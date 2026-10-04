@@ -2,6 +2,23 @@
 
 set -e
 
+# macOS 自带 Bash 3.2 不支持关联数组（declare -A），本脚本需要 Bash 4+
+if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
+    echo "[ERROR] This script requires Bash 4+.  需要 Bash 4+，macOS 请先执行: brew install bash" >&2
+    exit 1
+fi
+
+# curl | bash 场景下 stdin 是管道：有终端时把 stdin 切回终端保证交互可用；完全没有终端（CI 无人值守）则明确报错
+if [ ! -t 0 ]; then
+    if [ -r /dev/tty ] && exec 0</dev/tty; then
+        :
+    else
+        echo "[ERROR] Interactive terminal required (no TTY available)." >&2
+        echo "[错误] 本安装脚本需要交互式终端运行（未检测到 TTY）。" >&2
+        exit 1
+    fi
+fi
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -63,6 +80,8 @@ mirror_ghcr=GitHub Container Registry (ghcr.io/erispulse/erispulse)
 select_channel=选择版本通道:
 channel_stable=stable（稳定版）
 channel_dev=dev（预发布版）
+not_available_yet=（暂未提供）
+channel_dev_unavailable=dev 镜像通道暂未提供，敬请期待
 enable_dashboard=是否启用 Dashboard 管理面板？ [Y/n]
 set_token=请设置 Dashboard 登录令牌
 token_empty=令牌不能为空，Dashboard 将不启用
@@ -122,6 +141,7 @@ python_detected=检测到 Python
 python_version_low=Python 版本过低，建议使用 3.10 或更高版本
 continue_=是否继续？ [y/N]
 docker_detected=检测到 Docker
+docker_not_running=Docker 已安装但未运行，已跳过 Docker 安装方式；请启动 Docker 后重试
 auto_selected=仅检测到一种安装方式，自动选择
 no_install_method=未检测到可用的安装方式
 install_tools=请安装以下任一工具:
@@ -197,6 +217,8 @@ mirror_ghcr=GitHub Container Registry (ghcr.io/erispulse/erispulse)
 select_channel=選擇版本通道:
 channel_stable=stable（穩定版）
 channel_dev=dev（預發布版）
+not_available_yet=（暫未提供）
+channel_dev_unavailable=dev 映像通道暫未提供，敬請期待
 enable_dashboard=是否啟用 Dashboard 管理面板？ [Y/n]
 set_token=請設定 Dashboard 登入令牌
 token_empty=令牌不能為空，Dashboard 將不啟用
@@ -256,6 +278,7 @@ python_detected=偵測到 Python
 python_version_low=Python 版本過低，建議使用 3.10 或更高版本
 continue_=是否繼續？ [y/N]
 docker_detected=偵測到 Docker
+docker_not_running=Docker 已安裝但未執行，已跳過 Docker 安裝方式；請啟動 Docker 後重試
 auto_selected=僅偵測到一種安裝方式，自動選擇
 no_install_method=未偵測到可用的安裝方式
 install_tools=請安裝以下任一工具:
@@ -331,6 +354,8 @@ mirror_ghcr=GitHub Container Registry (ghcr.io/erispulse/erispulse)
 select_channel=Select channel:
 channel_stable=stable
 channel_dev=dev (pre-release)
+not_available_yet=(not available yet)
+channel_dev_unavailable=The dev image channel is not available yet, stay tuned
 enable_dashboard=Enable Dashboard? [Y/n]
 set_token=Set Dashboard login token
 token_empty=Token cannot be empty, Dashboard will be disabled
@@ -390,6 +415,7 @@ python_detected=Detected Python
 python_version_low=Python version too low, 3.10+ recommended
 continue_=Continue? [y/N]
 docker_detected=Detected Docker
+docker_not_running=Docker is installed but not running; Docker install skipped. Start Docker and re-run
 auto_selected=Only one method available, auto-selected
 no_install_method=No installation method available
 install_tools=Please install one of the following:
@@ -465,6 +491,8 @@ mirror_ghcr=GitHub Container Registry (ghcr.io/erispulse/erispulse)
 select_channel=チャンネルを選択:
 channel_stable=stable（安定版）
 channel_dev=dev（プレリリース版）
+not_available_yet=（未提供）
+channel_dev_unavailable=dev イメージチャンネルはまだ提供されていません。お楽しみに
 enable_dashboard=Dashboard 管理パネルを有効にしますか？ [Y/n]
 set_token=Dashboard ログイントークンを設定
 token_empty=トークンは空にできません。Dashboard は無効になります
@@ -524,6 +552,7 @@ python_detected=Python を検出
 python_version_low=Python バージョンが低すぎます。3.10+ を推奨
 continue_=続行しますか？ [y/N]
 docker_detected=Docker を検出
+docker_not_running=Docker はインストール済みですが起動していません。Docker インストールをスキップしました。Docker を起動して再実行してください
 auto_selected=インストール方法が1つのみ、自動選択
 no_install_method=利用可能なインストール方法がありません
 install_tools=以下のいずれかをインストールしてください:
@@ -562,8 +591,8 @@ i18n_note=起動後に中国語が表示されても心配しないでくださ�
 _L_ru="lang_name=Русский
 info_tag=ИНФО
 success_tag=ОК
-warning_tag=ВНИМ
-error_tag=ОШИБ
+warning_tag=ПРЕДУПР
+error_tag=ОШИБКА
 install_title=Установщик ErisPulse
 docker_mode=Установка через Docker
 docker_image_builtin=Официальный образ включает ErisPulse и Dashboard
@@ -599,6 +628,8 @@ mirror_ghcr=GitHub Container Registry (ghcr.io/erispulse/erispulse)
 select_channel=Выберите канал:
 channel_stable=stable (стабильная)
 channel_dev=dev (предварительная)
+not_available_yet=(пока недоступен)
+channel_dev_unavailable=Канал dev-образов пока недоступен, следите за обновлениями
 enable_dashboard=Включить Dashboard? [Y/n]
 set_token=Установите токен входа Dashboard
 token_empty=Токен не может быть пустым, Dashboard будет отключён
@@ -658,6 +689,7 @@ python_detected=Обнаружен Python
 python_version_low=Версия Python слишком старая, рекомендуется 3.10+
 continue_=Продолжить? [y/N]
 docker_detected=Обнаружен Docker
+docker_not_running=Docker установлен, но не запущен — установка через Docker пропущена; запустите Docker и повторите
 auto_selected=Только один способ, выбран автоматически
 no_install_method=Нет доступных способов установки
 install_tools=Установите один из следующих инструментов:
@@ -798,7 +830,7 @@ try:
         minor = int(parts[1]) if len(parts) > 1 and parts[1].replace('.', '').isdigit() else 0
         patch_str = parts[2].split('-')[0] if len(parts) > 2 else '0'
         patch_num = int(patch_str) if patch_str.isdigit() else 0
-        pre = 0 if not v[1] else 1
+        pre = 1 if not v[1] else 0
         return (major, minor, patch_num, pre, v[0])
     versions.sort(key=sort_key, reverse=True)
     for v, is_pre, date in versions:
@@ -890,7 +922,11 @@ show_all_versions() {
 
 check_docker() {
     command_exists docker || { DOCKER_AVAILABLE=false; return; }
-    docker info >/dev/null 2>&1 || { DOCKER_AVAILABLE=false; return; }
+    if ! docker info >/dev/null 2>&1; then
+        DOCKER_AVAILABLE=false
+        print_warning "$(t 'docker_not_running')"
+        return
+    fi
     local compose_cmd=""
     docker compose version >/dev/null 2>&1 && compose_cmd="docker compose"
     [ -z "$compose_cmd" ] && command_exists docker-compose && docker-compose version >/dev/null 2>&1 && compose_cmd="docker-compose"
@@ -1065,14 +1101,14 @@ install_docker_mode() {
     echo ""
     echo -e "${CYAN}$(t 'select_channel')${NC}"
     echo "  1. $(t 'channel_stable')"
-    echo "  2. $(t 'channel_dev')"
+    echo -e "  2. $(t 'channel_dev') ${YELLOW}$(t 'not_available_yet')${NC}"
     echo ""
     while true; do
         read -p "[$(t 'select_default')]: " channel_choice
         channel_choice=${channel_choice:-1}
         case "$channel_choice" in
             1) channel="stable"; tag="latest"; break ;;
-            2) channel="dev"; break ;;
+            2) print_warning "$(t 'channel_dev_unavailable')" ;;
             *) print_warning "$(t 'select_1_2')" ;;
         esac
     done
@@ -1092,7 +1128,7 @@ install_docker_mode() {
     echo -e "${CYAN}===========================================${NC}"
     echo -e "${CYAN}  $(t 'install_config')${NC}"
     echo -e "${CYAN}===========================================${NC}"
-    echo "  $(t 'image_label'): ${image}:latest"
+    echo "  $(t 'image_label'): ${image}:${tag}"
     echo "  $(t 'channel_label'): ${channel}"
     echo "  $(t 'port_label'): ${port}"
     echo "  Dashboard: $([ -n "$dashboard_token" ] && t 'enabled' || t 'not_enabled')"
@@ -1111,7 +1147,7 @@ install_docker_mode() {
 # ErisPulse Docker Compose
 services:
   erispulse:
-    image: ${image}:latest
+    image: ${image}:${tag}
     container_name: erispulse
     ports:
       - "\${ERISPULSE_PORT:-${port}}:8000"
@@ -1201,12 +1237,6 @@ install_traditional_mode() {
     echo -e "  - $(t 'tip_deactivate')"
     echo -e "  - $(t 'tip_update')"
     echo ""
-    [ -f "$VENV_DIR/bin/activate" ] && {
-        print_info "$(t 'activating_venv')"
-        source "$VENV_DIR/bin/activate"
-        print_success "$(t 'venv_activated')"
-        echo -e "${YELLOW}$(t 'python_path'): ${BLUE}$(which python)${NC}"
-    }
     print_completion_footer
     return 0
 }
@@ -1297,6 +1327,12 @@ install_uv_tool_mode() {
         print_success "epsdk $(t 'install_success')"
     else
         print_warning "$(t 'uv_tool_bin_hint')"
+        # export 只影响当前会话；按用户 shell 给出新终端生效的具体命令
+        case "$(basename "${SHELL:-}")" in
+            fish) echo -e "  ${GREEN}fish_add_path ~/.local/bin${NC}" ;;
+            zsh)  echo -e "  ${GREEN}echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.zshrc${NC}" ;;
+            *)    echo -e "  ${GREEN}echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.bashrc${NC}" ;;
+        esac
     fi
     echo -e "${CYAN}$(t 'uv_tool_usage')${NC}"
     echo ""

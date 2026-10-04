@@ -7,9 +7,9 @@
 脚本支持三种安装模式：
 
 ### Docker 安装（推荐）
-- 自动检测 Docker 和 docker compose
+- 自动检测 Docker 和 docker compose（已安装但未运行时会提示启动后重试）
 - 支持选择 Docker Hub 或 GitHub Container Registry 镜像源
-- 支持选择稳定版或预发布版通道
+- 版本通道当前提供 stable（dev 预发布通道暂未提供，菜单中已标注）
 - 可选配置 Dashboard 管理面板
 - 自动生成 `docker-compose.yml` 和 `.env` 配置文件
 

@@ -58,6 +58,8 @@ $langData = @{
         select_channel = "选择版本通道:"
         channel_stable = "stable（稳定版）"
         channel_dev = "dev（预发布版）"
+        not_available_yet = "（暂未提供）"
+        channel_dev_unavailable = "dev 镜像通道暂未提供，敬请期待"
         enable_dashboard = "是否启用 Dashboard 管理面板？ [Y/n]"
         set_token = "请设置 Dashboard 登录令牌"
         token_empty = "令牌不能为空，Dashboard 将不启用"
@@ -117,6 +119,7 @@ $langData = @{
         python_version_low = "Python 版本过低，建议使用 3.10 或更高版本"
         continue_ = "是否继续？ [y/N]"
         docker_detected = "检测到 Docker"
+        docker_not_running = "Docker 已安装但未运行，已跳过 Docker 安装方式；请启动 Docker 后重试"
         auto_selected = "仅检测到一种安装方式，自动选择"
         no_install_method = "未检测到可用的安装方式"
         install_tools = "请安装以下任一工具:"
@@ -191,6 +194,8 @@ $langData = @{
         select_channel = "選擇版本通道:"
         channel_stable = "stable（穩定版）"
         channel_dev = "dev（預發布版）"
+        not_available_yet = "（暫未提供）"
+        channel_dev_unavailable = "dev 映像通道暫未提供，敬請期待"
         enable_dashboard = "是否啟用 Dashboard 管理面板？ [Y/n]"
         set_token = "請設定 Dashboard 登入令牌"
         token_empty = "令牌不能為空，Dashboard 將不啟用"
@@ -250,6 +255,7 @@ $langData = @{
         python_version_low = "Python 版本過低，建議使用 3.10 或更高版本"
         continue_ = "是否繼續？ [y/N]"
         docker_detected = "偵測到 Docker"
+        docker_not_running = "Docker 已安裝但未執行，已跳過 Docker 安裝方式；請啟動 Docker 後重試"
         auto_selected = "僅偵測到一種安裝方式，自動選擇"
         no_install_method = "未偵測到可用的安裝方式"
         install_tools = "請安裝以下任一工具:"
@@ -324,6 +330,8 @@ $langData = @{
         select_channel = "Select channel:"
         channel_stable = "stable"
         channel_dev = "dev (pre-release)"
+        not_available_yet = "(not available yet)"
+        channel_dev_unavailable = "The dev image channel is not available yet, stay tuned"
         enable_dashboard = "Enable Dashboard? [Y/n]"
         set_token = "Set Dashboard login token"
         token_empty = "Token cannot be empty, Dashboard will be disabled"
@@ -383,6 +391,7 @@ $langData = @{
         python_version_low = "Python version too low, 3.10+ recommended"
         continue_ = "Continue? [y/N]"
         docker_detected = "Detected Docker"
+        docker_not_running = "Docker is installed but not running; Docker install skipped. Start Docker and re-run"
         auto_selected = "Only one method available, auto-selected"
         no_install_method = "No installation method available"
         install_tools = "Please install one of the following:"
@@ -457,6 +466,8 @@ $langData = @{
         select_channel = "チャンネルを選択:"
         channel_stable = "stable（安定版）"
         channel_dev = "dev（プレリリース版）"
+        not_available_yet = "（未提供）"
+        channel_dev_unavailable = "dev イメージチャンネルはまだ提供されていません。お楽しみに"
         enable_dashboard = "Dashboard 管理パネルを有効にしますか？ [Y/n]"
         set_token = "Dashboard ログイントークンを設定"
         token_empty = "トークンは空にできません。Dashboard は無効になります"
@@ -516,6 +527,7 @@ $langData = @{
         python_version_low = "Python バージョンが低すぎます。3.10+ を推奨"
         continue_ = "続行しますか？ [y/N]"
         docker_detected = "Docker を検出"
+        docker_not_running = "Docker はインストール済みですが起動していません。Docker インストールをスキップしました。Docker を起動して再実行してください"
         auto_selected = "インストール方法が1つのみ、自動選択"
         no_install_method = "利用可能なインストール方法がありません"
         install_tools = "以下のいずれかをインストールしてください:"
@@ -553,8 +565,8 @@ $langData = @{
         lang_name = "Русский"
         info_tag = "ИНФО"
         success_tag = "ОК"
-        warning_tag = "ВНИМ"
-        error_tag = "ОШИБ"
+        warning_tag = "ПРЕДУПР"
+        error_tag = "ОШИБКА"
         select_lang = "Выберите язык / Select Language"
         install_title = "Установщик ErisPulse"
         docker_mode = "Установка через Docker"
@@ -590,6 +602,8 @@ $langData = @{
         select_channel = "Выберите канал:"
         channel_stable = "stable (стабильная)"
         channel_dev = "dev (предварительная)"
+        not_available_yet = "(пока недоступен)"
+        channel_dev_unavailable = "Канал dev-образов пока недоступен, следите за обновлениями"
         enable_dashboard = "Включить Dashboard? [Y/n]"
         set_token = "Установите токен входа Dashboard"
         token_empty = "Токен не может быть пустым, Dashboard будет отключён"
@@ -649,6 +663,7 @@ $langData = @{
         python_version_low = "Версия Python слишком старая, рекомендуется 3.10+"
         continue_ = "Продолжить? [y/N]"
         docker_detected = "Обнаружен Docker"
+        docker_not_running = "Docker установлен, но не запущен — установка через Docker пропущена; запустите Docker и повторите"
         auto_selected = "Только один способ, выбран автоматически"
         no_install_method = "Нет доступных способов установки"
         install_tools = "Установите один из следующих инструментов:"
@@ -827,7 +842,7 @@ function Get-PyPiVersions {
             $minor = if ($parts.Count -gt 1 -and $parts[1] -match '^\d+$') { [int]$parts[1] } else { 0 }
             $patchStr = if ($parts.Count -gt 2) { $parts[2].Split('-')[0] } else { "0" }
             $patchNum = if ($patchStr -match '^\d+$') { [int]$patchStr } else { 0 }
-            $pre = if ($_.IsPre) { 1 } else { 0 }
+            $pre = if ($_.IsPre) { 0 } else { 1 }
             "$major,$minor,$patchNum,$pre,$($_.Version)"
         } -Descending
         
@@ -938,9 +953,11 @@ function Test-Docker {
     }
     
     try {
-        $null = & docker info 2>$null
+        & docker info *>$null
+        if ($LASTEXITCODE -ne 0) { throw "docker daemon not reachable" }
     } catch {
         $script:DockerAvailable = $false
+        Write-Warning (t 'docker_not_running')
         return
     }
     
@@ -1102,6 +1119,7 @@ function Install-DockerMode {
     Write-Host ""
     
     $image = ""
+    $tag = "latest"
     $channel = "stable"
     $port = 8000
     $dashboardToken = ""
@@ -1124,14 +1142,14 @@ function Install-DockerMode {
     Write-Host ""
     Write-Host (t 'select_channel') -ForegroundColor Cyan
     Write-Host "  1. $(t 'channel_stable')"
-    Write-Host "  2. $(t 'channel_dev')"
+    Write-Host "  2. $(t 'channel_dev') $(t 'not_available_yet')" -ForegroundColor Yellow
     Write-Host ""
     while ($true) {
         $channelChoice = Read-Host "[$(t 'select_default')]"
         $channelChoice = if ($channelChoice) { $channelChoice } else { "1" }
         switch ($channelChoice) {
-            "1" { $channel = "stable"; break }
-            "2" { $channel = "dev"; break }
+            "1" { $channel = "stable"; $tag = "latest"; break }
+            "2" { Write-Warning (t 'channel_dev_unavailable'); continue }
             default { Write-Warning (t 'select_1_2'); continue }
         }
         break
@@ -1157,7 +1175,7 @@ function Install-DockerMode {
     Write-Host "===========================================" -ForegroundColor Cyan
     Write-Host "  $(t 'install_config')" -ForegroundColor Cyan
     Write-Host "===========================================" -ForegroundColor Cyan
-    Write-Host "  $(t 'image_label'): $image`:latest"
+    Write-Host "  $(t 'image_label'): $image`:$tag"
     Write-Host "  $(t 'channel_label'): $channel"
     Write-Host "  $(t 'port_label'): $port"
     Write-Host "  Dashboard: $(if ($dashboardToken) { t 'enabled' } else { t 'not_enabled' })"
@@ -1174,7 +1192,7 @@ function Install-DockerMode {
 # ErisPulse Docker Compose
 services:
   erispulse:
-    image: ${image}:latest
+    image: ${image}:${tag}
     container_name: erispulse
     ports:
       - "`${ERISPULSE_PORT:-${port}}:8000"
@@ -1305,17 +1323,9 @@ function Install-TraditionalMode {
     Write-Host "  - $(t 'tip_deactivate')" -ForegroundColor Green
     Write-Host "  - $(t 'tip_update')" -ForegroundColor Green
     Write-Host ""
-    
-    $activateScript = Join-Path $script:VenvDir "Scripts\activate.ps1"
-    if (Test-Path $activateScript) {
-        Write-Info (t 'activating_venv')
-        & $activateScript
-        Write-Success (t 'venv_activated')
-        Write-Host "$(t 'python_path'): $((Get-Command python).Source)" -ForegroundColor Yellow
-    }
-    
+
     Write-CompletionFooter
-    
+
     return $true
 }
 
