@@ -4,7 +4,7 @@
 
 当您希望快速部署 ErisPulse 时，推荐使用一键安装脚本。脚本会自动检测您的环境并引导选择最适合的安装方式。
 
-脚本支持两种安装模式：
+脚本支持三种安装模式：
 
 ### Docker 安装（推荐）
 - 自动检测 Docker 和 docker compose
@@ -12,6 +12,11 @@
 - 支持选择稳定版或预发布版通道
 - 可选配置 Dashboard 管理面板
 - 自动生成 `docker-compose.yml` 和 `.env` 配置文件
+
+### 全局 CLI 安装（uv tool，推荐）
+- 通过 `uv tool install` 将 `epsdk` 安装为全局命令，无需虚拟环境
+- uv 自动管理 Python（系统 Python 过低或缺失时自动安装）
+- 项目目录内运行时自动感知项目 `.venv`，全局一份 epsdk 服务所有项目
 
 ### 传统安装（pip/uv + 虚拟环境）
 - 自动检测 Python 版本（>= 3.10）
@@ -46,6 +51,7 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 2. 脚本自动检测环境（Docker、Python、uv）
 3. 选择安装方式：
    - **Docker 安装（推荐）**：如果检测到 Docker
+   - **全局 CLI 安装（uv tool，推荐）**：全局命令行工具，无需虚拟环境
    - **传统安装**：使用 Python 虚拟环境
 4. 根据引导完成配置
 5. 安装完成后即可使用
@@ -84,6 +90,22 @@ docker compose down             # 停止服务
 docker compose restart          # 重启服务
 docker compose pull && docker compose up -d  # 更新镜像
 ```
+
+### 全局 CLI 安装模式
+
+安装完成后 `epsdk` 即为全局命令，**无需激活任何虚拟环境**，在项目目录内直接使用：
+
+```bash
+epsdk init                  # 初始化项目（自动创建项目 .venv）
+epsdk install <模块名>      # 组件安装进项目 .venv
+epsdk run                   # 使用项目 .venv 运行机器人
+epsdk self-update           # 更新框架（自动走 uv tool upgrade 通道）
+```
+
+若终端找不到 `epsdk`，请将 uv 的工具目录加入 PATH：
+
+- Windows: `%USERPROFILE%\.local\bin`
+- macOS/Linux: `~/.local/bin`
 
 ### 传统安装模式
 

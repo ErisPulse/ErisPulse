@@ -271,7 +271,13 @@ ErisPulse 已上架 1Panel 第三方应用商店，可使用 [okxlin/appstore](h
 pip install ErisPulse
 ```
 
-> 也可以使用上方的一键安装脚本，自动检测环境并引导配置。
+想把 `epsdk` 当全局命令行工具、不进虚拟环境使用时，推荐 `uv tool install`：
+
+```bash
+uv tool install ErisPulse
+```
+
+> 也可以使用上方的一键安装脚本，自动检测环境并引导配置（脚本菜单中同样提供「全局 CLI 安装（uv tool）」方式）。
 
 ### 初始化项目
 

@@ -82,12 +82,15 @@ uv tool upgrade ErisPulse
 > 工具环境里的 epsdk 在项目目录内运行时会自动感知项目 `.venv`：
 > `epsdk install` 将组件安装进项目环境、`epsdk run` 使用项目环境运行机器人，
 > 框架本体仍由工具环境提供，两边互不干扰。
+>
+> 一键安装脚本（`get.erisdev.com/install.sh` / `install.ps1`）的菜单中
+> 同样提供「全局 CLI 安装（uv tool）」方式，会自动安装 uv 并引导完成。
 
 ## 项目初始化与模块安装
 
 安装完成后，项目初始化、模块安装、运行的完整流程见 [5 分钟快速开始](../quick-start.md)。
 
-### 方式三：使用 ErisPulse-App 客户端（免终端）
+### 方式四：使用 ErisPulse-App 客户端（免终端）
 
 不想装 Python 环境？[ErisPulse-App](../ecosystem/app.md) 是官方全平台客户端
 （Android / Windows / Linux / macOS），**手机直接运行**，桌面版支持最小化到
