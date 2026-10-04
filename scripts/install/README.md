@@ -65,11 +65,12 @@ Docker 模式会自动生成以下文件：
 services:
   erispulse:
     image: erispulse/erispulse:latest
-    container_name: erispulse
+    container_name: ${CONTAINER_NAME:-erispulse}
     ports:
       - "${ERISPULSE_PORT:-8000}:8000"
     volumes:
       - ./config:/app/config
+      - ./config/.packages:/usr/local/lib/python3.13/site-packages
     env_file:
       - .env
     restart: unless-stopped
@@ -78,10 +79,10 @@ services:
 **.env**
 ```env
 ERISPULSE_DASHBOARD_TOKEN=your-token
-ERISPULSE_CHANNEL=stable
-ERISPULSE_UPDATE_ON_START=false
 TZ=Asia/Shanghai
 ```
+
+> site-packages 挂载用于持久化经 Dashboard 热更新安装的模块与适配器，更新镜像后不丢失；时区可在 `.env` 中按需修改（如 `Asia/Tokyo`、`Europe/Berlin`）。
 
 Docker 管理命令：
 ```bash

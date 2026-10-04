@@ -64,6 +64,7 @@ $langData = @{
         set_token = "请设置 Dashboard 登录令牌"
         token_empty = "令牌不能为空，Dashboard 将不启用"
         set_port = "设置端口 (默认: 8000)"
+        set_tz = "设置时区 (默认: Asia/Shanghai)"
         confirm_install = "确认安装？ [Y/n]"
         cancelled = "操作已取消"
         generating_config = "正在生成配置文件..."
@@ -200,6 +201,7 @@ $langData = @{
         set_token = "請設定 Dashboard 登入令牌"
         token_empty = "令牌不能為空，Dashboard 將不啟用"
         set_port = "設定埠 (預設: 8000)"
+        set_tz = "設定時區 (預設: Asia/Shanghai)"
         confirm_install = "確認安裝？ [Y/n]"
         cancelled = "操作已取消"
         generating_config = "正在產生設定檔..."
@@ -336,6 +338,7 @@ $langData = @{
         set_token = "Set Dashboard login token"
         token_empty = "Token cannot be empty, Dashboard will be disabled"
         set_port = "Set port (default: 8000)"
+        set_tz = "Set timezone (default: Asia/Shanghai)"
         confirm_install = "Confirm install? [Y/n]"
         cancelled = "Operation cancelled"
         generating_config = "Generating config files..."
@@ -472,6 +475,7 @@ $langData = @{
         set_token = "Dashboard ログイントークンを設定"
         token_empty = "トークンは空にできません。Dashboard は無効になります"
         set_port = "ポートを設定 (デフォルト: 8000)"
+        set_tz = "タイムゾーンを設定 (デフォルト: Asia/Shanghai)"
         confirm_install = "インストールを確認？ [Y/n]"
         cancelled = "操作がキャンセルされました"
         generating_config = "設定ファイルを生成中..."
@@ -608,6 +612,7 @@ $langData = @{
         set_token = "Установите токен входа Dashboard"
         token_empty = "Токен не может быть пустым, Dashboard будет отключён"
         set_port = "Установите порт (по умолчанию: 8000)"
+        set_tz = "Установите часовой пояс (по умолчанию: Asia/Shanghai)"
         confirm_install = "Подтвердить установку? [Y/n]"
         cancelled = "Операция отменена"
         generating_config = "Генерация конфигурационных файлов..."
@@ -1170,7 +1175,11 @@ function Install-DockerMode {
     if ($portInput -match '^\d+$') {
         $port = [int]$portInput
     }
-    
+
+    Write-Host ""
+    $tz = Read-Host (t 'set_tz')
+    if (-not $tz) { $tz = "Asia/Shanghai" }
+
     Write-Host ""
     Write-Host "===========================================" -ForegroundColor Cyan
     Write-Host "  $(t 'install_config')" -ForegroundColor Cyan
@@ -1178,6 +1187,7 @@ function Install-DockerMode {
     Write-Host "  $(t 'image_label'): $image`:$tag"
     Write-Host "  $(t 'channel_label'): $channel"
     Write-Host "  $(t 'port_label'): $port"
+    Write-Host "  TZ: $tz"
     Write-Host "  Dashboard: $(if ($dashboardToken) { t 'enabled' } else { t 'not_enabled' })"
     Write-Host "===========================================" -ForegroundColor Cyan
     Write-Host ""
@@ -1193,20 +1203,19 @@ function Install-DockerMode {
 services:
   erispulse:
     image: ${image}:${tag}
-    container_name: erispulse
+    container_name: ``${CONTAINER_NAME:-erispulse}
     ports:
       - "`${ERISPULSE_PORT:-${port}}:8000"
     volumes:
       - ./config:/app/config
+      - ./config/.packages:/usr/local/lib/python3.13/site-packages
     env_file:
       - .env
     restart: unless-stopped
 "@
-    
+
     $envContent = @"
-ERISPULSE_CHANNEL=${channel}
-ERISPULSE_UPDATE_ON_START=false
-TZ=Asia/Shanghai
+TZ=${tz}
 "@
     
     if ($dashboardToken) {

@@ -24,6 +24,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
 BOLD='\033[1m'
 NC='\033[0m'
 
@@ -86,6 +87,7 @@ enable_dashboard=是否启用 Dashboard 管理面板？ [Y/n]
 set_token=请设置 Dashboard 登录令牌
 token_empty=令牌不能为空，Dashboard 将不启用
 set_port=设置端口 (默认: 8000)
+set_tz=设置时区 (默认: Asia/Shanghai)
 confirm_install=确认安装？ [Y/n]
 cancelled=操作已取消
 generating_config=正在生成配置文件...
@@ -223,6 +225,7 @@ enable_dashboard=是否啟用 Dashboard 管理面板？ [Y/n]
 set_token=請設定 Dashboard 登入令牌
 token_empty=令牌不能為空，Dashboard 將不啟用
 set_port=設定埠 (預設: 8000)
+set_tz=設定時區 (預設: Asia/Shanghai)
 confirm_install=確認安裝？ [Y/n]
 cancelled=操作已取消
 generating_config=正在產生設定檔...
@@ -360,6 +363,7 @@ enable_dashboard=Enable Dashboard? [Y/n]
 set_token=Set Dashboard login token
 token_empty=Token cannot be empty, Dashboard will be disabled
 set_port=Set port (default: 8000)
+set_tz=Set timezone (default: Asia/Shanghai)
 confirm_install=Confirm install? [Y/n]
 cancelled=Operation cancelled
 generating_config=Generating config files...
@@ -497,6 +501,7 @@ enable_dashboard=Dashboard 管理パネルを有効にしますか？ [Y/n]
 set_token=Dashboard ログイントークンを設定
 token_empty=トークンは空にできません。Dashboard は無効になります
 set_port=ポートを設定 (デフォルト: 8000)
+set_tz=タイムゾーンを設定 (デフォルト: Asia/Shanghai)
 confirm_install=インストールを確認？ [Y/n]
 cancelled=操作がキャンセルされました
 generating_config=設定ファイルを生成中...
@@ -634,6 +639,7 @@ enable_dashboard=Включить Dashboard? [Y/n]
 set_token=Установите токен входа Dashboard
 token_empty=Токен не может быть пустым, Dashboard будет отключён
 set_port=Установите порт (по умолчанию: 8000)
+set_tz=Установите часовой пояс (по умолчанию: Asia/Shanghai)
 confirm_install=Подтвердить установку? [Y/n]
 cancelled=Операция отменена
 generating_config=Генерация конфигурационных файлов...
@@ -906,7 +912,7 @@ show_all_versions() {
     done <<< "$versions_output"
     echo ""
     while true; do
-        read -p "$(t 'enter_version') [1-$index]: " input
+        read -p "$(t 'enter_version') [1-${#version_list[@]}]: " input
         if [[ "$input" =~ ^[0-9]+$ ]]; then
             local idx=$((input - 1))
             [ $idx -ge 0 ] && [ $idx -lt ${#version_list[@]} ] && TARGET_VERSION="${version_list[$idx]}" && return 0
@@ -1089,7 +1095,7 @@ install_docker_mode() {
     echo "  2. $(t 'mirror_ghcr')"
     echo ""
     while true; do
-        read -p "[$(t 'select_default')]: " mirror_choice
+        read -p "[$(t 'select_1_2')]: " mirror_choice
         mirror_choice=${mirror_choice:-1}
         case "$mirror_choice" in
             1) image="erispulse/erispulse"; break ;;
@@ -1104,7 +1110,7 @@ install_docker_mode() {
     echo -e "  2. $(t 'channel_dev') ${YELLOW}$(t 'not_available_yet')${NC}"
     echo ""
     while true; do
-        read -p "[$(t 'select_default')]: " channel_choice
+        read -p "[$(t 'select_1_2')]: " channel_choice
         channel_choice=${channel_choice:-1}
         case "$channel_choice" in
             1) channel="stable"; tag="latest"; break ;;
@@ -1125,12 +1131,18 @@ install_docker_mode() {
     [[ "$port_input" =~ ^[0-9]+$ ]] && port="$port_input"
 
     echo ""
+    local tz
+    read -p "$(t 'set_tz'): " tz_input
+    tz="${tz_input:-Asia/Shanghai}"
+
+    echo ""
     echo -e "${CYAN}===========================================${NC}"
     echo -e "${CYAN}  $(t 'install_config')${NC}"
     echo -e "${CYAN}===========================================${NC}"
     echo "  $(t 'image_label'): ${image}:${tag}"
     echo "  $(t 'channel_label'): ${channel}"
     echo "  $(t 'port_label'): ${port}"
+    echo "  TZ: ${tz}"
     echo "  Dashboard: $([ -n "$dashboard_token" ] && t 'enabled' || t 'not_enabled')"
     echo -e "${CYAN}===========================================${NC}"
     echo ""
@@ -1148,11 +1160,12 @@ install_docker_mode() {
 services:
   erispulse:
     image: ${image}:${tag}
-    container_name: erispulse
+    container_name: \${CONTAINER_NAME:-erispulse}
     ports:
       - "\${ERISPULSE_PORT:-${port}}:8000"
     volumes:
       - ./config:/app/config
+      - ./config/.packages:/usr/local/lib/python3.13/site-packages
     env_file:
       - .env
     restart: unless-stopped
@@ -1160,9 +1173,7 @@ EOF
 
     {
         [ -n "$dashboard_token" ] && echo "ERISPULSE_DASHBOARD_TOKEN=${dashboard_token}"
-        echo "ERISPULSE_CHANNEL=${channel}"
-        echo "ERISPULSE_UPDATE_ON_START=false"
-        echo "TZ=Asia/Shanghai"
+        echo "TZ=${tz}"
     } > .env
 
     print_success "$(t 'docker_compose_generated')"

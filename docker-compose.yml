@@ -19,9 +19,6 @@
 
 services:
   erispulse:
-    build:
-      context: .
-      target: ${ERISPULSE_BUILD_TARGET:-production}
     image: erispulse/erispulse:${ERISPULSE_TAG:-latest}
     container_name: ${CONTAINER_NAME:-erispulse}
     ports:
@@ -35,7 +32,7 @@ services:
       - ERISPULSE_LANG=${ERISPULSE_LANG:-}
       - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
     init: true
-    # 优雅停机：entrypoint 捕获 SIGTERM 后让进程自然退出
+    # 优雅停机由框架内信号处理完成（SIGTERM），此处仅控制宽限时长
     stop_grace_period: 30s
     restart: on-failure:5
     healthcheck:
