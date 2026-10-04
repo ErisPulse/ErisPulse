@@ -4017,7 +4017,7 @@
     "Check Installation": [
       {
         "document": "user-guide/installation.md",
-        "line": 100,
+        "line": 102,
         "level": 3,
         "title": "Check Installation"
       }
@@ -4559,7 +4559,7 @@
     "Configuration Errors": [
       {
         "document": "user-guide/installation.md",
-        "line": 133,
+        "line": 135,
         "level": 3,
         "title": "Configuration Errors"
       }
@@ -4601,7 +4601,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 166,
+        "line": 167,
         "level": 2,
         "title": "Configuration File"
       }
@@ -5009,7 +5009,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 189,
+        "line": 209,
         "level": 3,
         "title": "Core Differences"
       },
@@ -5305,7 +5305,7 @@
     "Debian/Ubuntu Virtual Environment Creation Failed": [
       {
         "document": "user-guide/installation.md",
-        "line": 155,
+        "line": 157,
         "level": 3,
         "title": "Debian/Ubuntu Virtual Environment Creation Failed"
       }
@@ -5937,7 +5937,7 @@
     "Enable IDE Completion (Optional)": [
       {
         "document": "quick-start.md",
-        "line": 135,
+        "line": 136,
         "level": 2,
         "title": "Enable IDE Completion (Optional)"
       }
@@ -5948,6 +5948,14 @@
         "line": 152,
         "level": 2,
         "title": "Encryption Mode Explanation"
+      }
+    ],
+    "End-to-End Encryption (4.3.0)": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 67,
+        "level": 2,
+        "title": "End-to-End Encryption (4.3.0)"
       }
     ],
     "Entering Build Mode": [
@@ -6087,7 +6095,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 176,
+        "line": 196,
         "level": 3,
         "title": "Error Code Description"
       },
@@ -6403,7 +6411,7 @@
     "Event Mixin Methods": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 312,
+        "line": 332,
         "level": 3,
         "title": "Event Mixin Methods"
       }
@@ -6685,7 +6693,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 200,
+        "line": 220,
         "level": 3,
         "title": "Extended Fields"
       }
@@ -6873,7 +6881,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 114,
+        "line": 134,
         "level": 3,
         "title": "Fluent Chaining Examples"
       }
@@ -6909,7 +6917,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 106,
+        "line": 126,
         "level": 3,
         "title": "Fluent Modifier Methods (Combinable)"
       },
@@ -7041,7 +7049,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 123,
+        "line": 125,
         "level": 2,
         "title": "Frequently Asked Questions"
       }
@@ -7477,7 +7485,7 @@
     "Handling Group Messages": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 363,
+        "line": 383,
         "level": 3,
         "title": "Handling Group Messages"
       }
@@ -7507,7 +7515,7 @@
     "Handling Message Edits": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 425,
+        "line": 445,
         "level": 3,
         "title": "Handling Message Edits"
       }
@@ -7537,7 +7545,7 @@
     "Handling Reaction Events": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 387,
+        "line": 407,
         "level": 3,
         "title": "Handling Reaction Events"
       }
@@ -7589,7 +7597,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 350,
+        "line": 370,
         "level": 3,
         "title": "Heartbeat Mechanism"
       }
@@ -7871,7 +7879,7 @@
     "Initialize Project": [
       {
         "document": "quick-start.md",
-        "line": 69,
+        "line": 70,
         "level": 2,
         "title": "Initialize Project"
       },
@@ -7925,7 +7933,7 @@
     "Installation Failed": [
       {
         "document": "user-guide/installation.md",
-        "line": 125,
+        "line": 127,
         "level": 3,
         "title": "Installation Failed"
       }
@@ -7981,7 +7989,7 @@
     "Installing Modules": [
       {
         "document": "quick-start.md",
-        "line": 103,
+        "line": 104,
         "level": 2,
         "title": "Installing Modules"
       }
@@ -7997,7 +8005,7 @@
     "Installing via CLI": [
       {
         "document": "quick-start.md",
-        "line": 105,
+        "line": 106,
         "level": 3,
         "title": "Installing via CLI"
       }
@@ -8067,7 +8075,7 @@
     "Interactive Initialization (Recommended)": [
       {
         "document": "quick-start.md",
-        "line": 71,
+        "line": 72,
         "level": 3,
         "title": "Interactive Initialization (Recommended)"
       }
@@ -8075,7 +8083,7 @@
     "Interactive Installation": [
       {
         "document": "quick-start.md",
-        "line": 117,
+        "line": 118,
         "level": 3,
         "title": "Interactive Installation"
       },
@@ -8413,7 +8421,7 @@
     "Listening to Member Changes": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 438,
+        "line": 458,
         "level": 3,
         "title": "Listening to Member Changes"
       }
@@ -8635,7 +8643,7 @@
     "Manual Project Creation": [
       {
         "document": "quick-start.md",
-        "line": 94,
+        "line": 95,
         "level": 3,
         "title": "Manual Project Creation"
       }
@@ -8993,7 +9001,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 257,
+        "line": 277,
         "level": 3,
         "title": "Message Segment Types"
       }
@@ -9192,6 +9200,14 @@
         "title": "Method 3: Install with uv tool (Global CLI, Recommended)"
       }
     ],
+    "Method 4: Using the ErisPulse-App Client (No Terminal Required)": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 91,
+        "level": 3,
+        "title": "Method 4: Using the ErisPulse-App Client (No Terminal Required)"
+      }
+    ],
     "Method Chaining": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -9238,14 +9254,6 @@
         "line": 69,
         "level": 3,
         "title": "Method Signature"
-      }
-    ],
-    "Method Three: Using the ErisPulse-App Client (No Terminal Required)": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 89,
-        "level": 3,
-        "title": "Method Three: Using the ErisPulse-App Client (No Terminal Required)"
       }
     ],
     "Middleware": [
@@ -9425,7 +9433,7 @@
     "Module Installation Failed": [
       {
         "document": "user-guide/installation.md",
-        "line": 140,
+        "line": 142,
         "level": 3,
         "title": "Module Installation Failed"
       }
@@ -9797,7 +9805,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 182,
+        "line": 183,
         "level": 2,
         "title": "Next Steps"
       },
@@ -9809,7 +9817,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 167,
+        "line": 169,
         "level": 2,
         "title": "Next Steps"
       }
@@ -10039,7 +10047,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 139,
+        "line": 159,
         "level": 3,
         "title": "OneBot12 Message Support"
       },
@@ -10515,7 +10523,7 @@
     "Platform-Specific Event Types": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 185,
+        "line": 205,
         "level": 2,
         "title": "Platform-Specific Event Types"
       }
@@ -10675,7 +10683,7 @@
     "Project Initialization and Module Installation": [
       {
         "document": "user-guide/installation.md",
-        "line": 85,
+        "line": 87,
         "level": 2,
         "title": "Project Initialization and Module Installation"
       }
@@ -10697,7 +10705,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 154,
+        "line": 155,
         "level": 2,
         "title": "Project Structure"
       }
@@ -10897,7 +10905,7 @@
     "Quick Initialization": [
       {
         "document": "quick-start.md",
-        "line": 84,
+        "line": 85,
         "level": 3,
         "title": "Quick Initialization"
       }
@@ -11837,7 +11845,7 @@
     "Room Invitations": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 356,
+        "line": 376,
         "level": 3,
         "title": "Room Invitations"
       }
@@ -11941,7 +11949,7 @@
     "Run Tests": [
       {
         "document": "user-guide/installation.md",
-        "line": 107,
+        "line": 109,
         "level": 3,
         "title": "Run Tests"
       }
@@ -11957,7 +11965,7 @@
     "Running the Project": [
       {
         "document": "quick-start.md",
-        "line": 125,
+        "line": 126,
         "level": 2,
         "title": "Running the Project"
       }
@@ -12215,7 +12223,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 161,
+        "line": 181,
         "level": 2,
         "title": "Send Method Return Values"
       },
@@ -12361,7 +12369,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 404,
+        "line": 424,
         "level": 3,
         "title": "Sending Media Messages"
       }
@@ -12595,7 +12603,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 206,
+        "line": 226,
         "level": 3,
         "title": "Special Field Examples"
       },
@@ -12639,6 +12647,12 @@
       }
     ],
     "Standard API Action Examples": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 87,
+        "level": 3,
+        "title": "Standard API Action Examples"
+      },
       {
         "document": "platform-guide/sandbox.md",
         "line": 27,
@@ -12696,14 +12710,6 @@
         "line": 317,
         "level": 3,
         "title": "Standard Actions"
-      }
-    ],
-    "Standard Api Action Examples": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 67,
-        "level": 3,
-        "title": "Standard Api Action Examples"
       }
     ],
     "Standard Compliance Checklist": [
@@ -13059,7 +13065,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 86,
+        "line": 106,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -13113,7 +13119,7 @@
     "Supported Platform Capabilities": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 80,
+        "line": 100,
         "level": 3,
         "title": "Supported Platform Capabilities"
       },
@@ -13191,7 +13197,7 @@
     "Sync API Connection": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 338,
+        "line": 358,
         "level": 2,
         "title": "Sync API Connection"
       }
@@ -13199,7 +13205,7 @@
     "Synchronization Flow": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 340,
+        "line": 360,
         "level": 3,
         "title": "Synchronization Flow"
       }
@@ -13707,7 +13713,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 361,
+        "line": 381,
         "level": 2,
         "title": "Usage Examples"
       },
@@ -13805,7 +13811,7 @@
     "Using Docker": [
       {
         "document": "quick-start.md",
-        "line": 26,
+        "line": 27,
         "level": 3,
         "title": "Using Docker"
       }
@@ -13937,7 +13943,7 @@
     "Using pip Installation": [
       {
         "document": "quick-start.md",
-        "line": 51,
+        "line": 52,
         "level": 3,
         "title": "Using pip Installation"
       }
@@ -13999,7 +14005,7 @@
     "Verification of Installation": [
       {
         "document": "user-guide/installation.md",
-        "line": 98,
+        "line": 100,
         "level": 2,
         "title": "Verification of Installation"
       }
@@ -14023,7 +14029,7 @@
     "Viewing Available Modules": [
       {
         "document": "quick-start.md",
-        "line": 111,
+        "line": 112,
         "level": 3,
         "title": "Viewing Available Modules"
       }
@@ -14315,7 +14321,7 @@
     "Windows PowerShell Execution Policy": [
       {
         "document": "user-guide/installation.md",
-        "line": 147,
+        "line": 149,
         "level": 3,
         "title": "Windows PowerShell Execution Policy"
       }

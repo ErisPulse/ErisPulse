@@ -372,7 +372,7 @@ flowchart TD
 
 ### 一鍵安裝腳本（推薦）
 
-安裝腳本會自動檢測您的環境（Docker、Python、uv），並引導您選擇最適合的安裝方式。
+安裝腳本會自動偵測您的環境（Docker、Python、uv），並引導您選擇最適合的安裝方式。
 
 Windows (PowerShell):
 ```powershell
@@ -386,18 +386,19 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 腳本會引導您完成：
 
-- **Docker 安裝**（檢測到 Docker 時推薦）：選擇鏡像源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板配置、端口設置
-- **傳統安裝**：自動創建虛擬環境、選擇 ErisPulse 版本、可選安裝 Dashboard 管理面板模塊
+- **Docker 安裝**（偵測到 Docker 時推薦）：選擇鏡像來源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板配置、端口設定
+- **全域 CLI 安裝（uv tool，推薦）**：將 `epsdk` 安裝為全域命令，無需虛擬環境，uv 自動管理 Python（系統版本過低亦可）；項目目錄內運行時自動感知項目 `.venv`
+- **傳統安裝**：自動建立虛擬環境、選擇 ErisPulse 版本、可選安裝 Dashboard 管理面板模組
 
 ### 使用 Docker
 
-Docker 鏡像已內置 ErisPulse 框架和 Dashboard 管理面板。
+Docker 鏡像已內建 ErisPulse 框架和 Dashboard 管理面板。
 
 ```bash
 # 下載 docker-compose.yml
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-# 設置 Dashboard 令牌並啟動
+# 設定 Dashboard 令牌並啟動
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
@@ -412,25 +413,25 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-啟動後訪問 `http://<host>:8000/Dashboard`，使用設置的令牌登錄。
+啟動後訪問 `http://<host>:8000/Dashboard`，使用設定的令牌登入。
 
 ### 使用 pip 安裝
 
-確保你的 Python 版本 >= 3.10，然後使用 pip 安裝：
+確保您的 Python 版本 >= 3.10，然後使用 pip 安裝：
 
 ```bash
 pip install ErisPulse
 ```
 
-如果你已安裝 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安裝速度更快。
+如果您已安裝 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安裝速度更快。
 
-只想把 `epsdk` 命令行工具裝到全局、不污染項目環境時，推薦 `uv tool install`：
+只想把 `epsdk` 命令列工具裝到全域、不污染項目環境時，推薦 `uv tool install`：
 
 ```bash
 uv tool install ErisPulse
 ```
 
-安裝後 `epsdk` 全局可用：在項目目錄內運行時會自動感知項目 `.venv`（`epsdk install` 裝進項目環境、`epsdk run` 用項目環境運行），框架本體由工具環境提供。詳見[安裝參考](user-guide/installation.md)。
+安裝後 `epsdk` 全域可用：在項目目錄內運行時會自動感知項目 `.venv`（`epsdk install` 裝進項目環境、`epsdk run` 用項目環境運行），框架本體由工具環境提供。詳見[安裝參考](user-guide/installation.md)。
 
 ## 初始化項目
 
@@ -2894,7 +2895,7 @@ uv --version
 #### 建立虛擬環境
 
 ```bash
-# 建立專案資料夾
+# 建立專案目錄
 mkdir my_bot && cd my_bot
 
 # 安裝 Python 3.12
@@ -2923,8 +2924,8 @@ uv pip install ErisPulse --upgrade
 
 ### 方式三：使用 uv tool 安裝（全域 CLI，推薦）
 
-如果只想將 `epsdk` 當作全域命令列工具使用，`uv tool install` 是最乾淨的方式——
-epsdk 在獨立的工具環境中運行，不會污染任何專案環境：
+如果只想把 `epsdk` 當全域命令列工具使用，`uv tool install` 是最乾淨的方式——
+epsdk 運行在獨立的工具環境中，不會污染任何專案環境：
 
 ```bash
 # 安裝（epsdk 立即可用，無需激活任何虛擬環境）
@@ -2935,17 +2936,20 @@ uv tool upgrade ErisPulse
 ```
 
 > [!NOTE]
-> 工具環境中的 epsdk 在專案資料夾內運行時會自動感知專案 `.venv`：
-> `epsdk install` 將元件安裝進專案環境、`epsdk run` 使用專案環境運行機器人，
+> 工具環境中的 epsdk 在專案目錄內運行時會自動感知專案 `.venv`：
+> `epsdk install` 會將元件安裝進專案環境、`epsdk run` 使用專案環境運行機器人，
 > 框架本體仍由工具環境提供，兩邊互不干擾。
+>
+> 一鍵安裝腳本（`get.erisdev.com/install.sh` / `install.ps1`）的選單中
+> 同樣提供「全域 CLI 安裝（uv tool）」方式，會自動安裝 uv 並引導完成。
 
 ## 項目初始化與模組安裝
 
 安裝完成後，項目初始化、模組安裝、運行的完整流程見 [5 分鐘快速開始](../quick-start.md)。
 
-### 方式三：使用 ErisPulse-App 客戶端（免終端）
+### 方式四：使用 ErisPulse-App 客戶端（免終端）
 
-不想安裝 Python 環境？[ErisPulse-App](../ecosystem/app.md) 是官方全平台客戶端
+不想安裝 Python 環境？[ErisPulse-App](../ecosystem/app-tw.md) 是官方全平台客戶端
 （Android / Windows / Linux / macOS），**手機直接運行**，桌面版支援最小化到
 系統托盤後台常駐；內建 Python 運行時與 ErisPulse SDK，無需終端與手動配置：
 
@@ -2953,7 +2957,7 @@ uv tool upgrade ErisPulse
   （Android `online`/`offline` APK、Windows `setup.exe`/`zip`、Linux `tar.gz`、macOS `zip`）
 - 在 App 內建立並啟動實例，透過原生介面管理適配器與模組、瀏覽模組商店
 
-> 完整說明見 [ErisPulse-App 安裝與使用](../ecosystem/app.md)。
+> 完整說明見 [ErisPulse-App 安裝與使用](../ecosystem/app-tw.md)。
 
 ## 驗證安裝
 
@@ -24335,14 +24339,34 @@ enabled = true
 
 ## v5 範式更新（4.2.0）
 
-- **BaseConverter 繼承**：轉換器公共欄位由框架 build_base_event 構建
+- **BaseConverter 繼承**：轉換器公共欄位由框架 build_base_event 建構
 - **Api DSL**：get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + 元動作
 - **消息事件補充 message_id**（event_id）；消息登記表支援 delete_message
 - **spawn_background 任務歸屬**：同步/心跳任務改用 runtime.spawn_background
 - **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌
 - Matrix 無原生按鈕能力，標準 keyboard 段優雅忽略（不報錯）
 
-### 標準Api動作示例
+## 端到端加密（4.3.0）
+
+4.3.0 起適配器原生支援加密房間的端到端加密（基於 matrix-nio[e2e] / vodozemac）：
+
+```toml
+[Matrix_Adapter.accounts.default]
+user_id = "@bot:matrix.org"
+password = "YOUR_PASSWORD"
+encryption_enabled = true       # 啟用（預設 false，存量部署不受影響）
+trust_all_devices = true        # 自動信任未驗證裝置（預設；false 為嚴格模式）
+```
+
+- 加密房間訊息收發自動解密/加密，媒體端到端加密（`m.file.encrypted`）
+- `device_id` 自動解析與持久化；會話儲存於 `store_path`（預設 `data/matrix/<帳號名>`，**請勿刪除**，否則歷史訊息無法解密）
+- 事件 Mixin 新增 `event.is_encrypted()`；媒體段攜帶 `matrix_encrypted_file`（JWK），可用 `MatrixAdapter.decrypt_media()` 解密
+- 不支援交叉簽名與伺服器端密鑰備份；需要 Python >= 3.10
+- 未啟用或未安裝 matrix-nio 時自動降級為明文模式
+
+詳細說明見 [適配器 README](https://github.com/ErisPulse/ErisPulse-MatrixAdapter)。
+
+### 標準 API 行動示例
 
 ```python
 from ErisPulse import sdk
@@ -24357,9 +24381,9 @@ await matrix.Api.delete_message(event_id)            # redact（登記表補全 
 
 ### 已對接平台能力
 
-- **事件**：消息（m.room.message：文本/圖片/文件/音視頻/回覆/編輯）、成員增減（m.room.member）、房間名稱變更等狀態事件
+- **事件**：訊息（m.room.message：文字/圖片/檔案/音視頻/回覆/編輯）、成員增減（m.room.member）、房間名稱變更等狀態事件
 - **會話**：私聊（DM 房間自動發現）/ 群組（房間）；發送支援 Text/Image/File/Voice/Video/Markdown/Raw_ob12
-- **API**：whoami/profile/joined_rooms/房間狀態/成員列表/leave/redact（見上方 Api DSL）
+- **API**：whoami/profile/joined_rooms/房間狀態/成員列表/leave/redact（見上方 API DSL）
 
 ## 支援的消息傳送類型
 

@@ -369,24 +369,25 @@ flowchart TD
 
 ## ErisPulse のインストール
 
-### 1 本化インストールスクリプト（推奨）
+### 1 つでインストールするスクリプト（推奨）
 
-インストールスクリプトは、Docker、Python、uv などの環境を自動的に検出し、最適なインストール方法を選択するように誘導します。
+インストールスクリプトは、Docker、Python、uv の環境を自動的に検出し、最適なインストール方法を選択できるよう案内します。
 
-**Windows (PowerShell):**
+Windows (PowerShell):
 ```powershell
 irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
 ```
 
-**macOS / Linux:**
+macOS / Linux:
 ```bash
 curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
 ```
 
-スクリプトは以下の手順を誘導します：
+スクリプトは以下をガイドします：
 
-- **Docker インストール**（Docker が検出された場合に推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャネル（安定版 / プリリリース版）、Dashboard 管理パネルの設定、ポート設定
-- **従来のインストール**：自動的に仮想環境を作成、ErisPulse のバージョンを選択、オプションで Dashboard 管理パネルモジュールをインストール
+- **Docker インストール**（Docker が検出された場合に推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャネル（安定版 / プレビュー版）、Dashboard 管理パネルの設定、ポートの設定
+- **グローバル CLI インストール（uv tool、推奨）**：`epsdk` をグローバルコマンドとしてインストールし、仮想環境を必要とせず、uv が Python を自動管理します（システムの Python バージョンが低くても問題ありません）。プロジェクトディレクトリ内で実行すると、プロジェクトの `.venv` を自動的に認識します。
+- **従来のインストール**：自動的に仮想環境を作成し、ErisPulse のバージョンを選択し、オプションで Dashboard 管理パネルモジュールをインストールできます。
 
 ### Docker を使用する
 
@@ -411,9 +412,9 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-起動後、`http://<host>:8000/Dashboard` にアクセスし、設定したトークンでログインしてください。
+起動後、`http://<host>:8000/Dashboard` にアクセスし、設定したトークンでログインします。
 
-### pip を使用してインストール
+### pip を使用してインストールする
 
 Python のバージョンが 3.10 以上であることを確認した上で、pip を使用してインストールします：
 
@@ -421,15 +422,15 @@ Python のバージョンが 3.10 以上であることを確認した上で、p
 pip install ErisPulse
 ```
 
-既に [uv](https://github.com/astral-sh/uv) をインストールしている場合は、`uv pip install ErisPulse` を使用することで、より高速にインストールできます。
+既に [uv](https://github.com/astral-sh/uv) をインストールしている場合は、`uv pip install ErisPulse` を使用してインストール速度を向上させることもできます。
 
-プロジェクト環境を汚染せずに `epsdk` コマンドラインツールをグローバルにインストールしたい場合は、`uv tool install` を推奨します：
+`epsdk` コマンドラインツールをグローバルにインストールし、プロジェクト環境を汚染したくない場合は、`uv tool install` を推奨します：
 
 ```bash
 uv tool install ErisPulse
 ```
 
-インストール後、`epsdk` がグローバルに利用可能になります。プロジェクトディレクトリ内で実行すると、`.venv` を自動的に検知します（`epsdk install` でプロジェクト環境にインストール、`epsdk run` でプロジェクト環境で実行）。フレームワーク本体はツール環境から提供されます。詳しくは[インストールの参考](user-guide/installation.md)をご覧ください。
+インストール後、`epsdk` はグローバルに利用可能になります。プロジェクトディレクトリ内で実行すると、プロジェクトの `.venv` を自動的に認識します（`epsdk install` でプロジェクト環境にインストールし、`epsdk run` でプロジェクト環境で実行）。フレームワーク本体はツール環境から提供されます。詳しくは[インストールの参考](user-guide/installation.md)をご覧ください。
 
 ## プロジェクトの初期化
 

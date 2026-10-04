@@ -18,12 +18,12 @@
         "title": "0. キーワードの定義"
       }
     ],
-    "1 本化インストールスクリプト（推奨）": [
+    "1 つでインストールするスクリプト（推奨）": [
       {
         "document": "quick-start.md",
         "line": 7,
         "level": 3,
-        "title": "1 本化インストールスクリプト（推奨）"
+        "title": "1 つでインストールするスクリプト（推奨）"
       }
     ],
     "1. BaseAdapter 層（通常はオーバーライド不要）": [
@@ -2775,7 +2775,7 @@
     "CLI によるインストール": [
       {
         "document": "quick-start.md",
-        "line": 105,
+        "line": 106,
         "level": 3,
         "title": "CLI によるインストール"
       }
@@ -2887,7 +2887,7 @@
     "Debian/Ubuntu 仮想環境作成失敗": [
       {
         "document": "user-guide/installation.md",
-        "line": 153,
+        "line": 156,
         "level": 3,
         "title": "Debian/Ubuntu 仮想環境作成失敗"
       }
@@ -2927,7 +2927,7 @@
     "Docker を使用する": [
       {
         "document": "quick-start.md",
-        "line": 26,
+        "line": 27,
         "level": 3,
         "title": "Docker を使用する"
       }
@@ -2993,6 +2993,12 @@
         "document": "quick-start.md",
         "line": 5,
         "level": 2,
+        "title": "ErisPulse のインストール"
+      },
+      {
+        "document": "user-guide/installation.md",
+        "line": 61,
+        "level": 4,
         "title": "ErisPulse のインストール"
       }
     ],
@@ -3068,22 +3074,6 @@
         "title": "ErisPulse-Takumi"
       }
     ],
-    "ErisPulseのインストール": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 61,
-        "level": 4,
-        "title": "ErisPulseのインストール"
-      }
-    ],
-    "Event Mixin メソッド": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 314,
-        "level": 3,
-        "title": "Event Mixin メソッド"
-      }
-    ],
     "Event Mixin 拡張メソッド": [
       {
         "document": "platform-guide/ideaura.md",
@@ -3102,6 +3092,14 @@
         "line": 545,
         "level": 2,
         "title": "Event Mixin 拡張メソッド"
+      }
+    ],
+    "Event Mixinメソッド": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 334,
+        "level": 3,
+        "title": "Event Mixinメソッド"
       }
     ],
     "Event との連携（返信）": [
@@ -3283,7 +3281,7 @@
     "IDE補完の有効化（オプション）": [
       {
         "document": "quick-start.md",
-        "line": 135,
+        "line": 136,
         "level": 2,
         "title": "IDE補完の有効化（オプション）"
       }
@@ -3527,7 +3525,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 141,
+        "line": 161,
         "level": 3,
         "title": "OneBot12メッセージのサポート"
       },
@@ -3934,12 +3932,12 @@
         "title": "Supervisor"
       }
     ],
-    "Sync API 接続": [
+    "Sync API接続": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 340,
+        "line": 360,
         "level": 2,
-        "title": "Sync API 接続"
+        "title": "Sync API接続"
       }
     ],
     "Task オブジェクト": [
@@ -4135,7 +4133,7 @@
     "Windows PowerShell 実行ポリシー": [
       {
         "document": "user-guide/installation.md",
-        "line": 145,
+        "line": 148,
         "level": 3,
         "title": "Windows PowerShell 実行ポリシー"
       }
@@ -4836,12 +4834,12 @@
         "title": "owner コンテキストメカニズム"
       }
     ],
-    "pip を使用してインストール": [
+    "pip を使用してインストールする": [
       {
         "document": "quick-start.md",
-        "line": 51,
+        "line": 52,
         "level": 3,
-        "title": "pip を使用してインストール"
+        "title": "pip を使用してインストールする"
       }
     ],
     "pip 方式": [
@@ -5004,12 +5002,12 @@
         "title": "user"
       }
     ],
-    "uvのインストール": [
+    "uv のインストール": [
       {
         "document": "user-guide/installation.md",
         "line": 28,
         "level": 4,
-        "title": "uvのインストール"
+        "title": "uv のインストール"
       }
     ],
     "v5 ファンタジー更新（4.2.0）": [
@@ -5026,6 +5024,14 @@
         "line": 69,
         "level": 2,
         "title": "v5 ファンタムの更新（4.2.0）"
+      }
+    ],
+    "v5 ファンタム更新（4.2.0）": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 58,
+        "level": 2,
+        "title": "v5 ファンタム更新（4.2.0）"
       }
     ],
     "v5 ファンダメンタルの更新（4.2.0）": [
@@ -5093,12 +5099,6 @@
     "v5 フレームワークの更新（4.2.0）": [
       {
         "document": "platform-guide/email.md",
-        "line": 58,
-        "level": 2,
-        "title": "v5 フレームワークの更新（4.2.0）"
-      },
-      {
-        "document": "platform-guide/matrix.md",
         "line": 58,
         "level": 2,
         "title": "v5 フレームワークの更新（4.2.0）"
@@ -5255,7 +5255,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 121,
+        "line": 124,
         "level": 2,
         "title": "よくある質問"
       }
@@ -5985,13 +5985,13 @@
     "インストールの確認": [
       {
         "document": "user-guide/installation.md",
-        "line": 96,
+        "line": 99,
         "level": 2,
         "title": "インストールの確認"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 98,
+        "line": 101,
         "level": 3,
         "title": "インストールの確認"
       }
@@ -5999,7 +5999,7 @@
     "インストール失敗": [
       {
         "document": "user-guide/installation.md",
-        "line": 123,
+        "line": 126,
         "level": 3,
         "title": "インストール失敗"
       }
@@ -6031,7 +6031,7 @@
     "インタラクティブなインストール": [
       {
         "document": "quick-start.md",
-        "line": 117,
+        "line": 118,
         "level": 3,
         "title": "インタラクティブなインストール"
       }
@@ -6047,7 +6047,7 @@
     "インタラクティブな初期化（推奨）": [
       {
         "document": "quick-start.md",
-        "line": 71,
+        "line": 72,
         "level": 3,
         "title": "インタラクティブな初期化（推奨）"
       }
@@ -6115,7 +6115,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 178,
+        "line": 198,
         "level": 3,
         "title": "エラーコードの説明"
       },
@@ -6292,6 +6292,14 @@
         "line": 237,
         "level": 4,
         "title": "グループチャットメッセージ（@ユーザーのメンション付き）"
+      }
+    ],
+    "グループメッセージの処理": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 385,
+        "level": 3,
+        "title": "グループメッセージの処理"
       }
     ],
     "グループメッセージを監視": [
@@ -7236,6 +7244,12 @@
         "title": "チェーン修飾メソッド（組み合わせて使用可能）"
       },
       {
+        "document": "platform-guide/matrix.md",
+        "line": 128,
+        "level": 3,
+        "title": "チェーン修飾メソッド（組み合わせて使用可能）"
+      },
+      {
         "document": "platform-guide/yunhu_user.md",
         "line": 158,
         "level": 3,
@@ -7262,6 +7276,12 @@
       {
         "document": "platform-guide/discord.md",
         "line": 137,
+        "level": 3,
+        "title": "チェーン呼び出しの例"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 136,
         "level": 3,
         "title": "チェーン呼び出しの例"
       },
@@ -7304,14 +7324,6 @@
         "title": "チェーン式修飾メソッド（selfを返してチェーン式呼び出しをサポート）"
       }
     ],
-    "チェーン式修飾メソッド（組み合わせて使用可能）": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 108,
-        "level": 3,
-        "title": "チェーン式修飾メソッド（組み合わせて使用可能）"
-      }
-    ],
     "チェーン式修飾メソッド（組み合わせ可能）": [
       {
         "document": "platform-guide/onebot11.md",
@@ -7338,12 +7350,6 @@
       {
         "document": "platform-guide/ideaura.md",
         "line": 69,
-        "level": 3,
-        "title": "チェーン式呼び出しの例"
-      },
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 116,
         "level": 3,
         "title": "チェーン式呼び出しの例"
       },
@@ -7415,7 +7421,7 @@
     "テストの実行": [
       {
         "document": "user-guide/installation.md",
-        "line": 105,
+        "line": 108,
         "level": 3,
         "title": "テストの実行"
       }
@@ -7849,7 +7855,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 352,
+        "line": 372,
         "level": 3,
         "title": "ハートビートメカニズム"
       }
@@ -8045,7 +8051,7 @@
     "ファスト初期化": [
       {
         "document": "quick-start.md",
-        "line": 84,
+        "line": 85,
         "level": 3,
         "title": "ファスト初期化"
       }
@@ -8389,7 +8395,7 @@
     "プロジェクトの初期化": [
       {
         "document": "quick-start.md",
-        "line": 69,
+        "line": 70,
         "level": 2,
         "title": "プロジェクトの初期化"
       },
@@ -8403,7 +8409,7 @@
     "プロジェクトの初期化とモジュールのインストール": [
       {
         "document": "user-guide/installation.md",
-        "line": 83,
+        "line": 86,
         "level": 2,
         "title": "プロジェクトの初期化とモジュールのインストール"
       }
@@ -8411,7 +8417,7 @@
     "プロジェクトの実行": [
       {
         "document": "quick-start.md",
-        "line": 125,
+        "line": 126,
         "level": 2,
         "title": "プロジェクトの実行"
       },
@@ -8439,7 +8445,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 154,
+        "line": 155,
         "level": 2,
         "title": "プロジェクト構造"
       }
@@ -8748,12 +8754,12 @@
         "title": "メッセージの編集と撤回"
       }
     ],
-    "メッセージの編集処理": [
+    "メッセージの編集の処理": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 427,
+        "line": 447,
         "level": 3,
-        "title": "メッセージの編集処理"
+        "title": "メッセージの編集の処理"
       }
     ],
     "メッセージイベント": [
@@ -8826,14 +8832,6 @@
         "title": "メッセージイベントメソッド"
       }
     ],
-    "メッセージセグメントのタイプ": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 259,
-        "level": 3,
-        "title": "メッセージセグメントのタイプ"
-      }
-    ],
     "メッセージセグメントの変換": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -8847,6 +8845,12 @@
         "document": "advanced/message-builder.md",
         "line": 47,
         "level": 2,
+        "title": "メッセージセグメントの種類"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 279,
+        "level": 3,
         "title": "メッセージセグメントの種類"
       }
     ],
@@ -9119,7 +9123,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 406,
+        "line": 426,
         "level": 3,
         "title": "メディアメッセージの送信"
       }
@@ -9151,7 +9155,7 @@
     "メンバー変更の監視": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 440,
+        "line": 460,
         "level": 3,
         "title": "メンバー変更の監視"
       }
@@ -9207,7 +9211,7 @@
     "モジュールのインストール": [
       {
         "document": "quick-start.md",
-        "line": 103,
+        "line": 104,
         "level": 2,
         "title": "モジュールのインストール"
       },
@@ -9221,7 +9225,7 @@
     "モジュールのインストール失敗": [
       {
         "document": "user-guide/installation.md",
-        "line": 138,
+        "line": 141,
         "level": 3,
         "title": "モジュールのインストール失敗"
       }
@@ -9666,14 +9670,6 @@
         "title": "ラグロードモジュールの使用"
       }
     ],
-    "リアクションの処理": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 389,
-        "level": 3,
-        "title": "リアクションの処理"
-      }
-    ],
     "リクエストイベント": [
       {
         "document": "api-reference/event-system.md",
@@ -9871,7 +9867,7 @@
     "ルーム招待": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 358,
+        "line": 378,
         "level": 3,
         "title": "ルーム招待"
       }
@@ -10451,7 +10447,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 363,
+        "line": 383,
         "level": 2,
         "title": "使用例"
       },
@@ -10889,7 +10885,7 @@
     "利用可能なモジュールの確認": [
       {
         "document": "quick-start.md",
-        "line": 111,
+        "line": 112,
         "level": 3,
         "title": "利用可能なモジュールの確認"
       }
@@ -11132,12 +11128,12 @@
         "title": "各種例外の説明と発生場所"
       }
     ],
-    "同期フロー": [
+    "同期の流れ": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 342,
+        "line": 362,
         "level": 3,
-        "title": "同期フロー"
+        "title": "同期の流れ"
       }
     ],
     "同期初期化": [
@@ -11842,6 +11838,14 @@
         "title": "対応していない標準動作"
       }
     ],
+    "対応しているプラットフォームの機能": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 100,
+        "level": 3,
+        "title": "対応しているプラットフォームの機能"
+      }
+    ],
     "対応する i18n フィールド": [
       {
         "document": "advanced/i18n.md",
@@ -11872,14 +11876,6 @@
         "line": 153,
         "level": 3,
         "title": "対応する送信メソッドの一覧表示"
-      }
-    ],
-    "対応プラットフォームの機能": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 80,
-        "level": 3,
-        "title": "対応プラットフォームの機能"
       }
     ],
     "対応プラットフォーム機能": [
@@ -12293,7 +12289,7 @@
     "手動でのプロジェクト作成": [
       {
         "document": "quick-start.md",
-        "line": 94,
+        "line": 95,
         "level": 3,
         "title": "手動でのプロジェクト作成"
       }
@@ -12393,7 +12389,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 202,
+        "line": 222,
         "level": 3,
         "title": "拡張フィールド"
       }
@@ -12600,12 +12596,6 @@
         "title": "支援されるメッセージ送信タイプ"
       },
       {
-        "document": "platform-guide/matrix.md",
-        "line": 86,
-        "level": 2,
-        "title": "支援されるメッセージ送信タイプ"
-      },
-      {
         "document": "platform-guide/telegram.md",
         "line": 71,
         "level": 2,
@@ -12680,20 +12670,36 @@
         "title": "新機能：元のイベントタイプフィールド"
       }
     ],
+    "方法 1: pip を使用したインストール": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 14,
+        "level": 3,
+        "title": "方法 1: pip を使用したインストール"
+      }
+    ],
+    "方法 2: uv を使用したインストール（推奨）": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 24,
+        "level": 3,
+        "title": "方法 2: uv を使用したインストール（推奨）"
+      }
+    ],
+    "方法 3: uv tool を使用したインストール（グローバル CLI、推奨）": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 68,
+        "level": 3,
+        "title": "方法 3: uv tool を使用したインストール（グローバル CLI、推奨）"
+      }
+    ],
     "方法1: reply() の via パラメータ": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 164,
         "level": 3,
         "title": "方法1: reply() の via パラメータ"
-      }
-    ],
-    "方法1：pipを使用したインストール": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 14,
-        "level": 3,
-        "title": "方法1：pipを使用したインストール"
       }
     ],
     "方法1：ローカルプロセス（推奨）": [
@@ -12712,14 +12718,6 @@
         "title": "方法2: event.send_chain()"
       }
     ],
-    "方法2：uvを使用したインストール（推奨）": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 24,
-        "level": 3,
-        "title": "方法2：uvを使用したインストール（推奨）"
-      }
-    ],
     "方法2：公式オンラインエンドポイント": [
       {
         "document": "ai-support/README.md",
@@ -12728,20 +12726,12 @@
         "title": "方法2：公式オンラインエンドポイント"
       }
     ],
-    "方法3：ErisPulse-Appクライアントの使用（ターミナル不要）": [
+    "方法4：ErisPulse-Appクライアントを使用する（ターミナル不要）": [
       {
         "document": "user-guide/installation.md",
-        "line": 87,
+        "line": 90,
         "level": 3,
-        "title": "方法3：ErisPulse-Appクライアントの使用（ターミナル不要）"
-      }
-    ],
-    "方法3：uv toolを使用したインストール（グローバルCLI、推奨）": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 68,
-        "level": 3,
-        "title": "方法3：uv toolを使用したインストール（グローバルCLI、推奨）"
+        "title": "方法4：ErisPulse-Appクライアントを使用する（ターミナル不要）"
       }
     ],
     "方法速查表": [
@@ -13021,7 +13011,7 @@
     "核心的な相違点": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 191,
+        "line": 211,
         "level": 3,
         "title": "核心的な相違点"
       }
@@ -13150,20 +13140,20 @@
         "title": "標準 Api アクション"
       }
     ],
-    "標準 Api アクションの例": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 67,
-        "level": 3,
-        "title": "標準 Api アクションの例"
-      }
-    ],
     "標準 OB12 マッピング": [
       {
         "document": "platform-guide/onebot11.md",
         "line": 268,
         "level": 3,
         "title": "標準 OB12 マッピング"
+      }
+    ],
+    "標準APIアクションの例": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 87,
+        "level": 3,
+        "title": "標準APIアクションの例"
       }
     ],
     "標準Apiアクション（Api DSL）": [
@@ -13377,13 +13367,13 @@
       },
       {
         "document": "quick-start.md",
-        "line": 182,
+        "line": 183,
         "level": 2,
         "title": "次のステップ"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 165,
+        "line": 168,
         "level": 2,
         "title": "次のステップ"
       }
@@ -13468,6 +13458,12 @@
     ],
     "特有のイベントタイプ": [
       {
+        "document": "platform-guide/matrix.md",
+        "line": 207,
+        "level": 2,
+        "title": "特有のイベントタイプ"
+      },
+      {
         "document": "platform-guide/yunhu_user.md",
         "line": 221,
         "level": 2,
@@ -13508,12 +13504,6 @@
         "title": "特有イベントタイプ"
       },
       {
-        "document": "platform-guide/matrix.md",
-        "line": 187,
-        "level": 2,
-        "title": "特有イベントタイプ"
-      },
-      {
         "document": "platform-guide/telegram.md",
         "line": 180,
         "level": 2,
@@ -13547,7 +13537,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 208,
+        "line": 228,
         "level": 3,
         "title": "特殊フィールドの例"
       },
@@ -13734,6 +13724,14 @@
         "title": "立即ロード"
       }
     ],
+    "端末間暗号化（4.3.0）": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 67,
+        "level": 2,
+        "title": "端末間暗号化（4.3.0）"
+      }
+    ],
     "第三段階：ロボットのテスト": [
       {
         "document": "getting-started/first-bot.md",
@@ -13856,6 +13854,14 @@
         "title": "統計概要"
       }
     ],
+    "絵文字反応の処理": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 409,
+        "level": 3,
+        "title": "絵文字反応の処理"
+      }
+    ],
     "継承関係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -13870,14 +13876,6 @@
         "line": 183,
         "level": 3,
         "title": "群メッセージの処理（@検出）"
-      }
-    ],
-    "群組メッセージの処理": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 365,
-        "level": 3,
-        "title": "群組メッセージの処理"
       }
     ],
     "翻訳のアンロード": [
@@ -14270,12 +14268,6 @@
         "title": "設定の説明"
       },
       {
-        "document": "platform-guide/matrix.md",
-        "line": 22,
-        "level": 2,
-        "title": "設定の説明"
-      },
-      {
         "document": "platform-guide/qqbot.md",
         "line": 22,
         "level": 2,
@@ -14307,7 +14299,7 @@
     "設定エラー": [
       {
         "document": "user-guide/installation.md",
-        "line": 131,
+        "line": 134,
         "level": 3,
         "title": "設定エラー"
       }
@@ -14355,7 +14347,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 166,
+        "line": 167,
         "level": 2,
         "title": "設定ファイル"
       }
@@ -14452,6 +14444,12 @@
       {
         "document": "platform-guide/email.md",
         "line": 21,
+        "level": 2,
+        "title": "設定説明"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 22,
         "level": 2,
         "title": "設定説明"
       },
@@ -14675,7 +14673,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 163,
+        "line": 183,
         "level": 2,
         "title": "送信メソッドの戻り値"
       },
@@ -14758,6 +14756,14 @@
         "line": 134,
         "level": 3,
         "title": "送信例"
+      }
+    ],
+    "送信可能なメッセージの種類": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 108,
+        "level": 2,
+        "title": "送信可能なメッセージの種類"
       }
     ],
     "送信成功後に実行するロジック": [

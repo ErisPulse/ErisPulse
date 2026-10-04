@@ -387,6 +387,7 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 脚本会引导您完成：
 
 - **Docker 安装**（检测到 Docker 时推荐）：选择镜像源（Docker Hub / GHCR）、版本通道（稳定版 / 预发布版）、Dashboard 管理面板配置、端口设置
+- **全局 CLI 安装（uv tool，推荐）**：将 `epsdk` 安装为全局命令，无需虚拟环境，uv 自动管理 Python（系统版本过低亦可）；项目目录内运行时自动感知项目 `.venv`
 - **传统安装**：自动创建虚拟环境、选择 ErisPulse 版本、可选安装 Dashboard 管理面板模块
 
 ### 使用 Docker
@@ -2941,12 +2942,15 @@ uv tool upgrade ErisPulse
 > 工具环境里的 epsdk 在项目目录内运行时会自动感知项目 `.venv`：
 > `epsdk install` 将组件安装进项目环境、`epsdk run` 使用项目环境运行机器人，
 > 框架本体仍由工具环境提供，两边互不干扰。
+>
+> 一键安装脚本（`get.erisdev.com/install.sh` / `install.ps1`）的菜单中
+> 同样提供「全局 CLI 安装（uv tool）」方式，会自动安装 uv 并引导完成。
 
 ## 项目初始化与模块安装
 
 安装完成后，项目初始化、模块安装、运行的完整流程见 [5 分钟快速开始](../quick-start.md)。
 
-### 方式三：使用 ErisPulse-App 客户端（免终端）
+### 方式四：使用 ErisPulse-App 客户端（免终端）
 
 不想装 Python 环境？[ErisPulse-App](../ecosystem/app.md) 是官方全平台客户端
 （Android / Windows / Linux / macOS），**手机直接运行**，桌面版支持最小化到
@@ -24299,6 +24303,26 @@ enabled = true
 - **spawn_background 任务归属**：同步/心跳任务改用 runtime.spawn_background
 - **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
 - Matrix 无原生按钮能力，标准 keyboard 段优雅忽略（不报错）
+
+## 端到端加密（4.3.0）
+
+4.3.0 起适配器原生支持加密房间的端到端加密（基于 matrix-nio[e2e] / vodozemac）：
+
+```toml
+[Matrix_Adapter.accounts.default]
+user_id = "@bot:matrix.org"
+password = "YOUR_PASSWORD"
+encryption_enabled = true       # 启用（默认 false，存量部署不受影响）
+trust_all_devices = true        # 自动信任未验证设备（默认；false 为严格模式）
+```
+
+- 加密房间消息收发自动解密/加密，媒体端到端加密（`m.file.encrypted`）
+- `device_id` 自动解析与持久化；会话存储于 `store_path`（默认 `data/matrix/<账户名>`，**请勿删除**，否则历史消息无法解密）
+- 事件 Mixin 新增 `event.is_encrypted()`；媒体段携带 `matrix_encrypted_file`（JWK），可用 `MatrixAdapter.decrypt_media()` 解密
+- 不支持交叉签名与服务器端密钥备份；需要 Python >= 3.10
+- 未启用或未安装 matrix-nio 时自动降级为明文模式
+
+详细说明见 [适配器 README](https://github.com/ErisPulse/ErisPulse-MatrixAdapter)。
 
 ### 标准Api动作示例
 
