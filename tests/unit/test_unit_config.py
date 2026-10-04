@@ -2005,3 +2005,76 @@ class TestGetAllConfigAndDelConfig:
 
         assert mgr.delConfig("k.v") is True
         assert mgr.delConfig("k.v") is False
+
+
+class TestFlushNoneRobustness:
+    """flush 对 None 值的健壮性（TOML 无 null）
+
+    None（setConfig 置空语义）落盘等价于"键不存在"：标量 None 跳过、
+    字典内 None 叶子剔除；单键不可序列化时仅丢弃该键，不阻塞其余
+    待写键落盘（否则脏队列永不清空、无限重试刷屏）。
+    """
+
+    @pytest.fixture
+    def mgr(self, tmp_path):
+        cfg_file = tmp_path / "config.toml"
+        cfg_file.write_text("", encoding="utf-8")
+        manager = ConfigManager(config_file=str(cfg_file))
+        manager._dirty_keys.clear()
+        yield manager
+        if manager._write_timer:
+            manager._write_timer.cancel()
+        manager._watcher_stop.set()
+
+    @staticmethod
+    def _read_disk(manager) -> dict:
+        with open(manager.CONFIG_FILE, encoding="utf-8") as f:
+            return tomlkit.parse(f.read()).unwrap()
+
+    def test_set_none_scalar_omitted_from_disk(self, mgr):
+        """setConfig(key, None)：文件中不出现该键，读取走 default 语义"""
+        mgr.setConfig("blank.key", None, immediate=True)
+
+        assert "blank" not in self._read_disk(mgr)
+        assert mgr.getConfig("blank.key") is None
+        assert "blank.key" not in mgr._dirty_keys  # 不残留待写键（防无限重试）
+
+    def test_nested_none_leaf_stripped_siblings_persist(self, mgr):
+        """字典内 None 叶子剔除，兄弟键原样落盘（适配器默认模板场景）"""
+        mgr.setConfig(
+            "Discord_Adapter.accounts.default",
+            {"token": None, "enabled": True, "name": "default"},
+            immediate=True,
+        )
+
+        disk = self._read_disk(mgr)
+        assert disk["Discord_Adapter"]["accounts"]["default"] == {
+            "enabled": True,
+            "name": "default",
+        }
+        assert "token" not in str(disk)
+        assert mgr.getConfig("Discord_Adapter.accounts.default") == {
+            "enabled": True,
+            "name": "default",
+        }
+
+    def test_none_write_does_not_block_other_pending_keys(self, mgr):
+        """None 待写键不阻塞同批其它待写键落盘（回归：此前整次 flush 连坐失败）"""
+        mgr.setConfig("Discord_Adapter.accounts.default", {"token": None})
+        mgr.setConfig("other.valid", "yes")
+        mgr.force_save()
+
+        assert self._read_disk(mgr)["other"]["valid"] == "yes"
+        assert mgr._dirty_keys == {}  # 脏队列清空，不再无限重试
+
+    def test_unserializable_key_isolated_others_persist(self, mgr):
+        """单键不可序列化（列表内含 None）：仅该键丢弃并清出队列，其余照常落盘"""
+        mgr.setConfig("bad.list", {"items": [None, "x"]})
+        mgr.setConfig("good.k", 1)
+        mgr.force_save()
+
+        disk = self._read_disk(mgr)
+        assert disk["good"]["k"] == 1
+        # 失败键的值不落盘（仅残留路径上的空表壳，与删除语义的残留一致）
+        assert disk.get("bad") == {}
+        assert mgr._dirty_keys == {}

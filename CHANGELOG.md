@@ -110,6 +110,7 @@
 ### 修复
 
 - @YingXinche
+  - `Core/config` flush 对 `None` 值的健壮性（TOML 无 null）：`setConfig` 置空的标量 `None` 不落盘、字典内 `None` 叶子剔除——适配器默认账户模板以 `None` 占位必填字段时，此前会令整次 flush 失败并每分钟无限重试刷屏，且连坐阻塞同批其它待写键的持久化；现单键不可序列化时仅丢弃该键并告警一次，其余待写键照常落盘，脏队列正常清空
   - `pyproject` `[mysql]` extra 补 `cryptography` 依赖：MySQL 8 默认 `caching_sha2_password` 认证必需，此前缺失时连接池初始化失败（`tests/devs/test_storage_backend_verify.py` 真机验证暴露）
   - `Core/Event/command` 修复 `args=` 可选条目未声明默认值时注入 `None` 静默覆盖处理器自身默认值：注册期解析漏传处理器，文档承诺的“回填处理器签名同名参数默认值”从未生效（如 `[sides:int]` + `def roll(event, count, sides=6)` 省略实参时得 `None` 而非 `6`）
   - `Core/scope` 修复 `persist=False` 运行时绑定被顺带落盘：任意 `persist=True` 写入此前会把整棵内存树（含运行时绑定）做差量写入用户配置，模块卸载注销运行时绑定后这些值还会从磁盘"复活"；现以持久化基线（磁盘真相镜像）承接持久化写入，运行时绑定永不落盘。`delete(persist=True)` 同口径修复：提交持久化基线子树而非内存活引用，延迟刷盘期间对兄弟键的运行时修改不再被一并写入；`set_action` 整体替换语义下旧规则键不再残留在持久化内容中
