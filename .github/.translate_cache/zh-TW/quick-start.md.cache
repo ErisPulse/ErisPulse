@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "3a1a5f0f029c5264ade67a1409f45a72",
-  "file_hash": "3a1a5f0f029c5264ade67a1409f45a72",
-  "translated_at": "2026-09-21T11:17:55.245957",
+  "hash": "77bc4639cc0dedb535be5ea3116e8633",
+  "file_hash": "77bc4639cc0dedb535be5ea3116e8633",
+  "translated_at": "2026-10-04T12:09:04.650264",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 快速開始\n\n> **這是你的第一步。** 用 5 分鐘從零跑起一個 ErisPulse 机器人。"
     },
     {
-      "hash": "ee3c16ccd3e627a52b86cacaa4916188",
-      "translation": "## 安裝 ErisPulse\n\n### 一鍵安裝腳本（推薦）\n\n安裝腳本會自動檢測您的環境（Docker、Python、uv），並引導您選擇最適合的安裝方式。\n\nWindows (PowerShell):\n```powershell\nirm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1\n```\n\nmacOS / Linux:\n```bash\ncurl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh\n```\n\n腳本會引導您完成：\n\n- **Docker 安裝**（檢測到 Docker 時推薦）：選擇鏡像源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板配置、端口設置\n- **傳統安裝**：自動創建虛擬環境、選擇 ErisPulse 版本、可選安裝 Dashboard 管理面板模塊\n\n### 使用 Docker\n\nDocker 鏡像已內置 ErisPulse 框架和 Dashboard 管理面板。\n\n```bash\n# 下載 docker-compose.yml\ncurl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml\n\n# 設置 Dashboard 令牌並啟動\nERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d\n```\n\n<details>\n<summary>Docker Hub 不可用？</summary>\n\n使用 GitHub Container Registry 鏡像，修改 `docker-compose.yml` 中的 image：\n\n```yaml\nimage: ghcr.io/erispulse/erispulse:latest\n```\n\n</details>\n\n啟動後訪問 `http://<host>:8000/Dashboard`，使用設置的令牌登錄。\n\n### 使用 pip 安裝\n\n確保你的 Python 版本 >= 3.10，然後使用 pip 安裝：\n\n```bash\npip install ErisPulse\n```\n\n如果你已安裝 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安裝速度更快。\n\n只想把 `epsdk` 命令行工具裝到全局、不污染項目環境時，推薦 `uv tool install`：\n\n```bash\nuv tool install ErisPulse\n```\n\n安裝後 `epsdk` 全局可用：在項目目錄內運行時會自動感知項目 `.venv`（`epsdk install` 裝進項目環境、`epsdk run` 用項目環境運行），框架本體由工具環境提供。詳見[安裝參考](user-guide/installation.md)。"
+      "hash": "c2988959b0e3ee836781ecd5d8eae0b3",
+      "translation": "## 安裝 ErisPulse\n\n### 一鍵安裝腳本（推薦）\n\n安裝腳本會自動偵測您的環境（Docker、Python、uv），並引導您選擇最適合的安裝方式。\n\nWindows (PowerShell):\n```powershell\nirm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1\n```\n\nmacOS / Linux:\n```bash\ncurl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh\n```\n\n腳本會引導您完成：\n\n- **Docker 安裝**（偵測到 Docker 時推薦）：選擇鏡像來源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板配置、端口設定\n- **全域 CLI 安裝（uv tool，推薦）**：將 `epsdk` 安裝為全域命令，無需虛擬環境，uv 自動管理 Python（系統版本過低亦可）；項目目錄內運行時自動感知項目 `.venv`\n- **傳統安裝**：自動建立虛擬環境、選擇 ErisPulse 版本、可選安裝 Dashboard 管理面板模組\n\n### 使用 Docker\n\nDocker 鏡像已內建 ErisPulse 框架和 Dashboard 管理面板。\n\n```bash\n# 下載 docker-compose.yml\ncurl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml\n\n# 設定 Dashboard 令牌並啟動\nERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d\n```\n\n<details>\n<summary>Docker Hub 不可用？</summary>\n\n使用 GitHub Container Registry 鏡像，修改 `docker-compose.yml` 中的 image：\n\n```yaml\nimage: ghcr.io/erispulse/erispulse:latest\n```\n\n</details>\n\n啟動後訪問 `http://<host>:8000/Dashboard`，使用設定的令牌登入。\n\n### 使用 pip 安裝\n\n確保您的 Python 版本 >= 3.10，然後使用 pip 安裝：\n\n```bash\npip install ErisPulse\n```\n\n如果您已安裝 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安裝速度更快。\n\n只想把 `epsdk` 命令列工具裝到全域、不污染項目環境時，推薦 `uv tool install`：\n\n```bash\nuv tool install ErisPulse\n```\n\n安裝後 `epsdk` 全域可用：在項目目錄內運行時會自動感知項目 `.venv`（`epsdk install` 裝進項目環境、`epsdk run` 用項目環境運行），框架本體由工具環境提供。詳見[安裝參考](user-guide/installation.md)。"
     },
     {
       "hash": "7e317def5cef55f71b87c93ecb0233fd",

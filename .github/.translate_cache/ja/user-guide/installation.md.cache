@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "941cc1622a4d0a015f06a0c7fef322b6",
-  "file_hash": "941cc1622a4d0a015f06a0c7fef322b6",
-  "translated_at": "2026-09-23T13:02:22.626722",
+  "hash": "673fd305b4e3c288f5a193fbe9fad8fd",
+  "file_hash": "673fd305b4e3c288f5a193fbe9fad8fd",
+  "translated_at": "2026-10-04T12:09:14.603453",
   "target_lang": "ja",
   "chunks": [
     {
@@ -14,12 +14,12 @@
       "translation": "## システム要件\n\n- Python 3.10 以上\n- pip または uv（推奨）\n- 十分なディスク容量（少なくとも 100MB）"
     },
     {
-      "hash": "a5c38fb5214f1c38b7a570258c9d958b",
-      "translation": "## インストール方法\n\n### 方法1：pipを使用したインストール\n\n```bash\n# ErisPulseのインストール\npip install ErisPulse\n\n# 最新バージョンへのアップグレード\npip install ErisPulse --upgrade\n```\n\n### 方法2：uvを使用したインストール（推奨）\n\nuvはより高速なPythonツールチェーンであり、開発環境での使用が推奨されます。\n\n#### uvのインストール\n\n```bash\n# pipを使用してuvをインストール\npip install uv\n\n# インストールの確認\nuv --version\n```\n\n#### 仮想環境の作成\n\n```bash\n# プロジェクトディレクトリの作成\nmkdir my_bot && cd my_bot\n\n# Python 3.12のインストール\nuv python install 3.12\n\n# 仮想環境の作成\nuv venv\n```\n\n#### 仮想環境の有効化\n\n```bash\n# Windows\n.venv\\Scripts\\activate\n\n# Linux/Mac\nsource .venv/bin/activate\n```\n\n#### ErisPulseのインストール\n\n```bash\n# ErisPulseのインストール\nuv pip install ErisPulse --upgrade\n```\n\n### 方法3：uv toolを使用したインストール（グローバルCLI、推奨）\n\n`epsdk`をグローバルなコマンドラインツールとして使用したい場合、`uv tool install`が最もクリーンな方法です。epsdkは独立したツール環境で動作し、プロジェクト環境を汚染しません。\n\n```bash\n# インストール（.venvを有効化せずにepsdkがすぐに使用可能）\nuv tool install ErisPulse\n\n# アップグレード（またはepsdk self-updateを使用して自動的にこの経路をたどる）\nuv tool upgrade ErisPulse\n```\n\n> [!NOTE]\n> ツール環境内のepsdkは、プロジェクトディレクトリ内で実行された際にプロジェクトの`.venv`を自動的に認識します。`epsdk install`はコンポーネントをプロジェクト環境にインストールし、`epsdk run`はプロジェクト環境を使用してロボットを実行します。フレームワーク本体はツール環境から提供され、両者は互いに干渉しません。"
+      "hash": "d3978c861bb20b22c15d0f0cf940e47f",
+      "translation": "## インストール方法\n\n### 方法 1: pip を使用したインストール\n\n```bash\n# ErisPulse のインストール\npip install ErisPulse\n\n# 最新バージョンへのアップグレード\npip install ErisPulse --upgrade\n```\n\n### 方法 2: uv を使用したインストール（推奨）\n\nuv はより高速な Python ツールチェーンであり、開発環境での使用が推奨されています。\n\n#### uv のインストール\n\n```bash\n# pip を使用して uv をインストール\npip install uv\n\n# インストールの確認\nuv --version\n```\n\n#### 仮想環境の作成\n\n```bash\n# プロジェクトディレクトリの作成\nmkdir my_bot && cd my_bot\n\n# Python 3.12 のインストール\nuv python install 3.12\n\n# 仮想環境の作成\nuv venv\n```\n\n#### 仮想環境の有効化\n\n```bash\n# Windows\n.venv\\Scripts\\activate\n\n# Linux/Mac\nsource .venv/bin/activate\n```\n\n#### ErisPulse のインストール\n\n```bash\n# ErisPulse のインストール\nuv pip install ErisPulse --upgrade\n```\n\n### 方法 3: uv tool を使用したインストール（グローバル CLI、推奨）\n\n`epsdk` をグローバルなコマンドラインツールとして使用したい場合、`uv tool install` が最もクリーンな方法です。epsdk は独立したツール環境で動作し、プロジェクト環境を汚染しません。\n\n```bash\n# インストール（.venv をアクティブ化する必要なく、epsdk をすぐに使用可能）\nuv tool install ErisPulse\n\n# アップグレード（または `epsdk self-update` を直接実行すると、このプロセスが自動的に実行されます）\nuv tool upgrade ErisPulse\n```\n\n> [!NOTE]\n> ツール環境内の `epsdk` は、プロジェクトディレクトリ内で実行された際に、自動的にプロジェクトの `.venv` を認識します。  \n> `epsdk install` はコンポーネントをプロジェクト環境にインストールし、`epsdk run` はプロジェクト環境を使用してロボットを実行します。  \n> フレームワーク本体はツール環境から提供され、両者は互いに干渉しません。  \n> 一括インストールスクリプト（`get.erisdev.com/install.sh` / `install.ps1`）のメニューには、「グローバル CLI インストール（uv tool）」のオプションも用意されており、uv の自動インストールと手順のガイドが提供されます。"
     },
     {
-      "hash": "358f974f4ee2f44daa4450252b751cdc",
-      "translation": "## プロジェクトの初期化とモジュールのインストール\n\nインストール後、プロジェクトの初期化、モジュールのインストール、実行の完全な手順は、[5分間のクイックスタート](../quick-start.md)をご覧ください。\n\n### 方法3：ErisPulse-Appクライアントの使用（ターミナル不要）\n\nPython環境をインストールしたくないですか？[ErisPulse-App](../ecosystem/app.md) は公式の全プラットフォーム対応クライアントです（Android / Windows / Linux / macOS）。**スマートフォンで直接実行**でき、デスクトップ版はシステムトレイに最小化して常時バックグラウンドで実行可能です。内部にPythonランタイムとErisPulse SDKを内蔵しており、ターミナルや手動の設定は不要です。\n\n- [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) から、対応するプラットフォームに応じてダウンロードしてください（Android `online`/`offline` APK、Windows `setup.exe`/`zip`、Linux `tar.gz`、macOS `zip`）\n- App内でインスタンスを作成して起動し、ネイティブのインターフェースでアダプタとモジュールを管理し、モジュールストアを閲覧します\n\n> 詳細な説明は、[ErisPulse-Appのインストールと使用方法](../ecosystem/app.md)をご覧ください。"
+      "hash": "ecbe440ceb6ced627662296077022155",
+      "translation": "## プロジェクトの初期化とモジュールのインストール\n\nインストールが完了したら、プロジェクトの初期化、モジュールのインストール、実行の全手順は、[5分間で始める](../quick-start.md)を参照してください。\n\n### 方法4：ErisPulse-Appクライアントを使用する（ターミナル不要）\n\nPython環境をインストールしたくないですか？[ErisPulse-App](../ecosystem/app.md) は公式の全プラットフォーム対応クライアントです（Android / Windows / Linux / macOS）。**スマートフォンで直接実行**でき、デスクトップ版はシステムトレイに最小化して常駐させることができます。Python実行環境とErisPulse SDKが内蔵されており、ターミナルや手動設定は不要です。\n\n- [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) から、プラットフォームに応じてダウンロードを選択してください（Android `online`/`offline` APK、Windows `setup.exe`/`zip`、Linux `tar.gz`、macOS `zip`）\n- App内でインスタンスを作成して起動し、ネイティブのインターフェースでアダプタとモジュールを管理し、モジュールストアを閲覧します\n\n> 詳細な説明は、[ErisPulse-Appのインストールと使用方法](../ecosystem/app.md)をご覧ください。"
     },
     {
       "hash": "0cba7617f7a40bf89b6ae47d67267c5f",

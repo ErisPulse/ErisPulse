@@ -6,7 +6,7 @@
 
 ### 一鍵安裝腳本（推薦）
 
-安裝腳本會自動檢測您的環境（Docker、Python、uv），並引導您選擇最適合的安裝方式。
+安裝腳本會自動偵測您的環境（Docker、Python、uv），並引導您選擇最適合的安裝方式。
 
 Windows (PowerShell):
 ```powershell
@@ -20,18 +20,19 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 腳本會引導您完成：
 
-- **Docker 安裝**（檢測到 Docker 時推薦）：選擇鏡像源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板配置、端口設置
-- **傳統安裝**：自動創建虛擬環境、選擇 ErisPulse 版本、可選安裝 Dashboard 管理面板模塊
+- **Docker 安裝**（偵測到 Docker 時推薦）：選擇鏡像來源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板配置、端口設定
+- **全域 CLI 安裝（uv tool，推薦）**：將 `epsdk` 安裝為全域命令，無需虛擬環境，uv 自動管理 Python（系統版本過低亦可）；項目目錄內運行時自動感知項目 `.venv`
+- **傳統安裝**：自動建立虛擬環境、選擇 ErisPulse 版本、可選安裝 Dashboard 管理面板模組
 
 ### 使用 Docker
 
-Docker 鏡像已內置 ErisPulse 框架和 Dashboard 管理面板。
+Docker 鏡像已內建 ErisPulse 框架和 Dashboard 管理面板。
 
 ```bash
 # 下載 docker-compose.yml
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-# 設置 Dashboard 令牌並啟動
+# 設定 Dashboard 令牌並啟動
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
@@ -46,25 +47,25 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-啟動後訪問 `http://<host>:8000/Dashboard`，使用設置的令牌登錄。
+啟動後訪問 `http://<host>:8000/Dashboard`，使用設定的令牌登入。
 
 ### 使用 pip 安裝
 
-確保你的 Python 版本 >= 3.10，然後使用 pip 安裝：
+確保您的 Python 版本 >= 3.10，然後使用 pip 安裝：
 
 ```bash
 pip install ErisPulse
 ```
 
-如果你已安裝 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安裝速度更快。
+如果您已安裝 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安裝速度更快。
 
-只想把 `epsdk` 命令行工具裝到全局、不污染項目環境時，推薦 `uv tool install`：
+只想把 `epsdk` 命令列工具裝到全域、不污染項目環境時，推薦 `uv tool install`：
 
 ```bash
 uv tool install ErisPulse
 ```
 
-安裝後 `epsdk` 全局可用：在項目目錄內運行時會自動感知項目 `.venv`（`epsdk install` 裝進項目環境、`epsdk run` 用項目環境運行），框架本體由工具環境提供。詳見[安裝參考](user-guide/installation.md)。
+安裝後 `epsdk` 全域可用：在項目目錄內運行時會自動感知項目 `.venv`（`epsdk install` 裝進項目環境、`epsdk run` 用項目環境運行），框架本體由工具環境提供。詳見[安裝參考](user-guide/installation.md)。
 
 ## 初始化項目
 

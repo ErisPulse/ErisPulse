@@ -38,7 +38,7 @@ uv --version
 #### 建立虛擬環境
 
 ```bash
-# 建立專案資料夾
+# 建立專案目錄
 mkdir my_bot && cd my_bot
 
 # 安裝 Python 3.12
@@ -67,8 +67,8 @@ uv pip install ErisPulse --upgrade
 
 ### 方式三：使用 uv tool 安裝（全域 CLI，推薦）
 
-如果只想將 `epsdk` 當作全域命令列工具使用，`uv tool install` 是最乾淨的方式——
-epsdk 在獨立的工具環境中運行，不會污染任何專案環境：
+如果只想把 `epsdk` 當全域命令列工具使用，`uv tool install` 是最乾淨的方式——
+epsdk 運行在獨立的工具環境中，不會污染任何專案環境：
 
 ```bash
 # 安裝（epsdk 立即可用，無需激活任何虛擬環境）
@@ -79,17 +79,20 @@ uv tool upgrade ErisPulse
 ```
 
 > [!NOTE]
-> 工具環境中的 epsdk 在專案資料夾內運行時會自動感知專案 `.venv`：
-> `epsdk install` 將元件安裝進專案環境、`epsdk run` 使用專案環境運行機器人，
+> 工具環境中的 epsdk 在專案目錄內運行時會自動感知專案 `.venv`：
+> `epsdk install` 會將元件安裝進專案環境、`epsdk run` 使用專案環境運行機器人，
 > 框架本體仍由工具環境提供，兩邊互不干擾。
+>
+> 一鍵安裝腳本（`get.erisdev.com/install.sh` / `install.ps1`）的選單中
+> 同樣提供「全域 CLI 安裝（uv tool）」方式，會自動安裝 uv 並引導完成。
 
 ## 項目初始化與模組安裝
 
 安裝完成後，項目初始化、模組安裝、運行的完整流程見 [5 分鐘快速開始](../quick-start.md)。
 
-### 方式三：使用 ErisPulse-App 客戶端（免終端）
+### 方式四：使用 ErisPulse-App 客戶端（免終端）
 
-不想安裝 Python 環境？[ErisPulse-App](../ecosystem/app.md) 是官方全平台客戶端
+不想安裝 Python 環境？[ErisPulse-App](../ecosystem/app-tw.md) 是官方全平台客戶端
 （Android / Windows / Linux / macOS），**手機直接運行**，桌面版支援最小化到
 系統托盤後台常駐；內建 Python 運行時與 ErisPulse SDK，無需終端與手動配置：
 
@@ -97,7 +100,7 @@ uv tool upgrade ErisPulse
   （Android `online`/`offline` APK、Windows `setup.exe`/`zip`、Linux `tar.gz`、macOS `zip`）
 - 在 App 內建立並啟動實例，透過原生介面管理適配器與模組、瀏覽模組商店
 
-> 完整說明見 [ErisPulse-App 安裝與使用](../ecosystem/app.md)。
+> 完整說明見 [ErisPulse-App 安裝與使用](../ecosystem/app-tw.md)。
 
 ## 驗證安裝
 

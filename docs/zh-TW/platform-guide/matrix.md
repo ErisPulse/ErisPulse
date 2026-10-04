@@ -57,14 +57,34 @@ enabled = true
 
 ## v5 範式更新（4.2.0）
 
-- **BaseConverter 繼承**：轉換器公共欄位由框架 build_base_event 構建
+- **BaseConverter 繼承**：轉換器公共欄位由框架 build_base_event 建構
 - **Api DSL**：get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + 元動作
 - **消息事件補充 message_id**（event_id）；消息登記表支援 delete_message
 - **spawn_background 任務歸屬**：同步/心跳任務改用 runtime.spawn_background
 - **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌
 - Matrix 無原生按鈕能力，標準 keyboard 段優雅忽略（不報錯）
 
-### 標準Api動作示例
+## 端到端加密（4.3.0）
+
+4.3.0 起適配器原生支援加密房間的端到端加密（基於 matrix-nio[e2e] / vodozemac）：
+
+```toml
+[Matrix_Adapter.accounts.default]
+user_id = "@bot:matrix.org"
+password = "YOUR_PASSWORD"
+encryption_enabled = true       # 啟用（預設 false，存量部署不受影響）
+trust_all_devices = true        # 自動信任未驗證裝置（預設；false 為嚴格模式）
+```
+
+- 加密房間訊息收發自動解密/加密，媒體端到端加密（`m.file.encrypted`）
+- `device_id` 自動解析與持久化；會話儲存於 `store_path`（預設 `data/matrix/<帳號名>`，**請勿刪除**，否則歷史訊息無法解密）
+- 事件 Mixin 新增 `event.is_encrypted()`；媒體段攜帶 `matrix_encrypted_file`（JWK），可用 `MatrixAdapter.decrypt_media()` 解密
+- 不支援交叉簽名與伺服器端密鑰備份；需要 Python >= 3.10
+- 未啟用或未安裝 matrix-nio 時自動降級為明文模式
+
+詳細說明見 [適配器 README](https://github.com/ErisPulse/ErisPulse-MatrixAdapter)。
+
+### 標準 API 行動示例
 
 ```python
 from ErisPulse import sdk
@@ -79,9 +99,9 @@ await matrix.Api.delete_message(event_id)            # redact（登記表補全 
 
 ### 已對接平台能力
 
-- **事件**：消息（m.room.message：文本/圖片/文件/音視頻/回覆/編輯）、成員增減（m.room.member）、房間名稱變更等狀態事件
+- **事件**：訊息（m.room.message：文字/圖片/檔案/音視頻/回覆/編輯）、成員增減（m.room.member）、房間名稱變更等狀態事件
 - **會話**：私聊（DM 房間自動發現）/ 群組（房間）；發送支援 Text/Image/File/Voice/Video/Markdown/Raw_ob12
-- **API**：whoami/profile/joined_rooms/房間狀態/成員列表/leave/redact（見上方 Api DSL）
+- **API**：whoami/profile/joined_rooms/房間狀態/成員列表/leave/redact（見上方 API DSL）
 
 ## 支援的消息傳送類型
 
