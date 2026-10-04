@@ -494,6 +494,36 @@ class ConfigManager:
         except KeyError:
             pass
 
+    @staticmethod
+    def _toml_safe_value(value: Any) -> Any:
+        """
+        将待写入值转换为 TOML 可序列化形态
+
+        TOML 没有 null：``setConfig`` 置空语义的 ``None`` 在落盘时等价于
+        "键不存在"——标量 ``None`` 返回 ``None``（由调用方跳过该键），
+        字典内的 ``None`` 叶子递归剔除（其余键值原样保留，不改变顺序之外
+        的内容）。列表内的 ``None`` 属于数组元素，剔除会改变元素位置，
+        保持原样交由单键隔离丢弃并告警。
+
+        :param value: 待写入的值
+        :return: 可直接交给 tomlkit 的值；标量 ``None`` 原样返回
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        if not isinstance(value, dict):
+            return value
+
+        def _strip(node: dict[str, Any]) -> dict[str, Any]:
+            result: dict[str, Any] = {}
+            for k, v in node.items():
+                if v is None:
+                    continue
+                result[k] = _strip(v) if isinstance(v, dict) else v
+            return result
+
+        return _strip(value)
+
     def _remove_cache_path(self, keys: list[str]) -> None:
         """
         从内存缓存中按点分路径移除键（delete 时的即时视图更新）
@@ -559,11 +589,35 @@ class ConfigManager:
                     # 后应用——同节点分写不被整节写吞掉（与 getConfig ①④的叠加
                     # 语义同口径）；sorted 稳定排序保持同深度内的写入时序
                     pending = sorted(self._dirty_keys.items(), key=lambda kv: kv[0].count("."))
+                    failed_keys: list[tuple[str, Exception]] = []
                     for key, value in pending:
-                        if value is _DELETED:
-                            self._delete_doc_path(doc, key.split("."))
-                        else:
-                            self._set_doc_path(doc, key.split("."), value)
+                        try:
+                            if value is _DELETED:
+                                self._delete_doc_path(doc, key.split("."))
+                                continue
+                            safe_value = self._toml_safe_value(value)
+                            if safe_value is None:
+                                # None（setConfig 置空语义）在 TOML 中等价于"键不存在"：
+                                # 不落盘，直接出队（缓存中的置空视图由 default 语义承接）
+                                self._dirty_keys.pop(key, None)
+                                continue
+                            self._set_doc_path(doc, key.split("."), safe_value)
+                        except Exception as e:
+                            # 单键不可序列化（如列表内含 None）：仅丢弃该键，
+                            # 不阻塞其余待写键落盘（否则脏队列永不清空、无限重试刷屏）
+                            failed_keys.append((key, e))
+                            self._dirty_keys.pop(key, None)
+
+                    if failed_keys:
+                        try:
+                            from .logger import logger
+
+                            for key, e in failed_keys:
+                                logger.error(
+                                    i18n.t("core.config.set_failed", key=key, error=e)
+                                )
+                        except (ImportError, AttributeError):
+                            pass
 
                     # 原子写入：唯一临时文件 + fsync + os.replace（多实例/断电安全）
                     self._atomic_write_text(tomlkit.dumps(doc))
