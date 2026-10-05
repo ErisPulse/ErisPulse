@@ -568,6 +568,15 @@ class Uninitializer:
             except Exception:
                 pass
 
+            # 5.6 强制刷掉会话收件箱的未落盘缓冲（后台 flusher 已随 5.5 取消，
+            # 此处须在存储关闭前排空，保证正常退出不丢记录）
+            try:
+                from ..Core.transcript import transcript
+
+                await transcript.aflush()
+            except Exception:
+                pass
+
             # 6. 清理管理器
             adapter_manager.clear()
             module_manager.clear()

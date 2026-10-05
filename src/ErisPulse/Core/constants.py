@@ -578,6 +578,22 @@ DEFAULT_TRANSCRIPT_MAX_PER_SESSION: Final[int] = 50
 # 修改影响: 超过时长的消息记录在惰性清理时删除。可通过 ErisPulse.transcript.ttl_hours 覆盖。
 DEFAULT_TRANSCRIPT_TTL_HOURS: Final[float] = 168.0
 
+# 会话收件箱批量落盘的单批最大行数：缓冲达到该条数时 flusher 立即提交一个事务。
+# 使用位置: Core/transcript.py -> _take_batch / _flush_loop
+# 修改影响: 调大 → 单事务写放大更小，但两次落盘间隔内硬崩溃可能丢失更多记录。
+TRANSCRIPT_FLUSH_MAX_BATCH: Final[int] = 64
+
+# 会话收件箱批量落盘的刷盘间隔（秒）：后台 flusher 的周期，也是正常追加到落盘的最大延迟。
+# 使用位置: Core/transcript.py -> _flush_loop
+# 修改影响: 调大 → 每消息摊销写成本更低，但硬崩溃时的丢失时间窗变长。
+TRANSCRIPT_FLUSH_INTERVAL_SECS: Final[float] = 1.0
+
+# 会话收件箱内存缓冲的积压上限（行）：存储不可用期间超出即淘汰最旧行，为内存兜底。
+# 使用位置: Core/transcript.py -> append
+# 修改影响: 调大 → 存储恢复后可回补更多记录，但积压期内存占用更高。
+TRANSCRIPT_BUFFER_MAX_ROWS: Final[int] = 4096
+
+
 # 模块间调用（module.call）的默认超时（秒）。
 # 使用位置: Core/module.py -> ModuleManager.call()
 # 修改影响: 调用目标方法未在时限内返回时抛出 ModuleCallTimeoutError。
@@ -1226,6 +1242,9 @@ __all__ = [
     "DEFAULT_TRANSCRIPT_ENABLED",
     "DEFAULT_TRANSCRIPT_MAX_PER_SESSION",
     "DEFAULT_TRANSCRIPT_TTL_HOURS",
+    "TRANSCRIPT_FLUSH_MAX_BATCH",
+    "TRANSCRIPT_FLUSH_INTERVAL_SECS",
+    "TRANSCRIPT_BUFFER_MAX_ROWS",
     "DEFAULT_MODULE_CALL_TIMEOUT_SECS",
     "DEFAULT_EVENT_DEDUPE_CAPACITY",
     "DEFAULT_MAX_SESSION_REMINDERS",
