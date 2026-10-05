@@ -87,6 +87,17 @@ def _isolated_framework_singletons():
         for name, value in adapter_channels.items()
     }
 
+    # 模块管理器单例状态（reload / unload / uninit 类测试会清空或残留陈旧
+    # 模块类——sys.modules 被清后，残留的类无法重新实例化，后续
+    # ``module.load`` / ``module.call`` 随机报"模块未启用"）
+    from ErisPulse.Core.module import module as module_manager
+
+    module_manager_attrs = ("_modules", "_module_classes", "_loaded_modules", "_module_info")
+    module_manager_snapshots = {
+        name: dict(getattr(module_manager, name)) for name in module_manager_attrs
+    }
+    module_loaded_snapshot = set(module_manager._loaded_modules)
+
     module_sys = __import__("ErisPulse.Core.module", fromlist=["__file__"])
     module_vars_snapshot = dict(vars(module_sys))
     # sys.modules 快照以会话首次进入本夹具时的状态为规范基线（而非逐测试快照）：
@@ -116,6 +127,10 @@ def _isolated_framework_singletons():
 
     for name, snapshot in adapter_snapshots.items():
         _fill(adapter_channels[name], snapshot)
+
+    for name, snapshot in module_manager_snapshots.items():
+        _fill(getattr(module_manager, name), snapshot)
+    _fill(module_manager._loaded_modules, module_loaded_snapshot)
 
     current_erispulse_modules = {
         name for name in sys.modules if name.split(".")[0] == "ErisPulse"
