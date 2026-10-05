@@ -65,6 +65,22 @@ class _DeletedValue:
 _DELETED = _DeletedValue()
 
 
+class _FlushHandle:
+    """
+    {!--< internal-use >!--}
+    ``_write_timer`` 兼容句柄
+
+    延迟刷盘已由常驻 ``config-watcher`` 线程按 ``_flush_deadline`` 调度；
+    本句柄仅为既有测试与退出路径保留 ``_write_timer`` 属性语义
+    （"存在即有未落盘写入"），``cancel()`` 为幂等空操作。
+    """
+
+    __slots__ = ()
+
+    def cancel(self) -> None:
+        return None
+
+
 class ConfigManager:
     def __init__(self, config_file: str = DEFAULT_CONFIG_FILE_PATH):
         """
@@ -80,7 +96,9 @@ class ConfigManager:
         self._cache_timestamp = 0  # 缓存时间戳
         self._cache_timeout = CONFIG_CACHE_TIMEOUT_SECS
         self._write_delay = CONFIG_WRITE_DELAY_SECS
-        self._write_timer: threading.Timer | None = None  # 写入定时器
+        self._write_timer: threading.Timer | None = None  # 写入定时器（兼容句柄，见 _schedule_write）
+        self._flush_deadline: float | None = None  # 最近一次写入安排的刷盘时刻（time.monotonic）
+        self._flush_wakeup = threading.Event()  # 常驻 watcher 线程的提前唤醒信号
         self._lock = threading.RLock()  # 线程安全锁
         self._file_lock = threading.RLock()  # 文件操作锁
         self._atexit_registered = False  # atexit 钩子注册标记
@@ -109,17 +127,34 @@ class ConfigManager:
 
         def _watch_loop():
             while not self._watcher_stop.is_set():
-                self._watcher_stop.wait(timeout=self._CONFIG_WATCH_INTERVAL)
-                if self._watcher_stop.is_set():
-                    break
+                # 到期的延迟刷盘：setConfig 不再创建线程，统一由本线程
+                # 睡到 deadline 后执行（_flush_config 内部持锁，线程安全）
                 try:
+                    with self._lock:
+                        due = self._flush_deadline is not None and time.monotonic() >= self._flush_deadline
+                        if due:
+                            self._flush_deadline = None
+                    if due:
+                        self._flush_config()
+
+                    # 等待：刷盘 deadline 与轮询间隔取较小者；新写入会提前唤醒
+                    with self._lock:
+                        deadline = self._flush_deadline
+                    wait = self._CONFIG_WATCH_INTERVAL
+                    if deadline is not None:
+                        wait = min(wait, max(0.0, deadline - time.monotonic()))
+                    if self._flush_wakeup.wait(timeout=wait):
+                        self._flush_wakeup.clear()
+                    if self._watcher_stop.is_set():
+                        break
+
                     with self._lock:
                         # _check_file_change 已能区分"框架自身刷盘"与"外部修改"：
                         # 自身刷盘的 mtime 与 _last_self_write_mtime 一致 → 返回 False
                         if not self._check_file_change():
                             continue
                         # 真正的外部修改：重载文件到缓存。
-                        # 不清空 _dirty_keys、不取消 _write_timer —— 待写键会在
+                        # 不清空 _dirty_keys、不清除 _flush_deadline —— 待写键会在
                         # 下次 _flush_config 时与外部内容合并（脏键优先），
                         # 避免丢失本进程尚未落盘的写入。
                         old_cache = self._cache.copy() if self._cache else {}
@@ -729,16 +764,20 @@ class ConfigManager:
         """
         安排延迟写入
 
+        真实调度由常驻 ``config-watcher`` 线程承担（按 ``_flush_deadline``
+        睡到到期后刷盘），避免每次写入创建/取消 ``threading.Timer``
+        带来的线程创建开销（高频 setConfig 的热点）。
+        ``_write_timer`` 保留为兼容句柄：既有测试与退出路径依赖其
+        存在性与 ``cancel()`` 方法，语义为"存在即有未落盘写入"。
+
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
         """
         with self._lock:
-            if self._write_timer:
-                self._write_timer.cancel()
-
-            self._write_timer = threading.Timer(self._write_delay, self._flush_config)
-            self._write_timer.daemon = True
-            self._write_timer.start()
+            self._flush_deadline = time.monotonic() + self._write_delay
+            if self._write_timer is None:
+                self._write_timer = _FlushHandle()
+            self._flush_wakeup.set()
 
     def _check_cache_validity(self) -> None:
         """
@@ -1114,6 +1153,7 @@ class ConfigManager:
         {!--< /tips >!--}
         """
         with self._lock:
+            self._flush_deadline = None  # 待写项已排空，撤销 watcher 线程的到期刷盘
             self._flush_config()
 
     def reload(self) -> None:
