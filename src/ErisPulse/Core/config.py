@@ -32,6 +32,7 @@ from .constants import (
     CONFIG_CACHE_TIMEOUT_SECS,
     CONFIG_LOCK_FILE_NAME,
     CONFIG_WRITE_DELAY_SECS,
+    CONFIG_WRITE_RETRY_DELAY_SECS,
     DEFAULT_CONFIG_FILE_PATH,
 )
 from .i18n import i18n
@@ -96,7 +97,8 @@ class ConfigManager:
         self._cache_timestamp = 0  # 缓存时间戳
         self._cache_timeout = CONFIG_CACHE_TIMEOUT_SECS
         self._write_delay = CONFIG_WRITE_DELAY_SECS
-        self._write_timer: threading.Timer | None = None  # 写入定时器（兼容句柄，见 _schedule_write）
+        self._write_retry_delay = CONFIG_WRITE_RETRY_DELAY_SECS
+        self._write_timer: _FlushHandle | None = None  # 写入定时器（兼容句柄，见 _schedule_write）
         self._flush_deadline: float | None = None  # 最近一次写入安排的刷盘时刻（time.monotonic）
         self._flush_wakeup = threading.Event()  # 常驻 watcher 线程的提前唤醒信号
         self._lock = threading.RLock()  # 线程安全锁
@@ -132,10 +134,15 @@ class ConfigManager:
                 try:
                     with self._lock:
                         due = self._flush_deadline is not None and time.monotonic() >= self._flush_deadline
-                        if due:
-                            self._flush_deadline = None
                     if due:
                         self._flush_config()
+                        with self._lock:
+                            if self._dirty_keys:
+                                # 刷盘失败（_flush_config 失败时吞异常保留脏键）：
+                                # 短退避重试，避免静默等到下一次用户写入才补写
+                                self._flush_deadline = time.monotonic() + self._write_retry_delay
+                            else:
+                                self._flush_deadline = None
 
                     # 等待：刷盘 deadline 与轮询间隔取较小者；新写入会提前唤醒
                     with self._lock:
