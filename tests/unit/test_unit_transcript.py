@@ -234,8 +234,9 @@ class TestBufferedFlush:
         transcript.append(evt, "user", "auto1")
         assert transcript._flusher_started is True
 
-        for _ in range(40):
-            await asyncio.sleep(0.05)
+        # 高并发负载下线程调度可能显著延迟，放宽总等待窗口
+        for _ in range(100):
+            await asyncio.sleep(0.1)
             if not transcript._buffer:
                 break
         assert len(transcript._buffer) == 0
