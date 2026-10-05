@@ -21,8 +21,9 @@ import os
 import tempfile
 import threading
 import time
+import weakref
 from pathlib import Path
-from typing import Any, TypeAlias
+from typing import Any, ClassVar, TypeAlias
 
 import tomlkit
 from tomlkit.exceptions import ParseError
@@ -179,6 +180,37 @@ class ConfigManager:
 
         watcher = threading.Thread(target=_watch_loop, daemon=True, name="config-watcher")
         watcher.start()
+        ConfigManager._register_watcher_shutdown(self)
+
+    # 注册了 watcher 的实例（弱引用，随实例回收）。自由线程构建（3.14t）下
+    # threading._shutdown 会等待全部后台线程结束——多个测试/多实例泄漏的
+    # watcher 若在收尾阶段仍参与 config._lock 竞争，会让进程退出挂死；
+    # 经 threading._register_atexit（先于 join 执行，concurrent.futures 同款
+    # 机制）统一发出停止信号，watcher 至多等一个轮询周期后自然退出。
+    _active_watchers: ClassVar["weakref.WeakSet[ConfigManager]"] = weakref.WeakSet()
+    _watcher_shutdown_hook_registered: ClassVar[bool] = False
+
+    @classmethod
+    def _register_watcher_shutdown(cls, manager: "ConfigManager") -> None:
+        """{!--< internal-use >!--} 注册解释器关停时的 watcher 统一停止钩子（幂等）"""
+        cls._active_watchers.add(manager)
+        if cls._watcher_shutdown_hook_registered:
+            return
+        cls._watcher_shutdown_hook_registered = True
+        try:
+            from threading import _register_atexit
+
+            def _stop_all_watchers() -> None:
+                for m in list(cls._active_watchers):
+                    try:
+                        m._watcher_stop.set()
+                        m._flush_wakeup.set()
+                    except Exception:
+                        pass
+
+            _register_atexit(_stop_all_watchers)
+        except Exception:
+            pass
 
     def _watch_config_file(self) -> None:
         """
