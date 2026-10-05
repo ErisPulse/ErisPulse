@@ -3215,3 +3215,32 @@ class TestAdapterMetaAPI:
         """meta 缺 name 时以平台名补全"""
         manager._adapter_info["bare"] = {"meta": {}}
         assert manager.get_meta("bare")["name"] == "bare"
+
+
+class TestHandlerMatchPrecompile:
+    """_is_handler_match 的预编译消费与最小 dict 回退"""
+
+    def test_precompiled_detail_matcher_consumed(self):
+        from ErisPulse.Core.adapter import AdapterManager
+        from ErisPulse.Core.text_match import compile_entry_matcher
+
+        h = {"detail_type": "private", "_detail_matcher": compile_entry_matcher("private")}
+        assert AdapterManager._is_handler_match(h, {}, "private") is True
+        assert AdapterManager._is_handler_match(h, {}, "group") is False
+
+    def test_precompiled_text_cond_consumed(self):
+        from ErisPulse.Core.adapter import AdapterManager
+        from ErisPulse.Core.text_match import compile_text_matcher
+
+        h = {"pattern": "hi*", "_text_cond": compile_text_matcher("hi*", None)}
+        msg = {"message": [{"type": "text", "data": {"text": "hi there"}}], "alt_message": "hi there"}
+        assert AdapterManager._is_handler_match(h, msg, "private") is True
+        msg_miss = {"message": [{"type": "text", "data": {"text": "bye"}}], "alt_message": "bye"}
+        assert AdapterManager._is_handler_match(h, msg_miss, "private") is False
+
+    def test_minimal_wrapper_falls_back(self):
+        """非 on() 路径构造的最小包装器（如 Event.wait_for）回退现场编译"""
+        from ErisPulse.Core.adapter import AdapterManager
+
+        h = {"func": lambda: None, "platform": None}
+        assert AdapterManager._is_handler_match(h, {}, "anything") is True

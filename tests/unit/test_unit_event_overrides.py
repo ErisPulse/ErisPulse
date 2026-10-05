@@ -258,3 +258,31 @@ class TestOverridesInfra:
         ):
             overrides._reload({})
         assert "Bad" not in overrides._sections["message"]
+
+
+class TestConditionForCache:
+    """condition_for 编译缓存：命中同对象，分区变更即失效"""
+
+    def test_cached_and_invalidated(self):
+        from ErisPulse.Core.Event import overrides
+
+        overrides.clear()
+        try:
+            overrides.message.set("CacheMod", pattern="x*", persist=False)
+            first = overrides.condition_for("message", "CacheMod")
+            assert first is not None
+            assert overrides.condition_for("message", "CacheMod") is first
+
+            # 重设覆写 → 缓存失效 → 重新编译
+            overrides.message.set("CacheMod", pattern="y*", persist=False)
+            second = overrides.condition_for("message", "CacheMod")
+            assert second is not None and second is not first
+
+            # 未配置覆写的键返回 None（同样进入缓存）
+            assert overrides.condition_for("message", "Nobody") is None
+
+            # delete → 失效后仍为 None
+            overrides.message.delete("CacheMod", persist=False)
+            assert overrides.condition_for("message", "CacheMod") is None
+        finally:
+            overrides.clear()

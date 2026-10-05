@@ -1628,7 +1628,8 @@ class AdapterManager(ManagerBase):
             async def wrapper(*args, **kwargs):
                 return await func(*args, **kwargs)
 
-            # 创建带元信息的处理器包装器（记录 owner 供模块作用域过滤）
+            # 创建带元信息的处理器包装器（记录 owner 供模块作用域过滤）；
+            # 匹配闭包在注册时一次性预编译，分发热路径直接复用（见 _is_handler_match）
             handler_wrapper = {
                 "func": wrapper,
                 "platform": platform,
@@ -1637,6 +1638,8 @@ class AdapterManager(ManagerBase):
                 "detail_type": detail_type,
                 "pattern": pattern,
                 "regex": regex,
+                "_detail_matcher": compile_entry_matcher(str(detail_type)) if detail_type else None,
+                "_text_cond": compile_text_matcher(pattern, regex) if (pattern or regex) else None,
             }
 
             if raw:
@@ -2113,6 +2116,10 @@ class AdapterManager(ManagerBase):
         未设置条件（None）即视为命中；``pattern`` 与 ``regex`` 只对消息类事件
         生效（原生事件无 ``message`` 段，文本条件自动跳过）。
 
+        优先消费 ``on()`` 注册时预编译的 ``_detail_matcher`` / ``_text_cond``
+        （热路径上避免每事件每处理器重复编译闭包）；缺失时回退现场编译，
+        兼容非 ``on()`` 路径构造的最小包装器。
+
         :param handler_wrapper: 处理器包装器（含 detail_type/pattern/regex）
         :param data: 原始事件数据
         :param detail_type: 事件细分类型
@@ -2121,7 +2128,10 @@ class AdapterManager(ManagerBase):
         """
         wanted_type = handler_wrapper.get("detail_type")
         if wanted_type and detail_type:
-            if not compile_entry_matcher(str(wanted_type))(str(detail_type)):
+            detail_matcher = handler_wrapper.get("_detail_matcher")
+            if detail_matcher is None:
+                detail_matcher = compile_entry_matcher(str(wanted_type))
+            if not detail_matcher(str(detail_type)):
                 return False
 
         pattern = handler_wrapper.get("pattern")
@@ -2130,8 +2140,10 @@ class AdapterManager(ManagerBase):
             if raw:
                 # 原生事件不保证有标准 message 段，跳过文本条件
                 return True
-            cond = compile_text_matcher(pattern, regex)
-            if cond is not None and not cond(data):
+            text_cond = handler_wrapper.get("_text_cond")
+            if text_cond is None:
+                text_cond = compile_text_matcher(pattern, regex)
+            if text_cond is not None and not text_cond(data):
                 return False
         return True
 
