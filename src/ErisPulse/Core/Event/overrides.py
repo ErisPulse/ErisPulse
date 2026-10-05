@@ -68,6 +68,7 @@ acl    allow / deny      命令用户黑白名单（command 专属，按命令�
 """
 
 import copy
+from collections.abc import Callable
 from typing import Any
 
 from ...runtime.context import current_owner
@@ -98,7 +99,7 @@ _acl_default_allow: bool = True
 # condition_for 的编译缓存：(event_type, owner) -> 条件函数或 None。
 # _sections 的任何变更（_apply / clear / 分区 set）都必须使本缓存失效——
 # 热路径上每事件每模块处理器都会调用 condition_for，避免重复编译闭包。
-_cond_cache: dict[tuple[str, str], object] = {}
+_cond_cache: dict[tuple[str, str], Callable[[Any], bool] | None] = {}
 
 
 def _invalidate_cond_cache() -> None:
@@ -330,7 +331,7 @@ def _persist_section(section_key: str, value) -> None:
 # ==================== 通用判定 ====================
 
 
-def condition_for(event_type: str, owner: str):
+def condition_for(event_type: str, owner: str) -> "Callable[[Any], bool] | None":
     """
     {!--< internal-use >!--}
     获取某事件类型下某模块的覆写过滤条件（detail_types 白名单 + pattern/regex 文本条件）
