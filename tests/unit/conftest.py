@@ -50,6 +50,10 @@ def _fill(container, snapshot) -> None:
         container.update(snapshot)
 
 
+# 会话级 sys.modules 规范基线（首个使用本夹具的测试 setup 时建立，见夹具 docstring）
+_SESSION_MODULES_SNAPSHOT = None
+
+
 @pytest.fixture(autouse=True)
 def _isolated_framework_singletons():
     """
@@ -83,11 +87,30 @@ def _isolated_framework_singletons():
         for name, value in adapter_channels.items()
     }
 
+    # 模块管理器单例状态（reload / unload / uninit 类测试会清空或残留陈旧
+    # 模块类——sys.modules 被清后，残留的类无法重新实例化，后续
+    # ``module.load`` / ``module.call`` 随机报"模块未启用"）
+    from ErisPulse.Core.module import module as module_manager
+
+    module_manager_attrs = ("_modules", "_module_classes", "_loaded_modules", "_module_info")
+    module_manager_snapshots = {
+        name: dict(getattr(module_manager, name)) for name in module_manager_attrs
+    }
+    module_loaded_snapshot = set(module_manager._loaded_modules)
+
     module_sys = __import__("ErisPulse.Core.module", fromlist=["__file__"])
     module_vars_snapshot = dict(vars(module_sys))
-    erispulse_modules_snapshot = {
-        name: mod for name, mod in sys.modules.items() if name.split(".")[0] == "ErisPulse"
-    }
+    # sys.modules 快照以会话首次进入本夹具时的状态为规范基线（而非逐测试快照）：
+    # sdk uninit / 硬重启的清理会删除 ErisPulse.* 子模块条目，若按上次测试的
+    # setup 快照恢复，"缺失"状态会被永久化——之后本工人内任何
+    # ``import ErisPulse.Core.xxx`` 都会重新执行模块体、产生第二个框架单例
+    # （空管理器 / 空命令表），后续测试以随机组合集体失败。
+    global _SESSION_MODULES_SNAPSHOT
+    if _SESSION_MODULES_SNAPSHOT is None:
+        _SESSION_MODULES_SNAPSHOT = {
+            name: mod for name, mod in sys.modules.items() if name.split(".")[0] == "ErisPulse"
+        }
+    erispulse_modules_snapshot = _SESSION_MODULES_SNAPSHOT
 
     yield
 
@@ -105,6 +128,10 @@ def _isolated_framework_singletons():
     for name, snapshot in adapter_snapshots.items():
         _fill(adapter_channels[name], snapshot)
 
+    for name, snapshot in module_manager_snapshots.items():
+        _fill(getattr(module_manager, name), snapshot)
+    _fill(module_manager._loaded_modules, module_loaded_snapshot)
+
     current_erispulse_modules = {
         name for name in sys.modules if name.split(".")[0] == "ErisPulse"
     }
@@ -113,6 +140,20 @@ def _isolated_framework_singletons():
     sys.modules.update(erispulse_modules_snapshot)
 
     _fill(vars(module_sys), module_vars_snapshot)
+
+    # 5.7 逐测试清空事件覆写：persist=True 的覆写（如 ACL / master 限制）会写入
+    # 配置树，并在任意 config 事件时经 _reload 重放——仅内存 clear 挡不住
+    # "陈旧覆写复活"（曾致 scope 分发测试的命令被前序 ACL 测试的
+    # master=True 覆写静默限制为主人专用而随机失败）。delConfig 走脏覆盖层，
+    # 读取即时生效、落盘经延迟写合并。
+    try:
+        from ErisPulse.Core import config as _config_mod
+        from ErisPulse.Core.Event import overrides as _overrides_mod
+
+        _overrides_mod.clear()
+        _config_mod.config.delConfig("ErisPulse.event.overrides")
+    except Exception:
+        pass
 
     # interaction 状态（等待表 / 租约）含运行期对象，恢复无意义，直接清理
     try:

@@ -2078,3 +2078,55 @@ class TestFlushNoneRobustness:
         # 失败键的值不落盘（仅残留路径上的空表壳，与删除语义的残留一致）
         assert disk.get("bad") == {}
         assert mgr._dirty_keys == {}
+
+
+class TestWatcherScheduledFlush:
+    """延迟写入由常驻 watcher 线程按 deadline 调度（不再 per-write 建线程）"""
+
+    @pytest.fixture
+    def temp_config_file(self):
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".toml", delete=False) as f:
+            f.write('[test]\nkey = "value"\n')
+            temp_path = f.name
+        yield temp_path
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+    @pytest.fixture
+    def config_manager(self, temp_config_file):
+        manager = ConfigManager(config_file=temp_config_file)
+        yield manager
+        if manager._write_timer:
+            manager._write_timer.cancel()
+        manager._watcher_stop.set()
+
+    def test_delayed_flush_lands_on_disk(self, config_manager):
+        """setConfig 后按 write_delay 由 watcher 线程真实落盘（失败自动短退避重试）"""
+        import time as _time
+
+        config_manager._write_delay = 0.3
+        config_manager.setConfig("bench.watcher", "v1")
+
+        # 兼容句柄存在（"存在即有未落盘写入"）
+        assert config_manager._write_timer is not None
+        assert config_manager._flush_deadline is not None
+
+        # 并发高负载下首次刷盘可能失败（退避重试），以脏键排空为准、窗口放宽
+        deadline = _time.monotonic() + 10
+        while _time.monotonic() < deadline:
+            if not config_manager._dirty_keys and config_manager._flush_deadline is None:
+                break
+            _time.sleep(0.05)
+
+        assert not config_manager._dirty_keys
+        assert config_manager.getConfig("bench.watcher") == "v1"
+
+    def test_force_save_cancels_pending_deadline(self, config_manager):
+        """force_save 排空待写项并撤销到期刷盘"""
+        config_manager.setConfig("bench.fs", "v")
+        assert config_manager._flush_deadline is not None
+        config_manager.force_save()
+        assert config_manager._flush_deadline is None
+        assert not config_manager._dirty_keys

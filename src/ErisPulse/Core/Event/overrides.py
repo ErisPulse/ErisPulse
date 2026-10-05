@@ -68,6 +68,7 @@ acl    allow / deny      命令用户黑白名单（command 专属，按命令�
 """
 
 import copy
+from collections.abc import Callable
 from typing import Any
 
 from ...runtime.context import current_owner
@@ -94,6 +95,16 @@ _sections: dict[str, dict[str, dict]] = {t: {} for t in _TYPE_SPECS}
 _command: dict[str, dict] = {}
 _acl: dict[str, dict] = {}
 _acl_default_allow: bool = True
+
+# condition_for 的编译缓存：(event_type, owner) -> 条件函数或 None。
+# _sections 的任何变更（_apply / clear / 分区 set）都必须使本缓存失效——
+# 热路径上每事件每模块处理器都会调用 condition_for，避免重复编译闭包。
+_cond_cache: dict[tuple[str, str], Callable[[Any], bool] | None] = {}
+
+
+def _invalidate_cond_cache() -> None:
+    """{!--< internal-use >!--} 清空 condition_for 编译缓存"""
+    _cond_cache.clear()
 
 # 运行时写入（persist=False）的调用方归属记录：路径键 → owner。
 # persist=True 的写入属用户配置语义，不追踪也不清理；仅内存态运行时写入
@@ -293,6 +304,7 @@ def _apply(tree: dict) -> None:
     _command = new_command
     _acl = new_acl
     _acl_default_allow = new_default
+    _invalidate_cond_cache()
     # 重放运行时覆写（persist=False 的写入在任意配置重载后保持有效，Issue #432 同源问题）
     _replay_runtime()
 
@@ -319,45 +331,56 @@ def _persist_section(section_key: str, value) -> None:
 # ==================== 通用判定 ====================
 
 
-def condition_for(event_type: str, owner: str):
+def condition_for(event_type: str, owner: str) -> "Callable[[Any], bool] | None":
     """
     {!--< internal-use >!--}
     获取某事件类型下某模块的覆写过滤条件（detail_types 白名单 + pattern/regex 文本条件）
+
+    结果按 ``(event_type, owner)`` 缓存（含"无覆写 → None"），``_sections``
+    的任何变更都会使缓存失效；热路径上每事件每模块处理器都会调用本函数，
+    缓存避免重复编译 matcher 闭包。
 
     :param event_type: 事件类型（message / notice / request / meta）
     :param owner: 模块名
     :return: 事件条件函数，该类型未配置覆写时返回 None
     """
+    cache_key = (event_type, owner)
+    if cache_key in _cond_cache:
+        return _cond_cache[cache_key]
+
     params = _sections.get(event_type, {}).get(owner)
-    if not isinstance(params, dict):
-        return None
+    cond = None
+    if isinstance(params, dict):
+        detail_types = params.get("detail_types")
+        pattern = params.get("pattern")
+        regex = params.get("regex")
 
-    detail_types = params.get("detail_types")
-    pattern = params.get("pattern")
-    regex = params.get("regex")
+        dt_matcher = text_match.compile_entry_list(detail_types) if detail_types else None
+        if isinstance(regex, str) and regex.startswith(text_match.REGEX_PREFIX):
+            regex = regex[len(text_match.REGEX_PREFIX) :]
+        text_matcher = text_match.compile_text_matcher(pattern, regex) if (pattern or regex) else None
 
-    dt_matcher = text_match.compile_entry_list(detail_types) if detail_types else None
-    if isinstance(regex, str) and regex.startswith(text_match.REGEX_PREFIX):
-        regex = regex[len(text_match.REGEX_PREFIX) :]
-    text_matcher = text_match.compile_text_matcher(pattern, regex) if (pattern or regex) else None
+        if dt_matcher is not None or text_matcher is not None:
 
-    def _cond(event) -> bool:
-        if dt_matcher is not None:
-            dt = str(event.get("detail_type") or "")
-            # detail_type 缺失的未知事件放行（避免误杀），非空则必须命中白名单
-            if dt and not dt_matcher(dt):
-                return False
-        if text_matcher is not None:
-            # 无文本事件不受文本条件约束（pattern 不会误杀 notice / meta）
-            try:
-                if not text_match.extract_text(event):
-                    return True
-            except Exception:
-                pass
-            return text_matcher(event)  # matcher 内部自行提取文本
-        return True
+            def _cond(event) -> bool:
+                if dt_matcher is not None:
+                    dt = str(event.get("detail_type") or "")
+                    # detail_type 缺失的未知事件放行（避免误杀），非空则必须命中白名单
+                    if dt and not dt_matcher(dt):
+                        return False
+                if text_matcher is not None:
+                    # 无文本事件不受文本条件约束（pattern 不会误杀 notice / meta）
+                    try:
+                        if not text_match.extract_text(event):
+                            return True
+                    except Exception:
+                        pass
+                    return text_matcher(event)  # matcher 内部自行提取文本
+                return True
 
-    return _cond
+            cond = _cond
+    _cond_cache[cache_key] = cond
+    return cond
 
 
 def topology() -> dict:
@@ -379,6 +402,7 @@ def clear() -> None:
     _command = {}
     _acl = {}
     _runtime_owner_records.clear()
+    _invalidate_cond_cache()
 
 
 def _persist_all() -> None:
@@ -445,6 +469,7 @@ class _TypeNamespace:
         else:
             section.pop(module, None)
         _sections[self.type_name] = section
+        _invalidate_cond_cache()
         path = f"{self.type_name}:{module}"
         if persist:
             # 先清运行时记录再持久化：_persist_section 内部同步触发的
@@ -480,6 +505,7 @@ class _TypeNamespace:
             return False
         section.pop(module, None)
         _sections[self.type_name] = section
+        _invalidate_cond_cache()
         path = f"{self.type_name}:{module}"
         if persist:
             _clear_runtime_override(path)

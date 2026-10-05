@@ -1314,9 +1314,11 @@ class TestRouterReload:
         def make_server(_config):
             return new_server
 
+        import uvicorn as _uvicorn_mod
+
         with (
-            patch.object(router_module.uvicorn, "Server", side_effect=make_server),
-            patch.object(router_module.uvicorn, "Config", return_value=MagicMock()),
+            patch.object(_uvicorn_mod, "Server", side_effect=make_server),
+            patch.object(_uvicorn_mod, "Config", return_value=MagicMock()),
         ):
             assert await router_manager.reload(port=9001) is True
 

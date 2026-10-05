@@ -27,6 +27,7 @@ def isolated_scope():
     scope._data.update(saved)
     for t, v in saved_overrides.items():
         overrides._sections[t] = v
+    overrides._invalidate_cond_cache()
     scope._invalidate_cache()
 
 
@@ -103,6 +104,7 @@ class TestFilterChain:
         """event.overrides pattern 不命中文本 → 处理器不执行"""
         ran = []
         overrides._sections["message"]["TestModule"] = {"pattern": "打卡*"}
+        overrides._invalidate_cond_cache()
 
         h = BaseEventHandler("message")
         with owner_scope("TestModule"):
@@ -116,6 +118,7 @@ class TestFilterChain:
         """event.overrides regex 命中文本 → 处理器执行"""
         ran = []
         overrides._sections["message"]["TestModule"] = {"regex": "re:\\d+元"}
+        overrides._invalidate_cond_cache()
 
         h = BaseEventHandler("message")
         with owner_scope("TestModule"):
@@ -128,6 +131,7 @@ class TestFilterChain:
         """三重过滤同时生效：条件与文本均命中但模块被禁 → 不执行"""
         ran = []
         overrides._sections["message"]["TestModule"] = {"pattern": "签到*"}
+        overrides._invalidate_cond_cache()
         isolated_scope._data["platforms"]["test"] = {"blocked": ["TestModule"]}
         isolated_scope._invalidate_cache()
 
@@ -142,6 +146,7 @@ class TestFilterChain:
         """无 owner（框架级）处理器跳过模块维度与文本过滤"""
         ran = []
         overrides._sections["message"]["TestModule"] = {"pattern": "打卡*"}
+        overrides._invalidate_cond_cache()
         isolated_scope._data["platforms"]["test"] = {"blocked": ["TestModule"]}
         isolated_scope._invalidate_cache()
 

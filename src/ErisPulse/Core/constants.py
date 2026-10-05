@@ -130,6 +130,11 @@ CONFIG_CACHE_TIMEOUT_SECS: Final[int] = 60
 # 修改影响: setConfig() 后多久才真正写入磁盘。设大减少磁盘写入频率，设小数据安全性更高。
 CONFIG_WRITE_DELAY_SECS: Final[int] = 5
 
+# 配置延迟写入刷盘失败后的重试退避（秒）。
+# 使用位置: Core/config.py -> watcher 调度（_watch_loop）
+# 修改影响: watcher 发现脏键仍在（刷盘失败被吞异常保留）时按此间隔补写；调小重试更频繁。
+CONFIG_WRITE_RETRY_DELAY_SECS: Final[float] = 1.0
+
 # 多实例检测锁文件名（位于配置文件同级目录，进程独占持有，退出由 OS 自动释放）。
 # 使用位置: Core/config.py -> ConfigManager._acquire_instance_lock()
 # 修改影响: 检测"多个 ErisPulse 实例共享同一配置目录"所用的锁文件路径。
@@ -577,6 +582,28 @@ DEFAULT_TRANSCRIPT_MAX_PER_SESSION: Final[int] = 50
 # 使用位置: Core/transcript.py -> retention
 # 修改影响: 超过时长的消息记录在惰性清理时删除。可通过 ErisPulse.transcript.ttl_hours 覆盖。
 DEFAULT_TRANSCRIPT_TTL_HOURS: Final[float] = 168.0
+
+# 会话收件箱批量落盘的单批最大行数：缓冲达到该条数时 flusher 立即提交一个事务。
+# 使用位置: Core/transcript.py -> _take_batch / _flush_loop
+# 修改影响: 调大 → 单事务写放大更小，但两次落盘间隔内硬崩溃可能丢失更多记录。
+TRANSCRIPT_FLUSH_MAX_BATCH: Final[int] = 64
+
+# 会话收件箱批量落盘的刷盘间隔（秒）：后台 flusher 的周期，也是正常追加到落盘的最大延迟。
+# 使用位置: Core/transcript.py -> _flush_loop
+# 修改影响: 调大 → 每消息摊销写成本更低，但硬崩溃时的丢失时间窗变长。
+TRANSCRIPT_FLUSH_INTERVAL_SECS: Final[float] = 1.0
+
+# 会话收件箱内存缓冲的积压上限（行）：存储不可用期间超出即淘汰最旧行，为内存兜底。
+# 使用位置: Core/transcript.py -> append
+# 修改影响: 调大 → 存储恢复后可回补更多记录，但积压期内存占用更高。
+TRANSCRIPT_BUFFER_MAX_ROWS: Final[int] = 4096
+
+# 会话收件箱退出兜底刷盘的看门狗上限（秒）。
+# 使用位置: Core/transcript.py -> _flush_on_exit（atexit）
+# 修改影响: 解释器收尾阶段存储桥无法调度时（自由线程构建），超时放弃刷盘以保证进程退出；
+#           调大 → 退出兜底更执着但极端场景退出延迟变长。
+TRANSCRIPT_EXIT_FLUSH_TIMEOUT_SECS: Final[float] = 5.0
+
 
 # 模块间调用（module.call）的默认超时（秒）。
 # 使用位置: Core/module.py -> ModuleManager.call()
@@ -1133,6 +1160,7 @@ __all__ = [
     "CONFIG_LOCK_FILE_NAME",
     "CONFIG_ROOT_KEY",
     "CONFIG_WRITE_DELAY_SECS",
+    "CONFIG_WRITE_RETRY_DELAY_SECS",
     "CONFIRM_HINT_WORDS",
     "CONFIRM_NO_WORDS",
     "CONFIRM_YES_WORDS",
@@ -1226,6 +1254,10 @@ __all__ = [
     "DEFAULT_TRANSCRIPT_ENABLED",
     "DEFAULT_TRANSCRIPT_MAX_PER_SESSION",
     "DEFAULT_TRANSCRIPT_TTL_HOURS",
+    "TRANSCRIPT_FLUSH_MAX_BATCH",
+    "TRANSCRIPT_FLUSH_INTERVAL_SECS",
+    "TRANSCRIPT_BUFFER_MAX_ROWS",
+    "TRANSCRIPT_EXIT_FLUSH_TIMEOUT_SECS",
     "DEFAULT_MODULE_CALL_TIMEOUT_SECS",
     "DEFAULT_EVENT_DEDUPE_CAPACITY",
     "DEFAULT_MAX_SESSION_REMINDERS",

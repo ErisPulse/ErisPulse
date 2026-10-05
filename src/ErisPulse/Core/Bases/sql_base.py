@@ -37,7 +37,7 @@ from ..constants import (
 )
 from ..i18n import i18n
 from ..lifecycle import lifecycle
-from ..logger import logger
+from ..logger import TRACE, logger
 from .errors import StorageUnreachableError
 from .storage import _SENTINEL, BaseQueryBuilder, BaseStorage, _current_txn
 
@@ -1189,7 +1189,8 @@ class SQLStorageBase(BaseStorage):
         if not self._is_ready():
             return default
 
-        logger.trace(i18n.t("core.storage.kv_get", key=key))
+        if logger.should_log(TRACE):
+            logger.trace(i18n.t("core.storage.kv_get", key=key))
         try:
             return await self._run_with_conn(self._get_impl, key, default, conn=conn)
         except Exception as e:
@@ -1254,14 +1255,16 @@ class SQLStorageBase(BaseStorage):
         _overlay = self._shadow_overlay()
         if _overlay is not None and conn is None:
             _overlay.write(key, value)
-            logger.trace(f"shadow overlay set: key={key}")
+            if logger.should_log(TRACE):
+                logger.trace(f"shadow overlay set: key={key}")
             return True
 
         if not self._is_ready():
             return False
         try:
             result = await self._run_with_conn(self._set_impl, key, value, conn=conn)
-            logger.trace(f"storage.set: key={key}")
+            if logger.should_log(TRACE):
+                logger.trace(f"storage.set: key={key}")
             return result
         except Exception as e:
             logger.error(i18n.t("core.storage.set_failed", key=key, error=e))
@@ -1318,13 +1321,15 @@ class SQLStorageBase(BaseStorage):
         _overlay = self._shadow_overlay()
         if _overlay is not None and conn is None:
             _overlay.delete(key)
-            logger.trace(f"shadow overlay delete: key={key}")
+            if logger.should_log(TRACE):
+                logger.trace(f"shadow overlay delete: key={key}")
             return True
 
         if not self._is_ready():
             return False
 
-        logger.trace(i18n.t("core.storage.kv_delete", key=key))
+        if logger.should_log(TRACE):
+            logger.trace(i18n.t("core.storage.kv_delete", key=key))
         try:
             return await self._run_with_conn(self._delete_impl, key, conn=conn)
         except Exception as e:

@@ -523,6 +523,8 @@ class TestColdStartReplay:
         monkeypatch.setattr(storage_module, "storage", sm)
         monkeypatch.setattr(transcript_module, "storage", sm)
         transcript_module.transcript._table_ready = False
+        transcript_module.transcript._buffer.clear()
+        transcript_module.transcript._flusher_started = False
         self.transcript = transcript_module.transcript
         yield
         StorageManager._instance = None

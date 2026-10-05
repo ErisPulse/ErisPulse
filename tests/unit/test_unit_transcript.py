@@ -36,6 +36,9 @@ def temp_sm(monkeypatch):
         monkeypatch.setattr(_transcript_module, "storage", manager)
         transcript._table_ready = False
         transcript._append_count = 0
+        transcript._next_retention_at = transcript._RETENTION_INTERVAL
+        transcript._buffer.clear()
+        transcript._flusher_started = False
         yield manager
     finally:
         StorageManager._instance = None
@@ -167,3 +170,96 @@ class TestRetention:
         history = asyncio.run(evt.history(50))
         assert len(history) == 5
         assert history[0]["text"] == "m5"
+
+
+# ==================== 批量落盘 ====================
+
+
+class TestBufferedFlush:
+    def test_append_buffers_then_aflush_persists(self, temp_sm):
+        """append 仅入缓冲即可读；aflush 后入库且缓冲清空"""
+        evt = _evt()
+        transcript.append(evt, "user", "b1")
+        transcript.append(evt, "user", "b2")
+        assert [m["text"] for m in asyncio.run(evt.history(10))] == ["b1", "b2"]
+
+        assert asyncio.run(transcript.aflush()) == 2
+        assert len(transcript._buffer) == 0
+        assert [m["text"] for m in asyncio.run(evt.history(10))] == ["b1", "b2"]
+
+    def test_flush_failure_requeues(self, temp_sm, monkeypatch):
+        """落盘失败时批次回插缓冲，不丢数据"""
+        for i in range(3):
+            transcript.append(_evt(), "user", f"x{i}")
+
+        async def _fail():
+            return False
+
+        monkeypatch.setattr(transcript, "_aensure_table", _fail)
+        assert asyncio.run(transcript.aflush()) == 0
+        assert len(transcript._buffer) == 3
+
+        monkeypatch.undo()
+        transcript._table_ready = True
+        assert asyncio.run(transcript.aflush()) == 3
+        assert len(transcript._buffer) == 0
+
+    def test_buffer_overflow_drops_oldest(self, temp_sm, monkeypatch):
+        """积压超限时淘汰最旧行（内存兜底）"""
+        monkeypatch.setattr(_transcript_module, "TRANSCRIPT_BUFFER_MAX_ROWS", 3)
+        evt = _evt()
+        for i in range(5):
+            transcript.append(evt, "user", f"m{i}")
+        history = asyncio.run(evt.history(10))
+        assert [m["text"] for m in history] == ["m2", "m3", "m4"]
+
+    def test_sync_flush(self, temp_sm):
+        """同步 flush 用于退出兜底；空缓冲时幂等"""
+        transcript.append(_evt(), "user", "s1")
+        assert transcript.flush() == 1
+        assert len(transcript._buffer) == 0
+        assert transcript.flush() == 0
+
+    def test_flusher_not_started_without_loop(self, temp_sm):
+        """同步环境不启动后台 flusher（由读合并与显式 flush 兜底）"""
+        transcript.append(_evt(), "user", "no-loop")
+        assert transcript._flusher_started is False
+        assert len(transcript._buffer) == 1
+
+    @pytest.mark.asyncio
+    async def test_flusher_flushes_periodically(self, temp_sm, monkeypatch):
+        """事件循环内追加自动启动 flusher，按间隔批量落盘"""
+        monkeypatch.setattr(_transcript_module, "TRANSCRIPT_FLUSH_INTERVAL_SECS", 0.05)
+        evt = _evt()
+        transcript.append(evt, "user", "auto1")
+        assert transcript._flusher_started is True
+
+        # 高并发负载下线程调度可能显著延迟，放宽总等待窗口
+        for _ in range(100):
+            await asyncio.sleep(0.1)
+            if not transcript._buffer:
+                break
+        assert len(transcript._buffer) == 0
+        assert [m["text"] for m in transcript.get(evt, 10)] == ["auto1"]
+
+    def test_aflush_empty_is_noop(self, temp_sm):
+        assert asyncio.run(transcript.aflush()) == 0
+
+
+class TestExitFlushWatchdog:
+    def test_exit_flush_bounded_when_flush_hangs(self, temp_sm, monkeypatch):
+        """退出兜底刷盘被阻塞时看门狗限时返回（自由线程收尾冻结防护）"""
+        import threading as _threading
+        import time as _time
+
+        transcript.append(_evt(), "user", "w1")
+        transcript._exit_flush_timeout = 0.2
+
+        def _blocking_flush():
+            _threading.Event().wait()  # 模拟存储桥在解释器收尾阶段无法调度
+
+        monkeypatch.setattr(transcript, "flush", _blocking_flush)
+        t0 = _time.monotonic()
+        transcript._flush_on_exit()
+        elapsed = _time.monotonic() - t0
+        assert elapsed < 3.0, f"退出兜底未限时返回: {elapsed:.2f}s"

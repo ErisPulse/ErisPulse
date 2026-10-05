@@ -99,6 +99,13 @@ class I18nManager:
     def __init__(self):
         self._lock = threading.RLock()
         self._current_lang: str | None = None
+        # 生效语言解析缓存：热路径上每次 t() 不再打开全局状态文件。
+        # 失效信号：全局状态文件 mtime 变化（含文件删除）/ set_language /
+        # ErisPulse.i18n.* 配置写入（lifecycle config.set）与外部配置重载（config.updated）。
+        # ERISPULSE_LANG 环境变量不缓存，保持运行中修改即时生效。
+        self._eff_lang_cache: str | None = None
+        self._eff_lang_state_mtime: float | None = None
+        self._config_hook_registered = False
         self._translations: dict[str, dict[str, str]] = {}
         self._domains: dict[
             str, set[str]
@@ -346,36 +353,98 @@ class I18nManager:
 
         配置值为 "auto" 时使用自动检测的语言。
 
+        除手动设置与环境变量外走解析缓存：以全局状态文件的 mtime 为失效信号，
+        避免每次调用都打开并解析 ``~/.erispulse/cli_state.json``（热路径成本）；
+        外部修改（如另一进程执行 ``epsdk i18n``）通过 mtime 变化即时感知，
+        进程内 ``ErisPulse.i18n.*`` 配置写入通过 lifecycle 事件失效缓存。
+
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
         """
         if self._current_lang is not None:
             return self._current_lang
 
-        # 环境变量 ERISPULSE_LANG（临时覆盖，用于测试/运维）
+        self._ensure_config_invalidation_hook()
+
+        # 环境变量 ERISPULSE_LANG（临时覆盖，用于测试/运维）——不缓存，保持即时生效
         erispulse_lang = os.environ.get("ERISPULSE_LANG", "")
         if erispulse_lang:
             return self._resolve_nearest(erispulse_lang)
 
-        # 全局持久化设置（epsdk i18n 写入，所有项目共享）
-        global_lang = self._load_global_language()
-        if global_lang:
-            return global_lang
-
-        # 项目配置项
+        # 解析缓存：mtime 未变化的直接命中（含文件不存在 → None 的稳定状态）
+        state_path = self._global_state_path()
         try:
-            from ..config import config
+            state_mtime: float | None = state_path.stat().st_mtime
+        except OSError:
+            state_mtime = None
+        if self._eff_lang_cache is not None and state_mtime == self._eff_lang_state_mtime:
+            return self._eff_lang_cache
 
-            cfg_lang = config.getConfig("ErisPulse.i18n.language", None)
-            if cfg_lang and isinstance(cfg_lang, str):
-                # "auto" 表示使用自动检测的语言
-                if cfg_lang.lower() == "auto":
-                    return self._detected_lang
-                return self._resolve_nearest(cfg_lang)
+        # 全局持久化设置（epsdk i18n 写入，所有项目共享）
+        global_lang = self._load_global_language() if state_mtime is not None else None
+        if global_lang:
+            lang = global_lang
+        else:
+            # 项目配置项
+            lang = None
+            try:
+                from ..config import config
+
+                cfg_lang = config.getConfig("ErisPulse.i18n.language", None)
+                if cfg_lang and isinstance(cfg_lang, str):
+                    # "auto" 表示使用自动检测的语言
+                    if cfg_lang.lower() == "auto":
+                        lang = self._detected_lang
+                    else:
+                        lang = self._resolve_nearest(cfg_lang)
+            except Exception:
+                pass
+            if lang is None:
+                lang = self._detected_lang
+
+        with self._lock:
+            self._eff_lang_cache = lang
+            self._eff_lang_state_mtime = state_mtime
+        return lang
+
+    def _ensure_config_invalidation_hook(self) -> None:
+        """
+        注册配置写入对语言缓存的失效监听
+
+        惰性注册一次（避免 Core 单例构造顺序上的导入环），
+        监听 ``config.set`` / ``config.updated`` 两类事件。
+
+        {!--< internal-use >!--}
+        注册失败静默跳过，不影响语言解析本身。
+        {!--< /internal-use >!--}
+        """
+        if self._config_hook_registered:
+            return
+        self._config_hook_registered = True
+        try:
+            from ..lifecycle import lifecycle
+
+            lifecycle.on("config.set")(self._on_language_config_changed)
+            lifecycle.on("config.updated")(self._on_language_config_changed)
         except Exception:
             pass
 
-        return self._detected_lang
+    def _on_language_config_changed(self, data: Any) -> None:
+        """
+        配置事件回调：ErisPulse.i18n.* 写入或外部配置重载时清除语言缓存
+
+        :param data: 事件数据（含 ``key`` 的 dict，或任意载荷）
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        try:
+            key = data.get("key", "") if isinstance(data, dict) else ""
+            if not key or key.startswith("ErisPulse.i18n"):
+                with self._lock:
+                    self._eff_lang_cache = None
+        except Exception:
+            pass
 
     @staticmethod
     def _global_state_path() -> Path:
@@ -433,6 +502,7 @@ class I18nManager:
         with self._lock:
             previous = self._current_lang
             self._current_lang = resolved
+            self._eff_lang_cache = None  # persist 写全局文件后使解析缓存失效
         if persist:
             self._persist_global_language(resolved)
         if resolved != previous:
