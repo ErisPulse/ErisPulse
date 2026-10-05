@@ -157,7 +157,12 @@ class TestDependsUnit:
         token = _di_cache.set({})
         try:
             fake_call = AsyncMock(return_value="R")
-            with patch("ErisPulse.Core.module.module.call", new=fake_call):
+            # 直接对管理器单例 patch（不用点路径字符串：`ErisPulse.Core` 包属性
+            # `module` 会被模块文件/管理器单例按导入顺序遮蔽，旧版 mock 的点路径
+            # 解析在该属性上不确定，3.10 会解析失败）
+            from ErisPulse.Core.module import module as module_manager
+
+            with patch.object(module_manager, "call", new=fake_call):
                 kwargs = await resolve_depends({"d": dep}, "CTX")
             assert kwargs == {"d": "R"}
             # 退化为以依赖函数对象为缓存键（各 Depends.module 声明天然唯一），不再抛 TypeError
