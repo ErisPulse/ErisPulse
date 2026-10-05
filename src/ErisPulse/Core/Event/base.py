@@ -29,6 +29,7 @@ from ..constants import (
 from ..di import extract_depends, resolve_depends
 from ..i18n import i18n
 from ..lifecycle import lifecycle
+from ..logger import TRACE
 from .wrapper import Event
 
 _sentinel = object()
@@ -190,7 +191,7 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
                     cmd=_cmd_tag,
                 )
             )
-        else:
+        elif logger.should_log(TRACE):
             logger.trace(
                 i18n.t(
                     "core.event.trace_handler_wait",
@@ -371,8 +372,8 @@ class BaseEventHandler:
         if not isinstance(event, Event):
             event = Event(event)
 
-        # 事件链路追踪
-        _trace_chain: list[dict] = []
+        # 事件链路追踪（TRACE 关闭时不收集，省去每 handler 的字典构造）
+        _trace_chain: list[dict] | None = [] if logger.should_log(TRACE) else None
         _trace_start = _time.monotonic()
 
         # 钩子: 事件预处理（后台发射，不阻塞分发）
@@ -436,14 +437,15 @@ class BaseEventHandler:
                     _t0 = _time.monotonic()
                     await _invoke_handler(_h0, event)
                     _elapsed_0 = _time.monotonic() - _t0
-                    _trace_chain.append(
-                        {
-                            "handler": _h_name,
-                            "priority": _priority,
-                            "elapsed_ms": round(_elapsed_0 * 1000, 2),
-                            "processed": event.is_processed(),
-                        }
-                    )
+                    if _trace_chain is not None:
+                        _trace_chain.append(
+                            {
+                                "handler": _h_name,
+                                "priority": _priority,
+                                "elapsed_ms": round(_elapsed_0 * 1000, 2),
+                                "processed": event.is_processed(),
+                            }
+                        )
                     if event.is_stopped():
                         break
                     continue
@@ -457,14 +459,15 @@ class BaseEventHandler:
                 # 记录多处理器链路（并行执行，统一计时）
                 for h in active:
                     _h_name = getattr(h["func"], "__qualname__", getattr(h["func"], "__name__", str(h["func"])))
-                    _trace_chain.append(
-                        {
-                            "handler": _h_name,
-                            "priority": _priority,
-                            "elapsed_ms": round(_multi_elapsed * 1000, 2),
-                            "processed": False,
-                        }
-                    )
+                    if _trace_chain is not None:
+                        _trace_chain.append(
+                            {
+                                "handler": _h_name,
+                                "priority": _priority,
+                                "elapsed_ms": round(_multi_elapsed * 1000, 2),
+                                "processed": False,
+                            }
+                        )
 
                 # 合并修改（后者覆盖前者），并检测同优先级冲突
                 _modified_tracker: dict[str, list[dict]] = {}  # field -> [{handler_info}]

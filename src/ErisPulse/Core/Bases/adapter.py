@@ -33,7 +33,7 @@ from ..constants import (
 )
 from ..i18n import i18n
 from ..lifecycle import lifecycle
-from ..logger import logger
+from ..logger import EVENT, logger
 
 # ApiDSL 已拆分至独立模块，此处 re-export 保持既有导入路径不变
 from .api_dsl import ApiDSL
@@ -322,17 +322,18 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
         # 循环依赖：Core/adapter.py 顶层导入本模块（BaseAdapter）
         from ..adapter import _msg_logger
 
-        target_type = send_dsl._target_type or ""
-        target_id = send_dsl._target_id or ""
-        log_target = f"{target_type}/{target_id}" if target_type and target_id else target_id or "?"
-        _trace_tag = f" [trace:{_trace_id}]" if _trace_id else ""
-        if method_name in ("Text", "Markdown", "Html") and args:
-            content = str(args[0])
-            if len(content) > LOG_MESSAGE_TRUNCATE_CHARS:
-                content = content[:LOG_MESSAGE_TRUNCATE_CHARS] + "..."
-            _msg_logger.event(f"[Send] {platform}/{method_name} -> {log_target}{_trace_tag}: {content}")
-        else:
-            _msg_logger.event(f"[Send] {platform}/{method_name} -> {log_target}{_trace_tag}")
+        if _msg_logger.should_log(EVENT):
+            target_type = send_dsl._target_type or ""
+            target_id = send_dsl._target_id or ""
+            log_target = f"{target_type}/{target_id}" if target_type and target_id else target_id or "?"
+            _trace_tag = f" [trace:{_trace_id}]" if _trace_id else ""
+            if method_name in ("Text", "Markdown", "Html") and args:
+                content = str(args[0])
+                if len(content) > LOG_MESSAGE_TRUNCATE_CHARS:
+                    content = content[:LOG_MESSAGE_TRUNCATE_CHARS] + "..."
+                _msg_logger.event(f"[Send] {platform}/{method_name} -> {log_target}{_trace_tag}: {content}")
+            else:
+                _msg_logger.event(f"[Send] {platform}/{method_name} -> {log_target}{_trace_tag}")
 
         # 预判是否有生命周期监听者：无监听时跳过 Task 创建与 emit 调度，
         # 避免每条发送消息都无条件 spawn 两个后台任务
