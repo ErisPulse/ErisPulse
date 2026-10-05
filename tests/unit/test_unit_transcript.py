@@ -243,3 +243,22 @@ class TestBufferedFlush:
 
     def test_aflush_empty_is_noop(self, temp_sm):
         assert asyncio.run(transcript.aflush()) == 0
+
+
+class TestExitFlushWatchdog:
+    def test_exit_flush_bounded_when_flush_hangs(self, temp_sm, monkeypatch):
+        """退出兜底刷盘被阻塞时看门狗限时返回（自由线程收尾冻结防护）"""
+        import threading as _threading
+        import time as _time
+
+        transcript.append(_evt(), "user", "w1")
+        transcript._exit_flush_timeout = 0.2
+
+        def _blocking_flush():
+            _threading.Event().wait()  # 模拟存储桥在解释器收尾阶段无法调度
+
+        monkeypatch.setattr(transcript, "flush", _blocking_flush)
+        t0 = _time.monotonic()
+        transcript._flush_on_exit()
+        elapsed = _time.monotonic() - t0
+        assert elapsed < 3.0, f"退出兜底未限时返回: {elapsed:.2f}s"

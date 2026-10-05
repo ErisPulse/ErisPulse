@@ -598,6 +598,12 @@ TRANSCRIPT_FLUSH_INTERVAL_SECS: Final[float] = 1.0
 # 修改影响: 调大 → 存储恢复后可回补更多记录，但积压期内存占用更高。
 TRANSCRIPT_BUFFER_MAX_ROWS: Final[int] = 4096
 
+# 会话收件箱退出兜底刷盘的看门狗上限（秒）。
+# 使用位置: Core/transcript.py -> _flush_on_exit（atexit）
+# 修改影响: 解释器收尾阶段存储桥无法调度时（自由线程构建），超时放弃刷盘以保证进程退出；
+#           调大 → 退出兜底更执着但极端场景退出延迟变长。
+TRANSCRIPT_EXIT_FLUSH_TIMEOUT_SECS: Final[float] = 5.0
+
 
 # 模块间调用（module.call）的默认超时（秒）。
 # 使用位置: Core/module.py -> ModuleManager.call()
@@ -1251,6 +1257,7 @@ __all__ = [
     "TRANSCRIPT_FLUSH_MAX_BATCH",
     "TRANSCRIPT_FLUSH_INTERVAL_SECS",
     "TRANSCRIPT_BUFFER_MAX_ROWS",
+    "TRANSCRIPT_EXIT_FLUSH_TIMEOUT_SECS",
     "DEFAULT_MODULE_CALL_TIMEOUT_SECS",
     "DEFAULT_EVENT_DEDUPE_CAPACITY",
     "DEFAULT_MAX_SESSION_REMINDERS",

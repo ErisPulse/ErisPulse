@@ -47,6 +47,7 @@ from .constants import (
     DEFAULT_TRANSCRIPT_MAX_PER_SESSION,
     DEFAULT_TRANSCRIPT_TTL_HOURS,
     TRANSCRIPT_BUFFER_MAX_ROWS,
+    TRANSCRIPT_EXIT_FLUSH_TIMEOUT_SECS,
     TRANSCRIPT_FLUSH_INTERVAL_SECS,
     TRANSCRIPT_FLUSH_MAX_BATCH,
     TRANSCRIPT_TABLE,
@@ -77,6 +78,8 @@ class TranscriptManager:
 
     # 保留策略：每 N 次追加触发一次过期清理
     _RETENTION_INTERVAL = _MODULE_RETENTION_INTERVAL
+    # 退出兜底刷盘的看门狗上限（秒）：超时放弃，保证进程退出不被存储桥阻塞
+    _exit_flush_timeout: float = TRANSCRIPT_EXIT_FLUSH_TIMEOUT_SECS
 
     def __init__(self):
         self._table_ready: bool = False
@@ -138,11 +141,26 @@ class TranscriptManager:
                 pass
 
     def _flush_on_exit(self) -> None:
-        """{!--< internal-use >!--} 进程退出兜底：同步刷掉未落盘缓冲（镜像 config._flush_on_exit）"""
-        try:
-            self.flush()
-        except Exception:
-            pass
+        """
+        {!--< internal-use >!--}
+        进程退出兜底：同步刷掉未落盘缓冲（镜像 config._flush_on_exit）
+
+        以看门狗线程限时执行——解释器收尾阶段存储同步桥的后台线程可能已
+        无法调度（自由线程构建下尤其如此），在 atexit 里直接走同步桥会
+        永久阻塞、令进程退出挂死；超时即放弃（至多丢一批缓冲），保证
+        退出必然完成。缓冲为空时刷盘立即返回，无任何开销。
+        """
+        def _run():
+            try:
+                self.flush()
+            except Exception:
+                pass
+
+        watchdog = threading.Thread(
+            target=_run, daemon=True, name="transcript-exit-flush"
+        )
+        watchdog.start()
+        watchdog.join(timeout=self._exit_flush_timeout)
 
     @property
     def enabled(self) -> bool:
