@@ -5071,7 +5071,7 @@
     "与其他系统的关系": [
       {
         "document": "advanced/interaction.md",
-        "line": 230,
+        "line": 231,
         "level": 2,
         "title": "与其他系统的关系"
       }
@@ -11923,7 +11923,7 @@
     "消息事务：message_tx": [
       {
         "document": "advanced/interaction.md",
-        "line": 205,
+        "line": 206,
         "level": 2,
         "title": "消息事务：message_tx"
       }
@@ -12627,7 +12627,7 @@
       },
       {
         "document": "advanced/interaction.md",
-        "line": 237,
+        "line": 238,
         "level": 2,
         "title": "相关文档"
       },
@@ -15063,7 +15063,7 @@
     "链路追踪：trace-id": [
       {
         "document": "advanced/interaction.md",
-        "line": 219,
+        "line": 220,
         "level": 2,
         "title": "链路追踪：trace-id"
       }

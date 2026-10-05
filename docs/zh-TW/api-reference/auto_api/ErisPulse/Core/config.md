@@ -70,6 +70,16 @@ dict / list / tuple / set 递归处理；类对象（``type``）取
 **内部方法**
 
 
+### `class _FlushHandle`
+
+**内部方法**
+``_write_timer`` 兼容句柄
+
+延迟刷盘已由常驻 ``config-watcher`` 线程按 ``_flush_deadline`` 调度；
+本句柄仅为既有测试与退出路径保留 ``_write_timer`` 属性语义
+（"存在即有未落盘写入"），``cancel()`` 为幂等空操作。
+
+
 ### `class ConfigManager`
 
 ConfigManager 类提供相关功能。
@@ -326,6 +336,12 @@ atexit 回调：进程退出时强制刷新所有脏配置，并清理哨兵文�
 ##### `_schedule_write() -> None`
 
 安排延迟写入
+
+真实调度由常驻 ``config-watcher`` 线程承担（按 ``_flush_deadline``
+睡到到期后刷盘），避免每次写入创建/取消 ``threading.Timer``
+带来的线程创建开销（高频 setConfig 的热点）。
+``_write_timer`` 保留为兼容句柄：既有测试与退出路径依赖其
+存在性与 ``cancel()`` 方法，语义为"存在即有未落盘写入"。
 
 **内部方法**
 

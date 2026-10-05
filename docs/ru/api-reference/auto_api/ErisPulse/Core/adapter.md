@@ -683,6 +683,10 @@ await sdk.adapter.emit({
 未设置条件（None）即视为命中；``pattern`` 与 ``regex`` 只对消息类事件
 生效（原生事件无 ``message`` 段，文本条件自动跳过）。
 
+优先消费 ``on()`` 注册时预编译的 ``_detail_matcher`` / ``_text_cond``
+（热路径上避免每事件每处理器重复编译闭包）；缺失时回退现场编译，
+兼容非 ``on()`` 路径构造的最小包装器。
+
 - **handler_wrapper**: 处理器包装器（含 detail_type/pattern/regex）
 - **data**: 原始事件数据
 - **detail_type**: 事件细分类型

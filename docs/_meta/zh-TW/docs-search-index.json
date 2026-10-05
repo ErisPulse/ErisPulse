@@ -11107,7 +11107,7 @@
     "消息事務：message_tx": [
       {
         "document": "advanced/interaction.md",
-        "line": 205,
+        "line": 206,
         "level": 2,
         "title": "消息事務：message_tx"
       }
@@ -12231,7 +12231,7 @@
       },
       {
         "document": "advanced/interaction.md",
-        "line": 237,
+        "line": 238,
         "level": 2,
         "title": "相關文件"
       },
@@ -13025,7 +13025,7 @@
     "與其他系統的關係": [
       {
         "document": "advanced/interaction.md",
-        "line": 230,
+        "line": 231,
         "level": 2,
         "title": "與其他系統的關係"
       }
@@ -15039,7 +15039,7 @@
     "鏈路追蹤：trace-id": [
       {
         "document": "advanced/interaction.md",
-        "line": 219,
+        "line": 220,
         "level": 2,
         "title": "鏈路追蹤：trace-id"
       }

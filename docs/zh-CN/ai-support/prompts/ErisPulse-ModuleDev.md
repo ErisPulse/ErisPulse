@@ -7376,8 +7376,9 @@ for m in messages:
 
 - 自动记录：入站消息（role=user）+ 机器人出站文本（role=bot）
 - 存储：独立 SQLite 表，保留策略 = 每会话上限（默认 50）+ 全局 TTL（默认 7 天）
+- 写入方式：内存缓冲 + 后台批量落盘（延迟至多 1 秒），查询接口自动合并未落盘的缓冲行——同进程"读你的写"不受影响；正常退出（`sdk.uninit` / 进程退出）自动刷盘。**硬崩溃 / 强杀时最近约 1 秒的记录可能丢失**：该底座定位为近期上下文缓存，不适合作为审计级持久化
 - 配置：`ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`
-- 管理器 API：`sdk.transcript.append() / get() / clear()`
+- 管理器 API：`sdk.transcript.append() / get() / clear()`，`aflush()` / `flush()` 手动刷盘
 
 ## 消息事务：message_tx
 
