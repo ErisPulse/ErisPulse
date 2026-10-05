@@ -28,6 +28,7 @@ def clean_overrides():
     overrides.clear()
     for t, v in saved["sections"].items():
         overrides._sections[t] = v
+    overrides._invalidate_cond_cache()
     overrides._command = saved["command"]
     overrides._acl = saved["acl"]
     overrides._acl_default_allow = saved["default"]
