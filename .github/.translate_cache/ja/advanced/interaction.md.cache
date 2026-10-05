@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "345f22d0758f5f258585aa782f6998df",
-  "file_hash": "345f22d0758f5f258585aa782f6998df",
-  "translated_at": "2026-10-02T11:09:57.834637",
+  "hash": "0f88713770b62755f27189174a3968e7",
+  "file_hash": "0f88713770b62755f27189174a3968e7",
+  "translated_at": "2026-10-05T16:48:42.866231",
   "target_lang": "ja",
   "chunks": [
     {
@@ -26,8 +26,8 @@
       "translation": "## セッションの排他：acquire / hold / get_owner_of\n\n所有権は「リソース」から「セッション」へと移行しました。「このユーザーは現在誰に占有されているか」が一等のクエリになります。\n\n```python\n# クエリ：このセッションは誰と対話中ですか？（空きなら None を返す）\nowner = sdk.interaction.get_owner_of(event)\nif owner and owner != \"MyModule\":\n    return  # 他のモジュールが対話中なので、干渉しない\n\n# 排他的リース：セッションを独占（deny 策略、占有されていれば None を返す）\nlease = sdk.interaction.acquire(event)          # デフォルトで TTL 1 時間、ttl= を渡すことも可能\nif lease is None:\n    return  # すでに占有されている\n\ntry:\n    ...  # 独占的な対話\nfinally:\n    lease.release()\n```\n\nコンテキストマネージャー形式（取得失敗時は `SessionOccupiedError` をスロー）：\n\n```python\nwith sdk.interaction.hold(event) as lease:\n    ...  # 終了時に自動的に解放\n```\n\nリースは `renew(ttl)` で延長が可能；TTL は惰性で期限切れになります。期限切れのリースは、次回アクセス時に自動的にクリーンアップされます。\n\n`Conversation.resume()` が会話を再開する際、フレームワークは自動的にリースを取得します（[Conversation 多輪対話](conversation.md)の「復帰即接続」を参照）——復帰した会話は天然にセッションを保持し、他のモジュールが挿入されることはありません。"
     },
     {
-      "hash": "5bdfad4ca4d8173bb684cc04c21e3ce1",
-      "translation": "## セッションの受信箱：event.history\n\n各セッションの最近のメッセージの流れを統一的に記録します（ユーザーとロボット両方）。AI のコンテキスト、重複防止、行動分析などのモジュールの**共有事実ベース**として使用されます。各モジュールは個別に履歴を保存する必要がありません。\n\n```python\nmessages = await event.history(20)   # 最近の 20 件、時間順に昇順\nfor m in messages:\n    print(m[\"role\"], \":\", m[\"text\"])  # role: \"user\" / \"bot\"\n```\n\n- 自動記録：入力メッセージ（role=user）+ ロボットの出力テキスト（role=bot）\n- ストレージ：個別の SQLite テーブル、制限戦略 = 各セッションの上限（デフォルト 50）+ グローバルの TTL（デフォルト 7 日）\n- 設定：`ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`\n- マネージャー API：`sdk.transcript.append() / get() / clear()`"
+      "hash": "f922ea7b951b1cdca821a29c131e9695",
+      "translation": "## 会話受信箱：event.history\n\n各AIモジュールの**共有事実ベース**として、ユーザーとロボットの双方による、各会話の最近のメッセージストリームを一元的に記録します。これにより、各モジュールが個別に履歴を保存する必要がなくなります。\n\n```python\nmessages = await event.history(20)   # 最近20件のメッセージを取得、昇順で返す\nfor m in messages:\n    print(m[\"role\"], \":\", m[\"text\"])  # role: \"user\" / \"bot\"\n```\n\n- 自動記録：入力メッセージ（role=user）とロボットからの出力テキスト（role=bot）\n- ストレージ：個別のSQLiteテーブルを使用し、各会話の上限数（デフォルト50件）とグローバルなTTL（デフォルト7日間）に基づく保持ポリシー\n- 書き込み方法：メモリバッファに一時的に格納し、バックグラウンドでバッチ処理で一時的に格納されたデータを1秒以内に永続化。クエリインターフェースは、まだ永続化されていないバッファの行を自動的に結合します。同一プロセス内での「読み込みと書き込み」の競合は発生しません。正常な終了（`sdk.uninit` / プロセス終了）時には、自動的にバッファを永続化します。**ハードクラッシュや強制終了の場合は、直近約1秒の記録が失われる可能性があります**。このベースは短期間のコンテキストキャッシュとして設計されており、監査用の永続化には適していません。\n- 設定：`ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`\n- マネージャーAPI：`sdk.transcript.append() / get() / clear()`、`aflush()` / `flush()` 手動で永続化"
     },
     {
       "hash": "54ea849a11ce1018eea963a7748994a4",
