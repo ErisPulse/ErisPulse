@@ -425,3 +425,99 @@ class TestLanguageChangedEvent:
         finally:
             lifecycle.unregister(EVENT_I18N_LANGUAGE_CHANGED)
             i18n.set_language("zh-CN", persist=False)
+
+
+class TestEffectiveLanguageCache:
+    """生效语言解析缓存：mtime 失效 / set_language 失效 / config.set 事件失效"""
+
+    @pytest.fixture
+    def manager(self, tmp_path, monkeypatch):
+        """隔离环境：全局状态文件指向临时目录，环境变量清空"""
+        m = I18nManager()
+        monkeypatch.setattr(m, "_global_state_path", lambda: tmp_path / "cli_state.json")
+        monkeypatch.delenv("ERISPULSE_LANG", raising=False)
+        m._current_lang = None
+        m._eff_lang_cache = None
+        m._eff_lang_state_mtime = None
+        return m
+
+    def _write_state(self, path, lang):
+        import json
+
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"language": lang}), encoding="utf-8")
+
+    def test_cache_hits_without_rereading_file(self, manager):
+        """mtime 未变时不重新打开全局状态文件"""
+        state = manager._global_state_path()
+        self._write_state(state, "en")
+        first = manager._get_effective_language()
+        assert first == "en"
+
+        calls = []
+        original = manager._load_global_language
+        monkey_count = lambda: calls.append(1) or original()
+        manager._load_global_language = monkey_count
+        assert manager._get_effective_language() == "en"
+        assert manager._get_effective_language() == "en"
+        assert len(calls) == 0  # 缓存命中，未触发文件读取
+
+    def test_mtime_change_invalidates(self, manager):
+        """全局状态文件变化（含 mtime）后重新解析"""
+        state = manager._global_state_path()
+        self._write_state(state, "en")
+        assert manager._get_effective_language() == "en"
+
+        import os
+
+        self._write_state(state, "ja")
+        st = state.stat()
+        os.utime(state, ns=(st.st_atime_ns + 1_000_000, st.st_mtime_ns + 1_000_000))
+        assert manager._get_effective_language() == "ja"
+
+    def test_file_removal_invalidates(self, manager, monkeypatch):
+        """全局状态文件被删除后回落配置/检测语言"""
+        state = manager._global_state_path()
+        self._write_state(state, "en")
+        assert manager._get_effective_language() == "en"
+
+        state.unlink()
+        monkeypatch.setattr(
+            type(manager), "_detect_language", lambda self: "ru", raising=False
+        )
+        manager._detected_lang = "ru"
+        assert manager._get_effective_language() == "ru"
+
+    def test_set_language_invalidates_and_takes_priority(self, manager):
+        """set_language 走 _current_lang 快路径并清除解析缓存"""
+        state = manager._global_state_path()
+        self._write_state(state, "en")
+        assert manager._get_effective_language() == "en"
+
+        manager.set_language("ja", persist=False)
+        assert manager._get_effective_language() == "ja"
+        assert manager._eff_lang_cache is None
+
+    def test_config_set_event_invalidates(self, manager):
+        """ErisPulse.i18n.* 配置写入事件清除缓存；无关 key 不清除"""
+        from ErisPulse.Core.lifecycle import lifecycle
+
+        state = manager._global_state_path()
+        self._write_state(state, "en")
+        assert manager._get_effective_language() == "en"
+        assert manager._eff_lang_cache == "en"
+
+        lifecycle.emit_sync("config.set", {"key": "bench.other", "old_value": 1, "new_value": 2})
+        assert manager._eff_lang_cache == "en"  # 无关 key 不失效
+
+        lifecycle.emit_sync("config.set", {"key": "ErisPulse.i18n.language", "old_value": None, "new_value": "ja"})
+        assert manager._eff_lang_cache is None
+
+    def test_env_change_takes_effect_immediately(self, manager, monkeypatch):
+        """环境变量不缓存：运行中修改即时生效"""
+        state = manager._global_state_path()
+        self._write_state(state, "en")
+        assert manager._get_effective_language() == "en"
+
+        monkeypatch.setenv("ERISPULSE_LANG", "ru")
+        assert manager._get_effective_language() == "ru"
