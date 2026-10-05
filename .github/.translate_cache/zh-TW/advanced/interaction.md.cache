@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "345f22d0758f5f258585aa782f6998df",
-  "file_hash": "345f22d0758f5f258585aa782f6998df",
-  "translated_at": "2026-10-02T11:08:09.907270",
+  "hash": "0f88713770b62755f27189174a3968e7",
+  "file_hash": "0f88713770b62755f27189174a3968e7",
+  "translated_at": "2026-10-05T16:48:41.423501",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -26,8 +26,8 @@
       "translation": "## 會話互斥：acquire / hold / get_owner_of\n\n歸屬權從「資源」走向「會話」——「這個使用者目前正被誰佔用」成為一等查詢。\n\n```python\n# 查詢：這個會話正被誰互動？（空閒返回 None）\nowner = sdk.interaction.get_owner_of(event)\nif owner and owner != \"MyModule\":\n    return  # 其他模組正在對話中，避免打擾\n\n# 互斥租約：獨佔會話（deny 策略，被佔用返回 None）\nlease = sdk.interaction.acquire(event)          # 默認 TTL 1 小時，可傳 ttl=\nif lease is None:\n    return  # 已被佔用\ntry:\n    ...  # 獨佔互動\nfinally:\n    lease.release()\n```\n\n上下文管理器形式（獲取失敗拋 `SessionOccupiedError`）：\n\n```python\nwith sdk.interaction.hold(event) as lease:\n    ...  # 退出自動釋放\n```\n\n租約支援 `renew(ttl)` 續期；TTL 慣性過期——過期的租約在下次存取時自動清理。\n\n`Conversation.resume()` 恢復對話時框架會自動 acquire 租約（見\n[Conversation 多輪對話](conversation.md)的「恢復即接管」）——\n恢復的對話天然持有會話，其他模組不會插入。"
     },
     {
-      "hash": "5bdfad4ca4d8173bb684cc04c21e3ce1",
-      "translation": "## 會話收件箱：event.history\n\n每會話近期訊息流的統一記錄（使用者 + 機器人雙方），作為 AI 上下文、\n防重複回覆、行為分析類模組的**共享事實底座**——各模組不再各自儲存歷史。\n\n```python\nmessages = await event.history(20)   # 當前會話最近 20 條，時間升序\nfor m in messages:\n    print(m[\"role\"], \":\", m[\"text\"])  # role: \"user\" / \"bot\"\n```\n\n- 自動記錄：入站訊息（role=user）+ 機器人出站文字（role=bot）\n- 儲存：獨立 SQLite 表，保留策略 = 每會話上限（預設 50）+ 全域 TTL（預設 7 天）\n- 配置：`ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`\n- 管理器 API：`sdk.transcript.append() / get() / clear()`"
+      "hash": "f922ea7b951b1cdca821a29c131e9695",
+      "translation": "## 會話收件箱：event.history\n\n每會話近期訊息流的統一記錄（使用者 + 機器人雙方），作為 AI 上下文、  \n防重複發送、行為分析類模組的**共享事實底座**——各模組不再各自儲存歷史。\n\n```python\nmessages = await event.history(20)   # 當前會話最近 20 條，時間升序\nfor m in messages:\n    print(m[\"role\"], \":\", m[\"text\"])  # role: \"user\" / \"bot\"\n```\n\n- 自動記錄：入站訊息（role=user）+ 機器人出站文字（role=bot）  \n- 儲存：獨立 SQLite 表，保留策略 = 每會話上限（預設 50）+ 全局 TTL（預設 7 天）  \n- 寫入方式：記憶體緩衝 + 後台批次落盤（延遲最多 1 秒），查詢介面自動合併未落盤的緩衝行——同進程「讀取你的寫入」不受影響；正常退出（`sdk.uninit` / 進程退出）自動刷盤。**硬體崩潰 / 強制終止時最近約 1 秒的記錄可能遺失**：該底座定位為近期上下文快取，不適合作為稽核級持久化  \n- 配置：`ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`  \n- 管理器 API：`sdk.transcript.append() / get() / clear()`，`aflush()` / `flush()` 手動刷盤"
     },
     {
       "hash": "54ea849a11ce1018eea963a7748994a4",
