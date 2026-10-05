@@ -469,6 +469,28 @@ for log in logger.iter_logs():
 ---
 
 
+##### `should_log(level_const: int) -> bool`
+
+快速判断指定级别当前是否会产生任何输出
+
+与 :meth:`_log` 的判定保持同一语义（屏蔽集合 / 全局级别 / 模块覆盖 /
+订阅器）。供热路径在构造日志文本前作守卫：返回 False 时调用方应跳过
+字符串格式化与 i18n 翻译等昂贵前置工作，直接不记录。
+
+- **level_const**: 日志级别常量（如 ``TRACE`` / ``EVENT``）
+
+**返回值**: True 表示可能输出（调用方正常记录）；False 表示必然静默
+
+**示例**:
+
+```python
+if logger.should_log(EVENT):
+    logger.event(f"recv {event}")  # 仅在会输出时才格式化
+```
+
+---
+
+
 ##### `_log(level_name: str, level_const: int, msg, *args, **kwargs)`
 
 内部日志方法，统一处理日志记录流程
@@ -671,6 +693,20 @@ logger.mymodule.database.info("db message")
 
 - **parent_logger**: 父日志记录器实例
 - **name**: 子日志记录器名称
+
+---
+
+
+##### `should_log(level_const: int) -> bool`
+
+快速判断该子记录器指定级别当前是否会产生任何输出
+
+语义与 :meth:`Logger.should_log` 一致（屏蔽集合 / 订阅器 / 模块有效级别），
+供热路径在构造日志文本前作守卫。
+
+- **level_const**: 日志级别常量（如 ``TRACE`` / ``EVENT``）
+
+**返回值**: True 表示可能输出（调用方正常记录）；False 表示必然静默
 
 ---
 

@@ -7056,14 +7056,6 @@
         "title": "セキュリティヘッダー"
       }
     ],
-    "セッションの受信箱：event.history": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 170,
-        "level": 2,
-        "title": "セッションの受信箱：event.history"
-      }
-    ],
     "セッションの排他：acquire / hold / get_owner_of": [
       {
         "document": "advanced/interaction.md",
@@ -8911,7 +8903,7 @@
     "メッセージトランザクション：message_tx": [
       {
         "document": "advanced/interaction.md",
-        "line": 185,
+        "line": 186,
         "level": 2,
         "title": "メッセージトランザクション：message_tx"
       }
@@ -9803,7 +9795,7 @@
     "リンク追跡：trace-id": [
       {
         "document": "advanced/interaction.md",
-        "line": 198,
+        "line": 199,
         "level": 2,
         "title": "リンク追跡：trace-id"
       }
@@ -10331,7 +10323,7 @@
     "他のシステムとの関係": [
       {
         "document": "advanced/interaction.md",
-        "line": 209,
+        "line": 210,
         "level": 2,
         "title": "他のシステムとの関係"
       }
@@ -10390,6 +10382,14 @@
         "line": 708,
         "level": 2,
         "title": "优先度システム"
+      }
+    ],
+    "会話受信箱：event.history": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 170,
+        "level": 2,
+        "title": "会話受信箱：event.history"
       }
     ],
     "会話識別子": [
@@ -15115,7 +15115,7 @@
       },
       {
         "document": "advanced/interaction.md",
-        "line": 215,
+        "line": 216,
         "level": 2,
         "title": "関連ドキュメント"
       },

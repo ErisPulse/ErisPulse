@@ -10838,14 +10838,6 @@
         "title": "Почему рекомендуется использовать I18nClass?"
       }
     ],
-    "Почтовый ящик сессии: event.history": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 169,
-        "level": 2,
-        "title": "Почтовый ящик сессии: event.history"
-      }
-    ],
     "Права группы": [
       {
         "document": "getting-started/common-tasks.md",
@@ -12531,7 +12523,7 @@
       },
       {
         "document": "advanced/interaction.md",
-        "line": 214,
+        "line": 215,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -12709,7 +12701,7 @@
     "Связь с другими системами": [
       {
         "document": "advanced/interaction.md",
-        "line": 208,
+        "line": 209,
         "level": 2,
         "title": "Связь с другими системами"
       }
@@ -12816,6 +12808,14 @@
         "line": 292,
         "level": 3,
         "title": "Сервисный контракт (meta.services)"
+      }
+    ],
+    "Сессионная ящик входящих: event.history": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 169,
+        "level": 2,
+        "title": "Сессионная ящик входящих: event.history"
       }
     ],
     "Сессионные таймеры: remind / escalate": [
@@ -14497,7 +14497,7 @@
     "Транзакции сообщений: message_tx": [
       {
         "document": "advanced/interaction.md",
-        "line": 184,
+        "line": 185,
         "level": 2,
         "title": "Транзакции сообщений: message_tx"
       }
@@ -14521,7 +14521,7 @@
     "Трассировка цепочки: trace-id": [
       {
         "document": "advanced/interaction.md",
-        "line": 197,
+        "line": 198,
         "level": 2,
         "title": "Трассировка цепочки: trace-id"
       }

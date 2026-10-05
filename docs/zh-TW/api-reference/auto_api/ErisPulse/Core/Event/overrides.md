@@ -76,6 +76,13 @@ acl_default_allow = true
 ## 函数列表
 
 
+### `_invalidate_cond_cache() -> None`
+
+**内部方法** 清空 condition_for 编译缓存
+
+---
+
+
 ### `_record_runtime_owner(path: str, persist: bool) -> None`
 
 **内部方法** 记录（persist=False）或清除（persist=True）路径的调用方归属
@@ -139,10 +146,14 @@ acl_default_allow = true
 ---
 
 
-### `condition_for(event_type: str, owner: str)`
+### `condition_for(event_type: str, owner: str) -> 'Callable[[Any], bool] | None'`
 
 **内部方法**
 获取某事件类型下某模块的覆写过滤条件（detail_types 白名单 + pattern/regex 文本条件）
+
+结果按 ``(event_type, owner)`` 缓存（含"无覆写 → None"），``_sections``
+的任何变更都会使缓存失效；热路径上每事件每模块处理器都会调用本函数，
+缓存避免重复编译 matcher 闭包。
 
 - **event_type**: 事件类型（message / notice / request / meta）
 - **owner**: 模块名

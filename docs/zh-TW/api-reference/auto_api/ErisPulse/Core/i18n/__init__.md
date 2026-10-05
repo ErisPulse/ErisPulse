@@ -126,6 +126,35 @@ BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
 
 配置值为 "auto" 时使用自动检测的语言。
 
+除手动设置与环境变量外走解析缓存：以全局状态文件的 mtime 为失效信号，
+避免每次调用都打开并解析 ``~/.erispulse/cli_state.json``（热路径成本）；
+外部修改（如另一进程执行 ``epsdk i18n``）通过 mtime 变化即时感知，
+进程内 ``ErisPulse.i18n.*`` 配置写入通过 lifecycle 事件失效缓存。
+
+**内部方法**
+
+---
+
+
+##### `_ensure_config_invalidation_hook() -> None`
+
+注册配置写入对语言缓存的失效监听
+
+惰性注册一次（避免 Core 单例构造顺序上的导入环），
+监听 ``config.set`` / ``config.updated`` 两类事件。
+
+**内部方法**
+注册失败静默跳过，不影响语言解析本身。
+
+---
+
+
+##### `_on_language_config_changed(data: Any) -> None`
+
+配置事件回调：ErisPulse.i18n.* 写入或外部配置重载时清除语言缓存
+
+- **data**: 事件数据（含 ``key`` 的 dict，或任意载荷）
+
 **内部方法**
 
 ---
