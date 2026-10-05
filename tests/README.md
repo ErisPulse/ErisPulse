@@ -14,8 +14,11 @@ tests/
 │   ├── test_event.py    # 事件系统综合测试
 │   ├── test_compat.py   # SDK兼容性测试
 │   └── test_files/      # 测试资源文件
-└── unit/                # 标准单元测试目录
-    └── test_unit_*.py   # 各模块单元测试
+├── unit/                # 标准单元测试目录
+│   └── test_unit_*.py   # 各模块单元测试
+├── integration/         # 集成测试目录（test_integration_*.py）
+├── performance/         # 性能目录：test_perf_*.py + 全组件基准 benchmark.py
+└── stress/              # 压力测试目录（test_stress_*.py）
 ```
 
 ## 开发者快速测试 (devs/)
@@ -87,6 +90,43 @@ SDK兼容性测试，验证：
 ```bash
 python tests/devs/test_compat.py
 ```
+
+## 性能基准 (performance/benchmark.py)
+
+`performance/benchmark.py` 是覆盖全部核心组件的手动性能基准脚本（纯标准库实现，
+pytest 不会收集）。运行期间所有状态（config.toml / sqlite 数据库）均落在系统临时
+目录，不影响仓库真实配置。
+
+覆盖套件：
+
+- **config**：getConfig 热读/脏覆盖层、setConfig 各写入路径、getAllConfig、ConfigClass 属性访问、get_event_config 合成
+- **event**：总线直连吞吐/延迟、中间件链、detail_type 匹配、handler 注册、lifecycle.fire、消息桥、命令命中/miss、事件洪泛
+- **storage**：KV 异步/同步、批量 multi、查询构建器、事务、ORM（`--backend` 可切 mysql/postgres）
+- **send**：SendDSL 链构建与完整 hooked 发送路径（mock 传输）
+- **router**：ASGI 层请求（httpx ASGITransport，需 test extra）
+- **module**：跨模块 RPC、属性访问、spawn_background
+- **overall**：命令→存储→发送 端到端全链路、混合负载
+- **startup**：冷导入、sdk.init()/uninit()、装载适配器+模块
+
+使用方法：
+
+```bash
+# 全套件完整档
+python tests/performance/benchmark.py
+
+# 指定套件 / 快速冒烟档
+python tests/performance/benchmark.py --suite event,config --quick
+
+# 落盘基线 / 与旧基线对比 / 生成 HTML 报告
+python tests/performance/benchmark.py --json base.json
+python tests/performance/benchmark.py --compare base.json
+python tests/performance/benchmark.py --html report.html
+
+# 存储套件切换后端（mysql/postgres 需对应连接环境变量与驱动 extra）
+python tests/performance/benchmark.py --suite storage --backend mysql
+```
+
+同目录的 `test_perf_*.py` 为批量操作正确性断言（被 pytest 默认忽略，仅手动运行）。
 
 ## 标准单元测试 (unit/)
 
