@@ -403,10 +403,10 @@ class TestScopeDispatch:
             from ErisPulse.Core.adapter import adapter
 
             await adapter.emit(_make_msg("hi", bot_id="bot_y"))  # 未绑定的 Bot
-            await asyncio.sleep(0.05)
+            assert await wait_until(lambda: "A" in received)
             with patch.object(config_module.config, "getConfig", return_value="/"):
                 await adapter.emit(_make_msg("/alpha", bot_id="bot_y"))
-                await asyncio.sleep(0.05)
+                assert await wait_until(lambda: "cmdA" in received)
 
         assert "A" in received
         assert "cmdA" in received
