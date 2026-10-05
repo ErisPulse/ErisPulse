@@ -521,7 +521,7 @@ class TranscriptManager:
         rows: list[dict[str, Any]] = []
         if self._ensure_table():
             try:
-                rows = (
+                result: Any = (
                     storage.Table(TRANSCRIPT_TABLE)
                     .Select("role", "text", "ts", "event_id", "session_key")
                     .Where("session_key = ?", key)
@@ -530,8 +530,7 @@ class TranscriptManager:
                     .ToDict()
                     .Execute()
                 )
-                if not isinstance(rows, list):
-                    rows = []
+                rows = result if isinstance(result, list) else []
             except Exception as e:
                 logger.trace(i18n.t("core.transcript.get_failed", error=e))
                 rows = []
@@ -565,7 +564,7 @@ class TranscriptManager:
         rows: list[dict[str, Any]] = []
         if self._ensure_table():
             try:
-                rows = (
+                result: Any = (
                     storage.Table(TRANSCRIPT_TABLE)
                     .Select("role", "text", "ts", "sender", "session_key")
                     .Where("ts > ?", cutoff)
@@ -574,8 +573,7 @@ class TranscriptManager:
                     .ToDict()
                     .Execute()
                 )
-                if not isinstance(rows, list):
-                    rows = []
+                rows = result if isinstance(result, list) else []
             except Exception as e:
                 logger.trace(i18n.t("core.transcript.get_failed", error=e))
                 rows = []
@@ -683,7 +681,7 @@ class TranscriptManager:
         rows: list[dict[str, Any]] = []
         if self._ensure_table():
             try:
-                rows = (
+                result: Any = (
                     storage.Table(TRANSCRIPT_TABLE)
                     .Select("role", "text", "ts", "event_id", "session_key")
                     .Where("event_id = ?", str(trace_id))
@@ -692,8 +690,7 @@ class TranscriptManager:
                     .ToDict()
                     .Execute()
                 )
-                if not isinstance(rows, list):
-                    rows = []
+                rows = result if isinstance(result, list) else []
             except Exception as e:
                 logger.trace(i18n.t("core.transcript.get_failed", error=e))
                 rows = []
