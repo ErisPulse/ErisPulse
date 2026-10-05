@@ -829,6 +829,29 @@ class Logger:
     def _get_effective_level(self, module_name):
         return self._module_levels.get(module_name, self._logger.level)
 
+    def should_log(self, level_const: int) -> bool:
+        """
+        快速判断指定级别当前是否会产生任何输出
+
+        与 :meth:`_log` 的判定保持同一语义（屏蔽集合 / 全局级别 / 模块覆盖 /
+        订阅器）。供热路径在构造日志文本前作守卫：返回 False 时调用方应跳过
+        字符串格式化与 i18n 翻译等昂贵前置工作，直接不记录。
+
+        :param level_const: 日志级别常量（如 ``TRACE`` / ``EVENT``）
+        :return: True 表示可能输出（调用方正常记录）；False 表示必然静默
+
+        :example:
+        >>> if logger.should_log(EVENT):
+        ...     logger.event(f"recv {event}")  # 仅在会输出时才格式化
+        """
+        if level_const in self._excluded_levels:
+            return False
+        if level_const >= self._logger.level:
+            return True
+        if any(v <= level_const for v in self._module_levels.values()):
+            return True
+        return self._has_handler_for(level_const)
+
     def _log(self, level_name: str, level_const: int, msg, *args, **kwargs):
         """
         内部日志方法，统一处理日志记录流程
@@ -1123,6 +1146,23 @@ class LoggerChild:
         """
         self._parent = parent_logger
         self._name = name
+
+    def should_log(self, level_const: int) -> bool:
+        """
+        快速判断该子记录器指定级别当前是否会产生任何输出
+
+        语义与 :meth:`Logger.should_log` 一致（屏蔽集合 / 订阅器 / 模块有效级别），
+        供热路径在构造日志文本前作守卫。
+
+        :param level_const: 日志级别常量（如 ``TRACE`` / ``EVENT``）
+        :return: True 表示可能输出（调用方正常记录）；False 表示必然静默
+        """
+        parent = self._parent
+        if level_const in parent._excluded_levels:
+            return False
+        if parent._has_handler_for(level_const):
+            return True
+        return parent._get_effective_level(self._name.split(".")[0]) <= level_const
 
     def _log(self, level_name: str, level_const: int, msg, *args, **kwargs):
         """

@@ -46,7 +46,7 @@ from .constants import (
 from .di import _di_cache
 from .i18n import i18n
 from .lifecycle import lifecycle
-from .logger import logger
+from .logger import EVENT, logger
 from .text_match import compile_entry_matcher, compile_text_matcher
 
 # 适配器类型 TypeVar，用于 get() 的泛型返回，让用户可通过类型注解获得 IDE 补全
@@ -1836,14 +1836,16 @@ class AdapterManager(ManagerBase):
     ) -> None:
         """{!--< internal-use >!--} emit 的事件分发主体（trace-id 上下文内执行）"""
         if event_type == "message":
-            user_id = data.get("user_id", "")
-            alt_msg = data.get("alt_message", "")
-            if len(alt_msg) > LOG_MESSAGE_TRUNCATE_CHARS:
-                alt_msg = alt_msg[:LOG_MESSAGE_TRUNCATE_CHARS] + "..."
-            _msg_logger.event(f"[Recv] {platform}/{detail_type}({user_id}): {alt_msg}")
+            if _msg_logger.should_log(EVENT):
+                user_id = data.get("user_id", "")
+                alt_msg = data.get("alt_message", "")
+                if len(alt_msg) > LOG_MESSAGE_TRUNCATE_CHARS:
+                    alt_msg = alt_msg[:LOG_MESSAGE_TRUNCATE_CHARS] + "..."
+                _msg_logger.event(f"[Recv] {platform}/{detail_type}({user_id}): {alt_msg}")
         else:
             _logger = self._event_loggers.get(event_type, _meta_logger)
-            _logger.event(f"[Recv] {platform}/{detail_type}")
+            if _logger.should_log(EVENT):
+                _logger.event(f"[Recv] {platform}/{detail_type}")
 
         # 事件准入（scope 身份维度）：被拒绝的事件在分发入口完全丢弃——
         # 不进入中间件与任何处理器（含框架级），仅 TRACE 级日志可见

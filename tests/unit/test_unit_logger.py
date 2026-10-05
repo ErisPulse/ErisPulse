@@ -1302,3 +1302,79 @@ class TestLogDirectoryRotation:
             assert temp_logger._file_handlers
             assert temp_logger._file_handlers[0].baseFilename == os.path.abspath(plain)
             self._close_handlers(temp_logger)
+
+
+# ==================== should_log 快速守卫测试 ====================
+
+
+class TestShouldLog:
+    """should_log：热路径守卫，与 _log 判定语义一致"""
+
+    @pytest.fixture
+    def temp_logger(self):
+        test_logger = Logger()
+        yield test_logger
+
+    def test_false_below_global_without_subscribers(self, temp_logger):
+        """低于全局级别且无订阅器/模块覆盖时必然静默"""
+        temp_logger.set_level("WARNING")
+        assert temp_logger.should_log(logging.DEBUG) is False
+        assert temp_logger.should_log(logging.INFO) is False
+
+    def test_true_at_or_above_global(self, temp_logger):
+        """达到全局级别即可输出"""
+        temp_logger.set_level("WARNING")
+        assert temp_logger.should_log(logging.WARNING) is True
+        assert temp_logger.should_log(logging.ERROR) is True
+
+    def test_subscriber_forces_true_below_global(self, temp_logger):
+        """订阅器 min_level 低于目标级别时强制 True（即使低于全局级别）"""
+        temp_logger.set_level("WARNING")
+        temp_logger.handler("sub", min_level="DEBUG")(lambda data: None)
+        try:
+            assert temp_logger.should_log(logging.DEBUG) is True
+            assert temp_logger.should_log(logging.INFO) is True
+        finally:
+            temp_logger.remove_handler("sub")
+
+    def test_excluded_always_false(self, temp_logger):
+        """被屏蔽的级别即使有订阅器也必然静默"""
+        from ErisPulse.Core.logger import EVENT
+
+        temp_logger.set_level("DEBUG")
+        temp_logger.handler("sub", min_level="DEBUG")(lambda data: None)
+        try:
+            temp_logger.set_excluded_levels(["EVENT"])
+            assert temp_logger.should_log(EVENT) is False
+            assert temp_logger.should_log(logging.INFO) is True
+        finally:
+            temp_logger.remove_handler("sub")
+            temp_logger.set_excluded_levels([])
+
+    def test_module_override_forces_true(self, temp_logger):
+        """任一模块级别覆盖低于目标级别时 True"""
+        temp_logger.set_level("WARNING")
+        temp_logger.set_module_level("bench_mod", "DEBUG")
+        assert temp_logger.should_log(logging.DEBUG) is True
+
+    def test_child_uses_module_name(self, temp_logger):
+        """子记录器按自身模块名判定模块级别覆盖"""
+        temp_logger.set_level("WARNING")
+        child = temp_logger.get_child("Bench", relative=False)
+        assert child.should_log(logging.DEBUG) is False
+
+        temp_logger.set_module_level("Bench", "DEBUG")
+        assert child.should_log(logging.DEBUG) is True
+        assert child.should_log(logging.WARNING) is True
+
+    def test_child_excluded_false(self, temp_logger):
+        """子记录器同样遵循屏蔽集合"""
+        from ErisPulse.Core.logger import EVENT
+
+        temp_logger.set_level("DEBUG")
+        child = temp_logger.get_child("Message", relative=False)
+        temp_logger.set_excluded_levels(["EVENT"])
+        try:
+            assert child.should_log(EVENT) is False
+        finally:
+            temp_logger.set_excluded_levels([])
