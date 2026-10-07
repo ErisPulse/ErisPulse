@@ -6581,7 +6581,7 @@ epsdk list-remote -r
 
 | 命令 | 别名 | 参数 | 说明 |
 |------|------|------|------|
-| `config` | `cfg`, `conf` | `[name] [--list/-l]` | 交互式配置适配器/模块的声明式配置项 |
+| `config` | `cfg`, `conf` | `[name] [--list/-l] [--json]` | 交互式配置适配器/模块的声明式配置项 |
 
 ### config
 
@@ -6597,12 +6597,16 @@ epsdk list-remote -r
 |------|--------|------|
 | `[name]` | | 目标名称（适配器平台名或模块名），留空进入交互选择 |
 | `--list` | `-l` | 仅列出所有目标的配置状态，不进入向导 |
+| `--json` | | 以 JSON 输出全部目标及其配置状态（供 CI / 脚本消费），不进入向导 |
 
 **示例：**
 
 ```bash
 # 查看所有适配器/模块的配置状态
 epsdk config --list
+
+# 以 JSON 输出配置状态（CI / 脚本消费）
+epsdk config --json
 
 # 交互选择目标进行配置
 epsdk config
@@ -8509,15 +8513,15 @@ ErisPulse 的 Storage 模块提供链式调用风格的通用 SQL 查询构建�
 Bases/storage.py                    Core/storage.py
 ┌─────────────────────┐             ┌──────────────────────────┐
 │  BaseStorage (ABC)  │◄────────────│  StorageManager          │
-│  BaseQueryBuilder   │             │  (SQLite concrete impl)  │
-│    (ABC)            │             │                          │
+│  BaseQueryBuilder   │             │  (backend dispatch:      │
+│    (ABC)            │             │   sqlite/mysql/postgres) │
 └─────────────────────┘             │  SQLiteQueryBuilder      │
                                     │  AlterTableBuilder       │
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` 是抽象基类，定义统一接口，支持未来拓展其他存储介质（Redis、MySQL 等）
-- `StorageManager` 是当前 SQLite 具体实现，完全向后兼容
+- `BaseStorage` / `BaseQueryBuilder` 是抽象基类，定义统一接口；框架内置 SQLite / MySQL / PostgreSQL 三种实现（自定义后端亦可按此扩展，见[存储后端](storage-backends.md)）
+- `StorageManager` 按 `ErisPulse.storage.backend` 配置调度具体后端，默认 SQLite，完全向后兼容
 
 ## 导入
 

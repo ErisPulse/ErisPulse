@@ -30,6 +30,16 @@ ErisPulse 归属权统一门面
 
 ---
 
+## 函数列表
+
+
+### `_log_reclaim_failure(step: str, error: Exception) -> None`
+
+**内部方法** 回收步骤失败留痕（单步失败不阻断其余回收，但必须可观测）
+
+---
+
+
 ## 类列表
 
 

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1689,
+  "total_keywords": 1690,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2707,7 +2707,7 @@
     "Client 系列 — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 61,
+        "line": 65,
         "level": 3,
         "title": "Client 系列 — `Core/client.py` / `Core/Bases/client.py`"
       }
@@ -3113,7 +3113,7 @@
     "Interaction — `Core/Event/interaction.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 102,
+        "line": 106,
         "level": 3,
         "title": "Interaction — `Core/Event/interaction.py`"
       }
@@ -3241,7 +3241,7 @@
     "Module 系列 — `Core/module.py`（`sdk.module.call`）": [
       {
         "document": "advanced/errors.md",
-        "line": 115,
+        "line": 119,
         "level": 3,
         "title": "Module 系列 — `Core/module.py`（`sdk.module.call`）"
       }
@@ -3644,6 +3644,14 @@
         "title": "SendDSL 詳解"
       }
     ],
+    "Shadow 系列 — `Core/shadow.py`（影子模組）": [
+      {
+        "document": "advanced/errors.md",
+        "line": 148,
+        "level": 3,
+        "title": "Shadow 系列 — `Core/shadow.py`（影子模組）"
+      }
+    ],
     "SseEmitter API": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -3663,7 +3671,7 @@
     "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 88,
+        "line": 92,
         "level": 3,
         "title": "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`"
       }
@@ -3799,7 +3807,7 @@
     "WebSocket 系列 — `Core/client.py`（`send` / `receive`）": [
       {
         "document": "advanced/errors.md",
-        "line": 81,
+        "line": 85,
         "level": 3,
         "title": "WebSocket 系列 — `Core/client.py`（`send` / `receive`）"
       }
@@ -4331,7 +4339,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 379,
+        "line": 383,
         "level": 3,
         "title": "create"
       }
@@ -4387,7 +4395,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 519,
+        "line": 523,
         "level": 3,
         "title": "doctor"
       }
@@ -4451,7 +4459,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 430,
+        "line": 434,
         "level": 3,
         "title": "i18n"
       }
@@ -4459,7 +4467,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 329,
+        "line": 333,
         "level": 3,
         "title": "init"
       }
@@ -4603,7 +4611,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 291,
+        "line": 295,
         "level": 3,
         "title": "run"
       }
@@ -4691,7 +4699,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 467,
+        "line": 471,
         "level": 3,
         "title": "types"
       }
@@ -5571,7 +5579,7 @@
     "互動式安裝": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 548,
+        "line": 552,
         "level": 2,
         "title": "互動式安裝"
       }
@@ -5938,6 +5946,14 @@
         "title": "保留錯誤段"
       }
     ],
+    "信息查詢命令": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 166,
+        "level": 2,
+        "title": "信息查詢命令"
+      }
+    ],
     "修改表結構": [
       {
         "document": "advanced/sql-builder.md",
@@ -6177,7 +6193,7 @@
     "全局參數": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 502,
+        "line": 506,
         "level": 2,
         "title": "全局參數"
       }
@@ -6305,7 +6321,7 @@
     "切換語言": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 638,
+        "line": 642,
         "level": 3,
         "title": "切換語言"
       }
@@ -6329,7 +6345,7 @@
     "列出組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 576,
+        "line": 580,
         "level": 3,
         "title": "列出組件"
       }
@@ -6337,7 +6353,7 @@
     "初始化專案": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 661,
+        "line": 665,
         "level": 3,
         "title": "初始化專案"
       }
@@ -6525,7 +6541,7 @@
     "升級組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 615,
+        "line": 619,
         "level": 3,
         "title": "升級組件"
       }
@@ -6557,7 +6573,7 @@
     "卸載組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 592,
+        "line": 596,
         "level": 3,
         "title": "卸載組件"
       }
@@ -6747,7 +6763,7 @@
     "各異常說明與發生位置": [
       {
         "document": "advanced/errors.md",
-        "line": 59,
+        "line": 63,
         "level": 2,
         "title": "各異常說明與發生位置"
       }
@@ -8037,7 +8053,7 @@
     "安裝模組": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 563,
+        "line": 567,
         "level": 3,
         "title": "安裝模組"
       }
@@ -8199,7 +8215,7 @@
     "專案管理命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 322,
+        "line": 326,
         "level": 2,
         "title": "專案管理命令"
       }
@@ -8561,7 +8577,7 @@
     "常見用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 561,
+        "line": 565,
         "level": 2,
         "title": "常見用法"
       }
@@ -8767,7 +8783,7 @@
     "建立腳手架": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 671,
+        "line": 675,
         "level": 3,
         "title": "建立腳手架"
       }
@@ -9295,7 +9311,7 @@
     "捕獲建議": [
       {
         "document": "advanced/errors.md",
-        "line": 153,
+        "line": 166,
         "level": 2,
         "title": "捕獲建議"
       }
@@ -10421,7 +10437,7 @@
     "框架內部參數校驗（ValueError）": [
       {
         "document": "advanced/errors.md",
-        "line": 144,
+        "line": 157,
         "level": 3,
         "title": "框架內部參數校驗（ValueError）"
       }
@@ -11617,7 +11633,7 @@
     "環境診斷": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 517,
+        "line": 521,
         "level": 2,
         "title": "環境診斷"
       }
@@ -11701,7 +11717,7 @@
     "生成類型存根": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 651,
+        "line": 655,
         "level": 3,
         "title": "生成類型存根"
       }
@@ -12673,7 +12689,7 @@
     "結構化屬性": [
       {
         "document": "advanced/errors.md",
-        "line": 34,
+        "line": 38,
         "level": 2,
         "title": "結構化屬性"
       }
@@ -12892,14 +12908,6 @@
         "line": 407,
         "level": 2,
         "title": "背景任務歸屬與自動取消"
-      }
-    ],
-    "臨床診斷命令": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 18,
-        "level": 2,
-        "title": "臨床診斷命令"
       }
     ],
     "自動存檔": [
@@ -13366,6 +13374,14 @@
         "title": "設計邊界：哪些資源不隨卸載清理"
       }
     ],
+    "診斷命令": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 18,
+        "level": 2,
+        "title": "診斷命令"
+      }
+    ],
     "註冊 API": [
       {
         "document": "ecosystem/dashboard.md",
@@ -13457,7 +13473,7 @@
     "語言命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 424,
+        "line": 428,
         "level": 2,
         "title": "語言命令"
       }
@@ -13668,14 +13684,6 @@
         "line": 14,
         "level": 3,
         "title": "資料模型"
-      }
-    ],
-    "資訊查詢命令": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 166,
-        "level": 2,
-        "title": "資訊查詢命令"
       }
     ],
     "質量檢查清單": [
@@ -14145,7 +14153,7 @@
     "運行專案": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 628,
+        "line": 632,
         "level": 3,
         "title": "運行專案"
       }
@@ -14153,7 +14161,7 @@
     "運行控制命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 280,
+        "line": 284,
         "level": 2,
         "title": "運行控制命令"
       }
@@ -14605,7 +14613,7 @@
     "配置組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 602,
+        "line": 606,
         "level": 3,
         "title": "配置組件"
       }
@@ -15159,7 +15167,7 @@
     "關閉雜訊折疊": [
       {
         "document": "advanced/errors.md",
-        "line": 168,
+        "line": 181,
         "level": 2,
         "title": "關閉雜訊折疊"
       }
@@ -15259,7 +15267,7 @@
     "類型存根命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 461,
+        "line": 465,
         "level": 2,
         "title": "類型存根命令"
       }

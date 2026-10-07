@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1661,
+  "total_keywords": 1662,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2707,7 +2707,7 @@
     "Client 系列 — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 62,
+        "line": 66,
         "level": 3,
         "title": "Client 系列 — `Core/client.py` / `Core/Bases/client.py`"
       }
@@ -3119,7 +3119,7 @@
     "Interaction — `Core/Event/interaction.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 104,
+        "line": 108,
         "level": 3,
         "title": "Interaction — `Core/Event/interaction.py`"
       }
@@ -3247,7 +3247,7 @@
     "Module 系列 — `Core/module.py`（`sdk.module.call`）": [
       {
         "document": "advanced/errors.md",
-        "line": 117,
+        "line": 121,
         "level": 3,
         "title": "Module 系列 — `Core/module.py`（`sdk.module.call`）"
       }
@@ -3650,6 +3650,14 @@
         "title": "SendDSL 详解"
       }
     ],
+    "Shadow 系列 — `Core/shadow.py`（影子模块）": [
+      {
+        "document": "advanced/errors.md",
+        "line": 150,
+        "level": 3,
+        "title": "Shadow 系列 — `Core/shadow.py`（影子模块）"
+      }
+    ],
     "SseEmitter API": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -3669,7 +3677,7 @@
     "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 89,
+        "line": 93,
         "level": 3,
         "title": "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`"
       }
@@ -3821,7 +3829,7 @@
     "WebSocket 系列 — `Core/client.py`（`send` / `receive`）": [
       {
         "document": "advanced/errors.md",
-        "line": 82,
+        "line": 86,
         "level": 3,
         "title": "WebSocket 系列 — `Core/client.py`（`send` / `receive`）"
       }
@@ -4347,7 +4355,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 379,
+        "line": 383,
         "level": 3,
         "title": "create"
       }
@@ -4403,7 +4411,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 519,
+        "line": 523,
         "level": 3,
         "title": "doctor"
       }
@@ -4467,7 +4475,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 430,
+        "line": 434,
         "level": 3,
         "title": "i18n"
       }
@@ -4475,7 +4483,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 329,
+        "line": 333,
         "level": 3,
         "title": "init"
       }
@@ -4619,7 +4627,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 291,
+        "line": 295,
         "level": 3,
         "title": "run"
       }
@@ -4707,7 +4715,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 467,
+        "line": 471,
         "level": 3,
         "title": "types"
       }
@@ -5701,7 +5709,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 548,
+        "line": 552,
         "level": 2,
         "title": "交互式安装"
       }
@@ -6219,7 +6227,7 @@
     "全局参数": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 502,
+        "line": 506,
         "level": 2,
         "title": "全局参数"
       }
@@ -6251,7 +6259,7 @@
     "关停噪音折叠": [
       {
         "document": "advanced/errors.md",
-        "line": 170,
+        "line": 183,
         "level": 2,
         "title": "关停噪音折叠"
       }
@@ -6447,7 +6455,7 @@
     "切换语言": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 638,
+        "line": 642,
         "level": 3,
         "title": "切换语言"
       }
@@ -6471,7 +6479,7 @@
     "列出组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 576,
+        "line": 580,
         "level": 3,
         "title": "列出组件"
       }
@@ -6503,7 +6511,7 @@
     "创建脚手架": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 671,
+        "line": 675,
         "level": 3,
         "title": "创建脚手架"
       }
@@ -6563,7 +6571,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 661,
+        "line": 665,
         "level": 3,
         "title": "初始化项目"
       }
@@ -6711,7 +6719,7 @@
     "升级组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 615,
+        "line": 619,
         "level": 3,
         "title": "升级组件"
       }
@@ -6775,7 +6783,7 @@
     "卸载组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 592,
+        "line": 596,
         "level": 3,
         "title": "卸载组件"
       }
@@ -7215,7 +7223,7 @@
     "各异常说明与发生位置": [
       {
         "document": "advanced/errors.md",
-        "line": 60,
+        "line": 64,
         "level": 2,
         "title": "各异常说明与发生位置"
       }
@@ -8673,7 +8681,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 563,
+        "line": 567,
         "level": 3,
         "title": "安装模块"
       }
@@ -9067,7 +9075,7 @@
     "常见用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 561,
+        "line": 565,
         "level": 2,
         "title": "常见用法"
       }
@@ -10087,7 +10095,7 @@
     "捕获建议": [
       {
         "document": "advanced/errors.md",
-        "line": 155,
+        "line": 168,
         "level": 2,
         "title": "捕获建议"
       }
@@ -11331,7 +11339,7 @@
     "框架内部参数校验（ValueError）": [
       {
         "document": "advanced/errors.md",
-        "line": 146,
+        "line": 159,
         "level": 3,
         "title": "框架内部参数校验（ValueError）"
       }
@@ -12403,7 +12411,7 @@
     "环境诊断": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 517,
+        "line": 521,
         "level": 2,
         "title": "环境诊断"
       }
@@ -12479,7 +12487,7 @@
     "生成类型存根": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 651,
+        "line": 655,
         "level": 3,
         "title": "生成类型存根"
       }
@@ -13013,7 +13021,7 @@
     "类型存根命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 461,
+        "line": 465,
         "level": 2,
         "title": "类型存根命令"
       }
@@ -13069,7 +13077,7 @@
     "结构化属性": [
       {
         "document": "advanced/errors.md",
-        "line": 35,
+        "line": 39,
         "level": 2,
         "title": "结构化属性"
       }
@@ -13517,7 +13525,7 @@
     "语言命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 424,
+        "line": 428,
         "level": 2,
         "title": "语言命令"
       }
@@ -13931,7 +13939,7 @@
     "运行控制命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 280,
+        "line": 284,
         "level": 2,
         "title": "运行控制命令"
       }
@@ -13993,7 +14001,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 628,
+        "line": 632,
         "level": 3,
         "title": "运行项目"
       }
@@ -14723,7 +14731,7 @@
     "配置组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 602,
+        "line": 606,
         "level": 3,
         "title": "配置组件"
       }
@@ -15183,7 +15191,7 @@
     "项目管理命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 322,
+        "line": 326,
         "level": 2,
         "title": "项目管理命令"
       }
