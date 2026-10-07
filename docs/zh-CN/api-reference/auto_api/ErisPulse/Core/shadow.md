@@ -225,9 +225,9 @@ source 为新版代码的**目录或单 .py 文件路径**（推荐放在 plugin
 
 **返回值**: 影子 owner 名
 
-**异常**: `RuntimeError` - 原模块未加载 / 影子已存在 / 源路径无效 /
+**异常**: `ShadowStateError` - 原模块未加载 / 影子已存在
 
-                      影子装载失败
+**异常**: `ShadowSourceError` - 源路径无效 / 加载器缺失 / 影子装载失败
 
 **示例**:
 

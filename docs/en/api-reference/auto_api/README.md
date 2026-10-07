@@ -20,8 +20,8 @@
 ## 统计信息
 
 - **模块总数**: 130
-- **类总数**: 172（包括 4 个嵌套类）
-- **函数总数**: 328
+- **类总数**: 176（包括 4 个嵌套类）
+- **函数总数**: 330
 - **方法总数**: 1581
 
 ---
@@ -101,7 +101,7 @@
 
 ### [ErisPulse.CLI.commands.types](ErisPulse/CLI/commands/types.md)
 
-1 个类 | 5 个方法 | 5 个函数
+1 个类 | 5 个方法 | 6 个函数
 
 
 ### [ErisPulse.CLI.commands.uninstall](ErisPulse/CLI/commands/uninstall.md)
@@ -236,7 +236,7 @@
 
 ### [ErisPulse.Core.Bases.errors](ErisPulse/Core/Bases/errors.md)
 
-18 个类
+22 个类
 
 
 ### [ErisPulse.Core.Bases.i18n_schema](ErisPulse/Core/Bases/i18n_schema.md)
@@ -476,7 +476,7 @@
 
 ### [ErisPulse.Core.ownership](ErisPulse/Core/ownership.md)
 
-1 个类 | 10 个方法
+1 个类 | 10 个方法 | 1 个函数
 
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2118,
+  "total_keywords": 2124,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -3417,7 +3417,7 @@
     "`_build_introspect_script(group: str, kind: str) -> str`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/types.md",
-        "line": 144,
+        "line": 151,
         "level": 5,
         "title": "`_build_introspect_script(group: str, kind: str) -> str`（staticmethod）"
       }
@@ -3441,7 +3441,7 @@
     "`_build_send_class_stub(send_cls: type) -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/types.md",
-        "line": 62,
+        "line": 69,
         "level": 3,
         "title": "`_build_send_class_stub(send_cls: type) -> str`"
       }
@@ -3767,7 +3767,7 @@
     "`_collect_adapters() -> list[dict]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/types.md",
-        "line": 105,
+        "line": 112,
         "level": 5,
         "title": "`_collect_adapters() -> list[dict]`"
       }
@@ -3799,7 +3799,7 @@
     "`_collect_modules() -> list[dict]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/types.md",
-        "line": 116,
+        "line": 123,
         "level": 5,
         "title": "`_collect_modules() -> list[dict]`"
       }
@@ -4663,7 +4663,7 @@
     "`_generate_stub(adapters_info: list[dict], modules_info: list[dict]) -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/types.md",
-        "line": 156,
+        "line": 163,
         "level": 5,
         "title": "`_generate_stub(adapters_info: list[dict], modules_info: list[dict]) -> str`"
       }
@@ -5223,7 +5223,7 @@
     "`_introspect_remote(python_executable: str, group: str, kind: str) -> list[dict]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/types.md",
-        "line": 127,
+        "line": 134,
         "level": 5,
         "title": "`_introspect_remote(python_executable: str, group: str, kind: str) -> list[dict]`"
       }
@@ -5359,7 +5359,7 @@
     "`_is_module_method(name: str, func: Any) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/types.md",
-        "line": 38,
+        "line": 45,
         "level": 3,
         "title": "`_is_module_method(name: str, func: Any) -> bool`"
       }
@@ -5421,7 +5421,7 @@
     "`_is_send_method(name: str, func: Any) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/types.md",
-        "line": 24,
+        "line": 31,
         "level": 3,
         "title": "`_is_send_method(name: str, func: Any) -> bool`"
       }
@@ -5630,6 +5630,14 @@
         "line": 100,
         "level": 3,
         "title": "`_log_failure(owner: str, callback: Callable[[str], Any], *, error: Exception | None = None, timeout: bool = False) -> None`"
+      }
+    ],
+    "`_log_reclaim_failure(step: str, error: Exception) -> None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/ownership.md",
+        "line": 36,
+        "level": 3,
+        "title": "`_log_reclaim_failure(step: str, error: Exception) -> None`"
       }
     ],
     "`_logger_trace(message: str) -> None`（staticmethod）": [
@@ -6091,7 +6099,7 @@
     "`_pascal_case_ep_name(name: str) -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/types.md",
-        "line": 75,
+        "line": 82,
         "level": 3,
         "title": "`_pascal_case_ep_name(name: str) -> str`"
       }
@@ -6963,7 +6971,7 @@
     "`_safe_type_name(cls: type, fallback: str) -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/types.md",
-        "line": 50,
+        "line": 57,
         "level": 3,
         "title": "`_safe_type_name(cls: type, fallback: str) -> str`"
       }
@@ -7358,6 +7366,14 @@
         "line": 80,
         "level": 5,
         "title": "`_strict() -> Any`"
+      }
+    ],
+    "`_stub_header() -> str`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/commands/types.md",
+        "line": 24,
+        "level": 3,
+        "title": "`_stub_header() -> str`"
       }
     ],
     "`_sweep_usage_period(u_period: str, sep: str) -> None`": [
@@ -10163,7 +10179,7 @@
     "`async reclaim(owner: str) -> 'dict[str, int]'`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/ownership.md",
-        "line": 89,
+        "line": 99,
         "level": 5,
         "title": "`async reclaim(owner: str) -> 'dict[str, int]'`"
       }
@@ -10171,7 +10187,7 @@
     "`async reclaim_tasks(owner: str) -> 'dict[str, int]'`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/ownership.md",
-        "line": 112,
+        "line": 122,
         "level": 5,
         "title": "`async reclaim_tasks(owner: str) -> 'dict[str, int]'`"
       }
@@ -10739,7 +10755,7 @@
     "`audit(owner: 'str | None' = None, deep: bool = False) -> 'dict[str, Any]'`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/ownership.md",
-        "line": 189,
+        "line": 199,
         "level": 5,
         "title": "`audit(owner: 'str | None' = None, deep: bool = False) -> 'dict[str, Any]'`"
       }
@@ -11777,7 +11793,7 @@
     "`class OwnershipManager`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/ownership.md",
-        "line": 36,
+        "line": 46,
         "level": 3,
         "title": "`class OwnershipManager`"
       }
@@ -12038,6 +12054,14 @@
         "title": "`class SessionOccupiedError(InteractionError)`"
       }
     ],
+    "`class ShadowError(ErisPulseError)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
+        "line": 235,
+        "level": 3,
+        "title": "`class ShadowError(ErisPulseError)`"
+      }
+    ],
     "`class ShadowLedger`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/shadow.md",
@@ -12060,6 +12084,30 @@
         "line": 92,
         "level": 3,
         "title": "`class ShadowOverlay`"
+      }
+    ],
+    "`class ShadowPromoteError(ShadowError)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
+        "line": 259,
+        "level": 3,
+        "title": "`class ShadowPromoteError(ShadowError)`"
+      }
+    ],
+    "`class ShadowSourceError(ShadowError)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
+        "line": 251,
+        "level": 3,
+        "title": "`class ShadowSourceError(ShadowError)`"
+      }
+    ],
+    "`class ShadowStateError(ShadowError)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
+        "line": 243,
+        "level": 3,
+        "title": "`class ShadowStateError(ShadowError)`"
       }
     ],
     "`class SseEmitter`": [
@@ -12129,7 +12177,7 @@
     "`class TypesCommand(Command)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/types.md",
-        "line": 95,
+        "line": 102,
         "level": 3,
         "title": "`class TypesCommand(Command)`"
       }
@@ -12751,7 +12799,7 @@
     "`counts(owner: 'str | None' = None) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/ownership.md",
-        "line": 146,
+        "line": 156,
         "level": 5,
         "title": "`counts(owner: 'str | None' = None) -> Any`"
       }
@@ -13281,7 +13329,7 @@
     "`explain_event(event: dict[str, Any]) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/troubleshoot.md",
-        "line": 42,
+        "line": 43,
         "level": 3,
         "title": "`explain_event(event: dict[str, Any]) -> dict[str, Any]`"
       }
@@ -13289,7 +13337,7 @@
     "`explain_module(name: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/troubleshoot.md",
-        "line": 26,
+        "line": 27,
         "level": 3,
         "title": "`explain_module(name: str) -> dict[str, Any]`"
       }
@@ -13425,7 +13473,7 @@
     "`format_report(result: dict[str, Any]) -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/troubleshoot.md",
-        "line": 58,
+        "line": 59,
         "level": 3,
         "title": "`format_report(result: dict[str, Any]) -> str`"
       }
@@ -15155,7 +15203,7 @@
     "`is_shadow(owner: 'str | None') -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/ownership.md",
-        "line": 69,
+        "line": 79,
         "level": 5,
         "title": "`is_shadow(owner: 'str | None') -> bool`"
       }
@@ -15863,7 +15911,7 @@
     "`orphans() -> 'list[dict[str, Any]]'`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/ownership.md",
-        "line": 166,
+        "line": 176,
         "level": 5,
         "title": "`orphans() -> 'list[dict[str, Any]]'`"
       }
@@ -16241,7 +16289,7 @@
     "`reclaim_sync(owner: str) -> 'dict[str, int]'`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/ownership.md",
-        "line": 123,
+        "line": 133,
         "level": 5,
         "title": "`reclaim_sync(owner: str) -> 'dict[str, int]'`"
       }
@@ -16417,7 +16465,7 @@
     "`register_shadow(owner: str) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/ownership.md",
-        "line": 51,
+        "line": 61,
         "level": 5,
         "title": "`register_shadow(owner: str) -> None`"
       }
@@ -17241,7 +17289,7 @@
     "`shadow_owners() -> 'frozenset[str]'`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/ownership.md",
-        "line": 80,
+        "line": 90,
         "level": 5,
         "title": "`shadow_owners() -> 'frozenset[str]'`"
       }
@@ -18031,7 +18079,7 @@
     "`unregister_shadow(owner: str) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/ownership.md",
-        "line": 60,
+        "line": 70,
         "level": 5,
         "title": "`unregister_shadow(owner: str) -> None`"
       }
@@ -18474,6 +18522,12 @@
         "title": "函数列表"
       },
       {
+        "document": "api-reference/auto_api/ErisPulse/Core/ownership.md",
+        "line": 33,
+        "level": 2,
+        "title": "函数列表"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
         "line": 21,
         "level": 2,
@@ -18595,7 +18649,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/troubleshoot.md",
-        "line": 23,
+        "line": 24,
         "level": 2,
         "title": "函数列表"
       },
@@ -18707,7 +18761,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/types.md",
-        "line": 102,
+        "line": 109,
         "level": 4,
         "title": "方法列表"
       },
@@ -19169,7 +19223,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/ownership.md",
-        "line": 48,
+        "line": 58,
         "level": 4,
         "title": "方法列表"
       },
@@ -20257,7 +20311,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/types.md",
-        "line": 92,
+        "line": 99,
         "level": 2,
         "title": "类列表"
       },
@@ -20569,7 +20623,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/ownership.md",
-        "line": 33,
+        "line": 43,
         "level": 2,
         "title": "类列表"
       },

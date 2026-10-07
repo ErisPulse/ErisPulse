@@ -21,6 +21,13 @@ Types 命令实现
 ## 函数列表
 
 
+### `_stub_header() -> str`
+
+**内部方法** 渲染存根文件头部说明（当前语言）
+
+---
+
+
 ### `_is_send_method(name: str, func: Any) -> bool`
 
 判断一个类属性是否是"发送方法"

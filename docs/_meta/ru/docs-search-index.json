@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1730,
+  "total_keywords": 1731,
   "keywords": {
     "0 Успешно (OK)": [
       {
@@ -3152,14 +3152,6 @@
         "title": "WebSocket декораторы"
       }
     ],
-    "WebSocket исключения — `Core/client.py` (методы `send` / `receive`)": [
-      {
-        "document": "advanced/errors.md",
-        "line": 81,
-        "level": 3,
-        "title": "WebSocket исключения — `Core/client.py` (методы `send` / `receive`)"
-      }
-    ],
     "WebSocket клиент": [
       {
         "document": "advanced/http-client.md",
@@ -3603,7 +3595,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 379,
+        "line": 383,
         "level": 3,
         "title": "create"
       }
@@ -3627,7 +3619,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 519,
+        "line": 523,
         "level": 3,
         "title": "doctor"
       }
@@ -3675,7 +3667,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 430,
+        "line": 434,
         "level": 3,
         "title": "i18n"
       }
@@ -3683,7 +3675,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 329,
+        "line": 333,
         "level": 3,
         "title": "init"
       }
@@ -3755,7 +3747,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 291,
+        "line": 295,
         "level": 3,
         "title": "run"
       }
@@ -3811,7 +3803,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 467,
+        "line": 471,
         "level": 3,
         "title": "types"
       }
@@ -4130,12 +4122,12 @@
         "title": "Асинхронный интерфейс"
       }
     ],
-    "Асинхронный оригинальный API": [
+    "Асинхронный нативный API": [
       {
         "document": "advanced/sql-builder.md",
         "line": 289,
         "level": 2,
-        "title": "Асинхронный оригинальный API"
+        "title": "Асинхронный нативный API"
       }
     ],
     "Аудит исходящих вызовов: кто может вызывать кого": [
@@ -4440,6 +4432,14 @@
         "title": "Взаимодействие между модулями (RPC)"
       }
     ],
+    "Взаимодействие — `Core/Event/interaction.py`": [
+      {
+        "document": "advanced/errors.md",
+        "line": 103,
+        "level": 3,
+        "title": "Взаимодействие — `Core/Event/interaction.py`"
+      }
+    ],
     "Взаимоисключающие сессии: acquire / hold / get_owner_of": [
       {
         "document": "advanced/interaction.md",
@@ -4502,6 +4502,14 @@
         "line": 129,
         "level": 3,
         "title": "Внутреннее разбиение цепочки горячей перезагрузки"
+      }
+    ],
+    "Внутренняя проверка параметров фреймворка (ValueError)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 153,
+        "level": 3,
+        "title": "Внутренняя проверка параметров фреймворка (ValueError)"
       }
     ],
     "Внутренняя реализация: как работает принадлежность": [
@@ -4719,7 +4727,7 @@
     "Вывод списка компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 576,
+        "line": 580,
         "level": 3,
         "title": "Вывод списка компонентов"
       }
@@ -4772,12 +4780,12 @@
         "title": "Высокоуровневые методы (рекомендуется)"
       }
     ],
-    "Генерация типов": [
+    "Генерация аннотаций типов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 651,
+        "line": 655,
         "level": 3,
-        "title": "Генерация типов"
+        "title": "Генерация аннотаций типов"
       }
     ],
     "Генерация типовых заглушек (автодополнение в IDE)": [
@@ -4823,7 +4831,7 @@
     "Глобальные параметры": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 502,
+        "line": 506,
         "level": 2,
         "title": "Глобальные параметры"
       }
@@ -5061,7 +5069,7 @@
     "Диагностика окружения": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 517,
+        "line": 521,
         "level": 2,
         "title": "Диагностика окружения"
       }
@@ -5607,7 +5615,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 628,
+        "line": 632,
         "level": 3,
         "title": "Запуск проекта"
       }
@@ -5767,7 +5775,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 661,
+        "line": 665,
         "level": 3,
         "title": "Инициализация проекта"
       }
@@ -5867,7 +5875,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 548,
+        "line": 552,
         "level": 2,
         "title": "Интерактивная установка"
       }
@@ -6074,30 +6082,6 @@
         "line": 176,
         "level": 4,
         "title": "Информация об отправителе"
-      }
-    ],
-    "Исключения взаимодействия — `Core/Event/interaction.py`": [
-      {
-        "document": "advanced/errors.md",
-        "line": 99,
-        "level": 3,
-        "title": "Исключения взаимодействия — `Core/Event/interaction.py`"
-      }
-    ],
-    "Исключения модулей — `Core/module.py` (`sdk.module.call`)": [
-      {
-        "document": "advanced/errors.md",
-        "line": 111,
-        "level": 3,
-        "title": "Исключения модулей — `Core/module.py` (`sdk.module.call`)"
-      }
-    ],
-    "Исключения хранилища — `Core/storage` / `Core/Bases/sql_base.py`": [
-      {
-        "document": "advanced/errors.md",
-        "line": 88,
-        "level": 3,
-        "title": "Исключения хранилища — `Core/storage` / `Core/Bases/sql_base.py`"
       }
     ],
     "Использование": [
@@ -6352,14 +6336,6 @@
         "title": "Класс LazyModule"
       }
     ],
-    "Клиентские исключения — `Core/client.py` / `Core/Bases/client.py`": [
-      {
-        "document": "advanced/errors.md",
-        "line": 61,
-        "level": 3,
-        "title": "Клиентские исключения — `Core/client.py` / `Core/Bases/client.py`"
-      }
-    ],
     "Кнопки (keyboard / components)": [
       {
         "document": "platform-guide/discord.md",
@@ -6432,14 +6408,6 @@
         "title": "Командная система"
       }
     ],
-    "Команды генерации типовых файлов": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 461,
-        "level": 2,
-        "title": "Команды генерации типовых файлов"
-      }
-    ],
     "Команды диагностики": [
       {
         "document": "user-guide/cli-reference.md",
@@ -6448,12 +6416,12 @@
         "title": "Команды диагностики"
       }
     ],
-    "Команды настройки": [
+    "Команды конфигурации": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 231,
         "level": 2,
-        "title": "Команды настройки"
+        "title": "Команды конфигурации"
       }
     ],
     "Команды получения информации": [
@@ -6464,10 +6432,18 @@
         "title": "Команды получения информации"
       }
     ],
+    "Команды типовых аннотаций": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 465,
+        "level": 2,
+        "title": "Команды типовых аннотаций"
+      }
+    ],
     "Команды управления запуском": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 280,
+        "line": 284,
         "level": 2,
         "title": "Команды управления запуском"
       }
@@ -6483,17 +6459,17 @@
     "Команды управления проектом": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 322,
+        "line": 326,
         "level": 2,
         "title": "Команды управления проектом"
       }
     ],
-    "Команды языкового пакета": [
+    "Команды языка": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 424,
+        "line": 428,
         "level": 2,
-        "title": "Команды языкового пакета"
+        "title": "Команды языка"
       }
     ],
     "Комбинация правил и фоновое выполнение": [
@@ -6686,6 +6662,14 @@
         "line": 523,
         "level": 3,
         "title": "Конфигурация команд"
+      }
+    ],
+    "Конфигурация компонентов": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 606,
+        "level": 3,
+        "title": "Конфигурация компонентов"
       }
     ],
     "Конфигурация ленивой загрузки": [
@@ -7760,14 +7744,6 @@
         "title": "Настройка блокировки для команд и ответов"
       }
     ],
-    "Настройка компонентов": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 602,
-        "level": 3,
-        "title": "Настройка компонентов"
-      }
-    ],
     "Начало обучения": [
       {
         "document": "getting-started/README.md",
@@ -8067,7 +8043,7 @@
     "Обновление компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 615,
+        "line": 619,
         "level": 3,
         "title": "Обновление компонентов"
       }
@@ -8810,12 +8786,12 @@
         "title": "Описание дополнительных полей"
       }
     ],
-    "Описание исключений и места их возникновения": [
+    "Описание исключений и места возникновения": [
       {
         "document": "advanced/errors.md",
-        "line": 59,
+        "line": 63,
         "level": 2,
-        "title": "Описание исключений и места их возникновения"
+        "title": "Описание исключений и места возникновения"
       }
     ],
     "Описание кода": [
@@ -9868,12 +9844,12 @@
         "title": "Параметр `keep_running`"
       }
     ],
-    "Параметризованные запросы": [
+    "Параметризованный запрос": [
       {
         "document": "advanced/sql-builder.md",
         "line": 357,
         "level": 2,
-        "title": "Параметризованные запросы"
+        "title": "Параметризованный запрос"
       }
     ],
     "Параметры": [
@@ -10524,20 +10500,20 @@
         "title": "Подсказка по нескольким экземплярам и файлу блокировки"
       }
     ],
+    "Подсчет и проверка существования": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 230,
+        "level": 3,
+        "title": "Подсчет и проверка существования"
+      }
+    ],
     "Подсчет сообщений": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 339,
         "level": 3,
         "title": "Подсчет сообщений"
-      }
-    ],
-    "Подсчёт и проверка существования": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 230,
-        "level": 3,
-        "title": "Подсчёт и проверка существования"
       }
     ],
     "Подтверждение диалога (confirm)": [
@@ -10774,12 +10750,12 @@
         "title": "Пользовательские шрифты"
       }
     ],
-    "Пользовательский бэкенд хранилища": [
+    "Пользовательский бэкенд хранения": [
       {
         "document": "advanced/sql-builder.md",
         "line": 395,
         "level": 2,
-        "title": "Пользовательский бэкенд хранилища"
+        "title": "Пользовательский бэкенд хранения"
       }
     ],
     "Поля конфигурации аккаунта": [
@@ -11500,14 +11476,6 @@
         "title": "Проверка наличия слушателей (has_handlers)"
       }
     ],
-    "Проверка параметров фреймворка (ValueError)": [
-      {
-        "document": "advanced/errors.md",
-        "line": 140,
-        "level": 3,
-        "title": "Проверка параметров фреймворка (ValueError)"
-      }
-    ],
     "Проверка поддержки платформой": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -11853,7 +11821,7 @@
     "Распространённые способы использования": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 561,
+        "line": 565,
         "level": 2,
         "title": "Распространённые способы использования"
       }
@@ -12217,7 +12185,7 @@
     "Рекомендации по перехвату": [
       {
         "document": "advanced/errors.md",
-        "line": 146,
+        "line": 159,
         "level": 2,
         "title": "Рекомендации по перехвату"
       }
@@ -12810,6 +12778,46 @@
         "title": "Сервисный контракт (meta.services)"
       }
     ],
+    "Серия Client — `Core/client.py` / `Core/Bases/client.py`": [
+      {
+        "document": "advanced/errors.md",
+        "line": 65,
+        "level": 3,
+        "title": "Серия Client — `Core/client.py` / `Core/Bases/client.py`"
+      }
+    ],
+    "Серия Module — `Core/module.py` (`sdk.module.call`)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 115,
+        "level": 3,
+        "title": "Серия Module — `Core/module.py` (`sdk.module.call`)"
+      }
+    ],
+    "Серия Shadow — `Core/shadow.py` (теневые модули)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 144,
+        "level": 3,
+        "title": "Серия Shadow — `Core/shadow.py` (теневые модули)"
+      }
+    ],
+    "Серия Storage — `Core/storage` / `Core/Bases/sql_base.py`": [
+      {
+        "document": "advanced/errors.md",
+        "line": 92,
+        "level": 3,
+        "title": "Серия Storage — `Core/storage` / `Core/Bases/sql_base.py`"
+      }
+    ],
+    "Серия WebSocket — `Core/client.py` (методы `send` / `receive`)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 85,
+        "level": 3,
+        "title": "Серия WebSocket — `Core/client.py` (методы `send` / `receive`)"
+      }
+    ],
     "Сессионная ящик входящих: event.history": [
       {
         "document": "advanced/interaction.md",
@@ -12969,7 +12977,7 @@
     "Скрытие шума при завершении": [
       {
         "document": "advanced/errors.md",
-        "line": 161,
+        "line": 174,
         "level": 2,
         "title": "Скрытие шума при завершении"
       }
@@ -12993,7 +13001,7 @@
     "Смена языка": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 638,
+        "line": 642,
         "level": 3,
         "title": "Смена языка"
       }
@@ -13357,7 +13365,7 @@
     "Создание шаблона": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 671,
+        "line": 675,
         "level": 3,
         "title": "Создание шаблона"
       }
@@ -14148,12 +14156,12 @@
         "title": "Структура сегмента сообщения (направление отправки)"
       }
     ],
-    "Структурированные атрибуты": [
+    "Структурированные свойства": [
       {
         "document": "advanced/errors.md",
-        "line": 34,
+        "line": 38,
         "level": 2,
-        "title": "Структурированные атрибуты"
+        "title": "Структурированные свойства"
       }
     ],
     "Сценарии использования": [
@@ -14577,7 +14585,7 @@
     "Удаление компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 592,
+        "line": 596,
         "level": 3,
         "title": "Удаление компонентов"
       }
@@ -14907,7 +14915,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 563,
+        "line": 567,
         "level": 3,
         "title": "Установка модуля"
       }

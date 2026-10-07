@@ -3036,7 +3036,7 @@ sudo apt install python3-venv
 
 ErisPulse 命令行工具（`epsdk`）提供專案管理和套件管理功能。
 
-> **提示**：所有命令均可透過 `epsdk <命令> --help` 查看詳細的參數說明。
+> **提示**：所有命令均可通過 `epsdk <命令> --help` 查看詳細的參數說明。
 
 ---
 
@@ -3047,13 +3047,13 @@ ErisPulse 命令行工具（`epsdk`）提供專案管理和套件管理功能。
 | `install` | `i`, `add` | `[套件]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | 安裝模組/適配器 |
 | `uninstall` | `rm`, `remove` | `<套件>... [--no-uv]` | 卸載模組/適配器 |
 | `upgrade` | `up` | `[套件]... [--force/-f] [--pre] [--no-uv]` | 升級指定模組或全部 |
-| `self-update` | `su`, `update` | `[版本] [--pre] [--force/-f] [--no-uv]` | 更新 SDK 本身 |
+| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | 更新 SDK 本身 |
 
-## 臨床診斷命令
+## 診斷命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `doctor` | `diag` | `[--verbose]` | 臨床診斷環境並輸出健康報告 |
+| `doctor` | `diag` | `[--verbose]` | 診斷環境並輸出健康報告 |
 
 ### install
 
@@ -3076,14 +3076,14 @@ ErisPulse 命令行工具（`epsdk`）提供專案管理和套件管理功能。
 | `--extra-index-url` | | 預設 PyPI 鏡像來源地址（可多次指定） |
 | `--no-cache-dir` | | 禁用快取 |
 | `--requirement` | `-r` | 從 requirements 檔案安裝 |
-| `--constraint` | `-c` | 從約束檔案安裝 |
+| `--constraint` | `-c` | 從約束檔安裝 |
 | `--force-reinstall` | | 強制重新安裝 |
 | `--ignore-installed` | | 忽略已安裝的套件 |
 | `--compile` | | 安裝後編譯 .pyc 檔案 |
 | `--no-compile` | | 安裝後不編譯 .pyc 檔案 |
 | `--prefix` | | 安裝到指定前綴目錄 |
 | `--src` | | 可編輯安裝時使用的原始碼目錄 |
-| `--config-settings` | | 傳遞給建構後端的配置（可多次指定） |
+| `--config-settings` | | 傳遞給建構後端的設定（可多次指定） |
 | `--no-binary` | | 限制不使用二進位套件（格式如 `:all:`） |
 | `--only-binary` | | 限制僅使用二進位套件（格式如 `:all:`） |
 | `--prefer-binary` | | 优先選擇二進位套件 |
@@ -3170,7 +3170,7 @@ epsdk upgrade -f
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `[版本]` | | 指定要更新的目標版本號 |
+| `[version]` | | 指定要更新的目標版本號 |
 | `--pre` | | 允許更新到預發布版本 |
 | `--force` | `-f` | 強制更新，跳過確認 |
 | `--no-uv` | | 使用 pip 代替 uv |
@@ -3197,13 +3197,13 @@ epsdk self-update -f
 
 ---
 
-## 資訊查詢命令
+## 信息查詢命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
 | `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | 列出已安裝的組件 |
 | `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | 列出遠端可用的組件 |
-| `version` | `ver` | | 顯示 SDK 與 Python 版本資訊（與 `-V` 等效） |
+| `version` | `ver` | | 显示 SDK 與 Python 版本信息（與 `-V` 等效） |
 
 ### list
 
@@ -3266,11 +3266,11 @@ epsdk list-remote -r
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `config` | `cfg`, `conf` | `[名稱] [--list/-l]` | 互動式配置適配器/模組的宣告式配置項 |
+| `config` | `cfg`, `conf` | `[name] [--list/-l] [--json]` | 互動式配置適配器/模組的宣告式配置項 |
 
 ### config
 
-互動式填寫適配器/模組的宣告式配置項。向導由適配器/模組宣告的配置類（`ConfigClass` / `AccountConfigClass`）驅動，自動產生表單並驗證，無需手寫 config.toml。
+互動式填寫適配器/模組的宣告式配置項。向導由適配器/模組宣告的配置類（`ConfigClass` / `AccountConfigClass`）驅動，自動生成表單並驗證，無需手寫 config.toml。
 
 適配器額外支援多帳戶（bot 帳戶）管理：新增/編輯/刪除帳戶，以及啟用/停用開關。
 
@@ -3280,14 +3280,18 @@ epsdk list-remote -r
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `[名稱]` | | 目標名稱（適配器平台名或模組名），留空進入互動選擇 |
+| `[name]` | | 目標名稱（適配器平台名或模組名），留空進入互動選擇 |
 | `--list` | `-l` | 僅列出所有目標的配置狀態，不進入向導 |
+| `--json` | | 以 JSON 輸出全部目標及其配置狀態（供 CI / 腳本消費），不進入向導 |
 
 **示例：**
 
 ```bash
 # 查看所有適配器/模組的配置狀態
 epsdk config --list
+
+# 以 JSON 輸出配置狀態（CI / 腳本消費）
+epsdk config --json
 
 # 互動選擇目標進行配置
 epsdk config
@@ -3320,7 +3324,7 @@ epsdk config MyModule
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `run` | `r` | `[腳本] [--reload]` | 運行指定腳本或 SDK |
+| `run` | `r` | `[script] [--reload]` | 運行指定腳本或 SDK |
 
 ### run
 
@@ -3332,7 +3336,7 @@ epsdk config MyModule
 
 | 參數 | 說明 |
 |------|------|
-| `[腳本]` | 要運行的腳本檔案，不指定則運行 SDK |
+| `[script]` | 要運行的腳本檔案，不指定則運行 SDK |
 | `--reload` | 啟用熱重載模式，監控檔案變更自動重啟 |
 
 **示例：**
@@ -3357,8 +3361,8 @@ epsdk run --reload
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `init` | — | `[路徑] [--專案名稱/-n <名稱>] [--路徑 <目錄>] [--快速/-q] [--強制/-f] [--在這裡] [--no-uv] [--no-venv]` | 初始化 ErisPulse 專案 |
-| `create` | — | `{模組,適配器} [--名稱/-n <名稱>] [--描述/-d <描述>] [--作者/-a <名稱>] [--郵件/-e <郵件>] [--首頁 <網址>] [--輸出/-o <目錄>] [--強制/-f]` | 建立模組/適配器腳手架 |
+| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 專案 |
+| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | 建立模組/適配器腳手架 |
 
 ### init
 
@@ -3368,12 +3372,12 @@ epsdk run --reload
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `[路徑]` | | 目標路徑（可包含父目錄，如 `../apps/mybot`；純名稱等價 `--專案名稱`） |
-| `--專案名稱` | `-n` | 專案名稱 |
-| `--路徑` | | 專案父目錄（與 `-n` 組合指定建立位置） |
-| `--快速` | `-q` | 快速模式，跳過互動式向導（預設建立 `.venv` 並安裝相依性） |
-| `--強制` | `-f` | 強制覆蓋現有配置檔案 |
-| `--在這裡` | | 在目前目錄初始化，不建立子目錄 |
+| `[path]` | | 目標路徑（可包含父目錄，如 `../apps/mybot`；純名稱等價 `--project-name`） |
+| `--project-name` | `-n` | 專案名稱 |
+| `--path` | | 專案父目錄（與 `-n` 組合指定建立位置） |
+| `--quick` | `-q` | 快速模式，跳過互動式向導（預設建立 `.venv` 並安裝相依性） |
+| `--force` | `-f` | 強制覆蓋現有設定檔案 |
+| `--here` | | 在當前目錄初始化，不建立子目錄 |
 | `--no-uv` | | 使用 pip 代替 uv |
 | `--no-venv` | | 跳過虛擬環境建立與相依性安裝 |
 
@@ -3383,20 +3387,20 @@ epsdk run --reload
 # 互動式初始化
 epsdk init
 
-# 快速初始化（目前目錄下建立 my_bot/，含 pyproject.toml + .venv）
+# 快速初始化（當前目錄下建立 my_bot/，含 pyproject.toml + .venv）
 epsdk init -q -n my_bot
 
 # 指定任意目錄初始化（../apps/mybot）
 epsdk init ../apps/mybot
 
 # 組合父目錄與專案名
-epsdk init -n my_bot --路徑 ../apps
+epsdk init -n my_bot --path ../apps
 
-# 強制覆蓋已有配置
+# 強制覆蓋已有設定
 epsdk init -f
 
-# 在目前目錄初始化
-epsdk init --在這裡 -n my_bot
+# 在當前目錄初始化
+epsdk init --here -n my_bot
 
 # 只生成專案結構，不建立虛擬環境
 epsdk init --no-venv -n my_bot
@@ -3405,10 +3409,10 @@ epsdk init --no-venv -n my_bot
 init 產物：`main.py`、`pyproject.toml`（相依性清單）、`config/config.toml` + `config.full.example`、`config/ssl/`、`logs/`、`.gitignore`、`README.md`；選擇建立虛擬環境時額外生成 `.venv` 並將 `erispulse` 與所選適配器安裝其中。
 
 > [!NOTE]
-> `.gitignore` 為分組式範本：Python 位元組碼與建構產物、虛擬環境與 `.env`、工具快取、編輯器與系統檔案，並**整體排除 `config/` 與 `logs/` 運行時目錄**——`config.toml` 含適配器權杖等敏感資訊，不建議加入版本控制；共享配置骨架請使用 `config.full.example`。
+> `.gitignore` 為分組式範本：Python 位元組碼與建構產物、虛擬環境與 `.env`、工具快取、編輯器與系統檔案，並**整體排除 `config/` 與 `logs/` 運行時目錄**——`config.toml` 含適配器權杖等敏感資訊，不建議加入版本控制；共享設定骨架請使用 `config.full.example`。
 
 > [!WARNING]
-> **不要使用 `uv run epsdk run` 運行機器人**。`uv run` 在無 `pyproject.toml` 的目錄執行時建立**一次性隔離環境**——在其中透過 `epsdk install` 安裝的適配器不會持久化。請在專案目錄內使用 `epsdk run`（自動使用專案 `.venv`），或先激活虛擬環境再運行。
+> **不要使用 `uv run epsdk run` 運行機器人**。`uv run` 在無 `pyproject.toml` 的目錄執行時建立**一次性隔離環境**——在其中透過 `epsdk install` 安裝的適配器不會永久化。請在專案目錄內使用 `epsdk run`（自動使用專案 `.venv`），或先激活虛擬環境再執行。
 
 ### create
 
@@ -3418,15 +3422,15 @@ init 產物：`main.py`、`pyproject.toml`（相依性清單）、`config/config
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `{模組,適配器}` | | 要建立的類型：`模組` 或 `適配器` |
-| `--名稱` | `-n` | 專案名稱（PascalCase） |
-| `--描述` | `-d` | 專案描述 |
-| `--作者` | `-a` | 作者名稱 |
-| `--郵件` | `-e` | 作者郵件 |
-| `--首頁` | | 專案首頁 URL |
-| `--輸出` | `-o` | 輸出目錄（預設目前目錄） |
-| `--強制` | `-f` | 強制覆蓋已存在的目錄 |
-| `--本地` | | 建立本地插件（僅 `模組` 可用）：生成 `plugins/<名稱>/` 包結構，免打包安裝 |
+| `{module,adapter}` | | 要建立的類型：`module` 或 `adapter` |
+| `--name` | `-n` | 專案名稱（PascalCase） |
+| `--description` | `-d` | 專案描述 |
+| `--author` | `-a` | 作者名稱 |
+| `--email` | `-e` | 作者電郵 |
+| `--homepage` | | 專案首頁 URL |
+| `--output` | `-o` | 輸出目錄（預設當前目錄） |
+| `--force` | `-f` | 強制覆蓋已存在的目錄 |
+| `--local` | | 建立本地插件（僅 `module` 可用）：生成 `plugins/<name>/` 包結構，免打包安裝 |
 
 **示例：**
 
@@ -3434,23 +3438,23 @@ init 產物：`main.py`、`pyproject.toml`（相依性清單）、`config/config
 # 互動式建立（引導選擇類型和填寫資訊）
 epsdk create
 
-# 直接建立模組專案
-epsdk create 模組 -n MyModule
+# 直接建立 Module 專案
+epsdk create module -n MyModule
 
 # 建立本地插件（放入專案 plugins/ 目錄，啟動時自動發現，支援熱重載）
-epsdk create 模組 -n MyModule --本地
+epsdk create module -n MyModule --local
 
-# 直接建立適配器專案
-epsdk create 適配器 -n MyAdapter
+# 直接建立 Adapter 專案
+epsdk create adapter -n MyAdapter
 
 # 完整參數
-epsdk create 模組 -n MyModule -d "模組描述" -a "作者" -e "mail@example.com"
+epsdk create module -n MyModule -d "模組描述" -a "作者" -e "mail@example.com"
 
 # 指定輸出目錄
-epsdk create 模組 -n MyModule -o ./projects
+epsdk create module -n MyModule -o ./projects
 
 # 強制覆蓋已有目錄
-epsdk create 模組 -n MyModule -f
+epsdk create module -n MyModule -f
 ```
 
 ---
@@ -3459,11 +3463,11 @@ epsdk create 模組 -n MyModule -f
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `i18n` | `language`, `lang` | `[語言] [--list/-l]` | 查看或切換 CLI 顯示語言 |
+| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | 查看或切換 CLI 顯示語言 |
 
 ### i18n
 
-查看目前 CLI 語言、列出支援的語言、切換顯示語言。若不指定參數則進入互動式選擇介面。
+查看當前 CLI 語言、列出支援的語言、切換顯示語言。若不指定參數則進入互動式選擇介面。
 
 **別名：** `language`, `lang`
 
@@ -3471,7 +3475,7 @@ epsdk create 模組 -n MyModule -f
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `[語言]` | | 要切換的語言代碼（如 `zh-CN`、`en`、`ja`、`ru`） |
+| `[lang]` | | 要切換的語言代碼（如 `zh-CN`、`en`、`ja`、`ru`） |
 | `--list` | `-l` | 列出所有支援的語言 |
 
 **示例：**
@@ -3496,7 +3500,7 @@ epsdk i18n --list
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `types` | `t`, `stub` | `[--輸出/-o <路徑>] [--強制] [--僅適配器] [--僅模組]` | 生成類型存根檔案以啟用 IDE 补全 |
+| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | 生成類型存根檔案以啟用 IDE 补全 |
 
 ### types
 
@@ -3508,12 +3512,12 @@ epsdk i18n --list
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `--輸出` | `-o` | 輸出路徑（預設目前目錄下的 `ep-stubs/`） |
-| `--強制` | | 強制覆蓋已存在的存根檔案 |
-| `--僅適配器` | | 僅生成適配器的類型存根 |
-| `--僅模組` | | 僅生成模組的類型存根 |
+| `--output` | `-o` | 輸出路徑（預設當前目錄下的 `ep-stubs/`） |
+| `--force` | | 強制覆蓋已存在的存根檔案 |
+| `--adapters-only` | | 僅生成適配器的類型存根 |
+| `--modules-only` | | 僅生成模組的類型存根 |
 
-> **注意：** `--僅適配器` 與 `--僅模組` 互斥，同時指定時後者生效。
+> **注意：** `--adapters-only` 與 `--modules-only` 互斥，同時指定時後者生效。
 
 **示例：**
 
@@ -3522,13 +3526,13 @@ epsdk i18n --list
 epsdk types
 
 # 僅生成適配器存根
-epsdk types --僅適配器
+epsdk types --adapters-only
 
 # 輸出到指定目錄
 epsdk types -o ./typings
 
 # 強制覆蓋已有檔案
-epsdk types --強制
+epsdk types --force
 ```
 
 ---
@@ -3543,7 +3547,7 @@ epsdk types --強制
 | `--version` | `-V` | 顯示版本資訊 |
 | `--verbose` | `-v` | 顯示詳細輸出（可疊加 `-vv`/`-vvv`） |
 | `--no-color` | | 禁用彩色輸出（適合 CI / 日誌採集） |
-| `--no-banner` | | 跳過啟動 Banner（腳本化呼叫 / CI 場景；非互動終端與 `ERISPULSE_NO_BANNER=1` 下自動靜默） |
+| `--no-banner` | | 跳過啟動 Banner（腳本化調用 / CI 場景；非互動終端與 `ERISPULSE_NO_BANNER=1` 下自動靜默） |
 | `--yes` | `-y` | 自動確認所有互動提示（非互動式運行） |
 
 ---
@@ -3555,17 +3559,17 @@ epsdk types --強制
 > [!NOTE]
 > 本命令需要 ErisPulse **2.7.0+**。
 
-診斷目前 CLI 運行環境，輸出健康報告。用於排查"為什麼裝不上 / 連不上"類問題。
+診斷當前 CLI 運行環境，輸出健康報告。用於排查"為什麼裝不上 / 連不上"類問題。
 
 | 參數 | 說明 |
 |------|------|
 | `--verbose` | 顯示詳細診斷資訊 |
 
-**檢查項目**：
+**檢查項**：
 - **Python**：解釋器版本與路徑
 - **安裝後端**：使用 `uv` 還是 `pip`
 - **目標解釋器**：套件實際安裝到的目標 Python 環境
-- **配置檔案**：`config/config.toml` 是否存在
+- **設定檔**：`config/config.toml` 是否存在
 - **PyPI 連通性**：能否存取 PyPI（並顯示發現的組件數）
 - **系統代理**：是否檢測到代理
 
@@ -3614,7 +3618,7 @@ epsdk install Weather -U
 epsdk list
 
 # 只列出適配器
-epsdk list -t 適配器
+epsdk list -t adapters
 
 # 只列出可升級的組件
 epsdk list -o
@@ -3689,7 +3693,7 @@ epsdk i18n --list
 epsdk types
 
 # 僅生成模組類型存根
-epsdk types --僅模組
+epsdk types --modules-only
 ```
 
 ### 初始化專案
@@ -3708,17 +3712,17 @@ epsdk init -q -n my_bot
 # 互動式建立（引導選擇類型和填寫資訊）
 epsdk create
 
-# 直接建立模組專案
-epsdk create 模組 -n MyModule
+# 直接建立 Module 專案
+epsdk create module -n MyModule
 
-# 直接建立適配器專案
-epsdk create 適配器 -n MyAdapter
+# 直接建立 Adapter 專案
+epsdk create adapter -n MyAdapter
 
 # 完整參數
-epsdk create 模組 -n MyModule -d "模組描述" -a "作者" -e "mail@example.com"
+epsdk create module -n MyModule -d "模組描述" -a "作者" -e "mail@example.com"
 
 # 強制覆蓋已有目錄
-epsdk create 模組 -n MyModule -f
+epsdk create module -n MyModule -f
 ```
 
 
@@ -15400,15 +15404,15 @@ ErisPulse 的 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構�
 Bases/storage.py                    Core/storage.py
 ┌─────────────────────┐             ┌──────────────────────────┐
 │  BaseStorage (ABC)  │◄────────────│  StorageManager          │
-│  BaseQueryBuilder   │             │  (SQLite concrete impl)  │
-│    (ABC)            │             │                          │
+│  BaseQueryBuilder   │             │  (backend dispatch:      │
+│    (ABC)            │             │   sqlite/mysql/postgres) │
 └─────────────────────┘             │  SQLiteQueryBuilder      │
                                     │  AlterTableBuilder       │
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面，支援未來拓展其他儲存媒體（Redis、MySQL 等）
-- `StorageManager` 是目前 SQLite 具體實作，完全向後相容
+- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面；框架內建 SQLite / MySQL / PostgreSQL 三種實現（自定義後端亦可依此擴展，見[儲存後端](storage-backends.md)）
+- `StorageManager` 按 `ErisPulse.storage.backend` 配置調度具體後端，預設 SQLite，完全向後相容
 
 ## 導入
 

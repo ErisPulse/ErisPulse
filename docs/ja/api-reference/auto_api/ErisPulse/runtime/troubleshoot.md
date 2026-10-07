@@ -17,6 +17,7 @@
 > **提示**
 > 1. 两个函数均为纯读诊断，不改任何状态
 > 2. 返回 dict（机器可读），配 :func:`format_report` 渲染为人类可读文本
+> 3. conclusion / reasons 文案经 i18n 以当前语言渲染（``runtime.troubleshoot.*`` 键）
 
 ---
 
@@ -57,7 +58,7 @@
 
 ### `format_report(result: dict[str, Any]) -> str`
 
-将诊断结果渲染为人类可读文本
+将诊断结果渲染为人类可读文本（当前语言）
 
 - **result**: :func:`explain_module` 或 :func:`explain_event` 的返回值
 

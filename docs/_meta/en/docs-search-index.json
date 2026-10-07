@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1687,
+  "total_keywords": 1689,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -4065,7 +4065,7 @@
     "Client Series — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 61,
+        "line": 65,
         "level": 3,
         "title": "Client Series — `Core/client.py` / `Core/Bases/client.py`"
       }
@@ -4371,7 +4371,7 @@
     "Common Usage": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 560,
+        "line": 565,
         "level": 2,
         "title": "Common Usage"
       }
@@ -4537,7 +4537,7 @@
     "Configuration Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 230,
+        "line": 231,
         "level": 2,
         "title": "Configuration Commands"
       }
@@ -4756,12 +4756,12 @@
         "title": "Configuration Reading and Deletion API"
       }
     ],
-    "Configure Components": [
+    "Configure components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 601,
+        "line": 606,
         "level": 3,
-        "title": "Configure Components"
+        "title": "Configure components"
       }
     ],
     "Configuring Lazy Loading": [
@@ -5144,14 +5144,6 @@
         "title": "Counting and Existence Check"
       }
     ],
-    "Create Scaffold": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 670,
-        "level": 3,
-        "title": "Create Scaffold"
-      }
-    ],
     "Create Tasks": [
       {
         "document": "ecosystem/cron.md",
@@ -5174,6 +5166,14 @@
         "line": 38,
         "level": 4,
         "title": "Create a Virtual Environment"
+      }
+    ],
+    "Create scaffold": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 675,
+        "level": 3,
+        "title": "Create scaffold"
       }
     ],
     "Creating a Conversation": [
@@ -5977,7 +5977,7 @@
     "Environment Diagnosis": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 516,
+        "line": 521,
         "level": 2,
         "title": "Environment Diagnosis"
       }
@@ -6581,7 +6581,7 @@
     "Exception Descriptions and Occurrence Locations": [
       {
         "document": "advanced/errors.md",
-        "line": 59,
+        "line": 63,
         "level": 2,
         "title": "Exception Descriptions and Occurrence Locations"
       }
@@ -7035,7 +7035,7 @@
     "Framework Internal Parameter Validation (ValueError)": [
       {
         "document": "advanced/errors.md",
-        "line": 140,
+        "line": 153,
         "level": 3,
         "title": "Framework Internal Parameter Validation (ValueError)"
       }
@@ -7182,12 +7182,12 @@
         "title": "General request"
       }
     ],
-    "Generate Type Stubs": [
+    "Generate type stubs": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 650,
+        "line": 655,
         "level": 3,
-        "title": "Generate Type Stubs"
+        "title": "Generate type stubs"
       }
     ],
     "Get Adapter Instance": [
@@ -7295,7 +7295,7 @@
     "Global Parameters": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 501,
+        "line": 506,
         "level": 2,
         "title": "Global Parameters"
       }
@@ -7553,7 +7553,7 @@
     "Handling Recommendations": [
       {
         "document": "advanced/errors.md",
-        "line": 146,
+        "line": 159,
         "level": 2,
         "title": "Handling Recommendations"
       }
@@ -7841,7 +7841,7 @@
     "Information Query Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 165,
+        "line": 166,
         "level": 2,
         "title": "Information Query Commands"
       }
@@ -7882,12 +7882,14 @@
         "line": 70,
         "level": 2,
         "title": "Initialize Project"
-      },
+      }
+    ],
+    "Initialize project": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 660,
+        "line": 665,
         "level": 3,
-        "title": "Initialize Project"
+        "title": "Initialize project"
       }
     ],
     "Inline Query Event": [
@@ -7914,12 +7916,12 @@
         "title": "Install ErisPulse"
       }
     ],
-    "Install Modules": [
+    "Install modules": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 562,
+        "line": 567,
         "level": 3,
-        "title": "Install Modules"
+        "title": "Install modules"
       }
     ],
     "Install uv": [
@@ -8059,7 +8061,7 @@
     "Interaction — `Core/Event/interaction.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 99,
+        "line": 103,
         "level": 3,
         "title": "Interaction — `Core/Event/interaction.py`"
       }
@@ -8089,7 +8091,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 547,
+        "line": 552,
         "level": 2,
         "title": "Interactive Installation"
       }
@@ -8201,7 +8203,7 @@
     "Language Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 423,
+        "line": 428,
         "level": 2,
         "title": "Language Commands"
       }
@@ -8330,14 +8332,6 @@
         "title": "Link Control: Claiming and Blocking"
       }
     ],
-    "List Components": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 575,
-        "level": 3,
-        "title": "List Components"
-      }
-    ],
     "List Platforms": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8352,6 +8346,14 @@
         "line": 153,
         "level": 3,
         "title": "List Supported Send Methods"
+      }
+    ],
+    "List components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 580,
+        "level": 3,
+        "title": "List components"
       }
     ],
     "List of Functionality Already Integrated": [
@@ -9501,7 +9503,7 @@
     "Module Series — `Core/module.py` (`sdk.module.call`)": [
       {
         "document": "advanced/errors.md",
-        "line": 111,
+        "line": 115,
         "level": 3,
         "title": "Module Series — `Core/module.py` (`sdk.module.call`)"
       }
@@ -9836,14 +9838,6 @@
         "line": 138,
         "level": 3,
         "title": "Node Tree Example"
-      }
-    ],
-    "Noise Folding on Shutdown": [
-      {
-        "document": "advanced/errors.md",
-        "line": 161,
-        "level": 2,
-        "title": "Noise Folding on Shutdown"
       }
     ],
     "Non-persistent example Fields (v2.8.0+)": [
@@ -10691,7 +10685,7 @@
     "Project Management Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 321,
+        "line": 326,
         "level": 2,
         "title": "Project Management Commands"
       }
@@ -11938,20 +11932,20 @@
         "title": "Rule Propagation"
       }
     ],
-    "Run Project": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 627,
-        "level": 3,
-        "title": "Run Project"
-      }
-    ],
     "Run Tests": [
       {
         "document": "user-guide/installation.md",
         "line": 109,
         "level": 3,
         "title": "Run Tests"
+      }
+    ],
+    "Run project": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 632,
+        "level": 3,
+        "title": "Run project"
       }
     ],
     "Running Mode": [
@@ -11989,7 +11983,7 @@
     "Runtime Control Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 279,
+        "line": 284,
         "level": 2,
         "title": "Runtime Control Commands"
       }
@@ -12516,12 +12510,28 @@
         "title": "Shadow Modules and Gradual Promotion"
       }
     ],
+    "Shadow Series — `Core/shadow.py` (Shadow Modules)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 144,
+        "level": 3,
+        "title": "Shadow Series — `Core/shadow.py` (Shadow Modules)"
+      }
+    ],
     "Shutdown Adapters": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 108,
         "level": 4,
         "title": "Shutdown Adapters"
+      }
+    ],
+    "Shutdown Noise Folding": [
+      {
+        "document": "advanced/errors.md",
+        "line": 174,
+        "level": 2,
+        "title": "Shutdown Noise Folding"
       }
     ],
     "Sidebar Grouping": [
@@ -12923,7 +12933,7 @@
     "Storage Series — `Core/storage` / `Core/Bases/sql_base.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 88,
+        "line": 92,
         "level": 3,
         "title": "Storage Series — `Core/storage` / `Core/Bases/sql_base.py`"
       }
@@ -12953,7 +12963,7 @@
     "Structured Properties": [
       {
         "document": "advanced/errors.md",
-        "line": 34,
+        "line": 38,
         "level": 2,
         "title": "Structured Properties"
       }
@@ -13162,20 +13172,20 @@
         "title": "Supported i18n Fields"
       }
     ],
-    "Switch Language": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 637,
-        "level": 3,
-        "title": "Switch Language"
-      }
-    ],
     "Switch Manually in Code": [
       {
         "document": "advanced/i18n.md",
         "line": 39,
         "level": 3,
         "title": "Switch Manually in Code"
+      }
+    ],
+    "Switch language": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 642,
+        "level": 3,
+        "title": "Switch language"
       }
     ],
     "Switch via Configuration File": [
@@ -13481,7 +13491,7 @@
     "Type Stub Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 460,
+        "line": 465,
         "level": 2,
         "title": "Type Stub Commands"
       }
@@ -13526,20 +13536,20 @@
         "title": "Unified Module Access Entry"
       }
     ],
-    "Uninstall Components": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 591,
-        "level": 3,
-        "title": "Uninstall Components"
-      }
-    ],
     "Uninstall Process": [
       {
         "document": "advanced/startup.md",
         "line": 306,
         "level": 2,
         "title": "Uninstall Process"
+      }
+    ],
+    "Uninstall components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 596,
+        "level": 3,
+        "title": "Uninstall components"
       }
     ],
     "Unique Event Types": [
@@ -13674,12 +13684,12 @@
         "title": "Updating Data"
       }
     ],
-    "Upgrade Components": [
+    "Upgrade components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 614,
+        "line": 619,
         "level": 3,
-        "title": "Upgrade Components"
+        "title": "Upgrade components"
       }
     ],
     "Usage": [
@@ -14217,7 +14227,7 @@
     "WebSocket Series — `Core/client.py` (`send` / `receive`)": [
       {
         "document": "advanced/errors.md",
-        "line": 81,
+        "line": 85,
         "level": 3,
         "title": "WebSocket Series — `Core/client.py` (`send` / `receive`)"
       }
@@ -14743,7 +14753,7 @@
     "config": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 236,
+        "line": 237,
         "level": 3,
         "title": "config"
       }
@@ -14799,7 +14809,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 378,
+        "line": 383,
         "level": 3,
         "title": "create"
       }
@@ -14855,7 +14865,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 518,
+        "line": 523,
         "level": 3,
         "title": "doctor"
       }
@@ -14919,7 +14929,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 429,
+        "line": 434,
         "level": 3,
         "title": "i18n"
       }
@@ -14935,7 +14945,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 328,
+        "line": 333,
         "level": 3,
         "title": "init"
       }
@@ -14967,7 +14977,7 @@
     "list": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 173,
+        "line": 174,
         "level": 3,
         "title": "list"
       }
@@ -14975,7 +14985,7 @@
     "list-remote": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 202,
+        "line": 203,
         "level": 3,
         "title": "list-remote"
       }
@@ -15063,7 +15073,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 290,
+        "line": 295,
         "level": 3,
         "title": "run"
       }
@@ -15135,7 +15145,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 466,
+        "line": 471,
         "level": 3,
         "title": "types"
       }
