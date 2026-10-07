@@ -1657,7 +1657,9 @@ def create_project_venv(project_dir: Path) -> "str | None":
             check=False,
         )
         if result.returncode != 0:
-            console.print(f"[warning]  uv venv 失败：{result.stderr.strip()[:200]}[/]")
+            console.print(
+                f"[warning]  {i18n.t('cli.package.uv_venv_failed', error=result.stderr.strip()[:200])}[/]"
+            )
     else:
         result = subprocess.run(
             [sys.executable, "-m", "venv", str(venv_dir)],
@@ -1667,7 +1669,9 @@ def create_project_venv(project_dir: Path) -> "str | None":
             check=False,
         )
         if result.returncode != 0:
-            console.print(f"[warning]  python -m venv 失败：{result.stderr.strip()[:200]}[/]")
+            console.print(
+                f"[warning]  {i18n.t('cli.package.python_venv_failed', error=result.stderr.strip()[:200])}[/]"
+            )
 
     if sys.platform == "win32":
         py = venv_dir / "Scripts" / "python.exe"
@@ -1737,7 +1741,7 @@ def append_pyproject_dependencies(project_dir: Path, packages: "list[str]") -> b
         pyproject.write_text(tomlkit.dumps(doc_kit), encoding="utf-8")
         return True
     except Exception as e:
-        console.print(f"[warning]  pyproject.toml 依赖回写失败：{e}[/]")
+        console.print(f"[warning]  {i18n.t('cli.package.pyproject_writeback_failed', error=e)}[/]")
         return False
 
 

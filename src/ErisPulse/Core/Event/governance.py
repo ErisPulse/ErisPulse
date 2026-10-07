@@ -21,7 +21,12 @@ from collections import deque
 from typing import TYPE_CHECKING, Any
 
 from .. import logger
-from ..constants import GOVERNANCE_STATE_MAX_ENTRIES, UNKNOWN_PLATFORM
+from ..constants import (
+    GOVERNANCE_STATE_MAX_ENTRIES,
+    GOVERNANCE_USAGE_KEY_PREFIX,
+    GOVERNANCE_USAGE_STORAGE_TIMEOUT_SECS,
+    UNKNOWN_PLATFORM,
+)
 from ..i18n import i18n
 from .trace import trace_step
 
@@ -419,7 +424,8 @@ class GovernanceGate:
             # wait_for 兜底：后台桥接 loop 不可用（如裸 asyncio.run 测试
             # 场景）时限时回退内存计数，避免分发路径卡死
             stored = await asyncio.wait_for(
-                storage.aget(f"erispulse.usage{chr(0)}{u_key}"), timeout=1.0
+                storage.aget(f"{GOVERNANCE_USAGE_KEY_PREFIX}{chr(0)}{u_key}"),
+                timeout=GOVERNANCE_USAGE_STORAGE_TIMEOUT_SECS,
             )
             if isinstance(stored, int) and stored > used:
                 used = stored
@@ -458,8 +464,8 @@ class GovernanceGate:
                 # aset 内部吞异常返回 False（存储不可达时的快速失败语义），
                 # 返回 False 说明持久化已降级为内存计数，显式告警避免"重启不丢"静默失效
                 ok = await asyncio.wait_for(
-                    storage.aset(f"erispulse.usage{chr(0)}{u_key}", used + 1),
-                    timeout=1.0,
+                    storage.aset(f"{GOVERNANCE_USAGE_KEY_PREFIX}{chr(0)}{u_key}", used + 1),
+                    timeout=GOVERNANCE_USAGE_STORAGE_TIMEOUT_SECS,
                 )
                 if ok is False:
                     if main_name not in self._usage_persist_warned:

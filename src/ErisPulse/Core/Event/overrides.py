@@ -73,7 +73,7 @@ from typing import Any
 
 from ...runtime.context import current_owner
 from ...runtime.frame_config import set_erispulse_section
-from .. import text_match
+from .. import logger, text_match
 from ..i18n import i18n
 
 # 类型规格注册表：每事件类型的可覆写参数白名单（新参数/新类型在此注册）
@@ -193,13 +193,7 @@ def _warn_invalid(path: str, actual: str) -> None:
     if key in _warned:
         return
     _warned.add(key)
-    try:
-        from ..i18n import i18n
-        from ..logger import logger
-
-        logger.warning(i18n.t("core.event.overrides_invalid", path=path, actual=actual))
-    except Exception:
-        pass
+    logger.warning(i18n.t("core.event.overrides_invalid", path=path, actual=actual))
 
 
 def _snapshot() -> dict:
@@ -373,8 +367,11 @@ def condition_for(event_type: str, owner: str) -> "Callable[[Any], bool] | None"
                     try:
                         if not text_match.extract_text(event):
                             return True
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        # 提取失败按"有文本"处理交由 matcher 自行提取，留痕供排查
+                        logger.trace(
+                            i18n.t("core.event.overrides_text_extract_failed", error=e)
+                        )
                     return text_matcher(event)  # matcher 内部自行提取文本
                 return True
 
@@ -839,8 +836,9 @@ try:
 
     lifecycle.register("config.updated", _reload)
     lifecycle.register("config.set", _reload)
-except Exception:
-    pass
+except Exception as e:
+    # 订阅失败意味着覆写配置热更新失效，必须留痕否则无从排查
+    logger.warning(i18n.t("core.event.overrides_config_watch_failed", error=e))
 
 # 初始加载
 _reload()

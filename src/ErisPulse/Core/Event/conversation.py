@@ -19,8 +19,10 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Optional
 
 from .. import adapter, logger
+from ...runtime.tasks import spawn_background
 from ..constants import (
     CONVERSATION_CHECKPOINT_GC_INTERVAL_SECS,
+    CONVERSATION_CHECKPOINT_GC_OWNER,
     CONVERSATION_KEY_PREFIX,
     DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS,
     DEFAULT_SEND_METHOD,
@@ -38,11 +40,13 @@ _conversation_resume_handlers: list[tuple[Callable, str | None]] = []
 
 
 def _consume_task_exception(task: "asyncio.Task") -> None:
-    """{!--< internal-use >!--} 消费后台检查点任务的异常（防未检索告警）"""
+    """{!--< internal-use >!--} 消费后台检查点任务的异常（防未检索告警）并留痕"""
     if task.done() and not task.cancelled():
         exc = task.exception()
         if exc is not None:
-            del exc
+            logger.warning(
+                i18n.t("core.event.conversation_checkpoint_task_failed", error=exc)
+            )
 
 
 async def _rollback_receipts(receipts: list[dict[str, str]]) -> None:
@@ -674,8 +678,10 @@ class Conversation:
                 from ..storage import storage as _storage
 
                 _storage.delete(cls._checkpoint_key(event))
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.trace(
+                    i18n.t("core.event.conversation_checkpoint_delete_failed", error=_e)
+                )
             return False
 
         event_platform = event.get("platform")
@@ -748,17 +754,18 @@ _checkpoint_gc_started = False
 
 
 def _start_checkpoint_gc():
-    """{!--< internal-use >!--} 惰性启动过期检查点周期清理（仅启动一次，失败静默）"""
+    """{!--< internal-use >!--} 惰性启动过期检查点周期清理（仅启动一次；无运行中事件循环时静默跳过，下次触发重试）"""
     global _checkpoint_gc_started
     if _checkpoint_gc_started:
         return
     try:
-        loop = asyncio.get_running_loop()
+        asyncio.get_running_loop()
     except RuntimeError:
         return
     _checkpoint_gc_started = True
-    task = loop.create_task(_checkpoint_gc_loop())
-    task.add_done_callback(_consume_task_exception)
+    # 经框架后台任务生命周期调度：uninit 兜底可取消。使用独立 owner 名，
+    # 不落在分发期的 owner 上下文上，避免模块卸载/禁用误杀 GC 循环
+    spawn_background(_checkpoint_gc_loop(), owner=CONVERSATION_CHECKPOINT_GC_OWNER)
 
 
 async def _checkpoint_gc_loop():
@@ -769,5 +776,8 @@ async def _checkpoint_gc_loop():
             await Conversation._gc_expired_checkpoints()
         except asyncio.CancelledError:
             raise
-        except Exception:
-            pass
+        except Exception as e:
+            # 单轮清理失败不中断循环（下一周期重试），但必须留痕供排查
+            logger.warning(
+                i18n.t("core.event.conversation_checkpoint_gc_failed", error=e)
+            )

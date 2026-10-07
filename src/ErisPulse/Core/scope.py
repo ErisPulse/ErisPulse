@@ -68,11 +68,11 @@ from typing import Any
 
 from ..runtime.frame_config import set_erispulse_section, update_erispulse_config
 from . import text_match
-from .constants import CONFIG_ROOT_KEY
+from .constants import CONFIG_ROOT_KEY, SCOPE_DEFAULT_CACHE_SIZE
 from .i18n import i18n
 
-# 默认 LRU 缓存大小
-DEFAULT_CACHE_SIZE = 1024
+# 默认 LRU 缓存大小（唯一真相源在 Core/constants.py，保留既有导出名）
+DEFAULT_CACHE_SIZE = SCOPE_DEFAULT_CACHE_SIZE
 
 
 class ScopeManager:

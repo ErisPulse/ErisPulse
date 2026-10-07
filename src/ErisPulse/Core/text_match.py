@@ -29,6 +29,8 @@ from collections.abc import Callable
 from functools import lru_cache
 from typing import Any
 
+from .constants import TEXT_MATCH_CACHE_SIZE
+
 # 正则条目前缀
 REGEX_PREFIX = "re:"
 
@@ -36,7 +38,7 @@ REGEX_PREFIX = "re:"
 _INVALID_REGEX = object()
 
 
-@lru_cache(maxsize=1024)
+@lru_cache(maxsize=TEXT_MATCH_CACHE_SIZE)
 def _compile_regex(pattern: str) -> re.Pattern | object:
     """
     {!--< internal-use >!--}

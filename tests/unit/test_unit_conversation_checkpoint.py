@@ -318,3 +318,43 @@ class TestAutoResume:
             return _conv_with_branch(e)
 
         assert await Conversation.try_auto_resume(_evt(user_id="old")) is False
+
+
+# ==================== GC 周期任务生命周期 ====================
+
+
+@pytest.mark.unit
+class TestCheckpointGcLifecycle:
+    """检查点 GC 周期任务纳入框架后台任务生命周期（uninit 兜底可取消，不再永生）"""
+
+    def test_gc_task_registered_and_cancellable(self):
+        import ErisPulse.runtime.tasks as tasks_mod
+        from ErisPulse.Core.constants import CONVERSATION_CHECKPOINT_GC_OWNER
+        from ErisPulse.Core.Event import conversation as conv_mod
+
+        async def _run():
+            conv_mod._checkpoint_gc_started = False
+            conv_mod._start_checkpoint_gc()
+            # 幂等：重复触发不重复启动
+            conv_mod._start_checkpoint_gc()
+            tasks = tasks_mod.get_owner_tasks(CONVERSATION_CHECKPOINT_GC_OWNER)
+            assert len(tasks) == 1
+            assert await tasks_mod.cancel_owner_tasks(CONVERSATION_CHECKPOINT_GC_OWNER) == 1
+            # 取消后任务收尾，不再有存活任务
+            assert not tasks_mod.get_owner_tasks(CONVERSATION_CHECKPOINT_GC_OWNER)
+
+        try:
+            asyncio.run(_run())
+        finally:
+            conv_mod._checkpoint_gc_started = False
+
+    def test_gc_start_without_running_loop_is_noop(self):
+        from ErisPulse.Core.Event import conversation as conv_mod
+
+        conv_mod._checkpoint_gc_started = False
+        try:
+            # 无运行中事件循环：静默跳过且不置位（下次触发重试）
+            conv_mod._start_checkpoint_gc()
+            assert conv_mod._checkpoint_gc_started is False
+        finally:
+            conv_mod._checkpoint_gc_started = False

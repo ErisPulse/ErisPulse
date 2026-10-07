@@ -31,6 +31,17 @@ from .logger import logger
 __all__ = ["OwnershipManager", "ownership"]
 
 
+def _log_reclaim_failure(step: str, error: Exception) -> None:
+    """{!--< internal-use >!--} 回收步骤失败留痕（单步失败不阻断其余回收，但必须可观测）"""
+    try:
+        from .i18n import i18n
+
+        message = i18n.t("core.ownership.reclaim_step_failed", step=step, error=error)
+    except Exception:
+        message = f"ownership reclaim step '{step}' failed: {error}"
+    logger.warning(message)
+
+
 class OwnershipManager:
     """
     归属权管理器（单例）
@@ -117,14 +128,14 @@ class OwnershipManager:
             from ..runtime.tasks import cancel_owner_tasks
 
             result["tasks_cancelled"] = await cancel_owner_tasks(owner)
-        except Exception:
-            pass
+        except Exception as e:
+            _log_reclaim_failure("tasks_cancelled", e)
         try:
             from ..runtime.owner_cleanup import run_owner_cleanups
 
             result["cleanups_run"] = await run_owner_cleanups(owner)
-        except Exception:
-            pass
+        except Exception as e:
+            _log_reclaim_failure("cleanups_run", e)
         return result
 
     def reclaim_sync(self, owner: str) -> "dict[str, int]":
@@ -150,8 +161,8 @@ class OwnershipManager:
 
             i18n_service.unregister_domain(owner)
             result["i18n_domain"] = 1
-        except Exception:
-            pass
+        except Exception as e:
+            _log_reclaim_failure("i18n_domain", e)
 
         try:
             from .router import router as router_service
@@ -163,15 +174,15 @@ class OwnershipManager:
             owner_result = router_service.unregister_all_by_owner(owner)
             result["middlewares"] = owner_result.get("middleware_count", 0)
             result["home_entries"] = owner_result.get("home_entry_count", 0)
-        except Exception:
-            pass
+        except Exception as e:
+            _log_reclaim_failure("routes", e)
 
         try:
             from .adapter import adapter as adapter_service
 
             result["adapter_handlers"] = adapter_service.unregister_handlers_by_owner(owner)
-        except Exception:
-            pass
+        except Exception as e:
+            _log_reclaim_failure("adapter_handlers", e)
 
         try:
             from .Event import (
@@ -181,29 +192,29 @@ class OwnershipManager:
 
             result["custom_types"] = unregister_custom_types_by_owner(owner)
             result["event_methods"] = unregister_event_methods_by_owner(owner)
-        except Exception:
-            pass
+        except Exception as e:
+            _log_reclaim_failure("event_types", e)
 
         try:
             from .Event import overrides
 
             result["overrides"] = overrides.unregister_by_owner(owner)
-        except Exception:
-            pass
+        except Exception as e:
+            _log_reclaim_failure("overrides", e)
 
         try:
             from .scope import scope as scope_service
 
             result["scope_overrides"] = scope_service.unregister_by_owner(owner)
-        except Exception:
-            pass
+        except Exception as e:
+            _log_reclaim_failure("scope_overrides", e)
 
         try:
             from .Event import command as command_service
 
             result["commands"] = command_service.unregister_by_owner(owner)
-        except Exception:
-            pass
+        except Exception as e:
+            _log_reclaim_failure("commands", e)
 
         try:
             from .Event import message, meta, notice, request
@@ -212,29 +223,29 @@ class OwnershipManager:
             result["handlers_notice"] = notice.handler.unregister_by_owner(owner)
             result["handlers_request"] = request.handler.unregister_by_owner(owner)
             result["handlers_meta"] = meta.handler.unregister_by_owner(owner)
-        except Exception:
-            pass
+        except Exception as e:
+            _log_reclaim_failure("handlers", e)
 
         try:
             from .Event import interaction
 
             result["waiters_cancelled"] = interaction.cancel_by_owner(owner)
-        except Exception:
-            pass
+        except Exception as e:
+            _log_reclaim_failure("waiters", e)
 
         try:
             from .master import master as master_service
 
             result["master_providers"] = master_service.unregister_by_owner(owner)
-        except Exception:
-            pass
+        except Exception as e:
+            _log_reclaim_failure("master_providers", e)
 
         try:
             from .lifecycle import lifecycle as lifecycle_service
 
             result["lifecycle_hooks"] = lifecycle_service.unregister_by_owner(owner)
-        except Exception:
-            pass
+        except Exception as e:
+            _log_reclaim_failure("lifecycle_hooks", e)
 
         return {key: count for key, count in result.items() if count}
 

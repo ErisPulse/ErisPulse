@@ -308,6 +308,42 @@ class StrictModeError(ErisPulseError):
         self.violations: list = violations if violations is not None else []
 
 
+class ShadowError(ErisPulseError):
+    """
+    影子模块异常基类
+
+    影子模块机制（ShadowManager 装配 / 转正 / 放弃）相关的异常基类，
+    可用于统一捕获所有影子模块错误。
+    """
+
+
+class ShadowStateError(ShadowError):
+    """
+    影子模块状态不满足
+
+    目标模块未加载 / 已有活跃影子 / 未绑定影子等状态条件
+    不满足当前操作时抛出（``start`` / ``dismiss`` 流程）。
+    """
+
+
+class ShadowSourceError(ShadowError):
+    """
+    影子源不可用
+
+    影子源路径不存在、加载器缺失、源文件无可加载模块类
+    或影子加载失败时抛出（``start`` 流程）。
+    """
+
+
+class ShadowPromoteError(ShadowError):
+    """
+    影子模块转正失败
+
+    转正流程中目标未加载、影子未注册 / 未加载、加载器不支持快照
+    或转正重载失败时抛出（``promote`` 流程）。
+    """
+
+
 __all__ = [
     "ClientConnectionError",
     "ClientError",
@@ -322,6 +358,10 @@ __all__ = [
     "ModuleNotAvailableError",
     "ServiceNotProvidedError",
     "SessionOccupiedError",
+    "ShadowError",
+    "ShadowPromoteError",
+    "ShadowSourceError",
+    "ShadowStateError",
     "StrictModeError",
     "WebSocketDisconnect",
     "WebSocketError",

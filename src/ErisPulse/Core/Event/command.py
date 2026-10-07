@@ -108,8 +108,9 @@ class CommandHandler:
 
             lifecycle.register("config.updated", self._on_config_updated)
             lifecycle.register("config.set", self._on_config_updated)
-        except Exception:
-            pass
+        except Exception as e:
+            # 订阅失败意味着命令前缀等配置热更新失效，必须留痕否则无从排查
+            logger.warning(i18n.t("core.event.command.config_watch_failed", error=e))
 
         # 等待回复：委托交互会话管理器（Core/Event/interaction.py），
         # 由其统一维护会话键索引 / owner 归属 / 平台索引与互斥租约
@@ -884,8 +885,9 @@ class CommandHandler:
             try:
                 if await _Conversation.try_auto_resume(event):
                     return
-            except Exception:
-                pass
+            except Exception as e:
+                # 恢复失败不应阻断正常命令分发，但需留痕（存储不可达等根因排查入口）
+                logger.debug(i18n.t("core.event.command.auto_resume_failed", error=e))
             if await interaction.resolve(event):
                 return
 

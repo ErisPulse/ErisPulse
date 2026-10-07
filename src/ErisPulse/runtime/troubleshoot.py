@@ -11,6 +11,7 @@
 {!--< tips >!--}
 1. 两个函数均为纯读诊断，不改任何状态
 2. 返回 dict（机器可读），配 :func:`format_report` 渲染为人类可读文本
+3. conclusion / reasons 文案经 i18n 以当前语言渲染（``runtime.troubleshoot.*`` 键）
 {!--< /tips >!--}
 """
 
@@ -18,7 +19,10 @@ from __future__ import annotations
 
 from typing import Any
 
+from ..Core.i18n import i18n
 from .version import check_min_sdk_version
+
+__all__ = ["explain_module", "explain_event", "format_report"]
 
 
 def explain_module(name: str) -> dict[str, Any]:
@@ -48,11 +52,8 @@ def explain_module(name: str) -> dict[str, Any]:
 
     cls = module_mgr._module_classes.get(name)
     if cls is None:
-        result["conclusion"] = f"模块 {name} 未注册"
-        result["reasons"].append(
-            "未发现该模块的注册记录：包未安装、entry-point 组名错误，"
-            "或注册名与查询名不一致"
-        )
+        result["conclusion"] = i18n.t("runtime.troubleshoot.module_not_registered", name=name)
+        result["reasons"].append(i18n.t("runtime.troubleshoot.module_not_registered_reason"))
         return result
     result["registered"] = True
 
@@ -65,11 +66,8 @@ def explain_module(name: str) -> dict[str, Any]:
     except Exception:
         pass
     if not result["loaded"] and result["lazy"]:
-        result["conclusion"] = f"模块 {name} 为懒加载，首次调用时才实例化"
-        result["reasons"].append(
-            "懒加载模块：首次被调用（module.call / 命令触发等）时才实例化，"
-            "当前未加载属正常状态"
-        )
+        result["conclusion"] = i18n.t("runtime.troubleshoot.module_lazy", name=name)
+        result["reasons"].append(i18n.t("runtime.troubleshoot.module_lazy_reason"))
         return result
 
     # 配置启用状态：None = 未配置（默认启用）；False = 被显式禁用
@@ -86,7 +84,7 @@ def explain_module(name: str) -> dict[str, Any]:
         result["enabled"] = parse_bool_config(enabled_raw)
         if result["enabled"] is False:
             result["reasons"].append(
-                f"被配置禁用：ErisPulse.modules.status.{name} = false"
+                i18n.t("runtime.troubleshoot.module_disabled_reason", name=name)
             )
 
     # SDK 版本要求
@@ -98,7 +96,11 @@ def explain_module(name: str) -> dict[str, Any]:
             result["sdk_version_ok"] = ok or not parseable
             if not (ok or not parseable):
                 result["reasons"].append(
-                    f"SDK 版本不满足：当前 {current} < 要求 {min_sdk}"
+                    i18n.t(
+                        "runtime.troubleshoot.module_sdk_version_reason",
+                        current=current,
+                        required=min_sdk,
+                    )
                 )
     except Exception:
         pass
@@ -114,17 +116,19 @@ def explain_module(name: str) -> dict[str, Any]:
             result["missing_dependencies"].append(dep)
     if result["missing_dependencies"]:
         result["reasons"].append(
-            "依赖未加载：" + ", ".join(result["missing_dependencies"])
+            i18n.t(
+                "runtime.troubleshoot.module_deps_reason",
+                deps=", ".join(result["missing_dependencies"]),
+            )
         )
 
     if not result["reasons"]:
-        result["conclusion"] = f"模块 {name} 已注册但未加载"
+        result["conclusion"] = i18n.t("runtime.troubleshoot.module_registered_not_loaded", name=name)
         result["reasons"].append(
-            "注册正常但未加载：常见原因为 on_load 抛出异常或依赖加载失败——"
-            "请检查启动日志中模块名对应的 ERROR 记录"
+            i18n.t("runtime.troubleshoot.module_registered_not_loaded_reason")
         )
     else:
-        result["conclusion"] = "；".join(result["reasons"])
+        result["conclusion"] = "; ".join(result["reasons"])
     return result
 
 
@@ -172,7 +176,9 @@ def explain_event(event: dict[str, Any]) -> dict[str, Any]:
         bool(platform) and hasattr(adapter_mgr, platform) and platform in adapter_mgr._adapters
     )
     if not result["adapter_registered"]:
-        result["reasons"].append(f"平台适配器未注册：platform='{platform}' 无适配器实例")
+        result["reasons"].append(
+            i18n.t("runtime.troubleshoot.event_adapter_missing_reason", platform=platform)
+        )
 
     # 身份维度（谁的事件收不收）
     result["identity_allowed"] = scope_mgr.is_identity_allowed(
@@ -180,8 +186,7 @@ def explain_event(event: dict[str, Any]) -> dict[str, Any]:
     )
     if result["identity_allowed"] is False:
         result["reasons"].append(
-            "事件被身份维度作用域拒绝（用户 / 会话 / Bot / 适配器被拉黑）——"
-            "事件在分发入口被完全丢弃"
+            i18n.t("runtime.troubleshoot.event_identity_blocked_reason")
         )
 
     # 各已加载模块的会话可用性
@@ -194,7 +199,10 @@ def explain_event(event: dict[str, Any]) -> dict[str, Any]:
             result["blocked_modules"].append(mod_name)
     if result["blocked_modules"]:
         result["reasons"].append(
-            "以下模块在当前会话被作用域屏蔽：" + ", ".join(result["blocked_modules"])
+            i18n.t(
+                "runtime.troubleshoot.event_modules_blocked_reason",
+                modules=", ".join(result["blocked_modules"]),
+            )
         )
 
     # 命令命中判定（仅消息事件有意义）
@@ -206,28 +214,28 @@ def explain_event(event: dict[str, Any]) -> dict[str, Any]:
         result["command_registered"] = command_handler._is_command_text(alt)
         if result["command_registered"] is False:
             result["reasons"].append(
-                f"文本形如命令但未命中任何注册命令：'{alt}'（检查前缀配置与命令名）"
+                i18n.t("runtime.troubleshoot.event_command_unregistered_reason", text=alt)
             )
 
     if not result["reasons"]:
-        result["conclusion"] = "事件通过入口检查，无响应时请检查处理器过滤条件与中间件否决"
-        result["reasons"].append(
-            "入口检查全部通过：若仍无响应，检查处理器过滤条件 "
-            "（detail_type / pattern / regex）与中间件否决（adapter.event.blocked 钩子）"
-        )
+        result["conclusion"] = i18n.t("runtime.troubleshoot.event_entry_passed")
+        result["reasons"].append(i18n.t("runtime.troubleshoot.event_entry_passed_reason"))
     else:
-        result["conclusion"] = "；".join(result["reasons"])
+        result["conclusion"] = "; ".join(result["reasons"])
     return result
 
 
 def format_report(result: dict[str, Any]) -> str:
     """
-    将诊断结果渲染为人类可读文本
+    将诊断结果渲染为人类可读文本（当前语言）
 
     :param result: :func:`explain_module` 或 :func:`explain_event` 的返回值
     :return: 多行文本（结论 + 原因列表）
     """
     name = result.get("name") or result.get("platform") or ""
-    lines = [f"[诊断] {name}", f"结论: {result.get('conclusion', '')}"]
+    lines = [
+        i18n.t("runtime.troubleshoot.report_title", name=name),
+        i18n.t("runtime.troubleshoot.report_conclusion", conclusion=result.get("conclusion", "")),
+    ]
     lines.extend(f"  - {reason}" for reason in result.get("reasons", []))
     return "\n".join(lines)

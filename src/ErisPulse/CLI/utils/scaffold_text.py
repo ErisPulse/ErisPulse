@@ -42,6 +42,10 @@ _EN_FALLBACK: dict[str, str] = {
     "module.log.config_updated": "Module config hot-reloaded",
     "module.log.private_message": "Received private message: {content}",
     "module.log.friend_add": "New friend added: {nickname}",
+    "module.roll_hint": "Declarative args/options example: args= declares positional parameters, "
+    "options= declares options; the framework parses, type-converts and injects them by name "
+    "(types: str/int/float/bool/literal/duration/rest)",
+    "module.signin_pattern": "signin*",
     # ---- 适配器模板 ----
     "adapter.doc": "{name} adapter\n\nInherits from BaseAdapter with declarative config "
     "(ConfigClass), SendDSL-style chained calls and bot status tracking.",
@@ -84,6 +88,19 @@ _EN_FALLBACK: dict[str, str] = {
     "adapter.log.bot_disconnected": "Bot disconnected",
     "adapter.log.shutdown": "Adapter shut down",
     "adapter.log.api_call_failed": "API call failed: {error}",
+    # ---- init 生成物文案（config.toml / main.py / .gitignore / README 等）----
+    "init.ssl_placeholder": "# Paste your certificate/key PEM content into this file, "
+    "or fill ssl_cert/ssl_key inline in the config",
+    "init.config_toml_header": "# ErisPulse configuration file\n"
+    "# See config.full.example for the full configuration reference",
+    "init.main_docstring": '"""\n{display_name} main program\n\n'
+    'This main program file was generated automatically by ErisPulse\n"""',
+    "init.gitignore_section_venv": "# Virtual environments and local env files",
+    "init.gitignore_section_cache": "# Tool caches",
+    "init.gitignore_section_runtime": "# ErisPulse runtime data (config and logs contain "
+    "sensitive info, keep out of VCS)",
+    "init.gitignore_section_editor": "# Editor and system files",
+    "init.readme_body": "# {display_name}\n\nAn ErisPulse project.\n\n```bash\nepsdk run\n```\n",
     # ---- init 完整配置示例注释 ----
     "cfg.header.title": "# ErisPulse Full Configuration Example",
     "cfg.header.desc": "# This file shows all available config items and their defaults",
@@ -158,6 +175,9 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "module.log.config_updated": "模块配置已热更新",
         "module.log.private_message": "收到私聊消息: {content}",
         "module.log.friend_add": "新好友添加: {nickname}",
+        "module.roll_hint": "声明式参数与选项示例：args= 声明位置参数、options= 声明选项，"
+        "框架自动解析、类型转换并按名注入处理器参数（类型：str/int/float/bool/literal/duration/rest）",
+        "module.signin_pattern": "签到*",
         "adapter.doc": "{name} 适配器\n\n继承自 BaseAdapter 基类，使用声明式配置管理（ConfigClass），"
         "实现了 SendDSL 风格的链式调用接口和 Bot 状态追踪。",
         "adapter.config_doc": "{name} 适配器配置",
@@ -190,6 +210,14 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "adapter.log.bot_disconnected": "Bot 已断开",
         "adapter.log.shutdown": "适配器已关闭",
         "adapter.log.api_call_failed": "API 调用失败: {error}",
+        "init.ssl_placeholder": "# 将你的证书/密钥 PEM 内容粘贴到本文件，或在配置中改用 ssl_cert/ssl_key 内联填写",
+        "init.config_toml_header": "# ErisPulse 配置文件\n# 完整配置示例请参考 config.full.example",
+        "init.main_docstring": '"""\n{display_name} 主程序\n\n这是 ErisPulse 自动生成的主程序文件\n"""',
+        "init.gitignore_section_venv": "# 虚拟环境与本地环境",
+        "init.gitignore_section_cache": "# 工具缓存",
+        "init.gitignore_section_runtime": "# ErisPulse 运行时数据（配置与日志含敏感信息，不入库）",
+        "init.gitignore_section_editor": "# 编辑器与系统文件",
+        "init.readme_body": "# {display_name}\n\nErisPulse 项目。\n\n```bash\nepsdk run\n```\n",
     "cfg.header.title": "# ErisPulse 完整配置示例",
     "cfg.header.desc": "# 此文件展示所有可用配置项及其默认值",
     "cfg.header.usage": "# 如需使用，将所需配置复制到 config.toml 并按需修改",
@@ -259,6 +287,9 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "module.log.config_updated": "模組設定已熱更新",
         "module.log.private_message": "收到私聊訊息: {content}",
         "module.log.friend_add": "新好友添加: {nickname}",
+        "module.roll_hint": "宣告式參數與選項範例：args= 宣告位置參數、options= 宣告選項，"
+        "框架自動解析、類型轉換並按名注入處理器參數（類型：str/int/float/bool/literal/duration/rest）",
+        "module.signin_pattern": "簽到*",
         "adapter.doc": "{name} 適配器\n\n繼承自 BaseAdapter 基類，使用宣告式設定管理（ConfigClass），"
         "實作 SendDSL 風格的鏈式呼叫介面和 Bot 狀態追蹤。",
         "adapter.config_doc": "{name} 適配器設定",
@@ -291,6 +322,14 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "adapter.log.bot_disconnected": "Bot 已斷開",
         "adapter.log.shutdown": "適配器已關閉",
         "adapter.log.api_call_failed": "API 呼叫失敗: {error}",
+        "init.ssl_placeholder": "# 將你的憑證/金鑰 PEM 內容貼入本檔案，或在設定中改用 ssl_cert/ssl_key 內聯填寫",
+        "init.config_toml_header": "# ErisPulse 設定檔\n# 完整設定範例請參考 config.full.example",
+        "init.main_docstring": '"""\n{display_name} 主程式\n\n這是 ErisPulse 自動產生的主程式檔案\n"""',
+        "init.gitignore_section_venv": "# 虛擬環境與本地環境",
+        "init.gitignore_section_cache": "# 工具快取",
+        "init.gitignore_section_runtime": "# ErisPulse 執行時資料（設定與日誌含敏感資訊，不入庫）",
+        "init.gitignore_section_editor": "# 編輯器與系統檔案",
+        "init.readme_body": "# {display_name}\n\nErisPulse 專案。\n\n```bash\nepsdk run\n```\n",
     },
     "ja": {
         "module.doc": "{name} モジュール\n\nBaseModule を継承し、標準化されたライフサイクル管理とイベント処理を実装。"
@@ -308,6 +347,9 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "module.log.config_updated": "モジュール設定をホットリロードしました",
         "module.log.private_message": "プライベートメッセージを受信しました: {content}",
         "module.log.friend_add": "新しい友達が追加されました: {nickname}",
+        "module.roll_hint": "宣言的引数とオプションの例：args= で位置引数、options= でオプションを宣言。"
+        "フレームワークが自動で解析・型変換し、名前付きでハンドラ引数に注入します（型: str/int/float/bool/literal/duration/rest）",
+        "module.signin_pattern": "チェックイン*",
         "adapter.doc": "{name} アダプター\n\nBaseAdapter を継承し、宣言的な設定（ConfigClass）、SendDSL チェーン呼び出し、Bot 状態追跡を実装。",
         "adapter.config_doc": "{name} アダプター設定",
         "adapter.config_hint": "設定クラスはネストクラスとして宣言（@dataclass 必須）。フレームワークが ConfigClass を自動認識します。",
@@ -339,6 +381,14 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "adapter.log.bot_disconnected": "Bot が切断されました",
         "adapter.log.shutdown": "アダプターを停止しました",
         "adapter.log.api_call_failed": "API 呼び出しに失敗: {error}",
+        "init.ssl_placeholder": "# 証明書/鍵の PEM 内容をこのファイルに貼り付けるか、設定で ssl_cert/ssl_key をインライン指定してください",
+        "init.config_toml_header": "# ErisPulse 設定ファイル\n# 完全な設定例は config.full.example を参照してください",
+        "init.main_docstring": '"""\n{display_name} メインプログラム\n\nこのメインプログラムファイルは ErisPulse が自動生成しました\n"""',
+        "init.gitignore_section_venv": "# 仮想環境とローカル環境",
+        "init.gitignore_section_cache": "# ツールキャッシュ",
+        "init.gitignore_section_runtime": "# ErisPulse 実行時データ（設定とログに機密情報を含むためリポジトリに入れない）",
+        "init.gitignore_section_editor": "# エディタとシステムファイル",
+        "init.readme_body": "# {display_name}\n\nErisPulse プロジェクト。\n\n```bash\nepsdk run\n```\n",
     },
     "ru": {
         "module.doc": "{name} модуль\n\nНаследует BaseModule: стандартный жизненный цикл и обработка событий. "
@@ -356,6 +406,10 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "module.log.config_updated": "Конфигурация модуля перезагружена",
         "module.log.private_message": "Получено личное сообщение: {content}",
         "module.log.friend_add": "Добавлен новый друг: {nickname}",
+        "module.roll_hint": "Пример декларативных аргументов и опций: args= объявляет позиционные параметры, "
+        "options= — опции; фреймворк сам разбирает, преобразует типы и внедряет их в параметры обработчика по имени "
+        "(типы: str/int/float/bool/literal/duration/rest)",
+        "module.signin_pattern": "sign*",
         "adapter.doc": "{name} адаптер\n\nНаследует BaseAdapter: декларативная конфигурация (ConfigClass), "
         "цепочки SendDSL и отслеживание статуса бота.",
         "adapter.config_doc": "Конфигурация адаптера {name}",
@@ -388,6 +442,14 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "adapter.log.bot_disconnected": "Бот отключён",
         "adapter.log.shutdown": "Адаптер остановлен",
         "adapter.log.api_call_failed": "Ошибка вызова API: {error}",
+        "init.ssl_placeholder": "# Вставьте содержимое сертификата/ключа PEM в этот файл или укажите ssl_cert/ssl_key инлайн в конфигурации",
+        "init.config_toml_header": "# Файл конфигурации ErisPulse\n# Полный пример конфигурации см. в config.full.example",
+        "init.main_docstring": '"""\nГлавная программа {display_name}\n\nЭтот файл главной программы сгенерирован автоматически ErisPulse\n"""',
+        "init.gitignore_section_venv": "# Виртуальные окружения и локальные файлы окружения",
+        "init.gitignore_section_cache": "# Кэши инструментов",
+        "init.gitignore_section_runtime": "# Данные времени выполнения ErisPulse (конфигурация и журналы содержат конфиденциальную информацию, не добавлять в репозиторий)",
+        "init.gitignore_section_editor": "# Файлы редактора и системные файлы",
+        "init.readme_body": "# {display_name}\n\nПроект ErisPulse.\n\n```bash\nepsdk run\n```\n",
     },
 }
 

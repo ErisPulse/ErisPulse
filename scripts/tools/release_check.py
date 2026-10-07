@@ -24,7 +24,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 PYPROJECT = REPO_ROOT / "pyproject.toml"
 CHANGELOG = REPO_ROOT / "CHANGELOG.md"
 
-# CHANGELOG 条目标题：## [2.9.0-dev.1] - 2026/09/27
+# CHANGELOG 条目标题：## [2.9.0-dev.2] - 2026/10/03
 CHANGELOG_HEAD_RE = re.compile(r"^##\s+\[(?P<version>[^\]\s]+)\]", re.MULTILINE)
 
 

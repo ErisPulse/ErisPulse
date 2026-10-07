@@ -384,12 +384,17 @@ class TestPromote:
         assert sdk.roll_v2 is manager._modules["roll_v2"]
 
     def test_start_requires_loaded_target(self, tmp_path):
+        from ErisPulse.Core import ShadowStateError
+        from ErisPulse.Core.Bases.errors import ErisPulseError
+
         manager = self._fresh_manager()
         src = tmp_path / "x_v9.py"
         src.write_text("x = 1\n", encoding="utf-8")
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ShadowStateError) as exc_info:
             asyncio.run(shadow_manager.start("ghost_mod", str(src), manager=manager, sdk=None))
+        # 异常挂在 ErisPulseError 层级下，调用方可统一捕获
+        assert isinstance(exc_info.value, ErisPulseError)
 
     @staticmethod
     def _mk_v2_src(path):
@@ -494,3 +499,22 @@ def patch_getConfig():
 
     config_module = importlib.import_module("ErisPulse.Core.config")
     return patch.object(config_module.config, "getConfig", return_value="/")
+
+
+# ==================== 异常层级 ====================
+
+
+class TestShadowErrorHierarchy:
+    """影子 API 异常挂在 ErisPulseError 层级下（调用方可统一捕获）"""
+
+    def test_dismiss_without_shadow_is_idempotent_false(self):
+        # dismiss 的设计语义：从未绑定影子的目标幂等返回 False（不抛异常）
+        assert asyncio.run(shadow_manager.dismiss("never_shadowed_xyz", manager=None, sdk=None)) is False
+
+    def test_promote_without_shadow_raises_state_error(self):
+        from ErisPulse.Core import ShadowStateError
+        from ErisPulse.Core.Bases.errors import ErisPulseError
+
+        with pytest.raises(ShadowStateError) as exc_info:
+            asyncio.run(shadow_manager.promote("never_shadowed_xyz", manager=None, sdk=None))
+        assert isinstance(exc_info.value, ErisPulseError)

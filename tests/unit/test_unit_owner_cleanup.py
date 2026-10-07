@@ -8,6 +8,7 @@
 import asyncio
 
 import pytest
+from unittest.mock import patch
 
 from ErisPulse.Core.adapter import AdapterManager
 from ErisPulse.Core.Event import overrides, session_type
@@ -285,3 +286,50 @@ class TestImportWiring:
                 assert instance._shadow_registration() is False
         finally:
             ownership.unregister_shadow("wiring_shadow_owner")
+
+
+@pytest.mark.unit
+class TestReclaimFailureLogging:
+    """reclaim 单步失败必须留痕（WARNING），且不阻断其余回收步骤"""
+
+    def test_reclaim_tasks_failure_logged_and_step_recorded(self, caplog):
+        import logging
+
+        from ErisPulse.Core.ownership import ownership
+
+        async def _boom(owner):
+            raise RuntimeError("tasks backend down")
+
+        with patch("ErisPulse.runtime.tasks.cancel_owner_tasks", _boom):
+            with caplog.at_level(logging.WARNING):
+                result = asyncio.run(ownership.reclaim_tasks("some_owner"))
+
+        # 单步失败不阻断：cleanups_run 仍执行
+        assert result["cleanups_run"] >= 0
+        assert any("tasks_cancelled" in r.getMessage() for r in caplog.records)
+
+    def test_reclaim_sync_failure_logged_and_rest_reclaimed(self, caplog):
+        import logging
+
+        from ErisPulse.Core.Event import overrides as overrides_module
+        from ErisPulse.Core.ownership import ownership
+
+        # 在覆写注册表放入一条待回收记录（owner 归属取自上下文），
+        # 证明路由步骤失败后其余步骤仍执行
+        with owner_scope("log_test_owner"):
+            overrides_module.command.set("log_test_owner", "alpha", master=True, persist=False)
+        try:
+            with patch(
+                "ErisPulse.Core.router.RouterManager.unregister_all_by_namespace",
+                side_effect=RuntimeError("router registry gone"),
+            ):
+                with caplog.at_level(logging.WARNING):
+                    result = ownership.reclaim_sync("log_test_owner")
+
+            # 路由步骤失败留痕（含步骤名）……
+            assert any("routes" in r.getMessage() for r in caplog.records)
+            # ……且不阻断：覆写记录仍被回收
+            assert result.get("overrides", 0) >= 1
+            assert "alpha" not in (overrides_module.command.get("log_test_owner") or {})
+        finally:
+            overrides_module.clear()
