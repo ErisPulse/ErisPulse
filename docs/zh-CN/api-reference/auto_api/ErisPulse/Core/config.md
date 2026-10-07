@@ -109,6 +109,13 @@ ConfigManager 类提供相关功能。
 ---
 
 
+##### `_register_watcher_shutdown(manager: 'ConfigManager') -> None`（classmethod）
+
+**内部方法** 注册解释器关停时的 watcher 统一停止钩子（幂等）
+
+---
+
+
 ##### `_watch_config_file() -> None`
 
 记录配置文件的当前 mtime，用于后续检测外部修改
