@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "c9d4afea8dd70aaab40375e96a6e06b9",
-  "file_hash": "c9d4afea8dd70aaab40375e96a6e06b9",
-  "translated_at": "2026-09-08T05:37:18.484010",
+  "hash": "efe071ecbb646a457b23f243cf11d942",
+  "file_hash": "efe071ecbb646a457b23f243cf11d942",
+  "translated_at": "2026-10-07T17:28:06.110765",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# SQL Query Builder\n\nThe Storage module in ErisPulse provides a chain-call style generic SQL query builder, supporting custom table creation, querying, updating, and deleting operations."
     },
     {
-      "hash": "ee7789cf8f42a612d1ae5fe25c85a346",
-      "translation": "## Architecture Design\n\n```\nBases/storage.py                    Core/storage.py\n┌─────────────────────┐             ┌──────────────────────────┐\n│  BaseStorage (ABC)  │◄────────────│  StorageManager          │\n│  BaseQueryBuilder   │             │  (SQLite concrete impl)  │\n│    (ABC)            │             │                          │\n└─────────────────────┘             │  SQLiteQueryBuilder      │\n                                    │  AlterTableBuilder       │\n                                    └──────────────────────────┘\n```\n\n- `BaseStorage` / `BaseQueryBuilder` are abstract base classes that define a unified interface, supporting future expansion to other storage media (Redis, MySQL, etc.)\n- `StorageManager` is the current SQLite concrete implementation, fully backward compatible."
+      "hash": "20ae1ced7859becffd4da431ba169238",
+      "translation": "## Architecture Design\n\n```\nBases/storage.py                    Core/storage.py\n┌─────────────────────┐             ┌──────────────────────────┐\n│  BaseStorage (ABC)  │◄────────────│  StorageManager          │\n│  BaseQueryBuilder   │             │  (backend dispatch:      │\n│    (ABC)            │             │   sqlite/mysql/postgres) │\n└─────────────────────┘             │  SQLiteQueryBuilder      │\n                                    │  AlterTableBuilder       │\n                                    └──────────────────────────┘\n```\n\n- `BaseStorage` / `BaseQueryBuilder` are abstract base classes that define unified interfaces; the framework includes three built-in implementations: SQLite / MySQL / PostgreSQL (custom backends can also be extended following this pattern, see [Storage Backends](storage-backends.md))\n- `StorageManager` dispatches the specific backend according to the `ErisPulse.storage.backend` configuration, with SQLite as the default, ensuring full backward compatibility"
     },
     {
       "hash": "fbe24cf1538cfd8ae8fd473f74a0d86e",

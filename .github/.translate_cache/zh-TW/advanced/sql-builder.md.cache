@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "c9d4afea8dd70aaab40375e96a6e06b9",
-  "file_hash": "c9d4afea8dd70aaab40375e96a6e06b9",
-  "translated_at": "2026-09-08T05:37:23.520855",
+  "hash": "efe071ecbb646a457b23f243cf11d942",
+  "file_hash": "efe071ecbb646a457b23f243cf11d942",
+  "translated_at": "2026-10-07T17:28:05.992143",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# SQL 查詢建構器\n\nErisPulse 的 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的建立、查詢、更新與刪除操作。"
     },
     {
-      "hash": "ee7789cf8f42a612d1ae5fe25c85a346",
-      "translation": "## 架構設計\n\n```\nBases/storage.py                    Core/storage.py\n┌─────────────────────┐             ┌──────────────────────────┐\n│  BaseStorage (ABC)  │◄────────────│  StorageManager          │\n│  BaseQueryBuilder   │             │  (SQLite concrete impl)  │\n│    (ABC)            │             │                          │\n└─────────────────────┘             │  SQLiteQueryBuilder      │\n                                    │  AlterTableBuilder       │\n                                    └──────────────────────────┘\n```\n\n- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面，支援未來拓展其他儲存媒體（Redis、MySQL 等）\n- `StorageManager` 是目前 SQLite 具體實作，完全向後相容"
+      "hash": "20ae1ced7859becffd4da431ba169238",
+      "translation": "## 架構設計\n\n```\nBases/storage.py                    Core/storage.py\n┌─────────────────────┐             ┌──────────────────────────┐\n│  BaseStorage (ABC)  │◄────────────│  StorageManager          │\n│  BaseQueryBuilder   │             │  (backend dispatch:      │\n│    (ABC)            │             │   sqlite/mysql/postgres) │\n└─────────────────────┘             │  SQLiteQueryBuilder      │\n                                    │  AlterTableBuilder       │\n                                    └──────────────────────────┘\n```\n\n- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面；框架內建 SQLite / MySQL / PostgreSQL 三種實現（自定義後端亦可依此擴展，見[儲存後端](storage-backends.md)）\n- `StorageManager` 按 `ErisPulse.storage.backend` 配置調度具體後端，預設 SQLite，完全向後相容"
     },
     {
       "hash": "fbe24cf1538cfd8ae8fd473f74a0d86e",

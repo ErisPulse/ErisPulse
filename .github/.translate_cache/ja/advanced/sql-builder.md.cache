@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "c9d4afea8dd70aaab40375e96a6e06b9",
-  "file_hash": "c9d4afea8dd70aaab40375e96a6e06b9",
-  "translated_at": "2026-09-08T05:37:30.563673",
+  "hash": "efe071ecbb646a457b23f243cf11d942",
+  "file_hash": "efe071ecbb646a457b23f243cf11d942",
+  "translated_at": "2026-10-07T17:28:06.447318",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# SQL クエリビルダー\n\nErisPulse の Storage モジュールは、チェーン呼び出しスタイルの汎用 SQL クエリビルダーを提供し、カスタムテーブルの作成、クエリ、更新、削除操作をサポートします。"
     },
     {
-      "hash": "ee7789cf8f42a612d1ae5fe25c85a346",
-      "translation": "## 架構設計\n\n```\nBases/storage.py                    Core/storage.py\n┌─────────────────────┐             ┌──────────────────────────┐\n│  BaseStorage (ABC)  │◄────────────│  StorageManager          │\n│  BaseQueryBuilder   │             │  (SQLite concrete impl)  │\n│    (ABC)            │             │                          │\n└─────────────────────┘             │  SQLiteQueryBuilder      │\n                                    │  AlterTableBuilder       │\n                                    └──────────────────────────┘\n```\n\n- `BaseStorage` / `BaseQueryBuilder` は抽象基底クラスで、統一されたインターフェースを定義し、将来的に他のストレージメディア（Redis、MySQL など）への拡張を可能にします。\n- `StorageManager` は現在の SQLite 具体実装で、完全に後方互換性を保ちます。"
+      "hash": "20ae1ced7859becffd4da431ba169238",
+      "translation": "## 架構設計\n\n```\nBases/storage.py                    Core/storage.py\n┌─────────────────────┐             ┌──────────────────────────┐\n│  BaseStorage (ABC)  │◄────────────│  StorageManager          │\n│  BaseQueryBuilder   │             │  (backend dispatch:      │\n│    (ABC)            │             │   sqlite/mysql/postgres) │\n└─────────────────────┘             │  SQLiteQueryBuilder      │\n                                    │  AlterTableBuilder       │\n                                    └──────────────────────────┘\n```\n\n- `BaseStorage` / `BaseQueryBuilder` は抽象基底クラスで、統一されたインターフェースを定義します。フレームワークには、SQLite / MySQL / PostgreSQL の 3 種類の実装が内蔵されています（カスタムバックエンドもこの方式で拡張可能です。詳しくは[ストレージバックエンド](storage-backends.md)をご覧ください）。\n- `StorageManager` は `ErisPulse.storage.backend` 設定に従って具体的なバックエンドをスケジュールします。デフォルトは SQLite で、完全に後方互換性があります。"
     },
     {
       "hash": "fbe24cf1538cfd8ae8fd473f74a0d86e",

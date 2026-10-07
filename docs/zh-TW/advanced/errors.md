@@ -22,12 +22,16 @@ ErisPulseError                      # 所有框架異常的基類
 │   └── StorageUnreachableError     # 存儲後端不可達（建池重試耗盡：資料庫不可達/憑證錯誤）
 ├── InteractionError                # 交互會話異常基類（Core/Event/interaction）
 │   ├── InteractionCancelled        # 掛起的等待/租約被取消（wait_reply 上層轉為返回 None）
-│   └── SessionOccupiedError        # 會話互斥租約被佔用（hold() 獲取失敗）
+│   └── SessionOccupiedError        # 會話互斥租約被占用（hold() 獲取失敗）
 ├── ModuleError                     # 模塊系統異常基類（Core/module）
 │   └── ModuleCallError             # 模塊間調用異常基類
 │       ├── ModuleNotAvailableError # 目標模組未註冊/未啟用/初始化失敗（含懶加載訪問）
-│       ├── ServiceNotProvidedError # 目標模組未聲明該服務（meta.services 白名單外）
+│       ├── ServiceNotProvidedError # 目標模組未宣告該服務（meta.services 白名單外）
 │       └── ModuleCallTimeoutError  # 被調方法執行超時（預設 30s）
+├── ShadowError                     # 影子模組異常基類（Core/shadow）
+│   ├── ShadowStateError            # 狀態不滿足：目標未加載/已有活躍影子/未綁定影子（start/dismiss）
+│   ├── ShadowSourceError           # 影子源不可用：路徑不存在/加載器缺失/裝載失敗（start）
+│   └── ShadowPromoteError          # 轉正失敗：影子未註冊/未加載/加載器無快照/重載失敗（promote）
 └── StrictModeError                 # 嚴格模式致命違規（中止啟動流程，loaders/strict）
 ```
 
@@ -82,7 +86,7 @@ except ClientTimeoutError:
 
 | 異常 | 發生位置 | 典型場景 |
 |------|----------|----------|
-| `WebSocketError` | WS 收發方法 | 連接已關閉、收到意外訊息類型、底層 WS 異常 |
+| `WebSocketError` | WS 收發方法 | 連接已關閉、收到意外消息類型、底層 WS 異常 |
 | `WebSocketDisconnect` | WS 收發方法 | 對端正常斷開連接（框架會自動重連） |
 
 ### Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`
@@ -90,14 +94,14 @@ except ClientTimeoutError:
 | 異常 | 發生位置 | 典型場景 |
 |------|----------|----------|
 | `StorageError` | 存儲層 | 存儲相關異常基類 |
-| `StorageUnreachableError` | 建池階段 | 數據庫不可達 / 憑證錯誤 / 網路隔離，重試耗盡 |
+| `StorageUnreachableError` | 建池階段 | 資料庫不可達 / 憑證錯誤 / 網路隔離，重試耗盡 |
 
-> **存儲操作的失敗語義**：KV 與查詢操作**預設不拋出**——失敗時記錄 ERROR 日誌並
+> **儲存操作的失敗語義**：KV 與查詢操作**預設不拋出**——失敗時記錄 ERROR 日誌並
 > 返回 `False` / `None` / `default`（避免連接問題阻塞框架運行）。因此業務程式碼通常
-> **不會**捕獲到 `StorageUnreachableError`（它主要供直接操作存儲底層或自訂後端使用）。
+> **不會**捕獲到 `StorageUnreachableError`（它主要供直接操作儲存底層或自訂後端使用）。
 > 運行時感知連接狀態請訂閱生命週期事件 `storage.unreachable` / `storage.recovered`
-> （詳見[生命週期事件](lifecycle.md#存儲連接狀態)）。
-> 連接失敗行為詳見[存儲後端 → 連接失敗行為](storage-backends.md#連接失敗行為)。
+> （詳見[生命週期事件](lifecycle.md#儲存連接狀態)）。
+> 連接失敗行為詳見[儲存後端 → 連接失敗行為](storage-backends.md#連接失敗行為)。
 
 ### Interaction — `Core/Event/interaction.py`
 
@@ -106,7 +110,7 @@ except ClientTimeoutError:
 | 異常 | 發生位置 | 典型場景 |
 |------|----------|----------|
 | `InteractionError` | 交互會話層 | 交互會話異常基類 |
-| `InteractionCancelled` | 掛起等待被取消時 | 設置到等待 future 上（等待方可捕獲獲取 `.reason`） |
+| `InteractionCancelled` | 掛起等待被取消時 | 設定到等待 future 上（等待方可捕獲獲取 `.reason`） |
 | `SessionOccupiedError` | `hold()` 租約獲取失敗 | 會話已被其他 owner 占用（`.owner` 可查占用者） |
 
 等待被取消（模組卸載 / 平台關閉 / 同會話新等待取代）時，`wait_reply` **返回 `None`**
@@ -119,7 +123,7 @@ except ClientTimeoutError:
 | `ModuleError` | 模組系統 | 模組系統異常基類 |
 | `ModuleCallError` | `module.call()` | 模組間呼叫異常基類 |
 | `ModuleNotAvailableError` | `module.call()` / 慢加載屬性存取 | 目標未註冊 / 未啟用 / 初始化失敗 |
-| `ServiceNotProvidedError` | `module.call()` | 目標 `meta.services` 白名單未聲明該方法 |
+| `ServiceNotProvidedError` | `module.call()` | 目標 `meta.services` 白名單未宣告該方法 |
 | `ModuleCallTimeoutError` | `module.call()` | 被調協程超過超時時間（預設 30s） |
 
 "目標模組不可用"在不同存取路徑下的異常類型：
@@ -141,9 +145,18 @@ except ServiceNotProvidedError:
     ...  # 目標模組未提供該服務
 ```
 
+### Shadow 系列 — `Core/shadow.py`（影子模組）
+
+| 異常 | 發生位置 | 典型場景 |
+|------|----------|----------|
+| `ShadowError` | 影子模組機制 | 影子異常基類（統一捕獲所有影子錯誤） |
+| `ShadowStateError` | `shadow_start()` / `dismiss_shadow()` | 目標未加載 / 已有活躍影子 / 未綁定影子 |
+| `ShadowSourceError` | `shadow_start()` | 源路徑不存在 / 插件加載器缺失 / 源無可加載類 / 裝載失敗 |
+| `ShadowPromoteError` | `promote_shadow()` | 影子未註冊 / 未加載 / 加載器不支援快照 / 轉正重載失敗 |
+
 ### 框架內部參數校驗（ValueError）
 
-存儲查詢建構器的參數校驗（空欄位類型、`Insert` 非 dict、不安全欄位類型等）拋標準
+儲存查詢建構器的參數校驗（空欄位類型、`Insert` 非 dict、不安全欄位類型等）拋標準
 `ValueError`——這類屬於**開發期編碼錯誤**，正常業務程式碼不應捕獲，而應修正呼叫。
 
 適配器標準動作失敗**不拋異常**：返回帶 `retcode` 的響應字典（協定語義，如
