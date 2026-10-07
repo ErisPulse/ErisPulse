@@ -8,15 +8,15 @@ ErisPulse 的 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構�
 Bases/storage.py                    Core/storage.py
 ┌─────────────────────┐             ┌──────────────────────────┐
 │  BaseStorage (ABC)  │◄────────────│  StorageManager          │
-│  BaseQueryBuilder   │             │  (SQLite concrete impl)  │
-│    (ABC)            │             │                          │
+│  BaseQueryBuilder   │             │  (backend dispatch:      │
+│    (ABC)            │             │   sqlite/mysql/postgres) │
 └─────────────────────┘             │  SQLiteQueryBuilder      │
                                     │  AlterTableBuilder       │
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面，支援未來拓展其他儲存媒體（Redis、MySQL 等）
-- `StorageManager` 是目前 SQLite 具體實作，完全向後相容
+- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面；框架內建 SQLite / MySQL / PostgreSQL 三種實現（自定義後端亦可依此擴展，見[儲存後端](storage-backends.md)）
+- `StorageManager` 按 `ErisPulse.storage.backend` 配置調度具體後端，預設 SQLite，完全向後相容
 
 ## 導入
 
