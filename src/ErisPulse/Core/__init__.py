@@ -44,6 +44,10 @@ from .Bases import (
     ModuleNotAvailableError,
     ServiceNotProvidedError,
     SessionOccupiedError,
+    ShadowError,
+    ShadowPromoteError,
+    ShadowSourceError,
+    ShadowStateError,
     StorageError,
     StorageUnreachableError,
     StrictModeError,
@@ -61,6 +65,7 @@ from .config import config, ConfigManager
 from .i18n import i18n, I18nManager
 from .master import master, MasterManager, MasterProvider
 from .ownership import OwnershipManager, ownership
+from .shadow import ShadowLedger, ShadowManager, ShadowOverlay, shadow_ledger, shadow_manager
 from .di import Depends
 from .scope import scope, ScopeManager
 from .text_match import compile_entry_matcher, compile_text_matcher, extract_text
@@ -119,6 +124,10 @@ __all__ = [
     "ModuleNotAvailableError",  # 目标模块不可用异常
     "ServiceNotProvidedError",  # 服务未提供异常
     "SessionOccupiedError",  # 会话被占用异常
+    "ShadowError",  # 影子模块异常基类
+    "ShadowStateError",  # 影子模块状态不满足异常
+    "ShadowSourceError",  # 影子源不可用异常
+    "ShadowPromoteError",  # 影子模块转正失败异常
     "LifecycleManager",  # 生命周期管理器类
     "Logger",  # 日志类
     "LoggerChild",  # 日志子类
@@ -160,6 +169,11 @@ __all__ = [
     "master",  # 框架主人模块单例
     "ownership",  # 归属权统一门面单例
     "OwnershipManager",  # 归属权管理器类
+    "shadow_manager",  # 影子模块管理器单例（装配 / 转正 / 放弃 / 对比）
+    "ShadowManager",  # 影子模块管理器类
+    "shadow_ledger",  # 影子账本单例（promote/dismiss 历史与 diff 数据源）
+    "ShadowLedger",  # 影子账本类
+    "ShadowOverlay",  # 影子事件副本包装类
     "module",  # 模块模块单例
     "router",  # 路由模块单例
     "scope",  # 作用域模块单例

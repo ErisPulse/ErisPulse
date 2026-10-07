@@ -55,8 +55,17 @@ RUN_RESTART_PAUSE_SECS: float = 0.5
 # 修改影响: 数值越小越早提示，越大越保守（0/负数禁用提示）。
 RUN_PERSISTENT_CRASH_HINT_THRESHOLD: int = 3
 
+# init 生成项目对框架本体的依赖下限（pip 依赖声明，非 SDK 加载期检查）。
+# 使用位置: CLI/commands/init.py -> pyproject.toml 生成 / uv_add / pm.install_package /
+#           append_pyproject_dependencies 四处。
+# 修改影响: 这是真实 pip 依赖，2.9.0 正式版上 PyPI 前不能升到 "erispulse>=2.9.0"
+#           （pip 默认不解析预发布，dev 通道生成的项目将无法安装依赖）——
+#           2.9.0 收口时与 create.py 的 _TEMPLATE_MIN_SDK_VERSION 一并升级。
+INIT_ERISPULSE_DEPENDENCY: str = "erispulse>=2.8.3"
+
 __all__ = [
     "ADAPTER_ENTRY_POINT_GROUP",
+    "INIT_ERISPULSE_DEPENDENCY",
     "RUN_CRASH_BACKOFF_MAX_SECS",
     "RUN_CRASH_BACKOFF_PER_CRASH_SECS",
     "RUN_RESTART_PAUSE_SECS",

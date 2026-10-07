@@ -15,6 +15,7 @@ from rich.text import Text
 
 from ..base import Command
 from ..console import console
+from ..constants import INIT_ERISPULSE_DEPENDENCY
 from ..i18n import i18n
 from ..utils import PackageManager
 from ..utils.display import _input, prompt_validated, section_header
@@ -26,6 +27,7 @@ from ..utils.package_manager import (
     uv_add,
     warn_if_uv_isolated,
 )
+from ..utils.scaffold_text import ScaffoldText
 
 
 def _validate_project_name(name: str) -> bool:
@@ -192,6 +194,9 @@ class InitCommand(Command):
                 console.print(f"[success]  {i18n.t('cli.init.created_dir', name=project_name)}[/]")
 
         try:
+            # 生成物文案（config 注释 / main docstring / .gitignore 分节 /
+            # README）跟随 CLI 语言；缺失键回退英文
+            st = ScaffoldText()
             for dir_name in ["config", "logs"]:
                 (project_path / dir_name).mkdir(exist_ok=True)
             # SSL 证书默认目录：跟随项目运行目录走，配置里用相对路径引用
@@ -201,15 +206,14 @@ class InitCommand(Command):
                 ssl_file = ssl_dir / ssl_name
                 if not ssl_file.exists():
                     ssl_file.write_text(
-                        "# 将你的证书/密钥 PEM 内容粘贴到本文件，或在配置中改用 ssl_cert/ssl_key 内联填写\n",
+                        st.t("init.ssl_placeholder") + "\n",
                         encoding="utf-8",
                     )
 
             config_file = project_path / "config" / "config.toml"
             if not config_file.exists():
                 with config_file.open("w", encoding="utf-8") as f:
-                    f.write("# ErisPulse 配置文件\n")
-                    f.write("# 完整配置示例请参考 config.full.example\n\n")
+                    f.write(st.t("init.config_toml_header") + "\n\n")
                     f.write("[ErisPulse.server]\n")
                     f.write('host = "0.0.0.0"\n')
                     f.write("port = 8000\n\n")
@@ -224,9 +228,7 @@ class InitCommand(Command):
             main_file = project_path / "main.py"
             if not main_file.exists():
                 with main_file.open("w", encoding="utf-8") as f:
-                    f.write(f'"""\n{display_name} 主程序\n\n')
-                    f.write("这是 ErisPulse 自动生成的主程序文件\n")
-                    f.write('"""\n\n')
+                    f.write(st.t("init.main_docstring", display_name=display_name) + "\n")
                     f.write("import asyncio\n")
                     f.write("from ErisPulse import sdk\n\n")
                     f.write("async def main():\n")
@@ -245,7 +247,7 @@ class InitCommand(Command):
                     f.write('description = "ErisPulse project"\n')
                     f.write('requires-python = ">=3.10"\n')
                     f.write("dependencies = [\n")
-                    f.write('    "erispulse>=2.8.3",\n')
+                    f.write(f'    "{INIT_ERISPULSE_DEPENDENCY}",\n')
                     for adapter in adapter_list or []:
                         f.write(f'    "{adapter}",\n')
                     f.write("]\n")
@@ -265,13 +267,13 @@ class InitCommand(Command):
                         "*.egg-info/\n"
                         ".eggs/\n"
                         "\n"
-                        "# 虚拟环境与本地环境\n"
+                        f"{st.t('init.gitignore_section_venv')}\n"
                         ".venv/\n"
                         "venv/\n"
                         "env/\n"
                         ".env\n"
                         "\n"
-                        "# 工具缓存\n"
+                        f"{st.t('init.gitignore_section_cache')}\n"
                         ".pytest_cache/\n"
                         ".mypy_cache/\n"
                         ".ruff_cache/\n"
@@ -279,11 +281,11 @@ class InitCommand(Command):
                         "coverage.xml\n"
                         "htmlcov/\n"
                         "\n"
-                        "# ErisPulse 运行时数据（配置与日志含敏感信息，不入库）\n"
+                        f"{st.t('init.gitignore_section_runtime')}\n"
                         "config/\n"
                         "logs/\n"
                         "\n"
-                        "# 编辑器与系统文件\n"
+                        f"{st.t('init.gitignore_section_editor')}\n"
                         ".idea/\n"
                         ".vscode/\n"
                         "*.swp\n"
@@ -295,14 +297,14 @@ class InitCommand(Command):
             readme_file = project_path / "README.md"
             if not readme_file.exists():
                 with readme_file.open("w", encoding="utf-8") as f:
-                    f.write(f"# {display_name}\n\nErisPulse 项目。\n\n```bash\nepsdk run\n```\n")
+                    f.write(st.t("init.readme_body", display_name=display_name))
                 console.print(f"[success]  {i18n.t('cli.init.readme_created')}[/]")
 
             # ---- 虚拟环境与依赖安装 ----
             if create_venv:
                 console.print(f"[info]  {i18n.t('cli.init.venv_creating')}[/]")
                 venv_python = None
-                if uv_add(project_path, ["erispulse>=2.8.3"]):
+                if uv_add(project_path, [INIT_ERISPULSE_DEPENDENCY]):
                     # uv add 自动创建 .venv、安装依赖并写入 pyproject 依赖清单
                     venv_python = resolve_target_python(project_path)[0]
                     console.print(f"[success]  {i18n.t('cli.init.venv_created')}[/]")
@@ -312,8 +314,8 @@ class InitCommand(Command):
                     if venv_python:
                         console.print(f"[success]  {i18n.t('cli.init.venv_created')}[/]")
                         pm = PackageManager(python_executable=venv_python)
-                        if pm.install_package(["erispulse>=2.8.3"]):
-                            append_pyproject_dependencies(project_path, ["erispulse>=2.8.3"])
+                        if pm.install_package([INIT_ERISPULSE_DEPENDENCY]):
+                            append_pyproject_dependencies(project_path, [INIT_ERISPULSE_DEPENDENCY])
                             console.print(f"[success]  {i18n.t('cli.init.deps_installed')}[/]")
                         else:
                             console.print(

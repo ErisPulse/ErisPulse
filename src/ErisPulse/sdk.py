@@ -27,6 +27,7 @@ from .Core.constants import (
     ENV_SUPERVISED,
     HARD_RESTART_EXIT_CODE,
     LIFECYCLE_TIMER_CORE_INIT,
+    SDK_HARD_RESTART_SETTLE_DELAY_SECS,
 )
 from .Core.i18n import i18n
 
@@ -1217,7 +1218,8 @@ class SDK:
         """
 
         async def _do_hard_restart():
-            await asyncio.sleep(0.5)
+            # 让"重启中"的响应先送达再退出进程
+            await asyncio.sleep(SDK_HARD_RESTART_SETTLE_DELAY_SECS)
             try:
                 self.logger.info(i18n.t("core.sdk.hardrestart.starting"))
                 await self.uninit()

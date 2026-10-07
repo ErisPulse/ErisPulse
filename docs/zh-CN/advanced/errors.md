@@ -29,6 +29,10 @@ ErisPulseError                      # 所有框架异常的基类
 │       ├── ModuleNotAvailableError # 目标模块未注册/未启用/初始化失败（含懒加载访问）
 │       ├── ServiceNotProvidedError # 目标模块未声明该服务（meta.services 白名单外）
 │       └── ModuleCallTimeoutError  # 被调方法执行超时（默认 30s）
+├── ShadowError                     # 影子模块异常基类（Core/shadow）
+│   ├── ShadowStateError            # 状态不满足：目标未加载/已有活跃影子/未绑定影子（start/dismiss）
+│   ├── ShadowSourceError           # 影子源不可用：路径不存在/加载器缺失/装载失败（start）
+│   └── ShadowPromoteError          # 转正失败：影子未注册/未加载/加载器无快照/重载失败（promote）
 └── StrictModeError                 # 严格模式致命违规（中止启动流程，loaders/strict）
 ```
 
@@ -142,6 +146,15 @@ except ModuleNotAvailableError:
 except ServiceNotProvidedError:
     ...  # 目标模块未提供该服务
 ```
+
+### Shadow 系列 — `Core/shadow.py`（影子模块）
+
+| 异常 | 发生位置 | 典型场景 |
+|------|----------|----------|
+| `ShadowError` | 影子模块机制 | 影子异常基类（统一捕获所有影子错误） |
+| `ShadowStateError` | `shadow_start()` / `dismiss_shadow()` | 目标未加载 / 已有活跃影子 / 未绑定影子 |
+| `ShadowSourceError` | `shadow_start()` | 源路径不存在 / 插件加载器缺失 / 源无可加载类 / 装载失败 |
+| `ShadowPromoteError` | `promote_shadow()` | 影子未注册 / 未加载 / 加载器不支持快照 / 转正重载失败 |
 
 ### 框架内部参数校验（ValueError）
 

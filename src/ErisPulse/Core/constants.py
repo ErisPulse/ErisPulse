@@ -421,6 +421,11 @@ EVENT_ADAPTER_EVENT_BLOCKED: Final[str] = "adapter.event.blocked"
 # 修改影响: 设大确保异步事件处理完成，设小加速关闭流程。过小可能丢失事件。
 UNINIT_SETTLE_DELAY_SECS: Final[float] = 0.1
 
+# 硬重启调度前的缓冲时间（秒）：让"重启中"的响应先送达再退出进程。
+# 使用位置: sdk.py -> hard_restart() 的 _do_hard_restart()。
+# 修改影响: 设大→硬重启响应更可靠但退出更慢；设小→响应可能来不及发出。
+SDK_HARD_RESTART_SETTLE_DELAY_SECS: Final[float] = 0.5
+
 # 优雅关闭总超时时间（秒），超过此时间未完成则强制终止。
 # 用于防止模块 on_unload() 卡死阻塞 Docker/容器重启。
 # 0 表示不设超时（无限等待）。
@@ -509,6 +514,19 @@ GOVERNANCE_KEY_KINDS: Final[frozenset] = frozenset({"user", "session", "global"}
 #           （*_reply=）在极端容量压力下重复触发一次。
 GOVERNANCE_STATE_MAX_ENTRIES: Final[int] = 4096
 
+# 用量配额（usage_limit=）持久化的存储键前缀（完整键为
+# f"{GOVERNANCE_USAGE_KEY_PREFIX}{chr(0)}{键粒度标识}"，与 conversation 键
+# 同款 NUL 分隔风格）。
+# 使用位置: Core/Event/governance.py（usage 配额读写两处）。
+# 修改影响: 变更后旧计数键不再被读取（存量配额清零重新计数）。
+GOVERNANCE_USAGE_KEY_PREFIX: Final[str] = "erispulse.usage"
+
+# 用量配额持久化读/写兜底的 wait_for 超时（秒）：存储桥接 loop 不可用
+# （如裸 asyncio.run 测试场景）时限时回退内存计数，避免分发路径卡死。
+# 使用位置: Core/Event/governance.py（usage 配额 aget / aset 两处）。
+# 修改影响: 调大→存储异常时命令分发最多多等该时长；调小→更容易降级内存计数。
+GOVERNANCE_USAGE_STORAGE_TIMEOUT_SECS: Final[float] = 1.0
+
 # ==============================================================================
 # 事件处理器默认值
 #
@@ -554,10 +572,18 @@ DEFAULT_INTERACTION_LEASE_TTL_SECS: Final[float] = 3600.0
 DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS: Final[float] = 86400.0
 
 # 过期对话检查点主动清理的周期（秒）。
-# 使用位置: Core/Event/wrapper.py -> _checkpoint_gc_loop()（惰性启动的周期任务）。
+# 使用位置: Core/Event/conversation.py -> _checkpoint_gc_loop()（惰性启动的周期任务，
+# wrapper.py re-export 保持既有导入路径）。
 # 修改影响: 补全"仅在 resume 时惰性清理"的缺口——长期未恢复的过期存档
 # 按该周期被主动删除，不再永久驻留存储。
 CONVERSATION_CHECKPOINT_GC_INTERVAL_SECS: Final[float] = 3600.0
+
+# 过期对话检查点 GC 周期任务在框架后台任务表中的 owner 名。
+# 使用位置: Core/Event/conversation.py -> _start_checkpoint_gc()（经
+# runtime.tasks.spawn_background 调度，uninit 兜底可取消）。
+# 修改影响: 独立命名避免落在分发期 owner 上下文上被模块卸载误杀；
+# 变更后仅影响任务登记键，无持久化语义。
+CONVERSATION_CHECKPOINT_GC_OWNER: Final[str] = "ErisPulse.conversation_gc"
 
 # ==============================================================================
 # 会话收件箱（transcript）
@@ -614,6 +640,16 @@ DEFAULT_MODULE_CALL_TIMEOUT_SECS: Final[float] = 30.0
 # 使用位置: Core/adapter.py -> AdapterManager._is_duplicate_event()
 # 修改影响: 平台重连重推同 id 事件的去重窗口——容量越大可回溯越久，内存占用略增。
 DEFAULT_EVENT_DEDUPE_CAPACITY: Final[int] = 4096
+
+# 文本匹配正则编译的 LRU 缓存容量（pattern/regex → 编译结果）。
+# 使用位置: Core/text_match.py -> _compile_regex() 装饰器。
+# 修改影响: 调大→更多正则驻留缓存（重复编译更少）；调小→冷 pattern 反复重编译。
+TEXT_MATCH_CACHE_SIZE: Final[int] = 1024
+
+# 作用域判定缓存的默认容量（模块/身份/出站三维判定结果 LRU）。
+# 使用位置: Core/scope.py -> ScopeManager（DEFAULT_CACHE_SIZE 的唯一真相源）。
+# 修改影响: 调大→判定缓存命中率更高（内存略增）；调小→更频繁重算作用域判定。
+SCOPE_DEFAULT_CACHE_SIZE: Final[int] = 1024
 
 # 单会话同时挂起的 remind 定时器上限。
 # 使用位置: Core/Event/interaction.py -> InteractionManager.add_reminder()
@@ -1146,6 +1182,29 @@ __all__ = [
     "COMMAND_ARG_DURATION_UNITS",
     "GOVERNANCE_KEY_KINDS",
     "GOVERNANCE_STATE_MAX_ENTRIES",
+    "GOVERNANCE_USAGE_KEY_PREFIX",
+    "GOVERNANCE_USAGE_STORAGE_TIMEOUT_SECS",
+    "TEXT_MATCH_CACHE_SIZE",
+    "SCOPE_DEFAULT_CACHE_SIZE",
+    "ADAPTER_ENTRY_POINT_GROUP",
+    "MODULE_ENTRY_POINT_GROUP",
+    "PYPI_PACKAGE_JSON_URL_TEMPLATE",
+    "DEFAULT_COMMAND_BLOCK",
+    "DEFAULT_WAIT_REPLY_BLOCK",
+    "DEFAULT_SSE_HEADERS",
+    "DEFAULT_SSE_MEDIA_TYPE",
+    "HTTP_STATUS_BAD_GATEWAY",
+    "HTTP_STATUS_FORBIDDEN",
+    "HTTP_STATUS_INTERNAL_ERROR",
+    "HTTP_STATUS_NOT_FOUND",
+    "HTTP_STATUS_SERVICE_UNAVAILABLE",
+    "HTTP_STATUS_TOO_MANY_REQUESTS",
+    "STORAGE_POOL_CREATE_BACKOFF_SECS",
+    "STORAGE_POOL_CREATE_RETRIES",
+    "STORAGE_POOL_FAIL_COOLDOWN_SECS",
+    "TRANSCRIPT_TABLE",
+    "WS_CLOSE_NORMAL",
+    "SDK_HARD_RESTART_SETTLE_DELAY_SECS",
     "ADAPTER_START_TASK_JOIN_TIMEOUT_SECS",
     "STORAGE_CLOSE_OTHER_LOOP_TIMEOUT_SECS",
     "EXCEPTION_NOISE_STATE_MAX_ENTRIES",
@@ -1165,6 +1224,7 @@ __all__ = [
     "CONFIRM_NO_WORDS",
     "CONFIRM_YES_WORDS",
     "CONVERSATION_KEY_PREFIX",
+    "CONVERSATION_CHECKPOINT_GC_OWNER",
     "DEFAULT_ADAPTER_ENABLED",
     "DEFAULT_COMMAND_ALLOW_SPACE_PREFIX",
     "DEFAULT_COMMAND_CASE_SENSITIVE",

@@ -25,6 +25,7 @@ from collections import deque
 from pathlib import Path
 from typing import Any
 
+from .Bases.errors import ShadowPromoteError, ShadowSourceError, ShadowStateError
 from .i18n import i18n
 from .logger import logger
 
@@ -261,21 +262,21 @@ class ShadowManager:
                       ``f"{real_name}_shadow"``）
         :param loader: 模块加载器实例（None 时自动取 ``sdk._module_loader``）
         :return: 影子 owner 名
-        :raises RuntimeError: 原模块未加载 / 影子已存在 / 源路径无效 /
-                              影子装载失败
+        :raises ShadowStateError: 原模块未加载 / 影子已存在
+        :raises ShadowSourceError: 源路径无效 / 加载器缺失 / 影子装载失败
 
         :example:
         >>> await sdk.module.shadow_start("roll", source="downloads/roll_v2")
         'roll_shadow'
         """
         if real_name not in getattr(manager, "_loaded_modules", set()):
-            raise RuntimeError(f"module '{real_name}' is not loaded; cannot shadow it")
+            raise ShadowStateError(f"module '{real_name}' is not loaded; cannot shadow it")
         if self.shadow_owner_of(real_name):
-            raise RuntimeError(f"module '{real_name}' already has an active shadow")
+            raise ShadowStateError(f"module '{real_name}' already has an active shadow")
 
         src = Path(source)
         if not src.exists():
-            raise RuntimeError(f"shadow source path not found: {src}")
+            raise ShadowSourceError(f"shadow source path not found: {src}")
 
         owner = owner or src.stem.strip() or f"{real_name}_shadow"
         owner = "".join(ch if (ch.isalnum() or ch == "_") else "_" for ch in owner)
@@ -289,18 +290,18 @@ class ShadowManager:
             loader = getattr(sdk, "_module_loader", None)
         plugin_loader = getattr(loader, "_plugin_loader", None) if loader else None
         if plugin_loader is None:
-            raise RuntimeError("plugin loader unavailable; cannot import shadow source")
+            raise ShadowSourceError("plugin loader unavailable; cannot import shadow source")
 
         module_obj = plugin_loader._load_plugin(owner, src)
         if module_obj is None:
-            raise RuntimeError(f"shadow source '{src}' contains no loadable module class")
+            raise ShadowSourceError(f"shadow source '{src}' contains no loadable module class")
         v_info = module_obj.moduleInfo
         v_class = v_info["module_class"]
 
         try:
             manager.register(owner, v_class, v_info)
             if not await manager.load(owner):
-                raise RuntimeError("shadow load returned False")
+                raise ShadowSourceError("shadow load returned False")
         except Exception:
             try:
                 manager.unregister(owner)
@@ -351,22 +352,22 @@ class ShadowManager:
         """
         info = self._shadows.get(real_name)
         if not info:
-            raise ValueError(f"no shadow bound for module '{real_name}'")
+            raise ShadowStateError(f"no shadow bound for module '{real_name}'")
         shadow_owner = info["shadow_owner"]
         if real_name not in getattr(manager, "_loaded_modules", set()):
-            raise RuntimeError(f"module '{real_name}' is not loaded; nothing to promote onto")
+            raise ShadowPromoteError(f"module '{real_name}' is not loaded; nothing to promote onto")
 
         v2_class = (getattr(manager, "_module_classes", {}) or {}).get(shadow_owner)
         if v2_class is None:
-            raise RuntimeError(f"shadow '{shadow_owner}' is not registered")
+            raise ShadowPromoteError(f"shadow '{shadow_owner}' is not registered")
         loaded = getattr(manager, "_loaded_modules", set())
         if shadow_owner not in loaded:
-            raise RuntimeError(f"shadow '{shadow_owner}' is not loaded")
+            raise ShadowPromoteError(f"shadow '{shadow_owner}' is not loaded")
 
         if loader is None:
             loader = getattr(sdk, "_module_loader", None)
         if loader is None or not hasattr(loader, "_capture_reload_state"):
-            raise RuntimeError("module loader does not support snapshot; cannot promote safely")
+            raise ShadowPromoteError("module loader does not support snapshot; cannot promote safely")
 
         # 快照当前版本与级联依赖者（purge_names=[]：promote 不清 sys.modules，
         # 内存释放推迟到回滚窗口之外）
@@ -390,7 +391,7 @@ class ShadowManager:
         try:
             manager.register(real_name, v2_class, v2_info)
             if not await manager.load(real_name):
-                raise RuntimeError("load returned False")
+                raise ShadowPromoteError("load returned False")
             setattr(sdk, real_name, manager.get(real_name))
             module_obj = sys.modules.get(v2_class.__module__)
             if module_obj is not None:

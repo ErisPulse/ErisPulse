@@ -26,32 +26,31 @@ from ..i18n import i18n
 # 生成文件名（带前导下划线，避免与用户业务模块冲突）
 STUB_FILENAME = "_ep_types.py"
 
-# 存根文件头部说明
-_STUB_HEADER = '''"""
-ErisPulse 类型存根（自动生成，请勿手动编辑）
-
-由 `epsdk types` 命令根据已安装的模块/适配器生成。
-仅导出类型供用户代码作为变量标注使用，**不提供任何运行时实例**。
-所有导入都在 ``TYPE_CHECKING`` 下，运行时零开销、零行为改变。
-
-使用方式：
-    from _ep_types import MyModule, Yunhu
-    from ErisPulse import sdk
-
-    # 用导入的类型标注变量，即可获得 IDE 补全
-    my_mod: MyModule = sdk.module.get("MyModule")
-    my_mod.hello()                       # ← IDE 能补全 hello
-
-    my_adapter: Yunhu = sdk.adapter.get("yunhu")
-    await my_adapter.Send.To("group", "123").Board(...)  # ← 补全平台特有方法
-
-说明：
-    - 类型名采用 entry-point 名的 PascalCase 形式（如 ``yunhu`` → ``Yunhu``），
-      与传入 ``sdk.adapter.get()`` / ``sdk.module.get()`` 的名称对应
-    - 存根仅用于静态类型检查，不含运行时实现
-    - 安装/卸载模块/适配器后请重新生成：``epsdk types``
-"""
-'''
+def _stub_header() -> str:
+    """{!--< internal-use >!--} 渲染存根文件头部说明（当前语言）"""
+    return (
+        '"""\n'
+        f"{i18n.t('cli.types.stub_title')}\n"
+        "\n"
+        f"{i18n.t('cli.types.stub_intro')}\n"
+        "\n"
+        f"{i18n.t('cli.types.stub_usage_title')}:\n"
+        "    from _ep_types import MyModule, Yunhu\n"
+        "    from ErisPulse import sdk\n"
+        "\n"
+        f"    {i18n.t('cli.types.stub_usage_comment')}\n"
+        '    my_mod: MyModule = sdk.module.get("MyModule")\n'
+        f"    my_mod.hello()                       {i18n.t('cli.types.stub_usage_module_hint')}\n"
+        "\n"
+        '    my_adapter: Yunhu = sdk.adapter.get("yunhu")\n'
+        f"    await my_adapter.Send.To(\"group\", \"123\").Board(...)  {i18n.t('cli.types.stub_usage_adapter_hint')}\n"
+        "\n"
+        f"{i18n.t('cli.types.stub_notes_title')}:\n"
+        f"    - {i18n.t('cli.types.stub_note_naming')}\n"
+        f"    - {i18n.t('cli.types.stub_note_static_only')}\n"
+        f"    - {i18n.t('cli.types.stub_note_regen')}\n"
+        '"""\n'
+    )
 
 # 排除内省的方法名（来自基类、Python 内置、下划线开头）
 _EXCLUDE_METHOD_NAMES = frozenset({
@@ -491,14 +490,11 @@ class TypesCommand(Command):
         :param modules_info: 模块信息
         :return: 存根文件内容
         """
-        lines = [_STUB_HEADER.rstrip(), ""]
+        lines = [_stub_header().rstrip(), ""]
         lines.append("from typing import TYPE_CHECKING")
         lines.append("")
         lines.append("if TYPE_CHECKING:")
-        lines.append("    # 以下类型导入仅在 IDE / 类型检查器中生效，不会被运行时执行。")
-        lines.append("    # 在用户代码中通过 ``from _ep_types import XxxModule`` 获取类型，")
-        lines.append("    # 配合 ``my_mod: XxxModule = sdk.module.get('XxxModule')`` 获得补全。")
-        lines.append("")
+        lines.append(f"    # {i18n.t('cli.types.stub_typing_comment')}")
 
         export_names: list[str] = []
         seen_imports: set[str] = set()  # 去重完全相同的导入语句

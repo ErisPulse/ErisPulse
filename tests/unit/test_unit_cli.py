@@ -393,20 +393,21 @@ class TestCreateTemplatesCompile:
             converter_name="MyConverter",
             entry_key="myadapter",
             text=self._text(),
+            min_sdk=c._TEMPLATE_MIN_SDK_VERSION,
         )
         compile(code, "<adapter_core>", "exec")
 
     def test_module_core_renders_and_compiles(self):
         from ErisPulse.CLI.commands import create as c
 
-        code = c._MODULE_CORE.format(name="MyModule", text=self._text())
+        code = c._MODULE_CORE.format(name="MyModule", text=self._text(), min_sdk=c._TEMPLATE_MIN_SDK_VERSION)
         compile(code, "<module_core>", "exec")
 
     def test_module_core_sdk_injection_annotation(self):
         """模块模板：sdk 纯注入 + SDK 类型注解，无 import 兜底"""
         from ErisPulse.CLI.commands import create as c
 
-        code = c._MODULE_CORE.format(name="MyModule", text=self._text())
+        code = c._MODULE_CORE.format(name="MyModule", text=self._text(), min_sdk=c._TEMPLATE_MIN_SDK_VERSION)
         assert "def __init__(self, sdk: SDK = None):" in code
         assert "from ErisPulse import SDK" in code
         assert "from ErisPulse import sdk as _sdk" not in code
@@ -418,7 +419,7 @@ class TestCreateTemplatesCompile:
         """模块模板：事件回调带 Event 注解；meta description 用 i18n 字典"""
         from ErisPulse.CLI.commands import create as c
 
-        code = c._MODULE_CORE.format(name="MyModule", text=self._text())
+        code = c._MODULE_CORE.format(name="MyModule", text=self._text(), min_sdk=c._TEMPLATE_MIN_SDK_VERSION)
         assert "from ErisPulse.Core.Event import Event" in code
         # 事件回调全部注解为 Event
         assert "async def hello_command(event: Event):" in code
@@ -454,6 +455,7 @@ class TestCreateTemplatesCompile:
             converter_name="MyConverter",
             entry_key="myadapter",
             text=self._text(),
+            min_sdk=c._TEMPLATE_MIN_SDK_VERSION,
         )
         tree = ast.parse(code)
         imported = {

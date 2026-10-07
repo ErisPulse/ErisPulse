@@ -78,15 +78,24 @@
 > 开发版（预发布）
 
 **版本摘要**
-本版本是全组件性能基准驱动的一轮热路径优化：事件分发引擎与消息链路的吞吐 / 延迟提升 3~9 倍（消息桥 719 → 2,732 ops/s，总线单处理器延迟 0.66ms → 0.10ms），会话收件箱（transcript）改内存缓冲 + 批量落盘后不再拖累分发；i18n 语言解析缓存与热路径日志守卫消除每次调用的文件 IO 和无谓格式化。
+本版本为性能与健壮性双主线：事件分发引擎与消息链路的吞吐 / 延迟提升 3~9 倍（消息桥 719 → 2,732 ops/s，总线单处理器延迟 0.66ms → 0.10ms），会话收件箱（transcript）改内存缓冲 + 批量落盘后不再拖累分发；i18n 语言解析缓存与热路径日志守卫消除每次调用的文件 IO 和无谓格式化。同期完成发布前健壮性批次：会话检查点 GC 周期任务修复为可随 `uninit` 取消、约 20 处静默吞异常补留痕、影子模块异常挂入 `ErisPulseError` 层级并聚合导出、排查诊断与 CLI 脚手架生成物文案全面跟随界面语言。
 
 **升级建议**
 - **是否建议升级**：建议升级
-- 升级原因：无 API 变更、零改动升级；高消息量部署的分发吞吐、存储读路径（+41%）与出站发送延迟（-32%）显著受益
+- 升级原因：无破坏性配置 / 数据变更；高消息量部署的分发吞吐、存储读路径（+41%）与出站发送延迟（-32%）显著受益。已针对影子模块 API 捕获 `RuntimeError` / `ValueError` 的代码需按「注意事项」同步调整
 
 **注意事项**
 - transcript 自此为"内存缓冲 + 至多 1 秒批量落盘"：查询接口自动合并未落盘缓冲，同进程"读你的写"不受影响；正常退出（`sdk.uninit` / 进程退出）强制刷盘；**进程被硬崩溃 / 强杀时最近约 1 秒的会话记录可能丢失**（此前逐条立即写）——该底座定位为近期上下文缓存，不适合审计级持久化
 - `setConfig` 延迟写入的落盘调度线程模型变更（每次写入创建 OS 线程 → 常驻 watcher 线程按到期时间统一调度，刷盘失败自动短退避重试）；对外配置语义与 `config.set` 事件时序不变
+- 影子模块 API 异常类型变更（预发布期 API 定形）：`shadow_start` / `promote_shadow` / `dismiss_shadow` 由裸 `RuntimeError` / `ValueError` 改为 `ShadowStateError` / `ShadowSourceError` / `ShadowPromoteError`（均挂 `ErisPulseError` 层级，自 `ErisPulse.Core` 聚合导出），已有针对性 `except` 需同步调整
+- 脚手架生成物文案本地化：`epsdk create` / `epsdk init` 生成的模板注释、`main.py` docstring、`.gitignore` 分节、README、SSL 占位文件与 `epsdk types` 存根头注释均跟随 CLI 语言（此前部分为硬编码中文）
+- 模板 `min_sdk_version` 地板与 `epsdk init` 生成的 `erispulse>=` 依赖下限已抽为集中常量，在 2.9.0 正式版上 PyPI 前保持现值（pip 默认不解析预发布版本，dev 通道升版会导致生成项目无法安装依赖），2.9.0 收口时一并升级
+
+### 新增
+
+- @YingXinche
+  - `Core/Bases/errors` 新增影子模块异常族：`ShadowError`（基类）与 `ShadowStateError`（状态不满足）/ `ShadowSourceError`（影子源不可用）/ `ShadowPromoteError`（转正失败），挂入 `ErisPulseError` 层级，`Core` 与 `Core.Bases` 双侧聚合导出；`shadow_start` / `promote` 流程的错误按语义归类抛出（`docs/zh-CN/advanced/errors.md` 总览树同步）
+  - `Core` 聚合导出补齐：`shadow_manager` / `ShadowManager` / `shadow_ledger` / `ShadowLedger` / `ShadowOverlay` 可直接 `from ErisPulse.Core import` 获取（此前仅子模块路径可达）
 
 ### 优化
 
@@ -96,6 +105,17 @@
   - `Core/logger` 新增 `should_log(level)` 快速判定（`Logger` / `LoggerChild` 同语义，含屏蔽集合 / 模块覆盖 / 订阅器规则），事件收发日志、存储 KV 操作日志、处理器 trace 等热路径在级别关闭时跳过字符串格式化与 i18n 翻译；事件链路追踪（trace_chain）在 TRACE 关闭时不再逐处理器收集
   - `Core/adapter` 事件处理器的 detail_type / pattern / regex 匹配闭包改为注册时一次性预编译（此前每事件每处理器现场编译，带过滤条件的多处理器场景分发热路径）；`Core/Event/overrides` 覆写条件按（事件类型, 模块）缓存、随覆写变更整体失效
   - `Core/config` 延迟写入调度重造：常驻 config-watcher 线程按到期时间统一刷盘（此前每次 `setConfig` 创建并取消一个 OS 线程），并新增刷盘失败自动短退避重试（`CONFIG_WRITE_RETRY_DELAY_SECS`，此前失败后静默等到下一次用户写入才补写）
+  - `runtime/troubleshoot` 排查诊断输出（`explain_module` / `explain_event` / `format_report`）i18n 化：新增 `runtime.troubleshoot.*` 键（五语言），结论 / 原因文案与分发决策链（trace）的文案体系统一
+  - `CLI` 残留硬编码文案清理：`package_manager` 三处告警、`epsdk types` 存根头注释、`epsdk init` 生成物（config.toml 头注释 / `main.py` docstring / `.gitignore` 分节 / README / SSL 占位文件）全部接入 i18n / ScaffoldText（五语言）
+  - `CLI` 脚手架模板同步：`epsdk create` 模块模板新增 `args=` / `options=` 声明式参数示例命令（对齐 examples 推荐写法）、"签到"示例文案键化（pattern 与回复跟随语言）；`min_sdk_version` 与 `init` 依赖下限抽为集中常量并注明收口升版约束
+  - `Core` 行为参数收编 `Core/constants.py`（注明使用位置与修改影响）：text_match 正则 LRU 容量、governance 用量持久化超时与存储键前缀、scope 判定缓存容量、硬重启调度缓冲；`constants.py` 公共常量 `__all__` 补齐 25 项并新增导出完整性守护测试
+  - 文档：`user-guide/cli-reference.md` 补 `config --json`；`advanced/sql-builder.md` 架构节更新为 SQLite / MySQL / PostgreSQL 多后端现实
+
+### 修复
+
+- @YingXinche
+  - `Core/Event/conversation` 修复会话检查点 GC 周期任务"永生"：改经 `runtime.tasks.spawn_background` 以独立 owner 登记（原先裸 `loop.create_task` 无归属、无取消路径，`sdk.uninit` / 热重启后残留并随周期访问存储）
+  - `Core` 修复约 20 处静默吞异常无留痕：命令 / 覆写的配置热更新订阅失败（热更新失效后无任何痕迹）、事件检查点自动恢复 / 删除 / GC 失败、归属权（ownership）reclaim 链单步失败（此前与"该类资源为零"不可区分）等，现按语义记录 WARNING / DEBUG / TRACE 日志
 
 ---
 
@@ -229,6 +249,9 @@
   - `Core/adapter` 修复慢事件日志指向错误：框架桥接分发层（`BaseEventHandler._process_event` 挂载到适配器总线的整体耗时）超阈值时以框架函数名发 WARNING，用户无法据此定位真正的慢处理器（现降级为 TRACE——慢的根因由内层 EventHandler 告警，消除重复与误导）
   - `Core/Event/base` 慢事件日志重构为三层业务定位，Event 分发链路只透传不再出现在告警中：① 执行中看门狗——处理器超阈值仍未完成时采样其协程等待链，直接报告"当前停在哪个文件哪一行"（如 `当前位于 QvQChat/AIEngine/client.py:88 in chat`，无论等待的是 AI / HTTP 还是任何第三方库，且卡死处理器此前完全无告警、现同样触发）；② 结束统计——处理器名附带定义位置标注（入口 `Main._handle_message (QvQChat/Main.py:123)`）、命令分发场景附上 `[command=roll]` 标明具体慢命令、总耗时与 owner 归属；③ 标准库帧（asyncio sleep 等）自动跳过，直达业务等待点
   - `runtime/diagnostics` 新增 `handler_source_loc`（处理器定义位置标注）与 `deepest_user_frame`（协程等待链采样，沿 `cr_await` 下钻 + framework/stdlib 帧过滤）两个定位工具
+
+---
+
 ## [2.8.6] - 2026/09/22
 > 正式发布
 

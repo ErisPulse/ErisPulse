@@ -41,6 +41,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+# 生成模块/适配器模板的最低 SDK 地板（写入模板 min_sdk_version 字段）。
+# 模板示例使用 args=/options=（2.9 特性），语义上地板应为 2.9.0；但在
+# 2.9.0 正式版上 PyPI 前，dev SDK（2.9.0-dev.x < 2.9.0，PEP 440 序）无法
+# 满足该地板，生成的组件会被加载器拒载——故暂保持 2.8.0，
+# 2.9.0 正式版收口时随 init.py 依赖下限一并升为 "2.9.0"。
+_TEMPLATE_MIN_SDK_VERSION = "2.8.0"
+
 _MODULE_PYPROJECT = """[project]
 name = "ErisPulse-{name}"
 version = "1.0.0"
@@ -144,6 +151,42 @@ class Main(BaseModule):
             ru=\"Привет от {name}!\",
             zh_TW=\"來自 {name} 的問候！\",
         )
+        roll_help: I18nKey = I18nKey(
+            key=\"module.{name}.command.roll.help\",
+            default=\"Roll dice: count [sides]\",
+            zh_CN=\"掷骰子：次数 [面数]\",
+            en=\"Roll dice: count [sides]\",
+            ja=\"サイコロを振る: 回数 [面数]\",
+            ru=\"Бросить кости: количество [граней]\",
+            zh_TW=\"擲骰子：次數 [面數]\",
+        )
+        roll_reply: I18nKey = I18nKey(
+            key=\"module.{name}.command.roll.reply\",
+            default=\"Rolled {{count}}d{{sides}}, total: {{total}}{{detail}}\",
+            zh_CN=\"掷了 {{count}} 次 {{sides}} 面骰，总点数：{{total}}{{detail}}\",
+            en=\"Rolled {{count}}d{{sides}}, total: {{total}}{{detail}}\",
+            ja=\"{{sides}}面ダイスを {{count}} 回振った合計: {{total}}{{detail}}\",
+            ru=\"Бросков {{count}}d{{sides}}, сумма: {{total}}{{detail}}\",
+            zh_TW=\"擲了 {{count}} 次 {{sides}} 面骰，總點數：{{total}}{{detail}}\",
+        )
+        roll_detail: I18nKey = I18nKey(
+            key=\"module.{name}.command.roll.detail\",
+            default=\" (verbose: {{count}} rolls of {{sides}}-sided dice)\",
+            zh_CN=\"（详细模式：{{count}} 次 {{sides}} 面骰）\",
+            en=\" (verbose: {{count}} rolls of {{sides}}-sided dice)\",
+            ja=\"（詳細モード: {{sides}}面ダイスを {{count}} 回）\",
+            ru=\" (подробно: {{count}} бросков {{sides}}-гранного кубика)\",
+            zh_TW=\"（詳細模式：{{count}} 次 {{sides}} 面骰）\",
+        )
+        signin_reply: I18nKey = I18nKey(
+            key=\"module.{name}.command.signin.reply\",
+            default=\"Signed in!\",
+            zh_CN=\"签到成功\",
+            en=\"Signed in!\",
+            ja=\"チェックイン完了！\",
+            ru=\"Готово, вы отмечены!\",
+            zh_TW=\"簽到成功\",
+        )
 
     def __init__(self, sdk: SDK = None):
         # sdk 由框架在实例化时自动注入（无需手动导入兜底）
@@ -167,7 +210,7 @@ class Main(BaseModule):
             version=\"0.1.0\",
             author=\"ErisDev\",
             # 最低 SDK 版本（可选）：不满足时框架在加载期明确报错并跳过本模块
-            min_sdk_version=\"2.8.0\",
+            min_sdk_version=\"{min_sdk}\",
             group=\"default\",
             tags=[\"{name}\"],
             # 对外服务白名单（可选）：声明后其他模块可经 sdk.module.call() 调用这些方法；
@@ -225,6 +268,20 @@ class Main(BaseModule):
         async def hello_command(event: Event):
             await event.reply(i18n.t(\"module.{name}.command.hello.reply\"))
 
+        # {text[module.roll_hint]}
+        @command(
+            \"roll\",
+            args=\"<count:int> [sides:int=6]\",
+            options={{\"verbose\": \"-v/--verbose\"}},
+            help=i18n.t(\"module.{name}.command.roll.help\"),
+        )
+        async def roll_command(event: Event, count: int, sides: int = 6, verbose: bool = False):
+            import random
+
+            total = sum(random.randint(1, sides) for _ in range(count))
+            detail = i18n.t(\"module.{name}.command.roll.detail\", count=count, sides=sides) if verbose else \"\"
+            await event.reply(i18n.t(\"module.{name}.command.roll.reply\", count=count, sides=sides, total=total, detail=detail))
+
     async def _register_message_handlers(self):
         @message.on_private_message()
         async def private_message_handler(event: Event):
@@ -235,9 +292,9 @@ class Main(BaseModule):
             pass
 
         # 消息装饰器支持 pattern（glob 通配符）/ regex（正则），不匹配则不触发
-        @message.on_message(pattern=\"签到*\")
+        @message.on_message(pattern=\"{text[module.signin_pattern]}\")
         async def signin_handler(event: Event):
-            await event.reply(\"签到成功\")
+            await event.reply(i18n.t(\"module.{name}.command.signin.reply\"))
 
         @notice.on_friend_add()
         async def friend_add_handler(event: Event):
@@ -294,7 +351,7 @@ class {name}(BaseAdapter):
     {text[adapter.doc]}
     \"\"\"
 
-    # 依赖声明（可选，ErisPulse 2.8.0+）：
+    # 依赖声明（可选，ErisPulse 2.9.0+）：
     # depends = {{"adapters": [], "modules": []}}   # 硬依赖：缺失时跳过启动
     # optional_modules = []                          # 软依赖：就绪/丢失时收到
     #                                               # on_dependency_ready/lost 回调
@@ -302,7 +359,7 @@ class {name}(BaseAdapter):
     optional_modules: ClassVar[list] = []
 
     # 声明所需最低 SDK 版本：不满足时框架在加载期明确报错并跳过本适配器（可选）
-    min_sdk_version = "2.8.0"
+    min_sdk_version = "{min_sdk}"
 
     # {text[adapter.config_hint]}
     @dataclass
@@ -848,7 +905,7 @@ class CreateCommand(Command):
 
             (pkg_dir / "__init__.py").write_text(_MODULE_INIT, encoding="utf-8")
             (pkg_dir / "Core.py").write_text(
-                _MODULE_CORE.format(name=name, text=_scaffold_text(name)),
+                _MODULE_CORE.format(name=name, text=_scaffold_text(name), min_sdk=_TEMPLATE_MIN_SDK_VERSION),
                 encoding="utf-8",
             )
             (project_dir / "pyproject.toml").write_text(
@@ -921,7 +978,7 @@ class CreateCommand(Command):
 
             (plugin_dir / "__init__.py").write_text(_MODULE_INIT, encoding="utf-8")
             (plugin_dir / "Core.py").write_text(
-                _MODULE_CORE.format(name=name, text=_scaffold_text(name)),
+                _MODULE_CORE.format(name=name, text=_scaffold_text(name), min_sdk=_TEMPLATE_MIN_SDK_VERSION),
                 encoding="utf-8",
             )
 
@@ -1000,6 +1057,7 @@ class CreateCommand(Command):
                     converter_name=converter_name,
                     entry_key=entry_key,
                     text=_scaffold_text(name),
+                    min_sdk=_TEMPLATE_MIN_SDK_VERSION,
                 ),
                 encoding="utf-8",
             )
