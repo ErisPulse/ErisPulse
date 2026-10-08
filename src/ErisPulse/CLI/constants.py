@@ -58,10 +58,9 @@ RUN_PERSISTENT_CRASH_HINT_THRESHOLD: int = 3
 # init 生成项目对框架本体的依赖下限（pip 依赖声明，非 SDK 加载期检查）。
 # 使用位置: CLI/commands/init.py -> pyproject.toml 生成 / uv_add / pm.install_package /
 #           append_pyproject_dependencies 四处。
-# 修改影响: 这是真实 pip 依赖，2.9.0 正式版上 PyPI 前不能升到 "erispulse>=2.9.0"
-#           （pip 默认不解析预发布，dev 通道生成的项目将无法安装依赖）——
-#           2.9.0 收口时与 create.py 的 _TEMPLATE_MIN_SDK_VERSION 一并升级。
-INIT_ERISPULSE_DEPENDENCY: str = "erispulse>=2.8.3"
+# 修改影响: 真实 pip 依赖——pip 默认不解析预发布版本，该下限不得高于已发布的
+#           正式版本（与 create.py 的 _TEMPLATE_MIN_SDK_VERSION 同步升版）。
+INIT_ERISPULSE_DEPENDENCY: str = "erispulse>=2.9.0"
 
 __all__ = [
     "ADAPTER_ENTRY_POINT_GROUP",
