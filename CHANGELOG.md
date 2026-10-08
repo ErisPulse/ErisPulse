@@ -74,6 +74,28 @@
 
 ---
 
+## [2.9.0] - 2026/10/08
+> 正式发布
+
+**版本摘要**
+本版本交付 2.9「模块开发体验」主线（EPRFC-2026-001）全部方向：命令声明式参数与选项（`args=` / `options=`）、命令治理声明化（cooldown / rate_limit / usage_limit / deprecated）、处理器节流与防抖、统一依赖注入（`Depends`）、中间件事件否决权、内置 ORM（自动迁移 + 关系映射）、模块热重载完备性与影子模块灰度转正、分发决策链追踪与排查诊断、声明式配置环境变量绑定及配置 CRUD / 适配器元信息公开 API——均为增量能力，现有模块零适配。同期重造事件分发与消息链路热路径（吞吐 / 延迟提升 3~9 倍），正式支持 Python 3.14，并完成发布前健壮性批次（静默吞异常补留痕、影子模块异常族纳入 `ErisPulseError` 层级、CLI 生成物文案全面 i18n）。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 升级原因：新能力全部为声明式增量（命令不写 `args=` / `Depends`、中间件不返回 `False` 即原行为），无破坏性配置 / 数据变更；高消息量部署的分发吞吐、存储读路径与出站发送延迟显著受益
+
+**注意事项**
+- `scope` 的 `persist=False` 修复为严格不落盘：此前被误写入用户 `config.toml` 的残留值不会自动清理，如已受污染请手工删除对应键；修复前启动过影子模块的部署可能残留 `ErisPulse.modules.status.<影子owner>=False`，日后若真实插件与该影子重名会被误禁用，建议顺手清理
+- `epsdk init` / `epsdk create` 生成物的 `min_sdk_version` 与 `erispulse>=` 依赖下限自本版起为 `2.9.0`
+- Python 3.14 正式支持；3.14t（free-threaded）保持实验性监测、不承诺
+
+### 修复
+
+- @YingXinche
+  - `loaders/plugin_folder` 包形式插件的导入路径改用绝对路径写入 `sys.path`：此前写入相对条目（如 `plugins`），而 `sys.path_importer_cache` 以条目字面字符串为键——首个扫描该条目的工作目录决定 FileFinder 的实际指向并永久缓存，进程此后切换工作目录（测试套件、IDE 托管、多项目共管等场景）时同名条目命中指向旧目录的陈旧查找器，插件导入静默报 `ModuleNotFoundError`
+
+---
+
 ## [2.9.0-dev.3] - 2026/10/05
 > 开发版（预发布）
 
@@ -89,7 +111,7 @@
 - `setConfig` 延迟写入的落盘调度线程模型变更（每次写入创建 OS 线程 → 常驻 watcher 线程按到期时间统一调度，刷盘失败自动短退避重试）；对外配置语义与 `config.set` 事件时序不变
 - 影子模块 API 异常类型变更（预发布期 API 定形）：`shadow_start` / `promote_shadow` / `dismiss_shadow` 由裸 `RuntimeError` / `ValueError` 改为 `ShadowStateError` / `ShadowSourceError` / `ShadowPromoteError`（均挂 `ErisPulseError` 层级，自 `ErisPulse.Core` 聚合导出），已有针对性 `except` 需同步调整
 - 脚手架生成物文案本地化：`epsdk create` / `epsdk init` 生成的模板注释、`main.py` docstring、`.gitignore` 分节、README、SSL 占位文件与 `epsdk types` 存根头注释均跟随 CLI 语言（此前部分为硬编码中文）
-- 模板 `min_sdk_version` 地板与 `epsdk init` 生成的 `erispulse>=` 依赖下限已抽为集中常量，在 2.9.0 正式版上 PyPI 前保持现值（pip 默认不解析预发布版本，dev 通道升版会导致生成项目无法安装依赖），2.9.0 收口时一并升级
+- 模板 `min_sdk_version` 地板与 `epsdk init` 生成的 `erispulse>=` 依赖下限已抽为集中常量并随 2.9.0 正式版升至 `2.9.0`（pip 默认不解析预发布版本，dev 通道期间保持 2.8.x 防止生成项目依赖无法安装）
 
 ### 新增
 
