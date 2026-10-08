@@ -5,12 +5,18 @@
 """
 
 import asyncio
+from importlib import import_module
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from ErisPulse.Core.adapter import adapter
+from ErisPulse.Core.config import config as config_manager
 from ErisPulse.Core.Event import _clear_all_handlers, command
+
+# wait_reply 读取 command 模块全局命名空间中的 adapter——ErisPulse.Core.Event 导出的
+# command 是 CommandHandler 实例（遮蔽同名子模块），须径直取模块对象才能 patch。
+command_module = import_module("ErisPulse.Core.Event.command")
 
 
 def _make_msg(text, **kwargs):
@@ -57,7 +63,7 @@ class TestCommandFlowIntegration:
         async def hello(event):
             received.append(event)
 
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_manager, "getConfig", return_value="/"):
             await adapter.emit(_make_msg("/hello"))
             await asyncio.sleep(0)
 
@@ -72,7 +78,7 @@ class TestCommandFlowIntegration:
         async def echo(event):
             received.append(event)
 
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_manager, "getConfig", return_value="/"):
             await adapter.emit(_make_msg("/echo hello world 123"))
             await asyncio.sleep(0)
 
@@ -88,7 +94,7 @@ class TestCommandFlowIntegration:
         async def greet(event):
             received.append(event)
 
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_manager, "getConfig", return_value="/"):
             await adapter.emit(_make_msg("/hi"))
             await asyncio.sleep(0)
             await adapter.emit(_make_msg("/hey"))
@@ -123,7 +129,7 @@ class TestCommandFlowIntegration:
         async def secure(event):
             received.append(event)
 
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_manager, "getConfig", return_value="/"):
             await adapter.emit(_make_msg("/secure"))
             await asyncio.sleep(0)
 
@@ -141,7 +147,7 @@ class TestCommandFlowIntegration:
         async def locked(event):
             received.append(event)
 
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_manager, "getConfig", return_value="/"):
             await adapter.emit(_make_msg("/locked"))
             await asyncio.sleep(0)
 
@@ -215,7 +221,7 @@ class TestCommandFlowIntegration:
         async def hello(event):
             received.append(event)
 
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_manager, "getConfig", return_value="/"):
             await adapter.emit(_make_msg("just a normal message"))
             await asyncio.sleep(0)
 
@@ -224,7 +230,7 @@ class TestCommandFlowIntegration:
     @pytest.mark.asyncio
     async def test_wait_reply_timeout(self, clean_cmd):
         """wait_reply 超时返回 None"""
-        with patch("ErisPulse.Core.adapter.adapter", new_callable=AsyncMock):
+        with patch.object(command_module, "adapter", AsyncMock()):
             result = await command.wait_reply(
                 {"platform": "test", "user_id": "nonexist"},
                 timeout=0.1,

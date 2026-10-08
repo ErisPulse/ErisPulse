@@ -18,8 +18,8 @@ import time
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Optional
 
-from .. import adapter, logger
 from ...runtime.tasks import spawn_background
+from .. import adapter, logger
 from ..constants import (
     CONVERSATION_CHECKPOINT_GC_INTERVAL_SECS,
     CONVERSATION_CHECKPOINT_GC_OWNER,

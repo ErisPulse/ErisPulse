@@ -6,9 +6,9 @@
 """
 
 import asyncio
+from unittest.mock import patch
 
 import pytest
-from unittest.mock import patch
 
 from ErisPulse.Core.adapter import AdapterManager
 from ErisPulse.Core.Event import overrides, session_type
@@ -319,8 +319,9 @@ class TestReclaimFailureLogging:
         with owner_scope("log_test_owner"):
             overrides_module.command.set("log_test_owner", "alpha", master=True, persist=False)
         try:
-            with patch(
-                "ErisPulse.Core.router.RouterManager.unregister_all_by_namespace",
+            with patch.object(
+                RouterManager,
+                "unregister_all_by_namespace",
                 side_effect=RuntimeError("router registry gone"),
             ):
                 with caplog.at_level(logging.WARNING):

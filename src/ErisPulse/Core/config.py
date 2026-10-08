@@ -198,7 +198,7 @@ class ConfigManager:
             return
         cls._watcher_shutdown_hook_registered = True
         try:
-            from threading import _register_atexit
+            from threading import _register_atexit  # pyright: ignore[reportAttributeAccessIssue]
 
             def _stop_all_watchers() -> None:
                 for m in list(cls._active_watchers):
