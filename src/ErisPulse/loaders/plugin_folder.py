@@ -259,7 +259,11 @@ class PluginFolderLoader:
             spec.loader.exec_module(module_obj)
             return module_obj
 
-        base_str = str(path.parent)
+        # 必须插入绝对路径：sys.path_importer_cache 以条目字面字符串为键，
+        # 相对条目（如 "plugins"）的 FileFinder 在首次扫描时的 CWD 下解析后
+        # 永久缓存——进程此后切换工作目录，同名条目会命中指向旧目录的陈旧
+        # 查找器，插件导入静默落空（ModuleNotFoundError）。
+        base_str = str(path.parent.resolve())
         if base_str not in sys.path:
             sys.path.insert(0, base_str)
         return importlib.import_module(name)

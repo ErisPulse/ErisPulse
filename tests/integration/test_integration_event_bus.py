@@ -10,6 +10,7 @@ from unittest.mock import patch
 import pytest
 
 from ErisPulse.Core.adapter import adapter
+from ErisPulse.Core.config import config as config_manager
 from ErisPulse.Core.Event import _clear_all_handlers, command, message, notice
 from ErisPulse.Core.lifecycle import lifecycle
 
@@ -182,7 +183,7 @@ class TestEventBusIntegration:
         async def hello_handler(event):
             received.append(event)
 
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_manager, "getConfig", return_value="/"):
             event = _make_msg("/hello")
             await adapter.emit(event)
         await asyncio.sleep(0)
@@ -198,7 +199,7 @@ class TestEventBusIntegration:
         async def echo_handler(event):
             received.append(event)
 
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_manager, "getConfig", return_value="/"):
             event = _make_msg("/echo hello world")
             await adapter.emit(event)
         await asyncio.sleep(0)
@@ -217,7 +218,7 @@ class TestEventBusIntegration:
         async def greet_handler(event):
             received.append(event)
 
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_manager, "getConfig", return_value="/"):
             await adapter.emit(_make_msg("/hi"))
             await asyncio.sleep(0)
             await adapter.emit(_make_msg("/hello"))
@@ -239,7 +240,7 @@ class TestEventBusIntegration:
         async def private_handler(event):
             private_msgs.append(event)
 
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_manager, "getConfig", return_value="/"):
             await adapter.emit(_make_msg("hi", detail_type="private"))
             await asyncio.sleep(0)
             await adapter.emit(_make_msg("hi", detail_type="group", group_id="g1"))
@@ -301,7 +302,7 @@ class TestEventBusIntegration:
         async def second_handler(event):
             order.append("second")
 
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_manager, "getConfig", return_value="/"):
             event = _make_msg("test")
             await adapter.emit(event)
         await asyncio.sleep(0)
@@ -349,7 +350,7 @@ class TestEventBusIntegration:
 
         eris_logger.handler("test_conflict_watcher", min_level="WARNING")(log_watcher)
 
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_manager, "getConfig", return_value="/"):
             event = _make_msg("test conflict")
             await adapter.emit(event)
         await asyncio.sleep(0.5)

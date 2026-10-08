@@ -48,13 +48,15 @@ class TestInitProjectPaths:
         assert (tmp_path.parent / "apps" / "mybot" / "main.py").exists()
 
     def test_pyproject_generated(self, init_cmd, tmp_path, monkeypatch):
+        from ErisPulse.CLI.constants import INIT_ERISPULSE_DEPENDENCY
+
         monkeypatch.chdir(tmp_path)
         init_cmd._init_project("mybot", ["onebot11-adapter"], create_venv=False)
         pyproject = tmp_path / "mybot" / "pyproject.toml"
         text = pyproject.read_text(encoding="utf-8")
         assert 'name = "mybot"' in text
         assert 'requires-python = ">=3.10"' in text
-        assert '"erispulse>=2.8.3"' in text
+        assert f'"{INIT_ERISPULSE_DEPENDENCY}"' in text  # 依赖下限跟随集中常量
         assert '"onebot11-adapter"' in text  # 适配器进依赖清单
 
     def test_gitignore_generated(self, init_cmd, tmp_path, monkeypatch):

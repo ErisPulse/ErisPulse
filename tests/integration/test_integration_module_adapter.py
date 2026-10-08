@@ -11,6 +11,7 @@ import pytest
 
 from ErisPulse.Core.adapter import adapter
 from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.Core.config import config as config_manager
 from ErisPulse.Core.Event import _clear_all_handlers, command, message, notice
 from ErisPulse.Core.lifecycle import lifecycle
 from ErisPulse.Core.module import ModuleManager
@@ -118,7 +119,7 @@ class TestModuleAdapterIntegration:
         await collab_module_mgr.load("collab_mod")
         mod = collab_module_mgr._modules["collab_mod"]
 
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_manager, "getConfig", return_value="/"):
             await adapter.emit(_make_msg("/mod_cmd test_arg"))
             await asyncio.sleep(0)
 

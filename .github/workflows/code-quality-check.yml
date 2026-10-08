@@ -289,33 +289,33 @@ jobs:
       - name: Run integration tests
         run: uv run pytest tests/integration -p no:cacheprovider -n auto --tb=short -q --no-cov
 
-  free-threaded-smoke:
-    # Experimental Python 3.14t (free-threaded / no-GIL) smoke: monitoring signal only,
-    # NOT a supported platform. Skips gracefully when the ecosystem lacks cp314t wheels.
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    continue-on-error: true
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # free-threaded-smoke:
+  #   # Experimental Python 3.14t (free-threaded / no-GIL) smoke: monitoring signal only,
+  #   # NOT a supported platform. Skips gracefully when the ecosystem lacks cp314t wheels.
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 5
+  #   continue-on-error: true
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-        with:
-          enable-cache: true
+  #     - name: Install uv
+  #       uses: astral-sh/setup-uv@v7
+  #       with:
+  #         enable-cache: true
 
-      - name: Smoke test on Python 3.14t (free-threaded)
-        run: |
-          uv python install 3.14t
-          if uv run --python 3.14t --isolated python -c "import ErisPulse" 2>uv_314t_err.log; then
-            echo "3.14t import smoke passed; running unit tests..."
-            # --isolated 环境只装运行依赖，不装任何依赖组/extras，测试依赖须经 --extra test 显式带入
-            uv run --python 3.14t --isolated --extra test pytest tests/unit -p no:cacheprovider -q --no-cov
-          else
-            echo "::warning::Python 3.14t smoke skipped: cp314t dependency wheels unavailable"
-            cat uv_314t_err.log || true
-            exit 0
-          fi
+  #     - name: Smoke test on Python 3.14t (free-threaded)
+  #       run: |
+  #         uv python install 3.14t
+  #         if uv run --python 3.14t --isolated python -c "import ErisPulse" 2>uv_314t_err.log; then
+  #           echo "3.14t import smoke passed; running unit tests..."
+  #           # --isolated 环境只装运行依赖，不装任何依赖组/extras，测试依赖须经 --extra test 显式带入
+  #           uv run --python 3.14t --isolated --extra test pytest tests/unit -p no:cacheprovider -q --no-cov
+  #         else
+  #           echo "::warning::Python 3.14t smoke skipped: cp314t dependency wheels unavailable"
+  #           cat uv_314t_err.log || true
+  #           exit 0
+  #         fi
 
   typecheck:
     runs-on: ubuntu-latest

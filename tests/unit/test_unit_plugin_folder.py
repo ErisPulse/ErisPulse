@@ -124,3 +124,54 @@ def test_module_loader_merges_plugin_folder(plugin_dir):
         assert objs["weather"].moduleInfo["meta"]["source"] == "plugin_folder"
 
     asyncio.run(run())
+
+
+def test_discover_package_import_follows_current_cwd(tmp_path, monkeypatch):
+    """包插件导入跟随当前 CWD，而非 sys.path 相对条目首次扫描的旧目录（回归）
+
+    sys.path_importer_cache 以条目字面字符串为键：相对条目（如 "plugins"）的
+    FileFinder 在首次扫描时的 CWD 下解析后永久缓存——进程切换工作目录后
+    同名条目命中指向旧目录的陈旧查找器，包插件导入静默落空。
+    """
+    import importlib
+
+    marker = '    def identify(self):\n        return "{}"\n'
+
+    def make_site(tag):
+        root = tmp_path / f"site_{tag}"
+        plugins = root / "plugins"
+        (plugins / "dice").mkdir(parents=True)
+        (plugins / "dice" / "__init__.py").write_text(
+            "from .Core import Main\n", encoding="utf-8"
+        )
+        (plugins / "dice" / "Core.py").write_text(
+            PLUGIN_CORE + marker.format(tag), encoding="utf-8"
+        )
+        return root
+
+    site_a = make_site("a")
+    site_b = make_site("b")
+
+    try:
+        # 进程曾运行于 site_a：相对条目已进入 sys.path 且完成过一次导入缓存
+        monkeypatch.chdir(site_a)
+        monkeypatch.syspath_prepend("plugins")
+        importlib.import_module("dice")
+    finally:
+        for _name in ("dice", "dice.Core"):
+            sys.modules.pop(_name, None)
+
+    # 切换到 site_b 后经 loader 重新发现：必须导入 site_b 的包
+    monkeypatch.chdir(site_b)
+    loader = PluginFolderLoader()
+    results = loader.discover()
+    try:
+        assert "dice" in results
+        module_class = results["dice"].moduleInfo["module_class"]
+        assert module_class().identify() == "b"
+    finally:
+        for _name in ("dice", "dice.Core"):
+            sys.modules.pop(_name, None)
+        absolute_entry = str((site_b / "plugins").resolve())
+        if absolute_entry in sys.path:
+            sys.path.remove(absolute_entry)
