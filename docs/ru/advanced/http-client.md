@@ -38,13 +38,31 @@ data = await resp.json()
 ### WebSocket-соединение
 
 ```python
-from ErisPulse.Core import client
+from ErisPulse import client   # Импорт с корня (с версии 2.10, совместим с глубоким ErisPulse.Core.client)
 
 ws = await client.ws_connect("wss://example.com/ws")
 
 async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
+
+#### Автоматическая регистрация исходящих соединений в пуле (с версии 2.10)
+
+Соединения, созданные через `ws_connect`, **по умолчанию автоматически регистрируются** в пуле соединений фреймворка (отключение посредством `track=False`):
+их можно просматривать с помощью `connections.list(owner=...)`, рассылать сообщения; при закрытии соединения или разрыве удалённой стороны оно автоматически удаляется из пула;
+**при выгрузке модуля / остановке адаптера фреймворк автоматически закрывает** все исходящие соединения, связанные с ним, предотвращая утечки.
+
+```python
+from ErisPulse import client, connections
+
+ws = await client.ws_connect("wss://example.com/ws")
+print(ws.id, ws.owner)   # Уже зарегистрировано: id соединения и владелец
+
+# При отсутствии контекста owner (например, в обратном вызове из рабочего потока) явно укажите владельца, чтобы корректно произошла автоматическая выгрузка:
+ws2 = await client.ws_connect("wss://example.com/ws2", owner="MyAdapter")
+```
+
+См. подробнее [Пул соединений и трансляция](connections.md).
 
 ## HttpResponse
 

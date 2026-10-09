@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "b0fd49a959689afc4dc37a62b3b8d5e1",
-  "file_hash": "b0fd49a959689afc4dc37a62b3b8d5e1",
-  "translated_at": "2026-09-07T11:25:31.264127",
+  "hash": "9aaef1a655f2bb8a8a12c033e68f07eb",
+  "file_hash": "9aaef1a655f2bb8a8a12c033e68f07eb",
+  "translated_at": "2026-10-09T14:54:57.363880",
   "target_lang": "ja",
   "chunks": [
     {
@@ -22,8 +22,8 @@
       "translation": "## __init__.py\n\n```python\nfrom .Core import Main\n```"
     },
     {
-      "hash": "46fb55a7709c7f449b98832a2d63dc77",
-      "translation": "## Core.py - 基礎モジュール\n\n```python\nfrom ErisPulse import sdk\nfrom ErisPulse.Core.Bases import BaseModule\nfrom ErisPulse.Core.Event import command\n\nclass Main(BaseModule):\n    def __init__(self, sdk):\n        self.sdk = sdk\n        self.logger = sdk.logger.get_child(\"MyModule\")\n        self.storage = sdk.storage\n    \n    @staticmethod\n    def get_load_strategy():\n        \"\"\"モジュールのロード戦略を返す\"\"\"\n        from ErisPulse.loaders import ModuleLoadStrategy\n        return ModuleLoadStrategy(\n            lazy_load=True,\n            priority=0,\n            depends=[],  # オプション：他のモジュールへの依存リスト\n            # オプション：イベント駆動の遅延活性化——トリガーを宣言し、最初の一致するイベント/コマンドが到着した時点で自動的にロード\n            # activate_on=[{\"command\": {\"name\": \"hello\", \"help\": \"挨拶を送信\"}}],\n        )\n    \n    async def on_load(self, event):\n        \"\"\"モジュールがロードされたときに呼び出される\"\"\"\n        @command(\"hello\", help=\"挨拶を送信\")\n        async def hello_command(event):\n            name = event.get_user_nickname() or \"友達\"\n            await event.reply(f\"こんにちは、{name}！\")\n        \n        self.logger.info(\"モジュールがロードされました\")\n    \n    async def on_unload(self, event):\n        \"\"\"モジュールがアンロードされたときに呼び出される\"\"\"\n        self.logger.info(\"モジュールがアンロードされました\")\n```\n\n> **設定の読み込み**：上記の基本的な例では設定は使用していません。設定を読み込む必要がある場合は、`ConfigClass` をネストして宣言し、`self.cfg` を通じてリアルタイムに読み取ることを推奨します（[モジュールのコア概念](docs/ja/core-concepts.md#宣言的設定の推奨)を参照）。手動で `_load_config()` を呼び出す旧い書き方は廃止されました。"
+      "hash": "25f9efceea98881681c9962b6113cc79",
+      "translation": "## Core.py - 基礎モジュール\n\n```python\nfrom ErisPulse import sdk\n# 推奨されるルートインポート（2.10+）：一般的なシンボルはルートパッケージから直接インポートでき、深いパスも互換性があります\nfrom ErisPulse import BaseModule, command\n\nclass Main(BaseModule):\n    def __init__(self, sdk):\n        self.sdk = sdk\n        self.logger = sdk.logger.get_child(\"MyModule\")\n        self.storage = sdk.storage\n    \n    @staticmethod\n    def get_load_strategy():\n        \"\"\"モジュールのロード戦略を返す\"\"\"\n        from ErisPulse.loaders import ModuleLoadStrategy\n        return ModuleLoadStrategy(\n            lazy_load=True,\n            priority=0,\n            depends=[],  # オプション：依存する他のモジュールのリスト\n            # オプション：イベント駆動の遅延活性化——トリガーを宣言し、最初の一致するイベント/コマンドが到着したときに自動的にロードされます\n            # activate_on=[{\"command\": {\"name\": \"hello\", \"help\": \"挨拶を送る\"}}],\n        )\n    \n    async def on_load(self, event):\n        \"\"\"モジュールがロードされたときに呼び出されます\"\"\"\n        @command(\"hello\", help=\"挨拶を送る\")\n        async def hello_command(event):\n            name = event.get_user_nickname() or \"友達\"\n            await event.reply(f\"こんにちは、{name}！\")\n        \n        self.logger.info(\"モジュールがロードされました\")\n    \n    async def on_unload(self, event):\n        \"\"\"モジュールがアンロードされたときに呼び出されます\"\"\"\n        self.logger.info(\"モジュールがアンロードされました\")\n```\n\n> **設定の読み込み**：上記の基本的な例では設定は使用していません。設定を読み込む必要がある場合は、`ConfigClass` をネストして宣言し、`self.cfg` を使ってリアルタイムで読み込むことを推奨します（[モジュールのコア概念](docs/ja/core-concepts.md#宣言的設定の推奨)を参照してください）。手動で `_load_config()` を呼び出す古い書き方は廃止されました。"
     },
     {
       "hash": "b19935b00f6e24f77df608fef2d1ed1b",

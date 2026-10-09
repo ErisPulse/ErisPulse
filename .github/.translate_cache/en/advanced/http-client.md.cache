@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "24f1c9de449478892033e208bcb33e1c",
-  "file_hash": "24f1c9de449478892033e208bcb33e1c",
-  "translated_at": "2026-09-07T10:41:17.357454",
+  "hash": "ba11b095c9514060b058e4976e10345f",
+  "file_hash": "ba11b095c9514060b058e4976e10345f",
+  "translated_at": "2026-10-09T14:51:20.270972",
   "target_lang": "en",
   "chunks": [
     {
@@ -14,8 +14,8 @@
       "translation": "## Overview\n\nThe main features of the network client:\n\n- **Unified Interface**: Provides `get` / `post` / `put` / `delete` / `patch` / `request` methods\n- **WebSocket Client**: Establishes a client WebSocket connection via `ws_connect`\n- **Automatic Logging**: All requests are automatically logged and statistics are recorded\n- **Lifecycle Integration**: Each request triggers the `client.request` lifecycle event, and WS connections trigger the `client.ws.connect` event\n- **Retry Support**: Configurable automatic retry count and interval\n- **Timeout Control**: Independent connection timeout and request timeout\n- **Connection Pool Reuse**: Connection pool management based on aiohttp.ClientSession\n- **Exception System**: aiohttp exceptions are automatically converted to ErisPulse exceptions (ClientError system)"
     },
     {
-      "hash": "ee40eebc43f041b311d9fb624f2fe01c",
-      "translation": "## Quick Start\n\n### HTTP Requests\n\n```python\nfrom ErisPulse.Core import client\n\n# GET request\nresp = await client.get(\"https://httpbin.org/get\")\ndata = await resp.json()\nprint(resp.status)  # 200\n\n# POST request\nresp = await client.post(\n    \"https://httpbin.org/post\",\n    json={\"key\": \"value\"},\n)\ndata = await resp.json()\n```\n\n### WebSocket Connection\n\n```python\nfrom ErisPulse.Core import client\n\nws = await client.ws_connect(\"wss://example.com/ws\")\n\nasync for text in ws.iter_text():\n    await ws.send_text(f\"Echo: {text}\")\n```"
+      "hash": "bd74e299063f4d4653ce4af8acf87027",
+      "translation": "## Quick Start\n\n### HTTP Requests\n\n```python\nfrom ErisPulse.Core import client\n\n# GET request\nresp = await client.get(\"https://httpbin.org/get\")\ndata = await resp.json()\nprint(resp.status)  # 200\n\n# POST request\nresp = await client.post(\n    \"https://httpbin.org/post\",\n    json={\"key\": \"value\"},\n)\ndata = await resp.json()\n```\n\n### WebSocket Connection\n\n```python\nfrom ErisPulse import client   # 2.10+ root import (ErisPulse.Core.client deep path is still compatible)\n\nws = await client.ws_connect(\"wss://example.com/ws\")\n\nasync for text in ws.iter_text():\n    await ws.send_text(f\"Echo: {text}\")\n```\n\n#### Outbound Connections Automatically Pool (2.10+)\n\nConnections established by `ws_connect` are **automatically registered** into the framework connection pool by default (set `track=False` to disable):\nThey can be viewed by `connections.list(owner=...)`, broadcasted to, and automatically unregistered when closed or disconnected remotely;\n**When the module is unloaded or the adapter stops, the framework will close all outbound connections under its name uniformly**, preventing leaks.\n\n```python\nfrom ErisPulse import client, connections\n\nws = await client.ws_connect(\"wss://example.com/ws\")\nprint(ws.id, ws.owner)   # Already registered: connection id and owner\n\n# When the owner context is unavailable (e.g., in a utility thread callback), explicitly specify the owner so it can be automatically recycled during unloading:\nws2 = await client.ws_connect(\"wss://example.com/ws2\", owner=\"MyAdapter\")\n```\n\nSee [Connection Pool and Broadcasting](connections.md)."
     },
     {
       "hash": "a550770dec9fb9ee174c0f6ae9d92e85",

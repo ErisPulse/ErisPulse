@@ -188,7 +188,9 @@ with sdk.interaction.hold(event) as lease:
 
 ## 會話收件箱：event.history
 
-每會話近期訊息流的統一記錄（使用者 + 機器人雙方），作為 AI 上下文、  
+> 保留策略（7 天 / 條數上限）與執行時覆蓋 API、風險與審計請參閱[會話收件箱](transcript.md)專題。
+
+每會話近期訊息流的統一記錄（使用者 + 機器人雙方），作為 AI 上下文、
 防重複發送、行為分析類模組的**共享事實底座**——各模組不再各自儲存歷史。
 
 ```python
@@ -197,10 +199,10 @@ for m in messages:
     print(m["role"], ":", m["text"])  # role: "user" / "bot"
 ```
 
-- 自動記錄：入站訊息（role=user）+ 機器人出站文字（role=bot）  
-- 儲存：獨立 SQLite 表，保留策略 = 每會話上限（預設 50）+ 全局 TTL（預設 7 天）  
-- 寫入方式：記憶體緩衝 + 後台批次落盤（延遲最多 1 秒），查詢介面自動合併未落盤的緩衝行——同進程「讀取你的寫入」不受影響；正常退出（`sdk.uninit` / 進程退出）自動刷盤。**硬體崩潰 / 強制終止時最近約 1 秒的記錄可能遺失**：該底座定位為近期上下文快取，不適合作為稽核級持久化  
-- 配置：`ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`  
+- 自動記錄：入站訊息（role=user）+ 機器人出站文字（role=bot）
+- 儲存：獨立 SQLite 表，保留策略 = 每會話上限（預設 50）+ 全局 TTL（預設 7 天）
+- 寫入方式：記憶體緩衝 + 後台批量落盤（延遲最多 1 秒），查詢介面自動合併未落盤的緩衝行——同進程「讀你的寫」不受影響；正常退出（`sdk.uninit` / 進程退出）自動刷盤。**硬體崩潰 / 強制終止時最近約 1 秒的記錄可能遺失**：該底座定位為近期上下文快取，不適合作為審計級的永久儲存
+- 配置：`ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`
 - 管理器 API：`sdk.transcript.append() / get() / clear()`，`aflush()` / `flush()` 手動刷盤
 
 ## 消息事務：message_tx

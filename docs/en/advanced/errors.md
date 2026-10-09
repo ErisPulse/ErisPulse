@@ -13,39 +13,44 @@ All custom exceptions in ErisPulse inherit from `ErisPulseError`. Underlying lib
 ```text
 ErisPulseError                      # Base class for all framework exceptions
 ├── ClientError                     # Base class for HTTP/WS client request exceptions (Core/client)
-│   ├── ClientConnectionError       # Connection layer errors: DNS resolution failure, connection refused, unreachable network
+│   ├── ClientConnectionError       # Connection layer error: DNS resolution failed, connection refused, network unreachable
 │   ├── ClientTimeoutError          # Request timeout
-│   └── HTTPStatusError             # HTTP status code errors (e.g., 4xx/5xx with raise_for_status)
-├── WebSocketError                  # Base class for WebSocket exceptions (Core/client's WS connection)
-│   └── WebSocketDisconnect         # WebSocket disconnection (common to server/client)
+│   └── HTTPStatusError             # HTTP status code error (e.g., 4xx/5xx with raise_for_status)
+├── WebSocketError                  # Base class for WebSocket exceptions (WS connection in Core/client)
+│   └── WebSocketDisconnect         # WebSocket disconnected (common for both server and client)
+├── ConnectionRegistryError         # Base class for connection registry exceptions (Core/connections, 2.10+)
+│   ├── ConnectionNotFoundError     # Connection does not exist / has been disconnected/unregistered (connections.get/close)
+│   └── ConnectionPermissionError   # Closing another's connection without owner permission (closing rights belong to creator)
 ├── StorageError                    # Base class for storage exceptions (Core/storage)
-│   └── StorageUnreachableError     # Storage backend unreachable (retry exhaustion: database unreachable/credential error)
+│   └── StorageUnreachableError     # Storage backend unreachable (retry exhausted: database unreachable/credentials error)
 ├── InteractionError                # Base class for interaction session exceptions (Core/Event/interaction)
-│   ├── InteractionCancelled        # Canceled pending wait/lease (wait_reply upper layer returns None)
+│   ├── InteractionCancelled        # Pending wait/lease canceled (wait_reply upper layer returns None)
 │   └── SessionOccupiedError        # Session mutual exclusion lease occupied (hold() acquisition failed)
 ├── ModuleError                     # Base class for module system exceptions (Core/module)
-│   └── ModuleCallError             # Base class for module call exceptions
+│   └── ModuleCallError             # Base class for module inter-call exceptions
 │       ├── ModuleNotAvailableError # Target module not registered/unavailable/initialization failed (including lazy loading access)
-│       ├── ServiceNotProvidedError # Target module did not declare the service (outside meta.services whitelist)
-│       └── ModuleCallTimeoutError  # Target method execution timeout (default 30s)
+│       ├── ServiceNotProvidedError # Target module did not declare this service (outside meta.services whitelist)
+│       └── ModuleCallTimeoutError  # Called method execution timeout (default 30s)
 ├── ShadowError                     # Base class for shadow module exceptions (Core/shadow)
-│   ├── ShadowStateError            # State mismatch: target not loaded/active shadow exists/unbound shadow (start/dismiss)
-│   ├── ShadowSourceError           # Unavailable shadow source: path does not exist/loader missing/loading failed (start)
-│   └── ShadowPromoteError          # Promotion failed: shadow not registered/loaded/loader no snapshot/reload failed (promote)
-└── StrictModeError                 # Strict mode fatal violation (halts startup process, loaders/strict)
+│   ├── ShadowStateError            # State mismatch: target not loaded/active shadow already exists/not bound shadow (start/dismiss)
+│   ├── ShadowSourceError           # Shadow source unavailable: path does not exist/loader missing/loading failed (start)
+│   └── ShadowPromoteError          # Promotion failed: shadow not registered/not loaded/loader has no snapshot/reload failed (promote)
+└── StrictModeError                 # Strict mode fatal violation (aborts startup process, loaders/strict)
 ```
 
-## Structured Properties
+## Structured Attributes
 
-After catching an exception, you can read structured properties (no need to parse message text):
+After capturing an exception, you can read structured attributes (without parsing the message text):
 
-| Exception | Property |
-|-----------|----------|
-| `ClientError` (including subclasses) | `.url` Request URL, `.method` Request method, `.attempts` Number of attempts (when retries exhausted) |
+| Exception | Attributes |
+|---|---|
+| `ClientError` (with subclasses) | `.url` Request URL, `.method` Request method, `.attempts` Number of attempts (when retries are exhausted) |
 | `HTTPStatusError` | `.status` Status code, `.message` Response message |
 | `WebSocketDisconnect` | `.code` Close code, `.reason` Close reason |
+| `ConnectionNotFoundError` | `.connection_id` Connection ID searched for |
+| `ConnectionPermissionError` | `.connection_id` Target connection ID, `.owner` Owner of the connection |
 | `StorageUnreachableError` | `.backend` Backend name (sqlite/mysql/postgres), `.cooldown` Cool-down seconds |
-| `ModuleCallError` (including subclasses) | `.module` Target module name, `.method` Target method name |
+| `ModuleCallError` (with subclasses) | `.module` Target module name, `.method` Target method name |
 | `ModuleCallTimeoutError` | Inherits `.module/.method`, also has `.timeout` Timeout limit (seconds) |
 | `InteractionCancelled` | `.reason` Cancellation reason, `.wait_key` Session key |
 | `SessionOccupiedError` | `.wait_key` Session key, `.owner` Occupier |
@@ -64,13 +69,13 @@ except ClientError as e:
 
 ### Client Series — `Core/client.py` / `Core/Bases/client.py`
 
-Thrown when `sdk.client` or HTTP/WebSocket clients initiate requests:
+`sdk.client` / HTTP client and WebSocket client raise exceptions when initiating requests:
 
-| Exception | Occurrence Location | Typical Scenarios |
-|-----------|---------------------|-------------------|
-| `ClientError` | Request encapsulation layer | Other client errors (underlying aiohttp exceptions are converted) |
+| Exception | Occurrence Location | Typical Scenario |
+|-----------|---------------------|------------------|
+| `ClientError` | Request wrapper layer | Other client errors (lower-level aiohttp exceptions have been converted) |
 | `ClientConnectionError` | Connection establishment phase | Target service unreachable, DNS failure, connection refused |
-| `ClientTimeoutError` | Request execution phase | Exceeded request timeout |
+| `ClientTimeoutError` | Request execution phase | Request timeout exceeded |
 | `HTTPStatusError` | `raise_for_status()` | Response status code is 4xx/5xx |
 
 ```python
@@ -84,51 +89,58 @@ except ClientTimeoutError:
 
 ### WebSocket Series — `Core/client.py` (`send` / `receive`)
 
-| Exception | Occurrence Location | Typical Scenarios |
-|-----------|---------------------|-------------------|
-| `WebSocketError` | WS send/receive methods | Connection closed, unexpected message type received, underlying WS exception |
-| `WebSocketDisconnect` | WS send/receive methods | Peer disconnected normally (framework will auto-reconnect) |
+| Exception | Occurrence Location | Typical Scenario |
+|-----------|---------------------|------------------|
+| `WebSocketError` | WS send/receive methods | Connection closed, received unexpected message type, low-level WS exception |
+| `WebSocketDisconnect` | WS send/receive methods | Peer disconnected normally (framework will automatically reconnect) |
+
+### Connection Registry Series — `Core/connections.py` (2.10+)
+
+| Exception | Occurrence Location | Typical Scenario |
+|-----------|---------------------|------------------|
+| `ConnectionNotFoundError` | `connections.get` / `assign` / `dismiss` / `close` | Connection ID does not exist or has been disconnected and unregistered |
+| `ConnectionPermissionError` | Non-owner calls `conn.close()` | Closing someone else's connection across modules (sending and grouping are not restricted) |
 
 ### Storage Series — `Core/storage` / `Core/Bases/sql_base.py`
 
-| Exception | Occurrence Location | Typical Scenarios |
-|-----------|---------------------|-------------------|
+| Exception | Occurrence Location | Typical Scenario |
+|-----------|---------------------|------------------|
 | `StorageError` | Storage layer | Base class for storage-related exceptions |
-| `StorageUnreachableError` | Pool creation phase | Database unreachable/credential error/network isolation, retries exhausted |
+| `StorageUnreachableError` | Pool creation phase | Database unreachable / credential error / network isolation, retry exhausted |
 
-> **Failure semantics for storage operations**: KV and query operations **do not throw by default** — failures are logged as ERROR and `False` / `None` / `default` returned (to avoid blocking framework execution due to connection issues). Therefore, business code typically **does not** catch `StorageUnreachableError` (it is mainly for direct storage layer operations or custom backends). For runtime connection state awareness, subscribe to lifecycle events `storage.unreachable` / `storage.recovered` (see [Lifecycle Events](lifecycle.md#storage-connection-status)).
+> **Failure semantics of storage operations**: KV and query operations **do not throw exceptions by default**—failures are logged as ERROR and return `False` / `None` / `default` (to avoid blocking the framework due to connection issues). Therefore, business code typically **does not** catch `StorageUnreachableError` (it is mainly used for direct storage layer operations or custom backends). To perceive connection status at runtime, subscribe to lifecycle events `storage.unreachable` / `storage.recovered` (see [Lifecycle Events](lifecycle.md#storage-connection-status)).
 
-See [Storage Backend → Connection Failure Behavior](storage-backends.md#connection-failure-behavior) for details on connection failure behavior.
+See [Storage Backend → Connection Failure Behavior](storage-backends.md#connection-failure-behavior) for details on handling connection failures.
 
 ### Interaction — `Core/Event/interaction.py`
 
-Related to `wait_reply` / session leases / reminder timers:
+`wait_reply` / session lease / reminder timer related:
 
-| Exception | Occurrence Location | Typical Scenarios |
-|-----------|---------------------|-------------------|
+| Exception | Occurrence Location | Typical Scenario |
+|-----------|---------------------|------------------|
 | `InteractionError` | Interaction session layer | Base class for interaction session exceptions |
-| `InteractionCancelled` | When pending wait is canceled | Set on the waiting future (the waiting coroutine can catch and get `.reason`) |
-| `SessionOccupiedError` | `hold()` lease acquisition failed | Session already occupied by another owner (`.owner` reveals the occupier) |
+| `InteractionCancelled` | When pending wait is cancelled | Set on the waiting future (the waiting part can catch and get `.reason`) |
+| `SessionOccupiedError` | `hold()` lease acquisition failed | Session is already occupied by another owner (`.owner` can check the occupier) |
 
-When a wait is canceled (module unloading / platform shutdown / new wait in same session replaces it), `wait_reply` **returns `None`** instead of throwing an exception (`InteractionCancelled` is converted internally). Only when distinguishing the reason for cancellation should you directly catch it.
+When waiting is cancelled (module unloading / platform shutdown / new wait replaces the same session), `wait_reply` **returns `None`** instead of throwing an exception (`InteractionCancelled` is internally converted); only directly catch it when distinguishing the reason for cancellation.
 
 ### Module Series — `Core/module.py` (`sdk.module.call`)
 
-| Exception | Occurrence Location | Typical Scenarios |
-|-----------|---------------------|-------------------|
+| Exception | Occurrence Location | Typical Scenario |
+|-----------|---------------------|------------------|
 | `ModuleError` | Module system | Base class for module system exceptions |
 | `ModuleCallError` | `module.call()` | Base class for module call exceptions |
-| `ModuleNotAvailableError` | `module.call()` / lazy loading attribute access | Target not registered / not enabled / initialization failed |
-| `ServiceNotProvidedError` | `module.call()` | Target `meta.services` whitelist did not declare the method |
-| `ModuleCallTimeoutError` | `module.call()` | Target coroutine exceeds timeout (default 30s) |
+| `ModuleNotAvailableError` | `module.call()` / lazy-loaded attribute access | Target not registered / not enabled / initialization failed |
+| `ServiceNotProvidedError` | `module.call()` | Target `meta.services` whitelist does not declare this method |
+| `ModuleCallTimeoutError` | `module.call()` | Called coroutine exceeds timeout (default 30s) |
 
-"Target module unavailable" exceptions under different access paths:
+"Target module unavailable" exception types under different access paths:
 
 | Access Path | Exception |
 |-------------|-----------|
 | `await sdk.module.call("X", "method")` | `ModuleNotAvailableError` (typed) |
-| `sdk.module.X.attr` (lazy loading attribute access, after initialization failure) | `ModuleNotAvailableError` |
-| `sdk.module.X` (attribute access when module is not enabled) | `AttributeError` (Python attribute convention, `hasattr` relies on this semantics) |
+| `sdk.module.X.attr` (lazy-loaded attribute access, after initialization failure) | `ModuleNotAvailableError` |
+| `sdk.module.X` (module attribute access when module is not enabled) | `AttributeError` (Python attribute convention, `hasattr` relies on this semantics) |
 
 ```python
 from ErisPulse.Core.Bases.errors import ModuleNotAvailableError, ServiceNotProvidedError
@@ -143,18 +155,18 @@ except ServiceNotProvidedError:
 
 ### Shadow Series — `Core/shadow.py` (Shadow Modules)
 
-| Exception | Occurrence Location | Typical Scenarios |
-|-----------|---------------------|-------------------|
-| `ShadowError` | Shadow module mechanism | Base class for all shadow errors (catch all shadow errors) |
-| `ShadowStateError` | `shadow_start()` / `dismiss_shadow()` | Target not loaded / active shadow exists / unbound shadow |
+| Exception | Occurrence Location | Typical Scenario |
+|-----------|---------------------|------------------|
+| `ShadowError` | Shadow module mechanism | Base class for shadow exceptions (catch all shadow errors) |
+| `ShadowStateError` | `shadow_start()` / `dismiss_shadow()` | Target not loaded / active shadow exists / shadow not bound |
 | `ShadowSourceError` | `shadow_start()` | Source path does not exist / plugin loader missing / source has no loadable class / loading failed |
 | `ShadowPromoteError` | `promote_shadow()` | Shadow not registered / not loaded / loader does not support snapshot / promotion reload failed |
 
 ### Framework Internal Parameter Validation (ValueError)
 
-Parameter validation for storage query builders (empty column types, `Insert` not dict, unsafe column types, etc.) throws standard `ValueError` — these are **development-time coding errors**, and normal business code should not catch them, but instead correct the calls.
+Parameter validation for storage query builder (empty column types, `Insert` not dict, unsafe column types, etc.) throws standard `ValueError`—these are **development-time coding errors**, and normal business code should not catch them, but instead fix the calls.
 
-Adapter standard action failures **do not throw exceptions**: return a response dictionary with `retcode` (protocol semantics, e.g., `retcode=10002` indicates the action is not implemented) — this is a parallel error channel to the client layer's "failures throw `ClientError`". Adapter development must handle both.
+Adaptor standard action failures **do not throw exceptions**: return a response dictionary with `retcode` (protocol semantics, e.g., `retcode=10002` means the action is not implemented)—this is a parallel error channel to client layer "failures throw `ClientError`", and adaptor development must handle both.
 
 ## Handling Recommendations
 

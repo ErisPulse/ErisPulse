@@ -33,52 +33,98 @@ ErisPulse は、モジュールが FastAPI に直接依存しないようにす�
 >
 > `.raw` 属性を使用することで、下層の FastAPI のネイティブオブジェクトにアクセスできます。FastAPI の型を使用したコードも完全に互換性があります。
 
-## 装饰器ルーティング（推奨）
+## 装飾器ルート（推奨）
+
+### 登録形態：単引数（推奨）と二引数
+
+装飾器ルートは二つの形態をサポートしており、**推奨は単引数**です。コマンド / イベントトリガと同様に、名前空間は自動的に現在のモジュールに属します。
+
+```python
+from ErisPulse import router
+
+# 単引数（推奨）：自動的にモジュール名/hello → 実際のパス /my_module/hello
+@router.get("/hello")
+async def hello():
+    return {"ok": True}
+
+# 単引数 WebSocket：@ws("chat") → /my_module/chat
+@router.ws("chat")
+async def chat(ws):
+    ...
+
+# 二引数：明示的にモジュール名を指定（ルールは変更なし、モジュール間/ツールコードの登録時に使用）
+@router.get("other_module", "/info")
+async def get_info(request):
+    return {"method": request.method, "path": str(request.url)}
+```
+
+> [!NOTE]
+> 単引数の形態は、モジュール/アダプタの**ロードコンテキスト**内で登録する必要があります（ロード時にフレームワークが自動的に属するモジュールを注入）。
+> 属するコンテキストがない場所で呼び出すと `ValueError` が発生し、明示的にモジュール名を渡すように通知されます。
 
 ### HTTP 装飾器
 
 ```python
-from ErisPulse.Core import router
-@router.get("my_module", "/info")
-async def get_info(request):
-    return {"method": request.method, "path": str(request.url)}
+from ErisPulse import router, HttpRequest
 
-# 抽象型を明示的に指定することも可能
-from ErisPulse.Core import HttpRequest
-
-@router.post("my_module", "/data")
+# 抽象型を明示的に注釈することも可能です
+@router.post("/data")
 async def post_data(request: HttpRequest):
     data = await request.json()
     return {"received": data}
 
-@router.put("my_module", "/data/{item_id}")
+@router.put("/data/{item_id}")
 async def update_data(request):
     return {"updated": True}
 
-@router.delete("my_module", "/data/{item_id}")
+@router.delete("/data/{item_id}")
 async def delete_data(request):
     return {"deleted": True}
 ```
 
-> **自動注入ルール**：ハンドラの最初の引数の名前が `request` または `req` であり、FastAPI の型注釈がない場合、フレームワークは自動的に `HttpRequest` を注入します。引数が存在しない、またはリクエスト引数名でないハンドラには影響しません。
+> **自動注入ルール**：ハンドラの最初の引数が `request` または `req` であり、FastAPI の型注釈がない場合、フレームワークは自動的に `HttpRequest` を注入します。引数がなく、またはリクエストパラメータ名でないハンドラは影響を受けません。
+
+#### 応答返却の約束事（2.10+）
+
+ハンドラの返り値は**タプルの約束事**（推奨の書き方、明確にステータスコードを制御）をサポートします。dict/str/Response は従来通りです。
+
+```python
+@router.post("/login")
+async def login(request):
+    if not check_token(request):
+        # (body, status_code) → 401 JSON
+        return {"error": "unauthorized", "message": "token が無効です"}, 401
+    # (body, status_code, headers) でレスポンスヘッダーも指定可能
+    return {"user_id": 1}, 200, {"X-Request-Cost": "12ms"}
+
+# または respond() ヘルパー関数を使用（message はレスポンスボディに自動的にマージされます）
+from ErisPulse import respond
+
+@router.get("/me")
+async def me():
+    return respond({"user_id": 1}, status_code=200, message="ok")
+```
+
+パス / クエリパラメータは FastAPI の元の注釈（`item_id: int`、`page: int = 1`）を使用できます。
+ミドルウェアについては[ルートミドルウェア](#ルートミドルウェア)の節を参照してください。
 
 ### WebSocket 装飾器
 
 ```python
-from ErisPulse.Core import WebSocketConnection, WebSocketDisconnect
+from ErisPulse import WebSocketConnection, WebSocketDisconnect
 
-# 基本的な WebSocket
-@router.ws("my_module", "/ws")
+# 基本的な WebSocket（単引数の形態）
+@router.ws("ws")
 async def websocket_handler(ws):
     async for msg in ws.iter_text():
         await ws.send_text(f"Echo: {msg}")
 
-# ライフサイクルフック付きの WebSocket
-@router.ws("my_module", "/ws/chat")
+# ライフサイクルフックを含む WebSocket
+@router.ws("/ws/chat")
 async def chat(ws: WebSocketConnection):
     @ws.on_disconnect
     async def on_disconnect(ws, reason="unknown"):
-        print(f"ユーザーが切断: {reason}")
+        print(f"ユーザーが切断しました: {reason}")
 
     @ws.on_error
     async def on_error(ws, error=""):
@@ -92,14 +138,20 @@ async def ws_auth(ws: WebSocketConnection) -> bool:
     token = ws.query_params.get("token")
     return token == "secret"
 
-@router.ws("my_module", "/secure_ws", auth_handler=ws_auth)
+@router.ws("secure_ws", auth_handler=ws_auth)
 async def secure_ws_handler(ws):
     while True:
         data = await ws.receive_text()
         await ws.send_text(f"Echo: {data}")
 ```
 
-> **注意**：WebSocket ハンドラと認証ハンドラも自動注入をサポートしています。`WebSocketConnection` を取得するために引数の型注釈は不要です。`fastapi.WebSocket` を型注釈に指定することで、元のオブジェクトを渡すこともできますが、抽象型を使用することを推奨します。
+> **注意**：WebSocket ハンドラと認証ハンドラも自動的に注入されます。引数の注釈を必要とせず、`WebSocketConnection` を取得できます。`fastapi.WebSocket` を注釈することも可能ですが、抽象型を使用することを推奨します。
+
+### 接続の自動登録（接続プール、2.10+）
+
+`@ws` / `@sse` で確立された接続は**デフォルトでフレームワークの接続プールに自動登録されます**（`track=False` でオフにできます）：
+ハンドラ内で `ws.id` / `ws.join_group(...)` を使用可能で、任意のモジュールから `connections.list(namespace=...)` を使用して、このモジュールの接続を確認し、グループにブロードキャストできます。
+詳しくは[接続プールとブロードキャスト](connections.md)を参照してください。
 
 ## 伝統的な登録方法
 

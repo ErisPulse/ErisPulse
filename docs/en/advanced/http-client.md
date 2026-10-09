@@ -38,13 +38,31 @@ data = await resp.json()
 ### WebSocket Connection
 
 ```python
-from ErisPulse.Core import client
+from ErisPulse import client   # 2.10+ root import (ErisPulse.Core.client deep path is still compatible)
 
 ws = await client.ws_connect("wss://example.com/ws")
 
 async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
+
+#### Outbound Connections Automatically Pool (2.10+)
+
+Connections established by `ws_connect` are **automatically registered** into the framework connection pool by default (set `track=False` to disable):
+They can be viewed by `connections.list(owner=...)`, broadcasted to, and automatically unregistered when closed or disconnected remotely;
+**When the module is unloaded or the adapter stops, the framework will close all outbound connections under its name uniformly**, preventing leaks.
+
+```python
+from ErisPulse import client, connections
+
+ws = await client.ws_connect("wss://example.com/ws")
+print(ws.id, ws.owner)   # Already registered: connection id and owner
+
+# When the owner context is unavailable (e.g., in a utility thread callback), explicitly specify the owner so it can be automatically recycled during unloading:
+ws2 = await client.ws_connect("wss://example.com/ws2", owner="MyAdapter")
+```
+
+See [Connection Pool and Broadcasting](connections.md).
 
 ## HttpResponse
 

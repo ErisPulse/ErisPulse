@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "hash": "8dc7ace4046cb78f768f4121b4a8ea07",
+  "file_hash": "8dc7ace4046cb78f768f4121b4a8ea07",
+  "translated_at": "2026-10-09T14:51:05.822137",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "04f16c60b71455fcd2ade89ac0c3cd66",
+      "translation": "# Transcript\n\nThe Transcript Inbox automatically records messages sent and received by the bot (organized by session key `platform:detail_type:target_id`), providing historical data for conversation recovery (`event.history`), shadow module diff, cold start replay, and more. This document explains its **storage model, what each retention policy knob protects**, and the real cost of runtime override APIs and放开限制.\n\n> Before changing any limits, please read the \"Risks and Audits\" section first—each knob exists for a reason."
+    },
+    {
+      "hash": "5d001412bcfdafe02d2eb82f8403e55a",
+      "translation": "## How It Works\n\n```\nMessage ──append()──▶ Write buffer (in-memory deque, hard limit 4096 lines)\n                        │  Batched persistence every 1 second (batch ≤64 lines, single transaction)\n                        ▼\n              transcript table in storage backend (default sqlite)\n                        │  Lazy trigger of retention cleanup after ~32 appends\n                        ▼\n              ┌─ FIFO trimming by session (max_per_session, default 50 lines)\n              └─ Global TTL deletion (ttl_hours, default 168 = 7 days)\n```\n\nThree levels of protection, each guarding against different risks:\n\n| Knob | Default | Protection | Consequence if disabled (=0) |\n|------|---------|------------|------------------------------|\n| Write buffer limit | 4096 lines (constant, not configurable) | **Memory**: Prevents RAM blowup during storage unavailability | Cannot be disabled—this is the memory safety net |\n| Single text truncation | 2000 characters (constant, not configurable) | Memory/disk usage per message | Cannot be disabled |\n| `max_per_session` | 50 lines/session | **Disk growth**: Prevents infinite accumulation of session history | Session history grows indefinitely |\n| `ttl_hours` | 168 (7 days) | **Disk growth**: Prevents long-term accumulation across all sessions | `transcript` table grows indefinitely |\n\nKey insight: **The write buffer has a hard limit, so relaxing retention policies won't directly blow up memory**;  \nThe real risk lies in the storage layer and downstream consumers (see next section)."
+    },
+    {
+      "hash": "46c90a69b4cb95ffe501936495575f75",
+      "translation": "## Configuration\n\n```toml\n[ErisPulse.transcript]\nenabled = true          # Whether to automatically record\nmax_per_session = 50    # Number of entries to retain per session (0 = disable session trimming)\nttl_hours = 168.0       # Global retention duration (hours, 0 = never clean up)\n```\n\nEnvironment variables also take effect: `ERISPULSE_TRANSCRIPT_MAX_PER_SESSION`, `ERISPULSE_TRANSCRIPT_TTL_HOURS`.  \nConfiguration changes take effect immediately (within the write buffer flush interval, with a maximum delay of ~1 second)."
+    },
+    {
+      "hash": "9433acab9911e83195f2dc2a7ef4f755",
+      "translation": "## Runtime Override API\n\nWhen you need to dynamically adjust settings at runtime (for example, to temporarily extend retention for a specific scenario):\n\n```python\nfrom ErisPulse import transcript\n\n# Override (takes precedence over configuration; only in-memory, values revert to configuration after restart)\ntranscript.set_retention(max_per_session=500, ttl_hours=24 * 30)\n\n# Query effective values and their source\ntranscript.get_retention()\n# {'max_per_session': 500, 'ttl_hours': 720.0, 'overridden': ['max_per_session', 'ttl_hours']}\n\n# Restore configuration-based values\ntranscript.reset_retention()\n```\n\n- Passing `0` disables the corresponding strategy (will log a warning for traceability); negative numbers raise `ValueError`;\n- The override takes effect during the next retention cleanup (lazy, with a maximum delay of ~32 append operations);\n- The `transcript` singleton can be imported from the root package or via `sdk.transcript`."
+    },
+    {
+      "hash": "601b1adbdf2d0aeefad36fff2c8668fc",
+      "translation": "## Risks and Audits: Read Before Relaxing Limits\n\nAfter disabling `max_per_session` / `ttl_hours` (or significantly increasing them), the `transcript` table will grow **unlimited** with message volume. The consequences are as follows:\n\n1. **Disk full** — sqlite single-file continues to expand, making the storage layer unavailable once disk space is exhausted;\n2. **Query degradation** — scanning costs for `get()` / `recent()` / `get_by_trace()` increase as the table grows;\n3. **Downstream memory pressure (the real source of OOM)** — consumers that load entire historical segments into memory (such as restoring conversation with history, full panel retrieval, or your business code `get(session, n)` requesting large n) will consume more memory as the table grows, potentially triggering OOM kill in extreme cases.\n\n**Before relaxing the limits, ask yourself three questions**: How long of history do you need? How large should it be? Who will clean it up? If the answer depends on \"never deleting,\" the correct approach is usually external archiving (regularly moving old data to a dedicated database), rather than letting the inbox retain unlimited history.\n\nAuditing methods (regularly check table size):\n\n```python\n# Query row count and size via ORM/SQL builder (example for sqlite)\nfrom ErisPulse import storage\n\nrow = storage.Table(\"transcript\").raw_sql(\"SELECT COUNT(*) AS n FROM transcript\")\n```\n\n```sql\n-- Direct query on sqlite file (table size)\nSELECT COUNT(*) FROM transcript;\n```\n\nA warning log stating \"Retention policy has been disabled\" means someone disabled the policy with 0; please confirm if this was your operation."
+    },
+    {
+      "hash": "239bc4d1b62851e22e2247a1bcd70e74",
+      "translation": "## Boundaries with Other Mechanisms\n\n- **Interactive session timer / wait_reply**: See [Interactive Session System](interaction.md), which is unrelated to the inbox;\n- **History back for conversation recovery**: `resume(with_history=N)` retrieves the most recent N messages from the inbox—after the inbox is trimmed, the amount of history that can be recovered decreases (increasing `max_per_session` extends the recoverable window);\n- **Shadow module diff**: Relies on the `get_by_trace` query chain; an inbox with a short TTL shortens the diff window."
+    }
+  ]
+}

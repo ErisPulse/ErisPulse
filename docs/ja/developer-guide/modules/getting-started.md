@@ -46,8 +46,8 @@ from .Core import Main
 
 ```python
 from ErisPulse import sdk
-from ErisPulse.Core.Bases import BaseModule
-from ErisPulse.Core.Event import command
+# 推奨されるルートインポート（2.10+）：一般的なシンボルはルートパッケージから直接インポートでき、深いパスも互換性があります
+from ErisPulse import BaseModule, command
 
 class Main(BaseModule):
     def __init__(self, sdk):
@@ -62,14 +62,14 @@ class Main(BaseModule):
         return ModuleLoadStrategy(
             lazy_load=True,
             priority=0,
-            depends=[],  # オプション：他のモジュールへの依存リスト
-            # オプション：イベント駆動の遅延活性化——トリガーを宣言し、最初の一致するイベント/コマンドが到着した時点で自動的にロード
-            # activate_on=[{"command": {"name": "hello", "help": "挨拶を送信"}}],
+            depends=[],  # オプション：依存する他のモジュールのリスト
+            # オプション：イベント駆動の遅延活性化——トリガーを宣言し、最初の一致するイベント/コマンドが到着したときに自動的にロードされます
+            # activate_on=[{"command": {"name": "hello", "help": "挨拶を送る"}}],
         )
     
     async def on_load(self, event):
-        """モジュールがロードされたときに呼び出される"""
-        @command("hello", help="挨拶を送信")
+        """モジュールがロードされたときに呼び出されます"""
+        @command("hello", help="挨拶を送る")
         async def hello_command(event):
             name = event.get_user_nickname() or "友達"
             await event.reply(f"こんにちは、{name}！")
@@ -77,11 +77,11 @@ class Main(BaseModule):
         self.logger.info("モジュールがロードされました")
     
     async def on_unload(self, event):
-        """モジュールがアンロードされたときに呼び出される"""
+        """モジュールがアンロードされたときに呼び出されます"""
         self.logger.info("モジュールがアンロードされました")
 ```
 
-> **設定の読み込み**：上記の基本的な例では設定は使用していません。設定を読み込む必要がある場合は、`ConfigClass` をネストして宣言し、`self.cfg` を通じてリアルタイムに読み取ることを推奨します（[モジュールのコア概念](docs/ja/core-concepts.md#宣言的設定の推奨)を参照）。手動で `_load_config()` を呼び出す旧い書き方は廃止されました。
+> **設定の読み込み**：上記の基本的な例では設定は使用していません。設定を読み込む必要がある場合は、`ConfigClass` をネストして宣言し、`self.cfg` を使ってリアルタイムで読み込むことを推奨します（[モジュールのコア概念](docs/ja/core-concepts.md#宣言的設定の推奨)を参照してください）。手動で `_load_config()` を呼び出す古い書き方は廃止されました。
 
 ## テストモジュール
 

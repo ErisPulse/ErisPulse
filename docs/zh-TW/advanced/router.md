@@ -35,46 +35,92 @@ ErisPulse 提供了服務端抽象類型，使模組無需直接依賴 FastAPI�
 
 ## 裝飾器路由（推薦）
 
+### 註冊形態：單參（推薦）與雙參
+
+裝飾器路由支援兩種形態，**推薦單參**——與命令 / 事件觸發器一致，命名空間自動歸屬當前模組：
+
+```python
+from ErisPulse import router
+
+# 單參（推薦）：自動歸屬 模組名/hello → 實際路徑 /my_module/hello
+@router.get("/hello")
+async def hello():
+    return {"ok": True}
+
+# 單參 WebSocket：@ws("chat") → /my_module/chat
+@router.ws("chat")
+async def chat(ws):
+    ...
+
+# 雙參：明確指定模組名（規則不變，跨模組/工具程式碼註冊時使用）
+@router.get("other_module", "/info")
+async def get_info(request):
+    return {"method": request.method, "path": str(request.url)}
+```
+
+> [!NOTE]
+> 單參形態要求在模組/適配器**載入上下文**中註冊（載入期框架已注入歸屬）；
+> 在無歸屬上下文處呼叫會拋 `ValueError` 並提示明確傳入模組名。
+
 ### HTTP 裝飾器
 
 ```python
-from ErisPulse.Core import router
-@router.get("my_module", "/info")
-async def get_info(request):
-    return {"method": request.method, "path": str(request.url)}
+from ErisPulse import router, HttpRequest
 
-# 也可顯式標註抽象類型
-from ErisPulse.Core import HttpRequest
-
-@router.post("my_module", "/data")
+# 也可明確標註抽象類型
+@router.post("/data")
 async def post_data(request: HttpRequest):
     data = await request.json()
     return {"received": data}
 
-@router.put("my_module", "/data/{item_id}")
+@router.put("/data/{item_id}")
 async def update_data(request):
     return {"updated": True}
 
-@router.delete("my_module", "/data/{item_id}")
+@router.delete("/data/{item_id}")
 async def delete_data(request):
     return {"deleted": True}
 ```
 
-> **自動注入規則**：當處理器第一個參數名為 `request` 或 `req` 且無 FastAPI 類型註解時，框架會自動注入 `HttpRequest`。無參數或非請求參數名的處理器不受影響。
+> **自動注入規則**：當處理器第一個參數名為 `request` 或 `req` 且無 FastAPI 類型註解時，框架自動注入 `HttpRequest`。無參數或非請求參數名的處理器不受影響。
+
+#### 回應返回約定（2.10+）
+
+處理器回傳值支援**元組約定**（推薦寫法，明確控制狀態碼），dict/str/Response 照舊：
+
+```python
+@router.post("/login")
+async def login(request):
+    if not check_token(request):
+        # (body, status_code) → 401 JSON
+        return {"error": "unauthorized", "message": "token 無效"}, 401
+    # (body, status_code, headers) 還可帶回應頭
+    return {"user_id": 1}, 200, {"X-Request-Cost": "12ms"}
+
+# 或使用 respond() 幫助函數（message 自動合併進回應體）
+from ErisPulse import respond
+
+@router.get("/me")
+async def me():
+    return respond({"user_id": 1}, status_code=200, message="ok")
+```
+
+路徑 / 查詢參數直接用 FastAPI 原生註解即可（`item_id: int`、`page: int = 1`），
+中間件見[路由中間件](#路由中間件)一節。
 
 ### WebSocket 裝飾器
 
 ```python
-from ErisPulse.Core import WebSocketConnection, WebSocketDisconnect
+from ErisPulse import WebSocketConnection, WebSocketDisconnect
 
-# 基本 WebSocket
-@router.ws("my_module", "/ws")
+# 基本 WebSocket（單參形態）
+@router.ws("ws")
 async def websocket_handler(ws):
     async for msg in ws.iter_text():
         await ws.send_text(f"Echo: {msg}")
 
-# 帶生命週期鈎子的 WebSocket
-@router.ws("my_module", "/ws/chat")
+# 帶生命週期鉤子的 WebSocket
+@router.ws("/ws/chat")
 async def chat(ws: WebSocketConnection):
     @ws.on_disconnect
     async def on_disconnect(ws, reason="unknown"):
@@ -92,7 +138,7 @@ async def ws_auth(ws: WebSocketConnection) -> bool:
     token = ws.query_params.get("token")
     return token == "secret"
 
-@router.ws("my_module", "/secure_ws", auth_handler=ws_auth)
+@router.ws("secure_ws", auth_handler=ws_auth)
 async def secure_ws_handler(ws):
     while True:
         data = await ws.receive_text()
@@ -100,6 +146,13 @@ async def secure_ws_handler(ws):
 ```
 
 > **注意**：WebSocket 處理器和認證處理器也支援自動注入。無需參數註解即可獲得 `WebSocketConnection`。標註 `fastapi.WebSocket` 也可傳入原生物件，但推薦使用抽象類型。
+
+### 連接自動登記（連接池，2.10+）
+
+`@ws` / `@sse` 建立的連接**預設自動登記**進框架連接池（`track=False` 可關閉）：
+handler 內 `ws.id` / `ws.join_group(...)` 可用，任意模組可
+`connections.list(namespace=...)` 查看本模組連接、向分組廣播。
+詳見[連接池與廣播](connections.md)。
 
 ## 傳統註冊方式
 

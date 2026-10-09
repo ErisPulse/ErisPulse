@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "b0fd49a959689afc4dc37a62b3b8d5e1",
-  "file_hash": "b0fd49a959689afc4dc37a62b3b8d5e1",
-  "translated_at": "2026-09-07T11:34:35.647513",
+  "hash": "9aaef1a655f2bb8a8a12c033e68f07eb",
+  "file_hash": "9aaef1a655f2bb8a8a12c033e68f07eb",
+  "translated_at": "2026-10-09T14:54:05.084702",
   "target_lang": "ru",
   "chunks": [
     {
@@ -22,8 +22,8 @@
       "translation": "## __init__.py\n\n```python\nfrom .Core import Main\n```"
     },
     {
-      "hash": "46fb55a7709c7f449b98832a2d63dc77",
-      "translation": "## Core.py - Основной модуль\n\n```python\nfrom ErisPulse import sdk\nfrom ErisPulse.Core.Bases import BaseModule\nfrom ErisPulse.Core.Event import command\n\nclass Main(BaseModule):\n    def __init__(self, sdk):\n        self.sdk = sdk\n        self.logger = sdk.logger.get_child(\"MyModule\")\n        self.storage = sdk.storage\n    \n    @staticmethod\n    def get_load_strategy():\n        \"\"\"Возвращает стратегию загрузки модуля\"\"\"\n        from ErisPulse.loaders import ModuleLoadStrategy\n        return ModuleLoadStrategy(\n            lazy_load=True,\n            priority=0,\n            depends=[],  # Опционально: список зависимых других модулей\n            # Опционально: ленивая активация по событиям — объявите триггер, модуль автоматически загрузится при первом совпадении события/команды\n            # activate_on=[{\"command\": {\"name\": \"hello\", \"help\": \"Отправить приветствие\"}}],\n        )\n    \n    async def on_load(self, event):\n        \"\"\"Вызывается при загрузке модуля\"\"\"\n        @command(\"hello\", help=\"Отправить приветствие\")\n        async def hello_command(event):\n            name = event.get_user_nickname() or \"друг\"\n            await event.reply(f\"Привет, {name}!\")\n        \n        self.logger.info(\"Модуль загружен\")\n    \n    async def on_unload(self, event):\n        \"\"\"Вызывается при выгрузке модуля\"\"\"\n        self.logger.info(\"Модуль выгружен\")\n```\n\n> **Чтение конфигурации**: В приведённом базовом примере конфигурация не используется. Для чтения конфигурации рекомендуется объявить вложенный класс `ConfigClass` и читать его через `self.cfg` в реальном времени (см. [Основные концепции модуля](core-concepts.md#рекомендуемая-декларативная-конфигурация)). Старый способ с ручным вызовом `_load_config()` устарел."
+      "hash": "25f9efceea98881681c9962b6113cc79",
+      "translation": "## Core.py - Основной модуль\n\n```python\nfrom ErisPulse import sdk\n# Рекомендуемый корневой импорт (2.10+): часто используемые символы импортируются напрямую из корневого пакета, глубокие пути по-прежнему поддерживаются\nfrom ErisPulse import BaseModule, command\n\nclass Main(BaseModule):\n    def __init__(self, sdk):\n        self.sdk = sdk\n        self.logger = sdk.logger.get_child(\"MyModule\")\n        self.storage = sdk.storage\n    \n    @staticmethod\n    def get_load_strategy():\n        \"\"\"Возвращает стратегию загрузки модуля\"\"\"\n        from ErisPulse.loaders import ModuleLoadStrategy\n        return ModuleLoadStrategy(\n            lazy_load=True,\n            priority=0,\n            depends=[],  # Опционально: список зависимых других модулей\n            # Опционально: ленивая активация по событиям — объявите триггеры, модуль автоматически загрузится при первом совпадении события/команды\n            # activate_on=[{\"command\": {\"name\": \"hello\", \"help\": \"Отправить приветствие\"}}],\n        )\n    \n    async def on_load(self, event):\n        \"\"\"Вызывается при загрузке модуля\"\"\"\n        @command(\"hello\", help=\"Отправить приветствие\")\n        async def hello_command(event):\n            name = event.get_user_nickname() or \"друг\"\n            await event.reply(f\"Привет, {name}!\")\n        \n        self.logger.info(\"Модуль загружен\")\n    \n    async def on_unload(self, event):\n        \"\"\"Вызывается при выгрузке модуля\"\"\"\n        self.logger.info(\"Модуль выгружен\")\n```\n\n> **Чтение конфигурации**: В приведенном выше базовом примере конфигурация не используется. При необходимости чтения конфигурации рекомендуется объявить вложенный класс `ConfigClass` и получать доступ к конфигурации через `self.cfg` в реальном времени (см. [Основные концепции модуля](docs/ru/core-concepts.md#рекомендуемая-декларативная-конфигурация)). Устаревший способ ручного вызова `_load_config()` больше не поддерживается."
     },
     {
       "hash": "b19935b00f6e24f77df608fef2d1ed1b",

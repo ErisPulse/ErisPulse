@@ -33,73 +33,121 @@ ErisPulse предоставляет абстрактные типы серве�
 >
 > С помощью свойства `.raw` можно получить доступ к базовому объекту FastAPI. Код, использующий типы FastAPI, также полностью совместим.
 
-## Декораторы маршрутов (рекомендуется)
+## Декоратор маршрутизации (рекомендуется)
+
+### Регистрация: одиночный параметр (рекомендуется) и двойной параметр
+
+Декоратор маршрутизации поддерживает две формы, **рекомендуется одиночный параметр** — совпадает с триггерами команд / событий, пространство имён автоматически присваивается текущему модулю:
+
+```python
+from ErisPulse import router
+
+# Одиночный параметр (рекомендуется): автоматически присваивается модуль/привет → фактический путь /my_module/привет
+@router.get("/привет")
+async def привет():
+    return {"ok": True}
+
+# Одиночный WebSocket: @ws("чат") → /my_module/чат
+@router.ws("чат")
+async def чат(ws):
+    ...
+
+# Двойной параметр: явно указать имя модуля (правила не меняются, используется при регистрации в модуле/инструментальном коде)
+@router.get("другой_модуль", "/инфо")
+async def получить_инфу(request):
+    return {"метод": request.method, "путь": str(request.url)}
+```
+
+> [!NOTE]
+> Одиночный параметр требует регистрации в контексте загрузки модуля/адаптера (рамка уже вставила принадлежность); вызов вне контекста принадлежности вызовет `ValueError` и сообщит явно передать имя модуля.
 
 ### HTTP декораторы
 
 ```python
-from ErisPulse.Core import router
-@router.get("my_module", "/info")
-async def get_info(request):
-    return {"method": request.method, "path": str(request.url)}
+from ErisPulse import router, HttpRequest
 
 # Также можно явно указать абстрактный тип
-from ErisPulse.Core import HttpRequest
+@router.post("/данные")
+async def отправить_данные(request: HttpRequest):
+    данные = await request.json()
+    return {"получено": данные}
 
-@router.post("my_module", "/data")
-async def post_data(request: HttpRequest):
-    data = await request.json()
-    return {"received": data}
+@router.put("/данные/{id_элемента}")
+async def обновить_данные(request):
+    return {"обновлено": True}
 
-@router.put("my_module", "/data/{item_id}")
-async def update_data(request):
-    return {"updated": True}
-
-@router.delete("my_module", "/data/{item_id}")
-async def delete_data(request):
-    return {"deleted": True}
+@router.delete("/данные/{id_элемента}")
+async def удалить_данные(request):
+    return {"удалено": True}
 ```
 
-> **Правила автоматической инъекции**: если первый параметр обработчика имеет имя `request` или `req` и не имеет аннотации типа FastAPI, фреймворк автоматически инжектирует `HttpRequest`. Обработчики без параметров или с параметрами, не являющимися именем запроса, не затрагиваются.
+> **Правила автоматической вставки**: если первый параметр обработчика называется `request` или `req` и не имеет аннотации типа FastAPI, фреймворк автоматически вставляет `HttpRequest`. Обработчики без параметров или с параметрами, не являющимися именем запроса, не затрагиваются.
+
+#### Соглашение о возвращаемых значениях (2.10+)
+
+Возвращаемые значения обработчиков поддерживают **соглашение о кортеже** (рекомендуемый способ, позволяет явно управлять статус-кодом), dict/str/Response остаются прежними:
+
+```python
+@router.post("/вход")
+async def вход(request):
+    if not проверить_токен(request):
+        # (тело, статус_код) → 401 JSON
+        return {"ошибка": "неавторизован", "сообщение": "токен недействителен"}, 401
+    # (тело, статус_код, заголовки) можно также добавить заголовки ответа
+    return {"user_id": 1}, 200, {"X-Request-Cost": "12ms"}
+
+# Или использовать вспомогательную функцию respond() (сообщение автоматически объединяется в тело ответа)
+from ErisPulse import respond
+
+@router.get("/моя_инфо")
+async def моя_инфо():
+    return respond({"user_id": 1}, статус_код=200, сообщение="ок")
+```
+
+Параметры пути / запроса используются с помощью оригинальных аннотаций FastAPI (например, `id_элемента: int`, `страница: int = 1`), промежуточные обработчики см. в разделе [Промежуточные обработчики маршрутов](#промежуточные_обработчики_маршрутов).
 
 ### WebSocket декораторы
 
 ```python
-from ErisPulse.Core import WebSocketConnection, WebSocketDisconnect
+from ErisPulse import WebSocketConnection, WebSocketDisconnect
 
-# Базовый WebSocket
-@router.ws("my_module", "/ws")
-async def websocket_handler(ws):
-    async for msg in ws.iter_text():
-        await ws.send_text(f"Echo: {msg}")
+# Базовый WebSocket (одиночный параметр)
+@router.ws("ws")
+async def обработчик_websocket(ws):
+    async for сообщение in ws.iter_text():
+        await ws.send_text(f"Эхо: {сообщение}")
 
-# WebSocket с хуками жизненного цикла
-@router.ws("my_module", "/ws/chat")
-async def chat(ws: WebSocketConnection):
+# WebSocket с жизненным циклом
+@router.ws("/ws/чат")
+async def чат(ws: WebSocketConnection):
     @ws.on_disconnect
-    async def on_disconnect(ws, reason="unknown"):
-        print(f"Пользователь отключился: {reason}")
+    async def при_отключении(ws, причина="неизвестно"):
+        print(f"Пользователь отключился: {причина}")
 
     @ws.on_error
-    async def on_error(ws, error=""):
-        print(f"Ошибка соединения: {error}")
+    async def при_ошибке(ws, ошибка=""):
+        print(f"Ошибка соединения: {ошибка}")
 
-    async for msg in ws.iter_text():
-        await ws.send_text(f"Echo: {msg}")
+    async for сообщение in ws.iter_text():
+        await ws.send_text(f"Эхо: {сообщение}")
 
 # WebSocket с аутентификацией
-async def ws_auth(ws: WebSocketConnection) -> bool:
-    token = ws.query_params.get("token")
-    return token == "secret"
+async def аутентификация_websocket(ws: WebSocketConnection) -> bool:
+    токен = ws.query_params.get("токен")
+    return токен == "секрет"
 
-@router.ws("my_module", "/secure_ws", auth_handler=ws_auth)
-async def secure_ws_handler(ws):
+@router.ws("secure_ws", обработчик_аутентификации=аутентификация_websocket)
+async def обработчик_secure_ws(ws):
     while True:
-        data = await ws.receive_text()
-        await ws.send_text(f"Echo: {data}")
+        данные = await ws.receive_text()
+        await ws.send_text(f"Эхо: {данные}")
 ```
 
-> **Примечание**: WebSocket обработчики и обработчики аутентификации также поддерживают автоматическую инъекцию. `WebSocketConnection` можно получить без аннотации параметра. Использование аннотации `fastapi.WebSocket` также передаст оригинальный объект, но рекомендуется использовать абстрактный тип.
+> **Важно**: обработчики WebSocket и аутентификации также поддерживают автоматическую вставку. Не нужно аннотировать параметры, чтобы получить `WebSocketConnection`. Можно указать `fastapi.WebSocket`, чтобы получить оригинальный объект, но рекомендуется использовать абстрактный тип.
+
+### Автоматическая регистрация подключений (пул соединений, 2.10+)
+
+Подключения, созданные с помощью `@ws` / `@sse`, **по умолчанию автоматически регистрируются** в пуле соединений фреймворка (`track=False` отключает регистрацию): в обработчике доступны `ws.id` / `ws.join_group(...)`, в любом модуле можно использовать `connections.list(namespace=...)` для просмотра подключений текущего модуля и рассылки сообщений в группы. Подробнее см. [Пул соединений и рассылка](connections.md).
 
 ## Традиционный способ регистрации
 
