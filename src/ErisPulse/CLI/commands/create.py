@@ -78,10 +78,19 @@ _MODULE_INIT = """from .Core import Main
 
 _MODULE_CORE = """from dataclasses import dataclass, field
 
-from ErisPulse import SDK
-from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey, ModuleMeta
-from ErisPulse.Core.Event import Event, command, message, notice
-from ErisPulse.Core.i18n import i18n
+from ErisPulse import (
+    SDK,
+    BaseConfig,
+    BaseI18n,
+    BaseModule,
+    Event,
+    I18nKey,
+    ModuleMeta,
+    command,
+    i18n,
+    message,
+    notice,
+)
 
 
 class Main(BaseModule):
@@ -339,10 +348,7 @@ _ADAPTER_CORE = """import asyncio
 import json
 from dataclasses import dataclass, field
 from typing import ClassVar
-from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
-from ErisPulse.Core import router
-from ErisPulse.Core.i18n import i18n
+from ErisPulse import BaseAdapter, BaseConfig, BaseI18n, I18nKey, router, i18n
 
 
 class {name}(BaseAdapter):
@@ -517,6 +523,11 @@ class {name}(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
+        # 连接已由框架自动登记进连接池（ErisPulse.connections）：
+        # meta 供跨模块查看，join_group 后可被 connections.broadcast 定向推送
+        websocket.meta["bot_id"] = bot_id
+        websocket.join_group(f"bot:{{bot_id}}")
+
         await self.emit_meta("connect", bot_id, user_name="{name}")
         self.logger.info("{text[adapter.log.bot_connected]}")
 
@@ -540,7 +551,7 @@ class {name}(BaseAdapter):
 
     async def call_api(self, endpoint: str, **params):
         \"\"\"Call platform API\"\"\"
-        from ErisPulse.Core import client
+        from ErisPulse import client
 
         cfg = self.cfg
         headers = {{"Authorization": "Bearer " + cfg.token}}

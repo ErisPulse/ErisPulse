@@ -36,7 +36,10 @@ if TYPE_CHECKING:
 # 对话恢复工厂注册表：[(factory, platform | None)]
 # 由 Conversation.register_resume_handler 装饰器写入，
 # 框架在消息事件入口通过 Conversation.try_auto_resume 消费。
-_conversation_resume_handlers: list[tuple[Callable, str | None]] = []
+# 三元组为 (工厂, 平台过滤, owner)：owner 为注册时的归属（模块名/平台名），
+# 模块卸载时经 unregister_resume_handlers_by_owner 统一注销——
+# 否则已卸载模块的工厂仍会在重启恢复时被调用（行为错误 + 类对象泄漏）。
+_conversation_resume_handlers: list[tuple[Callable, "str | None", "str | None"]] = []
 
 
 def _consume_task_exception(task: "asyncio.Task") -> None:
@@ -620,6 +623,9 @@ class Conversation:
         会调用已注册的工厂重建 Conversation（模块需在工厂内重新注册所有分支），
         随后自动 ``goto`` 到存档分支继续对话。
 
+        工厂在注册时归属到当前 owner（模块名/平台名），模块卸载时由框架
+        统一注销，避免已卸载模块的工厂仍被恢复流程调用。
+
         :param platform: 仅匹配指定平台的事件；None 表示匹配所有平台
         :return: 装饰器
 
@@ -632,7 +638,9 @@ class Conversation:
         ...     return conv
         """
         def decorator(func: Callable):
-            _conversation_resume_handlers.append((func, platform))
+            from ...runtime.context import current_owner
+
+            _conversation_resume_handlers.append((func, platform, current_owner.get()))
             return func
 
         return decorator
@@ -685,8 +693,20 @@ class Conversation:
             return False
 
         event_platform = event.get("platform")
-        for handler, platform_filter in _conversation_resume_handlers:
+        # 归属兜底：owner 已注销（未走卸载链的孤儿工厂）不再调用
+        try:
+            from ..module import module as module_manager
+
+            registered_owners = set(
+                (getattr(module_manager, "_module_classes", {}) or {}).keys()
+            ) | set((getattr(module_manager, "_loaded_modules", {}) or {}).keys())
+        except Exception:
+            registered_owners = None
+
+        for handler, platform_filter, owner in _conversation_resume_handlers:
             if platform_filter and event_platform != platform_filter:
+                continue
+            if owner and registered_owners is not None and owner not in registered_owners:
                 continue
             try:
                 if inspect.iscoroutinefunction(handler):
@@ -781,3 +801,22 @@ async def _checkpoint_gc_loop():
             logger.warning(
                 i18n.t("core.event.conversation_checkpoint_gc_failed", error=e)
             )
+
+
+def unregister_resume_handlers_by_owner(owner: str) -> int:
+    """
+    注销指定归属者注册的全部对话恢复工厂
+
+    模块卸载 / 适配器关闭链经归属权门面（``ownership.reclaim_sync``）
+    自动调用；不注销会导致已卸载模块的工厂仍被重启恢复流程调用
+    （行为错误 + 类对象泄漏）。
+
+    :param owner: 归属者（模块名 / 平台名）
+    :return: int 注销的工厂数量
+    """
+    stale = [entry for entry in _conversation_resume_handlers if entry[2] == owner]
+    if not stale:
+        return 0
+    for entry in stale:
+        _conversation_resume_handlers.remove(entry)
+    return len(stale)

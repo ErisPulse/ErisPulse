@@ -63,7 +63,17 @@ from .hints import (
 from .memory import get_rss_mb, get_traced_mb, log_snapshot, snapshot
 from .owner_cleanup import off_cleanup, on_cleanup, run_owner_cleanups
 from .plugin_reload import PluginReloadWatcher
-from .tasks import cancel_all_background_tasks, cancel_owner_tasks, get_owner_tasks, spawn_background
+from .tasks import (
+    cancel_all_background_tasks,
+    cancel_owner_tasks,
+    get_owner_tasks,
+    get_owner_threads,
+    get_owner_timers,
+    run_main_loop,
+    spawn_background,
+    spawn_later,
+    spawn_thread,
+)
 
 __all__ = [
     # 配置管理
@@ -103,6 +113,8 @@ __all__ = [
     "get_logger_config",
     "get_master_config",
     "get_owner_tasks",
+    "get_owner_threads",
+    "get_owner_timers",
     "get_current_trace_id",
     "get_rss_mb",
     "get_send_receipts",
@@ -121,11 +133,14 @@ __all__ = [
     "redact_secret",
     "register_config_i18n",
     "resolve_config_schema",
+    "run_main_loop",
     "run_owner_cleanups",
     "send_receipts",
     "setup_exception_handling",
     "snapshot",
     "spawn_background",
+    "spawn_later",
+    "spawn_thread",
     "suggest_for_attribute_error",
     # 友好提示
     "suggest_similar",

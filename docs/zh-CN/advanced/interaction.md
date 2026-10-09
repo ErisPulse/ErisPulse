@@ -188,6 +188,8 @@ with sdk.interaction.hold(event) as lease:
 
 ## 会话收件箱：event.history
 
+> 保留策略（7 天 / 条数上限）与运行时覆盖 API、风险与审计见[会话收件箱](transcript.md)专题。
+
 每会话近期消息流的统一记录（用户 + 机器人双方），作为 AI 上下文、
 防复读、行为分析类模块的**共享事实底座**——各模块不再各自存历史。
 

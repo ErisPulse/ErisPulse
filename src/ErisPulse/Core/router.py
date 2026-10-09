@@ -38,6 +38,7 @@ if TYPE_CHECKING:
 from ..runtime.context import current_owner
 from .Bases.errors import WebSocketDisconnect as _EPWebSocketDisconnect
 from .Bases.router import HttpRequest, SseEmitter, WebSocketConnection
+from .connections import connections
 from .constants import (
     CONFIG_KEY_ROUTER_CORS,
     CONFIG_KEY_ROUTER_SECURITY,
@@ -69,6 +70,31 @@ from .logger import logger
 
 # Web 栈是否已懒加载完成
 _WEB_STACK_LOADED: bool = False
+
+
+def _to_http_response(result: Any) -> Any:
+    """
+    {!--< internal-use >!--}
+    HTTP handler 返回值的元组约定后处理
+
+    ``(body, status_code)`` / ``(body, status_code, headers)`` 形式的元组
+    转为对应状态码的 JSONResponse；其余返回值原样透传（dict/str/Response
+    由 FastAPI 原生机制处理，保持既有行为）。
+    """
+    if (
+        isinstance(result, tuple)
+        and 2 <= len(result) <= 3
+        and isinstance(result[1], int)
+        and not isinstance(result[1], bool)
+    ):
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse(
+            content=result[0],
+            status_code=result[1],
+            headers=result[2] if len(result) == 3 else None,
+        )
+    return result
 
 
 def _load_web_stack() -> None:
@@ -385,7 +411,7 @@ class RouterManager:
         # HTTP路由：{module_name: {path: {method: handler}}}
         self._http_routes: dict[str, dict[str, dict[str, Callable]]] = defaultdict(dict)
         self._websocket_routes: dict[
-            str, dict[str, tuple[Callable, Callable | None, bool]]
+            str, dict[str, tuple[Callable, Callable | None, bool, bool]]
         ] = defaultdict(dict)
         self._sse_routes: dict[str, dict[str, Callable]] = defaultdict(dict)
         # 路由对象索引: {(namespace, full_path): [(kind, route 对象), ...]}
@@ -482,6 +508,10 @@ class RouterManager:
         - HttpRequest / 无注解且名称类似 request → 注入 HttpRequest 包装
         - 其他类型 / 非请求参数名 → 不注入
 
+        返回值支持元组约定：``(body, status_code)`` / ``(body, status_code,
+        headers)`` 自动转为对应状态码的 JSONResponse（详见 ``respond``）；
+        dict/str/Response 照旧由 FastAPI 原生机制处理。
+
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
         """
@@ -489,7 +519,25 @@ class RouterManager:
         params = list(sig.parameters.values())
 
         if not params:
-            return handler
+            # 无参处理器：仅包一层元组返回约定处理（同步保持同步，走线程池）
+            if inspect.iscoroutinefunction(handler):
+
+                @functools.wraps(handler)
+                async def wrapper_bare(**kwargs):
+                    result = handler(**kwargs)
+                    if inspect.isawaitable(result):
+                        result = await result
+                    return _to_http_response(result)
+
+                cast("Any", wrapper_bare).__signature__ = sig
+                return wrapper_bare
+
+            @functools.wraps(handler)
+            def wrapper_bare_sync(**kwargs):
+                return _to_http_response(handler(**kwargs))
+
+            cast("Any", wrapper_bare_sync).__signature__ = sig
+            return wrapper_bare_sync
 
         first_param = params[0]
 
@@ -515,7 +563,32 @@ class RouterManager:
             should_wrap = True
 
         if not should_wrap:
-            return handler
+            # 不注入 request 的处理器：仅包一层元组返回约定处理。
+            # 同步处理器保持同步包装（FastAPI 会走线程池，不阻塞事件循环）
+            if inspect.iscoroutinefunction(handler):
+
+                @functools.wraps(handler)
+                async def wrapper_plain(**kwargs):
+                    result = handler(**kwargs)
+                    if inspect.isawaitable(result):
+                        result = await result
+                    return _to_http_response(result)
+
+                cast("Any", wrapper_plain).__signature__ = sig.replace(
+                    parameters=params,
+                    return_annotation=sig.return_annotation,
+                )
+                return wrapper_plain
+
+            @functools.wraps(handler)
+            def wrapper_plain_sync(**kwargs):
+                return _to_http_response(handler(**kwargs))
+
+            cast("Any", wrapper_plain_sync).__signature__ = sig.replace(
+                parameters=params,
+                return_annotation=sig.return_annotation,
+            )
+            return wrapper_plain_sync
 
         # 构建新签名：第一个参数注解替换为 FastAPI Request
         first_name = first_param.name
@@ -531,7 +604,7 @@ class RouterManager:
             result = handler(http_request, **kwargs)
             if inspect.isawaitable(result):
                 result = await result
-            return result
+            return _to_http_response(result)
 
         cast("Any", wrapper).__signature__ = sig.replace(
             parameters=new_params,
@@ -640,12 +713,18 @@ class RouterManager:
         return _wrapper
 
     @_web_stack_required
-    def _make_sse_endpoint(self, handler: Callable) -> Callable:
+    def _make_sse_endpoint(
+        self,
+        handler: Callable,
+        module_name: str = "",
+        track: bool = True,
+    ) -> Callable:
         """
         根据处理器签名创建 SSE 端点包装器
 
         自动检测处理器是否需要 HttpRequest 参数。
         为处理器创建 SseEmitter 实例，通过回调桥接 SSE 协议到底层 StreamingResponse。
+        track=True 时连接自动登记进连接池（kind="sse"），断开时自动注销。
 
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
@@ -690,13 +769,24 @@ class RouterManager:
                 dep_kwargs = await resolve_depends(_depends, sse)
                 handler_task = asyncio.create_task(handler(sse, **dep_kwargs))
 
+            if track:
+                # 同服务端 WS：owner 显式取注册路由的模块名（请求期无上下文）
+                connections.register(
+                    sse, namespace=module_name, kind="sse", owner=module_name
+                )
+
             async def generator():
-                yield ":ok\n\n"
-                while True:
-                    payload = await queue.get()
-                    if payload is None:
-                        break
-                    yield payload
+                try:
+                    yield ":ok\n\n"
+                    while True:
+                        payload = await queue.get()
+                        if payload is None:
+                            break
+                        yield payload
+                finally:
+                    # 覆盖正常关闭与客户端断开（GeneratorExit）两条路径
+                    if track:
+                        connections.unregister(sse)
 
             try:
                 return StreamingResponse(
@@ -710,6 +800,8 @@ class RouterManager:
                 )
             except Exception:
                 handler_task.cancel()
+                if track:
+                    connections.unregister(sse)
                 raise
 
         return wrapper
@@ -720,6 +812,7 @@ class RouterManager:
         full_path: str,
         module_name: str,
         handler: Callable,
+        track: bool = True,
         **kwargs,
     ) -> None:
         """
@@ -730,7 +823,7 @@ class RouterManager:
         共用，确保两条路径的路由创建逻辑完全一致。
         {!--< /internal-use >!--}
         """
-        endpoint = self._make_sse_endpoint(handler)
+        endpoint = self._make_sse_endpoint(handler, module_name=module_name, track=track)
         route = APIRoute(
             path=full_path,
             endpoint=endpoint,
@@ -751,6 +844,7 @@ class RouterManager:
         full_path: str,
         module_name: str,
         handler: Callable,
+        track: bool = True,
         **kwargs,
     ) -> None:
         """
@@ -768,7 +862,7 @@ class RouterManager:
             )
 
         self._track_owner_namespace(module_name)
-        self._create_sse_route(full_path, module_name, handler, **kwargs)
+        self._create_sse_route(full_path, module_name, handler, track=track, **kwargs)
         self._sse_routes[module_name][full_path] = handler
 
         logger.trace(
@@ -1007,7 +1101,7 @@ class RouterManager:
 
         restored_ws = 0
         for module_name, paths in self._websocket_routes.items():
-            for full_path, (handler, auth_handler, auto_accept) in paths.items():
+            for full_path, (handler, auth_handler, auto_accept, track) in paths.items():
                 # 直接在 FastAPI 上注册，跳过重复检查（记录已存在）
                 wrapped_handler = self._make_ws_handler(handler)
                 wrapped_auth = (
@@ -1020,6 +1114,7 @@ class RouterManager:
                     wrapped_handler,
                     wrapped_auth,
                     auto_accept,
+                    track,
                 )
 
                 self.app.add_api_websocket_route(
@@ -1429,12 +1524,46 @@ class RouterManager:
 
         return decorator
 
-    def http(self, module_name: str, path: str, methods: list[str] | None = None, **kwargs):
+    def _resolve_namespace(self, module_name_or_path: str, path: str | None) -> tuple[str, str]:
+        """
+        {!--< internal-use >!--}
+        解析装饰器路由的命名空间与路径
+
+        - 双参形态 ``@router.get("MyModule", "/path")``：显式命名空间，规则不变
+        - 单参形态 ``@router.get("/path")`` / ``@router.ws("api")``：命名空间
+          自动归属当前 owner（模块/适配器加载上下文），与其余触发器
+          （命令 / 事件处理器）的归属规则一致
+
+        :param module_name_or_path: 双参时为模块名，单参时为路径
+        :param path: 双参路径；单参形态为 None
+        :return: (namespace, path)
+        :raises ValueError: 单参形态且无归属上下文时
+        """
+        if path is not None:
+            return module_name_or_path, path
+        owner = current_owner.get()
+        if not owner:
+            raise ValueError(
+                i18n.t("core.router.namespace_required", path=module_name_or_path)
+            )
+        return owner, module_name_or_path
+
+    def http(
+        self,
+        module_name_or_path: str,
+        path: str | None = None,
+        methods: list[str] | None = None,
+        **kwargs,
+    ):
         """
         HTTP 路由装饰器
 
-        :param module_name: str 模块名称 (必填, 作为路径前缀)
-        :param path: str 路由路径
+        支持两种形态（推荐单参，与命令/事件触发器一致）：
+        - ``@router.http("/api/data")``：命名空间自动归属当前模块（加载上下文）
+        - ``@router.http("MyModule", "/api/data")``：显式命名空间
+
+        :param module_name_or_path: str 模块名称或路由路径（单参形态）
+        :param path: str | None 路由路径（双参形态时传入）
         :param methods: list[str] HTTP 方法列表 (默认: ["POST"])
         :param rate_limit: str|dict 限流规则 (可选)
         :param summary: str API 摘要 (可选, 用于文档)
@@ -1445,92 +1574,126 @@ class RouterManager:
         :return: Callable 装饰器
 
         :example:
+        >>> # 单参（推荐）：自动归属 模块名/api/data
+        >>> @sdk.router.http("/api/data", methods=["GET", "POST"])
+        ... async def handle_data(request):
+        ...     return {"ok": True}
+
+        >>> # 双参：显式指定模块名
         >>> @sdk.router.http("MyModule", "/api/data", methods=["GET", "POST"])
         ... async def handle_data(request):
         ...     return {"ok": True}
         """
-        full_path = self._normalize_path(module_name, path)
-        return self._http_decorate(full_path, module_name, methods, **kwargs)
+        namespace, resolved_path = self._resolve_namespace(module_name_or_path, path)
+        full_path = self._normalize_path(namespace, resolved_path)
+        return self._http_decorate(full_path, namespace, methods, **kwargs)
 
-    def get(self, module_name: str, path: str, **kwargs):
+    def get(self, module_name_or_path: str, path: str | None = None, **kwargs):
         """
         GET 路由装饰器
 
-        :param module_name: str 模块名称 (必填)
-        :param path: str 路由路径
+        单参形态 ``@router.get("/path")`` 命名空间自动归属当前模块；
+        双参形态 ``@router.get("MyModule", "/path")`` 显式指定。
+
+        :param module_name_or_path: str 模块名称或路由路径（单参形态）
+        :param path: str | None 路由路径（双参形态时传入）
         :return: Callable 装饰器
         """
-        return self.http(module_name, path, methods=["GET"], **kwargs)
+        namespace, resolved_path = self._resolve_namespace(module_name_or_path, path)
+        return self.http(namespace, resolved_path, methods=["GET"], **kwargs)
 
-    def post(self, module_name: str, path: str, **kwargs):
+    def post(self, module_name_or_path: str, path: str | None = None, **kwargs):
         """
-        POST 路由装饰器
+        POST 路由装饰器（单参/双参形态见 :meth:`get`）
 
-        :param module_name: str 模块名称 (必填)
-        :param path: str 路由路径
+        :param module_name_or_path: str 模块名称或路由路径（单参形态）
+        :param path: str | None 路由路径（双参形态时传入）
         :return: Callable 装饰器
         """
-        return self.http(module_name, path, methods=["POST"], **kwargs)
+        namespace, resolved_path = self._resolve_namespace(module_name_or_path, path)
+        return self.http(namespace, resolved_path, methods=["POST"], **kwargs)
 
-    def put(self, module_name: str, path: str, **kwargs):
+    def put(self, module_name_or_path: str, path: str | None = None, **kwargs):
         """
-        PUT 路由装饰器
+        PUT 路由装饰器（单参/双参形态见 :meth:`get`）
 
-        :param module_name: str 模块名称 (必填)
-        :param path: str 路由路径
+        :param module_name_or_path: str 模块名称或路由路径（单参形态）
+        :param path: str | None 路由路径（双参形态时传入）
         :return: Callable 装饰器
         """
-        return self.http(module_name, path, methods=["PUT"], **kwargs)
+        namespace, resolved_path = self._resolve_namespace(module_name_or_path, path)
+        return self.http(namespace, resolved_path, methods=["PUT"], **kwargs)
 
-    def delete(self, module_name: str, path: str, **kwargs):
+    def delete(self, module_name_or_path: str, path: str | None = None, **kwargs):
         """
-        DELETE 路由装饰器
+        DELETE 路由装饰器（单参/双参形态见 :meth:`get`）
 
-        :param module_name: str 模块名称 (必填)
-        :param path: str 路由路径
+        :param module_name_or_path: str 模块名称或路由路径（单参形态）
+        :param path: str | None 路由路径（双参形态时传入）
         :return: Callable 装饰器
         """
-        return self.http(module_name, path, methods=["DELETE"], **kwargs)
+        namespace, resolved_path = self._resolve_namespace(module_name_or_path, path)
+        return self.http(namespace, resolved_path, methods=["DELETE"], **kwargs)
 
-    def ws(self, module_name: str, path: str, **kwargs):
+    def ws(self, module_name_or_path: str, path: str | None = None, **kwargs):
         """
         WebSocket 路由装饰器
 
-        :param module_name: str 模块名称 (必填)
-        :param path: str WebSocket 路径
+        单参形态 ``@router.ws("api")`` 命名空间自动归属当前模块（实际路径
+        ``模块名/api``）；双参形态 ``@router.ws("MyModule", "/api")`` 显式指定。
+
+        :param module_name_or_path: str 模块名称或 WebSocket 路径（单参形态）
+        :param path: str | None WebSocket 路径（双参形态时传入）
         :param auth_handler: Callable 认证函数 (可选)
         :param auto_accept: bool 是否自动 accept (默认: True)
+        :param track: bool 是否将连接自动登记进连接池 (默认: True；
+                      登记后 handler 内 ``ws.id`` 可用，可 join_group / 被广播)
 
         {!--< tips >!--}
-        推荐使用 auth_handler 进行连接确认，而非关闭 auto_accept。
+        推荐单参注册与 auth_handler 进行连接确认，而非关闭 auto_accept。
         仅在需要完全控制连接流程时才设置 auto_accept=False。
         {!--< /tips >!--}
 
         :example:
+        >>> # 单参（推荐）：自动归属 模块名/chat
+        >>> @sdk.router.ws("chat")
+        ... async def chat(websocket):
+        ...     websocket.join_group("chat")
+        ...     await websocket.send_text("Hello!")
+
+        >>> # 双参：显式指定模块名
         >>> @sdk.router.ws("MyModule", "/ws/chat")
         ... async def chat(websocket):
         ...     await websocket.send_text("Hello!")
         """
-        full_path = self._normalize_path(module_name, path)
-        return self._ws_decorate(full_path, module_name, **kwargs)
+        namespace, resolved_path = self._resolve_namespace(module_name_or_path, path)
+        full_path = self._normalize_path(namespace, resolved_path)
+        return self._ws_decorate(full_path, namespace, **kwargs)
 
-    def sse(self, module_name: str, path: str, **kwargs):
+    def sse(self, module_name_or_path: str, path: str | None = None, **kwargs):
         """
         SSE (Server-Sent Events) 路由装饰器
 
-        :param module_name: str 模块名称 (必填)
-        :param path: str SSE 端点路径
+        单参形态 ``@router.sse("/events")`` 命名空间自动归属当前模块；
+        双参形态 ``@router.sse("MyModule", "/events")`` 显式指定。
+
+        :param module_name_or_path: str 模块名称或 SSE 端点路径（单参形态）
+        :param path: str | None SSE 端点路径（双参形态时传入）
+        :param track: bool 是否将连接自动登记进连接池 (默认: True)
         :param summary: str API 摘要 (可选)
         :param description: str API 描述 (可选)
         :param tags: list[str] API 标签 (可选)
 
         :example:
-        >>> @sdk.router.sse("MyModule", "/events")
+        >>> # 单参（推荐）：自动归属 模块名/events
+        >>> @sdk.router.sse("/events")
         ... async def event_stream(sse):
+        ...     sse.join_group("dashboard")
         ...     while True:
         ...         await sse.send({"msg": "hello"})
         ...         await asyncio.sleep(1)
 
+        >>> # 双参：显式指定模块名
         >>> @sdk.router.sse("MyModule", "/logs")
         ... async def log_stream(request, sse):
         ...     token = request.query_params.get("token")
@@ -1538,8 +1701,9 @@ class RouterManager:
         ...         line = await get_next_log(token)
         ...         await sse.send(line, event="log")
         """
-        full_path = self._normalize_path(module_name, path)
-        return self._sse_decorate(full_path, module_name, **kwargs)
+        namespace, resolved_path = self._resolve_namespace(module_name_or_path, path)
+        full_path = self._normalize_path(namespace, resolved_path)
+        return self._sse_decorate(full_path, namespace, **kwargs)
 
     def _sse_decorate(self, full_path: str, module_name: str, **kwargs):
         """
@@ -1715,6 +1879,7 @@ class RouterManager:
         wrapped_handler: Callable,
         wrapped_auth: Callable | None,
         auto_accept: bool,
+        track: bool = True,
     ) -> Callable[[WebSocket], Awaitable[None]]:
         """
         {!--< internal-use >!--}
@@ -1725,6 +1890,7 @@ class RouterManager:
         :param wrapped_handler: 已包装的 WebSocket 处理器
         :param wrapped_auth: 已包装的鉴权处理器（可为 None）
         :param auto_accept: 是否自动 accept 连接
+        :param track: 是否将连接自动登记进连接池（ErisPulse.connections）
         :return: WebSocket 端点协程函数
         {!--< /internal-use >!--}
         """
@@ -1734,6 +1900,12 @@ class RouterManager:
                 await websocket.accept()
 
             ws_conn = WebSocketConnection(websocket)
+            if track:
+                # 服务端连接的 owner 即注册路由的模块名：请求期无 owner 上下文，
+                # 必须显式传入，否则权限模型与卸载回收都无法归因
+                connections.register(
+                    ws_conn, namespace=module_name, kind="server", owner=module_name
+                )
 
             try:
                 if wrapped_auth:
@@ -1800,6 +1972,10 @@ class RouterManager:
                     await websocket.close(code=WS_CLOSE_INTERNAL_ERROR)
                 except Exception:
                     pass
+            finally:
+                # 连接池注销幂等：认证拒绝 / 正常断开 / 异常断开统一走这里
+                if track:
+                    connections.unregister(ws_conn)
 
         return _endpoint
 
@@ -1810,6 +1986,7 @@ class RouterManager:
         handler: Callable[[WebSocket], Awaitable[Any]],
         auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None,
         auto_accept: bool = DEFAULT_WS_AUTO_ACCEPT,
+        track: bool = True,
     ) -> None:
         """
         WebSocket 路由注册内部实现
@@ -1828,7 +2005,7 @@ class RouterManager:
         )
 
         websocket_endpoint = self._make_ws_endpoint_fn(
-            full_path, module_name, wrapped_handler, wrapped_auth, auto_accept
+            full_path, module_name, wrapped_handler, wrapped_auth, auto_accept, track
         )
 
         ws_route = APIWebSocketRoute(
@@ -1842,6 +2019,7 @@ class RouterManager:
             handler,
             auth_handler,
             auto_accept,
+            track,
         )
 
         logger.trace(
@@ -1861,6 +2039,7 @@ class RouterManager:
         handler: Callable[[WebSocket], Awaitable[Any]],
         auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None,
         auto_accept: bool = True,
+        track: bool = True,
     ) -> None:
         """
         注册WebSocket路由
@@ -1870,6 +2049,8 @@ class RouterManager:
         :param handler: Callable[[WebSocket], Awaitable[Any]] 主处理函数
         :param auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] 认证函数
         :param auto_accept: bool 是否自动调用 websocket.accept()，默认 True
+        :param track: bool 是否将连接自动登记进连接池（默认 True；
+                      登记后可经 ``connections`` 广播 / 分组 / 跨模块查看）
 
         {!--< tips >!--}
         推荐使用 auth_handler 进行连接确认，而非关闭 auto_accept。
@@ -1881,7 +2062,7 @@ class RouterManager:
         """
         full_path = self._normalize_path(module_name, path)
         self._register_ws_endpoint(
-            full_path, module_name, handler, auth_handler, auto_accept
+            full_path, module_name, handler, auth_handler, auto_accept, track
         )
 
     @_web_stack_required
@@ -1938,6 +2119,7 @@ class RouterManager:
         :param module_name: str 模块名称
         :param path: str SSE 端点路径
         :param handler: Callable 事件处理器, 签名: ``async def handler(sse)`` 或 ``async def handler(request, sse)``
+        :param track: bool 是否将连接自动登记进连接池（默认 True）
 
         :raises ValueError: 当路径已注册时抛出
 
@@ -2227,7 +2409,7 @@ class RouterManager:
                 }
             )
 
-        for path, (_, auth_handler, _) in self._websocket_routes.get(
+        for path, (_, auth_handler, _, _) in self._websocket_routes.get(
             module_name, {}
         ).items():
             result["websocket"].append(
@@ -3189,6 +3371,9 @@ class RouterManager:
         logger.debug(i18n.t("core.router.clearing_routes"))
         # 停止限流清理任务
         self._stop_rate_limit_cleanup()
+        # 服务端连接随服务器终止，清空其登记防止悬挂条目（客户端出站连接不受影响）
+        connections.clear(kind="server")
+        connections.clear(kind="sse")
         self._http_routes.clear()
         self._websocket_routes.clear()
         self._owner_namespaces.clear()

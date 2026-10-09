@@ -19,6 +19,9 @@ ErisPulseError                      # 所有框架异常的基类
 │   └── HTTPStatusError             # HTTP 状态码错误（如 4xx/5xx 且 raise_for_status）
 ├── WebSocketError                  # WebSocket 异常基类（Core/client 的 WS 连接）
 │   └── WebSocketDisconnect         # WebSocket 断开连接（服务端/客户端通用）
+├── ConnectionRegistryError         # 连接注册表异常基类（Core/connections，2.10+）
+│   ├── ConnectionNotFoundError     # 连接不存在/已断开注销（connections.get/close）
+│   └── ConnectionPermissionError   # 非 owner 关闭他人连接（关闭权归创建者）
 ├── StorageError                    # 存储异常基类（Core/storage）
 │   └── StorageUnreachableError     # 存储后端不可达（建池重试耗尽：数据库不可达/凭据错误）
 ├── InteractionError                # 交互会话异常基类（Core/Event/interaction）
@@ -45,6 +48,8 @@ ErisPulseError                      # 所有框架异常的基类
 | `ClientError`（含子类） | `.url` 请求 URL、`.method` 请求方法、`.attempts` 已尝试次数（重试耗尽时） |
 | `HTTPStatusError` | `.status` 状态码、`.message` 响应消息 |
 | `WebSocketDisconnect` | `.code` 关闭码、`.reason` 关闭原因 |
+| `ConnectionNotFoundError` | `.connection_id` 查找的连接 id |
+| `ConnectionPermissionError` | `.connection_id` 目标连接 id、`.owner` 连接归属 owner |
 | `StorageUnreachableError` | `.backend` 后端名（sqlite/mysql/postgres）、`.cooldown` 冷却秒数 |
 | `ModuleCallError`（含子类） | `.module` 目标模块名、`.method` 目标方法名 |
 | `ModuleCallTimeoutError` | 继承 `.module/.method`，另有 `.timeout` 超时时限（秒） |
@@ -89,6 +94,13 @@ except ClientTimeoutError:
 |------|----------|----------|
 | `WebSocketError` | WS 收发方法 | 连接已关闭、收到意外消息类型、底层 WS 异常 |
 | `WebSocketDisconnect` | WS 收发方法 | 对端正常断开连接（框架会自动重连） |
+
+### 连接注册表系列 — `Core/connections.py`（2.10+）
+
+| 异常 | 发生位置 | 典型场景 |
+|------|----------|----------|
+| `ConnectionNotFoundError` | `connections.get` / `assign` / `dismiss` / `close` | 连接 id 不存在或已断开注销 |
+| `ConnectionPermissionError` | 非 owner 调用 `conn.close()` | 跨模块关闭他人连接（发送与分组不受限） |
 
 ### Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`
 

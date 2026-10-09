@@ -2,8 +2,9 @@ import asyncio
 from dataclasses import dataclass, field
 from typing import ClassVar
 
-from ErisPulse.Core import BaseAdapter, RequestDSL, SendDSL
-from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
+# 推荐根导入（2.10+）：常用符号直接从 ErisPulse 根包导入，
+# 深路径（ErisPulse.Core.* 等）仍保持兼容
+from ErisPulse import BaseAdapter, BaseConfig, BaseI18n, I18nKey, RequestDSL, SendDSL
 
 
 class MyAdapter(BaseAdapter):
@@ -242,6 +243,11 @@ class MyAdapter(BaseAdapter):
         cfg = self.cfg
         self.logger.info(f"启动MyAdapter，配置模式: {cfg.mode}")
 
+        # 连接池示例（2.10+）：
+        # - 服务端 WS：router.ws(...) 的 handler 拿到的连接已自动登记进
+        #   ErisPulse.connections（owner=本适配器名），handler 内
+        #   websocket.join_group("bot:xxx") 后即可被任意模块 connections.broadcast 定向推送
+        # - 出站 WS：client.ws_connect(url) 同样自动登记，适配器停止时框架统一关闭
         # Bot 上线示例（使用 emit_meta 一行完成）
         # await self.emit_meta("connect", "bot_id_here", user_name="MyBot")
 

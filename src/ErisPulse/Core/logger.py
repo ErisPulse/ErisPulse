@@ -176,8 +176,10 @@ class Logger:
         self._logger.setLevel(logging.DEBUG)
         self._file_handlers: list[logging.FileHandler] = []
         self._console = Console(theme=_LOG_THEME)
-        # 外部日志订阅者：{handler_id: (callback, min_level_num)}
-        self._log_handlers: dict[str, tuple[Callable, int]] = {}
+        # 外部日志订阅者：{handler_id: (callback, min_level_num, owner)}
+        # owner 为注册时的归属（模块名/平台名），卸载链按其统一注销，
+        # 防止订阅回调持有已卸载模块实例导致泄漏与行为残留
+        self._log_handlers: dict[str, tuple[Callable, int, str | None]] = {}
         if not self._logger.handlers:
             console_handler = RichHandler(
                 console=self._console,
@@ -201,13 +203,16 @@ class Logger:
 
     # ==================== 日志订阅 ====================
 
-    def handler(self, handler_id: str = "", *, min_level: str = "TRACE"):
+    def handler(self, handler_id: str = "", *, min_level: str = "TRACE", owner: str | None = None):
         """
         日志订阅装饰器
 
         订阅器的 ``min_level`` 可低于全局日志级别，从而显式订阅 DEBUG / TRACE
         等低级别日志。此时低级别日志仅推送给匹配的订阅器，不会输出到控制台，
         也不会写入内存（历史补发仍受全局 ``memory_limit`` 限制）。
+
+        订阅在注册时归属到当前 owner（模块名/平台名），模块卸载时由框架
+        统一注销；也可用 ``owner`` 参数显式指定。
 
         >>> @sdk.logger.handler("dashboard", min_level="INFO")
         ... def on_log(log_data: dict): ...
@@ -220,17 +225,23 @@ class Logger:
 
         :param handler_id: 订阅器唯一标识，为空时使用函数名
         :param min_level: 最低日志级别
+        :param owner: 显式指定归属者；缺省时从当前 owner 上下文捕获
         """
 
         def decorate(f):
             hid = handler_id or f.__name__
-            self._register_handler(hid, f, min_level)
+            self._register_handler(hid, f, min_level, owner=owner)
             return f
 
         return decorate
 
     def _register_handler(
-        self, handler_id: str, callback: Callable[[dict], None], min_level: str
+        self,
+        handler_id: str,
+        callback: Callable[[dict], None],
+        min_level: str,
+        *,
+        owner: str | None = None,
     ) -> None:
         """
         {!--< internal-use >!--}
@@ -239,7 +250,11 @@ class Logger:
         level_value = self._resolve_level(min_level)
         if level_value is None:
             return
-        self._log_handlers[handler_id] = (callback, level_value)
+        if owner is None:
+            from ..runtime.context import current_owner
+
+            owner = current_owner.get()
+        self._log_handlers[handler_id] = (callback, level_value, owner)
         # 补发内存中已有的历史日志（按 level 筛选）
         for logs in self._logs.values():
             for log_data in logs:
@@ -258,6 +273,22 @@ class Logger:
         """
         return self._log_handlers.pop(handler_id, None) is not None
 
+    def unregister_by_owner(self, owner: str) -> int:
+        """
+        注销指定归属者的全部日志订阅器
+
+        模块卸载 / 适配器关闭链经归属权门面（``ownership.reclaim_sync``）
+        自动调用；订阅回调通常持有模块实例，不注销会导致已卸载模块
+        无法被 GC 且持续接收全量日志。
+
+        :param owner: 归属者（模块名 / 平台名）
+        :return: int 注销的订阅器数量
+        """
+        stale = [hid for hid, (_, _, h_owner) in self._log_handlers.items() if h_owner == owner]
+        for hid in stale:
+            del self._log_handlers[hid]
+        return len(stale)
+
     def _notify_handlers(
         self, level_name: str, level_const: int, module: str, msg: str
     ) -> None:
@@ -274,7 +305,7 @@ class Logger:
             "module": module,
             "message": str(msg),
         }
-        for callback, min_level in self._log_handlers.values():
+        for callback, min_level, _owner in self._log_handlers.values():
             if level_const >= min_level:
                 try:
                     callback(log_data)
@@ -295,7 +326,7 @@ class Logger:
         """
         return any(
             min_level <= level_const
-            for _, min_level in self._log_handlers.values()
+            for _, min_level, _owner in self._log_handlers.values()
         )
 
     def set_memory_limit(self, limit: int) -> bool:

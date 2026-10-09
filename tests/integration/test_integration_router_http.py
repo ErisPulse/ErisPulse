@@ -174,3 +174,75 @@ class TestRouterHTTPIntegration:
 
         assert client.get("/health").status_code == 200
         assert client.get("/ping").status_code == 200
+
+
+class TestTupleResponseConvention:
+    """HTTP 元组返回约定（2.10+）：(body, status[, headers]) → 对应状态码 JSON"""
+
+    def test_tuple_body_status_async(self, router_mgr):
+        async def handler():
+            return {"error": "unauthorized"}, 401
+
+        router_mgr.register_http_route("tuple_mod", "/a", handler, methods=["GET"])
+        client = TestClient(router_mgr.app)
+        resp = client.get("/tuple_mod/a")
+        assert resp.status_code == 401
+        assert resp.json() == {"error": "unauthorized"}
+
+    def test_tuple_body_status_sync(self, router_mgr):
+        def handler():
+            return {"error": "boom"}, 502
+
+        router_mgr.register_http_route("tuple_mod", "/b", handler, methods=["GET"])
+        client = TestClient(router_mgr.app)
+        resp = client.get("/tuple_mod/b")
+        assert resp.status_code == 502
+        assert resp.json() == {"error": "boom"}
+
+    def test_tuple_with_headers(self, router_mgr):
+        async def handler():
+            return {"ok": True}, 201, {"X-Custom": "yes"}
+
+        router_mgr.register_http_route("tuple_mod", "/c", handler, methods=["GET"])
+        client = TestClient(router_mgr.app)
+        resp = client.get("/tuple_mod/c")
+        assert resp.status_code == 201
+        assert resp.headers["x-custom"] == "yes"
+        assert resp.json() == {"ok": True}
+
+    def test_dict_return_unchanged(self, router_mgr):
+        """dict 返回保持既有行为（200 JSON）"""
+        async def handler():
+            return {"data": 1}
+
+        router_mgr.register_http_route("tuple_mod", "/d", handler, methods=["GET"])
+        client = TestClient(router_mgr.app)
+        resp = client.get("/tuple_mod/d")
+        assert resp.status_code == 200
+        assert resp.json() == {"data": 1}
+
+    def test_respond_helper(self, router_mgr):
+        """respond() 帮助函数：message 合并进响应体"""
+        from ErisPulse import respond
+
+        async def handler():
+            return respond({"user_id": 1}, status_code=401, message="unauthorized")
+
+        router_mgr.register_http_route("tuple_mod", "/e", handler, methods=["GET"])
+        client = TestClient(router_mgr.app)
+        resp = client.get("/tuple_mod/e")
+        assert resp.status_code == 401
+        assert resp.json() == {"user_id": 1, "message": "unauthorized"}
+
+    def test_request_injected_handler_tuple(self, router_mgr):
+        """注入 HttpRequest 的 handler 同样支持元组返回"""
+        from ErisPulse.Core.Bases import HttpRequest
+
+        async def handler(request: HttpRequest):
+            return {"msg": "teapot"}, 418
+
+        router_mgr.register_http_route("tuple_mod", "/f", handler, methods=["GET"])
+        client = TestClient(router_mgr.app)
+        resp = client.get("/tuple_mod/f")
+        assert resp.status_code == 418
+        assert resp.json() == {"msg": "teapot"}

@@ -645,25 +645,30 @@ class I18nManager:
     # ==================== 翻译注册 API ====================
 
     def register(
-        self, lang: str, translations: dict[str, str], domain: str = "app"
+        self, lang: str, translations: dict[str, str], domain: "str | None" = None
     ) -> None:
         """
         注册翻译文本（供外部模块使用）
 
         :param lang: str 语言代码，如 "en", "zh-CN"（会按就近原则映射）
         :param translations: dict[str, str] 翻译键值对，如 {"my_module.welcome": "Welcome!"}
-        :param domain: str 域名，用于区分不同模块的翻译，默认 "app"
+        :param domain: str | None 域名，用于区分不同模块的翻译并支持卸载清理；
+                      缺省时自动取当前归属 owner（模块名/平台名），无归属上下文
+                      才落入 "app"。模块显式传 domain 时请与模块名一致，
+                      否则卸载时词条无法按 owner 清理。
 
         :example:
-        >>> i18n.register("zh-CN", {
-        ...     "mybot.welcome": "欢迎使用机器人",
-        ...     "mybot.goodbye": "再见",
-        ... }, domain="mybot")
+        >>> # 模块内注册：domain 自动归属本模块，卸载时自动清理
+        >>> i18n.register("zh-CN", {"mybot.welcome": "欢迎使用机器人"})
         >>> i18n.register("en", {
         ...     "mybot.welcome": "Welcome to the bot",
         ...     "mybot.goodbye": "Goodbye",
         ... }, domain="mybot")
         """
+        if domain is None:
+            from ...runtime.context import current_owner
+
+            domain = current_owner.get() or "app"
         resolved = self._resolve_nearest(lang)
         with self._lock:
             if resolved not in self._translations:

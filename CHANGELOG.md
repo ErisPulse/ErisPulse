@@ -74,6 +74,48 @@
 
 ---
 
+## [2.10.0-dev.0] - 2026/10/09
+> 开发版（预发布）
+
+**版本摘要**
+本版本把"连接"升级为框架级一等资源：新增统一连接注册表（`ErisPulse.connections`），服务端 WS/SSE 与客户端出站连接自动登记，支持广播、业务分组订阅、跨模块传递/复用与卸载自动回收。同期交付根导入契约（常用 API 全部可从 `ErisPulse` 根包导入）、路由单参注册与 HTTP 元组响应约定、归属权体系补全（日志订阅/对话恢复工厂/定时器/线程纳入 owner 治理）与会话收件箱保留策略运行时覆盖 API。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 升级原因：全部为增量能力——新 API 不用即原行为，深路径导入永久兼容；仍受"模块卸载关闭归属连接"影响的下游组件（如依赖卸载后连接存活的旧版 Dashboard 推送）建议同步适配
+
+**注意事项**
+- 模块卸载 / 适配器停止现在会**关闭并注销其名下登记的全部连接**（服务端 WS/SSE + 出站 WS），日志订阅（`logger.handler`）与对话恢复工厂也会随卸载统一注销——这是杜绝泄漏的预期行为，依赖旧行为的组件需知悉
+- 放开会话收件箱保留策略（`transcript.set_retention` 传 0 或大值）会让 `transcript` 表随消息量无限增长（磁盘/下游内存风险），操作前阅读 `docs/advanced/transcript.md` 风险专节
+- `epsdk init` / `epsdk create` 生成物已切换为根导入写法；`from ErisPulse.Core.*` 深路径不受影响
+
+### 新增
+
+- @YingXinche
+  - `Core/connections` 新增连接注册表（单例 `ErisPulse.connections`）：
+    - 服务端 `@router.ws` / `@router.sse` 与客户端 `client.ws_connect` 的连接自动登记（`track=False` 可退出），断开自动注销
+    - 广播 `connections.broadcast(data, namespace=/group=/ids=/exclude=/timeout=...)`，返回 `BroadcastResult` 成败明细；WS 走 `send_json`、SSE 走 `send`
+    - 业务分组：连接侧 `ws.join_group()/leave_group()` + 管理侧 `connections.assign()/dismiss()`，扁平字符串命名、断开自动清组
+    - 跨模块传递/复用：`connections.get(id)` 共享连接对象，任意模块可发送/分组，`close` 仅 owner 可调（否则抛 `ConnectionPermissionError`）
+    - 查询：`connections.list(...)`（按命名空间/归属/分组/种类过滤）、`connections.stats()`；归属接入 ownership 审计计数
+    - 新异常族 `ConnectionRegistryError` / `ConnectionNotFoundError` / `ConnectionPermissionError`；生命周期事件 `connection.registered/unregistered/group.joined/group.left`
+  - `runtime` 跨线程与归属化调度工具：
+    - `run_main_loop(coro, timeout=...)`：子线程安全投递主循环并阻塞取结果的标准工具（广播/推送/回调基于它，不再手写 `run_coroutine_threadsafe`）
+    - `spawn_later(delay, coro_fn, owner=...)`：归属化延迟调度（裸 `loop.call_later` 不归属的盲区补全，卸载时随 `cancel_owner_tasks` 兜底取消）
+    - `spawn_thread(name, target, owner=...)`：归属化线程启动（观测面；线程不可强杀，退出清理由 on_cleanup 约定）
+  - 根导入契约：管理器单例（`client/connections/transcript/master/ownership`）、管理器类、路由/连接/客户端类型、错误全族、ORM、Schema、事件处理器（`command/message/notice/meta/request/interaction` 等）与运行时工具全部可 `from ErisPulse import ...`；`ErisPulse.Core.*` 深路径永久兼容
+  - 路由注册单参形态：`@router.get("/path")` / `@router.ws("api")` / `@router.sse("/events")` 命名空间自动归属当前模块（与命令/事件触发器一致）；双参显式形态规则不变
+  - HTTP 响应约定：处理器返回 `(body, status_code)` / `(body, status_code, headers)` 元组按状态码返回 JSON；新增 `respond(data, status_code=, message=, headers=)` 帮助函数；dict/str/Response 原行为不变
+  - `transcript` 保留策略运行时覆盖：`set_retention(max_per_session=, ttl_hours=)` / `get_retention()` / `reset_retention()`（覆盖优先于配置、重启失效；0=关闭该策略并告警）
+  - 归属权体系补全四项（并入 reclaim/counts/orphans 门面）：`logger.handler` 日志订阅、`Conversation.register_resume_handler` 恢复工厂纳入 owner 归属与卸载注销（后者并在恢复时跳过已注销 owner）；`i18n.register` 的 `domain` 缺省自动取当前归属 owner（消除忘传 domain 的词条泄漏）
+
+### 优化
+
+- @YingXinche
+  - `ownership.reclaim` 回收链新增归属连接关闭步骤（`connections_closed` 计数），模块卸载/适配器停止/半卸载三条路径统一生效
+
+---
+
 ## [2.9.0] - 2026/10/08
 > 正式发布
 

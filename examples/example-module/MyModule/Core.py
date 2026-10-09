@@ -1,9 +1,23 @@
 from dataclasses import dataclass, field
 
-from ErisPulse import SDK
-from ErisPulse.Core import Depends
-from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, Field, I18nKey, Model, ModuleMeta, relationship
-from ErisPulse.Core.Event import Event, command, message, notice
+# 推荐根导入（2.10+）：常用符号直接从 ErisPulse 根包导入，
+# 深路径（ErisPulse.Core.* 等）仍保持兼容
+from ErisPulse import (
+    SDK,
+    BaseConfig,
+    BaseI18n,
+    BaseModule,
+    Depends,
+    Event,
+    Field,
+    I18nKey,
+    Model,
+    ModuleMeta,
+    command,
+    message,
+    notice,
+    relationship,
+)
 from ErisPulse.runtime import off_cleanup, on_cleanup
 
 

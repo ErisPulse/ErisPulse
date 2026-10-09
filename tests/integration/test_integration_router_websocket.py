@@ -184,3 +184,84 @@ class TestRouterWebSocketIntegration:
 
         resp = client.get("/multi/api")
         assert resp.status_code == 200
+
+
+class TestConnectionPoolIntegration:
+    """连接池自动登记集成测试（2.10+）"""
+
+    @pytest.fixture(autouse=True)
+    def _clean_connections(self):
+        from ErisPulse import connections
+
+        connections.clear()
+        yield
+        connections.clear()
+
+    def test_ws_connection_auto_registered(self, router_mgr):
+        """WS 连接建立时自动登记进连接池，断开自动注销"""
+        seen = {}
+
+        async def ws_handler(websocket):
+            seen["id"] = websocket.id
+            seen["namespace"] = websocket.namespace
+            seen["owner"] = websocket.owner
+            await websocket.send_text(websocket.id)
+            # 保持连接直到客户端要求退出（handler 返回即触发注销）
+            while True:
+                if await websocket.receive_text() == "quit":
+                    break
+
+        router_mgr.register_websocket("pool_mod", "/ws", ws_handler)
+        client = TestClient(router_mgr.app)
+
+        from ErisPulse import connections
+
+        with client.websocket_connect("/pool_mod/ws") as ws:
+            cid = ws.receive_text()
+            assert cid == seen["id"]
+            assert cid.startswith("pool_mod:")
+            assert seen["namespace"] == "pool_mod"
+            assert seen["owner"] == "pool_mod"
+            live = connections.list(namespace="pool_mod")
+            assert [c.id for c in live] == [cid]
+            ws.send_text("quit")
+
+        # 连接断开后自动注销
+        assert connections.list(namespace="pool_mod") == []
+
+    def test_join_group_and_broadcast(self, router_mgr):
+        """handler 内 join_group 后可被 connections.broadcast 定向推送"""
+        from ErisPulse import connections
+
+        async def ws_handler(websocket):
+            websocket.join_group("it-room")
+            await websocket.send_text("joined")
+            cmd = await websocket.receive_text()
+            if cmd == "broadcast":
+                result = await connections.broadcast({"event": "go"}, group="it-room")
+                await websocket.send_text(f"ok:{result.total}:{len(result.sent)}")
+
+        router_mgr.register_websocket("pool_mod", "/ws_bcast", ws_handler)
+        client = TestClient(router_mgr.app)
+
+        with client.websocket_connect("/pool_mod/ws_bcast") as ws:
+            assert ws.receive_text() == "joined"
+            ws.send_text("broadcast")
+            # 自身也在 it-room：先收到广播 JSON，再收到结果回执
+            assert ws.receive_json() == {"event": "go"}
+            assert ws.receive_text() == "ok:1:1"
+
+    def test_track_false_skips_registration(self, router_mgr):
+        """track=False 时连接不进连接池"""
+        from ErisPulse import connections
+
+        async def ws_handler(websocket):
+            assert websocket.id == ""
+            await websocket.send_text("untracked")
+
+        router_mgr.register_websocket("pool_mod", "/ws_raw", ws_handler, track=False)
+        client = TestClient(router_mgr.app)
+
+        with client.websocket_connect("/pool_mod/ws_raw") as ws:
+            assert ws.receive_text() == "untracked"
+            assert connections.list(namespace="pool_mod") == []

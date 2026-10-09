@@ -263,3 +263,61 @@ class TestExitFlushWatchdog:
         transcript._flush_on_exit()
         elapsed = _time.monotonic() - t0
         assert elapsed < 3.0, f"退出兜底未限时返回: {elapsed:.2f}s"
+
+
+# ==================== 保留策略运行时覆盖（2.10+） ====================
+
+
+class TestRetentionOverride:
+    def test_set_and_get(self, temp_sm):
+        transcript.set_retention(max_per_session=500, ttl_hours=48)
+        try:
+            eff = transcript.get_retention()
+            assert eff["max_per_session"] == 500
+            assert eff["ttl_hours"] == 48.0
+            assert set(eff["overridden"]) == {"max_per_session", "ttl_hours"}
+        finally:
+            transcript.reset_retention()
+
+    def test_partial_override_falls_back_to_config(self, temp_sm):
+        transcript.set_retention(max_per_session=10)
+        try:
+            eff = transcript.get_retention()
+            assert eff["overridden"] == ["max_per_session"]
+            # ttl 未覆盖：回落配置默认（168 小时）
+            assert eff["ttl_hours"] == pytest.approx(168.0)
+        finally:
+            transcript.reset_retention()
+
+    def test_reset_restores_config(self, temp_sm):
+        transcript.set_retention(max_per_session=1, ttl_hours=1)
+        transcript.reset_retention()
+        assert transcript.get_retention()["overridden"] == []
+
+    def test_negative_rejected(self, temp_sm):
+        with pytest.raises(ValueError):
+            transcript.set_retention(max_per_session=-1)
+        with pytest.raises(ValueError):
+            transcript.set_retention(ttl_hours=-0.5)
+        assert transcript.get_retention()["overridden"] == []
+
+    def test_zero_disables_policy(self, temp_sm):
+        transcript.set_retention(max_per_session=0, ttl_hours=0)
+        try:
+            eff = transcript.get_retention()
+            assert eff["max_per_session"] == 0
+            assert eff["ttl_hours"] == 0.0
+        finally:
+            transcript.reset_retention()
+
+    def test_effective_retention_is_flush_source(self, temp_sm):
+        """_flush_async 的保留策略消费点（_effective_retention）读到覆盖值"""
+        transcript.set_retention(max_per_session=7, ttl_hours=3.5)
+        try:
+            eff_max, eff_ttl = transcript._effective_retention()
+            assert eff_max == 7
+            assert eff_ttl == pytest.approx(3.5)
+        finally:
+            transcript.reset_retention()
+        eff_max, eff_ttl = transcript._effective_retention()
+        assert eff_max == pytest.approx(50)  # 配置默认 DEFAULT_TRANSCRIPT_MAX_PER_SESSION

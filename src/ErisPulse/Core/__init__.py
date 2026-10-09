@@ -35,6 +35,9 @@ from .Bases import (
     ClientError,
     ClientConnectionError,
     ClientTimeoutError,
+    ConnectionNotFoundError,
+    ConnectionPermissionError,
+    ConnectionRegistryError,
     HTTPStatusError,
     InteractionCancelled,
     InteractionError,
@@ -55,8 +58,10 @@ from .Bases import (
 )
 from .Bases import BaseClient, BaseHttpResponse, BaseClientWebSocket
 from .Bases.client import BaseHttpClient  # 向后兼容别名
+from .Bases.router import SseEmitter, respond
 from .client import Client, HttpResponse, ClientWebSocket
 from .client import HttpClient  # 向后兼容别名
+from .connections import BroadcastResult, ConnectionManager, connections
 from .storage import storage, StorageManager
 from .logger import logger, Logger, LoggerChild
 from .module import module, ModuleManager
@@ -107,6 +112,14 @@ __all__ = [
     "ClientTimeoutError",  # HTTP 超时错误基类
     "ClientWebSocket",  # WebSocket 客户端类
     "ConfigManager",  # 配置管理器类
+    "ConnectionManager",  # 连接注册表管理器类
+    "connections",  # 连接注册表单例（连接池）
+    "BroadcastResult",  # 广播结果类
+    "ConnectionRegistryError",  # 连接注册表异常基类
+    "ConnectionNotFoundError",  # 连接不存在异常
+    "ConnectionPermissionError",  # 连接关闭权限异常
+    "SseEmitter",  # SSE 事件发送器类
+    "respond",  # HTTP JSON 响应构造帮助函数
     "Depends",  # 依赖注入声明标记
     "ErisPulseError",  # ErisPulse 错误基类
     "Event",  # 事件模块包
