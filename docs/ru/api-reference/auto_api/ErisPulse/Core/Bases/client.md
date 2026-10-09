@@ -152,9 +152,13 @@ async for msg in ws.iter_messages():
 #### 方法列表
 
 
-##### `__init__(ws)`
+##### `__init__(ws, *, connection_id: str = '', namespace: str = '', owner: str = '', kind: str = 'client')`
 
 - **ws** (`object`): 底层框架 WebSocket 对象
+- **connection_id** (`str`): 连接池分配的连接 id（未登记时为空串）
+- **namespace** (`str`): 服务端路由命名空间（客户端出站连接为空）
+- **owner** (`str`): 归属 owner（模块名 / 平台名），拥有关闭权
+- **kind** (`str`): 连接种类（默认 "client"）
 
 ---
 
@@ -245,13 +249,15 @@ await ws.send_text("Hello")
 ---
 
 
-##### `async ws_connect(url: str, *, headers: dict[str, str] | None = None, heartbeat: float | None = None, **kwargs) -> BaseClientWebSocket`
+##### `async ws_connect(url: str, *, headers: dict[str, str] | None = None, heartbeat: float | None = None, track: bool = True, owner: str | None = None, **kwargs) -> BaseClientWebSocket`
 
 建立 WebSocket 连接
 
 - **url**: str WebSocket 服务器 URL
 - **headers** (`dict[str, str] | None`): 额外请求头 (可选)
 - **heartbeat** (`float | None`): 心跳间隔秒数 (可选)
+- **track** (`bool`): 是否登记进连接池 (默认: True)
+- **owner** (`str | None`): 连接归属者 (默认: 当前 owner 上下文)
 - **kwargs**: 传递给底层 WS 连接的额外参数
 
 **返回值**: BaseClientWebSocket WebSocket 连接对象

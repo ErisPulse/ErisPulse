@@ -4815,8 +4815,8 @@ from .Core import Main
 
 ```python
 from ErisPulse import sdk
-from ErisPulse.Core.Bases import BaseModule
-from ErisPulse.Core.Event import command
+# Recommended root import (2.10+): Common symbols are directly imported from the root package, deep paths are still compatible
+from ErisPulse import BaseModule, command
 
 class Main(BaseModule):
     def __init__(self, sdk):
@@ -4826,13 +4826,13 @@ class Main(BaseModule):
     
     @staticmethod
     def get_load_strategy():
-        """Returns the module loading strategy"""
+        """Return the module loading strategy"""
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,
             priority=0,
-            depends=[],  # Optional: List of other modules this module depends on
-            # Optional: Event-driven lazy activation — declare triggers, module loads automatically when the first matching event/command arrives
+            depends=[],  # Optional: list of other modules this module depends on
+            # Optional: event-driven lazy activation - declare triggers, module automatically loads when first matching event/command arrives
             # activate_on=[{"command": {"name": "hello", "help": "Send a greeting"}}],
         )
     
@@ -4850,7 +4850,7 @@ class Main(BaseModule):
         self.logger.info("Module unloaded")
 ```
 
-> **Configuration Reading**: The basic example above does not use configuration. When configuration reading is needed, it is recommended to declare a nested `ConfigClass` and read it in real time via `self.cfg` (see [Core Module Concepts](core-concepts.md#declarative-configuration-recommended)). The old method of manually calling `_load_config()` has been deprecated.
+> **Configuration Reading**: The basic example above does not use configuration. To read configuration, it is recommended to declare a nested `ConfigClass` and access it via `self.cfg` for real-time reading (see [Module Core Concepts](core-concepts.md#recommended-declarative-configuration)). The old method of manually calling `_load_config()` is deprecated.
 
 ## Testing Module
 
@@ -6773,14 +6773,14 @@ mkdir MyAdapter && cd MyAdapter
 [project]
 name = "ErisPulse-MyAdapter"
 version = "1.0.0"
-description = "MyAdapter Platform Adapter"
+description = "MyAdapter platform adapter"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
 dependencies = [
-    "ErisPulse>=2.4.0"  # aiohttp is built-in in ErisPulse, usually no need to depend separately
+    "ErisPulse>=2.4.0"  # ErisPulse already includes aiohttp, usually no separate dependency needed
 ]
 
 [project.urls]
@@ -6792,13 +6792,13 @@ dependencies = [
 
 ### 3. Create Adapter Main Class
 
-The framework provides `ConfigClass` / `AccountConfigClass` for declarative configuration management. The adapter only needs to declare the configuration class to automatically load, validate, and generate the configuration template.
+The framework provides `ConfigClass` / `AccountConfigClass` for declarative configuration management. The adapter only needs to declare the configuration class, and the framework will automatically load, validate, and generate the configuration template.
 
 ```python
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
-from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core.Bases import BaseConfig
+# Recommended root import (2.10+): commonly used symbols directly imported from root package, deep paths are still compatible
+from ErisPulse import BaseAdapter, BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
@@ -6822,9 +6822,9 @@ class MyAdapterConfig(BaseConfig):
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyAdapterConfig  # Declare the configuration class, the framework manages it automatically
+    ConfigClass = MyAdapterConfig  # Declare the configuration class, the framework will manage it automatically
     
-    # No need to override __init__! The framework handles:
+    # No need to override __init__! The framework handles it automatically:
     # - self.sdk / self.logger are automatically set
     # - self.cfg reads the configuration in real-time
     # - self.Send / self.Request are automatically initialized
@@ -6834,9 +6834,9 @@ class MyAdapter(BaseAdapter):
         return MyPlatformConverter()
 ```
 
-> ⚠️ **About `__init__`**: In the new version, `BaseAdapter.__init__(self, sdk=None)` automatically handles SDK references, logging initialization, and configuration loading. Most adapters **do not need to override `__init__`**. See [__init__ Notes](#init-注意事项).
+> ⚠️ **Regarding `__init__`**: In the new version, `BaseAdapter.__init__(self, sdk=None)` will automatically handle SDK references, log initialization, and configuration loading. Most adapters **do not need to override `__init__`**. See [__init__ Notes](#init-注意事项).
 
-> ⚠️ **About `super().__init__()`**: `BaseAdapter.__init__()` is responsible for creating `Send` and `Request` factory instances. If you forget to call it, all message sending and request operations will raise `AttributeError`. See [__init__ Notes](#init-注意事项).
+> ⚠️ **Regarding `super().__init__()`**: `BaseAdapter.__init__()` is responsible for creating `Send` and `Request` factory instances. If you forget to call it, all message sending and request operations will raise an `AttributeError`. See [__init__ Notes](#init-注意事项).
 
 ### 4. Implement Required Methods
 
@@ -6864,13 +6864,13 @@ class MyAdapter(BaseAdapter):
         self.logger.info("Adapter shutdown")
     
     async def call_api(self, endpoint: str, **params):
-        """Call platform API (must implement)"""
+        """Call the platform API (must implement)"""
         raise NotImplementedError("call_api needs to be implemented")
 ```
 
-#### Actively Sending Meta Events
+#### Proactively Emit Meta Events
 
-The adapter should actively send meta events to let the framework track the Bot's online status. Use `emit_meta()` to complete this in one line:
+The adapter should proactively emit meta events to allow the framework to track the Bot's online status. Use `emit_meta()` to complete this in one line:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -6897,7 +6897,7 @@ class MyAdapter(BaseAdapter):
 
 ### 5. Implement Send Class
 
-`At`/`AtAll`/`Reply` decorators are already implemented by the framework's SendDSL base class. The adapter only needs to implement `Raw_ob12` and specific send methods.
+The `At`/`AtAll`/`Reply` decorators are built into the framework's SendDSL base class, so the adapter only needs to implement `Raw_ob12` and specific send methods.
 
 The framework provides two key helper methods:
 - `self._apply_modifiers(message)` — Automatically merges At/AtAll/Reply decorators into message segments
@@ -6915,8 +6915,8 @@ class MyAdapter(BaseAdapter):
             """
             Send OneBot12 formatted message (must implement)
 
-            Use _apply_modifiers to automatically merge decorator states,
-            Use send_context to get send context.
+            Use _apply_modifiers to automatically merge modifier states,
+            use send_context to get the send context.
             """
             async def _do_send():
                 segments = self._apply_modifiers(message)
@@ -6928,29 +6928,29 @@ class MyAdapter(BaseAdapter):
                 )
             return asyncio.create_task(_do_send())
 
-        # Text/Image/Voice/Video/File are inherited from SendDSL base class,
-        # Defaultly delegated to Raw_ob12, no need to reimplement.
+        # Text/Image/Voice/Video/File are inherited from the SendDSL base class,
+        # defaulting to delegate to Raw_ob12, no need to re-implement.
         # If platform-specific logic is needed, override individual methods:
         # def Text(self, text: str):
         #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-**Media Send Method Implementation Points (Image/Video/File):**
+**Media send method implementation points (Image/Video/File):**
 
-- The base class's default implementation wraps the `file` parameter as a OneBot12 message segment and passes it to `Raw_ob12`. The adapter needs to handle downloading/uploading in `Raw_ob12`.
-- The `file` parameter should support both `bytes` binary data and `str` URL types.
-- When a URL is passed, download the file before uploading it to the platform.
-- Platforms usually require first calling an upload interface to get the file identifier, then calling the send interface.
+- The default implementation in the base class will encapsulate the `file` parameter as a OneBot12 message segment and pass it to `Raw_ob12`, and the adapter needs to handle downloading/uploading in `Raw_ob12`
+- The `file` parameter should support both `bytes` binary data and `str` URL types
+- When a URL is passed, the file must be downloaded first and then uploaded to the platform
+- The platform usually requires first calling the upload interface to get the file identifier, then calling the send interface
 
-**`__getattr__` Magic Method:**
+**`__getattr__` magic method:**
 
 - Implement case-insensitive method names (`Text`, `text`, `TEXT` all work)
-- Undefined methods should return a hint message instead of raising an error
+- Undefined methods should return a hint message instead of throwing an error
 
-**`Raw_ob12` Method:**
+**`Raw_ob12` method:**
 
-- Convert OneBot12 standard message format to platform format for sending
-- Use `self._apply_modifiers(message)` to automatically handle At/AtAll/Reply decorators
+- Convert the OneBot12 standard message format to the platform format for sending
+- Use `self._apply_modifiers(message)` to automatically handle At/AtAll/Reply modifiers
 - Use `**self.send_context` to pass send target information and account information
 
 ### 6. Implement Converter
@@ -6997,10 +6997,10 @@ class MyPlatformConverter:
 
 ### 7. Implement Request Class (Request Operations)
 
-If your platform supports friend requests, group invitations, and other requests that require Bot decisions, you can implement the `Request` inner class:
+If your platform supports friend requests, group invitations, and other requests that require the Bot to make decisions, you can implement the `Request` inner class:
 
 ```python
-from ErisPulse.Core import BaseAdapter, RequestDSL
+from ErisPulse import BaseAdapter, RequestDSL
 
 class MyAdapter(BaseAdapter):
     # ... Send and other code ...
@@ -7045,20 +7045,20 @@ class MyAdapter(BaseAdapter):
             return self._create_task(_do())
 ```
 
-Module developers' usage:
+Module developer usage:
 
 ```python
-from ErisPulse.Core.Event import request
+from ErisPulse import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
-    # Use Event convenience methods
+    # Through Event convenience methods
     await event.approve()
-    # Or operate directly through the adapter
+    # Or directly through the adapter
     await adapter.myplatform.Request("req_id").accept()
 ```
 
-> If the platform does not support request operations, you can omit implementing the `Request` inner class. The base class defaults to returning `retcode=10002` (unsupported operation). See [Request Operation Specification](../../standards/request-action-spec.md).
+> If the platform does not support request operations, you can omit implementing the `Request` inner class. The base class defaults to returning `retcode=10002` (unsupported operation). See [Request Action Specification](../../standards/request-action-spec.md).
 
 ### 8. Create Package Entry
 
@@ -14773,13 +14773,31 @@ data = await resp.json()
 ### WebSocket Connection
 
 ```python
-from ErisPulse.Core import client
+from ErisPulse import client   # 2.10+ root import (ErisPulse.Core.client deep path is still compatible)
 
 ws = await client.ws_connect("wss://example.com/ws")
 
 async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
+
+#### Outbound Connections Automatically Pool (2.10+)
+
+Connections established by `ws_connect` are **automatically registered** into the framework connection pool by default (set `track=False` to disable):
+They can be viewed by `connections.list(owner=...)`, broadcasted to, and automatically unregistered when closed or disconnected remotely;
+**When the module is unloaded or the adapter stops, the framework will close all outbound connections under its name uniformly**, preventing leaks.
+
+```python
+from ErisPulse import client, connections
+
+ws = await client.ws_connect("wss://example.com/ws")
+print(ws.id, ws.owner)   # Already registered: connection id and owner
+
+# When the owner context is unavailable (e.g., in a utility thread callback), explicitly specify the owner so it can be automatically recycled during unloading:
+ws2 = await client.ws_connect("wss://example.com/ws2", owner="MyAdapter")
+```
+
+See [Connection Pool and Broadcasting](connections.md).
 
 ## HttpResponse
 
@@ -16339,77 +16357,121 @@ The ErisPulse Router Manager provides unified HTTP and WebSocket routing managem
 
 ## Overview
 
-The main features of the routing manager:
+The main functions of the Router Manager are:
 
-- **Decorator Routes**: Support for quick registration with `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` decorators
-- **Automatic Injection**: Route handlers do not require importing FastAPI types; the framework automatically injects abstract objects
-- **Route Grouping**: Support for `RouteGroup` with prefix and version number
-- **Route Middleware**: Support for request interception with glob pattern matching
+- **Decorator Routes**: Support `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` decorators for quick registration
+- **Automatic Injection**: Route handlers do not need to import FastAPI types; the framework automatically injects abstract objects
+- **Route Grouping**: Support `RouteGroup` with prefix and version number
+- **Route Middleware**: Support request interception with glob pattern matching
 - **Rate Limiting**: Built-in sliding window rate limiting
-- **CORS Support**: One-click enablement of cross-origin resource sharing
-- **Security Headers**: Automatic addition of security response headers
+- **CORS Support**: One-click enable Cross-Origin Resource Sharing
+- **Security Headers**: Automatically add security response headers
 - **Automatic Documentation**: Interactive documentation based on OpenAPI
 - **WebSocket Support**: Complete WebSocket connection management, custom authentication, and lifecycle hooks
 - **Lifecycle Integration**: Deep integration with the ErisPulse lifecycle system
-- **SSL/TLS Support**: Support for HTTPS and WSS secure connections
-- **Home Entry Point**: Support for registering quick entry buttons for modules at the root route `/`, with internationalization support
+- **SSL/TLS Support**: Support HTTPS and WSS secure connections
+- **Home Page Entry**: Support modules to register quick entry buttons on the root route `/`, supporting internationalization
 
 ## Abstract Types
 
-ErisPulse provides server-side abstract types, allowing modules to avoid direct dependencies on FastAPI:
+ErisPulse provides server-side abstract types, allowing modules to avoid direct dependency on FastAPI:
 
-| Abstract Type | FastAPI Equivalent | Description |
-|---------------|--------------------|-------------|
-| `HttpRequest` | `fastapi.Request` | HTTP request wrapper, fully compatible interface |
-| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket connection wrapper, with additional lifecycle hooks |
+| Abstract Type | FastAPI Correspondence | Description |
+|---------------|------------------------|-------------|
+| `HttpRequest` | `fastapi.Request` | HTTP request encapsulation, fully compatible interface |
+| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket connection encapsulation, additional lifecycle hooks provided |
 | `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket disconnection exception |
 
-> `WebSocketConnection` inherits from `WebSocketConnectionBase` and shares the same send/receive/iter/close interface with the client-side WebSocket (`ClientWebSocket`). Business logic code can be reused between client and server WebSocket connections.
+> `WebSocketConnection` inherits from `WebSocketConnectionBase`, sharing the same send/receive/iter/close interface with the client-side WebSocket (`ClientWebSocket`). The same business logic code can be used for both client and server side.
 >
-> The underlying native FastAPI object can be accessed via the `.raw` attribute. Code that directly uses FastAPI types is fully compatible as well.
+> The underlying FastAPI native object can be accessed via the `.raw` attribute. Code using native FastAPI types is also fully compatible.
 
-## Decorator-based Routing (Recommended)
+## Decorator Routes (Recommended)
+
+### Registration Forms: Single-Parameter (Recommended) and Two-Parameter
+
+Decorator routes support two forms; **single-parameter is recommended**—consistent with command/event triggers, with automatic namespace assignment to the current module:
+
+```python
+from ErisPulse import router
+
+# Single-parameter (recommended): automatically assigned to module_name/hello → actual path /my_module/hello
+@router.get("/hello")
+async def hello():
+    return {"ok": True}
+
+# Single-parameter WebSocket: @ws("chat") → /my_module/chat
+@router.ws("chat")
+async def chat(ws):
+    ...
+
+# Two-parameter: explicitly specify module name (same rule, used when registering across modules/tool code)
+@router.get("other_module", "/info")
+async def get_info(request):
+    return {"method": request.method, "path": str(request.url)}
+```
+
+> [!NOTE]
+> Single-parameter form requires registration within the module/adapter **loading context** (the framework has injected the namespace); calling without a context will throw a `ValueError` and prompt to explicitly pass the module name.
 
 ### HTTP Decorators
 
 ```python
-from ErisPulse.Core import router
-@router.get("my_module", "/info")
-async def get_info(request):
-    return {"method": request.method, "path": str(request.url)}
+from ErisPulse import router, HttpRequest
 
-# You can also explicitly annotate abstract types
-from ErisPulse.Core import HttpRequest
-
-@router.post("my_module", "/data")
+# Also can explicitly annotate abstract types
+@router.post("/data")
 async def post_data(request: HttpRequest):
     data = await request.json()
     return {"received": data}
 
-@router.put("my_module", "/data/{item_id}")
+@router.put("/data/{item_id}")
 async def update_data(request):
     return {"updated": True}
 
-@router.delete("my_module", "/data/{item_id}")
+@router.delete("/data/{item_id}")
 async def delete_data(request):
     return {"deleted": True}
 ```
 
-> **Automatic Injection Rule**: When the first parameter of a handler is named `request` or `req` and has no FastAPI type annotation, the framework automatically injects `HttpRequest`. Handlers with no parameters or non-request parameter names are unaffected.
+> **Automatic Injection Rule**: When the handler's first parameter is named `request` or `req` and has no FastAPI type annotation, the framework automatically injects `HttpRequest`. Handlers without parameters or with non-request parameter names are unaffected.
+
+#### Response Return Convention (2.10+)
+
+Handler return values support **tuple convention** (recommended writing style, explicitly controlling status code), while dict/str/Response remain unchanged:
+
+```python
+@router.post("/login")
+async def login(request):
+    if not check_token(request):
+        # (body, status_code) → 401 JSON
+        return {"error": "unauthorized", "message": "token invalid"}, 401
+    # (body, status_code, headers) can also include response headers
+    return {"user_id": 1}, 200, {"X-Request-Cost": "12ms"}
+
+# Or use the respond() helper function (message automatically merged into response body)
+from ErisPulse import respond
+
+@router.get("/me")
+async def me():
+    return respond({"user_id": 1}, status_code=200, message="ok")
+```
+
+Path/query parameters can be directly annotated using FastAPI native annotations (`item_id: int`, `page: int = 1`), and middleware is covered in the [Route Middleware](#route-middleware) section.
 
 ### WebSocket Decorators
 
 ```python
-from ErisPulse.Core import WebSocketConnection, WebSocketDisconnect
+from ErisPulse import WebSocketConnection, WebSocketDisconnect
 
-# Basic WebSocket
-@router.ws("my_module", "/ws")
+# Basic WebSocket (single-parameter form)
+@router.ws("ws")
 async def websocket_handler(ws):
     async for msg in ws.iter_text():
         await ws.send_text(f"Echo: {msg}")
 
 # WebSocket with lifecycle hooks
-@router.ws("my_module", "/ws/chat")
+@router.ws("/ws/chat")
 async def chat(ws: WebSocketConnection):
     @ws.on_disconnect
     async def on_disconnect(ws, reason="unknown"):
@@ -16427,16 +16489,23 @@ async def ws_auth(ws: WebSocketConnection) -> bool:
     token = ws.query_params.get("token")
     return token == "secret"
 
-@router.ws("my_module", "/secure_ws", auth_handler=ws_auth)
+@router.ws("secure_ws", auth_handler=ws_auth)
 async def secure_ws_handler(ws):
     while True:
         data = await ws.receive_text()
         await ws.send_text(f"Echo: {data}")
 ```
 
-> **Note**: WebSocket handlers and authentication handlers also support automatic injection. You can obtain `WebSocketConnection` without parameter annotations. You can also pass in the native object by annotating with `fastapi.WebSocket`, but abstract types are recommended.
+> **Note**: WebSocket handlers and authentication handlers also support automatic injection. No parameter annotation is needed to obtain a `WebSocketConnection`. Passing the native object via `fastapi.WebSocket` is also possible, but the abstract type is recommended.
 
-## Traditional Registration Methods
+### Automatic Connection Registration (Connection Pool, 2.10+)
+
+Connections established via `@ws` / `@sse` are **automatically registered** into the framework connection pool by default (`track=False` disables this):
+Within the handler, `ws.id` / `ws.join_group(...)` are available, and any module can
+`connections.list(namespace=...)` to view connections in this module and broadcast to groups.
+See [Connection Pool and Broadcasting](connections.md).
+
+## Traditional Registration Method
 
 ```python
 async def hello_handler(request):
@@ -16450,7 +16519,7 @@ router.register_http_route(
     methods=["GET"],
 )
 
-# With rate limiting and documentation
+# With rate limiting and documentation information
 router.register_http_route(
     module_name="my_module",
     path="/api/data",
@@ -16478,7 +16547,7 @@ router.register_websocket(
     handler=websocket_handler,
 )
 
-# With authentication (recommended)
+# Registration with authentication (recommended)
 async def auth_handler(ws: WebSocketConnection) -> bool:
     token = ws.query_params.get("token")
     return token == "secret"
@@ -16498,26 +16567,26 @@ router.register_websocket(
 | `module_name` | Module name (required) | - |
 | `path` | WebSocket path | - |
 | `handler` | Handler function | - |
-| `auth_handler` | Authentication function, returns `False` to automatically close the connection | `None` |
+| `auth_handler` | Authentication function, returning `False` will automatically close the connection | `None` |
 | `auto_accept` | Whether to automatically `accept()` | `True` |
 
-> **Recommendation**: Use `auth_handler` for connection confirmation instead of setting `auto_accept=False`. Only set `auto_accept=False` if you need full control over the connection process.
+> **Recommendation**: Use `auth_handler` for connection confirmation, rather than disabling `auto_accept`. Only set `auto_accept=False` if you need complete control over the connection flow.
 
 ## WebSocket Lifecycle Hooks
 
-`WebSocketConnection` provides callback registration for disconnection and errors, eliminating the need for manual try/catch:
+`WebSocketConnection` provides callback registration for disconnection and errors, without manual try/catch:
 
 ```python
 from ErisPulse.Core import WebSocketConnection
 
 @router.ws("my_module", "/ws")
 async def my_ws(ws: WebSocketConnection):
-    # Register using decorator
+    # Decorator-style registration
     @ws.on_disconnect
     async def on_close(ws, reason="unknown"):
-        print(f"Disconnect reason: {reason}")
+        print(f"Disconnection reason: {reason}")
 
-    # Alternatively, register directly
+    # Can also be called directly
     async def on_err(ws, error=""):
         print(f"Error: {error}")
     ws.on_error(on_err)
@@ -16527,7 +16596,7 @@ async def my_ws(ws: WebSocketConnection):
         await ws.send_text(f"Echo: {msg}")
 ```
 
-## Route Groups
+## Route Grouping
 
 ```python
 # Create a route group with a prefix
@@ -16546,7 +16615,7 @@ async def create_user(request):
 
 ## Route Middleware
 
-Middleware supports glob pattern matching for paths:
+Middleware supports glob pattern matching paths:
 
 ```python
 @router.middleware("/my_module/*")
@@ -16563,14 +16632,14 @@ async def admin_middleware(request, call_next):
 
 ## Request Correlation ID (X-Request-ID)
 
-Starting from version 2.7.0, each HTTP request carries a `X-Request-ID` correlation ID, which is used for log and distributed tracing correlation:
+Starting from version 2.7.0, each HTTP request carries an `X-Request-ID` correlation ID, used for logging / distributed tracing:
 
-- **Generation Rule**: The client-provided `X-Request-ID` header is prioritized (in distributed tracing scenarios); otherwise, a UUID is generated automatically.
-- **Response Header**: The response will include a `X-Request-ID`, which helps the client match requests with logs.
-- **Lifecycle Events**: The `server.request` and `server.response` event data now include a `request_id` field.
+- **Generation Rule**: Prioritize using the `X-Request-ID` request header passed from the client (for distributed tracing scenarios); otherwise, generate a UUID
+- **Response Header**: The response will write back the `X-Request-ID`, making it convenient for the client to correlate requests with logs
+- **Lifecycle Events**: The `server.request` and `server.response` event data will add a `request_id` field
 
 ```python
-# Listen for request events in the module and correlate requests and responses by request_id
+# Listen for request events in the module, and correlate requests-responses by request_id
 @sdk.lifecycle.on("server.request")
 async def on_request(data):
     print(f"[{data['request_id']}] {data['method']} {data['path']}")
@@ -16580,7 +16649,7 @@ async def on_response(data):
     print(f"[{data['request_id']}] -> {data['status_code']}")
 ```
 
-Clients can customize the ID to facilitate cross-service tracing:
+Clients can customize the ID for cross-service tracing:
 
 ```bash
 curl -H "X-Request-ID: my-trace-id" http://localhost:8080/my_module/health
@@ -16588,7 +16657,7 @@ curl -H "X-Request-ID: my-trace-id" http://localhost:8080/my_module/health
 
 ## Rate Limiting
 
-Rate limiting for routes using the sliding window algorithm:
+Use a sliding window algorithm to limit route access:
 
 ```python
 @router.get("my_module", "/limited", rate_limit="10/minute")
@@ -16600,7 +16669,7 @@ async def submit_data(request):
     return {"submitted": True}
 ```
 
-Rate limiting format: `{count}/{time window}`, for example `10/minute`, `100/hour`.
+Rate limiting format: `{count}/{time window}`, such as `10/minute`, `100/hour`.
 
 ## CORS Configuration
 
@@ -16627,9 +16696,9 @@ allow_headers = ["*"]
 router.setup_security_headers()
 ```
 
-Automatically adds security headers such as `X-Content-Type-Options`, `X-Frame-Options`, and `X-XSS-Protection`.
+Automatically add security headers such as `X-Content-Type-Options`, `X-Frame-Options`, and `X-XSS-Protection`.
 
-It can also be configured via `config.toml`:
+These can also be configured via `config.toml`:
 
 ```toml
 [router.security]
@@ -16638,7 +16707,7 @@ enabled = true
 
 ## Automatic Documentation
 
-Router enables OpenAPI interactive documentation by default:
+The Router automatically enables OpenAPI interactive documentation:
 
 ```python
 # Disable documentation
@@ -16647,7 +16716,7 @@ router.disable_docs()
 # Customize documentation information
 router.set_docs_info(
     title="My API",
-    description="API documentation",
+    description="API Documentation",
     version="1.0.0"
 )
 ```
@@ -16657,14 +16726,14 @@ router.set_docs_info(
 Route paths are automatically prefixed with the module name to avoid conflicts:
 
 ```python
-# Register the path "/api" to the module "my_module"
-# The actual accessible path is "/my_module/api"
+# Register path "/api" to module "my_module"
+# Actual access path is "/my_module/api"
 router.register_http_route("my_module", "/api", handler)
 ```
 
 ## System Routes
 
-The routing manager automatically provides the following system routes:
+The Router Manager automatically provides the following system routes:
 
 ### Health Check
 
@@ -16681,31 +16750,31 @@ GET /
 # Returns ErisPulse brand page
 ```
 
-The root route `/` displays the ErisPulse brand page, automatically detects the availability of the Dashboard and adds an entry button.
+The root route `/` displays the ErisPulse brand page, automatically detecting Dashboard availability and adding entry buttons.
 
-## Home Entry
+## Home Page Entry
 
-The router manager allows external modules to register quick-access entry buttons on the root route `/`, making it convenient for users to quickly access the management pages of various modules.
+The Router Manager allows external modules to register quick entry buttons on the root route `/`, making it convenient for users to access the management pages of various modules.
 
-### Registering an Entry
+### Register Entry
 
 ```python
 # Simple registration
 router.register_home_entry(
-    name="My Dashboard",
+    name="My Panel",
     url="/mymodule/admin",
 )
 
-# Registration with an icon (SVG)
+# Registration with icon (SVG)
 router.register_home_entry(
-    name="Dashboard",
+    name="Console",
     url="/console",
     icon_svg='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>',
 )
 
-# Registration with internationalization support (project i18n dictionary format)
+# Internationalization support (project i18n dictionary format)
 router.register_home_entry(
-    name={"i18n": "mymodule.home.entry", "default": "My Dashboard"},
+    name={"i18n": "mymodule.home.entry", "default": "My Panel"},
     url="/mymodule/admin",
 )
 ```
@@ -16714,13 +16783,13 @@ router.register_home_entry(
 
 | Parameter | Type | Description | Required |
 |-----------|------|-------------|----------|
-| `name` | `str` / `dict` | Button display text; when passing a dictionary `{"i18n": "key", "default": "text"}`, internationalization is used | Yes |
+| `name` | `str` / `dict` | Button display text; if a dictionary `{"i18n": "key", "default": "text"}` is passed, internationalization is used | Yes |
 | `url` | `str` | Button link address | Yes |
 | `icon_svg` | `str` | Optional SVG icon markup | No |
 
-### Automatic Dashboard Registration
+### Dashboard Auto-Registration
 
-When `sdk.Dashboard` is detected as available, the router manager automatically adds a Dashboard button as the first entry in the list, eliminating the need for manual registration.
+When the `sdk.Dashboard` is detected as available, the Router Manager automatically adds a Dashboard button at the beginning of the entry list, without requiring manual registration.
 
 ## Lifecycle Integration
 
@@ -16729,7 +16798,7 @@ from ErisPulse.Core import lifecycle
 
 @lifecycle.on("server.start")
 async def on_server_start(event):
-    print(f"Server has started: {event['data']['base_url']}")
+    print(f"Server started: {event['data']['base_url']}")
 
 @lifecycle.on("server.stop")
 async def on_server_stop(event):
@@ -16738,13 +16807,13 @@ async def on_server_stop(event):
 
 ## Best Practices
 
-1. **Prefer abstract types**: Use `HttpRequest` / `WebSocketConnection` instead of `fastapi.Request` / `fastapi.WebSocket` to avoid hard dependencies.
-2. **Leverage automatic injection**: Name the first parameter of a handler `request` or `req` to automatically receive an `HttpRequest` without any type annotation.
-3. **Explicitly pass module_name**: The first parameter of a decorator must be the module name and cannot be omitted.
-4. **Use route grouping**: Organize multiple routes from the same module using `group()`.
-5. **Security considerations**: Implement authentication mechanisms and security headers for sensitive operations.
-6. **Apply rate limiting appropriately**: Set rate limits for high-frequency endpoints.
-7. **Use lifecycle hooks**: Handle WebSocket exceptions using `@ws.on_disconnect` / `@ws.on_error` to avoid manual try/catch blocks.
+1. **Prefer Abstract Types**: Use `HttpRequest` / `WebSocketConnection` instead of `fastapi.Request` / `fastapi.WebSocket` to avoid hard dependencies
+2. **Use Automatic Injection**: Name the first parameter of the handler `request` or `req` without any type annotation to obtain `HttpRequest`
+3. **Explicitly Pass module_name**: The first parameter of the decorator must be the module name, not omitted
+4. **Use Route Grouping**: Use `group()` to organize multiple routes within the same module
+5. **Security Consideration**: Implement authentication mechanisms and security headers for sensitive operations
+6. **Reasonable Rate Limiting**: Set rate limits for high-frequency interfaces
+7. **Use Lifecycle Hooks**: Use `@ws.on_disconnect` / `@ws.on_error` to handle WebSocket exceptions, avoiding manual try/catch
 
 
 
@@ -17365,15 +17434,15 @@ async def chat_handler(event):
 > [!NOTE]
 > This chapter requires ErisPulse **2.8.0+**.
 
-ErisPulse has made "continuous interaction with users" a framework-level infrastructure: from a single `wait_reply`, to timed reminders, multi-path waiting, session mutual exclusion, and restart recovery, all are scheduled by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
+ErisPulse has made "continuous interaction with users" into a framework-level infrastructure: from a single `wait_reply`, to scheduled reminders, multi-path waiting, session mutual exclusion, and restart recovery, all are scheduled by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
 
 {!--< tips >!--}
-Every capability covered in this document comes with an inherent **ownership**: interaction waiting, leases, and timers all record the module name at registration time. When a module is unloaded or an adapter is closed, the framework automatically cleans up and immediately notifies the waiting party, instead of waiting until timeout — this is an extension of the ownership system in the context of interaction (see [Ownership System](ownership.md)).
+Each capability covered in this article comes with a **owner** (owner): interaction waiting, lease, and timers all record the module name at registration time. When the module is unloaded or the adapter is closed, the framework automatically cleans up and the waiting party immediately receives a notification instead of waiting for a timeout — this is an extension of the ownership system in the interactive dimension (see [Ownership System](ownership.md)).
 {!--< /tips >!--}
 
 ## Waiting for Reply: wait_reply
 
-`wait_reply` is the cornerstone of interactive sessions — it suspends the current coroutine and waits for a "reply" from the target user in the next message.
+`wait_reply` is the cornerstone of interactive sessions — it suspends the current coroutine and waits for the target user to "reply" in the next message.
 
 ```python
 from ErisPulse.Core.Event import command
@@ -17382,7 +17451,7 @@ from ErisPulse.Core.Event import command
 async def ask_command(event):
     reply = await event.wait_reply(prompt="Please enter your name:", timeout=30)
     if reply is None:
-        await event.reply("Timeout")
+        await event.reply("Timed out")
         return
     await event.reply(f"Hello, {reply.get_text()}!")
 ```
@@ -17393,11 +17462,11 @@ async def ask_command(event):
 |-----------|-------------|---------|
 | `prompt` | The prompt message sent before suspension | None |
 | `timeout` | Timeout for waiting (seconds) | 60 |
-| `pattern` | Glob filtering (`*` / `?` / `[seq]`), continues waiting if not matched | None |
-| `regex` | Regex filtering (must match both pattern and regex if both are given), continues waiting if not matched | None |
+| `pattern` | Glob filter (`*` / `?` / `[seq]`), continues waiting if not matched | None |
+| `regex` | Regex filter (must match both pattern and regex if both are given), continues waiting if not matched | None |
 | `validator` | Validation function (receives Event, returns bool), continues waiting if failed | None |
-| `callback` | Callback when a reply is received (alternative to value-returning approach) | None |
-| `method` | Method for sending the prompt | "Text" |
+| `callback` | Callback when reply is received (alternative to return-value style) | None |
+| `method` | Method to send the prompt | "Text" |
 | `session` | **Session-level waiting**: replies from anyone in the same session (group/channel) can match | False |
 
 ```python
@@ -17408,77 +17477,77 @@ reply = await event.wait_reply("Please enter the amount:", regex=r"\d+\s*元", t
 reply = await event.wait_reply(session=True, prompt="Which expert can help answer?")
 ```
 
-### When Will Waiting Be Cancelled
+### When Will the Waiting Be Cancelled
 
-Waiting is no longer "only waiting for timeout" — the following situations will immediately terminate the waiting (returning `None` from `wait_reply`), rather than letting the caller wait until timeout:
+Waiting is no longer "only waiting for timeout" — the following conditions will **immediately terminate** the waiting (returning `None` from `wait_reply`), instead of letting the caller wait until timeout:
 
 | Trigger | Cancellation Reason (`InteractionCancelled.reason`) | Description |
 |---------|-----------------------------------------------------|-------------|
-| Module ownership unloaded / disabled | `owner_unload` | Ownership cleanup: whoever registered the wait is reclaimed when they disappear |
-| Adapter closed / restarted | `platform_stop` | All waits suspended on this platform are cancelled |
-| New wait / lease replaces within the same session | `conflict` | See "Session Arbitration" below |
-| Replier blacklisted / owner module unbound | `revoked` | Permission recheck for reply match: scope identity dimension + module dimension |
-| User reply matched | — | Normal path, returns reply event |
+| The owning module is unloaded / disabled | `owner_unload` | Ownership cleanup: whoever registered the waiting, when it disappears, it is reclaimed together |
+| Adapter is stopped / restarted | `platform_stop` | All waiting suspended on this platform is cancelled |
+| New waiting / lease replaces in the same session | `conflict` | See "Session Arbitration" below |
+| The reply sender is blacklisted / owner module is unbound | `revoked` | Permission review for reply matching: scope identity dimension + module dimension |
+| Reply is received | — | Normal path, returns the reply event |
 
-The underlying exception is `InteractionCancelled` (part of the `InteractionError` exception hierarchy), and `wait_reply` has converted it to return `None`. Callers needing the reason can directly use the low-level API `sdk.interaction.register()`.
+The underlying exception is `InteractionCancelled` (under the `InteractionError` exception hierarchy), and `wait_reply` has converted it to return `None`. Callers who need the reason can directly use the low-level API `sdk.interaction.register()`.
 
-### Complete Reply Matching Chain
+### Complete Matching Chain for Reply
 
-When a reply message arrives, the interaction manager follows the sequence below (executed before command matching, prioritizing conversation continuity — even if the message is claimed by another high-priority handler, the suspended conversation can still complete):
+When a reply message arrives, the interactive manager executes the following sequence of determinations (executed before command matching, prioritizing conversation continuity — even if the message has been claimed by a higher-priority handler, the suspended conversation can still complete):
 
 ```
-Session key match (exact user dimension → session-level fallback)
+Session key match (precise user dimension → session-level fallback)
   → pattern / regex text filtering (continues waiting if not matched)
   → validator validation (continues waiting if failed)
-  → Permission recheck (scope identity dimension + owner module dimension, fails to terminate waiting)
-  → Wake up waiting party + claim event (mark_processed)
+  → permission review (scope identity dimension + module dimension, fails then terminates waiting)
+  → wake up the waiting party + claim event (mark_processed)
 ```
 
 ## Session Timers: remind / escalate
 
-Convert "timeout" from a return value into a programmable primitive. Timers are attached to interactive sessions and automatically cancelled when modules are unloaded or adapters are closed, with a single session active remind limit of 5.
+Turn "timeout" from a return value into a composable primitive. Timers are attached to interactive sessions and are automatically cancelled when the module is unloaded or the adapter is stopped. The single session active remind limit is 5.
 
-### remind: Remind if no reply
+### remind: Remind if No Reply
 
 ```python
 @command("ticket")
 async def ticket_command(event):
-    await event.reply("The ticket has been submitted. You will be notified here about the processing result.")
-    # Remind gently after 5 minutes of no reply; any user reply will automatically cancel it
-    event.remind(300, "Are you still there? You will be notified immediately when there is a result.")
+    await event.reply("The ticket has been submitted, the processing result will be notified here.")
+    # If there is no reply within 5 minutes, gently remind once; any reply from the user will automatically cancel it
+    event.remind(300, "Are you still there? The result will be notified to you as soon as possible.")
     reply = await event.wait_reply(timeout=3600)
     ...
 ```
 
-- `event.remind(delay, text=None, *, callback=None)`: Sends `text` (or executes `callback(event)`, supporting synchronous / asynchronous) to the current session upon expiration. **Mandatory validation**: `text` and `callback` must be chosen exclusively (neither given throws `ValueError`)
+- `event.remind(delay, text=None, *, callback=None)`: Sends `text` (or executes `callback(event)`, supports synchronous / asynchronous) to the current session after `delay` expires. **Mandatory validation**: `text` and `callback` must be chosen exclusively (if neither is given, `ValueError` is thrown)
 - Returns a `Reminder` handle: `reminder.cancel()` to manually cancel, `reminder.expired` to query status
-- Automatically cancels upon user reply in the session — this is the semantic of "reminder": reminders only appear when the user is silent
+- Automatically cancels after the user replies in this session — this is the semantics of "reminder": reminders only appear when the user is silent
 - Also available within `Conversation`: `conv.remind(120, "Are you still considering?")`
 
-### escalate: Guaranteed escalation at the deadline
+### escalate: Guaranteed Delivery at a Point in Time
 
 ```python
 event.escalate(1800, lambda e: notify_master(f"Ticket not processed for 30 minutes: {event.get_command_args()}"))
 ```
 
-The only difference from `remind`: **not cancelled by user reply** — escalation actions (notifying the master, transferring to human) are a "guaranteed timeout" commitment, cancelled only by manual `cancel()` / module unload / adapter shutdown.
+The only difference from `remind`: **not cancelled by user reply** — escalation actions (notifying the master, transferring to human) are a "guaranteed delivery" promise, cancelled only by manual `cancel()` / module unload / adapter stop.
 
 | | `remind` | `escalate` |
 |---|---|---|
-| Expiration behavior | Sends text / executes callback | Executes callback |
-| User reply | **Automatically cancelled** | Unaffected |
-| Ownership cleanup (unload / close platform) | Cancelled | Cancelled |
-| Single session limit | 5 | Unlimited (cleanup by ownership as fallback) |
+| Behavior on expiration | Sends text / executes callback | Executes callback |
+| User reply | **Automatically cancels** | Unaffected |
+| Ownership cleanup (unload / stop platform) | Cancels | Cancels |
+| Single session limit | 5 | Unlimited (ownership cleanup as fallback) |
 
 ## Multi-path Waiting: expect + select
 
-Suspends multiple expectations simultaneously, **first-come, first-served** — typical scenarios: waiting for admin approval while also waiting for user withdrawal, or multi-person collaborative voting.
+Suspends multiple expectations simultaneously, **first-come, first-served** — typical scenarios: waiting for administrator approval while waiting for user withdrawal, or multi-person collaborative voting.
 
 ```python
 which, reply = await event.select(
     event.expect(pattern="Agree*", user="10001"),
     event.expect(pattern="Reject*", user="10002"),
-    event.expect(validator=lambda e: e.get_text() == "Suspended", session=True),
+    event.expect(validator=lambda e: e.get_text() == "Suspend", session=True),
     timeout=60,
 )
 if which is None:
@@ -17490,25 +17559,25 @@ elif which == 1:
 ```
 
 - `event.expect(...)` constructs an **expectation description** (does not register any waiting): supports `pattern` / `regex` / `validator` / `user` (limits the replier) / `session` (anyone can reply)
-- `event.select(*expectations, timeout=60)`: Registers uniformly → returns `(index, reply event)` if any is matched → unmet expectations are automatically cancelled; returns `(None, None)` if all timeout. **Mandatory validation**: at least one expectation must be provided, otherwise throws `ValueError`
-- The matched event is claimed by the framework (`mark_processed`), not consumed repeatedly by other handlers
+- `event.select(*expectations, timeout=60)`: Registers uniformly → returns `(index, reply event)` on first match → unmet expectations are automatically cancelled; all timeouts return `(None, None)`. **Mandatory validation**: at least one expectation must be passed, otherwise `ValueError` is thrown
+- The matched event has been claimed by the framework (`mark_processed`), and will not be consumed repeatedly by other processors
 
 {!--< tips >!--}
-Compared to manually orchestrating `select` with multi-threaded `asyncio.wait`: unmet expectations are automatically cleaned up, matched events are automatically claimed, permission rechecks and ownership cleanup are fully effective — no need to manage any Future yourself.
+Compared to manually orchestrating `select` with multi-threading `asyncio.wait`: unmet expectations are automatically cleaned up, matched events are automatically claimed, permission review and ownership cleanup all take effect — no need to manage any Future yourself.
 {!--< /tips >!--}
 
 ## Session Mutual Exclusion: acquire / hold / get_owner_of
 
-Ownership transitions from "resource" to "session" — "who is currently occupying this user" becomes a first-class query.
+Ownership moves from "resources" to "sessions" — "who is currently occupying this user" becomes a first-class query.
 
 ```python
-# Query: Who is currently interacting in this session? (Returns None if idle)
+# Query: who is currently interacting with this session? (Returns None if idle)
 owner = sdk.interaction.get_owner_of(event)
 if owner and owner != "MyModule":
     return  # Another module is already in conversation, avoid interruption
 
-# Mutual exclusion lease: exclusive session (deny strategy, returns None if occupied)
-lease = sdk.interaction.acquire(event)          # Default TTL 1 hour, can pass ttl=
+# Mutual exclusion lease: exclusive session (deny policy, returns None if occupied)
+lease = sdk.interaction.acquire(event)          # Default TTL 1 hour, ttl= can be passed
 if lease is None:
     return  # Already occupied
 try:
@@ -17521,32 +17590,34 @@ Context manager form (throws `SessionOccupiedError` on failure):
 
 ```python
 with sdk.interaction.hold(event) as lease:
-    ...  # Automatically releases on exit
+    ...  # Automatically released on exit
 ```
 
-Leases support `renew(ttl)` for renewal; TTL is lazily expired — expired leases are automatically cleaned up on next access.
+Leases support `renew(ttl)` renewal; TTL is lazily expired — expired leases are automatically cleaned up on next access.
 
-When `Conversation.resume()` resumes a conversation, the framework automatically acquires a lease (see "Resume as Takeover" in [Conversation Multi-turn Dialogue](conversation.md)) — the resumed conversation naturally holds the session, and other modules cannot intervene.
+`Conversation.resume()` automatically acquires leases when resuming conversations (see [Conversation Multi-turn Dialogue](conversation.md)'s "Resume Takes Over") — resumed conversations naturally hold the session, and other modules cannot intervene.
 
 ## Session Inbox: event.history
 
-A unified record of recent message streams per session (both user and bot), serving as a shared factual base for AI context, anti-repetition, and behavioral analysis modules — modules no longer store history individually.
+> Retention policies (7 days / maximum number of entries) and runtime override APIs, risks, and audits are covered in the [Session Inbox](transcript.md) topic.
+
+A unified record of recent message streams per session (both user and bot), serving as a **shared factual base** for AI contexts, anti-spam, and behavior analysis modules — modules no longer store history individually.
 
 ```python
-messages = await event.history(20)   # Last 20 messages in the current session, in ascending time order
+messages = await event.history(20)   # Recent 20 entries of current session, ascending by time
 for m in messages:
     print(m["role"], ":", m["text"])  # role: "user" / "bot"
 ```
 
-- Automatic recording: inbound messages (role=user) + outbound bot text (role=bot)
-- Storage: Independent SQLite table, retention policy = per-session limit (default 50) + global TTL (default 7 days)
-- Writing method: Memory buffer + background batch persistence (delay up to 1 second), query interface automatically merges un-persisted buffer rows — reading your own writes in the same process is unaffected; automatic flush on normal exit (`sdk.uninit` / process exit). **Hard crash / forced kill may lose recent records (about 1 second)**: this base is positioned as a recent context cache, not suitable for audit-level persistence
+- Automatic recording: inbound messages (role=user) + bot outbound text (role=bot)
+- Storage: separate SQLite table, retention policy = per-session limit (default 50) + global TTL (default 7 days)
+- Writing method: memory buffer + background batch persistence (delay up to 1 second), query interface automatically combines un-persisted buffer rows — "read your write" within the same process is unaffected; normal exit (`sdk.uninit` / process exit) automatically flushes to disk. **Hard crash / forced kill may lose recent records for about 1 second**: this base is positioned as a recent context cache, not suitable for audit-level persistence
 - Configuration: `ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`
 - Manager API: `sdk.transcript.append() / get() / clear()`, `aflush()` / `flush()` to manually flush
 
 ## Message Transaction: message_tx
 
-All outbound sends within a transaction are automatically logged; **on abnormal exit, previously sent messages are automatically withdrawn in reverse order** (skipped if adapter does not implement `delete_message`, but the ledger is still recorded normally).
+All outbound sends within a transaction are automatically recorded; **on abnormal exit, previously sent messages are automatically withdrawn in reverse order** (skipped if adapter does not implement `delete_message`, but the ledger is still recorded normally).
 
 ```python
 async with event.message_tx():
@@ -17555,24 +17626,24 @@ async with event.message_tx():
     await event.reply(f"Completed: {result}")   # The previous "processing" is automatically withdrawn
 ```
 
-Sends outside a transaction are not logged (zero overhead); `get_send_receipts()` can view receipts of messages already sent in the current transaction.
+Sends outside a transaction are not recorded (zero overhead); `get_send_receipts()` can view receipts of messages already sent in the current transaction.
 
 ## Trace ID
 
-Each inbound event automatically receives a trace ID (reuses `event["id"]`, generates if missing), which is carried through:
+Each inbound event automatically receives a trace ID (reusing `event["id"], generates if missing), which is carried through:
 
-- Handler context (`get_current_trace_id()` reads it)
-- Outbound sends (`[Send]` log lines append `[trace:...]`, `message.sending/sent` hooks have `trace_id` field)
+- Handler context (`get_current_trace_id()` to read)
+- Outbound sends (`[Send]` log line appends `[trace:...]`, `message.sending/sent` hooks have `trace_id` field)
 - Lifecycle hook data (dict automatically adds `_trace_id`)
 - Directed events (`lifecycle.emit(..., to=...)`) and message transaction receipts
 
-When a message is processed by multiple modules, the entire chain can be connected with the same ID (for logging / slow query / audit).
+When a message is processed by multiple modules in succession, the entire chain can be linked with the same ID (for logging / slow query / audit).
 
 ## Relationship with Other Systems
 
-- **Ownership**: Waiting / lease / timers all record owner, reclaimed on unload (see [Ownership System](ownership.md))
-- **Scope**: Permission recheck on reply match (identity + module dimension); cross-module call audit exits outbound dimension (see [Scope](scope.md))
-- **Conversation**: Multi-turn dialogue is a state machine on top of interactive sessions (see [Conversation](conversation.md)), and its waiting shares all cancellation / recheck / ownership semantics described on this page
+- **Ownership**: Waiting / lease / timers all record owner, and are reclaimed on unload (see [Ownership System](ownership.md))
+- **Scope**: Reply matching reviews identity + module dimension; cross-module calls audit exit dimension (see [Scope](scope.md))
+- **Conversation**: Multi-turn dialogue is a branch state machine above interactive sessions (see [Conversation](conversation.md)), and its waiting enjoys all cancellation / review / ownership semantics described on this page
 
 
 

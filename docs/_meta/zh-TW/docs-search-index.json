@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1690,
+  "total_keywords": 1710,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -174,12 +174,12 @@
         "title": "1. 建立 Dockerfile"
       }
     ],
-    "1. 建立項目": [
+    "1. 建立專案": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 47,
         "level": 3,
-        "title": "1. 建立項目"
+        "title": "1. 建立專案"
       }
     ],
     "1. 必須返回 Task 對象": [
@@ -2226,12 +2226,12 @@
         "title": "8. 工具方法"
       }
     ],
-    "8. 建立包入口": [
+    "8. 建立套件入口": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 346,
         "level": 3,
-        "title": "8. 建立包入口"
+        "title": "8. 建立套件入口"
       }
     ],
     "8. 模組開發者指南": [
@@ -2406,6 +2406,14 @@
         "line": 1,
         "level": 1,
         "title": "AI 輔助開發"
+      }
+    ],
+    "API 一覽": [
+      {
+        "document": "advanced/connections.md",
+        "line": 199,
+        "level": 2,
+        "title": "API 一覽"
       }
     ],
     "API 參考": [
@@ -2699,7 +2707,7 @@
     "CORS 配置": [
       {
         "document": "advanced/router.md",
-        "line": 270,
+        "line": 323,
         "level": 2,
         "title": "CORS 配置"
       }
@@ -2707,7 +2715,7 @@
     "Client 系列 — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 65,
+        "line": 70,
         "level": 3,
         "title": "Client 系列 — `Core/client.py` / `Core/Bases/client.py`"
       }
@@ -2715,7 +2723,7 @@
     "ClientWebSocket 屬性": [
       {
         "document": "advanced/http-client.md",
-        "line": 336,
+        "line": 354,
         "level": 3,
         "title": "ClientWebSocket 屬性"
       }
@@ -2787,7 +2795,7 @@
     "Dashboard 自動註冊": [
       {
         "document": "advanced/router.md",
-        "line": 386,
+        "line": 439,
         "level": 3,
         "title": "Dashboard 自動註冊"
       }
@@ -3009,7 +3017,7 @@
     "GET": [
       {
         "document": "advanced/http-client.md",
-        "line": 74,
+        "line": 92,
         "level": 3,
         "title": "GET"
       }
@@ -3041,7 +3049,7 @@
     "HTTP 裝飾器": [
       {
         "document": "advanced/router.md",
-        "line": 38,
+        "line": 65,
         "level": 3,
         "title": "HTTP 裝飾器"
       }
@@ -3057,7 +3065,7 @@
     "HTTP 請求事件": [
       {
         "document": "advanced/http-client.md",
-        "line": 227,
+        "line": 245,
         "level": 3,
         "title": "HTTP 請求事件"
       }
@@ -3065,7 +3073,7 @@
     "HTTP 請求參數": [
       {
         "document": "advanced/http-client.md",
-        "line": 159,
+        "line": 177,
         "level": 3,
         "title": "HTTP 請求參數"
       }
@@ -3081,7 +3089,7 @@
     "HTTPStatusError": [
       {
         "document": "advanced/http-client.md",
-        "line": 435,
+        "line": 453,
         "level": 3,
         "title": "HTTPStatusError"
       }
@@ -3089,7 +3097,7 @@
     "HttpResponse": [
       {
         "document": "advanced/http-client.md",
-        "line": 49,
+        "line": 67,
         "level": 2,
         "title": "HttpResponse"
       }
@@ -3113,7 +3121,7 @@
     "Interaction — `Core/Event/interaction.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 106,
+        "line": 119,
         "level": 3,
         "title": "Interaction — `Core/Event/interaction.py`"
       }
@@ -3241,7 +3249,7 @@
     "Module 系列 — `Core/module.py`（`sdk.module.call`）": [
       {
         "document": "advanced/errors.md",
-        "line": 119,
+        "line": 132,
         "level": 3,
         "title": "Module 系列 — `Core/module.py`（`sdk.module.call`）"
       }
@@ -3385,7 +3393,7 @@
     "POST": [
       {
         "document": "advanced/http-client.md",
-        "line": 86,
+        "line": 104,
         "level": 3,
         "title": "POST"
       }
@@ -3393,7 +3401,7 @@
     "PUT / DELETE / PATCH": [
       {
         "document": "advanced/http-client.md",
-        "line": 135,
+        "line": 153,
         "level": 3,
         "title": "PUT / DELETE / PATCH"
       }
@@ -3647,7 +3655,7 @@
     "Shadow 系列 — `Core/shadow.py`（影子模組）": [
       {
         "document": "advanced/errors.md",
-        "line": 148,
+        "line": 161,
         "level": 3,
         "title": "Shadow 系列 — `Core/shadow.py`（影子模組）"
       }
@@ -3671,7 +3679,7 @@
     "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 92,
+        "line": 104,
         "level": 3,
         "title": "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`"
       }
@@ -3751,7 +3759,7 @@
     "WSMessage": [
       {
         "document": "advanced/http-client.md",
-        "line": 327,
+        "line": 345,
         "level": 3,
         "title": "WSMessage"
       }
@@ -3783,7 +3791,7 @@
     "WebSocket 客戶端": [
       {
         "document": "advanced/http-client.md",
-        "line": 260,
+        "line": 278,
         "level": 2,
         "title": "WebSocket 客戶端"
       }
@@ -3799,7 +3807,7 @@
     "WebSocket 生命週期鉤子": [
       {
         "document": "advanced/router.md",
-        "line": 171,
+        "line": 224,
         "level": 2,
         "title": "WebSocket 生命週期鉤子"
       }
@@ -3807,7 +3815,7 @@
     "WebSocket 系列 — `Core/client.py`（`send` / `receive`）": [
       {
         "document": "advanced/errors.md",
-        "line": 85,
+        "line": 90,
         "level": 3,
         "title": "WebSocket 系列 — `Core/client.py`（`send` / `receive`）"
       }
@@ -3815,7 +3823,7 @@
     "WebSocket 裝飾器": [
       {
         "document": "advanced/router.md",
-        "line": 65,
+        "line": 111,
         "level": 3,
         "title": "WebSocket 裝飾器"
       }
@@ -3823,7 +3831,7 @@
     "WebSocket 註冊": [
       {
         "document": "advanced/router.md",
-        "line": 130,
+        "line": 183,
         "level": 3,
         "title": "WebSocket 註冊"
       }
@@ -3851,7 +3859,7 @@
     "WebSocket 連接事件": [
       {
         "document": "advanced/http-client.md",
-        "line": 239,
+        "line": 257,
         "level": 3,
         "title": "WebSocket 連接事件"
       }
@@ -4827,7 +4835,7 @@
     "ws_connect 參數": [
       {
         "document": "advanced/http-client.md",
-        "line": 172,
+        "line": 190,
         "level": 3,
         "title": "ws_connect 參數"
       }
@@ -4921,7 +4929,7 @@
     "上下文管理": [
       {
         "document": "advanced/http-client.md",
-        "line": 251,
+        "line": 269,
         "level": 2,
         "title": "上下文管理"
       }
@@ -5151,7 +5159,7 @@
     "主頁入口": [
       {
         "document": "advanced/router.md",
-        "line": 351,
+        "line": 404,
         "level": 2,
         "title": "主頁入口"
       }
@@ -5625,7 +5633,7 @@
     "五、我要為 ErisPulse 貢獻": [
       {
         "document": "README.md",
-        "line": 68,
+        "line": 69,
         "level": 3,
         "title": "五、我要為 ErisPulse 貢獻"
       }
@@ -5710,12 +5718,12 @@
         "title": "伺服器配置"
       }
     ],
-    "低級方法": [
+    "低階方法": [
       {
         "document": "advanced/http-client.md",
-        "line": 304,
+        "line": 322,
         "level": 4,
-        "title": "低級方法"
+        "title": "低階方法"
       }
     ],
     "佔位命令 help 回退鏈": [
@@ -5914,14 +5922,6 @@
         "title": "使用適配器事件監聽"
       }
     ],
-    "依賴宣告（可選，2.8.0+）": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 353,
-        "level": 2,
-        "title": "依賴宣告（可選，2.8.0+）"
-      }
-    ],
     "依賴替換（需 EP>=2.9.0-dev）": [
       {
         "document": "developer-guide/testing.md",
@@ -5936,6 +5936,14 @@
         "line": 257,
         "level": 3,
         "title": "依賴注入（Depends）"
+      }
+    ],
+    "依賴聲明（可選，2.8.0+）": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 353,
+        "level": 2,
+        "title": "依賴聲明（可選，2.8.0+）"
       }
     ],
     "保留錯誤段": [
@@ -5981,7 +5989,7 @@
     "健康檢查": [
       {
         "document": "advanced/router.md",
-        "line": 334,
+        "line": 387,
         "level": 3,
         "title": "健康檢查"
       },
@@ -6011,7 +6019,7 @@
     "傳統註冊方式": [
       {
         "document": "advanced/router.md",
-        "line": 104,
+        "line": 157,
         "level": 2,
         "title": "傳統註冊方式"
       }
@@ -6233,7 +6241,7 @@
     "其他": [
       {
         "document": "README.md",
-        "line": 84,
+        "line": 85,
         "level": 2,
         "title": "其他"
       }
@@ -6294,6 +6302,22 @@
         "title": "出站斷言"
       }
     ],
+    "出站連接自動入池（2.10+）": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 49,
+        "level": 4,
+        "title": "出站連接自動入池（2.10+）"
+      }
+    ],
+    "出站連接（Client 側）": [
+      {
+        "document": "advanced/connections.md",
+        "line": 156,
+        "level": 2,
+        "title": "出站連接（Client 側）"
+      }
+    ],
     "分支與跳轉": [
       {
         "document": "advanced/conversation.md",
@@ -6316,6 +6340,14 @@
         "line": 129,
         "level": 2,
         "title": "分發決策鏈（排查「命令為什麼沒觸發」；需 EP>=2.9.0-dev）"
+      }
+    ],
+    "分組（訂閱模型）": [
+      {
+        "document": "advanced/connections.md",
+        "line": 66,
+        "level": 3,
+        "title": "分組（訂閱模型）"
       }
     ],
     "切換語言": [
@@ -6439,7 +6471,7 @@
     "前置知識": [
       {
         "document": "advanced/README.md",
-        "line": 36,
+        "line": 38,
         "level": 2,
         "title": "前置知識"
       }
@@ -6594,6 +6626,14 @@
         "title": "卸載與徹底卸載（purge）"
       }
     ],
+    "卸載與清理語意": [
+      {
+        "document": "advanced/connections.md",
+        "line": 189,
+        "level": 2,
+        "title": "卸載與清理語意"
+      }
+    ],
     "原始數據": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -6645,7 +6685,7 @@
     "參數說明": [
       {
         "document": "advanced/http-client.md",
-        "line": 157,
+        "line": 175,
         "level": 2,
         "title": "參數說明"
       },
@@ -6763,7 +6803,7 @@
     "各異常說明與發生位置": [
       {
         "document": "advanced/errors.md",
-        "line": 63,
+        "line": 68,
         "level": 2,
         "title": "各異常說明與發生位置"
       }
@@ -7031,7 +7071,7 @@
     "四、生態與官方客戶端": [
       {
         "document": "README.md",
-        "line": 56,
+        "line": 57,
         "level": 3,
         "title": "四、生態與官方客戶端"
       }
@@ -7066,6 +7106,14 @@
         "line": 106,
         "level": 4,
         "title": "回應"
+      }
+    ],
+    "回應返回約定（2.10+）": [
+      {
+        "document": "advanced/router.md",
+        "line": 87,
+        "level": 4,
+        "title": "回應返回約定（2.10+）"
       }
     ],
     "回覆功能": [
@@ -7347,7 +7395,7 @@
     "基本用法": [
       {
         "document": "advanced/http-client.md",
-        "line": 264,
+        "line": 282,
         "level": 3,
         "title": "基本用法"
       },
@@ -7975,7 +8023,7 @@
     "安全標頭": [
       {
         "document": "advanced/router.md",
-        "line": 289,
+        "line": 342,
         "level": 2,
         "title": "安全標頭"
       }
@@ -8300,6 +8348,12 @@
       {
         "document": "advanced/lazy-loading.md",
         "line": 14,
+        "level": 2,
+        "title": "工作原理"
+      },
+      {
+        "document": "advanced/transcript.md",
+        "line": 9,
         "level": 2,
         "title": "工作原理"
       },
@@ -8762,6 +8816,22 @@
         "line": 238,
         "level": 4,
         "title": "平台能力查詢"
+      }
+    ],
+    "廣播": [
+      {
+        "document": "advanced/connections.md",
+        "line": 87,
+        "level": 3,
+        "title": "廣播"
+      }
+    ],
+    "廣播與訂閱": [
+      {
+        "document": "advanced/connections.md",
+        "line": 64,
+        "level": 2,
+        "title": "廣播與訂閱"
       }
     ],
     "延遲發送（Defer）": [
@@ -9311,7 +9381,7 @@
     "捕獲建議": [
       {
         "document": "advanced/errors.md",
-        "line": 166,
+        "line": 179,
         "level": 2,
         "title": "捕獲建議"
       }
@@ -9335,7 +9405,7 @@
     "接收訊息": [
       {
         "document": "advanced/http-client.md",
-        "line": 276,
+        "line": 294,
         "level": 3,
         "title": "接收訊息"
       }
@@ -10023,7 +10093,7 @@
     "最佳實踐": [
       {
         "document": "advanced/http-client.md",
-        "line": 472,
+        "line": 490,
         "level": 2,
         "title": "最佳實踐"
       },
@@ -10041,7 +10111,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 404,
+        "line": 457,
         "level": 2,
         "title": "最佳實踐"
       },
@@ -10088,6 +10158,14 @@
         "line": 83,
         "level": 2,
         "title": "會話定時器：remind / escalate"
+      }
+    ],
+    "會話收件箱（Transcript）": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 1,
+        "level": 1,
+        "title": "會話收件箱（Transcript）"
       }
     ],
     "會話收件箱：event.history": [
@@ -10196,6 +10274,14 @@
         "line": 112,
         "level": 3,
         "title": "查看可用模塊"
+      }
+    ],
+    "查看連接池": [
+      {
+        "document": "advanced/connections.md",
+        "line": 38,
+        "level": 2,
+        "title": "查看連接池"
       }
     ],
     "查詢 Bot 狀態": [
@@ -10421,7 +10507,7 @@
     "根頁面": [
       {
         "document": "advanced/router.md",
-        "line": 342,
+        "line": 395,
         "level": 3,
         "title": "根頁面"
       }
@@ -10437,7 +10523,7 @@
     "框架內部參數校驗（ValueError）": [
       {
         "document": "advanced/errors.md",
-        "line": 157,
+        "line": 170,
         "level": 3,
         "title": "框架內部參數校驗（ValueError）"
       }
@@ -10475,6 +10561,12 @@
       }
     ],
     "概述": [
+      {
+        "document": "advanced/connections.md",
+        "line": 10,
+        "level": 2,
+        "title": "概述"
+      },
       {
         "document": "advanced/http-client.md",
         "line": 5,
@@ -11123,7 +11215,7 @@
     "消息事務：message_tx": [
       {
         "document": "advanced/interaction.md",
-        "line": 206,
+        "line": 208,
         "level": 2,
         "title": "消息事務：message_tx"
       }
@@ -11601,7 +11693,7 @@
     "獲取幫助": [
       {
         "document": "README.md",
-        "line": 90,
+        "line": 91,
         "level": 2,
         "title": "獲取幫助"
       }
@@ -11656,8 +11748,14 @@
     ],
     "生命週期事件": [
       {
+        "document": "advanced/connections.md",
+        "line": 112,
+        "level": 3,
+        "title": "生命週期事件"
+      },
+      {
         "document": "advanced/http-client.md",
-        "line": 225,
+        "line": 243,
         "level": 2,
         "title": "生命週期事件"
       },
@@ -11690,18 +11788,18 @@
         "title": "生命週期管理"
       }
     ],
-    "生命週期鈎子": [
+    "生命週期鉤子": [
       {
         "document": "advanced/http-client.md",
-        "line": 345,
+        "line": 363,
         "level": 3,
-        "title": "生命週期鈎子"
+        "title": "生命週期鉤子"
       }
     ],
     "生命週期集成": [
       {
         "document": "advanced/router.md",
-        "line": 390,
+        "line": 443,
         "level": 2,
         "title": "生命週期集成"
       }
@@ -11781,7 +11879,7 @@
     "異常層級": [
       {
         "document": "advanced/http-client.md",
-        "line": 375,
+        "line": 393,
         "level": 3,
         "title": "異常層級"
       }
@@ -11789,7 +11887,7 @@
     "異常捕獲": [
       {
         "document": "advanced/http-client.md",
-        "line": 387,
+        "line": 405,
         "level": 3,
         "title": "異常捕獲"
       },
@@ -11811,7 +11909,7 @@
     "異常體系": [
       {
         "document": "advanced/http-client.md",
-        "line": 369,
+        "line": 387,
         "level": 2,
         "title": "異常體系"
       },
@@ -12241,13 +12339,13 @@
       },
       {
         "document": "advanced/http-client.md",
-        "line": 482,
+        "line": 500,
         "level": 2,
         "title": "相關文件"
       },
       {
         "document": "advanced/interaction.md",
-        "line": 238,
+        "line": 240,
         "level": 2,
         "title": "相關文件"
       },
@@ -12277,7 +12375,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 414,
+        "line": 467,
         "level": 2,
         "title": "相關文件"
       },
@@ -12399,7 +12497,7 @@
     "相關連結": [
       {
         "document": "README.md",
-        "line": 96,
+        "line": 97,
         "level": 2,
         "title": "相關連結"
       },
@@ -12657,7 +12755,7 @@
     "系統路由": [
       {
         "document": "advanced/router.md",
-        "line": 330,
+        "line": 383,
         "level": 2,
         "title": "系統路由"
       }
@@ -12689,7 +12787,7 @@
     "結構化屬性": [
       {
         "document": "advanced/errors.md",
-        "line": 38,
+        "line": 41,
         "level": 2,
         "title": "結構化屬性"
       }
@@ -12705,7 +12803,7 @@
     "統一捕獲": [
       {
         "document": "advanced/http-client.md",
-        "line": 422,
+        "line": 440,
         "level": 3,
         "title": "統一捕獲"
       }
@@ -12726,12 +12824,12 @@
         "title": "綁定繼承（merge）"
       }
     ],
-    "網路客戶端": [
+    "網路用戶端": [
       {
         "document": "advanced/http-client.md",
         "line": 1,
         "level": 1,
-        "title": "網路客戶端"
+        "title": "網路用戶端"
       }
     ],
     "網關連接": [
@@ -12921,7 +13019,7 @@
     "自動文檔": [
       {
         "document": "advanced/router.md",
-        "line": 304,
+        "line": 357,
         "level": 2,
         "title": "自動文檔"
       }
@@ -12998,12 +13096,12 @@
         "title": "自訂消息段"
       }
     ],
-    "自訂預設頭": [
+    "自訂預設標頭": [
       {
         "document": "advanced/http-client.md",
-        "line": 200,
+        "line": 218,
         "level": 2,
-        "title": "自訂預設頭"
+        "title": "自訂預設標頭"
       }
     ],
     "與 CLI i18n 的關係": [
@@ -13033,9 +13131,17 @@
     "與其他系統的關係": [
       {
         "document": "advanced/interaction.md",
-        "line": 231,
+        "line": 233,
         "level": 2,
         "title": "與其他系統的關係"
+      }
+    ],
+    "與其它機制的邊界": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 95,
+        "level": 2,
+        "title": "與其它機制的邊界"
       }
     ],
     "與宣告式配置類的關係": [
@@ -13401,7 +13507,7 @@
     "註冊入口": [
       {
         "document": "advanced/router.md",
-        "line": 355,
+        "line": 408,
         "level": 3,
         "title": "註冊入口"
       }
@@ -13412,6 +13518,14 @@
         "line": 20,
         "level": 3,
         "title": "註冊命令"
+      }
+    ],
+    "註冊形態：單參（推薦）與雙參": [
+      {
+        "document": "advanced/router.md",
+        "line": 38,
+        "level": 3,
+        "title": "註冊形態：單參（推薦）與雙參"
       }
     ],
     "註冊時機 → 所有權結果對照表": [
@@ -13609,7 +13723,7 @@
     "請求方法": [
       {
         "document": "advanced/http-client.md",
-        "line": 72,
+        "line": 90,
         "level": 2,
         "title": "請求方法"
       }
@@ -13617,7 +13731,7 @@
     "請求統計": [
       {
         "document": "advanced/http-client.md",
-        "line": 212,
+        "line": 230,
         "level": 2,
         "title": "請求統計"
       }
@@ -13633,7 +13747,7 @@
     "請求關聯 ID（X-Request-ID）": [
       {
         "document": "advanced/router.md",
-        "line": 229,
+        "line": 282,
         "level": 2,
         "title": "請求關聯 ID（X-Request-ID）"
       }
@@ -13713,7 +13827,7 @@
     "超時與重試": [
       {
         "document": "advanced/http-client.md",
-        "line": 180,
+        "line": 198,
         "level": 2,
         "title": "超時與重試"
       }
@@ -13724,6 +13838,14 @@
         "line": 308,
         "level": 3,
         "title": "超級文件分享事件示例"
+      }
+    ],
+    "跨執行緒投遞": [
+      {
+        "document": "advanced/connections.md",
+        "line": 172,
+        "level": 2,
+        "title": "跨執行緒投遞"
       }
     ],
     "跨平台擴展（通配符）": [
@@ -13740,10 +13862,18 @@
         "title": "跨平台擴展（通配符）"
       }
     ],
+    "跨模組傳遞 / 復用": [
+      {
+        "document": "advanced/connections.md",
+        "line": 129,
+        "level": 2,
+        "title": "跨模組傳遞 / 復用"
+      }
+    ],
     "路徑處理": [
       {
         "document": "advanced/router.md",
-        "line": 320,
+        "line": 373,
         "level": 2,
         "title": "路徑處理"
       }
@@ -13751,7 +13881,7 @@
     "路由中間件": [
       {
         "document": "advanced/router.md",
-        "line": 212,
+        "line": 265,
         "level": 2,
         "title": "路由中間件"
       }
@@ -13767,7 +13897,7 @@
     "路由分組": [
       {
         "document": "advanced/router.md",
-        "line": 195,
+        "line": 248,
         "level": 2,
         "title": "路由分組"
       }
@@ -13876,6 +14006,22 @@
         "title": "退出碼 42 契約"
       }
     ],
+    "适配器架构": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 16,
+        "level": 3,
+        "title": "适配器架构"
+      }
+    ],
+    "适配器簡介": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 5,
+        "level": 2,
+        "title": "适配器簡介"
+      }
+    ],
     "透過 Dashboard 安裝模組": [
       {
         "document": "user-guide/deployment.md",
@@ -13927,7 +14073,7 @@
     "通用 request": [
       {
         "document": "advanced/http-client.md",
-        "line": 145,
+        "line": 163,
         "level": 3,
         "title": "通用 request"
       }
@@ -14061,7 +14207,7 @@
     "速率限制": [
       {
         "document": "advanced/router.md",
-        "line": 254,
+        "line": 307,
         "level": 2,
         "title": "速率限制"
       }
@@ -14090,6 +14236,14 @@
         "title": "連接失敗行為"
       }
     ],
+    "連接池與廣播": [
+      {
+        "document": "advanced/connections.md",
+        "line": 1,
+        "level": 1,
+        "title": "連接池與廣播"
+      }
+    ],
     "連接流程": [
       {
         "document": "platform-guide/discord.md",
@@ -14116,6 +14270,22 @@
         "line": 818,
         "level": 2,
         "title": "連接管理"
+      }
+    ],
+    "連接自動登記（連接池，2.10+）": [
+      {
+        "document": "advanced/router.md",
+        "line": 150,
+        "level": 3,
+        "title": "連接自動登記（連接池，2.10+）"
+      }
+    ],
+    "連接註冊表系列 — `Core/connections.py`（2.10+）": [
+      {
+        "document": "advanced/errors.md",
+        "line": 97,
+        "level": 3,
+        "title": "連接註冊表系列 — `Core/connections.py`（2.10+）"
       }
     ],
     "連接重試": [
@@ -14190,6 +14360,14 @@
         "title": "運行時細粒度控制"
       }
     ],
+    "運行時覆蓋 API": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 46,
+        "level": 2,
+        "title": "運行時覆蓋 API"
+      }
+    ],
     "運行時配置": [
       {
         "document": "advanced/i18n.md",
@@ -14225,7 +14403,7 @@
     "適用對象": [
       {
         "document": "advanced/README.md",
-        "line": 28,
+        "line": 30,
         "level": 2,
         "title": "適用對象"
       }
@@ -14241,7 +14419,7 @@
     "適配器中使用": [
       {
         "document": "advanced/http-client.md",
-        "line": 447,
+        "line": 465,
         "level": 2,
         "title": "適配器中使用"
       }
@@ -14275,12 +14453,6 @@
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 5,
         "level": 2,
-        "title": "適配器架構"
-      },
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 16,
-        "level": 3,
         "title": "適配器架構"
       }
     ],
@@ -14346,14 +14518,6 @@
         "line": 41,
         "level": 3,
         "title": "適配器管理"
-      }
-    ],
-    "適配器簡介": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 5,
-        "level": 2,
-        "title": "適配器簡介"
       }
     ],
     "適配器系統 API": [
@@ -14469,6 +14633,12 @@
       }
     ],
     "配置": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 34,
+        "level": 2,
+        "title": "配置"
+      },
       {
         "document": "developer-guide/publishing.md",
         "line": 143,
@@ -15047,7 +15217,7 @@
     "鏈路追蹤：trace-id": [
       {
         "document": "advanced/interaction.md",
-        "line": 220,
+        "line": 222,
         "level": 2,
         "title": "鏈路追蹤：trace-id"
       }
@@ -15071,7 +15241,7 @@
     "開發方式": [
       {
         "document": "README.md",
-        "line": 77,
+        "line": 78,
         "level": 2,
         "title": "開發方式"
       }
@@ -15151,7 +15321,7 @@
     "關閉連接": [
       {
         "document": "advanced/http-client.md",
-        "line": 363,
+        "line": 381,
         "level": 3,
         "title": "關閉連接"
       }
@@ -15167,7 +15337,7 @@
     "關閉雜訊折疊": [
       {
         "document": "advanced/errors.md",
-        "line": 181,
+        "line": 194,
         "level": 2,
         "title": "關閉雜訊折疊"
       }
@@ -15280,6 +15450,14 @@
         "title": "類型存根生成（IDE 補全）"
       }
     ],
+    "風險與審計：解除限制前必讀": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 68,
+        "level": 2,
+        "title": "風險與審計：解除限制前必讀"
+      }
+    ],
     "驗證安裝": [
       {
         "document": "user-guide/installation.md",
@@ -15296,20 +15474,20 @@
         "title": "高級主題"
       }
     ],
-    "高級方法 (推薦)": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 278,
-        "level": 4,
-        "title": "高級方法 (推薦)"
-      }
-    ],
     "高級：字典式點分路徑兜底": [
       {
         "document": "advanced/scope.md",
         "line": 299,
         "level": 3,
         "title": "高級：字典式點分路徑兜底"
+      }
+    ],
+    "高階方法（推薦）": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 296,
+        "level": 4,
+        "title": "高階方法（推薦）"
       }
     ],
     "黑名單過濾": [

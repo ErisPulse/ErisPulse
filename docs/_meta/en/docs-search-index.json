@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1689,
+  "total_keywords": 1708,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2466,6 +2466,12 @@
     ],
     "API Reference": [
       {
+        "document": "advanced/connections.md",
+        "line": 187,
+        "level": 2,
+        "title": "API Reference"
+      },
+      {
         "document": "advanced/i18n.md",
         "line": 424,
         "level": 2,
@@ -2662,14 +2668,6 @@
         "line": 178,
         "level": 2,
         "title": "Active State Management"
-      }
-    ],
-    "Actively Sending Meta Events": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 154,
-        "level": 4,
-        "title": "Actively Sending Meta Events"
       }
     ],
     "Adapter": [
@@ -3094,12 +3092,12 @@
         "title": "Automatic Checkpoints and Restart Recovery"
       }
     ],
-    "Automatic Dashboard Registration": [
+    "Automatic Connection Registration (Connection Pool, 2.10+)": [
       {
         "document": "advanced/router.md",
-        "line": 386,
+        "line": 148,
         "level": 3,
-        "title": "Automatic Dashboard Registration"
+        "title": "Automatic Connection Registration (Connection Pool, 2.10+)"
       }
     ],
     "Automatic Discovery Mechanism": [
@@ -3121,7 +3119,7 @@
     "Automatic Documentation": [
       {
         "document": "advanced/router.md",
-        "line": 304,
+        "line": 355,
         "level": 2,
         "title": "Automatic Documentation"
       }
@@ -3463,7 +3461,7 @@
     "Basic Usage": [
       {
         "document": "advanced/http-client.md",
-        "line": 264,
+        "line": 282,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -3581,7 +3579,7 @@
     "Best Practices": [
       {
         "document": "advanced/http-client.md",
-        "line": 472,
+        "line": 490,
         "level": 2,
         "title": "Best Practices"
       },
@@ -3599,7 +3597,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 404,
+        "line": 455,
         "level": 2,
         "title": "Best Practices"
       },
@@ -3728,12 +3726,36 @@
         "title": "Boundaries and Notes"
       }
     ],
+    "Boundaries with Other Mechanisms": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 92,
+        "level": 2,
+        "title": "Boundaries with Other Mechanisms"
+      }
+    ],
     "Branching and Jumping": [
       {
         "document": "advanced/conversation.md",
         "line": 200,
         "level": 2,
         "title": "Branching and Jumping"
+      }
+    ],
+    "Broadcasting": [
+      {
+        "document": "advanced/connections.md",
+        "line": 86,
+        "level": 3,
+        "title": "Broadcasting"
+      }
+    ],
+    "Broadcasting and Subscription": [
+      {
+        "document": "advanced/connections.md",
+        "line": 63,
+        "level": 2,
+        "title": "Broadcasting and Subscription"
       }
     ],
     "Browsing and Discovery": [
@@ -3825,7 +3847,7 @@
     "CORS Configuration": [
       {
         "document": "advanced/router.md",
-        "line": 270,
+        "line": 321,
         "level": 2,
         "title": "CORS Configuration"
       }
@@ -4065,7 +4087,7 @@
     "Client Series — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 65,
+        "line": 70,
         "level": 3,
         "title": "Client Series — `Core/client.py` / `Core/Bases/client.py`"
       }
@@ -4073,7 +4095,7 @@
     "ClientWebSocket Properties": [
       {
         "document": "advanced/http-client.md",
-        "line": 336,
+        "line": 354,
         "level": 3,
         "title": "ClientWebSocket Properties"
       }
@@ -4081,7 +4103,7 @@
     "Closing the Connection": [
       {
         "document": "advanced/http-client.md",
-        "line": 363,
+        "line": 381,
         "level": 3,
         "title": "Closing the Connection"
       }
@@ -4452,20 +4474,20 @@
         "title": "Complete Manual Startup Example"
       }
     ],
+    "Complete Matching Chain for Reply": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 63,
+        "level": 3,
+        "title": "Complete Matching Chain for Reply"
+      }
+    ],
     "Complete Module Example": [
       {
         "document": "ecosystem/dashboard.md",
         "line": 192,
         "level": 2,
         "title": "Complete Module Example"
-      }
-    ],
-    "Complete Reply Matching Chain": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 63,
-        "level": 3,
-        "title": "Complete Reply Matching Chain"
       }
     ],
     "Component Relationships": [
@@ -4501,6 +4523,12 @@
       }
     ],
     "Configuration": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 32,
+        "level": 2,
+        "title": "Configuration"
+      },
       {
         "document": "developer-guide/publishing.md",
         "line": 143,
@@ -4832,6 +4860,22 @@
         "title": "Connection Parameters"
       }
     ],
+    "Connection Pool and Broadcasting": [
+      {
+        "document": "advanced/connections.md",
+        "line": 1,
+        "level": 1,
+        "title": "Connection Pool and Broadcasting"
+      }
+    ],
+    "Connection Registry Series — `Core/connections.py` (2.10+)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 97,
+        "level": 3,
+        "title": "Connection Registry Series — `Core/connections.py` (2.10+)"
+      }
+    ],
     "Connection Retry": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -4859,7 +4903,7 @@
     "Context Management": [
       {
         "document": "advanced/http-client.md",
-        "line": 251,
+        "line": 269,
         "level": 2,
         "title": "Context Management"
       }
@@ -5192,12 +5236,28 @@
         "title": "Creating a Table"
       }
     ],
+    "Cross-Module Transfer / Reuse": [
+      {
+        "document": "advanced/connections.md",
+        "line": 127,
+        "level": 2,
+        "title": "Cross-Module Transfer / Reuse"
+      }
+    ],
     "Cross-Platform Extension (Wildcard)": [
       {
         "document": "api-reference/event-system.md",
         "line": 672,
         "level": 2,
         "title": "Cross-Platform Extension (Wildcard)"
+      }
+    ],
+    "Cross-Thread Dispatching": [
+      {
+        "document": "advanced/connections.md",
+        "line": 164,
+        "level": 2,
+        "title": "Cross-Thread Dispatching"
       }
     ],
     "Cross-platform Extension (Wildcard)": [
@@ -5211,7 +5271,7 @@
     "Custom Default Headers": [
       {
         "document": "advanced/http-client.md",
-        "line": 200,
+        "line": 218,
         "level": 2,
         "title": "Custom Default Headers"
       }
@@ -5262,6 +5322,14 @@
         "line": 395,
         "level": 2,
         "title": "Custom Storage Backend"
+      }
+    ],
+    "Dashboard Auto-Registration": [
+      {
+        "document": "advanced/router.md",
+        "line": 437,
+        "level": 3,
+        "title": "Dashboard Auto-Registration"
       }
     ],
     "Dashboard Management Panel": [
@@ -5408,12 +5476,12 @@
         "title": "Declaring i18n Fields"
       }
     ],
-    "Decorator-based Routing (Recommended)": [
+    "Decorator Routes (Recommended)": [
       {
         "document": "advanced/router.md",
         "line": 36,
         "level": 2,
-        "title": "Decorator-based Routing (Recommended)"
+        "title": "Decorator Routes (Recommended)"
       }
     ],
     "Decorators and Rule Inheritance": [
@@ -5545,7 +5613,7 @@
     "Development Methods": [
       {
         "document": "README.md",
-        "line": 79,
+        "line": 80,
         "level": 2,
         "title": "Development Methods"
       }
@@ -5756,6 +5824,14 @@
         "title": "Document Information"
       }
     ],
+    "Document List": [
+      {
+        "document": "advanced/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "Document List"
+      }
+    ],
     "Documentation": [
       {
         "document": "developer-guide/publishing.md",
@@ -5817,12 +5893,6 @@
       }
     ],
     "Documentation List": [
-      {
-        "document": "advanced/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "Documentation List"
-      },
       {
         "document": "api-reference/README.md",
         "line": 5,
@@ -6581,7 +6651,7 @@
     "Exception Descriptions and Occurrence Locations": [
       {
         "document": "advanced/errors.md",
-        "line": 63,
+        "line": 68,
         "level": 2,
         "title": "Exception Descriptions and Occurrence Locations"
       }
@@ -6589,7 +6659,7 @@
     "Exception Handling": [
       {
         "document": "advanced/http-client.md",
-        "line": 387,
+        "line": 405,
         "level": 3,
         "title": "Exception Handling"
       },
@@ -6603,7 +6673,7 @@
     "Exception Hierarchy": [
       {
         "document": "advanced/http-client.md",
-        "line": 375,
+        "line": 393,
         "level": 3,
         "title": "Exception Hierarchy"
       },
@@ -6625,7 +6695,7 @@
     "Exception System": [
       {
         "document": "advanced/http-client.md",
-        "line": 369,
+        "line": 387,
         "level": 2,
         "title": "Exception System"
       }
@@ -7035,7 +7105,7 @@
     "Framework Internal Parameter Validation (ValueError)": [
       {
         "document": "advanced/errors.md",
-        "line": 153,
+        "line": 165,
         "level": 3,
         "title": "Framework Internal Parameter Validation (ValueError)"
       }
@@ -7129,7 +7199,7 @@
     "GET": [
       {
         "document": "advanced/http-client.md",
-        "line": 74,
+        "line": 92,
         "level": 3,
         "title": "GET"
       }
@@ -7177,7 +7247,7 @@
     "General request": [
       {
         "document": "advanced/http-client.md",
-        "line": 145,
+        "line": 163,
         "level": 3,
         "title": "General request"
       }
@@ -7201,7 +7271,7 @@
     "Get Help": [
       {
         "document": "README.md",
-        "line": 92,
+        "line": 93,
         "level": 2,
         "title": "Get Help"
       }
@@ -7380,6 +7450,14 @@
         "title": "Group/Channel Information"
       }
     ],
+    "Groups (Subscription Model)": [
+      {
+        "document": "advanced/connections.md",
+        "line": 65,
+        "level": 3,
+        "title": "Groups (Subscription Model)"
+      }
+    ],
     "Guided Registration": [
       {
         "document": "advanced/conversation.md",
@@ -7407,7 +7485,7 @@
     "HTTP Decorators": [
       {
         "document": "advanced/router.md",
-        "line": 38,
+        "line": 64,
         "level": 3,
         "title": "HTTP Decorators"
       }
@@ -7415,7 +7493,7 @@
     "HTTP Request Events": [
       {
         "document": "advanced/http-client.md",
-        "line": 227,
+        "line": 245,
         "level": 3,
         "title": "HTTP Request Events"
       }
@@ -7423,7 +7501,7 @@
     "HTTP Request Parameters": [
       {
         "document": "advanced/http-client.md",
-        "line": 159,
+        "line": 177,
         "level": 3,
         "title": "HTTP Request Parameters"
       }
@@ -7447,7 +7525,7 @@
     "HTTPStatusError": [
       {
         "document": "advanced/http-client.md",
-        "line": 435,
+        "line": 453,
         "level": 3,
         "title": "HTTPStatusError"
       }
@@ -7553,7 +7631,7 @@
     "Handling Recommendations": [
       {
         "document": "advanced/errors.md",
-        "line": 159,
+        "line": 171,
         "level": 2,
         "title": "Handling Recommendations"
       }
@@ -7569,7 +7647,7 @@
     "Health Check": [
       {
         "document": "advanced/router.md",
-        "line": 334,
+        "line": 385,
         "level": 3,
         "title": "Health Check"
       },
@@ -7605,17 +7683,17 @@
     "High-Level Methods (Recommended)": [
       {
         "document": "advanced/http-client.md",
-        "line": 278,
+        "line": 296,
         "level": 4,
         "title": "High-Level Methods (Recommended)"
       }
     ],
-    "Home Entry": [
+    "Home Page Entry": [
       {
         "document": "advanced/router.md",
-        "line": 351,
+        "line": 402,
         "level": 2,
-        "title": "Home Entry"
+        "title": "Home Page Entry"
       }
     ],
     "Honest Boundaries (Can't Be Blocked)": [
@@ -7659,6 +7737,12 @@
       }
     ],
     "How It Works": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 7,
+        "level": 2,
+        "title": "How It Works"
+      },
       {
         "document": "ecosystem/app.md",
         "line": 61,
@@ -7713,17 +7797,17 @@
     "HttpResponse": [
       {
         "document": "advanced/http-client.md",
-        "line": 49,
+        "line": 67,
         "level": 2,
         "title": "HttpResponse"
       }
     ],
-    "I. I Want to Use a Robot": [
+    "I. I Want to Use Robots": [
       {
         "document": "README.md",
         "line": 13,
         "level": 3,
-        "title": "I. I Want to Use a Robot"
+        "title": "I. I Want to Use Robots"
       }
     ],
     "I18nClass Key Path Rules": [
@@ -7761,7 +7845,7 @@
     "IV. Ecosystem & Official Clients": [
       {
         "document": "README.md",
-        "line": 58,
+        "line": 59,
         "level": 3,
         "title": "IV. Ecosystem & Official Clients"
       }
@@ -8015,7 +8099,7 @@
     "Intended Audience": [
       {
         "document": "advanced/README.md",
-        "line": 28,
+        "line": 30,
         "level": 2,
         "title": "Intended Audience"
       }
@@ -8061,7 +8145,7 @@
     "Interaction — `Core/Event/interaction.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 103,
+        "line": 115,
         "level": 3,
         "title": "Interaction — `Core/Event/interaction.py`"
       }
@@ -8266,8 +8350,14 @@
     ],
     "Lifecycle Events": [
       {
+        "document": "advanced/connections.md",
+        "line": 110,
+        "level": 3,
+        "title": "Lifecycle Events"
+      },
+      {
         "document": "advanced/http-client.md",
-        "line": 225,
+        "line": 243,
         "level": 2,
         "title": "Lifecycle Events"
       },
@@ -8287,7 +8377,7 @@
     "Lifecycle Hooks": [
       {
         "document": "advanced/http-client.md",
-        "line": 345,
+        "line": 363,
         "level": 3,
         "title": "Lifecycle Hooks"
       }
@@ -8295,7 +8385,7 @@
     "Lifecycle Integration": [
       {
         "document": "advanced/router.md",
-        "line": 390,
+        "line": 441,
         "level": 2,
         "title": "Lifecycle Integration"
       }
@@ -8555,7 +8645,7 @@
     "Low-Level Methods": [
       {
         "document": "advanced/http-client.md",
-        "line": 304,
+        "line": 322,
         "level": 4,
         "title": "Low-Level Methods"
       }
@@ -9065,7 +9155,7 @@
     "Message Transaction: message_tx": [
       {
         "document": "advanced/interaction.md",
-        "line": 185,
+        "line": 187,
         "level": 2,
         "title": "Message Transaction: message_tx"
       }
@@ -9503,7 +9593,7 @@
     "Module Series — `Core/module.py` (`sdk.module.call`)": [
       {
         "document": "advanced/errors.md",
-        "line": 115,
+        "line": 127,
         "level": 3,
         "title": "Module Series — `Core/module.py` (`sdk.module.call`)"
       }
@@ -10139,7 +10229,7 @@
     "Others": [
       {
         "document": "README.md",
-        "line": 86,
+        "line": 87,
         "level": 2,
         "title": "Others"
       }
@@ -10158,6 +10248,22 @@
         "line": 118,
         "level": 2,
         "title": "Outbound Audit: Who Can Call Whom"
+      }
+    ],
+    "Outbound Connections (Client Side)": [
+      {
+        "document": "advanced/connections.md",
+        "line": 149,
+        "level": 2,
+        "title": "Outbound Connections (Client Side)"
+      }
+    ],
+    "Outbound Connections Automatically Pool (2.10+)": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 49,
+        "level": 4,
+        "title": "Outbound Connections Automatically Pool (2.10+)"
       }
     ],
     "Outbound Protocols": [
@@ -10193,6 +10299,12 @@
       }
     ],
     "Overview": [
+      {
+        "document": "advanced/connections.md",
+        "line": 9,
+        "level": 2,
+        "title": "Overview"
+      },
       {
         "document": "advanced/http-client.md",
         "line": 5,
@@ -10261,7 +10373,7 @@
     "POST": [
       {
         "document": "advanced/http-client.md",
-        "line": 86,
+        "line": 104,
         "level": 3,
         "title": "POST"
       }
@@ -10269,7 +10381,7 @@
     "PUT / DELETE / PATCH": [
       {
         "document": "advanced/http-client.md",
-        "line": 135,
+        "line": 153,
         "level": 3,
         "title": "PUT / DELETE / PATCH"
       }
@@ -10317,7 +10429,7 @@
     "Parameters": [
       {
         "document": "advanced/http-client.md",
-        "line": 157,
+        "line": 175,
         "level": 2,
         "title": "Parameters"
       }
@@ -10333,7 +10445,7 @@
     "Path Handling": [
       {
         "document": "advanced/router.md",
-        "line": 320,
+        "line": 371,
         "level": 2,
         "title": "Path Handling"
       }
@@ -10613,7 +10725,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 36,
+        "line": 38,
         "level": 2,
         "title": "Prerequisites"
       }
@@ -10648,6 +10760,14 @@
         "line": 172,
         "level": 3,
         "title": "Private Message Sending"
+      }
+    ],
+    "Proactively Emit Meta Events": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 154,
+        "level": 4,
+        "title": "Proactively Emit Meta Events"
       }
     ],
     "Process Supervision and Hard Restart": [
@@ -10993,7 +11113,7 @@
     "Rate Limiting": [
       {
         "document": "advanced/router.md",
-        "line": 254,
+        "line": 305,
         "level": 2,
         "title": "Rate Limiting"
       }
@@ -11039,7 +11159,7 @@
     "Receiving Messages": [
       {
         "document": "advanced/http-client.md",
-        "line": 276,
+        "line": 294,
         "level": 3,
         "title": "Receiving Messages"
       }
@@ -11116,6 +11236,14 @@
         "title": "Register API"
       }
     ],
+    "Register Entry": [
+      {
+        "document": "advanced/router.md",
+        "line": 406,
+        "level": 3,
+        "title": "Register Entry"
+      }
+    ],
     "Register Middleware": [
       {
         "document": "api-reference/adapter-system.md",
@@ -11156,12 +11284,12 @@
         "title": "Registering Handlers"
       }
     ],
-    "Registering an Entry": [
+    "Registration Forms: Single-Parameter (Recommended) and Two-Parameter": [
       {
         "document": "advanced/router.md",
-        "line": 355,
+        "line": 38,
         "level": 3,
-        "title": "Registering an Entry"
+        "title": "Registration Forms: Single-Parameter (Recommended) and Two-Parameter"
       }
     ],
     "Registration Timing → Ownership Result Comparison Table": [
@@ -11189,13 +11317,13 @@
       },
       {
         "document": "advanced/http-client.md",
-        "line": 482,
+        "line": 500,
         "level": 2,
         "title": "Related Documentation"
       },
       {
         "document": "advanced/interaction.md",
-        "line": 215,
+        "line": 217,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11225,7 +11353,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 414,
+        "line": 465,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11349,7 +11477,7 @@
     "Related Links": [
       {
         "document": "README.md",
-        "line": 98,
+        "line": 99,
         "level": 2,
         "title": "Related Links"
       },
@@ -11407,7 +11535,7 @@
     "Relationship with Other Systems": [
       {
         "document": "advanced/interaction.md",
-        "line": 209,
+        "line": 211,
         "level": 2,
         "title": "Relationship with Other Systems"
       }
@@ -11529,7 +11657,7 @@
     "Request Correlation ID (X-Request-ID)": [
       {
         "document": "advanced/router.md",
-        "line": 229,
+        "line": 280,
         "level": 2,
         "title": "Request Correlation ID (X-Request-ID)"
       }
@@ -11591,7 +11719,7 @@
     "Request Methods": [
       {
         "document": "advanced/http-client.md",
-        "line": 72,
+        "line": 90,
         "level": 2,
         "title": "Request Methods"
       }
@@ -11651,7 +11779,7 @@
     "Request Statistics": [
       {
         "document": "advanced/http-client.md",
-        "line": 212,
+        "line": 230,
         "level": 2,
         "title": "Request Statistics"
       }
@@ -11718,6 +11846,14 @@
         "line": 104,
         "level": 4,
         "title": "Response"
+      }
+    ],
+    "Response Return Convention (2.10+)": [
+      {
+        "document": "advanced/router.md",
+        "line": 86,
+        "level": 4,
+        "title": "Response Return Convention (2.10+)"
       }
     ],
     "Restart": [
@@ -11836,6 +11972,14 @@
         "title": "Rich Media Message Conversion Example"
       }
     ],
+    "Risks and Audits: Read Before Relaxing Limits": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 66,
+        "level": 2,
+        "title": "Risks and Audits: Read Before Relaxing Limits"
+      }
+    ],
     "Room Invitations": [
       {
         "document": "platform-guide/matrix.md",
@@ -11847,7 +11991,7 @@
     "Root Page": [
       {
         "document": "advanced/router.md",
-        "line": 342,
+        "line": 393,
         "level": 3,
         "title": "Root Page"
       }
@@ -11860,18 +12004,18 @@
         "title": "Route Discovery"
       }
     ],
-    "Route Groups": [
+    "Route Grouping": [
       {
         "document": "advanced/router.md",
-        "line": 195,
+        "line": 246,
         "level": 2,
-        "title": "Route Groups"
+        "title": "Route Grouping"
       }
     ],
     "Route Middleware": [
       {
         "document": "advanced/router.md",
-        "line": 212,
+        "line": 263,
         "level": 2,
         "title": "Route Middleware"
       }
@@ -11994,6 +12138,14 @@
         "line": 247,
         "level": 2,
         "title": "Runtime Fine-grained Control"
+      }
+    ],
+    "Runtime Override API": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 44,
+        "level": 2,
+        "title": "Runtime Override API"
       }
     ],
     "SDK Core Architecture": [
@@ -12141,7 +12293,7 @@
     "Security Headers": [
       {
         "document": "advanced/router.md",
-        "line": 289,
+        "line": 340,
         "level": 2,
         "title": "Security Headers"
       }
@@ -12513,7 +12665,7 @@
     "Shadow Series — `Core/shadow.py` (Shadow Modules)": [
       {
         "document": "advanced/errors.md",
-        "line": 144,
+        "line": 156,
         "level": 3,
         "title": "Shadow Series — `Core/shadow.py` (Shadow Modules)"
       }
@@ -12529,7 +12681,7 @@
     "Shutdown Noise Folding": [
       {
         "document": "advanced/errors.md",
-        "line": 174,
+        "line": 186,
         "level": 2,
         "title": "Shutdown Noise Folding"
       }
@@ -12933,7 +13085,7 @@
     "Storage Series — `Core/storage` / `Core/Bases/sql_base.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 92,
+        "line": 104,
         "level": 3,
         "title": "Storage Series — `Core/storage` / `Core/Bases/sql_base.py`"
       }
@@ -12960,12 +13112,12 @@
         "title": "Strict Mode"
       }
     ],
-    "Structured Properties": [
+    "Structured Attributes": [
       {
         "document": "advanced/errors.md",
-        "line": 38,
+        "line": 41,
         "level": 2,
-        "title": "Structured Properties"
+        "title": "Structured Attributes"
       }
     ],
     "Sub-Loggers": [
@@ -13239,7 +13391,7 @@
     "System Routes": [
       {
         "document": "advanced/router.md",
-        "line": 330,
+        "line": 381,
         "level": 2,
         "title": "System Routes"
       }
@@ -13371,7 +13523,7 @@
     "Timeouts and Retries": [
       {
         "document": "advanced/http-client.md",
-        "line": 180,
+        "line": 198,
         "level": 2,
         "title": "Timeouts and Retries"
       }
@@ -13395,17 +13547,17 @@
     "Trace ID": [
       {
         "document": "advanced/interaction.md",
-        "line": 198,
+        "line": 200,
         "level": 2,
         "title": "Trace ID"
       }
     ],
-    "Traditional Registration Methods": [
+    "Traditional Registration Method": [
       {
         "document": "advanced/router.md",
-        "line": 104,
+        "line": 155,
         "level": 2,
-        "title": "Traditional Registration Methods"
+        "title": "Traditional Registration Method"
       }
     ],
     "Transaction Operations": [
@@ -13430,6 +13582,14 @@
         "line": 64,
         "level": 2,
         "title": "Transactions"
+      }
+    ],
+    "Transcript": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 1,
+        "level": 1,
+        "title": "Transcript"
       }
     ],
     "Transcript Session Inbox": [
@@ -13523,7 +13683,7 @@
     "Unified Exception Handling": [
       {
         "document": "advanced/http-client.md",
-        "line": 422,
+        "line": 440,
         "level": 3,
         "title": "Unified Exception Handling"
       }
@@ -13594,6 +13754,14 @@
         "line": 219,
         "level": 2,
         "title": "Unique Event Types"
+      }
+    ],
+    "Unload and Cleanup Semantics": [
+      {
+        "document": "advanced/connections.md",
+        "line": 180,
+        "level": 2,
+        "title": "Unload and Cleanup Semantics"
       }
     ],
     "Unload vs. Purge": [
@@ -13907,7 +14075,7 @@
     "Using in Adapters": [
       {
         "document": "advanced/http-client.md",
-        "line": 447,
+        "line": 465,
         "level": 2,
         "title": "Using in Adapters"
       },
@@ -14007,7 +14175,7 @@
     "V. I Want to Contribute to ErisPulse": [
       {
         "document": "README.md",
-        "line": 70,
+        "line": 71,
         "level": 3,
         "title": "V. I Want to Contribute to ErisPulse"
       }
@@ -14044,6 +14212,14 @@
         "title": "Viewing Available Modules"
       }
     ],
+    "Viewing the Connection Pool": [
+      {
+        "document": "advanced/connections.md",
+        "line": 37,
+        "level": 2,
+        "title": "Viewing the Connection Pool"
+      }
+    ],
     "Viewport and Output Format": [
       {
         "document": "ecosystem/takumi.md",
@@ -14055,7 +14231,7 @@
     "WSMessage": [
       {
         "document": "advanced/http-client.md",
-        "line": 327,
+        "line": 345,
         "level": 3,
         "title": "WSMessage"
       }
@@ -14159,7 +14335,7 @@
     "WebSocket Client": [
       {
         "document": "advanced/http-client.md",
-        "line": 260,
+        "line": 278,
         "level": 2,
         "title": "WebSocket Client"
       }
@@ -14187,7 +14363,7 @@
     "WebSocket Connection Events": [
       {
         "document": "advanced/http-client.md",
-        "line": 239,
+        "line": 257,
         "level": 3,
         "title": "WebSocket Connection Events"
       }
@@ -14195,7 +14371,7 @@
     "WebSocket Decorators": [
       {
         "document": "advanced/router.md",
-        "line": 65,
+        "line": 109,
         "level": 3,
         "title": "WebSocket Decorators"
       }
@@ -14211,7 +14387,7 @@
     "WebSocket Lifecycle Hooks": [
       {
         "document": "advanced/router.md",
-        "line": 171,
+        "line": 222,
         "level": 2,
         "title": "WebSocket Lifecycle Hooks"
       }
@@ -14219,7 +14395,7 @@
     "WebSocket Registration": [
       {
         "document": "advanced/router.md",
-        "line": 130,
+        "line": 181,
         "level": 3,
         "title": "WebSocket Registration"
       }
@@ -14227,7 +14403,7 @@
     "WebSocket Series — `Core/client.py` (`send` / `receive`)": [
       {
         "document": "advanced/errors.md",
-        "line": 85,
+        "line": 90,
         "level": 3,
         "title": "WebSocket Series — `Core/client.py` (`send` / `receive`)"
       }
@@ -14256,12 +14432,12 @@
         "title": "When Should You Use Manual Startup?"
       }
     ],
-    "When Will Waiting Be Cancelled": [
+    "When Will the Waiting Be Cancelled": [
       {
         "document": "advanced/interaction.md",
         "line": 49,
         "level": 3,
-        "title": "When Will Waiting Be Cancelled"
+        "title": "When Will the Waiting Be Cancelled"
       }
     ],
     "When to Regenerate": [
@@ -14878,12 +15054,12 @@
         "title": "dump_state()"
       }
     ],
-    "escalate: Guaranteed escalation at the deadline": [
+    "escalate: Guaranteed Delivery at a Point in Time": [
       {
         "document": "advanced/interaction.md",
         "line": 96,
         "level": 3,
-        "title": "escalate: Guaranteed escalation at the deadline"
+        "title": "escalate: Guaranteed Delivery at a Point in Time"
       }
     ],
     "get() Method": [
@@ -15062,12 +15238,12 @@
         "title": "pyproject.toml Configuration"
       }
     ],
-    "remind: Remind if no reply": [
+    "remind: Remind if No Reply": [
       {
         "document": "advanced/interaction.md",
         "line": 79,
         "level": 3,
-        "title": "remind: Remind if no reply"
+        "title": "remind: Remind if No Reply"
       }
     ],
     "run": [
@@ -15273,7 +15449,7 @@
     "ws_connect Parameters": [
       {
         "document": "advanced/http-client.md",
-        "line": 172,
+        "line": 190,
         "level": 3,
         "title": "ws_connect Parameters"
       }

@@ -158,7 +158,7 @@
           "icon": "fa-puzzle-piece",
           "documents": [
             {
-              "title": "Введение в разработку модулей",
+              "title": "Начало разработки модуля",
               "path": "developer-guide/modules/getting-started.md",
               "level": 1,
               "icon": "fa-puzzle-piece"
@@ -366,7 +366,7 @@
     "Продвинутые темы": {
       "description": "Глубокое изучение продвинутых функций фреймворка",
       "icon": "fa-fire",
-      "count": 17,
+      "count": 19,
       "documents": [
         {
           "title": "Расширенные темы",
@@ -465,8 +465,20 @@
           "icon": "fa-triangle-exclamation"
         },
         {
+          "title": "Пул соединений и трансляция",
+          "path": "advanced/connections.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
           "title": "Процесс запуска и ручное управление",
           "path": "advanced/startup.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "Ящик для диалогов (Транскрипт)",
+          "path": "advanced/transcript.md",
           "level": 1,
           "icon": "fa-fire"
         }

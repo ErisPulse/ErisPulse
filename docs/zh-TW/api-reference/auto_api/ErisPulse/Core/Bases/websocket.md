@@ -14,6 +14,7 @@ send/receive/iter 方法签名在两端保持一致，具体实现由子类提�
 > 1. 客户端和服务端 WebSocket 共享相同的 send/receive/iter 接口
 > 2. iter_text/iter_bytes/iter_json 自动在断开时停止迭代
 > 3. 通过 on_disconnect/on_error 注册生命周期回调
+> 4. 连接池身份（id/namespace/owner/groups）由 _ConnectionIdentity 混入提供
 
 ---
 
@@ -49,7 +50,142 @@ async for msg in ws.iter_messages():
 ---
 
 
-### `class WebSocketConnectionBase`
+### `class _ConnectionIdentity`
+
+连接池身份混入
+
+提供连接在 ``ErisPulse.connections`` 注册表中登记后的身份信息
+（id / namespace / owner / kind / meta / groups）与业务分组操作。
+分组的真相源在 ConnectionManager，本混入仅持有只读快照；
+``close`` 的关闭权归创建者 owner，跨模块共享时仅允许发送与分组操作。
+
+**内部方法**
+WebSocketConnectionBase（服务端/客户端 WS）与 SseEmitter 共用
+
+
+#### 方法列表
+
+
+##### `__init__(*, connection_id: str = '', namespace: str = '', owner: str = '', kind: str = '')`
+
+- **connection_id** (`str`): 连接池分配的连接 id（未登记时为空串）
+- **namespace** (`str`): 服务端路由命名空间（客户端连接为空）
+- **owner** (`str`): 归属 owner（模块名 / 平台名），拥有关闭权
+- **kind** (`str`): 连接种类（"server" / "client" / "sse"）
+
+---
+
+
+##### `id -> str`（property）
+
+连接 id
+
+连接池分配的全局唯一标识，形如 ``"{namespace}:{hex}"``；
+未登记的连接为空串。
+
+**返回值** (`str`): 连接 id
+
+---
+
+
+##### `namespace -> str`（property）
+
+服务端路由命名空间（即注册路由的模块名 / 平台名）
+
+**返回值** (`str`): 命名空间，客户端出站连接为空串
+
+---
+
+
+##### `owner -> str`（property）
+
+连接归属 owner（模块名 / 平台名）
+
+owner 拥有关闭权；模块卸载时其名下连接由框架统一关闭。
+
+**返回值** (`str`): 归属标识
+
+---
+
+
+##### `kind -> str`（property）
+
+连接种类
+
+**返回值**: str "server"（服务端 WS）/ "client"（客户端出站 WS）/ "sse"（SSE 长连接）
+
+---
+
+
+##### `meta -> dict[str, Any]`（property）
+
+业务元数据（自由字典）
+
+业务可在连接存活期内写入任意标注（如用户身份、租户号），
+连接断开时随连接一并丢弃。
+
+**返回值** (`dict`): 元数据字典（原对象，非拷贝）
+
+---
+
+
+##### `groups -> frozenset[str]`（property）
+
+当前加入的业务分组
+
+**返回值** (`frozenset`): 分组名集合（只读快照）
+
+---
+
+
+##### `_set_conn_groups(groups: frozenset[str]) -> None`
+
+**内部方法**
+由连接池维护的分组快照回写（分组真相源在 ConnectionManager）
+
+---
+
+
+##### `join_group(*groups: str) -> None`
+
+加入业务分组
+
+分组命名完全由业务约定（房间 / 租户 / 主题……），框架不约束格式；
+连接断开时自动退出全部分组。等价于 ``connections.assign(self.id, *groups)``。
+
+- **groups** (`str`): 一个或多个分组名
+
+**示例**:
+
+```python
+@router.ws("MyModule", "/ws")
+async def handle(ws: WebSocketConnection):
+    ws.join_group("room:1")
+```
+
+---
+
+
+##### `leave_group(*groups: str) -> None`
+
+离开业务分组
+
+- **groups** (`str`): 一个或多个分组名
+
+---
+
+
+##### `_check_close_permission() -> None`
+
+**内部方法**
+关闭权校验：运行时上下文可归因且 ≠ 连接 owner 时拒绝。
+
+上下文为空（框架内部路径 / 未归因的老代码）一律放行，保证向后兼容。
+
+---
+
+
+### `class WebSocketConnectionBase(_ConnectionIdentity)`
 
 WebSocket 连接共享基类
 
@@ -60,6 +196,7 @@ send/receive 由子类实现，iter 方法提供基于 receive 的默认实现�
 > 1. 通过 .raw 属性可访问底层框架原生对象
 > 2. 服务端和客户端共享此基类，接口一致
 > 3. 使用 on_disconnect/on_error 注册生命周期回调
+> 4. close 默认校验归属权限，框架内部路径用 close(force=True) 绕过
 
 **示例**:
 
@@ -74,9 +211,13 @@ async for msg in ws.iter_text():
 #### 方法列表
 
 
-##### `__init__(ws)`
+##### `__init__(ws, *, connection_id: str = '', namespace: str = '', owner: str = '', kind: str = '')`
 
 - **ws** (`object`): 底层框架 WebSocket 对象
+- **connection_id** (`str`): 连接池分配的连接 id（未登记时为空串）
+- **namespace** (`str`): 服务端路由命名空间（客户端连接为空）
+- **owner** (`str`): 归属 owner（模块名 / 平台名），拥有关闭权
+- **kind** (`str`): 连接种类（"server" / "client"）
 
 ---
 
@@ -198,12 +339,29 @@ async for msg in ws.iter_text():
 ---
 
 
-##### `async close(code: int = 1000, reason: str | None = None) -> None`
+##### `async close(code: int = 1000, reason: str | None = None, *, force: bool = False) -> None`
 
-关闭 WebSocket 连接
+关闭 WebSocket 连接（默认校验归属权限）
+
+非 owner 模块关闭他人连接时抛出
+:class:`~ErisPulse.Core.Bases.errors.ConnectionPermissionError`；
+运行时上下文为空（框架内部路径 / 未归因代码）时放行。
 
 - **code** (`int`): 关闭码 (默认: 1000)
 - **reason** (`str | None`): 关闭原因 (可选)
+- **force** (`bool`): 跳过权限校验（框架内部回收路径使用）
+
+**异常**: `ConnectionPermissionError` - 跨 owner 关闭且未 force 时
+
+---
+
+
+##### `async _close(code: int = 1000, reason: str | None = None) -> None`
+
+实际关闭动作（子类实现，绕过权限层）
+
+- **code** (`int`): 关闭码
+- **reason** (`str | None`): 关闭原因
 
 ---
 

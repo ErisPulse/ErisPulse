@@ -19,10 +19,10 @@
 
 ## 统计信息
 
-- **模块总数**: 130
-- **类总数**: 176（包括 4 个嵌套类）
-- **函数总数**: 330
-- **方法总数**: 1581
+- **模块总数**: 131
+- **类总数**: 182（包括 4 个嵌套类）
+- **函数总数**: 339
+- **方法总数**: 1613
 
 ---
 
@@ -236,7 +236,7 @@
 
 ### [ErisPulse.Core.Bases.errors](ErisPulse/Core/Bases/errors.md)
 
-22 个类
+25 个类
 
 
 ### [ErisPulse.Core.Bases.i18n_schema](ErisPulse/Core/Bases/i18n_schema.md)
@@ -266,7 +266,7 @@
 
 ### [ErisPulse.Core.Bases.router](ErisPulse/Core/Bases/router.md)
 
-3 个类 | 48 个方法
+3 个类 | 48 个方法 | 1 个函数
 
 
 ### [ErisPulse.Core.Bases.send_builder](ErisPulse/Core/Bases/send_builder.md)
@@ -291,7 +291,7 @@
 
 ### [ErisPulse.Core.Bases.websocket](ErisPulse/Core/Bases/websocket.md)
 
-2 个类 | 17 个方法
+3 个类 | 29 个方法
 
 
 ### [ErisPulse.Core.Event.__init__](ErisPulse/Core/Event/__init__.md)
@@ -316,7 +316,7 @@
 
 ### [ErisPulse.Core.Event.conversation](ErisPulse/Core/Event/conversation.md)
 
-2 个类 | 26 个方法 | 4 个函数
+2 个类 | 26 个方法 | 5 个函数
 
 
 ### [ErisPulse.Core.Event.governance](ErisPulse/Core/Event/governance.md)
@@ -396,12 +396,17 @@
 
 ### [ErisPulse.Core.client](ErisPulse/Core/client.md)
 
-3 个类 | 32 个方法
+3 个类 | 33 个方法
 
 
 ### [ErisPulse.Core.config](ErisPulse/Core/config.md)
 
 3 个类 | 39 个方法 | 2 个函数
+
+
+### [ErisPulse.Core.connections](ErisPulse/Core/connections.md)
+
+2 个类 | 13 个方法
 
 
 ### [ErisPulse.Core.constants](ErisPulse/Core/constants.md)
@@ -461,7 +466,7 @@
 
 ### [ErisPulse.Core.logger](ErisPulse/Core/logger.md)
 
-4 个类 | 54 个方法 | 3 个函数
+4 个类 | 55 个方法 | 3 个函数
 
 
 ### [ErisPulse.Core.master](ErisPulse/Core/master.md)
@@ -481,7 +486,7 @@
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
 
-3 个类 | 82 个方法 | 2 个函数
+3 个类 | 83 个方法 | 3 个函数
 
 
 ### [ErisPulse.Core.scope](ErisPulse/Core/scope.md)
@@ -521,7 +526,7 @@
 
 ### [ErisPulse.Core.transcript](ErisPulse/Core/transcript.md)
 
-1 个类 | 27 个方法
+1 个类 | 31 个方法
 
 
 ### [ErisPulse.__init__](ErisPulse/__init__.md)
@@ -661,7 +666,7 @@
 
 ### [ErisPulse.runtime.tasks](ErisPulse/runtime/tasks.md)
 
-9 个函数
+15 个函数
 
 
 ### [ErisPulse.runtime.troubleshoot](ErisPulse/runtime/troubleshoot.md)
