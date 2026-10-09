@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1729,
+  "total_keywords": 1747,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -26,12 +26,12 @@
         "title": "1 つでインストールするスクリプト（推奨）"
       }
     ],
-    "1. BaseAdapter 層（通常はオーバーライド不要）": [
+    "1. BaseAdapter 層（ほとんどの場合、オーバーライドする必要はない）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 392,
         "level": 3,
-        "title": "1. BaseAdapter 層（通常はオーバーライド不要）"
+        "title": "1. BaseAdapter 層（ほとんどの場合、オーバーライドする必要はない）"
       }
     ],
     "1. CLI run コマンド（開発/簡単なデプロイ、推奨）": [
@@ -200,6 +200,14 @@
         "line": 346,
         "level": 3,
         "title": "1. ログレベルの適切な使用"
+      }
+    ],
+    "1. ロボットを使いたい": [
+      {
+        "document": "README.md",
+        "line": 13,
+        "level": 3,
+        "title": "1. ロボットを使いたい"
       }
     ],
     "1. 何时发送 Meta 事件": [
@@ -600,12 +608,12 @@
         "title": "2. README ヘッダー"
       }
     ],
-    "2. Send 内部クラス（通常はオーバーライド不要）": [
+    "2. Send 内部クラス（ほとんどの場合、オーバーライドする必要はない）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 423,
         "level": 3,
-        "title": "2. Send 内部クラス（通常はオーバーライド不要）"
+        "title": "2. Send 内部クラス（ほとんどの場合、オーバーライドする必要はない）"
       }
     ],
     "2. pyproject.toml の作成": [
@@ -686,6 +694,14 @@
         "line": 401,
         "level": 3,
         "title": "2. ブロッキング操作の回避"
+      }
+    ],
+    "2. モジュール / アダプタを開発したい": [
+      {
+        "document": "README.md",
+        "line": 27,
+        "level": 3,
+        "title": "2. モジュール / アダプタを開発したい"
       }
     ],
     "2. モジュール/コマンドが反応しない場合": [
@@ -1036,12 +1052,12 @@
         "title": "3. Request DSL"
       }
     ],
-    "3. Request 内部クラス（通常はオーバーライド不要）": [
+    "3. Request 内部クラス（ほとんどの場合、オーバーライドする必要はない）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 447,
         "level": 3,
-        "title": "3. Request 内部クラス（通常はオーバーライド不要）"
+        "title": "3. Request 内部クラス（ほとんどの場合、オーバーライドする必要はない）"
       }
     ],
     "3. `self` フィールドの欠落": [
@@ -1060,12 +1076,12 @@
         "title": "3. アダプタ"
       }
     ],
-    "3. アダプターのメインクラスの作成": [
+    "3. アダプターの主クラスの作成": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 76,
         "level": 3,
-        "title": "3. アダプターのメインクラスの作成"
+        "title": "3. アダプターの主クラスの作成"
       }
     ],
     "3. アダプタ終了時のクリーンアップ": [
@@ -1178,6 +1194,14 @@
         "line": 341,
         "level": 3,
         "title": "3. 出力アクションが拒否された場合のトラブルシューティング"
+      }
+    ],
+    "3. 原理を深く理解したい": [
+      {
+        "document": "README.md",
+        "line": 39,
+        "level": 3,
+        "title": "3. 原理を深く理解したい"
       }
     ],
     "3. 完全なフィールド仕様": [
@@ -1468,6 +1492,14 @@
         "title": "4. イメージを公開に設定"
       }
     ],
+    "4. エコシステムと公式クライアント": [
+      {
+        "document": "README.md",
+        "line": 59,
+        "level": 3,
+        "title": "4. エコシステムと公式クライアント"
+      }
+    ],
     "4. セッション識別子のプラットフォーム間の隔離": [
       {
         "document": "advanced/scope.md",
@@ -1666,6 +1698,14 @@
         "line": 80,
         "level": 3,
         "title": "5. Bot 状態の照会"
+      }
+    ],
+    "5. ErisPulse に貢献したい": [
+      {
+        "document": "README.md",
+        "line": 71,
+        "level": 3,
+        "title": "5. ErisPulse に貢献したい"
       }
     ],
     "5. Send クラスの実装": [
@@ -2346,12 +2386,12 @@
         "title": "9. アダプタ開発の注意点"
       }
     ],
-    "9. 接続情報とルーティング発見": [
+    "9. 接続情報とルート発見": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 469,
         "level": 3,
-        "title": "9. 接続情報とルーティング発見"
+        "title": "9. 接続情報とルート発見"
       }
     ],
     "9. 最善の実践": [
@@ -2506,6 +2546,14 @@
         "line": 83,
         "level": 3,
         "title": "API レスポンス"
+      }
+    ],
+    "API 一覧": [
+      {
+        "document": "advanced/connections.md",
+        "line": 184,
+        "level": 2,
+        "title": "API 一覧"
       }
     ],
     "API 呼び出し": [
@@ -2791,7 +2839,7 @@
     "CORS 設定": [
       {
         "document": "advanced/router.md",
-        "line": 270,
+        "line": 322,
         "level": 2,
         "title": "CORS 設定"
       }
@@ -2799,7 +2847,7 @@
     "Client 系列 — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 65,
+        "line": 70,
         "level": 3,
         "title": "Client 系列 — `Core/client.py` / `Core/Bases/client.py`"
       }
@@ -2807,7 +2855,7 @@
     "ClientWebSocket 属性": [
       {
         "document": "advanced/http-client.md",
-        "line": 336,
+        "line": 354,
         "level": 3,
         "title": "ClientWebSocket 属性"
       }
@@ -3169,7 +3217,7 @@
     "GET": [
       {
         "document": "advanced/http-client.md",
-        "line": 74,
+        "line": 92,
         "level": 3,
         "title": "GET"
       }
@@ -3198,26 +3246,10 @@
         "title": "HTTP クライアント モジュール"
       }
     ],
-    "HTTP リクエスト": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 20,
-        "level": 3,
-        "title": "HTTP リクエスト"
-      }
-    ],
-    "HTTP リクエストイベント": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 227,
-        "level": 3,
-        "title": "HTTP リクエストイベント"
-      }
-    ],
     "HTTP 装飾器": [
       {
         "document": "advanced/router.md",
-        "line": 38,
+        "line": 65,
         "level": 3,
         "title": "HTTP 装飾器"
       }
@@ -3225,7 +3257,7 @@
     "HTTPStatusError": [
       {
         "document": "advanced/http-client.md",
-        "line": 435,
+        "line": 453,
         "level": 3,
         "title": "HTTPStatusError"
       }
@@ -3238,10 +3270,26 @@
         "title": "HTTPクライアント"
       }
     ],
+    "HTTPリクエスト": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 20,
+        "level": 3,
+        "title": "HTTPリクエスト"
+      }
+    ],
+    "HTTPリクエストイベント": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 245,
+        "level": 3,
+        "title": "HTTPリクエストイベント"
+      }
+    ],
     "HTTPリクエストパラメータ": [
       {
         "document": "advanced/http-client.md",
-        "line": 159,
+        "line": 177,
         "level": 3,
         "title": "HTTPリクエストパラメータ"
       }
@@ -3257,7 +3305,7 @@
     "HttpResponse": [
       {
         "document": "advanced/http-client.md",
-        "line": 49,
+        "line": 67,
         "level": 2,
         "title": "HttpResponse"
       }
@@ -3289,7 +3337,7 @@
     "Interaction — `Core/Event/interaction.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 102,
+        "line": 119,
         "level": 3,
         "title": "Interaction — `Core/Event/interaction.py`"
       }
@@ -3425,7 +3473,7 @@
     "Module 系列 — `Core/module.py`（`sdk.module.call`）": [
       {
         "document": "advanced/errors.md",
-        "line": 114,
+        "line": 131,
         "level": 3,
         "title": "Module 系列 — `Core/module.py`（`sdk.module.call`）"
       }
@@ -3569,7 +3617,7 @@
     "POST": [
       {
         "document": "advanced/http-client.md",
-        "line": 86,
+        "line": 104,
         "level": 3,
         "title": "POST"
       }
@@ -3577,7 +3625,7 @@
     "PUT / DELETE / PATCH": [
       {
         "document": "advanced/http-client.md",
-        "line": 135,
+        "line": 153,
         "level": 3,
         "title": "PUT / DELETE / PATCH"
       }
@@ -3892,12 +3940,12 @@
         "title": "Sendのチェーン呼び出し"
       }
     ],
-    "Shadow 系列 — `Core/shadow.py`（影モジュール）": [
+    "Shadow 系列 — `Core/shadow.py`（影子モジュール）": [
       {
         "document": "advanced/errors.md",
-        "line": 143,
+        "line": 160,
         "level": 3,
-        "title": "Shadow 系列 — `Core/shadow.py`（影モジュール）"
+        "title": "Shadow 系列 — `Core/shadow.py`（影子モジュール）"
       }
     ],
     "SseEmitter API": [
@@ -3919,7 +3967,7 @@
     "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 92,
+        "line": 104,
         "level": 3,
         "title": "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`"
       }
@@ -4007,7 +4055,7 @@
     "WSMessage": [
       {
         "document": "advanced/http-client.md",
-        "line": 327,
+        "line": 345,
         "level": 3,
         "title": "WSMessage"
       }
@@ -4036,14 +4084,6 @@
         "title": "WebSocket / Webhook 接続"
       }
     ],
-    "WebSocket クライアント": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 260,
-        "level": 2,
-        "title": "WebSocket クライアント"
-      }
-    ],
     "WebSocket フロー": [
       {
         "document": "platform-guide/qqbot.md",
@@ -4055,31 +4095,15 @@
     "WebSocket ライフサイクルフック": [
       {
         "document": "advanced/router.md",
-        "line": 171,
+        "line": 223,
         "level": 2,
         "title": "WebSocket ライフサイクルフック"
-      }
-    ],
-    "WebSocket 接続": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 38,
-        "level": 3,
-        "title": "WebSocket 接続"
-      }
-    ],
-    "WebSocket 接続イベント": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 239,
-        "level": 3,
-        "title": "WebSocket 接続イベント"
       }
     ],
     "WebSocket 登録": [
       {
         "document": "advanced/router.md",
-        "line": 130,
+        "line": 182,
         "level": 3,
         "title": "WebSocket 登録"
       }
@@ -4087,7 +4111,7 @@
     "WebSocket 系列 — `Core/client.py`（`send` / `receive`）": [
       {
         "document": "advanced/errors.md",
-        "line": 85,
+        "line": 90,
         "level": 3,
         "title": "WebSocket 系列 — `Core/client.py`（`send` / `receive`）"
       }
@@ -4095,12 +4119,26 @@
     "WebSocket 装飾器": [
       {
         "document": "advanced/router.md",
-        "line": 65,
+        "line": 111,
         "level": 3,
         "title": "WebSocket 装飾器"
       }
     ],
+    "WebSocketクライアント": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 278,
+        "level": 2,
+        "title": "WebSocketクライアント"
+      }
+    ],
     "WebSocket接続": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 38,
+        "level": 3,
+        "title": "WebSocket接続"
+      },
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 805,
@@ -4112,6 +4150,14 @@
         "line": 360,
         "level": 2,
         "title": "WebSocket接続"
+      }
+    ],
+    "WebSocket接続イベント": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 257,
+        "level": 3,
+        "title": "WebSocket接続イベント"
       }
     ],
     "WebUI での消費方法": [
@@ -5139,7 +5185,7 @@
     "ws_connect パラメータ": [
       {
         "document": "advanced/http-client.md",
-        "line": 172,
+        "line": 190,
         "level": 3,
         "title": "ws_connect パラメータ"
       }
@@ -5209,7 +5255,7 @@
     "その他": [
       {
         "document": "README.md",
-        "line": 86,
+        "line": 87,
         "level": 2,
         "title": "その他"
       }
@@ -5431,7 +5477,7 @@
     "アダプターでの使用": [
       {
         "document": "advanced/http-client.md",
-        "line": 447,
+        "line": 465,
         "level": 2,
         "title": "アダプターでの使用"
       },
@@ -5442,12 +5488,12 @@
         "title": "アダプターでの使用"
       }
     ],
-    "アダプターとは": [
+    "アダプターとは何か": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 7,
         "level": 3,
-        "title": "アダプターとは"
+        "title": "アダプターとは何か"
       }
     ],
     "アダプターのアーキテクチャ": [
@@ -5600,6 +5646,14 @@
         "line": 72,
         "level": 2,
         "title": "アンロード/無効化クリーンアップシーケンス"
+      }
+    ],
+    "アンロードとクリーンアップの意味": [
+      {
+        "document": "advanced/connections.md",
+        "line": 177,
+        "level": 2,
+        "title": "アンロードとクリーンアップの意味"
       }
     ],
     "アンロードと完全アンロード（purge）": [
@@ -6095,7 +6149,7 @@
     "エラーのキャプチャに関する提案": [
       {
         "document": "advanced/errors.md",
-        "line": 158,
+        "line": 178,
         "level": 2,
         "title": "エラーのキャプチャに関する提案"
       }
@@ -6201,7 +6255,7 @@
     "エントリの登録": [
       {
         "document": "advanced/router.md",
-        "line": 355,
+        "line": 407,
         "level": 3,
         "title": "エントリの登録"
       }
@@ -6372,6 +6426,14 @@
         "line": 87,
         "level": 3,
         "title": "グループ管理メソッド"
+      }
+    ],
+    "グループ（サブスクリプションモデル）": [
+      {
+        "document": "advanced/connections.md",
+        "line": 64,
+        "level": 3,
+        "title": "グループ（サブスクリプションモデル）"
       }
     ],
     "グローバルバックアップ：`default_allow`": [
@@ -6674,12 +6736,12 @@
         "title": "コンテキストと永続化"
       }
     ],
-    "コンテキスト管理": [
+    "コンテキストマネージャー": [
       {
         "document": "advanced/http-client.md",
-        "line": 251,
+        "line": 269,
         "level": 2,
-        "title": "コンテキスト管理"
+        "title": "コンテキストマネージャー"
       }
     ],
     "コンポーネントのアップグレード": [
@@ -6885,7 +6947,7 @@
     "システムルーティング": [
       {
         "document": "advanced/router.md",
-        "line": 330,
+        "line": 382,
         "level": 2,
         "title": "システムルーティング"
       }
@@ -7032,6 +7094,14 @@
         "title": "ストレージ設定"
       }
     ],
+    "スレッド間の投递": [
+      {
+        "document": "advanced/connections.md",
+        "line": 161,
+        "level": 2,
+        "title": "スレッド間の投递"
+      }
+    ],
     "スーパーファイル共有イベントの例": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -7059,7 +7129,7 @@
     "セキュリティヘッダー": [
       {
         "document": "advanced/router.md",
-        "line": 289,
+        "line": 341,
         "level": 2,
         "title": "セキュリティヘッダー"
       }
@@ -7139,7 +7209,7 @@
     "タイムアウトとリトライ": [
       {
         "document": "advanced/http-client.md",
-        "line": 180,
+        "line": 198,
         "level": 2,
         "title": "タイムアウトとリトライ"
       }
@@ -7179,7 +7249,7 @@
     "ダッシュボードの自動登録": [
       {
         "document": "advanced/router.md",
-        "line": 386,
+        "line": 438,
         "level": 3,
         "title": "ダッシュボードの自動登録"
       }
@@ -7514,12 +7584,12 @@
         "title": "デバッグのコツ"
       }
     ],
-    "デフォルトのヘッダーをカスタマイズ": [
+    "デフォルトヘッダーのカスタマイズ": [
       {
         "document": "advanced/http-client.md",
-        "line": 200,
+        "line": 218,
         "level": 2,
-        "title": "デフォルトのヘッダーをカスタマイズ"
+        "title": "デフォルトヘッダーのカスタマイズ"
       }
     ],
     "デフォルト設定": [
@@ -7682,16 +7752,18 @@
     ],
     "ドキュメントリスト": [
       {
-        "document": "advanced/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "ドキュメントリスト"
-      },
-      {
         "document": "api-reference/README.md",
         "line": 5,
         "level": 2,
         "title": "ドキュメントリスト"
+      }
+    ],
+    "ドキュメント一覧": [
+      {
+        "document": "advanced/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "ドキュメント一覧"
       }
     ],
     "ドキュメント形式の規格": [
@@ -7954,18 +8026,10 @@
         "title": "バージョン更新の説明"
       }
     ],
-    "パスの選択": [
-      {
-        "document": "README.md",
-        "line": 9,
-        "level": 2,
-        "title": "パスの選択"
-      }
-    ],
     "パス処理": [
       {
         "document": "advanced/router.md",
-        "line": 320,
+        "line": 372,
         "level": 2,
         "title": "パス処理"
       }
@@ -8005,7 +8069,7 @@
     "パラメータの説明": [
       {
         "document": "advanced/http-client.md",
-        "line": 157,
+        "line": 175,
         "level": 2,
         "title": "パラメータの説明"
       },
@@ -8123,7 +8187,7 @@
     "フレームワーク内部のパラメータ検証（ValueError）": [
       {
         "document": "advanced/errors.md",
-        "line": 152,
+        "line": 169,
         "level": 3,
         "title": "フレームワーク内部のパラメータ検証（ValueError）"
       }
@@ -8142,6 +8206,22 @@
         "line": 169,
         "level": 3,
         "title": "ブラックリストフィルタリング"
+      }
+    ],
+    "ブロードキャスト": [
+      {
+        "document": "advanced/connections.md",
+        "line": 84,
+        "level": 3,
+        "title": "ブロードキャスト"
+      }
+    ],
+    "ブロードキャストとサブスクリプション": [
+      {
+        "document": "advanced/connections.md",
+        "line": 62,
+        "level": 2,
+        "title": "ブロードキャストとサブスクリプション"
       }
     ],
     "プライベートメッセージの処理": [
@@ -8477,7 +8557,7 @@
     "ヘルスチェック": [
       {
         "document": "advanced/router.md",
-        "line": 334,
+        "line": 386,
         "level": 3,
         "title": "ヘルスチェック"
       },
@@ -8491,7 +8571,7 @@
     "ヘルプを求める": [
       {
         "document": "README.md",
-        "line": 92,
+        "line": 93,
         "level": 2,
         "title": "ヘルプを求める"
       }
@@ -8515,7 +8595,7 @@
     "ホームページのエントリ": [
       {
         "document": "advanced/router.md",
-        "line": 351,
+        "line": 403,
         "level": 2,
         "title": "ホームページのエントリ"
       }
@@ -8741,7 +8821,7 @@
     "メッセージの受信": [
       {
         "document": "advanced/http-client.md",
-        "line": 276,
+        "line": 294,
         "level": 3,
         "title": "メッセージの受信"
       }
@@ -8911,7 +8991,7 @@
     "メッセージトランザクション：message_tx": [
       {
         "document": "advanced/interaction.md",
-        "line": 186,
+        "line": 188,
         "level": 2,
         "title": "メッセージトランザクション：message_tx"
       }
@@ -9436,6 +9516,14 @@
         "title": "モジュール開発者ガイド"
       }
     ],
+    "モジュール間の渡し渡し / 再利用": [
+      {
+        "document": "advanced/connections.md",
+        "line": 125,
+        "level": 2,
+        "title": "モジュール間の渡し渡し / 再利用"
+      }
+    ],
     "モジュール間呼び出し（RPC）": [
       {
         "document": "api-reference/core-modules.md",
@@ -9581,15 +9669,21 @@
     "ライフサイクルの統合": [
       {
         "document": "advanced/router.md",
-        "line": 390,
+        "line": 442,
         "level": 2,
         "title": "ライフサイクルの統合"
       }
     ],
     "ライフサイクルイベント": [
       {
+        "document": "advanced/connections.md",
+        "line": 108,
+        "level": 3,
+        "title": "ライフサイクルイベント"
+      },
+      {
         "document": "advanced/http-client.md",
-        "line": 225,
+        "line": 243,
         "level": 2,
         "title": "ライフサイクルイベント"
       },
@@ -9625,7 +9719,7 @@
     "ライフサイクルフック": [
       {
         "document": "advanced/http-client.md",
-        "line": 345,
+        "line": 363,
         "level": 3,
         "title": "ライフサイクルフック"
       }
@@ -9711,7 +9805,7 @@
     "リクエストメソッド": [
       {
         "document": "advanced/http-client.md",
-        "line": 72,
+        "line": 90,
         "level": 2,
         "title": "リクエストメソッド"
       }
@@ -9755,7 +9849,7 @@
     "リクエスト統計": [
       {
         "document": "advanced/http-client.md",
-        "line": 212,
+        "line": 230,
         "level": 2,
         "title": "リクエスト統計"
       }
@@ -9763,7 +9857,7 @@
     "リクエスト関連 ID（X-Request-ID）": [
       {
         "document": "advanced/router.md",
-        "line": 229,
+        "line": 281,
         "level": 2,
         "title": "リクエスト関連 ID（X-Request-ID）"
       }
@@ -9803,7 +9897,7 @@
     "リンク追跡：trace-id": [
       {
         "document": "advanced/interaction.md",
-        "line": 199,
+        "line": 201,
         "level": 2,
         "title": "リンク追跡：trace-id"
       }
@@ -9814,14 +9908,6 @@
         "line": 267,
         "level": 3,
         "title": "ルーター・サーバー"
-      }
-    ],
-    "ルーティングの発見": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 567,
-        "level": 4,
-        "title": "ルーティングの発見"
       }
     ],
     "ルーティングマネージャー": [
@@ -9835,7 +9921,7 @@
     "ルーティングミドルウェア": [
       {
         "document": "advanced/router.md",
-        "line": 212,
+        "line": 264,
         "level": 2,
         "title": "ルーティングミドルウェア"
       }
@@ -9843,7 +9929,7 @@
     "ルートのグループ化": [
       {
         "document": "advanced/router.md",
-        "line": 195,
+        "line": 247,
         "level": 2,
         "title": "ルートのグループ化"
       }
@@ -9851,9 +9937,17 @@
     "ルートページ": [
       {
         "document": "advanced/router.md",
-        "line": 342,
+        "line": 394,
         "level": 3,
         "title": "ルートページ"
+      }
+    ],
+    "ルート発見": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 567,
+        "level": 4,
+        "title": "ルート発見"
       }
     ],
     "ループ対話": [
@@ -10100,14 +10194,6 @@
         "title": "ワイルドカードと正規表現の監視"
       }
     ],
-    "一、ロボットを使いたい": [
-      {
-        "document": "README.md",
-        "line": 13,
-        "level": 3,
-        "title": "一、ロボットを使いたい"
-      }
-    ],
     "一般的 CSS クラス名": [
       {
         "document": "ecosystem/dashboard.md",
@@ -10116,12 +10202,12 @@
         "title": "一般的 CSS クラス名"
       }
     ],
-    "一般的な request": [
+    "一般的なrequest": [
       {
         "document": "advanced/http-client.md",
-        "line": 145,
+        "line": 163,
         "level": 3,
-        "title": "一般的な request"
+        "title": "一般的なrequest"
       }
     ],
     "一般的なフィールド（すべてのイベントタイプ）": [
@@ -10210,14 +10296,6 @@
         "title": "一般的パラメータ"
       }
     ],
-    "三、内部原理を深く理解したい": [
-      {
-        "document": "README.md",
-        "line": 39,
-        "level": 3,
-        "title": "三、内部原理を深く理解したい"
-      }
-    ],
     "並列と直列": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -10264,22 +10342,6 @@
         "line": 369,
         "level": 2,
         "title": "事件拡張メソッド"
-      }
-    ],
-    "二、モジュール / アダプタを開発したい": [
-      {
-        "document": "README.md",
-        "line": 27,
-        "level": 3,
-        "title": "二、モジュール / アダプタを開発したい"
-      }
-    ],
-    "五、ErisPulse に貢献したい": [
-      {
-        "document": "README.md",
-        "line": 70,
-        "level": 3,
-        "title": "五、ErisPulse に貢献したい"
       }
     ],
     "五つの隔離ゲート": [
@@ -10331,9 +10393,17 @@
     "他のシステムとの関係": [
       {
         "document": "advanced/interaction.md",
-        "line": 210,
+        "line": 212,
         "level": 2,
         "title": "他のシステムとの関係"
+      }
+    ],
+    "他のメカニズムとの境界": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 96,
+        "level": 2,
+        "title": "他のメカニズムとの境界"
       }
     ],
     "代理設定": [
@@ -10392,6 +10462,14 @@
         "title": "优先度システム"
       }
     ],
+    "会話トランザクト（Transcript）": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 1,
+        "level": 1,
+        "title": "会話トランザクト（Transcript）"
+      }
+    ],
     "会話受信箱：event.history": [
       {
         "document": "advanced/interaction.md",
@@ -10411,17 +10489,17 @@
     "伝統的な登録方法": [
       {
         "document": "advanced/router.md",
-        "line": 104,
+        "line": 156,
         "level": 2,
         "title": "伝統的な登録方法"
       }
     ],
-    "低レベル方法": [
+    "低レベルメソッド": [
       {
         "document": "advanced/http-client.md",
-        "line": 304,
+        "line": 322,
         "level": 4,
-        "title": "低レベル方法"
+        "title": "低レベルメソッド"
       }
     ],
     "作用域フィルタ：なぜ私のモジュールがメッセージを受け取らないのか": [
@@ -10514,6 +10592,12 @@
     ],
     "例外のキャッチ": [
       {
+        "document": "advanced/http-client.md",
+        "line": 405,
+        "level": 3,
+        "title": "例外のキャッチ"
+      },
+      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 364,
         "level": 3,
@@ -10522,10 +10606,24 @@
     ],
     "例外体系": [
       {
+        "document": "advanced/http-client.md",
+        "line": 387,
+        "level": 2,
+        "title": "例外体系"
+      },
+      {
         "document": "advanced/module-communication.md",
         "line": 35,
         "level": 3,
         "title": "例外体系"
+      }
+    ],
+    "例外階層": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 393,
+        "level": 3,
+        "title": "例外階層"
       }
     ],
     "依存注入（Depends）": [
@@ -10536,12 +10634,12 @@
         "title": "依存注入（Depends）"
       }
     ],
-    "依存関係の宣言（オプション、2.8.0以降）": [
+    "依存関係の宣言（オプション、2.8.0+）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 353,
         "level": 2,
-        "title": "依存関係の宣言（オプション、2.8.0以降）"
+        "title": "依存関係の宣言（オプション、2.8.0+）"
       }
     ],
     "依赖替换（需 EP>=2.9.0-dev）": [
@@ -10788,6 +10886,22 @@
         "title": "出力形式"
       }
     ],
+    "出力接続の自動プール登録（2.10+）": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 49,
+        "level": 4,
+        "title": "出力接続の自動プール登録（2.10+）"
+      }
+    ],
+    "出向接続（クライアント側）": [
+      {
+        "document": "advanced/connections.md",
+        "line": 146,
+        "level": 2,
+        "title": "出向接続（クライアント側）"
+      }
+    ],
     "出向監査：誰が誰を呼び出すか": [
       {
         "document": "advanced/module-communication.md",
@@ -10909,7 +11023,7 @@
     "前提知識": [
       {
         "document": "advanced/README.md",
-        "line": 36,
+        "line": 38,
         "level": 2,
         "title": "前提知識"
       }
@@ -10934,6 +11048,12 @@
       {
         "document": "advanced/lazy-loading.md",
         "line": 14,
+        "level": 2,
+        "title": "動作原理"
+      },
+      {
+        "document": "advanced/transcript.md",
+        "line": 9,
         "level": 2,
         "title": "動作原理"
       },
@@ -11104,6 +11224,14 @@
         "title": "友達追加"
       }
     ],
+    "各エラーの説明と発生位置": [
+      {
+        "document": "advanced/errors.md",
+        "line": 68,
+        "level": 2,
+        "title": "各エラーの説明と発生位置"
+      }
+    ],
     "各プラットフォームのコールバックイベントマッピング": [
       {
         "document": "standards/standardization-guide.md",
@@ -11126,14 +11254,6 @@
         "line": 51,
         "level": 2,
         "title": "各環節の詳細解説"
-      }
-    ],
-    "各種エラーの説明と発生位置": [
-      {
-        "document": "advanced/errors.md",
-        "line": 63,
-        "level": 2,
-        "title": "各種エラーの説明と発生位置"
       }
     ],
     "同期の流れ": [
@@ -11166,14 +11286,6 @@
         "line": 183,
         "level": 3,
         "title": "問題解決のアプローチ"
-      }
-    ],
-    "四、エコシステムと公式クライアント": [
-      {
-        "document": "README.md",
-        "line": 58,
-        "level": 3,
-        "title": "四、エコシステムと公式クライアント"
       }
     ],
     "回答機能": [
@@ -11376,6 +11488,12 @@
     ],
     "基本的な使い方": [
       {
+        "document": "advanced/http-client.md",
+        "line": 282,
+        "level": 3,
+        "title": "基本的な使い方"
+      },
+      {
         "document": "advanced/lazy-loading.md",
         "line": 134,
         "level": 3,
@@ -11415,12 +11533,6 @@
       }
     ],
     "基本的な使用法": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 264,
-        "level": 3,
-        "title": "基本的な使用法"
-      },
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 514,
@@ -11622,6 +11734,14 @@
         "title": "失敗時の自動再試行（Retry）"
       }
     ],
+    "学習の道筋をお選びください": [
+      {
+        "document": "README.md",
+        "line": 9,
+        "level": 2,
+        "title": "学習の道筋をお選びください"
+      }
+    ],
     "学習パス": [
       {
         "document": "getting-started/README.md",
@@ -11744,6 +11864,14 @@
         "line": 281,
         "level": 3,
         "title": "実行時のサーバー設定のホットリロード"
+      }
+    ],
+    "実行時オーバーライド API": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 48,
+        "level": 2,
+        "title": "実行時オーバーライド API"
       }
     ],
     "実行時細粒度制御": [
@@ -11949,7 +12077,7 @@
     "対象読者": [
       {
         "document": "advanced/README.md",
-        "line": 28,
+        "line": 30,
         "level": 2,
         "title": "対象読者"
       }
@@ -12100,6 +12228,14 @@
         "title": "応答の標準化"
       }
     ],
+    "応答返却の約束事（2.10+）": [
+      {
+        "document": "advanced/router.md",
+        "line": 87,
+        "level": 4,
+        "title": "応答返却の約束事（2.10+）"
+      }
+    ],
     "快速リファレンス": [
       {
         "document": "api-reference/core-modules.md",
@@ -12150,20 +12286,6 @@
         "line": 37,
         "level": 3,
         "title": "快速構築モード（静的）"
-      }
-    ],
-    "快速開始": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 18,
-        "level": 2,
-        "title": "快速開始"
-      },
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 45,
-        "level": 2,
-        "title": "快速開始"
       }
     ],
     "情報照会コマンド": [
@@ -12456,12 +12578,20 @@
         "title": "拦截の可観測性: `scope.blocked` イベント"
       }
     ],
-    "接続の切断": [
+    "接続の自動登録（接続プール、2.10+）": [
+      {
+        "document": "advanced/router.md",
+        "line": 150,
+        "level": 3,
+        "title": "接続の自動登録（接続プール、2.10+）"
+      }
+    ],
+    "接続の閉じ方": [
       {
         "document": "advanced/http-client.md",
-        "line": 363,
+        "line": 381,
         "level": 3,
-        "title": "接続の切断"
+        "title": "接続の閉じ方"
       }
     ],
     "接続イベント": [
@@ -12494,6 +12624,22 @@
         "title": "接続フロー"
       }
     ],
+    "接続プールとブロードキャスト": [
+      {
+        "document": "advanced/connections.md",
+        "line": 1,
+        "level": 1,
+        "title": "接続プールとブロードキャスト"
+      }
+    ],
+    "接続プールの確認": [
+      {
+        "document": "advanced/connections.md",
+        "line": 37,
+        "level": 2,
+        "title": "接続プールの確認"
+      }
+    ],
     "接続リトライ": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -12508,6 +12654,14 @@
         "line": 71,
         "level": 2,
         "title": "接続失敗時の動作"
+      }
+    ],
+    "接続登録表系列 — `Core/connections.py`（2.10+）": [
+      {
+        "document": "advanced/errors.md",
+        "line": 97,
+        "level": 3,
+        "title": "接続登録表系列 — `Core/connections.py`（2.10+）"
       }
     ],
     "接続管理": [
@@ -12782,6 +12936,14 @@
         "title": "早速体験"
       }
     ],
+    "早速始める": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 45,
+        "level": 2,
+        "title": "早速始める"
+      }
+    ],
     "暗号化モードの説明": [
       {
         "document": "platform-guide/wechatmp.md",
@@ -12808,12 +12970,6 @@
     ],
     "最佳実践": [
       {
-        "document": "advanced/http-client.md",
-        "line": 472,
-        "level": 2,
-        "title": "最佳実践"
-      },
-      {
         "document": "advanced/i18n.md",
         "line": 543,
         "level": 2,
@@ -12827,7 +12983,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 404,
+        "line": 456,
         "level": 2,
         "title": "最佳実践"
       },
@@ -12874,6 +13030,14 @@
         "line": 65,
         "level": 3,
         "title": "最終ユーザーにとって"
+      }
+    ],
+    "最適な実践": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 490,
+        "level": 2,
+        "title": "最適な実践"
       }
     ],
     "未サポートのタイプの処理": [
@@ -13084,6 +13248,12 @@
     ],
     "概要": [
       {
+        "document": "advanced/connections.md",
+        "line": 8,
+        "level": 2,
+        "title": "概要"
+      },
+      {
         "document": "advanced/http-client.md",
         "line": 5,
         "level": 2,
@@ -13119,7 +13289,7 @@
     "構造化属性": [
       {
         "document": "advanced/errors.md",
-        "line": 38,
+        "line": 41,
         "level": 2,
         "title": "構造化属性"
       }
@@ -13324,6 +13494,12 @@
     ],
     "次に進む": [
       {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 587,
+        "level": 2,
+        "title": "次に進む"
+      },
+      {
         "document": "developer-guide/modules/getting-started.md",
         "line": 201,
         "level": 2,
@@ -13340,12 +13516,6 @@
       {
         "document": "ai-support/README.md",
         "line": 134,
-        "level": 2,
-        "title": "次のステップ"
-      },
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 587,
         "level": 2,
         "title": "次のステップ"
       },
@@ -13636,30 +13806,6 @@
         "title": "異スレッド API"
       }
     ],
-    "異常のキャッチ": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 387,
-        "level": 3,
-        "title": "異常のキャッチ"
-      }
-    ],
-    "異常体系": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 369,
-        "level": 2,
-        "title": "異常体系"
-      }
-    ],
-    "異常階層": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 375,
-        "level": 3,
-        "title": "異常階層"
-      }
-    ],
     "登録されたメソッドの照会": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -13684,6 +13830,14 @@
         "title": "登録タイミング → 所有結果対照表"
       }
     ],
+    "登録形態：単引数（推奨）と二引数": [
+      {
+        "document": "advanced/router.md",
+        "line": 38,
+        "level": 3,
+        "title": "登録形態：単引数（推奨）と二引数"
+      }
+    ],
     "監督者ガイド": [
       {
         "document": "advanced/startup.md",
@@ -13700,12 +13854,12 @@
         "title": "監視者クエリ（has_handlers）"
       }
     ],
-    "目录構造": [
+    "目次構造": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 30,
         "level": 2,
-        "title": "目录構造"
+        "title": "目次構造"
       }
     ],
     "確認対話 (confirm)": [
@@ -13838,20 +13992,20 @@
         "title": "結果を待つ"
       }
     ],
-    "統一されたキャッチ": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 422,
-        "level": 3,
-        "title": "統一されたキャッチ"
-      }
-    ],
     "統一イベントオーバーライド設定 (event.overrides)": [
       {
         "document": "user-guide/configuration.md",
         "line": 644,
         "level": 2,
         "title": "統一イベントオーバーライド設定 (event.overrides)"
+      }
+    ],
+    "統一的なキャッチ": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 440,
+        "level": 3,
+        "title": "統一的なキャッチ"
       }
     ],
     "統計概要": [
@@ -13929,7 +14083,7 @@
     "自動ドキュメント": [
       {
         "document": "advanced/router.md",
-        "line": 304,
+        "line": 356,
         "level": 2,
         "title": "自動ドキュメント"
       }
@@ -14006,12 +14160,12 @@
         "title": "表情パック/ステッカーのメッセージセグメント (yunhu_expression)"
       }
     ],
-    "装饰器ルーティング（推奨）": [
+    "装飾器ルート（推奨）": [
       {
         "document": "advanced/router.md",
         "line": 36,
         "level": 2,
-        "title": "装饰器ルーティング（推奨）"
+        "title": "装飾器ルート（推奨）"
       }
     ],
     "複数のプラットフォームをサポートするには？": [
@@ -14213,6 +14367,12 @@
       }
     ],
     "設定": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 34,
+        "level": 2,
+        "title": "設定"
+      },
       {
         "document": "developer-guide/publishing.md",
         "line": 143,
@@ -14927,12 +15087,18 @@
     "速率制限": [
       {
         "document": "advanced/router.md",
-        "line": 254,
+        "line": 306,
         "level": 2,
         "title": "速率制限"
       }
     ],
     "速習": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 18,
+        "level": 2,
+        "title": "速習"
+      },
       {
         "document": "ecosystem/cron.md",
         "line": 23,
@@ -15079,7 +15245,7 @@
     "開発方法": [
       {
         "document": "README.md",
-        "line": 79,
+        "line": 80,
         "level": 2,
         "title": "開発方法"
       }
@@ -15117,13 +15283,13 @@
       },
       {
         "document": "advanced/http-client.md",
-        "line": 482,
+        "line": 500,
         "level": 2,
         "title": "関連ドキュメント"
       },
       {
         "document": "advanced/interaction.md",
-        "line": 216,
+        "line": 218,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -15153,7 +15319,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 414,
+        "line": 466,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -15269,7 +15435,7 @@
     "関連リンク": [
       {
         "document": "README.md",
-        "line": 98,
+        "line": 99,
         "level": 2,
         "title": "関連リンク"
       },
@@ -15410,20 +15576,28 @@
         "title": "非同期送信と結果処理"
       }
     ],
+    "風険と監査：制限を解放する前に必ず読む": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 70,
+        "level": 2,
+        "title": "風険と監査：制限を解放する前に必ず読む"
+      }
+    ],
     "騒音の抑制": [
       {
         "document": "advanced/errors.md",
-        "line": 173,
+        "line": 193,
         "level": 2,
         "title": "騒音の抑制"
       }
     ],
-    "高レベル方法（推奨）": [
+    "高レベルメソッド（推奨）": [
       {
         "document": "advanced/http-client.md",
-        "line": 278,
+        "line": 296,
         "level": 4,
-        "title": "高レベル方法（推奨）"
+        "title": "高レベルメソッド（推奨）"
       }
     ],
     "高度操作：辞書形式のドット区切りパスバックアップ": [

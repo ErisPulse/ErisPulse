@@ -13,10 +13,14 @@
 > **提示**
 > 1. ``spawn_background(coro)`` 调度一个不关心返回值的协程
 > 2. 任务自动归属到当前 ``owner_scope`` 上下文（模块/适配器），卸载时可由框架兜底取消
-> 3. ``cancel_owner_tasks(owner)`` 取消并等待指定归属者的全部后台任务
+> 3. ``cancel_owner_tasks(owner)`` 取消并等待指定归属者的全部后台任务与定时器
 > 4. ``cancel_all_background_tasks()`` 供 ``sdk.uninit()`` 兜底清理
 > 5. ``install_owner_task_factory()``（随启动自动安装）：事件循环级任务工厂，
 > owner 上下文内**任何** ``asyncio.create_task``（含第三方库）自动归属、卸载兜底取消
+> 6. ``run_main_loop(coro)`` 从子线程安全投递到主循环并阻塞取结果；
+> ``spawn_later(delay, coro_fn)`` 归属化的延迟调度（裸 ``loop.call_later`` 不归属）
+> 7. ``spawn_thread(name, target)`` 归属化的线程启动（观测面；线程不可强杀，
+> 退出清理靠 ``on_cleanup`` 约定）
 
 ---
 
@@ -139,6 +143,116 @@
 ```python
 spawn_background(some_async_work())
 ```
+
+---
+
+
+### `run_main_loop(coro: Coroutine[Any, Any, _T], *, timeout: float | None = None) -> _T`
+
+从子线程安全投递协程到主循环并阻塞等待结果
+
+跨线程投递的标准工具：在主循环内调用时直接报错（应 ``await``）；
+在其它线程（含其它事件循环的线程）调用时经
+``asyncio.run_coroutine_threadsafe`` 投递回已注册的主循环并阻塞取结果。
+广播、推送、连接操作等凡从子线程触达主循环资源的场景都应基于它，
+不再手写 ``run_coroutine_threadsafe``。
+
+- **coro**: 待执行的协程对象
+- **timeout**: 阻塞等待结果的超时秒数；None 表示无限等待
+
+**返回值**: 协程的返回值
+
+**异常**: `RuntimeError` - 在主循环内同步调用（应改为 await），
+
+                     或超时未完成（:class:`TimeoutError`）
+
+**示例**:
+
+```python
+# 在子线程里向某分组广播：
+run_main_loop(connections.broadcast({"type": "ping"}, group="room:1"), timeout=5)
+```
+
+---
+
+
+### `_warn_coro_fn_failed(error: Exception) -> None`
+
+**内部方法** spawn_later 触发回调失败留痕（不中断事件循环回调调度）
+
+---
+
+
+### `spawn_later(delay: float, coro_fn: Callable[[], Awaitable[Any]], *args: Any, owner: str | None = None) -> asyncio.TimerHandle`
+
+归属化的延迟调度（``loop.call_later`` 的 owner 感知包装）
+
+裸 ``loop.call_later`` 产生的 TimerHandle 不经过任务工厂，是归属权
+体系的盲区；本函数把句柄登记到 owner 名下，模块卸载时随
+``cancel_owner_tasks`` 兜底取消，触发后经 ``spawn_background`` 调度
+协程（同样归属该 owner）。
+
+- **delay**: 延迟秒数
+- **coro_fn**: 返回可等待对象的工厂函数（在触发瞬间调用；
+
+                传协程工厂而非协程对象，可避免取消后 "never awaited" 警告）
+- **args**: 传给 ``coro_fn`` 的位置参数
+- **owner**: 显式指定资源归属者；缺省时从当前 owner 上下文捕获
+
+**返回值**: :class:`asyncio.TimerHandle`（可提前 ``handle.cancel()``）
+
+**示例**:
+
+```python
+spawn_later(30, lambda: cleanup_expired(), owner="MyModule")
+```
+
+---
+
+
+### `spawn_thread(name: str, target: Callable[..., Any], *args: Any, owner: str | None = None, daemon: bool = True) -> threading.Thread`
+
+归属化的线程启动（观测面）
+
+线程无法被框架强制终止：登记使 ``ownership.counts()`` / 泄漏审计
+可见该归属者的存活线程，退出清理由业务在 ``on_cleanup`` 中自行约定
+（与框架内部 config-watcher / file-watcher 的兜底风格一致）。
+
+- **name**: 线程名（自动加 ``erispulse:`` 前缀便于辨识）
+- **target**: 线程入口函数
+- **args**: 传给 ``target`` 的位置参数
+- **owner**: 显式指定资源归属者；缺省时从当前 owner 上下文捕获
+- **daemon**: 是否守护线程 (默认: True，随主进程退出)
+
+**返回值**: 已启动的 :class:`threading.Thread`
+
+**示例**:
+
+```python
+spawn_thread("poller", poll_loop, owner="MyAdapter")
+```
+
+---
+
+
+### `get_owner_timers(owner: str | None) -> set[asyncio.TimerHandle]`
+
+获取指定归属者名下未触发的定时器句柄集合
+
+- **owner**: 资源归属者（模块名/适配器平台名）
+
+**返回值**: 未触发句柄集合的浅拷贝
+
+---
+
+
+### `get_owner_threads(owner: str | None) -> set[threading.Thread]`
+
+获取指定归属者名下存活的线程集合
+
+- **owner**: 资源归属者（模块名/适配器平台名）
+
+**返回值**: 存活线程集合的浅拷贝
 
 ---
 

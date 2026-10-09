@@ -366,7 +366,7 @@
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
       "icon": "fa-fire",
-      "count": 17,
+      "count": 19,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -465,8 +465,20 @@
           "icon": "fa-triangle-exclamation"
         },
         {
+          "title": "Connection Pool and Broadcasting",
+          "path": "advanced/connections.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
           "title": "Startup Process and Manual Control",
           "path": "advanced/startup.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "Transcript",
+          "path": "advanced/transcript.md",
           "level": 1,
           "icon": "fa-fire"
         }

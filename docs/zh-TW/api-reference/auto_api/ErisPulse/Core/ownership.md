@@ -121,11 +121,11 @@ await ownership.reclaim("roll")
 
 ##### `async reclaim_tasks(owner: str) -> 'dict[str, int]'`
 
-注销 owner 的进行中工作：归属后台任务取消 + 外部清理钩子触发
+注销 owner 的进行中工作：归属后台任务取消 + 归属连接关闭 + 外部清理钩子触发
 
 - **owner** (`owner`): 名
 
-**返回值**: {"tasks_cancelled": int, "cleanups_run": int}
+**返回值**: {"tasks_cancelled": int, "connections_closed": int, "cleanups_run": int}
 
 ---
 
@@ -136,7 +136,8 @@ await ownership.reclaim("roll")
 
 涵盖：i18n 翻译域、路由（命名空间 + owner 兜底）、适配器事件处理器、
 自定义会话类型、平台事件方法注入、事件覆写、scope 覆写、命令与
-四类事件处理器、交互会话等待、主人身份源、生命周期钩子。
+四类事件处理器、交互会话等待、主人身份源、生命周期钩子、
+日志订阅（logger.handler）、对话恢复工厂（resume handler）。
 每步独立容错，单步失败不阻断后续回收。
 
 - **owner** (`owner`): 名（模块名或适配器平台名）

@@ -114,13 +114,16 @@ JSON 日志格式化器
 #### 方法列表
 
 
-##### `handler(handler_id: str = '', *, min_level: str = 'TRACE')`
+##### `handler(handler_id: str = '', *, min_level: str = 'TRACE', owner: str | None = None)`
 
 日志订阅装饰器
 
 订阅器的 ``min_level`` 可低于全局日志级别，从而显式订阅 DEBUG / TRACE
 等低级别日志。此时低级别日志仅推送给匹配的订阅器，不会输出到控制台，
 也不会写入内存（历史补发仍受全局 ``memory_limit`` 限制）。
+
+订阅在注册时归属到当前 owner（模块名/平台名），模块卸载时由框架
+统一注销；也可用 ``owner`` 参数显式指定。
 
 ```python
 @sdk.logger.handler("dashboard", min_level="INFO")
@@ -139,11 +142,12 @@ sdk.logger.handler("dashboard", min_level="INFO")(on_log)
 
 - **handler_id**: 订阅器唯一标识，为空时使用函数名
 - **min_level**: 最低日志级别
+- **owner**: 显式指定归属者；缺省时从当前 owner 上下文捕获
 
 ---
 
 
-##### `_register_handler(handler_id: str, callback: Callable[[dict], None], min_level: str) -> None`
+##### `_register_handler(handler_id: str, callback: Callable[[dict], None], min_level: str, *, owner: str | None = None) -> None`
 
 **内部方法**
 内部注册逻辑
@@ -158,6 +162,21 @@ sdk.logger.handler("dashboard", min_level="INFO")(on_log)
 - **handler_id**: 注册时使用的标识
 
 **返回值** (`bool`): 是否成功移除
+
+---
+
+
+##### `unregister_by_owner(owner: str) -> int`
+
+注销指定归属者的全部日志订阅器
+
+模块卸载 / 适配器关闭链经归属权门面（``ownership.reclaim_sync``）
+自动调用；订阅回调通常持有模块实例，不注销会导致已卸载模块
+无法被 GC 且持续接收全量日志。
+
+- **owner**: 归属者（模块名 / 平台名）
+
+**返回值** (`int`): 注销的订阅器数量
 
 ---
 

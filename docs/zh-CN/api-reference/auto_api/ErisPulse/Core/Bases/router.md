@@ -21,6 +21,38 @@ ErisPulse 路由抽象基类
 
 ---
 
+## 函数列表
+
+
+### `respond(data: Any = None, *, status_code: int = 200, message: str | None = None, headers: dict[str, str] | None = None)`
+
+构造 JSON 响应（HTTP 路由推荐返回方式）
+
+与"元组返回约定"配套的帮助函数：handler 直接返回 ``respond(...)``
+或返回 ``(body, status_code)`` 元组均可在 FastAPI 层得到正确响应。
+``message`` 会合并进响应体：data 为 dict 时浅拷贝后写入 ``message`` 键，
+其余情况构造 ``{"message": ...}``。
+
+- **data** (`Any`): 响应体数据（dict 原样作为响应体；None 且无 message 时为空对象）
+- **status_code**: int HTTP 状态码 (默认: 200)
+- **message** (`str | None`): 附加的业务消息，写入响应体 ``message`` 键
+- **headers** (`dict[str, str] | None`): 额外响应头
+
+**返回值** (`JSONResponse`): 可直接作为 handler 返回值
+
+**示例**:
+
+```python
+@router.post("MyModule", "/login")
+async def login(request: HttpRequest):
+    if not valid(request):
+        return respond(message="unauthorized", status_code=401)
+    return respond({"user_id": 1}, message="ok")
+```
+
+---
+
+
 ## 类列表
 
 
@@ -284,9 +316,13 @@ async def chat(ws: WebSocketConnection):
 #### 方法列表
 
 
-##### `__init__(websocket)`
+##### `__init__(websocket, *, connection_id: str = '', namespace: str = '', owner: str = '', kind: str = 'server')`
 
 - **websocket** (`object`): 底层框架 WebSocket 对象 (fastapi.WebSocket)
+- **connection_id** (`str`): 连接池分配的连接 id（未登记时为空串）
+- **namespace** (`str`): 服务端路由命名空间
+- **owner** (`str`): 归属 owner（模块名 / 平台名）
+- **kind** (`str`): 连接种类（默认 "server"）
 
 ---
 
@@ -391,9 +427,9 @@ ASGI 应用实例
 ---
 
 
-##### `async close(code: int = 1000, reason: str | None = None) -> None`
+##### `async _close(code: int = 1000, reason: str | None = None) -> None`
 
-关闭 WebSocket 连接
+实际关闭动作（权限校验见基类 close）
 
 - **code** (`int`): 关闭码 (默认: 1000)
 - **reason** (`str | None`): 关闭原因 (可选)
@@ -480,7 +516,7 @@ ASGI 应用实例
 ---
 
 
-### `class SseEmitter`
+### `class SseEmitter(_ConnectionIdentity)`
 
 SSE (Server-Sent Events) 事件发送器 — 服务器无关的 SSE 协议实现
 
@@ -489,18 +525,21 @@ SSE (Server-Sent Events) 事件发送器 — 服务器无关的 SSE 协议实现
 ``on_send`` 和 ``on_close`` 回调即可使用。
 
 自动生成事件 ID，支持自定义事件类型和重试间隔。
+连接经连接池登记后可被广播 / 分组 / 跨模块查看
+（kind 为 ``"sse"``，``send`` 即广播的目标方法）。
 
 > **提示**
 > 1. 由框架自动创建，模块开发者只需在 handler 中接收 sse 参数
 > 2. ``send()`` 方法自动处理 JSON 序列化（非 str 数据转为 JSON）
 > 3. 通过 ``request`` 属性可访问客户端请求（query params、headers 等）
-> 4. 调用 ``close()`` 优雅关闭连接
+> 4. 调用 ``close()`` 优雅关闭连接（默认校验归属权限）
 
 **示例**:
 
 ```python
 @sdk.router.sse("MyModule", "/events")
 async def event_stream(sse: SseEmitter):
+    sse.join_group("dashboard")
     while True:
         await sse.send({"msg": "hello"}, event="update")
         await asyncio.sleep(1)
@@ -510,11 +549,14 @@ async def event_stream(sse: SseEmitter):
 #### 方法列表
 
 
-##### `__init__(on_send, on_close = None, request = None)`
+##### `__init__(on_send, on_close = None, request = None, *, connection_id: str = '', namespace: str = '', owner: str = '')`
 
 - **on_send**: 回调函数，接收格式化后的 SSE 文本并发送到底层传输层
 - **on_close**: 可选回调函数，连接关闭时调用
 - **request**: 可选，底层 HTTP 请求对象
+- **connection_id** (`str`): 连接池分配的连接 id（未登记时为空串）
+- **namespace** (`str`): 服务端路由命名空间
+- **owner** (`str`): 归属 owner（模块名 / 平台名）
 
 ---
 
@@ -569,11 +611,18 @@ await sse.send({"error": "boom"}, event="error", id="err-1")
 ---
 
 
-##### `async close() -> None`
+##### `async close(*, force: bool = False) -> None`
 
-关闭 SSE 连接
+关闭 SSE 连接（默认校验归属权限）
 
+非 owner 模块关闭他人连接时抛出
+:class:`~ErisPulse.Core.Bases.errors.ConnectionPermissionError`；
+运行时上下文为空（框架内部路径 / 未归因代码）时放行。
 安全方法，可多次调用。第一次调用时触发 ``on_close`` 回调。
+
+- **force** (`bool`): 跳过权限校验（框架内部回收路径使用）
+
+**异常**: `ConnectionPermissionError` - 跨 owner 关闭且未 force 时
 
 ---
 

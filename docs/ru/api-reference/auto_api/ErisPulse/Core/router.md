@@ -21,6 +21,18 @@ ErisPulse 路由系统
 ## 函数列表
 
 
+### `_to_http_response(result: Any) -> Any`
+
+**内部方法**
+HTTP handler 返回值的元组约定后处理
+
+``(body, status_code)`` / ``(body, status_code, headers)`` 形式的元组
+转为对应状态码的 JSONResponse；其余返回值原样透传（dict/str/Response
+由 FastAPI 原生机制处理，保持既有行为）。
+
+---
+
+
 ### `_load_web_stack() -> None`
 
 懒加载 FastAPI / Uvicorn / Starlette
@@ -275,6 +287,10 @@ FastAPI 应用实例（惰性创建，首次访问时加载 web 栈并注册核�
 - HttpRequest / 无注解且名称类似 request → 注入 HttpRequest 包装
 - 其他类型 / 非请求参数名 → 不注入
 
+返回值支持元组约定：``(body, status_code)`` / ``(body, status_code,
+headers)`` 自动转为对应状态码的 JSONResponse（详见 ``respond``）；
+dict/str/Response 照旧由 FastAPI 原生机制处理。
+
 **内部方法**
 
 ---
@@ -301,19 +317,20 @@ FastAPI 应用实例（惰性创建，首次访问时加载 web 栈并注册核�
 ---
 
 
-##### `_make_sse_endpoint(handler: Callable) -> Callable`
+##### `_make_sse_endpoint(handler: Callable, module_name: str = '', track: bool = True) -> Callable`
 
 根据处理器签名创建 SSE 端点包装器
 
 自动检测处理器是否需要 HttpRequest 参数。
 为处理器创建 SseEmitter 实例，通过回调桥接 SSE 协议到底层 StreamingResponse。
+track=True 时连接自动登记进连接池（kind="sse"），断开时自动注销。
 
 **内部方法**
 
 ---
 
 
-##### `_create_sse_route(full_path: str, module_name: str, handler: Callable, **kwargs) -> None`
+##### `_create_sse_route(full_path: str, module_name: str, handler: Callable, track: bool = True, **kwargs) -> None`
 
 **内部方法**
 在当前 app 实例上创建 SSE 路由（纯路由创建，不做重复检查、不写记录）
@@ -324,7 +341,7 @@ FastAPI 应用实例（惰性创建，首次访问时加载 web 栈并注册核�
 ---
 
 
-##### `_register_sse_endpoint(full_path: str, module_name: str, handler: Callable, **kwargs) -> None`
+##### `_register_sse_endpoint(full_path: str, module_name: str, handler: Callable, track: bool = True, **kwargs) -> None`
 
 SSE 路由注册内部实现
 
@@ -538,12 +555,36 @@ WebSocket 路由装饰器内部实现
 ---
 
 
-##### `http(module_name: str, path: str, methods: list[str] | None = None, **kwargs)`
+##### `_resolve_namespace(module_name_or_path: str, path: str | None) -> tuple[str, str]`
+
+**内部方法**
+解析装饰器路由的命名空间与路径
+
+- 双参形态 ``@router.get("MyModule", "/path")``：显式命名空间，规则不变
+- 单参形态 ``@router.get("/path")`` / ``@router.ws("api")``：命名空间
+  自动归属当前 owner（模块/适配器加载上下文），与其余触发器
+  （命令 / 事件处理器）的归属规则一致
+
+- **module_name_or_path**: 双参时为模块名，单参时为路径
+- **path**: 双参路径；单参形态为 None
+
+**返回值**: (namespace, path)
+
+**异常**: `ValueError` - 单参形态且无归属上下文时
+
+---
+
+
+##### `http(module_name_or_path: str, path: str | None = None, methods: list[str] | None = None, **kwargs)`
 
 HTTP 路由装饰器
 
-- **module_name** (`str`): 模块名称 (必填, 作为路径前缀)
-- **path** (`str`): 路由路径
+支持两种形态（推荐单参，与命令/事件触发器一致）：
+- ``@router.http("/api/data")``：命名空间自动归属当前模块（加载上下文）
+- ``@router.http("MyModule", "/api/data")``：显式命名空间
+
+- **module_name_or_path** (`str`): 模块名称或路由路径（单参形态）
+- **path** (`str | None`): 路由路径（双参形态时传入）
 - **methods**: list[str] HTTP 方法列表 (默认: ["POST"])
 - **rate_limit** (`str|dict`): 限流规则 (可选)
 - **summary**: str API 摘要 (可选, 用于文档)
@@ -557,6 +598,14 @@ HTTP 路由装饰器
 **示例**:
 
 ```python
+# 单参（推荐）：自动归属 模块名/api/data
+@sdk.router.http("/api/data", methods=["GET", "POST"])
+async def handle_data(request):
+    return {"ok": True}
+```
+
+```python
+# 双参：显式指定模块名
 @sdk.router.http("MyModule", "/api/data", methods=["GET", "POST"])
 async def handle_data(request):
     return {"ok": True}
@@ -565,70 +614,88 @@ async def handle_data(request):
 ---
 
 
-##### `get(module_name: str, path: str, **kwargs)`
+##### `get(module_name_or_path: str, path: str | None = None, **kwargs)`
 
 GET 路由装饰器
 
-- **module_name** (`str`): 模块名称 (必填)
-- **path** (`str`): 路由路径
+单参形态 ``@router.get("/path")`` 命名空间自动归属当前模块；
+双参形态 ``@router.get("MyModule", "/path")`` 显式指定。
+
+- **module_name_or_path** (`str`): 模块名称或路由路径（单参形态）
+- **path** (`str | None`): 路由路径（双参形态时传入）
 
 **返回值** (`Callable`): 装饰器
 
 ---
 
 
-##### `post(module_name: str, path: str, **kwargs)`
+##### `post(module_name_or_path: str, path: str | None = None, **kwargs)`
 
-POST 路由装饰器
+POST 路由装饰器（单参/双参形态见 :meth:`get`）
 
-- **module_name** (`str`): 模块名称 (必填)
-- **path** (`str`): 路由路径
-
-**返回值** (`Callable`): 装饰器
-
----
-
-
-##### `put(module_name: str, path: str, **kwargs)`
-
-PUT 路由装饰器
-
-- **module_name** (`str`): 模块名称 (必填)
-- **path** (`str`): 路由路径
+- **module_name_or_path** (`str`): 模块名称或路由路径（单参形态）
+- **path** (`str | None`): 路由路径（双参形态时传入）
 
 **返回值** (`Callable`): 装饰器
 
 ---
 
 
-##### `delete(module_name: str, path: str, **kwargs)`
+##### `put(module_name_or_path: str, path: str | None = None, **kwargs)`
 
-DELETE 路由装饰器
+PUT 路由装饰器（单参/双参形态见 :meth:`get`）
 
-- **module_name** (`str`): 模块名称 (必填)
-- **path** (`str`): 路由路径
+- **module_name_or_path** (`str`): 模块名称或路由路径（单参形态）
+- **path** (`str | None`): 路由路径（双参形态时传入）
 
 **返回值** (`Callable`): 装饰器
 
 ---
 
 
-##### `ws(module_name: str, path: str, **kwargs)`
+##### `delete(module_name_or_path: str, path: str | None = None, **kwargs)`
+
+DELETE 路由装饰器（单参/双参形态见 :meth:`get`）
+
+- **module_name_or_path** (`str`): 模块名称或路由路径（单参形态）
+- **path** (`str | None`): 路由路径（双参形态时传入）
+
+**返回值** (`Callable`): 装饰器
+
+---
+
+
+##### `ws(module_name_or_path: str, path: str | None = None, **kwargs)`
 
 WebSocket 路由装饰器
 
-- **module_name** (`str`): 模块名称 (必填)
-- **path**: str WebSocket 路径
+单参形态 ``@router.ws("api")`` 命名空间自动归属当前模块（实际路径
+``模块名/api``）；双参形态 ``@router.ws("MyModule", "/api")`` 显式指定。
+
+- **module_name_or_path** (`str`): 模块名称或 WebSocket 路径（单参形态）
+- **path**: str | None WebSocket 路径（双参形态时传入）
 - **auth_handler** (`Callable`): 认证函数 (可选)
 - **auto_accept** (`bool`): 是否自动 accept (默认: True)
+- **track** (`bool`): 是否将连接自动登记进连接池 (默认: True；
+
+              登记后 handler 内 ``ws.id`` 可用，可 join_group / 被广播)
 
 > **提示**
-> 推荐使用 auth_handler 进行连接确认，而非关闭 auto_accept。
+> 推荐单参注册与 auth_handler 进行连接确认，而非关闭 auto_accept。
 > 仅在需要完全控制连接流程时才设置 auto_accept=False。
 
 **示例**:
 
 ```python
+# 单参（推荐）：自动归属 模块名/chat
+@sdk.router.ws("chat")
+async def chat(websocket):
+    websocket.join_group("chat")
+    await websocket.send_text("Hello!")
+```
+
+```python
+# 双参：显式指定模块名
 @sdk.router.ws("MyModule", "/ws/chat")
 async def chat(websocket):
     await websocket.send_text("Hello!")
@@ -637,12 +704,16 @@ async def chat(websocket):
 ---
 
 
-##### `sse(module_name: str, path: str, **kwargs)`
+##### `sse(module_name_or_path: str, path: str | None = None, **kwargs)`
 
 SSE (Server-Sent Events) 路由装饰器
 
-- **module_name** (`str`): 模块名称 (必填)
-- **path**: str SSE 端点路径
+单参形态 ``@router.sse("/events")`` 命名空间自动归属当前模块；
+双参形态 ``@router.sse("MyModule", "/events")`` 显式指定。
+
+- **module_name_or_path** (`str`): 模块名称或 SSE 端点路径（单参形态）
+- **path**: str | None SSE 端点路径（双参形态时传入）
+- **track** (`bool`): 是否将连接自动登记进连接池 (默认: True)
 - **summary**: str API 摘要 (可选)
 - **description**: str API 描述 (可选)
 - **tags**: list[str] API 标签 (可选)
@@ -650,14 +721,17 @@ SSE (Server-Sent Events) 路由装饰器
 **示例**:
 
 ```python
-@sdk.router.sse("MyModule", "/events")
+# 单参（推荐）：自动归属 模块名/events
+@sdk.router.sse("/events")
 async def event_stream(sse):
+    sse.join_group("dashboard")
     while True:
         await sse.send({"msg": "hello"})
         await asyncio.sleep(1)
 ```
 
 ```python
+# 双参：显式指定模块名
 @sdk.router.sse("MyModule", "/logs")
 async def log_stream(request, sse):
     token = request.query_params.get("token")
@@ -717,7 +791,7 @@ SSE 路由装饰器内部实现
 ---
 
 
-##### `_make_ws_endpoint_fn(full_path: str, module_name: str, wrapped_handler: Callable, wrapped_auth: Callable | None, auto_accept: bool) -> Callable[[WebSocket], Awaitable[None]]`
+##### `_make_ws_endpoint_fn(full_path: str, module_name: str, wrapped_handler: Callable, wrapped_auth: Callable | None, auto_accept: bool, track: bool = True) -> Callable[[WebSocket], Awaitable[None]]`
 
 **内部方法**
 构建 WebSocket 端点处理函数（注册与恢复路由共用同一实现）
@@ -727,13 +801,14 @@ SSE 路由装饰器内部实现
 - **wrapped_handler**: 已包装的 WebSocket 处理器
 - **wrapped_auth**: 已包装的鉴权处理器（可为 None）
 - **auto_accept**: 是否自动 accept 连接
+- **track**: 是否将连接自动登记进连接池（ErisPulse.connections）
 
 **返回值** (`WebSocket`): 端点协程函数
 
 ---
 
 
-##### `_register_ws_endpoint(full_path: str, module_name: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = DEFAULT_WS_AUTO_ACCEPT) -> None`
+##### `_register_ws_endpoint(full_path: str, module_name: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = DEFAULT_WS_AUTO_ACCEPT, track: bool = True) -> None`
 
 WebSocket 路由注册内部实现
 
@@ -742,7 +817,7 @@ WebSocket 路由注册内部实现
 ---
 
 
-##### `register_websocket(module_name: str, path: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = True) -> None`
+##### `register_websocket(module_name: str, path: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = True, track: bool = True) -> None`
 
 注册WebSocket路由
 
@@ -751,6 +826,9 @@ WebSocket 路由注册内部实现
 - **handler**: Callable[[WebSocket], Awaitable[Any]] 主处理函数
 - **auth_handler**: Optional[Callable[[WebSocket], Awaitable[bool]]] 认证函数
 - **auto_accept** (`bool`): 是否自动调用 websocket.accept()，默认 True
+- **track** (`bool`): 是否将连接自动登记进连接池（默认 True；
+
+              登记后可经 ``connections`` 广播 / 分组 / 跨模块查看）
 
 > **提示**
 > 推荐使用 auth_handler 进行连接确认，而非关闭 auto_accept。
@@ -785,6 +863,7 @@ SSE 路由为 HTTP GET 端点，返回 ``text/event-stream`` 流式响应。
 - **module_name** (`str`): 模块名称
 - **path**: str SSE 端点路径
 - **handler** (`Callable`): 事件处理器, 签名: ``async def handler(sse)`` 或 ``async def handler(request, sse)``
+- **track** (`bool`): 是否将连接自动登记进连接池（默认 True）
 
 **异常**: `ValueError` - 当路径已注册时抛出
 

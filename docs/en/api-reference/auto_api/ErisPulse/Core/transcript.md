@@ -103,6 +103,61 @@ ErisPulse 会话收件箱（transcript）
 ---
 
 
+##### `set_retention(*, max_per_session: int | None = None, ttl_hours: float | None = None) -> None`
+
+运行时覆盖保留策略（优先于 ``ErisPulse.transcript.*`` 配置）
+
+覆盖仅驻内存、重启后失效（恢复配置值）。调大 / 关闭限制前请确认知悉：
+``transcript`` 表会随消息量无限增长——磁盘写满、查询变慢，且把历史
+整段载入内存的下游消费者（对话恢复 / 面板全量拉取）内存压力上升；
+写缓冲有硬上限不受影响。详见 docs advanced/transcript.md 风险专节。
+
+- **max_per_session** (`int | None`): 单会话保留条数；0 = 关闭该策略
+- **ttl_hours** (`float | None`): 全局保留时长（小时）；0 = 关闭该策略
+
+**异常**: `ValueError` - 传入负数时
+
+**示例**:
+
+```python
+transcript.set_retention(max_per_session=500, ttl_hours=24 * 30)
+```
+
+---
+
+
+##### `get_retention() -> dict[str, Any]`
+
+查询当前生效的保留策略
+
+**返回值** (`dict`): 含 ``max_per_session`` / ``ttl_hours`` 生效值与
+
+         ``overridden``（被运行时覆盖的键列表）
+
+**示例**:
+
+```python
+transcript.get_retention()
+{'max_per_session': 500, 'ttl_hours': 168.0, 'overridden': ['max_per_session']}
+```
+
+---
+
+
+##### `reset_retention() -> None`
+
+清除运行时覆盖，恢复按 ``ErisPulse.transcript.*`` 配置生效
+
+---
+
+
+##### `_effective_retention() -> tuple[int, float]`
+
+**内部方法** 生效保留策略：运行时覆盖优先，否则读配置
+
+---
+
+
 ##### `session_key_from_event(event: Any) -> str`（staticmethod）
 
 从事件推导会话键（platform:detail_type:target_id）

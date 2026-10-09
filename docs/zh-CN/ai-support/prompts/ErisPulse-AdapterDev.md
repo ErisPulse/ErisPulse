@@ -2378,8 +2378,8 @@ dependencies = [
 ```python
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
-from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core.Bases import BaseConfig
+# 推荐根导入（2.10+）：常用符号直接从根包导入，深路径仍兼容
+from ErisPulse import BaseAdapter, BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
@@ -2581,7 +2581,7 @@ class MyPlatformConverter:
 如果你的平台支持好友请求、群邀请等需要 Bot 做出决策的请求，可以实现 `Request` 内部类：
 
 ```python
-from ErisPulse.Core import BaseAdapter, RequestDSL
+from ErisPulse import BaseAdapter, RequestDSL
 
 class MyAdapter(BaseAdapter):
     # ... Send 和其他代码 ...
@@ -2629,7 +2629,7 @@ class MyAdapter(BaseAdapter):
 模块开发者使用方式：
 
 ```python
-from ErisPulse.Core.Event import request
+from ErisPulse import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
@@ -8058,13 +8058,31 @@ data = await resp.json()
 ### WebSocket 连接
 
 ```python
-from ErisPulse.Core import client
+from ErisPulse import client   # 2.10+ 根导入（ErisPulse.Core.client 深路径仍兼容）
 
 ws = await client.ws_connect("wss://example.com/ws")
 
 async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
+
+#### 出站连接自动入池（2.10+）
+
+`ws_connect` 建立的连接**默认自动登记**进框架连接池（`track=False` 可关闭）：
+可被 `connections.list(owner=...)` 查看、向其广播；连接关闭 / 远端断开自动注销；
+**模块卸载 / 适配器停止时框架统一关闭**其名下全部出站连接，杜绝泄漏。
+
+```python
+from ErisPulse import client, connections
+
+ws = await client.ws_connect("wss://example.com/ws")
+print(ws.id, ws.owner)   # 已登记：连接 id 与归属
+
+# owner 上下文不可用（如工具线程回调）时显式指定归属，卸载才能自动回收：
+ws2 = await client.ws_connect("wss://example.com/ws2", owner="MyAdapter")
+```
+
+详见[连接池与广播](connections.md)。
 
 ## HttpResponse
 

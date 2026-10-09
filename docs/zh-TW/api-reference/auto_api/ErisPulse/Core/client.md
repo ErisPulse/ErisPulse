@@ -202,6 +202,14 @@ async for text in ws.iter_text():
 ---
 
 
+##### `_note_closed() -> None`
+
+**内部方法**
+远端断开感知：aiohttp 被动关闭不会经 close()，在接收路径同步注销登记
+
+---
+
+
 ##### `async receive() -> WSMessage`
 
 接收原始消息
@@ -250,9 +258,9 @@ async for text in ws.iter_text():
 ---
 
 
-##### `async close(code: int = WS_CLOSE_NORMAL, reason: str | None = None) -> None`
+##### `async _close(code: int = WS_CLOSE_NORMAL, reason: str | None = None) -> None`
 
-关闭 WebSocket 连接
+实际关闭动作（权限校验见基类 close）
 
 - **code** (`int`): 关闭码 (默认: 1000)
 - **reason** (`str | None`): 关闭原因 (可选)
@@ -354,7 +362,7 @@ resp = await client.request("GET", "https://httpbin.org/get", params={"q": "test
 ---
 
 
-##### `async ws_connect(url: str, *, headers: dict[str, str] | None = None, heartbeat: float | None = DEFAULT_WS_CLIENT_HEARTBEAT_SECS, timeout: float = DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS, **kwargs) -> ClientWebSocket`
+##### `async ws_connect(url: str, *, headers: dict[str, str] | None = None, heartbeat: float | None = DEFAULT_WS_CLIENT_HEARTBEAT_SECS, timeout: float = DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS, track: bool = True, owner: str | None = None, **kwargs) -> ClientWebSocket`
 
 建立 WebSocket 连接
 
@@ -362,6 +370,10 @@ resp = await client.request("GET", "https://httpbin.org/get", params={"q": "test
 - **headers** (`dict[str, str] | None`): 额外请求头 (可选)
 - **heartbeat** (`float | None`): 心跳间隔秒数 (可选)
 - **timeout** (`float`): 连接超时秒数 (默认: DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS)
+- **track** (`bool`): 是否将连接自动登记进连接池（默认 True）
+- **owner** (`str | None`): 连接归属者（默认取当前 owner 上下文；
+
+              上下文不可用时建议显式传模块名，卸载时框架按其统一关闭）
 - **kwargs**: 传递给底层 ws_connect 的额外参数
 
 **返回值**: ClientWebSocket WebSocket 连接对象
@@ -374,6 +386,7 @@ resp = await client.request("GET", "https://httpbin.org/get", params={"q": "test
 
 ```python
 ws = await sdk.client.ws_connect("wss://example.com/ws", heartbeat=30)
+ws.id  # 已登记，可被 connections 查询/广播
 async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
