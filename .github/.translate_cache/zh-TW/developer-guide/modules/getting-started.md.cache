@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "b0fd49a959689afc4dc37a62b3b8d5e1",
-  "file_hash": "b0fd49a959689afc4dc37a62b3b8d5e1",
-  "translated_at": "2026-09-07T11:22:22.660591",
+  "hash": "9aaef1a655f2bb8a8a12c033e68f07eb",
+  "file_hash": "9aaef1a655f2bb8a8a12c033e68f07eb",
+  "translated_at": "2026-10-09T14:51:52.983176",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -22,8 +22,8 @@
       "translation": "## __init__.py\n\n```python\nfrom .Core import Main\n```"
     },
     {
-      "hash": "46fb55a7709c7f449b98832a2d63dc77",
-      "translation": "## Core.py - 基礎模組\n\n```python\nfrom ErisPulse import sdk\nfrom ErisPulse.Core.Bases import BaseModule\nfrom ErisPulse.Core.Event import command\n\nclass Main(BaseModule):\n    def __init__(self, sdk):\n        self.sdk = sdk\n        self.logger = sdk.logger.get_child(\"MyModule\")\n        self.storage = sdk.storage\n    \n    @staticmethod\n    def get_load_strategy():\n        \"\"\"返回模組加載策略\"\"\"\n        from ErisPulse.loaders import ModuleLoadStrategy\n        return ModuleLoadStrategy(\n            lazy_load=True,\n            priority=0,\n            depends=[],  # 可選：依賴的其他模組列表\n            # 可選：事件驅動懶加載——聲明觸發器，首個匹配事件/命令到達時自動加載\n            # activate_on=[{\"command\": {\"name\": \"hello\", \"help\": \"發送問候\"}}],\n        )\n    \n    async def on_load(self, event):\n        \"\"\"模組加載時調用\"\"\"\n        @command(\"hello\", help=\"發送問候\")\n        async def hello_command(event):\n            name = event.get_user_nickname() or \"朋友\"\n            await event.reply(f\"你好，{name}！\")\n        \n        self.logger.info(\"模組已加載\")\n    \n    async def on_unload(self, event):\n        \"\"\"模組卸載時調用\"\"\"\n        self.logger.info(\"模組已卸載\")\n```\n\n> **配置讀取**：上面的基礎範例未使用配置。需要讀取配置時，推薦聲明嵌套的 `ConfigClass` 並透過 `self.cfg` 即時讀取（見 [模組核心概念](core-concepts.md#宣告式配置推薦)）。手動呼叫 `_load_config()` 的舊寫法已廢棄。"
+      "hash": "25f9efceea98881681c9962b6113cc79",
+      "translation": "## Core.py - 基礎模組\n\n```python\nfrom ErisPulse import sdk\n# 推薦根導入（2.10+）：常用符號直接從根包導入，深路徑仍相容\nfrom ErisPulse import BaseModule, command\n\nclass Main(BaseModule):\n    def __init__(self, sdk):\n        self.sdk = sdk\n        self.logger = sdk.logger.get_child(\"MyModule\")\n        self.storage = sdk.storage\n    \n    @staticmethod\n    def get_load_strategy():\n        \"\"\"返回模組加載策略\"\"\"\n        from ErisPulse.loaders import ModuleLoadStrategy\n        return ModuleLoadStrategy(\n            lazy_load=True,\n            priority=0,\n            depends=[],  # 可選：依賴的其他模組列表\n            # 可選：事件驅動懶激活——聲明觸發器，首個匹配事件/命令到達時自動加載\n            # activate_on=[{\"command\": {\"name\": \"hello\", \"help\": \"發送問候\"}}],\n        )\n    \n    async def on_load(self, event):\n        \"\"\"模組加載時調用\"\"\"\n        @command(\"hello\", help=\"發送問候\")\n        async def hello_command(event):\n            name = event.get_user_nickname() or \"朋友\"\n            await event.reply(f\"你好，{name}！\")\n        \n        self.logger.info(\"模組已加載\")\n    \n    async def on_unload(self, event):\n        \"\"\"模組卸載時調用\"\"\"\n        self.logger.info(\"模組已卸載\")\n```\n\n> **配置讀取**：上面的基礎範例未使用配置。需要讀取配置時，推薦聲明嵌套的 `ConfigClass` 並透過 `self.cfg` 即時讀取（見 [模組核心概念](core-concepts.md#宣告式配置推薦)）。手動呼叫 `_load_config()` 的舊寫法已廢棄。"
     },
     {
       "hash": "b19935b00f6e24f77df608fef2d1ed1b",

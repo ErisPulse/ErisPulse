@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "24f1c9de449478892033e208bcb33e1c",
-  "file_hash": "24f1c9de449478892033e208bcb33e1c",
-  "translated_at": "2026-09-07T12:36:38.287696",
+  "hash": "ba11b095c9514060b058e4976e10345f",
+  "file_hash": "ba11b095c9514060b058e4976e10345f",
+  "translated_at": "2026-10-09T14:51:04.459026",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -14,8 +14,8 @@
       "translation": "## 概述\n\n網路客戶端的主要功能：\n\n- **統一介面**：提供 `get` / `post` / `put` / `delete` / `patch` / `request` 方法\n- **WebSocket 客戶端**：透過 `ws_connect` 建立客戶端 WebSocket 連接\n- **自動日誌**：所有請求自動記錄日誌和統計資訊\n- **生命週期整合**：每次請求觸發 `client.request` 生命週期事件，WS 連接觸發 `client.ws.connect` 事件\n- **重試支援**：可配置自動重試次數和間隔\n- **超時控制**：獨立的連接超時和請求超時\n- **連接池複用**：基於 aiohttp.ClientSession 的連接池管理\n- **異常體系**：aiohttp 異常自動轉換為 ErisPulse 異常 (ClientError 体系)"
     },
     {
-      "hash": "ee40eebc43f041b311d9fb624f2fe01c",
-      "translation": "## 快速入門\n\n### HTTP 請求\n\n```python\nfrom ErisPulse.Core import client\n\n# GET 請求\nresp = await client.get(\"https://httpbin.org/get\")\ndata = await resp.json()\nprint(resp.status)  # 200\n\n# POST 請求\nresp = await client.post(\n    \"https://httpbin.org/post\",\n    json={\"key\": \"value\"},\n)\ndata = await resp.json()\n```\n\n### WebSocket 連接\n\n```python\nfrom ErisPulse.Core import client\n\nws = await client.ws_connect(\"wss://example.com/ws\")\n\nasync for text in ws.iter_text():\n    await ws.send_text(f\"Echo: {text}\")\n```"
+      "hash": "bd74e299063f4d4653ce4af8acf87027",
+      "translation": "## 快速開始\n\n### HTTP 請求\n\n```python\nfrom ErisPulse.Core import client\n\n# GET 請求\nresp = await client.get(\"https://httpbin.org/get\")\ndata = await resp.json()\nprint(resp.status)  # 200\n\n# POST 請求\nresp = await client.post(\n    \"https://httpbin.org/post\",\n    json={\"key\": \"value\"},\n)\ndata = await resp.json()\n```\n\n### WebSocket 連接\n\n```python\nfrom ErisPulse import client   # 2.10+ 根導入（ErisPulse.Core.client 深路徑仍相容）\n\nws = await client.ws_connect(\"wss://example.com/ws\")\n\nasync for text in ws.iter_text():\n    await ws.send_text(f\"Echo: {text}\")\n```\n\n#### 出站連接自動入池（2.10+）\n\n`ws_connect` 建立的連接**預設自動登記**進框架連接池（`track=False` 可關閉）：\n可被 `connections.list(owner=...)` 查看、向其廣播；連接關閉 / 遠端斷開自動註銷；\n**模組卸載 / 適配器停止時框架統一關閉**其名下全部出站連接，杜絕洩漏。\n\n```python\nfrom ErisPulse import client, connections\n\nws = await client.ws_connect(\"wss://example.com/ws\")\nprint(ws.id, ws.owner)   # 已登記：連接 id 與歸屬\n\n# owner 上下文不可用（如工具線程回調）時顯式指定歸屬，卸載才能自動回收：\nws2 = await client.ws_connect(\"wss://example.com/ws2\", owner=\"MyAdapter\")\n```\n\n詳見[連接池與廣播](connections.md)。"
     },
     {
       "hash": "a550770dec9fb9ee174c0f6ae9d92e85",

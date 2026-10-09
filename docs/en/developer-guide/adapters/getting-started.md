@@ -56,14 +56,14 @@ mkdir MyAdapter && cd MyAdapter
 [project]
 name = "ErisPulse-MyAdapter"
 version = "1.0.0"
-description = "MyAdapter Platform Adapter"
+description = "MyAdapter platform adapter"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
 dependencies = [
-    "ErisPulse>=2.4.0"  # aiohttp is built-in in ErisPulse, usually no need to depend separately
+    "ErisPulse>=2.4.0"  # ErisPulse already includes aiohttp, usually no separate dependency needed
 ]
 
 [project.urls]
@@ -75,13 +75,13 @@ dependencies = [
 
 ### 3. Create Adapter Main Class
 
-The framework provides `ConfigClass` / `AccountConfigClass` for declarative configuration management. The adapter only needs to declare the configuration class to automatically load, validate, and generate the configuration template.
+The framework provides `ConfigClass` / `AccountConfigClass` for declarative configuration management. The adapter only needs to declare the configuration class, and the framework will automatically load, validate, and generate the configuration template.
 
 ```python
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
-from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core.Bases import BaseConfig
+# Recommended root import (2.10+): commonly used symbols directly imported from root package, deep paths are still compatible
+from ErisPulse import BaseAdapter, BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
@@ -105,9 +105,9 @@ class MyAdapterConfig(BaseConfig):
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyAdapterConfig  # Declare the configuration class, the framework manages it automatically
+    ConfigClass = MyAdapterConfig  # Declare the configuration class, the framework will manage it automatically
     
-    # No need to override __init__! The framework handles:
+    # No need to override __init__! The framework handles it automatically:
     # - self.sdk / self.logger are automatically set
     # - self.cfg reads the configuration in real-time
     # - self.Send / self.Request are automatically initialized
@@ -117,9 +117,9 @@ class MyAdapter(BaseAdapter):
         return MyPlatformConverter()
 ```
 
-> ⚠️ **About `__init__`**: In the new version, `BaseAdapter.__init__(self, sdk=None)` automatically handles SDK references, logging initialization, and configuration loading. Most adapters **do not need to override `__init__`**. See [__init__ Notes](#init-注意事项).
+> ⚠️ **Regarding `__init__`**: In the new version, `BaseAdapter.__init__(self, sdk=None)` will automatically handle SDK references, log initialization, and configuration loading. Most adapters **do not need to override `__init__`**. See [__init__ Notes](#init-注意事项).
 
-> ⚠️ **About `super().__init__()`**: `BaseAdapter.__init__()` is responsible for creating `Send` and `Request` factory instances. If you forget to call it, all message sending and request operations will raise `AttributeError`. See [__init__ Notes](#init-注意事项).
+> ⚠️ **Regarding `super().__init__()`**: `BaseAdapter.__init__()` is responsible for creating `Send` and `Request` factory instances. If you forget to call it, all message sending and request operations will raise an `AttributeError`. See [__init__ Notes](#init-注意事项).
 
 ### 4. Implement Required Methods
 
@@ -147,13 +147,13 @@ class MyAdapter(BaseAdapter):
         self.logger.info("Adapter shutdown")
     
     async def call_api(self, endpoint: str, **params):
-        """Call platform API (must implement)"""
+        """Call the platform API (must implement)"""
         raise NotImplementedError("call_api needs to be implemented")
 ```
 
-#### Actively Sending Meta Events
+#### Proactively Emit Meta Events
 
-The adapter should actively send meta events to let the framework track the Bot's online status. Use `emit_meta()` to complete this in one line:
+The adapter should proactively emit meta events to allow the framework to track the Bot's online status. Use `emit_meta()` to complete this in one line:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -180,7 +180,7 @@ class MyAdapter(BaseAdapter):
 
 ### 5. Implement Send Class
 
-`At`/`AtAll`/`Reply` decorators are already implemented by the framework's SendDSL base class. The adapter only needs to implement `Raw_ob12` and specific send methods.
+The `At`/`AtAll`/`Reply` decorators are built into the framework's SendDSL base class, so the adapter only needs to implement `Raw_ob12` and specific send methods.
 
 The framework provides two key helper methods:
 - `self._apply_modifiers(message)` — Automatically merges At/AtAll/Reply decorators into message segments
@@ -198,8 +198,8 @@ class MyAdapter(BaseAdapter):
             """
             Send OneBot12 formatted message (must implement)
 
-            Use _apply_modifiers to automatically merge decorator states,
-            Use send_context to get send context.
+            Use _apply_modifiers to automatically merge modifier states,
+            use send_context to get the send context.
             """
             async def _do_send():
                 segments = self._apply_modifiers(message)
@@ -211,29 +211,29 @@ class MyAdapter(BaseAdapter):
                 )
             return asyncio.create_task(_do_send())
 
-        # Text/Image/Voice/Video/File are inherited from SendDSL base class,
-        # Defaultly delegated to Raw_ob12, no need to reimplement.
+        # Text/Image/Voice/Video/File are inherited from the SendDSL base class,
+        # defaulting to delegate to Raw_ob12, no need to re-implement.
         # If platform-specific logic is needed, override individual methods:
         # def Text(self, text: str):
         #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-**Media Send Method Implementation Points (Image/Video/File):**
+**Media send method implementation points (Image/Video/File):**
 
-- The base class's default implementation wraps the `file` parameter as a OneBot12 message segment and passes it to `Raw_ob12`. The adapter needs to handle downloading/uploading in `Raw_ob12`.
-- The `file` parameter should support both `bytes` binary data and `str` URL types.
-- When a URL is passed, download the file before uploading it to the platform.
-- Platforms usually require first calling an upload interface to get the file identifier, then calling the send interface.
+- The default implementation in the base class will encapsulate the `file` parameter as a OneBot12 message segment and pass it to `Raw_ob12`, and the adapter needs to handle downloading/uploading in `Raw_ob12`
+- The `file` parameter should support both `bytes` binary data and `str` URL types
+- When a URL is passed, the file must be downloaded first and then uploaded to the platform
+- The platform usually requires first calling the upload interface to get the file identifier, then calling the send interface
 
-**`__getattr__` Magic Method:**
+**`__getattr__` magic method:**
 
 - Implement case-insensitive method names (`Text`, `text`, `TEXT` all work)
-- Undefined methods should return a hint message instead of raising an error
+- Undefined methods should return a hint message instead of throwing an error
 
-**`Raw_ob12` Method:**
+**`Raw_ob12` method:**
 
-- Convert OneBot12 standard message format to platform format for sending
-- Use `self._apply_modifiers(message)` to automatically handle At/AtAll/Reply decorators
+- Convert the OneBot12 standard message format to the platform format for sending
+- Use `self._apply_modifiers(message)` to automatically handle At/AtAll/Reply modifiers
 - Use `**self.send_context` to pass send target information and account information
 
 ### 6. Implement Converter
@@ -280,10 +280,10 @@ class MyPlatformConverter:
 
 ### 7. Implement Request Class (Request Operations)
 
-If your platform supports friend requests, group invitations, and other requests that require Bot decisions, you can implement the `Request` inner class:
+If your platform supports friend requests, group invitations, and other requests that require the Bot to make decisions, you can implement the `Request` inner class:
 
 ```python
-from ErisPulse.Core import BaseAdapter, RequestDSL
+from ErisPulse import BaseAdapter, RequestDSL
 
 class MyAdapter(BaseAdapter):
     # ... Send and other code ...
@@ -328,20 +328,20 @@ class MyAdapter(BaseAdapter):
             return self._create_task(_do())
 ```
 
-Module developers' usage:
+Module developer usage:
 
 ```python
-from ErisPulse.Core.Event import request
+from ErisPulse import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
-    # Use Event convenience methods
+    # Through Event convenience methods
     await event.approve()
-    # Or operate directly through the adapter
+    # Or directly through the adapter
     await adapter.myplatform.Request("req_id").accept()
 ```
 
-> If the platform does not support request operations, you can omit implementing the `Request` inner class. The base class defaults to returning `retcode=10002` (unsupported operation). See [Request Operation Specification](../../standards/request-action-spec.md).
+> If the platform does not support request operations, you can omit implementing the `Request` inner class. The base class defaults to returning `retcode=10002` (unsupported operation). See [Request Action Specification](../../standards/request-action-spec.md).
 
 ### 8. Create Package Entry
 

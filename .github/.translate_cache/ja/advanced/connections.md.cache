@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "hash": "4ad7739051f6405b57898718a2217e75",
+  "file_hash": "4ad7739051f6405b57898718a2217e75",
+  "translated_at": "2026-10-09T14:52:35.200575",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "e775eeafb16677712ff7c8d631e6a7db",
+      "translation": "# 接続プールとブロードキャスト\n\nErisPulse における接続（サーバ側 WebSocket / SSE / クライアント出向 WebSocket）は**フレームワークレベルの一等リソース**です。接続が確立すると自動的に統一登録表に登録され、ブロードキャスト、業務グループサブスクリプション、モジュール間の渡し渡しや再利用が可能になります。モジュールのアンロード時にはフレームワークが自動的に接続を閉じて回収します。これにより、業務側が `_ws_clients` 集合を自前で作成する必要がなく、忘れずにクリーンアップすることでリソースリークを防げます。\n\n> 本文ドキュメントの例はすべて**ルートインポート**の書き方を前提としています（2.10以降推奨）：\n> `from ErisPulse import connections, router, client, WebSocketConnection`"
+    },
+    {
+      "hash": "082ac18ecfe481fd554932f5f21338db",
+      "translation": "## 概要\n\n```python\nfrom ErisPulse import connections, router, WebSocketConnection\n\n# サーバ側：接続は自動登録され、ハンドラ内で業務グループに参加\n@router.ws(\"MyModule\", \"/ws\")\nasync def handle(ws: WebSocketConnection):\n    ws.join_group(\"room:1\")            # グループ名は業務側で自由に命名\n    async for msg in ws.iter_text():\n        ...                             # 接続が切断された際にはフレームワークが自動的に登録を解除し、グループをクリーンアップ\n\n# 任意の位置で：グループにブロードキャスト（成功/失敗の詳細を返す）\nresult = await connections.broadcast({\"type\": \"notify\"}, group=\"room:1\")\nif not result.ok:\n    ...                                 # result.failed: {接続ID: 例外}\n\n```\n\n3種類の接続はすべて登録表に統合されます：\n\n| kind | 来源 | 归属 owner | 说明 |\n|------|------|-----------|------|\n| `server` | `@router.ws(...)` / `register_websocket(...)` | ルートを登録したモジュール名 | 接続切断時に自動的に登録を解除 |\n| `sse` | `@router.sse(...)` / `register_sse(...)` | ルートを登録したモジュール名 | ブロードキャストは `sse.send()` を使用 |\n| `client` | `await client.ws_connect(url)` | 現在のモジュール（または明示的な `owner=`） | 接続の閉じる、リモート切断時に自動的に登録を解除；アダプターが停止した際にはフレームワークが一括して閉じる |\n\n自動登録を不要とする場合：ルートに `track=False` を渡すか、出向接続に `track=False` を渡すことで、従来のコードの挙動は完全に維持されます。"
+    },
+    {
+      "hash": "3dea3dca7571484de5491e127b2e27e6",
+      "translation": "## 接続プールの確認\n\n```python\nfrom ErisPulse import connections\n\n# 特定のモジュールの接続プールを確認（「現在、あるモジュールに何本の接続があるか」）\nconns = connections.list(namespace=\"Dashboard\")\nfor conn in conns:\n    print(conn.id, conn.kind, conn.groups, conn.meta)\n\n# その他の条件でフィルタリング（すべての条件がAND条件）\nconnections.list(owner=\"MyAdapter\", kind=\"client\")\nconnections.list(group=\"tenant:acme\")\n\n# 全体の統計情報（各条件のカウント）\nstats = connections.stats()\n# {'total': 5, 'by_kind': {...}, 'by_namespace': {...}, 'by_owner': {...}, 'groups': {...}}\n\n# 所有権監査のカウント（ownership インターフェースでも確認可能）\nfrom ErisPulse import ownership\nownership.counts(\"Dashboard\")   # {'connections': 3, ...}\n```\n\n各接続は以下の識別情報を読み取ることができます：`conn.id`（例: `Dashboard:1a2b3c4d`）、`conn.namespace`、`conn.owner`、`conn.kind`、`conn.groups`、`conn.meta`（業務用の自由な辞書）。"
+    },
+    {
+      "hash": "76042f396dcfd14c9971faa985d680af",
+      "translation": "## ブロードキャストとサブスクリプション\n\n### グループ（サブスクリプションモデル）\n\nグループは**フラットな文字列**であり、命名は完全に業務側の合意によって行われます（ルーム / テナント / トピックなど）。ネストされた階層は命名規則で表現します（例: `tenant:acme/room:1`）。フレームワークは形式を制限しません。\n\n両方向から操作が可能です：\n\n```python\n# 方向1：接続側が参加/退出（ハンドラ内で）\n@router.ws(\"Chat\", \"/ws\")\nasync def handle(ws: WebSocketConnection):\n    ws.join_group(\"room:1\")        # 等価: connections.assign(ws.id, \"room:1\")\n    ws.leave_group(\"room:1\")\n\n# 方向2：管理側が割り当て（ルート側 / 他のモジュール）\nconnections.assign(conn_id, \"tenant:acme\")\nconnections.dismiss(conn_id, \"tenant:acme\")   # グループ名を指定しない場合はすべてのグループから退出\n```\n\n接続が切断された際には、すべてのグループから自動的に退出し、業務側によるクリーンアップは不要です。\n\n### ブロードキャスト\n\n```python\nresult = await connections.broadcast(\n    data,                       # WS は send_json を使用；SSE は send を使用（自動的にJSONシリアライズ）\n    namespace=\"Dashboard\",      # 名前空間でフィルタリング\n    group=\"room:1\",             # グループでフィルタリング\n    kind=\"sse\",                 # 接続の種類でフィルタリング\n    owner=\"MyAdapter\",          # 所有者でフィルタリング\n    ids={conn_id, ...},         # 明示的に候補集を指定（フィルタ条件は依然有効）\n    exclude={conn_id},          # 特定の接続を除外\n    timeout=10.0,               # 単一接続の送信タイムアウト（トータルの時間ではなく）\n    concurrency=64,             # 並列送信の上限\n    raise_on_error=False,       # True の場合、失敗した項目があると最初の例外を送出\n)\nresult.total      # 目標接続の総数（除外前に）\nresult.sent       # 成功した接続IDのリスト\nresult.failed     # {接続ID: 例外オブジェクト}（タイムアウト/切断済み/送信失敗）\nresult.excluded   # 除外された接続ID\nresult.ok         # 全て送信されたか\n```\n\nフィルタ条件は **AND** で処理されます。1件の失敗は他の接続への影響はありません。`ids` に存在しない接続は `failed` にカウントされ、業務側が状況を把握できるようにします。\n\n### ライフサイクルイベント\n\n接続の登録/登録解除/グループ変更は標準的なライフサイクルイベントとして発行され、Dashboard などのコンポーネントはサブスクライブしてリアルタイムに表示できます：\n\n```python\nfrom ErisPulse import lifecycle\n\n@lifecycle.on(\"connection.registered\")\nasync def on_registered(data): ...\n@lifecycle.on(\"connection.unregistered\")\nasync def on_unregistered(data): ...\n@lifecycle.on(\"connection.group.joined\")\nasync def on_joined(data): ...\n@lifecycle.on(\"connection.group.left\")\nasync def on_left(data): ...\n```"
+    },
+    {
+      "hash": "b53a9b53f2849579f4a13f0433c00767",
+      "translation": "## モジュール間の渡し渡し / 再利用\n\n接続はフレームワークが登録したリソースであり、どのモジュールでも接続IDを使って取得して**再利用**できます。自前で新たな接続を作成する必要も、誰が接続を作成したかを知る必要もありません：\n\n```python\nfrom ErisPulse import connections\n\nconn = connections.get(\"Dashboard:1a2b3c4d\")   # 存在しない/切断済みの場合は ConnectionNotFoundError を送出\nawait conn.send_json({\"ping\": 1})              # どのモジュールからでも送信可能\nconn.join_group(\"someone-elses-room\")          # グループ参加も可能\n```\n\n**所有権と閉じる権限**：\n\n- 接続の `owner`（作成したモジュール）は、閉じる権限を独占します。非 owner が `close()` を呼び出すと `ConnectionPermissionError`（`from ErisPulse import ConnectionPermissionError`）が送出されます；\n- 送信やグループ操作は、どのモジュールからでも許可なく実行可能です；\n- owner モジュールのアンロード / アダプターの停止時に、フレームワークは**一括して閉じて登録を解除**します（サーバ側 + 出向接続）。取得した参照で送信を試みても失敗結果が返り、`connection.unregistered` イベントを監視することで感知できます；\n- フレームワーク内部のリソース回収には `close(force=True)` を使用して検証を回避します。\n\n> 説明：閉じる権限の検証は、実行時の owner コンテキスト（`owner_scope` / イベント配信 / `spawn_background` など）に依存します。コンテキストが不明な呼び出し（古いコードなど）は許可され、破壊的な影響をゼロに保ちます。新しいコードでは、owner コンテキスト内で呼び出すことで保護されます。"
+    },
+    {
+      "hash": "e7912c2c04f6ee355027996ef66eee92",
+      "translation": "## 出向接続（クライアント側）\n\n```python\nfrom ErisPulse import client\n\nws = await client.ws_connect(\"wss://example.com/ws\")\nws.id          # 登録済みで、connections で検索/ブロードキャストが可能\nws.owner       # 現在のモジュール（owner コンテキストが利用できない場合は明示的に指定）\n\n# owner コンテキストが利用できない場合（例：ツールスレッドのコールバック）は明示的に指定し、アンロード時に自動回収されます：\nws = await client.ws_connect(\"wss://example.com/ws\", owner=\"MyAdapter\")\n```\n\nリモート側が切断した場合、またはローカルで `close()` を呼び出した場合、自動的に登録を解除します。モジュールのアンロード時には、フレームワークがその名下のすべての出向接続を閉じます。これにより、従来のコードで接続を自前で管理し忘れることによるリソースリークはなくなりました。"
+    },
+    {
+      "hash": "9ab7d9f87430a26275b6a3fb04972a44",
+      "translation": "## スレッド間の投递\n\n子スレッドから接続にアクセスする場合（ブロードキャスト / プッシュ / 閉じる）には、フレームワークの標準的なツールを使ってメインループに投递してください。**`run_coroutine_threadsafe` を手書きで使用しないでください**：\n\n```python\nfrom ErisPulse import run_main_loop, spawn_later, spawn_thread\n\n# 子スレッドでブロックして結果を取得：\nrun_main_loop(connections.broadcast({\"tick\": 1}, group=\"room:1\"), timeout=5)\n\n# バックグラウンドスレッド + 遅延タスク（所有権の割り当て、アンロード時に自動キャンセル）：\ndef push_tick():\n    return connections.broadcast({\"tick\": 1}, group=\"room:1\")\nspawn_later(30, push_tick, owner=\"MyModule\")\n```"
+    },
+    {
+      "hash": "f9aaad8cad6ec8d77223420d46c8a6e9",
+      "translation": "## アンロードとクリーンアップの意味\n\nモジュールのアンロード / アダプターの停止時の所有権回収の流れは次のように進行します：所属するバックグラウンドタスクやタイマーのキャンセル → **所属する接続の閉じて登録を解除** → `on_cleanup` フックの呼び出し → ルート/ハンドラなどの登録済みリソースの登録解除。詳細は [所有権（owner）システム](ownership.md) を参照してください。\n\n> [!WARNING]\n> 2.10以降、モジュールのアンロード時に登録された WS/SSE/出向接続が閉じられます。アンロード後に接続が生き続けることを依存している下流コンポーネント（例：旧バージョンの Dashboard プッシュ）は、これはリソースリークを防ぐ意図的な挙動であることを認識する必要があります。"
+    },
+    {
+      "hash": "1af6c3a4d287b18aa6c300957ca84d60",
+      "translation": "## API 一覧\n\n| API | 说明 |\n|-----|------|\n| `connections.get(id)` | 接続を取得（モジュール間のエントリーポイント）、存在しない場合は `ConnectionNotFoundError` を送出 |\n| `connections.list(namespace=, owner=, group=, kind=)` | 接続のリストをフィルタリングして取得 |\n| `connections.stats(namespace=, owner=)` | 各条件のカウント統計 |\n| `connections.assign(id, *groups)` / `dismiss(id, *groups)` | 管理側によるグループ参加/退出 |\n| `await connections.broadcast(data, ...)` | ブロードキャスト、`BroadcastResult` を返す |\n| `await connections.close(id, force=False)` | 閉じて登録を解除（権限チェックあり） |\n| `await connections.close_owner(owner)` | 指定 owner 名下のすべての接続を閉じて登録を解除（フレームワークのアンロードチェーンで呼び出される） |\n| `conn.join_group(*groups)` / `conn.leave_group(*groups)` | 接続側によるグループ参加/退出 |\n| `conn.send_json / send_text / iter_text / ...` | 受信/送信（サーバ側/クライアント側のインターフェースは同一） |\n| `conn.meta` | 業務用メタデータ辞書 |\n| `conn.close(force=False)` | 閉じる（非 owner は `ConnectionPermissionError` を送出） |"
+    }
+  ]
+}

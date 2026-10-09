@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "hash": "4ad7739051f6405b57898718a2217e75",
+  "file_hash": "4ad7739051f6405b57898718a2217e75",
+  "translated_at": "2026-10-09T14:51:08.418316",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "e775eeafb16677712ff7c8d631e6a7db",
+      "translation": "# 連接池與廣播\n\n連接（服務端 WebSocket / SSE / 客戶端出站 WebSocket）在 ErisPulse 中是**框架級一等資源**：\n隨著連接建立自動登記進統一註冊表，支援廣播、業務分組訂閱與跨模組傳遞/複用，\n模組卸載時由框架自動關閉回收——業務不再自建 `_ws_clients` 集合，也不會因忘記清理而造成記憶體洩漏。\n\n> 本文文件範例均為**根導入**寫法（2.10+ 推薦）：\n> `from ErisPulse import connections, router, client, WebSocketConnection`"
+    },
+    {
+      "hash": "082ac18ecfe481fd554932f5f21338db",
+      "translation": "## 概述\n\n```python\nfrom ErisPulse import connections, router, WebSocketConnection\n\n# 服務端：連接自動登記，handler 內加入業務分組\n@router.ws(\"MyModule\", \"/ws\")\nasync def handle(ws: WebSocketConnection):\n    ws.join_group(\"room:1\")            # 分組命名完全由業務約定\n    async for msg in ws.iter_text():\n        ...                             # 斷開時框架自動註銷、清理分組\n\n# 任意位置：向分組廣播（返回成功失敗明細）\nresult = await connections.broadcast({\"type\": \"notify\"}, group=\"room:1\")\nif not result.ok:\n    ...                                 # result.failed: {連接id: 異常}\n```\n\n三種連接統一進入註冊表：\n\n| kind | 來源 | 歸屬 owner | 說明 |\n|------|------|-----------|------|\n| `server` | `@router.ws(...)` / `register_websocket(...)` | 註冊路由的模組名 | 斷開自動註銷 |\n| `sse` | `@router.sse(...)` / `register_sse(...)` | 註冊路由的模組名 | 廣播走 `sse.send()` |\n| `client` | `await client.ws_connect(url)` | 當前模組（或顯式 `owner=`） | 關閉/遠端斷開自動註銷；適配器停止時框架統一關閉 |\n\n不想要自動登記時：路由傳 `track=False`，出站連接傳 `track=False`，舊代碼行為完全不變。"
+    },
+    {
+      "hash": "3dea3dca7571484de5491e127b2e27e6",
+      "translation": "## 查看連接池\n\n```python\nfrom ErisPulse import connections\n\n# 查看某模組的連接池（「某模組現在有幾條活連接」）\nconns = connections.list(namespace=\"Dashboard\")\nfor conn in conns:\n    print(conn.id, conn.kind, conn.groups, conn.meta)\n\n# 按其它維度過濾（各條件 AND）\nconnections.list(owner=\"MyAdapter\", kind=\"client\")\nconnections.list(group=\"tenant:acme\")\n\n# 全局統計（各維度計數）\nstats = connections.stats()\n# {'total': 5, 'by_kind': {...}, 'by_namespace': {...}, 'by_owner': {...}, 'groups': {...}}\n\n# 歸屬權審計計數（ownership 面門同樣可見）\nfrom ErisPulse import ownership\nownership.counts(\"Dashboard\")   # {'connections': 3, ...}\n```\n\n每條連接可讀的身份資訊：`conn.id`（形如 `Dashboard:1a2b3c4d`）、`conn.namespace`、\n`conn.owner`、`conn.kind`、`conn.groups`、`conn.meta`（業務自由字典）。"
+    },
+    {
+      "hash": "76042f396dcfd14c9971faa985d680af",
+      "translation": "## 廣播與訂閱\n\n### 分組（訂閱模型）\n\n分組是**扁平字串**，命名完全由業務約定（房間 / 租戶 / 主題……），\n嵌套層級用命名約定表達（如 `tenant:acme/room:1`），框架不約束格式。\n\n兩個方向都可以操作：\n\n```python\n# 方向一：連接端主動加入/退出（handler 內）\n@router.ws(\"Chat\", \"/ws\")\nasync def handle(ws: WebSocketConnection):\n    ws.join_group(\"room:1\")        # 等價 connections.assign(ws.id, \"room:1\")\n    ws.leave_group(\"room:1\")\n\n# 方向二：管理端被動分配（路由端 / 其它模組）\nconnections.assign(conn_id, \"tenant:acme\")\nconnections.dismiss(conn_id, \"tenant:acme\")   # 不傳分組名 = 退出全部分組\n```\n\n連接斷開時自動退出全部分組，無需業務清理。\n\n### 廣播\n\n```python\nresult = await connections.broadcast(\n    data,                       # WS 走 send_json；SSE 走 send（自動 JSON 序列化）\n    namespace=\"Dashboard\",      # 按命名空間過濾\n    group=\"room:1\",             # 按分組過濾\n    kind=\"sse\",                 # 按連接種類過濾\n    owner=\"MyAdapter\",          # 按歸屬過濾\n    ids={conn_id, ...},         # 明確指定候選集（過濾條件仍生效）\n    exclude={conn_id},          # 排除某些連接\n    timeout=10.0,               # 單條連接發送超時（非總時長）\n    concurrency=64,             # 並發發送上限\n    raise_on_error=False,       # True 時有失敗項則拋出首個異常\n)\nresult.total      # 目標連接總數（排除前）\nresult.sent       # 成功的連接 id 列表\nresult.failed     # {連接 id: 異常物件}（超時/已斷開/發送失敗）\nresult.excluded   # 被排除的連接 id\nresult.ok         # 是否全部傳達\n```\n\n過濾條件之間是 **AND**；單條失敗不會影響其它連接；`ids` 中已不存在的連接會計入\n`failed`（讓業務知道全貌）。\n\n### 生命週期事件\n\n連接登記/註銷/分組變化會發射標準生命週期事件，Dashboard 等可訂閱做即時呈現：\n\n```python\nfrom ErisPulse import lifecycle\n\n@lifecycle.on(\"connection.registered\")\nasync def on_registered(data): ...\n@lifecycle.on(\"connection.unregistered\")\nasync def on_unregistered(data): ...\n@lifecycle.on(\"connection.group.joined\")\nasync def on_joined(data): ...\n@lifecycle.on(\"connection.group.left\")\nasync def on_left(data): ...\n```"
+    },
+    {
+      "hash": "b53a9b53f2849579f4a13f0433c00767",
+      "translation": "## 跨模組傳遞 / 復用\n\n連接是框架登記的資源，任何模組都可以透過連接 id 拿到它並**復用**——  \n不需要自己再建立一條，也不需要知道連接是誰建立的：\n\n```python\nfrom ErisPulse import connections\n\nconn = connections.get(\"Dashboard:1a2b3c4d\")   # 不存在 / 已斷開拋 ConnectionNotFoundError\nawait conn.send_json({\"ping\": 1})              # 任何模組都可發送\nconn.join_group(\"someone-elses-room\")          # 也可參與分組\n```\n\n**歸屬與關閉權**：\n\n- 連接的 `owner`（建立它的模組）獨佔關閉權。非 owner 調用 `close()` 拋  \n  `ConnectionPermissionError`（`from ErisPulse import ConnectionPermissionError`）；\n- 發送與分組操作對所有模組開放，不需要授權；\n- owner 模組卸載 / 适配器停止時，框架**統一關閉並註銷**其名下全部連接  \n  （服務器端 + 出站），已拿到的引用再發送會得到失敗結果，監聽  \n  `connection.unregistered` 事件可感知；\n- 框架內部回收路徑用 `close(force=True)` 繞過校驗。\n\n> 歸因說明：關閉權校驗依賴運行時 owner 上下文（`owner_scope` / 事件分發 /  \n> `spawn_background` 等自動攜帶）。上下文不可歸因的呼叫（未歸因的老程式碼）會放行，  \n> 保證 0 破壞；新程式碼在 owner 上下文中呼叫即受保護。"
+    },
+    {
+      "hash": "e7912c2c04f6ee355027996ef66eee92",
+      "translation": "## 出站連接（Client 側）\n\n```python\nfrom ErisPulse import client\n\nws = await client.ws_connect(\"wss://example.com/ws\")\nws.id          # 已登記，可被 connections 查詢/廣播\nws.owner       # 當前模組（owner 上下文不可用時建議顯式傳）\n\n# owner 上下文不可用（如工具線程回調）時顯式指定，卸載才能自動回收：\nws = await client.ws_connect(\"wss://example.com/ws\", owner=\"MyAdapter\")\n```\n\n遠端主動斷開、本地 `close()` 都會自動註銷登記；模組卸載時框架關閉其名下\n全部出站連接。等舊代碼裸建連接各自管理、忘記清理導致泄漏的日子到此為止。"
+    },
+    {
+      "hash": "9ab7d9f87430a26275b6a3fb04972a44",
+      "translation": "## 跨執行緒投遞\n\n從子執行緒觸發連線（廣播 / 推送 / 關閉）時，使用框架標準工具投遞回主迴圈，  \n**不要手寫 `run_coroutine_threadsafe`**：\n\n```python\nfrom ErisPulse import run_main_loop, spawn_later, spawn_thread\n\n# 子執行緒阻塞取得結果：\nrun_main_loop(connections.broadcast({\"tick\": 1}, group=\"room:1\"), timeout=5)\n\n# 後台執行緒 + 延遲任務（owner 歸屬，卸載自動取消）：\ndef push_tick():\n    return connections.broadcast({\"tick\": 1}, group=\"room:1\")\nspawn_later(30, push_tick, owner=\"MyModule\")\n```"
+    },
+    {
+      "hash": "f9aaad8cad6ec8d77223420d46c8a6e9",
+      "translation": "## 卸載與清理語意\n\n模組卸載 / 适配器停止的歸屬權回收鏈會依序：取消歸屬背景任務與定時器 →  \n**關閉並註銷歸屬連接** → 觸發 on_cleanup 鈎子 → 註銷路由/處理器等註冊類資源。  \n詳見 [歸屬權（owner）系統](ownership.md)。\n\n> [!WARNING]  \n> 從 2.10 開始，模組卸載時會關閉其名下登記的 WS/SSE/出站連接。依賴「卸載後連接仍存活」的  \n> 下游組件（如舊版 Dashboard 推送）需知悉——這是杜絕連接泄漏的預期行為。"
+    },
+    {
+      "hash": "1af6c3a4d287b18aa6c300957ca84d60",
+      "translation": "## API 一覽\n\n| API | 說明 |\n|-----|------|\n| `connections.get(id)` | 取得連接（跨模組入口），不存在則拋出 `ConnectionNotFoundError` |\n| `connections.list(namespace=, owner=, group=, kind=)` | 過濾查詢連接列表 |\n| `connections.stats(namespace=, owner=)` | 各維度計數統計 |\n| `connections.assign(id, *groups)` / `dismiss(id, *groups)` | 管理端加入/移出分組 |\n| `await connections.broadcast(data, ...)` | 廣播，返回 `BroadcastResult` |\n| `await connections.close(id, force=False)` | 關閉並註銷（權限驗證） |\n| `await connections.close_owner(owner)` | 關閉註銷某 owner 名下全部連接（框架卸載鏈調用） |\n| `conn.join_group(*groups)` / `conn.leave_group(*groups)` | 連接端分組 |\n| `conn.send_json / send_text / iter_text / ...` | 收發（服務端/客戶端介面一致） |\n| `conn.meta` | 業務元數據字典 |\n| `conn.close(force=False)` | 關閉（非 owner 拋出 `ConnectionPermissionError`） |"
+    }
+  ]
+}

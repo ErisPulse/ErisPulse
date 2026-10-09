@@ -46,8 +46,8 @@ from .Core import Main
 
 ```python
 from ErisPulse import sdk
-from ErisPulse.Core.Bases import BaseModule
-from ErisPulse.Core.Event import command
+# Recommended root import (2.10+): Common symbols are directly imported from the root package, deep paths are still compatible
+from ErisPulse import BaseModule, command
 
 class Main(BaseModule):
     def __init__(self, sdk):
@@ -57,13 +57,13 @@ class Main(BaseModule):
     
     @staticmethod
     def get_load_strategy():
-        """Returns the module loading strategy"""
+        """Return the module loading strategy"""
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,
             priority=0,
-            depends=[],  # Optional: List of other modules this module depends on
-            # Optional: Event-driven lazy activation — declare triggers, module loads automatically when the first matching event/command arrives
+            depends=[],  # Optional: list of other modules this module depends on
+            # Optional: event-driven lazy activation - declare triggers, module automatically loads when first matching event/command arrives
             # activate_on=[{"command": {"name": "hello", "help": "Send a greeting"}}],
         )
     
@@ -81,7 +81,7 @@ class Main(BaseModule):
         self.logger.info("Module unloaded")
 ```
 
-> **Configuration Reading**: The basic example above does not use configuration. When configuration reading is needed, it is recommended to declare a nested `ConfigClass` and read it in real time via `self.cfg` (see [Core Module Concepts](core-concepts.md#declarative-configuration-recommended)). The old method of manually calling `_load_config()` has been deprecated.
+> **Configuration Reading**: The basic example above does not use configuration. To read configuration, it is recommended to declare a nested `ConfigClass` and access it via `self.cfg` for real-time reading (see [Module Core Concepts](core-concepts.md#recommended-declarative-configuration)). The old method of manually calling `_load_config()` is deprecated.
 
 ## Testing Module
 

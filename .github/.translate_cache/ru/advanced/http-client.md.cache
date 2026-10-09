@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "24f1c9de449478892033e208bcb33e1c",
-  "file_hash": "24f1c9de449478892033e208bcb33e1c",
-  "translated_at": "2026-09-07T10:51:40.439955",
+  "hash": "ba11b095c9514060b058e4976e10345f",
+  "file_hash": "ba11b095c9514060b058e4976e10345f",
+  "translated_at": "2026-10-09T14:52:07.511849",
   "target_lang": "ru",
   "chunks": [
     {
@@ -14,8 +14,8 @@
       "translation": "## Обзор\n\nОсновные функции сетевого клиента:\n\n- **Единый интерфейс**: предоставляет методы `get` / `post` / `put` / `delete` / `patch` / `request`\n- **WebSocket-клиент**: установление WebSocket-соединения с помощью `ws_connect`\n- **Автоматическая запись логов**: все запросы автоматически записываются в логи и статистику\n- **Интеграция с жизненным циклом**: каждый запрос вызывает событие жизненного цикла `client.request`, а подключение WebSocket — событие `client.ws.connect`\n- **Поддержка повторных попыток**: можно настроить количество и интервал автоматических повторных попыток\n- **Управление тайм-аутами**: независимые тайм-ауты подключения и запроса\n- **Повторное использование пула соединений**: управление пулом соединений на основе aiohttp.ClientSession\n- **Система исключений**: исключения aiohttp автоматически преобразуются в исключения ErisPulse (система ClientError)"
     },
     {
-      "hash": "ee40eebc43f041b311d9fb624f2fe01c",
-      "translation": "## Быстрый старт\n\n### HTTP-запросы\n\n```python\nfrom ErisPulse.Core import client\n\n# GET-запрос\nresp = await client.get(\"https://httpbin.org/get\")\ndata = await resp.json()\nprint(resp.status)  # 200\n\n# POST-запрос\nresp = await client.post(\n    \"https://httpbin.org/post\",\n    json={\"key\": \"value\"},\n)\ndata = await resp.json()\n```\n\n### WebSocket-соединение\n\n```python\nfrom ErisPulse.Core import client\n\nws = await client.ws_connect(\"wss://example.com/ws\")\n\nasync for text in ws.iter_text():\n    await ws.send_text(f\"Echo: {text}\")\n```"
+      "hash": "bd74e299063f4d4653ce4af8acf87027",
+      "translation": "## Быстрый старт\n\n### HTTP-запросы\n\n```python\nfrom ErisPulse.Core import client\n\n# GET-запрос\nresp = await client.get(\"https://httpbin.org/get\")\ndata = await resp.json()\nprint(resp.status)  # 200\n\n# POST-запрос\nresp = await client.post(\n    \"https://httpbin.org/post\",\n    json={\"key\": \"value\"},\n)\ndata = await resp.json()\n```\n\n### WebSocket-соединение\n\n```python\nfrom ErisPulse import client   # Импорт с корня (с версии 2.10, совместим с глубоким ErisPulse.Core.client)\n\nws = await client.ws_connect(\"wss://example.com/ws\")\n\nasync for text in ws.iter_text():\n    await ws.send_text(f\"Echo: {text}\")\n```\n\n#### Автоматическая регистрация исходящих соединений в пуле (с версии 2.10)\n\nСоединения, созданные через `ws_connect`, **по умолчанию автоматически регистрируются** в пуле соединений фреймворка (отключение посредством `track=False`):\nих можно просматривать с помощью `connections.list(owner=...)`, рассылать сообщения; при закрытии соединения или разрыве удалённой стороны оно автоматически удаляется из пула;\n**при выгрузке модуля / остановке адаптера фреймворк автоматически закрывает** все исходящие соединения, связанные с ним, предотвращая утечки.\n\n```python\nfrom ErisPulse import client, connections\n\nws = await client.ws_connect(\"wss://example.com/ws\")\nprint(ws.id, ws.owner)   # Уже зарегистрировано: id соединения и владелец\n\n# При отсутствии контекста owner (например, в обратном вызове из рабочего потока) явно укажите владельца, чтобы корректно произошла автоматическая выгрузка:\nws2 = await client.ws_connect(\"wss://example.com/ws2\", owner=\"MyAdapter\")\n```\n\nСм. подробнее [Пул соединений и трансляция](connections.md)."
     },
     {
       "hash": "a550770dec9fb9ee174c0f6ae9d92e85",

@@ -46,8 +46,8 @@ from .Core import Main
 
 ```python
 from ErisPulse import sdk
-from ErisPulse.Core.Bases import BaseModule
-from ErisPulse.Core.Event import command
+# 推薦根導入（2.10+）：常用符號直接從根包導入，深路徑仍相容
+from ErisPulse import BaseModule, command
 
 class Main(BaseModule):
     def __init__(self, sdk):
@@ -63,7 +63,7 @@ class Main(BaseModule):
             lazy_load=True,
             priority=0,
             depends=[],  # 可選：依賴的其他模組列表
-            # 可選：事件驅動懶加載——聲明觸發器，首個匹配事件/命令到達時自動加載
+            # 可選：事件驅動懶激活——聲明觸發器，首個匹配事件/命令到達時自動加載
             # activate_on=[{"command": {"name": "hello", "help": "發送問候"}}],
         )
     
