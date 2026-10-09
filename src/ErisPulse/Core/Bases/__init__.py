@@ -17,6 +17,9 @@ from .errors import (
     ClientError,
     ClientConnectionError,
     ClientTimeoutError,
+    ConnectionNotFoundError,
+    ConnectionPermissionError,
+    ConnectionRegistryError,
     HTTPStatusError,
     InteractionCancelled,
     InteractionError,
@@ -37,7 +40,7 @@ from .errors import (
     WebSocketDisconnect,
 )
 from .websocket import WebSocketConnectionBase, WSMessage
-from .router import HttpRequest, WebSocketConnection, SseEmitter
+from .router import HttpRequest, WebSocketConnection, SseEmitter, respond
 from .client import BaseClient, BaseHttpResponse, BaseClientWebSocket
 from .client import BaseHttpClient  # 向后兼容别名（2.8.0 前类名）
 
@@ -77,6 +80,9 @@ __all__ = [
     "ClientConnectionError",
     "ClientError",
     "ClientTimeoutError",
+    "ConnectionNotFoundError",
+    "ConnectionPermissionError",
+    "ConnectionRegistryError",
     "Condition",
     "ColumnExpr",
     "ErisPulseError",
@@ -99,6 +105,7 @@ __all__ = [
     "ModuleNotAvailableError",
     "QuerySet",
     "relationship",
+    "respond",
     "RequestDSL",
     "SendBuilder",
     "SendContext",

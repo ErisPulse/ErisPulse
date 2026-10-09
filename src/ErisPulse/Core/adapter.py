@@ -1088,6 +1088,25 @@ class AdapterManager(ManagerBase):
                 i18n.t("core.adapter.tasks_cancel_failed", platform=platform, error=e)
             )
 
+        # 兜底关闭该平台名下的全部连接（出站 WS 与以平台名为命名空间的
+        # 服务端 WS/SSE）：连接是框架登记的一等资源，适配器停止后不得残留
+        try:
+            from .connections import connections
+
+            closed_conns = await connections.close_owner(platform)
+            if closed_conns > 0:
+                logger.debug(
+                    i18n.t(
+                        "core.adapter.connections_closed",
+                        platform=platform,
+                        count=closed_conns,
+                    )
+                )
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.adapter.connections_close_failed", platform=platform, error=e)
+            )
+
         # 触发以平台名为 owner 登记的外部归属清理钩子（on_cleanup）
         try:
             from ..runtime.owner_cleanup import run_owner_cleanups

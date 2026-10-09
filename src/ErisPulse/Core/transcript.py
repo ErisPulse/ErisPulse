@@ -94,6 +94,9 @@ class TranscriptManager:
         self._atexit_registered: bool = False
         self._hooks_registered: bool = False
         self._cfg_cache: dict[str, Any] | None = None
+        # 运行时保留策略覆盖（set_retention 写入；优先于配置，重启失效）
+        self._retention_override: dict[str, float | int] = {}
+        self._retention_lock = threading.Lock()
 
     # ==================== 配置 ====================
 
@@ -166,6 +169,91 @@ class TranscriptManager:
     def enabled(self) -> bool:
         """是否启用自动记录（ErisPulse.transcript.enabled）"""
         return bool(self._config().get("enabled", DEFAULT_TRANSCRIPT_ENABLED))
+
+    # ==================== 保留策略（运行时覆盖） ====================
+
+    def set_retention(
+        self,
+        *,
+        max_per_session: int | None = None,
+        ttl_hours: float | None = None,
+    ) -> None:
+        """
+        运行时覆盖保留策略（优先于 ``ErisPulse.transcript.*`` 配置）
+
+        覆盖仅驻内存、重启后失效（恢复配置值）。调大 / 关闭限制前请确认知悉：
+        ``transcript`` 表会随消息量无限增长——磁盘写满、查询变慢，且把历史
+        整段载入内存的下游消费者（对话恢复 / 面板全量拉取）内存压力上升；
+        写缓冲有硬上限不受影响。详见 docs advanced/transcript.md 风险专节。
+
+        :param max_per_session: int | None 单会话保留条数；0 = 关闭该策略
+        :param ttl_hours: float | None 全局保留时长（小时）；0 = 关闭该策略
+        :raises ValueError: 传入负数时
+
+        :example:
+        >>> transcript.set_retention(max_per_session=500, ttl_hours=24 * 30)
+        """
+        with self._retention_lock:
+            if max_per_session is not None:
+                if isinstance(max_per_session, bool) or not isinstance(max_per_session, int):
+                    raise ValueError("max_per_session 必须为 int")
+                if max_per_session < 0:
+                    raise ValueError("max_per_session 不能为负数")
+                if max_per_session == 0:
+                    logger.warning(
+                        i18n.t("core.transcript.retention_disabled", kind="max_per_session")
+                    )
+                self._retention_override["max_per_session"] = max_per_session
+            if ttl_hours is not None:
+                if isinstance(ttl_hours, bool) or not isinstance(ttl_hours, (int, float)):
+                    raise ValueError("ttl_hours 必须为数值")
+                if ttl_hours < 0:
+                    raise ValueError("ttl_hours 不能为负数")
+                if ttl_hours == 0:
+                    logger.warning(
+                        i18n.t("core.transcript.retention_disabled", kind="ttl_hours")
+                    )
+                self._retention_override["ttl_hours"] = float(ttl_hours)
+
+    def get_retention(self) -> dict[str, Any]:
+        """
+        查询当前生效的保留策略
+
+        :return: dict 含 ``max_per_session`` / ``ttl_hours`` 生效值与
+                 ``overridden``（被运行时覆盖的键列表）
+
+        :example:
+        >>> transcript.get_retention()
+        {'max_per_session': 500, 'ttl_hours': 168.0, 'overridden': ['max_per_session']}
+        """
+        eff_max, eff_ttl = self._effective_retention()
+        with self._retention_lock:
+            overridden = sorted(self._retention_override.keys())
+        return {
+            "max_per_session": eff_max,
+            "ttl_hours": eff_ttl,
+            "overridden": overridden,
+        }
+
+    def reset_retention(self) -> None:
+        """
+        清除运行时覆盖，恢复按 ``ErisPulse.transcript.*`` 配置生效
+        """
+        with self._retention_lock:
+            self._retention_override.clear()
+
+    def _effective_retention(self) -> tuple[int, float]:
+        """{!--< internal-use >!--} 生效保留策略：运行时覆盖优先，否则读配置"""
+        with self._retention_lock:
+            override = dict(self._retention_override)
+        cfg = self._config()
+        raw_max = override.get("max_per_session")
+        if raw_max is None:
+            raw_max = cfg.get("max_per_session", DEFAULT_TRANSCRIPT_MAX_PER_SESSION)
+        raw_ttl = override.get("ttl_hours")
+        if raw_ttl is None:
+            raw_ttl = cfg.get("ttl_hours", DEFAULT_TRANSCRIPT_TTL_HOURS)
+        return int(raw_max), float(raw_ttl)
 
     # ==================== 会话键 ====================
 
@@ -371,12 +459,12 @@ class TranscriptManager:
 
         self._append_count += len(rows)
         while self._append_count >= self._next_retention_at:
-            cfg = self._config()
             self._next_retention_at = self._append_count + self._RETENTION_INTERVAL
+            eff_max, eff_ttl = self._effective_retention()
             self._retention(
                 rows[-1]["session_key"],
-                int(cfg.get("max_per_session", DEFAULT_TRANSCRIPT_MAX_PER_SESSION)),
-                float(cfg.get("ttl_hours", DEFAULT_TRANSCRIPT_TTL_HOURS)),
+                eff_max,
+                eff_ttl,
             )
         return True
 

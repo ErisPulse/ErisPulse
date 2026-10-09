@@ -48,6 +48,7 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 | [适配器系统](api-reference/adapter-system.md) | 适配器注册、启停、API 调用 |
 | [核心模块](api-reference/core-modules.md) | Storage / Config / Logger / Router 等基础能力 |
 | [生命周期管理](advanced/lifecycle.md) · [懶加载](advanced/lazy-loading.md) · [路由系统](advanced/router.md) | 内部子系统 |
+| [连接池与广播](advanced/connections.md) · [会话收件箱](advanced/transcript.md) | 连接一等资源：广播/分组/跨模块传递与复用、连接池查看；消息记录保留策略与运行时覆盖 |
 | [作用域（scope）](advanced/scope.md) | 三维作用域控制：模块可用性 / 事件准入 / 出站动作限制（含方法级细粒度规则、绑定继承 merge） |
 | [归属权（owner）系统](advanced/ownership.md) | 资源归属与自动回收：owner 上下文、归属资源全景、卸载清理序列、设计边界与模块作者指南 |
 | [影子模块与灰度转正](advanced/shadow.md) | 模块新版本以独立 owner 并行试运行：五道隔离闸、行为 diff 对齐、promote 转正与失败回滚 |

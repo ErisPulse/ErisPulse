@@ -278,6 +278,16 @@ class ClientWebSocket(BaseClientWebSocket):
             return WSMessage(WSMessage.ERROR, str(self._ws.exception()))
         return WSMessage("unknown", msg.data)
 
+    def _note_closed(self) -> None:
+        """
+        {!--< internal-use >!--}
+        远端断开感知：aiohttp 被动关闭不会经 close()，在接收路径同步注销登记
+        """
+        if self._conn_id:
+            from .connections import connections
+
+            connections.unregister(self)
+
     async def receive(self) -> WSMessage:
         """
         接收原始消息
@@ -286,7 +296,10 @@ class ClientWebSocket(BaseClientWebSocket):
         """
         async with self._recv_lock:
             msg = await self._ws.receive()
-        return self._convert_ws_msg(msg)
+        converted = self._convert_ws_msg(msg)
+        if converted.type == WSMessage.CLOSE:
+            self._note_closed()
+        return converted
 
     async def receive_text(self) -> str:
         """
@@ -307,6 +320,7 @@ class ClientWebSocket(BaseClientWebSocket):
             aiohttp.WSMsgType.CLOSING,
             aiohttp.WSMsgType.CLOSED,
         ):
+            self._note_closed()
             code = msg.data if isinstance(msg.data, int) else WS_CLOSE_NORMAL
             raise WebSocketDisconnect(code=code)
         if msg.type == aiohttp.WSMsgType.ERROR:
@@ -332,6 +346,7 @@ class ClientWebSocket(BaseClientWebSocket):
             aiohttp.WSMsgType.CLOSING,
             aiohttp.WSMsgType.CLOSED,
         ):
+            self._note_closed()
             code = msg.data if isinstance(msg.data, int) else WS_CLOSE_NORMAL
             raise WebSocketDisconnect(code=code)
         if msg.type == aiohttp.WSMsgType.ERROR:
@@ -354,15 +369,19 @@ class ClientWebSocket(BaseClientWebSocket):
 
     # ---- Close ----
 
-    async def close(self, code: int = WS_CLOSE_NORMAL, reason: str | None = None) -> None:
+    async def _close(self, code: int = WS_CLOSE_NORMAL, reason: str | None = None) -> None:
         """
-        关闭 WebSocket 连接
+        实际关闭动作（权限校验见基类 close）
 
         :param code: int 关闭码 (默认: 1000)
         :param reason: str | None 关闭原因 (可选)
         """
         await self._ws.close(code=code, message=reason)
         self._closed = True
+        if self._conn_id:
+            from .connections import connections
+
+            connections.unregister(self)
 
 
 class Client(BaseClient):
@@ -781,6 +800,8 @@ class Client(BaseClient):
         headers: dict[str, str] | None = None,
         heartbeat: float | None = DEFAULT_WS_CLIENT_HEARTBEAT_SECS,
         timeout: float = DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS,
+        track: bool = True,
+        owner: str | None = None,
         **kwargs,
     ) -> ClientWebSocket:
         """
@@ -790,6 +811,9 @@ class Client(BaseClient):
         :param headers: dict[str, str] | None 额外请求头 (可选)
         :param heartbeat: float | None 心跳间隔秒数 (可选)
         :param timeout: float 连接超时秒数 (默认: DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS)
+        :param track: bool 是否将连接自动登记进连接池（默认 True）
+        :param owner: str | None 连接归属者（默认取当前 owner 上下文；
+                      上下文不可用时建议显式传模块名，卸载时框架按其统一关闭）
         :param kwargs: 传递给底层 ws_connect 的额外参数
         :return: ClientWebSocket WebSocket 连接对象
 
@@ -798,6 +822,7 @@ class Client(BaseClient):
 
         :example:
         >>> ws = await sdk.client.ws_connect("wss://example.com/ws", heartbeat=30)
+        >>> ws.id  # 已登记，可被 connections 查询/广播
         >>> async for text in ws.iter_text():
         ...     await ws.send_text(f"Echo: {text}")
         """
@@ -821,8 +846,14 @@ class Client(BaseClient):
                 },
             )
 
+            conn = ClientWebSocket(ws)
+            if track:
+                from .connections import connections
+
+                connections.register(conn, kind="client", owner=owner or None, meta={"url": str(url)})
+
             logger.debug(i18n.t("core.client.ws_connect", url=url))
-            return ClientWebSocket(ws)
+            return conn
 
         except ClientError:
             raise

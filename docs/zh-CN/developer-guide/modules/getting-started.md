@@ -46,8 +46,8 @@ from .Core import Main
 
 ```python
 from ErisPulse import sdk
-from ErisPulse.Core.Bases import BaseModule
-from ErisPulse.Core.Event import command
+# 推荐根导入（2.10+）：常用符号直接从根包导入，深路径仍兼容
+from ErisPulse import BaseModule, command
 
 class Main(BaseModule):
     def __init__(self, sdk):

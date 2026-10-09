@@ -139,11 +139,29 @@ class BaseClientWebSocket(WebSocketConnectionBase):
 
     __slots__ = ("_closed",)
 
-    def __init__(self, ws):
+    def __init__(
+        self,
+        ws,
+        *,
+        connection_id: str = "",
+        namespace: str = "",
+        owner: str = "",
+        kind: str = "client",
+    ):
         """
         :param ws: object 底层框架 WebSocket 对象
+        :param connection_id: str 连接池分配的连接 id（未登记时为空串）
+        :param namespace: str 服务端路由命名空间（客户端出站连接为空）
+        :param owner: str 归属 owner（模块名 / 平台名），拥有关闭权
+        :param kind: str 连接种类（默认 "client"）
         """
-        super().__init__(ws)
+        super().__init__(
+            ws,
+            connection_id=connection_id,
+            namespace=namespace,
+            owner=owner,
+            kind=kind,
+        )
         self._closed = False
 
     @property
@@ -247,6 +265,8 @@ class BaseClient:
         *,
         headers: dict[str, str] | None = None,
         heartbeat: float | None = None,
+        track: bool = True,
+        owner: str | None = None,
         **kwargs,
     ) -> BaseClientWebSocket:
         """
@@ -255,6 +275,8 @@ class BaseClient:
         :param url: str WebSocket 服务器 URL
         :param headers: dict[str, str] | None 额外请求头 (可选)
         :param heartbeat: float | None 心跳间隔秒数 (可选)
+        :param track: bool 是否登记进连接池 (默认: True)
+        :param owner: str | None 连接归属者 (默认: 当前 owner 上下文)
         :param kwargs: 传递给底层 WS 连接的额外参数
         :return: BaseClientWebSocket WebSocket 连接对象
 

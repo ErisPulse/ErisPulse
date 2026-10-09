@@ -409,7 +409,9 @@ class TestCreateTemplatesCompile:
 
         code = c._MODULE_CORE.format(name="MyModule", text=self._text(), min_sdk=c._TEMPLATE_MIN_SDK_VERSION)
         assert "def __init__(self, sdk: SDK = None):" in code
-        assert "from ErisPulse import SDK" in code
+        # 2.10+ 模板改用根导入合并块，SDK 在其中
+        assert "from ErisPulse import (" in code
+        assert "    SDK," in code
         assert "from ErisPulse import sdk as _sdk" not in code
         assert "_sdk if sdk is None else sdk" not in code
         # 初始化日志不再调用无效的 .format(name=...)
@@ -420,7 +422,7 @@ class TestCreateTemplatesCompile:
         from ErisPulse.CLI.commands import create as c
 
         code = c._MODULE_CORE.format(name="MyModule", text=self._text(), min_sdk=c._TEMPLATE_MIN_SDK_VERSION)
-        assert "from ErisPulse.Core.Event import Event" in code
+        assert "    Event," in code  # 2.10+ 根导入块
         # 事件回调全部注解为 Event
         assert "async def hello_command(event: Event):" in code
         assert "async def private_message_handler(event: Event):" in code

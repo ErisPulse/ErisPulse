@@ -754,6 +754,20 @@ class ModuleManager(ManagerBase):
                     )
                 )
 
+            # 兜底关闭该模块名下的全部连接（服务端 WS/SSE 与客户端出站 WS）：
+            # 连接是框架登记的一等资源，owner 卸载后不得残留（2.10 连接池化）
+            from .connections import connections
+
+            closed_conns = await connections.close_owner(module_name)
+            if closed_conns > 0:
+                logger.debug(
+                    i18n.t(
+                        "core.module.unload_connections_closed",
+                        name=module_name,
+                        count=closed_conns,
+                    )
+                )
+
             # 触发外部工具模块登记的归属清理钩子（on_cleanup）：
             # 工具模块借此抛弃内部持有的本模块句柄，使本模块实例可被 GC
             from ..runtime.owner_cleanup import run_owner_cleanups

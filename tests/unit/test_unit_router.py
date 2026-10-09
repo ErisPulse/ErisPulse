@@ -162,7 +162,7 @@ class TestRouterManager:
         # 验证
         assert "test_module" in router_manager._websocket_routes
         assert "/test_module/ws" in router_manager._websocket_routes["test_module"]
-        handler, auth, auto_accept = router_manager._websocket_routes["test_module"][
+        handler, auth, auto_accept, track = router_manager._websocket_routes["test_module"][
             "/test_module/ws"
         ]
         assert handler is ws_handler
@@ -188,7 +188,7 @@ class TestRouterManager:
         )
 
         # 验证
-        handler, auth, auto_accept = router_manager._websocket_routes["test_module"][
+        handler, auth, auto_accept, track = router_manager._websocket_routes["test_module"][
             "/test_module/ws"
         ]
         assert handler is ws_handler
@@ -554,7 +554,7 @@ class TestDecoratorRoutes:
         async def handler(websocket):
             pass
 
-        _, stored_auth, _ = router_manager._websocket_routes["mod"]["/mod/secure"]
+        _, stored_auth, _, _ = router_manager._websocket_routes["mod"]["/mod/secure"]
         assert stored_auth is auth
 
     def test_decorator_returns_function(self, router_manager):
@@ -1326,3 +1326,52 @@ class TestRouterReload:
         assert router_manager._uvicorn_server is new_server
         assert router_manager._server_params["port"] == 9001
         assert router_manager.base_url == "http://127.0.0.1:9001"
+
+
+class TestSingleParamRegistration:
+    """单参路由注册（2.10+）：路径自动归属当前 owner（模块名）"""
+
+    @pytest.fixture
+    def router_manager(self):
+        manager = RouterManager()
+        yield manager
+
+    def test_single_param_http(self, router_manager):
+        from ErisPulse.runtime.context import owner_scope
+
+        with owner_scope("SpMod"):
+            @router_manager.get("/hello")
+            async def hello():
+                return {"ok": 1}
+
+        assert "/SpMod/hello" in router_manager._http_routes.get("SpMod", {})
+
+    def test_single_param_ws_and_sse(self, router_manager):
+        from ErisPulse.runtime.context import owner_scope
+
+        with owner_scope("SpMod"):
+            @router_manager.ws("ws1")
+            async def ws1(websocket):
+                pass
+
+            @router_manager.sse("/events")
+            async def ev(sse):
+                pass
+
+        assert "/SpMod/ws1" in router_manager._websocket_routes.get("SpMod", {})
+        assert "/SpMod/events" in router_manager._sse_routes.get("SpMod", {})
+
+    def test_single_param_requires_owner_context(self, router_manager):
+        import pytest
+
+        with pytest.raises(ValueError):
+            @router_manager.get("/orphan")
+            async def orphan():
+                return {}
+
+    def test_two_param_form_unchanged(self, router_manager):
+        @router_manager.get("ExplicitMod", "/x")
+        async def x():
+            return {}
+
+        assert "/ExplicitMod/x" in router_manager._http_routes.get("ExplicitMod", {})

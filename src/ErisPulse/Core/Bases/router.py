@@ -20,7 +20,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Iterator
 from typing import Any
 
-from .websocket import WebSocketConnectionBase
+from .websocket import WebSocketConnectionBase, _ConnectionIdentity
 
 
 class HttpRequest:
@@ -286,11 +286,29 @@ class WebSocketConnection(WebSocketConnectionBase):
 
     __slots__ = ()
 
-    def __init__(self, websocket):
+    def __init__(
+        self,
+        websocket,
+        *,
+        connection_id: str = "",
+        namespace: str = "",
+        owner: str = "",
+        kind: str = "server",
+    ):
         """
         :param websocket: object 底层框架 WebSocket 对象 (fastapi.WebSocket)
+        :param connection_id: str 连接池分配的连接 id（未登记时为空串）
+        :param namespace: str 服务端路由命名空间
+        :param owner: str 归属 owner（模块名 / 平台名）
+        :param kind: str 连接种类（默认 "server"）
         """
-        super().__init__(websocket)
+        super().__init__(
+            websocket,
+            connection_id=connection_id,
+            namespace=namespace,
+            owner=owner,
+            kind=kind,
+        )
 
     # ---- Server-specific properties ----
 
@@ -399,9 +417,9 @@ class WebSocketConnection(WebSocketConnectionBase):
         """
         await self._ws.accept(subprotocol=subprotocol, headers=headers)
 
-    async def close(self, code: int = 1000, reason: str | None = None) -> None:
+    async def _close(self, code: int = 1000, reason: str | None = None) -> None:
         """
-        关闭 WebSocket 连接
+        实际关闭动作（权限校验见基类 close）
 
         :param code: int 关闭码 (默认: 1000)
         :param reason: str | None 关闭原因 (可选)
@@ -498,7 +516,7 @@ class WebSocketConnection(WebSocketConnectionBase):
         return len(self._ws)
 
 
-class SseEmitter:
+class SseEmitter(_ConnectionIdentity):
     """
     SSE (Server-Sent Events) 事件发送器 — 服务器无关的 SSE 协议实现
 
@@ -507,17 +525,20 @@ class SseEmitter:
     ``on_send`` 和 ``on_close`` 回调即可使用。
 
     自动生成事件 ID，支持自定义事件类型和重试间隔。
+    连接经连接池登记后可被广播 / 分组 / 跨模块查看
+    （kind 为 ``"sse"``，``send`` 即广播的目标方法）。
 
     {!--< tips >!--}
     1. 由框架自动创建，模块开发者只需在 handler 中接收 sse 参数
     2. ``send()`` 方法自动处理 JSON 序列化（非 str 数据转为 JSON）
     3. 通过 ``request`` 属性可访问客户端请求（query params、headers 等）
-    4. 调用 ``close()`` 优雅关闭连接
+    4. 调用 ``close()`` 优雅关闭连接（默认校验归属权限）
     {!--< /tips >!--}
 
     :example:
     >>> @sdk.router.sse("MyModule", "/events")
     ... async def event_stream(sse: SseEmitter):
+    ...     sse.join_group("dashboard")
     ...     while True:
     ...         await sse.send({"msg": "hello"}, event="update")
     ...         await asyncio.sleep(1)
@@ -525,12 +546,30 @@ class SseEmitter:
 
     __slots__ = ("_closed", "_id_counter", "_on_close", "_on_send", "_request")
 
-    def __init__(self, on_send, on_close=None, request=None):
+    def __init__(
+        self,
+        on_send,
+        on_close=None,
+        request=None,
+        *,
+        connection_id: str = "",
+        namespace: str = "",
+        owner: str = "",
+    ):
         """
         :param on_send: 回调函数，接收格式化后的 SSE 文本并发送到底层传输层
         :param on_close: 可选回调函数，连接关闭时调用
         :param request: 可选，底层 HTTP 请求对象
+        :param connection_id: str 连接池分配的连接 id（未登记时为空串）
+        :param namespace: str 服务端路由命名空间
+        :param owner: str 归属 owner（模块名 / 平台名）
         """
+        super().__init__(
+            connection_id=connection_id,
+            namespace=namespace,
+            owner=owner,
+            kind="sse",
+        )
         self._on_send = on_send
         self._on_close = on_close
         self._request = request
@@ -619,12 +658,20 @@ class SseEmitter:
 
         await self._on_send(payload)
 
-    async def close(self) -> None:
+    async def close(self, *, force: bool = False) -> None:
         """
-        关闭 SSE 连接
+        关闭 SSE 连接（默认校验归属权限）
 
+        非 owner 模块关闭他人连接时抛出
+        :class:`~ErisPulse.Core.Bases.errors.ConnectionPermissionError`；
+        运行时上下文为空（框架内部路径 / 未归因代码）时放行。
         安全方法，可多次调用。第一次调用时触发 ``on_close`` 回调。
+
+        :param force: bool 跳过权限校验（框架内部回收路径使用）
+        :raises ConnectionPermissionError: 跨 owner 关闭且未 force 时
         """
+        if not force:
+            self._check_close_permission()
         if self._closed:
             return
         self._closed = True
@@ -632,8 +679,49 @@ class SseEmitter:
             await self._on_close()
 
 
+def respond(
+    data: Any = None,
+    *,
+    status_code: int = 200,
+    message: str | None = None,
+    headers: dict[str, str] | None = None,
+):
+    """
+    构造 JSON 响应（HTTP 路由推荐返回方式）
+
+    与"元组返回约定"配套的帮助函数：handler 直接返回 ``respond(...)``
+    或返回 ``(body, status_code)`` 元组均可在 FastAPI 层得到正确响应。
+    ``message`` 会合并进响应体：data 为 dict 时浅拷贝后写入 ``message`` 键，
+    其余情况构造 ``{"message": ...}``。
+
+    :param data: Any 响应体数据（dict 原样作为响应体；None 且无 message 时为空对象）
+    :param status_code: int HTTP 状态码 (默认: 200)
+    :param message: str | None 附加的业务消息，写入响应体 ``message`` 键
+    :param headers: dict[str, str] | None 额外响应头
+    :return: JSONResponse 可直接作为 handler 返回值
+
+    :example:
+    >>> @router.post("MyModule", "/login")
+    ... async def login(request: HttpRequest):
+    ...     if not valid(request):
+    ...         return respond(message="unauthorized", status_code=401)
+    ...     return respond({"user_id": 1}, message="ok")
+    """
+    from fastapi.responses import JSONResponse
+
+    if message is not None:
+        body = dict(data) if isinstance(data, dict) else {}
+        body["message"] = message
+    elif data is None:
+        body = {}
+    else:
+        body = data
+    return JSONResponse(content=body, status_code=status_code, headers=headers)
+
+
 __all__ = [
     "HttpRequest",
     "SseEmitter",
     "WebSocketConnection",
+    "respond",
 ]

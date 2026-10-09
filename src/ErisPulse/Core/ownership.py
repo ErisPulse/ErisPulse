@@ -118,18 +118,24 @@ class OwnershipManager:
 
     async def reclaim_tasks(self, owner: str) -> "dict[str, int]":
         """
-        注销 owner 的进行中工作：归属后台任务取消 + 外部清理钩子触发
+        注销 owner 的进行中工作：归属后台任务取消 + 归属连接关闭 + 外部清理钩子触发
 
         :param owner: owner 名
-        :return: {"tasks_cancelled": int, "cleanups_run": int}
+        :return: {"tasks_cancelled": int, "connections_closed": int, "cleanups_run": int}
         """
-        result = {"tasks_cancelled": 0, "cleanups_run": 0}
+        result = {"tasks_cancelled": 0, "connections_closed": 0, "cleanups_run": 0}
         try:
             from ..runtime.tasks import cancel_owner_tasks
 
             result["tasks_cancelled"] = await cancel_owner_tasks(owner)
         except Exception as e:
             _log_reclaim_failure("tasks_cancelled", e)
+        try:
+            from .connections import connections
+
+            result["connections_closed"] = await connections.close_owner(owner)
+        except Exception as e:
+            _log_reclaim_failure("connections_closed", e)
         try:
             from ..runtime.owner_cleanup import run_owner_cleanups
 
@@ -144,7 +150,8 @@ class OwnershipManager:
 
         涵盖：i18n 翻译域、路由（命名空间 + owner 兜底）、适配器事件处理器、
         自定义会话类型、平台事件方法注入、事件覆写、scope 覆写、命令与
-        四类事件处理器、交互会话等待、主人身份源、生命周期钩子。
+        四类事件处理器、交互会话等待、主人身份源、生命周期钩子、
+        日志订阅（logger.handler）、对话恢复工厂（resume handler）。
         每步独立容错，单步失败不阻断后续回收。
 
         :param owner: owner 名（模块名或适配器平台名）
@@ -247,6 +254,20 @@ class OwnershipManager:
         except Exception as e:
             _log_reclaim_failure("lifecycle_hooks", e)
 
+        try:
+            from .logger import logger as logger_service
+
+            result["log_handlers"] = logger_service.unregister_by_owner(owner)
+        except Exception as e:
+            _log_reclaim_failure("log_handlers", e)
+
+        try:
+            from .Event.conversation import unregister_resume_handlers_by_owner
+
+            result["resume_handlers"] = unregister_resume_handlers_by_owner(owner)
+        except Exception as e:
+            _log_reclaim_failure("resume_handlers", e)
+
         return {key: count for key, count in result.items() if count}
 
     # ==================== 只读计数 ====================
@@ -287,6 +308,18 @@ class OwnershipManager:
 
             for o, task_set in (getattr(tasks_module, "_owner_tasks", {}) or {}).items():
                 _add(o, "tasks", len(task_set or ()))
+            for o, timer_set in (getattr(tasks_module, "_owner_timers", {}) or {}).items():
+                _add(o, "timers", len(timer_set or ()))
+            for o, thread_set in (getattr(tasks_module, "_owner_threads", {}) or {}).items():
+                _add(o, "threads", sum(1 for t in (thread_set or ()) if t.is_alive()))
+        except Exception:
+            pass
+
+        try:
+            from .connections import connections as connections_service
+
+            for o, conn_ids in (getattr(connections_service, "_by_owner", {}) or {}).items():
+                _add(o, "connections", len(conn_ids or ()))
         except Exception:
             pass
 
@@ -426,6 +459,30 @@ class OwnershipManager:
 
             for domain, keys in (getattr(i18n_service, "_domains", {}) or {}).items():
                 _add(domain, "i18n_keys", len(keys or ()))
+        except Exception:
+            pass
+
+        try:
+            from .logger import logger as logger_service
+
+            _items_count(
+                getattr(logger_service, "_log_handlers", []) or [],
+                lambda h: h.get("owner") if isinstance(h, dict) else getattr(h, "owner", None),
+                "log_handlers",
+            )
+        except Exception:
+            pass
+
+        try:
+            from .Event.conversation import _conversation_resume_handlers
+
+            _items_count(
+                (_conversation_resume_handlers or {}).items()
+                if isinstance(_conversation_resume_handlers, dict)
+                else [],
+                lambda kv: kv[1],
+                "resume_handlers",
+            )
         except Exception:
             pass
 

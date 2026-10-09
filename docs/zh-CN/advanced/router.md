@@ -35,46 +35,92 @@ ErisPulse 提供了服务端抽象类型，使模块无需直接依赖 FastAPI�
 
 ## 装饰器路由（推荐）
 
+### 注册形态：单参（推荐）与双参
+
+装饰器路由支持两种形态，**推荐单参**——与命令 / 事件触发器一致，命名空间自动归属当前模块：
+
+```python
+from ErisPulse import router
+
+# 单参（推荐）：自动归属 模块名/hello → 实际路径 /my_module/hello
+@router.get("/hello")
+async def hello():
+    return {"ok": True}
+
+# 单参 WebSocket：@ws("chat") → /my_module/chat
+@router.ws("chat")
+async def chat(ws):
+    ...
+
+# 双参：显式指定模块名（规则不变，跨模块/工具代码注册时使用）
+@router.get("other_module", "/info")
+async def get_info(request):
+    return {"method": request.method, "path": str(request.url)}
+```
+
+> [!NOTE]
+> 单参形态要求在模块/适配器**加载上下文**中注册（加载期框架已注入归属）；
+> 在无归属上下文处调用会抛 `ValueError` 并提示显式传入模块名。
+
 ### HTTP 装饰器
 
 ```python
-from ErisPulse.Core import router
-@router.get("my_module", "/info")
-async def get_info(request):
-    return {"method": request.method, "path": str(request.url)}
+from ErisPulse import router, HttpRequest
 
 # 也可显式标注抽象类型
-from ErisPulse.Core import HttpRequest
-
-@router.post("my_module", "/data")
+@router.post("/data")
 async def post_data(request: HttpRequest):
     data = await request.json()
     return {"received": data}
 
-@router.put("my_module", "/data/{item_id}")
+@router.put("/data/{item_id}")
 async def update_data(request):
     return {"updated": True}
 
-@router.delete("my_module", "/data/{item_id}")
+@router.delete("/data/{item_id}")
 async def delete_data(request):
     return {"deleted": True}
 ```
 
 > **自动注入规则**：当处理器第一个参数名为 `request` 或 `req` 且无 FastAPI 类型注解时，框架自动注入 `HttpRequest`。无参数或非请求参数名的处理器不受影响。
 
+#### 响应返回约定（2.10+）
+
+处理器返回值支持**元组约定**（推荐写法，明确控制状态码），dict/str/Response 照旧：
+
+```python
+@router.post("/login")
+async def login(request):
+    if not check_token(request):
+        # (body, status_code) → 401 JSON
+        return {"error": "unauthorized", "message": "token 无效"}, 401
+    # (body, status_code, headers) 还可带响应头
+    return {"user_id": 1}, 200, {"X-Request-Cost": "12ms"}
+
+# 或使用 respond() 帮助函数（message 自动合并进响应体）
+from ErisPulse import respond
+
+@router.get("/me")
+async def me():
+    return respond({"user_id": 1}, status_code=200, message="ok")
+```
+
+路径 / 查询参数直接用 FastAPI 原生注解即可（`item_id: int`、`page: int = 1`），
+中间件见[路由中间件](#路由中间件)一节。
+
 ### WebSocket 装饰器
 
 ```python
-from ErisPulse.Core import WebSocketConnection, WebSocketDisconnect
+from ErisPulse import WebSocketConnection, WebSocketDisconnect
 
-# 基本 WebSocket
-@router.ws("my_module", "/ws")
+# 基本 WebSocket（单参形态）
+@router.ws("ws")
 async def websocket_handler(ws):
     async for msg in ws.iter_text():
         await ws.send_text(f"Echo: {msg}")
 
 # 带生命周期钩子的 WebSocket
-@router.ws("my_module", "/ws/chat")
+@router.ws("/ws/chat")
 async def chat(ws: WebSocketConnection):
     @ws.on_disconnect
     async def on_disconnect(ws, reason="unknown"):
@@ -92,7 +138,7 @@ async def ws_auth(ws: WebSocketConnection) -> bool:
     token = ws.query_params.get("token")
     return token == "secret"
 
-@router.ws("my_module", "/secure_ws", auth_handler=ws_auth)
+@router.ws("secure_ws", auth_handler=ws_auth)
 async def secure_ws_handler(ws):
     while True:
         data = await ws.receive_text()
@@ -100,6 +146,13 @@ async def secure_ws_handler(ws):
 ```
 
 > **注意**：WebSocket 处理器和认证处理器也支持自动注入。无需参数注解即可获得 `WebSocketConnection`。标注 `fastapi.WebSocket` 也可传入原生对象，但推荐使用抽象类型。
+
+### 连接自动登记（连接池，2.10+）
+
+`@ws` / `@sse` 建立的连接**默认自动登记**进框架连接池（`track=False` 可关闭）：
+handler 内 `ws.id` / `ws.join_group(...)` 可用，任意模块可
+`connections.list(namespace=...)` 查看本模块连接、向分组广播。
+详见[连接池与广播](connections.md)。
 
 ## 传统注册方式
 

@@ -117,6 +117,50 @@ class WebSocketError(ErisPulseError):
     """
 
 
+class ConnectionRegistryError(ErisPulseError):
+    """
+    连接注册表异常基类
+
+    连接池（``ErisPulse.connections``）的查找、权限与生命周期操作
+    相关的异常基类，可用于统一捕获所有连接池错误。
+    """
+
+
+class ConnectionNotFoundError(ConnectionRegistryError):
+    """
+    连接不存在
+
+    按连接 id 查找失败或目标连接已断开注销时抛出。
+
+    :attribute connection_id: 查找的连接 id
+    """
+
+    def __init__(self, connection_id: str = "", message: str = ""):
+        self.connection_id = connection_id
+        super().__init__(message or f"connection not found: {connection_id!r}")
+
+
+class ConnectionPermissionError(ConnectionRegistryError):
+    """
+    连接操作无权限
+
+    非 owner 模块尝试关闭他人连接时抛出（连接的关闭权归创建者）。
+    发送消息与分组操作不受限。
+
+    :attribute connection_id: 目标连接 id
+    :attribute owner: 连接的归属 owner（模块名 / 平台名）
+    """
+
+    def __init__(self, connection_id: str = "", owner: str = "", message: str = ""):
+        self.connection_id = connection_id
+        self.owner = owner
+        super().__init__(
+            message
+            or f"connection {connection_id!r} is owned by {owner!r}; "
+            "only the owner may close it"
+        )
+
+
 class StorageError(ErisPulseError):
     """
     存储异常基类
@@ -348,6 +392,9 @@ __all__ = [
     "ClientConnectionError",
     "ClientError",
     "ClientTimeoutError",
+    "ConnectionNotFoundError",
+    "ConnectionPermissionError",
+    "ConnectionRegistryError",
     "ErisPulseError",
     "HTTPStatusError",
     "InteractionCancelled",

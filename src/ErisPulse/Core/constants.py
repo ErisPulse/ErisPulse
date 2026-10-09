@@ -417,6 +417,16 @@ EVENT_I18N_LANGUAGE_CHANGED: Final[str] = "i18n.language.changed"
 # 修改影响: 事件名是对外契约，变更会静默破坏外部监听者——仍需同步文档（advanced/lifecycle.md）。
 EVENT_ADAPTER_EVENT_BLOCKED: Final[str] = "adapter.event.blocked"
 
+# 连接池生命周期事件（2.10.0 新增）：连接登记/注销/加入分组/移出分组时发射。
+# 使用位置: Core/connections.py -> register(), unregister(), assign(), dismiss()（连接侧
+#           join_group/leave_group 亦经 assign/dismiss 路径）。
+# 修改影响: 事件名是对外契约，变更会静默破坏外部监听者——需同步文档
+#           （advanced/lifecycle.md 与 advanced/connections.md）。
+EVENT_CONNECTION_REGISTERED: Final[str] = "connection.registered"
+EVENT_CONNECTION_UNREGISTERED: Final[str] = "connection.unregistered"
+EVENT_CONNECTION_GROUP_JOINED: Final[str] = "connection.group.joined"
+EVENT_CONNECTION_GROUP_LEFT: Final[str] = "connection.group.left"
+
 # 反初始化时等待事件处理完成的缓冲时间（秒）。
 # 修改影响: 设大确保异步事件处理完成，设小加速关闭流程。过小可能丢失事件。
 UNINIT_SETTLE_DELAY_SECS: Final[float] = 0.1
@@ -1005,6 +1015,33 @@ DEFAULT_WS_CLIENT_HEARTBEAT_SECS: Final[float | None] = None
 DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS: Final[float] = 10.0
 
 # ==============================================================================
+# 连接池与广播（2.10.0 新增）
+#
+# 控制 Core/connections.py 连接注册表的广播推送行为。
+# 使用位置: Core/connections.py -> ConnectionManager.broadcast()
+# ==============================================================================
+
+# 单条连接广播推送的默认超时（秒）。
+# 广播对每条目标连接的 send 独立计时（非总时长）；超时的连接计入
+# BroadcastResult.failed 而不影响其他连接。
+# 修改影响: 设大→慢连接更可能送达但拉长广播总耗时；设小→慢连接更快判失败。
+DEFAULT_BROADCAST_TIMEOUT_SECS: Final[float] = 10.0
+
+# 广播推送的最大并发 Task 数。
+# 广播按此并发上限对目标连接并行 send（信号量限流）。
+# 修改影响: 设大提高广播吞吐但增加瞬时 IO 压力；设小降低压力但拉长总耗时。
+DEFAULT_BROADCAST_CONCURRENCY: Final[int] = 64
+
+# 连接 id 的随机段长度（hex 字符数），形如 "{namespace}:{hex}"。
+# 修改影响: 仅影响 id 可读性与碰撞概率，无需同步外部系统。
+CONNECTION_ID_HEX_CHARS: Final[int] = 8
+
+# 单条连接关闭的兜底超时（秒）：close_owner 批量回收时防止单条卡连接拖垮卸载链。
+# 使用位置: Core/connections.py -> ConnectionManager.close_owner()
+# 修改影响: 设大→卸载更耐心等待慢连接；设小→超时后放弃等待（连接由底层自行收尾）。
+DEFAULT_CONNECTION_CLOSE_TIMEOUT_SECS: Final[float] = 5.0
+
+# ==============================================================================
 # 存储嵌套键安全限制
 #
 # 控制点分隔嵌套键路径中数字段作为列表索引处理时的安全上限。
@@ -1241,6 +1278,10 @@ __all__ = [
     "EVENT_CLIENT_REQUEST_FAILED",
     "EVENT_CLIENT_REQUEST_SUCCESS",
     "EVENT_CLIENT_WS_CONNECT",
+    "EVENT_CONNECTION_GROUP_JOINED",
+    "EVENT_CONNECTION_GROUP_LEFT",
+    "EVENT_CONNECTION_REGISTERED",
+    "EVENT_CONNECTION_UNREGISTERED",
     "EVENT_CORE_INIT_STAGE",
     "EVENT_I18N_LANGUAGE_CHANGED",
     "EVENT_MODULE_RELOAD",
@@ -1250,6 +1291,10 @@ __all__ = [
     "DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS",
     "DEFAULT_HANDLER_MAX_CONCURRENCY",
     "DEFAULT_HANDLER_PRIORITY",
+    "DEFAULT_BROADCAST_CONCURRENCY",
+    "DEFAULT_BROADCAST_TIMEOUT_SECS",
+    "CONNECTION_ID_HEX_CHARS",
+    "DEFAULT_CONNECTION_CLOSE_TIMEOUT_SECS",
     "DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS",
     "DEFAULT_HTTP_CLIENT_MAX_RETRIES",
     "DEFAULT_HTTP_CLIENT_RETRY_DELAY_SECS",

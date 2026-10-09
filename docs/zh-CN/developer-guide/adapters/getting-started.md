@@ -80,8 +80,8 @@ dependencies = [
 ```python
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
-from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core.Bases import BaseConfig
+# 推荐根导入（2.10+）：常用符号直接从根包导入，深路径仍兼容
+from ErisPulse import BaseAdapter, BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
@@ -283,7 +283,7 @@ class MyPlatformConverter:
 如果你的平台支持好友请求、群邀请等需要 Bot 做出决策的请求，可以实现 `Request` 内部类：
 
 ```python
-from ErisPulse.Core import BaseAdapter, RequestDSL
+from ErisPulse import BaseAdapter, RequestDSL
 
 class MyAdapter(BaseAdapter):
     # ... Send 和其他代码 ...
@@ -331,7 +331,7 @@ class MyAdapter(BaseAdapter):
 模块开发者使用方式：
 
 ```python
-from ErisPulse.Core.Event import request
+from ErisPulse import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
