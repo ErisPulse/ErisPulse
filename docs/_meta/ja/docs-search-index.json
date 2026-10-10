@@ -3246,12 +3246,12 @@
         "title": "HTTP クライアント モジュール"
       }
     ],
-    "HTTP 装飾器": [
+    "HTTP デコレータ": [
       {
         "document": "advanced/router.md",
         "line": 65,
         "level": 3,
-        "title": "HTTP 装飾器"
+        "title": "HTTP デコレータ"
       }
     ],
     "HTTPStatusError": [
@@ -4084,6 +4084,14 @@
         "title": "WebSocket / Webhook 接続"
       }
     ],
+    "WebSocket デコレータ": [
+      {
+        "document": "advanced/router.md",
+        "line": 111,
+        "level": 3,
+        "title": "WebSocket デコレータ"
+      }
+    ],
     "WebSocket フロー": [
       {
         "document": "platform-guide/qqbot.md",
@@ -4114,14 +4122,6 @@
         "line": 90,
         "level": 3,
         "title": "WebSocket 系列 — `Core/client.py`（`send` / `receive`）"
-      }
-    ],
-    "WebSocket 装飾器": [
-      {
-        "document": "advanced/router.md",
-        "line": 111,
-        "level": 3,
-        "title": "WebSocket 装飾器"
       }
     ],
     "WebSocketクライアント": [
@@ -5801,7 +5801,7 @@
     "イベントハンドラのライフサイクル": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 335,
+        "line": 338,
         "level": 3,
         "title": "イベントハンドラのライフサイクル"
       }
@@ -5809,7 +5809,7 @@
     "イベントハンドラの登録": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 319,
+        "line": 322,
         "level": 3,
         "title": "イベントハンドラの登録"
       }
@@ -5855,7 +5855,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 317,
+        "line": 320,
         "level": 2,
         "title": "イベント処理"
       }
@@ -6227,7 +6227,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 362,
+        "line": 365,
         "level": 2,
         "title": "エラー処理"
       },
@@ -6255,7 +6255,7 @@
     "エントリの登録": [
       {
         "document": "advanced/router.md",
-        "line": 407,
+        "line": 410,
         "level": 3,
         "title": "エントリの登録"
       }
@@ -6947,7 +6947,7 @@
     "システムルーティング": [
       {
         "document": "advanced/router.md",
-        "line": 382,
+        "line": 385,
         "level": 2,
         "title": "システムルーティング"
       }
@@ -7057,7 +7057,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 292,
+        "line": 295,
         "level": 2,
         "title": "ストレージシステム"
       }
@@ -7249,7 +7249,7 @@
     "ダッシュボードの自動登録": [
       {
         "document": "advanced/router.md",
-        "line": 438,
+        "line": 441,
         "level": 3,
         "title": "ダッシュボードの自動登録"
       }
@@ -7576,6 +7576,14 @@
         "title": "デコレータとルールの継承"
       }
     ],
+    "デコレータルーティング（推奨）": [
+      {
+        "document": "advanced/router.md",
+        "line": 36,
+        "level": 2,
+        "title": "デコレータルーティング（推奨）"
+      }
+    ],
     "デバッグのコツ": [
       {
         "document": "developer-guide/README.md",
@@ -7697,7 +7705,7 @@
     "トランザクションの使用": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 307,
+        "line": 310,
         "level": 3,
         "title": "トランザクションの使用"
       }
@@ -8557,7 +8565,7 @@
     "ヘルスチェック": [
       {
         "document": "advanced/router.md",
-        "line": 386,
+        "line": 389,
         "level": 3,
         "title": "ヘルスチェック"
       },
@@ -8592,12 +8600,20 @@
         "title": "ホットリロード失敗ロールバック"
       }
     ],
-    "ホームページのエントリ": [
+    "ホームエントリ": [
       {
         "document": "advanced/router.md",
-        "line": 403,
+        "line": 406,
         "level": 2,
-        "title": "ホームページのエントリ"
+        "title": "ホームエントリ"
+      }
+    ],
+    "ホームページ": [
+      {
+        "document": "advanced/router.md",
+        "line": 397,
+        "level": 3,
+        "title": "ホームページ"
       }
     ],
     "ボタンクリックイベントかどうかを確認する": [
@@ -9666,14 +9682,6 @@
         "title": "ライフサイクルの全体像"
       }
     ],
-    "ライフサイクルの統合": [
-      {
-        "document": "advanced/router.md",
-        "line": 442,
-        "level": 2,
-        "title": "ライフサイクルの統合"
-      }
-    ],
     "ライフサイクルイベント": [
       {
         "document": "advanced/connections.md",
@@ -9732,6 +9740,14 @@
         "title": "ライフサイクル管理"
       }
     ],
+    "ライフサイクル統合": [
+      {
+        "document": "advanced/router.md",
+        "line": 445,
+        "level": 2,
+        "title": "ライフサイクル統合"
+      }
+    ],
     "ラグジュアリー ロード モジュール システム": [
       {
         "document": "advanced/lazy-loading.md",
@@ -9751,7 +9767,7 @@
     "ラグロードメカニズム": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 339,
+        "line": 342,
         "level": 2,
         "title": "ラグロードメカニズム"
       }
@@ -9854,12 +9870,12 @@
         "title": "リクエスト統計"
       }
     ],
-    "リクエスト関連 ID（X-Request-ID）": [
+    "リクエスト関連ID（X-Request-ID）": [
       {
         "document": "advanced/router.md",
         "line": 281,
         "level": 2,
-        "title": "リクエスト関連 ID（X-Request-ID）"
+        "title": "リクエスト関連ID（X-Request-ID）"
       }
     ],
     "リバースコンバージョンとメッセージ構築": [
@@ -9910,6 +9926,14 @@
         "title": "ルーター・サーバー"
       }
     ],
+    "ルーティンググループ": [
+      {
+        "document": "advanced/router.md",
+        "line": 247,
+        "level": 2,
+        "title": "ルーティンググループ"
+      }
+    ],
     "ルーティングマネージャー": [
       {
         "document": "advanced/router.md",
@@ -9924,22 +9948,6 @@
         "line": 264,
         "level": 2,
         "title": "ルーティングミドルウェア"
-      }
-    ],
-    "ルートのグループ化": [
-      {
-        "document": "advanced/router.md",
-        "line": 247,
-        "level": 2,
-        "title": "ルートのグループ化"
-      }
-    ],
-    "ルートページ": [
-      {
-        "document": "advanced/router.md",
-        "line": 394,
-        "level": 3,
-        "title": "ルートページ"
       }
     ],
     "ルート発見": [
@@ -10006,6 +10014,14 @@
         "title": "レスポンスの送信"
       }
     ],
+    "レスポンス戻り値の約束（2.10+）": [
+      {
+        "document": "advanced/router.md",
+        "line": 87,
+        "level": 4,
+        "title": "レスポンス戻り値の約束（2.10+）"
+      }
+    ],
     "レプリを待つ": [
       {
         "document": "api-reference/event-system.md",
@@ -10070,6 +10086,14 @@
         "title": "レンダリング結果の送信"
       }
     ],
+    "レート制限": [
+      {
+        "document": "advanced/router.md",
+        "line": 306,
+        "level": 2,
+        "title": "レート制限"
+      }
+    ],
     "ログサブスクリプション（プッシュ方式）": [
       {
         "document": "api-reference/core-modules.md",
@@ -10117,7 +10141,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 379,
+        "line": 382,
         "level": 3,
         "title": "ログ記録"
       }
@@ -10599,7 +10623,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 364,
+        "line": 367,
         "level": 3,
         "title": "例外のキャッチ"
       }
@@ -11059,7 +11083,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 341,
+        "line": 344,
         "level": 3,
         "title": "動作原理"
       },
@@ -11527,7 +11551,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 294,
+        "line": 297,
         "level": 3,
         "title": "基本的な使用方法"
       }
@@ -11898,14 +11922,6 @@
         "title": "宣言式構成クラスとの関係"
       }
     ],
-    "宣言的な設定（推奨）": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 179,
-        "level": 3,
-        "title": "宣言的な設定（推奨）"
-      }
-    ],
     "宣言的イベント拡張メソッド（v2.7.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -11937,7 +11953,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 234,
+        "line": 237,
         "level": 3,
         "title": "宣言的翻訳キー（v2.7.0+）"
       }
@@ -11946,6 +11962,12 @@
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 899,
+        "level": 3,
+        "title": "宣言的設定（推奨）"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 179,
         "level": 3,
         "title": "宣言的設定（推奨）"
       }
@@ -12228,14 +12250,6 @@
         "title": "応答の標準化"
       }
     ],
-    "応答返却の約束事（2.10+）": [
-      {
-        "document": "advanced/router.md",
-        "line": 87,
-        "level": 4,
-        "title": "応答返却の約束事（2.10+）"
-      }
-    ],
     "快速リファレンス": [
       {
         "document": "api-reference/core-modules.md",
@@ -12440,14 +12454,6 @@
         "title": "手動でレスポンス構築（旧方式は互換性あり）"
       }
     ],
-    "手動で設定を読み取る（非推奨）": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 275,
-        "level": 3,
-        "title": "手動で設定を読み取る（非推奨）"
-      }
-    ],
     "手動による Request DSL 呼び出し": [
       {
         "document": "platform-guide/onebot12.md",
@@ -12470,6 +12476,14 @@
         "line": 348,
         "level": 3,
         "title": "手動復元（自動メカニズムを使用しない場合）"
+      }
+    ],
+    "手動設定読み取り（廃止）": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 278,
+        "level": 3,
+        "title": "手動設定読み取り（廃止）"
       }
     ],
     "手動起動が必要な場面": [
@@ -12982,12 +12996,6 @@
         "title": "最佳実践"
       },
       {
-        "document": "advanced/router.md",
-        "line": 456,
-        "level": 2,
-        "title": "最佳実践"
-      },
-      {
         "document": "developer-guide/adapters/converter.md",
         "line": 367,
         "level": 2,
@@ -13038,6 +13046,14 @@
         "line": 490,
         "level": 2,
         "title": "最適な実践"
+      }
+    ],
+    "最適実践": [
+      {
+        "document": "advanced/router.md",
+        "line": 459,
+        "level": 2,
+        "title": "最適実践"
       }
     ],
     "未サポートのタイプの処理": [
@@ -13881,7 +13897,7 @@
     "立即ロード": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 349,
+        "line": 352,
         "level": 3,
         "title": "立即ロード"
       }
@@ -14158,14 +14174,6 @@
         "line": 594,
         "level": 3,
         "title": "表情パック/ステッカーのメッセージセグメント (yunhu_expression)"
-      }
-    ],
-    "装飾器ルート（推奨）": [
-      {
-        "document": "advanced/router.md",
-        "line": 36,
-        "level": 2,
-        "title": "装飾器ルート（推奨）"
       }
     ],
     "複数のプラットフォームをサポートするには？": [
@@ -15084,14 +15092,6 @@
         "title": "速攻起動"
       }
     ],
-    "速率制限": [
-      {
-        "document": "advanced/router.md",
-        "line": 306,
-        "level": 2,
-        "title": "速率制限"
-      }
-    ],
     "速習": [
       {
         "document": "advanced/http-client.md",
@@ -15319,7 +15319,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 466,
+        "line": 469,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -15403,7 +15403,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 390,
+        "line": 393,
         "level": 2,
         "title": "関連ドキュメント"
       },

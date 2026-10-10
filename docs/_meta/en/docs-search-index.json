@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1708,
+  "total_keywords": 1709,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -3497,7 +3497,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 294,
+        "line": 297,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -3597,7 +3597,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 455,
+        "line": 458,
         "level": 2,
         "title": "Best Practices"
       },
@@ -5327,7 +5327,7 @@
     "Dashboard Auto-Registration": [
       {
         "document": "advanced/router.md",
-        "line": 437,
+        "line": 440,
         "level": 3,
         "title": "Dashboard Auto-Registration"
       }
@@ -5447,7 +5447,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 234,
+        "line": 237,
         "level": 3,
         "title": "Declarative Translation Keys (v2.7.0+)"
       }
@@ -6213,7 +6213,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 362,
+        "line": 365,
         "level": 2,
         "title": "Error Handling"
       },
@@ -6349,7 +6349,7 @@
     "Event Handler Lifecycle": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 335,
+        "line": 338,
         "level": 3,
         "title": "Event Handler Lifecycle"
       }
@@ -6357,7 +6357,7 @@
     "Event Handler Registration": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 319,
+        "line": 322,
         "level": 3,
         "title": "Event Handler Registration"
       }
@@ -6371,7 +6371,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 317,
+        "line": 320,
         "level": 2,
         "title": "Event Handling"
       }
@@ -6665,7 +6665,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 364,
+        "line": 367,
         "level": 3,
         "title": "Exception Handling"
       }
@@ -7276,12 +7276,12 @@
         "title": "Get Help"
       }
     ],
-    "Get Method Detailed Information": [
+    "Get Method Details": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 161,
         "level": 3,
-        "title": "Get Method Detailed Information"
+        "title": "Get Method Details"
       }
     ],
     "Get an Adapter": [
@@ -7647,7 +7647,7 @@
     "Health Check": [
       {
         "document": "advanced/router.md",
-        "line": 385,
+        "line": 388,
         "level": 3,
         "title": "Health Check"
       },
@@ -7691,7 +7691,7 @@
     "Home Page Entry": [
       {
         "document": "advanced/router.md",
-        "line": 402,
+        "line": 405,
         "level": 2,
         "title": "Home Page Entry"
       }
@@ -7885,7 +7885,7 @@
     "Immediate Loading": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 349,
+        "line": 352,
         "level": 3,
         "title": "Immediate Loading"
       }
@@ -8303,7 +8303,7 @@
     "Lazy Loading Mechanism": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 339,
+        "line": 342,
         "level": 2,
         "title": "Lazy Loading Mechanism"
       }
@@ -8385,7 +8385,7 @@
     "Lifecycle Integration": [
       {
         "document": "advanced/router.md",
-        "line": 441,
+        "line": 444,
         "level": 2,
         "title": "Lifecycle Integration"
       }
@@ -8526,13 +8526,15 @@
         "title": "Listening to Private Messages"
       }
     ],
-    "Loading Strategy": [
+    "Loading Strategies": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 7,
         "level": 3,
-        "title": "Loading Strategy"
-      },
+        "title": "Loading Strategies"
+      }
+    ],
+    "Loading Strategy": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 141,
@@ -8613,7 +8615,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 379,
+        "line": 382,
         "level": 3,
         "title": "Logging"
       }
@@ -8719,7 +8721,7 @@
     "Manual Configuration Reading (Deprecated)": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 275,
+        "line": 278,
         "level": 3,
         "title": "Manual Configuration Reading (Deprecated)"
       }
@@ -11239,7 +11241,7 @@
     "Register Entry": [
       {
         "document": "advanced/router.md",
-        "line": 406,
+        "line": 409,
         "level": 3,
         "title": "Register Entry"
       }
@@ -11353,7 +11355,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 465,
+        "line": 468,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11437,7 +11439,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 390,
+        "line": 393,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11991,7 +11993,7 @@
     "Root Page": [
       {
         "document": "advanced/router.md",
-        "line": 393,
+        "line": 396,
         "level": 3,
         "title": "Root Page"
       }
@@ -13099,7 +13101,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 292,
+        "line": 295,
         "level": 2,
         "title": "Storage System"
       }
@@ -13391,7 +13393,7 @@
     "System Routes": [
       {
         "document": "advanced/router.md",
-        "line": 381,
+        "line": 384,
         "level": 2,
         "title": "System Routes"
       }
@@ -13571,7 +13573,7 @@
     "Transaction Usage": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 307,
+        "line": 310,
         "level": 3,
         "title": "Transaction Usage"
       }
@@ -13764,12 +13766,12 @@
         "title": "Unload and Cleanup Semantics"
       }
     ],
-    "Unload vs. Purge": [
+    "Unload vs. Purge (Complete Unload)": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 59,
         "level": 3,
-        "title": "Unload vs. Purge"
+        "title": "Unload vs. Purge (Complete Unload)"
       }
     ],
     "Unload/Disable Cleanup Sequence": [
@@ -14521,7 +14523,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 341,
+        "line": 344,
         "level": 3,
         "title": "Working Principle"
       }

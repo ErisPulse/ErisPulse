@@ -5288,6 +5288,9 @@ class MyModule(BaseModule):
 
 `BaseConfig` 是通用配置基类，适用于适配器、模块、外部项目等任何场景。配置字段支持 i18n 多语言描述（详见 [i18n 文档](../../advanced/i18n.md#配置字段多语言)）。
 
+> [!NOTE]
+> 模块（含适配器）的加载、卸载、启停等生命周期由框架统一管理（`module manager` / `scope` 提供查询与控制 API）。`ConfigClass` 只应承载业务参数，模块无需在内部再次嵌套判断"自己要不要启动"的逻辑。
+
 配置 Schema 系统还支持（v2.8.0+，详见 [适配器 core-concepts](../adapters/core-concepts.md#metadata-约定)）：
 
 - **docstring 自动生成字段描述**：未声明 metadata `description` 时，自动从 docstring 的 `:ivar 字段: 说明` 或 `Attributes:` 段提取兜底
@@ -16870,6 +16873,9 @@ router.set_docs_info(
 # 实际访问路径为 "/my_module/api"
 router.register_http_route("my_module", "/api", handler)
 ```
+
+> [!WARNING]
+> 路由路径（含模块名前缀）**大小写敏感**。注册时的模块名是什么大小写，实际路径就是什么大小写：模块名为 `Test` 时注册 `/api` 的实际路径是 `/Test/api`，访问 `/test/api` 将返回 404。
 
 ## 系统路由
 

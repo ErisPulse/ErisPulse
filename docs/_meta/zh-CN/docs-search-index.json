@@ -2795,7 +2795,7 @@
     "Dashboard 自动注册": [
       {
         "document": "advanced/router.md",
-        "line": 439,
+        "line": 442,
         "level": 3,
         "title": "Dashboard 自动注册"
       }
@@ -5237,7 +5237,7 @@
     "主页入口": [
       {
         "document": "advanced/router.md",
-        "line": 404,
+        "line": 407,
         "level": 2,
         "title": "主页入口"
       }
@@ -5297,7 +5297,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 317,
+        "line": 320,
         "level": 2,
         "title": "事件处理"
       }
@@ -5313,7 +5313,7 @@
     "事件处理器注册": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 319,
+        "line": 322,
         "level": 3,
         "title": "事件处理器注册"
       }
@@ -5321,7 +5321,7 @@
     "事件处理器生命周期": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 335,
+        "line": 338,
         "level": 3,
         "title": "事件处理器生命周期"
       }
@@ -5631,7 +5631,7 @@
     "事务使用": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 307,
+        "line": 310,
         "level": 3,
         "title": "事务使用"
       }
@@ -6181,7 +6181,7 @@
     "健康检查": [
       {
         "document": "advanced/router.md",
-        "line": 387,
+        "line": 390,
         "level": 3,
         "title": "健康检查"
       },
@@ -7815,7 +7815,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 294,
+        "line": 297,
         "level": 3,
         "title": "基本使用"
       }
@@ -8111,7 +8111,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 234,
+        "line": 237,
         "level": 3,
         "title": "声明式翻译键（v2.7.0+）"
       }
@@ -8613,7 +8613,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 292,
+        "line": 295,
         "level": 2,
         "title": "存储系统"
       }
@@ -8963,7 +8963,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 341,
+        "line": 344,
         "level": 3,
         "title": "工作原理"
       },
@@ -9533,7 +9533,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 364,
+        "line": 367,
         "level": 3,
         "title": "异常捕获"
       }
@@ -9865,7 +9865,7 @@
     "懒加载机制": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 339,
+        "line": 342,
         "level": 2,
         "title": "懒加载机制"
       }
@@ -9953,7 +9953,7 @@
     "手动读取配置（已废弃）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 275,
+        "line": 278,
         "level": 3,
         "title": "手动读取配置（已废弃）"
       }
@@ -10785,7 +10785,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 379,
+        "line": 382,
         "level": 3,
         "title": "日志记录"
       }
@@ -10875,7 +10875,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 457,
+        "line": 460,
         "level": 2,
         "title": "最佳实践"
       },
@@ -11417,7 +11417,7 @@
     "根页面": [
       {
         "document": "advanced/router.md",
-        "line": 395,
+        "line": 398,
         "level": 3,
         "title": "根页面"
       }
@@ -11789,7 +11789,7 @@
     "注册入口": [
       {
         "document": "advanced/router.md",
-        "line": 408,
+        "line": 411,
         "level": 3,
         "title": "注册入口"
       }
@@ -12585,7 +12585,7 @@
     "生命周期集成": [
       {
         "document": "advanced/router.md",
-        "line": 443,
+        "line": 446,
         "level": 2,
         "title": "生命周期集成"
       }
@@ -12779,7 +12779,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 467,
+        "line": 470,
         "level": 2,
         "title": "相关文档"
       },
@@ -12869,7 +12869,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 390,
+        "line": 393,
         "level": 2,
         "title": "相关文档"
       },
@@ -12957,7 +12957,7 @@
     "立即加载": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 349,
+        "line": 352,
         "level": 3,
         "title": "立即加载"
       }
@@ -13159,7 +13159,7 @@
     "系统路由": [
       {
         "document": "advanced/router.md",
-        "line": 383,
+        "line": 386,
         "level": 2,
         "title": "系统路由"
       }
@@ -15265,7 +15265,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 362,
+        "line": 365,
         "level": 2,
         "title": "错误处理"
       },

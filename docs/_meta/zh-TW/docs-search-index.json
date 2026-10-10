@@ -2795,7 +2795,7 @@
     "Dashboard 自動註冊": [
       {
         "document": "advanced/router.md",
-        "line": 439,
+        "line": 442,
         "level": 3,
         "title": "Dashboard 自動註冊"
       }
@@ -5159,7 +5159,7 @@
     "主頁入口": [
       {
         "document": "advanced/router.md",
-        "line": 404,
+        "line": 407,
         "level": 2,
         "title": "主頁入口"
       }
@@ -5335,7 +5335,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 317,
+        "line": 320,
         "level": 2,
         "title": "事件處理"
       }
@@ -5351,7 +5351,7 @@
     "事件處理器生命週期": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 335,
+        "line": 338,
         "level": 3,
         "title": "事件處理器生命週期"
       }
@@ -5359,7 +5359,7 @@
     "事件處理器註冊": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 319,
+        "line": 322,
         "level": 3,
         "title": "事件處理器註冊"
       }
@@ -5555,7 +5555,7 @@
     "事務使用": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 307,
+        "line": 310,
         "level": 3,
         "title": "事務使用"
       }
@@ -5989,7 +5989,7 @@
     "健康檢查": [
       {
         "document": "advanced/router.md",
-        "line": 387,
+        "line": 390,
         "level": 3,
         "title": "健康檢查"
       },
@@ -6067,7 +6067,7 @@
     "儲存系統": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 292,
+        "line": 295,
         "level": 2,
         "title": "儲存系統"
       }
@@ -7339,7 +7339,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 294,
+        "line": 297,
         "level": 3,
         "title": "基本使用"
       }
@@ -8359,7 +8359,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 341,
+        "line": 344,
         "level": 3,
         "title": "工作原理"
       },
@@ -9109,7 +9109,7 @@
     "慢載入機制": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 339,
+        "line": 342,
         "level": 2,
         "title": "慢載入機制"
       }
@@ -9227,7 +9227,7 @@
     "手動讀取配置（已廢棄）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 275,
+        "line": 278,
         "level": 3,
         "title": "手動讀取配置（已廢棄）"
       }
@@ -10023,7 +10023,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 379,
+        "line": 382,
         "level": 3,
         "title": "日誌記錄"
       }
@@ -10111,7 +10111,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 457,
+        "line": 460,
         "level": 2,
         "title": "最佳實踐"
       },
@@ -10507,7 +10507,7 @@
     "根頁面": [
       {
         "document": "advanced/router.md",
-        "line": 395,
+        "line": 398,
         "level": 3,
         "title": "根頁面"
       }
@@ -11799,7 +11799,7 @@
     "生命週期集成": [
       {
         "document": "advanced/router.md",
-        "line": 443,
+        "line": 446,
         "level": 2,
         "title": "生命週期集成"
       }
@@ -11893,7 +11893,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 364,
+        "line": 367,
         "level": 3,
         "title": "異常捕獲"
       }
@@ -12375,7 +12375,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 467,
+        "line": 470,
         "level": 2,
         "title": "相關文件"
       },
@@ -12465,7 +12465,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 390,
+        "line": 393,
         "level": 2,
         "title": "相關文件"
       },
@@ -12547,7 +12547,7 @@
     "立即載入": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 349,
+        "line": 352,
         "level": 3,
         "title": "立即載入"
       }
@@ -12755,7 +12755,7 @@
     "系統路由": [
       {
         "document": "advanced/router.md",
-        "line": 383,
+        "line": 386,
         "level": 2,
         "title": "系統路由"
       }
@@ -12979,7 +12979,7 @@
     "聲明式翻譯鍵（v2.7.0+）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 234,
+        "line": 237,
         "level": 3,
         "title": "聲明式翻譯鍵（v2.7.0+）"
       }
@@ -13507,7 +13507,7 @@
     "註冊入口": [
       {
         "document": "advanced/router.md",
-        "line": 408,
+        "line": 411,
         "level": 3,
         "title": "註冊入口"
       }
@@ -15013,7 +15013,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 362,
+        "line": 365,
         "level": 2,
         "title": "錯誤處理"
       },

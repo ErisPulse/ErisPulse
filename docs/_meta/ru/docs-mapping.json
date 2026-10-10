@@ -164,7 +164,7 @@
               "icon": "fa-puzzle-piece"
             },
             {
-              "title": "Основные концепции модуля",
+              "title": "Основные концепты модуля",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1,
               "icon": "fa-cubes-stacked"
@@ -387,7 +387,7 @@
           "icon": "fa-hourglass-half"
         },
         {
-          "title": "Маршрутизатор",
+          "title": "Менеджер маршрутизации",
           "path": "advanced/router.md",
           "level": 1,
           "icon": "fa-route"

@@ -2576,14 +2576,6 @@
         "title": "Bug Tracker"
       }
     ],
-    "CORS Configuration": [
-      {
-        "document": "advanced/router.md",
-        "line": 318,
-        "level": 2,
-        "title": "CORS Configuration"
-      }
-    ],
     "Cache and Hot Reload": [
       {
         "document": "advanced/scope.md",
@@ -3174,14 +3166,6 @@
         "line": 814,
         "level": 3,
         "title": "WebSocket подключение"
-      }
-    ],
-    "WebSocket 生命周期钩子": [
-      {
-        "document": "advanced/router.md",
-        "line": 219,
-        "level": 2,
-        "title": "WebSocket 生命周期钩子"
       }
     ],
     "WebSocket-подключение": [
@@ -3875,7 +3859,7 @@
     "Автоматическая документация": [
       {
         "document": "advanced/router.md",
-        "line": 352,
+        "line": 355,
         "level": 2,
         "title": "Автоматическая документация"
       }
@@ -3907,7 +3891,7 @@
     "Автоматическая регистрация Dashboard": [
       {
         "document": "advanced/router.md",
-        "line": 434,
+        "line": 440,
         "level": 3,
         "title": "Автоматическая регистрация Dashboard"
       }
@@ -3920,12 +3904,12 @@
         "title": "Автоматическая регистрация исходящих соединений в пуле (с версии 2.10)"
       }
     ],
-    "Автоматическая регистрация подключений (пул соединений, 2.10+)": [
+    "Автоматическая регистрация подключений (пул подключений, 2.10+)": [
       {
         "document": "advanced/router.md",
         "line": 148,
         "level": 3,
-        "title": "Автоматическая регистрация подключений (пул соединений, 2.10+)"
+        "title": "Автоматическая регистрация подключений (пул подключений, 2.10+)"
       }
     ],
     "Автоматические контрольные точки и восстановление после перезапуска": [
@@ -4216,6 +4200,12 @@
         "title": "Базовое использование"
       },
       {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 297,
+        "level": 3,
+        "title": "Базовое использование"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 47,
         "level": 3,
@@ -4268,6 +4258,14 @@
         "line": 415,
         "level": 2,
         "title": "Безопасность"
+      }
+    ],
+    "Безопасные заголовки": [
+      {
+        "document": "advanced/router.md",
+        "line": 340,
+        "level": 2,
+        "title": "Безопасные заголовки"
       }
     ],
     "Быстрая инициализация": [
@@ -4828,20 +4826,20 @@
         "title": "Генерация типовых заглушек (автодополнение в IDE)"
       }
     ],
+    "Главная кнопка": [
+      {
+        "document": "advanced/router.md",
+        "line": 405,
+        "level": 2,
+        "title": "Главная кнопка"
+      }
+    ],
     "Главная страница": [
       {
         "document": "advanced/router.md",
-        "line": 390,
+        "line": 396,
         "level": 3,
         "title": "Главная страница"
-      }
-    ],
-    "Главная точка входа": [
-      {
-        "document": "advanced/router.md",
-        "line": 399,
-        "level": 2,
-        "title": "Главная точка входа"
       }
     ],
     "Глобальная конфигурация": [
@@ -4917,7 +4915,7 @@
     "Группировка маршрутов": [
       {
         "document": "advanced/router.md",
-        "line": 243,
+        "line": 246,
         "level": 2,
         "title": "Группировка маршрутов"
       }
@@ -5077,7 +5075,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 234,
+        "line": 237,
         "level": 3,
         "title": "Декларативные ключи перевода (v2.7.0+)"
       }
@@ -5098,12 +5096,12 @@
         "title": "Декоратор команды"
       }
     ],
-    "Декоратор маршрутизации (рекомендуется)": [
+    "Декораторы маршрутов (рекомендуется)": [
       {
         "document": "advanced/router.md",
         "line": 36,
         "level": 2,
-        "title": "Декоратор маршрутизации (рекомендуется)"
+        "title": "Декораторы маршрутов (рекомендуется)"
       }
     ],
     "Декораторы правил отправки": [
@@ -5501,7 +5499,7 @@
     "Жизненный цикл обработчиков событий": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 335,
+        "line": 338,
         "level": 3,
         "title": "Жизненный цикл обработчиков событий"
       }
@@ -5520,14 +5518,6 @@
         "line": 353,
         "level": 2,
         "title": "Зависимости (необязательно, 2.8.0+)"
-      }
-    ],
-    "Заголовки безопасности": [
-      {
-        "document": "advanced/router.md",
-        "line": 337,
-        "level": 2,
-        "title": "Заголовки безопасности"
       }
     ],
     "Загрузка и хранение изображений": [
@@ -5573,7 +5563,7 @@
     "Запись в лог": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 379,
+        "line": 382,
         "level": 3,
         "title": "Запись в лог"
       }
@@ -5584,14 +5574,6 @@
         "line": 90,
         "level": 3,
         "title": "Запрос данных"
-      }
-    ],
-    "Запрос методов отправки адаптера": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 149,
-        "level": 2,
-        "title": "Запрос методов отправки адаптера"
       }
     ],
     "Запрос на группу": [
@@ -5709,7 +5691,7 @@
     "Идентификатор запроса (X-Request-ID)": [
       {
         "document": "advanced/router.md",
-        "line": 277,
+        "line": 280,
         "level": 2,
         "title": "Идентификатор запроса (X-Request-ID)"
       }
@@ -5893,7 +5875,7 @@
     "Интеграция жизненного цикла": [
       {
         "document": "advanced/router.md",
-        "line": 438,
+        "line": 444,
         "level": 2,
         "title": "Интеграция жизненного цикла"
       }
@@ -6315,7 +6297,7 @@
     "Использование транзакций": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 307,
+        "line": 310,
         "level": 3,
         "title": "Использование транзакций"
       }
@@ -6970,20 +6952,12 @@
         "title": "Лучшие практики обработки событий"
       }
     ],
-    "Маршрутизатор": [
+    "Маршрутизационные промежуточные обработчики": [
       {
         "document": "advanced/router.md",
-        "line": 1,
-        "level": 1,
-        "title": "Маршрутизатор"
-      }
-    ],
-    "Маршрутизация промежуточного программного обеспечения": [
-      {
-        "document": "advanced/router.md",
-        "line": 260,
+        "line": 263,
         "level": 2,
-        "title": "Маршрутизация промежуточного программного обеспечения"
+        "title": "Маршрутизационные промежуточные обработчики"
       }
     ],
     "Массовая регистрация (через Mixin-класс)": [
@@ -7016,6 +6990,14 @@
         "line": 5,
         "level": 2,
         "title": "Менеджер адаптеров"
+      }
+    ],
+    "Менеджер маршрутизации": [
+      {
+        "document": "advanced/router.md",
+        "line": 1,
+        "level": 1,
+        "title": "Менеджер маршрутизации"
       }
     ],
     "Мета-события": [
@@ -7222,6 +7204,14 @@
         "title": "Методы отправки"
       }
     ],
+    "Методы отправки адаптера": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 149,
+        "level": 2,
+        "title": "Методы отправки адаптера"
+      }
+    ],
     "Методы отправки медиа": [
       {
         "document": "platform-guide/telegram.md",
@@ -7403,7 +7393,7 @@
     "Механизм ленивой загрузки": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 339,
+        "line": 342,
         "level": 2,
         "title": "Механизм ленивой загрузки"
       }
@@ -7822,6 +7812,14 @@
         "title": "Наследование привязок (merge)"
       }
     ],
+    "Настройка CORS": [
+      {
+        "document": "advanced/router.md",
+        "line": 321,
+        "level": 2,
+        "title": "Настройка CORS"
+      }
+    ],
     "Настройка блокировки для команд и ответов": [
       {
         "document": "getting-started/event-handling.md",
@@ -7881,7 +7879,7 @@
     "Немедленная загрузка": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 349,
+        "line": 352,
         "level": 3,
         "title": "Немедленная загрузка"
       }
@@ -8294,6 +8292,12 @@
         "line": 405,
         "level": 3,
         "title": "Обработка исключений"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 367,
+        "level": 3,
+        "title": "Обработка исключений"
       }
     ],
     "Обработка личных сообщений": [
@@ -8355,7 +8359,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 362,
+        "line": 365,
         "level": 2,
         "title": "Обработка ошибок"
       },
@@ -8391,7 +8395,7 @@
     "Обработка путей": [
       {
         "document": "advanced/router.md",
-        "line": 368,
+        "line": 371,
         "level": 2,
         "title": "Обработка путей"
       }
@@ -8429,7 +8433,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 317,
+        "line": 320,
         "level": 2,
         "title": "Обработка событий"
       },
@@ -8701,7 +8705,7 @@
     "Ограничение скорости": [
       {
         "document": "advanced/router.md",
-        "line": 302,
+        "line": 305,
         "level": 2,
         "title": "Ограничение скорости"
       }
@@ -9236,12 +9240,6 @@
         "title": "Основное использование"
       },
       {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 294,
-        "level": 3,
-        "title": "Основное использование"
-      },
-      {
         "document": "getting-started/ide-completion.md",
         "line": 14,
         "level": 2,
@@ -9280,20 +9278,20 @@
         "title": "Основные компоненты"
       }
     ],
+    "Основные концепты модуля": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 1,
+        "level": 1,
+        "title": "Основные концепты модуля"
+      }
+    ],
     "Основные концепции адаптера": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 1,
         "level": 1,
         "title": "Основные концепции адаптера"
-      }
-    ],
-    "Основные концепции модуля": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 1,
-        "level": 1,
-        "title": "Основные концепции модуля"
       }
     ],
     "Основные методы": [
@@ -10142,12 +10140,12 @@
         "title": "Пересылка сообщений"
       }
     ],
-    "Перехват исключений": [
+    "Перечисление поддерживаемых методов отправки": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 364,
+        "line": 153,
         "level": 3,
-        "title": "Перехват исключений"
+        "title": "Перечисление поддерживаемых методов отправки"
       }
     ],
     "Письмо с вложением": [
@@ -11469,7 +11467,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 341,
+        "line": 344,
         "level": 3,
         "title": "Принцип работы"
       },
@@ -11566,6 +11564,14 @@
         "title": "Проверка зарегистрированных методов платформы"
       }
     ],
+    "Проверка здоровья": [
+      {
+        "document": "advanced/router.md",
+        "line": 388,
+        "level": 3,
+        "title": "Проверка здоровья"
+      }
+    ],
     "Проверка наличия слушателей (has_handlers)": [
       {
         "document": "advanced/lifecycle.md",
@@ -11583,12 +11589,6 @@
       }
     ],
     "Проверка работоспособности": [
-      {
-        "document": "advanced/router.md",
-        "line": 382,
-        "level": 3,
-        "title": "Проверка работоспособности"
-      },
       {
         "document": "user-guide/deployment.md",
         "line": 122,
@@ -12107,17 +12107,9 @@
     "Регистрация WebSocket": [
       {
         "document": "advanced/router.md",
-        "line": 178,
+        "line": 181,
         "level": 3,
         "title": "Регистрация WebSocket"
-      }
-    ],
-    "Регистрация входа": [
-      {
-        "document": "advanced/router.md",
-        "line": 403,
-        "level": 3,
-        "title": "Регистрация входа"
       }
     ],
     "Регистрация и отмена": [
@@ -12126,6 +12118,14 @@
         "line": 350,
         "level": 3,
         "title": "Регистрация и отмена"
+      }
+    ],
+    "Регистрация кнопки": [
+      {
+        "document": "advanced/router.md",
+        "line": 409,
+        "level": 3,
+        "title": "Регистрация кнопки"
       }
     ],
     "Регистрация команд": [
@@ -12144,6 +12144,14 @@
         "title": "Регистрация кросс-платформенного метода"
       }
     ],
+    "Регистрация маршрутов: одиночный и двойной параметры": [
+      {
+        "document": "advanced/router.md",
+        "line": 38,
+        "level": 3,
+        "title": "Регистрация маршрутов: одиночный и двойной параметры"
+      }
+    ],
     "Регистрация обработчиков": [
       {
         "document": "advanced/lifecycle.md",
@@ -12155,7 +12163,7 @@
     "Регистрация обработчиков событий": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 319,
+        "line": 322,
         "level": 3,
         "title": "Регистрация обработчиков событий"
       }
@@ -12182,14 +12190,6 @@
         "line": 75,
         "level": 3,
         "title": "Регистрация промежуточного слоя"
-      }
-    ],
-    "Регистрация: одиночный параметр (рекомендуется) и двойной параметр": [
-      {
-        "document": "advanced/router.md",
-        "line": 38,
-        "level": 3,
-        "title": "Регистрация: одиночный параметр (рекомендуется) и двойной параметр"
       }
     ],
     "Редактирование и удаление сообщений": [
@@ -12353,7 +12353,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 452,
+        "line": 458,
         "level": 2,
         "title": "Рекомендуемые практики"
       },
@@ -12533,7 +12533,7 @@
     "Ручное чтение конфигурации (устарело)": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 275,
+        "line": 278,
         "level": 3,
         "title": "Ручное чтение конфигурации (устарело)"
       }
@@ -12598,6 +12598,12 @@
         "title": "Связанная документация"
       },
       {
+        "document": "advanced/router.md",
+        "line": 468,
+        "level": 2,
+        "title": "Связанная документация"
+      },
+      {
         "document": "advanced/storage-backends.md",
         "line": 148,
         "level": 2,
@@ -12634,12 +12640,6 @@
       {
         "document": "advanced/module-communication.md",
         "line": 225,
-        "level": 2,
-        "title": "Связанные документы"
-      },
-      {
-        "document": "advanced/router.md",
-        "line": 462,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -12717,7 +12717,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 390,
+        "line": 393,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -13091,7 +13091,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 292,
+        "line": 295,
         "level": 2,
         "title": "Система хранения"
       }
@@ -13099,7 +13099,7 @@
     "Системные маршруты": [
       {
         "document": "advanced/router.md",
-        "line": 378,
+        "line": 384,
         "level": 2,
         "title": "Системные маршруты"
       }
@@ -13732,14 +13732,6 @@
         "line": 139,
         "level": 4,
         "title": "Список платформ"
-      }
-    ],
-    "Список поддерживаемых методов отправки": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 153,
-        "level": 3,
-        "title": "Список поддерживаемых методов отправки"
       }
     ],
     "Список проверки перед публикацией": [
@@ -14631,7 +14623,7 @@
     "Традиционный способ регистрации": [
       {
         "document": "advanced/router.md",
-        "line": 152,
+        "line": 155,
         "level": 2,
         "title": "Традиционный способ регистрации"
       }
@@ -15266,6 +15258,14 @@
         "line": 1,
         "level": 1,
         "title": "Хранилище"
+      }
+    ],
+    "Хуки жизненного цикла WebSocket": [
+      {
+        "document": "advanced/router.md",
+        "line": 222,
+        "level": 2,
+        "title": "Хуки жизненного цикла WebSocket"
       }
     ],
     "Целевая аудитория": [
