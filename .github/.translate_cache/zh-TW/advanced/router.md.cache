@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "df5bc61a2ef5436956f2f40268b59842",
-  "file_hash": "df5bc61a2ef5436956f2f40268b59842",
-  "translated_at": "2026-10-09T14:51:37.670867",
+  "hash": "5ac186f45db1141d8d3579a868aacc7d",
+  "file_hash": "5ac186f45db1141d8d3579a868aacc7d",
+  "translated_at": "2026-10-10T04:12:59.134252",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -58,8 +58,8 @@
       "translation": "## 自動文檔\n\nRouter 預設啟用 OpenAPI 互動式文檔：\n\n```python\n# 禁用文檔\nrouter.disable_docs()\n\n# 自訂文檔資訊\nrouter.set_docs_info(\n    title=\"My API\",\n    description=\"API 文檔\",\n    version=\"1.0.0\"\n)\n```"
     },
     {
-      "hash": "73acbc68887187cb20c5b8a3a25a074a",
-      "translation": "## 路徑處理\n\n路由路徑會自動加上模組名稱作為前綴，以避免衝突：\n\n```python\n# 將路徑 \"/api\" 註冊到模組 \"my_module\"\n# 實際可存取的路徑為 \"/my_module/api\"\nrouter.register_http_route(\"my_module\", \"/api\", handler)\n```"
+      "hash": "3efff5883417aeee2582eff5944b43da",
+      "translation": "## 路徑處理\n\n路由路徑會自動加上模組名稱作為前綴，以避免衝突：\n\n```python\n# 將路徑 \"/api\" 註冊到模組 \"my_module\"\n# 實際可存取的路徑為 \"/my_module/api\"\nrouter.register_http_route(\"my_module\", \"/api\", handler)\n```\n\n> [!WARNING]\n> 路由路徑（包含模組名前綴）**區分大小寫**。註冊時的模組名稱大小寫會反映在實際路徑上：當模組名稱為 `Test` 時，註冊 `/api` 的實際路徑是 `/Test/api`，若存取 `/test/api` 則會回傳 404。"
     },
     {
       "hash": "bc3df13a708431aae80900b948e4b75a",

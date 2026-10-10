@@ -380,6 +380,9 @@ router.set_docs_info(
 router.register_http_route("my_module", "/api", handler)
 ```
 
+> [!WARNING]
+> 路由路徑（包含模組名前綴）**區分大小寫**。註冊時的模組名稱大小寫會反映在實際路徑上：當模組名稱為 `Test` 時，註冊 `/api` 的實際路徑是 `/Test/api`，若存取 `/test/api` 則會回傳 404。
+
 ## 系統路由
 
 路由管理器自動提供以下系統路由：

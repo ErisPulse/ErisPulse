@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "df5bc61a2ef5436956f2f40268b59842",
-  "file_hash": "df5bc61a2ef5436956f2f40268b59842",
-  "translated_at": "2026-10-09T14:52:49.914060",
+  "hash": "5ac186f45db1141d8d3579a868aacc7d",
+  "file_hash": "5ac186f45db1141d8d3579a868aacc7d",
+  "translated_at": "2026-10-10T04:12:57.597165",
   "target_lang": "en",
   "chunks": [
     {
@@ -58,8 +58,8 @@
       "translation": "## Automatic Documentation\n\nThe Router automatically enables OpenAPI interactive documentation:\n\n```python\n# Disable documentation\nrouter.disable_docs()\n\n# Customize documentation information\nrouter.set_docs_info(\n    title=\"My API\",\n    description=\"API Documentation\",\n    version=\"1.0.0\"\n)\n```"
     },
     {
-      "hash": "73acbc68887187cb20c5b8a3a25a074a",
-      "translation": "## Path Handling\n\nRoute paths are automatically prefixed with the module name to avoid conflicts:\n\n```python\n# Register path \"/api\" to module \"my_module\"\n# Actual access path is \"/my_module/api\"\nrouter.register_http_route(\"my_module\", \"/api\", handler)\n```"
+      "hash": "3efff5883417aeee2582eff5944b43da",
+      "translation": "## Path Handling\n\nRoute paths are automatically prefixed with the module name to avoid conflicts:\n\n```python\n# Register path \"/api\" to module \"my_module\"\n# The actual accessible path is \"/my_module/api\"\nrouter.register_http_route(\"my_module\", \"/api\", handler)\n```\n\n> [!WARNING]\n> Route paths (including the module name prefix) are **case-sensitive**. The case of the module name used during registration determines the case of the actual path: if the module name is `Test` and `/api` is registered, the actual path is `/Test/api`. Accessing `/test/api` will return a 404."
     },
     {
       "hash": "bc3df13a708431aae80900b948e4b75a",

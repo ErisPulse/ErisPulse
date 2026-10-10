@@ -374,9 +374,12 @@ Route paths are automatically prefixed with the module name to avoid conflicts:
 
 ```python
 # Register path "/api" to module "my_module"
-# Actual access path is "/my_module/api"
+# The actual accessible path is "/my_module/api"
 router.register_http_route("my_module", "/api", handler)
 ```
+
+> [!WARNING]
+> Route paths (including the module name prefix) are **case-sensitive**. The case of the module name used during registration determines the case of the actual path: if the module name is `Test` and `/api` is registered, the actual path is `/Test/api`. Accessing `/test/api` will return a 404.
 
 ## System Routes
 

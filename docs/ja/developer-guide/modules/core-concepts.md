@@ -176,9 +176,9 @@ info = sdk.adapter.send_info("onebot11", "Text")
 
 ## 設定管理
 
-### 宣言的な設定（推奨）
+### 宣言的設定（推奨）
 
-v2.5.2 以降、モジュールは `ConfigClass` を使って設定クラスを宣言し、アダプターと同じ設定 Schema システムを使用できます。設定は `self.cfg` でリアルタイムに読み取ることができ、変更後は即座に反映されます：
+v2.5.2 以降、モジュールは `ConfigClass` を使って設定クラスを宣言し、アダプタと同じ設定 Schema システムを使用できます。設定は `self.cfg` でリアルタイムに読み取り、変更後は即座に反映されます：
 
 ```python
 from dataclasses import dataclass, field
@@ -223,17 +223,20 @@ class MyModule(BaseModule):
         timeout = cfg.timeout
 ```
 
-`BaseConfig` は、アダプター、モジュール、外部プロジェクトなど、あらゆる場面で使用できる汎用的な設定基底クラスです。設定フィールドは i18n 多言語説明をサポートしています（詳しくは [i18n ドキュメント](../../advanced/i18n.md#配置字段多语言）を参照）。
+`BaseConfig` は、アダプタ、モジュール、外部プロジェクトなど、あらゆる場面で使用できる汎用的な設定基底クラスです。設定フィールドは i18n 多言語説明をサポートしています（詳細は [i18n ドキュメント](../../advanced/i18n.md#配置字段多语言) を参照）。
 
-設定 Schema システムは（v2.8.0+、[アダプター core-concepts](../adapters/core-concepts.md#metadata-约定）を参照）以下の機能もサポートしています：
+> [!NOTE]  
+> モジュール（アダプタを含む）のロード、アンロード、起動、停止などのライフサイクルは、フレームワークが一括して管理します（`module manager` / `scope` がクエリとコントロール API を提供）。`ConfigClass` は業務パラメータのみを保持すべきであり、モジュールは内部で「自分自身が起動するかどうか」を判断するロジックを再嵌套してはいけません。
 
-- **docstring から自動生成されたフィールド説明**：`metadata` の `description` が宣言されていない場合、docstring の `:ivar フィールド: 説明` または `Attributes:` 部分から自動的に説明を抽出します。
-- **ネストされた dataclass 設定**：フィールドの型がネストされた dataclass の場合、schema/テンプレート/検証が再帰的に処理され、WebUI ではネストされたグループとしてレンダリングされます。
-- **`example` フィールド（永続化されない）**：`metadata={"example": True}` のフィールドは `config.toml` に書き込まれず、`config.full.example` に記録されます（複雑で頻繁に触れない高度な設定項目に適しています）。ユーザーが手動で設定した場合は通常通り永続化されます。
+設定 Schema システムはさらに（v2.8.0+、[アダプタ core-concepts](../adapters/core-concepts.md#metadata-约定) を参照）：
+
+- **docstring から自動生成されたフィールド説明**：`metadata` の `description` を宣言していない場合、docstring の `:ivar フィールド名: 説明` または `Attributes:` 段から代替として抽出されます。
+- **ネストされた dataclass 設定**：フィールドの型がネストされた dataclass の場合、schema/テンプレート/検証は再帰的に処理され、WebUI ではネストされたグループとしてレンダリングされます。
+- **`example` は保存しないフィールド**：`metadata={"example": True}` のフィールドは `config.toml` に書き込まれず、`config.full.example` に記録されます（複雑で頻繁に触れない高度な設定項目に適しています）。ユーザーが手動で設定した場合は通常通り永続化されます。
 
 ### 宣言的翻訳キー（v2.7.0+）
 
-v2.7.0 以降、モジュールは `ConfigClass` を宣言するのと同じように、`I18nClass` というネストされたクラスを使って翻訳キーを一括で宣言できます。フレームワークはロード時に**自動的に**宣言されたすべての翻訳キーを登録し、`i18n.register()` を手動で呼び出す必要がなく、設定テンプレート生成よりも早い段階で登録されます。これにより、設定の説明で参照される i18n キーが利用可能になります。
+v2.7.0 以降、モジュールは `ConfigClass` を宣言するのと同じように、`I18nClass` というネストされたクラスを使って翻訳キーを一括して宣言できます。フレームワークはロード時に**自動的に**すべての宣言された翻訳キーを登録し、手動で `i18n.register()` を呼び出す必要はありません。登録のタイミングは設定テンプレート生成よりも早いため、設定説明で参照される i18n キーが利用可能であることを保証します。
 
 ```python
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
@@ -251,9 +254,9 @@ class MyModule(BaseModule):
 
     # 翻訳キー集合クラス（オプション）
     class I18nClass(BaseI18n):
-        # 属性名が自動的に完全なキー経路：<モジュール名>.<属性名> に結合されます
+        # 属性名が自動的に完全なキー パス：<モジュール名>.<属性名> に結合されます
         welcome_msg: I18nKey = I18nKey(
-            default="Welcome Message",   # 言語に依存しないデフォルト
+            default="Welcome Message",   # 言語に依存しない代替
             zh_CN="欢迎消息",
             zh_TW="歡迎訊息",
             en="Welcome Message",
@@ -270,11 +273,11 @@ class MyModule(BaseModule):
         )
 ```
 
-詳細は [i18n 推奨の書き方](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270)を参照してください。
+詳細は [i18n 推奨書き方](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270) を参照してください。
 
-### 手動で設定を読み取る（非推奨）
+### 手動設定読み取り（廃止）
 
-> **非推奨**：宣言的設定（[宣言式設定](#声明式配置推荐)）と `self.cfg` を使用してリアルタイムに読み取ることを推奨します。
+> **廃止**：宣言的設定 ([声明式配置推荐](#声明式配置推荐)) と `self.cfg` による実時読み取りを使用してください。
 
 ```python
 class MyModule(BaseModule):
