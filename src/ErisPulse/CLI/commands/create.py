@@ -107,12 +107,6 @@ class Main(BaseModule):
         :ivar advanced_threshold: 高级阈值（docstring :ivar: 声明即为字段描述，无需 metadata）
         \"\"\"
 
-        enabled: bool = field(
-            default=True,
-            metadata={{
-                \"description\": {{\"i18n\": \"module.{name}.enabled\", \"default\": \"Enable module\"}},
-            }},
-        )
         # example 字段：默认不写入 config.toml（仅记录在 config.full.example，用户按需启用）
         advanced_threshold: int = field(
             default=100,
@@ -131,15 +125,6 @@ class Main(BaseModule):
             ja=\"{name} モジュール\",
             ru=\"Модуль {name}\",
             zh_TW=\"{name} 模組\",
-        )
-        enabled: I18nKey = I18nKey(
-            key=\"module.{name}.enabled\",
-            default=\"Enable module\",
-            zh_CN=\"是否启用模块\",
-            en=\"Enable module\",
-            ja=\"モジュールを有効にする\",
-            ru=\"Включить модуль\",
-            zh_TW=\"啟用模組\",
         )
         hello_help: I18nKey = I18nKey(
             key=\"module.{name}.command.hello.help\",

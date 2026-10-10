@@ -380,6 +380,9 @@ router.set_docs_info(
 router.register_http_route("my_module", "/api", handler)
 ```
 
+> [!WARNING]
+> 路由路径（含模块名前缀）**大小写敏感**。注册时的模块名是什么大小写，实际路径就是什么大小写：模块名为 `Test` 时注册 `/api` 的实际路径是 `/Test/api`，访问 `/test/api` 将返回 404。
+
 ## 系统路由
 
 路由管理器自动提供以下系统路由：
