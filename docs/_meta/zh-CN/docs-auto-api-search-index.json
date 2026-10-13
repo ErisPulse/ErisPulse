@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2175,
+  "total_keywords": 2176,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -3595,7 +3595,7 @@
     "`_check_port_available(host: str, port: int) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1304,
+        "line": 1329,
         "level": 5,
         "title": "`_check_port_available(host: str, port: int) -> None`"
       }
@@ -3659,7 +3659,7 @@
     "`_cleanup_expired_rate_limits() -> int`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1338,
+        "line": 1363,
         "level": 5,
         "title": "`_cleanup_expired_rate_limits() -> int`"
       }
@@ -4086,6 +4086,14 @@
         "line": 784,
         "level": 5,
         "title": "`_create_task(coro) -> Awaitable[Any]`"
+      }
+    ],
+    "`_create_uvicorn_server(config: 'uvicorn.Config') -> 'tuple[uvicorn.Server, Callable[[], Any]]'`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/router.md",
+        "line": 1218,
+        "level": 5,
+        "title": "`_create_uvicorn_server(config: 'uvicorn.Config') -> 'tuple[uvicorn.Server, Callable[[], Any]]'`"
       }
     ],
     "`_ctx_key(ctx: dict) -> str`（staticmethod）": [
@@ -4659,7 +4667,7 @@
     "`_format_display_url(url: str) -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1357,
+        "line": 1382,
         "level": 5,
         "title": "`_format_display_url(url: str) -> str`"
       }
@@ -7375,7 +7383,7 @@
     "`_start_rate_limit_cleanup() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1320,
+        "line": 1345,
         "level": 5,
         "title": "`_start_rate_limit_cleanup() -> None`"
       }
@@ -7415,7 +7423,7 @@
     "`_stop_rate_limit_cleanup() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1330,
+        "line": 1355,
         "level": 5,
         "title": "`_stop_rate_limit_cleanup() -> None`"
       }
@@ -8657,7 +8665,7 @@
     "`async _launch_uvicorn(params: dict[str, Any]) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1257,
+        "line": 1282,
         "level": 5,
         "title": "`async _launch_uvicorn(params: dict[str, Any]) -> bool`"
       }
@@ -8995,7 +9003,7 @@
     "`async _stop_uvicorn_listener() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1245,
+        "line": 1270,
         "level": 5,
         "title": "`async _stop_uvicorn_listener() -> None`"
       }
@@ -10345,7 +10353,7 @@
     "`async reload(host: str | None = None, port: int | None = None, ssl_certfile: str | None = None, ssl_keyfile: str | None = None, *, ssl_cert: str | None = None, ssl_key: str | None = None) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1274,
+        "line": 1299,
         "level": 5,
         "title": "`async reload(host: str | None = None, port: int | None = None, ssl_certfile: str | None = None, ssl_keyfile: str | None = None, *, ssl_cert: str | None = None, ssl_key: str | None = None) -> bool`"
       }
@@ -10659,7 +10667,7 @@
     "`async start(host: str = DEFAULT_SERVER_HOST, port: int = DEFAULT_SERVER_PORT, ssl_certfile: str | None = None, ssl_keyfile: str | None = None, *, ssl_cert: str | None = None, ssl_key: str | None = None) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1218,
+        "line": 1243,
         "level": 5,
         "title": "`async start(host: str = DEFAULT_SERVER_HOST, port: int = DEFAULT_SERVER_PORT, ssl_certfile: str | None = None, ssl_keyfile: str | None = None, *, ssl_cert: str | None = None, ssl_key: str | None = None) -> None`"
       }
@@ -10683,7 +10691,7 @@
     "`async stop() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1350,
+        "line": 1375,
         "level": 5,
         "title": "`async stop() -> None`"
       }
