@@ -3,10 +3,10 @@
 > [!NOTE]
 > This chapter requires ErisPulse **2.8.0+**.
 
-ErisPulse has made "continuous interaction with users" into a framework-level infrastructure: from a single `wait_reply`, to scheduled reminders, multi-path waiting, session mutual exclusion, and restart recovery, all are scheduled by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
+ErisPulse has made "continuous interaction with users" into a framework-level infrastructure: from a single `wait_reply`, to timed reminders, multi-path waiting, session mutual exclusion, and restart recovery, all are scheduled by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
 
 {!--< tips >!--}
-Each capability covered in this article comes with a **owner** (owner): interaction waiting, lease, and timers all record the module name at registration time. When the module is unloaded or the adapter is closed, the framework automatically cleans up and the waiting party immediately receives a notification instead of waiting for a timeout — this is an extension of the ownership system in the interactive dimension (see [Ownership System](ownership.md)).
+Each capability covered in this document comes with an inherent **ownership**: interaction waiting, leases, and timers all record the module name at registration time. When a module is unloaded or an adapter is closed, the framework automatically cleans up and immediately notifies the waiting party instead of waiting for a timeout — this is an extension of the ownership system into the interaction dimension (see [Ownership System](ownership.md)).
 {!--< /tips >!--}
 
 ## Waiting for Reply: wait_reply
@@ -20,7 +20,7 @@ from ErisPulse.Core.Event import command
 async def ask_command(event):
     reply = await event.wait_reply(prompt="Please enter your name:", timeout=30)
     if reply is None:
-        await event.reply("Timed out")
+        await event.reply("Timeout.")
         return
     await event.reply(f"Hello, {reply.get_text()}!")
 ```
@@ -30,87 +30,91 @@ async def ask_command(event):
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `prompt` | The prompt message sent before suspension | None |
-| `timeout` | Timeout for waiting (seconds) | 60 |
-| `pattern` | Glob filter (`*` / `?` / `[seq]`), continues waiting if not matched | None |
-| `regex` | Regex filter (must match both pattern and regex if both are given), continues waiting if not matched | None |
-| `validator` | Validation function (receives Event, returns bool), continues waiting if failed | None |
-| `callback` | Callback when reply is received (alternative to return-value style) | None |
+| `timeout` | Wait timeout (seconds) | 60 |
+| `pattern` | Glob filter (`*` / `?` / `[seq]`), continue waiting if not matched | None |
+| `regex` | Regex filter (must match both pattern and regex if both are given), continue waiting if not matched | None |
+| `validator` | Validation function (receives Event, returns bool), continue waiting if failed | None |
+| `callback` | Callback when reply is received (alternative to returning values) | None |
 | `method` | Method to send the prompt | "Text" |
 | `session` | **Session-level waiting**: replies from anyone in the same session (group/channel) can match | False |
 
 ```python
-# Only accepts numeric amounts, otherwise continues waiting
+# Only accept numeric amounts, otherwise continue waiting
 reply = await event.wait_reply("Please enter the amount:", regex=r"\d+\s*元", timeout=30)
 
-# Session-level waiting: group collaboration scenario, any group member's reply can match
+# Session-level waiting: for group collaboration, replies from any group member can match
 reply = await event.wait_reply(session=True, prompt="Which expert can help answer?")
 ```
 
-### When Will the Waiting Be Cancelled
+### The Boundary Between Waiting and Commands (Command Bypass)
 
-Waiting is no longer "only waiting for timeout" — the following conditions will **immediately terminate** the waiting (returning `None` from `wait_reply`), instead of letting the caller wait until timeout:
+During waiting, if a message containing a **registered command** (e.g., `/cancel`) is received, it is by default passed to the command dispatcher and not consumed as a reply (configuration item `ErisPulse.event.wait_reply.cmdpass`, if `True` it reverses — all messages are treated as replies). The text judgment criteria are consistent with command dispatch: `alt_message` takes precedence, and if missing, falls back to message segment concatenation (effective for pure message segment adapters since 2.10.1).
+
+### When Will Waiting Be Cancelled
+
+Waiting is no longer "just waiting until timeout" — the following situations will **immediately terminate** the waiting (`wait_reply` returns `None`), rather than letting the caller wait until timeout:
 
 | Trigger | Cancellation Reason (`InteractionCancelled.reason`) | Description |
 |---------|-----------------------------------------------------|-------------|
-| The owning module is unloaded / disabled | `owner_unload` | Ownership cleanup: whoever registered the waiting, when it disappears, it is reclaimed together |
-| Adapter is stopped / restarted | `platform_stop` | All waiting suspended on this platform is cancelled |
-| New waiting / lease replaces in the same session | `conflict` | See "Session Arbitration" below |
-| The reply sender is blacklisted / owner module is unbound | `revoked` | Permission review for reply matching: scope identity dimension + module dimension |
-| Reply is received | — | Normal path, returns the reply event |
+| The owning module is unloaded / disabled | `owner_unload` | Ownership cleanup: whoever registered the waiting is canceled when they disappear |
+| Adapter is stopped / restarted | `platform_stop` | All waiting suspended on this platform is canceled |
+| Conflicting with a new waiting / lease in the same session | `conflict` | See "Session Arbitration" below |
+| The replier is blacklisted / owner module is unbound | `revoked` | Permission复查 on reply match: scope identity dimension + module dimension |
+| The reply is matched | — | Normal path, returns the reply event |
 
-The underlying exception is `InteractionCancelled` (under the `InteractionError` exception hierarchy), and `wait_reply` has converted it to return `None`. Callers who need the reason can directly use the low-level API `sdk.interaction.register()`.
+The underlying exception is `InteractionCancelled` (part of the `InteractionError` exception hierarchy), and `wait_reply` has converted it to return `None`. If the reason is needed, the caller can directly use the low-level API `sdk.interaction.register()`.
 
 ### Complete Matching Chain for Reply
 
-When a reply message arrives, the interactive manager executes the following sequence of determinations (executed before command matching, prioritizing conversation continuity — even if the message has been claimed by a higher-priority handler, the suspended conversation can still complete):
+When a reply message arrives, the interaction manager executes the following sequence of judgments (executed before command matching, prioritizing conversation continuity — even if the message has been claimed by another high-priority processor, the suspended conversation can still complete):
 
 ```
-Session key match (precise user dimension → session-level fallback)
-  → pattern / regex text filtering (continues waiting if not matched)
-  → validator validation (continues waiting if failed)
-  → permission review (scope identity dimension + module dimension, fails then terminates waiting)
-  → wake up the waiting party + claim event (mark_processed)
+Session key match (exact user dimension → session-level fallback)
+  → pattern / regex text filter (continue waiting if not matched)
+  → validator check (continue waiting if failed)
+  → Permission复查 (scope identity dimension + owner module dimension, cancel if failed)
+  → Wake up the waiting party + claim the event (mark_processed)
 ```
 
 ## Session Timers: remind / escalate
 
-Turn "timeout" from a return value into a composable primitive. Timers are attached to interactive sessions and are automatically cancelled when the module is unloaded or the adapter is stopped. The single session active remind limit is 5.
+Transform "timeout" from a return value into a composable primitive. Timers are attached to interactive sessions and are automatically canceled when the module is unloaded or the adapter is stopped. The single session active remind limit is 5.
 
-### remind: Remind if No Reply
+### remind: Gentle Reminder if No Reply
 
 ```python
 @command("ticket")
 async def ticket_command(event):
-    await event.reply("The ticket has been submitted, the processing result will be notified here.")
-    # If there is no reply within 5 minutes, gently remind once; any reply from the user will automatically cancel it
-    event.remind(300, "Are you still there? The result will be notified to you as soon as possible.")
+    await event.reply("Your ticket has been submitted. You will be notified here with the processing result.")
+    # Remind gently after 5 minutes of no reply; any reply from the user will automatically cancel it
+    event.remind(300, "Are you still there? We will notify you as soon as there is a result.")
     reply = await event.wait_reply(timeout=3600)
     ...
 ```
 
-- `event.remind(delay, text=None, *, callback=None)`: Sends `text` (or executes `callback(event)`, supports synchronous / asynchronous) to the current session after `delay` expires. **Mandatory validation**: `text` and `callback` must be chosen exclusively (if neither is given, `ValueError` is thrown)
-- Returns a `Reminder` handle: `reminder.cancel()` to manually cancel, `reminder.expired` to query status
-- Automatically cancels after the user replies in this session — this is the semantics of "reminder": reminders only appear when the user is silent
+- `event.remind(delay, text=None, *, callback=None)`: Sends `text` (or executes `callback(event)`, supporting synchronous / asynchronous) to the current session upon expiration. **Mandatory check**: `text` and `callback` must be chosen exclusively (neither given throws `ValueError`)
+- Returns a `Reminder` handle: `reminder.cancel()` manually cancels, `reminder.expired` queries the status
+- Automatically canceled by user reply in the same session — this is the semantics of "reminder": reminders only appear when the user is silent
 - Also available within `Conversation`: `conv.remind(120, "Are you still considering?")`
 
-### escalate: Guaranteed Delivery at a Point in Time
+### escalate: Guaranteed Escalation on Time
 
 ```python
 event.escalate(1800, lambda e: notify_master(f"Ticket not processed for 30 minutes: {event.get_command_args()}"))
 ```
 
-The only difference from `remind`: **not cancelled by user reply** — escalation actions (notifying the master, transferring to human) are a "guaranteed delivery" promise, cancelled only by manual `cancel()` / module unload / adapter stop.
+The only difference from `remind` is that it is **not canceled by user reply** — escalation actions (notifying the owner, transferring to human) are a "guaranteed timeout" commitment, canceled only by manual `cancel()` / module unload / adapter stop.
 
 | | `remind` | `escalate` |
 |---|---|---|
-| Behavior on expiration | Sends text / executes callback | Executes callback |
-| User reply | **Automatically cancels** | Unaffected |
-| Ownership cleanup (unload / stop platform) | Cancels | Cancels |
-| Single session limit | 5 | Unlimited (ownership cleanup as fallback) |
+| Behavior on expiration | Send text / execute callback | Execute callback |
+| User reply | **Automatically canceled** | Unaffected |
+| Ownership cleanup (unload / stop platform) | Canceled | Canceled |
+| Single session limit | 5 | Unlimited (canceled by ownership cleanup as a fallback) |
 
 ## Multi-path Waiting: expect + select
 
-Suspends multiple expectations simultaneously, **first-come, first-served** — typical scenarios: waiting for administrator approval while waiting for user withdrawal, or multi-person collaborative voting.
+Simultaneously suspends multiple expectations, **first-come, first-served** — typical scenarios: waiting for admin approval while also waiting for user withdrawal, or multi-person collaborative voting.
 
 ```python
 which, reply = await event.select(
@@ -128,25 +132,30 @@ elif which == 1:
 ```
 
 - `event.expect(...)` constructs an **expectation description** (does not register any waiting): supports `pattern` / `regex` / `validator` / `user` (limits the replier) / `session` (anyone can reply)
-- `event.select(*expectations, timeout=60)`: Registers uniformly → returns `(index, reply event)` on first match → unmet expectations are automatically cancelled; all timeouts return `(None, None)`. **Mandatory validation**: at least one expectation must be passed, otherwise `ValueError` is thrown
-- The matched event has been claimed by the framework (`mark_processed`), and will not be consumed repeatedly by other processors
+- `event.select(*expectations, timeout=60)`: Registers uniformly → returns `(index, reply event)` as soon as any match is found → unmet expectations are automatically canceled; returns `(None, None)` if all timeout. **Mandatory check**: at least one expectation must be provided, otherwise `ValueError` is thrown
+- The matched event is claimed by the framework (`mark_processed`), and will not be consumed by other processors
 
 {!--< tips >!--}
-Compared to manually orchestrating `select` with multi-threading `asyncio.wait`: unmet expectations are automatically cleaned up, matched events are automatically claimed, permission review and ownership cleanup all take effect — no need to manage any Future yourself.
+`select` compared to manually orchestrated multi-threading `asyncio.wait`: unmet expectations are automatically cleaned up, matched events are automatically claimed, permission复查 and ownership cleanup are fully effective — no need to manage any Future yourself.
 {!--< /tips >!--}
+
+> [!NOTE]
+> As of 2.10.1, `select` is a **aggregated waiting**: all expectations are merged into a single entry + custom match judgment, multiple paths with the same key (e.g., two different patterns for the same user) no longer cancel each other, and the first path to match returns. The judgment criterion for reply text is `alt_message` priority + message segment fallback (consistent with command dispatch).
+>
+> Boundary explanation: `event.wait_for(...)` is directly attached to the adapter event bus, **not passing** through middleware and `detail_type` condition filtering (identity admission is covered by the dispatch entrance); for complete pipeline waiting, use `wait_reply` / `select`.
 
 ## Session Mutual Exclusion: acquire / hold / get_owner_of
 
-Ownership moves from "resources" to "sessions" — "who is currently occupying this user" becomes a first-class query.
+Ownership moves from "resources" to "session" — "who is currently occupying this user" becomes a first-class query.
 
 ```python
-# Query: who is currently interacting with this session? (Returns None if idle)
+# Query: Is this session currently being interacted with? (Returns None if idle)
 owner = sdk.interaction.get_owner_of(event)
 if owner and owner != "MyModule":
-    return  # Another module is already in conversation, avoid interruption
+    return  # Another module is currently in conversation, avoid interrupting
 
 # Mutual exclusion lease: exclusive session (deny policy, returns None if occupied)
-lease = sdk.interaction.acquire(event)          # Default TTL 1 hour, ttl= can be passed
+lease = sdk.interaction.acquire(event)          # Default TTL 1 hour, can pass ttl=
 if lease is None:
     return  # Already occupied
 try:
@@ -155,68 +164,68 @@ finally:
     lease.release()
 ```
 
-Context manager form (throws `SessionOccupiedError` on failure):
+Context manager form (throws `SessionOccupiedError` if acquisition fails):
 
 ```python
 with sdk.interaction.hold(event) as lease:
-    ...  # Automatically released on exit
+    ...  # Lease is automatically released on exit
 ```
 
-Leases support `renew(ttl)` renewal; TTL is lazily expired — expired leases are automatically cleaned up on next access.
+The lease supports `renew(ttl)` to extend; TTL is lazily expired — expired leases are automatically cleaned up on next access.
 
-`Conversation.resume()` automatically acquires leases when resuming conversations (see [Conversation Multi-turn Dialogue](conversation.md)'s "Resume Takes Over") — resumed conversations naturally hold the session, and other modules cannot intervene.
+When `Conversation.resume()` resumes a conversation, the framework automatically acquires the lease (see [Conversation Multi-turn Dialogue](conversation.md)'s "Resume Takes Over") — the resumed conversation naturally holds the session, and other modules cannot insert.
 
 ## Session Inbox: event.history
 
-> Retention policies (7 days / maximum number of entries) and runtime override APIs, risks, and audits are covered in the [Session Inbox](transcript.md) topic.
+> Retention policy (7 days / maximum number of entries) and runtime override API, risks, and audit are covered in the dedicated [Session Inbox](transcript.md) topic.
 
-A unified record of recent message streams per session (both user and bot), serving as a **shared factual base** for AI contexts, anti-spam, and behavior analysis modules — modules no longer store history individually.
+A unified record of recent message streams per session (both user and bot), serving as a shared factual base for AI context, anti-spam, and behavioral analysis modules — each module no longer stores history individually.
 
 ```python
-messages = await event.history(20)   # Recent 20 entries of current session, ascending by time
+messages = await event.history(20)   # The most recent 20 entries in the current session, in ascending order
 for m in messages:
     print(m["role"], ":", m["text"])  # role: "user" / "bot"
 ```
 
 - Automatic recording: inbound messages (role=user) + bot outbound text (role=bot)
-- Storage: separate SQLite table, retention policy = per-session limit (default 50) + global TTL (default 7 days)
-- Writing method: memory buffer + background batch persistence (delay up to 1 second), query interface automatically combines un-persisted buffer rows — "read your write" within the same process is unaffected; normal exit (`sdk.uninit` / process exit) automatically flushes to disk. **Hard crash / forced kill may lose recent records for about 1 second**: this base is positioned as a recent context cache, not suitable for audit-level persistence
+- Storage: separate SQLite table, retention policy = per session limit (default 50) + global TTL (default 7 days)
+- Writing method: memory buffer + background batch persistence (delay up to 1 second), query interface automatically merges un-persisted buffer rows — reads within the same process are unaffected; automatic flush on normal exit (`sdk.uninit` / process exit). **Hard crash / force kill may lose the last ~1 second of records**: this base is positioned as a recent context cache, not suitable for audit-level persistence
 - Configuration: `ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`
 - Manager API: `sdk.transcript.append() / get() / clear()`, `aflush()` / `flush()` to manually flush
 
 ## Message Transaction: message_tx
 
-All outbound sends within a transaction are automatically recorded; **on abnormal exit, previously sent messages are automatically withdrawn in reverse order** (skipped if adapter does not implement `delete_message`, but the ledger is still recorded normally).
+All outbound sends within a transaction are automatically logged; **on abnormal exit, previously sent messages are automatically recalled in reverse order** (skipped if the adapter does not implement `delete_message`, but the ledger is still recorded).
 
 ```python
 async with event.message_tx():
     await event.reply("Processing, please wait")
-    result = await do_something()          # Exception thrown here →
-    await event.reply(f"Completed: {result}")   # The previous "processing" is automatically withdrawn
+    result = await do_something()          # If an exception is thrown here →
+    await event.reply(f"Completed: {result}")   # The previous "processing" is automatically recalled
 ```
 
-Sends outside a transaction are not recorded (zero overhead); `get_send_receipts()` can view receipts of messages already sent in the current transaction.
+Outbound sends outside a transaction are not logged (zero overhead); `get_send_receipts()` can view receipts of messages sent in the current transaction.
 
 ## Trace ID
 
-Each inbound event automatically receives a trace ID (reusing `event["id"], generates if missing), which is carried through:
+Each inbound event automatically receives a trace ID (reusing `event["id"], generating one if missing), which is carried through:
 
 - Handler context (`get_current_trace_id()` to read)
-- Outbound sends (`[Send]` log line appends `[trace:...]`, `message.sending/sent` hooks have `trace_id` field)
+- Outbound sends (`[Send]` log lines append `[trace:...]`, `message.sending/sent` hooks have a `trace_id` field)
 - Lifecycle hook data (dict automatically adds `_trace_id`)
 - Directed events (`lifecycle.emit(..., to=...)`) and message transaction receipts
 
-When a message is processed by multiple modules in succession, the entire chain can be linked with the same ID (for logging / slow query / audit).
+When a message is processed by multiple modules, the same ID can be used to link the entire chain (logging / slow query / audit).
 
 ## Relationship with Other Systems
 
-- **Ownership**: Waiting / lease / timers all record owner, and are reclaimed on unload (see [Ownership System](ownership.md))
-- **Scope**: Reply matching reviews identity + module dimension; cross-module calls audit exit dimension (see [Scope](scope.md))
-- **Conversation**: Multi-turn dialogue is a branch state machine above interactive sessions (see [Conversation](conversation.md)), and its waiting enjoys all cancellation / review / ownership semantics described on this page
+- **Ownership**: Waiting / leases / timers all record owner, and are recycled when unloaded (see [Ownership System](ownership.md))
+- **Scope**: Reply matching checks identity + module dimension; cross-module calls audit outbound dimension (see [Scope](scope.md))
+- **Conversation**: Multi-turn dialogue is a state machine on top of interactive sessions (see [Conversation](conversation.md)), and its waiting also enjoys all cancellation /复查 / ownership semantics described on this page
 
 ## Related Documentation
 
 - [Conversation Multi-turn Dialogue](conversation.md) - Branch state machine, automatic checkpoints, and restart recovery
-- [Ownership (owner) System](ownership.md) - Full view and design boundaries of ownership cleanup
-- [Scope (scope)](scope.md) - Configuration method for permission review and exit audit
-- [Module-to-Module Communication](module-communication.md) - Cross-module calls and directed events
+- [Ownership (owner) System](ownership.md) - Overview and design boundaries of ownership cleanup
+- [Scope (scope)](scope.md) - Configuration methods for permission复查 and outbound auditing
+- [Inter-module Communication](module-communication.md) - Cross-module calls and directed events
