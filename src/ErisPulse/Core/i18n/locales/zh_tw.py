@@ -317,6 +317,7 @@ TRANSLATIONS = {
     "core.router.config_hook_register_failed": "註冊路由設定回呼失敗: {error}",
     "core.router.get_local_ip_failed": "取得本地IP位址失敗: {error}",
     "core.router.already_running": "伺服器已在執行中",
+    "core.router.uvicorn_serve_missing": "目前 uvicorn（{version}）缺少內嵌啟動所用的內部介面 Server._serve()，已回退公開 serve() 啟動（服務期間程序訊號將由 uvicorn 暫時接管）；該路徑未經 ErisPulse 驗證（範圍 {constraint}），建議前往 uvicorn 儲存庫確認其是否正式支援",
     "core.router.reloaded": "路由伺服器已熱重載: {url}",
     "core.router.reload_keep_old": "路由伺服器熱重載失敗，已保持原配置服務: {error}",
     "core.router.reload_not_running": "路由伺服器未在執行，reload 不可用（請使用 start）",

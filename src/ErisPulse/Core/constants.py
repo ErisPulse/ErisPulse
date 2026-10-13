@@ -62,6 +62,13 @@ SERVER_SHUTDOWN_TIMEOUT_SECS: Final[float] = 5.0
 # 超时视为启动失败并回退旧配置（修改影响：过大延长失败感知，过小误判慢启动）
 ROUTER_RELOAD_STARTUP_TIMEOUT_SECS: Final[float] = 10.0
 
+# 内嵌 uvicorn 所依赖的已验证版本范围（与 pyproject.toml 的依赖约束保持一致）。
+# 使用位置: Core/router.py -> _create_uvicorn_server() 接口缺失告警的文案。
+# 修改影响: 内嵌启动走私有接口 Server._serve()（0.34.0 引入），兼容性按能力
+# 探测判定（不比较版本）；缺失时经此文案告警并回退公开 serve()。收紧
+# pyproject 上限时需同步本值。
+UVICORN_COMPAT_RANGE: Final[str] = ">=0.35.0,<1.0"
+
 # ==============================================================================
 # 配置键模板
 #

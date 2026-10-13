@@ -317,6 +317,7 @@ TRANSLATIONS = {
     "core.router.config_hook_register_failed": "Не удалось зарегистрировать callback конфигурации маршрутизатора: {error}",
     "core.router.get_local_ip_failed": "Ошибка получения локального IP-адреса: {error}",
     "core.router.already_running": "Сервер уже запущен",
+    "core.router.uvicorn_serve_missing": "В установленном uvicorn ({version}) отсутствует внутренний интерфейс Server._serve(), используемый для встроенного запуска; выполнен откат на публичный serve() (на время работы сервера обработка сигналов временно перейдёт к uvicorn). Этот путь не проверялся в ErisPulse (диапазон {constraint}); проверьте официальную поддержку в репозитории uvicorn",
     "core.router.reloaded": "Сервер маршрутов горячо перезагружен: {url}",
     "core.router.reload_keep_old": "Не удалось горячо перезагрузить сервер маршрутов, продолжает работать прежняя конфигурация: {error}",
     "core.router.reload_not_running": "Сервер маршрутов не запущен, reload недоступен (используйте start)",
