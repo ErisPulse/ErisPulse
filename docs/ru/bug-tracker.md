@@ -1,1017 +1,1102 @@
-# Bug Tracker
+# Система отслеживания ошибок
 
-This document records known bugs of the ErisPulse SDK and their repair status, arranged in chronological order by the version in which they were fixed.
+Данная документация содержит известные ошибки ErisPulse SDK и информацию об их исправлении, представленную в хронологическом порядке по версиям исправлений.
 
-> **For the reader**  
-> No software is inherently perfect; even the most careful developers leave small mistakes. This tracker includes only issues that have a practical impact on operation—those that are too minor to even be classified as "minor" will not appear here. Although the number of "severe" items in the list may seem high, the original intention of publicly documenting these bugs is to make troubleshooting and retrospective analysis smoother, not to create anxiety: problems that are visible, recorded, and repaired are themselves proof that the project is constantly improving. Do not be alarmed by this list; it is a troubleshooting tool, not a source of fear.
+> **Обращение к читателю**  
+> Ни одно программное обеспечение не является идеальным, и даже самые внимательные разработчики могут допускать небольшие ошибки. В этот отчет включены только те проблемы, которые реально влияют на работу приложения — слишком мелкие, даже не достигающие уровня "незначительных", не будут здесь отмечены. Хотя список с пометкой "серьезный" может показаться большим, основная цель публикации таких ошибок — сделать отслеживание и откат более плавными, а не вызывать беспокойство: возможность видеть, записывать и исправлять ошибки — это доказательство постоянного улучшения проекта. Не стоит волноваться при просмотре этого списка, это инструмент для диагностики, а не источник страха.
 
-> **How to read & maintenance conventions**  
-> - Each bug record contains structured fields such as problem description, root cause analysis, affected version range, repair solution, etc. It is recommended to check the "affected version" field before upgrading to see if it covers the version you are currently using.  
-> - If you need to add a new bug entry, please supplement the content at the corresponding position, following the field specifications and severity/type classifications described below.
+> **Как читать и поддерживать документ**  
+> - Каждая запись об ошибке включает структурированные поля: описание проблемы, анализ корневой причины, охватываемые версии, номер исправления, краткое описание исправления, дату публикации, уровень серьезности и тип. Рекомендуется перед обновлением проверять, охватывает ли "версия влияния" используемую вами версию.  
+> - Если вы хотите добавить запись об ошибке, вставьте её в соответствующее место, следуя формату полей и классификации серьезности/типа, описанным ниже.
 
 ---
 
-## Field Descriptions
+## Описание полей
 
-### Mandatory Fields
+### Обязательные поля
 
-| Field | Description |
+| Поле | Описание |
 |------|------|
-| **Problem** | The observable abnormal phenomenon of the bug, the external manifestation of the bug. Try to provide error messages or typical scenarios |
-| **Cause** | Root cause analysis, pointing to specific code defects (including "root cause chain" diagrams for complex scenarios) |
-| **Affected Version** | The affected version range, format `introduced version - fixed version` (including both dev versions) |
-| **Fixed Version** | The specific version number in which the bug was fixed |
-| **Fixed Content** | Brief description of the repair solution, including key code changes |
-| **Fixed Date** | The release date of the corresponding fixed version, using the `YYYY/MM/DD` format |
-| **Severity** | As described in the "Severity Classification" below |
-| **Type** | As described in the "Type Classification" below, can be combined (e.g., `Adapter / Routing`) |
+| **Проблема** | Внешнее проявление ошибки, наблюдаемое пользователем. Стремитесь предоставить сообщения об ошибках или типичные сценарии |
+| **Причина** | Анализ корневой причины, указывающий на конкретные дефекты кода (включая "цепочку корневых причин" для сложных сценариев) |
+| **Версии влияния** | Влияющие версии, в формате `Версия введения - Версия исправления` (включая бета-версии) |
+| **Исправленная версия** | Номер конкретной версии, в которой была исправлена ошибка |
+| **Содержание исправления** | Краткое описание исправления, включая ключевые изменения в коде |
+| **Дата исправления** | Дата публикации соответствующей версии исправления, в формате `YYYY/MM/DD` |
+| **Серьезность** | Уровень серьезности, определённый по следующей "шкале серьезности" |
+| **Тип** | Тип ошибки, определённый по следующей "классификации типов", может быть комбинированным (например, `адаптер / маршрутизация`) |
 
-### Optional Fields
+### Дополнительные поля
 
-| Field | Description | Applicable Scenarios |
+| Поле | Описание | Сценарий применения |
 |------|------|---------|
-| **Reproduction Steps** | The minimum reproducible path to trigger the bug | Complex bugs, occasional bugs are recommended to supplement |
-| **关联** | Related Issue / PR / Commit links | Supplement when there are external discussion records |
-| **Regression Test** | Test case location for verifying repair and preventing recurrence | Supplement when corresponding pytest cases have been written |
+| **Шаги воспроизведения** | Минимальный путь для воспроизведения ошибки | Рекомендуется добавлять для сложных или случайных ошибок |
+| **Связи** | Ссылки на связанные Issues / PR / Commit | Добавляются при наличии внешних обсуждений |
+| **Тесты на повторное испытание** | Позиция тестовых сценариев для проверки исправления и предотвращения повторного возникновения | Добавляются, если соответствующие тесты pytest написаны |
 
 ---
 
-## Severity Classification
+## Шкала серьезности
 
-| Identifier | Level | Judgment Criteria | Typical Manifestations |
+| Идентификатор | Уровень | Критерии | Типичные проявления |
 |------|------|---------|---------|
-| 🔴 | Severe | Causes process crash, data loss/damage, core functionality completely unusable, security vulnerabilities | OOM Kill, message cannot be sent, module cannot be loaded, hot reload failure |
-| 🟡 | Moderate | Functional abnormalities but there are workarounds, non-core functionality failure, occasional problems | Incorrect status judgment, repeated triggering, cache expiration, inaccurate error prompts |
-| 🟢 | Minor | Does not affect core functionality, only code quality or experience issues, potential risks have not occurred | Deprecated APIs, dead code, missing warning logs |
+| 🔴 | Серьёзный | Причиняет сбой процесса, потерю или повреждение данных, полную недоступность основных функций, уязвимости безопасности | OOM Kill, невозможность отправки сообщений, невозможность загрузки модуля, сбой горячего перезапуска |
+| 🟡 | Средний | Функциональные сбои, но есть пути обхода, недоступность неосновных функций, случайные проблемы | Ошибочное определение состояния, повторное срабатывание, истечение кэша, неточное сообщение об ошибке |
+| 🟢 | Лёгкий | Не влияет на основные функции, только качество кода или проблемы с опытом, потенциальные риски без проявления | Устаревший API, мёртвый код, отсутствие предупреждающих логов |
 
 ---
 
-## Type Classification
+## Классификация типов
 
-| Type | Coverage Range |
+| Тип | Охватываемые области |
 |------|---------|
-| Configuration System | `ConfigManager`, configuration read/write, configuration Schema, hot update |
-| Event System | `Event` module (command/message/notice/request/meta), event distribution, processor registration |
-| Adapter | `AdapterManager`, `BaseAdapter`, account parsing, Bot status, middleware |
-| Routing | `RouterManager`, HTTP/WebSocket/SSE routing, rate limiting, CORS |
-| Client | `HttpClient`, `ClientWebSocket`, aiohttp wrapper |
-| Storage | `StorageManager`, SQLite, SQL builder, nested keys |
-| Loading System | `Loader`, `LazyModule`, `ModuleInitializer`, strict mode, module discovery |
-| CLI | `epsdk` command, `init`/`run`/`install`, parameter parsing, signal handling |
-| Runtime | `sdk.run`/`restart`/`uninit`, lifecycle, signal, subprocess |
+| Система конфигурации | `ConfigManager`, чтение и запись конфигурации, схема конфигурации, горячее обновление |
+| Система событий | `Event` модуль (command/message/notice/request/meta), распределение событий, регистрация обработчиков |
+| Адаптер | `AdapterManager`, `BaseAdapter`, анализ учётных записей, состояние Bot, промежуточное ПО |
+| Маршрутизация | `RouterManager`, HTTP/WebSocket/SSE маршруты, ограничение скорости, CORS |
+| Клиент | `HttpClient`, `ClientWebSocket`, обёртка aiohttp |
+| Хранилище | `StorageManager`, SQLite, конструктор SQL, вложенные ключи |
+| Загрузка | `Loader`, `LazyModule`, `ModuleInitializer`, строгий режим, обнаружение модулей |
+| CLI | `epsdk` команда, `init`/`run`/`install`, разбор параметров, обработка сигналов |
+| Рантайм | `sdk.run`/`restart`/`uninit`, жизненный цикл, сигналы, подпроцессы |
 
 ---
 
-## Item Template
+## Шаблон записи
 
-Please follow the following format when adding a new bug entry:
+При добавлении новой записи об ошибке следуйте следующему формату:
 
 ```markdown
-### [BUG-XXX] Title
+### [BUG-XXX] Заголовок
 
-**Problem**: Problem description (error message or typical phenomenon)
-**Cause**: Root cause analysis
-**Affected Version**: Introduced version - Fixed version
-**Fixed Version**: x.x.x
-**Fixed Content**: Repair solution
-**Fixed Date**: YYYY/MM/DD
+**Проблема**: Описание проблемы (сообщение об ошибке или типичный сценарий)
+**Причина**: Анализ корневой причины
+**Версии влияния**: Введение - Исправление
+**Исправленная версия**: x.x.x
+**Содержание исправления**: Описание исправления
+**Дата исправления**: YYYY/MM/DD
 
-<!-- Optional fields -->
-**Reproduction Steps**: (Recommended for complex bugs)
-**关联**: (Issue/PR links)
-**Regression Test**: (Test case path)
+<!-- Дополнительные поля -->
+**Шаги воспроизведения**: (Рекомендуется для сложных ошибок)
+**Связи**: (Ссылки на Issues/PR/Commit)
+**Тесты на повторное испытание**: (Позиция тестовых сценариев)
 
-**Severity**: 🔴 Severe | 🟡 Moderate | 🟢 Minor
-**Type**: Configuration System / Event System / Adapter / Routing / Client / Storage / Loading System / CLI / Runtime
+**Серьезность**: 🔴 Серьёзный | 🟡 Средний | 🟢 Лёгкий
+**Тип**: Система конфигурации / Система событий / Адаптер / Маршрутизация / Клиент / Хранилище / Загрузка / CLI / Рантайм
 ```
 
 ---
 
-## Statistics Overview
+## Статистика обзор
 
-| Severity | Quantity |
+| Уровень серьезности | Количество |
 |--------|------|
-| 🔴 Severe | 16 |
-| 🟡 Moderate | 18 |
-| 🟢 Minor | 3 |
-| **Total** | **37** |
+| 🔴 Серьёзный | 16 |
+| 🟡 Средний | 18 |
+| 🟢 Лёгкий | 3 |
+| **Итого** | **37** |
 
-| Type | Quantity |
+| Тип | Количество |
 |------|------|
-| Adapter | 6 |
-| Configuration System | 11 |
-| Event System | 7 |
+| Адаптер | 6 |
+| Система конфигурации | 11 |
+| Система событий | 7 |
 | CLI | 3 |
-| Storage | 3 |
-| Loading System | 3 |
-| Routing | 2 |
-| Client | 1 |
-| Runtime | 1 |
+| Хранилище | 3 |
+| Загрузка | 3 |
+| Маршрутизация | 2 |
+| Клиент | 1 |
+| Рантайм | 1 |
 
-> Note: A single bug can belong to multiple types, the table above counts based on the main type.  
-> Note: BUG-028 / BUG-031 numbering is vacant (abandoned during registration, to maintain stable numbering, not recycled and rearranged).
-
----
-
-## Fixed Bugs
-
-### [BUG-001] Event handler registration duplicate leads to multiple event processing
-
-**Problem**: When using multiple `@message` / `@notice` decorators to register handlers, the same event is triggered multiple times, causing the command to be executed multiple times and duplicate log output.
-
-**Cause**: `BaseEventHandler` lacks deduplication logic when registering handlers with the adapter event bus; each decorator mounts once to the bus, and the event is called multiple times during distribution.
-
-**Affected Version**: 2.2.0-dev.0 - 2.2.1-dev.0
-
-**Fixed Version**: 2.2.1-dev.0
-
-**Fixed Content**: Optimize `BaseEventHandler` to ensure each event type is only registered once with the adapter, avoiding repeated triggers.
-
-**Fixed Date**: 2025/08/18
-
-**Severity**: 🔴 Severe
-
-**Type**: Event System
+> Примечание: Один баг может относиться к нескольким типам, в таблице указан основной тип.  
+> Примечание: Номера BUG-028 / BUG-031 отсутствуют (зарегистрированы, но отменены, чтобы сохранить стабильность существующих номеров).
 
 ---
 
-### [BUG-002] Adapter configuration path type error during init command
+## Исправленные ошибки
 
-**Problem**: When using the `ep init` command for interactive initialization, selecting the adapter configuration results in a type error:
+### [BUG-001] Повторная регистрация обработчиков событий приводит к многократному срабатыванию событий
+
+**Проблема**: При использовании нескольких декораторов `@message` / `@notice` для регистрации обработчиков, одно и то же событие будет обрабатываться несколько раз, что приводит к многократному выполнению команд и дублированию логов.
+
+**Причина**: `BaseEventHandler` не имеет логики удаления дубликатов при регистрации обработчиков в событийный буфер адаптера. Каждый декоратор добавляет обработчик один раз, и событие будет вызываться несколько раз при распределении.
+
+**Версии влияния**: 2.2.0-dev.0 - 2.2.1-dev.0
+
+**Исправленная версия**: 2.2.1-dev.0
+
+**Содержание исправления**: Оптимизация `BaseEventHandler`, чтобы каждый тип события регистрировался только один раз в событийный буфер адаптера, предотвращая многократное срабатывание.
+
+**Дата исправления**: 2025/08/18
+
+**Серьезность**: 🔴 Серьёзный
+
+**Тип**: Система событий
+
+---
+
+### [BUG-002] Ошибка типа при выборе адаптера конфигурации в команде init
+
+**Проблема**: При использовании команды `ep init` для интерактивной инициализации возникает ошибка типа:
 
 ```
-Interactive initialization failed: unsupported operand type(s) for /: 'str' and 'str'
+Ошибка интерактивной инициализации: unsupported operand type(s) for /: 'str' and 'str'
 ```
 
-**Cause**: When adjusting the configuration file path in version 2.3.7, the method parameter type is inconsistent. `_configure_adapters_interactive_sync` receives a `str` type parameter, but internally uses the `Path` `/` operator to concatenate paths.
+**Причина**: В версии 2.3.7 при изменении пути к файлу конфигурации метод `_configure_adapters_interactive_sync` принимает параметры типа `str`, но внутри используется оператор `/` класса `Path` для объединения путей.
 
-**Affected Version**: 2.3.7 - 2.3.9-dev.1
+**Версии влияния**: 2.3.7 - 2.3.9-dev.1
 
-**Fixed Version**: 2.3.9-dev.1
+**Исправленная версия**: 2.3.9-dev.1
 
-**Fixed Content**: Change the parameter type of `_configure_adapters_interactive_sync` from `str` to `Path`, and pass a `Path` object directly when calling.
+**Содержание исправления**: Изменение типа параметра `_configure_adapters_interactive_sync` с `str` на `Path`, передача объекта `Path` при вызове.
 
-**Fixed Date**: 2026/03/23
+**Дата исправления**: 2026/03/23
 
-**Severity**: 🟡 Moderate
+**Серьезность**: 🟡 Средний
 
-**Type**: CLI
-
----
-
-### [BUG-003] Command events become invalid after restart
-
-**Problem**: After calling `sdk.restart()`, commands registered via `@command` are not triggered, resulting in no response from the robot after sending the command.
-
-**Cause**: After `adapter.shutdown()` clears the event bus, the `_linked_to_adapter_bus` status of `BaseEventHandler` is not reset to `False`, causing the `_process_event` method to think it has been mounted to the adapter bus and skip re-mounting.
-
-**Affected Version**: 2.2.x - 2.4.0-dev.2
-
-**Fixed Version**: 2.4.0-dev.3
-
-**Fixed Content**: Introduce `_linked_to_adapter_bus` status tracking; after `_clear_handlers()` disconnects the bus, the next `register()` automatically re-mounts, adapting to shutdown/restart scenarios.
-
-**Fixed Date**: 2026/04/09
-
-**Severity**: 🔴 Severe
-
-**Type**: Event System
+**Тип**: CLI
 
 ---
 
-### [BUG-004] Lifecycle event handlers not cleared
+### [BUG-003] Команды не срабатывают после перезапуска
 
-**Problem**: After `sdk.restart()`, old lifecycle event handlers still exist and are triggered repeatedly, causing the same event to be processed multiple times.
+**Проблема**: После вызова `sdk.restart()` команды, зарегистрированные с помощью `@command`, не срабатывают, что проявляется в том, что робот не отвечает на отправленные команды.
 
-**Cause**: The `lifecycle._handlers` dictionary is never cleared in `uninit()`, so old handlers and new handlers coexist after restart.
+**Причина**: `adapter.shutdown()` очищает событийный буфер, но состояние `_linked_to_adapter_bus` в `BaseEventHandler` не сбрасывается в `False`, поэтому `_process_event` метод считает, что уже подключен к событийному буферу адаптера, и пропускает повторную регистрацию.
 
-**Affected Version**: 2.3.0 - 2.4.0-dev.2
+**Версии влияния**: 2.2.x - 2.4.0-dev.2
 
-**Fixed Version**: 2.4.0-dev.3
+**Исправленная версия**: 2.4.0-dev.3
 
-**Fixed Content**: Clear `lifecycle._handlers` at the end of the `Uninitializer` cleanup process (after all events are submitted), adapting to shutdown/restart scenarios.
+**Содержание исправления**: Введение отслеживания состояния `_linked_to_adapter_bus`, при `_clear_handlers()` отключение от буфера, при следующем `register()` автоматическая повторная регистрация, адаптация к сценариям `shutdown/restart`.
 
-**Fixed Date**: 2026/04/09
+**Дата исправления**: 2026/04/09
 
-**Severity**: 🟡 Moderate
+**Серьезность**: 🔴 Серьёзный
 
-**Type**: Runtime
-
----
-
-### [BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard
-
-**Problem**: `Event.is_friend_add()` checks `detail_type == "friend_add"`, `Event.is_friend_delete()` checks `detail_type == "friend_delete"`, but the OneBot12 standard defines `detail_type` values as `"friend_increase"` and `"friend_decrease"`. Inconsistent with the values used in `notice.py`'s `on_friend_add`/`on_friend_remove` decorators, leading to handlers registered via decorators not being triggered when the corresponding `is_friend_add()`/`is_friend_delete()` judgment methods return `False`.
-
-**Cause**: `wrapper.py` uses non-standard naming, while `notice.py` uses the correct OB12 standard naming.
-
-**Affected Version**: Implemented since
-
-**Fixed Version**: 2.4.2-dev.1
-
-**Fixed Content**: Change the matching value of `is_friend_add()` from `"friend_add"` to `"friend_increase"`, and `is_friend_delete()` from `"friend_delete"` to `"friend_decrease"`.
-
-**Fixed Date**: 2026/04/13
-
-**Severity**: 🟡 Moderate
-
-**Type**: Event System
+**Тип**: Система событий
 
 ---
 
-### [BUG-006] adapter.clear() does not clear _started_instances, causing incorrect status after restart
+### [BUG-004] Неочищенные обработчики событий жизненного цикла
 
-**Problem**: The `AdapterManager.clear()` method clears `_adapters`, `_adapter_info`, handlers, and `_bots`, but omits `_started_instances`. If `clear()` is called while the adapter is running, `_started_instances` retains dangling references, causing incorrect status judgment after restart.
+**Проблема**: После вызова `sdk.restart()` старые обработчики событий жизненного цикла остаются и повторно срабатывают, что приводит к одному и тому же событию, обрабатываемому несколько раз.
 
-**Cause**: When `_started_instances` was introduced in 2.4.0-dev.1, it was not cleared in `clear()`.
+**Причина**: Словарь `lifecycle._handlers` никогда не очищается при `uninit()`, поэтому при перезапуске старые и новые обработчики существуют одновременно.
 
-**Affected Version**: 2.4.0-dev.1 - 2.4.2-dev.0
+**Версии влияния**: 2.3.0 - 2.4.0-dev.2
 
-**Fixed Version**: 2.4.2-dev.1
+**Исправленная версия**: 2.4.0-dev.3
 
-**Fixed Content**: Add `self._started_instances.clear()` in the `clear()` method.
+**Содержание исправления**: Очистка `lifecycle._handlers` в процессе очистки `Uninitializer` (после всех событий), чтобы старые обработчики были удалены.
 
-**Fixed Date**: 2026/04/13
+**Дата исправления**: 2026/04/09
 
-**Severity**: 🟡 Moderate
+**Серьезность**: 🟡 Средний
 
-**Type**: Adapter
-
----
-
-### [BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()
-
-**Problem**: The `CommandHandler.wait_reply()` method uses `asyncio.get_event_loop()` to create futures and get timestamps, which has been deprecated in Python 3.10+. In asynchronous contexts, `asyncio.get_running_loop()` should be used. This is inconsistent with the `get_running_loop()` used in the `wrapper.py`'s `wait_for()` method.
-
-**Cause**: The old API was used during development, and the newly added `wait_for()` used the correct API but did not retroactively fix the old code.
-
-**Affected Version**: 2.3.0-dev.0
-
-**Fixed Version**: 2.4.2-dev.1
-
-**Fixed Content**: Replace `asyncio.get_event_loop()` with `asyncio.get_running_loop()` in `command.py` at two places.
-
-**Fixed Date**: 2026/04/13
-
-**Severity**: 🟢 Minor
-
-**Type**: Event System
+**Тип**: Рантайм
 
 ---
 
-### [BUG-008] Bot offline event is repeatedly submitted during shutdown
+### [BUG-005] `Event.is_friend_add/is_friend_delete` `detail_type` не соответствует стандарту OB12
 
-**Problem**: When calling `adapter.shutdown()` to close all adapters, `_update_bot_status()` repeatedly submits Bot offline events during the shutdown process, causing the same batch of Bots to be marked offline multiple times and triggering multiple `adapter.bot.offline` lifecycle events.
+**Проблема**: `Event.is_friend_add()` проверяет `detail_type == "friend_add"`, `Event.is_friend_delete()` проверяет `detail_type == "friend_delete"`, но стандарт OneBot12 определяет значения `detail_type` как `"friend_increase"` и `"friend_decrease"`. Это несоответствие с `notice.py` в `on_friend_add`/`on_friend_remove` приводит к тому, что обработчики, зарегистрированные с помощью декораторов, не срабатывают, когда соответствующие методы `is_friend_add()`/`is_friend_delete()` возвращают `False`.
 
-**Cause**: The Bot status tracking system introduced in 2.4.0-dev.1 did not set a "shutting down" flag during `shutdown()`, so `_update_bot_status()` could not distinguish between normal offline and cascading offline during shutdown.
+**Причина**: В `wrapper.py` используется нестандартное имя, в то время как `notice.py` использует правильные имена стандарта OB12.
 
-**Affected Version**: 2.4.0-dev.1 - 2.4.2-dev.1
+**Версии влияния**: С момента реализации
 
-**Fixed Version**: 2.4.2-dev.1
+**Исправленная версия**: 2.4.2-dev.1
 
-**Fixed Content**: Add `_is_being_shutdown` flag in `AdapterManager`, set to True at the start of `shutdown()` and cleared at the end; `_update_bot_status()` skips duplicate submissions during shutdown based on the flag.
+**Содержание исправления**: Изменение значения проверки `is_friend_add()` с `"friend_add"` на `"friend_increase"`, `is_friend_delete()` с `"friend_delete"` на `"friend_decrease"`.
 
-**Fixed Date**: 2026/04/21
+**Дата исправления**: 2026/04/13
 
-**Severity**: 🟡 Moderate
+**Серьезность**: 🟡 Средний
 
-**Type**: Adapter
-
----
-
-### [BUG-009] LazyModule synchronous access to BaseModule leads to incomplete initialization
-
-**Problem**: When users access the properties of a lazy-loaded BaseModule in a synchronous context, the module uses `loop.create_task()` for asynchronous initialization but does not wait, leading to race conditions when properties are accessed before initialization is complete.
-
-**Cause**: `_ensure_initialized()` uses `loop.create_task(self._initialize())` and returns immediately without ensuring initialization is complete.
-
-**Affected Version**: 2.4.0-dev.0 - 2.4.2-dev.1
-
-**Fixed Version**: 2.4.2-dev.2
-
-**Fixed Content**: In synchronous contexts, BaseModule initialization is changed to use `asyncio.run(self._initialize())` to ensure initialization is complete before returning. The transparent proxy feature is maintained, and users do not need to be aware of synchronous/asynchronous differences.
-
-**Fixed Date**: 2026/04/21
-
-**Severity**: 🟡 Moderate
-
-**Type**: Loading System
+**Тип**: Система событий
 
 ---
 
-### [BUG-010] Multi-threaded configuration system write leads to data loss
+### [BUG-006] `adapter.clear()` не очищает `_started_instances`, что приводит к неправильному состоянию после перезапуска
 
-**Problem**: In a multi-threaded environment, when multiple threads simultaneously call `config.setConfig()`, the `_flush_config()` read-modify-write operation is not atomic, potentially leading to partial write loss.
+**Проблема**: Метод `AdapterManager.clear()` очищает `_adapters`, `_adapter_info`, обработчики и `_bots`, но пропускает `_started_instances`. Если адаптер запущен и вызывается `clear()`, `_started_instances` сохраняет висящие ссылки, что приводит к ошибочному состоянию после перезапуска.
 
-**Cause**: Although `_flush_config()` uses `RLock`, there is no file lock protection between file read and write, and the `_schedule_write` Timer may be triggered multiple times, causing overwrite.
+**Причина**: При введении `_started_instances` в 2.4.0-dev.1 не было очистки в `clear()`.
 
-**Affected Version**: 2.3.0 - 2.4.2-dev.1
+**Версии влияния**: 2.4.0-dev.1 - 2.4.2-dev.0
 
-**Fixed Version**: 2.4.2-dev.2
+**Исправленная версия**: 2.4.2-dev.1
 
-**Fixed Content**:
-1. Add file lock mechanism (`_file_lock`) to ensure atomic file operations
-2. Use temporary files for writing and then atomically rename (`os.replace`/`os.rename`)
-3. Improve `_schedule_write` Timer cancellation and re-scheduling logic
+**Содержание исправления**: Добавление `self._started_instances.clear()` в метод `clear()`.
 
-**Fixed Date**: 2026/04/21
+**Дата исправления**: 2026/04/13
 
-**Severity**: 🔴 Severe
+**Серьезность**: 🟡 Средний
 
-**Type**: Configuration System
+**Тип**: Адаптер
 
 ---
 
-### [BUG-011] Windows Ctrl+C cannot stop the program
+### [BUG-007] `command.wait_reply()` использует устаревший `asyncio.get_event_loop()`
 
-**Problem**: When running `python main.py` directly on Windows, pressing Ctrl+C does not terminate the program. After the program starts normally and outputs the routing server information, Ctrl+C has no response and can only be forcibly terminated via Task Manager. However, it can be stopped normally when started via `epsdk run`, but `epsdk run` runs via a subprocess model.
+**Проблема**: Метод `CommandHandler.wait_reply()` использует `asyncio.get_event_loop()` для создания будущих объектов и получения временной метки, этот метод устарел в Python 3.10+ и в асинхронном контексте следует использовать `asyncio.get_running_loop()`. Это несоответствие с `wrapper.py` в `wait_for()` методе, который использует `get_running_loop()`.
 
-**Cause**: The Hypercorn ASGI server's `serve()` function internally registers its own SIGINT handler via `signal.signal(SIGINT, handler)`, overriding Python's default `KeyboardInterrupt` handling mechanism. When Hypercorn is started as a background task via `asyncio.create_task()`, its internal shutdown process cannot be triggered (because it expects the `worker_serve` mode), causing the Ctrl+C signal to be swallowed by Hypercorn without triggering any cleanup actions.
+**Причина**: При разработке использовался старый API, а последующий `wait_for()` использует правильный API, но старый код не был обновлён.
 
-**Affected Version**: 2.3.6 - 2.4.2
+**Версии влияния**: 2.3.0-dev.0
 
-**Fixed Version**: 2.4.3-dev.0
+**Исправленная версия**: 2.4.2-dev.1
 
-**Fixed Content**:
-1. Switch the ASGI server from Hypercorn to Uvicorn (`pyproject.toml` dependency change)
-2. Use `uvicorn.Server._serve()` to directly start the server, **bypassing** the `capture_signals()` signal handling context manager
-3. Implement graceful shutdown via `server.should_exit = True`, and cancel the background task if timeout occurs
-4. Synchronously remove the subprocess running model and `runtime/cleanup.py` cleanup module (no longer needed for subprocess cleanup)
+**Содержание исправления**: Замена `asyncio.get_event_loop()` на `asyncio.get_running_loop()` в `command.py`.
 
-**Fixed Date**: 2026/04/28
+**Дата исправления**: 2026/04/13
 
-**Severity**: 🔴 Severe
+**Серьезность**: 🟢 Лёгкий
 
-**Type**: CLI / Runtime
+**Тип**: Система событий
 
 ---
 
-### [BUG-012] After hot restart, the updated module's Python code does not take effect
+### [BUG-008] Событие отключения Bot повторно отправляется при процессе shutdown
 
-**Problem**: After executing `sdk.restart()` for a soft restart, newly updated module/adapters' new code (such as newly added API routes) does not take effect, and the old logic is still running. A complete restart of the process is required to load the latest code.
+**Проблема**: При вызове `adapter.shutdown()` для закрытия всех адаптеров, `_update_bot_status()` будет повторно отправлять событие отключения Bot, что приводит к тому, что одни и те же Bot будут помечены как отключённые несколько раз и запускаются несколько раз событий жизненного цикла `adapter.bot.offline`.
 
-**Cause**: `_do_restart()` calls `entry_point.load()` during re-initialization, but this function returns a cached old module object from `sys.modules` instead of reloading from disk.
+**Причина**: Введённая в 2.4.0-dev.1 система отслеживания состояния Bot не устанавливает флаг "в процессе закрытия" во время shutdown, `_update_bot_status()` не может различить нормальное отключение и каскадное отключение во время процесса закрытия.
 
-**Affected Version**: Early versions - 2.4.3-dev.1
+**Версии влияния**: 2.4.0-dev.1 - 2.4.2-dev.1
 
-**Fixed Version**: 2.4.3-dev.1
+**Исправленная версия**: 2.4.2-dev.1
 
-**Fixed Content**: Clean up cached modules/adapters packages in `sys.modules` before `init()` after `uninit()`, so that `entry_point.load()` reloads the latest code from disk. Add `_collect_top_level_modules()` and `_invalidate_module_cache()` helper methods, deriving top-level module names via `top_level.txt` or entry-point value.
+**Содержание исправления**: Добавление `_is_being_shutdown` флага в `AdapterManager`, установка True в начале shutdown и сброс в конце; `_update_bot_status()` проверяет этот флаг и пропускает повторную отправку во время процесса закрытия.
 
-**Fixed Date**: 2026/05/03
+**Дата исправления**: 2026/04/21
 
-**Severity**: 🔴 Severe
+**Серьезность**: 🟡 Средний
 
-**Type**: Loading System / Runtime
-
----
-
-### [BUG-013] Module loading strategy sorting logic error
-
-**Problem**: `ModuleLoadStrategy` provides a `priority` field to declare the initialization priority of modules, but the implementation of the loading strategy has a flaw, causing modules to be initialized not in the expected priority order, but in the default order of `entry_points()`. When modules have initialization dependencies, the correct initialization order cannot be ensured via `priority`.
-
-**Cause**: There is a flaw in the sorting logic of the loading strategy implementation; `initialize_modules()` does not use `priority` to sort the module list.
-
-**Affected Version**: 2.3.4 - 2.4.5-dev.2
-
-**Fixed Version**: 2.4.5-dev.3
-
-**Fixed Content**: Before `initialize_modules()` traversal, sort the module list by `priority` in descending order. Modules with the same priority maintain their original relative order (stable sorting).
-
-**Fixed Date**: 2026/05/15
-
-**Severity**: 🟡 Moderate
-
-**Type**: Loading System
+**Тип**: Адаптер
 
 ---
 
-### [BUG-014] Adapter middleware returning None causes event data loss
+### [BUG-009] Синхронный доступ к BaseModule без завершения инициализации
 
-**Problem**: When `adapter.emit()` executes the OneBot12 middleware chain, if a middleware returns `None` (e.g., forgetting to `return data`), subsequent middleware and all event processors receive `processed_data` as `None`, causing event processing to fail completely.
+**Проблема**: При синхронном доступе к свойству лениво загруженного BaseModule, модуль использует `loop.create_task()` для асинхронной инициализации, но не ожидает, что может привести к гонке состояний.
 
-**Cause**: The middleware chain implementation `processed_data = await middleware(processed_data)` does not check if the return value is `None`, directly overwriting the result of the previous step.
+**Причина**: `_ensure_initialized()` для BaseModule использует `loop.create_task(self._initialize())` и сразу возвращает, не обеспечив завершения инициализации.
 
-**Affected Version**: unknown - 2.4.5-dev.3
+**Версии влияния**: 2.4.0-dev.0 - 2.4.2-dev.1
 
-**Fixed Version**: 2.4.5-dev.4
+**Исправленная версия**: 2.4.2-dev.2
 
-**Fixed Content**: When middleware returns `None`, ignore the return value, retain the original data, and output a warning-level log.
+**Содержание исправления**: В синхронном контексте инициализация BaseModule изменена на использование `asyncio.run(self._initialize())`, чтобы убедиться, что инициализация завершена, прежде чем вернуться. Сохраняется прозрачность прокси, пользователь не должен осознавать различие между синхронным и асинхронным контекстом.
 
-**Fixed Date**: 2026/05/15
+**Дата исправления**: 2026/04/21
 
-**Severity**: 🔴 Severe
+**Серьезность**: 🟡 Средний
 
-**Type**: Adapter / Event System
-
----
-
-### [BUG-015] Configuration file path depends on working directory
-
-**Problem**: The configuration file path of `ConfigManager` is a relative path `"config/config.toml"` by default, which depends on `os.getcwd()` for resolution at runtime. If the working directory changes during runtime (e.g., via `os.chdir()`), configuration file read/write operations will point to the wrong location, leading to configuration loss or reading old data.
-
-**Cause**: `__init__` directly stores the relative path without resolving it to an absolute path at initialization.
-
-**Affected Version**: 2.3.7 - 2.4.5-dev.3
-
-**Fixed Version**: 2.4.5-dev.4
-
-**Fixed Content**: In `ConfigManager.__init__()`, if the passed path is a relative path, automatically resolve it to an absolute path using `os.path.abspath()`.
-
-**Fixed Date**: 2026/05/15
-
-**Severity**: 🟡 Moderate
-
-**Type**: Configuration System
+**Тип**: Загрузка
 
 ---
 
-### [BUG-016] BaseStorage confuses storing value None with non-existent key
+### [BUG-010] Многопоточная запись конфигурации приводит к потере данных
 
-**Problem**: `BaseStorage.get_multi()` / `__getattr__()` cannot distinguish between "key does not exist" and "key's value is None", treating a user explicitly stored `None` as if the key does not exist when reading.
+**Проблема**: При одновременном вызове `config.setConfig()` несколькими потоками, `_flush_config()` операции чтения-изменения-записи не являются атомарными, что может привести к потере части записей.
 
-**Cause**: The value retrieval logic directly uses `value is None` to determine if the key exists, lacking an independent "missing" marker.
+**Причина**: Хотя `_flush_config()` использует `RLock`, между чтением и записью файла нет защиты с помощью файлового блока, и `_schedule_write` таймер может быть запущен несколько раз, вызывая перезапись.
 
-**Affected Version**: Early versions - 2.4.6-dev.6
+**Версии влияния**: 2.3.0 - 2.4.2-dev.1
 
-**Fixed Version**: 2.4.6-dev.6
+**Исправленная версия**: 2.4.2-dev.2
 
-**Fixed Content**: Introduce `_SENTINEL` sentinel value to distinguish "key does not exist" from "value is None", no longer confusing the two.
+**Содержание исправления**:
+1. Добавлена атомарная защита с помощью файлового блока (`_file_lock`)
+2. Использование временного файла для записи, затем атомарное переименование (`os.replace`/`os.rename`)
+3. Улучшена логика отмены и перезапуска `_schedule_write` таймера
 
-**Fixed Date**: 2026/06/07
+**Дата исправления**: 2026/04/21
 
-**Severity**: 🟡 Moderate
+**Серьезность**: 🔴 Серьёзный
 
-**Type**: Storage
-
----
-
-### [BUG-017] WebSocket route auto_accept flag is lost after service restart
-
-**Problem**: After a service restart (such as `sdk.restart()`), the `auto_accept` configuration for all WebSocket routes becomes `False`, and connections that were expected to be automatically accepted remain in a pending state, with clients receiving no response for a long time, resulting in the WebSocket connection hanging.
-
-**Cause**: In `_restore_routes_from_records()`, when restoring routes from persistent records, `auto_accept` is hard-coded to `False` instead of reading the actual value from the record; also, when the route storage tuple was expanded from a binary tuple to a ternary tuple, the restoration logic was not synchronized.
-
-**Affected Version**: 2.3.8-dev.0 - 2.4.6-dev.6
-
-**Fixed Version**: 2.4.6-dev.6
-
-**Fixed Content**: The route storage tuple is expanded to `(handler, auth_handler, auto_accept)`, and `_restore_routes_from_records()` reads the real `auto_accept` value from the record instead of hard-coding `False`.
-
-**Fixed Date**: 2026/06/07
-
-**Severity**: 🔴 Severe
-
-**Type**: Routing
+**Тип**: Система конфигурации
 
 ---
 
-### [BUG-018] Concurrent calls to HTTP/WS client cause crashes and connection leaks
+### [BUG-011] Невозможность остановки программы с помощью CTRL+C в Windows
 
-**Problem**: The HTTP and WebSocket clients in `Core/client.py` have multiple stability defects in concurrent scenarios, leading to connection leaks or process crashes:
-- Multiple coroutines concurrently calling `ClientWebSocket.receive()` causes aiohttp to throw `Concurrent call to receive() is not allowed`
-- `_get_http_session()` / `_get_ws_session()` concurrent calls may create multiple sessions, and `_drain_sessions()` does not close old connections, causing connection leaks
-- The exception handling order in `request()` is incorrect: `except ClientConnectionError` (ErisPulse exception) is never triggered, aiohttp connection errors are caught by the generic `except Exception`, leading to the "retry + session rebuild" logic (dead code) never executed
-- `send_json()` ignores the `mode="binary"` parameter; `_get_ws_session()` does not pass default request headers
+**Проблема**: При запуске `python main.py` в Windows, нажатие CTRL+C не завершает программу. Программа запускается и выводит информацию о сервере маршрутизации, но CTRL+C не реагирует, приходится убивать процесс через диспетчер задач. При запуске через `epsdk run` остановка возможна, но `epsdk run` использует модель подпроцесса.
 
-**Cause**: The client was initially implemented (2.4.6-dev.5) without concurrent protection and improper handling of aiohttp exception hierarchy and ErisPulse custom exception inheritance.
+**Причина**: ASGI-сервер Hypercorn в функции `serve()` зарегистрировал свой обработчик SIGINT, перекрыв стандартный механизм обработки KeyboardInterrupt Python. При запуске Hypercorn как фоновая задача с помощью `asyncio.create_task()`, процесс остановки Hypercorn не может быть вызван должным образом, так как он ожидает `worker_serve` режима, что приводит к тому, что сигналы SIGINT поглощаются Hypercorn, но не вызывают никаких действий очистки.
 
-**Affected Version**: 2.4.6-dev.5 - 2.4.8
+**Версии влияния**: 2.3.6 - 2.4.2
 
-**Fixed Version**: 2.4.8
+**Исправленная версия**: 2.4.3-dev.0
 
-**Fixed Content**:
-1. Add `_recv_lock` to serialize all `receive()` / `receive_text()` / `receive_bytes()` calls
-2. Add `_session_lock` to protect session creation; `_drain_sessions()` is changed to an asynchronous method and truly closes old sessions
-3. Refactor `request()` exception handling order: `asyncio.TimeoutError` → `aiohttp.ClientConnectionError` (triggers session rebuild) → `aiohttp.ClientError` → `ClientError` (transparent pass) → `Exception`
-4. Fix `send_json()` mode handling, `_get_ws_session()` default request header pass, `close()` concurrent race, `HttpResponse.__aexit__` duplicate `release()`
+**Содержание исправления**:
+1. Замена ASGI-сервера с Hypercorn на Uvicorn (`pyproject.toml` зависимость)
+2. Использование `uvicorn.Server._serve()` для прямого запуска сервера, **исключая** контекстный менеджер обработки сигналов `capture_signals()`
+3. Использование `server.should_exit = True` для обеспечения корректной остановки, с отменой фоновой задачи при истечении таймера
+4. Синхронное удаление модели очистки подпроцессов и модуля `runtime/cleanup.py` (механизм очистки подпроцессов больше не нужен)
 
-**Fixed Date**: 2026/06/12
+**Дата исправления**: 2026/04/28
 
-**Severity**: 🔴 Severe
+**Серьезность**: 🔴 Серьёзный
 
-**Type**: Client
+**Тип**: CLI / Рантайм
 
 ---
 
-### [BUG-019] Adapter hot reload causes route conflicts and reload failure
+### [BUG-012] После горячего перезапуска обновлённые модули не применяют новые коды
 
-**Problem**: When third-party modules (such as Dashboard) trigger adapter hot reload, or when adapter startup fails and retries, old routes (such as `onebot11_default`) are not cleared, causing `WebSocket path ... already registered` conflicts, leading to reload failure. A complete restart of the process is required to recover.
+**Проблема**: После выполнения `sdk.restart()` (мягкий перезапуск) новые коды модулей/адаптеров, обновлённые через `epsdk install`, не применяются, и по-прежнему выполняется логика старой версии. Необходим полный перезапуск процесса для загрузки последнего кода.
 
-**Cause**: `AdapterManager.shutdown()` only clears routes via `unregister_all_by_namespace(platform)`, but adapters (such as OneBot11) register WebSocket routes with `onebot11_{account_name}` as the namespace, resulting in a granularity mismatch that makes clearing an empty operation; startup failure retry paths also do not clear previously residual routes.
+**Причина**: `_do_restart()` при повторной инициализации вызывает `entry_point.load()`, но эта функция возвращает закэшированный объект модуля из `sys.modules`, а не загружает его заново с диска.
 
-**Affected Version**: Early versions - 2.4.9
+**Версии влияния**: Ранние версии - 2.4.3-dev.1
 
-**Fixed Version**: 2.4.9
+**Исправленная версия**: 2.4.3-dev.1
 
-**Fixed Content**:
-1. Automatically track `owner → namespace` ownership relationships during route registration via `current_owner` ContextVar
-2. Add `unregister_all_by_owner(owner)`, clearing at stop/restart by owner, covering fine-grained namespaces
-3. Add `_stop_adapter(platform)` primitive ("stop equals clear"), binding stopping adapters and reclaiming their registered resources in a single call, `restart()` and startup failure retry both go through this entry
-4. Add framework-level `adapter.restart(platform)` API, third-party modules should call this method instead of directly manipulating adapter instances
+**Содержание исправления**: При `uninit()` перед `init()` очищается кэш загруженных модулей/адаптеров из `sys.modules`, чтобы `entry_point.load()` загружал последний код с диска. Добавлены вспомогательные методы `_collect_top_level_modules()` и `_invalidate_module_cache()` для вывода верхнего уровня модуля по `top_level.txt` или значению entry-point.
 
-**Fixed Date**: 2026/06/12
+**Дата исправления**: 2026/05/03
 
-**Severity**: 🔴 Severe
+**Серьезность**: 🔴 Серьёзный
 
-**Type**: Adapter / Routing
+**Тип**: Загрузка / Рантайм
 
 ---
 
-### [BUG-020] Subprocess mode `ep run <script>` cannot find sub-packages in the script's directory
+### [BUG-013] Ошибка логики сортировки стратегии загрузки модуля
 
-**Problem**: When running a script with `ep r .\main.py` in non-hot-reload mode, if the script has relative imports (such as `from qg import ...`), it reports `No module named 'qg'`. While `--reload` mode works normally.
+**Проблема**: `ModuleLoadStrategy` предоставляет поле `priority` для декларации приоритета инициализации модуля, но реализация сортировки имеет ошибку, что приводит к тому, что модули инициализируются не в ожидаемом порядке приоритета, а по умолчанию `entry_points()`.
 
-**Cause**: Non-hot-reload mode directly calls `runpy.run_path()` to execute the script, which does not automatically add the script's directory to `sys.path`. In contrast, `--reload` mode runs via `subprocess.Popen` subprocess, which automatically inherits the current working directory, making `sys.path[0]` the script's directory, so it works normally.
+**Причина**: Ошибка в реализации логики сортировки: `initialize_modules()` не использует `priority` для сортировки списка модулей.
 
-**Affected Version**: 2.5.0 - 2.5.2-dev.0
+**Версии влияния**: 2.3.4 - 2.4.5-dev.2
 
-**Fixed Version**: 2.5.2-dev.0
+**Исправленная версия**: 2.4.5-dev.3
 
-**Fixed Content**: Before calling `runpy.run_path()`, manually insert the script's directory into `sys.path[0]`.
+**Содержание исправления**: Перед итерацией в `initialize_modules()` сортируем список модулей по убывающему `priority`. Модули с одинаковым `priority` сохраняют исходный относительный порядок (стабильная сортировка).
 
-**Fixed Date**: 2026/06/27
+**Дата исправления**: 2026/05/15
 
-**Severity**: 🟡 Moderate
+**Серьезность**: 🟡 Средний
 
-**Type**: CLI
-
----
-
-### [BUG-021] SQL query builder rejects valid wildcard and list expressions
-
-**Problem**: `SQLiteQueryBuilder`'s `_build_select_sql()` calls `_validate_identifier()` for all SELECT columns, which uses a strict whitelist regex `^[a-zA-Z_][a-zA-Z0-9_]*$`, causing valid SQL syntax to be incorrectly judged as unsafe column names:
-
-- `SELECT *` — `*` is a standard SQL wildcard
-- `SELECT COUNT(*)` — aggregate function
-- `SELECT users.name` — qualified column name
-- `SELECT col AS alias` — column alias
-
-Among them, `Select("*")` is used by Cron and other modules, causing module `on_load` execution failure and module loading failure.
-
-**Cause**: In 2.4.6, SQL injection protection was enhanced, introducing `_validate_identifier()` whitelist validation. This validation is applied to all column names, but not distinguished between read-side (SELECT/ORDER BY) and write-side (INSERT/UPDATE). SELECT columns allow complex SQL expressions and should not be restricted by simple identifier whitelist.
-
-**Affected Version**: 2.4.6 - 2.5.2-dev.1
-
-**Fixed Version**: 2.5.2-dev.2
-
-**Fixed Content**: Change the SELECT/ORDER BY column validation from whitelist mode to blacklist mode:
-1. Add `_validate_select_column()` function, only blocking SQL injection dangerous characters (`;` `'` `"` `--` `/*` `*/` `\x00` newline)
-2. Allow any valid SQL column expression (`*`, `table.*`, `table.column`, `COUNT(*)`, `col AS alias`, etc.)
-3. INSERT/UPDATE column names still maintain strict whitelist validation (only allow simple identifiers)
-
-**Fixed Date**: 2026/06/29
-
-**Severity**: 🔴 Severe
-
-**Type**: Storage
+**Тип**: Загрузка
 
 ---
 
-### [BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)
+### [BUG-014] Возвращение None из промежуточного ПО адаптера приводит к потере данных события
 
-**Problem**: After the 2.5.2 configuration system refactoring, multi-account adapters declaring `AccountConfigClass` report `ValueError("AccountConfigClass not declared, cannot resolve account")` when calling `wait_reply`, `reply`, and other methods that need to send messages. Even if the adapter correctly configures multi-account information, account resolution still fails.
+**Проблема**: При выполнении `adapter.emit()` в цепочке промежуточного ПО OneBot12, если какой-либо промежуточный ПО возвращает `None` (например, забыл `return data`), последующие промежуточные ПО и все обработчики событий получают `processed_data` в виде `None`, что приводит к полной потере обработки событий.
 
-**Cause**: In 2.5.2-dev.5, `_load_accounts()` (responsible for reading configuration + validation + populating `_accounts_data`) was refactored to `_ensure_accounts_exist()` (only generating configuration templates), but `_resolve_account()` still checks `self._accounts_data is None`. Since `_ensure_accounts_exist()` no longer populates `_accounts_data`, this attribute remains `None`, causing `_resolve_account()` to prematurely return `(None, None)`, and account resolution fails completely.
+**Причина**: Реализация цепочки промежуточного ПО `processed_data = await middleware(processed_data)` не проверяет, возвращается ли значение `None`, и просто перезаписывает результат предыдущего шага.
 
-**Root Cause Chain**:
+**Версии влияния**: unknown - 2.4.5-dev.3
+
+**Исправленная версия**: 2.4.5-dev.4
+
+**Содержание исправления**: При возврате `None` промежуточным ПО, значение игнорируется, сохраняется исходное значение, и выводится предупреждение уровня warning.
+
+**Дата исправления**: 2026/05/15
+
+**Серьезность**: 🔴 Серьёзный
+
+**Тип**: Адаптер / Система событий
+
+---
+
+### [BUG-015] Путь к файлу конфигурации зависит от рабочей директории
+
+**Проблема**: Путь к файлу конфигурации `ConfigManager` по умолчанию является относительным путём `"config/config.toml"`, который зависит от `os.getcwd()` в процессе выполнения. Если рабочая директория изменяется во время выполнения (например, с помощью `os.chdir()`), операции чтения и записи конфигурационного файла будут указывать на неправильное место, что приводит к потере конфигурации или чтению старых данных.
+
+**Причина**: В `__init__` непосредственно хранится относительный путь, а не преобразуется в абсолютный путь при инициализации.
+
+**Версии влияния**: 2.3.7 - 2.4.5-dev.3
+
+**Исправленная версия**: 2.4.5-dev.4
+
+**Содержание исправления**: В `ConfigManager.__init__()` при получении пути, если он является относительным, автоматически преобразуется в абсолютный путь с помощью `os.path.abspath()`.
+
+**Дата исправления**: 2026/05/15
+
+**Серьезность**: 🟡 Средний
+
+**Тип**: Система конфигурации
+
+---
+
+### [BUG-016] `BaseStorage` не различает значение `None` и отсутствие ключа
+
+**Проблема**: `BaseStorage.get_multi()` / `__getattr__()` не могут различать "ключ отсутствует" и "значение ключа равно `None`", пользователь, явно сохранивший `None`, при последующем чтении будет рассматриваться как отсутствующий ключ.
+
+**Причина**: Логика получения значения использует `value is None` для проверки наличия ключа, отсутствует отдельный маркер "отсутствия".
+
+**Версии влияния**: Ранние версии - 2.4.6-dev.6
+
+**Исправленная версия**: 2.4.6-dev.6
+
+**Содержание исправления**: Введён `_SENTINEL` для различения "ключ отсутствует" и "значение равно None", они больше не перепутаны.
+
+**Дата исправления**: 2026/06/07
+
+**Серьезность**: 🟡 Средний
+
+**Тип**: Хранилище
+
+---
+
+### [BUG-017] Флаг `auto_accept` WebSocket маршрутов теряется после перезапуска службы
+
+**Проблема**: После перезапуска службы (например, `sdk.restart()`), флаг `auto_accept` всех WebSocket маршрутов становится `False`, и клиенты, ожидавшие автоматического принятия подключения, остаются в ожидании, что проявляется в том, что WebSocket-соединение "зависает".
+
+**Причина**: `_restore_routes_from_records()` при восстановлении маршрутов из записей жёстко устанавливает `auto_accept` в `False`, не читая значение из записей; при расширении кортежа маршрута до трёх элементов не было обновления логики восстановления.
+
+**Версии влияния**: 2.3.8-dev.0 - 2.4.6-dev.6
+
+**Исправленная версия**: 2.4.6-dev.6
+
+**Содержание исправления**: Кортеж маршрута расширен до `(handler, auth_handler, auto_accept)`, `_restore_routes_from_records()` читает значение `auto_accept` из записей, а не жёстко устанавливает `False`.
+
+**Дата исправления**: 2026/06/07
+
+**Серьезность**: 🔴 Серьёзный
+
+**Тип**: Маршрутизация
+
+---
+
+### [BUG-018] Параллельные вызовы HTTP/WS-клиентов приводят к сбоям и утечкам соединений
+
+**Проблема**: HTTP и WebSocket-клиенты в `Core/client.py` имеют несколько стабильностных проблем в сценариях параллелизма, которые приводят к утечкам соединений или сбоям процесса:
+- Параллельные вызовы `ClientWebSocket.receive()` с aiohttp вызывают `Concurrent call to receive() is not allowed`
+- `_get_http_session()` / `_get_ws_session()` при параллельных вызовах могут создавать несколько сессий, а `_drain_sessions()` не закрывает старые соединения, вызывая утечку соединений
+- `request()` имеет неправильный порядок перехвата исключений: `except ClientConnectionError` (ErisPulse исключение) никогда не срабатывает, aiohttp исключения соединения перехватываются общим `except Exception`, что приводит к логике "повторной попытки + пересоздание сессии" (мертвый код), никогда не выполняется
+- `send_json()` игнорирует параметр `mode="binary"`; `_get_ws_session()` не передаёт стандартные заголовки запроса
+
+**Причина**: Первоначальная реализация клиента (2.4.6-dev.5) не имела защиты от параллелизма и неправильной обработки иерархии исключений aiohttp и пользовательских исключений ErisPulse.
+
+**Версии влияния**: 2.4.6-dev.5 - 2.4.8
+
+**Исправленная версия**: 2.4.8
+
+**Содержание исправления**:
+1. Добавлен `_recv_lock` для последовательного выполнения `receive()` / `receive_text()` / `receive_bytes()`
+2. Добавлен `_session_lock` для защиты создания сессии; `_drain_sessions()` изменён на асинхронный метод и действительно закрывает старые сессии
+3. Перестроен порядок перехвата исключений в `request()`: `asyncio.TimeoutError` → `aiohttp.ClientConnectionError` (запуск пересоздания сессии) → `aiohttp.ClientError` → `ClientError` (пропуск) → `Exception`
+4. Исправлены `send_json()` с учётом `mode`, `get_ws_session()` с передачей стандартных заголовков, `close()` с учётом гонки, `HttpResponse.__aexit__` с дублированием `release()`
+
+**Дата исправления**: 2026/06/12
+
+**Серьезность**: 🔴 Серьёзный
+
+**Тип**: Клиент
+
+---
+
+### [BUG-019] При горячем перезагрузке адаптера возникают конфликты маршрутов, приводящие к неудаче перезагрузки
+
+**Проблема**: Третьи модули (например, Dashboard) вызывают горячую перезагрузку адаптера, или адаптер не может запуститься и повторно запускается, из-за того, что предыдущие зарегистрированные маршруты (например, `onebot11_default`) не были очищены, возникает исключение `WebSocket路径 ... уже зарегистрирован`, что приводит к неудаче перезагрузки. Необходим полный перезапуск процесса для восстановления.
+
+**Причина**: `AdapterManager.shutdown()` только удаляет маршруты по `unregister_all_by_namespace(platform)`, но адаптеры (например, OneBot11) регистрируют маршруты WebSocket по `onebot11_{account_name}` с пространством имён, которое не совпадает с точечным масштабом, поэтому очистка оказывается пустой операцией; при повторном запуске маршруты также не очищаются.
+
+**Версии влияния**: Ранние версии - 2.4.9
+
+**Исправленная версия**: 2.4.9
+
+**Содержание исправления**:
+1. При регистрации маршрута с помощью `current_owner` ContextVar автоматически отслеживается принадлежность `owner → namespace`
+2. Добавлен `unregister_all_by_owner`, чтобы при остановке/перезапуске удалять ресурсы по владельцу, охватывая мелкие пространства имён
+3. Добавлен `stop_adapter(platform)` примитив (остановка = очистка), связывающий остановку адаптера и освобождение зарегистрированных ресурсов в одном вызове; `restart()` и повторный запуск при сбое проходят через этот вход
+4. Добавлен фреймворк-уровень `adapter.restart(platform)` API, который третья модули должны вызывать, а не напрямую оперировать экземпляром адаптера
+
+**Дата исправления**: 2026/06/12
+
+**Серьезность**: 🔴 Серьёзный
+
+**Тип**: Адаптер / Маршрутизация
+
+---
+
+### [BUG-020] В режиме `ep run <script>` без горячей перезагрузки не найдены подпакеты каталога скрипта
+
+**Проблема**: При использовании `ep r .\main.py` для запуска скрипта без горячей перезагрузки, если скрипт имеет относительный импорт (например, `from qg import ...`), возникает ошибка `No module named 'qg'`. Режим `--reload` работает нормально.
+
+**Причина**: Неперезагрузочный режим напрямую вызывает `runpy.run_path()` для выполнения скрипта, эта функция не добавляет каталог скрипта в `sys.path`. Режим `--reload` запускает скрипт через `subprocess.Popen` в подпроцессе, подпроцесс автоматически наследует текущий рабочий каталог, и `sys.path[0]` становится каталогом скрипта, поэтому он работает нормально.
+
+**Версии влияния**: 2.5.0 - 2.5.2-dev.0
+
+**Исправленная версия**: 2.5.2-dev.0
+
+**Содержание исправления**: Перед вызовом `runpy.run_path()` вручную вставляется каталог скрипта в начало `sys.path`.
+
+**Дата исправления**: 2026/06/27
+
+**Серьезность**: 🟡 Средний
+
+**Тип**: CLI
+
+---
+
+### [BUG-021] Конструктор SQL-запросов отвергает допустимые выражения с подстановочными знаками и списками
+
+**Проблема**: `SQLiteQueryBuilder` в `_build_select_sql()` вызывает `_validate_identifier()` для всех столбцов SELECT, этот функция использует строгий белый список регулярного выражения `^[a-zA-Z_][a-zA-Z0-9_]*$`, что приводит к тому, что допустимые выражения SQL ошибочно считаются небезопасными именами столбцов:
+
+- `SELECT *` — это стандартный подстановочный знак SQL
+- `SELECT COUNT(*)` — агрегатная функция
+- `SELECT users.name` — ограниченное имя столбца
+- `SELECT col AS alias` — псевдоним столбца
+
+где `Select("*")` используется Cron и другими модулями, что приводит к сбою загрузки модуля, модуль не может быть загружен.
+
+**Причина**: В 2.4.6 версии усилена защита от SQL-инъекций, введена `_validate_identifier()` с белым списком. Эта проверка применяется ко всем столбцам, но не различает чтение (SELECT/ORDER BY) и запись (INSERT/UPDATE). SELECT-столбцы допускают сложные выражения SQL, не должны быть ограничены простым идентификатором.
+
+**Версии влияния**: 2.4.6 - 2.5.2-dev.1
+
+**Исправленная версия**: 2.5.2-dev.2
+
+**Содержание исправления**: Проверка столбцов SELECT/ORDER BY изменена с белого списка на чёрный список:
+1. Добавлена `_validate_select_column()` функция, которая только блокирует опасные символы SQL-инъекций (`;` `'` `"` `--` `/*` `*/` `\x00` символы перевода строки)
+2. Разрешены любые допустимые выражения SQL-столбца (`*`, `table.*`, `table.column`, `COUNT(*)`, `col AS alias` и т.д.)
+3. Имена столбцов INSERT/UPDATE остаются под строгой проверкой белого списка (только простые идентификаторы)
+
+**Дата исправления**: 2026/06/29
+
+**Серьезность**: 🔴 Серьёзный
+
+**Тип**: Хранилище
+
+---
+
+### [BUG-022] Обработка учётной записи `_resolve_account()` вернулась ( `_accounts_data` не заполнен)
+
+**Проблема**: После переработки системы конфигурации в 2.5.2, адаптеры, объявляющие `AccountConfigClass`, при вызове `wait_reply` / `reply` и других методов, требующих отправки сообщений, получают ошибку `ValueError("не объявлен AccountConfigClass, невозможно разрешить учётную запись")`. Даже если адаптер правильно настроен с учётными данными, разрешение учётной записи всё равно не удаётся.
+
+**Причина**: В 2.5.2-dev.5 `_load_accounts()` (отвечающий за чтение конфигурации + проверку + заполнение `_accounts_data`) был переработан в `_ensure_accounts_exist()` (только генерация шаблона конфигурации), но `_resolve_account()` по-прежнему проверяет `self._accounts_data is None`. Поскольку `_ensure_accounts_exist()` больше не заполняет `_accounts_data`, это свойство всегда остаётся `None`, что приводит к тому, что `_resolve_account()` возвращает `(None, None)` до того, как методы, использующие `_resolve_account`, получают `None`, и вызывают ошибку.
+
+**Корневая цепочка**:
 ```
-_load_accounts() is deleted
-  → __init__ no longer populates _accounts_data
-    → _accounts_data is always None
-      → _resolve_account() checks _accounts_data is None → return (None, None)
-        → downstream calling _resolve_account (e.g. call_api) gets None
-          → triggers error
+_load_accounts() удалён
+  → __init__ не заполняет _accounts_data
+    → _accounts_data всегда None
+      → _resolve_account() проверяет _accounts_data is None → return (None, None)
+        → методы, использующие _resolve_account, получают None
+          → вызывает ошибку
 ```
 
-**Affected Version**: 2.5.2-dev.5 - 2.5.2
+**Версии влияния**: 2.5.2-dev.5 - 2.5.2
 
-**Fixed Version**: 2.5.3
+**Исправленная версия**: 2.5.3
 
-**Fixed Content**: In `BaseAdapter.__init__`, after `self._ensure_accounts_exist()`, restore the population of `_accounts_data`:
+**Содержание исправления**: В `BaseAdapter.__init__` после `_ensure_accounts_exist()` восстанавливается заполнение `_accounts_data`:
 ```python
 if self.AccountConfigClass is not None:
     self._ensure_accounts_exist()
-    self._accounts_data = self.accounts  # Restore population, data source is real-time read accounts property
+    self._accounts_data = self.accounts  # восстановить заполнение, источник данных — актуальные accounts
 ```
-The `_resolve_account()` logic remains unchanged, fully backward compatible:
-- Adapters that do not declare `AccountConfigClass`: `_accounts_data` remains `None` → return `(None, None)`
-- Adapters that declare `AccountConfigClass`: `_accounts_data` is populated → normal resolution
-- Adapters that override `_load_accounts` or manually set `_accounts_data`: override in `super().__init__()` after, highest priority
+Логика `_resolve_account()` остаётся неизменной, полностью обратно совместимой:
+- Адаптеры, не объявляющие `AccountConfigClass`: `_accounts_data` остаётся `None` → возвращается `(None, None)`
+- Адаптеры, объявляющие `AccountConfigClass`: `_accounts_data` заполняется → нормальное разрешение
+- Адаптеры, перезаписывающие `_load_accounts` или устанавливающие `_accounts_data` вручную: в `super().__init__()` после установки, приоритет наивысший
 
-**Fixed Date**: 2026/07/07
+**Дата исправления**: 2026/07/07
 
-**Severity**: 🔴 Severe
+**Серьезность**: 🔴 Серьёзный
 
-**Type**: Adapter / Configuration System
+**Тип**: Адаптер / Система конфигурации
 
 ---
 
-### [BUG-023] After modifying account configuration, adapter cache is not refreshed, causing account resolution failure
+### [BUG-023] Кэш адаптера не обновляется после изменения конфигурации учётной записи
 
-**Problem**: After users modify the account configuration of a multi-account adapter (such as filling in the token) through the Dashboard, the adapter still uses the old cache, and calling message sending related methods reports `No available account (account_id=default)`. The process must be restarted for the new configuration to take effect.
+**Проблема**: После изменения конфигурации учётной записи адаптера через Dashboard, адаптер по-прежнему использует старый кэш, и вызов методов, связанных с отправкой сообщений, приводит к ошибке `не найдена доступная учётная запись (account_id=default)`. Необходим полный перезапуск процесса, чтобы новые настройки вступили в силу.
 
-**Cause**: `_accounts_data` is only read from the configuration storage once in `BaseAdapter.__init__`, and is never refreshed afterwards. `AdapterManager._run_adapter()` and `restart()` do not re-read the account configuration before calling `adapter.start()`, causing the cache to be out of sync with the actual configuration.
+**Причина**: `_accounts_data` заполняется только один раз при инициализации `BaseAdapter` из хранилища конфигурации, после этого он не обновляется. `AdapterManager._run_adapter()` и `restart()` не перечитывают конфигурацию учётной записи перед вызовом `adapter.start()`, что приводит к тому, что кэш и фактические настройки расходятся.
 
-**Affected Version**: 2.4.6 - 2.5.4
+**Версии влияния**: 2.4.6 - 2.5.4
 
-**Fixed Version**: 2.5.4
+**Исправленная версия**: 2.5.4
 
-**Fixed Content**: In `AdapterManager._run_adapter()` and `restart()`, before calling `adapter.start()`, refresh `adapter._accounts_data = adapter.accounts` to ensure that the latest configuration is used each time the adapter starts.
+**Содержание исправления**: В `AdapterManager._run_adapter()` и `restart()` перед вызовом `adapter.start()` обновляется `adapter._accounts_data = adapter.accounts`, чтобы каждый раз использовать актуальные настройки.
 
-**Fixed Date**: 2026/07/09
+**Дата исправления**: 2026/07/09
 
-**Severity**: 🔴 Severe
+**Серьезность**: 🔴 Серьёзный
 
-**Type**: Adapter / Configuration System
+**Тип**: Адаптер / Система конфигурации
 
 ---
 
-### [BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill
+### [BUG-024] Запись больших числовых ID ключей в хранилище вызывает OOM Kill
 
-**Problem**: When calling `storage.set()` to write a nested key path containing a large numeric field (such as QQ group number 871684833), the process is killed by container OOM (exit code -9), causing the service to crash and unable to recover.
+**Проблема**: Вызов `storage.set()` для записи вложенного ключа с большим числовым полем (например, QQ-группой `871684833`) приводит к тому, что процесс убивается контейнером OOM Kill (код выхода -9), служба крашится и не может восстановиться.
 
-**Cause**: In the recursive implementation of `_set_nested_value`, pure numeric fields in the nested key path are mistakenly identified as list indices by `isdigit()`, triggering `current.extend([None] * (index - len(current) + 1))`, attempting to allocate hundreds of millions of list elements, instantly exhausting memory.
+**Причина**: Рекурсивная реализация `_set_nested_value` при обнаружении числового поля в пути ключа ошибочно интерпретируется как индекс списка, что приводит к попытке расширить `current` на `None` до нужного размера, пытаясь выделить список с миллиардами элементов, мгновенно исчерпывая память.
 
-**Root Cause Chain**:
+**Корневая цепочка**:
 ```
-Key path contains pure numeric field (such as group number 871684833)
-  → isdigit() mistakenly identifies as array index
-    → extend([None] * (871684833 - len(current) + 1))
-      → attempts to allocate hundreds of millions of elements
-        → memory exhausted → container OOM Kill (exit code -9)
+Путь ключа содержит числовое поле (например, QQ-группа 871684833)
+  → isdigit() ошибочно интерпретирует как индекс массива
+    → extend([None] * (index - len(current) + 1))
+      → попытка выделить массив с миллиардами элементов
+        → память исчерпана → контейнер OOM Kill (код выхода -9)
 ```
 
-**Affected Version**: 2.5.1 - 2.5.5
+**Версии влияния**: 2.5.1 - 2.5.5
 
-**Fixed Version**: 2.5.5
+**Исправленная версия**: 2.5.5
 
-**Fixed Content**:
-1. Always use a dictionary when pre-creating intermediate layers, no longer guessing the container type based on whether the next segment is a number
-2. Only when the container itself is a list and the index is less than `STORAGE_MAX_LIST_INDEX` (10000) do we process the index, and skip large indices safely
-3. Change the recursive implementation to an iterative one, eliminating potential infinite recursion risks in the original code
-4. Add `STORAGE_MAX_LIST_INDEX` constant to `Core/constants.py`, centrally managing the index safety limit
+**Содержание исправления**:
+1. При создании промежуточных уровней всегда используйте словарь, а не угадывайте тип контейнера на основе следующего сегмента
+2. При установке конечного значения, только если контейнер — список и индекс меньше `STORAGE_MAX_LIST_INDEX` (10000), обрабатывайте индекс, иначе безопасно пропустите
+3. Преобразуйте рекурсивную реализацию в итеративную, устраняя потенциальные бесконечные рекурсии
+4. Добавьте константу `STORAGE_MAX_LIST_INDEX` в `Core/constants.py`, централизованно управляя верхним пределом индекса
 
-**Fixed Date**: 2026/07/10
+**Дата исправления**: 2026/07/10
 
-**Reproduction Steps**:
+**Шаги воспроизведения**:
 ```python
-# Trigger by writing a nested key path containing a large number field (such as QQ group number)
+# Запись вложенного ключа с большим числовым полем (например, QQ-группа) вызывает OOM
 await sdk.storage.aset("groups.871684833.name", "某群")
-# → Process memory spikes instantly, killed by OOM
+# → память процесса мгновенно взлетает, процесс убивается OOM Kill
 ```
 
-**Regression Test**: `tests/unit/test_unit_storage.py` adds 4 regression test cases
-- `test_nested_key_numeric_segment_as_dict_key` — precisely reproduces the OOM scenario
-- `test_nested_key_numeric_segment_multiple` — multiple consecutive numeric fields all as dictionary keys
-- `test_nested_key_existing_list_index_set_within_limit` — existing list index set within limit
-- `test_nested_key_list_index_safety_limit` — safety limit verification for large indices
+**Тесты на повторное испытание**: `tests/unit/test_unit_storage.py` добавлено 4 теста
+- `test_nested_key_numeric_segment_as_dict_key` — точное воспроизведение сцены OOM
+- `test_nested_key_numeric_segment_multiple` — несколько числовых сегментов как ключи словаря
+- `test_nested_key_existing_list_index_set_within_limit` — существующий индекс списка в пределах
+- `test_nested_key_list_index_safety_limit` — ограничение большого индекса
 
-**Severity**: 🔴 Severe
+**Серьезность**: 🔴 Серьёзный
 
-**Type**: Storage
-
----
-
-### [BUG-025] on_config_update callback not triggered by core routes
-
-**Problem**: The `on_config_update(old, new)` callback is defined in the base class (`BaseModule` / `BaseAdapter`), but the core framework does not associate it with configuration change events. As a result, when the configuration is modified via the configuration management panel, it can be triggered, but when the `config.toml` file is manually edited or `setConfig()` is called, `on_config_update` is not triggered.
-
-**Cause**: `ConfigManager` emits `config.set` / `config.updated` lifecycle events when the configuration changes, but lacks the subscription logic to forward these events to each component's `on_config_update` method.
-
-**Root Cause Chain**:
-```
-Core does not subscribe to config.set / config.updated
-  → Configuration change events are not forwarded
-    → on_config_update is not called
-      → Manual file edit / code setConfig does not trigger hot update callback
-```
-
-**Affected Version**: All versions
-
-**Fixed Version**: 2.6.2
-
-**Fixed Content**: `ModuleManager` / `AdapterManager` register subscriptions for `config.set` (covering code `setConfig()` path) and `config.updated` (covering manual file edit path), match by configuration key prefix and call the corresponding component's `on_config_update`, passing type-safe configuration objects. Also fix `_flush_config()` writing file without synchronizing `_config_mtime`, avoiding framework's own write being mistakenly judged as external modification by file monitoring task and repeatedly triggering `config.updated`.
-
-**Compatibility Note**: The framework core now maintains configuration hot updates. Previously, the logic of triggering by the configuration management panel has been removed, and the panel must be upgraded synchronously after upgrading the framework, otherwise duplicate triggers (core + panel each trigger once) will occur. The signature and semantics of `on_config_update` remain unchanged, and subclasses do not need to modify.
-
-**Fixed Date**: 2026/07/23
-
-**Severity**: 🟡 Moderate
-
-**Type**: Configuration System
+**Тип**: Хранилище
 
 ---
 
-### [BUG-026] notice/request event reply target inference error
+### [BUG-025] Обратный вызов `on_config_update` не был подключен к ядру
 
-**Problem**: In group notification events (such as member joining a group `group_member_increase`), calling `event.reply()` sends the message to the user who triggered the event's private chat, not to the group where the event occurred. The same applies to friend notification events, where the reply target may be confused.
+**Проблема**: `on_config_update(old, new)` определён в базовых классах (`BaseModule` / `BaseAdapter`), но ядро фреймворка не подключает его к событию изменения конфигурации. На практике: при изменении конфигурации через панель управления конфигурации можно вызвать обратный вызов, но при ручном редактировании `config.toml` или коде `setConfig()` обратный вызов `on_config_update` не будет вызван.
 
-**Cause**: `infer_receive_type()` directly returns the `detail_type` as the session type. For message events, this is correct (the `detail_type` values `private`/`group` are the session types), but for notice/request events, the `detail_type` is a semantic sub-type (such as `group_member_increase`, `friend_increase`), not the session type. Subsequent `convert_to_send_type()` and `get_id_field()` lookups in the mapping table fail to find the value, defaulting to `"user"` / `"user_id"`, leading to the reply target being confused.
+**Причина**: `ConfigManager` при изменении конфигурации издаёт события `config.set` / `config.updated`, но отсутствует логика пересылки этих событий в обратный вызов `on_config_update` каждого компонента.
 
-**Root Cause Chain**:
+**Корневая цепочка**:
 ```
-notice event detail_type="group_member_increase"
-  → infer_receive_type() directly returns "group_member_increase"
-    → convert_to_send_type("group_member_increase") not in mapping table → default "user"
-    → get_id_field("group_member_increase") not in mapping table → default "user_id"
-      → target_id = event["user_id"]  ← new member's private chat (not the group)
+Ядро не подписывается на config.set / config.updated
+  → события изменения конфигурации не пересылаются
+    → on_config_update не вызывается
+      → ручное редактирование файла / код setConfig не вызывает обратного вызова горячего обновления
 ```
 
-**Affected Version**: All versions
+**Версии влияния**: Все версии
 
-**Fixed Version**: 2.7.0-dev.3
+**Исправленная версия**: 2.6.2
 
-**Fixed Content**: `infer_receive_type()` adds a check—only if `detail_type` is a known session type (standard type or custom type) is it directly returned; otherwise, the session type is inferred based on the ID field (`group_id` / `channel_id` / `user_id` etc.).
+**Содержание исправления**: `ModuleManager` / `AdapterManager` подписываются на события `config.set` (покрывает путь кода `setConfig()`) и `config.updated` (покрывает путь ручного редактирования файла), сопоставляя по префиксу конфигурации и вызывая соответствующий обратный вызов `on_config_update` компонента, передавая типобезопасные объекты конфигурации. Также исправлена проблема `_flush_config()` при записи файла без синхронизации `_config_mtime`, что могло привести к тому, что самопись в файле была ошибочно расценена как внешнее изменение и повторно вызвала `config.updated`.
 
-**Regression Test**: `tests/unit/test_unit_session_type.py` → `TestNoticeRequestTypeInference` (10 test cases)
+**Совместимость**: Горячее обновление конфигурации теперь централизованно поддерживается ядром. Ранее логика панели управления конфигурации, которая вызывала это, была удалена, поэтому после обновления фреймворка необходимо обновить панель управления конфигурации, иначе произойдёт двойной вызов (ядро + панель). Подпись и семантика метода `on_config_update` остались неизменными, подклассам не нужно изменять код.
 
-**Fixed Date**: 2026/07/29
+**Дата исправления**: 2026/07/23
 
-**Severity**: 🟢 Minor
+**Серьезность**: 🟡 Средний
 
-**Type**: Event System
-
----
-
-### [BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limiting rules to fail
-
-**Problem**: When routing rate limiting is configured as a long window rule (such as `100/hour`, `{"requests": 100, "window": 3600}`), the rate limiting is essentially ineffective—actual performance is close to `100/minute` (up to about 6000 requests per hour), completely failing to provide the expected hourly protection.
-
-**Cause**: `_apply_rate_limit` parses the actual `window` (maximum 3600 seconds) for each route, and per-request checks also use this window; however, the background cleanup task `_cleanup_expired_rate_limits` uses a fixed constant `DEFAULT_RATE_LIMIT_WINDOW_SECS` (60 seconds) as the cleanup threshold for all routes. Thus, time stamps earlier than 60 seconds are cleared by the cleanup task, so the hour window never accumulates close to 100 records, and the rate limiting is severely weakened.
-
-**Root Cause Chain**:
-```
-_apply_rate_limit parses window=3600 (100/hour)
-  → per-request check uses 3600s retention time (correct)
-  → but _cleanup_expired_rate_limits uses fixed max_window=60s to clean
-    → 60s old time stamps are cleared
-      → only the last 1 minute's records remain in the hour window
-        → 100/hour actually degrades to ~100/minute (relaxed by about 60 times)
-```
-
-**Affected Version**: 2.6.0-dev.0 - 2.7.0-dev.4
-
-**Fixed Version**: 2.7.0-dev.5
-
-**Fixed Content**: Add `_rate_limit_windows: dict[str, int]` to record the actual window for each route; `_apply_rate_limit` writes the window when creating the entry for the first time; `_cleanup_expired_rate_limits` cleans up based on each key's own window (fallback to default value if missing); clean up and maintain the two dictionaries synchronously during `stop()`.
-
-**Fixed Date**: 2026/07/31
-
-**Regression Test**: `tests/unit/test_unit_router.py` → `TestRateLimit::test_cleanup_respects_per_route_window`
-
-**Severity**: 🔴 Severe
-
-**Type**: Routing
+**Тип**: Система конфигурации
 
 ---
 
-### [BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions
+### [BUG-026] Ошибка определения целевого назначения ответа для событий уведомления/запроса
 
-**Problem**: When a user manually edits `config.toml` and saves it halfway (creating a temporary syntax error), the configuration listening background thread detects the mtime change, reloads the configuration, but fails to load and still broadcasts an empty configuration `{}` as `config.updated`, causing adapters/modules' `on_config_update` to receive an empty configuration, mistakenly assuming all configuration items have been cleared and reverting to default values. Additionally, the listener loop uses `except Exception: pass` to silently swallow all exceptions, making it impossible to diagnose faults.
+**Проблема**: При вызове `event.reply()` в событии уведомления (например, `group_member_increase`) сообщение отправляется в личную переписку пользователя, который вызвал событие, а не в группу, где произошло событие. Аналогично для событий уведомления о друзьях.
 
-**Cause**: Two overlapping defects:
-1. `_load_config` overwrites `self._cache` to `{}` when TOML syntax errors/permission errors occur, but the background listener thread `_watch_loop` and cache timeout path `_check_cache_validity` execute `_emit_config_updated()` unconditionally after calling `_load_config()`, broadcasting the "empty cache" produced by failed loading as a real change.
-2. `_watch_loop` uses `except Exception: pass` to not log any errors.
+**Причина**: `infer_receive_type()` возвращает `detail_type` как тип сессии. Для событий `message` это правильно (значения `detail_type` `private`/`group` — это типы сессии), но для событий `notice/request` `detail_type` — это семантический подтип (например, `group_member_increase`, `friend_increase`), а не тип сессии. В последующих `convert_to_send_type()` и `get_id_field()` в карте сопоставления не найдено этого значения, по умолчанию возвращается `"user"` / `"user_id"`, что приводит к отправке в личную переписку нового участника (а не в группу).
 
-**Root Cause Chain**:
+**Корневая цепочка**:
 ```
-User saves halfway → TOML syntax error
-  → _load_config() overwrites _cache = {}
-    → _watch_loop unconditionally _emit_config_updated(new_config={})
-      → adapters/modules on_config_update receive empty config
-        → mistakenly judge configuration as cleared, revert to default values
+notice событие detail_type="group_member_increase"
+  → infer_receive_type() возвращает "group_member_increase"
+    → convert_to_send_type("group_member_increase") не в карте → возвращается "user"
+    → get_id_field("group_member_increase") не в карте → возвращается "user_id"
+      → target_id = event["user_id"]  ← личная переписка нового участника (а не группа)
 ```
 
-**Affected Version**: 2.6.2-dev.1 - 2.7.0-dev.4
+**Версии влияния**: Все версии
 
-**Fixed Version**: 2.7.0-dev.5
+**Исправленная версия**: 2.7.0-dev.3
 
-**Fixed Content**:
-1. `_load_config` is changed to return `bool`; when TOML syntax errors/permission errors/other errors occur, the last valid cache is retained (not overwritten to `{}`), only diagnostic logs are recorded and `False` is returned
-2. `_watch_loop` and `_check_cache_validity` only emit `config.updated` when `_load_config()` returns `True`
-3. `_watch_loop`'s `except Exception` is changed to log at warning level (new i18n key `core.config.watcher_error`, synchronized for five languages)
+**Содержание исправления**: `infer_receive_type()` добавляет проверку — `detail_type` возвращается напрямую, только если он является типом сессии (стандартным или пользовательским); в противном случае по полю `id` (например, `group_id` / `channel_id` / `user_id`) определяется правильный тип сессии.
 
-**Fixed Date**: 2026/07/31
+**Тесты на повторное испытание**: `tests/unit/test_unit_session_type.py` → `TestNoticeRequestTypeInference` (10 тестов)
 
-**Regression Test**: `tests/unit/test_unit_config.py` → `test_malformed_toml_preserves_last_valid_cache`, `test_permission_denied_logs_clear_message` (updated to verify cache retention + return False)
+**Дата исправления**: 2026/07/29
 
-**Severity**: 🟡 Moderate
+**Серьезность**: 🟢 Лёгкий
 
-**Type**: Configuration System
+**Тип**: Система событий
 
 ---
 
-### [BUG-030] Configuration watcher race condition causes setConfig delayed write silently drops data
+### [BUG-027] Очистка маршрутизации с фиксированным окном приводит к сбоям в правилах длительного окна
 
-**Problem**: Multiple users report that after using `config.setConfig(key, value)` (default `immediate=False`), their module configuration is not written to `config.toml`, while other modules' configurations are normal. Setting `immediate=True` (force flush) can bypass this. Manifestation: configuration written during runtime is lost after the next restart, while configuration generated during startup remains.
+**Проблема**: При настройке ограничения скорости маршрутов на длительное окно (например, `100/hour`, `{"requests": 100, "window": 3600}`), ограничение не работает — фактически оно работает как `100/minute` (в час можно пропустить до 6000 запросов), не обеспечивая защиту на уровне часа.
 
-**Cause**: Two overlapping defects:
-1. **Logical defect**: `_watch_loop` unconditionally `_dirty_keys.clear()` when `_check_file_change()` returns `True`, discarding all pending write keys. However, `_check_file_change()` only uses `!=` to compare mtime, and the framework's own `_flush_config` write also changes mtime—although `_flush_config` updates `_config_mtime` after writing, the watcher thread may still observe mtime differences (and on coarse-grained file systems) between file write and mtime assignment, mistakenly judging it as "external modification" and clearing all pending write keys.
-2. **Thread defect**: `_watch_loop` operates `_write_timer`/`_dirty_keys` without holding `_lock`, causing data races with `setConfig` (holding lock to write `_dirty_keys`), `_schedule_write` (holding lock to write `_write_timer`).
+**Причина**: `_apply_rate_limit` анализирует полученный `window` (максимум 3600 секунд), проверка для каждого запроса также использует это окно; однако фоновая задача очистки `_cleanup_expired_rate_limits` использует фиксированную константу `DEFAULT_RATE_LIMIT_WINDOW_SECS` (60 секунд) в качестве общего порога для всех маршрутов. Таким образом, временные метки до 60 секунд удаляются, и в окне в часе никогда не накапливается около 100 записей, ограничение ослабляется.
 
-**Root Cause Chain**:
+**Корневая цепочка**:
 ```
-Module A setConfig(immediate=True) → flush writes, mtime changes
-  → User module setConfig(immediate=False) → enters _dirty_keys, flushes in 5s
-    → watcher polling, _check_file_change observes mtime difference from its own previous write
-      → _dirty_keys.clear() → user module's pending write keys are silently discarded
-        → configuration missing after restart
+_apply_rate_limit анализирует window=3600 (100/hour)
+  → проверка для запроса по 3600s сохраняет временные метки (правильно)
+  → но _cleanup_expired_rate_limits использует фиксированное max_window=60s для очистки
+    → временные метки до 60 секунд удаляются
+      → в окне в часе остаются только последние 1 минуту записей
+        → 100/hour фактически превращается в ~100/minute (ослабление примерно в 60 раз)
 ```
 
-**Affected Version**: 2.6.0 - 2.7.0
+**Версии влияния**: 2.6.0-dev.0 - 2.7.0-dev.4
 
-**Fixed Version**: 2.7.1
+**Исправленная версия**: 2.7.0-dev.5
 
-**Fixed Content**:
-1. Add `_last_self_write_mtime` field, `_flush_config` records it after writing; `_check_file_change` compares this value first when mtime changes, returns `False` if matches, judging it as self-write
-2. `_watch_loop` holds `_lock` throughout; retains `_dirty_keys` on true external modification (merge semantics), next flush merges with external content (dirty keys take precedence), no `clear()`
-3. `getConfig`/`_check_cache_validity` paths are unaffected (their reload does not clear dirty keys)
+**Содержание исправления**: Добавлен `_rate_limit_windows: dict[str, int]` для хранения окон для каждого store key; при создании записи `window` записывается; при очистке `_cleanup_expired_rate_limits` очищает по окну каждого key (если отсутствует, возвращается значение по умолчанию); при удалении записей и `stop()` синхронно поддерживаются два словаря.
 
-**Fixed Date**: 2026/08/06
+**Дата исправления**: 2026/07/31
 
-**Regression Test**: `tests/unit/test_unit_config.py` → `test_self_write_not_detected_as_external`, `test_external_change_preserves_dirty_keys`, `test_flush_merges_dirty_with_external`
+**Тесты на повторное испытание**: `tests/unit/test_unit_router.py` → `TestRateLimit::test_cleanup_respects_per_route_window`
 
-**Severity**: 🔴 Severe
+**Серьезность**: 🔴 Серьёзный
 
-**Type**: Configuration System
+**Тип**: Маршрутизация
 
 ---
 
-### [BUG-032] Configuration delay write period "write after read" reads old value
+### [BUG-029] Задача прослушивания конфигурации транслирует неполные TOML и молча поглощает исключения
 
-**Problem**: After `config.setConfig()` (default `immediate=False` delay about 5 seconds to flush), writing a dot-separated key, immediately reading its parent/ancestor node (such as `set_erispulse_section("scope.actions.MyModule", {...})` followed by `get_erispulse_config()`) returns the old value, the written sub-key "disappears" until the flush, affecting scope configuration hot updates and other "write-read-write" scenarios (2.8.0 test plugin `/t_section` case exposed).
+**Проблема**: При редактировании `config.toml` пользователем и сохранении его на полпути (создание временного файла с синтаксической ошибкой), задача прослушивания обнаруживает изменение mtime, перезагружает конфигурацию, но при неудачной загрузке `_load_config()` очищает `_cache` в `{}` и по-прежнему извещает `config.updated` с пустой конфигурацией, что приводит к тому, что обработчики `on_config_update` получают пустую конфигурацию и ошибочно возвращаются к значениям по умолчанию. Кроме того, задача прослушивания молча поглощает все исключения, что затрудняет диагностику сбоев watcher.
 
-**Cause**: `setConfig` stores dot-separated keys as **flat** entries in the dirty queue `_dirty_keys`, only `getConfig`'s **exact key query** hits the dirty queue; tree path queries (`getConfig("ErisPulse.scope")`) only walk the cache tree, not overlay dirty values—during the delay write period (`_flush_config` merges dirty keys into cache and clears the queue), a read-you-write read-write gap occurs.
+**Причина**: Две ошибки:
+1. `_load_config` при синтаксической ошибке TOML/ошибке доступа очищает `_cache` в `{}`, но фоновая задача `_watch_loop` и `_check_cache_validity` безусловно извещают `_emit_config_updated(new_config={})`, передавая "пустой кэш из-за неудачной загрузки" как реальное изменение.
+2. `_watch_loop` с `except Exception: pass` молча поглощает все исключения.
 
-**Affected Version**: 2.6.0 - 2.8.0-dev.1
+**Корневая цепочка**:
+```
+Пользователь сохраняет на полпути → синтаксическая ошибка TOML
+  → _load_config() очищает _cache = {}
+    → _watch_loop безусловно _emit_config_updated(new_config={})
+      → обработчики/модули on_config_update получают пустую конфигурацию
+        → ошибочно считают, что все настройки сброшены, и возвращаются к значениям по умолчанию
+```
 
-**Fixed Version**: 2.8.0-dev.1
+**Версии влияния**: 2.6.2-dev.1 - 2.7.0-dev.4
 
-**Fixed Content**: `getConfig` introduces dirty overlay semantics—① exact match dirty key returns directly (original behavior unchanged); ② dirty key is an ancestor of the query key → take the longest dirty ancestor, parse the remaining path in its value subtree; ③ dirty key is a descendant of the query key → build an overlay subtree (`_dirty_overlay`) and deeply merge it with the cache subtree (`_deep_merge`, override priority, do not modify original cache object). No dirty key walks the original fast path, zero additional overhead.
+**Исправленная версия**: 2.7.0-dev.5
 
-**Fixed Date**: 2026/09/04
+**Содержание исправления**:
+1. `_load_config` теперь возвращает `bool`; при синтаксической ошибке TOML/ошибке доступа `_cache` не очищается (остаётся предыдущим кэшем), записываются диагностические логи и возвращается `False`
+2. `_watch_loop` и `_check_cache_validity` извещают `config.updated` только при возвращении `True`
+3. `_watch_loop` с `except Exception` теперь записывает предупреждение (новый i18n ключ `core.config.watcher_error`, пять языков синхронно)
 
-**Regression Test**: `tests/unit/test_unit_config.py` → `test_get_config_overlays_dirty_descendant`, `test_get_config_overlay_merges_with_cache_siblings`, `test_get_config_overlay_new_branch`, `test_get_config_dirty_ancestor_query`, `test_get_config_dirty_exact_key_still_wins`
+**Дата исправления**: 2026/07/31
 
-**Severity**: 🟡 Moderate
+**Тесты на повторное испытание**: `tests/unit/test_unit_config.py` → `test_malformed_toml_preserves_last_valid_cache`, `test_permission_denied_logs_clear_message` (обновлено для проверки сохранения кэша и возвращения False)
 
-**Type**: Configuration System
+**Серьезность**: 🟡 Средний
 
----
-
-### [BUG-033] wait_reply suspended replies are starved by high-priority processors
-
-**Problem**: When a module calls `wait_reply()` to wait for a user reply, if that reply message is claimed by a higher-priority event processor (`mark_processed()`), the command dispatcher, seeing the `_processed` flag at the entry, directly returns, and the reply matching logic at the end of the dispatcher is never executed—the waiting party receives no reply, only timing out and returning `None`. Typical trigger scenario: robots using high-priority message processors (recording/auditing/blocking type) have random failures in all dialog interactions.
-
-**Cause**: Reply matching `_check_pending_reply` is placed at the end of `_handle_message` (only executed if the command is not matched), while `_processed` checking is before it—the order of claim checking and reply matching is reversed. Interaction waiting is a framework-level session continuation mechanism, not a competing processor, and should not be affected by other processors' claim.
-
-**Affected Version**: 2.2.0-dev.0 - 2.8.0-dev.1
-
-**Fixed Version**: 2.8.0-dev.2
-
-**Fixed Content**: Move reply matching to the entry of `_handle_message` (before `_processed` checking, only for message events): first try to complete the suspended conversation, if matched, the event is marked as processed, and the subsequent checks naturally short-circuit; if not matched, continue the original command matching process. The judgment chain delegates to a new interaction session manager (`Core/Event/interaction.py`), incidentally gaining session cancellation and permission review capabilities by affiliation.
-
-**Fixed Date**: 2026/09/08
-
-**Regression Test**: `tests/unit/test_unit_interaction.py` (TestRegisterResolve match/miss/claim flag), `tests/unit/test_unit_event.py` (full chain of wait_reply)
-
-**Severity**: 🟡 Moderate
-
-**Type**: Event System / Command System
+**Тип**: Система конфигурации
 
 ---
 
-### [BUG-034] Scope persist=False runtime binding is silently overwritten by any subsequent configuration write
+### [BUG-030] Гонка в задаче прослушивания конфигурации приводит к потере данных при отложенной записи setConfig
 
-**Problem**: `scope.set_module(..., persist=False)` and other runtime writes only modify the memory `self._data`; but scope subscribes to `config.set` / `config.updated` events, and any code writing configuration (such as a module loading and writing its default configuration) triggers scope to rebuild the configuration tree from the configuration file, causing all previous runtime bindings to be silently lost (reverting to default allow), with no log warning. Scenarios dependent on runtime bindings (Dashboard "runtime only" switches, module runtime dynamic disable) revert to behavior after unrelated module configuration writes.
+**Проблема**: Несколько пользователей сообщают, что использование `config.setConfig(key, value)` (по умолчанию `immediate=False`) после этого конфигурация модуля не записывается в `config.toml`, а другие конфигурации модуля сохраняются. Установка `immediate=True` (принудительная запись) решает проблему. Происходит так, что конфигурация, записанная во время выполнения, теряется после перезапуска, а конфигурация, сгенерированная при запуске, сохраняется.
 
-**Cause**: Root cause chain: `scope.set/delete(persist=False)` only writes memory (`Core/scope.py`) → any `setConfig` triggers `config.set` event → `_on_config_updated` unconditionally `_load_config()` → `_apply_tree()` replaces `self._data = {...}` with the entire tree → runtime bindings not in the configuration file are discarded.
+**Причина**: Две накладывающиеся ошибки:
+1. **Логическая ошибка**: `_watch_loop` при `_check_file_change()` возвращает `True` безусловно очищает `_dirty_keys`, но `_check_file_change()` использует только `!=` для сравнения mtime, запись `_flush_config()` сама изменяет mtime — хотя `_flush_config` обновляет `_config_mtime` после записи, задача прослушивания может обнаружить разницу mtime между записью и присвоением `_config_mtime` (а также на грубом масштабе файловой системы), и ошибочно расценивать это как "внешнее изменение", очищая все ожидающие ключи.
+2. **Ошибки потоков**: `_watch_loop` не захватывает `_lock` при операциях `_write_timer`/`_dirty_keys`, что приводит к гонке с `setConfig` (захватывает `_dirty_keys`), `_schedule_write` (захватывает `_write_timer`).
 
-**Affected Version**: 2.8.0-dev.1 - 2.8.0-dev.2
-**Fixed Version**: 2.8.0-dev.2
-**Fixed Content**: Introduce a runtime overlay layer `_runtime_overrides` (with deletion sentinel): `persist=False` writes/ deletes are recorded in the overlay, `apply_tree()` rebuilds the persistent layer and replays in insertion order, runtime rules remain effective after any configuration write; `persist=True` writes/ deletes clear corresponding overlay records (user persistence semantics take precedence); `config.set` filters by event key precisely, `config.updated` compares new and old scope sections, only rebuilding if scope actually changes (attaching to avoid unrelated writes flushing the decision LRU cache); add `unregister_by_owner()` for modules to clean up with the caller at unload. `Core.Event.overrides`'s persist=False runtime overwrites have a similar problem, and are fixed with the overlay architecture.
-**Fixed Date**: 2026/09/09
+**Корневая цепочка**:
+```
+Модуль A setConfig(immediate=True) → flush запись, mtime изменяется
+  → Пользовательский модуль setConfig(immediate=False) → входит в _dirty_keys, через 5s запись
+    → Задача прослушивания, _check_file_change обнаруживает разницу mtime от предыдущей записи
+      → _dirty_keys.clear() → ключи ожидающей записи пользователя молча теряются
+        → при перезапуске конфигурация отсутствует
+```
 
-**Reproduction Steps**: ① `scope.set_module("testplat", blocked=["TestB"], persist=False)` → decision False; ② any module executes `config.setConfig("HelpModule", {...})` → triggers scope rebuild; ③ `scope.is_allowed("testplat", None, "TestB")` returns True (expected still False).
-**关联**: Issue #432
-**Regression Test**: `tests/unit/test_unit_scope.py::TestRuntimeOverrideSurvival` (unrelated write survives/rebuild replay/delete sentinel/persistent clear/precise invalidation/owner cleanup)
+**Версии влияния**: 2.6.0 - 2.7.0
 
-**Severity**: 🟡 Moderate
-**Type**: Configuration System / Runtime
+**Исправленная версия**: 2.7.1
 
----
+**Содержание исправления**:
+1. Добавлено `_last_self_write_mtime`, при `_flush_config` записывается значение; при сравнении mtime в `_check_file_change` сначала сравнивается с этим значением, если совпадает, возвращается `False` как собственное изменение.
+2. Весь блок `_watch_loop` захватывает `_lock`; при обнаружении внешнего изменения сохраняются `_dirty_keys` (слияние), при следующей записи объединяются с внешними данными (ключи ожидания имеют приоритет), `_dirty_keys` не очищаются.
+3. `getConfig`/`_check_cache_validity` не затрагиваются (перезагрузка не очищает ключи ожидания)
 
-### [BUG-035] Configuration panel select options and dict fields render as [object Object]
+**Дата исправления**: 2026/08/06
 
-**Problem**: In the WebUI configuration panel, the select field options dropdown displays `[object Object]` (such as dynamically generated color style options); dict fields (such as `stalker_mode`, `knowledge_base`, etc.) without declared control types display `[object Object]` in the text box, making it impossible to view and edit normally.
+**Тесты на повторное испытание**: `tests/unit/test_unit_config.py` → `test_self_write_not_detected_as_external`, `test_external_change_preserves_dirty_keys`, `test_flush_merges_dirty_with_external`
 
-**Cause**: Two separate defects: ① The framework i18n resolver `_resolve_i18n_text` only restores dictionaries with an `i18n` key, but option labels are dictionaries with only a `default` key (no i18n key for dynamic text) and are passed through as-is, resulting in `[object Object]` after frontend `esc(label)` string coercion; ② The Dashboard rendering branch only handles JSON textarea for array types, dict values fall into the plain text input branch and are converted by `String()`. Additionally, if a module declares `_schema_meta` as a regular dataclass field (missing `ClassVar` annotation), it will be treated as a configuration field in the schema, exacerbating the confusion.
+**Серьезность**: 🔴 Серьёзный
 
-**Affected Version**: 2.7.0 - 2.8.0-dev.2
-**Fixed Version**: 2.8.0-dev.2
-**Fixed Content**: ① `_resolve_i18n_text` supports dictionaries with only a `default` key, restoring them to text; ② The framework schema/template/default value/filling/validation five places always exclude fields with underscore prefix (harmless if misdeclared); ③ Dashboard select option label objects are parsed as fallback (prioritizing `default`), dict/table fields are rendered as JSON textarea (save path as `tp=object` JSON.parse back, complete round trip).
-**Fixed Date**: 2026/09/09
-
-**Regression Test**: `tests/unit/test_unit_config.py::TestResolveI18nDefaultOnlyDict`, `TestSchemaUnderscoreFieldExclusion`
-
-**Severity**: 🟡 Moderate
-**Type**: Configuration System
+**Тип**: Система конфигурации
 
 ---
 
-### [BUG-036] Multi-instance shared configuration directory causes occasional configuration write failures (ENOENT)
+### [BUG-032] При чтении "после записи" получаем старое значение
 
-**Problem**: In Docker deployment scenarios (multiple containers mounting the same host configuration directory), the log occasionally shows two consecutive lines of `Failed to write configuration file ... [Errno 2] No such file or directory: '...config.toml.tmp' -> '...config.toml'`. This configuration write is discarded (the old configuration is fully retained, no configuration loss is observed), functionality is unaffected, but the alert repeats, interfering with troubleshooting, and pending configuration items must wait for the next write to be written.
+**Проблема**: При `config.setConfig()` (по умолчанию `immediate=False`, задержка около 5 секунд) записи точечного ключа, немедленное чтение его **родительского/предка** (например, `set_erispulse_section("scope.actions.MyModule", {...})` и вызов `get_erispulse_config()`) возвращает старое значение, записанное в подключённой ветви, исчезает, пока перезапись не произойдёт. Сценарии "запись-чтение-запись" с областью конфигурации затрагиваются (тестовый плагин `/t_section` обнаружил).
 
-**Cause**: The root cause chain: `_flush_config` / `setConfigTemplate` uses a **fixed-name** temporary file `config.toml.tmp` to carry new content, writes it without `fsync` and directly `rename()`s. Two ErisPulse instances sharing the same configuration directory may have B instance `open("w")` truncate A instance's ongoing temporary file → A's `rename` finds the target already taken or content truncated by B, reporting ENOENT (i.e., the user's log shows two consecutive error lines). In reported cases, only write failure alerts appear (old configuration retained); if the timing is more extreme, `rename` may output an empty/half-written `config.toml` (a potential risk, not yet exploded in real environments). In single-instance scenarios, ext4's delayed allocation also has a "rename metadata before data block" crash window (SIGKILL / power loss). `_file_lock` is a process-level `threading.RLock`, which has no constraint on cross-process/cross-container writes.
+**Причина**: `setConfig` помещает точечный ключ в очередь ожидания `_dirty_keys` в виде **плоской** структуры, только точечные запросы `getConfig` попадают в очередь; дерево запросов (`getConfig("ErisPulse.scope")`) только смотрит в кэш дерева, не добавляя значения из ожидания — до записи `_flush_config` объединяет значения из ожидания в кэш и очищает очередь, возникает разрыв между чтением и записью.
 
-**Affected Version**: 2.2.0-dev.0 - 2.8.0
+**Версии влияния**: 2.6.0 - 2.8.0-dev.1
 
-**Fixed Version**: 2.8.1
+**Исправленная версия**: 2.8.0-dev.1
 
-**Fixed Content**: Converge all configuration writes to `_atomic_write_text()`: generate a process-unique temporary file (eliminating fixed-name contention, multiple instances degrade to last-writer-wins, no more ENOENT) via `mkstemp` in the same directory → write and `flush + fsync` to force data to disk (eliminating the "rename effective but data not flushed" window) → `os.replace` atomically replaces the target (atomic on both POSIX/Windows, either the disk has the complete old content or the complete new content at any moment). On POSIX, additionally `fsync` the configuration directory. Three write points (`_flush_config`, `setConfigTemplate`, root directory configuration migration) all switch; exception path cleanup logic is restructured with the unique temporary filename. Add **multi-instance detection**: acquire an advisory lock (`flock` on POSIX / `msvcrt.locking` on Windows) to exclusively hold the configuration directory lock file `.erispulse_config.lock` at startup, output an i18n warning if occupied (does not block startup), and the lock is automatically released by the OS when the process exits, with no ghost locks.
+**Содержание исправления**: `getConfig` вводит логику добавления ожидания — ① точечный запрос попадает в очередь, возвращается (старое поведение); ② если ожидаемый ключ является предком запроса, возвращается самый длинный предок в значении поддерева; ③ если ожидаемый ключ является потомком запроса, создается объединённое поддерево (`_dirty_overlay`) и объединяется с поддеревом кэша (`_deep_merge`, приоритет override, без изменения исходного объекта кэша). Без ожидания — быстрый путь, без дополнительных накладных расходов.
 
-**Fixed Date**: 2026/09/13
+**Дата исправления**: 2026/09/04
 
-**Reproduction Steps**: ① Two containers mount the same host `config/` directory and run ErisPulse simultaneously; ② Trigger configuration write (such as module registration default configuration) in any instance; ③ Observe the log showing ENOENT write failure alerts, this write is discarded (old configuration retained).
+**Тесты на повторное испытание**: `tests/unit/test_unit_config.py` → `test_get_config_overlays_dirty_descendant`, `test_get_config_overlay_merges_with_cache_siblings`, `test_get_config_dirty_ancestor_query`, `test_get_config_dirty_exact_key_still_wins`
 
-**关联**: User report (1Panel container ×2)
+**Серьезность**: 🟡 Средний
 
-**Regression Test**: `tests/unit/test_unit_config_atomic_write.py` (complete content write / no temporary file residue / write failure preserves original file / dual-instance concurrent write always valid file / lock file creation / multi-instance warning / migration atomic write)
-
-**Severity**: 🟢 Minor
-
-**Type**: Configuration System
+**Тип**: Система конфигурации
 
 ---
 
-### [BUG-037] Space-separated command names registered as subcommands can never be triggered
+### [BUG-033] Ожидание ответа `wait_reply` заблокировано высокоприоритетным обработчиком
 
-**Problem**: After registering subcommands with space-separated multi-token command names (such as `@command("admin add")`), the command can be registered normally and appear in the help list, but when users send `/admin add`, the robot never responds—the input is matched as `admin` + parameter `["add"]` by the parent token command; if the parent token is also unregistered, there is no response at all. Only when using dot-separated naming (e.g., `admin.reload`, as a single token) can this be avoided.
+**Проблема**: При вызове модулем `wait_reply()` для ожидания ответа пользователя, если это сообщение было признано обработчиком с высоким приоритетом (`mark_processed()`), диспетчер команд в начале видит метку `_processed` и возвращает, не выполняя логику поиска ответа, которая находится в конце `_handle_message` (только если сообщение не соответствует команде) — ожидающий не получает ответ, ожидание истекает, и возвращается `None`. Типичные сценарии: роботы с обработчиками высокого приоритета (запись/аудит/блокировка) теряют случайность во всех диалоговых взаимодействиях.
 
-**Cause**: The root cause chain: `CommandHandler.__call__` stores any command name (including space-separated forms) as a flat key in `self.commands` → during distribution, `_try_execute_command` only matches the first token of the message (`cmd_name = parts[0]`) → multi-token command names as dictionary keys are never found. The registration and matching phases have inconsistent assumptions about the command name space, and there is no registration-time warning (silent failure).
+**Причина**: Логика поиска ответа `_check_pending_reply` находится в конце `_handle_message` (после `mark_processed`), а проверка `_processed` находится до неё — порядок проверки признания и поиска ответа перепутан. Ожидание диалога — это механизм продолжения сессии на уровне фреймворка, а не конкуренция обработчиков, он не должен зависеть от признания других обработчиков.
 
-**Affected Version**: From the introduction of the command system to 2.8.0
+**Версии влияния**: 2.2.0-dev.0 - 2.8.0-dev.1
 
-**Fixed Version**: 2.8.1
+**Исправленная версия**: 2.8.0-dev.2
 
-**Fixed Content**: The matching layer changes to **longest prefix matching**: from the longest candidate (`" ".join(parts[:n])`, n capped by the maximum token count of registered command names/aliases cached `_max_name_tokens`) try matching step by step, if matched, execute with the remaining tokens as parameters, downstream scope/ACL/overriding/master/permission chain naturally takes effect on the full command name. Accompanying semantics: when parent and child coexist, unregistered subcommands fall back to the parent command (unchanged historical behavior); if a subcommand does not declare `permission`, it inherits the nearest ancestor command's declared permission (protecting the parent command protects all its subcommands); only registering single-token commands matches in the first round, distribution overhead is consistent with the original. `unregister` / `unregister_by_owner` / full cleanup synchronously maintains the token count cache.
+**Содержание исправления**: Логика поиска ответа перемещается в начало `_handle_message` (до проверки `_processed`, только для событий `message`): сначала пытается завершить ожидающий диалог, если найден, событие помечается как обработанное, и дальнейшие проверки коротким замыканием; если не найдено, продолжается обычный процесс сопоставления команд. Также цепочка проверки делегируется новому менеджеру сессий взаимодействия (`Core/Event/interaction.py`), получая возможность отмены по принадлежности и перепроверки прав.
 
-**Fixed Date**: 2026/09/13
+**Дата исправления**: 2026/09/08
 
-**Reproduction Steps**: ① Module `@command("admin add")` registration; ② Send `/admin add x`; ③ Before fixing, no response (or caught by the unregistered `/admin` as a parameter), after fixing, `admin add` triggers and `get_command_args()` is `["x"]`.
+**Тесты на повторное испытание**: `tests/unit/test_unit_interaction.py` (TestRegisterResolve нахождение/не нахождение/метка признания), `tests/unit/test_unit_event.py` (весь цепочку wait_reply)
 
-**Regression Test**: `tests/unit/test_unit_command_subcommand.py` (longest prefix matching/only subcommands trigger/three-level nesting/case sensitivity two modes/single and multi-token aliases/event payload full name/lifecycle hooks full name/permission inheritance six examples/ACL glob full name/master/unregister fallback and cache recalculation)
+**Серьезность**: 🟡 Средний
 
-**Severity**: 🟡 Moderate
-
-**Type**: Event System
+**Тип**: Система событий / Команды
 
 ---
 
-### [BUG-038] persist=False runtime bindings are written to disk along with persistent writes, reviving from disk after module unloading
+### [BUG-034] Привязка времени жизни `persist=False` была восстановлена с диска после записи
 
-**Problem**: Runtime bindings written with `scope.set(path, value, persist=False)` (documented promise not to persist, lost after process restart, cleared after module unloading) are written to disk along with any unrelated `persist=True` write (default value, such as module `set_module` / WebUI save configuration), being diff-writt en to the user's `config.toml`; after the module is unloaded and the runtime binding is cleared, the binding is "revived" from disk after the next configuration reload, continuing to take effect and remaining after process restart—contrary to the "runtime binding does not persist" semantic contract, and extremely difficult to troubleshoot.
+**Проблема**: `scope.set_module(..., persist=False)` и другие привязки времени жизни изменяются только в `_data` памяти; но scope подписывается на события `config.set` / `config.updated`, и любое изменение конфигурации (например, другой модуль записывает свои значения по умолчанию) приводит к тому, что scope перестраивает дерево конфигурации, и все предыдущие привязки времени жизни теряются (возвращаются к значениям по умолчанию), без каких-либо предупреждений. Сценарии, зависящие от привязок времени жизни (панель "только во время выполнения", отключение модуля во время выполнения), возвращаются к поведению по умолчанию после записи конфигурации другим модулем.
 
-**Cause**: Root cause chain: `ScopeManager.set()` first writes the value to the memory configuration tree `_data` (runtime bindings are also directly written to `_data`) → the persistent branch makes a deep copy snapshot of the entire `_data` tree and submits it to `update_erispulse_config` for diff-writ e, mixing the runtime binding value into the snapshot. `delete(persist=True)` same source: the live reference (`parent` node) is handed over to the delayed write dirty queue, and during the delayed write period, the live reference exists in the dirty queue, causing a cross-write contamination window.
+**Причина**: Корневая цепочка: `scope.set/delete(persist=False)` записывает только в `_data` (Core/scope.py) → любое `setConfig` вызывает `config.set` событие → `_on_config_updated` безусловно `_load_config()` → `_apply_tree()` перезаписывает `_data = {...}` полностью, удаляя привязки времени жизни, не сохранённые в файле конфигурации.
 
-**Affected Version**: 2.8.0-dev.2 - 2.9.0-dev.0
+**Версии влияния**: 2.8.0-dev.1 - 2.8.0-dev.2
+**Исправленная версия**: 2.8.0-dev.2
+**Содержание исправления**: Введён слой перекрытия для времени жизни `_runtime_overrides` (включая маркер удаления): `persist=False` записи записываются в слой перекрытия, `apply_tree()` перестраивает постоянное дерево, затем воспроизводит перекрытие по порядку вставки, правила времени жизни остаются действительными после любой записи конфигурации; `persist=True` записи удаляют соответствующие записи перекрытия (приоритет пользовательского сохранения); `config.set` фильтруется по ключу события, `config.updated` сравнивает новую и старую часть scope, перестраивается только при фактическом изменении (включая избежание сбоя кэша LRU из-за записи, не связанной с конфигурацией); `unregister_by_owner()` для очистки при выгрузке модуля.
+`Core.Event.overrides` с persist=False также исправлены с архитектурой слоя перекрытия.
+**Дата исправления**: 2026/09/09
 
-**Fixed Version**: 2.9.0-dev.2
+**Шаги воспроизведения**: ① `scope.set_module("testplat", blocked=["TestB"], persist=False)` → возвращается False; ② любой модуль выполняет `config.setConfig("HelpModule", {...})` → вызывает перестройку scope; ③ `scope.is_allowed("testplat", None, "TestB")` возвращает True (ожидается False)。
+**Связано**: Issue #432
+**Тесты на повторное испытание**: `tests/unit/test_unit_scope.py::TestRuntimeOverrideSurvival` (не связанная запись сохраняется/перестройка воспроизводит/удаление маркера/удаление сохранения/точное отключение/очистка владельца)
 
-**Fixed Content**: Introduce a persistent baseline `_persisted_tree` (the configuration tree is refreshed and validated from the disk-loaded tree as the mirror of disk truth): `set(persist=True)` only applies this change to the baseline and submits the diff-writ e, keeping runtime bindings out of persistent content; "read after write" is changed to restore the memory final state snapshot directly, no longer through `_apply_tree` rebuild to avoid polluting the baseline. `delete(persist=True)` same口径: apply the deletion to the baseline and hand over a deep copy of the baseline subtree to the persistent layer; `set_action` replaces the entire rule, old rule keys do not remain in persistent content.
-
-**Fixed Date**: 2026/09/27
-
-**Reproduction Steps**: ① Module executes `scope.set("bots.p.debug_mode", {"blocked": ["X"]}, persist=False)`; ② Trigger any persistent write (such as another module calling `set_module`); ③ Open `config/config.toml`, the `debug_mode` is written (before fixing); ④ After unloading the module (runtime binding is cleared), trigger configuration reload, `scope.get("bots.p.debug_mode")` still returns the bound value.
-
-**Regression Test**: `tests/unit/test_unit_scope.py::TestPersistBaseline` (runtime bindings do not write to disk with unrelated persistent writes / do not revive after unloading and configuration reload / delete submits baseline subtree without runtime sibling keys / set_action replacement leaves no residual keys / cache_size configuration takes effect)
-
-**Severity**: 🔴 Severe
-
-**Type**: Configuration System
+**Серьезность**: 🟡 Средний
+**Тип**: Система конфигурации / Рантайм
 
 ---
 
-### [BUG-039] Conflicting reads and writes of sections and dot-separated keys (dot-separated overwrite lost)
+### [BUG-035] Веб-интерфейс конфигурации отображает select опции и dict поля как [object Object]
 
-**Problem**: During the delayed write window, when both whole-section write (`setConfig("Mod", {...})`, such as `BaseModule.cfg` writing back) and dot-separated write (`setConfig("Mod.key", v)`, such as configuration hot update / test tool overwrite) coexist, there are two variants: Variant A (read path) — `getConfig("Mod")` whole-section read returns the old section pending write snapshot, not seeing the later dot-separated overwrite (dot-separated read path is normal); Variant B (write path, heavier) — dot-separated write first, then whole-section write (common timing in test tools injecting overwrites → module `self.cfg = ...` writing back) — `flush` applies dirty keys in insertion order, whole-section write replaces the entire section, **dot-separated overwrite is permanently lost on disk**. Production environment "configuration hot update + module runtime write back" combination can trigger this, unrelated to test environment (ErisPulse-DailyCard test feedback exposed).
+**Проблема**: В веб-интерфейсе конфигурации поля select отображают `[object Object]` (например, динамически сгенерированные опции стиля цвета); необъявленные поля dict (например, `stalker_mode`, `knowledge_base` и т.д.) отображаются в текстовом поле как `[object Object]`, что затрудняет просмотр и редактирование.
 
-**Cause**: `getConfig` first segment (exact match in `_dirty_keys`) returns early `return self._dirty_keys[key]`, completely bypassing the fourth segment `_dirty_overlay` descendant overlay; `_flush_config` applies dirty keys in insertion order, whole-section write happens to be after dot-separated write, so dot-separated value is overwritten. Also: `getConfig` returning (exact match / ancestor subtree / overlay merge) returns (deepcopy isolated copy) the dirty queue object reference, modifying the returned dict in place directly changes the pending write state.
+**Причина**: Две отдельные ошибки: ① парсер i18n `_resolve_i18n_text` восстанавливает только словари с ключом `i18n`, метки опций с единственным ключом `default` (без ключа i18n для динамического текста) передаются без изменений, и фронтенд `esc(label)` строковое преобразование даёт `[object Object]`; ② ветвь рендеринга панели управления не отличает массив от объекта, и поля dict попадают в текстовое поле и преобразуются в строку `String()`; кроме того, если модуль объявляет `_schema_meta` как обычное поле dataclass (без аннотации `ClassVar`), оно будет рассматриваться как конфигурационное поле, усугубляя путаницу.
 
-**Affected Version**: 2.6.0 - 2.9.0-dev.2
+**Версии влияния**: 2.7.0 - 2.8.0-dev.2
+**Исправленная версия**: 2.8.0-dev.2
+**Содержание исправления**: ① `_resolve_i18n_text` поддерживает словари с единственным ключом `default` для восстановления в текст; ② пять мест в схеме/шаблоне/значениях по умолчанию/заполнении/валидации всегда исключают поля с подчёркиванием в начале (ошибочная декларация безвредна); ③ ветвь рендеринга панели управления для полей select и dict отображает как JSON textarea (сохраняя путь по `tp=object` для обратного JSON.parse при записи, полный roundtrip).
+**Дата исправления**: 2026/09/09
 
-**Fixed Version**: 2.9.0-dev.2
+**Тесты на повторное испытание**: `tests/unit/test_unit_config.py::TestResolveI18nDefaultOnlyDict`, `TestSchemaUnderscoreFieldExclusion`
 
-**Fixed Content**: In the dirty window, unify **specificity priority** semantics — dot-separated (more specific) pending values take precedence over whole-section (more general) pending values, read path and write path have the same口径: ① `getConfig` after exact match in dirty key still overlays `_dirty_overlay` descendant pending values (not dict value returns overlay subtree, same口径 as ③+④ scalar edges); ② `_flush_config` applies dirty keys in path depth order (ancestors first, descendants last, stable sort maintains insertion order at same depth). Cost: In the same dirty window (about 5 seconds), whole-section write back cannot overwrite still pending dot-separated write — read path fixed, read-modify-write naturally carries dot-separated value, actual impact surface is extremely small. ③ Involved dirty value `getConfig` returns (exact match / ancestor subtree / overlay merge) changed to `copy.deepcopy` isolated copy, no longer leaks dirty queue internal reference; no dirty key fast path and pure cache read behavior unchanged.
+**Серьезность**: 🟡 Средний
+**Тип**: Система конфигурации
 
-**Fixed Date**: 2026/09/28
+---
 
-**Reproduction Steps**: ① `setConfig("FB.y", 1)`; ② `setConfig("FB", {"z": 2})`; ③ `force_save()` — before fixing, only `[FB] z = 2` remains on disk (y lost), after fixing `{"y": 1, "z": 2}`; Variant A: steps ①② without saving directly `getConfig("FB")` — before fixing, `FB` does not contain `y`, after fixing, `y` is visible.
+### [BUG-036] Запись конфигурации в общую директорию конфигурации с несколькими экземплярами приводит к случайным сбоям (ENOENT)
 
-**Regression Test**: `tests/unit/test_unit_config.py::TestSectionAndDottedDirtyConsistency` (Variant A two insertion orders / Variant B write and order irrelevant / three-level mixed survival / isolated copy / ancestor subtree isolation)
+**Проблема**: В сценарии развертывания Docker (несколько контейнеров монтируют одну и ту же хост-директорию конфигурации), логи случайно выводят две последовательные ошибки "Failed to write configuration file ... [Errno 2] No such file or directory: '...config.toml.tmp' -> '...config.toml'". Эта запись конфигурации теряется (старая конфигурация сохраняется, без наблюдения потери конфигурации), функция не затрагивается, но предупреждения повторяются, мешая диагностированию, и ожидающие записи конфигурации должны ждать следующей записи, чтобы записаться.
 
-**Severity**: 🟡 Moderate
+**Причина**: Корневая цепочка: `_flush_config` / `setConfigTemplate` использует **фиксированное** имя временного файла `config.toml.tmp` для хранения новой информации, `write()` без `fsync` сразу `rename()`; два экземпляра ErisPulse, разделяющие одну директорию конфигурации, могут `open("w")` обрезать файл, который другой экземпляр пытается записать, что приводит к тому, что `rename` получает файл, который был взят или обрезан другим, вызывая `ENOENT` (как в сообщениях пользователей). В отчетах случаев только сообщается о сбое записи (старая конфигурация сохраняется); если перекрёстные временные файлы более экстремальные, `rename` может выдать пустой или частично записанный `config.toml` (потенциальный риск, не всплыл в реальных условиях). На одном экземпляре ext4 также существует окно сбоя, когда `rename` обновляет метаданные раньше, чем данные блоки записываются (SIGKILL / отключение питания).
 
-**Type**: Configuration System
+**Версии влияния**: 2.2.0-dev.0 - 2.8.0
+
+**Исправленная версия**: 2.8.1
+
+**Содержание исправления**: Запись конфигурации сводится к `_atomic_write_text()`: с помощью `mkstemp` в той же директории создаётся уникальный временный файл, запись завершается `flush + fsync` для принудительной записи данных (удаляет окно, когда `rename` обновляется, но данные не записываются), `os.replace` атомарно заменяет целевой файл (атомарно на POSIX/Windows, на диске всегда либо целая старая информация, либо целая новая информация); на POSIX дополнительно `fsync` директории конфигурации. Все три места записи (`_flush_config`, `setConfigTemplate`, миграция корневой конфигурации) переключаются; логика очистки пути ошибки перестраивается с уникальным именем временного файла. Добавлено **обнаружение нескольких экземпляров**: при запуске advisory lock (POSIX `flock` / Windows `msvcrt.locking`) на файл блокировки `.erispulse_config.lock` в директории конфигурации, если заблокировано, выводится i18n предупреждение (не блокирует запуск), блокировка автоматически освобождается ОС при завершении процесса, без призрачных блокировок.
+
+**Дата исправления**: 2026/09/13
+
+**Шаги воспроизведения**: ① Два контейнера монтируют одну и ту же хост-директорию `config/` и запускают ErisPulse; ② один из экземпляров вызывает запись конфигурации (например, установка модуля по умолчанию); ③ в логах появляются предупреждения об ошибке `ENOENT`, эта запись конфигурации теряется (старая конфигурация сохраняется).
+
+**Связано**: Сообщение пользователя (1Panel контейнер ×2)
+
+**Тесты на повторное испытание**: `tests/unit/test_unit_config_atomic_write.py` (полная запись данных / отсутствие временных файлов / сохранение файла при сбое / одновременная запись двух экземпляров всегда закончена / создание файла блокировки / предупреждение при нескольких экземплярах / атомарная запись миграции)
+
+**Серьезность**: 🟢 Лёгкий
+
+**Тип**: Система конфигурации
+
+---
+
+### [BUG-037] Команды с пробелами в имени не могут быть запущены
+
+**Проблема**: Регистрация подкоманды с пробелами в имени (например, `@command("admin add")`) работает нормально, команда появляется в списке помощи, но при отправке `/admin add` робот не отвечает — ввод интерпретируется как команда `admin` с параметрами `["add"]`; если команда `admin` также не зарегистрирована, ответа не будет. Только при использовании точечного имени (например, `admin.reload`, где всё одно слово) можно избежать проблемы.
+
+**Причина**: Корневая цепочка: `CommandHandler.__call__` сохраняет имя команды (с пробелами) в плоский словарь `self.commands` → при распределении `_try_execute_command` только первый токен сообщения сопоставляется (`cmd_name = parts[0]`) → команды с несколькими токенами в имени не могут быть найдены. Логика регистрации и распределения имеет несоответствующие предположения о пространстве имен команды, и нет предупреждений при регистрации (тихий сбой).
+
+**Версии влияния**: С момента введения системы команд до 2.8.0
+
+**Исправленная версия**: 2.8.1
+
+**Содержание исправления**: Логика распределения изменяется на **максимальное совпадение префиксов**: от самого длинного кандидата (например, `" ".join(parts[:n])`, где n ограничено максимальным количеством токенов в именах команд или псевдонимов, кэшируемое `_max_name_tokens`) постепенно до более коротких, сначала совпадение означает, что оставшиеся токены используются в качестве параметров, и下游 области/ACL/переопределения/master/права доступа применяются к полному имени команды. Сопутствующая семантика: когда родитель и подкоманда зарегистрированы, если подкоманда не зарегистрирована, она возвращается родительской команде (историческое поведение); если подкоманда не объявляет `permission`, она наследует ближайшую родительскую команду с объявленным правом доступа (защита родительской команды защищает все её подкоманды); только при регистрации одной команды, первый шаг совпадения, производительность распределения такая же, как и раньше. `unregister` / `unregister_by_owner` / полная очистка также сопутствует кэшированию количества токенов.
+
+**Дата исправления**: 2026/09/13
+
+**Шаги воспроизведения**: ① `@command("admin add")` регистрируется; ② отправляется `/admin add x`; ③ до исправления нет ответа (или принимается родительской командой как параметры), после исправления `admin add` срабатывает, и `get_command_args()` возвращает `["x"]`.
+
+**Тесты на повторное испытание**: `tests/unit/test_unit_command_subcommand.py` (максимальное совпадение префиксов/только подкоманда срабатывает/трехуровневая вложенность/регистрация имен с чувствительностью к регистру/псевдонимы с одним и несколькими токенами/событие полного имени/钩子 полного имени/права доступа наследуются/ACL glob полного имени/master/отмена возврата и пересчёт кэша)
+
+**Серьезность**: 🟡 Средний
+
+**Тип**: Система событий
+
+---
+
+### [BUG-038] Привязки времени жизни `persist=False` были восстановлены с диска
+
+**Проблема**: Привязки времени жизни, записанные с помощью `scope.set(path, value, persist=False)`, которые документально обещают не записываться на диск и исчезать после перезапуска процесса или отмены модуля, будут записаны в `config.toml` вместе с любым другим `persist=True` записью (значения по умолчанию, например, `set_module` / сохранение конфигурации через веб-интерфейс), затем, даже если модуль отменяет привязку, при перезагрузке конфигурации она будет восстановлена с диска и останется после перезапуска процесса — противоречит семантике "привязки времени жизни не записываются на диск", и трудно отследить.
+
+**Причина**: Корневая цепочка: `ScopeManager.set()` сначала записывает значение в дерево конфигурации `_data` (привязка времени жизни также записывается напрямую в `_data`), затем ветвь persist делает глубокую копию всего дерева `_data` и передаёт её в `update_erispulse_config` для разностной записи на диск; "запись после отмены" использует ссылку на родительский узел (parent) в очереди задержки, и во время задержки записи этот узел остаётся в очереди, существует окно утечки между записями.
+
+**Версии влияния**: 2.8.0-dev.2 - 2.9.0-dev.0
+
+**Исправленная версия**: 2.9.0-dev.2
+
+**Содержание исправления**: Введён базис для сохранения persist `_persisted_tree` (обновлённое дерево конфигурации из диска, проверенное и проверенное), как зеркало истины на диске: `set(persist=True)` только в базисе применяет текущее изменение и передаёт разностную запись в persist; привязки времени жизни никогда не попадают в persist контент. "Чтение после записи" использует быстрый снимок окончательного состояния памяти для восстановления, а не перестраивает базис. `delete(persist=True)` аналогично: в базисе применяет удаление и передаёт копию поддерева базиса в persist слой; `set_action` заменяет весь ключ, старые ключи не остаются в persist контенте.
+
+**Дата исправления**: 2026/09/27
+
+**Шаги воспроизведения**: ① модуль вызывает `scope.set("bots.p.debug_mode", {"blocked": ["X"]}, persist=False)`; ② вызывает любую persist запись (например, другой модуль вызывает `set_module`); ③ открывает `config/config.toml`, видит, что `debug_mode` записано (до исправления); ④ отменяет модуль (отменяет привязку времени жизни) и вызывает перезагрузку конфигурации, `scope.get("bots.p.debug_mode")` по-прежнему возвращает привязанное значение.
+
+**Тесты на повторное испытание**: `tests/unit/test_unit_scope.py::TestPersistBaseline` (привязки времени жизни не записываются при независимой persist записи / после отмены перезагрузки конфигурации не восстанавливаются / удаление передаёт поддерево базиса без ключей брата / set_action заменяет без остатка ключей / cache_size конфигурация вступает в силу)
+
+**Серьезность**: 🔴 Серьёзный
+
+**Тип**: Система конфигурации
+
+---
+
+### [BUG-039] Несовместимость чтения и записи при одновременном использовании полной записи и точечной записи (потеря точечного значения)
+
+**Проблема**: В окне задержки записи, при одновременном использовании полной записи (`setConfig("Mod", {...})`, например, `BaseModule.cfg` записывается обратно) и точечной записи (`setConfig("Mod.key", v)`, например, теплые обновления / тестовые инструменты перезаписывают), есть два варианта: вариант A (чтение по пути) — `getConfig("Mod")` полное чтение возвращает старый фрагмент ожидания, не видя более позднего точечного значения (точечное чтение по пути работает нормально); вариант B (запись по пути, более серьёзный) — если точечная запись идёт первой, а полная запись — второй (тестовый инструмент вставляет перезапись → модуль `self.cfg = ...` записывает обратно), при flush по порядку вставки, полная запись заменяет весь фрагмент, **потеря точечного значения на диске**. Продуктовая среда "тепловое обновление + модуль записывает обратно во время выполнения" может вызвать это, независимо от тестовой среды (ErisPulse-DailyCard тестовое сообщение обнаружило).
+
+**Причина**: `getConfig` в первом этапе (точное совпадение `_dirty_keys`) сразу `return self._dirty_keys[key]`, полностью обходя четвертый этап `_dirty_overlay` потомков; `flush` по порядку вставки `_dirty_keys` применяет значения, полная запись перезаписывает фрагмент, **потеря точечного значения**. Кроме того: ① `getConfig` точечное совпадение возвращает (точное совпадение `_dirty_keys`), но все еще добавляет `_dirty_overlay` потомков (не dict значение возвращает объединённое поддерево, как ③+④ края скаляров); ② `flush` по пути глубины сортирует `_dirty_keys`, полные/родительские сначала, точечные/потомки после, стабильная сортировка сохраняет порядок вставки при одинаковой глубине; ③ `getConfig` возвращающие (точное совпадение / предок поддерево / объединённое объединение) теперь возвращают `copy.deepcopy` изоляции ссылки, не утечка внутренней ссылки `_dirty_keys`; без dirty окно быстрый путь и чистое чтение кэша не изменяются.
+
+**Версии влияния**: 2.6.0 - 2.9.0-dev.2
+
+**Исправленная версия**: 2.9.0-dev.2
+
+**Содержание исправления**: В окне dirty единство **специфичности имеет приоритет** — точечные (более конкретные) значения dirty имеют приоритет над полными (более широкими) значениями dirty, как чтение, так и запись по пути имеют одинаковую семантику: ① `getConfig` точечное совпадение возвращает и добавляет `_dirty_overlay` потомков (не dict значение возвращает объединённое поддерево, как ③+④ края скаляров); ② `flush` сортирует `_dirty_keys` по пути глубины, полные/родительские сначала, точечные/потомки после, стабильная сортировка сохраняет порядок вставки при одинаковой глубине. Стоимость: в одном окне dirty (около 5 секунд) полная запись не может перезаписать ещё ожидающую точечную запись — чтение по пути исправлено, чтение-изменение-запись естественно несёт точечные значения, на самом деле влияет очень мало. ③ `getConfig` возвращающие (точное совпадение / предок поддерево / объединённое объединение) теперь возвращают `copy.deepcopy` изоляции копии, не утечка внутренней ссылки `_dirty_keys`; без dirty окно быстрый путь и чистое чтение кэша не изменяются.
+
+**Дата исправления**: 2026/09/28
+
+**Шаги воспроизведения**: ① `setConfig("FB.y", 1)`; ② `setConfig("FB", {"z": 2})`; ③ `force_save()` — до исправления на диске осталось только `[FB] z = 2` (y потеряно), после исправления `{"y": 1, "z": 2}`; вариант A: шаги ①② без сохранения, `getConfig("FB")` — до исправления не содержит `y`, после исправления видно.
+
+**Тесты на повторное испытание**: `tests/unit/test_unit_config.py::TestSectionAndDottedDirtyConsistency` (вариант A два порядка вставки / вариант B сохранение и независимо от порядка / три уровня живут / изоляция копии / предок поддерево изоляция)
+
+**Серьезность**: 🟡 Средний
+
+**Тип**: Система конфигурации
+
+---
+
+### [BUG-040] Команды, разбитые на несколько сегментов, теряют параметры в конце
+
+**Проблема**: Когда платформа разбивает одно сообщение на несколько сегментов текста (например, `/kick` и параметр между упоминанием и вводом метода ввода), диспетчер команд берёт только первый сегмент текста для сопоставления — `/艾特 @xxx 123` анализируется как команда `艾特` без параметров, объявленная команда с `args=` сообщает об отсутствии параметров, и не оставляет никаких следов.
+**Причина**: В `command.py` цикл извлечения текста берёт первый сегмент `type=="text"` и `break` — остальные сегменты (включая все не текстовые сегменты) отбрасываются.
+**Версии влияния**: 2.6.0 (введение диспетчера команд) - 2.10.0
+**Исправленная версия**: 2.10.1-dev.0
+**Содержание исправления**: Текст команды теперь собирается из всех сегментов `text`, объединяется пробелами; упоминания/изображения между сегментами больше не приводят к тому, что команда не может быть проанализирована; также улучшена устойчивость к искажённым сегментам (если `message` является None/строкой/некорректным сегментом, он не приводит к сбою диспетчера).
+**Тесты на повторное испытание**: tests/unit/test_unit_command_multiseg.py
+
+**Серьезность**: 🟡 Средний
+**Тип**: Система событий
+
+---
+
+### [BUG-041] После отказа в команде через alt_message вся цепочка перезапускается: повторные ответы и двойное выполнение побочных эффектов функций разрешения
+
+**Проблема**: Когда `alt_message` адаптера и текст сегмента сообщения не совпадают (например, alt содержит префикс упоминания @),命中 команды отклоняется правилом scope/ACL/master/permission, диспетчерер использует alt_message для повторного запуска всей цепочки — пользователь получает два сообщения "недостаточно прав", пользовательские функции разрешения (часто с побочными эффектами, такими как запрос базы данных или подсчет) вызываются дважды.
+**Причина**: Значение возврата `return False` для отказа и "не найдено команды" совпадают, диспетчерер считает, что может попробовать alt в качестве резервного варианта; однако событие было признано до отказа, повторный запуск повторяет только выполнение ответа и проверку разрешения.
+**Версии влияния**: 2.9.0 (управление/цепочка разрешения сформировалась) - 2.10.0
+**Исправленная версия**: 2.10.1-dev.0
+**Содержание исправления**: Текст обработки изменен на трёхсоставное соглашение (нечто не найдено/потреблено/отклонено) — после совпадения зарегистрированной команды (независимо от отказа) не будет повторного запуска alt; только если не найдена ни одна команда, останется резервный alt.
+**Тесты на повторное испытание**: tests/unit/test_unit_command_multiseg.py::test_denied_command_not_rerun_via_alt
+
+**Серьезность**: 🟡 Средний
+**Тип**: Система событий
+
+---
+
+### [BUG-042] Командный обработчик, зарегистрированный в wait_reply, потребляет ту же самую входящую команду
+
+**Проблема**: Внутри метода команды, вызывающего `wait_reply` / регистрирующего ожидание взаимодействия, ожидание потребляется той же самой командой, которая была отправлена — первый шаг диалога пропущен, "ответ пользователя" на самом деле является самим текстом команды (ответ не по теме / данные загрязнены).
+**Причина**: `_handle_message` вызывает `interaction.resolve` дважды — в начале и в конце; после выполнения команды второе завершение `resolve` срабатывает на ожидании, зарегистрированном во время выполнения; при отключении cmdpass отсутствие alt приводит к пустой строке, которая сразу проходит, усугубляя проблему.
+**Версии влияния**: 2.8.0 (система сессий взаимодействия введена) - 2.10.0
+**Исправленная версия**: 2.10.1-dev.0
+**Содержание исправления**: Диспетчерер сжимается в один `interaction.resolve` (в начале метода), удаляется второе завершение вызова; ожидание теперь потребляется следующим сообщением.
+**Тесты на повторное испытание**: tests/unit/test_unit_command_multiseg.py::test_wait_reply_not_consumed_by_command_trigger
+
+**Серьезность**: 🟡 Средний
+**Тип**: Система событий
+
+---
+
+### [BUG-043] select() с одним ключом для нескольких ожиданий перезаписывает последнее, отменяя первое
+
+**Проблема**: `event.select()` с несколькими ожиданиями, выводящими одинаковый ключ сессии (один пользователь, разные шаблоны, несколько ожиданий сессии и т.д.), последнее зарегистрированное ожидание отменяет первое, select немедленно выбрасывает `InteractionCancelled` вместо ожидаемого тайм-аута `(None, None)`, как заявлено в документации.
+**Причина**: Каждое ожидание вызывает `interaction.register` по отдельности, его взаимоисключающая семантика отменяет предыдущие ожидания с тем же ключом, отправляя `REASON_CONFLICT`; комментарий утверждает, что "для одного пользователя несколько путей из-за независимых копий событий не конфликтуют", что не выполняется — копии изменяют только `user_id`, для одного пользователя одинаковые ключи.
+**Версии влияния**: 2.9.0 (select введён) - 2.10.0
+**Исправленная версия**: 2.10.1-dev.0
+**Содержание исправления**: select изменён на объединённое ожидание — все ожидания объединяются в один элемент с пользовательским matcher (по ключу набора регистрируются, разделяются одинаковые будущие вызовы), любое совпадение возвращает соответствующий индекс; одинаковые ключи могут существовать одновременно.
+**Тесты на повторное испытание**: tests/unit/test_unit_command_multiseg.py::test_select_same_user_multi_branch
+
+**Серьезность**: 🟡 Средний
+**Тип**: Система событий
+
+---
+
+### [BUG-044] `BaseConverter.at()` генерирует устаревший сегмент "at" в OB11, все проверки упоминаний в фреймворке не распознают
+
+**Проблема**: При составлении входящего события с помощью `BaseConverter.at()` `must_at_bot` / `has_mention()` / `on_at_message` все проверки упоминаний и построения в фреймворке (MessageBuilder/декораторы модификации) используют OB12 "mention", двойной режим и отсутствуют какие-либо предупреждения.
+**Причина**: `at()` генерирует `{"type": "at"}` (формат OB11), в то время как вся проверка упоминаний и построение в фреймворке для OB12 "mention", две системы существуют параллельно без каких-либо предупреждений.
+**Версии влияния**: Не ранее 2.5.0 - 2.10.0
+**Исправленная версия**: 2.10.1-dev.0
+**Содержание исправления**: `at()` теперь генерирует `{"type": "mention", "data": {"user_id": ...}}` (метод name оставлен с alias, добавлен `mention` alias).
+**Тесты на повторное испытание**: tests/unit/test_unit_command_multiseg.py::test_converter_at_produces_mention
+
+**Серьезность**: 🟡 Средний
+**Тип**: Адаптер
+
+---
+
+### [BUG-045] Без alt_message адаптера, интерактивные примитивы вечно ждут, команды не проходят
+
+**Проблема**: Когда адаптер заполняет только `message` сегмент, а не `alt_message`, `confirm` / `choose` / `collect` ждут ответа пользователя на его текст (например, "да"); ожидающие зарегистрированные команды никогда не выполняются; `Event.get_text()` возвращает пустую строку, что делает примеры скелета молча неэффективными.
+**Причина**: Все эти пути берут `alt_message` напрямую, без возврата сегмента `text` — фреймворк "alt_message является необязательным полем адаптера" в соглашении, только заполнение сегмента является легальным форматом.
+**Версии влияния**: Все пять мест извлечения/проверки значений интерактивных примитивов, `cmdpass` проверка, `Event.get_text()/get_message_text()` с момента введения интерактивных примитивов до 2.10.0
+**Исправленная версия**: 2.10.1-dev.0
+**Содержание исправления**: Единый подход `alt_message` с приоритетом + возврат сегмента `text` для `extract_text` (в пяти точках извлечения/проверки значений интерактивных примитивов, `cmdpass` проверка, `Event.get_text()/get_message_text()`)
+**Тесты на повторное испытание**: tests/unit/test_unit_command_multiseg.py
+
+**Серьезность**: 🟡 Средний
+**Тип**: Система событий
