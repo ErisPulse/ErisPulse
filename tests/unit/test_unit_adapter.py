@@ -2686,7 +2686,7 @@ class TestBaseConverter:
 
         c = BaseConverter("t")
         assert c.text("hi") == {"type": "text", "data": {"text": "hi"}}
-        assert c.at("123") == {"type": "at", "data": {"user_id": "123"}}
+        assert c.at("123") == {"type": "mention", "data": {"user_id": "123"}}
         assert c.image("file.png") == {"type": "image", "data": {"file": "file.png"}}
 
     def test_convert_not_implemented(self):

@@ -60,7 +60,7 @@ RUN_PERSISTENT_CRASH_HINT_THRESHOLD: int = 3
 #           append_pyproject_dependencies 四处。
 # 修改影响: 真实 pip 依赖——pip 默认不解析预发布版本，该下限不得高于已发布的
 #           正式版本（与 create.py 的 _TEMPLATE_MIN_SDK_VERSION 同步升版）。
-INIT_ERISPULSE_DEPENDENCY: str = "erispulse>=2.9.0"
+INIT_ERISPULSE_DEPENDENCY: str = "erispulse>=2.10.0"
 
 __all__ = [
     "ADAPTER_ENTRY_POINT_GROUP",

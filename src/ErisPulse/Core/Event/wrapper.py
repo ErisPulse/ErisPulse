@@ -153,9 +153,17 @@ def register_event_mixin(platform: str, mixin_cls: type) -> int:
 
     registered = 0
 
+    _DICT_BUILTINS = frozenset(
+        ("get", "keys", "values", "items", "update", "pop", "popitem", "setdefault", "clear", "copy")
+    )
     for name, func in inspect.getmembers(mixin_cls, predicate=inspect.isfunction):
         if name.startswith("_"):
             continue
+        if name in _DICT_BUILTINS:
+            # Event 继承自 dict：mixin 覆盖 dict 内建名会静默破坏整个字典接口
+            logger.warning(
+                i18n.t("core.event.mixin_builtin_conflict", platform=platform, method=name)
+            )
         _platform_event_methods[platform][name] = func
         _record_event_method_owner(platform, name)
         registered += 1
@@ -338,7 +346,9 @@ async def _builtin_confirm(
     _all = _yes | _no
 
     def validator(event_dict: dict[str, Any]) -> bool:
-        text = event_dict.get("alt_message", "").strip().lower()
+        from ..text_match import extract_text
+
+        text = extract_text(event_dict).strip().lower()
         return text in _all
 
     actual_prompt = prompt
@@ -366,7 +376,9 @@ async def _builtin_confirm(
     if result is None:
         return None
 
-    text = result.get("alt_message", "").strip().lower()
+    from ..text_match import extract_text
+
+    text = extract_text(result).strip().lower()
     return text in _yes
 
 
@@ -475,7 +487,9 @@ async def _builtin_choose(
     valid_inputs = set(index_map.keys()) | set(lower_text_map.keys())
 
     def validator(event_dict: dict[str, Any]) -> bool:
-        text = event_dict.get("alt_message", "").strip().lower()
+        from ..text_match import extract_text
+
+        text = extract_text(event_dict).strip().lower()
         return text in valid_inputs
 
     if _is_text_method(method) or merge_prompt:
@@ -503,7 +517,9 @@ async def _builtin_choose(
     if result is None:
         return None
 
-    text = result.get("alt_message", "").strip().lower()
+    from ..text_match import extract_text
+
+    text = extract_text(result).strip().lower()
     if text in index_map:
         return index_map[text]
     if text in lower_text_map:
@@ -586,7 +602,9 @@ async def _builtin_collect(
                 if reply is None:
                     return None
 
-        result[key] = reply.get("alt_message", "").strip()
+        from ..text_match import extract_text
+
+        result[key] = extract_text(reply).strip()
 
     return result
 
@@ -759,17 +777,25 @@ class Event(dict):
         """
         获取纯文本内容
 
+        alt_message 优先（适配器提供的备用文本）；未提供时回退为消息段
+        中全部 text 段的顺序拼接——适配器只填 message 段时不再静默返回空串。
+
         :return: 纯文本内容
         """
-        return self.get_alt_message()
+        alt = self.get_alt_message()
+        if alt:
+            return alt
+        from ..text_match import extract_text
+
+        return extract_text(self)
 
     def get_message_text(self) -> str:
         """
-        获取纯文本内容（别名）
+        获取纯文本内容（别名，回退口径同 :meth:`get_text`）
 
         :return: 纯文本内容
         """
-        return self.get_alt_message()
+        return self.get_text()
 
     def has_mention(self) -> bool:
         """
@@ -781,8 +807,17 @@ class Event(dict):
         self_id = self.get_self_user_id()
 
         for segment in message_segments:
+            if not isinstance(segment, dict):
+                continue
             if segment.get("type") == "mention":
-                if segment.get("data", {}).get("user_id") == self_id:
+                data = segment.get("data")
+                segment_user_id = data.get("user_id") if isinstance(data, dict) else None
+                # 两侧 str() 归一：适配器透传平台原生 int 时不失配
+                if (
+                    segment_user_id is not None
+                    and self_id is not None
+                    and str(segment_user_id) == str(self_id)
+                ):
                     return True
         return False
 
@@ -796,8 +831,11 @@ class Event(dict):
         mentions = []
 
         for segment in message_segments:
+            if not isinstance(segment, dict):
+                continue
             if segment.get("type") == "mention":
-                user_id = segment.get("data", {}).get("user_id")
+                data = segment.get("data")
+                user_id = data.get("user_id") if isinstance(data, dict) else None
                 if user_id:
                     mentions.append(user_id)
 
@@ -1947,43 +1985,85 @@ class Event(dict):
         if not expectations:
             raise ValueError(i18n.t("core.interaction.select_requires_expectations"))
 
+        from ..text_match import compile_text_matcher
         from .interaction import interaction
 
+        # 聚合等待：全部期望合并为单个条目 + 自定义 matcher（任一路命中即唤醒）。
+        # 此前按路独立注册同键条目，后注册者会把先注册者以"冲突"静默取消，
+        # 被取消路抛 InteractionCancelled 直接击穿 select——尤其同 user 多路
+        # （派生键完全相同）必然触发。会话维度：任一路为 session 级则整条
+        # 等待挂会话键（任何人的回复都可进入逐路判定），user 限定在各路
+        # matcher 内自行把关
+        session_scope = any(exp.session for exp in expectations)
+        matched_index = [-1]
+
+        def _branch_predicate(exp: Expectation):
+            text_cond = compile_text_matcher(exp.pattern, exp.regex)
+
+            def _match(evt: "Event") -> bool:
+                if not exp.session and exp.user is not None:
+                    # user_id 两侧 str() 归一，适配器透传平台原生 int 时不失配
+                    evt_user = evt.get("user_id")
+                    if evt_user is None or str(evt_user) != str(exp.user):
+                        return False
+                if text_cond is not None and not text_cond(evt):
+                    return False
+                if exp.validator is not None:
+                    try:
+                        if not exp.validator(evt):
+                            return False
+                    except Exception:
+                        return False
+                return True
+
+            return _match
+
+        predicates = [_branch_predicate(exp) for exp in expectations]
+
+        def _combined_matcher(evt: "Event") -> bool:
+            for index, predicate in enumerate(predicates):
+                if predicate(evt):
+                    matched_index[0] = index
+                    return True
+            return False
+
         loop = asyncio.get_running_loop()
+        future = loop.create_future()
+
+        # 按分支键集合登记：全部条目共享同一 future 与聚合 matcher——
+        # 同键多路不再互踢；resolve 按键定位条目后由 matcher 逐路判定归属
         entries = []
-        futures = []
-        for exp in expectations:
-            evt = self
-            # 不同 user 的期望构造键区分的变体事件（同 user 多路也因事件副本独立而互不冲突）
-            if exp.user is not None:
-                evt = Event(dict(self))
-                evt["user_id"] = exp.user
-            future = loop.create_future()
-            entry = interaction.register(
-                evt,
-                future,
-                pattern=exp.pattern,
-                regex=exp.regex,
-                validator=exp.validator,
-                session_scope=exp.session,
+        seen_keys: set[str] = set()
+
+        def _register_variant(evt: "Event", is_session: bool) -> None:
+            key = interaction.make_session_key(evt) if is_session else interaction.make_key(evt)
+            if key in seen_keys:
+                return
+            seen_keys.add(key)
+            entries.append(
+                interaction.register(evt, future, session_scope=is_session, matcher=_combined_matcher)
             )
-            entries.append(entry)
-            futures.append(future)
+
+        if session_scope:
+            _register_variant(self, True)
+        _register_variant(self, False)
+        for exp in expectations:
+            if not exp.session and exp.user is not None:
+                variant = Event(dict(self))
+                variant["user_id"] = exp.user
+                _register_variant(variant, False)
 
         try:
-            done, _pending = await asyncio.wait(
-                futures, timeout=timeout, return_when=asyncio.FIRST_COMPLETED
-            )
+            done, _pending = await asyncio.wait([future], timeout=timeout)
         finally:
-            # 无论命中 / 超时 / 被取消，未消费的等待全部清理（已命中的条目已被移除，取消为幂等空操作）
+            # 无论命中 / 超时 / 被取消，未消费的等待统一清理（已命中的取消为幂等空操作）
             for entry in entries:
                 interaction.cancel(entry.key)
 
         if not done:
             return None, None
 
-        done_future = next(iter(done))
-        return futures.index(done_future), done_future.result()
+        return matched_index[0], future.result()
 
     def message_tx(self) -> "_MessageTx":
         """
@@ -2108,6 +2188,9 @@ class Event(dict):
         :return: Any - 属性值
         """
         platform = dict.get(self, "platform", "")
+        # 不可哈希的 platform（适配器违规塞 None/dict）按缺失处理，不击穿属性查找
+        if not isinstance(platform, str):
+            platform = ""
         # 1. 当前平台特定方法
         platform_methods = _platform_event_methods.get(platform)
         if platform_methods and name in platform_methods:

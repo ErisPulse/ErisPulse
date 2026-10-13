@@ -50,6 +50,13 @@ reply = await event.wait_reply("请输入金额:", regex=r"\d+\s*元", timeout=3
 reply = await event.wait_reply(session=True, prompt="哪位大佬帮忙答一下？")
 ```
 
+### 等待与命令的边界（命令穿透）
+
+等待期间收到**已注册命令**（如 `/cancel`）的消息时，默认放行给命令分发器执行、
+不作为回复消费（配置项 `ErisPulse.event.wait_reply.cmdpass`，`True` 则反转——
+消息一律作为回复）。判定文本口径与命令分发一致：`alt_message` 优先、
+缺失时回退消息段拼接（2.10.1 起纯 message 段适配器同样生效）。
+
 ### 等待会在什么时候被取消
 
 等待不再是"只能等超时"——以下情况会让等待**立即终止**（`wait_reply` 返回 `None`），
@@ -152,6 +159,15 @@ elif which == 1:
 `select` 与多线程 `asyncio.wait` 手工编排相比：期望未命中时自动清理、
 命中事件自动认领、权限复查与归属清理全部生效——不需要自己管任何 Future。
 {!--< /tips >!--}
+
+> [!NOTE]
+> 2.10.1 起 `select` 为**聚合等待**：全部期望合并为单条目 + 自定义命中判定，
+> 同键多路（如同一 user 挂两条不同 pattern）不再互相取消，任一路先命中即返回。
+> 回复文本的判定口径为 `alt_message` 优先 + 消息段回退（与命令分发一致）。
+>
+> 边界说明：`event.wait_for(...)` 直挂在适配器事件总线上，**不经过**中间件与
+> detail_type 条件过滤（身份准入由分发入口兜底）；需要完整管线的等待请用
+> `wait_reply` / `select`。
 
 ## 会话互斥：acquire / hold / get_owner_of
 

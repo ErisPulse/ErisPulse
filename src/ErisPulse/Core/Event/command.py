@@ -391,6 +391,10 @@ class CommandHandler:
                 # 使用函数名作为命令名
                 cmd_names = [func.__name__]
 
+            # 注册期校验（fail-fast）：空列表 / 非 str 名此前会 IndexError 或静默产出垃圾名
+            if not cmd_names or any(not isinstance(n, str) or not n for n in cmd_names):
+                raise ValueError(i18n.t("core.command.invalid_name", func=func.__qualname__))
+
             main_name = cmd_names[0]
 
             # 声明式参数/选项（args= / options=）注册期解析与校验（fail-fast）：
@@ -861,6 +865,16 @@ class CommandHandler:
             # （命中 / 取消路径条目已被移除，此处仅兜底超时路径的残留）
             interaction.cancel(wait_key)
 
+    # 文本处理三态结果（_process_text_for_command / _try_execute_command 的返回契约）：
+    # unmatched = 文本未解析出任何注册命令（允许 alt_message 兜底重试）；
+    # consumed  = 命令已执行 / 治理拦截 / 参数错误等已消费路径；
+    # rejected  = 命中注册命令但被 scope/ACL/master/permission 拒绝。
+    # 命中注册命令后（无论拒绝与否）不再用 alt_message 重跑整条链——
+    # 否则拒绝回复会重复发送、用户自定义权限函数副作用会双触发。
+    _STATE_UNMATCHED = "unmatched"
+    _STATE_CONSUMED = "consumed"
+    _STATE_REJECTED = "rejected"
+
     async def _handle_message(self, event: dict[str, Any]):
         """
         处理消息事件中的命令
@@ -914,7 +928,7 @@ class CommandHandler:
             )
             return
 
-        async def _process_text_for_command(event: "Event", text: str) -> bool:
+        async def _process_text_for_command(event: "Event", text: str) -> str:
             """
             处理文本内容，尝试匹配并执行命令
 
@@ -923,18 +937,25 @@ class CommandHandler:
 
             :param event: 消息事件数据
             :param text: 要处理的文本内容
-            :return: 是否成功执行命令
+            :return: 处理状态三态（unmatched / consumed / rejected，
+                     见 :attr:`_STATE_UNMATCHED` 系列常量）
+            {!--< /internal-use >!--}
             """
             if not text:
-                return False
+                return self._STATE_UNMATCHED
+
+            # 前导空白容忍："@bot /kick x" 场景下首段文本常以空格开头
+            # （mention 段后的空格随平台输入分段进入 text），不剥离则前缀永不命中
+            text = text.lstrip()
 
             # 处理大小写敏感性
             check_text = text if self.case_sensitive else text.lower()
             prefixes = self._prefixes if self.case_sensitive else [p.lower() for p in self._prefixes]
 
-            # 检查前缀，找出匹配的前缀（支持多个前缀）
+            # 检查前缀，找出匹配的前缀（支持多个前缀，最长优先——
+            # 避免 "/a" 抢占 "/ab" 导致后者整组命令不可达）
             matched_prefix = None
-            for prefix in prefixes:
+            for prefix in sorted(prefixes, key=len, reverse=True):
                 has_prefix = check_text.startswith(prefix)
                 has_space_prefix = self.allow_space_prefix and check_text.startswith(prefix + " ")
                 if has_prefix or has_space_prefix:
@@ -949,21 +970,32 @@ class CommandHandler:
                         user_id=event.get("user_id", ""),
                     )
                 )
-                return False
+                return self._STATE_UNMATCHED
 
             # 检查是否必须@机器人
             if self.must_at_bot:
                 detail_type = infer_receive_type(event)
                 # 一对一场景（private或user）不需要检查@
                 if detail_type not in (DETAIL_TYPE_PRIVATE, DETAIL_TYPE_USER):
-                    message_segments = event.get("message", [])
-                    self_id = event.get("self", {}).get("user_id")
+                    message_segments = event.get("message") or []
+                    self_id = event.get_self_account_id() or event.get("self", {}).get("user_id")
 
                     has_mention = False
-                    for segment in message_segments:
-                        if segment.get("type") == "mention" and segment.get("data", {}).get("user_id") == self_id:
-                            has_mention = True
-                            break
+                    if isinstance(message_segments, list):
+                        for segment in message_segments:
+                            if not isinstance(segment, dict):
+                                continue
+                            data = segment.get("data")
+                            segment_user_id = data.get("user_id") if isinstance(data, dict) else None
+                            # user_id 两侧 str() 归一：适配器透传平台原生 int 时不失配
+                            if (
+                                segment.get("type") == "mention"
+                                and segment_user_id is not None
+                                and self_id is not None
+                                and str(segment_user_id) == str(self_id)
+                            ):
+                                has_mention = True
+                                break
 
                     if not has_mention:
                         logger.trace(
@@ -973,37 +1005,52 @@ class CommandHandler:
                                 user_id=event.get("user_id", ""),
                             )
                         )
-                        return False
+                        # 文本是命令形态但未@机器人：判定为拒绝（alt_message
+                        # 走同样的段判定，重试不可能改变结果）
+                        return self._STATE_REJECTED
 
             # 尝试执行命令
             return await self._try_execute_command(event, text, matched_prefix)
 
-        # 从 message 列表和 alt_message 中提取文本内容
-        message_segments = event.get("message", [])
-        message_text = ""
-        for segment in message_segments:
-            if segment.get("type") == "text":
-                message_text = segment.get("data", {}).get("text", "")
-                break
+        # 从 message 段列表提取命令文本：按段顺序收集全部 text 段并以空格拼接——
+        # 平台常把一条消息切成多个 text 段（如 mention 前后各一段），只取首段会
+        # 静默丢失尾部参数。畸形输入全程容错（None / 字符串 / 非 dict 段 / data 非 dict）
+        message_segments = event.get("message") or []
+        raw_text_parts: list[str] = []
+        if isinstance(message_segments, str):
+            # OB11 遗留形态：适配器直接塞 CQ 码 / 纯文本字符串，按单段文本处理
+            if message_segments:
+                raw_text_parts.append(message_segments)
+        elif isinstance(message_segments, list):
+            for segment in message_segments:
+                if not isinstance(segment, dict):
+                    continue
+                if segment.get("type") != "text":
+                    continue
+                segment_data = segment.get("data")
+                segment_text = segment_data.get("text", "") if isinstance(segment_data, dict) else ""
+                if segment_text:
+                    raw_text_parts.append(segment_text)
+        message_text = " ".join(raw_text_parts)
 
         alt_message = event.get("alt_message", "")
 
-        # 尝试使用 message 列表的内容
+        # 三态流转：仅当文本未命中任何注册命令时才用 alt_message 兜底——
+        # 命中即止（无论执行 / 治理拦截 / 权限拒绝），杜绝拒绝链重复执行
+        command_state = self._STATE_UNMATCHED
         if message_text:
-            command_matched = await _process_text_for_command(event, message_text)
-            if command_matched:
-                return
+            command_state = await _process_text_for_command(event, message_text)
 
-        # 尝试使用 alt_message
-        if alt_message and alt_message != message_text:
-            command_matched = await _process_text_for_command(event, alt_message)
-            if command_matched:
-                return
+        if command_state == self._STATE_UNMATCHED and alt_message and alt_message != message_text:
+            command_state = await _process_text_for_command(event, alt_message)
 
-        # 决策链：带前缀的文本未命中任何注册命令（或非命令文本）——放行给消息处理器
+        if command_state != self._STATE_UNMATCHED:
+            return
+
+        # 决策链：带前缀的文本未命中任何注册命令（或非命令文本）——放行给消息处理器。
+        # 交互等待已在方法开头 resolve 过（单次判定），此处不再重复调用：
+        # 命令处理器内新注册的 wait_reply 不应被本条触发消息消费
         trace_step("dispatch", "passed", "core.trace.passed_to_message")
-        # 如果都没有匹配，检查是否是等待回复的消息
-        await self._check_pending_reply(event)
         return
 
     def _is_command_text(self, text: str) -> bool:
@@ -1024,11 +1071,13 @@ class CommandHandler:
         if not text:
             return False
 
+        # 前导空白容忍与最长前缀优先：口径与 _process_text_for_command 保持一致
+        text = text.lstrip()
         check_text = text if self.case_sensitive else text.lower()
         prefixes = self._prefixes if self.case_sensitive else [p.lower() for p in self._prefixes]
 
         matched_prefix = None
-        for prefix in prefixes:
+        for prefix in sorted(prefixes, key=len, reverse=True):
             has_prefix = check_text.startswith(prefix)
             has_space_prefix = self.allow_space_prefix and check_text.startswith(prefix + " ")
             if has_prefix or has_space_prefix:
@@ -1046,7 +1095,7 @@ class CommandHandler:
         cmd_name, _actual, _matched = self._resolve_command_tokens(parts)
         return cmd_name is not None
 
-    async def _try_execute_command(self, event: "Event", original_text: str, prefix: str) -> bool:
+    async def _try_execute_command(self, event: "Event", original_text: str, prefix: str) -> str:
         """
         尝试执行命令
 
@@ -1056,14 +1105,15 @@ class CommandHandler:
         :param event: 消息事件数据
         :param original_text: 原始文本内容（命令名匹配时按配置做大小写归一，参数保留原文）
         :param prefix: 已匹配的命令前缀（可能已转换为小写）
-        :return: 是否成功执行命令
+        :return: 处理状态三态（unmatched / consumed / rejected，
+                 见 :attr:`_STATE_UNMATCHED` 系列常量）
         """
         # 解析命令和参数：参数与 raw 载荷保留用户原始大小写（取自 original_text，
         # 前缀为配置字面量、在大小写归一前后长度一致），仅命令名匹配候选做归一
         command_text = original_text[len(prefix) :].strip()
         raw_parts = command_text.split()
         if not raw_parts:
-            return False
+            return self._STATE_UNMATCHED
 
         # 处理大小写敏感性：候选名归一化用于匹配，参数列表保留原始形式
         parts = raw_parts if self.case_sensitive else [part.lower() for part in raw_parts]
@@ -1087,7 +1137,7 @@ class CommandHandler:
                 text=f"{prefix}{raw_parts[0]}",
                 suggestion=suggestion or "",
             )
-            return False
+            return self._STATE_UNMATCHED
         args = raw_parts[matched:]
 
         # 命中即认领：文本已解析为一条注册命令，无论后续作用域 / ACL /
@@ -1127,7 +1177,8 @@ class CommandHandler:
             cmd_info = self.commands[actual_cmd_name]
             handler = cmd_info["func"]
 
-            # 作用域检查：模块未对该 Bot / 会话 / 平台启用时静默忽略（不回复、不认领）
+            # 作用域检查：模块未对该 Bot / 会话 / 平台启用时静默不回复
+            # （事件已在命令命中时统一认领，对低优先级处理器不可见）
             cmd_owner = cmd_info.get("owner")
             if cmd_owner:
                 from ..scope import scope
@@ -1146,7 +1197,7 @@ class CommandHandler:
                         command=actual_cmd_name,
                         module=cmd_owner,
                     )
-                    return False
+                    return self._STATE_REJECTED
 
             # 命令用户 ACL（event.overrides.acl）：命令名支持 glob
             # deny 命中 / allow 白名单未命中 / 严格模式无 ACL → 拒绝；
@@ -1172,7 +1223,7 @@ class CommandHandler:
                     )
                 )
                 await self._send_permission_denied(event)
-                return False
+                return self._STATE_REJECTED
 
             # 命令实现参数覆写（event.overrides.command）：覆盖 master / hidden / aliases / prefix 等
             # 覆写键 master 由 overrides.command.apply 统一映射到存储键 must_master（用户优先）
@@ -1201,7 +1252,7 @@ class CommandHandler:
                         )
                     )
                     await self._send_permission_denied(event)
-                    return False
+                    return self._STATE_REJECTED
 
             # 检查权限：子命令未声明权限时继承最近声明了权限的祖先命令
             # （如 /admin 声明权限后，/admin add 等子命令自动受同一权限保护）
@@ -1233,7 +1284,7 @@ class CommandHandler:
                             command=actual_cmd_name,
                         )
                         await self._send_permission_denied(event)
-                        return False
+                        return self._STATE_REJECTED
                 except Exception as e:
                     logger.error(i18n.t("core.command.permission_check_error", error=e))
                     trace_step(
@@ -1244,7 +1295,7 @@ class CommandHandler:
                         error=str(e),
                     )
                     await self._send_permission_denied(event)
-                    return False
+                    return self._STATE_REJECTED
 
             # 添加命令相关信息到事件（合并覆写后的有效参数）
             # owner：注册该命令的模块（懒激活占位命令即目标模块），
@@ -1261,6 +1312,9 @@ class CommandHandler:
                 "owner": cmd_info.get("owner"),
             }
 
+            if "command" in event:
+                # 平台 payload 透传了同名键：框架写入会覆盖原始数据，告警留痕
+                logger.warning(i18n.t("core.command.key_collision", platform=event.get("platform", UNKNOWN_PLATFORM)))
             event["command"] = command_info
 
             # 认领已在命令命中时完成（见上方 mark_processed），
@@ -1325,7 +1379,7 @@ class CommandHandler:
                             "error": error_text,
                         },
                     )
-                    return True
+                    return self._STATE_CONSUMED
 
             # 治理判定（cooldown / rate_limit / usage，EPRFC-2026-001 方向七）：
             # 位于全部权限检查与参数解析之后——无权限用户不触发计时，
@@ -1335,15 +1389,15 @@ class CommandHandler:
             if await self._gate.check_cooldown(
                 cmd_info["main_name"], actual_cmd_name, _effective, event, self._send_args_error
             ):
-                return True
+                return self._STATE_CONSUMED
             if await self._gate.check_rate_limit(
                 cmd_info["main_name"], actual_cmd_name, _effective, event, self._send_args_error
             ):
-                return True
+                return self._STATE_CONSUMED
             if await self._gate.check_usage(
                 cmd_info["main_name"], actual_cmd_name, _effective, event, self._send_args_error
             ):
-                return True
+                return self._STATE_CONSUMED
 
             # 废弃声明（deprecated=）：调用时自动回复废弃文案；默认继续执行，
             # deprecated_reject=True 时拒绝执行（命令已认领，不漏给消息处理器）
@@ -1379,7 +1433,7 @@ class CommandHandler:
                             "error": "deprecated",
                         },
                     )
-                    return True
+                    return self._STATE_CONSUMED
                 trace_step(
                     "deprecated",
                     "notice",
@@ -1455,7 +1509,7 @@ class CommandHandler:
                     },
                 )
 
-            return True
+            return self._STATE_CONSUMED
 
         logger.trace(
             i18n.t(
@@ -1465,7 +1519,7 @@ class CommandHandler:
                 user_id=event.get("user_id", ""),
             )
         )
-        return False
+        return self._STATE_UNMATCHED
 
     async def _check_pending_reply(self, event: "Event"):
         """

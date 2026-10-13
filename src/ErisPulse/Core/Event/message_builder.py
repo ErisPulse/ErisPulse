@@ -81,6 +81,8 @@ class MessageBuilder:
     def _mention_inst(
         self, user_id: str, user_name: str | None = None
     ) -> "MessageBuilder":
+        if not user_id:
+            raise ValueError("mention() 需要非空 user_id")
         data: dict[str, Any] = {"user_id": user_id}
         if user_name is not None:
             data["user_name"] = user_name
@@ -88,6 +90,8 @@ class MessageBuilder:
         return self
 
     def _reply_inst(self, message_id: str) -> "MessageBuilder":
+        if not message_id:
+            raise ValueError("reply() 需要非空 message_id")
         self._segments.append({"type": "reply", "data": {"message_id": message_id}})
         return self
 
@@ -185,7 +189,9 @@ class MessageBuilder:
         >>> segments = MessageBuilder().text("Hello").image("url").build()
         >>> # [{"type": "text", "data": {"text": "Hello"}}, {"type": "image", "data": {"file": "url"}}]
         """
-        return list(self._segments)
+        import copy as _copy
+
+        return _copy.deepcopy(self._segments)
 
     # ==================== 工具方法 ====================
 

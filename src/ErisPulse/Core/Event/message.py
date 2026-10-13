@@ -248,14 +248,22 @@ class MessageHandler:
         """
 
         def condition(event: dict[str, Any]) -> bool:
-            # 检查消息中是否有@机器人
-            message_segments = event.get("message", [])
-            self_id = event.get("self", {}).get("user_id")
+            # 检查消息中是否有@机器人（self 取 account_id or user_id；
+            # user_id 两侧 str() 归一，畸形段容错跳过）
+            message_segments = event.get("message") or []
+            self_info = event.get("self") or {}
+            self_id = self_info.get("account_id") or self_info.get("user_id")
 
             for segment in message_segments:
+                if not isinstance(segment, dict):
+                    continue
+                data = segment.get("data")
+                segment_user_id = data.get("user_id") if isinstance(data, dict) else None
                 if (
                     segment.get("type") == "mention"
-                    and segment.get("data", {}).get("user_id") == self_id
+                    and segment_user_id is not None
+                    and self_id is not None
+                    and str(segment_user_id) == str(self_id)
                 ):
                     return True
             return False
