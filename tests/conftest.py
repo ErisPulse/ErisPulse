@@ -103,11 +103,14 @@ def _protect_repo_config() -> Generator[None, None, None]:
     """
     会话级备份/还原仓库根 config/config.toml
 
-    问题背景：单测的 ``persist=True`` 写入（scope / overrides ACL 等）落在
-    进程 cwd 的真实用户配置上且测试结束不清理——残留的 ACL / 覆写节会让
-    后续测试运行（以及本地真实开发）被静默改变行为（如命令被 ACL 拒绝）。
+    问题背景：单测的 ``persist=True`` 写入（scope / overrides ACL、模块启用态
+    自动写等）落在进程 cwd 的真实用户配置上且测试结束不清理——残留的 ACL /
+    覆写节 / 模块禁用标记会让后续测试运行（以及本地真实开发）被静默改变行为
+    （如命令被 ACL 拒绝、模块调用报"未启用"）。
 
-    会话开始备份、结束还原；开始时不存在的文件在结束时移除。
+    会话开始备份后**换入空白配置**再跑测试——测试期读写全部落在临时内容上，
+    与维护者真实配置彻底隔离（单纯备份还原会在还原时把历史污染原样带回，
+    自我延续）。结束还原；开始时不存在的文件在结束时移除。
 
     {!--< internal-use >!--}
     """
@@ -117,6 +120,9 @@ def _protect_repo_config() -> Generator[None, None, None]:
     backup: bytes | None = None
     if config_path.exists():
         backup = config_path.read_bytes()
+        # 干净隔离：换入空白配置（框架全部行为走内存默认值），
+        # 使测试既读不到历史污染、也不会把污染继续写回真实文件
+        config_path.write_bytes(b"")
     yield
     try:
         # 先丢弃未刷盘的脏写入（防止还原后被 atexit/延迟刷盘再次覆盖）
