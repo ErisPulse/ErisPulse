@@ -4088,12 +4088,12 @@
         "title": "`_create_task(coro) -> Awaitable[Any]`"
       }
     ],
-    "`_create_uvicorn_server(config: 'uvicorn.Config') -> 'tuple[uvicorn.Server, Callable[[], Any]]'`": [
+    "`_create_uvicorn_server(config: uvicorn.Config) -> tuple[uvicorn.Server, Callable[[], Any]]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
         "line": 1218,
         "level": 5,
-        "title": "`_create_uvicorn_server(config: 'uvicorn.Config') -> 'tuple[uvicorn.Server, Callable[[], Any]]'`"
+        "title": "`_create_uvicorn_server(config: uvicorn.Config) -> tuple[uvicorn.Server, Callable[[], Any]]`"
       }
     ],
     "`_ctx_key(ctx: dict) -> str`（staticmethod）": [

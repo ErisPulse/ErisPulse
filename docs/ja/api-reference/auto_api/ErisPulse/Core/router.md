@@ -1215,7 +1215,7 @@ router 中间件配置变更回调：CORS/安全头需重启进程才能生效
 ---
 
 
-##### `_create_uvicorn_server(config: 'uvicorn.Config') -> 'tuple[uvicorn.Server, Callable[[], Any]]'`
+##### `_create_uvicorn_server(config: uvicorn.Config) -> tuple[uvicorn.Server, Callable[[], Any]]`
 
 构建 uvicorn.Server 并解析内嵌启动入口（私有接口缺失时告警回退）
 
