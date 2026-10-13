@@ -2911,8 +2911,8 @@ class RouterManager:
                         pass
 
     def _create_uvicorn_server(
-        self, config: "uvicorn.Config"
-    ) -> "tuple[uvicorn.Server, Callable[[], Any]]":
+        self, config: uvicorn.Config
+    ) -> tuple[uvicorn.Server, Callable[[], Any]]:
         """
         构建 uvicorn.Server 并解析内嵌启动入口（私有接口缺失时告警回退）
 
