@@ -54,6 +54,10 @@ OneBot12 事件转换器基类
 
 构造 @ 消息段
 
+方法名保留 ``at`` 别名，产出为 OB12 规范的 ``mention`` 段——
+此前产出 ``{"type": "at"}``（OB11 遗留形态），框架全部 mention
+判定（must_at_bot / has_mention / on_at_message）均不识别该形态。
+
 ---
 
 

@@ -345,7 +345,7 @@ async def old(event): ...
 ---
 
 
-##### `async _try_execute_command(event: 'Event', original_text: str, prefix: str) -> bool`
+##### `async _try_execute_command(event: 'Event', original_text: str, prefix: str) -> str`
 
 尝试执行命令
 
@@ -356,7 +356,9 @@ async def old(event): ...
 - **original_text**: 原始文本内容（命令名匹配时按配置做大小写归一，参数保留原文）
 - **prefix**: 已匹配的命令前缀（可能已转换为小写）
 
-**返回值**: 是否成功执行命令
+**返回值**: 处理状态三态（unmatched / consumed / rejected，
+
+         见 :attr:`_STATE_UNMATCHED` 系列常量）
 
 ---
 

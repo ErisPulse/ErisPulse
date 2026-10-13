@@ -17708,7 +17708,14 @@ reply = await event.wait_reply("請輸入金額:", regex=r"\d+\s*元", timeout=3
 reply = await event.wait_reply(session=True, prompt="哪位大神幫忙答一下？")
 ```
 
-### 等待會在什麼時候被取消
+### 等待與命令的邊界（命令穿透）
+
+等待期間收到**已註冊命令**（如 `/cancel`）的訊息時，預設放行給命令分發器執行、
+不作為回覆消費（設定項 `ErisPulse.event.wait_reply.cmdpass`，`True` 則反轉——
+訊息一律作為回覆）。判定文字口徑與命令分發一致：`alt_message` 优先、
+缺失時回退訊息段拼接（2.10.1 起純 message 段適配器同樣生效）。
+
+### 等待什麼時候會被取消
 
 等待不再是「只能等超時」——以下情況會讓等待**立即終止**（`wait_reply` 返回 `None`），
 而不是讓呼叫方一直等到超時：
@@ -17719,10 +17726,10 @@ reply = await event.wait_reply(session=True, prompt="哪位大神幫忙答一下
 | 適配器關閉 / 重啟 | `platform_stop` | 該平台掛起的等待全部取消 |
 | 同會話被新的等待 / 租約取代 | `conflict` | 見下方「會話仲裁」 |
 | 回覆者被拉黑 / owner 模組被解綁 | `revoked` | 回覆命中的**權限複查**：scope 身份維度 + 模組維度 |
-| 使用者回覆命中 | —— | 正常路徑，回傳回覆事件 |
+| 用戶回覆命中 | —— | 正常路徑，返回回覆事件 |
 
 底層異常為 `InteractionCancelled`（掛在 `InteractionError` 異常體系下），
-`wait_reply` 已將其轉換為回傳 `None`；需要原因的呼叫方可直接使用
+`wait_reply` 已將其轉換為返回 `None`；需要原因的呼叫方可直接使用
 `sdk.interaction.register()` 低層 API。
 
 ### 回覆命中的完整判定鏈
@@ -17781,8 +17788,7 @@ event.escalate(1800, lambda e: notify_master(f"工單 30 分鐘未處理：{even
 
 ## 多路等待：expect + select
 
-同時掛起多條期望，**先到先得**——典型場景：等管理員審批的同時等使用者撤回、
-多人協作投票。
+同時掛起多條期望，**先到先得**——典型場景：等待管理員審批的同時等待使用者撤回、多人協作投票。
 
 ```python
 which, reply = await event.select(
@@ -17810,6 +17816,15 @@ elif which == 1:
 `select` 與多執行緒 `asyncio.wait` 手工編排相比：期望未命中時自動清理、
 命中事件自動認領、權限複查與歸屬清理全部生效——不需要自己管任何 Future。
 {!--< /tips >!--}
+
+> [!NOTE]
+> 2.10.1 起 `select` 為**聚合等待**：全部期望合併為單條目 + 自訂命中判定，
+> 同鍵多路（如同一 user 掛兩條不同 pattern）不再互相取消，任一路先命中即返回。
+> 回覆文字的判定口徑為 `alt_message` 優先 + 消息段回退（與命令分發一致）。
+>
+> 边界說明：`event.wait_for(...)` 直掛在適配器事件總線上，**不經過**中間件與
+> detail_type 條件過濾（身份准入由分發入口兜底）；需要完整管線的等待請用
+> `wait_reply` / `select`。
 
 ## 會話互斥：acquire / hold / get_owner_of
 

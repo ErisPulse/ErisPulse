@@ -435,7 +435,7 @@
           "icon": "fa-user-tag"
         },
         {
-          "title": "交互会話システム",
+          "title": "交互会话システム",
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"

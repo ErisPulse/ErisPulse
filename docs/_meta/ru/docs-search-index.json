@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1749,
+  "total_keywords": 1754,
   "keywords": {
     "0 Успешно (OK)": [
       {
@@ -2568,14 +2568,6 @@
         "title": "BaseI18n / I18nKey (объявления ключей перевода)"
       }
     ],
-    "Bug Tracker": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1,
-        "level": 1,
-        "title": "Bug Tracker"
-      }
-    ],
     "Cache and Hot Reload": [
       {
         "document": "advanced/scope.md",
@@ -2768,22 +2760,6 @@
         "title": "Event Mixin расширения методов"
       }
     ],
-    "Field Descriptions": [
-      {
-        "document": "bug-tracker.md",
-        "line": 14,
-        "level": 2,
-        "title": "Field Descriptions"
-      }
-    ],
-    "Fixed Bugs": [
-      {
-        "document": "bug-tracker.md",
-        "line": 116,
-        "level": 2,
-        "title": "Fixed Bugs"
-      }
-    ],
     "GET": [
       {
         "document": "advanced/http-client.md",
@@ -2872,14 +2848,6 @@
         "title": "I18nManager"
       }
     ],
-    "Item Template": [
-      {
-        "document": "bug-tracker.md",
-        "line": 65,
-        "level": 2,
-        "title": "Item Template"
-      }
-    ],
     "Logger (Журнал)": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -2894,14 +2862,6 @@
         "line": 60,
         "level": 2,
         "title": "MCP сервер"
-      }
-    ],
-    "Mandatory Fields": [
-      {
-        "document": "bug-tracker.md",
-        "line": 16,
-        "level": 3,
-        "title": "Mandatory Fields"
       }
     ],
     "Matching Entry Syntax (Unified Across the System)": [
@@ -2942,14 +2902,6 @@
         "line": 93,
         "level": 2,
         "title": "OneBot12 стандартный API-действия"
-      }
-    ],
-    "Optional Fields": [
-      {
-        "document": "bug-tracker.md",
-        "line": 29,
-        "level": 3,
-        "title": "Optional Fields"
       }
     ],
     "POST": [
@@ -3048,22 +3000,6 @@
         "title": "SendDSL подробно"
       }
     ],
-    "Severity Classification": [
-      {
-        "document": "bug-tracker.md",
-        "line": 39,
-        "level": 2,
-        "title": "Severity Classification"
-      }
-    ],
-    "Statistics Overview": [
-      {
-        "document": "bug-tracker.md",
-        "line": 90,
-        "level": 2,
-        "title": "Statistics Overview"
-      }
-    ],
     "Storage (Хранилище)": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -3102,14 +3038,6 @@
         "line": 92,
         "level": 4,
         "title": "Telegram"
-      }
-    ],
-    "Type Classification": [
-      {
-        "document": "bug-tracker.md",
-        "line": 49,
-        "level": 2,
-        "title": "Type Classification"
       }
     ],
     "WSMessage": [
@@ -3184,300 +3112,348 @@
         "title": "WebSocket-соединение"
       }
     ],
-    "[BUG-001] Event handler registration duplicate leads to multiple event processing": [
+    "[BUG-001] Повторная регистрация обработчиков событий приводит к многократному срабатыванию событий": [
       {
         "document": "bug-tracker.md",
         "line": 118,
         "level": 3,
-        "title": "[BUG-001] Event handler registration duplicate leads to multiple event processing"
+        "title": "[BUG-001] Повторная регистрация обработчиков событий приводит к многократному срабатыванию событий"
       }
     ],
-    "[BUG-002] Adapter configuration path type error during init command": [
+    "[BUG-002] Ошибка типа при выборе адаптера конфигурации в команде init": [
       {
         "document": "bug-tracker.md",
         "line": 138,
         "level": 3,
-        "title": "[BUG-002] Adapter configuration path type error during init command"
+        "title": "[BUG-002] Ошибка типа при выборе адаптера конфигурации в команде init"
       }
     ],
-    "[BUG-003] Command events become invalid after restart": [
+    "[BUG-003] Команды не срабатывают после перезапуска": [
       {
         "document": "bug-tracker.md",
         "line": 162,
         "level": 3,
-        "title": "[BUG-003] Command events become invalid after restart"
+        "title": "[BUG-003] Команды не срабатывают после перезапуска"
       }
     ],
-    "[BUG-004] Lifecycle event handlers not cleared": [
+    "[BUG-004] Неочищенные обработчики событий жизненного цикла": [
       {
         "document": "bug-tracker.md",
         "line": 182,
         "level": 3,
-        "title": "[BUG-004] Lifecycle event handlers not cleared"
+        "title": "[BUG-004] Неочищенные обработчики событий жизненного цикла"
       }
     ],
-    "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard": [
+    "[BUG-005] `Event.is_friend_add/is_friend_delete` `detail_type` не соответствует стандарту OB12": [
       {
         "document": "bug-tracker.md",
         "line": 202,
         "level": 3,
-        "title": "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard"
+        "title": "[BUG-005] `Event.is_friend_add/is_friend_delete` `detail_type` не соответствует стандарту OB12"
       }
     ],
-    "[BUG-006] adapter.clear() does not clear _started_instances, causing incorrect status after restart": [
+    "[BUG-006] `adapter.clear()` не очищает `_started_instances`, что приводит к неправильному состоянию после перезапуска": [
       {
         "document": "bug-tracker.md",
         "line": 222,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() does not clear _started_instances, causing incorrect status after restart"
+        "title": "[BUG-006] `adapter.clear()` не очищает `_started_instances`, что приводит к неправильному состоянию после перезапуска"
       }
     ],
-    "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()": [
+    "[BUG-007] `command.wait_reply()` использует устаревший `asyncio.get_event_loop()`": [
       {
         "document": "bug-tracker.md",
         "line": 242,
         "level": 3,
-        "title": "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()"
+        "title": "[BUG-007] `command.wait_reply()` использует устаревший `asyncio.get_event_loop()`"
       }
     ],
-    "[BUG-008] Bot offline event is repeatedly submitted during shutdown": [
+    "[BUG-008] Событие отключения Bot повторно отправляется при процессе shutdown": [
       {
         "document": "bug-tracker.md",
         "line": 262,
         "level": 3,
-        "title": "[BUG-008] Bot offline event is repeatedly submitted during shutdown"
+        "title": "[BUG-008] Событие отключения Bot повторно отправляется при процессе shutdown"
       }
     ],
-    "[BUG-009] LazyModule synchronous access to BaseModule leads to incomplete initialization": [
+    "[BUG-009] Синхронный доступ к BaseModule без завершения инициализации": [
       {
         "document": "bug-tracker.md",
         "line": 282,
         "level": 3,
-        "title": "[BUG-009] LazyModule synchronous access to BaseModule leads to incomplete initialization"
+        "title": "[BUG-009] Синхронный доступ к BaseModule без завершения инициализации"
       }
     ],
-    "[BUG-010] Multi-threaded configuration system write leads to data loss": [
+    "[BUG-010] Многопоточная запись конфигурации приводит к потере данных": [
       {
         "document": "bug-tracker.md",
         "line": 302,
         "level": 3,
-        "title": "[BUG-010] Multi-threaded configuration system write leads to data loss"
+        "title": "[BUG-010] Многопоточная запись конфигурации приводит к потере данных"
       }
     ],
-    "[BUG-011] Windows Ctrl+C cannot stop the program": [
+    "[BUG-011] Невозможность остановки программы с помощью CTRL+C в Windows": [
       {
         "document": "bug-tracker.md",
         "line": 325,
         "level": 3,
-        "title": "[BUG-011] Windows Ctrl+C cannot stop the program"
+        "title": "[BUG-011] Невозможность остановки программы с помощью CTRL+C в Windows"
       }
     ],
-    "[BUG-012] After hot restart, the updated module's Python code does not take effect": [
+    "[BUG-012] После горячего перезапуска обновлённые модули не применяют новые коды": [
       {
         "document": "bug-tracker.md",
         "line": 349,
         "level": 3,
-        "title": "[BUG-012] After hot restart, the updated module's Python code does not take effect"
+        "title": "[BUG-012] После горячего перезапуска обновлённые модули не применяют новые коды"
       }
     ],
-    "[BUG-013] Module loading strategy sorting logic error": [
+    "[BUG-013] Ошибка логики сортировки стратегии загрузки модуля": [
       {
         "document": "bug-tracker.md",
         "line": 369,
         "level": 3,
-        "title": "[BUG-013] Module loading strategy sorting logic error"
+        "title": "[BUG-013] Ошибка логики сортировки стратегии загрузки модуля"
       }
     ],
-    "[BUG-014] Adapter middleware returning None causes event data loss": [
+    "[BUG-014] Возвращение None из промежуточного ПО адаптера приводит к потере данных события": [
       {
         "document": "bug-tracker.md",
         "line": 389,
         "level": 3,
-        "title": "[BUG-014] Adapter middleware returning None causes event data loss"
+        "title": "[BUG-014] Возвращение None из промежуточного ПО адаптера приводит к потере данных события"
       }
     ],
-    "[BUG-015] Configuration file path depends on working directory": [
+    "[BUG-015] Путь к файлу конфигурации зависит от рабочей директории": [
       {
         "document": "bug-tracker.md",
         "line": 409,
         "level": 3,
-        "title": "[BUG-015] Configuration file path depends on working directory"
+        "title": "[BUG-015] Путь к файлу конфигурации зависит от рабочей директории"
       }
     ],
-    "[BUG-016] BaseStorage confuses storing value None with non-existent key": [
+    "[BUG-016] `BaseStorage` не различает значение `None` и отсутствие ключа": [
       {
         "document": "bug-tracker.md",
         "line": 429,
         "level": 3,
-        "title": "[BUG-016] BaseStorage confuses storing value None with non-existent key"
+        "title": "[BUG-016] `BaseStorage` не различает значение `None` и отсутствие ключа"
       }
     ],
-    "[BUG-017] WebSocket route auto_accept flag is lost after service restart": [
+    "[BUG-017] Флаг `auto_accept` WebSocket маршрутов теряется после перезапуска службы": [
       {
         "document": "bug-tracker.md",
         "line": 449,
         "level": 3,
-        "title": "[BUG-017] WebSocket route auto_accept flag is lost after service restart"
+        "title": "[BUG-017] Флаг `auto_accept` WebSocket маршрутов теряется после перезапуска службы"
       }
     ],
-    "[BUG-018] Concurrent calls to HTTP/WS client cause crashes and connection leaks": [
+    "[BUG-018] Параллельные вызовы HTTP/WS-клиентов приводят к сбоям и утечкам соединений": [
       {
         "document": "bug-tracker.md",
         "line": 469,
         "level": 3,
-        "title": "[BUG-018] Concurrent calls to HTTP/WS client cause crashes and connection leaks"
+        "title": "[BUG-018] Параллельные вызовы HTTP/WS-клиентов приводят к сбоям и утечкам соединений"
       }
     ],
-    "[BUG-019] Adapter hot reload causes route conflicts and reload failure": [
+    "[BUG-019] При горячем перезагрузке адаптера возникают конфликты маршрутов, приводящие к неудаче перезагрузки": [
       {
         "document": "bug-tracker.md",
         "line": 497,
         "level": 3,
-        "title": "[BUG-019] Adapter hot reload causes route conflicts and reload failure"
+        "title": "[BUG-019] При горячем перезагрузке адаптера возникают конфликты маршрутов, приводящие к неудаче перезагрузки"
       }
     ],
-    "[BUG-020] Subprocess mode `ep run <script>` cannot find sub-packages in the script's directory": [
+    "[BUG-020] В режиме `ep run <script>` без горячей перезагрузки не найдены подпакеты каталога скрипта": [
       {
         "document": "bug-tracker.md",
         "line": 521,
         "level": 3,
-        "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find sub-packages in the script's directory"
+        "title": "[BUG-020] В режиме `ep run <script>` без горячей перезагрузки не найдены подпакеты каталога скрипта"
       }
     ],
-    "[BUG-021] SQL query builder rejects valid wildcard and list expressions": [
+    "[BUG-021] Конструктор SQL-запросов отвергает допустимые выражения с подстановочными знаками и списками": [
       {
         "document": "bug-tracker.md",
         "line": 541,
         "level": 3,
-        "title": "[BUG-021] SQL query builder rejects valid wildcard and list expressions"
+        "title": "[BUG-021] Конструктор SQL-запросов отвергает допустимые выражения с подстановочными знаками и списками"
       }
     ],
-    "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)": [
+    "[BUG-022] Обработка учётной записи `_resolve_account()` вернулась ( `_accounts_data` не заполнен)": [
       {
         "document": "bug-tracker.md",
         "line": 571,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)"
+        "title": "[BUG-022] Обработка учётной записи `_resolve_account()` вернулась ( `_accounts_data` не заполнен)"
       }
     ],
-    "[BUG-023] After modifying account configuration, adapter cache is not refreshed, causing account resolution failure": [
+    "[BUG-023] Кэш адаптера не обновляется после изменения конфигурации учётной записи": [
       {
         "document": "bug-tracker.md",
         "line": 610,
         "level": 3,
-        "title": "[BUG-023] After modifying account configuration, adapter cache is not refreshed, causing account resolution failure"
+        "title": "[BUG-023] Кэш адаптера не обновляется после изменения конфигурации учётной записи"
       }
     ],
-    "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill": [
+    "[BUG-024] Запись больших числовых ID ключей в хранилище вызывает OOM Kill": [
       {
         "document": "bug-tracker.md",
         "line": 630,
         "level": 3,
-        "title": "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill"
+        "title": "[BUG-024] Запись больших числовых ID ключей в хранилище вызывает OOM Kill"
       }
     ],
-    "[BUG-025] on_config_update callback not triggered by core routes": [
+    "[BUG-025] Обратный вызов `on_config_update` не был подключен к ядру": [
       {
         "document": "bug-tracker.md",
         "line": 676,
         "level": 3,
-        "title": "[BUG-025] on_config_update callback not triggered by core routes"
+        "title": "[BUG-025] Обратный вызов `on_config_update` не был подключен к ядру"
       }
     ],
-    "[BUG-026] notice/request event reply target inference error": [
+    "[BUG-026] Ошибка определения целевого назначения ответа для событий уведомления/запроса": [
       {
         "document": "bug-tracker.md",
         "line": 706,
         "level": 3,
-        "title": "[BUG-026] notice/request event reply target inference error"
+        "title": "[BUG-026] Ошибка определения целевого назначения ответа для событий уведомления/запроса"
       }
     ],
-    "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limiting rules to fail": [
+    "[BUG-027] Очистка маршрутизации с фиксированным окном приводит к сбоям в правилах длительного окна": [
       {
         "document": "bug-tracker.md",
         "line": 737,
         "level": 3,
-        "title": "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limiting rules to fail"
+        "title": "[BUG-027] Очистка маршрутизации с фиксированным окном приводит к сбоям в правилах длительного окна"
       }
     ],
-    "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions": [
+    "[BUG-029] Задача прослушивания конфигурации транслирует неполные TOML и молча поглощает исключения": [
       {
         "document": "bug-tracker.md",
         "line": 769,
         "level": 3,
-        "title": "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions"
+        "title": "[BUG-029] Задача прослушивания конфигурации транслирует неполные TOML и молча поглощает исключения"
       }
     ],
-    "[BUG-030] Configuration watcher race condition causes setConfig delayed write silently drops data": [
+    "[BUG-030] Гонка в задаче прослушивания конфигурации приводит к потере данных при отложенной записи setConfig": [
       {
         "document": "bug-tracker.md",
         "line": 805,
         "level": 3,
-        "title": "[BUG-030] Configuration watcher race condition causes setConfig delayed write silently drops data"
+        "title": "[BUG-030] Гонка в задаче прослушивания конфигурации приводит к потере данных при отложенной записи setConfig"
       }
     ],
-    "[BUG-032] Configuration delay write period \"write after read\" reads old value": [
+    "[BUG-032] При чтении \"после записи\" получаем старое значение": [
       {
         "document": "bug-tracker.md",
         "line": 841,
         "level": 3,
-        "title": "[BUG-032] Configuration delay write period \"write after read\" reads old value"
+        "title": "[BUG-032] При чтении \"после записи\" получаем старое значение"
       }
     ],
-    "[BUG-033] wait_reply suspended replies are starved by high-priority processors": [
+    "[BUG-033] Ожидание ответа `wait_reply` заблокировано высокоприоритетным обработчиком": [
       {
         "document": "bug-tracker.md",
         "line": 863,
         "level": 3,
-        "title": "[BUG-033] wait_reply suspended replies are starved by high-priority processors"
+        "title": "[BUG-033] Ожидание ответа `wait_reply` заблокировано высокоприоритетным обработчиком"
       }
     ],
-    "[BUG-034] Scope persist=False runtime binding is silently overwritten by any subsequent configuration write": [
+    "[BUG-034] Привязка времени жизни `persist=False` была восстановлена с диска после записи": [
       {
         "document": "bug-tracker.md",
         "line": 885,
         "level": 3,
-        "title": "[BUG-034] Scope persist=False runtime binding is silently overwritten by any subsequent configuration write"
+        "title": "[BUG-034] Привязка времени жизни `persist=False` была восстановлена с диска после записи"
       }
     ],
-    "[BUG-035] Configuration panel select options and dict fields render as [object Object]": [
+    "[BUG-035] Веб-интерфейс конфигурации отображает select опции и dict поля как [object Object]": [
       {
         "document": "bug-tracker.md",
-        "line": 905,
+        "line": 906,
         "level": 3,
-        "title": "[BUG-035] Configuration panel select options and dict fields render as [object Object]"
+        "title": "[BUG-035] Веб-интерфейс конфигурации отображает select опции и dict поля как [object Object]"
       }
     ],
-    "[BUG-036] Multi-instance shared configuration directory causes occasional configuration write failures (ENOENT)": [
+    "[BUG-036] Запись конфигурации в общую директорию конфигурации с несколькими экземплярами приводит к случайным сбоям (ENOENT)": [
       {
         "document": "bug-tracker.md",
-        "line": 923,
+        "line": 924,
         "level": 3,
-        "title": "[BUG-036] Multi-instance shared configuration directory causes occasional configuration write failures (ENOENT)"
+        "title": "[BUG-036] Запись конфигурации в общую директорию конфигурации с несколькими экземплярами приводит к случайным сбоям (ENOENT)"
       }
     ],
-    "[BUG-037] Space-separated command names registered as subcommands can never be triggered": [
+    "[BUG-037] Команды с пробелами в имени не могут быть запущены": [
       {
         "document": "bug-tracker.md",
-        "line": 949,
+        "line": 950,
         "level": 3,
-        "title": "[BUG-037] Space-separated command names registered as subcommands can never be triggered"
+        "title": "[BUG-037] Команды с пробелами в имени не могут быть запущены"
       }
     ],
-    "[BUG-038] persist=False runtime bindings are written to disk along with persistent writes, reviving from disk after module unloading": [
+    "[BUG-038] Привязки времени жизни `persist=False` были восстановлены с диска": [
       {
         "document": "bug-tracker.md",
-        "line": 973,
+        "line": 974,
         "level": 3,
-        "title": "[BUG-038] persist=False runtime bindings are written to disk along with persistent writes, reviving from disk after module unloading"
+        "title": "[BUG-038] Привязки времени жизни `persist=False` были восстановлены с диска"
       }
     ],
-    "[BUG-039] Conflicting reads and writes of sections and dot-separated keys (dot-separated overwrite lost)": [
+    "[BUG-039] Несовместимость чтения и записи при одновременном использовании полной записи и точечной записи (потеря точечного значения)": [
       {
         "document": "bug-tracker.md",
-        "line": 997,
+        "line": 998,
         "level": 3,
-        "title": "[BUG-039] Conflicting reads and writes of sections and dot-separated keys (dot-separated overwrite lost)"
+        "title": "[BUG-039] Несовместимость чтения и записи при одновременном использовании полной записи и точечной записи (потеря точечного значения)"
+      }
+    ],
+    "[BUG-040] Команды, разбитые на несколько сегментов, теряют параметры в конце": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1022,
+        "level": 3,
+        "title": "[BUG-040] Команды, разбитые на несколько сегментов, теряют параметры в конце"
+      }
+    ],
+    "[BUG-041] После отказа в команде через alt_message вся цепочка перезапускается: повторные ответы и двойное выполнение побочных эффектов функций разрешения": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1036,
+        "level": 3,
+        "title": "[BUG-041] После отказа в команде через alt_message вся цепочка перезапускается: повторные ответы и двойное выполнение побочных эффектов функций разрешения"
+      }
+    ],
+    "[BUG-042] Командный обработчик, зарегистрированный в wait_reply, потребляет ту же самую входящую команду": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1050,
+        "level": 3,
+        "title": "[BUG-042] Командный обработчик, зарегистрированный в wait_reply, потребляет ту же самую входящую команду"
+      }
+    ],
+    "[BUG-043] select() с одним ключом для нескольких ожиданий перезаписывает последнее, отменяя первое": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1064,
+        "level": 3,
+        "title": "[BUG-043] select() с одним ключом для нескольких ожиданий перезаписывает последнее, отменяя первое"
+      }
+    ],
+    "[BUG-044] `BaseConverter.at()` генерирует устаревший сегмент \"at\" в OB11, все проверки упоминаний в фреймворке не распознают": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1078,
+        "level": 3,
+        "title": "[BUG-044] `BaseConverter.at()` генерирует устаревший сегмент \"at\" в OB11, все проверки упоминаний в фреймворке не распознают"
+      }
+    ],
+    "[BUG-045] Без alt_message адаптера, интерактивные примитивы вечно ждут, команды не проходят": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1092,
+        "level": 3,
+        "title": "[BUG-045] Без alt_message адаптера, интерактивные примитивы вечно ждут, команды не проходят"
       }
     ],
     "__init__.py": [
@@ -3624,12 +3600,12 @@
         "title": "dump_state()"
       }
     ],
-    "escalate: обязательное уведомление по истечении времени": [
+    "escalate: Обязательное уведомление по истечении времени": [
       {
         "document": "advanced/interaction.md",
-        "line": 96,
+        "line": 100,
         "level": 3,
-        "title": "escalate: обязательное уведомление по истечении времени"
+        "title": "escalate: Обязательное уведомление по истечении времени"
       }
     ],
     "getAllConfig: полный снимок конфигурации": [
@@ -3728,12 +3704,12 @@
         "title": "private"
       }
     ],
-    "remind: напоминание при отсутствии ответа": [
+    "remind: Напоминание при отсутствии ответа": [
       {
         "document": "advanced/interaction.md",
-        "line": 79,
+        "line": 83,
         "level": 3,
-        "title": "remind: напоминание при отсутствии ответа"
+        "title": "remind: Напоминание при отсутствии ответа"
       }
     ],
     "run": [
@@ -4470,12 +4446,12 @@
         "title": "Взаимодействие — `Core/Event/interaction.py`"
       }
     ],
-    "Взаимоисключающие сессии: acquire / hold / get_owner_of": [
+    "Взаимоисключение сессий: acquire / hold / get_owner_of": [
       {
         "document": "advanced/interaction.md",
-        "line": 138,
+        "line": 147,
         "level": 2,
-        "title": "Взаимоисключающие сессии: acquire / hold / get_owner_of"
+        "title": "Взаимоисключение сессий: acquire / hold / get_owner_of"
       }
     ],
     "Видимая область и формат вывода": [
@@ -4894,6 +4870,14 @@
         "line": 281,
         "level": 3,
         "title": "Горячая перезагрузка серверных конфигураций в режиме работы"
+      }
+    ],
+    "Границы ожидания и команд": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 49,
+        "level": 3,
+        "title": "Границы ожидания и команд"
       }
     ],
     "Границы с другими механизмами": [
@@ -5329,6 +5313,12 @@
       }
     ],
     "Дополнительные поля": [
+      {
+        "document": "bug-tracker.md",
+        "line": 29,
+        "level": 3,
+        "title": "Дополнительные поля"
+      },
       {
         "document": "platform-guide/kook.md",
         "line": 227,
@@ -6302,6 +6292,14 @@
         "title": "Использование транзакций"
       }
     ],
+    "Исправленные ошибки": [
+      {
+        "document": "bug-tracker.md",
+        "line": 116,
+        "level": 2,
+        "title": "Исправленные ошибки"
+      }
+    ],
     "Исходные данные": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -6382,6 +6380,14 @@
         "title": "Класс LazyModule"
       }
     ],
+    "Классификация типов": [
+      {
+        "document": "bug-tracker.md",
+        "line": 49,
+        "level": 2,
+        "title": "Классификация типов"
+      }
+    ],
     "Кнопки (keyboard / components)": [
       {
         "document": "platform-guide/discord.md",
@@ -6422,12 +6428,12 @@
         "title": "Когда использовать ручной запуск?"
       }
     ],
-    "Когда ожидание будет отменено": [
+    "Когда ожидание может быть отменено": [
       {
         "document": "advanced/interaction.md",
-        "line": 49,
+        "line": 53,
         "level": 3,
-        "title": "Когда ожидание будет отменено"
+        "title": "Когда ожидание может быть отменено"
       }
     ],
     "Когда перегенерировать": [
@@ -7503,7 +7509,7 @@
     "Многопоточное ожидание: expect + select": [
       {
         "document": "advanced/interaction.md",
-        "line": 111,
+        "line": 115,
         "level": 2,
         "title": "Многопоточное ожидание: expect + select"
       }
@@ -8682,6 +8688,12 @@
     ],
     "Обязательные поля": [
       {
+        "document": "bug-tracker.md",
+        "line": 16,
+        "level": 3,
+        "title": "Обязательные поля"
+      },
+      {
         "document": "developer-guide/adapters/converter.md",
         "line": 109,
         "level": 2,
@@ -9000,6 +9012,14 @@
         "line": 524,
         "level": 3,
         "title": "Описание параметров конфигурации"
+      }
+    ],
+    "Описание полей": [
+      {
+        "document": "bug-tracker.md",
+        "line": 14,
+        "level": 2,
+        "title": "Описание полей"
       }
     ],
     "Описание полей конфигурации": [
@@ -10644,12 +10664,12 @@
         "title": "Полная справочная документация API"
       }
     ],
-    "Полная цепочка проверки при ответе": [
+    "Полная цепочка проверки ответа": [
       {
         "document": "advanced/interaction.md",
-        "line": 63,
+        "line": 67,
         "level": 3,
-        "title": "Полная цепочка проверки при ответе"
+        "title": "Полная цепочка проверки ответа"
       }
     ],
     "Полное событие электронной почты": [
@@ -10908,6 +10928,14 @@
         "line": 137,
         "level": 4,
         "title": "Почему рекомендуется использовать I18nClass?"
+      }
+    ],
+    "Почтовый ящик сессии: event.history": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 178,
+        "level": 2,
+        "title": "Почтовый ящик сессии: event.history"
       }
     ],
     "Права группы": [
@@ -12627,7 +12655,7 @@
       },
       {
         "document": "advanced/interaction.md",
-        "line": 217,
+        "line": 226,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -12799,7 +12827,7 @@
     "Связь с другими системами": [
       {
         "document": "advanced/interaction.md",
-        "line": 211,
+        "line": 220,
         "level": 2,
         "title": "Связь с другими системами"
       }
@@ -12967,7 +12995,7 @@
     "Сессионные таймеры: remind / escalate": [
       {
         "document": "advanced/interaction.md",
-        "line": 75,
+        "line": 79,
         "level": 2,
         "title": "Сессионные таймеры: remind / escalate"
       }
@@ -13048,6 +13076,14 @@
         "line": 1,
         "level": 1,
         "title": "Система международной локализации (i18n)"
+      }
+    ],
+    "Система отслеживания ошибок": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1,
+        "level": 1,
+        "title": "Система отслеживания ошибок"
       }
     ],
     "Система правил отправки": [
@@ -14182,6 +14218,14 @@
         "title": "Статистика запросов"
       }
     ],
+    "Статистика обзор": [
+      {
+        "document": "bug-tracker.md",
+        "line": 90,
+        "level": 2,
+        "title": "Статистика обзор"
+      }
+    ],
     "Статистика сообщений": [
       {
         "document": "getting-started/common-tasks.md",
@@ -14639,7 +14683,7 @@
     "Транзакции сообщений: message_tx": [
       {
         "document": "advanced/interaction.md",
-        "line": 187,
+        "line": 196,
         "level": 2,
         "title": "Транзакции сообщений: message_tx"
       }
@@ -14679,7 +14723,7 @@
     "Трассировка цепочки: trace-id": [
       {
         "document": "advanced/interaction.md",
-        "line": 200,
+        "line": 209,
         "level": 2,
         "title": "Трассировка цепочки: trace-id"
       }
@@ -15476,6 +15520,14 @@
         "title": "Что такое адаптер"
       }
     ],
+    "Шаблон записи": [
+      {
+        "document": "bug-tracker.md",
+        "line": 65,
+        "level": 2,
+        "title": "Шаблон записи"
+      }
+    ],
     "Шаблон описания задачи": [
       {
         "document": "ai-support/README.md",
@@ -15524,6 +15576,14 @@
         "title": "Шаг первый: написание первой команды"
       }
     ],
+    "Шкала серьезности": [
+      {
+        "document": "bug-tracker.md",
+        "line": 39,
+        "level": 2,
+        "title": "Шкала серьезности"
+      }
+    ],
     "Шрифты": [
       {
         "document": "ecosystem/takumi.md",
@@ -15562,14 +15622,6 @@
         "line": 1,
         "level": 1,
         "title": "Ящик для диалогов (Транскрипт)"
-      }
-    ],
-    "Ящик для диалогов: event.history": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 169,
-        "level": 2,
-        "title": "Ящик для диалогов: event.history"
       }
     ],
     "① Module Dimension": [

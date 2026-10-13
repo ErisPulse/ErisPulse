@@ -204,7 +204,7 @@ ErisPulse 交互会话管理
 ---
 
 
-##### `register(event: Any, future: asyncio.Future, callback: Any = None, validator: Any = None, pattern: str | None = None, regex: str | None = None, owner: str | None = None, session_scope: bool = False, cmdpass: bool | None = None) -> _Entry`
+##### `register(event: Any, future: asyncio.Future, callback: Any = None, validator: Any = None, pattern: str | None = None, regex: str | None = None, owner: str | None = None, session_scope: bool = False, cmdpass: bool | None = None, matcher: Any = None) -> _Entry`
 
 **内部方法**
 注册等待回复条目
@@ -224,6 +224,9 @@ ErisPulse 交互会话管理
 - **cmdpass**: 是否跳过命令匹配的三态（None=跟随全局配置，默认不跳过；
 
     True=跳过命令匹配，等待期间消息一律作为回复消费）
+- **matcher**: 自定义命中判定函数 ``callable(Event) -> bool``，提供时完全取代
+
+    pattern/regex/validator 链（select 多路等待的聚合入口；异常按不命中处理）
 **返回值**: 注册的条目（含推导的会话键）
 
 ---
