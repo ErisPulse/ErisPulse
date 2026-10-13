@@ -67,7 +67,11 @@ dependencies = [
     "websockets>=12.0",
     "aiohttp>=3.9.0",
     "fastapi>=0.116.1",
-    "uvicorn>=0.35.0",
+
+    # uvicorn的内嵌启动依赖私有接口 Server._serve()（0.34.0 引入，用于跳过 serve() 的信号捕获），
+    # 上限锁定 0.x 线；启动期按能力探测，接口缺失时仅告警并回退公开 serve()
+    "uvicorn>=0.35.0,<1.0",
+
     # storage 相关（默认 SQLite 后端异步驱动，开箱即用）
     "aiosqlite>=0.20.0",
 ]

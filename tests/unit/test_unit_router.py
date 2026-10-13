@@ -6,6 +6,7 @@
 
 import asyncio
 import importlib
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -440,6 +441,60 @@ class TestGlobalRouter:
         # 验证核心路由存在
         assert "/health" in routes
         assert "/ping" in routes
+
+
+# ==================== uvicorn 兼容性校验测试 ====================
+
+
+class TestUvicornServerCompatibility:
+    """内嵌 uvicorn 私有接口（Server._serve）能力探测与回退测试"""
+
+    @pytest.fixture
+    def router_manager(self):
+        """创建路由管理器实例"""
+        manager = RouterManager()
+        yield manager
+
+    def test_create_uvicorn_server_uses_private_serve(self, router_manager):
+        """测试当前 uvicorn 具备 _serve 接口时直接采用（不告警、不回退）"""
+        import uvicorn as _uvicorn
+
+        config = _uvicorn.Config(app=router_manager.app, log_level="warning")
+
+        # 执行
+        server, serve_entry = router_manager._create_uvicorn_server(config)
+
+        # 验证：启动入口即私有 _serve（上游移除该接口时本用例在 CI 先行报警）
+        assert serve_entry == server._serve
+
+    def test_create_uvicorn_server_fallback_warns(self, router_manager, monkeypatch):
+        """测试缺少 _serve 时告警并回退公开 serve()，而非硬失败"""
+
+        class _FakeServerWithoutServe:
+            def __init__(self, config):
+                self.config = config
+
+            async def serve(self):
+                await asyncio.sleep(0)
+
+        class _FakeUvicorn:
+            __version__ = "9.9.9"
+            Server = _FakeServerWithoutServe
+
+        warnings: list[str] = []
+
+        # 注入缺少 _serve 的假 uvicorn 与告警收集器
+        monkeypatch.setattr(router_module, "uvicorn", _FakeUvicorn)
+        monkeypatch.setattr(
+            router_module, "logger", SimpleNamespace(warning=warnings.append)
+        )
+
+        # 执行
+        server, serve_entry = router_manager._create_uvicorn_server(config=object())
+
+        # 验证：回退公开接口 + 告警包含版本号（文案随 locale 变化，仅匹配版本号）
+        assert serve_entry == server.serve
+        assert any("9.9.9" in message for message in warnings)
 
 
 # ==================== 集成测试 ====================

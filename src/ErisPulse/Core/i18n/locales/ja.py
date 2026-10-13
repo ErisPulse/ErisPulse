@@ -317,6 +317,7 @@ TRANSLATIONS = {
     "core.router.config_hook_register_failed": "ルーター設定コールバックの登録に失敗しました: {error}",
     "core.router.get_local_ip_failed": "ローカル IP アドレスの取得に失敗しました: {error}",
     "core.router.already_running": "サーバーは既に実行中です",
+    "core.router.uvicorn_serve_missing": "インストール済みの uvicorn（{version}）には組み込み起動で使用する内部インターフェース Server._serve() がなく、公開 API の serve() にフォールバックします（稼働中はプロセスシグナルが一時的に uvicorn に委ねられます）。この経路は ErisPulse で検証されていません（範囲: {constraint}）。uvicorn リポジトリで公式サポート状況をご確認ください",
     "core.router.reloaded": "ルートサーバーをホットリロードしました: {url}",
     "core.router.reload_keep_old": "ルートサーバーのホットリロードに失敗しました。以前の設定で稼働を継続します: {error}",
     "core.router.reload_not_running": "ルートサーバーが起動していないため reload は利用できません（start を使用してください）",

@@ -317,6 +317,7 @@ TRANSLATIONS = {
     "core.router.config_hook_register_failed": "Failed to register router config callback: {error}",
     "core.router.get_local_ip_failed": "Failed to get local IP address: {error}",
     "core.router.already_running": "Server is already running",
+    "core.router.uvicorn_serve_missing": "Installed uvicorn ({version}) lacks the internal Server._serve() interface used for embedded startup; falling back to the public serve() (process signals will be temporarily handled by uvicorn while serving). This path is unverified by ErisPulse (range {constraint}); please check the uvicorn repository for official support",
     "core.router.reloaded": "Route server hot-reloaded: {url}",
     "core.router.reload_keep_old": "Route server hot-reload failed, previous configuration kept serving: {error}",
     "core.router.reload_not_running": "Route server is not running; reload is unavailable (use start instead)",
