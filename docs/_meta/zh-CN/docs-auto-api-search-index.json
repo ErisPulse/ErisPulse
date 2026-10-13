@@ -2661,7 +2661,7 @@
     "`__dir__() -> list[str]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1533,
+        "line": 1536,
         "level": 5,
         "title": "`__dir__() -> list[str]`"
       },
@@ -2703,7 +2703,7 @@
     "`__getattr__(name: str) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1517,
+        "line": 1520,
         "level": 5,
         "title": "`__getattr__(name: str) -> Any`"
       },
@@ -2781,7 +2781,7 @@
     "`__getattribute__(name: str) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1503,
+        "line": 1506,
         "level": 5,
         "title": "`__getattribute__(name: str) -> Any`"
       },
@@ -3199,7 +3199,7 @@
     "`__repr__() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1540,
+        "line": 1543,
         "level": 5,
         "title": "`__repr__() -> str`"
       },
@@ -3509,7 +3509,7 @@
     "`_cancel_all_timers(reason_hint: str) -> int`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 468,
+        "line": 471,
         "level": 5,
         "title": "`_cancel_all_timers(reason_hint: str) -> int`"
       }
@@ -3517,7 +3517,7 @@
     "`_cancel_entry(key: str, entry: _Entry, reason: str) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 263,
+        "line": 266,
         "level": 5,
         "title": "`_cancel_entry(key: str, entry: _Entry, reason: str) -> None`"
       }
@@ -3525,7 +3525,7 @@
     "`_cancel_reminders_for_key(key: str, only_reply_cancellable: bool = True) -> int`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 461,
+        "line": 464,
         "level": 5,
         "title": "`_cancel_reminders_for_key(key: str, only_reply_cancellable: bool = True) -> int`"
       }
@@ -3611,7 +3611,7 @@
     "`_check_revoked(entry: _Entry, event: 'Event') -> str | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 250,
+        "line": 253,
         "level": 5,
         "title": "`_check_revoked(entry: _Entry, event: 'Event') -> str | None`"
       }
@@ -3699,7 +3699,7 @@
     "`_clear_commands()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 478,
+        "line": 480,
         "level": 5,
         "title": "`_clear_commands()`"
       }
@@ -3971,7 +3971,7 @@
     "`_context_from_event(event: Any) -> dict[str, str | None]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 567,
+        "line": 569,
         "level": 5,
         "title": "`_context_from_event(event: Any) -> dict[str, str | None]`"
       }
@@ -4003,7 +4003,7 @@
     "`_cooldown_scope_key(kind: str, event: 'Event') -> str`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 427,
+        "line": 429,
         "level": 5,
         "title": "`_cooldown_scope_key(kind: str, event: 'Event') -> str`（staticmethod）"
       }
@@ -4281,7 +4281,7 @@
     "`_effective_info(name: str, info: dict) -> dict`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 587,
+        "line": 589,
         "level": 5,
         "title": "`_effective_info(name: str, info: dict) -> dict`"
       }
@@ -4715,7 +4715,7 @@
     "`_get_active_entry(key: str) -> _Entry | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 313,
+        "line": 316,
         "level": 5,
         "title": "`_get_active_entry(key: str) -> _Entry | None`"
       }
@@ -4723,7 +4723,7 @@
     "`_get_adapter_and_target() -> tuple[Any, str, str, str]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 788,
+        "line": 791,
         "level": 5,
         "title": "`_get_adapter_and_target() -> tuple[Any, str, str, str]`"
       }
@@ -6087,7 +6087,7 @@
     "`_owner_blocked(info: dict, ctx: dict[str, str | None]) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 629,
+        "line": 631,
         "level": 5,
         "title": "`_owner_blocked(info: dict, ctx: dict[str, str | None]) -> bool`"
       }
@@ -6501,7 +6501,7 @@
     "`_register_dispatcher() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 470,
+        "line": 472,
         "level": 5,
         "title": "`_register_dispatcher() -> None`"
       }
@@ -6597,7 +6597,7 @@
     "`_remove_timer_refs(reminder: Reminder) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 443,
+        "line": 446,
         "level": 5,
         "title": "`_remove_timer_refs(reminder: Reminder) -> None`"
       }
@@ -6613,7 +6613,7 @@
     "`_renew_lease(entry: _Entry, ttl: float | None) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 407,
+        "line": 410,
         "level": 5,
         "title": "`_renew_lease(entry: _Entry, ttl: float | None) -> bool`"
       }
@@ -6839,7 +6839,7 @@
     "`_resolve_query_context(event: Any = None, platform: str | None = None, bot_id: str | None = None, session_id: str | None = None) -> dict[str, str | None] | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 575,
+        "line": 577,
         "level": 5,
         "title": "`_resolve_query_context(event: Any = None, platform: str | None = None, bot_id: str | None = None, session_id: str | None = None) -> dict[str, str | None] | None`"
       }
@@ -7607,7 +7607,7 @@
     "`_usage_line(cmd_name: str, effective: dict, display_prefix: str | None = None) -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 440,
+        "line": 442,
         "level": 5,
         "title": "`_usage_line(cmd_name: str, effective: dict, display_prefix: str | None = None) -> str`"
       }
@@ -7875,7 +7875,7 @@
     "`acquire(event: Any, owner: str | None = None, ttl: float = DEFAULT_INTERACTION_LEASE_TTL_SECS) -> InteractionLease | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 341,
+        "line": 344,
         "level": 5,
         "title": "`acquire(event: Any, owner: str | None = None, ttl: float = DEFAULT_INTERACTION_LEASE_TTL_SECS) -> InteractionLease | None`"
       }
@@ -7915,7 +7915,7 @@
     "`add_reminder(event: Any, delay: float, action: Any, cancellable_by_reply: bool = True, owner: str | None = None) -> Reminder | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 414,
+        "line": 417,
         "level": 5,
         "title": "`add_reminder(event: Any, delay: float, action: Any, cancellable_by_reply: bool = True, owner: str | None = None) -> Reminder | None`"
       }
@@ -8213,7 +8213,7 @@
     "`async _check_pending_reply(event: 'Event')`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 364,
+        "line": 366,
         "level": 5,
         "title": "`async _check_pending_reply(event: 'Event')`"
       }
@@ -8609,7 +8609,7 @@
     "`async _handle_request_action(action: str, comment: str | None = None) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 747,
+        "line": 750,
         "level": 5,
         "title": "`async _handle_request_action(action: str, comment: str | None = None) -> Any`"
       }
@@ -8931,7 +8931,7 @@
     "`async _run_reminder(reminder: Reminder) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 436,
+        "line": 439,
         "level": 5,
         "title": "`async _run_reminder(reminder: Reminder) -> None`"
       }
@@ -8955,7 +8955,7 @@
     "`async _send_args_error(event: dict[str, Any], text: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 414,
+        "line": 416,
         "level": 5,
         "title": "`async _send_args_error(event: dict[str, Any], text: str)`"
       }
@@ -8963,7 +8963,7 @@
     "`async _send_command_error(event: dict[str, Any], error: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 401,
+        "line": 403,
         "level": 5,
         "title": "`async _send_command_error(event: dict[str, Any], error: str)`"
       }
@@ -8971,7 +8971,7 @@
     "`async _send_event_text(event: dict[str, Any], text: str, *, error_log_key: str) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 377,
+        "line": 379,
         "level": 5,
         "title": "`async _send_event_text(event: dict[str, Any], text: str, *, error_log_key: str) -> None`"
       }
@@ -8979,7 +8979,7 @@
     "`async _send_permission_denied(event: dict[str, Any])`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 389,
+        "line": 391,
         "level": 5,
         "title": "`async _send_permission_denied(event: dict[str, Any])`"
       }
@@ -9000,12 +9000,12 @@
         "title": "`async _stop_uvicorn_listener() -> None`"
       }
     ],
-    "`async _try_execute_command(event: 'Event', original_text: str, prefix: str) -> bool`": [
+    "`async _try_execute_command(event: 'Event', original_text: str, prefix: str) -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
         "line": 348,
         "level": 5,
-        "title": "`async _try_execute_command(event: 'Event', original_text: str, prefix: str) -> bool`"
+        "title": "`async _try_execute_command(event: 'Event', original_text: str, prefix: str) -> str`"
       }
     ],
     "`async _unload_single_module(module_name: str) -> bool`": [
@@ -9303,7 +9303,7 @@
     "`async approve(comment: str | None = None) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 697,
+        "line": 700,
         "level": 5,
         "title": "`async approve(comment: str | None = None) -> Any`"
       }
@@ -9467,7 +9467,7 @@
     "`async choose(prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, method: str = DEFAULT_SEND_METHOD, options_format: str | Callable[[list[str]], str] = 'auto', merge_prompt: bool = False, placeholder: str = '{options}') -> int | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1030,
+        "line": 1033,
         "level": 5,
         "title": "`async choose(prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, method: str = DEFAULT_SEND_METHOD, options_format: str | Callable[[list[str]], str] = 'auto', merge_prompt: bool = False, placeholder: str = '{options}') -> int | None`"
       }
@@ -9535,7 +9535,7 @@
     "`async collect(fields: list[dict[str, Any]], timeout_per_field: float = 60.0) -> dict[str, str] | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1092,
+        "line": 1095,
         "level": 5,
         "title": "`async collect(fields: list[dict[str, Any]], timeout_per_field: float = 60.0) -> dict[str, str] | None`"
       }
@@ -9559,7 +9559,7 @@
     "`async confirm(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] | None = None, no_words: set[str] | frozenset[str] | None = None, method: str = DEFAULT_SEND_METHOD, hint: bool = False) -> bool | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1001,
+        "line": 1004,
         "level": 5,
         "title": "`async confirm(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] | None = None, no_words: set[str] | frozenset[str] | None = None, method: str = DEFAULT_SEND_METHOD, hint: bool = False) -> bool | None`"
       }
@@ -9965,7 +9965,7 @@
     "`async history(n: int = 20) -> list[dict[str, Any]]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1301,
+        "line": 1304,
         "level": 5,
         "title": "`async history(n: int = 20) -> list[dict[str, Any]]`"
       }
@@ -10337,7 +10337,7 @@
     "`async reject(comment: str | None = None) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 723,
+        "line": 726,
         "level": 5,
         "title": "`async reject(comment: str | None = None) -> Any`"
       }
@@ -10401,7 +10401,7 @@
     "`async reply(content: str, method: str | None = None, at_sender: bool = False, quote: bool = False, at_users: list[str] | None = None, reply_to: str | None = None, at_all: bool = False, via: list | None = None, **kwargs) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 799,
+        "line": 802,
         "level": 5,
         "title": "`async reply(content: str, method: str | None = None, at_sender: bool = False, quote: bool = False, at_users: list[str] | None = None, reply_to: str | None = None, at_all: bool = False, via: list | None = None, **kwargs) -> Any`"
       }
@@ -10409,7 +10409,7 @@
     "`async reply_ob12(message: list[dict[str, Any]] | dict[str, Any]) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 860,
+        "line": 863,
         "level": 5,
         "title": "`async reply_ob12(message: list[dict[str, Any]] | dict[str, Any]) -> Any`"
       }
@@ -10433,7 +10433,7 @@
     "`async resolve(event: 'Event') -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 232,
+        "line": 235,
         "level": 5,
         "title": "`async resolve(event: 'Event') -> bool`"
       }
@@ -10513,7 +10513,7 @@
     "`async select(*expectations: Expectation, timeout: float | None = None) -> 'tuple[int | None, Event | None]'`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1348,
+        "line": 1351,
         "level": 5,
         "title": "`async select(*expectations: Expectation, timeout: float | None = None) -> 'tuple[int | None, Event | None]'`"
       }
@@ -10809,7 +10809,7 @@
     "`async wait_for(event_type: str = 'message', condition: Callable[['Event'], bool] | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS) -> Optional['Event']`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1130,
+        "line": 1133,
         "level": 5,
         "title": "`async wait_for(event_type: str = 'message', condition: Callable[['Event'], bool] | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS) -> Optional['Event']`"
       }
@@ -10825,7 +10825,7 @@
     "`async wait_reply(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None, cmdpass: bool | None = None) -> Optional['Event']`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 975,
+        "line": 978,
         "level": 5,
         "title": "`async wait_reply(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None, cmdpass: bool | None = None) -> Optional['Event']`"
       }
@@ -10929,7 +10929,7 @@
     "`available_methods() -> list[str]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 959,
+        "line": 962,
         "level": 5,
         "title": "`available_methods() -> list[str]`"
       }
@@ -10995,7 +10995,7 @@
     "`bind_message_handler(handler: BaseEventHandler) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 457,
+        "line": 459,
         "level": 5,
         "title": "`bind_message_handler(handler: BaseEventHandler) -> None`"
       }
@@ -11067,7 +11067,7 @@
     "`cancel(key: str, reason: str = REASON_CANCELLED) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 270,
+        "line": 273,
         "level": 5,
         "title": "`cancel(key: str, reason: str = REASON_CANCELLED) -> bool`"
       }
@@ -11075,7 +11075,7 @@
     "`cancel_by_owner(owner: str) -> int`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 282,
+        "line": 285,
         "level": 5,
         "title": "`cancel_by_owner(owner: str) -> int`"
       }
@@ -11083,7 +11083,7 @@
     "`cancel_by_platform(platform: str) -> int`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 293,
+        "line": 296,
         "level": 5,
         "title": "`cancel_by_platform(platform: str) -> int`"
       }
@@ -11091,7 +11091,7 @@
     "`cancel_reminder(reminder: Reminder) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 450,
+        "line": 453,
         "level": 5,
         "title": "`cancel_reminder(reminder: Reminder) -> bool`"
       }
@@ -12511,7 +12511,7 @@
     "`class _LeaseContext`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 491,
+        "line": 494,
         "level": 3,
         "title": "`class _LeaseContext`"
       }
@@ -12681,7 +12681,7 @@
     "`clear() -> int`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 304,
+        "line": 307,
         "level": 5,
         "title": "`clear() -> int`"
       }
@@ -12903,7 +12903,7 @@
     "`conversation(timeout: float = DEFAULT_WAIT_TIMEOUT_SECS) -> 'Conversation'`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1161,
+        "line": 1164,
         "level": 5,
         "title": "`conversation(timeout: float = DEFAULT_WAIT_TIMEOUT_SECS) -> 'Conversation'`"
       }
@@ -12911,7 +12911,7 @@
     "`convert(raw_event: dict) -> dict | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/converter.md",
-        "line": 67,
+        "line": 71,
         "level": 5,
         "title": "`convert(raw_event: dict) -> dict | None`"
       }
@@ -12973,7 +12973,7 @@
     "`counts() -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 475,
+        "line": 478,
         "level": 5,
         "title": "`counts() -> dict[str, Any]`"
       }
@@ -13285,7 +13285,7 @@
     "`done(claim: bool = True, stop: bool = True)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1463,
+        "line": 1466,
         "level": 5,
         "title": "`done(claim: bool = True, stop: bool = True)`"
       }
@@ -13431,7 +13431,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1279,
+        "line": 1282,
         "level": 5,
         "title": "`escalate(delay: float, callback: Any) -> Any`"
       }
@@ -13505,7 +13505,7 @@
     "`expect(pattern: str | None = None, regex: str | None = None, validator: Any = None, user: str | None = None, session: bool = False) -> Expectation`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1323,
+        "line": 1326,
         "level": 5,
         "title": "`expect(pattern: str | None = None, regex: str | None = None, validator: Any = None, user: str | None = None, session: bool = False) -> Expectation`（staticmethod）"
       }
@@ -13937,7 +13937,7 @@
     "`get_channel_id() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 501,
+        "line": 504,
         "level": 5,
         "title": "`get_channel_id() -> str`"
       }
@@ -13961,7 +13961,7 @@
     "`get_command(name: str, *, event: Any = None, platform: str | None = None, bot_id: str | None = None, session_id: str | None = None) -> dict | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 488,
+        "line": 490,
         "level": 5,
         "title": "`get_command(name: str, *, event: Any = None, platform: str | None = None, bot_id: str | None = None, session_id: str | None = None) -> dict | None`"
       }
@@ -13969,7 +13969,7 @@
     "`get_command_args() -> list[str]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1214,
+        "line": 1217,
         "level": 5,
         "title": "`get_command_args() -> list[str]`"
       }
@@ -13977,7 +13977,7 @@
     "`get_command_info() -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1232,
+        "line": 1235,
         "level": 5,
         "title": "`get_command_info() -> dict[str, Any]`"
       }
@@ -13985,7 +13985,7 @@
     "`get_command_name() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1205,
+        "line": 1208,
         "level": 5,
         "title": "`get_command_name() -> str`"
       }
@@ -13993,7 +13993,7 @@
     "`get_command_raw() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1223,
+        "line": 1226,
         "level": 5,
         "title": "`get_command_raw() -> str`"
       }
@@ -14001,7 +14001,7 @@
     "`get_commands(*, event: Any = None, platform: str | None = None, bot_id: str | None = None, session_id: str | None = None) -> dict[str, dict]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 513,
+        "line": 515,
         "level": 5,
         "title": "`get_commands(*, event: Any = None, platform: str | None = None, bot_id: str | None = None, session_id: str | None = None) -> dict[str, dict]`"
       }
@@ -14017,7 +14017,7 @@
     "`get_comment() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 677,
+        "line": 680,
         "level": 5,
         "title": "`get_comment() -> str`"
       }
@@ -14145,7 +14145,7 @@
     "`get_group_commands(group: str, *, event: Any = None, platform: str | None = None, bot_id: str | None = None, session_id: str | None = None) -> list[str]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 531,
+        "line": 533,
         "level": 5,
         "title": "`get_group_commands(group: str, *, event: Any = None, platform: str | None = None, bot_id: str | None = None, session_id: str | None = None) -> list[str]`"
       }
@@ -14153,7 +14153,7 @@
     "`get_group_id() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 492,
+        "line": 495,
         "level": 5,
         "title": "`get_group_id() -> str`"
       }
@@ -14169,7 +14169,7 @@
     "`get_guild_id() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 510,
+        "line": 513,
         "level": 5,
         "title": "`get_guild_id() -> str`"
       }
@@ -14311,7 +14311,7 @@
     "`get_mentions() -> list[str]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 447,
+        "line": 450,
         "level": 5,
         "title": "`get_mentions() -> list[str]`"
       }
@@ -14327,7 +14327,7 @@
     "`get_message_text() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 429,
+        "line": 432,
         "level": 5,
         "title": "`get_message_text() -> str`"
       }
@@ -14429,7 +14429,7 @@
     "`get_operator_id() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 614,
+        "line": 617,
         "level": 5,
         "title": "`get_operator_id() -> str`"
       }
@@ -14437,7 +14437,7 @@
     "`get_operator_nickname() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 623,
+        "line": 626,
         "level": 5,
         "title": "`get_operator_nickname() -> str`"
       }
@@ -14453,7 +14453,7 @@
     "`get_owner_of(event: Any) -> str | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 320,
+        "line": 323,
         "level": 5,
         "title": "`get_owner_of(event: Any) -> str | None`"
       }
@@ -14525,7 +14525,7 @@
     "`get_raw() -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1187,
+        "line": 1190,
         "level": 5,
         "title": "`get_raw() -> dict[str, Any]`"
       }
@@ -14533,7 +14533,7 @@
     "`get_raw_type() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1196,
+        "line": 1199,
         "level": 5,
         "title": "`get_raw_type() -> str`"
       }
@@ -14549,7 +14549,7 @@
     "`get_request_id() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 686,
+        "line": 689,
         "level": 5,
         "title": "`get_request_id() -> str`"
       }
@@ -14629,7 +14629,7 @@
     "`get_sender() -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 569,
+        "line": 572,
         "level": 5,
         "title": "`get_sender() -> dict[str, Any]`"
       }
@@ -14645,7 +14645,7 @@
     "`get_session_id() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 548,
+        "line": 551,
         "level": 5,
         "title": "`get_session_id() -> str`"
       }
@@ -14691,7 +14691,7 @@
     "`get_target_id() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 528,
+        "line": 531,
         "level": 5,
         "title": "`get_target_id() -> str`"
       }
@@ -14723,7 +14723,7 @@
     "`get_thread_id() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 519,
+        "line": 522,
         "level": 5,
         "title": "`get_thread_id() -> str`"
       }
@@ -14791,7 +14791,7 @@
     "`get_user_id() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 456,
+        "line": 459,
         "level": 5,
         "title": "`get_user_id() -> str`"
       }
@@ -14799,7 +14799,7 @@
     "`get_user_nickname() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 483,
+        "line": 486,
         "level": 5,
         "title": "`get_user_nickname() -> str`"
       }
@@ -14807,7 +14807,7 @@
     "`get_visible_commands(*, event: Any = None, platform: str | None = None, bot_id: str | None = None, session_id: str | None = None) -> dict[str, dict]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 548,
+        "line": 550,
         "level": 5,
         "title": "`get_visible_commands(*, event: Any = None, platform: str | None = None, bot_id: str | None = None, session_id: str | None = None) -> dict[str, dict]`"
       }
@@ -14931,7 +14931,7 @@
     "`has_mention() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 438,
+        "line": 441,
         "level": 5,
         "title": "`has_mention() -> bool`"
       }
@@ -15001,7 +15001,7 @@
     "`help(command_name: str | None = None, show_hidden: bool = False, event: Any = None) -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 600,
+        "line": 602,
         "level": 5,
         "title": "`help(command_name: str | None = None, show_hidden: bool = False, event: Any = None) -> str`"
       }
@@ -15009,7 +15009,7 @@
     "`hold(event: Any, owner: str | None = None, ttl: float = DEFAULT_INTERACTION_LEASE_TTL_SECS)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 369,
+        "line": 372,
         "level": 5,
         "title": "`hold(event: Any, owner: str | None = None, ttl: float = DEFAULT_INTERACTION_LEASE_TTL_SECS)`"
       }
@@ -15041,7 +15041,7 @@
     "`image(file: str) -> dict`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/converter.md",
-        "line": 60,
+        "line": 64,
         "level": 5,
         "title": "`image(file: str) -> dict`（staticmethod）"
       }
@@ -15175,7 +15175,7 @@
     "`is_at_message() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 605,
+        "line": 608,
         "level": 5,
         "title": "`is_at_message() -> bool`"
       }
@@ -15199,7 +15199,7 @@
     "`is_command() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1241,
+        "line": 1244,
         "level": 5,
         "title": "`is_command() -> bool`"
       }
@@ -15247,7 +15247,7 @@
     "`is_friend_add() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 659,
+        "line": 662,
         "level": 5,
         "title": "`is_friend_add() -> bool`"
       }
@@ -15255,7 +15255,7 @@
     "`is_friend_delete() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 668,
+        "line": 671,
         "level": 5,
         "title": "`is_friend_delete() -> bool`"
       }
@@ -15263,7 +15263,7 @@
     "`is_friend_request() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 770,
+        "line": 773,
         "level": 5,
         "title": "`is_friend_request() -> bool`"
       }
@@ -15271,7 +15271,7 @@
     "`is_group_member_decrease() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 650,
+        "line": 653,
         "level": 5,
         "title": "`is_group_member_decrease() -> bool`"
       }
@@ -15279,7 +15279,7 @@
     "`is_group_member_increase() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 641,
+        "line": 644,
         "level": 5,
         "title": "`is_group_member_increase() -> bool`"
       }
@@ -15287,7 +15287,7 @@
     "`is_group_message() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 596,
+        "line": 599,
         "level": 5,
         "title": "`is_group_message() -> bool`"
       }
@@ -15295,7 +15295,7 @@
     "`is_group_request() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 779,
+        "line": 782,
         "level": 5,
         "title": "`is_group_request() -> bool`"
       }
@@ -15335,7 +15335,7 @@
     "`is_master() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 465,
+        "line": 468,
         "level": 5,
         "title": "`is_master() -> bool`"
       }
@@ -15351,7 +15351,7 @@
     "`is_message() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 578,
+        "line": 581,
         "level": 5,
         "title": "`is_message() -> bool`"
       }
@@ -15385,7 +15385,7 @@
     "`is_notice() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 632,
+        "line": 635,
         "level": 5,
         "title": "`is_notice() -> bool`"
       }
@@ -15393,7 +15393,7 @@
     "`is_private_message() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 587,
+        "line": 590,
         "level": 5,
         "title": "`is_private_message() -> bool`"
       }
@@ -15401,7 +15401,7 @@
     "`is_processed() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1420,
+        "line": 1423,
         "level": 5,
         "title": "`is_processed() -> bool`"
       }
@@ -15409,7 +15409,7 @@
     "`is_request() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 761,
+        "line": 764,
         "level": 5,
         "title": "`is_request() -> bool`"
       }
@@ -15473,7 +15473,7 @@
     "`is_stopped() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1492,
+        "line": 1495,
         "level": 5,
         "title": "`is_stopped() -> bool`"
       }
@@ -15865,7 +15865,7 @@
     "`mark_processed(claim: bool = True, stop: bool = True)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1429,
+        "line": 1432,
         "level": 5,
         "title": "`mark_processed(claim: bool = True, stop: bool = True)`"
       }
@@ -15881,7 +15881,7 @@
     "`message_tx() -> '_MessageTx'`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1380,
+        "line": 1383,
         "level": 5,
         "title": "`message_tx() -> '_MessageTx'`"
       }
@@ -16644,12 +16644,12 @@
         "title": "`register(conn: Any, *, namespace: str = '', owner: str | None = None, kind: str = '', meta: dict[str, Any] | None = None) -> str`"
       }
     ],
-    "`register(event: Any, future: asyncio.Future, callback: Any = None, validator: Any = None, pattern: str | None = None, regex: str | None = None, owner: str | None = None, session_scope: bool = False, cmdpass: bool | None = None) -> _Entry`": [
+    "`register(event: Any, future: asyncio.Future, callback: Any = None, validator: Any = None, pattern: str | None = None, regex: str | None = None, owner: str | None = None, session_scope: bool = False, cmdpass: bool | None = None, matcher: Any = None) -> _Entry`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
         "line": 207,
         "level": 5,
-        "title": "`register(event: Any, future: asyncio.Future, callback: Any = None, validator: Any = None, pattern: str | None = None, regex: str | None = None, owner: str | None = None, session_scope: bool = False, cmdpass: bool | None = None) -> _Entry`"
+        "title": "`register(event: Any, future: asyncio.Future, callback: Any = None, validator: Any = None, pattern: str | None = None, regex: str | None = None, owner: str | None = None, session_scope: bool = False, cmdpass: bool | None = None, matcher: Any = None) -> _Entry`"
       }
     ],
     "`register(event: str, handler: Callable, *, priority: int = 0)`": [
@@ -16847,7 +16847,7 @@
     "`release(key: str, owner: str | None = None) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 393,
+        "line": 396,
         "level": 5,
         "title": "`release(key: str, owner: str | None = None) -> bool`"
       }
@@ -16875,7 +16875,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1250,
+        "line": 1253,
         "level": 5,
         "title": "`remind(delay: float, text: str | None = None, *, callback: Any = None) -> Any`"
       }
@@ -17285,7 +17285,7 @@
     "`send_chain()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 903,
+        "line": 906,
         "level": 5,
         "title": "`send_chain()`"
       }
@@ -18019,7 +18019,7 @@
     "`supports(method: str) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 941,
+        "line": 944,
         "level": 5,
         "title": "`supports(method: str) -> bool`"
       }
@@ -18127,7 +18127,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
-        "line": 1408,
+        "line": 1411,
         "level": 5,
         "title": "`to_dict() -> dict[str, Any]`"
       }

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1681,
+  "total_keywords": 1688,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -4208,6 +4208,54 @@
         "title": "[BUG-039] 整节写与点分写并存时读写不一致（点分覆写丢失）"
       }
     ],
+    "[BUG-040] 平台切段消息的命令尾部参数静默丢失": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1021,
+        "level": 3,
+        "title": "[BUG-040] 平台切段消息的命令尾部参数静默丢失"
+      }
+    ],
+    "[BUG-041] 被拒绝命令经 alt_message 整链重跑：重复回复与权限函数副作用双触发": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1033,
+        "level": 3,
+        "title": "[BUG-041] 被拒绝命令经 alt_message 整链重跑：重复回复与权限函数副作用双触发"
+      }
+    ],
+    "[BUG-042] 命令处理器内注册的 wait_reply 被同一条触发消息立即消费": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1045,
+        "level": 3,
+        "title": "[BUG-042] 命令处理器内注册的 wait_reply 被同一条触发消息立即消费"
+      }
+    ],
+    "[BUG-043] select() 同键多路等待后者静默取消前者": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1057,
+        "level": 3,
+        "title": "[BUG-043] select() 同键多路等待后者静默取消前者"
+      }
+    ],
+    "[BUG-044] BaseConverter.at() 产出 OB11 遗留 \"at\" 段，全框架 mention 判定不识别": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1069,
+        "level": 3,
+        "title": "[BUG-044] BaseConverter.at() 产出 OB11 遗留 \"at\" 段，全框架 mention 判定不识别"
+      }
+    ],
+    "[BUG-045] 无 alt_message 的适配器上交互原语永久超时、命令穿透失效": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1081,
+        "level": 3,
+        "title": "[BUG-045] 无 alt_message 的适配器上交互原语永久超时、命令穿透失效"
+      }
+    ],
     "__init__.py": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -4435,7 +4483,7 @@
     "escalate：到点必达的升级": [
       {
         "document": "advanced/interaction.md",
-        "line": 108,
+        "line": 115,
         "level": 3,
         "title": "escalate：到点必达的升级"
       }
@@ -4627,7 +4675,7 @@
     "remind：没回复就提醒": [
       {
         "document": "advanced/interaction.md",
-        "line": 88,
+        "line": 95,
         "level": 3,
         "title": "remind：没回复就提醒"
       }
@@ -5087,7 +5135,7 @@
     "与其他系统的关系": [
       {
         "document": "advanced/interaction.md",
-        "line": 233,
+        "line": 249,
         "level": 2,
         "title": "与其他系统的关系"
       }
@@ -5843,7 +5891,7 @@
     "会话互斥：acquire / hold / get_owner_of": [
       {
         "document": "advanced/interaction.md",
-        "line": 156,
+        "line": 172,
         "level": 2,
         "title": "会话互斥：acquire / hold / get_owner_of"
       }
@@ -5851,7 +5899,7 @@
     "会话定时器：remind / escalate": [
       {
         "document": "advanced/interaction.md",
-        "line": 83,
+        "line": 90,
         "level": 2,
         "title": "会话定时器：remind / escalate"
       }
@@ -5867,7 +5915,7 @@
     "会话收件箱：event.history": [
       {
         "document": "advanced/interaction.md",
-        "line": 189,
+        "line": 205,
         "level": 2,
         "title": "会话收件箱：event.history"
       }
@@ -7599,7 +7647,7 @@
     "回复命中的完整判定链": [
       {
         "document": "advanced/interaction.md",
-        "line": 70,
+        "line": 77,
         "level": 3,
         "title": "回复命中的完整判定链"
       }
@@ -8383,7 +8431,7 @@
     "多路等待：expect + select": [
       {
         "document": "advanced/interaction.md",
-        "line": 124,
+        "line": 131,
         "level": 2,
         "title": "多路等待：expect + select"
       }
@@ -12039,7 +12087,7 @@
     "消息事务：message_tx": [
       {
         "document": "advanced/interaction.md",
-        "line": 208,
+        "line": 224,
         "level": 2,
         "title": "消息事务：message_tx"
       }
@@ -12749,7 +12797,7 @@
       },
       {
         "document": "advanced/interaction.md",
-        "line": 240,
+        "line": 256,
         "level": 2,
         "title": "相关文档"
       },
@@ -12994,6 +13042,14 @@
         "title": "第二步：运行机器人"
       }
     ],
+    "等待与命令的边界（命令穿透）": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 53,
+        "level": 3,
+        "title": "等待与命令的边界（命令穿透）"
+      }
+    ],
     "等待任意事件 (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
@@ -13005,7 +13061,7 @@
     "等待会在什么时候被取消": [
       {
         "document": "advanced/interaction.md",
-        "line": 53,
+        "line": 60,
         "level": 3,
         "title": "等待会在什么时候被取消"
       }
@@ -15239,7 +15295,7 @@
     "链路追踪：trace-id": [
       {
         "document": "advanced/interaction.md",
-        "line": 222,
+        "line": 238,
         "level": 2,
         "title": "链路追踪：trace-id"
       }

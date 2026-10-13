@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1709,
+  "total_keywords": 1716,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -4477,7 +4477,7 @@
     "Complete Matching Chain for Reply": [
       {
         "document": "advanced/interaction.md",
-        "line": 63,
+        "line": 67,
         "level": 3,
         "title": "Complete Matching Chain for Reply"
       }
@@ -6034,14 +6034,6 @@
         "line": 402,
         "level": 3,
         "title": "Entering Build Mode"
-      }
-    ],
-    "Entry Template": [
-      {
-        "document": "bug-tracker.md",
-        "line": 65,
-        "level": 2,
-        "title": "Entry Template"
       }
     ],
     "Environment Diagnosis": [
@@ -8260,6 +8252,14 @@
         "title": "Internationalization Configuration"
       }
     ],
+    "Item Template": [
+      {
+        "document": "bug-tracker.md",
+        "line": 65,
+        "level": 2,
+        "title": "Item Template"
+      }
+    ],
     "Jinja Template Example": [
       {
         "document": "ecosystem/takumi.md",
@@ -9157,7 +9157,7 @@
     "Message Transaction: message_tx": [
       {
         "document": "advanced/interaction.md",
-        "line": 187,
+        "line": 196,
         "level": 2,
         "title": "Message Transaction: message_tx"
       }
@@ -9769,7 +9769,7 @@
     "Multi-path Waiting: expect + select": [
       {
         "document": "advanced/interaction.md",
-        "line": 111,
+        "line": 115,
         "level": 2,
         "title": "Multi-path Waiting: expect + select"
       }
@@ -11325,7 +11325,7 @@
       },
       {
         "document": "advanced/interaction.md",
-        "line": 217,
+        "line": 226,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11537,7 +11537,7 @@
     "Relationship with Other Systems": [
       {
         "document": "advanced/interaction.md",
-        "line": 211,
+        "line": 220,
         "level": 2,
         "title": "Relationship with Other Systems"
       }
@@ -12627,7 +12627,7 @@
     "Session Inbox: event.history": [
       {
         "document": "advanced/interaction.md",
-        "line": 169,
+        "line": 178,
         "level": 2,
         "title": "Session Inbox: event.history"
       }
@@ -12635,7 +12635,7 @@
     "Session Mutual Exclusion: acquire / hold / get_owner_of": [
       {
         "document": "advanced/interaction.md",
-        "line": 138,
+        "line": 147,
         "level": 2,
         "title": "Session Mutual Exclusion: acquire / hold / get_owner_of"
       }
@@ -12643,7 +12643,7 @@
     "Session Timers: remind / escalate": [
       {
         "document": "advanced/interaction.md",
-        "line": 75,
+        "line": 79,
         "level": 2,
         "title": "Session Timers: remind / escalate"
       }
@@ -13522,6 +13522,14 @@
         "title": "Testing: TestBot.dispatch returns DispatchTrace"
       }
     ],
+    "The Boundary Between Waiting and Commands (Command Bypass)": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 49,
+        "level": 3,
+        "title": "The Boundary Between Waiting and Commands (Command Bypass)"
+      }
+    ],
     "Timeouts and Retries": [
       {
         "document": "advanced/http-client.md",
@@ -13549,7 +13557,7 @@
     "Trace ID": [
       {
         "document": "advanced/interaction.md",
-        "line": 200,
+        "line": 209,
         "level": 2,
         "title": "Trace ID"
       }
@@ -14434,12 +14442,12 @@
         "title": "When Should You Use Manual Startup?"
       }
     ],
-    "When Will the Waiting Be Cancelled": [
+    "When Will Waiting Be Cancelled": [
       {
         "document": "advanced/interaction.md",
-        "line": 49,
+        "line": 53,
         "level": 3,
-        "title": "When Will the Waiting Be Cancelled"
+        "title": "When Will Waiting Be Cancelled"
       }
     ],
     "When to Regenerate": [
@@ -14544,36 +14552,36 @@
         "title": "Yunhu User Platform Features Documentation"
       }
     ],
-    "[BUG-001] Event handler registration leads to duplicate event processing": [
+    "[BUG-001] Event handler duplication causing multiple event processing": [
       {
         "document": "bug-tracker.md",
         "line": 118,
         "level": 3,
-        "title": "[BUG-001] Event handler registration leads to duplicate event processing"
+        "title": "[BUG-001] Event handler duplication causing multiple event processing"
       }
     ],
-    "[BUG-002] Adapter configuration path type error in Init command": [
+    "[BUG-002] Init command adapter configuration path type error": [
       {
         "document": "bug-tracker.md",
         "line": 138,
         "level": 3,
-        "title": "[BUG-002] Adapter configuration path type error in Init command"
+        "title": "[BUG-002] Init command adapter configuration path type error"
       }
     ],
-    "[BUG-003] Commands fail to trigger after restart": [
+    "[BUG-003] Commands fail after restart": [
       {
         "document": "bug-tracker.md",
         "line": 162,
         "level": 3,
-        "title": "[BUG-003] Commands fail to trigger after restart"
+        "title": "[BUG-003] Commands fail after restart"
       }
     ],
-    "[BUG-004] Lifecycle event handlers not cleared": [
+    "[BUG-004] Lifecycle event handlers not cleaned up": [
       {
         "document": "bug-tracker.md",
         "line": 182,
         "level": 3,
-        "title": "[BUG-004] Lifecycle event handlers not cleared"
+        "title": "[BUG-004] Lifecycle event handlers not cleaned up"
       }
     ],
     "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard": [
@@ -14584,12 +14592,12 @@
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard"
       }
     ],
-    "[BUG-006] adapter.clear() not clearing _started_instances causing incorrect status after restart": [
+    "[BUG-006] adapter.clear() does not clean up _started_instances causing incorrect status after restart": [
       {
         "document": "bug-tracker.md",
         "line": 222,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() not clearing _started_instances causing incorrect status after restart"
+        "title": "[BUG-006] adapter.clear() does not clean up _started_instances causing incorrect status after restart"
       }
     ],
     "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()": [
@@ -14600,44 +14608,44 @@
         "title": "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()"
       }
     ],
-    "[BUG-008] Bot offline events repeatedly submitted during shutdown": [
+    "[BUG-008] Bot offline event repeatedly submitted during shutdown": [
       {
         "document": "bug-tracker.md",
         "line": 262,
         "level": 3,
-        "title": "[BUG-008] Bot offline events repeatedly submitted during shutdown"
+        "title": "[BUG-008] Bot offline event repeatedly submitted during shutdown"
       }
     ],
-    "[BUG-009] LazyModule synchronous access to BaseModule causing incomplete initialization": [
+    "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization": [
       {
         "document": "bug-tracker.md",
         "line": 282,
         "level": 3,
-        "title": "[BUG-009] LazyModule synchronous access to BaseModule causing incomplete initialization"
+        "title": "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization"
       }
     ],
-    "[BUG-010] Multi-threaded configuration system write causing data loss": [
+    "[BUG-010] Multi-threaded configuration writes cause data loss": [
       {
         "document": "bug-tracker.md",
         "line": 302,
         "level": 3,
-        "title": "[BUG-010] Multi-threaded configuration system write causing data loss"
+        "title": "[BUG-010] Multi-threaded configuration writes cause data loss"
       }
     ],
-    "[BUG-011] Windows Ctrl+C unable to stop the program": [
+    "[BUG-011] Windows Ctrl+C cannot stop the program": [
       {
         "document": "bug-tracker.md",
         "line": 325,
         "level": 3,
-        "title": "[BUG-011] Windows Ctrl+C unable to stop the program"
+        "title": "[BUG-011] Windows Ctrl+C cannot stop the program"
       }
     ],
-    "[BUG-012] Hot reload after updating modules does not activate new code": [
+    "[BUG-012] After hot restart, updated module Python code does not take effect": [
       {
         "document": "bug-tracker.md",
         "line": 349,
         "level": 3,
-        "title": "[BUG-012] Hot reload after updating modules does not activate new code"
+        "title": "[BUG-012] After hot restart, updated module Python code does not take effect"
       }
     ],
     "[BUG-013] Module loading strategy sorting logic error": [
@@ -14664,12 +14672,12 @@
         "title": "[BUG-015] Configuration file path depends on working directory"
       }
     ],
-    "[BUG-016] BaseStorage confuses storing None value with missing key": [
+    "[BUG-016] BaseStorage confuses storing value None with key not existing": [
       {
         "document": "bug-tracker.md",
         "line": 429,
         "level": 3,
-        "title": "[BUG-016] BaseStorage confuses storing None value with missing key"
+        "title": "[BUG-016] BaseStorage confuses storing value None with key not existing"
       }
     ],
     "[BUG-017] WebSocket route auto_accept flag lost after service restart": [
@@ -14680,12 +14688,12 @@
         "title": "[BUG-017] WebSocket route auto_accept flag lost after service restart"
       }
     ],
-    "[BUG-018] Concurrent calls to HTTP/WS client cause crashes and connection leaks": [
+    "[BUG-018] Concurrent calls to HTTP/WS clients cause crashes and connection leaks": [
       {
         "document": "bug-tracker.md",
         "line": 469,
         "level": 3,
-        "title": "[BUG-018] Concurrent calls to HTTP/WS client cause crashes and connection leaks"
+        "title": "[BUG-018] Concurrent calls to HTTP/WS clients cause crashes and connection leaks"
       }
     ],
     "[BUG-019] Adapter hot reload causes route conflicts leading to reload failure": [
@@ -14696,20 +14704,20 @@
         "title": "[BUG-019] Adapter hot reload causes route conflicts leading to reload failure"
       }
     ],
-    "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in the script's directory": [
+    "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in script's directory": [
       {
         "document": "bug-tracker.md",
         "line": 521,
         "level": 3,
-        "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in the script's directory"
+        "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in script's directory"
       }
     ],
-    "[BUG-021] SQL query builder rejects valid wildcards and list expressions": [
+    "[BUG-021] SQL query builder rejects valid wildcard and list expressions": [
       {
         "document": "bug-tracker.md",
         "line": 541,
         "level": 3,
-        "title": "[BUG-021] SQL query builder rejects valid wildcards and list expressions"
+        "title": "[BUG-021] SQL query builder rejects valid wildcard and list expressions"
       }
     ],
     "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)": [
@@ -14720,28 +14728,28 @@
         "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)"
       }
     ],
-    "[BUG-023] After modifying account configuration, adapter cache is not refreshed causing account resolution failure": [
+    "[BUG-023] After modifying account configuration, adapter cache is not refreshed, causing account resolution failure": [
       {
         "document": "bug-tracker.md",
         "line": 609,
         "level": 3,
-        "title": "[BUG-023] After modifying account configuration, adapter cache is not refreshed causing account resolution failure"
+        "title": "[BUG-023] After modifying account configuration, adapter cache is not refreshed, causing account resolution failure"
       }
     ],
-    "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill": [
+    "[BUG-024] storage.set() writing large numeric key triggers OOM Kill": [
       {
         "document": "bug-tracker.md",
         "line": 629,
         "level": 3,
-        "title": "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill"
+        "title": "[BUG-024] storage.set() writing large numeric key triggers OOM Kill"
       }
     ],
-    "[BUG-025] on_config_update callback not called by core route": [
+    "[BUG-025] on_config_update callback not called by core router": [
       {
         "document": "bug-tracker.md",
         "line": 675,
         "level": 3,
-        "title": "[BUG-025] on_config_update callback not called by core route"
+        "title": "[BUG-025] on_config_update callback not called by core router"
       }
     ],
     "[BUG-026] notice/request event reply target inference error": [
@@ -14752,12 +14760,12 @@
         "title": "[BUG-026] notice/request event reply target inference error"
       }
     ],
-    "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limiting rules to fail": [
+    "[BUG-027] Router rate limiting cleanup task uses fixed window causing long window rate limit rules to fail": [
       {
         "document": "bug-tracker.md",
         "line": 736,
         "level": 3,
-        "title": "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limiting rules to fail"
+        "title": "[BUG-027] Router rate limiting cleanup task uses fixed window causing long window rate limit rules to fail"
       }
     ],
     "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions": [
@@ -14768,60 +14776,60 @@
         "title": "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions"
       }
     ],
-    "[BUG-030] Configuration watcher race condition causes setConfig delay write silently loses data": [
+    "[BUG-030] Configuration watcher race condition causes setConfig delayed write to silently drop data": [
       {
         "document": "bug-tracker.md",
         "line": 804,
         "level": 3,
-        "title": "[BUG-030] Configuration watcher race condition causes setConfig delay write silently loses data"
+        "title": "[BUG-030] Configuration watcher race condition causes setConfig delayed write to silently drop data"
       }
     ],
-    "[BUG-032] Configuration delay write period \"write after read\" reads old value": [
+    "[BUG-032] Configuration delay write period \"write after read immediately\" reads old value": [
       {
         "document": "bug-tracker.md",
         "line": 840,
         "level": 3,
-        "title": "[BUG-032] Configuration delay write period \"write after read\" reads old value"
+        "title": "[BUG-032] Configuration delay write period \"write after read immediately\" reads old value"
       }
     ],
-    "[BUG-033] wait_reply hangs and replies are starved by high-priority processors": [
+    "[BUG-033] wait_reply hangs up reply being starved by high-priority processor": [
       {
         "document": "bug-tracker.md",
         "line": 862,
         "level": 3,
-        "title": "[BUG-033] wait_reply hangs and replies are starved by high-priority processors"
+        "title": "[BUG-033] wait_reply hangs up reply being starved by high-priority processor"
       }
     ],
-    "[BUG-034] Scope persist=False runtime binding is silently overwritten by any subsequent configuration write": [
+    "[BUG-034] persist=False runtime binding is silently overwritten by any subsequent configuration write": [
       {
         "document": "bug-tracker.md",
         "line": 884,
         "level": 3,
-        "title": "[BUG-034] Scope persist=False runtime binding is silently overwritten by any subsequent configuration write"
+        "title": "[BUG-034] persist=False runtime binding is silently overwritten by any subsequent configuration write"
       }
     ],
-    "[BUG-035] Configuration panel select options and dict fields rendered as [object Object]": [
+    "[BUG-035] Configuration panel select options and dict fields render as [object Object]": [
       {
         "document": "bug-tracker.md",
         "line": 904,
         "level": 3,
-        "title": "[BUG-035] Configuration panel select options and dict fields rendered as [object Object]"
+        "title": "[BUG-035] Configuration panel select options and dict fields render as [object Object]"
       }
     ],
-    "[BUG-036] Multi-instance shared configuration directory causes occasional configuration write failures (ENOENT)": [
+    "[BUG-036] Multi-instance shared configuration directory causes occasional configuration write failure (ENOENT)": [
       {
         "document": "bug-tracker.md",
         "line": 922,
         "level": 3,
-        "title": "[BUG-036] Multi-instance shared configuration directory causes occasional configuration write failures (ENOENT)"
+        "title": "[BUG-036] Multi-instance shared configuration directory causes occasional configuration write failure (ENOENT)"
       }
     ],
-    "[BUG-037] Space-separated command names registered as subcommands never trigger": [
+    "[BUG-037] Space-separated command names registered as subcommands can never be triggered": [
       {
         "document": "bug-tracker.md",
         "line": 948,
         "level": 3,
-        "title": "[BUG-037] Space-separated command names registered as subcommands never trigger"
+        "title": "[BUG-037] Space-separated command names registered as subcommands can never be triggered"
       }
     ],
     "[BUG-038] persist=False runtime bindings are written to disk along with persistent writes, reviving from disk after module unloading": [
@@ -14832,12 +14840,60 @@
         "title": "[BUG-038] persist=False runtime bindings are written to disk along with persistent writes, reviving from disk after module unloading"
       }
     ],
-    "[BUG-039] Reading and writing inconsistency with section write and dot write (dot overwrite lost)": [
+    "[BUG-039] Inconsistent read and write with simultaneous whole-section and dot-section writing (dot-section overwrite lost)": [
       {
         "document": "bug-tracker.md",
         "line": 996,
         "level": 3,
-        "title": "[BUG-039] Reading and writing inconsistency with section write and dot write (dot overwrite lost)"
+        "title": "[BUG-039] Inconsistent read and write with simultaneous whole-section and dot-section writing (dot-section overwrite lost)"
+      }
+    ],
+    "[BUG-040] Command tail parameters lost silently when platform segments messages": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1020,
+        "level": 3,
+        "title": "[BUG-040] Command tail parameters lost silently when platform segments messages"
+      }
+    ],
+    "[BUG-041] Rejected commands rerun via alt_message chain: duplicate replies and permission function side effects triggered twice": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1034,
+        "level": 3,
+        "title": "[BUG-041] Rejected commands rerun via alt_message chain: duplicate replies and permission function side effects triggered twice"
+      }
+    ],
+    "[BUG-042] wait_reply registered within command handler is immediately consumed by the same triggering message": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1048,
+        "level": 3,
+        "title": "[BUG-042] wait_reply registered within command handler is immediately consumed by the same triggering message"
+      }
+    ],
+    "[BUG-043] select() with same key multiple waits silently cancels the former": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1062,
+        "level": 3,
+        "title": "[BUG-043] select() with same key multiple waits silently cancels the former"
+      }
+    ],
+    "[BUG-044] BaseConverter.at() produces OB11 legacy \"at\" segment, whole framework mention judgment does not recognize": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1076,
+        "level": 3,
+        "title": "[BUG-044] BaseConverter.at() produces OB11 legacy \"at\" segment, whole framework mention judgment does not recognize"
+      }
+    ],
+    "[BUG-045] Interaction primitives permanently timeout and command penetration fail when no alt_message": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1090,
+        "level": 3,
+        "title": "[BUG-045] Interaction primitives permanently timeout and command penetration fail when no alt_message"
       }
     ],
     "__init__.py": [
@@ -15056,12 +15112,12 @@
         "title": "dump_state()"
       }
     ],
-    "escalate: Guaranteed Delivery at a Point in Time": [
+    "escalate: Guaranteed Escalation on Time": [
       {
         "document": "advanced/interaction.md",
-        "line": 96,
+        "line": 100,
         "level": 3,
-        "title": "escalate: Guaranteed Delivery at a Point in Time"
+        "title": "escalate: Guaranteed Escalation on Time"
       }
     ],
     "get() Method": [
@@ -15240,12 +15296,12 @@
         "title": "pyproject.toml Configuration"
       }
     ],
-    "remind: Remind if No Reply": [
+    "remind: Gentle Reminder if No Reply": [
       {
         "document": "advanced/interaction.md",
-        "line": 79,
+        "line": 83,
         "level": 3,
-        "title": "remind: Remind if No Reply"
+        "title": "remind: Gentle Reminder if No Reply"
       }
     ],
     "run": [
