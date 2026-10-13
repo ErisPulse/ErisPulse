@@ -310,7 +310,9 @@ jobs:
           if uv run --python 3.14t --isolated python -c "import ErisPulse" 2>uv_314t_err.log; then
             echo "3.14t import smoke passed; running unit tests..."
             # --isolated 环境只装运行依赖，不装任何依赖组/extras，测试依赖须经 --extra test 显式带入
-            uv run --python 3.14t --isolated --extra test pytest tests/unit -p no:cacheprovider -q --no-cov
+            # 经 pytest.main + os._exit 硬退出：3.14t 测试全部完成后解释器收尾阶段会卡住不退出
+            # （仅影响进程生命周期，结果在收尾前已完整输出），跳过收尾以保住退出码
+            uv run --python 3.14t --isolated --extra test python -c "import sys, pytest, os; code = pytest.main(['tests/unit', '-p', 'no:cacheprovider', '-q', '--no-cov']); sys.stdout.flush(); sys.stderr.flush(); os._exit(code)"
           else
             echo "::warning::Python 3.14t smoke skipped: cp314t dependency wheels unavailable"
             cat uv_314t_err.log || true
