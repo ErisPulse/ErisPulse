@@ -74,6 +74,42 @@
 
 ---
 
+## [2.10.1-dev.0] - 2026/10/13
+> 开发版（预发布）
+
+**版本摘要**
+本版本为命令与消息处理链路的健壮性维护：修复多段消息参数丢失、"先 @ 后命令"不可达、拒绝路径重复回复与权限副作用双触发、交互等待被命令触发消息重入消费、`select` 同键多路互踢、坏模块条件函数拖死分发链等一批深层缺陷；同期统一 mention/at 语义（converter 产出 OB12 规范 `mention` 段）、补齐无 `alt_message` 适配器的全链路文本回退。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 升级原因：全部为缺陷修复与防御加固，无新 API；依赖"被拒命令经 alt_message 重跑"或"会话键不含 detail_type"旧行为的场景需按下述注意事项核对
+
+**注意事项**
+- 命令分发文本由"仅首个 text 段"改为**全部 text 段按序拼接**：平台切段导致此前静默丢失的尾部参数现在会进入 `args`（修复性质的行为变更）
+- 多前缀配置改为**最长前缀优先**（如 `["/a", "/ab"]` 下 `/ab` 组命令此前不可达）；命令前缀匹配容忍前导空白
+- `BaseConverter.at()` 产出由 `{"type":"at"}` 修正为 OB12 规范 `{"type":"mention"}`（全框架 mention 判定此前不识别 "at" 形态）；依赖旧形态的适配器请同步
+- 会话级等待键并入 `detail_type`：同平台同 bot 下 user 与 group 同数值 id 不再互相命中（进程内等待，无持久化迁移）
+- `overrides` 的 pattern 文本条件对 **message 事件空文本改为不命中**（与 message 装饰器口径一致，纯图片等无文本消息不再绕过 pattern）；notice / meta 维持放行
+
+### 修复
+
+- @YingXinche
+  - `Core/Event/command` 命令分发链路：
+    - 多 text 段丢失：命令文本改为按段顺序收集全部 text 段（空格拼接），平台切段（如 mention 前后各一段）不再丢失尾部参数；mention/图片夹层不再导致命令整体无法解析
+    - 畸形段防御：`message` 为 None/字符串（OB11 遗留）、段列表混入非 dict 元素、`data` 非 dict 时不再击穿分发器并连带跳过交互等待解析
+    - 拒绝路径重跑：scope / ACL / master / permission 拒绝后不再经 `alt_message` 重跑整链——消除重复"权限拒绝"回复、用户权限函数副作用双触发、scope 重复 trace（命中注册命令即止，未命中时 alt 兜底语义不变）
+    - 交互重入：命令处理器内新注册的 `wait_reply` 不再被同一条触发消息立即消费（分发链收敛为单次 `interaction.resolve`，非命令消息的 pattern/validator 双跑同步消除）
+    - 前缀健壮化：多前缀最长匹配优先；前导空白容忍（"@bot /kick" 场景首段 " /kick" 可命中）；`must_at_bot` 的 user_id 比较两侧 `str()` 归一、self 标识回退 `account_id`
+  - `Core/Event/interaction` / `wrapper`：
+    - `select()` 改为聚合等待：全部期望合并单条目 + 自定义 matcher，同键多路（同 user 不同 pattern 等）不再被"冲突"静默取消、`InteractionCancelled` 不再击穿调用方
+    - 命令穿透（cmdpass）与 confirm / choose / collect 的文本统一走 `alt_message` 优先 + 消息段回退口径——仅填 message 段的适配器上交互原语不再永久超时、命令穿透不再失效
+  - `Core/Event/base` 事件条件逐 handler 异常隔离：一个坏模块的条件函数崩溃按"不命中"处理并留痕，不再拖死同事件全部处理器（含命令分发器）
+  - `Core/Bases/converter` `at()` 产出修正为 OB12 规范 `mention` 段（保留方法名别名，新增 `mention` 别名）
+  - `Event.get_text() / get_message_text()` 无 `alt_message` 时回退为 text 段拼接（此前静默返回空串，脚手架示例在未填 alt 的适配器上失效）
+  - 边界加固：`MessageBuilder.build()` 深拷贝防产物回写污染、`mention()/reply()` 空参 fail-fast、命令空名/非字符串名注册期校验、会话级键并入 `detail_type`、`platform` 非字符串守卫、mixin 覆盖 dict 内建名与 `command` 键冲突告警
+
+---
+
 ## [2.10.0] - 2026/10/11
 > 正式发布
 
@@ -88,7 +124,7 @@
 - 模块卸载 / 适配器停止现在会**关闭并注销其名下登记的全部连接**（服务端 WS/SSE + 出站 WS），日志订阅（`logger.handler`）与对话恢复工厂也会随卸载统一注销——这是杜绝泄漏的预期行为，依赖旧行为的组件需知悉
 - 放开会话收件箱保留策略（`transcript.set_retention` 传 0 或大值）会让 `transcript` 表随消息量无限增长（磁盘/下游内存风险），操作前阅读 `docs/advanced/transcript.md` 风险专节
 - 路由路径（含模块名前缀）大小写敏感：模块名 `Test` 注册 `/api` 的实际路径为 `/Test/api`，访问 `/test/api` 返回 404
-- `epsdk init` / `epsdk create` 生成物已切换为根导入写法（`from ErisPulse.Core.*` 深路径不受影响）；模块模板不再生成模块级 `enabled` 配置开关——模块启停由框架统一管理，新项目配置段只含业务参数
+- `epsdk init` / `epsdk create` 生成物已切换为根导入写法（`from ErisPulse.Core.*` 深路径不受影响），生成物的 `min_sdk_version` 与 `erispulse>=` 依赖下限自本版起为 `2.10.0`；模块模板不再生成模块级 `enabled` 配置开关——模块启停由框架统一管理，新项目配置段只含业务参数
 
 ---
 

@@ -42,10 +42,10 @@ SOFTWARE.
 """
 
 # 生成模块/适配器模板的最低 SDK 地板（写入模板 min_sdk_version 字段）。
-# 模板示例使用 args=/options=（2.9 特性）；pip 默认不解析预发布版本，
-# 该地板不得高于已发布的正式版本，否则生成的组件会因依赖装不上或
+# 模板示例使用根导入契约（2.10 特性）与 args=/options=（2.9 特性）；pip 默认不解析
+# 预发布版本，该地板不得高于已发布的正式版本，否则生成的组件会因依赖装不上或
 # 加载器按 PEP 440 拒载（与 CLI/constants.py 的 INIT_ERISPULSE_DEPENDENCY 同步升版）。
-_TEMPLATE_MIN_SDK_VERSION = "2.9.0"
+_TEMPLATE_MIN_SDK_VERSION = "2.10.0"
 
 _MODULE_PYPROJECT = """[project]
 name = "ErisPulse-{name}"

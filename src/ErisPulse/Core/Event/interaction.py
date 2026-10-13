@@ -83,6 +83,7 @@ class _Entry:
         "future",
         "key",
         "kind",
+        "matcher",
         "owner",
         "pattern",
         "platform",
@@ -103,6 +104,8 @@ class _Entry:
         self.validator: Any = None
         self.pattern: str | None = None
         self.regex: str | None = None
+        # 自定义匹配器（select 多路等待聚合用）：提供时完全取代 pattern/regex/validator 链
+        self.matcher: Any = None
         # 命令穿透三态（2.8.3）：None=跟随全局配置 / True=强制豁免 / False=强制吞
         self.cmdpass: bool | None = None
         # lease 类别字段
@@ -290,7 +293,10 @@ class InteractionManager:
         _send_type, target_id = get_send_type_and_target_id(event, platform)
         self_info = event.get("self") or {}
         bot_id = self_info.get("account_id", "") or self_info.get("user_id", "")
-        return f"{platform}:{bot_id}:{target_id}"
+        # 并入 detail_type：同平台同 bot 下 user_id 与 group_id 数值碰撞时
+        # （如 user 123 与 group 123），私聊与群聊的会话级等待不再互相命中
+        detail_type = event.get("detail_type") or ""
+        return f"{platform}:{bot_id}:{detail_type}:{target_id}"
 
     # ==================== 索引维护 ====================
 
@@ -342,6 +348,7 @@ class InteractionManager:
         owner: str | None = None,
         session_scope: bool = False,
         cmdpass: bool | None = None,
+        matcher: Any = None,
     ) -> _Entry:
         """
         {!--< internal-use >!--}
@@ -361,6 +368,8 @@ class InteractionManager:
         :param session_scope: 会话级等待（同会话任何人的回复均可命中，键不含 user 维度）
         :param cmdpass: 是否跳过命令匹配的三态（None=跟随全局配置，默认不跳过；
             True=跳过命令匹配，等待期间消息一律作为回复消费）
+        :param matcher: 自定义命中判定函数 ``callable(Event) -> bool``，提供时完全取代
+            pattern/regex/validator 链（select 多路等待的聚合入口；异常按不命中处理）
         :return: 注册的条目（含推导的会话键）
         """
         if session_scope:
@@ -383,6 +392,7 @@ class InteractionManager:
         entry.pattern = pattern
         entry.regex = regex
         entry.cmdpass = cmdpass
+        entry.matcher = matcher
         entry.timestamp = time.monotonic()
 
         if session_scope:
@@ -430,9 +440,13 @@ class InteractionManager:
                 .get("cmdpass", DEFAULT_WAIT_REPLY_CMDPASS)
             )
         if not cmdpass and event.get("type", "") == "message":
+            # 文本口径与命令分发一致（alt_message 优先 + 段回退）：
+            # 仅填 message 段的事件此前判空直接放行，命令穿透永不生效。
+            # 经 extract_text 提取：resolve 的入参可能是裸 dict（非 Event 包装）
+            from ..text_match import extract_text
             from .command import command as _command_handler
 
-            text = event.get("alt_message", "") or ""
+            text = extract_text(event)
             if text and _command_handler._is_command_text(text):
                 logger.trace(
                     i18n.t(
@@ -444,10 +458,16 @@ class InteractionManager:
                 )
                 return False
 
-        # pattern（glob）/ regex（正则）过滤：不匹配则继续等待（不消费 future）
-        if entry.pattern or entry.regex:
-            text_cond = compile_text_matcher(entry.pattern, entry.regex)
-            if text_cond is not None and not text_cond(event):
+        # 命中判定：matcher（自定义聚合判定，select 多路等待用）优先，
+        # 否则走 pattern（glob）/ regex（正则）过滤 + validator 校验链——
+        # 不匹配则继续等待（不消费 future）
+        if entry.matcher is not None:
+            try:
+                matched = bool(entry.matcher(event))
+            except Exception as e:
+                logger.error(i18n.t("core.interaction.matcher_error", error=e))
+                matched = False
+            if not matched:
                 logger.trace(
                     i18n.t(
                         "core.interaction.reply_not_matched",
@@ -457,23 +477,35 @@ class InteractionManager:
                     )
                 )
                 return False
-
-        # validator 校验：失败则继续等待
-        validator = entry.validator
-        if validator is not None:
-            try:
-                if not validator(event):
+        else:
+            if entry.pattern or entry.regex:
+                text_cond = compile_text_matcher(entry.pattern, entry.regex)
+                if text_cond is not None and not text_cond(event):
                     logger.trace(
                         i18n.t(
-                            "core.interaction.reply_validation_failed",
+                            "core.interaction.reply_not_matched",
                             wait_key=key,
                             user_id=event.get("user_id", ""),
+                            platform=event.get("platform", UNKNOWN_PLATFORM),
                         )
                     )
                     return False
-            except Exception as e:
-                logger.error(i18n.t("core.interaction.validator_error", error=e))
-                return False
+
+            validator = entry.validator
+            if validator is not None:
+                try:
+                    if not validator(event):
+                        logger.trace(
+                            i18n.t(
+                                "core.interaction.reply_validation_failed",
+                                wait_key=key,
+                                user_id=event.get("user_id", ""),
+                            )
+                        )
+                        return False
+                except Exception as e:
+                    logger.error(i18n.t("core.interaction.validator_error", error=e))
+                    return False
 
         # 权限复查：会话建立后被拉黑 / owner 模块被解绑 → 终止等待
         revoked_reason = self._check_revoked(entry, event)

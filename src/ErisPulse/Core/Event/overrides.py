@@ -363,15 +363,19 @@ def condition_for(event_type: str, owner: str) -> "Callable[[Any], bool] | None"
                     if dt and not dt_matcher(dt):
                         return False
                 if text_matcher is not None:
-                    # 无文本事件不受文本条件约束（pattern 不会误杀 notice / meta）
                     try:
-                        if not text_match.extract_text(event):
-                            return True
+                        _has_text = bool(text_match.extract_text(event))
                     except Exception as e:
                         # 提取失败按"有文本"处理交由 matcher 自行提取，留痕供排查
                         logger.trace(
                             i18n.t("core.event.overrides_text_extract_failed", error=e)
                         )
+                        _has_text = True
+                    if not _has_text:
+                        # message 事件空文本 = 不命中（与 message 装饰器口径一致，
+                        # 纯图片等无文本消息不再绕过 pattern 直接触发处理器）；
+                        # notice / meta 等无文本事件不受文本条件约束（避免误杀）
+                        return event_type != "message"
                     return text_matcher(event)  # matcher 内部自行提取文本
                 return True
 
