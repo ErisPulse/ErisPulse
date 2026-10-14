@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "48aaa0fff964cb44a4041f7219e0e4fb",
-  "file_hash": "48aaa0fff964cb44a4041f7219e0e4fb",
-  "translated_at": "2026-10-09T14:52:27.910899",
+  "hash": "310a226fadbdb1e4f9438119924810d5",
+  "file_hash": "310a226fadbdb1e4f9438119924810d5",
+  "translated_at": "2026-10-14T03:08:55.081220",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "7bcdbe2822393ffcb164bd618230344c",
-      "translation": "# エラーシステムとキャッチガイド\n\nErisPulse におけるすべての独自例外は `ErisPulseError` を継承しており、aiohttp や aiomysql などの下層ライブラリの例外は、フレームワーク内でキャッチされ、対応する ErisPulse 例外に変換されます。業務コードでは**下層ライブラリの例外型に依存する必要はありません**。\n\n{!--< tips >!--}\n1. 幅広くカバーしたい場合：`ErisPulseError`（すべてのフレームワーク例外の基底クラス）をキャッチ\n2. 精度を重視した処理をしたい場合：モジュールごとにキャッチ（例：`ModuleCallTimeoutError`、`StorageUnreachableError`）\n3. ストレージ操作はデフォルトで例外をスローしません：失敗時はログを記録し、`False / None / default` を返します。接続状態の変化は `storage.unreachable` / `storage.recovered` イベントをサブスクライブしてください。\n{!--< /tips >!--}"
+      "hash": "f5279cb51c0e876a32829e9c2a6f94a9",
+      "translation": "# エラー体系とキャッチのガイド\n\n> [!NOTE]\n> **L1の必須項目** —— ホームページの「読むべき順」にある5つのコアドキュメントの1つで、モジュール開発に不可欠です。\n\nErisPulseのすべてのカスタムエラーは `ErisPulseError` を継承しており、aiohttp、aiomysqlなどのライブラリのエラーは、フレームワーク内でキャッチされ、対応するErisPulseのエラーに変換されます。業務コードでは**下位ライブラリのエラー型に依存する必要はありません**。\n\n{!--< tips >!--}\n1. 一般的なエラーを網羅的に処理したい場合：`ErisPulseError` をキャッチする（フレームワークのすべてのエラーの基底クラス）\n2. 精度を高めて処理したい場合：モジュールごとにキャッチする（例：`ModuleCallTimeoutError`、`StorageUnreachableError`）\n3. ストレージ操作はデフォルトでエラーをスローしない：失敗時はログを記録し、`False / None / default` を返す。接続状態の変化は `storage.unreachable` / `storage.recovered` イベントをサブスクライブする。\n{!--< /tips >!--}"
     },
     {
       "hash": "a729f3a16f39abddf7670ad8861bab01",

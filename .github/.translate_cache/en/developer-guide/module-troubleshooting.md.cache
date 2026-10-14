@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "5296ab5e162bbe403d630d153562fec1",
-  "file_hash": "5296ab5e162bbe403d630d153562fec1",
-  "translated_at": "2026-09-23T07:37:43.989031",
+  "hash": "b8518df82f5b4a9120e963531f41d0de",
+  "file_hash": "b8518df82f5b4a9120e963531f41d0de",
+  "translated_at": "2026-10-14T03:11:24.278387",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "e7ee1375b57c8f4dbb50b50a7bfe7e55",
-      "translation": "# Module Troubleshooting Guide\n\nWhen a module \"doesn't respond,\" it can be categorized into three types of issues, each with corresponding framework diagnostic tools (RFC EPRFC-2026-001 Direction Five):\n\n| Symptom | Diagnostic Tool | Diagnostic Level |\n|---------|----------------|------------------|\n| Module not loaded | `ErisPulse.runtime.explain_module(name)` | Registration and loading chain |\n| Event not handled | `ErisPulse.runtime.explain_event(event)` | Distribution entry point check |\n| Command not triggered | Distribution decision chain (test side `DispatchTrace` / framework built-in `trace`) | Command determination chain |\n\nBoth diagnostic functions are **pure read** operations, do not change any state, and can be called at any time; they return a machine-readable dict, which can be rendered into human-readable text using `format_report()`."
+      "hash": "533bdfe89cafe6b6653248c0b45c082b",
+      "translation": "# Module Troubleshooting Guide\n\n> [!TIP]\n> **When to read this**: When a module \"doesn't respond\", commands don't trigger, or events aren't received. Skip if not needed, as it does not affect the use of other features.\n\nWhen a module \"doesn't respond\", symptoms are categorized into three types, each with corresponding framework diagnostic tools (RFC EPRFC-2026-001 Direction Five):\n\n| Symptom | Diagnostic Tool | Positioning Level |\n|------|---------|---------|\n| Module not loaded | `ErisPulse.runtime.explain_module(name)` | Registration and Loading Chain |\n| Event not responded | `ErisPulse.runtime.explain_event(event)` | Distribution Entry Check |\n| Command not triggered | Distribution Decision Chain (Test side `DispatchTrace` / Framework built-in `trace`) | Command Determination Chain |\n\nBoth diagnostic functions are **pure read** operations that do not change any state and can be called at any time; they return machine-readable dicts, which can be rendered into human-readable text using `format_report()`."
     },
     {
       "hash": "68b8a2d39c9da82c2710f7523960f0ac",

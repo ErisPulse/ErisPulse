@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "ccf145605ccbcde6645ba7b1fd9d02a4",
-  "file_hash": "ccf145605ccbcde6645ba7b1fd9d02a4",
-  "translated_at": "2026-09-07T10:50:11.429227",
+  "hash": "1fac5bb37de4ea824d5547dc48aaabf6",
+  "file_hash": "1fac5bb37de4ea824d5547dc48aaabf6",
+  "translated_at": "2026-10-14T03:11:10.831019",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "beaaca1a9a89664f37264436e23a6a42",
-      "translation": "# MessageBuilder 详解\n\n`MessageBuilder` は ErisPulse が提供する OneBot12 標準のメッセージセグメント構築ツールであり、構造化されたメッセージ内容を構築し、`Send.Raw_ob12()` と共に使用します。"
+      "hash": "4bafc7cbfc9d915b4083731a2c6f9613",
+      "translation": "# MessageBuilder 详解\n\n> [!TIP]\n> **この記事を読む必要があるのは**：複雑な / 複数のメッセージセグメントを構築する場合です。必要ない場合は飛ばしても、他の機能の使用に影響はありません。\n\n`MessageBuilder` は ErisPulse が提供する OneBot12 標準のメッセージセグメント構築ツールであり、構造化されたメッセージ内容を構築するために使用します。`Send.Raw_ob12()` と併用します。"
     },
     {
       "hash": "2500525151763f3bec08079067fc08cb",

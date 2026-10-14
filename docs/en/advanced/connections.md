@@ -1,9 +1,13 @@
 # Connection Pool and Broadcasting
 
-Connections (server-side WebSocket / SSE / client-side outbound WebSocket) are **first-class resources at the framework level** in ErisPulse:  
-They are automatically registered into a unified registry upon establishment, supporting broadcasting, business group subscription, and cross-module transfer/reuse. When a module is unloaded, the framework automatically closes and recovers them—business logic no longer needs to manually create `_ws_clients` collections, nor will memory leaks occur due to forgotten cleanup.
+> [!TIP]
+> **When to read this**: When you need WebSocket/SSE connection pooling, broadcast groups, cross-module push, or when checking connections. If not needed, skip this section; it won't affect the use of other features.
 
-> The examples in this document use **root import** syntax (recommended for 2.10+):  
+Connections (server-side WebSocket / SSE / client-side outbound WebSocket) in ErisPulse are **first-class resources at the framework level**:
+Upon connection establishment, they are automatically registered into a unified registry, supporting broadcast, business group subscription, and cross-module transfer/reuse.
+When modules are unloaded, the framework automatically closes and recycles them—business logic no longer needs to manually create `_ws_clients` collections, nor will memory leaks occur due to forgotten cleanup.
+
+> All examples in this document use **root import** syntax (recommended for 2.10+):
 > `from ErisPulse import connections, router, client, WebSocketConnection`
 
 ## Overview

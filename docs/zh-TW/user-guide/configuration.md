@@ -1,7 +1,11 @@
 # 配置文件說明
-> 這個文件會介紹框架的配置文件，如果有第三方模組需要配置，請參考模組的文件。
 
-ErisPulse 使用 TOML 格式的配置文件 `config/config.toml` 來管理專案配置。
+> [!NOTE]
+> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
+
+> 此文件會介紹框架的配置文件，如果有第三方模組需要設定，請參考模組的文件。
+
+ErisPulse 使用 TOML 格式的配置文件 `config/config.toml` 來管理專案設定。
 
 ## 配置文件位置
 
@@ -184,7 +188,6 @@ flowchart TD
 | 模組 | 路由到 `on_config_update` | 各模組 `on_config_update(old, new)` 回呼 |
 | 存儲 | `config.updated` | `use_global_db` 變更**僅警告**（需重啟） |
 | 路由 | `config.updated` | `cors.*` / `security.*` 變更**僅警告**（需重啟） |
-
 
 ## 配置讀取與刪除 API
 

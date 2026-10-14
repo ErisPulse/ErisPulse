@@ -1,6 +1,9 @@
 # Publishing and Module Store Guide
 
-Publish your developed modules or adapters to the ErisPulse Module Store, allowing other users to easily discover and install them.
+> [!TIP]
+> **When to read this**: When publishing your work to PyPI / the module store. If not needed, skip it, as it does not affect the use of other features.
+
+Publish your developed module or adapter to the ErisPulse module store, so other users can easily discover and install it.
 
 ## Module Store Overview
 

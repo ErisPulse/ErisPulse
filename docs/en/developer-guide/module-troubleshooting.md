@@ -1,14 +1,17 @@
 # Module Troubleshooting Guide
 
-When a module "doesn't respond," it can be categorized into three types of issues, each with corresponding framework diagnostic tools (RFC EPRFC-2026-001 Direction Five):
+> [!TIP]
+> **When to read this**: When a module "doesn't respond", commands don't trigger, or events aren't received. Skip if not needed, as it does not affect the use of other features.
 
-| Symptom | Diagnostic Tool | Diagnostic Level |
-|---------|----------------|------------------|
-| Module not loaded | `ErisPulse.runtime.explain_module(name)` | Registration and loading chain |
-| Event not handled | `ErisPulse.runtime.explain_event(event)` | Distribution entry point check |
-| Command not triggered | Distribution decision chain (test side `DispatchTrace` / framework built-in `trace`) | Command determination chain |
+When a module "doesn't respond", symptoms are categorized into three types, each with corresponding framework diagnostic tools (RFC EPRFC-2026-001 Direction Five):
 
-Both diagnostic functions are **pure read** operations, do not change any state, and can be called at any time; they return a machine-readable dict, which can be rendered into human-readable text using `format_report()`.
+| Symptom | Diagnostic Tool | Positioning Level |
+|------|---------|---------|
+| Module not loaded | `ErisPulse.runtime.explain_module(name)` | Registration and Loading Chain |
+| Event not responded | `ErisPulse.runtime.explain_event(event)` | Distribution Entry Check |
+| Command not triggered | Distribution Decision Chain (Test side `DispatchTrace` / Framework built-in `trace`) | Command Determination Chain |
+
+Both diagnostic functions are **pure read** operations that do not change any state and can be called at any time; they return machine-readable dicts, which can be rendered into human-readable text using `format_report()`.
 
 ## Scenario 1: Module Not Loaded
 

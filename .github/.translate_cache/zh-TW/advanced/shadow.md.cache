@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "dffe430799a6d7c4d188b0ebd9cd08e9",
-  "file_hash": "dffe430799a6d7c4d188b0ebd9cd08e9",
-  "translated_at": "2026-09-26T20:51:05.301790",
+  "hash": "b8e1891a7b064a7e26a9d7725edb07f8",
+  "file_hash": "b8e1891a7b064a7e26a9d7725edb07f8",
+  "translated_at": "2026-10-14T03:12:29.207382",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "545f15cac1afa8bee17efa5df1041d52",
-      "translation": "# 影子模組與灰度轉正\n\n影子 = 同一模組的**新版本**，以獨立 owner（如 `roll_shadow`）與線上舊版並存試運行：它收到真實事件的**副本**、其出站被**攔截記帳**而非真正發出——在 `shadow_diff` 裡對比兩個版本的行為，確認無害後 `promote` 一鍵轉正，`dismiss` 隨時放棄。**模組程式碼零變動，全程運行時 API 驅動**：與 `load / unload / reload` 同類的運維動作，Dashboard / 自訂管理模組直接調用，沒有任何設定項要寫。\n\n{!--< tips >!--}\n1. 啟動：``await sdk.module.shadow_start(\"roll\", source=\"路徑/到/v2\")``\n   ——新版程式碼以獨立 owner（預設取路徑名）與舊版並存\n2. 影子不參與真實分發與依賴圖：同名命令進影子目錄、路由只登記不掛載、\n   生命週期廣播靜默、`module.call` 與依賴解析仍指向 v1\n3. 轉正永遠由人確認：``await sdk.module.promote_shadow(\"roll\")``，失敗\n   自動回滾舊實例繼續服務；``dismiss_shadow`` 隨時放棄\n{!--< /tips >!--}"
+      "hash": "426f30335b992639eaca83525d9d192a",
+      "translation": "# 影子模組與灰度轉正\n\n> [!TIP]\n> **什麼時候需要閱讀這篇**：需要灰度發布——新版本並行試運行、行為對比與轉正回滾時。不需要則跳過，不影響其他功能的使用。\n\n影子 = 同一模組的**新版本**，以獨立 owner（如 `roll_shadow`）與線上舊版\n並存試運行：它收到真實事件的**副本**、其出站被**拦截記帳**而非真正發出——\n在 `shadow_diff` 裡對比兩個版本的行為，確認無害後 `promote` 一鍵轉正，\n`dismiss` 隨時放棄。**模組代碼零修改，全程運行時 API 驅動**：與\n`load / unload / reload` 同類的運維動作，Dashboard / 自定義管理模組直接\n呼叫，沒有任何配置項要寫。\n\n{!--< tips >!--}\n1. 啟動：``await sdk.module.shadow_start(\"roll\", source=\"路徑/到/v2\")``\n   ——新版本代碼以獨立 owner（預設取路徑名）與舊版並存\n2. 影子不參與真實分發與依賴圖：同名命令進影子目錄、路由只登記不掛載、\n   生命週期廣播靜默、`module.call` 與依賴解析仍指向 v1\n3. 轉正永遠由人確認：``await sdk.module.promote_shadow(\"roll\")``，失敗\n   自動回滾舊實例繼續服務；``dismiss_shadow`` 隨時放棄\n{!--< /tips >!--}"
     },
     {
       "hash": "29abe142f17e3cec5dd233535e646456",

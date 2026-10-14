@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "07c2ae3b438df1f8df2b5b8184f2fc5d",
-  "file_hash": "07c2ae3b438df1f8df2b5b8184f2fc5d",
-  "translated_at": "2026-09-07T11:08:34.846411",
+  "hash": "2b17565450e6ba9198a496bbbe2796f2",
+  "file_hash": "2b17565450e6ba9198a496bbbe2796f2",
+  "translated_at": "2026-10-14T03:15:40.532549",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "a233b474d0708b15cf9c594cbd6df072",
-      "translation": "# 適配器開發最佳實踐\n\n本文檔提供了 ErisPulse 適配器開發的最佳實踐建議。"
+      "hash": "6aca0c0a115f304f615472b14011a91d",
+      "translation": "# 適配器開發最佳實踐\n\n> [!TIP]\n> **何時需要閱讀本文**：建議在適配器骨架跑通後閱讀（工程化最佳實踐）。如不需要則可跳過，不會影響其他功能的使用。\n\n本文檔提供了 ErisPulse 適配器開發的最佳實踐建議。"
     },
     {
       "hash": "89a26208c4ded06ed8092c30d27ecfda",

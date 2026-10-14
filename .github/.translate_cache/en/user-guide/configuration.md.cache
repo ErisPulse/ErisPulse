@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "44c4eed961458bc9d5fc3e13b785bc90",
-  "file_hash": "44c4eed961458bc9d5fc3e13b785bc90",
-  "translated_at": "2026-10-03T14:23:22.192595",
+  "hash": "c5ee780f97f2cc34d3cbc01e03eaa01d",
+  "file_hash": "c5ee780f97f2cc34d3cbc01e03eaa01d",
+  "translated_at": "2026-10-14T03:07:14.059512",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "3e912d500049e0e58ec0fab1207b13a8",
-      "translation": "# Configuration File Guide\n> This document introduces the framework's configuration file. For third-party module configuration, please refer to the module's documentation.\n\nErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project configurations."
+      "hash": "edc5c1ada2d16779d0a6a14624d4b788",
+      "translation": "# Configuration File Guide\n\n> [!NOTE]\n> **L1 Core Reading** — One of the five core documents in the \"Reading Path\" on the home page, essential for module development.\n\n> This document will introduce the framework's configuration file. If a third-party module requires configuration, please refer to the module's documentation.\n\nErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project settings."
     },
     {
       "hash": "e642dc8e9b37f9f9f2466648852c173c",

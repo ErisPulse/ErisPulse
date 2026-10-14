@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "04bffcfc851acbb0f15be9d65fe92ffc",
-  "file_hash": "04bffcfc851acbb0f15be9d65fe92ffc",
-  "translated_at": "2026-09-26T20:51:47.666816",
+  "hash": "a14fefc46a19f5e1b985d0f2a56484f6",
+  "file_hash": "a14fefc46a19f5e1b985d0f2a56484f6",
+  "translated_at": "2026-10-14T03:11:11.983352",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "436e5f0a864bb691cd650d32514a9996",
-      "translation": "# データモデル層（ORM）\n\n2.9.0 からフレームワークに宣言的データモデル層が内蔵されています。`Model` を継承し、`Field` でフィールドを宣言することで、自動的なテーブル作成と CRUD 操作（挿入、削除、更新、検索）が可能になります。モデルは、内蔵ストレージ層の上に直接構築されています。SQLite / MySQL / PostgreSQL は `ErisPulse.storage.backend` で設定され、**バックエンドを切り替えてもモデルコードを変更する必要はありません**。"
+      "hash": "f5b77481a5b10b484d6b104f5f79aeec",
+      "translation": "# データモデル層（ORM）\n\n> [!TIP]\n> **この記事を読むタイミング**：データモデル、自動テーブル作成、関連マッピングが必要な場合。不要であれば飛ばしても、他の機能の使用に影響はありません。\n\n2.9.0 から、フレームワークに宣言型のデータモデル層が内蔵されました。`Model` を継承し、`Field` を使ってフィールドを宣言するだけで、自動テーブル作成と CRUD 機能が得られます。モデルは、内蔵されたストレージ層（SQLite / MySQL / PostgreSQL）の上に直接構築されています。ストレージのバックエンドは `ErisPulse.storage.backend` で設定され、**バックエンドの切り替えに伴いモデルのコードを変更する必要はありません**。"
     },
     {
       "hash": "c1b572c8a25677998e6ff5138ed757d1",

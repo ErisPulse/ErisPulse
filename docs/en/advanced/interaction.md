@@ -1,4 +1,7 @@
-# Interactive Session System
+# Interactive Conversation System
+
+> [!TIP]
+> **When to read this section**: When you need `wait_reply`, multi-turn conversation, timed reminders, session mutual exclusion, or traceability. If not needed, you can skip this section without affecting the use of other features.
 
 > [!NOTE]
 > This chapter requires ErisPulse **2.8.0+**.
@@ -6,7 +9,7 @@
 ErisPulse has made "continuous interaction with users" into a framework-level infrastructure: from a single `wait_reply`, to timed reminders, multi-path waiting, session mutual exclusion, and restart recovery, all are scheduled by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
 
 {!--< tips >!--}
-Each capability covered in this document comes with an inherent **ownership**: interaction waiting, leases, and timers all record the module name at registration time. When a module is unloaded or an adapter is closed, the framework automatically cleans up and immediately notifies the waiting party instead of waiting for a timeout — this is an extension of the ownership system into the interaction dimension (see [Ownership System](ownership.md)).
+Each capability covered in this article comes with its own **ownership (owner)**: interaction waiting, leases, and timers are all recorded with the module name at registration time. When the module is unloaded or the adapter is closed, the framework automatically cleans up and the waiting party immediately receives a notification instead of waiting for a timeout—this is an extension of the ownership system in the interaction dimension (see [Ownership System](ownership.md)).
 {!--< /tips >!--}
 
 ## Waiting for Reply: wait_reply

@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "b1b6ea166f381fe0a1988079282c0be5",
-  "file_hash": "b1b6ea166f381fe0a1988079282c0be5",
-  "translated_at": "2026-10-03T14:50:21.732116",
+  "hash": "98f20fcd78832392b6c462139b515d16",
+  "file_hash": "98f20fcd78832392b6c462139b515d16",
+  "translated_at": "2026-10-14T03:12:31.861454",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "a2691f1926097465b63b1e427826516c",
-      "translation": "# モジュールテスト（ErisPulse-Testing）\n\n[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) は公式のテストツールキット（RFC EPRFC-2026-001 方向三）です。  \n`TestBot`、テストイベント工場、出力メッセージのキャプチャとアサーション機能を提供し、モジュールのテストを通常の pytest と同じように簡単に実現します。\n\n```bash\npip install ErisPulse-Testing\n```\n\n> 開発期にフレームワークに依存するツールであり、実行時には一切介入しません。本格的なアダプタープラットフォームのスモークテストは、フレームワークのリポジトリにある `tests/devs/test_adapter.py` を使用してください。"
+      "hash": "1394c83e232620e4e71cfe077e2eb677",
+      "translation": "# モジュールテスト（ErisPulse-Testing）\n\n> [!TIP]\n> **このドキュメントを読むタイミング**：自身のモジュールに自動テストを書く必要がある場合。不要であれば飛ばしても、他の機能の使用に影響はありません。\n\n[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) は公式のテストツールキット（RFC EPRFC-2026-001 方向三）です：\n`TestBot`、テストイベント工場、出力メッセージのキャプチャとアサーション機能を提供し、モジュールのテストを通常の pytest と同じように簡単に実行できます。\n\n```bash\npip install ErisPulse-Testing\n```\n\n> フレームワークの開発時のみに依存するツールで、実行時には一切介入しません。実際のアダプタープラットフォームとの冒険テスト（スモークテスト）は、フレームワークリポジトリの `tests/devs/test_adapter.py` を使用してください。"
     },
     {
       "hash": "f737589ee49948d2216f43e9ab8c7843",

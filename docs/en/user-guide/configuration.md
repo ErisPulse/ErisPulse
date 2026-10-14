@@ -1,7 +1,11 @@
 # Configuration File Guide
-> This document introduces the framework's configuration file. For third-party module configuration, please refer to the module's documentation.
 
-ErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project configurations.
+> [!NOTE]
+> **L1 Core Reading** — One of the five core documents in the "Reading Path" on the home page, essential for module development.
+
+> This document will introduce the framework's configuration file. If a third-party module requires configuration, please refer to the module's documentation.
+
+ErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project settings.
 
 ## Configuration File Location
 

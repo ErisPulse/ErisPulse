@@ -1,11 +1,14 @@
-# 互動會話系統
+# 互動對話系統
+
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要 `wait_reply`、多輪對話、定時提醒、會話互斥或鏈路追蹤時。不需要則跳過，不會影響其他功能的使用。
 
 > [!NOTE]
 > 本章內容需要 ErisPulse **2.8.0+**。
 
 ErisPulse 將「與使用者的持續互動」做成了框架級基礎設施：從一條 `wait_reply`，
 到定時提醒、多路等待、會話互斥、重啟恢復，全部由統一的
-**互動會話管理器**（`Core/Event/interaction.py`，`sdk.interaction`）調度。
+**互動對話管理器**（`Core/Event/interaction.py`，`sdk.interaction`）調度。
 
 {!--< tips >!--}
 本文涵蓋的每一項能力都附帶**歸屬（owner）**：互動等待、租約、定時器全部記錄

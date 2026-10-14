@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "17127e48480b15f2faca66d347510f8b",
-  "file_hash": "17127e48480b15f2faca66d347510f8b",
-  "translated_at": "2026-09-10T07:02:37.948031",
+  "hash": "6cee6ab53c9fcf81328dc0a5436af4ac",
+  "file_hash": "6cee6ab53c9fcf81328dc0a5436af4ac",
+  "translated_at": "2026-10-14T03:12:08.849643",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "ababaf20f275150b59718c17c1914b6c",
-      "translation": "# 模組間通信\n\n> [!NOTE]  \n> 本章內容需要 ErisPulse **2.8.0+**。\n\nErisPulse 的模組之間有**三層通訊模型**，依「點對點 → 定向 → 廣播」排列：\n\n| 層 | API | 語義 | 典型場景 |\n|---|---|---|---|\n| **RPC** | `await sdk.module.call(\"Chat\", \"get_history\", ...)` | 點對點請求-回應，帶契約 / 審計 / 超時 | 調用另一模組的能力（查詢歷史、翻譯、退款） |\n| **定向事件** | `await lifecycle.emit(\"message_received\", {...}, to=\"Chat\")` | 僅分發給指定模組註冊的生命周期鉤子 | 上游狀態變更通知下游（「收到新訊息了」） |\n| **廣播** | `await lifecycle.emit(\"config.updated\", {...})` | 全框架可見的生命周期事件 | 配置熱更新、模組上下線 |\n\n{!--< tips >!--}\n選型口訣：**要回傳值用 `call`，只通知一個模組的鉤子用 `emit(..., to=...)`，通知所有人用 `emit(...)`**。\n{!--< /tips >!--}"
+      "hash": "9a626d9b1e532ad183560359a9b33316",
+      "translation": "# 模組間通信\n\n> [!TIP]\n> **什麼時候需要閱讀本章**：需要跨模組呼叫（RPC）、服務契約、定向事件或冷啟動回放時。不需要則跳過，不影響其他功能的使用。\n\n> [!NOTE]\n> 本章內容需要 ErisPulse **2.8.0+**。\n\nErisPulse 的模組之間有**三層通信模型**，依「點對點 → 定向 → 廣播」排列：\n\n| 層 | API | 語意 | 典型場景 |\n|---|---|---|---|\n| **RPC** | `await sdk.module.call(\"Chat\", \"get_history\", ...)` | 點對點請求-回應，帶契約 / 審計 / 超時 | 呼叫另一模組的能力（查詢歷史、翻譯、退款） |\n| **定向事件** | `await lifecycle.emit(\"message_received\", {...}, to=\"Chat\")` | 僅分發給指定模組註冊的生命周期鉤子 | 上游狀態變化通知下游（「收到新訊息了」） |\n| **廣播** | `await lifecycle.emit(\"config.updated\", {...})` | 全框架可見的生命周期事件 | 配置熱更新、模組上下線 |\n\n{!--< tips >!--}\n選型口訣：**要回傳值用 `call`，只通知一個模組的鉤子用 `emit(..., to=...)`，通知所有人用 `emit(...)`**。\n{!--< /tips >!--}"
     },
     {
       "hash": "5b51074c006e2010d6be572866c8f80d",
