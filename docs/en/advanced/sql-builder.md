@@ -1,5 +1,8 @@
 # SQL Query Builder
 
+> [!TIP]
+> **When to read this**: When you need chain-style SQL queries or custom storage backends. Skip if not needed, as it won't affect other features.
+
 The Storage module in ErisPulse provides a chain-call style generic SQL query builder, supporting custom table creation, querying, updating, and deleting operations.
 
 ## Architecture Design
@@ -15,23 +18,23 @@ Bases/storage.py                    Core/storage.py
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` are abstract base classes that define unified interfaces; the framework includes three built-in implementations: SQLite / MySQL / PostgreSQL (custom backends can also be extended following this pattern, see [Storage Backends](storage-backends.md))
-- `StorageManager` dispatches the specific backend according to the `ErisPulse.storage.backend` configuration, with SQLite as the default, ensuring full backward compatibility
+- `BaseStorage` / `BaseQueryBuilder` are abstract base classes defining unified interfaces; the framework includes built-in implementations for SQLite / MySQL / PostgreSQL (custom backends can be extended similarly, see [Storage Backends](storage-backends.md))
+- `StorageManager` dispatches specific backends based on the `ErisPulse.storage.backend` configuration, defaulting to SQLite, fully backward compatible
 
-## Importing
+## Import
 
 ```python
 from ErisPulse import sdk
 # or
 from ErisPulse.Core import storage
 
-# ABC base classes (for type annotation or custom implementation)
+# ABC base classes (for type hints or custom implementations)
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
 ## Table Management
 
-### Creating a Table
+### Create Table
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -42,44 +45,44 @@ sdk.storage.CreateTable("users", {
 })
 ```
 
-### Checking if a Table Exists
+### Check if Table Exists
 
 ```python
 if sdk.storage.HasTable("users"):
     print("users table exists")
 ```
 
-### Dropping a Table
+### Drop Table
 
 ```python
 sdk.storage.DropTable("users")
 ```
 
-### Modifying Table Structure
+### Modify Table Structure
 
 ```python
-# Adding a column
+# Add column
 sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
 
-# Renaming a table
+# Rename table
 sdk.storage.AlterTable("users").RenameTo("members").Execute()
 
-# Chaining multiple operations
+# Chain multiple operations
 sdk.storage.AlterTable("users") \
     .AddColumn("phone", "TEXT") \
     .AddColumn("address", "TEXT") \
     .Execute()
 ```
 
-## Chainable Queries
+## Chain-style Querying
 
-### Inserting Data
+### Insert Data
 
 ```python
-# Single row insertion (passing a dictionary)
+# Single row insertion (pass a dictionary)
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# Batch insertion (passing a list of dictionaries)
+# Bulk insertion (pass a list of dictionaries)
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35},
@@ -87,9 +90,9 @@ sdk.storage.Table("users").InsertMulti([
 ]).Execute()
 ```
 
-### Querying Data
+### Query Data
 
-> **Important**: `Select()` returns a `list[tuple]` (list of tuples), not a dictionary. You need to access values by column index.
+> **Important**: `Select()` returns a `list[tuple]` (list of tuples), not a dictionary. You must access values by column index.
 
 ```python
 # Select all columns
@@ -106,9 +109,9 @@ for row in rows:
     age = row[1]    # 30
 ```
 
-#### Converting Tuples to Dictionaries
+#### Convert Tuples to Dictionaries
 
-It is recommended to call `ToDict()` directly on the chain; the SELECT result will automatically be returned as a dictionary (column name → value):
+It is recommended to directly call `ToDict()` on the chain; SELECT results will automatically return as a list of dictionaries (column name → value):
 
 ```python
 # ToDict chain: result is list[dict], column names are automatically taken from query metadata (SELECT * is also supported)
@@ -126,24 +129,24 @@ row = sdk.storage.Table("users").Select("name", "age") \
 # row: {"name": "Alice", "age": 30} or None
 ```
 
-> `ToDict()` is a chainable marker (returns self): chains without calling it retain the original `list[tuple]` behavior, fully backward compatible; `copy()` will preserve this flag.
+> `ToDict()` is a chain marker (returns self): chains without calling it maintain the original `list[tuple]` behavior, fully backward compatible; `copy()` preserves this marker.
 
-Manual zip method (equivalent to ToDict, suitable for scenarios where the chain cannot be modified):
+Manual zip approach (equivalent to ToDict, suitable for scenarios where the chain cannot be modified):
 
 ```python
 columns = ["id", "name", "age"]
 rows = sdk.storage.Table("users").Select(*columns).Execute()
 
-# Method 1: zip in loop
+# Method one: zip in loop
 for row in rows:
     record = dict(zip(columns, row))
     print(record["name"], record["age"])
 
-# Method 2: convert to list of dictionaries at once
+# Method two: convert to list of dictionaries at once
 records = [dict(zip(columns, row)) for row in rows]
 ```
 
-#### Getting a Single Record
+#### Get Single Record
 
 ```python
 row = sdk.storage.Table("users").Select("name", "age") \
@@ -156,9 +159,9 @@ if row is not None:
     age = row[1]   # 30
 ```
 
-### Filtering Conditions
+### Condition Filtering
 
-> `Where(condition, *params)` supports passing multiple parameters, corresponding to multiple `?` placeholders.
+> `Where(condition, *params)` supports multiple parameters, corresponding to multiple `?` placeholders.
 
 ```python
 # Single condition (one placeholder, one parameter)
@@ -166,19 +169,19 @@ rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 18) \
     .Execute()
 
-# Using multiple placeholders in one Where
+# Multiple placeholders in one Where
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ? AND age < ?", 20, 40) \
     .Execute()
 
-# Multiple Where calls (AND connected)
+# Multiple Where calls (AND connection)
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 20) \
     .Where("age < ?", 40) \
     .Execute()
 ```
 
-### Sorting and Pagination
+### Sorting, Pagination
 
 ```python
 # Ascending order
@@ -199,7 +202,7 @@ rows = sdk.storage.Table("users").Select("name") \
     .Execute()
 ```
 
-### Updating Data
+### Update Data
 
 ```python
 # Conditional update
@@ -214,7 +217,7 @@ sdk.storage.Table("users") \
     .Execute()
 ```
 
-### Deleting Data
+### Delete Data
 
 ```python
 # Conditional delete
@@ -227,7 +230,7 @@ sdk.storage.Table("users") \
 sdk.storage.Table("users").Delete().Execute()
 ```
 
-### Counting and Existence Check
+### Count and Existence Check
 
 ```python
 # Count
@@ -240,7 +243,7 @@ exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 
 ## Reusing Query Conditions
 
-Use `copy()` to deep copy the builder and reuse base conditions:
+Use `copy()` to deep copy the builder and reuse the base condition:
 
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
@@ -268,7 +271,7 @@ rows = builder.Execute()
 
 ## Using in Transactions
 
-Chainable operations fully support transactions:
+Chain operations fully support transactions:
 
 ```python
 # Commit transaction
@@ -288,7 +291,7 @@ except Exception:
 
 ## Asynchronous Native API
 
-Starting from version 2.8.0, the storage layer uses asynchronous operations as the native primary interface. All terminating methods have corresponding asynchronous versions with an `a` prefix. It is recommended to use these in asynchronous handlers (to avoid temporary blocking of the event loop due to synchronous compatibility layers):
+Starting from version 2.8.0, the storage layer uses asynchronous calls as the native main interface. All terminating methods have corresponding asynchronous versions prefixed with `a`, recommended for use within asynchronous handlers (to avoid briefly blocking the event loop with synchronous compatibility layers):
 
 ```python
 # Asynchronous transaction
@@ -296,19 +299,19 @@ async with sdk.storage.atransaction():
     await sdk.storage.aset("key1", "value1")
     await sdk.storage.aset("key2", {"nested": True})
 
-# Asynchronous chainable query
+# Asynchronous chain query
 rows = await sdk.storage.Table("users").Select("name", "age").ToDict().aExecute()
 row = await sdk.storage.Table("users").Select("*").Where("id = ?", 1).aExecuteOne()
 total = await sdk.storage.Table("users").Where("age > ?", 18).aCount()
 exists = await sdk.storage.Table("users").Where("name = ?", "Alice").aExists()
 
-# Asynchronous KV operations
+# Asynchronous KV
 await sdk.storage.aset("app.name", "MyApp")
 value = await sdk.storage.aget("app.name")
 keys = await sdk.storage.aget_all_keys()
 ```
 
-| Synchronous (Compatibility Layer) | Asynchronous Native |
+| Synchronous (compatibility layer) | Asynchronous native |
 |------|------|
 | `get` / `set` / `delete` | `aget` / `aset` / `adelete` |
 | `get_all_keys` / `clear` | `aget_all_keys` / `aclear` |
@@ -330,22 +333,22 @@ keys = await sdk.storage.aget_all_keys()
 | `Count()` | `int` | Number of matching rows |
 | `Exists()` | `bool` | Whether exists |
 
-### Example of Return Value Handling
+### Return Value Handling Example
 
 ```python
 # Select returns tuples, access by index
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
-first_name = rows[0][0]  # First row, first column (name)
-first_age = rows[0][1]   # First row, second column (age)
+first_name = rows[0][0]  # First row, first column name
+first_age = rows[0][1]   # First row, second column age
 
-# Recommended: Use column name list + zip to convert to dictionary, code is more readable
+# Recommended: use column name list + zip to convert to dictionary, code is more readable
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
     d = dict(zip(cols, row))
     print(d["name"], d["age"])
 
-# ExecuteOne returns a single tuple or None
+# ExecuteOne returns single tuple or None
 row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
 name = row[0] if row else None
 
@@ -356,7 +359,7 @@ print(f"Deleted {affected} records")
 
 ## Parameterized Queries
 
-All WHERE parameters use `?` placeholders, and parameters are passed as subsequent arguments to `Where()` (not as a tuple or list):
+All WHERE parameters use `?` placeholders, with parameters passed as subsequent arguments to `Where()` (**not** as a tuple or list):
 
 ```python
 # Correct ✓ — multiple parameters passed individually
@@ -369,7 +372,7 @@ sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execu
 sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
 # This will treat the entire tuple as the value for the first placeholder
 
-# Incorrect ✗ — SQL injection risk exists
+# Incorrect ✗ — SQL injection risk
 sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 ```
 
@@ -377,7 +380,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ```python
 # Where(condition: str, *params: Any)
-# params are variable arguments, passed one by one
+# params are variable arguments, passed individually
 
 # Single parameter
 .Where("name = ?", "Alice")
@@ -394,7 +397,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ## Custom Storage Backend
 
-Starting from version 2.8.0, the abstract layer uses **asynchronous methods as the native contract**: inherit `BaseStorage` and implement asynchronous abstract methods. Synchronous `get/set/Execute` and others are provided automatically by the base class bridge:
+Starting from version 2.8.0, the abstraction layer uses **asynchronous methods as native contracts**: inherit `BaseStorage` and implement asynchronous abstract methods. Synchronous `get/set/Execute` etc. are automatically bridged by the base class:
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -428,12 +431,12 @@ class MyStorage(BaseStorage):
 
 > [!TIP]
 > If you do not want to implement transaction connection routing (`conn` keyword argument), keep the class attribute
-> `_SUPPORTS_CONN_ROUTING = False` (default), and transaction functionality is still available (with limited isolation).
+> `_SUPPORTS_CONN_ROUTING = False` (default), and transaction features will still be available (with limited isolation).
 > Pure SQL backends can directly inherit `Core/Bases/sql_base.py`'s `SQLStorageBase` +
-> `SQLQueryBuilder`, requiring only connection management and dialect execution funnel implementation, see
-> [Storage Backends](docs/en/storage-backends.md).
+> `SQLQueryBuilder`, only requiring connection management and dialect execution funnel implementation, see
+> [Storage Backends](storage-backends.md).
 
-## Related Documents
+## Related Documentation
 
 - [Storage Backends](storage-backends.md) - sqlite / mysql / postgres backend selection and configuration
 - [Core Module API](../api-reference/core-modules.md) - Complete Storage module API

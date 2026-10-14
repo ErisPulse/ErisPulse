@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "498f49c6b07263d7767d9b1b044de2f5",
-  "file_hash": "498f49c6b07263d7767d9b1b044de2f5",
-  "translated_at": "2026-10-13T12:40:01.616455",
+  "hash": "edfc266655aef90a43f42138f16ef56b",
+  "file_hash": "edfc266655aef90a43f42138f16ef56b",
+  "translated_at": "2026-10-14T01:02:43.588376",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "6fe6291c3d4a0d278537d195f0f5ddba",
-      "translation": "# 互動會話系統\n\n> [!NOTE]\n> 本章內容需要 ErisPulse **2.8.0+**。\n\nErisPulse 將「與使用者的持續互動」做成了框架級基礎設施：從一條 `wait_reply`，\n到定時提醒、多路等待、會話互斥、重啟恢復，全部由統一的\n**互動會話管理器**（`Core/Event/interaction.py`，`sdk.interaction`）調度。\n\n{!--< tips >!--}\n本文涵蓋的每一項能力都附帶**歸屬（owner）**：互動等待、租約、定時器全部記錄\n註冊時的模組名，模組卸載 / 適配器關閉時由框架自動清理，等待方立即得到通知\n而非干等超時——這是歸屬權系統在互動維度的延伸（見 [歸屬權系統](ownership.md)）。\n{!--< /tips >!--}"
+      "hash": "5058df37038172d012d32d5e1ba6d8b1",
+      "translation": "# 互動對話系統\n\n> [!TIP]\n> **何時需要閱讀本文**：需要 `wait_reply`、多輪對話、定時提醒、會話互斥或鏈路追蹤時。不需要則可跳過，不會影響其他功能的使用。\n\n> [!NOTE]\n> 本文內容需要 ErisPulse **2.8.0+**。\n\nErisPulse 將「與使用者的持續互動」建構為框架級基礎設施：從一條 `wait_reply`，\n到定時提醒、多路等待、會話互斥、重啟恢復，全部由統一的\n**互動對話管理器**（`Core/Event/interaction.py`，`sdk.interaction`）調度。\n\n{!--< tips >!--}\n本文涵蓋的每一項能力都附帶**歸屬（owner）**：互動等待、租約、定時器全部記錄\n註冊時的模組名，模組卸載 / 介面關閉時由框架自動清理，等待方立即得到通知\n而非乾等超時——這是歸屬權系統在互動維度的延伸（見 [歸屬權系統](ownership.md)）。\n{!--< /tips >!--}"
     },
     {
       "hash": "0650a5c0ef7fb609cc5ab4b395d38393",

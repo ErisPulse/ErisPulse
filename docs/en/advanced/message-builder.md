@@ -1,6 +1,9 @@
-# MessageBuilder Explained
+# MessageBuilder Detailed Explanation
 
-`MessageBuilder` is a OneBot12 standard message segment builder provided by ErisPulse, used to construct structured message content, and should be used in conjunction with `Send.Raw_ob12()`.
+> [!TIP]
+> **When to read this**: When constructing complex/multi-segment messages. Skip if not needed, as it does not affect the use of other features.
+
+`MessageBuilder` is a OneBot12-standard message segment builder provided by ErisPulse, used to construct structured message content, and is used in conjunction with `Send.Raw_ob12()`.
 
 ## Import Methods
 

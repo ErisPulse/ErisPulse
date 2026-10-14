@@ -1,6 +1,9 @@
 # 網路用戶端
 
-ErisPulse 提供了統一的網路用戶端，聚合了 HTTP 請求、WebSocket 連接和連接池管理。模組和適配器**必須優先使用**此用戶端，而非自行匯入 `aiohttp` / `httpx` / `requests` 等第三方庫。
+> [!TIP]
+> **何時需要閱讀這篇**：需要發出站 HTTP / WebSocket 請求時。若不需要則可跳過，這不會影響其他功能的使用。
+
+ErisPulse 提供了統一的網路用戶端，聚合了 HTTP 請求、WebSocket 連接和連接池管理。模組和適配器**必須優先使用**此用戶端，而非自行導入 `aiohttp` / `httpx` / `requests` 等第三方庫。
 
 ## 概述
 

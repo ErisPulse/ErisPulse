@@ -1,6 +1,9 @@
-# Module Development Best Practices
+# Best Practices for Module Development
 
-This document provides best practices for developing modules in ErisPulse.
+> [!TIP]
+> **When to read this**: It is recommended to read after writing your first module (engineering best practices). If not needed, you can skip it without affecting the use of other features.
+
+This document provides best practice recommendations for ErisPulse module development.
 
 ## Module Design
 

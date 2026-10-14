@@ -1,6 +1,9 @@
 # SQL 查詢建構器
 
-ErisPulse 的 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的建立、查詢、更新與刪除操作。
+> [!TIP]
+> **何時需要閱讀這篇**：需要鏈式 SQL 查詢或自訂儲存後端時。不需要則跳過，不會影響其他功能的使用。
+
+ErisPulse 的 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的建立、查詢、更新和刪除操作。
 
 ## 架構設計
 
@@ -15,7 +18,7 @@ Bases/storage.py                    Core/storage.py
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面；框架內建 SQLite / MySQL / PostgreSQL 三種實現（自定義後端亦可依此擴展，見[儲存後端](storage-backends.md)）
+- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面；框架內建 SQLite / MySQL / PostgreSQL 三種實現（自訂後端亦可依此擴展，見[儲存後端](storage-backends.md)）
 - `StorageManager` 按 `ErisPulse.storage.backend` 配置調度具體後端，預設 SQLite，完全向後相容
 
 ## 導入
@@ -25,7 +28,7 @@ from ErisPulse import sdk
 # 或
 from ErisPulse.Core import storage
 
-# ABC 基類（用於型別註解或自訂實作）
+# ABC 基類（用於類型標註或自訂實作）
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
@@ -58,13 +61,13 @@ sdk.storage.DropTable("users")
 ### 修改表結構
 
 ```python
-# 添加欄位
+# 新增欄位
 sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
 
 # 重新命名表
 sdk.storage.AlterTable("users").RenameTo("members").Execute()
 
-# 串連多個操作
+# 鏈式多個操作
 sdk.storage.AlterTable("users") \
     .AddColumn("phone", "TEXT") \
     .AddColumn("address", "TEXT") \
@@ -76,10 +79,10 @@ sdk.storage.AlterTable("users") \
 ### 插入資料
 
 ```python
-# 單筆插入（傳入字典）
+# 單行插入（傳入字典）
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# 批次插入（傳入字典列表）
+# 批量插入（傳入字典列表）
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35},
@@ -143,7 +146,7 @@ for row in rows:
 records = [dict(zip(columns, row)) for row in rows]
 ```
 
-#### 獲取單筆記錄
+#### 獲取單條記錄
 
 ```python
 row = sdk.storage.Table("users").Select("name", "age") \
@@ -238,9 +241,9 @@ count = sdk.storage.Table("users").Where("age > ?", 18).Count()
 exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 ```
 
-## 複用查詢條件
+## 復用查詢條件
 
-使用 `copy()` 深拷貝建構器，複用基礎條件：
+使用 `copy()` 深拷貝建構器，復用基礎條件：
 
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
@@ -255,7 +258,7 @@ count = base.copy().Count()
 exists = base.copy().Where("name = ?", "Alice").Exists()
 ```
 
-## 重設建構器
+## 重置建構器
 
 ```python
 builder = sdk.storage.Table("users").Select("name").Where("age > ?", 18)
@@ -289,7 +292,7 @@ except Exception:
 ## 異步原生 API
 
 2.8.0 起儲存層以異步為原生主介面，所有終止方法都有對應的 a 前綴異步版本，
-異步 handler 內推薦使用（避免同步相容層短暫阻塞事件循環）：
+異步 handler 內推薦使用（避免同步相容層短暫阻塞事件迴圈）：
 
 ```python
 # 異步事務
@@ -320,15 +323,15 @@ keys = await sdk.storage.aget_all_keys()
 
 ## 回傳值說明
 
-| 操作 | 回傳型別 | 說明 |
+| 操作 | 回傳類型 | 說明 |
 |------|---------|------|
 | `Select().Execute()` | `list[tuple]` | 元組列表，按欄位順序排列 |
-| `Select().ExecuteOne()` | `tuple \| None` | 單筆元組或 None |
+| `Select().ExecuteOne()` | `tuple \| None` | 單條元組或 None |
 | `Insert().Execute()` | `int` | 受影響列數 |
 | `InsertMulti().Execute()` | `int` | 插入列數 |
 | `Update().Execute()` | `int` | 受影響列數 |
 | `Delete().Execute()` | `int` | 受影響列數 |
-| `Count()` | `int` | 符合條件列數 |
+| `Count()` | `int` | 匹配列數 |
 | `Exists()` | `bool` | 是否存在 |
 
 ### 回傳值處理示例
@@ -336,17 +339,17 @@ keys = await sdk.storage.aget_all_keys()
 ```python
 # Select 回傳元組，按索引取值
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
-first_name = rows[0][0]  # 第一列第一欄 name
-first_age = rows[0][1]   # 第一列第二欄 age
+first_name = rows[0][0]  # 第一行第一列 name
+first_age = rows[0][1]   # 第一行第二列 age
 
-# 推薦：用欄位名列表 + zip 轉為字典，程式碼更易讀
+# 推薦：用欄位名列表 + zip 轉為字典，程式碼更可讀
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
     d = dict(zip(cols, row))
     print(d["name"], d["age"])
 
-# ExecuteOne 回傳單筆元組或 None
+# ExecuteOne 回傳單條元組或 None
 row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
 name = row[0] if row else None
 
@@ -395,7 +398,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ## 自訂儲存後端
 
-2.8.0 起抽象層以**異步方法為原生契約**：繼承 `BaseStorage` 實作異步抽象方法，
+2.8.0 起抽象層以**異步方法為原生契約**：繼承 `BaseStorage` 實現異步抽象方法，
 同步 `get/set/Execute` 等由基類自動橋接提供：
 
 ```python
@@ -403,7 +406,7 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 class MyQueryBuilder(BaseQueryBuilder):
     async def aExecute(self):
-        # 實作具體執行邏輯
+        # 實現具體執行邏輯
         ...
 
     async def aExecuteOne(self):
@@ -423,13 +426,13 @@ class MyStorage(BaseStorage):
     async def aset(self, key, value):
         ...
 
-    # 實作其他異步抽象方法與事務連接 hook ...
+    # 實現其他異步抽象方法與事務連接 hook ...
     def Table(self, table_name):
         return MyQueryBuilder(self, table_name)
 ```
 
 > [!TIP]
-> 若不想實作事務連接路由（`conn` 關鍵字參數），保持類屬性
+> 若不想實現事務連接路由（`conn` 關鍵字參數），保持類屬性
 > `_SUPPORTS_CONN_ROUTING = False`（預設）即可，事務功能仍可用（隔離性受限）。
 > 純 SQL 後端可直接繼承 `Core/Bases/sql_base.py` 的 `SQLStorageBase` +
 > `SQLQueryBuilder`，只需提供連接管理與方言執行漏斗，詳見

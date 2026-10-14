@@ -1,14 +1,20 @@
-# Ownership (owner) System
+# Ownership (Owner) System
 
-Ownership is the cornerstone of the "plug-and-play" nature of modules: all framework resources registered during module loading are automatically attributed, and automatically reclaimed when the module is unloaded or disabled. Module authors only need to declare resources, without writing manual cleanup logic.
+> [!TIP]  
+> **When to read this**: When troubleshooting resource leaks, understanding the unload/cleanup chain, or declaring owned resources. If not needed, you can skip this section without affecting other features.
 
-> **Related Systems**: Scope determines "whether a resource is active" during event dispatching, while ownership determines "who owns the resource and who is responsible for reclaiming it during lifecycle events." For more details on scope, see [Unified Control Plane (scope)](scope.md). For background tasks, see [Lifecycle Management](lifecycle.md#Background Task Ownership and Automatic Cancellation).
+Ownership is the foundation of the module's "plug-and-play" capability: all framework resources registered during module loading are automatically named, and can be reclaimed with a single click during unload/disable—module authors only need to declare resources, without manually writing cleanup logic.
+
+> **Related systems**: The scope determines "whether resources are active" during event dispatching,  
+> while ownership determines "to whom resources belong and who will reclaim them during unload" during the lifecycle.  
+> For more details on scope, see [Unified Control Plane (Scope)](scope.md), and for background tasks, see  
+> [Lifecycle Management](lifecycle.md#background-task-ownership-and-automatic-cancellation).
 
 {!--< tips >!--}
-1. Ownership is automatically recorded at the **moment of registration** based on `current_owner`, requiring zero code changes from the module.
-2. Unload and disable share the same cleanup chain (`_cleanup_module_registrations`), where each step only logs a warning if it fails, without interrupting the process.
-3. Resources with user-configured semantics (persistent overrides / scope rules / command ACLs) are **not** cleaned up when the module is unloaded.
-4. External handles managed by utility modules can be attached to the cleanup chain via `on_cleanup(cb)`, which will be automatically called when the dependent module is unloaded (see [Guide to Utility Modules: Managing Handles of Other Modules](#Guide-to-Utility-Modules-Managing-Handles-of-Other-Modules)).
+1. Ownership is **automatically recorded at the moment of registration** based on `current_owner`, requiring zero changes to module code.
+2. Unload and disable share the same cleanup chain (`_cleanup_module_registrations`), with each step issuing a warning but not interrupting the process if it fails.
+3. Resources defined by user configuration (persistent overrides / scope rules / command ACLs) are **not** cleaned up when the module is unloaded.
+4. External handles managed by utility modules can be added to the cleanup chain using `on_cleanup(cb)`, which automatically triggers callbacks when the dependent module is unloaded (see [Utility Module Guide](#utility-module-guide-handling-other-modules-handles)).
 {!--< /tips >!--}
 
 ## Owner Context Mechanism

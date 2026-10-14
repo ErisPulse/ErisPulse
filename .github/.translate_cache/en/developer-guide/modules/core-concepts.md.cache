@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "2e17cfa0c7379f54728b292951f66ba8",
-  "file_hash": "2e17cfa0c7379f54728b292951f66ba8",
-  "translated_at": "2026-10-10T04:14:05.910214",
+  "hash": "59d24ff2d899b840ee2d9d601416230c",
+  "file_hash": "59d24ff2d899b840ee2d9d601416230c",
+  "translated_at": "2026-10-14T01:15:11.686978",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "9322c52c1629acad58f4593781523923",
-      "translation": "# Core Module Concepts\n\nUnderstanding the core concepts of ErisPulse modules is essential for developing high-quality modules."
+      "hash": "0ad5f1e3296cc12c4224a3f4da99f5c1",
+      "translation": "# Core Module Concepts\n\n> [!NOTE]\n> **L1 Essential Reading** — One of the five core documents in the \"Reading Path\" on the homepage, essential for module development.\n\nUnderstanding the core concepts of ErisPulse modules is the foundation for developing high-quality modules."
     },
     {
       "hash": "06c57c8af2e7d0a0a3d21373792a33a1",

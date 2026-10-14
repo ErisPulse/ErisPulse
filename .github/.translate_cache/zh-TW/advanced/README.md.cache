@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "ca1772e61749b10d41eb673e1df8fc3b",
-  "file_hash": "ca1772e61749b10d41eb673e1df8fc3b",
-  "translated_at": "2026-10-09T14:51:32.314303",
+  "hash": "6dcbeec0f1c015614d537c03ab704f70",
+  "file_hash": "6dcbeec0f1c015614d537c03ab704f70",
+  "translated_at": "2026-10-14T01:09:31.532964",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "940fb1a5278ec5d38e1b46188eea4472",
-      "translation": "# 高級主題\n\n本目錄包含 ErisPulse 框架的高級特性與深入主題。"
+      "hash": "199a065f76f6105c4ce475b5a2294cc8",
+      "translation": "# 高級主題\n\n本目錄包含 ErisPulse 框架的高級特性與深入主題。\n\n> [!NOTE]\n> 本目錄全部為**按需查閱**的專題文件——請先讀完首頁的 L1 核心五篇，\n> 遇到對應需求再來翻。每篇開頭標有「什麼時候需要讀這篇」。"
     },
     {
       "hash": "5bc742cb0b04d8c643768d2e60ff5226",

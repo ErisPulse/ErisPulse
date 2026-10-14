@@ -1,23 +1,26 @@
 # 作用域（scope）
 
+> [!TIP]
+> **何時需要閱讀本文**：需要控制模組可用性、事件准入或出站動作限制時。不需要則跳過，不會影響其他功能的使用。
+
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-作用域回答四個問題：**哪些模組可用、誰的事件收不收、某模組處理什麼文本、
-模組能向外做什麼**。
+作用域回答四個問題：**哪些模組可用、誰的事件收不收、某模組處理什麼文字、
+模組能向外做什麼**。  
 控制權完全交給使用者：在模組 / 適配器 / 處理器 / 出站呼叫註冊的**上層**（配置
-`ErisPulse.scope` 或執行時 `sdk.scope`）統一聲明，事件管線在入口、處理器過濾
+`ErisPulse.scope` 或執行時 `sdk.scope`）統一宣告，事件管線在入口、處理器過濾
 與出站閘口自動讀取並執行。
 
 | 維度 | 控制什麼 | 拒絕行為 | 配置路徑 |
 |------|---------|---------|---------|
 | **① 模組** | 哪些模組可用（平台 / Bot / 會話三級） | 被過濾模組不觸發、不回覆（攔截廣播 `scope.blocked` 事件；命中的命令仍被認領阻斷） | `scope.platforms / bots / sessions` |
-| **② 身份** | 事件收不收（適配器 / Bot / 會話 / 用戶四級） | 入口完全丟棄（攔截廣播 `scope.blocked` 事件） | `scope.identity.*` |
-| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
+| **② 身份** | 事件收不收（適配器 / Bot / 會話 / 使用者四級） | 入口完全丟棄（攔截廣播 `scope.blocked` 事件） | `scope.identity.*` |
+| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白名單/黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
 
-> **相關系統**：命令是特殊的訊息事件處理器，其用戶黑白名單（ACL）與
+> **相關系統**：命令是特殊的訊息事件處理器，其使用者黑白名單（ACL）與
 > 實現參數覆寫由命令系統自持（`ErisPulse.event.command`），
-> 見 [事件處理入門](../getting-started/event-handling.md) 與 [配置指南](../user-guide/configuration.md)。
+> 請見 [事件處理入門](../getting-started/event-handling.md) 與 [配置指南](../user-guide/configuration.md)。
 
 {!--< tips >!--}
 1. 透過 `from ErisPulse.Core import scope` 導入單例（`sdk.scope` 同物件）
@@ -26,9 +29,9 @@
 3. 讀寫：維度化參數方法（IDE 可補全）——
    `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`；
    另有字典式兜底 `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
-4. 事件處理器文本條件覆寫見
+4. 事件處理器文字條件覆寫請見
    [事件處理入門 · 事件覆寫](../getting-started/event-handling.md#事件覆寫不改模組代碼覆寫任意事件類型的行為)；
-   命令 ACL / 參數覆寫見[事件處理入門](../getting-started/event-handling.md)
+   命令 ACL / 參數覆寫請見 [事件處理入門](../getting-started/event-handling.md)
 {!--< /tips >!--}
 
 ## 匹配條目語法（全系統統一）

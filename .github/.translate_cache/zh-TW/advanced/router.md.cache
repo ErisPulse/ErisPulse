@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "5ac186f45db1141d8d3579a868aacc7d",
-  "file_hash": "5ac186f45db1141d8d3579a868aacc7d",
-  "translated_at": "2026-10-10T04:12:59.134252",
+  "hash": "fd85cfd326b35f5f0567a22d760f67c1",
+  "file_hash": "fd85cfd326b35f5f0567a22d760f67c1",
+  "translated_at": "2026-10-14T01:09:42.806637",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "17478b448933632235a760eca6803b33",
-      "translation": "# 路由管理器\n\nErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支援多適配器路由註冊和生命週期管理。底層透過抽象層封裝（目前為 FastAPI + Uvicorn）"
+      "hash": "42c8c2ece6ceba5983e420ff46bb201e",
+      "translation": "# 路由管理器\n\n> [!TIP]\n> **什麼時候需要閱讀這篇**：需要 HTTP / WebSocket / SSE 路由（含連接池廣播）時。不需要則跳過，不會影響其他功能的使用。\n\nErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支援多適配器路由註冊和生命週期管理。底層透過抽象層封裝（目前為 FastAPI + Uvicorn）"
     },
     {
       "hash": "fb144a12cbd40237d4f461fd0a1f0c7b",

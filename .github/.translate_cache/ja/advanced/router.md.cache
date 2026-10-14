@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "5ac186f45db1141d8d3579a868aacc7d",
-  "file_hash": "5ac186f45db1141d8d3579a868aacc7d",
-  "translated_at": "2026-10-10T04:14:10.506362",
+  "hash": "fd85cfd326b35f5f0567a22d760f67c1",
+  "file_hash": "fd85cfd326b35f5f0567a22d760f67c1",
+  "translated_at": "2026-10-14T01:11:41.507885",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "17478b448933632235a760eca6803b33",
-      "translation": "# ルーティングマネージャー\n\nErisPulse ルーティングマネージャーは、HTTP および WebSocket のルーティングを統一的に管理し、複数アダプタのルーティング登録とライフサイクル管理をサポートします。内部では抽象層を介してラッピング（現在は FastAPI + Uvicorn）されています。"
+      "hash": "42c8c2ece6ceba5983e420ff46bb201e",
+      "translation": "# ルーティングマネージャー\n\n> [!TIP]\n> **このドキュメントを読むタイミング**: HTTP / WebSocket / SSE ルーティング（接続プールによるブロードキャスト含む）が必要な場合。不要な場合は飛ばしても、他の機能の使用に影響はありません。\n\nErisPulse ルーティングマネージャーは、HTTP および WebSocket ルーティングを統一的に管理する機能を提供します。マルチアダプタのルーティング登録とライフサイクル管理をサポートしています。基盤は抽象化層（現在は FastAPI + Uvicorn）を封印しています。"
     },
     {
       "hash": "fb144a12cbd40237d4f461fd0a1f0c7b",

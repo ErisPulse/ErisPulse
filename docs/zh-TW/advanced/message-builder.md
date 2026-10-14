@@ -1,6 +1,9 @@
-# MessageBuilder 詳解
+# MessageBuilder 详解
 
-`MessageBuilder` 是 ErisPulse 提供的 OneBot12 標準訊息段建構工具，用於建構結構化的訊息內容，配合 `Send.Raw_ob12()` 使用。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：在構建複雜 / 多段消息時。不需要則跳過，不會影響其他功能的使用。
+
+`MessageBuilder` 是 ErisPulse 提供的 OneBot12 標準訊息段建構工具，用於建構結構化的訊息內容，搭配 `Send.Raw_ob12()` 使用。
 
 ## 導入方式
 

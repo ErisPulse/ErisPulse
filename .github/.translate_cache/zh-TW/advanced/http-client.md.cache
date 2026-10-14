@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "ba11b095c9514060b058e4976e10345f",
-  "file_hash": "ba11b095c9514060b058e4976e10345f",
-  "translated_at": "2026-10-09T14:51:04.459026",
+  "hash": "df25266a5e2e181153df3ae0b03b629f",
+  "file_hash": "df25266a5e2e181153df3ae0b03b629f",
+  "translated_at": "2026-10-14T01:08:54.927149",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "d4f40818d781afcc6fe1b64e7a568a7c",
-      "translation": "# 網路用戶端\n\nErisPulse 提供了統一的網路用戶端，聚合了 HTTP 請求、WebSocket 連接和連接池管理。模組和適配器**必須優先使用**此用戶端，而非自行匯入 `aiohttp` / `httpx` / `requests` 等第三方庫。"
+      "hash": "81fedc93d77162d2b68e68be97efe9dc",
+      "translation": "# 網路用戶端\n\n> [!TIP]\n> **何時需要閱讀這篇**：需要發出站 HTTP / WebSocket 請求時。若不需要則可跳過，這不會影響其他功能的使用。\n\nErisPulse 提供了統一的網路用戶端，聚合了 HTTP 請求、WebSocket 連接和連接池管理。模組和適配器**必須優先使用**此用戶端，而非自行導入 `aiohttp` / `httpx` / `requests` 等第三方庫。"
     },
     {
       "hash": "360b24db9c6d8e43f858546b5393f4c7",

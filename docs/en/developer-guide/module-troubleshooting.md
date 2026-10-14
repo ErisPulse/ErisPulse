@@ -1,14 +1,17 @@
 # Module Troubleshooting Guide
 
-When a module "doesn't respond," it can be categorized into three types of issues, each with corresponding framework diagnostic tools (RFC EPRFC-2026-001 Direction Five):
+> [!TIP]
+> **When to read this**: When a module "doesn't respond", a command isn't triggered, or an event isn't received. Skip if not needed, as it won't affect the use of other features.
+
+When a module "doesn't respond", symptoms can be divided into three types of issues, each with corresponding framework diagnostic tools (RFC EPRFC-2026-001 Direction Five):
 
 | Symptom | Diagnostic Tool | Diagnostic Level |
-|---------|----------------|------------------|
+|------|---------|---------|
 | Module not loaded | `ErisPulse.runtime.explain_module(name)` | Registration and loading chain |
-| Event not handled | `ErisPulse.runtime.explain_event(event)` | Distribution entry point check |
+| Event not responded to | `ErisPulse.runtime.explain_event(event)` | Distribution entry point check |
 | Command not triggered | Distribution decision chain (test side `DispatchTrace` / framework built-in `trace`) | Command determination chain |
 
-Both diagnostic functions are **pure read** operations, do not change any state, and can be called at any time; they return a machine-readable dict, which can be rendered into human-readable text using `format_report()`.
+Both diagnostic functions are **pure read** operations and do not change any state; they can be called at any time; they return a machine-readable dict, which can be rendered into human-readable text using `format_report()`.
 
 ## Scenario 1: Module Not Loaded
 

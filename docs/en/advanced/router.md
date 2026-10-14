@@ -1,6 +1,9 @@
 # Router Manager
 
-The ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. The underlying layer is encapsulated through an abstraction layer (currently FastAPI + Uvicorn).
+> [!TIP]  
+> **When to read this**: When you need HTTP / WebSocket / SSE routing (including connection pool broadcasting). If not needed, you can skip it without affecting the use of other features.
+
+The ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. Under the hood, it is encapsulated through an abstraction layer (currently FastAPI + Uvicorn).
 
 ## Overview
 

@@ -1,13 +1,16 @@
 # 模組測試（ErisPulse-Testing）
 
-[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) 是官方測試工具包（RFC EPRFC-2026-001 方向三）：
-提供 `TestBot`、測試事件工廠、出站訊息捕獲與斷言介面，讓模組測試像寫普通 pytest 一樣簡單。
+> [!TIP]  
+> **何時需要閱讀本文**：為自己的模組撰寫自動化測試時。若不需要則可跳過，這不會影響其他功能的使用。
+
+[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) 是官方測試工具包（RFC EPRFC-2026-001 方向三）：  
+提供 `TestBot`、測試事件工廠、出站訊息捕獲與斷言介面，讓模組測試像撰寫普通 pytest 一樣簡單。
 
 ```bash
 pip install ErisPulse-Testing
 ```
 
-> 單向依賴框架的開發期工具，執行時零介入。真連適配器平台的冒煙測試請使用框架倉庫的 `tests/devs/test_adapter.py`。
+> 單向依賴框架的開發期工具，執行時零介入。若要進行真正連接適配器平台的冒煙測試，請使用框架倉庫的 `tests/devs/test_adapter.py`。
 
 ## 快速開始
 

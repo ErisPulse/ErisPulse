@@ -1,18 +1,21 @@
 # Inter-Module Communication
 
-> [!NOTE]  
+> [!TIP]
+> **When to read this**: When you need cross-module calls (RPC), service contracts, targeted events, or cold-start replay. Skip if not needed; it won't affect the use of other features.
+
+> [!NOTE]
 > This chapter requires ErisPulse **2.8.0+**.
 
-ErisPulse's modules have a **three-layer communication model**, ordered as "point-to-point → directed → broadcast":
+ErisPulse's modules communicate through a **three-layer communication model**, arranged from "point-to-point → targeted → broadcast":
 
 | Layer | API | Semantics | Typical Scenario |
 |---|---|---|---|
-| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking capabilities of another module (e.g., fetching history, translation, refund) |
-| **Directed Events** | `await lifecycle.emit("message_received", {...}, to="Chat")` | Distributed only to lifecycle hooks registered by the specified module | Notifying downstream modules of upstream state changes ("a new message was received") |
-| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide visible lifecycle events | Hot configuration updates, module up/down events |
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking another module's capability (e.g., fetching history, translation, refund) |
+| **Targeted Events** | `await lifecycle.emit("message_received", {...}, to="Chat")` | Distributed only to lifecycle hooks registered by the specified module | Notifying downstream modules about upstream state changes ("a new message has been received") |
+| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide lifecycle events | Hot configuration updates, module startup/shutdown |
 
 {!--< tips >!--}
-Selection rule: **Use `call` when you need a return value, use `emit(..., to=...)` when you only want to notify a specific module's hooks, and use `emit(...)` to notify everyone.**  
+Selection mnemonic: **Use `call` when you need a return value, use `emit(..., to=...)` to notify a specific module's hooks, and use `emit(...)` to notify everyone.** 
 {!--< /tips >!--}
 
 ## RPC: module.call

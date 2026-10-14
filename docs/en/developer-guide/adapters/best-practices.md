@@ -1,5 +1,8 @@
 # Adapter Development Best Practices
 
+> [!TIP]
+> **When to read this**: It is recommended to read this after the adapter skeleton is working (engineering best practices). If not needed, you can skip it without affecting the use of other features.
+
 This document provides best practice recommendations for ErisPulse adapter development.
 
 ## Bot Status Management and Meta Events

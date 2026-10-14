@@ -1,10 +1,13 @@
 # Startup Process and Manual Control
 
-ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup chain into a single line of code. However, when you need to fully customize the startup process (for example, partial loading, dynamic registration, hot plugging, injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
+> [!TIP]
+> **When to read this**: When you need to manually drive the startup sequence, customize the startup order, or troubleshoot startup failures. If not needed, you can skip this section without affecting other features.
 
-This article breaks down the startup chain into independent components, explains the responsibilities of each, the order of calls, and provides an example of how to manually perform a complete startup.
+ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup sequence into a single line of code. However, when you need to fully customize the startup process (for example, partial loading, dynamic registration, hot-swapping, or injecting custom loading strategies), you need to understand what happens inside this sequence and how to manually drive each step.
 
-> This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the `init()` chain and lower-level entry points such as `init()` / `init_task()` / `init_sync()`.
+This article breaks down the startup sequence into independent steps, explains the responsibilities of each step and their calling order, and provides an example of manually performing the complete startup process.
+
+> This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the `init()` sequence, as well as lower-level entry points such as `init()`/`init_task()`/`init_sync()`.
 
 ## Overview of SDK Top-Level Entry Points
 

@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "8dc7ace4046cb78f768f4121b4a8ea07",
-  "file_hash": "8dc7ace4046cb78f768f4121b4a8ea07",
-  "translated_at": "2026-10-09T14:50:49.869905",
+  "hash": "34c7b2051108bbddcd7a6a2afc47f64e",
+  "file_hash": "34c7b2051108bbddcd7a6a2afc47f64e",
+  "translated_at": "2026-10-14T01:03:05.571158",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "04f16c60b71455fcd2ade89ac0c3cd66",
-      "translation": "# 會話收件箱（Transcript）\n\n會話收件箱會自動記錄機器人收發的訊息（依會話鍵 `platform:detail_type:target_id` 組織），\n為對話恢復（`event.history`）、影子模組 diff、冷啟動回放等提供歷史資料。\n本文檔說明它的**儲存模型、保留策略旋鈕各保護什麼**，以及執行時覆蓋 API 與放開限制的真實代價。\n\n> 改限制前請先讀完「風險與審計」一節——每個旋鈕都有它存在的理由。"
+      "hash": "20cf1056a1a015d625824a9719db545b",
+      "translation": "# 會話收件箱（Transcript）\n\n> [!TIP]\n> **什麼時候需要閱讀這篇**：需要消息歷史、對話恢復，或調整收件箱保留策略時。不需要則跳過，不會影響其他功能的使用。\n\n會話收件箱會自動記錄機器人收發的消息（按會話鍵 `platform:detail_type:target_id` 組織），\n為對話恢復（`event.history`）、影子模組 diff、冷啟動回放等提供歷史資料。\n本文檔說明它的**儲存模型、保留策略旋鈕各保護什麼**，以及運行時覆蓋 API 與放開限制的真實代價。\n\n> 改動限制前請先讀完「風險與審計」一節——每個旋鈕都有它存在的理由。"
     },
     {
       "hash": "5d001412bcfdafe02d2eb82f8403e55a",

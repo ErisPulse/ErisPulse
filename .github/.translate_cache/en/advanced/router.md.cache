@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "5ac186f45db1141d8d3579a868aacc7d",
-  "file_hash": "5ac186f45db1141d8d3579a868aacc7d",
-  "translated_at": "2026-10-10T04:12:57.597165",
+  "hash": "fd85cfd326b35f5f0567a22d760f67c1",
+  "file_hash": "fd85cfd326b35f5f0567a22d760f67c1",
+  "translated_at": "2026-10-14T01:10:23.500725",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "17478b448933632235a760eca6803b33",
-      "translation": "# Router Manager\n\nThe ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. The underlying layer is encapsulated through an abstraction layer (currently FastAPI + Uvicorn)."
+      "hash": "42c8c2ece6ceba5983e420ff46bb201e",
+      "translation": "# Router Manager\n\n> [!TIP]  \n> **When to read this**: When you need HTTP / WebSocket / SSE routing (including connection pool broadcasting). If not needed, you can skip it without affecting the use of other features.\n\nThe ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. Under the hood, it is encapsulated through an abstraction layer (currently FastAPI + Uvicorn)."
     },
     {
       "hash": "fb144a12cbd40237d4f461fd0a1f0c7b",

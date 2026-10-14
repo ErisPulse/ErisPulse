@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "519904b241003647135502f6825da279",
-  "file_hash": "519904b241003647135502f6825da279",
-  "translated_at": "2026-09-07T12:36:11.494571",
+  "hash": "c2b5d068ffbc2848eeee805b99e02ff9",
+  "file_hash": "c2b5d068ffbc2848eeee805b99e02ff9",
+  "translated_at": "2026-10-14T01:11:37.723068",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "6a3343ecbacbbe56e5e13ece3df87a63",
-      "translation": "# 事件轉換器實作指南\n\n事件轉換器 (Converter) 是適配器的核心組件之一，負責將平台原生事件轉換為 ErisPulse 統一的 OneBot12 標準事件格式。"
+      "hash": "b7e3ab73f17ae5e32ef30e02f4065438",
+      "translation": "# 事件轉換器實作指南\n\n> [!TIP]\n> **什麼時候需要閱讀這篇**：適配器開發路徑內必讀（事件轉換器）。不需要則跳過，不會影響其他功能的使用。\n\n事件轉換器 (Converter) 是適配器的核心組件之一，負責將平台原生事件轉換為 ErisPulse 統一的 OneBot12 標準事件格式。"
     },
     {
       "hash": "9378718b4e9cea27747fab845b30a03a",

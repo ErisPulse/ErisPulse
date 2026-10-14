@@ -1,8 +1,11 @@
-# SQL クエリビルダー
+# SQL クエリビルダ
 
-ErisPulse の Storage モジュールは、チェーン呼び出しスタイルの汎用 SQL クエリビルダーを提供し、カスタムテーブルの作成、クエリ、更新、削除操作をサポートします。
+> [!TIP]
+> **この記事を読むべきタイミング**：チェーン形式のSQLクエリやカスタムストレージバックエンドが必要な場合。必要ない場合はスキップしても、他の機能の使用に影響はありません。
 
-## 架構設計
+ErisPulseのStorageモジュールは、チェーン形式の呼び出しスタイルを提供する汎用的なSQLクエリビルダを備えており、カスタムテーブルの作成、クエリ、更新、削除操作をサポートします。
+
+## アーキテクチャ設計
 
 ```
 Bases/storage.py                    Core/storage.py
@@ -15,8 +18,8 @@ Bases/storage.py                    Core/storage.py
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` は抽象基底クラスで、統一されたインターフェースを定義します。フレームワークには、SQLite / MySQL / PostgreSQL の 3 種類の実装が内蔵されています（カスタムバックエンドもこの方式で拡張可能です。詳しくは[ストレージバックエンド](storage-backends.md)をご覧ください）。
-- `StorageManager` は `ErisPulse.storage.backend` 設定に従って具体的なバックエンドをスケジュールします。デフォルトは SQLite で、完全に後方互換性があります。
+- `BaseStorage` / `BaseQueryBuilder` は抽象基底クラスで、統一されたインターフェースを定義します。フレームワークにはSQLite / MySQL / PostgreSQLの3つの実装が内蔵されています（カスタムバックエンドもこのように拡張可能です。[ストレージバックエンド](storage-backends.md)を参照）。
+- `StorageManager` は `ErisPulse.storage.backend` の設定に従って具体的なバックエンドをスケジュールし、デフォルトはSQLiteで、完全に後方互換性があります。
 
 ## 導入
 
@@ -25,7 +28,7 @@ from ErisPulse import sdk
 # または
 from ErisPulse.Core import storage
 
-# ABC 基底クラス（型注釈またはカスタム実装用）
+# ABC基底クラス（型注釈やカスタム実装に使用）
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
@@ -64,14 +67,14 @@ sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
 # テーブル名の変更
 sdk.storage.AlterTable("users").RenameTo("members").Execute()
 
-# 連鎖的な複数操作
+# 複数の操作をチェーンで実行
 sdk.storage.AlterTable("users") \
     .AddColumn("phone", "TEXT") \
     .AddColumn("address", "TEXT") \
     .Execute()
 ```
 
-## チェーン呼び出しによるクエリ
+## チェーン形式のクエリ
 
 ### データの挿入
 
@@ -89,14 +92,14 @@ sdk.storage.Table("users").InsertMulti([
 
 ### データの取得
 
-> **重要**：`Select()` は `list[tuple]`（タプルのリスト）を返します。辞書ではなく、列の順序に従ってインデックスでアクセスする必要があります。
+> **重要**：`Select()` は `list[tuple]`（タプルのリスト）を返します。辞書ではありません。列の順序に従ってインデックスでアクセスする必要があります。
 
 ```python
-# 全列を取得
+# 全ての列を取得
 rows = sdk.storage.Table("users").Select().Execute()
 # rows: [(1, "Alice", 30), (2, "Bob", 25), ...]
 
-# 指定列を取得
+# 指定の列を取得
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
 # rows: [("Alice", 30), ("Bob", 25), ...]
 
@@ -108,10 +111,10 @@ for row in rows:
 
 #### タプルを辞書に変換
 
-`ToDict()` をチェーン内で呼び出すことを推奨します。SELECT の結果は自動的に辞書で返されます（列名 → 値）：
+`ToDict()` をチェーン内で直接呼び出すことを推奨します。SELECT結果は自動的に辞書で返されます（列名 → 値）：
 
 ```python
-# ToDict チェーン：結果は list[dict] で、列名はクエリメタデータから自動取得（SELECT * に対しても同様）
+# ToDict チェーン：結果は list[dict] で、列名はクエリメタデータから自動的に取得されます（SELECT * でも同様に対応）
 rows = sdk.storage.Table("users").Select("name", "age").ToDict().Execute()
 # rows: [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}, ...]
 
@@ -126,9 +129,9 @@ row = sdk.storage.Table("users").Select("name", "age") \
 # row: {"name": "Alice", "age": 30} または None
 ```
 
-> `ToDict()` はチェーン呼び出しのマーカー（self を返す）です：`ToDict()` を呼び出さないチェーンは元の `list[tuple]` の振る舞いを保ち、完全に後方互換性があります。`copy()` はこのマーカーを保持します。
+> `ToDict()` はチェーン形式のマーカー（selfを返す）です：`ToDict()` を呼び出さないチェーンは、元の `list[tuple]` の動作を完全に保持し、後方互換性があります。`copy()` はこのマーカーを保持します。
 
-手動で zip を使用する方法（ToDict と同等、チェーンを変更できない場合に適しています）：
+手動で zip を使用する方法（`ToDict` と同等、チェーンを変更できない場合に適しています）：
 
 ```python
 columns = ["id", "name", "age"]
@@ -139,11 +142,11 @@ for row in rows:
     record = dict(zip(columns, row))
     print(record["name"], record["age"])
 
-# 方法2：一度に辞書のリストに変換
+# 方法2：一度に辞書リストに変換
 records = [dict(zip(columns, row)) for row in rows]
 ```
 
-#### 単一行の取得
+#### 単一行取得
 
 ```python
 row = sdk.storage.Table("users").Select("name", "age") \
@@ -158,20 +161,20 @@ if row is not None:
 
 ### 条件フィルタ
 
-> `Where(condition, *params)` は、複数のパラメータを渡すことで、複数の `?` プレースホルダに対応します。
+> `Where(condition, *params)` は複数のパラメータを渡すことができ、複数の `?` サンクポールに対応します。
 
 ```python
-# 単一条件（1つのプレースホルダ、1つのパラメータ）
+# 単一条件（1つのサンクポール、1つのパラメータ）
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 18) \
     .Execute()
 
-# 1つの Where で複数のプレースホルダを使用
+# 1つの Where で複数のサンクポールを使用
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ? AND age < ?", 20, 40) \
     .Execute()
 
-# Where を複数回呼び出す（AND で連結）
+# Where を複数回呼び出す（ANDで連結）
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 20) \
     .Where("age < ?", 40) \
@@ -240,12 +243,12 @@ exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 
 ## クエリ条件の再利用
 
-`copy()` を使用してビルダーを深くコピーし、基本条件を再利用します：
+`copy()` を使用してビルダを深くコピーし、基本的な条件を再利用します：
 
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
 
-# 同じ条件に基づいてクエリを実行
+# 同じ条件に基づいてクエリ
 rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
 
 # 同じ条件に基づいてカウント
@@ -255,7 +258,7 @@ count = base.copy().Count()
 exists = base.copy().Where("name = ?", "Alice").Exists()
 ```
 
-## ビルダーのリセット
+## ビルダのリセット
 
 ```python
 builder = sdk.storage.Table("users").Select("name").Where("age > ?", 18)
@@ -268,7 +271,7 @@ rows = builder.Execute()
 
 ## トランザクションでの使用
 
-チェーン呼び出しはトランザクションを完全にサポートします：
+チェーン形式の操作はトランザクションに対応しています：
 
 ```python
 # トランザクションをコミット
@@ -283,12 +286,12 @@ try:
         raise Exception("force rollback")
 except Exception:
     pass
-# Alice のレコードは依然として存在します
+# Aliceのレコードは依然として存在します
 ```
 
-## 非同期のネイティブ API
+## 非同期のネイティブAPI
 
-2.8.0 以降、ストレージ層は非同期をネイティブの主インターフェースとしています。すべての終端メソッドには、`a` が付いた非同期版が用意されており、非同期ハンドラ内ではイベントループのブロッキングを避けるために推奨されます：
+2.8.0からストレージ層は非同期をネイティブの主インターフェースとしており、すべての終端メソッドには `a` が付いた非同期版があります。非同期ハンドラ内では、イベントループのブロッキングを避けるために、非同期版を使用することを推奨します：
 
 ```python
 # 非同期トランザクション
@@ -296,13 +299,13 @@ async with sdk.storage.atransaction():
     await sdk.storage.aset("key1", "value1")
     await sdk.storage.aset("key2", {"nested": True})
 
-# 非同期チェーンクエリ
+# 非同期チェーン形式のクエリ
 rows = await sdk.storage.Table("users").Select("name", "age").ToDict().aExecute()
 row = await sdk.storage.Table("users").Select("*").Where("id = ?", 1).aExecuteOne()
 total = await sdk.storage.Table("users").Where("age > ?", 18).aCount()
 exists = await sdk.storage.Table("users").Where("name = ?", "Alice").aExists()
 
-# 非同期 KV
+# 非同期KV
 await sdk.storage.aset("app.name", "MyApp")
 value = await sdk.storage.aget("app.name")
 keys = await sdk.storage.aget_all_keys()
@@ -321,80 +324,80 @@ keys = await sdk.storage.aget_all_keys()
 
 | 操作 | 戻り値の型 | 説明 |
 |------|---------|------|
-| `Select().Execute()` | `list[tuple]` | タプルのリスト、列の順序で並べ替え |
-| `Select().ExecuteOne()` | `tuple \| None` | 単一行のタプルまたは None |
-| `Insert().Execute()` | `int` | 受影響された行数 |
+| `Select().Execute()` | `list[tuple]` | 列の順序に従ったタプルのリスト |
+| `Select().ExecuteOne()` | `tuple \| None` | 単一のタプルまたは None |
+| `Insert().Execute()` | `int` | 更新された行数 |
 | `InsertMulti().Execute()` | `int` | 挿入された行数 |
-| `Update().Execute()` | `int` | 受影響された行数 |
-| `Delete().Execute()` | `int` | 受影響された行数 |
-| `Count()` | `int` | 一致する行数 |
-| `Exists()` | `bool` | 存在するか |
+| `Update().Execute()` | `int` | 更新された行数 |
+| `Delete().Execute()` | `int` | 削除された行数 |
+| `Count()` | `int` | マッチする行数 |
+| `Exists()` | `bool` | 存在するかどうか |
 
 ### 戻り値の処理例
 
 ```python
-# Select はタプルを返し、インデックスで値を取得します
+# Select はタプルを返し、インデックスで値を取り出します
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
-first_name = rows[0][0]  # 最初の行、最初の列 name
-first_age = rows[0][1]   # 最初の行、2番目の列 age
+first_name = rows[0][0]  # 1行目の1列目 name
+first_age = rows[0][1]   # 1行目の2列目 age
 
-# 推奨：列名リスト + zip を使って辞書に変換、コードの可読性が向上
+# 推奨：列名のリスト + zip で辞書に変換し、コードの可読性を高めます
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
     d = dict(zip(cols, row))
     print(d["name"], d["age"])
 
-# ExecuteOne は単一行のタプルまたは None を返します
+# ExecuteOne は単一のタプルまたは None を返します
 row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
 name = row[0] if row else None
 
-# Insert/Update/Delete は影響された行数を返します
+# Insert/Update/Delete は更新された行数を返します
 affected = sdk.storage.Table("users").Delete().Where("age < ?", 18).Execute()
 print(f"削除されたレコード数: {affected}")
 ```
 
 ## パラメータ化されたクエリ
 
-すべての WHERE パラメータは `?` プレースホルダを使用し、パラメータは `Where()` の追加引数として渡します（**タプルやリストではありません**）：
+すべてのWHEREパラメータは `?` サンクポールを使用し、パラメータは `Where()` の追加引数として渡します（**タプルやリストではありません**）：
 
 ```python
 # 正しい ✓ — 複数のパラメータを個別に渡す
 sdk.storage.Table("users").Where("age > ? AND name = ?", 18, "Alice").Execute()
 
-# 正しい ✓ — Where を複数回呼び出す
+# 正しい ✓ — Whereを複数回呼び出す
 sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execute()
 
 # 間違っている ✗ — タプルを渡さないでください
 sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
-# これはタプル全体を最初のプレースホルダの値として扱います
+# これはタプル全体を最初のサンクポールの値として扱います
 
-# 間違っている ✗ — SQL インジェクションのリスクがあります
+# 間違っている ✗ — サンクポール注入のリスクがあります
 sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 ```
 
-### Where パラメータの渡し方
+### Whereパラメータの渡し方
 
 ```python
 # Where(condition: str, *params: Any)
-# params は可変引数で、個別に渡します
+# params は可変引数で、個別に渡すだけです
 
-# 単一パラメータ
+# 単一のパラメータ
 .Where("name = ?", "Alice")
 
-# 複数パラメータ
+# 複数のパラメータ
 .Where("age > ? AND age < ?", 18, 60)
 
-# LIKE クエリ
+# LIKEクエリ
 .Where("name LIKE ?", "A%")
 
-# IN クエリ（プレースホルダを手動で構築する必要があります）
+# INクエリ（手動でサンクポールを構築する必要があります）
 .Where("name IN (?, ?, ?)", "Alice", "Bob", "Charlie")
 ```
 
 ## カスタムストレージバックエンド
 
-2.8.0 以降、抽象層は**非同期メソッドをネイティブ契約**としています：`BaseStorage` を継承して非同期抽象メソッドを実装し、同期 `get/set/Execute` などは基底クラスが自動的にブリッジで提供します：
+2.8.0から抽象層は**非同期メソッドをネイティブ契約**としています：`BaseStorage` を継承して非同期の抽象メソッドを実装し、同期の `get/set/Execute` などは基底クラスが自動的にブリッジで提供します：
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -421,21 +424,17 @@ class MyStorage(BaseStorage):
     async def aset(self, key, value):
         ...
 
-    # 他の非同期抽象メソッドとトランザクション接続のフックを実装 ...
+    # 他の非同期抽象メソッドとトランザクション接続のhookを実装 ...
     def Table(self, table_name):
         return MyQueryBuilder(self, table_name)
 ```
 
 > [!TIP]
-> トランザクション接続ルーティング（`conn` キーワード引数）を実装したくない場合は、クラス属性を
-> `_SUPPORTS_CONN_ROUTING = False`（デフォルト）のままにしておけば、トランザクション機能は使用可能ですが、隔離性は制限されます。
-> 純粋な SQL バックエンドの場合は、`Core/Bases/sql_base.py` の `SQLStorageBase` +
-> `SQLQueryBuilder` を直接継承し、接続管理と方言の実行フーニャーを提供するだけで済みます。詳しくは
-> [ストレージバックエンド](storage-backends.md)を参照してください。
+> トランザクション接続ルーティング（`conn`キーワード引数）を実装したくない場合は、クラス属性を `_SUPPORTS_CONN_ROUTING = False`（デフォルト）のままにしておけば、トランザクション機能は使用できます（分離性は制限されます）。純粋なSQLバックエンドは、`Core/Bases/sql_base.py` の `SQLStorageBase` + `SQLQueryBuilder` を直接継承し、接続管理と方言実行のフーニェルを提供するだけで、[ストレージバックエンド](storage-backends.md)を参照してください。
 
 ## 関連ドキュメント
 
-- [ストレージバックエンド](storage-backends.md) - sqlite / mysql / postgres バックエンドの選択と設定
-- [コアモジュール API](../api-reference/core-modules.md) - Storage モジュールの完全な API
-- [ストレージ基底クラス API](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - BaseStorage/BaseQueryBuilder 抽象インターフェース
-- [メッセージビルダー](message-builder.md) - MessageBuilder のチェーン呼び出しスタイルの参考
+- [ストレージバックエンド](storage-backends.md) - sqlite / mysql / postgresのバックエンド選択と設定
+- [コアモジュールAPI](../api-reference/core-modules.md) - Storageモジュールの完全なAPI
+- [ストレージ基底クラスAPI](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - BaseStorage/BaseQueryBuilderの抽象インターフェース
+- [メッセージビルダ](message-builder.md) - MessageBuilderのチェーン形式呼び出しの参考

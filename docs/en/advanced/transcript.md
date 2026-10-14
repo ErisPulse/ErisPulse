@@ -1,8 +1,11 @@
-# Transcript
+# Transcript Inbox
 
-The Transcript Inbox automatically records messages sent and received by the bot (organized by session key `platform:detail_type:target_id`), providing historical data for conversation recovery (`event.history`), shadow module diff, cold start replay, and more. This document explains its **storage model, what each retention policy knob protects**, and the real cost of runtime override APIs and放开限制.
+> [!TIP]
+> **When to read this**: When you need message history, conversation recovery, or to adjust the retention policy of the inbox. If not needed, you can skip this section without affecting the use of other features.
 
-> Before changing any limits, please read the "Risks and Audits" section first—each knob exists for a reason.
+The Transcript Inbox automatically records messages sent and received by the bot (organized by session key `platform:detail_type:target_id`), providing historical data for conversation recovery (`event.history`), shadow module diff, cold start replay, and more. This document explains its **storage model, what each retention policy knob protects**, and the real cost of runtime override APIs and relaxed restrictions.
+
+> Please read the "Risks and Audits" section before changing any restrictions—each knob exists for a specific reason.
 
 ## How It Works
 

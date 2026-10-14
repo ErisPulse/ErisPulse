@@ -1,11 +1,14 @@
 # Exception System and Handling Guide
 
-All custom exceptions in ErisPulse inherit from `ErisPulseError`. Underlying library exceptions (e.g., aiohttp, aiomysql, etc.) are caught and converted into corresponding ErisPulse exceptions within the framework — business code **does not need to rely on any underlying library exception types**.
+> [!NOTE]
+> **L1 Core Reading** — One of the five core documents in the "Reading Path" on the homepage, essential for module development.
+
+All custom exceptions in ErisPulse inherit from `ErisPulseError`. Underlying library exceptions (e.g., aiohttp, aiomysql) are caught internally by the framework and converted into corresponding ErisPulse exceptions — your business code **does not need to depend on any underlying library exception types**.
 
 {!--< tips >!--}
-1. For broad fallback: catch `ErisPulseError` (the base class for all framework exceptions)
-2. For precise handling: catch by module (e.g., `ModuleCallTimeoutError`, `StorageUnreachableError`)
-3. Storage operations do not throw by default: failures are logged and `False / None / default` returned; subscribe to `storage.unreachable` / `storage.recovered` events for connection state changes
+1. To broadly catch exceptions: catch `ErisPulseError` (the base class for all framework exceptions)
+2. To handle exceptions precisely: catch by module (e.g., `ModuleCallTimeoutError`, `StorageUnreachableError`)
+3. Storage operations do not throw by default: log failures and return `False / None / default`; subscribe to `storage.unreachable` / `storage.recovered` events for connection status changes
 {!--< /tips >!--}
 
 ## Exception Overview

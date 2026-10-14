@@ -1,23 +1,29 @@
-# Scope (область видимости)
+# Scope (Scope)
 
-> [!NOTE]
-> Эта функция доступна только в ErisPulse **2.8.0+**.
+> [!TIP]  
+> **When to read this**: When you need to control module availability, event access, or outbound action restrictions. Skip if not needed, as it won't affect the use of other features.
 
-Область видимости отвечает на четыре вопроса: **какие модули доступны, какие события принимать, какой текст обрабатывает модуль и что модуль может делать вне системы**. Контроль полностью предоставляется пользователю: на верхнем уровне (в конфигурации `ErisPulse.scope` или во время выполнения `sdk.scope`) объявляются модули, адаптеры, обработчики и вызовы на выходе, а пайплайн событий автоматически читает и выполняет эти настройки на входе, при фильтрации обработчиков и на выходных портах.
+> [!NOTE]  
+> This feature requires ErisPulse **2.8.0+**.
 
-| Измерение | Что контролируется | Что отклоняется | Путь настройки |
-|-----------|------------------|------------------|----------------|
-| **① Модуль** | Какие модули доступны (три уровня: платформа / Bot / сессия) | Отфильтрованные модули не запускаются и не отвечают (блокировка события широковещательной рассылки `scope.blocked`; команды, попавшие под фильтр, всё равно распознаются и блокируются) | `scope.platforms / bots / sessions` |
-| **② Идентичность** | Принимать или нет события (четыре уровня: адаптер / Bot / сессия / пользователь) | Полное отбрасывание на входе (блокировка события широковещательной рассылки `scope.blocked`) | `scope.identity.*` |
-| **③ Выход** | Какие вызовы на выходе может инициировать модуль (белый и чёрный списки методов для сообщений / API / запросов) | Отказ с ответом (`retcode=34601`) | `scope.actions` |
+Scope answers four questions: **which modules are available, who's events are accepted or rejected, what text a module processes, and what actions a module can perform outwardly**.  
+The control is entirely user-driven: at the **top level** of module / adapter / processor / outbound call registration (configured via `ErisPulse.scope` or runtime `sdk.scope`), the scope is declared uniformly. The event pipeline automatically reads and executes the scope at the entry point, processor filtering, and outbound gate.
 
-> **Связанные системы**: Команды являются специальными обработчиками событий сообщений, и их пользовательские списки белого и чёрного списков (ACL) и перезапись параметров реализации управляются системой команд (`ErisPulse.event.command`). Дополнительную информацию см. в [Введение в обработку событий](../getting-started/event-handling.md) и [Руководство по конфигурации](../user-guide/configuration.md).
+| Dimension | What is controlled | Rejected behavior | Configuration path |
+|-----------|--------------------|-------------------|--------------------|
+| **① Module** | Which modules are available (platform / Bot / session three levels) | The filtered modules do not trigger or reply (broadcast `scope.blocked` event is intercepted; matched commands are still claimed and blocked) | `scope.platforms / bots / sessions` |
+| **② Identity** | Whether to accept or reject events (adapter / Bot / session / user four levels) | Completely discard at the entry point (broadcast `scope.blocked` event is intercepted) | `scope.identity.*` |
+| **③ Outbound** | Which outbound calls a module can initiate (message / API / request, method-level white/blacklist) | Fail response (`retcode=34601`) | `scope.actions` |
+
+> **Related systems**: Commands are special message event handlers, with their user allow/deny lists (ACL) and parameter overwrites managed by the command system (`ErisPulse.event.command`). See [Event Handling Introduction](../getting-started/event-handling.md) and [Configuration Guide](../user-guide/configuration.md).
 
 {!--< tips >!--}
-1. Импортируйте единственный экземпляр с помощью `from ErisPulse.Core import scope` (объект `sdk.scope` идентичен)
-2. Проверка: `scope.is_allowed(...)` / `scope.is_identity_allowed(...)` / `scope.is_action_allowed(...)` соответствуют трем портам ①②③
-3. Чтение и запись: методы с параметрами по измерениям (IDE может подсказывать) — `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`; также есть словарный способ: `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
-4. Переопределение текста обработчиками событий см. в [Введение в обработку событий · Переопределение событий](../getting-started/event-handling.md#переопределение-событий-без-изменения-кода-модуля-переопределение-поведения-любого-типа-событий); ACL команд и переопределение параметров см. в [Введение в обработку событий](../getting-started/event-handling.md)
+1. Import the singleton via `from ErisPulse.Core import scope` (`sdk.scope` refers to the same object)
+2. Check: `scope.is_allowed(...)` / `scope.is_identity_allowed(...)` / `scope.is_action_allowed(...)` correspond to the three gates ①②③
+3. Read/Write: Dimensional parameter methods (IDE can auto-complete) — `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`;  
+   Additionally, there are dictionary-style fallback methods `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
+4. Event handler text condition overwrites are described in [Event Handling Introduction · Event Overwrite](../getting-started/event-handling.md#event-overwrite-overwrite-the-behavior-of-any-event-type-without-modifying-module-code);  
+   Command ACL / parameter overwrites are described in [Event Handling Introduction](../getting-started/event-handling.md)
 {!--< /tips >!--}
 
 ## Matching Entry Syntax (Unified Across the System)

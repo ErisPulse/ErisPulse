@@ -8,17 +8,32 @@ ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配�
 
 根據你的目標，選擇對應的學習路徑。每條路徑內部按由淺入深排列。
 
+> [!IMPORTANT]
+> **不需要讀完所有文件。** 絕大多數開發者只需按順序讀完 **L1 核心五篇**
+> （約 1–2 小時）即可獨立開發 90% 的功能；其餘文件全部是特定場景的按需
+> 查閱資料——遇到對應需求再來翻，每篇開頭都標了"什麼時候需要讀這篇"。
+>
+> **L1 核心五篇**：[模組開發入門](developer-guide/modules/getting-started.md)
+> → [基礎概念](getting-started/basic-concepts.md)
+> → [Event 包裝類](developer-guide/modules/event-wrapper.md)
+> → [配置文件說明](user-guide/configuration.md)
+> → [異常捕獲](advanced/errors.md)
+>
+> 適配器作者另需：[適配器開發入門](developer-guide/adapters/getting-started.md)
+> → [事件轉換器](developer-guide/adapters/converter.md)
+> → [SendDSL 詳解](developer-guide/adapters/send-dsl.md)
+
 ### 一、我要使用機器人
 
-讓機器人跑起來、安裝模組、進行配置。
+讓機器人跑起來、裝模組、做配置。
 
 | 進度 | 文件 | 說明 |
 |------|------|------|
 | **① 上手** | [5 分鐘快速開始](quick-start.md) | 安裝、初始化、運行 —— 唯一的起步入口 |
-| App 直裝 | [ErisPulse-App 客戶端](ecosystem/app.md) | 官方全平台客戶端：手機 / 電腦圖形介面直接運行與管理，免終端 |
-| ② 深入 | [建立第一個機器人](getting-started/first-bot.md) | 編寫第一個命令處理器 |
+| App 直裝 | [ErisPulse-App 客戶端](ecosystem/app.md) | 官方全平台客戶端：手機 / 電腦圖形界面直接運行與管理，免終端 |
+| ② 深入 | [創建第一個機器人](getting-started/first-bot.md) | 編寫第一個命令處理器 |
 | ③ 概念 | [基礎概念](getting-started/basic-concepts.md) | 理解適配器/模組/事件的設計 |
-| ④ 實戰 | [常見任務範例](getting-started/common-tasks.md) | 存儲、定時任務、權限控制 |
+| ④ 實戰 | [常見任務示例](getting-started/common-tasks.md) | 存儲、定時任務、權限控制 |
 | 參考 | [配置文件說明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md) | 按需查閱 |
 | 參考 | [平台特性指南](platform-guide/README.md) | 各平台（雲湖/QQ/Telegram…）的差異 |
 
@@ -31,7 +46,7 @@ ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配�
 | **模組開發**（推薦） | [模組開發入門](developer-guide/modules/getting-started.md) | [核心概念](developer-guide/modules/core-concepts.md) · [Event 包裝類](developer-guide/modules/event-wrapper.md) · [最佳實踐](developer-guide/modules/best-practices.md) |
 | **適配器開發** | [適配器開發入門](developer-guide/adapters/getting-started.md) | [核心概念](developer-guide/adapters/core-concepts.md) · [SendDSL 詳解](developer-guide/adapters/send-dsl.md) · [事件轉換器](developer-guide/adapters/converter.md) · [最佳實踐](developer-guide/adapters/best-practices.md) |
 | **技術標準** | [標準規範總覽](standards/README.md) | 適配器開發必須遵循的 [會話類型](standards/session-types.md) · [事件轉換](standards/event-conversion.md) · [發送方法](standards/send-method-spec.md) · [API 回應](standards/api-response.md) · [請求操作](standards/request-action-spec.md) 規範 |
-| **測試與排查** | [模組測試（ErisPulse-Testing）](developer-guide/testing.md) | 分發決策鏈排查「命令為什麼沒觸發」 |
+| **測試與排查** | [模組測試（ErisPulse-Testing）](developer-guide/testing.md) | 分發決策鏈排查"命令為什麼沒觸發" |
 | **發布** | [發布與模組商店](developer-guide/publishing.md) | 將作品發布到 PyPI 和模組商店 |
 
 ### 三、我要深入理解原理
@@ -40,17 +55,17 @@ ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配�
 
 | 文件 | 說明 |
 |------|------|
-| [架構概覽](architecture.md) | 可視化圖表：核心架構、初始化流程、事件處理、生命週期、模組加載策略（含 `activate_on` 事件驅動懶加載）、本地插件文件夾與模組熱重載架構（支援全部模組來源） |
+| [架構概覽](architecture.md) | 可視化圖表：核心架構、初始化流程、事件處理、生命週期、模組加載策略（含 `activate_on` 事件驅動懶激活）、本地插件文件夾與模組熱重載架構（支援全部模組來源） |
 | [啟動流程與手動控制](advanced/startup.md) | 啟動鏈路拆解、手動驅動各環節、加載失敗診斷 |
 | [事件系統](api-reference/event-system.md) | 五大類事件的完整 API |
 | [適配器系統](api-reference/adapter-system.md) | 適配器註冊、啟停、API 調用 |
 | [核心模組](api-reference/core-modules.md) | Storage / Config / Logger / Router 等基礎能力 |
 | [生命週期管理](advanced/lifecycle.md) · [懶加載](advanced/lazy-loading.md) · [路由系統](advanced/router.md) | 內部子系統 |
-| [連接池與廣播](advanced/connections.md) · [會話收件箱](advanced/transcript.md) | 連接一等資源：廣播/分組/跨模組傳遞與重用、連接池查看；消息記錄保留策略與運行時覆蓋 |
+| [連接池與廣播](advanced/connections.md) · [會話收件箱](advanced/transcript.md) | 連接一等資源：廣播/分組/跨模組傳遞與複用、連接池查看；訊息記錄保留策略與運行時覆蓋 |
 | [作用域（scope）](advanced/scope.md) | 三維作用域控制：模組可用性 / 事件准入 / 出站動作限制（含方法級細粒度規則、綁定繼承 merge） |
 | [歸屬權（owner）系統](advanced/ownership.md) | 資源歸屬與自動回收：owner 上下文、歸屬資源全景、卸載清理序列、設計邊界與模組作者指南 |
 | [影子模組與灰度轉正](advanced/shadow.md) | 模組新版本以獨立 owner 並行試運行：五道隔離閘、行為 diff 對齊、promote 轉正與失敗回滾 |
-| [互動會話系統](advanced/interaction.md) | wait_reply 全解、會話定時器（remind/escalate）、多路等待（select）、會話互斥租約、收件箱、消息事務、鏈路追踪 |
+| [交互會話系統](advanced/interaction.md) | wait_reply 全解、會話定時器（remind/escalate）、多路等待（select）、會話互斥租約、收件箱、訊息事務、鏈路追踪 |
 | [模組間通信](advanced/module-communication.md) | RPC 協議化（module.call）、meta.services 服務契約與目錄、定向事件 emit(to=)、冷啟動回放、事件冪等去重 |
 | [Conversation 多輪對話](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL 構建](advanced/sql-builder.md) · [存儲後端](advanced/storage-backends.md) · [HTTP 客戶端](advanced/http-client.md) · [國際化](advanced/i18n.md) | 進階工具 |
 
@@ -61,10 +76,10 @@ ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配�
 | 文件 | 說明 |
 |------|------|
 | [生態總覽](ecosystem/README.md) | 如何安裝生態模組、為什麼這些不是內建功能 |
-| [ErisPulse-App](ecosystem/app.md) | 官方全平台客戶端（Android / Windows / Linux / macOS）：原生介面管理多個實例，**手機直接運行**，桌面托盤常駐 |
+| [ErisPulse-App](ecosystem/app.md) | 官方全平台客戶端（Android / Windows / Linux / macOS）：原生界面管理多個實例，**手機直接運行**，桌面托盤常駐 |
 | [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web 管理面板 + 視窗註冊 API（模組可向側邊欄註冊自定義頁面） |
-| [ErisPulse-Cron](ecosystem/cron.md) | 定時任務調度模組：一次性 / 間隔 / Cron 表達式，回調傳參，SQLite 持久化，其他模組可托管定時回調 |
-| [ErisPulse-Takumi](ecosystem/takumi.md) | 圖片渲染（HTML / 節點樹 / SVG / 動畫，內建中英文字體） |
+| [ErisPulse-Cron](ecosystem/cron.md) | 定時任務調度模組：一次性 / 间隔 / Cron 表達式，回調傳參，SQLite 持久化，其他模組可托管定時回調 |
+| [ErisPulse-Takumi](ecosystem/takumi.md) | 圖片渲染（HTML / 節點樹 / SVG / 動畫，內置中英文字體） |
 
 ### 五、我要為 ErisPulse 貢獻
 
