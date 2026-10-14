@@ -328,7 +328,7 @@ epsdk run --reload
 | 命令 | 别名 | 参数 | 说明 |
 |------|------|------|------|
 | `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 项目 |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | 创建模块/适配器脚手架 |
+| `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | 创建模块/适配器脚手架；`pack` 将本地插件转换为可发布项目 |
 
 ### init
 
@@ -382,13 +382,13 @@ init 产物：`main.py`、`pyproject.toml`（依赖清单）、`config/config.to
 
 ### create
 
-创建 ErisPulse 模块或适配器的脚手架项目。
+创建 ErisPulse 模块或适配器的脚手架项目；`pack` 子命令将本地插件（`plugins/` 目录）转换为可发布的标准项目。
 
 **参数：**
 
 | 参数 | 短参数 | 说明 |
 |------|--------|------|
-| `{module,adapter}` | | 要创建的类型：`module` 或 `adapter` |
+| `{module,adapter,pack}` | | 要创建的类型：`module` / `adapter` / `pack`（插件转项目）|
 | `--name` | `-n` | 项目名称（PascalCase） |
 | `--description` | `-d` | 项目描述 |
 | `--author` | `-a` | 作者名称 |
@@ -396,7 +396,7 @@ init 产物：`main.py`、`pyproject.toml`（依赖清单）、`config/config.to
 | `--homepage` | | 项目主页 URL |
 | `--output` | `-o` | 输出目录（默认当前目录） |
 | `--force` | `-f` | 强制覆盖已存在的目录 |
-| `--local` | | 创建本地插件（仅 `module` 可用）：生成 `plugins/<name>/` 包结构，免打包安装 |
+| `--local` | | 创建本地插件（`module` / `adapter` 可用）：生成 `plugins/<name>/` 包结构，免打包安装 |
 
 **示例：**
 
@@ -407,11 +407,17 @@ epsdk create
 # 直接创建 Module 项目
 epsdk create module -n MyModule
 
-# 创建本地插件（放入项目 plugins/ 目录，启动时自动发现，支持热重载）
+# 创建本地插件（放入项目 plugins/ 目录，启动时自动发现）
 epsdk create module -n MyModule --local
+
+# 创建本地适配器插件（同上，免打包开发）
+epsdk create adapter -n MyAdapter --local
 
 # 直接创建 Adapter 项目
 epsdk create adapter -n MyAdapter
+
+# 将本地插件转换为可发布项目（交互选择插件 → 补全元信息 → 生成标准项目）
+epsdk create pack
 
 # 完整参数
 epsdk create module -n MyModule -d "模块描述" -a "作者" -e "mail@example.com"

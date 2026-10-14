@@ -10,16 +10,21 @@ ErisPulse 本地插件文件夹加载器
     project/
     ├── main.py
     └── plugins/                  # 默认插件目录
-        ├── weather/              # 包形式插件（含 __init__.py）
+        ├── weather/              # 包形式模块插件（含 __init__.py）
         │   ├── __init__.py
         │   └── Core.py           # 定义 class Main(BaseModule)
+        ├── my_adapter/           # 包形式适配器插件
+        │   ├── __init__.py
+        │   └── Core.py           # 定义 BaseAdapter 子类（推荐经 __init__ 导出）
         └── dice.py               # 单文件插件
 
 {!--< tips >!--}
 1. 单 ``.py`` 文件 → 插件名 = 文件名；子目录（含 ``__init__.py``）→ 插件名 = 目录名
 2. 模块类识别：优先 ``Main``（BaseModule 子类），兼容首个 BaseModule 子类
-3. 与 PyPI 模块同名时**本地插件优先**（便于覆盖调试）
-4. 插件与安装包模块共用同一套启用状态 / 作用域 / meta / i18n / 上下文
+3. 适配器类识别：优先 ``Main``（BaseAdapter 子类），兼容插件内定义/导出的
+   首个 BaseAdapter 子类；由 :meth:`discover_adapters` 供适配器加载器消费
+4. 与 PyPI 模块/适配器同名时**本地插件优先**（便于覆盖调试）
+5. 插件与安装包模块/适配器共用同一套启用状态 / 作用域 / meta / i18n / 上下文
 {!--< /tips >!--}
 """
 
@@ -30,7 +35,10 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from ..Core.constants import MODULE_SOURCE_PLUGIN_FOLDER
+from ..Core.constants import (
+    ADAPTER_SOURCE_PLUGIN_FOLDER,
+    MODULE_SOURCE_PLUGIN_FOLDER,
+)
 from ..Core.i18n import i18n
 from ..Core.logger import logger
 
@@ -48,6 +56,7 @@ class PluginFolderLoader:
 
     def __init__(self):
         self._loaded_paths: dict[str, Path] = {}
+        self._loaded_adapter_paths: dict[str, Path] = {}
 
     # ==================== 目录解析 ====================
 
@@ -150,9 +159,16 @@ class PluginFolderLoader:
             module_obj = self._import_plugin(name, path)
             module_class = self._find_module_class(module_obj)
             if module_class is None:
-                logger.warning(
-                    i18n.t("loader.plugin.no_module_class", name=name)
-                )
+                if self._find_adapter_class(module_obj) is not None:
+                    # 适配器插件：由适配器加载器经 discover_adapters() 消费，
+                    # 模块加载侧静默跳过（误报警告会干扰用户）
+                    logger.trace(
+                        i18n.t("loader.plugin.adapter_skip", name=name)
+                    )
+                else:
+                    logger.warning(
+                        i18n.t("loader.plugin.no_module_class", name=name)
+                    )
                 return None
 
             from .strategy import ModuleLoadStrategy
@@ -300,6 +316,186 @@ class PluginFolderLoader:
             ):
                 return obj
         return None
+
+    @staticmethod
+    def _find_adapter_class(module_obj: Any) -> type | None:
+        """
+        {!--< internal-use >!--}
+        识别插件中的适配器类
+
+        优先 ``Main``（BaseAdapter 子类）；否则回落到插件内定义或经包
+        ``__init__`` 导出的首个 BaseAdapter 子类（``MyAdapter.Core`` 定义、
+        ``MyAdapter.__init__`` 导出为模板惯例，故 ``__module__`` 匹配
+        插件名自身或其子模块均有效，但不接受外部包的重导出）。
+
+        :param module_obj: 插件模块对象
+        :return: 适配器类；未找到返回 None
+        """
+        from ..Core.Bases.adapter import BaseAdapter
+
+        main_class = getattr(module_obj, "Main", None)
+        if (
+            inspect.isclass(main_class)
+            and issubclass(main_class, BaseAdapter)
+            and main_class is not BaseAdapter
+        ):
+            return main_class
+
+        module_name = getattr(module_obj, "__name__", "")
+        for obj in vars(module_obj).values():
+            if not (inspect.isclass(obj) and issubclass(obj, BaseAdapter)):
+                continue
+            if obj is BaseAdapter:
+                continue
+            obj_module = getattr(obj, "__module__", "")
+            if obj_module == module_name or obj_module.startswith(
+                module_name + "."
+            ):
+                return obj
+        return None
+
+    # ==================== 适配器插件发现 ====================
+
+    def discover_adapters(self) -> dict[str, dict[str, Any]]:
+        """
+        扫描全部插件目录并识别适配器插件
+
+        与 :meth:`discover` 共享目录解析与导入机制；模块类插件静默跳过
+        （由模块加载侧消费）。发现结果同步登记到
+        :attr:`_loaded_adapter_paths` 供热重载查询源路径。
+
+        :return: ``{适配器名: {"name", "path", "adapter_class", "module_obj", "meta"}}``
+
+        {!--< tips >!--}
+        meta 结构与 entry-point 加载路径的 ``adapterInfo.meta`` 一致，
+        ``source`` 为 ``ADAPTER_SOURCE_PLUGIN_FOLDER``。
+        {!--< /tips >!--}
+        """
+        results: dict[str, dict[str, Any]] = {}
+        plugin_dirs = self.get_plugins_dirs()
+
+        for base in plugin_dirs:
+            if not base.is_dir():
+                continue
+
+            for entry in sorted(base.iterdir()):
+                name = self._plugin_name_of(entry)
+                if name is None:
+                    continue
+
+                # 同名适配器先到先得（跨目录重复声明时警告）
+                if name in results:
+                    logger.warning(
+                        i18n.t("loader.plugin.duplicate", name=name)
+                    )
+                    continue
+
+                item = self._load_adapter_plugin(name, entry)
+                if item is not None:
+                    results[name] = item
+
+        if results:
+            logger.print_info(
+                i18n.t("loader.adapter.plugin_discovered", count=len(results)),
+                level=1,
+            )
+
+        return results
+
+    def _load_adapter_plugin(self, name: str, path: Path) -> dict[str, Any] | None:
+        """
+        {!--< internal-use >!--}
+        导入单个适配器插件并构造与 entry-point 加载路径一致的描述结构
+
+        :param name: 适配器插件名
+        :param path: 插件路径（.py 文件或包目录）
+        :return: 适配器描述字典；非适配器插件或加载失败返回 None
+        """
+        try:
+            module_obj = self._import_plugin(name, path)
+
+            # 模块类插件静默跳过（由模块加载侧消费）
+            if self._find_module_class(module_obj) is not None:
+                return None
+
+            adapter_class = self._find_adapter_class(module_obj)
+            if adapter_class is None:
+                return None
+
+            from ..runtime.version import check_min_sdk_version
+            from .bases.loader import resolve_min_sdk_version
+
+            # 运行时最低 SDK 版本检查：不满足时明确报错并跳过（声明缺失则放行）
+            declared_sdk = resolve_min_sdk_version(adapter_class, name=name)
+            if declared_sdk:
+                satisfied, current, required, parseable = check_min_sdk_version(
+                    str(declared_sdk)
+                )
+                if not parseable:
+                    logger.warning(
+                        i18n.t(
+                            "loader.plugin.sdk_version_invalid",
+                            name=name,
+                            value=declared_sdk,
+                        )
+                    )
+                elif not satisfied:
+                    logger.error(
+                        i18n.t(
+                            "loader.adapter.sdk_version_unsupported",
+                            name=name,
+                            required=required,
+                            current=current,
+                        )
+                    )
+                    return None
+
+            self._loaded_adapter_paths[name] = path
+            return {
+                "name": name,
+                "path": path,
+                "adapter_class": adapter_class,
+                "module_obj": module_obj,
+                "meta": {
+                    "name": name,
+                    "version": getattr(module_obj, "__version__", "1.0.0"),
+                    "description": getattr(module_obj, "__description__", ""),
+                    "author": getattr(module_obj, "__author__", ""),
+                    "license": getattr(module_obj, "__license__", ""),
+                    "package": None,  # 本地插件非安装包
+                    "min_sdk_version": str(declared_sdk) if declared_sdk else None,
+                    "depends": dict(
+                        getattr(adapter_class, "depends", None) or {}
+                    ),
+                    "optional_modules": list(
+                        getattr(adapter_class, "optional_modules", None) or []
+                    ),
+                    "top_level": [name],
+                    "source": ADAPTER_SOURCE_PLUGIN_FOLDER,
+                },
+            }
+        except SystemExit as e:
+            logger.error(
+                i18n.t("loader.plugin.systemexit", name=name, code=e.code)
+            )
+            return None
+        except Exception as e:
+            logger.error(
+                i18n.t("loader.plugin.load_failed", name=name, error=e)
+            )
+            from ..runtime.diagnostics import log_diagnostic
+
+            log_diagnostic(e, hint_key="loader.plugin.diag_hint")
+            return None
+
+    def get_loaded_adapter_path(self, name: str) -> Path | None:
+        """
+        获取已加载适配器插件的源路径（热重载用）
+
+        :param name: 适配器插件名
+        :return: 插件路径；未知适配器返回 None
+        """
+        return self._loaded_adapter_paths.get(name)
 
     @staticmethod
     def _get_load_strategy(module_class: type) -> Any:

@@ -1144,6 +1144,12 @@ CLEANUP_CALLBACK_TIMEOUT_SECS: Final[float] = 10.0
 # 修改影响: 必须与 plugin_folder.py 写入的 source 值保持一致。
 MODULE_SOURCE_PLUGIN_FOLDER: Final[str] = "plugin_folder"
 
+# 适配器注册来源标识：本地插件文件夹（plugins/ 目录）。
+# 使用位置: loaders/plugin_folder.py（构造 adapterInfo meta.source）与
+# loaders/adapter.py（热重载路由：仅本地插件适配器可经 reload_adapter 热重载）。
+# 修改影响: 必须与 plugin_folder.py 写入的 source 值保持一致。
+ADAPTER_SOURCE_PLUGIN_FOLDER: Final[str] = "adapter_plugin_folder"
+
 # ==============================================================================
 # 进程 / 版本 / 日志展示常量
 #
@@ -1212,6 +1218,7 @@ __all__ = [
     "ADAPTER_EVENT_MIXIN_PLATFORM",
     "ADAPTER_RETRY_BACKOFF_INTERVALS",
     "ADAPTER_RETRY_FIXED_DELAY_SECS",
+    "ADAPTER_SOURCE_PLUGIN_FOLDER",
     "ADAPTER_STATUS_DISABLED",
     "ADAPTER_STATUS_SKIPPED_DEPENDENCY",
     "ADAPTER_STATUS_STARTED",

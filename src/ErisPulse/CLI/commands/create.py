@@ -5,6 +5,7 @@ Create 命令实现
 """
 
 import datetime
+import shutil
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
@@ -74,6 +75,33 @@ packages = ["{name}"]
 """
 
 _MODULE_INIT = """from .Core import Main
+"""
+
+# pack 转换用：entry-point 组与类名按插件类型动态生成
+_PACK_PYPROJECT = """[project]
+name = "{pypi_name}"
+version = "1.0.0"
+description = "{description}"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {{ file = "LICENSE" }}
+authors = [ {{ name = "{author}", email = "{email}" }} ]
+
+dependencies = [
+]
+
+[project.urls]
+"homepage" = "{homepage}"
+
+[project.entry-points]
+"{group}" = {{ "{entry_key}" = "{name}:{class_name}" }}
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["{name}"]
 """
 
 _MODULE_CORE = """from dataclasses import dataclass, field
@@ -561,6 +589,7 @@ class {name}(BaseAdapter):
             return self.make_error(message=str(e))
 """
 
+
 _ADAPTER_CONVERTER = """\"\"\"
 {text[adapter.converter_doc]}
 \"\"\"
@@ -765,7 +794,7 @@ class CreateCommand(Command):
         parser.add_argument(
             "create_type",
             nargs="?",
-            choices=["module", "adapter"],
+            choices=["module", "adapter", "pack"],
             help=i18n.t("cli.create.type_help"),
         )
         parser.add_argument("--name", "-n", help=i18n.t("cli.create.name_help"))
@@ -791,13 +820,18 @@ class CreateCommand(Command):
             "--local",
             action="store_true",
             default=False,
-            help=i18n.t("cli.create.local_module_help"),
+            help=i18n.t("cli.create.local_help"),
         )
 
     def execute(self, args):
         create_type = getattr(args, "create_type", None)
         if not create_type:
             create_type = self._interactive_select_type()
+
+        # pack：本地插件 → 可发布项目（无需组件名，直接进入转换流程）
+        if create_type == "pack":
+            self._create_pack(args)
+            return
 
         default_name = "MyModule" if create_type == "module" else "MyAdapter"
         name = args.name
@@ -828,12 +862,15 @@ class CreateCommand(Command):
         console.print(
             f"    [bold]2.[/] Adapter  [dim]{i18n.t('cli.create.select_type_adapter')}[/]"
         )
-        console.print()
-        choice = IntPrompt.ask(
-            i18n.t("cli.create.select_prompt"), default=1, choices=["1", "2"]
+        console.print(
+            f"    [bold]3.[/] Pack     [dim]{i18n.t('cli.create.select_type_pack')}[/]"
         )
         console.print()
-        return "module" if choice == 1 else "adapter"
+        choice = IntPrompt.ask(
+            i18n.t("cli.create.select_prompt"), default=1, choices=["1", "2", "3"]
+        )
+        console.print()
+        return ("module", "adapter", "pack")[choice - 1]
 
     def _ask_missing(
         self, args, field_name: str, prompt_text: str, default: str = ""
@@ -851,6 +888,184 @@ class CreateCommand(Command):
         if not val:
             val = Prompt.ask(f"  {prompt_text}", default=default)
         return val
+
+    def _create_pack(self, args):
+        """
+        将本地插件（plugins/ 目录）转换为可发布的标准项目结构
+
+        交互式选择插件目录中的插件，识别类型（模块/适配器）后输入包元信息，
+        输出含 pyproject.toml（entry-point 按插件类型生成）与插件源码的完整
+        项目目录，可直接 ``pip install -e .`` 或打包发布。
+
+        :param args: [Any] 解析后的命令参数对象
+        :return: [None] 无返回值
+        """
+        from ErisPulse.loaders.plugin_folder import PluginFolderLoader
+
+        # 1. 收集插件目录中的候选插件
+        loader = PluginFolderLoader()
+        candidates: list[tuple[str, Path]] = []
+        for base in loader.get_plugins_dirs():
+            if not base.is_dir():
+                continue
+            for entry in sorted(base.iterdir()):
+                plugin_name = PluginFolderLoader._plugin_name_of(entry)
+                if plugin_name is not None:
+                    candidates.append((plugin_name, entry))
+
+        if not candidates:
+            console.print(f"[error]  {i18n.t('cli.create.pack_no_plugins')}")
+            sys.exit(1)
+
+        # 2. 选择插件：--name 直选，否则交互编号选择
+        plugin_name = getattr(args, "name", None)
+        selected = next((c for c in candidates if c[0] == plugin_name), None)
+        if selected is None:
+            if plugin_name:
+                console.print(
+                    f"[error]  {i18n.t('cli.create.pack_not_found', name=plugin_name)}"
+                )
+                sys.exit(1)
+            console.print(Text(i18n.t("cli.create.pack_select_title"), style="bold"))
+            for i, (name, path) in enumerate(candidates, start=1):
+                console.print(f"    [bold]{i}.[/] {name}  [dim]{path}[/]")
+            console.print()
+            choice = IntPrompt.ask(
+                i18n.t("cli.create.pack_select_prompt"),
+                default=1,
+                choices=[str(i) for i in range(1, len(candidates) + 1)],
+            )
+            selected = candidates[choice - 1]
+            console.print()
+
+        plugin_name, plugin_path = selected
+
+        # 3. 导入插件并识别类型
+        try:
+            module_obj = loader._import_plugin(plugin_name, plugin_path)
+        except Exception as e:
+            console.print(f"[error]  {i18n.t('cli.create.failed', error=e)}")
+            sys.exit(1)
+        module_class = PluginFolderLoader._find_module_class(module_obj)
+        adapter_class = PluginFolderLoader._find_adapter_class(module_obj)
+        if module_class is not None:
+            class_name = module_class.__name__
+            group = "erispulse.module"
+            kind_label = "module"
+        elif adapter_class is not None:
+            class_name = adapter_class.__name__
+            group = "erispulse.adapter"
+            kind_label = "adapter"
+        else:
+            console.print(
+                f"[error]  {i18n.t('cli.create.pack_unknown_kind', name=plugin_name)}"
+            )
+            sys.exit(1)
+        console.print(
+            f"[success]  {i18n.t('cli.create.pack_detected', name=plugin_name, kind=kind_label, cls=class_name)}"
+        )
+
+        # 4. 元信息（项目名默认插件名，经组件名校验）
+        project_name = prompt_validated(
+            i18n.t("cli.create.pack_project_prompt"),
+            default=plugin_name,
+            validate=_validate_name,
+            error_msg=i18n.t("cli.create.name_error"),
+        )
+        description = self._ask_missing(
+            args,
+            "description",
+            i18n.t("cli.create.pack_desc_prompt"),
+            i18n.t("cli.create.pack_desc_placeholder", name=project_name),
+        )
+        author = self._ask_missing(args, "author", i18n.t("cli.create.author_prompt"), "yourname")
+        email = self._ask_missing(args, "email", i18n.t("cli.create.email_prompt"), "your@mail.com")
+        homepage = self._ask_missing(
+            args,
+            "homepage",
+            i18n.t("cli.create.homepage_prompt"),
+            f"https://github.com/{author}/{project_name}",
+        )
+        entry_key = _camel_to_snake(project_name)
+
+        output = Path(args.output)
+        project_dir = output / project_name
+        if project_dir.exists() and not args.force:
+            console.print(
+                f"[error]  {i18n.t('cli.create.dir_exists', dir=str(project_dir))}"
+            )
+            sys.exit(1)
+
+        # 5. 生成项目：源码拷贝 + pyproject（entry-point 按类型）+ LICENSE/README
+        try:
+            pkg_dir = project_dir / project_name
+            pkg_dir.mkdir(parents=True, exist_ok=True)
+
+            if plugin_path.is_file():
+                # 单文件插件 → 包内模块 + __init__ 导出
+                (pkg_dir / "__init__.py").write_text(
+                    f"from .{plugin_path.stem} import {class_name}\n",
+                    encoding="utf-8",
+                )
+                shutil.copy2(plugin_path, pkg_dir / plugin_path.name)
+            else:
+                shutil.copytree(
+                    plugin_path,
+                    pkg_dir,
+                    dirs_exist_ok=True,
+                    ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+                )
+
+            (project_dir / "pyproject.toml").write_text(
+                _PACK_PYPROJECT.format(
+                    name=project_name,
+                    pypi_name=f"ErisPulse-{project_name}",
+                    description=description,
+                    author=author,
+                    email=email,
+                    homepage=homepage,
+                    group=group,
+                    entry_key=entry_key,
+                    class_name=class_name,
+                ),
+                encoding="utf-8",
+            )
+            (project_dir / "LICENSE").write_text(
+                _LICENSE_TEMPLATE.format(
+                    year=str(datetime.datetime.now().year), author=author
+                ),
+                encoding="utf-8",
+            )
+            readme_tpl = _README_MODULE if module_class is not None else _README_ADAPTER
+            readme_kwargs = {"name": project_name, "description": description}
+            if module_class is None:
+                readme_kwargs["name_snake"] = entry_key
+            (project_dir / "README.md").write_text(
+                readme_tpl.format(**readme_kwargs),
+                encoding="utf-8",
+            )
+
+            console.print()
+            console.print(
+                f"[success]  {i18n.t('cli.create.pack_created', name=plugin_name, dir=str(project_dir))}[/]"
+            )
+            console.print()
+            console.print(Text(i18n.t("cli.create.project_structure"), style="bold"))
+            console.print(f"    {project_name}/")
+            console.print("    ├── pyproject.toml")
+            console.print("    ├── LICENSE")
+            console.print("    ├── README.md")
+            console.print(f"    └── {project_name}/  [dim]({plugin_path})[/]")
+            console.print()
+            console.print(Text(i18n.t("cli.create.next_steps"), style="bold"))
+            console.print(f"    · {i18n.t('cli.create.cd_to', dir=project_name)}")
+            console.print(f"    · {i18n.t('cli.create.install_dev')}")
+            console.print(f"    · {i18n.t('cli.create.run_test')}")
+            console.print(f"    · {i18n.t('cli.create.pack_remove_hint', name=plugin_name)}")
+
+        except Exception as e:
+            console.print(f"[error]  {i18n.t('cli.create.failed', error=e)}")
+            sys.exit(1)
 
     def _create_module(self, args, name: str):
         """
@@ -999,6 +1214,80 @@ class CreateCommand(Command):
             console.print(f"[error]  {i18n.t('cli.create.failed', error=e)}")
             sys.exit(1)
 
+    def _create_adapter_local(self, args, name: str):
+        """
+        创建本地适配器插件（--local）：生成 plugins/ 目录结构，免打包安装
+
+        :param args: [Any] 解析后的命令参数对象
+        :param name: [str] 适配器名称
+        :return: [None] 无返回值
+        """
+        output = Path(args.output)
+        plugins_dir = output / "plugins"
+        plugin_dir = plugins_dir / name
+
+        if plugin_dir.exists() and not args.force:
+            console.print(
+                f"[error]  {i18n.t('cli.create.dir_exists', dir=str(plugin_dir))}"
+            )
+            sys.exit(1)
+
+        try:
+            plugin_dir.mkdir(parents=True, exist_ok=True)
+
+            converter_name = _to_converter_name(name)
+            entry_key = _camel_to_snake(name)
+
+            (plugin_dir / "__init__.py").write_text(
+                _ADAPTER_INIT.format(name=name, converter_name=converter_name),
+                encoding="utf-8",
+            )
+            (plugin_dir / "Core.py").write_text(
+                _ADAPTER_CORE.format(
+                    name=name,
+                    converter_name=converter_name,
+                    entry_key=entry_key,
+                    text=_scaffold_text(name),
+                    min_sdk=_TEMPLATE_MIN_SDK_VERSION,
+                ),
+                encoding="utf-8",
+            )
+            (plugin_dir / "Converter.py").write_text(
+                _ADAPTER_CONVERTER.format(
+                    name=name,
+                    converter_name=converter_name,
+                    entry_key=entry_key,
+                    text=_scaffold_text(name),
+                ),
+                encoding="utf-8",
+            )
+
+            console.print()
+            console.print(
+                f"[success]  {i18n.t('cli.create.adapter_created', name=name)}[/]"
+            )
+            console.print()
+            console.print(Text(i18n.t("cli.create.local_structure"), style="bold"))
+            console.print("    plugins/")
+            console.print(f"    └── {name}/")
+            console.print("        ├── __init__.py")
+            console.print("        ├── Core.py")
+            console.print("        └── Converter.py")
+            console.print()
+            console.print(Text(i18n.t("cli.create.next_steps"), style="bold"))
+            console.print(f"    · {i18n.t('cli.create.cd_to', dir=str(plugin_dir))}")
+            console.print(
+                f"    · {i18n.t('cli.create.edit_adapter', file=str(plugin_dir) + '/Core.py')}"
+            )
+            console.print(
+                f"    · {i18n.t('cli.create.edit_converter', file=str(plugin_dir) + '/Converter.py')}"
+            )
+            console.print(f"    · {i18n.t('cli.create.local_tip')}")
+
+        except Exception as e:
+            console.print(f"[error]  {i18n.t('cli.create.failed', error=e)}")
+            sys.exit(1)
+
     def _create_adapter(self, args, name: str):
         """
         创建 Adapter 项目脚手架
@@ -1007,6 +1296,11 @@ class CreateCommand(Command):
         :param name: [str] 适配器名称
         :return: [None] 无返回值
         """
+        # --local：创建本地适配器插件（plugins/ 目录结构，免打包安装）
+        if getattr(args, "local", False):
+            self._create_adapter_local(args, name)
+            return
+
         description = self._ask_missing(
             args,
             "description",
