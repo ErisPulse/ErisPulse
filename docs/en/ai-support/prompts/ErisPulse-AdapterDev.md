@@ -7941,20 +7941,23 @@ Configuration (`ErisPulse.transcript`): `enabled` (default enabled), `max_per_se
 
 # Network Client
 
-ErisPulse provides a unified network client that aggregates HTTP requests, WebSocket connections, and connection pool management. Modules and adapters **must** use this client by preference, rather than importing third-party libraries such as `aiohttp`, `httpx`, or `requests`.
+> [!TIP]
+> **When to read this**: When you need to make outbound HTTP / WebSocket requests. Skip if not needed, it doesn't affect the use of other features.
+
+ErisPulse provides a unified network client that aggregates HTTP requests, WebSocket connections, and connection pool management. Modules and adapters **must** use this client instead of directly importing third-party libraries such as `aiohttp`, `httpx`, or `requests`.
 
 ## Overview
 
-The main features of the network client:
+The main functions of the network client are:
 
-- **Unified Interface**: Provides `get` / `post` / `put` / `delete` / `patch` / `request` methods
-- **WebSocket Client**: Establishes a client WebSocket connection via `ws_connect`
-- **Automatic Logging**: All requests are automatically logged and statistics are recorded
-- **Lifecycle Integration**: Each request triggers the `client.request` lifecycle event, and WS connections trigger the `client.ws.connect` event
-- **Retry Support**: Configurable automatic retry count and interval
-- **Timeout Control**: Independent connection timeout and request timeout
-- **Connection Pool Reuse**: Connection pool management based on aiohttp.ClientSession
-- **Exception System**: aiohttp exceptions are automatically converted to ErisPulse exceptions (ClientError system)
+- **Unified interface**: Provides `get` / `post` / `put` / `delete` / `patch` / `request` methods
+- **WebSocket client**: Establishes a client-side WebSocket connection via `ws_connect`
+- **Automatic logging**: All requests are automatically logged and their statistics recorded
+- **Lifecycle integration**: Each request triggers the `client.request` lifecycle event, and WS connections trigger the `client.ws.connect` event
+- **Retry support**: Configurable automatic retry counts and intervals
+- **Timeout control**: Independent connection and request timeouts
+- **Connection pool reuse**: Connection pool management based on `aiohttp.ClientSession`
+- **Exception system**: aiohttp exceptions are automatically converted to ErisPulse exceptions (ClientError system)
 
 ## Quick Start
 
@@ -7987,11 +7990,11 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-#### Outbound Connections Automatically Pool (2.10+)
+#### Outbound connections automatically join the pool (2.10+)
 
-Connections established by `ws_connect` are **automatically registered** into the framework connection pool by default (set `track=False` to disable):
-They can be viewed by `connections.list(owner=...)`, broadcasted to, and automatically unregistered when closed or disconnected remotely;
-**When the module is unloaded or the adapter stops, the framework will close all outbound connections under its name uniformly**, preventing leaks.
+Connections established via `ws_connect` are **automatically registered** into the framework's connection pool (set `track=False` to disable):
+They can be viewed via `connections.list(owner=...)` and broadcasted to; connections are automatically unregistered when closed or disconnected remotely;
+**When modules are unloaded or adapters are stopped, the framework closes all outbound connections under their names**, preventing leaks.
 
 ```python
 from ErisPulse import client, connections
@@ -7999,7 +8002,7 @@ from ErisPulse import client, connections
 ws = await client.ws_connect("wss://example.com/ws")
 print(ws.id, ws.owner)   # Already registered: connection id and owner
 
-# When the owner context is unavailable (e.g., in a utility thread callback), explicitly specify the owner so it can be automatically recycled during unloading:
+# When the owner context is unavailable (e.g., tool thread callback), explicitly specify the owner so it can be automatically recycled on unload:
 ws2 = await client.ws_connect("wss://example.com/ws2", owner="MyAdapter")
 ```
 
@@ -8067,10 +8070,10 @@ resp = await client.post(
 )
 
 # File upload (using files parameter, no need to import aiohttp)
-# Format: {field_name: file_object/bytes/(filename, file)/(filename, file, content_type)}
+# Format: {field name: file object/bytes/(filename, file)/(filename, file, content_type)}
 resp = await client.post(
     "https://api.example.com/upload",
-    data={"description": "avatar"},           # Optional: include regular form fields
+    data={"description": "avatar"},            # Optional: can carry regular form fields
     files={
         "file": ("photo.png", open("photo.png", "rb"), "image/png"),
     },
@@ -8082,7 +8085,7 @@ resp = await client.post(
     files={"file": open("photo.png", "rb")},
 )
 
-# Upload data directly from memory (no disk storage required)
+# Upload in-memory data directly (no need to write to disk)
 import io
 
 resp = await client.post(
@@ -8101,7 +8104,7 @@ resp = await client.delete("https://api.example.com/users/1")
 resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
 ```
 
-### General request
+### Generic request
 
 ```python
 from ErisPulse.Core import client
@@ -8113,7 +8116,7 @@ resp = await client.request(
 )
 ```
 
-## Parameters
+## Parameter Explanation
 
 ### HTTP Request Parameters
 
@@ -8124,9 +8127,9 @@ resp = await client.request(
 | `headers` | `dict[str, str]` | Additional request headers (optional) |
 | `data` | `Any` | Request body (form or raw data) (optional) |
 | `json` | `Any` | JSON request body (optional) |
-| `files` | `dict[str, Any]` | File upload fields (optional, automatically constructs multipart/form-data) |
-| `timeout` | `float` | Request timeout (seconds) (optional, overrides default) |
-| `max_retries` | `int` | Maximum retry count for this request (optional, overrides default) |
+| `files` | `dict[str, Any]` | File upload fields (optional, automatically builds multipart/form-data) |
+| `timeout` | `float` | Timeout for this request (seconds) (optional, overrides default value) |
+| `max_retries` | `int` | Maximum retry attempts for this request (optional, overrides default value) |
 
 ### ws_connect Parameters
 
@@ -8136,17 +8139,17 @@ resp = await client.request(
 | `headers` | `dict[str, str]` | Additional request headers (optional) |
 | `heartbeat` | `float` | Heartbeat interval in seconds (optional) |
 
-## Timeouts and Retries
+## Timeout and Retries
 
 ```python
 from ErisPulse.Core import Client
 
 # Create a client with custom timeouts
 client = Client(
-    timeout=60,           # Total request timeout of 60s
-    connect_timeout=5,    # Connection timeout of 5s
-    max_retries=3,        # Automatic retry 3 times on failure
-    retry_delay=2,        # Retry interval of 2s
+    timeout=60,           # Total request timeout 60s
+    connect_timeout=5,    # Connection timeout 5s
+    max_retries=3,        # Failures automatically retry 3 times
+    retry_delay=2,        # Retry interval 2s
 )
 
 # Override timeout for a single request
@@ -8154,7 +8157,7 @@ resp = await client.get("https://slow-api.example.com/data", timeout=120)
 ```
 
 > [!NOTE]
-> The client class was renamed to `Client` starting from version 2.8.0 (the property name `sdk.client` remains unchanged); the old name `HttpClient` is retained as a compatibility alias, so no changes are needed for legacy code.
+> The client class was renamed to `Client` starting from version 2.8.0 (`sdk.client` property name remains unchanged); the old name `HttpClient` is retained as a compatibility alias, so old code does not need modification.
 
 ## Custom Default Headers
 
@@ -8185,7 +8188,7 @@ client.reset_stats()
 
 ### HTTP Request Events
 
-The `client.request` event is triggered after each request completes and can be used for monitoring:
+The `client.request` event is triggered after each request completes, which can be used for monitoring:
 
 ```python
 from ErisPulse.Core import lifecycle
@@ -8204,13 +8207,13 @@ from ErisPulse.Core import lifecycle
 
 @lifecycle.on("client.ws.connect")
 async def on_ws_connect(event_data):
-    print(f"WS connection: {event_data['url']}")
+    print(f"WS Connection: {event_data['url']}")
 ```
 
 ## Context Management
 
 ```python
-# As a context manager, automatically closes the session
+# As a context manager, automatically close the session
 async with Client(timeout=30) as client:
     resp = await client.get("https://httpbin.org/get")
     data = await resp.json()
@@ -8218,7 +8221,7 @@ async with Client(timeout=30) as client:
 
 ## WebSocket Client
 
-Establish a WebSocket client connection using `client.ws_connect()`, which returns a `ClientWebSocket` object. The client and server WebSocket share the same base class `WebSocketConnectionBase`, and their send/receive/iter interfaces are completely consistent.
+Establish a WebSocket client connection via `client.ws_connect()`, returning a `ClientWebSocket` object. The client and server-side WebSocket share the same `WebSocketConnectionBase` base class, with identical send/receive/iter interfaces.
 
 ### Basic Usage
 
@@ -8234,9 +8237,9 @@ await ws.send_json({"type": "ping"})
 
 ### Receiving Messages
 
-#### High-Level Methods (Recommended)
+#### Advanced Methods (Recommended)
 
-Automatically filter message types and raise `WebSocketDisconnect` on disconnection:
+Automatically filter message types, and throw `WebSocketDisconnect` on disconnection:
 
 ```python
 from ErisPulse.Core import client
@@ -8244,12 +8247,12 @@ from ErisPulse.Core.Bases.errors import WebSocketDisconnect
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# Receive single message
+# Single message receive
 text = await ws.receive_text()    # str
 data = await ws.receive_bytes()   # bytes
 obj = await ws.receive_json()     # dict / list
 
-# Iterate messages (automatically stops on disconnection)
+# Iterate receive (automatically stops on disconnection)
 async for text in ws.iter_text():
     print(text)
 
@@ -8262,7 +8265,7 @@ async for obj in ws.iter_json():
 
 #### Low-Level Methods
 
-Use `receive()` and `iter_messages()` to handle raw message types, allowing differentiation between TEXT / BINARY / CLOSE / ERROR:
+Use `receive()` and `iter_messages()` to handle raw message types, which allows distinguishing TEXT / BINARY / CLOSE / ERROR:
 
 ```python
 from ErisPulse.Core import client
@@ -8270,7 +8273,7 @@ from ErisPulse.Core.Bases.websocket import WSMessage
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# Receive single raw message
+# Single message receive raw message
 msg = await ws.receive()
 # msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
 # msg.data  -> str | bytes | None
@@ -8285,10 +8288,10 @@ async for msg in ws.iter_messages():
 
 ### WSMessage
 
-`WSMessage` is a unified WebSocket message type independent of the underlying library:
+`WSMessage` is a unified WebSocket message type, independent of the underlying library:
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
+| Property | Type | Description |
+|----------|------|-------------|
 | `type` | `str` | Message type: `WSMessage.TEXT` / `WSMessage.BINARY` / `WSMessage.CLOSE` / `WSMessage.ERROR` |
 | `data` | `Any` | Message data |
 
@@ -8319,7 +8322,7 @@ async def handle_error(ws, error=""):
     print(f"Connection error: {error}")
 ```
 
-### Closing the Connection
+### Closing Connection
 
 ```python
 await ws.close(code=1000, reason="Normal closure")
@@ -8327,9 +8330,9 @@ await ws.close(code=1000, reason="Normal closure")
 
 ## Exception System
 
-ErisPulse defines a unified exception hierarchy. Requests initiated through `sdk.client` automatically convert underlying aiohttp exceptions into ErisPulse exceptions.
+ErisPulse defines a unified exception hierarchy. Requests initiated via `sdk.client` will automatically convert underlying aiohttp exceptions into ErisPulse exceptions.
 
-> **Backward Compatibility**: Old modules/adapters that directly use `aiohttp.ClientSession` are completely unaffected. Exception conversion only takes effect when requests are initiated through `sdk.client`. Code that directly uses aiohttp continues to catch native exceptions such as `aiohttp.ClientError`. Both approaches can coexist.
+> **Backward Compatibility**: Old modules/adapters that directly use `aiohttp.ClientSession` are completely unaffected. Exception conversion only occurs when requests are initiated via `sdk.client`. Code that directly uses aiohttp still catches `aiohttp.ClientError` and other native exceptions. Both approaches can coexist.
 
 ### Exception Hierarchy
 
@@ -8338,9 +8341,9 @@ ErisPulseError
 ├── ClientError                  # Base class for all HTTP/WS client request exceptions
 │   ├── ClientConnectionError    # Connection failed (DNS resolution failed, connection refused, network unreachable)
 │   ├── ClientTimeoutError       # Connection timeout or request timeout
-│   └── HTTPStatusError          # HTTP 4xx/5xx status code errors
-└── WebSocketError               # Base class for WebSocket exceptions
-    └── WebSocketDisconnect      # WebSocket connection disconnected (applicable to both client and server)
+│   └── HTTPStatusError          # HTTP 4xx/5xx status code error
+└── WebSocketError               # WebSocket exception base class
+    └── WebSocketDisconnect      # WebSocket connection disconnected (common for both client and server)
 ```
 
 ### Exception Handling
@@ -8363,7 +8366,7 @@ try:
 except ClientConnectionError:
     print("Unable to connect to the server")
 except ClientTimeoutError:
-    print("Request timed out")
+    print("Request timeout")
 except ClientError as e:
     print(f"Request failed: {e}")
 
@@ -8380,7 +8383,7 @@ except WebSocketError as e:
 
 ### Unified Exception Handling
 
-Use `ClientError` to catch all HTTP/WS client request exceptions uniformly:
+Use `ClientError` to catch all HTTP/WS client request exceptions:
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError
@@ -8393,7 +8396,7 @@ except ClientError as e:
 
 ### HTTPStatusError
 
-When you need to check the status code after a request and raise an exception, you can use it manually:
+When you need to check the status code after a request and throw an exception, you can manually use:
 
 ```python
 from ErisPulse.Core.Bases.errors import HTTPStatusError
@@ -8426,17 +8429,17 @@ class MyAdapter(BaseAdapter):
             raise
 ```
 
-> You can also use `sdk.client` via `from ErisPulse import sdk`, which has the same effect.
+> You can also use `from ErisPulse import sdk` to access `sdk.client`, with the same effect.
 
 ## Best Practices
 
-1. **Prefer using the global client**: Use `from ErisPulse.Core import client` to obtain the global singleton, which facilitates unified management and monitoring by the framework.
-2. **Avoid directly importing aiohttp**: Use `client` instead of `aiohttp.ClientSession`, so that future changes to the underlying implementation do not require code modifications. Code that directly uses aiohttp will continue to work normally, and both approaches can coexist.
-3. **Use ErisPulse's exception system**: When making requests via `sdk.client`, catch `ClientError` instead of `aiohttp.ClientError` to ensure your code does not depend on a specific HTTP library. Code that directly uses aiohttp remains unaffected.
-4. **Set timeouts appropriately**: Set reasonable timeout values based on the API response speed to avoid prolonged blocking.
-5. **Use retry mechanisms**: Enable retries for unstable APIs to improve reliability.
-6. **Monitor request statistics**: Monitor request situations through `sdk.client.stats` or lifecycle events of `client.request`.
-7. **Use advanced methods for WebSocket**: Prefer advanced methods such as `iter_text` / `iter_json`, and use `iter_messages` only when distinguishing message types is necessary.
+1. **Prefer the global client**: Use `from ErisPulse.Core import client` to get the global singleton for easier framework management and monitoring
+2. **Avoid directly importing aiohttp**: Use `client` instead of `aiohttp.ClientSession` to allow future changes to the underlying implementation without code modification. Old code directly using aiohttp still works normally, and both approaches can coexist
+3. **Use the ErisPulse exception system**: When using `sdk.client` for requests, catch `ClientError` instead of `aiohttp.ClientError` to ensure code independence from specific HTTP libraries. Old code using aiohttp directly is unaffected
+4. **Set timeouts reasonably**: Set appropriate timeout values based on API response speed to avoid long blocking
+5. **Use retry mechanisms**: Enable retries for unstable APIs to improve reliability
+6. **Monitor request statistics**: Use `sdk.client.stats` or the `client.request` lifecycle event to monitor request situations
+7. **Use advanced WebSocket methods**: Prefer advanced methods like `iter_text` / `iter_json`, and only use `iter_messages` when distinguishing message types is needed
 
 
 
@@ -8883,12 +8886,15 @@ class MyStorage(BaseStorage):
 
 # Lifecycle Management
 
-ErisPulse provides a unified hook/lifecycle system for monitoring the operational status of system components and enabling extensions such as auditing, statistics, and custom logic.
+> [!TIP]
+> **When to read this**: When you need to subscribe to framework lifecycle events (startup / load / state changes). Skip if not needed, as it does not affect other features.
 
-The system supports three trigger methods:
-- `await lifecycle.emit("event", data)` — A concise version, passing arbitrary data (directed delivery when `to="Owner"`)
-- `lifecycle.emit_sync("event", data)` — Synchronous version (for non-async contexts)
-- `await lifecycle.submit_event("event", ...)` — Backward compatible, automatically constructs standard event format
+ErisPulse provides a unified hook/lifecycle system for monitoring the runtime status of system components and implementing extension features such as auditing, statistics, and custom logic.
+
+The system supports three triggering methods:
+- `await lifecycle.emit("event", data)` — A concise version that passes arbitrary data (direct delivery when `to="Owner"`)
+- `lifecycle.emit_sync("event", data)` — A synchronous version (for non-async contexts)
+- `await lifecycle.submit_event("event", ...)` — Backward compatible, automatically builds standard event format
 
 ## Event Handling Mechanism
 
@@ -8908,21 +8914,21 @@ sdk.lifecycle.register("module.load", on_module_load, priority=10)
 # Unregister
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# Batch unregister by owner (automatically called by framework during module/unloader adapter)
+# Batch unregister by owner (automatically called by framework on module/adapter unload)
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
 print(f"Cleaned up {removed} lifecycle hooks")
 ```
 
 ### Priority
 
-Handlers support the `priority` parameter, with higher values executed first (consistent with module loader):
+Handlers support `priority` parameter. The higher the value, the earlier the execution (consistent with module loader):
 
 ```python
-@sdk.lifecycle.on("adapter.event.receive", priority=10)  # Executed first
+@sdk.lifecycle.on("adapter.event.receive", priority=10)  # First to execute
 async def first_handler(data):
     pass
 
-@sdk.lifecycle.on("adapter.event.receive", priority=0)  # Executed later
+@sdk.lifecycle.on("adapter.event.receive", priority=0)  # Later execution
 async def second_handler(data):
     pass
 ```
@@ -8943,18 +8949,18 @@ async def on_anything(data):
     print(f"Received event: {data}")
 ```
 
-### Directed Propagation (emit to=)
+### Directed Propagation (`emit to=`)
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-When `emit()` specifies the `to` parameter, it enters directed propagation: events are only distributed to handlers registered with that owner (module hooks registered in `on_load` automatically belong to the module), other modules and wildcard `*` handlers do not receive them.
+When `emit()` is specified with the `to` parameter, it enters directed propagation: the event is only distributed to handlers registered by the owner (hooks registered by a module in `on_load` are automatically assigned to the module), and other modules and wildcard `*` handlers are not notified.
 
 ```python
-# Emitter: events only delivered to hooks registered by Chat module
+# Sender: Event only delivered to hooks registered by Chat module
 await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 
-# Subscriber (within Chat module): register same event name, owner is automatically recorded during registration
+# Subscriber (within Chat module): Register hooks with the same name, owner is automatically recorded during registration
 @sdk.lifecycle.on("message_received")
 async def on_message_received(data): ...
 
@@ -8962,15 +8968,14 @@ async def on_message_received(data): ...
 async def on_any(data): ...
 ```
 
-- If the target owner has no registered hooks → the event is **not consumed** (can be probed beforehand using `has_handlers()`)
-- When `data` is a dict, `_trace_id` is automatically included (without overriding existing values)
-- `emit_sync` / `submit_event` also support the `to=` parameter
-- Three-layer model for inter-module communication (RPC / directed / broadcast) is detailed in
-  [Module Communication](module-communication.md)
+- If the target owner has no registered hooks → the event is **not consumed** (can be probed in advance using `has_handlers()`)
+- When `data` is a dict, it automatically carries `_trace_id` (does not overwrite existing values)
+- `emit_sync` / `submit_event` also support `to=` parameter
+- Three-layer model for inter-module communication (RPC / directed / broadcast) is described in [Inter-Module Communication](module-communication.md)
 
-### One-Time Registration (once)
+### One-Time Registration (`once`)
 
-Since 2.7.0, handlers registered with `lifecycle.once()` are automatically unregistered after being triggered once, suitable for "first ready" type hooks:
+Since 2.7.0, handlers registered with `lifecycle.once()` are automatically unregistered after being triggered once, suitable for "first ready" type one-time hooks:
 
 ```python
 @sdk.lifecycle.once("core.init.complete")
@@ -8979,55 +8984,55 @@ async def on_first_ready(data):
 ```
 
 - Same priority semantics as `on()` (higher `priority` value means earlier execution)
-- Automatically unregistered, no need for manual `unregister`
-- Supported for both synchronous and asynchronous handlers
+- Automatically unregistered, no need to manually `unregister`
+- Both synchronous and asynchronous handlers are supported
 
-### Listener Query (has_handlers)
+### Listener Query (`has_handlers`)
 
-In hot-path short-circuit scenarios, `has_handlers()` can be used to check if listeners exist beforehand, avoiding unnecessary event traversal and task scheduling:
+For hot-path short-circuit scenarios, use `has_handlers()` to check if there are listeners in advance, avoiding unnecessary event traversal and task scheduling:
 
 ```python
 if sdk.lifecycle.has_handlers("message.sending"):
     await sdk.lifecycle.emit("message.sending", send_ctx)
 ```
 
-- Covers **exact event name**, **wildcard `*`**, and **parent event** matching
+- Covers **exact event name**, wildcard `*`, and parent event matching
 - Returns `False` if there are no listeners, allowing safe skipping of `emit`
 
 ## Hook Breakpoints Overview
 
-A typical sequence of lifecycle events for a message from platform entry into the framework until processing completion:
+A typical lifecycle event sequence for a message from platform entry to processing completion in the framework:
 
 ```mermaid
 sequenceDiagram
     participant P as Platform
     participant A as Adapter
-    participant F as Framework Core
-    participant M as Module Processor
+    participant F as Core Framework
+    participant M as Module Processors
 
     P->>A: Native event arrives
     A->>F: adapter.event.receive (earliest)
     F->>F: event.pre_process (before handler execution)
-    F->>M: Dispatch to processor (commands/messages/notifications, etc.)
+    F->>M: Distribute to processors (commands/messages/notifications, etc.)
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending (before sending)
     F->>A: SendDSL send
     A->>P: Send to platform
     A->>F: message.sent (after sending)
-    F->>F: adapter.event.dispatched (after dispatch)
+    F->>F: adapter.event.dispatched (after distribution)
 ```
 
-The framework provides the following built-in hook breakpoints, which users can listen to with `@sdk.lifecycle.on()` to implement custom logic.
+The framework includes the following built-in hook breakpoints, which users can listen to via `@sdk.lifecycle.on()` to implement custom logic.
 
 ### Core Initialization
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `core.init.start` | SDK initialization starts | `{}` |
-| `core.init.stage` | Each initialization stage starts (emitted in background) | `{"stage": str}`, values: `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
-| `core.init.complete` | SDK initialization completes | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str (only on failure)}` |
-| `core.uninit.complete` | SDK deinitialization completes | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (only on failure)}` |
+| `core.init.start` | SDK initialization begins | `{}` |
+| `core.init.stage` | Each initialization stage begins (emitted in background) | `{"stage": str}`, values: `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.complete` | SDK initialization completes | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str (only if failed)}` |
+| `core.uninit.complete` | SDK deinitialization completes | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (only if failed)}` |
 
 **Example: Displaying Startup Progress**
 
@@ -9042,7 +9047,7 @@ def show_stage(data):
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `config.set` | A configuration item is modified | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | Entire config tree is updated after external edit to config.toml | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.updated` | Entire config tree change detected after external edit to config.toml | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **Example: Configuration Audit**
 
@@ -9056,32 +9061,32 @@ def audit_config(data):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `module.register` | Module class is registered to manager | `{"module_name": str, "success": bool}` |
-| `module.load` | Module loading completes (successful instantiation) | `{"module_name": str, "success": bool}` |
-| `module.init` | Module initialization completes (including lazy loading) | `{"module_name": str, "success": bool}` |
-| `module.unload` | Module is unloaded | `{"module_name": str, "success": bool}` |
-| `module.reload` | Module hot reload completes (including cascading reload of dependencies) | `{"module_name": str, "success": bool, "full": bool}`; when full reload (`reload_all`) occurs, `module_name` is `"All"`, payload additionally contains `"results": dict[str, bool]` |
+| `module.register` | Module class registered to manager | `{"module_name": str, "success": bool}` |
+| `module.load` | Module loaded (instantiation successful) | `{"module_name": str, "success": bool}` |
+| `module.init` | Module initialization complete (including lazy loading) | `{"module_name": str, "success": bool}` |
+| `module.unload` | Module unloaded | `{"module_name": str, "success": bool}` |
+| `module.reload` | Module hot-reloaded (including cascading reload of dependencies) | `{"module_name": str, "success": bool, "full": bool}`; for full reload (`reload_all`), `module_name` is `"All"`, payload additionally carries `"results": dict[str, bool]` |
 
 ### Adapter Lifecycle
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `adapter.load` | Adapter registration completes | `{"platform": str, "success": bool}` |
-| `adapter.start` | Adapter starts | `{"platforms": [str]}` |
-| `adapter.status.change` | Adapter status changes | `{"platform": str, "status": str, "retry_count": int, "error": str (only on failure)}`; complete status values: `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
-| `adapter.stop` | Adapter stops | `{"platforms": [str]}` |
-| `adapter.stopped` | Adapter stop completes | `{"platforms": [str]}` |
-| `adapter.bot.online` | Bot goes online | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
-| `adapter.bot.offline` | Bot goes offline | `{"platform": str, "bot_id": str, "status": str}` |
+| `adapter.load` | Adapter registered | `{"platform": str, "success": bool}` |
+| `adapter.start` | Adapter started | `{"platforms": [str]}` |
+| `adapter.status.change` | Adapter status changed | `{"platform": str, "status": str, "retry_count": int, "error": str (only if failed)}`; status values: `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
+| `adapter.stop` | Adapter stopped | `{"platforms": [str]}` |
+| `adapter.stopped` | Adapter stopped completely | `{"platforms": [str]}` |
+| `adapter.bot.online` | Bot online | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
+| `adapter.bot.offline` | Bot offline | `{"platform": str, "bot_id": str, "status": str}` |
 
 ### Event Reception and Processing
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `adapter.event.receive` | External platform event is received (earliest) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.blocked` | Middleware rejects event (returns `False`, event is discarded and not passed to any handler) | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
-| `adapter.event.dispatched` | Event dispatch completes | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | Event handler begins execution | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `adapter.event.receive` | External platform event received (earliest) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.blocked` | Middleware blocks event (returns `False`, event discarded and not delivered to any processor) | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
+| `adapter.event.dispatched` | Event distribution completed | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
+| `event.pre_process` | Before event processor execution begins | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **Example: Event Counting**
 
@@ -9096,15 +9101,15 @@ def count_events(data):
 @sdk.lifecycle.on("adapter.event.dispatched")
 def log_unhandled(data):
     if data["onebot_handlers_count"] == 0:
-        print(f"[Unhandled] {data['platform']}/{data['event_type']}")
+        print(f"[Unprocessed] {data['platform']}/{data['event_type']}")
 ```
 
 ### Message Sending
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `message.sending` | Message is about to be sent | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | Message sending completes | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sending` | Message about to be sent | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | Message sent successfully | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **Example: Message Sending Audit**
 
@@ -9118,8 +9123,8 @@ def log_sending(data):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `command.matched` | Command is matched and about to execute | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | Command execution completes | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (only on failure)}` |
+| `command.matched` | Command matched and about to execute | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
+| `command.executed` | Command execution completed | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (only if failed)}` |
 
 **Example: Command Counting**
 
@@ -9133,8 +9138,8 @@ def count_commands(data):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `server.request` | HTTP request is received | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | HTTP response is sent | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.request` | HTTP request received | `{"method": str, "path": str, "client_ip": str}` |
+| `server.response` | HTTP response sent | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
 **Example: Request Logging**
 
@@ -9148,60 +9153,60 @@ def log_http(data):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `server.start` | Route server starts | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str (only on failure)}` |
-| `server.stop` | Route server stops | `{}` |
+| `server.start` | Router server started | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str (only if failed)}` |
+| `server.stop` | Router server stopped | `{}` |
 | `server.websocket.connect` | WebSocket connection established | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | WebSocket connection disconnected | `{"path": str, "module_name": str, "reason": str, "error": str (only on abnormal disconnection)}` |
+| `server.websocket.disconnect` | WebSocket connection disconnected | `{"path": str, "module_name": str, "reason": str, "error": str (only if failed)}` |
 
 **Example: WebSocket Connection Monitoring**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
 def on_ws_connect(data):
-    print(f"[WS] Connection: {data['path']} from {data['client_ip']}")
+    print(f"[WS] Connected: {data['path']} from {data['client_ip']}")
 
 @sdk.lifecycle.on("server.websocket.disconnect")
 def on_ws_disconnect(data):
-    print(f"[WS] Disconnection: {data['path']} ({data['reason']})")
+    print(f"[WS] Disconnected: {data['path']} ({data['reason']})")
 ```
 
 ### Storage Connection Status
 
-Establishment, failure, and recovery of storage backend connection pools (all emitted in background, do not block storage operations):
+Backend storage connection pool establishment, failure, and recovery (all emitted in background, not blocking storage operations):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `storage.ready` | Storage backend connection pool is ready (first successful pool creation per event loop) | `{"backend": str}` |
-| `storage.unreachable` | Connection retries exhausted, entering cooldown period (operations fail quickly during cooldown) | `{"backend": str, "error": str, "cooldown": float}` |
-| `storage.recovered` | Cooldown ends, reconnection successful, storage becomes available again | `{"backend": str}` |
+| `storage.ready` | Storage backend connection pool ready (first pool creation successful in each event loop) | `{"backend": str}` |
+| `storage.unreachable` | Retry exhaustion leads to cooldown period (during which operations fail quickly) | `{"backend": str, "error": str, "cooldown": float}` |
+| `storage.recovered` | Cool-down ends, reconnection successful, storage becomes available | `{"backend": str}` |
 
 **Example: Storage Failure Alert**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
 def alert_storage_down(data):
-    print(f"[Alert] Storage backend {data['backend']} unreachable: {data['error']}, automatic reconnection in {data['cooldown']}s")
+    print(f"[Alert] Storage backend {data['backend']} unreachable: {data['error']}, will automatically reconnect in {data['cooldown']}s")
 
 @sdk.lifecycle.on("storage.recovered")
 def notify_storage_back(data):
-    print(f"[Recovery] Storage backend {data['backend']} is available again")
+    print(f"[Recovery] Storage backend {data['backend']} is back online")
 ```
 
 ### HTTP Client
 
-Events related to `sdk.client` requests and connections (all emitted in background):
+`sdk.client` request and connection events (all emitted in background):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `client.request.success` | HTTP request succeeds | `{"method": str, "url": str, "status": int, "elapsed": float}` |
-| `client.request.failed` | HTTP request fails after exhausting retries | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
+| `client.request.success` | HTTP request successful | `{"method": str, "url": str, "status": int, "elapsed": float}` |
+| `client.request.failed` | HTTP request failed after exhausting retries | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
 | `client.ws.connect` | WebSocket connection established | `{"url": str}` |
 
 ### Internationalization
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `i18n.language.changed` | Framework language switch (via `i18n.set_language`) | `{"language": str, "previous": str}` |
+| `i18n.language.changed` | Framework language switched (via `i18n.set_language`) | `{"language": str, "previous": str}` |
 
 ## Standard Event Definitions
 
@@ -9237,28 +9242,28 @@ STANDARD_EVENTS = {
 |------|------|
 | `@lifecycle.on(event, *, priority=0)` | Decorator registration of handler |
 | `lifecycle.register(event, handler, *, priority=0)` | Programmatic registration |
-| `lifecycle.unregister(event, handler=None)` | Unregister (if handler=None, unregister all handlers for that event) |
+| `lifecycle.unregister(event, handler=None)` | Unregister (if handler=None, unregister all handlers for this event) |
 
 ### Triggering
 
 | Method | Description |
 |------|------|
-| `await lifecycle.emit(event, data=None, *, to=None)` | Asynchronous trigger, handlers execute **in parallel** (non-blocking, returns when all complete), returns non-None values in priority order for chained data replacement; `to` specifies owner for directed delivery |
-| `lifecycle.fire(event, data=None, *, to=None)` | **Fire in background (fire and forget)**: handlers execute in background tasks in parallel, no wait, no return value; zero overhead if no listeners; suitable for high-frequency hot paths and pure observation events; for shutdown sequences and ordered consumption (e.g., `config.set`) use `emit` |
-| `lifecycle.emit_sync(event, data=None, *, to=None)` | Synchronous trigger, asynchronous handlers scheduled via create_task |
-| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | Backward compatible, automatically constructs standard event format; if `background=True`, uses `fire` background firing |
+| `await lifecycle.emit(event, data=None, *, to=None)` | Asynchronous trigger, handlers execute **in parallel** (non-blocking each other, returns when all complete), returns non-None values in order of priority to chain-replace data; `to` specifies owner for directed delivery |
+| `lifecycle.fire(event, data=None, *, to=None)` | **Background emission (fire-and-forget)**: handlers execute in background tasks in parallel, no waiting, no return value; zero overhead if no listeners; suitable for high-frequency hot paths and pure observation events; for shutdown sequences and ordered consumption (e.g., `config.set`) use `emit` |
+| `lifecycle.emit_sync(event, data=None, *, to=None)` | Synchronous trigger, asynchronous handlers scheduled with create_task |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | Backward compatible, automatically builds standard event format; `background=True` uses `fire` background emission |
 
 ### Utilities
 
 | Method | Description |
 |------|------|
 | `lifecycle.start_timer(timer_id)` | Start timing |
-| `lifecycle.get_duration(timer_id)` | Get elapsed duration (seconds) |
-| `lifecycle.stop_timer(timer_id)` | Stop timing and return elapsed duration |
+| `lifecycle.get_duration(timer_id)` | Get elapsed time (seconds) |
+| `lifecycle.stop_timer(timer_id)` | Stop timing and return elapsed time |
 | `lifecycle.list_hooks()` | List all registered hooks and handler counts |
 | `lifecycle.clear()` | Clear all handlers and timers |
 
-## Module Usage Examples
+## Module Usage Example
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -9266,7 +9271,7 @@ from ErisPulse import sdk
 
 class Main(BaseModule):
     async def on_load(self, event):
-        # Implement simple message statistics
+        # Implement simple message counting
         self.msg_count = 0
         
         @sdk.lifecycle.on("adapter.event.receive")
@@ -9282,7 +9287,7 @@ class Main(BaseModule):
         # Configuration change audit
         @sdk.lifecycle.on("config.set")
         def audit(data):
-            sdk.logger.info(f"Configuration change: {data['key']} = {data['new_value']}")
+            sdk.logger.info(f"Configuration changed: {data['key']} = {data['new_value']}")
 ```
 
 ## Background Task Ownership and Automatic Cancellation
@@ -9290,19 +9295,19 @@ class Main(BaseModule):
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Background tasks created by modules that are not canceled in `on_unload` will hold a reference to `self`, preventing the module instance from being recycled (old instances remain after hot reload). The framework provides the following fallback mechanism:
+Background tasks created by modules, if not cancelled in `on_unload`, will hold a reference to `self`, preventing the module instance from being garbage collected (residual old instances after hot reload). The framework provides the following fallback mechanism:
 
-- **`self.spawn(coro)`** (recommended within modules): Tasks are automatically assigned to the module name, and the framework cancels unfinished tasks and logs warnings after `on_unload` when the module is unloaded
-- **`spawn_background(coro)`** (on `ErisPulse.runtime`): Automatically captures the current `owner_scope` context; `cancel_owner_tasks(owner)` cancels tasks by assignment, `cancel_all_background_tasks()` is provided for `sdk.uninit()` fallback
-- **Adapters**: When closing, background tasks under the platform name are also canceled as a fallback
+- **`self.spawn(coro)`** (recommended within modules): Tasks are automatically assigned to the module name. When the module is unloaded, the framework automatically cancels unfinished tasks after `on_unload` and logs a warning.
+- **`spawn_background(coro)`** (in `ErisPulse.runtime`): Automatically captures the current `owner_scope` context; `cancel_owner_tasks(owner)` cancels by assignment, `cancel_all_background_tasks()` is provided for `sdk.uninit()` fallback.
+- **Adapters**: Background tasks under platform names are also automatically cancelled on shutdown.
 
 ```python
 async def on_load(self, event):
-    # Recommended: Use self.spawn() for background tasks, framework automatically cancels as fallback after unload
+    # Recommended: Use self.spawn() for background tasks, framework automatically cancels on unload
     self.spawn(self._poll())
 
 async def on_unload(self, event):
-    # For fine-grained control, still recommend manually canceling and waiting for completion
+    # For fine control, still recommend manually cancelling and awaiting completion
     if self._poll_task:
         self._poll_task.cancel()
         await asyncio.gather(self._poll_task, return_exceptions=True)
@@ -9314,17 +9319,17 @@ async def _poll(self):
 ```
 
 > [!IMPORTANT]
-> The framework's fallback is **forced cancellation** (`cancel_owner_tasks`), which occurs after `on_unload` returns. Therefore, tasks requiring graceful termination (flush buffers, persist state, close connections) **must** be manually canceled and awaited in `on_unload`—do not rely on the fallback to preserve termination logic. The framework only guarantees that "tasks holding `self` are not left behind," not that they terminate "gracefully." Tasks requiring `await` results should be awaited directly, not thrown into background tasks.
+> The framework's fallback is **forced cancellation** (`cancel_owner_tasks`), which occurs after `on_unload` returns. Therefore, tasks requiring graceful completion (flush buffers, persist state, close connections) **must** be manually cancelled and awaited in `on_unload`—don't expect the fallback to preserve cleanup logic. The framework only guarantees "no residual tasks holding `self`", not "graceful". For tasks requiring `await` results, directly `await` instead of dropping them into background tasks.
 
 ## Notes
 
-1. **Handlers can be synchronous or asynchronous**: The system automatically identifies and correctly calls them
-2. **Data passing**: In `emit()` mode, handlers returning non-None values modify the data passed to subsequent handlers
-3. **Event naming convention**: It is recommended to use dot-structure naming for events, which facilitates listening to parent events
-4. **Error isolation**: An exception in a single handler does not affect the execution of other handlers
-5. **Synchronous trigger limitation**: In `emit_sync()`, asynchronous handlers are scheduled in a fire-and-forget manner, and return values cannot be returned
-6. **Lifecycle cleanup**: When `sdk.uninit()` is called, all registered handlers and timers are cleared
-7. **Load priority**: If you need to listen to events during the framework initialization phase, it is recommended to set a high priority and disable lazy loading
+1. **Handlers can be synchronous or asynchronous**: The system automatically identifies and calls them correctly.
+2. **Data passing**: In `emit()` mode, if a handler returns a non-None value, it modifies the data passed to subsequent handlers.
+3. **Event naming conventions**: Use dot-structure event names for easier parent event listening.
+4. **Error isolation**: An exception in a single handler does not affect the execution of other handlers.
+5. **Synchronous trigger limitation**: In `emit_sync()`, asynchronous handlers are scheduled fire-and-forget, and return values cannot be returned.
+6. **Lifecycle cleanup**: When `sdk.uninit()` is called, all registered handlers and timers are cleared.
+7. **Loading priority**: If you need to listen to events during the framework initialization phase, set a high priority and disable lazy loading.
 
 
 
@@ -10157,31 +10162,32 @@ This design ensures that changes to CLI translations do not affect the stability
 
 # Scope
 
-> [!NOTE]  
+> [!TIP]
+> **When to read this**: When you need to control module availability, event acceptance, or outbound action restrictions. Skip if not needed, it does not affect the use of other features.
+
+> [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Scope answers four questions: **which modules are available, whether events from certain sources should be received, what text a module processes, and what actions a module can perform externally**.  
-Control is entirely user-driven: at the **upper level** of module / adapter / processor / outbound call registration (configured via `ErisPulse.scope` or runtime `sdk.scope`), declarations are made, and the event pipeline automatically reads and executes them at entry, processor filtering, and outbound gate.
+Scope answers four questions: **which modules are available, whether to accept events, what text a module processes, and what outbound actions a module can perform**. Control is entirely user-driven: at the upper level of module / adapter / processor / outbound call registration (configuration `ErisPulse.scope` or runtime `sdk.scope`), it is declared uniformly. The event pipeline automatically reads and executes at the entry, processor filtering, and outbound gate.
 
-| Dimension | What is controlled | Rejection behavior | Configuration path |
-|-----------|--------------------|--------------------|--------------------|
+| Dimension | Controls what | Rejection behavior | Configuration path |
+|------|---------|---------|---------|
 | **① Module** | Which modules are available (platform / Bot / session three levels) | Filtered modules do not trigger or reply (intercept broadcast `scope.blocked` event; matched commands are still claimed and blocked) | `scope.platforms / bots / sessions` |
-| **② Identity** | Whether to receive events (adapter / Bot / session / user four levels) | Completely discard at entry (intercept broadcast `scope.blocked` event) | `scope.identity.*` |
-| **③ Outbound** | Which outbound calls a module can initiate (messages / API / requests, method-level white/blacklists) | Fail response (`retcode=34601`) | `scope.actions` |
+| **② Identity** | Whether to accept events (adapter / Bot / session / user four levels) | Completely discard at entry (intercept broadcast `scope.blocked` event) | `scope.identity.*` |
+| **③ Outbound** | Which outbound calls a module can initiate (message / API / request, method-level white/black lists) | Fail response (`retcode=34601`) | `scope.actions` |
 
-> **Related systems**: Commands are special message event processors, with their user allow/deny lists (ACL) and implementation parameter overrides handled by the command system itself (`ErisPulse.event.command`).  
-> See [Event Handling Introduction](../getting-started/event-handling.md) and [Configuration Guide](../user-guide/configuration.md).
+> **Related system**: Commands are special message event handlers, their user white/black lists (ACL) and implementation parameter overwrites are maintained by the command system (`ErisPulse.event.command`), see [Event Handling Introduction](../getting-started/event-handling.md) and [Configuration Guide](../user-guide/configuration.md).
 
 {!--< tips >!--}
 1. Import the singleton via `from ErisPulse.Core import scope` (same object as `sdk.scope`)
-2. Check permissions: `scope.is_allowed(...)` / `scope.is_identity_allowed(...)` /  
-   `scope.is_action_allowed(...)` correspond to the three gates ①②③
-3. Read/write: dimension-specific parameter methods (IDE can auto-complete) —  
-   `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`;  
-   Additionally, there are dictionary-style fallback methods `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
-4. Event handler text condition overrides are covered in  
-   [Event Handling Introduction · Event Overriding](../getting-started/event-handling.md#event-overriding-does-not-change-module-code-overriding-the-behavior-of-any-event-type);  
-   command ACL / parameter overrides are covered in [Event Handling Introduction](../getting-started/event-handling.md)
+2. Check: `scope.is_allowed(...)` / `scope.is_identity_allowed(...)` /
+   `scope.is_action_allowed(...)` corresponding to the three gates ①②③
+3. Read/write: dimension-specific parameter methods (IDE can auto-complete) —
+   `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`;
+   Additionally, there is a dictionary-style fallback `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
+4. Event handler text condition overwrite see
+   [Event Handling Introduction · Event Overwrite](../getting-started/event-handling.md#event-overwrite-overwrite-any-event-type-behavior-without-modifying-module-code);
+   Command ACL / parameter overwrite see [Event Handling Introduction](../getting-started/event-handling.md)
 {!--< /tips >!--}
 
 ## Matching Entry Syntax (Unified Across the System)
@@ -10189,24 +10195,25 @@ Control is entirely user-driven: at the **upper level** of module / adapter / pr
 All "name lists" in scope (module names, identity keys, outbound entries) share the same matching syntax (`ErisPulse.Core.text_match`):
 
 | Syntax | Example | Description |
-|--------|---------|-------------|
+|------|------|------|
 | Exact name | `"Chat"` | Full value comparison, **case-insensitive** |
 | Glob | `"Tool*"`、`"spam_*"` | `*` for any string / `?` for single character / `[seq]` for character set, case-insensitive |
-| Regular expression | `"re:^Danger.*"` | Declared with `re:` prefix, matches using regex `search`, default case-insensitive |
+| Regex | `"re:^Danger.*"` | Prefix with `re:` for regex `search` matching, default case-insensitive |
 
-- Invalid regex **silently degrades** to "no match" (no error thrown, no crash)
-- Decorator parameters (`pattern=` / `regex=`) have fixed semantics: `pattern` is glob, `regex` is raw regex (without `re:` prefix); regex entries in scope configuration **must** have the `re:` prefix
+- Invalid regex silently degrades to "no match" (no error thrown, no crash)
+- Decorator parameters (`pattern=` / `regex=`) have fixed semantics: `pattern` is glob, `regex` is regex source (no `re:` prefix); regex entries in scope configuration **must** have the `re:` prefix
 
 ## Global Fallback: `default_allow`
 
 `default_allow` is the **single global fallback switch** (default `true`), affecting two decision dimensions:
 
-- **Module dimension**: If no binding is matched → `default_allow` decides allow/deny
-- **Identity dimension**: If no policy is matched → `default_allow` decides allow/deny
+- **Module dimension**: If no binding is matched → `default_allow` determines allow or deny
+- **Identity dimension**: If no policy is matched → `default_allow` determines allow or deny
 
-Setting it to `false` enables "implicit deny" strict mode: whitelisting management, **any not explicitly allowed is denied**.
+Setting it to `false` enables "implicit deny" strict mode: whitelist-based management,
+**everything not explicitly allowed is denied**.
 
-> **Exception**: The outbound dimension is **not** affected by `default_allow`—it is an independent tightening switch, defaulting to full allow, restricting only with explicit rules (framework-level owner-empty calls are always allowed). This strict global mode won't accidentally cut off all module message replies. Command ACL has a separate `ErisPulse.event.command.default_allow` fallback, independent of this.
+> **Exception**: The ③ outbound dimension is **not** affected by `default_allow`—it is an independent tightening switch, defaulting to full allow, only explicitly rules restrict (framework-level owner-empty calls always allow). This strict global mode won't accidentally cut off all module message replies. Command ACL has a separate `ErisPulse.event.command.default_allow` fallback, independent of each other.
 
 ## Configuration File
 
@@ -10221,7 +10228,7 @@ modules = ["Chat", "Tool*"]   # Whitelist: exact name / glob / re: regex
 blocked = ["re:^Danger"]
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Chat"]
-merge = true                  # Append on top of platform-level binding (default is overall override)
+merge = true                  # Append on top of platform-level binding (default is full override)
 [ErisPulse.scope.sessions.onebot11."789012345"]
 modules = ["Chat"]
 
@@ -10236,55 +10243,61 @@ deny = true
 allow = ["u_admin"]           # User keys support glob / re: regex
 deny = ["u_bad", "spam_*"]
 
-# ── ③ Outbound dimension (default all allowed, only explicitly tighten) ──
+# ── ③ Outbound dimension (default allow all, restrict only with explicit rules) ──
 [ErisPulse.scope.actions.MyModule]
 send = { deny = true }                                    # Disable all sending
 api = { allow = ["get_*"] }                               # Only allow standard query APIs
 request = { deny = true }                                 # Disable request handling
 ```
 
-## ① Module Level
+## ① Module Dimension
 
-Answer the question: "In a certain context, which modules are available?" By default, all modules are open; filtering starts only after configuration is bound. **No changes are required for modules or adapters.**
+Answers "which modules are available in a certain context." By default, all are open; filtering starts only after configuration binding.
+**Modules and adapters require no changes**.
 
 ```mermaid
 flowchart TD
     A["Event arrives at a module's handler/command"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
-    B --> C{"Resolution chain: session level > bot level > platform level<br/> (when merge = true, merge each level)"}
+    B --> C{"Parse chain: session-level > Bot-level > platform-level<br/>(if sub-level merge = true, merge entries individually)"}
     C -->|"Matched"| D["blocked matched → deny<br/>modules non-empty → only whitelist allowed<br/>both empty → default_allow"]
     C -->|"Not matched"| E["default_allow (default true = allow)"]
-    D -->|"Deny"| Z["No reply<br/> (blocks broadcast `scope.blocked` event; matched commands are still claimed and blocked)"]
+    D -->|"Deny"| Z["No reply<br/>(intercept broadcast `scope.blocked` event; matched commands are still claimed and blocked)"]
 ```
 
-- **Resolution priority: session level > bot level > platform level.** Higher-level bindings **completely override** lower-level ones; when sub-level bindings write `merge = true`, they instead perform **item-by-item union** with lower levels (merge `modules` / `blocked` separately; `merge` itself is a control key and does not count as an item).
-- **Default semantics:** Commands and handlers of filtered modules do not trigger or reply; TRACE-level logs are visible (`core.scope.denied`). Blocking also broadcasts the `scope.blocked` lifecycle event (subscribers can observe who is blocked and why). **Matched commands are still claimed and blocked**—command text is no longer passed to lower-level message handlers, eliminating the ambiguity of "double response" where a command is rejected but then the message handler responds again.
-- **Framework-level handlers** (`scope_exempt=True` or owner is empty) are unaffected; module names that are empty (framework-level resources) are always allowed.
-- **Session-aware help and command query:** Command query APIs (`command.help` / `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`, and `module.get_commands_overview`) all support optional `event=` or explicit `platform=` / `bot_id=` / `session_id=` keywords—commands from modules not available in the current session no longer appear in the results (`get_command` returns None, single-command help is treated as "not registered," consistent with default semantics); if no context is provided, the behavior remains full.
+- **Parse priority: session-level > Bot-level > platform-level**, higher priority bindings **fully override** lower priority; if sub-level binding writes `merge = true`, it becomes **entry-by-entry union** with lower priority (both `modules` and `blocked` are merged individually, `merge` itself is a control key, not counted as an entry)
+- **Default semantics**: Filtered module commands and handlers do not trigger or reply, visible in TRACE-level logs (`core.scope.denied`); interception also broadcasts the `scope.blocked` lifecycle event (subscribing makes it observable who is blocked and why); **matched commands** are still claimed and blocked—command text is no longer leaked to lower-priority message handlers, eliminating the ambiguity of "double response" where a command is rejected and then the message handler responds again
+- **Framework-level handlers** (`scope_exempt=True` or owner is empty) are unaffected; module name is empty (framework-level resources) always allowed
+- **Session-aware help and command query**: Command query APIs (`command.help` /
+  `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`,
+  and `module.get_commands_overview`) all support optional `event=` or explicit
+  `platform=` / `bot_id=` / `session_id=` keyword—commands from modules unavailable in the current session
+  no longer appear in results (`get_command` returns None, single command help is treated as "unregistered",
+  consistent with default semantics); if no context is provided, full behavior is maintained
 
 ### Binding Inheritance (merge)
 
-By default, the semantics of complete override are clear and predictable; when you need to **add** to the parent binding, set `merge = true` in the sub-level:
+The default semantics of full override are clear and predictable; when you need to **append** on top of an upper-level binding, write `merge = true` in the sub-level:
 
 ```toml
 [ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Tool"]      # Platform level: allow Chat, Tool
+modules = ["Chat", "Tool"]      # Platform-level: allow Chat, Tool
 
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Music"]
 merge = true                    # The actual effective modules for this Bot = ["Chat", "Tool", "Music"]
 ```
 
-- **Merge rules:** `modules` and `blocked` each take the **union**; within a binding, `blocked` still takes precedence over `modules`.
-- **Chained merging:** Platform → Bot → Session levels are merged step by step, with each level independently deciding whether to merge or override.
+- **Merge rules**: `modules` and `blocked` each take **union**; `blocked` still takes precedence over `modules` within the binding
+- **Chained merge**: Platform → Bot → Session is layered step-by-step, each level independently decides `merge` or full override
 
-## ② Identity Dimension (Event Admission)
+## ② Identity Dimension (Event Acceptance)
 
-Answers "whose events are received or not." Events rejected at the **distribution entry are completely discarded**—they do not enter middleware or any processor (including framework-level), visible only in TRACE-level logs (`core.scope.identity_denied`).
+Answers "whose events are accepted or rejected." Events that are rejected are **completely discarded at the distribution entry**—they do not enter middlewares or any processor (including framework-level), visible only in TRACE-level logs (`core.scope.identity_denied`).
 
-- **Parse priority**: user > session > Bot > adapter, taking the most specific configured policy; deny takes precedence over allow
-- Each level's binding is a binary policy: `{ allow = true }` or `{ deny = true }`
+- **Parse priority: user > session > Bot > adapter**, taking the most specific configured policy; deny takes precedence over allow
+- Each level of binding is a binary policy: `{ allow = true }` or `{ deny = true }`
 - User keys support glob / regex (e.g., `"spam_*"` to block a batch of spam users)
-- Typical usage—上级 deny, individual allow for "exceptional allowance":
+- Typical usage—deny at upper level, allow individual for "exceptional pass-through":
 
 ```toml
 [ErisPulse.scope.identity.adapters.onebot11]
@@ -10293,51 +10306,57 @@ deny = true
 allow = ["u_admin"]   # Even if adapter-level is denied, events from u_admin are still allowed
 ```
 
-## ③ Outbound Dimension (Limiting Module Initiated Outbound Calls)
+## ③ Outbound Dimension (Restricting Module Outbound Calls)
 
-Restricts the **outbound actions** initiated by a module: message sending / standard API actions / request operations. The three action types correspond to the underlying DSL: `Event.reply` and `Send` (send), `Api` / `call_api` (api), `Request`'s accept/reject (request). Outbound calls initiated by a module during event handler execution carry the module owner, and are uniformly judged by this dimension.
+Restricts the **outbound actions** a module can initiate: message sending / standard API actions / request operations. The three action types correspond to the underlying DSL: `Event.reply` and `Send` (send), `Api` / `call_api` (api), `Request`'s accept/reject (request). Outbound calls initiated by modules during event handler execution carry the module owner, and are uniformly judged by this dimension.
 
-### Rule Forms (Inline Table)
+### Rule Form (Inline Table)
 
-Each action's rule is an inline table: `{ allow = [...], deny = true|[...] }`. Only one rule per action is allowed (TOML keys cannot be repeated, choose either full deny or fine-grained):
+The rule for each action is an inline table: `{ allow = [...], deny = true|[...] }`.
+Only one rule can exist for the same action (TOML keys are not repeatable, choose between full deny and fine-grained):
 
 ```toml
 [ErisPulse.scope.actions.MyModule]
 send = { deny = true }                                  # Disable all sending (Event.reply / Send DSL)
-# Or fine-grained method-level: send = { allow = ["Text", "Image*"], deny = ["File"] }
+# Or fine-grained by method: send = { allow = ["Text", "Image*"], deny = ["File"] }
 api = { allow = ["get_*"] }                             # Only allow standard query APIs
-# Or action-level blacklist: api = { deny = ["set_*", "leave_*"] }
+# Or blacklist by action: api = { deny = ["set_*", "leave_*"] }
 request = { deny = true }                               # Disable request handling accept/reject
 ```
 
-- `send` entries match **send method names** (`Text` / `Image` / `File` ...), `api` entries match **standard action names** (`get_group_info` / `set_group_name` ...)
+- `send` entries match **send method names** (`Text` / `Image` / `File` ...),
+  `api` entries match **standard action names** (`get_group_info` / `set_group_name` ...)
 - Entries support exact names / glob / `re:` regex (consistent with the unified system syntax, case-insensitive)
 - Writing a single string in `allow` is equivalent to a single-entry list: `send = { allow = "Text" }`
 
 ### Decision Semantics
 
-**Default is full allow**—unconfigured, or owner is empty (internal framework calls) are all allowed. After configuration, the following order is used for judgment:
+**Default is full allow**—if not configured, or owner is empty (internal framework calls), it is allowed.
+After configuring rules, the following order is used for determination:
 
-1. `deny = true` → deny
-2. `deny` list matches the call name → deny
-3. `allow` list is non-empty and the call name is not matched (or the call has no name) → deny
-4. Otherwise allow
+1. `deny = true` → reject
+2. `deny` list matches the call name → reject
+3. `allow` list is non-empty and the call name is not matched (or the call has no name) → reject
+4. Otherwise, allow
 
-Denied calls do not initiate any network requests, directly returning the standard failure response (`retcode = 34601`, see [api-response §5.3](../standards/api-response.md#53-framework-extended-return-code-34xxx-platform-error-segment-low-three-digits-custom)).
+Rejected calls do not initiate any network requests, directly returning the standard failure response
+(`retcode = 34601`, see [api-response §5.3](../standards/api-response.md#53-framework-extended-return-code-34xxx-custom-defined-low-three-digits-in-the-platform-error-segment)).
+
+The three actions are independent, and only one can be restricted.
 
 ```python
 # Runtime API
 sdk.scope.set_action("MyModule", "send", deny=True)              # Disable all message sending
-sdk.scope.set_action("MyModule", "send", allow=["Text"])         # Allow only text sending
+sdk.scope.set_action("MyModule", "send", allow=["Text"])         # Allow only text messages
 sdk.scope.is_action_allowed("MyModule", "send", name="Image")    # False
-sdk.scope.is_action_allowed("MyModule", "api", name="get_user_info")  # Judged by rules
+sdk.scope.is_action_allowed("MyModule", "api", name="get_user_info")  # Determine by rule
 sdk.scope.delete_action("MyModule", "send")                      # Restore allow
 sdk.scope.get_action("MyModule", "send")                         # Current rule for this action
 ```
 
 ## Runtime API
 
-The runtime API for scope is layered into three parts: **decision** (three questions), **dimensional read/write** (each dimension has `set`/`get`/`delete` parameterized methods, fully type-annotated, IDE-completable), and **dictionary-style fallback** (dot-path access to any section).
+The runtime API for scope is layered in three tiers: **determination** (three questions), **dimension-specific read/write** (each dimension has `set` / `get` / `delete` parameterized methods, fully type-annotated, IDE can auto-complete), and **dictionary-style fallback** (dot-separated path to reach any section).
 
 ```python
 from ErisPulse import sdk
@@ -10345,7 +10364,7 @@ from ErisPulse import sdk
 scope = sdk.scope
 ```
 
-### Decision (Three Questions)
+### Determination (Three Questions)
 
 ```python
 scope.is_allowed("onebot11", "123456", "Chat")                 # ① Module dimension
@@ -10355,7 +10374,7 @@ scope.is_allowed("onebot11", "123456", None)                   # Framework-level
 scope.is_identity_allowed("onebot11", "123456", "group_9", "u1")   # ② Identity dimension
 
 scope.is_action_allowed("MyModule", "send")                    # ④ Outbound dimension
-scope.is_action_allowed("MyModule", "send", name="Image")      # Fine-grained method-level
+scope.is_action_allowed("MyModule", "send", name="Image")      # Fine-grained by method
 ```
 
 ### ① Module Dimension
@@ -10373,16 +10392,17 @@ scope.get_module("onebot11", bot_id="123456")   # {"modules": ["Chat"], "blocked
 scope.delete_module("onebot11", bot_id="123456")
 ```
 
-> `merge=True` is **write-time union** (merges entries with existing bindings at this level); `merge = true` configuration at parse time across levels is described in the previous section on [Binding Inheritance](#绑定继承merge)—these are independent mechanisms.
+> `merge=True` is **merge on write** (merge entries with existing binding at this level); the `merge = true` configuration key during cross-level parsing is described above in [Binding Inheritance](#binding-inheritancemerge)—these are independent mechanisms.
 
-> **Runtime binding (persist=False) semantics**: Runtime bindings are saved in a separate overlay layer, **not overwritten by any subsequent configuration writes or hot reloads of the configuration file** (the configuration tree is rebuilt and automatically reapplied in the order of writes, including runtime deletions). They are not persisted, lost on process restart; when a module is unloaded, runtime bindings written by that module are cleared by fallback. Subsequent `persist=True` writes (user-persistent semantics) to the same path will replace runtime rules.
+> **Runtime binding (`persist=False` semantics)**: Runtime bindings are saved in a separate overlay layer,
+> **any subsequent configuration writes / hot reloads of the configuration file will not overwrite them** (the configuration tree is rebuilt and automatically replayed in the order of writes, including runtime deletions). They are not persisted, and are lost upon process restart; runtime bindings written by a module are cleaned up when the module is unloaded. Subsequent `persist=True` writes (user-persistent semantics) to the same path will replace the runtime rules.
 
 ### ② Identity Dimension
 
 ```python
-# Binding policies (hierarchy determined by parameters: user > session > Bot > adapter; allow / deny is binary)
+# Binding policies (hierarchy determined by parameters: user > session > bot > adapter; allow / deny are mutually exclusive)
 scope.set_identity("onebot11", user_id="u_bad", deny=True)
-scope.set_identity("onebot11", user_id="spam_*", deny=True)    # Key supports glob / re: regex
+scope.set_identity("onebot11", user_id="spam_*", deny=True)    # Keys support glob / re: regex
 scope.set_identity("onebot11", bot_id="123456", session_id="g9", allow=True)
 
 # Read / Delete
@@ -10395,7 +10415,7 @@ scope.delete_identity("onebot11", user_id="u_bad")
 ```python
 # Set restriction rules (allow: str|list; deny: bool|str|list; whole rule replacement semantics)
 scope.set_action("MyModule", "send", deny=True)                    # Disable all sending
-scope.set_action("MyModule", "send", allow=["Text"])               # Allow only text sending
+scope.set_action("MyModule", "send", allow=["Text"])               # Allow only text messages
 scope.set_action("MyModule", "api", deny=["set_*", "leave_*"])     # Disable management APIs
 
 # Read / Delete
@@ -10407,18 +10427,18 @@ scope.delete_action("MyModule")            # Remove all action restrictions for 
 ### General
 
 ```python
-scope.get("platforms")   # Dictionary-style fallback: dot-path read any section
+scope.get("platforms")   # Dictionary-style fallback: dot-separated path to read any section
 scope.topology()         # Full configuration tree (for Dashboard)
 scope.stats()
 # {"module_calls": .., "module_filtered": .., "identity_checks": .., "identity_denied": ..,
 #  "action_checks": .., "action_denied": .., "cache_hits": .., "cache_misses": ..}
 scope.reset_stats()
-scope.clear()           # Clear all configurations (memory-only)
+scope.clear()           # Clear all configurations (only effective in memory)
 ```
 
-### Advanced: Dictionary-style Dot-Path Fallback
+### Advanced: Dictionary-style Dot-separated Path Fallback
 
-Dimensional methods cover daily scenarios; when you need direct access to any node (or future added dimensions), use the dictionary-style API—`get` / `set` / `delete` accepts dot-path (deep dict merge, immediate read after write), and provides `scope[path]` / `scope[path] = v` / `del scope[path]` / `path in scope` protocols:
+Dimension-specific methods cover daily scenarios; when you need to directly access any node (or future added dimensions), use the dictionary-style API—`get` / `set` / `delete` accepts dot-separated paths (deep merge for dict, read immediately after write), and provides `scope[path]` / `scope[path] = v` / `del scope[path]` / `path in scope` protocol:
 
 ```python
 scope.set("bots.onebot11.123456", {"modules": ["Chat"], "blocked": []})
@@ -10428,64 +10448,69 @@ scope.get("actions.MyModule.send")
 scope["platforms.onebot11"]        # Read (raises KeyError if not exists)
 scope["platforms.onebot11"] = {...}  # Write
 del scope["platforms.onebot11"]      # Delete
-"actions.MyModule" in scope          # Existence check
+"actions.MyModule" in scope          # Check existence
 ```
 
 ## Interception Observability: `scope.blocked` Event
 
-When scope interception (module filtering / identity rejection) occurs, the **`scope.blocked`** lifecycle event is broadcast, allowing subscription to and statistics on "who was blocked and at which layer" and presenting this information in the Dashboard. Interception does not reply by default, but it is no longer an opaque black box.
+When scope interception (module filtering / identity rejection) occurs, the lifecycle event **`scope.blocked`** is broadcast,
+making "who is blocked, at which level" subscribable, statable, and presentable in the Dashboard—interception defaults
+to no reply, but is no longer an unknowable black box.
 
 | Field | Description |
-|-------|-------------|
-| `dimension` | `"module"` (module dimension filtering) / `"identity"` (identity admission rejection) |
-| `module` | The name of the filtered module (only for module dimension) |
-| `platform` / `bot_id` / `session_id` / `user_id` | The source context where the interception occurred |
+|------|------|
+| `dimension` | `"module"` (module dimension filtering) / `"identity"` (identity acceptance rejection) |
+| `module` | The filtered module name (only module dimension) |
+| `platform` / `bot_id` / `session_id` / `user_id` | The context where the interception occurred |
 
 ```python
 from ErisPulse.Core.lifecycle import lifecycle
 
 @lifecycle.on("scope.blocked")
 def on_blocked(data):
-    print(f"Intercepted: {data['dimension']} {data.get('module') or data.get('user_id')}")
+    print(f"Blocked: {data['dimension']} {data.get('module') or data.get('user_id')}")
 ```
 
-- The event is broadcast in the background via `fire` (zero overhead if there are no listeners, does not slow down hot paths)
-- Repeated interceptions with cache hits are **not** broadcast repeatedly — the same combination is only broadcast once when the cache expires
-- Distinct from `adapter.event.blocked` (middleware rejection): the latter is event-level discarding, while this event is module / identity filtering at the scope admission gate
+- The event is broadcast via `fire` in the background (zero overhead if no listeners, does not slow hot paths)
+- Repeated interception hits in the cache **do not** broadcast again—each unique combination is broadcast only once when the cache expires
+- Distinct from `adapter.event.blocked` (event-level discard): this
+  event is the module/identity filtering at the scope acceptance gate
 
 ## Cache and Hot Reload
 
-- `is_allowed` / `is_identity_allowed` / `is_action_allowed` results include **LRU cache** (`scope.cache_size` is adjustable), and `set` / `delete` / configuration hot reload (`config.updated` / `config.set`) automatically invalidate
+- `is_allowed` / `is_identity_allowed` / `is_action_allowed` results are cached with **LRU cache**
+  (`scope.cache_size` is adjustable), `set` / `delete` /
+  configuration hot reload (`config.updated` / `config.set`) automatically invalidate
 - All dimension configurations take effect **immediately**, no restart required
-- Scope is "per-event" judgment, does not cross-event state: if configuration changes, the next event follows new rules
+- Scope is "event-by-event" judgment, not cross-event memory: if configuration changes, the next event follows the new rules
 
 ## Configuration Format Validation
 
-Configuration format is validated per section during loading / hot reload: sections with type errors (e.g., `platforms` written as a string), invalid outbound rules (e.g., `allow` written as a number), unknown action names, or unknown top-level keys (e.g., `alow` with a typo) will output a **WARNING** and ignore the corresponding section / entry, while other valid configurations remain effective—mistakes no longer silently fail.
+When loading / hot reloading, each section is validated for configuration format: type errors in sections (e.g., `platforms` written as a string), invalid outbound rules (e.g., `allow` written as a number), unknown action names, unknown top-level keys (e.g., `alow` spelling error)
+will output **WARNING** and ignore the corresponding section / entry, while other valid configurations take effect as usual—writing errors no longer silently fail.
 
-## Frequently Asked Questions and Precautions
+## Common Issues and Precautions
 
 ### 1. Configuration Hierarchy and Overriding
 
-- Module Level: Session > Bot > Platform, **Overall Override** (when `merge = true` at the sub-level, merge each item by union).
-  If you want "Platform allows Chat, Bot adds Music", you can set `merge = true` at the Bot level, or list both.
-- Identity Level: User > Session > Bot > Adapter, take the **most specific** configured policy (exceptions can be allowed).
-- Command User Whitelist/Blacklist: Exact command name takes precedence over glob key (see `event.command.acl`).
+- Module dimension: session-level > Bot-level > platform-level, **full override** (if sub-level `merge = true`, each entry is unioned). To "platform allows Chat, Bot adds Music", write `merge = true` in the Bot-level, or list both simultaneously
+- Identity dimension: user > session > Bot > adapter, take the **most specific** configured policy (can do exceptional pass-through)
+- Command user white/black lists: exact command names take precedence over glob keys (see `event.command.acl`)
 
 ### 2. Module/Command Not Responding
 
-First suspect the scope rather than the module itself:
+First suspect scope rather than the module itself:
 
 ```python
 from ErisPulse import sdk
 
 print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
 print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
-print(sdk.scope.stats())   # module_filtered / identity_denied > 0 indicates there are blocking records
+print(sdk.scope.stats())   # module_filtered / identity_denied > 0 indicates there are interception records
 ```
 
-Filtered requests default to no reply (at both module and identity levels, to avoid exposing rules), but will broadcast the `scope.blocked` lifecycle event and continuously accumulate statistics;
-ACL-rejected commands will explicitly reply with "Insufficient permissions".
+Filtered modules default to no reply (module dimension and identity dimension, avoiding rule exposure), but broadcast the `scope.blocked` lifecycle event and continuously accumulate statistics;
+ACL-rejected commands return an explicit "insufficient permissions" response.
 
 ### 3. Troubleshooting Outbound Actions Rejected
 
@@ -10493,18 +10518,19 @@ ACL-rejected commands will explicitly reply with "Insufficient permissions".
 from ErisPulse import sdk
 
 print(sdk.scope.get("actions.MyModule"))
-print(sdk.scope.stats())   # action_denied > 0 indicates there are blocked calls
+print(sdk.scope.stats())   # action_denied > 0 indicates there are intercepted calls
 ```
 
-Blocking is **explicit**: rejected calls return a standard failure response with `retcode = 34601` (no network request is initiated).
+Interception is **explicit**: rejected calls return the standard failure response (`retcode = 34601`) without initiating network requests.
 
-### 4. Session Identifier Isolation Across Platforms
+### 4. Session Identifier Cross-Platform Isolation
 
-The combination of `(platform, session_id)` is the unique identifier. `scope.sessions.onebot11."789"` only applies to onebot11 and does not affect the session with `789` on telegram. The same applies to user keys at the identity level.
+The `(platform, session_id)` combination is the unique identifier. `scope.sessions.onebot11."789"` only affects onebot11, not telegram sessions with the same `789`. The same applies to identity dimension user keys.
 
-## Topology API
+## Topology Tree API
 
-`ModuleManager.get_topology()` and `AdapterManager.get_topology()` provide data on module/adapter ownership relationships. `sdk.get_topology()` offers a one-click aggregation (including scope `scope`):
+`ModuleManager.get_topology()` and `AdapterManager.get_topology()` provide module/adapter ownership relationship data,
+`sdk.get_topology()` aggregates them (including scope):
 
 ```python
 from ErisPulse import sdk
@@ -10520,14 +10546,14 @@ topology = sdk.get_topology()
 #       "lifecycle_hooks": 3,
 #     }
 #   },
-#   "adapters": {                                  # Adapter → Bot → scope
+#   "adapters": {                                  # Adapter → Bot → Scope
 #     "onebot11": {
 #       "status": "started", "enabled": True,
 #       "bots": {"123456": {"status": "online", "scope": {...}}},
 #       "scope": {"modules": [...], "blocked": [...]},
 #     }
 #   },
-#   "scope": {                                     # Scope (module / identity / outbound action)
+#   "scope": {                                     # Scope (module / identity / outbound actions)
 #     "platforms": {...}, "bots": {...}, "sessions": {...},
 #     "identity": {"adapters": {...}, "bots": {...}, "sessions": {...}, "users": {...}},
 #     "actions": {...},
@@ -10535,9 +10561,9 @@ topology = sdk.get_topology()
 # }
 ```
 
-- The module topology aggregates commands, event handlers, HTTP/WS/SSE routes, and lifecycle hooks registered by the module, which is useful for drawing a module resource tree.
-- The adapter topology aggregates the status of each adapter, the status of its subordinate Bots, and platform-level/Bot-level scope bindings (at the module level).
-- **JSON-safe output**: `get_topology(json_safe=...)` is `True` by default, and the returned structure can be directly `json.dumps`—the module's `info` retains only the pure data sub-table `meta` (discarding runtime objects like `module_class` / `strategy`), and other nodes (including arbitrary objects inserted by adapter authors into Bot `info`) are sanitized by default (class objects use `__name__`, non-serializable objects are converted to `str()`). Dashboard/WebUI can directly serialize the returned data; for raw objects, pass `json_safe=False`.
+- Module topology aggregates commands registered by the module, event handlers, HTTP/WS/SSE routes, and lifecycle hooks, facilitating the drawing of module resource trees.
+- Adapter topology aggregates status of each adapter, status of subordinate Bots, and platform-level/Bot-level scope bindings (module dimension).
+- **JSON-safe output**: `get_topology(json_safe=...)` defaults to `True`, returning a structure that can be directly `json.dumps`—module `info` retains only the pure data `meta` sub-table (discarding `module_class` / `strategy` runtime objects), and other nodes (including arbitrary objects inserted by adapter authors into Bot `info`) are purged (class objects take `__name__`, unserializable objects degrade to `str()`). Dashboards/WebUI can directly serialize and return; for original objects, pass `json_safe=False`.
 
 
 

@@ -423,7 +423,7 @@
           "icon": "fa-language"
         },
         {
-          "title": "スコープ (scope)",
+          "title": "スコープ（scope）",
           "path": "advanced/scope.md",
           "level": 1,
           "icon": "fa-shield-halved"

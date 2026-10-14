@@ -170,7 +170,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Event Wrapper Class Detailed Explanation",
+              "title": "Event Wrapper Class Guide",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -453,7 +453,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Storage Backends",
+          "title": "Storage Backend",
           "path": "advanced/storage-backends.md",
           "level": 1,
           "icon": "fa-server"
