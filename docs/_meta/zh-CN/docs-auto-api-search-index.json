@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2177,
+  "total_keywords": 2183,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -2863,7 +2863,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/adapter.md",
-        "line": 40,
+        "line": 42,
         "level": 5,
         "title": "`__init__()`"
       },
@@ -4043,15 +4043,23 @@
     "`_create_adapter(args, name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
-        "line": 132,
+        "line": 159,
         "level": 5,
         "title": "`_create_adapter(args, name: str)`"
+      }
+    ],
+    "`_create_adapter_local(args, name: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
+        "line": 147,
+        "level": 5,
+        "title": "`_create_adapter_local(args, name: str)`"
       }
     ],
     "`_create_module(args, name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
-        "line": 108,
+        "line": 123,
         "level": 5,
         "title": "`_create_module(args, name: str)`"
       }
@@ -4059,9 +4067,17 @@
     "`_create_module_local(args, name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
-        "line": 120,
+        "line": 135,
         "level": 5,
         "title": "`_create_module_local(args, name: str)`"
+      }
+    ],
+    "`_create_pack(args)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
+        "line": 108,
+        "level": 5,
+        "title": "`_create_pack(args)`"
       }
     ],
     "`_create_parser() -> ArgumentParser`": [
@@ -4602,6 +4618,14 @@
         "title": "`_fill_from_schema_fields(fields_dict: dict, values: dict) -> None`"
       }
     ],
+    "`_find_adapter_class(module_obj: Any) -> type | None`（staticmethod）": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
+        "line": 122,
+        "level": 5,
+        "title": "`_find_adapter_class(module_obj: Any) -> type | None`（staticmethod）"
+      }
+    ],
     "`_find_entry(key: str) -> _Entry | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
@@ -4621,7 +4645,7 @@
     "`_find_module_class(module_obj: Any) -> type | None`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
-        "line": 102,
+        "line": 107,
         "level": 5,
         "title": "`_find_module_class(module_obj: Any) -> type | None`（staticmethod）"
       }
@@ -4803,7 +4827,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/adapter.md",
-        "line": 47,
+        "line": 49,
         "level": 5,
         "title": "`_get_entry_point_group() -> str`"
       },
@@ -4887,7 +4911,7 @@
     "`_get_load_strategy(module_class: type) -> Any`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
-        "line": 117,
+        "line": 180,
         "level": 5,
         "title": "`_get_load_strategy(module_class: type) -> Any`（staticmethod）"
       }
@@ -5087,7 +5111,7 @@
     "`_import_plugin(name: str, path: Path) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
-        "line": 90,
+        "line": 95,
         "level": 5,
         "title": "`_import_plugin(name: str, path: Path) -> Any`"
       }
@@ -5550,6 +5574,14 @@
         "title": "`_load_accounts() -> dict | None`"
       }
     ],
+    "`_load_adapter_plugin(name: str, path: Path) -> dict[str, Any] | None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
+        "line": 156,
+        "level": 5,
+        "title": "`_load_adapter_plugin(name: str, path: Path) -> dict[str, Any] | None`"
+      }
+    ],
     "`_load_builtin()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/i18n/__init__.md",
@@ -5617,7 +5649,7 @@
     "`_load_plugin(name: str, path: Path) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
-        "line": 77,
+        "line": 82,
         "level": 5,
         "title": "`_load_plugin(name: str, path: Path) -> Any`"
       }
@@ -5829,6 +5861,12 @@
       }
     ],
     "`_merge_plugin_folder(objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any) -> None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/loaders/adapter.md",
+        "line": 97,
+        "level": 5,
+        "title": "`_merge_plugin_folder(objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any) -> None`"
+      },
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/module.md",
         "line": 179,
@@ -6239,7 +6277,7 @@
     "`_plugin_name_of(entry: Path) -> str | None`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
-        "line": 65,
+        "line": 70,
         "level": 5,
         "title": "`_plugin_name_of(entry: Path) -> str | None`（staticmethod）"
       }
@@ -8757,7 +8795,7 @@
     "`async _process_entry_point(entry_point: Any, objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any) -> tuple[dict[str, Any], list[str], list[str], bool]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/adapter.md",
-        "line": 73,
+        "line": 75,
         "level": 5,
         "title": "`async _process_entry_point(entry_point: Any, objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any) -> tuple[dict[str, Any], list[str], list[str], bool]`"
       },
@@ -10085,7 +10123,7 @@
     "`async load(manager_instance: Any) -> tuple[dict[str, Any], list[str], list[str]]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/adapter.md",
-        "line": 56,
+        "line": 58,
         "level": 5,
         "title": "`async load(manager_instance: Any) -> tuple[dict[str, Any], list[str], list[str]]`"
       },
@@ -10329,7 +10367,7 @@
     "`async register_to_manager(adapters: list[str], adapter_objs: dict[str, Any], manager_instance: Any) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/adapter.md",
-        "line": 95,
+        "line": 113,
         "level": 5,
         "title": "`async register_to_manager(adapters: list[str], adapter_objs: dict[str, Any], manager_instance: Any) -> bool`"
       }
@@ -11159,7 +11197,7 @@
     "`class AdapterLoader(BaseLoader)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/adapter.md",
-        "line": 22,
+        "line": 23,
         "level": 3,
         "title": "`class AdapterLoader(BaseLoader)`"
       }
@@ -11983,7 +12021,7 @@
     "`class PluginFolderLoader`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
-        "line": 36,
+        "line": 41,
         "level": 3,
         "title": "`class PluginFolderLoader`"
       }
@@ -13277,9 +13315,17 @@
     "`discover() -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
-        "line": 56,
+        "line": 61,
         "level": 5,
         "title": "`discover() -> dict[str, Any]`"
+      }
+    ],
+    "`discover_adapters() -> dict[str, dict[str, Any]]`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
+        "line": 139,
+        "level": 5,
+        "title": "`discover_adapters() -> dict[str, dict[str, Any]]`"
       }
     ],
     "`dismiss(connection_id: str, *groups: str) -> None`": [
@@ -14284,10 +14330,18 @@
         "title": "`get_load_strategy() -> ModuleLoadStrategy | dict[str, Any]`（staticmethod）"
       }
     ],
+    "`get_loaded_adapter_path(name: str) -> Path | None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
+        "line": 169,
+        "level": 5,
+        "title": "`get_loaded_adapter_path(name: str) -> Path | None`"
+      }
+    ],
     "`get_loaded_path(name: str) -> Path | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
-        "line": 124,
+        "line": 187,
         "level": 5,
         "title": "`get_loaded_path(name: str) -> Path | None`"
       }
@@ -14525,7 +14579,7 @@
     "`get_plugins_dirs() -> list[Path]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
-        "line": 47,
+        "line": 52,
         "level": 5,
         "title": "`get_plugins_dirs() -> list[Path]`"
       }
@@ -19773,7 +19827,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/adapter.md",
-        "line": 37,
+        "line": 39,
         "level": 4,
         "title": "方法列表"
       },
@@ -19803,7 +19857,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
-        "line": 44,
+        "line": 49,
         "level": 4,
         "title": "方法列表"
       },
@@ -21137,7 +21191,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/adapter.md",
-        "line": 19,
+        "line": 20,
         "level": 2,
         "title": "类列表"
       },
@@ -21155,7 +21209,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
-        "line": 33,
+        "line": 38,
         "level": 2,
         "title": "类列表"
       },

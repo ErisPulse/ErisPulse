@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1688,
+  "total_keywords": 1690,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -21,7 +21,7 @@
     "1. BaseAdapter 层（大多数情况不需要重写）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 392,
+        "line": 442,
         "level": 3,
         "title": "1. BaseAdapter 层（大多数情况不需要重写）"
       }
@@ -131,7 +131,7 @@
     "1. 创建项目": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 47,
+        "line": 50,
         "level": 3,
         "title": "1. 创建项目"
       }
@@ -401,7 +401,7 @@
     "10. SSE (Server-Sent Events) 支持": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 510,
+        "line": 560,
         "level": 3,
         "title": "10. SSE (Server-Sent Events) 支持"
       }
@@ -529,7 +529,7 @@
     "2. Send 内部类（大多数情况不需要重写）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 423,
+        "line": 473,
         "level": 3,
         "title": "2. Send 内部类（大多数情况不需要重写）"
       }
@@ -577,7 +577,7 @@
     "2. 创建 pyproject.toml": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 53,
+        "line": 68,
         "level": 3,
         "title": "2. 创建 pyproject.toml"
       }
@@ -1005,7 +1005,7 @@
     "3. Request 内部类（大多数情况不需要重写）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 447,
+        "line": 497,
         "level": 3,
         "title": "3. Request 内部类（大多数情况不需要重写）"
       }
@@ -1045,7 +1045,7 @@
     "3. 创建适配器主类": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 76,
+        "line": 91,
         "level": 3,
         "title": "3. 创建适配器主类"
       }
@@ -1453,7 +1453,7 @@
     "4. 实现必需方法": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 124,
+        "line": 139,
         "level": 3,
         "title": "4. 实现必需方法"
       }
@@ -1661,7 +1661,7 @@
     "5. 实现 Send 类": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 181,
+        "line": 196,
         "level": 3,
         "title": "5. 实现 Send 类"
       }
@@ -1925,7 +1925,7 @@
     "6. 实现转换器": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 239,
+        "line": 254,
         "level": 3,
         "title": "6. 实现转换器"
       }
@@ -2125,7 +2125,7 @@
     "7. 实现 Request 类（请求操作）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 281,
+        "line": 296,
         "level": 3,
         "title": "7. 实现 Request 类（请求操作）"
       }
@@ -2221,7 +2221,7 @@
     "8. 创建包入口": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 346,
+        "line": 361,
         "level": 3,
         "title": "8. 创建包入口"
       }
@@ -2323,7 +2323,7 @@
     "9. 连接信息与路由发现": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 469,
+        "line": 519,
         "level": 3,
         "title": "9. 连接信息与路由发现"
       }
@@ -2453,7 +2453,7 @@
     "API 响应标准": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 878,
+        "line": 881,
         "level": 2,
         "title": "API 响应标准"
       }
@@ -2507,7 +2507,7 @@
     "API 错误处理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1011,
+        "line": 1014,
         "level": 3,
         "title": "API 错误处理"
       }
@@ -2555,7 +2555,7 @@
     "AdapterManager 适配器管理器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 46,
+        "line": 49,
         "level": 2,
         "title": "AdapterManager 适配器管理器"
       }
@@ -2587,7 +2587,7 @@
     "BaseAdapter 基类": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 281,
+        "line": 284,
         "level": 2,
         "title": "BaseAdapter 基类"
       }
@@ -2655,7 +2655,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1105,
+        "line": 1108,
         "level": 3,
         "title": "Bot 状态查询"
       },
@@ -2675,7 +2675,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1039,
+        "line": 1042,
         "level": 2,
         "title": "Bot 状态管理"
       }
@@ -3231,7 +3231,7 @@
     "Meta 事件类型": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1061,
+        "line": 1064,
         "level": 3,
         "title": "Meta 事件类型"
       }
@@ -3327,7 +3327,7 @@
     "OneBot12 标准事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 155,
+        "line": 158,
         "level": 4,
         "title": "OneBot12 标准事件"
       }
@@ -3621,7 +3621,7 @@
     "Send 消息发送 DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 672,
+        "line": 675,
         "level": 2,
         "title": "Send 消息发送 DSL"
       }
@@ -3669,7 +3669,7 @@
     "SseEmitter API": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 548,
+        "line": 598,
         "level": 4,
         "title": "SseEmitter API"
       }
@@ -3781,7 +3781,7 @@
     "WebHook 连接": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 854,
+        "line": 857,
         "level": 3,
         "title": "WebHook 连接"
       }
@@ -3859,7 +3859,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 820,
+        "line": 823,
         "level": 3,
         "title": "WebSocket 连接"
       }
@@ -4267,7 +4267,7 @@
     "`__init__` 注意事项": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 388,
+        "line": 438,
         "level": 2,
         "title": "`__init__` 注意事项"
       }
@@ -4299,7 +4299,7 @@
     "`self` 字段扩展信息": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1094,
+        "line": 1097,
         "level": 3,
         "title": "`self` 字段扩展信息"
       }
@@ -4459,7 +4459,7 @@
     "docstring 自动生成字段描述（v2.8.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 473,
+        "line": 476,
         "level": 4,
         "title": "docstring 自动生成字段描述（v2.8.0+）"
       }
@@ -4467,7 +4467,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 523,
+        "line": 529,
         "level": 3,
         "title": "doctor"
       }
@@ -4491,7 +4491,7 @@
     "get() 方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 265,
+        "line": 268,
         "level": 4,
         "title": "get() 方法"
       }
@@ -4531,7 +4531,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 434,
+        "line": 440,
         "level": 3,
         "title": "i18n"
       }
@@ -4619,7 +4619,7 @@
     "metadata 约定": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 395,
+        "line": 398,
         "level": 4,
         "title": "metadata 约定"
       }
@@ -4731,7 +4731,7 @@
     "self.user_id 与 Using 的关系": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 968,
+        "line": 971,
         "level": 3,
         "title": "self.user_id 与 Using 的关系"
       }
@@ -4771,7 +4771,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 471,
+        "line": 477,
         "level": 3,
         "title": "types"
       }
@@ -5015,7 +5015,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 587,
+        "line": 637,
         "level": 2,
         "title": "下一步"
       },
@@ -5103,7 +5103,7 @@
     "不落盘的 example 字段（v2.8.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 536,
+        "line": 539,
         "level": 4,
         "title": "不落盘的 example 字段（v2.8.0+）"
       }
@@ -5197,7 +5197,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 204,
+        "line": 207,
         "level": 3,
         "title": "中间件"
       }
@@ -5213,7 +5213,7 @@
     "中间件执行顺序": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 248,
+        "line": 251,
         "level": 4,
         "title": "中间件执行顺序"
       }
@@ -5221,7 +5221,7 @@
     "中间件返回契约": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 224,
+        "line": 227,
         "level": 4,
         "title": "中间件返回契约"
       }
@@ -5277,7 +5277,7 @@
     "主动发送 Meta 事件": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 154,
+        "line": 169,
         "level": 4,
         "title": "主动发送 Meta 事件"
       }
@@ -5315,7 +5315,7 @@
     "事件分发机制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 190,
+        "line": 193,
         "level": 4,
         "title": "事件分发机制"
       }
@@ -5513,7 +5513,7 @@
     "事件监听": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 153,
+        "line": 156,
         "level": 3,
         "title": "事件监听"
       },
@@ -5615,7 +5615,7 @@
     "事件转换器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 745,
+        "line": 748,
         "level": 2,
         "title": "事件转换器"
       }
@@ -5773,7 +5773,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 552,
+        "line": 558,
         "level": 2,
         "title": "交互式安装"
       }
@@ -5811,7 +5811,7 @@
     "什么是适配器": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 7,
+        "line": 10,
         "level": 3,
         "title": "什么是适配器"
       }
@@ -5822,6 +5822,14 @@
         "line": 508,
         "level": 3,
         "title": "从 SDK 实例访问"
+      }
+    ],
+    "从本地插件到发布": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 389,
+        "level": 3,
+        "title": "从本地插件到发布"
       }
     ],
     "代理配置": [
@@ -6133,7 +6141,7 @@
     "使用请求参数": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 530,
+        "line": 580,
         "level": 4,
         "title": "使用请求参数"
       }
@@ -6149,7 +6157,7 @@
     "依赖声明（可选，2.8.0+）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 353,
+        "line": 402,
         "level": 2,
         "title": "依赖声明（可选，2.8.0+）"
       }
@@ -6299,7 +6307,7 @@
     "全局参数": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 506,
+        "line": 512,
         "level": 2,
         "title": "全局参数"
       }
@@ -6363,7 +6371,7 @@
     "关闭适配器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 108,
+        "line": 111,
         "level": 4,
         "title": "关闭适配器"
       }
@@ -6551,7 +6559,7 @@
     "切换语言": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 642,
+        "line": 648,
         "level": 3,
         "title": "切换语言"
       }
@@ -6559,7 +6567,7 @@
     "列出平台": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 139,
+        "line": 142,
         "level": 4,
         "title": "列出平台"
       }
@@ -6575,7 +6583,7 @@
     "列出组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 580,
+        "line": 586,
         "level": 3,
         "title": "列出组件"
       }
@@ -6607,7 +6615,7 @@
     "创建脚手架": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 675,
+        "line": 681,
         "level": 3,
         "title": "创建脚手架"
       }
@@ -6645,7 +6653,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 648,
+        "line": 651,
         "level": 3,
         "title": "初始化过程"
       }
@@ -6667,7 +6675,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 665,
+        "line": 671,
         "level": 3,
         "title": "初始化项目"
       }
@@ -6815,7 +6823,7 @@
     "升级组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 619,
+        "line": 625,
         "level": 3,
         "title": "升级组件"
       }
@@ -6839,7 +6847,7 @@
     "单账户配置": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 329,
+        "line": 332,
         "level": 4,
         "title": "单账户配置"
       }
@@ -6887,7 +6895,7 @@
     "卸载组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 596,
+        "line": 602,
         "level": 3,
         "title": "卸载组件"
       }
@@ -7295,7 +7303,7 @@
     "可用属性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 683,
+        "line": 686,
         "level": 3,
         "title": "可用属性"
       }
@@ -7391,7 +7399,7 @@
     "启动和关闭": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 83,
+        "line": 86,
         "level": 3,
         "title": "启动和关闭"
       }
@@ -7407,7 +7415,7 @@
     "启动适配器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 85,
+        "line": 88,
         "level": 4,
         "title": "启动适配器"
       }
@@ -7767,7 +7775,7 @@
     "在 RouteGroup 中使用": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 557,
+        "line": 607,
         "level": 4,
         "title": "在 RouteGroup 中使用"
       }
@@ -7845,13 +7853,13 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 58,
+        "line": 61,
         "level": 3,
         "title": "基本使用"
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 514,
+        "line": 564,
         "level": 4,
         "title": "基本使用"
       },
@@ -7989,7 +7997,7 @@
     "基本方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 707,
+        "line": 710,
         "level": 3,
         "title": "基本方法"
       }
@@ -8031,7 +8039,7 @@
     "基本结构": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 283,
+        "line": 286,
         "level": 3,
         "title": "基本结构"
       }
@@ -8131,7 +8139,7 @@
     "声明式事件扩展方法（v2.7.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 590,
+        "line": 593,
         "level": 3,
         "title": "声明式事件扩展方法（v2.7.0+）"
       }
@@ -8147,7 +8155,7 @@
     "声明式翻译键（v2.7.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 556,
+        "line": 559,
         "level": 3,
         "title": "声明式翻译键（v2.7.0+）"
       },
@@ -8167,7 +8175,7 @@
     "声明式配置（推荐）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 914,
+        "line": 917,
         "level": 3,
         "title": "声明式配置（推荐）"
       },
@@ -8389,7 +8397,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 912,
+        "line": 915,
         "level": 2,
         "title": "多账户支持"
       }
@@ -8405,7 +8413,7 @@
     "多账户配置": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 358,
+        "line": 361,
         "level": 4,
         "title": "多账户配置"
       },
@@ -8793,7 +8801,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 567,
+        "line": 573,
         "level": 3,
         "title": "安装模块"
       }
@@ -8983,7 +8991,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 273,
+        "line": 276,
         "level": 4,
         "title": "属性访问"
       }
@@ -8991,7 +8999,7 @@
     "嵌套配置（v2.8.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 499,
+        "line": 502,
         "level": 4,
         "title": "嵌套配置（v2.8.0+）"
       }
@@ -9193,7 +9201,7 @@
     "常见用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 565,
+        "line": 571,
         "level": 2,
         "title": "常见用法"
       }
@@ -9275,7 +9283,7 @@
     "平台原生事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 176,
+        "line": 179,
         "level": 4,
         "title": "平台原生事件"
       }
@@ -9759,7 +9767,7 @@
     "必需字段": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 757,
+        "line": 760,
         "level": 3,
         "title": "必需字段"
       }
@@ -9839,7 +9847,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 45,
+        "line": 48,
         "level": 2,
         "title": "快速开始"
       },
@@ -9881,7 +9889,7 @@
     "总结": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 460,
+        "line": 510,
         "level": 3,
         "title": "总结"
       }
@@ -9937,7 +9945,7 @@
     "成功响应": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 882,
+        "line": 885,
         "level": 3,
         "title": "成功响应"
       }
@@ -9985,7 +9993,7 @@
     "手动构造响应（旧版方式仍然兼容）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 898,
+        "line": 901,
         "level": 3,
         "title": "手动构造响应（旧版方式仍然兼容）"
       }
@@ -10183,7 +10191,7 @@
     "指定账户发送": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 955,
+        "line": 958,
         "level": 3,
         "title": "指定账户发送"
       }
@@ -10988,6 +10996,14 @@
         "title": "服务目录：services()"
       }
     ],
+    "本地开发（免打包）": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 368,
+        "level": 2,
+        "title": "本地开发（免打包）"
+      }
+    ],
     "本地插件文件夹架构": [
       {
         "document": "architecture.md",
@@ -11309,7 +11325,7 @@
     "核心功能": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 50,
+        "line": 53,
         "level": 3,
         "title": "核心功能"
       }
@@ -11489,7 +11505,7 @@
     "框架辅助方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 700,
+        "line": 703,
         "level": 3,
         "title": "框架辅助方法"
       }
@@ -11513,7 +11529,7 @@
     "检查平台状态": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 125,
+        "line": 128,
         "level": 4,
         "title": "检查平台状态"
       }
@@ -12357,7 +12373,7 @@
     "添加中间件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 206,
+        "line": 209,
         "level": 4,
         "title": "添加中间件"
       }
@@ -12567,7 +12583,7 @@
     "环境诊断": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 521,
+        "line": 527,
         "level": 2,
         "title": "环境诊断"
       }
@@ -12649,7 +12665,7 @@
     "生成类型存根": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 655,
+        "line": 661,
         "level": 3,
         "title": "生成类型存根"
       }
@@ -12705,7 +12721,7 @@
     "监听 Bot 生命周期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1128,
+        "line": 1131,
         "level": 3,
         "title": "监听 Bot 生命周期"
       }
@@ -12777,7 +12793,7 @@
     "目录结构": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 30,
+        "line": 33,
         "level": 2,
         "title": "目录结构"
       }
@@ -12899,7 +12915,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1146,
+        "line": 1149,
         "level": 2,
         "title": "相关文档"
       },
@@ -13191,7 +13207,7 @@
     "类型存根命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 465,
+        "line": 471,
         "level": 2,
         "title": "类型存根命令"
       }
@@ -13223,7 +13239,7 @@
     "组件关系": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 7,
+        "line": 10,
         "level": 3,
         "title": "组件关系"
       }
@@ -13287,7 +13303,7 @@
     "继承关系": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 674,
+        "line": 677,
         "level": 3,
         "title": "继承关系"
       }
@@ -13391,7 +13407,7 @@
     "自动发现机制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1043,
+        "line": 1046,
         "level": 3,
         "title": "自动发现机制"
       }
@@ -13535,7 +13551,7 @@
     "获取适配器实例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 263,
+        "line": 266,
         "level": 3,
         "title": "获取适配器实例"
       }
@@ -13695,7 +13711,7 @@
     "语言命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 428,
+        "line": 434,
         "level": 2,
         "title": "语言命令"
       }
@@ -13887,7 +13903,7 @@
     "账户解析": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 622,
+        "line": 625,
         "level": 4,
         "title": "账户解析"
       }
@@ -13927,7 +13943,7 @@
     "账户配置文件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 941,
+        "line": 944,
         "level": 3,
         "title": "账户配置文件"
       }
@@ -14037,7 +14053,7 @@
     "路由发现": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 567,
+        "line": 617,
         "level": 4,
         "title": "路由发现"
       }
@@ -14077,7 +14093,7 @@
     "转换器示例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 777,
+        "line": 780,
         "level": 3,
         "title": "转换器示例"
       }
@@ -14085,7 +14101,7 @@
     "转换流程": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 747,
+        "line": 750,
         "level": 3,
         "title": "转换流程"
       }
@@ -14195,7 +14211,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 632,
+        "line": 638,
         "level": 3,
         "title": "运行项目"
       }
@@ -14327,7 +14343,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 818,
+        "line": 821,
         "level": 2,
         "title": "连接管理"
       }
@@ -14343,7 +14359,7 @@
     "连接重试": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 987,
+        "line": 990,
         "level": 3,
         "title": "连接重试"
       }
@@ -14399,7 +14415,7 @@
     "适配器发送 Meta 事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1069,
+        "line": 1072,
         "level": 3,
         "title": "适配器发送 Meta 事件"
       }
@@ -14455,13 +14471,13 @@
     "适配器架构": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "适配器架构"
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 16,
+        "line": 19,
         "level": 3,
         "title": "适配器架构"
       }
@@ -14509,7 +14525,7 @@
     "适配器简介": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "适配器简介"
       }
@@ -14901,7 +14917,7 @@
     "配置热更新": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 635,
+        "line": 638,
         "level": 4,
         "title": "配置热更新"
       },
@@ -14935,13 +14951,13 @@
     "配置管理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 123,
+        "line": 126,
         "level": 3,
         "title": "配置管理"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 325,
+        "line": 328,
         "level": 3,
         "title": "配置管理"
       },
@@ -14955,7 +14971,7 @@
     "配置组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 606,
+        "line": 612,
         "level": 3,
         "title": "配置组件"
       }
@@ -15131,7 +15147,7 @@
     "链式修饰方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 731,
+        "line": 734,
         "level": 3,
         "title": "链式修饰方法"
       },
@@ -15309,7 +15325,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 985,
+        "line": 988,
         "level": 2,
         "title": "错误处理"
       },

@@ -4283,7 +4283,10 @@ print(final_verdict(records))           # 總結論
 
 # 發布與模組商店指南
 
-將你開發的模組或適配器發布到 ErisPulse 模組商店，讓其他使用者可以輕鬆地發現和安裝。
+> [!TIP]
+> **何時需要閱讀此篇**：當你將作品發布到 PyPI / 模組商店時。若不需要則可跳過，不會影響其他功能的使用。
+
+將你開發的模組或適配器發布到 ErisPulse 模組商店，讓其他使用者可以輕鬆地發現並安裝。
 
 ## 模組商店概述
 
@@ -5157,29 +5160,29 @@ epsdk run --reload
 
 ---
 
-## 專案管理命令
+## 項目管理命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 專案 |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | 建立模組/適配器腳手架 |
+| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 項目 |
+| `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | 創建模組/適配器腳手架；`pack` 將本地插件轉換為可發布項目 |
 
 ### init
 
-初始化一個新的 ErisPulse 專案。支援互動式與快速模式，2.8.4 起生成 `pyproject.toml`（相依性清單）、可選建立專案 `.venv` 虛擬環境並安裝框架與適配器，並支援**指定任意目錄**。
+初始化一個新的 ErisPulse 項目。支援互動式與快速模式，2.8.4 起生成 `pyproject.toml`（依賴清單）、可選創建項目 `.venv` 虛擬環境並安裝框架與適配器，並支援**指定任意目錄**。
 
 **參數：**
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
 | `[path]` | | 目標路徑（可包含父目錄，如 `../apps/mybot`；純名稱等價 `--project-name`） |
-| `--project-name` | `-n` | 專案名稱 |
-| `--path` | | 專案父目錄（與 `-n` 組合指定建立位置） |
-| `--quick` | `-q` | 快速模式，跳過互動式向導（預設建立 `.venv` 並安裝相依性） |
-| `--force` | `-f` | 強制覆蓋現有設定檔案 |
+| `--project-name` | `-n` | 項目名稱 |
+| `--path` | | 項目父目錄（與 `-n` 組合指定建立位置） |
+| `--quick` | `-q` | 快速模式，跳過互動式向導（預設建立 `.venv` 並安裝依賴） |
+| `--force` | `-f` | 強制覆蓋現有配置檔案 |
 | `--here` | | 在當前目錄初始化，不建立子目錄 |
 | `--no-uv` | | 使用 pip 代替 uv |
-| `--no-venv` | | 跳過虛擬環境建立與相依性安裝 |
+| `--no-venv` | | 跳過虛擬環境建立與依賴安裝 |
 
 **示例：**
 
@@ -5193,44 +5196,44 @@ epsdk init -q -n my_bot
 # 指定任意目錄初始化（../apps/mybot）
 epsdk init ../apps/mybot
 
-# 組合父目錄與專案名
+# 組合父目錄與項目名
 epsdk init -n my_bot --path ../apps
 
-# 強制覆蓋已有設定
+# 強制覆蓋已有配置
 epsdk init -f
 
 # 在當前目錄初始化
 epsdk init --here -n my_bot
 
-# 只生成專案結構，不建立虛擬環境
+# 只生成項目結構，不建立虛擬環境
 epsdk init --no-venv -n my_bot
 ```
 
-init 產物：`main.py`、`pyproject.toml`（相依性清單）、`config/config.toml` + `config.full.example`、`config/ssl/`、`logs/`、`.gitignore`、`README.md`；選擇建立虛擬環境時額外生成 `.venv` 並將 `erispulse` 與所選適配器安裝其中。
+init 產物：`main.py`、`pyproject.toml`（依賴清單）、`config/config.toml` + `config.full.example`、`config/ssl/`、`logs/`、`.gitignore`、`README.md`；選擇建立虛擬環境時額外生成 `.venv` 並將 `erispulse` 與所選適配器安裝其中。
 
 > [!NOTE]
-> `.gitignore` 為分組式範本：Python 位元組碼與建構產物、虛擬環境與 `.env`、工具快取、編輯器與系統檔案，並**整體排除 `config/` 與 `logs/` 運行時目錄**——`config.toml` 含適配器權杖等敏感資訊，不建議加入版本控制；共享設定骨架請使用 `config.full.example`。
+> `.gitignore` 為分組式模板：Python 字節碼與建構產物、虛擬環境與 `.env`、工具快取、編輯器與系統檔案，並**整體排除 `config/` 與 `logs/` 運行時目錄**——`config.toml` 含適配器令牌等敏感資訊，不建議入庫；共享配置骨架請使用 `config.full.example`。
 
 > [!WARNING]
-> **不要使用 `uv run epsdk run` 運行機器人**。`uv run` 在無 `pyproject.toml` 的目錄執行時建立**一次性隔離環境**——在其中透過 `epsdk install` 安裝的適配器不會永久化。請在專案目錄內使用 `epsdk run`（自動使用專案 `.venv`），或先激活虛擬環境再執行。
+> **不要使用 `uv run epsdk run` 運行機器人**。`uv run` 在無 `pyproject.toml` 的目錄執行時建立**一次性隔離環境**——在其中透過 `epsdk install` 安裝的適配器不會持久化。請在項目目錄內使用 `epsdk run`（自動使用項目 `.venv`），或先激活虛擬環境再運行。
 
 ### create
 
-建立 ErisPulse 模組或適配器的腳手架專案。
+建立 ErisPulse 模組或適配器的腳手架項目；`pack` 子命令將本地插件（`plugins/` 目錄）轉換為可發布的標準項目。
 
 **參數：**
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `{module,adapter}` | | 要建立的類型：`module` 或 `adapter` |
-| `--name` | `-n` | 專案名稱（PascalCase） |
-| `--description` | `-d` | 專案描述 |
+| `{module,adapter,pack}` | | 要建立的類型：`module` / `adapter` / `pack`（插件轉項目）|
+| `--name` | `-n` | 項目名稱（PascalCase） |
+| `--description` | `-d` | 項目描述 |
 | `--author` | `-a` | 作者名稱 |
-| `--email` | `-e` | 作者電郵 |
-| `--homepage` | | 專案首頁 URL |
+| `--email` | `-e` | 作者電子信箱 |
+| `--homepage` | | 項目主頁 URL |
 | `--output` | `-o` | 輸出目錄（預設當前目錄） |
 | `--force` | `-f` | 強制覆蓋已存在的目錄 |
-| `--local` | | 建立本地插件（僅 `module` 可用）：生成 `plugins/<name>/` 包結構，免打包安裝 |
+| `--local` | | 建立本地插件（`module` / `adapter` 可用）：生成 `plugins/<name>/` 包結構，免打包安裝 |
 
 **示例：**
 
@@ -5238,14 +5241,20 @@ init 產物：`main.py`、`pyproject.toml`（相依性清單）、`config/config
 # 互動式建立（引導選擇類型和填寫資訊）
 epsdk create
 
-# 直接建立 Module 專案
+# 直接建立 Module 項目
 epsdk create module -n MyModule
 
-# 建立本地插件（放入專案 plugins/ 目錄，啟動時自動發現，支援熱重載）
+# 建立本地插件（放入項目 plugins/ 目錄，啟動時自動發現）
 epsdk create module -n MyModule --local
 
-# 直接建立 Adapter 專案
+# 建立本地適配器插件（同上，免打包開發）
+epsdk create adapter -n MyAdapter --local
+
+# 直接建立 Adapter 項目
 epsdk create adapter -n MyAdapter
+
+# 將本地插件轉換為可發布項目（互動選擇插件 → 補全元資訊 → 生成標準項目）
+epsdk create pack
 
 # 完整參數
 epsdk create module -n MyModule -d "模組描述" -a "作者" -e "mail@example.com"
@@ -5258,6 +5267,7 @@ epsdk create module -n MyModule -f
 ```
 
 ---
+[!TOC]
 
 ## 語言命令
 
@@ -6807,11 +6817,14 @@ async def low_priority_handler(event):
 
 # Conversation 多輪對話
 
-`Conversation` 類提供了在同一會話中進行多輪交互的便捷方法，適合實現引導式操作、資訊收集、對話式問答等場景。
+> [!TIP]
+> **什麼時候需要讀這篇**：需要多輪對話狀態機與檢查點恢復時。不需要則跳過，不影響其它功能的使用。
 
-## 建立對話
+`Conversation` 類提供了在同一會話中進行多輪互動的便捷方法，適合實現引導式操作、資訊收集、對話式問答等場景。
 
-透過 `Event` 物件的 `conversation()` 方法建立：
+## 創建對話
+
+透過 `Event` 對象的 `conversation()` 方法創建：
 
 ```python
 from ErisPulse.Core.Event import command
@@ -6844,13 +6857,13 @@ async def quiz_handler(event):
 
 ### say(content, **kwargs)
 
-發送訊息，回傳 `self` 支援鏈式呼叫：
+發送訊息，返回 `self` 支持鏈式呼叫：
 
 ```python
 await conv.say("第一行").say("第二行").say("第三行")
 ```
 
-也可以指定發送方式：
+也可以指定發送方法：
 
 ```python
 await conv.say("https://example.com/image.jpg", method="Image")
@@ -6858,7 +6871,7 @@ await conv.say("https://example.com/image.jpg", method="Image")
 
 ### wait(prompt=None, timeout=None)
 
-等待使用者回覆，回傳 `Event` 物件或 `None`（超時）：
+等待使用者回覆，返回 `Event` 對象或 `None`（超時）：
 
 ```python
 # 簡單等待
@@ -6875,7 +6888,7 @@ resp = await conv.wait(prompt="請在10秒內回覆：", timeout=10)
 
 ### confirm(prompt=None, **kwargs)
 
-等待使用者確認（是/否），回傳 `True` / `False` / `None`（超時）：
+等待使用者確認（是/否），返回 `True` / `False` / `None`（超時）：
 
 ```python
 result = await conv.confirm("確定要刪除所有資料嗎？")
@@ -6893,7 +6906,7 @@ else:
 
 ### choose(prompt, options, **kwargs)
 
-等待使用者從選項中選擇，回傳選項索引（0-based）或 `None`：
+等待使用者從選項中選擇，返回選項索引（0-based）或 `None`：
 
 ```python
 choice = await conv.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
@@ -6904,7 +6917,7 @@ if choice is not None:
 
 使用者可以透過輸入編號（`1`/`2`/`3`）或選項文字（`紅色`）來選擇。
 
-`options_format="auto"`（預設）根據 method 自動選擇內建樣式：Markdown→無序列表，Html→有序列表，其他→純文字列表。  
+`options_format="auto"`（預設）根據 method 自動選擇內建樣式：Markdown→無序列表，Html→有序列表，其他→純文字列表。
 也支援 `"list"`、`"inline"`、`"md"`、`"html"` 或自訂函數。
 
 支援 `merge_prompt=True` 合併為一條訊息，以及占位符控制選項插入位置（預設 `{options}`，可透過 `placeholder` 自訂）：
@@ -6927,7 +6940,7 @@ choice = await conv.choose(
 
 ### collect(fields, **kwargs)
 
-多步驟收集資訊，回傳資料字典或 `None`：
+多步驟收集資訊，返回資料字典或 `None`：
 
 ```python
 data = await conv.collect([
@@ -7017,7 +7030,7 @@ async def menu_handler(event):
 
     @conv.branch("main")
     async def main_menu():
-        await conv.say("=== 主選單 ===\n1. 個人資訊\n2. 設定\n3. 退出")
+        await conv.say("=== 主菜單 ===\n1. 個人資訊\n2. 設定\n3. 退出")
         resp = await conv.wait()
         if resp is None:
             return
@@ -7099,7 +7112,7 @@ await conv.clear_saved()
 
 ### 自動存檔
 
-框架在以下時機自動維護檢查點，通常無需手動調用 `save()`：
+框架在以下時機自動維護檢查點，通常無需手動呼叫 `save()`：
 
 | 時機 | 行為 |
 |------|------|
@@ -7111,7 +7124,7 @@ await conv.clear_saved()
 存檔帶時間戳，超過 `ErisPulse.interaction.checkpoint_ttl`（預設 24 小時）的存檔會被清理：
 
 - **惰性丟棄**：恢復時發現存檔已過期，自動丟棄
-- **後台主動清理**：框架有周期 GC 任務（首次使用檢查點後惰性啟動）主動枚舉並刪除過期存檔，避免長期運行時 storage 中過期檢查點無限累積。被主動清理的存檔若之後收到會話消息，按"無檢查點"處理
+- **後台主動清理**：框架有周期 GC 任務（首次使用檢查點後惰性啟動）主動枚舉並刪除過期存檔，避免長期運行時 storage 中過期檢查點無限累積。被主動清理的存檔若之後收到會話訊息，按"無檢查點"處理
 
 ```toml
 [ErisPulse.interaction]
@@ -7120,7 +7133,7 @@ checkpoint_ttl = 86400  # 秒
 
 ### 重啟自動恢復
 
-框架重啟後，進行中的對話（記憶體中的等待協程）會丟失，但檢查點仍在。透過 `register_resume_handler` 註冊**恢復工廠**，框架即可在重啟後收到該會話首條消息時自動續接對話：
+框架重啟後，進行中的對話（記憶體中的等待協程）會丟失，但檢查點仍在。透過 `register_resume_handler` 註冊**恢復工廠**，框架即可在重啟後收到該會話首條訊息時自動續接對話：
 
 ```python
 from ErisPulse.Core.Event.wrapper import Conversation
@@ -7137,14 +7150,14 @@ def make_conversation(event) -> Conversation:
     return conv
 ```
 
-註冊後，重啟前處於 `menu` 分支的使用者發來首條消息時，框架自動：恢復 context → 認領該消息 → 從存檔分支繼續對話。未註冊工廠時此機制零開銷。
+註冊後，重啟前處於 `menu` 分支的使用者發來首條訊息時，框架自動：恢復 context → 認領該訊息 → 從存檔分支繼續對話。未註冊工廠時此機制零開銷。
 
 ### 恢復即接管
 
 `resume()` 成功時框架自動完成兩件事：
 
-1. **會話接管**：自動 acquire 該會話的互斥租約——其他模組可透過 `sdk.interaction.get_owner_of(event)` 感知"這個使用者正被對話占用"；會話已被其他模組占用時放棄恢復（返回 False），避免兩個對話打架
-2. **歷史帶回**：從會話收件箱取最近 10 條消息到 `conv.recent_history`（AI 模組恢復後 LLM 上下文不斷檔）；`resume(with_history=0)` 可關閉
+1. **會話接管**：自動 acquire 該會話的互斥租約——其他模組可透過 `sdk.interaction.get_owner_of(event)` 感知"這個使用者正被對話佔用"；會話已被其他模組佔用時放棄恢復（回傳 False），避免兩個對話打架
+2. **歷史帶回**：從會話收件箱取最近 10 條訊息到 `conv.recent_history`（AI 模組恢復後 LLM 上下文不斷檔）；`resume(with_history=0)` 可關閉
 
 ```python
 if await conv.resume(with_history=20):
@@ -7225,7 +7238,7 @@ async def chat_handler(event):
 
 ## 相關文件
 
-- [Event 包裝類](../developer-guide/modules/event-wrapper.md) - Event 物件的所有方法
+- [Event 包裝類](../developer-guide/modules/event-wrapper.md) - Event 對象的所有方法
 - [事件處理入門](../getting-started/event-handling.md) - 事件處理基礎
 
 

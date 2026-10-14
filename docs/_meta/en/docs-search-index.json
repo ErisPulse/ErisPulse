@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1715,
+  "total_keywords": 1717,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -18,12 +18,12 @@
         "title": "0. Keyword Conventions"
       }
     ],
-    "1. BaseAdapter Level (Most Cases Do Not Require Overriding)": [
+    "1. BaseAdapter Level (Most cases do not need to override)": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 392,
+        "line": 441,
         "level": 3,
-        "title": "1. BaseAdapter Level (Most Cases Do Not Require Overriding)"
+        "title": "1. BaseAdapter Level (Most cases do not need to override)"
       }
     ],
     "1. Basic Information Section": [
@@ -34,12 +34,12 @@
         "title": "1. Basic Information Section"
       }
     ],
-    "1. CLI run command (Development/Simple Deployment, Recommended)": [
+    "1. CLI run command (development/simple deployment, recommended)": [
       {
         "document": "advanced/startup.md",
-        "line": 370,
+        "line": 373,
         "level": 4,
-        "title": "1. CLI run command (Development/Simple Deployment, Recommended)"
+        "title": "1. CLI run command (development/simple deployment, recommended)"
       }
     ],
     "1. Categorized Exception Handling": [
@@ -99,7 +99,7 @@
     "1. Create Project": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 47,
+        "line": 50,
         "level": 3,
         "title": "1. Create Project"
       }
@@ -131,7 +131,7 @@
     "1. Discovery Layer: Finder": [
       {
         "document": "advanced/startup.md",
-        "line": 53,
+        "line": 56,
         "level": 3,
         "title": "1. Discovery Layer: Finder"
       }
@@ -433,7 +433,7 @@
     "10. SSE (Server-Sent Events) Support": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 510,
+        "line": 559,
         "level": 3,
         "title": "10. SSE (Server-Sent Events) Support"
       }
@@ -585,7 +585,7 @@
     "2. Create pyproject.toml": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 53,
+        "line": 68,
         "level": 3,
         "title": "2. Create pyproject.toml"
       }
@@ -655,7 +655,7 @@
     "2. Loading Layer: Loader": [
       {
         "document": "advanced/startup.md",
-        "line": 73,
+        "line": 76,
         "level": 3,
         "title": "2. Loading Layer: Loader"
       }
@@ -746,12 +746,12 @@
         "title": "2. Response Standardization"
       }
     ],
-    "2. Send Inner Class (Most Cases Do Not Require Overriding)": [
+    "2. Send Inner Class (Most cases do not need to override)": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 423,
+        "line": 472,
         "level": 3,
-        "title": "2. Send Inner Class (Most Cases Do Not Require Overriding)"
+        "title": "2. Send Inner Class (Most cases do not need to override)"
       }
     ],
     "2. Sending Meta Events": [
@@ -850,12 +850,12 @@
         "title": "2. Updating Version Information"
       }
     ],
-    "2. systemd (Linux Server)": [
+    "2. systemd (Linux server)": [
       {
         "document": "advanced/startup.md",
-        "line": 378,
+        "line": 381,
         "level": 4,
-        "title": "2. systemd (Linux Server)"
+        "title": "2. systemd (Linux server)"
       }
     ],
     "2.1 Mandatory Fields": [
@@ -1037,7 +1037,7 @@
     "3. Create Adapter Main Class": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 76,
+        "line": 91,
         "level": 3,
         "title": "3. Create Adapter Main Class"
       }
@@ -1045,7 +1045,7 @@
     "3. Docker / docker-compose": [
       {
         "document": "advanced/startup.md",
-        "line": 391,
+        "line": 394,
         "level": 4,
         "title": "3. Docker / docker-compose"
       }
@@ -1157,7 +1157,7 @@
     "3. Registration Layer: register_to_manager": [
       {
         "document": "advanced/startup.md",
-        "line": 122,
+        "line": 125,
         "level": 3,
         "title": "3. Registration Layer: register_to_manager"
       }
@@ -1170,12 +1170,12 @@
         "title": "3. Request DSL"
       }
     ],
-    "3. Request Inner Class (Most Cases Do Not Require Overriding)": [
+    "3. Request Inner Class (Most cases do not need to override)": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 447,
+        "line": 496,
         "level": 3,
-        "title": "3. Request Inner Class (Most Cases Do Not Require Overriding)"
+        "title": "3. Request Inner Class (Most cases do not need to override)"
       }
     ],
     "3. Resource Management": [
@@ -1477,7 +1477,7 @@
     "4. Implement Required Methods": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 124,
+        "line": 139,
         "level": 3,
         "title": "4. Implement Required Methods"
       }
@@ -1514,12 +1514,12 @@
         "title": "4. Modules"
       }
     ],
-    "4. PM2 (Node Ecosystem Operations)": [
+    "4. PM2 (Node ecosystem operations)": [
       {
         "document": "advanced/startup.md",
-        "line": 402,
+        "line": 405,
         "level": 4,
-        "title": "4. PM2 (Node Ecosystem Operations)"
+        "title": "4. PM2 (Node ecosystem operations)"
       }
     ],
     "4. Parameter Naming Convention": [
@@ -1546,12 +1546,12 @@
         "title": "4. Set Image to Public"
       }
     ],
-    "4. Starting Adapters": [
+    "4. Start Adapters": [
       {
         "document": "advanced/startup.md",
-        "line": 136,
+        "line": 139,
         "level": 3,
-        "title": "4. Starting Adapters"
+        "title": "4. Start Adapters"
       }
     ],
     "4. Usage": [
@@ -1725,17 +1725,17 @@
     "5. Implement Send Class": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 181,
+        "line": 196,
         "level": 3,
         "title": "5. Implement Send Class"
       }
     ],
-    "5. Initializing Modules": [
+    "5. Initialize Modules": [
       {
         "document": "advanced/startup.md",
-        "line": 148,
+        "line": 151,
         "level": 3,
-        "title": "5. Initializing Modules"
+        "title": "5. Initialize Modules"
       }
     ],
     "5. Interaction Component Standards": [
@@ -1773,7 +1773,7 @@
     "5. supervisord": [
       {
         "document": "advanced/startup.md",
-        "line": 410,
+        "line": 413,
         "level": 4,
         "title": "5. supervisord"
       }
@@ -1965,7 +1965,7 @@
     "6. Implement Converter": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 239,
+        "line": 254,
         "level": 3,
         "title": "6. Implement Converter"
       }
@@ -1981,7 +1981,7 @@
     "6. Pure Python Custom Supervisor": [
       {
         "document": "advanced/startup.md",
-        "line": 419,
+        "line": 422,
         "level": 4,
         "title": "6. Pure Python Custom Supervisor"
       }
@@ -2002,12 +2002,12 @@
         "title": "6. Reverse Conversion Specification (OneBot12 → Platform)"
       }
     ],
-    "6. Starting the Router Server": [
+    "6. Start Router Server": [
       {
         "document": "advanced/startup.md",
-        "line": 160,
+        "line": 163,
         "level": 3,
-        "title": "6. Starting the Router Server"
+        "title": "6. Start Router Server"
       }
     ],
     "6.1 Conversion Model": [
@@ -2165,7 +2165,7 @@
     "7. Implement Request Class (Request Operations)": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 281,
+        "line": 296,
         "level": 3,
         "title": "7. Implement Request Class (Request Operations)"
       }
@@ -2258,12 +2258,12 @@
         "title": "8. Adapter Implementation Checklist"
       }
     ],
-    "8. Create Package Entry": [
+    "8. Create Package Entry Point": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 346,
+        "line": 361,
         "level": 3,
-        "title": "8. Create Package Entry"
+        "title": "8. Create Package Entry Point"
       }
     ],
     "8. Module Developer Guide": [
@@ -2349,7 +2349,7 @@
     "9. Connection Information and Route Discovery": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 469,
+        "line": 518,
         "level": 3,
         "title": "9. Connection Information and Route Discovery"
       }
@@ -2467,7 +2467,7 @@
     "API Error Handling": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1008,
+        "line": 1011,
         "level": 3,
         "title": "API Error Handling"
       }
@@ -2547,7 +2547,7 @@
     "API Response Standard": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 875,
+        "line": 878,
         "level": 2,
         "title": "API Response Standard"
       },
@@ -2585,7 +2585,7 @@
     "Accessing Core Modules": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 130,
+        "line": 133,
         "level": 3,
         "title": "Accessing Core Modules"
       }
@@ -2625,7 +2625,7 @@
     "Account Configuration File": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 938,
+        "line": 941,
         "level": 3,
         "title": "Account Configuration File"
       }
@@ -2665,7 +2665,7 @@
     "Account Resolution": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 619,
+        "line": 622,
         "level": 4,
         "title": "Account Resolution"
       }
@@ -2710,6 +2710,14 @@
         "title": "Active State Management"
       }
     ],
+    "Actively Send Meta Events": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 169,
+        "level": 4,
+        "title": "Actively Send Meta Events"
+      }
+    ],
     "Adapter": [
       {
         "document": "developer-guide/publishing.md",
@@ -2721,13 +2729,13 @@
     "Adapter Architecture": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "Adapter Architecture"
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 16,
+        "line": 19,
         "level": 3,
         "title": "Adapter Architecture"
       }
@@ -2804,18 +2812,10 @@
         "title": "Adapter Module"
       }
     ],
-    "Adapter Overview": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 5,
-        "level": 2,
-        "title": "Adapter Overview"
-      }
-    ],
     "Adapter Send Method Query": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 149,
+        "line": 152,
         "level": 2,
         "title": "Adapter Send Method Query"
       }
@@ -2823,7 +2823,7 @@
     "Adapter Sending Meta Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1066,
+        "line": 1069,
         "level": 3,
         "title": "Adapter Sending Meta Events"
       }
@@ -2863,7 +2863,7 @@
     "AdapterManager Adapter Manager": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 46,
+        "line": 49,
         "level": 2,
         "title": "AdapterManager Adapter Manager"
       }
@@ -2871,7 +2871,7 @@
     "Add Middleware": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 206,
+        "line": 209,
         "level": 4,
         "title": "Add Middleware"
       }
@@ -3111,7 +3111,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 273,
+        "line": 276,
         "level": 4,
         "title": "Attribute Access"
       }
@@ -3167,7 +3167,7 @@
     "Automatic Discovery Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1040,
+        "line": 1043,
         "level": 3,
         "title": "Automatic Discovery Mechanism"
       }
@@ -3223,7 +3223,7 @@
     "Available Properties": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 680,
+        "line": 683,
         "level": 3,
         "title": "Available Properties"
       }
@@ -3279,7 +3279,7 @@
     "BaseAdapter Base Class": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 281,
+        "line": 284,
         "level": 2,
         "title": "BaseAdapter Base Class"
       }
@@ -3437,7 +3437,7 @@
     "Basic Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 704,
+        "line": 707,
         "level": 3,
         "title": "Basic Methods"
       }
@@ -3517,7 +3517,7 @@
     "Basic Structure": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 283,
+        "line": 286,
         "level": 3,
         "title": "Basic Structure"
       }
@@ -3543,13 +3543,13 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 58,
+        "line": 61,
         "level": 3,
         "title": "Basic Usage"
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 514,
+        "line": 563,
         "level": 4,
         "title": "Basic Usage"
       },
@@ -3561,7 +3561,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 297,
+        "line": 300,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -3743,7 +3743,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1036,
+        "line": 1039,
         "level": 2,
         "title": "Bot Status Management"
       }
@@ -3771,7 +3771,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1102,
+        "line": 1105,
         "level": 3,
         "title": "Bot Status Query"
       },
@@ -4012,20 +4012,20 @@
         "title": "Chain Modifiers"
       }
     ],
-    "Chain Startup Overview": [
-      {
-        "document": "advanced/startup.md",
-        "line": 23,
-        "level": 2,
-        "title": "Chain Startup Overview"
-      }
-    ],
     "Chainable Call Examples": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 177,
         "level": 3,
         "title": "Chainable Call Examples"
+      }
+    ],
+    "Chainable Modifier Methods": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 731,
+        "level": 3,
+        "title": "Chainable Modifier Methods"
       }
     ],
     "Chainable Modifier Methods (Return self, can be combined)": [
@@ -4100,14 +4100,6 @@
         "title": "Chaining Mode (Instance)"
       }
     ],
-    "Chaining Modifier Methods": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 728,
-        "level": 3,
-        "title": "Chaining Modifier Methods"
-      }
-    ],
     "Check Installation": [
       {
         "document": "user-guide/installation.md",
@@ -4119,7 +4111,7 @@
     "Check Platform Status": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 125,
+        "line": 128,
         "level": 4,
         "title": "Check Platform Status"
       }
@@ -4207,7 +4199,7 @@
     "Cold Start Replay": [
       {
         "document": "advanced/module-communication.md",
-        "line": 179,
+        "line": 170,
         "level": 2,
         "title": "Cold Start Replay"
       }
@@ -4473,7 +4465,7 @@
     "Common Usage": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 565,
+        "line": 571,
         "level": 2,
         "title": "Common Usage"
       }
@@ -4549,7 +4541,7 @@
     "Complete Manual Startup Example": [
       {
         "document": "advanced/startup.md",
-        "line": 173,
+        "line": 176,
         "level": 2,
         "title": "Complete Manual Startup Example"
       }
@@ -4573,7 +4565,7 @@
     "Component Relationships": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 7,
+        "line": 10,
         "level": 3,
         "title": "Component Relationships"
       }
@@ -4749,7 +4741,7 @@
     "Configuration Hot Update": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 632,
+        "line": 635,
         "level": 4,
         "title": "Configuration Hot Update"
       },
@@ -4805,19 +4797,19 @@
     "Configuration Management": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 123,
+        "line": 126,
         "level": 3,
         "title": "Configuration Management"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 325,
+        "line": 328,
         "level": 3,
         "title": "Configuration Management"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 177,
+        "line": 180,
         "level": 2,
         "title": "Configuration Management"
       }
@@ -4867,7 +4859,7 @@
     "Configure components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 606,
+        "line": 612,
         "level": 3,
         "title": "Configure components"
       }
@@ -4927,7 +4919,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 815,
+        "line": 818,
         "level": 2,
         "title": "Connection Management"
       }
@@ -4959,7 +4951,7 @@
     "Connection Retry": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 984,
+        "line": 987,
         "level": 3,
         "title": "Connection Retry"
       }
@@ -5028,18 +5020,18 @@
         "title": "Conversation Multi-turn Conversations"
       }
     ],
-    "Conversion Flow": [
+    "Conversion Process": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 744,
+        "line": 747,
         "level": 3,
-        "title": "Conversion Flow"
+        "title": "Conversion Process"
       }
     ],
     "Converter Example": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 774,
+        "line": 777,
         "level": 3,
         "title": "Converter Example"
       }
@@ -5068,6 +5060,14 @@
         "title": "Core API"
       }
     ],
+    "Core Adapter Concepts": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 1,
+        "level": 1,
+        "title": "Core Adapter Concepts"
+      }
+    ],
     "Core Components": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -5088,14 +5088,6 @@
         "line": 1,
         "level": 1,
         "title": "Core Concepts"
-      }
-    ],
-    "Core Concepts of Adapters": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1,
-        "level": 1,
-        "title": "Core Concepts of Adapters"
       }
     ],
     "Core Design Principles": [
@@ -5152,12 +5144,6 @@
     ],
     "Core Features": [
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 50,
-        "level": 3,
-        "title": "Core Features"
-      },
-      {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 25,
         "level": 2,
@@ -5170,6 +5156,14 @@
         "line": 32,
         "level": 2,
         "title": "Core Field Methods"
+      }
+    ],
+    "Core Functions": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 53,
+        "level": 3,
+        "title": "Core Functions"
       }
     ],
     "Core Initialization": [
@@ -5295,7 +5289,7 @@
     "Create scaffold": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 675,
+        "line": 681,
         "level": 3,
         "title": "Create scaffold"
       }
@@ -5485,13 +5479,13 @@
     "Declarative Configuration (Recommended)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 911,
+        "line": 914,
         "level": 3,
         "title": "Declarative Configuration (Recommended)"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 179,
+        "line": 182,
         "level": 3,
         "title": "Declarative Configuration (Recommended)"
       }
@@ -5499,7 +5493,7 @@
     "Declarative Event Extension Methods (v2.7.0+)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 587,
+        "line": 590,
         "level": 3,
         "title": "Declarative Event Extension Methods (v2.7.0+)"
       }
@@ -5507,7 +5501,7 @@
     "Declarative Translation Keys (v2.7.0+)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 555,
+        "line": 558,
         "level": 3,
         "title": "Declarative Translation Keys (v2.7.0+)"
       },
@@ -5519,7 +5513,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 237,
+        "line": 240,
         "level": 3,
         "title": "Declarative Translation Keys (v2.7.0+)"
       }
@@ -5597,7 +5591,7 @@
     "Dependency Declaration (Optional, 2.8.0+)": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 353,
+        "line": 402,
         "level": 2,
         "title": "Dependency Declaration (Optional, 2.8.0+)"
       }
@@ -5650,12 +5644,12 @@
         "title": "Detailed Event Handling Chain"
       }
     ],
-    "Detailed Explanation of Each Step": [
+    "Detailed Explanation of Each Component": [
       {
         "document": "advanced/startup.md",
-        "line": 51,
+        "line": 54,
         "level": 2,
-        "title": "Detailed Explanation of Each Step"
+        "title": "Detailed Explanation of Each Component"
       }
     ],
     "Detailed Initialization Phases": [
@@ -5746,12 +5740,12 @@
         "title": "Diagnostic Commands"
       }
     ],
-    "Diagnostic Information on Loading Failures": [
+    "Diagnostic Information on Loading Failure": [
       {
         "document": "advanced/startup.md",
-        "line": 97,
+        "line": 100,
         "level": 4,
-        "title": "Diagnostic Information on Loading Failures"
+        "title": "Diagnostic Information on Loading Failure"
       }
     ],
     "Dialect Behavior Differences": [
@@ -5762,12 +5756,12 @@
         "title": "Dialect Behavior Differences"
       }
     ],
-    "Directed Events: lifecycle.emit's to parameter": [
+    "Directed Events: lifecycle.emit with to parameter": [
       {
         "document": "advanced/module-communication.md",
-        "line": 134,
+        "line": 130,
         "level": 2,
-        "title": "Directed Events: lifecycle.emit's to parameter"
+        "title": "Directed Events: lifecycle.emit with to parameter"
       }
     ],
     "Directed Propagation (`emit to=`)": [
@@ -5781,7 +5775,7 @@
     "Directory Structure": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 30,
+        "line": 33,
         "level": 2,
         "title": "Directory Structure"
       }
@@ -6119,7 +6113,7 @@
     "Environment Diagnosis": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 521,
+        "line": 527,
         "level": 2,
         "title": "Environment Diagnosis"
       }
@@ -6273,7 +6267,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 982,
+        "line": 985,
         "level": 2,
         "title": "Error Handling"
       },
@@ -6285,7 +6279,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 365,
+        "line": 368,
         "level": 2,
         "title": "Error Handling"
       },
@@ -6337,7 +6331,7 @@
     "Event Converter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 742,
+        "line": 745,
         "level": 2,
         "title": "Event Converter"
       }
@@ -6361,7 +6355,7 @@
     "Event Distribution Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 190,
+        "line": 193,
         "level": 4,
         "title": "Event Distribution Mechanism"
       }
@@ -6421,7 +6415,7 @@
     "Event Handler Lifecycle": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 338,
+        "line": 341,
         "level": 3,
         "title": "Event Handler Lifecycle"
       }
@@ -6429,7 +6423,7 @@
     "Event Handler Registration": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 322,
+        "line": 325,
         "level": 3,
         "title": "Event Handler Registration"
       }
@@ -6443,7 +6437,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 320,
+        "line": 323,
         "level": 2,
         "title": "Event Handling"
       }
@@ -6511,7 +6505,7 @@
     "Event Idempotency Deduplication": [
       {
         "document": "advanced/module-communication.md",
-        "line": 211,
+        "line": 200,
         "level": 2,
         "title": "Event Idempotency Deduplication"
       }
@@ -6519,7 +6513,7 @@
     "Event Listening": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 153,
+        "line": 156,
         "level": 3,
         "title": "Event Listening"
       },
@@ -6737,7 +6731,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 367,
+        "line": 370,
         "level": 3,
         "title": "Exception Handling"
       }
@@ -6751,7 +6745,7 @@
       },
       {
         "document": "advanced/module-communication.md",
-        "line": 35,
+        "line": 38,
         "level": 3,
         "title": "Exception Hierarchy"
       }
@@ -6807,7 +6801,7 @@
     "Exit Code 42 Contract": [
       {
         "document": "advanced/startup.md",
-        "line": 355,
+        "line": 358,
         "level": 3,
         "title": "Exit Code 42 Contract"
       }
@@ -6840,12 +6834,12 @@
         "title": "Extended Fields"
       }
     ],
-    "Extended Information in `self` Field": [
+    "Extended `self` Field Information": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1091,
+        "line": 1094,
         "level": 3,
-        "title": "Extended Information in `self` Field"
+        "title": "Extended `self` Field Information"
       }
     ],
     "Extension Field Description": [
@@ -6978,10 +6972,18 @@
         "title": "Filtering Conditions"
       }
     ],
+    "Fine-Grained Runtime Control": [
+      {
+        "document": "advanced/startup.md",
+        "line": 250,
+        "level": 2,
+        "title": "Fine-Grained Runtime Control"
+      }
+    ],
     "Five Isolation Gates": [
       {
         "document": "advanced/shadow.md",
-        "line": 39,
+        "line": 42,
         "level": 2,
         "title": "Five Isolation Gates"
       }
@@ -7169,7 +7171,7 @@
     "Framework Helper Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 697,
+        "line": 700,
         "level": 3,
         "title": "Framework Helper Methods"
       }
@@ -7252,6 +7254,14 @@
         "title": "Friend Request Event"
       }
     ],
+    "From Local Plugin to Release": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 389,
+        "level": 3,
+        "title": "From Local Plugin to Release"
+      }
+    ],
     "Full Parameter Overview": [
       {
         "document": "advanced/interaction.md",
@@ -7311,7 +7321,7 @@
     "Generate type stubs": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 655,
+        "line": 661,
         "level": 3,
         "title": "Generate type stubs"
       }
@@ -7327,7 +7337,7 @@
     "Get Adapter Instance": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 263,
+        "line": 266,
         "level": 3,
         "title": "Get Adapter Instance"
       }
@@ -7340,12 +7350,12 @@
         "title": "Get Help"
       }
     ],
-    "Get Method Details": [
+    "Get Method Detailed Information": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 161,
+        "line": 164,
         "level": 3,
-        "title": "Get Method Details"
+        "title": "Get Method Detailed Information"
       }
     ],
     "Get an Adapter": [
@@ -7429,7 +7439,7 @@
     "Global Parameters": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 506,
+        "line": 512,
         "level": 2,
         "title": "Global Parameters"
       }
@@ -7437,7 +7447,7 @@
     "Graceful Shutdown": [
       {
         "document": "advanced/startup.md",
-        "line": 284,
+        "line": 287,
         "level": 2,
         "title": "Graceful Shutdown"
       }
@@ -7755,7 +7765,7 @@
     "Honest Boundaries (Can't Be Blocked)": [
       {
         "document": "advanced/shadow.md",
-        "line": 51,
+        "line": 54,
         "level": 2,
         "title": "Honest Boundaries (Can't Be Blocked)"
       }
@@ -7784,12 +7794,12 @@
         "title": "Hot Reload Server Configuration at Runtime"
       }
     ],
-    "Hot Restart of Adapters": [
+    "Hot Restart/Stop of Adapters": [
       {
         "document": "advanced/startup.md",
-        "line": 251,
+        "line": 254,
         "level": 3,
-        "title": "Hot Restart of Adapters"
+        "title": "Hot Restart/Stop of Adapters"
       }
     ],
     "How It Works": [
@@ -7909,7 +7919,7 @@
     "Immediate Loading": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 352,
+        "line": 355,
         "level": 3,
         "title": "Immediate Loading"
       }
@@ -7954,12 +7964,12 @@
         "title": "Information Query Commands"
       }
     ],
-    "Inheritance Structure": [
+    "Inheritance Relationship": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 671,
+        "line": 674,
         "level": 3,
-        "title": "Inheritance Structure"
+        "title": "Inheritance Relationship"
       }
     ],
     "Initialization Flow": [
@@ -7979,7 +7989,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 645,
+        "line": 648,
         "level": 3,
         "title": "Initialization Process"
       }
@@ -7995,7 +8005,7 @@
     "Initialize project": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 665,
+        "line": 671,
         "level": 3,
         "title": "Initialize project"
       }
@@ -8027,7 +8037,7 @@
     "Install modules": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 567,
+        "line": 573,
         "level": 3,
         "title": "Install modules"
       }
@@ -8145,7 +8155,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 141,
+        "line": 144,
         "level": 3,
         "title": "Inter-Module Communication"
       }
@@ -8207,7 +8217,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 552,
+        "line": 558,
         "level": 2,
         "title": "Interactive Installation"
       }
@@ -8284,6 +8294,14 @@
         "title": "Internationalization Configuration"
       }
     ],
+    "Introduction to Adapters": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 8,
+        "level": 2,
+        "title": "Introduction to Adapters"
+      }
+    ],
     "Item Template": [
       {
         "document": "bug-tracker.md",
@@ -8319,7 +8337,7 @@
     "Language Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 428,
+        "line": 434,
         "level": 2,
         "title": "Language Commands"
       }
@@ -8335,7 +8353,7 @@
     "Lazy Loading Mechanism": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 342,
+        "line": 345,
         "level": 2,
         "title": "Lazy Loading Mechanism"
       }
@@ -8348,12 +8366,20 @@
         "title": "Lazy Loading System"
       }
     ],
-    "Lazy Loading and Calls": [
+    "Lazy Loading and Invocation": [
       {
         "document": "advanced/module-communication.md",
-        "line": 166,
+        "line": 158,
         "level": 2,
-        "title": "Lazy Loading and Calls"
+        "title": "Lazy Loading and Invocation"
+      }
+    ],
+    "Lazy Module Loading": [
+      {
+        "document": "advanced/startup.md",
+        "line": 280,
+        "level": 3,
+        "title": "Lazy Module Loading"
       }
     ],
     "Lazy-Loaded Module System": [
@@ -8441,7 +8467,7 @@
     "Lifecycle Overview": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 86,
+        "line": 89,
         "level": 3,
         "title": "Lifecycle Overview"
       }
@@ -8457,7 +8483,7 @@
     "List Platforms": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 139,
+        "line": 142,
         "level": 4,
         "title": "List Platforms"
       }
@@ -8465,7 +8491,7 @@
     "List Supported Send Methods": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 153,
+        "line": 156,
         "level": 3,
         "title": "List Supported Send Methods"
       }
@@ -8473,7 +8499,7 @@
     "List components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 580,
+        "line": 586,
         "level": 3,
         "title": "List components"
       }
@@ -8492,6 +8518,14 @@
         "line": 282,
         "level": 3,
         "title": "List of Rule Methods"
+      }
+    ],
+    "Listen to Bot Lifecycle": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 1128,
+        "level": 3,
+        "title": "Listen to Bot Lifecycle"
       }
     ],
     "Listener Query (`has_handlers`)": [
@@ -8516,14 +8550,6 @@
         "line": 25,
         "level": 3,
         "title": "Listening to All Messages"
-      }
-    ],
-    "Listening to Bot Lifecycle": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1125,
-        "level": 3,
-        "title": "Listening to Bot Lifecycle"
       }
     ],
     "Listening to Group Messages": [
@@ -8558,20 +8584,26 @@
         "title": "Listening to Private Messages"
       }
     ],
-    "Loading Strategies": [
+    "Loading Strategy": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 7,
+        "line": 10,
         "level": 3,
-        "title": "Loading Strategies"
-      }
-    ],
-    "Loading Strategy": [
+        "title": "Loading Strategy"
+      },
       {
         "document": "getting-started/basic-concepts.md",
         "line": 141,
         "level": 4,
         "title": "Loading Strategy"
+      }
+    ],
+    "Local Development (No Packaging)": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 368,
+        "level": 2,
+        "title": "Local Development (No Packaging)"
       }
     ],
     "Local Plugin Folder Architecture": [
@@ -8647,7 +8679,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 382,
+        "line": 385,
         "level": 3,
         "title": "Logging"
       }
@@ -8753,7 +8785,7 @@
     "Manual Configuration Reading (Deprecated)": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 278,
+        "line": 281,
         "level": 3,
         "title": "Manual Configuration Reading (Deprecated)"
       }
@@ -8782,20 +8814,20 @@
         "title": "Manual Request DSL Calls"
       }
     ],
-    "Manual Response Construction (Legacy Method Still Compatible)": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 895,
-        "level": 3,
-        "title": "Manual Response Construction (Legacy Method Still Compatible)"
-      }
-    ],
     "Manual Resume (without automatic mechanism)": [
       {
         "document": "advanced/conversation.md",
         "line": 351,
         "level": 3,
         "title": "Manual Resume (without automatic mechanism)"
+      }
+    ],
+    "Manually Constructed Response (Legacy Method Still Compatible)": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 898,
+        "level": 3,
+        "title": "Manually Constructed Response (Legacy Method Still Compatible)"
       }
     ],
     "Manually Registering Custom Translations (Old Approach)": [
@@ -9235,7 +9267,7 @@
     "Meta Event Types": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1058,
+        "line": 1061,
         "level": 3,
         "title": "Meta Event Types"
       }
@@ -9383,7 +9415,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 204,
+        "line": 207,
         "level": 3,
         "title": "Middleware"
       }
@@ -9399,7 +9431,7 @@
     "Middleware Execution Order": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 248,
+        "line": 251,
         "level": 4,
         "title": "Middleware Execution Order"
       }
@@ -9407,7 +9439,7 @@
     "Middleware Return Contract": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 224,
+        "line": 227,
         "level": 4,
         "title": "Middleware Return Contract"
       }
@@ -9557,7 +9589,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "Module Lifecycle"
       },
@@ -9659,7 +9691,7 @@
     "Multi-Account Configuration": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 358,
+        "line": 361,
         "level": 4,
         "title": "Multi-Account Configuration"
       },
@@ -9721,7 +9753,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 909,
+        "line": 912,
         "level": 2,
         "title": "Multi-Account Support"
       }
@@ -9841,7 +9873,7 @@
     "Nested Configuration (v2.8.0+)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 498,
+        "line": 501,
         "level": 4,
         "title": "Nested Configuration (v2.8.0+)"
       }
@@ -9879,7 +9911,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 587,
+        "line": 636,
         "level": 2,
         "title": "Next Steps"
       },
@@ -9948,12 +9980,12 @@
         "title": "Node Tree Example"
       }
     ],
-    "Non-persistent example Fields (v2.8.0+)": [
+    "Non-persisted example fields (v2.8.0+)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 535,
+        "line": 538,
         "level": 4,
-        "title": "Non-persistent example Fields (v2.8.0+)"
+        "title": "Non-persisted example fields (v2.8.0+)"
       }
     ],
     "Not Waiting for Results": [
@@ -10086,14 +10118,6 @@
         "title": "OB12 Message Segment Reverse Conversion (Raw_ob12)"
       }
     ],
-    "On-demand Module Loading": [
-      {
-        "document": "advanced/startup.md",
-        "line": 277,
-        "level": 3,
-        "title": "On-demand Module Loading"
-      }
-    ],
     "One-Click Installation Script (Recommended)": [
       {
         "document": "quick-start.md",
@@ -10185,7 +10209,7 @@
     "OneBot12 Standard Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 155,
+        "line": 158,
         "level": 4,
         "title": "OneBot12 Standard Events"
       },
@@ -10255,7 +10279,7 @@
     "Outbound Audit: Who Can Call Whom": [
       {
         "document": "advanced/module-communication.md",
-        "line": 118,
+        "line": 114,
         "level": 2,
         "title": "Outbound Audit: Who Can Call Whom"
       }
@@ -10351,9 +10375,17 @@
     "Overview of SDK Top-Level Entry Points": [
       {
         "document": "advanced/startup.md",
-        "line": 9,
+        "line": 12,
         "level": 2,
         "title": "Overview of SDK Top-Level Entry Points"
+      }
+    ],
+    "Overview of Startup Chain": [
+      {
+        "document": "advanced/startup.md",
+        "line": 26,
+        "level": 2,
+        "title": "Overview of Startup Chain"
       }
     ],
     "Owner Context Mechanism": [
@@ -10631,7 +10663,7 @@
     "Platform Native Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 176,
+        "line": 179,
         "level": 4,
         "title": "Platform Native Events"
       }
@@ -10772,14 +10804,6 @@
         "title": "Private Message Sending"
       }
     ],
-    "Proactively Emit Meta Events": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 154,
-        "level": 4,
-        "title": "Proactively Emit Meta Events"
-      }
-    ],
     "Process Supervision and Hard Restart": [
       {
         "document": "user-guide/deployment.md",
@@ -10845,7 +10869,7 @@
     "Promote and Rollback": [
       {
         "document": "advanced/shadow.md",
-        "line": 59,
+        "line": 62,
         "level": 2,
         "title": "Promote and Rollback"
       }
@@ -11071,13 +11095,13 @@
       },
       {
         "document": "advanced/shadow.md",
-        "line": 12,
+        "line": 15,
         "level": 2,
         "title": "Quick Start"
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 45,
+        "line": 48,
         "level": 2,
         "title": "Quick Start"
       },
@@ -11115,7 +11139,7 @@
     "RPC: module.call": [
       {
         "document": "advanced/module-communication.md",
-        "line": 18,
+        "line": 21,
         "level": 2,
         "title": "RPC: module.call"
       }
@@ -11357,7 +11381,7 @@
       },
       {
         "document": "advanced/module-communication.md",
-        "line": 223,
+        "line": 211,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11369,13 +11393,13 @@
       },
       {
         "document": "advanced/shadow.md",
-        "line": 65,
+        "line": 68,
         "level": 2,
         "title": "Related Documentation"
       },
       {
         "document": "advanced/startup.md",
-        "line": 437,
+        "line": 440,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11423,7 +11447,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1143,
+        "line": 1146,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11436,12 +11460,6 @@
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 552,
-        "level": 2,
-        "title": "Related Documentation"
-      },
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 393,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11474,6 +11492,12 @@
       {
         "document": "developer-guide/adapters/converter.md",
         "line": 378,
+        "level": 2,
+        "title": "Related Documents"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 396,
         "level": 2,
         "title": "Related Documents"
       },
@@ -11521,7 +11545,7 @@
     "Relationship between self.user_id and Using": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 965,
+        "line": 968,
         "level": 3,
         "title": "Relationship between self.user_id and Using"
       }
@@ -11813,7 +11837,7 @@
     "Required Fields": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 754,
+        "line": 757,
         "level": 3,
         "title": "Required Fields"
       }
@@ -11869,7 +11893,7 @@
     "Restart": [
       {
         "document": "advanced/startup.md",
-        "line": 324,
+        "line": 327,
         "level": 2,
         "title": "Restart"
       }
@@ -12009,7 +12033,7 @@
     "Route Discovery": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 567,
+        "line": 616,
         "level": 4,
         "title": "Route Discovery"
       }
@@ -12057,7 +12081,7 @@
     "Router Server": [
       {
         "document": "advanced/startup.md",
-        "line": 267,
+        "line": 270,
         "level": 3,
         "title": "Router Server"
       }
@@ -12097,7 +12121,7 @@
     "Run project": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 632,
+        "line": 638,
         "level": 3,
         "title": "Run project"
       }
@@ -12142,14 +12166,6 @@
         "title": "Runtime Control Commands"
       }
     ],
-    "Runtime Fine-grained Control": [
-      {
-        "document": "advanced/startup.md",
-        "line": 247,
-        "level": 2,
-        "title": "Runtime Fine-grained Control"
-      }
-    ],
     "Runtime Override API": [
       {
         "document": "advanced/transcript.md",
@@ -12177,7 +12193,7 @@
     "SDK Object": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 128,
+        "line": 131,
         "level": 2,
         "title": "SDK Object"
       },
@@ -12343,7 +12359,7 @@
     "Send Message Sending DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 669,
+        "line": 672,
         "level": 2,
         "title": "Send Message Sending DSL"
       }
@@ -12597,7 +12613,7 @@
     "Service Contract: meta.services": [
       {
         "document": "advanced/module-communication.md",
-        "line": 47,
+        "line": 50,
         "level": 2,
         "title": "Service Contract: meta.services"
       }
@@ -12613,7 +12629,7 @@
     "Service Directory: services()": [
       {
         "document": "advanced/module-communication.md",
-        "line": 97,
+        "line": 96,
         "level": 2,
         "title": "Service Directory: services()"
       }
@@ -12680,12 +12696,12 @@
         "title": "Shadow Series — `Core/shadow.py` (Shadow Modules)"
       }
     ],
-    "Shutdown Adapters": [
+    "Shutdown Adapter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 108,
+        "line": 111,
         "level": 4,
-        "title": "Shutdown Adapters"
+        "title": "Shutdown Adapter"
       }
     ],
     "Shutdown Noise Folding": [
@@ -12739,7 +12755,7 @@
     "Single Account Configuration": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 329,
+        "line": 332,
         "level": 4,
         "title": "Single Account Configuration"
       }
@@ -12786,6 +12802,14 @@
         "title": "Special Field Examples"
       }
     ],
+    "Specify Account for Sending": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 955,
+        "level": 3,
+        "title": "Specify Account for Sending"
+      }
+    ],
     "Specify Sending Account": [
       {
         "document": "api-reference/adapter-system.md",
@@ -12794,18 +12818,10 @@
         "title": "Specify Sending Account"
       }
     ],
-    "Specifying Account for Sending": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 952,
-        "level": 3,
-        "title": "Specifying Account for Sending"
-      }
-    ],
     "SseEmitter API": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 548,
+        "line": 597,
         "level": 4,
         "title": "SseEmitter API"
       }
@@ -12972,12 +12988,12 @@
         "title": "Standardized Response"
       }
     ],
-    "Start Adapters": [
+    "Start Adapter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 85,
+        "line": 88,
         "level": 4,
-        "title": "Start Adapters"
+        "title": "Start Adapter"
       }
     ],
     "Startup Process and Manual Control": [
@@ -12991,7 +13007,7 @@
     "Startup and Shutdown": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 83,
+        "line": 86,
         "level": 3,
         "title": "Startup and Shutdown"
       }
@@ -13109,7 +13125,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 295,
+        "line": 298,
         "level": 2,
         "title": "Storage System"
       }
@@ -13149,7 +13165,7 @@
     "Success Response": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 879,
+        "line": 882,
         "level": 3,
         "title": "Success Response"
       }
@@ -13165,7 +13181,7 @@
     "Summary": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 460,
+        "line": 509,
         "level": 3,
         "title": "Summary"
       }
@@ -13189,7 +13205,7 @@
     "Supervisor Guide": [
       {
         "document": "advanced/startup.md",
-        "line": 366,
+        "line": 369,
         "level": 3,
         "title": "Supervisor Guide"
       }
@@ -13337,7 +13353,7 @@
     "Switch language": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 642,
+        "line": 648,
         "level": 3,
         "title": "Switch language"
       }
@@ -13589,7 +13605,7 @@
     "Transaction Usage": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 310,
+        "line": 313,
         "level": 3,
         "title": "Transaction Usage"
       }
@@ -13669,7 +13685,7 @@
     "Type Stub Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 465,
+        "line": 471,
         "level": 2,
         "title": "Type Stub Commands"
       }
@@ -13714,18 +13730,18 @@
         "title": "Unified Module Access Entry"
       }
     ],
-    "Uninstall Process": [
+    "Uninit Process": [
       {
         "document": "advanced/startup.md",
-        "line": 306,
+        "line": 309,
         "level": 2,
-        "title": "Uninstall Process"
+        "title": "Uninit Process"
       }
     ],
     "Uninstall components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 596,
+        "line": 602,
         "level": 3,
         "title": "Uninstall components"
       }
@@ -13782,12 +13798,12 @@
         "title": "Unload and Cleanup Semantics"
       }
     ],
-    "Unload vs. Purge (Complete Unload)": [
+    "Unload vs. Purge": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 59,
+        "line": 62,
         "level": 3,
-        "title": "Unload vs. Purge (Complete Unload)"
+        "title": "Unload vs. Purge"
       }
     ],
     "Unload/Disable Cleanup Sequence": [
@@ -13873,7 +13889,7 @@
     "Upgrade components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 619,
+        "line": 625,
         "level": 3,
         "title": "Upgrade components"
       }
@@ -14047,7 +14063,7 @@
     "Using Request Parameters": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 530,
+        "line": 579,
         "level": 4,
         "title": "Using Request Parameters"
       }
@@ -14123,7 +14139,7 @@
     "Using in RouteGroup": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 557,
+        "line": 606,
         "level": 4,
         "title": "Using in RouteGroup"
       }
@@ -14321,7 +14337,7 @@
     "WebHook Connection": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 851,
+        "line": 854,
         "level": 3,
         "title": "WebHook Connection"
       }
@@ -14359,7 +14375,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 817,
+        "line": 820,
         "level": 3,
         "title": "WebSocket Connection"
       },
@@ -14426,20 +14442,12 @@
         "title": "Webhook Mode"
       }
     ],
-    "What is an Adapter": [
+    "What is an Adapter?": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 7,
+        "line": 10,
         "level": 3,
-        "title": "What is an Adapter"
-      }
-    ],
-    "When Should You Use Manual Startup?": [
-      {
-        "document": "advanced/startup.md",
-        "line": 237,
-        "level": 3,
-        "title": "When Should You Use Manual Startup?"
+        "title": "What is an Adapter?"
       }
     ],
     "When Will Waiting Be Cancelled": [
@@ -14461,9 +14469,17 @@
     "When to Use Hard Restart?": [
       {
         "document": "advanced/startup.md",
-        "line": 345,
+        "line": 348,
         "level": 3,
         "title": "When to Use Hard Restart?"
+      }
+    ],
+    "When to Use Manual Startup?": [
+      {
+        "document": "advanced/startup.md",
+        "line": 240,
+        "level": 3,
+        "title": "When to Use Manual Startup?"
       }
     ],
     "When to Use Which Declaration": [
@@ -14531,7 +14547,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 344,
+        "line": 347,
         "level": 3,
         "title": "Working Principle"
       }
@@ -14907,7 +14923,7 @@
     "`__init__` Notes": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 388,
+        "line": 437,
         "level": 2,
         "title": "`__init__` Notes"
       }
@@ -14934,6 +14950,22 @@
         "line": 38,
         "level": 3,
         "title": "`keep_running` Parameter"
+      }
+    ],
+    "`on_load` Method": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 32,
+        "level": 3,
+        "title": "`on_load` Method"
+      }
+    ],
+    "`on_unload` Method": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 47,
+        "level": 3,
+        "title": "`on_unload` Method"
       }
     ],
     "`t()` Method Details": [
@@ -15088,18 +15120,18 @@
         "title": "docker-compose.yml"
       }
     ],
-    "docstring Automatically Generates Field Descriptions (v2.8.0+)": [
+    "docstring automatically generates field descriptions (v2.8.0+)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 473,
+        "line": 476,
         "level": 4,
-        "title": "docstring Automatically Generates Field Descriptions (v2.8.0+)"
+        "title": "docstring automatically generates field descriptions (v2.8.0+)"
       }
     ],
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 523,
+        "line": 529,
         "level": 3,
         "title": "doctor"
       }
@@ -15123,7 +15155,7 @@
     "get() Method": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 265,
+        "line": 268,
         "level": 4,
         "title": "get() Method"
       }
@@ -15163,7 +15195,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 434,
+        "line": 440,
         "level": 3,
         "title": "i18n"
       }
@@ -15251,25 +15283,9 @@
     "metadata Convention": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 395,
+        "line": 398,
         "level": 4,
         "title": "metadata Convention"
-      }
-    ],
-    "on_load Method": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 29,
-        "level": 3,
-        "title": "on_load Method"
-      }
-    ],
-    "on_unload Method": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 44,
-        "level": 3,
-        "title": "on_unload Method"
       }
     ],
     "pip Method": [
@@ -15379,7 +15395,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 471,
+        "line": 477,
         "level": 3,
         "title": "types"
       }

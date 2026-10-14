@@ -188,7 +188,7 @@
           "icon": "fa-network-wired",
           "documents": [
             {
-              "title": "アダプター開発入門",
+              "title": "アダプタ開発入門",
               "path": "developer-guide/adapters/getting-started.md",
               "level": 1,
               "icon": "fa-network-wired"

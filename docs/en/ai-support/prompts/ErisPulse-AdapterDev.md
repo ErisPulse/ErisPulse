@@ -2243,17 +2243,20 @@ The `types` command is mainly used to complete **platform-specific methods** (su
 
 # Getting Started with Adapter Development
 
-This guide helps you get started with developing ErisPulse adapters to connect new messaging platforms.
+> [!TIP]
+> **When to read this**: The entry point for the adapter development path (required reading). Learn how to write an adapter from scratch, understand its responsibilities and project structure here; after reading, proceed to [Event Converter](converter.md) and [SendDSL Detailed Guide](send-dsl.md) as needed.
 
-## Adapter Overview
+This guide helps you start developing an ErisPulse adapter to connect new messaging platforms.
 
-### What is an Adapter
+## Introduction to Adapters
 
-An adapter serves as the bridge between ErisPulse and various messaging platforms, responsible for:
+### What is an Adapter?
 
-1. **Forward Conversion**: Receiving platform events and converting them into the OneBot12 standard format (Converter)
+An adapter serves as a bridge between ErisPulse and various messaging platforms, responsible for:
+
+1. **Forward Conversion**: Receiving platform events and converting them into OneBot12 standard format (Converter)
 2. **Reverse Conversion**: Converting OneBot12 message segments into platform API calls (`Raw_ob12`)
-3. Managing the connection with the platform (WebSocket/WebHook)
+3. Managing connections with the platform (WebSocket/WebHook)
 4. Providing a unified SendDSL message sending interface
 
 ### Adapter Architecture
@@ -2276,18 +2279,30 @@ Standard adapter package structure:
 
 ```
 MyAdapter/
-├── pyproject.toml          # Project configuration
-├── README.md               # Project description
+├── pyproject.toml          # Project Configuration
+├── README.md               # Project Description
 ├── LICENSE                 # License
 └── MyAdapter/
-    ├── __init__.py          # Package entry point
-    ├── Core.py               # Adapter main class
-    └── Converter.py          # Event converter
+    ├── __init__.py          # Package Entry Point
+    ├── Core.py               # Main Adapter Class
+    └── Converter.py          # Event Converter
 ```
 
 ## Quick Start
 
 ### 1. Create Project
+
+It is recommended to use the scaffolding tool to generate a complete skeleton (including pyproject, main class, and converter):
+
+```bash
+# Standard Project (for packaging and publishing)
+epsdk create adapter -n MyAdapter
+
+# Local Adapter Plugin (no packaging required; just place in plugins/ directory to be automatically loaded, see "Local Development" below)
+epsdk create adapter -n MyAdapter --local
+```
+
+Alternatively, you can create manually:
 
 ```bash
 mkdir MyAdapter && cd MyAdapter
@@ -2299,7 +2314,7 @@ mkdir MyAdapter && cd MyAdapter
 [project]
 name = "ErisPulse-MyAdapter"
 version = "1.0.0"
-description = "MyAdapter platform adapter"
+description = "MyAdapter Platform Adapter"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
@@ -2318,12 +2333,12 @@ dependencies = [
 
 ### 3. Create Adapter Main Class
 
-The framework provides `ConfigClass` / `AccountConfigClass` for declarative configuration management. The adapter only needs to declare the configuration class, and the framework will automatically load, validate, and generate the configuration template.
+The framework provides `ConfigClass` / `AccountConfigClass` for declarative configuration management. The adapter only needs to declare the configuration class to automatically load, validate, and generate configuration templates.
 
 ```python
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
-# Recommended root import (2.10+): commonly used symbols directly imported from root package, deep paths are still compatible
+# Recommended root import (for Python 3.10+): Common symbols directly imported from root package, deep paths still compatible
 from ErisPulse import BaseAdapter, BaseConfig
 
 @dataclass
@@ -2348,11 +2363,11 @@ class MyAdapterConfig(BaseConfig):
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyAdapterConfig  # Declare the configuration class, the framework will manage it automatically
+    ConfigClass = MyAdapterConfig  # Declare configuration class for automatic management by the framework
     
-    # No need to override __init__! The framework handles it automatically:
+    # No need to override __init__! The framework automatically handles:
     # - self.sdk / self.logger are automatically set
-    # - self.cfg reads the configuration in real-time
+    # - self.cfg is read in real-time from configuration
     # - self.Send / self.Request are automatically initialized
     
     def _setup_converter(self):
@@ -2360,9 +2375,9 @@ class MyAdapter(BaseAdapter):
         return MyPlatformConverter()
 ```
 
-> ⚠️ **Regarding `__init__`**: In the new version, `BaseAdapter.__init__(self, sdk=None)` will automatically handle SDK references, log initialization, and configuration loading. Most adapters **do not need to override `__init__`**. See [__init__ Notes](#init-注意事项).
+> ⚠️ **About `__init__`**: In the new version, `BaseAdapter.__init__(self, sdk=None)` automatically manages SDK references, logging initialization, and configuration loading. Most adapters **do not need to override `__init__`**. See [__init__ Notes](#init-注意事项).
 
-> ⚠️ **Regarding `super().__init__()`**: `BaseAdapter.__init__()` is responsible for creating `Send` and `Request` factory instances. If you forget to call it, all message sending and request operations will raise an `AttributeError`. See [__init__ Notes](#init-注意事项).
+> ⚠️ **About `super().__init__()`**: `BaseAdapter.__init__()` is responsible for creating `Send` and `Request` factory instances. If you forget to call it, all message sending and request operations will report `AttributeError`. See [__init__ Notes](#init-注意事项).
 
 ### 4. Implement Required Methods
 
@@ -2381,22 +2396,22 @@ class MyAdapter(BaseAdapter):
         self.logger.info("Adapter started")
     
     async def shutdown(self):
-        """Shutdown the adapter (must implement)"""
+        """Shut down the adapter (must implement)"""
         router.unregister_websocket(
             module_name="myplatform",
             path="/ws"
         )
         # Clean up connections and resources
-        self.logger.info("Adapter shutdown")
+        self.logger.info("Adapter shut down")
     
     async def call_api(self, endpoint: str, **params):
-        """Call the platform API (must implement)"""
-        raise NotImplementedError("call_api needs to be implemented")
+        """Call platform API (must implement)"""
+        raise NotImplementedError("call_api must be implemented")
 ```
 
-#### Proactively Emit Meta Events
+#### Actively Send Meta Events
 
-The adapter should proactively emit meta events to allow the framework to track the Bot's online status. Use `emit_meta()` to complete this in one line:
+The adapter should actively send meta events to let the framework track the Bot's online status. Use `emit_meta()` to complete this in one line:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -2419,15 +2434,15 @@ class MyAdapter(BaseAdapter):
             await self.emit_meta("disconnect", bot_id)
 ```
 
-> For detailed Bot status management and meta event explanations, see [Adapter Best Practices - Bot Status Management and Meta Events](best-practices.md#bot-状态管理与-meta-事件).
+> For detailed Bot status management and meta events, see [Adapter Best Practices - Bot Status Management and Meta Events](best-practices.md#bot-状态管理与-meta-事件).
 
 ### 5. Implement Send Class
 
-The `At`/`AtAll`/`Reply` decorators are built into the framework's SendDSL base class, so the adapter only needs to implement `Raw_ob12` and specific send methods.
+The `At`/`AtAll`/`Reply` decorators are already implemented in the framework's SendDSL base class. The adapter only needs to implement `Raw_ob12` and specific send methods.
 
 The framework provides two key helper methods:
 - `self._apply_modifiers(message)` — Automatically merges At/AtAll/Reply decorators into message segments
-- `self.send_context` — Gets the send context dictionary (`target_type`, `target_id`, `account_id`)
+- `self.send_context` — Retrieves the send context dictionary (`target_type`, `target_id`, `account_id`)
 
 ```python
 import asyncio
@@ -2442,7 +2457,7 @@ class MyAdapter(BaseAdapter):
             Send OneBot12 formatted message (must implement)
 
             Use _apply_modifiers to automatically merge modifier states,
-            use send_context to get the send context.
+            use send_context to retrieve send context.
             """
             async def _do_send():
                 segments = self._apply_modifiers(message)
@@ -2455,29 +2470,29 @@ class MyAdapter(BaseAdapter):
             return asyncio.create_task(_do_send())
 
         # Text/Image/Voice/Video/File are inherited from the SendDSL base class,
-        # defaulting to delegate to Raw_ob12, no need to re-implement.
+        # default delegation to Raw_ob12, no need to re-implement.
         # If platform-specific logic is needed, override individual methods:
         # def Text(self, text: str):
         #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-**Media send method implementation points (Image/Video/File):**
+**Media Send Method Implementation Points:**
 
-- The default implementation in the base class will encapsulate the `file` parameter as a OneBot12 message segment and pass it to `Raw_ob12`, and the adapter needs to handle downloading/uploading in `Raw_ob12`
-- The `file` parameter should support both `bytes` binary data and `str` URL types
-- When a URL is passed, the file must be downloaded first and then uploaded to the platform
-- The platform usually requires first calling the upload interface to get the file identifier, then calling the send interface
+- The base class's default implementation wraps the `file` parameter as a OneBot12 message segment and passes it to `Raw_ob12`. The adapter needs to handle downloads/uploads in `Raw_ob12`.
+- The `file` parameter should support both `bytes` binary data and `str` URL types.
+- When a URL is passed, the file must be downloaded first and then uploaded to the platform.
+- Platforms usually require first calling an upload interface to get a file identifier, then calling the send interface.
 
-**`__getattr__` magic method:**
+**`__getattr__` Magic Method:**
 
 - Implement case-insensitive method names (`Text`, `text`, `TEXT` all work)
-- Undefined methods should return a hint message instead of throwing an error
+- Undefined methods should return a prompt message instead of raising an error
 
-**`Raw_ob12` method:**
+**`Raw_ob12` Method:**
 
-- Convert the OneBot12 standard message format to the platform format for sending
-- Use `self._apply_modifiers(message)` to automatically handle At/AtAll/Reply modifiers
-- Use `**self.send_context` to pass send target information and account information
+- Converts OneBot12 standard message format into platform format for sending
+- Uses `self._apply_modifiers(message)` to automatically handle At/AtAll/Reply modifiers
+- Uses `**self.send_context` to pass send target information and account information
 
 ### 6. Implement Converter
 
@@ -2488,7 +2503,7 @@ import uuid
 
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """Convert platform-native events to OneBot12 standard format"""
+        """Convert platform-native events into OneBot12 standard format"""
         if not isinstance(raw_event, dict):
             return None
         
@@ -2523,7 +2538,7 @@ class MyPlatformConverter:
 
 ### 7. Implement Request Class (Request Operations)
 
-If your platform supports friend requests, group invitations, and other requests that require the Bot to make decisions, you can implement the `Request` inner class:
+If your platform supports friend requests, group invitations, and other requests requiring the Bot to make decisions, you can implement the `Request` inner class:
 
 ```python
 from ErisPulse import BaseAdapter, RequestDSL
@@ -2571,56 +2586,90 @@ class MyAdapter(BaseAdapter):
             return self._create_task(_do())
 ```
 
-Module developer usage:
+Module developers use it as follows:
 
 ```python
 from ErisPulse import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
-    # Through Event convenience methods
+    # Approve via Event method
     await event.approve()
-    # Or directly through the adapter
+    # Or directly via adapter
     await adapter.myplatform.Request("req_id").accept()
 ```
 
-> If the platform does not support request operations, you can omit implementing the `Request` inner class. The base class defaults to returning `retcode=10002` (unsupported operation). See [Request Action Specification](../../standards/request-action-spec.md).
+> If the platform does not support request operations, you can omit the `Request` inner class. The base class defaults to returning `retcode=10002` (operation not supported). See [Request Action Specification](../../standards/request-action-spec.md).
 
-### 8. Create Package Entry
+### 8. Create Package Entry Point
 
 ```python
 # MyAdapter/__init__.py
 from .Core import MyAdapter
 ```
 
+## Local Development (No Packaging)
+
+Like modules, adapters can also be placed in the project's local plugin directory (default `plugins/`, configurable via `ErisPulse.framework.plugins_dir`) for direct development, **no need for `pip install -e .`**:
+
+```bash
+# Generate local adapter plugin
+epsdk create adapter -n MyAdapter --local
+# Structure generated:
+# plugins/
+# └── MyAdapter/
+#     ├── __init__.py
+#     ├── Core.py
+#     └── Converter.py
+```
+
+The framework automatically scans the plugin directory and loads modules and adapters (same treatment as entry-point installed packages: enabling status, configuration declaration, hot reload, uninstall cleanup are all consistent):
+
+- **Identification Rules**: Package directories (with `__init__.py`) or single `.py` files are both recognized; `Main` named class is prioritized, otherwise the first `BaseAdapter` / `BaseModule` subclass in the plugin is taken
+- **Name Overlap**: When a local plugin and a PyPI-installed adapter have the same name, the local plugin takes precedence (for easy debugging)
+- **Hot Reload**: `sdk.enable_plugin_hot_reload()` enables plugin directory monitoring, covering adapters as well; code-level hot reload for adapters will be available in 2.11 (current version requires restarting the framework after modifying adapter code)
+
+### From Local Plugin to Release
+
+After local verification, use the `pack` subcommand to convert the plugin into a release-ready standard project (interactive selection of plugin, completion of metadata, generation of `pyproject` with entry-point):
+
+```bash
+epsdk create pack
+# Select plugin directory in plugin → Enter project name/description/author → Generate MyAdapter/ project directory
+cd MyAdapter
+pip install -e .   # Convert to standard installation; then follow release process to upload to PyPI
+```
+
+> **Note**: After conversion, it is recommended to remove the original from `plugins/` to avoid duplicate loading of local plugin and installed package (both take precedence when names overlap, which might make you think the installed package is effective).
+
 ## Dependency Declaration (Optional, 2.8.0+)
 
-Adapters can declare dependencies on other adapters or modules to enable adapter interconnection and optional features:
+An adapter can declare dependencies on other adapters or modules to achieve adapter interconnection and optional features:
 
 ```python
 from typing import ClassVar
 
 class MyAdapter(BaseAdapter):
-    # Hard dependency: Adapter startup is skipped if dependency is missing (warning + status=skipped-dependency event)
+    # Hard Dependency: Skips startup if missing (warning + status=skipped-dependency event)
     depends: ClassVar[dict] = {
         "adapters": ["onebot11"],   # Dependent adapters (by platform name)
-        "modules": ["TranslateEngine"],  # Dependent modules (by registration name)
+        "modules": ["TranslateEngine"],  # Dependent modules (by registered name)
     }
-    # Soft dependency: Missing dependency does not affect startup; callbacks are received when the module is loaded/unloaded (optional feature mode)
+    # Soft Dependency: Does not affect startup; callbacks when module is loaded/unloaded (optional feature mode)
     optional_modules: ClassVar[list] = ["TranslateEngine"]
 ```
 
-- **Startup Order**: Adapters declaring hard dependencies on modules will **start after the module initialization is complete**
-- **Soft Dependency Notification**: When modules in `optional_modules` (or hard dependencies) are loaded, `on_dependency_ready(module_name)` is called; when they are unloaded, `on_dependency_lost(module_name)` is called (default empty implementation, can be overridden) — covering late-load and hot-reload scenarios:
+- **Startup Order**: Adapters declaring hard dependencies on modules will **start after module initialization**
+- **Soft Dependency Notification**: `on_dependency_ready(module_name)` is called when modules in `optional_modules` (or hard dependencies) are loaded; `on_dependency_lost(module_name)` is called when modules are unloaded (default is an empty implementation, can be overridden) — covers late loading and hot reload scenarios:
 
 ```python
 async def on_dependency_ready(self, module_name):
-    """Soft dependency module is ready: enable corresponding optional features"""
+    """Soft dependency module ready: Enable corresponding optional features"""
     if module_name == "TranslateEngine":
         self._translate = self.sdk.TranslateEngine
 
 async def on_dependency_lost(self, module_name):
-    """Soft dependency module is lost: degrade features"""
+    """Soft dependency module lost: Downgrade features"""
     if module_name == "TranslateEngine":
         self._translate = None
 ```
@@ -2630,44 +2679,44 @@ async def on_dependency_lost(self, module_name):
 
 ## `__init__` Notes
 
-There are three levels in adapter development where `__init__` may be overridden. Below are the correct practices for each level.
+There are three levels in adapter development where `__init__` may be involved. Here are the correct practices for each level.
 
-### 1. BaseAdapter Level (Most Cases Do Not Require Overriding)
+### 1. BaseAdapter Level (Most cases do not need to override)
 
-`BaseAdapter.__init__(self, sdk=None)` is responsible for creating `Send` / `Request` factory instances and automatically performs the following tasks:
+`BaseAdapter.__init__(self, sdk=None)` is responsible for creating `Send` / `Request` factory instances and automatically handles the following:
 
-- Accepts the `sdk` parameter and sets `self.sdk` and `self.logger`
-- If `ConfigClass` is declared, you can read global configurations in real time via `self.cfg`
-- If `AccountConfigClass` is declared, you can read multi-account configurations in real time via `self.accounts`
+- Accepts `sdk` parameter and sets `self.sdk`, `self.logger`
+- If `ConfigClass` is declared, `self.cfg` can read global configuration in real-time
+- If `AccountConfigClass` is declared, `self.accounts` can read multi-account configuration in real-time
 
-**In most cases, there is no need to override `__init__`**. Just declare `ConfigClass`:
+**Most cases do not need to override `__init__`**, just declare `ConfigClass`:
 
 ```python
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyAdapterConfig  # After declaration, the framework automatically manages configurations
+    ConfigClass = MyAdapterConfig  # Declare to let the framework manage configuration automatically
     
     async def start(self):
-        cfg = self.cfg  # Type-safe, real-time read
+        cfg = self.cfg  # Type-safe, real-time reading
         ...
 ```
 
-If custom initialization is indeed required, call `super().__init__(sdk)`:
+If you really need custom initialization, call `super().__init__(sdk)`:
 
 ```python
 class MyAdapter(BaseAdapter):
     ConfigClass = MyAdapterConfig
     
     def __init__(self, sdk=None):
-        super().__init__(sdk)  # Pass in sdk
+        super().__init__(sdk)  # Pass sdk
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 ```
 
-### 2. Send Inner Class (Most Cases Do Not Require Overriding)
+### 2. Send Inner Class (Most cases do not need to override)
 
-`SendDSL.__init__` is responsible for state transfer in chain calls (target type, target ID, account, etc.). **In most cases, you only need to override methods** (`Raw_ob12`, `Text`, etc.), not `__init__`.
+`SendDSL.__init__` is responsible for passing state through chain calls (target type, target ID, account, etc.). **Most cases, you only need to override methods** (`Raw_ob12`, `Text`, etc.), not `__init__`.
 
-If overriding is necessary (for example, initializing platform-specific states), **all parameters must be passed through**:
+If you really need to (e.g., initializing platform-specific states), **you must pass all parameters**:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -2678,18 +2727,18 @@ class MyAdapter(BaseAdapter):
             self._my_state = None  # Platform-specific initialization
 ```
 
-**Why must it be passed through?** Each step in the chain call creates a new instance via `self.__class__(...)`:
+**Why must you pass through?** Each step in chain calls creates a new instance via `self.__class__(...)`:
 
 ```python
 adapter.Send.To("user", "123")               # → Send(adapter, "user", "123", None)
 adapter.Send.To("user", "123").Using("bot1")  # → Send(adapter, "user", "123", "bot1")
 ```
 
-If the `__init__` signature does not match or `super()` is not called, the chain call will break.
+If `__init__` signature does not match or `super()` is not called, chain calls will break.
 
-### 3. Request Inner Class (Most Cases Do Not Require Overriding)
+### 3. Request Inner Class (Most cases do not need to override)
 
-Same as `Send`. The parameters are `adapter`, `request_id`, `account_id`:
+Same as Send. Parameters are `adapter`, `request_id`, `account_id`:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -2702,21 +2751,21 @@ class MyAdapter(BaseAdapter):
 
 ### Summary
 
-| Level | When to Override | Must Do |
+| Level | When to Override | What Must Be Done |
 |------|------------|-----------|
-| **BaseAdapter** | When custom initialization logic is needed | `super().__init__(sdk)` (pass in sdk parameter) |
+| **BaseAdapter** | When custom initialization logic is needed | `super().__init__(sdk)` (pass sdk parameter) |
 | **Send Inner Class** | When initializing send-related states is needed | `super().__init__(adapter, target_type, target_id, account_id)` |
 | **Request Inner Class** | When initializing request-related states is needed | `super().__init__(adapter, request_id, account_id)` |
-| All Three Levels | Most Cases | **Just declare ConfigClass, do not touch `__init__`** |
+| All Levels | Most cases | **Declare ConfigClass and do not touch `__init__`** |
 
 ### 9. Connection Information and Route Discovery
 
-After the adapter registers routes, the framework records all route information. Users can use the following API to view the adapter's connection address:
+After registering routes, the framework records all route information. Users can use the following API to view the adapter's connection address:
 
 ```python
 from ErisPulse import sdk
 
-# Get complete connection information for the adapter
+# Get complete adapter connection information
 info = sdk.adapter.get_connection_info("myplatform")
 # {
 #   "platform": "myplatform",
@@ -2738,21 +2787,21 @@ info = sdk.adapter.get_connection_info("myplatform")
 namespaces = sdk.router.list_namespaces()
 # {"myplatform": {"http": ["/myplatform/webhook"], "websocket": ["/myplatform/ws"]}}
 
-# Get complete connection URLs for the namespace
+# Get complete connection URL for namespace
 urls = sdk.router.get_module_urls("myplatform")
 # {"base_url": "http://localhost:8080", "http": [...], "websocket": [...]}
 
-# Get detailed route information for the namespace
+# Get detailed route information for namespace
 routes = sdk.router.get_module_routes("myplatform")
 # {"http": [{"path": "/myplatform/webhook", "methods": ["POST"]}],
 #  "websocket": [{"path": "/myplatform/ws", "auth": false}]}
 ```
 
-> **Tip**: The information returned by `get_connection_info()` is suitable for displaying to users (such as WebUI), helping users configure the callback address or WebSocket connection address on the platform side. The `module_name` registered during route registration must exactly match the `platform` name registered by the adapter in ErisPulse, otherwise route discovery will not be correctly associated.
+> **Note**: The information returned by `get_connection_info()` is suitable for displaying to users (e.g., WebUI), helping users configure the platform side callback address or WebSocket connection address. The `module_name` registered during route registration must exactly match the `platform` name registered in ErisPulse for the adapter; otherwise, route discovery will not correctly associate.
 
 ### 10. SSE (Server-Sent Events) Support
 
-ErisPulse has built-in, server-agnostic SSE support. Modules and adapters can register SSE endpoints using `@sdk.router.sse()`.
+ErisPulse includes server-agnostic SSE support, allowing modules and adapters to register SSE endpoints via `@sdk.router.sse()`.
 
 #### Basic Usage
 
@@ -2792,10 +2841,10 @@ async def event_stream(request, sse):
 
 | Method | Description |
 |------|------|
-| `sse.send(data, event=None, id=None, retry=None)` | Send an SSE event. Non-string data is automatically JSON serialized |
-| `sse.close()` | Gracefully close the SSE connection (safe to call multiple times) |
+| `sse.send(data, event=None, id=None, retry=None)` | Send SSE event. Non-str data is automatically JSON serialized |
+| `sse.close()` | Gracefully close SSE connection (safe to call multiple times) |
 | `sse.closed` | Whether the connection is closed |
-| `sse.request` | The underlying request object (can be used to read query params, headers) |
+| `sse.request` | Underlying request object (can be used to read query params, headers) |
 
 #### Using in RouteGroup
 
@@ -2809,10 +2858,10 @@ async def events(sse):
 
 #### Route Discovery
 
-SSE routes will automatically appear in the route discovery API:
+SSE routes are automatically included in route discovery APIs:
 
 ```python
-# list_namespaces will include the "sse" key
+# list_namespaces will include "sse" key
 sdk.router.list_namespaces()
 # {"MyModule": {"http": [...], "websocket": [...], "sse": ["/MyModule/events"]}}
 
@@ -2820,31 +2869,34 @@ sdk.router.list_namespaces()
 sdk.router.get_module_routes("MyModule")
 # {"http": [...], "websocket": [...], "sse": [{"path": "/MyModule/events", "streaming": true}]}
 
-# get_module_urls will generate complete URLs
+# get_module_urls will generate full URL
 sdk.router.get_module_urls("MyModule")
 # {"sse": [{"path": "/MyModule/events", "url": "http://localhost:8080/MyModule/events"}]}
 ```
 
-> **Server-Agnostic Design**: `SseEmitter` is decoupled from the underlying HTTP framework through callbacks. The framework provides `register_sse()` and `@sse` decorators as unified registration entry points, allowing adapters to implement SSE endpoints without directly depending on any underlying HTTP framework.
+> **Server-agnostic Design**: `SseEmitter` decouples through callbacks from the underlying HTTP framework. The framework provides `register_sse()` and `@sse` decorators as unified registration entry points, allowing adapters to implement SSE endpoints without directly depending on any underlying HTTP framework.
 
 
 
 ### 适配器核心概念
 
-# Core Concepts of Adapters
+# Core Adapter Concepts
 
-Understanding the core concepts of ErisPulse adapters is fundamental to adapter development.
+> [!TIP]
+> **When to read this**: Mandatory for adapter development path (complete explanation of BaseAdapter / SendDSL / lifecycle mechanisms). For quick start, read [Adapter Development Introduction](getting-started.md) first, and return here for deeper questions.
+
+Understanding the core concepts of ErisPulse adapters is the foundation for developing adapters.
 
 ## Adapter Architecture
 
 ### Component Relationships
 
 ```
-Forward Conversion (Receiving Direction)                           Reverse Conversion (Sending Direction)
+Forward Conversion (Receive Direction)                           Reverse Conversion (Send Direction)
 ─────────────────                           ─────────────────
                                              
 ┌──────────────────┐                        ┌──────────────────┐
-│ Native Platform Event     │                        │ Module-built Message     │
+│ Platform Native Event     │                        │ Module Constructed Message     │
 └────────┬─────────┘                        └────────┬─────────┘
          │                                           │
          ↓                                           ↓
@@ -2868,24 +2920,24 @@ Forward Conversion (Receiving Direction)                           Reverse Conve
                                 │
                                 ↓
                        ┌──────────────────┐
-                       │ Module (Event Handling)  │
+                       │ Module (Event Handler)  │
                        └──────────────────┘
 ```
 
 **Core Symmetry**:
-- **Forward Conversion** (Converter): Native platform event → OneBot12 standard event, original data preserved in `{platform}_raw`
+- **Forward Conversion** (Converter): Platform native event → OneBot12 standard event, original data preserved in `{platform}_raw`
 - **Reverse Conversion** (Raw_ob12): OneBot12 message segment → Platform API call, returns standard response format
 
 ## AdapterManager Adapter Manager
 
-`AdapterManager` is the core component of ErisPulse's adapter system, responsible for managing the registration, startup, shutdown, and event distribution of all platform adapters.
+`AdapterManager` is the core component of the ErisPulse adapter system, responsible for managing all platform adapters' registration, startup, shutdown, and event distribution.
 
-### Core Features
+### Core Functions
 
 - **Adapter Registration**: Register and manage multiple platform adapters
-- **Lifecycle Management**: Control the startup and shutdown of adapters
-- **Event Distribution**: Distribute OneBot12 standard events and platform-native events
-- **Configuration Management**: Manage the enabled/disabled status of adapters
+- **Lifecycle Management**: Control adapter startup and shutdown
+- **Event Distribution**: Distribute OneBot12 standard events and platform native events
+- **Configuration Management**: Manage adapter enable/disable status
 - **Middleware Support**: Support OneBot12 event middleware
 
 ### Basic Usage
@@ -2893,13 +2945,13 @@ Forward Conversion (Receiving Direction)                           Reverse Conve
 ```python
 from ErisPulse import sdk
 
-# Register adapters (usually done automatically by Loader)
+# Register adapter (usually done automatically by Loader)
 sdk.adapter.register("myplatform", MyPlatformAdapter)
 
 # Start all adapters
 await sdk.adapter.startup()
 
-# Start specified adapters
+# Start specified adapter
 await sdk.adapter.startup(["myplatform"])
 # Start all adapters
 await sdk.adapter.startup()
@@ -2915,13 +2967,13 @@ await sdk.adapter.shutdown()
 
 ### Startup and Shutdown
 
-#### Start Adapters
+#### Start Adapter
 
 ```python
 # Start all registered adapters
 await sdk.adapter.startup()
 
-# Start specified platforms
+# Start specified platform
 await sdk.adapter.startup(["platform1", "platform2"])
 ```
 
@@ -2929,16 +2981,16 @@ await sdk.adapter.startup(["platform1", "platform2"])
 
 1. Submit `adapter.start` lifecycle event
 2. Submit `adapter.status.change` event (starting)
-3. Parallel start each adapter
+3. Start adapters in parallel
 4. If startup fails, automatically retry (exponential backoff strategy)
 5. After successful startup, submit `adapter.status.change` event (started)
 
 **Retry Mechanism:**
 
 - First 4 retries: 60 seconds, 10 minutes, 30 minutes, 60 minutes
-- 5th and later: Fixed interval of 3 hours
+- 5th and subsequent: Fixed interval of 3 hours
 
-#### Shutdown Adapters
+#### Shutdown Adapter
 
 ```python
 # Shutdown all adapters
@@ -2948,7 +3000,7 @@ await sdk.adapter.shutdown()
 **Shutdown Process:**
 
 1. Submit `adapter.stop` lifecycle event
-2. Call `shutdown()` method for all adapters
+2. Call all adapters' `shutdown()` method
 3. Shutdown router server
 4. Clear event handlers
 5. Submit `adapter.stopped` lifecycle event
@@ -2990,17 +3042,17 @@ enabled_platforms = [p for p, enabled in status_dict.items() if enabled]
 ```python
 from ErisPulse import sdk
 
-# Listen for standard message events from all platforms
+# Listen to standard message events from all platforms
 @sdk.adapter.on("message")
 async def handle_message(data):
     print(f"Received OneBot12 message: {data}")
 
-# Listen for standard message events from a specific platform
+# Listen to standard message events from specific platform
 @sdk.adapter.on("message", platform="myplatform")
 async def handle_platform_message(data):
-    print(f"Received myplatform message: {data}")
+    print(f"Received message from myplatform: {data}")
 
-# Listen for all events
+# Listen to all events
 @sdk.adapter.on("*")
 async def handle_any_event(data):
     print(f"Received event: {data.get('type')}")
@@ -3009,12 +3061,12 @@ async def handle_any_event(data):
 #### Platform Native Events
 
 ```python
-# Listen for native events from a specific platform
+# Listen to specific platform's native event
 @sdk.adapter.on("raw_event_type", raw=True, platform="myplatform")
 async def handle_raw_event(data):
     print(f"Received native event: {data}")
 
-# Listen for native events from all platforms (wildcard)
+# Listen to native events from all platforms (wildcard)
 @sdk.adapter.on("*", raw=True)
 async def handle_all_raw_events(data):
     print(f"Received native event: {data}")
@@ -3024,13 +3076,13 @@ async def handle_all_raw_events(data):
 
 When calling `adapter.emit(event_data)`:
 
-1. **Middleware Processing**: Execute all OneBot12 middlewares first
+1. **Middleware Processing**: Execute all OneBot12 middleware first
 2. **Standard Event Distribution**: Distribute to matching OneBot12 event handlers
 3. **Native Event Distribution**: If raw data exists, distribute to native event handlers
 
 **Matching Rules:**
 
-- Exact match: `@sdk.adapter.on("message")` only matches `message` events
+- Exact match: `@sdk.adapter.on("message")` only matches `message` event
 - Wildcard: `@sdk.adapter.on("*")` matches all events
 - Platform filtering: `platform="myplatform"` only distributes events from the specified platform
 
@@ -3050,45 +3102,45 @@ async def filter_middleware(data):
     """Event filtering middleware"""
     # Filter out unwanted events
     if data.get("type") == "notice":
-        return None  # Returning None means the middleware chain ignores this return value, keeping original data for further processing
+        return None  # Return None to ignore the return value and preserve original data
     return data  # Must return data to continue passing
 ```
 
 #### Middleware Return Contract
 
 | Return Value | Behavior |
-|--------------|----------|
-| `dict`       | Rewrite event payload (subsequent handlers receive rewritten event) |
-| `None`       | Allow passage, payload unchanged (outputs WARNING log — recommend explicit `return data`) |
-| `False`      | **Reject**: Event is discarded, not passed to any handler, no outbound side effects |
+|--------|------|
+| `dict` | Rewrite event payload (subsequent handlers receive the modified event) |
+| `None` | Pass through, payload unchanged (outputs WARNING prompt - recommend explicit `return data`) |
+| `False` | **Block**: Event is discarded, not entering any handler, no outbound side effects |
 
-Reject is suitable for firewall, rate limiting, blacklist scenarios where events are discarded at the event level ("direct discard at event level") (previously only achievable via high-priority event handlers). When rejecting, the framework outputs TRACE log and triggers the `adapter.event.blocked` lifecycle hook (carrying `middleware` middleware name, full `event`, `platform` / `event_type` / `detail_type`), facilitating troubleshooting of "why an event received no response":
+Blocking is suitable for firewall, rate limiting, blacklist scenarios where events are discarded at the event level (previously only achievable with high-priority event handlers). When blocking, the framework outputs TRACE log and triggers the `adapter.event.blocked` lifecycle hook (carrying `middleware` middleware name, full `event`, `platform` / `event_type` / `detail_type`), facilitating troubleshooting for "why events are not responded to":
 
 ```python
 @sdk.adapter.middleware
 async def rate_limit_middleware(data):
     """Rate limiting middleware"""
     if _is_rate_limited(data):
-        return False  # Reject: event is discarded
+        return False  # Block: event is discarded
     data["rate_marked"] = True
     return data
 
 @sdk.lifecycle.on("adapter.event.blocked")
 async def on_event_blocked(data):
-    print(f"Event rejected by {data['middleware']}: {data['event_type']}")
+    print(f"Event blocked by {data['middleware']}: {data['event_type']}")
 ```
 
 #### Middleware Execution Order
 
-Middlewares execute in registration order, with later-registered middlewares executing first.
+Middleware executes in registration order, with later registered middleware executing first.
 
-> **Note**: If a middleware returns `None` (e.g., forgetting to `return data`), the framework ignores this return value and continues passing the original data, while outputting a warning-level log. This ensures that a single middleware mistake does not interrupt the entire event chain.
+> **Note**: If middleware returns `None` (e.g., forgetting `return data`), the framework ignores the return value and preserves the original data while outputting a warning-level log. This ensures that a single middleware mistake does not interrupt the entire event chain.
 
 ```python
 # Registration order
-sdk.adapter.middleware(middleware1)  # Executes last
-sdk.adapter.middleware(middleware2)  # Executes in the middle
-sdk.adapter.middleware(middleware3)  # Executes first
+sdk.adapter.middleware(middleware1)  # Last executed
+sdk.adapter.middleware(middleware2)  # Middle executed
+sdk.adapter.middleware(middleware3)  # First executed
 
 # Execution order: middleware3 -> middleware2 -> middleware1
 ```
@@ -3122,7 +3174,7 @@ from ErisPulse.Core.Bases import BaseConfig, BotAccountConfig
 
 @dataclass
 class MyConfig(BaseConfig):
-    """Adapter Configuration (declared, framework automatically manages)"""
+    """Adapter configuration (declared, framework automatically manages)"""
     token: str = field(
         default="",
         metadata={
@@ -3136,7 +3188,7 @@ class MyConfig(BaseConfig):
 class MyAdapter(BaseAdapter):
     ConfigClass = MyConfig  # Declare configuration class
     
-    # No need to override __init__, framework automatically handles:
+    # No need to override __init__, framework handles automatically:
     # - self.sdk, self.logger
     # - self.cfg (type-safe configuration instance, real-time read)
     # - self.Send, self.Request
@@ -3157,7 +3209,7 @@ class MyAdapter(BaseAdapter):
 
 ### Configuration Management
 
-The framework provides declarative configuration management, defining configuration structures via dataclass, with the framework automatically handling loading, validation, and template generation.
+The framework provides declarative configuration management, defining configuration structures through dataclass, and automatically handling loading, validation, and template generation.
 
 #### Single Account Configuration
 
@@ -3190,7 +3242,7 @@ class TelegramAdapter(BaseAdapter):
 
 #### Multi-Account Configuration
 
-The `BotAccountConfig` base class provides `enabled` and `name` fields. Most adapters can automatically obtain `bot_id` from the platform protocol or login response, injecting it into the account configuration during event conversion:
+The `BotAccountConfig` base class provides `enabled` and `name` fields. Most adapters can automatically obtain `bot_id` from the platform protocol or login response, injecting it into the account configuration during event conversion.:
 
 ```python
 from dataclasses import dataclass, field
@@ -3204,11 +3256,11 @@ class MyBotConfig(BotAccountConfig):
         "required": True,
     })
 
-# If bot_id cannot be obtained during login, allow users to fill it in configuration
+# If bot_id cannot be obtained during login, allow users to fill it in the configuration
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
     bot_id: str = field(default="", metadata={
-        "description": {"i18n": "yunhu.bot_id", "default": "Bot ID"},
+        "description": {"i18n": "yunhu.bot_id", "default": "Robot ID"},
         "required": True,
     })
     token: str = field(default="", metadata={
@@ -3232,11 +3284,11 @@ Field metadata serves both TOML comment generation and WebUI form rendering:
 ```python
 metadata = {
     "description": str | dict,  # Field description (supports i18n)
-    "required": bool,         # Whether required (validation + WebUI required marker)
+    "required": bool,         # Whether required (validation + WebUI required mark)
     "secret": bool,           # Whether sensitive (WebUI displays as ***, logs are masked)
-    "example": bool,          # Non-persistent flag: not written to config.toml (default value/template excluded),
+    "example": bool,          # Not persisted flag: not written to config.toml (default value/template excluded),
                               # only rendered into config.full.example; schema with "example": true marked,
-                              # CLI configuration wizard skips by default; user manually sets and persists normally
+                              # CLI configuration wizard skips by default; user manually sets then normal persistence
     "min": number, "max": number,  # Numerical range validation
     "ui": {                   # WebUI control configuration (old name "webui" still compatible)
         "widget": str,        # Control type: "text" | "switch" | "select" | "number" | "password"
@@ -3245,7 +3297,7 @@ metadata = {
         "options": list,      # Select control options [{label, value}], label supports i18n
         "placeholder": str | dict,  # Input box placeholder (supports i18n)
     },
-    "extra": dict,            # Extra extended field (passed through to schema)
+    "extra": dict,            # Additional extension field (passed through to schema)
 }
 ```
 
@@ -3259,7 +3311,7 @@ pure strings are passed through as-is (backward compatibility). Supported i18n f
 | `placeholder` | `ui.placeholder` | Input box placeholder |
 | `group_labels` | `_schema_meta` | Group display name (Dashboard partition title) |
 
-When using i18n, translation keys must be pre-registered in the i18n system (see [i18n documentation](../../advanced/i18n.md#Configuration Field Multilingual)).
+When using i18n, you need to register the translation keys to the i18n system in advance (see [i18n documentation](../../advanced/i18n.md#configuration-field-multilingual) for more details).
 
 **description / placeholder / options label** example:
 
@@ -3289,7 +3341,7 @@ mode: str = field(
 )
 ```
 
-**group_labels** example (declare after configuration class definition):
+**group_labels** example (declared after configuration class definition):
 
 ```python
 MyConfig._schema_meta = {
@@ -3300,12 +3352,12 @@ MyConfig._schema_meta = {
 }
 ```
 
-The framework's `resolve_config_schema()` automatically resolves all i18n keys in these fields according to the current language;
-`get_config_schema()` passes through the i18n dictionary as-is, to be parsed by the frontend.
+The framework's `resolve_config_schema()` will automatically parse all the above fields' i18n keys based on the current language;
+`get_config_schema()` will pass through the i18n dictionary as-is, for the frontend to parse itself.
 
-#### docstring Automatically Generates Field Descriptions (v2.8.0+)
+#### docstring automatically generates field descriptions (v2.8.0+)
 
-Fields without `description` declared in metadata, the framework automatically extracts field descriptions from the configuration class docstring as a fallback, supporting two common styles (can be mixed):
+Fields without `description` declared in metadata, the framework will automatically extract field descriptions from the configuration class docstring as a fallback, supporting two common styles (can be mixed):
 
 ```python
 @dataclass
@@ -3317,7 +3369,7 @@ class MyConfig(BaseConfig):
     :ivar timeout: Request timeout in seconds
     """
 
-    endpoint: str = "https://api.example.com"   # No metadata description → comment/description from docstring
+    endpoint: str = "https://api.example.com"   # No metadata description → Comment/description from docstring
     timeout: int = 30
 
     # Google style is also supported (Attributes: section):
@@ -3330,9 +3382,9 @@ i18n dictionary form of description is unaffected (always prioritized).
 
 #### Nested Configuration (v2.8.0+)
 
-When the field type is a nested dataclass, the framework recursively processes: schema uses `"type": "table"` +
-`"fields"` subtree (WebUI renders as a collapsible nested group), TOML template renders as `[sub-table]` section,
-default values / filling / validation / i18n resolution all recursively apply.
+When the field type is a nested dataclass, the framework recursively processes: the schema uses `"type": "table"` +
+`"fields"` subtree to carry (WebUI renders as collapsible nested group), TOML template renders as `[sub-table]` section,
+default values / filling / validation / i18n parsing all recursively take effect.
 
 ```python
 @dataclass
@@ -3362,10 +3414,10 @@ max_retries = 3
 backoff = 0.5
 ```
 
-> For nested types, it is recommended to use direct type annotations; string annotations (e.g., for deferred evaluation scenarios) must ensure
-> the type can be globally resolved from the configuration class's module, `__qualname__` outer class namespace, or class attribute by name.
+> For nested types, it is recommended to use direct type annotations; string annotations (for delayed evaluation scenarios) must ensure
+> the type can be globally resolved from the configuration class's module, `__qualname__` outer class namespace, or class attributes by name.
 
-#### Non-persistent example Fields (v2.8.0+)
+#### Non-persisted example fields (v2.8.0+)
 
 ```python
 gc_interval: int = field(default=300, metadata={"example": True})
@@ -3376,18 +3428,18 @@ Fields with `example: True`:
 - Not written to config.toml (adapter/module configuration template and default values excluded, runtime uses code default values)
 - Only rendered into project's `config.full.example` (for user reference, manually copied to config.toml as needed)
 - Schema marked with `"example": true` (panel can decide display strategy), CLI configuration wizard skips by default
-- After user manually sets this key, it persists normally and updates normally (user's explicit intent takes precedence)
+- After user manually sets this key, it is normally persisted, normally hot-updated (user's explicit intent takes precedence)
 
-Suitable for "complex and rarely touched" advanced configuration items, keeping the user's config.toml minimal.
+Suitable for "complex but rarely touched" advanced configuration items, keeping the user's config.toml minimal.
 
-> ⚠️ `_schema_meta` is class-level metadata (not a configuration field). If declared inside the dataclass body,
-> it must be annotated with `ClassVar` (`_schema_meta: ClassVar[dict] = {...}`), otherwise it will be treated
-> as a regular field by dataclass. The framework defensively excludes fields with leading underscores from any
-> schema/template/default value/validation output, but it is still recommended to declare them properly.
+> ⚠️ `_schema_meta` is class-level metadata (not a configuration field). If declared within the dataclass class body,
+> must add `ClassVar` annotation (`_schema_meta: ClassVar[dict] = {...}`), otherwise it will be treated as a normal field by
+> dataclass. The framework defensively excludes fields with leading underscores from any
+> schema / template / default value / validation output, but it is still recommended to declare them properly.
 
 ### Declarative Translation Keys (v2.7.0+)
 
-Adapters can declare translation keys centrally by nesting the `I18nClass` class, similar to declaring `ConfigClass`. The framework automatically registers all declared translation keys during `__init__` phase (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available when generating templates.
+Adapters can declare translation keys in a centralized manner through the nested `I18nClass`, similar to declaring `ConfigClass`. The framework automatically registers all declared translation keys during `__init__` (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available when generating templates.
 
 ```python
 from ErisPulse.Core.Bases import BaseAdapter, BaseI18n, I18nKey
@@ -3412,14 +3464,14 @@ class MyAdapter(BaseAdapter):
         )
 ```
 
-> ``I18nKey.default`` is a language-agnostic fallback text and is not registered in any language.
-> To make translations effective, at least one language parameter must be explicitly provided.
+> ``I18nKey.default`` is **language-agnostic fallback text**, not registered to any language.
+> To make translations effective, at least one language parameter must be explicitly passed.
 
-For detailed usage (key path rules, explicit key parameters, etc.), see [i18n documentation](../../advanced/i18n.md#Recommended Writing Method Through I18nClass Declaration of Translation Keys v270).
+For detailed usage (key path rules, explicit key parameters, etc.), see [i18n documentation](../../advanced/i18n.md#recommended-usage-declaring-translation-keys-via-i18nclass-v270).
 
 ### Declarative Event Extension Methods (v2.7.0+)
 
-Adapters can declare platform-specific event extension methods in `EventMixin`, which the framework automatically registers to the current platform.
+Adapters can declare platform-specific event extension methods through `EventMixin`, and the framework automatically registers them to the current platform.
 
 ```python
 from ErisPulse.Core import BaseAdapter
@@ -3446,12 +3498,12 @@ async def handler(event):
         await event.reply(f"[{chat_name}] Official message received")
 ```
 
-> Adapter's event extension methods are registered to its own platform (``self._platform``).
-> Modules needing cross-platform event extensions should use the original ``register_event_mixin()`` API.
+> Event extension methods of adapters are registered to their own platform (``self._platform``).
+> Modules need to use the original ``register_event_mixin()`` API for cross-platform event extensions.
 
 #### Account Resolution
 
-Multi-account adapters can use `_resolve_account()` to automatically resolve target accounts:
+Multi-account adapters can use `_resolve_account()` to automatically resolve the target account:
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -3472,7 +3524,7 @@ class MyAdapter(BaseAdapter):
     
     def on_config_update(self, old_config, new_config):
         if old_config.token != new_config.token:
-            self.logger.info("Token has been updated, reconnecting")
+            self.logger.info("Token updated, reconnecting")
 ```
 
 ### Initialization Process
@@ -3483,9 +3535,9 @@ The framework automatically performs the following tasks in `BaseAdapter.__init_
 2. **Send/Request Factory**: Create `self.Send` and `self.Request`
 3. **Configuration Template**: If `ConfigClass` is declared, automatically generate default configuration template (first time)
 4. **Account Template**: If `AccountConfigClass` is declared, automatically generate default account template (first time)
-5. **EventMixin Registration**: If `EventMixin` is declared, automatically register in `AdapterManager` after platform name injection
+5. **EventMixin Registration**: If `EventMixin` is declared, automatically register to `AdapterManager` after platform name injection
 
-Configuration is read in real-time via `self.cfg` / `self.accounts` (each access reads the latest value from configuration storage). `self.config` as a compatibility alias for `self.cfg` is still usable.
+Configuration is read in real-time via `self.cfg` / `self.accounts` (each access reads from configuration storage). `self.config` as a compatibility alias for `self.cfg` is still available.
 
 Most adapters do not need to override `__init__`. If custom initialization is required:
 
@@ -3501,7 +3553,7 @@ class MyAdapter(BaseAdapter):
 
 ## Send Message Sending DSL
 
-### Inheritance Structure
+### Inheritance Relationship
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -3512,7 +3564,7 @@ class MyAdapter(BaseAdapter):
 
 ### Available Properties
 
-The `Send` class automatically sets the following properties when called:
+`Send` class automatically sets the following properties when called:
 
 | Property | Description | Setting Method |
 |-----|------|---------|
@@ -3522,8 +3574,8 @@ The `Send` class automatically sets the following properties when called:
 | `_account_id` | Sending Account ID | `Using(account_id)` |
 | `_adapter` | Adapter Instance | Automatically set |
 | `_at_user_ids` | @ User List | `At(user_id)` |
-| `_reply_message_id` | ID of replied message | `Reply(message_id)` |
-| `_at_all` | Whether to @ all | `AtAll()` |
+| `_reply_message_id` | Reply Message ID | `Reply(message_id)` |
+| `_at_all` | Whether @ All | `AtAll()` |
 
 > **Recommendation**: Use `self.send_context` property to get `target_type`, `target_id`, `account_id` at once, which is clearer than directly accessing instance variables.
 
@@ -3536,12 +3588,12 @@ The `Send` class automatically sets the following properties when called:
 
 ### Basic Methods
 
-Adapters only need to implement `Raw_ob12`, standard methods (Text/Image/Voice/Video/File) are inherited from the `SendDSL` base class and default to delegating to it:
+The adapter only needs to implement `Raw_ob12`, standard methods (Text/Image/Voice/Video/File) are inherited from the `SendDSL` base class and default to delegating to it:
 
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """Must implement: OneBot12 message segment → platform API"""
+        """Must implement: OneBot12 message segment → Platform API"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -3558,7 +3610,7 @@ class Send(BaseAdapter.Send):
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-### Chaining Modifier Methods
+### Chainable Modifier Methods
 
 ```python
 class Send(BaseAdapter.Send):
@@ -3574,7 +3626,7 @@ class Send(BaseAdapter.Send):
 
 ## Event Converter
 
-### Conversion Flow
+### Conversion Process
 
 ```
 Platform Raw Event
@@ -3590,17 +3642,17 @@ All converted events must include:
 
 ```python
 {
-    "id": "Event Unique Identifier",
+    "id": "Unique Event Identifier",
     "time": 1234567890,           # 10-digit Unix timestamp
     "type": "message/notice/request/meta",
-    "detail_type": "Event Detailed Type",
+    "detail_type": "Detailed Event Type",
     "platform": "Platform Name",
     "self": {
         "platform": "Platform Name",
         "user_id": "Bot ID"     # Must match bot_id
     },
-    "{platform}_raw": {...},       # Raw data (must)
-    "{platform}_raw_type": "..."    # Raw type (must)
+    "{platform}_raw": {...},       # Raw data (required)
+    "{platform}_raw_type": "..."    # Raw type (required)
 }
 ```
 
@@ -3627,7 +3679,7 @@ class MyPlatformConverter:
         event_type = self._convert_type(raw_event.get("type"))
         detail_type = self._convert_detail_type(raw_event)
         
-        # Build standard event
+        # Construct standard event
         onebot_event = {
             "id": str(event_id),
             "time": timestamp,
@@ -3703,7 +3755,7 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
-> **Route Information Query**: Adapter-registered routes (HTTP, WebSocket, SSE) can be queried for complete connection addresses (including `base_url` + path) via `sdk.adapter.get_connection_info(platform)` and `sdk.router.get_module_urls(module_name)`. See [Getting Started - Adapter Development - Connection Information and Route Discovery](getting-started.md#9-Connection Information and Route Discovery) and [SSE Support](getting-started.md#10-SSE-Server-Sent-Events-Support).
+> **Route Information Query**: The routes registered by adapters (HTTP, WebSocket, SSE) can be queried through `sdk.adapter.get_connection_info(platform)` and `sdk.router.get_module_urls(module_name)` to obtain complete connection addresses (including `base_url` + path). See [Adapter Development Introduction - Connection Information and Route Discovery](getting-started.md#9-connection-information-and-route-discovery) and [SSE Support](getting-started.md#10-sse-server-sent-events-support).
 
 ## API Response Standard
 
@@ -3725,7 +3777,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e), raw=None)
 ```
 
-### Manual Response Construction (Legacy Method Still Compatible)
+### Manually Constructed Response (Legacy Method Still Compatible)
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -3782,13 +3834,13 @@ token = "token2"
 enabled = true
 ```
 
-### Specifying Account for Sending
+### Specify Account for Sending
 
 ```python
 # Use Using method to specify account
 my_adapter = adapter.get("myplatform")
 
-# Through event's self.user_id (recommended, most general)
+# Through event's self.user_id (recommended, most universal)
 await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
 
 # Through account name
@@ -3797,12 +3849,12 @@ await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
 ### Relationship between self.user_id and Using
 
-The framework's event reply mechanism automatically extracts `account_id` (if present) or `user_id` from the event's `self` field, as the `Using` parameter. Adapter developers need to ensure the Converter correctly sets `self.user_id` so that `_resolve_account()` can match the correct account.
+The framework's event reply mechanism automatically extracts `account_id` (prioritized) or `user_id` from the event's `self` field as the `Using` parameter. Adapter developers need to ensure that the `self.user_id` value set by the Converter correctly matches `_resolve_account()`.
 
 **Framework Internal Behavior**:
 
 ```python
-# Framework extraction logic for bot_id
+# Framework extraction of bot_id logic
 bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
 
 # Only call Using if bot_id is non-empty
@@ -3810,7 +3862,7 @@ if bot_id:
     send_chain = send_chain.Using(bot_id)
 ```
 
-> **Key Point**: Even if the adapter uses a single Bot configuration, as long as the Converter correctly sets `self.user_id`, the framework will use it as the `Using` parameter. The adapter must ensure `self.user_id` matches the identifier field (e.g., `bot_id`) in `AccountConfigClass` so that `_resolve_account()` can match the correct account. If `self.user_id` is empty, the framework will not call `Using`, in which case `call_api` receives `account_id` as `None`, and `_resolve_account(None)` returns the first enabled account.
+> **Key Point**: Even if the adapter only uses a single Bot configuration, as long as the Converter correctly sets `self.user_id`, the framework will use it as the `Using` parameter. The adapter needs to ensure that `self.user_id` matches the identifier field (such as `bot_id`) in `AccountConfigClass` so that `_resolve_account()` can match the correct account. If `self.user_id` is empty, the framework will not call `Using`, and the received `account_id` in `call_api` will be `None`, and `_resolve_account(None)` returns the first enabled account.
 
 ## Error Handling
 
@@ -3864,18 +3916,18 @@ async def call_api(self, endpoint: str, **params):
         return self._error_response(str(e), 34000)
 ```
 
-> **Backward Compatibility**: Adapters using `aiohttp.ClientSession` directly are unaffected and can still catch `aiohttp.ClientError`. Both methods can coexist. New code is recommended to use `sdk.client` with ErisPulse's exception system.
+> **Backward Compatibility**: Code using `aiohttp.ClientSession` in old adapters is unaffected and can still catch `aiohttp.ClientError`. Both methods can coexist. New code is recommended to use `sdk.client` + ErisPulse exception system.
 
 ## Bot Status Management
 
-AdapterManager includes a built-in bot status tracking system, automatically maintaining the online status, active time, and metadata of all registered bots.
+AdapterManager includes a built-in Bot status tracking system that automatically maintains the online status, active time, and metadata of all registered Bots.
 
 ### Automatic Discovery Mechanism
 
-When the adapter emits an event via `adapter.emit()`, the framework automatically checks the event's `self` field:
+When an adapter emits an event via `adapter.emit()`, the framework automatically checks the `self` field in the event:
 
-- **Meta Events**: Execute corresponding actions based on `detail_type` (register on connect, mark offline on disconnect, update active time on heartbeat)
-- **Regular Events** (message/notice/request): Automatically discover bots and update active time
+- **Meta Events**: Perform corresponding actions based on `detail_type` (register on connect, mark as offline on disconnect, update active time on heartbeat)
+- **Regular Events** (message/notice/request): Automatically discover Bots and update active time
 
 ```python
 # All events containing self field trigger automatic discovery
@@ -3892,9 +3944,9 @@ await self.adapter.emit({
 
 | `detail_type` | Description | Framework Behavior |
 |---|---|---|
-| `connect` | Bot connects | Register bot and trigger `adapter.bot.online` lifecycle event |
-| `disconnect` | Bot disconnects | Mark bot as offline and trigger `adapter.bot.offline` lifecycle event |
-| `heartbeat` | Bot heartbeat | Update bot active time and metadata |
+| `connect` | Bot connects | Register Bot and trigger `adapter.bot.online` lifecycle event |
+| `disconnect` | Bot disconnects | Mark Bot as offline and trigger `adapter.bot.offline` lifecycle event |
+| `heartbeat` | Bot heartbeat | Update Bot active time and metadata |
 
 ### Adapter Sending Meta Events
 
@@ -3904,13 +3956,13 @@ Use `emit_meta()` to send meta events in one line:
 class MyAdapter(BaseAdapter):
     async def _on_bot_connect(self, bot_id: str):
         # Send connect event in one line
-        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="My Bot")
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="My Robot")
 
     async def _on_bot_disconnect(self, bot_id: str):
         await self.emit_meta("disconnect", bot_id)
 ```
 
-Also supports manual construction (legacy method still compatible):
+Also supports manual construction (old method still compatible):
 
 ```python
 await self.adapter.emit({
@@ -3921,7 +3973,7 @@ await self.adapter.emit({
 })
 ```
 
-### Extended Information in `self` Field
+### Extended `self` Field Information
 
 Besides the required `platform` and `user_id`, the `self` field supports the following optional fields:
 
@@ -3937,25 +3989,25 @@ Besides the required `platform` and `user_id`, the `self` field supports the fol
 ```python
 from ErisPulse import sdk
 
-# Get single bot information
+# Get single Bot information
 info = sdk.adapter.get_bot_info("myplatform", "bot123")
 # {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
 
-# List all bots
+# List all Bots
 all_bots = sdk.adapter.list_bots()
 
-# List bots of specified platform
+# List Bots of specified platform
 platform_bots = sdk.adapter.list_bots("myplatform")
 
-# Check if bot is online
+# Check if Bot is online
 is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
-# Get full status summary (suitable for WebUI display)
+# Get complete status summary (suitable for WebUI display)
 summary = sdk.adapter.get_status_summary()
 # {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
 ```
 
-### Listening to Bot Lifecycle
+### Listen to Bot Lifecycle
 
 ```python
 from ErisPulse import sdk
@@ -6621,21 +6673,21 @@ epsdk run --reload
 
 | Command | Alias | Parameters | Description |
 |---------|-------|------------|-------------|
-| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | Initialize ErisPulse project |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | Create module/adapter scaffold |
+| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | Initialize an ErisPulse project |
+| `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | Create scaffolding for module/adapter; `pack` converts local plugins into a distributable project |
 
 ### init
 
-Initialize a new ErisPulse project. Supports interactive and quick modes, generates `pyproject.toml` (dependency manifest) since 2.8.4, optionally creates project `.venv` virtual environment and installs framework and adapters, and supports **specifying any directory**.
+Initialize a new ErisPulse project. Supports interactive and quick modes, generates `pyproject.toml` (dependency manifest) since 2.8.4, optionally creates a project `.venv` virtual environment and installs framework and adapters, and supports **specifying any directory**.
 
 **Parameters:**
 
 | Parameter | Short | Description |
-|-----------|--------|-------------|
-| `[path]` | | Target path (can include parent directory, e.g. `../apps/mybot`; pure name equivalent to `--project-name`) |
+|-----------|-------|-------------|
+| `[path]` | | Target path (can include parent directory, e.g., `../apps/mybot`; pure name is equivalent to `--project-name`) |
 | `--project-name` | `-n` | Project name |
-| `--path` | | Project parent directory (combined with `-n` to specify creation location) |
-| `--quick` | `-q` | Quick mode, skip interactive wizard (default creates `.venv` and installs dependencies) |
+| `--path` | | Parent directory for the project (combined with `-n` to specify creation location) |
+| `--quick` | `-q` | Quick mode, skips interactive wizard (default creates `.venv` and installs dependencies) |
 | `--force` | `-f` | Force overwrite existing configuration files |
 | `--here` | | Initialize in current directory, do not create subdirectory |
 | `--no-uv` | | Use pip instead of uv |
@@ -6650,7 +6702,7 @@ epsdk init
 # Quick initialization (creates my_bot/ in current directory, with pyproject.toml + .venv)
 epsdk init -q -n my_bot
 
-# Initialize in any directory (../apps/mybot)
+# Initialize in any specified directory (../apps/mybot)
 epsdk init ../apps/mybot
 
 # Combine parent directory and project name
@@ -6662,53 +6714,59 @@ epsdk init -f
 # Initialize in current directory
 epsdk init --here -n my_bot
 
-# Generate project structure only, skip virtual environment creation
+# Generate project structure only, skip virtual environment
 epsdk init --no-venv -n my_bot
 ```
 
-init output: `main.py`, `pyproject.toml` (dependency manifest), `config/config.toml` + `config.full.example`, `config/ssl/`, `logs/`, `.gitignore`, `README.md`; if virtual environment creation is selected, additionally generates `.venv` and installs `erispulse` and selected adapters into it.
+Init output: `main.py`, `pyproject.toml` (dependency manifest), `config/config.toml` + `config.full.example`, `config/ssl/`, `logs/`, `.gitignore`, `README.md`; if virtual environment is chosen, `.venv` is created and `erispulse` along with selected adapters are installed within it.
 
 > [!NOTE]
-> `.gitignore` is a grouped template: Python bytecode and build artifacts, virtual environment and `.env`, tool cache, editor and system files, and **excludes `config/` and `logs/` runtime directories as a whole**—`config.toml` contains sensitive information like adapter tokens and should not be committed to the repository; for sharing configuration skeletons, use `config.full.example`.
+> `.gitignore` is a grouped template: Python bytecode and build artifacts, virtual environments and `.env`, tool caches, editor and system files, and **excludes the runtime directories `config/` and `logs/` entirely**—`config.toml` contains sensitive information such as adapter tokens and should not be committed; for sharing configuration skeletons, use `config.full.example`.
 
 > [!WARNING]
-> **Do not use `uv run epsdk run` to run the robot**. `uv run` creates a **one-time isolated environment** when executed in a directory without `pyproject.toml`—packages installed via `epsdk install` in it will not persist. Use `epsdk run` within the project directory (which automatically uses the project `.venv`), or activate the virtual environment first before running.
+> **Do not use `uv run epsdk run` to run the bot**. `uv run` creates a **one-time isolated environment** when executed in a directory without `pyproject.toml`—dependencies installed via `epsdk install` in this environment will not persist. Use `epsdk run` within the project directory (which automatically uses the project’s `.venv`), or activate the virtual environment first before running.
 
 ### create
 
-Create a scaffold project for ErisPulse module or adapter.
+Create scaffolding for ErisPulse modules or adapters; the `pack` subcommand converts local plugins (`plugins/` directory) into a distributable standard project.
 
 **Parameters:**
 
 | Parameter | Short | Description |
-|-----------|--------|-------------|
-| `{module,adapter}` | | Type to create: `module` or `adapter` |
+|-----------|-------|-------------|
+| `{module,adapter,pack}` | | Type to create: `module` / `adapter` / `pack` (plugin to project) |
 | `--name` | `-n` | Project name (PascalCase) |
 | `--description` | `-d` | Project description |
 | `--author` | `-a` | Author name |
 | `--email` | `-e` | Author email |
 | `--homepage` | | Project homepage URL |
 | `--output` | `-o` | Output directory (default is current directory) |
-| `--force` | `-f` | Force overwrite existing directory |
-| `--local` | | Create local plugin (only available for `module`): generates `plugins/<name>/` package structure, no packaging required for installation |
+| `--force` | `-f` | Force overwrite existing directories |
+| `--local` | | Create a local plugin (`module` / `adapter` available): generates `plugins/<name>/` package structure, avoids packaging and installation |
 
 **Examples:**
 
 ```bash
-# Interactive creation (guided selection of type and filling in information)
+# Interactive creation (guided selection of type and filling out information)
 epsdk create
 
-# Directly create Module project
+# Directly create a Module project
 epsdk create module -n MyModule
 
-# Create local plugin (placed in project plugins/ directory, automatically discovered at startup, supports hot-reload)
+# Create a local plugin (placed in the project's plugins/ directory, automatically discovered at startup)
 epsdk create module -n MyModule --local
 
-# Directly create Adapter project
+# Create a local adapter plugin (same as above, avoids packaging for development)
+epsdk create adapter -n MyAdapter --local
+
+# Directly create an Adapter project
 epsdk create adapter -n MyAdapter
 
-# Complete parameters
-epsdk create module -n MyModule -d "module description" -a "author" -e "mail@example.com"
+# Convert a local plugin into a distributable project (interactive selection of plugin → fill in metadata → generate standard project)
+epsdk create pack
+
+# Full parameters
+epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@example.com"
 
 # Specify output directory
 epsdk create module -n MyModule -o ./projects
@@ -10864,14 +10922,17 @@ Guaranteed framework behavior:
 
 # Shadow Modules and Gradual Promotion
 
-A shadow module is a **new version** of the same module, running in parallel with the live old version under an independent owner (e.g., `roll_shadow`). It receives **copies** of real events, and its outbound calls are **intercepted and logged** instead of being actually dispatched. By comparing the behaviors of both versions in `shadow_diff`, you can confirm there are no issues before promoting the shadow to become the live version with a single `promote` action. You can also `dismiss` the shadow at any time. **No code changes are required** for the module; all operations are driven at runtime via APIs: similar to `load / unload / reload`, these operational actions can be directly invoked through the Dashboard or custom management modules, with no configuration files needed.
+> [!TIP]
+> **When to read this**: When you need a gradual release — running a new version in parallel with the old one, comparing behaviors, and promoting or rolling back. If not needed, you can skip this section without affecting other features.
 
-<!-- < tips > -->
+A shadow module is a **new version** of the same module, running in parallel with the live old version under a separate owner (e.g., `roll_shadow`). It receives **copies** of real events, and its outbound calls are **intercepted and recorded** instead of being actually sent — allowing you to compare behaviors between the two versions in `shadow_diff`. After confirming the new version is safe, you can `promote` it to become the new live version with a single click, or `dismiss` it at any time to abandon the shadow version. **No code changes are required**; the entire process is driven by runtime APIs: similar to `load / unload / reload`, these operational actions can be directly called from the Dashboard or custom management modules, with no configuration needed.
+
+{!--< tips >!--}
 1. Start: ``await sdk.module.shadow_start("roll", source="path/to/v2")``
-   —— The new version runs in parallel with the old version under an independent owner (defaulting to the path name).
+   —— The new version runs in parallel with the old version under a separate owner (defaulting to the path name).
 2. The shadow does not participate in real distribution or dependency graphs: commands with the same name go into the shadow directory, routes are registered but not mounted, lifecycle broadcasts are silent, and `module.call` and dependency resolution still point to v1.
-3. Promotion must always be confirmed by a human: ``await sdk.module.promote_shadow("roll")``, and if it fails, the old instance is automatically rolled back to continue serving; ``dismiss_shadow`` can be used at any time to abandon the shadow.
-<!-- < /tips > -->
+3. Promotion is always confirmed by a human: ``await sdk.module.promote_shadow("roll")``, and if it fails, the old instance automatically rolls back and continues serving; ``dismiss_shadow`` abandons the shadow version at any time.
+{!--< /tips >!--}
 
 ## Quick Start
 
@@ -10932,19 +10993,22 @@ The `promote` process: take a snapshot of the current version (including cascadi
 
 # Inter-Module Communication
 
-> [!NOTE]  
+> [!TIP]
+> **When to read this**: When you need cross-module calls (RPC), service contracts, directed events, or cold-start replay. Skip if not needed, as it does not affect other features.
+
+> [!NOTE]
 > This chapter requires ErisPulse **2.8.0+**.
 
-ErisPulse's modules have a **three-layer communication model**, ordered as "point-to-point → directed → broadcast":
+ErisPulse has a **three-layer communication model** between modules, arranged as "point-to-point → directed → broadcast":
 
 | Layer | API | Semantics | Typical Scenario |
 |---|---|---|---|
-| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking capabilities of another module (e.g., fetching history, translation, refund) |
-| **Directed Events** | `await lifecycle.emit("message_received", {...}, to="Chat")` | Distributed only to lifecycle hooks registered by the specified module | Notifying downstream modules of upstream state changes ("a new message was received") |
-| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide visible lifecycle events | Hot configuration updates, module up/down events |
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking another module's capability (e.g., check history, translate, refund) |
+| **Directed Events** | `await lifecycle.emit("message_received", {...}, to="Chat")` | Only delivered to lifecycle hooks registered by the specified module | Upstream state change notification to downstream ("new message received") |
+| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide visible lifecycle event | Hot configuration updates, module up/down |
 
 {!--< tips >!--}
-Selection rule: **Use `call` when you need a return value, use `emit(..., to=...)` when you only want to notify a specific module's hooks, and use `emit(...)` to notify everyone.**  
+Selection mnemonic: **Use `call` for return values, `emit(..., to=...)` for notifying a specific module's hooks, and `emit(...)` for notifying everyone.** 
 {!--< /tips >!--}
 
 ## RPC: module.call
@@ -10957,11 +11021,11 @@ Difference from direct attribute access `sdk.module.Chat.get_history(...)` (unch
 
 | | `module.call()` | Direct attribute access |
 |---|---|---|
-| Target not registered / disabled | Throws `ModuleNotAvailableError` | Throws `AttributeError` |
-| Lazy-loaded modules | **Automatically wakes up** (event-driven modules go through activation lock) | Asynchronous initialization throws RuntimeError |
-| `current_owner` | Attributed to the **target module** (its internal wait_reply / send / logs are correctly attributed) | Remains the caller |
-| Timeout | Default 30 seconds (`timeout=` overrides, None means unlimited) | None |
-| Scope audit | Caller goes through the outbound gate `actions.<caller>.call` | None |
+| Target not registered / enabled | Throws `ModuleNotAvailableError` | Throws `AttributeError` |
+| Lazy-loaded module | **Automatically wakes up** (event-driven modules use activation lock) | Async initialization throws RuntimeError |
+| `current_owner` | Attributed to the **target module** (its internal wait_reply / send / logs are correctly attributed) | Maintains caller |
+| Timeout | Default 30 seconds (`timeout=` overrides, None means no timeout) | None |
+| Scope audit | Caller passes through outbound gate `actions.<caller>.call` | None |
 | Contract validation | `meta.services` whitelist | None |
 
 ### Exception Hierarchy
@@ -10969,16 +11033,16 @@ Difference from direct attribute access `sdk.module.Chat.get_history(...)` (unch
 ```
 ModuleError                      # Base class for module system exceptions
 └── ModuleCallError              # Base class for cross-module calls (includes module / method attributes)
-    ├── ModuleNotAvailableError  # Target not registered / disabled / activation failed
+    ├── ModuleNotAvailableError  # Target not registered / enabled / activation failed
     ├── ServiceNotProvidedError  # Method not in services whitelist / private method / does not exist
     └── ModuleCallTimeoutError   # Coroutine method timeout
 ```
 
-All exceptions are under the `ErisPulseError` hierarchy and can be caught using `from ErisPulse.Core import ModuleCallError`.
+All are part of the `ErisPulseError` hierarchy, and can be caught via `from ErisPulse.Core import ModuleCallError`.
 
 ## Service Contract: meta.services
 
-Service providers declare a whitelist of publicly available services in `get_meta()` (symmetrical to the `commands` field):
+The service provider declares the whitelist of externally provided services in `get_meta()` (symmetrical to `commands` field):
 
 ```python
 from ErisPulse.Core.Bases import BaseModule, ModuleMeta
@@ -10999,17 +11063,13 @@ class ChatModule(BaseModule):
     def _internal_helper(self): ...   # Underscore-prefixed methods are always forbidden for external calls
 ```
 
-**Default behavior is unnoticeable**:
+**Default behavior is implicit**:
 
-- If `services` is not declared → All **public** methods are naturally callable via `module.call()` (consistent with direct attribute access),  
-  no declaration is required
-- After declaration → Restrict to the whitelist, calls beyond the list throw `ServiceNotProvidedError`—used to mark  
-  "these methods are the ones promised externally"
-- The main control authority lies with the user side: `scope.actions` configuration determines "who can call whom" (see audit below),  
-  the module author's `services` is only a service declaration, and the two layers are not interchangeable
+- If `services` is not declared → All **public** methods are naturally callable via `module.call()` (consistent with direct attribute access), requiring no declaration.
+- If declared → Restrict to the whitelist, and out-of-whitelist calls throw `ServiceNotProvidedError`—used to mark "these methods are the ones promised externally."
+- Control is primarily on the user side: `scope.actions` configuration determines "who can call whom" (see audit below), while the module author's `services` is only a service surface declaration; the two layers are independent.
 
-**Service Descriptions**: Provide human-readable / AI-readable descriptions for each service—no need to write anything if not required,  
-the description is automatically taken from the **first line of the method's docstring** (the framework already requires docstring style):
+**Service descriptions**: Provide human / AI-readable descriptions for each service—no need to write anything if not required. The description is automatically taken from the **first line of the method's docstring** (the framework already requires docstring style):
 
 ```python
 async def translate(self, text, target_lang):
@@ -11033,84 +11093,76 @@ sdk.module.services()
 # {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
 #            'description': 'Translate text into a specified language'}]}
 
-sdk.module.services("Chat")   # Only query a specific module
+sdk.module.services("Chat")   # Query only a specific module
 ```
 
-- Only lists modules that explicitly declare `meta.services` (modules not declared do not appear in the directory)
-- Each service includes method signature string (extracted via `inspect.signature`) and description text
-- Also included in topology: `sdk.module.get_topology()` entries for each module include a `services` field
+- Only lists modules that **explicitly declare** `meta.services` (modules without declaration do not appear in the directory)
+- Each service includes the method signature string (extracted via `inspect.signature`) and description text
+- Also included in topology: `sdk.module.get_topology()` entries for each module include the `services` field
 
 {!--< tips >!--}
-**MCP Roadmap**: The service directory (name + signature + description) is the shape of an MCP tool—  
-each service naturally becomes ``{"name", "description", "parameters"}``.  
-In the future, the framework can expose ``services()`` directly as an MCP server endpoint, allowing AI to discover and invoke module capabilities;  
-``scope.actions.call`` audit naturally becomes the security gate for AI calls.
+**MCP Roadmap**: The service directory (name + signature + description) is the shape of an MCP tool—each service naturally becomes ``{"name", "description", "parameters"}``. In the future, the framework could expose ``services()`` directly as an MCP server endpoint, allowing AI to discover and call module capabilities; ``scope.actions.call`` audit naturally becomes the security gate for AI calls.
 {!--< /tips >!--}
 
 ## Outbound Audit: Who Can Call Whom
 
-Each `module.call()` passes through the scope outbound gate as the **caller module**'s identity:
+Each `module.call()` passes through the scope outbound gate as the **caller module**:
 
 ```toml
 [ErisPulse.scope.actions.CallerModule.call]
-deny = ["Chat.get_history"]        # Prohibit CallerModule from calling Chat's get_history
+deny = ["Chat.get_history"]        # Deny CallerModule from calling Chat's get_history
 # allow = ["Chat.get_*"]           # Or whitelist: only allow calling Chat's get-* services
 ```
 
-- `name` format is `<target module>.<method name>`, supports exact / glob / `re:` regex
+- `name` format is `<target module>.<method name>`, supporting exact / glob / `re:` regex
 - Framework-level calls (without owner context, e.g., startup scripts) are not subject to audit constraints
 - Denied calls throw `ModuleCallError` (TRACE log `core.module.call_denied`)
 
 See [Scope (scope)](scope.md) for configuration details on the outbound dimension.
 
-## Directed Events: lifecycle.emit's to parameter
+## Directed Events: lifecycle.emit with to parameter
 
-Lifecycle events support directed propagation: `to` specifies the target owner (owner), and the event is only distributed to hooks registered by that owner (hooks automatically registered by the module in `on_load` are assigned to the module itself),  
-other modules and wildcard `*` handlers are not notified.
+Lifecycle events support directed propagation: when `to` specifies the target owner (owner), the event is only delivered to hooks registered by that owner (modules automatically register hooks in `on_load` and record the owner). Other modules and wildcard `*` handlers do not receive the event.
 
 ```python
 from ErisPulse.Core.lifecycle import lifecycle
 
-# Emitter: Event is only sent to hooks registered by the Chat module
+# Emitter: event is only delivered to hooks registered by Chat module
 await lifecycle.emit("message_received", {"text": "hi", "from": "u1"}, to="Chat")
 
-# Subscriber (inside Chat module): Register same-name hook, owner is automatically recorded at registration
+# Subscriber (inside Chat module): register same-name hook, owner is automatically recorded during registration
 @lifecycle.on("message_received")
 async def on_message_received(data): ...
 
-@lifecycle.on("message")          # Dot-prefixed parent prefix also works (filtered by owner)
+@lifecycle.on("message")          # Point prefix also works (filtered by owner)
 async def on_any(data): ...
 ```
 
 Semantic details:
 
-- If the target owner has no registered hooks → The event is **silently discarded** (events are not sent to non-existent places),  
-  use `lifecycle.has_handlers("message_received")` to probe in advance
-- When `data` is a dict, `_trace_id` is automatically added (without overwriting existing values), connecting to full-chain tracing
-- Broadcast and directed events share the same hook registration: `emit(...)` without `to` broadcasts to the entire framework,  
-  with `to` the same event is only visible to the target module
-- `emit_sync` / `submit_event` (compatible API) also support the `to=` parameter
+- If the target owner has no registered hooks → the event is **silently discarded** (does not send to non-existent places), use `lifecycle.has_handlers("message_received")` to probe in advance
+- When `data` is a dict, it automatically carries `_trace_id` (without overriding existing values), integrating with full-chain tracing
+- Broadcast and directed events share the same hook registration: `emit(...)` without `to` broadcasts to the entire framework, while with `to` the same event is only visible to the target module
+- `emit_sync` / `submit_event` (compatibility API) also support `to=` parameter
 
-> [!NOTE]  
-> Directed events are lightweight notifications, **do not perform target validation or lazy wake-up**;  
-> if target existence validation, contract audit, or return values are needed, switch to [RPC: module.call](#rpcmodulecall).
+> [!NOTE]
+> Directed events are lightweight notifications, **do not perform target validation or lazy activation**; for target existence validation, contract audit, or return values, switch to [RPC: module.call](#rpcmodulecall).
 
-## Lazy Loading and Calls
+## Lazy Loading and Invocation
 
-`module.call()` transparently wakes up lazy-loaded modules:
+`module.call()` transparently activates lazy-loaded modules:
 
-- Event-driven lazy modules (`activate_on` declared) → Go through the activation lock `_activate()`, stubs are automatically unregistered after activation
-- Ordinary lazy modules → Synchronous initialization or regular loading path (idempotent)
+- Event-driven lazy modules (`activate_on` declared) → Use activation lock `_activate()`, stub automatically unregisters after activation
+- Regular lazy modules → Synchronous initialization or standard loading path (idempotent)
 - Activation failure → `ModuleNotAvailableError`
 
-That is: **the caller does not need to care if the target module is loaded**, nor does it need to wait for the target module to be awakened.
+That is: **the caller does not need to care whether the target module is loaded** and does not need to wait for it to be activated.
 
-Directed events (`lifecycle.emit(..., to=...)`) do not perform lazy wake-up—no hooks are present if the target is not loaded,  
-the event is silently discarded; use `module.call()` if delivery must be ensured.
+Directed events (`lifecycle.emit(..., to=...)`) do not perform lazy activation—target not loaded means no hooks, event silently discarded; use `module.call()` if you need to ensure delivery.
 
 ## Cold Start Replay
 
-A newly installed / restarted module misses some chat history—`get_load_strategy(replay=...)` allows the framework to replay the module's inbox messages **after the module is ready**:
+A newly installed / restarted module missed some chat messages—`get_load_strategy(replay=...)` allows the framework to replay the most recent messages from the session inbox to the module itself after it is ready:
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -11121,7 +11173,7 @@ class MyAIModule(BaseModule):
         return ModuleLoadStrategy(
             lazy_load=False,
             priority=100,
-            replay="5m",        # Replay the last 5 minutes (can also use "1h" / "300" seconds)
+            replay="5m",        # Replay the last 5 minutes ("1h" / "300" seconds are also valid)
         )
 
     async def on_load(self, event):
@@ -11134,23 +11186,20 @@ class MyAIModule(BaseModule):
 
 Semantic details:
 
-- The data source is the [session inbox](interaction.md#session-inbox-eventhistory) (`sdk.transcript.recent()`),  
-  executed in the background after module loading, not blocking startup
-- Synthetic events include the `replayed: True` flag, complete `platform / detail_type / user_id / alt_message`,  
-  **only distributed to the module's own handlers**—other modules are unaffected by replay
+- The data source is the [session inbox](interaction.md#session-inbox-eventhistory) (`sdk.transcript.recent()`), executed in the background after module loading, without blocking startup
+- Synthetic events carry the `replayed: True` flag, along with complete `platform / detail_type / user_id / alt_message`, and are **only distributed to the module's own handlers**—other modules are unaffected by the replay
 - If the inbox is not enabled / no records exist / the replay duration is invalid (`replay_invalid` warning), it is silently skipped
 
 ## Event Idempotency Deduplication
 
-After platform websocket reconnection, the same event (same `event["id"]`) is often resent—distribution entry performs LRU deduplication (capacity 4096),  
-so the same id event is only distributed once.
+After platform websocket reconnection, the same event (with the same `event["id"]`) is often re-sent—event distribution entry deduplicates by id (capacity 4096), so the same id event is only distributed once.
 
 ```toml
 [ErisPulse.framework]
-event_dedupe = true   # Default is enabled; disable for test environments with fixed id synthetic events
+event_dedupe = true   # Default on; turn off for test environments with fixed id synthetic events
 ```
 
-The deduplication cache is automatically reset when adapters register (start of new connection lifecycle).
+The deduplication cache is automatically reset when adapters **register** (start of new connection lifecycle).
 
 
 
@@ -11158,59 +11207,62 @@ The deduplication cache is automatically reset when adapters register (start of 
 
 # Startup Process and Manual Control
 
-ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup chain into a single line of code. However, when you need to fully customize the startup process (for example, partial loading, dynamic registration, hot plugging, injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
+> [!TIP]
+> **When to read this**: When you need to manually drive the startup chain, customize the startup sequence, or troubleshoot startup failures. Skip if not needed, as it does not affect the use of other features.
 
-This article breaks down the startup chain into independent components, explains the responsibilities of each, the order of calls, and provides an example of how to manually perform a complete startup.
+ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup chain into a single line of code. However, when you need to fully customize the startup process (e.g., partial loading, dynamic registration, hot-plugging, injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
 
-> This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the `init()` chain and lower-level entry points such as `init()` / `init_task()` / `init_sync()`.
+This document breaks down the startup chain into independent components, explains their respective responsibilities, invocation order, and provides an example of manually initiating the complete startup process.
+
+> This document assumes you have already run [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This document focuses on the internal breakdown of the `init()` chain and lower-level entry points such as `init()`/`init_task()`/`init_sync()`.
 
 ## Overview of SDK Top-Level Entry Points
 
-In addition to the two `keep_running` modes of `run()`, the SDK also provides several lower-level initialization entry points, which differ in terms of **asynchronicity, return value, and whether exceptions are wrapped**:
+In addition to the two `keep_running` modes of `run()`, the SDK provides several lower-level initialization entry points, differing in **asynchronous behavior, return values, and exception handling**:
 
-| Entry Point | Asynchronicity | Return Value | Exception Handling | Use Case |
-|-------------|----------------|--------------|--------------------|----------|
-| `await sdk.run(True)` | async, blocks and maintains | `None` (automatically `uninit` when closed) | Module/adapter errors are intercepted, not crashing the process | Pure bot application |
-| `await sdk.run(False)` | async, does not block | `None` (does not automatically unload) | Same as above | Execute custom logic after initialization |
-| `await sdk.init()` | async, requires await | `bool` | Internal component exceptions are caught, returns `False` on failure | Manual lifecycle control (paired with `uninit()`) |
-| `sdk.init_task()` | async, returns Task without blocking | `asyncio.Task` | Same as `init()` | Concurrently execute other initializations, or when event loop is not yet running |
-| `sdk.init_sync()` | **Synchronous**, blocks current thread | `bool` | Same as `init()` | Command-line scripts, synchronous entry point without event loop |
+| Entry Point | Asynchronous | Return Value | Exception Handling | Use Cases |
+|-------------|--------------|--------------|--------------------|-----------|
+| `await sdk.run(True)` | async, blocks to maintain | `None` (uninit automatically on shutdown) | Module/adapter errors are intercepted, not dragging down the process | Pure bot application |
+| `await sdk.run(False)` | async, non-blocking | `None` (no automatic uninit) | Same as above | Perform custom logic after initialization |
+| `await sdk.init()` | async, requires await | `bool` | Internal capture of component exceptions, returns `False` on failure | Manual lifecycle control (paired with `uninit()`) |
+| `sdk.init_task()` | async, returns Task without blocking | `asyncio.Task` | Same as `init()` | Concurrently execute other initializations or when event loop is not running |
+| `sdk.init_sync()` | **Synchronous**, blocks current thread | `bool` | Same as `init()` | Command-line scripts, synchronous entry without event loop |
 
-> **Common Misconception**: `await sdk.init()` is **not equivalent** to `await sdk.run(keep_running=False)`. There are two differences: ① `init()` returns `bool` (returns `False` on failure), while `run()` returns `None`; ② `init()` only performs initialization and **does not automatically unload**, whereas `run()` automatically `uninit()` when the event loop ends. Therefore, when manually pairing unloading or customizing the lifecycle, use `init()` + `uninit()`.
+> **Common misconception**: `await sdk.init()` **is not equivalent to** `await sdk.run(keep_running=False)`. Two differences: ① `init()` returns `bool` (returns `False` on failure), `run()` returns `None`; ② `init()` only performs initialization, **does not automatically uninit**, while `run()` automatically calls `uninit()` when the event loop ends. Therefore, when needing to manually pair uninit or customize lifecycle, use `init()` + `uninit()`.
 
-## Chain Startup Overview
+## Overview of Startup Chain
 
-`sdk.init()` (specifically, its internal `Initializer.init()`) initiates the framework in the following sequence:
+`sdk.init()` (specifically its internal `Initializer.init()`) initiates the entire framework in the following order:
 
 ```mermaid
 flowchart TD
-    A[0. Prepare Environment<br/>Configuration Loading / Exception Handling] --> B
-    B[1. Parallel Discovery and Loading<br/>AdapterLoader.load / ModuleLoader.load<br/>Internal call to Finder.find_all] --> C
+    A[0. Prepare Environment<br/>Configuration loading / Exception handling] --> B
+    B[1. Parallel Discovery and Loading<br/>AdapterLoader.load / ModuleLoader.load<br/>Internally calls Finder.find_all] --> C
     C[2. Register Adapters<br/>AdapterLoader.register_to_manager] --> D
     D[3. Start Adapters<br/>adapter.startup] --> E
     E[4. Register Modules<br/>ModuleLoader.register_to_manager] --> F
-    F[5. Initialize Modules<br/>ModuleLoader.initialize_modules<br/>Instantiate and mount to sdk] --> G
+    F[5. Initialize Modules<br/>ModuleLoader.initialize_modules<br/>Instantiates and mounts to sdk] --> G
     G[6. Start Router Server<br/>router.start]
 ```
 
 Corresponding core components:
 
 | Layer | Component | Responsibility |
-|----|------|------|
+|-------|-----------|----------------|
 | Discovery | `AdapterFinder` / `ModuleFinder` | **Discover** adapters/modules from entry-points of installed packages |
 | Loading | `AdapterLoader` / `ModuleLoader` | Discovery + Import + Read metadata + Determine enable/disable, return object list |
 | Registration | `*Loader.register_to_manager` | Register objects to corresponding managers |
-| Management | `sdk.adapter` / `sdk.module` | Maintain adapter/module instances, provide startup/shutdown interfaces |
-| Initialization | `ModuleLoader.initialize_modules` | Create module instances and mount to `sdk` (handle dependency topological sorting) |
+| Management | `sdk.adapter` / `sdk.module` | Maintain adapter/module instances, provide start/stop interfaces |
+| Initialization | `ModuleLoader.initialize_modules` | Create module instances and mount to `sdk` (handle dependency topological sort) |
 | Routing | `sdk.router` | HTTP / WebSocket server |
 
-> **Important**: `Finder` and `Loader` are two layers. The `Loader` internally **already holds** a `Finder` (`AdapterLoader` has its own `AdapterFinder`, `ModuleLoader` has its own `ModuleFinder`). In most scenarios, you only need to use `Loader`. You would only use `Finder` separately when you need to "list without importing".
+> **Important**: `Finder` and `Loader` are two layers. `Loader` internally **already holds** a `Finder` (`AdapterLoader` has `AdapterFinder`, `ModuleLoader` has `ModuleFinder`). In most scenarios, you only need to use `Loader`, and only use `Finder` directly when you need "list only, no import".
 
-## Detailed Explanation of Each Step
+## Detailed Explanation of Each Component
 
 ### 1. Discovery Layer: Finder
 
-The Finder is responsible only for "finding which packages provide adapters/modules", without importing or instantiating them.
+Finder only finds "which packages provide adapters/modules", without importing or instantiating.
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -11218,19 +11270,19 @@ from ErisPulse.finders import AdapterFinder, ModuleFinder
 adapter_finder = AdapterFinder()
 module_finder = ModuleFinder()
 
-# Find all installed adapter/module entry-points
+# Find all installed adapters/modules entry-points
 adapter_entries = adapter_finder.find_all()    # list[EntryPoint]
 module_entries = module_finder.find_all()      # list[EntryPoint]
 
-# Find a single entry-point by name
+# Find single by name
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
-Each `EntryPoint` can be loaded via `.load()` to obtain the corresponding class, but typically you do not need to do this manually—the Loader will handle it.
+Each `EntryPoint` can be loaded via `.load()` to get the corresponding class, but usually you don't need to call it manually—Loader will do it.
 
 ### 2. Loading Layer: Loader
 
-The Loader performs "importing + reading metadata + determining enabled/disabled" on top of the Finder.
+Loader does "import + read metadata + determine enable/disable" on top of Finder.
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -11239,32 +11291,32 @@ from ErisPulse import sdk
 adapter_loader = AdapterLoader()
 module_loader = ModuleLoader()
 
-# load() internally: calls finder.find_all() → processes each entry-point → returns a triple
+# load() internally: calls finder.find_all() → processes each entry-point → returns triple
 adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sdk.adapter)
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
 
-The triple returned by `load()`:
+The three-tuple returned by `load()`:
 
 | Return Value | Meaning |
 |--------------|---------|
 | `objs` (`dict`) | Name → Object (adapter class / module wrapper object) |
-| `enabled` (`list[str]`) | Names that are enabled (not disabled in configuration) |
-| `disabled` (`list[str]`) | Names that are disabled |
+| `enabled` (`list[str]`) | Enabled names (not disabled in configuration) |
+| `disabled` (`list[str]`) | Disabled names |
 
-#### Diagnostic Information on Loading Failures
+#### Diagnostic Information on Loading Failure
 
-When a module/adapter throws an exception during loading or initialization, the framework skips that component and continues loading others, while outputting a **user code frame summary**. This allows you to locate the error position at the default INFO level, without manually enabling DEBUG:
+When a module/adapter throws an exception during loading or initialization, the framework skips that component and continues loading others, while outputting a **summary of user code frames** so you can locate the error position at the default INFO level without manually turning on DEBUG:
 
 ```
 [ERROR] [ModuleLoader] Failed to load module MyModule from entry-point, skipped: 'NoneType' object has no attribute 'platform'
   → MyModule/Core.py:42 in on_load
       adapter = sdk.platform
   → AttributeError: 'NoneType' object has no attribute 'platform'
-  → Hint: Increase log level to DEBUG to view full stack trace; check implementation code of module MyModule
+  → Note: Raise log level to DEBUG to view full stack trace; check implementation code of module MyModule
 ```
 
-Diagnostic information is generated through the `ErisPulse.runtime.diagnostics` module, which automatically filters out internal framework frames and retains only your code frames. If you need to reuse this in custom loading logic:
+The diagnostic information is generated by the `ErisPulse.runtime.diagnostics` module, which automatically filters out internal framework frames and retains only your code frames. If you need to reuse this in custom loading logic:
 
 ```python
 from ErisPulse.runtime import log_diagnostic
@@ -11272,26 +11324,26 @@ from ErisPulse.runtime import log_diagnostic
 try:
     risky_init()
 except Exception as e:
-    log_diagnostic(e)  # Automatically extracts user code frames and writes to ERROR log
+    log_diagnostic(e)  # Automatically extract user code frames and write to ERROR log
 ```
 
 This module also provides two low-level functions: `extract_user_frame()` (returns structured frame information) and `format_diagnostic_block()` (returns multi-line text).
 
 ### 3. Registration Layer: register_to_manager
 
-Registers the objects produced by the Loader into the manager, so that `sdk.adapter` / `sdk.module` can recognize them.
+Registers the objects produced by Loader to the manager, allowing `sdk.adapter` / `sdk.module` to recognize them.
 
 ```python
-# Register adapters (returns bool indicating success)
+# Register adapters (returns bool, indicating if all succeeded)
 await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.adapter)
 
 # Register modules
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
-After registration, adapters are registered into the adapter manager, and modules are registered into the module manager, but **they are not yet started/instantiated**.
+After registration, adapters are registered to the adapter manager and modules are registered to the module manager, but **they are not started/initialized yet**.
 
-### 4. Starting Adapters
+### 4. Start Adapters
 
 ```python
 # Start all registered adapters
@@ -11301,11 +11353,11 @@ await sdk.adapter.startup("yunhu")
 await sdk.adapter.startup(["yunhu", "telegram"])
 ```
 
-> Registration ≠ Starting. `register_to_manager` only registers; `startup` calls the adapter's `start()` method to establish a connection with the platform.
+> Registration ≠ Startup. `register_to_manager` only registers; `startup` calls the adapter's `start()`, establishing a connection with the platform.
 
-### 5. Initializing Modules
+### 5. Initialize Modules
 
-Modules have an additional step compared to adapters—they need to be **instantiated** and attached to `sdk` (so you can call `sdk.MyModule.xxx`). This step also handles module dependencies and topological sorting.
+Modules have an extra step compared to adapters—they need to be **instantiated** and mounted to `sdk` (so you can call `sdk.MyModule.xxx`). This step also handles module dependencies and topological sorting.
 
 ```python
 success = await module_loader.initialize_modules(
@@ -11313,9 +11365,9 @@ success = await module_loader.initialize_modules(
 )
 ```
 
-After successful instantiation, the module appears at `sdk.<ModuleName>`.
+After successful instantiation, modules appear on `sdk.<ModuleName>`.
 
-### 6. Starting the Router Server
+### 6. Start Router Server
 
 ```python
 await sdk.router.start(
@@ -11326,11 +11378,11 @@ await sdk.router.start(
 )
 ```
 
-The router server is responsible for receiving webhook/WebSocket callbacks from adapters. Without starting it, server-mode adapters cannot receive messages.
+The router server is responsible for receiving callbacks from adapters (Webhook / WebSocket). Without starting it, server-mode adapters cannot receive messages.
 
 ## Complete Manual Startup Example
 
-The following code is **equivalent** to the core process of `await sdk.init()`, but exposes every step, allowing you to insert custom logic at any point:
+The following code is **equivalent to** the core process of `await sdk.init()`, but each step is exposed to you, allowing you to insert custom logic at any step:
 
 ```python
 import asyncio
@@ -11338,9 +11390,9 @@ from ErisPulse import sdk
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
 
 async def manual_startup():
-    # 0. Prepare environment (load configuration, register global exception handling)
-    #    _prepare_environment is a pre-step inside init(); for manual flow, it must be called first,
-    #    otherwise the Loader won't read the configuration and will incorrectly disable all adapters/modules.
+    # 0. Prepare Environment (load configuration, register global exception handling)
+    #    _prepare_environment is a pre-step in init(); the manual process also needs to call it first,
+    #    otherwise Loader cannot read the configuration and will misjudge all adapters/modules as disabled.
     if not await sdk._prepare_environment():
         print("Environment preparation failed")
         return False
@@ -11349,7 +11401,7 @@ async def manual_startup():
     adapter_loader = AdapterLoader()
     module_loader = ModuleLoader()
 
-    # 2. Parallel discovery and loading (same as internal gather in init())
+    # 2. Parallel Discovery and Loading (consistent with internal use of gather in init())
     (adapter_objs, enabled_adapters, disabled_adapters), \
     (module_objs, enabled_modules, disabled_modules) = await asyncio.gather(
         adapter_loader.load(sdk.adapter),
@@ -11370,13 +11422,13 @@ async def manual_startup():
         enabled_modules, module_objs, sdk.module
     )
 
-    # 6. Initialize modules (instantiation + attach to sdk)
+    # 6. Initialize modules (instantiation + mount to sdk)
     if enabled_modules:
         await module_loader.initialize_modules(
             enabled_modules, module_objs, sdk.module, sdk
         )
 
-    # 7. Start the routing server
+    # 7. Start router server
     await sdk.router.start(host="0.0.0.0", port=8000)
 
     print("Manual startup completed")
@@ -11385,66 +11437,66 @@ async def manual_startup():
 async def main():
     ok = await manual_startup()
     if ok:
-        # Block to keep running (manual flow won't automatically block)
+        # Block to maintain running (manual process does not automatically block)
         await asyncio.Event().wait()
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### When Should You Use Manual Startup?
+### When to Use Manual Startup?
 
-In most cases, **manual startup is not necessary** as `await sdk.run()` already handles all the above steps. Manual startup is only valuable in these scenarios:
+In most cases, **manual startup is not necessary**, as `await sdk.run()` already handles all the above steps. Manual startup is only valuable in these scenarios:
 
-- **Partial loading**: Load only specific adapters/modules, skipping others
-- **Dynamic registration**: Register new adapters/modules at runtime based on conditions
-- **Custom order**: Need to change the default loading order (e.g., start a module before starting an adapter)
-- **Injection strategies**: Inject custom strict-mode managers, loading strategies, etc., into the Loader
-- **Debugging/diagnosis**: Manually drive execution at a specific step when failure occurs to locate the issue
+- **Partial Loading**: Only load specific adapters/modules, skipping others
+- **Dynamic Registration**: Register new adapters/modules at runtime based on conditions
+- **Custom Order**: Need to disrupt the default loading order (e.g., start a module before an adapter)
+- **Inject Strategies**: Inject custom strict mode managers or loading strategies into Loader
+- **Debugging/Diagnosis**: Manually drive at a certain step when a failure occurs to locate the issue
 
-## Runtime Fine-grained Control
+## Fine-Grained Runtime Control
 
-Even after using `sdk.run()` to start the SDK, you can still control individual subsystems at runtime without having to restart the entire SDK:
+Even when using `sdk.run()` to complete the startup, you can still individually control subsystems at runtime without having to restart the entire SDK:
 
-### Hot Restart of Adapters
+### Hot Restart/Stop of Adapters
 
 ```python
-# Hot restart a specific adapter (to fix a connection, without affecting other platforms)
+# Hot restart an adapter (fix connection, does not affect other platforms)
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
-# Bring up a new platform during runtime
+# Bring up a new platform at runtime
 await sdk.adapter.startup("telegram")
 
-# Temporarily take a platform offline
+# Temporarily take down a platform
 await sdk.adapter.shutdown("telegram")
 ```
 
-> `adapter.startup()` requires the adapter to be **registered** with the manager. Registration occurs internally within `init()`/`run()`, so this is a fine-grained control that operates **after** startup.
+> `adapter.startup()` requires the adapter to have been **registered** to the manager. Registration occurs within `init()`/`run()`, so this is fine-grained control **after** startup.
 
 ### Router Server
 
 ```python
-# Temporarily take the webhook server offline
+# Temporarily take down webhook server
 await sdk.router.stop()
 
-# Restart it (for example, after changing the port)
+# Restart (e.g., after changing port)
 await sdk.router.start(host="0.0.0.0", port=9000)
 ```
 
-### On-demand Module Loading
+### Lazy Module Loading
 
 ```python
-# Manually load a module (which may be lazily loaded)
+# Manually load a module (possibly lazy-loaded)
 await sdk.load_module("MyModule")
 ```
 
 ## Graceful Shutdown
 
-Starting from version 2.7.0, `sdk.shutdown()` provides **programmatic graceful shutdown**: it sets a shutdown event, allowing the main loop that is hanging with `await sdk.run(keep_running=True)` to return, which in turn triggers `uninit()` to complete resource cleanup.
+As of version 2.7.0, `sdk.shutdown()` provides **programmatic graceful shutdown**: set the shutdown event to allow the main loop, which is suspended by `await sdk.run(keep_running=True)`, to return, thus triggering `uninit()` to complete resource cleanup.
 
 ```python
-# Call from any coroutine to trigger graceful exit (run() will return and uninit is automatically triggered)
+# Call from any coroutine to trigger graceful exit (run() suspended returns and automatically uninit)
 sdk.shutdown()
 ```
 
@@ -11453,89 +11505,89 @@ Typical use cases:
 ```python
 async def shutdown_after_idle():
     await asyncio.sleep(3600)
-    sdk.shutdown()  # Gracefully exit after being idle for 1 hour
+    sdk.shutdown()  # Gracefully exit after 1 hour of idle
 ```
 
-**Signal Handling**: `run()` internally registers `SIGTERM` / `SIGHUP` handlers, converting system signals into graceful shutdown—when stopping services via container orchestration (e.g., Docker `docker stop`) or `systemd`, the process will complete `uninit()` cleanup instead of being forcefully killed.
+**Signal Handling**: `run()` internally registers `SIGTERM` / `SIGHUP` handlers, converting system signals into graceful shutdown—when container orchestration (Docker `docker stop`) or `systemd` stops the service, the process completes `uninit()` cleanup instead of being forcibly killed.
 
-- On Windows, `loop.add_signal_handler` is not supported, so signal handlers are automatically skipped (graceful shutdown can still be triggered via `sdk.shutdown()` or Ctrl+C)
-- Repeatedly calling `sdk.shutdown()` is safe (subsequent calls after the event is set are no-ops)
+- Windows does not support `loop.add_signal_handler`, so the signal handler is automatically skipped (still use `sdk.shutdown()` or Ctrl+C to trigger shutdown)
+- Repeatedly calling `sdk.shutdown()` is safe (no operation after the event is set)
 
-## Uninstall Process
+## Uninit Process
 
-The reverse operation of startup is `await sdk.uninit()`, which performs cleanup in the reverse order:
+The reverse operation of startup is `await sdk.uninit()`, which cleans up in the opposite order:
 
-1. Shut down all adapters (`adapter.shutdown()`)
+1. Close all adapters (`adapter.shutdown()`)
 2. Unload all modules
 3. Clean up all event handlers
-4. Clean up module properties on managers and the SDK
+4. Clean up managers and module attributes on SDK
 
-In scenarios where the process is manually started, remember to call `uninit()` before exiting to ensure a graceful shutdown:
+In manual startup scenarios, remember to call `uninit()` before exiting to ensure graceful shutdown:
 
 ```python
 try:
-    await asyncio.Event().wait()   # Keep running
+    await asyncio.Event().wait()   # Maintain running
 finally:
     await sdk.uninit()
 ```
 
 ## Restart
 
-The SDK provides two restart methods, both of which do not require you to manually uninstall first—the framework handles it automatically:
+The SDK provides two restart methods, neither requiring you to manually unload first—the framework handles it itself:
 
-| Method | Call | Behavior | Use Case |
-|------|------|------|----------|
-| Hot Restart | `await sdk.restart()` | Re-initialize (`init()`) after `uninit()` in the same process, reloading adapters/modules | Reload configuration, hot update modules |
-| Hard Restart | `await sdk.hard_restart()` | After `uninit()`, exit the process with **exit code 42**, and let an external supervisor start a new process | Suspected memory/resource leaks, or when a completely clean restart is needed |
+| Method | Call | Behavior | Use Cases |
+|--------|------|----------|-----------|
+| Hot Restart | `await sdk.restart()` | Same process, `uninit()` then `init()` again, reload adapters/modules | Reload configuration, hot update modules |
+| Hard Restart | `await sdk.hard_restart()` | `uninit()` then exit process with **exit code 42**, restarted by external supervisor | Suspected memory/resource leak, need completely clean restart |
 
 ```python
-# Hot restart: Reload within the same process (most common)
+# Hot Restart: Reload within the same process (most commonly used)
 await sdk.restart()
 
-# Hard restart: Exit the process, let an external supervisor restart (see "Supervisor Guide" below)
+# Hard Restart: Exit process, handed over to external supervisor for restart (see "Supervisor Guide" below)
 await sdk.hard_restart()
 ```
 
 > **Two points to note**:
-> 1. Both methods execute the restart in the background, **immediately returning `True` to indicate that the "restart task has been scheduled"**, not that the restart is completed. The actual restart runs in the background to avoid interrupting the current event chain.
-> 2. The principle of `hard_restart()` is: after unloading and saving the configuration, exit the process with **exit code 42** (`HARD_RESTART_EXIT_CODE`) — **it does not start a new process itself**. It must be restarted by an external supervisor that detects exit code 42. If you run `python main.py` directly without any supervisor, the process exits with code 42 and **does not automatically restart** (the framework will issue a warning).
+> 1. These methods execute restart in the background task and **immediately return `True` indicating "restart task scheduled"**, not "restart completed". Actual restart happens in the background to avoid interrupting the current event chain.
+> 2. The principle of `hard_restart()` is: after uninit and flush configuration, exit the process with **exit code 42** (`HARD_RESTART_EXIT_CODE`)—**it does not start a new process itself**. It must be restarted by an external supervisor detecting exit code 42. If running directly via `python main.py` without any supervisor, the process ends with code 42 and **will not automatically restart** (the framework will warn).
 
 ### When to Use Hard Restart?
 
-Hard restart is not just a "more thorough restart"—it is more suitable and even more efficient than hot restart in the following scenarios:
+Hard restart is not just a "more thorough restart," it is more suitable and even more efficient in the following scenarios compared to hot restart:
 
-- **Binary library (C extension) side effects**: Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, or other process-level resources. Hard restart starts a new process, completely clearing these side effects.
-- **Resource leak troubleshooting**: When you suspect memory or handle leaks, hard restart provides a clean environment.
-- **Frequent restarts sensitive to performance**: Hard restart avoids the overhead of unloading and reloading within the same process, making it more efficient than hot restart.
+- **Binary Library (C Extension) Side Effects**: Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources; hard restart switches to a new process, thoroughly clearing these side effects.
+- **Resource Leak Diagnosis**: When suspecting memory or handle leaks, hard restart provides a clean environment.
+- **Frequent Restart with Performance Sensitivity**: Hard restart avoids the overhead of unloading and reloading within the same process, making it more efficient than hot restart in practice.
 
-> The "Framework Restart" function in the Dashboard management panel internally calls `hard_restart()`.
+> The "Framework Restart" function in the Dashboard management panel calls `hard_restart()` underneath.
 
 ### Exit Code 42 Contract
 
-Hard restart is a cross-process collaboration: **SDK is responsible for exiting (code 42), and the supervisor is responsible for restarting**.
+Hard restart is cross-process collaboration: **SDK is responsible for exiting (code 42), supervisor is responsible for restarting**.
 
 | Role | Behavior |
-|------|------|
-| SDK (when hard restarted) | `uninit()` → Save configuration → `os._exit(42)` |
-| Supervisor | Detects child process exit code 42 → Restart the same command |
+|------|----------|
+| SDK (when hard restarted) | `uninit()` → flush configuration → `os._exit(42)` |
+| Supervisor | Detects child process exit code 42 → restart the same command |
 
-> `sdk.is_supervised()` can check if the current process was started by a supervisor (by checking the environment variable `ERISPULSE_SUPERVISED`). The CLI `run` command automatically injects this flag when starting a subprocess; external supervisors like systemd or Docker do not inject it, so `is_supervised()` returns `False`, and the framework will issue a "no supervisor detected" warning after hard restart.
+> `sdk.is_supervised()` can query whether the current process is started by a supervisor (detects environment variable `ERISPULSE_SUPERVISED`). CLI `run` command starts a subprocess and automatically injects this marker; external supervisors like systemd / Docker do not inject it, `is_supervised()` returns `False`, and in this case, the framework will warn "supervisor not detected" after hard restart.
 
 ### Supervisor Guide
 
-Choose a supervisor that suits your needs to make hard restart work effectively:
+Choose the supervisor that suits you to make hard restart truly effective:
 
-#### 1. CLI run command (Development/Simple Deployment, Recommended)
+#### 1. CLI run command (development/simple deployment, recommended)
 
-`epsdk run main.py` includes a built-in supervision loop: it detects the child process exit code, restarts immediately if it is 42; for other abnormal exit codes, it automatically retries with exponential backoff; `Ctrl+C` first gracefully terminates the child process (exit code 0 is considered normal, so it will not be restarted).
+`epsdk run main.py` includes an internal supervision loop: detects the child process exit code, restarts immediately if it's 42; other abnormal exit codes retry with exponential backoff; `Ctrl+C` first gracefully terminates the child process (code 0 is considered normal exit, no restart).
 
 ```bash
 epsdk run main.py
 ```
 
-#### 2. systemd (Linux Server)
+#### 2. systemd (Linux server)
 
-`RestartForceExitStatus=42` makes exit code 42 trigger a restart (by default `on-failure` only applies to non-zero codes):
+`RestartForceExitStatus=42` makes exit code 42 trigger a restart (default `on-failure` only applies to non-zero codes):
 
 ```ini
 [Service]
@@ -11548,20 +11600,20 @@ User=mybot
 
 #### 3. Docker / docker-compose
 
-The container's PID 1 is the application process, and it exits with code 42, causing the container to exit—use the `restart` policy to make it automatically restart:
+The container's PID 1 is the application process, and exit code 42 causes the container to exit—use `restart` policy to automatically restart it:
 
 ```yaml
 services:
   bot:
     build: .
-    restart: unless-stopped   # Restart for any exit (including 42)
+    restart: unless-stopped   # Restart on any exit (including 42)
 ```
 
-#### 4. PM2 (Node Ecosystem Operations)
+#### 4. PM2 (Node ecosystem operations)
 
 ```bash
 pm2 start main.py --name mybot --interpreter python3
-# 42 is treated as an exit code, and PM2 restarts by default; set restart_delay to debounce
+# 42 is treated as an exit code, PM2 defaults to restart; set restart_delay to debounce
 pm2 set mybot.restart_delay 2000
 ```
 
@@ -11571,7 +11623,7 @@ pm2 set mybot.restart_delay 2000
 [program:mybot]
 command=python3 /opt/mybot/main.py
 autorestart=true
-exitcodes=0,2,42    # 42 is also considered "normal exit, restart needed"
+exitcodes=0,2,42    # 42 is also considered "normal exit requiring restart"
 ```
 
 #### 6. Pure Python Custom Supervisor
@@ -11587,10 +11639,10 @@ while True:
         continue
     if code == 0:           # Normal exit
         break
-    time.sleep(3)           # Abnormal exit, retry with backoff
+    time.sleep(3)           # Exception exit, backoff retry
 ```
 
-> **Behavior without a supervisor**: Running directly with `python main.py`, calling `hard_restart()` causes the process to exit with code 42 and not restart. In this case, you should integrate one of the supervisors above.
+> **Behavior without supervisor**: Running directly via `python main.py`, calling `hard_restart()` exits the process with code 42 and does not restart. In this case, you should integrate one of the above supervisors.
 
 
 

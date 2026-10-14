@@ -194,7 +194,7 @@
               "icon": "fa-network-wired"
             },
             {
-              "title": "Core Concepts of Adapters",
+              "title": "Core Adapter Concepts",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1,
               "icon": "fa-microchip"
