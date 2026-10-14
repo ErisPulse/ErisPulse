@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "0863e9d3575cb34bd78917f8b7fea058",
-  "file_hash": "0863e9d3575cb34bd78917f8b7fea058",
-  "translated_at": "2026-09-07T12:35:23.098025",
+  "hash": "a86bf0263780aa4d06fec0fe70fc1aba",
+  "file_hash": "a86bf0263780aa4d06fec0fe70fc1aba",
+  "translated_at": "2026-10-14T02:07:48.070216",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "840b8a8715f2fb5bc2255e14e638b054",
-      "translation": "# 啟動流程與手動控制\n\nErisPulse 的 `await sdk.run()` / `await sdk.init()` 將一整條啟動鏈路封裝成了「一行程式碼」。但當你需要完全自訂啟動流程（例如部分載入、動態註冊、熱插拔、注入自訂載入策略）時，就需要了解這條鏈路內部到底發生了什麼、以及如何手動驅動每一步。\n\n本文把啟動鏈路拆解成獨立的環節，說明各自的職責、呼叫順序，並給出手動完整啟動的示例。\n\n> 本文假設你已經跑過 [第一個機器人](../getting-started/first-bot.md)，了解 `sdk.run(keep_running=True/False)` 兩種模式。本文聚焦於 `init()` **內部**的鏈路拆解，以及 `init()`/`init_task()`/`init_sync()` 等更底層的入口。"
+      "hash": "396c1c858982ca441b0ec9f52de3de8b",
+      "translation": "# 啟動流程與手動控制\n\n> [!TIP]\n> **什麼時候需要閱讀這篇**：需要手動驅動啟動鏈路、自訂啟動順序或排查啟動失敗時。不需要則跳過，不會影響其他功能的使用。\n\nErisPulse 的 `await sdk.run()` / `await sdk.init()` 將一整條啟動鏈路封裝成了一行代碼。但當你需要完全自訂啟動流程（例如部分載入、動態註冊、熱插拔、注入自訂載入策略）時，就需要了解這條鏈路內部到底發生了什麼，以及如何手動驅動每一步。\n\n本文將啟動鏈路拆解成獨立的環節，說明各自的職責、呼叫順序，並給出手動完整啟動的範例。\n\n> 本文假設你已經跑過 [第一個機器人](../getting-started/first-bot.md)，了解 `sdk.run(keep_running=True/False)` 兩種模式。本文聚焦於 `init()` **內部**的鏈路拆解，以及 `init()`/`init_task()`/`init_sync()` 等更底層的入口。"
     },
     {
       "hash": "de4fc449a5416721de394f5b4deb706b",

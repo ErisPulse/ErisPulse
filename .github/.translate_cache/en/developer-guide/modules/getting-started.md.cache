@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "9aaef1a655f2bb8a8a12c033e68f07eb",
-  "file_hash": "9aaef1a655f2bb8a8a12c033e68f07eb",
-  "translated_at": "2026-10-09T14:53:52.926441",
+  "hash": "be1f1caf5482403cd1d7f97c38cbb5d0",
+  "file_hash": "be1f1caf5482403cd1d7f97c38cbb5d0",
+  "translated_at": "2026-10-14T02:09:59.996265",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "1a641ad2e70cab0bd7aa7947bf3707b7",
-      "translation": "# Getting Started with Module Development\n\nThis guide walks you through creating an ErisPulse module from scratch."
+      "hash": "6ac7fcfa418a1e0b78a17a9900a59700",
+      "translation": "# Getting Started with Module Development\n\n> [!NOTE]\n> **L1 Core Reading** — One of the five essential documents in the \"Reading Path\" on the homepage, a must-read for module development.\n\nThis guide walks you through creating an ErisPulse module from scratch."
     },
     {
       "hash": "a0073e5af21db81bec6138a64a0fdceb",

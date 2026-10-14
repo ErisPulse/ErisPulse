@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "a6eca5de5ba6313348caa0d7135fd512",
-  "file_hash": "a6eca5de5ba6313348caa0d7135fd512",
-  "translated_at": "2026-09-07T10:41:55.569204",
+  "hash": "c29a473a29d8e918e74bb67acf58e545",
+  "file_hash": "c29a473a29d8e918e74bb67acf58e545",
+  "translated_at": "2026-10-14T02:07:44.743032",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "2a52021ecb4b43418480f825d57b0c51",
-      "translation": "# 慢載模組系統\n\nErisPulse SDK 提供了強大的慢載模組系統，允許模組在實際需要時才進行初始化，從而顯著提升應用啟動速度和記憶體效率。"
+      "hash": "29d6a177451c286642ef54d5b430e762",
+      "translation": "# 慢載模組系統\n\n> [!TIP]  \n> **何時需要閱讀此篇**：使用慢載模組或 activate_on 事件驅動激活時。若不需要則可跳過，不會影響其他功能的使用。\n\nErisPulse SDK 提供了強大的慢載模組系統，允許模組在實際需要時才進行初始化，從而顯著提升應用啟動速度和記憶體效率。"
     },
     {
       "hash": "6b2c94d48cfeaba0069c82bfd2e12c13",

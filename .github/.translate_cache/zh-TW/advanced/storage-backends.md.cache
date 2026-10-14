@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "c79d9241a22ae109218bf2b52dc0fe18",
-  "file_hash": "c79d9241a22ae109218bf2b52dc0fe18",
-  "translated_at": "2026-10-03T14:20:27.367541",
+  "hash": "2224d9499abf21c4a545a2ae820a9763",
+  "file_hash": "2224d9499abf21c4a545a2ae820a9763",
+  "translated_at": "2026-10-14T02:07:50.242026",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "64f579472629a57395431e2e8ff5dde3",
-      "translation": "# 存儲後端\n\nErisPulse 內建三種異步原生存儲後端，透過配置即可輕鬆切換，**API 完全一致、切換零程式碼修改**：\n\n| 後端 | 驅動 | 安裝 | 特點 |\n|------|------|------|------|\n| SQLite（預設） | aiosqlite | 開箱即用 | 零設定、單檔案、WAL 併發 |\n| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | 適合已有 MySQL 基礎設施、多實例共享 |\n| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | 事務能力強、JSONB 生態、高併發 |\n\n{!--< tips >!--}\n1. 異步是原生主介面（`aget/aset/atransaction/aExecute`），同步 API 為相容層\n2. 框架自身的設定持久化、會話收件箱、對話檢查點等全部走同一存儲後端——切換後端即整體遷移\n3. `[mysql]` extra 已包含 `cryptography`——MySQL 8 預設的 `caching_sha2_password` 認證必需，缺失時連接池初始化會失敗\n{!--< /tips >!--}"
+      "hash": "62b988b1d8d19218776eace75c346058",
+      "translation": "# 存儲後端\n\n> [!TIP]\n> **什麼時候需要閱讀這篇**：當切換 sqlite / mysql / postgres 或自定義存儲後端時。不需要則跳過，不會影響其他功能的使用。\n\nErisPulse 內建三種異步原生存儲後端，透過配置即可一鍵切換，**API 完全一致、切換零程式碼變動**：\n\n| 後端 | 驅動 | 安裝 | 特點 |\n|------|------|------|------|\n| SQLite（預設） | aiosqlite | 開箱即用 | 零設定、單檔案、WAL 併發 |\n| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | 適合已有 MySQL 基礎設施、多實例共享 |\n| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | 事務能力強、JSONB 生態、高併發 |\n\n{!--< tips >!--}\n1. 異步是原生主介面（`aget/aset/atransaction/aExecute`），同步 API 為相容層\n2. 框架自身的配置持久化、會話收件箱、對話檢查點等全部走同一存儲後端——切換後端即整體遷移\n3. `[mysql]` extra 已包含 `cryptography`——MySQL 8 預設的 `caching_sha2_password` 認證必需，缺失時連接池初始化會失敗\n{!--< /tips >!--}"
     },
     {
       "hash": "76e0fd25ed7cbc2783013357bbb37f84",

@@ -1,5 +1,8 @@
 # Getting Started with Module Development
 
+> [!NOTE]
+> **L1 Core Reading** — One of the five essential documents in the "Reading Path" on the homepage, a must-read for module development.
+
 This guide walks you through creating an ErisPulse module from scratch.
 
 ## Project Structure
