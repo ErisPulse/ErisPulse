@@ -10,6 +10,21 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 
 根据你的目标，选择对应的学习路径。每条路径内部按由浅入深排列。
 
+> [!IMPORTANT]
+> **不需要读完所有文档。** 绝大多数开发者只需按顺序读完 **L1 核心五篇**
+> （约 1–2 小时）即可独立开发 90% 的功能；其余文档全部是特定场景的按需
+> 查阅资料——遇到对应需求再来翻，每篇开头都标了"什么时候需要读这篇"。
+>
+> **L1 核心五篇**：[模块开发入门](developer-guide/modules/getting-started.md)
+> → [基础概念](getting-started/basic-concepts.md)
+> → [Event 包装类](developer-guide/modules/event-wrapper.md)
+> → [配置文件说明](user-guide/configuration.md)
+> → [异常捕获](advanced/errors.md)
+>
+> 适配器作者另需：[适配器开发入门](developer-guide/adapters/getting-started.md)
+> → [事件转换器](developer-guide/adapters/converter.md)
+> → [SendDSL 详解](developer-guide/adapters/send-dsl.md)
+
 ### 一、我要使用机器人
 
 让机器人跑起来、装模块、做配置。

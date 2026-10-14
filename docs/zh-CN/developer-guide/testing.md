@@ -1,5 +1,9 @@
 # 模块测试（ErisPulse-Testing）
 
+> [!TIP]
+> **什么时候需要读这篇**：为自己的模块编写自动化测试时。不需要则跳过，不影响其它功能的使用。
+
+
 [ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) 是官方测试工具包（RFC EPRFC-2026-001 方向三）：
 提供 `TestBot`、测试事件工厂、出站消息捕获与断言面，让模块测试像写普通 pytest 一样简单。
 

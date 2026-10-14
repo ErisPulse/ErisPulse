@@ -98,6 +98,29 @@ def _close_storage_on_teardown() -> Generator[None, None, None]:
         pass
 
 
+def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
+    """会话收尾：确定性关停常驻线程（同步桥接循环 + 配置监视线程）
+
+    此前仅靠 daemon 线程 + 解释器退出兜底，Windows/自由线程下收尾阶段偶发
+    进程挂死与 aiosqlite "Event loop is closed" 噪音；此处显式按
+    "先停桥、再停 watcher" 关停，使测试进程必然退出。
+    """
+    try:
+        import importlib
+
+        _storage_base = importlib.import_module("ErisPulse.Core.Bases.storage")
+        _storage_base.AsyncBridge().close()
+    except Exception:
+        pass
+    try:
+        import importlib
+
+        _config_module = importlib.import_module("ErisPulse.Core.config")
+        _config_module.ConfigManager.stop_all_watchers()
+    except Exception:
+        pass
+
+
 @pytest.fixture(scope="session", autouse=True)
 def _protect_repo_config() -> Generator[None, None, None]:
     """

@@ -191,6 +191,32 @@ class ConfigManager:
     _watcher_shutdown_hook_registered: ClassVar[bool] = False
 
     @classmethod
+    def stop_all_watchers(cls) -> int:
+        """
+        停止全部配置监视线程（向所有实例发出停止信号并提前唤醒）
+
+        框架 uninit 链与测试会话收尾的**确定性关停入口**：显式调用后 watcher
+        至多等一个轮询周期自然退出，不再依赖解释器退出阶段的兜底钩子
+        （自由线程构建下收尾期参与锁竞争曾导致进程退出挂死）。
+
+        :return: 发出停止信号的实例数（幂等，重复调用返回 0）
+
+        {!--< tips >!--}
+        `threading._register_atexit` 的解释器退出兜底仍保留，本方法是它的
+        提前显式形态
+        {!--< /tips >!--}
+        """
+        stopped = 0
+        for m in list(cls._active_watchers):
+            try:
+                m._watcher_stop.set()
+                m._flush_wakeup.set()
+                stopped += 1
+            except Exception:
+                pass
+        return stopped
+
+    @classmethod
     def _register_watcher_shutdown(cls, manager: "ConfigManager") -> None:
         """{!--< internal-use >!--} 注册解释器关停时的 watcher 统一停止钩子（幂等）"""
         cls._active_watchers.add(manager)
@@ -200,15 +226,7 @@ class ConfigManager:
         try:
             from threading import _register_atexit  # pyright: ignore[reportAttributeAccessIssue]
 
-            def _stop_all_watchers() -> None:
-                for m in list(cls._active_watchers):
-                    try:
-                        m._watcher_stop.set()
-                        m._flush_wakeup.set()
-                    except Exception:
-                        pass
-
-            _register_atexit(_stop_all_watchers)
+            _register_atexit(cls.stop_all_watchers)
         except Exception:
             pass
 
