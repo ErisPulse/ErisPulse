@@ -176,7 +176,7 @@
               "icon": "fa-bolt-lightning"
             },
             {
-              "title": "Module Development Best Practices",
+              "title": "Best Practices for Module Development",
               "path": "developer-guide/modules/best-practices.md",
               "level": 1,
               "icon": "fa-award"
@@ -393,7 +393,7 @@
           "icon": "fa-route"
         },
         {
-          "title": "MessageBuilder Explained",
+          "title": "MessageBuilder Detailed Explanation",
           "path": "advanced/message-builder.md",
           "level": 1,
           "icon": "fa-comment-dots"
@@ -429,7 +429,7 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "Ownership (owner) System",
+          "title": "Ownership (Owner) System",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
@@ -441,7 +441,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Shadow Modules and Gradual Promotion",
+          "title": "Shadow Modules and Gradual Cutover",
           "path": "advanced/shadow.md",
           "level": 1,
           "icon": "fa-eye"
@@ -477,7 +477,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Transcript",
+          "title": "Transcript Inbox",
           "path": "advanced/transcript.md",
           "level": 1,
           "icon": "fa-fire"

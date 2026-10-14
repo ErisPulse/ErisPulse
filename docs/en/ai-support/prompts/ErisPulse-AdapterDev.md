@@ -3979,6 +3979,9 @@ async def on_bot_offline(data):
 
 # SendDSL Explained
 
+> [!TIP]
+> **When to read this**: Required reading for adapter development (Send DSL). Skip if not needed; it does not affect the use of other features.
+
 SendDSL is a fluent-style message sending interface provided by the ErisPulse adapter.
 
 ## Basic Calling Methods
@@ -4707,6 +4710,9 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("Announcemen
 
 # Adapter Development Best Practices
 
+> [!TIP]
+> **When to read this**: It is recommended to read this after the adapter skeleton is working (engineering best practices). If not needed, you can skip it without affecting the use of other features.
+
 This document provides best practice recommendations for ErisPulse adapter development.
 
 ## Bot Status Management and Meta Events
@@ -5358,25 +5364,28 @@ version = "2.0.0"  # Update the version number
 
 # Event Converter Implementation Guide
 
-The Event Converter (Converter) is one of the core components of the adapter, responsible for transforming platform-native events into ErisPulse's unified OneBot12 standard event format.
+> [!TIP]
+> **When to read this**: Required reading for adapter development paths (event converters). Skip if not needed, as it does not affect the usage of other features.
+
+The Event Converter (Converter) is one of the core components of the adapter, responsible for converting platform-native events into the unified OneBot12 event format of ErisPulse.
 
 ## Converter Responsibilities
 
 ```
-Platform-native event ──→ Converter.convert() ──→ OneBot12 standard event
+Platform-native events ──→ Converter.convert() ──→ OneBot12 standard events
 ```
 
-The Converter is only responsible for **forward conversion** (receiving direction), transforming platform-native event data into the OneBot12 standard format. Reverse conversion (sending direction) is handled by the `Send.Raw_ob12()` method.
+The `Converter` is responsible only for **forward conversion** (inbound direction), which means converting platform-native event data into the OneBot12 standard format. Reverse conversion (outbound direction) is handled by the `Send.Raw_ob12()` method.
 
 ### Core Principles
 
-1. **Lossless conversion**: Original data must be fully retained in the `{platform}_raw` field
-2. **Standard compatibility**: The converted event must conform to the OneBot12 standard format
-3. **Platform extension**: Platform-specific data is stored in fields with the `{platform}_` prefix
+1. **Lossless Conversion**: Original data must be fully preserved in the `{platform}_raw` field
+2. **Standard Compatibility**: Converted events must conform to the OneBot12 standard format
+3. **Platform Extensions**: Platform-specific data is stored in fields prefixed with `{platform}_`
 
 ## BaseConverter Base Class (Recommended)
 
-Starting from version 2.7.0, the framework provides the `BaseConverter` base class (`ErisPulse.Core.Bases`), which encapsulates the **common field construction** and **common message segment utilities** for OneBot12 events, allowing converters to focus only on type mapping:
+Starting from version 2.7.0, the framework provides the `BaseConverter` base class (`ErisPulse.Core.Bases`), which encapsulates the **common field construction** and **common message segment utilities** for OneBot12 events. This allows converters to focus solely on type mapping:
 
 ```python
 from ErisPulse.Core.Bases import BaseConverter
@@ -5401,18 +5410,18 @@ class MyConverter(BaseConverter):
         return None
 ```
 
-`build_base_event()` already fills the following common fields:
+The `build_base_event()` method already fills in the following common fields:
 
 | Field | Source |
 |------|------|
-| `id` | `raw_event["event_id"]`, UUID generated if missing |
-| `time` | `raw_event["timestamp"]`, current time if missing |
-| `platform` | `platform` passed during initialization |
+| `id` | `raw_event["event_id"]`, a UUID is generated if missing |
+| `time` | `raw_event["timestamp"]`, the current time is used if missing |
+| `platform` | Provided via the `platform` argument during initialization |
 | `self` | `{"platform": ..., "user_id": raw_event["bot_id"]}` |
-| `{platform}_raw` | Raw event (satisfies "lossless conversion" principle) |
-| `{platform}_raw_type` | Raw event type |
+| `{platform}_raw` | The original event (satisfying the "lossless conversion" principle) |
+| `{platform}_raw_type` | The original event type |
 
-Common message segment utility methods (all static methods, directly reusable):
+Common message segment utility methods (all are static methods, directly reusable):
 
 ```python
 converter.text("hi")          # {"type": "text", "data": {"text": "hi"}}
@@ -5420,7 +5429,7 @@ converter.at("123456")        # {"type": "at", "data": {"user_id": "123456"}}
 converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
 ```
 
-> When manually implementing, the common field construction in `build_base_event` is boilerplate code that must be repeatedly written. Using `BaseConverter` eliminates this, and naturally ensures "lossless conversion" (the raw event always goes into `{platform}_raw`).
+> When implementing manually, the construction of common fields in `build_base_event` is boilerplate code that must be repeatedly written. Using `BaseConverter` eliminates this part and naturally satisfies "lossless conversion" (the original event is always included in `{platform}_raw`).
 
 ## convert() Method
 
@@ -5429,10 +5438,10 @@ converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
 ```python
 def convert(self, raw_event: dict) -> dict:
     """
-    Converts platform-native event data to OneBot12 standard format.
+    Converts a platform-native event into OneBot12 standard format
 
     :param raw_event: Platform-native event data
-    :return: OneBot12 standard event dictionary
+    :return: Event dictionary in OneBot12 standard format
     """
     pass
 ```
@@ -5443,7 +5452,7 @@ The converted event dictionary should include the following standard fields:
 
 ```python
 {
-    "id": "unique event ID",
+    "id": "Unique event ID",
     "time": 1234567890,           # Unix timestamp (seconds)
     "type": "message",             # Event type
     "detail_type": "private",      # Detailed type
@@ -5456,11 +5465,11 @@ The converted event dictionary should include the following standard fields:
     # Message event fields
     "user_id": "sender_id",
     "message": [...],              # OneBot12 message segment list
-    "alt_message": "plain text content",
+    "alt_message": "Plain text content",
 
-    # Original data must be preserved
-    "myplatform_raw": { ... },     # Platform-native event complete data
-    "myplatform_raw_type": "native event type name",
+    # Must retain original data
+    "myplatform_raw": { ... },     # Complete platform-native event data
+    "myplatform_raw_type": "Native event type name",
 }
 ```
 
@@ -5469,32 +5478,32 @@ The converted event dictionary should include the following standard fields:
 ### Common Fields (All Event Types)
 
 | OB12 Field | Type | Description |
-|-----------|------|------|
-| `id` | str | Unique event identifier |
+|------------|------|-------------|
+| `id` | str | Unique identifier for the event |
 | `time` | int | Unix timestamp (seconds) |
 | `type` | str | Event type: `message` / `notice` / `request` / `meta` |
 | `detail_type` | str | Detailed type: `private` / `group` / `friend` etc. |
-| `platform` | str | Platform name, consistent with adapter registration name |
+| `platform` | str | Platform name, consistent with the adapter registration name |
 | `self` | dict | Bot information: `{"platform": "...", "user_id": "..."}` |
 
-### Message Event Additional Fields
+### Additional Fields for Message Events
 
 | OB12 Field | Type | Description |
-|-----------|------|------|
+|------------|------|-------------|
 | `user_id` | str | Sender ID |
 | `message` | list[dict] | OneBot12 message segment list |
-| `alt_message` | str | Plain text fallback content |
+| `alt_message` | str | Plain text alternative content |
 
-### Notice Event Additional Fields
+### Additional Fields for Notice Events
 
 | OB12 Field | Type | Description |
-|-----------|------|------|
-| `user_id` | str | Related user ID |
+|------------|------|-------------|
+| `user_id` | str | Relevant user ID |
 | `operator_id` | str | Operator ID (e.g., group member changes) |
 
 ## Message Segment Conversion
 
-OneBot12 standard defines the following message segment types:
+The OneBot12 specification defines the following message segment types:
 
 ```python
 # Text
@@ -5512,21 +5521,21 @@ OneBot12 standard defines the following message segment types:
 # File
 {"type": "file", "data": {"file": "https://example.com/doc.pdf"}}
 
-# Mention
+# @Mention
 {"type": "mention", "data": {"user_id": "123"}}
 
-# Mention All
+# @Everyone
 {"type": "mention_all", "data": {}}
 
 # Reply
 {"type": "reply", "data": {"message_id": "msg_123"}}
 ```
 
-If the platform does not support certain message segment types, you can omit the segment or convert it to the closest standard type.
+If a platform does not support a particular message segment type, it can omit that segment or convert it to the closest standard type.
 
 ## Platform Extension Fields
 
-Platform-specific data should be stored using the `{platform}_` prefix to avoid conflicts with standard fields:
+Platform-specific data should be stored with a `{platform}_` prefix to avoid conflicts with standard fields:
 
 ```python
 {
@@ -5545,7 +5554,7 @@ Platform-specific data should be stored using the `{platform}_` prefix to avoid 
 }
 ```
 
-> **Important**: The `{platform}_raw` field is required, as ErisPulse's event system and modules may depend on it to access platform-native data.
+> **Important**: The `{platform}_raw` field is required, as ErisPulse's event system and modules may depend on it to access raw platform data.
 
 ## Complete Example
 
@@ -5629,13 +5638,13 @@ class MyConverter:
         return base
 ```
 
-## Rich Media Message Conversion Example
+## Rich Media Message Conversion Examples
 
-Platform messages often contain rich media such as images, mentions, and replies. Here is an example of `_convert_message_segments` handling multiple message types:
+Platform-specific messages typically contain rich media content such as images, @mentions, and replies. Below is an example of `_convert_message_segments` handling various message types:
 
 ```python
 def _convert_message_segments(self, raw_content: list) -> list:
-    """Converts platform-native message segment list into OneBot12 standard message segments"""
+    """Convert a list of platform-native message segments into OneBot12 standard message segments"""
     segments = []
 
     for item in raw_content:
@@ -5682,7 +5691,7 @@ def _convert_message_segments(self, raw_content: list) -> list:
 
 ### 1. Missing `{platform}_raw` Field
 
-This is the most common mistake. Missing the raw data field will prevent modules from accessing platform-specific information.
+This is the most common mistake. Missing the raw data field prevents the module from accessing platform-specific information.
 
 ```python
 base_event["myplatform_raw"] = raw_event        # Required!
@@ -5691,44 +5700,44 @@ base_event["myplatform_raw_type"] = event_type   # Required!
 
 ### 2. Incorrect Timestamp Format
 
-OneBot12 requires the `time` field to be a Unix timestamp in seconds (integer). If your platform returns milliseconds or an ISO format string, you must convert it:
+The OneBot12 standard requires the `time` field to be a Unix second-level timestamp (integer). If your platform returns a millisecond timestamp or an ISO-formatted string, you need to convert it:
 
 ```python
 import time
 
-# Milliseconds → seconds
+# Milliseconds → Seconds
 "time": raw_event.get("timestamp", 0) // 1000
 
-# ISO string → seconds
+# ISO String → Seconds
 "time": int(time.mktime(time.strptime(raw_event["created_at"], "%Y-%m-%dT%H:%M:%S")))
 ```
 
 ### 3. Missing `self` Field
 
-The `self` field contains bot information, with `user_id` being the bot's account ID. This field is crucial in multi-bot scenarios:
+The `self` field contains information about the bot itself, with `user_id` being the bot's account ID. This field is crucial in multi-Bot scenarios:
 
 ```python
 "self": {
     "platform": self.platform,
-    "user_id": raw_event.get("bot_id", ""),   # Bot's own ID
+    "user_id": raw_event.get("bot_id", ""),   # The bot's own ID
 }
 ```
 
-### 4. Using Non-standard `detail_type` Values
+### 4. Use of Non-standard `detail_type` Values
 
-`detail_type` must use the values defined by OneBot12, such as `private`, `group`, `friend_increase`, `group_member_increase`, etc. Do not use platform-specific naming.
+The `detail_type` must use values defined by the OneBot12 standard, such as `private`, `group`, `friend_increase`, `group_member_increase`, etc. Do not use platform-specific naming.
 
 ### 5. Round-trip Consistency
 
-Ensure that the message segment types generated by the Converter correspond to the methods supported by the Send end. For example, if the Converter converts a platform image message to `{"type": "image", ...}`, then the Send end's `Image()` method must be able to handle image sending.
+Ensure that the message segment types generated by the Converter correspond to the methods supported by the Send end. For example, if the Converter converts the platform's image message to `{"type": "image", ...}`, then the `Image()` method on the Send end must be able to handle image sending.
 
 ## Best Practices
 
-1. **Always preserve raw data**: The `{platform}_raw` field must not be omitted
-2. **Use standard message segments**: Convert platform messages to OneBot12 standard message segments whenever possible
-3. **Set `detail_type` appropriately**: Use standard types (`private`/`group`/`channel` etc.), do not define custom ones
-4. **Handle edge cases**: Raw events may lack certain fields; use `.get()` with reasonable default values
-5. **Performance considerations**: `convert()` is called for every event; avoid performing time-consuming operations within it
+1. **Always retain the original data**: The `{platform}_raw` field must not be omitted.
+2. **Use standard message segments**: Try to convert platform-specific messages into OneBot12 standard message segments.
+3. **Set `detail_type` appropriately**: Use standard types (`private`/`group`/`channel`, etc.), and do not define custom types.
+4. **Handle edge cases**: The original event may lack certain fields; use `.get()` and provide reasonable default values.
+5. **Performance considerations**: The `convert()` method is called on each event, so avoid performing time-consuming operations within it.
 
 
 
@@ -5741,7 +5750,10 @@ Ensure that the message segment types generated by the Converter correspond to t
 
 # Publishing and Module Store Guide
 
-Publish your developed modules or adapters to the ErisPulse Module Store, allowing other users to easily discover and install them.
+> [!TIP]
+> **When you need to read this**: When publishing your work to PyPI / the module store. If not needed, skip it, as it will not affect the use of other features.
+
+Publish your developed module or adapter to the ErisPulse module store, allowing other users to easily discover and install it.
 
 ## Module Store Overview
 
@@ -6133,14 +6145,17 @@ These two methods are not mutually exclusive—you can simultaneously publish mo
 
 # Module Testing (ErisPulse-Testing)
 
-[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) is the official testing toolkit (RFC EPRFC-2026-001 Direction 3):  
-It provides `TestBot`, test event factories, outbound message capture and assertion interface, making module testing as simple as writing regular pytest.
+> [!TIP]
+> **When to read this:** When writing automated tests for your own module. If not needed, skip this section; it won't affect the use of other features.
+
+[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) is the official testing toolkit (RFC EPRFC-2026-001 Direction 3):
+It provides `TestBot`, test event factories, outbound message capture and assertion interfaces, making module testing as simple as writing regular pytest.
 
 ```bash
 pip install ErisPulse-Testing
 ```
 
-> A one-way dependency development-time tool, with zero runtime intervention. For smoke tests that truly connect to adapter platforms, please use the framework repository's `tests/devs/test_adapter.py`.
+> A one-way dependency development-time tool for the framework, with zero runtime involvement. For smoke tests that actually connect to adapter platforms, please use `tests/devs/test_adapter.py` in the framework repository.
 
 ## Quick Start
 
@@ -8444,6 +8459,9 @@ class MyAdapter(BaseAdapter):
 
 # SQL Query Builder
 
+> [!TIP]
+> **When to read this**: When you need chain-style SQL queries or custom storage backends. Skip if not needed, as it won't affect other features.
+
 The Storage module in ErisPulse provides a chain-call style generic SQL query builder, supporting custom table creation, querying, updating, and deleting operations.
 
 ## Architecture Design
@@ -8459,23 +8477,23 @@ Bases/storage.py                    Core/storage.py
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` are abstract base classes that define unified interfaces; the framework includes three built-in implementations: SQLite / MySQL / PostgreSQL (custom backends can also be extended following this pattern, see [Storage Backends](storage-backends.md))
-- `StorageManager` dispatches the specific backend according to the `ErisPulse.storage.backend` configuration, with SQLite as the default, ensuring full backward compatibility
+- `BaseStorage` / `BaseQueryBuilder` are abstract base classes defining unified interfaces; the framework includes built-in implementations for SQLite / MySQL / PostgreSQL (custom backends can be extended similarly, see [Storage Backends](storage-backends.md))
+- `StorageManager` dispatches specific backends based on the `ErisPulse.storage.backend` configuration, defaulting to SQLite, fully backward compatible
 
-## Importing
+## Import
 
 ```python
 from ErisPulse import sdk
 # or
 from ErisPulse.Core import storage
 
-# ABC base classes (for type annotation or custom implementation)
+# ABC base classes (for type hints or custom implementations)
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
 ## Table Management
 
-### Creating a Table
+### Create Table
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -8486,44 +8504,44 @@ sdk.storage.CreateTable("users", {
 })
 ```
 
-### Checking if a Table Exists
+### Check if Table Exists
 
 ```python
 if sdk.storage.HasTable("users"):
     print("users table exists")
 ```
 
-### Dropping a Table
+### Drop Table
 
 ```python
 sdk.storage.DropTable("users")
 ```
 
-### Modifying Table Structure
+### Modify Table Structure
 
 ```python
-# Adding a column
+# Add column
 sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
 
-# Renaming a table
+# Rename table
 sdk.storage.AlterTable("users").RenameTo("members").Execute()
 
-# Chaining multiple operations
+# Chain multiple operations
 sdk.storage.AlterTable("users") \
     .AddColumn("phone", "TEXT") \
     .AddColumn("address", "TEXT") \
     .Execute()
 ```
 
-## Chainable Queries
+## Chain-style Querying
 
-### Inserting Data
+### Insert Data
 
 ```python
-# Single row insertion (passing a dictionary)
+# Single row insertion (pass a dictionary)
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# Batch insertion (passing a list of dictionaries)
+# Bulk insertion (pass a list of dictionaries)
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35},
@@ -8531,9 +8549,9 @@ sdk.storage.Table("users").InsertMulti([
 ]).Execute()
 ```
 
-### Querying Data
+### Query Data
 
-> **Important**: `Select()` returns a `list[tuple]` (list of tuples), not a dictionary. You need to access values by column index.
+> **Important**: `Select()` returns a `list[tuple]` (list of tuples), not a dictionary. You must access values by column index.
 
 ```python
 # Select all columns
@@ -8550,9 +8568,9 @@ for row in rows:
     age = row[1]    # 30
 ```
 
-#### Converting Tuples to Dictionaries
+#### Convert Tuples to Dictionaries
 
-It is recommended to call `ToDict()` directly on the chain; the SELECT result will automatically be returned as a dictionary (column name → value):
+It is recommended to directly call `ToDict()` on the chain; SELECT results will automatically return as a list of dictionaries (column name → value):
 
 ```python
 # ToDict chain: result is list[dict], column names are automatically taken from query metadata (SELECT * is also supported)
@@ -8570,24 +8588,24 @@ row = sdk.storage.Table("users").Select("name", "age") \
 # row: {"name": "Alice", "age": 30} or None
 ```
 
-> `ToDict()` is a chainable marker (returns self): chains without calling it retain the original `list[tuple]` behavior, fully backward compatible; `copy()` will preserve this flag.
+> `ToDict()` is a chain marker (returns self): chains without calling it maintain the original `list[tuple]` behavior, fully backward compatible; `copy()` preserves this marker.
 
-Manual zip method (equivalent to ToDict, suitable for scenarios where the chain cannot be modified):
+Manual zip approach (equivalent to ToDict, suitable for scenarios where the chain cannot be modified):
 
 ```python
 columns = ["id", "name", "age"]
 rows = sdk.storage.Table("users").Select(*columns).Execute()
 
-# Method 1: zip in loop
+# Method one: zip in loop
 for row in rows:
     record = dict(zip(columns, row))
     print(record["name"], record["age"])
 
-# Method 2: convert to list of dictionaries at once
+# Method two: convert to list of dictionaries at once
 records = [dict(zip(columns, row)) for row in rows]
 ```
 
-#### Getting a Single Record
+#### Get Single Record
 
 ```python
 row = sdk.storage.Table("users").Select("name", "age") \
@@ -8600,9 +8618,9 @@ if row is not None:
     age = row[1]   # 30
 ```
 
-### Filtering Conditions
+### Condition Filtering
 
-> `Where(condition, *params)` supports passing multiple parameters, corresponding to multiple `?` placeholders.
+> `Where(condition, *params)` supports multiple parameters, corresponding to multiple `?` placeholders.
 
 ```python
 # Single condition (one placeholder, one parameter)
@@ -8610,19 +8628,19 @@ rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 18) \
     .Execute()
 
-# Using multiple placeholders in one Where
+# Multiple placeholders in one Where
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ? AND age < ?", 20, 40) \
     .Execute()
 
-# Multiple Where calls (AND connected)
+# Multiple Where calls (AND connection)
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 20) \
     .Where("age < ?", 40) \
     .Execute()
 ```
 
-### Sorting and Pagination
+### Sorting, Pagination
 
 ```python
 # Ascending order
@@ -8643,7 +8661,7 @@ rows = sdk.storage.Table("users").Select("name") \
     .Execute()
 ```
 
-### Updating Data
+### Update Data
 
 ```python
 # Conditional update
@@ -8658,7 +8676,7 @@ sdk.storage.Table("users") \
     .Execute()
 ```
 
-### Deleting Data
+### Delete Data
 
 ```python
 # Conditional delete
@@ -8671,7 +8689,7 @@ sdk.storage.Table("users") \
 sdk.storage.Table("users").Delete().Execute()
 ```
 
-### Counting and Existence Check
+### Count and Existence Check
 
 ```python
 # Count
@@ -8684,7 +8702,7 @@ exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 
 ## Reusing Query Conditions
 
-Use `copy()` to deep copy the builder and reuse base conditions:
+Use `copy()` to deep copy the builder and reuse the base condition:
 
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
@@ -8712,7 +8730,7 @@ rows = builder.Execute()
 
 ## Using in Transactions
 
-Chainable operations fully support transactions:
+Chain operations fully support transactions:
 
 ```python
 # Commit transaction
@@ -8732,7 +8750,7 @@ except Exception:
 
 ## Asynchronous Native API
 
-Starting from version 2.8.0, the storage layer uses asynchronous operations as the native primary interface. All terminating methods have corresponding asynchronous versions with an `a` prefix. It is recommended to use these in asynchronous handlers (to avoid temporary blocking of the event loop due to synchronous compatibility layers):
+Starting from version 2.8.0, the storage layer uses asynchronous calls as the native main interface. All terminating methods have corresponding asynchronous versions prefixed with `a`, recommended for use within asynchronous handlers (to avoid briefly blocking the event loop with synchronous compatibility layers):
 
 ```python
 # Asynchronous transaction
@@ -8740,19 +8758,19 @@ async with sdk.storage.atransaction():
     await sdk.storage.aset("key1", "value1")
     await sdk.storage.aset("key2", {"nested": True})
 
-# Asynchronous chainable query
+# Asynchronous chain query
 rows = await sdk.storage.Table("users").Select("name", "age").ToDict().aExecute()
 row = await sdk.storage.Table("users").Select("*").Where("id = ?", 1).aExecuteOne()
 total = await sdk.storage.Table("users").Where("age > ?", 18).aCount()
 exists = await sdk.storage.Table("users").Where("name = ?", "Alice").aExists()
 
-# Asynchronous KV operations
+# Asynchronous KV
 await sdk.storage.aset("app.name", "MyApp")
 value = await sdk.storage.aget("app.name")
 keys = await sdk.storage.aget_all_keys()
 ```
 
-| Synchronous (Compatibility Layer) | Asynchronous Native |
+| Synchronous (compatibility layer) | Asynchronous native |
 |------|------|
 | `get` / `set` / `delete` | `aget` / `aset` / `adelete` |
 | `get_all_keys` / `clear` | `aget_all_keys` / `aclear` |
@@ -8774,22 +8792,22 @@ keys = await sdk.storage.aget_all_keys()
 | `Count()` | `int` | Number of matching rows |
 | `Exists()` | `bool` | Whether exists |
 
-### Example of Return Value Handling
+### Return Value Handling Example
 
 ```python
 # Select returns tuples, access by index
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
-first_name = rows[0][0]  # First row, first column (name)
-first_age = rows[0][1]   # First row, second column (age)
+first_name = rows[0][0]  # First row, first column name
+first_age = rows[0][1]   # First row, second column age
 
-# Recommended: Use column name list + zip to convert to dictionary, code is more readable
+# Recommended: use column name list + zip to convert to dictionary, code is more readable
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
     d = dict(zip(cols, row))
     print(d["name"], d["age"])
 
-# ExecuteOne returns a single tuple or None
+# ExecuteOne returns single tuple or None
 row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
 name = row[0] if row else None
 
@@ -8800,7 +8818,7 @@ print(f"Deleted {affected} records")
 
 ## Parameterized Queries
 
-All WHERE parameters use `?` placeholders, and parameters are passed as subsequent arguments to `Where()` (not as a tuple or list):
+All WHERE parameters use `?` placeholders, with parameters passed as subsequent arguments to `Where()` (**not** as a tuple or list):
 
 ```python
 # Correct ✓ — multiple parameters passed individually
@@ -8813,7 +8831,7 @@ sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execu
 sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
 # This will treat the entire tuple as the value for the first placeholder
 
-# Incorrect ✗ — SQL injection risk exists
+# Incorrect ✗ — SQL injection risk
 sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 ```
 
@@ -8821,7 +8839,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ```python
 # Where(condition: str, *params: Any)
-# params are variable arguments, passed one by one
+# params are variable arguments, passed individually
 
 # Single parameter
 .Where("name = ?", "Alice")
@@ -8838,7 +8856,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ## Custom Storage Backend
 
-Starting from version 2.8.0, the abstract layer uses **asynchronous methods as the native contract**: inherit `BaseStorage` and implement asynchronous abstract methods. Synchronous `get/set/Execute` and others are provided automatically by the base class bridge:
+Starting from version 2.8.0, the abstraction layer uses **asynchronous methods as native contracts**: inherit `BaseStorage` and implement asynchronous abstract methods. Synchronous `get/set/Execute` etc. are automatically bridged by the base class:
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -8872,10 +8890,10 @@ class MyStorage(BaseStorage):
 
 > [!TIP]
 > If you do not want to implement transaction connection routing (`conn` keyword argument), keep the class attribute
-> `_SUPPORTS_CONN_ROUTING = False` (default), and transaction functionality is still available (with limited isolation).
+> `_SUPPORTS_CONN_ROUTING = False` (default), and transaction features will still be available (with limited isolation).
 > Pure SQL backends can directly inherit `Core/Bases/sql_base.py`'s `SQLStorageBase` +
-> `SQLQueryBuilder`, requiring only connection management and dialect execution funnel implementation, see
-> [Storage Backends](docs/en/storage-backends.md).
+> `SQLQueryBuilder`, only requiring connection management and dialect execution funnel implementation, see
+> [Storage Backends](storage-backends.md).
 
 
 
@@ -9332,6 +9350,9 @@ async def _poll(self):
 
 # Lazy-Loaded Module System
 
+> [!TIP]
+> **When to read this**: When using lazy-loaded modules or activate_on event-driven activation. If not needed, you can skip this section without affecting the use of other features.
+
 The ErisPulse SDK provides a powerful lazy-loaded module system that allows modules to be initialized only when they are actually needed, significantly improving application startup speed and memory efficiency.
 
 ## Overview
@@ -9559,15 +9580,18 @@ flowchart TD
 
 # Internationalization (i18n) System
 
-ErisPulse v2.5.0 includes full internationalization support. Both the framework core and CLI interface can automatically switch display text according to your system language, and external modules can also register their own translations.
+> [!TIP]
+> **When to read this**: When you need multi-language text, translation registration, or language detection. Skip if not needed, as it won't affect the use of other features.
+
+ErisPulse v2.5.0 includes full internationalization support. The framework core and CLI interface can automatically switch displayed text according to your system language, and support external modules registering their own translations.
 
 ## Supported Languages
 
 | Language | Code | Description |
 |------|------|------|
-| Simplified Chinese | `zh-CN` | Default language (native framework language) |
+| Simplified Chinese | `zh-CN` | Default language (native to the framework) |
 | Traditional Chinese | `zh-TW` | Traditional Chinese (Hong Kong/Macau/Taiwan) |
-| English | `en` | English (general fallback language) |
+| English | `en` | English (fallback language) |
 | 日本語 | `ja` | Japanese |
 | Русский | `ru` | Russian |
 
@@ -9593,7 +9617,7 @@ Add to `config/config.toml`:
 language = "zh-TW"
 ```
 
-Set to `"auto"` (default) to automatically detect system language.
+Set to `"auto"` (default) to automatically detect the system language.
 
 ### Switch Manually in Code
 
@@ -9604,7 +9628,7 @@ from ErisPulse import i18n
 i18n.set_language("en")
 print(i18n.get_language())  # "en"
 
-# Reset to auto-detect
+# Reset to automatic detection
 i18n.reset_language()
 ```
 
@@ -9612,20 +9636,20 @@ i18n.reset_language()
 
 ## Language Detection Mechanism
 
-The framework detects user language with the following priority:
+The framework detects user language in the following priority order:
 
-1. **Environment variable `ERISPULSE_LANG`** — Highest priority, for testing and temporary switching
-2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, not affected by tools like Git Bash that override `LANG`)
+1. **Environment variable `ERISPULSE_LANG`** — Highest priority, used for testing and temporary switching
+2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, unaffected by tools like Git Bash that override `LANG`)
 3. **Environment variables** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (Unix/macOS standard)
 4. **System Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
 5. **Fallback** — en (English)
 
 ### Nearest Mapping Principle
 
-When detected language does not match exactly, map to the nearest supported language:
+When detected language is not an exact match, map to the nearest supported language:
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **Traditional Chinese**
-- All other `zh-*` (e.g. `zh-CN`, `zh-SG`) → **Simplified Chinese**
+- All other `zh-*` (e.g., `zh-CN`, `zh-SG`) → **Simplified Chinese**
 - `en-US`, `en-GB`, `en-AU` etc. → **English**
 - `ja-JP` → **Japanese**
 - `ru-RU` → **Russian**
@@ -9635,11 +9659,11 @@ When detected language does not match exactly, map to the nearest supported lang
 
 ## Using i18n in Modules
 
-You can register translation text for your own modules to make them support multiple languages.
+You can register translation text for your own modules, allowing your module to support multiple languages.
 
 ### Recommended Approach: Declare Translation Keys via I18nClass (v2.7.0+)
 
-From v2.7.0, modules/adapters can declare translation keys by nesting the `I18nClass` class, similar to declaring a `ConfigClass`. The framework will **automatically register** all declared translation keys without requiring manual `i18n.register()` calls.
+Starting from v2.7.0, modules/adapters can declare translation keys by embedding a class `I18nClass`, similar to declaring `ConfigClass`. The framework will automatically register all declared translation keys during loading, eliminating the need to manually call `i18n.register()`.
 
 ```python
 from dataclasses import dataclass, field
@@ -9660,7 +9684,7 @@ class MyModule(BaseModule):
         )
 
     # Translation key collection class (optional)
-    # Declared keys will be automatically registered by the framework, with higher priority than default configuration generated from ConfigClass
+    # Declared keys will be automatically registered by the framework, with higher priority than ConfigClass-generated defaults
     class I18nClass(BaseI18n):
         # Property names are automatically concatenated into full key paths: <module name>.<property name>
         welcome_msg: I18nKey = I18nKey(
@@ -9671,7 +9695,7 @@ class MyModule(BaseModule):
             ru="Приветственное сообщение",
             zh_TW="歡迎訊息",
         )
-        # Other business-related translation keys
+        # Other translation keys used in business logic
         hello: I18nKey = I18nKey(
             default="Hello, {name}!",
             zh_CN="你好，{name}！",
@@ -9693,25 +9717,25 @@ class MyModule(BaseModule):
         )
 ```
 
-#### Why is I18nClass Recommended?
+#### Why I18nClass is Recommended?
 
 | Scenario | Manual i18n.register() | I18nClass Declarative |
 |------|-----------------------|------------------|
-| Configuration description referencing i18n keys | Need manual registration, and must be done before configuration generation | Framework automatically registers before configuration generation |
-| Multi-language translation declaration | Scattered in various on_load() methods | Centralized in class, clearly visible |
+| i18n keys referenced in configuration descriptions | Need manual registration, and must be done before configuration generation | Framework automatically registers before configuration generation |
+| Multi-language translation declarations | Scattered across various on_load() methods | Centralized in class, easy to see at a glance |
 | Key naming consistency | Prone to spelling errors | Property names as key suffixes, IDE can auto-complete |
-| Unloading cleanup | Need manual unregister_domain() | Framework uses unified domain registration |
+| Cleanup on unload | Need manual unregister_domain() | Framework uses unified domain registration |
 
 #### I18nClass Key Path Rules
 
 - **Default**: Use ``<module registration name>.<property name>`` as the full key path
   - Example: Module name is ``MyModule``, property ``welcome`` → key path ``MyModule.welcome``
-- **Explicit**: Use the ``I18nKey(key="...")`` parameter to specify any dot-separated path
-  - Suitable for deeply nested key names (e.g. ``mymodule.config.basic.token``)
+- **Explicit**: Specify any dot-separated path via ``I18nKey(key="...")`` parameter
+  - Suitable for deeply nested key names (e.g., ``mymodule.config.basic.token``)
 
 #### Using in Adapters
 
-Adapters also support `I18nClass`, with identical usage:
+Adapters also support `I18nClass`, with the same usage:
 
 ```python
 from ErisPulse.Core import BaseAdapter
@@ -9730,34 +9754,34 @@ class MyAdapter(BaseAdapter):
         )
 
     class I18nClass(BaseI18n):
-        # Central declaration of configuration description referenced keys and other business keys' multilingual translations
+        # Central declaration of i18n keys referenced in configuration descriptions and other business keys
         endpoint: I18nKey = I18nKey(
             default="API Endpoint",
-            zh_CN="API address",
-            zh_TW="API address",
+            zh_CN="API 地址",
+            zh_TW="API 位址",
             en="API Endpoint",
-            ja="API address",
-            ru="API address",
+            ja="APIアドレス",
+            ru="API адрес",
         )
 ```
 
-The `I18nClass` of adapters is automatically registered during the `__init__` phase (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available.
+The `I18nClass` of adapters will be automatically registered during the `__init__` phase (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available.
 
-### Manual Registration of Custom Translations (Old Approach)
+### Manually Register Custom Translations (Old Method)
 
-If you do not use `I18nClass`, you can directly call `i18n.register()` to register translation text.
+If you don't use `I18nClass`, you can directly call `i18n.register()` to register translation text.
 
 ```python
 from ErisPulse import i18n
 
-# Register Chinese translations
+# Register Chinese translation
 i18n.register("zh-CN", {
-    "my_module.welcome": "Welcome to my module!",
-    "my_module.goodbye": "Goodbye!",
-    "my_module.hello": "Hello, {name}!",
+    "my_module.welcome": "欢迎使用我的模块！",
+    "my_module.goodbye": "再见！",
+    "my_module.hello": "你好，{name}！",
 }, domain="my_module")
 
-# Register English translations
+# Register English translation
 i18n.register("en", {
     "my_module.welcome": "Welcome to my module!",
     "my_module.goodbye": "Goodbye!",
@@ -9776,11 +9800,11 @@ i18n.t("my_module.welcome")  # Automatically uses current language
 # With formatted parameters
 i18n.t("my_module.hello", name="Alice")
 
-# Specify default value (returns when translation key does not exist)
+# Specify default value (returns when translation key doesn't exist)
 i18n.t("my_module.unknown_key", default="Default text")
 ```
 
-### Using in Module Classes
+### Using in Module Class
 
 ```python
 from dataclasses import dataclass, field
@@ -9801,7 +9825,7 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def on_load(self, event):
-        # Real-time configuration access (reflects latest value on each access)
+        # Read configuration in real-time (reflects latest value on each access)
         self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
 
@@ -9814,7 +9838,7 @@ class MyModule(BaseModule):
         pass
 ```
 
-### Unregistering Translations
+### Unregister Translations
 
 ```python
 # Unregister all translations in a domain
@@ -9825,7 +9849,7 @@ i18n.unregister_domain("my_module")
 
 ## Multi-language Configuration Fields
 
-From v2.5.2, configuration Schema fully supports i18n. All user-visible text fields can reference i18n keys, and WebUI and other consumers will automatically resolve them into corresponding text based on the current language.
+Starting from v2.5.2, configuration Schema fully supports i18n. All user-visible text fields can reference i18n keys, and WebUI and other consumers will automatically resolve them according to the current language.
 
 ### Supported i18n Fields
 
@@ -9834,9 +9858,9 @@ From v2.5.2, configuration Schema fully supports i18n. All user-visible text fie
 | `description` | field metadata | Field description |
 | `options[].label` | `ui.options` | Select control option labels |
 | `placeholder` | `ui.placeholder` | Input box placeholder |
-| `group_labels` | `_schema_meta` | Group display names (Dashboard partition titles) |
+| `group_labels` | `_schema_meta` | Group display names (Dashboard section titles) |
 
-All use the `{"i18n": "key", "default": "text"}` format. Pure strings are passed through as-is (for backward compatibility).
+All use the format `{"i18n": "key", "default": "text"}`, with plain strings passed through as-is (backward compatibility).
 
 ### Declaring i18n Fields
 
@@ -9848,7 +9872,7 @@ from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
-    # description i18n
+    # i18n for description
     token: str = field(
         default="",
         metadata={
@@ -9859,12 +9883,12 @@ class MyAdapterConfig(BaseConfig):
                 "widget": "password",
                 "group": "basic",
                 "order": 1,
-                # placeholder i18n
-                "placeholder": {"i18n": "my_adapter.token.ph", "default": "Enter Token"},
+                # i18n for placeholder
+                "placeholder": {"i18n": "my_adapter.token.ph", "default": "Please enter Token"},
             },
         },
     )
-    # options label i18n
+    # i18n for options label
     mode: str = field(
         default="a",
         metadata={
@@ -9881,7 +9905,7 @@ class MyAdapterConfig(BaseConfig):
         },
     )
 
-    # group_labels i18n (group display names)
+    # i18n for group_labels (group display names)
     _schema_meta = {
         "group_labels": {
             "basic": {"i18n": "my_adapter.group.basic", "default": "Basic Settings"},
@@ -9893,10 +9917,10 @@ class MyAdapterConfig(BaseConfig):
 
 ### Secret Masking and Configuration Validation
 
-Fields marked as `"secret": True` will automatically receive **masking protection** (from v2.7.0):
+Fields marked as `"secret": True` will automatically receive **masking protection** (from v2.7.0 onwards):
 
-- **Template generation masking**: When `dataclass_to_toml_with_comments()` generates configuration templates, secret fields' real values are not written to the file (displaying empty placeholders), preventing sensitive information from being written to disk
-- **General masking utility**: `redact_secret(value)` replaces non-empty values with `***`, returning empty values as-is, suitable for scenarios like logging output
+- **Template generation masking**: When `dataclass_to_toml_with_comments()` generates a configuration template, the real value of secret fields will not be written to the file (displaying an empty placeholder), preventing sensitive information from being persisted.
+- **General masking utility**: `redact_secret(value)` replaces non-empty values with `***`, and returns empty values as-is, suitable for use in log output, etc.
 
 ```python
 from ErisPulse.Core.Bases.config_schema import redact_secret
@@ -9909,8 +9933,8 @@ redact_secret("")           # ''
 
 | Validation | Metadata | Example |
 |--------|--------|------|
-| Type matching | Field declaration type | `int` field passed a string raises an error |
-| Enum constraint | `ui.options` or top-level `options` | Value must be among allowed options |
+| Type matching | Field declared type | `int` field with a string input raises an error |
+| Enum constraint | `ui.options` or top-level `options` | Value must belong to allowed options |
 | Numeric range | Top-level `min` / `max` | `metadata={"min": 1, "max": 65535}` |
 
 ```python
@@ -9926,12 +9950,12 @@ errors = validate_config(C(mode="x", port=70000))  # Two errors: enum + range
 
 ### Registering Configuration Translations
 
-Configuration field i18n keys and regular translation keys are registered the same way using `i18n.register()`:
+Configuration field i18n keys are registered the same way as regular translation keys using `i18n.register()`:
 
 ```python
 from ErisPulse import i18n
 
-# Register Chinese (same as default, but can differ)
+# Register Chinese (same as default, but can be different)
 i18n.register("zh-CN", {
     "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
@@ -9941,9 +9965,9 @@ i18n.register("en", {
     "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
 ```
-> **Recommended approach**: Use `I18nClass` to declare translation keys, and the framework will automatically register them (see the "Recommended approach" section above), eliminating the need to manually call `i18n.register()` or `register_config_i18n()`.
+> **Recommended approach**: Use `I18nClass` to declare translation keys; the framework will automatically register them (see the "Recommended Approach" section above), eliminating the need to manually call `i18n.register()` or `register_config_i18n()`.
 
-A convenient function `register_config_i18n()` is also provided, which automatically extracts keys from the configuration class and registers them:
+A convenient function `register_config_i18n()` is also provided, which can automatically extract keys from the configuration class and register them:
 
 ```python
 from ErisPulse.Core.Bases.config_schema import register_config_i18n
@@ -9959,25 +9983,24 @@ register_config_i18n(MyAdapterConfig, "en", {
 
 ### How WebUI Consumes
 
-`get_config_schema()` returns a schema where the i18n dictionary is passed through as-is. The WebUI frontend can use `i18n.t()` to resolve based on the current language.
+The schema returned by `get_config_schema()` will pass through the i18n dictionary as-is. The WebUI frontend can call `i18n.t()` to resolve it according to the current language.
 
-If you need the server to directly resolve into strings (e.g., for frontends that do not support i18n), use `resolve_config_schema()`, which resolves `description`, `options[].label`, `placeholder`, and `group_labels` into the current language's text:
+If you need the server to directly resolve it to a string (e.g., for a frontend that doesn't support i18n), use `resolve_config_schema()`, which will resolve `description`, `options[].label`, `placeholder`, and `group_labels` into the current language's text:
 
 ```python
 from ErisPulse.Core.Bases.config_schema import resolve_config_schema
 
-# All i18n fields are resolved into the current language's string
+# All i18n fields have been resolved into the current language's string
 schema = resolve_config_schema(MyAdapterConfig)
 print(schema["fields"]["token"]["description"])    # "Platform Token" or "Platform Token"
-print(schema["fields"]["token"]["placeholder"])   # "Enter Token" or "Enter Token"
+print(schema["fields"]["token"]["placeholder"])   # "Please enter Token" or "Enter Token"
 print(schema["fields"]["mode"]["options"][0]["label"])  # "Mode A" or "Mode A"
 print(schema["group_labels"]["basic"])             # "Basic Settings" or "Basic"
 ```
 
-> `BaseConfig`, `BotAccountConfig`, `register_config_i18n()`, `resolve_config_schema()`
-> and other types and utility functions are actually defined in `ErisPulse.Core.Bases.config_schema`.
+> `BaseConfig`, `BotAccountConfig`, `register_config_i18n()`, `resolve_config_schema()`, etc., are actually defined in `ErisPulse.Core.Bases.config_schema`.
 > `ErisPulse.runtime.config_schema` is retained as a compatibility shim,
-> **recommended to import uniformly from `ErisPulse.Core.Bases`** (except for i18n translation key related types,
+> **recommended to import uniformly from `ErisPulse.Core.Bases`** (except for i18n translation key-related types,
 > which are located in `ErisPulse.Core.Bases.i18n_schema`).
 
 ## API Reference
@@ -9991,11 +10014,11 @@ print(schema["group_labels"]["basic"])             # "Basic Settings" or "Basic"
 | `t(key, default=None, **kwargs)` | Get translated text (`gettext()` is an alias) |
 | `set_language(lang)` | Manually set language |
 | `get_language()` | Get current language |
-| `reset_language()` | Reset to auto-detection (and re-detect environment) |
+| `reset_language()` | Reset to automatic detection (and re-detect environment) |
 | `get_supported_languages()` | Get list of all supported languages |
 | `has_translation(key, lang=None)` | Check if translation key exists |
 | `register(lang, translations, domain)` | Register custom translations |
-| `unregister_domain(domain)` | Unload all translations in specified domain |
+| `unregister_domain(domain)` | Unload all translations for a specified domain |
 | `reload()` | Reload built-in translations and re-detect language |
 
 #### `t()` Method Details
@@ -10018,20 +10041,20 @@ i18n.t("greeting", name="Alice", place="ErisPulse")
 
 ### BaseI18n / I18nKey (Declarative Translation Keys)
 
-Starting from v2.7.0, `ErisPulse.Core.Bases` provides a translation key declaration tool based on class attributes (recommended to import uniformly from `ErisPulse.Core.Bases`):
+Starting from v2.7.0, `ErisPulse.Core.Bases` provides a class property-based translation key declaration tool (recommended to import uniformly from `ErisPulse.Core.Bases`):
 
 > ``I18nKey.default`` is a **language-agnostic fallback text** and is not registered to any language.
-> To make translations effective, at least one language parameter must be explicitly passed (``zh_CN=`` / ``en=`` / ``ja=`` etc.).
-> This allows developers from various countries to freely use their native language to fill in ``default``, with no assumptions made by the framework.
+> To make translations effective, you must explicitly pass at least one language parameter (``zh_CN=`` / ``en=`` / ``ja=`` etc.).
+> This allows developers from various countries to freely fill in ``default`` in their native language, with no assumptions made by the framework.
 
 | Name | Description |
 |------|------|
-| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | Declaration of a single translation key, `default` is a language-agnostic fallback |
-| `BaseI18n` | Translation key collection base class (naming aligned with `BaseConfig`), sub-classes declare multiple `I18nKey` via class attributes |
+| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | Declaration of a single translation key, `default` is language-agnostic fallback |
+| `BaseI18n` | Base class for translation key collections (aligned with `BaseConfig` naming), child classes declare multiple `I18nKey` as class attributes |
 | `BaseI18n.register(prefix="", domain="app")` | Class method: register all declared keys to the i18n system |
 | `key` | Alias for `I18nKey` (more concise writing)
 
-Usage example:
+Example usage:
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, key
@@ -10055,7 +10078,7 @@ class MyKeys(BaseI18n):
         ru="До свидания",
     )
 
-# Standalone use (manual registration)
+# Using independently (manual registration)
 MyKeys.register(prefix="myapp.", domain="myapp")
 ```
 
@@ -10082,7 +10105,7 @@ from ErisPulse.runtime import get_i18n_config
 config = get_i18n_config()
 print(config["language"])  # "auto" or specific language code
 
-# I18nConfig is a dataclass, suitable for generating configuration templates
+# I18nConfig is a dataclass, can be used to generate configuration templates
 schema = I18nConfig.__dataclass_fields__
 ```
 
@@ -10092,8 +10115,8 @@ In the `[ErisPulse.i18n]` section of `config/config.toml`:
 
 ```toml
 [ErisPulse.i18n]
-# Display language, possible values:
-# - "auto"      — Auto-detect system language (default)
+# Display language, optional values:
+# - "auto"      — Automatically detect system language (default)
 # - "zh-CN"     — Simplified Chinese
 # - "zh-TW"     — Traditional Chinese
 # - "en"        — English
@@ -10108,7 +10131,7 @@ language = "auto"
 
 ### Translation Key Naming
 
-It is recommended to use dot-separated namespace format:
+It is recommended to use a dot-separated namespace format:
 
 ```
 <module name>.<category>.<description>
@@ -10118,7 +10141,7 @@ For example: `my_module.command.hello_desc`, `core.adapter.start_failed`
 
 ### Multi-language Coverage
 
-There is no need to provide translations for all languages at once; missing languages will automatically fall back to English, and if English is also missing, the key name itself will be displayed.
+You don't need to provide translations for all languages at once; missing languages will automatically fall back to English, and if English is also missing, the key name itself will be displayed.
 
 ### Dynamic Content
 
@@ -10543,17 +10566,23 @@ topology = sdk.get_topology()
 
 ### 归属权（owner）系统
 
-# Ownership (owner) System
+# Ownership (Owner) System
 
-Ownership is the cornerstone of the "plug-and-play" nature of modules: all framework resources registered during module loading are automatically attributed, and automatically reclaimed when the module is unloaded or disabled. Module authors only need to declare resources, without writing manual cleanup logic.
+> [!TIP]  
+> **When to read this**: When troubleshooting resource leaks, understanding the unload/cleanup chain, or declaring owned resources. If not needed, you can skip this section without affecting other features.
 
-> **Related Systems**: Scope determines "whether a resource is active" during event dispatching, while ownership determines "who owns the resource and who is responsible for reclaiming it during lifecycle events." For more details on scope, see [Unified Control Plane (scope)](scope.md). For background tasks, see [Lifecycle Management](lifecycle.md#Background Task Ownership and Automatic Cancellation).
+Ownership is the foundation of the module's "plug-and-play" capability: all framework resources registered during module loading are automatically named, and can be reclaimed with a single click during unload/disable—module authors only need to declare resources, without manually writing cleanup logic.
+
+> **Related systems**: The scope determines "whether resources are active" during event dispatching,  
+> while ownership determines "to whom resources belong and who will reclaim them during unload" during the lifecycle.  
+> For more details on scope, see [Unified Control Plane (Scope)](scope.md), and for background tasks, see  
+> [Lifecycle Management](lifecycle.md#background-task-ownership-and-automatic-cancellation).
 
 {!--< tips >!--}
-1. Ownership is automatically recorded at the **moment of registration** based on `current_owner`, requiring zero code changes from the module.
-2. Unload and disable share the same cleanup chain (`_cleanup_module_registrations`), where each step only logs a warning if it fails, without interrupting the process.
-3. Resources with user-configured semantics (persistent overrides / scope rules / command ACLs) are **not** cleaned up when the module is unloaded.
-4. External handles managed by utility modules can be attached to the cleanup chain via `on_cleanup(cb)`, which will be automatically called when the dependent module is unloaded (see [Guide to Utility Modules: Managing Handles of Other Modules](#Guide-to-Utility-Modules-Managing-Handles-of-Other-Modules)).
+1. Ownership is **automatically recorded at the moment of registration** based on `current_owner`, requiring zero changes to module code.
+2. Unload and disable share the same cleanup chain (`_cleanup_module_registrations`), with each step issuing a warning but not interrupting the process if it fails.
+3. Resources defined by user configuration (persistent overrides / scope rules / command ACLs) are **not** cleaned up when the module is unloaded.
+4. External handles managed by utility modules can be added to the cleanup chain using `on_cleanup(cb)`, which automatically triggers callbacks when the dependent module is unloaded (see [Utility Module Guide](#utility-module-guide-handling-other-modules-handles)).
 {!--< /tips >!--}
 
 ## Owner Context Mechanism
@@ -10820,16 +10849,19 @@ Guaranteed framework behavior:
 
 ### 影子模块与灰度转正
 
-# Shadow Modules and Gradual Promotion
+# Shadow Modules and Gradual Cutover
 
-A shadow module is a **new version** of the same module, running in parallel with the live old version under an independent owner (e.g., `roll_shadow`). It receives **copies** of real events, and its outbound calls are **intercepted and logged** instead of being actually dispatched. By comparing the behaviors of both versions in `shadow_diff`, you can confirm there are no issues before promoting the shadow to become the live version with a single `promote` action. You can also `dismiss` the shadow at any time. **No code changes are required** for the module; all operations are driven at runtime via APIs: similar to `load / unload / reload`, these operational actions can be directly invoked through the Dashboard or custom management modules, with no configuration files needed.
+> [!TIP]
+> **When you should read this**: When you need to perform a gradual release—run a new version in parallel with the existing one, compare behaviors, and promote or roll back. If you don't need this, you can skip this section without affecting the use of other features.
 
-<!-- < tips > -->
+A shadow module is a **new version** of a module that runs in parallel with the existing online version under a separate owner (such as `roll_shadow`). It receives **copies** of real events, and its outbound actions are **intercepted and recorded** rather than actually dispatched. By comparing the behaviors of both versions in `shadow_diff`, you can confirm that the new version is safe to promote. Once confirmed, you can use `promote` to promote the shadow module to become the new default, or use `dismiss` to discard it at any time. **No code changes are required**—the entire process is driven at runtime via API: similar to `load / unload / reload`, these operational actions can be called directly from the Dashboard or custom management modules, with no configuration needed.
+
+{!--< tips >!--}
 1. Start: ``await sdk.module.shadow_start("roll", source="path/to/v2")``
-   —— The new version runs in parallel with the old version under an independent owner (defaulting to the path name).
-2. The shadow does not participate in real distribution or dependency graphs: commands with the same name go into the shadow directory, routes are registered but not mounted, lifecycle broadcasts are silent, and `module.call` and dependency resolution still point to v1.
-3. Promotion must always be confirmed by a human: ``await sdk.module.promote_shadow("roll")``, and if it fails, the old instance is automatically rolled back to continue serving; ``dismiss_shadow`` can be used at any time to abandon the shadow.
-<!-- < /tips > -->
+   ——The new version code runs in parallel with the old version under a separate owner (defaulting to the path name).
+2. The shadow module does not participate in real distribution or dependency graph: commands with the same name go into the shadow directory, routes are only registered but not mounted, lifecycle broadcasts are silent, and `module.call` and dependency resolution still point to v1.
+3. Promotion is always confirmed by a human: ``await sdk.module.promote_shadow("roll")``, and if it fails, the old instance automatically rolls back and continues serving; ``dismiss_shadow`` can discard the shadow module at any time.
+{!--< /tips >!--}
 
 ## Quick Start
 
@@ -10890,19 +10922,22 @@ The `promote` process: take a snapshot of the current version (including cascadi
 
 # Inter-Module Communication
 
-> [!NOTE]  
+> [!TIP]
+> **When to read this**: When you need cross-module calls (RPC), service contracts, targeted events, or cold-start replay. Skip if not needed; it won't affect the use of other features.
+
+> [!NOTE]
 > This chapter requires ErisPulse **2.8.0+**.
 
-ErisPulse's modules have a **three-layer communication model**, ordered as "point-to-point → directed → broadcast":
+ErisPulse's modules communicate through a **three-layer communication model**, arranged from "point-to-point → targeted → broadcast":
 
 | Layer | API | Semantics | Typical Scenario |
 |---|---|---|---|
-| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking capabilities of another module (e.g., fetching history, translation, refund) |
-| **Directed Events** | `await lifecycle.emit("message_received", {...}, to="Chat")` | Distributed only to lifecycle hooks registered by the specified module | Notifying downstream modules of upstream state changes ("a new message was received") |
-| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide visible lifecycle events | Hot configuration updates, module up/down events |
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking another module's capability (e.g., fetching history, translation, refund) |
+| **Targeted Events** | `await lifecycle.emit("message_received", {...}, to="Chat")` | Distributed only to lifecycle hooks registered by the specified module | Notifying downstream modules about upstream state changes ("a new message has been received") |
+| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide lifecycle events | Hot configuration updates, module startup/shutdown |
 
 {!--< tips >!--}
-Selection rule: **Use `call` when you need a return value, use `emit(..., to=...)` when you only want to notify a specific module's hooks, and use `emit(...)` to notify everyone.**  
+Selection mnemonic: **Use `call` when you need a return value, use `emit(..., to=...)` to notify a specific module's hooks, and use `emit(...)` to notify everyone.** 
 {!--< /tips >!--}
 
 ## RPC: module.call
@@ -11116,11 +11151,14 @@ The deduplication cache is automatically reset when adapters register (start of 
 
 # Startup Process and Manual Control
 
-ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup chain into a single line of code. However, when you need to fully customize the startup process (for example, partial loading, dynamic registration, hot plugging, injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
+> [!TIP]
+> **When to read this**: When you need to manually drive the startup sequence, customize the startup order, or troubleshoot startup failures. If not needed, you can skip this section without affecting other features.
 
-This article breaks down the startup chain into independent components, explains the responsibilities of each, the order of calls, and provides an example of how to manually perform a complete startup.
+ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup sequence into a single line of code. However, when you need to fully customize the startup process (for example, partial loading, dynamic registration, hot-swapping, or injecting custom loading strategies), you need to understand what happens inside this sequence and how to manually drive each step.
 
-> This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the `init()` chain and lower-level entry points such as `init()` / `init_task()` / `init_sync()`.
+This article breaks down the startup sequence into independent steps, explains the responsibilities of each step and their calling order, and provides an example of manually performing the complete startup process.
+
+> This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the `init()` sequence, as well as lower-level entry points such as `init()`/`init_task()`/`init_sync()`.
 
 ## Overview of SDK Top-Level Entry Points
 

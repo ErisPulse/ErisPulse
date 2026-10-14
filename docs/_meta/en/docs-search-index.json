@@ -37,7 +37,7 @@
     "1. CLI run command (Development/Simple Deployment, Recommended)": [
       {
         "document": "advanced/startup.md",
-        "line": 370,
+        "line": 373,
         "level": 4,
         "title": "1. CLI run command (Development/Simple Deployment, Recommended)"
       }
@@ -45,13 +45,13 @@
     "1. Categorized Exception Handling": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 454,
+        "line": 457,
         "level": 3,
         "title": "1. Categorized Exception Handling"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 274,
+        "line": 277,
         "level": 3,
         "title": "1. Categorized Exception Handling"
       }
@@ -67,7 +67,7 @@
     "1. Configure pyproject.toml": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 38,
+        "line": 41,
         "level": 3,
         "title": "1. Configure pyproject.toml"
       }
@@ -91,7 +91,7 @@
     "1. Create Dockerfile": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 203,
+        "line": 206,
         "level": 3,
         "title": "1. Create Dockerfile"
       }
@@ -107,7 +107,7 @@
     "1. Declarative Configuration (Recommended)": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 392,
+        "line": 395,
         "level": 3,
         "title": "1. Declarative Configuration (Recommended)"
       }
@@ -131,7 +131,7 @@
     "1. Discovery Layer: Finder": [
       {
         "document": "advanced/startup.md",
-        "line": 53,
+        "line": 56,
         "level": 3,
         "title": "1. Discovery Layer: Finder"
       }
@@ -163,7 +163,7 @@
     "1. Implement Connection Retry": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 107,
+        "line": 110,
         "level": 3,
         "title": "1. Implement Connection Retry"
       }
@@ -171,7 +171,7 @@
     "1. Maintaining Platform-Specific Documentation": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 618,
+        "line": 621,
         "level": 3,
         "title": "1. Maintaining Platform-Specific Documentation"
       }
@@ -179,7 +179,7 @@
     "1. Missing `{platform}_raw` Field": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 325,
+        "line": 328,
         "level": 3,
         "title": "1. Missing `{platform}_raw` Field"
       }
@@ -187,7 +187,7 @@
     "1. Must Return a Task Object": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 280,
+        "line": 283,
         "level": 3,
         "title": "1. Must Return a Task Object"
       }
@@ -203,7 +203,7 @@
     "1. Reasonable Use of Log Levels": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 348,
+        "line": 351,
         "level": 3,
         "title": "1. Reasonable Use of Log Levels"
       }
@@ -227,7 +227,7 @@
     "1. Sensitive Data Protection": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 419,
+        "line": 422,
         "level": 3,
         "title": "1. Sensitive Data Protection"
       }
@@ -235,7 +235,7 @@
     "1. Single Responsibility Principle": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 7,
+        "line": 10,
         "level": 3,
         "title": "1. Single Responsibility Principle"
       }
@@ -243,7 +243,7 @@
     "1. Specify Type and ID": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 7,
+        "line": 10,
         "level": 3,
         "title": "1. Specify Type and ID"
       }
@@ -267,7 +267,7 @@
     "1. Standardized Response Format": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 341,
+        "line": 344,
         "level": 3,
         "title": "1. Standardized Response Format"
       }
@@ -275,7 +275,7 @@
     "1. Strictly Follow the OneBot12 Standard": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 224,
+        "line": 227,
         "level": 3,
         "title": "1. Strictly Follow the OneBot12 Standard"
       }
@@ -283,13 +283,13 @@
     "1. Unit Tests": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 508,
+        "line": 511,
         "level": 3,
         "title": "1. Unit Tests"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 465,
+        "line": 468,
         "level": 3,
         "title": "1. Unit Tests"
       }
@@ -297,7 +297,7 @@
     "1. Use Asynchronous Libraries": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 97,
+        "line": 100,
         "level": 3,
         "title": "1. Use Asynchronous Libraries"
       }
@@ -305,7 +305,7 @@
     "1. Use Caching": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 382,
+        "line": 385,
         "level": 3,
         "title": "1. Use Caching"
       }
@@ -313,7 +313,7 @@
     "1. Use Event Wrapper Class": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 169,
+        "line": 172,
         "level": 3,
         "title": "1. Use Event Wrapper Class"
       }
@@ -321,7 +321,7 @@
     "1. Use Transactions": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 315,
+        "line": 318,
         "level": 3,
         "title": "1. Use Transactions"
       }
@@ -329,7 +329,7 @@
     "1. Using Mixin Classes for Batch Registration (Recommended)": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 566,
+        "line": 569,
         "level": 3,
         "title": "1. Using Mixin Classes for Batch Registration (Recommended)"
       }
@@ -337,7 +337,7 @@
     "1. Version Management": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 494,
+        "line": 497,
         "level": 3,
         "title": "1. Version Management"
       }
@@ -345,7 +345,7 @@
     "1. When to Send Meta Events": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 9,
+        "line": 12,
         "level": 3,
         "title": "1. When to Send Meta Events"
       }
@@ -513,7 +513,7 @@
     "2. Account Selection Mechanism": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 432,
+        "line": 435,
         "level": 3,
         "title": "2. Account Selection Mechanism"
       }
@@ -521,7 +521,7 @@
     "2. Avoid Blocking Operations": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 403,
+        "line": 406,
         "level": 3,
         "title": "2. Avoid Blocking Operations"
       }
@@ -537,7 +537,7 @@
     "2. Batch Operations": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 331,
+        "line": 334,
         "level": 3,
         "title": "2. Batch Operations"
       }
@@ -545,7 +545,7 @@
     "2. Chainable Modifier Methods Return self": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 300,
+        "line": 303,
         "level": 3,
         "title": "2. Chainable Modifier Methods Return self"
       }
@@ -553,7 +553,7 @@
     "2. Connection State Management": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 136,
+        "line": 139,
         "level": 3,
         "title": "2. Connection State Management"
       }
@@ -561,7 +561,7 @@
     "2. Correct Asynchronous Operations": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 133,
+        "line": 136,
         "level": 3,
         "title": "2. Correct Asynchronous Operations"
       }
@@ -569,7 +569,7 @@
     "2. Create GitHub Actions Workflow": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 231,
+        "line": 234,
         "level": 3,
         "title": "2. Create GitHub Actions Workflow"
       }
@@ -593,7 +593,7 @@
     "2. Error Code Specification": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 368,
+        "line": 371,
         "level": 3,
         "title": "2. Error Code Specification"
       }
@@ -609,7 +609,7 @@
     "2. Incorrect Timestamp Format": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 334,
+        "line": 337,
         "level": 3,
         "title": "2. Incorrect Timestamp Format"
       }
@@ -617,7 +617,7 @@
     "2. Input Validation": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 445,
+        "line": 448,
         "level": 3,
         "title": "2. Input Validation"
       }
@@ -625,13 +625,13 @@
     "2. Integration Tests": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 532,
+        "line": 535,
         "level": 3,
         "title": "2. Integration Tests"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 478,
+        "line": 481,
         "level": 3,
         "title": "2. Integration Tests"
       }
@@ -639,7 +639,7 @@
     "2. Loading Layer: Loader": [
       {
         "document": "advanced/startup.md",
-        "line": 73,
+        "line": 76,
         "level": 3,
         "title": "2. Loading Layer: Loader"
       }
@@ -647,7 +647,7 @@
     "2. Logging": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 487,
+        "line": 490,
         "level": 3,
         "title": "2. Logging"
       },
@@ -661,7 +661,7 @@
     "2. Module Naming Convention": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 27,
+        "line": 30,
         "level": 3,
         "title": "2. Module Naming Convention"
       }
@@ -677,7 +677,7 @@
     "2. Publish to PyPI": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 75,
+        "line": 78,
         "level": 3,
         "title": "2. Publish to PyPI"
       }
@@ -685,7 +685,7 @@
     "2. README Header": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 508,
+        "line": 511,
         "level": 3,
         "title": "2. README Header"
       }
@@ -693,7 +693,7 @@
     "2. Reasonable Use of Lazy Loading": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 185,
+        "line": 188,
         "level": 3,
         "title": "2. Reasonable Use of Lazy Loading"
       }
@@ -709,7 +709,7 @@
     "2. Registering Individual Methods Using a Decorator": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 592,
+        "line": 595,
         "level": 3,
         "title": "2. Registering Individual Methods Using a Decorator"
       }
@@ -741,7 +741,7 @@
     "2. Sending Meta Events": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 17,
+        "line": 20,
         "level": 3,
         "title": "2. Sending Meta Events"
       }
@@ -749,7 +749,7 @@
     "2. Specify ID Only": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 13,
+        "line": 16,
         "level": 3,
         "title": "2. Specify ID Only"
       }
@@ -789,7 +789,7 @@
     "2. Standardize Timestamps": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 246,
+        "line": 249,
         "level": 3,
         "title": "2. Standardize Timestamps"
       }
@@ -797,7 +797,7 @@
     "2. Structured Logging": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 370,
+        "line": 373,
         "level": 3,
         "title": "2. Structured Logging"
       }
@@ -821,7 +821,7 @@
     "2. Timeout Handling": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 297,
+        "line": 300,
         "level": 3,
         "title": "2. Timeout Handling"
       }
@@ -829,7 +829,7 @@
     "2. Updating Version Information": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 639,
+        "line": 642,
         "level": 3,
         "title": "2. Updating Version Information"
       }
@@ -837,7 +837,7 @@
     "2. systemd (Linux Server)": [
       {
         "document": "advanced/startup.md",
-        "line": 378,
+        "line": 381,
         "level": 4,
         "title": "2. systemd (Linux Server)"
       }
@@ -997,7 +997,7 @@
     "3. Cleanup on Adapter Shutdown": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 602,
+        "line": 605,
         "level": 3,
         "title": "3. Cleanup on Adapter Shutdown"
       }
@@ -1005,7 +1005,7 @@
     "3. Clear Configuration Management": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 34,
+        "line": 37,
         "level": 3,
         "title": "3. Clear Configuration Management"
       }
@@ -1029,7 +1029,7 @@
     "3. Docker / docker-compose": [
       {
         "document": "advanced/startup.md",
-        "line": 391,
+        "line": 394,
         "level": 4,
         "title": "3. Docker / docker-compose"
       }
@@ -1045,7 +1045,7 @@
     "3. Event Handler Registration": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 220,
+        "line": 223,
         "level": 3,
         "title": "3. Event Handler Registration"
       }
@@ -1053,7 +1053,7 @@
     "3. Event ID Generation": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 262,
+        "line": 265,
         "level": 3,
         "title": "3. Event ID Generation"
       }
@@ -1077,7 +1077,7 @@
     "3. Heartbeat Events": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 42,
+        "line": 45,
         "level": 3,
         "title": "3. Heartbeat Events"
       }
@@ -1085,7 +1085,7 @@
     "3. Heartbeat Keepalive and Meta Heartbeat": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 160,
+        "line": 163,
         "level": 3,
         "title": "3. Heartbeat Keepalive and Meta Heartbeat"
       }
@@ -1101,7 +1101,7 @@
     "3. Missing `self` Field": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 348,
+        "line": 351,
         "level": 3,
         "title": "3. Missing `self` Field"
       }
@@ -1133,7 +1133,7 @@
     "3. Registration Layer: register_to_manager": [
       {
         "document": "advanced/startup.md",
-        "line": 122,
+        "line": 125,
         "level": 3,
         "title": "3. Registration Layer: register_to_manager"
       }
@@ -1157,7 +1157,7 @@
     "3. Resource Management": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 155,
+        "line": 158,
         "level": 3,
         "title": "3. Resource Management"
       }
@@ -1165,7 +1165,7 @@
     "3. Specify Sender Account": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 19,
+        "line": 22,
         "level": 3,
         "title": "3. Specify Sender Account"
       }
@@ -1189,7 +1189,7 @@
     "3. Submit to the Module Store": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 90,
+        "line": 93,
         "level": 3,
         "title": "3. Submit to the Module Store"
       }
@@ -1197,7 +1197,7 @@
     "3. Support Platform-Specific Methods": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 314,
+        "line": 317,
         "level": 3,
         "title": "3. Support Platform-Specific Methods"
       }
@@ -1205,7 +1205,7 @@
     "3. Trigger Build": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 300,
+        "line": 303,
         "level": 3,
         "title": "3. Trigger Build"
       }
@@ -1389,7 +1389,7 @@
     "4. Automatic Discovery of the `self` Field": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 55,
+        "line": 58,
         "level": 3,
         "title": "4. Automatic Discovery of the `self` Field"
       }
@@ -1397,7 +1397,7 @@
     "4. Combine Usage": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 25,
+        "line": 28,
         "level": 3,
         "title": "4. Combine Usage"
       }
@@ -1405,7 +1405,7 @@
     "4. Connection Information Exposure": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 185,
+        "line": 188,
         "level": 3,
         "title": "4. Connection Information Exposure"
       }
@@ -1461,7 +1461,7 @@
     "4. Manage Published Modules": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 106,
+        "line": 109,
         "level": 3,
         "title": "4. Manage Published Modules"
       }
@@ -1485,7 +1485,7 @@
     "4. PM2 (Node Ecosystem Operations)": [
       {
         "document": "advanced/startup.md",
-        "line": 402,
+        "line": 405,
         "level": 4,
         "title": "4. PM2 (Node Ecosystem Operations)"
       }
@@ -1509,7 +1509,7 @@
     "4. Set Image to Public": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 315,
+        "line": 318,
         "level": 3,
         "title": "4. Set Image to Public"
       }
@@ -1517,7 +1517,7 @@
     "4. Starting Adapters": [
       {
         "document": "advanced/startup.md",
-        "line": 136,
+        "line": 139,
         "level": 3,
         "title": "4. Starting Adapters"
       }
@@ -1530,12 +1530,12 @@
         "title": "4. Usage"
       }
     ],
-    "4. Using Non-standard `detail_type` Values": [
+    "4. Use of Non-standard `detail_type` Values": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 359,
+        "line": 362,
         "level": 3,
-        "title": "4. Using Non-standard `detail_type` Values"
+        "title": "4. Use of Non-standard `detail_type` Values"
       }
     ],
     "4.1 Basic Invocation": [
@@ -1653,7 +1653,7 @@
     "5. Bot Status Query": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 80,
+        "line": 83,
         "level": 3,
         "title": "5. Bot Status Query"
       }
@@ -1693,7 +1693,7 @@
     "5. Initializing Modules": [
       {
         "document": "advanced/startup.md",
-        "line": 148,
+        "line": 151,
         "level": 3,
         "title": "5. Initializing Modules"
       }
@@ -1717,7 +1717,7 @@
     "5. Round-trip Consistency": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 363,
+        "line": 366,
         "level": 3,
         "title": "5. Round-trip Consistency"
       }
@@ -1725,7 +1725,7 @@
     "5. User Usage": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 322,
+        "line": 325,
         "level": 3,
         "title": "5. User Usage"
       }
@@ -1733,7 +1733,7 @@
     "5. supervisord": [
       {
         "document": "advanced/startup.md",
-        "line": 410,
+        "line": 413,
         "level": 4,
         "title": "5. supervisord"
       }
@@ -1941,7 +1941,7 @@
     "6. Pure Python Custom Supervisor": [
       {
         "document": "advanced/startup.md",
-        "line": 419,
+        "line": 422,
         "level": 4,
         "title": "6. Pure Python Custom Supervisor"
       }
@@ -1965,7 +1965,7 @@
     "6. Starting the Router Server": [
       {
         "document": "advanced/startup.md",
-        "line": 160,
+        "line": 163,
         "level": 3,
         "title": "6. Starting the Router Server"
       }
@@ -2467,13 +2467,13 @@
     "API Reference": [
       {
         "document": "advanced/connections.md",
-        "line": 187,
+        "line": 191,
         "level": 2,
         "title": "API Reference"
       },
       {
         "document": "advanced/i18n.md",
-        "line": 424,
+        "line": 426,
         "level": 2,
         "title": "API Reference"
       },
@@ -2487,7 +2487,7 @@
     "API Response": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 339,
+        "line": 342,
         "level": 2,
         "title": "API Response"
       },
@@ -2537,7 +2537,7 @@
     "Abstract Types": [
       {
         "document": "advanced/router.md",
-        "line": 22,
+        "line": 25,
         "level": 2,
         "title": "Abstract Types"
       }
@@ -2545,7 +2545,7 @@
     "Accessing Core Modules": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 130,
+        "line": 133,
         "level": 3,
         "title": "Accessing Core Modules"
       }
@@ -2553,7 +2553,7 @@
     "Accessing from SDK Instance": [
       {
         "document": "advanced/i18n.md",
-        "line": 503,
+        "line": 505,
         "level": 3,
         "title": "Accessing from SDK Instance"
       }
@@ -2609,7 +2609,7 @@
     "Account Management": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 221,
+        "line": 224,
         "level": 2,
         "title": "Account Management"
       }
@@ -2617,7 +2617,7 @@
     "Account Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 240,
+        "line": 243,
         "level": 3,
         "title": "Account Method"
       }
@@ -2633,7 +2633,7 @@
     "Account Resolution Fallback Chain": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 600,
+        "line": 603,
         "level": 3,
         "title": "Account Resolution Fallback Chain"
       }
@@ -2657,7 +2657,7 @@
     "Active GC Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 426,
+        "line": 431,
         "level": 3,
         "title": "Active GC Configuration"
       }
@@ -2673,7 +2673,7 @@
     "Adapter": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 60,
+        "line": 63,
         "level": 4,
         "title": "Adapter"
       }
@@ -2775,7 +2775,7 @@
     "Adapter Send Method Query": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 149,
+        "line": 152,
         "level": 2,
         "title": "Adapter Send Method Query"
       }
@@ -2844,6 +2844,22 @@
         "title": "Adding Type Annotations to the event Parameter"
       }
     ],
+    "Additional Fields for Message Events": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 125,
+        "level": 3,
+        "title": "Additional Fields for Message Events"
+      }
+    ],
+    "Additional Fields for Notice Events": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 133,
+        "level": 3,
+        "title": "Additional Fields for Notice Events"
+      }
+    ],
     "Additional Operation Methods": [
       {
         "document": "platform-guide/kook.md",
@@ -2892,6 +2908,14 @@
         "title": "Advanced: Dictionary-style Dot-Path Fallback"
       }
     ],
+    "All Parameters Overview": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 31,
+        "level": 3,
+        "title": "All Parameters Overview"
+      }
+    ],
     "Animation Example": [
       {
         "document": "ecosystem/takumi.md",
@@ -2911,7 +2935,7 @@
     "Applicable Scenarios": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 197,
+        "line": 200,
         "level": 3,
         "title": "Applicable Scenarios"
       }
@@ -2919,7 +2943,7 @@
     "Architecture Design": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "Architecture Design"
       }
@@ -2949,7 +2973,7 @@
     "Asynchronous Initialization": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 166,
+        "line": 169,
         "level": 3,
         "title": "Asynchronous Initialization"
       }
@@ -2965,7 +2989,7 @@
     "Asynchronous Native API": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 289,
+        "line": 292,
         "level": 2,
         "title": "Asynchronous Native API"
       }
@@ -2981,7 +3005,7 @@
     "Asynchronous Processing": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 248,
+        "line": 251,
         "level": 2,
         "title": "Asynchronous Processing"
       }
@@ -3003,7 +3027,7 @@
     "Asynchronous Programming": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 95,
+        "line": 98,
         "level": 2,
         "title": "Asynchronous Programming"
       }
@@ -3019,7 +3043,7 @@
     "At Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 95,
+        "line": 98,
         "level": 3,
         "title": "At Method"
       }
@@ -3027,7 +3051,7 @@
     "AtAll Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 105,
+        "line": 108,
         "level": 3,
         "title": "AtAll Method"
       }
@@ -3055,7 +3079,7 @@
     "Attribution Chain (contextvar Propagation)": [
       {
         "document": "advanced/ownership.md",
-        "line": 150,
+        "line": 156,
         "level": 3,
         "title": "Attribution Chain (contextvar Propagation)"
       }
@@ -3079,7 +3103,7 @@
     "Automatic Cancellation on Timeout (Timeout)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 317,
+        "line": 320,
         "level": 3,
         "title": "Automatic Cancellation on Timeout (Timeout)"
       }
@@ -3095,7 +3119,7 @@
     "Automatic Connection Registration (Connection Pool, 2.10+)": [
       {
         "document": "advanced/router.md",
-        "line": 148,
+        "line": 151,
         "level": 3,
         "title": "Automatic Connection Registration (Connection Pool, 2.10+)"
       }
@@ -3119,7 +3143,7 @@
     "Automatic Documentation": [
       {
         "document": "advanced/router.md",
-        "line": 355,
+        "line": 358,
         "level": 2,
         "title": "Automatic Documentation"
       }
@@ -3135,7 +3159,7 @@
     "Automatic Migration (Phase Two)": [
       {
         "document": "developer-guide/orm.md",
-        "line": 98,
+        "line": 101,
         "level": 2,
         "title": "Automatic Migration (Phase Two)"
       }
@@ -3151,7 +3175,7 @@
     "Automatic Retry on Failure (Retry)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 308,
+        "line": 311,
         "level": 3,
         "title": "Automatic Retry on Failure (Retry)"
       }
@@ -3175,7 +3199,7 @@
     "Background Execution": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 508,
+        "line": 511,
         "level": 3,
         "title": "Background Execution"
       }
@@ -3231,7 +3255,7 @@
     "BaseConverter Base Class (Recommended)": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 19,
+        "line": 22,
         "level": 2,
         "title": "BaseConverter Base Class (Recommended)"
       }
@@ -3239,7 +3263,7 @@
     "BaseI18n / I18nKey (Declarative Translation Keys)": [
       {
         "document": "advanced/i18n.md",
-        "line": 460,
+        "line": 462,
         "level": 3,
         "title": "BaseI18n / I18nKey (Declarative Translation Keys)"
       }
@@ -3255,7 +3279,7 @@
     "Basic Calling Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "Basic Calling Methods"
       }
@@ -3381,7 +3405,7 @@
     "Basic Methods (Built-in in Base Class)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 45,
+        "line": 48,
         "level": 3,
         "title": "Basic Methods (Built-in in Base Class)"
       }
@@ -3467,7 +3491,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 133,
+        "line": 136,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -3491,13 +3515,13 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 689,
+        "line": 692,
         "level": 3,
         "title": "Basic Usage"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 297,
+        "line": 300,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -3517,7 +3541,7 @@
     "Batch Build Mode (Build)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 398,
+        "line": 401,
         "level": 2,
         "title": "Batch Build Mode (Build)"
       },
@@ -3555,7 +3579,7 @@
     "Batch-wide Rules and Callbacks": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 450,
+        "line": 453,
         "level": 3,
         "title": "Batch-wide Rules and Callbacks"
       }
@@ -3585,25 +3609,25 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 548,
+        "line": 550,
         "level": 2,
         "title": "Best Practices"
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 187,
+        "line": 190,
         "level": 2,
         "title": "Best Practices"
       },
       {
         "document": "advanced/router.md",
-        "line": 458,
+        "line": 461,
         "level": 2,
         "title": "Best Practices"
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 367,
+        "line": 370,
         "level": 2,
         "title": "Best Practices"
       },
@@ -3612,6 +3636,14 @@
         "line": 505,
         "level": 2,
         "title": "Best Practices"
+      }
+    ],
+    "Best Practices for Module Development": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 1,
+        "level": 1,
+        "title": "Best Practices for Module Development"
       }
     ],
     "Binding Inheritance (merge)": [
@@ -3679,7 +3711,7 @@
     "Bot Status Management and Meta Events": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "Bot Status Management and Meta Events"
       }
@@ -3721,7 +3753,7 @@
     "Boundaries and Notes": [
       {
         "document": "developer-guide/orm.md",
-        "line": 90,
+        "line": 93,
         "level": 2,
         "title": "Boundaries and Notes"
       }
@@ -3729,7 +3761,7 @@
     "Boundaries with Other Mechanisms": [
       {
         "document": "advanced/transcript.md",
-        "line": 92,
+        "line": 95,
         "level": 2,
         "title": "Boundaries with Other Mechanisms"
       }
@@ -3745,7 +3777,7 @@
     "Broadcasting": [
       {
         "document": "advanced/connections.md",
-        "line": 86,
+        "line": 90,
         "level": 3,
         "title": "Broadcasting"
       }
@@ -3753,7 +3785,7 @@
     "Broadcasting and Subscription": [
       {
         "document": "advanced/connections.md",
-        "line": 63,
+        "line": 67,
         "level": 2,
         "title": "Broadcasting and Subscription"
       }
@@ -3761,7 +3793,7 @@
     "Browsing and Discovery": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 9,
+        "line": 12,
         "level": 3,
         "title": "Browsing and Discovery"
       }
@@ -3847,7 +3879,7 @@
     "CORS Configuration": [
       {
         "document": "advanced/router.md",
-        "line": 321,
+        "line": 324,
         "level": 2,
         "title": "CORS Configuration"
       }
@@ -3895,7 +3927,7 @@
     "Can one package register multiple modules?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 179,
+        "line": 182,
         "level": 3,
         "title": "Can one package register multiple modules?"
       }
@@ -3903,7 +3935,7 @@
     "Cancellation Chain (Task Registry)": [
       {
         "document": "advanced/ownership.md",
-        "line": 163,
+        "line": 169,
         "level": 3,
         "title": "Cancellation Chain (Task Registry)"
       }
@@ -3911,7 +3943,7 @@
     "Cancellation Timing (Module Unload)": [
       {
         "document": "advanced/ownership.md",
-        "line": 172,
+        "line": 178,
         "level": 3,
         "title": "Cancellation Timing (Module Unload)"
       }
@@ -3943,9 +3975,17 @@
     "Chain Startup Overview": [
       {
         "document": "advanced/startup.md",
-        "line": 23,
+        "line": 26,
         "level": 2,
         "title": "Chain Startup Overview"
+      }
+    ],
+    "Chain-style Querying": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 77,
+        "level": 2,
+        "title": "Chain-style Querying"
       }
     ],
     "Chainable Call Examples": [
@@ -3972,14 +4012,6 @@
         "title": "Chainable Modifier Methods (can be combined)"
       }
     ],
-    "Chainable Queries": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 74,
-        "level": 2,
-        "title": "Chainable Queries"
-      }
-    ],
     "Chained Call Examples": [
       {
         "document": "platform-guide/onebot11.md",
@@ -3991,7 +4023,7 @@
     "Chained Calls": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 707,
+        "line": 710,
         "level": 3,
         "title": "Chained Calls"
       }
@@ -4023,7 +4055,7 @@
     "Chaining Mode (Instance)": [
       {
         "document": "advanced/message-builder.md",
-        "line": 18,
+        "line": 21,
         "level": 3,
         "title": "Chaining Mode (Instance)"
       }
@@ -4052,12 +4084,12 @@
         "title": "Check Platform Status"
       }
     ],
-    "Checking if a Table Exists": [
+    "Check if Table Exists": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 45,
+        "line": 48,
         "level": 3,
-        "title": "Checking if a Table Exists"
+        "title": "Check if Table Exists"
       }
     ],
     "Checkpoint TTL": [
@@ -4087,7 +4119,7 @@
     "Client Series — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 70,
+        "line": 73,
         "level": 3,
         "title": "Client Series — `Core/client.py` / `Core/Bases/client.py`"
       }
@@ -4127,7 +4159,7 @@
     "Code Quality": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 127,
+        "line": 130,
         "level": 3,
         "title": "Code Quality"
       }
@@ -4135,7 +4167,7 @@
     "Cold Start Replay": [
       {
         "document": "advanced/module-communication.md",
-        "line": 179,
+        "line": 182,
         "level": 2,
         "title": "Cold Start Replay"
       }
@@ -4143,7 +4175,7 @@
     "Combined Modifiers": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 119,
+        "line": 122,
         "level": 3,
         "title": "Combined Modifiers"
       }
@@ -4175,7 +4207,7 @@
     "Command Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 521,
+        "line": 526,
         "level": 3,
         "title": "Command Configuration"
       }
@@ -4191,7 +4223,7 @@
     "Command Dict Declaration Parameters": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 66,
+        "line": 69,
         "level": 3,
         "title": "Command Dict Declaration Parameters"
       }
@@ -4275,7 +4307,7 @@
     "Command Parsing Configuration (event.command)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 677,
+        "line": 682,
         "level": 2,
         "title": "Command Parsing Configuration (event.command)"
       }
@@ -4315,7 +4347,7 @@
     "Comment Retention and Minimal Disk Write": [
       {
         "document": "user-guide/configuration.md",
-        "line": 44,
+        "line": 48,
         "level": 2,
         "title": "Comment Retention and Minimal Disk Write"
       }
@@ -4347,7 +4379,7 @@
     "Common Fields (All Event Types)": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 111,
+        "line": 114,
         "level": 3,
         "title": "Common Fields (All Event Types)"
       }
@@ -4377,7 +4409,7 @@
     "Common Pitfalls": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 323,
+        "line": 326,
         "level": 2,
         "title": "Common Pitfalls"
       }
@@ -4409,7 +4441,7 @@
     "Compatibility": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 135,
+        "line": 138,
         "level": 3,
         "title": "Compatibility"
       }
@@ -4425,7 +4457,7 @@
     "Complete Configuration Example": [
       {
         "document": "user-guide/configuration.md",
-        "line": 205,
+        "line": 208,
         "level": 2,
         "title": "Complete Configuration Example"
       }
@@ -4441,7 +4473,7 @@
     "Complete Example": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 192,
+        "line": 195,
         "level": 2,
         "title": "Complete Example"
       },
@@ -4455,13 +4487,13 @@
     "Complete Examples": [
       {
         "document": "advanced/message-builder.md",
-        "line": 151,
+        "line": 154,
         "level": 2,
         "title": "Complete Examples"
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 687,
+        "line": 690,
         "level": 2,
         "title": "Complete Examples"
       }
@@ -4469,7 +4501,7 @@
     "Complete Manual Startup Example": [
       {
         "document": "advanced/startup.md",
-        "line": 173,
+        "line": 176,
         "level": 2,
         "title": "Complete Manual Startup Example"
       }
@@ -4477,7 +4509,7 @@
     "Complete Matching Chain for Reply": [
       {
         "document": "advanced/interaction.md",
-        "line": 67,
+        "line": 70,
         "level": 3,
         "title": "Complete Matching Chain for Reply"
       }
@@ -4496,6 +4528,14 @@
         "line": 7,
         "level": 3,
         "title": "Component Relationships"
+      }
+    ],
+    "Condition Filtering": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 162,
+        "level": 3,
+        "title": "Condition Filtering"
       }
     ],
     "Conditional Listening": [
@@ -4525,13 +4565,13 @@
     "Configuration": [
       {
         "document": "advanced/transcript.md",
-        "line": 32,
+        "line": 35,
         "level": 2,
         "title": "Configuration"
       },
       {
         "document": "developer-guide/publishing.md",
-        "line": 143,
+        "line": 146,
         "level": 3,
         "title": "Configuration"
       },
@@ -4645,7 +4685,7 @@
     "Configuration File Location": [
       {
         "document": "user-guide/configuration.md",
-        "line": 6,
+        "line": 10,
         "level": 2,
         "title": "Configuration File Location"
       }
@@ -4675,7 +4715,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 109,
+        "line": 112,
         "level": 2,
         "title": "Configuration Hot Update"
       }
@@ -4709,7 +4749,7 @@
     "Configuration Item Description": [
       {
         "document": "advanced/i18n.md",
-        "line": 530,
+        "line": 532,
         "level": 3,
         "title": "Configuration Item Description"
       }
@@ -4717,7 +4757,7 @@
     "Configuration Loading Error Handling": [
       {
         "document": "user-guide/configuration.md",
-        "line": 21,
+        "line": 25,
         "level": 2,
         "title": "Configuration Loading Error Handling"
       }
@@ -4737,7 +4777,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 177,
+        "line": 180,
         "level": 2,
         "title": "Configuration Management"
       }
@@ -4771,7 +4811,7 @@
     "Configuration Override": [
       {
         "document": "developer-guide/testing.md",
-        "line": 107,
+        "line": 110,
         "level": 3,
         "title": "Configuration Override"
       }
@@ -4779,7 +4819,7 @@
     "Configuration Reading and Deletion API": [
       {
         "document": "user-guide/configuration.md",
-        "line": 179,
+        "line": 182,
         "level": 2,
         "title": "Configuration Reading and Deletion API"
       }
@@ -4795,7 +4835,7 @@
     "Configuring Lazy Loading": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 102,
+        "line": 105,
         "level": 2,
         "title": "Configuring Lazy Loading"
       }
@@ -4841,7 +4881,7 @@
     "Connection Management": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 105,
+        "line": 108,
         "level": 2,
         "title": "Connection Management"
       },
@@ -4871,7 +4911,7 @@
     "Connection Registry Series — `Core/connections.py` (2.10+)": [
       {
         "document": "advanced/errors.md",
-        "line": 97,
+        "line": 100,
         "level": 3,
         "title": "Connection Registry Series — `Core/connections.py` (2.10+)"
       }
@@ -4919,7 +4959,7 @@
     "Continue on Failure and Retry": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 438,
+        "line": 441,
         "level": 3,
         "title": "Continue on Failure and Retry"
       }
@@ -4956,6 +4996,14 @@
         "title": "Conversion Flow"
       }
     ],
+    "Convert Tuples to Dictionaries": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 112,
+        "level": 4,
+        "title": "Convert Tuples to Dictionaries"
+      }
+    ],
     "Converter Example": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -4967,17 +5015,9 @@
     "Converter Responsibilities": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "Converter Responsibilities"
-      }
-    ],
-    "Converting Tuples to Dictionaries": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 109,
-        "level": 4,
-        "title": "Converting Tuples to Dictionaries"
       }
     ],
     "Core API": [
@@ -5103,7 +5143,7 @@
     "Core Methods": [
       {
         "document": "advanced/i18n.md",
-        "line": 428,
+        "line": 430,
         "level": 4,
         "title": "Core Methods"
       },
@@ -5161,7 +5201,7 @@
     "Core Principles": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 13,
+        "line": 16,
         "level": 3,
         "title": "Core Principles"
       },
@@ -5180,12 +5220,20 @@
         "title": "Core.py - Core Module"
       }
     ],
-    "Counting and Existence Check": [
+    "Count and Existence Check": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 230,
+        "line": 233,
         "level": 3,
-        "title": "Counting and Existence Check"
+        "title": "Count and Existence Check"
+      }
+    ],
+    "Create Table": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 37,
+        "level": 3,
+        "title": "Create Table"
       }
     ],
     "Create Tasks": [
@@ -5228,18 +5276,10 @@
         "title": "Creating a Conversation"
       }
     ],
-    "Creating a Table": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 34,
-        "level": 3,
-        "title": "Creating a Table"
-      }
-    ],
     "Cross-Module Transfer / Reuse": [
       {
         "document": "advanced/connections.md",
-        "line": 127,
+        "line": 131,
         "level": 2,
         "title": "Cross-Module Transfer / Reuse"
       }
@@ -5255,7 +5295,7 @@
     "Cross-Thread Dispatching": [
       {
         "document": "advanced/connections.md",
-        "line": 164,
+        "line": 168,
         "level": 2,
         "title": "Cross-Thread Dispatching"
       }
@@ -5287,7 +5327,7 @@
     "Custom Identity Source (provider)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 329,
+        "line": 332,
         "level": 3,
         "title": "Custom Identity Source (provider)"
       }
@@ -5303,7 +5343,7 @@
     "Custom Message Segments": [
       {
         "document": "advanced/message-builder.md",
-        "line": 135,
+        "line": 138,
         "level": 2,
         "title": "Custom Message Segments"
       }
@@ -5319,7 +5359,7 @@
     "Custom Storage Backend": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 395,
+        "line": 398,
         "level": 2,
         "title": "Custom Storage Backend"
       }
@@ -5327,7 +5367,7 @@
     "Dashboard Auto-Registration": [
       {
         "document": "advanced/router.md",
-        "line": 440,
+        "line": 443,
         "level": 3,
         "title": "Dashboard Auto-Registration"
       }
@@ -5394,14 +5434,6 @@
         "title": "Decision (Three Questions)"
       }
     ],
-    "Decision Chain and Runtime Add/Delete": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 315,
-        "level": 3,
-        "title": "Decision Chain and Runtime Add/Delete"
-      }
-    ],
     "Decision Semantics": [
       {
         "document": "advanced/scope.md",
@@ -5419,7 +5451,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 179,
+        "line": 182,
         "level": 3,
         "title": "Declarative Configuration (Recommended)"
       }
@@ -5441,13 +5473,13 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 64,
+        "line": 67,
         "level": 3,
         "title": "Declarative Translation Keys (v2.7.0+)"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 237,
+        "line": 240,
         "level": 3,
         "title": "Declarative Translation Keys (v2.7.0+)"
       }
@@ -5463,7 +5495,7 @@
     "Declaring Models": [
       {
         "document": "developer-guide/orm.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "Declaring Models"
       }
@@ -5471,7 +5503,7 @@
     "Declaring i18n Fields": [
       {
         "document": "advanced/i18n.md",
-        "line": 282,
+        "line": 285,
         "level": 3,
         "title": "Declaring i18n Fields"
       }
@@ -5479,7 +5511,7 @@
     "Decorator Routes (Recommended)": [
       {
         "document": "advanced/router.md",
-        "line": 36,
+        "line": 39,
         "level": 2,
         "title": "Decorator Routes (Recommended)"
       }
@@ -5487,7 +5519,7 @@
     "Decorators and Rule Inheritance": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 484,
+        "line": 487,
         "level": 3,
         "title": "Decorators and Rule Inheritance"
       }
@@ -5509,17 +5541,17 @@
     "Delayed Sending (Defer)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 349,
+        "line": 352,
         "level": 3,
         "title": "Delayed Sending (Defer)"
       }
     ],
-    "Deleting Data": [
+    "Delete Data": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 217,
+        "line": 220,
         "level": 3,
-        "title": "Deleting Data"
+        "title": "Delete Data"
       }
     ],
     "Dependency Declaration (Optional, 2.8.0+)": [
@@ -5541,7 +5573,7 @@
     "Dependency Replacement (requires EP>=2.9.0-dev)": [
       {
         "document": "developer-guide/testing.md",
-        "line": 97,
+        "line": 100,
         "level": 3,
         "title": "Dependency Replacement (requires EP>=2.9.0-dev)"
       }
@@ -5549,7 +5581,7 @@
     "Deployment": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 492,
+        "line": 495,
         "level": 2,
         "title": "Deployment"
       }
@@ -5565,7 +5597,7 @@
     "Design Boundaries: Resources Not Cleaned on Unload": [
       {
         "document": "advanced/ownership.md",
-        "line": 133,
+        "line": 139,
         "level": 2,
         "title": "Design Boundaries: Resources Not Cleaned on Unload"
       }
@@ -5581,7 +5613,7 @@
     "Detailed Explanation of Each Step": [
       {
         "document": "advanced/startup.md",
-        "line": 51,
+        "line": 54,
         "level": 2,
         "title": "Detailed Explanation of Each Step"
       }
@@ -5592,6 +5624,14 @@
         "line": 80,
         "level": 3,
         "title": "Detailed Initialization Phases"
+      }
+    ],
+    "Determination Chain and Runtime Add/Delete": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 318,
+        "level": 3,
+        "title": "Determination Chain and Runtime Add/Delete"
       }
     ],
     "Developer Guide": [
@@ -5613,7 +5653,7 @@
     "Development Methods": [
       {
         "document": "README.md",
-        "line": 80,
+        "line": 87,
         "level": 2,
         "title": "Development Methods"
       }
@@ -5629,7 +5669,7 @@
     "Development Mode Testing": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 163,
+        "line": 166,
         "level": 2,
         "title": "Development Mode Testing"
       }
@@ -5669,7 +5709,7 @@
     "Diagnostic Information on Loading Failures": [
       {
         "document": "advanced/startup.md",
-        "line": 97,
+        "line": 100,
         "level": 4,
         "title": "Diagnostic Information on Loading Failures"
       }
@@ -5685,7 +5725,7 @@
     "Directed Events: lifecycle.emit's to parameter": [
       {
         "document": "advanced/module-communication.md",
-        "line": 134,
+        "line": 137,
         "level": 2,
         "title": "Directed Events: lifecycle.emit's to parameter"
       }
@@ -5733,7 +5773,7 @@
     "Dispatch": [
       {
         "document": "developer-guide/testing.md",
-        "line": 58,
+        "line": 61,
         "level": 3,
         "title": "Dispatch"
       }
@@ -5741,7 +5781,7 @@
     "Dispatch Decision Chain (for troubleshooting \"why command didn't trigger\"; requires EP>=2.9.0-dev)": [
       {
         "document": "developer-guide/testing.md",
-        "line": 121,
+        "line": 124,
         "level": 2,
         "title": "Dispatch Decision Chain (for troubleshooting \"why command didn't trigger\"; requires EP>=2.9.0-dev)"
       }
@@ -5749,7 +5789,7 @@
     "Distributing Applications via Docker Images": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 193,
+        "line": 196,
         "level": 2,
         "title": "Distributing Applications via Docker Images"
       }
@@ -5773,7 +5813,7 @@
     "Docker Image vs PyPI Publishing": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 377,
+        "line": 380,
         "level": 3,
         "title": "Docker Image vs PyPI Publishing"
       }
@@ -5827,7 +5867,7 @@
     "Document List": [
       {
         "document": "advanced/README.md",
-        "line": 5,
+        "line": 9,
         "level": 2,
         "title": "Document List"
       }
@@ -5835,7 +5875,7 @@
     "Documentation": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 149,
+        "line": 152,
         "level": 3,
         "title": "Documentation"
       }
@@ -5903,7 +5943,7 @@
     "Documentation Maintenance": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 616,
+        "line": 619,
         "level": 2,
         "title": "Documentation Maintenance"
       }
@@ -5940,18 +5980,18 @@
         "title": "Dot-Structure Events"
       }
     ],
-    "Dropping a Table": [
+    "Drop Table": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 52,
+        "line": 55,
         "level": 3,
-        "title": "Dropping a Table"
+        "title": "Drop Table"
       }
     ],
     "Dual Mode Mechanism": [
       {
         "document": "advanced/message-builder.md",
-        "line": 14,
+        "line": 17,
         "level": 2,
         "title": "Dual Mode Mechanism"
       }
@@ -5959,7 +5999,7 @@
     "Dynamic Content": [
       {
         "document": "advanced/i18n.md",
-        "line": 564,
+        "line": 566,
         "level": 3,
         "title": "Dynamic Content"
       }
@@ -6031,7 +6071,7 @@
     "Entering Build Mode": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 402,
+        "line": 405,
         "level": 3,
         "title": "Entering Build Mode"
       }
@@ -6047,7 +6087,7 @@
     "Environment Variable Override": [
       {
         "document": "user-guide/configuration.md",
-        "line": 54,
+        "line": 58,
         "level": 2,
         "title": "Environment Variable Override"
       }
@@ -6187,7 +6227,7 @@
     "Error Handling": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 452,
+        "line": 455,
         "level": 2,
         "title": "Error Handling"
       },
@@ -6199,13 +6239,13 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 272,
+        "line": 275,
         "level": 2,
         "title": "Error Handling"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 365,
+        "line": 368,
         "level": 2,
         "title": "Error Handling"
       },
@@ -6233,7 +6273,7 @@
     "Event Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 519,
+        "line": 524,
         "level": 2,
         "title": "Event Configuration"
       }
@@ -6249,7 +6289,7 @@
     "Event Conversion": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 222,
+        "line": 225,
         "level": 2,
         "title": "Event Conversion"
       }
@@ -6325,7 +6365,7 @@
     "Event Factory": [
       {
         "document": "developer-guide/testing.md",
-        "line": 42,
+        "line": 45,
         "level": 2,
         "title": "Event Factory"
       }
@@ -6341,7 +6381,7 @@
     "Event Handler Lifecycle": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 338,
+        "line": 341,
         "level": 3,
         "title": "Event Handler Lifecycle"
       }
@@ -6349,7 +6389,7 @@
     "Event Handler Registration": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 322,
+        "line": 325,
         "level": 3,
         "title": "Event Handler Registration"
       }
@@ -6357,13 +6397,13 @@
     "Event Handling": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 167,
+        "line": 170,
         "level": 2,
         "title": "Event Handling"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 320,
+        "line": 323,
         "level": 2,
         "title": "Event Handling"
       }
@@ -6431,7 +6471,7 @@
     "Event Idempotency Deduplication": [
       {
         "document": "advanced/module-communication.md",
-        "line": 211,
+        "line": 214,
         "level": 2,
         "title": "Event Idempotency Deduplication"
       }
@@ -6605,7 +6645,7 @@
     "Event-Driven Lazy Activation (`activate_on`)": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 30,
+        "line": 33,
         "level": 2,
         "title": "Event-Driven Lazy Activation (`activate_on`)"
       }
@@ -6616,14 +6656,6 @@
         "line": 215,
         "level": 3,
         "title": "Event-Driven Lazy Activation (`activate_on`) Trigger Architecture"
-      }
-    ],
-    "Example of Return Value Handling": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 333,
-        "level": 3,
-        "title": "Example of Return Value Handling"
       }
     ],
     "Examples": [
@@ -6643,7 +6675,7 @@
     "Exception Descriptions and Occurrence Locations": [
       {
         "document": "advanced/errors.md",
-        "line": 68,
+        "line": 71,
         "level": 2,
         "title": "Exception Descriptions and Occurrence Locations"
       }
@@ -6657,7 +6689,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 367,
+        "line": 370,
         "level": 3,
         "title": "Exception Handling"
       }
@@ -6671,7 +6703,7 @@
       },
       {
         "document": "advanced/module-communication.md",
-        "line": 35,
+        "line": 38,
         "level": 3,
         "title": "Exception Hierarchy"
       }
@@ -6679,7 +6711,7 @@
     "Exception Overview": [
       {
         "document": "advanced/errors.md",
-        "line": 11,
+        "line": 14,
         "level": 2,
         "title": "Exception Overview"
       }
@@ -6711,7 +6743,7 @@
     "Executing Logic After Successful Send (Hook)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 291,
+        "line": 294,
         "level": 3,
         "title": "Executing Logic After Successful Send (Hook)"
       }
@@ -6719,7 +6751,7 @@
     "Exemption List": [
       {
         "document": "user-guide/configuration.md",
-        "line": 458,
+        "line": 463,
         "level": 4,
         "title": "Exemption List"
       }
@@ -6727,7 +6759,7 @@
     "Exit Code 42 Contract": [
       {
         "document": "advanced/startup.md",
-        "line": 355,
+        "line": 358,
         "level": 3,
         "title": "Exit Code 42 Contract"
       }
@@ -6877,7 +6909,7 @@
     "Field Parameters": [
       {
         "document": "developer-guide/orm.md",
-        "line": 22,
+        "line": 25,
         "level": 2,
         "title": "Field Parameters"
       }
@@ -6890,18 +6922,10 @@
         "title": "File Handling Features"
       }
     ],
-    "Filtering Conditions": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 159,
-        "level": 3,
-        "title": "Filtering Conditions"
-      }
-    ],
     "Five Isolation Gates": [
       {
         "document": "advanced/shadow.md",
-        "line": 39,
+        "line": 42,
         "level": 2,
         "title": "Five Isolation Gates"
       }
@@ -7033,7 +7057,7 @@
     "Foreign Keys (Foundation for Relationship Mapping)": [
       {
         "document": "developer-guide/orm.md",
-        "line": 118,
+        "line": 121,
         "level": 2,
         "title": "Foreign Keys (Foundation for Relationship Mapping)"
       }
@@ -7073,7 +7097,7 @@
     "Framework Built-in trace Module": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 72,
+        "line": 75,
         "level": 3,
         "title": "Framework Built-in trace Module"
       }
@@ -7081,7 +7105,7 @@
     "Framework Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 405,
+        "line": 410,
         "level": 2,
         "title": "Framework Configuration"
       }
@@ -7097,7 +7121,7 @@
     "Framework Internal Parameter Validation (ValueError)": [
       {
         "document": "advanced/errors.md",
-        "line": 165,
+        "line": 168,
         "level": 3,
         "title": "Framework Internal Parameter Validation (ValueError)"
       }
@@ -7105,7 +7129,7 @@
     "Frequently Asked Questions": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 173,
+        "line": 176,
         "level": 2,
         "title": "Frequently Asked Questions"
       },
@@ -7180,14 +7204,6 @@
         "title": "Friend Request Event"
       }
     ],
-    "Full Parameter Overview": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 28,
-        "level": 3,
-        "title": "Full Parameter Overview"
-      }
-    ],
     "GET": [
       {
         "document": "advanced/http-client.md",
@@ -7231,7 +7247,7 @@
     "General Recommendations": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 107,
+        "line": 110,
         "level": 2,
         "title": "General Recommendations"
       }
@@ -7263,7 +7279,7 @@
     "Get Help": [
       {
         "document": "README.md",
-        "line": 93,
+        "line": 100,
         "level": 2,
         "title": "Get Help"
       }
@@ -7271,9 +7287,17 @@
     "Get Method Details": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 161,
+        "line": 164,
         "level": 3,
         "title": "Get Method Details"
+      }
+    ],
+    "Get Single Record": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 149,
+        "level": 4,
+        "title": "Get Single Record"
       }
     ],
     "Get an Adapter": [
@@ -7322,18 +7346,10 @@
         "title": "Getting Started with Module Development"
       }
     ],
-    "Getting a Single Record": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 146,
-        "level": 4,
-        "title": "Getting a Single Record"
-      }
-    ],
     "Global Configuration": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 104,
+        "line": 107,
         "level": 3,
         "title": "Global Configuration"
       }
@@ -7365,7 +7381,7 @@
     "Graceful Shutdown": [
       {
         "document": "advanced/startup.md",
-        "line": 284,
+        "line": 287,
         "level": 2,
         "title": "Graceful Shutdown"
       }
@@ -7445,7 +7461,7 @@
     "Groups (Subscription Model)": [
       {
         "document": "advanced/connections.md",
-        "line": 65,
+        "line": 69,
         "level": 3,
         "title": "Groups (Subscription Model)"
       }
@@ -7477,7 +7493,7 @@
     "HTTP Decorators": [
       {
         "document": "advanced/router.md",
-        "line": 64,
+        "line": 67,
         "level": 3,
         "title": "HTTP Decorators"
       }
@@ -7623,7 +7639,7 @@
     "Handling Recommendations": [
       {
         "document": "advanced/errors.md",
-        "line": 171,
+        "line": 174,
         "level": 2,
         "title": "Handling Recommendations"
       }
@@ -7639,7 +7655,7 @@
     "Health Check": [
       {
         "document": "advanced/router.md",
-        "line": 388,
+        "line": 391,
         "level": 3,
         "title": "Health Check"
       },
@@ -7683,7 +7699,7 @@
     "Home Page Entry": [
       {
         "document": "advanced/router.md",
-        "line": 405,
+        "line": 408,
         "level": 2,
         "title": "Home Page Entry"
       }
@@ -7691,7 +7707,7 @@
     "Honest Boundaries (Can't Be Blocked)": [
       {
         "document": "advanced/shadow.md",
-        "line": 51,
+        "line": 54,
         "level": 2,
         "title": "Honest Boundaries (Can't Be Blocked)"
       }
@@ -7707,7 +7723,7 @@
     "Hot Reload Failure Rollback": [
       {
         "document": "advanced/ownership.md",
-        "line": 123,
+        "line": 129,
         "level": 2,
         "title": "Hot Reload Failure Rollback"
       }
@@ -7723,7 +7739,7 @@
     "Hot Restart of Adapters": [
       {
         "document": "advanced/startup.md",
-        "line": 251,
+        "line": 254,
         "level": 3,
         "title": "Hot Restart of Adapters"
       }
@@ -7731,7 +7747,7 @@
     "How It Works": [
       {
         "document": "advanced/transcript.md",
-        "line": 7,
+        "line": 10,
         "level": 2,
         "title": "How It Works"
       },
@@ -7757,7 +7773,7 @@
     "How WebUI Consumes": [
       {
         "document": "advanced/i18n.md",
-        "line": 401,
+        "line": 404,
         "level": 3,
         "title": "How WebUI Consumes"
       }
@@ -7765,7 +7781,7 @@
     "How long does the review take?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 189,
+        "line": 192,
         "level": 3,
         "title": "How long does the review take?"
       }
@@ -7794,18 +7810,18 @@
         "title": "HttpResponse"
       }
     ],
-    "I. I Want to Use Robots": [
+    "I. I Want to Use a Bot": [
       {
         "document": "README.md",
-        "line": 13,
+        "line": 20,
         "level": 3,
-        "title": "I. I Want to Use Robots"
+        "title": "I. I Want to Use a Bot"
       }
     ],
     "I18nClass Key Path Rules": [
       {
         "document": "advanced/i18n.md",
-        "line": 146,
+        "line": 149,
         "level": 4,
         "title": "I18nClass Key Path Rules"
       }
@@ -7813,7 +7829,7 @@
     "I18nManager": [
       {
         "document": "advanced/i18n.md",
-        "line": 426,
+        "line": 428,
         "level": 3,
         "title": "I18nManager"
       }
@@ -7821,7 +7837,7 @@
     "II. I Want to Develop Modules / Adapters": [
       {
         "document": "README.md",
-        "line": 27,
+        "line": 34,
         "level": 3,
         "title": "II. I Want to Develop Modules / Adapters"
       }
@@ -7829,7 +7845,7 @@
     "III. I Want to Deeply Understand the Principles": [
       {
         "document": "README.md",
-        "line": 39,
+        "line": 46,
         "level": 3,
         "title": "III. I Want to Deeply Understand the Principles"
       }
@@ -7837,7 +7853,7 @@
     "IV. Ecosystem & Official Clients": [
       {
         "document": "README.md",
-        "line": 59,
+        "line": 66,
         "level": 3,
         "title": "IV. Ecosystem & Official Clients"
       }
@@ -7845,7 +7861,7 @@
     "Identifying Governance Silent Matches": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 103,
+        "line": 106,
         "level": 3,
         "title": "Identifying Governance Silent Matches"
       }
@@ -7877,15 +7893,23 @@
     "Immediate Loading": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 352,
+        "line": 355,
         "level": 3,
         "title": "Immediate Loading"
+      }
+    ],
+    "Import": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 24,
+        "level": 2,
+        "title": "Import"
       }
     ],
     "Import Methods": [
       {
         "document": "advanced/message-builder.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "Import Methods"
       }
@@ -7896,14 +7920,6 @@
         "line": 48,
         "level": 3,
         "title": "Important Restrictions"
-      }
-    ],
-    "Importing": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 21,
-        "level": 2,
-        "title": "Importing"
       }
     ],
     "Inbound Protocols": [
@@ -7941,7 +7957,7 @@
     "Initialization Process": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 20,
+        "line": 23,
         "level": 3,
         "title": "Initialization Process"
       },
@@ -7976,12 +7992,12 @@
         "title": "Inline Query Event"
       }
     ],
-    "Inserting Data": [
+    "Insert Data": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 76,
+        "line": 79,
         "level": 3,
-        "title": "Inserting Data"
+        "title": "Insert Data"
       }
     ],
     "Install ErisPulse": [
@@ -8091,7 +8107,7 @@
     "Intended Audience": [
       {
         "document": "advanced/README.md",
-        "line": 30,
+        "line": 34,
         "level": 2,
         "title": "Intended Audience"
       }
@@ -8113,7 +8129,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 141,
+        "line": 144,
         "level": 3,
         "title": "Inter-Module Communication"
       }
@@ -8137,7 +8153,7 @@
     "Interaction — `Core/Event/interaction.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 115,
+        "line": 118,
         "level": 3,
         "title": "Interaction — `Core/Event/interaction.py`"
       }
@@ -8207,7 +8223,7 @@
     "Internal Breakdown of Hot Update Chain": [
       {
         "document": "user-guide/configuration.md",
-        "line": 131,
+        "line": 134,
         "level": 3,
         "title": "Internal Breakdown of Hot Update Chain"
       }
@@ -8215,7 +8231,7 @@
     "Internal Decomposition of the Send Chain": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 570,
+        "line": 573,
         "level": 2,
         "title": "Internal Decomposition of the Send Chain"
       }
@@ -8223,7 +8239,7 @@
     "Internal Implementation: How Ownership Works": [
       {
         "document": "advanced/ownership.md",
-        "line": 146,
+        "line": 152,
         "level": 2,
         "title": "Internal Implementation: How Ownership Works"
       }
@@ -8247,7 +8263,7 @@
     "Internationalization Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 548,
+        "line": 553,
         "level": 2,
         "title": "Internationalization Configuration"
       }
@@ -8295,7 +8311,7 @@
     "Language Detection Mechanism": [
       {
         "document": "advanced/i18n.md",
-        "line": 54,
+        "line": 57,
         "level": 2,
         "title": "Language Detection Mechanism"
       }
@@ -8303,7 +8319,7 @@
     "Lazy Loading Mechanism": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 342,
+        "line": 345,
         "level": 2,
         "title": "Lazy Loading Mechanism"
       }
@@ -8319,7 +8335,7 @@
     "Lazy Loading and Calls": [
       {
         "document": "advanced/module-communication.md",
-        "line": 166,
+        "line": 169,
         "level": 2,
         "title": "Lazy Loading and Calls"
       }
@@ -8335,7 +8351,7 @@
     "LazyModule Class": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 16,
+        "line": 19,
         "level": 3,
         "title": "LazyModule Class"
       }
@@ -8351,7 +8367,7 @@
     "Lifecycle Events": [
       {
         "document": "advanced/connections.md",
-        "line": 110,
+        "line": 114,
         "level": 3,
         "title": "Lifecycle Events"
       },
@@ -8385,7 +8401,7 @@
     "Lifecycle Integration": [
       {
         "document": "advanced/router.md",
-        "line": 444,
+        "line": 447,
         "level": 2,
         "title": "Lifecycle Integration"
       }
@@ -8409,7 +8425,7 @@
     "Lifecycle Overview": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 86,
+        "line": 89,
         "level": 3,
         "title": "Lifecycle Overview"
       }
@@ -8433,7 +8449,7 @@
     "List Supported Send Methods": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 153,
+        "line": 156,
         "level": 3,
         "title": "List Supported Send Methods"
       }
@@ -8457,7 +8473,7 @@
     "List of Rule Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 279,
+        "line": 282,
         "level": 3,
         "title": "List of Rule Methods"
       }
@@ -8529,7 +8545,7 @@
     "Loading Strategies": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 7,
+        "line": 10,
         "level": 3,
         "title": "Loading Strategies"
       }
@@ -8577,7 +8593,7 @@
     "Log Messages": [
       {
         "document": "advanced/i18n.md",
-        "line": 576,
+        "line": 578,
         "level": 3,
         "title": "Log Messages"
       }
@@ -8609,13 +8625,13 @@
     "Logging": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 346,
+        "line": 349,
         "level": 2,
         "title": "Logging"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 382,
+        "line": 385,
         "level": 3,
         "title": "Logging"
       }
@@ -8623,7 +8639,7 @@
     "Logging Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 357,
+        "line": 362,
         "level": 2,
         "title": "Logging Configuration"
       }
@@ -8721,7 +8737,7 @@
     "Manual Configuration Reading (Deprecated)": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 278,
+        "line": 281,
         "level": 3,
         "title": "Manual Configuration Reading (Deprecated)"
       }
@@ -8740,14 +8756,6 @@
         "line": 95,
         "level": 3,
         "title": "Manual Project Creation"
-      }
-    ],
-    "Manual Registration of Custom Translations (Old Approach)": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 187,
-        "level": 3,
-        "title": "Manual Registration of Custom Translations (Old Approach)"
       }
     ],
     "Manual Request DSL Calls": [
@@ -8774,10 +8782,18 @@
         "title": "Manual Resume (Without Automatic Mechanism)"
       }
     ],
+    "Manually Register Custom Translations (Old Method)": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 190,
+        "level": 3,
+        "title": "Manually Register Custom Translations (Old Method)"
+      }
+    ],
     "Master System Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 289,
+        "line": 292,
         "level": 2,
         "title": "Master System Configuration"
       }
@@ -8857,7 +8873,7 @@
     "Message Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 537,
+        "line": 542,
         "level": 3,
         "title": "Message Configuration"
       }
@@ -8892,14 +8908,6 @@
         "line": 287,
         "level": 3,
         "title": "Message Edit Notification Example"
-      }
-    ],
-    "Message Event Additional Fields": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 122,
-        "level": 3,
-        "title": "Message Event Additional Fields"
       }
     ],
     "Message Event Example": [
@@ -9045,7 +9053,7 @@
     "Message Segment Conversion": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 137,
+        "line": 140,
         "level": 2,
         "title": "Message Segment Conversion"
       }
@@ -9077,7 +9085,7 @@
     "Message Segment Types": [
       {
         "document": "advanced/message-builder.md",
-        "line": 47,
+        "line": 50,
         "level": 2,
         "title": "Message Segment Types"
       },
@@ -9154,12 +9162,12 @@
         "title": "Message Statistics"
       }
     ],
-    "Message Transaction: message_tx": [
+    "Message Transaction: `message_tx`": [
       {
         "document": "advanced/interaction.md",
-        "line": 196,
+        "line": 199,
         "level": 2,
-        "title": "Message Transaction: message_tx"
+        "title": "Message Transaction: `message_tx`"
       }
     ],
     "Message Type Detection": [
@@ -9192,12 +9200,12 @@
         "title": "Message-related"
       }
     ],
-    "MessageBuilder Explained": [
+    "MessageBuilder Detailed Explanation": [
       {
         "document": "advanced/message-builder.md",
         "line": 1,
         "level": 1,
-        "title": "MessageBuilder Explained"
+        "title": "MessageBuilder Detailed Explanation"
       }
     ],
     "Meta Event Handling": [
@@ -9257,7 +9265,7 @@
     "Method 1: The `via` Parameter in `reply()`": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 164,
+        "line": 167,
         "level": 3,
         "title": "Method 1: The `via` Parameter in `reply()`"
       }
@@ -9281,7 +9289,7 @@
     "Method 2: `event.send_chain()`": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 181,
+        "line": 184,
         "level": 3,
         "title": "Method 2: `event.send_chain()`"
       }
@@ -9305,7 +9313,7 @@
     "Method Chaining": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 31,
+        "line": 34,
         "level": 2,
         "title": "Method Chaining"
       }
@@ -9345,7 +9353,7 @@
     "Method Signature": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 69,
+        "line": 72,
         "level": 3,
         "title": "Method Signature"
       }
@@ -9439,23 +9447,23 @@
     "Modifiers": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 91,
+        "line": 94,
         "level": 2,
         "title": "Modifiers"
       }
     ],
-    "Modifying Table Structure": [
+    "Modify Table Structure": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 58,
+        "line": 61,
         "level": 3,
-        "title": "Modifying Table Structure"
+        "title": "Modify Table Structure"
       }
     ],
     "Module": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 42,
+        "line": 45,
         "level": 4,
         "title": "Module"
       }
@@ -9463,7 +9471,7 @@
     "Module Author Guide": [
       {
         "document": "advanced/ownership.md",
-        "line": 188,
+        "line": 194,
         "level": 2,
         "title": "Module Author Guide"
       }
@@ -9471,7 +9479,7 @@
     "Module Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 559,
+        "line": 564,
         "level": 2,
         "title": "Module Configuration"
       }
@@ -9479,7 +9487,7 @@
     "Module Configuration Environment Variable Binding (2.9.0+)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 80,
+        "line": 83,
         "level": 3,
         "title": "Module Configuration Environment Variable Binding (2.9.0+)"
       }
@@ -9487,7 +9495,7 @@
     "Module Design": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "Module Design"
       }
@@ -9498,14 +9506,6 @@
         "line": 7,
         "level": 3,
         "title": "Module Development"
-      }
-    ],
-    "Module Development Best Practices": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 1,
-        "level": 1,
-        "title": "Module Development Best Practices"
       }
     ],
     "Module Discovery Mechanism": [
@@ -9541,7 +9541,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "Module Lifecycle"
       },
@@ -9555,7 +9555,7 @@
     "Module Loading": [
       {
         "document": "developer-guide/testing.md",
-        "line": 86,
+        "line": 89,
         "level": 3,
         "title": "Module Loading"
       }
@@ -9595,7 +9595,7 @@
     "Module Series — `Core/module.py` (`sdk.module.call`)": [
       {
         "document": "advanced/errors.md",
-        "line": 127,
+        "line": 130,
         "level": 3,
         "title": "Module Series — `Core/module.py` (`sdk.module.call`)"
       }
@@ -9603,7 +9603,7 @@
     "Module Store Overview": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "Module Store Overview"
       }
@@ -9635,7 +9635,7 @@
     "Module-Level Control": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 113,
+        "line": 116,
         "level": 3,
         "title": "Module-Level Control"
       }
@@ -9699,7 +9699,7 @@
     "Multi-Account Support": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 390,
+        "line": 393,
         "level": 2,
         "title": "Multi-Account Support"
       },
@@ -9729,7 +9729,7 @@
     "Multi-Instance Warning and Lock File": [
       {
         "document": "user-guide/configuration.md",
-        "line": 17,
+        "line": 21,
         "level": 3,
         "title": "Multi-Instance Warning and Lock File"
       }
@@ -9745,7 +9745,7 @@
     "Multi-element Message": [
       {
         "document": "advanced/message-builder.md",
-        "line": 153,
+        "line": 156,
         "level": 3,
         "title": "Multi-element Message"
       }
@@ -9753,7 +9753,7 @@
     "Multi-language Configuration Fields": [
       {
         "document": "advanced/i18n.md",
-        "line": 267,
+        "line": 270,
         "level": 2,
         "title": "Multi-language Configuration Fields"
       }
@@ -9761,17 +9761,17 @@
     "Multi-language Coverage": [
       {
         "document": "advanced/i18n.md",
-        "line": 560,
+        "line": 562,
         "level": 3,
         "title": "Multi-language Coverage"
       }
     ],
-    "Multi-path Waiting: expect + select": [
+    "Multi-path Waiting: `expect` + `select`": [
       {
         "document": "advanced/interaction.md",
-        "line": 115,
+        "line": 118,
         "level": 2,
-        "title": "Multi-path Waiting: expect + select"
+        "title": "Multi-path Waiting: `expect` + `select`"
       }
     ],
     "Multi-turn conversation (conversation)": [
@@ -9785,7 +9785,7 @@
     "Must package names start with `ErisPulse-`?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 175,
+        "line": 178,
         "level": 3,
         "title": "Must package names start with `ErisPulse-`?"
       }
@@ -9801,7 +9801,7 @@
     "Naming Convention": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 523,
+        "line": 526,
         "level": 2,
         "title": "Naming Convention"
       }
@@ -9817,7 +9817,7 @@
     "Nearest Mapping Principle": [
       {
         "document": "advanced/i18n.md",
-        "line": 64,
+        "line": 67,
         "level": 3,
         "title": "Nearest Mapping Principle"
       }
@@ -9905,7 +9905,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 679,
+        "line": 684,
         "level": 2,
         "title": "Next Steps"
       },
@@ -9943,7 +9943,7 @@
     "Not Waiting for Results": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 250,
+        "line": 253,
         "level": 3,
         "title": "Not Waiting for Results"
       }
@@ -9959,7 +9959,7 @@
     "Notes": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 217,
+        "line": 220,
         "level": 2,
         "title": "Notes"
       },
@@ -9971,7 +9971,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 212,
+        "line": 218,
         "level": 3,
         "title": "Notes"
       },
@@ -9992,14 +9992,6 @@
         "line": 222,
         "level": 2,
         "title": "Notes"
-      }
-    ],
-    "Notice Event Additional Fields": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 130,
-        "level": 3,
-        "title": "Notice Event Additional Fields"
       }
     ],
     "Notice Event Handling": [
@@ -10081,7 +10073,7 @@
     "On-demand Module Loading": [
       {
         "document": "advanced/startup.md",
-        "line": 277,
+        "line": 280,
         "level": 3,
         "title": "On-demand Module Loading"
       }
@@ -10231,7 +10223,7 @@
     "Others": [
       {
         "document": "README.md",
-        "line": 87,
+        "line": 94,
         "level": 2,
         "title": "Others"
       }
@@ -10239,7 +10231,7 @@
     "Outbound Assertions": [
       {
         "document": "developer-guide/testing.md",
-        "line": 69,
+        "line": 72,
         "level": 3,
         "title": "Outbound Assertions"
       }
@@ -10247,7 +10239,7 @@
     "Outbound Audit: Who Can Call Whom": [
       {
         "document": "advanced/module-communication.md",
-        "line": 118,
+        "line": 121,
         "level": 2,
         "title": "Outbound Audit: Who Can Call Whom"
       }
@@ -10255,7 +10247,7 @@
     "Outbound Connections (Client Side)": [
       {
         "document": "advanced/connections.md",
-        "line": 149,
+        "line": 153,
         "level": 2,
         "title": "Outbound Connections (Client Side)"
       }
@@ -10303,7 +10295,7 @@
     "Overview": [
       {
         "document": "advanced/connections.md",
-        "line": 9,
+        "line": 13,
         "level": 2,
         "title": "Overview"
       },
@@ -10315,13 +10307,13 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "Overview"
       },
       {
         "document": "advanced/router.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "Overview"
       },
@@ -10343,7 +10335,7 @@
     "Overview of SDK Top-Level Entry Points": [
       {
         "document": "advanced/startup.md",
-        "line": 9,
+        "line": 12,
         "level": 2,
         "title": "Overview of SDK Top-Level Entry Points"
       }
@@ -10351,23 +10343,23 @@
     "Owner Context Mechanism": [
       {
         "document": "advanced/ownership.md",
-        "line": 14,
+        "line": 20,
         "level": 2,
         "title": "Owner Context Mechanism"
       }
     ],
-    "Ownership (owner) System": [
+    "Ownership (Owner) System": [
       {
         "document": "advanced/ownership.md",
         "line": 1,
         "level": 1,
-        "title": "Ownership (owner) System"
+        "title": "Ownership (Owner) System"
       }
     ],
     "Ownership Facade (ownership)": [
       {
         "document": "advanced/ownership.md",
-        "line": 97,
+        "line": 103,
         "level": 2,
         "title": "Ownership Facade (ownership)"
       }
@@ -10407,7 +10399,7 @@
     "Parallel vs Sequential": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 418,
+        "line": 421,
         "level": 3,
         "title": "Parallel vs Sequential"
       }
@@ -10423,7 +10415,7 @@
     "Parameterized Queries": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 357,
+        "line": 360,
         "level": 2,
         "title": "Parameterized Queries"
       }
@@ -10439,7 +10431,7 @@
     "PascalCase Naming": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 525,
+        "line": 528,
         "level": 3,
         "title": "PascalCase Naming"
       }
@@ -10447,7 +10439,7 @@
     "Path Handling": [
       {
         "document": "advanced/router.md",
-        "line": 371,
+        "line": 374,
         "level": 2,
         "title": "Path Handling"
       }
@@ -10455,7 +10447,7 @@
     "Performance Optimization": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 380,
+        "line": 383,
         "level": 2,
         "title": "Performance Optimization"
       }
@@ -10471,7 +10463,7 @@
     "Placeholder Command Help Fallback Chain": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 81,
+        "line": 84,
         "level": 3,
         "title": "Placeholder Command Help Fallback Chain"
       }
@@ -10515,7 +10507,7 @@
     "Platform Event Method Extensions": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 562,
+        "line": 565,
         "level": 2,
         "title": "Platform Event Method Extensions"
       }
@@ -10539,7 +10531,7 @@
     "Platform Extension Fields": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 169,
+        "line": 172,
         "level": 2,
         "title": "Platform Extension Fields"
       },
@@ -10655,7 +10647,7 @@
     "Platform-Specific Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 78,
+        "line": 81,
         "level": 3,
         "title": "Platform-Specific Methods"
       }
@@ -10663,7 +10655,7 @@
     "Platform-Specific Modifier Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 125,
+        "line": 128,
         "level": 3,
         "title": "Platform-Specific Modifier Methods"
       }
@@ -10687,7 +10679,7 @@
     "Platform-specific Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 545,
+        "line": 548,
         "level": 3,
         "title": "Platform-specific Methods"
       }
@@ -10719,7 +10711,7 @@
     "Pre-publish Checklist": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 123,
+        "line": 126,
         "level": 2,
         "title": "Pre-publish Checklist"
       }
@@ -10727,7 +10719,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 38,
+        "line": 42,
         "level": 2,
         "title": "Prerequisites"
       }
@@ -10751,7 +10743,7 @@
     "Priority and Congestion Dropping (Priority)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 358,
+        "line": 361,
         "level": 3,
         "title": "Priority and Congestion Dropping (Priority)"
       }
@@ -10791,7 +10783,7 @@
     "Progress Monitoring (OnProgress / OnError)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 327,
+        "line": 330,
         "level": 3,
         "title": "Progress Monitoring (OnProgress / OnError)"
       }
@@ -10837,7 +10829,7 @@
     "Promote and Rollback": [
       {
         "document": "advanced/shadow.md",
-        "line": 59,
+        "line": 62,
         "level": 2,
         "title": "Promote and Rollback"
       }
@@ -10845,7 +10837,7 @@
     "Protocol Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 70,
+        "line": 73,
         "level": 3,
         "title": "Protocol Methods"
       }
@@ -10869,7 +10861,7 @@
     "Publish to Docker Hub Simultaneously": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 354,
+        "line": 357,
         "level": 3,
         "title": "Publish to Docker Hub Simultaneously"
       }
@@ -10877,7 +10869,7 @@
     "Publishing": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 156,
+        "line": 159,
         "level": 3,
         "title": "Publishing"
       }
@@ -10962,6 +10954,14 @@
         "title": "Query Bot Status"
       }
     ],
+    "Query Data": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 93,
+        "level": 3,
+        "title": "Query Data"
+      }
+    ],
     "Query Methods": [
       {
         "document": "platform-guide/onebot11.md",
@@ -10986,14 +10986,6 @@
         "title": "Query Supported Sending Methods"
       }
     ],
-    "Querying Data": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 90,
-        "level": 3,
-        "title": "Querying Data"
-      }
-    ],
     "Querying Registered Platform Methods": [
       {
         "document": "api-reference/event-system.md",
@@ -11005,7 +10997,7 @@
     "Quick Build Mode (Static)": [
       {
         "document": "advanced/message-builder.md",
-        "line": 37,
+        "line": 40,
         "level": 3,
         "title": "Quick Build Mode (Static)"
       }
@@ -11013,7 +11005,7 @@
     "Quick Experience": [
       {
         "document": "advanced/i18n.md",
-        "line": 15,
+        "line": 18,
         "level": 2,
         "title": "Quick Experience"
       }
@@ -11029,7 +11021,7 @@
     "Quick Publish": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 34,
+        "line": 37,
         "level": 2,
         "title": "Quick Publish"
       }
@@ -11063,7 +11055,7 @@
       },
       {
         "document": "advanced/shadow.md",
-        "line": 12,
+        "line": 15,
         "level": 2,
         "title": "Quick Start"
       },
@@ -11075,7 +11067,7 @@
       },
       {
         "document": "developer-guide/testing.md",
-        "line": 12,
+        "line": 15,
         "level": 2,
         "title": "Quick Start"
       },
@@ -11107,7 +11099,7 @@
     "RPC: module.call": [
       {
         "document": "advanced/module-communication.md",
-        "line": 18,
+        "line": 21,
         "level": 2,
         "title": "RPC: module.call"
       }
@@ -11115,7 +11107,7 @@
     "Rate Limiting": [
       {
         "document": "advanced/router.md",
-        "line": 305,
+        "line": 308,
         "level": 2,
         "title": "Rate Limiting"
       }
@@ -11145,7 +11137,7 @@
     "Raw Messages and Message Building": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 717,
+        "line": 720,
         "level": 3,
         "title": "Raw Messages and Message Building"
       }
@@ -11153,7 +11145,7 @@
     "Reading i18n Configuration via Configuration API": [
       {
         "document": "advanced/i18n.md",
-        "line": 517,
+        "line": 519,
         "level": 3,
         "title": "Reading i18n Configuration via Configuration API"
       }
@@ -11169,7 +11161,7 @@
     "Recommended Approach: Declare Translation Keys via I18nClass (v2.7.0+)": [
       {
         "document": "advanced/i18n.md",
-        "line": 81,
+        "line": 84,
         "level": 3,
         "title": "Recommended Approach: Declare Translation Keys via I18nClass (v2.7.0+)"
       }
@@ -11185,7 +11177,7 @@
     "Recommended Practices": [
       {
         "document": "advanced/ownership.md",
-        "line": 190,
+        "line": 196,
         "level": 3,
         "title": "Recommended Practices"
       }
@@ -11193,7 +11185,7 @@
     "Recommended Scenarios for Disabling Lazy Loading (lazy_load=False)": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 208,
+        "line": 211,
         "level": 3,
         "title": "Recommended Scenarios for Disabling Lazy Loading (lazy_load=False)"
       }
@@ -11201,7 +11193,7 @@
     "Recommended Scenarios for Lazy Loading (lazy_load=True)": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 203,
+        "line": 206,
         "level": 3,
         "title": "Recommended Scenarios for Lazy Loading (lazy_load=True)"
       }
@@ -11241,7 +11233,7 @@
     "Register Entry": [
       {
         "document": "advanced/router.md",
-        "line": 409,
+        "line": 412,
         "level": 3,
         "title": "Register Entry"
       }
@@ -11265,7 +11257,7 @@
     "Registering Configuration Translations": [
       {
         "document": "advanced/i18n.md",
-        "line": 368,
+        "line": 371,
         "level": 3,
         "title": "Registering Configuration Translations"
       }
@@ -11289,7 +11281,7 @@
     "Registration Forms: Single-Parameter (Recommended) and Two-Parameter": [
       {
         "document": "advanced/router.md",
-        "line": 38,
+        "line": 41,
         "level": 3,
         "title": "Registration Forms: Single-Parameter (Recommended) and Two-Parameter"
       }
@@ -11297,7 +11289,7 @@
     "Registration Timing → Ownership Result Comparison Table": [
       {
         "document": "advanced/ownership.md",
-        "line": 219,
+        "line": 225,
         "level": 3,
         "title": "Registration Timing → Ownership Result Comparison Table"
       }
@@ -11325,13 +11317,13 @@
       },
       {
         "document": "advanced/interaction.md",
-        "line": 226,
+        "line": 229,
         "level": 2,
         "title": "Related Documentation"
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 224,
+        "line": 227,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11343,31 +11335,37 @@
       },
       {
         "document": "advanced/message-builder.md",
-        "line": 185,
+        "line": 188,
         "level": 2,
         "title": "Related Documentation"
       },
       {
         "document": "advanced/module-communication.md",
-        "line": 223,
+        "line": 226,
         "level": 2,
         "title": "Related Documentation"
       },
       {
         "document": "advanced/router.md",
-        "line": 468,
+        "line": 471,
         "level": 2,
         "title": "Related Documentation"
       },
       {
         "document": "advanced/shadow.md",
-        "line": 65,
+        "line": 68,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 439,
         "level": 2,
         "title": "Related Documentation"
       },
       {
         "document": "advanced/startup.md",
-        "line": 437,
+        "line": 440,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11409,13 +11407,7 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 648,
-        "level": 2,
-        "title": "Related Documentation"
-      },
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 375,
+        "line": 651,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11427,19 +11419,19 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 725,
+        "line": 728,
         "level": 2,
         "title": "Related Documentation"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 549,
+        "line": 552,
         "level": 2,
         "title": "Related Documentation"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 393,
+        "line": 396,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11470,8 +11462,8 @@
     ],
     "Related Documents": [
       {
-        "document": "advanced/sql-builder.md",
-        "line": 436,
+        "document": "developer-guide/adapters/converter.md",
+        "line": 378,
         "level": 2,
         "title": "Related Documents"
       }
@@ -11479,7 +11471,7 @@
     "Related Links": [
       {
         "document": "README.md",
-        "line": 99,
+        "line": 106,
         "level": 2,
         "title": "Related Links"
       },
@@ -11505,7 +11497,7 @@
     "Relationship Mapping (relationship)": [
       {
         "document": "developer-guide/orm.md",
-        "line": 132,
+        "line": 135,
         "level": 2,
         "title": "Relationship Mapping (relationship)"
       }
@@ -11521,7 +11513,7 @@
     "Relationship with CLI i18n": [
       {
         "document": "advanced/i18n.md",
-        "line": 586,
+        "line": 588,
         "level": 2,
         "title": "Relationship with CLI i18n"
       }
@@ -11529,7 +11521,7 @@
     "Relationship with Declarative Configuration Class": [
       {
         "document": "developer-guide/orm.md",
-        "line": 74,
+        "line": 77,
         "level": 2,
         "title": "Relationship with Declarative Configuration Class"
       }
@@ -11537,7 +11529,7 @@
     "Relationship with Other Systems": [
       {
         "document": "advanced/interaction.md",
-        "line": 220,
+        "line": 223,
         "level": 2,
         "title": "Relationship with Other Systems"
       }
@@ -11621,7 +11613,7 @@
     "Reply Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 112,
+        "line": 115,
         "level": 3,
         "title": "Reply Method"
       }
@@ -11637,7 +11629,7 @@
     "Replying with Event": [
       {
         "document": "advanced/message-builder.md",
-        "line": 81,
+        "line": 84,
         "level": 3,
         "title": "Replying with Event"
       }
@@ -11659,7 +11651,7 @@
     "Request Correlation ID (X-Request-ID)": [
       {
         "document": "advanced/router.md",
-        "line": 280,
+        "line": 283,
         "level": 2,
         "title": "Request Correlation ID (X-Request-ID)"
       }
@@ -11797,7 +11789,7 @@
     "Required Field Mapping": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 109,
+        "line": 112,
         "level": 2,
         "title": "Required Field Mapping"
       }
@@ -11829,7 +11821,7 @@
     "Resetting the Builder": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 258,
+        "line": 261,
         "level": 2,
         "title": "Resetting the Builder"
       }
@@ -11837,7 +11829,7 @@
     "Resource Ownership Overview": [
       {
         "document": "advanced/ownership.md",
-        "line": 37,
+        "line": 43,
         "level": 2,
         "title": "Resource Ownership Overview"
       }
@@ -11853,7 +11845,7 @@
     "Response Return Convention (2.10+)": [
       {
         "document": "advanced/router.md",
-        "line": 86,
+        "line": 89,
         "level": 4,
         "title": "Response Return Convention (2.10+)"
       }
@@ -11861,7 +11853,7 @@
     "Restart": [
       {
         "document": "advanced/startup.md",
-        "line": 324,
+        "line": 327,
         "level": 2,
         "title": "Restart"
       }
@@ -11885,9 +11877,17 @@
     "Return Value Description": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 320,
+        "line": 323,
         "level": 2,
         "title": "Return Value Description"
+      }
+    ],
+    "Return Value Handling Example": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 336,
+        "level": 3,
+        "title": "Return Value Handling Example"
       }
     ],
     "Return Value Specification": [
@@ -11901,7 +11901,7 @@
     "Return Value Structure": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 82,
+        "line": 85,
         "level": 3,
         "title": "Return Value Structure"
       }
@@ -11909,7 +11909,7 @@
     "Return Values": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 630,
+        "line": 633,
         "level": 2,
         "title": "Return Values"
       }
@@ -11937,7 +11937,7 @@
     "Reusing Query Conditions": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 241,
+        "line": 244,
         "level": 2,
         "title": "Reusing Query Conditions"
       }
@@ -11953,7 +11953,7 @@
     "Reverse Conversion and Message Building": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 552,
+        "line": 555,
         "level": 2,
         "title": "Reverse Conversion and Message Building"
       }
@@ -11966,18 +11966,18 @@
         "title": "Reverse Proxy"
       }
     ],
-    "Rich Media Message Conversion Example": [
+    "Rich Media Message Conversion Examples": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 274,
+        "line": 277,
         "level": 2,
-        "title": "Rich Media Message Conversion Example"
+        "title": "Rich Media Message Conversion Examples"
       }
     ],
     "Risks and Audits: Read Before Relaxing Limits": [
       {
         "document": "advanced/transcript.md",
-        "line": 66,
+        "line": 69,
         "level": 2,
         "title": "Risks and Audits: Read Before Relaxing Limits"
       }
@@ -11993,7 +11993,7 @@
     "Root Page": [
       {
         "document": "advanced/router.md",
-        "line": 396,
+        "line": 399,
         "level": 3,
         "title": "Root Page"
       }
@@ -12009,7 +12009,7 @@
     "Route Grouping": [
       {
         "document": "advanced/router.md",
-        "line": 246,
+        "line": 249,
         "level": 2,
         "title": "Route Grouping"
       }
@@ -12017,7 +12017,7 @@
     "Route Middleware": [
       {
         "document": "advanced/router.md",
-        "line": 263,
+        "line": 266,
         "level": 2,
         "title": "Route Middleware"
       }
@@ -12049,7 +12049,7 @@
     "Router Server": [
       {
         "document": "advanced/startup.md",
-        "line": 267,
+        "line": 270,
         "level": 3,
         "title": "Router Server"
       }
@@ -12057,7 +12057,7 @@
     "Rule Composition and Background Execution": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 370,
+        "line": 373,
         "level": 3,
         "title": "Rule Composition and Background Execution"
       }
@@ -12073,7 +12073,7 @@
     "Rule Propagation": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 385,
+        "line": 388,
         "level": 3,
         "title": "Rule Propagation"
       }
@@ -12121,7 +12121,7 @@
     "Runtime Configuration": [
       {
         "document": "advanced/i18n.md",
-        "line": 515,
+        "line": 517,
         "level": 2,
         "title": "Runtime Configuration"
       }
@@ -12137,7 +12137,7 @@
     "Runtime Fine-grained Control": [
       {
         "document": "advanced/startup.md",
-        "line": 247,
+        "line": 250,
         "level": 2,
         "title": "Runtime Fine-grained Control"
       }
@@ -12145,7 +12145,7 @@
     "Runtime Override API": [
       {
         "document": "advanced/transcript.md",
-        "line": 44,
+        "line": 47,
         "level": 2,
         "title": "Runtime Override API"
       }
@@ -12169,7 +12169,7 @@
     "SDK Object": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 128,
+        "line": 131,
         "level": 2,
         "title": "SDK Object"
       },
@@ -12215,7 +12215,7 @@
     "Scenario 1: Module Not Loaded": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 13,
+        "line": 16,
         "level": 2,
         "title": "Scenario 1: Module Not Loaded"
       }
@@ -12223,7 +12223,7 @@
     "Scenario 2: Event Not Responding": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 35,
+        "line": 38,
         "level": 2,
         "title": "Scenario 2: Event Not Responding"
       }
@@ -12231,7 +12231,7 @@
     "Scenario 3: Command Not Triggered (Dispatch Decision Chain)": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 56,
+        "line": 59,
         "level": 2,
         "title": "Scenario 3: Command Not Triggered (Dispatch Decision Chain)"
       }
@@ -12255,7 +12255,7 @@
     "Scope Configuration (scope)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 588,
+        "line": 593,
         "level": 2,
         "title": "Scope Configuration (scope)"
       }
@@ -12279,7 +12279,7 @@
     "Secret Masking and Configuration Validation": [
       {
         "document": "advanced/i18n.md",
-        "line": 335,
+        "line": 338,
         "level": 3,
         "title": "Secret Masking and Configuration Validation"
       }
@@ -12287,7 +12287,7 @@
     "Security": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 417,
+        "line": 420,
         "level": 2,
         "title": "Security"
       }
@@ -12295,7 +12295,7 @@
     "Security Headers": [
       {
         "document": "advanced/router.md",
-        "line": 340,
+        "line": 343,
         "level": 2,
         "title": "Security Headers"
       }
@@ -12423,7 +12423,7 @@
     "Send Rule Engine (Retry/Timeout/Delay)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 613,
+        "line": 616,
         "level": 3,
         "title": "Send Rule Engine (Retry/Timeout/Delay)"
       }
@@ -12431,7 +12431,7 @@
     "Send Rule System": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 273,
+        "line": 276,
         "level": 2,
         "title": "Send Rule System"
       }
@@ -12463,7 +12463,7 @@
     "SendDSL Implementation": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 276,
+        "line": 279,
         "level": 2,
         "title": "SendDSL Implementation"
       }
@@ -12541,7 +12541,7 @@
     "Sending Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 41,
+        "line": 44,
         "level": 2,
         "title": "Sending Methods"
       }
@@ -12573,7 +12573,7 @@
     "Server Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 259,
+        "line": 262,
         "level": 2,
         "title": "Server Configuration"
       }
@@ -12589,7 +12589,7 @@
     "Service Contract: meta.services": [
       {
         "document": "advanced/module-communication.md",
-        "line": 47,
+        "line": 50,
         "level": 2,
         "title": "Service Contract: meta.services"
       }
@@ -12605,7 +12605,7 @@
     "Service Directory: services()": [
       {
         "document": "advanced/module-communication.md",
-        "line": 97,
+        "line": 100,
         "level": 2,
         "title": "Service Directory: services()"
       }
@@ -12624,28 +12624,28 @@
         "title": "Session Identifiers"
       }
     ],
-    "Session Inbox: event.history": [
+    "Session Inbox: `event.history`": [
       {
         "document": "advanced/interaction.md",
-        "line": 178,
+        "line": 181,
         "level": 2,
-        "title": "Session Inbox: event.history"
+        "title": "Session Inbox: `event.history`"
       }
     ],
-    "Session Mutual Exclusion: acquire / hold / get_owner_of": [
+    "Session Mutual Exclusion: `acquire` / `hold` / `get_owner_of`": [
       {
         "document": "advanced/interaction.md",
-        "line": 147,
+        "line": 150,
         "level": 2,
-        "title": "Session Mutual Exclusion: acquire / hold / get_owner_of"
+        "title": "Session Mutual Exclusion: `acquire` / `hold` / `get_owner_of`"
       }
     ],
-    "Session Timers: remind / escalate": [
+    "Session Timers: `remind` / `escalate`": [
       {
         "document": "advanced/interaction.md",
-        "line": 79,
+        "line": 82,
         "level": 2,
-        "title": "Session Timers: remind / escalate"
+        "title": "Session Timers: `remind` / `escalate`"
       }
     ],
     "Severity Classification": [
@@ -12656,18 +12656,18 @@
         "title": "Severity Classification"
       }
     ],
-    "Shadow Modules and Gradual Promotion": [
+    "Shadow Modules and Gradual Cutover": [
       {
         "document": "advanced/shadow.md",
         "line": 1,
         "level": 1,
-        "title": "Shadow Modules and Gradual Promotion"
+        "title": "Shadow Modules and Gradual Cutover"
       }
     ],
     "Shadow Series — `Core/shadow.py` (Shadow Modules)": [
       {
         "document": "advanced/errors.md",
-        "line": 156,
+        "line": 159,
         "level": 3,
         "title": "Shadow Series — `Core/shadow.py` (Shadow Modules)"
       }
@@ -12683,7 +12683,7 @@
     "Shutdown Noise Folding": [
       {
         "document": "advanced/errors.md",
-        "line": 186,
+        "line": 189,
         "level": 2,
         "title": "Shutdown Noise Folding"
       }
@@ -12744,12 +12744,12 @@
         "title": "Single Method Registration"
       }
     ],
-    "Sorting and Pagination": [
+    "Sorting, Pagination": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 181,
+        "line": 184,
         "level": 3,
-        "title": "Sorting and Pagination"
+        "title": "Sorting, Pagination"
       }
     ],
     "Special Field Examples": [
@@ -12959,7 +12959,7 @@
     "Standardized Response": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 656,
+        "line": 659,
         "level": 3,
         "title": "Standardized Response"
       }
@@ -12991,7 +12991,7 @@
     "Static Factory + Chain Mixing": [
       {
         "document": "advanced/message-builder.md",
-        "line": 169,
+        "line": 172,
         "level": 3,
         "title": "Static Factory + Chain Mixing"
       }
@@ -13063,7 +13063,7 @@
     "Storage Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 470,
+        "line": 475,
         "level": 2,
         "title": "Storage Configuration"
       }
@@ -13087,7 +13087,7 @@
     "Storage Series — `Core/storage` / `Core/Bases/sql_base.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 104,
+        "line": 107,
         "level": 3,
         "title": "Storage Series — `Core/storage` / `Core/Bases/sql_base.py`"
       }
@@ -13095,13 +13095,13 @@
     "Storage System": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 313,
+        "line": 316,
         "level": 2,
         "title": "Storage System"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 295,
+        "line": 298,
         "level": 2,
         "title": "Storage System"
       }
@@ -13109,7 +13109,7 @@
     "Strict Mode": [
       {
         "document": "user-guide/configuration.md",
-        "line": 441,
+        "line": 446,
         "level": 3,
         "title": "Strict Mode"
       }
@@ -13117,7 +13117,7 @@
     "Structured Attributes": [
       {
         "document": "advanced/errors.md",
-        "line": 41,
+        "line": 44,
         "level": 2,
         "title": "Structured Attributes"
       }
@@ -13181,7 +13181,7 @@
     "Supervisor Guide": [
       {
         "document": "advanced/startup.md",
-        "line": 366,
+        "line": 369,
         "level": 3,
         "title": "Supervisor Guide"
       }
@@ -13197,7 +13197,7 @@
     "Supported Languages": [
       {
         "document": "advanced/i18n.md",
-        "line": 5,
+        "line": 8,
         "level": 2,
         "title": "Supported Languages"
       }
@@ -13313,7 +13313,7 @@
     "Supported Submission Types": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 27,
+        "line": 30,
         "level": 3,
         "title": "Supported Submission Types"
       }
@@ -13321,7 +13321,7 @@
     "Supported i18n Fields": [
       {
         "document": "advanced/i18n.md",
-        "line": 271,
+        "line": 274,
         "level": 3,
         "title": "Supported i18n Fields"
       }
@@ -13329,7 +13329,7 @@
     "Switch Manually in Code": [
       {
         "document": "advanced/i18n.md",
-        "line": 39,
+        "line": 42,
         "level": 3,
         "title": "Switch Manually in Code"
       }
@@ -13345,7 +13345,7 @@
     "Switch via Configuration File": [
       {
         "document": "advanced/i18n.md",
-        "line": 28,
+        "line": 31,
         "level": 3,
         "title": "Switch via Configuration File"
       }
@@ -13353,7 +13353,7 @@
     "Switch via Environment Variable": [
       {
         "document": "advanced/i18n.md",
-        "line": 17,
+        "line": 20,
         "level": 3,
         "title": "Switch via Environment Variable"
       }
@@ -13377,7 +13377,7 @@
     "Synchronous Initialization": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 178,
+        "line": 181,
         "level": 3,
         "title": "Synchronous Initialization"
       }
@@ -13393,7 +13393,7 @@
     "System Routes": [
       {
         "document": "advanced/router.md",
-        "line": 384,
+        "line": 387,
         "level": 2,
         "title": "System Routes"
       }
@@ -13401,7 +13401,7 @@
     "Table Creation and CRUD": [
       {
         "document": "developer-guide/orm.md",
-        "line": 38,
+        "line": 41,
         "level": 2,
         "title": "Table Creation and CRUD"
       }
@@ -13409,7 +13409,7 @@
     "Table Management": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 32,
+        "line": 35,
         "level": 2,
         "title": "Table Management"
       }
@@ -13431,7 +13431,7 @@
     "Task Object": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 632,
+        "line": 635,
         "level": 3,
         "title": "Task Object"
       }
@@ -13479,7 +13479,7 @@
     "TestBot API": [
       {
         "document": "developer-guide/testing.md",
-        "line": 56,
+        "line": 59,
         "level": 2,
         "title": "TestBot API"
       }
@@ -13487,13 +13487,13 @@
     "Testing": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 506,
+        "line": 509,
         "level": 2,
         "title": "Testing"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 463,
+        "line": 466,
         "level": 2,
         "title": "Testing"
       }
@@ -13517,17 +13517,17 @@
     "Testing: TestBot.dispatch returns DispatchTrace": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 60,
+        "line": 63,
         "level": 3,
         "title": "Testing: TestBot.dispatch returns DispatchTrace"
       }
     ],
-    "The Boundary Between Waiting and Commands (Command Bypass)": [
+    "The Boundary Between Waiting and Commands (Command Penetration)": [
       {
         "document": "advanced/interaction.md",
-        "line": 49,
+        "line": 52,
         "level": 3,
-        "title": "The Boundary Between Waiting and Commands (Command Bypass)"
+        "title": "The Boundary Between Waiting and Commands (Command Penetration)"
       }
     ],
     "Timeouts and Retries": [
@@ -13541,7 +13541,7 @@
     "Tool Module Guide: Handling References to Other Modules": [
       {
         "document": "advanced/ownership.md",
-        "line": 234,
+        "line": 240,
         "level": 2,
         "title": "Tool Module Guide: Handling References to Other Modules"
       }
@@ -13557,7 +13557,7 @@
     "Trace ID": [
       {
         "document": "advanced/interaction.md",
-        "line": 209,
+        "line": 212,
         "level": 2,
         "title": "Trace ID"
       }
@@ -13565,7 +13565,7 @@
     "Traditional Registration Method": [
       {
         "document": "advanced/router.md",
-        "line": 155,
+        "line": 158,
         "level": 2,
         "title": "Traditional Registration Method"
       }
@@ -13581,7 +13581,7 @@
     "Transaction Usage": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 310,
+        "line": 313,
         "level": 3,
         "title": "Transaction Usage"
       }
@@ -13589,17 +13589,17 @@
     "Transactions": [
       {
         "document": "developer-guide/orm.md",
-        "line": 64,
+        "line": 67,
         "level": 2,
         "title": "Transactions"
       }
     ],
-    "Transcript": [
+    "Transcript Inbox": [
       {
         "document": "advanced/transcript.md",
         "line": 1,
         "level": 1,
-        "title": "Transcript"
+        "title": "Transcript Inbox"
       }
     ],
     "Transcript Session Inbox": [
@@ -13613,7 +13613,7 @@
     "Translation Key Naming": [
       {
         "document": "advanced/i18n.md",
-        "line": 550,
+        "line": 552,
         "level": 3,
         "title": "Translation Key Naming"
       }
@@ -13621,7 +13621,7 @@
     "Trigger Semantics": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 91,
+        "line": 94,
         "level": 3,
         "title": "Trigger Semantics"
       }
@@ -13637,7 +13637,7 @@
     "Troubleshooting Approach": [
       {
         "document": "advanced/ownership.md",
-        "line": 183,
+        "line": 189,
         "level": 3,
         "title": "Troubleshooting Approach"
       }
@@ -13685,7 +13685,7 @@
     "Unified Event Override Configuration (event.overrides)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 634,
+        "line": 639,
         "level": 2,
         "title": "Unified Event Override Configuration (event.overrides)"
       }
@@ -13701,7 +13701,7 @@
     "Unified Module Access Entry": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 145,
+        "line": 148,
         "level": 3,
         "title": "Unified Module Access Entry"
       }
@@ -13709,7 +13709,7 @@
     "Uninstall Process": [
       {
         "document": "advanced/startup.md",
-        "line": 306,
+        "line": 309,
         "level": 2,
         "title": "Uninstall Process"
       }
@@ -13769,7 +13769,7 @@
     "Unload and Cleanup Semantics": [
       {
         "document": "advanced/connections.md",
-        "line": 180,
+        "line": 184,
         "level": 2,
         "title": "Unload and Cleanup Semantics"
       }
@@ -13777,7 +13777,7 @@
     "Unload vs. Purge (Complete Unload)": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 59,
+        "line": 62,
         "level": 3,
         "title": "Unload vs. Purge (Complete Unload)"
       }
@@ -13785,9 +13785,17 @@
     "Unload/Disable Cleanup Sequence": [
       {
         "document": "advanced/ownership.md",
-        "line": 72,
+        "line": 78,
         "level": 2,
         "title": "Unload/Disable Cleanup Sequence"
+      }
+    ],
+    "Unregister Translations": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 261,
+        "level": 3,
+        "title": "Unregister Translations"
       }
     ],
     "Unregistering Methods": [
@@ -13796,14 +13804,6 @@
         "line": 639,
         "level": 4,
         "title": "Unregistering Methods"
-      }
-    ],
-    "Unregistering Translations": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 258,
-        "level": 3,
-        "title": "Unregistering Translations"
       }
     ],
     "Unregistering Views": [
@@ -13830,10 +13830,18 @@
         "title": "Unsupported Standard Actions"
       }
     ],
+    "Update Data": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 205,
+        "level": 3,
+        "title": "Update Data"
+      }
+    ],
     "Update Published Modules": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 115,
+        "line": 118,
         "level": 2,
         "title": "Update Published Modules"
       }
@@ -13852,14 +13860,6 @@
         "line": 262,
         "level": 2,
         "title": "Updates and Maintenance"
-      }
-    ],
-    "Updating Data": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 202,
-        "level": 3,
-        "title": "Updating Data"
       }
     ],
     "Upgrade components": [
@@ -13956,12 +13956,12 @@
         "title": "User Guide"
       }
     ],
-    "User Priority: Master Effect Scope Decided by User": [
+    "User Priority: Master Scope Determined by User": [
       {
         "document": "user-guide/configuration.md",
-        "line": 353,
+        "line": 357,
         "level": 3,
-        "title": "User Priority: Master Effect Scope Decided by User"
+        "title": "User Priority: Master Scope Determined by User"
       }
     ],
     "User Status Change Event": [
@@ -14007,7 +14007,7 @@
     "Using Lazy-Loaded Modules": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 131,
+        "line": 134,
         "level": 2,
         "title": "Using Lazy-Loaded Modules"
       }
@@ -14023,7 +14023,7 @@
     "Using Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 223,
+        "line": 226,
         "level": 3,
         "title": "Using Method"
       }
@@ -14031,7 +14031,7 @@
     "Using Modifier Methods in Event Wrapper Classes": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 157,
+        "line": 160,
         "level": 2,
         "title": "Using Modifier Methods in Event Wrapper Classes"
       }
@@ -14069,7 +14069,7 @@
     "Using Translations": [
       {
         "document": "advanced/i18n.md",
-        "line": 209,
+        "line": 212,
         "level": 3,
         "title": "Using Translations"
       }
@@ -14077,7 +14077,7 @@
     "Using i18n in Modules": [
       {
         "document": "advanced/i18n.md",
-        "line": 77,
+        "line": 80,
         "level": 2,
         "title": "Using i18n in Modules"
       }
@@ -14091,7 +14091,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 153,
+        "line": 156,
         "level": 4,
         "title": "Using in Adapters"
       }
@@ -14104,12 +14104,12 @@
         "title": "Using in Code"
       }
     ],
-    "Using in Module Classes": [
+    "Using in Module Class": [
       {
         "document": "advanced/i18n.md",
-        "line": 224,
+        "line": 227,
         "level": 3,
-        "title": "Using in Module Classes"
+        "title": "Using in Module Class"
       }
     ],
     "Using in RouteGroup": [
@@ -14123,7 +14123,7 @@
     "Using in Transactions": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 269,
+        "line": 272,
         "level": 2,
         "title": "Using in Transactions"
       }
@@ -14147,7 +14147,7 @@
     "Using with Send": [
       {
         "document": "advanced/message-builder.md",
-        "line": 62,
+        "line": 65,
         "level": 2,
         "title": "Using with Send"
       }
@@ -14163,7 +14163,7 @@
     "Utility Methods": [
       {
         "document": "advanced/message-builder.md",
-        "line": 97,
+        "line": 100,
         "level": 2,
         "title": "Utility Methods"
       },
@@ -14177,7 +14177,7 @@
     "Utility Module: When Hosting Other Things, You Must Catch \"Unload Notification\"": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 236,
+        "line": 239,
         "level": 2,
         "title": "Utility Module: When Hosting Other Things, You Must Catch \"Unload Notification\""
       }
@@ -14185,7 +14185,7 @@
     "V. I Want to Contribute to ErisPulse": [
       {
         "document": "README.md",
-        "line": 71,
+        "line": 78,
         "level": 3,
         "title": "V. I Want to Contribute to ErisPulse"
       }
@@ -14225,7 +14225,7 @@
     "Viewing the Connection Pool": [
       {
         "document": "advanced/connections.md",
-        "line": 37,
+        "line": 41,
         "level": 2,
         "title": "Viewing the Connection Pool"
       }
@@ -14270,18 +14270,18 @@
         "title": "Waiting for Replies"
       }
     ],
-    "Waiting for Reply: wait_reply": [
+    "Waiting for Reply: `wait_reply`": [
       {
         "document": "advanced/interaction.md",
-        "line": 12,
+        "line": 15,
         "level": 2,
-        "title": "Waiting for Reply: wait_reply"
+        "title": "Waiting for Reply: `wait_reply`"
       }
     ],
     "Waiting for Results": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 260,
+        "line": 263,
         "level": 3,
         "title": "Waiting for Results"
       }
@@ -14381,7 +14381,7 @@
     "WebSocket Decorators": [
       {
         "document": "advanced/router.md",
-        "line": 109,
+        "line": 112,
         "level": 3,
         "title": "WebSocket Decorators"
       }
@@ -14397,7 +14397,7 @@
     "WebSocket Lifecycle Hooks": [
       {
         "document": "advanced/router.md",
-        "line": 222,
+        "line": 225,
         "level": 2,
         "title": "WebSocket Lifecycle Hooks"
       }
@@ -14405,7 +14405,7 @@
     "WebSocket Registration": [
       {
         "document": "advanced/router.md",
-        "line": 181,
+        "line": 184,
         "level": 3,
         "title": "WebSocket Registration"
       }
@@ -14413,7 +14413,7 @@
     "WebSocket Series — `Core/client.py` (`send` / `receive`)": [
       {
         "document": "advanced/errors.md",
-        "line": 90,
+        "line": 93,
         "level": 3,
         "title": "WebSocket Series — `Core/client.py` (`send` / `receive`)"
       }
@@ -14437,7 +14437,7 @@
     "When Should You Use Manual Startup?": [
       {
         "document": "advanced/startup.md",
-        "line": 237,
+        "line": 240,
         "level": 3,
         "title": "When Should You Use Manual Startup?"
       }
@@ -14445,7 +14445,7 @@
     "When Will Waiting Be Cancelled": [
       {
         "document": "advanced/interaction.md",
-        "line": 53,
+        "line": 56,
         "level": 3,
         "title": "When Will Waiting Be Cancelled"
       }
@@ -14461,7 +14461,7 @@
     "When to Use Hard Restart?": [
       {
         "document": "advanced/startup.md",
-        "line": 345,
+        "line": 348,
         "level": 3,
         "title": "When to Use Hard Restart?"
       }
@@ -14469,7 +14469,7 @@
     "When to Use Which Declaration": [
       {
         "document": "developer-guide/orm.md",
-        "line": 78,
+        "line": 81,
         "level": 3,
         "title": "When to Use Which Declaration"
       }
@@ -14477,17 +14477,17 @@
     "Where Parameter Passing Rules": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 376,
+        "line": 379,
         "level": 3,
         "title": "Where Parameter Passing Rules"
       }
     ],
-    "Why is I18nClass Recommended?": [
+    "Why I18nClass is Recommended?": [
       {
         "document": "advanced/i18n.md",
-        "line": 137,
+        "line": 140,
         "level": 4,
-        "title": "Why is I18nClass Recommended?"
+        "title": "Why I18nClass is Recommended?"
       }
     ],
     "Why is a Standard Needed?": [
@@ -14525,13 +14525,13 @@
     "Working Principle": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 14,
+        "line": 17,
         "level": 2,
         "title": "Working Principle"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 344,
+        "line": 347,
         "level": 3,
         "title": "Working Principle"
       }
@@ -14912,6 +14912,14 @@
         "title": "`__init__` Notes"
       }
     ],
+    "`escalate`: Guaranteed Delivery at the Deadline": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 103,
+        "level": 3,
+        "title": "`escalate`: Guaranteed Delivery at the Deadline"
+      }
+    ],
     "`hasattr` / `dir` Support": [
       {
         "document": "api-reference/event-system.md",
@@ -14936,10 +14944,18 @@
         "title": "`keep_running` Parameter"
       }
     ],
+    "`remind`: Gentle Reminder if No Reply": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 86,
+        "level": 3,
+        "title": "`remind`: Gentle Reminder if No Reply"
+      }
+    ],
     "`t()` Method Details": [
       {
         "document": "advanced/i18n.md",
-        "line": 442,
+        "line": 444,
         "level": 4,
         "title": "`t()` Method Details"
       }
@@ -14971,7 +14987,7 @@
     "clear()": [
       {
         "document": "advanced/message-builder.md",
-        "line": 111,
+        "line": 114,
         "level": 3,
         "title": "clear()"
       }
@@ -15027,7 +15043,7 @@
     "convert() Method": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 67,
+        "line": 70,
         "level": 2,
         "title": "convert() Method"
       }
@@ -15035,7 +15051,7 @@
     "copy()": [
       {
         "document": "advanced/message-builder.md",
-        "line": 99,
+        "line": 102,
         "level": 3,
         "title": "copy()"
       }
@@ -15051,7 +15067,7 @@
     "delConfig: Delete Configuration Key": [
       {
         "document": "user-guide/configuration.md",
-        "line": 192,
+        "line": 195,
         "level": 3,
         "title": "delConfig: Delete Configuration Key"
       }
@@ -15112,14 +15128,6 @@
         "title": "dump_state()"
       }
     ],
-    "escalate: Guaranteed Escalation on Time": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 100,
-        "level": 3,
-        "title": "escalate: Guaranteed Escalation on Time"
-      }
-    ],
     "get() Method": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -15131,7 +15139,7 @@
     "getAllConfig: Full Configuration Snapshot": [
       {
         "document": "user-guide/configuration.md",
-        "line": 181,
+        "line": 184,
         "level": 3,
         "title": "getAllConfig: Full Configuration Snapshot"
       }
@@ -15203,7 +15211,7 @@
     "len() / bool()": [
       {
         "document": "advanced/message-builder.md",
-        "line": 124,
+        "line": 127,
         "level": 3,
         "title": "len() / bool()"
       }
@@ -15259,7 +15267,7 @@
     "on_load Method": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 29,
+        "line": 32,
         "level": 3,
         "title": "on_load Method"
       }
@@ -15267,7 +15275,7 @@
     "on_unload Method": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 44,
+        "line": 47,
         "level": 3,
         "title": "on_unload Method"
       }
@@ -15294,14 +15302,6 @@
         "line": 19,
         "level": 2,
         "title": "pyproject.toml Configuration"
-      }
-    ],
-    "remind: Gentle Reminder if No Reply": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 83,
-        "level": 3,
-        "title": "remind: Gentle Reminder if No Reply"
       }
     ],
     "run": [
