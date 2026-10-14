@@ -1,6 +1,9 @@
 # Core Module Concepts
 
-Understanding the core concepts of ErisPulse modules is essential for developing high-quality modules.
+> [!NOTE]
+> **L1 Essential Reading** — One of the five core documents in the "Reading Path" on the homepage, essential for module development.
+
+Understanding the core concepts of ErisPulse modules is the foundation for developing high-quality modules.
 
 ## Module Lifecycle
 

@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "07c2ae3b438df1f8df2b5b8184f2fc5d",
-  "file_hash": "07c2ae3b438df1f8df2b5b8184f2fc5d",
-  "translated_at": "2026-09-07T11:11:20.905458",
+  "hash": "2b17565450e6ba9198a496bbbe2796f2",
+  "file_hash": "2b17565450e6ba9198a496bbbe2796f2",
+  "translated_at": "2026-10-14T01:13:58.889969",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "a233b474d0708b15cf9c594cbd6df072",
-      "translation": "# Adapter Development Best Practices\n\nThis document provides best practice recommendations for ErisPulse adapter development."
+      "hash": "6aca0c0a115f304f615472b14011a91d",
+      "translation": "# Adapter Development Best Practices\n\n> [!TIP]\n> **When to read this**: It is recommended to read this after the adapter skeleton is working (engineering best practices). If not needed, you can skip it without affecting the use of other features.\n\nThis document provides best practice recommendations for ErisPulse adapter development."
     },
     {
       "hash": "89a26208c4ded06ed8092c30d27ecfda",

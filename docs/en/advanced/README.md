@@ -2,6 +2,10 @@
 
 This directory contains advanced features and in-depth topics of the ErisPulse framework.
 
+> [!NOTE]
+> All documents in this directory are **on-demand reference topics**—please first read the five core Level 1 documents in the home page,
+> and refer to this section only when you encounter the corresponding requirements. Each document begins with a note indicating "When you need to read this article."
+
 ## Document List
 
 - [Startup Process and Manual Control](startup.md) - Breakdown of the startup chain (Finder/Loader/Manager/Router) and manual full startup

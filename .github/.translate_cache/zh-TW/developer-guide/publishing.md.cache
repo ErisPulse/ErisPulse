@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "01a8bd0d492a1118d3fc41d9287941f0",
-  "file_hash": "01a8bd0d492a1118d3fc41d9287941f0",
-  "translated_at": "2026-09-13T09:33:26.117468",
+  "hash": "e4bd2d89bfa7b0d66782c75500cec6a3",
+  "file_hash": "e4bd2d89bfa7b0d66782c75500cec6a3",
+  "translated_at": "2026-10-14T01:13:30.367562",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "e5b296a5ae88b9e39293ff2bd157be5c",
-      "translation": "# 發布與模組商店指南\n\n將你開發的模組或適配器發布到 ErisPulse 模組商店，讓其他使用者可以輕鬆地發現和安裝。"
+      "hash": "13785113f9aa432abf4b0914d16ec37f",
+      "translation": "# 發布與模組商店指南\n\n> [!TIP]  \n> **什麼時候需要閱讀這篇**：當你要將作品發佈到 PyPI / 模組商店時。如果不需要，可以跳過，這不會影響其他功能的使用。\n\n將你開發的模組或適配器發佈到 ErisPulse 模組商店，讓其他使用者可以輕鬆地發現並安裝。"
     },
     {
       "hash": "1facd37581b3ddf487a2eb1e898d2a10",

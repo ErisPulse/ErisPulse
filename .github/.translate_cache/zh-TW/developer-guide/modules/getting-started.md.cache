@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "9aaef1a655f2bb8a8a12c033e68f07eb",
-  "file_hash": "9aaef1a655f2bb8a8a12c033e68f07eb",
-  "translated_at": "2026-10-09T14:51:52.983176",
+  "hash": "be1f1caf5482403cd1d7f97c38cbb5d0",
+  "file_hash": "be1f1caf5482403cd1d7f97c38cbb5d0",
+  "translated_at": "2026-10-14T01:12:31.106589",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "1a641ad2e70cab0bd7aa7947bf3707b7",
-      "translation": "# 模組開發入門\n\n本指南帶你從零開始建立一個 ErisPulse 模組。"
+      "hash": "6ac7fcfa418a1e0b78a17a9900a59700",
+      "translation": "# 模組開發入門\n\n> [!NOTE]\n> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。\n\n\n本指南帶你從零開始建立一個 ErisPulse 模組。"
     },
     {
       "hash": "a0073e5af21db81bec6138a64a0fdceb",

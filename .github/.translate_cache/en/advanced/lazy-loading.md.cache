@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "a6eca5de5ba6313348caa0d7135fd512",
-  "file_hash": "a6eca5de5ba6313348caa0d7135fd512",
-  "translated_at": "2026-09-07T10:43:35.398694",
+  "hash": "c29a473a29d8e918e74bb67acf58e545",
+  "file_hash": "c29a473a29d8e918e74bb67acf58e545",
+  "translated_at": "2026-10-14T01:09:04.077406",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "2a52021ecb4b43418480f825d57b0c51",
-      "translation": "# Lazy-Loaded Module System\n\nThe ErisPulse SDK provides a powerful lazy-loaded module system that allows modules to be initialized only when they are actually needed, significantly improving application startup speed and memory efficiency."
+      "hash": "29d6a177451c286642ef54d5b430e762",
+      "translation": "# Lazy-Loaded Module System\n\n> [!TIP]\n> **When to read this**: When using lazy-loaded modules or activate_on event-driven activation. If not needed, you can skip this section without affecting the use of other features.\n\nThe ErisPulse SDK provides a powerful lazy-loaded module system that allows modules to be initialized only when they are actually needed, significantly improving application startup speed and memory efficiency."
     },
     {
       "hash": "6b2c94d48cfeaba0069c82bfd2e12c13",

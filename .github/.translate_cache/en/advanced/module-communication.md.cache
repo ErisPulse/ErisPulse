@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "17127e48480b15f2faca66d347510f8b",
-  "file_hash": "17127e48480b15f2faca66d347510f8b",
-  "translated_at": "2026-09-10T07:03:35.577761",
+  "hash": "6cee6ab53c9fcf81328dc0a5436af4ac",
+  "file_hash": "6cee6ab53c9fcf81328dc0a5436af4ac",
+  "translated_at": "2026-10-14T01:11:42.180639",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "ababaf20f275150b59718c17c1914b6c",
-      "translation": "# Inter-Module Communication\n\n> [!NOTE]  \n> This chapter requires ErisPulse **2.8.0+**.\n\nErisPulse's modules have a **three-layer communication model**, ordered as \"point-to-point → directed → broadcast\":\n\n| Layer | API | Semantics | Typical Scenario |\n|---|---|---|---|\n| **RPC** | `await sdk.module.call(\"Chat\", \"get_history\", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking capabilities of another module (e.g., fetching history, translation, refund) |\n| **Directed Events** | `await lifecycle.emit(\"message_received\", {...}, to=\"Chat\")` | Distributed only to lifecycle hooks registered by the specified module | Notifying downstream modules of upstream state changes (\"a new message was received\") |\n| **Broadcast** | `await lifecycle.emit(\"config.updated\", {...})` | Framework-wide visible lifecycle events | Hot configuration updates, module up/down events |\n\n{!--< tips >!--}\nSelection rule: **Use `call` when you need a return value, use `emit(..., to=...)` when you only want to notify a specific module's hooks, and use `emit(...)` to notify everyone.**  \n{!--< /tips >!--}"
+      "hash": "9a626d9b1e532ad183560359a9b33316",
+      "translation": "# Inter-Module Communication\n\n> [!TIP]\n> **When to read this**: When you need cross-module calls (RPC), service contracts, targeted events, or cold-start replay. Skip if not needed; it won't affect the use of other features.\n\n> [!NOTE]\n> This chapter requires ErisPulse **2.8.0+**.\n\nErisPulse's modules communicate through a **three-layer communication model**, arranged from \"point-to-point → targeted → broadcast\":\n\n| Layer | API | Semantics | Typical Scenario |\n|---|---|---|---|\n| **RPC** | `await sdk.module.call(\"Chat\", \"get_history\", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking another module's capability (e.g., fetching history, translation, refund) |\n| **Targeted Events** | `await lifecycle.emit(\"message_received\", {...}, to=\"Chat\")` | Distributed only to lifecycle hooks registered by the specified module | Notifying downstream modules about upstream state changes (\"a new message has been received\") |\n| **Broadcast** | `await lifecycle.emit(\"config.updated\", {...})` | Framework-wide lifecycle events | Hot configuration updates, module startup/shutdown |\n\n{!--< tips >!--}\nSelection mnemonic: **Use `call` when you need a return value, use `emit(..., to=...)` to notify a specific module's hooks, and use `emit(...)` to notify everyone.** \n{!--< /tips >!--}"
     },
     {
       "hash": "5b51074c006e2010d6be572866c8f80d",

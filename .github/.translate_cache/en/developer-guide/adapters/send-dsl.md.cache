@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "2a746981c3985e6bae48849c20931ec7",
-  "file_hash": "2a746981c3985e6bae48849c20931ec7",
-  "translated_at": "2026-09-07T11:18:46.515087",
+  "hash": "44d66e906990e21d6989c7efc7ca0f39",
+  "file_hash": "44d66e906990e21d6989c7efc7ca0f39",
+  "translated_at": "2026-10-14T01:13:17.912448",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "46032d03a016f94fcbe39dea2def8e07",
-      "translation": "# SendDSL Explained\n\nSendDSL is a fluent-style message sending interface provided by the ErisPulse adapter."
+      "hash": "05bfb1629104093d05a47c1b0d431596",
+      "translation": "# SendDSL Explained\n\n> [!TIP]\n> **When to read this**: Required reading for adapter development (Send DSL). Skip if not needed; it does not affect the use of other features.\n\nSendDSL is a fluent-style message sending interface provided by the ErisPulse adapter."
     },
     {
       "hash": "f2c153ebdef11bbf3d2ca6f9bec5fcac",

@@ -1,13 +1,16 @@
 # Module Testing (ErisPulse-Testing)
 
-[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) is the official testing toolkit (RFC EPRFC-2026-001 Direction 3):  
-It provides `TestBot`, test event factories, outbound message capture and assertion interface, making module testing as simple as writing regular pytest.
+> [!TIP]
+> **When to read this:** When writing automated tests for your own module. If not needed, skip this section; it won't affect the use of other features.
+
+[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) is the official testing toolkit (RFC EPRFC-2026-001 Direction 3):
+It provides `TestBot`, test event factories, outbound message capture and assertion interfaces, making module testing as simple as writing regular pytest.
 
 ```bash
 pip install ErisPulse-Testing
 ```
 
-> A one-way dependency development-time tool, with zero runtime intervention. For smoke tests that truly connect to adapter platforms, please use the framework repository's `tests/devs/test_adapter.py`.
+> A one-way dependency development-time tool for the framework, with zero runtime involvement. For smoke tests that actually connect to adapter platforms, please use `tests/devs/test_adapter.py` in the framework repository.
 
 ## Quick Start
 

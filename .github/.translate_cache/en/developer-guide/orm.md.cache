@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "04bffcfc851acbb0f15be9d65fe92ffc",
-  "file_hash": "04bffcfc851acbb0f15be9d65fe92ffc",
-  "translated_at": "2026-09-26T20:51:06.028482",
+  "hash": "a14fefc46a19f5e1b985d0f2a56484f6",
+  "file_hash": "a14fefc46a19f5e1b985d0f2a56484f6",
+  "translated_at": "2026-10-14T01:12:01.551873",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "436e5f0a864bb691cd650d32514a9996",
-      "translation": "# Data Model Layer (ORM)\n\nStarting from version 2.9.0, the framework includes a built-in declarative data model layer: by inheriting from `Model` and declaring fields using `Field`, you gain automatic table creation and CRUD capabilities. The model is built directly on the built-in storage layer—SQLite / MySQL / PostgreSQL is determined by the `ErisPulse.storage.backend` configuration. **Switching the backend does not require modifying the model code.**"
+      "hash": "f5b77481a5b10b484d6b104f5f79aeec",
+      "translation": "# Data Model Layer (ORM)\n\n> [!TIP]\n> **When to read this**: When you need data models, automatic table creation, or relationship mapping. If not needed, you can skip this section without affecting the use of other features.\n\nStarting from version 2.9.0, the framework includes a built-in declarative data model layer: by inheriting from `Model` and declaring fields using `Field`, you can obtain automatic table creation and CRUD capabilities. The models are directly built on top of the built-in storage layer—SQLite / MySQL / PostgreSQL is determined by the `ErisPulse.storage.backend` configuration. **Switching the backend does not require modifying the model code.**"
     },
     {
       "hash": "c1b572c8a25677998e6ff5138ed757d1",

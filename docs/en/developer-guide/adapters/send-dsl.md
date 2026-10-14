@@ -1,5 +1,8 @@
 # SendDSL Explained
 
+> [!TIP]
+> **When to read this**: Required reading for adapter development (Send DSL). Skip if not needed; it does not affect the use of other features.
+
 SendDSL is a fluent-style message sending interface provided by the ErisPulse adapter.
 
 ## Basic Calling Methods

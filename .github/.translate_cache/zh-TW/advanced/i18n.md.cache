@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "0626f46dcd00c6b58c88c770766f4846",
-  "file_hash": "0626f46dcd00c6b58c88c770766f4846",
-  "translated_at": "2026-09-07T10:46:03.090327",
+  "hash": "9cf464142bb2557725246f5d5bffa2c6",
+  "file_hash": "9cf464142bb2557725246f5d5bffa2c6",
+  "translated_at": "2026-10-14T01:03:14.200164",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "8cedceeb3e7a6489b7d08a60f9b61a6a",
-      "translation": "# 國際化 (i18n) 系統\n\nErisPulse v2.5.0 起內建了完整的國際化支援。框架核心及 CLI 界面均可根據您的系統語言自動切換顯示文字，也支援外部模組註冊自己的翻譯。"
+      "hash": "0350cc89a0685bfa798f57bb1a9a0d3a",
+      "translation": "# 國際化 (i18n) 系統\n\n> [!TIP]\n> **什麼時候需要閱讀這篇**：需要多語言文案、翻譯註冊或語言檢測時。不需要則跳過，不會影響其他功能的使用。\n\nErisPulse v2.5.0 起內建了完整的國際化支援。框架核心及 CLI 界面均可根據您的系統語言自動切換顯示文本，也支援外部模組註冊自己的翻譯。"
     },
     {
       "hash": "259f0588f95ecf4088fcb90d44572bad",

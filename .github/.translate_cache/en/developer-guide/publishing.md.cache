@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "01a8bd0d492a1118d3fc41d9287941f0",
-  "file_hash": "01a8bd0d492a1118d3fc41d9287941f0",
-  "translated_at": "2026-09-13T09:34:51.710854",
+  "hash": "e4bd2d89bfa7b0d66782c75500cec6a3",
+  "file_hash": "e4bd2d89bfa7b0d66782c75500cec6a3",
+  "translated_at": "2026-10-14T01:13:01.770416",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "e5b296a5ae88b9e39293ff2bd157be5c",
-      "translation": "# Publishing and Module Store Guide\n\nPublish your developed modules or adapters to the ErisPulse Module Store, allowing other users to easily discover and install them."
+      "hash": "13785113f9aa432abf4b0914d16ec37f",
+      "translation": "# Publishing and Module Store Guide\n\n> [!TIP]\n> **When you need to read this**: When publishing your work to PyPI / the module store. If not needed, skip it, as it will not affect the use of other features.\n\nPublish your developed module or adapter to the ErisPulse module store, allowing other users to easily discover and install it."
     },
     {
       "hash": "1facd37581b3ddf487a2eb1e898d2a10",

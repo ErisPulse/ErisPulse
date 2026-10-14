@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "44c4eed961458bc9d5fc3e13b785bc90",
-  "file_hash": "44c4eed961458bc9d5fc3e13b785bc90",
-  "translated_at": "2026-10-03T14:20:28.351545",
+  "hash": "c5ee780f97f2cc34d3cbc01e03eaa01d",
+  "file_hash": "c5ee780f97f2cc34d3cbc01e03eaa01d",
+  "translated_at": "2026-10-14T01:02:41.088640",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "3e912d500049e0e58ec0fab1207b13a8",
-      "translation": "# 設定ファイルの説明\n> このドキュメントでは、フレームワークの設定ファイルについて説明します。サードパーティのモジュールに設定が必要な場合は、モジュールのドキュメントを参照してください。\n\nErisPulse は、プロジェクトの設定を管理するために TOML 形式の設定ファイル `config/config.toml` を使用します。"
+      "hash": "edc5c1ada2d16779d0a6a14624d4b788",
+      "translation": "# 設定ファイルの説明\n\n> [!NOTE]\n> **L1 コア必読**——「読むべき読むべき」のトップページにある5つのコアドキュメントの1つで、モジュール開発に不可欠です。\n\n> このドキュメントでは、フレームワークの設定ファイルについて説明します。サードパーティのモジュールに設定が必要な場合は、そのモジュールのドキュメントを参照してください。\n\nErisPulse は、プロジェクトの設定を管理するために TOML 形式の設定ファイル `config/config.toml` を使用します。"
     },
     {
       "hash": "e642dc8e9b37f9f9f2466648852c173c",

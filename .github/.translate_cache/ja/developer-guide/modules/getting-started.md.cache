@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "9aaef1a655f2bb8a8a12c033e68f07eb",
-  "file_hash": "9aaef1a655f2bb8a8a12c033e68f07eb",
-  "translated_at": "2026-10-09T14:54:57.363880",
+  "hash": "be1f1caf5482403cd1d7f97c38cbb5d0",
+  "file_hash": "be1f1caf5482403cd1d7f97c38cbb5d0",
+  "translated_at": "2026-10-14T01:15:30.292972",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "1a641ad2e70cab0bd7aa7947bf3707b7",
-      "translation": "# モジュール開発入門\n\nこのガイドでは、ErisPulse モジュールをゼロから作成する方法を説明します。"
+      "hash": "6ac7fcfa418a1e0b78a17a9900a59700",
+      "translation": "# モジュール開発入門\n\n> [!NOTE]\n> **L1 コア必須読書**——「読書経路」のトップページにある5つのコアドキュメントの1つで、モジュール開発に必須です。\n\nこのガイドでは、ErisPulse モジュールをゼロから作成する方法を説明します。"
     },
     {
       "hash": "a0073e5af21db81bec6138a64a0fdceb",

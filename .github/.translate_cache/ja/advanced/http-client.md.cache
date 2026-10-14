@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "ba11b095c9514060b058e4976e10345f",
-  "file_hash": "ba11b095c9514060b058e4976e10345f",
-  "translated_at": "2026-10-09T14:55:01.750123",
+  "hash": "df25266a5e2e181153df3ae0b03b629f",
+  "file_hash": "df25266a5e2e181153df3ae0b03b629f",
+  "translated_at": "2026-10-14T01:09:33.390788",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "d4f40818d781afcc6fe1b64e7a568a7c",
-      "translation": "# ネットワーククライアント\n\nErisPulse は、HTTPリクエスト、WebSocket接続、および接続プール管理を統合した統一されたネットワーククライアントを提供しています。モジュールやアダプターは、このクライアントを**優先的に使用する**必要があります。`aiohttp` / `httpx` / `requests` などのサードパーティライブラリを直接インポートしてはいけません。"
+      "hash": "81fedc93d77162d2b68e68be97efe9dc",
+      "translation": "# ネットワーククライアント\n\n> [!TIP]\n> **この記事を読む必要があるとき**：出力（出向き）HTTP / WebSocket リクエストが必要な場合。必要ない場合は飛ばしても、他の機能の使用に影響はありません。\n\nErisPulse は、HTTP リクエスト、WebSocket 接続、および接続プール管理を統合した統一されたネットワーククライアントを提供しています。モジュールとアダプターは、**このクライアントを優先的に使用する必要があります**。`aiohttp` / `httpx` / `requests` などのサードパーティライブラリを直接インポートしてはいけません。"
     },
     {
       "hash": "360b24db9c6d8e43f858546b5393f4c7",

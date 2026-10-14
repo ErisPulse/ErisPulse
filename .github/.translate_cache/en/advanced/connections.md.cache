@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "4ad7739051f6405b57898718a2217e75",
-  "file_hash": "4ad7739051f6405b57898718a2217e75",
-  "translated_at": "2026-10-09T14:51:58.262094",
+  "hash": "8a440839fcdb026fca9de57b6e504800",
+  "file_hash": "8a440839fcdb026fca9de57b6e504800",
+  "translated_at": "2026-10-14T01:03:29.583031",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "e775eeafb16677712ff7c8d631e6a7db",
-      "translation": "# Connection Pool and Broadcasting\n\nConnections (server-side WebSocket / SSE / client-side outbound WebSocket) are **first-class resources at the framework level** in ErisPulse:  \nThey are automatically registered into a unified registry upon establishment, supporting broadcasting, business group subscription, and cross-module transfer/reuse. When a module is unloaded, the framework automatically closes and recovers them—business logic no longer needs to manually create `_ws_clients` collections, nor will memory leaks occur due to forgotten cleanup.\n\n> The examples in this document use **root import** syntax (recommended for 2.10+):  \n> `from ErisPulse import connections, router, client, WebSocketConnection`"
+      "hash": "6f42ccb0908824a8603465c010119c3d",
+      "translation": "# Connection Pool and Broadcasting\n\n> [!TIP]\n> **When to read this**: When you need WebSocket/SSE connection pools, broadcast groups, cross-module pushing, or want to inspect connections. If not needed, you can skip it without affecting other features.\n\nConnections (server-side WebSocket / SSE / client-side outbound WebSocket) in ErisPulse are **first-class resources at the framework level**:\nThey are automatically registered into a unified registry upon connection establishment, supporting broadcasting, business group subscriptions, and cross-module passing/reuse.\nWhen modules are unloaded, the framework automatically closes and recycles them—no need for applications to create their own `_ws_clients` collections, and there will be no leaks due to forgotten cleanup.\n\n> All examples in this document use **root import** syntax (recommended since 2.10+):\n> `from ErisPulse import connections, router, client, WebSocketConnection`"
     },
     {
       "hash": "082ac18ecfe481fd554932f5f21338db",

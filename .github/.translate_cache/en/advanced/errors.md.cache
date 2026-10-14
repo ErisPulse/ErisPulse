@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "48aaa0fff964cb44a4041f7219e0e4fb",
-  "file_hash": "48aaa0fff964cb44a4041f7219e0e4fb",
-  "translated_at": "2026-10-09T14:52:18.247002",
+  "hash": "310a226fadbdb1e4f9438119924810d5",
+  "file_hash": "310a226fadbdb1e4f9438119924810d5",
+  "translated_at": "2026-10-14T01:05:41.888755",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "7bcdbe2822393ffcb164bd618230344c",
-      "translation": "# Exception System and Handling Guide\n\nAll custom exceptions in ErisPulse inherit from `ErisPulseError`. Underlying library exceptions (e.g., aiohttp, aiomysql, etc.) are caught and converted into corresponding ErisPulse exceptions within the framework — business code **does not need to rely on any underlying library exception types**.\n\n{!--< tips >!--}\n1. For broad fallback: catch `ErisPulseError` (the base class for all framework exceptions)\n2. For precise handling: catch by module (e.g., `ModuleCallTimeoutError`, `StorageUnreachableError`)\n3. Storage operations do not throw by default: failures are logged and `False / None / default` returned; subscribe to `storage.unreachable` / `storage.recovered` events for connection state changes\n{!--< /tips >!--}"
+      "hash": "f5279cb51c0e876a32829e9c2a6f94a9",
+      "translation": "# Exception System and Handling Guide\n\n> [!NOTE]\n> **L1 Core Reading** — One of the five core documents in the \"Reading Path\" on the homepage, essential for module development.\n\nAll custom exceptions in ErisPulse inherit from `ErisPulseError`. Underlying library exceptions (e.g., aiohttp, aiomysql) are caught internally by the framework and converted into corresponding ErisPulse exceptions — your business code **does not need to depend on any underlying library exception types**.\n\n{!--< tips >!--}\n1. To broadly catch exceptions: catch `ErisPulseError` (the base class for all framework exceptions)\n2. To handle exceptions precisely: catch by module (e.g., `ModuleCallTimeoutError`, `StorageUnreachableError`)\n3. Storage operations do not throw by default: log failures and return `False / None / default`; subscribe to `storage.unreachable` / `storage.recovered` events for connection status changes\n{!--< /tips >!--}"
     },
     {
       "hash": "a729f3a16f39abddf7670ad8861bab01",

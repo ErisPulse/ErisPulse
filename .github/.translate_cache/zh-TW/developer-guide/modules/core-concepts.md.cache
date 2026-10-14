@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "2e17cfa0c7379f54728b292951f66ba8",
-  "file_hash": "2e17cfa0c7379f54728b292951f66ba8",
-  "translated_at": "2026-10-10T04:13:16.760249",
+  "hash": "59d24ff2d899b840ee2d9d601416230c",
+  "file_hash": "59d24ff2d899b840ee2d9d601416230c",
+  "translated_at": "2026-10-14T01:13:07.765095",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "9322c52c1629acad58f4593781523923",
-      "translation": "# 模組核心概念\n\n了解 ErisPulse 模組的核心概念是開發高品質模組的基礎。"
+      "hash": "0ad5f1e3296cc12c4224a3f4da99f5c1",
+      "translation": "# 模組核心概念\n\n> [!NOTE]\n> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。\n\n了解 ErisPulse 模組的核心概念是開發高品質模組的基礎。"
     },
     {
       "hash": "06c57c8af2e7d0a0a3d21373792a33a1",
