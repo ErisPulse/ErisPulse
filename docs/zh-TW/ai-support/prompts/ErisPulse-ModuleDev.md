@@ -2294,7 +2294,10 @@ if TYPE_CHECKING:
 
 # 模組開發入門
 
-本指南帶你從零開始建立一個 ErisPulse 模組。
+> [!NOTE]  
+> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
+
+本指南將帶你從零開始建立一個 ErisPulse 模組。
 
 ## 項目結構
 
@@ -2497,6 +2500,10 @@ sdk.lifecycle  # 生命週期系統
 ### 模块核心概念
 
 # 模組核心概念
+
+> [!NOTE]
+> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
+
 
 了解 ErisPulse 模組的核心概念是開發高品質模組的基礎。
 
@@ -2899,6 +2906,10 @@ self.logger.critical("致命錯誤") # 致命錯誤
 ### Event 包装类详解
 
 # Event 包裝類詳解
+
+> [!NOTE]
+> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
+
 
 Event 模組提供了功能強大的 Event 包裝類，簡化事件處理。
 
@@ -3952,7 +3963,10 @@ version = "1.0.0"
 
 # 數據模型層（ORM）
 
-自 2.9.0 版本起，框架內建了宣告式數據模型層：繼承 `Model` 並使用 `Field` 聲明欄位，即可獲得自動建表與增刪改查能力。模型直接建構在內建儲存層之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置決定，**切換後端無需修改模型程式碼**。
+> [!TIP]  
+> **什麼時候需要閱讀這篇**：需要數據模型、自動建表或關係映射時。不需要則跳過，不會影響其他功能的使用。  
+
+2.9.0 版本起框架內建聲明式數據模型層：繼承 `Model` 並使用 `Field` 聲明欄位，即可獲得自動建表與增刪改查能力。模型直接建立在內建儲存層之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置決定，**切換後端無需修改模型代碼**。
 
 ## 聲明模型
 
@@ -4144,15 +4158,19 @@ await writer.posts.count()          # 雙向互通
 
 # 模組排查指南
 
-當模組「沒有反應」時，可依症狀分為三類問題，每類皆有對應的框架診斷工具（RFC EPRFC-2026-001 方向五）：
+> [!TIP]
+> **什麼時候需要閱讀本文**：當模組「沒有反應」、命令未觸發或事件未收到時進行排查。若無此情況則可跳過，不會影響其他功能的使用。
+
+
+當模組「沒有反應」時，根據症狀可分為三類問題，每類問題皆有對應的框架診斷工具（RFC EPRFC-2026-001 方向五）：
 
 | 症狀 | 診斷工具 | 定位層面 |
 |------|---------|---------|
-| 模組未載入 | `ErisPulse.runtime.explain_module(name)` | 注冊與載入鏈 |
+| 模組未加載 | `ErisPulse.runtime.explain_module(name)` | 注冊與加載鏈 |
 | 事件未響應 | `ErisPulse.runtime.explain_event(event)` | 分發入口檢查 |
 | 命令未觸發 | 分發決策鏈（測試端 `DispatchTrace` / 框架內建 `trace`） | 命令判定鏈 |
 
-這兩個診斷函數皆為**純讀取**操作，不會改變任何狀態，可在任意時刻調用；返回機器可讀的 dict，搭配 `format_report()` 可渲染為人類可讀的文本。
+這兩個診斷函數均為**純讀取**操作，不會改變任何狀態，可在任意時刻調用；返回機器可讀取的 dict，搭配 `format_report()` 可渲染為人類可讀取的文本。
 
 ## 場景一：模組未載入
 
@@ -4656,6 +4674,9 @@ services:
 ### 模块测试（ErisPulse-Testing）
 
 # 模組測試（ErisPulse-Testing）
+
+> [!TIP]
+> **何時需要閱讀本文**：為自己的模組編寫自動化測試時。不需要則跳過，不會影響其他功能的使用。
 
 [ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) 是官方測試工具包（RFC EPRFC-2026-001 方向三）：
 提供 `TestBot`、測試事件工廠、出站訊息捕獲與斷言介面，讓模組測試像寫普通 pytest 一樣簡單。
@@ -7211,14 +7232,17 @@ async def chat_handler(event):
 
 ### 交互会话系统
 
-# 互動會話系統
+# 互動對話系統
+
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要 `wait_reply`、多輪對話、定時提醒、會話互斥或鏈路追蹤時。不需要則跳過，不會影響其他功能的使用。
 
 > [!NOTE]
 > 本章內容需要 ErisPulse **2.8.0+**。
 
 ErisPulse 將「與使用者的持續互動」做成了框架級基礎設施：從一條 `wait_reply`，
 到定時提醒、多路等待、會話互斥、重啟恢復，全部由統一的
-**互動會話管理器**（`Core/Event/interaction.py`，`sdk.interaction`）調度。
+**互動對話管理器**（`Core/Event/interaction.py`，`sdk.interaction`）調度。
 
 {!--< tips >!--}
 本文涵蓋的每一項能力都附帶**歸屬（owner）**：互動等待、租約、定時器全部記錄
@@ -7478,15 +7502,18 @@ async with event.message_tx():
 
 # 模組間通信
 
-> [!NOTE]  
+> [!TIP]
+> **什麼時候需要閱讀本章**：需要跨模組呼叫（RPC）、服務契約、定向事件或冷啟動回放時。不需要則跳過，不影響其他功能的使用。
+
+> [!NOTE]
 > 本章內容需要 ErisPulse **2.8.0+**。
 
-ErisPulse 的模組之間有**三層通訊模型**，依「點對點 → 定向 → 廣播」排列：
+ErisPulse 的模組之間有**三層通信模型**，依「點對點 → 定向 → 廣播」排列：
 
-| 層 | API | 語義 | 典型場景 |
+| 層 | API | 語意 | 典型場景 |
 |---|---|---|---|
-| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 點對點請求-回應，帶契約 / 審計 / 超時 | 調用另一模組的能力（查詢歷史、翻譯、退款） |
-| **定向事件** | `await lifecycle.emit("message_received", {...}, to="Chat")` | 僅分發給指定模組註冊的生命周期鉤子 | 上游狀態變更通知下游（「收到新訊息了」） |
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 點對點請求-回應，帶契約 / 審計 / 超時 | 呼叫另一模組的能力（查詢歷史、翻譯、退款） |
+| **定向事件** | `await lifecycle.emit("message_received", {...}, to="Chat")` | 僅分發給指定模組註冊的生命周期鉤子 | 上游狀態變化通知下游（「收到新訊息了」） |
 | **廣播** | `await lifecycle.emit("config.updated", {...})` | 全框架可見的生命周期事件 | 配置熱更新、模組上下線 |
 
 {!--< tips >!--}
@@ -7713,7 +7740,10 @@ event_dedupe = true   # 預設開啟；測試環境固定 id 合成事件可關�
 
 # MessageBuilder 詳解
 
-`MessageBuilder` 是 ErisPulse 提供的 OneBot12 標準訊息段建構工具，用於建構結構化的訊息內容，配合 `Send.Raw_ob12()` 使用。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：當需要建構複雜或多段消息時。若不需要則可跳過，這不會影響其他功能的使用。
+
+`MessageBuilder` 是 ErisPulse 提供的 OneBot12 標準訊息段建構工具，用於建構結構化的訊息內容，並配合 `Send.Raw_ob12()` 使用。
 
 ## 導入方式
 
@@ -7906,6 +7936,9 @@ complex_msg = (
 ### HTTP 客户端
 
 # 網路用戶端
+
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要出站 HTTP / WebSocket 請求時。不需要則跳過，不會影響其他功能的使用。
 
 ErisPulse 提供了統一的網路用戶端，聚合了 HTTP 請求、WebSocket 連接和連接池管理。模組和適配器**必須優先使用**此用戶端，而非自行匯入 `aiohttp` / `httpx` / `requests` 等第三方庫。
 
@@ -8416,7 +8449,10 @@ class MyAdapter(BaseAdapter):
 
 # SQL 查詢建構器
 
-ErisPulse 的 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的建立、查詢、更新與刪除操作。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要鏈式 SQL 查詢或自定義儲存後端時。不需要則跳過，不會影響其他功能的使用。
+
+ErisPulse 的 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自定義表的建立、查詢、更新和刪除操作。
 
 ## 架構設計
 
@@ -8863,6 +8899,9 @@ class MyStorage(BaseStorage):
 ### 路由系统
 
 # 路由管理器
+
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要 HTTP / WebSocket / SSE 路由（含連接池廣播）時。不需要則跳過，不會影響其他功能的使用。
 
 ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支援多適配器路由註冊和生命週期管理。底層透過抽象層封裝（目前為 FastAPI + Uvicorn）
 
@@ -9343,7 +9382,11 @@ async def on_server_stop(event):
 
 # 生命週期管理
 
-ErisPulse 提供統一的鈎子/生命週期系統，用於監控系統各組件的運行狀態，以及實現審計、統計、自定義邏輯等擴展功能。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要訂閱框架生命週期事件（啟動 / 加載 / 狀態變化）時。不需要則跳過，不會影響其他功能的使用。
+
+
+ErisPulse 提供統一的鉤子/生命週期系統，用於監控系統各組件的運行狀態，以及實現審計、統計、自訂邏輯等擴展功能。
 
 系統支援三種觸發方式：
 - `await lifecycle.emit("event", data)` — 精簡版，傳遞任意資料（`to="Owner"` 時定向投遞）
@@ -10039,7 +10082,10 @@ flowchart TD
 
 # 國際化 (i18n) 系統
 
-ErisPulse v2.5.0 起內建了完整的國際化支援。框架核心及 CLI 界面均可根據您的系統語言自動切換顯示文字，也支援外部模組註冊自己的翻譯。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要多語言文案、翻譯註冊或語言檢測時。不需要則跳過，不會影響其他功能的使用。
+
+ErisPulse v2.5.0 起內建了完整的國際化支援。框架核心及 CLI 界面均可根據您的系統語言自動切換顯示文本，也支援外部模組註冊自己的翻譯。
 
 ## 支援的語言
 
@@ -10634,35 +10680,38 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 
 # 作用域（scope）
 
-> [!NOTE]
+> [!TIP]  
+> **什麼時候需要閱讀這篇**：需要控制模組可用性、事件准入或出站動作限制時。不需要則跳過，不會影響其他功能的使用。
+
+> [!NOTE]  
 > 本特性需要 ErisPulse **2.8.0+**。
 
-作用域回答四個問題：**哪些模組可用、誰的事件收不收、某模組處理什麼文本、
-模組能向外做什麼**。
-控制權完全交給使用者：在模組 / 適配器 / 處理器 / 出站呼叫註冊的**上層**（配置
-`ErisPulse.scope` 或執行時 `sdk.scope`）統一聲明，事件管線在入口、處理器過濾
+作用域回答四個問題：**哪些模組可用、誰的事件收不收、某模組處理什麼文字、  
+模組能向外做什麼**。  
+控制權完全交給使用者：在模組 / 適配器 / 處理器 / 出站呼叫註冊的**上層**（配置  
+`ErisPulse.scope` 或執行時 `sdk.scope`）統一宣告，事件管線在入口、處理器過濾  
 與出站閘口自動讀取並執行。
 
 | 維度 | 控制什麼 | 拒絕行為 | 配置路徑 |
 |------|---------|---------|---------|
 | **① 模組** | 哪些模組可用（平台 / Bot / 會話三級） | 被過濾模組不觸發、不回覆（攔截廣播 `scope.blocked` 事件；命中的命令仍被認領阻斷） | `scope.platforms / bots / sessions` |
-| **② 身份** | 事件收不收（適配器 / Bot / 會話 / 用戶四級） | 入口完全丟棄（攔截廣播 `scope.blocked` 事件） | `scope.identity.*` |
-| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
+| **② 身份** | 事件收不收（適配器 / Bot / 會話 / 使用者四級） | 入口完全丟棄（攔截廣播 `scope.blocked` 事件） | `scope.identity.*` |
+| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白名單與黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
 
-> **相關系統**：命令是特殊的訊息事件處理器，其用戶黑白名單（ACL）與
-> 實現參數覆寫由命令系統自持（`ErisPulse.event.command`），
-> 見 [事件處理入門](../getting-started/event-handling.md) 與 [配置指南](../user-guide/configuration.md)。
+> **相關系統**：命令是特殊的訊息事件處理器，其使用者黑白名單（ACL）與  
+> 實作參數覆寫由命令系統自持（`ErisPulse.event.command`），  
+> 請參閱 [事件處理入門](../getting-started/event-handling.md) 與 [配置指南](../user-guide/configuration.md)。
 
 {!--< tips >!--}
 1. 透過 `from ErisPulse.Core import scope` 導入單例（`sdk.scope` 同物件）
-2. 判定：`scope.is_allowed(...)` / `scope.is_identity_allowed(...)` /
+2. 判定：`scope.is_allowed(...)` / `scope.is_identity_allowed(...)` /  
    `scope.is_action_allowed(...)` 對應 ①②③ 三個閘口
-3. 讀寫：維度化參數方法（IDE 可補全）——
-   `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`；
+3. 讀寫：維度化參數方法（IDE 可補全）——  
+   `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`；  
    另有字典式兜底 `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
-4. 事件處理器文本條件覆寫見
-   [事件處理入門 · 事件覆寫](../getting-started/event-handling.md#事件覆寫不改模組代碼覆寫任意事件類型的行為)；
-   命令 ACL / 參數覆寫見[事件處理入門](../getting-started/event-handling.md)
+4. 事件處理器文字條件覆寫請見  
+   [事件處理入門 · 事件覆寫](../getting-started/event-handling.md#事件覆寫不改模組代碼覆寫任意事件類型的行為)；  
+   命令 ACL / 參數覆寫請見 [事件處理入門](../getting-started/event-handling.md)
 {!--< /tips >!--}
 
 ## 匹配條目語法（全系統統一）
@@ -11068,16 +11117,19 @@ topology = sdk.get_topology()
 
 ### 归属权（owner）系统
 
-# 所有权（owner）系統
+# 归屬權（owner）系統
 
-所有權是模組「即插即用」的基石：模組在載入期間註冊的一切框架資源自動記名，卸載/停用時按記名一鍵回收——模組作者只需聲明資源，無需手寫清理邏輯。
+> [!TIP]
+> **何時需要閱讀本文**：排查資源泄漏、理解卸載清理鏈路或聲明歸屬資源時。若無需求則可跳過，不影響其他功能的使用。
 
-> **相關系統**：作用域（scope）在事件分發時決定「資源是否生效」，所有權在生命週期中決定「資源歸誰、誰卸載時被回收」。作用域詳見[統一控制面（scope）](scope.md)，背景任務詳見 [生命週期管理](lifecycle.md#背景任務所有權與自動取消)。
+歸屬權是模組「即插即用」的基石：模組在加載期間註冊的所有框架資源會自動標記所有者，卸載/禁用時則根據標記的所有者進行一鍵回收——模組作者只需聲明資源，無需手動編寫清理邏輯。
+
+> **相關系統**：作用域（scope）在事件分發時決定「資源是否生效」，歸屬權在生命週期中決定「資源歸誰所有、誰卸載時被回收」。作用域詳見[統一控制面（scope）](scope.md)，背景任務詳見 [生命週期管理](lifecycle.md#背景任務歸屬與自動取消)。
 
 {!--< tips >!--}
-1. 所有權在**註冊瞬間**按 `current_owner` 自動記錄，模組程式碼零修改
-2. 卸載/停用共用同一條清理鏈（`_cleanup_module_registrations`），每步失敗僅警告不中斷
-3. 用戶配置語意的資源（持久化覆寫 / scope 規則 / 命令 ACL）**不**隨模組卸載清理
+1. 歸屬在**註冊瞬間**按 `current_owner` 自動記錄，模組程式碼無需修改
+2. 卸載/禁用共用同一條清理鏈（`_cleanup_module_registrations`），每步失敗僅發出警告而不中斷
+3. 用戶配置語義的資源（持久化覆寫 / scope 規則 / 命令 ACL）**不**隨模組卸載清理
 4. 工具模組托管的外部句柄可用 `on_cleanup(cb)` 掛入清理鏈，對方模組卸載時自動回調（見[工具模組指南](#工具模組指南托管其它模組的句柄)）
 {!--< /tips >!--}
 
@@ -11386,11 +11438,19 @@ class CronModule(BaseModule):
 
 # 影子模組與灰度轉正
 
-影子 = 同一模組的**新版本**，以獨立 owner（如 `roll_shadow`）與線上舊版並存試運行：它收到真實事件的**副本**、其出站被**攔截記帳**而非真正發出——在 `shadow_diff` 裡對比兩個版本的行為，確認無害後 `promote` 一鍵轉正，`dismiss` 隨時放棄。**模組程式碼零變動，全程運行時 API 驅動**：與 `load / unload / reload` 同類的運維動作，Dashboard / 自訂管理模組直接調用，沒有任何設定項要寫。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要灰度發布——新版本並行試運行、行為對比與轉正回滾時。不需要則跳過，不影響其他功能的使用。
+
+影子 = 同一模組的**新版本**，以獨立 owner（如 `roll_shadow`）與線上舊版
+並存試運行：它收到真實事件的**副本**、其出站被**拦截記帳**而非真正發出——
+在 `shadow_diff` 裡對比兩個版本的行為，確認無害後 `promote` 一鍵轉正，
+`dismiss` 隨時放棄。**模組代碼零修改，全程運行時 API 驅動**：與
+`load / unload / reload` 同類的運維動作，Dashboard / 自定義管理模組直接
+呼叫，沒有任何配置項要寫。
 
 {!--< tips >!--}
 1. 啟動：``await sdk.module.shadow_start("roll", source="路徑/到/v2")``
-   ——新版程式碼以獨立 owner（預設取路徑名）與舊版並存
+   ——新版本代碼以獨立 owner（預設取路徑名）與舊版並存
 2. 影子不參與真實分發與依賴圖：同名命令進影子目錄、路由只登記不掛載、
    生命週期廣播靜默、`module.call` 與依賴解析仍指向 v1
 3. 轉正永遠由人確認：``await sdk.module.promote_shadow("roll")``，失敗

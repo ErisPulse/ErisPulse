@@ -3332,9 +3332,12 @@ Method resolution priority (from high to low): platform-specific methods → wil
 
 ### 模块开发最佳实践
 
-# Module Development Best Practices
+# Best Practices for Module Development
 
-This document provides best practices for developing modules in ErisPulse.
+> [!TIP]
+> **When to read this**: It is recommended to read after completing the first module (engineering best practices). Skip if not needed, as it does not affect the use of other features.
+
+This document provides best practice recommendations for ErisPulse module development.
 
 ## Module Design
 
@@ -3886,7 +3889,10 @@ You can add GitHub Stars, Downloads, and other badges as needed. The logo can al
 
 # Data Model Layer (ORM)
 
-Starting from version 2.9.0, the framework includes a built-in declarative data model layer: by inheriting from `Model` and declaring fields using `Field`, you gain automatic table creation and CRUD capabilities. The model is built directly on the built-in storage layer—SQLite / MySQL / PostgreSQL is determined by the `ErisPulse.storage.backend` configuration. **Switching the backend does not require modifying the model code.**
+> [!TIP]
+> **When to read this**: When you need data models, automatic table creation, or relationship mapping. If not needed, skip this section; it does not affect the use of other features.
+
+Starting from version 2.9.0, the framework includes a built-in declarative data model layer: by inheriting from `Model` and declaring fields using `Field`, you gain automatic table creation and CRUD capabilities. The models are directly built on top of the built-in storage layer—SQLite / MySQL / PostgreSQL is determined by the `ErisPulse.storage.backend` configuration. **Switching backends requires no changes to your model code.**
 
 ## Declaring Models
 
@@ -4074,15 +4080,18 @@ await writer.posts.count()          # Bidirectional access
 
 # Module Troubleshooting Guide
 
-When a module "doesn't respond," it can be categorized into three types of issues, each with corresponding framework diagnostic tools (RFC EPRFC-2026-001 Direction Five):
+> [!TIP]
+> **When to read this**: When a module "doesn't respond", commands don't trigger, or events aren't received. Skip if not needed, as it does not affect the use of other features.
 
-| Symptom | Diagnostic Tool | Diagnostic Level |
-|---------|----------------|------------------|
-| Module not loaded | `ErisPulse.runtime.explain_module(name)` | Registration and loading chain |
-| Event not handled | `ErisPulse.runtime.explain_event(event)` | Distribution entry point check |
-| Command not triggered | Distribution decision chain (test side `DispatchTrace` / framework built-in `trace`) | Command determination chain |
+When a module "doesn't respond", symptoms are categorized into three types, each with corresponding framework diagnostic tools (RFC EPRFC-2026-001 Direction Five):
 
-Both diagnostic functions are **pure read** operations, do not change any state, and can be called at any time; they return a machine-readable dict, which can be rendered into human-readable text using `format_report()`.
+| Symptom | Diagnostic Tool | Positioning Level |
+|------|---------|---------|
+| Module not loaded | `ErisPulse.runtime.explain_module(name)` | Registration and Loading Chain |
+| Event not responded | `ErisPulse.runtime.explain_event(event)` | Distribution Entry Check |
+| Command not triggered | Distribution Decision Chain (Test side `DispatchTrace` / Framework built-in `trace`) | Command Determination Chain |
+
+Both diagnostic functions are **pure read** operations that do not change any state and can be called at any time; they return machine-readable dicts, which can be rendered into human-readable text using `format_report()`.
 
 ## Scenario 1: Module Not Loaded
 
@@ -4195,7 +4204,10 @@ When `cooldown=`, `rate_limit=`, or `usage_limit=` are triggered, they are **sil
 
 # Publishing and Module Store Guide
 
-Publish your developed modules or adapters to the ErisPulse Module Store, allowing other users to easily discover and install them.
+> [!TIP]
+> **When to read this**: When publishing your work to PyPI / the module store. If not needed, skip it, as it does not affect the use of other features.
+
+Publish your developed module or adapter to the ErisPulse module store, so other users can easily discover and install it.
 
 ## Module Store Overview
 
@@ -4587,14 +4599,17 @@ These two methods are not mutually exclusive—you can simultaneously publish mo
 
 # Module Testing (ErisPulse-Testing)
 
-[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) is the official testing toolkit (RFC EPRFC-2026-001 Direction 3):  
-It provides `TestBot`, test event factories, outbound message capture and assertion interface, making module testing as simple as writing regular pytest.
+> [!TIP]
+> **When to read this**: When writing automated tests for your own module. If not needed, skip this section as it does not affect the use of other features.
+
+[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) is the official testing toolkit (RFC EPRFC-2026-001 Direction 3):
+It provides `TestBot`, test event factories, outbound message capture and assertion utilities, making module testing as simple as writing regular pytest.
 
 ```bash
 pip install ErisPulse-Testing
 ```
 
-> A one-way dependency development-time tool, with zero runtime intervention. For smoke tests that truly connect to adapter platforms, please use the framework repository's `tests/devs/test_adapter.py`.
+> A development-time tool with a one-way dependency on the framework, requiring zero integration at runtime. For smoke tests that actually connect to adapter platforms, please use `tests/devs/test_adapter.py` from the framework repository.
 
 ## Quick Start
 
@@ -7109,7 +7124,10 @@ async def chat_handler(event):
 
 ### 交互会话系统
 
-# Interactive Session System
+# Interactive Conversation System
+
+> [!TIP]
+> **When to read this section**: When you need `wait_reply`, multi-turn conversation, timed reminders, session mutual exclusion, or traceability. If not needed, you can skip this section without affecting the use of other features.
 
 > [!NOTE]
 > This chapter requires ErisPulse **2.8.0+**.
@@ -7117,7 +7135,7 @@ async def chat_handler(event):
 ErisPulse has made "continuous interaction with users" into a framework-level infrastructure: from a single `wait_reply`, to timed reminders, multi-path waiting, session mutual exclusion, and restart recovery, all are scheduled by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
 
 {!--< tips >!--}
-Each capability covered in this document comes with an inherent **ownership**: interaction waiting, leases, and timers all record the module name at registration time. When a module is unloaded or an adapter is closed, the framework automatically cleans up and immediately notifies the waiting party instead of waiting for a timeout — this is an extension of the ownership system into the interaction dimension (see [Ownership System](ownership.md)).
+Each capability covered in this article comes with its own **ownership (owner)**: interaction waiting, leases, and timers are all recorded with the module name at registration time. When the module is unloaded or the adapter is closed, the framework automatically cleans up and the waiting party immediately receives a notification instead of waiting for a timeout—this is an extension of the ownership system in the interaction dimension (see [Ownership System](ownership.md)).
 {!--< /tips >!--}
 
 ## Waiting for Reply: wait_reply
@@ -7564,9 +7582,12 @@ The deduplication cache is automatically reset when adapters register (start of 
 
 ### MessageBuilder 详解
 
-# MessageBuilder Explained
+# MessageBuilder Detailed Explanation
 
-`MessageBuilder` is a OneBot12 standard message segment builder provided by ErisPulse, used to construct structured message content, and should be used in conjunction with `Send.Raw_ob12()`.
+> [!TIP]
+> **When to read this**: When constructing complex/multi-segment messages. Skip if not needed, as it won't affect the use of other features.
+
+`MessageBuilder` is a OneBot12 standard message segment builder provided by ErisPulse, used to construct structured message content, and is used in conjunction with `Send.Raw_ob12()`.
 
 ## Import Methods
 
@@ -8260,7 +8281,10 @@ class MyAdapter(BaseAdapter):
 
 # SQL Query Builder
 
-The Storage module in ErisPulse provides a chain-call style generic SQL query builder, supporting custom table creation, querying, updating, and deleting operations.
+> [!TIP]
+> **When to read this**: When you need chain-style SQL queries or custom storage backends. If not needed, you can skip it without affecting the use of other features.
+
+The Storage module of ErisPulse provides a general-purpose SQL query builder with a chain-call style, supporting creation, querying, updating, and deletion operations for custom tables.
 
 ## Architecture Design
 
@@ -8699,28 +8723,31 @@ class MyStorage(BaseStorage):
 
 # Router Manager
 
-The ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. The underlying layer is encapsulated through an abstraction layer (currently FastAPI + Uvicorn).
+> [!TIP]
+> **When to read this**: When you need HTTP/WebSocket/SSE routes (including connection pool broadcasting). Skip if not needed, as it does not affect the use of other features.
+
+The ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. Underlyingly, it encapsulates an abstraction layer (currently FastAPI + Uvicorn).
 
 ## Overview
 
 The main functions of the Router Manager are:
 
-- **Decorator Routes**: Support `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` decorators for quick registration
-- **Automatic Injection**: Route handlers do not need to import FastAPI types; the framework automatically injects abstract objects
-- **Route Grouping**: Support `RouteGroup` with prefix and version number
-- **Route Middleware**: Support request interception with glob pattern matching
-- **Rate Limiting**: Built-in sliding window rate limiting
-- **CORS Support**: One-click enable Cross-Origin Resource Sharing
-- **Security Headers**: Automatically add security response headers
-- **Automatic Documentation**: Interactive documentation based on OpenAPI
-- **WebSocket Support**: Complete WebSocket connection management, custom authentication, and lifecycle hooks
-- **Lifecycle Integration**: Deep integration with the ErisPulse lifecycle system
-- **SSL/TLS Support**: Support HTTPS and WSS secure connections
-- **Home Page Entry**: Support modules to register quick entry buttons on the root route `/`, supporting internationalization
+- **Decorator Routes**: Supports `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` decorators for quick registration.
+- **Automatic Injection**: Route handlers do not need to import FastAPI types; the framework automatically injects the abstract object.
+- **Route Grouping**: Supports `RouteGroup` with prefix and version number.
+- **Route Middleware**: Supports request interception with glob pattern matching.
+- **Rate Limiting**: Built-in sliding window rate limiting.
+- **CORS Support**: One-click enable cross-origin resource sharing.
+- **Security Headers**: Automatically adds security response headers.
+- **Automatic Documentation**: Interactive documentation based on OpenAPI.
+- **WebSocket Support**: Complete WebSocket connection management, custom authentication, and lifecycle hooks.
+- **Lifecycle Integration**: Deeply integrated with the ErisPulse lifecycle system.
+- **SSL/TLS Support**: Supports HTTPS and WSS secure connections.
+- **Home Entry**: Supports modules registering quick entry buttons at the root route `/`, with internationalization support.
 
 ## Abstract Types
 
-ErisPulse provides server-side abstract types, allowing modules to avoid direct dependency on FastAPI:
+ErisPulse provides server-side abstraction types to allow modules to avoid direct dependencies on FastAPI:
 
 | Abstract Type | FastAPI Correspondence | Description |
 |---------------|------------------------|-------------|
@@ -8728,20 +8755,19 @@ ErisPulse provides server-side abstract types, allowing modules to avoid direct 
 | `WebSocketConnection` | `fastapi.WebSocket` | WebSocket connection encapsulation, additional lifecycle hooks provided |
 | `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket disconnection exception |
 
-> `WebSocketConnection` inherits from `WebSocketConnectionBase`, sharing the same send/receive/iter/close interface with the client-side WebSocket (`ClientWebSocket`). The same business logic code can be used for both client and server side.
->
-> The underlying FastAPI native object can be accessed via the `.raw` attribute. Code using native FastAPI types is also fully compatible.
+> `WebSocketConnection` inherits from `WebSocketConnectionBase`, sharing the same send/receive/iter/close interface with the client-side WebSocket (`ClientWebSocket`). The same business logic code can be used on both client and server.  
+> The `.raw` attribute allows access to the underlying native FastAPI object. Code directly using FastAPI types is fully compatible.
 
 ## Decorator Routes (Recommended)
 
-### Registration Forms: Single-Parameter (Recommended) and Two-Parameter
+### Registration Forms: Single-Parameter (Recommended) and Dual-Parameter
 
-Decorator routes support two forms; **single-parameter is recommended**—consistent with command/event triggers, with automatic namespace assignment to the current module:
+Decorator routes support two forms, **single-parameter is recommended**—it aligns with command/event triggers, and the namespace is automatically assigned to the current module:
 
 ```python
 from ErisPulse import router
 
-# Single-parameter (recommended): automatically assigned to module_name/hello → actual path /my_module/hello
+# Single-parameter (Recommended): auto-assigns module_name/hello → actual path /my_module/hello
 @router.get("/hello")
 async def hello():
     return {"ok": True}
@@ -8751,21 +8777,21 @@ async def hello():
 async def chat(ws):
     ...
 
-# Two-parameter: explicitly specify module name (same rule, used when registering across modules/tool code)
+# Dual-parameter: explicitly specify module name (same rules, used when registering across modules/tool code)
 @router.get("other_module", "/info")
 async def get_info(request):
     return {"method": request.method, "path": str(request.url)}
 ```
 
 > [!NOTE]
-> Single-parameter form requires registration within the module/adapter **loading context** (the framework has injected the namespace); calling without a context will throw a `ValueError` and prompt to explicitly pass the module name.
+> The single-parameter form requires registration within the module/adapter **loading context** (the framework has injected the assignment during loading); calling it outside the context will raise a `ValueError` and prompt for explicit module name.
 
 ### HTTP Decorators
 
 ```python
 from ErisPulse import router, HttpRequest
 
-# Also can explicitly annotate abstract types
+# You can also explicitly annotate with abstract types
 @router.post("/data")
 async def post_data(request: HttpRequest):
     data = await request.json()
@@ -8784,7 +8810,7 @@ async def delete_data(request):
 
 #### Response Return Convention (2.10+)
 
-Handler return values support **tuple convention** (recommended writing style, explicitly controlling status code), while dict/str/Response remain unchanged:
+Handler return values support a **tuple convention** (recommended syntax, clearly controlling status code), while dict/str/Response remain unchanged:
 
 ```python
 @router.post("/login")
@@ -8803,7 +8829,7 @@ async def me():
     return respond({"user_id": 1}, status_code=200, message="ok")
 ```
 
-Path/query parameters can be directly annotated using FastAPI native annotations (`item_id: int`, `page: int = 1`), and middleware is covered in the [Route Middleware](#route-middleware) section.
+Path/query parameters can be directly annotated using FastAPI native annotations (`item_id: int`, `page: int = 1`), and middleware is described in the [Route Middleware](#route-middleware) section.
 
 ### WebSocket Decorators
 
@@ -8842,16 +8868,15 @@ async def secure_ws_handler(ws):
         await ws.send_text(f"Echo: {data}")
 ```
 
-> **Note**: WebSocket handlers and authentication handlers also support automatic injection. No parameter annotation is needed to obtain a `WebSocketConnection`. Passing the native object via `fastapi.WebSocket` is also possible, but the abstract type is recommended.
+> **Note**: WebSocket handlers and authentication handlers also support automatic injection. You can obtain `WebSocketConnection` without parameter annotations. Passing in the native object with `fastapi.WebSocket` is also possible, but abstract types are recommended.
 
 ### Automatic Connection Registration (Connection Pool, 2.10+)
 
-Connections established via `@ws` / `@sse` are **automatically registered** into the framework connection pool by default (`track=False` disables this):
-Within the handler, `ws.id` / `ws.join_group(...)` are available, and any module can
-`connections.list(namespace=...)` to view connections in this module and broadcast to groups.
+Connections established via `@ws` / `@sse` are **automatically registered** into the framework connection pool by default (`track=False` to disable):  
+Within the handler, `ws.id` / `ws.join_group(...)` are available, and any module can use `connections.list(namespace=...)` to view connections of the current module and broadcast to groups.  
 See [Connection Pool and Broadcasting](connections.md).
 
-## Traditional Registration Method
+## Traditional Registration Methods
 
 ```python
 async def hello_handler(request):
@@ -8913,24 +8938,24 @@ router.register_websocket(
 | `module_name` | Module name (required) | - |
 | `path` | WebSocket path | - |
 | `handler` | Handler function | - |
-| `auth_handler` | Authentication function, returning `False` will automatically close the connection | `None` |
+| `auth_handler` | Authentication function, returns `False` to automatically close connection | `None` |
 | `auto_accept` | Whether to automatically `accept()` | `True` |
 
-> **Recommendation**: Use `auth_handler` for connection confirmation, rather than disabling `auto_accept`. Only set `auto_accept=False` if you need complete control over the connection flow.
+> **Recommendation**: Use `auth_handler` for connection confirmation, rather than setting `auto_accept=False`. Only set `auto_accept=False` when you need complete control over the connection flow.
 
 ## WebSocket Lifecycle Hooks
 
-`WebSocketConnection` provides callback registration for disconnection and errors, without manual try/catch:
+`WebSocketConnection` provides callback registration for disconnection and errors, eliminating the need for manual try/catch:
 
 ```python
 from ErisPulse.Core import WebSocketConnection
 
 @router.ws("my_module", "/ws")
 async def my_ws(ws: WebSocketConnection):
-    # Decorator-style registration
+    # Decorator way to register
     @ws.on_disconnect
     async def on_close(ws, reason="unknown"):
-        print(f"Disconnection reason: {reason}")
+        print(f"Disconnect reason: {reason}")
 
     # Can also be called directly
     async def on_err(ws, error=""):
@@ -8978,14 +9003,14 @@ async def admin_middleware(request, call_next):
 
 ## Request Correlation ID (X-Request-ID)
 
-Starting from version 2.7.0, each HTTP request carries an `X-Request-ID` correlation ID, used for logging / distributed tracing:
+Starting from 2.7.0, each HTTP request carries an `X-Request-ID` correlation ID for logging / trace linking:
 
-- **Generation Rule**: Prioritize using the `X-Request-ID` request header passed from the client (for distributed tracing scenarios); otherwise, generate a UUID
-- **Response Header**: The response will write back the `X-Request-ID`, making it convenient for the client to correlate requests with logs
-- **Lifecycle Events**: The `server.request` and `server.response` event data will add a `request_id` field
+- **Generation Rule**: Prioritizes using the `X-Request-ID` header from the client (for distributed tracing scenarios); otherwise, generates a UUID automatically
+- **Response Header**: The response writes back the `X-Request-ID`, making it easy for the client to correlate requests with logs
+- **Lifecycle Events**: The `server.request` and `server.response` event data include a new `request_id` field
 
 ```python
-# Listen for request events in the module, and correlate requests-responses by request_id
+# Listen for request events in the module, linking requests-responses by request_id
 @sdk.lifecycle.on("server.request")
 async def on_request(data):
     print(f"[{data['request_id']}] {data['method']} {data['path']}")
@@ -9003,7 +9028,7 @@ curl -H "X-Request-ID: my-trace-id" http://localhost:8080/my_module/health
 
 ## Rate Limiting
 
-Use a sliding window algorithm to limit route access:
+Rate limiting is applied to routes using the sliding window algorithm:
 
 ```python
 @router.get("my_module", "/limited", rate_limit="10/minute")
@@ -9027,7 +9052,7 @@ router.setup_cors(
 )
 ```
 
-CORS can also be configured via `config.toml`:
+It can also be configured via `config.toml`:
 
 ```toml
 [router.cors]
@@ -9042,9 +9067,9 @@ allow_headers = ["*"]
 router.setup_security_headers()
 ```
 
-Automatically add security headers such as `X-Content-Type-Options`, `X-Frame-Options`, and `X-XSS-Protection`.
+Automatically adds security headers such as `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`.
 
-These can also be configured via `config.toml`:
+It can also be configured via `config.toml`:
 
 ```toml
 [router.security]
@@ -9053,7 +9078,7 @@ enabled = true
 
 ## Automatic Documentation
 
-The Router automatically enables OpenAPI interactive documentation:
+The router enables OpenAPI interactive documentation by default:
 
 ```python
 # Disable documentation
@@ -9062,7 +9087,7 @@ router.disable_docs()
 # Customize documentation information
 router.set_docs_info(
     title="My API",
-    description="API Documentation",
+    description="API documentation",
     version="1.0.0"
 )
 ```
@@ -9073,16 +9098,16 @@ Route paths are automatically prefixed with the module name to avoid conflicts:
 
 ```python
 # Register path "/api" to module "my_module"
-# The actual accessible path is "/my_module/api"
+# Actual access path is "/my_module/api"
 router.register_http_route("my_module", "/api", handler)
 ```
 
 > [!WARNING]
-> Route paths (including the module name prefix) are **case-sensitive**. The case of the module name used during registration determines the case of the actual path: if the module name is `Test` and `/api` is registered, the actual path is `/Test/api`. Accessing `/test/api` will return a 404.
+> Route paths (including module name prefix) are **case-sensitive**. The module name's case in registration determines the actual path: if the module name is `Test`, registering `/api` results in the actual path being `/Test/api`; accessing `/test/api` will return 404.
 
 ## System Routes
 
-The Router Manager automatically provides the following system routes:
+The router manager automatically provides the following system routes:
 
 ### Health Check
 
@@ -9099,18 +9124,18 @@ GET /
 # Returns ErisPulse brand page
 ```
 
-The root route `/` displays the ErisPulse brand page, automatically detecting Dashboard availability and adding entry buttons.
+The root route `/` displays the ErisPulse brand page, automatically detects Dashboard availability, and adds an entry button.
 
-## Home Page Entry
+## Home Entry
 
-The Router Manager allows external modules to register quick entry buttons on the root route `/`, making it convenient for users to access the management pages of various modules.
+The router manager allows external modules to register quick entry buttons on the root route `/`, making it easy for users to quickly access each module's management page.
 
 ### Register Entry
 
 ```python
 # Simple registration
 router.register_home_entry(
-    name="My Panel",
+    name="My Dashboard",
     url="/mymodule/admin",
 )
 
@@ -9123,7 +9148,7 @@ router.register_home_entry(
 
 # Internationalization support (project i18n dictionary format)
 router.register_home_entry(
-    name={"i18n": "mymodule.home.entry", "default": "My Panel"},
+    name={"i18n": "mymodule.home.entry", "default": "My Dashboard"},
     url="/mymodule/admin",
 )
 ```
@@ -9132,13 +9157,13 @@ router.register_home_entry(
 
 | Parameter | Type | Description | Required |
 |-----------|------|-------------|----------|
-| `name` | `str` / `dict` | Button display text; if a dictionary `{"i18n": "key", "default": "text"}` is passed, internationalization is used | Yes |
+| `name` | `str` / `dict` | Button display text; if a dictionary `{"i18n": "key", "default": "text"}` is provided, internationalization is used | Yes |
 | `url` | `str` | Button link address | Yes |
 | `icon_svg` | `str` | Optional SVG icon markup | No |
 
 ### Dashboard Auto-Registration
 
-When the `sdk.Dashboard` is detected as available, the Router Manager automatically adds a Dashboard button at the beginning of the entry list, without requiring manual registration.
+When `sdk.Dashboard` is detected as available, the router manager automatically adds a Dashboard button at the first position in the entry list, without requiring manual registration.
 
 ## Lifecycle Integration
 
@@ -9156,13 +9181,13 @@ async def on_server_stop(event):
 
 ## Best Practices
 
-1. **Prefer Abstract Types**: Use `HttpRequest` / `WebSocketConnection` instead of `fastapi.Request` / `fastapi.WebSocket` to avoid hard dependencies
-2. **Use Automatic Injection**: Name the first parameter of the handler `request` or `req` without any type annotation to obtain `HttpRequest`
-3. **Explicitly Pass module_name**: The first parameter of the decorator must be the module name, not omitted
-4. **Use Route Grouping**: Use `group()` to organize multiple routes within the same module
-5. **Security Consideration**: Implement authentication mechanisms and security headers for sensitive operations
-6. **Reasonable Rate Limiting**: Set rate limits for high-frequency interfaces
-7. **Use Lifecycle Hooks**: Use `@ws.on_disconnect` / `@ws.on_error` to handle WebSocket exceptions, avoiding manual try/catch
+1. **Prefer Abstract Types**: Use `HttpRequest` / `WebSocketConnection` instead of `fastapi.Request` / `fastapi.WebSocket` to avoid hard dependencies.
+2. **Leverage Automatic Injection**: Name the first parameter of the handler `request` or `req`, and obtain `HttpRequest` without any type annotation.
+3. **Explicitly Pass module_name**: The first parameter of the decorator must be the module name, and cannot be omitted.
+4. **Use Route Grouping**: Use `group()` to organize multiple routes within the same module.
+5. **Security Consideration**: Implement authentication mechanisms and security headers for sensitive operations.
+6. **Reasonable Rate Limiting**: Set rate limits for high-frequency interfaces.
+7. **Use Lifecycle Hooks**: Use `@ws.on_disconnect` / `@ws.on_error` to handle WebSocket exceptions, avoiding manual try/catch.
 
 
 
@@ -9621,7 +9646,10 @@ async def _poll(self):
 
 # Lazy-Loaded Module System
 
-The ErisPulse SDK provides a powerful lazy-loaded module system that allows modules to be initialized only when they are actually needed, significantly improving application startup speed and memory efficiency.
+> [!TIP]
+> **When to read this**: When using lazy-loaded modules or activate_on event-driven activation. Skip if not needed, as it does not affect the use of other features.
+
+The ErisPulse SDK provides a powerful lazy-loaded module system that allows modules to be initialized only when needed, significantly improving application startup speed and memory efficiency.
 
 ## Overview
 
@@ -9848,21 +9876,24 @@ flowchart TD
 
 # Internationalization (i18n) System
 
-ErisPulse v2.5.0 includes full internationalization support. Both the framework core and CLI interface can automatically switch display text according to your system language, and external modules can also register their own translations.
+> [!TIP]
+> **When to read this**: When you need multi-language text, translation registration, or language detection. If not needed, you can skip this, which will not affect the use of other features.
+
+Starting from ErisPulse v2.5.0, the framework includes built-in support for complete internationalization. Both the core framework and the CLI interface can automatically switch the displayed text according to your system language, and it also supports external modules to register their own translations.
 
 ## Supported Languages
 
 | Language | Code | Description |
-|------|------|------|
-| Simplified Chinese | `zh-CN` | Default language (native framework language) |
+|----------|------|-------------|
+| Simplified Chinese | `zh-CN` | Default language (native language of the framework) |
 | Traditional Chinese | `zh-TW` | Traditional Chinese (Hong Kong/Macau/Taiwan) |
-| English | `en` | English (general fallback language) |
+| English | `en` | English (fallback language) |
 | 日本語 | `ja` | Japanese |
 | Русский | `ru` | Russian |
 
 ## Quick Experience
 
-### Switch via Environment Variable
+### Switching via Environment Variables
 
 ```bash
 # Windows PowerShell
@@ -9873,18 +9904,18 @@ epsdk run
 ERISPULSE_LANG=ja epsdk run
 ```
 
-### Switch via Configuration File
+### Switching via Configuration File
 
-Add to `config/config.toml`:
+Add the following to `config/config.toml`:
 
 ```toml
 [ErisPulse.i18n]
 language = "zh-TW"
 ```
 
-Set to `"auto"` (default) to automatically detect system language.
+Setting it to `"auto"` (default) enables automatic system language detection.
 
-### Switch Manually in Code
+### Switching Manually in Code
 
 ```python
 from ErisPulse import i18n
@@ -9893,7 +9924,7 @@ from ErisPulse import i18n
 i18n.set_language("en")
 print(i18n.get_language())  # "en"
 
-# Reset to auto-detect
+# Reset to automatic detection
 i18n.reset_language()
 ```
 
@@ -9901,34 +9932,32 @@ i18n.reset_language()
 
 ## Language Detection Mechanism
 
-The framework detects user language with the following priority:
+The framework detects the user's language in the following priority order:
 
-1. **Environment variable `ERISPULSE_LANG`** — Highest priority, for testing and temporary switching
-2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, not affected by tools like Git Bash that override `LANG`)
+1. **Environment variable `ERISPULSE_LANG`** — Highest priority, used for testing and temporary switching
+2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, unaffected by tools like Git Bash that override `LANG`)
 3. **Environment variables** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (Unix/macOS standard)
 4. **System Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
 5. **Fallback** — en (English)
 
 ### Nearest Mapping Principle
 
-When detected language does not match exactly, map to the nearest supported language:
+When the detected language does not match exactly, it is mapped to the supported language based on the nearest principle:
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **Traditional Chinese**
-- All other `zh-*` (e.g. `zh-CN`, `zh-SG`) → **Simplified Chinese**
-- `en-US`, `en-GB`, `en-AU` etc. → **English**
+- All other `zh-*` (such as `zh-CN`, `zh-SG`) → **Simplified Chinese**
+- `en-US`, `en-GB`, `en-AU`, etc. → **English**
 - `ja-JP` → **Japanese**
 - `ru-RU` → **Russian**
 - Other unrecognized languages → **Simplified Chinese (fallback)**
 
----
-
 ## Using i18n in Modules
 
-You can register translation text for your own modules to make them support multiple languages.
+You can register translation texts for your own module to make it support multiple languages.
 
 ### Recommended Approach: Declare Translation Keys via I18nClass (v2.7.0+)
 
-From v2.7.0, modules/adapters can declare translation keys by nesting the `I18nClass` class, similar to declaring a `ConfigClass`. The framework will **automatically register** all declared translation keys without requiring manual `i18n.register()` calls.
+Starting from v2.7.0, modules/adapters can declare translation keys in a nested class `I18nClass`, just like declaring `ConfigClass`. The framework will **automatically register** all declared translation keys during loading, without manually calling `i18n.register()`.
 
 ```python
 from dataclasses import dataclass, field
@@ -9943,7 +9972,7 @@ class MyModule(BaseModule):
         welcome_msg: str = field(
             default="欢迎",
             metadata={
-                # Reference i18n key mymodule.welcome_msg here
+                # Here references the i18n key mymodule.welcome_msg
                 "description": {"i18n": "mymodule.welcome_msg", "default": "Welcome message"},
             },
         )
@@ -9953,14 +9982,14 @@ class MyModule(BaseModule):
     class I18nClass(BaseI18n):
         # Property names are automatically concatenated into full key paths: <module name>.<property name>
         welcome_msg: I18nKey = I18nKey(
-            default="Welcome Message",   # Language-agnostic fallback, not registered to any language
+            default="Welcome Message",   # Fallback text not registered to any language
             zh_CN="欢迎消息",
             en="Welcome Message",
             ja="ウェルカムメッセージ",
             ru="Приветственное сообщение",
             zh_TW="歡迎訊息",
         )
-        # Other business-related translation keys
+        # Other translation keys used in business logic
         hello: I18nKey = I18nKey(
             default="Hello, {name}!",
             zh_CN="你好，{name}！",
@@ -9984,23 +10013,23 @@ class MyModule(BaseModule):
 
 #### Why is I18nClass Recommended?
 
-| Scenario | Manual i18n.register() | I18nClass Declarative |
+| Scenario | Manual i18n.register() | I18nClass Declarative Approach |
 |------|-----------------------|------------------|
-| Configuration description referencing i18n keys | Need manual registration, and must be done before configuration generation | Framework automatically registers before configuration generation |
-| Multi-language translation declaration | Scattered in various on_load() methods | Centralized in class, clearly visible |
+| i18n keys referenced in configuration descriptions | Need to register manually, and must be done before configuration generation | Framework automatically registers before configuration generation |
+| Multi-language translation declarations | Scattered across various on_load() methods | Centralized in the class, easy to see at a glance |
 | Key naming consistency | Prone to spelling errors | Property names as key suffixes, IDE can auto-complete |
-| Unloading cleanup | Need manual unregister_domain() | Framework uses unified domain registration |
+| Cleanup on unload | Need to manually unregister_domain() | Framework uses unified domain registration |
 
 #### I18nClass Key Path Rules
 
 - **Default**: Use ``<module registration name>.<property name>`` as the full key path
   - Example: Module name is ``MyModule``, property ``welcome`` → key path ``MyModule.welcome``
-- **Explicit**: Use the ``I18nKey(key="...")`` parameter to specify any dot-separated path
-  - Suitable for deeply nested key names (e.g. ``mymodule.config.basic.token``)
+- **Explicit**: Specify any dot-separated path via the ``I18nKey(key="...")`` parameter
+  - Suitable for deeply nested key names (e.g., ``mymodule.config.basic.token``)
 
 #### Using in Adapters
 
-Adapters also support `I18nClass`, with identical usage:
+Adapters also support `I18nClass`, with the same usage:
 
 ```python
 from ErisPulse.Core import BaseAdapter
@@ -10013,37 +10042,37 @@ class MyAdapter(BaseAdapter):
         endpoint: str = field(
             default="",
             metadata={
-                # Configuration description references adapter.MyAdapter.endpoint key
+                # Configuration description references the adapter.MyAdapter.endpoint key
                 "description": {"i18n": "MyAdapter.endpoint", "default": "API address"},
             },
         )
 
     class I18nClass(BaseI18n):
-        # Central declaration of configuration description referenced keys and other business keys' multilingual translations
+        # Central declaration of i18n keys referenced in configuration descriptions and other business keys' multi-language translations
         endpoint: I18nKey = I18nKey(
             default="API Endpoint",
-            zh_CN="API address",
-            zh_TW="API address",
+            zh_CN="API 地址",
+            zh_TW="API 位址",
             en="API Endpoint",
-            ja="API address",
-            ru="API address",
+            ja="APIアドレス",
+            ru="API адрес",
         )
 ```
 
-The `I18nClass` of adapters is automatically registered during the `__init__` phase (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available.
+The `I18nClass` of the adapter will be automatically registered during the `__init__` phase (before template configuration generation), ensuring that i18n keys referenced in configuration descriptions are available.
 
-### Manual Registration of Custom Translations (Old Approach)
+### Manually Registering Custom Translations (Old Approach)
 
-If you do not use `I18nClass`, you can directly call `i18n.register()` to register translation text.
+If you don't use `I18nClass`, you can directly call `i18n.register()` to register translation texts.
 
 ```python
 from ErisPulse import i18n
 
 # Register Chinese translations
 i18n.register("zh-CN", {
-    "my_module.welcome": "Welcome to my module!",
-    "my_module.goodbye": "Goodbye!",
-    "my_module.hello": "Hello, {name}!",
+    "my_module.welcome": "欢迎使用我的模块！",
+    "my_module.goodbye": "再见！",
+    "my_module.hello": "你好，{name}！",
 }, domain="my_module")
 
 # Register English translations
@@ -10065,7 +10094,7 @@ i18n.t("my_module.welcome")  # Automatically uses current language
 # With formatted parameters
 i18n.t("my_module.hello", name="Alice")
 
-# Specify default value (returns when translation key does not exist)
+# Specify default value (returns if translation key does not exist)
 i18n.t("my_module.unknown_key", default="Default text")
 ```
 
@@ -10090,7 +10119,7 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def on_load(self, event):
-        # Real-time configuration access (reflects latest value on each access)
+        # Real-time reading of configuration (reflects latest value on each access)
         self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
 
@@ -10114,18 +10143,18 @@ i18n.unregister_domain("my_module")
 
 ## Multi-language Configuration Fields
 
-From v2.5.2, configuration Schema fully supports i18n. All user-visible text fields can reference i18n keys, and WebUI and other consumers will automatically resolve them into corresponding text based on the current language.
+Starting from v2.5.2, the configuration Schema fully supports i18n. All user-visible text fields can reference i18n keys, and the WebUI and other consumers will automatically resolve them into corresponding text based on the current language.
 
 ### Supported i18n Fields
 
 | Field | Location | Description |
 |------|------|------|
 | `description` | field metadata | Field description |
-| `options[].label` | `ui.options` | Select control option labels |
-| `placeholder` | `ui.placeholder` | Input box placeholder |
-| `group_labels` | `_schema_meta` | Group display names (Dashboard partition titles) |
+| `options[].label` | `ui.options` | Label for select control options |
+| `placeholder` | `ui.placeholder` | Placeholder text for input fields |
+| `group_labels` | `_schema_meta` | Group display names (Dashboard section titles) |
 
-All use the `{"i18n": "key", "default": "text"}` format. Pure strings are passed through as-is (for backward compatibility).
+All fields use the unified format `{"i18n": "key", "default": "text"}`. If a field is a plain string, it is passed through as-is (for backward compatibility).
 
 ### Declaring i18n Fields
 
@@ -10137,7 +10166,7 @@ from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
-    # description i18n
+    # i18n for description
     token: str = field(
         default="",
         metadata={
@@ -10148,16 +10177,16 @@ class MyAdapterConfig(BaseConfig):
                 "widget": "password",
                 "group": "basic",
                 "order": 1,
-                # placeholder i18n
+                # i18n for placeholder
                 "placeholder": {"i18n": "my_adapter.token.ph", "default": "Enter Token"},
             },
         },
     )
-    # options label i18n
+    # i18n for options label
     mode: str = field(
         default="a",
         metadata={
-            "description": {"i18n": "my_adapter.mode", "default": "Operation mode"},
+            "description": {"i18n": "my_adapter.mode", "default": "Run Mode"},
             "ui": {
                 "widget": "select",
                 "group": "basic",
@@ -10170,7 +10199,7 @@ class MyAdapterConfig(BaseConfig):
         },
     )
 
-    # group_labels i18n (group display names)
+    # i18n for group_labels (group display name)
     _schema_meta = {
         "group_labels": {
             "basic": {"i18n": "my_adapter.group.basic", "default": "Basic Settings"},
@@ -10178,14 +10207,14 @@ class MyAdapterConfig(BaseConfig):
     }
 ```
 
-`default` is the fallback text—shown when translation is not registered or lookup fails.
+The `default` field serves as a fallback text, displayed when the translation is not registered or lookup fails.
 
 ### Secret Masking and Configuration Validation
 
-Fields marked as `"secret": True` will automatically receive **masking protection** (from v2.7.0):
+Fields marked with `"secret": True` will automatically receive **masking protection** (since 2.7.0):
 
-- **Template generation masking**: When `dataclass_to_toml_with_comments()` generates configuration templates, secret fields' real values are not written to the file (displaying empty placeholders), preventing sensitive information from being written to disk
-- **General masking utility**: `redact_secret(value)` replaces non-empty values with `***`, returning empty values as-is, suitable for scenarios like logging output
+- **Template generation masking**: When generating configuration templates using `dataclass_to_toml_with_comments()`, the actual value of secret fields will not be written to the file (displayed as an empty placeholder), preventing sensitive information from being persisted.
+- **General masking utility**: `redact_secret(value)` replaces non-empty values with `***`, and returns empty values as-is. This can be used in scenarios such as logging.
 
 ```python
 from ErisPulse.Core.Bases.config_schema import redact_secret
@@ -10194,12 +10223,12 @@ redact_secret("sk-xxxxxx")  # '***'
 redact_secret("")           # ''
 ```
 
-**Configuration validation** (`validate_config()`) supports additional checks beyond `required` non-empty checks (from v2.7.0):
+**Configuration validation** (`validate_config()`) supports additional checks beyond `required` non-empty checks since 2.7.0:
 
 | Validation | Metadata | Example |
 |--------|--------|------|
-| Type matching | Field declaration type | `int` field passed a string raises an error |
-| Enum constraint | `ui.options` or top-level `options` | Value must be among allowed options |
+| Type match | Field declaration type | Passing a string to an `int` field will cause an error |
+| Enum constraint | `ui.options` or top-level `options` | The value must be one of the allowed options |
 | Numeric range | Top-level `min` / `max` | `metadata={"min": 1, "max": 65535}` |
 
 ```python
@@ -10215,14 +10244,14 @@ errors = validate_config(C(mode="x", port=70000))  # Two errors: enum + range
 
 ### Registering Configuration Translations
 
-Configuration field i18n keys and regular translation keys are registered the same way using `i18n.register()`:
+The i18n keys for configuration fields are registered in the same way as regular translation keys, using `i18n.register()`:
 
 ```python
 from ErisPulse import i18n
 
-# Register Chinese (same as default, but can differ)
+# Register Chinese (can be different from default)
 i18n.register("zh-CN", {
-    "my_adapter.token": "Platform Token",
+    "my_adapter.token": "平台 Token",
 }, domain="my_adapter")
 
 # Register English
@@ -10230,9 +10259,9 @@ i18n.register("en", {
     "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
 ```
-> **Recommended approach**: Use `I18nClass` to declare translation keys, and the framework will automatically register them (see the "Recommended approach" section above), eliminating the need to manually call `i18n.register()` or `register_config_i18n()`.
+> **Recommended approach**: Use `I18nClass` to declare translation keys; the framework will automatically register them (see the "Recommended Approach" section above). No need to manually call `i18n.register()` or `register_config_i18n()`.
 
-A convenient function `register_config_i18n()` is also provided, which automatically extracts keys from the configuration class and registers them:
+A convenient function `register_config_i18n()` is also provided, which can automatically extract keys from the configuration class and register them:
 
 ```python
 from ErisPulse.Core.Bases.config_schema import register_config_i18n
@@ -10248,26 +10277,22 @@ register_config_i18n(MyAdapterConfig, "en", {
 
 ### How WebUI Consumes
 
-`get_config_schema()` returns a schema where the i18n dictionary is passed through as-is. The WebUI frontend can use `i18n.t()` to resolve based on the current language.
+The schema returned by `get_config_schema()` passes through the i18n dictionary as-is. The WebUI frontend can resolve it using `i18n.t()` based on the current language.
 
-If you need the server to directly resolve into strings (e.g., for frontends that do not support i18n), use `resolve_config_schema()`, which resolves `description`, `options[].label`, `placeholder`, and `group_labels` into the current language's text:
+If you need the server to directly resolve to a string (e.g., for a frontend that does not support i18n), use `resolve_config_schema()`, which will resolve all `description`, `options[].label`, `placeholder`, and `group_labels` fields into the current language's text:
 
 ```python
 from ErisPulse.Core.Bases.config_schema import resolve_config_schema
 
 # All i18n fields are resolved into the current language's string
 schema = resolve_config_schema(MyAdapterConfig)
-print(schema["fields"]["token"]["description"])    # "Platform Token" or "Platform Token"
-print(schema["fields"]["token"]["placeholder"])   # "Enter Token" or "Enter Token"
-print(schema["fields"]["mode"]["options"][0]["label"])  # "Mode A" or "Mode A"
-print(schema["group_labels"]["basic"])             # "Basic Settings" or "Basic"
+print(schema["fields"]["token"]["description"])    # "平台 Token" or "Platform Token"
+print(schema["fields"]["token"]["placeholder"])   # "请输入 Token" or "Enter Token"
+print(schema["fields"]["mode"]["options"][0]["label"])  # "模式A" or "Mode A"
+print(schema["group_labels"]["basic"])             # "基本设置" or "Basic"
 ```
 
-> `BaseConfig`, `BotAccountConfig`, `register_config_i18n()`, `resolve_config_schema()`
-> and other types and utility functions are actually defined in `ErisPulse.Core.Bases.config_schema`.
-> `ErisPulse.runtime.config_schema` is retained as a compatibility shim,
-> **recommended to import uniformly from `ErisPulse.Core.Bases`** (except for i18n translation key related types,
-> which are located in `ErisPulse.Core.Bases.i18n_schema`).
+> `BaseConfig`, `BotAccountConfig`, `register_config_i18n()`, `resolve_config_schema()`, and other types and utility functions are actually defined in `ErisPulse.Core.Bases.config_schema`. `ErisPulse.runtime.config_schema` is retained for backward compatibility. **It is recommended to import from `ErisPulse.Core.Bases`** (except for i18n translation key-related types, which are located in `ErisPulse.Core.Bases.i18n_schema`).
 
 ## API Reference
 
@@ -10276,15 +10301,15 @@ print(schema["group_labels"]["basic"])             # "Basic Settings" or "Basic"
 #### Core Methods
 
 | Method | Description |
-|------|------|
+|--------|-------------|
 | `t(key, default=None, **kwargs)` | Get translated text (`gettext()` is an alias) |
-| `set_language(lang)` | Manually set language |
-| `get_language()` | Get current language |
-| `reset_language()` | Reset to auto-detection (and re-detect environment) |
-| `get_supported_languages()` | Get list of all supported languages |
-| `has_translation(key, lang=None)` | Check if translation key exists |
+| `set_language(lang)` | Manually set the language |
+| `get_language()` | Get the current language |
+| `reset_language()` | Reset to automatic detection (and re-detect environment) |
+| `get_supported_languages()` | Get the list of all supported languages |
+| `has_translation(key, lang=None)` | Check if a translation key exists |
 | `register(lang, translations, domain)` | Register custom translations |
-| `unregister_domain(domain)` | Unload all translations in specified domain |
+| `unregister_domain(domain)` | Unload all translations for the specified domain |
 | `reload()` | Reload built-in translations and re-detect language |
 
 #### `t()` Method Details
@@ -10293,9 +10318,9 @@ print(schema["group_labels"]["basic"])             # "Basic Settings" or "Basic"
 def t(self, key, /, default=None, **kwargs):
 ```
 
-- `key` — Translation key (positional argument only, does not conflict with `**kwargs`'s `key=`)
-- `default` — Default value returned when translation does not exist, default is `None` (returns key name itself)
-- `**kwargs` — Formatting parameters, used to fill placeholders in translation values
+- `key` — Translation key (positional-only argument, does not conflict with `key=` in `**kwargs`)
+- `default` — The default value returned if the translation does not exist, defaults to `None` (returns the key name itself)
+- `**kwargs` — Formatting parameters used to fill placeholders `{placeholder}` in the translation value
 
 Example:
 
@@ -10309,18 +10334,18 @@ i18n.t("greeting", name="Alice", place="ErisPulse")
 
 Starting from v2.7.0, `ErisPulse.Core.Bases` provides a translation key declaration tool based on class attributes (recommended to import uniformly from `ErisPulse.Core.Bases`):
 
-> ``I18nKey.default`` is a **language-agnostic fallback text** and is not registered to any language.
-> To make translations effective, at least one language parameter must be explicitly passed (``zh_CN=`` / ``en=`` / ``ja=`` etc.).
-> This allows developers from various countries to freely use their native language to fill in ``default``, with no assumptions made by the framework.
+> ``I18nKey.default`` is a **language-agnostic fallback text** that is not registered to any language.  
+> To make translations effective, at least one language parameter (``zh_CN=`` / ``en=`` / ``ja=`` etc.) must be explicitly passed.  
+> This allows developers from different countries to freely use their native language to fill in ``default``, and the framework makes no assumptions.
 
 | Name | Description |
-|------|------|
-| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | Declaration of a single translation key, `default` is a language-agnostic fallback |
-| `BaseI18n` | Translation key collection base class (naming aligned with `BaseConfig`), sub-classes declare multiple `I18nKey` via class attributes |
+|------|-------------|
+| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | Declaration of a single translation key, `default` is language-agnostic fallback |
+| `BaseI18n` | Base class for translation key collections (naming aligned with `BaseConfig`), child classes declare multiple `I18nKey` as class attributes |
 | `BaseI18n.register(prefix="", domain="app")` | Class method: register all declared keys to the i18n system |
-| `key` | Alias for `I18nKey` (more concise writing)
+| `key` | Alias for `I18nKey` (more concise writing) |
 
-Usage example:
+Usage Example:
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, key
@@ -10344,7 +10369,7 @@ class MyKeys(BaseI18n):
         ru="До свидания",
     )
 
-# Standalone use (manual registration)
+# Independent usage (manual registration)
 MyKeys.register(prefix="myapp.", domain="myapp")
 ```
 
@@ -10358,8 +10383,6 @@ sdk.i18n.set_language("en")
 print(sdk.i18n.t("core.sdk.init.starting"))
 ```
 
----
-
 ## Runtime Configuration
 
 ### Reading i18n Configuration via Configuration API
@@ -10371,17 +10394,17 @@ from ErisPulse.runtime import get_i18n_config
 config = get_i18n_config()
 print(config["language"])  # "auto" or specific language code
 
-# I18nConfig is a dataclass, suitable for generating configuration templates
+# I18nConfig is a dataclass, which can be used to generate configuration templates
 schema = I18nConfig.__dataclass_fields__
 ```
 
-### Configuration Item Description
+### Configuration Item Descriptions
 
 In the `[ErisPulse.i18n]` section of `config/config.toml`:
 
 ```toml
 [ErisPulse.i18n]
-# Display language, possible values:
+# Display language, available values:
 # - "auto"      — Auto-detect system language (default)
 # - "zh-CN"     — Simplified Chinese
 # - "zh-TW"     — Traditional Chinese
@@ -10390,28 +10413,27 @@ In the `[ErisPulse.i18n]` section of `config/config.toml`:
 # - "ru"        — Russian
 language = "auto"
 ```
-
 ---
 
 ## Best Practices
 
 ### Translation Key Naming
 
-It is recommended to use dot-separated namespace format:
+It is recommended to use a dot-separated namespace format:
 
 ```
-<module name>.<category>.<description>
+<module_name>.<category>.<description>
 ```
 
 For example: `my_module.command.hello_desc`, `core.adapter.start_failed`
 
 ### Multi-language Coverage
 
-There is no need to provide translations for all languages at once; missing languages will automatically fall back to English, and if English is also missing, the key name itself will be displayed.
+You don't need to provide translations for all languages at once. Missing languages will automatically fall back to English. If English is also missing, the key name itself will be displayed.
 
 ### Dynamic Content
 
-For dynamically generated content (such as usernames, quantities, etc.), use `{placeholder}` formatting:
+For dynamically generated content (such as usernames, quantities, etc.), use the `{placeholder}` format:
 
 ```python
 # Translation definition
@@ -10429,16 +10451,14 @@ If your module uses the framework's Logger, these messages will also automatical
 self.logger.info(i18n.t("my_module.startup"))
 ```
 
----
-
 ## Relationship with CLI i18n
 
-The CLI has an **independent** internationalization module (`ErisPulse.CLI.i18n`), which is completely decoupled from the framework core's internationalization module.
+The CLI has an **independent** internationalization module (`ErisPulse.CLI.i18n`), which is completely decoupled from the framework's core internationalization module.
 
-- **Core i18n** — Used by framework core modules, external modules can register translations
-- **CLI i18n** — Used internally by the command-line interface, does not share translation data with Core
+- **Core i18n** — Used by the framework core module; external modules can register translations
+- **CLI i18n** — Used internally by the command-line interface; does not share translation data with Core
 
-This design ensures that changes to CLI translations do not affect the stability of the framework core.
+This design ensures that translation changes in the CLI do not affect the stability of the framework core.
 
 
 
@@ -10853,17 +10873,20 @@ topology = sdk.get_topology()
 
 ### 归属权（owner）系统
 
-# Ownership (owner) System
+# Ownership (Owner) System
 
-Ownership is the cornerstone of the "plug-and-play" nature of modules: all framework resources registered during module loading are automatically attributed, and automatically reclaimed when the module is unloaded or disabled. Module authors only need to declare resources, without writing manual cleanup logic.
+> [!TIP]
+> **When to read this**: When troubleshooting resource leaks, understanding the unload/cleanup chain, or declaring owned resources. If not needed, skip this section—it won't affect the use of other features.
 
-> **Related Systems**: Scope determines "whether a resource is active" during event dispatching, while ownership determines "who owns the resource and who is responsible for reclaiming it during lifecycle events." For more details on scope, see [Unified Control Plane (scope)](scope.md). For background tasks, see [Lifecycle Management](lifecycle.md#Background Task Ownership and Automatic Cancellation).
+Ownership is the foundation of the module's "plug-and-play" capability: all framework resources registered during module loading are automatically named, and are automatically reclaimed when the module is unloaded or disabled—module authors only need to declare resources, without manually writing cleanup logic.
+
+> **Related systems**: Scopes determine whether resources are active during event dispatching, while ownership determines which module owns a resource and who is responsible for reclaiming it during the lifecycle. See [Unified Control Plane (Scope)](scope.md) for scopes, and [Lifecycle Management](lifecycle.md#background-task-ownership-and-automatic-cancellation) for background tasks.
 
 {!--< tips >!--}
-1. Ownership is automatically recorded at the **moment of registration** based on `current_owner`, requiring zero code changes from the module.
-2. Unload and disable share the same cleanup chain (`_cleanup_module_registrations`), where each step only logs a warning if it fails, without interrupting the process.
-3. Resources with user-configured semantics (persistent overrides / scope rules / command ACLs) are **not** cleaned up when the module is unloaded.
-4. External handles managed by utility modules can be attached to the cleanup chain via `on_cleanup(cb)`, which will be automatically called when the dependent module is unloaded (see [Guide to Utility Modules: Managing Handles of Other Modules](#Guide-to-Utility-Modules-Managing-Handles-of-Other-Modules)).
+1. Ownership is automatically recorded at the **moment of registration** based on `current_owner`, requiring zero changes to module code.
+2. Unload and disable share the same cleanup chain (`_cleanup_module_registrations`), where each step failure only generates a warning and does not interrupt the process.
+3. User-configured resources (persistent overrides, scope rules, command ACLs) are **not** cleaned up when the module is unloaded.
+4. External handles managed by utility modules can be attached to the cleanup chain using `on_cleanup(cb)`, which automatically calls back when the dependent module is unloaded (see [Utility Module Guide](#utility-module-guide-handling-handles-of-other-modules)).
 {!--< /tips >!--}
 
 ## Owner Context Mechanism

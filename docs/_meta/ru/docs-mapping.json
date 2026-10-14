@@ -96,7 +96,7 @@
           "icon": "fa-download"
         },
         {
-          "title": "Конфигурационный файл",
+          "title": "Описание конфигурационного файла",
           "path": "user-guide/configuration.md",
           "level": 1,
           "icon": "fa-sliders"
@@ -158,25 +158,25 @@
           "icon": "fa-puzzle-piece",
           "documents": [
             {
-              "title": "Начало разработки модуля",
+              "title": "Введение в разработку модулей",
               "path": "developer-guide/modules/getting-started.md",
               "level": 1,
               "icon": "fa-puzzle-piece"
             },
             {
-              "title": "Основные концепты модуля",
+              "title": "Основные концепции модуля",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1,
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Подробное описание обёртки событий",
+              "title": "Детальный разбор класса-обертки Event",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
             },
             {
-              "title": "Рекомендации по разработке модулей",
+              "title": "Лучшие практики разработки модулей",
               "path": "developer-guide/modules/best-practices.md",
               "level": 1,
               "icon": "fa-award"
@@ -206,7 +206,7 @@
               "icon": "fa-code-branch"
             },
             {
-              "title": "Рекомендации по лучшим практикам разработки адаптеров",
+              "title": "Рекомендации по разработке адаптеров",
               "path": "developer-guide/adapters/best-practices.md",
               "level": 1,
               "icon": "fa-medal"
@@ -381,19 +381,19 @@
           "icon": "fa-clock-rotate-left"
         },
         {
-          "title": "Система ленивой загрузки модулей",
+          "title": "Ленивая система загрузки модулей",
           "path": "advanced/lazy-loading.md",
           "level": 1,
           "icon": "fa-hourglass-half"
         },
         {
-          "title": "Менеджер маршрутизации",
+          "title": "Маршрутизатор",
           "path": "advanced/router.md",
           "level": 1,
           "icon": "fa-route"
         },
         {
-          "title": "MessageBuilder — подробное руководство",
+          "title": "MessageBuilder подробно",
           "path": "advanced/message-builder.md",
           "level": 1,
           "icon": "fa-comment-dots"
@@ -429,7 +429,7 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "Система принадлежности (owner)",
+          "title": "Система собственности (owner)",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
@@ -441,7 +441,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Теневые модули и постепенный переход на новый вариант",
+          "title": "Теневые модули и постепенный переход",
           "path": "advanced/shadow.md",
           "level": 1,
           "icon": "fa-eye"
@@ -453,7 +453,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Хранилище",
+          "title": "Хранилище данных",
           "path": "advanced/storage-backends.md",
           "level": 1,
           "icon": "fa-server"
@@ -465,7 +465,7 @@
           "icon": "fa-triangle-exclamation"
         },
         {
-          "title": "Пул соединений и трансляция",
+          "title": "Пул подключений и трансляция",
           "path": "advanced/connections.md",
           "level": 1,
           "icon": "fa-fire"
@@ -477,7 +477,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Ящик для диалогов (Транскрипт)",
+          "title": "Транскрипт (Transcript)",
           "path": "advanced/transcript.md",
           "level": 1,
           "icon": "fa-fire"

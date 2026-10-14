@@ -61,7 +61,7 @@
     "1. Meta イベントの送信タイミング": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 12,
+        "line": 13,
         "level": 3,
         "title": "1. Meta イベントの送信タイミング"
       }
@@ -69,7 +69,7 @@
     "1. Mixin クラスを使用した一括登録（推奨）": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 569,
+        "line": 570,
         "level": 3,
         "title": "1. Mixin クラスを使用した一括登録（推奨）"
       }
@@ -77,7 +77,7 @@
     "1. OneBot12 標準に厳密に従う": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 227,
+        "line": 228,
         "level": 3,
         "title": "1. OneBot12 標準に厳密に従う"
       }
@@ -149,7 +149,7 @@
     "1. プラットフォーム固有のドキュメントの保守": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 621,
+        "line": 622,
         "level": 3,
         "title": "1. プラットフォーム固有のドキュメントの保守"
       }
@@ -181,7 +181,7 @@
     "1. ユニットテスト": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 511,
+        "line": 512,
         "level": 3,
         "title": "1. ユニットテスト"
       }
@@ -229,7 +229,7 @@
     "1. 宣言的構成（推奨）": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 395,
+        "line": 396,
         "level": 3,
         "title": "1. 宣言的構成（推奨）"
       }
@@ -237,7 +237,7 @@
     "1. 必ず Task オブジェクトを返す": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 283,
+        "line": 284,
         "level": 3,
         "title": "1. 必ず Task オブジェクトを返す"
       }
@@ -253,7 +253,7 @@
     "1. 接続の再試行実装": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 110,
+        "line": 111,
         "level": 3,
         "title": "1. 接続の再試行実装"
       }
@@ -301,7 +301,7 @@
     "1. 標準化されたレスポンス形式": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 344,
+        "line": 345,
         "level": 3,
         "title": "1. 標準化されたレスポンス形式"
       }
@@ -317,7 +317,7 @@
     "1. 異常の分類処理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 457,
+        "line": 458,
         "level": 3,
         "title": "1. 異常の分類処理"
       }
@@ -581,7 +581,7 @@
     "2. Meta イベントの送信方法": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 20,
+        "line": 21,
         "level": 3,
         "title": "2. Meta イベントの送信方法"
       }
@@ -629,7 +629,7 @@
     "2. アカウント選択メカニズム": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 435,
+        "line": 436,
         "level": 3,
         "title": "2. アカウント選択メカニズム"
       }
@@ -645,7 +645,7 @@
     "2. エラーコード規格": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 371,
+        "line": 372,
         "level": 3,
         "title": "2. エラーコード規格"
       }
@@ -669,7 +669,7 @@
     "2. チェーン修飾メソッドは self を返す": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 303,
+        "line": 304,
         "level": 3,
         "title": "2. チェーン修飾メソッドは self を返す"
       }
@@ -677,7 +677,7 @@
     "2. デコレータを使用した単一メソッドの登録": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 595,
+        "line": 596,
         "level": 3,
         "title": "2. デコレータを使用した単一メソッドの登録"
       }
@@ -693,7 +693,7 @@
     "2. バージョン情報の更新": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 642,
+        "line": 643,
         "level": 3,
         "title": "2. バージョン情報の更新"
       }
@@ -741,7 +741,7 @@
     "2. ログ記録": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 490,
+        "line": 491,
         "level": 3,
         "title": "2. ログ記録"
       },
@@ -795,7 +795,7 @@
     "2. 接続状態管理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 139,
+        "line": 140,
         "level": 3,
         "title": "2. 接続状態管理"
       }
@@ -811,7 +811,7 @@
     "2. 時間スタンプの標準化": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 249,
+        "line": 250,
         "level": 3,
         "title": "2. 時間スタンプの標準化"
       }
@@ -859,7 +859,7 @@
     "2. 統合テスト": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 535,
+        "line": 536,
         "level": 3,
         "title": "2. 統合テスト"
       },
@@ -1065,7 +1065,7 @@
     "3. アダプタ終了時のクリーンアップ": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 605,
+        "line": 606,
         "level": 3,
         "title": "3. アダプタ終了時のクリーンアップ"
       }
@@ -1073,7 +1073,7 @@
     "3. イベント ID の生成": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 265,
+        "line": 266,
         "level": 3,
         "title": "3. イベント ID の生成"
       }
@@ -1105,7 +1105,7 @@
     "3. ハートビートイベント": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 45,
+        "line": 46,
         "level": 3,
         "title": "3. ハートビートイベント"
       }
@@ -1113,7 +1113,7 @@
     "3. ハートビート保活と Meta ハートビート": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 163,
+        "line": 164,
         "level": 3,
         "title": "3. ハートビート保活と Meta ハートビート"
       }
@@ -1145,7 +1145,7 @@
     "3. プラットフォーム固有のメソッドをサポート": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 317,
+        "line": 318,
         "level": 3,
         "title": "3. プラットフォーム固有のメソッドをサポート"
       }
@@ -1441,7 +1441,7 @@
     "4. `self` フィールドの自動発見": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 58,
+        "line": 59,
         "level": 3,
         "title": "4. `self` フィールドの自動発見"
       }
@@ -1545,7 +1545,7 @@
     "4. 接続情報の公開": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 188,
+        "line": 189,
         "level": 3,
         "title": "4. 接続情報の公開"
       }
@@ -1657,7 +1657,7 @@
     "5. Bot 状態の照会": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 83,
+        "line": 84,
         "level": 3,
         "title": "5. Bot 状態の照会"
       }
@@ -2471,7 +2471,7 @@
     "API リファレンス": [
       {
         "document": "advanced/i18n.md",
-        "line": 426,
+        "line": 424,
         "level": 2,
         "title": "API リファレンス"
       },
@@ -2485,7 +2485,7 @@
     "API レスポンス": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 342,
+        "line": 343,
         "level": 2,
         "title": "API レスポンス"
       },
@@ -2671,7 +2671,7 @@
     "BaseI18n / I18nKey（宣言的翻訳キー）": [
       {
         "document": "advanced/i18n.md",
-        "line": 462,
+        "line": 460,
         "level": 3,
         "title": "BaseI18n / I18nKey（宣言的翻訳キー）"
       }
@@ -2729,7 +2729,7 @@
     "Bot 状態管理と Meta イベント": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 8,
+        "line": 9,
         "level": 2,
         "title": "Bot 状態管理と Meta イベント"
       }
@@ -2769,7 +2769,7 @@
     "CLI i18n との関係": [
       {
         "document": "advanced/i18n.md",
-        "line": 588,
+        "line": 582,
         "level": 2,
         "title": "CLI i18n との関係"
       }
@@ -2798,12 +2798,12 @@
         "title": "CORS 設定"
       }
     ],
-    "Client シリーズ — `Core/client.py` / `Core/Bases/client.py`": [
+    "Client 系列 — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
         "line": 73,
         "level": 3,
-        "title": "Client シリーズ — `Core/client.py` / `Core/Bases/client.py`"
+        "title": "Client 系列 — `Core/client.py` / `Core/Bases/client.py`"
       }
     ],
     "ClientWebSocket 属性": [
@@ -3264,10 +3264,18 @@
         "title": "HttpResponse"
       }
     ],
+    "I18nClass のキー経路ルール": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 146,
+        "level": 4,
+        "title": "I18nClass のキー経路ルール"
+      }
+    ],
     "I18nManager": [
       {
         "document": "advanced/i18n.md",
-        "line": 428,
+        "line": 426,
         "level": 3,
         "title": "I18nManager"
       }
@@ -3283,7 +3291,7 @@
     "Interaction — `Core/Event/interaction.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 118,
+        "line": 122,
         "level": 3,
         "title": "Interaction — `Core/Event/interaction.py`"
       }
@@ -3408,20 +3416,20 @@
         "title": "Metaイベントタイプ"
       }
     ],
-    "Module シリーズ — `Core/module.py`（`sdk.module.call`）": [
-      {
-        "document": "advanced/errors.md",
-        "line": 130,
-        "level": 3,
-        "title": "Module シリーズ — `Core/module.py`（`sdk.module.call`）"
-      }
-    ],
     "Module モジュール": [
       {
         "document": "api-reference/core-modules.md",
         "line": 247,
         "level": 2,
         "title": "Module モジュール"
+      }
+    ],
+    "Module 系列 — `Core/module.py`（`sdk.module.call`）": [
+      {
+        "document": "advanced/errors.md",
+        "line": 134,
+        "level": 3,
+        "title": "Module 系列 — `Core/module.py`（`sdk.module.call`）"
       }
     ],
     "MySQL（`ErisPulse.storage.mysql`）": [
@@ -3688,12 +3696,12 @@
         "title": "Router（ルーター）"
       }
     ],
-    "SDK インスタンスからアクセスする": [
+    "SDK インスタンスからのアクセス": [
       {
         "document": "advanced/i18n.md",
-        "line": 505,
+        "line": 503,
         "level": 3,
-        "title": "SDK インスタンスからアクセスする"
+        "title": "SDK インスタンスからのアクセス"
       }
     ],
     "SDK オブジェクト": [
@@ -3865,7 +3873,7 @@
     "SendDSL 実装": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 279,
+        "line": 280,
         "level": 2,
         "title": "SendDSL 実装"
       }
@@ -3886,12 +3894,12 @@
         "title": "Sendのチェーン呼び出し"
       }
     ],
-    "Shadow シリーズ — `Core/shadow.py`（シャドウモジュール）": [
+    "Shadow 系列 — `Core/shadow.py`（影子モジュール）": [
       {
         "document": "advanced/errors.md",
-        "line": 159,
+        "line": 163,
         "level": 3,
-        "title": "Shadow シリーズ — `Core/shadow.py`（シャドウモジュール）"
+        "title": "Shadow 系列 — `Core/shadow.py`（影子モジュール）"
       }
     ],
     "SseEmitter API": [
@@ -3902,20 +3910,20 @@
         "title": "SseEmitter API"
       }
     ],
-    "Storage シリーズ — `Core/storage` / `Core/Bases/sql_base.py`": [
-      {
-        "document": "advanced/errors.md",
-        "line": 107,
-        "level": 3,
-        "title": "Storage シリーズ — `Core/storage` / `Core/Bases/sql_base.py`"
-      }
-    ],
     "Storage モジュール": [
       {
         "document": "api-reference/core-modules.md",
         "line": 5,
         "level": 2,
         "title": "Storage モジュール"
+      }
+    ],
+    "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`": [
+      {
+        "document": "advanced/errors.md",
+        "line": 107,
+        "level": 3,
+        "title": "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`"
       }
     ],
     "Storage（ストレージ）": [
@@ -3977,7 +3985,7 @@
     "TestBot API": [
       {
         "document": "developer-guide/testing.md",
-        "line": 60,
+        "line": 59,
         "level": 2,
         "title": "TestBot API"
       }
@@ -4030,14 +4038,6 @@
         "title": "WebSocket / Webhook 接続"
       }
     ],
-    "WebSocket シリーズ — `Core/client.py`（`send` / `receive`）": [
-      {
-        "document": "advanced/errors.md",
-        "line": 93,
-        "level": 3,
-        "title": "WebSocket シリーズ — `Core/client.py`（`send` / `receive`）"
-      }
-    ],
     "WebSocket デコレータ": [
       {
         "document": "advanced/router.md",
@@ -4068,6 +4068,14 @@
         "line": 185,
         "level": 3,
         "title": "WebSocket 登録"
+      }
+    ],
+    "WebSocket 系列 — `Core/client.py`（`send` / `receive`）": [
+      {
+        "document": "advanced/errors.md",
+        "line": 93,
+        "level": 3,
+        "title": "WebSocket 系列 — `Core/client.py`（`send` / `receive`）"
       }
     ],
     "WebSocketクライアント": [
@@ -4106,12 +4114,12 @@
         "title": "WebSocket接続イベント"
       }
     ],
-    "WebUI がどのように消費するか": [
+    "WebUI での消費方法": [
       {
         "document": "advanced/i18n.md",
-        "line": 405,
+        "line": 402,
         "level": 3,
-        "title": "WebUI がどのように消費するか"
+        "title": "WebUI での消費方法"
       }
     ],
     "Webhook モード": [
@@ -4122,12 +4130,12 @@
         "title": "Webhook モード"
       }
     ],
-    "Whereパラメータの渡し方": [
+    "Where パラメータの渡し方": [
       {
         "document": "advanced/sql-builder.md",
         "line": 379,
         "level": 3,
-        "title": "Whereパラメータの渡し方"
+        "title": "Where パラメータの渡し方"
       }
     ],
     "Windows PowerShell 実行ポリシー": [
@@ -4490,14 +4498,6 @@
         "title": "__init__.py"
       }
     ],
-    "`I18nClass` のキー経路ルール": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 149,
-        "level": 4,
-        "title": "`I18nClass` のキー経路ルール"
-      }
-    ],
     "`__init__` の注意点": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -4533,7 +4533,7 @@
     "`t()` メソッドの詳細": [
       {
         "document": "advanced/i18n.md",
-        "line": 444,
+        "line": 442,
         "level": 4,
         "title": "`t()` メソッドの詳細"
       }
@@ -4706,12 +4706,12 @@
         "title": "dump_state()"
       }
     ],
-    "escalate：期限が来たら必ず通知": [
+    "escalate：時間通りに必ず届くアップグレード": [
       {
         "document": "advanced/interaction.md",
-        "line": 104,
+        "line": 103,
         "level": 3,
-        "title": "escalate：期限が来たら必ず通知"
+        "title": "escalate：時間通りに必ず届くアップグレード"
       }
     ],
     "event パラメータに型注釈を追加する": [
@@ -4778,28 +4778,12 @@
         "title": "i18n"
       }
     ],
-    "i18n サポートのフィールド": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 274,
-        "level": 3,
-        "title": "i18n サポートのフィールド"
-      }
-    ],
     "i18n フィールドの宣言": [
       {
         "document": "advanced/i18n.md",
-        "line": 285,
+        "line": 282,
         "level": 3,
         "title": "i18n フィールドの宣言"
-      }
-    ],
-    "i18n 設定を API で読み取る": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 519,
-        "level": 3,
-        "title": "i18n 設定を API で読み取る"
       }
     ],
     "init": [
@@ -4901,7 +4885,7 @@
     "owner コンテキストメカニズム": [
       {
         "document": "advanced/ownership.md",
-        "line": 17,
+        "line": 20,
         "level": 2,
         "title": "owner コンテキストメカニズム"
       }
@@ -4978,12 +4962,12 @@
         "title": "say(content, **kwargs)"
       }
     ],
-    "secret 保護と設定検証": [
+    "secret 脱敏と設定検証": [
       {
         "document": "advanced/i18n.md",
-        "line": 338,
+        "line": 335,
         "level": 3,
-        "title": "secret 保護と設定検証"
+        "title": "secret 脱敏と設定検証"
       }
     ],
     "self フィールド拡張": [
@@ -5254,6 +5238,14 @@
         "title": "③ 出力次元（モジュールの出力呼び出し制限）"
       }
     ],
+    "いつ待機がキャンセルされるか": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 56,
+        "level": 3,
+        "title": "いつ待機がキャンセルされるか"
+      }
+    ],
     "すぐに始める": [
       {
         "document": "quick-start.md",
@@ -5294,12 +5286,12 @@
         "title": "どちらの宣言を使うべきか"
       }
     ],
-    "なぜ `I18nClass` を推奨するのか？": [
+    "なぜ I18nClass が推奨されるのか？": [
       {
         "document": "advanced/i18n.md",
-        "line": 140,
+        "line": 137,
         "level": 4,
-        "title": "なぜ `I18nClass` を推奨するのか？"
+        "title": "なぜ I18nClass が推奨されるのか？"
       }
     ],
     "なぜ標準が必要なのか？": [
@@ -5493,7 +5485,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 156,
+        "line": 153,
         "level": 4,
         "title": "アダプターでの使用"
       }
@@ -5661,7 +5653,7 @@
     "アンロード/無効化クリーンアップシーケンス": [
       {
         "document": "advanced/ownership.md",
-        "line": 75,
+        "line": 78,
         "level": 2,
         "title": "アンロード/無効化クリーンアップシーケンス"
       }
@@ -5694,14 +5686,6 @@
         "line": 30,
         "level": 2,
         "title": "アーキテクチャ概要"
-      }
-    ],
-    "アーキテクチャ設計": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 8,
-        "level": 2,
-        "title": "アーキテクチャ設計"
       }
     ],
     "イベントにおけるアカウント識別": [
@@ -5979,7 +5963,7 @@
     "イベント変換": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 225,
+        "line": 226,
         "level": 2,
         "title": "イベント変換"
       },
@@ -6172,6 +6156,22 @@
         "title": "エコシステムモジュール"
       }
     ],
+    "エラーのキャプチャに関する提案": [
+      {
+        "document": "advanced/errors.md",
+        "line": 181,
+        "level": 2,
+        "title": "エラーのキャプチャに関する提案"
+      }
+    ],
+    "エラーの概要": [
+      {
+        "document": "advanced/errors.md",
+        "line": 14,
+        "level": 2,
+        "title": "エラーの概要"
+      }
+    ],
     "エラーコードの説明": [
       {
         "document": "platform-guide/discord.md",
@@ -6214,26 +6214,18 @@
         "title": "エラーハンドリング"
       }
     ],
-    "エラー一覧": [
-      {
-        "document": "advanced/errors.md",
-        "line": 14,
-        "level": 2,
-        "title": "エラー一覧"
-      }
-    ],
-    "エラー体系とキャッチガイド": [
+    "エラー体系とキャッチのガイド": [
       {
         "document": "advanced/errors.md",
         "line": 1,
         "level": 1,
-        "title": "エラー体系とキャッチガイド"
+        "title": "エラー体系とキャッチのガイド"
       }
     ],
     "エラー処理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 455,
+        "line": 456,
         "level": 2,
         "title": "エラー処理"
       },
@@ -6310,18 +6302,10 @@
         "title": "キャッシュとホットアップデート"
       }
     ],
-    "キャッチの推奨": [
-      {
-        "document": "advanced/errors.md",
-        "line": 174,
-        "level": 2,
-        "title": "キャッチの推奨"
-      }
-    ],
     "キャンセルタイミング（モジュールアンロード）": [
       {
         "document": "advanced/ownership.md",
-        "line": 175,
+        "line": 178,
         "level": 3,
         "title": "キャンセルタイミング（モジュールアンロード）"
       }
@@ -6329,7 +6313,7 @@
     "キャンセルチェーン（タスク登録表）": [
       {
         "document": "advanced/ownership.md",
-        "line": 166,
+        "line": 169,
         "level": 3,
         "title": "キャンセルチェーン（タスク登録表）"
       }
@@ -6810,14 +6794,6 @@
         "title": "コンポーネント関係"
       }
     ],
-    "コードで手動で切り替える": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 42,
-        "level": 3,
-        "title": "コードで手動で切り替える"
-      }
-    ],
     "コード例の規格": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -6832,6 +6808,14 @@
         "line": 24,
         "level": 2,
         "title": "コード内での使用方法"
+      }
+    ],
+    "コード内で手動で切り替え": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 42,
+        "level": 3,
+        "title": "コード内で手動で切り替え"
       }
     ],
     "コード品質": [
@@ -6989,7 +6973,7 @@
     "シナリオ1：モジュールがロードされていない": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 17,
+        "line": 16,
         "level": 2,
         "title": "シナリオ1：モジュールがロードされていない"
       }
@@ -6997,7 +6981,7 @@
     "シナリオ2：イベントが応答しない": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 39,
+        "line": 38,
         "level": 2,
         "title": "シナリオ2：イベントが応答しない"
       }
@@ -7005,17 +6989,9 @@
     "シナリオ3：コマンドがトリガーされない（配信決定チェーン）": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 60,
+        "line": 59,
         "level": 2,
         "title": "シナリオ3：コマンドがトリガーされない（配信決定チェーン）"
-      }
-    ],
-    "シャットダウン時のノイズの折りたたみ": [
-      {
-        "document": "advanced/errors.md",
-        "line": 189,
-        "level": 2,
-        "title": "シャットダウン時のノイズの折りたたみ"
       }
     ],
     "シャドウモジュールとグレーディングの正式化": [
@@ -7171,7 +7147,7 @@
     "セッション受信箱：event.history": [
       {
         "document": "advanced/interaction.md",
-        "line": 183,
+        "line": 181,
         "level": 2,
         "title": "セッション受信箱：event.history"
       }
@@ -7179,7 +7155,7 @@
     "セッション排他：acquire / hold / get_owner_of": [
       {
         "document": "advanced/interaction.md",
-        "line": 151,
+        "line": 150,
         "level": 2,
         "title": "セッション排他：acquire / hold / get_owner_of"
       }
@@ -7368,6 +7344,14 @@
         "title": "チェーン呼び出し"
       }
     ],
+    "チェーン呼び出しによるクエリ": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 77,
+        "level": 2,
+        "title": "チェーン呼び出しによるクエリ"
+      }
+    ],
     "チェーン呼び出しの例": [
       {
         "document": "platform-guide/discord.md",
@@ -7462,14 +7446,6 @@
         "title": "チェーン式呼び出しの例"
       }
     ],
-    "チェーン形式のクエリ": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 77,
-        "level": 2,
-        "title": "チェーン形式のクエリ"
-      }
-    ],
     "チャンネルメッセージの処理": [
       {
         "document": "platform-guide/discord.md",
@@ -7495,7 +7471,7 @@
     "ツールモジュールガイド：他のモジュールのハンドルを管理する": [
       {
         "document": "advanced/ownership.md",
-        "line": 237,
+        "line": 240,
         "level": 2,
         "title": "ツールモジュールガイド：他のモジュールのハンドルを管理する"
       }
@@ -7503,7 +7479,7 @@
     "テスト": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 509,
+        "line": 510,
         "level": 2,
         "title": "テスト"
       },
@@ -7549,7 +7525,7 @@
     "テスト中：TestBot.dispatch が DispatchTrace を返す": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 64,
+        "line": 63,
         "level": 3,
         "title": "テスト中：TestBot.dispatch が DispatchTrace を返す"
       }
@@ -7760,6 +7736,14 @@
         "title": "トリガーの意味"
       }
     ],
+    "トレースID：trace-id": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 212,
+        "level": 2,
+        "title": "トレースID：trace-id"
+      }
+    ],
     "ドキュメント": [
       {
         "document": "developer-guide/publishing.md",
@@ -7771,7 +7755,7 @@
     "ドキュメントの保守": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 619,
+        "line": 620,
         "level": 2,
         "title": "ドキュメントの保守"
       }
@@ -8130,12 +8114,12 @@
         "title": "ビューポートと出力形式"
       }
     ],
-    "ビルダのリセット": [
+    "ビルダーのリセット": [
       {
         "document": "advanced/sql-builder.md",
         "line": 261,
         "level": 2,
-        "title": "ビルダのリセット"
+        "title": "ビルダーのリセット"
       }
     ],
     "ファイバーメディアメッセージの変換例": [
@@ -8221,7 +8205,7 @@
     "フレームワークが内包する trace モジュール": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 76,
+        "line": 75,
         "level": 3,
         "title": "フレームワークが内包する trace モジュール"
       }
@@ -8229,7 +8213,7 @@
     "フレームワーク内部のパラメータ検証（ValueError）": [
       {
         "document": "advanced/errors.md",
-        "line": 168,
+        "line": 172,
         "level": 3,
         "title": "フレームワーク内部のパラメータ検証（ValueError）"
       }
@@ -8339,7 +8323,7 @@
     "プラットフォームイベントメソッド拡張": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 565,
+        "line": 566,
         "level": 2,
         "title": "プラットフォームイベントメソッド拡張"
       }
@@ -8629,7 +8613,7 @@
     "ホットリロード失敗ロールバック": [
       {
         "document": "advanced/ownership.md",
-        "line": 126,
+        "line": 129,
         "level": 2,
         "title": "ホットリロード失敗ロールバック"
       }
@@ -8718,6 +8702,14 @@
         "line": 518,
         "level": 2,
         "title": "マルチアカウントの設定"
+      }
+    ],
+    "マルチウェイティング：expect + select": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 118,
+        "level": 2,
+        "title": "マルチウェイティング：expect + select"
       }
     ],
     "マルチメソッド登録（Mixin クラス）": [
@@ -9041,7 +9033,7 @@
     "メッセージトランザクション：message_tx": [
       {
         "document": "advanced/interaction.md",
-        "line": 201,
+        "line": 199,
         "level": 2,
         "title": "メッセージトランザクション：message_tx"
       }
@@ -9314,12 +9306,12 @@
         "title": "モジュール"
       }
     ],
-    "モジュールで i18n を使用する": [
+    "モジュールでの i18n の使用": [
       {
         "document": "advanced/i18n.md",
-        "line": 80,
+        "line": 76,
         "level": 2,
-        "title": "モジュールで i18n を使用する"
+        "title": "モジュールでの i18n の使用"
       }
     ],
     "モジュールでの使用例": [
@@ -9425,7 +9417,7 @@
     "モジュールクラスでの使用": [
       {
         "document": "advanced/i18n.md",
-        "line": 227,
+        "line": 224,
         "level": 3,
         "title": "モジュールクラスでの使用"
       }
@@ -9553,7 +9545,7 @@
     "モジュール開発者ガイド": [
       {
         "document": "advanced/ownership.md",
-        "line": 191,
+        "line": 194,
         "level": 2,
         "title": "モジュール開発者ガイド"
       }
@@ -9774,12 +9766,12 @@
         "title": "ライフサイクル統合"
       }
     ],
-    "ラグジュアリー モジュールシステム": [
+    "ラグジュアリー・ロード・モジュール・システム": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 1,
         "level": 1,
-        "title": "ラグジュアリー モジュールシステム"
+        "title": "ラグジュアリー・ロード・モジュール・システム"
       }
     ],
     "ラグドロードシステム": [
@@ -9915,17 +9907,17 @@
     "リバース変換とメッセージ構築": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 555,
+        "line": 556,
         "level": 2,
         "title": "リバース変換とメッセージ構築"
       }
     ],
-    "リリースとモジュールストアのガイド": [
+    "リリースとモジュールストアガイド": [
       {
         "document": "developer-guide/publishing.md",
         "line": 1,
         "level": 1,
-        "title": "リリースとモジュールストアのガイド"
+        "title": "リリースとモジュールストアガイド"
       }
     ],
     "リンク制御": [
@@ -9942,14 +9934,6 @@
         "line": 590,
         "level": 2,
         "title": "リンク制御：認領とブロック"
-      }
-    ],
-    "リンク追跡：trace-id": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 214,
-        "level": 2,
-        "title": "リンク追跡：trace-id"
       }
     ],
     "ルーター・サーバー": [
@@ -10072,12 +10056,20 @@
         "title": "レプリメソッド"
       }
     ],
-    "レプリーの待ち：wait_reply": [
+    "レプリーが命中したときの完全な判定チェーン": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 70,
+        "level": 3,
+        "title": "レプリーが命中したときの完全な判定チェーン"
+      }
+    ],
+    "レプリーの待機：wait_reply": [
       {
         "document": "advanced/interaction.md",
         "line": 15,
         "level": 2,
-        "title": "レプリーの待ち：wait_reply"
+        "title": "レプリーの待機：wait_reply"
       }
     ],
     "レプリ機能": [
@@ -10131,7 +10123,7 @@
     "ログメッセージ": [
       {
         "document": "advanced/i18n.md",
-        "line": 578,
+        "line": 574,
         "level": 3,
         "title": "ログメッセージ"
       }
@@ -10349,7 +10341,7 @@
     "一般的アドバイス": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 111,
+        "line": 110,
         "level": 2,
         "title": "一般的アドバイス"
       }
@@ -10421,7 +10413,7 @@
     "事件工場": [
       {
         "document": "developer-guide/testing.md",
-        "line": 46,
+        "line": 45,
         "level": 2,
         "title": "事件工場"
       }
@@ -10434,26 +10426,26 @@
         "title": "事件拡張メソッド"
       }
     ],
-    "二、私はモジュール / アダプターを開発したい": [
+    "二、私はモジュール / アダプタを開発したい": [
       {
         "document": "README.md",
         "line": 34,
         "level": 3,
-        "title": "二、私はモジュール / アダプターを開発したい"
+        "title": "二、私はモジュール / アダプタを開発したい"
       }
     ],
-    "五、私はErisPulseに貢献したい": [
+    "五、私は ErisPulse に貢献したい": [
       {
         "document": "README.md",
         "line": 78,
         "level": 3,
-        "title": "五、私はErisPulseに貢献したい"
+        "title": "五、私は ErisPulse に貢献したい"
       }
     ],
     "五つの隔離ゲート": [
       {
         "document": "advanced/shadow.md",
-        "line": 48,
+        "line": 42,
         "level": 2,
         "title": "五つの隔離ゲート"
       }
@@ -10499,7 +10491,7 @@
     "他のシステムとの関係": [
       {
         "document": "advanced/interaction.md",
-        "line": 225,
+        "line": 223,
         "level": 2,
         "title": "他のシステムとの関係"
       }
@@ -10507,7 +10499,7 @@
     "他のメカニズムとの境界": [
       {
         "document": "advanced/transcript.md",
-        "line": 97,
+        "line": 99,
         "level": 2,
         "title": "他のメカニズムとの境界"
       }
@@ -10743,7 +10735,7 @@
     "依赖替换（需 EP>=2.9.0-dev）": [
       {
         "document": "developer-guide/testing.md",
-        "line": 101,
+        "line": 100,
         "level": 3,
         "title": "依赖替换（需 EP>=2.9.0-dev）"
       }
@@ -10931,7 +10923,7 @@
     "内部実装：所有権の仕組み": [
       {
         "document": "advanced/ownership.md",
-        "line": 149,
+        "line": 152,
         "level": 2,
         "title": "内部実装：所有権の仕組み"
       }
@@ -11011,7 +11003,7 @@
     "出站断言": [
       {
         "document": "developer-guide/testing.md",
-        "line": 73,
+        "line": 72,
         "level": 3,
         "title": "出站断言"
       }
@@ -11019,7 +11011,7 @@
     "分发": [
       {
         "document": "developer-guide/testing.md",
-        "line": 62,
+        "line": 61,
         "level": 3,
         "title": "分发"
       }
@@ -11027,7 +11019,7 @@
     "分发决策链（\"命令为什么没触发\"の調査；需 EP>=2.9.0-dev）": [
       {
         "document": "developer-guide/testing.md",
-        "line": 125,
+        "line": 124,
         "level": 2,
         "title": "分发决策链（\"命令为什么没触发\"の調査；需 EP>=2.9.0-dev）"
       }
@@ -11151,7 +11143,7 @@
       },
       {
         "document": "advanced/transcript.md",
-        "line": 10,
+        "line": 12,
         "level": 2,
         "title": "動作原理"
       },
@@ -11183,7 +11175,7 @@
     "動的コンテンツ": [
       {
         "document": "advanced/i18n.md",
-        "line": 566,
+        "line": 562,
         "level": 3,
         "title": "動的コンテンツ"
       }
@@ -11204,12 +11196,12 @@
         "title": "単一メソッドの登録"
       }
     ],
-    "単一行取得": [
+    "単一行の取得": [
       {
         "document": "advanced/sql-builder.md",
         "line": 149,
         "level": 4,
-        "title": "単一行取得"
+        "title": "単一行の取得"
       }
     ],
     "原始メッセージとメッセージ構築": [
@@ -11322,12 +11314,12 @@
         "title": "友達追加"
       }
     ],
-    "各エラーの説明と発生場所": [
+    "各エラーの説明と発生位置": [
       {
         "document": "advanced/errors.md",
         "line": 71,
         "level": 2,
-        "title": "各エラーの説明と発生場所"
+        "title": "各エラーの説明と発生位置"
       }
     ],
     "各プラットフォームのコールバックイベントマッピング": [
@@ -11381,7 +11373,7 @@
     "問題解決のアプローチ": [
       {
         "document": "advanced/ownership.md",
-        "line": 186,
+        "line": 189,
         "level": 3,
         "title": "問題解決のアプローチ"
       }
@@ -11757,7 +11749,7 @@
     "多アカウントサポート": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 393,
+        "line": 394,
         "level": 2,
         "title": "多アカウントサポート"
       },
@@ -11787,17 +11779,9 @@
     "多言語のカバー": [
       {
         "document": "advanced/i18n.md",
-        "line": 562,
+        "line": 558,
         "level": 3,
         "title": "多言語のカバー"
-      }
-    ],
-    "多重待ち：expect + select": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 119,
-        "level": 2,
-        "title": "多重待ち：expect + select"
       }
     ],
     "大文字小文字を区別しない呼び出し": [
@@ -11840,12 +11824,12 @@
         "title": "失敗時の自動再試行（Retry）"
       }
     ],
-    "学習の道筋を選択する": [
+    "学習の道筋を選ぶ": [
       {
         "document": "README.md",
         "line": 9,
         "level": 2,
-        "title": "学習の道筋を選択する"
+        "title": "学習の道筋を選ぶ"
       }
     ],
     "学習パス": [
@@ -11969,7 +11953,7 @@
     "実行時オーバーライド API": [
       {
         "document": "advanced/transcript.md",
-        "line": 49,
+        "line": 51,
         "level": 2,
         "title": "実行時オーバーライド API"
       }
@@ -11985,7 +11969,7 @@
     "実行時設定": [
       {
         "document": "advanced/i18n.md",
-        "line": 517,
+        "line": 513,
         "level": 2,
         "title": "実行時設定"
       }
@@ -12072,6 +12056,14 @@
         "title": "対応しているプラットフォームの機能"
       }
     ],
+    "対応する i18n フィールド": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 271,
+        "level": 3,
+        "title": "対応する i18n フィールド"
+      }
+    ],
     "対応するファイルタイプ": [
       {
         "document": "platform-guide/ideaura.md",
@@ -12130,14 +12122,6 @@
         "line": 30,
         "level": 3,
         "title": "対応済みプラットフォーム機能"
-      }
-    ],
-    "対応言語": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 8,
-        "level": 2,
-        "title": "対応言語"
       }
     ],
     "対話の作成": [
@@ -12219,7 +12203,7 @@
     "帰属チェーン（contextvar 伝播）": [
       {
         "document": "advanced/ownership.md",
-        "line": 153,
+        "line": 156,
         "level": 3,
         "title": "帰属チェーン（contextvar 伝播）"
       }
@@ -12248,20 +12232,12 @@
         "title": "建表と CRUD"
       }
     ],
-    "待ちがいつキャンセルされるか": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 56,
-        "level": 3,
-        "title": "待ちがいつキャンセルされるか"
-      }
-    ],
-    "待ちとコマンドの境界（コマンドの透過）": [
+    "待機とコマンドの境界（コマンドの透過）": [
       {
         "document": "advanced/interaction.md",
         "line": 52,
         "level": 3,
-        "title": "待ちとコマンドの境界（コマンドの透過）"
+        "title": "待機とコマンドの境界（コマンドの透過）"
       }
     ],
     "復元は即座に引き継ぎ": [
@@ -12327,7 +12303,7 @@
     "快速上手": [
       {
         "document": "advanced/shadow.md",
-        "line": 21,
+        "line": 15,
         "level": 2,
         "title": "快速上手"
       },
@@ -12349,7 +12325,7 @@
     "快速开始": [
       {
         "document": "developer-guide/testing.md",
-        "line": 16,
+        "line": 15,
         "level": 2,
         "title": "快速开始"
       }
@@ -12461,7 +12437,7 @@
     "所有リソースの全貌": [
       {
         "document": "advanced/ownership.md",
-        "line": 40,
+        "line": 43,
         "level": 2,
         "title": "所有リソースの全貌"
       }
@@ -12469,7 +12445,7 @@
     "所有者権限統一ファサード（ownership）": [
       {
         "document": "advanced/ownership.md",
-        "line": 100,
+        "line": 103,
         "level": 2,
         "title": "所有者権限統一ファサード（ownership）"
       }
@@ -12501,7 +12477,7 @@
     "手動でカスタム翻訳を登録する（旧方法）": [
       {
         "document": "advanced/i18n.md",
-        "line": 190,
+        "line": 187,
         "level": 3,
         "title": "手動でカスタム翻訳を登録する（旧方法）"
       }
@@ -12738,14 +12714,6 @@
         "title": "接続リトライ"
       }
     ],
-    "接続レジストリシリーズ — `Core/connections.py`（2.10+）": [
-      {
-        "document": "advanced/errors.md",
-        "line": 100,
-        "level": 3,
-        "title": "接続レジストリシリーズ — `Core/connections.py`（2.10+）"
-      }
-    ],
     "接続失敗時の動作": [
       {
         "document": "advanced/storage-backends.md",
@@ -12754,10 +12722,18 @@
         "title": "接続失敗時の動作"
       }
     ],
+    "接続登録表系列 — `Core/connections.py`（2.10+）": [
+      {
+        "document": "advanced/errors.md",
+        "line": 100,
+        "level": 3,
+        "title": "接続登録表系列 — `Core/connections.py`（2.10+）"
+      }
+    ],
     "接続管理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 108,
+        "line": 109,
         "level": 2,
         "title": "接続管理"
       },
@@ -12776,18 +12752,18 @@
         "title": "推奨モジュールと公式クライアント"
       }
     ],
-    "推奨方法: `I18nClass` で翻訳キーを宣言する (v2.7.0+)": [
+    "推奨方法：I18nClass を使って翻訳キーを宣言する（v2.7.0+）": [
       {
         "document": "advanced/i18n.md",
-        "line": 84,
+        "line": 80,
         "level": 3,
-        "title": "推奨方法: `I18nClass` で翻訳キーを宣言する (v2.7.0+)"
+        "title": "推奨方法：I18nClass を使って翻訳キーを宣言する（v2.7.0+）"
       }
     ],
     "推奨書き方": [
       {
         "document": "advanced/ownership.md",
-        "line": 193,
+        "line": 196,
         "level": 3,
         "title": "推奨書き方"
       }
@@ -12880,6 +12856,14 @@
         "line": 24,
         "level": 2,
         "title": "支援するメッセージ送信タイプ"
+      }
+    ],
+    "支援言語": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 8,
+        "level": 2,
+        "title": "支援言語"
       }
     ],
     "断線再接続": [
@@ -13010,12 +12994,12 @@
         "title": "旧設定の互換性"
       }
     ],
-    "早速体験する": [
+    "早速体験": [
       {
         "document": "advanced/i18n.md",
         "line": 18,
         "level": 2,
-        "title": "早速体験する"
+        "title": "早速体験"
       }
     ],
     "早速始める": [
@@ -13051,6 +13035,12 @@
       }
     ],
     "最佳実践": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 546,
+        "level": 2,
+        "title": "最佳実践"
+      },
       {
         "document": "advanced/lazy-loading.md",
         "line": 193,
@@ -13108,12 +13098,6 @@
       {
         "document": "advanced/http-client.md",
         "line": 493,
-        "level": 2,
-        "title": "最適な実践"
-      },
-      {
-        "document": "advanced/i18n.md",
-        "line": 550,
         "level": 2,
         "title": "最適な実践"
       }
@@ -13174,6 +13158,14 @@
         "title": "条目テンプレート"
       }
     ],
+    "架構設計": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 8,
+        "level": 2,
+        "title": "架構設計"
+      }
+    ],
     "核心フィールドメソッド": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -13185,7 +13177,7 @@
     "核心メソッド": [
       {
         "document": "advanced/i18n.md",
-        "line": 430,
+        "line": 428,
         "level": 4,
         "title": "核心メソッド"
       },
@@ -13533,7 +13525,7 @@
     "模块加载": [
       {
         "document": "developer-guide/testing.md",
-        "line": 90,
+        "line": 89,
         "level": 3,
         "title": "模块加载"
       }
@@ -13637,7 +13629,7 @@
     "正直な境界（防ぎきれない）": [
       {
         "document": "advanced/shadow.md",
-        "line": 60,
+        "line": 54,
         "level": 2,
         "title": "正直な境界（防ぎきれない）"
       }
@@ -13653,7 +13645,7 @@
     "治理系の静かに一致した判定の識別": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 107,
+        "line": 106,
         "level": 3,
         "title": "治理系の静かに一致した判定の識別"
       }
@@ -13673,7 +13665,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 215,
+        "line": 218,
         "level": 3,
         "title": "注意事項"
       },
@@ -13820,20 +13812,20 @@
         "title": "環境変数"
       }
     ],
-    "環境変数で切り替える": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 20,
-        "level": 3,
-        "title": "環境変数で切り替える"
-      }
-    ],
     "環境変数による上書き": [
       {
         "document": "user-guide/configuration.md",
         "line": 58,
         "level": 2,
         "title": "環境変数による上書き"
+      }
+    ],
+    "環境変数による切り替え": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 20,
+        "level": 3,
+        "title": "環境変数による切り替え"
       }
     ],
     "環境診断": [
@@ -13903,7 +13895,7 @@
     "登録タイミング → 所有結果対照表": [
       {
         "document": "advanced/ownership.md",
-        "line": 222,
+        "line": 225,
         "level": 3,
         "title": "登録タイミング → 所有結果対照表"
       }
@@ -14121,7 +14113,7 @@
     "翻訳のアンロード": [
       {
         "document": "advanced/i18n.md",
-        "line": 261,
+        "line": 258,
         "level": 3,
         "title": "翻訳のアンロード"
       }
@@ -14129,7 +14121,7 @@
     "翻訳の使用": [
       {
         "document": "advanced/i18n.md",
-        "line": 212,
+        "line": 209,
         "level": 3,
         "title": "翻訳の使用"
       }
@@ -14137,7 +14129,7 @@
     "翻訳キーの命名": [
       {
         "document": "advanced/i18n.md",
-        "line": 552,
+        "line": 548,
         "level": 3,
         "title": "翻訳キーの命名"
       }
@@ -14423,7 +14415,7 @@
     "言語検出メカニズム": [
       {
         "document": "advanced/i18n.md",
-        "line": 57,
+        "line": 55,
         "level": 2,
         "title": "言語検出メカニズム"
       }
@@ -14439,7 +14431,7 @@
     "設定": [
       {
         "document": "advanced/transcript.md",
-        "line": 35,
+        "line": 37,
         "level": 2,
         "title": "設定"
       },
@@ -14456,6 +14448,14 @@
         "title": "設定"
       }
     ],
+    "設定APIを介してi18n設定を読み取る": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 515,
+        "level": 3,
+        "title": "設定APIを介してi18n設定を読み取る"
+      }
+    ],
     "設定のホットアップデート": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -14470,12 +14470,12 @@
         "title": "設定のホットアップデート"
       }
     ],
-    "設定の翻訳を登録する": [
+    "設定の翻訳登録": [
       {
         "document": "advanced/i18n.md",
-        "line": 371,
+        "line": 368,
         "level": 3,
-        "title": "設定の翻訳を登録する"
+        "title": "設定の翻訳登録"
       }
     ],
     "設定の説明": [
@@ -14582,12 +14582,12 @@
         "title": "設定ファイル"
       }
     ],
-    "設定ファイルで切り替える": [
+    "設定ファイルによる切り替え": [
       {
         "document": "advanced/i18n.md",
         "line": 31,
         "level": 3,
-        "title": "設定ファイルで切り替える"
+        "title": "設定ファイルによる切り替え"
       }
     ],
     "設定ファイルの場所": [
@@ -14609,7 +14609,7 @@
     "設定フィールドの多言語対応": [
       {
         "document": "advanced/i18n.md",
-        "line": 270,
+        "line": 267,
         "level": 2,
         "title": "設定フィールドの多言語対応"
       }
@@ -14699,7 +14699,7 @@
     "設定項目の説明": [
       {
         "document": "advanced/i18n.md",
-        "line": 532,
+        "line": 528,
         "level": 3,
         "title": "設定項目の説明"
       },
@@ -14713,7 +14713,7 @@
     "設計境界：アンロード時にクリーンアップされないリソース": [
       {
         "document": "advanced/ownership.md",
-        "line": 136,
+        "line": 139,
         "level": 2,
         "title": "設計境界：アンロード時にクリーンアップされないリソース"
       }
@@ -14774,12 +14774,12 @@
         "title": "起動と停止"
       }
     ],
-    "起動プロセスと手動制御": [
+    "起動フローと手動制御": [
       {
         "document": "advanced/startup.md",
         "line": 1,
         "level": 1,
-        "title": "起動プロセスと手動制御"
+        "title": "起動フローと手動制御"
       }
     ],
     "跨プラットフォームメソッドの登録": [
@@ -14807,7 +14807,7 @@
     "転正とロールバック": [
       {
         "document": "advanced/shadow.md",
-        "line": 69,
+        "line": 63,
         "level": 2,
         "title": "転正とロールバック"
       }
@@ -14839,17 +14839,9 @@
     "近接マッピング原則": [
       {
         "document": "advanced/i18n.md",
-        "line": 67,
+        "line": 65,
         "level": 3,
         "title": "近接マッピング原則"
-      }
-    ],
-    "返信が命中する完全な判定チェーン": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 70,
-        "level": 3,
-        "title": "返信が命中する完全な判定チェーン"
       }
     ],
     "返信待ち機能": [
@@ -15243,7 +15235,7 @@
     "配置覆写": [
       {
         "document": "developer-guide/testing.md",
-        "line": 111,
+        "line": 110,
         "level": 3,
         "title": "配置覆写"
       }
@@ -15359,7 +15351,7 @@
       },
       {
         "document": "advanced/interaction.md",
-        "line": 231,
+        "line": 229,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -15395,13 +15387,13 @@
       },
       {
         "document": "advanced/shadow.md",
-        "line": 76,
+        "line": 70,
         "level": 2,
         "title": "関連ドキュメント"
       },
       {
         "document": "advanced/sql-builder.md",
-        "line": 435,
+        "line": 439,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -15443,7 +15435,7 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 651,
+        "line": 652,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -15584,12 +15576,12 @@
         "title": "静的ファクトリ + チェーン混合"
       }
     ],
-    "非同期のネイティブAPI": [
+    "非同期のネイティブ API": [
       {
         "document": "advanced/sql-builder.md",
         "line": 292,
         "level": 2,
-        "title": "非同期のネイティブAPI"
+        "title": "非同期のネイティブ API"
       }
     ],
     "非同期インターフェース": [
@@ -15649,9 +15641,17 @@
     "風険と監査：制限を解放する前に必ず読む": [
       {
         "document": "advanced/transcript.md",
-        "line": 71,
+        "line": 73,
         "level": 2,
         "title": "風険と監査：制限を解放する前に必ず読む"
+      }
+    ],
+    "騒音の抑制": [
+      {
+        "document": "advanced/errors.md",
+        "line": 196,
+        "level": 2,
+        "title": "騒音の抑制"
       }
     ],
     "高レベルメソッド（推奨）": [
@@ -15662,20 +15662,20 @@
         "title": "高レベルメソッド（推奨）"
       }
     ],
+    "高度なトピック": [
+      {
+        "document": "advanced/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "高度なトピック"
+      }
+    ],
     "高度な操作：辞書式ドット区切りパスバックアップ": [
       {
         "document": "advanced/scope.md",
         "line": 258,
         "level": 3,
         "title": "高度な操作：辞書式ドット区切りパスバックアップ"
-      }
-    ],
-    "高級トピック": [
-      {
-        "document": "advanced/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "高級トピック"
       }
     ]
   }

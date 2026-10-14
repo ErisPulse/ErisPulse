@@ -128,7 +128,7 @@
           "icon": "fa-code"
         },
         {
-          "title": "モジュール商店への公開ガイド",
+          "title": "リリースとモジュールストアガイド",
           "path": "developer-guide/publishing.md",
           "level": 1,
           "icon": "fa-upload"
@@ -200,13 +200,13 @@
               "icon": "fa-microchip"
             },
             {
-              "title": "SendDSL 详解",
+              "title": "SendDSL の詳細",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1,
               "icon": "fa-code-branch"
             },
             {
-              "title": "アダプタ開発のベストプラクティス",
+              "title": "アダプター開発のベストプラクティス",
               "path": "developer-guide/adapters/best-practices.md",
               "level": 1,
               "icon": "fa-medal"
@@ -369,7 +369,7 @@
       "count": 19,
       "documents": [
         {
-          "title": "高級トピック",
+          "title": "高度なトピック",
           "path": "advanced/README.md",
           "level": 1,
           "icon": "fa-fire"
@@ -381,7 +381,7 @@
           "icon": "fa-clock-rotate-left"
         },
         {
-          "title": "ラグジュアリー ロード モジュール システム",
+          "title": "ラグジュアリー・ロード・モジュール・システム",
           "path": "advanced/lazy-loading.md",
           "level": 1,
           "icon": "fa-hourglass-half"
@@ -411,7 +411,7 @@
           "icon": "fa-globe"
         },
         {
-          "title": "SQL クエリビルダー",
+          "title": "SQL クエリビルダ",
           "path": "advanced/sql-builder.md",
           "level": 1,
           "icon": "fa-database"
@@ -435,13 +435,13 @@
           "icon": "fa-user-tag"
         },
         {
-          "title": "交互会话システム",
+          "title": "交互会話システム",
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"
         },
         {
-          "title": "シャドウモジュールとグレーディングから本番への移行",
+          "title": "シャドウモジュールとグレーディングの正式化",
           "path": "advanced/shadow.md",
           "level": 1,
           "icon": "fa-eye"
@@ -459,7 +459,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "エラーシステムとキャッチガイド",
+          "title": "エラー体系とキャッチのガイド",
           "path": "advanced/errors.md",
           "level": 1,
           "icon": "fa-triangle-exclamation"
@@ -471,13 +471,13 @@
           "icon": "fa-fire"
         },
         {
-          "title": "スタートフローと手動制御",
+          "title": "起動フローと手動制御",
           "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"
         },
         {
-          "title": "会話トランザクト（Transcript）",
+          "title": "会話トランスク립ト（Transcript）",
           "path": "advanced/transcript.md",
           "level": 1,
           "icon": "fa-fire"

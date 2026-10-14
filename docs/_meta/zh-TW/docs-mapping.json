@@ -429,13 +429,13 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "所有权（owner）系統",
+          "title": "归屬權（owner）系統",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
         },
         {
-          "title": "互動會話系統",
+          "title": "互動對話系統",
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"
