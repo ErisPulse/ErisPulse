@@ -78,7 +78,7 @@
 > 正式发布
 
 **版本摘要**
-本版本为命令与消息处理链路的健壮性维护：集中修复多段消息参数丢失、"先 @ 后命令"不可达、命令被拒后重复回复与权限函数副作用双触发、交互等待被命令消息重入消费、`select` 同键多路互踢、坏模块条件函数拖死分发链等一批深层缺陷；同期统一 mention/at 语义（converter 产出 OB12 规范 `mention` 段）、补齐无 `alt_message` 适配器的全链路文本回退，并将测试会话的配置隔离升级为干净替换。全部为缺陷修复与防御加固，无新 API。
+本版本为命令与消息处理链路的健壮性维护：集中修复多段消息参数丢失、"先 @ 后命令"不可达、命令被拒后重复回复与权限函数副作用双触发、交互等待被命令消息重入消费、`select` 同键多路互踢、坏模块条件函数拖死分发链等一批深层缺陷；同期统一 mention/at 语义（converter 产出 OB12 规范 `mention` 段）、补齐无 `alt_message` 适配器的全链路文本回退，将测试会话的配置隔离升级为干净替换，并为退出路径新增确定性关停。除新增配置监视线程的统一停止入口（`ConfigManager.stop_all_watchers()`）外无其它 API 变化。
 
 **升级建议**
 - **是否建议升级**：建议升级
@@ -89,6 +89,16 @@
 - `BaseConverter.at()` 产出由 `{"type":"at"}` 修正为 OB12 规范 `{"type":"mention"}`（全框架 mention 判定此前不识别 "at" 形态）；依赖旧形态的适配器请同步
 - 会话级等待键并入 `detail_type`（进程内等待，无迁移）；`overrides` 的 pattern 文本条件对 message 事件空文本改为**不命中**（与 message 装饰器口径一致，notice / meta 维持放行）
 - 测试会话的配置隔离升级为干净替换：维护者本机 `config/config.toml` 若残留历史测试写入（如模块启用态残渣），可顺手清理
+
+### 修复
+
+- @YingXinche
+  - 退出健壮性：uninit 链与测试会话收尾**显式确定性关停**常驻线程（同步桥接循环按"先连接后桥"顺序停止、配置监视线新增统一停止入口 `ConfigManager.stop_all_watchers()`）——消除退出期 aiosqlite "Event loop is closed" 噪音与偶发的进程退出挂死
+
+### 文档
+
+- @YingXinche
+  - 文档站阅读路径翻新：首页新增"**不需要读完所有文档**"声明与 **L1 核心五篇**最小必读集；进阶/指南各篇开头新增"什么时候需要读这篇"适用场景标注（30 篇）——文档全部转为按需查阅，无需通读
 
 ---
 
@@ -117,6 +127,8 @@
   - `Core/Bases/converter` `at()` 产出修正为 OB12 规范 `mention` 段（保留方法名别名，新增 `mention` 别名）
   - `Event.get_text() / get_message_text()` 无 `alt_message` 时回退为 text 段拼接（此前静默返回空串，脚手架示例在未填 alt 的适配器上失效）
   - 边界加固：`MessageBuilder.build()` 深拷贝防产物回写污染、`mention()/reply()` 空参 fail-fast、命令空名/非字符串名注册期校验、会话级键并入 `detail_type`、`platform` 非字符串守卫、mixin 覆盖 dict 内建名与 `command` 键冲突告警
+  - 退出健壮性：uninit 链新增 7.6 显式确定性关停步骤（`AsyncBridge.close()` 按先连接后桥顺序、新增公开入口 `ConfigManager.stop_all_watchers()`）；测试会话 `pytest_sessionfinish` 同步关停
+  - 文档：阅读路径翻新（首页"不必全读"声明 + L1 核心五篇 + 30 篇判读框）
 
 ---
 
