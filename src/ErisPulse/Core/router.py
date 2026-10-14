@@ -975,15 +975,6 @@ class RouterManager:
 
         @self.app.get("/", include_in_schema=False)
         async def root_page(request: Request) -> HTMLResponse:
-            dashboard_available = False
-            try:
-                import ErisPulse as _pkg  # noqa: N813 - 包名是 PascalCase，别名需小写以符合 PEP 8
-
-                _sdk = _pkg.sdk
-                dashboard_available = hasattr(_sdk, "Dashboard") and _sdk.Dashboard
-            except Exception:
-                pass
-
             from .assets import render_root_page
 
             entries: list[dict] = []
@@ -996,13 +987,6 @@ class RouterManager:
                     "url": entry["url"],
                     "icon_svg": entry.get("icon_svg", ""),
                 })
-            if dashboard_available:
-                entries.insert(0, {
-                    "name": "Dashboard",
-                    "url": "/Dashboard",
-                    "icon_svg": '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>'
-                })
-
             html = render_root_page(
                 version=self._erispulse_version(),
                 sub_text=i18n.t("core.router.root_page_text"),
