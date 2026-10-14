@@ -1,10 +1,14 @@
-# 錯誤體系與捕獲指南
+# 異常體系與捕獲指南
 
-ErisPulse 所有自訂的錯誤都繼承自 `ErisPulseError`，底層庫的錯誤（aiohttp、aiomysql 等）會在框架內部被捕獲並轉換為對應的 ErisPulse 錯誤——業務程式碼**不需要依賴任何底層庫的錯誤類型**。
+> [!NOTE]
+> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
+
+ErisPulse 所有自定義異常都繼承自 `ErisPulseError`，底層庫異常（aiohttp、aiomysql 等）  
+會在框架內部被捕獲並轉換為對應的 ErisPulse 異常——業務程式碼**無需依賴任何底層庫異常類型**。
 
 {!--< tips >!--}
-1. 想要廣泛兜底：捕獲 `ErisPulseError`（所有框架錯誤的基類）
-2. 想要精確處理：按模組捕獲（如 `ModuleCallTimeoutError`、`StorageUnreachableError`）
+1. 想寬泛兜底：捕獲 `ErisPulseError`（所有框架異常的基類）
+2. 想精確處理：按模組捕獲（如 `ModuleCallTimeoutError`、`StorageUnreachableError`）
 3. 儲存操作預設不拋出：失敗時記錄日誌並返回 `False / None / default`；連線狀態變化訂閱 `storage.unreachable` / `storage.recovered` 事件
 {!--< /tips >!--}
 

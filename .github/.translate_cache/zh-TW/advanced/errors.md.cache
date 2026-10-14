@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "48aaa0fff964cb44a4041f7219e0e4fb",
-  "file_hash": "48aaa0fff964cb44a4041f7219e0e4fb",
-  "translated_at": "2026-10-09T14:51:45.569685",
+  "hash": "310a226fadbdb1e4f9438119924810d5",
+  "file_hash": "310a226fadbdb1e4f9438119924810d5",
+  "translated_at": "2026-10-14T14:13:12.511176",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "7bcdbe2822393ffcb164bd618230344c",
-      "translation": "# 錯誤體系與捕獲指南\n\nErisPulse 所有自訂的錯誤都繼承自 `ErisPulseError`，底層庫的錯誤（aiohttp、aiomysql 等）會在框架內部被捕獲並轉換為對應的 ErisPulse 錯誤——業務程式碼**不需要依賴任何底層庫的錯誤類型**。\n\n{!--< tips >!--}\n1. 想要廣泛兜底：捕獲 `ErisPulseError`（所有框架錯誤的基類）\n2. 想要精確處理：按模組捕獲（如 `ModuleCallTimeoutError`、`StorageUnreachableError`）\n3. 儲存操作預設不拋出：失敗時記錄日誌並返回 `False / None / default`；連線狀態變化訂閱 `storage.unreachable` / `storage.recovered` 事件\n{!--< /tips >!--}"
+      "hash": "f5279cb51c0e876a32829e9c2a6f94a9",
+      "translation": "# 異常體系與捕獲指南\n\n> [!NOTE]\n> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。\n\nErisPulse 所有自定義異常都繼承自 `ErisPulseError`，底層庫異常（aiohttp、aiomysql 等）  \n會在框架內部被捕獲並轉換為對應的 ErisPulse 異常——業務程式碼**無需依賴任何底層庫異常類型**。\n\n{!--< tips >!--}\n1. 想寬泛兜底：捕獲 `ErisPulseError`（所有框架異常的基類）\n2. 想精確處理：按模組捕獲（如 `ModuleCallTimeoutError`、`StorageUnreachableError`）\n3. 儲存操作預設不拋出：失敗時記錄日誌並返回 `False / None / default`；連線狀態變化訂閱 `storage.unreachable` / `storage.recovered` 事件\n{!--< /tips >!--}"
     },
     {
       "hash": "a729f3a16f39abddf7670ad8861bab01",

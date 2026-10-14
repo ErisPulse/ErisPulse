@@ -323,29 +323,29 @@ epsdk run --reload
 
 ---
 
-## 專案管理命令
+## 項目管理命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 專案 |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | 建立模組/適配器腳手架 |
+| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 項目 |
+| `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | 創建模組/適配器腳手架；`pack` 將本地插件轉換為可發布項目 |
 
 ### init
 
-初始化一個新的 ErisPulse 專案。支援互動式與快速模式，2.8.4 起生成 `pyproject.toml`（相依性清單）、可選建立專案 `.venv` 虛擬環境並安裝框架與適配器，並支援**指定任意目錄**。
+初始化一個新的 ErisPulse 項目。支援互動式與快速模式，2.8.4 起生成 `pyproject.toml`（依賴清單）、可選創建項目 `.venv` 虛擬環境並安裝框架與適配器，並支援**指定任意目錄**。
 
 **參數：**
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
 | `[path]` | | 目標路徑（可包含父目錄，如 `../apps/mybot`；純名稱等價 `--project-name`） |
-| `--project-name` | `-n` | 專案名稱 |
-| `--path` | | 專案父目錄（與 `-n` 組合指定建立位置） |
-| `--quick` | `-q` | 快速模式，跳過互動式向導（預設建立 `.venv` 並安裝相依性） |
-| `--force` | `-f` | 強制覆蓋現有設定檔案 |
+| `--project-name` | `-n` | 項目名稱 |
+| `--path` | | 項目父目錄（與 `-n` 組合指定建立位置） |
+| `--quick` | `-q` | 快速模式，跳過互動式向導（預設建立 `.venv` 並安裝依賴） |
+| `--force` | `-f` | 強制覆蓋現有配置檔案 |
 | `--here` | | 在當前目錄初始化，不建立子目錄 |
 | `--no-uv` | | 使用 pip 代替 uv |
-| `--no-venv` | | 跳過虛擬環境建立與相依性安裝 |
+| `--no-venv` | | 跳過虛擬環境建立與依賴安裝 |
 
 **示例：**
 
@@ -359,44 +359,44 @@ epsdk init -q -n my_bot
 # 指定任意目錄初始化（../apps/mybot）
 epsdk init ../apps/mybot
 
-# 組合父目錄與專案名
+# 組合父目錄與項目名
 epsdk init -n my_bot --path ../apps
 
-# 強制覆蓋已有設定
+# 強制覆蓋已有配置
 epsdk init -f
 
 # 在當前目錄初始化
 epsdk init --here -n my_bot
 
-# 只生成專案結構，不建立虛擬環境
+# 只生成項目結構，不建立虛擬環境
 epsdk init --no-venv -n my_bot
 ```
 
-init 產物：`main.py`、`pyproject.toml`（相依性清單）、`config/config.toml` + `config.full.example`、`config/ssl/`、`logs/`、`.gitignore`、`README.md`；選擇建立虛擬環境時額外生成 `.venv` 並將 `erispulse` 與所選適配器安裝其中。
+init 產物：`main.py`、`pyproject.toml`（依賴清單）、`config/config.toml` + `config.full.example`、`config/ssl/`、`logs/`、`.gitignore`、`README.md`；選擇建立虛擬環境時額外生成 `.venv` 並將 `erispulse` 與所選適配器安裝其中。
 
 > [!NOTE]
-> `.gitignore` 為分組式範本：Python 位元組碼與建構產物、虛擬環境與 `.env`、工具快取、編輯器與系統檔案，並**整體排除 `config/` 與 `logs/` 運行時目錄**——`config.toml` 含適配器權杖等敏感資訊，不建議加入版本控制；共享設定骨架請使用 `config.full.example`。
+> `.gitignore` 為分組式模板：Python 字節碼與建構產物、虛擬環境與 `.env`、工具快取、編輯器與系統檔案，並**整體排除 `config/` 與 `logs/` 運行時目錄**——`config.toml` 含適配器令牌等敏感資訊，不建議入庫；共享配置骨架請使用 `config.full.example`。
 
 > [!WARNING]
-> **不要使用 `uv run epsdk run` 運行機器人**。`uv run` 在無 `pyproject.toml` 的目錄執行時建立**一次性隔離環境**——在其中透過 `epsdk install` 安裝的適配器不會永久化。請在專案目錄內使用 `epsdk run`（自動使用專案 `.venv`），或先激活虛擬環境再執行。
+> **不要使用 `uv run epsdk run` 運行機器人**。`uv run` 在無 `pyproject.toml` 的目錄執行時建立**一次性隔離環境**——在其中透過 `epsdk install` 安裝的適配器不會持久化。請在項目目錄內使用 `epsdk run`（自動使用項目 `.venv`），或先激活虛擬環境再運行。
 
 ### create
 
-建立 ErisPulse 模組或適配器的腳手架專案。
+建立 ErisPulse 模組或適配器的腳手架項目；`pack` 子命令將本地插件（`plugins/` 目錄）轉換為可發布的標準項目。
 
 **參數：**
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `{module,adapter}` | | 要建立的類型：`module` 或 `adapter` |
-| `--name` | `-n` | 專案名稱（PascalCase） |
-| `--description` | `-d` | 專案描述 |
+| `{module,adapter,pack}` | | 要建立的類型：`module` / `adapter` / `pack`（插件轉項目）|
+| `--name` | `-n` | 項目名稱（PascalCase） |
+| `--description` | `-d` | 項目描述 |
 | `--author` | `-a` | 作者名稱 |
-| `--email` | `-e` | 作者電郵 |
-| `--homepage` | | 專案首頁 URL |
+| `--email` | `-e` | 作者電子信箱 |
+| `--homepage` | | 項目主頁 URL |
 | `--output` | `-o` | 輸出目錄（預設當前目錄） |
 | `--force` | `-f` | 強制覆蓋已存在的目錄 |
-| `--local` | | 建立本地插件（僅 `module` 可用）：生成 `plugins/<name>/` 包結構，免打包安裝 |
+| `--local` | | 建立本地插件（`module` / `adapter` 可用）：生成 `plugins/<name>/` 包結構，免打包安裝 |
 
 **示例：**
 
@@ -404,14 +404,20 @@ init 產物：`main.py`、`pyproject.toml`（相依性清單）、`config/config
 # 互動式建立（引導選擇類型和填寫資訊）
 epsdk create
 
-# 直接建立 Module 專案
+# 直接建立 Module 項目
 epsdk create module -n MyModule
 
-# 建立本地插件（放入專案 plugins/ 目錄，啟動時自動發現，支援熱重載）
+# 建立本地插件（放入項目 plugins/ 目錄，啟動時自動發現）
 epsdk create module -n MyModule --local
 
-# 直接建立 Adapter 專案
+# 建立本地適配器插件（同上，免打包開發）
+epsdk create adapter -n MyAdapter --local
+
+# 直接建立 Adapter 項目
 epsdk create adapter -n MyAdapter
+
+# 將本地插件轉換為可發布項目（互動選擇插件 → 補全元資訊 → 生成標準項目）
+epsdk create pack
 
 # 完整參數
 epsdk create module -n MyModule -d "模組描述" -a "作者" -e "mail@example.com"
@@ -424,6 +430,7 @@ epsdk create module -n MyModule -f
 ```
 
 ---
+[!TOC]
 
 ## 語言命令
 

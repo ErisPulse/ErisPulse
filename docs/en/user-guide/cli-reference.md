@@ -327,21 +327,21 @@ epsdk run --reload
 
 | Command | Alias | Parameters | Description |
 |---------|-------|------------|-------------|
-| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | Initialize ErisPulse project |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | Create module/adapter scaffold |
+| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | Initialize an ErisPulse project |
+| `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | Create scaffolding for module/adapter; `pack` converts local plugins into a distributable project |
 
 ### init
 
-Initialize a new ErisPulse project. Supports interactive and quick modes, generates `pyproject.toml` (dependency manifest) since 2.8.4, optionally creates project `.venv` virtual environment and installs framework and adapters, and supports **specifying any directory**.
+Initialize a new ErisPulse project. Supports interactive and quick modes, generates `pyproject.toml` (dependency manifest) since 2.8.4, optionally creates a project `.venv` virtual environment and installs framework and adapters, and supports **specifying any directory**.
 
 **Parameters:**
 
 | Parameter | Short | Description |
-|-----------|--------|-------------|
-| `[path]` | | Target path (can include parent directory, e.g. `../apps/mybot`; pure name equivalent to `--project-name`) |
+|-----------|-------|-------------|
+| `[path]` | | Target path (can include parent directory, e.g., `../apps/mybot`; pure name is equivalent to `--project-name`) |
 | `--project-name` | `-n` | Project name |
-| `--path` | | Project parent directory (combined with `-n` to specify creation location) |
-| `--quick` | `-q` | Quick mode, skip interactive wizard (default creates `.venv` and installs dependencies) |
+| `--path` | | Parent directory for the project (combined with `-n` to specify creation location) |
+| `--quick` | `-q` | Quick mode, skips interactive wizard (default creates `.venv` and installs dependencies) |
 | `--force` | `-f` | Force overwrite existing configuration files |
 | `--here` | | Initialize in current directory, do not create subdirectory |
 | `--no-uv` | | Use pip instead of uv |
@@ -356,7 +356,7 @@ epsdk init
 # Quick initialization (creates my_bot/ in current directory, with pyproject.toml + .venv)
 epsdk init -q -n my_bot
 
-# Initialize in any directory (../apps/mybot)
+# Initialize in any specified directory (../apps/mybot)
 epsdk init ../apps/mybot
 
 # Combine parent directory and project name
@@ -368,53 +368,59 @@ epsdk init -f
 # Initialize in current directory
 epsdk init --here -n my_bot
 
-# Generate project structure only, skip virtual environment creation
+# Generate project structure only, skip virtual environment
 epsdk init --no-venv -n my_bot
 ```
 
-init output: `main.py`, `pyproject.toml` (dependency manifest), `config/config.toml` + `config.full.example`, `config/ssl/`, `logs/`, `.gitignore`, `README.md`; if virtual environment creation is selected, additionally generates `.venv` and installs `erispulse` and selected adapters into it.
+Init output: `main.py`, `pyproject.toml` (dependency manifest), `config/config.toml` + `config.full.example`, `config/ssl/`, `logs/`, `.gitignore`, `README.md`; if virtual environment is chosen, `.venv` is created and `erispulse` along with selected adapters are installed within it.
 
 > [!NOTE]
-> `.gitignore` is a grouped template: Python bytecode and build artifacts, virtual environment and `.env`, tool cache, editor and system files, and **excludes `config/` and `logs/` runtime directories as a whole**—`config.toml` contains sensitive information like adapter tokens and should not be committed to the repository; for sharing configuration skeletons, use `config.full.example`.
+> `.gitignore` is a grouped template: Python bytecode and build artifacts, virtual environments and `.env`, tool caches, editor and system files, and **excludes the runtime directories `config/` and `logs/` entirely**—`config.toml` contains sensitive information such as adapter tokens and should not be committed; for sharing configuration skeletons, use `config.full.example`.
 
 > [!WARNING]
-> **Do not use `uv run epsdk run` to run the robot**. `uv run` creates a **one-time isolated environment** when executed in a directory without `pyproject.toml`—packages installed via `epsdk install` in it will not persist. Use `epsdk run` within the project directory (which automatically uses the project `.venv`), or activate the virtual environment first before running.
+> **Do not use `uv run epsdk run` to run the bot**. `uv run` creates a **one-time isolated environment** when executed in a directory without `pyproject.toml`—dependencies installed via `epsdk install` in this environment will not persist. Use `epsdk run` within the project directory (which automatically uses the project’s `.venv`), or activate the virtual environment first before running.
 
 ### create
 
-Create a scaffold project for ErisPulse module or adapter.
+Create scaffolding for ErisPulse modules or adapters; the `pack` subcommand converts local plugins (`plugins/` directory) into a distributable standard project.
 
 **Parameters:**
 
 | Parameter | Short | Description |
-|-----------|--------|-------------|
-| `{module,adapter}` | | Type to create: `module` or `adapter` |
+|-----------|-------|-------------|
+| `{module,adapter,pack}` | | Type to create: `module` / `adapter` / `pack` (plugin to project) |
 | `--name` | `-n` | Project name (PascalCase) |
 | `--description` | `-d` | Project description |
 | `--author` | `-a` | Author name |
 | `--email` | `-e` | Author email |
 | `--homepage` | | Project homepage URL |
 | `--output` | `-o` | Output directory (default is current directory) |
-| `--force` | `-f` | Force overwrite existing directory |
-| `--local` | | Create local plugin (only available for `module`): generates `plugins/<name>/` package structure, no packaging required for installation |
+| `--force` | `-f` | Force overwrite existing directories |
+| `--local` | | Create a local plugin (`module` / `adapter` available): generates `plugins/<name>/` package structure, avoids packaging and installation |
 
 **Examples:**
 
 ```bash
-# Interactive creation (guided selection of type and filling in information)
+# Interactive creation (guided selection of type and filling out information)
 epsdk create
 
-# Directly create Module project
+# Directly create a Module project
 epsdk create module -n MyModule
 
-# Create local plugin (placed in project plugins/ directory, automatically discovered at startup, supports hot-reload)
+# Create a local plugin (placed in the project's plugins/ directory, automatically discovered at startup)
 epsdk create module -n MyModule --local
 
-# Directly create Adapter project
+# Create a local adapter plugin (same as above, avoids packaging for development)
+epsdk create adapter -n MyAdapter --local
+
+# Directly create an Adapter project
 epsdk create adapter -n MyAdapter
 
-# Complete parameters
-epsdk create module -n MyModule -d "module description" -a "author" -e "mail@example.com"
+# Convert a local plugin into a distributable project (interactive selection of plugin → fill in metadata → generate standard project)
+epsdk create pack
+
+# Full parameters
+epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@example.com"
 
 # Specify output directory
 epsdk create module -n MyModule -o ./projects

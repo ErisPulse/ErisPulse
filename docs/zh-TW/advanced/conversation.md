@@ -1,10 +1,13 @@
 # Conversation 多輪對話
 
-`Conversation` 類提供了在同一會話中進行多輪交互的便捷方法，適合實現引導式操作、資訊收集、對話式問答等場景。
+> [!TIP]
+> **什麼時候需要讀這篇**：需要多輪對話狀態機與檢查點恢復時。不需要則跳過，不影響其它功能的使用。
 
-## 建立對話
+`Conversation` 類提供了在同一會話中進行多輪互動的便捷方法，適合實現引導式操作、資訊收集、對話式問答等場景。
 
-透過 `Event` 物件的 `conversation()` 方法建立：
+## 創建對話
+
+透過 `Event` 對象的 `conversation()` 方法創建：
 
 ```python
 from ErisPulse.Core.Event import command
@@ -37,13 +40,13 @@ async def quiz_handler(event):
 
 ### say(content, **kwargs)
 
-發送訊息，回傳 `self` 支援鏈式呼叫：
+發送訊息，返回 `self` 支持鏈式呼叫：
 
 ```python
 await conv.say("第一行").say("第二行").say("第三行")
 ```
 
-也可以指定發送方式：
+也可以指定發送方法：
 
 ```python
 await conv.say("https://example.com/image.jpg", method="Image")
@@ -51,7 +54,7 @@ await conv.say("https://example.com/image.jpg", method="Image")
 
 ### wait(prompt=None, timeout=None)
 
-等待使用者回覆，回傳 `Event` 物件或 `None`（超時）：
+等待使用者回覆，返回 `Event` 對象或 `None`（超時）：
 
 ```python
 # 簡單等待
@@ -68,7 +71,7 @@ resp = await conv.wait(prompt="請在10秒內回覆：", timeout=10)
 
 ### confirm(prompt=None, **kwargs)
 
-等待使用者確認（是/否），回傳 `True` / `False` / `None`（超時）：
+等待使用者確認（是/否），返回 `True` / `False` / `None`（超時）：
 
 ```python
 result = await conv.confirm("確定要刪除所有資料嗎？")
@@ -86,7 +89,7 @@ else:
 
 ### choose(prompt, options, **kwargs)
 
-等待使用者從選項中選擇，回傳選項索引（0-based）或 `None`：
+等待使用者從選項中選擇，返回選項索引（0-based）或 `None`：
 
 ```python
 choice = await conv.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
@@ -97,7 +100,7 @@ if choice is not None:
 
 使用者可以透過輸入編號（`1`/`2`/`3`）或選項文字（`紅色`）來選擇。
 
-`options_format="auto"`（預設）根據 method 自動選擇內建樣式：Markdown→無序列表，Html→有序列表，其他→純文字列表。  
+`options_format="auto"`（預設）根據 method 自動選擇內建樣式：Markdown→無序列表，Html→有序列表，其他→純文字列表。
 也支援 `"list"`、`"inline"`、`"md"`、`"html"` 或自訂函數。
 
 支援 `merge_prompt=True` 合併為一條訊息，以及占位符控制選項插入位置（預設 `{options}`，可透過 `placeholder` 自訂）：
@@ -120,7 +123,7 @@ choice = await conv.choose(
 
 ### collect(fields, **kwargs)
 
-多步驟收集資訊，回傳資料字典或 `None`：
+多步驟收集資訊，返回資料字典或 `None`：
 
 ```python
 data = await conv.collect([
@@ -210,7 +213,7 @@ async def menu_handler(event):
 
     @conv.branch("main")
     async def main_menu():
-        await conv.say("=== 主選單 ===\n1. 個人資訊\n2. 設定\n3. 退出")
+        await conv.say("=== 主菜單 ===\n1. 個人資訊\n2. 設定\n3. 退出")
         resp = await conv.wait()
         if resp is None:
             return
@@ -292,7 +295,7 @@ await conv.clear_saved()
 
 ### 自動存檔
 
-框架在以下時機自動維護檢查點，通常無需手動調用 `save()`：
+框架在以下時機自動維護檢查點，通常無需手動呼叫 `save()`：
 
 | 時機 | 行為 |
 |------|------|
@@ -304,7 +307,7 @@ await conv.clear_saved()
 存檔帶時間戳，超過 `ErisPulse.interaction.checkpoint_ttl`（預設 24 小時）的存檔會被清理：
 
 - **惰性丟棄**：恢復時發現存檔已過期，自動丟棄
-- **後台主動清理**：框架有周期 GC 任務（首次使用檢查點後惰性啟動）主動枚舉並刪除過期存檔，避免長期運行時 storage 中過期檢查點無限累積。被主動清理的存檔若之後收到會話消息，按"無檢查點"處理
+- **後台主動清理**：框架有周期 GC 任務（首次使用檢查點後惰性啟動）主動枚舉並刪除過期存檔，避免長期運行時 storage 中過期檢查點無限累積。被主動清理的存檔若之後收到會話訊息，按"無檢查點"處理
 
 ```toml
 [ErisPulse.interaction]
@@ -313,7 +316,7 @@ checkpoint_ttl = 86400  # 秒
 
 ### 重啟自動恢復
 
-框架重啟後，進行中的對話（記憶體中的等待協程）會丟失，但檢查點仍在。透過 `register_resume_handler` 註冊**恢復工廠**，框架即可在重啟後收到該會話首條消息時自動續接對話：
+框架重啟後，進行中的對話（記憶體中的等待協程）會丟失，但檢查點仍在。透過 `register_resume_handler` 註冊**恢復工廠**，框架即可在重啟後收到該會話首條訊息時自動續接對話：
 
 ```python
 from ErisPulse.Core.Event.wrapper import Conversation
@@ -330,14 +333,14 @@ def make_conversation(event) -> Conversation:
     return conv
 ```
 
-註冊後，重啟前處於 `menu` 分支的使用者發來首條消息時，框架自動：恢復 context → 認領該消息 → 從存檔分支繼續對話。未註冊工廠時此機制零開銷。
+註冊後，重啟前處於 `menu` 分支的使用者發來首條訊息時，框架自動：恢復 context → 認領該訊息 → 從存檔分支繼續對話。未註冊工廠時此機制零開銷。
 
 ### 恢復即接管
 
 `resume()` 成功時框架自動完成兩件事：
 
-1. **會話接管**：自動 acquire 該會話的互斥租約——其他模組可透過 `sdk.interaction.get_owner_of(event)` 感知"這個使用者正被對話占用"；會話已被其他模組占用時放棄恢復（返回 False），避免兩個對話打架
-2. **歷史帶回**：從會話收件箱取最近 10 條消息到 `conv.recent_history`（AI 模組恢復後 LLM 上下文不斷檔）；`resume(with_history=0)` 可關閉
+1. **會話接管**：自動 acquire 該會話的互斥租約——其他模組可透過 `sdk.interaction.get_owner_of(event)` 感知"這個使用者正被對話佔用"；會話已被其他模組佔用時放棄恢復（回傳 False），避免兩個對話打架
+2. **歷史帶回**：從會話收件箱取最近 10 條訊息到 `conv.recent_history`（AI 模組恢復後 LLM 上下文不斷檔）；`resume(with_history=0)` 可關閉
 
 ```python
 if await conv.resume(with_history=20):
@@ -418,5 +421,5 @@ async def chat_handler(event):
 
 ## 相關文件
 
-- [Event 包裝類](../developer-guide/modules/event-wrapper.md) - Event 物件的所有方法
+- [Event 包裝類](../developer-guide/modules/event-wrapper.md) - Event 對象的所有方法
 - [事件處理入門](../getting-started/event-handling.md) - 事件處理基礎

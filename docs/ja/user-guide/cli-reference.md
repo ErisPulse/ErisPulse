@@ -326,39 +326,39 @@ epsdk run --reload
 
 | コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | ErisPulseプロジェクトを初期化 |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | モジュール/アダプターフットワークを生成 |
+| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | ErisPulse プロジェクトの初期化 |
+| `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | モジュール/アダプターのフットプリント作成；`pack` はローカルプラグインを公開可能なプロジェクトに変換 |
 
 ### init
 
-新しいErisPulseプロジェクトを初期化します。対話形式とクイックモードをサポートし、2.8.4から`pyproject.toml`（依存関係リスト）、任意のディレクトリに生成可能、仮想環境`.venv`の作成とフレームワーク・アダプターのインストール、**任意のディレクトリの指定**をサポートします。
+ErisPulse プロジェクトを初期化します。対話式とクイックモードがサポートされ、2.8.4 以降では `pyproject.toml`（依存関係リスト）が生成され、オプションでプロジェクト用の `.venv` 仮想環境を作成してフレームワークとアダプターをインストールし、**任意のディレクトリを指定可能**です。
 
 **パラメータ：**
 
-| パラメータ | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `[path]` | | ターゲットパス（親ディレクトリを含む、例：`../apps/mybot`；純粋な名前は`--project-name`と同等） |
+| `[path]` | | 目標パス（`../apps/mybot` のように親ディレクトリを含むことも可能；単純な名前は `--project-name` と同等） |
 | `--project-name` | `-n` | プロジェクト名 |
-| `--path` | | プロジェクトの親ディレクトリ（`-n`と組み合わせて作成位置を指定） |
-| `--quick` | `-q` | クイックモード、対話形式の向導をスキップ（デフォルトで`.venv`を作成し、依存関係をインストール） |
+| `--path` | | プロジェクトの親ディレクトリ（`-n` と組み合わせて作成位置を指定） |
+| `--quick` | `-q` | 対話式のガイドをスキップするクイックモード（デフォルトで `.venv` を作成して依存関係をインストール） |
 | `--force` | `-f` | 既存の設定ファイルを強制的に上書き |
 | `--here` | | 現在のディレクトリで初期化し、サブディレクトリを作成しない |
-| `--no-uv` | | uvの代わりにpipを使用 |
+| `--no-uv` | | uv の代わりに pip を使用 |
 | `--no-venv` | | 仮想環境の作成と依存関係のインストールをスキップ |
 
 **例：**
 
 ```bash
-# 対話形式で初期化
+# 対話式の初期化
 epsdk init
 
-# クイックモードで初期化（現在のディレクトリにmy_bot/を作成し、pyproject.toml + .venvを含む）
+# クイック初期化（現在のディレクトリに my_bot/ を作成し、pyproject.toml と .venv を含む）
 epsdk init -q -n my_bot
 
-# 任意のディレクトリで初期化（../apps/mybot）
+# 任意のディレクトリに初期化（../apps/mybot）
 epsdk init ../apps/mybot
 
-# 父ディレクトリとプロジェクト名を組み合わせて指定
+# 親ディレクトリとプロジェクト名の組み合わせ
 epsdk init -n my_bot --path ../apps
 
 # 既存の設定ファイルを強制的に上書き
@@ -371,46 +371,52 @@ epsdk init --here -n my_bot
 epsdk init --no-venv -n my_bot
 ```
 
-initの生成物：`main.py`、`pyproject.toml`（依存関係リスト）、`config/config.toml` + `config.full.example`、`config/ssl/`、`logs/`、`.gitignore`、`README.md`；仮想環境を作成する場合、`.venv`を生成し、`erispulse`と選択したアダプターをその中にインストールします。
+init の出力物：`main.py`、`pyproject.toml`（依存関係リスト）、`config/config.toml` + `config.full.example`、`config/ssl/`、`logs/`、`.gitignore`、`README.md`；仮想環境を作成する場合は `.venv` を生成し、`erispulse` と選択したアダプターをその中にインストールします。
 
 > [!NOTE]
-> `.gitignore`はグループ形式のテンプレートです：Pythonのバイトコードとビルド成果物、仮想環境と`.env`、ツールのキャッシュ、エディタとシステムファイル、そして**`config/`と`logs/`の実行時ディレクトリを全体的に除外**します——`config.toml`にはアダプターのトークンなどの機密情報が含まれており、リポジトリに含めないことを推奨します；共有する設定の骨格は`config.full.example`を使用してください。
+> `.gitignore` はグループ化されたテンプレートです：Python のバイトコードとビルド成果物、仮想環境と `.env`、ツールのキャッシュ、エディタとシステムファイル、そして**`config/` と `logs/` の実行時ディレクトリを全体的に除外**します。`config.toml` にはアダプターのトークンなどの機密情報が含まれるため、リポジトリに含めないことを推奨します。共有する設定の骨格には `config.full.example` を使用してください。
 
 > [!WARNING]
-> **`uv run epsdk run`でロボットを実行しないでください**。`uv run`は`pyproject.toml`のないディレクトリで実行すると**一時的な隔離環境**を作成します——その中で`epsdk install`でインストールされたアダプターは永続化されません。プロジェクトディレクトリ内で`epsdk run`を使用してください（自動的にプロジェクトの`.venv`を使用し、または仮想環境をアクティブにしてから実行してください）。
+> **`uv run epsdk run` を使用してロボットを実行しないでください**。`uv run` は `pyproject.toml` がないディレクトリで実行すると**一時的な隔離環境**を作成します。その中で `epsdk install` でインストールしたアダプターは永続化されません。プロジェクトディレクトリ内で `epsdk run` を使用してください（自動的にプロジェクトの `.venv` を使用）。または、仮想環境を事前にアクティブにしてから実行してください。
 
 ### create
 
-ErisPulseモジュールまたはアダプターのフットワークプロジェクトを作成します。
+ErisPulse のモジュールまたはアダプターのフットプリントプロジェクトを作成します。`pack` サブコマンドはローカルプラグイン（`plugins/` ディレクトリ）を公開可能な標準プロジェクトに変換します。
 
 **パラメータ：**
 
-| パラメータ | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `{module,adapter}` | | 作成するタイプ：`module`または`adapter` |
+| `{module,adapter,pack}` | | 作成するタイプ：`module` / `adapter` / `pack`（プラグインをプロジェクトに変換） |
 | `--name` | `-n` | プロジェクト名（PascalCase） |
 | `--description` | `-d` | プロジェクトの説明 |
 | `--author` | `-a` | 作者の名前 |
 | `--email` | `-e` | 作者のメールアドレス |
-| `--homepage` | | プロジェクトのホームページURL |
+| `--homepage` | | プロジェクトのホームページ URL |
 | `--output` | `-o` | 出力ディレクトリ（デフォルトは現在のディレクトリ） |
 | `--force` | `-f` | 既存のディレクトリを強制的に上書き |
-| `--local` | | ローカルプラグインを作成する（`module`のみ使用可能）：`plugins/<name>/`のパッケージ構造を生成し、ビルドなしでインストール可能 |
+| `--local` | | ローカルプラグインを作成する（`module` / `adapter` で使用可能）：`plugins/<name>/` パッケージ構造を生成し、パッケージ化を省略してインストールする |
 
 **例：**
 
 ```bash
-# 対話形式で作成（タイプの選択と情報を入力する誘導）
+# 対話式の作成（タイプの選択と情報を入力するガイド付き）
 epsdk create
 
-# 直接Moduleプロジェクトを作成
+# モジュールプロジェクトの直接作成
 epsdk create module -n MyModule
 
-# ローカルプラグインを作成（プロジェクトのplugins/ディレクトリに配置し、起動時に自動発見、ホットリロードをサポート）
+# ローカルプラグインを作成（プロジェクトの plugins/ ディレクトリに配置し、起動時に自動的に検出される）
 epsdk create module -n MyModule --local
 
-# 直接Adapterプロジェクトを作成
+# ローカルアダプターのプラグインを作成（上記と同じ、パッケージ化を省略して開発可能）
+epsdk create adapter -n MyAdapter --local
+
+# アダプターのプロジェクトの直接作成
 epsdk create adapter -n MyAdapter
+
+# ローカルプラグインを公開可能なプロジェクトに変換（対話式でプラグインを選択 → 元情報の補完 → 標準プロジェクトの生成）
+epsdk create pack
 
 # 完全なパラメータ
 epsdk create module -n MyModule -d "モジュールの説明" -a "作者" -e "mail@example.com"
