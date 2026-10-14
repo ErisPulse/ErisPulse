@@ -96,7 +96,7 @@
           "icon": "fa-download"
         },
         {
-          "title": "配置文件說明",
+          "title": "配置檔說明",
           "path": "user-guide/configuration.md",
           "level": 1,
           "icon": "fa-sliders"
@@ -212,7 +212,7 @@
               "icon": "fa-medal"
             },
             {
-              "title": "事件轉換器實現指南",
+              "title": "事件轉換器實作指南",
               "path": "developer-guide/adapters/converter.md",
               "level": 1,
               "icon": "fa-exchange-alt"
@@ -393,7 +393,7 @@
           "icon": "fa-route"
         },
         {
-          "title": "MessageBuilder 詳解",
+          "title": "MessageBuilder 详解",
           "path": "advanced/message-builder.md",
           "level": 1,
           "icon": "fa-comment-dots"
@@ -435,13 +435,13 @@
           "icon": "fa-user-tag"
         },
         {
-          "title": "互動會話系統",
+          "title": "互動對話系統",
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"
         },
         {
-          "title": "影子模組與灰度轉正",
+          "title": "影子模組與灰階轉正",
           "path": "advanced/shadow.md",
           "level": 1,
           "icon": "fa-eye"
@@ -459,7 +459,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "錯誤體系與捕獲指南",
+          "title": "異常體系與捕獲指南",
           "path": "advanced/errors.md",
           "level": 1,
           "icon": "fa-triangle-exclamation"

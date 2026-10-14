@@ -3673,13 +3673,17 @@ epsdk create module -n MyModule -f
 ### 配置文件说明
 
 # Configuration File Guide
-> This document introduces the framework's configuration file. For third-party module configuration, please refer to the module's documentation.
+
+> [!NOTE]
+> **L1 Core Must-Read** – One of the five core documents in the "Read Path" on the homepage, essential for module development.
+
+> This document will introduce the framework's configuration file. If a third-party module requires configuration, please refer to the module's documentation.
 
 ErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project configurations.
 
 ## Configuration File Location
 
-The configuration file is located in the `config/` folder at the project root:
+The configuration file is located in the `config/` folder in the project root directory:
 
 ```
 project/
@@ -3690,44 +3694,44 @@ project/
 
 ### Multi-Instance Warning and Lock File
 
-When the framework starts, it creates a `.erispulse_config.lock` lock file in the `config/` directory and holds it until the process exits (used to detect multiple instances sharing the configuration directory). If the log shows a warning like "Detected that the configuration file may be in use by another ErisPulse instance," it means there are **two or more ErisPulse processes writing to the same configuration file** (typical scenario: multiple containers mounted the same host `config/` directory) — concurrent writes will overwrite each other. Please use separate configuration directories for each instance.
+When the framework starts, it creates a `.erispulse_config.lock` lock file in the `config/` directory and holds it until the process exits (used to detect multiple instances sharing the configuration directory). If the log shows a warning like "Detected that the configuration file may be in use by another ErisPulse instance," it means that **two or more ErisPulse processes are writing to the same configuration file** (typical scenario: multiple containers mounted the same host `config/` directory) – concurrent writes will overwrite each other. Please use a separate configuration directory for each instance.
 
 ## Configuration Loading Error Handling
 
-When loading `config.toml`, the framework distinguishes three error states and provides **actionable diagnostic information**, rather than silently falling back to default configurations:
+The framework distinguishes three error states when loading `config.toml` and provides **actionable diagnostic information** instead of silently reverting to default configuration:
 
 | Error State | Trigger Condition | Framework Behavior |
 |---------|---------|---------|
-| File Missing | `config.toml` does not exist | Normal on first startup, silently uses empty configuration (no warning) |
-| TOML Syntax Error | File exists but format is invalid (e.g., missing quotes, unclosed parentheses) | Outputs **line/column number and reason for error**, and **retains the last valid configuration to continue running** (this file modification is not effective) |
-| Permission/Other Errors | No read permission, IO errors, etc. | Outputs **clear reason**, and **retains the last valid configuration to continue running** |
+| File Missing | `config.toml` does not exist | On normal first startup, silently use empty configuration (no warning) |
+| TOML Syntax Error | File exists but format is invalid (e.g., missing quotes, unclosed parentheses) | Output **line/column number and reason for error**, and **retain last valid configuration and continue running** (this file modification is not effective) |
+| Permission/Other Error | No read permission, IO error, etc. | Output **clear reason**, and **retain last valid configuration and continue running** |
 
-> **Note:** "Last valid configuration" ≠ Default configuration: When the file is damaged, the framework uses the **last successfully parsed configuration before this startup** (if the configuration file is modified and broken during runtime, the old value is retained), rather than resetting all configuration items to factory defaults. Do not assume that "the configuration has been reset" during troubleshooting.
+> **Note "last valid configuration" ≠ default configuration**: When the file is damaged, the framework uses the **last successfully parsed configuration from before this startup** (if the configuration file is hot-updated and damaged during runtime, the old value is used), rather than resetting all configuration items to factory defaults. When troubleshooting, do not assume "the configuration has been reset."
 
-For example, if you accidentally write the configuration as `port = 8000` (missing quotes around the string), the log will output something like:
+For example, if you accidentally write the configuration as `port = 8000` (missing quotes for a string), the log will output something like:
 
 ```
 [ERROR] [Config] Configuration file config/config.toml has a syntax error (line 3, column 1): ...
-[WARNING] [Config] Failed to read configuration file. Continuing to run with the last valid configuration. This file modification is not effective — please fix and reload or restart.
+[WARNING] [Config] Failed to read configuration file. Continuing to run with last valid configuration, this file modification is not effective – please fix and reload or restart
 ```
 
-This allows you to immediately locate the issue at the **default INFO level** without confusion about "why my modified configuration is not effective."
+This allows you to immediately locate the problem at the **default INFO level** instead of being confused "why my modified configuration is not effective."
 
-> **What if I modify the configuration file while the robot is running?** If you manually edit `config.toml` during robot operation and introduce a syntax error, the framework will output "Configuration file is damaged (syntax error, line X), unable to merge and write — please fix the configuration file and restart" when attempting to write next time, instead of an confusing "write failed." The configuration items to be written are retained and not lost.
+> **What if you modify the configuration file while the robot is running?** If you manually edit `config.toml` during robot operation and introduce a syntax error, the framework will output "Configuration file is damaged (syntax error, line X), cannot merge and write – please fix the configuration file and restart" when writing next time (instead of confusing "write failed"), and the configuration items to be written will be retained, not lost.
 
 ## Comment Retention and Minimal Disk Write
 
-**Comments and key order in config.toml are fully retained after framework write:** Whether through code `setConfig()`, CLI configuration wizard save, or adapter/module first-generation configuration template, the framework only modifies the involved keys. Your comments and sorted order are not erased or rearranged (based on tomlkit comment-retaining round-trip implementation).
+**Comments and key order in config.toml are fully retained after framework write**: Whether through code `setConfig()`, CLI configuration wizard save, or adapter/module first-generation configuration template, the framework only modifies the involved keys, and your written comments and arranged order will not be erased or rearranged (based on tomlkit comment-retaining roundtrip implementation).
 
-The framework is restrained about what is written to disk:
+The framework is restrained in writing disk content:
 
-- **Framework default configurations are not automatically written to disk:** `gc`, `scope`, `transcript`, etc., built-in defaults only reside in memory; config.toml only contains keys you explicitly set, keeping it minimal. Refer to `config/config.full.example` in the project for a complete list of configurable items. Copy and modify as needed (unconfigured items always default to built-in values, behavior unchanged).
-- **`config.full.example` is automatically maintained:** Whether or not `epsdk init` is executed, as long as the framework is started (`epsdk run` / `main.py`), `config/config.full.example` will be automatically generated if missing. The file's first line is a framework-maintained marker; the generator content updates (e.g., new configuration items, newly installed components) when the startup refreshes once. If the first line is deleted or modified, it becomes manually managed, and the framework no longer overwrites.
-- **Adapter/Module configuration templates:** First initialization saves a template with comments (field descriptions are comments); fields marked as `example` do not write to disk, only recorded in `config.full.example` for reference.
+- **Framework default configuration is not automatically written to disk**: `gc`, `scope`, `transcript` and other built-in default values only reside in memory; `config.toml` only contains keys you explicitly set, keeping it minimal. Refer to `config/config.full.example` in the project for a complete list of configurable items. Copy it to `config.toml` and modify as needed (unconfigured items always use built-in defaults, behavior unchanged).
+- **`config.full.example` is automatically maintained**: Regardless of whether `epsdk init` has been executed, as long as the framework is started (`epsdk run` / `main.py`), `config/config.full.example` will be automatically generated if missing. The file header is marked for framework maintenance; when the generator content is updated (such as new configuration items, newly installed components), the startup will refresh it once. If the header is deleted or modified, it will be manually taken over and the framework will no longer overwrite it.
+- **Adapter/Module configuration templates**: When initialized for the first time, a template with comments is written to disk (field descriptions are comments); fields marked as `example` do not write to disk, only recorded in `config.full.example` for reference
 
 ## Environment Variable Override
 
-The framework supports **overriding** `ErisPulse.*` configuration items with environment variables (suitable for Docker/containerized/CI deployment, no need to modify `config.toml`).
+The framework supports using environment variables to **override** `ErisPulse.*` configuration items (suitable for Docker / containerization / CI deployment, no need to modify `config.toml`).
 
 Naming rule: Convert the dot-separated path `ErisPulse.<section>.<key>` to all uppercase, replace `.` with `_`, and add the `ERISPULSE_` prefix:
 
@@ -3739,27 +3743,26 @@ Naming rule: Convert the dot-separated path `ErisPulse.<section>.<key>` to all u
 | `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
 
 Behavior description:
-
-- **Highest priority:** Environment variables override "configuration file" and "default values," automatically converting to the original value type (`bool` / `int` / `float` / comma-separated `list` / string)
-- **Non-persistent:** The override only takes effect during runtime and is not written back to `config.toml`
-- **Supports hot update:** After modifying environment variables during runtime, combined with configuration listener reload, it takes effect
+- **Highest priority**: Environment variables override "configuration file" and "default value", automatically converting to the original value type (bool / int / float / comma-separated list / string)
+- **Non-persistent**: The override only takes effect during runtime and is not written back to `config.toml`
+- **Supports hot update**: After modifying the environment variable during runtime, it can take effect by combining with configuration listening reload
 
 ```bash
 # Docker deployment example: No need to modify config.toml, directly override the port
 ERISPULSE_SERVER_PORT=9000 docker compose up -d
 ```
 
-> Note: `ErisPulse.server.port` and other framework configurations accessed via `get_server_config()` and similar APIs are affected by environment variable overrides.
+> Note: `ErisPulse.server.port` and other framework configurations are read through `get_server_config()` and other APIs, all affected by environment variable overrides.
 
 ### Module Configuration Environment Variable Binding (2.9.0+)
 
-Modules' own declarative configurations (`ConfigClass`) support field-level environment variable binding—declare `env` in `field(metadata=...)`:
+Module-specific declarative configuration (`ConfigClass`) supports field-level environment variable binding – declare `env` in `field(metadata=...)`:
 
 ```python
 @dataclass
 class MyConfig(BaseConfig):
     api_key: str = field(default="", metadata={
-        "description": "API Key",
+        "description": "API key",
         "env": "MYMODULE_API_KEY",   # Environment variable binding
     })
     retries: int = field(default=3, metadata={"env": "MYMODULE_RETRIES"})
@@ -3767,101 +3770,101 @@ class MyConfig(BaseConfig):
 
 Behavior description:
 
-- **Priority:** Environment variable > `config.toml` > declared default value (the same priority holds after configuration file hot update)
-- **Type conversion:** Environment variable values are automatically converted according to field annotations—`str` as-is, `int` / `float` / `bool` (`true` / `1` / `yes` / `on`) automatically converted, `list` / `dict` parsed via JSON; if conversion fails, ignore the override (fall back to configuration file / default value) and output a warning
-- **Declare once, apply everywhere:** The configuration read, hot update, and validation use the same pipeline; the configuration panel Schema will mark the `env` name, and `config.toml` template comments will also prompt available environment variables (the template does not write the actual value of environment variables to avoid leaks)
-- **Fully compatible:** Fields without `env` declaration behave unchanged; directly instantiating ConfigClass (without framework configuration pipeline) is not affected by environment variables
+- **Priority**: Environment variable > `config.toml` > declared default value (the priority remains the same even after configuration file hot update)
+- **Type conversion**: Environment variable values are automatically converted according to field annotations – `str` as-is, `int` / `float` / `bool` (`true` / `1` / `yes` / `on`) automatically converted, `list` / `dict` parsed via JSON; if conversion fails, ignore the override (fallback to configuration file / default value) and output a warning
+- **Declare once, used everywhere**: Configuration reading, hot update, validation use the same pipeline; the configuration panel Schema will mark the `env` name, and the `config.toml` template will also prompt available environment variables (the template does not write the actual value of the environment variable, to avoid leakage)
+- **Fully compatible**: Fields without `env` declaration behave unchanged; directly instantiating ConfigClass (not through the framework configuration pipeline) is not affected by environment variables
 
 ```bash
 # Docker deployment example: No need to modify config.toml, directly inject module key
 MYMODULE_API_KEY=sk-xxx docker compose up -d
 ```
 
-> **Configuration class vs. model field: which to choose?** The configuration class manages "how the module operates" (behavior parameters, hot update), while ORM's `Field()` manages "what data the user generates" (database table, query). Both share the same constraint vocabulary and validator engine; the comparison table is available at
+> **Configuration class vs model field, which to choose?** The configuration class manages "how the module runs" (behavior parameters, hot update), while ORM's `Field()` manages "what data the user generates" (database table, query). Both share the same set of constraint words and validator engine; see the comparison table at
 > [Data Model Layer · When to Use Which Declaration](../developer-guide/orm.md#when-to-use-which-declaration).
 
 ## Configuration Hot Update
 
-Since version 2.7.0, the framework has provided **systematic support for configuration hot updates**. After external modification of `config.toml` (background watcher checks every 5 seconds), or code calls `setConfig()`, each component automatically responds:
+Since version 2.7.0, the framework has provided **systematic support for configuration hot updates**. After external modification of `config.toml` (detected by the background watcher every 5 seconds), or after code calls `setConfig()`, each component automatically responds:
 
-| Component | Hot-updatable Configurations | Behavior |
+| Component | Hot-updatable Configuration | Behavior |
 |------|----------------|------|
 | **Logger** | `logger.level` / `log_files` / `log_dir` (including segmentation parameters) / `memory_limit` / `format` / `exclude_levels` | Automatically reapplies (with change detection) |
-| **Command System CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
+| **Command System** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
 | **Adapter Concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore and rebuilds according to new value |
 | **Active GC** | `framework.proactive_gc_*` | Configuration changes immediately restart GC tasks, supporting runtime adjustment/disable/re-enable |
-| **Master System Master** | `master.users` | Each `is_master()` check reads in real-time, no restart needed |
-| **Modules/Adapters Configurations** | Their respective configuration items | Triggers `on_config_update(old, new)` callback |
+| **Master System** | `master.users` | Each `is_master()` check reads in real time, no need to restart |
+| **Modules/Adapters Configuration** | Their own configuration items | Triggers `on_config_update(old, new)` callback |
 
-**Configurations requiring restart** (cannot be safely hot-switched, warning is output when changed "restart process to take effect"):
+**Configurations that require a restart** (cannot be safely hot-switched, warning is output when changed "needs to be effective after restarting the process"):
 
 | Configuration | Reason |
 |------|------|
 | `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot-switched at runtime |
 | `storage.use_global_db` | SQLite file handle is already opened at runtime, switching paths is unsafe |
 
-> **What if editing and saving the configuration file fails midway?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, without broadcasting an empty configuration to each component (avoiding `on_config_update` receiving empty values and mistakenly reverting to default).
+> **What if editing and saving goes wrong midway?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, not broadcast an empty configuration to each component (avoiding `on_config_update` receiving empty values and mistakenly reverting to defaults).
 
 ### Internal Breakdown of Hot Update Chain
 
-"How do components know when the configuration is changed?" — Behind this is a detection → reload → broadcast chain:
+"How do components know when the configuration is changed?" – Behind this is a detection → reload → broadcast chain:
 
 ```mermaid
 flowchart TD
-    A["External edit of config.toml"] --> B{"Who detects first?"}
+    A["External edit config.toml"] --> B{"Who finds out first?"}
     B -->|"Background watcher thread<br/>Polls mtime every 5 seconds"| C["_check_file_change determines change"]
     B -->|"Code reads configuration<br/>Cache exceeds 60 seconds"| C
     C --> D["_load_config re-parses TOML"]
     D --> E{"Parsing successful?"}
-    E -->|"No (syntax error)"| F["Retains last valid configuration<br/>Does not broadcast, outputs diagnostic logs"]
+    E -->|"No (syntax error)"| F["Retain last valid configuration<br/>Do not broadcast, output diagnostic logs"]
     E -->|"Yes"| G["lifecycle.emit config.updated<br/>Carries old_config / new_config"]
     G --> H["Components listen and respond<br/>(logger / scope / command / GC ... )"]
 ```
 
-**Two detection paths** (either one suffices, both can serve as fallback):
+**Two detection paths** (either one is sufficient, both can serve as a fallback):
 
 | Path | Mechanism | Trigger Timing |
 |------|------|---------|
 | Background watcher | Daemon thread `config-watcher` polls file `mtime` every **5 seconds** | Detects external file changes within at most 5 seconds |
-| Lazy detection | Any `getConfig()` read checks file if cache exceeds **60 seconds** | Next time configuration is read |
+| Lazy detection | Any `getConfig()` read, if cache exceeds **60 seconds**, first checks file | Next time configuration is read |
 
-> **The framework does not accidentally harm itself:** When `setConfig()` writes to disk, it records the "mtime written by itself," and the watcher excludes it when comparing, treating only **external edits** as changes.
+> **The framework will not mistakenly hit itself**: When `setConfig()` writes to disk, it records the "mtime written by itself", and the watcher excludes it when comparing, treating only **external edits** as changes.
 
-**Two types of configuration change events:**
+**Two types of configuration change events**:
 
 | Event | Trigger | Data | Typical Scenario |
 |------|--------|------|---------|
 | `config.set` | Code / Dashboard calls `setConfig()` | `{key, old_value, new_value}` | Single key write (template generation, status recording, runtime configuration change) |
 | `config.updated` | External edit detected by watcher/lazy detection | `{old_config, new_config, config_file}` | Manual edit of `config.toml` |
 
-> `setConfig()` defaults to **delayed write to disk after 5 seconds** (merges multiple writes); `immediate=True` writes immediately. The watcher detects external modifications and only updates the in-memory cache, **does not** write the external changes back to the file.
+> `setConfig()` defaults to **delayed disk write** (merges multiple writes) after 5 seconds; `immediate=True` writes immediately. The watcher detects external modifications and only updates the in-memory cache, **does not** write external changes back to the file.
 
-**List of automatic response components** (both event types are typically subscribed to, with consistent response content):
+**List of automatic response components** (both event types are usually subscribed, response content is consistent):
 
 | Component | Listener | Response |
 |------|------|------|
-| Logger | `config.set` + `config.updated` | Reapplies level/file/directory segmentation/memory limit/format/exclude levels (with change detection, no change means no action) |
-| Scope | `config.updated` | Rebuilds scope binding cache |
-| Command System | `config.updated` | Refreshes prefix/case sensitivity/space prefix/must_at_bot parsing parameters, effective on next message |
-| Adapter Concurrency | `config.set` + `config.updated` | Invalidates and rebuilds handler_max_concurrency semaphore |
-| Active GC | `config.set` + `config.updated` | Immediately restarts GC background task |
-| Adapter | Routes to `on_config_update` | Each adapter's `on_config_update(old, new)` callback |
-| Module | Routes to `on_config_update` | Each module's `on_config_update(old, new)` callback |
-| Storage | `config.updated` | `use_global_db` change **only warns** (requires restart) |
-| Router | `config.updated` | `cors.*` / `security.*` change **only warns** (requires restart) |
+| Logger | `config.set` + `config.updated` | Reapply level/file/directory segmentation/memory limit/format/exclude level (with change detection, no change if unchanged) |
+| Scope | `config.updated` | Rebuild scope binding cache |
+| Command System | `config.updated` | Refresh prefix/case sensitivity/space prefix/must_at_bot parsing parameters, effective on next message |
+| Adapter Concurrency | `config.set` + `config.updated` | Invalidate and rebuild semaphore for `handler_max_concurrency` |
+| Active GC | `config.set` + `config.updated` | Immediately restart GC background task for `proactive_gc_*` |
+| Adapter | Route to `on_config_update` | Each adapter's `on_config_update(old, new)` callback |
+| Module | Route to `on_config_update` | Each module's `on_config_update(old, new)` callback |
+| Storage | `config.updated` | `use_global_db` change only warns (needs restart) |
+| Router | `config.updated` | `cors.*` / `security.*` change only warns (needs restart) |
 
 ## Configuration Reading and Deletion API
 
 ### getAllConfig: Full Configuration Snapshot
 
-Use instead of directly reading private `_cache` (external reading of private attributes is not protected by version compatibility):
+Instead of directly reading private `_cache` (external reading of private attributes is not protected by version compatibility):
 
 ```python
 config = sdk.config.getAllConfig()     # Deep copy snapshot, in-place modification does not affect framework state
 config["ErisPulse"]["server"]["port"]
 ```
 
-The view口径 is consistent with `getConfig`: Unwritten `setConfig` / `delete` are already reflected, and the content is strictly consistent with the delayed write to disk.
+The view口径 is consistent with `getConfig`: Unwritten `setConfig` / `delete` are already reflected, and the content is strictly consistent with the delayed disk-write file.
 
 ### delConfig: Delete Configuration Key
 
@@ -3873,8 +3876,8 @@ sdk.config.delConfig("OneBot.deprecated_key", immediate=True)         # Write im
 ```
 
 - Supports dot-separated paths; returns `False` if the key does not exist
-- Writes to disk via comment-retaining path, file content and order remain unaffected
-- Reuses `config.set` event broadcast (`new_value=None`): Existing listeners for adapters/modules zero change can perceive deletion
+- Disk write follows the comment-retaining path, the rest of the file content and order are unaffected
+- Reuses the `config.set` event broadcast (`new_value=None`): Existing listeners of adapters/modules zero change to `on_config_update` can perceive the deletion
 
 ## Complete Configuration Example
 
@@ -3889,7 +3892,7 @@ ssl_keyfile = ""
 [ErisPulse.master]
 # users supports two writing methods (choose one):
 #   Global master (effective on all platforms): users = ["123456", "789012"]
-#   Master per platform: users = { yunhu = ["123456"], telegram = ["789012"] }
+#   Master specified by platform: users = { yunhu = ["123456"], telegram = ["789012"] }
 users = {}
 
 [ErisPulse.logger]
@@ -3939,7 +3942,7 @@ port = 8000
 auto_start = true
 ssl_certfile = "/path/to/cert.pem"
 ssl_keyfile = "/path/to/key.pem"
-# In container / no file mounting scenarios, PEM content can be inlined (prioritized over certfile/keyfile paths)
+# In container / no file mount scenarios, PEM content can be inlined (prioritized over certfile/keyfile paths)
 # ssl_cert = """-----BEGIN CERTIFICATE-----
 # ...
 # -----END CERTIFICATE-----"""
@@ -3952,13 +3955,13 @@ ssl_keyfile = "/path/to/key.pem"
 |---------|------|---------|------|
 | host | string | 0.0.0.0 | Listening address, 0.0.0.0 means all interfaces |
 | port | integer | 8000 | Listening port number |
-| auto_start | boolean | true | Whether to automatically start the routing server at `sdk.init()`. Set to `false` to skip the routing server startup (pure event/no WebUI scenario) |
+| auto_start | boolean | true | Whether to automatically start the routing server in `sdk.init()`. Set to `false` to skip routing server startup (pure event/no WebUI scenario) |
 | ssl_certfile | string | empty | SSL certificate file path |
 | ssl_keyfile | string | empty | SSL private key file path |
-| ssl_cert | string | empty | **Inlined PEM certificate content** (not a path). Used together with `ssl_key` to prioritize over `ssl_certfile`/`ssl_keyfile` paths; the framework temporarily writes to disk to build the SSL context and immediately deletes the temporary file |
-| ssl_key | string | empty | **Inlined PEM private key content** (not a path), semantic same as above |
+| ssl_cert | string | empty | **Inlined PEM certificate content** (not a path). Used with `ssl_key` to prioritize over `ssl_certfile`/`ssl_keyfile` paths; framework temporarily writes and builds SSL context, then immediately deletes the temporary file |
+| ssl_key | string | empty | **Inlined PEM private key content** (not a path), semantics same as above |
 
-> **Port occupation is not a fatal error**: If the framework detects that the `port` is already occupied at startup, it will skip the routing server startup and issue a warning, **adapters and modules will still run normally** (only HTTP/WS/SSE routing and WebUI are unavailable). When troubleshooting "the robot can run but the WebUI cannot open," first confirm the port.
+> **Port occupation is not a fatal error**: If the framework detects that the `port` is already occupied at startup, it will skip routing server startup and issue a warning, **adapters and modules will continue to run normally** (only HTTP/WS/SSE routing and WebUI are unavailable). When troubleshooting "the robot can run but the WebUI cannot open", first confirm the port.
 
 ## Master System Configuration
 
@@ -3966,50 +3969,50 @@ The master system is used to identify the "framework master" account (such as Bo
 
 ```toml
 [ErisPulse.master]
-# Writing method one: Global master (effective on all platforms)
+# Method 1: Global master (effective on all platforms)
 users = ["123456", "789012"]
 
-# Writing method two: Specify master per platform (dict)
+# Method 2: Master specified by platform (dict)
 # users = { yunhu = ["123456"], telegram = ["789012"] }
 ```
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| users | array / object | empty | List of master accounts. `list` form is global master (effective on all platforms); `dict` form specifies per platform (key is platform name, value is the list of master account IDs for that platform) |
+| users | array / object | empty | Master account list. `list` form is global master (effective on all platforms); `dict` form specifies by platform (key is platform name, value is the master account list for that platform) |
 
-Code checks using `master.is_master(event)` or `master.is_master(platform, user_id)`, each call reads the configuration in real-time (supports hot update, no restart needed):
+In code, check using `master.is_master(event)` or `master.is_master(platform, user_id)`, each call reads the configuration in real time (supports hot updates, no restart needed):
 
 ```python
 from ErisPulse.Core import master
 
 if master.is_master(event):
-    await event.reply("Hello Master")
+    await event.reply("Hello master")
 ```
 
-### Decision Chain and Runtime Add/Delete
+### Determination Chain and Runtime Add/Delete
 
-The master decision chain is **configuration master → runtime record → provider chain**:
+The master determination chain is **configuration master → runtime record → provider chain**:
 
 ```python
 from ErisPulse.Core import master
 
 master.is_master(event)                      # Determine from event
 master.is_master("yunhu", "123")             # Explicit determination
-master.add("yunhu", "123")                   # Add at runtime (default persistent; persist=False is only in-memory)
+master.add("yunhu", "123")                   # Runtime add (default persistent; persist=False only in memory)
 master.remove("yunhu", "123")                # Remove (default persistent)
 master.list()                                # Aggregate: {"global": [...], "<platform>": [...]}
 ```
 
 ### Custom Identity Source (provider)
 
-In addition to configuration, custom identity sources can be registered: `fn(platform, user_id) -> bool`, and if the built-in identity sources (configuration + runtime record) do not match, they are tried in sequence, and if any provider allows it, it is recognized as a master. Suitable for integrating adapter administrator interfaces, database roles, and other external identity systems.
+In addition to configuration, you can also register a custom identity source: `fn(platform, user_id) -> bool`, and if the built-in identity sources (configuration + runtime record) do not match, they are tried in sequence, and if any provider allows it, it is recognized as the master. Suitable for connecting adapter administrator interfaces, database roles, and other external identity systems.
 
-Registration entry `master.provider` supports both decorator and function-style writing; unregistration is done through the unregistered function's `fn.unregister()`:
+The registration entry `master.provider` supports both decorator and function-style writing, and unregistration is done through the unregistered function's `fn.unregister()`:
 
 ```python
 from ErisPulse.Core import master
 
-# Writing method one: Decorator (persistent identity source, recommended)
+# Method 1: Decorator (persistent identity source, recommended)
 @master.provider
 def admin_provider(platform, user_id):
     return user_id in {"999"}     # Custom determination logic
@@ -4017,27 +4020,29 @@ def admin_provider(platform, user_id):
 master.is_master("yunhu", "999")   # True
 admin_provider.unregister()        # Unregister when no longer needed
 
-# Writing method two: Function-style (register during module loading / unregister during module unloading)
+# Method 2: Function-style (register during module load / unregister during unload)
 fn = master.provider(admin_provider)
 fn.unregister()
 ```
 
-> Provider exceptions are caught and skipped, not blocking the identity determination chain. Binding instance methods cannot attach `unregister`, and scenarios requiring registration/unregistration pairing should use **module-level functions**.
+> Provider exceptions are caught and skipped, not blocking the identity determination chain.
+> Binding instance methods cannot mount `unregister`, and scenarios requiring registration/unregistration pairing should use **module-level functions**.
 
-### User Priority: Master Effect Scope Decided by User
+### User Priority: Master Scope Determined by User
 
-The `master=True` of commands is only a **developer default**: Users can override or tighten or loosen it in `ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false` (see [Unified Event Override Configuration](#unified-event-override-configurationeventoverrides), user explicit configuration takes effect).
+The `master=True` of a command is only the **developer's default**: The user can overwrite or loosen it in
+`ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false` (see [Unified Event Override Configuration](#unified-event-override-configurationeventoverrides), user explicit configuration takes effect).
 
 ## Logging Configuration
 
 ```toml
 [ErisPulse.logger]
 level = "INFO"
-log_files = []                # Explicit list of log files (mutually exclusive with log_dir, higher priority)
-log_dir = ""                  # Log output directory (auto-created). If set, automatically segments and rotates logs into `erispulse.log` in the directory according to `log_rotation`; mutually exclusive with `log_files`, `log_files` has higher priority
+log_files = []                # Explicit log file list (mutually exclusive with log_dir, higher priority)
+log_dir = ""                  # Log output directory (auto-created). After setting, automatically segments and rotates logs into `erispulse.log` in the directory according to `log_rotation`; mutually exclusive with `log_files`, `log_files` has higher priority
 log_rotation = "size"         # Segmentation method: "size" / "date" / "none"
-log_max_size_mb = 10          # Single file size limit (MB) for size mode, rotates to `.1`/`.2` backup when exceeded
-log_backup_count = 5          # Number of historical log files to retain
+log_max_size_mb = 10          # Single file size limit (MB) in size mode, rotates to `.1`/`.2` backup when exceeded
+log_backup_count = 5          # Number of historical log files retained
 log_rotation_when = "midnight"  # Date mode rotation cycle: S/M/H/D/midnight
 memory_limit = 1000
 exclude_levels = ["EVENT"]
@@ -4045,36 +4050,36 @@ exclude_levels = ["EVENT"]
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed framework internal debugging information) |
-| format | string | rich | Log output format: `rich` (colored, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (JSON structured, suitable for ELK, etc.) |
-| log_files | array | empty | List of log output files (explicit paths, no segmentation) |
-| log_dir | string | empty | Log output directory (auto-created). If set, writes to `erispulse.log` in the directory and automatically segments according to `log_rotation`; mutually exclusive with `log_files`, `log_files` has higher priority |
-| log_rotation | string | size | Segmentation method: `size` (by size) / `date` (by time) / `none` (no segmentation) |
-| log_max_size_mb | float | 10 | Single file size limit (MB) for size mode, rotates to `.1`/`.2` backup when exceeded |
-| log_backup_count | integer | 5 | Number of historical log files to retain, oldest backups beyond this are automatically deleted |
-| log_rotation_when | string | midnight | Date mode rotation cycle: `S`/`M`/`H`/`D`/`midnight` (default is midnight daily) |
+| level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed debugging information of the framework) |
+| format | string | rich | Log output format: `rich` (colorful, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (structured JSON, suitable for ELK, etc.) |
+| log_files | array | empty | List of log output files (explicit paths, not segmented) |
+| log_dir | string | empty | Log output directory (auto-created). After setting, writes to `erispulse.log` in the directory and automatically segments according to `log_rotation`; mutually exclusive with `log_files`, `log_files` has higher priority |
+| log_rotation | string | size | Segmentation method: `size` (by size) / `date` (by time) / `none` (not segmented) |
+| log_max_size_mb | float | 10 | Single file size limit (MB) in size mode, rotates to `.1`/`.2` backup when exceeded |
+| log_backup_count | integer | 5 | Number of historical log files retained, oldest backups beyond this are automatically deleted |
+| log_rotation_when | string | midnight | Date mode rotation cycle: `S`/`M`/`H`/`D`/`midnight` (default daily at midnight) |
 | memory_limit | integer | 1000 | Number of log entries saved in memory |
-| exclude_levels | array | empty | Levels to exclude. Logs of excluded levels are **completely discarded** (not written to memory, not pushed to Dashboard or other subscribers, not printed, not written to file). Supports hot update |
+| exclude_levels | array | empty | Levels to exclude. Logs of excluded levels are **completely discarded** (not written to memory, not pushed to Dashboard or other subscribers, not printed, not written to file). Supports hot updates |
 
 You can also dynamically switch in code:
 
 ```python
 from ErisPulse.Core import logger
 
-# Size-based segmentation: Single file 10MB, retain 5 copies
+# Segment by size: single file 10MB, retain 5 copies
 logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
 
-# Time-based segmentation: Rotate daily at midnight, retain 7 copies
+# Segment by time: rotate daily at midnight, retain 7 copies
 logger.set_output_dir("logs", rotation="date", backup_count=7)
 ```
 
 > [!NOTE]
 > `log_dir` and related segmentation configurations require ErisPulse **2.8.0+**.
 
-> **Privacy Protection**: Message sending and receiving content is recorded at the **EVENT level** (value 21). Setting `exclude_levels = ["EVENT"]` allows the backend (such as the Dashboard log panel) to not see message content from groups/private chats, while not affecting logs of other levels.
+> **Privacy Protection**: Message content is recorded at the **EVENT level** (value 21). Setting `exclude_levels = ["EVENT"]` allows the backend (such as the Dashboard log panel) to not see message content in each group/private chat, while not affecting logs of other levels.
 
 > [!NOTE]
-> This `exclude_levels` feature requires ErisPulse **2.8.0+**.
+> The `exclude_levels` feature requires ErisPulse **2.8.0+**.
 
 ## Framework Configuration
 
@@ -4092,46 +4097,46 @@ adapters = []
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | Whether to enable lazy loading of modules |
-| uninit_timeout | integer | 30 | Graceful shutdown timeout (seconds), forcibly terminates if exceeded. 0 means no timeout set |
-| strict_mode | integer | 0 | Strict mode level, see "Strict Mode" below |
-| handler_max_concurrency | integer | 64 | Maximum number of concurrent Task for event handlers, increasing allows higher throughput but increases memory usage |
-| offline_bot_expiry | integer | 3600 | Automatic expiration time (seconds) for offline Bot records, 0 means no expiration |
+| uninit_timeout | integer | 30 | Graceful shutdown timeout (seconds), forcibly terminates after exceeding. 0 means no timeout |
+| strict_mode | integer | 0 | Strict mode level, see below "Strict Mode" explanation |
+| handler_max_concurrency | integer | 64 | Maximum concurrent Task count for event handlers, increasing improves throughput but increases memory usage |
+| offline_bot_expiry | integer | 3600 | Automatic expiration time (seconds) for offline Bot records, 0 means never expires |
 
 ### Active GC Configuration
 
-After SDK initialization, an active GC background task is started, periodically performing Python GC and internal resource recycling (cleaning offline Bots, etc.). All parameters support hot updates, and tasks are immediately restarted upon changes.
+After SDK initialization, an active GC background task starts, periodically performing Python GC and internal resource recycling (such as cleaning up offline Bots). All parameters support hot updates, and the task restarts immediately when changes are made.
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
 | proactive_gc_interval | number | 300 | Recycling interval (seconds), supports decimals. 0 means disable active GC |
 | proactive_gc_generation | integer | 0 | Regular round recycling generation (0/1/2, clamped to 0..2). Note that `gc.collect(2)` is equivalent to full recycling, default 0 keeps it lightweight; deep recycling is triggered periodically by `proactive_gc_full_every` |
-| proactive_gc_full_every | integer | 20 | Do a full recycling every N rounds, 0 means disable periodic full recycling. Full recycling is subject to the `proactive_gc_memory_growth_mb` threshold |
-| proactive_gc_memory_growth_mb | integer | 32 | Full recycling memory growth threshold (MB): Compared with the memory baseline after the last full recycling (prioritizing tracemalloc, then RSS), full recycling is only performed when the growth reaches this value. 0 means no threshold set |
-| proactive_gc_idle_only | boolean | false | When enabled, skip Python GC during event peaks (pending handlers exist) to avoid pauses and message processing competition; internal resource recycling is unaffected |
-| proactive_gc_gen0_min | integer | 500 | Minimum garbage amount for regular round recycling: `gc.get_count()[0]` below this value directly skips (empty rounds nearly zero overhead). 0 means always recycle |
+| proactive_gc_full_every | integer | 20 | Full recycling every N rounds, 0 means disable periodic full recycling. Full recycling is constrained by the `proactive_gc_memory_growth_mb` threshold |
+| proactive_gc_memory_growth_mb | integer | 32 | Full recycling memory growth threshold (MB): Compared with the memory baseline after the last full recycling (prioritizing tracemalloc, then RSS), full recycling is only performed when the growth reaches this value. 0 means no threshold |
+| proactive_gc_idle_only | boolean | false | When enabled, skip Python GC during event peaks (when there are unfinished pending handlers) to avoid pauses and message processing competition; internal resource recycling is unaffected |
+| proactive_gc_gen0_min | integer | 500 | Minimum garbage amount for regular round recycling of gen0: `gc.get_count()[0]` below this value is skipped directly (empty round nearly zero overhead). 0 means always recycle |
 
-> **2.7.1 Change**: The default `proactive_gc_generation` is adjusted from `2` to `0`, and `proactive_gc_full_every` from `0` to `20`. Previously `generation=2` meant a full heavy recycling every round; the new default maintains recycling coverage while significantly reducing idle round overhead. Explicitly configured old values still behave as worded.
+> **2.7.1 Change**: The default `proactive_gc_generation` is adjusted from `2` to `0`, and the default `proactive_gc_full_every` is adjusted from `0` to `20`. Previously `generation=2` meant full recycling every round; the new default maintains recycling coverage while significantly reducing empty round overhead. Explicitly configured old values still follow literal semantics.
 
 ### Strict Mode
 
-Strict mode controls the handling strategy for non-compliant or failed loading of modules/adapters during the loading phase. Modern modules/adapters should inherit corresponding base classes (`BaseModule`/`BaseAdapter`), components that do not inherit base classes affect the framework's context system and fallback cleanup, potentially causing resource leaks.
+The strict mode controls the handling strategy for modules/adapters when they are not compliant or fail during the loading phase. Modern modules/adapters should inherit the corresponding base classes (`BaseModule`/`BaseAdapter`); components that do not inherit base classes affect the framework's context system and fallback cleanup, potentially leading to resource leaks.
 
-> **2.5.2 Change**: The default level is adjusted from `1` (skip) to `0` (lenient), to reduce loading issues for new users on initial use. Components that do not inherit base classes will be warned and attempted to load, rather than directly rejected. To restore old behavior, explicitly set `strict_mode = 1`.
+> **2.5.2 Change**: The default level is adjusted from `1` (skip) to `0` (lenient), to reduce loading issues for new users on first use. Components that do not inherit base classes will be warned and attempted to load, rather than directly rejected. If you need to restore the previous behavior, explicitly set `strict_mode = 1`.
 
 | Level | Name | Behavior |
 |------|------|------|
-| 0 | Lenient (Default) | Non-compliant only warns, components that do not inherit base classes will still be attempted to load (compatible with old components) |
-| 1 | Strict-Skip | Rejects components that do not inherit base classes and skips them, other normal startup |
-| 2 | Strict-Fatal | Collects all violations and reports them collectively, then terminates the entire startup |
+| 0 | Lenient (default) | Violations are only warned, components that do not inherit base classes will still be attempted to load (compatible with old components) |
+| 1 | Strict-Skip | Reject components that do not inherit base classes and skip them, other components start normally |
+| 2 | Strict-Fatal | Collect all violations and report them together, then terminate the entire startup |
 
-In all levels, "loading/registration/initialization phase errors" such as component self-crashes are always skipped; the difference lies in:
+In all levels, component self-crashes during the loading/registration/initialization phase are always skipped; the difference is:
 
-- **0 → 1**: The only behavioral change is that "not inheriting base class" changes from "still loading" to "skipping."
-- **1 → 2**: All violations (not inheriting base class, loading failure, registration failure, initialization failure, etc.) are upgraded to fatal, collected at the startup checkpoint and reported as a violation list before termination.
+- **0 → 1**: The only behavioral change is that "not inheriting base class" changes from "still loading" to "skipping".
+- **1 → 2**: All violations (not inheriting base class, loading failure, registration failure, initialization failure, etc.) are upgraded to fatal, collected at the startup check point and reported as a violation list, then terminated.
 
 #### Exemption List
 
-If certain components cannot be migrated temporarily (e.g., dependencies on old modules), they can be added to the exemption list. Components listed will be treated leniently even if non-compliant, and continue to be loaded:
+If certain components cannot be migrated for some reason (e.g., dependent old modules), you can add them to the exemption list. Components listed will be treated as lenient mode and continue loading, even if they are non-compliant:
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -4139,24 +4144,24 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> When a component is rejected by strict mode, the log will clearly indicate how to restore loading (add to the exemption list or lower the level).
+> When a component is rejected by strict mode, the log will clearly indicate how to resume loading (add to the exemption list or lower the level).
 
 ## Storage Configuration
 
-Since version 2.8.0, the storage engine supports three asynchronous backends, with **identical APIs and one-click configuration switching**:
+Since version 2.8.0, the storage engine supports three asynchronous backends, with **completely consistent APIs and one-click configuration switching**:
 
-| Backend | Driver | Installation | Characteristics |
+| Backend | Driver | Installation | Features |
 |------|------|------|------|
-| SQLite (Default) | aiosqlite | Ready-to-use | Zero configuration, single file, WAL concurrency |
+| SQLite (Default) | aiosqlite | Ready-to-use out of the box | Zero configuration, single file, WAL concurrency |
 | MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | Existing MySQL infrastructure, multi-instance sharing |
 | PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | Strong transaction capability, high concurrency |
 
 ```toml
 [ErisPulse.storage]
 backend = "sqlite"        # "sqlite" (default) / "mysql" / "postgres"
-use_global_db = false     # Only for SQLite: Use the package's global database data/config.db
+use_global_db = false     # Only for SQLite: Use the package's global database data/config.db instead of the project's independent database
 
-[ErisPulse.storage.mysql]      # Only effective when backend = "mysql"
+[ErisPulse.storage.mysql]      # Applies when backend = "mysql"
 host = "127.0.0.1"
 port = 3306
 user = "erispulse"
@@ -4166,7 +4171,7 @@ database = "erispulse"
 # pool_min = 1
 # pool_max = 10
 
-[ErisPulse.storage.postgres]   # Only effective when backend = "postgres"
+[ErisPulse.storage.postgres]   # Applies when backend = "postgres"
 host = "127.0.0.1"
 port = 5432
 user = "erispulse"
@@ -4187,8 +4192,8 @@ Environment variables are also supported for overriding (Docker / 12-factor): `E
 
 > [!TIP]
 > - Connection parameter changes require a framework restart to take effect; transient connection pool creation failures will automatically retry with exponential backoff
-> - Use a verification script before switching backends: `python tests/devs/test_storage_backend_verify.py --backend mysql`
-> - Transaction / dialect differences / custom backends, etc., are fully described in [Storage Backends](../advanced/storage-backends.md)
+> - Before switching backends, use a verification script to check: `python tests/devs/test_storage_backend_verify.py --backend mysql`
+> - For full details on transactions, dialect differences, and custom backends, see [Storage Backends](../advanced/storage-backends.md)
 
 ## Event Configuration
 
@@ -4204,9 +4209,9 @@ allow_space_prefix = false
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
 | prefix | string | / | Command prefix |
-| case_sensitive | boolean | true | Whether to distinguish case (whether `/Help` and `/help` are different commands) |
-| allow_space_prefix | boolean | false | Whether to allow spaces as prefix |
-| must_at_bot | boolean | false | Whether to require mentioning the bot to trigger the command (private chats are not restricted) |
+| case_sensitive | boolean | true | Whether to distinguish case (is `/Help` and `/help` different commands) |
+| allow_space_prefix | boolean | false | Whether to allow space as prefix |
+| must_at_bot | boolean | false | Whether to require @bot to trigger command (private chat is not restricted) |
 
 ### Message Configuration
 
@@ -4228,7 +4233,7 @@ language = "auto"
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| language | string | auto | The display language for the framework's built-in text. Set to `auto` for automatic system language detection, or set to a specific code: `zh-CN`, `zh-TW`, `en`, `ja`, `ru` |
+| language | string | auto | The display language for built-in framework text. Set to `auto` to automatically detect the system language, or set to a specific code: `zh-CN`, `zh-TW`, `en`, `ja`, `ru` |
 
 ## Module Configuration
 
@@ -4241,7 +4246,7 @@ timeout = 30
 enabled = true
 ```
 
-In the module, read and write the configuration:
+Read and write configuration in the module:
 
 ```python
 from ErisPulse import sdk
@@ -4257,38 +4262,38 @@ sdk.config.setConfig("MyModule.timeout", 60)
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` defaults to delayed write (about every 5 seconds batch save to file), set `immediate=True` to immediately persist. Configuration changes trigger the `config.set` lifecycle event.
+> `setConfig` uses delayed writing by default (batched saved to file every ~5 seconds), set `immediate=True` to persist immediately. Configuration changes trigger the `config.set` lifecycle event.
 
 ## Scope Configuration (scope)
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Scope declares "the **scope of effect**"—which modules are available in what platform/Bot/session (① module level), whether events are received for what user/group/Bot/adapter (② identity level), and what outbound calls a module can initiate (③ outbound level):
+Scope declares "what range it is effective in" – which modules are available in what platform / Bot / session (① module dimension), whether events are received for what user / group / Bot / adapter (② identity dimension), and what outbound calls modules can initiate (③ outbound dimension):
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # Global fallback (false = implicit deny strict mode; does not affect outbound level)
+default_allow = true        # Global fallback (false = implicit deny in strict mode; does not affect outbound dimension)
 cache_size = 1024           # LRU cache size
 
-# ① Module level (priority: session > Bot > platform; entries support exact / glob / re: regex)
+# ① Module dimension (priority: session > Bot > platform; entries support exact / glob / re: regex)
 [ErisPulse.scope.platforms.onebot11]
 modules = ["Chat", "Tool*"]
 blocked = ["re:^Danger"]
 
-# Sub-level binding with merge = true merges entries with lower priority (default overall overwrite)
+# Sub-level binding with merge = true merges with lower priority entries (default overall overwrite)
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Music"]
 merge = true
 
-# ② Identity level (priority: user > session > Bot > adapter; only allow or deny per level)
+# ② Identity dimension (priority: user > session > Bot > adapter; only allow or deny one per level)
 [ErisPulse.scope.identity.adapters.onebot11]
 deny = true                 # Discard all events on this platform at the entry
 [ErisPulse.scope.identity.users.onebot11]
 allow = ["u_admin"]         # User keys support glob / re: regex
 deny = ["u_bad", "spam_*"]
 
-# ③ Outbound level (default all allowed; rules are inline tables, entries support exact / glob / re: regex)
+# ③ Outbound dimension (default all allowed; rules are inline tables, entries support exact / glob / re: regex)
 [ErisPulse.scope.actions.MyModule]
 send = { deny = true }                    # Deny all sending
 api = { allow = ["get_*"] }               # Allow only standard query APIs
@@ -4297,17 +4302,17 @@ request = { deny = true }                 # Deny request handling
 
 | Configuration Item | Type | Description |
 |---------|------|------|
-| `scope.default_allow` | boolean | Global fallback: Allow or deny for modules/identity not matched by rules (true) |
+| `scope.default_allow` | boolean | Global fallback: Allow or deny for modules/identity not matched by rules (`true`) |
 | `scope.cache_size` | integer | LRU cache size (default 1024) |
-| `scope.platforms / bots / sessions` | table | ① Module three-level binding: `{modules=[...], blocked=[...], merge=bool?}` |
-| `scope.identity.adapters / bots / sessions / users` | table | ② Identity four-level binding: `{allow=true}` / `{deny=true}` |
+| `scope.platforms / bots / sessions` | table | ① Three-level module binding: `{modules=[...], blocked=[...], merge=bool?}` |
+| `scope.identity.adapters / bots / sessions / users` | table | ② Four-level identity binding: `{allow=true}` / `{deny=true}` |
 | `scope.actions.<module>.<action>` | table | ③ Outbound rules: `{allow=[...], deny=true|[...]}` (actions are send / api / request) |
 
 > For detailed explanations and runtime APIs (dimensional `sdk.scope.set_module()` / `set_identity()` / `set_action()`, determination `is_allowed()` / `is_identity_allowed()` / `is_action_allowed()`, and dictionary-style fallback `get()` / `set()` / `delete()`), see [Scope (scope)](../advanced/scope.md).
 
 ## Unified Event Override Configuration (event.overrides)
 
-Unified override system: Overriding behavior of any module handler by **event type** without modifying module code. OneBot12 standard types (meta / message / notice / request) and extended types (command) each have dedicated overridable parameters:
+Unified override system: Overriding behavior of any module handler by **event type** without modifying module code. OneBot12 standard types (meta / message / notice / request) and extended types (command) each have their own overridable parameters:
 
 ```toml
 [ErisPulse.event.overrides]
@@ -4320,18 +4325,18 @@ pattern = "闲聊*"
 [ErisPulse.event.overrides.notice.MyModule]
 detail_types = ["group_increase"]
 
-# command (extended type): Override command parameters (user priority; disable via acl deny)
+# command (extended type): Implement parameter override (user priority; disable via acl deny)
 [ErisPulse.event.overrides.command.MyModule.restart]
-master = true               # Override to only allow framework master (false to relax developer's master restriction)
+master = true               # Override to only framework master (false opens developers' master restriction)
 hidden = true               # Hide in help list
 aliases = ["rs"]            # Effective alias
 
-# acl (command-specific): User allow/deny lists for commands (command names support glob / re: regex, exact keys take precedence)
+# acl (command exclusive): User allow/deny lists (command names support glob / re: regex, exact keys take priority)
 [ErisPulse.event.overrides.acl."roll*"]
 allow = ["onebot11:u_vip"]  # User identifier "platform:user_id"
 deny = ["onebot11:u_bad"]
 
-# ACL fallback: Allow (true) / strictly deny (false) commands without ACL configuration
+# ACL fallback: Allow (true) or strictly deny (false) commands not configured with ACL
 acl_default_allow = true
 ```
 
@@ -4343,10 +4348,10 @@ acl_default_allow = true
 | `event.overrides.command.<module>` | table | Module-level parameter override (scalar values like `hidden = true`) |
 | `event.overrides.command.<module>.<command>` | table | Command-level override (command-level takes precedence) |
 | `event.overrides.acl.<command name>` | table | User allow/deny lists: `{allow=[...], deny=[...]}` |
-| `event.overrides.acl_default_allow` | boolean | ACL fallback: Allow (true) / strictly deny (false) commands without ACL configuration |
+| `event.overrides.acl_default_allow` | boolean | ACL fallback: Allow (true) or strictly deny (false) commands not configured with ACL |
 
-> Runtime API (after `from ErisPulse.Core.Event import overrides`, call `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` by type sub-namespace, or access via `sdk.Event.overrides`)
-> See [Event Handling Introduction · Event Override](../getting-started/event-handling.md#event-override-does-not-modify-module-code-override-behavior-of-any-event-type)
+> Runtime API (after `from ErisPulse.Core.Event import overrides`, call by type sub-namespace `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` etc., or access via `sdk.Event.overrides`)
+> See [Event Handling Introduction · Event Override](../getting-started/event-handling.md#event-override-no-code-modification-override-behavior-of-any-event-type).
 
 ## Command Parsing Configuration (event.command)
 
@@ -4973,7 +4978,10 @@ sdk.lifecycle  # Lifecycle system
 
 # Core Module Concepts
 
-Understanding the core concepts of ErisPulse modules is essential for developing high-quality modules.
+> [!NOTE]
+> **L1 Essential Reading** — One of the five core documents in the "Reading Path" on the homepage, essential for module development.
+
+Understanding the core concepts of ErisPulse modules is the foundation for developing high-quality modules.
 
 ## Module Lifecycle
 
@@ -5853,9 +5861,12 @@ Method resolution priority (from highest to lowest): platform-specific methods �
 
 ### 模块开发最佳实践
 
-# Module Development Best Practices
+# Best Practices for Module Development
 
-This document provides best practices for developing modules in ErisPulse.
+> [!TIP]
+> **When to read this**: It is recommended to read after writing your first module (engineering best practices). If not needed, you can skip it without affecting the use of other features.
+
+This document provides best practice recommendations for ErisPulse module development.
 
 ## Module Design
 
@@ -6407,7 +6418,10 @@ You can add GitHub Stars, Downloads, and other badges as needed. The logo can al
 
 # Data Model Layer (ORM)
 
-Starting from version 2.9.0, the framework includes a built-in declarative data model layer: by inheriting from `Model` and declaring fields using `Field`, you gain automatic table creation and CRUD capabilities. The model is built directly on the built-in storage layer—SQLite / MySQL / PostgreSQL is determined by the `ErisPulse.storage.backend` configuration. **Switching the backend does not require modifying the model code.**
+> [!TIP]
+> **When to read this**: When you need data models, automatic table creation, or relationship mapping. If not needed, you can skip this section without affecting the use of other features.
+
+Starting from version 2.9.0, the framework includes a built-in declarative data model layer: by inheriting from `Model` and declaring fields using `Field`, you can obtain automatic table creation and CRUD capabilities. The models are directly built on top of the built-in storage layer—SQLite / MySQL / PostgreSQL is determined by the `ErisPulse.storage.backend` configuration. **Switching the backend does not require modifying the model code.**
 
 ## Declaring Models
 
@@ -6595,15 +6609,18 @@ await writer.posts.count()          # Bidirectional access
 
 # Module Troubleshooting Guide
 
-When a module "doesn't respond," it can be categorized into three types of issues, each with corresponding framework diagnostic tools (RFC EPRFC-2026-001 Direction Five):
+> [!TIP]
+> **When to read this**: When a module "doesn't respond", a command isn't triggered, or an event isn't received. Skip if not needed, as it won't affect the use of other features.
+
+When a module "doesn't respond", symptoms can be divided into three types of issues, each with corresponding framework diagnostic tools (RFC EPRFC-2026-001 Direction Five):
 
 | Symptom | Diagnostic Tool | Diagnostic Level |
-|---------|----------------|------------------|
+|------|---------|---------|
 | Module not loaded | `ErisPulse.runtime.explain_module(name)` | Registration and loading chain |
-| Event not handled | `ErisPulse.runtime.explain_event(event)` | Distribution entry point check |
+| Event not responded to | `ErisPulse.runtime.explain_event(event)` | Distribution entry point check |
 | Command not triggered | Distribution decision chain (test side `DispatchTrace` / framework built-in `trace`) | Command determination chain |
 
-Both diagnostic functions are **pure read** operations, do not change any state, and can be called at any time; they return a machine-readable dict, which can be rendered into human-readable text using `format_report()`.
+Both diagnostic functions are **pure read** operations and do not change any state; they can be called at any time; they return a machine-readable dict, which can be rendered into human-readable text using `format_report()`.
 
 ## Scenario 1: Module Not Loaded
 
@@ -8456,6 +8473,9 @@ async def on_bot_offline(data):
 
 # SendDSL Explained
 
+> [!TIP]
+> **When to read this**: Required reading for adapter development (Send DSL). Skip if not needed; it does not affect the use of other features.
+
 SendDSL is a fluent-style message sending interface provided by the ErisPulse adapter.
 
 ## Basic Calling Methods
@@ -9184,6 +9204,9 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("Announcemen
 
 # Adapter Development Best Practices
 
+> [!TIP]
+> **When to read this**: It is recommended to read this after the adapter skeleton is working (engineering best practices). If not needed, you can skip it without affecting the use of other features.
+
 This document provides best practice recommendations for ErisPulse adapter development.
 
 ## Bot Status Management and Meta Events
@@ -9835,25 +9858,28 @@ version = "2.0.0"  # Update the version number
 
 # Event Converter Implementation Guide
 
-The Event Converter (Converter) is one of the core components of the adapter, responsible for transforming platform-native events into ErisPulse's unified OneBot12 standard event format.
+> [!TIP]
+> **When to read this**: Required reading for adapter development paths (event converters). Skip if not needed, as it does not affect the usage of other features.
+
+The Event Converter (Converter) is one of the core components of the adapter, responsible for converting platform-native events into the unified OneBot12 event format of ErisPulse.
 
 ## Converter Responsibilities
 
 ```
-Platform-native event ──→ Converter.convert() ──→ OneBot12 standard event
+Platform-native events ──→ Converter.convert() ──→ OneBot12 standard events
 ```
 
-The Converter is only responsible for **forward conversion** (receiving direction), transforming platform-native event data into the OneBot12 standard format. Reverse conversion (sending direction) is handled by the `Send.Raw_ob12()` method.
+The `Converter` is responsible only for **forward conversion** (inbound direction), which means converting platform-native event data into the OneBot12 standard format. Reverse conversion (outbound direction) is handled by the `Send.Raw_ob12()` method.
 
 ### Core Principles
 
-1. **Lossless conversion**: Original data must be fully retained in the `{platform}_raw` field
-2. **Standard compatibility**: The converted event must conform to the OneBot12 standard format
-3. **Platform extension**: Platform-specific data is stored in fields with the `{platform}_` prefix
+1. **Lossless Conversion**: Original data must be fully preserved in the `{platform}_raw` field
+2. **Standard Compatibility**: Converted events must conform to the OneBot12 standard format
+3. **Platform Extensions**: Platform-specific data is stored in fields prefixed with `{platform}_`
 
 ## BaseConverter Base Class (Recommended)
 
-Starting from version 2.7.0, the framework provides the `BaseConverter` base class (`ErisPulse.Core.Bases`), which encapsulates the **common field construction** and **common message segment utilities** for OneBot12 events, allowing converters to focus only on type mapping:
+Starting from version 2.7.0, the framework provides the `BaseConverter` base class (`ErisPulse.Core.Bases`), which encapsulates the **common field construction** and **common message segment utilities** for OneBot12 events. This allows converters to focus solely on type mapping:
 
 ```python
 from ErisPulse.Core.Bases import BaseConverter
@@ -9878,18 +9904,18 @@ class MyConverter(BaseConverter):
         return None
 ```
 
-`build_base_event()` already fills the following common fields:
+The `build_base_event()` method already fills in the following common fields:
 
 | Field | Source |
 |------|------|
-| `id` | `raw_event["event_id"]`, UUID generated if missing |
-| `time` | `raw_event["timestamp"]`, current time if missing |
-| `platform` | `platform` passed during initialization |
+| `id` | `raw_event["event_id"]`, a UUID is generated if missing |
+| `time` | `raw_event["timestamp"]`, the current time is used if missing |
+| `platform` | Provided via the `platform` argument during initialization |
 | `self` | `{"platform": ..., "user_id": raw_event["bot_id"]}` |
-| `{platform}_raw` | Raw event (satisfies "lossless conversion" principle) |
-| `{platform}_raw_type` | Raw event type |
+| `{platform}_raw` | The original event (satisfying the "lossless conversion" principle) |
+| `{platform}_raw_type` | The original event type |
 
-Common message segment utility methods (all static methods, directly reusable):
+Common message segment utility methods (all are static methods, directly reusable):
 
 ```python
 converter.text("hi")          # {"type": "text", "data": {"text": "hi"}}
@@ -9897,7 +9923,7 @@ converter.at("123456")        # {"type": "at", "data": {"user_id": "123456"}}
 converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
 ```
 
-> When manually implementing, the common field construction in `build_base_event` is boilerplate code that must be repeatedly written. Using `BaseConverter` eliminates this, and naturally ensures "lossless conversion" (the raw event always goes into `{platform}_raw`).
+> When implementing manually, the construction of common fields in `build_base_event` is boilerplate code that must be repeatedly written. Using `BaseConverter` eliminates this part and naturally satisfies "lossless conversion" (the original event is always included in `{platform}_raw`).
 
 ## convert() Method
 
@@ -9906,10 +9932,10 @@ converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
 ```python
 def convert(self, raw_event: dict) -> dict:
     """
-    Converts platform-native event data to OneBot12 standard format.
+    Converts a platform-native event into OneBot12 standard format
 
     :param raw_event: Platform-native event data
-    :return: OneBot12 standard event dictionary
+    :return: Event dictionary in OneBot12 standard format
     """
     pass
 ```
@@ -9920,7 +9946,7 @@ The converted event dictionary should include the following standard fields:
 
 ```python
 {
-    "id": "unique event ID",
+    "id": "Unique event ID",
     "time": 1234567890,           # Unix timestamp (seconds)
     "type": "message",             # Event type
     "detail_type": "private",      # Detailed type
@@ -9933,11 +9959,11 @@ The converted event dictionary should include the following standard fields:
     # Message event fields
     "user_id": "sender_id",
     "message": [...],              # OneBot12 message segment list
-    "alt_message": "plain text content",
+    "alt_message": "Plain text content",
 
-    # Original data must be preserved
-    "myplatform_raw": { ... },     # Platform-native event complete data
-    "myplatform_raw_type": "native event type name",
+    # Must retain original data
+    "myplatform_raw": { ... },     # Complete platform-native event data
+    "myplatform_raw_type": "Native event type name",
 }
 ```
 
@@ -9946,32 +9972,32 @@ The converted event dictionary should include the following standard fields:
 ### Common Fields (All Event Types)
 
 | OB12 Field | Type | Description |
-|-----------|------|------|
-| `id` | str | Unique event identifier |
+|------------|------|-------------|
+| `id` | str | Unique identifier for the event |
 | `time` | int | Unix timestamp (seconds) |
 | `type` | str | Event type: `message` / `notice` / `request` / `meta` |
 | `detail_type` | str | Detailed type: `private` / `group` / `friend` etc. |
-| `platform` | str | Platform name, consistent with adapter registration name |
+| `platform` | str | Platform name, consistent with the adapter registration name |
 | `self` | dict | Bot information: `{"platform": "...", "user_id": "..."}` |
 
-### Message Event Additional Fields
+### Additional Fields for Message Events
 
 | OB12 Field | Type | Description |
-|-----------|------|------|
+|------------|------|-------------|
 | `user_id` | str | Sender ID |
 | `message` | list[dict] | OneBot12 message segment list |
-| `alt_message` | str | Plain text fallback content |
+| `alt_message` | str | Plain text alternative content |
 
-### Notice Event Additional Fields
+### Additional Fields for Notice Events
 
 | OB12 Field | Type | Description |
-|-----------|------|------|
-| `user_id` | str | Related user ID |
+|------------|------|-------------|
+| `user_id` | str | Relevant user ID |
 | `operator_id` | str | Operator ID (e.g., group member changes) |
 
 ## Message Segment Conversion
 
-OneBot12 standard defines the following message segment types:
+The OneBot12 specification defines the following message segment types:
 
 ```python
 # Text
@@ -9989,21 +10015,21 @@ OneBot12 standard defines the following message segment types:
 # File
 {"type": "file", "data": {"file": "https://example.com/doc.pdf"}}
 
-# Mention
+# @Mention
 {"type": "mention", "data": {"user_id": "123"}}
 
-# Mention All
+# @Everyone
 {"type": "mention_all", "data": {}}
 
 # Reply
 {"type": "reply", "data": {"message_id": "msg_123"}}
 ```
 
-If the platform does not support certain message segment types, you can omit the segment or convert it to the closest standard type.
+If a platform does not support a particular message segment type, it can omit that segment or convert it to the closest standard type.
 
 ## Platform Extension Fields
 
-Platform-specific data should be stored using the `{platform}_` prefix to avoid conflicts with standard fields:
+Platform-specific data should be stored with a `{platform}_` prefix to avoid conflicts with standard fields:
 
 ```python
 {
@@ -10022,7 +10048,7 @@ Platform-specific data should be stored using the `{platform}_` prefix to avoid 
 }
 ```
 
-> **Important**: The `{platform}_raw` field is required, as ErisPulse's event system and modules may depend on it to access platform-native data.
+> **Important**: The `{platform}_raw` field is required, as ErisPulse's event system and modules may depend on it to access raw platform data.
 
 ## Complete Example
 
@@ -10106,13 +10132,13 @@ class MyConverter:
         return base
 ```
 
-## Rich Media Message Conversion Example
+## Rich Media Message Conversion Examples
 
-Platform messages often contain rich media such as images, mentions, and replies. Here is an example of `_convert_message_segments` handling multiple message types:
+Platform-specific messages typically contain rich media content such as images, @mentions, and replies. Below is an example of `_convert_message_segments` handling various message types:
 
 ```python
 def _convert_message_segments(self, raw_content: list) -> list:
-    """Converts platform-native message segment list into OneBot12 standard message segments"""
+    """Convert a list of platform-native message segments into OneBot12 standard message segments"""
     segments = []
 
     for item in raw_content:
@@ -10159,7 +10185,7 @@ def _convert_message_segments(self, raw_content: list) -> list:
 
 ### 1. Missing `{platform}_raw` Field
 
-This is the most common mistake. Missing the raw data field will prevent modules from accessing platform-specific information.
+This is the most common mistake. Missing the raw data field prevents the module from accessing platform-specific information.
 
 ```python
 base_event["myplatform_raw"] = raw_event        # Required!
@@ -10168,44 +10194,44 @@ base_event["myplatform_raw_type"] = event_type   # Required!
 
 ### 2. Incorrect Timestamp Format
 
-OneBot12 requires the `time` field to be a Unix timestamp in seconds (integer). If your platform returns milliseconds or an ISO format string, you must convert it:
+The OneBot12 standard requires the `time` field to be a Unix second-level timestamp (integer). If your platform returns a millisecond timestamp or an ISO-formatted string, you need to convert it:
 
 ```python
 import time
 
-# Milliseconds → seconds
+# Milliseconds → Seconds
 "time": raw_event.get("timestamp", 0) // 1000
 
-# ISO string → seconds
+# ISO String → Seconds
 "time": int(time.mktime(time.strptime(raw_event["created_at"], "%Y-%m-%dT%H:%M:%S")))
 ```
 
 ### 3. Missing `self` Field
 
-The `self` field contains bot information, with `user_id` being the bot's account ID. This field is crucial in multi-bot scenarios:
+The `self` field contains information about the bot itself, with `user_id` being the bot's account ID. This field is crucial in multi-Bot scenarios:
 
 ```python
 "self": {
     "platform": self.platform,
-    "user_id": raw_event.get("bot_id", ""),   # Bot's own ID
+    "user_id": raw_event.get("bot_id", ""),   # The bot's own ID
 }
 ```
 
-### 4. Using Non-standard `detail_type` Values
+### 4. Use of Non-standard `detail_type` Values
 
-`detail_type` must use the values defined by OneBot12, such as `private`, `group`, `friend_increase`, `group_member_increase`, etc. Do not use platform-specific naming.
+The `detail_type` must use values defined by the OneBot12 standard, such as `private`, `group`, `friend_increase`, `group_member_increase`, etc. Do not use platform-specific naming.
 
 ### 5. Round-trip Consistency
 
-Ensure that the message segment types generated by the Converter correspond to the methods supported by the Send end. For example, if the Converter converts a platform image message to `{"type": "image", ...}`, then the Send end's `Image()` method must be able to handle image sending.
+Ensure that the message segment types generated by the Converter correspond to the methods supported by the Send end. For example, if the Converter converts the platform's image message to `{"type": "image", ...}`, then the `Image()` method on the Send end must be able to handle image sending.
 
 ## Best Practices
 
-1. **Always preserve raw data**: The `{platform}_raw` field must not be omitted
-2. **Use standard message segments**: Convert platform messages to OneBot12 standard message segments whenever possible
-3. **Set `detail_type` appropriately**: Use standard types (`private`/`group`/`channel` etc.), do not define custom ones
-4. **Handle edge cases**: Raw events may lack certain fields; use `.get()` with reasonable default values
-5. **Performance considerations**: `convert()` is called for every event; avoid performing time-consuming operations within it
+1. **Always retain the original data**: The `{platform}_raw` field must not be omitted.
+2. **Use standard message segments**: Try to convert platform-specific messages into OneBot12 standard message segments.
+3. **Set `detail_type` appropriately**: Use standard types (`private`/`group`/`channel`, etc.), and do not define custom types.
+4. **Handle edge cases**: The original event may lack certain fields; use `.get()` and provide reasonable default values.
+5. **Performance considerations**: The `convert()` method is called on each event, so avoid performing time-consuming operations within it.
 
 
 
@@ -10213,7 +10239,10 @@ Ensure that the message segment types generated by the Converter correspond to t
 
 # Publishing and Module Store Guide
 
-Publish your developed modules or adapters to the ErisPulse Module Store, allowing other users to easily discover and install them.
+> [!TIP]
+> **When you need to read this**: When publishing your work to PyPI / the module store. If not needed, skip it, as it will not affect the use of other features.
+
+Publish your developed module or adapter to the ErisPulse module store, allowing other users to easily discover and install it.
 
 ## Module Store Overview
 
@@ -15241,6 +15270,9 @@ class MyAdapter(BaseAdapter):
 
 # SQL Query Builder
 
+> [!TIP]
+> **When to read this**: When you need chain-style SQL queries or custom storage backends. Skip if not needed, as it won't affect other features.
+
 The Storage module in ErisPulse provides a chain-call style generic SQL query builder, supporting custom table creation, querying, updating, and deleting operations.
 
 ## Architecture Design
@@ -15256,23 +15288,23 @@ Bases/storage.py                    Core/storage.py
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` are abstract base classes that define unified interfaces; the framework includes three built-in implementations: SQLite / MySQL / PostgreSQL (custom backends can also be extended following this pattern, see [Storage Backends](storage-backends.md))
-- `StorageManager` dispatches the specific backend according to the `ErisPulse.storage.backend` configuration, with SQLite as the default, ensuring full backward compatibility
+- `BaseStorage` / `BaseQueryBuilder` are abstract base classes defining unified interfaces; the framework includes built-in implementations for SQLite / MySQL / PostgreSQL (custom backends can be extended similarly, see [Storage Backends](storage-backends.md))
+- `StorageManager` dispatches specific backends based on the `ErisPulse.storage.backend` configuration, defaulting to SQLite, fully backward compatible
 
-## Importing
+## Import
 
 ```python
 from ErisPulse import sdk
 # or
 from ErisPulse.Core import storage
 
-# ABC base classes (for type annotation or custom implementation)
+# ABC base classes (for type hints or custom implementations)
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
 ## Table Management
 
-### Creating a Table
+### Create Table
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -15283,44 +15315,44 @@ sdk.storage.CreateTable("users", {
 })
 ```
 
-### Checking if a Table Exists
+### Check if Table Exists
 
 ```python
 if sdk.storage.HasTable("users"):
     print("users table exists")
 ```
 
-### Dropping a Table
+### Drop Table
 
 ```python
 sdk.storage.DropTable("users")
 ```
 
-### Modifying Table Structure
+### Modify Table Structure
 
 ```python
-# Adding a column
+# Add column
 sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
 
-# Renaming a table
+# Rename table
 sdk.storage.AlterTable("users").RenameTo("members").Execute()
 
-# Chaining multiple operations
+# Chain multiple operations
 sdk.storage.AlterTable("users") \
     .AddColumn("phone", "TEXT") \
     .AddColumn("address", "TEXT") \
     .Execute()
 ```
 
-## Chainable Queries
+## Chain-style Querying
 
-### Inserting Data
+### Insert Data
 
 ```python
-# Single row insertion (passing a dictionary)
+# Single row insertion (pass a dictionary)
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# Batch insertion (passing a list of dictionaries)
+# Bulk insertion (pass a list of dictionaries)
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35},
@@ -15328,9 +15360,9 @@ sdk.storage.Table("users").InsertMulti([
 ]).Execute()
 ```
 
-### Querying Data
+### Query Data
 
-> **Important**: `Select()` returns a `list[tuple]` (list of tuples), not a dictionary. You need to access values by column index.
+> **Important**: `Select()` returns a `list[tuple]` (list of tuples), not a dictionary. You must access values by column index.
 
 ```python
 # Select all columns
@@ -15347,9 +15379,9 @@ for row in rows:
     age = row[1]    # 30
 ```
 
-#### Converting Tuples to Dictionaries
+#### Convert Tuples to Dictionaries
 
-It is recommended to call `ToDict()` directly on the chain; the SELECT result will automatically be returned as a dictionary (column name → value):
+It is recommended to directly call `ToDict()` on the chain; SELECT results will automatically return as a list of dictionaries (column name → value):
 
 ```python
 # ToDict chain: result is list[dict], column names are automatically taken from query metadata (SELECT * is also supported)
@@ -15367,24 +15399,24 @@ row = sdk.storage.Table("users").Select("name", "age") \
 # row: {"name": "Alice", "age": 30} or None
 ```
 
-> `ToDict()` is a chainable marker (returns self): chains without calling it retain the original `list[tuple]` behavior, fully backward compatible; `copy()` will preserve this flag.
+> `ToDict()` is a chain marker (returns self): chains without calling it maintain the original `list[tuple]` behavior, fully backward compatible; `copy()` preserves this marker.
 
-Manual zip method (equivalent to ToDict, suitable for scenarios where the chain cannot be modified):
+Manual zip approach (equivalent to ToDict, suitable for scenarios where the chain cannot be modified):
 
 ```python
 columns = ["id", "name", "age"]
 rows = sdk.storage.Table("users").Select(*columns).Execute()
 
-# Method 1: zip in loop
+# Method one: zip in loop
 for row in rows:
     record = dict(zip(columns, row))
     print(record["name"], record["age"])
 
-# Method 2: convert to list of dictionaries at once
+# Method two: convert to list of dictionaries at once
 records = [dict(zip(columns, row)) for row in rows]
 ```
 
-#### Getting a Single Record
+#### Get Single Record
 
 ```python
 row = sdk.storage.Table("users").Select("name", "age") \
@@ -15397,9 +15429,9 @@ if row is not None:
     age = row[1]   # 30
 ```
 
-### Filtering Conditions
+### Condition Filtering
 
-> `Where(condition, *params)` supports passing multiple parameters, corresponding to multiple `?` placeholders.
+> `Where(condition, *params)` supports multiple parameters, corresponding to multiple `?` placeholders.
 
 ```python
 # Single condition (one placeholder, one parameter)
@@ -15407,19 +15439,19 @@ rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 18) \
     .Execute()
 
-# Using multiple placeholders in one Where
+# Multiple placeholders in one Where
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ? AND age < ?", 20, 40) \
     .Execute()
 
-# Multiple Where calls (AND connected)
+# Multiple Where calls (AND connection)
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 20) \
     .Where("age < ?", 40) \
     .Execute()
 ```
 
-### Sorting and Pagination
+### Sorting, Pagination
 
 ```python
 # Ascending order
@@ -15440,7 +15472,7 @@ rows = sdk.storage.Table("users").Select("name") \
     .Execute()
 ```
 
-### Updating Data
+### Update Data
 
 ```python
 # Conditional update
@@ -15455,7 +15487,7 @@ sdk.storage.Table("users") \
     .Execute()
 ```
 
-### Deleting Data
+### Delete Data
 
 ```python
 # Conditional delete
@@ -15468,7 +15500,7 @@ sdk.storage.Table("users") \
 sdk.storage.Table("users").Delete().Execute()
 ```
 
-### Counting and Existence Check
+### Count and Existence Check
 
 ```python
 # Count
@@ -15481,7 +15513,7 @@ exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 
 ## Reusing Query Conditions
 
-Use `copy()` to deep copy the builder and reuse base conditions:
+Use `copy()` to deep copy the builder and reuse the base condition:
 
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
@@ -15509,7 +15541,7 @@ rows = builder.Execute()
 
 ## Using in Transactions
 
-Chainable operations fully support transactions:
+Chain operations fully support transactions:
 
 ```python
 # Commit transaction
@@ -15529,7 +15561,7 @@ except Exception:
 
 ## Asynchronous Native API
 
-Starting from version 2.8.0, the storage layer uses asynchronous operations as the native primary interface. All terminating methods have corresponding asynchronous versions with an `a` prefix. It is recommended to use these in asynchronous handlers (to avoid temporary blocking of the event loop due to synchronous compatibility layers):
+Starting from version 2.8.0, the storage layer uses asynchronous calls as the native main interface. All terminating methods have corresponding asynchronous versions prefixed with `a`, recommended for use within asynchronous handlers (to avoid briefly blocking the event loop with synchronous compatibility layers):
 
 ```python
 # Asynchronous transaction
@@ -15537,19 +15569,19 @@ async with sdk.storage.atransaction():
     await sdk.storage.aset("key1", "value1")
     await sdk.storage.aset("key2", {"nested": True})
 
-# Asynchronous chainable query
+# Asynchronous chain query
 rows = await sdk.storage.Table("users").Select("name", "age").ToDict().aExecute()
 row = await sdk.storage.Table("users").Select("*").Where("id = ?", 1).aExecuteOne()
 total = await sdk.storage.Table("users").Where("age > ?", 18).aCount()
 exists = await sdk.storage.Table("users").Where("name = ?", "Alice").aExists()
 
-# Asynchronous KV operations
+# Asynchronous KV
 await sdk.storage.aset("app.name", "MyApp")
 value = await sdk.storage.aget("app.name")
 keys = await sdk.storage.aget_all_keys()
 ```
 
-| Synchronous (Compatibility Layer) | Asynchronous Native |
+| Synchronous (compatibility layer) | Asynchronous native |
 |------|------|
 | `get` / `set` / `delete` | `aget` / `aset` / `adelete` |
 | `get_all_keys` / `clear` | `aget_all_keys` / `aclear` |
@@ -15571,22 +15603,22 @@ keys = await sdk.storage.aget_all_keys()
 | `Count()` | `int` | Number of matching rows |
 | `Exists()` | `bool` | Whether exists |
 
-### Example of Return Value Handling
+### Return Value Handling Example
 
 ```python
 # Select returns tuples, access by index
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
-first_name = rows[0][0]  # First row, first column (name)
-first_age = rows[0][1]   # First row, second column (age)
+first_name = rows[0][0]  # First row, first column name
+first_age = rows[0][1]   # First row, second column age
 
-# Recommended: Use column name list + zip to convert to dictionary, code is more readable
+# Recommended: use column name list + zip to convert to dictionary, code is more readable
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
     d = dict(zip(cols, row))
     print(d["name"], d["age"])
 
-# ExecuteOne returns a single tuple or None
+# ExecuteOne returns single tuple or None
 row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
 name = row[0] if row else None
 
@@ -15597,7 +15629,7 @@ print(f"Deleted {affected} records")
 
 ## Parameterized Queries
 
-All WHERE parameters use `?` placeholders, and parameters are passed as subsequent arguments to `Where()` (not as a tuple or list):
+All WHERE parameters use `?` placeholders, with parameters passed as subsequent arguments to `Where()` (**not** as a tuple or list):
 
 ```python
 # Correct ✓ — multiple parameters passed individually
@@ -15610,7 +15642,7 @@ sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execu
 sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
 # This will treat the entire tuple as the value for the first placeholder
 
-# Incorrect ✗ — SQL injection risk exists
+# Incorrect ✗ — SQL injection risk
 sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 ```
 
@@ -15618,7 +15650,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ```python
 # Where(condition: str, *params: Any)
-# params are variable arguments, passed one by one
+# params are variable arguments, passed individually
 
 # Single parameter
 .Where("name = ?", "Alice")
@@ -15635,7 +15667,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ## Custom Storage Backend
 
-Starting from version 2.8.0, the abstract layer uses **asynchronous methods as the native contract**: inherit `BaseStorage` and implement asynchronous abstract methods. Synchronous `get/set/Execute` and others are provided automatically by the base class bridge:
+Starting from version 2.8.0, the abstraction layer uses **asynchronous methods as native contracts**: inherit `BaseStorage` and implement asynchronous abstract methods. Synchronous `get/set/Execute` etc. are automatically bridged by the base class:
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -15669,16 +15701,19 @@ class MyStorage(BaseStorage):
 
 > [!TIP]
 > If you do not want to implement transaction connection routing (`conn` keyword argument), keep the class attribute
-> `_SUPPORTS_CONN_ROUTING = False` (default), and transaction functionality is still available (with limited isolation).
+> `_SUPPORTS_CONN_ROUTING = False` (default), and transaction features will still be available (with limited isolation).
 > Pure SQL backends can directly inherit `Core/Bases/sql_base.py`'s `SQLStorageBase` +
-> `SQLQueryBuilder`, requiring only connection management and dialect execution funnel implementation, see
-> [Storage Backends](docs/en/storage-backends.md).
+> `SQLQueryBuilder`, only requiring connection management and dialect execution funnel implementation, see
+> [Storage Backends](storage-backends.md).
 
 
 
 ### 懶加载系统
 
 # Lazy-Loaded Module System
+
+> [!TIP]
+> **When to read this**: When using lazy-loaded modules or activate_on event-driven activation. If not needed, you can skip this section without affecting the use of other features.
 
 The ErisPulse SDK provides a powerful lazy-loaded module system that allows modules to be initialized only when they are actually needed, significantly improving application startup speed and memory efficiency.
 
@@ -16356,7 +16391,10 @@ async def _poll(self):
 
 # Router Manager
 
-The ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. The underlying layer is encapsulated through an abstraction layer (currently FastAPI + Uvicorn).
+> [!TIP]  
+> **When to read this**: When you need HTTP / WebSocket / SSE routing (including connection pool broadcasting). If not needed, you can skip it without affecting the use of other features.
+
+The ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. Under the hood, it is encapsulated through an abstraction layer (currently FastAPI + Uvicorn).
 
 ## Overview
 
@@ -16825,9 +16863,12 @@ async def on_server_stop(event):
 
 ### MessageBuilder 详解
 
-# MessageBuilder Explained
+# MessageBuilder Detailed Explanation
 
-`MessageBuilder` is a OneBot12 standard message segment builder provided by ErisPulse, used to construct structured message content, and should be used in conjunction with `Send.Raw_ob12()`.
+> [!TIP]
+> **When to read this**: When constructing complex/multi-segment messages. Skip if not needed, as it does not affect the use of other features.
+
+`MessageBuilder` is a OneBot12-standard message segment builder provided by ErisPulse, used to construct structured message content, and is used in conjunction with `Send.Raw_ob12()`.
 
 ## Import Methods
 
@@ -17437,18 +17478,21 @@ async def chat_handler(event):
 
 # Interactive Session System
 
-> [!NOTE]
-> This chapter requires ErisPulse **2.8.0+**.
+> [!TIP]
+> **When to read this**: When you need `wait_reply`, multi-turn dialogues, timed reminders, session mutual exclusion, or traceability. Skip if not needed, as it does not affect the usage of other features.
 
-ErisPulse has made "continuous interaction with users" into a framework-level infrastructure: from a single `wait_reply`, to timed reminders, multi-path waiting, session mutual exclusion, and restart recovery, all are scheduled by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
+> [!NOTE]
+> This section requires ErisPulse **2.8.0+**.
+
+ErisPulse has made "continuous interaction with users" a framework-level infrastructure: from a single `wait_reply`, to timed reminders, multi-path waiting, session mutual exclusion, and restart recovery, all are scheduled by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
 
 {!--< tips >!--}
-Each capability covered in this document comes with an inherent **ownership**: interaction waiting, leases, and timers all record the module name at registration time. When a module is unloaded or an adapter is closed, the framework automatically cleans up and immediately notifies the waiting party instead of waiting for a timeout — this is an extension of the ownership system into the interaction dimension (see [Ownership System](ownership.md)).
+Every capability covered in this article comes with its own **ownership (owner)**: interaction waiting, leases, and timers all record the module name at registration time. When a module is unloaded or an adapter is closed, the framework automatically cleans up and the waiting party is immediately notified instead of waiting until timeout — this is an extension of the ownership system in the interaction dimension (see [Ownership System](ownership.md)).
 {!--< /tips >!--}
 
-## Waiting for Reply: wait_reply
+## Waiting for Reply: `wait_reply`
 
-`wait_reply` is the cornerstone of interactive sessions — it suspends the current coroutine and waits for the target user to "reply" in the next message.
+`wait_reply` is the foundation of interactive sessions — it suspends the current coroutine and waits for a reply from the target user in the next message.
 
 ```python
 from ErisPulse.Core.Event import command
@@ -17457,101 +17501,101 @@ from ErisPulse.Core.Event import command
 async def ask_command(event):
     reply = await event.wait_reply(prompt="Please enter your name:", timeout=30)
     if reply is None:
-        await event.reply("Timeout.")
+        await event.reply("Timed out")
         return
     await event.reply(f"Hello, {reply.get_text()}!")
 ```
 
-### Full Parameter Overview
+### All Parameters Overview
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `prompt` | The prompt message sent before suspension | None |
+| `prompt` | Message sent before suspending | None |
 | `timeout` | Wait timeout (seconds) | 60 |
 | `pattern` | Glob filter (`*` / `?` / `[seq]`), continue waiting if not matched | None |
-| `regex` | Regex filter (must match both pattern and regex if both are given), continue waiting if not matched | None |
+| `regex` | Regex filter (must match if both `pattern` and `regex` are given), continue waiting if not matched | None |
 | `validator` | Validation function (receives Event, returns bool), continue waiting if failed | None |
-| `callback` | Callback when reply is received (alternative to returning values) | None |
-| `method` | Method to send the prompt | "Text" |
+| `callback` | Callback when reply is received (alternative to return-value style) | None |
+| `method` | Method for sending `prompt` | "Text" |
 | `session` | **Session-level waiting**: replies from anyone in the same session (group/channel) can match | False |
 
 ```python
 # Only accept numeric amounts, otherwise continue waiting
 reply = await event.wait_reply("Please enter the amount:", regex=r"\d+\s*元", timeout=30)
 
-# Session-level waiting: for group collaboration, replies from any group member can match
+# Session-level waiting: group collaboration scenario, any group member's reply can match
 reply = await event.wait_reply(session=True, prompt="Which expert can help answer?")
 ```
 
-### The Boundary Between Waiting and Commands (Command Bypass)
+### The Boundary Between Waiting and Commands (Command Penetration)
 
-During waiting, if a message containing a **registered command** (e.g., `/cancel`) is received, it is by default passed to the command dispatcher and not consumed as a reply (configuration item `ErisPulse.event.wait_reply.cmdpass`, if `True` it reverses — all messages are treated as replies). The text judgment criteria are consistent with command dispatch: `alt_message` takes precedence, and if missing, falls back to message segment concatenation (effective for pure message segment adapters since 2.10.1).
+During waiting, if a message containing a **registered command** (e.g., `/cancel`) is received, it is by default passed to the command dispatcher and not consumed as a reply (configuration item `ErisPulse.event.wait_reply.cmdpass`, `True` reverses this — messages are always treated as replies). The text judgment standard is consistent with command dispatch: `alt_message` is prioritized, and if missing, message segments are concatenated (生效于 2.10.1起纯 message 段适配器同样生效).
 
 ### When Will Waiting Be Cancelled
 
-Waiting is no longer "just waiting until timeout" — the following situations will **immediately terminate** the waiting (`wait_reply` returns `None`), rather than letting the caller wait until timeout:
+Waiting is no longer "only waiting until timeout" — the following situations will **immediately terminate** the waiting (`wait_reply` returns `None`), rather than letting the caller wait until timeout:
 
 | Trigger | Cancellation Reason (`InteractionCancelled.reason`) | Description |
-|---------|-----------------------------------------------------|-------------|
-| The owning module is unloaded / disabled | `owner_unload` | Ownership cleanup: whoever registered the waiting is canceled when they disappear |
-| Adapter is stopped / restarted | `platform_stop` | All waiting suspended on this platform is canceled |
-| Conflicting with a new waiting / lease in the same session | `conflict` | See "Session Arbitration" below |
-| The replier is blacklisted / owner module is unbound | `revoked` | Permission复查 on reply match: scope identity dimension + module dimension |
-| The reply is matched | — | Normal path, returns the reply event |
+|---------|------------------------------------------|-------------|
+| Owner module is unloaded / disabled | `owner_unload` | Ownership cleanup: whoever registered the waiting, when they disappear, it is all reclaimed |
+| Adapter is closed / restarted | `platform_stop` | All waiting suspended on this platform is cancelled |
+| New waiting / lease replaces the same session | `conflict` | See "Session Arbitration" below |
+| Replier is blacklisted / owner module is unbound | `revoked` | Permission recheck for reply match: scope identity dimension + module dimension |
+| Reply is matched | — | Normal path, return reply event |
 
-The underlying exception is `InteractionCancelled` (part of the `InteractionError` exception hierarchy), and `wait_reply` has converted it to return `None`. If the reason is needed, the caller can directly use the low-level API `sdk.interaction.register()`.
+The underlying exception is `InteractionCancelled` (attached to the `InteractionError` exception system), and `wait_reply` has converted it to return `None`. Callers who need the reason can directly use the low-level API `sdk.interaction.register()`.
 
 ### Complete Matching Chain for Reply
 
-When a reply message arrives, the interaction manager executes the following sequence of judgments (executed before command matching, prioritizing conversation continuity — even if the message has been claimed by another high-priority processor, the suspended conversation can still complete):
+When a reply message arrives, the interaction manager executes the following sequence of judgments (executed **before** command matching, dialog continuity is prioritized — even if the message has been claimed by another high-priority processor, the suspended dialog can still complete):
 
 ```
 Session key match (exact user dimension → session-level fallback)
   → pattern / regex text filter (continue waiting if not matched)
   → validator check (continue waiting if failed)
-  → Permission复查 (scope identity dimension + owner module dimension, cancel if failed)
-  → Wake up the waiting party + claim the event (mark_processed)
+  → permission recheck (scope identity dimension + owner module dimension, terminate waiting if failed)
+  → wake up waiting party + claim event (mark_processed)
 ```
 
-## Session Timers: remind / escalate
+## Session Timers: `remind` / `escalate`
 
-Transform "timeout" from a return value into a composable primitive. Timers are attached to interactive sessions and are automatically canceled when the module is unloaded or the adapter is stopped. The single session active remind limit is 5.
+Turn "timeout" from a return value into a programmable primitive. Timers are attached to interactive sessions and are automatically cancelled when the module is unloaded or the adapter is closed. The maximum number of active remind timers per session is 5.
 
-### remind: Gentle Reminder if No Reply
+### `remind`: Gentle Reminder if No Reply
 
 ```python
 @command("ticket")
 async def ticket_command(event):
-    await event.reply("Your ticket has been submitted. You will be notified here with the processing result.")
-    # Remind gently after 5 minutes of no reply; any reply from the user will automatically cancel it
-    event.remind(300, "Are you still there? We will notify you as soon as there is a result.")
+    await event.reply("The ticket has been submitted, and the result will be notified here.")
+    # If there is no reply for 5 minutes, gently remind once; any reply from the user will automatically cancel it
+    event.remind(300, "Are you still there? I will notify you as soon as there is a result.")
     reply = await event.wait_reply(timeout=3600)
     ...
 ```
 
-- `event.remind(delay, text=None, *, callback=None)`: Sends `text` (or executes `callback(event)`, supporting synchronous / asynchronous) to the current session upon expiration. **Mandatory check**: `text` and `callback` must be chosen exclusively (neither given throws `ValueError`)
+- `event.remind(delay, text=None, *, callback=None)`: Sends `text` (or executes `callback(event)`, supports synchronous / asynchronous) to the current session when the timer expires. **Mandatory check**: `text` and `callback` must be chosen exclusively (if neither is provided, a `ValueError` is thrown)
 - Returns a `Reminder` handle: `reminder.cancel()` manually cancels, `reminder.expired` queries the status
-- Automatically canceled by user reply in the same session — this is the semantics of "reminder": reminders only appear when the user is silent
-- Also available within `Conversation`: `conv.remind(120, "Are you still considering?")`
+- Automatically cancels after the user replies in this session — this is the semantics of "reminder": reminders only appear when the user is silent
+- Similarly available within `Conversation`: `conv.remind(120, "Are you still considering?")`
 
-### escalate: Guaranteed Escalation on Time
+### `escalate`: Guaranteed Delivery at the Deadline
 
 ```python
 event.escalate(1800, lambda e: notify_master(f"Ticket not processed for 30 minutes: {event.get_command_args()}"))
 ```
 
-The only difference from `remind` is that it is **not canceled by user reply** — escalation actions (notifying the owner, transferring to human) are a "guaranteed timeout" commitment, canceled only by manual `cancel()` / module unload / adapter stop.
+The only difference from `remind` is that it is **not automatically cancelled by user replies** — escalation actions (notifying the owner, transferring to human support) are a "guaranteed delivery" promise, cancelled only by manual `cancel()` / module unload / adapter shutdown.
 
 | | `remind` | `escalate` |
 |---|---|---|
 | Behavior on expiration | Send text / execute callback | Execute callback |
-| User reply | **Automatically canceled** | Unaffected |
-| Ownership cleanup (unload / stop platform) | Canceled | Canceled |
-| Single session limit | 5 | Unlimited (canceled by ownership cleanup as a fallback) |
+| User reply | **Automatically cancelled** | Unaffected |
+| Ownership cleanup (unload / close platform) | Cancelled | Cancelled |
+| Maximum per session | 5 | Unlimited (cleaned up by ownership) |
 
-## Multi-path Waiting: expect + select
+## Multi-path Waiting: `expect` + `select`
 
-Simultaneously suspends multiple expectations, **first-come, first-served** — typical scenarios: waiting for admin approval while also waiting for user withdrawal, or multi-person collaborative voting.
+Simultaneously suspends multiple expectations, with the **first to arrive wins** — typical scenarios: waiting for admin approval while also waiting for user withdrawal, or multi-person collaborative voting.
 
 ```python
 which, reply = await event.select(
@@ -17569,27 +17613,27 @@ elif which == 1:
 ```
 
 - `event.expect(...)` constructs an **expectation description** (does not register any waiting): supports `pattern` / `regex` / `validator` / `user` (limits the replier) / `session` (anyone can reply)
-- `event.select(*expectations, timeout=60)`: Registers uniformly → returns `(index, reply event)` as soon as any match is found → unmet expectations are automatically canceled; returns `(None, None)` if all timeout. **Mandatory check**: at least one expectation must be provided, otherwise `ValueError` is thrown
-- The matched event is claimed by the framework (`mark_processed`), and will not be consumed by other processors
+- `event.select(*expectations, timeout=60)`: registers uniformly → any match returns `(index, reply event)` → unmet expectations are automatically cancelled; if all timeout, returns `(None, None)`. **Mandatory check**: at least one expectation must be provided, otherwise a `ValueError` is thrown
+- The matched event has been claimed by the framework (`mark_processed`), and will not be consumed repeatedly by other processors
 
 {!--< tips >!--}
-`select` compared to manually orchestrated multi-threading `asyncio.wait`: unmet expectations are automatically cleaned up, matched events are automatically claimed, permission复查 and ownership cleanup are fully effective — no need to manage any Future yourself.
+Compared to manually orchestrating `select` with multi-threaded `asyncio.wait`: unmet expectations are automatically cleaned up, matched events are automatically claimed, permission rechecks and ownership cleanup are all effective — no need to manage any Future yourself.
 {!--< /tips >!--}
 
 > [!NOTE]
-> As of 2.10.1, `select` is a **aggregated waiting**: all expectations are merged into a single entry + custom match judgment, multiple paths with the same key (e.g., two different patterns for the same user) no longer cancel each other, and the first path to match returns. The judgment criterion for reply text is `alt_message` priority + message segment fallback (consistent with command dispatch).
+> Starting from 2.10.1, `select` is a **aggregated waiting**: all expectations are merged into a single entry + custom match judgment, multiple paths with the same key (e.g., two different patterns for the same user) no longer cancel each other, and the first match returns. The judgment criterion for reply text is `alt_message` priority + message segment fallback (consistent with command dispatch).
 >
-> Boundary explanation: `event.wait_for(...)` is directly attached to the adapter event bus, **not passing** through middleware and `detail_type` condition filtering (identity admission is covered by the dispatch entrance); for complete pipeline waiting, use `wait_reply` / `select`.
+> Boundary explanation: `event.wait_for(...)` is directly attached to the adapter event bus, **not passing** through middleware and `detail_type` condition filtering (identity admission is covered by the distribution entry); for complete pipeline waiting, use `wait_reply` / `select`.
 
-## Session Mutual Exclusion: acquire / hold / get_owner_of
+## Session Mutual Exclusion: `acquire` / `hold` / `get_owner_of`
 
-Ownership moves from "resources" to "session" — "who is currently occupying this user" becomes a first-class query.
+Ownership has moved from "resources" to "sessions" — "who is currently occupying this user" becomes a first-class query.
 
 ```python
-# Query: Is this session currently being interacted with? (Returns None if idle)
+# Query: who is currently interacting with this session? (Returns None if idle)
 owner = sdk.interaction.get_owner_of(event)
 if owner and owner != "MyModule":
-    return  # Another module is currently in conversation, avoid interrupting
+    return  # Another module is in dialogue, avoid disturbing
 
 # Mutual exclusion lease: exclusive session (deny policy, returns None if occupied)
 lease = sdk.interaction.acquire(event)          # Default TTL 1 hour, can pass ttl=
@@ -17605,18 +17649,18 @@ Context manager form (throws `SessionOccupiedError` if acquisition fails):
 
 ```python
 with sdk.interaction.hold(event) as lease:
-    ...  # Lease is automatically released on exit
+    ...  # Automatically released on exit
 ```
 
-The lease supports `renew(ttl)` to extend; TTL is lazily expired — expired leases are automatically cleaned up on next access.
+Leases support `renew(ttl)` to extend; TTL is lazily expired — expired leases are automatically cleaned up on next access.
 
-When `Conversation.resume()` resumes a conversation, the framework automatically acquires the lease (see [Conversation Multi-turn Dialogue](conversation.md)'s "Resume Takes Over") — the resumed conversation naturally holds the session, and other modules cannot insert.
+When `Conversation.resume()` resumes a dialogue, the framework automatically acquires a lease (see [Conversation Multi-turn Dialogue](conversation.md)'s "Takeover on Resume") — the resumed dialogue naturally holds the session, and other modules cannot intervene.
 
-## Session Inbox: event.history
+## Session Inbox: `event.history`
 
-> Retention policy (7 days / maximum number of entries) and runtime override API, risks, and audit are covered in the dedicated [Session Inbox](transcript.md) topic.
+> Retention policy (7 days / maximum number of entries) and runtime override API, risks, and auditing are covered in the [Session Inbox](transcript.md) special topic.
 
-A unified record of recent message streams per session (both user and bot), serving as a shared factual base for AI context, anti-spam, and behavioral analysis modules — each module no longer stores history individually.
+A unified record of recent message streams per session (both user and bot), serving as a **shared fact base** for AI context, anti-repetition, and behavior analysis modules — modules no longer store history individually.
 
 ```python
 messages = await event.history(20)   # The most recent 20 entries in the current session, in ascending order
@@ -17624,41 +17668,41 @@ for m in messages:
     print(m["role"], ":", m["text"])  # role: "user" / "bot"
 ```
 
-- Automatic recording: inbound messages (role=user) + bot outbound text (role=bot)
-- Storage: separate SQLite table, retention policy = per session limit (default 50) + global TTL (default 7 days)
-- Writing method: memory buffer + background batch persistence (delay up to 1 second), query interface automatically merges un-persisted buffer rows — reads within the same process are unaffected; automatic flush on normal exit (`sdk.uninit` / process exit). **Hard crash / force kill may lose the last ~1 second of records**: this base is positioned as a recent context cache, not suitable for audit-level persistence
+- Automatic recording: inbound messages (role=user) + robot outbound text (role=bot)
+- Storage: separate SQLite table, retention policy = per session maximum (default 50) + global TTL (default 7 days)
+- Writing method: memory buffer + background batch write to disk (delay up to 1 second), query interface automatically combines unflushed buffer rows — "read your own write" within the same process is unaffected; automatic flush on normal exit (`sdk.uninit` / process exit). **Hard crash / forced kill may lose the last ~1 second of records**: this base is positioned as a recent context cache, not suitable for audit-level persistence
 - Configuration: `ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`
-- Manager API: `sdk.transcript.append() / get() / clear()`, `aflush()` / `flush()` to manually flush
+- Manager API: `sdk.transcript.append() / get() / clear()`, `aflush()` / `flush()` manual flush
 
-## Message Transaction: message_tx
+## Message Transaction: `message_tx`
 
-All outbound sends within a transaction are automatically logged; **on abnormal exit, previously sent messages are automatically recalled in reverse order** (skipped if the adapter does not implement `delete_message`, but the ledger is still recorded).
+All outbound sends within a transaction are automatically recorded; **on abnormal exit, all sent messages are automatically withdrawn in reverse order** (skipped if adapter does not implement `delete_message`, but the ledger is still recorded normally).
 
 ```python
 async with event.message_tx():
     await event.reply("Processing, please wait")
-    result = await do_something()          # If an exception is thrown here →
-    await event.reply(f"Completed: {result}")   # The previous "processing" is automatically recalled
+    result = await do_something()          # This throws an exception →
+    await event.reply(f"Completed: {result}")   # The previous "processing" is automatically withdrawn
 ```
 
-Outbound sends outside a transaction are not logged (zero overhead); `get_send_receipts()` can view receipts of messages sent in the current transaction.
+Outbound sends outside a transaction are not recorded (zero overhead); `get_send_receipts()` can view receipts of messages sent in the current transaction.
 
 ## Trace ID
 
-Each inbound event automatically receives a trace ID (reusing `event["id"], generating one if missing), which is carried through:
+Each inbound event automatically receives a trace ID (reusing `event["id"], generated if missing), which is carried through:
 
 - Handler context (`get_current_trace_id()` to read)
-- Outbound sends (`[Send]` log lines append `[trace:...]`, `message.sending/sent` hooks have a `trace_id` field)
+- Outbound sends (`[Send]` log lines append `[trace:...]`, `message.sending/sent` hooks' `trace_id` field)
 - Lifecycle hook data (dict automatically adds `_trace_id`)
 - Directed events (`lifecycle.emit(..., to=...)`) and message transaction receipts
 
-When a message is processed by multiple modules, the same ID can be used to link the entire chain (logging / slow query / audit).
+When a message is processed by multiple modules, the entire chain can be connected using the same ID (for logging / slow query / audit).
 
 ## Relationship with Other Systems
 
-- **Ownership**: Waiting / leases / timers all record owner, and are recycled when unloaded (see [Ownership System](ownership.md))
-- **Scope**: Reply matching checks identity + module dimension; cross-module calls audit outbound dimension (see [Scope](scope.md))
-- **Conversation**: Multi-turn dialogue is a state machine on top of interactive sessions (see [Conversation](conversation.md)), and its waiting also enjoys all cancellation /复查 / ownership semantics described on this page
+- **Ownership**: Waiting / leases / timers all record owner, and are reclaimed on unload (see [Ownership System](ownership.md))
+- **Scope**: Reply matching checks identity + module dimension; cross-module calls audit out-of-band (see [Scope](scope.md))
+- **Conversation**: Multi-turn dialogue is a state machine on top of interactive sessions (see [Conversation](conversation.md)), and its waiting also enjoys all cancellation / recheck / ownership semantics described on this page
 
 
 
@@ -17666,19 +17710,22 @@ When a message is processed by multiple modules, the same ID can be used to link
 
 # Inter-Module Communication
 
-> [!NOTE]  
+> [!TIP]
+> **When to read this**: When you need cross-module calls (RPC), service contracts, targeted events, or cold-start replay. Skip if not needed; it won't affect the use of other features.
+
+> [!NOTE]
 > This chapter requires ErisPulse **2.8.0+**.
 
-ErisPulse's modules have a **three-layer communication model**, ordered as "point-to-point → directed → broadcast":
+ErisPulse's modules communicate through a **three-layer communication model**, arranged from "point-to-point → targeted → broadcast":
 
 | Layer | API | Semantics | Typical Scenario |
 |---|---|---|---|
-| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking capabilities of another module (e.g., fetching history, translation, refund) |
-| **Directed Events** | `await lifecycle.emit("message_received", {...}, to="Chat")` | Distributed only to lifecycle hooks registered by the specified module | Notifying downstream modules of upstream state changes ("a new message was received") |
-| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide visible lifecycle events | Hot configuration updates, module up/down events |
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking another module's capability (e.g., fetching history, translation, refund) |
+| **Targeted Events** | `await lifecycle.emit("message_received", {...}, to="Chat")` | Distributed only to lifecycle hooks registered by the specified module | Notifying downstream modules about upstream state changes ("a new message has been received") |
+| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide lifecycle events | Hot configuration updates, module startup/shutdown |
 
 {!--< tips >!--}
-Selection rule: **Use `call` when you need a return value, use `emit(..., to=...)` when you only want to notify a specific module's hooks, and use `emit(...)` to notify everyone.**  
+Selection mnemonic: **Use `call` when you need a return value, use `emit(..., to=...)` to notify a specific module's hooks, and use `emit(...)` to notify everyone.** 
 {!--< /tips >!--}
 
 ## RPC: module.call
@@ -17892,15 +17939,18 @@ The deduplication cache is automatically reset when adapters register (start of 
 
 # Internationalization (i18n) System
 
-ErisPulse v2.5.0 includes full internationalization support. Both the framework core and CLI interface can automatically switch display text according to your system language, and external modules can also register their own translations.
+> [!TIP]
+> **When to read this**: When you need multi-language text, translation registration, or language detection. Skip if not needed, as it won't affect the use of other features.
+
+ErisPulse v2.5.0 includes full internationalization support. The framework core and CLI interface can automatically switch displayed text according to your system language, and support external modules registering their own translations.
 
 ## Supported Languages
 
 | Language | Code | Description |
 |------|------|------|
-| Simplified Chinese | `zh-CN` | Default language (native framework language) |
+| Simplified Chinese | `zh-CN` | Default language (native to the framework) |
 | Traditional Chinese | `zh-TW` | Traditional Chinese (Hong Kong/Macau/Taiwan) |
-| English | `en` | English (general fallback language) |
+| English | `en` | English (fallback language) |
 | 日本語 | `ja` | Japanese |
 | Русский | `ru` | Russian |
 
@@ -17926,7 +17976,7 @@ Add to `config/config.toml`:
 language = "zh-TW"
 ```
 
-Set to `"auto"` (default) to automatically detect system language.
+Set to `"auto"` (default) to automatically detect the system language.
 
 ### Switch Manually in Code
 
@@ -17937,7 +17987,7 @@ from ErisPulse import i18n
 i18n.set_language("en")
 print(i18n.get_language())  # "en"
 
-# Reset to auto-detect
+# Reset to automatic detection
 i18n.reset_language()
 ```
 
@@ -17945,20 +17995,20 @@ i18n.reset_language()
 
 ## Language Detection Mechanism
 
-The framework detects user language with the following priority:
+The framework detects user language in the following priority order:
 
-1. **Environment variable `ERISPULSE_LANG`** — Highest priority, for testing and temporary switching
-2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, not affected by tools like Git Bash that override `LANG`)
+1. **Environment variable `ERISPULSE_LANG`** — Highest priority, used for testing and temporary switching
+2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, unaffected by tools like Git Bash that override `LANG`)
 3. **Environment variables** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (Unix/macOS standard)
 4. **System Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
 5. **Fallback** — en (English)
 
 ### Nearest Mapping Principle
 
-When detected language does not match exactly, map to the nearest supported language:
+When detected language is not an exact match, map to the nearest supported language:
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **Traditional Chinese**
-- All other `zh-*` (e.g. `zh-CN`, `zh-SG`) → **Simplified Chinese**
+- All other `zh-*` (e.g., `zh-CN`, `zh-SG`) → **Simplified Chinese**
 - `en-US`, `en-GB`, `en-AU` etc. → **English**
 - `ja-JP` → **Japanese**
 - `ru-RU` → **Russian**
@@ -17968,11 +18018,11 @@ When detected language does not match exactly, map to the nearest supported lang
 
 ## Using i18n in Modules
 
-You can register translation text for your own modules to make them support multiple languages.
+You can register translation text for your own modules, allowing your module to support multiple languages.
 
 ### Recommended Approach: Declare Translation Keys via I18nClass (v2.7.0+)
 
-From v2.7.0, modules/adapters can declare translation keys by nesting the `I18nClass` class, similar to declaring a `ConfigClass`. The framework will **automatically register** all declared translation keys without requiring manual `i18n.register()` calls.
+Starting from v2.7.0, modules/adapters can declare translation keys by embedding a class `I18nClass`, similar to declaring `ConfigClass`. The framework will automatically register all declared translation keys during loading, eliminating the need to manually call `i18n.register()`.
 
 ```python
 from dataclasses import dataclass, field
@@ -17993,7 +18043,7 @@ class MyModule(BaseModule):
         )
 
     # Translation key collection class (optional)
-    # Declared keys will be automatically registered by the framework, with higher priority than default configuration generated from ConfigClass
+    # Declared keys will be automatically registered by the framework, with higher priority than ConfigClass-generated defaults
     class I18nClass(BaseI18n):
         # Property names are automatically concatenated into full key paths: <module name>.<property name>
         welcome_msg: I18nKey = I18nKey(
@@ -18004,7 +18054,7 @@ class MyModule(BaseModule):
             ru="Приветственное сообщение",
             zh_TW="歡迎訊息",
         )
-        # Other business-related translation keys
+        # Other translation keys used in business logic
         hello: I18nKey = I18nKey(
             default="Hello, {name}!",
             zh_CN="你好，{name}！",
@@ -18026,25 +18076,25 @@ class MyModule(BaseModule):
         )
 ```
 
-#### Why is I18nClass Recommended?
+#### Why I18nClass is Recommended?
 
 | Scenario | Manual i18n.register() | I18nClass Declarative |
 |------|-----------------------|------------------|
-| Configuration description referencing i18n keys | Need manual registration, and must be done before configuration generation | Framework automatically registers before configuration generation |
-| Multi-language translation declaration | Scattered in various on_load() methods | Centralized in class, clearly visible |
+| i18n keys referenced in configuration descriptions | Need manual registration, and must be done before configuration generation | Framework automatically registers before configuration generation |
+| Multi-language translation declarations | Scattered across various on_load() methods | Centralized in class, easy to see at a glance |
 | Key naming consistency | Prone to spelling errors | Property names as key suffixes, IDE can auto-complete |
-| Unloading cleanup | Need manual unregister_domain() | Framework uses unified domain registration |
+| Cleanup on unload | Need manual unregister_domain() | Framework uses unified domain registration |
 
 #### I18nClass Key Path Rules
 
 - **Default**: Use ``<module registration name>.<property name>`` as the full key path
   - Example: Module name is ``MyModule``, property ``welcome`` → key path ``MyModule.welcome``
-- **Explicit**: Use the ``I18nKey(key="...")`` parameter to specify any dot-separated path
-  - Suitable for deeply nested key names (e.g. ``mymodule.config.basic.token``)
+- **Explicit**: Specify any dot-separated path via ``I18nKey(key="...")`` parameter
+  - Suitable for deeply nested key names (e.g., ``mymodule.config.basic.token``)
 
 #### Using in Adapters
 
-Adapters also support `I18nClass`, with identical usage:
+Adapters also support `I18nClass`, with the same usage:
 
 ```python
 from ErisPulse.Core import BaseAdapter
@@ -18063,34 +18113,34 @@ class MyAdapter(BaseAdapter):
         )
 
     class I18nClass(BaseI18n):
-        # Central declaration of configuration description referenced keys and other business keys' multilingual translations
+        # Central declaration of i18n keys referenced in configuration descriptions and other business keys
         endpoint: I18nKey = I18nKey(
             default="API Endpoint",
-            zh_CN="API address",
-            zh_TW="API address",
+            zh_CN="API 地址",
+            zh_TW="API 位址",
             en="API Endpoint",
-            ja="API address",
-            ru="API address",
+            ja="APIアドレス",
+            ru="API адрес",
         )
 ```
 
-The `I18nClass` of adapters is automatically registered during the `__init__` phase (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available.
+The `I18nClass` of adapters will be automatically registered during the `__init__` phase (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available.
 
-### Manual Registration of Custom Translations (Old Approach)
+### Manually Register Custom Translations (Old Method)
 
-If you do not use `I18nClass`, you can directly call `i18n.register()` to register translation text.
+If you don't use `I18nClass`, you can directly call `i18n.register()` to register translation text.
 
 ```python
 from ErisPulse import i18n
 
-# Register Chinese translations
+# Register Chinese translation
 i18n.register("zh-CN", {
-    "my_module.welcome": "Welcome to my module!",
-    "my_module.goodbye": "Goodbye!",
-    "my_module.hello": "Hello, {name}!",
+    "my_module.welcome": "欢迎使用我的模块！",
+    "my_module.goodbye": "再见！",
+    "my_module.hello": "你好，{name}！",
 }, domain="my_module")
 
-# Register English translations
+# Register English translation
 i18n.register("en", {
     "my_module.welcome": "Welcome to my module!",
     "my_module.goodbye": "Goodbye!",
@@ -18109,11 +18159,11 @@ i18n.t("my_module.welcome")  # Automatically uses current language
 # With formatted parameters
 i18n.t("my_module.hello", name="Alice")
 
-# Specify default value (returns when translation key does not exist)
+# Specify default value (returns when translation key doesn't exist)
 i18n.t("my_module.unknown_key", default="Default text")
 ```
 
-### Using in Module Classes
+### Using in Module Class
 
 ```python
 from dataclasses import dataclass, field
@@ -18134,7 +18184,7 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def on_load(self, event):
-        # Real-time configuration access (reflects latest value on each access)
+        # Read configuration in real-time (reflects latest value on each access)
         self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
 
@@ -18147,7 +18197,7 @@ class MyModule(BaseModule):
         pass
 ```
 
-### Unregistering Translations
+### Unregister Translations
 
 ```python
 # Unregister all translations in a domain
@@ -18158,7 +18208,7 @@ i18n.unregister_domain("my_module")
 
 ## Multi-language Configuration Fields
 
-From v2.5.2, configuration Schema fully supports i18n. All user-visible text fields can reference i18n keys, and WebUI and other consumers will automatically resolve them into corresponding text based on the current language.
+Starting from v2.5.2, configuration Schema fully supports i18n. All user-visible text fields can reference i18n keys, and WebUI and other consumers will automatically resolve them according to the current language.
 
 ### Supported i18n Fields
 
@@ -18167,9 +18217,9 @@ From v2.5.2, configuration Schema fully supports i18n. All user-visible text fie
 | `description` | field metadata | Field description |
 | `options[].label` | `ui.options` | Select control option labels |
 | `placeholder` | `ui.placeholder` | Input box placeholder |
-| `group_labels` | `_schema_meta` | Group display names (Dashboard partition titles) |
+| `group_labels` | `_schema_meta` | Group display names (Dashboard section titles) |
 
-All use the `{"i18n": "key", "default": "text"}` format. Pure strings are passed through as-is (for backward compatibility).
+All use the format `{"i18n": "key", "default": "text"}`, with plain strings passed through as-is (backward compatibility).
 
 ### Declaring i18n Fields
 
@@ -18181,7 +18231,7 @@ from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
-    # description i18n
+    # i18n for description
     token: str = field(
         default="",
         metadata={
@@ -18192,12 +18242,12 @@ class MyAdapterConfig(BaseConfig):
                 "widget": "password",
                 "group": "basic",
                 "order": 1,
-                # placeholder i18n
-                "placeholder": {"i18n": "my_adapter.token.ph", "default": "Enter Token"},
+                # i18n for placeholder
+                "placeholder": {"i18n": "my_adapter.token.ph", "default": "Please enter Token"},
             },
         },
     )
-    # options label i18n
+    # i18n for options label
     mode: str = field(
         default="a",
         metadata={
@@ -18214,7 +18264,7 @@ class MyAdapterConfig(BaseConfig):
         },
     )
 
-    # group_labels i18n (group display names)
+    # i18n for group_labels (group display names)
     _schema_meta = {
         "group_labels": {
             "basic": {"i18n": "my_adapter.group.basic", "default": "Basic Settings"},
@@ -18226,10 +18276,10 @@ class MyAdapterConfig(BaseConfig):
 
 ### Secret Masking and Configuration Validation
 
-Fields marked as `"secret": True` will automatically receive **masking protection** (from v2.7.0):
+Fields marked as `"secret": True` will automatically receive **masking protection** (from v2.7.0 onwards):
 
-- **Template generation masking**: When `dataclass_to_toml_with_comments()` generates configuration templates, secret fields' real values are not written to the file (displaying empty placeholders), preventing sensitive information from being written to disk
-- **General masking utility**: `redact_secret(value)` replaces non-empty values with `***`, returning empty values as-is, suitable for scenarios like logging output
+- **Template generation masking**: When `dataclass_to_toml_with_comments()` generates a configuration template, the real value of secret fields will not be written to the file (displaying an empty placeholder), preventing sensitive information from being persisted.
+- **General masking utility**: `redact_secret(value)` replaces non-empty values with `***`, and returns empty values as-is, suitable for use in log output, etc.
 
 ```python
 from ErisPulse.Core.Bases.config_schema import redact_secret
@@ -18242,8 +18292,8 @@ redact_secret("")           # ''
 
 | Validation | Metadata | Example |
 |--------|--------|------|
-| Type matching | Field declaration type | `int` field passed a string raises an error |
-| Enum constraint | `ui.options` or top-level `options` | Value must be among allowed options |
+| Type matching | Field declared type | `int` field with a string input raises an error |
+| Enum constraint | `ui.options` or top-level `options` | Value must belong to allowed options |
 | Numeric range | Top-level `min` / `max` | `metadata={"min": 1, "max": 65535}` |
 
 ```python
@@ -18259,12 +18309,12 @@ errors = validate_config(C(mode="x", port=70000))  # Two errors: enum + range
 
 ### Registering Configuration Translations
 
-Configuration field i18n keys and regular translation keys are registered the same way using `i18n.register()`:
+Configuration field i18n keys are registered the same way as regular translation keys using `i18n.register()`:
 
 ```python
 from ErisPulse import i18n
 
-# Register Chinese (same as default, but can differ)
+# Register Chinese (same as default, but can be different)
 i18n.register("zh-CN", {
     "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
@@ -18274,9 +18324,9 @@ i18n.register("en", {
     "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
 ```
-> **Recommended approach**: Use `I18nClass` to declare translation keys, and the framework will automatically register them (see the "Recommended approach" section above), eliminating the need to manually call `i18n.register()` or `register_config_i18n()`.
+> **Recommended approach**: Use `I18nClass` to declare translation keys; the framework will automatically register them (see the "Recommended Approach" section above), eliminating the need to manually call `i18n.register()` or `register_config_i18n()`.
 
-A convenient function `register_config_i18n()` is also provided, which automatically extracts keys from the configuration class and registers them:
+A convenient function `register_config_i18n()` is also provided, which can automatically extract keys from the configuration class and register them:
 
 ```python
 from ErisPulse.Core.Bases.config_schema import register_config_i18n
@@ -18292,25 +18342,24 @@ register_config_i18n(MyAdapterConfig, "en", {
 
 ### How WebUI Consumes
 
-`get_config_schema()` returns a schema where the i18n dictionary is passed through as-is. The WebUI frontend can use `i18n.t()` to resolve based on the current language.
+The schema returned by `get_config_schema()` will pass through the i18n dictionary as-is. The WebUI frontend can call `i18n.t()` to resolve it according to the current language.
 
-If you need the server to directly resolve into strings (e.g., for frontends that do not support i18n), use `resolve_config_schema()`, which resolves `description`, `options[].label`, `placeholder`, and `group_labels` into the current language's text:
+If you need the server to directly resolve it to a string (e.g., for a frontend that doesn't support i18n), use `resolve_config_schema()`, which will resolve `description`, `options[].label`, `placeholder`, and `group_labels` into the current language's text:
 
 ```python
 from ErisPulse.Core.Bases.config_schema import resolve_config_schema
 
-# All i18n fields are resolved into the current language's string
+# All i18n fields have been resolved into the current language's string
 schema = resolve_config_schema(MyAdapterConfig)
 print(schema["fields"]["token"]["description"])    # "Platform Token" or "Platform Token"
-print(schema["fields"]["token"]["placeholder"])   # "Enter Token" or "Enter Token"
+print(schema["fields"]["token"]["placeholder"])   # "Please enter Token" or "Enter Token"
 print(schema["fields"]["mode"]["options"][0]["label"])  # "Mode A" or "Mode A"
 print(schema["group_labels"]["basic"])             # "Basic Settings" or "Basic"
 ```
 
-> `BaseConfig`, `BotAccountConfig`, `register_config_i18n()`, `resolve_config_schema()`
-> and other types and utility functions are actually defined in `ErisPulse.Core.Bases.config_schema`.
+> `BaseConfig`, `BotAccountConfig`, `register_config_i18n()`, `resolve_config_schema()`, etc., are actually defined in `ErisPulse.Core.Bases.config_schema`.
 > `ErisPulse.runtime.config_schema` is retained as a compatibility shim,
-> **recommended to import uniformly from `ErisPulse.Core.Bases`** (except for i18n translation key related types,
+> **recommended to import uniformly from `ErisPulse.Core.Bases`** (except for i18n translation key-related types,
 > which are located in `ErisPulse.Core.Bases.i18n_schema`).
 
 ## API Reference
@@ -18324,11 +18373,11 @@ print(schema["group_labels"]["basic"])             # "Basic Settings" or "Basic"
 | `t(key, default=None, **kwargs)` | Get translated text (`gettext()` is an alias) |
 | `set_language(lang)` | Manually set language |
 | `get_language()` | Get current language |
-| `reset_language()` | Reset to auto-detection (and re-detect environment) |
+| `reset_language()` | Reset to automatic detection (and re-detect environment) |
 | `get_supported_languages()` | Get list of all supported languages |
 | `has_translation(key, lang=None)` | Check if translation key exists |
 | `register(lang, translations, domain)` | Register custom translations |
-| `unregister_domain(domain)` | Unload all translations in specified domain |
+| `unregister_domain(domain)` | Unload all translations for a specified domain |
 | `reload()` | Reload built-in translations and re-detect language |
 
 #### `t()` Method Details
@@ -18351,20 +18400,20 @@ i18n.t("greeting", name="Alice", place="ErisPulse")
 
 ### BaseI18n / I18nKey (Declarative Translation Keys)
 
-Starting from v2.7.0, `ErisPulse.Core.Bases` provides a translation key declaration tool based on class attributes (recommended to import uniformly from `ErisPulse.Core.Bases`):
+Starting from v2.7.0, `ErisPulse.Core.Bases` provides a class property-based translation key declaration tool (recommended to import uniformly from `ErisPulse.Core.Bases`):
 
 > ``I18nKey.default`` is a **language-agnostic fallback text** and is not registered to any language.
-> To make translations effective, at least one language parameter must be explicitly passed (``zh_CN=`` / ``en=`` / ``ja=`` etc.).
-> This allows developers from various countries to freely use their native language to fill in ``default``, with no assumptions made by the framework.
+> To make translations effective, you must explicitly pass at least one language parameter (``zh_CN=`` / ``en=`` / ``ja=`` etc.).
+> This allows developers from various countries to freely fill in ``default`` in their native language, with no assumptions made by the framework.
 
 | Name | Description |
 |------|------|
-| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | Declaration of a single translation key, `default` is a language-agnostic fallback |
-| `BaseI18n` | Translation key collection base class (naming aligned with `BaseConfig`), sub-classes declare multiple `I18nKey` via class attributes |
+| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | Declaration of a single translation key, `default` is language-agnostic fallback |
+| `BaseI18n` | Base class for translation key collections (aligned with `BaseConfig` naming), child classes declare multiple `I18nKey` as class attributes |
 | `BaseI18n.register(prefix="", domain="app")` | Class method: register all declared keys to the i18n system |
 | `key` | Alias for `I18nKey` (more concise writing)
 
-Usage example:
+Example usage:
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, key
@@ -18388,7 +18437,7 @@ class MyKeys(BaseI18n):
         ru="До свидания",
     )
 
-# Standalone use (manual registration)
+# Using independently (manual registration)
 MyKeys.register(prefix="myapp.", domain="myapp")
 ```
 
@@ -18415,7 +18464,7 @@ from ErisPulse.runtime import get_i18n_config
 config = get_i18n_config()
 print(config["language"])  # "auto" or specific language code
 
-# I18nConfig is a dataclass, suitable for generating configuration templates
+# I18nConfig is a dataclass, can be used to generate configuration templates
 schema = I18nConfig.__dataclass_fields__
 ```
 
@@ -18425,8 +18474,8 @@ In the `[ErisPulse.i18n]` section of `config/config.toml`:
 
 ```toml
 [ErisPulse.i18n]
-# Display language, possible values:
-# - "auto"      — Auto-detect system language (default)
+# Display language, optional values:
+# - "auto"      — Automatically detect system language (default)
 # - "zh-CN"     — Simplified Chinese
 # - "zh-TW"     — Traditional Chinese
 # - "en"        — English
@@ -18441,7 +18490,7 @@ language = "auto"
 
 ### Translation Key Naming
 
-It is recommended to use dot-separated namespace format:
+It is recommended to use a dot-separated namespace format:
 
 ```
 <module name>.<category>.<description>
@@ -18451,7 +18500,7 @@ For example: `my_module.command.hello_desc`, `core.adapter.start_failed`
 
 ### Multi-language Coverage
 
-There is no need to provide translations for all languages at once; missing languages will automatically fall back to English, and if English is also missing, the key name itself will be displayed.
+You don't need to provide translations for all languages at once; missing languages will automatically fall back to English, and if English is also missing, the key name itself will be displayed.
 
 ### Dynamic Content
 
@@ -18876,17 +18925,23 @@ topology = sdk.get_topology()
 
 ### 归属权（owner）系统
 
-# Ownership (owner) System
+# Ownership (Owner) System
 
-Ownership is the cornerstone of the "plug-and-play" nature of modules: all framework resources registered during module loading are automatically attributed, and automatically reclaimed when the module is unloaded or disabled. Module authors only need to declare resources, without writing manual cleanup logic.
+> [!TIP]  
+> **When to read this**: When troubleshooting resource leaks, understanding the unload/cleanup chain, or declaring owned resources. If not needed, you can skip this section without affecting other features.
 
-> **Related Systems**: Scope determines "whether a resource is active" during event dispatching, while ownership determines "who owns the resource and who is responsible for reclaiming it during lifecycle events." For more details on scope, see [Unified Control Plane (scope)](scope.md). For background tasks, see [Lifecycle Management](lifecycle.md#Background Task Ownership and Automatic Cancellation).
+Ownership is the foundation of the module's "plug-and-play" capability: all framework resources registered during module loading are automatically named, and can be reclaimed with a single click during unload/disable—module authors only need to declare resources, without manually writing cleanup logic.
+
+> **Related systems**: The scope determines "whether resources are active" during event dispatching,  
+> while ownership determines "to whom resources belong and who will reclaim them during unload" during the lifecycle.  
+> For more details on scope, see [Unified Control Plane (Scope)](scope.md), and for background tasks, see  
+> [Lifecycle Management](lifecycle.md#background-task-ownership-and-automatic-cancellation).
 
 {!--< tips >!--}
-1. Ownership is automatically recorded at the **moment of registration** based on `current_owner`, requiring zero code changes from the module.
-2. Unload and disable share the same cleanup chain (`_cleanup_module_registrations`), where each step only logs a warning if it fails, without interrupting the process.
-3. Resources with user-configured semantics (persistent overrides / scope rules / command ACLs) are **not** cleaned up when the module is unloaded.
-4. External handles managed by utility modules can be attached to the cleanup chain via `on_cleanup(cb)`, which will be automatically called when the dependent module is unloaded (see [Guide to Utility Modules: Managing Handles of Other Modules](#Guide-to-Utility-Modules-Managing-Handles-of-Other-Modules)).
+1. Ownership is **automatically recorded at the moment of registration** based on `current_owner`, requiring zero changes to module code.
+2. Unload and disable share the same cleanup chain (`_cleanup_module_registrations`), with each step issuing a warning but not interrupting the process if it fails.
+3. Resources defined by user configuration (persistent overrides / scope rules / command ACLs) are **not** cleaned up when the module is unloaded.
+4. External handles managed by utility modules can be added to the cleanup chain using `on_cleanup(cb)`, which automatically triggers callbacks when the dependent module is unloaded (see [Utility Module Guide](#utility-module-guide-handling-other-modules-handles)).
 {!--< /tips >!--}
 
 ## Owner Context Mechanism
@@ -19153,16 +19208,19 @@ Guaranteed framework behavior:
 
 ### 影子模块与灰度转正
 
-# Shadow Modules and Gradual Promotion
+# Shadow Modules and Gradual Cutover
 
-A shadow module is a **new version** of the same module, running in parallel with the live old version under an independent owner (e.g., `roll_shadow`). It receives **copies** of real events, and its outbound calls are **intercepted and logged** instead of being actually dispatched. By comparing the behaviors of both versions in `shadow_diff`, you can confirm there are no issues before promoting the shadow to become the live version with a single `promote` action. You can also `dismiss` the shadow at any time. **No code changes are required** for the module; all operations are driven at runtime via APIs: similar to `load / unload / reload`, these operational actions can be directly invoked through the Dashboard or custom management modules, with no configuration files needed.
+> [!TIP]
+> **When you should read this**: When you need to perform a gradual release—run a new version in parallel with the existing one, compare behaviors, and promote or roll back. If you don't need this, you can skip this section without affecting the use of other features.
 
-<!-- < tips > -->
+A shadow module is a **new version** of a module that runs in parallel with the existing online version under a separate owner (such as `roll_shadow`). It receives **copies** of real events, and its outbound actions are **intercepted and recorded** rather than actually dispatched. By comparing the behaviors of both versions in `shadow_diff`, you can confirm that the new version is safe to promote. Once confirmed, you can use `promote` to promote the shadow module to become the new default, or use `dismiss` to discard it at any time. **No code changes are required**—the entire process is driven at runtime via API: similar to `load / unload / reload`, these operational actions can be called directly from the Dashboard or custom management modules, with no configuration needed.
+
+{!--< tips >!--}
 1. Start: ``await sdk.module.shadow_start("roll", source="path/to/v2")``
-   —— The new version runs in parallel with the old version under an independent owner (defaulting to the path name).
-2. The shadow does not participate in real distribution or dependency graphs: commands with the same name go into the shadow directory, routes are registered but not mounted, lifecycle broadcasts are silent, and `module.call` and dependency resolution still point to v1.
-3. Promotion must always be confirmed by a human: ``await sdk.module.promote_shadow("roll")``, and if it fails, the old instance is automatically rolled back to continue serving; ``dismiss_shadow`` can be used at any time to abandon the shadow.
-<!-- < /tips > -->
+   ——The new version code runs in parallel with the old version under a separate owner (defaulting to the path name).
+2. The shadow module does not participate in real distribution or dependency graph: commands with the same name go into the shadow directory, routes are only registered but not mounted, lifecycle broadcasts are silent, and `module.call` and dependency resolution still point to v1.
+3. Promotion is always confirmed by a human: ``await sdk.module.promote_shadow("roll")``, and if it fails, the old instance automatically rolls back and continues serving; ``dismiss_shadow`` can discard the shadow module at any time.
+{!--< /tips >!--}
 
 ## Quick Start
 
@@ -19223,11 +19281,14 @@ The `promote` process: take a snapshot of the current version (including cascadi
 
 # Startup Process and Manual Control
 
-ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup chain into a single line of code. However, when you need to fully customize the startup process (for example, partial loading, dynamic registration, hot plugging, injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
+> [!TIP]
+> **When to read this**: When you need to manually drive the startup sequence, customize the startup order, or troubleshoot startup failures. If not needed, you can skip this section without affecting other features.
 
-This article breaks down the startup chain into independent components, explains the responsibilities of each, the order of calls, and provides an example of how to manually perform a complete startup.
+ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup sequence into a single line of code. However, when you need to fully customize the startup process (for example, partial loading, dynamic registration, hot-swapping, or injecting custom loading strategies), you need to understand what happens inside this sequence and how to manually drive each step.
 
-> This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the `init()` chain and lower-level entry points such as `init()` / `init_task()` / `init_sync()`.
+This article breaks down the startup sequence into independent steps, explains the responsibilities of each step and their calling order, and provides an example of manually performing the complete startup process.
+
+> This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the `init()` sequence, as well as lower-level entry points such as `init()`/`init_task()`/`init_sync()`.
 
 ## Overview of SDK Top-Level Entry Points
 

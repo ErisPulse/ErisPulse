@@ -2446,7 +2446,10 @@ sdk.lifecycle  # Lifecycle system
 
 # Core Module Concepts
 
-Understanding the core concepts of ErisPulse modules is essential for developing high-quality modules.
+> [!NOTE]
+> **L1 Essential Reading** — One of the five core documents in the "Reading Path" on the homepage, essential for module development.
+
+Understanding the core concepts of ErisPulse modules is the foundation for developing high-quality modules.
 
 ## Module Lifecycle
 
@@ -3326,9 +3329,12 @@ Method resolution priority (from highest to lowest): platform-specific methods �
 
 ### 模块开发最佳实践
 
-# Module Development Best Practices
+# Best Practices for Module Development
 
-This document provides best practices for developing modules in ErisPulse.
+> [!TIP]
+> **When to read this**: It is recommended to read after writing your first module (engineering best practices). If not needed, you can skip it without affecting the use of other features.
+
+This document provides best practice recommendations for ErisPulse module development.
 
 ## Module Design
 
@@ -3880,7 +3886,10 @@ You can add GitHub Stars, Downloads, and other badges as needed. The logo can al
 
 # Data Model Layer (ORM)
 
-Starting from version 2.9.0, the framework includes a built-in declarative data model layer: by inheriting from `Model` and declaring fields using `Field`, you gain automatic table creation and CRUD capabilities. The model is built directly on the built-in storage layer—SQLite / MySQL / PostgreSQL is determined by the `ErisPulse.storage.backend` configuration. **Switching the backend does not require modifying the model code.**
+> [!TIP]
+> **When to read this**: When you need data models, automatic table creation, or relationship mapping. If not needed, you can skip this section without affecting the use of other features.
+
+Starting from version 2.9.0, the framework includes a built-in declarative data model layer: by inheriting from `Model` and declaring fields using `Field`, you can obtain automatic table creation and CRUD capabilities. The models are directly built on top of the built-in storage layer—SQLite / MySQL / PostgreSQL is determined by the `ErisPulse.storage.backend` configuration. **Switching the backend does not require modifying the model code.**
 
 ## Declaring Models
 
@@ -4068,15 +4077,18 @@ await writer.posts.count()          # Bidirectional access
 
 # Module Troubleshooting Guide
 
-When a module "doesn't respond," it can be categorized into three types of issues, each with corresponding framework diagnostic tools (RFC EPRFC-2026-001 Direction Five):
+> [!TIP]
+> **When to read this**: When a module "doesn't respond", a command isn't triggered, or an event isn't received. Skip if not needed, as it won't affect the use of other features.
+
+When a module "doesn't respond", symptoms can be divided into three types of issues, each with corresponding framework diagnostic tools (RFC EPRFC-2026-001 Direction Five):
 
 | Symptom | Diagnostic Tool | Diagnostic Level |
-|---------|----------------|------------------|
+|------|---------|---------|
 | Module not loaded | `ErisPulse.runtime.explain_module(name)` | Registration and loading chain |
-| Event not handled | `ErisPulse.runtime.explain_event(event)` | Distribution entry point check |
+| Event not responded to | `ErisPulse.runtime.explain_event(event)` | Distribution entry point check |
 | Command not triggered | Distribution decision chain (test side `DispatchTrace` / framework built-in `trace`) | Command determination chain |
 
-Both diagnostic functions are **pure read** operations, do not change any state, and can be called at any time; they return a machine-readable dict, which can be rendered into human-readable text using `format_report()`.
+Both diagnostic functions are **pure read** operations and do not change any state; they can be called at any time; they return a machine-readable dict, which can be rendered into human-readable text using `format_report()`.
 
 ## Scenario 1: Module Not Loaded
 
@@ -4189,7 +4201,10 @@ When `cooldown=`, `rate_limit=`, or `usage_limit=` are triggered, they are **sil
 
 # Publishing and Module Store Guide
 
-Publish your developed modules or adapters to the ErisPulse Module Store, allowing other users to easily discover and install them.
+> [!TIP]
+> **When you need to read this**: When publishing your work to PyPI / the module store. If not needed, skip it, as it will not affect the use of other features.
+
+Publish your developed module or adapter to the ErisPulse module store, allowing other users to easily discover and install it.
 
 ## Module Store Overview
 
@@ -4581,14 +4596,17 @@ These two methods are not mutually exclusive—you can simultaneously publish mo
 
 # Module Testing (ErisPulse-Testing)
 
-[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) is the official testing toolkit (RFC EPRFC-2026-001 Direction 3):  
-It provides `TestBot`, test event factories, outbound message capture and assertion interface, making module testing as simple as writing regular pytest.
+> [!TIP]
+> **When to read this:** When writing automated tests for your own module. If not needed, skip this section; it won't affect the use of other features.
+
+[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) is the official testing toolkit (RFC EPRFC-2026-001 Direction 3):
+It provides `TestBot`, test event factories, outbound message capture and assertion interfaces, making module testing as simple as writing regular pytest.
 
 ```bash
 pip install ErisPulse-Testing
 ```
 
-> A one-way dependency development-time tool, with zero runtime intervention. For smoke tests that truly connect to adapter platforms, please use the framework repository's `tests/devs/test_adapter.py`.
+> A one-way dependency development-time tool for the framework, with zero runtime involvement. For smoke tests that actually connect to adapter platforms, please use `tests/devs/test_adapter.py` in the framework repository.
 
 ## Quick Start
 
@@ -7102,18 +7120,21 @@ async def chat_handler(event):
 
 # Interactive Session System
 
-> [!NOTE]
-> This chapter requires ErisPulse **2.8.0+**.
+> [!TIP]
+> **When to read this**: When you need `wait_reply`, multi-turn dialogues, timed reminders, session mutual exclusion, or traceability. Skip if not needed, as it does not affect the usage of other features.
 
-ErisPulse has made "continuous interaction with users" into a framework-level infrastructure: from a single `wait_reply`, to timed reminders, multi-path waiting, session mutual exclusion, and restart recovery, all are scheduled by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
+> [!NOTE]
+> This section requires ErisPulse **2.8.0+**.
+
+ErisPulse has made "continuous interaction with users" a framework-level infrastructure: from a single `wait_reply`, to timed reminders, multi-path waiting, session mutual exclusion, and restart recovery, all are scheduled by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
 
 {!--< tips >!--}
-Each capability covered in this document comes with an inherent **ownership**: interaction waiting, leases, and timers all record the module name at registration time. When a module is unloaded or an adapter is closed, the framework automatically cleans up and immediately notifies the waiting party instead of waiting for a timeout — this is an extension of the ownership system into the interaction dimension (see [Ownership System](ownership.md)).
+Every capability covered in this article comes with its own **ownership (owner)**: interaction waiting, leases, and timers all record the module name at registration time. When a module is unloaded or an adapter is closed, the framework automatically cleans up and the waiting party is immediately notified instead of waiting until timeout — this is an extension of the ownership system in the interaction dimension (see [Ownership System](ownership.md)).
 {!--< /tips >!--}
 
-## Waiting for Reply: wait_reply
+## Waiting for Reply: `wait_reply`
 
-`wait_reply` is the cornerstone of interactive sessions — it suspends the current coroutine and waits for the target user to "reply" in the next message.
+`wait_reply` is the foundation of interactive sessions — it suspends the current coroutine and waits for a reply from the target user in the next message.
 
 ```python
 from ErisPulse.Core.Event import command
@@ -7122,101 +7143,101 @@ from ErisPulse.Core.Event import command
 async def ask_command(event):
     reply = await event.wait_reply(prompt="Please enter your name:", timeout=30)
     if reply is None:
-        await event.reply("Timeout.")
+        await event.reply("Timed out")
         return
     await event.reply(f"Hello, {reply.get_text()}!")
 ```
 
-### Full Parameter Overview
+### All Parameters Overview
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `prompt` | The prompt message sent before suspension | None |
+| `prompt` | Message sent before suspending | None |
 | `timeout` | Wait timeout (seconds) | 60 |
 | `pattern` | Glob filter (`*` / `?` / `[seq]`), continue waiting if not matched | None |
-| `regex` | Regex filter (must match both pattern and regex if both are given), continue waiting if not matched | None |
+| `regex` | Regex filter (must match if both `pattern` and `regex` are given), continue waiting if not matched | None |
 | `validator` | Validation function (receives Event, returns bool), continue waiting if failed | None |
-| `callback` | Callback when reply is received (alternative to returning values) | None |
-| `method` | Method to send the prompt | "Text" |
+| `callback` | Callback when reply is received (alternative to return-value style) | None |
+| `method` | Method for sending `prompt` | "Text" |
 | `session` | **Session-level waiting**: replies from anyone in the same session (group/channel) can match | False |
 
 ```python
 # Only accept numeric amounts, otherwise continue waiting
 reply = await event.wait_reply("Please enter the amount:", regex=r"\d+\s*元", timeout=30)
 
-# Session-level waiting: for group collaboration, replies from any group member can match
+# Session-level waiting: group collaboration scenario, any group member's reply can match
 reply = await event.wait_reply(session=True, prompt="Which expert can help answer?")
 ```
 
-### The Boundary Between Waiting and Commands (Command Bypass)
+### The Boundary Between Waiting and Commands (Command Penetration)
 
-During waiting, if a message containing a **registered command** (e.g., `/cancel`) is received, it is by default passed to the command dispatcher and not consumed as a reply (configuration item `ErisPulse.event.wait_reply.cmdpass`, if `True` it reverses — all messages are treated as replies). The text judgment criteria are consistent with command dispatch: `alt_message` takes precedence, and if missing, falls back to message segment concatenation (effective for pure message segment adapters since 2.10.1).
+During waiting, if a message containing a **registered command** (e.g., `/cancel`) is received, it is by default passed to the command dispatcher and not consumed as a reply (configuration item `ErisPulse.event.wait_reply.cmdpass`, `True` reverses this — messages are always treated as replies). The text judgment standard is consistent with command dispatch: `alt_message` is prioritized, and if missing, message segments are concatenated (生效于 2.10.1起纯 message 段适配器同样生效).
 
 ### When Will Waiting Be Cancelled
 
-Waiting is no longer "just waiting until timeout" — the following situations will **immediately terminate** the waiting (`wait_reply` returns `None`), rather than letting the caller wait until timeout:
+Waiting is no longer "only waiting until timeout" — the following situations will **immediately terminate** the waiting (`wait_reply` returns `None`), rather than letting the caller wait until timeout:
 
 | Trigger | Cancellation Reason (`InteractionCancelled.reason`) | Description |
-|---------|-----------------------------------------------------|-------------|
-| The owning module is unloaded / disabled | `owner_unload` | Ownership cleanup: whoever registered the waiting is canceled when they disappear |
-| Adapter is stopped / restarted | `platform_stop` | All waiting suspended on this platform is canceled |
-| Conflicting with a new waiting / lease in the same session | `conflict` | See "Session Arbitration" below |
-| The replier is blacklisted / owner module is unbound | `revoked` | Permission复查 on reply match: scope identity dimension + module dimension |
-| The reply is matched | — | Normal path, returns the reply event |
+|---------|------------------------------------------|-------------|
+| Owner module is unloaded / disabled | `owner_unload` | Ownership cleanup: whoever registered the waiting, when they disappear, it is all reclaimed |
+| Adapter is closed / restarted | `platform_stop` | All waiting suspended on this platform is cancelled |
+| New waiting / lease replaces the same session | `conflict` | See "Session Arbitration" below |
+| Replier is blacklisted / owner module is unbound | `revoked` | Permission recheck for reply match: scope identity dimension + module dimension |
+| Reply is matched | — | Normal path, return reply event |
 
-The underlying exception is `InteractionCancelled` (part of the `InteractionError` exception hierarchy), and `wait_reply` has converted it to return `None`. If the reason is needed, the caller can directly use the low-level API `sdk.interaction.register()`.
+The underlying exception is `InteractionCancelled` (attached to the `InteractionError` exception system), and `wait_reply` has converted it to return `None`. Callers who need the reason can directly use the low-level API `sdk.interaction.register()`.
 
 ### Complete Matching Chain for Reply
 
-When a reply message arrives, the interaction manager executes the following sequence of judgments (executed before command matching, prioritizing conversation continuity — even if the message has been claimed by another high-priority processor, the suspended conversation can still complete):
+When a reply message arrives, the interaction manager executes the following sequence of judgments (executed **before** command matching, dialog continuity is prioritized — even if the message has been claimed by another high-priority processor, the suspended dialog can still complete):
 
 ```
 Session key match (exact user dimension → session-level fallback)
   → pattern / regex text filter (continue waiting if not matched)
   → validator check (continue waiting if failed)
-  → Permission复查 (scope identity dimension + owner module dimension, cancel if failed)
-  → Wake up the waiting party + claim the event (mark_processed)
+  → permission recheck (scope identity dimension + owner module dimension, terminate waiting if failed)
+  → wake up waiting party + claim event (mark_processed)
 ```
 
-## Session Timers: remind / escalate
+## Session Timers: `remind` / `escalate`
 
-Transform "timeout" from a return value into a composable primitive. Timers are attached to interactive sessions and are automatically canceled when the module is unloaded or the adapter is stopped. The single session active remind limit is 5.
+Turn "timeout" from a return value into a programmable primitive. Timers are attached to interactive sessions and are automatically cancelled when the module is unloaded or the adapter is closed. The maximum number of active remind timers per session is 5.
 
-### remind: Gentle Reminder if No Reply
+### `remind`: Gentle Reminder if No Reply
 
 ```python
 @command("ticket")
 async def ticket_command(event):
-    await event.reply("Your ticket has been submitted. You will be notified here with the processing result.")
-    # Remind gently after 5 minutes of no reply; any reply from the user will automatically cancel it
-    event.remind(300, "Are you still there? We will notify you as soon as there is a result.")
+    await event.reply("The ticket has been submitted, and the result will be notified here.")
+    # If there is no reply for 5 minutes, gently remind once; any reply from the user will automatically cancel it
+    event.remind(300, "Are you still there? I will notify you as soon as there is a result.")
     reply = await event.wait_reply(timeout=3600)
     ...
 ```
 
-- `event.remind(delay, text=None, *, callback=None)`: Sends `text` (or executes `callback(event)`, supporting synchronous / asynchronous) to the current session upon expiration. **Mandatory check**: `text` and `callback` must be chosen exclusively (neither given throws `ValueError`)
+- `event.remind(delay, text=None, *, callback=None)`: Sends `text` (or executes `callback(event)`, supports synchronous / asynchronous) to the current session when the timer expires. **Mandatory check**: `text` and `callback` must be chosen exclusively (if neither is provided, a `ValueError` is thrown)
 - Returns a `Reminder` handle: `reminder.cancel()` manually cancels, `reminder.expired` queries the status
-- Automatically canceled by user reply in the same session — this is the semantics of "reminder": reminders only appear when the user is silent
-- Also available within `Conversation`: `conv.remind(120, "Are you still considering?")`
+- Automatically cancels after the user replies in this session — this is the semantics of "reminder": reminders only appear when the user is silent
+- Similarly available within `Conversation`: `conv.remind(120, "Are you still considering?")`
 
-### escalate: Guaranteed Escalation on Time
+### `escalate`: Guaranteed Delivery at the Deadline
 
 ```python
 event.escalate(1800, lambda e: notify_master(f"Ticket not processed for 30 minutes: {event.get_command_args()}"))
 ```
 
-The only difference from `remind` is that it is **not canceled by user reply** — escalation actions (notifying the owner, transferring to human) are a "guaranteed timeout" commitment, canceled only by manual `cancel()` / module unload / adapter stop.
+The only difference from `remind` is that it is **not automatically cancelled by user replies** — escalation actions (notifying the owner, transferring to human support) are a "guaranteed delivery" promise, cancelled only by manual `cancel()` / module unload / adapter shutdown.
 
 | | `remind` | `escalate` |
 |---|---|---|
 | Behavior on expiration | Send text / execute callback | Execute callback |
-| User reply | **Automatically canceled** | Unaffected |
-| Ownership cleanup (unload / stop platform) | Canceled | Canceled |
-| Single session limit | 5 | Unlimited (canceled by ownership cleanup as a fallback) |
+| User reply | **Automatically cancelled** | Unaffected |
+| Ownership cleanup (unload / close platform) | Cancelled | Cancelled |
+| Maximum per session | 5 | Unlimited (cleaned up by ownership) |
 
-## Multi-path Waiting: expect + select
+## Multi-path Waiting: `expect` + `select`
 
-Simultaneously suspends multiple expectations, **first-come, first-served** — typical scenarios: waiting for admin approval while also waiting for user withdrawal, or multi-person collaborative voting.
+Simultaneously suspends multiple expectations, with the **first to arrive wins** — typical scenarios: waiting for admin approval while also waiting for user withdrawal, or multi-person collaborative voting.
 
 ```python
 which, reply = await event.select(
@@ -7234,27 +7255,27 @@ elif which == 1:
 ```
 
 - `event.expect(...)` constructs an **expectation description** (does not register any waiting): supports `pattern` / `regex` / `validator` / `user` (limits the replier) / `session` (anyone can reply)
-- `event.select(*expectations, timeout=60)`: Registers uniformly → returns `(index, reply event)` as soon as any match is found → unmet expectations are automatically canceled; returns `(None, None)` if all timeout. **Mandatory check**: at least one expectation must be provided, otherwise `ValueError` is thrown
-- The matched event is claimed by the framework (`mark_processed`), and will not be consumed by other processors
+- `event.select(*expectations, timeout=60)`: registers uniformly → any match returns `(index, reply event)` → unmet expectations are automatically cancelled; if all timeout, returns `(None, None)`. **Mandatory check**: at least one expectation must be provided, otherwise a `ValueError` is thrown
+- The matched event has been claimed by the framework (`mark_processed`), and will not be consumed repeatedly by other processors
 
 {!--< tips >!--}
-`select` compared to manually orchestrated multi-threading `asyncio.wait`: unmet expectations are automatically cleaned up, matched events are automatically claimed, permission复查 and ownership cleanup are fully effective — no need to manage any Future yourself.
+Compared to manually orchestrating `select` with multi-threaded `asyncio.wait`: unmet expectations are automatically cleaned up, matched events are automatically claimed, permission rechecks and ownership cleanup are all effective — no need to manage any Future yourself.
 {!--< /tips >!--}
 
 > [!NOTE]
-> As of 2.10.1, `select` is a **aggregated waiting**: all expectations are merged into a single entry + custom match judgment, multiple paths with the same key (e.g., two different patterns for the same user) no longer cancel each other, and the first path to match returns. The judgment criterion for reply text is `alt_message` priority + message segment fallback (consistent with command dispatch).
+> Starting from 2.10.1, `select` is a **aggregated waiting**: all expectations are merged into a single entry + custom match judgment, multiple paths with the same key (e.g., two different patterns for the same user) no longer cancel each other, and the first match returns. The judgment criterion for reply text is `alt_message` priority + message segment fallback (consistent with command dispatch).
 >
-> Boundary explanation: `event.wait_for(...)` is directly attached to the adapter event bus, **not passing** through middleware and `detail_type` condition filtering (identity admission is covered by the dispatch entrance); for complete pipeline waiting, use `wait_reply` / `select`.
+> Boundary explanation: `event.wait_for(...)` is directly attached to the adapter event bus, **not passing** through middleware and `detail_type` condition filtering (identity admission is covered by the distribution entry); for complete pipeline waiting, use `wait_reply` / `select`.
 
-## Session Mutual Exclusion: acquire / hold / get_owner_of
+## Session Mutual Exclusion: `acquire` / `hold` / `get_owner_of`
 
-Ownership moves from "resources" to "session" — "who is currently occupying this user" becomes a first-class query.
+Ownership has moved from "resources" to "sessions" — "who is currently occupying this user" becomes a first-class query.
 
 ```python
-# Query: Is this session currently being interacted with? (Returns None if idle)
+# Query: who is currently interacting with this session? (Returns None if idle)
 owner = sdk.interaction.get_owner_of(event)
 if owner and owner != "MyModule":
-    return  # Another module is currently in conversation, avoid interrupting
+    return  # Another module is in dialogue, avoid disturbing
 
 # Mutual exclusion lease: exclusive session (deny policy, returns None if occupied)
 lease = sdk.interaction.acquire(event)          # Default TTL 1 hour, can pass ttl=
@@ -7270,18 +7291,18 @@ Context manager form (throws `SessionOccupiedError` if acquisition fails):
 
 ```python
 with sdk.interaction.hold(event) as lease:
-    ...  # Lease is automatically released on exit
+    ...  # Automatically released on exit
 ```
 
-The lease supports `renew(ttl)` to extend; TTL is lazily expired — expired leases are automatically cleaned up on next access.
+Leases support `renew(ttl)` to extend; TTL is lazily expired — expired leases are automatically cleaned up on next access.
 
-When `Conversation.resume()` resumes a conversation, the framework automatically acquires the lease (see [Conversation Multi-turn Dialogue](conversation.md)'s "Resume Takes Over") — the resumed conversation naturally holds the session, and other modules cannot insert.
+When `Conversation.resume()` resumes a dialogue, the framework automatically acquires a lease (see [Conversation Multi-turn Dialogue](conversation.md)'s "Takeover on Resume") — the resumed dialogue naturally holds the session, and other modules cannot intervene.
 
-## Session Inbox: event.history
+## Session Inbox: `event.history`
 
-> Retention policy (7 days / maximum number of entries) and runtime override API, risks, and audit are covered in the dedicated [Session Inbox](transcript.md) topic.
+> Retention policy (7 days / maximum number of entries) and runtime override API, risks, and auditing are covered in the [Session Inbox](transcript.md) special topic.
 
-A unified record of recent message streams per session (both user and bot), serving as a shared factual base for AI context, anti-spam, and behavioral analysis modules — each module no longer stores history individually.
+A unified record of recent message streams per session (both user and bot), serving as a **shared fact base** for AI context, anti-repetition, and behavior analysis modules — modules no longer store history individually.
 
 ```python
 messages = await event.history(20)   # The most recent 20 entries in the current session, in ascending order
@@ -7289,41 +7310,41 @@ for m in messages:
     print(m["role"], ":", m["text"])  # role: "user" / "bot"
 ```
 
-- Automatic recording: inbound messages (role=user) + bot outbound text (role=bot)
-- Storage: separate SQLite table, retention policy = per session limit (default 50) + global TTL (default 7 days)
-- Writing method: memory buffer + background batch persistence (delay up to 1 second), query interface automatically merges un-persisted buffer rows — reads within the same process are unaffected; automatic flush on normal exit (`sdk.uninit` / process exit). **Hard crash / force kill may lose the last ~1 second of records**: this base is positioned as a recent context cache, not suitable for audit-level persistence
+- Automatic recording: inbound messages (role=user) + robot outbound text (role=bot)
+- Storage: separate SQLite table, retention policy = per session maximum (default 50) + global TTL (default 7 days)
+- Writing method: memory buffer + background batch write to disk (delay up to 1 second), query interface automatically combines unflushed buffer rows — "read your own write" within the same process is unaffected; automatic flush on normal exit (`sdk.uninit` / process exit). **Hard crash / forced kill may lose the last ~1 second of records**: this base is positioned as a recent context cache, not suitable for audit-level persistence
 - Configuration: `ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`
-- Manager API: `sdk.transcript.append() / get() / clear()`, `aflush()` / `flush()` to manually flush
+- Manager API: `sdk.transcript.append() / get() / clear()`, `aflush()` / `flush()` manual flush
 
-## Message Transaction: message_tx
+## Message Transaction: `message_tx`
 
-All outbound sends within a transaction are automatically logged; **on abnormal exit, previously sent messages are automatically recalled in reverse order** (skipped if the adapter does not implement `delete_message`, but the ledger is still recorded).
+All outbound sends within a transaction are automatically recorded; **on abnormal exit, all sent messages are automatically withdrawn in reverse order** (skipped if adapter does not implement `delete_message`, but the ledger is still recorded normally).
 
 ```python
 async with event.message_tx():
     await event.reply("Processing, please wait")
-    result = await do_something()          # If an exception is thrown here →
-    await event.reply(f"Completed: {result}")   # The previous "processing" is automatically recalled
+    result = await do_something()          # This throws an exception →
+    await event.reply(f"Completed: {result}")   # The previous "processing" is automatically withdrawn
 ```
 
-Outbound sends outside a transaction are not logged (zero overhead); `get_send_receipts()` can view receipts of messages sent in the current transaction.
+Outbound sends outside a transaction are not recorded (zero overhead); `get_send_receipts()` can view receipts of messages sent in the current transaction.
 
 ## Trace ID
 
-Each inbound event automatically receives a trace ID (reusing `event["id"], generating one if missing), which is carried through:
+Each inbound event automatically receives a trace ID (reusing `event["id"], generated if missing), which is carried through:
 
 - Handler context (`get_current_trace_id()` to read)
-- Outbound sends (`[Send]` log lines append `[trace:...]`, `message.sending/sent` hooks have a `trace_id` field)
+- Outbound sends (`[Send]` log lines append `[trace:...]`, `message.sending/sent` hooks' `trace_id` field)
 - Lifecycle hook data (dict automatically adds `_trace_id`)
 - Directed events (`lifecycle.emit(..., to=...)`) and message transaction receipts
 
-When a message is processed by multiple modules, the same ID can be used to link the entire chain (logging / slow query / audit).
+When a message is processed by multiple modules, the entire chain can be connected using the same ID (for logging / slow query / audit).
 
 ## Relationship with Other Systems
 
-- **Ownership**: Waiting / leases / timers all record owner, and are recycled when unloaded (see [Ownership System](ownership.md))
-- **Scope**: Reply matching checks identity + module dimension; cross-module calls audit outbound dimension (see [Scope](scope.md))
-- **Conversation**: Multi-turn dialogue is a state machine on top of interactive sessions (see [Conversation](conversation.md)), and its waiting also enjoys all cancellation /复查 / ownership semantics described on this page
+- **Ownership**: Waiting / leases / timers all record owner, and are reclaimed on unload (see [Ownership System](ownership.md))
+- **Scope**: Reply matching checks identity + module dimension; cross-module calls audit out-of-band (see [Scope](scope.md))
+- **Conversation**: Multi-turn dialogue is a state machine on top of interactive sessions (see [Conversation](conversation.md)), and its waiting also enjoys all cancellation / recheck / ownership semantics described on this page
 
 
 
@@ -7331,19 +7352,22 @@ When a message is processed by multiple modules, the same ID can be used to link
 
 # Inter-Module Communication
 
-> [!NOTE]  
+> [!TIP]
+> **When to read this**: When you need cross-module calls (RPC), service contracts, targeted events, or cold-start replay. Skip if not needed; it won't affect the use of other features.
+
+> [!NOTE]
 > This chapter requires ErisPulse **2.8.0+**.
 
-ErisPulse's modules have a **three-layer communication model**, ordered as "point-to-point → directed → broadcast":
+ErisPulse's modules communicate through a **three-layer communication model**, arranged from "point-to-point → targeted → broadcast":
 
 | Layer | API | Semantics | Typical Scenario |
 |---|---|---|---|
-| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking capabilities of another module (e.g., fetching history, translation, refund) |
-| **Directed Events** | `await lifecycle.emit("message_received", {...}, to="Chat")` | Distributed only to lifecycle hooks registered by the specified module | Notifying downstream modules of upstream state changes ("a new message was received") |
-| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide visible lifecycle events | Hot configuration updates, module up/down events |
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking another module's capability (e.g., fetching history, translation, refund) |
+| **Targeted Events** | `await lifecycle.emit("message_received", {...}, to="Chat")` | Distributed only to lifecycle hooks registered by the specified module | Notifying downstream modules about upstream state changes ("a new message has been received") |
+| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide lifecycle events | Hot configuration updates, module startup/shutdown |
 
 {!--< tips >!--}
-Selection rule: **Use `call` when you need a return value, use `emit(..., to=...)` when you only want to notify a specific module's hooks, and use `emit(...)` to notify everyone.**  
+Selection mnemonic: **Use `call` when you need a return value, use `emit(..., to=...)` to notify a specific module's hooks, and use `emit(...)` to notify everyone.** 
 {!--< /tips >!--}
 
 ## RPC: module.call
@@ -7555,9 +7579,12 @@ The deduplication cache is automatically reset when adapters register (start of 
 
 ### MessageBuilder 详解
 
-# MessageBuilder Explained
+# MessageBuilder Detailed Explanation
 
-`MessageBuilder` is a OneBot12 standard message segment builder provided by ErisPulse, used to construct structured message content, and should be used in conjunction with `Send.Raw_ob12()`.
+> [!TIP]
+> **When to read this**: When constructing complex/multi-segment messages. Skip if not needed, as it does not affect the use of other features.
+
+`MessageBuilder` is a OneBot12-standard message segment builder provided by ErisPulse, used to construct structured message content, and is used in conjunction with `Send.Raw_ob12()`.
 
 ## Import Methods
 
@@ -8248,6 +8275,9 @@ class MyAdapter(BaseAdapter):
 
 # SQL Query Builder
 
+> [!TIP]
+> **When to read this**: When you need chain-style SQL queries or custom storage backends. Skip if not needed, as it won't affect other features.
+
 The Storage module in ErisPulse provides a chain-call style generic SQL query builder, supporting custom table creation, querying, updating, and deleting operations.
 
 ## Architecture Design
@@ -8263,23 +8293,23 @@ Bases/storage.py                    Core/storage.py
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` are abstract base classes that define unified interfaces; the framework includes three built-in implementations: SQLite / MySQL / PostgreSQL (custom backends can also be extended following this pattern, see [Storage Backends](storage-backends.md))
-- `StorageManager` dispatches the specific backend according to the `ErisPulse.storage.backend` configuration, with SQLite as the default, ensuring full backward compatibility
+- `BaseStorage` / `BaseQueryBuilder` are abstract base classes defining unified interfaces; the framework includes built-in implementations for SQLite / MySQL / PostgreSQL (custom backends can be extended similarly, see [Storage Backends](storage-backends.md))
+- `StorageManager` dispatches specific backends based on the `ErisPulse.storage.backend` configuration, defaulting to SQLite, fully backward compatible
 
-## Importing
+## Import
 
 ```python
 from ErisPulse import sdk
 # or
 from ErisPulse.Core import storage
 
-# ABC base classes (for type annotation or custom implementation)
+# ABC base classes (for type hints or custom implementations)
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
 ## Table Management
 
-### Creating a Table
+### Create Table
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -8290,44 +8320,44 @@ sdk.storage.CreateTable("users", {
 })
 ```
 
-### Checking if a Table Exists
+### Check if Table Exists
 
 ```python
 if sdk.storage.HasTable("users"):
     print("users table exists")
 ```
 
-### Dropping a Table
+### Drop Table
 
 ```python
 sdk.storage.DropTable("users")
 ```
 
-### Modifying Table Structure
+### Modify Table Structure
 
 ```python
-# Adding a column
+# Add column
 sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
 
-# Renaming a table
+# Rename table
 sdk.storage.AlterTable("users").RenameTo("members").Execute()
 
-# Chaining multiple operations
+# Chain multiple operations
 sdk.storage.AlterTable("users") \
     .AddColumn("phone", "TEXT") \
     .AddColumn("address", "TEXT") \
     .Execute()
 ```
 
-## Chainable Queries
+## Chain-style Querying
 
-### Inserting Data
+### Insert Data
 
 ```python
-# Single row insertion (passing a dictionary)
+# Single row insertion (pass a dictionary)
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# Batch insertion (passing a list of dictionaries)
+# Bulk insertion (pass a list of dictionaries)
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35},
@@ -8335,9 +8365,9 @@ sdk.storage.Table("users").InsertMulti([
 ]).Execute()
 ```
 
-### Querying Data
+### Query Data
 
-> **Important**: `Select()` returns a `list[tuple]` (list of tuples), not a dictionary. You need to access values by column index.
+> **Important**: `Select()` returns a `list[tuple]` (list of tuples), not a dictionary. You must access values by column index.
 
 ```python
 # Select all columns
@@ -8354,9 +8384,9 @@ for row in rows:
     age = row[1]    # 30
 ```
 
-#### Converting Tuples to Dictionaries
+#### Convert Tuples to Dictionaries
 
-It is recommended to call `ToDict()` directly on the chain; the SELECT result will automatically be returned as a dictionary (column name → value):
+It is recommended to directly call `ToDict()` on the chain; SELECT results will automatically return as a list of dictionaries (column name → value):
 
 ```python
 # ToDict chain: result is list[dict], column names are automatically taken from query metadata (SELECT * is also supported)
@@ -8374,24 +8404,24 @@ row = sdk.storage.Table("users").Select("name", "age") \
 # row: {"name": "Alice", "age": 30} or None
 ```
 
-> `ToDict()` is a chainable marker (returns self): chains without calling it retain the original `list[tuple]` behavior, fully backward compatible; `copy()` will preserve this flag.
+> `ToDict()` is a chain marker (returns self): chains without calling it maintain the original `list[tuple]` behavior, fully backward compatible; `copy()` preserves this marker.
 
-Manual zip method (equivalent to ToDict, suitable for scenarios where the chain cannot be modified):
+Manual zip approach (equivalent to ToDict, suitable for scenarios where the chain cannot be modified):
 
 ```python
 columns = ["id", "name", "age"]
 rows = sdk.storage.Table("users").Select(*columns).Execute()
 
-# Method 1: zip in loop
+# Method one: zip in loop
 for row in rows:
     record = dict(zip(columns, row))
     print(record["name"], record["age"])
 
-# Method 2: convert to list of dictionaries at once
+# Method two: convert to list of dictionaries at once
 records = [dict(zip(columns, row)) for row in rows]
 ```
 
-#### Getting a Single Record
+#### Get Single Record
 
 ```python
 row = sdk.storage.Table("users").Select("name", "age") \
@@ -8404,9 +8434,9 @@ if row is not None:
     age = row[1]   # 30
 ```
 
-### Filtering Conditions
+### Condition Filtering
 
-> `Where(condition, *params)` supports passing multiple parameters, corresponding to multiple `?` placeholders.
+> `Where(condition, *params)` supports multiple parameters, corresponding to multiple `?` placeholders.
 
 ```python
 # Single condition (one placeholder, one parameter)
@@ -8414,19 +8444,19 @@ rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 18) \
     .Execute()
 
-# Using multiple placeholders in one Where
+# Multiple placeholders in one Where
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ? AND age < ?", 20, 40) \
     .Execute()
 
-# Multiple Where calls (AND connected)
+# Multiple Where calls (AND connection)
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 20) \
     .Where("age < ?", 40) \
     .Execute()
 ```
 
-### Sorting and Pagination
+### Sorting, Pagination
 
 ```python
 # Ascending order
@@ -8447,7 +8477,7 @@ rows = sdk.storage.Table("users").Select("name") \
     .Execute()
 ```
 
-### Updating Data
+### Update Data
 
 ```python
 # Conditional update
@@ -8462,7 +8492,7 @@ sdk.storage.Table("users") \
     .Execute()
 ```
 
-### Deleting Data
+### Delete Data
 
 ```python
 # Conditional delete
@@ -8475,7 +8505,7 @@ sdk.storage.Table("users") \
 sdk.storage.Table("users").Delete().Execute()
 ```
 
-### Counting and Existence Check
+### Count and Existence Check
 
 ```python
 # Count
@@ -8488,7 +8518,7 @@ exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 
 ## Reusing Query Conditions
 
-Use `copy()` to deep copy the builder and reuse base conditions:
+Use `copy()` to deep copy the builder and reuse the base condition:
 
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
@@ -8516,7 +8546,7 @@ rows = builder.Execute()
 
 ## Using in Transactions
 
-Chainable operations fully support transactions:
+Chain operations fully support transactions:
 
 ```python
 # Commit transaction
@@ -8536,7 +8566,7 @@ except Exception:
 
 ## Asynchronous Native API
 
-Starting from version 2.8.0, the storage layer uses asynchronous operations as the native primary interface. All terminating methods have corresponding asynchronous versions with an `a` prefix. It is recommended to use these in asynchronous handlers (to avoid temporary blocking of the event loop due to synchronous compatibility layers):
+Starting from version 2.8.0, the storage layer uses asynchronous calls as the native main interface. All terminating methods have corresponding asynchronous versions prefixed with `a`, recommended for use within asynchronous handlers (to avoid briefly blocking the event loop with synchronous compatibility layers):
 
 ```python
 # Asynchronous transaction
@@ -8544,19 +8574,19 @@ async with sdk.storage.atransaction():
     await sdk.storage.aset("key1", "value1")
     await sdk.storage.aset("key2", {"nested": True})
 
-# Asynchronous chainable query
+# Asynchronous chain query
 rows = await sdk.storage.Table("users").Select("name", "age").ToDict().aExecute()
 row = await sdk.storage.Table("users").Select("*").Where("id = ?", 1).aExecuteOne()
 total = await sdk.storage.Table("users").Where("age > ?", 18).aCount()
 exists = await sdk.storage.Table("users").Where("name = ?", "Alice").aExists()
 
-# Asynchronous KV operations
+# Asynchronous KV
 await sdk.storage.aset("app.name", "MyApp")
 value = await sdk.storage.aget("app.name")
 keys = await sdk.storage.aget_all_keys()
 ```
 
-| Synchronous (Compatibility Layer) | Asynchronous Native |
+| Synchronous (compatibility layer) | Asynchronous native |
 |------|------|
 | `get` / `set` / `delete` | `aget` / `aset` / `adelete` |
 | `get_all_keys` / `clear` | `aget_all_keys` / `aclear` |
@@ -8578,22 +8608,22 @@ keys = await sdk.storage.aget_all_keys()
 | `Count()` | `int` | Number of matching rows |
 | `Exists()` | `bool` | Whether exists |
 
-### Example of Return Value Handling
+### Return Value Handling Example
 
 ```python
 # Select returns tuples, access by index
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
-first_name = rows[0][0]  # First row, first column (name)
-first_age = rows[0][1]   # First row, second column (age)
+first_name = rows[0][0]  # First row, first column name
+first_age = rows[0][1]   # First row, second column age
 
-# Recommended: Use column name list + zip to convert to dictionary, code is more readable
+# Recommended: use column name list + zip to convert to dictionary, code is more readable
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
     d = dict(zip(cols, row))
     print(d["name"], d["age"])
 
-# ExecuteOne returns a single tuple or None
+# ExecuteOne returns single tuple or None
 row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
 name = row[0] if row else None
 
@@ -8604,7 +8634,7 @@ print(f"Deleted {affected} records")
 
 ## Parameterized Queries
 
-All WHERE parameters use `?` placeholders, and parameters are passed as subsequent arguments to `Where()` (not as a tuple or list):
+All WHERE parameters use `?` placeholders, with parameters passed as subsequent arguments to `Where()` (**not** as a tuple or list):
 
 ```python
 # Correct ✓ — multiple parameters passed individually
@@ -8617,7 +8647,7 @@ sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execu
 sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
 # This will treat the entire tuple as the value for the first placeholder
 
-# Incorrect ✗ — SQL injection risk exists
+# Incorrect ✗ — SQL injection risk
 sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 ```
 
@@ -8625,7 +8655,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ```python
 # Where(condition: str, *params: Any)
-# params are variable arguments, passed one by one
+# params are variable arguments, passed individually
 
 # Single parameter
 .Where("name = ?", "Alice")
@@ -8642,7 +8672,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ## Custom Storage Backend
 
-Starting from version 2.8.0, the abstract layer uses **asynchronous methods as the native contract**: inherit `BaseStorage` and implement asynchronous abstract methods. Synchronous `get/set/Execute` and others are provided automatically by the base class bridge:
+Starting from version 2.8.0, the abstraction layer uses **asynchronous methods as native contracts**: inherit `BaseStorage` and implement asynchronous abstract methods. Synchronous `get/set/Execute` etc. are automatically bridged by the base class:
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -8676,10 +8706,10 @@ class MyStorage(BaseStorage):
 
 > [!TIP]
 > If you do not want to implement transaction connection routing (`conn` keyword argument), keep the class attribute
-> `_SUPPORTS_CONN_ROUTING = False` (default), and transaction functionality is still available (with limited isolation).
+> `_SUPPORTS_CONN_ROUTING = False` (default), and transaction features will still be available (with limited isolation).
 > Pure SQL backends can directly inherit `Core/Bases/sql_base.py`'s `SQLStorageBase` +
-> `SQLQueryBuilder`, requiring only connection management and dialect execution funnel implementation, see
-> [Storage Backends](docs/en/storage-backends.md).
+> `SQLQueryBuilder`, only requiring connection management and dialect execution funnel implementation, see
+> [Storage Backends](storage-backends.md).
 
 
 
@@ -8687,7 +8717,10 @@ class MyStorage(BaseStorage):
 
 # Router Manager
 
-The ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. The underlying layer is encapsulated through an abstraction layer (currently FastAPI + Uvicorn).
+> [!TIP]  
+> **When to read this**: When you need HTTP / WebSocket / SSE routing (including connection pool broadcasting). If not needed, you can skip it without affecting the use of other features.
+
+The ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. Under the hood, it is encapsulated through an abstraction layer (currently FastAPI + Uvicorn).
 
 ## Overview
 
@@ -9607,6 +9640,9 @@ async def _poll(self):
 
 # Lazy-Loaded Module System
 
+> [!TIP]
+> **When to read this**: When using lazy-loaded modules or activate_on event-driven activation. If not needed, you can skip this section without affecting the use of other features.
+
 The ErisPulse SDK provides a powerful lazy-loaded module system that allows modules to be initialized only when they are actually needed, significantly improving application startup speed and memory efficiency.
 
 ## Overview
@@ -9834,15 +9870,18 @@ flowchart TD
 
 # Internationalization (i18n) System
 
-ErisPulse v2.5.0 includes full internationalization support. Both the framework core and CLI interface can automatically switch display text according to your system language, and external modules can also register their own translations.
+> [!TIP]
+> **When to read this**: When you need multi-language text, translation registration, or language detection. Skip if not needed, as it won't affect the use of other features.
+
+ErisPulse v2.5.0 includes full internationalization support. The framework core and CLI interface can automatically switch displayed text according to your system language, and support external modules registering their own translations.
 
 ## Supported Languages
 
 | Language | Code | Description |
 |------|------|------|
-| Simplified Chinese | `zh-CN` | Default language (native framework language) |
+| Simplified Chinese | `zh-CN` | Default language (native to the framework) |
 | Traditional Chinese | `zh-TW` | Traditional Chinese (Hong Kong/Macau/Taiwan) |
-| English | `en` | English (general fallback language) |
+| English | `en` | English (fallback language) |
 | 日本語 | `ja` | Japanese |
 | Русский | `ru` | Russian |
 
@@ -9868,7 +9907,7 @@ Add to `config/config.toml`:
 language = "zh-TW"
 ```
 
-Set to `"auto"` (default) to automatically detect system language.
+Set to `"auto"` (default) to automatically detect the system language.
 
 ### Switch Manually in Code
 
@@ -9879,7 +9918,7 @@ from ErisPulse import i18n
 i18n.set_language("en")
 print(i18n.get_language())  # "en"
 
-# Reset to auto-detect
+# Reset to automatic detection
 i18n.reset_language()
 ```
 
@@ -9887,20 +9926,20 @@ i18n.reset_language()
 
 ## Language Detection Mechanism
 
-The framework detects user language with the following priority:
+The framework detects user language in the following priority order:
 
-1. **Environment variable `ERISPULSE_LANG`** — Highest priority, for testing and temporary switching
-2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, not affected by tools like Git Bash that override `LANG`)
+1. **Environment variable `ERISPULSE_LANG`** — Highest priority, used for testing and temporary switching
+2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, unaffected by tools like Git Bash that override `LANG`)
 3. **Environment variables** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (Unix/macOS standard)
 4. **System Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
 5. **Fallback** — en (English)
 
 ### Nearest Mapping Principle
 
-When detected language does not match exactly, map to the nearest supported language:
+When detected language is not an exact match, map to the nearest supported language:
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **Traditional Chinese**
-- All other `zh-*` (e.g. `zh-CN`, `zh-SG`) → **Simplified Chinese**
+- All other `zh-*` (e.g., `zh-CN`, `zh-SG`) → **Simplified Chinese**
 - `en-US`, `en-GB`, `en-AU` etc. → **English**
 - `ja-JP` → **Japanese**
 - `ru-RU` → **Russian**
@@ -9910,11 +9949,11 @@ When detected language does not match exactly, map to the nearest supported lang
 
 ## Using i18n in Modules
 
-You can register translation text for your own modules to make them support multiple languages.
+You can register translation text for your own modules, allowing your module to support multiple languages.
 
 ### Recommended Approach: Declare Translation Keys via I18nClass (v2.7.0+)
 
-From v2.7.0, modules/adapters can declare translation keys by nesting the `I18nClass` class, similar to declaring a `ConfigClass`. The framework will **automatically register** all declared translation keys without requiring manual `i18n.register()` calls.
+Starting from v2.7.0, modules/adapters can declare translation keys by embedding a class `I18nClass`, similar to declaring `ConfigClass`. The framework will automatically register all declared translation keys during loading, eliminating the need to manually call `i18n.register()`.
 
 ```python
 from dataclasses import dataclass, field
@@ -9935,7 +9974,7 @@ class MyModule(BaseModule):
         )
 
     # Translation key collection class (optional)
-    # Declared keys will be automatically registered by the framework, with higher priority than default configuration generated from ConfigClass
+    # Declared keys will be automatically registered by the framework, with higher priority than ConfigClass-generated defaults
     class I18nClass(BaseI18n):
         # Property names are automatically concatenated into full key paths: <module name>.<property name>
         welcome_msg: I18nKey = I18nKey(
@@ -9946,7 +9985,7 @@ class MyModule(BaseModule):
             ru="Приветственное сообщение",
             zh_TW="歡迎訊息",
         )
-        # Other business-related translation keys
+        # Other translation keys used in business logic
         hello: I18nKey = I18nKey(
             default="Hello, {name}!",
             zh_CN="你好，{name}！",
@@ -9968,25 +10007,25 @@ class MyModule(BaseModule):
         )
 ```
 
-#### Why is I18nClass Recommended?
+#### Why I18nClass is Recommended?
 
 | Scenario | Manual i18n.register() | I18nClass Declarative |
 |------|-----------------------|------------------|
-| Configuration description referencing i18n keys | Need manual registration, and must be done before configuration generation | Framework automatically registers before configuration generation |
-| Multi-language translation declaration | Scattered in various on_load() methods | Centralized in class, clearly visible |
+| i18n keys referenced in configuration descriptions | Need manual registration, and must be done before configuration generation | Framework automatically registers before configuration generation |
+| Multi-language translation declarations | Scattered across various on_load() methods | Centralized in class, easy to see at a glance |
 | Key naming consistency | Prone to spelling errors | Property names as key suffixes, IDE can auto-complete |
-| Unloading cleanup | Need manual unregister_domain() | Framework uses unified domain registration |
+| Cleanup on unload | Need manual unregister_domain() | Framework uses unified domain registration |
 
 #### I18nClass Key Path Rules
 
 - **Default**: Use ``<module registration name>.<property name>`` as the full key path
   - Example: Module name is ``MyModule``, property ``welcome`` → key path ``MyModule.welcome``
-- **Explicit**: Use the ``I18nKey(key="...")`` parameter to specify any dot-separated path
-  - Suitable for deeply nested key names (e.g. ``mymodule.config.basic.token``)
+- **Explicit**: Specify any dot-separated path via ``I18nKey(key="...")`` parameter
+  - Suitable for deeply nested key names (e.g., ``mymodule.config.basic.token``)
 
 #### Using in Adapters
 
-Adapters also support `I18nClass`, with identical usage:
+Adapters also support `I18nClass`, with the same usage:
 
 ```python
 from ErisPulse.Core import BaseAdapter
@@ -10005,34 +10044,34 @@ class MyAdapter(BaseAdapter):
         )
 
     class I18nClass(BaseI18n):
-        # Central declaration of configuration description referenced keys and other business keys' multilingual translations
+        # Central declaration of i18n keys referenced in configuration descriptions and other business keys
         endpoint: I18nKey = I18nKey(
             default="API Endpoint",
-            zh_CN="API address",
-            zh_TW="API address",
+            zh_CN="API 地址",
+            zh_TW="API 位址",
             en="API Endpoint",
-            ja="API address",
-            ru="API address",
+            ja="APIアドレス",
+            ru="API адрес",
         )
 ```
 
-The `I18nClass` of adapters is automatically registered during the `__init__` phase (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available.
+The `I18nClass` of adapters will be automatically registered during the `__init__` phase (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available.
 
-### Manual Registration of Custom Translations (Old Approach)
+### Manually Register Custom Translations (Old Method)
 
-If you do not use `I18nClass`, you can directly call `i18n.register()` to register translation text.
+If you don't use `I18nClass`, you can directly call `i18n.register()` to register translation text.
 
 ```python
 from ErisPulse import i18n
 
-# Register Chinese translations
+# Register Chinese translation
 i18n.register("zh-CN", {
-    "my_module.welcome": "Welcome to my module!",
-    "my_module.goodbye": "Goodbye!",
-    "my_module.hello": "Hello, {name}!",
+    "my_module.welcome": "欢迎使用我的模块！",
+    "my_module.goodbye": "再见！",
+    "my_module.hello": "你好，{name}！",
 }, domain="my_module")
 
-# Register English translations
+# Register English translation
 i18n.register("en", {
     "my_module.welcome": "Welcome to my module!",
     "my_module.goodbye": "Goodbye!",
@@ -10051,11 +10090,11 @@ i18n.t("my_module.welcome")  # Automatically uses current language
 # With formatted parameters
 i18n.t("my_module.hello", name="Alice")
 
-# Specify default value (returns when translation key does not exist)
+# Specify default value (returns when translation key doesn't exist)
 i18n.t("my_module.unknown_key", default="Default text")
 ```
 
-### Using in Module Classes
+### Using in Module Class
 
 ```python
 from dataclasses import dataclass, field
@@ -10076,7 +10115,7 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def on_load(self, event):
-        # Real-time configuration access (reflects latest value on each access)
+        # Read configuration in real-time (reflects latest value on each access)
         self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
 
@@ -10089,7 +10128,7 @@ class MyModule(BaseModule):
         pass
 ```
 
-### Unregistering Translations
+### Unregister Translations
 
 ```python
 # Unregister all translations in a domain
@@ -10100,7 +10139,7 @@ i18n.unregister_domain("my_module")
 
 ## Multi-language Configuration Fields
 
-From v2.5.2, configuration Schema fully supports i18n. All user-visible text fields can reference i18n keys, and WebUI and other consumers will automatically resolve them into corresponding text based on the current language.
+Starting from v2.5.2, configuration Schema fully supports i18n. All user-visible text fields can reference i18n keys, and WebUI and other consumers will automatically resolve them according to the current language.
 
 ### Supported i18n Fields
 
@@ -10109,9 +10148,9 @@ From v2.5.2, configuration Schema fully supports i18n. All user-visible text fie
 | `description` | field metadata | Field description |
 | `options[].label` | `ui.options` | Select control option labels |
 | `placeholder` | `ui.placeholder` | Input box placeholder |
-| `group_labels` | `_schema_meta` | Group display names (Dashboard partition titles) |
+| `group_labels` | `_schema_meta` | Group display names (Dashboard section titles) |
 
-All use the `{"i18n": "key", "default": "text"}` format. Pure strings are passed through as-is (for backward compatibility).
+All use the format `{"i18n": "key", "default": "text"}`, with plain strings passed through as-is (backward compatibility).
 
 ### Declaring i18n Fields
 
@@ -10123,7 +10162,7 @@ from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
-    # description i18n
+    # i18n for description
     token: str = field(
         default="",
         metadata={
@@ -10134,12 +10173,12 @@ class MyAdapterConfig(BaseConfig):
                 "widget": "password",
                 "group": "basic",
                 "order": 1,
-                # placeholder i18n
-                "placeholder": {"i18n": "my_adapter.token.ph", "default": "Enter Token"},
+                # i18n for placeholder
+                "placeholder": {"i18n": "my_adapter.token.ph", "default": "Please enter Token"},
             },
         },
     )
-    # options label i18n
+    # i18n for options label
     mode: str = field(
         default="a",
         metadata={
@@ -10156,7 +10195,7 @@ class MyAdapterConfig(BaseConfig):
         },
     )
 
-    # group_labels i18n (group display names)
+    # i18n for group_labels (group display names)
     _schema_meta = {
         "group_labels": {
             "basic": {"i18n": "my_adapter.group.basic", "default": "Basic Settings"},
@@ -10168,10 +10207,10 @@ class MyAdapterConfig(BaseConfig):
 
 ### Secret Masking and Configuration Validation
 
-Fields marked as `"secret": True` will automatically receive **masking protection** (from v2.7.0):
+Fields marked as `"secret": True` will automatically receive **masking protection** (from v2.7.0 onwards):
 
-- **Template generation masking**: When `dataclass_to_toml_with_comments()` generates configuration templates, secret fields' real values are not written to the file (displaying empty placeholders), preventing sensitive information from being written to disk
-- **General masking utility**: `redact_secret(value)` replaces non-empty values with `***`, returning empty values as-is, suitable for scenarios like logging output
+- **Template generation masking**: When `dataclass_to_toml_with_comments()` generates a configuration template, the real value of secret fields will not be written to the file (displaying an empty placeholder), preventing sensitive information from being persisted.
+- **General masking utility**: `redact_secret(value)` replaces non-empty values with `***`, and returns empty values as-is, suitable for use in log output, etc.
 
 ```python
 from ErisPulse.Core.Bases.config_schema import redact_secret
@@ -10184,8 +10223,8 @@ redact_secret("")           # ''
 
 | Validation | Metadata | Example |
 |--------|--------|------|
-| Type matching | Field declaration type | `int` field passed a string raises an error |
-| Enum constraint | `ui.options` or top-level `options` | Value must be among allowed options |
+| Type matching | Field declared type | `int` field with a string input raises an error |
+| Enum constraint | `ui.options` or top-level `options` | Value must belong to allowed options |
 | Numeric range | Top-level `min` / `max` | `metadata={"min": 1, "max": 65535}` |
 
 ```python
@@ -10201,12 +10240,12 @@ errors = validate_config(C(mode="x", port=70000))  # Two errors: enum + range
 
 ### Registering Configuration Translations
 
-Configuration field i18n keys and regular translation keys are registered the same way using `i18n.register()`:
+Configuration field i18n keys are registered the same way as regular translation keys using `i18n.register()`:
 
 ```python
 from ErisPulse import i18n
 
-# Register Chinese (same as default, but can differ)
+# Register Chinese (same as default, but can be different)
 i18n.register("zh-CN", {
     "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
@@ -10216,9 +10255,9 @@ i18n.register("en", {
     "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
 ```
-> **Recommended approach**: Use `I18nClass` to declare translation keys, and the framework will automatically register them (see the "Recommended approach" section above), eliminating the need to manually call `i18n.register()` or `register_config_i18n()`.
+> **Recommended approach**: Use `I18nClass` to declare translation keys; the framework will automatically register them (see the "Recommended Approach" section above), eliminating the need to manually call `i18n.register()` or `register_config_i18n()`.
 
-A convenient function `register_config_i18n()` is also provided, which automatically extracts keys from the configuration class and registers them:
+A convenient function `register_config_i18n()` is also provided, which can automatically extract keys from the configuration class and register them:
 
 ```python
 from ErisPulse.Core.Bases.config_schema import register_config_i18n
@@ -10234,25 +10273,24 @@ register_config_i18n(MyAdapterConfig, "en", {
 
 ### How WebUI Consumes
 
-`get_config_schema()` returns a schema where the i18n dictionary is passed through as-is. The WebUI frontend can use `i18n.t()` to resolve based on the current language.
+The schema returned by `get_config_schema()` will pass through the i18n dictionary as-is. The WebUI frontend can call `i18n.t()` to resolve it according to the current language.
 
-If you need the server to directly resolve into strings (e.g., for frontends that do not support i18n), use `resolve_config_schema()`, which resolves `description`, `options[].label`, `placeholder`, and `group_labels` into the current language's text:
+If you need the server to directly resolve it to a string (e.g., for a frontend that doesn't support i18n), use `resolve_config_schema()`, which will resolve `description`, `options[].label`, `placeholder`, and `group_labels` into the current language's text:
 
 ```python
 from ErisPulse.Core.Bases.config_schema import resolve_config_schema
 
-# All i18n fields are resolved into the current language's string
+# All i18n fields have been resolved into the current language's string
 schema = resolve_config_schema(MyAdapterConfig)
 print(schema["fields"]["token"]["description"])    # "Platform Token" or "Platform Token"
-print(schema["fields"]["token"]["placeholder"])   # "Enter Token" or "Enter Token"
+print(schema["fields"]["token"]["placeholder"])   # "Please enter Token" or "Enter Token"
 print(schema["fields"]["mode"]["options"][0]["label"])  # "Mode A" or "Mode A"
 print(schema["group_labels"]["basic"])             # "Basic Settings" or "Basic"
 ```
 
-> `BaseConfig`, `BotAccountConfig`, `register_config_i18n()`, `resolve_config_schema()`
-> and other types and utility functions are actually defined in `ErisPulse.Core.Bases.config_schema`.
+> `BaseConfig`, `BotAccountConfig`, `register_config_i18n()`, `resolve_config_schema()`, etc., are actually defined in `ErisPulse.Core.Bases.config_schema`.
 > `ErisPulse.runtime.config_schema` is retained as a compatibility shim,
-> **recommended to import uniformly from `ErisPulse.Core.Bases`** (except for i18n translation key related types,
+> **recommended to import uniformly from `ErisPulse.Core.Bases`** (except for i18n translation key-related types,
 > which are located in `ErisPulse.Core.Bases.i18n_schema`).
 
 ## API Reference
@@ -10266,11 +10304,11 @@ print(schema["group_labels"]["basic"])             # "Basic Settings" or "Basic"
 | `t(key, default=None, **kwargs)` | Get translated text (`gettext()` is an alias) |
 | `set_language(lang)` | Manually set language |
 | `get_language()` | Get current language |
-| `reset_language()` | Reset to auto-detection (and re-detect environment) |
+| `reset_language()` | Reset to automatic detection (and re-detect environment) |
 | `get_supported_languages()` | Get list of all supported languages |
 | `has_translation(key, lang=None)` | Check if translation key exists |
 | `register(lang, translations, domain)` | Register custom translations |
-| `unregister_domain(domain)` | Unload all translations in specified domain |
+| `unregister_domain(domain)` | Unload all translations for a specified domain |
 | `reload()` | Reload built-in translations and re-detect language |
 
 #### `t()` Method Details
@@ -10293,20 +10331,20 @@ i18n.t("greeting", name="Alice", place="ErisPulse")
 
 ### BaseI18n / I18nKey (Declarative Translation Keys)
 
-Starting from v2.7.0, `ErisPulse.Core.Bases` provides a translation key declaration tool based on class attributes (recommended to import uniformly from `ErisPulse.Core.Bases`):
+Starting from v2.7.0, `ErisPulse.Core.Bases` provides a class property-based translation key declaration tool (recommended to import uniformly from `ErisPulse.Core.Bases`):
 
 > ``I18nKey.default`` is a **language-agnostic fallback text** and is not registered to any language.
-> To make translations effective, at least one language parameter must be explicitly passed (``zh_CN=`` / ``en=`` / ``ja=`` etc.).
-> This allows developers from various countries to freely use their native language to fill in ``default``, with no assumptions made by the framework.
+> To make translations effective, you must explicitly pass at least one language parameter (``zh_CN=`` / ``en=`` / ``ja=`` etc.).
+> This allows developers from various countries to freely fill in ``default`` in their native language, with no assumptions made by the framework.
 
 | Name | Description |
 |------|------|
-| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | Declaration of a single translation key, `default` is a language-agnostic fallback |
-| `BaseI18n` | Translation key collection base class (naming aligned with `BaseConfig`), sub-classes declare multiple `I18nKey` via class attributes |
+| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | Declaration of a single translation key, `default` is language-agnostic fallback |
+| `BaseI18n` | Base class for translation key collections (aligned with `BaseConfig` naming), child classes declare multiple `I18nKey` as class attributes |
 | `BaseI18n.register(prefix="", domain="app")` | Class method: register all declared keys to the i18n system |
 | `key` | Alias for `I18nKey` (more concise writing)
 
-Usage example:
+Example usage:
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, key
@@ -10330,7 +10368,7 @@ class MyKeys(BaseI18n):
         ru="До свидания",
     )
 
-# Standalone use (manual registration)
+# Using independently (manual registration)
 MyKeys.register(prefix="myapp.", domain="myapp")
 ```
 
@@ -10357,7 +10395,7 @@ from ErisPulse.runtime import get_i18n_config
 config = get_i18n_config()
 print(config["language"])  # "auto" or specific language code
 
-# I18nConfig is a dataclass, suitable for generating configuration templates
+# I18nConfig is a dataclass, can be used to generate configuration templates
 schema = I18nConfig.__dataclass_fields__
 ```
 
@@ -10367,8 +10405,8 @@ In the `[ErisPulse.i18n]` section of `config/config.toml`:
 
 ```toml
 [ErisPulse.i18n]
-# Display language, possible values:
-# - "auto"      — Auto-detect system language (default)
+# Display language, optional values:
+# - "auto"      — Automatically detect system language (default)
 # - "zh-CN"     — Simplified Chinese
 # - "zh-TW"     — Traditional Chinese
 # - "en"        — English
@@ -10383,7 +10421,7 @@ language = "auto"
 
 ### Translation Key Naming
 
-It is recommended to use dot-separated namespace format:
+It is recommended to use a dot-separated namespace format:
 
 ```
 <module name>.<category>.<description>
@@ -10393,7 +10431,7 @@ For example: `my_module.command.hello_desc`, `core.adapter.start_failed`
 
 ### Multi-language Coverage
 
-There is no need to provide translations for all languages at once; missing languages will automatically fall back to English, and if English is also missing, the key name itself will be displayed.
+You don't need to provide translations for all languages at once; missing languages will automatically fall back to English, and if English is also missing, the key name itself will be displayed.
 
 ### Dynamic Content
 
@@ -10818,17 +10856,23 @@ topology = sdk.get_topology()
 
 ### 归属权（owner）系统
 
-# Ownership (owner) System
+# Ownership (Owner) System
 
-Ownership is the cornerstone of the "plug-and-play" nature of modules: all framework resources registered during module loading are automatically attributed, and automatically reclaimed when the module is unloaded or disabled. Module authors only need to declare resources, without writing manual cleanup logic.
+> [!TIP]  
+> **When to read this**: When troubleshooting resource leaks, understanding the unload/cleanup chain, or declaring owned resources. If not needed, you can skip this section without affecting other features.
 
-> **Related Systems**: Scope determines "whether a resource is active" during event dispatching, while ownership determines "who owns the resource and who is responsible for reclaiming it during lifecycle events." For more details on scope, see [Unified Control Plane (scope)](scope.md). For background tasks, see [Lifecycle Management](lifecycle.md#Background Task Ownership and Automatic Cancellation).
+Ownership is the foundation of the module's "plug-and-play" capability: all framework resources registered during module loading are automatically named, and can be reclaimed with a single click during unload/disable—module authors only need to declare resources, without manually writing cleanup logic.
+
+> **Related systems**: The scope determines "whether resources are active" during event dispatching,  
+> while ownership determines "to whom resources belong and who will reclaim them during unload" during the lifecycle.  
+> For more details on scope, see [Unified Control Plane (Scope)](scope.md), and for background tasks, see  
+> [Lifecycle Management](lifecycle.md#background-task-ownership-and-automatic-cancellation).
 
 {!--< tips >!--}
-1. Ownership is automatically recorded at the **moment of registration** based on `current_owner`, requiring zero code changes from the module.
-2. Unload and disable share the same cleanup chain (`_cleanup_module_registrations`), where each step only logs a warning if it fails, without interrupting the process.
-3. Resources with user-configured semantics (persistent overrides / scope rules / command ACLs) are **not** cleaned up when the module is unloaded.
-4. External handles managed by utility modules can be attached to the cleanup chain via `on_cleanup(cb)`, which will be automatically called when the dependent module is unloaded (see [Guide to Utility Modules: Managing Handles of Other Modules](#Guide-to-Utility-Modules-Managing-Handles-of-Other-Modules)).
+1. Ownership is **automatically recorded at the moment of registration** based on `current_owner`, requiring zero changes to module code.
+2. Unload and disable share the same cleanup chain (`_cleanup_module_registrations`), with each step issuing a warning but not interrupting the process if it fails.
+3. Resources defined by user configuration (persistent overrides / scope rules / command ACLs) are **not** cleaned up when the module is unloaded.
+4. External handles managed by utility modules can be added to the cleanup chain using `on_cleanup(cb)`, which automatically triggers callbacks when the dependent module is unloaded (see [Utility Module Guide](#utility-module-guide-handling-other-modules-handles)).
 {!--< /tips >!--}
 
 ## Owner Context Mechanism
@@ -11095,16 +11139,19 @@ Guaranteed framework behavior:
 
 ### 影子模块与灰度转正
 
-# Shadow Modules and Gradual Promotion
+# Shadow Modules and Gradual Cutover
 
-A shadow module is a **new version** of the same module, running in parallel with the live old version under an independent owner (e.g., `roll_shadow`). It receives **copies** of real events, and its outbound calls are **intercepted and logged** instead of being actually dispatched. By comparing the behaviors of both versions in `shadow_diff`, you can confirm there are no issues before promoting the shadow to become the live version with a single `promote` action. You can also `dismiss` the shadow at any time. **No code changes are required** for the module; all operations are driven at runtime via APIs: similar to `load / unload / reload`, these operational actions can be directly invoked through the Dashboard or custom management modules, with no configuration files needed.
+> [!TIP]
+> **When you should read this**: When you need to perform a gradual release—run a new version in parallel with the existing one, compare behaviors, and promote or roll back. If you don't need this, you can skip this section without affecting the use of other features.
 
-<!-- < tips > -->
+A shadow module is a **new version** of a module that runs in parallel with the existing online version under a separate owner (such as `roll_shadow`). It receives **copies** of real events, and its outbound actions are **intercepted and recorded** rather than actually dispatched. By comparing the behaviors of both versions in `shadow_diff`, you can confirm that the new version is safe to promote. Once confirmed, you can use `promote` to promote the shadow module to become the new default, or use `dismiss` to discard it at any time. **No code changes are required**—the entire process is driven at runtime via API: similar to `load / unload / reload`, these operational actions can be called directly from the Dashboard or custom management modules, with no configuration needed.
+
+{!--< tips >!--}
 1. Start: ``await sdk.module.shadow_start("roll", source="path/to/v2")``
-   —— The new version runs in parallel with the old version under an independent owner (defaulting to the path name).
-2. The shadow does not participate in real distribution or dependency graphs: commands with the same name go into the shadow directory, routes are registered but not mounted, lifecycle broadcasts are silent, and `module.call` and dependency resolution still point to v1.
-3. Promotion must always be confirmed by a human: ``await sdk.module.promote_shadow("roll")``, and if it fails, the old instance is automatically rolled back to continue serving; ``dismiss_shadow`` can be used at any time to abandon the shadow.
-<!-- < /tips > -->
+   ——The new version code runs in parallel with the old version under a separate owner (defaulting to the path name).
+2. The shadow module does not participate in real distribution or dependency graph: commands with the same name go into the shadow directory, routes are only registered but not mounted, lifecycle broadcasts are silent, and `module.call` and dependency resolution still point to v1.
+3. Promotion is always confirmed by a human: ``await sdk.module.promote_shadow("roll")``, and if it fails, the old instance automatically rolls back and continues serving; ``dismiss_shadow`` can discard the shadow module at any time.
+{!--< /tips >!--}
 
 ## Quick Start
 
@@ -11165,11 +11212,14 @@ The `promote` process: take a snapshot of the current version (including cascadi
 
 # Startup Process and Manual Control
 
-ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup chain into a single line of code. However, when you need to fully customize the startup process (for example, partial loading, dynamic registration, hot plugging, injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
+> [!TIP]
+> **When to read this**: When you need to manually drive the startup sequence, customize the startup order, or troubleshoot startup failures. If not needed, you can skip this section without affecting other features.
 
-This article breaks down the startup chain into independent components, explains the responsibilities of each, the order of calls, and provides an example of how to manually perform a complete startup.
+ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup sequence into a single line of code. However, when you need to fully customize the startup process (for example, partial loading, dynamic registration, hot-swapping, or injecting custom loading strategies), you need to understand what happens inside this sequence and how to manually drive each step.
 
-> This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the `init()` chain and lower-level entry points such as `init()` / `init_task()` / `init_sync()`.
+This article breaks down the startup sequence into independent steps, explains the responsibilities of each step and their calling order, and provides an example of manually performing the complete startup process.
+
+> This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the `init()` sequence, as well as lower-level entry points such as `init()`/`init_task()`/`init_sync()`.
 
 ## Overview of SDK Top-Level Entry Points
 

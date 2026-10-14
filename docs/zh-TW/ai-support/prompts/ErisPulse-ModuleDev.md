@@ -2294,6 +2294,10 @@ if TYPE_CHECKING:
 
 # 模組開發入門
 
+> [!NOTE]
+> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
+
+
 本指南帶你從零開始建立一個 ErisPulse 模組。
 
 ## 項目結構
@@ -2497,6 +2501,9 @@ sdk.lifecycle  # 生命週期系統
 ### 模块核心概念
 
 # 模組核心概念
+
+> [!NOTE]
+> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
 
 了解 ErisPulse 模組的核心概念是開發高品質模組的基礎。
 
@@ -2899,6 +2906,9 @@ self.logger.critical("致命錯誤") # 致命錯誤
 ### Event 包装类详解
 
 # Event 包裝類詳解
+
+> [!NOTE]
+> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
 
 Event 模組提供了功能強大的 Event 包裝類，簡化事件處理。
 
@@ -3949,7 +3959,11 @@ version = "1.0.0"
 
 # 數據模型層（ORM）
 
-自 2.9.0 版本起，框架內建了宣告式數據模型層：繼承 `Model` 並使用 `Field` 聲明欄位，即可獲得自動建表與增刪改查能力。模型直接建構在內建儲存層之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置決定，**切換後端無需修改模型程式碼**。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要數據模型、自動建表或關係映射時。不需要則跳過，不會影響其他功能的使用。
+
+
+2.9.0 起框架內建宣告式數據模型層：繼承 `Model` 並使用 `Field` 聲明欄位，即可獲得自動建表與增刪改查能力。模型直接建立在內建儲存層之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置決定，**切換後端無需修改模型程式碼**。
 
 ## 聲明模型
 
@@ -4141,15 +4155,18 @@ await writer.posts.count()          # 雙向互通
 
 # 模組排查指南
 
-當模組「沒有反應」時，可依症狀分為三類問題，每類皆有對應的框架診斷工具（RFC EPRFC-2026-001 方向五）：
+> [!TIP]
+> **什麼時候需要閱讀本文**：當模組「沒有反應」、命令未觸發或事件未收到時進行排查。若無此類情況，可直接跳過，不會影響其他功能的使用。
+
+當模組「沒有反應」時，根據症狀可分為三類問題，每類問題都有對應的框架診斷工具（RFC EPRFC-2026-001 方向五）：
 
 | 症狀 | 診斷工具 | 定位層面 |
 |------|---------|---------|
-| 模組未載入 | `ErisPulse.runtime.explain_module(name)` | 注冊與載入鏈 |
+| 模組未加載 | `ErisPulse.runtime.explain_module(name)` | 注冊與加載鏈 |
 | 事件未響應 | `ErisPulse.runtime.explain_event(event)` | 分發入口檢查 |
-| 命令未觸發 | 分發決策鏈（測試端 `DispatchTrace` / 框架內建 `trace`） | 命令判定鏈 |
+| 命令未觸發 | 分發決策鏈（測試側 `DispatchTrace` / 框架內建 `trace`） | 命令判定鏈 |
 
-這兩個診斷函數皆為**純讀取**操作，不會改變任何狀態，可在任意時刻調用；返回機器可讀的 dict，搭配 `format_report()` 可渲染為人類可讀的文本。
+這兩個診斷函數均為**純讀取**操作，不會改變任何狀態，可在任何時間調用；返回的是機器可讀的 dict，搭配 `format_report()` 可渲染成人類可讀的文本。
 
 ## 場景一：模組未載入
 
@@ -4262,7 +4279,10 @@ print(final_verdict(records))           # 總結論
 
 # 發布與模組商店指南
 
-將你開發的模組或適配器發布到 ErisPulse 模組商店，讓其他使用者可以輕鬆地發現和安裝。
+> [!TIP]  
+> **什麼時候需要閱讀這篇**：當你要將作品發佈到 PyPI / 模組商店時。如果不需要，可以跳過，這不會影響其他功能的使用。
+
+將你開發的模組或適配器發佈到 ErisPulse 模組商店，讓其他使用者可以輕鬆地發現並安裝。
 
 ## 模組商店概述
 
@@ -4654,14 +4674,17 @@ services:
 
 # 模組測試（ErisPulse-Testing）
 
-[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) 是官方測試工具包（RFC EPRFC-2026-001 方向三）：
-提供 `TestBot`、測試事件工廠、出站訊息捕獲與斷言介面，讓模組測試像寫普通 pytest 一樣簡單。
+> [!TIP]  
+> **何時需要閱讀本文**：為自己的模組撰寫自動化測試時。若不需要則可跳過，這不會影響其他功能的使用。
+
+[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) 是官方測試工具包（RFC EPRFC-2026-001 方向三）：  
+提供 `TestBot`、測試事件工廠、出站訊息捕獲與斷言介面，讓模組測試像撰寫普通 pytest 一樣簡單。
 
 ```bash
 pip install ErisPulse-Testing
 ```
 
-> 單向依賴框架的開發期工具，執行時零介入。真連適配器平台的冒煙測試請使用框架倉庫的 `tests/devs/test_adapter.py`。
+> 單向依賴框架的開發期工具，執行時零介入。若要進行真正連接適配器平台的冒煙測試，請使用框架倉庫的 `tests/devs/test_adapter.py`。
 
 ## 快速開始
 
@@ -6783,7 +6806,10 @@ async def low_priority_handler(event):
 
 # Conversation 多輪對話
 
-`Conversation` 類提供了在同一會話中進行多輪交互的便捷方法，適合實現引導式操作、資訊收集、對話式問答等場景。
+> [!TIP]  
+> **什麼時候需要閱讀這篇**：當需要多輪對話狀態機與檢查點恢復時。若不需要則可跳過，這不會影響其他功能的使用。  
+
+`Conversation` 類提供了一種在同一會話中進行多輪互動的便捷方法，適合實現引導式操作、資訊收集、對話式問答等場景。
 
 ## 建立對話
 
@@ -7208,19 +7234,22 @@ async def chat_handler(event):
 
 ### 交互会话系统
 
-# 互動會話系統
+# 互動對話系統
+
+> [!TIP]
+> **何時需要閱讀本文**：需要 `wait_reply`、多輪對話、定時提醒、會話互斥或鏈路追蹤時。不需要則可跳過，不會影響其他功能的使用。
 
 > [!NOTE]
-> 本章內容需要 ErisPulse **2.8.0+**。
+> 本文內容需要 ErisPulse **2.8.0+**。
 
-ErisPulse 將「與使用者的持續互動」做成了框架級基礎設施：從一條 `wait_reply`，
+ErisPulse 將「與使用者的持續互動」建構為框架級基礎設施：從一條 `wait_reply`，
 到定時提醒、多路等待、會話互斥、重啟恢復，全部由統一的
-**互動會話管理器**（`Core/Event/interaction.py`，`sdk.interaction`）調度。
+**互動對話管理器**（`Core/Event/interaction.py`，`sdk.interaction`）調度。
 
 {!--< tips >!--}
 本文涵蓋的每一項能力都附帶**歸屬（owner）**：互動等待、租約、定時器全部記錄
-註冊時的模組名，模組卸載 / 適配器關閉時由框架自動清理，等待方立即得到通知
-而非干等超時——這是歸屬權系統在互動維度的延伸（見 [歸屬權系統](ownership.md)）。
+註冊時的模組名，模組卸載 / 介面關閉時由框架自動清理，等待方立即得到通知
+而非乾等超時——這是歸屬權系統在互動維度的延伸（見 [歸屬權系統](ownership.md)）。
 {!--< /tips >!--}
 
 ## 等待回覆：wait_reply
@@ -7475,19 +7504,22 @@ async with event.message_tx():
 
 # 模組間通信
 
-> [!NOTE]  
+> [!TIP]
+> **什麼時候需要閱讀本篇**：需要跨模組呼叫（RPC）、服務契約、定向事件或冷啟動回放時。不需要則跳過，不會影響其他功能的使用。
+
+> [!NOTE]
 > 本章內容需要 ErisPulse **2.8.0+**。
 
-ErisPulse 的模組之間有**三層通訊模型**，依「點對點 → 定向 → 廣播」排列：
+ErisPulse 的模組之間有**三層通信模型**，依「點對點 → 定向 → 廣播」排列：
 
 | 層 | API | 語義 | 典型場景 |
 |---|---|---|---|
-| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 點對點請求-回應，帶契約 / 審計 / 超時 | 調用另一模組的能力（查詢歷史、翻譯、退款） |
-| **定向事件** | `await lifecycle.emit("message_received", {...}, to="Chat")` | 僅分發給指定模組註冊的生命周期鉤子 | 上游狀態變更通知下游（「收到新訊息了」） |
-| **廣播** | `await lifecycle.emit("config.updated", {...})` | 全框架可見的生命周期事件 | 配置熱更新、模組上下線 |
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 點對點請求-回應，帶契約 / 審計 / 超時 | 呼叫另一模組的能力（查詢歷史、翻譯、退款） |
+| **定向事件** | `await lifecycle.emit("message_received", {...}, to="Chat")` | 僅分發給指定模組註冊的生命週期鉤子 | 上游狀態變化通知下游（「收到新訊息了」） |
+| **廣播** | `await lifecycle.emit("config.updated", {...})` | 全框架可見的生命週期事件 | 配置熱更新、模組上下線 |
 
 {!--< tips >!--}
-選型口訣：**要回傳值用 `call`，只通知一個模組的鉤子用 `emit(..., to=...)`，通知所有人用 `emit(...)`**。
+選型口訣：**要返回值用 `call`，只通知一個模組的鉤子用 `emit(..., to=...)`，通知所有人用 `emit(...)`**。
 {!--< /tips >!--}
 
 ## RPC：module.call
@@ -7708,9 +7740,12 @@ event_dedupe = true   # 預設開啟；測試環境固定 id 合成事件可關�
 
 ### MessageBuilder 详解
 
-# MessageBuilder 詳解
+# MessageBuilder 详解
 
-`MessageBuilder` 是 ErisPulse 提供的 OneBot12 標準訊息段建構工具，用於建構結構化的訊息內容，配合 `Send.Raw_ob12()` 使用。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：在構建複雜 / 多段消息時。不需要則跳過，不會影響其他功能的使用。
+
+`MessageBuilder` 是 ErisPulse 提供的 OneBot12 標準訊息段建構工具，用於建構結構化的訊息內容，搭配 `Send.Raw_ob12()` 使用。
 
 ## 導入方式
 
@@ -7904,7 +7939,10 @@ complex_msg = (
 
 # 網路用戶端
 
-ErisPulse 提供了統一的網路用戶端，聚合了 HTTP 請求、WebSocket 連接和連接池管理。模組和適配器**必須優先使用**此用戶端，而非自行匯入 `aiohttp` / `httpx` / `requests` 等第三方庫。
+> [!TIP]
+> **何時需要閱讀這篇**：需要發出站 HTTP / WebSocket 請求時。若不需要則可跳過，這不會影響其他功能的使用。
+
+ErisPulse 提供了統一的網路用戶端，聚合了 HTTP 請求、WebSocket 連接和連接池管理。模組和適配器**必須優先使用**此用戶端，而非自行導入 `aiohttp` / `httpx` / `requests` 等第三方庫。
 
 ## 概述
 
@@ -8413,7 +8451,10 @@ class MyAdapter(BaseAdapter):
 
 # SQL 查詢建構器
 
-ErisPulse 的 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的建立、查詢、更新與刪除操作。
+> [!TIP]
+> **何時需要閱讀這篇**：需要鏈式 SQL 查詢或自訂儲存後端時。不需要則跳過，不會影響其他功能的使用。
+
+ErisPulse 的 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的建立、查詢、更新和刪除操作。
 
 ## 架構設計
 
@@ -8428,7 +8469,7 @@ Bases/storage.py                    Core/storage.py
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面；框架內建 SQLite / MySQL / PostgreSQL 三種實現（自定義後端亦可依此擴展，見[儲存後端](storage-backends.md)）
+- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面；框架內建 SQLite / MySQL / PostgreSQL 三種實現（自訂後端亦可依此擴展，見[儲存後端](storage-backends.md)）
 - `StorageManager` 按 `ErisPulse.storage.backend` 配置調度具體後端，預設 SQLite，完全向後相容
 
 ## 導入
@@ -8438,7 +8479,7 @@ from ErisPulse import sdk
 # 或
 from ErisPulse.Core import storage
 
-# ABC 基類（用於型別註解或自訂實作）
+# ABC 基類（用於類型標註或自訂實作）
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
@@ -8471,13 +8512,13 @@ sdk.storage.DropTable("users")
 ### 修改表結構
 
 ```python
-# 添加欄位
+# 新增欄位
 sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
 
 # 重新命名表
 sdk.storage.AlterTable("users").RenameTo("members").Execute()
 
-# 串連多個操作
+# 鏈式多個操作
 sdk.storage.AlterTable("users") \
     .AddColumn("phone", "TEXT") \
     .AddColumn("address", "TEXT") \
@@ -8489,10 +8530,10 @@ sdk.storage.AlterTable("users") \
 ### 插入資料
 
 ```python
-# 單筆插入（傳入字典）
+# 單行插入（傳入字典）
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# 批次插入（傳入字典列表）
+# 批量插入（傳入字典列表）
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35},
@@ -8556,7 +8597,7 @@ for row in rows:
 records = [dict(zip(columns, row)) for row in rows]
 ```
 
-#### 獲取單筆記錄
+#### 獲取單條記錄
 
 ```python
 row = sdk.storage.Table("users").Select("name", "age") \
@@ -8651,9 +8692,9 @@ count = sdk.storage.Table("users").Where("age > ?", 18).Count()
 exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 ```
 
-## 複用查詢條件
+## 復用查詢條件
 
-使用 `copy()` 深拷貝建構器，複用基礎條件：
+使用 `copy()` 深拷貝建構器，復用基礎條件：
 
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
@@ -8668,7 +8709,7 @@ count = base.copy().Count()
 exists = base.copy().Where("name = ?", "Alice").Exists()
 ```
 
-## 重設建構器
+## 重置建構器
 
 ```python
 builder = sdk.storage.Table("users").Select("name").Where("age > ?", 18)
@@ -8702,7 +8743,7 @@ except Exception:
 ## 異步原生 API
 
 2.8.0 起儲存層以異步為原生主介面，所有終止方法都有對應的 a 前綴異步版本，
-異步 handler 內推薦使用（避免同步相容層短暫阻塞事件循環）：
+異步 handler 內推薦使用（避免同步相容層短暫阻塞事件迴圈）：
 
 ```python
 # 異步事務
@@ -8733,15 +8774,15 @@ keys = await sdk.storage.aget_all_keys()
 
 ## 回傳值說明
 
-| 操作 | 回傳型別 | 說明 |
+| 操作 | 回傳類型 | 說明 |
 |------|---------|------|
 | `Select().Execute()` | `list[tuple]` | 元組列表，按欄位順序排列 |
-| `Select().ExecuteOne()` | `tuple \| None` | 單筆元組或 None |
+| `Select().ExecuteOne()` | `tuple \| None` | 單條元組或 None |
 | `Insert().Execute()` | `int` | 受影響列數 |
 | `InsertMulti().Execute()` | `int` | 插入列數 |
 | `Update().Execute()` | `int` | 受影響列數 |
 | `Delete().Execute()` | `int` | 受影響列數 |
-| `Count()` | `int` | 符合條件列數 |
+| `Count()` | `int` | 匹配列數 |
 | `Exists()` | `bool` | 是否存在 |
 
 ### 回傳值處理示例
@@ -8749,17 +8790,17 @@ keys = await sdk.storage.aget_all_keys()
 ```python
 # Select 回傳元組，按索引取值
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
-first_name = rows[0][0]  # 第一列第一欄 name
-first_age = rows[0][1]   # 第一列第二欄 age
+first_name = rows[0][0]  # 第一行第一列 name
+first_age = rows[0][1]   # 第一行第二列 age
 
-# 推薦：用欄位名列表 + zip 轉為字典，程式碼更易讀
+# 推薦：用欄位名列表 + zip 轉為字典，程式碼更可讀
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
     d = dict(zip(cols, row))
     print(d["name"], d["age"])
 
-# ExecuteOne 回傳單筆元組或 None
+# ExecuteOne 回傳單條元組或 None
 row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
 name = row[0] if row else None
 
@@ -8808,7 +8849,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ## 自訂儲存後端
 
-2.8.0 起抽象層以**異步方法為原生契約**：繼承 `BaseStorage` 實作異步抽象方法，
+2.8.0 起抽象層以**異步方法為原生契約**：繼承 `BaseStorage` 實現異步抽象方法，
 同步 `get/set/Execute` 等由基類自動橋接提供：
 
 ```python
@@ -8816,7 +8857,7 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 class MyQueryBuilder(BaseQueryBuilder):
     async def aExecute(self):
-        # 實作具體執行邏輯
+        # 實現具體執行邏輯
         ...
 
     async def aExecuteOne(self):
@@ -8836,13 +8877,13 @@ class MyStorage(BaseStorage):
     async def aset(self, key, value):
         ...
 
-    # 實作其他異步抽象方法與事務連接 hook ...
+    # 實現其他異步抽象方法與事務連接 hook ...
     def Table(self, table_name):
         return MyQueryBuilder(self, table_name)
 ```
 
 > [!TIP]
-> 若不想實作事務連接路由（`conn` 關鍵字參數），保持類屬性
+> 若不想實現事務連接路由（`conn` 關鍵字參數），保持類屬性
 > `_SUPPORTS_CONN_ROUTING = False`（預設）即可，事務功能仍可用（隔離性受限）。
 > 純 SQL 後端可直接繼承 `Core/Bases/sql_base.py` 的 `SQLStorageBase` +
 > `SQLQueryBuilder`，只需提供連接管理與方言執行漏斗，詳見
@@ -8860,6 +8901,9 @@ class MyStorage(BaseStorage):
 ### 路由系统
 
 # 路由管理器
+
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要 HTTP / WebSocket / SSE 路由（含連接池廣播）時。不需要則跳過，不會影響其他功能的使用。
 
 ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支援多適配器路由註冊和生命週期管理。底層透過抽象層封裝（目前為 FastAPI + Uvicorn）
 
@@ -9340,12 +9384,15 @@ async def on_server_stop(event):
 
 # 生命週期管理
 
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要訂閱框架生命週期事件（啟動 / 加載 / 狀態變化）時。不需要則跳過，不影響其他功能的使用。
+
 ErisPulse 提供統一的鈎子/生命週期系統，用於監控系統各組件的運行狀態，以及實現審計、統計、自定義邏輯等擴展功能。
 
 系統支援三種觸發方式：
-- `await lifecycle.emit("event", data)` — 精簡版，傳遞任意資料（`to="Owner"` 時定向投遞）
+- `await lifecycle.emit("event", data)` — 精簡版，傳遞任意數據（`to="Owner"` 時定向投遞）
 - `lifecycle.emit_sync("event", data)` — 同步版（用於非異步上下文）
-- `await lifecycle.submit_event("event", ...)` — 兼容舊版，自動建構標準事件格式
+- `await lifecycle.submit_event("event", ...)` — 兼容舊版，自動構建標準事件格式
 
 ## 事件處理機制
 
@@ -9365,7 +9412,7 @@ sdk.lifecycle.register("module.load", on_module_load, priority=10)
 # 取消註冊
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# 按所有者批量取消註冊（模組/適配器卸載時框架自動呼叫）
+# 按所有者批量取消註冊（模組/適配器卸載時框架自動調用）
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
 print(f"清理了 {removed} 個生命週期鈎子")
 ```
@@ -9455,7 +9502,7 @@ if sdk.lifecycle.has_handlers("message.sending"):
 
 ## 鈎子斷點一覽
 
-一條訊息從平台進入框架到處理完成的典型生命週期事件時序：
+一條消息從平台進入框架到處理完成的典型生命週期事件時序：
 
 ```mermaid
 sequenceDiagram
@@ -9467,7 +9514,7 @@ sequenceDiagram
     P->>A: 原生事件到達
     A->>F: adapter.event.receive（最早期）
     F->>F: event.pre_process（處理器執行前）
-    F->>M: 分發到處理器（命令/訊息/通知等）
+    F->>M: 分發到處理器（命令/消息/通知等）
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending（發送前）
@@ -9477,18 +9524,18 @@ sequenceDiagram
     F->>F: adapter.event.dispatched（分發完成）
 ```
 
-框架內建了以下鈎子斷點，使用者可以透過 `@sdk.lifecycle.on()` 監聽任意斷點實現自訂邏輯。
+框架內建了以下鈎子斷點，使用者可以透過 `@sdk.lifecycle.on()` 監聽任意斷點實現自定義邏輯。
 
 ### 核心初始化
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `core.init.start` | SDK 初始化開始 | `{}` |
 | `core.init.stage` | 初始化各階段開始（背景發射） | `{"stage": str}`，取值 `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
 | `core.init.complete` | SDK 初始化完成 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(僅失敗時)}` |
 | `core.uninit.complete` | SDK 反初始化完成 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(僅失敗時)}` |
 
-**示例：啟動進度展示**
+**範例：啟動進度展示**
 
 ```python
 @sdk.lifecycle.on("core.init.stage")
@@ -9498,12 +9545,12 @@ def show_stage(data):
 
 ### 配置變更
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `config.set` | 配置項被修改 | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | 外部編輯 config.toml 後偵測到整樹變更 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.updated` | 外部編輯 config.toml 後檢測到整樹變更 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
-**示例：配置審計**
+**範例：配置審計**
 
 ```python
 @sdk.lifecycle.on("config.set")
@@ -9513,17 +9560,17 @@ def audit_config(data):
 
 ### 模組生命週期
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `module.register` | 模組類註冊到管理器 | `{"module_name": str, "success": bool}` |
-| `module.load` | 模組載入完成（實例化成功） | `{"module_name": str, "success": bool}` |
+| `module.load` | 模組加載完成（實例化成功） | `{"module_name": str, "success": bool}` |
 | `module.init` | 模組初始化完畢（含懶加載） | `{"module_name": str, "success": bool}` |
 | `module.unload` | 模組卸載 | `{"module_name": str, "success": bool}` |
-| `module.reload` | 模組熱重載完成（含級聯重載依賴者） | `{"module_name": str, "success": bool, "full": bool}`；全量重載（`reload_all`）時 `module_name` 為 `"All"`，payload 預留 `"results": dict[str, bool]` |
+| `module.reload` | 模組熱重載完成（含級聯重載依賴者） | `{"module_name": str, "success": bool, "full": bool}`；全量重載（`reload_all`）時 `module_name` 為 `"All"`，payload 預期額外攜帶 `"results": dict[str, bool]` |
 
 ### 適配器生命週期
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `adapter.load` | 適配器註冊完成 | `{"platform": str, "success": bool}` |
 | `adapter.start` | 適配器啟動 | `{"platforms": [str]}` |
@@ -9535,14 +9582,14 @@ def audit_config(data):
 
 ### 事件接收與處理
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `adapter.event.receive` | 收到外部平台事件（最早期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
 | `adapter.event.blocked` | 中間件否決事件（返回 `False`，事件被丟棄不進入任何處理器） | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
 | `adapter.event.dispatched` | 事件分發完成 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
 | `event.pre_process` | 事件處理器開始執行前 | `{"event_type": str, "platform": str, "detail_type": str}` |
 
-**示例：事件統計**
+**範例：事件統計**
 
 ```python
 event_counter = {}
@@ -9560,12 +9607,12 @@ def log_unhandled(data):
 
 ### 消息發送
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `message.sending` | 消息即將發送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | 消息發送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
-**示例：消息發送審計**
+**範例：消息發送審計**
 
 ```python
 @sdk.lifecycle.on("message.sending")
@@ -9575,12 +9622,12 @@ def log_sending(data):
 
 ### 命令系統
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `command.matched` | 命令被匹配並即將執行 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
 | `command.executed` | 命令執行完成 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(僅失敗時)}` |
 
-**示例：命令統計**
+**範例：命令統計**
 
 ```python
 @sdk.lifecycle.on("command.matched")
@@ -9590,12 +9637,12 @@ def count_commands(data):
 
 ### HTTP 路由
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `server.request` | HTTP 請求接收 | `{"method": str, "path": str, "client_ip": str}` |
 | `server.response` | HTTP 回應發送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
-**示例：請求日誌**
+**範例：請求日誌**
 
 ```python
 @sdk.lifecycle.on("server.response")
@@ -9605,14 +9652,14 @@ def log_http(data):
 
 ### WebSocket
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `server.start` | 路由伺服器啟動 | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(僅失敗時)}` |
 | `server.stop` | 路由伺服器停止 | `{}` |
 | `server.websocket.connect` | WebSocket 連接建立 | `{"path": str, "module_name": str, "client_ip": str}` |
 | `server.websocket.disconnect` | WebSocket 連接斷開 | `{"path": str, "module_name": str, "reason": str, "error": str(僅異常時)}` |
 
-**示例：WebSocket 連接監控**
+**範例：WebSocket 連接監控**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
@@ -9628,13 +9675,13 @@ def on_ws_disconnect(data):
 
 儲存後端連接池的建立、故障與恢復（均背景發射，不阻塞儲存操作）：
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
-| `storage.ready` | 儲存後端連接池就緒（每事件循環首次建池成功） | `{"backend": str}` |
+| `storage.ready` | 儲存後端連接池就緒（每事件迴圈首次建池成功） | `{"backend": str}` |
 | `storage.unreachable` | 連接重試耗盡進入冷卻期（期間操作快速失敗） | `{"backend": str, "error": str, "cooldown": float}` |
 | `storage.recovered` | 冷卻結束重連成功，儲存恢復可用 | `{"backend": str}` |
 
-**示例：儲存故障告警**
+**範例：儲存故障告警**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
@@ -9650,7 +9697,7 @@ def notify_storage_back(data):
 
 `sdk.client` 的請求與連接事件（均背景發射）：
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `client.request.success` | HTTP 請求成功 | `{"method": str, "url": str, "status": int, "elapsed": float}` |
 | `client.request.failed` | HTTP 請求重試耗盡最終失敗 | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
@@ -9658,7 +9705,7 @@ def notify_storage_back(data):
 
 ### 國際化
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `i18n.language.changed` | 框架語言切換（`i18n.set_language`） | `{"language": str, "previous": str}` |
 
@@ -9705,7 +9752,7 @@ STANDARD_EVENTS = {
 | `await lifecycle.emit(event, data=None, *, to=None)` | 異步觸發，處理器**並行執行**（互不阻塞，返回時全部完成），返回非 None 值按優先級順序回放鏈式替換 data；`to` 指定 owner 時定向投遞 |
 | `lifecycle.fire(event, data=None, *, to=None)` | **背景發射（扔桶即走）**：處理器在背景任務中並行執行、不等待、無返回值；無監聽者時零開銷。適用於高頻熱路徑與純觀測事件；關停序列與順序敏感消費（如 `config.set`）請用 `emit` |
 | `lifecycle.emit_sync(event, data=None, *, to=None)` | 同步觸發，異步處理器以 create_task 調度 |
-| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 兼容舊版，自動建構標準事件格式；`background=True` 時走 `fire` 背景發射 |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 兼容舊版，自動構建標準事件格式；`background=True` 時走 `fire` 背景發射 |
 
 ### 工具
 
@@ -9725,7 +9772,7 @@ from ErisPulse import sdk
 
 class Main(BaseModule):
     async def on_load(self, event):
-        # 實現簡單的訊息統計
+        # 實現簡單的消息統計
         self.msg_count = 0
         
         @sdk.lifecycle.on("adapter.event.receive")
@@ -9777,12 +9824,12 @@ async def _poll(self):
 
 ## 注意事項
 
-1. **處理器可以是同步或異步**：系統自動辨識並正確呼叫
-2. **資料傳遞**：`emit()` 模式下，處理器返回非 None 值會修改傳遞給後續處理器的 data
+1. **處理器可以是同步或異步**：系統自動辨識並正確調用
+2. **數據傳遞**：`emit()` 模式下，處理器返回非 None 值會修改傳遞給後續處理器的 data
 3. **事件命名規範**：建議使用點式結構命名事件，便於使用父級監聽
 4. **錯誤隔離**：單個處理器異常不會影響其他處理器執行
 5. **同步觸發限制**：`emit_sync()` 中異步處理器以 fire-and-forget 方式調度，返回值無法回傳
-6. **生命週期清理**：呼叫 `sdk.uninit()` 時，所有已註冊的處理器和計時器會被清理
+6. **生命週期清理**：調用 `sdk.uninit()` 時，所有已註冊的處理器和計時器會被清理
 7. **加載優先性**：如需在框架初始化階段就監聽事件，建議設定高優先級並禁用懶加載
 
 ## 相關文件
@@ -10033,7 +10080,10 @@ flowchart TD
 
 # 國際化 (i18n) 系統
 
-ErisPulse v2.5.0 起內建了完整的國際化支援。框架核心及 CLI 界面均可根據您的系統語言自動切換顯示文字，也支援外部模組註冊自己的翻譯。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要多語言文案、翻譯註冊或語言檢測時。不需要則跳過，不會影響其他功能的使用。
+
+ErisPulse v2.5.0 起內建了完整的國際化支援。框架核心及 CLI 界面均可根據您的系統語言自動切換顯示文本，也支援外部模組註冊自己的翻譯。
 
 ## 支援的語言
 
@@ -10628,24 +10678,27 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 
 # 作用域（scope）
 
+> [!TIP]
+> **何時需要閱讀本文**：需要控制模組可用性、事件准入或出站動作限制時。不需要則跳過，不會影響其他功能的使用。
+
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-作用域回答四個問題：**哪些模組可用、誰的事件收不收、某模組處理什麼文本、
-模組能向外做什麼**。
+作用域回答四個問題：**哪些模組可用、誰的事件收不收、某模組處理什麼文字、
+模組能向外做什麼**。  
 控制權完全交給使用者：在模組 / 適配器 / 處理器 / 出站呼叫註冊的**上層**（配置
-`ErisPulse.scope` 或執行時 `sdk.scope`）統一聲明，事件管線在入口、處理器過濾
+`ErisPulse.scope` 或執行時 `sdk.scope`）統一宣告，事件管線在入口、處理器過濾
 與出站閘口自動讀取並執行。
 
 | 維度 | 控制什麼 | 拒絕行為 | 配置路徑 |
 |------|---------|---------|---------|
 | **① 模組** | 哪些模組可用（平台 / Bot / 會話三級） | 被過濾模組不觸發、不回覆（攔截廣播 `scope.blocked` 事件；命中的命令仍被認領阻斷） | `scope.platforms / bots / sessions` |
-| **② 身份** | 事件收不收（適配器 / Bot / 會話 / 用戶四級） | 入口完全丟棄（攔截廣播 `scope.blocked` 事件） | `scope.identity.*` |
-| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
+| **② 身份** | 事件收不收（適配器 / Bot / 會話 / 使用者四級） | 入口完全丟棄（攔截廣播 `scope.blocked` 事件） | `scope.identity.*` |
+| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白名單/黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
 
-> **相關系統**：命令是特殊的訊息事件處理器，其用戶黑白名單（ACL）與
+> **相關系統**：命令是特殊的訊息事件處理器，其使用者黑白名單（ACL）與
 > 實現參數覆寫由命令系統自持（`ErisPulse.event.command`），
-> 見 [事件處理入門](../getting-started/event-handling.md) 與 [配置指南](../user-guide/configuration.md)。
+> 請見 [事件處理入門](../getting-started/event-handling.md) 與 [配置指南](../user-guide/configuration.md)。
 
 {!--< tips >!--}
 1. 透過 `from ErisPulse.Core import scope` 導入單例（`sdk.scope` 同物件）
@@ -10654,9 +10707,9 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 3. 讀寫：維度化參數方法（IDE 可補全）——
    `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`；
    另有字典式兜底 `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
-4. 事件處理器文本條件覆寫見
+4. 事件處理器文字條件覆寫請見
    [事件處理入門 · 事件覆寫](../getting-started/event-handling.md#事件覆寫不改模組代碼覆寫任意事件類型的行為)；
-   命令 ACL / 參數覆寫見[事件處理入門](../getting-started/event-handling.md)
+   命令 ACL / 參數覆寫請見 [事件處理入門](../getting-started/event-handling.md)
 {!--< /tips >!--}
 
 ## 匹配條目語法（全系統統一）
@@ -11064,15 +11117,22 @@ topology = sdk.get_topology()
 
 # 所有权（owner）系統
 
-所有權是模組「即插即用」的基石：模組在載入期間註冊的一切框架資源自動記名，卸載/停用時按記名一鍵回收——模組作者只需聲明資源，無需手寫清理邏輯。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：排查資源泄漏、理解卸載清理鏈路或聲明歸屬資源時。不需要則跳過，不會影響其他功能的使用。
 
-> **相關系統**：作用域（scope）在事件分發時決定「資源是否生效」，所有權在生命週期中決定「資源歸誰、誰卸載時被回收」。作用域詳見[統一控制面（scope）](scope.md)，背景任務詳見 [生命週期管理](lifecycle.md#背景任務所有權與自動取消)。
+所有權是模組「即插即用」的基石：模組在載入期間註冊的一切框架資源會自動記名，
+卸載/禁用時會根據記名一鍵回收——模組作者只需聲明資源，無需手寫清理邏輯。
+
+> **相關系統**：作用域（scope）在事件分發時決定「資源是否生效」，
+> 所有權在生命週期中決定「資源歸誰、誰卸載時被回收」。
+> 作用域詳見[統一控制面（scope）](scope.md)，背景任務詳見
+> [生命週期管理](lifecycle.md#背景任務歸屬與自動取消)。
 
 {!--< tips >!--}
-1. 所有權在**註冊瞬間**按 `current_owner` 自動記錄，模組程式碼零修改
-2. 卸載/停用共用同一條清理鏈（`_cleanup_module_registrations`），每步失敗僅警告不中斷
+1. 所有權在**註冊瞬間**按 `current_owner` 自動記錄，模組程式碼無需修改
+2. 卸載/禁用共用同一條清理鏈（`_cleanup_module_registrations`），每步失敗僅發出警告而不中斷
 3. 用戶配置語意的資源（持久化覆寫 / scope 規則 / 命令 ACL）**不**隨模組卸載清理
-4. 工具模組托管的外部句柄可用 `on_cleanup(cb)` 掛入清理鏈，對方模組卸載時自動回調（見[工具模組指南](#工具模組指南托管其它模組的句柄)）
+4. 工具模組托管的外部句柄可用 `on_cleanup(cb)` 掛入清理鏈，對方模組卸載時自動回呼（見[工具模組指南](#工具模組指南托管其它模組的句柄)）
 {!--< /tips >!--}
 
 ## owner 上下文機制
@@ -11378,14 +11438,21 @@ class CronModule(BaseModule):
 
 ### 影子模块与灰度转正
 
-# 影子模組與灰度轉正
+# 影子模組與灰階轉正
 
-影子 = 同一模組的**新版本**，以獨立 owner（如 `roll_shadow`）與線上舊版並存試運行：它收到真實事件的**副本**、其出站被**攔截記帳**而非真正發出——在 `shadow_diff` 裡對比兩個版本的行為，確認無害後 `promote` 一鍵轉正，`dismiss` 隨時放棄。**模組程式碼零變動，全程運行時 API 驅動**：與 `load / unload / reload` 同類的運維動作，Dashboard / 自訂管理模組直接調用，沒有任何設定項要寫。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要灰階發布——新版本並行試運行、行為對比與轉正回滾時。不需要則跳過，不影響其他功能的使用。
+
+影子 = 同一模組的**新版本**，以獨立 owner（如 `roll_shadow`）與線上舊版並存試運行：它收到真實事件的**副本**、其出站被**攔截記帳**而非真正發出——
+在 `shadow_diff` 裡對比兩個版本的行為，確認無害後 `promote` 一鍵轉正，
+`dismiss` 隨時放棄。**模組程式碼零修改，全程運行時 API 驅動**：與
+`load / unload / reload` 同類的運維動作，Dashboard / 自訂管理模組直接
+呼叫，沒有任何設定項目要寫。
 
 {!--< tips >!--}
 1. 啟動：``await sdk.module.shadow_start("roll", source="路徑/到/v2")``
-   ——新版程式碼以獨立 owner（預設取路徑名）與舊版並存
-2. 影子不參與真實分發與依賴圖：同名命令進影子目錄、路由只登記不掛載、
+   ——新版本程式碼以獨立 owner（預設取路徑名）與舊版並存
+2. 影子不參與真實分發與依賴圖：同名指令進入影子目錄、路由只登記不掛載、
    生命週期廣播靜默、`module.call` 與依賴解析仍指向 v1
 3. 轉正永遠由人確認：``await sdk.module.promote_shadow("roll")``，失敗
    自動回滾舊實例繼續服務；``dismiss_shadow`` 隨時放棄

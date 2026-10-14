@@ -3729,14 +3729,18 @@ epsdk create module -n MyModule -f
 
 ### 配置文件说明
 
-# 配置文件說明
-> 這個文件會介紹框架的配置文件，如果有第三方模組需要配置，請參考模組的文件。
+# 配置檔說明
 
-ErisPulse 使用 TOML 格式的配置文件 `config/config.toml` 來管理專案配置。
+> [!NOTE]  
+> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
 
-## 配置文件位置
+> 本文件將介紹框架的配置檔，若有第三方模組需要配置，請參考模組的文件。
 
-配置文件位於專案根目錄的 `config/` 資料夾中：
+ErisPulse 使用 TOML 格式的配置檔 `config/config.toml` 來管理專案配置。
+
+## 配置檔位置
+
+配置檔位於專案根目錄的 `config/` 檔案夾中：
 
 ```
 project/
@@ -3745,9 +3749,9 @@ project/
 ├── main.py
 ```
 
-### 多實例提示與鎖文件
+### 多實例提示與鎖檔
 
-框架啟動時會在 `config/` 目錄下建立 `.erispulse_config.lock` 鎖文件並持有到進程退出（用於偵測多實例共享配置目錄）。如果日誌出現「偵測到配置文件可能正被另一個 ErisPulse 實例同時使用」的警告，說明有**兩個以上的 ErisPulse 進程在寫同一份配置**（典型場景：多個容器掛載了同一個主機 `config/` 目錄）——併發寫入會互相覆蓋，請為每個實例使用獨立的配置目錄。
+框架啟動時會在 `config/` 目錄下建立 `.erispulse_config.lock` 鎖檔並持有到進程退出（用於偵測多實例共享配置目錄）。如果日誌出現「偵測到配置檔可能正被另一個 ErisPulse 實例同時使用」的警告，說明有**兩個以上的 ErisPulse 進程在寫同一份配置**（典型場景：多個容器掛載了同一個主機 `config/` 目錄）——併發寫入會互相覆蓋，請為每個實例使用獨立的配置目錄。
 
 ## 配置載入錯誤處理
 
@@ -3755,39 +3759,39 @@ project/
 
 | 錯誤狀態 | 觸發條件 | 框架行為 |
 |---------|---------|---------|
-| 文件遺失 | `config.toml` 不存在 | 正常首次啟動，靜默使用空配置（不發出警告） |
-| TOML 語法錯誤 | 文件存在但格式非法（如少了引號、括號未閉合） | 輸出**出錯行號/列號與原因**，並**保留上次有效配置繼續運行**（本次文件修改不生效） |
+| 檔案遺失 | `config.toml` 不存在 | 正常首次啟動，靜默使用空配置（不發警告） |
+| TOML 語法錯誤 | 檔案存在但格式非法（如少了引號、括號未閉合） | 輸出**出錯行號/列號與原因**，並**保留上次有效配置繼續運行**（本次檔案修改不生效） |
 | 權限/其他錯誤 | 無讀取權限、IO 錯誤等 | 輸出**明確原因**，並**保留上次有效配置繼續運行** |
 
-> **注意「上次有效配置」≠ 預設配置**：文件損壞時框架沿用**本次啟動前最後一份解析成功的配置**（運行中熱更新改壞文件則沿用舊值），而不是把所有配置項重置為出廠預設。故障處理時不要假設「配置已被重置」。
+> **注意「上次有效配置」≠ 預設配置**：檔案損壞時框架沿用**本次啟動前最後一份解析成功的配置**（運行中熱更新改壞檔案則沿用舊值），而不是把所有配置項重置為出廠預設。故障處理時不要假設「配置已被重置」。
 
 例如，當你不慎把配置寫成了 `port = 8000`（少了引號的字串）時，日誌會輸出類似：
 
 ```
-[ERROR] [Config] 配置文件 config/config.toml 語法錯誤（第 3 行 第 1 列）: ...
-[WARNING] [Config] 配置文件讀取失敗。繼續使用上次有效配置運行，本次文件修改未生效——請修復後重新載入或重啟
+[ERROR] [Config] 配置文件 config/config.toml 语法错误（第 3 行 第 1 列）: ...
+[WARNING] [Config] 配置文件读取失败。继续使用上次有效配置运行，本次文件修改未生效——请修复后重新加载或重启
 ```
 
 這樣你可以在**預設 INFO 級別**下立刻定位問題，而不會困惑「為什麼我改的配置沒生效」。
 
-> **運行中改壞配置文件？** 如果你在機器人運行期間手動編輯 `config.toml` 引入了語法錯誤，框架在下次寫入（合併配置）時會輸出「配置文件已損壞（語法錯誤，第 X 行），無法合併寫入——請先修復配置文件後重啟」，而不是令人困惑的「寫入失敗」。待寫入的配置項會被保留，不會丟失。
+> **運行中改壞配置檔？** 如果你在機器人運行期間手動編輯 `config.toml` 引入了語法錯誤，框架在下次寫入（合併配置）時會輸出「配置文件已損壞（語法錯誤，第 X 行），無法合併寫入——請先修復配置檔後重啟」，而不是令人困惑的「寫入失敗」。待寫入的配置項會被保留，不會丟失。
 
 ## 注釋保留與最小化落盤
 
-config.toml 中的**註釋與鍵順序在框架寫入後完整保留**：無論是程式碼 `setConfig()`、
-CLI 配置向導保存還是適配器/模組首次生成配置範本，框架都只改變涉及的鍵，
-你寫的註釋、整理的順序不會被抹掉或重排（基於 tomlkit 註釋保留往返實現）。
+config.toml 中的**注釋與鍵順序在框架寫入後完整保留**：無論是程式碼 `setConfig()`、  
+CLI 配置向導保存還是適配器/模組首次生成配置範本，框架都只改動涉及的鍵，  
+你寫的注釋、整理的順序不會被抹掉或重排（基於 tomlkit 注釋保留往返實現）。
 
 框架對落盤內容保持克制：
 
-- **框架預設配置不自動落盤**：`gc`、`scope`、`transcript` 等內建預設值僅駐記憶體，
-  config.toml 只包含你顯式設定的鍵，保持最小化。完整可配置項參考專案內的
+- **框架預設配置不自動落盤**：`gc`、`scope`、`transcript` 等內建預設值僅駐記憶體，  
+  config.toml 只包含你顯式設定的鍵，保持最小化。完整可配置項參考專案內的  
   `config/config.full.example`，按需複製到 config.toml 修改即可（未配置項一律走內建預設值，行為不變）
-- **`config.full.example` 自動維護**：無論是否執行過 `epsdk init`，只要啟動框架
-  （`epsdk run` / `main.py`），都會在 `config/config.full.example` 缺失時自动生成
-  完整配置參考；文件首行為框架自維護標記，生成器內容更新（如新增配置項、新裝
+- **`config.full.example` 自動維護**：無論是否執行過 `epsdk init`，只要啟動框架  
+  （`epsdk run` / `main.py`），都會在 `config/config.full.example` 缺失時自动生成  
+  完整配置參考；檔案首行為框架自維護標記，生成器內容更新（如新增配置項、新裝  
   組件）時啟動會刷新一次，刪除/改動首行即轉為手動接管、框架不再覆蓋
-- **適配器/模組配置範本**：首次初始化時以帶註釋的範本落盤（字段描述即註釋）；
+- **適配器/模組配置範本**：首次初始化時以帶注釋的範本落盤（字段描述即注釋）；  
   聲明為 `example` 標誌的字段不落盤，僅記錄在 config.full.example 供參考
 
 ## 環境變數覆蓋
@@ -3804,16 +3808,16 @@ CLI 配置向導保存還是適配器/模組首次生成配置範本，框架都
 | `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
 
 行為說明：
-- **優先級最高**：環境變數覆蓋「配置文件」與「預設值」，按原值類型自動轉換（`bool` / `int` / `float` / 逗號分隔的 `list` / 字串）
+- **優先級最高**：環境變數覆蓋「配置檔」與「預設值」，按原值類型自動轉換（`bool` / `int` / `float` / 逗號分隔的 `list` / 字串）
 - **不持久化**：覆蓋只在運行期生效，不會寫回 `config.toml`
 - **支援熱更新**：運行中修改環境變數後，配合配置監聽的重載即可生效
 
 ```bash
-# Docker 部署範例：不修改 config.toml，直接覆蓋端口
+# Docker 部署示例：不修改 config.toml，直接覆蓋端口
 ERISPULSE_SERVER_PORT=9000 docker compose up -d
 ```
 
-> 註：`ErisPulse.server.port` 這類框架配置走 `get_server_config()` 等 API 讀取，均受環境變數覆蓋影響。
+> 注：`ErisPulse.server.port` 這類框架配置走 `get_server_config()` 等 API 讀取，均受環境變數覆蓋影響。
 
 ### 模組配置的環境變數綁定（2.9.0+）
 
@@ -3831,46 +3835,46 @@ class MyConfig(BaseConfig):
 
 行為說明：
 
-- **優先級**：環境變數 > `config.toml` > 宣告預設值（配置文件熱更新後同樣保持此優先級）
-- **類型轉換**：環境變數值按字段註解自動轉換——`str` 原樣、`int` / `float` / `bool`（`true` / `1` / `yes` / `on`）自動轉換、`list` / `dict` 走 JSON 解析；轉換失敗時忽略該覆蓋（回退配置文件 / 預設值）並輸出警告
-- **宣告一處、處處生效**：配置讀取、熱更新、驗證使用同一管道；配置面板 Schema 會標註 `env` 名，`config.toml` 範本註釋也會提示可用的環境變數（範本不寫入環境變數的實際值，避免洩露）
-- **完全相容**：未宣告 `env` 的字段行為不變；直接實例化 ConfigClass（不經框架配置管道）不受環境變數影響
+- **優先級**：環境變數 > `config.toml` > 聲明預設值（配置檔熱更新後同樣保持此優先級）
+- **類型轉換**：環境變數值按字段註解自動轉換——`str` 原樣、`int` / `float` / `bool`（`true` / `1` / `yes` / `on`）自動轉換、`list` / `dict` 走 JSON 解析；轉換失敗時忽略該覆蓋（回退配置檔 / 預設值）並輸出警告
+- **宣告一次、處處生效**：配置讀取、熱更新、校驗使用同一管道；配置面板 Schema 會標註 `env` 名，`config.toml` 範本注釋也會提示可用的環境變數（範本不寫入環境變數的實際值，避免洩露）
+- **完全相容**：未聲明 `env` 的字段行為不變；直接實例化 ConfigClass（不經框架配置管道）不受環境變數影響
 
 ```bash
-# Docker 部署範例：不修改 config.toml，直接注入模組密鑰
+# Docker 部署示例：不修改 config.toml，直接注入模組密鑰
 MYMODULE_API_KEY=sk-xxx docker compose up -d
 ```
 
-> **配置類 vs 模型字段怎麼選？** 配置類管「模組怎麼運轉」（行為參數、熱更新），
-> ORM 的 `Field()` 管「使用者產生了什麼資料」（資料庫表、查詢）。兩者共享同一套
-> 約束詞表與驗證器引擎；對照表見
+> **配置類 vs 模型字段怎麼選？** 配置類管「模組怎麼運轉」（行為參數、熱更新），  
+> ORM 的 `Field()` 管「用戶產生了什麼數據」（資料庫表、查詢）。兩者共享同一套  
+> 約束詞表與校驗器引擎；對照表見  
 > [資料模型層 · 兩種宣告何時用哪個](../developer-guide/orm.md#兩種宣告何時用哪個)。
 
 ## 配置熱更新
 
-從 2.7.0 起，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（後台 watcher 每 5 秒偵測一次），或程式碼呼叫 `setConfig()` 後，各元件自動響應：
+從 2.7.0 起，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（後台 watcher 每 5 秒檢測一次），或程式碼呼叫 `setConfig()` 後，各組件自動響應：
 
-| 元件 | 支援熱更新的配置 | 行為 |
+| 組件 | 支援熱更新的配置 | 行為 |
 |------|----------------|------|
-| **日誌 Logger** | `logger.level` / `log_files` / `log_dir`（含分段參數）/ `memory_limit` / `format` / `exclude_levels` | 自動重新應用（帶變更偵測） |
-| **命令系統 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一條訊息即生效 |
+| **日誌 Logger** | `logger.level` / `log_files` / `log_dir`（含分段參數）/ `memory_limit` / `format` / `exclude_levels` | 自動重新應用（帶變更檢測） |
+| **命令系統 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一條消息即生效 |
 | **適配器併發** | `framework.handler_max_concurrency` | 失效快取信號量，按新值重建 |
 | **主動 GC** | `framework.proactive_gc_*` | 配置變更即時重啟 GC 任務，支援運行時調整/禁用/重新啟用 |
 | **主人系統 Master** | `master.users` | 每次 `is_master()` 檢查實時讀取，無需重啟 |
-| **模組/適配器配置** | 各自的配置項 | 觸發 `on_config_update(old, new)` 回呼 |
+| **模組/適配器配置** | 各自的配置項 | 觸發 `on_config_update(old, new)` 回調 |
 
 **需重啟的配置**（無法安全熱切換，變更時會輸出警告「需重啟進程後生效」）：
 
 | 配置 | 原因 |
 |------|------|
 | `router.cors.*` / `router.security.*` | 中間件在服務啟動時寫入 FastAPI，運行時無法安全熱切換 |
-| `storage.use_global_db` | SQLite 檔案句柄已在運行時開啟，切換路徑不安全 |
+| `storage.use_global_db` | SQLite 檔案句柄已在運行時打開，切換路徑不安全 |
 
-> **中途編輯保存出錯？** 若編輯 `config.toml` 時出現瞬間語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各元件（避免 `on_config_update` 收到空值誤回退預設）。
+> **中途編輯保存出錯？** 若編輯 `config.toml` 時出現瞬時語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各組件（避免 `on_config_update` 收到空值誤回退預設）。
 
 ### 熱更新鏈路內部拆解
 
-「改了配置，各元件怎麼知道的？」——背後是一條偵測 → 重載 → 廣播的鏈路：
+「改了配置，各組件怎麼知道的？」——背後是一條檢測 → 重載 → 廣播的鏈路：
 
 ```mermaid
 flowchart TD
@@ -3881,15 +3885,15 @@ flowchart TD
     D --> E{"解析成功？"}
     E -->|"否（語法錯誤）"| F["保留上次有效配置<br/>不廣播，打診斷日誌"]
     E -->|"是"| G["lifecycle.emit config.updated<br/>攜帶 old_config / new_config"]
-    G --> H["各元件監聽者響應<br/>（logger / scope / 命令 / GC ...）"]
+    G --> H["各組件監聽者響應<br/>（logger / scope / 命令 / GC ...）"]
 ```
 
-**兩條偵測路徑**（取其一即可，均能兜底）：
+**兩條檢測路徑**（取其一即可，均能兜底）：
 
 | 路徑 | 機制 | 觸發時機 |
 |------|------|---------|
 | 後台 watcher | daemon 線程 `config-watcher` 每 **5 秒** `wait` 輪詢檔案 `mtime` | 外部改檔案後最多 5 秒內 |
-| 慣性偵測 | 任何 `getConfig()` 讀取時，若快取超過 **60 秒**則先查檔案 | 下次讀配置時 |
+| 慵惰檢測 | 任何 `getConfig()` 讀取時，若快取超過 **60 秒**則先查檔案 | 下次讀配置時 |
 
 > **框架不會誤傷自己**：`setConfig()` 寫盤時會記錄「自身寫入的 mtime」，watcher 對比時把它排除，只把**外部編輯**視為變更。
 
@@ -3898,23 +3902,23 @@ flowchart TD
 | 事件 | 觸發者 | 數據 | 典型場景 |
 |------|--------|------|---------|
 | `config.set` | 程式碼 / Dashboard 調 `setConfig()` | `{key, old_value, new_value}` | 單鍵寫入（範本生成、狀態記錄、運行時改配置） |
-| `config.updated` | 外部編輯後 watcher/慣性偵測捕獲 | `{old_config, new_config, config_file}` | 手改 `config.toml` |
+| `config.updated` | 外部編輯後 watcher/慵惰檢測捕獲 | `{old_config, new_config, config_file}` | 手改 `config.toml` |
 
 > `setConfig()` 預設**延遲 5 秒落盤**（合併多次寫入），`immediate=True` 立即寫。watcher 檢測到外部修改後只更新記憶體快取，**不會**把外部變更回寫檔案。
 
 **自動響應方清單**（兩類事件通常會都訂閱，響應內容一致）：
 
-| 元件 | 監聽 | 回應 |
+| 組件 | 監聽 | 回應 |
 |------|------|------|
-| Logger | `config.set` + `config.updated` | 級別/檔案/目錄分段/記憶體上限/格式/屏蔽等級重新應用（帶變更偵測，無變化不動） |
+| Logger | `config.set` + `config.updated` | 等級/檔案/目錄分段/記憶體上限/格式/屏蔽等級重新應用（帶變更檢測，無變化不動） |
 | Scope | `config.updated` | 作用域綁定快取重建 |
-| 命令系統 | `config.updated` | 前綴/大小寫/空格前綴/must_at_bot 解析參數刷新，下一條訊息生效 |
+| 命令系統 | `config.updated` | 前綴/大小寫/空格前綴/must_at_bot 解析參數刷新，下一條消息生效 |
 | 適配器併發 | `config.set` + `config.updated` | `handler_max_concurrency` 失效重建信號量 |
 | 主動 GC | `config.set` + `config.updated` | `proactive_gc_*` 即時重啟 GC 後台任務 |
-| 適配器 | 路由到 `on_config_update` | 各適配器 `on_config_update(old, new)` 回呼 |
-| 模組 | 路由到 `on_config_update` | 各模組 `on_config_update(old, new)` 回呼 |
-| 存儲 | `config.updated` | `use_global_db` 變更**僅警告**（需重啟） |
-| 路由 | `config.updated` | `cors.*` / `security.*` 變更**僅警告**（需重啟） |
+| 適配器 | 路由到 `on_config_update` | 各適配器 `on_config_update(old, new)` 回調 |
+| 模組 | 路由到 `on_config_update` | 各模組 `on_config_update(old, new)` 回調 |
+| 存儲 | `config.updated` | `use_global_db` 變更**僅告警**（需重啟） |
+| 路由 | `config.updated` | `cors.*` / `security.*` 變更**僅告警**（需重啟） |
 
 
 ## 配置讀取與刪除 API
@@ -3928,7 +3932,7 @@ config = sdk.config.getAllConfig()     # 深拷貝快照，原地修改不影響
 config["ErisPulse"]["server"]["port"]
 ```
 
-視圖口徑與 `getConfig` 一致：未落盤的 `setConfig` / `delete` 均已反映，
+視圖口徑與 `getConfig` 一致：未落盤的 `setConfig` / `delete` 均已反映，  
 與延遲刷盤後的檔案內容嚴格一致。
 
 ### delConfig：刪除配置鍵
@@ -3940,9 +3944,9 @@ sdk.config.delConfig("ErisPulse.modules.status.OldModule")            # 延遲�
 sdk.config.delConfig("OneBot.deprecated_key", immediate=True)         # 立即落盤
 ```
 
-- 支援點分路徑；鍵不存在時回傳 `False`
-- 落盤走註釋保留路徑，檔案其餘內容與順序不受影響
-- 復用 `config.set` 事件廣播（`new_value=None`）：適配器 / 模組的
+- 支援點分路徑；鍵不存在時返回 `False`
+- 落盤走注釋保留路徑，檔案其餘內容與順序不受影響
+- 復用 `config.set` 事件廣播（`new_value=None`）：適配器 / 模組的  
   `on_config_update` 等現有監聽方零改動即可感知刪除
 
 ## 完整配置範例
@@ -3957,7 +3961,7 @@ ssl_keyfile = ""
 
 [ErisPulse.master]
 # users 支援兩種寫法（二選一）：
-#   全局主人（所有平台生效）：users = ["123456", "789012"]
+#   全域主人（所有平台生效）：users = ["123456", "789012"]
 #   按平台指定主人：users = { yunhu = ["123456"], telegram = ["789012"] }
 users = {}
 
@@ -4027,7 +4031,7 @@ ssl_keyfile = "/path/to/key.pem"
 | ssl_cert | string | 空 | **內聯 PEM 證書內容**（非路徑）。與 `ssl_key` 成對使用時優先於 `ssl_certfile`/`ssl_keyfile`；框架臨時落盤建構 SSL 上下文後立即刪除臨時檔案 |
 | ssl_key | string | 空 | **內聯 PEM 私鑰內容**（非路徑），語義同上 |
 
-> **埠占用不是致命錯誤**：啟動時若偵測到 `port` 已被占用，框架會跳過路由伺服器啟動並警告，**適配器與模組照常運行**（僅 HTTP/WS/SSE 路由與 WebUI 不可用）。排查「機器人能跑但 WebUI 打不開」時先確認埠。
+> **埠口佔用不是致命錯誤**：啟動時若檢測到 `port` 已被佔用，框架會跳過路由伺服器啟動並告警，**適配器與模組照常運行**（僅 HTTP/WS/SSE 路由與 WebUI 不可用）。排查「機器人能跑但 WebUI 打不開」時先確認埠口。
 
 ## 主人系統配置
 
@@ -4035,7 +4039,7 @@ ssl_keyfile = "/path/to/key.pem"
 
 ```toml
 [ErisPulse.master]
-# 寫法一：全局主人（所有平台生效）
+# 寫法一：全域主人（所有平台生效）
 users = ["123456", "789012"]
 
 # 寫法二：按平台指定主人（dict）
@@ -4044,7 +4048,7 @@ users = ["123456", "789012"]
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| users | array / object | 空 | 主人帳號列表。`list` 形式為全局主人（所有平台生效）；`dict` 形式按平台指定（鍵為平台名，值為該平台的主人帳號列表） |
+| users | array / object | 空 | 主人帳號列表。`list` 形式為全域主人（所有平台生效）；`dict` 形式按平台指定（鍵為平台名，值為該平台的主人帳號列表） |
 
 程式碼中透過 `master.is_master(event)` 或 `master.is_master(platform, user_id)` 檢查，每次呼叫實時讀取配置（支援熱更新，無需重啟）：
 
@@ -4069,13 +4073,13 @@ master.remove("yunhu", "123")                # 移除（預設持久化）
 master.list()                                # 匯總：{"global": [...], "<platform>": [...]}
 ```
 
-### 自定義身份源（provider）
+### 自訂身份源（provider）
 
-除配置外，還可註冊自定義身份源：`fn(platform, user_id) -> bool`，
-內建身份源（配置 + 運行時記錄）未命中時依序嘗試，任一 provider 放行即認定為主人。
+除配置外，還可註冊自訂身份源：`fn(platform, user_id) -> bool`，  
+內建身份源（配置 + 運行時記錄）未命中時依序嘗試，任一 provider 放行即認定為主人。  
 適合對接適配器管理員介面、資料庫角色等外部身份體系。
 
-註冊入口 `master.provider` 支援裝飾器 / 函數式兩種寫法，
+註冊入口 `master.provider` 支援裝飾器 / 函數式兩種寫法，  
 註銷統一走被註冊函數上的 `fn.unregister()`：
 
 ```python
@@ -4084,23 +4088,23 @@ from ErisPulse.Core import master
 # 寫法一：裝飾器（常駐身份源，推薦）
 @master.provider
 def admin_provider(platform, user_id):
-    return user_id in {"999"}     # 自定義判定邏輯
+    return user_id in {"999"}     # 自訂判定邏輯
 
 master.is_master("yunhu", "999")   # True
 admin_provider.unregister()        # 不再需要時註銷
 
-# 寫法二：函數式（模組加載期註冊 / 卸載期註銷）
+# 寫法二：函數式（模組載入期註冊 / 卸載期註銷）
 fn = master.provider(admin_provider)
 fn.unregister()
 ```
 
-> provider 異常會被捕獲並跳過，不阻斷身份判定鏈。
+> provider 異常會被捕獲並跳過，不阻斷身份判定鏈。  
 > 繫結實例方法無法掛載 `unregister`，需要註冊/註銷配對的場景請用**模組級函數**。
 
 ### 用戶優先：主人生效範圍由用戶最終決定
 
-命令的 `master=True` 只是**開發者預設**：用戶可在
-`ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false`
+命令的 `master=True` 只是**開發者預設**：用戶可在  
+`ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false`  
 覆寫收緊或放開（見[統一事件覆寫配置](#統一事件覆寫配置eventoverrides)，用戶顯式配置即生效）。
 
 ## 日誌配置
@@ -4109,7 +4113,7 @@ fn.unregister()
 [ErisPulse.logger]
 level = "INFO"
 log_files = []                # 明確日誌檔案列表（與 log_dir 互斥，優先級更高）
-log_dir = ""                  # 日誌輸出目錄（設定後自動分段輪轉）
+log_dir = ""                  # 日誌目錄（設定後自動分段輪轉）
 log_rotation = "size"         # 分段方式: "size" / "date" / "none"
 log_max_size_mb = 10          # size 模式單檔案上限（MB）
 log_backup_count = 5          # 保留的歷史日誌檔案數
@@ -4121,7 +4125,7 @@ exclude_levels = ["EVENT"]
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | level | string | INFO | 日誌等級：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低等級，輸出框架內部詳細調試資訊） |
-| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文本無顏色，適合日誌採集/管道重定向）、`json`（JSON 機構化，適合 ELK 等） |
+| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文字無顏色，適合日誌採集/管道重定向）、`json`（JSON 機構化，適合 ELK 等） |
 | log_files | array | 空 | 日誌輸出檔案列表（明確路徑，不分段） |
 | log_dir | string | 空 | 日誌輸出目錄（自動建立）。設定後寫入目錄內 `erispulse.log` 並按 `log_rotation` 自動分段；與 `log_files` 互斥，`log_files` 優先 |
 | log_rotation | string | size | 分段方式：`size`（按大小）/ `date`（按時間）/ `none`（不分段） |
@@ -4189,24 +4193,24 @@ SDK 初始化完成後啟動主動 GC 後台任務，週期性執行 Python GC �
 
 ### 嚴格模式
 
-嚴格模式控制模組/適配器在加載階段不合規或失敗時的處理策略。現代模組/適配器都應繼承對應的基類（`BaseModule`/`BaseAdapter`），未繼承基類的元件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
+嚴格模式控制模組/適配器在加載階段不合規或失敗時的處理策略。現代模組/適配器都應繼承對應的基類（`BaseModule`/`BaseAdapter`），未繼承基類的組件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
 
-> **2.5.2 變更**：預設級別從 `1`（跳過）調整為 `0`（寬鬆），以減少新使用者初次使用時遇到的加載問題。未繼承基類的元件將以 WARNING 提示並嘗試加載，而非直接拒絕。如需恢復舊行為，請顯式設定 `strict_mode = 1`。
+> **2.5.2 變更**：預設級別從 `1`（跳過）調整為 `0`（寬鬆），以減少新用戶初次使用時遇到的加載問題。未繼承基類的組件將以 WARNING 提示並嘗試加載，而非直接拒絕。如需恢復舊行為，請顯式設定 `strict_mode = 1`。
 
 | 級別 | 名稱 | 行為 |
 |------|------|------|
-| 0 | 寬鬆（預設） | 違規僅警告，未繼承基類的元件仍會嘗試加載（相容舊元件） |
-| 1 | 嚴格-跳過 | 拒絕未繼承基類的元件並跳過，其餘正常啟動 |
+| 0 | 寬鬆（預設） | 違規僅警告，未繼承基類的組件仍會嘗試加載（相容舊組件） |
+| 1 | 嚴格-跳過 | 拒絕未繼承基類的組件並跳過，其餘正常啟動 |
 | 2 | 嚴格-致命 | 收集所有違規後統一報告並中止整個啟動 |
 
-各級別下，「加載/註冊/初始化階段報錯」這類元件自身崩潰始終會被跳過；區別在於：
+各級別下，「加載/註冊/初始化階段報錯」這類組件自身崩潰始終會被跳過；區別在於：
 
 - **0 → 1**：唯一行為變化是「未繼承基類」從「仍加載」變為「跳過」。
 - **1 → 2**：所有違規（未繼承基類、加載失敗、註冊失敗、初始化失敗等）升級為致命，會在啟動檢查點收集後一次性輸出違規清單並中止。
 
 #### 豁免清單
 
-如果某些元件確實暫時無法遷移（例如依賴的舊模組），可以將其加入豁免清單，被列名的元件即使不合規也會按寬鬆模式對待，繼續加載：
+如果某些組件確實暫時無法遷移（例如依賴的舊模組），可以將其加入豁免清單，被列名的組件即使不合規也會按寬鬆模式對待，繼續加載：
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -4214,7 +4218,7 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> 當某個元件被嚴格模式拒絕時，日誌會明確提示如何恢復加載（加入豁免清單或調低級別）。
+> 當某個組件被嚴格模式拒絕時，日誌會明確提示如何恢復加載（加入豁免清單或調低級別）。
 
 ## 存儲配置
 
@@ -4229,7 +4233,7 @@ adapters = ["OldAdapter"]
 ```toml
 [ErisPulse.storage]
 backend = "sqlite"        # "sqlite"（預設）/ "mysql" / "postgres"
-use_global_db = false     # 僅 SQLite：使用包內全局資料庫 data/config.db
+use_global_db = false     # 僅 SQLite：使用包內全域資料庫 data/config.db
 
 [ErisPulse.storage.mysql]      # backend = "mysql" 時生效
 host = "127.0.0.1"
@@ -4254,7 +4258,7 @@ database = "erispulse"
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | backend | string | sqlite | 存儲後端：`sqlite` / `mysql` / `postgres`，切換零程式碼改動 |
-| use_global_db | boolean | false | 僅 SQLite：是否使用包內全局資料庫而非專案獨立資料庫 |
+| use_global_db | boolean | false | 僅 SQLite：是否使用包內全域資料庫而非專案獨立資料庫 |
 | storage.mysql.* | table | 見上 | MySQL 連接參數（host / port / user / password / database / charset / pool） |
 | storage.postgres.* | table | 見上 | PostgreSQL 連接參數（host / port / user / password / database / pool） |
 
@@ -4263,7 +4267,7 @@ database = "erispulse"
 > [!TIP]
 > - 連接參數變更後需重啟框架生效；連接池建立瞬時失敗會自動指數退避重試
 > - 切換後端前可用驗證腳本自檢：`python tests/devs/test_storage_backend_verify.py --backend mysql`
-> - 事務 / 方言差異 / 自定義後端等完整說明見[存儲後端](../advanced/storage-backends.md)
+> - 事務 / 方言差異 / 自訂後端等完整說明見[存儲後端](../advanced/storage-backends.md)
 
 ## 事件配置
 
@@ -4303,11 +4307,11 @@ language = "auto"
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| language | string | auto | 框架內建文本的顯示語言。設為 `auto` 自動偵測系統語言，也可設為具體代碼：`zh-CN`、`zh-TW`、`en`、`ja`、`ru` |
+| language | string | auto | 框架內建文本的顯示語言。設為 `auto` 自動檢測系統語言，也可設為具體代碼：`zh-CN`、`zh-TW`、`en`、`ja`、`ru` |
 
 ## 模組配置
 
-每個模組可以在配置檔案中定義自己的配置：
+每個模組可以在配置檔中定義自己的配置：
 
 ```toml
 [MyModule]
@@ -4339,8 +4343,8 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-作用域宣告「**什麼範圍內生效**」——某平台 / Bot / 會話裡哪些模組可用（① 模組維度）、
-某用戶 / 群 / Bot / 適配器的事件收不收（② 身份維度）、
+作用域宣告「**什麼範圍內生效**」——某平台 / Bot / 會話裡哪些模組可用（① 模組維度）、  
+某用戶 / 群 / Bot / 適配器的事件收不收（② 身份維度）、  
 模組能發起哪些出站呼叫（③ 出站維度）：
 
 ```toml
@@ -4380,14 +4384,14 @@ request = { deny = true }                 # 禁止處理請求
 | `scope.identity.adapters / bots / sessions / users` | table | ② 身份四級綁定：`{allow=true}` / `{deny=true}` |
 | `scope.actions.<module>.<動作>` | table | ③ 出站規則：`{allow=[...], deny=true|[...]}`（動作取 send / api / request） |
 
-> 詳解與運行時 API（維度化 `sdk.scope.set_module()` / `set_identity()` /
-> `set_action()`，判定 `is_allowed()` / `is_identity_allowed()` / `is_action_allowed()`，
+> 詳解與運行時 API（維度化 `sdk.scope.set_module()` / `set_identity()` /  
+> `set_action()`，判定 `is_allowed()` / `is_identity_allowed()` / `is_action_allowed()`，  
 > 以及字典式兜底 `get()` / `set()` / `delete()`）詳見[作用域（scope）](../advanced/scope.md)。
 
 ## 統一事件覆寫配置（event.overrides）
 
-統一覆寫系統：按**事件類型**覆寫任意模組處理器的行為，不改模組程式碼。
-OneBot12 標準類型（meta / message / notice / request）與擴展類型（command）
+統一覆寫系統：按**事件類型**覆寫任意模組處理器的行為，不改模組程式碼。  
+OneBot12 標準類型（meta / message / notice / request）與擴展類型（command）  
 各自擁有專屬的可覆寫參數：
 
 ```toml
@@ -4401,18 +4405,18 @@ pattern = "閒聊*"
 [ErisPulse.event.overrides.notice.MyModule]
 detail_types = ["group_increase"]
 
-# command（擴展類型）：實現參數覆寫（使用者優先；禁用統一走 acl deny）
+# command（擴展類型）：實現參數覆寫（用戶優先；禁用統一走 acl deny）
 [ErisPulse.event.overrides.command.MyModule.restart]
 master = true               # 覆寫為僅框架主人（false 則放開開發者的主人限制）
 hidden = true               # 幫助列表中隱藏
 aliases = ["rs"]            # 生效別名
 
-# acl（command 專屬）：命令使用者黑白名單（命令名支援 glob / re: 正則，精確鍵優先）
+# acl（command 專屬）：命令用戶黑白名單（命令名支援 glob / re: 正則，精確鍵优先）
 [ErisPulse.event.overrides.acl."roll*"]
 allow = ["onebot11:u_vip"]  # 用戶標識 "platform:user_id"
 deny = ["onebot11:u_bad"]
 
-# ACL 兜底：未配置 ACL 的命令放行（`true`）/ 嚴格拒絕（`false`）
+# ACL 兜底：未配置 ACL 的命令放行（true）/ 嚴格拒絕（false）
 acl_default_allow = true
 ```
 
@@ -4426,9 +4430,9 @@ acl_default_allow = true
 | `event.overrides.acl.<命令名>` | table | 用戶黑白名單：`{allow=[...], deny=[...]}` |
 | `event.overrides.acl_default_allow` | boolean | ACL 兜底：未配置 ACL 的命令放行（`true`）/ 嚴格拒絕（`false`） |
 
-> 運行時 API（`from ErisPulse.Core.Event import overrides` 後按類型子命名空間呼叫
-> `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` 等，
-> 或經 `sdk.Event.overrides` 訪問）
+> 運行時 API（`from ErisPulse.Core.Event import overrides` 後按類型子命名空間調用  
+> `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` 等，  
+> 或經 `sdk.Event.overrides` 訪問）  
 > 見 [事件處理入門 · 事件覆寫](../getting-started/event-handling.md#事件覆寫不改模組程式碼覆寫任意事件類型的行為)。
 
 ## 命令解析配置（event.command）
@@ -4861,6 +4865,10 @@ level = "DEBUG"
 
 # 模組開發入門
 
+> [!NOTE]
+> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
+
+
 本指南帶你從零開始建立一個 ErisPulse 模組。
 
 ## 項目結構
@@ -5064,6 +5072,9 @@ sdk.lifecycle  # 生命週期系統
 ### 模块核心概念
 
 # 模組核心概念
+
+> [!NOTE]
+> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
 
 了解 ErisPulse 模組的核心概念是開發高品質模組的基礎。
 
@@ -5466,6 +5477,9 @@ self.logger.critical("致命錯誤") # 致命錯誤
 ### Event 包装类详解
 
 # Event 包裝類詳解
+
+> [!NOTE]
+> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
 
 Event 模組提供了功能強大的 Event 包裝類，簡化事件處理。
 
@@ -6516,7 +6530,11 @@ version = "1.0.0"
 
 # 數據模型層（ORM）
 
-自 2.9.0 版本起，框架內建了宣告式數據模型層：繼承 `Model` 並使用 `Field` 聲明欄位，即可獲得自動建表與增刪改查能力。模型直接建構在內建儲存層之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置決定，**切換後端無需修改模型程式碼**。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要數據模型、自動建表或關係映射時。不需要則跳過，不會影響其他功能的使用。
+
+
+2.9.0 起框架內建宣告式數據模型層：繼承 `Model` 並使用 `Field` 聲明欄位，即可獲得自動建表與增刪改查能力。模型直接建立在內建儲存層之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置決定，**切換後端無需修改模型程式碼**。
 
 ## 聲明模型
 
@@ -6708,15 +6726,18 @@ await writer.posts.count()          # 雙向互通
 
 # 模組排查指南
 
-當模組「沒有反應」時，可依症狀分為三類問題，每類皆有對應的框架診斷工具（RFC EPRFC-2026-001 方向五）：
+> [!TIP]
+> **什麼時候需要閱讀本文**：當模組「沒有反應」、命令未觸發或事件未收到時進行排查。若無此類情況，可直接跳過，不會影響其他功能的使用。
+
+當模組「沒有反應」時，根據症狀可分為三類問題，每類問題都有對應的框架診斷工具（RFC EPRFC-2026-001 方向五）：
 
 | 症狀 | 診斷工具 | 定位層面 |
 |------|---------|---------|
-| 模組未載入 | `ErisPulse.runtime.explain_module(name)` | 注冊與載入鏈 |
+| 模組未加載 | `ErisPulse.runtime.explain_module(name)` | 注冊與加載鏈 |
 | 事件未響應 | `ErisPulse.runtime.explain_event(event)` | 分發入口檢查 |
-| 命令未觸發 | 分發決策鏈（測試端 `DispatchTrace` / 框架內建 `trace`） | 命令判定鏈 |
+| 命令未觸發 | 分發決策鏈（測試側 `DispatchTrace` / 框架內建 `trace`） | 命令判定鏈 |
 
-這兩個診斷函數皆為**純讀取**操作，不會改變任何狀態，可在任意時刻調用；返回機器可讀的 dict，搭配 `format_report()` 可渲染為人類可讀的文本。
+這兩個診斷函數均為**純讀取**操作，不會改變任何狀態，可在任何時間調用；返回的是機器可讀的 dict，搭配 `format_report()` 可渲染成人類可讀的文本。
 
 ## 場景一：模組未載入
 
@@ -8578,7 +8599,10 @@ async def on_bot_offline(data):
 
 # SendDSL 詳解
 
-SendDSL 是 ErisPulse 适配器提供的鏈式呼叫風格的訊息傳送介面。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：在開發適配器時必讀（發送 DSL）。不需要則可跳過，不會影響其他功能的使用。
+
+SendDSL 是 ErisPulse 適配器提供的鏈式呼叫風格的消息發送介面。
 
 ## 基本呼叫方式
 
@@ -9313,6 +9337,9 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消�
 
 # 適配器開發最佳實踐
 
+> [!TIP]
+> **何時需要閱讀本文**：建議在適配器骨架跑通後閱讀（工程化最佳實踐）。若不需要則可跳過，不會影響其他功能的使用。
+
 本文檔提供了 ErisPulse 適配器開發的最佳實踐建議。
 
 ## Bot 狀態管理與 Meta 事件
@@ -9968,7 +9995,10 @@ version = "2.0.0"  # 更新版本號
 
 ### 事件转换器
 
-# 事件轉換器實現指南
+# 事件轉換器實作指南
+
+> [!TIP]
+> **什麼時候需要閱讀這篇**：適配器開發路徑內必讀（事件轉換器）。不需要則跳過，不會影響其他功能的使用。
 
 事件轉換器 (Converter) 是適配器的核心組件之一，負責將平台原生事件轉換為 ErisPulse 統一的 OneBot12 標準事件格式。
 
@@ -9988,7 +10018,7 @@ Converter 只負責**正向轉換**（接收方向），即將平台的原生事
 
 ## BaseConverter 基類（推薦）
 
-從 2.7.0 起，框架提供 `BaseConverter` 基類（`ErisPulse.Core.Bases`），封裝 OneBot12 事件的**公共字段建構**與**常用消息段輔助**，讓轉換器只需聚焦類型映射：
+從 2.7.0 起，框架提供 `BaseConverter` 基類（`ErisPulse.Core.Bases`），封裝 OneBot12 事件的**公共欄位構建**與**常用訊息段輔助**，讓轉換器只需專注於型別映射：
 
 ```python
 from ErisPulse.Core.Bases import BaseConverter
@@ -10013,18 +10043,18 @@ class MyConverter(BaseConverter):
         return None
 ```
 
-`build_base_event()` 已填充的公共字段：
+`build_base_event()` 已填入的公共欄位：
 
-| 字段 | 來源 |
+| 欄位 | 來源 |
 |------|------|
-| `id` | `raw_event["event_id"]`，缺省自生成 UUID |
+| `id` | `raw_event["event_id"]`，缺省自动生成 UUID |
 | `time` | `raw_event["timestamp"]`，缺省當前時間 |
 | `platform` | 建構時傳入的 `platform` |
 | `self` | `{"platform": ..., "user_id": raw_event["bot_id"]}` |
-| `{platform}_raw` | 原始事件（滿足"無損轉換"原則） |
+| `{platform}_raw` | 原始事件（滿足「無損轉換」原則） |
 | `{platform}_raw_type` | 原始事件類型 |
 
-常用消息段輔助方法（均為靜態方法，直接複用）：
+常用訊息段輔助方法（均為靜態方法，可直接重用）：
 
 ```python
 converter.text("hi")          # {"type": "text", "data": {"text": "hi"}}
@@ -10032,7 +10062,7 @@ converter.at("123456")        # {"type": "at", "data": {"user_id": "123456"}}
 converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
 ```
 
-> 手動實現時 `build_base_event` 的公共字段建構是必須重複寫的樣板代碼，使用 `BaseConverter` 可省去這部分，且天然滿足"無損轉換"（原始事件始終進 `{platform}_raw`）。
+> 手動實現時 `build_base_event` 的公共欄位構造是必須重複撰寫的樣板程式碼，使用 `BaseConverter` 可省去這部分，且天然滿足「無損轉換」（原始事件始終進入 `{platform}_raw`）。
 
 ## convert() 方法
 
@@ -10068,7 +10098,7 @@ def convert(self, raw_event: dict) -> dict:
     # 消息事件字段
     "user_id": "sender_id",
     "message": [...],              # OneBot12 消息段列表
-    "alt_message": "純文本內容",
+    "alt_message": "純文字內容",
 
     # 必須保留原始數據
     "myplatform_raw": { ... },     # 平台原生事件完整數據
@@ -10078,7 +10108,7 @@ def convert(self, raw_event: dict) -> dict:
 
 ## 必填字段映射
 
-### 通用字段（所有事件類型）
+### 通用字段（所有事件类型）
 
 | OB12 字段 | 類型 | 說明 |
 |-----------|------|------|
@@ -10087,21 +10117,21 @@ def convert(self, raw_event: dict) -> dict:
 | `type` | str | 事件類型：`message` / `notice` / `request` / `meta` |
 | `detail_type` | str | 詳細類型：`private` / `group` / `friend` 等 |
 | `platform` | str | 平台名稱，與適配器註冊名一致 |
-| `self` | dict | 机器人信息：`{"platform": "...", "user_id": "..."}` |
+| `self` | dict | 機器人資訊：`{"platform": "...", "user_id": "..."}` |
 
 ### 消息事件額外字段
 
-| OB12 字段 | 類型 | 说明 |
+| OB12 字段 | 類型 | 說明 |
 |-----------|------|------|
 | `user_id` | str | 發送者 ID |
 | `message` | list[dict] | OneBot12 消息段列表 |
-| `alt_message` | str | 純文本備用內容 |
+| `alt_message` | str | 純文字備用內容 |
 
 ### 通知事件額外字段
 
-| OB12 字段 | 類型 | 说明 |
+| OB12 字段 | 類型 | 說明 |
 |-----------|------|------|
-| `user_id` | str | 相關用戶 ID |
+| `user_id` | str | 相關使用者 ID |
 | `operator_id` | str | 操作者 ID（如群成員變動） |
 
 ## 消息段轉換
@@ -10136,28 +10166,28 @@ OneBot12 標準定義了以下消息段類型：
 
 如果平台有不支援的消息段類型，可以省略該段或轉換為最接近的標準類型。
 
-## 平台擴展字段
+## 平台擴展欄位
 
-平台特有的數據應使用 `{platform}_` 前綴存儲，避免與標準字段衝突：
+平台特有的資料應使用 `{platform}_` 前綴儲存，以避免與標準欄位衝突：
 
 ```python
 {
-    # 標準字段
+    # 標準欄位
     "type": "message",
     "detail_type": "group",
     # ...
 
-    # 平台擴展字段
-    "myplatform_raw": { ... },          # 原始事件數據（必須）
+    # 平台擴展欄位
+    "myplatform_raw": { ... },          # 原始事件資料（必須）
     "myplatform_raw_type": "chat",      # 原始事件類型（必須）
 
-    # 其他平台特有字段
+    # 其他平台特有欄位
     "myplatform_group_name": "群名稱",
     "myplatform_sender_role": "admin",
 }
 ```
 
-> **重要**：`{platform}_raw` 字段是必須的，ErisPulse 的事件系統和模組可能依賴它來訪問平台原始數據。
+> **重要**：`{platform}_raw` 欄位是必須的，ErisPulse 的事件系統和模組可能依賴它來存取平台原始資料。
 
 ## 完整示例
 
@@ -10241,13 +10271,13 @@ class MyConverter:
         return base
 ```
 
-## 富媒體消息轉換示例
+## 富媒體訊息轉換示例
 
-實際平台的消息通常包含圖片、@提及、回覆等富媒體內容。以下是 `_convert_message_segments` 處理多種消息類型的示例：
+實際平台的訊息通常包含圖片、@提及、回覆等富媒體內容。以下是 `_convert_message_segments` 處理多種訊息類型的示例：
 
 ```python
 def _convert_message_segments(self, raw_content: list) -> list:
-    """將平台原生消息段列表轉換為 OneBot12 標準消息段"""
+    """將平台原生訊息段列表轉換為 OneBot12 標準訊息段"""
     segments = []
 
     for item in raw_content:
@@ -10284,7 +10314,7 @@ def _convert_message_segments(self, raw_content: list) -> list:
         else:
             segments.append({
                 "type": "text",
-                "data": {"text": f"[不支援的消息類型: {item_type}]"}
+                "data": {"text": f"[不支援的訊息類型: {item_type}]"}
             })
 
     return segments
@@ -10294,7 +10324,7 @@ def _convert_message_segments(self, raw_content: list) -> list:
 
 ### 1. 缺少 `{platform}_raw` 字段
 
-這是常見的錯誤。缺少原始數據字段會導致模組無法訪問平台特有的資訊。
+這是常見的錯誤。缺少原始資料字段會導致模組無法存取平台特有的資訊。
 
 ```python
 base_event["myplatform_raw"] = raw_event        # 必須！
@@ -10303,7 +10333,7 @@ base_event["myplatform_raw_type"] = event_type   # 必須！
 
 ### 2. 時間戳格式錯誤
 
-OneBot12 標準要求 `time` 字段為 Unix 秒級時間戳（整數）。如果你的平台返回毫秒時間戳或 ISO 格式字串，需要轉換：
+OneBot12 標準要求 `time` 欄位為 Unix 秒級時間戳（整數）。如果你的平台回傳毫秒時間戳或 ISO 格式字串，需要進行轉換：
 
 ```python
 import time
@@ -10315,9 +10345,9 @@ import time
 "time": int(time.mktime(time.strptime(raw_event["created_at"], "%Y-%m-%dT%H:%M:%S")))
 ```
 
-### 3. 缺少 `self` 字段
+### 3. 缺少 `self` 欄位
 
-`self` 字段包含機器人自身資訊，`user_id` 為機器人的帳號 ID。多 Bot 場景下此字段至關重要：
+`self` 欄位包含機器人自身資訊，`user_id` 為機器人的帳號 ID。多 Bot 場景下此欄位至關重要：
 
 ```python
 "self": {
@@ -10328,19 +10358,19 @@ import time
 
 ### 4. detail_type 使用了非標準值
 
-`detail_type` 必須使用 OneBot12 標準定義的值，如 `private`、`group`、`friend_increase`、`group_member_increase` 等。不要使用平台特有的命名。
+`detail_type` 必須使用 OneBot12 標準定義的值，例如 `private`、`group`、`friend_increase`、`group_member_increase` 等。請勿使用平台特有的命名。
 
 ### 5. 往返一致性
 
-確保 Converter 生成的消息段類型與 Send 端支援的方法對應。例如，如果 Converter 將平台的圖片消息轉換為 `{"type": "image", ...}`，那麼 Send 端的 `Image()` 方法必須能處理圖片發送。
+確保 Converter 產生的消息段類型與 Send 端支援的方法對應。例如，如果 Converter 將平台的圖片訊息轉換為 `{"type": "image", ...}`，那麼 Send 端的 `Image()` 方法必須能處理圖片傳送。
 
 ## 最佳實踐
 
-1. **總是保留原始數據**：`{platform}_raw` 字段不能省略
-2. **使用標準消息段**：盡量將平台消息轉換為 OneBot12 標準消息段
-3. **合理設定 detail_type**：使用標準類型（`private`/`group`/`channel` 等），不要自定義
-4. **處理邊界情況**：原始事件可能缺少某些字段，使用 `.get()` 並提供合理預設值
-5. **效能考量**：`convert()` 在每個事件上呼叫，避免在其中執行耗時操作
+1. **始終保留原始資料**：`{platform}_raw` 欄位不能省略
+2. **使用標準訊息段**：盡量將平台訊息轉換為 OneBot12 標準訊息段
+3. **合理設定 detail_type**：使用標準類型（`private`/`group`/`channel` 等），不要自訂
+4. **處理邊界情況**：原始事件可能缺少某些欄位，使用 `.get()` 並提供合理的預設值
+5. **效能考量**：`convert()` 在每個事件上被呼叫，避免在其中執行耗時操作
 
 ## 相關文件
 
@@ -10355,7 +10385,10 @@ import time
 
 # 發布與模組商店指南
 
-將你開發的模組或適配器發布到 ErisPulse 模組商店，讓其他使用者可以輕鬆地發現和安裝。
+> [!TIP]  
+> **什麼時候需要閱讀這篇**：當你要將作品發佈到 PyPI / 模組商店時。如果不需要，可以跳過，這不會影響其他功能的使用。
+
+將你開發的模組或適配器發佈到 ErisPulse 模組商店，讓其他使用者可以輕鬆地發現並安裝。
 
 ## 模組商店概述
 
@@ -14908,7 +14941,10 @@ if result["retcode"] == 10002:
 
 # 網路用戶端
 
-ErisPulse 提供了統一的網路用戶端，聚合了 HTTP 請求、WebSocket 連接和連接池管理。模組和適配器**必須優先使用**此用戶端，而非自行匯入 `aiohttp` / `httpx` / `requests` 等第三方庫。
+> [!TIP]
+> **何時需要閱讀這篇**：需要發出站 HTTP / WebSocket 請求時。若不需要則可跳過，這不會影響其他功能的使用。
+
+ErisPulse 提供了統一的網路用戶端，聚合了 HTTP 請求、WebSocket 連接和連接池管理。模組和適配器**必須優先使用**此用戶端，而非自行導入 `aiohttp` / `httpx` / `requests` 等第三方庫。
 
 ## 概述
 
@@ -15417,7 +15453,10 @@ class MyAdapter(BaseAdapter):
 
 # SQL 查詢建構器
 
-ErisPulse 的 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的建立、查詢、更新與刪除操作。
+> [!TIP]
+> **何時需要閱讀這篇**：需要鏈式 SQL 查詢或自訂儲存後端時。不需要則跳過，不會影響其他功能的使用。
+
+ErisPulse 的 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的建立、查詢、更新和刪除操作。
 
 ## 架構設計
 
@@ -15432,7 +15471,7 @@ Bases/storage.py                    Core/storage.py
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面；框架內建 SQLite / MySQL / PostgreSQL 三種實現（自定義後端亦可依此擴展，見[儲存後端](storage-backends.md)）
+- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面；框架內建 SQLite / MySQL / PostgreSQL 三種實現（自訂後端亦可依此擴展，見[儲存後端](storage-backends.md)）
 - `StorageManager` 按 `ErisPulse.storage.backend` 配置調度具體後端，預設 SQLite，完全向後相容
 
 ## 導入
@@ -15442,7 +15481,7 @@ from ErisPulse import sdk
 # 或
 from ErisPulse.Core import storage
 
-# ABC 基類（用於型別註解或自訂實作）
+# ABC 基類（用於類型標註或自訂實作）
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
@@ -15475,13 +15514,13 @@ sdk.storage.DropTable("users")
 ### 修改表結構
 
 ```python
-# 添加欄位
+# 新增欄位
 sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
 
 # 重新命名表
 sdk.storage.AlterTable("users").RenameTo("members").Execute()
 
-# 串連多個操作
+# 鏈式多個操作
 sdk.storage.AlterTable("users") \
     .AddColumn("phone", "TEXT") \
     .AddColumn("address", "TEXT") \
@@ -15493,10 +15532,10 @@ sdk.storage.AlterTable("users") \
 ### 插入資料
 
 ```python
-# 單筆插入（傳入字典）
+# 單行插入（傳入字典）
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# 批次插入（傳入字典列表）
+# 批量插入（傳入字典列表）
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35},
@@ -15560,7 +15599,7 @@ for row in rows:
 records = [dict(zip(columns, row)) for row in rows]
 ```
 
-#### 獲取單筆記錄
+#### 獲取單條記錄
 
 ```python
 row = sdk.storage.Table("users").Select("name", "age") \
@@ -15655,9 +15694,9 @@ count = sdk.storage.Table("users").Where("age > ?", 18).Count()
 exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 ```
 
-## 複用查詢條件
+## 復用查詢條件
 
-使用 `copy()` 深拷貝建構器，複用基礎條件：
+使用 `copy()` 深拷貝建構器，復用基礎條件：
 
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
@@ -15672,7 +15711,7 @@ count = base.copy().Count()
 exists = base.copy().Where("name = ?", "Alice").Exists()
 ```
 
-## 重設建構器
+## 重置建構器
 
 ```python
 builder = sdk.storage.Table("users").Select("name").Where("age > ?", 18)
@@ -15706,7 +15745,7 @@ except Exception:
 ## 異步原生 API
 
 2.8.0 起儲存層以異步為原生主介面，所有終止方法都有對應的 a 前綴異步版本，
-異步 handler 內推薦使用（避免同步相容層短暫阻塞事件循環）：
+異步 handler 內推薦使用（避免同步相容層短暫阻塞事件迴圈）：
 
 ```python
 # 異步事務
@@ -15737,15 +15776,15 @@ keys = await sdk.storage.aget_all_keys()
 
 ## 回傳值說明
 
-| 操作 | 回傳型別 | 說明 |
+| 操作 | 回傳類型 | 說明 |
 |------|---------|------|
 | `Select().Execute()` | `list[tuple]` | 元組列表，按欄位順序排列 |
-| `Select().ExecuteOne()` | `tuple \| None` | 單筆元組或 None |
+| `Select().ExecuteOne()` | `tuple \| None` | 單條元組或 None |
 | `Insert().Execute()` | `int` | 受影響列數 |
 | `InsertMulti().Execute()` | `int` | 插入列數 |
 | `Update().Execute()` | `int` | 受影響列數 |
 | `Delete().Execute()` | `int` | 受影響列數 |
-| `Count()` | `int` | 符合條件列數 |
+| `Count()` | `int` | 匹配列數 |
 | `Exists()` | `bool` | 是否存在 |
 
 ### 回傳值處理示例
@@ -15753,17 +15792,17 @@ keys = await sdk.storage.aget_all_keys()
 ```python
 # Select 回傳元組，按索引取值
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
-first_name = rows[0][0]  # 第一列第一欄 name
-first_age = rows[0][1]   # 第一列第二欄 age
+first_name = rows[0][0]  # 第一行第一列 name
+first_age = rows[0][1]   # 第一行第二列 age
 
-# 推薦：用欄位名列表 + zip 轉為字典，程式碼更易讀
+# 推薦：用欄位名列表 + zip 轉為字典，程式碼更可讀
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
     d = dict(zip(cols, row))
     print(d["name"], d["age"])
 
-# ExecuteOne 回傳單筆元組或 None
+# ExecuteOne 回傳單條元組或 None
 row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
 name = row[0] if row else None
 
@@ -15812,7 +15851,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ## 自訂儲存後端
 
-2.8.0 起抽象層以**異步方法為原生契約**：繼承 `BaseStorage` 實作異步抽象方法，
+2.8.0 起抽象層以**異步方法為原生契約**：繼承 `BaseStorage` 實現異步抽象方法，
 同步 `get/set/Execute` 等由基類自動橋接提供：
 
 ```python
@@ -15820,7 +15859,7 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 class MyQueryBuilder(BaseQueryBuilder):
     async def aExecute(self):
-        # 實作具體執行邏輯
+        # 實現具體執行邏輯
         ...
 
     async def aExecuteOne(self):
@@ -15840,13 +15879,13 @@ class MyStorage(BaseStorage):
     async def aset(self, key, value):
         ...
 
-    # 實作其他異步抽象方法與事務連接 hook ...
+    # 實現其他異步抽象方法與事務連接 hook ...
     def Table(self, table_name):
         return MyQueryBuilder(self, table_name)
 ```
 
 > [!TIP]
-> 若不想實作事務連接路由（`conn` 關鍵字參數），保持類屬性
+> 若不想實現事務連接路由（`conn` 關鍵字參數），保持類屬性
 > `_SUPPORTS_CONN_ROUTING = False`（預設）即可，事務功能仍可用（隔離性受限）。
 > 純 SQL 後端可直接繼承 `Core/Bases/sql_base.py` 的 `SQLStorageBase` +
 > `SQLQueryBuilder`，只需提供連接管理與方言執行漏斗，詳見
@@ -16102,12 +16141,15 @@ flowchart TD
 
 # 生命週期管理
 
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要訂閱框架生命週期事件（啟動 / 加載 / 狀態變化）時。不需要則跳過，不影響其他功能的使用。
+
 ErisPulse 提供統一的鈎子/生命週期系統，用於監控系統各組件的運行狀態，以及實現審計、統計、自定義邏輯等擴展功能。
 
 系統支援三種觸發方式：
-- `await lifecycle.emit("event", data)` — 精簡版，傳遞任意資料（`to="Owner"` 時定向投遞）
+- `await lifecycle.emit("event", data)` — 精簡版，傳遞任意數據（`to="Owner"` 時定向投遞）
 - `lifecycle.emit_sync("event", data)` — 同步版（用於非異步上下文）
-- `await lifecycle.submit_event("event", ...)` — 兼容舊版，自動建構標準事件格式
+- `await lifecycle.submit_event("event", ...)` — 兼容舊版，自動構建標準事件格式
 
 ## 事件處理機制
 
@@ -16127,7 +16169,7 @@ sdk.lifecycle.register("module.load", on_module_load, priority=10)
 # 取消註冊
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# 按所有者批量取消註冊（模組/適配器卸載時框架自動呼叫）
+# 按所有者批量取消註冊（模組/適配器卸載時框架自動調用）
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
 print(f"清理了 {removed} 個生命週期鈎子")
 ```
@@ -16217,7 +16259,7 @@ if sdk.lifecycle.has_handlers("message.sending"):
 
 ## 鈎子斷點一覽
 
-一條訊息從平台進入框架到處理完成的典型生命週期事件時序：
+一條消息從平台進入框架到處理完成的典型生命週期事件時序：
 
 ```mermaid
 sequenceDiagram
@@ -16229,7 +16271,7 @@ sequenceDiagram
     P->>A: 原生事件到達
     A->>F: adapter.event.receive（最早期）
     F->>F: event.pre_process（處理器執行前）
-    F->>M: 分發到處理器（命令/訊息/通知等）
+    F->>M: 分發到處理器（命令/消息/通知等）
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending（發送前）
@@ -16239,18 +16281,18 @@ sequenceDiagram
     F->>F: adapter.event.dispatched（分發完成）
 ```
 
-框架內建了以下鈎子斷點，使用者可以透過 `@sdk.lifecycle.on()` 監聽任意斷點實現自訂邏輯。
+框架內建了以下鈎子斷點，使用者可以透過 `@sdk.lifecycle.on()` 監聽任意斷點實現自定義邏輯。
 
 ### 核心初始化
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `core.init.start` | SDK 初始化開始 | `{}` |
 | `core.init.stage` | 初始化各階段開始（背景發射） | `{"stage": str}`，取值 `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
 | `core.init.complete` | SDK 初始化完成 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(僅失敗時)}` |
 | `core.uninit.complete` | SDK 反初始化完成 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(僅失敗時)}` |
 
-**示例：啟動進度展示**
+**範例：啟動進度展示**
 
 ```python
 @sdk.lifecycle.on("core.init.stage")
@@ -16260,12 +16302,12 @@ def show_stage(data):
 
 ### 配置變更
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `config.set` | 配置項被修改 | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | 外部編輯 config.toml 後偵測到整樹變更 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.updated` | 外部編輯 config.toml 後檢測到整樹變更 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
-**示例：配置審計**
+**範例：配置審計**
 
 ```python
 @sdk.lifecycle.on("config.set")
@@ -16275,17 +16317,17 @@ def audit_config(data):
 
 ### 模組生命週期
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `module.register` | 模組類註冊到管理器 | `{"module_name": str, "success": bool}` |
-| `module.load` | 模組載入完成（實例化成功） | `{"module_name": str, "success": bool}` |
+| `module.load` | 模組加載完成（實例化成功） | `{"module_name": str, "success": bool}` |
 | `module.init` | 模組初始化完畢（含懶加載） | `{"module_name": str, "success": bool}` |
 | `module.unload` | 模組卸載 | `{"module_name": str, "success": bool}` |
-| `module.reload` | 模組熱重載完成（含級聯重載依賴者） | `{"module_name": str, "success": bool, "full": bool}`；全量重載（`reload_all`）時 `module_name` 為 `"All"`，payload 預留 `"results": dict[str, bool]` |
+| `module.reload` | 模組熱重載完成（含級聯重載依賴者） | `{"module_name": str, "success": bool, "full": bool}`；全量重載（`reload_all`）時 `module_name` 為 `"All"`，payload 預期額外攜帶 `"results": dict[str, bool]` |
 
 ### 適配器生命週期
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `adapter.load` | 適配器註冊完成 | `{"platform": str, "success": bool}` |
 | `adapter.start` | 適配器啟動 | `{"platforms": [str]}` |
@@ -16297,14 +16339,14 @@ def audit_config(data):
 
 ### 事件接收與處理
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `adapter.event.receive` | 收到外部平台事件（最早期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
 | `adapter.event.blocked` | 中間件否決事件（返回 `False`，事件被丟棄不進入任何處理器） | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
 | `adapter.event.dispatched` | 事件分發完成 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
 | `event.pre_process` | 事件處理器開始執行前 | `{"event_type": str, "platform": str, "detail_type": str}` |
 
-**示例：事件統計**
+**範例：事件統計**
 
 ```python
 event_counter = {}
@@ -16322,12 +16364,12 @@ def log_unhandled(data):
 
 ### 消息發送
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `message.sending` | 消息即將發送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | 消息發送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
-**示例：消息發送審計**
+**範例：消息發送審計**
 
 ```python
 @sdk.lifecycle.on("message.sending")
@@ -16337,12 +16379,12 @@ def log_sending(data):
 
 ### 命令系統
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `command.matched` | 命令被匹配並即將執行 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
 | `command.executed` | 命令執行完成 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(僅失敗時)}` |
 
-**示例：命令統計**
+**範例：命令統計**
 
 ```python
 @sdk.lifecycle.on("command.matched")
@@ -16352,12 +16394,12 @@ def count_commands(data):
 
 ### HTTP 路由
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `server.request` | HTTP 請求接收 | `{"method": str, "path": str, "client_ip": str}` |
 | `server.response` | HTTP 回應發送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
-**示例：請求日誌**
+**範例：請求日誌**
 
 ```python
 @sdk.lifecycle.on("server.response")
@@ -16367,14 +16409,14 @@ def log_http(data):
 
 ### WebSocket
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `server.start` | 路由伺服器啟動 | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(僅失敗時)}` |
 | `server.stop` | 路由伺服器停止 | `{}` |
 | `server.websocket.connect` | WebSocket 連接建立 | `{"path": str, "module_name": str, "client_ip": str}` |
 | `server.websocket.disconnect` | WebSocket 連接斷開 | `{"path": str, "module_name": str, "reason": str, "error": str(僅異常時)}` |
 
-**示例：WebSocket 連接監控**
+**範例：WebSocket 連接監控**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
@@ -16390,13 +16432,13 @@ def on_ws_disconnect(data):
 
 儲存後端連接池的建立、故障與恢復（均背景發射，不阻塞儲存操作）：
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
-| `storage.ready` | 儲存後端連接池就緒（每事件循環首次建池成功） | `{"backend": str}` |
+| `storage.ready` | 儲存後端連接池就緒（每事件迴圈首次建池成功） | `{"backend": str}` |
 | `storage.unreachable` | 連接重試耗盡進入冷卻期（期間操作快速失敗） | `{"backend": str, "error": str, "cooldown": float}` |
 | `storage.recovered` | 冷卻結束重連成功，儲存恢復可用 | `{"backend": str}` |
 
-**示例：儲存故障告警**
+**範例：儲存故障告警**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
@@ -16412,7 +16454,7 @@ def notify_storage_back(data):
 
 `sdk.client` 的請求與連接事件（均背景發射）：
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `client.request.success` | HTTP 請求成功 | `{"method": str, "url": str, "status": int, "elapsed": float}` |
 | `client.request.failed` | HTTP 請求重試耗盡最終失敗 | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
@@ -16420,7 +16462,7 @@ def notify_storage_back(data):
 
 ### 國際化
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `i18n.language.changed` | 框架語言切換（`i18n.set_language`） | `{"language": str, "previous": str}` |
 
@@ -16467,7 +16509,7 @@ STANDARD_EVENTS = {
 | `await lifecycle.emit(event, data=None, *, to=None)` | 異步觸發，處理器**並行執行**（互不阻塞，返回時全部完成），返回非 None 值按優先級順序回放鏈式替換 data；`to` 指定 owner 時定向投遞 |
 | `lifecycle.fire(event, data=None, *, to=None)` | **背景發射（扔桶即走）**：處理器在背景任務中並行執行、不等待、無返回值；無監聽者時零開銷。適用於高頻熱路徑與純觀測事件；關停序列與順序敏感消費（如 `config.set`）請用 `emit` |
 | `lifecycle.emit_sync(event, data=None, *, to=None)` | 同步觸發，異步處理器以 create_task 調度 |
-| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 兼容舊版，自動建構標準事件格式；`background=True` 時走 `fire` 背景發射 |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 兼容舊版，自動構建標準事件格式；`background=True` 時走 `fire` 背景發射 |
 
 ### 工具
 
@@ -16487,7 +16529,7 @@ from ErisPulse import sdk
 
 class Main(BaseModule):
     async def on_load(self, event):
-        # 實現簡單的訊息統計
+        # 實現簡單的消息統計
         self.msg_count = 0
         
         @sdk.lifecycle.on("adapter.event.receive")
@@ -16539,12 +16581,12 @@ async def _poll(self):
 
 ## 注意事項
 
-1. **處理器可以是同步或異步**：系統自動辨識並正確呼叫
-2. **資料傳遞**：`emit()` 模式下，處理器返回非 None 值會修改傳遞給後續處理器的 data
+1. **處理器可以是同步或異步**：系統自動辨識並正確調用
+2. **數據傳遞**：`emit()` 模式下，處理器返回非 None 值會修改傳遞給後續處理器的 data
 3. **事件命名規範**：建議使用點式結構命名事件，便於使用父級監聽
 4. **錯誤隔離**：單個處理器異常不會影響其他處理器執行
 5. **同步觸發限制**：`emit_sync()` 中異步處理器以 fire-and-forget 方式調度，返回值無法回傳
-6. **生命週期清理**：呼叫 `sdk.uninit()` 時，所有已註冊的處理器和計時器會被清理
+6. **生命週期清理**：調用 `sdk.uninit()` 時，所有已註冊的處理器和計時器會被清理
 7. **加載優先性**：如需在框架初始化階段就監聽事件，建議設定高優先級並禁用懶加載
 
 ## 相關文件
@@ -16557,6 +16599,9 @@ async def _poll(self):
 ### 路由系统
 
 # 路由管理器
+
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要 HTTP / WebSocket / SSE 路由（含連接池廣播）時。不需要則跳過，不會影響其他功能的使用。
 
 ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支援多適配器路由註冊和生命週期管理。底層透過抽象層封裝（目前為 FastAPI + Uvicorn）
 
@@ -17035,9 +17080,12 @@ async def on_server_stop(event):
 
 ### MessageBuilder 详解
 
-# MessageBuilder 詳解
+# MessageBuilder 详解
 
-`MessageBuilder` 是 ErisPulse 提供的 OneBot12 標準訊息段建構工具，用於建構結構化的訊息內容，配合 `Send.Raw_ob12()` 使用。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：在構建複雜 / 多段消息時。不需要則跳過，不會影響其他功能的使用。
+
+`MessageBuilder` 是 ErisPulse 提供的 OneBot12 標準訊息段建構工具，用於建構結構化的訊息內容，搭配 `Send.Raw_ob12()` 使用。
 
 ## 導入方式
 
@@ -17231,7 +17279,10 @@ complex_msg = (
 
 # Conversation 多輪對話
 
-`Conversation` 類提供了在同一會話中進行多輪交互的便捷方法，適合實現引導式操作、資訊收集、對話式問答等場景。
+> [!TIP]  
+> **什麼時候需要閱讀這篇**：當需要多輪對話狀態機與檢查點恢復時。若不需要則可跳過，這不會影響其他功能的使用。  
+
+`Conversation` 類提供了一種在同一會話中進行多輪互動的便捷方法，適合實現引導式操作、資訊收集、對話式問答等場景。
 
 ## 建立對話
 
@@ -17656,19 +17707,22 @@ async def chat_handler(event):
 
 ### 交互会话系统
 
-# 互動會話系統
+# 互動對話系統
+
+> [!TIP]
+> **何時需要閱讀本文**：需要 `wait_reply`、多輪對話、定時提醒、會話互斥或鏈路追蹤時。不需要則可跳過，不會影響其他功能的使用。
 
 > [!NOTE]
-> 本章內容需要 ErisPulse **2.8.0+**。
+> 本文內容需要 ErisPulse **2.8.0+**。
 
-ErisPulse 將「與使用者的持續互動」做成了框架級基礎設施：從一條 `wait_reply`，
+ErisPulse 將「與使用者的持續互動」建構為框架級基礎設施：從一條 `wait_reply`，
 到定時提醒、多路等待、會話互斥、重啟恢復，全部由統一的
-**互動會話管理器**（`Core/Event/interaction.py`，`sdk.interaction`）調度。
+**互動對話管理器**（`Core/Event/interaction.py`，`sdk.interaction`）調度。
 
 {!--< tips >!--}
 本文涵蓋的每一項能力都附帶**歸屬（owner）**：互動等待、租約、定時器全部記錄
-註冊時的模組名，模組卸載 / 適配器關閉時由框架自動清理，等待方立即得到通知
-而非干等超時——這是歸屬權系統在互動維度的延伸（見 [歸屬權系統](ownership.md)）。
+註冊時的模組名，模組卸載 / 介面關閉時由框架自動清理，等待方立即得到通知
+而非乾等超時——這是歸屬權系統在互動維度的延伸（見 [歸屬權系統](ownership.md)）。
 {!--< /tips >!--}
 
 ## 等待回覆：wait_reply
@@ -17923,19 +17977,22 @@ async with event.message_tx():
 
 # 模組間通信
 
-> [!NOTE]  
+> [!TIP]
+> **什麼時候需要閱讀本篇**：需要跨模組呼叫（RPC）、服務契約、定向事件或冷啟動回放時。不需要則跳過，不會影響其他功能的使用。
+
+> [!NOTE]
 > 本章內容需要 ErisPulse **2.8.0+**。
 
-ErisPulse 的模組之間有**三層通訊模型**，依「點對點 → 定向 → 廣播」排列：
+ErisPulse 的模組之間有**三層通信模型**，依「點對點 → 定向 → 廣播」排列：
 
 | 層 | API | 語義 | 典型場景 |
 |---|---|---|---|
-| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 點對點請求-回應，帶契約 / 審計 / 超時 | 調用另一模組的能力（查詢歷史、翻譯、退款） |
-| **定向事件** | `await lifecycle.emit("message_received", {...}, to="Chat")` | 僅分發給指定模組註冊的生命周期鉤子 | 上游狀態變更通知下游（「收到新訊息了」） |
-| **廣播** | `await lifecycle.emit("config.updated", {...})` | 全框架可見的生命周期事件 | 配置熱更新、模組上下線 |
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 點對點請求-回應，帶契約 / 審計 / 超時 | 呼叫另一模組的能力（查詢歷史、翻譯、退款） |
+| **定向事件** | `await lifecycle.emit("message_received", {...}, to="Chat")` | 僅分發給指定模組註冊的生命週期鉤子 | 上游狀態變化通知下游（「收到新訊息了」） |
+| **廣播** | `await lifecycle.emit("config.updated", {...})` | 全框架可見的生命週期事件 | 配置熱更新、模組上下線 |
 
 {!--< tips >!--}
-選型口訣：**要回傳值用 `call`，只通知一個模組的鉤子用 `emit(..., to=...)`，通知所有人用 `emit(...)`**。
+選型口訣：**要返回值用 `call`，只通知一個模組的鉤子用 `emit(..., to=...)`，通知所有人用 `emit(...)`**。
 {!--< /tips >!--}
 
 ## RPC：module.call
@@ -18158,7 +18215,10 @@ event_dedupe = true   # 預設開啟；測試環境固定 id 合成事件可關�
 
 # 國際化 (i18n) 系統
 
-ErisPulse v2.5.0 起內建了完整的國際化支援。框架核心及 CLI 界面均可根據您的系統語言自動切換顯示文字，也支援外部模組註冊自己的翻譯。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要多語言文案、翻譯註冊或語言檢測時。不需要則跳過，不會影響其他功能的使用。
+
+ErisPulse v2.5.0 起內建了完整的國際化支援。框架核心及 CLI 界面均可根據您的系統語言自動切換顯示文本，也支援外部模組註冊自己的翻譯。
 
 ## 支援的語言
 
@@ -18753,24 +18813,27 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 
 # 作用域（scope）
 
+> [!TIP]
+> **何時需要閱讀本文**：需要控制模組可用性、事件准入或出站動作限制時。不需要則跳過，不會影響其他功能的使用。
+
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-作用域回答四個問題：**哪些模組可用、誰的事件收不收、某模組處理什麼文本、
-模組能向外做什麼**。
+作用域回答四個問題：**哪些模組可用、誰的事件收不收、某模組處理什麼文字、
+模組能向外做什麼**。  
 控制權完全交給使用者：在模組 / 適配器 / 處理器 / 出站呼叫註冊的**上層**（配置
-`ErisPulse.scope` 或執行時 `sdk.scope`）統一聲明，事件管線在入口、處理器過濾
+`ErisPulse.scope` 或執行時 `sdk.scope`）統一宣告，事件管線在入口、處理器過濾
 與出站閘口自動讀取並執行。
 
 | 維度 | 控制什麼 | 拒絕行為 | 配置路徑 |
 |------|---------|---------|---------|
 | **① 模組** | 哪些模組可用（平台 / Bot / 會話三級） | 被過濾模組不觸發、不回覆（攔截廣播 `scope.blocked` 事件；命中的命令仍被認領阻斷） | `scope.platforms / bots / sessions` |
-| **② 身份** | 事件收不收（適配器 / Bot / 會話 / 用戶四級） | 入口完全丟棄（攔截廣播 `scope.blocked` 事件） | `scope.identity.*` |
-| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
+| **② 身份** | 事件收不收（適配器 / Bot / 會話 / 使用者四級） | 入口完全丟棄（攔截廣播 `scope.blocked` 事件） | `scope.identity.*` |
+| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白名單/黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
 
-> **相關系統**：命令是特殊的訊息事件處理器，其用戶黑白名單（ACL）與
+> **相關系統**：命令是特殊的訊息事件處理器，其使用者黑白名單（ACL）與
 > 實現參數覆寫由命令系統自持（`ErisPulse.event.command`），
-> 見 [事件處理入門](../getting-started/event-handling.md) 與 [配置指南](../user-guide/configuration.md)。
+> 請見 [事件處理入門](../getting-started/event-handling.md) 與 [配置指南](../user-guide/configuration.md)。
 
 {!--< tips >!--}
 1. 透過 `from ErisPulse.Core import scope` 導入單例（`sdk.scope` 同物件）
@@ -18779,9 +18842,9 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 3. 讀寫：維度化參數方法（IDE 可補全）——
    `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`；
    另有字典式兜底 `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
-4. 事件處理器文本條件覆寫見
+4. 事件處理器文字條件覆寫請見
    [事件處理入門 · 事件覆寫](../getting-started/event-handling.md#事件覆寫不改模組代碼覆寫任意事件類型的行為)；
-   命令 ACL / 參數覆寫見[事件處理入門](../getting-started/event-handling.md)
+   命令 ACL / 參數覆寫請見 [事件處理入門](../getting-started/event-handling.md)
 {!--< /tips >!--}
 
 ## 匹配條目語法（全系統統一）
@@ -19189,15 +19252,22 @@ topology = sdk.get_topology()
 
 # 所有权（owner）系統
 
-所有權是模組「即插即用」的基石：模組在載入期間註冊的一切框架資源自動記名，卸載/停用時按記名一鍵回收——模組作者只需聲明資源，無需手寫清理邏輯。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：排查資源泄漏、理解卸載清理鏈路或聲明歸屬資源時。不需要則跳過，不會影響其他功能的使用。
 
-> **相關系統**：作用域（scope）在事件分發時決定「資源是否生效」，所有權在生命週期中決定「資源歸誰、誰卸載時被回收」。作用域詳見[統一控制面（scope）](scope.md)，背景任務詳見 [生命週期管理](lifecycle.md#背景任務所有權與自動取消)。
+所有權是模組「即插即用」的基石：模組在載入期間註冊的一切框架資源會自動記名，
+卸載/禁用時會根據記名一鍵回收——模組作者只需聲明資源，無需手寫清理邏輯。
+
+> **相關系統**：作用域（scope）在事件分發時決定「資源是否生效」，
+> 所有權在生命週期中決定「資源歸誰、誰卸載時被回收」。
+> 作用域詳見[統一控制面（scope）](scope.md)，背景任務詳見
+> [生命週期管理](lifecycle.md#背景任務歸屬與自動取消)。
 
 {!--< tips >!--}
-1. 所有權在**註冊瞬間**按 `current_owner` 自動記錄，模組程式碼零修改
-2. 卸載/停用共用同一條清理鏈（`_cleanup_module_registrations`），每步失敗僅警告不中斷
+1. 所有權在**註冊瞬間**按 `current_owner` 自動記錄，模組程式碼無需修改
+2. 卸載/禁用共用同一條清理鏈（`_cleanup_module_registrations`），每步失敗僅發出警告而不中斷
 3. 用戶配置語意的資源（持久化覆寫 / scope 規則 / 命令 ACL）**不**隨模組卸載清理
-4. 工具模組托管的外部句柄可用 `on_cleanup(cb)` 掛入清理鏈，對方模組卸載時自動回調（見[工具模組指南](#工具模組指南托管其它模組的句柄)）
+4. 工具模組托管的外部句柄可用 `on_cleanup(cb)` 掛入清理鏈，對方模組卸載時自動回呼（見[工具模組指南](#工具模組指南托管其它模組的句柄)）
 {!--< /tips >!--}
 
 ## owner 上下文機制
@@ -19503,14 +19573,21 @@ class CronModule(BaseModule):
 
 ### 影子模块与灰度转正
 
-# 影子模組與灰度轉正
+# 影子模組與灰階轉正
 
-影子 = 同一模組的**新版本**，以獨立 owner（如 `roll_shadow`）與線上舊版並存試運行：它收到真實事件的**副本**、其出站被**攔截記帳**而非真正發出——在 `shadow_diff` 裡對比兩個版本的行為，確認無害後 `promote` 一鍵轉正，`dismiss` 隨時放棄。**模組程式碼零變動，全程運行時 API 驅動**：與 `load / unload / reload` 同類的運維動作，Dashboard / 自訂管理模組直接調用，沒有任何設定項要寫。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要灰階發布——新版本並行試運行、行為對比與轉正回滾時。不需要則跳過，不影響其他功能的使用。
+
+影子 = 同一模組的**新版本**，以獨立 owner（如 `roll_shadow`）與線上舊版並存試運行：它收到真實事件的**副本**、其出站被**攔截記帳**而非真正發出——
+在 `shadow_diff` 裡對比兩個版本的行為，確認無害後 `promote` 一鍵轉正，
+`dismiss` 隨時放棄。**模組程式碼零修改，全程運行時 API 驅動**：與
+`load / unload / reload` 同類的運維動作，Dashboard / 自訂管理模組直接
+呼叫，沒有任何設定項目要寫。
 
 {!--< tips >!--}
 1. 啟動：``await sdk.module.shadow_start("roll", source="路徑/到/v2")``
-   ——新版程式碼以獨立 owner（預設取路徑名）與舊版並存
-2. 影子不參與真實分發與依賴圖：同名命令進影子目錄、路由只登記不掛載、
+   ——新版本程式碼以獨立 owner（預設取路徑名）與舊版並存
+2. 影子不參與真實分發與依賴圖：同名指令進入影子目錄、路由只登記不掛載、
    生命週期廣播靜默、`module.call` 與依賴解析仍指向 v1
 3. 轉正永遠由人確認：``await sdk.module.promote_shadow("roll")``，失敗
    自動回滾舊實例繼續服務；``dismiss_shadow`` 隨時放棄
