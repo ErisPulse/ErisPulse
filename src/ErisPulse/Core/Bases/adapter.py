@@ -1521,7 +1521,7 @@ class BaseAdapter(ABC):
             if not isinstance(account_data, dict):
                 continue
             instance = dict_to_dataclass(self.AccountConfigClass, account_data)
-            errors = validate_config(instance)
+            errors = validate_config(instance, f"{self._get_config_key()}.accounts.{name}")
             if errors:
                 self._get_logger().error(
                     i18n.t("core.adapter.account_config_invalid", name=name, error=", ".join(errors))

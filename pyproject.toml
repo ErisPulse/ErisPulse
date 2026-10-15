@@ -62,7 +62,8 @@ classifiers = [
 
 dependencies = [
     "rich>=13.0.0",
-    "tomlkit>=0.15.1",
+    "tomlclass>=0.3.2,<0.4",
+
     # network 相关
     "websockets>=12.0",
     "aiohttp>=3.9.0",
@@ -102,6 +103,7 @@ test = [
     "pytest-timeout>=2.1.0",
     "pytest-mock>=3.10.0",
     "httpx>=0.24.0",
+    "tomli>=2.0.0; python_version < '3.11'",
 ]
 
 [dependency-groups]

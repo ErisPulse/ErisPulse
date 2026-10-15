@@ -731,6 +731,7 @@ TRANSLATIONS = {
     "core.config.field_below_min": "{field} の値 {value} は最小値 {min} を下回っています",
     "core.config.field_option_invalid": "{field} の値 '{value}' は許可されたオプションにありません",
     "core.config.field_required_empty": "{field}（{desc}）は空にできません",
+    "core.config.file_comment_suffix": "（設定ファイルのコメント：{comment}）",
     "core.config.field_type_mismatch": "{field} の型は {expected} のはずです、実際は {actual} です",
     "core.config.i18n_language_description": "表示言語 (auto=自動検出, zh-CN, zh-TW, en, ja, ru)",
     "core.config.required_suffix": "（必須）",

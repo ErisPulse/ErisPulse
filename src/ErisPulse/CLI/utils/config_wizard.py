@@ -266,7 +266,7 @@ def get_target_status(target: ConfigTarget, config=None) -> tuple[str, list[str]
         if data is None:
             return STATUS_UNCONFIGURED, []
         has_any_data = True
-        errors.extend(validate_config(dict_to_dataclass(target.config_class, data)))
+        errors.extend(validate_config(dict_to_dataclass(target.config_class, data), target.config_key))
 
     if target.account_class is not None:
         from ErisPulse.Core.Bases.config_schema import dict_to_dataclass, validate_config
@@ -284,7 +284,12 @@ def get_target_status(target: ConfigTarget, config=None) -> tuple[str, list[str]
         for account_name, account_data in accounts.items():
             if not isinstance(account_data, dict):
                 continue
-            account_errors = validate_config(dict_to_dataclass(target.account_class, account_data))
+            # section_key 传账户所在子表路径（AoT 形态的账户节注释回读
+            # 自然落空为无后缀，不影响校验）
+            account_errors = validate_config(
+                dict_to_dataclass(target.account_class, account_data),
+                f"{target.config_key}.{key.split('.', 1)[1]}.{account_name}",
+            )
             errors.extend(f"[{account_name}] {e}" for e in account_errors)
 
     if not has_any_data:

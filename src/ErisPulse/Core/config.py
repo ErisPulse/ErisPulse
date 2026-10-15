@@ -4,7 +4,7 @@ ErisPulse 配置中心
 集中管理所有配置项，避免循环导入问题
 提供自动补全缺失配置项的功能
 添加内存缓存和延迟写入机制以提高性能
-基于 tomlkit 实现注释保留写入：配置文件中的注释与键顺序在任何框架写入后均不丢失
+基于 tomlclass（无损 TOML 编辑引擎）实现注释保留写入：配置文件中的注释与键顺序在任何框架写入后均不丢失
 配置写入采用"唯一临时文件 + fsync + 原子替换"（``os.replace``）：
 进程被杀（OOM / SIGKILL）或断电时磁盘上的配置文件要么是完整旧内容、要么是完整新内容，
 不会出现空文件或半写状态；临时文件名按进程唯一，多实例共享配置目录时不再互相争抢踩踏
@@ -18,6 +18,7 @@ ErisPulse 配置中心
 import atexit
 import copy
 import os
+import re
 import tempfile
 import threading
 import time
@@ -25,9 +26,8 @@ import weakref
 from pathlib import Path
 from typing import Any, ClassVar, TypeAlias
 
-import tomlkit
-from tomlkit.exceptions import ParseError
-from tomlkit.items import Table
+import tomlclass
+from tomlclass import InlineTable, Table, TOMLParseError
 
 from .constants import (
     CONFIG_CACHE_TIMEOUT_SECS,
@@ -270,12 +270,11 @@ class ConfigManager:
             if str(config_dir) and not config_dir.exists():
                 config_dir.mkdir(parents=True, exist_ok=True)
 
-            # tomlkit 解析保留原文件注释与键顺序，迁移后内容与原文件一致
-            with Path(old_config_path).open(encoding="utf-8") as f:
-                old_doc = tomlkit.parse(f.read())
+            # 无损引擎解析保留原文件注释与键顺序，迁移后内容与原文件逐字节一致
+            old_doc = tomlclass.load_path(old_config_path)
 
             # 原子写入：避免"新文件半写 + 旧文件已删"窗口内中断导致配置丢失
-            self._atomic_write_text(tomlkit.dumps(old_doc))
+            self._atomic_write_text(old_doc.dumps())
 
             readme_content = f"""# 配置文件迁移说明
 
@@ -289,7 +288,7 @@ class ConfigManager:
 ## 原配置内容
 
 ```toml
-{tomlkit.dumps(old_doc)}
+{old_doc.dumps()}
 ```
 
 ## 注意事项
@@ -337,17 +336,17 @@ class ConfigManager:
                 return True
 
             try:
-                with path.open(encoding="utf-8") as f:
-                    config = tomlkit.parse(f.read()).unwrap()
-            except ParseError as e:                # 态1：TOML 语法错误——给出行号/列号与原因，便于用户精确定位
+                # load_path 走字节读取：CRLF 等行尾风格原样保留，不因框架读写被归一化
+                config = tomlclass.load_path(self.CONFIG_FILE).unwrap()
+            except TOMLParseError as e:                # 态1：TOML 语法错误——给出行号/列号与原因，便于用户精确定位
                 # 保留上次有效缓存，避免半成品 TOML 干扰运行中的进程
                 self._log_config_error(
                     i18n.t(
                         "core.config.toml_malformed",
                         path=self.CONFIG_FILE,
-                        line=getattr(e, "line", "?"),
-                        col=getattr(e, "col", "?"),
-                        reason=getattr(e, "msg", str(e)),
+                        line=e.line if e.line is not None else "?",
+                        col=e.col if e.col is not None else "?",
+                        reason=e.message,
                     )
                 )
                 self._log_config_error(
@@ -513,7 +512,10 @@ class ConfigManager:
             dir=str(config_path.parent), prefix=config_path.name + ".", suffix=".tmp"
         )
         try:
-            with os.fdopen(fd, "w", encoding="utf-8") as f:
+            # newline=""：禁用换行翻译。无损引擎的渲染结果自带源文件的行尾
+            # 风格（CRLF 文件原样保留 CRLF）；Windows 文本模式默认会把每个
+            # \n 翻译成 \r\n，遇到已含 \r\n 的内容会写出 \r\r\n 损坏文件
+            with os.fdopen(fd, "w", encoding="utf-8", newline="") as f:
                 f.write(text)
                 f.flush()
                 os.fsync(f.fileno())
@@ -537,39 +539,15 @@ class ConfigManager:
                 pass
 
     @staticmethod
-    def _set_doc_path(doc: Any, keys: list[str], value: Any) -> None:
-        """
-        在 tomlkit 文档树中按点分路径写入值
-
-        中间层节点缺失或非表时以空表替换（与 dict 语义一致）；
-        叶子写入保留既有注释与顺序，新键追加至所在节末尾。
-
-        :param doc: tomlkit 文档/表对象
-        :param keys: 点分路径拆分后的键列表
-        :param value: 待写入的值（plain dict 会转换为标准 table）
-
-        {!--< internal-use >!--}
-        {!--< /internal-use >!--}
-        """
-        node = doc
-        for k in keys[:-1]:
-            child = node.get(k)
-            if not isinstance(child, Table):
-                node[k] = {}
-                child = node[k]
-            node = child
-        node[keys[-1]] = value
-
-    @staticmethod
     def _delete_doc_path(doc: Any, keys: list[str]) -> None:
         """
-        在 tomlkit 文档树中按点分路径删除键
+        在无损文档树中按点分路径删除键
 
         中间层缺失或非表时视为已删除（幂等）；仅触碰目标键所在行，
         文件其余内容与注释保持不变。删除子表的最后一个键后，空表头
         原样保留（与后续重设同名键的行为兼容）。
 
-        :param doc: tomlkit 文档/表对象
+        :param doc: tomlclass 文档/表对象
         :param keys: 点分路径拆分后的键列表
 
         {!--< internal-use >!--}
@@ -595,10 +573,11 @@ class ConfigManager:
         "键不存在"——标量 ``None`` 返回 ``None``（由调用方跳过该键），
         字典内的 ``None`` 叶子递归剔除（其余键值原样保留，不改变顺序之外
         的内容）。列表内的 ``None`` 属于数组元素，剔除会改变元素位置，
-        保持原样交由单键隔离丢弃并告警。
+        显式拒绝（交由单键隔离丢弃并告警），不静默改写用户数据。
 
         :param value: 待写入的值
-        :return: 可直接交给 tomlkit 的值；标量 ``None`` 原样返回
+        :return: 可直接交给 tomlclass 的值；标量 ``None`` 原样返回
+        :raises ValueError: 嵌套数组中含 ``None`` 元素时抛出
 
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
@@ -614,7 +593,20 @@ class ConfigManager:
                 result[k] = _strip(v) if isinstance(v, dict) else v
             return result
 
-        return _strip(value)
+        safe = _strip(value)
+
+        def _reject_none_in_array(node: Any) -> None:
+            if isinstance(node, list):
+                for item in node:
+                    if item is None:
+                        raise ValueError("array contains null (None) element, which TOML cannot represent")
+                    _reject_none_in_array(item)
+            elif isinstance(node, dict):
+                for item in node.values():
+                    _reject_none_in_array(item)
+
+        _reject_none_in_array(safe)
+        return safe
 
     def _remove_cache_path(self, keys: list[str]) -> None:
         """
@@ -639,25 +631,22 @@ class ConfigManager:
     @staticmethod
     def _doc_to_plain_dict(doc: Any) -> dict[str, Any]:
         """
-        将 tomlkit 文档转为 plain dict 缓存
+        将无损文档树转为 plain dict 缓存
 
-        经 body 低层插入的条目不进入容器索引，直接 ``unwrap()`` 会丢失；
-        渲染后重新解析可保证缓存与文件内容严格一致。
-
-        :param doc: tomlkit 文档对象
+        :param doc: tomlclass 文档对象
         :return: dict 纯字典形式的配置内容
 
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
         """
-        return tomlkit.parse(tomlkit.dumps(doc)).unwrap()
+        return doc.to_dict()
 
     def _flush_config(self) -> None:
         """
         将待写入的配置刷新到文件
 
         使用文件锁确保多线程环境下的原子性操作。
-        基于 tomlkit 在解析出的文档树上做增量修改后整体回写，
+        基于无损文档树做增量修改后整体回写，
         文件中已有的注释与键顺序不因框架写入而丢失或重排。
 
         {!--< internal-use >!--}
@@ -671,10 +660,9 @@ class ConfigManager:
             with self._file_lock:
                 try:
                     if Path(self.CONFIG_FILE).exists():
-                        with Path(self.CONFIG_FILE).open(encoding="utf-8") as f:
-                            doc = tomlkit.parse(f.read())
+                        doc = tomlclass.load_path(self.CONFIG_FILE)
                     else:
-                        doc = tomlkit.document()
+                        doc = tomlclass.document()
 
                     # 应用待写入的更改（注释保留：仅触碰脏键所在行，其余原样保留）。
                     # 按键特异性排序：路径浅者（整节/祖先）先应用、深者（点分/后代）
@@ -693,7 +681,7 @@ class ConfigManager:
                                 # 不落盘，直接出队（缓存中的置空视图由 default 语义承接）
                                 self._dirty_keys.pop(key, None)
                                 continue
-                            self._set_doc_path(doc, key.split("."), safe_value)
+                            doc.set_path(key, safe_value)
                         except Exception as e:
                             # 单键不可序列化（如列表内含 None）：仅丢弃该键，
                             # 不阻塞其余待写键落盘（否则脏队列永不清空、无限重试刷屏）
@@ -712,7 +700,7 @@ class ConfigManager:
                             pass
 
                     # 原子写入：唯一临时文件 + fsync + os.replace（多实例/断电安全）
-                    self._atomic_write_text(tomlkit.dumps(doc))
+                    self._atomic_write_text(doc.dumps())
 
                     # 更新缓存并清除待写入队列（转回 plain dict，保持缓存类型不变）
                     self._cache = self._doc_to_plain_dict(doc)
@@ -734,7 +722,7 @@ class ConfigManager:
                     except OSError:
                         pass
 
-                except ParseError as e:
+                except TOMLParseError as e:
                     # 配置文件已损坏（语法错误）→ 无法安全地读取-合并-写入。
                     # 不清空 _dirty_keys，待用户修复文件后下次 flush 再写入。
                     # 去重：使用配置目录下的哨兵文件 mtime 做冷却。
@@ -761,9 +749,9 @@ class ConfigManager:
                                 i18n.t(
                                     "core.config.flush_malformed",
                                     path=self.CONFIG_FILE,
-                                    line=getattr(e, "line", "?"),
-                                    col=getattr(e, "col", "?"),
-                                    reason=getattr(e, "msg", str(e)),
+                                    line=e.line if e.line is not None else "?",
+                                    col=e.col if e.col is not None else "?",
+                                    reason=e.message,
                                 )
                             )
                         except (ImportError, AttributeError):
@@ -1153,7 +1141,7 @@ class ConfigManager:
         与 ``setConfig(key, None)`` 的"置空但键仍在"不同：delete 会把键
         从配置文件中移除。存在性按当前读取视图判定（缓存 + 待写叠加，
         与 :meth:`getConfig` 同口径——待写整节内的键、已删除的键均如实
-        判定）。落盘走 tomlkit 增量修改路径，文件其余内容与注释不受
+        判定）。落盘走无损引擎增量修改路径，文件其余内容与注释不受
         影响；删除复用 ``config.set`` 事件广播（``new_value=None``），
         现有监听方（如适配器的 ``on_config_update``）零改动即可感知。
 
@@ -1287,6 +1275,8 @@ class ConfigManager:
         用于适配器/模块首次生成配置模板：模板中的字段注释原样落盘。
         目标节已存在时不覆盖（由调用方保证仅在配置缺失时调用）；
         文件其余内容与注释不受影响。
+        模板中相对命名的子表头（如嵌套 dataclass 生成的 ``[Nested]``）
+        会自动重锚为 ``[<key>.Nested]``，与所在节保持父子关系。
 
         :param key: str 配置节键（支持点分路径，如 ``"MyAdapter"``）
         :param toml_text: str 模板 TOML 文本（仅键值与注释，不含节头）
@@ -1297,64 +1287,59 @@ class ConfigManager:
         >>> sdk.config.setConfigTemplate("MyAdapter", '# API 令牌\\ntoken = ""')
         """
         try:
-            parsed = tomlkit.parse(toml_text)
-        except ParseError as e:
+            parsed_template = tomlclass.parse(toml_text)
+        except TOMLParseError as e:
             self._log_config_error(
                 i18n.t(
                     "core.config.template_malformed",
                     key=key,
-                    line=getattr(e, "line", "?"),
-                    col=getattr(e, "col", "?"),
-                    reason=getattr(e, "msg", str(e)),
+                    line=e.line if e.line is not None else "?",
+                    col=e.col if e.col is not None else "?",
+                    reason=e.message,
                 )
             )
             return False
 
-        # 模板条目（含独立注释与空行）逐项搬运到新表，保留注释
-        section = tomlkit.table()
-        for item_key, item in parsed.body:
-            section.value.body.append((item_key, item))
-
         with self._lock:
             with self._file_lock:
                 try:
+                    text = ""
                     if Path(self.CONFIG_FILE).exists():
-                        with Path(self.CONFIG_FILE).open(encoding="utf-8") as f:
-                            doc = tomlkit.parse(f.read())
+                        doc = tomlclass.load_path(self.CONFIG_FILE)
+                        text = doc.dumps()
                     else:
-                        doc = tomlkit.document()
+                        doc = tomlclass.document()
 
-                    # 定位父节点，目标节已存在则不覆盖
+                    # 定位目标节：已存在则不覆盖；路径上有非表值占位时先让位
+                    # （以空表替换的旧语义，复刻自增量修改流程）
                     keys = key.split(".")
                     node = doc
-                    exists = True
-                    for k in keys:
+                    for depth, k in enumerate(keys):
                         child = node.get(k)
                         if not isinstance(child, Table):
-                            exists = False
+                            if child is not None:
+                                self._delete_doc_path(doc, keys[: depth + 1])
+                                text = doc.dumps()
                             break
                         node = child
-                    if exists:
+                    else:
                         return False
 
-                    parent = doc
-                    for k in keys[:-1]:
-                        child = parent.get(k)
-                        if not isinstance(child, Table):
-                            parent[k] = {}
-                            child = parent[k]
-                        parent = child
-                    parent[keys[-1]] = section
+                    # 文本级拼接插入：模板正文（含独立注释与空行）逐字保留
+                    new_text = self._splice_config_section(text, key, toml_text, parsed_template)
+
+                    # 拼接结果整体重解析：保证落盘内容合法，并以此刷新缓存
+                    new_doc = tomlclass.parse(new_text)
 
                     if not immediate:
-                        self._cache = self._doc_to_plain_dict(doc)
+                        self._cache = self._doc_to_plain_dict(new_doc)
                         self._cache_timestamp = time.time()
                         return True
 
                     # 原子写入：唯一临时文件 + fsync + os.replace（多实例/断电安全）
-                    self._atomic_write_text(tomlkit.dumps(doc))
+                    self._atomic_write_text(new_text)
 
-                    self._cache = self._doc_to_plain_dict(doc)
+                    self._cache = self._doc_to_plain_dict(new_doc)
                     self._cache_timestamp = time.time()
                     # 写入成功 → 清除告警冷却标记（与 _flush_config 行为一致）
                     sentinel = self._malformed_sentinel_path
@@ -1373,14 +1358,14 @@ class ConfigManager:
 
                     return True
 
-                except ParseError as e:
+                except TOMLParseError as e:
                     self._log_config_error(
                         i18n.t(
                             "core.config.toml_malformed",
                             path=self.CONFIG_FILE,
-                            line=getattr(e, "line", "?"),
-                            col=getattr(e, "col", "?"),
-                            reason=getattr(e, "msg", str(e)),
+                            line=e.line if e.line is not None else "?",
+                            col=e.col if e.col is not None else "?",
+                            reason=e.message,
                         )
                     )
                     return False
@@ -1398,6 +1383,181 @@ class ConfigManager:
                     except (ImportError, AttributeError):
                         pass
                     return False
+
+    def get_field_comment(self, section_key: str, field_path: str) -> "str | None":
+        """
+        读取配置文件中指定字段的说明注释（声明式配置"文件即文档"回读）
+
+        声明式配置（ConfigClass）的 description 以注释形式落盘后，配置文件
+        本身就是自带文档的数据源。覆盖两种注释布局：字段行尾注释（无损
+        引擎注释 API 直读）与字段上方的独立注释行（模板生成器的 description
+        布局，文本级扫描）。注释只存在于文件中（内存缓存是纯字典），故按需
+        解析文件；文件缺失或损坏时返回 None（容错，不阻塞调用方主流程）。
+
+        :param section_key: str 配置节键（点分路径，如 ``"MyAdapter"``）
+        :param field_path: str 节内字段路径（点分，如 ``"token"`` 或
+            ``"Nested.inner"``）
+        :return: str 注释文本（不含 ``#``）；无注释/键不存在/文件不可解析
+            时返回 None
+
+        :example:
+        >>> sdk.config.get_field_comment("MyAdapter", "token")
+        """
+        if not field_path:
+            return None
+        try:
+            path = Path(self.CONFIG_FILE)
+            if not path.exists():
+                return None
+            doc = tomlclass.load_path(path)
+            trailing = doc.comment(f"{section_key}.{field_path}")
+            if trailing:
+                return trailing
+            return self._standalone_comment_above(doc.dumps(), section_key, field_path)
+        except Exception:
+            return None
+
+    @staticmethod
+    def _standalone_comment_above(text: str, section_key: str, field_path: str) -> "str | None":
+        """
+        文本级回读字段上方紧邻的独立注释行（模板生成器的 description 布局）
+
+        定位目标节头后向下扫描：命中字段行（含被注释化的 required 字段，
+        如 ``# token = ""``）时返回其上方积累的连续注释行（空格拼接）；
+        遇到空行、其他字段行或其他被注释化的字段行则重置积累。
+
+        :param text: str 配置文件全文
+        :param section_key: str 配置节键（点分路径）
+        :param field_path: str 节内字段路径（点分；嵌套字段按子表头定位）
+        :return: str 注释文本；未命中返回 None
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        parts = field_path.split(".")
+        leaf = parts[-1]
+        target_header = "[" + ".".join([section_key, *parts[:-1]]) + "]"
+        field_re = re.compile(rf"^#?\s*{re.escape(leaf)}\s*=")
+        any_field_re = re.compile(r"^#?\s*[A-Za-z0-9_-]+\s*=")
+        in_section = False
+        comment_buf: list[str] = []
+        for line in text.splitlines():
+            stripped = line.strip()
+            if stripped.startswith("["):
+                in_section = stripped == target_header
+                comment_buf = []
+                continue
+            if not in_section:
+                continue
+            if field_re.match(stripped):
+                return " ".join(comment_buf) if comment_buf else None
+            if stripped.startswith("#"):
+                if any_field_re.match(stripped):
+                    # 其他字段的被注释化行：description 块从此重新积累
+                    comment_buf = []
+                else:
+                    comment_buf.append(stripped.lstrip("#").strip())
+                continue
+            if stripped:
+                comment_buf = []
+        return None
+
+    @staticmethod
+    def _splice_config_section(text: str, key: str, template: str, parsed_template: Any) -> str:
+        """
+        将模板文本作为一节拼接到配置文本末尾（文本级拼接，注释零损耗）
+
+        新节始终追加在文件末尾（TOML 中任意位置的节头都合法开启新表），
+        现有内容不做任何重排。模板内相对命名的子表头按已知路径集合精确
+        重锚到 ``<key>.`` 前缀下，仅重写行首精确匹配已知子表路径的行。
+
+        :param text: str 现有配置文件文本（可为空/纯注释）
+        :param key: str 目标节键（点分路径）
+        :param template: str 模板 TOML 文本（不含节头）
+        :param parsed_template: tomlclass 文档对象（模板解析结果，用于枚举子表路径）
+        :return: str 拼接后的完整配置文本
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        header = ".".join(ConfigManager._quote_key_segment(seg) for seg in key.split("."))
+        body = ConfigManager._anchor_template_headers(key, template, parsed_template)
+        section_text = f"[{header}]\n" + body
+        if not text.strip():
+            return section_text
+        sep = "" if text.endswith("\n\n") else ("\n" if text.endswith("\n") else "\n\n")
+        return text + sep + section_text
+
+    @staticmethod
+    def _anchor_template_headers(key: str, template: str, parsed_template: Any) -> str:
+        """
+        将模板中相对命名的子表头重锚到 ``<key>.`` 前缀下
+
+        仅重写与已知子表路径精确相等的行首表头（``[Nested]`` →
+        ``[MyAdapter.Nested]``，含 ``[[...]]`` 形式）；带行尾注释等
+        非精确匹配的表头保持原样。无子表的模板原样返回。
+
+        :param key: str 目标节键
+        :param template: str 模板 TOML 文本
+        :param parsed_template: tomlclass 文档对象
+        :return: str 重锚后的模板文本
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        sub_tables = ConfigManager._collect_table_paths(parsed_template.root)
+        if not sub_tables:
+            return template
+        lines = template.splitlines(keepends=True)
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            is_aot = stripped.startswith("[[") and stripped.endswith("]]")
+            is_single = not is_aot and stripped.startswith("[") and stripped.endswith("]")
+            if not (is_aot or is_single):
+                continue
+            name = stripped[2:-2] if is_aot else stripped[1:-1]
+            if name not in sub_tables:
+                continue
+            eol = "\r\n" if line.endswith("\r\n") else ("\n" if line.endswith("\n") else "")
+            opener, closer = ("[[", "]]") if is_aot else ("[", "]")
+            lines[i] = f"{opener}{key}.{name}{closer}{eol}"
+        return "".join(lines)
+
+    @staticmethod
+    def _collect_table_paths(node: Any, prefix: str = "") -> set[str]:
+        """
+        收集文档子树中所有实表（非 inline table）的点分路径
+
+        :param node: tomlclass 表/文档对象
+        :param prefix: 递归用路径前缀
+        :return: set 子表点分路径集合
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        paths: set[str] = set()
+        for k in node:
+            child = node[k]
+            if isinstance(child, Table) and not isinstance(child, InlineTable):
+                path = f"{prefix}{k}"
+                paths.add(path)
+                paths |= ConfigManager._collect_table_paths(child, path + ".")
+        return paths
+
+    @staticmethod
+    def _quote_key_segment(segment: str) -> str:
+        """
+        将单个键段格式化为 TOML 表头键（非法裸键字符加引号转义）
+
+        :param segment: str 键段原文
+        :return: str 可直接用于 ``[表头]`` 的键形式
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        if re.fullmatch(r"[A-Za-z0-9_-]+", segment):
+            return segment
+        return '"' + segment.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
     async def aforce_save(self) -> None:
         """

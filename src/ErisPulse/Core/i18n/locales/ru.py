@@ -731,6 +731,7 @@ TRANSLATIONS = {
     "core.config.field_below_min": "Значение {field} {value} меньше минимума {min}",
     "core.config.field_option_invalid": "Значение {field} '{value}' не входит в разрешённые параметры",
     "core.config.field_required_empty": "{field} ({desc}) не может быть пустым",
+    "core.config.file_comment_suffix": " (комментарий в файле конфигурации: {comment})",
     "core.config.field_type_mismatch": "Тип {field} должен быть {expected}, получено {actual}",
     "core.config.i18n_language_description": "Язык интерфейса (auto=автоопределение, zh-CN, zh-TW, en, ja, ru)",
     "core.config.required_suffix": "(обязательно)",

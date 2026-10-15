@@ -92,14 +92,14 @@
 | 严重性 | 数量 |
 |--------|------|
 | 🔴 严重 | 16 |
-| 🟡 中等 | 18 |
+| 🟡 中等 | 19 |
 | 🟢 轻微 | 3 |
-| **合计** | **37** |
+| **合计** | **38** |
 
 | 类型 | 数量 |
 |------|------|
 | 适配器 | 6 |
-| 配置系统 | 11 |
+| 配置系统 | 12 |
 | 事件系统 | 7 |
 | CLI | 3 |
 | 存储 | 3 |
@@ -1089,3 +1089,15 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **严重性**: 🟡 中等
 **类型**: 事件系统
+
+### [BUG-046] 声明式配置模板的嵌套子表头漂移为顶层表
+
+**问题**: 嵌套 dataclass 声明的配置（ConfigClass 内嵌 dataclass 字段）首次生成配置模板时，子表头 `[Nested]` 落在文件顶层而非组件节内——适配器读 `cfg.嵌套字段` 拿不到值；`config.full.example` 中同样错位。
+**原因**: 模板生成器对嵌套 dataclass 渲染相对表头（`[Nested]`），而 TOML 表头语义是从根算起的绝对路径；`setConfigTemplate` 旧实现把解析后的表对象搬进组件节、`full.example` 直接文本拼装，两条路径都未把相对表头重锚到组件路径下。
+**影响版本**: 2.10.0 - 2.10.1（嵌套 dataclass 模板渲染随该版本引入）
+**修复版本**: 2.10.2-dev.0
+**修复内容**: `setConfigTemplate` 按模板解析出的子表路径集合精确重锚表头（`[Nested]` → `[组件名.Nested]`）；`config.full.example` 生成侧改传 `_prefix` 直接产出绝对表头。
+**回归测试**: tests/unit/test_unit_config.py::TestTomlclassEngineMigration::test_template_write_idempotent_and_nested_anchored
+
+**严重性**: 🟡 中等
+**类型**: 配置系统 / 适配器

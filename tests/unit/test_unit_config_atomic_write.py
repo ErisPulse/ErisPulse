@@ -15,7 +15,11 @@ import threading
 from pathlib import Path
 
 import pytest
-import tomlkit
+
+try:
+    import tomllib as _toml
+except ModuleNotFoundError:  # Python 3.10：tomllib 是 3.11+ 标准库
+    import tomli as _toml
 
 from ErisPulse.Core.config import ConfigManager
 from ErisPulse.Core.constants import CONFIG_LOCK_FILE_NAME
@@ -60,7 +64,7 @@ class TestAtomicWrite:
         config_manager._flush_config()
 
         with open(os.path.join(config_dir, "config.toml"), encoding="utf-8") as f:
-            doc = tomlkit.parse(f.read())
+            doc = _toml.loads(f.read())
         assert doc["test"]["key"] == "hello"
 
     def test_no_tmp_residue_after_flush(self, config_manager, config_dir):
@@ -110,7 +114,7 @@ class TestAtomicWrite:
         t2.join()
 
         text = Path(config_dir, "config.toml").read_text(encoding="utf-8")
-        doc = tomlkit.parse(text)
+        doc = _toml.loads(text)
         assert doc["one"]["counter"] in range(20)
         assert doc["two"]["counter"] in range(20)
         leftovers = [p for p in os.listdir(config_dir) if p.endswith(".tmp")]
@@ -155,7 +159,7 @@ class TestAtomicWrite:
             try:
                 new_file = legacy / "config" / "config.toml"
                 assert new_file.exists()
-                doc = tomlkit.parse(new_file.read_text(encoding="utf-8"))
+                doc = _toml.loads(new_file.read_text(encoding="utf-8"))
                 assert doc["old"]["key"] == "value"
                 assert not (legacy / "config.toml").exists()
                 tmp_leftovers = [

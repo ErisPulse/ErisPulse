@@ -207,7 +207,11 @@ def _component_sections(st) -> list[str]:
         if cfg_cls is None:
             continue
         try:
-            body = dataclass_to_toml_with_comments(cfg_cls, include_example=True)
+            # _prefix 让嵌套子表头直接锚定在组件节下（[key.Nested]），
+            # 避免相对表头 [Nested] 在示例文件中漂移成顶层表
+            body = dataclass_to_toml_with_comments(
+                cfg_cls, include_example=True, _prefix=f"{target.config_key}."
+            )
         except Exception:
             continue
         if not body.strip():

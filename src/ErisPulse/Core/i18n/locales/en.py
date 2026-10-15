@@ -731,6 +731,7 @@ TRANSLATIONS = {
     "core.config.field_below_min": "{field} value {value} is below minimum {min}",
     "core.config.field_option_invalid": "{field} value '{value}' not in allowed options",
     "core.config.field_required_empty": "{field} ({desc}) cannot be empty",
+    "core.config.file_comment_suffix": " (config file comment: {comment})",
     "core.config.field_type_mismatch": "{field} type should be {expected}, got {actual}",
     "core.config.i18n_language_description": "Display language (auto=auto-detect, zh-CN, zh-TW, en, ja, ru)",
     "core.config.required_suffix": "(required)",

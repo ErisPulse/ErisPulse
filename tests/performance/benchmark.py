@@ -436,14 +436,14 @@ async def suite_config(args: argparse.Namespace) -> None:
 
     await bench_ops(suite, "setConfig persist=False", _set_dirty, **_sc(5000, 5))
 
-    # 4. setConfig immediate=True（tomlkit 全文件重解析 + 原子写 + fsync）
+    # 4. setConfig immediate=True（无损引擎全文件重解析 + 原子写 + fsync）
     def _set_immediate():
         idx["i"] += 1
         config.setConfig("bench.flush.key", idx["i"], immediate=True)
 
     await bench_ops(
         suite, "setConfig immediate=True", _set_immediate,
-        **_sc(30, 5), warmup=2, note="全文件 tomlkit 重解析+fsync",
+        **_sc(30, 5), warmup=2, note="全文件无损引擎重解析+fsync",
     )
 
     # 5. getAllConfig（全量 deepcopy + 脏键重放）

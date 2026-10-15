@@ -481,12 +481,15 @@ class TestFullExampleConfig:
 
     @staticmethod
     def _example():
-        import tomlkit
+        try:
+            import tomllib as _toml
+        except ModuleNotFoundError:  # Python 3.10：tomllib 是 3.11+ 标准库
+            import tomli as _toml
 
         from ErisPulse.CLI.commands.init import InitCommand
 
         text = InitCommand._get_full_example_config()
-        return text, tomlkit.loads(text).unwrap()
+        return text, _toml.loads(text)
 
     def test_example_is_valid_toml(self):
         """生成的示例必须是可解析的 TOML"""
@@ -534,13 +537,16 @@ class TestRuntimeFullExampleEnsure:
 
     def test_render_starts_with_marker_and_valid_toml(self, tmp_path):
         """生成文本首行为自维护标记，整体为合法 TOML"""
-        import tomlkit
+        try:
+            import tomllib as _toml
+        except ModuleNotFoundError:  # Python 3.10：tomllib 是 3.11+ 标准库
+            import tomli as _toml
 
         from ErisPulse.runtime import example_config
 
         text = example_config.render_full_example()
         assert text.splitlines()[0].startswith(example_config._MARKER_PREFIX)
-        data = tomlkit.loads(text).unwrap()
+        data = _toml.loads(text)
         assert "ErisPulse" in data
         assert "framework" in data["ErisPulse"]
 

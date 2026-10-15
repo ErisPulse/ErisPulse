@@ -143,12 +143,14 @@ class DoctorCommand(Command):
             )
 
             incomplete: list[str] = []
+            error_hints: list[str] = []
             for target in load_config_targets():
                 status, _errors = get_target_status(target)
                 # 仅"待完善"（开了但必填项缺失）判 FAIL；完全未配置属
                 # 用户尚未开始配置，不算故障
                 if status == STATUS_INCOMPLETE:
                     incomplete.append(target.name)
+                    error_hints.extend(_errors)
             if incomplete:
                 failed = True
                 rows.append(
@@ -160,6 +162,11 @@ class DoctorCommand(Command):
                             names=", ".join(incomplete),
                         ),
                     )
+                )
+                # 附带前两条校验问题（错误消息已含配置文件注释回读），
+                # 把"哪个字段、文件里怎么写的"直接给到用户
+                rows.extend(
+                    (self._status(False), "", hint) for hint in error_hints[:2]
                 )
             else:
                 rows.append(

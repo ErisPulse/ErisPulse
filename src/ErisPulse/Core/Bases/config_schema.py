@@ -847,7 +847,37 @@ def validate_field_constraints(
     return errors
 
 
-def validate_config(instance) -> list[str]:
+def _file_comment_suffix(section_key: "str | None", field_path: str) -> str:
+    """
+    取配置文件中字段行尾注释并格式化为错误消息后缀（"文件即文档"回读）
+
+    声明式字段的 description 以注释落盘后，配置文件本身就是用户眼前的
+    文档；校验失败时引用文件里的原文比 schema 元数据更贴近用户所见。
+    按需无损解析配置文件，任何失败静默返回空串（注释是增强信息，
+    不允许拖垮校验主流程）。
+
+    :param section_key: str 配置节键（点分路径）；None 表示调用方未提供
+        节上下文，跳过回读
+    :param field_path: str 节内字段路径（点分，嵌套字段含祖先路径）
+    :return: str 形如 ``" （配置文件注释：…）"`` 的后缀；无注释返回空串
+
+    {!--< internal-use >!--}
+    {!--< /internal-use >!--}
+    """
+    if not section_key:
+        return ""
+    try:
+        from ..config import config as _config
+
+        comment_text = _config.get_field_comment(section_key, field_path)
+    except Exception:
+        return ""
+    if not comment_text:
+        return ""
+    return " " + i18n.t("core.config.file_comment_suffix", comment=comment_text)
+
+
+def validate_config(instance, section_key: "str | None" = None) -> list[str]:
     """
     校验 dataclass 实例
 
@@ -857,10 +887,27 @@ def validate_config(instance) -> list[str]:
     - 检查 ``min``/``max`` 数值范围约束
 
     返回错误信息列表（空列表表示通过）。description 若为 i18n 字典，
-    错误信息使用其 fallback/default 文本。
+    错误信息使用其 fallback/default 文本。传入 ``section_key`` 时，
+    配置文件中该字段的行尾注释（如有）会附在对应错误消息之后。
 
     :param instance: dataclass 实例
+    :param section_key: str 实例对应的配置节键（点分路径，如
+        ``"MyAdapter"``）；传入后启用文件注释回读（默认 None 不回读）
     :return: 错误信息列表
+    """
+    return _validate_config(instance, section_key, "")
+
+
+def _validate_config(instance, section_key: "str | None", prefix: str) -> list[str]:
+    """
+    :meth:`validate_config` 的递归实现
+
+    :param instance: dataclass 实例
+    :param section_key: str 配置节键（透传，用于文件注释回读）
+    :param prefix: str 嵌套字段的路径前缀（如 ``"Nested."``）
+
+    {!--< internal-use >!--}
+    {!--< /internal-use >!--}
     """
     errors = []
 
@@ -877,17 +924,21 @@ def validate_config(instance) -> list[str]:
             child = getattr(instance, f.name)
             if is_dataclass(child):
                 errors.extend(
-                    f"{f.name}: {sub_error}" for sub_error in validate_config(child)
+                    f"{f.name}: {sub_error}"
+                    for sub_error in _validate_config(child, section_key, f"{prefix}{f.name}.")
                 )
             continue
         meta = f.metadata or {}
         value = getattr(instance, f.name)
         ui_meta = _get_ui_meta(meta) if meta else {}
+        comment_suffix = _file_comment_suffix(section_key, f"{prefix}{f.name}")
 
         # 1. required 非空（需要 metadata 声明）
         if meta.get("required", False) and _is_empty(value):
             desc_text = _resolve_description_text(meta) or f.name
-            errors.append(i18n.t("core.config.field_required_empty", field=f.name, desc=desc_text))
+            errors.append(
+                i18n.t("core.config.field_required_empty", field=f.name, desc=desc_text) + comment_suffix
+            )
             continue  # 已为空，类型/范围检查无意义
 
         # 跳过空值后续检查
@@ -903,6 +954,7 @@ def validate_config(instance) -> list[str]:
             # bool 是 int 的子类：声明 int 但实际为 bool 视为类型不符
             errors.append(
                 i18n.t("core.config.field_type_mismatch", field=f.name, expected=type_name, actual=type(value).__name__)
+                + comment_suffix
             )
 
         # 3. 枚举选项（options 可在 ui 子表或 metadata 顶层）
@@ -912,7 +964,10 @@ def validate_config(instance) -> list[str]:
                 o.get("value") if isinstance(o, dict) else o for o in options
             ]
             if value not in plain_opts:
-                errors.append(i18n.t("core.config.field_option_invalid", field=f.name, value=value))
+                errors.append(
+                    i18n.t("core.config.field_option_invalid", field=f.name, value=value)
+                    + comment_suffix
+                )
 
         # 4. 数值范围
         if isinstance(value, (int, float)) and not isinstance(value, bool):
@@ -923,9 +978,15 @@ def validate_config(instance) -> list[str]:
             if max_val is None:
                 max_val = meta.get("max")
             if min_val is not None and value < min_val:
-                errors.append(i18n.t("core.config.field_below_min", field=f.name, value=value, min=min_val))
+                errors.append(
+                    i18n.t("core.config.field_below_min", field=f.name, value=value, min=min_val)
+                    + comment_suffix
+                )
             if max_val is not None and value > max_val:
-                errors.append(i18n.t("core.config.field_above_max", field=f.name, value=value, max=max_val))
+                errors.append(
+                    i18n.t("core.config.field_above_max", field=f.name, value=value, max=max_val)
+                    + comment_suffix
+                )
 
     return errors
 

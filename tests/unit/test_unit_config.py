@@ -11,12 +11,23 @@ import time
 from unittest.mock import patch
 
 import pytest
-import tomlkit
+
+try:
+    import tomllib as _toml
+except ModuleNotFoundError:  # Python 3.10：tomllib 是 3.11+ 标准库
+    import tomli as _toml
+
+import tomlclass
 
 from ErisPulse.Core.config import ConfigManager
 
 # importlib.import_module 返回真实子模块（Core.logger 包属性被 Logger 单例遮蔽）
 logger_module = importlib.import_module("ErisPulse.Core.logger")
+
+
+def _toml_loads(text):
+    """独立参照解析器（tomllib/tomli）加载 TOML 文本，用于校验写出内容"""
+    return _toml.loads(text)
 
 # ==================== ConfigManager 基础测试 ====================
 
@@ -207,7 +218,7 @@ nested_key = "nested_value"
 
         # 从文件读取验证
         with open(config_manager.CONFIG_FILE, encoding='utf-8') as f:
-            config_data = tomlkit.parse(f.read()).unwrap()
+            config_data = _toml_loads(f.read())
         assert config_data["immediate"]["key"] == "immediate_value"
 
     def test_overwrite_existing_config(self, config_manager):
@@ -609,12 +620,12 @@ nested_key = "nested_value"
         # 2. 模拟外部修改：直接写文件并更新 mtime
         config_path = config_manager.CONFIG_FILE
         with open(config_path, encoding="utf-8") as f:
-            existing = tomlkit.parse(f.read())
-        existing.setdefault("external", {})["key"] = "external_value"
+            existing = tomlclass.parse(f.read())
+        existing["external"] = {"key": "external_value"}
         # 确保 mtime 变化（等待文件系统时间粒度）
         time.sleep(0.1)
         with open(config_path, "w", encoding="utf-8") as f:
-            f.write(tomlkit.dumps(existing))
+            f.write(existing.dumps())
 
         # 3. _check_file_change 应检测到外部修改
         assert config_manager._check_file_change() is True
@@ -634,10 +645,10 @@ nested_key = "nested_value"
         config_path = config_manager.CONFIG_FILE
         time.sleep(0.1)
         with open(config_path, encoding="utf-8") as f:
-            existing = tomlkit.parse(f.read())
+            existing = tomlclass.parse(f.read())
         existing["base"]["key"] = "external_override"
         with open(config_path, "w", encoding="utf-8") as f:
-            f.write(tomlkit.dumps(existing))
+            f.write(existing.dumps())
 
         # 4. flush（应读取外部内容 + 应用脏键）
         config_manager.force_save()
@@ -1032,7 +1043,7 @@ level = "INFO"
         manager._load_config()
         manager.setConfig("other.key", "v", immediate=True)
 
-        final = tomlkit.loads(cfg_file.read_text(encoding="utf-8")).unwrap()
+        final = _toml_loads(cfg_file.read_text(encoding="utf-8"))
         assert final["ErisPulse"]["modules"]["status"]["HotMod"] is False
         # 叶子脏键仍然生效（进程待写）
         assert final["ErisPulse"]["master"]["users"] == ["123"]
@@ -1125,7 +1136,7 @@ class TestBasesReExport:
 
 
 class TestCommentPreservingWrites:
-    """注释保留写入测试（tomlkit 往返）
+    """注释保留写入测试（无损引擎往返）
 
     配置文件中的注释与键顺序在任何框架写入（setConfig/flush）后
     均不丢失、不重排；新键追加到所在节末尾。
@@ -1204,7 +1215,7 @@ host = "0.0.0.0"
         assert manager.getConfig("plugin.opt.a") == 1
 
     def test_cache_matches_file_after_flush(self, manager):
-        """flush 后缓存与文件内容一致（plain dict，无 tomlkit 类型残留）"""
+        """flush 后缓存与文件内容一致（plain dict，无引擎节点类型残留）"""
         manager.setConfig("mode", "slow", immediate=True)
 
         cached = manager._cache
@@ -1785,7 +1796,7 @@ class TestSectionAndDottedDirtyConsistency:
     @staticmethod
     def _read_disk(manager) -> dict:
         with open(manager.CONFIG_FILE, encoding="utf-8") as f:
-            return tomlkit.parse(f.read()).unwrap()
+            return _toml_loads(f.read())
 
     def test_dotted_read_visible_after_section_write(self, mgr):
         """变体 A（读路径）：整节写后，整节读取仍能看到更晚的点分覆写"""
@@ -1855,7 +1866,7 @@ class TestGetAllConfigAndDelConfig:
 
     get_all 替代外部读私有 _cache：深拷贝 + 脏叠加视图（与 getConfig 口径
     一致）；delete 将键从文件中移除（区别于 setConfig(key, None) 的置空），
-    走 tomlkit 增量路径保留注释，复用 config.set 事件广播（new_value=None）。
+    走无损引擎增量路径保留注释，复用 config.set 事件广播（new_value=None）。
     """
 
     @pytest.fixture
@@ -2029,7 +2040,7 @@ class TestFlushNoneRobustness:
     @staticmethod
     def _read_disk(manager) -> dict:
         with open(manager.CONFIG_FILE, encoding="utf-8") as f:
-            return tomlkit.parse(f.read()).unwrap()
+            return _toml_loads(f.read())
 
     def test_set_none_scalar_omitted_from_disk(self, mgr):
         """setConfig(key, None)：文件中不出现该键，读取走 default 语义"""
@@ -2075,8 +2086,9 @@ class TestFlushNoneRobustness:
 
         disk = self._read_disk(mgr)
         assert disk["good"]["k"] == 1
-        # 失败键的值不落盘（仅残留路径上的空表壳，与删除语义的残留一致）
-        assert disk.get("bad") == {}
+        # 失败键的值不落盘；写入前置校验在触碰文档前完成，
+        # 文件中不残留任何空表壳（旧 tomlkit 流程会残留 bad = {}）
+        assert "bad" not in disk
         assert mgr._dirty_keys == {}
 
 
@@ -2130,3 +2142,214 @@ class TestWatcherScheduledFlush:
         config_manager.force_save()
         assert config_manager._flush_deadline is None
         assert not config_manager._dirty_keys
+
+
+# ==================== 无损引擎（tomlclass）迁移回归 ====================
+
+class TestTomlclassEngineMigration:
+    """tomlkit → tomlclass 引擎替换的硬回归
+
+    覆盖：未触碰行字节级保真、CRLF 行尾保真、模板幂等与嵌套子表锚定、
+    删除的干净行移除、脏写与既有注释共存、注释回读（上方独立注释行与
+    行尾注释两种布局）。写入内容一律用独立参照解析器（tomllib/tomli）
+    复核，避免"同一引擎自我验证"。
+    """
+
+    @pytest.fixture
+    def config_manager(self, tmp_path):
+        manager = ConfigManager(config_file=str(tmp_path / "config.toml"))
+        yield manager
+        if manager._write_timer:
+            manager._write_timer.cancel()
+        manager._watcher_stop.set()
+
+    TEMPLATE = (
+        "# API 令牌，从平台获取\n"
+        'token = ""\n'
+        "\n"
+        "# 监听端口\n"
+        "port = 8080\n"
+        "\n"
+    )
+
+    def test_untouched_lines_byte_exact_after_flush(self, config_manager, tmp_path):
+        """flush 后未触碰的行逐字节保留（含注释与空行）"""
+        cfg = tmp_path / "config.toml"
+        cfg.write_text(self.TEMPLATE, encoding="utf-8", newline="")
+        before = cfg.read_bytes()
+
+        config_manager.setConfig("port2", 9090)  # 顶层新键，不触碰既有行
+        config_manager.force_save()
+
+        after = cfg.read_bytes()
+        for line in before.decode("utf-8").splitlines(keepends=True):
+            assert line in after.decode("utf-8").splitlines(keepends=True)
+        assert _toml_loads(after.decode("utf-8"))["port2"] == 9090
+
+    def test_crlf_file_preserved_through_flush(self, config_manager, tmp_path):
+        """CRLF 文件经框架写入后行尾风格不归一、不出现裸 \r"""
+        cfg = tmp_path / "config.toml"
+        cfg.write_bytes(self.TEMPLATE.replace("\n", "\r\n").encode("utf-8"))
+
+        config_manager.setConfig("tag", "x")
+        config_manager.force_save()
+
+        raw = cfg.read_bytes().decode("utf-8")
+        assert "\r\n" in raw
+        assert "\r\r" not in raw
+        data = _toml_loads(raw)
+        assert data["tag"] == "x"
+        assert data["port"] == 8080
+        assert "# 监听端口" in raw
+
+    def test_template_write_idempotent_and_nested_anchored(self, config_manager, tmp_path):
+        """模板二次写入不覆盖；嵌套子表锚定在节下而非顶层（存量缺陷修复）"""
+        nested = (
+            "# 外层字段\n"
+            "outer = 1\n"
+            "\n"
+            "# 嵌套节说明\n"
+            "[Nested]\n"
+            "# 内层字段\n"
+            'inner = "x"\n'
+            "\n"
+        )
+        assert config_manager.setConfigTemplate("MyAdapter", nested) is True
+        assert config_manager.setConfigTemplate("MyAdapter", nested) is False
+
+        raw = (tmp_path / "config.toml").read_text(encoding="utf-8")
+        data = _toml_loads(raw)
+        assert data["MyAdapter"]["outer"] == 1
+        assert data["MyAdapter"]["Nested"]["inner"] == "x"
+        assert "Nested" not in data  # 不再漂移成顶层表
+        assert "# 内层字段" in raw and "# 外层字段" in raw
+
+    def test_template_required_commented_field_and_simple_layout(self, config_manager):
+        """简单模板（含被注释化的 required 字段）注释原样落盘"""
+        template = (
+            "# 机器人令牌，从平台获取（必填）\n"
+            '# token = ""\n'
+            "\n"
+            "# 监听端口\n"
+            "port = 8080\n"
+            "\n"
+        )
+        assert config_manager.setConfigTemplate("Bot", template) is True
+        with open(config_manager.CONFIG_FILE, encoding="utf-8") as f:
+            raw = f.read()
+        assert "# token = \"\"" in raw
+        assert "# 机器人令牌，从平台获取（必填）" in raw
+
+    def test_delete_removes_line_keeps_sibling_comments(self, config_manager):
+        """delConfig 仅移除目标行，兄弟字段的注释保留"""
+        config_manager.setConfigTemplate("S", self.TEMPLATE)
+        assert config_manager.delConfig("S.token", immediate=True) is True
+
+        with open(config_manager.CONFIG_FILE, encoding="utf-8") as f:
+            raw = f.read()
+        assert "token" not in raw
+        assert "# 监听端口" in raw
+        assert _toml_loads(raw)["S"]["port"] == 8080
+
+    def test_full_sequence_template_set_flush_delete(self, config_manager):
+        """全链路序列：模板 → 脏写 flush → 删除，注释与数据全程保真"""
+        assert config_manager.setConfigTemplate("Flow", self.TEMPLATE) is True
+        config_manager.setConfig("Flow.port", 9090)
+        config_manager.force_save()
+        with open(config_manager.CONFIG_FILE, encoding="utf-8") as f:
+            raw = f.read()
+        assert "port = 9090" in raw and "# 监听端口" in raw and "# API 令牌，从平台获取" in raw
+
+        assert config_manager.delConfig("Flow.token", immediate=True) is True
+        with open(config_manager.CONFIG_FILE, encoding="utf-8") as f:
+            raw = f.read()
+        assert "token" not in raw and "# 监听端口" in raw
+        assert config_manager.getConfig("Flow.port") == 9090
+
+    def test_set_config_list_of_dicts_writes_aot(self, config_manager):
+        """dict 列表写为合法 AoT，参照解析器可读回"""
+        config_manager.setConfig(
+            "accounts",
+            [{"name": "bot1", "enabled": True}, {"name": "bot2", "enabled": False}],
+            immediate=True,
+        )
+        with open(config_manager.CONFIG_FILE, encoding="utf-8") as f:
+            raw = f.read()
+        data = _toml_loads(raw)
+        assert data["accounts"][0] == {"name": "bot1", "enabled": True}
+        assert data["accounts"][1]["name"] == "bot2"
+
+    def test_malformed_file_keeps_dirty_and_reports(self, config_manager, tmp_path):
+        """损坏文件不阻塞：诊断带行列号，脏键保留待修复后重写"""
+        cfg = tmp_path / "config.toml"
+        cfg.write_text("a = \nbroken [[\n", encoding="utf-8")
+        config_manager.setConfig("pending.key", "v")
+        config_manager.force_save()
+        # 无法安全读取-合并-写入：脏键保留，等文件修复后下次 flush 落盘
+        assert "pending.key" in config_manager._dirty_keys
+        cfg.write_text("fixed = true\n", encoding="utf-8")
+        config_manager.force_save()
+        assert "pending.key" not in config_manager._dirty_keys
+        assert config_manager.getConfig("pending.key") == "v"
+
+    def test_get_field_comment_both_layouts(self, config_manager, tmp_path):
+        """注释回读：上方独立注释行与行尾注释两种布局"""
+        config_manager.setConfigTemplate("R", self.TEMPLATE)
+        # 上方独立注释行（模板生成器布局）
+        assert config_manager.get_field_comment("R", "token") == "API 令牌，从平台获取"
+        assert config_manager.get_field_comment("R", "port") == "监听端口"
+        # 行尾注释（无损引擎注释 API）
+        config_manager.setConfig("R.port", 1234)
+        config_manager.force_save()
+        cfg = tmp_path / "config.toml"
+        raw = cfg.read_text(encoding="utf-8")
+        cfg.write_text(raw.replace("port = 1234", "port = 1234  # 行尾说明"), encoding="utf-8", newline="")
+        assert config_manager.get_field_comment("R", "port") == "行尾说明"
+        # 未声明注释/不存在的字段
+        assert config_manager.get_field_comment("R", "missing") is None
+
+    def test_validate_config_appends_file_comment(self, monkeypatch, tmp_path):
+        """validate_config 传 section_key 时错误消息附带文件注释（回读走全局 config.toml）"""
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core import config as global_config
+        from ErisPulse.Core.Bases.config_schema import (
+            BaseConfig,
+            dict_to_dataclass,
+            validate_config,
+        )
+
+        template = (
+            "# 服务令牌（必填）\n"
+            '# token = ""\n'
+            "\n"
+            "# 重试次数上限\n"
+            "retries = -1\n"
+            "\n"
+        )
+        temp_path = str(tmp_path / "config.toml")
+        monkeypatch.setattr(global_config, "CONFIG_FILE", temp_path)
+        global_config._cache.clear()
+        global_config._dirty_keys.clear()
+        assert global_config.setConfigTemplate("V", template) is True
+
+        @dataclass
+        class VConfig(BaseConfig):
+            token: str = field(default="", metadata={"required": True, "description": "服务令牌"})
+            retries: int = field(default=3, metadata={"description": "重试次数", "min": 0})
+
+        instance = dict_to_dataclass(VConfig, global_config.getConfig("V"))
+        errors = validate_config(instance, "V")
+        assert any("服务令牌（必填）" in e for e in errors), errors
+        assert any("重试次数上限" in e for e in errors), errors
+        # 不传 section_key：行为与旧版一致，无注释后缀
+        errors_plain = validate_config(instance)
+        assert not any("配置文件注释" in e for e in errors_plain), errors_plain
+
+    def test_unchanged_doc_round_trips_byte_exact(self, tmp_path):
+        """无损引擎基本盘：未修改文档 parse → dumps 逐字节一致"""
+        source = "# 头注释\r\n[a]\r\nk = 1  # 行尾\r\n"
+        p = tmp_path / "roundtrip.toml"
+        p.write_bytes(source.encode("utf-8"))
+        doc = tomlclass.load_path(p)
+        assert doc.dumps() == source

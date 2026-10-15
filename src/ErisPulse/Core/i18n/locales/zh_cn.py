@@ -731,6 +731,7 @@ TRANSLATIONS = {
     "core.config.field_below_min": "{field} 的值 {value} 小于最小值 {min}",
     "core.config.field_option_invalid": "{field} 的值 '{value}' 不在允许的选项中",
     "core.config.field_required_empty": "{field}（{desc}）不能为空",
+    "core.config.file_comment_suffix": "（配置文件注释：{comment}）",
     "core.config.field_type_mismatch": "{field} 类型应为 {expected}，实际为 {actual}",
     "core.config.i18n_language_description": "显示语言 (auto=自动检测, zh-CN, zh-TW, en, ja, ru)",
     "core.config.required_suffix": "（必填）",
