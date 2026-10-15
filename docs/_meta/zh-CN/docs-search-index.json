@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1690,
+  "total_keywords": 1691,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -4256,6 +4256,14 @@
         "title": "[BUG-045] 无 alt_message 的适配器上交互原语永久超时、命令穿透失效"
       }
     ],
+    "[BUG-046] 声明式配置模板的嵌套子表头漂移为顶层表": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1093,
+        "level": 3,
+        "title": "[BUG-046] 声明式配置模板的嵌套子表头漂移为顶层表"
+      }
+    ],
     "__init__.py": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -4419,7 +4427,7 @@
     "delConfig：删除配置键": [
       {
         "document": "user-guide/configuration.md",
-        "line": 207,
+        "line": 211,
         "level": 3,
         "title": "delConfig：删除配置键"
       }
@@ -4499,7 +4507,7 @@
     "getAllConfig：全量配置快照": [
       {
         "document": "user-guide/configuration.md",
-        "line": 195,
+        "line": 199,
         "level": 3,
         "title": "getAllConfig：全量配置快照"
       }
@@ -5057,7 +5065,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 709,
+        "line": 713,
         "level": 2,
         "title": "下一步"
       },
@@ -5175,7 +5183,7 @@
     "严格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 463,
+        "line": 467,
         "level": 3,
         "title": "严格模式"
       }
@@ -5261,7 +5269,7 @@
     "主人系统配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 305,
+        "line": 309,
         "level": 2,
         "title": "主人系统配置"
       }
@@ -5269,7 +5277,7 @@
     "主动 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 448,
+        "line": 452,
         "level": 3,
         "title": "主动 GC 配置"
       }
@@ -5631,7 +5639,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 541,
+        "line": 545,
         "level": 2,
         "title": "事件配置"
       }
@@ -5985,7 +5993,7 @@
     "作用域配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 610,
+        "line": 614,
         "level": 2,
         "title": "作用域配置（scope）"
       }
@@ -6707,7 +6715,7 @@
     "判定链与运行时增删": [
       {
         "document": "user-guide/configuration.md",
-        "line": 331,
+        "line": 335,
         "level": 3,
         "title": "判定链与运行时增删"
       }
@@ -7579,7 +7587,7 @@
     "命令解析配置（event.command）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 707,
+        "line": 711,
         "level": 2,
         "title": "命令解析配置（event.command）"
       }
@@ -7595,7 +7603,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 543,
+        "line": 547,
         "level": 3,
         "title": "命令配置"
       }
@@ -7735,7 +7743,7 @@
     "国际化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 570,
+        "line": 574,
         "level": 2,
         "title": "国际化配置"
       }
@@ -8685,7 +8693,7 @@
     "存储配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 492,
+        "line": 496,
         "level": 2,
         "title": "存储配置"
       }
@@ -8867,7 +8875,7 @@
     "完整配置示例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 221,
+        "line": 225,
         "level": 2,
         "title": "完整配置示例"
       }
@@ -10849,7 +10857,7 @@
     "日志配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 379,
+        "line": 383,
         "level": 2,
         "title": "日志配置"
       }
@@ -10959,7 +10967,7 @@
     "服务器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 275,
+        "line": 279,
         "level": 2,
         "title": "服务器配置"
       }
@@ -11513,7 +11521,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 427,
+        "line": 431,
         "level": 2,
         "title": "框架配置"
       }
@@ -11767,7 +11775,7 @@
     "模块配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 581,
+        "line": 585,
         "level": 2,
         "title": "模块配置"
       }
@@ -11775,7 +11783,7 @@
     "模块配置的环境变量绑定（2.9.0+）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 91,
+        "line": 95,
         "level": 3,
         "title": "模块配置的环境变量绑定（2.9.0+）"
       }
@@ -12365,7 +12373,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 559,
+        "line": 563,
         "level": 3,
         "title": "消息配置"
       }
@@ -12429,7 +12437,7 @@
     "热更新链路内部拆解": [
       {
         "document": "user-guide/configuration.md",
-        "line": 144,
+        "line": 148,
         "level": 3,
         "title": "热更新链路内部拆解"
       }
@@ -12575,7 +12583,7 @@
     "环境变量覆盖": [
       {
         "document": "user-guide/configuration.md",
-        "line": 66,
+        "line": 70,
         "level": 2,
         "title": "环境变量覆盖"
       }
@@ -12681,7 +12689,7 @@
     "用户优先：主人生效范围由用户最终决定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 373,
+        "line": 377,
         "level": 3,
         "title": "用户优先：主人生效范围由用户最终决定"
       }
@@ -13271,7 +13279,7 @@
     "统一事件覆写配置（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 660,
+        "line": 664,
         "level": 2,
         "title": "统一事件覆写配置（event.overrides）"
       }
@@ -13487,7 +13495,7 @@
     "自定义身份源（provider）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 345,
+        "line": 349,
         "level": 3,
         "title": "自定义身份源（provider）"
       }
@@ -13879,7 +13887,7 @@
     "豁免清单": [
       {
         "document": "user-guide/configuration.md",
-        "line": 480,
+        "line": 484,
         "level": 4,
         "title": "豁免清单"
       }
@@ -14923,7 +14931,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 122,
+        "line": 126,
         "level": 2,
         "title": "配置热更新"
       }
@@ -15043,7 +15051,7 @@
     "配置读取与删除 API": [
       {
         "document": "user-guide/configuration.md",
-        "line": 193,
+        "line": 197,
         "level": 2,
         "title": "配置读取与删除 API"
       }

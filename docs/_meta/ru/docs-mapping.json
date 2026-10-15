@@ -96,7 +96,7 @@
           "icon": "fa-download"
         },
         {
-          "title": "Описание конфигурационного файла",
+          "title": "Конфигурационный файл",
           "path": "user-guide/configuration.md",
           "level": 1,
           "icon": "fa-sliders"
