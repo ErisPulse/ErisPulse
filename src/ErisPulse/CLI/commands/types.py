@@ -200,6 +200,7 @@ class TypesCommand(Command):
     name = "types"
     description = i18n.t("cli.types.description")
     aliases = ["t", "stub"]
+    category = "components"
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(

@@ -327,7 +327,9 @@ class TestCommandRouting:
 
         printed = {"help": False}
         monkeypatch.setattr(
-            fresh_cli.parser, "print_help", lambda *a: printed.__setitem__("help", True)
+            fresh_cli,
+            "_print_grouped_help",
+            lambda *a: printed.__setitem__("help", True),
         )
         monkeypatch.setattr(sys, "argv", ["epsdk"])
         fresh_cli.run()
@@ -743,3 +745,270 @@ class TestCreateModuleLocal:
         meta = results["Dice"].moduleInfo["meta"]
         assert meta["source"] == "plugin_folder"
         assert meta["is_base_module"] is True
+
+
+# ==================== 2.10.2 CLI 批次：init --adapter / doctor --fix / run --strict / 分组帮助 ====================
+
+
+class TestInitAdapterPreset:
+    """init --adapter 预选参数解析"""
+
+    def test_parse_preset_empty(self):
+        from ErisPulse.CLI.commands.init import InitCommand
+
+        assert InitCommand._parse_adapter_preset(None) == []
+        assert InitCommand._parse_adapter_preset([]) == []
+
+    def test_parse_preset_comma_separated(self):
+        from ErisPulse.CLI.commands.init import InitCommand
+
+        assert InitCommand._parse_adapter_preset(["yunhu,telegram"]) == [
+            "yunhu",
+            "telegram",
+        ]
+
+    def test_parse_preset_repeated_and_dedup(self):
+        from ErisPulse.CLI.commands.init import InitCommand
+
+        assert InitCommand._parse_adapter_preset(["yunhu", "telegram,yunhu"]) == [
+            "yunhu",
+            "telegram",
+        ]
+
+    def test_parse_preset_strips_and_skips_empty(self):
+        from ErisPulse.CLI.commands.init import InitCommand
+
+        assert InitCommand._parse_adapter_preset([" a , , b "]) == ["a", "b"]
+
+    def test_parser_accepts_adapter_flag(self, fresh_cli):
+        args, _ = fresh_cli.parser.parse_known_args(
+            ["init", "-a", "yunhu", "--adapter", "tg,email"]
+        )
+        assert args.adapter == ["yunhu", "tg,email"]
+
+
+class TestGroupedHelp:
+    """主帮助分组渲染"""
+
+    def test_every_command_has_known_category(self, fresh_cli):
+        known = set(CLI._HELP_CATEGORY_ORDER)
+        for cmd in fresh_cli.registry.get_all():
+            assert cmd.category in known, (
+                "%s has unknown category '%s'" % (cmd.name, cmd.category)
+            )
+
+    def test_grouped_help_lists_all_commands(self, fresh_cli, capsys):
+        fresh_cli._print_grouped_help()
+        out = capsys.readouterr().out
+        for canonical in EXPECTED_COMMANDS:
+            assert canonical in out, "command '%s' missing from grouped help" % canonical
+        # 翻译键必须被解析（未注册的键会原样出现在输出中）
+        assert "cli.help.category" not in out
+
+    def test_grouped_help_lists_global_options(self, fresh_cli, capsys):
+        fresh_cli._print_grouped_help()
+        out = capsys.readouterr().out
+        assert "--no-banner" in out
+        assert "--yes" in out
+        assert "--version" in out
+
+
+class TestRunPreflight:
+    """run 启动前自检：默认警告不阻塞，--strict 检查失败退出，异常跳过"""
+
+    def _write_config(self, tmp_path, content: str):
+        config_dir = tmp_path / "config"
+        config_dir.mkdir(exist_ok=True)
+        (config_dir / "config.toml").write_text(content, encoding="utf-8")
+
+    def test_missing_config_is_info_only_even_strict(self, tmp_path, monkeypatch, capsys):
+        """配置缺失属正常首次启动：仅提示，strict 下也不退出"""
+        monkeypatch.chdir(tmp_path)
+
+        from ErisPulse.CLI.commands.run import RunCommand
+
+        RunCommand()._preflight(strict=True)
+        assert "config.toml" in capsys.readouterr().out
+
+    def test_broken_config_strict_exits(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        self._write_config(tmp_path, "[ErisPulse\nbroken =")
+
+        from ErisPulse.CLI.commands.run import RunCommand
+
+        with pytest.raises(SystemExit) as exc_info:
+            RunCommand()._preflight(strict=True)
+        assert exc_info.value.code == 1
+
+    def test_broken_config_non_strict_continues(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        self._write_config(tmp_path, "[ErisPulse\nbroken =")
+
+        from ErisPulse.CLI.commands.run import RunCommand
+
+        RunCommand()._preflight(strict=False)
+        out = capsys.readouterr().out
+        assert "config.toml" in out
+        # 错误详情附带解析行列（填充值为语言无关的英文 line/col）
+        assert "line 1" in out
+
+    def test_preflight_error_skips_startup(self, tmp_path, monkeypatch, capsys):
+        """自检自身异常（如组件发现失败）一律跳过，strict 下也不阻塞启动"""
+        monkeypatch.chdir(tmp_path)
+
+        import ErisPulse.CLI.utils.config_wizard as cw
+
+        def _boom():
+            raise RuntimeError("discovery failed")
+
+        monkeypatch.setattr(cw, "load_config_targets", _boom)
+
+        from ErisPulse.CLI.commands.run import RunCommand
+
+        RunCommand()._preflight(strict=True)
+
+
+class TestStrictResolution:
+    """run --strict 三态解析：显式参数临时覆盖，缺省跟随 framework.strict_mode"""
+
+    @staticmethod
+    def _patch_strict_mode(monkeypatch, level):
+        import ErisPulse.runtime.frame_config as fc
+
+        monkeypatch.setattr(fc, "get_config", lambda section=None: {"strict_mode": level})
+
+    def test_parser_accepts_strict_tri_state(self, fresh_cli):
+        args, _ = fresh_cli.parser.parse_known_args(["run", "--strict"])
+        assert args.strict is True
+        args, _ = fresh_cli.parser.parse_known_args(["run", "--no-strict"])
+        assert args.strict is False
+        args, _ = fresh_cli.parser.parse_known_args(["run"])
+        assert args.strict is None
+
+    def test_default_follows_config(self, monkeypatch):
+        from ErisPulse.CLI.commands.run import RunCommand
+
+        self._patch_strict_mode(monkeypatch, 0)
+        assert RunCommand()._resolve_strict(None) == (False, None)
+        self._patch_strict_mode(monkeypatch, 1)
+        assert RunCommand()._resolve_strict(None) == (True, None)
+        self._patch_strict_mode(monkeypatch, 2)
+        assert RunCommand()._resolve_strict(None) == (True, None)
+
+    def test_explicit_strict_raises_level(self, monkeypatch):
+        from ErisPulse.CLI.commands.run import RunCommand
+
+        self._patch_strict_mode(monkeypatch, 0)
+        assert RunCommand()._resolve_strict(True) == (True, 1)
+        self._patch_strict_mode(monkeypatch, 2)
+        # 配置已为致命级时不降级
+        assert RunCommand()._resolve_strict(True) == (True, 2)
+
+    def test_explicit_no_strict_forces_lenient(self, monkeypatch):
+        from ErisPulse.CLI.commands.run import RunCommand
+
+        self._patch_strict_mode(monkeypatch, 2)
+        assert RunCommand()._resolve_strict(False) == (False, 0)
+
+    def test_read_strict_mode_fallback_on_error(self, monkeypatch):
+        import ErisPulse.runtime.frame_config as fc
+
+        def _boom(section=None):
+            raise RuntimeError("config unavailable")
+
+        monkeypatch.setattr(fc, "get_config", _boom)
+
+        from ErisPulse.CLI.commands.run import RunCommand
+
+        assert RunCommand()._read_strict_mode() == 0
+
+    def test_execute_applies_strict_env_override(self, tmp_path, monkeypatch):
+        """--strict/--no-strict 经 ERISPULSE_FRAMEWORK_STRICT_MODE 临时覆盖框架级别"""
+        monkeypatch.chdir(tmp_path)
+        self._patch_strict_mode(monkeypatch, 2)
+        monkeypatch.delenv("ERISPULSE_FRAMEWORK_STRICT_MODE", raising=False)
+
+        from ErisPulse.CLI.commands.run import RunCommand
+
+        class Args:
+            script = "no_such_script.py"  # 预检与 env 注入后即报错返回
+            reload = False
+            strict = False  # --no-strict
+
+        RunCommand().execute(Args())
+        import os
+
+        assert os.environ["ERISPULSE_FRAMEWORK_STRICT_MODE"] == "0"
+
+
+class TestDoctorFix:
+    """doctor --fix 修复行为"""
+
+    @staticmethod
+    def _fix_context(config_path, *, missing=False, targets=None, hints=None):
+        return {
+            "config_missing": missing,
+            "config_path": config_path,
+            "incomplete_targets": targets or [],
+            "unrecoverable": hints or [],
+        }
+
+    def test_fix_creates_missing_config(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+
+        from ErisPulse.CLI.commands.doctor import DoctorCommand
+
+        config_path = tmp_path / "config" / "config.toml"
+        DoctorCommand._attempt_fixes(
+            DoctorCommand.__new__(DoctorCommand),
+            self._fix_context(config_path, missing=True),
+        )
+
+        content = config_path.read_text(encoding="utf-8")
+        assert "[ErisPulse.server]" in content
+        assert "[ErisPulse.logger]" in content
+
+    def test_fix_never_overwrites_existing_config(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+
+        from ErisPulse.CLI.commands.doctor import DoctorCommand
+
+        config_path = tmp_path / "config" / "config.toml"
+        config_path.parent.mkdir()
+        config_path.write_text("# keep user file\n", encoding="utf-8")
+
+        DoctorCommand._attempt_fixes(
+            DoctorCommand.__new__(DoctorCommand),
+            self._fix_context(config_path, missing=True),
+        )
+        assert config_path.read_text(encoding="utf-8") == "# keep user file\n"
+
+    def test_fix_incomplete_non_interactive_hints_only(self, tmp_path, monkeypatch, capsys):
+        """非交互环境不拉起向导，仅提示改用 epsdk config（pytest 下 stdin 非 TTY）"""
+        monkeypatch.chdir(tmp_path)
+
+        from ErisPulse.CLI.commands.doctor import DoctorCommand
+
+        class _FakeTarget:
+            name = "fake_adapter"
+
+        DoctorCommand._attempt_fixes(
+            DoctorCommand.__new__(DoctorCommand),
+            self._fix_context(
+                tmp_path / "config" / "config.toml", targets=[_FakeTarget()]
+            ),
+        )
+        assert "epsdk config" in capsys.readouterr().out
+
+    def test_fix_reports_unrecoverable_hints(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+
+        from ErisPulse.CLI.commands.doctor import DoctorCommand
+
+        DoctorCommand._attempt_fixes(
+            DoctorCommand.__new__(DoctorCommand),
+            self._fix_context(
+                tmp_path / "config" / "config.toml", hints=["network down"]
+            ),
+        )
+        assert "network down" in capsys.readouterr().out

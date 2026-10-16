@@ -11,12 +11,16 @@ import subprocess
 import sys
 import threading
 import time
-from argparse import ArgumentParser
+from argparse import ArgumentParser, BooleanOptionalAction, Namespace
 from pathlib import Path
 
 from rich.panel import Panel
 
-from ...runtime.file_watcher import FileSystemEventHandler, PollingObserver
+from ...runtime.file_watcher import (
+    FileChangeEvent,
+    FileSystemEventHandler,
+    PollingObserver,
+)
 from ..base import Command
 from ..console import console
 from ..constants import (
@@ -58,11 +62,11 @@ class ReloadHandler(FileSystemEventHandler):
         self._loop = loop
         self._last_reload = 0.0
 
-    def on_modified(self, event):
+    def on_modified(self, event: FileChangeEvent):
         """
         文件修改事件回调，对 .py 文件触发热重载
 
-        :param event: [FileSystemEvent] 文件系统事件
+        :param event: [FileChangeEvent] 文件系统事件
         """
         now = time.time()
         if now - self._last_reload < 1.0:
@@ -71,11 +75,11 @@ class ReloadHandler(FileSystemEventHandler):
             self._last_reload = now
             self._schedule_reload(event)
 
-    def _schedule_reload(self, event):
+    def _schedule_reload(self, event: FileChangeEvent):
         """
         在事件循环中调度 SDK 重启以执行热重载
 
-        :param event: [FileSystemEvent] 触发重载的文件系统事件
+        :param event: [FileChangeEvent] 触发重载的文件系统事件
         """
 
         async def _do_reload():
@@ -106,6 +110,7 @@ class RunCommand(Command):
     name = "run"
     description = i18n.t("cli.run.description")
     aliases = ["r"]
+    category = "project"
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(
@@ -117,8 +122,14 @@ class RunCommand(Command):
             default=False,
             help=i18n.t("cli.run.reload_help"),
         )
+        parser.add_argument(
+            "--strict",
+            action=BooleanOptionalAction,
+            default=None,
+            help=i18n.t("cli.run.strict_help"),
+        )
 
-    def execute(self, args):
+    def execute(self, args: Namespace):
         script = args.script
         reload_mode = args.reload
 
@@ -132,6 +143,20 @@ class RunCommand(Command):
             console.print(
                 f"[info]  {i18n.t('cli.run.venv_using', python=self.python_exe)}[/]"
             )
+
+        # 严格模式三态：--strict/--no-strict 临时覆盖（不落盘），缺省跟随
+        # ErisPulse.framework.strict_mode 配置
+        preflight_strict, strict_env = self._resolve_strict(
+            getattr(args, "strict", None)
+        )
+        if strict_env is not None:
+            # 经 ERISPULSE_FRAMEWORK_STRICT_MODE → ErisPulse.framework.strict_mode
+            # 的环境变量覆盖通道临时改写本次运行的框架严格级别；子进程由
+            # Popen 继承环境自动生效，runpy 同进程 / reload 内联模式同样读取
+            os.environ["ERISPULSE_FRAMEWORK_STRICT_MODE"] = str(strict_env)
+
+        # 启动前自检：配置可解析性 / 组件必填项（严格模式失败即退出）
+        self._preflight(strict=preflight_strict)
 
         if script:
             if not Path(script).exists():
@@ -159,6 +184,116 @@ class RunCommand(Command):
             self._run_internal(reload_mode)
 
     _RESTART_EXIT_CODE = HARD_RESTART_EXIT_CODE
+
+    def _read_strict_mode(self) -> int:
+        """
+        读取框架严格模式配置级别（``ErisPulse.framework.strict_mode``）
+
+        走 frame_config 的内存合并默认值通道（不要求配置文件存在该键），
+        环境变量 ``ERISPULSE_FRAMEWORK_STRICT_MODE`` 的覆盖同样生效。
+
+        :return: [int] 0=宽松 / 1=跳过 / 2=致命；读取失败按宽松(0)处理
+        """
+        try:
+            from ...runtime.frame_config import get_config
+
+            value = get_config("framework").get("strict_mode", 0)
+            return int(value) if isinstance(value, (int, float)) else 0
+        except Exception:
+            return 0
+
+    def _resolve_strict(self, strict_arg: bool | None) -> tuple[bool, int | None]:
+        """
+        解析严格模式三态：显式参数临时覆盖，缺省跟随框架配置
+
+        :param strict_arg: [bool | None] ``--strict`` / ``--no-strict`` 的解析值，
+            None 表示未传参
+        :return: ([tuple]) ``(预检是否严格, 框架级别注入值)``——注入值非 None 时
+            写入 ``ERISPULSE_FRAMEWORK_STRICT_MODE`` 临时覆盖本次运行的框架
+            严格级别（不落盘，子进程经环境继承）；None 表示框架级别不动
+        """
+        configured = self._read_strict_mode()
+        if strict_arg is None:
+            # 未传参：预检严格性跟随配置；框架级别不动
+            return configured >= 1, None
+        if strict_arg:
+            # 临时开启：预检失败即退出；框架级别提升为至少"跳过"级
+            # （配置已为 2 时保持 2，只升不降）
+            return True, max(configured, 1)
+        # 临时关闭：预检仅警告；框架级别压到宽松
+        return False, 0
+
+    def _preflight(self, strict: bool):
+        """
+        启动前快速自检：配置文件可解析性与已装组件必填项完整性
+
+        严格性来源：``--strict`` / ``--no-strict`` 显式指定，缺省跟随
+        ``ErisPulse.framework.strict_mode``（>=1 视为严格）。检查失败默认仅
+        警告并继续启动——框架对缺失配置按"正常首次启动"容忍，警告不应
+        挡住运行；``strict=True`` 时打印失败项并以退出码 1 终止。自检自身
+        出现任何异常（依赖缺失、组件发现失败等）一律跳过，绝不阻塞启动。
+        不含任何网络探测。
+
+        :param strict: [bool] 检查失败时是否强制退出
+        """
+        failures: list[str] = []
+        infos: list[str] = []
+        try:
+            config_path = Path("config") / "config.toml"
+            if not config_path.exists():
+                infos.append(
+                    i18n.t("cli.run.preflight_config_missing", path=config_path)
+                )
+            else:
+                import tomlclass
+                from tomlclass import TOMLParseError
+
+                try:
+                    tomlclass.load_path(str(config_path))
+                except TOMLParseError as e:
+                    failures.append(
+                        i18n.t(
+                            "cli.run.preflight_config_broken",
+                            path=config_path,
+                            error=(
+                                f"line {e.line if e.line is not None else '?'}, "
+                                f"col {e.col if e.col is not None else '?'}: {e.message}"
+                            ),
+                        )
+                    )
+
+            from ..utils.config_wizard import (
+                STATUS_INCOMPLETE,
+                get_target_status,
+                load_config_targets,
+            )
+
+            incomplete = []
+            for target in load_config_targets():
+                status, _errors = get_target_status(target)
+                # 与 doctor 同口径：仅"已启用但必填项缺失"判失败，
+                # 完全未配置属尚未开始配置，不算故障
+                if status == STATUS_INCOMPLETE:
+                    incomplete.append(target.name)
+            if incomplete:
+                failures.append(
+                    i18n.t("cli.run.preflight_incomplete", names=", ".join(incomplete))
+                )
+        except Exception:
+            console.print(f"[dim]  {i18n.t('cli.run.preflight_skipped')}[/]")
+            return
+
+        for info in infos:
+            console.print(f"[info]  {info}[/]")
+        if not failures:
+            return
+
+        for failure in failures:
+            console.print(f"[warning]  {failure}[/]")
+        if strict:
+            console.print(f"[error]  {i18n.t('cli.run.preflight_strict_exit')}[/]")
+            sys.exit(1)
+        console.print(f"[info]  {i18n.t('cli.run.preflight_warn_continue')}[/]")
 
     def _run_internal(self, reload_mode: bool):
         """
@@ -326,11 +461,11 @@ class RunCommand(Command):
             仅设置重载事件，不直接操作子进程（终止/重启由主线程统一处理）。
             """
 
-            def on_modified(self, event):
+            def on_modified(self, event: FileChangeEvent):
                 """
                 文件修改事件回调，设置重载信号供主线程处理
 
-                :param event: [FileSystemEvent] 文件系统事件
+                :param event: [FileChangeEvent] 文件系统事件
                 """
                 now = time.time()
                 if now - reload_state["last_reload"] < 1.0:

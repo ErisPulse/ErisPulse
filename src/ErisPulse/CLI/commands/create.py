@@ -789,6 +789,7 @@ class CreateCommand(Command):
     name = "create"
     description = i18n.t("cli.create.description")
     aliases = ["c", "new"]
+    category = "project"
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(

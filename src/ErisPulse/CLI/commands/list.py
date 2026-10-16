@@ -27,6 +27,7 @@ class ListCommand(Command):
     name = "list"
     description = i18n.t("cli.list.description")
     aliases = ["l", "ls"]
+    category = "components"
 
     def __init__(self):
         """

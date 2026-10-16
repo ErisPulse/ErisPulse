@@ -78,7 +78,7 @@ CLI 配置向导保存还是适配器/模块首次生成配置模板，框架都
 | `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |
 | `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |
 | `ErisPulse.logger.level` | `ERISPULSE_LOGGER_LEVEL` | `DEBUG` |
-| `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
+| `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `2` |
 
 行为说明：
 - **优先级最高**：环境变量覆盖「配置文件」与「默认值」，按原值类型自动转换（`bool` / `int` / `float` / 逗号分隔的 `list` / 字符串）
@@ -492,6 +492,10 @@ adapters = ["OldAdapter"]
 ```
 
 > 当某个组件被严格模式拒绝时，日志会明确提示如何恢复加载（加入豁免清单或调低级别）。
+
+#### 与 CLI 的联动
+
+`epsdk run` 的启动前自检（配置文件可解析性、组件必填配置完整性）默认跟随本配置：非 0 时检查失败即拒绝启动，0 时仅警告继续。也可以不改配置临时切换：`epsdk run --strict` 本次将自检与严格级别同时开启（级别只升不降，经 `ERISPULSE_FRAMEWORK_STRICT_MODE` 环境变量传导到运行进程），`--no-strict` 本次临时压到宽松并仅警告。
 
 ## 存储配置
 

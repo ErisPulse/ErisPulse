@@ -34,6 +34,7 @@ class ConfigCommand(Command):
     name = "config"
     description = i18n.t("cli.config.description")
     aliases = ["cfg", "conf"]
+    category = "config"
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(

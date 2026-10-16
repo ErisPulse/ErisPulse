@@ -24,6 +24,7 @@ class VersionCommand(Command):
     name = "version"
     description = i18n.t("cli.version.description")
     aliases = ["ver"]
+    category = "misc"
 
     def add_arguments(self, parser):
         """version 命令无额外参数"""
