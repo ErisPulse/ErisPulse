@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1725,
+  "total_keywords": 1728,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2831,7 +2831,7 @@
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 267,
+        "line": 291,
         "level": 3,
         "title": "Docker 方式"
       }
@@ -4377,7 +4377,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 383,
+        "line": 396,
         "level": 3,
         "title": "create"
       }
@@ -4385,7 +4385,7 @@
     "delConfig：刪除配置鍵": [
       {
         "document": "user-guide/configuration.md",
-        "line": 210,
+        "line": 211,
         "level": 3,
         "title": "delConfig：刪除配置鍵"
       }
@@ -4433,7 +4433,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 530,
+        "line": 542,
         "level": 3,
         "title": "doctor"
       }
@@ -4465,7 +4465,7 @@
     "getAllConfig：全量配置快照": [
       {
         "document": "user-guide/configuration.md",
-        "line": 198,
+        "line": 199,
         "level": 3,
         "title": "getAllConfig：全量配置快照"
       }
@@ -4497,7 +4497,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 441,
+        "line": 453,
         "level": 3,
         "title": "i18n"
       }
@@ -4505,7 +4505,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 333,
+        "line": 342,
         "level": 3,
         "title": "init"
       }
@@ -4617,7 +4617,7 @@
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 277,
+        "line": 301,
         "level": 3,
         "title": "pip 方式"
       }
@@ -4737,7 +4737,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 478,
+        "line": 490,
         "level": 3,
         "title": "types"
       }
@@ -4764,6 +4764,22 @@
         "line": 50,
         "level": 4,
         "title": "user"
+      }
+    ],
+    "uv tool 分離部署（CLI 與項目環境隔離）": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 248,
+        "level": 3,
+        "title": "uv tool 分離部署（CLI 與項目環境隔離）"
+      }
+    ],
+    "uv tool 方式": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 308,
+        "level": 3,
+        "title": "uv tool 方式"
       }
     ],
     "v5 範式更新（1.1.0）": [
@@ -5023,7 +5039,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 712,
+        "line": 717,
         "level": 2,
         "title": "下一步"
       },
@@ -5163,7 +5179,7 @@
     "主人系統配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 308,
+        "line": 309,
         "level": 2,
         "title": "主人系統配置"
       }
@@ -5171,7 +5187,7 @@
     "主動 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 451,
+        "line": 452,
         "level": 3,
         "title": "主動 GC 配置"
       }
@@ -5499,7 +5515,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 544,
+        "line": 549,
         "level": 2,
         "title": "事件配置"
       }
@@ -5623,7 +5639,7 @@
     "互動式安裝": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 559,
+        "line": 581,
         "level": 2,
         "title": "互動式安裝"
       }
@@ -5741,7 +5757,7 @@
     "伺服器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 278,
+        "line": 279,
         "level": 2,
         "title": "伺服器配置"
       }
@@ -5781,7 +5797,7 @@
     "作用域配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 613,
+        "line": 618,
         "level": 2,
         "title": "作用域配置（scope）"
       }
@@ -5982,14 +5998,6 @@
         "title": "保留錯誤段"
       }
     ],
-    "信息查詢命令": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 166,
-        "level": 2,
-        "title": "信息查詢命令"
-      }
-    ],
     "修改表結構": [
       {
         "document": "advanced/sql-builder.md",
@@ -6039,7 +6047,7 @@
     "備份": [
       {
         "document": "user-guide/deployment.md",
-        "line": 299,
+        "line": 333,
         "level": 3,
         "title": "備份"
       }
@@ -6224,20 +6232,20 @@
         "title": "全參數一覽"
       }
     ],
+    "全域參數": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 525,
+        "level": 2,
+        "title": "全域參數"
+      }
+    ],
     "全局兜底：`default_allow`": [
       {
         "document": "advanced/scope.md",
         "line": 52,
         "level": 2,
         "title": "全局兜底：`default_allow`"
-      }
-    ],
-    "全局參數": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 513,
-        "level": 2,
-        "title": "全局參數"
       }
     ],
     "全局配置": [
@@ -6387,7 +6395,7 @@
     "切換語言": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 649,
+        "line": 671,
         "level": 3,
         "title": "切換語言"
       }
@@ -6411,7 +6419,7 @@
     "列出組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 587,
+        "line": 609,
         "level": 3,
         "title": "列出組件"
       }
@@ -6419,7 +6427,7 @@
     "初始化專案": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 672,
+        "line": 694,
         "level": 3,
         "title": "初始化專案"
       }
@@ -6475,7 +6483,7 @@
     "判定鏈與運行時增刪": [
       {
         "document": "user-guide/configuration.md",
-        "line": 334,
+        "line": 335,
         "level": 3,
         "title": "判定鏈與運行時增刪"
       }
@@ -6617,7 +6625,7 @@
     "升級組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 626,
+        "line": 648,
         "level": 3,
         "title": "升級組件"
       }
@@ -6649,7 +6657,7 @@
     "卸載組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 603,
+        "line": 625,
         "level": 3,
         "title": "卸載組件"
       }
@@ -6991,7 +6999,7 @@
     "命令解析配置（event.command）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 710,
+        "line": 715,
         "level": 2,
         "title": "命令解析配置（event.command）"
       }
@@ -7035,7 +7043,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 546,
+        "line": 551,
         "level": 3,
         "title": "命令配置"
       }
@@ -7107,7 +7115,7 @@
     "嚴格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 466,
+        "line": 467,
         "level": 3,
         "title": "嚴格模式"
       }
@@ -7263,7 +7271,7 @@
     "國際化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 573,
+        "line": 578,
         "level": 2,
         "title": "國際化配置"
       }
@@ -7723,7 +7731,7 @@
     "多實例部署": [
       {
         "document": "user-guide/deployment.md",
-        "line": 257,
+        "line": 281,
         "level": 2,
         "title": "多實例部署"
       }
@@ -8053,7 +8061,7 @@
     "存儲配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 495,
+        "line": 500,
         "level": 2,
         "title": "存儲配置"
       }
@@ -8069,7 +8077,7 @@
     "安全建議": [
       {
         "document": "user-guide/deployment.md",
-        "line": 248,
+        "line": 272,
         "level": 2,
         "title": "安全建議"
       }
@@ -8163,7 +8171,7 @@
     "安裝模組": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 574,
+        "line": 596,
         "level": 3,
         "title": "安裝模組"
       }
@@ -8239,7 +8247,7 @@
     "完整配置範例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 224,
+        "line": 225,
         "level": 2,
         "title": "完整配置範例"
       }
@@ -8298,6 +8306,14 @@
         "line": 112,
         "level": 4,
         "title": "將元組轉為字典"
+      }
+    ],
+    "專案管理命令": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 335,
+        "level": 2,
+        "title": "專案管理命令"
       }
     ],
     "對最終用戶": [
@@ -8647,7 +8663,7 @@
     "常見用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 572,
+        "line": 594,
         "level": 2,
         "title": "常見用法"
       }
@@ -8863,7 +8879,7 @@
     "建立腳手架": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 682,
+        "line": 704,
         "level": 3,
         "title": "建立腳手架"
       }
@@ -10063,7 +10079,7 @@
     "日誌配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 382,
+        "line": 383,
         "level": 2,
         "title": "日誌配置"
       }
@@ -10087,7 +10103,7 @@
     "更新與維護": [
       {
         "document": "user-guide/deployment.md",
-        "line": 265,
+        "line": 289,
         "level": 2,
         "title": "更新與維護"
       }
@@ -10565,7 +10581,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 430,
+        "line": 431,
         "level": 2,
         "title": "框架配置"
       }
@@ -10949,7 +10965,7 @@
     "模組配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 584,
+        "line": 589,
         "level": 2,
         "title": "模組配置"
       }
@@ -11423,7 +11439,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 562,
+        "line": 567,
         "level": 3,
         "title": "消息配置"
       }
@@ -11751,7 +11767,7 @@
     "環境診斷": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 528,
+        "line": 540,
         "level": 2,
         "title": "環境診斷"
       }
@@ -11841,7 +11857,7 @@
     "生成類型存根": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 662,
+        "line": 684,
         "level": 3,
         "title": "生成類型存根"
       }
@@ -11873,7 +11889,7 @@
     "用戶優先：主人生效範圍由用戶最終決定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 376,
+        "line": 377,
         "level": 3,
         "title": "用戶優先：主人生效範圍由用戶最終決定"
       }
@@ -12839,7 +12855,7 @@
     "統一事件覆寫配置（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 663,
+        "line": 668,
         "level": 2,
         "title": "統一事件覆寫配置（event.overrides）"
       }
@@ -13111,7 +13127,7 @@
     "自定義身份源（provider）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 348,
+        "line": 349,
         "level": 3,
         "title": "自定義身份源（provider）"
       }
@@ -13154,6 +13170,14 @@
         "line": 586,
         "level": 2,
         "title": "與 CLI i18n 的關係"
+      }
+    ],
+    "與 CLI 的聯動": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 496,
+        "level": 4,
+        "title": "與 CLI 的聯動"
       }
     ],
     "與 SDK 的關係": [
@@ -13631,7 +13655,7 @@
     "語言命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 435,
+        "line": 447,
         "level": 2,
         "title": "語言命令"
       }
@@ -13807,7 +13831,7 @@
     "豁免清單": [
       {
         "document": "user-guide/configuration.md",
-        "line": 483,
+        "line": 484,
         "level": 4,
         "title": "豁免清單"
       }
@@ -13842,6 +13866,14 @@
         "line": 14,
         "level": 3,
         "title": "資料模型"
+      }
+    ],
+    "資訊查詢命令": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 166,
+        "level": 2,
+        "title": "資訊查詢命令"
       }
     ],
     "質量檢查清單": [
@@ -14377,7 +14409,7 @@
     "運行專案": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 639,
+        "line": 661,
         "level": 3,
         "title": "運行專案"
       }
@@ -14398,12 +14430,12 @@
         "title": "運行時 API"
       }
     ],
-    "運行時熱重載伺服器配置": [
+    "運行時熱重載伺服器設定": [
       {
         "document": "user-guide/deployment.md",
-        "line": 284,
+        "line": 318,
         "level": 3,
-        "title": "運行時熱重載伺服器配置"
+        "title": "運行時熱重載伺服器設定"
       }
     ],
     "運行時細粒度控制": [
@@ -14845,7 +14877,7 @@
     "配置組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 613,
+        "line": 635,
         "level": 3,
         "title": "配置組件"
       }
@@ -14917,7 +14949,7 @@
     "配置讀取與刪除 API": [
       {
         "document": "user-guide/configuration.md",
-        "line": 196,
+        "line": 197,
         "level": 2,
         "title": "配置讀取與刪除 API"
       }
@@ -15464,14 +15496,6 @@
         "title": "項目模板"
       }
     ],
-    "項目管理命令": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 326,
-        "level": 2,
-        "title": "項目管理命令"
-      }
-    ],
     "項目結構": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -15503,7 +15527,7 @@
     "類型存根命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 472,
+        "line": 484,
         "level": 2,
         "title": "類型存根命令"
       }

@@ -64,3 +64,15 @@
 
 ---
 
+
+##### `initial_config_toml() -> str`
+
+生成初始 config.toml 全文（注释跟随脚手架语言）
+
+init 建项与 ``doctor --fix`` 补建缺失配置共用的单一真相源，
+两处生成的文件内容保持一致。
+
+**返回值**: 初始 config.toml 内容（含 server / logger 基础节）
+
+---
+

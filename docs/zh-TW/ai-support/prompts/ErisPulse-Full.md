@@ -3034,9 +3034,9 @@ sudo apt install python3-venv
 
 # CLI 命令參考
 
-ErisPulse 命令行工具（`epsdk`）提供專案管理和套件管理功能。
+ErisPulse 命令行工具（`epsdk`）提供項目管理和套件管理功能。
 
-> **提示**：所有命令均可通過 `epsdk <命令> --help` 查看詳細的參數說明。
+> **提示**：所有命令均可透過 `epsdk <命令> --help` 查看詳細的參數說明。`epsdk`（不帶命令）的主幫助按類別分組展示：**項目**（init / create / run）、**組件管理**（install / uninstall / upgrade / list / list-remote / types）、**配置與診斷**（config / doctor / i18n）、**其他**（self-update / version）。
 
 ---
 
@@ -3053,7 +3053,7 @@ ErisPulse 命令行工具（`epsdk`）提供專案管理和套件管理功能。
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `doctor` | `diag` | `[--verbose]` | 診斷環境並輸出健康報告 |
+| `doctor` | `diag` | `[--verbose] [--fix]` | 診斷環境並輸出健康報告；`--fix` 嘗試自動修復 |
 
 ### install
 
@@ -3072,18 +3072,18 @@ ErisPulse 命令行工具（`epsdk`）提供專案管理和套件管理功能。
 | `--user` | | 安裝到使用者 site-packages 目錄 |
 | `--no-deps` | | 不安裝相依性 |
 | `--target` | `-t` | 安裝到指定目錄 |
-| `--index-url` | | 指定 PyPI 鏡像來源地址 |
-| `--extra-index-url` | | 預設 PyPI 鏡像來源地址（可多次指定） |
+| `--index-url` | | 指定 PyPI 鏡像源位址 |
+| `--extra-index-url` | | 額外 PyPI 鏡像源位址（可多次指定） |
 | `--no-cache-dir` | | 禁用快取 |
 | `--requirement` | `-r` | 從 requirements 檔案安裝 |
-| `--constraint` | `-c` | 從約束檔安裝 |
+| `--constraint` | `-c` | 從約束檔案安裝 |
 | `--force-reinstall` | | 強制重新安裝 |
 | `--ignore-installed` | | 忽略已安裝的套件 |
 | `--compile` | | 安裝後編譯 .pyc 檔案 |
 | `--no-compile` | | 安裝後不編譯 .pyc 檔案 |
 | `--prefix` | | 安裝到指定前綴目錄 |
 | `--src` | | 可編輯安裝時使用的原始碼目錄 |
-| `--config-settings` | | 傳遞給建構後端的設定（可多次指定） |
+| `--config-settings` | | 傳遞給建構後端的配置（可多次指定） |
 | `--no-binary` | | 限制不使用二進位套件（格式如 `:all:`） |
 | `--only-binary` | | 限制僅使用二進位套件（格式如 `:all:`） |
 | `--prefer-binary` | | 优先選擇二進位套件 |
@@ -3093,7 +3093,7 @@ ErisPulse 命令行工具（`epsdk`）提供專案管理和套件管理功能。
 | `--break-system-packages` | | 允許修改系統套件管理器管理的 Python 套件 |
 | `--no-uv` | | 使用 pip 代替 uv |
 
-**示例：**
+**範例：**
 
 ```bash
 # 安裝單個模組
@@ -3102,7 +3102,7 @@ epsdk install Weather
 # 安裝多個模組
 epsdk install Yunhu Weather
 
-# 從鏡像來源安裝並升級
+# 從鏡像源安裝並升級
 epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 可編輯模式安裝（開發模式）
@@ -3122,7 +3122,7 @@ epsdk install -e ./my-adapter
 | `<套件>...` | 要卸載的套件名稱，可指定多個 |
 | `--no-uv` | 使用 pip 代替 uv |
 
-**示例：**
+**範例：**
 
 ```bash
 # 卸載單個模組
@@ -3147,7 +3147,7 @@ epsdk uninstall Yunhu Weather
 | `--pre` | | 允許升級到預發布版本 |
 | `--no-uv` | | 使用 pip 代替 uv |
 
-**示例：**
+**範例：**
 
 ```bash
 # 升級所有套件
@@ -3175,7 +3175,7 @@ epsdk upgrade -f
 | `--force` | `-f` | 強制更新，跳過確認 |
 | `--no-uv` | | 使用 pip 代替 uv |
 
-**示例：**
+**範例：**
 
 ```bash
 # 更新到最新穩定版
@@ -3197,13 +3197,13 @@ epsdk self-update -f
 
 ---
 
-## 信息查詢命令
+## 資訊查詢命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
 | `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | 列出已安裝的組件 |
 | `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | 列出遠端可用的組件 |
-| `version` | `ver` | | 显示 SDK 與 Python 版本信息（與 `-V` 等效） |
+| `version` | `ver` | | 顯示 SDK 與 Python 版本資訊（與 `-V` 等效） |
 
 ### list
 
@@ -3218,7 +3218,7 @@ epsdk self-update -f
 | `--type` | `-t` | 指定類型：`modules`、`adapters`、`all`（預設） |
 | `--outdated` | `-o` | 僅顯示可升級的套件 |
 
-**示例：**
+**範例：**
 
 ```bash
 # 列出所有已安裝的組件
@@ -3247,7 +3247,7 @@ epsdk list -o
 | `--type` | `-t` | 指定類型：`modules`、`adapters`、`all`（預設） |
 | `--refresh` | `-r` | 強制刷新遠端套件列表快取 |
 
-**示例：**
+**範例：**
 
 ```bash
 # 列出所有遠端可用組件
@@ -3266,13 +3266,13 @@ epsdk list-remote -r
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `config` | `cfg`, `conf` | `[name] [--list/-l] [--json]` | 互動式配置適配器/模組的宣告式配置項 |
+| `config` | `cfg`, `conf` | `[name] [--list/-l] [--json]` | 互動式配置適配器/模組的宣告式配置項目 |
 
 ### config
 
-互動式填寫適配器/模組的宣告式配置項。向導由適配器/模組宣告的配置類（`ConfigClass` / `AccountConfigClass`）驅動，自動生成表單並驗證，無需手寫 config.toml。
+互動式填寫適配器/模組的宣告式配置項目。向導由適配器/模組宣告的配置類（`ConfigClass` / `AccountConfigClass`）驅動，自動生成表單並驗證，無需手寫 config.toml。
 
-適配器額外支援多帳戶（bot 帳戶）管理：新增/編輯/刪除帳戶，以及啟用/停用開關。
+適配器額外支援多帳戶（bot 帳戶）管理：新增/編輯/刪除帳戶，以及啟用/禁用開關。
 
 **別名：** `cfg`, `conf`
 
@@ -3284,7 +3284,7 @@ epsdk list-remote -r
 | `--list` | `-l` | 僅列出所有目標的配置狀態，不進入向導 |
 | `--json` | | 以 JSON 輸出全部目標及其配置狀態（供 CI / 腳本消費），不進入向導 |
 
-**示例：**
+**範例：**
 
 ```bash
 # 查看所有適配器/模組的配置狀態
@@ -3306,8 +3306,8 @@ epsdk config MyModule
 **說明：**
 
 - 配置狀態分為四檔：`已就緒`（驗證通過）、`待完善`（必填項缺失或驗證失敗）、`未配置`（從未生成）、`無配置`（目標未宣告配置類）
-- 字段值帶來源標註：已有配置顯示 `（目前:值）`，未配置時顯示 schema 預設值 `（預設:值）`；直接回車即保留該值
-- 密鑰類字段（宣告 `secret`）輸入時不回顯，回車保留已設定的值
+- 字段值帶來源標註：已有配置顯示 `（目前:值）`，未配置時顯示 schema 預設值 `（預設:值）`；直接按回車即保留該值
+- 密鑰類字段（宣告 `secret`）輸入時不回顯，按回車保留已設定的值
 - 互動選擇模式下，單個向導結束後會回到選擇選單（狀態已刷新），可連續配置多個目標，留空退出
 - 全局表單驗證失敗且放棄重新填寫時，本次向導中止且不寫入任何配置（避免產生"已啟用但配置不完整"的半成品狀態）
 - 保存後立即寫入 `config/config.toml`，Dashboard 與運行中的 SDK 均可見；運行中的適配器如需應用新帳戶配置，重啟進程即可
@@ -3324,7 +3324,7 @@ epsdk config MyModule
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `run` | `r` | `[script] [--reload]` | 運行指定腳本或 SDK |
+| `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | 運行指定腳本或 SDK |
 
 ### run
 
@@ -3338,8 +3338,9 @@ epsdk config MyModule
 |------|------|
 | `[script]` | 要運行的腳本檔案，不指定則運行 SDK |
 | `--reload` | 啟用熱重載模式，監控檔案變更自動重啟 |
+| `--strict` / `--no-strict` | 臨時開啟 / 關閉嚴格模式（僅本次生效，不寫入配置）；預設跟隨 `ErisPulse.framework.strict_mode` |
 
-**示例：**
+**範例：**
 
 ```bash
 # 直接運行 SDK
@@ -3353,35 +3354,44 @@ epsdk run main.py --reload
 
 # SDK 熱重載模式
 epsdk run --reload
+
+# 臨時嚴格模式：啟動前自檢失敗即退出，框架嚴格級別本次提升為至少 1
+epsdk run main.py --strict
+
+# 臨時寬鬆模式（配置裡開了 strict_mode 但本次想先跑起來）
+epsdk run main.py --no-strict
 ```
+
+**啟動前自檢：** `run` 啟動前會快速檢查 `config/config.toml` 可解析性與已安裝組件的必填配置完整性，嚴格性預設跟隨 `ErisPulse.framework.strict_mode`（非 0 時檢查失敗即退出，0 時僅警告繼續）。配置檔案缺失視為正常首次啟動，僅提示不判失敗。`--strict` 臨時開啟：預檢失敗即退出，同時框架嚴格級別本次提升為至少 1（跳過不合規組件，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到運行進程，不寫入配置檔案）；`--no-strict` 反之臨時壓到寬鬆。自檢自身異常時自動跳過，不含網路探測，不會阻塞啟動。
 
 ---
 
-## 項目管理命令
+## 專案管理命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 項目 |
-| `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | 創建模組/適配器腳手架；`pack` 將本地插件轉換為可發布項目 |
+| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--adapter/-a <name>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 專案 |
+| `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | 建立模組/適配器腳手架；`pack` 將本地插件轉換為可發布專案 |
 
 ### init
 
-初始化一個新的 ErisPulse 項目。支援互動式與快速模式，2.8.4 起生成 `pyproject.toml`（依賴清單）、可選創建項目 `.venv` 虛擬環境並安裝框架與適配器，並支援**指定任意目錄**。
+初始化一個新的 ErisPulse 專案。支援互動式與快速模式，2.8.4 起生成 `pyproject.toml`（相依性清單）、可選建立專案 `.venv` 虛擬環境並安裝框架與適配器，並支援**指定任意目錄**。
 
 **參數：**
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
 | `[path]` | | 目標路徑（可包含父目錄，如 `../apps/mybot`；純名稱等價 `--project-name`） |
-| `--project-name` | `-n` | 項目名稱 |
-| `--path` | | 項目父目錄（與 `-n` 組合指定建立位置） |
-| `--quick` | `-q` | 快速模式，跳過互動式向導（預設建立 `.venv` 並安裝依賴） |
+| `--project-name` | `-n` | 專案名稱 |
+| `--path` | | 專案父目錄（與 `-n` 組合指定建立位置） |
+| `--adapter` | `-a` | 預選要安裝的適配器（可重複傳參或逗號分隔），傳入時跳過適配器詢問與選擇 |
+| `--quick` | `-q` | 快速模式，跳過互動式向導（預設建立 `.venv` 並安裝相依性） |
 | `--force` | `-f` | 強制覆蓋現有配置檔案 |
 | `--here` | | 在當前目錄初始化，不建立子目錄 |
 | `--no-uv` | | 使用 pip 代替 uv |
-| `--no-venv` | | 跳過虛擬環境建立與依賴安裝 |
+| `--no-venv` | | 跳過虛擬環境建立與相依性安裝 |
 
-**示例：**
+**範例：**
 
 ```bash
 # 互動式初始化
@@ -3390,10 +3400,13 @@ epsdk init
 # 快速初始化（當前目錄下建立 my_bot/，含 pyproject.toml + .venv）
 epsdk init -q -n my_bot
 
+# 快速初始化並預裝適配器（免互動，腳本 / CI 場景）
+epsdk init -q -n my_bot --adapter yunhu,telegram
+
 # 指定任意目錄初始化（../apps/mybot）
 epsdk init ../apps/mybot
 
-# 組合父目錄與項目名
+# 組合父目錄與專案名
 epsdk init -n my_bot --path ../apps
 
 # 強制覆蓋已有配置
@@ -3402,55 +3415,55 @@ epsdk init -f
 # 在當前目錄初始化
 epsdk init --here -n my_bot
 
-# 只生成項目結構，不建立虛擬環境
+# 只生成專案結構，不建立虛擬環境
 epsdk init --no-venv -n my_bot
 ```
 
-init 產物：`main.py`、`pyproject.toml`（依賴清單）、`config/config.toml` + `config.full.example`、`config/ssl/`、`logs/`、`.gitignore`、`README.md`；選擇建立虛擬環境時額外生成 `.venv` 並將 `erispulse` 與所選適配器安裝其中。
+init 產物：`main.py`、`pyproject.toml`（相依性清單）、`config/config.toml` + `config.full.example`、`config/ssl/`、`logs/`、`.gitignore`、`README.md`；選擇建立虛擬環境時額外生成 `.venv` 並將 `erispulse` 與所選適配器安裝其中。
 
 > [!NOTE]
-> `.gitignore` 為分組式模板：Python 字節碼與建構產物、虛擬環境與 `.env`、工具快取、編輯器與系統檔案，並**整體排除 `config/` 與 `logs/` 運行時目錄**——`config.toml` 含適配器令牌等敏感資訊，不建議入庫；共享配置骨架請使用 `config.full.example`。
+> `.gitignore` 為分組式範本：Python 字節碼與建構產物、虛擬環境與 `.env`、工具快取、編輯器與系統檔案，並**整體排除 `config/` 與 `logs/` 運行時目錄**——`config.toml` 含適配器權杖等敏感資訊，不建議庫入；共享配置骨架請使用 `config.full.example`。
 
 > [!WARNING]
-> **不要使用 `uv run epsdk run` 運行機器人**。`uv run` 在無 `pyproject.toml` 的目錄執行時建立**一次性隔離環境**——在其中透過 `epsdk install` 安裝的適配器不會持久化。請在項目目錄內使用 `epsdk run`（自動使用項目 `.venv`），或先激活虛擬環境再運行。
+> **不要使用 `uv run epsdk run` 運行機器人**。`uv run` 在無 `pyproject.toml` 的目錄執行時建立**一次性的隔離環境**——在其中透過 `epsdk install` 安裝的適配器不會持久化。請在專案目錄內使用 `epsdk run`（自動使用專案 `.venv`），或先激活虛擬環境再運行。
 
 ### create
 
-建立 ErisPulse 模組或適配器的腳手架項目；`pack` 子命令將本地插件（`plugins/` 目錄）轉換為可發布的標準項目。
+建立 ErisPulse 模組或適配器的腳手架專案；`pack` 子命令將本地插件（`plugins/` 目錄）轉換為可發布的標準專案。
 
 **參數：**
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `{module,adapter,pack}` | | 要建立的類型：`module` / `adapter` / `pack`（插件轉項目）|
-| `--name` | `-n` | 項目名稱（PascalCase） |
-| `--description` | `-d` | 項目描述 |
+| `{module,adapter,pack}` | | 要建立的類型：`module` / `adapter` / `pack`（插件轉專案）|
+| `--name` | `-n` | 專案名稱（PascalCase） |
+| `--description` | `-d` | 專案描述 |
 | `--author` | `-a` | 作者名稱 |
 | `--email` | `-e` | 作者電子信箱 |
-| `--homepage` | | 項目主頁 URL |
+| `--homepage` | | 專案首頁 URL |
 | `--output` | `-o` | 輸出目錄（預設當前目錄） |
 | `--force` | `-f` | 強制覆蓋已存在的目錄 |
 | `--local` | | 建立本地插件（`module` / `adapter` 可用）：生成 `plugins/<name>/` 包結構，免打包安裝 |
 
-**示例：**
+**範例：**
 
 ```bash
 # 互動式建立（引導選擇類型和填寫資訊）
 epsdk create
 
-# 直接建立 Module 項目
+# 直接建立 Module 專案
 epsdk create module -n MyModule
 
-# 建立本地插件（放入項目 plugins/ 目錄，啟動時自動發現）
+# 建立本地插件（放入專案 plugins/ 目錄，啟動時自動發現）
 epsdk create module -n MyModule --local
 
 # 建立本地適配器插件（同上，免打包開發）
 epsdk create adapter -n MyAdapter --local
 
-# 直接建立 Adapter 項目
+# 直接建立 Adapter 專案
 epsdk create adapter -n MyAdapter
 
-# 將本地插件轉換為可發布項目（互動選擇插件 → 補全元資訊 → 生成標準項目）
+# 將本地插件轉換為可發布專案（互動選擇插件 → 補全元資訊 → 生成標準專案）
 epsdk create pack
 
 # 完整參數
@@ -3464,7 +3477,6 @@ epsdk create module -n MyModule -f
 ```
 
 ---
-[!TOC]
 
 ## 語言命令
 
@@ -3474,7 +3486,7 @@ epsdk create module -n MyModule -f
 
 ### i18n
 
-查看當前 CLI 語言、列出支援的語言、切換顯示語言。若不指定參數則進入互動式選擇介面。
+查看目前 CLI 語言、列出支援的語言、切換顯示語言。若不指定參數則進入互動式選擇介面。
 
 **別名：** `language`, `lang`
 
@@ -3485,7 +3497,7 @@ epsdk create module -n MyModule -f
 | `[lang]` | | 要切換的語言代碼（如 `zh-CN`、`en`、`ja`、`ru`） |
 | `--list` | `-l` | 列出所有支援的語言 |
 
-**示例：**
+**範例：**
 
 ```bash
 # 互動式選擇語言
@@ -3507,7 +3519,7 @@ epsdk i18n --list
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | 生成類型存根檔案以啟用 IDE 补全 |
+| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | 生成類型存根檔案以啟用 IDE 補全 |
 
 ### types
 
@@ -3526,7 +3538,7 @@ epsdk i18n --list
 
 > **注意：** `--adapters-only` 與 `--modules-only` 互斥，同時指定時後者生效。
 
-**示例：**
+**範例：**
 
 ```bash
 # 為所有已安裝的模組和適配器生成類型存根
@@ -3544,7 +3556,7 @@ epsdk types --force
 
 ---
 
-## 全局參數
+## 全域參數
 
 以下參數適用於所有命令：
 
@@ -3553,8 +3565,8 @@ epsdk types --force
 | `--help` | `-h` | 顯示幫助資訊 |
 | `--version` | `-V` | 顯示版本資訊 |
 | `--verbose` | `-v` | 顯示詳細輸出（可疊加 `-vv`/`-vvv`） |
-| `--no-color` | | 禁用彩色輸出（適合 CI / 日誌採集） |
-| `--no-banner` | | 跳過啟動 Banner（腳本化調用 / CI 場景；非互動終端與 `ERISPULSE_NO_BANNER=1` 下自動靜默） |
+| `--no-color` | | 禁用彩色輸出（適合 CI / 日誌收集） |
+| `--no-banner` | | 跳過啟動 Banner（腳本化呼叫 / CI 場景；非互動終端與 `ERISPULSE_NO_BANNER=1` 下自動靜默） |
 | `--yes` | `-y` | 自動確認所有互動提示（非互動式運行） |
 
 ---
@@ -3566,19 +3578,26 @@ epsdk types --force
 > [!NOTE]
 > 本命令需要 ErisPulse **2.7.0+**。
 
-診斷當前 CLI 運行環境，輸出健康報告。用於排查"為什麼裝不上 / 連不上"類問題。
+診斷目前 CLI 運行環境，輸出健康報告。用於排查"為什麼裝不上 / 連不上"類問題。
 
 | 參數 | 說明 |
 |------|------|
 | `--verbose` | 顯示詳細診斷資訊 |
+| `--fix` | 診斷後嘗試自動修復可修復的問題 |
 
 **檢查項**：
 - **Python**：解釋器版本與路徑
 - **安裝後端**：使用 `uv` 還是 `pip`
 - **目標解釋器**：套件實際安裝到的目標 Python 環境
-- **設定檔**：`config/config.toml` 是否存在
+- **配置檔案**：`config/config.toml` 是否存在
+- **組件配置**：已安裝組件的宣告式配置完整性（"裝好了跑不起來"多因必填項缺失）
 - **PyPI 連通性**：能否存取 PyPI（並顯示發現的組件數）
 - **系統代理**：是否檢測到代理
+
+**自動修復（`--fix`）**：
+- `config.toml` 缺失 → 按目前語言生成初始配置檔案（與 `init` 建項同源）
+- 組件配置"待完善" → 逐個拉起互動式配置向導補全必填項（非互動環境提示改用 `epsdk config <名稱>`）
+- Python 版本過低、PyPI 無法存取等需人工介入的問題 → 僅輸出行動建議
 
 ```bash
 # 運行環境診斷
@@ -3586,6 +3605,9 @@ epsdk doctor
 
 # 使用別名
 epsdk diag
+
+# 診斷並嘗試自動修復
+epsdk doctor --fix
 ```
 
 ---
@@ -3741,13 +3763,13 @@ epsdk create module -n MyModule -f
 > [!NOTE]
 > **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
 
-> 此文件會介紹框架的配置文件，如果有第三方模組需要設定，請參考模組的文件。
+> 這個文件會介紹框架的配置文件，如果有第三方模組需要配置，請參考模組的文件。
 
-ErisPulse 使用 TOML 格式的配置文件 `config/config.toml` 來管理專案設定。
+ErisPulse 使用 TOML 格式的配置文件 `config/config.toml` 來管理專案配置。
 
 ## 配置文件位置
 
-配置文件位於專案根目錄的 `config/` 資料夾中：
+配置文件位於專案根目錄的 `config/` 檔案夾中：
 
 ```
 project/
@@ -3758,7 +3780,7 @@ project/
 
 ### 多實例提示與鎖文件
 
-框架啟動時會在 `config/` 目錄下建立 `.erispulse_config.lock` 鎖文件並持有到進程退出（用於偵測多實例共享配置目錄）。如果日誌出現「偵測到配置文件可能正被另一個 ErisPulse 實例同時使用」的警告，說明有**兩個以上的 ErisPulse 進程在寫同一份配置**（典型場景：多個容器掛載了同一個主機 `config/` 目錄）——併發寫入會互相覆蓋，請為每個實例使用獨立的配置目錄。
+框架啟動時會在 `config/` 目錄下建立 `.erispulse_config.lock` 鎖文件並持有到進程退出（用於檢測多實例共享配置目錄）。如果日誌出現「檢測到配置文件可能正被另一個 ErisPulse 實例同時使用」的告警，說明有**兩個以上的 ErisPulse 進程在寫同一份配置**（典型場景：多個容器掛載了同一個宿主機 `config/` 目錄）——併發寫入會互相覆蓋，請為每個實例使用獨立的配置目錄。
 
 ## 配置載入錯誤處理
 
@@ -3766,11 +3788,11 @@ project/
 
 | 錯誤狀態 | 觸發條件 | 框架行為 |
 |---------|---------|---------|
-| 文件遺失 | `config.toml` 不存在 | 正常首次啟動，靜默使用空配置（不發出警告） |
+| 文件缺失 | `config.toml` 不存在 | 正常首次啟動，靜默使用空配置（不報警告） |
 | TOML 語法錯誤 | 文件存在但格式非法（如少了引號、括號未閉合） | 輸出**出錯行號/列號與原因**，並**保留上次有效配置繼續運行**（本次文件修改不生效） |
-| 權限/其他錯誤 | 無讀取權限、IO 錯誤等 | 輸出**明確原因**，並**保留上次有效配置繼續運行** |
+| 權限/其他錯誤 | 無讀權限、IO 錯誤等 | 輸出**明確原因**，並**保留上次有效配置繼續運行** |
 
-> **注意「上次有效配置」≠ 預設配置**：文件損壞時框架沿用**本次啟動前最後一份解析成功的配置**（運行中熱更新改壞文件則沿用舊值），而不是把所有配置項重置為出廠預設。故障處理時不要假設「配置已被重置」。
+> **注意"上次有效配置"≠ 預設配置**：文件損壞時框架沿用**本次啟動前最後一份解析成功的配置**（運行中熱更新改壞文件則沿用舊值），而不是把所有配置項重置為出廠預設。故障處置時不要假設「配置已被重置」。
 
 例如，當你不慎把配置寫成了 `port = 8000`（少了引號的字串）時，日誌會輸出類似：
 
@@ -3785,25 +3807,25 @@ project/
 
 ## 注釋保留與最小化落盤
 
-`config.toml` 中的**註釋與鍵順序在框架寫入後完整保留**：無論是程式碼 `setConfig()`、
-CLI 配置向導儲存還是適配器/模組首次生成配置模板，框架都只修改涉及的鍵，
-你撰寫的註釋、整理的順序不會被抹掉或重排（基於 `tomlclass` 無損 TOML 引擎，
-未觸碰的內容逐字節保真，檔案原有的 CRLF/LF 行尾風格也不會被改變）。
+config.toml 中的**注釋與鍵順序在框架寫入後完整保留**：無論是代碼 `setConfig()`、
+CLI 配置向導保存還是適配器/模組首次生成配置範本，框架都只改動涉及的鍵，
+你寫的注釋、整理的順序不會被抹掉或重排（基於 tomlclass 無損 TOML 引擎，
+未觸碰的內容逐字節保真，文件原有的 CRLF/LF 行尾風格也不會被改變）。
 
 框架對落盤內容保持克制：
 
 - **框架預設配置不自動落盤**：`gc`、`scope`、`transcript` 等內建預設值僅駐記憶體，
-  `config.toml` 只包含你顯式設定的鍵，保持最小化。完整可配置項目參考專案內的
-  `config/config.full.example`，按需複製到 `config.toml` 修改即可（未配置項目一律走內建預設值，行為不變）
+  config.toml 只包含你顯式設定的鍵，保持最小化。完整可配置項參考專案內的
+  `config/config.full.example`，按需複製到 config.toml 修改即可（未配置項一律走內建預設值，行為不變）
 - **`config.full.example` 自動維護**：無論是否執行過 `epsdk init`，只要啟動框架
-  （`epsdk run` / `main.py`），都會在 `config/config.full.example` 缺失時自動產生
-  完整配置參考；檔案首行為框架自維護標記，產生器內容更新（如新增配置項目、新裝
-  組件）時啟動會刷新一次，刪除/修改首行即轉為手動接管、框架不再覆蓋
-- **適配器/模組配置模板**：首次初始化時以帶註釋的模板落盤（欄位描述即註釋）；
-  聲明為 `example` 標誌的欄位不落盤，僅記錄在 `config.full.example` 供參考
-- **宣告式註釋回讀**：配置檔案裡的註釋本身就是文件——`ep doctor` 與配置校驗
-  失敗提示會引用該欄位在檔案中的註釋原文（即使你手動改過註釋，提示跟隨檔案
-  現狀），報錯時無需再翻文件查找欄位含義
+  （`epsdk run` / `main.py`），都會在 `config/config.full.example` 缺失時自动生成
+  完整配置參考；文件首行為框架自維護標記，生成器內容更新（如新增配置項、新裝
+  組件）時啟動會刷新一次，刪除/改動首行即轉為手動接管、框架不再覆蓋
+- **適配器/模組配置範本**：首次初始化時以帶注釋的範本落盤（字段描述即注釋）；
+  聲明為 `example` 標誌的字段不落盤，僅記錄在 config.full.example 供參考
+- **宣告式注釋回讀**：配置文件裡的注釋本身就是文件——`ep doctor` 與配置校驗
+  失敗提示會引用該字段在文件中的注釋原文（即使你手動改過注釋，提示跟隨文件
+  現狀），報錯時無需再翻文件查找字段含義
 
 ## 環境變數覆蓋
 
@@ -3811,12 +3833,12 @@ CLI 配置向導儲存還是適配器/模組首次生成配置模板，框架都
 
 命名規則：把點分路徑 `ErisPulse.<section>.<key>` 改為全大寫、`.` 替換為 `_`，並加上 `ERISPULSE_` 前綴：
 
-| 配置項 | 環境變數 | 範例值 |
+| 配置項 | 環境變數 | 示例值 |
 |--------|---------|--------|
 | `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |
 | `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |
 | `ErisPulse.logger.level` | `ERISPULSE_LOGGER_LEVEL` | `DEBUG` |
-| `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
+| `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `2` |
 
 行為說明：
 - **優先級最高**：環境變數覆蓋「配置文件」與「預設值」，按原值類型自動轉換（`bool` / `int` / `float` / 逗號分隔的 `list` / 字串）
@@ -3824,11 +3846,11 @@ CLI 配置向導儲存還是適配器/模組首次生成配置模板，框架都
 - **支援熱更新**：運行中修改環境變數後，配合配置監聽的重載即可生效
 
 ```bash
-# Docker 部署範例：不修改 config.toml，直接覆蓋端口
+# Docker 部署示例：不修改 config.toml，直接覆蓋端口
 ERISPULSE_SERVER_PORT=9000 docker compose up -d
 ```
 
-> 註：`ErisPulse.server.port` 這類框架配置走 `get_server_config()` 等 API 讀取，均受環境變數覆蓋影響。
+> 注：`ErisPulse.server.port` 這類框架配置走 `get_server_config()` 等 API 讀取，均受環境變數覆蓋影響。
 
 ### 模組配置的環境變數綁定（2.9.0+）
 
@@ -3846,65 +3868,65 @@ class MyConfig(BaseConfig):
 
 行為說明：
 
-- **優先級**：環境變數 > `config.toml` > 宣告預設值（配置文件熱更新後同樣保持此優先級）
-- **類型轉換**：環境變數值按字段註解自動轉換——`str` 原樣、`int` / `float` / `bool`（`true` / `1` / `yes` / `on`）自動轉換、`list` / `dict` 走 JSON 解析；轉換失敗時忽略該覆蓋（回退配置文件 / 預設值）並輸出警告
-- **宣告一處、處處生效**：配置讀取、熱更新、驗證使用同一管道；配置面板 Schema 會標註 `env` 名，`config.toml` 範本註釋也會提示可用的環境變數（範本不寫入環境變數的實際值，避免洩露）
-- **完全相容**：未宣告 `env` 的字段行為不變；直接實例化 ConfigClass（不經框架配置管道）不受環境變數影響
+- **優先級**：環境變數 > `config.toml` > 聲明預設值（配置文件熱更新後同樣保持此優先級）
+- **類型轉換**：環境變數值按字段註解自動轉換——`str` 原樣、`int` / `float` / `bool`（`true` / `1` / `yes` / `on`）自動轉換、`list` / `dict` 走 JSON 解析；轉換失敗時忽略該覆蓋（回退配置文件 / 預設值）並輸出告警
+- **宣告一處、處處生效**：配置讀取、熱更新、校驗使用同一管道；配置面板 Schema 會標註 `env` 名，`config.toml` 範本注釋也會提示可用的環境變數（範本不寫入環境變數的實際值，避免洩露）
+- **完全相容**：未聲明 `env` 的字段行為不變；直接實例化 ConfigClass（不經框架配置管道）不受環境變數影響
 
 ```bash
-# Docker 部署範例：不修改 config.toml，直接注入模組密鑰
+# Docker 部署示例：不修改 config.toml，直接注入模組密鑰
 MYMODULE_API_KEY=sk-xxx docker compose up -d
 ```
 
-> **配置類 vs 模型字段怎麼選？** 配置類管「模組怎麼運轉」（行為參數、熱更新），
-> ORM 的 `Field()` 管「使用者產生了什麼資料」（資料庫表、查詢）。兩者共享同一套
-> 約束詞表與驗證器引擎；對照表見
-> [資料模型層 · 兩種宣告何時用哪個](../developer-guide/orm.md#兩種宣告何時用哪個)。
+> **配置類 vs 模型字段怎麼選？** 配置類管"模組怎麼運轉"（行為參數、熱更新），
+> ORM 的 `Field()` 管"用戶產生了什麼數據"（資料庫表、查詢）。兩者共享同一套
+> 約束詞表與校驗器引擎；對照表見
+> [數據模型層 · 兩種宣告何時用哪個](../developer-guide/orm.md#兩種宣告何時用哪個)。
 
 ## 配置熱更新
 
-從 2.7.0 起，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（後台 watcher 每 5 秒偵測一次），或程式碼呼叫 `setConfig()` 後，各元件自動響應：
+從 2.7.0 起，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（後台 watcher 每 5 秒檢測一次），或代碼呼叫 `setConfig()` 後，各組件自動響應：
 
-| 元件 | 支援熱更新的配置 | 行為 |
+| 組件 | 支援熱更新的配置 | 行為 |
 |------|----------------|------|
-| **日誌 Logger** | `logger.level` / `log_files` / `log_dir`（含分段參數）/ `memory_limit` / `format` / `exclude_levels` | 自動重新應用（帶變更偵測） |
-| **命令系統 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一條訊息即生效 |
+| **日誌 Logger** | `logger.level` / `log_files` / `log_dir`（含分段參數）/ `memory_limit` / `format` / `exclude_levels` | 自動重新應用（帶變更檢測） |
+| **命令系統 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一條消息即生效 |
 | **適配器併發** | `framework.handler_max_concurrency` | 失效快取信號量，按新值重建 |
 | **主動 GC** | `framework.proactive_gc_*` | 配置變更即時重啟 GC 任務，支援運行時調整/禁用/重新啟用 |
 | **主人系統 Master** | `master.users` | 每次 `is_master()` 檢查實時讀取，無需重啟 |
-| **模組/適配器配置** | 各自的配置項 | 觸發 `on_config_update(old, new)` 回呼 |
+| **模組/適配器配置** | 各自的配置項 | 觸發 `on_config_update(old, new)` 回調 |
 
-**需重啟的配置**（無法安全熱切換，變更時會輸出警告「需重啟進程後生效」）：
+**需重啟的配置**（無法安全熱切換，變更時會輸出告警"需重啟進程後生效"）：
 
 | 配置 | 原因 |
 |------|------|
 | `router.cors.*` / `router.security.*` | 中間件在服務啟動時寫入 FastAPI，運行時無法安全熱切換 |
-| `storage.use_global_db` | SQLite 檔案句柄已在運行時開啟，切換路徑不安全 |
+| `storage.use_global_db` | SQLite 檔案句柄已在運行時打開，切換路徑不安全 |
 
-> **中途編輯保存出錯？** 若編輯 `config.toml` 時出現瞬間語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各元件（避免 `on_config_update` 收到空值誤回退預設）。
+> **中途編輯保存出錯？** 若編輯 `config.toml` 時出現瞬時語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各組件（避免 `on_config_update` 收到空值誤回退預設）。
 
 ### 熱更新鏈路內部拆解
 
-「改了配置，各元件怎麼知道的？」——背後是一條偵測 → 重載 → 廣播的鏈路：
+「改了配置，各組件怎麼知道的？」——背後是一條檢測 → 重載 → 廣播的鏈路：
 
 ```mermaid
 flowchart TD
     A["外部編輯 config.toml"] --> B{"誰先發現？"}
     B -->|"後台 watcher 線程<br/>每 5 秒輪詢 mtime"| C["_check_file_change 判定變更"]
-    B -->|"程式碼讀取配置時<br/>快取超過 60 秒"| C
+    B -->|"代碼讀取配置時<br/>快取超過 60 秒"| C
     C --> D["_load_config 重新解析 TOML"]
     D --> E{"解析成功？"}
     E -->|"否（語法錯誤）"| F["保留上次有效配置<br/>不廣播，打診斷日誌"]
     E -->|"是"| G["lifecycle.emit config.updated<br/>攜帶 old_config / new_config"]
-    G --> H["各元件監聽者響應<br/>（logger / scope / 命令 / GC ...）"]
+    G --> H["各組件監聽者響應<br/>（logger / scope / 命令 / GC ...）"]
 ```
 
-**兩條偵測路徑**（取其一即可，均能兜底）：
+**兩條檢測路徑**（取其一即可，均能兜底）：
 
 | 路徑 | 機制 | 觸發時機 |
 |------|------|---------|
 | 後台 watcher | daemon 線程 `config-watcher` 每 **5 秒** `wait` 輪詢檔案 `mtime` | 外部改檔案後最多 5 秒內 |
-| 慣性偵測 | 任何 `getConfig()` 讀取時，若快取超過 **60 秒**則先查檔案 | 下次讀配置時 |
+| 慢性檢測 | 任何 `getConfig()` 讀取時，若快取超過 **60 秒**則先查檔案 | 下次讀配置時 |
 
 > **框架不會誤傷自己**：`setConfig()` 寫盤時會記錄「自身寫入的 mtime」，watcher 對比時把它排除，只把**外部編輯**視為變更。
 
@@ -3912,24 +3934,25 @@ flowchart TD
 
 | 事件 | 觸發者 | 數據 | 典型場景 |
 |------|--------|------|---------|
-| `config.set` | 程式碼 / Dashboard 調 `setConfig()` | `{key, old_value, new_value}` | 單鍵寫入（範本生成、狀態記錄、運行時改配置） |
-| `config.updated` | 外部編輯後 watcher/慣性偵測捕獲 | `{old_config, new_config, config_file}` | 手改 `config.toml` |
+| `config.set` | 代碼 / Dashboard 調 `setConfig()` | `{key, old_value, new_value}` | 單鍵寫入（範本生成、狀態記錄、運行時改配置） |
+| `config.updated` | 外部編輯後 watcher/慢性檢測捕獲 | `{old_config, new_config, config_file}` | 手改 `config.toml` |
 
-> `setConfig()` 預設**延遲 5 秒落盤**（合併多次寫入），`immediate=True` 立即寫。watcher 檢測到外部修改後只更新記憶體快取，**不會**把外部變更回寫檔案。
+> `setConfig()` 預設**延遲 5 秒落盤**（合併多次寫入），`immediate=True` 立即寫。watcher 檢測到外部修改後只更新記憶體快取，**不會**把外部改變回寫檔案。
 
 **自動響應方清單**（兩類事件通常會都訂閱，響應內容一致）：
 
-| 元件 | 監聽 | 回應 |
+| 組件 | 監聽 | 回應 |
 |------|------|------|
-| Logger | `config.set` + `config.updated` | 級別/檔案/目錄分段/記憶體上限/格式/屏蔽等級重新應用（帶變更偵測，無變化不動） |
+| Logger | `config.set` + `config.updated` | 級別/檔案/目錄分段/記憶體上限/格式/屏蔽等級重新應用（帶變更檢測，無變化不動） |
 | Scope | `config.updated` | 作用域綁定快取重建 |
-| 命令系統 | `config.updated` | 前綴/大小寫/空格前綴/must_at_bot 解析參數刷新，下一條訊息生效 |
-| 適配器併發 | `config.set` + `config.updated` | `handler_max_concurrency` 失效重建信號量 |
+| 命令系統 | `config.updated` | 前綴/大小寫/空格前綴/must_at_bot 解析參數刷新，下一條消息生效 |
+| 适配器併發 | `config.set` + `config.updated` | `handler_max_concurrency` 失效重建信號量 |
 | 主動 GC | `config.set` + `config.updated` | `proactive_gc_*` 即時重啟 GC 後台任務 |
-| 適配器 | 路由到 `on_config_update` | 各適配器 `on_config_update(old, new)` 回呼 |
-| 模組 | 路由到 `on_config_update` | 各模組 `on_config_update(old, new)` 回呼 |
-| 存儲 | `config.updated` | `use_global_db` 變更**僅警告**（需重啟） |
-| 路由 | `config.updated` | `cors.*` / `security.*` 變更**僅警告**（需重啟） |
+| 适配器 | 路由到 `on_config_update` | 各适配器 `on_config_update(old, new)` 回調 |
+| 模組 | 路由到 `on_config_update` | 各模組 `on_config_update(old, new)` 回調 |
+| 存儲 | `config.updated` | `use_global_db` 變更**僅告警**（需重啟） |
+| 路由 | `config.updated` | `cors.*` / `security.*` 變更**僅告警**（需重啟） |
+
 
 ## 配置讀取與刪除 API
 
@@ -3954,9 +3977,9 @@ sdk.config.delConfig("ErisPulse.modules.status.OldModule")            # 延遲�
 sdk.config.delConfig("OneBot.deprecated_key", immediate=True)         # 立即落盤
 ```
 
-- 支援點分路徑；鍵不存在時回傳 `False`
-- 落盤走註釋保留路徑，檔案其餘內容與順序不受影響
-- 復用 `config.set` 事件廣播（`new_value=None`）：適配器 / 模組的
+- 支援點分路徑；鍵不存在時返回 `False`
+- 落盤走註解保留路徑，檔案其餘內容與順序不受影響
+- 復用 `config.set` 事件廣播（`new_value=None`）：适配器 / 模組的
   `on_config_update` 等現有監聽方零改動即可感知刪除
 
 ## 完整配置範例
@@ -4034,14 +4057,14 @@ ssl_keyfile = "/path/to/key.pem"
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | host | string | 0.0.0.0 | 監聽位址，0.0.0.0 表示所有介面 |
-| port | integer | 8000 | 監聽埠號 |
+| port | integer | 8000 | 監聽端口號 |
 | auto_start | boolean | true | 是否在 `sdk.init()` 時自動啟動路由伺服器。設為 `false` 可跳過路由伺服器啟動（純事件/無 WebUI 場景） |
 | ssl_certfile | string | 空 | SSL 證書檔案路徑 |
 | ssl_keyfile | string | 空 | SSL 私鑰檔案路徑 |
 | ssl_cert | string | 空 | **內聯 PEM 證書內容**（非路徑）。與 `ssl_key` 成對使用時優先於 `ssl_certfile`/`ssl_keyfile`；框架臨時落盤建構 SSL 上下文後立即刪除臨時檔案 |
-| ssl_key | string | 空 | **內聯 PEM 私鑰內容**（非路徑），語義同上 |
+| ssl_key | string | 空 | **內聯 PEM 私鑰內容**（非路徑），語意同上 |
 
-> **埠占用不是致命錯誤**：啟動時若偵測到 `port` 已被占用，框架會跳過路由伺服器啟動並警告，**適配器與模組照常運行**（僅 HTTP/WS/SSE 路由與 WebUI 不可用）。排查「機器人能跑但 WebUI 打不開」時先確認埠。
+> **端口佔用不是致命錯誤**：啟動時若檢測到 `port` 已被佔用，框架會跳過路由伺服器啟動並告警，**适配器與模組照常運行**（僅 HTTP/WS/SSE 路由與 WebUI 不可用）。排查「機器人能跑但 WebUI 打不開」時先確認端口。
 
 ## 主人系統配置
 
@@ -4060,7 +4083,7 @@ users = ["123456", "789012"]
 |---------|------|---------|------|
 | users | array / object | 空 | 主人帳號列表。`list` 形式為全局主人（所有平台生效）；`dict` 形式按平台指定（鍵為平台名，值為該平台的主人帳號列表） |
 
-程式碼中透過 `master.is_master(event)` 或 `master.is_master(platform, user_id)` 檢查，每次呼叫實時讀取配置（支援熱更新，無需重啟）：
+代碼中透過 `master.is_master(event)` 或 `master.is_master(platform, user_id)` 檢查，每次呼叫實時讀取配置（支援熱更新，無需重啟）：
 
 ```python
 from ErisPulse.Core import master
@@ -4077,7 +4100,7 @@ if master.is_master(event):
 from ErisPulse.Core import master
 
 master.is_master(event)                      # 從事件判定
-master.is_master("yunhu", "123")             # 明確判定
+master.is_master("yunhu", "123")             # 顯式判定
 master.add("yunhu", "123")                   # 運行時新增（預設持久化；persist=False 僅記憶體）
 master.remove("yunhu", "123")                # 移除（預設持久化）
 master.list()                                # 匯總：{"global": [...], "<platform>": [...]}
@@ -4086,8 +4109,8 @@ master.list()                                # 匯總：{"global": [...], "<plat
 ### 自定義身份源（provider）
 
 除配置外，還可註冊自定義身份源：`fn(platform, user_id) -> bool`，
-內建身份源（配置 + 運行時記錄）未命中時依序嘗試，任一 provider 放行即認定為主人。
-適合對接適配器管理員介面、資料庫角色等外部身份體系。
+內建身份源（配置 + 運行時記錄）未命中時依次嘗試，任一 provider 放行即認定為主人。
+適合對接适配器管理員介面、資料庫角色等外部身份體系。
 
 註冊入口 `master.provider` 支援裝飾器 / 函數式兩種寫法，
 註銷統一走被註冊函數上的 `fn.unregister()`：
@@ -4109,7 +4132,7 @@ fn.unregister()
 ```
 
 > provider 異常會被捕獲並跳過，不阻斷身份判定鏈。
-> 繫結實例方法無法掛載 `unregister`，需要註冊/註銷配對的場景請用**模組級函數**。
+> 綁定實例方法無法掛載 `unregister`，需要註冊/註銷配對的場景請用**模組級函數**。
 
 ### 用戶優先：主人生效範圍由用戶最終決定
 
@@ -4122,8 +4145,8 @@ fn.unregister()
 ```toml
 [ErisPulse.logger]
 level = "INFO"
-log_files = []                # 明確日誌檔案列表（與 log_dir 互斥，優先級更高）
-log_dir = ""                  # 日誌輸出目錄（設定後自動分段輪轉）
+log_files = []                # 顯式日誌檔案列表（與 log_dir 互斥，優先級更高）
+log_dir = ""                  # 日誌目錄（設定後自動分段輪轉）
 log_rotation = "size"         # 分段方式: "size" / "date" / "none"
 log_max_size_mb = 10          # size 模式單檔案上限（MB）
 log_backup_count = 5          # 保留的歷史日誌檔案數
@@ -4134,18 +4157,18 @@ exclude_levels = ["EVENT"]
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| level | string | INFO | 日誌等級：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低等級，輸出框架內部詳細調試資訊） |
-| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文本無顏色，適合日誌採集/管道重定向）、`json`（JSON 機構化，適合 ELK 等） |
-| log_files | array | 空 | 日誌輸出檔案列表（明確路徑，不分段） |
+| level | string | INFO | 日誌級別：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低級別，輸出框架內部詳細調試資訊） |
+| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文本無顏色，適合日誌採集/管道重定向）、`json`（JSON 構造化，適合 ELK 等） |
+| log_files | array | 空 | 日誌輸出檔案列表（顯式路徑，不分段） |
 | log_dir | string | 空 | 日誌輸出目錄（自動建立）。設定後寫入目錄內 `erispulse.log` 並按 `log_rotation` 自動分段；與 `log_files` 互斥，`log_files` 優先 |
 | log_rotation | string | size | 分段方式：`size`（按大小）/ `date`（按時間）/ `none`（不分段） |
 | log_max_size_mb | float | 10 | size 模式單檔案大小上限（MB），超過後輪轉為 `.1`/`.2` 備份 |
 | log_backup_count | integer | 5 | 保留的歷史日誌檔案數，超出的最舊備份自動刪除 |
 | log_rotation_when | string | midnight | date 模式輪轉週期：`S`/`M`/`H`/`D`/`midnight`（預設每天零點） |
-| memory_limit | integer | 1000 | 記憶體中保存的日誌筆數 |
-| exclude_levels | array | 空 | 屏蔽指定日誌等級。被屏蔽等級的日誌**完全丟棄**（不寫記憶體、不推送到 Dashboard 等訂閱器、不列印、不寫檔案）。支援熱更新 |
+| memory_limit | integer | 1000 | 記憶體中保存的日誌條數 |
+| exclude_levels | array | 空 | 屏蔽指定日誌級別。被屏蔽級別的日誌**完全丟棄**（不寫記憶體、不推送到 Dashboard 等訂閱器、不列印、不寫檔案）。支援熱更新 |
 
-也可在程式碼中動態切換：
+也可在代碼中動態切換：
 
 ```python
 from ErisPulse.Core import logger
@@ -4160,7 +4183,7 @@ logger.set_output_dir("logs", rotation="date", backup_count=7)
 > [!NOTE]
 > `log_dir` 及分段相關配置需要 ErisPulse **2.8.0+**。
 
-> **隱私保護**：訊息收發內容以 **EVENT 等級**（數值 21）記錄。設定 `exclude_levels = ["EVENT"]` 即可讓後台（如 Dashboard 日誌面板）無法看到各群/私聊的訊息內容，同時不影響其它等級日誌。
+> **隱私保護**：訊息收發內容以 **EVENT 等級**（數值 21）記錄。設定 `exclude_levels = ["EVENT"]` 即可讓後台（如 Dashboard 日誌面板）無法看到各群/私聊的訊息內容，同時不限制其它等級日誌。
 
 > [!NOTE]
 > `exclude_levels` 本特性需要 ErisPulse **2.8.0+**。
@@ -4182,7 +4205,7 @@ adapters = []
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | 是否啟用模組懶加載 |
 | uninit_timeout | integer | 30 | 優雅關閉的總超時時間（秒），超過後強制終止。0 表示不設超時 |
-| strict_mode | integer | 0 | 嚴格模式等級，見下方「嚴格模式」說明 |
+| strict_mode | integer | 0 | 嚴格模式級別，見下方「嚴格模式」說明 |
 | handler_max_concurrency | integer | 64 | 事件處理器最大併發 Task 數，設大提高吞吐但增加記憶體佔用 |
 | offline_bot_expiry | integer | 3600 | 離線 Bot 記錄自動過期時間（秒），0 表示不過期 |
 
@@ -4199,28 +4222,28 @@ SDK 初始化完成後啟動主動 GC 後台任務，週期性執行 Python GC �
 | proactive_gc_idle_only | boolean | false | 開啟後，事件洪峰（存在未完成的 pending handler）時本輪跳過 Python GC，避免停頓與訊息處理競爭；內部資源回收不受影響 |
 | proactive_gc_gen0_min | integer | 500 | 常規輪次觸發回收的 gen0 垃圾量下限：`gc.get_count()[0]` 低於此值直接跳過（空轉輪次近乎零開銷）。0 表示始終回收 |
 
-> **2.7.1 變更**：預設 `proactive_gc_generation` 由 `2` 調整為 `0`，預設 `proactive_gc_full_every` 由 `0` 調整為 `20`。此前 `generation=2` 意味著每輪都做最重的全量回收；新預設在保持回收覆蓋的同時顯著降低空轉開銷。顯式配置的舊值仍按字面語義生效。
+> **2.7.1 變更**：預設 `proactive_gc_generation` 由 `2` 調整為 `0`，預設 `proactive_gc_full_every` 由 `0` 調整為 `20`。此前 `generation=2` 意味著每輪都做最重的全量回收；新預設在保持回收覆蓋的同時顯著降低空轉開銷。顯式配置的舊值仍按字面語意生效。
 
 ### 嚴格模式
 
-嚴格模式控制模組/適配器在加載階段不合規或失敗時的處理策略。現代模組/適配器都應繼承對應的基類（`BaseModule`/`BaseAdapter`），未繼承基類的元件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
+嚴格模式控制模組/适配器在加載階段不合規或失敗時的處理策略。現代模組/适配器都應繼承對應的基類（`BaseModule`/`BaseAdapter`），未繼承基類的組件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
 
-> **2.5.2 變更**：預設級別從 `1`（跳過）調整為 `0`（寬鬆），以減少新使用者初次使用時遇到的加載問題。未繼承基類的元件將以 WARNING 提示並嘗試加載，而非直接拒絕。如需恢復舊行為，請顯式設定 `strict_mode = 1`。
+> **2.5.2 變更**：預設級別從 `1`（跳過）調整為 `0`（寬鬆），以減少新用戶初次使用時遇到的加載問題。未繼承基類的組件將以 WARNING 提示並嘗試加載，而非直接拒絕。如需恢復旧行為，請顯式設定 `strict_mode = 1`。
 
 | 級別 | 名稱 | 行為 |
 |------|------|------|
-| 0 | 寬鬆（預設） | 違規僅警告，未繼承基類的元件仍會嘗試加載（相容舊元件） |
-| 1 | 嚴格-跳過 | 拒絕未繼承基類的元件並跳過，其餘正常啟動 |
+| 0 | 寬鬆（預設） | 違規僅警告，未繼承基類的組件仍會嘗試加載（相容舊組件） |
+| 1 | 嚴格-跳過 | 拒絕未繼承基類的組件並跳過，其餘正常啟動 |
 | 2 | 嚴格-致命 | 收集所有違規後統一報告並中止整個啟動 |
 
-各級別下，「加載/註冊/初始化階段報錯」這類元件自身崩潰始終會被跳過；區別在於：
+各級別下，「加載/註冊/初始化階段報錯」這類組件自身崩潰始終會被跳過；區別在於：
 
 - **0 → 1**：唯一行為變化是「未繼承基類」從「仍加載」變為「跳過」。
 - **1 → 2**：所有違規（未繼承基類、加載失敗、註冊失敗、初始化失敗等）升級為致命，會在啟動檢查點收集後一次性輸出違規清單並中止。
 
 #### 豁免清單
 
-如果某些元件確實暫時無法遷移（例如依賴的舊模組），可以將其加入豁免清單，被列名的元件即使不合規也會按寬鬆模式對待，繼續加載：
+如果某些組件確實暫時無法遷移（例如依賴的舊模組），可以將其加入豁免清單，被列名的組件即使不合規也會按寬鬆模式對待，繼續加載：
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -4228,7 +4251,11 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> 當某個元件被嚴格模式拒絕時，日誌會明確提示如何恢復加載（加入豁免清單或調低級別）。
+> 當某個組件被嚴格模式拒絕時，日誌會明確提示如何恢復加載（加入豁免清單或調低級別）。
+
+#### 與 CLI 的聯動
+
+`epsdk run` 的啟動前自檢（配置文件可解析性、組件必填配置完整性）預設跟隨本配置：非 0 時檢查失敗即拒絕啟動，0 時僅警告繼續。也可以不改配置臨時切換：`epsdk run --strict` 本次將自檢與嚴格級別同時開啟（級別只升不降，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到運行進程），`--no-strict` 本次臨時壓到寬鬆並僅警告。
 
 ## 存儲配置
 
@@ -4267,7 +4294,7 @@ database = "erispulse"
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| backend | string | sqlite | 存儲後端：`sqlite` / `mysql` / `postgres`，切換零程式碼改動 |
+| backend | string | sqlite | 存儲後端：`sqlite` / `mysql` / `postgres`，切換零代碼改動 |
 | use_global_db | boolean | false | 僅 SQLite：是否使用包內全局資料庫而非專案獨立資料庫 |
 | storage.mysql.* | table | 見上 | MySQL 連接參數（host / port / user / password / database / charset / pool） |
 | storage.postgres.* | table | 見上 | PostgreSQL 連接參數（host / port / user / password / database / pool） |
@@ -4317,11 +4344,11 @@ language = "auto"
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| language | string | auto | 框架內建文本的顯示語言。設為 `auto` 自動偵測系統語言，也可設為具體代碼：`zh-CN`、`zh-TW`、`en`、`ja`、`ru` |
+| language | string | auto | 框架內建文本的顯示語言。設為 `auto` 自動檢測系統語言，也可設為具體代碼：`zh-CN`、`zh-TW`、`en`、`ja`、`ru` |
 
 ## 模組配置
 
-每個模組可以在配置檔案中定義自己的配置：
+每個模組可以在配置文件中定義自己的配置：
 
 ```toml
 [MyModule]
@@ -4353,9 +4380,9 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-作用域宣告「**什麼範圍內生效**」——某平台 / Bot / 會話裡哪些模組可用（① 模組維度）、
-某用戶 / 群 / Bot / 適配器的事件收不收（② 身份維度）、
-模組能發起哪些出站呼叫（③ 出站維度）：
+作用域宣告"**什麼範圍內生效**"——某平台 / Bot / 會話裡哪些模組可用（① 模組維度）、
+某用戶 / 群 / Bot / 适配器的事件收不收（② 身份維度）、
+模組能發起哪些出站調用（③ 出站維度）：
 
 ```toml
 [ErisPulse.scope]
@@ -4372,7 +4399,7 @@ blocked = ["re:^Danger"]
 modules = ["Music"]
 merge = true
 
-# ② 身份維度（優先級：用戶 > 會話 > Bot > 適配器；每級只寫 allow 或 deny 之一）
+# ② 身份維度（優先級：用戶 > 會話 > Bot > 适配器；每級只寫 allow 或 deny 之一）
 [ErisPulse.scope.identity.adapters.onebot11]
 deny = true                 # 該平台所有事件在入口丟棄
 [ErisPulse.scope.identity.users.onebot11]
@@ -4400,14 +4427,14 @@ request = { deny = true }                 # 禁止處理請求
 
 ## 統一事件覆寫配置（event.overrides）
 
-統一覆寫系統：按**事件類型**覆寫任意模組處理器的行為，不改模組程式碼。
+統一覆寫系統：按**事件類型**覆寫任意模組處理器的行為，不改模組代碼。
 OneBot12 標準類型（meta / message / notice / request）與擴展類型（command）
 各自擁有專屬的可覆寫參數：
 
 ```toml
 [ErisPulse.event.overrides]
 
-# message：文本觸發條件（與程式碼內條件 AND）
+# message：文本觸發條件（與代碼內條件 AND）
 [ErisPulse.event.overrides.message.ChatModule]
 pattern = "閒聊*"
 
@@ -4415,18 +4442,18 @@ pattern = "閒聊*"
 [ErisPulse.event.overrides.notice.MyModule]
 detail_types = ["group_increase"]
 
-# command（擴展類型）：實現參數覆寫（使用者優先；禁用統一走 acl deny）
+# command（擴展類型）：實現參數覆寫（用戶優先；禁用統一走 acl deny）
 [ErisPulse.event.overrides.command.MyModule.restart]
 master = true               # 覆寫為僅框架主人（false 則放開開發者的主人限制）
 hidden = true               # 幫助列表中隱藏
 aliases = ["rs"]            # 生效別名
 
-# acl（command 專屬）：命令使用者黑白名單（命令名支援 glob / re: 正則，精確鍵優先）
+# acl（command 專屬）：命令用戶黑白名單（命令名支援 glob / re: 正則，精確鍵优先）
 [ErisPulse.event.overrides.acl."roll*"]
 allow = ["onebot11:u_vip"]  # 用戶標識 "platform:user_id"
 deny = ["onebot11:u_bad"]
 
-# ACL 兜底：未配置 ACL 的命令放行（`true`）/ 嚴格拒絕（`false`）
+# ACL 兜底：未配置 ACL 的命令放行（true）/ 嚴格拒絕（false）
 acl_default_allow = true
 ```
 
@@ -4440,10 +4467,10 @@ acl_default_allow = true
 | `event.overrides.acl.<命令名>` | table | 用戶黑白名單：`{allow=[...], deny=[...]}` |
 | `event.overrides.acl_default_allow` | boolean | ACL 兜底：未配置 ACL 的命令放行（`true`）/ 嚴格拒絕（`false`） |
 
-> 運行時 API（`from ErisPulse.Core.Event import overrides` 後按類型子命名空間呼叫
+> 運行時 API（`from ErisPulse.Core.Event import overrides` 後按類型子命名空間調用
 > `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` 等，
 > 或經 `sdk.Event.overrides` 訪問）
-> 見 [事件處理入門 · 事件覆寫](../getting-started/event-handling.md#事件覆寫不改模組程式碼覆寫任意事件類型的行為)。
+> 見 [事件處理入門 · 事件覆寫](../getting-started/event-handling.md#事件覆寫不改模組代碼覆寫任意事件類型的行為)。
 
 ## 命令解析配置（event.command）
 
@@ -4698,6 +4725,30 @@ stderr_logfile=/var/log/erispulse-bot/err.log
 stdout_logfile=/var/log/erispulse-bot/out.log
 ```
 
+### uv tool 分離部署（CLI 與項目環境隔離）
+
+`uv tool install` 將 `epsdk` 安裝為**獨立的工具環境**，CLI 自身與項目依賴徹底隔離：升級 CLI 不會觸碰項目 `.venv`，項目依賴變動也不會影響 CLI。
+
+```bash
+# 1. 全域安裝 CLI（自動暴露 epsdk / ep 命令）
+uv tool install ErisPulse
+
+# 2. 項目內只放機器人依賴（.venv 由 uv 管理）
+cd /opt/erispulse-bot
+uv add erispulse ErisPulse-Adapter-Yunhu   # 按需追加適配器
+
+# 3. 用 CLI 運行（自動探測並使用項目 .venv 中的解釋器）
+epsdk run main.py
+```
+
+行為要點：
+
+- `epsdk run` 的目標解釋器解析順序：`ERISPULSE_PYTHON` 環境變數 → 項目 `.venv` → 當前解釋器；工具環境本身只承載 CLI，組件（適配器/模組）應裝進項目 `.venv`
+- `epsdk install` / `uninstall` / `upgrade` / `list` 同樣作用於項目 `.venv`，不會污染工具環境
+- 升級 CLI：`uv tool upgrade ErisPulse`（或直接 `epsdk self-update`，uv tool 環境下自動改走 `uv tool upgrade`）；升級項目依賴：在項目目錄執行 `uv sync` / `uv add`，兩者互不影響
+- 伺服器場景下工具環境由 uv 統一管理（`uv tool list` 查看、`uv tool upgrade --all` 批量升級），無需手動維護全域 pip 包
+- 若在無項目的目錄用 `uv run epsdk ...` 執行，會落入**一次性隔離環境**（安裝的組件不持久化）；伺服器上請始終用 `epsdk` 直接呼叫，或先 `cd` 進項目目錄
+
 ## 安全建議
 
 1. **設定 Dashboard 令牌**：使用強大的隨機令牌，不要使用預設值
@@ -4734,20 +4785,30 @@ epsdk self-update
 epsdk upgrade
 ```
 
-### 運行時熱重載伺服器配置
+### uv tool 方式
 
-修改監聽地址 / 端口 / SSL 證書後無需重啟進程，在任意協程中呼叫 `router.reload()`：
+```bash
+# 升級 CLI 工具環境
+uv tool upgrade ErisPulse
+
+# 升級專案相依性（於專案目錄內執行）
+uv sync
+```
+
+### 運行時熱重載伺服器設定
+
+修改監聽位址 / 端口 / SSL 證書後無需重新啟動程序，在任意協程中呼叫 `router.reload()`：
 
 ```python
-await sdk.router.reload(port=9000)                                # 更換端口
+await sdk.router.reload(port=9000)                                # 更改端口
 await sdk.router.reload(ssl_cert=new_pem, ssl_key=new_key)        # 熱更換證書（證書續期場景）
-await sdk.router.reload(host="0.0.0.0", port=9000)                # 缺省參數沿用當前配置
+await sdk.router.reload(host="0.0.0.0", port=9000)                # 缺省參數沿用當前設定
 ```
 
 - 重用同一 FastAPI 應用，模組註冊的 HTTP / WebSocket / SSE 路由全部保留
-- 先驗證新配置（證書可構建、端口可用）再切換；失敗時以舊配置恢復服務並返回 `False`，
-  保證返回 `False` = 舊服務保持可用
-- 伺服器未運行時返回 `False`（首次啟動請使用 `sdk.router.start()`）
+- 先驗證新設定（證書可建立、端口可用）再切換；失敗時以舊設定恢復服務並回傳 `False`，
+  保證回傳 `False` = 舊服務保持可用
+- 伺服器未運行時回傳 `False`（首次啟動請使用 `sdk.router.start()`）
 
 ### 備份
 
@@ -4757,7 +4818,7 @@ await sdk.router.reload(host="0.0.0.0", port=9000)                # 缺省參數
 # Docker 部署
 tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
-# 或在 Dashboard 中使用「備份」功能導出
+# 或在 Dashboard 中使用「備份」功能匯出
 ```
 
 

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1763,
+  "total_keywords": 1766,
   "keywords": {
     "0 Успешно (OK)": [
       {
@@ -2513,7 +2513,7 @@
     "API чтения и удаления конфигурации": [
       {
         "document": "user-guide/configuration.md",
-        "line": 184,
+        "line": 183,
         "level": 2,
         "title": "API чтения и удаления конфигурации"
       }
@@ -2700,14 +2700,6 @@
         "line": 102,
         "level": 4,
         "title": "Discord"
-      }
-    ],
-    "Docker-метод": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 264,
-        "level": 3,
-        "title": "Docker-метод"
       }
     ],
     "Docker-образ vs PyPI-публикация": [
@@ -3033,7 +3025,7 @@
     "Supervisor": [
       {
         "document": "user-guide/deployment.md",
-        "line": 230,
+        "line": 232,
         "level": 3,
         "title": "Supervisor"
       }
@@ -3561,7 +3553,7 @@
     "config": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 236,
+        "line": 237,
         "level": 3,
         "title": "config"
       }
@@ -3601,17 +3593,17 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 382,
+        "line": 396,
         "level": 3,
         "title": "create"
       }
     ],
-    "delConfig: удаление конфигурационного ключа": [
+    "delConfig: удаление ключа конфигурации": [
       {
         "document": "user-guide/configuration.md",
-        "line": 197,
+        "line": 196,
         "level": 3,
-        "title": "delConfig: удаление конфигурационного ключа"
+        "title": "delConfig: удаление ключа конфигурации"
       }
     ],
     "docker-compose.yml": [
@@ -3625,7 +3617,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 528,
+        "line": 542,
         "level": 3,
         "title": "doctor"
       }
@@ -3649,7 +3641,7 @@
     "getAllConfig: полный снимок конфигурации": [
       {
         "document": "user-guide/configuration.md",
-        "line": 186,
+        "line": 185,
         "level": 3,
         "title": "getAllConfig: полный снимок конфигурации"
       }
@@ -3673,7 +3665,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 439,
+        "line": 453,
         "level": 3,
         "title": "i18n"
       }
@@ -3681,7 +3673,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 332,
+        "line": 342,
         "level": 3,
         "title": "init"
       }
@@ -3713,7 +3705,7 @@
     "list": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 173,
+        "line": 174,
         "level": 3,
         "title": "list"
       }
@@ -3721,17 +3713,9 @@
     "list-remote": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 202,
+        "line": 203,
         "level": 3,
         "title": "list-remote"
-      }
-    ],
-    "pip-метод": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 274,
-        "level": 3,
-        "title": "pip-метод"
       }
     ],
     "private": [
@@ -3753,7 +3737,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 294,
+        "line": 295,
         "level": 3,
         "title": "run"
       }
@@ -3793,7 +3777,7 @@
     "systemd (Linux)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 198,
+        "line": 200,
         "level": 3,
         "title": "systemd (Linux)"
       }
@@ -3809,7 +3793,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 476,
+        "line": 490,
         "level": 3,
         "title": "types"
       }
@@ -3836,6 +3820,14 @@
         "line": 50,
         "level": 4,
         "title": "user"
+      }
+    ],
+    "uv tool: разделение развертывания (отдельное окружение CLI и проекта)": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 247,
+        "level": 3,
+        "title": "uv tool: разделение развертывания (отдельное окружение CLI и проекта)"
       }
     ],
     "wait(prompt=None, timeout=None)": [
@@ -4542,20 +4534,20 @@
         "title": "Внешние ключи (основа сопоставления отношений)"
       }
     ],
+    "Внутреннее разбиение цепочки горячего обновления": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 134,
+        "level": 3,
+        "title": "Внутреннее разбиение цепочки горячего обновления"
+      }
+    ],
     "Внутренняя проверка параметров фреймворка (ValueError)": [
       {
         "document": "advanced/errors.md",
         "line": 168,
         "level": 3,
         "title": "Внутренняя проверка параметров фреймворка (ValueError)"
-      }
-    ],
-    "Внутренняя разбивка цепочки горячего обновления": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 135,
-        "level": 3,
-        "title": "Внутренняя разбивка цепочки горячего обновления"
       }
     ],
     "Внутренняя реализация: как работает принадлежность": [
@@ -4781,7 +4773,7 @@
     "Вывод списка компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 585,
+        "line": 609,
         "level": 3,
         "title": "Вывод списка компонентов"
       }
@@ -4834,12 +4826,12 @@
         "title": "Высокоуровневые методы (рекомендуется)"
       }
     ],
-    "Генерация типовых аннотаций": [
+    "Генерация аннотаций типов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 660,
+        "line": 684,
         "level": 3,
-        "title": "Генерация типовых аннотаций"
+        "title": "Генерация аннотаций типов"
       }
     ],
     "Генерация типовых заглушек (автодополнение в IDE)": [
@@ -4885,7 +4877,7 @@
     "Глобальные параметры": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 511,
+        "line": 525,
         "level": 2,
         "title": "Глобальные параметры"
       }
@@ -4906,18 +4898,18 @@
         "title": "Горячая перезагрузка конфигурации"
       }
     ],
-    "Горячая перезагрузка серверных конфигураций в режиме работы": [
+    "Горячая перезагрузка конфигурации сервера в режиме реального времени": [
       {
         "document": "user-guide/deployment.md",
-        "line": 281,
+        "line": 317,
         "level": 3,
-        "title": "Горячая перезагрузка серверных конфигураций в режиме работы"
+        "title": "Горячая перезагрузка конфигурации сервера в режиме реального времени"
       }
     ],
     "Горячее обновление конфигурации": [
       {
         "document": "user-guide/configuration.md",
-        "line": 113,
+        "line": 112,
         "level": 2,
         "title": "Горячее обновление конфигурации"
       }
@@ -5024,6 +5016,12 @@
       {
         "document": "quick-start.md",
         "line": 183,
+        "level": 2,
+        "title": "Далее"
+      },
+      {
+        "document": "user-guide/configuration.md",
+        "line": 687,
         "level": 2,
         "title": "Далее"
       },
@@ -5148,12 +5146,12 @@
         "title": "Детальный разбор класса-обертки Event"
       }
     ],
-    "Диагностика окружения": [
+    "Диагностика среды": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 526,
+        "line": 540,
         "level": 2,
-        "title": "Диагностика окружения"
+        "title": "Диагностика среды"
       }
     ],
     "Дизайн модуля": [
@@ -5469,7 +5467,7 @@
     "Единая конфигурация перезаписи событий (event.overrides)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 640,
+        "line": 642,
         "level": 2,
         "title": "Единая конфигурация перезаписи событий (event.overrides)"
       }
@@ -5689,7 +5687,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 637,
+        "line": 661,
         "level": 3,
         "title": "Запуск проекта"
       }
@@ -5849,7 +5847,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 670,
+        "line": 694,
         "level": 3,
         "title": "Инициализация проекта"
       }
@@ -5949,7 +5947,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 557,
+        "line": 581,
         "level": 2,
         "title": "Интерактивная установка"
       }
@@ -6524,36 +6522,20 @@
         "title": "Команды диагностики"
       }
     ],
-    "Команды для генерации типовых аннотаций": [
+    "Команды конфигурации": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 470,
+        "line": 231,
         "level": 2,
-        "title": "Команды для генерации типовых аннотаций"
+        "title": "Команды конфигурации"
       }
     ],
-    "Команды для настройки": [
+    "Команды получения информации": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 230,
+        "line": 166,
         "level": 2,
-        "title": "Команды для настройки"
-      }
-    ],
-    "Команды для получения информации": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 165,
-        "level": 2,
-        "title": "Команды для получения информации"
-      }
-    ],
-    "Команды для языковых настроек": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 433,
-        "level": 2,
-        "title": "Команды для языковых настроек"
+        "title": "Команды получения информации"
       }
     ],
     "Команды тестирования": [
@@ -6564,10 +6546,18 @@
         "title": "Команды тестирования"
       }
     ],
+    "Команды типовых аннотаций": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 484,
+        "level": 2,
+        "title": "Команды типовых аннотаций"
+      }
+    ],
     "Команды управления запуском": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 283,
+        "line": 284,
         "level": 2,
         "title": "Команды управления запуском"
       }
@@ -6580,12 +6570,20 @@
         "title": "Команды управления пакетами"
       }
     ],
-    "Команды управления проектами": [
+    "Команды управления проектом": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 325,
+        "line": 335,
         "level": 2,
-        "title": "Команды управления проектами"
+        "title": "Команды управления проектом"
+      }
+    ],
+    "Команды языка": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 447,
+        "level": 2,
+        "title": "Команды языка"
       }
     ],
     "Комбинация правил и фоновое выполнение": [
@@ -6696,12 +6694,6 @@
         "line": 167,
         "level": 2,
         "title": "Конфигурационный файл"
-      },
-      {
-        "document": "user-guide/configuration.md",
-        "line": 1,
-        "level": 1,
-        "title": "Конфигурационный файл"
       }
     ],
     "Конфигурация": [
@@ -6757,7 +6749,7 @@
     "Конфигурация активного GC": [
       {
         "document": "user-guide/configuration.md",
-        "line": 432,
+        "line": 430,
         "level": 3,
         "title": "Конфигурация активного GC"
       }
@@ -6770,18 +6762,10 @@
         "title": "Конфигурация во время выполнения"
       }
     ],
-    "Конфигурация для производственной среды": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 180,
-        "level": 3,
-        "title": "Конфигурация для производственной среды"
-      }
-    ],
     "Конфигурация команд": [
       {
         "document": "user-guide/configuration.md",
-        "line": 527,
+        "line": 529,
         "level": 3,
         "title": "Конфигурация команд"
       }
@@ -6797,7 +6781,7 @@
     "Конфигурация логов": [
       {
         "document": "user-guide/configuration.md",
-        "line": 363,
+        "line": 361,
         "level": 2,
         "title": "Конфигурация логов"
       }
@@ -6805,17 +6789,17 @@
     "Конфигурация локализации": [
       {
         "document": "user-guide/configuration.md",
-        "line": 554,
+        "line": 556,
         "level": 2,
         "title": "Конфигурация локализации"
       }
     ],
-    "Конфигурация модуля": [
+    "Конфигурация модулей": [
       {
         "document": "user-guide/configuration.md",
-        "line": 565,
+        "line": 567,
         "level": 2,
-        "title": "Конфигурация модуля"
+        "title": "Конфигурация модулей"
       }
     ],
     "Конфигурация нескольких аккаунтов": [
@@ -6829,7 +6813,7 @@
     "Конфигурация области действия (scope)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 594,
+        "line": 596,
         "level": 2,
         "title": "Конфигурация области действия (scope)"
       }
@@ -6859,7 +6843,7 @@
     "Конфигурация разбора команд (event.command)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 683,
+        "line": 685,
         "level": 2,
         "title": "Конфигурация разбора команд (event.command)"
       }
@@ -6883,23 +6867,23 @@
     "Конфигурация сервера": [
       {
         "document": "user-guide/configuration.md",
-        "line": 264,
+        "line": 263,
         "level": 2,
         "title": "Конфигурация сервера"
       }
     ],
-    "Конфигурация системы хозяев": [
+    "Конфигурация системы мастеров": [
       {
         "document": "user-guide/configuration.md",
-        "line": 294,
+        "line": 293,
         "level": 2,
-        "title": "Конфигурация системы хозяев"
+        "title": "Конфигурация системы мастеров"
       }
     ],
     "Конфигурация событий": [
       {
         "document": "user-guide/configuration.md",
-        "line": 525,
+        "line": 527,
         "level": 2,
         "title": "Конфигурация событий"
       }
@@ -6907,7 +6891,7 @@
     "Конфигурация сообщений": [
       {
         "document": "user-guide/configuration.md",
-        "line": 543,
+        "line": 545,
         "level": 3,
         "title": "Конфигурация сообщений"
       }
@@ -6915,7 +6899,7 @@
     "Конфигурация фреймворка": [
       {
         "document": "user-guide/configuration.md",
-        "line": 411,
+        "line": 409,
         "level": 2,
         "title": "Конфигурация фреймворка"
       }
@@ -6923,7 +6907,7 @@
     "Конфигурация хранилища": [
       {
         "document": "user-guide/configuration.md",
-        "line": 476,
+        "line": 478,
         "level": 2,
         "title": "Конфигурация хранилища"
       }
@@ -7570,14 +7554,6 @@
         "title": "Многоботная конфигурация"
       }
     ],
-    "Многократное развертывание": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 254,
-        "level": 2,
-        "title": "Многократное развертывание"
-      }
-    ],
     "Многопоточное ожидание: expect + select": [
       {
         "document": "advanced/interaction.md",
@@ -7826,12 +7802,12 @@
         "title": "Навигационная регистрация"
       }
     ],
-    "Надзор за процессом и жесткий перезапуск": [
+    "Надзор за процессами и принудительный перезапуск": [
       {
         "document": "user-guide/deployment.md",
-        "line": 111,
+        "line": 113,
         "level": 2,
-        "title": "Надзор за процессом и жесткий перезапуск"
+        "title": "Надзор за процессами и принудительный перезапуск"
       }
     ],
     "Назначение методов отправки": [
@@ -7882,10 +7858,18 @@
         "title": "Настройка блокировки для команд и ответов"
       }
     ],
+    "Настройка для рабочей среды": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 182,
+        "level": 3,
+        "title": "Настройка для рабочей среды"
+      }
+    ],
     "Настройка компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 611,
+        "line": 635,
         "level": 3,
         "title": "Настройка компонентов"
       }
@@ -8147,7 +8131,7 @@
     "Обзор функций": [
       {
         "document": "user-guide/deployment.md",
-        "line": 87,
+        "line": 89,
         "level": 3,
         "title": "Обзор функций"
       }
@@ -8187,7 +8171,7 @@
     "Обновление и обслуживание": [
       {
         "document": "user-guide/deployment.md",
-        "line": 262,
+        "line": 288,
         "level": 2,
         "title": "Обновление и обслуживание"
       }
@@ -8195,7 +8179,7 @@
     "Обновление компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 624,
+        "line": 648,
         "level": 3,
         "title": "Обновление компонентов"
       }
@@ -8613,7 +8597,7 @@
     "Обратный прокси": [
       {
         "document": "user-guide/deployment.md",
-        "line": 144,
+        "line": 146,
         "level": 2,
         "title": "Обратный прокси"
       }
@@ -8680,14 +8664,6 @@
         "line": 453,
         "level": 3,
         "title": "Общие правила и обратные вызовы для пачки"
-      }
-    ],
-    "Общие примеры использования": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 570,
-        "level": 2,
-        "title": "Общие примеры использования"
       }
     ],
     "Общие рекомендации": [
@@ -9032,6 +9008,14 @@
         "line": 517,
         "level": 3,
         "title": "Описание конфигурации"
+      }
+    ],
+    "Описание конфигурационного файла": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 1,
+        "level": 1,
+        "title": "Описание конфигурационного файла"
       }
     ],
     "Описание конфигурационных параметров": [
@@ -9997,7 +9981,7 @@
     "Панель управления Dashboard": [
       {
         "document": "user-guide/deployment.md",
-        "line": 83,
+        "line": 85,
         "level": 2,
         "title": "Панель управления Dashboard"
       }
@@ -10172,12 +10156,12 @@
         "title": "Переменные окружения"
       }
     ],
-    "Переменные окружения для перекрытия": [
+    "Переменные окружения для перекрытия конфигурации": [
       {
         "document": "user-guide/configuration.md",
         "line": 59,
         "level": 2,
-        "title": "Переменные окружения для перекрытия"
+        "title": "Переменные окружения для перекрытия конфигурации"
       }
     ],
     "Перенос старой конфигурации": [
@@ -10660,12 +10644,12 @@
         "title": "Подробности метода `t()`"
       }
     ],
-    "Подсказка по нескольким экземплярам и файлам блокировки": [
+    "Подсказки по нескольким экземплярам и файлу блокировки": [
       {
         "document": "user-guide/configuration.md",
         "line": 21,
         "level": 3,
-        "title": "Подсказка по нескольким экземплярам и файлам блокировки"
+        "title": "Подсказки по нескольким экземплярам и файлу блокировки"
       }
     ],
     "Подсчет сообщений": [
@@ -10761,7 +10745,7 @@
     "Полный пример конфигурации": [
       {
         "document": "user-guide/configuration.md",
-        "line": 210,
+        "line": 209,
         "level": 2,
         "title": "Полный пример конфигурации"
       }
@@ -10897,7 +10881,7 @@
     "Пользовательские источники идентификации (провайдеры)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 334,
+        "line": 333,
         "level": 3,
         "title": "Пользовательские источники идентификации (провайдеры)"
       }
@@ -10948,14 +10932,6 @@
         "line": 175,
         "level": 3,
         "title": "Последовательность отмены (выгрузка модуля)"
-      }
-    ],
-    "Постоянное хранение данных": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 73,
-        "level": 3,
-        "title": "Постоянное хранение данных"
       }
     ],
     "Поток WebSocket": [
@@ -11090,14 +11066,6 @@
         "line": 341,
         "level": 3,
         "title": "Преобразование событий запросов"
-      }
-    ],
-    "Привязка переменных окружения к конфигурации модуля (2.9.0+)": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 85,
-        "level": 3,
-        "title": "Привязка переменных окружения к конфигурации модуля (2.9.0+)"
       }
     ],
     "Приглашения в комнаты": [
@@ -11604,12 +11572,12 @@
         "title": "Приоритет методов"
       }
     ],
-    "Приоритет пользователя: зона действия хозяина определяется пользователем": [
+    "Приоритет пользователя: зона действия мастера определяется пользователем": [
       {
         "document": "user-guide/configuration.md",
-        "line": 359,
+        "line": 357,
         "level": 3,
-        "title": "Приоритет пользователя: зона действия хозяина определяется пользователем"
+        "title": "Приоритет пользователя: зона действия мастера определяется пользователем"
       }
     ],
     "Приоритет разрешения аккаунта": [
@@ -11679,7 +11647,7 @@
     "Проверка работоспособности": [
       {
         "document": "user-guide/deployment.md",
-        "line": 122,
+        "line": 124,
         "level": 2,
         "title": "Проверка работоспособности"
       }
@@ -11964,6 +11932,14 @@
         "title": "Развертывание"
       }
     ],
+    "Развертывание нескольких экземпляров": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 280,
+        "level": 2,
+        "title": "Развертывание нескольких экземпляров"
+      }
+    ],
     "Различия в поведении диалектов": [
       {
         "document": "advanced/storage-backends.md",
@@ -12018,6 +11994,14 @@
         "line": 31,
         "level": 3,
         "title": "Распространённые места конфигурации"
+      }
+    ],
+    "Распространённые случаи использования": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 594,
+        "level": 2,
+        "title": "Распространённые случаи использования"
       }
     ],
     "Расширение для всех платформ (шаблон \"*\")": [
@@ -12355,7 +12339,7 @@
     "Резервное копирование": [
       {
         "document": "user-guide/deployment.md",
-        "line": 295,
+        "line": 332,
         "level": 3,
         "title": "Резервное копирование"
       }
@@ -12363,7 +12347,7 @@
     "Рекомендации по безопасности": [
       {
         "document": "user-guide/deployment.md",
-        "line": 245,
+        "line": 271,
         "level": 2,
         "title": "Рекомендации по безопасности"
       }
@@ -12589,7 +12573,7 @@
     "Ручное развертывание (pip)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 176,
+        "line": 178,
         "level": 2,
         "title": "Ручное развертывание (pip)"
       }
@@ -12850,6 +12834,22 @@
         "line": 355,
         "level": 2,
         "title": "Связанные ссылки"
+      }
+    ],
+    "Связывание переменных окружения с конфигурацией модуля (2.9.0+)": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 84,
+        "level": 3,
+        "title": "Связывание переменных окружения с конфигурацией модуля (2.9.0+)"
+      }
+    ],
+    "Связь с CLI": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 474,
+        "level": 4,
+        "title": "Связь с CLI"
       }
     ],
     "Связь с другими системами": [
@@ -13176,14 +13176,6 @@
         "title": "Скрытие шума при завершении"
       }
     ],
-    "Следующие шаги": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 685,
-        "level": 2,
-        "title": "Следующие шаги"
-      }
-    ],
     "Служебный каталог: services()": [
       {
         "document": "advanced/module-communication.md",
@@ -13203,7 +13195,7 @@
     "Смена языка": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 647,
+        "line": 671,
         "level": 3,
         "title": "Смена языка"
       }
@@ -13581,7 +13573,7 @@
     "Создание шаблона": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 680,
+        "line": 704,
         "level": 3,
         "title": "Создание шаблона"
       }
@@ -13698,12 +13690,12 @@
         "title": "Состояние подключения к хранилищу"
       }
     ],
-    "Сохранение комментариев и минимизация записи": [
+    "Сохранение комментариев и минимизация записи на диск": [
       {
         "document": "user-guide/configuration.md",
         "line": 48,
         "level": 2,
-        "title": "Сохранение комментариев и минимизация записи"
+        "title": "Сохранение комментариев и минимизация записи на диск"
       }
     ],
     "Спецификация кодов ошибок": [
@@ -13761,7 +13753,7 @@
     "Список исключений": [
       {
         "document": "user-guide/configuration.md",
-        "line": 464,
+        "line": 462,
         "level": 4,
         "title": "Список исключений"
       }
@@ -13878,6 +13870,30 @@
         "title": "Способ 4: Использование клиентского приложения ErisPulse-App (без терминала)"
       }
     ],
+    "Способ Docker": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 290,
+        "level": 3,
+        "title": "Способ Docker"
+      }
+    ],
+    "Способ pip": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 300,
+        "level": 3,
+        "title": "Способ pip"
+      }
+    ],
+    "Способ uv tool": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 307,
+        "level": 3,
+        "title": "Способ uv tool"
+      }
+    ],
     "Способ второй: `event.send_chain()`": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -13970,12 +13986,12 @@
         "title": "Справочник API"
       }
     ],
-    "Справочник команд CLI": [
+    "Справочник командной строки": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 1,
         "level": 1,
-        "title": "Справочник команд CLI"
+        "title": "Справочник командной строки"
       }
     ],
     "Справочник методов": [
@@ -14333,7 +14349,7 @@
     "Строгий режим": [
       {
         "document": "user-guide/configuration.md",
-        "line": 447,
+        "line": 445,
         "level": 3,
         "title": "Строгий режим"
       }
@@ -14819,7 +14835,7 @@
     "Удаление компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 601,
+        "line": 625,
         "level": 3,
         "title": "Удаление компонентов"
       }
@@ -15133,7 +15149,7 @@
     "Установка модулей через Dashboard": [
       {
         "document": "user-guide/deployment.md",
-        "line": 102,
+        "line": 104,
         "level": 3,
         "title": "Установка модулей через Dashboard"
       }
@@ -15147,7 +15163,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 572,
+        "line": 596,
         "level": 3,
         "title": "Установка модуля"
       }
@@ -15326,6 +15342,14 @@
         "title": "Характеристики платформы пользователей Yunhu"
       }
     ],
+    "Хранение данных": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 73,
+        "level": 3,
+        "title": "Хранение данных"
+      }
+    ],
     "Хранение данных пользователя": [
       {
         "document": "getting-started/common-tasks.md",
@@ -15444,12 +15468,12 @@
         "title": "Цепочка принятия решений при распределении команд: почему команда не сработала"
       }
     ],
-    "Цепочка проверки и добавление/удаление во время выполнения": [
+    "Цепочка проверки и удаление в режиме реального времени": [
       {
         "document": "user-guide/configuration.md",
-        "line": 320,
+        "line": 319,
         "level": 3,
-        "title": "Цепочка проверки и добавление/удаление во время выполнения"
+        "title": "Цепочка проверки и удаление в режиме реального времени"
       }
     ],
     "Цепочка разрешения учётной записи": [

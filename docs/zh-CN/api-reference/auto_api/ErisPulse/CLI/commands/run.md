@@ -38,20 +38,20 @@ Run 命令实现
 ---
 
 
-##### `on_modified(event)`
+##### `on_modified(event: FileChangeEvent)`
 
 文件修改事件回调，对 .py 文件触发热重载
 
-- **event** (`FileSystemEvent`): 文件系统事件
+- **event** (`FileChangeEvent`): 文件系统事件
 
 ---
 
 
-##### `_schedule_reload(event)`
+##### `_schedule_reload(event: FileChangeEvent)`
 
 在事件循环中调度 SDK 重启以执行热重载
 
-- **event** (`FileSystemEvent`): 触发重载的文件系统事件
+- **event** (`FileChangeEvent`): 触发重载的文件系统事件
 
 ---
 
@@ -64,6 +64,49 @@ Run 命令
 
 
 #### 方法列表
+
+
+##### `_read_strict_mode() -> int`
+
+读取框架严格模式配置级别（``ErisPulse.framework.strict_mode``）
+
+走 frame_config 的内存合并默认值通道（不要求配置文件存在该键），
+环境变量 ``ERISPULSE_FRAMEWORK_STRICT_MODE`` 的覆盖同样生效。
+
+**返回值** (`int`): 0=宽松 / 1=跳过 / 2=致命；读取失败按宽松(0)处理
+
+---
+
+
+##### `_resolve_strict(strict_arg: bool | None) -> tuple[bool, int | None]`
+
+解析严格模式三态：显式参数临时覆盖，缺省跟随框架配置
+
+- **strict_arg** (`bool | None`): ``--strict`` / ``--no-strict`` 的解析值，
+
+    None 表示未传参
+**返回值**: ([tuple]) ``(预检是否严格, 框架级别注入值)``——注入值非 None 时
+
+    写入 ``ERISPULSE_FRAMEWORK_STRICT_MODE`` 临时覆盖本次运行的框架
+    严格级别（不落盘，子进程经环境继承）；None 表示框架级别不动
+
+---
+
+
+##### `_preflight(strict: bool)`
+
+启动前快速自检：配置文件可解析性与已装组件必填项完整性
+
+严格性来源：``--strict`` / ``--no-strict`` 显式指定，缺省跟随
+``ErisPulse.framework.strict_mode``（>=1 视为严格）。检查失败默认仅
+警告并继续启动——框架对缺失配置按"正常首次启动"容忍，警告不应
+挡住运行；``strict=True`` 时打印失败项并以退出码 1 终止。自检自身
+出现任何异常（依赖缺失、组件发现失败等）一律跳过，绝不阻塞启动。
+不含任何网络探测。
+
+- **strict** (`bool`): 检查失败时是否强制退出
+
+---
 
 
 ##### `_run_internal(reload_mode: bool)`

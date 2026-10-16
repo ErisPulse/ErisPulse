@@ -22,7 +22,7 @@
 - **模块总数**: 131
 - **类总数**: 182（包括 4 个嵌套类）
 - **函数总数**: 341
-- **方法总数**: 1627
+- **方法总数**: 1637
 
 ---
 
@@ -41,7 +41,7 @@
 
 ### [ErisPulse.CLI.cli](ErisPulse/CLI/cli.md)
 
-1 个类 | 9 个方法
+1 个类 | 10 个方法
 
 
 ### [ErisPulse.CLI.commands.__init__](ErisPulse/CLI/commands/__init__.md)
@@ -61,12 +61,12 @@
 
 ### [ErisPulse.CLI.commands.doctor](ErisPulse/CLI/commands/doctor.md)
 
-1 个类 | 2 个方法
+1 个类 | 5 个方法
 
 
 ### [ErisPulse.CLI.commands.init](ErisPulse/CLI/commands/init.md)
 
-1 个类 | 7 个方法 | 2 个函数
+1 个类 | 9 个方法 | 2 个函数
 
 
 ### [ErisPulse.CLI.commands.install](ErisPulse/CLI/commands/install.md)
@@ -91,7 +91,7 @@
 
 ### [ErisPulse.CLI.commands.run](ErisPulse/CLI/commands/run.md)
 
-2 个类 | 7 个方法
+2 个类 | 10 个方法
 
 
 ### [ErisPulse.CLI.commands.self_update](ErisPulse/CLI/commands/self_update.md)
@@ -201,7 +201,7 @@
 
 ### [ErisPulse.CLI.utils.scaffold_text](ErisPulse/CLI/utils/scaffold_text.md)
 
-1 个类 | 4 个方法
+1 个类 | 5 个方法
 
 
 ### [ErisPulse.Core.Bases.__init__](ErisPulse/Core/Bases/__init__.md)

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1717,
+  "total_keywords": 1719,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2697,7 +2697,7 @@
     "Active GC Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 431,
+        "line": 429,
         "level": 3,
         "title": "Active GC Configuration"
       }
@@ -3255,7 +3255,7 @@
     "Backup": [
       {
         "document": "user-guide/deployment.md",
-        "line": 295,
+        "line": 329,
         "level": 3,
         "title": "Backup"
       }
@@ -4239,7 +4239,7 @@
     "Command Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 526,
+        "line": 528,
         "level": 3,
         "title": "Command Configuration"
       }
@@ -4339,7 +4339,7 @@
     "Command Parsing Configuration (event.command)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 682,
+        "line": 683,
         "level": 2,
         "title": "Command Parsing Configuration (event.command)"
       }
@@ -4376,12 +4376,12 @@
         "title": "Command and Reply Block Configuration"
       }
     ],
-    "Comment Preservation and Minimal Disk Writing": [
+    "Comment Retention and Minimal Disk Write": [
       {
         "document": "user-guide/configuration.md",
         "line": 48,
         "level": 2,
-        "title": "Comment Preservation and Minimal Disk Writing"
+        "title": "Comment Retention and Minimal Disk Write"
       }
     ],
     "Common CSS Class Names": [
@@ -4465,7 +4465,7 @@
     "Common Usage": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 571,
+        "line": 594,
         "level": 2,
         "title": "Common Usage"
       }
@@ -4497,7 +4497,7 @@
     "Complete Configuration Example": [
       {
         "document": "user-guide/configuration.md",
-        "line": 210,
+        "line": 208,
         "level": 2,
         "title": "Complete Configuration Example"
       }
@@ -4747,7 +4747,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 114,
+        "line": 112,
         "level": 2,
         "title": "Configuration Hot Update"
       }
@@ -4851,17 +4851,17 @@
     "Configuration Reading and Deletion API": [
       {
         "document": "user-guide/configuration.md",
-        "line": 184,
+        "line": 182,
         "level": 2,
         "title": "Configuration Reading and Deletion API"
       }
     ],
-    "Configure components": [
+    "Configure Components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 612,
+        "line": 635,
         "level": 3,
-        "title": "Configure components"
+        "title": "Configure Components"
       }
     ],
     "Configuring Lazy Loading": [
@@ -5262,6 +5262,14 @@
         "title": "Counting and Existence Check"
       }
     ],
+    "Create Scaffolding": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 704,
+        "level": 3,
+        "title": "Create Scaffolding"
+      }
+    ],
     "Create Tasks": [
       {
         "document": "ecosystem/cron.md",
@@ -5284,14 +5292,6 @@
         "line": 38,
         "level": 4,
         "title": "Create a Virtual Environment"
-      }
-    ],
-    "Create scaffold": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 681,
-        "level": 3,
-        "title": "Create scaffold"
       }
     ],
     "Creating a Conversation": [
@@ -5361,7 +5361,7 @@
     "Custom Identity Source (provider)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 334,
+        "line": 332,
         "level": 3,
         "title": "Custom Identity Source (provider)"
       }
@@ -5458,14 +5458,6 @@
         "line": 72,
         "level": 3,
         "title": "Debugging Tips"
-      }
-    ],
-    "Decision Chain and Runtime Add/Delete": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 320,
-        "level": 3,
-        "title": "Decision Chain and Runtime Add/Delete"
       }
     ],
     "Decision Semantics": [
@@ -5855,7 +5847,7 @@
     "Docker Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 264,
+        "line": 288,
         "level": 3,
         "title": "Docker Method"
       }
@@ -6118,12 +6110,12 @@
         "title": "Entry Template"
       }
     ],
-    "Environment Diagnosis": [
+    "Environment Diagnostics": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 527,
+        "line": 540,
         "level": 2,
-        "title": "Environment Diagnosis"
+        "title": "Environment Diagnostics"
       }
     ],
     "Environment Variable Override": [
@@ -6315,7 +6307,7 @@
     "Event Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 524,
+        "line": 526,
         "level": 2,
         "title": "Event Configuration"
       }
@@ -6801,7 +6793,7 @@
     "Exemption List": [
       {
         "document": "user-guide/configuration.md",
-        "line": 463,
+        "line": 461,
         "level": 4,
         "title": "Exemption List"
       }
@@ -7171,7 +7163,7 @@
     "Framework Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 410,
+        "line": 408,
         "level": 2,
         "title": "Framework Configuration"
       }
@@ -7326,12 +7318,12 @@
         "title": "General Recommendations"
       }
     ],
-    "Generate type stubs": [
+    "Generate Type Stubs": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 661,
+        "line": 684,
         "level": 3,
-        "title": "Generate type stubs"
+        "title": "Generate Type Stubs"
       }
     ],
     "Generic request": [
@@ -7447,7 +7439,7 @@
     "Global Parameters": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 512,
+        "line": 525,
         "level": 2,
         "title": "Global Parameters"
       }
@@ -7797,7 +7789,7 @@
     "Hot Reload Server Configuration at Runtime": [
       {
         "document": "user-guide/deployment.md",
-        "line": 281,
+        "line": 315,
         "level": 3,
         "title": "Hot Reload Server Configuration at Runtime"
       }
@@ -8008,14 +8000,12 @@
         "line": 70,
         "level": 2,
         "title": "Initialize Project"
-      }
-    ],
-    "Initialize project": [
+      },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 671,
+        "line": 694,
         "level": 3,
-        "title": "Initialize project"
+        "title": "Initialize Project"
       }
     ],
     "Inline Query Event": [
@@ -8042,12 +8032,12 @@
         "title": "Install ErisPulse"
       }
     ],
-    "Install modules": [
+    "Install Modules": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 573,
+        "line": 596,
         "level": 3,
-        "title": "Install modules"
+        "title": "Install Modules"
       }
     ],
     "Install uv": [
@@ -8138,6 +8128,14 @@
         "title": "Installing via CLI"
       }
     ],
+    "Integration with CLI": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 473,
+        "level": 4,
+        "title": "Integration with CLI"
+      }
+    ],
     "Intended Audience": [
       {
         "document": "advanced/README.md",
@@ -8225,7 +8223,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 558,
+        "line": 581,
         "level": 2,
         "title": "Interactive Installation"
       }
@@ -8257,7 +8255,7 @@
     "Internal Breakdown of Hot Update Chain": [
       {
         "document": "user-guide/configuration.md",
-        "line": 136,
+        "line": 134,
         "level": 3,
         "title": "Internal Breakdown of Hot Update Chain"
       }
@@ -8297,7 +8295,7 @@
     "Internationalization Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 553,
+        "line": 555,
         "level": 2,
         "title": "Internationalization Configuration"
       }
@@ -8337,7 +8335,7 @@
     "Language Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 434,
+        "line": 447,
         "level": 2,
         "title": "Language Commands"
       }
@@ -8480,6 +8478,14 @@
         "title": "Link Control: Claiming and Blocking"
       }
     ],
+    "List Components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 609,
+        "level": 3,
+        "title": "List Components"
+      }
+    ],
     "List Platforms": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8494,14 +8500,6 @@
         "line": 156,
         "level": 3,
         "title": "List Supported Send Methods"
-      }
-    ],
-    "List components": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 586,
-        "level": 3,
-        "title": "List components"
       }
     ],
     "List of Functionality Already Integrated": [
@@ -8687,7 +8685,7 @@
     "Logging Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 362,
+        "line": 360,
         "level": 2,
         "title": "Logging Configuration"
       }
@@ -8830,10 +8828,18 @@
         "title": "Manually Registering Custom Translations (Old Approach)"
       }
     ],
+    "Master Determination Chain and Runtime Add/Delete": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 318,
+        "level": 3,
+        "title": "Master Determination Chain and Runtime Add/Delete"
+      }
+    ],
     "Master System Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 294,
+        "line": 292,
         "level": 2,
         "title": "Master System Configuration"
       }
@@ -8913,7 +8919,7 @@
     "Message Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 542,
+        "line": 544,
         "level": 3,
         "title": "Message Configuration"
       }
@@ -9519,7 +9525,7 @@
     "Module Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 564,
+        "line": 566,
         "level": 2,
         "title": "Module Configuration"
       }
@@ -9527,7 +9533,7 @@
     "Module Configuration Environment Variable Binding (2.9.0+)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 85,
+        "line": 84,
         "level": 3,
         "title": "Module Configuration Environment Variable Binding (2.9.0+)"
       }
@@ -9761,7 +9767,7 @@
     "Multi-Instance Deployment": [
       {
         "document": "user-guide/deployment.md",
-        "line": 254,
+        "line": 278,
         "level": 2,
         "title": "Multi-Instance Deployment"
       }
@@ -9945,7 +9951,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 684,
+        "line": 685,
         "level": 2,
         "title": "Next Steps"
       },
@@ -10804,12 +10810,12 @@
         "title": "Process Supervision and Hard Restart"
       }
     ],
-    "Production Configuration": [
+    "Production Environment Configuration": [
       {
         "document": "user-guide/deployment.md",
         "line": 180,
         "level": 3,
-        "title": "Production Configuration"
+        "title": "Production Environment Configuration"
       }
     ],
     "Progress Monitoring (OnProgress / OnError)": [
@@ -10831,7 +10837,7 @@
     "Project Management Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 326,
+        "line": 335,
         "level": 2,
         "title": "Project Management Commands"
       }
@@ -12108,20 +12114,20 @@
         "title": "Rule Propagation"
       }
     ],
+    "Run Project": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 661,
+        "level": 3,
+        "title": "Run Project"
+      }
+    ],
     "Run Tests": [
       {
         "document": "user-guide/installation.md",
         "line": 109,
         "level": 3,
         "title": "Run Tests"
-      }
-    ],
-    "Run project": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 638,
-        "level": 3,
-        "title": "Run project"
       }
     ],
     "Running Mode": [
@@ -12277,7 +12283,7 @@
     "Scope Configuration (scope)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 593,
+        "line": 595,
         "level": 2,
         "title": "Scope Configuration (scope)"
       }
@@ -12325,7 +12331,7 @@
     "Security Recommendations": [
       {
         "document": "user-guide/deployment.md",
-        "line": 245,
+        "line": 269,
         "level": 2,
         "title": "Security Recommendations"
       }
@@ -12595,7 +12601,7 @@
     "Server Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 264,
+        "line": 262,
         "level": 2,
         "title": "Server Configuration"
       }
@@ -13085,7 +13091,7 @@
     "Storage Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 475,
+        "line": 477,
         "level": 2,
         "title": "Storage Configuration"
       }
@@ -13131,7 +13137,7 @@
     "Strict Mode": [
       {
         "document": "user-guide/configuration.md",
-        "line": 446,
+        "line": 444,
         "level": 3,
         "title": "Strict Mode"
       }
@@ -13348,12 +13354,12 @@
         "title": "Supported i18n Fields"
       }
     ],
-    "Switch language": [
+    "Switch Language": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 648,
+        "line": 671,
         "level": 3,
-        "title": "Switch language"
+        "title": "Switch Language"
       }
     ],
     "Switching Manually in Code": [
@@ -13683,7 +13689,7 @@
     "Type Stub Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 471,
+        "line": 484,
         "level": 2,
         "title": "Type Stub Commands"
       }
@@ -13707,7 +13713,7 @@
     "Unified Event Override Configuration (event.overrides)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 639,
+        "line": 641,
         "level": 2,
         "title": "Unified Event Override Configuration (event.overrides)"
       }
@@ -13736,12 +13742,12 @@
         "title": "Uninit Process"
       }
     ],
-    "Uninstall components": [
+    "Uninstall Components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 602,
+        "line": 625,
         "level": 3,
-        "title": "Uninstall components"
+        "title": "Uninstall Components"
       }
     ],
     "Unique Event Types": [
@@ -13871,7 +13877,7 @@
     "Updates and Maintenance": [
       {
         "document": "user-guide/deployment.md",
-        "line": 262,
+        "line": 286,
         "level": 2,
         "title": "Updates and Maintenance"
       }
@@ -13884,12 +13890,12 @@
         "title": "Updating Data"
       }
     ],
-    "Upgrade components": [
+    "Upgrade Components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 625,
+        "line": 648,
         "level": 3,
-        "title": "Upgrade components"
+        "title": "Upgrade Components"
       }
     ],
     "Usage": [
@@ -13978,12 +13984,12 @@
         "title": "User Guide"
       }
     ],
-    "User Priority: Master Effect Scope Decided by User": [
+    "User Priority: Master Scope Controlled by User": [
       {
         "document": "user-guide/configuration.md",
-        "line": 358,
+        "line": 356,
         "level": 3,
-        "title": "User Priority: Master Effect Scope Decided by User"
+        "title": "User Priority: Master Scope Controlled by User"
       }
     ],
     "User Status Change Event": [
@@ -15081,7 +15087,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 383,
+        "line": 396,
         "level": 3,
         "title": "create"
       }
@@ -15089,7 +15095,7 @@
     "delConfig: Delete Configuration Key": [
       {
         "document": "user-guide/configuration.md",
-        "line": 197,
+        "line": 195,
         "level": 3,
         "title": "delConfig: Delete Configuration Key"
       }
@@ -15137,7 +15143,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 529,
+        "line": 542,
         "level": 3,
         "title": "doctor"
       }
@@ -15169,7 +15175,7 @@
     "getAllConfig: Full Configuration Snapshot": [
       {
         "document": "user-guide/configuration.md",
-        "line": 186,
+        "line": 184,
         "level": 3,
         "title": "getAllConfig: Full Configuration Snapshot"
       }
@@ -15201,7 +15207,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 440,
+        "line": 453,
         "level": 3,
         "title": "i18n"
       }
@@ -15217,7 +15223,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 333,
+        "line": 342,
         "level": 3,
         "title": "init"
       }
@@ -15297,7 +15303,7 @@
     "pip Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 274,
+        "line": 298,
         "level": 3,
         "title": "pip Method"
       }
@@ -15401,7 +15407,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 477,
+        "line": 490,
         "level": 3,
         "title": "types"
       }
@@ -15428,6 +15434,22 @@
         "line": 50,
         "level": 4,
         "title": "user"
+      }
+    ],
+    "uv tool Method": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 305,
+        "level": 3,
+        "title": "uv tool Method"
+      }
+    ],
+    "uv tool for Separated Deployment (CLI and Project Environment Isolation)": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 245,
+        "level": 3,
+        "title": "uv tool for Separated Deployment (CLI and Project Environment Isolation)"
       }
     ],
     "v5 Paradigm Update (1.1.0)": [

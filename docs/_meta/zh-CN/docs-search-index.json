@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1691,
+  "total_keywords": 1694,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2827,7 +2827,7 @@
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 267,
+        "line": 291,
         "level": 3,
         "title": "Docker 方式"
       }
@@ -4419,7 +4419,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 383,
+        "line": 396,
         "level": 3,
         "title": "create"
       }
@@ -4475,7 +4475,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 529,
+        "line": 542,
         "level": 3,
         "title": "doctor"
       }
@@ -4539,7 +4539,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 440,
+        "line": 453,
         "level": 3,
         "title": "i18n"
       }
@@ -4547,7 +4547,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 333,
+        "line": 342,
         "level": 3,
         "title": "init"
       }
@@ -4659,7 +4659,7 @@
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 277,
+        "line": 301,
         "level": 3,
         "title": "pip 方式"
       }
@@ -4779,7 +4779,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 477,
+        "line": 490,
         "level": 3,
         "title": "types"
       }
@@ -4806,6 +4806,22 @@
         "line": 50,
         "level": 4,
         "title": "user"
+      }
+    ],
+    "uv tool 分离部署（CLI 与项目环境隔离）": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 248,
+        "level": 3,
+        "title": "uv tool 分离部署（CLI 与项目环境隔离）"
+      }
+    ],
+    "uv tool 方式": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 308,
+        "level": 3,
+        "title": "uv tool 方式"
       }
     ],
     "v5 范式更新（1.1.0）": [
@@ -5065,7 +5081,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 713,
+        "line": 717,
         "level": 2,
         "title": "下一步"
       },
@@ -5122,6 +5138,14 @@
         "line": 591,
         "level": 2,
         "title": "与 CLI i18n 的关系"
+      }
+    ],
+    "与 CLI 的联动": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 496,
+        "level": 4,
+        "title": "与 CLI 的联动"
       }
     ],
     "与 SDK 的关系": [
@@ -5639,7 +5663,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 545,
+        "line": 549,
         "level": 2,
         "title": "事件配置"
       }
@@ -5781,7 +5805,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 558,
+        "line": 581,
         "level": 2,
         "title": "交互式安装"
       }
@@ -5993,7 +6017,7 @@
     "作用域配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 614,
+        "line": 618,
         "level": 2,
         "title": "作用域配置（scope）"
       }
@@ -6315,7 +6339,7 @@
     "全局参数": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 512,
+        "line": 525,
         "level": 2,
         "title": "全局参数"
       }
@@ -6567,7 +6591,7 @@
     "切换语言": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 648,
+        "line": 671,
         "level": 3,
         "title": "切换语言"
       }
@@ -6591,7 +6615,7 @@
     "列出组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 586,
+        "line": 609,
         "level": 3,
         "title": "列出组件"
       }
@@ -6623,7 +6647,7 @@
     "创建脚手架": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 681,
+        "line": 704,
         "level": 3,
         "title": "创建脚手架"
       }
@@ -6683,7 +6707,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 671,
+        "line": 694,
         "level": 3,
         "title": "初始化项目"
       }
@@ -6831,7 +6855,7 @@
     "升级组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 625,
+        "line": 648,
         "level": 3,
         "title": "升级组件"
       }
@@ -6903,7 +6927,7 @@
     "卸载组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 602,
+        "line": 625,
         "level": 3,
         "title": "卸载组件"
       }
@@ -7587,7 +7611,7 @@
     "命令解析配置（event.command）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 711,
+        "line": 715,
         "level": 2,
         "title": "命令解析配置（event.command）"
       }
@@ -7603,7 +7627,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 547,
+        "line": 551,
         "level": 3,
         "title": "命令配置"
       }
@@ -7743,7 +7767,7 @@
     "国际化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 574,
+        "line": 578,
         "level": 2,
         "title": "国际化配置"
       }
@@ -8305,7 +8329,7 @@
     "备份": [
       {
         "document": "user-guide/deployment.md",
-        "line": 299,
+        "line": 333,
         "level": 3,
         "title": "备份"
       }
@@ -8353,7 +8377,7 @@
     "多实例部署": [
       {
         "document": "user-guide/deployment.md",
-        "line": 257,
+        "line": 281,
         "level": 2,
         "title": "多实例部署"
       }
@@ -8693,7 +8717,7 @@
     "存储配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 496,
+        "line": 500,
         "level": 2,
         "title": "存储配置"
       }
@@ -8717,7 +8741,7 @@
     "安全建议": [
       {
         "document": "user-guide/deployment.md",
-        "line": 248,
+        "line": 272,
         "level": 2,
         "title": "安全建议"
       }
@@ -8809,7 +8833,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 573,
+        "line": 596,
         "level": 3,
         "title": "安装模块"
       }
@@ -9209,7 +9233,7 @@
     "常见用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 571,
+        "line": 594,
         "level": 2,
         "title": "常见用法"
       }
@@ -10889,7 +10913,7 @@
     "更新与维护": [
       {
         "document": "user-guide/deployment.md",
-        "line": 265,
+        "line": 289,
         "level": 2,
         "title": "更新与维护"
       }
@@ -11775,7 +11799,7 @@
     "模块配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 585,
+        "line": 589,
         "level": 2,
         "title": "模块配置"
       }
@@ -12373,7 +12397,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 563,
+        "line": 567,
         "level": 3,
         "title": "消息配置"
       }
@@ -12591,7 +12615,7 @@
     "环境诊断": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 527,
+        "line": 540,
         "level": 2,
         "title": "环境诊断"
       }
@@ -12673,7 +12697,7 @@
     "生成类型存根": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 661,
+        "line": 684,
         "level": 3,
         "title": "生成类型存根"
       }
@@ -13215,7 +13239,7 @@
     "类型存根命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 471,
+        "line": 484,
         "level": 2,
         "title": "类型存根命令"
       }
@@ -13279,7 +13303,7 @@
     "统一事件覆写配置（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 664,
+        "line": 668,
         "level": 2,
         "title": "统一事件覆写配置（event.overrides）"
       }
@@ -13719,7 +13743,7 @@
     "语言命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 434,
+        "line": 447,
         "level": 2,
         "title": "语言命令"
       }
@@ -14165,7 +14189,7 @@
     "运行时热重载服务器配置": [
       {
         "document": "user-guide/deployment.md",
-        "line": 284,
+        "line": 318,
         "level": 3,
         "title": "运行时热重载服务器配置"
       }
@@ -14219,7 +14243,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 638,
+        "line": 661,
         "level": 3,
         "title": "运行项目"
       }
@@ -14979,7 +15003,7 @@
     "配置组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 612,
+        "line": 635,
         "level": 3,
         "title": "配置组件"
       }
@@ -15439,7 +15463,7 @@
     "项目管理命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 326,
+        "line": 335,
         "level": 2,
         "title": "项目管理命令"
       }

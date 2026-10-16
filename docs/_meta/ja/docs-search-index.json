@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1760,
+  "total_keywords": 1762,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2774,6 +2774,14 @@
         "title": "CLI i18n との関係"
       }
     ],
+    "CLI との連携": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 481,
+        "level": 4,
+        "title": "CLI との連携"
+      }
+    ],
     "CLI によるインストール": [
       {
         "document": "quick-start.md",
@@ -2782,12 +2790,12 @@
         "title": "CLI によるインストール"
       }
     ],
-    "CLIコマンドリファレンス": [
+    "CLI コマンドリファレンス": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 1,
         "level": 1,
-        "title": "CLIコマンドリファレンス"
+        "title": "CLI コマンドリファレンス"
       }
     ],
     "CORS 設定": [
@@ -2870,20 +2878,20 @@
         "title": "Core.py - 基礎モジュール"
       }
     ],
-    "Dashboard によるモジュールのインストール": [
+    "Dashboard からモジュールをインストール": [
       {
         "document": "user-guide/deployment.md",
         "line": 102,
         "level": 3,
-        "title": "Dashboard によるモジュールのインストール"
+        "title": "Dashboard からモジュールをインストール"
       }
     ],
-    "Dashboard 管理面板": [
+    "Dashboard 管理パネル": [
       {
         "document": "user-guide/deployment.md",
         "line": 83,
         "level": 2,
-        "title": "Dashboard 管理面板"
+        "title": "Dashboard 管理パネル"
       }
     ],
     "Debian/Ubuntu 仮想環境作成失敗": [
@@ -2953,7 +2961,7 @@
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 264,
+        "line": 288,
         "level": 3,
         "title": "Docker 方式"
       }
@@ -4589,7 +4597,7 @@
     "config": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 236,
+        "line": 237,
         "level": 3,
         "title": "config"
       }
@@ -4645,7 +4653,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 382,
+        "line": 396,
         "level": 3,
         "title": "create"
       }
@@ -4653,7 +4661,7 @@
     "delConfig：設定キーの削除": [
       {
         "document": "user-guide/configuration.md",
-        "line": 196,
+        "line": 198,
         "level": 3,
         "title": "delConfig：設定キーの削除"
       }
@@ -4701,7 +4709,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 528,
+        "line": 542,
         "level": 3,
         "title": "doctor"
       }
@@ -4741,7 +4749,7 @@
     "getAllConfig：全設定のスナップショット": [
       {
         "document": "user-guide/configuration.md",
-        "line": 185,
+        "line": 187,
         "level": 3,
         "title": "getAllConfig：全設定のスナップショット"
       }
@@ -4781,7 +4789,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 439,
+        "line": 453,
         "level": 3,
         "title": "i18n"
       }
@@ -4797,7 +4805,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 332,
+        "line": 342,
         "level": 3,
         "title": "init"
       }
@@ -4829,7 +4837,7 @@
     "list": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 173,
+        "line": 174,
         "level": 3,
         "title": "list"
       }
@@ -4837,7 +4845,7 @@
     "list-remote": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 202,
+        "line": 203,
         "level": 3,
         "title": "list-remote"
       }
@@ -4909,7 +4917,7 @@
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 274,
+        "line": 298,
         "level": 3,
         "title": "pip 方式"
       }
@@ -4949,7 +4957,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 294,
+        "line": 295,
         "level": 3,
         "title": "run"
       }
@@ -5037,7 +5045,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 476,
+        "line": 490,
         "level": 3,
         "title": "types"
       }
@@ -5064,6 +5072,22 @@
         "line": 50,
         "level": 4,
         "title": "user"
+      }
+    ],
+    "uv tool による分離デプロイ（CLI とプロジェクト環境の分離）": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 245,
+        "level": 3,
+        "title": "uv tool による分離デプロイ（CLI とプロジェクト環境の分離）"
+      }
+    ],
+    "uv tool 方式": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 305,
+        "level": 3,
+        "title": "uv tool 方式"
       }
     ],
     "uv のインストール": [
@@ -5259,6 +5283,12 @@
         "document": "quick-start.md",
         "line": 1,
         "level": 1,
+        "title": "すぐに始める"
+      },
+      {
+        "document": "user-guide/deployment.md",
+        "line": 9,
+        "level": 3,
         "title": "すぐに始める"
       }
     ],
@@ -6009,7 +6039,7 @@
     "イベント設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 528,
+        "line": 534,
         "level": 2,
         "title": "イベント設定"
       }
@@ -6465,7 +6495,7 @@
     "グローバルパラメータ": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 511,
+        "line": 525,
         "level": 2,
         "title": "グローバルパラメータ"
       }
@@ -6717,7 +6747,7 @@
     "コマンド解析の設定（event.command）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 694,
+        "line": 700,
         "level": 2,
         "title": "コマンド解析の設定（event.command）"
       }
@@ -6725,7 +6755,7 @@
     "コマンド設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 530,
+        "line": 536,
         "level": 3,
         "title": "コマンド設定"
       }
@@ -6757,7 +6787,7 @@
     "コンポーネントのアップグレード": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 624,
+        "line": 648,
         "level": 3,
         "title": "コンポーネントのアップグレード"
       }
@@ -6765,7 +6795,7 @@
     "コンポーネントのアンインストール": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 601,
+        "line": 625,
         "level": 3,
         "title": "コンポーネントのアンインストール"
       }
@@ -6773,7 +6803,7 @@
     "コンポーネントの一覧表示": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 585,
+        "line": 609,
         "level": 3,
         "title": "コンポーネントの一覧表示"
       }
@@ -6781,7 +6811,7 @@
     "コンポーネントの設定": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 611,
+        "line": 635,
         "level": 3,
         "title": "コンポーネントの設定"
       }
@@ -6909,7 +6939,7 @@
     "サーバー設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 263,
+        "line": 265,
         "level": 2,
         "title": "サーバー設定"
       }
@@ -7029,7 +7059,7 @@
     "スコープの設定（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 597,
+        "line": 603,
         "level": 2,
         "title": "スコープの設定（scope）"
       }
@@ -7091,7 +7121,7 @@
     "ストレージ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 479,
+        "line": 485,
         "level": 2,
         "title": "ストレージ設定"
       }
@@ -7120,12 +7150,12 @@
         "title": "セキュリティ"
       }
     ],
-    "セキュリティに関する推奨事項": [
+    "セキュリティの推奨事項": [
       {
         "document": "user-guide/deployment.md",
-        "line": 245,
+        "line": 269,
         "level": 2,
-        "title": "セキュリティに関する推奨事項"
+        "title": "セキュリティの推奨事項"
       }
     ],
     "セキュリティヘッダー": [
@@ -7195,7 +7225,7 @@
     "タイプストアブの生成": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 660,
+        "line": 684,
         "level": 3,
         "title": "タイプストアブの生成"
       }
@@ -7203,7 +7233,7 @@
     "タイプストアブコマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 470,
+        "line": 484,
         "level": 2,
         "title": "タイプストアブコマンド"
       }
@@ -7568,14 +7598,6 @@
         "line": 35,
         "level": 2,
         "title": "テーブル管理"
-      }
-    ],
-    "ディアグノスティックコマンド": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 18,
-        "level": 2,
-        "title": "ディアグノスティックコマンド"
       }
     ],
     "ディレクトリ構造": [
@@ -7985,7 +8007,7 @@
     "バックアップ": [
       {
         "document": "user-guide/deployment.md",
-        "line": 296,
+        "line": 329,
         "level": 3,
         "title": "バックアップ"
       }
@@ -8202,12 +8224,12 @@
         "title": "フックの断点一覧"
       }
     ],
-    "フットワークの生成": [
+    "フットスタジアムの作成": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 680,
+        "line": 704,
         "level": 3,
-        "title": "フットワークの生成"
+        "title": "フットスタジアムの作成"
       }
     ],
     "フレームワークが内包する trace モジュール": [
@@ -8498,12 +8520,12 @@
         "title": "プレースホルダーコマンドの help 回帰チェーン"
       }
     ],
-    "プロアクティブGC設定": [
+    "プロアクティブ GC 設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 435,
+        "line": 437,
         "level": 3,
-        "title": "プロアクティブGC設定"
+        "title": "プロアクティブ GC 設定"
       }
     ],
     "プロジェクトの初期化": [
@@ -8515,7 +8537,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 670,
+        "line": 694,
         "level": 3,
         "title": "プロジェクトの初期化"
       }
@@ -8537,7 +8559,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 637,
+        "line": 661,
         "level": 3,
         "title": "プロジェクトの実行"
       }
@@ -8567,7 +8589,7 @@
     "プロジェクト管理コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 325,
+        "line": 335,
         "level": 2,
         "title": "プロジェクト管理コマンド"
       }
@@ -8613,7 +8635,7 @@
     "ホットアップデートの内部処理の詳細": [
       {
         "document": "user-guide/configuration.md",
-        "line": 135,
+        "line": 137,
         "level": 3,
         "title": "ホットアップデートの内部処理の詳細"
       }
@@ -9161,7 +9183,7 @@
     "メッセージ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 546,
+        "line": 552,
         "level": 3,
         "title": "メッセージ設定"
       }
@@ -9347,7 +9369,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 572,
+        "line": 596,
         "level": 3,
         "title": "モジュールのインストール"
       }
@@ -9417,7 +9439,7 @@
     "モジュールの設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 568,
+        "line": 574,
         "level": 2,
         "title": "モジュールの設定"
       }
@@ -9505,7 +9527,7 @@
     "モジュール設定の環境変数バインディング（2.9.0+）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 84,
+        "line": 85,
         "level": 3,
         "title": "モジュール設定の環境変数バインディング（2.9.0+）"
       }
@@ -9655,7 +9677,7 @@
     "ユーザー優先：主人生効果範囲はユーザーが最終決定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 360,
+        "line": 362,
         "level": 3,
         "title": "ユーザー優先：主人生効果範囲はユーザーが最終決定"
       }
@@ -10175,7 +10197,7 @@
     "ログ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 366,
+        "line": 368,
         "level": 2,
         "title": "ログ設定"
       }
@@ -10317,7 +10339,7 @@
     "一般的な使い方": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 570,
+        "line": 594,
         "level": 2,
         "title": "一般的な使い方"
       }
@@ -10421,7 +10443,7 @@
     "主人システム設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 293,
+        "line": 295,
         "level": 2,
         "title": "主人システム設定"
       }
@@ -11105,7 +11127,7 @@
     "判定チェーンと実行時追加・削除": [
       {
         "document": "user-guide/configuration.md",
-        "line": 319,
+        "line": 321,
         "level": 3,
         "title": "判定チェーンと実行時追加・削除"
       }
@@ -11253,7 +11275,7 @@
     "厳格モード": [
       {
         "document": "user-guide/configuration.md",
-        "line": 450,
+        "line": 452,
         "level": 3,
         "title": "厳格モード"
       }
@@ -11418,12 +11440,12 @@
         "title": "回答機能"
       }
     ],
-    "国内用のイメージ加速": [
+    "国内向けのイメージ加速": [
       {
         "document": "user-guide/deployment.md",
         "line": 24,
         "level": 3,
-        "title": "国内用のイメージ加速"
+        "title": "国内向けのイメージ加速"
       }
     ],
     "国際化": [
@@ -11445,7 +11467,7 @@
     "国際化設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 557,
+        "line": 563,
         "level": 2,
         "title": "国際化設定"
       }
@@ -11784,14 +11806,6 @@
         "title": "多アカウントサポート"
       }
     ],
-    "多インスタンスデプロイ": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 254,
-        "level": 2,
-        "title": "多インスタンスデプロイ"
-      }
-    ],
     "多プラットフォーム対応": [
       {
         "document": "getting-started/common-tasks.md",
@@ -11915,7 +11929,7 @@
     "完全な設定例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 209,
+        "line": 211,
         "level": 2,
         "title": "完全な設定例"
       }
@@ -11953,7 +11967,7 @@
     "実行制御コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 283,
+        "line": 284,
         "level": 2,
         "title": "実行制御コマンド"
       }
@@ -11966,20 +11980,20 @@
         "title": "実行時API"
       }
     ],
-    "実行時のサーバー設定のホットリロード": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 281,
-        "level": 3,
-        "title": "実行時のサーバー設定のホットリロード"
-      }
-    ],
     "実行時オーバーライド API": [
       {
         "document": "advanced/transcript.md",
         "line": 51,
         "level": 2,
         "title": "実行時オーバーライド API"
+      }
+    ],
+    "実行時ホットリロードでサーバーの設定を再読み込み": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 315,
+        "level": 3,
+        "title": "実行時ホットリロードでサーバーの設定を再読み込み"
       }
     ],
     "実行時細粒度制御": [
@@ -12164,12 +12178,12 @@
         "title": "対話処理"
       }
     ],
-    "対話形式のインストール": [
+    "対話形式でのインストール": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 557,
+        "line": 581,
         "level": 2,
-        "title": "対話形式のインストール"
+        "title": "対話形式でのインストール"
       }
     ],
     "対象読者": [
@@ -12365,7 +12379,7 @@
     "情報照会コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 165,
+        "line": 166,
         "level": 2,
         "title": "情報照会コマンド"
       }
@@ -13042,12 +13056,12 @@
         "title": "暗号化モードの説明"
       }
     ],
-    "更新と保守": [
+    "更新とメンテナンス": [
       {
         "document": "user-guide/deployment.md",
-        "line": 262,
+        "line": 286,
         "level": 2,
-        "title": "更新と保守"
+        "title": "更新とメンテナンス"
       }
     ],
     "更新要件": [
@@ -13319,7 +13333,7 @@
     "框架設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 414,
+        "line": 416,
         "level": 2,
         "title": "框架設定"
       }
@@ -13601,7 +13615,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 696,
+        "line": 702,
         "level": 2,
         "title": "次に進む"
       }
@@ -13863,7 +13877,7 @@
     "環境診断": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 526,
+        "line": 540,
         "level": 2,
         "title": "環境診断"
       }
@@ -14089,7 +14103,7 @@
     "統一イベントオーバーライド設定 (event.overrides)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 649,
+        "line": 655,
         "level": 2,
         "title": "統一イベントオーバーライド設定 (event.overrides)"
       }
@@ -14217,7 +14231,7 @@
     "自定义アイデンティティソース（provider）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 333,
+        "line": 335,
         "level": 3,
         "title": "自定义アイデンティティソース（provider）"
       }
@@ -14314,6 +14328,14 @@
         "line": 362,
         "level": 4,
         "title": "複数アカウント設定"
+      }
+    ],
+    "複数インスタンスのデプロイ": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 278,
+        "level": 2,
+        "title": "複数インスタンスのデプロイ"
       }
     ],
     "複数インスタンスの注意点とロックファイル": [
@@ -14423,7 +14445,7 @@
     "言語の切り替え": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 647,
+        "line": 671,
         "level": 3,
         "title": "言語の切り替え"
       }
@@ -14431,7 +14453,7 @@
     "言語コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 433,
+        "line": 447,
         "level": 2,
         "title": "言語コマンド"
       }
@@ -14489,7 +14511,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 113,
+        "line": 115,
         "level": 2,
         "title": "設定のホットアップデート"
       }
@@ -14537,7 +14559,7 @@
     "設定の読み取りと削除 API": [
       {
         "document": "user-guide/configuration.md",
-        "line": 183,
+        "line": 185,
         "level": 2,
         "title": "設定の読み取りと削除 API"
       }
@@ -14587,7 +14609,7 @@
     "設定コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 230,
+        "line": 231,
         "level": 2,
         "title": "設定コマンド"
       }
@@ -14742,6 +14764,14 @@
         "title": "設計境界：アンロード時にクリーンアップされないリソース"
       }
     ],
+    "診断コマンド": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 18,
+        "level": 2,
+        "title": "診断コマンド"
+      }
+    ],
     "認証と API 呼び出し": [
       {
         "document": "ecosystem/dashboard.md",
@@ -14769,7 +14799,7 @@
     "豁免リスト": [
       {
         "document": "user-guide/configuration.md",
-        "line": 467,
+        "line": 469,
         "level": 4,
         "title": "豁免リスト"
       }
@@ -15168,14 +15198,6 @@
         "line": 37,
         "level": 2,
         "title": "速攻公開"
-      }
-    ],
-    "速攻起動": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 9,
-        "level": 3,
-        "title": "速攻起動"
       }
     ],
     "速習": [

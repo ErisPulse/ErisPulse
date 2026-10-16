@@ -64,6 +64,17 @@ ErisPulse 命令行接口主类
 ---
 
 
+##### `_print_grouped_help() -> None`
+
+按类别分组打印主帮助（Rich 表格渲染）
+
+取代 argparse 默认的子命令平铺列表：命令按 category 归类展示
+（名称 + 别名 + 描述），全局选项从 ``parser._actions`` 实时遍历
+生成避免与实际参数漂移。子命令级 ``--help`` 保持 argparse 原样。
+
+---
+
+
 ##### `_print_quickstart() -> None`
 
 打印 Quick Start 面板

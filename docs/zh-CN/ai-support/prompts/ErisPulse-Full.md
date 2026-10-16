@@ -3039,7 +3039,7 @@ sudo apt install python3-venv
 
 ErisPulse 命令行工具（`epsdk`）提供项目管理和包管理功能。
 
-> **提示**：所有命令均可通过 `epsdk <命令> --help` 查看详细的参数说明。
+> **提示**：所有命令均可通过 `epsdk <命令> --help` 查看详细的参数说明。`epsdk`（不带命令）的主帮助按类别分组展示：**项目**（init / create / run）、**组件管理**（install / uninstall / upgrade / list / list-remote / types）、**配置与诊断**（config / doctor / i18n）、**其他**（self-update / version）。
 
 ---
 
@@ -3056,7 +3056,7 @@ ErisPulse 命令行工具（`epsdk`）提供项目管理和包管理功能。
 
 | 命令 | 别名 | 参数 | 说明 |
 |------|------|------|------|
-| `doctor` | `diag` | `[--verbose]` | 诊断环境并输出健康报告 |
+| `doctor` | `diag` | `[--verbose] [--fix]` | 诊断环境并输出健康报告；`--fix` 尝试自动修复 |
 
 ### install
 
@@ -3327,7 +3327,7 @@ epsdk config MyModule
 
 | 命令 | 别名 | 参数 | 说明 |
 |------|------|------|------|
-| `run` | `r` | `[script] [--reload]` | 运行指定脚本或 SDK |
+| `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | 运行指定脚本或 SDK |
 
 ### run
 
@@ -3341,6 +3341,7 @@ epsdk config MyModule
 |------|------|
 | `[script]` | 要运行的脚本文件，不指定则运行 SDK |
 | `--reload` | 启用热重载模式，监控文件变化自动重启 |
+| `--strict` / `--no-strict` | 临时开启 / 关闭严格模式（仅本次生效，不写入配置）；缺省跟随 `ErisPulse.framework.strict_mode` |
 
 **示例：**
 
@@ -3356,7 +3357,15 @@ epsdk run main.py --reload
 
 # SDK 热重载模式
 epsdk run --reload
+
+# 临时严格模式：启动前自检失败即退出，框架严格级别本次提升为至少 1
+epsdk run main.py --strict
+
+# 临时宽松模式（配置里开了 strict_mode 但本次想先跑起来）
+epsdk run main.py --no-strict
 ```
+
+**启动前自检：** `run` 启动前会快速检查 `config/config.toml` 可解析性与已安装组件的必填配置完整性，严格性默认跟随 `ErisPulse.framework.strict_mode`（非 0 时检查失败即退出，0 时仅警告继续）。配置文件缺失视为正常首次启动，仅提示不判失败。`--strict` 临时开启：预检失败即退出，同时框架严格级别本次提升为至少 1（跳过不合规组件，经 `ERISPULSE_FRAMEWORK_STRICT_MODE` 环境变量传导到运行进程，不写入配置文件）；`--no-strict` 反之临时压到宽松。自检自身异常时自动跳过，不含网络探测，不会阻塞启动。
 
 ---
 
@@ -3364,7 +3373,7 @@ epsdk run --reload
 
 | 命令 | 别名 | 参数 | 说明 |
 |------|------|------|------|
-| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 项目 |
+| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--adapter/-a <name>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 项目 |
 | `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | 创建模块/适配器脚手架；`pack` 将本地插件转换为可发布项目 |
 
 ### init
@@ -3378,6 +3387,7 @@ epsdk run --reload
 | `[path]` | | 目标路径（可包含父目录，如 `../apps/mybot`；纯名称等价 `--project-name`） |
 | `--project-name` | `-n` | 项目名称 |
 | `--path` | | 项目父目录（与 `-n` 组合指定创建位置） |
+| `--adapter` | `-a` | 预选要安装的适配器（可重复传参或逗号分隔），传入时跳过适配器问询与选择 |
 | `--quick` | `-q` | 快速模式，跳过交互式向导（默认创建 `.venv` 并安装依赖） |
 | `--force` | `-f` | 强制覆盖现有配置文件 |
 | `--here` | | 在当前目录初始化，不创建子目录 |
@@ -3392,6 +3402,9 @@ epsdk init
 
 # 快速初始化（当前目录下创建 my_bot/，含 pyproject.toml + .venv）
 epsdk init -q -n my_bot
+
+# 快速初始化并预装适配器（免交互，脚本 / CI 场景）
+epsdk init -q -n my_bot --adapter yunhu,telegram
 
 # 指定任意目录初始化（../apps/mybot）
 epsdk init ../apps/mybot
@@ -3573,14 +3586,21 @@ epsdk types --force
 | 参数 | 说明 |
 |------|------|
 | `--verbose` | 显示详细诊断信息 |
+| `--fix` | 诊断后尝试自动修复可修复的问题 |
 
 **检查项**：
 - **Python**：解释器版本与路径
 - **安装后端**：使用 `uv` 还是 `pip`
 - **目标解释器**：包实际安装到的目标 Python 环境
 - **配置文件**：`config/config.toml` 是否存在
+- **组件配置**：已安装组件的声明式配置完整性（"装好了跑不起来"多因必填项缺失）
 - **PyPI 连通性**：能否访问 PyPI（并显示发现的组件数）
 - **系统代理**：是否检测到代理
+
+**自动修复（`--fix`）**：
+- `config.toml` 缺失 → 按当前语言生成初始配置文件（与 `init` 建项同源）
+- 组件配置"待完善" → 逐个拉起交互式配置向导补全必填项（非交互环境提示改用 `epsdk config <名称>`）
+- Python 版本过低、PyPI 无法访问等需人工介入的问题 → 仅输出行动建议
 
 ```bash
 # 运行环境诊断
@@ -3588,6 +3608,9 @@ epsdk doctor
 
 # 使用别名
 epsdk diag
+
+# 诊断并尝试自动修复
+epsdk doctor --fix
 ```
 
 ---
@@ -3818,7 +3841,7 @@ CLI 配置向导保存还是适配器/模块首次生成配置模板，框架都
 | `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |
 | `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |
 | `ErisPulse.logger.level` | `ERISPULSE_LOGGER_LEVEL` | `DEBUG` |
-| `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
+| `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `2` |
 
 行为说明：
 - **优先级最高**：环境变量覆盖「配置文件」与「默认值」，按原值类型自动转换（`bool` / `int` / `float` / 逗号分隔的 `list` / 字符串）
@@ -4232,6 +4255,10 @@ adapters = ["OldAdapter"]
 ```
 
 > 当某个组件被严格模式拒绝时，日志会明确提示如何恢复加载（加入豁免清单或调低级别）。
+
+#### 与 CLI 的联动
+
+`epsdk run` 的启动前自检（配置文件可解析性、组件必填配置完整性）默认跟随本配置：非 0 时检查失败即拒绝启动，0 时仅警告继续。也可以不改配置临时切换：`epsdk run --strict` 本次将自检与严格级别同时开启（级别只升不降，经 `ERISPULSE_FRAMEWORK_STRICT_MODE` 环境变量传导到运行进程），`--no-strict` 本次临时压到宽松并仅警告。
 
 ## 存储配置
 
@@ -4701,6 +4728,30 @@ stderr_logfile=/var/log/erispulse-bot/err.log
 stdout_logfile=/var/log/erispulse-bot/out.log
 ```
 
+### uv tool 分离部署（CLI 与项目环境隔离）
+
+`uv tool install` 将 `epsdk` 安装为**独立的工具环境**，CLI 自身与项目依赖彻底隔离：升级 CLI 不会触碰项目 `.venv`，项目依赖变动也不会影响 CLI。
+
+```bash
+# 1. 全局安装 CLI（自动暴露 epsdk / ep 命令）
+uv tool install ErisPulse
+
+# 2. 项目内只放机器人依赖（.venv 由 uv 管理）
+cd /opt/erispulse-bot
+uv add erispulse ErisPulse-Adapter-Yunhu   # 按需追加适配器
+
+# 3. 用 CLI 运行（自动探测并使用项目 .venv 中的解释器）
+epsdk run main.py
+```
+
+行为要点：
+
+- `epsdk run` 的目标解释器解析顺序：`ERISPULSE_PYTHON` 环境变量 → 项目 `.venv` → 当前解释器；工具环境本身只承载 CLI，组件（适配器/模块）应装进项目 `.venv`
+- `epsdk install` / `uninstall` / `upgrade` / `list` 同样作用于项目 `.venv`，不会污染工具环境
+- 升级 CLI：`uv tool upgrade ErisPulse`（或直接 `epsdk self-update`，uv tool 环境下自动改走 `uv tool upgrade`）；升级项目依赖：在项目目录执行 `uv sync` / `uv add`，两者互不影响
+- 服务器场景下工具环境由 uv 统一管理（`uv tool list` 查看、`uv tool upgrade --all` 批量升级），无需手工维护全局 pip 包
+- 若在无项目的目录用 `uv run epsdk ...` 执行，会落入**一次性隔离环境**（安装的组件不持久化）；服务器上请始终用 `epsdk` 直接调用，或先 `cd` 进项目目录
+
 ## 安全建议
 
 1. **设置 Dashboard 令牌**：使用强随机令牌，不要使用默认值
@@ -4735,6 +4786,16 @@ docker compose up -d
 ```bash
 epsdk self-update
 epsdk upgrade
+```
+
+### uv tool 方式
+
+```bash
+# 升级 CLI 工具环境
+uv tool upgrade ErisPulse
+
+# 升级项目依赖（项目目录内执行）
+uv sync
 ```
 
 ### 运行时热重载服务器配置

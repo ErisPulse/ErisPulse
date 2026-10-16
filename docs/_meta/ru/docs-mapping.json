@@ -96,13 +96,13 @@
           "icon": "fa-download"
         },
         {
-          "title": "Конфигурационный файл",
+          "title": "Описание конфигурационного файла",
           "path": "user-guide/configuration.md",
           "level": 1,
           "icon": "fa-sliders"
         },
         {
-          "title": "Справочник команд CLI",
+          "title": "Справочник командной строки",
           "path": "user-guide/cli-reference.md",
           "level": 1,
           "icon": "fa-terminal"
