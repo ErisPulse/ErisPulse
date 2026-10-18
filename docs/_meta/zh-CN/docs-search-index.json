@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1695,
+  "total_keywords": 1708,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -425,7 +425,7 @@
     "10. 适配器实现检查清单": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 451,
+        "line": 513,
         "level": 2,
         "title": "10. 适配器实现检查清单"
       }
@@ -433,7 +433,7 @@
     "11. 消息构建器（MessageBuilder）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 477,
+        "line": 545,
         "level": 2,
         "title": "11. 消息构建器（MessageBuilder）"
       }
@@ -449,7 +449,7 @@
     "11.1 导入": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 481,
+        "line": 549,
         "level": 3,
         "title": "11.1 导入"
       }
@@ -457,7 +457,7 @@
     "11.2 链式调用构建": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 489,
+        "line": 557,
         "level": 3,
         "title": "11.2 链式调用构建"
       }
@@ -465,7 +465,7 @@
     "11.3 快速构建单段": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 506,
+        "line": 574,
         "level": 3,
         "title": "11.3 快速构建单段"
       }
@@ -473,7 +473,7 @@
     "11.4 配合 Event.reply_ob12 使用": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 517,
+        "line": 585,
         "level": 3,
         "title": "11.4 配合 Event.reply_ob12 使用"
       }
@@ -481,7 +481,7 @@
     "11.5 支持的消息段方法": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 532,
+        "line": 600,
         "level": 3,
         "title": "11.5 支持的消息段方法"
       }
@@ -489,7 +489,7 @@
     "11.6 工具方法": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 547,
+        "line": 615,
         "level": 3,
         "title": "11.6 工具方法"
       }
@@ -497,7 +497,7 @@
     "12. 相关文档": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 566,
+        "line": 634,
         "level": 2,
         "title": "12. 相关文档"
       }
@@ -970,6 +970,14 @@
         "title": "2.3 通知事件字段"
       }
     ],
+    "2.4 合并转发能力（`MergeForward`，可选）": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 185,
+        "level": 3,
+        "title": "2.4 合并转发能力（`MergeForward`，可选）"
+      }
+    ],
     "2.4 请求事件字段": [
       {
         "document": "standards/event-conversion.md",
@@ -1069,7 +1077,7 @@
     "3. 平台特有方法命名": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 185,
+        "line": 247,
         "level": 2,
         "title": "3. 平台特有方法命名"
       }
@@ -1437,7 +1445,7 @@
     "4. 参数命名规范": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 216,
+        "line": 278,
         "level": 2,
         "title": "4. 参数命名规范"
       }
@@ -1709,7 +1717,7 @@
     "5. 返回值规范": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 228,
+        "line": 290,
         "level": 2,
         "title": "5. 返回值规范"
       }
@@ -1901,7 +1909,7 @@
     "6. 反向转换规范（OneBot12 → 平台）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 235,
+        "line": 297,
         "level": 2,
         "title": "6. 反向转换规范（OneBot12 → 平台）"
       }
@@ -1989,7 +1997,7 @@
     "6.1 转换模型": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 239,
+        "line": 301,
         "level": 3,
         "title": "6.1 转换模型"
       }
@@ -1997,7 +2005,7 @@
     "6.2 `Raw_ob12` 实现规范": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 256,
+        "line": 318,
         "level": 3,
         "title": "6.2 `Raw_ob12` 实现规范"
       }
@@ -2037,7 +2045,7 @@
     "6.3 消息段转换规则": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 284,
+        "line": 346,
         "level": 3,
         "title": "6.3 消息段转换规则"
       }
@@ -2045,7 +2053,7 @@
     "6.3.1 标准消息段转换": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 286,
+        "line": 348,
         "level": 4,
         "title": "6.3.1 标准消息段转换"
       }
@@ -2053,7 +2061,7 @@
     "6.3.2 平台扩展消息段转换": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 302,
+        "line": 364,
         "level": 4,
         "title": "6.3.2 平台扩展消息段转换"
       }
@@ -2061,7 +2069,7 @@
     "6.3.3 复合消息段处理": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 326,
+        "line": 388,
         "level": 4,
         "title": "6.3.3 复合消息段处理"
       }
@@ -2069,7 +2077,7 @@
     "6.4 `Raw_ob12` 与标准方法的关系": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 344,
+        "line": 406,
         "level": 3,
         "title": "6.4 `Raw_ob12` 与标准方法的关系"
       }
@@ -2085,7 +2093,7 @@
     "6.5 实现示例": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 366,
+        "line": 428,
         "level": 3,
         "title": "6.5 实现示例"
       }
@@ -2141,7 +2149,7 @@
     "7. 方法发现": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 419,
+        "line": 481,
         "level": 2,
         "title": "7. 方法发现"
       }
@@ -2331,7 +2339,7 @@
     "9. 适配器开发注意事项": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 443,
+        "line": 505,
         "level": 2,
         "title": "9. 适配器开发注意事项"
       }
@@ -2926,6 +2934,14 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse-Dashboard"
+      }
+    ],
+    "ErisPulse-QvQChat 通用智能体": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-QvQChat 通用智能体"
       }
     ],
     "ErisPulse-Takumi": [
@@ -4312,6 +4328,30 @@
         "title": "`keep_running` 参数"
       }
     ],
+    "`qvq_personas()` → 注册人格预设": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 71,
+        "level": 4,
+        "title": "`qvq_personas()` → 注册人格预设"
+      }
+    ],
+    "`qvq_prompts()` → 注入系统提示词": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 59,
+        "level": 4,
+        "title": "`qvq_prompts()` → 注入系统提示词"
+      }
+    ],
+    "`qvq_schemas()` → 显式参数 schema": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 85,
+        "level": 4,
+        "title": "`qvq_schemas()` → 显式参数 schema"
+      }
+    ],
     "`self` 字段扩展信息": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5638,6 +5678,14 @@
         "title": "事件覆写：不改模块代码，覆写任意事件类型的行为"
       }
     ],
+    "事件订阅": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 107,
+        "level": 2,
+        "title": "事件订阅"
+      }
+    ],
     "事件转换": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -6012,6 +6060,14 @@
         "line": 73,
         "level": 2,
         "title": "何时重新生成"
+      }
+    ],
+    "作为服务被调用": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 121,
+        "level": 2,
+        "title": "作为服务被调用"
       }
     ],
     "作用域过滤：为什么我的模块没收到消息": [
@@ -6760,6 +6816,14 @@
         "title": "判定（三问）"
       }
     ],
+    "刷新时机": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 103,
+        "level": 3,
+        "title": "刷新时机"
+      }
+    ],
     "前置知识": [
       {
         "document": "advanced/README.md",
@@ -7051,7 +7115,7 @@
     "反向转换": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 467,
+        "line": 535,
         "level": 3,
         "title": "反向转换"
       }
@@ -7199,7 +7263,7 @@
       },
       {
         "document": "standards/send-method-spec.md",
-        "line": 453,
+        "line": 515,
         "level": 3,
         "title": "发送方法"
       }
@@ -7386,6 +7450,14 @@
         "line": 55,
         "level": 2,
         "title": "各环节详解"
+      }
+    ],
+    "合并转发（可选，见 §2.4）": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 529,
+        "level": 3,
+        "title": "合并转发（可选，见 §2.4）"
       }
     ],
     "同时发布到 Docker Hub": [
@@ -8607,7 +8679,7 @@
     "媒体发送协议": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 460,
+        "line": 522,
         "level": 3,
         "title": "媒体发送协议"
       }
@@ -10001,7 +10073,7 @@
     "我也想把自己的模块列在这里？": [
       {
         "document": "ecosystem/README.md",
-        "line": 30,
+        "line": 31,
         "level": 2,
         "title": "我也想把自己的模块列在这里？"
       }
@@ -11510,6 +11582,14 @@
         "title": "核心组件"
       }
     ],
+    "核心能力": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 14,
+        "level": 2,
+        "title": "核心能力"
+      }
+    ],
     "核心设计原则": [
       {
         "document": "getting-started/ide-completion.md",
@@ -11718,6 +11798,14 @@
         "line": 1,
         "level": 1,
         "title": "模块开发最佳实践"
+      }
+    ],
+    "模块扩展": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 35,
+        "level": 2,
+        "title": "模块扩展"
       }
     ],
     "模块按需加载": [
@@ -12410,6 +12498,14 @@
         "title": "消息配置"
       }
     ],
+    "深度集成（可选）": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 55,
+        "level": 3,
+        "title": "深度集成（可选）"
+      }
+    ],
     "添加中间件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -12756,6 +12852,14 @@
         "line": 523,
         "level": 4,
         "title": "用户：使用平台扩展方法"
+      }
+    ],
+    "界面": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 129,
+        "level": 2,
+        "title": "界面"
       }
     ],
     "监听 Bot 生命周期": [

@@ -488,7 +488,7 @@
     "Модули экосистемы": {
       "description": "Сторонние модули, поддерживаемые сообществом",
       "icon": "fa-cubes",
-      "count": 5,
+      "count": 6,
       "documents": [
         {
           "title": "Экосистемные модули",
@@ -519,6 +519,12 @@
           "path": "ecosystem/takumi.md",
           "level": 1,
           "icon": "fa-image"
+        },
+        {
+          "title": "Общий агент ErisPulse-QvQChat",
+          "path": "ecosystem/qvqchat.md",
+          "level": 1,
+          "icon": "fa-cubes"
         }
       ],
       "subgroups": {}

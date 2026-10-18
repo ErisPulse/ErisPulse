@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1729,
+  "total_keywords": 1742,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -425,7 +425,7 @@
     "10. 适配器實現檢查清單": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 446,
+        "line": 508,
         "level": 2,
         "title": "10. 适配器實現檢查清單"
       }
@@ -433,7 +433,7 @@
     "11. 消息建構器（MessageBuilder）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 470,
+        "line": 538,
         "level": 2,
         "title": "11. 消息建構器（MessageBuilder）"
       }
@@ -449,7 +449,7 @@
     "11.1 導入": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 474,
+        "line": 542,
         "level": 3,
         "title": "11.1 導入"
       }
@@ -457,7 +457,7 @@
     "11.2 鏈式呼叫建構": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 482,
+        "line": 550,
         "level": 3,
         "title": "11.2 鏈式呼叫建構"
       }
@@ -465,7 +465,7 @@
     "11.3 快速建構單段": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 499,
+        "line": 567,
         "level": 3,
         "title": "11.3 快速建構單段"
       }
@@ -473,7 +473,7 @@
     "11.4 配合 Event.reply_ob12 使用": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 510,
+        "line": 578,
         "level": 3,
         "title": "11.4 配合 Event.reply_ob12 使用"
       }
@@ -481,7 +481,7 @@
     "11.5 支援的消息段方法": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 525,
+        "line": 593,
         "level": 3,
         "title": "11.5 支援的消息段方法"
       }
@@ -489,7 +489,7 @@
     "11.6 工具方法": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 540,
+        "line": 608,
         "level": 3,
         "title": "11.6 工具方法"
       }
@@ -497,7 +497,7 @@
     "12. 相關文件": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 557,
+        "line": 625,
         "level": 2,
         "title": "12. 相關文件"
       }
@@ -850,12 +850,12 @@
         "title": "2.1 OneBot12 標準類型"
       }
     ],
-    "2.1 媒體訊息發送協定（`Image` / `Voice` / `Video` / `File`）": [
+    "2.1 媒體訊息發送協議（`Image` / `Voice` / `Video` / `File`）": [
       {
         "document": "standards/send-method-spec.md",
         "line": 71,
         "level": 3,
-        "title": "2.1 媒體訊息發送協定（`Image` / `Voice` / `Video` / `File`）"
+        "title": "2.1 媒體訊息發送協議（`Image` / `Voice` / `Video` / `File`）"
       }
     ],
     "2.1 必須字段": [
@@ -890,12 +890,12 @@
         "title": "2.1.2 形態判定順序"
       }
     ],
-    "2.1.3 `File` 的檔案名語義": [
+    "2.1.3 `File` 的檔案名語意": [
       {
         "document": "standards/send-method-spec.md",
         "line": 112,
         "level": 4,
-        "title": "2.1.3 `File` 的檔案名語義"
+        "title": "2.1.3 `File` 的檔案名語意"
       }
     ],
     "2.1.4 平台限制的聲明義務": [
@@ -968,6 +968,14 @@
         "line": 37,
         "level": 3,
         "title": "2.3 通知事件字段"
+      }
+    ],
+    "2.4 合併轉發能力（`MergeForward`，可選）": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 185,
+        "level": 3,
+        "title": "2.4 合併轉發能力（`MergeForward`，可選）"
       }
     ],
     "2.4 請求事件字段": [
@@ -1061,7 +1069,7 @@
     "3. 平台特有方法命名": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 185,
+        "line": 247,
         "level": 2,
         "title": "3. 平台特有方法命名"
       }
@@ -1429,7 +1437,7 @@
     "4. 參數命名規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 216,
+        "line": 278,
         "level": 2,
         "title": "4. 參數命名規範"
       }
@@ -1709,7 +1717,7 @@
     "5. 返回值規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 228,
+        "line": 290,
         "level": 2,
         "title": "5. 返回值規範"
       }
@@ -1901,7 +1909,7 @@
     "6. 反向轉換規範（OneBot12 → 平台）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 235,
+        "line": 297,
         "level": 2,
         "title": "6. 反向轉換規範（OneBot12 → 平台）"
       }
@@ -1989,7 +1997,7 @@
     "6.1 轉換模型": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 239,
+        "line": 301,
         "level": 3,
         "title": "6.1 轉換模型"
       }
@@ -1997,7 +2005,7 @@
     "6.2 `Raw_ob12` 實現規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 256,
+        "line": 318,
         "level": 3,
         "title": "6.2 `Raw_ob12` 實現規範"
       }
@@ -2037,7 +2045,7 @@
     "6.3 消息段轉換規則": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 284,
+        "line": 346,
         "level": 3,
         "title": "6.3 消息段轉換規則"
       }
@@ -2045,7 +2053,7 @@
     "6.3.1 標準消息段轉換": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 286,
+        "line": 348,
         "level": 4,
         "title": "6.3.1 標準消息段轉換"
       }
@@ -2053,7 +2061,7 @@
     "6.3.2 平台擴展消息段轉換": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 302,
+        "line": 364,
         "level": 4,
         "title": "6.3.2 平台擴展消息段轉換"
       }
@@ -2061,7 +2069,7 @@
     "6.3.3 複合消息段處理": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 326,
+        "line": 388,
         "level": 4,
         "title": "6.3.3 複合消息段處理"
       }
@@ -2069,7 +2077,7 @@
     "6.4 `Raw_ob12` 與標準方法的關係": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 344,
+        "line": 406,
         "level": 3,
         "title": "6.4 `Raw_ob12` 與標準方法的關係"
       }
@@ -2085,7 +2093,7 @@
     "6.5 實現範例": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 366,
+        "line": 428,
         "level": 3,
         "title": "6.5 實現範例"
       }
@@ -2125,7 +2133,7 @@
     "7. 方法發現": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 419,
+        "line": 481,
         "level": 2,
         "title": "7. 方法發現"
       }
@@ -2331,7 +2339,7 @@
     "9. 適配器開發注意事項": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 442,
+        "line": 504,
         "level": 2,
         "title": "9. 適配器開發注意事項"
       }
@@ -2930,6 +2938,14 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse-Dashboard"
+      }
+    ],
+    "ErisPulse-QvQChat 通用智能體": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-QvQChat 通用智能體"
       }
     ],
     "ErisPulse-Takumi": [
@@ -4270,6 +4286,30 @@
         "title": "`keep_running` 參數"
       }
     ],
+    "`qvq_personas()` → 註冊人格預設": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 71,
+        "level": 4,
+        "title": "`qvq_personas()` → 註冊人格預設"
+      }
+    ],
+    "`qvq_prompts()` → 注入系統提示詞": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 59,
+        "level": 4,
+        "title": "`qvq_prompts()` → 注入系統提示詞"
+      }
+    ],
+    "`qvq_schemas()` → 显式參數 schema": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 85,
+        "level": 4,
+        "title": "`qvq_schemas()` → 显式參數 schema"
+      }
+    ],
     "`self` 字段扩展信息": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5490,6 +5530,14 @@
         "title": "事件覆寫：不改模組代碼，覆寫任意事件類型的行為"
       }
     ],
+    "事件訂閱": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 107,
+        "level": 2,
+        "title": "事件訂閱"
+      }
+    ],
     "事件轉換": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -5792,6 +5840,14 @@
         "line": 73,
         "level": 2,
         "title": "何時重新產生"
+      }
+    ],
+    "作為服務被調用": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 121,
+        "level": 2,
+        "title": "作為服務被調用"
       }
     ],
     "作用域過濾：為什麼我的模組沒收到訊息": [
@@ -6520,6 +6576,14 @@
         "title": "刪除資料"
       }
     ],
+    "刷新時機": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 103,
+        "level": 3,
+        "title": "刷新時機"
+      }
+    ],
     "前置知識": [
       {
         "document": "advanced/README.md",
@@ -6791,7 +6855,7 @@
     "反向轉換": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 462,
+        "line": 530,
         "level": 3,
         "title": "反向轉換"
       }
@@ -6866,6 +6930,14 @@
         "line": 72,
         "level": 2,
         "title": "各異常說明與發生位置"
+      }
+    ],
+    "合併轉發（可選，見 §2.4）": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 524,
+        "level": 3,
+        "title": "合併轉發（可選，見 §2.4）"
       }
     ],
     "同時發布到 Docker Hub": [
@@ -7997,7 +8069,7 @@
     "媒體發送協議": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 455,
+        "line": 517,
         "level": 3,
         "title": "媒體發送協議"
       }
@@ -9207,7 +9279,7 @@
     "我也想把自己的模組列在這裡？": [
       {
         "document": "ecosystem/README.md",
-        "line": 30,
+        "line": 31,
         "level": 2,
         "title": "我也想把自己的模組列在這裡？"
       }
@@ -10546,6 +10618,14 @@
         "title": "核心特性"
       }
     ],
+    "核心能力": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 14,
+        "level": 2,
+        "title": "核心能力"
+      }
+    ],
     "核心設計原則": [
       {
         "document": "getting-started/ide-completion.md",
@@ -10900,6 +10980,14 @@
         "line": 1,
         "level": 1,
         "title": "模組排查指南"
+      }
+    ],
+    "模組擴展": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 35,
+        "level": 2,
+        "title": "模組擴展"
       }
     ],
     "模組核心概念": [
@@ -11466,6 +11554,14 @@
         "title": "消息類型判斷"
       }
     ],
+    "深度集成（可選）": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 55,
+        "level": 3,
+        "title": "深度集成（可選）"
+      }
+    ],
     "添加中間件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -11926,6 +12022,14 @@
         "title": "用戶：使用平台擴展方法"
       }
     ],
+    "界面": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 129,
+        "level": 2,
+        "title": "界面"
+      }
+    ],
     "異常層級": [
       {
         "document": "advanced/http-client.md",
@@ -12181,7 +12285,7 @@
       },
       {
         "document": "standards/send-method-spec.md",
-        "line": 448,
+        "line": 510,
         "level": 3,
         "title": "發送方法"
       }

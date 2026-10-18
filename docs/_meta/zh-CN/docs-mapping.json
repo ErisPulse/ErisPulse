@@ -488,7 +488,7 @@
     "生态模块": {
       "description": "社区维护的第三方扩展模块",
       "icon": "fa-cubes",
-      "count": 5,
+      "count": 6,
       "documents": [
         {
           "title": "生态模块",
@@ -519,6 +519,12 @@
           "path": "ecosystem/takumi.md",
           "level": 1,
           "icon": "fa-image"
+        },
+        {
+          "title": "ErisPulse-QvQChat 通用智能体",
+          "path": "ecosystem/qvqchat.md",
+          "level": 1,
+          "icon": "fa-cubes"
         }
       ],
       "subgroups": {}

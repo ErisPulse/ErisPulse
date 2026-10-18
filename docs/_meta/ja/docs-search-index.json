@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1764,
+  "total_keywords": 1776,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -10,12 +10,12 @@
         "title": "0 成功（OK）"
       }
     ],
-    "0. キーワードの定義": [
+    "0. キーワードの約束": [
       {
         "document": "standards/send-method-spec.md",
         "line": 5,
         "level": 2,
-        "title": "0. キーワードの定義"
+        "title": "0. キーワードの約束"
       }
     ],
     "1 つでインストールするスクリプト（推奨）": [
@@ -402,12 +402,12 @@
         "title": "1.3 プロトコルメソッド"
       }
     ],
-    "1.4 推奨される拡張命名規則": [
+    "1.4 推奨される拡張命名規約": [
       {
         "document": "standards/send-method-spec.md",
         "line": 56,
         "level": 3,
-        "title": "1.4 推奨される拡張命名規則"
+        "title": "1.4 推奨される拡張命名規約"
       }
     ],
     "10. SSE (Server-Sent Events) 支持": [
@@ -429,7 +429,7 @@
     "10. アダプタ実装チェックリスト": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 444,
+        "line": 499,
         "level": 2,
         "title": "10. アダプタ実装チェックリスト"
       }
@@ -442,12 +442,12 @@
         "title": "10. 関連ドキュメント"
       }
     ],
-    "11. メッセージビルダ（MessageBuilder）": [
+    "11. メッセージビルダー（MessageBuilder）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 470,
+        "line": 523,
         "level": 2,
-        "title": "11. メッセージビルダ（MessageBuilder）"
+        "title": "11. メッセージビルダー（MessageBuilder）"
       }
     ],
     "11. 関連ドキュメント": [
@@ -458,18 +458,18 @@
         "title": "11. 関連ドキュメント"
       }
     ],
-    "11.1 導入": [
+    "11.1 インポート": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 474,
+        "line": 527,
         "level": 3,
-        "title": "11.1 導入"
+        "title": "11.1 インポート"
       }
     ],
     "11.2 チェーン呼び出しによる構築": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 482,
+        "line": 535,
         "level": 3,
         "title": "11.2 チェーン呼び出しによる構築"
       }
@@ -477,7 +477,7 @@
     "11.3 単一セグメントの高速構築": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 499,
+        "line": 552,
         "level": 3,
         "title": "11.3 単一セグメントの高速構築"
       }
@@ -485,33 +485,33 @@
     "11.4 Event.reply_ob12と併用": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 510,
+        "line": 563,
         "level": 3,
         "title": "11.4 Event.reply_ob12と併用"
       }
     ],
-    "11.5 支持するメッセージセグメントメソッド": [
+    "11.5 支援されるメッセージセグメントメソッド": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 525,
+        "line": 578,
         "level": 3,
-        "title": "11.5 支持するメッセージセグメントメソッド"
+        "title": "11.5 支援されるメッセージセグメントメソッド"
       }
     ],
     "11.6 ユーティリティメソッド": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 540,
+        "line": 593,
         "level": 3,
         "title": "11.6 ユーティリティメソッド"
       }
     ],
-    "12. 関連ドキュメント": [
+    "12. 関連文書": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 559,
+        "line": 612,
         "level": 2,
-        "title": "12. 関連ドキュメント"
+        "title": "12. 関連文書"
       }
     ],
     "1xxxx 動作リクエストエラー（Request Error）": [
@@ -698,6 +698,14 @@
         "title": "2. バージョン情報の更新"
       }
     ],
+    "2. パラメータ規則の詳細": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 69,
+        "level": 2,
+        "title": "2. パラメータ規則の詳細"
+      }
+    ],
     "2. ブロッキング操作の回避": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -774,14 +782,6 @@
         "line": 12,
         "level": 2,
         "title": "2. 基礎レスポンス構造"
-      }
-    ],
-    "2. 引数規則の詳細": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 69,
-        "level": 2,
-        "title": "2. 引数規則の詳細"
       }
     ],
     "2. 応答の標準化": [
@@ -902,12 +902,12 @@
         "title": "2.1 標準フィールド"
       }
     ],
-    "2.1.1 `file`引数の合法な形態": [
+    "2.1.1 `file`パラメータの合法な形態": [
       {
         "document": "standards/send-method-spec.md",
         "line": 75,
         "level": 4,
-        "title": "2.1.1 `file`引数の合法な形態"
+        "title": "2.1.1 `file`パラメータの合法な形態"
       }
     ],
     "2.1.2 形態判定順序": [
@@ -942,12 +942,12 @@
         "title": "2.1.5 機能降格の段階"
       }
     ],
-    "2.2 @ユーザー引数の規則": [
+    "2.2 @ユーザーのパラメータ規則": [
       {
         "document": "standards/send-method-spec.md",
         "line": 142,
         "level": 3,
-        "title": "2.2 @ユーザー引数の規則"
+        "title": "2.2 @ユーザーのパラメータ規則"
       }
     ],
     "2.2 ErisPulse 拡張タイプ": [
@@ -974,14 +974,6 @@
         "title": "2.2 メッセージイベントフィールド"
       }
     ],
-    "2.3 メッセージ返信引数の規則": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 163,
-        "level": 3,
-        "title": "2.3 メッセージ返信引数の規則"
-      }
-    ],
     "2.3 リクエストイベントの例": [
       {
         "document": "standards/request-action-spec.md",
@@ -990,12 +982,28 @@
         "title": "2.3 リクエストイベントの例"
       }
     ],
+    "2.3 返信メッセージのパラメータ規則": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 163,
+        "level": 3,
+        "title": "2.3 返信メッセージのパラメータ規則"
+      }
+    ],
     "2.3 通知イベントフィールド": [
       {
         "document": "standards/event-conversion.md",
         "line": 37,
         "level": 3,
         "title": "2.3 通知イベントフィールド"
+      }
+    ],
+    "2.4 合併転送機能（`MergeForward`、オプション）": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 179,
+        "level": 3,
+        "title": "2.4 合併転送機能（`MergeForward`、オプション）"
       }
     ],
     "2.4 要求イベントフィールド": [
@@ -1153,7 +1161,7 @@
     "3. プラットフォーム固有メソッドの命名": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 179,
+        "line": 234,
         "level": 2,
         "title": "3. プラットフォーム固有メソッドの命名"
       }
@@ -1470,6 +1478,14 @@
         "title": "4. セッション識別子のプラットフォーム間隔離"
       }
     ],
+    "4. パラメータ名の命名規則": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 265,
+        "level": 2,
+        "title": "4. パラメータ名の命名規則"
+      }
+    ],
     "4. メッセージセグメント標準": [
       {
         "document": "standards/event-conversion.md",
@@ -1516,14 +1532,6 @@
         "line": 65,
         "level": 2,
         "title": "4. 差異処理モード（アダプタ層）"
-      }
-    ],
-    "4. 引数名の規則": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 210,
-        "level": 2,
-        "title": "4. 引数名の規則"
       }
     ],
     "4. 必須メソッドの実装": [
@@ -1729,7 +1737,7 @@
     "5. 戻り値の規則": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 222,
+        "line": 277,
         "level": 2,
         "title": "5. 戻り値の規則"
       }
@@ -1993,7 +2001,7 @@
     "6. 逆変換規則（OneBot12 → プラットフォーム）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 229,
+        "line": 284,
         "level": 2,
         "title": "6. 逆変換規則（OneBot12 → プラットフォーム）"
       }
@@ -2017,17 +2025,17 @@
     "6.1 変換モデル": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 233,
+        "line": 288,
         "level": 3,
         "title": "6.1 変換モデル"
       }
     ],
-    "6.2 `Raw_ob12`の実装規則": [
+    "6.2 `Raw_ob12`実装規則": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 250,
+        "line": 305,
         "level": 3,
-        "title": "6.2 `Raw_ob12`の実装規則"
+        "title": "6.2 `Raw_ob12`実装規則"
       }
     ],
     "6.2 イベントの返信": [
@@ -2057,7 +2065,7 @@
     "6.3 メッセージセグメント変換ルール": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 278,
+        "line": 333,
         "level": 3,
         "title": "6.3 メッセージセグメント変換ルール"
       }
@@ -2073,7 +2081,7 @@
     "6.3.1 標準メッセージセグメント変換": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 280,
+        "line": 335,
         "level": 4,
         "title": "6.3.1 標準メッセージセグメント変換"
       }
@@ -2081,7 +2089,7 @@
     "6.3.2 プラットフォーム拡張メッセージセグメント変換": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 296,
+        "line": 351,
         "level": 4,
         "title": "6.3.2 プラットフォーム拡張メッセージセグメント変換"
       }
@@ -2089,17 +2097,17 @@
     "6.3.3 複合メッセージセグメント処理": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 320,
+        "line": 375,
         "level": 4,
         "title": "6.3.3 複合メッセージセグメント処理"
       }
     ],
-    "6.4 `Raw_ob12`と標準メソッドの関係": [
+    "6.4 `Raw_ob12` と標準メソッドの関係": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 338,
+        "line": 393,
         "level": 3,
-        "title": "6.4 `Raw_ob12`と標準メソッドの関係"
+        "title": "6.4 `Raw_ob12` と標準メソッドの関係"
       }
     ],
     "6.4 プラットフォーム固有フィールドの例": [
@@ -2113,7 +2121,7 @@
     "6.5 実装例": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 360,
+        "line": 415,
         "level": 3,
         "title": "6.5 実装例"
       }
@@ -2177,7 +2185,7 @@
     "7. メソッド発見": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 413,
+        "line": 468,
         "level": 2,
         "title": "7. メソッド発見"
       }
@@ -2332,12 +2340,12 @@
         "title": "9. notice / request イベントのセッションタイプ推論"
       }
     ],
-    "9. アダプタ開発の注意点": [
+    "9. アダプタ開発の注意事項": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 436,
+        "line": 491,
         "level": 2,
-        "title": "9. アダプタ開発の注意点"
+        "title": "9. アダプタ開発の注意事項"
       }
     ],
     "9. 接続情報とルート発見": [
@@ -3074,6 +3082,14 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse-Dashboard"
+      }
+    ],
+    "ErisPulse-QvQChat 一般エージェント": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-QvQChat 一般エージェント"
       }
     ],
     "ErisPulse-Takumi": [
@@ -4546,6 +4562,30 @@
         "title": "`keep_running` パラメータ"
       }
     ],
+    "`qvq_personas()` → 人格プリセットの登録": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 71,
+        "level": 4,
+        "title": "`qvq_personas()` → 人格プリセットの登録"
+      }
+    ],
+    "`qvq_prompts()` → システムプロンプトの注入": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 59,
+        "level": 4,
+        "title": "`qvq_prompts()` → システムプロンプトの注入"
+      }
+    ],
+    "`qvq_schemas()` → 明示的なパラメータ schema": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 85,
+        "level": 4,
+        "title": "`qvq_schemas()` → 明示的なパラメータ schema"
+      }
+    ],
     "`self`フィールドの拡張情報": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5748,6 +5788,14 @@
         "title": "イベントにおけるアカウント識別"
       }
     ],
+    "イベントのサブスクライブ": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 107,
+        "level": 2,
+        "title": "イベントのサブスクライブ"
+      }
+    ],
     "イベントの例": [
       {
         "document": "platform-guide/telegram.md",
@@ -6176,6 +6224,14 @@
         "line": 436,
         "level": 3,
         "title": "インタラクティブメソッド"
+      }
+    ],
+    "インターフェース": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 129,
+        "level": 2,
+        "title": "インターフェース"
       }
     ],
     "インラインキーボード付きメッセージ": [
@@ -6958,6 +7014,14 @@
         "line": 265,
         "level": 2,
         "title": "サーバー設定"
+      }
+    ],
+    "サービスとして呼び出される": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 121,
+        "level": 2,
+        "title": "サービスとして呼び出される"
       }
     ],
     "サービスディレクトリ: services()": [
@@ -9299,7 +9363,7 @@
     "メディア送信プロトコル": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 453,
+        "line": 508,
         "level": 3,
         "title": "メディア送信プロトコル"
       }
@@ -9514,6 +9578,14 @@
         "line": 8,
         "level": 2,
         "title": "モジュール商店の概要"
+      }
+    ],
+    "モジュール拡張": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 35,
+        "level": 2,
+        "title": "モジュール拡張"
       }
     ],
     "モジュール概要": [
@@ -9964,6 +10036,14 @@
         "line": 556,
         "level": 2,
         "title": "リバース変換とメッセージ構築"
+      }
+    ],
+    "リフレッシュタイミング": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 103,
+        "level": 3,
+        "title": "リフレッシュタイミング"
       }
     ],
     "リリースとモジュールストアガイド": [
@@ -11410,6 +11490,14 @@
         "title": "各環節の詳細解説"
       }
     ],
+    "合併転送（オプション、§2.4参照）": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 515,
+        "level": 3,
+        "title": "合併転送（オプション、§2.4参照）"
+      }
+    ],
     "同期の流れ": [
       {
         "document": "platform-guide/matrix.md",
@@ -12792,14 +12880,6 @@
         "title": "接続管理"
       }
     ],
-    "推奨モジュールと公式クライアント": [
-      {
-        "document": "ecosystem/README.md",
-        "line": 19,
-        "level": 2,
-        "title": "推奨モジュールと公式クライアント"
-      }
-    ],
     "推奨方法：I18nClass を使って翻訳キーを宣言する（v2.7.0+）": [
       {
         "document": "advanced/i18n.md",
@@ -12814,6 +12894,14 @@
         "line": 196,
         "level": 3,
         "title": "推奨書き方"
+      }
+    ],
+    "推荐モジュールと公式クライアント": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 19,
+        "level": 2,
+        "title": "推荐モジュールと公式クライアント"
       }
     ],
     "提出可能なタイプ": [
@@ -13332,6 +13420,14 @@
         "title": "核心的な違い"
       }
     ],
+    "核心能力": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 14,
+        "level": 2,
+        "title": "核心能力"
+      }
+    ],
     "核心設計原則": [
       {
         "document": "getting-started/ide-completion.md",
@@ -13744,6 +13840,14 @@
         "title": "注釈の保持と最小限の書き込み"
       }
     ],
+    "深度統合（オプション）": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 55,
+        "level": 3,
+        "title": "深度統合（オプション）"
+      }
+    ],
     "点式構造イベント": [
       {
         "document": "advanced/lifecycle.md",
@@ -13991,7 +14095,7 @@
     "私も自分のモジュールをここに掲載したい！": [
       {
         "document": "ecosystem/README.md",
-        "line": 30,
+        "line": 31,
         "level": 2,
         "title": "私も自分のモジュールをここに掲載したい！"
       }
@@ -14943,7 +15047,7 @@
     "送信メソッド": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 446,
+        "line": 501,
         "level": 3,
         "title": "送信メソッド"
       }
@@ -15106,14 +15210,6 @@
         "line": 152,
         "level": 2,
         "title": "适配器送信メソッドの照会"
-      }
-    ],
-    "逆変換": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 460,
-        "level": 3,
-        "title": "逆変換"
       }
     ],
     "通常イベントの自動発見": [

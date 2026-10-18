@@ -488,7 +488,7 @@
     "Ecosystem Modules": {
       "description": "Community-maintained third-party modules",
       "icon": "fa-cubes",
-      "count": 5,
+      "count": 6,
       "documents": [
         {
           "title": "Ecosystem Modules",
@@ -519,6 +519,12 @@
           "path": "ecosystem/takumi.md",
           "level": 1,
           "icon": "fa-image"
+        },
+        {
+          "title": "ErisPulse-QvQChat General Agent",
+          "path": "ecosystem/qvqchat.md",
+          "level": 1,
+          "icon": "fa-cubes"
         }
       ],
       "subgroups": {}

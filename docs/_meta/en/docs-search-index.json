@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1721,
+  "total_keywords": 1734,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -409,7 +409,7 @@
     "10. Adapter Implementation Checklist": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 444,
+        "line": 500,
         "level": 2,
         "title": "10. Adapter Implementation Checklist"
       }
@@ -441,7 +441,7 @@
     "11. Message Builder (`MessageBuilder`)": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 470,
+        "line": 532,
         "level": 2,
         "title": "11. Message Builder (`MessageBuilder`)"
       }
@@ -457,39 +457,39 @@
     "11.1 Import": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 474,
+        "line": 536,
         "level": 3,
         "title": "11.1 Import"
       }
     ],
-    "11.2 Chainable Construction": [
+    "11.2 Chainable Build": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 482,
+        "line": 544,
         "level": 3,
-        "title": "11.2 Chainable Construction"
+        "title": "11.2 Chainable Build"
       }
     ],
-    "11.3 Quick Single Segment Construction": [
+    "11.3 Quick Build Single Segment": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 499,
+        "line": 561,
         "level": 3,
-        "title": "11.3 Quick Single Segment Construction"
+        "title": "11.3 Quick Build Single Segment"
       }
     ],
-    "11.4 Use with `Event.reply_ob12`": [
+    "11.4 Use with Event.reply_ob12": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 510,
+        "line": 572,
         "level": 3,
-        "title": "11.4 Use with `Event.reply_ob12`"
+        "title": "11.4 Use with Event.reply_ob12"
       }
     ],
     "11.5 Supported Message Segment Methods": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 525,
+        "line": 587,
         "level": 3,
         "title": "11.5 Supported Message Segment Methods"
       }
@@ -497,7 +497,7 @@
     "11.6 Utility Methods": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 540,
+        "line": 602,
         "level": 3,
         "title": "11.6 Utility Methods"
       }
@@ -505,7 +505,7 @@
     "12. Related Documents": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 559,
+        "line": 621,
         "level": 2,
         "title": "12. Related Documents"
       }
@@ -930,12 +930,12 @@
         "title": "2.1.5 Capability Degradation Hierarchy"
       }
     ],
-    "2.2 @User Parameter Specification": [
+    "2.2 @ User Parameter Specification": [
       {
         "document": "standards/send-method-spec.md",
         "line": 142,
         "level": 3,
-        "title": "2.2 @User Parameter Specification"
+        "title": "2.2 @ User Parameter Specification"
       }
     ],
     "2.2 ErisPulse Extended Types": [
@@ -984,6 +984,14 @@
         "line": 64,
         "level": 3,
         "title": "2.3 Request Event Example"
+      }
+    ],
+    "2.4 Merge Forward Capability (`MergeForward`, Optional)": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 179,
+        "level": 3,
+        "title": "2.4 Merge Forward Capability (`MergeForward`, Optional)"
       }
     ],
     "2.4 Request Event Fields": [
@@ -1149,7 +1157,7 @@
     "3. Platform-Specific Method Naming": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 179,
+        "line": 235,
         "level": 2,
         "title": "3. Platform-Specific Method Naming"
       }
@@ -1525,7 +1533,7 @@
     "4. Parameter Naming Convention": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 210,
+        "line": 266,
         "level": 2,
         "title": "4. Parameter Naming Convention"
       }
@@ -1746,12 +1754,12 @@
         "title": "5. Interaction Component Standards"
       }
     ],
-    "5. Return Value Specification": [
+    "5. Return Value Convention": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 222,
+        "line": 278,
         "level": 2,
-        "title": "5. Return Value Specification"
+        "title": "5. Return Value Convention"
       }
     ],
     "5. Round-trip Consistency": [
@@ -1994,12 +2002,12 @@
         "title": "6. Response Format"
       }
     ],
-    "6. Reverse Conversion Specification (OneBot12 → Platform)": [
+    "6. Reverse Conversion Convention (OneBot12 → Platform)": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 229,
+        "line": 285,
         "level": 2,
-        "title": "6. Reverse Conversion Specification (OneBot12 → Platform)"
+        "title": "6. Reverse Conversion Convention (OneBot12 → Platform)"
       }
     ],
     "6. Start Router Server": [
@@ -2013,7 +2021,7 @@
     "6.1 Conversion Model": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 233,
+        "line": 289,
         "level": 3,
         "title": "6.1 Conversion Model"
       }
@@ -2050,12 +2058,12 @@
         "title": "6.2 Message Segment Type Naming"
       }
     ],
-    "6.2 `Raw_ob12` Implementation Specification": [
+    "6.2 `Raw_ob12` Implementation Convention": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 250,
+        "line": 306,
         "level": 3,
-        "title": "6.2 `Raw_ob12` Implementation Specification"
+        "title": "6.2 `Raw_ob12` Implementation Convention"
       }
     ],
     "6.3 Command Handling": [
@@ -2069,7 +2077,7 @@
     "6.3 Message Segment Conversion Rules": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 278,
+        "line": 334,
         "level": 3,
         "title": "6.3 Message Segment Conversion Rules"
       }
@@ -2085,7 +2093,7 @@
     "6.3.1 Standard Message Segment Conversion": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 280,
+        "line": 336,
         "level": 4,
         "title": "6.3.1 Standard Message Segment Conversion"
       }
@@ -2093,7 +2101,7 @@
     "6.3.2 Platform Extension Message Segment Conversion": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 296,
+        "line": 352,
         "level": 4,
         "title": "6.3.2 Platform Extension Message Segment Conversion"
       }
@@ -2101,7 +2109,7 @@
     "6.3.3 Handling Composite Message Segments": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 320,
+        "line": 376,
         "level": 4,
         "title": "6.3.3 Handling Composite Message Segments"
       }
@@ -2114,18 +2122,18 @@
         "title": "6.4 Examples of Platform-Specific Fields"
       }
     ],
-    "6.4 Relationship Between `Raw_ob12` and Standard Methods": [
+    "6.4 Relationship between `Raw_ob12` and Standard Methods": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 338,
+        "line": 394,
         "level": 3,
-        "title": "6.4 Relationship Between `Raw_ob12` and Standard Methods"
+        "title": "6.4 Relationship between `Raw_ob12` and Standard Methods"
       }
     ],
     "6.5 Implementation Example": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 360,
+        "line": 416,
         "level": 3,
         "title": "6.5 Implementation Example"
       }
@@ -2173,7 +2181,7 @@
     "7. Method Discovery": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 413,
+        "line": 469,
         "level": 2,
         "title": "7. Method Discovery"
       }
@@ -2333,7 +2341,7 @@
     "9. Adapter Development Notes": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 436,
+        "line": 492,
         "level": 2,
         "title": "9. Adapter Development Notes"
       }
@@ -5068,6 +5076,14 @@
         "title": "Core Adapter Concepts"
       }
     ],
+    "Core Capabilities": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 14,
+        "level": 2,
+        "title": "Core Capabilities"
+      }
+    ],
     "Core Components": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -5550,6 +5566,14 @@
         "title": "Decorators and Rule Inheritance"
       }
     ],
+    "Deep Integration (Optional)": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 55,
+        "level": 3,
+        "title": "Deep Integration (Optional)"
+      }
+    ],
     "Default Configuration": [
       {
         "document": "platform-guide/onebot11.md",
@@ -5823,7 +5847,7 @@
     "Do I want to list my module here too?": [
       {
         "document": "ecosystem/README.md",
-        "line": 30,
+        "line": 31,
         "level": 2,
         "title": "Do I want to list my module here too?"
       }
@@ -6204,6 +6228,14 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse-Dashboard"
+      }
+    ],
+    "ErisPulse-QvQChat General Agent": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-QvQChat General Agent"
       }
     ],
     "ErisPulse-Takumi": [
@@ -6590,6 +6622,14 @@
         "line": 192,
         "level": 3,
         "title": "Event Shortcut Methods"
+      }
+    ],
+    "Event Subscription": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 107,
+        "level": 2,
+        "title": "Event Subscription"
       }
     ],
     "Event System": [
@@ -8244,6 +8284,14 @@
         "title": "Interception Observability: `scope.blocked` Event"
       }
     ],
+    "Interface": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 129,
+        "level": 2,
+        "title": "Interface"
+      }
+    ],
     "Internal Breakdown of Hot Update Chain": [
       {
         "document": "user-guide/configuration.md",
@@ -8298,6 +8346,14 @@
         "line": 8,
         "level": 2,
         "title": "Introduction to Adapters"
+      }
+    ],
+    "Invoked as a Service": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 121,
+        "level": 2,
+        "title": "Invoked as a Service"
       }
     ],
     "Item Template": [
@@ -8911,7 +8967,7 @@
     "Media Sending Protocol": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 453,
+        "line": 509,
         "level": 3,
         "title": "Media Sending Protocol"
       }
@@ -8922,6 +8978,14 @@
         "line": 336,
         "level": 3,
         "title": "Mention Message Segment"
+      }
+    ],
+    "Merge Forward (Optional, see §2.4)": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 516,
+        "level": 3,
+        "title": "Merge Forward (Optional, see §2.4)"
       }
     ],
     "Message Configuration": [
@@ -9568,6 +9632,14 @@
         "line": 106,
         "level": 4,
         "title": "Module Discovery Mechanism"
+      }
+    ],
+    "Module Extensions": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 35,
+        "level": 2,
+        "title": "Module Extensions"
       }
     ],
     "Module Hot Reload Architecture": [
@@ -11212,12 +11284,12 @@
         "title": "Recommended Approach: Declare Translation Keys via I18nClass (v2.7.0+)"
       }
     ],
-    "Recommended Modules & Official Clients": [
+    "Recommended Modules and Official Clients": [
       {
         "document": "ecosystem/README.md",
         "line": 19,
         "level": 2,
-        "title": "Recommended Modules & Official Clients"
+        "title": "Recommended Modules and Official Clients"
       }
     ],
     "Recommended Practices": [
@@ -11266,6 +11338,14 @@
         "line": 276,
         "level": 2,
         "title": "Reference Links"
+      }
+    ],
+    "Refresh Timing": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 103,
+        "level": 3,
+        "title": "Refresh Timing"
       }
     ],
     "Register API": [
@@ -11983,7 +12063,7 @@
     "Reverse Conversion": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 460,
+        "line": 522,
         "level": 3,
         "title": "Reverse Conversion"
       }
@@ -12421,7 +12501,7 @@
     "Send Methods": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 446,
+        "line": 502,
         "level": 3,
         "title": "Send Methods"
       }
@@ -14988,6 +15068,30 @@
         "line": 47,
         "level": 3,
         "title": "`on_unload` Method"
+      }
+    ],
+    "`qvq_personas()` → Register personality presets": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 71,
+        "level": 4,
+        "title": "`qvq_personas()` → Register personality presets"
+      }
+    ],
+    "`qvq_prompts()` → Inject system prompts": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 59,
+        "level": 4,
+        "title": "`qvq_prompts()` → Inject system prompts"
+      }
+    ],
+    "`qvq_schemas()` → Explicit parameter schema": [
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 85,
+        "level": 4,
+        "title": "`qvq_schemas()` → Explicit parameter schema"
       }
     ],
     "`t()` Method Details": [
