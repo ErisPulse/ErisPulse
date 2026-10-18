@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1728,
+  "total_keywords": 1729,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3905,7 +3905,7 @@
     "[BUG-001] 事件處理器重複註冊導致事件被多次處理": [
       {
         "document": "bug-tracker.md",
-        "line": 116,
+        "line": 118,
         "level": 3,
         "title": "[BUG-001] 事件處理器重複註冊導致事件被多次處理"
       }
@@ -3913,7 +3913,7 @@
     "[BUG-002] Init 命令適配器配置路徑類型錯誤": [
       {
         "document": "bug-tracker.md",
-        "line": 136,
+        "line": 138,
         "level": 3,
         "title": "[BUG-002] Init 命令適配器配置路徑類型錯誤"
       }
@@ -3921,7 +3921,7 @@
     "[BUG-003] 重啟後命令事件失效": [
       {
         "document": "bug-tracker.md",
-        "line": 160,
+        "line": 162,
         "level": 3,
         "title": "[BUG-003] 重啟後命令事件失效"
       }
@@ -3929,7 +3929,7 @@
     "[BUG-004] 生命週期事件處理器未清理": [
       {
         "document": "bug-tracker.md",
-        "line": 180,
+        "line": 182,
         "level": 3,
         "title": "[BUG-004] 生命週期事件處理器未清理"
       }
@@ -3937,7 +3937,7 @@
     "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致": [
       {
         "document": "bug-tracker.md",
-        "line": 200,
+        "line": 202,
         "level": 3,
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致"
       }
@@ -3945,7 +3945,7 @@
     "[BUG-006] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確": [
       {
         "document": "bug-tracker.md",
-        "line": 220,
+        "line": 222,
         "level": 3,
         "title": "[BUG-006] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確"
       }
@@ -3953,7 +3953,7 @@
     "[BUG-007] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()": [
       {
         "document": "bug-tracker.md",
-        "line": 240,
+        "line": 242,
         "level": 3,
         "title": "[BUG-007] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()"
       }
@@ -3961,7 +3961,7 @@
     "[BUG-008] Bot 離線事件在 shutdown 過程中被重複提交": [
       {
         "document": "bug-tracker.md",
-        "line": 260,
+        "line": 262,
         "level": 3,
         "title": "[BUG-008] Bot 離線事件在 shutdown 過程中被重複提交"
       }
@@ -3969,7 +3969,7 @@
     "[BUG-009] LazyModule 同步訪問 BaseModule 導致未初始化完成": [
       {
         "document": "bug-tracker.md",
-        "line": 280,
+        "line": 282,
         "level": 3,
         "title": "[BUG-009] LazyModule 同步訪問 BaseModule 導致未初始化完成"
       }
@@ -3977,7 +3977,7 @@
     "[BUG-010] 配置系統多線程寫入導致數據丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 300,
+        "line": 302,
         "level": 3,
         "title": "[BUG-010] 配置系統多線程寫入導致數據丟失"
       }
@@ -3985,31 +3985,31 @@
     "[BUG-011] Windows 下 CTRL+C 無法停止程序": [
       {
         "document": "bug-tracker.md",
-        "line": 323,
+        "line": 325,
         "level": 3,
         "title": "[BUG-011] Windows 下 CTRL+C 無法停止程序"
       }
     ],
-    "[BUG-012] 熱重啟後已更新模塊的 Python 代碼未生效": [
+    "[BUG-012] 熱重啟後已更新模組的 Python 代碼未生效": [
       {
         "document": "bug-tracker.md",
-        "line": 347,
+        "line": 349,
         "level": 3,
-        "title": "[BUG-012] 熱重啟後已更新模塊的 Python 代碼未生效"
+        "title": "[BUG-012] 熱重啟後已更新模組的 Python 代碼未生效"
       }
     ],
-    "[BUG-013] 模塊加載策略排序邏輯錯誤": [
+    "[BUG-013] 模組加載策略排序邏輯錯誤": [
       {
         "document": "bug-tracker.md",
-        "line": 367,
+        "line": 369,
         "level": 3,
-        "title": "[BUG-013] 模塊加載策略排序邏輯錯誤"
+        "title": "[BUG-013] 模組加載策略排序邏輯錯誤"
       }
     ],
     "[BUG-014] 適配器中間件返回 None 導致事件數據丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 387,
+        "line": 389,
         "level": 3,
         "title": "[BUG-014] 適配器中間件返回 None 導致事件數據丟失"
       }
@@ -4017,7 +4017,7 @@
     "[BUG-015] 配置文件路徑依賴工作目錄": [
       {
         "document": "bug-tracker.md",
-        "line": 407,
+        "line": 409,
         "level": 3,
         "title": "[BUG-015] 配置文件路徑依賴工作目錄"
       }
@@ -4025,7 +4025,7 @@
     "[BUG-016] BaseStorage 將存儲值 None 與鍵不存在混淆": [
       {
         "document": "bug-tracker.md",
-        "line": 427,
+        "line": 429,
         "level": 3,
         "title": "[BUG-016] BaseStorage 將存儲值 None 與鍵不存在混淆"
       }
@@ -4033,23 +4033,23 @@
     "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 447,
+        "line": 449,
         "level": 3,
         "title": "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失"
       }
     ],
-    "[BUG-018] HTTP/WS 客戶端並發調用導致崩潰與連接洩漏": [
+    "[BUG-018] HTTP/WS 客戶端併發調用導致崩潰與連接泄漏": [
       {
         "document": "bug-tracker.md",
-        "line": 467,
+        "line": 469,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS 客戶端並發調用導致崩潰與連接洩漏"
+        "title": "[BUG-018] HTTP/WS 客戶端併發調用導致崩潰與連接泄漏"
       }
     ],
     "[BUG-019] 適配器熱重載時路由衝突導致重載失敗": [
       {
         "document": "bug-tracker.md",
-        "line": 495,
+        "line": 497,
         "level": 3,
         "title": "[BUG-019] 適配器熱重載時路由衝突導致重載失敗"
       }
@@ -4057,7 +4057,7 @@
     "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包": [
       {
         "document": "bug-tracker.md",
-        "line": 519,
+        "line": 521,
         "level": 3,
         "title": "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包"
       }
@@ -4065,23 +4065,23 @@
     "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式": [
       {
         "document": "bug-tracker.md",
-        "line": 539,
+        "line": 541,
         "level": 3,
         "title": "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式"
       }
     ],
-    "[BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填充）": [
+    "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）": [
       {
         "document": "bug-tracker.md",
-        "line": 569,
+        "line": 571,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填充）"
+        "title": "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）"
       }
     ],
     "[BUG-023] 修改賬戶配置後適配器緩存未刷新導致賬戶解析失敗": [
       {
         "document": "bug-tracker.md",
-        "line": 608,
+        "line": 610,
         "level": 3,
         "title": "[BUG-023] 修改賬戶配置後適配器緩存未刷新導致賬戶解析失敗"
       }
@@ -4089,7 +4089,7 @@
     "[BUG-024] storage.set() 寫入大數字 ID 鍵時觸發 OOM Kill": [
       {
         "document": "bug-tracker.md",
-        "line": 628,
+        "line": 630,
         "level": 3,
         "title": "[BUG-024] storage.set() 寫入大數字 ID 鍵時觸發 OOM Kill"
       }
@@ -4097,7 +4097,7 @@
     "[BUG-025] on_config_update 回調未被核心路由": [
       {
         "document": "bug-tracker.md",
-        "line": 674,
+        "line": 676,
         "level": 3,
         "title": "[BUG-025] on_config_update 回調未被核心路由"
       }
@@ -4105,7 +4105,7 @@
     "[BUG-026] notice/request 事件 reply 目標推斷錯誤": [
       {
         "document": "bug-tracker.md",
-        "line": 704,
+        "line": 706,
         "level": 3,
         "title": "[BUG-026] notice/request 事件 reply 目標推斷錯誤"
       }
@@ -4113,7 +4113,7 @@
     "[BUG-027] 路由限流清理任務使用固定窗口導致長窗口限流規則失效": [
       {
         "document": "bug-tracker.md",
-        "line": 735,
+        "line": 737,
         "level": 3,
         "title": "[BUG-027] 路由限流清理任務使用固定窗口導致長窗口限流規則失效"
       }
@@ -4121,7 +4121,7 @@
     "[BUG-029] 配置監聽任務廣播半成品 TOML 並靜默吞掉異常": [
       {
         "document": "bug-tracker.md",
-        "line": 767,
+        "line": 769,
         "level": 3,
         "title": "[BUG-029] 配置監聽任務廣播半成品 TOML 並靜默吞掉異常"
       }
@@ -4129,7 +4129,7 @@
     "[BUG-030] 配置 watcher 競態導致 setConfig 延遲寫入靜默丟數據": [
       {
         "document": "bug-tracker.md",
-        "line": 803,
+        "line": 805,
         "level": 3,
         "title": "[BUG-030] 配置 watcher 競態導致 setConfig 延遲寫入靜默丟數據"
       }
@@ -4137,7 +4137,7 @@
     "[BUG-032] 配置延遲刷盤期間「寫後立讀」讀到舊值": [
       {
         "document": "bug-tracker.md",
-        "line": 839,
+        "line": 841,
         "level": 3,
         "title": "[BUG-032] 配置延遲刷盤期間「寫後立讀」讀到舊值"
       }
@@ -4145,7 +4145,7 @@
     "[BUG-033] wait_reply 挂起的回覆被高優先級處理器餓死": [
       {
         "document": "bug-tracker.md",
-        "line": 861,
+        "line": 863,
         "level": 3,
         "title": "[BUG-033] wait_reply 挂起的回覆被高優先級處理器餓死"
       }
@@ -4153,7 +4153,7 @@
     "[BUG-034] scope.set_module(..., persist=False) 運行時綁定被任意後續配置寫入靜默沖掉": [
       {
         "document": "bug-tracker.md",
-        "line": 883,
+        "line": 885,
         "level": 3,
         "title": "[BUG-034] scope.set_module(..., persist=False) 運行時綁定被任意後續配置寫入靜默沖掉"
       }
@@ -4161,39 +4161,39 @@
     "[BUG-035] 整節寫與點分寫並存時讀寫不一致（點分覆寫丟失）": [
       {
         "document": "bug-tracker.md",
-        "line": 907,
+        "line": 909,
         "level": 3,
         "title": "[BUG-035] 整節寫與點分寫並存時讀寫不一致（點分覆寫丟失）"
       }
     ],
-    "[BUG-036] 平台切段消息的命令尾部參數靜默丟失": [
+    "[BUG-036] 平台切段訊息的命令尾部參數靜默丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 931,
+        "line": 933,
         "level": 3,
-        "title": "[BUG-036] 平台切段消息的命令尾部參數靜默丟失"
+        "title": "[BUG-036] 平台切段訊息的命令尾部參數靜默丟失"
       }
     ],
     "[BUG-037] 被拒絕命令經 alt_message 整鏈重跑：重複回覆與權限函數副作用雙觸發": [
       {
         "document": "bug-tracker.md",
-        "line": 943,
+        "line": 947,
         "level": 3,
         "title": "[BUG-037] 被拒絕命令經 alt_message 整鏈重跑：重複回覆與權限函數副作用雙觸發"
       }
     ],
-    "[BUG-038] 命令處理器內註冊的 wait_reply 被同一條觸發消息立即消費": [
+    "[BUG-038] 命令處理器內註冊的 wait_reply 被同一條觸發訊息立即消費": [
       {
         "document": "bug-tracker.md",
-        "line": 955,
+        "line": 961,
         "level": 3,
-        "title": "[BUG-038] 命令處理器內註冊的 wait_reply 被同一條觸發消息立即消費"
+        "title": "[BUG-038] 命令處理器內註冊的 wait_reply 被同一條觸發訊息立即消費"
       }
     ],
     "[BUG-039] select() 同鍵多路等待後者靜默取消前者": [
       {
         "document": "bug-tracker.md",
-        "line": 967,
+        "line": 975,
         "level": 3,
         "title": "[BUG-039] select() 同鍵多路等待後者靜默取消前者"
       }
@@ -4201,25 +4201,33 @@
     "[BUG-040] BaseConverter.at() 產出 OB11 遺留 \"at\" 段，全框架 mention 判定不識別": [
       {
         "document": "bug-tracker.md",
-        "line": 979,
+        "line": 989,
         "level": 3,
         "title": "[BUG-040] BaseConverter.at() 產出 OB11 遺留 \"at\" 段，全框架 mention 判定不識別"
       }
     ],
-    "[BUG-041] 無 alt_message 的適配器上交互原語永久超時、命令穿透失效": [
+    "[BUG-041] 無 alt_message 的適配器上互動原語永久超時、命令穿透失效": [
       {
         "document": "bug-tracker.md",
-        "line": 991,
+        "line": 1003,
         "level": 3,
-        "title": "[BUG-041] 無 alt_message 的適配器上交互原語永久超時、命令穿透失效"
+        "title": "[BUG-041] 無 alt_message 的適配器上互動原語永久超時、命令穿透失效"
       }
     ],
     "[BUG-042] 聲明式配置模板的嵌套子表頭漂移為頂層表": [
       {
         "document": "bug-tracker.md",
-        "line": 1003,
+        "line": 1017,
         "level": 3,
         "title": "[BUG-042] 聲明式配置模板的嵌套子表頭漂移為頂層表"
+      }
+    ],
+    "[BUG-043] 服務目錄全量枚舉漏掉懶加載模組": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1031,
+        "level": 3,
+        "title": "[BUG-043] 服務目錄全量枚舉漏掉懶加載模組"
       }
     ],
     "__init__.py": [
@@ -5233,7 +5241,7 @@
     "事件冪等去重": [
       {
         "document": "advanced/module-communication.md",
-        "line": 216,
+        "line": 239,
         "level": 2,
         "title": "事件冪等去重"
       }
@@ -6315,7 +6323,7 @@
     "冷啟動回放": [
       {
         "document": "advanced/module-communication.md",
-        "line": 183,
+        "line": 206,
         "level": 2,
         "title": "冷啟動回放"
       }
@@ -6331,7 +6339,7 @@
     "出站審計：誰能呼叫誰": [
       {
         "document": "advanced/module-communication.md",
-        "line": 121,
+        "line": 144,
         "level": 2,
         "title": "出站審計：誰能呼叫誰"
       }
@@ -8255,7 +8263,7 @@
     "定向事件：lifecycle.emit 的 to 參數": [
       {
         "document": "advanced/module-communication.md",
-        "line": 137,
+        "line": 160,
         "level": 2,
         "title": "定向事件：lifecycle.emit 的 to 參數"
       }
@@ -8471,7 +8479,7 @@
     "已修復的 Bug": [
       {
         "document": "bug-tracker.md",
-        "line": 114,
+        "line": 116,
         "level": 2,
         "title": "已修復的 Bug"
       }
@@ -9175,7 +9183,7 @@
     "慢載與呼叫": [
       {
         "document": "advanced/module-communication.md",
-        "line": 170,
+        "line": 193,
         "level": 2,
         "title": "慢載與呼叫"
       }
@@ -10251,7 +10259,7 @@
     "服務目錄：services()": [
       {
         "document": "advanced/module-communication.md",
-        "line": 100,
+        "line": 120,
         "level": 2,
         "title": "服務目錄：services()"
       }
@@ -12427,7 +12435,7 @@
       },
       {
         "document": "advanced/module-communication.md",
-        "line": 227,
+        "line": 250,
         "level": 2,
         "title": "相關文件"
       },

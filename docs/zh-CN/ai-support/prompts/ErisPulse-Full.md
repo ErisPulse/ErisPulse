@@ -18125,12 +18125,32 @@ async def translate(self, text, target_lang):
     ...
 ```
 
-需要精细控制（覆盖 docstring / 多语言）时用 dict 形态声明 description（支持 i18n 字典）：
+**参数提示**：调用方（尤其是 AI 智能体）需要知道每个参数的含义。不需要就什么都不写，
+提示自动取方法 docstring 的 **`:param:` 行**：
+
+```python
+async def render_card(self, html, width=800, height=0):
+    """渲染 HTML 为图片文件
+
+    :param html: 要渲染的 HTML 文本          ← 自动成为参数提示
+    :param width: 画布宽度像素，0 为按内容自适应
+    :param height: 画布高度像素，0 为按内容自适应
+    """
+```
+
+需要精细控制（覆盖 docstring / 多语言）时用 dict 形态声明 description 与 parameters
+（均支持 i18n 字典；`parameters` 按**参数**与 docstring 合并，单参数内显式声明优先，
+声明了签名中不存在的参数会被过滤）：
 
 ```python
 services=[
     {"name": "translate", "description": "把文本翻译成指定语言"},
     {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "摘要对话"}},
+    {
+        "name": "render_card",
+        "description": "渲染 HTML 为图片文件",
+        "parameters": {"html": "HTML 文本", "width": "宽度像素，0 为自适应"},
+    },
 ]
 ```
 
@@ -18139,17 +18159,20 @@ services=[
 ```python
 sdk.module.services()
 # {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
-#            'description': '把文本翻译成指定语言'}]}
+#            'description': '把文本翻译成指定语言',
+#            'parameters': {'session_id': '会话 ID', 'n': '返回条数'}}]}
 
 sdk.module.services("Chat")   # 仅查询指定模块
 ```
 
 - 只列出**显式声明** `meta.services` 的模块（未声明模块不出现在目录中）
-- 每个服务带方法签名字符串（`inspect.signature` 提取）与介绍文本
+- 每个服务带方法签名字符串（`inspect.signature` 提取）、介绍文本与参数提示
+- **懒加载模块同样进入目录**（服务发现先于加载发生）——调用方可据此决定是否
+  `call()` 唤醒目标模块
 - 同时进入拓扑：`sdk.module.get_topology()` 的各模块条目带 `services` 字段
 
 {!--< tips >!--}
-**MCP 化路线**：服务目录（名称 + 签名 + 描述）即 MCP tool 的形状——
+**MCP 化路线**：服务目录（名称 + 签名 + 描述 + 参数提示）即 MCP tool 的形状——
 每个服务天然长成 ``{"name", "description", "parameters"}``。
 未来框架可把 ``services()`` 直接暴露为 MCP server 端点，让 AI 发现并调用模块能力；
 ``scope.actions.call`` 审计天然成为 AI 调用的安全闸口。

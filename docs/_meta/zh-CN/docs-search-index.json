@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1694,
+  "total_keywords": 1695,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -4264,6 +4264,14 @@
         "title": "[BUG-046] 声明式配置模板的嵌套子表头漂移为顶层表"
       }
     ],
+    "[BUG-047] 服务目录全量枚举漏掉懒加载模块": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1107,
+        "level": 3,
+        "title": "[BUG-047] 服务目录全量枚举漏掉懒加载模块"
+      }
+    ],
     "__init__.py": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -5483,7 +5491,7 @@
     "事件幂等去重": [
       {
         "document": "advanced/module-communication.md",
-        "line": 217,
+        "line": 240,
         "level": 2,
         "title": "事件幂等去重"
       }
@@ -6511,7 +6519,7 @@
     "冷启动回放": [
       {
         "document": "advanced/module-communication.md",
-        "line": 184,
+        "line": 207,
         "level": 2,
         "title": "冷启动回放"
       }
@@ -6527,7 +6535,7 @@
     "出站审计：谁能调用谁": [
       {
         "document": "advanced/module-communication.md",
-        "line": 122,
+        "line": 145,
         "level": 2,
         "title": "出站审计：谁能调用谁"
       }
@@ -8907,7 +8915,7 @@
     "定向事件：lifecycle.emit 的 to 参数": [
       {
         "document": "advanced/module-communication.md",
-        "line": 138,
+        "line": 161,
         "level": 2,
         "title": "定向事件：lifecycle.emit 的 to 参数"
       }
@@ -9945,7 +9953,7 @@
     "懒加载与调用": [
       {
         "document": "advanced/module-communication.md",
-        "line": 171,
+        "line": 194,
         "level": 2,
         "title": "懒加载与调用"
       }
@@ -11023,7 +11031,7 @@
     "服务目录：services()": [
       {
         "document": "advanced/module-communication.md",
-        "line": 101,
+        "line": 121,
         "level": 2,
         "title": "服务目录：services()"
       }
@@ -12869,7 +12877,7 @@
       },
       {
         "document": "advanced/module-communication.md",
-        "line": 229,
+        "line": 252,
         "level": 2,
         "title": "相关文档"
       },

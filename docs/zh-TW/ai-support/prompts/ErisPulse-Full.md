@@ -18162,8 +18162,8 @@ class ChatModule(BaseModule):
         return ModuleMeta(
             name="聊天",
             services=[
-                "get_history",                                       # 簡單形式
-                {"name": "translate", "description": "把文本翻譯成指定語言"},  # 帶說明
+                "get_history",                                       # 簡單形態
+                {"name": "translate", "description": "把文本翻譯成指定語言"},  # 帶介紹
             ],
         )
 
@@ -18176,26 +18176,46 @@ class ChatModule(BaseModule):
 
 - 未宣告 `services` → 所有**公開**方法天然可被 `module.call()` 呼叫（與裸屬性存取一致），
   無需任何宣告
-- 宣告後 → 收緊為白名單，越界呼叫拋出 `ServiceNotProvidedError`——用於標記
+- 宣告後 → 收緊為白名單，越界呼叫拋 `ServiceNotProvidedError`——用於標記
   "這些方法才是對外承諾"
-- 限制的**主控制權在使用者端**：`scope.actions` 配置決定「誰能呼叫誰」（見下文審計），
-  模組作者的 `services` 僅是服務面宣告，兩層互不替代
+- 限制的**主控制權在用戶端**：`scope.actions` 配置決定"誰能呼叫誰"（見下文審計），
+  模組作者的 `services` 只是服務面宣告，兩層互不替代
 
-**服務說明**：為每個服務配上人類 / AI 可讀的描述——不需要就不寫，
-說明自動取**方法 docstring 首行**（框架本就要求 docstring 風格）：
+**服務介紹**：為每個服務配上人類 / AI 可讀的描述——不需要就什麼都不寫，
+介紹自動取**方法 docstring 首行**（框架本就要求 docstring 風格）：
 
 ```python
 async def translate(self, text, target_lang):
-    """把文本翻譯成指定語言"""    # ← 這一行自動成為服務說明
+    """把文本翻譯成指定語言"""    # ← 這一行自動成為服務介紹
     ...
 ```
 
-需要精細控制（覆蓋 docstring / 多語言）時用 dict 形式宣告 description（支援 i18n 字典）：
+**參數提示**：呼叫方（尤其是 AI 智能體）需要知道每個參數的含義。不需要就什麼都不寫，
+提示自動取方法 docstring 的 **`:param:` 行**：
+
+```python
+async def render_card(self, html, width=800, height=0):
+    """渲染 HTML 為圖片檔案
+
+    :param html: 要渲染的 HTML 文本          ← 自動成為參數提示
+    :param width: 畫布寬度像素，0 為按內容自適應
+    :param height: 畫布高度像素，0 為按內容自適應
+    """
+```
+
+需要精細控制（覆蓋 docstring / 多語言）時用 dict 形態宣告 description 與 parameters
+（均支援 i18n 字典；`parameters` 按**參數**與 docstring 合併，單參數內顯式宣告優先，
+宣告了簽名中不存在的參數會被過濾）：
 
 ```python
 services=[
     {"name": "translate", "description": "把文本翻譯成指定語言"},
     {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "摘要對話"}},
+    {
+        "name": "render_card",
+        "description": "渲染 HTML 為圖片檔案",
+        "parameters": {"html": "HTML 文本", "width": "寬度像素，0 為自適應"},
+    },
 ]
 ```
 
@@ -18204,20 +18224,23 @@ services=[
 ```python
 sdk.module.services()
 # {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
-#            'description': '把文本翻譯成指定語言'}]}
+#            'description': '把文本翻譯成指定語言',
+#            'parameters': {'session_id': '會話 ID', 'n': '返回條數'}}]}
 
 sdk.module.services("Chat")   # 僅查詢指定模組
 ```
 
-- 僅列出**明確宣告** `meta.services` 的模組（未宣告的模組不出現在目錄中）
-- 每個服務帶有方法簽名字串（使用 `inspect.signature` 提取）與介紹文字
-- 同時進入拓撲：`sdk.module.get_topology()` 的各模組條目帶有 `services` 欄位
+- 僅列出**明確聲明** `meta.services` 的模組（未聲明模組不出現在目錄中）
+- 每個服務帶有方法簽名字串（由 `inspect.signature` 提取）、介紹文字與參數提示
+- **懶加載模組同樣會進入目錄**（服務發現先於加載發生）——呼叫方可據此決定是否
+  `call()` 喚醒目標模組
+- 同時進入拓撲：`sdk.module.get_topology()` 的各模組條目帶有 `services` 字段
 
 {!--< tips >!--}
-**MCP 化路線**：服務目錄（名稱 + 簽名 + 描述）即為 MCP tool 的形狀——
-每個服務自然地長成 ``{"name", "description", "parameters"}``。
-未來框架可將 ``services()`` 直接暴露為 MCP server 端點，讓 AI 發現並呼叫模組能力；
-``scope.actions.call`` 審計自然成為 AI 呼叫的安全閘口。
+**MCP 化路線**：服務目錄（名稱 + 簽名 + 描述 + 參數提示）即 MCP tool 的形狀——
+每個服務天然長成 ``{"name", "description", "parameters"}``。
+未來框架可把 ``services()`` 直接暴露為 MCP server 端點，讓 AI 發現並呼叫模組能力；
+``scope.actions.call`` 審計天然成為 AI 調用的安全閘口。
 {!--< /tips >!--}
 
 ## 出站審計：誰能呼叫誰

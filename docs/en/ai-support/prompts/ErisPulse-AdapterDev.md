@@ -11065,7 +11065,7 @@ All are part of the `ErisPulseError` hierarchy, and can be caught via `from Eris
 
 ## Service Contract: meta.services
 
-The service provider declares the whitelist of externally provided services in `get_meta()` (symmetrical to `commands` field):
+The service provider declares the whitelist of services offered externally in `get_meta()` (symmetrical to the `commands` field):
 
 ```python
 from ErisPulse.Core.Bases import BaseModule, ModuleMeta
@@ -11083,16 +11083,20 @@ class ChatModule(BaseModule):
 
     async def get_history(self, session_id, n=20): ...
     async def translate(self, text, target_lang): ...
-    def _internal_helper(self): ...   # Underscore-prefixed methods are always forbidden for external calls
+    def _internal_helper(self): ...   # Methods with leading underscore are always prohibited from external calls
 ```
 
-**Default behavior is implicit**:
+**By default, services are invisible to developers**:
 
-- If `services` is not declared → All **public** methods are naturally callable via `module.call()` (consistent with direct attribute access), requiring no declaration.
-- If declared → Restrict to the whitelist, and out-of-whitelist calls throw `ServiceNotProvidedError`—used to mark "these methods are the ones promised externally."
-- Control is primarily on the user side: `scope.actions` configuration determines "who can call whom" (see audit below), while the module author's `services` is only a service surface declaration; the two layers are independent.
+- If `services` is not declared → all **public** methods are naturally callable via `module.call()` (consistent with direct attribute access),
+  no declaration is required
+- After declaration → the scope is restricted to the whitelist, calling outside the whitelist raises `ServiceNotProvidedError`—used to mark
+  "these methods are the ones promised externally"
+- The main control authority lies with the user: `scope.actions` configuration determines "who can call whom" (see audit below),
+  the module author's `services` is only a service declaration, and the two layers are independent
 
-**Service descriptions**: Provide human / AI-readable descriptions for each service—no need to write anything if not required. The description is automatically taken from the **first line of the method's docstring** (the framework already requires docstring style):
+**Service Descriptions**: Provide human- or AI-readable descriptions for each service—leave empty if not needed,
+the description is automatically taken from the **first line of the method's docstring** (the framework already requires docstring style):
 
 ```python
 async def translate(self, text, target_lang):
@@ -11100,12 +11104,32 @@ async def translate(self, text, target_lang):
     ...
 ```
 
-For fine-grained control (overriding docstring / multilingual), use dict form to declare `description` (supports i18n dictionary):
+**Parameter Hints**: The caller (especially AI agents) needs to know the meaning of each parameter. Leave empty if not needed,
+hints are automatically taken from the **`:param:` lines** in the method's docstring:
+
+```python
+async def render_card(self, html, width=800, height=0):
+    """Render HTML into an image file
+
+    :param html: HTML text to render          ← Automatically becomes the parameter hint
+    :param width: Canvas width in pixels, 0 for adaptive to content
+    :param height: Canvas height in pixels, 0 for adaptive to content
+    """
+```
+
+For fine-grained control (overriding docstring or multi-language support), use the dict form to declare `description` and `parameters`
+(both support i18n dictionaries; `parameters` are merged with the docstring **by parameter**, explicit declaration within a single parameter takes precedence,
+parameters declared that do not exist in the signature are filtered):
 
 ```python
 services=[
     {"name": "translate", "description": "Translate text into a specified language"},
     {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "Summarize conversation"}},
+    {
+        "name": "render_card",
+        "description": "Render HTML into an image file",
+        "parameters": {"html": "HTML text", "width": "Width in pixels, 0 for adaptive"},
+    },
 ]
 ```
 
@@ -11114,17 +11138,19 @@ services=[
 ```python
 sdk.module.services()
 # {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
-#            'description': 'Translate text into a specified language'}]}
+#            'description': 'Translate text into the specified language',
+#            'parameters': {'session_id': 'Session ID', 'n': 'Number of entries to return'}}]}
 
 sdk.module.services("Chat")   # Query only a specific module
 ```
 
-- Only lists modules that **explicitly declare** `meta.services` (modules without declaration do not appear in the directory)
-- Each service includes the method signature string (extracted via `inspect.signature`) and description text
-- Also included in topology: `sdk.module.get_topology()` entries for each module include the `services` field
+- Only modules that explicitly declare `meta.services` are listed (modules without declaration do not appear in the directory)
+- Each service includes a method signature string (extracted via `inspect.signature`), description text, and parameter hints
+- **Lazily loaded modules are also included in the directory** (service discovery occurs before loading) — the caller can decide whether to `call()` to activate the target module
+- Modules are also included in the topology: each entry in `sdk.module.get_topology()` contains a `services` field
 
 {!--< tips >!--}
-**MCP Roadmap**: The service directory (name + signature + description) is the shape of an MCP tool—each service naturally becomes ``{"name", "description", "parameters"}``. In the future, the framework could expose ``services()`` directly as an MCP server endpoint, allowing AI to discover and call module capabilities; ``scope.actions.call`` audit naturally becomes the security gate for AI calls.
+**MCP Roadmap**: The service directory (name + signature + description + parameter hints) naturally forms the shape of an MCP tool — each service becomes ``{"name", "description", "parameters"}``. In the future, the framework could directly expose ``services()`` as an MCP server endpoint, allowing AI to discover and invoke module capabilities; ``scope.actions.call`` auditing naturally becomes a security gate for AI calls.
 {!--< /tips >!--}
 
 ## Outbound Audit: Who Can Call Whom

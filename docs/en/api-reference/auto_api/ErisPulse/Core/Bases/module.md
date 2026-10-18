@@ -100,7 +100,9 @@ on_load / on_unload 事件数据
 - ``services``: 模块对外提供的服务列表（模块间调用契约，缺省时公开方法全开放）
     - 简单形态：``["get_history", "translate"]``（方法名，介绍自动取 docstring 首行）
     - 完整形态：``[{"name": "get_history", "description": "查询会话历史"}]``
-      （``description`` 支持纯字符串或 i18n 字典，声明后覆盖 docstring）
+      （``description`` 支持纯字符串或 i18n 字典，声明后覆盖 docstring；
+      ``parameters`` 为 ``{参数名: 说明}`` 参数提示——调用方经 ``sdk.module.services()``
+      发现服务时可读，支持 i18n 字典，未声明的参数自动取 docstring ``:param:`` 行）
 - ``min_sdk_version``: 运行时所需最低 SDK 版本（如 ``"2.8.1"``；
     SDK 低于该版本时框架在加载期明确报错并跳过本模块）
 

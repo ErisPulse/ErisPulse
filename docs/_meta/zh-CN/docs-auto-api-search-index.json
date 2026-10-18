@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2201,
+  "total_keywords": 2203,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -2607,7 +2607,7 @@
     "`__contains__(module_name: str) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/module.md",
-        "line": 1095,
+        "line": 1135,
         "level": 5,
         "title": "`__contains__(module_name: str) -> bool`"
       }
@@ -2681,7 +2681,7 @@
     "`__getattr__(module_name: str) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/module.md",
-        "line": 1076,
+        "line": 1116,
         "level": 5,
         "title": "`__getattr__(module_name: str) -> Any`"
       }
@@ -4318,6 +4318,14 @@
         "title": "`_docstring_first_line(func: Any) -> str`（staticmethod）"
       }
     ],
+    "`_docstring_params(func: Any) -> dict[str, str]`（staticmethod）": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/module.md",
+        "line": 979,
+        "level": 5,
+        "title": "`_docstring_params(func: Any) -> dict[str, str]`（staticmethod）"
+      }
+    ],
     "`_drop_provider(fn: MasterProvider) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/master.md",
@@ -4415,7 +4423,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/module.md",
-        "line": 259,
+        "line": 261,
         "level": 5,
         "title": "`_ensure_config_exists()`"
       }
@@ -4477,7 +4485,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/module.md",
-        "line": 270,
+        "line": 272,
         "level": 5,
         "title": "`_ensure_i18n_registered()`"
       }
@@ -4825,7 +4833,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/module.md",
-        "line": 246,
+        "line": 248,
         "level": 5,
         "title": "`_get_config_key() -> str`"
       }
@@ -7330,6 +7338,14 @@
         "title": "`_service_names(module_name: str) -> 'list[str] | None'`"
       }
     ],
+    "`_service_parameters(module_name: str, entry: dict[str, Any]) -> dict[str, str]`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/module.md",
+        "line": 994,
+        "level": 5,
+        "title": "`_service_parameters(module_name: str, entry: dict[str, Any]) -> dict[str, str]`"
+      }
+    ],
     "`_set_conn_groups(groups: frozenset[str]) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/websocket.md",
@@ -9033,7 +9049,7 @@
     "`async _resolve_call_target(module_name: str) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/module.md",
-        "line": 1011,
+        "line": 1051,
         "level": 5,
         "title": "`async _resolve_call_target(module_name: str) -> Any`"
       }
@@ -9553,7 +9569,7 @@
     "`async call(module_name: str, method: str, *args: Any, timeout: float | None = None, **kwargs: Any) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/module.md",
-        "line": 1025,
+        "line": 1065,
         "level": 5,
         "title": "`async call(module_name: str, method: str, *args: Any, timeout: float | None = None, **kwargs: Any) -> Any`"
       }
@@ -10295,7 +10311,7 @@
     "`async on_load(event: dict[str, Any]) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/module.md",
-        "line": 187,
+        "line": 189,
         "level": 5,
         "title": "`async on_load(event: dict[str, Any]) -> bool`"
       }
@@ -10303,7 +10319,7 @@
     "`async on_unload(event: dict[str, Any]) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/module.md",
-        "line": 202,
+        "line": 204,
         "level": 5,
         "title": "`async on_unload(event: dict[str, Any]) -> bool`"
       }
@@ -11271,7 +11287,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/module.md",
-        "line": 297,
+        "line": 299,
         "level": 5,
         "title": "`cfg(value)`"
       }
@@ -11285,7 +11301,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/module.md",
-        "line": 283,
+        "line": 285,
         "level": 5,
         "title": "`cfg`（property）"
       }
@@ -14453,7 +14469,7 @@
     "`get_load_strategy() -> ModuleLoadStrategy | dict[str, Any]`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/module.md",
-        "line": 148,
+        "line": 150,
         "level": 5,
         "title": "`get_load_strategy() -> ModuleLoadStrategy | dict[str, Any]`（staticmethod）"
       }
@@ -16197,7 +16213,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/module.md",
-        "line": 304,
+        "line": 306,
         "level": 5,
         "title": "`on_config_update(old_config, new_config)`"
       }
@@ -17506,12 +17522,12 @@
         "title": "`send_info(platform: str, method_name: str) -> dict[str, Any]`"
       }
     ],
-    "`services(module_name: str | None = None) -> dict[str, list[dict[str, str]]]`": [
+    "`services(module_name: str | None = None) -> 'dict[str, list[dict[str, Any]]]'`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/module.md",
-        "line": 979,
+        "line": 1011,
         "level": 5,
-        "title": "`services(module_name: str | None = None) -> dict[str, list[dict[str, str]]]`"
+        "title": "`services(module_name: str | None = None) -> 'dict[str, list[dict[str, Any]]]'`"
       }
     ],
     "`session -> dict[str, Any]`（property）": [
@@ -17877,7 +17893,7 @@
     "`spawn(coro)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/module.md",
-        "line": 217,
+        "line": 219,
         "level": 5,
         "title": "`spawn(coro)`"
       }
