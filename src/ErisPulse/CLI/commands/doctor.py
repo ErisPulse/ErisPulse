@@ -30,6 +30,7 @@ class DoctorCommand(Command):
     name = "doctor"
     description = i18n.t("cli.doctor.description")
     aliases = ["diag"]
+    category = "config"
 
     def __init__(self):
         """初始化 DoctorCommand，创建包管理器实例"""
@@ -42,11 +43,37 @@ class DoctorCommand(Command):
             action="store_true",
             help=i18n.t("cli.doctor.verbose_help"),
         )
+        parser.add_argument(
+            "--fix",
+            action="store_true",
+            help=i18n.t("cli.doctor.fix_help"),
+        )
 
     def execute(self, args):
+        rows, failed, fix_context = self._collect_diagnosis()
+        self._print_report(rows, failed)
+
+        if getattr(args, "fix", False):
+            self._attempt_fixes(fix_context)
+
+    def _collect_diagnosis(self) -> tuple[list, bool, dict]:
+        """
+        运行全部诊断项并收集结果
+
+        :return: ([tuple]) 三元组 ``(rows, failed, fix_context)``：
+            rows 为 (状态, 标签, 详情) 行列表；failed 为是否存在失败项；
+            fix_context 携带 ``--fix`` 所需的上下文（缺失配置路径、待完善
+            目标列表、不可自动修复项提示）。
+        """
         pm = self.package_manager
         rows: list[tuple[str, str, str]] = []
         failed = False
+        fix_context: dict = {
+            "config_missing": False,
+            "config_path": Path("config") / "config.toml",
+            "incomplete_targets": [],
+            "unrecoverable": [],
+        }
 
         # 1. Python 解释器
         py_ok = sys.version_info >= (3, 10)
@@ -59,6 +86,7 @@ class DoctorCommand(Command):
         )
         if not py_ok:
             failed = True
+            fix_context["unrecoverable"].append(i18n.t("cli.doctor.fix_hint_python"))
 
         # 2. 安装后端（uv / pip）
         uv_cmd = pm._get_uv_command()
@@ -114,7 +142,7 @@ class DoctorCommand(Command):
             )
 
         # 4. 配置文件
-        config_path = Path("config") / "config.toml"
+        config_path = fix_context["config_path"]
         if config_path.exists():
             rows.append(
                 (
@@ -132,6 +160,7 @@ class DoctorCommand(Command):
                 )
             )
             failed = True
+            fix_context["config_missing"] = True
 
         # 4.5 组件配置健康（配置文件存在 ≠ 必填项齐全：复用配置向导的
         # schema 状态检测，"装好了跑不起来"多因适配器必填项缺失）
@@ -143,12 +172,15 @@ class DoctorCommand(Command):
             )
 
             incomplete: list[str] = []
+            error_hints: list[str] = []
             for target in load_config_targets():
                 status, _errors = get_target_status(target)
                 # 仅"待完善"（开了但必填项缺失）判 FAIL；完全未配置属
                 # 用户尚未开始配置，不算故障
                 if status == STATUS_INCOMPLETE:
                     incomplete.append(target.name)
+                    error_hints.extend(_errors)
+                    fix_context["incomplete_targets"].append(target)
             if incomplete:
                 failed = True
                 rows.append(
@@ -160,6 +192,11 @@ class DoctorCommand(Command):
                             names=", ".join(incomplete),
                         ),
                     )
+                )
+                # 附带前两条校验问题（错误消息已含配置文件注释回读），
+                # 把"哪个字段、文件里怎么写的"直接给到用户
+                rows.extend(
+                    (self._status(False), "", hint) for hint in error_hints[:2]
                 )
             else:
                 rows.append(
@@ -194,6 +231,7 @@ class DoctorCommand(Command):
             )
         except Exception:
             failed = True
+            fix_context["unrecoverable"].append(i18n.t("cli.doctor.fix_hint_pypi"))
             rows.append(
                 (
                     self._status(False),
@@ -222,7 +260,15 @@ class DoctorCommand(Command):
                 )
             )
 
-        # 输出诊断报告
+        return rows, failed, fix_context
+
+    def _print_report(self, rows: list, failed: bool):
+        """
+        输出诊断报告表格与失败项摘要
+
+        :param rows: [list] (状态, 标签, 详情) 行列表
+        :param failed: [bool] 是否存在失败项
+        """
         table = Table(
             show_header=False,
             box=None,
@@ -243,6 +289,85 @@ class DoctorCommand(Command):
                     )
         else:
             console.print(f"[success]{i18n.t('cli.doctor.all_ok')}[/]")
+
+    def _attempt_fixes(self, fix_context: dict):
+        """
+        对可自动修复的诊断失败项执行修复
+
+        修复范围：缺失的 ``config.toml``（与 init 建项同源生成）与"待完善"
+        组件配置（逐个拉起交互式向导）。Python 版本、网络连通等需人工
+        介入的项仅输出行动建议。修复动作逐项即时反馈，不在完成后重跑
+        全套诊断（避免重复网络探测）。
+
+        :param fix_context: [dict] ``_collect_diagnosis`` 返回的修复上下文
+        """
+        from ErisPulse import config as app_config
+
+        from ..utils.config_wizard import (
+            STATUS_OK,
+            get_target_status,
+            is_interactive,
+            run_wizard,
+        )
+        from ..utils.scaffold_text import ScaffoldText
+
+        console.print(f"\n[bold]{i18n.t('cli.doctor.fix_section')}[/]")
+
+        # 1. 补建缺失的 config.toml（新建直写，不涉及既有文件的编辑路径）
+        config_path = fix_context["config_path"]
+        if fix_context["config_missing"]:
+            if config_path.exists():
+                console.print(
+                    f"[dim]  {i18n.t('cli.doctor.fix_config_exists')}[/]"
+                )
+            else:
+                try:
+                    config_path.parent.mkdir(parents=True, exist_ok=True)
+                    config_path.write_text(
+                        ScaffoldText().initial_config_toml(), encoding="utf-8"
+                    )
+                    console.print(
+                        f"[success]  {i18n.t('cli.doctor.fix_config_created', path=config_path)}[/]"
+                    )
+                except OSError as e:
+                    console.print(
+                        f"[error]  {i18n.t('cli.doctor.fix_config_create_failed', error=e)}[/]"
+                    )
+
+        # 2. 待完善组件配置：逐个拉起向导补必填项
+        targets = fix_context["incomplete_targets"]
+        if targets:
+            if not is_interactive():
+                console.print(
+                    f"[warning]  {i18n.t('cli.doctor.fix_non_interactive')}[/]"
+                )
+            else:
+                names = ", ".join(t.name for t in targets)
+                console.print(
+                    f"[info]  {i18n.t('cli.doctor.fix_wizard_start', names=names)}[/]"
+                )
+                for target in targets:
+                    try:
+                        run_wizard(target, app_config)
+                        status, _errors = get_target_status(target, app_config)
+                    except KeyboardInterrupt:
+                        console.print(f"\n[warning]  {i18n.t('cli.doctor.fix_wizard_interrupted')}[/]")
+                        break
+                    if status == STATUS_OK:
+                        console.print(
+                            f"[success]  {i18n.t('cli.doctor.fix_wizard_done', name=target.name)}[/]"
+                        )
+                    else:
+                        console.print(
+                            f"[warning]  {i18n.t('cli.doctor.fix_wizard_still_incomplete', name=target.name)}[/]"
+                        )
+
+        # 3. 不可自动修复项：输出行动建议
+        hints = fix_context["unrecoverable"]
+        if hints:
+            console.print(f"[dim]  {i18n.t('cli.doctor.fix_unrecoverable')}[/]")
+            for hint in hints:
+                console.print(f"    [dim]-[/] {hint}")
 
     @staticmethod
     def _status(ok: bool) -> str:

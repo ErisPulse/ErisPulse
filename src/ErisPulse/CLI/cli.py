@@ -168,6 +168,65 @@ class CLI:
             )
         )
 
+    # 主帮助分组表展示顺序（未列出的类别按注册顺序附在末尾）
+    _HELP_CATEGORY_ORDER = ("project", "components", "config", "misc")
+
+    def _print_grouped_help(self) -> None:
+        """
+        按类别分组打印主帮助（Rich 表格渲染）
+
+        取代 argparse 默认的子命令平铺列表：命令按 category 归类展示
+        （名称 + 别名 + 描述），全局选项从 ``parser._actions`` 实时遍历
+        生成避免与实际参数漂移。子命令级 ``--help`` 保持 argparse 原样。
+        """
+        from rich.table import Table
+
+        if self.parser.description:
+            console.print(f"[bold]{self.parser.description}[/]\n")
+        console.print(f"[dim]{self.parser.format_usage().strip()}[/]\n")
+
+        groups: dict[str, list[Command]] = {}
+        for command in self.registry.get_all():
+            groups.setdefault(command.category or "misc", []).append(command)
+
+        ordered = list(self._HELP_CATEGORY_ORDER) + [
+            cat for cat in groups if cat not in self._HELP_CATEGORY_ORDER
+        ]
+        table = Table(show_header=False, box=None, pad_edge=False, expand=True)
+        table.add_column(min_width=18)
+        table.add_column(ratio=1)
+        for cat in ordered:
+            commands = groups.get(cat)
+            if not commands:
+                continue
+            table.add_row(
+                f"[title]{i18n.t(f'cli.help.category.{cat}')}[/]", ""
+            )
+            for command in sorted(commands, key=lambda c: c.name):
+                aliases = getattr(command, "aliases", None) or []
+                name_text = command.name + (
+                    f" [dim]({', '.join(aliases)})[/]" if aliases else ""
+                )
+                table.add_row(f"    [cmd]{name_text}[/]", command.description)
+        console.print(table)
+
+        option_lines: list[tuple[str, str]] = []
+        for action in self.parser._actions:
+            if not action.option_strings:
+                continue
+            option_lines.append(
+                (", ".join(action.option_strings), action.help or "")
+            )
+        if option_lines:
+            width = max(len(opts) for opts, _ in option_lines)
+            console.print(f"\n[title]{i18n.t('cli.parser.optionals_title')}[/]")
+            for opts, help_text in option_lines:
+                console.print(f"  [cmd]{opts.ljust(width)}[/]  {help_text}")
+
+        console.print(
+            f"\n[dim]{i18n.t('cli.run.quickstart.run_help_hint')}[/]"
+        )
+
     def _print_quickstart(self) -> None:
         """
         打印 Quick Start 面板
@@ -248,7 +307,7 @@ class CLI:
             console.print(
                 f"[error]{i18n.t('cli.run.unknown_command', command=cmd)}[/]"
             )
-            self.parser.print_help()
+            self._print_grouped_help()
         sys.exit(1)
 
     def _maybe_show_language_hint(self) -> None:
@@ -336,7 +395,7 @@ class CLI:
                     f"[warning]{i18n.t('cli.run.unknown_args', args=' '.join(unknown))}[/]"
                 )
             self._print_quickstart()
-            self.parser.print_help()
+            self._print_grouped_help()
             return
 
         # 将别名解析为规范命令名
@@ -373,7 +432,7 @@ class CLI:
                 console.print(
                     f"[error]{i18n.t('cli.run.unknown_command', command=args.command)}[/]"
                 )
-                self.parser.print_help()
+                self._print_grouped_help()
                 sys.exit(1)
 
         except KeyboardInterrupt:

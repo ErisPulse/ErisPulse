@@ -429,13 +429,13 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "所有权（owner）系統",
+          "title": "归屬權（owner）系統",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
         },
         {
-          "title": "互動會話系統",
+          "title": "互動對話系統",
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"
@@ -459,7 +459,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "錯誤體系與捕獲指南",
+          "title": "異常體系與捕獲指南",
           "path": "advanced/errors.md",
           "level": 1,
           "icon": "fa-triangle-exclamation"
@@ -488,7 +488,7 @@
     "生態模組": {
       "description": "社群維護的第三方擴展模組",
       "icon": "fa-cubes",
-      "count": 5,
+      "count": 6,
       "documents": [
         {
           "title": "生態模組",
@@ -519,6 +519,12 @@
           "path": "ecosystem/takumi.md",
           "level": 1,
           "icon": "fa-image"
+        },
+        {
+          "title": "ErisPulse-QvQChat 通用智能體",
+          "path": "ecosystem/qvqchat.md",
+          "level": 1,
+          "icon": "fa-cubes"
         }
       ],
       "subgroups": {}

@@ -1,5 +1,9 @@
 # MessageBuilder 详解
 
+> [!TIP]
+> **什么时候需要读这篇**：构建复杂 / 多段消息时。不需要则跳过，不影响其它功能的使用。
+
+
 `MessageBuilder` 是 ErisPulse 提供的 OneBot12 标准消息段构建工具，用于构建结构化的消息内容，配合 `Send.Raw_ob12()` 使用。
 
 ## 导入方式

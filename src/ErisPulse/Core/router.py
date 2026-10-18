@@ -58,6 +58,7 @@ from .constants import (
     FALLBACK_IPV6_HOST,
     ROUTER_RELOAD_STARTUP_TIMEOUT_SECS,
     SERVER_SHUTDOWN_TIMEOUT_SECS,
+    UVICORN_COMPAT_RANGE,
     WILDCARD_IPV4,
     WILDCARD_IPV6,
     WS_CLOSE_INTERNAL_ERROR,
@@ -974,15 +975,6 @@ class RouterManager:
 
         @self.app.get("/", include_in_schema=False)
         async def root_page(request: Request) -> HTMLResponse:
-            dashboard_available = False
-            try:
-                import ErisPulse as _pkg  # noqa: N813 - 包名是 PascalCase，别名需小写以符合 PEP 8
-
-                _sdk = _pkg.sdk
-                dashboard_available = hasattr(_sdk, "Dashboard") and _sdk.Dashboard
-            except Exception:
-                pass
-
             from .assets import render_root_page
 
             entries: list[dict] = []
@@ -995,13 +987,6 @@ class RouterManager:
                     "url": entry["url"],
                     "icon_svg": entry.get("icon_svg", ""),
                 })
-            if dashboard_available:
-                entries.insert(0, {
-                    "name": "Dashboard",
-                    "url": "/Dashboard",
-                    "icon_svg": '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>'
-                })
-
             html = render_root_page(
                 version=self._erispulse_version(),
                 sub_text=i18n.t("core.router.root_page_text"),
@@ -2909,6 +2894,42 @@ class RouterManager:
                     except Exception:
                         pass
 
+    def _create_uvicorn_server(
+        self, config: uvicorn.Config
+    ) -> tuple[uvicorn.Server, Callable[[], Any]]:
+        """
+        构建 uvicorn.Server 并解析内嵌启动入口（私有接口缺失时告警回退）
+
+        {!--< internal-use >!--}
+        内嵌启动优先调用私有方法 ``Server._serve()``（跳过 ``serve()`` 的
+        ``capture_signals``——后者会抢注进程信号并在退出时重抛，与 SDK 的
+        信号管理冲突），该接口自 uvicorn 0.34.0 引入且属私有 API。
+
+        兼容性按**能力探测**判定（仅检查接口是否存在、不比较版本）：
+        接口存在即直接使用，上游大版本更新若保留该接口则无需跟进发版；
+        缺失时仅告警并回退公开 ``serve()``（服务期间进程信号由 uvicorn
+        暂时接管，属可接受的降级），建议用户前往 uvicorn 仓库确认其正式
+        支持情况。已验证范围见 :data:`UVICORN_COMPAT_RANGE`（与
+        pyproject.toml 锁定一致）。
+        {!--< /internal-use >!--}
+
+        :param config: 已构建的 :class:`uvicorn.Config`
+        :return: ``(server, serve_entry)`` 二元组——Server 实例与启动协程
+                 工厂（调用即返回待调度协程，供 ``asyncio.create_task`` 使用）
+        """
+        server = uvicorn.Server(config)
+        serve_entry = getattr(server, "_serve", None)
+        if not callable(serve_entry):
+            logger.warning(
+                i18n.t(
+                    "core.router.uvicorn_serve_missing",
+                    version=getattr(uvicorn, "__version__", "unknown"),
+                    constraint=UVICORN_COMPAT_RANGE,
+                )
+            )
+            serve_entry = server.serve
+        return server, serve_entry
+
     @_web_stack_required
     async def start(
         self,
@@ -2994,7 +3015,7 @@ class RouterManager:
                 if ssl_context
                 else None,
             )
-            self._uvicorn_server = uvicorn.Server(config)
+            self._uvicorn_server, serve_entry = self._create_uvicorn_server(config)
 
             self.base_url = f"http{'s' if use_https else ''}://{host}:{port}"
             display_url = self._format_display_url(self.base_url)
@@ -3022,7 +3043,7 @@ class RouterManager:
                 )
             )
 
-            self._server_task = asyncio.create_task(self._uvicorn_server._serve())
+            self._server_task = asyncio.create_task(serve_entry())
 
             # 启动限流存储定期清理任务
             self._start_rate_limit_cleanup()
@@ -3133,9 +3154,9 @@ class RouterManager:
             if ssl_context
             else None,
         )
-        self._uvicorn_server = uvicorn.Server(config)
+        self._uvicorn_server, serve_entry = self._create_uvicorn_server(config)
         self.base_url = f"http{'s' if use_https else ''}://{params['host']}:{params['port']}"
-        self._server_task = asyncio.create_task(self._uvicorn_server._serve())
+        self._server_task = asyncio.create_task(serve_entry())
 
         # 等待监听就绪（绑定失败会令 serve 任务以异常结束）
         loop = asyncio.get_running_loop()

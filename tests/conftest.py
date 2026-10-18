@@ -98,16 +98,42 @@ def _close_storage_on_teardown() -> Generator[None, None, None]:
         pass
 
 
+def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
+    """会话收尾：确定性关停常驻线程（同步桥接循环 + 配置监视线程）
+
+    此前仅靠 daemon 线程 + 解释器退出兜底，Windows/自由线程下收尾阶段偶发
+    进程挂死与 aiosqlite "Event loop is closed" 噪音；此处显式按
+    "先停桥、再停 watcher" 关停，使测试进程必然退出。
+    """
+    try:
+        import importlib
+
+        _storage_base = importlib.import_module("ErisPulse.Core.Bases.storage")
+        _storage_base.AsyncBridge().close()
+    except Exception:
+        pass
+    try:
+        import importlib
+
+        _config_module = importlib.import_module("ErisPulse.Core.config")
+        _config_module.ConfigManager.stop_all_watchers()
+    except Exception:
+        pass
+
+
 @pytest.fixture(scope="session", autouse=True)
 def _protect_repo_config() -> Generator[None, None, None]:
     """
     会话级备份/还原仓库根 config/config.toml
 
-    问题背景：单测的 ``persist=True`` 写入（scope / overrides ACL 等）落在
-    进程 cwd 的真实用户配置上且测试结束不清理——残留的 ACL / 覆写节会让
-    后续测试运行（以及本地真实开发）被静默改变行为（如命令被 ACL 拒绝）。
+    问题背景：单测的 ``persist=True`` 写入（scope / overrides ACL、模块启用态
+    自动写等）落在进程 cwd 的真实用户配置上且测试结束不清理——残留的 ACL /
+    覆写节 / 模块禁用标记会让后续测试运行（以及本地真实开发）被静默改变行为
+    （如命令被 ACL 拒绝、模块调用报"未启用"）。
 
-    会话开始备份、结束还原；开始时不存在的文件在结束时移除。
+    会话开始备份后**换入空白配置**再跑测试——测试期读写全部落在临时内容上，
+    与维护者真实配置彻底隔离（单纯备份还原会在还原时把历史污染原样带回，
+    自我延续）。结束还原；开始时不存在的文件在结束时移除。
 
     {!--< internal-use >!--}
     """
@@ -117,6 +143,9 @@ def _protect_repo_config() -> Generator[None, None, None]:
     backup: bytes | None = None
     if config_path.exists():
         backup = config_path.read_bytes()
+        # 干净隔离：换入空白配置（框架全部行为走内存默认值），
+        # 使测试既读不到历史污染、也不会把污染继续写回真实文件
+        config_path.write_bytes(b"")
     yield
     try:
         # 先丢弃未刷盘的脏写入（防止还原后被 atexit/延迟刷盘再次覆盖）

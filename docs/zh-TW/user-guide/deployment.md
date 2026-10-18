@@ -245,6 +245,30 @@ stderr_logfile=/var/log/erispulse-bot/err.log
 stdout_logfile=/var/log/erispulse-bot/out.log
 ```
 
+### uv tool 分離部署（CLI 與項目環境隔離）
+
+`uv tool install` 將 `epsdk` 安裝為**獨立的工具環境**，CLI 自身與項目依賴徹底隔離：升級 CLI 不會觸碰項目 `.venv`，項目依賴變動也不會影響 CLI。
+
+```bash
+# 1. 全域安裝 CLI（自動暴露 epsdk / ep 命令）
+uv tool install ErisPulse
+
+# 2. 項目內只放機器人依賴（.venv 由 uv 管理）
+cd /opt/erispulse-bot
+uv add erispulse ErisPulse-Adapter-Yunhu   # 按需追加適配器
+
+# 3. 用 CLI 運行（自動探測並使用項目 .venv 中的解釋器）
+epsdk run main.py
+```
+
+行為要點：
+
+- `epsdk run` 的目標解釋器解析順序：`ERISPULSE_PYTHON` 環境變數 → 項目 `.venv` → 當前解釋器；工具環境本身只承載 CLI，組件（適配器/模組）應裝進項目 `.venv`
+- `epsdk install` / `uninstall` / `upgrade` / `list` 同樣作用於項目 `.venv`，不會污染工具環境
+- 升級 CLI：`uv tool upgrade ErisPulse`（或直接 `epsdk self-update`，uv tool 環境下自動改走 `uv tool upgrade`）；升級項目依賴：在項目目錄執行 `uv sync` / `uv add`，兩者互不影響
+- 伺服器場景下工具環境由 uv 統一管理（`uv tool list` 查看、`uv tool upgrade --all` 批量升級），無需手動維護全域 pip 包
+- 若在無項目的目錄用 `uv run epsdk ...` 執行，會落入**一次性隔離環境**（安裝的組件不持久化）；伺服器上請始終用 `epsdk` 直接呼叫，或先 `cd` 進項目目錄
+
 ## 安全建議
 
 1. **設定 Dashboard 令牌**：使用強大的隨機令牌，不要使用預設值
@@ -281,20 +305,30 @@ epsdk self-update
 epsdk upgrade
 ```
 
-### 運行時熱重載伺服器配置
+### uv tool 方式
 
-修改監聽地址 / 端口 / SSL 證書後無需重啟進程，在任意協程中呼叫 `router.reload()`：
+```bash
+# 升級 CLI 工具環境
+uv tool upgrade ErisPulse
+
+# 升級專案相依性（於專案目錄內執行）
+uv sync
+```
+
+### 運行時熱重載伺服器設定
+
+修改監聽位址 / 端口 / SSL 證書後無需重新啟動程序，在任意協程中呼叫 `router.reload()`：
 
 ```python
-await sdk.router.reload(port=9000)                                # 更換端口
+await sdk.router.reload(port=9000)                                # 更改端口
 await sdk.router.reload(ssl_cert=new_pem, ssl_key=new_key)        # 熱更換證書（證書續期場景）
-await sdk.router.reload(host="0.0.0.0", port=9000)                # 缺省參數沿用當前配置
+await sdk.router.reload(host="0.0.0.0", port=9000)                # 缺省參數沿用當前設定
 ```
 
 - 重用同一 FastAPI 應用，模組註冊的 HTTP / WebSocket / SSE 路由全部保留
-- 先驗證新配置（證書可構建、端口可用）再切換；失敗時以舊配置恢復服務並返回 `False`，
-  保證返回 `False` = 舊服務保持可用
-- 伺服器未運行時返回 `False`（首次啟動請使用 `sdk.router.start()`）
+- 先驗證新設定（證書可建立、端口可用）再切換；失敗時以舊設定恢復服務並回傳 `False`，
+  保證回傳 `False` = 舊服務保持可用
+- 伺服器未運行時回傳 `False`（首次啟動請使用 `sdk.router.start()`）
 
 ### 備份
 
@@ -304,5 +338,5 @@ await sdk.router.reload(host="0.0.0.0", port=9000)                # 缺省參數
 # Docker 部署
 tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
-# 或在 Dashboard 中使用「備份」功能導出
+# 或在 Dashboard 中使用「備份」功能匯出
 ```

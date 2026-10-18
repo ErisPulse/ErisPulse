@@ -25,6 +25,7 @@ class UninstallCommand(Command):
     name = "uninstall"
     description = i18n.t("cli.uninstall.description")
     aliases = ["rm", "remove"]
+    category = "components"
 
     def __init__(self):
         """

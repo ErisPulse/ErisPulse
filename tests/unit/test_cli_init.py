@@ -4,7 +4,7 @@ CLI init / 环境基建单元测试
 测试 init 目录支持（位置路径 / --path / --here）、pyproject.toml 生成、
 .gitignore / README 脚手架、目标解释器解析优先级（ERISPULSE_PYTHON >
 项目 .venv > VIRTUAL_ENV > 当前解释器）、uv 隔离环境检测警告，以及
-pyproject 依赖回写（tomlkit 保格式 + 去重）。
+pyproject 依赖回写（tomlclass 保格式 + 去重）。
 """
 
 import sys
@@ -158,7 +158,7 @@ class TestUvIsolationWarning:
 
 
 class TestAppendPyprojectDependencies:
-    """pyproject 依赖回写（tomlkit 保格式 + 去重）"""
+    """pyproject 依赖回写（tomlclass 保格式 + 去重）"""
 
     def test_append_and_dedupe(self, tmp_path):
         from ErisPulse.CLI.utils.package_manager import append_pyproject_dependencies
@@ -170,7 +170,7 @@ class TestAppendPyprojectDependencies:
         )
         assert append_pyproject_dependencies(tmp_path, ["onebot11-adapter"]) is True
         text = pyproject.read_text(encoding="utf-8")
-        assert "# 项目注释" in text  # 注释保留（tomlkit）
+        assert "# 项目注释" in text  # 注释保留（tomlclass 无损引擎）
         assert "onebot11-adapter" in text
 
         # 重复追加：幂等

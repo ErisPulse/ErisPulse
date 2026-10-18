@@ -25,6 +25,7 @@ class LanguageCommand(Command):
     name = "i18n"
     description = i18n.t("cli.language.description")
     aliases = ["language", "lang"]
+    category = "config"
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(

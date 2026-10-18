@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "85b5522419a86396a4868ce13eee07db",
-  "file_hash": "85b5522419a86396a4868ce13eee07db",
-  "translated_at": "2026-10-02T11:09:29.159648",
+  "hash": "5bd691c082de4fb60e8b5306db371ad7",
+  "file_hash": "5bd691c082de4fb60e8b5306db371ad7",
+  "translated_at": "2026-10-14T03:11:50.009524",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "99ab953322e101251938a084b08f4230",
-      "translation": "# 生命週期管理\n\nErisPulse 提供統一的鈎子/生命週期系統，用於監控系統各組件的運行狀態，以及實現審計、統計、自定義邏輯等擴展功能。\n\n系統支援三種觸發方式：\n- `await lifecycle.emit(\"event\", data)` — 精簡版，傳遞任意資料（`to=\"Owner\"` 時定向投遞）\n- `lifecycle.emit_sync(\"event\", data)` — 同步版（用於非異步上下文）\n- `await lifecycle.submit_event(\"event\", ...)` — 兼容舊版，自動建構標準事件格式"
+      "hash": "8d2712ae98b91162cdb30091cd4ba4f5",
+      "translation": "# 生命週期管理\n\n> [!TIP]\n> **什麼時候需要閱讀這篇**：需要訂閱框架生命週期事件（啟動 / 加載 / 狀態變化）時。不需要則跳過，不會影響其他功能的使用。\n\n\nErisPulse 提供統一的鉤子/生命週期系統，用於監控系統各組件的運行狀態，以及實現審計、統計、自訂邏輯等擴展功能。\n\n系統支援三種觸發方式：\n- `await lifecycle.emit(\"event\", data)` — 精簡版，傳遞任意資料（`to=\"Owner\"` 時定向投遞）\n- `lifecycle.emit_sync(\"event\", data)` — 同步版（用於非異步上下文）\n- `await lifecycle.submit_event(\"event\", ...)` — 兼容舊版，自動建構標準事件格式"
     },
     {
       "hash": "2bd43e5aec8f03a8953fe68144c470e1",

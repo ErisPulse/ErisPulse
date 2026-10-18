@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "b22a11bd59c422ace256e6dc5c7890bf",
-  "file_hash": "b22a11bd59c422ace256e6dc5c7890bf",
-  "translated_at": "2026-09-08T14:32:37.470608",
+  "hash": "31fc936a56cf013a047263030216cbf2",
+  "file_hash": "31fc936a56cf013a047263030216cbf2",
+  "translated_at": "2026-10-14T03:13:17.375049",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "c7f4ab1fd5e9621bd10a0cc5846a3d50",
-      "translation": "# Event 包装クラスの詳細\n\nEvent モジュールは、強力な Event 包装クラスを提供し、イベント処理を簡素化します。"
+      "hash": "31988cb78116334d11ec325f3bcaf271",
+      "translation": "# Event 包装クラスの詳細\n\n> [!NOTE]\n> **L1 核心必読**——「ホーム > 読み進む」に記載されている5つのコアドキュメントの1つで、モジュール開発に不可欠です。\n\nEvent モジュールは、強力な Event 包装クラスを提供し、イベント処理を簡素化します。"
     },
     {
       "hash": "64133ca15f87c3eebfe5aeefb05aa0d6",

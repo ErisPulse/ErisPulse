@@ -68,10 +68,10 @@
 
 ## 2. 參數規範詳解
 
-### 2.1 媒體訊息發送協定（`Image` / `Voice` / `Video` / `File`）
+### 2.1 媒體訊息發送協議（`Image` / `Voice` / `Video` / `File`）
 
-本節是媒體發送的**統一協定標準**：模組以同一份程式碼呼叫四個媒體方法，適配器負責將
-`file` 參數的各種形態轉換為平台原生的上傳/發送行為。
+本節是媒體發送的**統一協議標準**：模組以同一份程式碼呼叫四個媒體方法，適配器負責將
+`file` 參數的各種形態轉換為平台原生上傳/發送行為。
 
 #### 2.1.1 `file` 參數的合法形態
 
@@ -79,7 +79,7 @@
 |------|------|-----------|
 | HTTP(S) URL | `https://example.com/image.jpg` | **必須**接受 |
 | 本地檔案路徑 | `/path/to/file.jpg`、`C:\path\to\file.jpg` | **必須**接受 |
-| 二進位數據 | `b"\x89PNG..."` | **必須**接受 |
+| 二進位元數據 | `b"\x89PNG..."` | **必須**接受 |
 | `file://` URI | `file:///path/to/file.jpg` | **應當**接受（可轉發為本地路徑處理） |
 | Base64 字串 / Data URI | `iVBORw0KGgo=...`、`data:image/png;base64,...` | **應當**接受（與 OneBot12 生態慣例相容） |
 
@@ -89,7 +89,7 @@
 
 #### 2.1.2 形態判定順序
 
-適配器實作媒體參數處理時，**應當**按以下順序判定形態：
+適配器實現媒體參數處理時，**應當**按以下順序判定形態：
 
 1. `bytes` 類型 → 直接上傳
 2. 字串以 `http://` / `https://` 開頭 → 按 URL 處理（直接引用或下載後上傳，按平台能力）
@@ -109,7 +109,7 @@ def _resolve_media(self, file: "str | bytes") -> bytes:
         return f.read()
 ```
 
-#### 2.1.3 `File` 的檔案名語義
+#### 2.1.3 `File` 的檔案名語意
 
 `File` 方法簽名：`File(file, filename=None)`（`filename` 為可選參數，基類已內建）。
 
@@ -122,15 +122,15 @@ def _resolve_media(self, file: "str | bytes") -> bytes:
    類型識別與預覽行為）
 
 > `Image` / `Voice` / `Video` 同樣**可以**接受 `filename`（經訊息段 `data.filename` 傳遞），
-> 但僅 `File` 的檔案名有跨平台語義保證。
+> 但僅 `File` 的檔案名有跨平台語意保證。
 
 #### 2.1.4 平台限制的聲明義務
 
-各平台對媒體的大小上限、格式（MIME）、時長（音訊/視訊）等限制不同。適配器**應當**：
+各平台對媒體的大小上限、格式（MIME）、時長（音視頻）等約束不同。適配器**應當**：
 
 - 在適配器文件中聲明支援的媒體類型與限制範圍
 - 超限或不支援的輸入返回**標準錯誤回應**（`status: "failed"`；`retcode` 使用
-  `10002` 或平台語義化錯誤碼，`message` 說明原因），**不得**拋出例外中斷模組邏輯
+  `10002` 或平台語意化錯誤碼，`message` 說明原因），**不得**拋出異常中斷模組邏輯
 
 #### 2.1.5 能力降級階梯
 
@@ -143,7 +143,7 @@ def _resolve_media(self, file: "str | bytes") -> bytes:
 | 媒體類型完全不支援（無檔案能力） | 返回 `retcode=10002`，`message` 注明不支援的資料類型 |
 | 形態不支援（如無法處理 base64） | 返回 `retcode=10002`，**可以**在 `message` 中提示模組改用 URL/bytes |
 
-**禁止**的行為：靜默丟棄（無回應）、拋出例外、要求模組編寫平台分支處理。
+**禁止**的行為：靜默丟棄（無回應）、拋出異常、要求模組編寫平台分支處理。
 
 ### 2.2 @使用者參數規範
 
@@ -181,6 +181,68 @@ send.To("group", "g123").At("123456").At("789012").Text("大家好")
 ```python
 send.To("group", "g123").Reply("msg_123456").Text("收到")
 ```
+
+### 2.4 合併轉發能力（`MergeForward`，可選）
+
+`MergeForward(nodes)` 是**可選的能力方法**：把多段內容打包為「合併轉發 / 富文本摺疊」形式發送，
+由適配器按平台能力決定最佳呈現。與 §1.1 的 `Forward(from_chat_id, message_id)`（轉發**已有**訊息）
+語意不同，二者並存。
+
+> **標準背景**：OneBot12 核心標準沒有 node 訊息段，也沒有合併轉發 API——"訊息結點"是 OneBot v11
+> 生態（go-cqhttp 扩展）的實現層概念，v12 把這類平台特有能力下放給擴展機制。ErisPulse 的落地方式
+> 即擴展機制等價物：**不新增標準訊息段，而是可選能力方法 + `list_sends` 運行時探測**——實現了
+> `MergeForward` 的適配器自動獲得能力，未實現的呼叫方自動回退普通文字，模組零變動。
+
+**方法簽名：**
+
+```python
+def MergeForward(self, nodes: List[Dict]) -> asyncio.Task:
+    """
+    發送合併轉發 / 富文本摺疊訊息
+
+    :param nodes: 合併轉發結點陣列（go-cqhttp 扩展的 OneBot v11 結點格式）：
+        [
+            {
+                "type": "node",
+                "data": {
+                    "user_id": "10000",     # 展示用發送者 id
+                    "nickname": "QvQChat",  # 展示用發送者暱稱
+                    "content": [            # 訊息段陣列，目前為 text 段
+                        {"type": "text", "data": {"text": "【1/3】標題\n正文…"}}
+                    ],
+                },
+            },
+        ]
+    :return: asyncio.Task，await 後返回標準回應格式
+    """
+```
+
+**實現要求：**
+
+1. **平台有原生合併轉發**（OneBot11 系）：**必須**呼叫協議端專用端點
+   （`send_group_forward_msg` / `send_private_forward_msg`）——NapCat 等實現會拒絕
+   `send_msg` 攜帶的 node 段（retcode 1400）；專用端點失敗時**可以**回退 `send_msg` 直發 node 段
+2. **平台無原生轉發但有富文本**（雲湖 / Telegram / Kook / Discord / Matrix 等）：
+   **應當**將結點渲染為平台的富文本摺疊形態（HTML 摺疊卡 / Card / Embed / blockquote 列表），
+   參考樣式與逐適配器任務清單見 `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`
+3. **兩者皆無**：**不得**實現本方法（更不得返回成功卻把 node 字典當純文字發出）——
+   不實現時 `list_sends` 不含 `MergeForward`，呼叫方自動回退普通文字
+4. **失敗語意**：返回標準錯誤回應（`status: "failed"`）或拋出異常均可，呼叫方會回退純文字發送，內容不遺失
+5. **不得**在 `MergeForward` 內部再呼叫 `Raw_ob12` 發送同樣的 nodes（OneBot11 的 `Raw_ob12`
+   已內建純 node 段自動路由，會成環）
+
+**呼叫方探測示例：**
+
+```python
+sends = adapter.list_sends(platform)
+if "MergeForward" in sends:
+    await adapter.Send.To("group", "123").MergedForward(nodes)
+else:
+    await adapter.Send.To("group", "123").Text(plain_text)
+```
+
+> 參考實現：`ErisPulse-OneBot11Adapter`（專用端點 → `send_msg` 回退）；渲染模板與各適配器任務清單見
+> `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`。
 
 ## 3. 平台特有方法命名
 
@@ -455,17 +517,23 @@ info = adapter.send_info("myplatform", "Form")
 ### 媒體發送協議
 - [ ] `file` 參數**必須形態**全部支援：HTTP(S) URL / 本地路徑 / `bytes`（見 §2.1.1）
 - [ ] 形態判定順序符合 §2.1.2（bytes → URL → `file://` → 路徑）
-- [ ] `File` 的檔案名推導順序符合 §2.1.3（顯式 `filename` > URL basename > 路徑 basename > 平台預設）
+- [ ] `File` 的文件名推導順序符合 §2.1.3（顯式 `filename` > URL basename > 路徑 basename > 平台預設）
 - [ ] 平台的媒體限制（大小 / MIME / 時長）已在適配器文件中聲明（§2.1.4）
 - [ ] 不支援的媒體類型按 §2.1.5 降級階梯處理：近緣類型降級或返回 `retcode=10002`，不拋異常、不靜默丟棄
 
+### 合併轉發（可選，見 §2.4）
+- [ ] 平台有原生合併轉發時，`MergeForward` 走協議專用端點，失敗回退 `send_msg`（OneBot11 系）
+- [ ] 平台無原生轉發但有富文本時，`MergeForward` 渲染為平台摺疊形態（HTML 卡 / Card / Embed / blockquote）
+- [ ] 兩者皆無時**不實現** `MergeForward`，不返回成功卻發出 node 字典純文字
+- [ ] `MergeForward` 內部不再調 `Raw_ob12` 轉發同樣 nodes
+
 ### 反向轉換
 - [ ] `Raw_ob12` **已實現**（必須，不可跳過）
-- [ ] `Raw_ob12` 能處理所有標準訊息段（`text`, `image`, `audio`, `video`, `file`, `mention`, `reply`）
-- [ ] `Raw_ob12` 能處理平台擴展訊息段（`{platform}_xxx` 類型）
+- [ ] `Raw_ob12` 能處理所有標準消息段（`text`, `image`, `audio`, `video`, `file`, `mention`, `reply`）
+- [ ] `Raw_ob12` 能處理平台擴展消息段（`{platform}_xxx` 類型）
 - [ ] 標準發送方法（`Text`, `Image` 等）內部委託給 `Raw_ob12`，而非獨立實現轉換邏輯
-- [ ] 不支援的訊息段跳過並記錄警告，不拋出異常
-- [ ] 複合訊息段正確處理（合併或按序拆分）
+- [ ] 不支援的消息段跳過並記錄警告，不拋出異常
+- [ ] 複合消息段正確處理（合併或按序拆分）
 
 ## 11. 消息建構器（MessageBuilder）
 

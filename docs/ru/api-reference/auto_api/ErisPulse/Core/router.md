@@ -1215,6 +1215,31 @@ router 中间件配置变更回调：CORS/安全头需重启进程才能生效
 ---
 
 
+##### `_create_uvicorn_server(config: uvicorn.Config) -> tuple[uvicorn.Server, Callable[[], Any]]`
+
+构建 uvicorn.Server 并解析内嵌启动入口（私有接口缺失时告警回退）
+
+**内部方法**
+内嵌启动优先调用私有方法 ``Server._serve()``（跳过 ``serve()`` 的
+``capture_signals``——后者会抢注进程信号并在退出时重抛，与 SDK 的
+信号管理冲突），该接口自 uvicorn 0.34.0 引入且属私有 API。
+
+兼容性按**能力探测**判定（仅检查接口是否存在、不比较版本）：
+接口存在即直接使用，上游大版本更新若保留该接口则无需跟进发版；
+缺失时仅告警并回退公开 ``serve()``（服务期间进程信号由 uvicorn
+暂时接管，属可接受的降级），建议用户前往 uvicorn 仓库确认其正式
+支持情况。已验证范围见 :data:`UVICORN_COMPAT_RANGE`（与
+pyproject.toml 锁定一致）。
+
+- **config**: 已构建的 :class:`uvicorn.Config`
+
+**返回值**: ``(server, serve_entry)`` 二元组——Server 实例与启动协程
+
+         工厂（调用即返回待调度协程，供 ``asyncio.create_task`` 使用）
+
+---
+
+
 ##### `async start(host: str = DEFAULT_SERVER_HOST, port: int = DEFAULT_SERVER_PORT, ssl_certfile: str | None = None, ssl_keyfile: str | None = None, *, ssl_cert: str | None = None, ssl_key: str | None = None) -> None`
 
 启动路由服务器

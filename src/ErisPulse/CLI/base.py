@@ -18,13 +18,15 @@ class Command(ABC):
     1. 每个命令类必须实现 add_arguments 和 execute 方法
     2. name 和 description 为类属性，必须在子类中定义
     3. aliases 为可选类属性，用于定义命令的简化形式
-    4. execute 方法接收解析后的 args 对象
+    4. category 为可选类属性，决定主帮助分组表中的归类
+    5. execute 方法接收解析后的 args 对象
     {!--< /tips >!--}
     """
 
     name: str = ""  # 命令名称
     description: str = ""  # 命令描述
     aliases: list = []  # 命令别名（简化形式，如 "install" -> ["i", "add"]）
+    category: str = ""  # 主帮助分组类别标识（project/components/config/misc；空串归入 misc）
 
     @abstractmethod
     def add_arguments(self, parser: ArgumentParser):

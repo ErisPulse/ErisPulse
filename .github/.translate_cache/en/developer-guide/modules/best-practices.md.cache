@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "3f62f5477795310a404180b02846c23c",
-  "file_hash": "3f62f5477795310a404180b02846c23c",
-  "translated_at": "2026-09-19T05:33:58.992010",
+  "hash": "4d1645edcb56634c3d7bf50b59fc6e03",
+  "file_hash": "4d1645edcb56634c3d7bf50b59fc6e03",
+  "translated_at": "2026-10-14T03:14:57.991603",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "9115c2d5bf6fadeda7bab5532afd830e",
-      "translation": "# Module Development Best Practices\n\nThis document provides best practices for developing modules in ErisPulse."
+      "hash": "8a9c137db45ca4a022e37a0ed6f29497",
+      "translation": "# Best Practices for Module Development\n\n> [!TIP]\n> **When to read this**: It is recommended to read after completing the first module (engineering best practices). Skip if not needed, as it does not affect the use of other features.\n\nThis document provides best practice recommendations for ErisPulse module development."
     },
     {
       "hash": "c38ca276d93f3b5d3da66971665ca939",

@@ -1,10 +1,11 @@
 """
 ErisPulse 适配器加载器
 
-专门用于从 PyPI 包加载和初始化适配器
+从 PyPI entry-points 与本地插件文件夹加载和初始化适配器
 
 {!--< tips >!--}
-1. 适配器必须通过 entry-points 机制注册到 erispulse.adapter 组
+1. 适配器必须通过 entry-points 机制注册到 erispulse.adapter 组，
+   或放入本地插件目录（默认 ``plugins/``，经 ``discover_adapters`` 发现）
 2. 适配器类必须继承 BaseAdapter
 3. 适配器不适用懒加载
 {!--< /tips >!--}
@@ -27,7 +28,8 @@ class AdapterLoader(BaseLoader):
     """
     适配器加载器
 
-    负责从 PyPI entry-points 加载适配器
+    负责从 PyPI entry-points 与本地插件文件夹加载适配器
+    （本地插件优先：与 entry-point 适配器同名时覆盖，便于本地覆盖调试）
 
     {!--< tips >!--}
     使用方式：
@@ -40,6 +42,12 @@ class AdapterLoader(BaseLoader):
         """初始化适配器加载器"""
         super().__init__("ErisPulse.adapters")
         self._finder = AdapterFinder()
+        # 本地适配器插件扫描器（与模块插件共享 plugins/ 目录约定与导入机制）
+        from .plugin_folder import PluginFolderLoader
+
+        self._plugin_loader = PluginFolderLoader()
+        # 最近一次加载发现的本地适配器插件（供后续热重载等能力使用）
+        self._local_adapters: dict[str, dict[str, Any]] = {}
 
     def _get_entry_point_group(self) -> str:
         """
@@ -98,6 +106,9 @@ class AdapterLoader(BaseLoader):
                 ) = await self._process_entry_point(
                     entry_point, objs, enabled_list, disabled_list, manager_instance
                 )
+
+            # 本地适配器插件：发现后并入结果，本地优先（同名覆盖 entry-point）
+            self._merge_plugin_folder(objs, enabled_list, disabled_list, manager_instance)
 
             logger.print_section_separator()
 
@@ -242,6 +253,73 @@ class AdapterLoader(BaseLoader):
             )
 
         return objs, enabled_list, disabled_list, is_new
+
+    # ==================== 本地适配器插件 ====================
+
+    def _merge_plugin_folder(
+        self,
+        objs: dict[str, Any],
+        enabled_list: list[str],
+        disabled_list: list[str],
+        manager_instance: Any,
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        发现本地适配器插件并并入加载结果
+
+        本地插件优先：与 entry-point 适配器同名时，本地插件覆盖安装包条目
+        （便于本地覆盖调试）。启用状态沿用 ``ErisPulse.adapters.status``。
+
+        :param objs: 适配器对象字典（原地修改）
+        :param enabled_list: 启用列表（原地修改）
+        :param disabled_list: 禁用列表（原地修改）
+        :param manager_instance: 适配器管理器实例
+        """
+        try:
+            found = self._plugin_loader.discover_adapters()
+        except Exception as e:
+            logger.error(i18n.t("loader.plugin.discovery_failed", error=e))
+            return
+
+        self._local_adapters = found
+
+        for plugin_name, item in found.items():
+            # 与 entry-point 一致：新适配器写入启用状态配置
+            if not manager_instance.exists(plugin_name):
+                manager_instance._config_register(plugin_name)
+
+            if not manager_instance.is_enabled(plugin_name):
+                # 被禁用的本地适配器：若覆盖了 entry-point 同名适配器则一并移除
+                if plugin_name in objs:
+                    del objs[plugin_name]
+                    if plugin_name in enabled_list:
+                        enabled_list.remove(plugin_name)
+                if plugin_name not in disabled_list:
+                    disabled_list.append(plugin_name)
+                continue
+
+            # 本地优先：同名覆盖 entry-point
+            if plugin_name in objs:
+                logger.warning(
+                    i18n.t("loader.adapter.plugin_override", name=plugin_name)
+                )
+
+            # 构造与 entry-point 加载路径同构的 adapterInfo 并挂载到模块对象
+            module_obj = item["module_obj"]
+            if not hasattr(module_obj, "adapterInfo") or not isinstance(
+                module_obj.adapterInfo, dict
+            ):
+                module_obj.adapterInfo = {}
+            module_obj.adapterInfo[plugin_name] = {
+                "meta": item["meta"],
+                "adapter_class": item["adapter_class"],
+            }
+
+            objs[plugin_name] = module_obj
+            if plugin_name not in enabled_list:
+                enabled_list.append(plugin_name)
+            if plugin_name in disabled_list:
+                disabled_list.remove(plugin_name)
 
     async def register_to_manager(
         self, adapters: list[str], adapter_objs: dict[str, Any], manager_instance: Any

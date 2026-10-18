@@ -386,9 +386,12 @@ class BaseEventHandler:
             },
         )
 
-        # 忽略自己发送的消息
+        # 忽略自己发送的消息（self 标识取 account_id or user_id，与全框架口径一致：
+        # 仅填 self.account_id 的适配器此前会漏判导致机器人消息自激分发）
         if self.event_type == EVENT_TYPE_MESSAGE:
-            if event.get("self", {}).get("user_id") == event.get("user_id"):
+            _self_info = event.get("self", {})
+            _self_id = _self_info.get("account_id") or _self_info.get("user_id")
+            if _self_id is not None and str(_self_id) == str(event.get("user_id")):
                 event_config = get_event_config()
                 ignore_self = event_config.get("message", {}).get("ignore_self", True)
                 if ignore_self:
@@ -419,11 +422,32 @@ class BaseEventHandler:
             for _priority, group_iter in groupby(self.handlers, key=lambda h: h["priority"]):
                 group = list(group_iter)
 
-                # 过滤出满足条件的处理器（条件函数 + 作用域模块维度 + 事件作用域文本过滤）
+                # 过滤出满足条件的处理器（条件函数 + 作用域模块维度 + 事件作用域文本过滤）。
+                # 条件函数逐个异常隔离：一个坏模块的条件崩溃只影响自身命中与否，
+                # 不得拖死同优先级组的其它处理器（含命令分发器）
+                def _condition_ok(h: dict) -> bool:
+                    condition = h.get("condition")
+                    if not condition:
+                        return True
+                    try:
+                        return bool(condition(event))
+                    except Exception as _cond_err:
+                        _h_qualname = getattr(
+                            h["func"], "__qualname__", getattr(h["func"], "__name__", str(h["func"]))
+                        )
+                        logger.error(
+                            i18n.t(
+                                "core.event.condition_error",
+                                handler=_h_qualname,
+                                error=_cond_err,
+                            )
+                        )
+                        return False
+
                 active = [
                     h
                     for h in group
-                    if (not h.get("condition") or h["condition"](event))
+                    if _condition_ok(h)
                     and self._is_scope_allowed(h, scope_platform, scope_bot, scope_session)
                     and self._is_scope_handler_ok(h, event)
                 ]

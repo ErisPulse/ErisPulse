@@ -25,6 +25,7 @@ class UpgradeCommand(Command):
     name = "upgrade"
     description = i18n.t("cli.upgrade.description")
     aliases = ["up"]
+    category = "components"
 
     def __init__(self):
         """

@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "0626f46dcd00c6b58c88c770766f4846",
-  "file_hash": "0626f46dcd00c6b58c88c770766f4846",
-  "translated_at": "2026-09-07T10:43:37.557193",
+  "hash": "9cf464142bb2557725246f5d5bffa2c6",
+  "file_hash": "9cf464142bb2557725246f5d5bffa2c6",
+  "translated_at": "2026-10-14T03:08:12.328965",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "8cedceeb3e7a6489b7d08a60f9b61a6a",
-      "translation": "# Internationalization (i18n) System\n\nErisPulse v2.5.0 and later includes full internationalization support. Both the framework core and the CLI interface can automatically switch their displayed text based on your system language, and also support external modules registering their own translations."
+      "hash": "0350cc89a0685bfa798f57bb1a9a0d3a",
+      "translation": "# Internationalization (i18n) System\n\n> [!TIP]\n> **When to read this**: When you need multi-language text, translation registration, or language detection. If not needed, you can skip this, which will not affect the use of other features.\n\nStarting from ErisPulse v2.5.0, the framework includes built-in support for complete internationalization. Both the core framework and the CLI interface can automatically switch the displayed text according to your system language, and it also supports external modules to register their own translations."
     },
     {
       "hash": "259f0588f95ecf4088fcb90d44572bad",

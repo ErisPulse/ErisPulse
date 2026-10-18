@@ -31,6 +31,7 @@ class SelfUpdateCommand(Command):
     name = "self-update"
     description = i18n.t("cli.self_update.description")
     aliases = ["su", "update"]
+    category = "misc"
 
     def __init__(self):
         """

@@ -1,5 +1,8 @@
 # 适配器开发入门
 
+> [!TIP]
+> **什么时候需要读这篇**：适配器开发路径的入口篇（必读）。从零写一个适配器、了解适配器的职责边界与项目结构都在这里；读完后再按需进入 [事件转换器](converter.md) 与 [SendDSL 详解](send-dsl.md)。
+
 本指南帮助你开始开发 ErisPulse 适配器，连接新的消息平台。
 
 ## 适配器简介
@@ -45,6 +48,18 @@ MyAdapter/
 ## 快速开始
 
 ### 1. 创建项目
+
+推荐直接用脚手架生成完整骨架（含 pyproject、主类、转换器）：
+
+```bash
+# 标准项目（打包发布用）
+epsdk create adapter -n MyAdapter
+
+# 本地适配器插件（免打包，放入 plugins/ 目录即可被自动加载，见下方"本地开发"）
+epsdk create adapter -n MyAdapter --local
+```
+
+也可以手动创建：
 
 ```bash
 mkdir MyAdapter && cd MyAdapter
@@ -350,7 +365,42 @@ async def handle_friend_request(event):
 from .Core import MyAdapter
 ```
 
+## 本地开发（免打包）
+
+与模块一致，适配器也可以放入项目的本地插件目录（默认 `plugins/`，可通过 `ErisPulse.framework.plugins_dir` 配置）直接开发，**无需 `pip install -e .`**：
+
+```bash
+# 生成本地适配器插件
+epsdk create adapter -n MyAdapter --local
+# 生成结构：
+# plugins/
+# └── MyAdapter/
+#     ├── __init__.py
+#     ├── Core.py
+#     └── Converter.py
+```
+
+框架启动时自动扫描插件目录并加载其中的模块与适配器（与 entry-point 安装包同等待遇：启用状态、配置声明、热更新、卸载清理全部一致）：
+
+- **识别规则**：包目录（含 `__init__.py`）或单 `.py` 文件均可；优先识别 `Main` 命名类，否则取插件内首个 `BaseAdapter` / `BaseModule` 子类
+- **同名覆盖**：本地插件与 PyPI 安装的适配器同名时，本地插件优先（便于覆盖调试）
+- **热重载**：`sdk.enable_plugin_hot_reload()` 开启的插件目录监控同样覆盖适配器；适配器代码级热重载将在 2.11 提供（当前版本修改适配器代码后需重启框架生效）
+
+### 从本地插件到发布
+
+本地验证完成后，用 `pack` 子命令把插件一键转换为可发布的标准项目（交互式选择插件、补全元信息，生成含 entry-point 的 pyproject）：
+
+```bash
+epsdk create pack
+# 选择插件目录中的插件 → 输入项目名/描述/作者 → 生成 MyAdapter/ 项目目录
+cd MyAdapter
+pip install -e .   # 转为标准安装；随后按发布流程上传 PyPI
+```
+
+> **提示**：转换完成后建议移除 `plugins/` 中的原件，避免本地插件与安装包重复加载（两者同名时本地优先，会让你误以为安装包生效）。
+
 ## 依赖声明（可选，2.8.0+）
+
 
 适配器可以声明对其它适配器或模块的依赖，实现适配器间联动与可选功能：
 

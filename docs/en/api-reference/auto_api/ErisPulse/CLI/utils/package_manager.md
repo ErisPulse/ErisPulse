@@ -47,7 +47,7 @@ uv 会自动创建/使用项目 `.venv` 并生成 uv.lock——安装与依赖�
 
 手动向 pyproject.toml 的 project.dependencies 追加依赖（pip 回退路径用）
 
-使用 tomlkit 保留文件注释与格式。
+使用 tomlclass 无损引擎保留文件注释与格式。
 
 - **project_dir**: 项目目录
 - **packages**: 依赖包名列表

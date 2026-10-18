@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "8dc7ace4046cb78f768f4121b4a8ea07",
-  "file_hash": "8dc7ace4046cb78f768f4121b4a8ea07",
-  "translated_at": "2026-10-09T14:51:05.822137",
+  "hash": "34c7b2051108bbddcd7a6a2afc47f64e",
+  "file_hash": "34c7b2051108bbddcd7a6a2afc47f64e",
+  "translated_at": "2026-10-14T03:07:23.335223",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "04f16c60b71455fcd2ade89ac0c3cd66",
-      "translation": "# Transcript\n\nThe Transcript Inbox automatically records messages sent and received by the bot (organized by session key `platform:detail_type:target_id`), providing historical data for conversation recovery (`event.history`), shadow module diff, cold start replay, and more. This document explains its **storage model, what each retention policy knob protects**, and the real cost of runtime override APIs and放开限制.\n\n> Before changing any limits, please read the \"Risks and Audits\" section first—each knob exists for a reason."
+      "hash": "20cf1056a1a015d625824a9719db545b",
+      "translation": "# Transcript (Conversation Inbox)\n\n> [!TIP]\n> **When to read this**: When you need message history, conversation recovery, or want to adjust the retention policy for the inbox. If not needed, you can skip this section without affecting other features.\n\nThe conversation inbox automatically records messages sent and received by the bot (organized by the session key `platform:detail_type:target_id`), providing historical data for conversation recovery (`event.history`), shadow module diff, cold-start replay, and more. This document explains its **storage model**, what each retention policy knob protects, and the real cost of runtime override APIs and relaxed restrictions.\n\n> Before changing any limits, please read the \"Risks and Auditing\" section first—each knob exists for a specific reason."
     },
     {
       "hash": "5d001412bcfdafe02d2eb82f8403e55a",

@@ -58,6 +58,7 @@ class InitCommand(Command):
     name = "init"
     description = i18n.t("cli.init.description")
     aliases = []
+    category = "project"
 
     def __init__(self):
         """
@@ -88,6 +89,13 @@ class InitCommand(Command):
             default=None,
             help=i18n.t("cli.init.path_dir_help"),
         )
+        parser.add_argument(
+            "--adapter",
+            "-a",
+            action="append",
+            default=None,
+            help=i18n.t("cli.init.adapter_help"),
+        )
 
     def execute(self, args):
         self.no_uv = getattr(args, "no_uv", False)
@@ -113,17 +121,23 @@ class InitCommand(Command):
                 target_dir = p.parent
 
         create_venv = not self.no_venv
+        adapter_preset = self._parse_adapter_preset(getattr(args, "adapter", None))
 
         if args.quick:
             if here:
                 name = project_name or Path.cwd().name
                 success = self._init_project(
-                    name, [], in_current_dir=True, create_venv=create_venv
+                    name, adapter_preset, in_current_dir=True, create_venv=create_venv
                 )
+                if success and adapter_preset:
+                    self._apply_adapter_preset(Path(), adapter_preset)
             elif project_name:
                 success = self._init_project(
-                    project_name, [], target_dir=target_dir, create_venv=create_venv
+                    project_name, adapter_preset, target_dir=target_dir, create_venv=create_venv
                 )
+                if success and adapter_preset:
+                    project_path = (Path(target_dir) if target_dir else Path()) / project_name
+                    self._apply_adapter_preset(project_path, adapter_preset)
             else:
                 success = self._interactive_init(
                     args.project_name,
@@ -131,6 +145,7 @@ class InitCommand(Command):
                     here,
                     target_dir=target_dir,
                     create_venv=create_venv,
+                    adapter_preset=adapter_preset,
                 )
         else:
             success = self._interactive_init(
@@ -139,6 +154,7 @@ class InitCommand(Command):
                 here,
                 target_dir=target_dir,
                 create_venv=create_venv,
+                adapter_preset=adapter_preset,
             )
 
         if success:
@@ -213,12 +229,7 @@ class InitCommand(Command):
             config_file = project_path / "config" / "config.toml"
             if not config_file.exists():
                 with config_file.open("w", encoding="utf-8") as f:
-                    f.write(st.t("init.config_toml_header") + "\n\n")
-                    f.write("[ErisPulse.server]\n")
-                    f.write('host = "0.0.0.0"\n')
-                    f.write("port = 8000\n\n")
-                    f.write("[ErisPulse.logger]\n")
-                    f.write('level = "INFO"\n')
+                    f.write(st.initial_config_toml())
 
             example_file = project_path / "config" / "config.full.example"
             if not example_file.exists():
@@ -405,6 +416,52 @@ class InitCommand(Command):
             "email": i18n.t("cli.init.adapter_desc_email"),
         }
 
+    @staticmethod
+    def _parse_adapter_preset(raw) -> list:
+        """
+        解析 ``--adapter`` 参数为去重的适配器名列表
+
+        支持重复传参与逗号分隔两种写法（``-a yunhu -a telegram`` 等价于
+        ``-a yunhu,telegram``）；空片段与重复名自动剔除，保持首现顺序。
+
+        :param raw: [list|None] argparse append 收集到的原始值列表
+        :return: [list] 去重后的适配器名称列表（无传参时为空列表）
+        """
+        if not raw:
+            return []
+        names: list = []
+        for item in raw:
+            for name in str(item).split(","):
+                name = name.strip()
+                if name and name not in names:
+                    names.append(name)
+        return names
+
+    def _apply_adapter_preset(self, project_path: Path, adapter_names: list):
+        """
+        应用 ``--adapter`` 预选：启用状态开关并安装到项目环境
+
+        显式传参视为同意安装，不再询问；安装后的配置向导仅在可交互
+        环境衔接（``_install_adapters`` 内部已守卫）。
+
+        :param project_path: [Path] 项目路径（配置文件重定向目标）
+        :param adapter_names: [list] 适配器名称列表（去重、非空）
+        """
+        from ErisPulse import config
+
+        config_file = Path(project_path) / "config" / "config.toml"
+        config.CONFIG_FILE = str(config_file)
+        config.reload()
+
+        for name in adapter_names:
+            config.setConfig(f"ErisPulse.adapters.status.{name}", True)
+        config.force_save()
+        console.print(
+            f"[dim]  {i18n.t('cli.init.adapters_enabled', count=len(adapter_names))}[/]"
+        )
+
+        self._install_adapters(adapter_names)
+
     def _interactive_init(
         self,
         project_name: str | None = None,
@@ -412,6 +469,7 @@ class InitCommand(Command):
         here: bool = False,
         target_dir: Path | None = None,
         create_venv: bool = True,
+        adapter_preset: list | None = None,
     ) -> bool:
         """
         交互式初始化项目，引导用户配置项目位置及基本参数
@@ -421,6 +479,8 @@ class InitCommand(Command):
         :param here: [bool] 是否在当前目录初始化 (默认: False)
         :param target_dir: [Path | None] 项目父目录 (默认: None)
         :param create_venv: [bool] 是否创建虚拟环境并安装依赖 (默认: True)
+        :param adapter_preset: [list] ``--adapter`` 预选的适配器列表，传入时
+            跳过适配器问询与选择 (默认: None)
         :return: [bool] 初始化成功返回 True，失败返回 False
         """
         try:
@@ -482,7 +542,7 @@ class InitCommand(Command):
 
             if not self._init_project(
                 project_name,
-                [],
+                list(adapter_preset or []),
                 target_dir=target_dir,
                 create_venv=create_venv,
                 git_init=git_init,
@@ -527,7 +587,10 @@ class InitCommand(Command):
                     console.print(f"[warning]  {i18n.t('cli.init.invalid_port', port=new_port)}[/]")
                     new_port = _input(">")
 
-            if confirm(
+            if adapter_preset:
+                # 显式预选：跳过问询与列表选择，直接启用并安装
+                self._apply_adapter_preset(project_path, adapter_preset)
+            elif confirm(
                 f"\n  [cyan]{i18n.t('cli.init.configure_adapters_prompt')}[/]",
                 default=True,
             ):
@@ -594,16 +657,15 @@ class InitCommand(Command):
         console.print(f"[dim]  {i18n.t('cli.init.adapters_enabled', count=len(enabled))}[/]")
 
         if enabled and confirm(f"  [cyan]{i18n.t('cli.init.install_selected_prompt')}[/]", default=True):
-            self._install_adapters(enabled, adapters)
+            self._install_adapters(enabled)
 
-    def _install_adapters(self, adapter_names, adapters_info):
+    def _install_adapters(self, adapter_names: list[str]):
         """
         安装选中的适配器
 
         安装成功后衔接交互式配置向导（写入新项目的 config.toml）
 
         :param adapter_names: [list] 适配器简称列表
-        :param adapters_info: [dict] 适配器信息
         """
         from ErisPulse import config
 

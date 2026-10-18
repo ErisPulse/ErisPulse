@@ -92,18 +92,18 @@
 | 严重性 | 数量 |
 |--------|------|
 | 🔴 严重 | 16 |
-| 🟡 中等 | 18 |
+| 🟡 中等 | 26 |
 | 🟢 轻微 | 3 |
-| **合计** | **37** |
+| **合计** | **45** |
 
 | 类型 | 数量 |
 |------|------|
-| 适配器 | 6 |
-| 配置系统 | 11 |
-| 事件系统 | 7 |
+| 事件系统 | 12 |
+| 配置系统 | 12 |
+| 适配器 | 7 |
 | CLI | 3 |
 | 存储 | 3 |
-| 加载系统 | 3 |
+| 加载系统 | 4 |
 | 路由 | 2 |
 | 客户端 | 1 |
 | 运行时 | 1 |
@@ -1016,3 +1016,102 @@ _apply_rate_limit 解析 window=3600（100/hour）
 **严重性**: 🟡 中等
 
 **类型**: 配置系统
+
+
+### [BUG-040] 平台切段消息的命令尾部参数静默丢失
+
+**问题**: 平台把一条消息切成多个 text 段（如 `/kick` 与参数之间夹着 mention 段、或输入法分段）时，命令分发只取第一个 text 段做匹配——`/艾特 @xxx 123` 解析为无参数的 `艾特`，声明了 `args=` 的命令直接报"参数缺失"，且无任何留痕。
+**原因**: `command.py` 的文本提取循环取到首个 `type=="text"` 段后 `break`，其余段（含全部非文本段）被丢弃。
+**影响版本**: 2.6.0（命令分发引入）- 2.10.0
+**修复版本**: 2.10.1-dev.0
+**修复内容**: 命令文本改为按段顺序收集全部 text 段空格拼接；mention/图片夹层不再导致命令整体无法解析；同步补齐畸形段容错（`message` 为 None/字符串/非 dict 段不再击穿分发器）。
+**回归测试**: tests/unit/test_unit_command_multiseg.py
+
+**严重性**: 🟡 中等
+**类型**: 事件系统
+
+### [BUG-041] 被拒绝命令经 alt_message 整链重跑：重复回复与权限函数副作用双触发
+
+**问题**: 适配器的 `alt_message` 与消息段文本不一致时（如 alt 含 @文本前缀），命中命令被 scope/ACL/master/permission 拒绝后，分发器用 alt_message 把整条链重跑一遍——用户收到两条"权限不足"回复，自定义权限函数（常带查库/计数副作用）被调用两次。
+**原因**: 拒绝路径 `return False` 与"未命中命令"共用同一返回值，分发器据此认为可尝试 alt 兜底；而事件在拒绝前已被认领，重跑仅多执行了回复与权限判定。
+**影响版本**: 2.9.0（治理/权限链成形）- 2.10.0
+**修复版本**: 2.10.1-dev.0
+**修复内容**: 文本处理改三态契约（unmatched/consumed/rejected）——命中注册命令后（无论拒绝与否）不再 alt 回退；仅未命中任何命令时保持 alt 兜底。
+**回归测试**: tests/unit/test_unit_command_multiseg.py::test_denied_command_not_rerun_via_alt
+
+**严重性**: 🟡 中等
+**类型**: 事件系统
+
+### [BUG-042] 命令处理器内注册的 wait_reply 被同一条触发消息立即消费
+
+**问题**: 命令执行体内调用 `wait_reply` / 注册交互等待时，等待被同一条命令消息立即命中——交互流首问被跳过，"用户回复"实为命令文本本身（答非所问/数据污染）。
+**原因**: `_handle_message` 在方法开头与结尾各调用一次 `interaction.resolve`，命令执行后结尾的二次 resolve 会命中执行期间新注册的等待；cmdpass 关闭时 alt 缺失场景判定为空串直接放行，加重了该问题。
+**影响版本**: 2.8.0（交互会话系统引入）- 2.10.0
+**修复版本**: 2.10.1-dev.0
+**修复内容**: 分发链收敛为单次 `interaction.resolve`（方法开头处），删除结尾二次调用；等待统一由下一条消息消费。
+**回归测试**: tests/unit/test_unit_command_multiseg.py::test_wait_reply_not_consumed_by_command_trigger
+
+**严重性**: 🟡 中等
+**类型**: 事件系统
+
+### [BUG-043] select() 同键多路等待后者静默取消前者
+
+**问题**: `event.select()` 的多条期望推导出同一会话键（同 user 不同 pattern、多条 session 期望等）时，后注册路把先注册路以"冲突"取消，select 直接抛 `InteractionCancelled` 而非文档承诺的超时返回 `(None, None)`。
+**原因**: 每路独立调用 `interaction.register`，其互斥语义对同键旧等待发 `REASON_CONFLICT` 取消；注释声称"同 user 多路因事件副本独立互不冲突"不成立——副本只改 user_id，同 user 多路的键完全相同。
+**影响版本**: 2.9.0（select 引入）- 2.10.0
+**修复版本**: 2.10.1-dev.0
+**修复内容**: select 改为聚合等待——全部期望合并为自定义 matcher 的单条目（按键集合登记、共享同一 future），任一路命中即返回对应下标；同键多路天然共存。
+**回归测试**: tests/unit/test_unit_command_multiseg.py::test_select_same_user_multi_branch
+
+**严重性**: 🟡 中等
+**类型**: 事件系统
+
+### [BUG-044] BaseConverter.at() 产出 OB11 遗留 "at" 段，全框架 mention 判定不识别
+
+**问题**: 适配器用 `BaseConverter.at()` 组装入站事件时，`must_at_bot` / `has_mention()` / `on_at_message` 全部失明——@机器人命令在群里静默失效。
+**原因**: `at()` 产出 `{"type": "at"}`（OB11 形态），而框架全部 mention 判定与构建侧（MessageBuilder/发送修饰器）均为 OB12 的 `"mention"`，双轨并存且无任何告警。
+**影响版本**: 引入版本不早于 2.5.0 - 2.10.0
+**修复版本**: 2.10.1-dev.0
+**修复内容**: `at()` 改产 `{"type": "mention", "data": {"user_id": ...}}`（方法名保留别名，新增 `mention` 别名）。
+**回归测试**: tests/unit/test_unit_command_multiseg.py::test_converter_at_produces_mention
+
+**严重性**: 🟡 中等
+**类型**: 适配器
+
+### [BUG-045] 无 alt_message 的适配器上交互原语永久超时、命令穿透失效
+
+**问题**: 适配器只填 message 段不填 `alt_message` 时：`confirm` / `choose` / `collect` 对用户明文回复（如"是"）永久等待；等待期间的已注册命令永远无法穿透执行；`Event.get_text()` 返回空串导致脚手架示例静默失效。
+**原因**: 上述路径全部直取 `alt_message` 字符串、无消息段回退——框架"alt_message 为适配器可选字段"的契约下，仅段填充是合法形态。
+**影响版本**: 各交互原语引入版本 - 2.10.0
+**修复版本**: 2.10.1-dev.0
+**修复内容**: 统一走 `alt_message` 优先 + text 段回退的 `extract_text` 口径（交互原语五处取值/校验点、cmdpass 判定、`Event.get_text()/get_message_text()`）。
+**回归测试**: tests/unit/test_unit_command_multiseg.py
+
+**严重性**: 🟡 中等
+**类型**: 事件系统
+
+### [BUG-046] 声明式配置模板的嵌套子表头漂移为顶层表
+
+**问题**: 嵌套 dataclass 声明的配置（ConfigClass 内嵌 dataclass 字段）首次生成配置模板时，子表头 `[Nested]` 落在文件顶层而非组件节内——适配器读 `cfg.嵌套字段` 拿不到值；`config.full.example` 中同样错位。
+**原因**: 模板生成器对嵌套 dataclass 渲染相对表头（`[Nested]`），而 TOML 表头语义是从根算起的绝对路径；`setConfigTemplate` 旧实现把解析后的表对象搬进组件节、`full.example` 直接文本拼装，两条路径都未把相对表头重锚到组件路径下。
+**影响版本**: 2.10.0 - 2.10.1（嵌套 dataclass 模板渲染随该版本引入）
+**修复版本**: 2.10.2
+**修复内容**: `setConfigTemplate` 按模板解析出的子表路径集合精确重锚表头（`[Nested]` → `[组件名.Nested]`）；`config.full.example` 生成侧改传 `_prefix` 直接产出绝对表头。
+**回归测试**: tests/unit/test_unit_config.py::TestTomlclassEngineMigration::test_template_write_idempotent_and_nested_anchored
+
+**严重性**: 🟡 中等
+**类型**: 配置系统 / 适配器
+
+---
+
+### [BUG-047] 服务目录全量枚举漏掉懒加载模块
+
+**问题**: `sdk.module.services()` 全量目录对未实例化（懒加载）模块一律跳过——模块声明了 `meta.services` 也不出现在目录中，以目录为发现入口的消费方（AI 智能体、help 模块等）无法发现其服务；单模块精确查询 `services("Name")` 与拓扑 `get_topology()` 不受影响。
+**原因**: `ModuleManager.services()` 全量枚举分支对无契约缓存（未加载）的模块在**现场解析契约之后**仍无条件 `continue`——本意是跳过"未声明服务的模块"，实际把未加载模块整体跳过了；已加载模块因加载时写入契约缓存不受影响。
+**影响版本**: 2.9.0 - 2.10.1（模块 RPC 与服务目录随 2.9.0 引入）
+**修复版本**: 2.10.2
+**修复内容**: 删除无条件跳过，统一由"解析结果为空才跳过"裁决；未加载模块现场解析 `get_meta().services`（与 `module.call()` 白名单同口径），声明了服务的照常进入目录。
+**回归测试**: tests/unit/test_unit_module_rpc.py::TestServicesDirectory::test_lazy_declared_module_in_full_directory
+
+**严重性**: 🟡 中等
+**类型**: 加载系统

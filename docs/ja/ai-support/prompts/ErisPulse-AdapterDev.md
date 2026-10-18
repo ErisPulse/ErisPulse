@@ -2308,22 +2308,25 @@ if TYPE_CHECKING:
 
 ### 适配器开发入门
 
-# アダプター開発入門
+# アダプタ開発入門
 
-このガイドは、ErisPulse アダプターを開発し、新しいメッセージプラットフォームに接続する手順を説明します。
+> [!TIP]
+> **この記事を読むべきタイミング**：アダプタ開発の入門編（必読）。ゼロからアダプタを作成し、アダプタの役割とプロジェクト構造を理解するにはここを読む必要があります。読了後は、[イベントコンバーター](converter.md) と [SendDSL 詳解](send-dsl.md) に進んでください。
 
-## アダプターの概要
+このガイドは、ErisPulse アダプタの開発を開始し、新しいメッセージプラットフォームを接続するための手引きです。
 
-### アダプターとは何か
+## アダプタ概要
 
-アダプターは、ErisPulse と各メッセージプラットフォームの間の橋渡し役であり、以下の機能を担います：
+### アダプタとは何か
 
-1. **正方向変換**：プラットフォームのイベントを受け取り、OneBot12 標準フォーマットに変換する（Converter）
-2. **逆方向変換**：OneBot12 メッセージセグメントをプラットフォームの API 呼び出しに変換する（`Raw_ob12`）
+アダプタは、ErisPulse と各メッセージプラットフォームの間の橋渡し役であり、以下の機能を担います：
+
+1. **正方向変換**：プラットフォームイベントを受け取り、OneBot12 標準形式に変換する（Converter）
+2. **逆方向変換**：OneBot12 メッセージセグメントをプラットフォーム API 呼び出しに変換する（`Raw_ob12`）
 3. プラットフォームとの接続を管理する（WebSocket/WebHook）
 4. 統一された SendDSL メッセージ送信インターフェースを提供する
 
-### アダプターのアーキテクチャ
+### アダプタのアーキテクチャ
 
 ```mermaid
 flowchart LR
@@ -2333,13 +2336,13 @@ flowchart LR
     end
     subgraph send["逆方向変換（送信）"]
         direction TB
-        M2["モジュールがメッセージを構築"] --> R1["Send.Raw_ob12()"] --> N1["プラットフォームの API 呼び出し"] --> R2["標準レスポンスフォーマット"]
+        M2["モジュールがメッセージを構築"] --> R1["Send.Raw_ob12()"] --> N1["プラットフォームのネイティブ API 呼び出し"] --> R2["標準レスポンス形式"]
     end
 ```
 
-## 目次構造
+## ディレクトリ構造
 
-標準的なアダプターパッケージ構造：
+標準的なアダプタパッケージ構造は以下の通りです：
 
 ```
 MyAdapter/
@@ -2348,13 +2351,25 @@ MyAdapter/
 ├── LICENSE                 # ライセンス
 └── MyAdapter/
     ├── __init__.py          # パッケージエントリ
-    ├── Core.py               # アダプターの主クラス
-    └── Converter.py          # イベント変換器
+    ├── Core.py               # アダプタ主クラス
+    └── Converter.py          # イベントコンバーター
 ```
 
 ## 早速始める
 
 ### 1. プロジェクトの作成
+
+スクリプトを使って完全な骨格を生成することを推奨します（pyproject、主クラス、コンバーターを含む）：
+
+```bash
+# 標準プロジェクト（パッケージ化・公開用）
+epsdk create adapter -n MyAdapter
+
+# ローカルアダプタプラグイン（パッケージ化不要、plugins/ ディレクトリに配置すると自動的にロードされる、下記「ローカル開発」参照）
+epsdk create adapter -n MyAdapter --local
+```
+
+手動で作成することも可能です：
 
 ```bash
 mkdir MyAdapter && cd MyAdapter
@@ -2366,14 +2381,14 @@ mkdir MyAdapter && cd MyAdapter
 [project]
 name = "ErisPulse-MyAdapter"
 version = "1.0.0"
-description = "MyAdapterプラットフォームアダプター"
+description = "MyAdapter プラットフォームアダプタ"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
 dependencies = [
-    "ErisPulse>=2.4.0"  # ErisPulse は aiohttp を内蔵しているため、通常は個別に依存関係を指定する必要はない
+    "ErisPulse>=2.4.0"  # ErisPulse には aiohttp が内蔵されているため、通常は個別に依存関係を宣言する必要はない
 ]
 
 [project.urls]
@@ -2383,14 +2398,14 @@ dependencies = [
 "MyAdapter" = "MyAdapter:MyAdapter"
 ```
 
-### 3. アダプターの主クラスの作成
+### 3. アダプタ主クラスの作成
 
-フレームワークは `ConfigClass` / `AccountConfigClass` を用いた宣言的設定管理を提供しており、アダプターは設定クラスを宣言するだけで自動的にロード、検証、設定テンプレートの生成が行われます。
+フレームワークは `ConfigClass` / `AccountConfigClass` を提供しており、宣言的な設定管理が可能。アダプタは設定クラスを宣言するだけで自動的にロード、検証、設定テンプレートの生成が行われます。
 
 ```python
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
-# 推奨のルートインポート（2.10+）：一般的に使用されるシンボルはルートパッケージから直接インポートし、深いパスも互換性がある
+# 推奨のルートインポート（2.10+）：頻出シンボルはルートパッケージから直接インポートし、深いパスも互換性がある
 from ErisPulse import BaseAdapter, BaseConfig
 
 @dataclass
@@ -2407,7 +2422,7 @@ class MyAdapterConfig(BaseConfig):
     token: str = field(
         default="",
         metadata={
-            "description": {"i18n": "my_adapter.token", "default": "プラットフォーム Token"},
+            "description": {"i18n": "my_adapter.token", "default": "プラットフォームトークン"},
             "required": True,
             "secret": True,
             "ui": {"widget": "password", "group": "basic", "order": 2},
@@ -2419,7 +2434,7 @@ class MyAdapter(BaseAdapter):
     
     # __init__ をオーバーライドする必要はない！フレームワークが自動的に処理する：
     # - self.sdk / self.logger が自動的に設定される
-    # - self.cfg は設定をリアルタイムに読み取る
+    # - self.cfg が設定をリアルタイムで読み取れる
     # - self.Send / self.Request が自動的に初期化される
     
     def _setup_converter(self):
@@ -2427,43 +2442,43 @@ class MyAdapter(BaseAdapter):
         return MyPlatformConverter()
 ```
 
-> ⚠️ **__init__ について**：新バージョンでは `BaseAdapter.__init__(self, sdk=None)` が SDK リファレンス、ログ初期化、設定のロードを自動的に処理する。ほとんどのアダプターは **__init__ をオーバーライドする必要はない**。[__init__ の注意事項](#init-注意事项)を参照してください。
+> ⚠️ **__init__ について**：新バージョンでは `BaseAdapter.__init__(self, sdk=None)` が SDK リファレンス、ログ初期化、設定の読み込みを自動的に処理する。ほとんどのアダプタは **`__init__` をオーバーライドする必要はない**。詳細は [__init__ 注意事項](#init-注意事项) を参照。
 
-> ⚠️ **super().__init__() について**：`BaseAdapter.__init__()` は Send と Request ファクトリインスタンスの作成を担当する。`super().__init__()` を呼び忘れた場合、すべてのメッセージ送信とリクエスト操作は `AttributeError` を発生させる。[__init__ の注意事項](#init-注意事项)を参照してください。
+> ⚠️ **super().__init__() について**：`BaseAdapter.__init__()` は `Send` と `Request` ファクトリインスタンスの作成を担当する。呼び忘れると、すべてのメッセージ送信とリクエスト操作が `AttributeError` を発生させる。詳細は [__init__ 注意事項](#init-注意事项) を参照。
 
 ### 4. 必須メソッドの実装
 
 ```python
 class MyAdapter(BaseAdapter):
-    # ... __init__ 代码 ...
+    # ... __init__ コード ...
     
     async def start(self):
-        """アダプターの起動（実装必須）"""
+        """アダプタの起動（必須実装）"""
         # WebSocket または WebHook ルートを登録
         router.register_websocket(
             module_name="myplatform",
             path="/ws",
             handler=self._ws_handler
         )
-        self.logger.info("アダプターが起動しました")
+        self.logger.info("アダプタが起動しました")
     
     async def shutdown(self):
-        """アダプターの停止（実装必須）"""
+        """アダプタの停止（必須実装）"""
         router.unregister_websocket(
             module_name="myplatform",
             path="/ws"
         )
         # 接続とリソースのクリーンアップ
-        self.logger.info("アダプターが停止しました")
+        self.logger.info("アダプタが停止しました")
     
     async def call_api(self, endpoint: str, **params):
-        """プラットフォームの API を呼び出す（実装必須）"""
+        """プラットフォーム API を呼び出す（必須実装）"""
         raise NotImplementedError("call_api を実装する必要があります")
 ```
 
 #### メタイベントの送信
 
-アダプターは Bot のオンライン状態をフレームワークに追跡させるために、メタイベントを送信する必要があります。`emit_meta()` を使用すると、一行で実現できます：
+アダプタは、Bot のオンライン状態をフレームワークに追跡させるために、メタイベントを送信する必要があります。`emit_meta()` を使用すれば、一行で実現できます：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -2486,14 +2501,14 @@ class MyAdapter(BaseAdapter):
             await self.emit_meta("disconnect", bot_id)
 ```
 
-> Bot の状態管理とメタイベントの詳細については、[アダプターのベストプラクティス - Bot 状態管理とメタイベント](best-practices.md#bot-状態管理と-meta-イベント)を参照してください。
+> Bot 状態管理とメタイベントの詳細は [アダプタのベストプラクティス - Bot 状態管理とメタイベント](best-practices.md#bot-状態管理と-meta-イベント) を参照してください。
 
 ### 5. Send クラスの実装
 
-`At`/`AtAll`/`Reply` 修飾子は SendDSL 基底クラスに内蔵されており、アダプターは `Raw_ob12` と具体的な送信メソッドを実装するだけでよい。
+`At`/`AtAll`/`Reply` 修飾子は SendDSL 基底クラスに内蔵されており、アダプタは `Raw_ob12` と具体的な送信メソッドを実装するだけでよい。
 
-フレームワークは以下の重要な補助メソッドを提供する：
-- `self._apply_modifiers(message)` — At/AtAll/Reply 修飾子をメッセージセグメントに自動的にマージする
+フレームワークは 2 つの重要な補助メソッドを提供している：
+- `self._apply_modifiers(message)` — 修飾子状態を自動的にメッセージセグメントにマージする
 - `self.send_context` — 送信コンテキスト辞書（`target_type`、`target_id`、`account_id`）を取得する
 
 ```python
@@ -2501,15 +2516,14 @@ import asyncio
 
 class MyAdapter(BaseAdapter):
     # ... 他のコード ...
-    
+
     class Send(BaseAdapter.Send):
 
         def Raw_ob12(self, message, **kwargs):
             """
-            OneBot12 形式のメッセージを送信する（実装必須）
+            OneBot12 形式のメッセージを送信する（必須実装）
 
-            _apply_modifiers を使用して修飾子の状態を自動的にマージし、
-            send_context を使用して送信コンテキストを取得する。
+            _apply_modifiers を使用して修飾子状態を自動的にマージし、send_context を使用して送信コンテキストを渡す。
             """
             async def _do_send():
                 segments = self._apply_modifiers(message)
@@ -2521,32 +2535,31 @@ class MyAdapter(BaseAdapter):
                 )
             return asyncio.create_task(_do_send())
 
-        # Text/Image/Voice/Video/File は SendDSL 基底クラスから継承されるため、
-        # Raw_ob12 にデフォルトで委譲されるため、再実装する必要はない。
+        # Text/Image/Voice/Video/File は SendDSL 基底クラスから継承されており、Raw_ob12 にデフォルトで委譲されるため、再実装は不要。
         # プラットフォーム固有のロジックが必要な場合は、個別のメソッドをオーバーライドする：
         # def Text(self, text: str):
         #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-**メディア送信メソッド（Image/Video/File）の実装のポイント：**
+**メディア送信メソッド（Image/Video/File）の実装ポイント：**
 
-- 基底クラスのデフォルト実装は、`file` パラメータを OneBot12 メッセージセグメントとして `Raw_ob12` にラップし、アダプターは `Raw_ob12` でダウンロード/アップロードを処理する必要がある
-- `file` パラメータは `bytes` 二進データと `str` URL の両方の形式に対応する
-- URL が渡された場合は、まずファイルをダウンロードしてからプラットフォームにアップロードする必要がある
-- プラットフォームでは通常、まずアップロード API を呼び出してファイル識別子を取得し、次に送信 API を呼び出す必要がある
+- 基底クラスのデフォルト実装は、`file` パラメータを OneBot12 メッセージセグメントにラップして `Raw_ob12` に渡す。アダプタは `Raw_ob12` でダウンロード/アップロードを処理する必要がある。
+- `file` パラメータは `bytes` バイナリデータと `str` URL の両方をサポートする。
+- URL を渡した場合は、まずファイルをダウンロードしてからプラットフォームにアップロードする必要がある。
+- プラットフォームは通常、まずアップロードインターフェースを呼び出してファイル識別子を取得し、次に送信インターフェースを呼び出す。
 
 **`__getattr__` マジックメソッド：**
 
-- 実装メソッド名は大文字小文字を区別しない（`Text`、`text`、`TEXT` がすべて呼び出せる）
-- 未定義のメソッドはエラーではなく、提示情報を返す
+- メソッド名の大文字小文字を区別しない（`Text`、`text`、`TEXT` がすべて呼び出せる）
+- 未定義のメソッドはエラーではなく、メッセージを返す
 
 **`Raw_ob12` メソッド：**
 
-- OneBot12 標準メッセージフォーマットをプラットフォーム形式に変換して送信する
+- OneBot12 標準メッセージ形式をプラットフォーム形式に変換して送信する
 - `self._apply_modifiers(message)` を使用して At/AtAll/Reply 修飾子を自動的に処理する
-- `**self.send_context` を使用して送信先情報とアカウント情報を渡す
+- `**self.send_context` を使用して送信ターゲット情報とアカウント情報を渡す
 
-### 6. 変換器の実装
+### 6. コンバーターの実装
 
 ```python
 # MyAdapter/Converter.py
@@ -2555,7 +2568,7 @@ import uuid
 
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """プラットフォームの生イベントを OneBot12 標準フォーマットに変換する"""
+        """プラットフォームのネイティブイベントを OneBot12 標準形式に変換する"""
         if not isinstance(raw_event, dict):
             return None
         
@@ -2585,12 +2598,12 @@ class MyPlatformConverter:
     
     def _convert_detail_type(self, raw_event):
         """詳細タイプを変換する"""
-        return "private"  # 簡単な例
+        return "private"  # 簡略化例
 ```
 
 ### 7. Request クラスの実装（リクエスト操作）
 
-プラットフォームがフレンドリクエスト、グループ招待など Bot が判断を下す必要があるリクエストをサポートしている場合、`Request` 内部クラスを実装できます：
+プラットフォームがフレンドリクエスト、グループ招待など Bot が意思決定を必要とするリクエストをサポートしている場合、`Request` 内部クラスを実装できます。
 
 ```python
 from ErisPulse import BaseAdapter, RequestDSL
@@ -2638,20 +2651,20 @@ class MyAdapter(BaseAdapter):
             return self._create_task(_do())
 ```
 
-モジュール開発者の使用方法：
+モジュール開発者が使用する方法：
 
 ```python
 from ErisPulse import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
-    # Event による便利な方法
+    # Event からの便利なメソッド
     await event.approve()
-    # またはアダプターを直接操作する
+    # またはアダプタを介して直接操作
     await adapter.myplatform.Request("req_id").accept()
 ```
 
-> プラットフォームがリクエスト操作をサポートしていない場合は、`Request` 内部クラスを実装する必要はありません。基底クラスはデフォルトで `retcode=10002`（サポートされていない操作）を返します。[リクエスト操作の規格](../../standards/request-action-spec.md)を参照してください。
+> プラットフォームがリクエスト操作をサポートしていない場合は、`Request` 内部クラスを実装する必要はありません。基底クラスはデフォルトで `retcode=10002`（サポートされていない操作）を返します。詳細は [リクエスト操作仕様](../../standards/request-action-spec.md) を参照してください。
 
 ### 8. パッケージエントリの作成
 
@@ -2660,25 +2673,59 @@ async def handle_friend_request(event):
 from .Core import MyAdapter
 ```
 
-## 依存関係の宣言（オプション、2.8.0+）
+## ローカル開発（パッケージ化不要）
 
-アダプターは他のアダプターやモジュールへの依存を宣言し、アダプター間の連携やオプション機能を実現できます：
+モジュールと同様に、アダプタもプロジェクトのローカルプラグインディレクトリ（デフォルト `plugins/`、`ErisPulse.framework.plugins_dir` で設定可能）に直接開発することもでき、**`pip install -e .` は不要**です：
+
+```bash
+# ローカルアダプタプラグインの生成
+epsdk create adapter -n MyAdapter --local
+# 生成される構造：
+# plugins/
+# └── MyAdapter/
+#     ├── __init__.py
+#     ├── Core.py
+#     └── Converter.py
+```
+
+フレームワークの起動時に、プラグインディレクトリを自動的にスキャンし、プラグイン内のモジュールとアダプタをロードします（entry-point でインストールされたパッケージと同じ扱い：有効化状態、設定の宣言、ホットリロード、アンロードのクリーンアップなどすべてが同様です）：
+
+- **識別ルール**：`__init__.py` を含むパッケージディレクトリまたは単一の `.py` ファイルでも認識されます。`Main` という名前のクラスが優先的に認識され、なければプラグイン内にある最初の `BaseAdapter` / `BaseModule` のサブクラスが使用されます。
+- **同名の上書き**：ローカルプラグインと PyPI でインストールされたアダプタが同名の場合、ローカルプラグインが優先されます（デバッグ用に上書きできる）。
+- **ホットリロード**：`sdk.enable_plugin_hot_reload()` で有効化されたプラグインディレクトリの監視はアダプタにも適用されます。アダプタのコードレベルのホットリロードは 2.11 で提供される予定です（現バージョンではアダプタのコードを変更した後はフレームワークの再起動が必要です）。
+
+### ローカルプラグインから公開へ
+
+ローカルで検証が完了したら、`pack` サブコマンドを使ってプラグインを一括で公開可能な標準プロジェクトに変換します（対話形式でプラグインを選択し、メタ情報を補完し、entry-point を含む pyproject を生成します）：
+
+```bash
+epsdk create pack
+# プラグインディレクトリ内のプラグインを選択 → プロジェクト名/説明/作者を入力 → MyAdapter/ プロジェクトディレクトリを生成
+cd MyAdapter
+pip install -e .   # 標準インストールに変換；その後、公開プロセスに従って PyPI にアップロード
+```
+
+> **ヒント**：変換後は、`plugins/` ディレクトリ内の元ファイルを削除することを推奨します。同名のローカルプラグインとインストールパッケージが重複して読み込まれるのを避けるためです（ローカルが優先されるため、インストールパッケージが有効になっているように見えてしまう可能性があります）。
+
+## 依存関係宣言（オプション、2.8.0+）
+
+アダプタは、他のアダプタやモジュールへの依存を宣言し、アダプタ間の連携やオプション機能を実現できます。
 
 ```python
 from typing import ClassVar
 
 class MyAdapter(BaseAdapter):
-    # 硬的依存：不足すると起動をスキップし、警告と status=skipped-dependency イベントを送信
+    # 硬依存：存在しない場合、起動をスキップし、警告と status=skipped-dependency イベントを送信
     depends: ClassVar[dict] = {
-        "adapters": ["onebot11"],   # 依存するアダプター（プラットフォーム名）
+        "adapters": ["onebot11"],   # 依存するアダプタ（プラットフォーム名）
         "modules": ["TranslateEngine"],  # 依存するモジュール（登録名）
     }
-    # ソフト依存：不足しても起動に影響しない；モジュールのロード/アンロード時にコールバック（オプション機能モード）
+    # ソフト依存：存在しない場合、起動に影響しない；モジュールのロード/アンロード時にコールバックを受ける（オプション機能モード）
     optional_modules: ClassVar[list] = ["TranslateEngine"]
 ```
 
-- **起動順序**：モジュールの硬的依存を宣言したアダプターは、**モジュールの初期化完了後に遅れて起動**される
-- **ソフト依存通知**：`optional_modules`（またはモジュールの硬的依存）に含まれるモジュールがロードされたときに `on_dependency_ready(module_name)` を呼び出す；アンロードされたときに `on_dependency_lost(module_name)` を呼び出す（デフォルトでは空実装、オーバーライド可能）——オーバーライドの遅れとホットリロードの場面に対応：
+- **起動順序**：モジュールの硬依存を宣言したアダプタは、**モジュールの初期化が完了した後に起動**されます。
+- **ソフト依存通知**：`optional_modules`（またはモジュールの硬依存）に含まれるモジュールがロードされたときに `on_dependency_ready(module_name)` が呼び出され、アンロードされたときに `on_dependency_lost(module_name)` が呼び出されます（デフォルトでは空実装、オーバーライド可能）— 晩期ロードとホットリロードの状況をカバーします：
 
 ```python
 async def on_dependency_ready(self, module_name):
@@ -2695,30 +2742,30 @@ async def on_dependency_lost(self, module_name):
 > [!NOTE]
 > この機能は ErisPulse **2.8.0+** が必要です。
 
-## `__init__` の注意点
+## `__init__` 注意事項
 
-アダプター開発では、`__init__` のオーバーライドが3つのレベルで発生する可能性があります。以下は各レベルの正しい使い方です。
+アダプタ開発では、`__init__` のオーバーライドが3つのレベルで必要になる場合があります。以下は各レベルの正しいやり方です。
 
-### 1. BaseAdapter 層（ほとんどの場合、オーバーライドする必要はない）
+### 1. BaseAdapter 層（ほとんどの場合、オーバーライド不要）
 
-`BaseAdapter.__init__(self, sdk=None)` は `Send` / `Request` ファクトリインスタンスの作成を担当し、以下を自動的に処理する：
+`BaseAdapter.__init__(self, sdk=None)` は、`Send` / `Request` ファクトリインスタンスを作成し、以下の処理を自動的に行います：
 
 - `sdk` パラメータを受け取り、`self.sdk`、`self.logger` を設定する
-- `ConfigClass` を宣言した場合、`self.cfg` を通じてグローバル設定をリアルタイムに読み取ることができる
-- `AccountConfigClass` を宣言した場合、`self.accounts` を通じて複数アカウントの設定をリアルタイムに読み取ることができる
+- `ConfigClass` を宣言した場合、`self.cfg` でグローバル設定をリアルタイムに読み取れる
+- `AccountConfigClass` を宣言した場合、`self.accounts` でマルチアカウント設定をリアルタイムに読み取れる
 
-**ほとんどの場合、`__init__` をオーバーライドする必要はない**。`ConfigClass` を宣言するだけでよい：
+**ほとんどの場合、`__init__` をオーバーライドする必要はありません**。`ConfigClass` を宣言するだけでよいです：
 
 ```python
 class MyAdapter(BaseAdapter):
     ConfigClass = MyAdapterConfig  # 設定クラスを宣言すると、フレームワークが自動的に管理する
     
     async def start(self):
-        cfg = self.cfg  # タイプセーフで、リアルタイムに読み取る
+        cfg = self.cfg  # タイプセーフ、リアルタイムに読み取れる
         ...
 ```
 
-もし本当にカスタム初期化が必要な場合は、`super().__init__(sdk)` を呼び出す：
+もし本当にカスタム初期化が必要な場合は、`super().__init__(sdk)` を呼び出すだけです：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -2730,60 +2777,60 @@ class MyAdapter(BaseAdapter):
         self.convert = self.converter.convert
 ```
 
-### 2. Send 内部クラス（ほとんどの場合、オーバーライドする必要はない）
+### 2. Send 内部クラス（ほとんどの場合、オーバーライド不要）
 
-`SendDSL.__init__` はチェーン呼び出しの状態の伝達（ターゲットタイプ、ターゲットID、アカウントなど）を担当する。**ほとんどの場合、メソッド（`Raw_ob12`、`Text` など）をオーバーライドするだけでよく、`__init__` をオーバーライドする必要はない。**
+`SendDSL.__init__` は、チェーン呼び出しの状態を伝達する（ターゲットタイプ、ターゲットID、アカウントなど）ことを担当します。**ほとんどの場合、メソッド（`Raw_ob12`、`Text` など）をオーバーライドするだけで、`__init__` をオーバーライドする必要はありません。**
 
-もし本当に必要（例えば、プラットフォーム特有の状態の初期化など）な場合は、**すべてのパラメータを透かす**必要がある：
+もし本当に必要（例えば、プラットフォーム特有の状態の初期化）な場合は、**すべてのパラメータを透かす必要があります**：
 
 ```python
 class MyAdapter(BaseAdapter):
     class Send(BaseAdapter.Send):
-        # パラメータ: adapter, target_type, target_id, account_id
+        # パラメータ：adapter, target_type, target_id, account_id
         def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
-            super().__init__(adapter, target_type, target_id, account_id)  # ← 必須で透かす
+            super().__init__(adapter, target_type, target_id, account_id)  # ← 必須透かす
             self._my_state = None  # プラットフォーム特有の初期化
 ```
 
-**なぜ透かす必要があるのか？** チェーン呼び出しの各ステップは `self.__class__(...)` で新しいインスタンスを作成する：
+**なぜ透かす必要があるのか？** チェーン呼び出しの各ステップは `self.__class__(...)` で新しいインスタンスを作成するためです：
 
 ```python
 adapter.Send.To("user", "123")               # → Send(adapter, "user", "123", None)
 adapter.Send.To("user", "123").Using("bot1")  # → Send(adapter, "user", "123", "bot1")
 ```
 
-もし `__init__` のシグネチャが一致しない、または `super()` を呼び出さない場合、チェーン呼び出しは中断する。
+もし `__init__` のシグネチャが一致しない、または `super()` を呼び出していない場合、チェーン呼び出しは中断します。
 
-### 3. Request 内部クラス（ほとんどの場合、オーバーライドする必要はない）
+### 3. Request 内部クラス（ほとんどの場合、オーバーライド不要）
 
-Send と同じ。パラメータは `adapter`, `request_id`, `account_id` である：
+Send と同様。パラメータは `adapter`, `request_id`, `account_id` です：
 
 ```python
 class MyAdapter(BaseAdapter):
     class Request(RequestDSL):
-        # パラメータ: adapter, request_id, account_id
+        # パラメータ：adapter, request_id, account_id
         def __init__(self, adapter, request_id=None, account_id=None):
-            super().__init__(adapter, request_id, account_id)  # ← 必須で透かす
+            super().__init__(adapter, request_id, account_id)  # ← 必須透かす
             self._my_state = None  # プラットフォーム特有の初期化
 ```
 
 ### まとめ
 
-| レベル | いつオーバーライドするか | 必須の動作 |
+| レベル | いつオーバーライドするか | 必須の作業 |
 |------|------------|-----------|
-| **BaseAdapter** | 自定义初始化逻辑が必要な場合 | `super().__init__(sdk)` （sdk パラメータを渡す） |
+| **BaseAdapter** | カスタム初期化ロジックが必要な場合 | `super().__init__(sdk)` （sdk パラメータを渡す） |
 | **Send 内部クラス** | 送信関連の状態を初期化する必要がある場合 | `super().__init__(adapter, target_type, target_id, account_id)` |
 | **Request 内部クラス** | リクエスト関連の状態を初期化する必要がある場合 | `super().__init__(adapter, request_id, account_id)` |
-| 3つのレベル | 大抵の場合 | **ConfigClass を宣言するだけで、`__init__` は触らない** |
+| 3つのレベル | ほとんどの場合 | **ConfigClass を宣言するだけで、`__init__` に触らない** |
 
 ### 9. 接続情報とルート発見
 
-アダプターがルートを登録すると、フレームワークはすべてのルート情報を記録する。ユーザーは以下の API を使ってアダプターの接続アドレスを確認できる：
+アダプタがルートを登録した後、フレームワークはすべてのルート情報を記録します。ユーザーは以下の API を使ってアダプタの接続アドレスを取得できます：
 
 ```python
 from ErisPulse import sdk
 
-# アダプターの完全な接続情報を取得
+# アダプタの完全な接続情報を取得
 info = sdk.adapter.get_connection_info("myplatform")
 # {
 #   "platform": "myplatform",
@@ -2801,7 +2848,7 @@ info = sdk.adapter.get_connection_info("myplatform")
 #   }
 # }
 
-# ルート発見 API で利用可能なすべての名前空間（アダプターやモジュール）をリストアップ
+# すべての名前空間（アダプタ/モジュール）のルートをリストアップ
 namespaces = sdk.router.list_namespaces()
 # {"myplatform": {"http": ["/myplatform/webhook"], "websocket": ["/myplatform/ws"]}}
 
@@ -2815,13 +2862,13 @@ routes = sdk.router.get_module_routes("myplatform")
 #  "websocket": [{"path": "/myplatform/ws", "auth": false}]}
 ```
 
-> **ヒント**：`get_connection_info()` が返す情報は、ユーザーに表示するのに適している（例：WebUI）。プラットフォーム側のコールバックアドレスや WebSocket 接続アドレスを設定するのに役立つ。ルート登録時の `module_name` は、ErisPulse で登録された `platform` 名と完全に一致する必要がある。そうしないと、ルート発見は正しく関連付けられない。
+> **ヒント**：`get_connection_info()` が返す情報は、ユーザー（例：WebUI）に表示するのに適しており、プラットフォーム側のコールバックアドレスや WebSocket 接続アドレスの設定に役立ちます。ルート登録時の `module_name` は、ErisPulse でアダプタが登録する `platform` 名と完全に一致している必要があります。そうしないと、ルート発見は正しく関連付けられません。
 
-### 10. SSE (Server-Sent Events) のサポート
+### 10. SSE (Server-Sent Events) 支持
 
-ErisPulse はサーバーに依存しない SSE を内蔵しており、モジュールやアダプターは `@sdk.router.sse()` を使って SSE エンドポイントを登録できる。
+ErisPulse は、サーバーに依存しない SSE を内蔵しており、モジュールやアダプタは `@sdk.router.sse()` を使って SSE エンドポイントを登録できます。
 
-#### 基本的な使用法
+#### 基本的な使用
 
 ```python
 import asyncio
@@ -2839,7 +2886,7 @@ async def event_stream(sse):
 
 #### リクエストパラメータの使用
 
-ハンドラは `request` パラメータを宣言してクライアントリクエスト情報をアクセスできる：
+ハンドラは `request` パラメータを宣言してクライアントリクエスト情報をアクセスできます：
 
 ```python
 @sdk.router.sse("MyModule", "/events")
@@ -2862,7 +2909,7 @@ async def event_stream(request, sse):
 | `sse.send(data, event=None, id=None, retry=None)` | SSE イベントを送信する。str 以外の data は自動的に JSON シリアライズされる |
 | `sse.close()` | SSE 接続を安全に閉じる（複数回呼び出しても安全） |
 | `sse.closed` | 接続が閉じられているかどうか |
-| `sse.request` | ベースリクエストオブジェクト（クエリパラメータ、ヘッダーの読み取りに使用できる） |
+| `sse.request` | ベースリクエストオブジェクト（クエリパラメータ、ヘッダーの読み取りに使用可能） |
 
 #### RouteGroup での使用
 
@@ -2876,7 +2923,7 @@ async def events(sse):
 
 #### ルート発見
 
-SSE ルートは自動的にルート発見 API に表示される：
+SSE ルートは自動的にルート発見 API に含まれるようになります：
 
 ```python
 # list_namespaces は "sse" キーを含む
@@ -2892,14 +2939,14 @@ sdk.router.get_module_urls("MyModule")
 # {"sse": [{"path": "/MyModule/events", "url": "http://localhost:8080/MyModule/events"}]}
 ```
 
-> **サーバーに依存しない設計**：`SseEmitter` はコールバックを通じて下層の HTTP フレームワークと解離されている。フレームワークは `register_sse()` と `@sse` デコレータを統一的な登録エントリとして提供しており、アダプターは下層の HTTP フレームワークに直接依存することなく SSE エンドポイントを実装できる。
+> **サーバーに依存しない設計**：`SseEmitter` はコールバックと下位の HTTP フレームワークを分離する。フレームワークは `register_sse()` と `@sse` デコレータを統一的な登録エントリとして提供し、アダプタは下位の HTTP フレームワークに直接依存することなく SSE エンドポイントを実装できる。
 
 ## 次に進む
 
-- [アダプターのコアコンセプト](core-concepts.md) - アダプターのアーキテクチャを理解する
+- [アダプタのコアコンセプト](core-concepts.md) - アダプタのアーキテクチャを理解する
 - [SendDSL 詳解](send-dsl.md) - メッセージ送信を学ぶ
-- [変換器の実装](converter.md) - イベント変換を理解する
-- [アダプターのベストプラクティス](best-practices.md) - 高品質なアダプターを開発する
+- [コンバーターの実装](converter.md) - イベント変換を理解する
+- [アダプタのベストプラクティス](best-practices.md) - 高品質なアダプタを開発する
 
 
 
@@ -2907,7 +2954,10 @@ sdk.router.get_module_urls("MyModule")
 
 # アダプタのコアコンセプト
 
-ErisPulseアダプタのコアコンセプトを理解することは、アダプタ開発の基礎です。
+> [!TIP]
+> **この記事を読むタイミングは**：アダプタ開発の経路では必須です（BaseAdapter / SendDSL / ライフサイクルなどのコアメカニズムの完全な説明）。開発を始めるだけであれば、まずは [アダプタ開発の入門](getting-started.md) を読んでください。疑問が生じた場合は、この記事に戻って確認してください。
+
+ErisPulse アダプタのコアコンセプトを理解することは、アダプタを開発するための基礎です。
 
 ## アダプタアーキテクチャ
 
@@ -4039,9 +4089,12 @@ async def on_bot_offline(data):
 
 ### SendDSL 详解
 
-# SendDSL 详解
+# SendDSL の詳細
 
-SendDSL は、ErisPulse アダプターが提供する、連鎖呼び出しスタイルのメッセージ送信インターフェースです。
+> [!TIP]  
+> **この記事を読むべきタイミング**：アダプタ開発経路内では必須（送信 DSL）。不要な場合は飛ばしても、他の機能の使用に影響はありません。
+
+SendDSL は ErisPulse アダプタが提供する、メソッドチェーン形式のメッセージ送信インターフェースです。
 
 ## 基本的な呼び出し方法
 
@@ -4767,32 +4820,36 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("お知ら�
 
 ### 适配器开发最佳实践
 
-# アダプタ開発のベストプラクティス
+# アダプター開発のベストプラクティス
 
-このドキュメントは、ErisPulse アダプタ開発におけるベストプラクティスを提供します。
+> [!TIP]
+> **この記事を読むタイミング**：アダプターの基本構造が動作確認できた後にお勧めします（エンジニアリングのベストプラクティス）。不要な場合は読み飛ばしても、他の機能に影響はありません。
+
+
+本文書では、ErisPulse アダプター開発におけるベストプラクティスの提案を提供します。
 
 ## Bot 状態管理と Meta イベント
 
-アダプタは、`adapter.emit()` を通じて Meta イベントを送信し、フレームワークが Bot の接続状態、ログイン/ログアウト、およびハートビート情報を自動的に追跡できるようにする必要があります。
+アダプタは `adapter.emit()` を使用して Meta イベントを送信し、Bot の接続状態、ログイン/ログアウト、およびハートビート情報をフレームワークが自動的に追跡できるようにする必要があります。
 
-### 1. 何时发送 Meta 事件
+### 1. Meta イベントの送信タイミング
 
 | イベント | `detail_type` | 発生タイミング | フレームワークの動作 |
 |------|--------------|---------|---------|
-| 接続 | `"connect"` | Bot がプラットフォームと接続したとき | Bot を登録し、`adapter.bot.online` のライフサイクルイベントをトリガー |
-| 切断 | `"disconnect"` | Bot がプラットフォームと切断したとき | Bot をオフラインにマークし、`adapter.bot.offline` のライフサイクルイベントをトリガー |
-| ハートビート | `"heartbeat"` | 定期的に送信（30-60秒が推奨） | Bot のアクティブタイムとメタ情報を更新 |
+| 接続 | `"connect"` | Bot がプラットフォームとの接続を確立したとき | Bot を登録し、`adapter.bot.online` のライフサイクルイベントをトリガー |
+| 切断 | `"disconnect"` | Bot がプラットフォームとの接続を切断したとき | Bot をオフライン状態にマークし、`adapter.bot.offline` のライフサイクルイベントをトリガー |
+| ハートビート | `"heartbeat"` | 定期的に送信（推奨 30-60 秒） | Bot の最新アクティブ時間とメタ情報を更新 |
 
-### 2. 发送 Meta 事件
+### 2. Meta イベントの送信方法
 
-フレームワークは `emit_meta()` メソッドを提供しており、一行で Meta イベントを送信できます：
+フレームワークは `emit_meta()` メソッドを提供しており、一行で Meta イベントを送信できます。
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
-        # Bot 上線：一行で connect イベントを送信
+        # Bot のオンライン：一行で connect イベントを送信
         await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="私のロボット")
 
         try:
@@ -4804,13 +4861,13 @@ class MyAdapter(BaseAdapter):
         except WebSocketDisconnect:
             pass
         finally:
-            # Bot 下線
+            # Bot のオフライン
             await self.emit_meta("disconnect", bot_id)
 ```
 
-### 3. 心跳イベント
+### 3. ハートビートイベント
 
-アダプタは接続が維持されている間、定期的にハートビートイベントを送信し、Bot のアクティブタイムを更新する必要があります：
+アダプタは接続が維持されている間、定期的にハートビートイベントを送信し、Bot のアクティブ時間を更新する必要があります。
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -4823,13 +4880,13 @@ class MyAdapter(BaseAdapter):
 
 ### 4. `self` フィールドの自動発見
 
-フレームワークの `adapter.emit()` は、すべてのイベント（Meta イベントに限らず）の `self` フィールドを自動的に処理します：
+フレームワークの `adapter.emit()` は、すべてのイベント（Meta イベントに限らず）中の `self` フィールドを自動的に処理します。
 
-- **通常のイベント**（message/notice/request）の `self` フィールドは自動的に Bot を登録します
-- **`self` フィールドの拡張情報**：`user_name`、`nickname`、`avatar`、`account_id` などのオプションフィールドがサポートされます
+- **通常イベント**（message/notice/request）の `self` フィールドは自動的に Bot を登録します。
+- **`self` フィールドの拡張情報**：`user_name`、`nickname`、`avatar`、`account_id` などのオプションフィールドをサポートします。
 
 ```python
-# 転換器に self フィールドを含めれば、Bot は自動的に登録され、アクティブタイムが更新されます
+# 転換器に self フィールドを含めることで Bot の自動登録が可能
 onebot_event = {
     "type": "message",
     "detail_type": "private",
@@ -4843,12 +4900,12 @@ onebot_event = {
     # ... その他のフィールド
 }
 await self.adapter.emit(onebot_event)
-# Bot "bot123" は自動的に登録され、アクティブタイムが更新されます
+# Bot "bot123" は自動的に登録され、最新アクティブ時間も更新されます
 ```
 
 ### 5. Bot 状態の照会
 
-フレームワークは以下の照会メソッドを提供しています：
+フレームワークは以下の照会メソッドを提供します。
 
 ```python
 from ErisPulse import sdk
@@ -4857,16 +4914,16 @@ from ErisPulse import sdk
 info = sdk.adapter.get_bot_info("myplatform", "bot123")
 # {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
 
-# すべての Bot をリストアップ（プラットフォーム別にグループ化）
+# すべての Bot を取得（プラットフォームごとに分類）
 all_bots = sdk.adapter.list_bots()
 
-# 指定のプラットフォームの Bot をリストアップ
+# 指定プラットフォームの Bot を取得
 platform_bots = sdk.adapter.list_bots("myplatform")
 
 # Bot がオンラインかどうかを確認
 is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
-# 完全なステータスサマリーを取得（WebUI に表示するのに適しています）
+# 完全な状態サマリーを取得（WebUI に表示するのに適しています）
 summary = sdk.adapter.get_status_summary()
 # {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
 ```
@@ -4928,7 +4985,7 @@ class MyAdapter(BaseAdapter):
 
 ### 3. ハートビート保活と Meta ハートビート
 
-アダプタのハートビートは、プラットフォームへのハートビート保活と、フレームワークへの meta heartbeat イベント送信の両方を完了する必要があります。
+アダプタのハートビートは、2つのタスクを同時に完了する必要があります：プラットフォームにハートビート保活を送信し、フレームワークに meta heartbeat イベントを送信することです。
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -4953,7 +5010,7 @@ class MyAdapter(BaseAdapter):
 
 ### 4. 接続情報の公開
 
-アダプタが登録するルートは、ユーザーがプラットフォーム側のコールバックアドレスを設定できるように、ユーザーに見えるようにする必要があります。`start()` で接続情報を明示的に出力することを推奨します：
+アダプタが登録したルーティングは、ユーザーがプラットフォーム側のコールバックアドレスを設定できるように、ユーザーに見えるようにする必要があります。`start()` で接続情報を明示的に出力することを推奨します：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -4972,7 +5029,7 @@ class MyAdapter(BaseAdapter):
                     f"{info.get('connection', {}).get('websocket_routes', [])}")
 ```
 
-ユーザーは以下の API を使って、アダプタのすべてのルートと接続アドレスを照会できます：
+ユーザーは以下の API を使用して、アダプタのすべてのルーティングと接続アドレスを確認できます：
 
 ```python
 from ErisPulse import sdk
@@ -4980,17 +5037,17 @@ from ErisPulse import sdk
 # アダプタレベルの接続情報（推奨）
 info = sdk.adapter.get_connection_info("myplatform")
 
-# ルートマネージャレベルの照会
-sdk.router.list_namespaces()              # すべての名前空間をリストアップ
-sdk.router.get_module_routes("myplatform")  # 詳細なルート情報
+# ルーティングマネージャー レベルのクエリ
+sdk.router.list_namespaces()              # すべてのネームスペースをリスト
+sdk.router.get_module_routes("myplatform")  # 詳細なルーティング情報
 sdk.router.get_module_urls("myplatform")    # 完全な接続 URL
 ```
 
-> **注意**: ルート登録時の `module_name` は、ErisPulse で登録するアダプタの `platform` 名と完全に一致している必要があります。そうでない場合、`get_connection_info()` はルートと関連付けられません。複数アカウントアダプタは、異なる `module_name` を使用するのではなく、サブパス（例: `/account1/webhook`、`/account2/webhook`）を各アカウントに登録する必要があります。
+> **注意**：ルーティング登録時の `module_name` は、ErisPulse に登録されたアダプタの `platform` 名と完全に一致している必要があります。一致しない場合、`get_connection_info()` はルーティングと関連付けられません。複数アカウントのアダプタは、異なる `module_name` を使用するのではなく、各アカウントごとにサブパスを登録する必要があります（例: `/account1/webhook`、`/account2/webhook`）。
 
 ## イベント変換
 
-### 1. OneBot12 標準の厳密遵守
+### 1. OneBot12 標準に厳密に従う
 
 ```python
 class MyPlatformConverter:
@@ -5006,8 +5063,8 @@ class MyPlatformConverter:
                 "platform": "myplatform",
                 "user_id": str(raw_event.get("bot_id", ""))
             },
-            "myplatform_raw": raw_event,  # 保持原始数据（必须）
-            "myplatform_raw_type": raw_event.get("type", "")  # 原始类型（必须）
+            "myplatform_raw": raw_event,  # 保持原始数据（必須）
+            "myplatform_raw_type": raw_event.get("type", "")  # 原始类型（必須）
         }
         return onebot_event
 ```
@@ -5016,7 +5073,7 @@ class MyPlatformConverter:
 
 ```python
 def _convert_timestamp(self, timestamp):
-    """10桁の秒単位時間スタンプに変換"""
+    """10 位の秒単位時間スタンプに変換"""
     if not timestamp:
         return int(time.time())
     
@@ -5044,14 +5101,14 @@ def _generate_event_id(self, raw_event):
 
 ## SendDSL 実装
 
-`At`/`AtAll`/`Reply` 修飾子はフレームワークの SendDSL 基底クラスに既に実装されています。アダプタは `Raw_ob12` と具体的な送信メソッドを実装するだけで、`self._apply_modifiers(message)` と `self.send_context` を使用して開発を簡素化できます。
+`At`/`AtAll`/`Reply` 修飾子はフレームワークの SendDSL 基底クラスに内蔵されており、アダプタは `Raw_ob12` と具体的な送信メソッドを実装するだけでよい。`self._apply_modifiers(message)` と `self.send_context` を使用して開発を簡素化する。
 
-### 1. Task オブジェクトを返す必要がある
+### 1. 必ず Task オブジェクトを返す
 
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """推奨実装：フレームワークの補助メソッドを使用"""
+        """推奨の実装方法：フレームワークの補助メソッドを使用"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -5066,7 +5123,7 @@ class Send(BaseAdapter.Send):
         return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-### 2. 鏈式修飾メソッドは self を返す
+### 2. チェーン修飾メソッドは self を返す
 
 ```python
 class Send(BaseAdapter.Send):
@@ -5085,7 +5142,7 @@ class Send(BaseAdapter.Send):
 ```python
 class Send(BaseAdapter.Send):
     def Sticker(self, sticker_id: str):
-        """ステッカーを送信"""
+        """スタンプを送信"""
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_sticker",
@@ -5099,7 +5156,7 @@ class Send(BaseAdapter.Send):
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_card",
-                message=[{"type": "card", "data": {"card_data": card_data}}],
+                message=[{"type": "card", "data": card_data}],
                 **self.send_context
             )
         )
@@ -5107,9 +5164,9 @@ class Send(BaseAdapter.Send):
 
 ## API レスポンス
 
-### 1. レスポンスの標準化
+### 1. 標準化されたレスポンス形式
 
-フレームワークは `make_response()` と `make_error()` メソッドを提供し、標準化されたレスポンスを構築できます：
+フレームワークは `make_response()` および `make_error()` メソッドを提供し、標準化されたレスポンスを構築します。
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -5132,23 +5189,23 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-`make_response()` は `{platform}_raw` キーを含むレスポンス辞書を自動的に生成します。`make_error()` はデフォルトで `retcode=34000`（Platform Error）を使用します。
+`make_response()` は、`{platform}_raw` キーを含むレスポンス辞書を自動的に生成します。`make_error()` はデフォルトで `retcode=34000`（Platform Error）を使用します。
 
 ### 2. エラーコード規格
 
-OneBot12 標準エラーコードに従います：
+OneBot12 標準エラーコードに従います。
 
 ```python
-# 1xxxx - アクションリクエストエラー
+# 1xxxx - 動作リクエストエラー
 10001: Bad Request
 10002: Unsupported Action
 10003: Bad Param
 
-# 2xxxx - アクションハンドラエラー
+# 2xxxx - 動作ハンドラエラー
 20001: Bad Handler
 20002: Internal Handler Error
 
-# 3xxxx - アクション実行エラー
+# 3xxxx - 動作実行エラー
 31000: Database Error
 32000: Filesystem Error
 33000: Network Error
@@ -5160,7 +5217,7 @@ OneBot12 標準エラーコードに従います：
 
 ### 1. 宣言的構成（推奨）
 
-`AccountConfigClass` を宣言して構成クラスを定義した後、フレームワークが多アカウントの読み込み、検証、テンプレート生成を自動的に管理します。`BotAccountConfig` 基底クラスは `enabled` と `name` フィールドを提供しており、アダプタは宣言する必要はありません：
+`AccountConfigClass` を宣言的に設定することで、フレームワークは多アカウントの自動ロード、検証、およびテンプレート生成を管理します。`BotAccountConfig` 基底クラスは `enabled` および `name` フィールドを提供しており、アダプタはそれらを宣言する必要はありません：
 
 ```python
 from dataclasses import dataclass, field
@@ -5179,9 +5236,9 @@ class MyAdapter(BaseAdapter):
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            self.logger.info(f"アカウント {name} を起動中")
+            self.logger.info(f"アカウント {name} を起動")
             await self._connect(name, account.token)
-            # bot_id はフレームワークがプラットフォームプロトコル/ログイン応答から自動的に取得して戻し埋めします
+            # bot_id はフレームワークによってプラットフォームプロトコル/ログイン応答から自動的に取得され、戻り値として補完されます
     
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
@@ -5189,7 +5246,7 @@ class MyAdapter(BaseAdapter):
         # name: アカウント名, account: MyBotConfig インスタンス
 ```
 
-構成ファイルは自動的に生成されます：
+構成ファイルは自動的に次のように生成されます：
 
 ```toml
 [MyAdapter.accounts.default]
@@ -5200,29 +5257,29 @@ name = ""
 
 ### 2. アカウント選択メカニズム
 
-フレームワークは `_resolve_account()` メソッドを内蔵しており、以下の優先順位でマッチします：
+フレームワークには `_resolve_account()` メソッドが内蔵されており、次の優先順位でアカウントを照合します：
 
-1. **アカウント名** — 構成のキー名と正確に一致
-2. **`bot_id` フィールド** — 自動的に取得された bot_id（イベントの `event["self"]["user_id"]` から）
-3. **任意の str フィールド** — 構成の他の文字列フィールド
-4. **デフォルト** — 最初に有効なアカウント
+1. **アカウント名** — 構成のキー名と正確に一致する
+2. **`bot_id` フィールド** — 自動的に取得される bot_id（すなわち `event["self"]["user_id"]`）
+3. **任意の str フィールド** — 構成内の他の文字列フィールド
+4. **デフォルト** — 最初に有効化されたアカウント
 
 ```python
-# アカウント名でマッチ
+# アカウント名で照合
 name, account = self._resolve_account("account1")
 
-# bot_id でマッチ（イベントからの最も一般的な方法）
+# bot_id で照合（イベントからの最も一般的な方法）
 name, account = self._resolve_account("bot_123")
 
-# 最初に有効なアカウントを取得（None を渡す）
+# 有効化された最初のアカウントを取得（None を渡す）
 name, account = self._resolve_account(None)
 ```
 
-## エラーハンドリング
+## エラー処理
 
-### 1. エラータイプの分類
+### 1. 異常の分類処理
 
-`make_error()` を使用して標準化されたエラーレスポンスを構築します。`sdk.client` でリクエストする際は ErisPulse のエラーをキャッチします：
+`make_error()` を使用して標準化されたエラー応答を構築します。`sdk.client` を通じてリクエストを行う際、ErisPulse の異常をキャッチします：
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
@@ -5238,43 +5295,43 @@ async def call_api(self, endpoint: str, **params):
         response = await resp.json()
         return self.make_response(data=response, raw=response)
     except ClientTimeoutError:
-        self.logger.error(f"リクエストタイムアウト: {endpoint}")
-        return self.make_error(retcode=32000, message="リクエストタイムアウト")
+        self.logger.error(f"リクエストがタイムアウトしました: {endpoint}")
+        return self.make_error(retcode=32000, message="リクエストがタイムアウトしました")
     except ClientError as e:
         self.logger.error(f"ネットワークエラー: {e}")
-        return self.make_error(retcode=33000, message="ネットワークリクエスト失敗")
+        return self.make_error(retcode=33000, message="ネットワークリクエストが失敗しました")
     except json.JSONDecodeError:
-        self.logger.error("JSON 解析失敗")
-        return self.make_error(retcode=10006, message="レスポンス形式エラー")
+        self.logger.error("JSON 解析に失敗しました")
+        return self.make_error(retcode=10006, message="レスポンス形式が無効です")
     except Exception as e:
-        self.logger.error(f"未知のエラー: {e}", exc_info=True)
+        self.logger.error(f"不明なエラー: {e}", exc_info=True)
         return self.make_error(message=str(e))
 ```
 
-> **後方互換性**: `aiohttp` を直接使用する古いアダプタコードは影響を受けません。`sdk.client` を通じてリクエストする場合にのみ、エラーの変換が有効になります。
+> **後方互換性**：`aiohttp` を直接使用する従来のアダプタコードは影響を受けず、`aiohttp.ClientError` をキャッチし続けることができます。エラー変換は `sdk.client` を通じてリクエストが発行される場合にのみ有効です。
 
 ### 2. ログ記録
 
-フレームワークはアダプタにサブロガー（`sdk.logger.get_child("MyAdapter")`）を自動的に作成します。手動の初期化は不要です：
+フレームワークはアダプタごとに自動的にサブロガーを作成します（`sdk.logger.get_child("MyAdapter")`）。手動での初期化は不要です：
 
 ```python
 class MyAdapter(BaseAdapter):
-    # ConfigClass = ...  # 構成クラスを宣言した後、self.logger が自動的に利用可能になります
+    # ConfigClass = ...  # 設定クラスを宣言した後、self.logger を自動的に使用可能に
     
     async def start(self):
-        self.logger.info("アダプタ起動中...")
+        self.logger.info("アダプタの起動中...")
         # ...
-        self.logger.info("アダプタ起動完了")
+        self.logger.info("アダプタの起動完了")
     
     async def shutdown(self):
-        self.logger.info("アダプタ終了中...")
+        self.logger.info("アダプタの停止中...")
         # ...
-        self.logger.info("アダプタ終了完了")
+        self.logger.info("アダプタの停止完了")
 ```
 
 ## テスト
 
-### 1. 単体テスト
+### 1. ユニットテスト
 
 ```python
 import pytest
@@ -5282,7 +5339,7 @@ from ErisPulse.Core.Bases import BaseAdapter
 
 class TestMyAdapter:
     def test_converter(self):
-        """テスト転換器"""
+        """変換機能のテスト"""
         converter = MyPlatformConverter()
         raw_event = {"type": "message", "content": "Hello"}
         result = converter.convert(raw_event)
@@ -5291,7 +5348,7 @@ class TestMyAdapter:
         assert "myplatform_raw" in result
     
     def test_api_response(self):
-        """テスト API レスポンス形式"""
+        """APIレスポンス形式のテスト"""
         adapter = MyAdapter()
         response = adapter.call_api("/test", param="value")
         assert "status" in response
@@ -5303,14 +5360,14 @@ class TestMyAdapter:
 ```python
 @pytest.mark.asyncio
 async def test_adapter_start():
-    """テストアダプタ起動"""
+    """アダプタの起動をテスト"""
     adapter = MyAdapter()
     await adapter.start()
     assert adapter._connected is True
 
 @pytest.mark.asyncio
 async def test_send_message():
-    """テストメッセージ送信"""
+    """メッセージ送信のテスト"""
     adapter = MyAdapter()
     await adapter.start()
     
@@ -5318,23 +5375,23 @@ async def test_send_message():
     assert result is not None
 ```
 
-## リバースコンバージョンとメッセージ構築
+## リバース変換とメッセージ構築
 
-`Raw_ob12` はアダプタが**実装しなければならない**メソッドで、OneBot12 → プラットフォームのリバースコンバージョンの統一エントリーポイントです。標準メソッド（`Text`、`Image` など）は `Raw_ob12` に委譲し、修飾子の状態（`At`/`Reply`/`AtAll`）は `Raw_ob12` 内でメッセージセグメントにマージされる必要があります。
+`Raw_ob12` はアダプターが**実装しなければならない**メソッドであり、OneBot12 → プラットフォームへのリバース変換の統一エントリポイントです。標準メソッド（`Text`、`Image` など）は `Raw_ob12` に委譲し、修飾子の状態（`At`/`Reply`/`AtAll`）は `Raw_ob12` 内でメッセージセグメントとしてマージする必要があります。
 
-`MessageBuilder` は `Raw_ob12` と一緒に使用するメッセージセグメント構築ツールで、チェーン呼び出しと迅速な構築をサポートします。
+`MessageBuilder` は `Raw_ob12` と併用するためのメッセージセグメント構築ツールであり、チェーン呼び出しと高速な構築をサポートしています。
 
-> 完全な実装規格、コード例、使用方法については、以下のドキュメントを参照してください：
-> - [送信メソッド規格 §6 リバースコンバージョン規格](../../standards/send-method-spec.md#6-リバースコンバージョン規格onebot12--プラットフォーム)
+> 完全な実装規格、コード例、および使用方法については、以下を参照してください：
+> - [送信メソッド規格 §6 リバース変換規格 (OneBot12 → プラットフォーム)](../../standards/send-method-spec.md#6-リバース変換規格onebot12--プラットフォーム)
 > - [送信メソッド規格 §11 メッセージビルダー](../../standards/send-method-spec.md#11-メッセージビルダー-messagebuilder)
 
 ## プラットフォームイベントメソッド拡張
 
-アダプタは Event 包装クラスにプラットフォーム固有のメソッドを登録し、モジュール開発者がプラットフォーム特有のデータに簡単にアクセスできるようにすることができます。
+アダプタは、Eventラッパークラスにプラットフォーム固有のメソッドを登録し、モジュール開発者がプラットフォーム特有のデータに簡単にアクセスできるようにすることができます。
 
 ### 1. Mixin クラスを使用した一括登録（推奨）
 
-プラットフォームに複数の固有メソッドがある場合、Mixin クラスの使用が推奨されます：
+プラットフォームに複数の固有メソッドがある場合、Mixin クラスを使用することを推奨します。
 
 ```python
 # アダプタの start() またはモジュールレベルで登録
@@ -5346,7 +5403,7 @@ class MyPlatformEventMixin:
         return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 
     def is_official_message(self):
-        """公式メッセージかどうかを判断"""
+        """公式メッセージかどうかを判定"""
         raw = self.get("myplatform_raw", {})
         return raw.get("sender", {}).get("is_official", False)
 
@@ -5358,7 +5415,7 @@ class MyPlatformEventMixin:
 register_event_mixin("myplatform", MyPlatformEventMixin)
 ```
 
-### 2. デコレーターを使用した個別メソッド登録
+### 2. デコレータを使用した単一メソッドの登録
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -5377,37 +5434,37 @@ class MyAdapter(BaseAdapter):
     async def shutdown(self):
         # プラットフォームイベントメソッドの登録をクリーンアップ
         unregister_platform_event_methods("myplatform")
-        # ... その他のクリーンアップ
+        # ... 他のクリーンアップ処理
 ```
 
-> 詳細な登録とアンロードの説明は、[イベントシステム API - プラットフォーム拡張メソッドの登録](../../api-reference/event-system.md#アダプタ登録プラットフォーム拡張メソッド)を参照してください。
+> 詳細な登録および登録解除の説明は、[イベントシステム API - プラットフォーム拡張メソッドの登録](../../api-reference/event-system.md#プラットフォーム拡張メソッドの登録) を参照してください。
 
-## ドキュメントの維持
+## ドキュメントの保守
 
-### 1. プラットフォーム機能ドキュメントの維持
+### 1. プラットフォーム固有のドキュメントの保守
 
-`docs/ja/platform-guide/` に `{platform}.md` ドキュメントを作成します（他の言語バージョンは自動生成されます）：
+`docs/ja/platform-guide/` ディレクトリに `{platform}.md` ドキュメントを作成します（他の言語バージョンは自動的に生成されます）：
 
 ```markdown
 # プラットフォーム名アダプタドキュメント
 
 ## 基本情報
 - 対応モジュールバージョン: 1.0.0
-- 維持者: あなたの名前
+- 保守者: Your Name
 
 ## 支援されるメッセージ送信タイプ
 ...
 
-## 特有のイベントタイプ
+## 固有のイベントタイプ
 ...
 
-## 構成オプション
+## 設定オプション
 ...
 ```
 
 ### 2. バージョン情報の更新
 
-新バージョンをリリースする際、ドキュメント内のバージョン情報を更新します：
+新しいバージョンをリリースする際、ドキュメント内のバージョン情報を更新します：
 
 ```toml
 [project]
@@ -5420,25 +5477,29 @@ version = "2.0.0"  # バージョン番号を更新
 
 # イベントコンバーター実装ガイド
 
-イベントコンバーター (Converter) は、アダプターのコアコンポーネントの一つであり、プラットフォームのネイティブイベントを ErisPulse 統一の OneBot12 標準イベント形式に変換する役割を担います。
+> [!TIP]
+> **この記事を読むべきタイミング**：アダプター開発経路内では必須（イベントコンバーター）。不要なら飛ばしても、他の機能の使用に影響はありません。
 
-## Converter の責任
+
+イベントコンバーター (Converter) は、アダプターのコアコンポーネントの一つであり、プラットフォームのネイティブイベントを ErisPulse が統一する OneBot12 標準イベント形式に変換する役割を担います。
+
+## Converterの役割
 
 ```
 プラットフォームのネイティブイベント ──→ Converter.convert() ──→ OneBot12 標準イベント
 ```
 
-Converter は**正方向の変換**（受信方向）のみを担当し、プラットフォームのネイティブイベントデータを OneBot12 標準形式に変換します。逆方向の変換（送信方向）は `Send.Raw_ob12()` メソッドで処理されます。
+Converterは**正方向の変換**（受信方向）のみを担当し、プラットフォームのネイティブイベントデータを OneBot12 標準形式に変換します。逆方向の変換（送信方向）は `Send.Raw_ob12()` メソッドで処理されます。
 
 ### 核心原則
 
-1. **無損変換**：元のデータはすべて `{platform}_raw` フィールドに完全に保持される必要があります
-2. **標準互換性**：変換後のイベントは OneBot12 標準形式に準拠している必要があります
-3. **プラットフォーム拡張**：プラットフォーム固有のデータは `{platform}_` で始まるフィールドに格納されます
+1. **無損変換**：元のデータは必ず `{platform}_raw` フィールドに完全に保持される
+2. **標準互換性**：変換後のイベントは OneBot12 標準形式に準拠する
+3. **プラットフォーム拡張**：プラットフォーム固有のデータは `{platform}_` で始まるフィールドに格納する
 
-## BaseConverter 基底クラス（推奨）
+## BaseConverter基底クラス（推奨）
 
-2.7.0 以降、フレームワークは `BaseConverter` 基底クラス（`ErisPulse.Core.Bases`）を提供しており、OneBot12 イベントの**共通フィールド構築**と**一般的なメッセージセグメント補助**をカプセル化しています。これにより、コンバーターは型マッピングにのみ集中できます。
+2.7.0以降、フレームワークは `BaseConverter` 基底クラス（`ErisPulse.Core.Bases`）を提供しており、OneBot12イベントの**共通フィールド構築**と**一般的なメッセージセグメントの補助**をカプセル化しています。これにより、コンバーターは型マッピングに集中することができます。
 
 ```python
 from ErisPulse.Core.Bases import BaseConverter
@@ -5465,14 +5526,14 @@ class MyConverter(BaseConverter):
 
 `build_base_event()` で既に埋め込まれている共通フィールド：
 
-| フィールド | 情報源 |
+| フィールド | 来源 |
 |------|------|
-| `id` | `raw_event["event_id"]`、不足時は UUID を自動生成 |
+| `id` | `raw_event["event_id"]`、不足時はUUIDを自動生成 |
 | `time` | `raw_event["timestamp"]`、不足時は現在時刻 |
 | `platform` | コンストラクタで渡された `platform` |
 | `self` | `{"platform": ..., "user_id": raw_event["bot_id"]}` |
-| `{platform}_raw` | 原始イベント（「無損失変換」の原則を満たす） |
-| `{platform}_raw_type` | 原始イベントの型 |
+| `{platform}_raw` | 原始イベント（「無損変換」の原則を満たす） |
+| `{platform}_raw_type` | 原始イベントの型名 |
 
 一般的なメッセージセグメント補助メソッド（すべて静的メソッドで、直接再利用可能）：
 
@@ -5482,19 +5543,19 @@ converter.at("123456")        # {"type": "at", "data": {"user_id": "123456"}}
 converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
 ```
 
-> 手動実装では、`build_base_event` の共通フィールド構築は繰り返し書く必要のある定型コードです。`BaseConverter` を使用することで、この部分を省略でき、また「無損失変換」（原始イベントは常に `{platform}_raw` に格納される）を自然に満たします。
+> 手動実装の際、`build_base_event` の共通フィールド構築は繰り返し書く必要のある定型コードです。`BaseConverter` を使用することで、この部分を省略でき、かつ「無損変換」（原始イベントは常に `{platform}_raw` に格納される）が自然に満たされます。
 
-## convert() メソッド
+## convert()メソッド
 
 ### メソッド署名
 
 ```python
 def convert(self, raw_event: dict) -> dict:
     """
-    プラットフォーム固有のイベントを OneBot12 標準フォーマットに変換します。
+    プラットフォームのネイティブイベントを OneBot12 標準形式に変換する
 
-    :param raw_event: プラットフォーム固有のイベントデータ
-    :return: OneBot12 標準フォーマットのイベント辞書
+    :param raw_event: プラットフォームのネイティブイベントデータ
+    :return: OneBot12 標準形式のイベント辞書
     """
     pass
 ```
@@ -5505,10 +5566,10 @@ def convert(self, raw_event: dict) -> dict:
 
 ```python
 {
-    "id": "イベントの唯一ID",
-    "time": 1234567890,           # Unix タイムスタンプ（秒）
-    "type": "message",             # イベントの種類
-    "detail_type": "private",      # 詳細な種類
+    "id": "イベントの一意ID",
+    "time": 1234567890,           # Unixタイムスタンプ（秒）
+    "type": "message",             # イベントの型
+    "detail_type": "private",      # 詳細型
     "platform": "myplatform",      # プラットフォーム名
     "self": {
         "platform": "myplatform",
@@ -5516,47 +5577,47 @@ def convert(self, raw_event: dict) -> dict:
     },
 
     # メッセージイベントのフィールド
-    "user_id": "送信者のID",
-    "message": [...],              # OneBot12 メッセージセグメントのリスト
+    "user_id": "sender_id",
+    "message": [...],              # OneBot12 メッセージセグメントリスト
     "alt_message": "プレーンテキストの内容",
 
-    # 原始データを保持する必要がある
-    "myplatform_raw": { ... },     # プラットフォーム固有のイベントの完全なデータ
-    "myplatform_raw_type": "プラットフォーム固有のイベントタイプ名",
+    # 原始データを必ず保持する
+    "myplatform_raw": { ... },     # プラットフォームのネイティブイベントの完全なデータ
+    "myplatform_raw_type": "ネイティブイベントの型名",
 }
 ```
 
 ## 必須フィールドのマッピング
 
-### 一般的なフィールド（すべてのイベントタイプ）
+### 一般的なフィールド（すべてのイベント型に共通）
 
 | OB12 フィールド | 型 | 説明 |
 |-----------|------|------|
-| `id` | str | イベントの一意の識別子 |
-| `time` | int | Unix タイムスタンプ（秒） |
-| `type` | str | イベントの種類：`message` / `notice` / `request` / `meta` |
-| `detail_type` | str | 詳細なタイプ：`private` / `group` / `friend` など |
-| `platform` | str | プラットフォーム名。アダプターの登録名と同じ |
+| `id` | str | イベントの一意識別子 |
+| `time` | int | Unixタイムスタンプ（秒） |
+| `type` | str | イベントの型：`message` / `notice` / `request` / `meta` |
+| `detail_type` | str | 詳細型：`private` / `group` / `friend` 等 |
+| `platform` | str | プラットフォーム名、アダプター登録名と一致する |
 | `self` | dict | ロボット情報：`{"platform": "...", "user_id": "..."}` |
 
 ### メッセージイベントの追加フィールド
 
 | OB12 フィールド | 型 | 説明 |
 |-----------|------|------|
-| `user_id` | str | 送信者の ID |
+| `user_id` | str | 送信者のID |
 | `message` | list[dict] | OneBot12 メッセージセグメントのリスト |
-| `alt_message` | str | 純粋なテキストの代替内容 |
+| `alt_message` | str | プレーンテキストの代替内容 |
 
 ### 通知イベントの追加フィールド
 
 | OB12 フィールド | 型 | 説明 |
 |-----------|------|------|
-| `user_id` | str | 関連するユーザーの ID |
-| `operator_id` | str | 操作者の ID（例：グループメンバーの変更時） |
+| `user_id` | str | 関連するユーザーのID |
+| `operator_id` | str | 操作者のID（例：グループメンバーの変更時） |
 
 ## メッセージセグメントの変換
 
-OneBot12 標準では、以下のメッセージセグメントタイプが定義されています：
+OneBot12 標準は以下のメッセージセグメント型を定義しています：
 
 ```python
 # テキスト
@@ -5580,15 +5641,15 @@ OneBot12 標準では、以下のメッセージセグメントタイプが定�
 # @全員
 {"type": "mention_all", "data": {}}
 
-# 返信
+# 回答
 {"type": "reply", "data": {"message_id": "msg_123"}}
 ```
 
-プラットフォームがサポートしていないメッセージセグメントタイプがある場合、そのセグメントを省略するか、最も近い標準タイプに変換することができます。
+プラットフォームがサポートしていないメッセージセグメント型がある場合、そのセグメントを省略するか、最も近い標準型に変換することができます。
 
 ## プラットフォーム拡張フィールド
 
-プラットフォーム固有のデータは、標準フィールドとの競合を避けるために `{platform}_` という接頭辞を使用して保存してください。
+プラットフォーム固有のデータは、`{platform}_` で始まるフィールドに格納し、標準フィールドとの衝突を避ける必要があります：
 
 ```python
 {
@@ -5599,19 +5660,19 @@ OneBot12 標準では、以下のメッセージセグメントタイプが定�
 
     # プラットフォーム拡張フィールド
     "myplatform_raw": { ... },          # 原始イベントデータ（必須）
-    "myplatform_raw_type": "chat",      # 原始イベントの種類（必須）
+    "myplatform_raw_type": "chat",      # 原始イベントの型名（必須）
 
     # その他のプラットフォーム固有のフィールド
-    "myplatform_group_name": "群名称",
-    "myplatform_sender_role": "admin",
+    "myplatform_group_name": "グループ名",
+    "myplatform_sender_role": "管理者",
 }
 ```
 
-> **重要**：`{platform}_raw` フィールドは必須です。ErisPulse のイベントシステムやモジュールは、プラットフォームの元のデータにアクセスするためにこのフィールドに依存することがあります。
+> **重要**：`{platform}_raw` フィールドは必須であり、ErisPulse のイベントシステムやモジュールは、このフィールドを介してプラットフォームの原始データにアクセスできる可能性があります。
 
-## 完整例
+## 完全な実装例
 
-以下は Converter の完全な実装例です：
+以下は、完全な Converter 実装の一例です：
 
 ```python
 class MyConverter:
@@ -5691,13 +5752,13 @@ class MyConverter:
         return base
 ```
 
-## 富媒体メッセージ変換の例
+## ファイバーメディアメッセージの変換例
 
-実際のプラットフォームのメッセージには、画像、@メンション、返信などの富媒体コンテンツが含まれることが多いです。以下は、`_convert_message_segments` が複数のメッセージタイプを処理する例です：
+実際のプラットフォームのメッセージは、画像、@メンション、回答などのファイバーメディアコンテンツを含むことがよくあります。以下は、`_convert_message_segments` で複数のメッセージ型を処理する例です：
 
 ```python
 def _convert_message_segments(self, raw_content: list) -> list:
-    """プラットフォーム固有のメッセージセグメントリストを OneBot12 標準のメッセージセグメントに変換する"""
+    """プラットフォームのネイティブメッセージセグメントリストを OneBot12 標準メッセージセグメントに変換する"""
     segments = []
 
     for item in raw_content:
@@ -5740,20 +5801,20 @@ def _convert_message_segments(self, raw_content: list) -> list:
     return segments
 ```
 
-## 常見の落とし穴
+## 一般的な落とし穴
 
 ### 1. `{platform}_raw` フィールドの欠落
 
-これは最も一般的なエラーです。元データフィールドが欠落していると、モジュールがプラットフォーム固有の情報をアクセスできなくなります。
+これは最も一般的な間違いです。元のデータフィールドを欠くと、モジュールがプラットフォーム固有の情報をアクセスできなくなります。
 
 ```python
 base_event["myplatform_raw"] = raw_event        # 必須！
 base_event["myplatform_raw_type"] = event_type   # 必須！
 ```
 
-### 2. 時間スタンプの形式エラー
+### 2. タイムスタンプ形式の誤り
 
-OneBot12 標準では、`time` フィールドは Unix 秒単位の時間スタンプ（整数）である必要があります。もしプラットフォームがミリ秒単位の時間スタンプや ISO 形式の文字列を返している場合、変換が必要です。
+OneBot12 標準では、`time` フィールドは Unix 秒単位のタイムスタンプ（整数）である必要があります。もしプラットフォームがミリ秒単位のタイムスタンプや ISO 形式の文字列を返している場合、変換が必要です：
 
 ```python
 import time
@@ -5761,13 +5822,13 @@ import time
 # ミリ秒 → 秒
 "time": raw_event.get("timestamp", 0) // 1000
 
-# ISO 文字列 → 秒
+# ISO文字列 → 秒
 "time": int(time.mktime(time.strptime(raw_event["created_at"], "%Y-%m-%dT%H:%M:%S")))
 ```
 
 ### 3. `self` フィールドの欠落
 
-`self` フィールドには、ロボット自身の情報が含まれており、`user_id` はロボットのアカウント ID です。複数の Bot が存在する状況では、このフィールドは非常に重要です。
+`self` フィールドにはロボット自身の情報が含まれており、`user_id` はロボットのアカウントIDです。複数の Bot が存在する場面では、このフィールドは非常に重要です：
 
 ```python
 "self": {
@@ -5776,21 +5837,21 @@ import time
 }
 ```
 
-### 4. `detail_type` に非標準の値を使用
+### 4. `detail_type` に非標準値を使用
 
-`detail_type` には、OneBot12 標準で定義された値、例えば `private`、`group`、`friend_increase`、`group_member_increase` などを使用する必要があります。プラットフォーム固有の命名は使用しないでください。
+`detail_type` には OneBot12 標準で定義された値（例：`private`、`group`、`friend_increase`、`group_member_increase`）を使用する必要があります。プラットフォーム固有の命名は使用しないでください。
 
-### 5. 送受信の一貫性
+### 5. 往復の一貫性
 
-Converter が生成するメッセージセグメントの型が、Send 端でサポートされているメソッドに対応していることを確認してください。たとえば、Converter がプラットフォームの画像メッセージを `{"type": "image", ...}` に変換した場合、Send 端の `Image()` メソッドは画像の送信を処理できる必要があります。
+Converter が生成するメッセージセグメントの型と Send 端の対応するメソッドが一致していることを確認してください。たとえば、Converter がプラットフォームの画像メッセージを `{"type": "image", ...}` に変換した場合、Send 端の `Image()` メソッドは画像送信を処理できる必要があります。
 
-## 最佳実践
+## 最善の実践
 
-1. **常に元のデータを保持する**：`{platform}_raw` フィールドは省略しないでください。
-2. **標準メッセージセグメントを使用する**：可能な限りプラットフォームのメッセージを OneBot12 標準メッセージセグメントに変換してください。
-3. **detail_type を適切に設定する**：標準の型（`private`/`group`/`channel` など）を使用し、独自に定義しないでください。
-4. **境界ケースを処理する**：元のイベントにフィールドが欠けている可能性があるため、`.get()` を使用し、適切なデフォルト値を提供してください。
-5. **パフォーマンスの考慮**：`convert()` は各イベントで呼び出されるため、ここで処理に時間がかかる操作を避けてください。
+1. **常に元のデータを保持する**：`{platform}_raw` フィールドは省略しない
+2. **標準メッセージセグメントを使用する**：できるだけプラットフォームのメッセージを OneBot12 標準メッセージセグメントに変換する
+3. **`detail_type` を適切に設定する**：標準型（`private`/`group`/`channel` 等）を使用し、独自の命名はしない
+4. **境界条件を処理する**：元のイベントに特定のフィールドが欠けている可能性があるため、`.get()` を使用し、適切なデフォルト値を提供する
+5. **パフォーマンスを考慮する**：`convert()` は各イベントで呼び出されるため、ここで時間のかかる処理を実行しない
 
 
 
@@ -5801,9 +5862,12 @@ Converter が生成するメッセージセグメントの型が、Send 端で�
 
 ### 发布模块到模块商店
 
-# モジュール商店への公開ガイド
+# リリースとモジュールストアガイド
 
-ErisPulse モジュール商店に開発したモジュールやアダプタを公開し、他のユーザーが簡単に発見してインストールできるようにしましょう。
+> [!TIP]
+> **この記事を読むタイミング**：作品を PyPI / モジュールストアにリリースする場合。不要な場合は飛ばしても、他の機能の使用には影響しません。
+
+ErisPulse モジュールストアに開発したモジュールやアダプタをリリースし、他のユーザーが簡単に発見・インストールできるようにしましょう。
 
 ## モジュール商店の概要
 
@@ -6195,14 +6259,17 @@ services:
 
 # モジュールテスト（ErisPulse-Testing）
 
-[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) は公式のテストツールキット（RFC EPRFC-2026-001 方向三）です。  
-`TestBot`、テストイベント工場、出力メッセージのキャプチャとアサーション機能を提供し、モジュールのテストを通常の pytest と同じように簡単に実現します。
+> [!TIP]
+> **このドキュメントを読むタイミング**：自身のモジュールに自動テストを書く必要がある場合。不要であれば飛ばしても、他の機能の使用に影響はありません。
+
+[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) は公式のテストツールキット（RFC EPRFC-2026-001 方向三）です：
+`TestBot`、テストイベント工場、出力メッセージのキャプチャとアサーション機能を提供し、モジュールのテストを通常の pytest と同じように簡単に実行できます。
 
 ```bash
 pip install ErisPulse-Testing
 ```
 
-> 開発期にフレームワークに依存するツールであり、実行時には一切介入しません。本格的なアダプタープラットフォームのスモークテストは、フレームワークのリポジトリにある `tests/devs/test_adapter.py` を使用してください。
+> フレームワークの開発時のみに依存するツールで、実行時には一切介入しません。実際のアダプタープラットフォームとの冒険テスト（スモークテスト）は、フレームワークリポジトリの `tests/devs/test_adapter.py` を使用してください。
 
 ## 快速开始
 
@@ -6339,11 +6406,11 @@ trace.assert_no_match()         # 断言未命中
 
 ### CLI 命令参考
 
-# CLIコマンドリファレンス
+# CLI コマンドリファレンス
 
-ErisPulseコマンドラインツール（`epsdk`）は、プロジェクト管理とパッケージ管理機能を提供します。
+ErisPulse コマンドラインツール（`epsdk`）は、プロジェクト管理およびパッケージ管理機能を提供します。
 
-> **ヒント**：すべてのコマンドは `epsdk <コマンド> --help` で詳細なパラメータ説明を確認できます。
+> **ヒント**：すべてのコマンドは `epsdk <コマンド> --help` を使用して詳細なパラメータの説明を表示できます。`epsdk`（コマンドなし）の主なヘルプはカテゴリ別にグループ化され、**プロジェクト**（init / create / run）、**コンポーネント管理**（install / uninstall / upgrade / list / list-remote / types）、**設定と診断**（config / doctor / i18n）、**その他**（self-update / version）が含まれます。
 
 ---
 
@@ -6351,54 +6418,54 @@ ErisPulseコマンドラインツール（`epsdk`）は、プロジェクト管�
 
 | コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | モジュール/アダプターをインストール |
-| `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | モジュール/アダプターをアンインストール |
-| `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | 指定されたモジュールまたはすべてをアップグレード |
-| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | SDK自体を更新 |
+| `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | モジュール/アダプタのインストール |
+| `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | モジュール/アダプタのアンインストール |
+| `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | 指定したモジュールまたはすべてをアップグレード |
+| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | SDK 自体の更新 |
 
-## ディアグノスティックコマンド
+## 診断コマンド
 
 | コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `doctor` | `diag` | `[--verbose]` | 環境を診断し、健全性レポートを出力 |
+| `doctor` | `diag` | `[--verbose] [--fix]` | 環境を診断し、健全性レポートを出力します。`--fix` は自動的に修正を試みます |
 
 ### install
 
-ErisPulseモジュールまたはアダプターパッケージをインストールします。パッケージ名を指定しない場合は、対話形式のインストールインターフェースに移行します。
+ErisPulse モジュールまたはアダプタパッケージをインストールします。パッケージ名を指定しない場合は、対話形式のインストールインターフェースに移行します。
 
 **別名：** `i`, `add`
 
 **パラメータ：**
 
-| パラメータ | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `[package]...` | | インストールするパッケージ名、複数指定可 |
-| `--upgrade` | `-U` | インストール時に最新版にアップグレード |
-| `--pre` | | プリリリース版を許可 |
+| `[package]...` | | インストールするパッケージ名、複数指定可能 |
+| `--upgrade` | `-U` | インストール時に最新バージョンにアップグレード |
+| `--pre` | | プレリリース版のインストールを許可 |
 | `--editable` | `-e` | 編集可能なモードでインストール（パスを指定する必要あり） |
-| `--user` | | ユーザーのsite-packagesディレクトリにインストール |
+| `--user` | | ユーザーの site-packages ディレクトリにインストール |
 | `--no-deps` | | 依存関係をインストールしない |
 | `--target` | `-t` | 指定したディレクトリにインストール |
-| `--index-url` | | PyPIのミラーサイトのURLを指定 |
-| `--extra-index-url` | | 余分なPyPIのミラーサイトのURL（複数指定可） |
+| `--index-url` | | PyPI ミラーサーバーのURLを指定 |
+| `--extra-index-url` | | 余分な PyPI ミラーサーバーのURL（複数指定可能） |
 | `--no-cache-dir` | | キャッシュを無効化 |
-| `--requirement` | `-r` | requirementsファイルからインストール |
+| `--requirement` | `-r` | requirements ファイルからインストール |
 | `--constraint` | `-c` | 制約ファイルからインストール |
 | `--force-reinstall` | | 強制的に再インストール |
-| `--ignore-installed` | | 既にインストールされているパッケージを無視 |
-| `--compile` | | インストール後に.pycファイルをコンパイル |
-| `--no-compile` | | インストール後に.pycファイルをコンパイルしない |
+| `--ignore-installed` | | 既にインストールされたパッケージを無視 |
+| `--compile` | | インストール後に .pyc ファイルをコンパイル |
+| `--no-compile` | | インストール後に .pyc ファイルをコンパイルしない |
 | `--prefix` | | 指定したプレフィックスディレクトリにインストール |
 | `--src` | | 編集可能なインストール時に使用するソースコードディレクトリ |
-| `--config-settings` | | ビルドバックエンドに渡す設定（複数指定可） |
-| `--no-binary` | | 二進数パッケージの使用を制限（形式は`:all:`など） |
-| `--only-binary` | | 二進数パッケージのみを使用する（形式は`:all:`など） |
-| `--prefer-binary` | | 二進数パッケージを優先 |
-| `--build-isolation` | | ビルドの隔離を有効化 |
-| `--no-build-isolation` | | ビルドの隔離を無効化 |
-| `--upgrade-strategy` | | アップグレード戦略：`eager`、`only-if-needed`、`to-satisfy-only` |
-| `--break-system-packages` | | システムパッケージマネージャーが管理するPythonパッケージの変更を許可 |
-| `--no-uv` | | uvの代わりにpipを使用 |
+| `--config-settings` | | ビルドバックエンドに渡す設定（複数指定可能） |
+| `--no-binary` | | 二進位パッケージの使用を制限（`:all:` の形式） |
+| `--only-binary` | | 二進位パッケージのみを使用する（`:all:` の形式） |
+| `--prefer-binary` | | 二進位パッケージを優先 |
+| `--build-isolation` | | ビルド隔離を有効化 |
+| `--no-build-isolation` | | ビルド隔離を無効化 |
+| `--upgrade-strategy` | | インストール戦略：`eager`、`only-if-needed`、`to-satisfy-only` |
+| `--break-system-packages` | | システムパッケージマネージャーが管理する Python パッケージを変更を許可 |
+| `--no-uv` | | uv の代わりに pip を使用 |
 
 **例：**
 
@@ -6409,7 +6476,7 @@ epsdk install Weather
 # 複数モジュールのインストール
 epsdk install Yunhu Weather
 
-# ミラーからインストールし、アップグレード
+# ミラーからインストールしてアップグレード
 epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 編集可能なモードでインストール（開発モード）
@@ -6418,7 +6485,7 @@ epsdk install -e ./my-adapter
 
 ### uninstall
 
-インストール済みのErisPulseモジュールまたはアダプターパッケージをアンインストールします。パッケージ名を指定しない場合は、対話形式のアンインストールインターフェースに移行します。
+インストール済みの ErisPulse モジュールまたはアダプタパッケージをアンインストールします。パッケージ名を指定しない場合は、対話形式のアンインストールインターフェースに移行します。
 
 **別名：** `rm`, `remove`
 
@@ -6426,8 +6493,8 @@ epsdk install -e ./my-adapter
 
 | パラメータ | 説明 |
 |------|------|
-| `<package>...` | アンインストールするパッケージ名、複数指定可 |
-| `--no-uv` | uvの代わりにpipを使用 |
+| `<package>...` | アンインストールするパッケージ名、複数指定可能 |
+| `--no-uv` | uv の代わりに pip を使用 |
 
 **例：**
 
@@ -6441,46 +6508,46 @@ epsdk uninstall Yunhu Weather
 
 ### upgrade
 
-インストール済みのErisPulseコンポーネントをアップグレードします。パッケージ名を指定しない場合は、対話形式ですべてをアップグレードします。
+インストール済みの ErisPulse コンポーネントをアップグレードします。パッケージ名を指定しない場合は、対話形式で全アップグレードを行います。
 
 **別名：** `up`
 
 **パラメータ：**
 
-| パラメータ | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `[package]...` | | アップグレードするパッケージ名、複数指定可 |
-| `--force` | `-f` | 強制的にアップグレード、確認をスキップ |
-| `--pre` | | プリリリース版へのアップグレードを許可 |
-| `--no-uv` | | uvの代わりにpipを使用 |
+| `[package]...` | | アップグレードするパッケージ名、複数指定可能 |
+| `--force` | `-f` | 強制アップグレード、確認をスキップ |
+| `--pre` | | プレリリース版へのアップグレードを許可 |
+| `--no-uv` | | uv の代わりに pip を使用 |
 
 **例：**
 
 ```bash
-# すべてのパッケージをアップグレード
+# 全てのパッケージをアップグレード
 epsdk upgrade
 
-# 指定されたパッケージをアップグレード
+# 指定パッケージをアップグレード
 epsdk upgrade Weather
 
-# 強制的にアップグレード（確認をスキップ）
+# 強制アップグレード（確認をスキップ）
 epsdk upgrade -f
 ```
 
 ### self-update
 
-ErisPulse SDKを最新版に更新します。
+ErisPulse SDK 自体を最新バージョンに更新します。
 
 **別名：** `su`, `update`
 
 **パラメータ：**
 
-| パラメータ | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
 | `[version]` | | 更新するターゲットバージョンを指定 |
-| `--pre` | | プリリリース版への更新を許可 |
-| `--force` | `-f` | 強制的に更新、確認をスキップ |
-| `--no-uv` | | uvの代わりにpipを使用 |
+| `--pre` | | プレリリース版への更新を許可 |
+| `--force` | `-f` | 強制更新、確認をスキップ |
+| `--no-uv` | | uv の代わりに pip を使用 |
 
 **例：**
 
@@ -6491,15 +6558,16 @@ epsdk self-update
 # 指定バージョンに更新
 epsdk self-update 1.2.3
 
-# プリリリース版を許可
+# プレリリース版を許可
 epsdk self-update --pre
 
-# 強制的に更新
+# 強制更新
 epsdk self-update -f
 ```
 
 > [!NOTE]
-> `uv tool install ErisPulse`でインストールする場合、本コマンドは自動的に`uv tool upgrade ErisPulse`（バージョン指定時は`uv tool install ErisPulse==<バージョン> --force`）に切り替わります。直接pipでツール環境をアップグレードすると、uvの清单が元に戻され、ツール環境のファイルが占有されているため、更新は新しいコンソールウィンドウで行われます：現在のCLIはツール環境ファイルの占有を解除するために終了する必要があります。ウィンドウのプロンプトが完了したら、ターミナルを再起動してください。
+> `uv tool install ErisPulse` でインストールする場合、このコマンドは自動的に `uv tool upgrade ErisPulse`（バージョン指定時は `uv tool install ErisPulse==<バージョン> --force`）に変更されます。直接 pip でツール環境をアップグレードすると、uv のリストアによってツール環境のファイルが上書きされます。
+> Windows での更新は新しいコマンドプロンプトウィンドウで行われます：現在の CLI はツール環境のファイルの使用を解除するために終了する必要があります。ウィンドウのプロンプトが完了したら、ターミナルを再起動してください。
 
 ---
 
@@ -6508,61 +6576,61 @@ epsdk self-update -f
 | コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
 | `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | インストール済みのコンポーネントを一覧表示 |
-| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | リモートリポジトリで利用可能なコンポーネントを一覧表示 |
-| `version` | `ver` | | SDKとPythonのバージョン情報を表示（`-V`と同等） |
+| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | リモートで利用可能なコンポーネントを一覧表示 |
+| `version` | `ver` | | SDK と Python のバージョン情報を表示（`-V` と同等） |
 
 ### list
 
-インストール済みのErisPulseモジュールとアダプターを一覧表示します。
+ErisPulse モジュールとアダプタを一覧表示します。
 
 **別名：** `l`, `ls`
 
 **パラメータ：**
 
-| パラメータ | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `--type` | `-t` | タイプを指定：`modules`、`adapters`、`all`（デフォルト） |
+| `--type` | `-t` | 指定するタイプ：`modules`、`adapters`、`all`（デフォルト） |
 | `--outdated` | `-o` | アップグレード可能なパッケージのみ表示 |
 
 **例：**
 
 ```bash
-# すべてのインストール済みコンポーネントを一覧表示
+# インストール済みのすべてのコンポーネントを一覧表示
 epsdk list
 
 # モジュールのみを一覧表示
 epsdk list -t modules
 
-# アダプターのみを一覧表示
+# アダプタのみを一覧表示
 epsdk list -t adapters
 
-# アップグレード可能なパッケージのみ表示
+# アップグレード可能なパッケージのみを表示
 epsdk list -o
 ```
 
 ### list-remote
 
-リモートリポジトリで利用可能なErisPulseモジュールとアダプターを一覧表示します。
+リモートリポジトリで利用可能な ErisPulse モジュールとアダプタを一覧表示します。
 
 **別名：** `lsr`
 
 **パラメータ：**
 
-| パラメータ | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `--type` | `-t` | タイプを指定：`modules`、`adapters`、`all`（デフォルト） |
+| `--type` | `-t` | 指定するタイプ：`modules`、`adapters`、`all`（デフォルト） |
 | `--refresh` | `-r` | リモートパッケージリストのキャッシュを強制的に更新 |
 
 **例：**
 
 ```bash
-# すべてのリモートで利用可能なコンポーネントを一覧表示
+# リモートで利用可能なすべてのコンポーネントを一覧表示
 epsdk list-remote
 
 # リモートのモジュールのみを一覧表示
 epsdk list-remote -t modules
 
-# キャッシュを強制的に更新して一覧表示
+# キャッシュを強制的に更新して表示
 epsdk list-remote -r
 ```
 
@@ -6572,69 +6640,69 @@ epsdk list-remote -r
 
 | コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `config` | `cfg`, `conf` | `[name] [--list/-l] [--json]` | アダプター/モジュールの宣言的設定項目を対話形式で設定 |
+| `config` | `cfg`, `conf` | `[name] [--list/-l] [--json]` | アダプタ/モジュールの宣言的設定項目を対話形式で設定 |
 
 ### config
 
-アダプター/モジュールの宣言的設定項目を対話形式で設定します。アダプター/モジュールが宣言した設定クラス（`ConfigClass` / `AccountConfigClass`）によって、自動的にフォームが生成され、検証が行われ、config.tomlを手動で書く必要がありません。
+アダプタ/モジュールの宣言的設定項目を対話形式で設定します。アダプタ/モジュールが宣言した設定クラス（`ConfigClass` / `AccountConfigClass`）によって、自動的にフォームが生成され、検証が行われます。`config.toml` を手動で書く必要はありません。
 
-アダプターは追加で、複数のアカウント（botアカウント）を管理できます：アカウントの追加/編集/削除、および有効化/無効化のスイッチ。
+アダプタは追加で、複数のアカウント（botアカウント）の管理をサポートしています：アカウントの追加/編集/削除、および有効化/無効化のスイッチ。
 
 **別名：** `cfg`, `conf`
 
 **パラメータ：**
 
-| パラメータ | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `[name]` | | ターゲット名（アダプタープラットフォーム名またはモジュール名）、空欄で対話形式選択 |
-| `--list` | `-l` | 対話形式に入らず、すべてのターゲットの設定状態を一覧表示 |
-| `--json` | | 全てのターゲットとその設定状態をJSON形式で出力（CI / スクリプト用）、対話形式に入らず |
+| `[name]` | | 対象の名前（アダプタのプラットフォーム名またはモジュール名）、空欄の場合は対話形式で選択 |
+| `--list` | `-l` | 対象の設定状態を一覧表示し、対話形式に入らない |
+| `--json` | | 全ての対象とその設定状態を JSON 形式で出力（CI / スクリプト用）、対話形式に入らない |
 
 **例：**
 
 ```bash
-# すべてのアダプター/モジュールの設定状態を表示
+# すべてのアダプタ/モジュールの設定状態を表示
 epsdk config --list
 
-# 設定状態をJSON形式で出力（CI / スクリプト用）
+# 設定状態を JSON 形式で出力（CI / スクリプト用）
 epsdk config --json
 
-# 対話形式でターゲットを設定
+# 対話形式で対象を選択して設定
 epsdk config
 
-# 指定されたアダプターを直接設定
+# 指定アダプタを直接設定
 epsdk config yunhu
 
-# 指定されたモジュールを直接設定
+# 指定モジュールを直接設定
 epsdk config MyModule
 ```
 
 **説明：**
 
-- 設定状態は4段階です：`完了`（検証通過）、`未完成`（必須項目不足または検証失敗）、`未設定`（未生成）、`無設定`（ターゲットが設定クラスを宣言していない）
-- フィールド値にはソースが表示されます：既に設定されている場合は`（現在:値）`、未設定の場合はschemaのデフォルト値`（デフォルト:値）`が表示されます；直接Enterを押すとその値が保持されます
-- `secret`と宣言されたキー型フィールドは、入力時に表示されず、Enterを押すと既に設定された値が保持されます
-- 対話形式選択モードでは、1つのフォームが終了した後、状態が更新された選択メニューに戻り、複数のターゲットを連続して設定でき、空欄で終了します
-- グローバルフォームの検証が失敗し、再入力を放棄した場合、今回のフォームは中止され、設定は一切書き込まれません（「有効化済みだが設定が不完全」の半完成状態を避けるため）
-- 保存後、`config/config.toml`に即座に書き込まれ、ダッシュボードと実行中のSDKで確認できます；実行中のアダプターは、新しいアカウント設定を適用するには、プロセスを再起動する必要があります
-- `epsdk install`（対話形式インストール）と`epsdk init`でアダプターをインストールした後、設定宣言を検出すると、自動的に本フォームに誘導されます；コマンドラインで直接パッケージ名を指定してインストールした場合は、設定の提示のみ表示されます
+- 設定状態は4段階に分類されます：`完了`（検証通過）、`未完了`（必須項目が欠落または検証失敗）、`未設定`（未生成）、`無設定`（設定クラスが宣言されていない）
+- フィールド値にはソースが表示されます：既に設定されている場合は `（現在:値）`、未設定の場合は schema のデフォルト値 `（デフォルト:値）` が表示されます。直接 Enter すると、その値が保持されます。
+- シークレットフィールド（`secret` と宣言）は、入力時に表示されず、Enter で既存の値を保持します。
+- 対話形式で選択した場合、1つのフォームが終了すると状態が更新され、選択メニューに戻り、複数の対象を連続して設定できます。空欄で終了します。
+- グローバルフォームの検証が失敗し、再入力を放棄した場合、今回の対話は中止され、設定は一切書き込まれません（「有効化されているが設定が不完全」の半完成状態を避けるため）。
+- 保存後、`config/config.toml` に即時書き込まれ、ダッシュボードと実行中の SDK で確認できます。実行中のアダプタが新しいアカウントの設定を適用するには、プロセスを再起動する必要があります。
+- `epsdk install`（対話形式のインストール）または `epsdk init` でアダプタをインストールした後、設定宣言が検出された場合、自動的に本対話形式の設定に誘導されます。コマンドラインで直接パッケージ名を指定してインストールした場合、設定の提示のみ表示されます。
 
 ---
 
 ## 実行制御コマンド
 
 > [!TIP]
-> `epsdk run`は、プロジェクトディレクトリ内の`.venv`仮想環境を自動的に検出し、使用してロボットを実行します
-> （`ERISPULSE_PYTHON`環境変数で明示的に解釈子を指定することもできます）。`epsdk install` /
-> `uninstall` / `upgrade` / `list`もプロジェクト仮想環境に作用します。
+> `epsdk run` は、プロジェクトディレクトリ内の `.venv` 仮想環境を自動的に検出し、使用してロボットを実行します。
+> （`ERISPULSE_PYTHON` 環境変数を明示的に指定して、解釈子を指定することもできます）。`epsdk install` /
+> `uninstall` / `upgrade` / `list` も同様にプロジェクト仮想環境に作用します。
 
 | コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `run` | `r` | `[script] [--reload]` | 指定されたスクリプトまたはSDKを実行 |
+| `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | 指定スクリプトまたは SDK を実行 |
 
 ### run
 
-ErisPulseプロジェクトスクリプトまたはSDKを実行します。ホットリロードモードをサポートします。
+ErisPulse プロジェクトのスクリプトまたは SDK を実行します。ホットリロードモードもサポートします。
 
 **別名：** `r`
 
@@ -6642,24 +6710,33 @@ ErisPulseプロジェクトスクリプトまたはSDKを実行します。ホ�
 
 | パラメータ | 説明 |
 |------|------|
-| `[script]` | 実行するスクリプトファイル、指定しない場合はSDKを実行 |
+| `[script]` | 実行するスクリプトファイル、指定しない場合は SDK を実行 |
 | `--reload` | ホットリロードモードを有効化、ファイル変更を監視して自動的に再起動 |
+| `--strict` / `--no-strict` | 一時的に厳格モードを有効化 / 無効化（今回の実行にのみ有効、設定ファイルには書き込まれない）；デフォルトは `ErisPulse.framework.strict_mode` に従う |
 
 **例：**
 
 ```bash
-# SDKを直接実行
+# SDK を直接実行
 epsdk run
 
-# 指定されたスクリプトファイルを実行
+# 指定スクリプトファイルを実行
 epsdk run main.py
 
 # ホットリロードモードで実行（ファイル変更で自動再起動）
 epsdk run main.py --reload
 
-# SDKのホットリロードモード
+# SDK のホットリロードモード
 epsdk run --reload
+
+# 一時的な厳格モード：起動前の自己検証が失敗すると終了し、フレームワークの厳格レベルを一時的に1以上に上げる
+epsdk run main.py --strict
+
+# 一時的な緩和モード（設定で strict_mode がオンになっているが、今回は先に動かしたい）
+epsdk run main.py --no-strict
 ```
+
+**起動前の自己検証：** `run` は起動前に `config/config.toml` の可解析性と、インストール済みコンポーネントの必須設定の完全性を迅速にチェックします。厳格性はデフォルトで `ErisPulse.framework.strict_mode` に従います（0でない場合、チェック失敗で終了、0の場合は警告のみで続行）。設定ファイルが欠落している場合は、正常な初期起動と見なし、失敗とは判定しません。`--strict` で一時的に有効化：自己検証が失敗すると終了し、フレームワークの厳格レベルを一時的に1以上に上げます（不適合コンポーネントはスキップし、`ERISPULSE_FRAMEWORK_STRICT_MODE` 環境変数を通じて実行プロセスに伝達され、設定ファイルには書き込まれません）；`--no-strict` で一時的に緩和します。自己検証自体が異常な場合は自動的にスキップされ、ネットワーク検証は含まれず、起動をブロックしません。
 
 ---
 
@@ -6667,24 +6744,25 @@ epsdk run --reload
 
 | コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | ErisPulseプロジェクトを初期化 |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | モジュール/アダプターフットワークを生成 |
+| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--adapter/-a <name>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | ErisPulse プロジェクトを初期化 |
+| `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | モジュール/アダプタのフットスタジアムを作成；`pack` はローカルプラグインを公開可能なプロジェクトに変換します |
 
 ### init
 
-新しいErisPulseプロジェクトを初期化します。対話形式とクイックモードをサポートし、2.8.4から`pyproject.toml`（依存関係リスト）、任意のディレクトリに生成可能、仮想環境`.venv`の作成とフレームワーク・アダプターのインストール、**任意のディレクトリの指定**をサポートします。
+新しい ErisPulse プロジェクトを初期化します。対話形式とクイックモードをサポートし、2.8.4 以降は `pyproject.toml`（依存関係リスト）、任意のディレクトリに作成可能な仮想環境 `.venv` の生成とフレームワークおよびアダプタのインストールをサポートします。
 
 **パラメータ：**
 
-| パラメータ | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `[path]` | | ターゲットパス（親ディレクトリを含む、例：`../apps/mybot`；純粋な名前は`--project-name`と同等） |
+| `[path]` | | 目標パス（親ディレクトリを含む可能性あり、例：`../apps/mybot`；純粋な名前は `--project-name` と同等） |
 | `--project-name` | `-n` | プロジェクト名 |
-| `--path` | | プロジェクトの親ディレクトリ（`-n`と組み合わせて作成位置を指定） |
-| `--quick` | `-q` | クイックモード、対話形式の向導をスキップ（デフォルトで`.venv`を作成し、依存関係をインストール） |
-| `--force` | `-f` | 既存の設定ファイルを強制的に上書き |
+| `--path` | | プロジェクトの親ディレクトリ（`-n` と組み合わせて作成位置を指定） |
+| `--adapter` | `-a` | 事前にインストールするアダプタ（複数指定可能、またはカンマ区切りで指定）、指定した場合はアダプタの問い合わせと選択をスキップ |
+| `--quick` | `-q` | クイックモード、対話形式のガイドをスキップ（デフォルトで `.venv` を作成し、依存関係をインストール） |
+| `--force` | `-f` | 既存の設定ファイルを上書き |
 | `--here` | | 現在のディレクトリで初期化し、サブディレクトリを作成しない |
-| `--no-uv` | | uvの代わりにpipを使用 |
+| `--no-uv` | | uv の代わりに pip を使用 |
 | `--no-venv` | | 仮想環境の作成と依存関係のインストールをスキップ |
 
 **例：**
@@ -6693,65 +6771,74 @@ epsdk run --reload
 # 対話形式で初期化
 epsdk init
 
-# クイックモードで初期化（現在のディレクトリにmy_bot/を作成し、pyproject.toml + .venvを含む）
+# クイックモードで初期化（現在のディレクトリに `my_bot/` を作成し、`pyproject.toml` + `.venv` を含む）
 epsdk init -q -n my_bot
 
-# 任意のディレクトリで初期化（../apps/mybot）
+# クイックモードで初期化し、事前にアダプタをインストール（対話形式をスキップ、スクリプト / CI 環境）
+epsdk init -q -n my_bot --adapter yunhu,telegram
+
+# 任意のディレクトリで初期化（`../apps/mybot`）
 epsdk init ../apps/mybot
 
-# 父ディレクトリとプロジェクト名を組み合わせて指定
+# 親ディレクトリとプロジェクト名を組み合わせて指定
 epsdk init -n my_bot --path ../apps
 
-# 既存の設定ファイルを強制的に上書き
+# 既存の設定ファイルを上書き
 epsdk init -f
 
 # 現在のディレクトリで初期化
 epsdk init --here -n my_bot
 
-# プロジェクト構造のみ生成し、仮想環境を作成しない
+# プロジェクト構造のみを作成し、仮想環境を作成しない
 epsdk init --no-venv -n my_bot
 ```
 
-initの生成物：`main.py`、`pyproject.toml`（依存関係リスト）、`config/config.toml` + `config.full.example`、`config/ssl/`、`logs/`、`.gitignore`、`README.md`；仮想環境を作成する場合、`.venv`を生成し、`erispulse`と選択したアダプターをその中にインストールします。
+init の成果物：`main.py`、`pyproject.toml`（依存関係リスト）、`config/config.toml` + `config.full.example`、`config/ssl/`、`logs/`、`.gitignore`、`README.md`；仮想環境を作成した場合は `.venv` を生成し、`erispulse` と選択したアダプタをその中にインストールします。
 
 > [!NOTE]
-> `.gitignore`はグループ形式のテンプレートです：Pythonのバイトコードとビルド成果物、仮想環境と`.env`、ツールのキャッシュ、エディタとシステムファイル、そして**`config/`と`logs/`の実行時ディレクトリを全体的に除外**します——`config.toml`にはアダプターのトークンなどの機密情報が含まれており、リポジトリに含めないことを推奨します；共有する設定の骨格は`config.full.example`を使用してください。
+> `.gitignore` はグループ形式のテンプレートです：Python のバイトコードとビルド成果物、仮想環境と `.env`、ツールのキャッシュ、エディタとシステムファイル、そして**`config/` と `logs/` の実行時ディレクトリを全体的に除外**します。`config.toml` にはアダプタのトークンなどの機密情報が含まれているため、リポジトリに含めるべきではありません。共有する設定の骨格は `config.full.example` を使用してください。
 
 > [!WARNING]
-> **`uv run epsdk run`でロボットを実行しないでください**。`uv run`は`pyproject.toml`のないディレクトリで実行すると**一時的な隔離環境**を作成します——その中で`epsdk install`でインストールされたアダプターは永続化されません。プロジェクトディレクトリ内で`epsdk run`を使用してください（自動的にプロジェクトの`.venv`を使用し、または仮想環境をアクティブにしてから実行してください）。
+> **`uv run epsdk run` を使用してロボットを実行しないでください**。`uv run` は `pyproject.toml` がないディレクトリで実行すると**一時的な隔離環境**を作成します。その中で `epsdk install` でインストールしたアダプタは永続化されません。プロジェクトディレクトリ内で `epsdk run` を使用してください（自動的にプロジェクトの `.venv` を使用し、または仮想環境をアクティベートしてから実行してください）。
 
 ### create
 
-ErisPulseモジュールまたはアダプターのフットワークプロジェクトを作成します。
+ErisPulse モジュールまたはアダプタのフットスタジアムプロジェクトを作成します。`pack` サブコマンドはローカルプラグイン（`plugins/` ディレクトリ）を公開可能な標準プロジェクトに変換します。
 
 **パラメータ：**
 
-| パラメータ | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `{module,adapter}` | | 作成するタイプ：`module`または`adapter` |
+| `{module,adapter,pack}` | | 作成するタイプ：`module` / `adapter` / `pack`（プラグインをプロジェクトに変換） |
 | `--name` | `-n` | プロジェクト名（PascalCase） |
 | `--description` | `-d` | プロジェクトの説明 |
-| `--author` | `-a` | 作者の名前 |
+| `--author` | `-a` | 作者名 |
 | `--email` | `-e` | 作者のメールアドレス |
-| `--homepage` | | プロジェクトのホームページURL |
+| `--homepage` | | プロジェクトのホームページ URL |
 | `--output` | `-o` | 出力ディレクトリ（デフォルトは現在のディレクトリ） |
-| `--force` | `-f` | 既存のディレクトリを強制的に上書き |
-| `--local` | | ローカルプラグインを作成する（`module`のみ使用可能）：`plugins/<name>/`のパッケージ構造を生成し、ビルドなしでインストール可能 |
+| `--force` | `-f` | 既存のディレクトリを上書き |
+| `--local` | | ローカルプラグインを作成（`module` / `adapter` で使用可能）：`plugins/<name>/` パッケージ構造を生成し、パッケージ化せずにインストール可能 |
 
 **例：**
 
 ```bash
-# 対話形式で作成（タイプの選択と情報を入力する誘導）
+# 対話形式で作成（タイプの選択と情報を入力するガイド）
 epsdk create
 
-# 直接Moduleプロジェクトを作成
+# Module プロジェクトを直接作成
 epsdk create module -n MyModule
 
-# ローカルプラグインを作成（プロジェクトのplugins/ディレクトリに配置し、起動時に自動発見、ホットリロードをサポート）
+# ローカルプラグインを作成（プロジェクトの `plugins/` ディレクトリに配置し、起動時に自動的に検出される）
 epsdk create module -n MyModule --local
 
-# 直接Adapterプロジェクトを作成
+# ローカルアダプタプラグインを作成（同上、パッケージ化せずに開発可能）
+epsdk create adapter -n MyAdapter --local
+
+# Adapter プロジェクトを直接作成
 epsdk create adapter -n MyAdapter
+
+# ローカルプラグインを公開可能なプロジェクトに変換（対話形式でプラグインを選択 → 元情報の補完 → 標準プロジェクトの生成）
+epsdk create pack
 
 # 完全なパラメータ
 epsdk create module -n MyModule -d "モジュールの説明" -a "作者" -e "mail@example.com"
@@ -6759,7 +6846,7 @@ epsdk create module -n MyModule -d "モジュールの説明" -a "作者" -e "ma
 # 出力ディレクトリを指定
 epsdk create module -n MyModule -o ./projects
 
-# 既存のディレクトリを強制的に上書き
+# 既存のディレクトリを上書き
 epsdk create module -n MyModule -f
 ```
 
@@ -6769,20 +6856,20 @@ epsdk create module -n MyModule -f
 
 | コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | CLIの表示言語を確認または切り替える |
+| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | CLI の表示言語を確認または切り替え |
 
 ### i18n
 
-CLIの現在の言語を確認し、サポートされている言語を一覧表示し、表示言語を切り替えます。パラメータを指定しない場合は、対話形式の選択インターフェースに移行します。
+現在の CLI 言語を確認、サポートされている言語の一覧を表示、表示言語を切り替えます。パラメータを指定しない場合は、対話形式の選択画面に移行します。
 
 **別名：** `language`, `lang`
 
 **パラメータ：**
 
-| パラメータ | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
 | `[lang]` | | 切り替える言語コード（例：`zh-CN`、`en`、`ja`、`ru`） |
-| `--list` | `-l` | サポートされているすべての言語を一覧表示 |
+| `--list` | `-l` | すべてのサポートされている言語を一覧表示 |
 
 **例：**
 
@@ -6790,13 +6877,13 @@ CLIの現在の言語を確認し、サポートされている言語を一覧�
 # 対話形式で言語を選択
 epsdk i18n
 
-# 英語に切り替える
+# 英語に切り替え
 epsdk i18n en
 
-# 日本語に切り替える
+# 日本語に切り替え
 epsdk i18n ja
 
-# サポートされているすべての言語を一覧表示
+# すべてのサポートされている言語を一覧表示
 epsdk i18n --list
 ```
 
@@ -6806,38 +6893,38 @@ epsdk i18n --list
 
 | コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | IDE補完を有効化するためのタイプストアブファイルを生成 |
+| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | IDE の補完と型チェックを有効にするため、タイプストアブファイルを生成 |
 
 ### types
 
-インストール済みのErisPulseモジュールとアダプターをスキャンし、それらの`.pyi`タイプストアブファイルを生成します。これにより、IDEで正確なコード補完と型チェックが可能になります。
+インストール済みの ErisPulse モジュールとアダプタをスキャンし、`.pyi` タイプストアブファイルを生成します。これにより、IDE で正確なコード補完と型チェックが可能になります。
 
 **別名：** `t`, `stub`
 
 **パラメータ：**
 
-| パラメータ | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `--output` | `-o` | 出力パス（デフォルトは現在のディレクトリの`ep-stubs/`） |
-| `--force` | | 既存のストアブファイルを強制的に上書き |
-| `--adapters-only` | | アダプターのタイプストアブのみ生成 |
-| `--modules-only` | | モジュールのタイプストアブのみ生成 |
+| `--output` | `-o` | 出力パス（デフォルトは現在のディレクトリの `ep-stubs/`） |
+| `--force` | | 既存のストアブファイルを上書き |
+| `--adapters-only` | | アダプタのタイプストアブのみを生成 |
+| `--modules-only` | | モジュールのタイプストアブのみを生成 |
 
-> **注意：** `--adapters-only` と `--modules-only` は互いに排他的で、両方指定した場合、後者が優先されます。
+> **注意：** `--adapters-only` と `--modules-only` は排他的です。両方指定した場合、後者（`--modules-only`）が優先されます。
 
 **例：**
 
 ```bash
-# すべてのインストール済みのモジュールとアダプターにタイプストアブを生成
+# すべてのインストール済みのモジュールとアダプタにタイプストアブを生成
 epsdk types
 
-# アダプターのストアブのみ生成
+# アダプタのストアブのみを生成
 epsdk types --adapters-only
 
-# 指定されたディレクトリに出力
+# 指定ディレクトリに出力
 epsdk types -o ./typings
 
-# 既存のファイルを強制的に上書き
+# 既存のファイルを上書き
 epsdk types --force
 ```
 
@@ -6847,14 +6934,14 @@ epsdk types --force
 
 以下のパラメータはすべてのコマンドに適用されます：
 
-| パラメータ | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
 | `--help` | `-h` | ヘルプ情報を表示 |
 | `--version` | `-V` | バージョン情報を表示 |
-| `--verbose` | `-v` | 詳細な出力を表示（`-vv`/`-vvv`で重ね可） |
-| `--no-color` | | カラーアウトプットを無効化（CI / ログ収集に適している） |
-| `--no-banner` | | スタートバナーをスキップ（スクリプト化呼び出し / CI環境；非インタラクティブ端末と`ERISPULSE_NO_BANNER=1`下で自動的に静かになる） |
-| `--yes` | `-y` | インタラクティブなプロンプトをすべて自動的に確認（非インタラクティブ実行） |
+| `--verbose` | `-v` | 詳細出力を表示（`-vv`/`-vvv` で重ねる） |
+| `--no-color` | | 色付き出力を無効化（CI / ログ収集に適しています） |
+| `--no-banner` | | スタートバナーをスキップ（スクリプト化呼び出し / CI 環境；非対話端末と `ERISPULSE_NO_BANNER=1` では自動的に静音） |
+| `--yes` | `-y` | すべての対話的プロンプトを自動的に確認（非対話実行） |
 
 ---
 
@@ -6863,21 +6950,28 @@ epsdk types --force
 ### doctor
 
 > [!NOTE]
-> 本コマンドはErisPulse **2.7.0+** が必要です。
+> このコマンドは ErisPulse **2.7.0+** が必要です。
 
-現在のCLI実行環境を診断し、健全性レポートを出力します。"なぜインストールできない / 接続できない"などの問題を診断するのに使用します。
+現在の CLI 実行環境を診断し、健全性レポートを出力します。"なぜインストールできない / 接続できないか" などの問題を診断するのに使用します。
 
 | パラメータ | 説明 |
 |------|------|
 | `--verbose` | 詳細な診断情報を表示 |
+| `--fix` | 診断後に自動的に修正可能な問題を修正します |
 
-**チェック項目**：
-- **Python**：解釈子のバージョンとパス
-- **インストール後端**：`uv`を使用しているか`pip`を使用しているか
-- **ターゲット解釈子**：パッケージが実際にインストールされたターゲットPython環境
-- **設定ファイル**：`config/config.toml`が存在するか
-- **PyPIの接続性**：PyPIにアクセスできるか（発見されたコンポーネント数も表示）
+**チェック項目：**
+- **Python**：解釈器のバージョンとパス
+- **インストールバックエンド**：`uv` または `pip` を使用
+- **ターゲット解釈器**：パッケージが実際にインストールされる Python 環境
+- **設定ファイル**：`config/config.toml` が存在するか
+- **コンポーネント設定**：インストール済みコンポーネントの宣言的設定の完全性（"インストールは完了したが起動できない"の多くは必須項目が欠落しているため）
+- **PyPI 接続性**：PyPI にアクセスできるか（発見されたコンポーネント数を表示）
 - **システムプロキシ**：プロキシが検出されているか
+
+**自動修正（`--fix`）**：
+- `config.toml` が欠落 → 現在の言語に応じた初期設定ファイルを生成（`init` でプロジェクトを作成するのと同じソース）
+- コンポーネントの設定が「未完了」→ 1つずつ対話形式の設定向導を起動し、必須項目を補完（非対話環境では `epsdk config <名称>` を使用するよう提示）
+- Python バージョンが低すぎる、PyPI にアクセスできないなどの人為介入が必要な問題 → 修正のための行動提案のみを出力
 
 ```bash
 # 実行環境の診断
@@ -6885,22 +6979,25 @@ epsdk doctor
 
 # 別名を使用
 epsdk diag
+
+# 診断して自動的に修正を試みる
+epsdk doctor --fix
 ```
 
 ---
 
-## 対話形式のインストール
+## 対話形式でのインストール
 
-`epsdk install`にパッケージ名を指定しないで実行すると、対話形式のインストールに移行します：
+`epsdk install` をパッケージ名を指定せずに実行すると、対話形式のインストールに移行します：
 
 ```bash
 epsdk install
 ```
 
-対話インターフェースは以下の項目を提供します：
-1. アダプターの選択
+対話インターフェースは以下の内容を提供します：
+1. アダプタの選択
 2. モジュールの選択
-3. 自定义インストール
+3. 自由なインストール
 
 ## 一般的な使い方
 
@@ -6923,7 +7020,7 @@ epsdk install Weather -U
 # すべてのコンポーネントを一覧表示
 epsdk list
 
-# アダプターのみを一覧表示
+# アダプタのみを一覧表示
 epsdk list -t adapters
 
 # アップグレード可能なコンポーネントのみを一覧表示
@@ -6949,10 +7046,10 @@ epsdk uninstall Yunhu Weather
 # 設定状態を表示
 epsdk config --list
 
-# 対話形式でターゲットを設定
+# 対話形式で対象を選択して設定
 epsdk config
 
-# 指定されたアダプターを設定
+# 指定アダプタを直接設定
 epsdk config yunhu
 ```
 
@@ -6962,10 +7059,10 @@ epsdk config yunhu
 # すべてのコンポーネントをアップグレード
 epsdk upgrade
 
-# 指定されたコンポーネントをアップグレード
+# 指定コンポーネントをアップグレード
 epsdk upgrade Weather
 
-# 強制的にアップグレード
+# 強制アップグレード
 epsdk upgrade -f
 ```
 
@@ -6975,7 +7072,7 @@ epsdk upgrade -f
 # 普通に実行
 epsdk run main.py
 
-# ホットリロードモード
+# ホットリロードモードで実行（ファイル変更で自動的に再起動）
 epsdk run main.py --reload
 ```
 
@@ -6985,10 +7082,10 @@ epsdk run main.py --reload
 # 対話形式で言語を選択
 epsdk i18n
 
-# 直接英語に切り替える
+# 英語に直接切り替え
 epsdk i18n en
 
-# サポートされている言語を一覧表示
+# 利用可能な言語を一覧表示
 epsdk i18n --list
 ```
 
@@ -6998,7 +7095,7 @@ epsdk i18n --list
 # すべてのタイプストアブを生成
 epsdk types
 
-# モジュールのタイプストアブのみ生成
+# モジュールのタイプストアブのみを生成
 epsdk types --modules-only
 ```
 
@@ -7012,22 +7109,22 @@ epsdk init
 epsdk init -q -n my_bot
 ```
 
-### フットワークの生成
+### フットスタジアムの作成
 
 ```bash
-# 対話形式で生成（タイプの選択と情報を入力する誘導）
+# 対話形式で作成（タイプの選択と情報を入力するガイド）
 epsdk create
 
-# 直接Moduleプロジェクトを生成
+# Module プロジェクトを直接作成
 epsdk create module -n MyModule
 
-# 直接Adapterプロジェクトを生成
+# Adapter プロジェクトを直接作成
 epsdk create adapter -n MyAdapter
 
 # 完全なパラメータ
 epsdk create module -n MyModule -d "モジュールの説明" -a "作者" -e "mail@example.com"
 
-# 強制的に既存のディレクトリを上書き
+# 既存のディレクトリを上書き
 epsdk create module -n MyModule -f
 ```
 
@@ -8009,7 +8106,10 @@ sdk.transcript.clear(event)
 
 # ネットワーククライアント
 
-ErisPulse は、HTTPリクエスト、WebSocket接続、および接続プール管理を統合した統一されたネットワーククライアントを提供しています。モジュールやアダプターは、このクライアントを**優先的に使用する**必要があります。`aiohttp` / `httpx` / `requests` などのサードパーティライブラリを直接インポートしてはいけません。
+> [!TIP]
+> **この記事を読む必要があるのは**：出力（outbound）の HTTP / WebSocket リクエストが必要な場合。必要ない場合はスキップしても、他の機能への影響はありません。
+
+ErisPulse は、HTTP リクエスト、WebSocket 接続、および接続プール管理を統合した一貫したネットワーククライアントを提供しています。モジュールやアダプタは、**このクライアントを優先的に使用する必要があります**。`aiohttp` / `httpx` / `requests` などの外部ライブラリを直接インポートしてはいけません。
 
 ## 概要
 
@@ -8510,9 +8610,12 @@ class MyAdapter(BaseAdapter):
 
 ### SQL 查询构建器
 
-# SQL クエリビルダー
+# SQL クエリビルダ
 
-ErisPulse の Storage モジュールは、チェーン呼び出しスタイルの汎用 SQL クエリビルダーを提供し、カスタムテーブルの作成、クエリ、更新、削除操作をサポートします。
+> [!TIP]
+> **このドキュメントを読むタイミング**：チェーン式の SQL クエリやカスタムストレージバックエンドが必要な場合。不要な場合はスキップしても、他の機能の使用に影響はありません。
+
+ErisPulse の Storage モジュールは、チェーン式の呼び出しスタイルを採用した汎用的な SQL クエリビルダを提供し、カスタムテーブルの作成、クエリ、更新、削除操作をサポートしています。
 
 ## 架構設計
 
@@ -8951,12 +9054,15 @@ class MyStorage(BaseStorage):
 
 # ライフサイクル管理
 
+> [!TIP]
+> **この記事を読む必要があるのはいつか**：フレームワークのライフサイクルイベント（起動 / 加載 / 状態変化）をサブスクライブする必要がある場合。必要ない場合はスキップしても、他の機能の使用に影響はありません。
+
 ErisPulse は、システムの各コンポーネントの実行状態を監視し、監査、統計、カスタムロジックなどの拡張機能を実現するための統一されたフック/ライフサイクルシステムを提供します。
 
-システムは以下の3つのトリガ方法をサポートしています：
+システムは以下の3種類のトリガー方式をサポートしています：
 - `await lifecycle.emit("event", data)` — 精簡版、任意のデータを渡す（`to="Owner"` で指定送信）
 - `lifecycle.emit_sync("event", data)` — 同期版（非非同期コンテキストで使用）
-- `await lifecycle.submit_event("event", ...)` — 旧版との互換性、標準イベント形式を自動構築
+- `await lifecycle.submit_event("event", ...)` — 旧バージョンとの互換性、標準イベント形式を自動構築
 
 ## イベント処理メカニズム
 
@@ -8965,20 +9071,20 @@ ErisPulse は、システムの各コンポーネントの実行状態を監視�
 ```python
 from ErisPulse import sdk
 
-# デコレータ方式
+# デコレータ形式
 @sdk.lifecycle.on("module.load")
 async def on_module_load(data):
-    print(f"モジュールのロード: {data}")
+    print(f"モジュール加載: {data}")
 
-# プログラム的登録
+# プログラム形式での登録
 sdk.lifecycle.register("module.load", on_module_load, priority=10)
 
 # 登録解除
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# 所有者毎に一括解除（モジュール/アダプターのアンロード時にフレームワークが自動的に呼び出す）
+# 所有者ごとの一括登録解除（モジュール/アダプターのアンロード時にフレームワークが自動的に呼び出す）
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
-print(f"クリーンアップしたライフサイクルフック: {removed}")
+print(f"クリーンアップしたライフサイクルフック数: {removed}")
 ```
 
 ### 優先度
@@ -8995,7 +9101,7 @@ async def second_handler(data):
     pass
 ```
 
-### 点構造イベント
+### 点式構造イベント
 
 具体的なイベントをトリガーすると、その親イベントもトリガーされます：
 - `module.load` をトリガーすると、`module` もトリガーされます
@@ -9003,26 +9109,26 @@ async def second_handler(data):
 
 ### ワイルドカード
 
-`*` を登録すると、すべてのイベントをキャッチできます：
+`*` を登録することで、すべてのイベントをキャッチできます：
 
 ```python
 @sdk.lifecycle.on("*")
 async def on_anything(data):
-    print(f"イベントを受信: {data}")
+    print(f"イベント受信: {data}")
 ```
 
-### 定向送信（emit to=）
+### 指定送信（emit to=）
 
 > [!NOTE]
 > この機能は ErisPulse **2.8.0+** が必要です。
 
-`emit()` に `to` パラメータを指定すると、定向送信モードになります：イベントは、その所有者（owner）として登録されたハンドラにのみ配信されます（モジュールは `on_load` 内で登録されたフックは自動的に自身の所有者になります）。他のモジュールやワイルドカード `*` ハンドラは感知しません。
+`emit()` で `to` パラメータを指定すると、指定された所有者（owner）に登録されたハンドラにのみイベントが送信されます（モジュールは `on_load` 内で登録したフックは自動的に所属モジュールになります）。他のモジュールやワイルドカード `*` ハンドラはイベントを感知しません。
 
 ```python
-# 送信元：イベントは Chat モジュールが登録したハンドラにのみ送信
+# 送信元：イベントは Chat モジュールに登録されたハンドラにのみ送信される
 await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 
-# 受信元（Chat モジュール内）：同名のハンドラを登録し、owner は登録時に自動的に記録されます
+# 受信元（Chat モジュール内）：同名のハンドラを登録し、owner は登録時に自動的に記録される
 @sdk.lifecycle.on("message_received")
 async def on_message_received(data): ...
 
@@ -9030,51 +9136,50 @@ async def on_message_received(data): ...
 async def on_any(data): ...
 ```
 
-- 目標の owner に登録されたハンドラがない場合 → イベントは**消費されません**（`has_handlers()` で事前に検出できます）
-- `data` が dict の場合、自動的に `_trace_id` を含みます（既存の値は上書きされません）
-- `emit_sync` / `submit_event` でも `to=` パラメータをサポートします
-- モジュール間通信の3層モデル（RPC / 定向 / ブロードキャスト）は
-  [モジュール間通信](module-communication.md) を参照してください
+- 対象の所有者が登録されたハンドラがない場合 → イベントは**消費されない**（`has_handlers()` で事前に検出可能）
+- `data` が dict の場合、自動で `_trace_id` を追加（既存値は上書きしない）
+- `emit_sync` / `submit_event` も `to=` パラメータをサポート
+- モジュール間通信の3層モデル（RPC / 指定送信 / ブロードキャスト）は [モジュール間通信](module-communication.md) を参照してください
 
-### 1回限りの登録（once）
+### 一回限りの登録（once）
 
-2.7.0 から、`lifecycle.once()` で登録されたハンドラは**1回実行後に自動的に登録解除**されます。これは「初回準備完了」のような1回限りのフックに適しています：
+2.7.0 から、`lifecycle.once()` で登録されたハンドラは**一度実行後自動で登録解除**されます。これは「初期準備完了」のような一回限りのフックに適しています。
 
 ```python
 @sdk.lifecycle.once("core.init.complete")
 async def on_first_ready(data):
-    print("初回準備完了、以降はトリガーされません")
+    print("初期準備完了、以降はトリガーされない")
 ```
 
 - `on()` と同じ優先度パラメータの意味（`priority` 数値が大きいほど先に実行）
-- 自動的に登録解除、手動の `unregister` は不要
+- 自動で登録解除、手動での `unregister` は不要
 - 同期/非同期ハンドラの両方をサポート
 
-### 監視者クエリ（has_handlers）
+### 監視者検索（has_handlers）
 
-ホットパスの短絡処理では、`has_handlers()` を使って事前に監視者がいるかどうかを判断し、不要なイベントのループとタスクのスケジューリングを避けることができます：
+ホットパスの短絡処理では、`has_handlers()` を使って監視者がいるかどうかを事前に判断し、無駄なイベントのループやタスクのスケジューリングを避けることができます。
 
 ```python
 if sdk.lifecycle.has_handlers("message.sending"):
     await sdk.lifecycle.emit("message.sending", send_ctx)
 ```
 
-- **正確なイベント名、ワイルドカード `*`、親イベント**の3種類のマッチングをカバー
-- 監視者がいない場合、`False` を返し、`emit` を安全にスキップできます
+- 精確なイベント名、ワイルドカード `*`、親イベントの3種類のマッチングをカバー
+- 監視者がいない場合、`False` を返し、`emit` を安全にスキップできる
 
-## フックブレークポイント一覧
+## フックの断点一覧
 
-プラットフォームからフレームワークにメッセージが届き、処理が完了するまでの典型的なライフサイクルイベントの時系列：
+プラットフォームからフレームワークにメッセージが到達して処理が完了するまでの典型的なライフサイクルイベントの順序：
 
 ```mermaid
 sequenceDiagram
     participant P as プラットフォーム
-    participant A as アダプタ
+    participant A as アダプター
     participant F as フレームワークコア
     participant M as モジュールハンドラ
 
-    P->>A: ネイティブイベント到着
-    A->>F: adapter.event.receive（初期段階）
+    P->>A: プラットフォームのイベント到達
+    A->>F: adapter.event.receive（最も初期）
     F->>F: event.pre_process（ハンドラ実行前）
     F->>M: ハンドラに分散（コマンド/メッセージ/通知など）
     M->>M: command.matched / command.executed
@@ -9086,31 +9191,31 @@ sequenceDiagram
     F->>F: adapter.event.dispatched（分散完了）
 ```
 
-フレームワークには、ユーザーが `@sdk.lifecycle.on()` を使って任意のブレークポイントにカスタムロジックを実装できる、以下のフックが用意されています。
+フレームワークは以下のフック断点を内蔵しており、ユーザーは `@sdk.lifecycle.on()` を使って任意の断点を監視してカスタムロジックを実装できます。
 
 ### コア初期化
 
-| フック名 | 触発タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `core.init.start` | SDKの初期化開始 | `{}` |
-| `core.init.stage` | 初期化各段階開始（バックグラウンドで発行） | `{"stage": str}`、値は `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
-| `core.init.complete` | SDKの初期化完了 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
-| `core.uninit.complete` | SDKの反初期化完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
+| `core.init.start` | SDK 初期化開始 | `{}` |
+| `core.init.stage` | 初期化各段階開始（バックグラウンドで発射） | `{"stage": str}`、値は `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.complete` | SDK 初期化完了 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
+| `core.uninit.complete` | SDK 反初期化完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
 
-**例：起動進行表示**
+**例：起動進捗表示**
 
 ```python
 @sdk.lifecycle.on("core.init.stage")
 def show_stage(data):
-    print(f"[起動] 階段に移行: {data['stage']}")
+    print(f"[起動] 段階に移行: {data['stage']}")
 ```
 
 ### 設定変更
 
-| フック名 | 触発タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `config.set` | 設定項目が変更された時 | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | 外部で config.toml を編集した後、木全体の変更を検知した時 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.set` | 設定項目が変更された | `{"key": str, "old_value": Any, "new_value": Any}` |
+| `config.updated` | 外部で config.toml を編集した後に検出されたツリー全体の変更 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **例：設定監査**
 
@@ -9122,34 +9227,34 @@ def audit_config(data):
 
 ### モジュールライフサイクル
 
-| フック名 | 触発タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `module.register` | モジュールクラスがマネージャに登録された時 | `{"module_name": str, "success": bool}` |
-| `module.load` | モジュールのロード完了（インスタンス化成功） | `{"module_name": str, "success": bool}` |
-| `module.init` | モジュールの初期化完了（遅延ロード含む） | `{"module_name": str, "success": bool}` |
+| `module.register` | モジュールクラスがマネージャーに登録された | `{"module_name": str, "success": bool}` |
+| `module.load` | モジュールのロードが完了した（インスタンス化成功） | `{"module_name": str, "success": bool}` |
+| `module.init` | モジュールの初期化が完了した（遅延ロード含む） | `{"module_name": str, "success": bool}` |
 | `module.unload` | モジュールのアンロード | `{"module_name": str, "success": bool}` |
-| `module.reload` | モジュールのホットリロード完了（依存者も再ロード） | `{"module_name": str, "success": bool, "full": bool}`；全量リロード（`reload_all`）の場合は `module_name` が `"All"`、さらに `"results": dict[str, bool]` が付加される |
+| `module.reload` | モジュールのホットリロードが完了した（依存者を含む連鎖リロード） | `{"module_name": str, "success": bool, "full": bool}`；全量リロード（`reload_all`）の場合は `module_name` が `"All"` になり、payload に `"results": dict[str, bool]` が追加される |
 
-### アダプタライフサイクル
+### アダプターライフサイクル
 
-| フック名 | 触発タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `adapter.load` | アダプタの登録完了 | `{"platform": str, "success": bool}` |
-| `adapter.start` | アダプタの起動 | `{"platforms": [str]}` |
-| `adapter.status.change` | アダプタのステータス変化 | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}`；statusの値は `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
-| `adapter.stop` | アダプタの停止 | `{"platforms": [str]}` |
-| `adapter.stopped` | アダプタの停止完了 | `{"platforms": [str]}` |
-| `adapter.bot.online` | Botのオンライン | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
-| `adapter.bot.offline` | Botのオフライン | `{"platform": str, "bot_id": str, "status": str}` |
+| `adapter.load` | アダプターの登録が完了した | `{"platform": str, "success": bool}` |
+| `adapter.start` | アダプターの起動 | `{"platforms": [str]}` |
+| `adapter.status.change` | アダプターのステータスが変化した | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}`；status の完全な値は `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
+| `adapter.stop` | アダプターの停止 | `{"platforms": [str]}` |
+| `adapter.stopped` | アダプターの停止が完了した | `{"platforms": [str]}` |
+| `adapter.bot.online` | Bot のオンライン | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
+| `adapter.bot.offline` | Bot のオフライン | `{"platform": str, "bot_id": str, "status": str}` |
 
 ### イベント受信と処理
 
-| フック名 | 触発タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `adapter.event.receive` | 外部プラットフォームイベントを受信（初期段階） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.blocked` | 中間層がイベントを拒否（`False`を返すと、イベントは処理されず破棄される） | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
-| `adapter.event.dispatched` | イベントの分散完了 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | イベントハンドラの実行前 | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `adapter.event.receive` | 外部プラットフォームのイベントを受信した（最も初期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.blocked` | ミドルウェアがイベントをブロックした（`False` を返した場合、イベントは他のハンドラに渡されず破棄される） | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
+| `adapter.event.dispatched` | イベントの分散が完了した | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
+| `event.pre_process` | イベントハンドラの実行前に | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **例：イベント統計**
 
@@ -9169,10 +9274,10 @@ def log_unhandled(data):
 
 ### メッセージ送信
 
-| フック名 | 触発タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
 | `message.sending` | メッセージが送信される直前 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | メッセージの送信完了 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | メッセージの送信が完了した | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **例：メッセージ送信監査**
 
@@ -9184,10 +9289,10 @@ def log_sending(data):
 
 ### コマンドシステム
 
-| フック名 | 触発タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `command.matched` | コマンドがマッチし、実行される直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | コマンドの実行完了 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(失敗時のみ)}` |
+| `command.matched` | コマンドがマッチして実行される直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
+| `command.executed` | コマンドの実行が完了した | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(失敗時のみ)}` |
 
 **例：コマンド統計**
 
@@ -9199,10 +9304,10 @@ def count_commands(data):
 
 ### HTTPルーティング
 
-| フック名 | 触発タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `server.request` | HTTPリクエスト受信 | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | HTTPレスポンス送信 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.request` | HTTPリクエストの受信 | `{"method": str, "path": str, "client_ip": str}` |
+| `server.response` | HTTPレスポンスの送信 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
 **例：リクエストログ**
 
@@ -9214,12 +9319,12 @@ def log_http(data):
 
 ### WebSocket
 
-| フック名 | 触発タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `server.start` | ルーティングサーバの起動 | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(失敗時のみ)}` |
-| `server.stop` | ルーティングサーバの停止 | `{}` |
-| `server.websocket.connect` | WebSocket接続確立 | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | WebSocket接続切断 | `{"path": str, "module_name": str, "reason": str, "error": str(異常時のみ)}` |
+| `server.start` | ルーティングサーバーの起動 | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(失敗時のみ)}` |
+| `server.stop` | ルーティングサーバーの停止 | `{}` |
+| `server.websocket.connect` | WebSocket接続の確立 | `{"path": str, "module_name": str, "client_ip": str}` |
+| `server.websocket.disconnect` | WebSocket接続の切断 | `{"path": str, "module_name": str, "reason": str, "error": str(異常時のみ)}` |
 
 **例：WebSocket接続監視**
 
@@ -9235,13 +9340,13 @@ def on_ws_disconnect(data):
 
 ### ストレージ接続状態
 
-ストレージバックエンドの接続プールの確立、障害、回復（すべてバックグラウンドで発行され、ストレージ操作をブロックしない）：
+ストレージバックエンドの接続プールの確立、障害、回復（すべてバックグラウンドで発射され、ストレージ操作をブロックしない）：
 
-| フック名 | 触発タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `storage.ready` | ストレージバックエンドの接続プールが準備完了（イベントループで最初にプール確立に成功した時） | `{"backend": str}` |
-| `storage.unreachable` | 接続リトライが尽きて冷却期間に入る（この間は操作は即時失敗） | `{"backend": str, "error": str, "cooldown": float}` |
-| `storage.recovered` | 冷却期間終了後、再接続に成功し、ストレージが利用可能になる | `{"backend": str}` |
+| `storage.ready` | ストレージバックエンドの接続プールが準備完了（各イベントループで最初にプールが確立された場合） | `{"backend": str}` |
+| `storage.unreachable` | 接続リトライが尽き、クールダウン期間に入る（この間、操作は即座に失敗する） | `{"backend": str, "error": str, "cooldown": float}` |
+| `storage.recovered` | クールダウン終了後、再接続に成功し、ストレージが再利用可能になる | `{"backend": str}` |
 
 **例：ストレージ障害アラート**
 
@@ -9257,19 +9362,19 @@ def notify_storage_back(data):
 
 ### HTTPクライアント
 
-`sdk.client` のリクエストと接続イベント（すべてバックグラウンドで発行）：
+`sdk.client` のリクエストと接続イベント（すべてバックグラウンドで発射）：
 
-| フック名 | 触発タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `client.request.success` | HTTPリクエスト成功 | `{"method": str, "url": str, "status": int, "elapsed": float}` |
-| `client.request.failed` | HTTPリクエストがリトライを尽して最終的に失敗 | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
-| `client.ws.connect` | WebSocket接続確立 | `{"url": str}` |
+| `client.request.success` | HTTPリクエストが成功 | `{"method": str, "url": str, "status": int, "elapsed": float}` |
+| `client.request.failed` | HTTPリクエストがリトライを尽くし最終的に失敗 | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
+| `client.ws.connect` | WebSocket接続の確立 | `{"url": str}` |
 
 ### 国際化
 
-| フック名 | 触発タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `i18n.language.changed` | フレームワークの言語が切り替わる（`i18n.set_language`） | `{"language": str, "previous": str}` |
+| `i18n.language.changed` | フレームワークの言語が切り替わった（`i18n.set_language`） | `{"language": str, "previous": str}` |
 
 ## 標準イベント定義
 
@@ -9304,27 +9409,27 @@ STANDARD_EVENTS = {
 | メソッド | 説明 |
 |------|------|
 | `@lifecycle.on(event, *, priority=0)` | デコレータでハンドラを登録 |
-| `lifecycle.register(event, handler, *, priority=0)` | プログラム的に登録 |
-| `lifecycle.unregister(event, handler=None)` | 登録解除（handler=None の場合は、そのイベントのすべてのハンドラを解除） |
+| `lifecycle.register(event, handler, *, priority=0)` | プログラム形式で登録 |
+| `lifecycle.unregister(event, handler=None)` | 登録解除（handler=None の場合、該当イベントのすべてのハンドラを解除） |
 
 ### トリガー
 
 | メソッド | 説明 |
 |------|------|
-| `await lifecycle.emit(event, data=None, *, to=None)` | 非同期でトリガー、ハンドラは**並列に実行**（互いにブロッキングせず、戻り値はすべて完了時に返る）、`to` パラメータを指定すると、owner に限定して送信 |
-| `lifecycle.fire(event, data=None, *, to=None)` | **バックグラウンドで発行（投げたらすぐ）**：ハンドラはバックグラウンドタスクで並列に実行、待機せず、戻り値なし；ハンドラがいない場合、コストゼロ。高頻度のホットパスや純粋な観測イベントに適している。停止シーケンスや順序依存の消費（例: `config.set`）は `emit` を使用 |
-| `lifecycle.emit_sync(event, data=None, *, to=None)` | 同期でトリガー、非同期ハンドラは `create_task` でスケジュール |
-| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 旧版との互換性、標準イベント形式を自動構築；`background=True` の場合は `fire` でバックグラウンドで発行 |
+| `await lifecycle.emit(event, data=None, *, to=None)` | 非同期でトリガーし、ハンドラを**並列実行**（互いにブロックせず、返却時にすべて完了）、返り値がNoneでない場合、優先度順にdataを置換してチェーンバック；`to` で所有者を指定すると、指定所有者のハンドラにのみ送信 |
+| `lifecycle.fire(event, data=None, *, to=None)` | **バックグラウンドで発射（投げた後は即離）**：ハンドラをバックグラウンドタスクで並列実行、待機せず、返り値なし；ハンドラがいない場合、オーバーヘッドなし。高頻度のホットパスや観測イベントに適している。停止シーケンスや順序依存消費（例：`config.set`）は `emit` を使用すること |
+| `lifecycle.emit_sync(event, data=None, *, to=None)` | 同期でトリガーし、非同期ハンドラは create_task でスケジュール |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 旧バージョンとの互換性、標準イベント形式を自動構築；`background=True` の場合は `fire` のバックグラウンド発射を使用 |
 
 ### ユーティリティ
 
 | メソッド | 説明 |
 |------|------|
-| `lifecycle.start_timer(timer_id)` | タイマーを開始 |
+| `lifecycle.start_timer(timer_id)` | タイマーの開始 |
 | `lifecycle.get_duration(timer_id)` | 経過時間を取得（秒） |
 | `lifecycle.stop_timer(timer_id)` | タイマーを停止し、経過時間を返す |
-| `lifecycle.list_hooks()` | すべての登録されたフックとハンドラ数を表示 |
-| `lifecycle.clear()` | すべてのハンドラとタイマーをクリア |
+| `lifecycle.list_hooks()` | すべての登録されたフックとハンドラ数をリストする |
+| `lifecycle.clear()` | すべてのハンドラとタイマーをクリアする |
 
 ## モジュールでの使用例
 
@@ -9353,24 +9458,24 @@ class Main(BaseModule):
             sdk.logger.info(f"設定変更: {data['key']} = {data['new_value']}")
 ```
 
-## バックグラウンドタスクの所有者と自動キャンセル
+## バックグラウンドタスクの所有者と自動解除
 
 > [!NOTE]
 > この機能は ErisPulse **2.8.0+** が必要です。
 
-モジュールが作成した asyncio バックグラウンドタスクは、`on_unload` でキャンセルしない場合、`self` の参照を保持し、モジュールインスタンスが回収されず（ホットリロード後に古いインスタンスが残る）。フレームワークは以下のバックアップメカニズムを提供します：
+モジュールが作成した asyncio バックグラウンドタスクが `on_unload` で解除されない場合、`self` の参照が保持され、モジュールインスタンスが回収されない（ホットリロード後に古いインスタンスが残る）可能性があります。フレームワークは以下のバックアップメカニズムを提供しています：
 
-- **`self.spawn(coro)`**（モジュール内で推奨）：タスクはモジュール名に自動的に所有者として割り当てられ、モジュールのアンロード時にフレームワークが `on_unload` **後に**未終了のタスクをバックアップでキャンセルし、警告を記録します
-- **`spawn_background(coro)`**（`ErisPulse.runtime`）：現在の `owner_scope` コンテキストを自動的にキャプチャします；`cancel_owner_tasks(owner)` で所有者に属するタスクをキャンセル、`cancel_all_background_tasks()` は `sdk.uninit()` のバックアップ用
-- **アダプター**：プラットフォーム名の下のバックグラウンドタスクも同様にバックアップでキャンセル
+- **`self.spawn(coro)`**（モジュール内で推奨）：タスクは自動的にモジュール名に所属し、モジュールのアンロード時にフレームワークが `on_unload` **の後に**未完了のタスクをバックアップでキャンセルし、警告を記録します。
+- **`spawn_background(coro)`**（`ErisPulse.runtime`）：現在の `owner_scope` コンテキストを自動的にキャプチャします。`cancel_owner_tasks(owner)` で所属をキャンセルし、`cancel_all_background_tasks()` は `sdk.uninit()` のバックアップ用です。
+- **アダプター**：プラットフォーム名の下のバックグラウンドタスクも同様にバックアップでキャンセルされます。
 
 ```python
 async def on_load(self, event):
-    # 推奨：バックグラウンドタスクは self.spawn() を使用し、アンロード時にフレームワークがバックアップで自動キャンセル
+    # 推奨：バックグラウンドタスクは self.spawn() を使用し、アンロード時にフレームワークがバックアップで自動的にキャンセルされます
     self.spawn(self._poll())
 
 async def on_unload(self, event):
-    # 精密制御の場面では、手動でキャンセルし、終了処理を待つことを推奨
+    # 精密制御の場合は、自分でキャンセルし、終了処理を待つ必要があります
     if self._poll_task:
         self._poll_task.cancel()
         await asyncio.gather(self._poll_task, return_exceptions=True)
@@ -9382,25 +9487,28 @@ async def _poll(self):
 ```
 
 > [!IMPORTANT]
-> フレームワークのバックアップは**強制キャンセル**（`cancel_owner_tasks`）です。これは `on_unload` の返り値後に発生します。したがって、優雅に終了処理が必要なタスク（バッファのフラッシュ、ステートの永続化、接続の終了）は**必ず** `on_unload` で `cancel()` + `await` で完了させる必要があります——バックアップが終了処理を保持することを期待しないでください。フレームワークは「`self` を保持するタスクが残らないようにする」ことを保証しますが、「優雅に」は保証しません。`await` の結果が必要なタスクは、`await` してバックグラウンドタスクに投げないでください。
+> フレームワークのバックアップは**強制キャンセル**（`cancel_owner_tasks`）です。これは `on_unload` の返り値の後に発生します。そのため、優雅な終了処理が必要なタスク（バッファのフラッシュ、状態の永続化、接続の閉じる）は **`on_unload` で `cancel()` と `await` を行う必要があります**—バックアップが終了処理を保証するとは思わないでください。フレームワークは「`self` を保持するタスクが残らない」ことを保証するだけで、「優雅」を保証するものではありません。`await` の結果が必要なタスクは `await` してください、バックグラウンドタスクに投げないでください。
 
 ## 注意事項
 
-1. **ハンドラは同期または非同期**：システムは自動的に識別し、適切に呼び出します
-2. **データの渡し方**：`emit()` モードでは、ハンドラが `None` 以外の値を返すと、次のハンドラに渡される `data` を変更します
-3. **イベント名の命名規則**：点構造のイベント名を使用することを推奨し、親イベントの監視が容易になります
-4. **エラーの隔離**：1つのハンドラのエラーは他のハンドラの実行に影響しません
-5. **同期トリガーの制限**：`emit_sync()` では、非同期ハンドラは fire-and-forget でスケジュールされ、返り値は戻りません
+1. **ハンドラは同期または非同期**：システムは自動的に正しく呼び出します
+2. **データの渡し方**：`emit()` モードでは、ハンドラが `None` 以外の値を返すと、後続のハンドラに渡される `data` が変更されます
+3. **イベント命名規則**：点式構造でイベント名を付けることを推奨し、親イベントの監視がしやすくなります
+4. **エラーの分離**：1つのハンドラのエラーは他のハンドラの実行に影響しません
+5. **同期トリガーの制限**：`emit_sync()` 中の非同期ハンドラは fire-and-forget 方式でスケジュールされ、返り値は戻されません
 6. **ライフサイクルのクリーンアップ**：`sdk.uninit()` を呼び出すと、すべての登録されたハンドラとタイマーがクリーンアップされます
-7. **ロードの優先性**：フレームワークの初期化段階でイベントを監視したい場合は、高優先度を設定し、遅延ロードを無効にすることを推奨します
+7. **ロードの優先性**：フレームワークの初期化段階でイベントを監視する必要がある場合、高優先度を設定し、遅延ロードを無効化することを推奨します
 
 
 
 ### 懶加载系统
 
-# ラグジュアリー ロード モジュール システム
+# ラグジュアリー・ロード・モジュール・システム
 
-ErisPulse SDK は、モジュールを実際に必要になるまで初期化しない強力なラグジュアリー ロード モジュール システムを提供し、アプリケーションの起動速度とメモリ効率を大幅に向上させます。
+> [!TIP]  
+> **この記事を読む必要があるタイミング**：ラグジュアリー・ロード・モジュールを使用する場合、または activate_on イベント駆動型のアクティベーションを使用する場合。それ以外の場合は読み飛ばしても、他の機能の使用に影響はありません。
+
+ErisPulse SDK は、モジュールが実際に必要になるまで初期化されない強力なラグジュアリー・ロード・モジュール・システムを提供しており、これによりアプリケーションの起動速度とメモリ効率が大幅に向上します。
 
 ## 概要
 
@@ -9630,7 +9738,10 @@ flowchart TD
 
 # 国際化 (i18n) システム
 
-ErisPulse v2.5.0 以降、完全な国際化 (i18n) 機能が内蔵されています。フレームワークのコアおよび CLI インターフェースは、システムの言語に応じて表示テキストを自動的に切り替えることができ、外部モジュールが独自の翻訳を登録することも可能です。
+> [!TIP]
+> **この記事を読む必要があるのは**：多言語の文案、翻訳の登録、言語の検出が必要な場合です。必要ない場合は、他の機能の使用に影響を与えることなく、この記事は飛ばしてください。
+
+ErisPulse v2.5.0 以降、完全な国際化 (i18n) 機能が内蔵されています。フレームワークのコアおよび CLI インターフェースは、システム言語に応じて表示されるテキストを自動的に切り替えることができ、外部モジュールが独自の翻訳を登録することもサポートしています。
 
 ## 支援言語
 
@@ -10219,196 +10330,185 @@ CLI には**独立**した国際化モジュール (`ErisPulse.CLI.i18n`) があ
 
 ### 统一控制面（scope）
 
-# スコープ (scope)
+# スコープ（scope）
+
+> [!TIP]
+> **この記事を読むタイミング**：モジュールの可用性、イベントの受信制限、または出力アクションの制限を制御する必要がある場合。不要であれば飛ばしても、他の機能の使用に影響はありません。
 
 > [!NOTE]
 > この機能は ErisPulse **2.8.0+** が必要です。
 
-スコープは以下の4つの質問に答えます：**どのモジュールが利用可能か、どのイベントを受け取るか、特定のモジュールがどのようなテキストを処理するか、モジュールが外部に何ができるか**。  
-コントロールはすべてユーザーに委ねられます。モジュール / アダプタ / プロセッサ / 出力呼び出しの登録の**上層**（`ErisPulse.scope` または実行時 `sdk.scope` での設定）で一括して宣言し、イベントパイプラインはエントリ、プロセッサフィルタ、出力ゲートで自動的に読み取り、実行します。
+スコープは4つの質問に答えます：**どのモジュールが利用可能か、どのイベントを受け入れるか、特定のモジュールはどのテキストを処理するか、モジュールは外に何ができるか**。制御権はすべてユーザーに委ねられ、モジュール / アダプタ / プロセッサ / 出力呼び出しの登録の**上層**（設定 `ErisPulse.scope` または実行時 `sdk.scope`）で一括して宣言されます。イベントパイプラインは、エントリ、プロセッサのフィルタ、出力のゲートで自動的に読み取り、実行されます。
 
-| 次元 | コントロール対象 | 拒否される動作 | 設定パス |
+| 維度 | 控制するもの | 拒否される動作 | 設定パス |
 |------|---------|---------|---------|
-| **① モジュール** | 利用可能なモジュール（プラットフォーム / Bot / セッションの3段階） | フィルタされたモジュールはトリガーされず、返信されません（ブロードキャスト `scope.blocked` イベントをブロック；一致したコマンドは引き続き認定され、ブロックされます） | `scope.platforms / bots / sessions` |
-| **② 身分** | イベントの受信可否（アダプタ / Bot / セッション / ユーザーの4段階） | エントリで完全に破棄されます（ブロードキャスト `scope.blocked` イベントをブロック） | `scope.identity.*` |
-| **③ 出力** | モジュールがどの出力呼び出し（メッセージ / API / 要求、メソッドレベルのホワイトリスト/ブラックリスト）を発行できるか | 失敗応答（`retcode=34601`） | `scope.actions` |
+| **① モジュール** | どのモジュールが利用可能か（プラットフォーム / Bot / セッションの3段階） | フィルタされたモジュールはトリガーされず、返信もされない（ブロードキャスト `scope.blocked` イベントをブロック；一致したコマンドは認識され、ブロックされる） | `scope.platforms / bots / sessions` |
+| **② 身元** | イベントを受け入れるか（アダプタ / Bot / セッション / ユーザーの4段階） | エントリで完全に破棄される（ブロードキャスト `scope.blocked` イベントをブロック） | `scope.identity.*` |
+| **③ 出力** | モジュールがどの出力呼び出しを発生できるか（メッセージ / API / リクエスト、メソッドレベルのホワイト/ブラックリスト） | 失敗レスポンス（`retcode=34601`） | `scope.actions` |
 
-> **関連システム**：コマンドは特別なメッセージイベントプロセッサであり、そのユーザーのホワイトリスト/ブラックリスト（ACL）と実装パラメータのオーバーライドはコマンドシステムが独自に管理します（`ErisPulse.event.command`）。  
-> [イベント処理の入門](../getting-started/event-handling.md) および [設定ガイド](../user-guide/configuration.md) を参照してください。
+> **関連するシステム**：コマンドは特別なメッセージイベントプロセッサであり、そのユーザーブラックリスト/ホワイトリスト（ACL）と実装パラメータのオーバーライドは、コマンドシステムが独自に保持します（`ErisPulse.event.command`）。[イベント処理入門](../getting-started/event-handling.md)と[設定ガイド](../user-guide/configuration.md)をご覧ください。
 
 {!--< tips >!--}
-1. 単例を `from ErisPulse.Core import scope` でインポート（`sdk.scope` は同じオブジェクト）
-2. 判定：`scope.is_allowed(...)` / `scope.is_identity_allowed(...)` /  
-   `scope.is_action_allowed(...)` はそれぞれ ①②③ の3つのゲートに対応します
-3. 読み書き：次元化されたパラメータメソッド（IDEで補完可能）——  
-   `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`；  
-   また、辞書式のバックアップメソッドとして `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)` もあります
-4. イベントプロセッサのテキスト条件オーバーライドについては、  
-   [イベント処理の入門 · イベントオーバーライド](../getting-started/event-handling.md#イベントオーバーライド-モジュールコードを変更せずに任意のイベントタイプの挙動をオーバーライド) を参照してください。  
-   コマンド ACL / パラメータオーバーライドについては、[イベント処理の入門](../getting-started/event-handling.md) を参照してください。
+1. `from ErisPulse.Core import scope` でシングルトンをインポート（`sdk.scope` は同じオブジェクト）
+2. 判定：`scope.is_allowed(...)` / `scope.is_identity_allowed(...)` / `scope.is_action_allowed(...)` はそれぞれ ①②③ の3つのゲートに対応
+3. 読み書き：次元化されたパラメータメソッド（IDEで補完可能）——`scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`；また、辞書式のバックアップ `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
+4. イベントプロセッサのテキスト条件オーバーライドは、[イベント処理入門 · イベントオーバーライド](../getting-started/event-handling.md#イベントオーバーライド-モジュールコードを変更せずに任意のイベントタイプの振る舞いをオーバーライド)をご覧ください；コマンド ACL / パラメータのオーバーライドは[イベント処理入門](../getting-started/event-handling.md)をご覧ください
 {!--< /tips >!--}
 
-## マッチング条目構文（全システム共通）
+## マッチングエントリの構文（全システムで統一）
 
-スコープのすべての「名前リスト」（モジュール名、身元キー、出力条目）は、同一のマッチング構文（`ErisPulse.Core.text_match`）を使用します：
+スコープのすべての「名前リスト」（モジュール名、身元キー、出力エントリ）は、同一のマッチング構文（`ErisPulse.Core.text_match`）を使用します：
 
 | 構文 | 例 | 説明 |
 |------|------|------|
-| 精確名 | `"Chat"` | 完全一致比較、**大文字小文字は区別しない** |
-| glob | `"Tool*"`、`"spam_*"` | `*` 任意文字列 / `?` 1文字 / `[seq]` 文字集合、大文字小文字は区別しない |
-| 正規表現 | `"re:^Danger.*"` | `re:` 前置詞で宣言、正規表現の `search` で一致、デフォルトで大文字小文字は区別しない |
+| 精確名 | `"Chat"` | 全値比較、**大文字小文字は区別しない** |
+| glob | `"Tool*"`、`"spam_*"` | `*` 任意の文字列 / `?` 1文字 / `[seq]` 文字集合、大文字小文字は区別しない |
+| 正規表現 | `"re:^Danger.*"` | `re:` で始まる宣言、正規表現 `search` で一致、デフォルトは大文字小文字は区別しない |
 
-- 不正な正規表現は**静かに降格**される（エラーを投げず、クラッシュしない）
-- デコレータ引数（`pattern=` / `regex=`）は固定の意味を持つ：`pattern` は glob、`regex` は正規表現ソースコード（`re:` 前置詞なし）；スコープ設定の正規表現条目は**必ず** `re:` 前置詞が必要
+- 不正な正規表現は**静かに無効化**される（エラーは発生せず、クラッシュもしない）
+- デコレータのパラメータ（`pattern=` / `regex=`）は固定された意味を持つ：`pattern` は glob、`regex` は正規表現のソースコード（`re:` プレフィックスは付けない）；スコープの設定内の正規表現エントリは**必ず** `re:` プレフィックスを付ける必要がある
 
 ## グローバルバックアップ：`default_allow`
 
-`default_allow` は**グローバルで唯一**のバックアップスイッチ（デフォルト `true`）で、以下の2つの判定次元に一括して効果します：
+`default_allow` は**唯一のグローバルバックアップ**スイッチ（デフォルト `true`）で、2つの判定次元に一括して効果を及ぼします：
 
-- **モジュール次元**：すべてのバインドに一致しない → `default_allow` で許可 / 拒否を決定
-- **身元次元**：すべての戦略に一致しない → `default_allow` で許可 / 拒否を決定
+- **モジュール次元**：どのバインディングにも一致しない → `default_allow` で許可 / 拒否を決定
+- **身元次元**：どの戦略にも一致しない → `default_allow` で許可 / 拒否を決定
 
-`false` に設定すると「暗黙の拒否」厳格モードが有効になり、ホワイトリスト式の管理が可能で、**明示的に許可されていないものはすべて拒否**されます。
+`false` に設定すると「暗黙の拒否」厳密モードが有効になり、ホワイトリスト方式で管理されるため、**明示的に許可されていないものはすべて拒否**されます。
 
-> **例外**：③ 出力次元は `default_allow` の影響を受けない——これは独立した絞り込みスイッチで、デフォルトはすべて許可され、明示的なルールのみが制限される（フレームワーク層の owner が空の呼び出しは常に許可される）。  
-> これにより、厳格なグローバルモードでも、すべてのモジュールのメッセージ返信が意図せず遮断されることはない。  
-> コマンド ACL には独立した `ErisPulse.event.command.default_allow` バックアップがあり、互いに影響しない。
+> **例外**：③ 出力次元は**`default_allow`の影響を受けない**——これは独立した絞り込みスイッチであり、デフォルトはすべて許可され、明示的なルールでのみ制限される（フレームワーク層の owner が空の呼び出しは常に許可される）。このように厳密なグローバルモードでも、すべてのモジュールのメッセージ返信が意図せず遮断されることはない。コマンド ACL には独立した `ErisPulse.event.command.default_allow` バックアップがあり、互いに影響しない。
 
 ## 設定ファイル
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # グローバルバックアップ（false = 暗黙の拒否厳格モード）
+default_allow = true        # グローバルバックアップ（false = 暗黙の拒否厳密モード）
 cache_size = 1024           # LRUキャッシュサイズ
 
 # ── ① モジュール次元（優先度：セッション > Bot > プラットフォーム）──
 [ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Tool*"]   # ホワイトリスト：正確名 / glob / re: 正規表現
+modules = ["Chat", "Tool*"]   # ホワイトリスト：正確な名前 / glob / re: 正規表現
 blocked = ["re:^Danger"]
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Chat"]
-merge = true                  # プラットフォームレベルのバインドに追加（デフォルトは全体上書き）
+merge = true                  # プラットフォームレベルのバインディングに追加（デフォルトは全体を上書き）
 [ErisPulse.scope.sessions.onebot11."789012345"]
 modules = ["Chat"]
 
-# ── ② 身元次元（優先度：ユーザー > セッション > Bot > アダプター）──
+# ── ② 身元次元（優先度：ユーザー > セッション > Bot > アダプタ）──
 [ErisPulse.scope.identity.adapters.onebot11]
-deny = true                   # アダプター全体のイベントを完全に破棄
+deny = true                   # アダプタ全体のイベントを完全に破棄
 [ErisPulse.scope.identity.bots.onebot11."123456"]
 deny = true
 [ErisPulse.scope.identity.sessions.onebot11."g_blocked"]
 deny = true
 [ErisPulse.scope.identity.users.onebot11]
-allow = ["u_admin"]           # ユーザー識別子に glob / re: 正規表現をサポート
+allow = ["u_admin"]           # ユーザー鍵は glob / re: 正規表現をサポート
 deny = ["u_bad", "spam_*"]
 
-# ── ③ 出力次元（デフォルトはすべて許可、明示的に絞る場合のみ制限）──
+# ── ③ 出力次元（デフォルトはすべて許可され、明示的な絞り込みのみ制限）──
 [ErisPulse.scope.actions.MyModule]
-send = { deny = true }                                    # 送信を全禁止
+send = { deny = true }                                    # 送信を完全に禁止
 api = { allow = ["get_*"] }                               # クエリ系の標準APIのみ許可
 request = { deny = true }                                 # リクエスト処理を禁止
 ```
 
 ## ① モジュール次元
 
-「あるコンテキストの中で、どのモジュールが利用可能か？」という質問に答える。デフォルトではすべてが開放されており、設定のバインディングが有効になってからフィルタリングが開始されるため、**モジュールとアダプタは一切変更不要**。
+「あるコンテキストで、どのモジュールが利用可能か」を回答します。デフォルトはすべて開放され、バインディングを設定した後にフィルタリングが開始され、**モジュールとアダプタは一切変更を必要としません**。
 
 ```mermaid
 flowchart TD
-    A["イベントがモジュールのハンドラ/コマンドに到達"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
-    B --> C{"解析の優先順位：セッションレベル > Bot レベル > プラットフォームレベル<br/>（子レベルで merge = true の場合、各レベルで逐次合併）"}
-    C -->|"一致"| D["blocked に一致 → 拒否<br/>modules が空でない → 限定された白名単のみ許可<br/>両方空 → default_allow"]
-    C -->|"不一致"| E["default_allow（デフォルトは true = 許可）"]
-    D -->|"拒否"| Z["返信なし<br/>（ブロードキャスト `scope.blocked` イベントをブロック；一致したコマンドは引き続き認領され、ブロックされる）"]
+    A["イベントがモジュールのプロセッサ/コマンドに到達"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
+    B --> C{"解析チェーン：セッションレベル > Botレベル > プラットフォームレベル<br/>（子レベル merge = true の場合、各エントリを並列に結合）"}
+    C -->|"一致"| D["blockedに一致 → 拒否<br/>modulesが空でない → ホワイトリストのみ許可<br/>どちらも空 → default_allow"]
+    C -->|"一致しない"| E["default_allow（デフォルトはtrue = 許可）"]
+    D -->|"拒否"| Z["返信しない<br/>（ブロードキャスト `scope.blocked` イベントをブロック；一致したコマンドは認識され、ブロックされる）"]
 ```
 
-- **解析の優先順位：セッションレベル > Bot レベル > プラットフォームレベル**。高優先度のバインディングは低優先度を**全体的に上書き**する。子レベルで `merge = true` を設定すると、低優先度と**各項目ごとの合併**（modules / blocked はそれぞれ独立に合併）に変更される（`merge` 自体は制御キーであり、項目としてはカウントされない）。
-- **デフォルトの意味**：フィルタリングされたモジュールのコマンドとハンドラはトリガされず、返信もされない。TRACE レベルのログで確認可能（`core.scope.denied`）。同時に `scope.blocked` ライフサイクルイベントがブロードキャストされ、何がブロックされたのか、なぜブロックされたのかをサブスクライブすることで観測可能。一致した**コマンド**は引き続き認領され、ブロックされる——コマンドのテキストは低優先度のメッセージハンドラに漏れることなく、二重応答の曖昧さ（コマンドが拒否された後にメッセージハンドラが再度反応する）を解消する。
-- **フレームワークレベルのハンドラ**（`scope_exempt=True` または owner が空）は影響を受けない。モジュール名が空（フレームワーク層のリソース）の場合は常に許可される。
-- **セッション感知によるヘルプとコマンド照会**：コマンド照会 API（`command.help` / `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`、および `module.get_commands_overview`）は、オプションで `event=` または明示的に `platform=` / `bot_id=` / `session_id=` を指定できる。現在のセッションで利用できないモジュールのコマンドは結果に含まれない（`get_command` は None を返し、単一のコマンドヘルプは「未登録」として扱われる。これはデフォルトの意味と一致する）。コンテキストを渡さない場合は、全量の動作を維持する。
+- **解析優先度**：セッションレベル > Botレベル > プラットフォームレベル、高優先度のバインディングは低優先度を**全体的に上書き**します；子レベルのバインディングに `merge = true` を書くと、低優先度と**各エントリを並列に結合**します（modules / blocked はそれぞれ結合、`merge` 自体はエントリではなく、制御キーです）
+- **デフォルトの意味**：フィルタされたモジュールのコマンドとプロセッサはトリガーされず、返信もされず、TRACEレベルのログに表示されます（`core.scope.denied`）；ブロードキャスト `scope.blocked` ライフサイクルイベントをブロックします（サブスクライブすれば、誰がブロックされたか、なぜブロックされたかを観測できます）；**コマンド**は認識され、ブロックされます——コマンドが拒否された後に低優先度のメッセージプロセッサが反応する二重応答の不一致を排除します
+- **フレームワークレベルのプロセッサ**（`scope_exempt=True` または owner が空）は影響を受けません；モジュール名が空（フレームワークレベルのリソース）は常に許可されます
+- **セッション感知のヘルプとコマンド照会**：コマンド照会API（`command.help` / `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`、および `module.get_commands_overview`）は、オプションの `event=` または明示的な `platform=` / `bot_id=` / `session_id=` キーワードをサポートします——現在のセッションで利用できないモジュールのコマンドは結果に含まれません（`get_command` は None を返し、単一のヘルプは「未登録」として処理され、デフォルトの意味と一致します）；コンテキストを渡さない場合は、全量動作を維持します
 
-### バインディングの継承（merge）
+### バインディング継承（merge）
 
-デフォルトの上書きの意味は明確で予測可能である。上位レベルのバインディングに**追加**したい場合は、子レベルで `merge = true` を設定する：
+デフォルトの上書きの意味は明確で予測可能です；上位レベルの内容を**追加**したい場合は、子レベルに `merge = true` を書きます：
 
 ```toml
 [ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Tool"]      # プラットフォームレベル：Chat、Tool を許可
+modules = ["Chat", "Tool"]      # プラットフォームレベル：Chat、Tool のみ許可
 
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Music"]
-merge = true                    # その Bot で実効する = ["Chat", "Tool", "Music"]
+merge = true                    # この Bot で実際の効果 = ["Chat", "Tool", "Music"]
 ```
 
-- 合併ルール：`modules` と `blocked` はそれぞれ**合併**される。バインディング内では `blocked` は `modules` よりも優先される。
-- 鏈式の合併：プラットフォーム → Bot → セッションの順に段階的に追加され、各レベルで `merge` または上書きを個別に決定する。
+- 合併ルール：`modules` と `blocked` はそれぞれ**並列に結合**されます；バインディング内では `blocked` が `modules` より優先されます
+- チェーンの合併：プラットフォーム → Bot → セッションと段階的に追加され、各レベルは `merge` または上書きを個別に決定します
 
-## ② 身元次元（イベント受信）
+## ② 身元次元（イベント受信制限）
 
-「誰のイベントを受信するか」を回答します。拒否されたイベントは**イベント配信のエントリで完全に破棄**されます——ミドルウェアやどのハンドラにも送られず（フレームワークレベルも含む）、`core.scope.identity_denied` のTRACEレベルのログのみが表示されます。
+「誰のイベントを受け入れるか」を回答します。拒否されたイベントは**配信のエントリで完全に破棄**されます——ミドルウェアや他のプロセッサ（フレームワークレベルを含む）には届きません（`core.scope.identity_denied` の TRACE レベルのログにのみ表示されます）。
 
-- **解析優先度：ユーザー > セッション > Bot > アダプター**。最も具体的な設定された戦略を取る；`deny` は `allow` より優先
-- 各レベルのバインドは二元戦略：`{ allow = true }` または `{ deny = true }`
-- ユーザー識別子は glob / 正規表現をサポート（例：`"spam_*"` で一括した迷惑ユーザーをブロック）
-- 一般的な使い方——上位で deny、個人で allow で「例外許可」：
+- **解析優先度**：ユーザー > セッション > Bot > アダプタ、最も具体的に設定された戦略を取ります；deny は allow より優先されます
+- 各レベルのバインディングは二元戦略です：`{ allow = true }` または `{ deny = true }`
+- ユーザー鍵は glob / 正規表現をサポートします（例: `"spam_*"` で一括してスパムユーザーをブロック）
+- 代表的な用途——上位レベルで deny、個人で allow で「例外許可」を行う：
 
 ```toml
 [ErisPulse.scope.identity.adapters.onebot11]
 deny = true
 [ErisPulse.scope.identity.users.onebot11]
-allow = ["u_admin"]   # アダプター全体が拒否していても、u_admin のイベントは許可される
+allow = ["u_admin"]   # アダプタレベルで拒否されても、u_admin のイベントは許可されます
 ```
 
 ## ③ 出力次元（モジュールの出力呼び出し制限）
 
-モジュールが**出力アクション**（メッセージ送信 / 標準APIアクション / リクエスト操作）を開始することを制限します。  
-3つのアクションはそれぞれのDSLに対応：`Event.reply` と `Send`（send）、`Api` / `call_api`（api）、`Request` の accept/reject（request）。イベントハンドラ実行中に出力呼び出しが発生した場合、モジュールの owner が含まれ、この次元で一括して判定されます。
+モジュールが**出力アクションを発生させる**ことを制限します：メッセージ送信 / 標準API動作 / リクエスト操作。3つのアクションはそれぞれのDSLに対応します：`Event.reply` と `Send`（send）、`Api` / `call_api`（api）、`Request` の accept/reject（request）。イベントハンドラ実行中にモジュールが発生させる出力呼び出しは、モジュールの owner を持つため、この次元で一括して判定されます。
 
 ### 規則の形態（インライン表）
 
-各アクションのルールはインライン表です：`{ allow = [...], deny = true|[...] }`。  
-同一アクションには1つのルールしか設定できません（TOMLのキーは重複不可、全禁止と細粒度はどちらか一方のみ）：
+各アクションのルールはインライン表です：`{ allow = [...], deny = true|[...] }`。同一アクションには1つのルールしかできません（TOMLのキーは重複不可、全禁止と細粒度の2択）：
 
 ```toml
 [ErisPulse.scope.actions.MyModule]
-send = { deny = true }                                  # 送信を全禁止（Event.reply / Send DSL）
-# または方法レベルの細粒度：send = { allow = ["Text", "Image*"], deny = ["File"] }
+send = { deny = true }                                  # 全ての送信を禁止（Event.reply / Send DSL）
+# またはメソッドレベルの細粒度：send = { allow = ["Text", "Image*"], deny = ["File"] }
 api = { allow = ["get_*"] }                             # クエリ系の標準APIのみ許可
 # またはアクションレベルのブラックリスト：api = { deny = ["set_*", "leave_*"] }
-request = { deny = true }                               # リクエストの処理を禁止（accept/reject）
+request = { deny = true }                               # リクエストの処理 accept/reject を禁止
 ```
 
-- `send` の条目は**送信メソッド名**（`Text` / `Image` / `File` ...）に一致します、  
-  `api` の条目は**標準アクション名**（`get_group_info` / `set_group_name` ...）に一致します
-- 条目は正確名 / glob / `re:` 正規表現（全システムの統一構文に一致し、大文字小文字は区別しない）をサポート
-- `allow` に1つの文字列を書くことは、1つのリスト条目と同等です：`send = { allow = "Text" }`
+- `send` のエントリは**送信メソッド名**（`Text` / `Image` / `File` ...）にマッチし、`api` のエントリは**標準アクション名**（`get_group_info` / `set_group_name` ...）にマッチします
+- エントリは正確な名前 / glob / `re:` 正規表現（全システムで統一された構文、大文字小文字は区別しない）をサポートします
+- `allow` に1つの文字列を書くことは、1つのエントリリストに等しいです：`send = { allow = "Text" }`
 
 ### 判定の意味
 
-**デフォルトはすべて許可**——設定されていない場合、または owner が空（フレームワーク層の内部呼び出し）の場合はすべて許可されます。  
-設定ルールがある場合、以下の順序で判定されます：
+**デフォルトはすべて許可**されます——未設定、または owner が空（フレームワークレベルの内部呼び出し）はすべて許可されます。ルールが設定された場合は以下の順序で判定されます：
 
 1. `deny = true` → 拒否
 2. `deny` リストに呼び出し名が一致 → 拒否
-3. `allow` リストが空でないかつ呼び出し名が一致しない（または呼び出し名がない）→ 拒否
-4. その他の場合は許可
+3. `allow` リストが空でないかつ呼び出し名が一致しない（または呼び出しに名前がない）→ 拒否
+4. その他の場合 → 許可
 
-拒否された呼び出しはネットワークリクエストを開始せず、直接標準の失敗応答（`retcode = 34601`、[api-response §5.3](../standards/api-response.md#53-フレームワーク拡張返却コード34xxx-プラットフォームエラー段の下3桁のカスタム定義)）を返します。  
-3つのアクションは互いに独立しており、1つだけ制限できます。
+拒否された呼び出しはネットワークリクエストを発生させず、直接標準の失敗レスポンス（`retcode = 34601`、[api-response §5.3](../standards/api-response.md#53-フレームワーク拡張返却コード34xxx-プラットフォームエラーセグメントの下3桁のカスタム定義)）を返します。3つのアクションは互いに独立しており、1つだけ制限できます。
 
 ```python
 # 実行時API
-sdk.scope.set_action("MyModule", "send", deny=True)              # 送信を全禁止
-sdk.scope.set_action("MyModule", "send", allow=["Text"])         # 送信可能なのはテキストのみ
+sdk.scope.set_action("MyModule", "send", deny=True)              # 全てのメッセージ送信を禁止
+sdk.scope.set_action("MyModule", "send", allow=["Text"])         # テキスト送信のみ許可
 sdk.scope.is_action_allowed("MyModule", "send", name="Image")    # False
-sdk.scope.is_action_allowed("MyModule", "api", name="get_user_info")  # 規則に従って判定
+sdk.scope.is_action_allowed("MyModule", "api", name="get_user_info")  # ルールに従って判定
 sdk.scope.delete_action("MyModule", "send")                      # 許可を復元
 sdk.scope.get_action("MyModule", "send")                         # そのアクションの現在のルール
 ```
 
 ## 実行時API
 
-スコープの実行時APIは3つの層に分かれています：**判定**（3つの質問）、**ディメンション化された読み書き**（各層の `set` / `get` / `delete` パラメータ化メソッド、すべての型注釈が付いており、IDEで補完可能）、**辞書形式のバックアップ**（ドット区切りパスで任意の節に直接アクセス）。
+スコープの実行時APIは3つの層に分かれています：**判定**（3つの質問）、**次元ごとの読み書き**（各次元の `set` / `get` / `delete` パラメータ化メソッド、署名はすべて型注釈付き、IDEで補完可能）、**辞書式バックアップ**（ドット区切りのパスで任意の節に直接アクセス）。
 
 ```python
 from ErisPulse import sdk
@@ -10432,11 +10532,11 @@ scope.is_action_allowed("MyModule", "send", name="Image")      # メソッドレ
 ### ① モジュール次元
 
 ```python
-# バインド（パラメータによって階層が決定：session_id > bot_id > プラットフォームレベル）
+# バインディング（パラメータによって階層が決まります：session_id > bot_id > プラットフォームレベル）
 scope.set_module("onebot11", bot_id="123456", modules=["Chat", "Tool*"])
 scope.set_module("onebot11", blocked=["re:^Danger"])                       # プラットフォームレベル
 scope.set_module("onebot11", bot_id="123456", session_id="g9", modules=["Chat"])  # セッションレベル
-scope.set_module("onebot11", bot_id="123456", modules=["Music"], merge=True)      # 現在のバインドと並列に追加
+scope.set_module("onebot11", bot_id="123456", modules=["Music"], merge=True)      # 現在のバインディングと並列に結合
 scope.set_module("onebot11", bot_id="123456", modules=["Chat"], persist=False)    # 実行時のみ
 
 # 読み取り / 削除
@@ -10444,16 +10544,16 @@ scope.get_module("onebot11", bot_id="123456")   # {"modules": ["Chat"], "blocked
 scope.delete_module("onebot11", bot_id="123456")
 ```
 
-> `merge=True` は**書き込み時の並列**（現在のバインドと条目を並列に）です；階層解析時の `merge = true` 設定は上記の[バインド継承](#バインド継承merge)を参照してください——これらは独立したメカニズムです。
+> `merge=True` は**書き込み時に並列に結合**（現在のバインディングとエントリを結合）です；階層間の解析時の `merge = true` 設定は上記の[バインディング継承](#バインディング継承merge)をご覧ください——これらは独立したメカニズムです。
 
-> **実行時バインド（`persist=False`）の意味**：実行時バインドは独立したオーバーライド層に保存され、**その後のすべての設定書き込み / 設定ファイルのホットアップデートによっても破棄されません**（設定ツリーの再構築後に書き込み順序で自動的に再実行され、実行時削除も含む）。それらは永続化されず、プロセスの再起動後に失われる。モジュールのアンロード時に、そのモジュールが書き込んだ実行時バインドはバックアップでクリーンアップされる。その後、同じパスに対して `persist=True` で書き込み（ユーザー永続化の意味）を行うと、実行時ルールが上書きされます。
+> **実行時バインディング（`persist=False`）の意味**：実行時バインディングは独立したオーバーライド層に保存され、**任意の後続の設定書き込み / 設定ファイルのホットアップデートでも削除されません**（設定ツリーが再構築された後に、書き込み順に自動的に再実行されます、実行時削除も含みます）。これらは永続化されず、プロセスの再起動後に失われます；モジュールのアンロード時に、そのモジュールが書き込んだ実行時バインディングはバックアップでクリーンアップされます。その後、同一のパスで `persist=True` を実行すると、ユーザー永続化の意味で実行時ルールが上書きされます。
 
 ### ② 身元次元
 
 ```python
-# 戦略のバインド（パラメータによって階層が決定：user > session > bot > adapter；allow / deny は二択）
+# 戦略のバインディング（パラメータによって階層が決まります：user > session > bot > adapter；allow / deny のどちらか一方）
 scope.set_identity("onebot11", user_id="u_bad", deny=True)
-scope.set_identity("onebot11", user_id="spam_*", deny=True)    # キーに glob / re: 正規表現をサポート
+scope.set_identity("onebot11", user_id="spam_*", deny=True)    # キーは glob / re: 正規表現をサポート
 scope.set_identity("onebot11", bot_id="123456", session_id="g9", allow=True)
 
 # 読み取り / 削除
@@ -10465,118 +10565,115 @@ scope.delete_identity("onebot11", user_id="u_bad")
 
 ```python
 # 制限ルールの設定（allow: str|list；deny: bool|str|list；ルール全体の置換）
-scope.set_action("MyModule", "send", deny=True)                    # 送信を全禁止
-scope.set_action("MyModule", "send", allow=["Text"])               # 送信可能なのはテキストのみ
+scope.set_action("MyModule", "send", deny=True)                    # 送信を完全に禁止
+scope.set_action("MyModule", "send", allow=["Text"])               # テキスト送信のみ許可
 scope.set_action("MyModule", "api", deny=["set_*", "leave_*"])     # 管理系APIを禁止
 
 # 読み取り / 削除
 scope.get_action("MyModule", "send")       # {"allow": ["Text"]} 元のルール
-scope.delete_action("MyModule", "send")    # 単一アクションを削除
-scope.delete_action("MyModule")            # モジュールの全アクション制限を削除
+scope.delete_action("MyModule", "send")    # 個別のアクションを削除
+scope.delete_action("MyModule")            # モジュールのすべてのアクション制限を削除
 ```
 
 ### 一般的な操作
 
 ```python
-scope.get("platforms")   # 辞書形式のバックアップ：ドット区切りパスで任意の節を読み取り
-scope.topology()         # 全ての設定ツリー（ダッシュボード用）
+scope.get("platforms")   # 辞書式バックアップ：ドット区切りのパスで任意の節を読み取り
+scope.topology()         # 全設定ツリー（ダッシュボード用）
 scope.stats()
 # {"module_calls": .., "module_filtered": .., "identity_checks": .., "identity_denied": ..,
 #  "action_checks": .., "action_denied": .., "cache_hits": .., "cache_misses": ..}
 scope.reset_stats()
-scope.clear()           # 全ての設定をクリア（メモリ内のみ有効）
+scope.clear()           # 全設定をクリア（メモリ上でのみ有効）
 ```
 
-### 高度操作：辞書形式のドット区切りパスバックアップ
+### 高度な操作：辞書式ドット区切りパスバックアップ
 
-ディメンション化されたメソッドは日常的なシナリオをカバーします。任意のノード（または将来追加されるディメンション）に直接アクセスする必要がある場合は、辞書形式のAPIを使用します——`get` / `set` / `delete` はドット区切りパスを受け取り（dictの深いマージ、書き込み後に即座に読み取り可能）、`scope[path]` / `scope[path] = v` / `del scope[path]` / `path in scope` のプロトコルも提供します：
+次元化されたメソッドは日常的なシナリオをカバーします；任意のノード（または将来追加される次元）に直接アクセスする必要がある場合、**辞書式API**を使用できます——`get` / `set` / `delete` はドット区切りのパスを受け取り（dictの深さのマージ、書き込み後すぐに読み取り可能）、`scope[path]` / `scope[path] = v` / `del scope[path]` / `path in scope` プロトコルも提供します：
 
 ```python
 scope.set("bots.onebot11.123456", {"modules": ["Chat"], "blocked": []})
 scope.set("identity.users.onebot11.u_bad", {"deny": True})
 scope.get("actions.MyModule.send")
 
-scope["platforms.onebot11"]        # 読み取り（存在しない場合はKeyError）
+scope["platforms.onebot11"]        # 読み取り（存在しない場合はKeyErrorを送出）
 scope["platforms.onebot11"] = {...}  # 書き込み
 del scope["platforms.onebot11"]      # 削除
 "actions.MyModule" in scope          # 存在確認
 ```
 
-## 拦截の可観測性: `scope.blocked` イベント
+## 拦截の可視化：`scope.blocked` イベント
 
-スコープのブロッキング（モジュールフィルタリング / アイデンティティ拒否）が発生すると、ライフサイクルイベント **`scope.blocked`** がブロードキャストされます。  
-これにより、「誰がブロックされたのか、どの層でブロックされたのか」をサブスクライブし、統計を取ることができ、ダッシュボード上に表示することも可能になります。ブロッキングはデフォルトではレスポンスを返しませんが、もはやブラックボックスではなくなります。
+スコープのフィルタリング（モジュールのフィルタ / 身元の拒否）が発生すると、**`scope.blocked`** というライフサイクルイベントがブロードキャストされ、"誰がブロックされたか、どのレベルでブロックされたか"をサブスクライブ、統計、ダッシュボードで表示可能になります——ブロックはデフォルトで返信されませんが、不可知のブラックボックスではありません。
 
 | フィールド | 説明 |
 |------|------|
-| `dimension` | `"module"`（モジュール次元のフィルタリング）/ `"identity"`（アイデンティティのアクセス拒否） |
-| `module` | フィルタリングされたモジュール名（モジュール次元のみ） |
-| `platform` / `bot_id` / `session_id` / `user_id` | ブロッキングが発生したソースコンテキスト |
+| `dimension` | `"module"`（モジュール次元のフィルタ）/ `"identity"`（身元の受信拒否） |
+| `module` | フィルタされたモジュール名（モジュール次元のみ） |
+| `platform` / `bot_id` / `session_id` / `user_id` | ブロックが発生したソースコンテキスト |
 
 ```python
 from ErisPulse.Core.lifecycle import lifecycle
 
 @lifecycle.on("scope.blocked")
 def on_blocked(data):
-    print(f"ブロックされました：{data['dimension']} {data.get('module') or data.get('user_id')}")
+    print(f"ブロックされた：{data['dimension']} {data.get('module') or data.get('user_id')}")
 ```
 
-- イベントは `fire` バックグラウンドでブロードキャストされます（リスナーがいない場合、オーバーヘッドはゼロで、ホットパスを遅らせません）
-- キャッシュヒットによる重複ブロッキングは**再ブロードキャストされません**——同じコンビネーションはキャッシュが失効した場合にのみ1回だけブロードキャストされます
-- `adapter.event.blocked`（ミドルウェアによる拒否）とは区別されます：前者はイベントレベルでの破棄であり、本イベントはスコープのアクセス制御におけるモジュール / アイデンティティのフィルタリングです。
+- イベントは `fire` でバックグラウンドでブロードキャストされます（リスナーがいない場合はオーバーヘッドがなく、ホットパスを遅らせません）
+- キャッシュヒットによる重複のブロックは**再ブロードキャストされません**——同じ組み合わせはキャッシュが失効するたびに1回だけブロードキャストされます
+- `adapter.event.blocked`（ミドルウェアによる拒否）とは区別されます：これはイベントレベルの破棄であり、本イベントはスコープの受信ゲートのモジュール / 身元フィルタリングです
 
 ## キャッシュとホットアップデート
 
-- `is_allowed` / `is_identity_allowed` / `is_action_allowed` の結果は **LRUキャッシュ**（`scope.cache_size` で調整可能）が付いており、`set` / `delete` /  
-  設定のホットアップデート（`config.updated` / `config.set`）で自動的に無効化されます
-- すべてのディメンションの設定は**即座に有効**になり、再起動は不要
-- スコープは「イベントごとに」判断されるため、イベント間で状態を保持しない：設定が変わると、次のイベントから新しいルールで判断される
+- `is_allowed` / `is_identity_allowed` / `is_action_allowed` の結果は**LRUキャッシュ**（`scope.cache_size` で調整可能）が付いており、`set` / `delete` / 設定のホットアップデート（`config.updated` / `config.set`）で自動的に失効します
+- すべての次元の設定は**即座に有効**になります、再起動は不要です
+- スコープは**イベントごとの判断**であり、イベント間で状態を記憶しません：設定が変わると、次のイベントは新しいルールに従います
 
 ## 設定フォーマットの検証
 
-ロード時またはホットアップデート時に、各セクションの設定フォーマットを検証します：型エラーのセクション（例：`platforms` が文字列になっている）、不正な出力ルール（例：`allow` が数字になっている）、未知のアクション名、未知のトップレベルのキー（例：`alow` のスペルミス）は **WARNING** として出力され、対応するセクション / 条目は無視され、他の合法な設定は正常に有効になります——間違った設定は静かに無効になることはありません。
+ロード時 / ホットアップデート時に各セクションの設定フォーマットを検証します：型の間違ったセクション（例：`platforms` が文字列に設定されている）、不正な出力ルール（例：`allow` が数値に設定されている）、未知のアクション名、未知のトップレベルのキー（例：`alow` というスペルミス）は **WARNING** として出力され、対応するセクション / 条目は無視され、他の合法な設定は正常に有効になります——間違った設定は静かに失効するのではなく、警告されます。
 
-## 常見問題與注意事項
+## 一般的な問題と注意事項
 
-### 1. 配置層級與覆蓋
+### 1. 設定の階層と上書き
 
-- モジュール次元：セッションレベル > Bot レベル > プラットフォームレベル。**全体的な上書き**（子レベルで `merge = true` の場合、各項目を並列にマージ）。
-  「プラットフォームで Chat を許可し、Bot で Music を追加したい」場合は、Bot レベルで `merge = true` を設定するか、両方を明示的にリストに追加します。
-- 身元次元：ユーザー > セッション > Bot > アダプター。**最も具体的な**設定された戦略を採用します（例外として許可する場合も可能）。
-- コマンドのユーザーブラックリスト/ホワイトリスト：正確なコマンド名が glob キーに優先されます（`event.command.acl` を参照）。
+- モジュール次元：セッションレベル > Botレベル > プラットフォームレベル、**全体的に上書き**（子レベルで `merge = true` の場合は各エントリを並列に結合）。プラットフォームで `Chat` を許可し、Bot で `Music` を追加したい場合は、Bot レベルで `merge = true` を書くか、両方をリストに書く
+- 身元次元：ユーザー > セッション > Bot > アダプタ、**最も具体的な**設定された戦略を取ります（例外許可ができます）
+- コマンドのユーザーブラックリスト/ホワイトリスト：正確なコマンド名が glob キーに優先されます（`event.command.acl` を参照）
 
-### 2. モジュール/コマンドが反応しない場合
+### 2. モジュール/コマンドが反応しない
 
-まず、モジュール自体ではなく作用域を疑ってください：
+まず作用域が原因かどうかを疑います：
 
 ```python
 from ErisPulse import sdk
 
 print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
 print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
-print(sdk.scope.stats())   # module_filtered / identity_denied > 0 なら、フィルタリング記録があります
+print(sdk.scope.stats())   # module_filtered / identity_denied > 0 なら、ブロック記録がある
 ```
 
-フィルタリングされた場合、デフォルトでは返信されません（モジュール次元と身元次元で、ルールを露出しないようにします）。ただし、`scope.blocked` ライフサイクルイベントがブロードキャストされ、統計は継続的に累積されます。コマンド次元で ACL に拒否された場合は、「権限不足」という明示的な返信がされます。
+フィルタされた場合、デフォルトでは返信されません（モジュール次元と身元次元、ルールを暴露しないように）；`scope.blocked` ライフサイクルイベントをブロードキャストし、統計は継続的に蓄積されます；ACL で拒否されたコマンドは「権限不足」の返信を表示します。
 
-### 3. 出力アクションが拒否された場合のトラブルシューティング
+### 3. 出力アクションが拒否されたときのトラブルシューティング
 
 ```python
 from ErisPulse import sdk
 
 print(sdk.scope.get("actions.MyModule"))
-print(sdk.scope.stats())   # action_denied > 0 なら、呼び出しがブロックされています
+print(sdk.scope.stats())   # action_denied > 0 なら、呼び出しがブロックされている
 ```
 
-ブロックは**明示的**です：拒否された呼び出しは `retcode = 34601` の標準的な失敗レスポンスを返し、ネットワークリクエストは発生しません。
+ブロックは**明示的**です：拒否された呼び出しは `retcode = 34601` の標準の失敗レスポンスを返し、ネットワークリクエストは発生しません。
 
-### 4. セッション識別子のプラットフォーム間の隔離
+### 4. セッション識別子のプラットフォーム間隔離
 
-`(platform, session_id)` の組み合わせが一意の識別子です。`scope.sessions.onebot11."789"` は onebot11 上でのみ有効で、Telegram 上で同じ `789` であるセッションには影響しません。身元次元のユーザー識別子も同様です。
+`(platform, session_id)` 組み合わせが唯一の識別子です。`scope.sessions.onebot11."789"` は onebot11 でのみ作用し、telegram 上で同じ `789` のセッションには影響しません。身元次元のユーザーキーも同様です。
 
-## トポロジツリーAPI
+## 拓撲ツリーアプリケーションプログラミングインターフェース
 
-`ModuleManager.get_topology()` と `AdapterManager.get_topology()` は、モジュール/アダプターの所属関係データを提供します。`sdk.get_topology()` は、スコープ `scope` を含む一括集約を提供します：
+`ModuleManager.get_topology()` と `AdapterManager.get_topology()` は、モジュール/アダプタの所属関係データを提供します。`sdk.get_topology()` は、作用域 `scope` を含む一括集約を行います：
 
 ```python
 from ErisPulse import sdk
@@ -10592,14 +10689,14 @@ topology = sdk.get_topology()
 #       "lifecycle_hooks": 3,
 #     }
 #   },
-#   "adapters": {                                  # アダプター → Bot → スコープ
+#   "adapters": {                                  # アダプタ → Bot → 作用域
 #     "onebot11": {
 #       "status": "started", "enabled": True,
 #       "bots": {"123456": {"status": "online", "scope": {...}}},
 #       "scope": {"modules": [...], "blocked": [...]},
 #     }
 #   },
-#   "scope": {                                     # スコープ（モジュール / 身元 / 出力アクション）
+#   "scope": {                                     # 作用域（モジュール / 身元 / 出力アクション）
 #     "platforms": {...}, "bots": {...}, "sessions": {...},
 #     "identity": {"adapters": {...}, "bots": {...}, "sessions": {...}, "users": {...}},
 #     "actions": {...},
@@ -10607,9 +10704,9 @@ topology = sdk.get_topology()
 # }
 ```
 
-- モジュールトポロジーは、登録されたコマンド、イベントハンドラ、HTTP/WS/SSEルート、ライフサイクルフックを集約し、モジュールリソースツリーの描画に便利です。
-- アダプタートポロジーは、各アダプターのステータス、所属するBotのステータス、およびプラットフォーム/Botレベルのスコープバインド（モジュール次元）を集約します。
-- **JSON安全出力**：`get_topology(json_safe=...)` はデフォルトで `True` で、返された構造は `json.dumps` で直接シリアライズ可能——モジュール `info` は純粋なデータの `meta` サブテーブルのみを保持し（`module_class` / `strategy` などの実行時オブジェクトは除外）、その他のノード（アダプター作者が Bot `info` に追加した任意のオブジェクトを含む）はバックアップで浄化されます（クラスオブジェクトは `__name__` を取得、シリアライズできないオブジェクトは `str()` に退化）。ダッシュボード / WebUI は直接シリアライズして返すことができる；元のオブジェクトが必要な場合は `json_safe=False` を渡す。
+- モジュールのトポロジーは、登録されたコマンド、イベントハンドラ、HTTP/WS/SSEルート、ライフサイクルフックを統合し、モジュールリソースツリーを描画するのに便利です。
+- アダプタのトポロジーは、各アダプタの状態、下位のBotの状態、およびプラットフォーム/Botレベルの作用域バインディング（モジュール次元）を統合します。
+- **JSON安全出力**：`get_topology(json_safe=...)` はデフォルトで `True` であり、返された構造は直接 `json.dumps` できます——モジュール `info` は純粋なデータの `meta` サブテーブルのみ保持されます（`module_class` / `strategy` などの実行時オブジェクトは除外）、その他のノード（アダプタ作者が Bot `info` に挿入した任意のオブジェクトを含む）もバックアップで浄化されます（クラスオブジェクトは `__name__` を取得し、シリアライズできないオブジェクトは `str()` に退化します）。ダッシュボード / WebUI は直接シリアライズして返すことができます；原始オブジェクトが必要な場合は `json_safe=False` を渡します。
 
 
 
@@ -10617,15 +10714,21 @@ topology = sdk.get_topology()
 
 # 所有者（owner）システム
 
-所有者（owner）は、モジュールの「プラグインとして即時利用」の基盤です。モジュールがロード時に登録するフレームワークリソースはすべて自動的に所有者に記名され、モジュールのアンロード/無効化時に所有者ごとに一括で回収されます。モジュール開発者はリソースを宣言するだけで、手動でクリーンアップロジックを書く必要はありません。
+> [!TIP]
+> **この記事を読む必要があるのは**：リソースリークの調査、アンロード時のクリーンアップ処理の理解、またはリソースの所有権を宣言する場合。必要ない場合は飛ばしても、他の機能の使用に影響はありません。
 
-> **関連システム**：スコープ（scope）はイベント配信時に「リソースが有効かどうか」を決定し、所有者はライフサイクル中に「リソースは誰のものか、誰がアンロード時に回収されるか」を決定します。スコープの詳細は[統一制御面（scope）](scope.md)、バックグラウンドタスクの詳細は[ライフサイクル管理](lifecycle.md#バックグラウンドタスクの所有と自動キャンセル)をご覧ください。
+所有権は、モジュールの「プラグイン方式」の基盤です。モジュールが読み込まれる際に登録するフレームワークリソースはすべて自動的に所有者に記録され、アンロード/無効化時に所有者に従って一括回収されます。モジュールの作成者は、リソースを宣言するだけで手動でクリーンアップのロジックを書く必要はありません。
+
+> **関連システム**：スコープ（scope）は、イベントの配信時に「リソースが有効かどうか」を決定します。  
+> 所有権は、モジュールのライフサイクルの中で「リソースは誰のものか、誰がアンロード時に回収されるか」を決定します。  
+> スコープについては [統一制御面（scope）](docs/ja/scope.md) を、バックグラウンドタスクについては  
+> [ライフサイクル管理](docs/ja/lifecycle.md#バックグラウンドタスクの所有と自動キャンセル) を参照してください。
 
 {!--< tips >!--}
-1. 所有者は**登録瞬間**に `current_owner` によって自動的に記録され、モジュールコードは変更不要です。
-2. アンロード/無効化は共通のクリーンアップチェーン（`_cleanup_module_registrations`）を使用し、各ステップで失敗しても警告のみ表示され、処理は中断されません。
-3. ユーザー設定のリソース（永続化オーバーライド / scope 規則 / コマンド ACL）は、モジュールのアンロード時にクリーンアップされません。
-4. ツールモジュールが管理する外部ハンドルは、`on_cleanup(cb)` を使ってクリーンアップチェーンに登録し、他のモジュールがアンロードされた際に自動的にコールバックされます（[ツールモジュールガイド](#ツールモジュールガイド他のモジュールのハンドルを管理する)を参照）。
+1. 所有権は**登録の瞬間**に `current_owner` に従って自動的に記録されます。モジュールのコードは変更する必要がありません。
+2. アンロード/無効化は同じクリーンアップチェーン（`_cleanup_module_registrations`）を使用します。各ステップで失敗しても警告のみ表示され、処理は中断されません。
+3. ユーザー設定のリソース（永続化されたオーバーライド / scope ルール / コマンド ACL）は、モジュールのアンロード時にクリーンアップされません。
+4. ツールモジュールが管理する外部ハンドルは、`on_cleanup(cb)` を使用してクリーンアップチェーンに登録でき、対象モジュールがアンロードされた際に自動的にコールバックされます（[ツールモジュールガイド](#ツールモジュールガイド外部モジュールのハンドルを管理) を参照）。
 {!--< /tips >!--}
 
 ## owner コンテキストメカニズム
@@ -10897,15 +11000,18 @@ class CronModule(BaseModule):
 
 ### 影子模块与灰度转正
 
-# シャドウモジュールとグレーディングから本番への移行
+# シャドウモジュールとグレーディングの正式化
 
-シャドウ = 同じモジュールの**新しいバージョン**。これは、独立した所有者（例: `roll_shadow`）として、本番の旧バージョンと並存して試運転されます。シャドウは本物のイベントの**コピー**を受け取り、出力は**トラッキングされ、記録される**だけで、実際には発行されません。`shadow_diff` で2つのバージョンの動作を比較し、問題がないことを確認した後、`promote` でワンクリックで本番に移行し、`dismiss` でいつでも取り消すことができます。**モジュールのコードは一切変更せず、実行時 API によって駆動されます**。`load / unload / reload` と同様の運用アクションで、ダッシュボードやカスタム管理モジュールから直接呼び出すだけで、設定項目を書く必要はありません。
+> [!TIP]  
+> **このドキュメントを読むタイミング**：新バージョンを並行して試運転し、動作を比較して正式化またはロールバックしたい場合に必要です。不要であればスキップしても、他の機能の使用に影響はありません。
+
+シャドウとは、同一モジュールの**新しいバージョン**を指します。これは、`roll_shadow` などの**独立したオーナー**として、本番環境の旧バージョンと並行して試運転されます。シャドウは、本物のイベントの**コピー**を受け取り、その出力は**実際には送信されず、記録されるだけ**です。`shadow_diff` で2つのバージョンの動作を比較し、問題がないことを確認した後、`promote` コマンドで**ワンクリックで正式化**し、`dismiss` でいつでも**中止**できます。**モジュールのコードは一切変更せず、全プロセスは実行時APIによって駆動されます**：`load / unload / reload` と同じようなオペレーションアクションであり、ダッシュボードやカスタム管理モジュールから直接呼び出すことができます。**設定項目を書く必要はありません**。
 
 {!--< tips >!--}
-1. 起動: ``await sdk.module.shadow_start("roll", source="v2のパス")``
-   —— 新しいバージョンのコードは、独立した所有者（デフォルトはパス名）として、旧バージョンと並存します。
-2. シャドウは本物の配布や依存関係図に参加しません。同名のコマンドはシャドウディレクトリに進み、ルーティングは登録されるだけ、マウントされません。ライフサイクルのブロードキャストは静かに処理され、`module.call` と依存解析は引き続き v1 を指します。
-3. 本番への移行は常に人間による確認が必要です: ``await sdk.module.promote_shadow("roll")``。失敗した場合は、自動的に旧インスタンスにロールバックしてサービスを継続します。`dismiss_shadow` でいつでもシャドウを放棄できます。
+1. 起動：``await sdk.module.shadow_start("roll", source="v2のパス")``  
+   —— 新バージョンのコードは、独立したオーナー（デフォルトではパス名が使用されます）として旧バージョンと並行して動作します。
+2. シャドウは、実際の配布や依存関係グラフには参加しません：同名のコマンドはシャドウディレクトリに進み、ルーティングは登録されるだけ、ライフサイクルのブロードキャストは無視されます。`module.call` と依存解析は引き続き v1 を指します。
+3. 正式化は常に人間の確認が必要です：``await sdk.module.promote_shadow("roll")`` で正式化を実行し、失敗した場合は自動的に旧インスタンスに戻ってサービスを継続します。`dismiss_shadow` でいつでもシャドウを中止できます。
 {!--< /tips >!--}
 
 ## 快速上手
@@ -10969,53 +11075,56 @@ await sdk.module.dismiss_shadow("roll")   # または：シャドウを放棄
 
 # モジュール間通信
 
+> [!TIP]
+> **この章を読むタイミング**：RPCによるモジュール間呼び出し、サービス契約、指定されたイベント、またはクールスタート時の再再生が必要な場合。必要ない場合はスキップしても、他の機能の使用に影響はありません。
+
 > [!NOTE]
-> 本章の内容は ErisPulse **2.8.0+** が必要です。
+> 本章の内容は ErisPulse **2.8.0以上**で利用可能です。
 
-ErisPulse のモジュール間には**3つの通信モデル**があり、"点対点 → 定向 → ブロードキャスト"の順序で配置されています：
+ErisPulseでは、モジュール間の通信は**3つの階層モデル**で構成されています。順番は「点対点 → 指定 → ブロードキャスト」です。
 
-| 層 | API | 語義 | 典型的な場面 |
+| 層 | API | 意味 | 代表的な場面 |
 |---|---|---|---|
-| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 点対点のリクエスト-レスポンス、契約 / 審計 / タイムアウト付き | 他のモジュールの機能を呼び出す（履歴の取得、翻訳、返金など） |
-| **定向イベント** | `await lifecycle.emit("message_received", {...}, to="Chat")` | 指定されたモジュールが登録したライフサイクルフックにのみ配信 | 上流の状態変化を下流に通知する（"新しいメッセージを受け取りました"） |
-| **ブロードキャスト** | `await lifecycle.emit("config.updated", {...})` | フレームワーク全体で見えるライフサイクルイベント | 設定のホット更新、モジュールの起動・停止 |
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 点対点のリクエスト-レスポンス、契約 / 審査 / タイムアウト付き | 他のモジュールの機能を呼び出す（履歴の取得、翻訳、返金など） |
+| **指定イベント** | `await lifecycle.emit("message_received", {...}, to="Chat")` | 指定されたモジュールにのみ、ライフサイクルフックを登録したハンドラに配信 | 上流の状態変化を下流に通知する（「新しいメッセージを受け取りました」） |
+| **ブロードキャスト** | `await lifecycle.emit("config.updated", {...})` | フレームワーク全体で見えるライフサイクルイベント | 設定のホットアップデート、モジュールの起動 / 停止 |
 
 {!--< tips >!--}
-選択の口訣：**返り値が必要な場合は `call` を使い、特定のモジュールのフックに通知する場合は `emit(..., to=...)` を使い、全員に通知する場合は `emit(...)` を使う**。
+選択の口訣：**返り値が必要な場合は `call`、特定のモジュールのフックに通知する場合は `emit(..., to=...)`、全員に通知する場合は `emit(...)`**。
 {!--< /tips >!--}
 
-## RPC：module.call
+## RPC: module.call
 
 ```python
 result = await sdk.module.call("Chat", "get_history", session_id, n=20)
 ```
 
-裸属性访问 `sdk.module.Chat.get_history(...)`（保持不变）与 `module.call()` 的差异：
+`sdk.module.Chat.get_history(...)`（変更なし）の属性アクセスとの違いは以下の通りです：
 
-| | `module.call()` | 裸属性アクセス |
+| | `module.call()` | 属性アクセス |
 |---|---|---|
-| 目標が登録されていない / 有効化されていない | `ModuleNotAvailableError` をスロー | `AttributeError` をスロー |
-| ラグジュアリーなモジュール | **自動的に起動**（イベント駆動モジュールはアクティベーションロックを経由） | 非同期初期化モジュールが `RuntimeError` をスロー |
-| `current_owner` | **対象モジュール**に帰属（内部の `wait_reply` / 送信 / ログは正しく所有者に属する） | 呼び出し元のまま |
-| タイムアウト | デフォルト 30 秒（`timeout=` で上書き、`None` で無制限） | なし |
-| scope 審査 | 呼び出し元の出力ゲート `actions.<呼び出し元>.call` | なし |
+| 目標が登録されていない / 有効になっていない | `ModuleNotAvailableError` をスロー | `AttributeError` をスロー |
+| ラグジュアリーなモジュール | **自動的に起動**（イベント駆動モジュールはアクティベーションロックを通過） | 非同期初期化モジュールは `RuntimeError` をスロー |
+| `current_owner` | **ターゲットモジュール**に帰属（内部の wait_reply / 送信 / ログは正しい帰属） | 呼び出し元に保持 |
+| タイムアウト | 30秒（`timeout=` で上書き、None でタイムアウトなし） | なし |
+| scope 審査 | 呼び出し元が出口のゲートを通過 `actions.<呼び出し元>.call` | なし |
 | 契約検証 | `meta.services` のホワイトリスト | なし |
 
-### 例外体系
+### エラー体系
 
 ```
-ModuleError                      # モジュールシステムの例外基底クラス
-└── ModuleCallError              # モジュール間呼び出しの基底クラス（module / method 属性を含む）
-    ├── ModuleNotAvailableError  # 目標が登録されていない / 有効化されていない / 起動に失敗
-    ├── ServiceNotProvidedError  # メソッドが services ホワイトリストにない / 私有メソッド / 存在しない
-    └── ModuleCallTimeoutError   # コルーチンメソッドのタイムアウト
+ModuleError                      # モジュールシステムのエラー基底クラス
+└── ModuleCallError              # 跨モジュール呼び出しの基底クラス（module / method 属性を含む）
+    ├── ModuleNotAvailableError  # 目標が登録されていない / 有効になっていない / 起動に失敗
+    ├── ServiceNotProvidedError  # メソッドが services ホワイトリストにない / 私的メソッド / 存在しない
+    └── ModuleCallTimeoutError   # クロージャー関数がタイムアウト
 ```
 
 すべて `ErisPulseError` 体系に属し、`from ErisPulse.Core import ModuleCallError` でキャッチ可能です。
 
-## サービス契約：meta.services
+## サービス契約: meta.services
 
-サービス提供者は `get_meta()` で公開する白リストを宣言します（`commands` フィールドと対称）：
+サービス提供者は `get_meta()` で公開するホワイトリストを宣言します（`commands` と対称）：
 
 ```python
 from ErisPulse.Core.Bases import BaseModule, ModuleMeta
@@ -11033,31 +11142,46 @@ class ChatModule(BaseModule):
 
     async def get_history(self, session_id, n=20): ...
     async def translate(self, text, target_lang): ...
-    def _internal_helper(self): ...   # アンダースコア付きメソッドは外部からの呼び出しを常に禁止
+    def _internal_helper(self): ...   # 下線付きメソッドは外部から呼び出し禁止
 ```
 
-**開発者にとっては無視されるのがデフォルト**：
+**開発者は無感覚なデフォルト**：
 
-- `services` を宣言していない場合 → すべての**公開**メソッドは `module.call()` で呼び出せる（属性アクセスと同様に、宣言不要）
-- 宣言した場合 → 白リストに絞られ、範囲外の呼び出しは `ServiceNotProvidedError` を送出する——「これらが外部に約束されたメソッド」を明示するため
-- 制限の**主なコントロール権はユーザー側**にある：`scope.actions` 設定が「誰が誰を呼び出せるか」を決定する（下記の監査を参照），
-  モジュール作者の `services` はサービス面の宣言に過ぎず、2つの層は互いに代替できない
+- `services` を宣言していない → **公開**メソッドはすべて `module.call()` で呼び出せる（属性アクセスと同様）、宣言は不要
+- 宣言後 → ホワイトリストに絞られ、越境呼び出しは `ServiceNotProvidedError` をスロー——「これが外部に約束したメソッド」を明示する
+- 制限の**主制御権はユーザー側**：`scope.actions` の設定が「誰が誰を呼び出せるか」を決定（後述の審査参照）、モジュール作者の `services` はサービス面の宣言に過ぎず、2つの層は互いに置換不可能
 
-**サービスの説明**：各サービスに人間やAIが読める説明をつける——不要なら何も書かなくてもよい。
-説明は自動的に**メソッドの docstring の最初の行**を取る（フレームワークは docstring 形式を要求している）：
+**サービス紹介**：各サービスに人間 / AI が読める説明を付ける——不要なら何も書かなくてよい、説明は**メソッドの docstring 首行**（フレームワークは docstring 形式を要求している）から自動取得：
 
 ```python
 async def translate(self, text, target_lang):
-    """テキストを指定された言語に翻訳する"""    # ← この行が自動的にサービスの説明になる
+    """テキストを指定された言語に翻訳する"""    # ← この行がサービス紹介として自動取得される
     ...
 ```
 
-docstring に上書きしたい、または多言語に対応したいなどの細かい制御が必要な場合は、dict 形式で description を宣言する（i18n 辞書に対応）：
+**パラメータ提示**：呼び出し元（特に AI エージェント）は各パラメータの意味を知る必要がある。不要なら何も書かなくてよい、提示はメソッドの docstring の **`:param:` 行**から自動取得：
+
+```python
+async def render_card(self, html, width=800, height=0):
+    """HTMLを画像ファイルにレンダリングする
+
+    :param html: レンダリングするHTMLテキスト          ← 自動的にパラメータ提示として取得される
+    :param width: 画布の幅ピクセル、0は内容に応じて自動調整
+    :param height: 画布の高さピクセル、0は内容に応じて自動調整
+    """
+```
+
+微調整が必要な場合（docstring を上書き / 多言語対応）は dict 形式で `description` と `parameters` を宣言（両方とも i18n 辞書に対応；`parameters` は**パラメータ**と docstring をマージし、docstring が優先、宣言されたが存在しないパラメータはフィルタリングされる）：
 
 ```python
 services=[
     {"name": "translate", "description": "テキストを指定された言語に翻訳する"},
     {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "会話の要約"}},
+    {
+        "name": "render_card",
+        "description": "HTMLを画像ファイルにレンダリングする",
+        "parameters": {"html": "HTMLテキスト", "width": "幅ピクセル、0は自動調整"},
+    },
 ]
 ```
 
@@ -11066,82 +11190,80 @@ services=[
 ```python
 sdk.module.services()
 # {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
-#            'description': 'テキストを指定された言語に翻訳する'}]}
+#            'description': 'テキストを指定された言語に翻訳する',
+#            'parameters': {'session_id': 'セッションID', 'n': '返却件数'}}]}
 
 sdk.module.services("Chat")   # 指定されたモジュールのみを照会
 ```
 
-- `meta.services` が**明示的に宣言**されたモジュールのみをリストアップ（宣言されていないモジュールはディレクトリに表示されない）
-- 各サービスにはメソッドの署名文字列（`inspect.signature` から抽出）と説明文が付属
-- トポロジーにも対応：`sdk.module.get_topology()` の各モジュール項目には `services` フィールドが含まれる
+- **明示的に `meta.services` を宣言したモジュール**のみをリストアップ（宣言していないモジュールはディレクトリに表示されない）
+- 各サービスにはメソッドのシグネチャ文字列（`inspect.signature` から抽出）、説明文、パラメータ提示が付く
+- **ラグジュアリーなモジュールもディレクトリに表示される**（サービス発見はロードより先に発生）——呼び出し元はこれにより、`call()` でターゲットモジュールを起動するかを判断できる
+- トポロジーにも反映される：`sdk.module.get_topology()` の各モジュール項目に `services` フィールドが含まれる
 
 {!--< tips >!--}
-**MCP 化の道筋**：サービスディレクトリ（名前 + 署名 + 説明）は、MCP ツールの構造に自然に適合する——
-各サービスは天然に ``{"name", "description", "parameters"}`` の形をとる。
-将来、フレームワークは ``services()`` を直接 MCP サーバーエンドポイントとして公開し、AI がモジュールの機能を発見して呼び出すことが可能になる。
-また、``scope.actions.call`` の監査は、AI 呼び出しのセキュリティゲートとして自然に機能する。
+**MCP 化の道筋**：サービスディレクトリ（名前 + シグネチャ + 説明 + パラメータ提示）は MCP tool の形状に相当する——各サービスは自然に ``{"name", "description", "parameters"}`` になる。将来、フレームワークは ``services()`` を直接 MCP サーバエンドポイントとして公開し、AI がモジュールの能力を発見して呼び出せるようにする。また、``scope.actions.call`` 審査は AI 呼び出しのセキュリティゲートとして自然に機能する。
 {!--< /tips >!--}
 
-## 出向監査：誰が誰を呼び出すか
+## 出力審査: 誰が誰を呼び出せるか
 
-`module.call()` のたびに、**呼び出し元モジュール**の身分としてスコープの出向ゲートを通過します：
+`module.call()` は**呼び出し元モジュール**の立場で scope の出力ゲートを通過する：
 
 ```toml
 [ErisPulse.scope.actions.CallerModule.call]
 deny = ["Chat.get_history"]        # CallerModule が Chat の get_history を呼び出すことを禁止
-# allow = ["Chat.get_*"]           # またはホワイトリスト：get で始まる Chat のサービスのみを許可
+# allow = ["Chat.get_*"]           # またはホワイトリスト：get で始まるサービスのみを許可
 ```
 
-- `name` の形式は `<対象モジュール>.<メソッド名>` で、正確な一致、ワイルドカード、`re:` 正規表現がサポートされています
-- フレームワーク層の呼び出し（owner コンテキストがない、起動スクリプトなど）は監査制約の対象外です
-- 拒否された呼び出しは `ModuleCallError` を送出します（TRACE ログ `core.module.call_denied`）
+- `name` の形式は `<ターゲットモジュール>.<メソッド名>`、正確な一致 / glob / `re:` 正規表現が可能
+- フレームワーク層の呼び出し（owner コンテキストがない、例：起動スクリプト）は審査制約を受けない
+- 拒否された呼び出しは `ModuleCallError` をスロー（TRACE ログ `core.module.call_denied`）
 
-設定方法は [スコープ（scope）](docs/ja/scope.md) の出向の観点を参照してください。
+設定方法は [作用域（scope）](scope.md) の出力側の詳細を参照。
 
-## 定向イベント: lifecycle.emit の to パラメータ
+## 指定イベント: lifecycle.emit の to パラメータ
 
-ライフサイクルイベントは、`to` パラメータで送信先の所有者（owner）を指定することで、特定のオーナーにイベントを送信できます。この場合、イベントはそのオーナーとして登録されたフック（モジュールが `on_load` 内で登録するフックは自動的に自身のモジュールに属します）にのみ配信され、他のモジュールやワイルドカード `*` のハンドラはイベントを感知しません。
+ライフサイクルイベントは指定送信をサポート：`to` でターゲット所有者（owner）を指定すると、イベントはその owner として登録されたフックにのみ配信される（`on_load` 内で登録されたフックは自動的に本モジュールに帰属）、他のモジュールやワイルドカード `*` ハンドラは感知しない。
 
 ```python
 from ErisPulse.Core.lifecycle import lifecycle
 
-# 送信側：イベントは Chat モジュールが登録したフックにのみ送信されます
+# 投递元：イベントは Chat モジュールが登録したフックにのみ投递される
 await lifecycle.emit("message_received", {"text": "hi", "from": "u1"}, to="Chat")
 
-# 受信側（Chat モジュール内）：同名のフックを登録し、owner は登録時に自動的に記録されます
+# 訂閱元（Chat モジュール内）：同名のフックを登録し、owner は登録時に自動的に記録される
 @lifecycle.on("message_received")
 async def on_message_received(data): ...
 
-@lifecycle.on("message")          # 点式の親プレフィックスも同様に有効（owner でフィルタリング）
+@lifecycle.on("message")          # 点式の親前缀も同様に有効（owner でフィルタリング）
 async def on_any(data): ...
 ```
 
-動作の詳細：
+意味の詳細：
 
-- 指定されたオーナーに登録されたフックがない場合 → イベントは**静かに破棄**されます（**存在しない場所に送信されません**）。  
-  事前に `lifecycle.has_handlers("message_received")` を使用して存在を確認できます。
-- `data` が dict の場合、自動的に `_trace_id` を追加します（既存の値は上書きされません）。これにより、全トラッキングフローと連携できます。
-- ブロードキャストと定向は、同じフック登録システムを使用します：`emit(...)` に `to=` を指定しない場合、イベントはフレームワーク全体にブロードキャストされます。`to=` を指定すると、同一イベントは対象モジュールのみに表示されます。
-- `emit_sync` / `submit_event`（互換 API）も `to=` パラメータをサポートします。
+- ターゲット owner に登録されたフックがない → イベントは**静かに破棄**（**存在しない場所には送らない**）、`lifecycle.has_handlers("message_received")` で事前に検出可能
+- `data` が dict の場合、`_trace_id` が自動的に付与される（既存値を上書きしない）、全トラッキングと連携
+- ブロードキャストと指定は同じフック登録を共有：`emit(...)` に `to` を指定しないと全フレームワークにブロードキャスト、`to` を指定すると同一イベントはターゲットモジュールにのみ見える
+- `emit_sync` / `submit_event`（互換 API）も `to=` パラメータをサポート
 
-> [!NOTE]  
-> 定向イベントは軽量な通知であり、**送信先の存在確認や遅延起動は行いません**。送信先の存在確認、契約の監査、または戻り値が必要な場合は、[RPC: module.call](#rpcmodulecall) を使用してください。
+> [!NOTE]
+> 指定イベントは軽量な通知であり、**ターゲットの検証やラグジュアリーな起動は行わない**；ターゲットの存在性検証、契約審査、または返り値が必要な場合は、[RPC: module.call](#rpcmodulecall) を使用してください。
 
-## 慢的ロードと呼び出し
+## ラグジュアリーなモジュールと呼び出し
 
-`module.call()` は、**遅延ロードモジュールに対して透明な起動**を提供します：
+`module.call()` はラグジュアリーなモジュールに対して**透明な起動**を行う：
 
-- イベント駆動の遅延モジュール（`activate_on` で宣言）→ 活性化ロック `_activate()` を通ります。活性化後、トリガースタブは自動的に登録解除されます。
-- 通常の遅延モジュール → 同期初期化または通常のロード経路（冪等性）
-- 起動失敗 → `ModuleNotAvailableError`
+- イベント駆動ラグジュアリーなモジュール（`activate_on` で宣言）→ 活性化ロック `_activate()` を通る、活性化後はトリガースタブが自動的に登録解除
+- 通常のラグジュアリーなモジュール → 同期初期化または通常のロード経路（冪等）
+- 起動に失敗 → `ModuleNotAvailableError`
 
-つまり、**呼び出し元は対象モジュールが既にロードされているかどうかを気にする必要がなく、またその起動のために特定のイベントを待つ必要もありません。**
+つまり：**呼び出し元はターゲットモジュールがロードされているかどうかを気にする必要はない**、また、ターゲットを起動するために特定のイベントを待つ必要もない。
 
-対象イベント（`lifecycle.emit(..., to=...)`）は遅延起動を行いません。対象がロードされていない場合、フックは存在せず、イベントは静かに破棄されます。確実に送信する必要がある場合は、`module.call()` を使用してください。
+指定イベント（`lifecycle.emit(..., to=...)`）はラグジュアリーな起動を行わない——ターゲットがロードされていないとフックが存在しない、イベントは静かに破棄される；確実に送信したい場合は `module.call()` を使用してください。
 
-## クールスタートリプレイ
+## クールスタート時の再再生
 
-新規インストール / 再起動のモジュールが一部のチャットを逃した場合、`get_load_strategy(replay=...)` により、フレームワークはモジュールが準備完了した後に、セッション受信箱内の最近のメッセージを**そのモジュール自身にリプレイ**します。
+新規インストール / 再起動のモジュールは一部のチャットを逃した——`get_load_strategy(replay=...)` により、フレームワークはモジュールが準備された後、会話の受信箱に含まれる最近のメッセージを**再再生**してモジュール自身に送る：
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -11152,46 +11274,48 @@ class MyAIModule(BaseModule):
         return ModuleLoadStrategy(
             lazy_load=False,
             priority=100,
-            replay="5m",        # 最近の 5 分間をリプレイ ("1h" / "300" 秒の書き方も可能です)
+            replay="5m",        # 最近の5分間を再再生（"1h" / "300"秒の形式も可）
         )
 
     async def on_load(self, event):
         @message.on_message()
         async def handle(e):
             if e.get("replayed"):
-                # 合成イベント: コンテキストのみ補完、送信などの副作用は発生しない
+                # 合成イベント：コンテキストの補完のみ、送信などの副作用は発生しない
                 ...
 ```
 
-意味の詳細:
+意味の詳細：
 
-- データソースは[セッション受信箱](interaction.md#会話受信箱eventhistory) (`sdk.transcript.recent()`) です。
-  モジュールの読み込み完了後にバックグラウンドで実行され、起動をブロックしません。
-- 合成イベントには `replayed: True` のフラグと、`platform / detail_type / user_id / alt_message` が完全に含まれており、**本モジュールのハンドラにのみ配信されます**。他のモジュールはリプレイの影響を受けません。
-- 受信箱が有効でない / 記録がない / 時間長の宣言が不正な場合 (`replay_invalid` 警告) は、静かにスキップされます。
+- データソースは[会話の受信箱](interaction.md#会話受信箱eventhistory)（`sdk.transcript.recent()`）であり、モジュールのロード完了後にバックグラウンドで実行され、起動をブロックしない
+- 合成イベントには `replayed: True` フラグ、`platform / detail_type / user_id / alt_message` が含まれ、**本モジュールのハンドラにのみ分発される**——他のモジュールには再再生の影響を受けない
+- 受信箱が有効 / 記録がない / 時間の宣言が不正（`replay_invalid` 警告）の場合は静かにスキップされる
 
 ## イベントの冪等性と重複除去
 
-プラットフォームの WebSocket 再接続後に、同じイベント（同じ `event["id"]`）が頻繁に再送されることがあります。イベントの配信エントリポイントでは、ID に基づいて LRU 重複除去（容量 4096）が行われ、同じ ID のイベントは一度だけ配信されます。
+プラットフォームの websocket 再接続後に同じイベントが重複送信されることがよくある（同じ `event["id"]`）——配信エントリは id に基づいて LRU で重複除去（容量 4096）、同じ id のイベントは1回しか配信されない。
 
 ```toml
 [ErisPulse.framework]
-event_dedupe = true   # デフォルトで有効。テスト環境では固定 ID で合成イベントを作成する場合は無効にできます。
+event_dedupe = true   # 既定で有効；テスト環境で固定 id の合成イベントを生成する場合は無効化可能
 ```
 
-アダプタが**登録**（新しい接続のライフサイクルの起点）される際に、自動的に重複除去キャッシュがリセットされます。
+アダプターが**登録**（新接続のライフサイクルの起点）されたときに、自動的に重複除去キャッシュがリセットされる。
 
 
 
 ### 启动流程与手动控制
 
-# スタートフローと手動制御
+# 起動フローと手動制御
 
-ErisPulse の `await sdk.run()` / `await sdk.init()` は、一連のスタートフローを「一行のコード」に抽象化しています。しかし、部分的な読み込み、動的な登録、ホットプラグ、カスタムロード戦略の注入など、完全にカスタマイズしたスタートフローが必要な場合は、このフローの内部で何が起こっているのか、そして各ステップをどのように手動で駆動するのかを理解する必要があります。
+> [!TIP]  
+> **この記事を読むタイミング**：手動で起動フローを制御し、起動順序をカスタマイズしたり、起動失敗をトラブルシューティングする必要がある場合。必要がない場合はスキップしても、他の機能の使用に影響はありません。
 
-本文では、スタートフローを個々のステップに分解し、それぞれの役割と呼び出し順序を説明します。また、手動で完全にスタートさせるための例も示します。
+ErisPulse の `await sdk.run()` / `await sdk.init()` は、一連の起動フローを「一行のコード」に抽象化しています。しかし、部分的なロード、動的な登録、ホットプラグ、カスタムロード戦略の注入など、起動フローを完全にカスタマイズしたい場合は、このフローの内部で何が起こっているのか、そして各ステップをどのように手動で制御するのかを理解する必要があります。
 
-> 本文では、[最初のロボット](../getting-started/first-bot.md)を実行済みと仮定し、`sdk.run(keep_running=True/False)` の 2 つのモードについて理解している前提でいます。本文では、`init()` の**内部**のフローの分解、および `init()` / `init_task()` / `init_sync()` などのより下層のエントリーポイントに焦点を当てます。
+本文では、起動フローを独立したステップに分解し、それぞれの役割と呼び出し順序を説明します。また、手動で完全に起動するための例も示します。
+
+> 本文は、[最初のロボット](../getting-started/first-bot.md)を実行し、`sdk.run(keep_running=True/False)` の2つのモードを理解していることを前提としています。本文では、`init()` **内部**のフローの分解と、`init()` / `init_task()` / `init_sync()` などのより低レベルなエントリポイントに焦点を当てています。
 
 ## SDK トップレベルのエントリーポイント一覧
 
@@ -12764,48 +12888,48 @@ ErisPulse フレームワークで現在使用している `346xx` コード：
 
 # ErisPulse 送信メソッド規格
 
-このドキュメントでは、ErisPulseアダプタのSendクラスにおける送信メソッドの命名規則、引数規則、および逆変換要件を定義します。
+本文書は、ErisPulseアダプタのSendクラスにおける送信メソッドの命名規則、パラメータ規則、および逆変換要件を定義します。
 
-## 0. キーワードの定義
+## 0. キーワードの約束
 
-本文書における**必須（MUST）**、**推奨（SHOULD）**、**可選（MAY）**は、RFC 2119に従い以下の意味で解釈されます：
+本文書内の **必須（MUST）**、**推奨（SHOULD）**、**可能（MAY）** は、RFC 2119に従い以下の意味で解釈されます：
 
 | キーワード | 意味 | 違反時の影響 |
 |--------|------|---------|
-| **必須** | 強制的な要件、フレームワークの動作やプラットフォーム間の一貫性に依存 | アダプタは規格に準拠していないと見なされ、モジュールコードが動作しない可能性がある |
-| **推奨** | 強く推奨するが、正当な理由がない限り遵守すべき | 違反する場合は、アダプタのドキュメントに理由と代替動作を明記する必要がある |
-| **可選** | オプションで、プラットフォームの能力に応じて自由に決定できる | 無し |
+| **必須** | 強制要件。フレームワークの動作/クロスプラットフォームの一貫性はこれに依存 | アダプタは規格に準拠していないと見なされ、モジュールコードが動作しない可能性がある |
+| **推奨** | 強く推奨。十分な理由がない限り、遵守すべき | 違反する場合は、アダプタのドキュメントに理由と代替動作を明記する必要がある |
+| **可能** | オプション。プラットフォームの能力に応じて決定 | 無 |
 
 ## 1. 標準メソッド命名
 
-すべての送信メソッドは**大文字キャメルケース（PascalCase）**を使用し、先頭文字は大文字とする。
+送信メソッドは **大キャメルケース（PascalCase）** を使用し、先頭文字は大文字とする。
 
 ### 1.1 標準送信メソッド
 
-| メソッド名 | 説明 | 引数型 | 実装要件 |
+| メソッド名 | 説明 | パラメータ型 | 実装要件 |
 |-------|------|---------|---------|
 | `Text` | テキストメッセージを送信 | `str` | 必須 |
 | `Image` | 画像を送信 | `str` \| `bytes` | 必須（基底クラスに既に実装済み、§6.4参照） |
-| `Voice` | 音声を送信 | `str` \| `bytes` | 必須（基底クラスに既に実装済み；プラットフォームが音声をサポートしない場合は§2.1.5に従って降格） |
-| `Video` | 動画を送信 | `str` \| `bytes` | 必須（基底クラスに既に実装済み；プラットフォームが動画をサポートしない場合は§2.1.5に従って降格） |
+| `Voice` | 音声を送信 | `str` \| `bytes` | 必須（基底クラスに既に実装済み；プラットフォームが音声をサポートしない場合は§2.1.5に従い降格） |
+| `Video` | 動画を送信 | `str` \| `bytes` | 必須（基底クラスに既に実装済み；プラットフォームが動画をサポートしない場合は§2.1.5に従い降格） |
 | `File` | ファイルを送信 | `str` \| `bytes`、`filename: str \| None = None` | 必須（基底クラスに既に実装済み） |
-| `At` | ユーザー/グループを@する | `str` (user_id) | 修飾メソッド、必要に応じて使用 |
+| `At` | ユーザー/グループを@する | `str` (user_id) | 修飾メソッド、必要に応じて |
 | `Face` | 表情を送信 | `str` (emoji) | 可能 |
-| `Reply` | メッセージに返信する | `str` (message_id) | 修飾メソッド、必要に応じて使用 |
-| `Forward` | メッセージを転送する | `str` (message_id) | 可能 |
-| `Markdown` | Markdown形式のメッセージを送信 | `str` | 可能 |
-| `HTML` | HTML形式のメッセージを送信 | `str` | 可能 |
-| `Card` | カード形式のメッセージを送信 | `dict` | 可能 |
+| `Reply` | メッセージに返信 | `str` (message_id) | 修飾メソッド、必要に応じて |
+| `Forward` | メッセージを転送 | `str` (message_id) | 可能 |
+| `Markdown` | Markdownメッセージを送信 | `str` | 可能 |
+| `HTML` | HTMLメッセージを送信 | `str` | 可能 |
+| `Card` | カードメッセージを送信 | `dict` | 可能 |
 
-> 標準メソッド（`Text`/`Image`/`Voice`/`Video`/`File`）は基底クラス `SendDSL` に内蔵されており、`Raw_ob12` にデフォルトで委譲される。アダプタはこれらのメソッドを再実装せずにタイプ署名を得ることができる。プラットフォームに特別なロジックが必要な場合にのみ、個々のメソッドをオーバーライドする（§6.4参照）。
+> 標準メソッド（`Text`/`Image`/`Voice`/`Video`/`File`）は基底クラス `SendDSL` に内蔵され、デフォルトで `Raw_ob12` に委譲されるため、アダプタは再実装する必要がない。プラットフォームに特殊なロジックが必要な場合のみ、個々のメソッドをオーバーライドする（§6.4参照）。
 
 ### 1.2 チェーン修飾メソッド
 
-| メソッド名 | 説明 | 引数型 |
+| メソッド名 | 説明 | パラメータ型 |
 |-------|------|---------|
 | `At` | ユーザーを@する（複数回呼び出し可） | `str` (user_id) |
-| `AtAll` | 全メンバーを@する | 無し |
-| `Reply` | メッセージに返信する | `str` (message_id) |
+| `AtAll` | 全員を@する | 無 |
+| `Reply` | メッセージに返信 | `str` (message_id) |
 
 ### 1.3 プロトコルメソッド
 
@@ -12813,49 +12937,49 @@ ErisPulse フレームワークで現在使用している `346xx` コード：
 |-------|------|---------|
 | `Raw_ob12` | OneBot12形式のメッセージセグメントを送信 | 必須 |
 
-**`Raw_ob12` は必須実装のメソッド**。これはアダプタの主要な責任の一つであり、OneBot12標準メッセージセグメントを受信してそれをプラットフォーム固有のAPI呼び出しに変換する。`Raw_ob12` はOneBot12 → プラットフォームへの逆変換（OneBot12 → プラットフォーム）の統一エントリーポイントであり、モジュールがプラットフォーム固有のメソッドに依存することなく、標準メッセージセグメントを使用してメッセージを送信できるようにする。
+**`Raw_ob12` は必須実装メソッド**。これはアダプタの主要な責任の一つであり、OneBot12標準メッセージセグメントを受信して、プラットフォーム固有のAPI呼び出しに変換する。`Raw_ob12` は逆変換（OneBot12 → プラットフォーム）の統一エントリーポイントであり、モジュールがプラットフォーム固有のメソッドに依存せず、標準メッセージセグメントを使用してメッセージを送信できるようにする。
 
-**`Raw_ob12` をオーバーライドしない場合の動作**：基底クラスのデフォルト実装は **errorレベル**のログを記録し、標準エラーレスポンス形式（`status: "failed"`, `retcode: 10002`）を返し、アダプタ開発者がこのメソッドを実装する必要があることを示す。
+**`Raw_ob12` をオーバーライドしない場合の動作**：基底クラスのデフォルト実装は **errorレベル** のログを記録し、エラー応答形式（`status: "failed"`, `retcode: 10002`）を返し、アダプタ開発者がこのメソッドを実装する必要があることを示す。
 
-### 1.4 推奨される拡張命名規則
+### 1.4 推奨される拡張命名規約
 
-アダプタがOneBot12形式以外の生データ（プラットフォーム固有のJSON、XMLなど）を送信する必要がある場合、以下の命名規則を推奨する：
+アダプタがOneBot12形式以外のデータ（プラットフォーム固有のJSON、XMLなど）を送信する必要がある場合、以下の命名規約を推奨する：
 
 | 推奨メソッド名 | 説明 |
 |-----------|------|
 | `Raw_json` | 任意のJSONデータを送信 |
 | `Raw_xml` | 任意のXMLデータを送信 |
 
-**注意**：これらのメソッドは**基底クラスが提供するデフォルトメソッドではなく、強制的に実装する必要もない**。これらは命名規則としてのみ、アダプタが必要に応じて独自に定義できる。もしアダプタがこれらの形式をサポートしていない場合は、定義する必要はない。
+**注意**：これらのメソッドは**基底クラスに提供されているものではなく、強制的に実装する必要もない**。これらは単なる命名規約であり、アダプタは必要に応じて独自に定義する。これらの形式をサポートしない場合は、定義する必要はない。
 
-**メッセージビルダ（MessageBuilder）**：ErisPulseは`MessageBuilder`ツールクラスを提供しており、OneBot12メッセージセグメントリストを容易に構築し、`Raw_ob12`と併用できる。詳細は[メッセージビルダ](#11-メッセージビルダ-messagebuilder)章節を参照。
+**メッセージビルダー（MessageBuilder）**：ErisPulseは`MessageBuilder`ツールクラスを提供し、OneBot12メッセージセグメントリストを簡単に構築できる。`Raw_ob12`と併用する。[メッセージビルダー](#11-メッセージビルダー-messagebuilder)章節を参照。
 
-## 2. 引数規則の詳細
+## 2. パラメータ規則の詳細
 
 ### 2.1 メディア送信プロトコル（`Image` / `Voice` / `Video` / `File`）
 
-本節はメディア送信の**統一プロトコル標準**である。モジュールは同じコードで4つのメディアメソッドを呼び出し、アダプタは`file`引数のさまざまな形態をプラットフォーム固有のアップロード/送信動作に変換する。
+本節はメディア送信の**統一プロトコル標準**である。モジュールは同一のコードで4つのメディアメソッドを呼び出し、アダプタは`file`パラメータの様々な形態をプラットフォーム固有のアップロード/送信動作に変換する。
 
-#### 2.1.1 `file`引数の合法な形態
+#### 2.1.1 `file`パラメータの合法な形態
 
 | 形態 | 例 | アダプタの要件 |
 |------|------|-----------|
-| HTTP(S) URL | `https://example.com/image.jpg` | **必須**受ける |
-| 本地ファイルパス | `/path/to/file.jpg`、`C:\path\to\file.jpg` | **必須**受ける |
-| 二進データ | `b"\x89PNG..."` | **必須**受ける |
-| `file://` URI | `file:///path/to/file.jpg` | **推奨**受ける（ローカルパスに転送して処理） |
-| Base64文字列 / Data URI | `iVBORw0KGgo=...`、`data:image/png;base64,...` | **推奨**受ける（OneBot12エコシステムとの互換性に配慮） |
+| HTTP(S) URL | `https://example.com/image.jpg` | **必須**受諾 |
+| 本地ファイルパス | `/path/to/file.jpg`、`C:\path\to\file.jpg` | **必須**受諾 |
+| 二進データ | `b"\x89PNG..."` | **必須**受諾 |
+| `file://` URI | `file:///path/to/file.jpg` | **推奨**受諾（ローカルパスに変換して処理） |
+| Base64文字列 / Data URI | `iVBORw0KGgo=...`、`data:image/png;base64,...` | **推奨**受諾（OneBot12エコシステムの慣例に準拠） |
 
-> アダプタは**必須の3つの形態**で動作を一貫させる必要がある。モジュールがURL、パス、またはbytesを渡しても、受信されるのは同じメッセージになる。プラットフォームが外部URLを直接使用できない場合（URLを参照またはダウンロードしてアップロード）、**要求を変更して再試行する必要はない**。
+> アダプタは**3つの必須形態**で動作を一貫させる必要がある。モジュールがURL、パス、またはbytesを送信しても、受信されるのは同一のメッセージである。プラットフォームが外部URLを直接使用できない場合（URLを参照できないAPI）、アダプタがダウンロード/読み取り後にアップロードする。**モジュールに再試行を要求して形態を変更させるべきではない**。
 
 #### 2.1.2 形態判定順序
 
-アダプタがメディア引数を処理する際、**判定順序は以下の通り**とする。
+アダプタがメディアパラメータを処理する際、**判定順序は以下の通り**とする。
 
 1. `bytes`型 → 直接アップロード
-2. 文字列が`http://` / `https://`で始まる → URLとして処理（プラットフォームの能力に応じてURLを参照またはダウンロードしてアップロード）
-3. 文字列が`file://`で始まる → プレフィックスを剥がしてローカルパスとして処理
-4. その他の文字列 → ローカルパスとして処理（存在すれば読み込んでアップロード、存在しない場合は標準エラーレスポンスを返す）
+2. 文字列が`http://` / `https://`で始まる → URLとして処理（直接参照またはダウンロード後アップロード、プラットフォームの能力に応じて）
+3. 文字列が`file://`で始まる → プレフィックスを剥離してローカルパスとして処理
+4. それ以外の文字列 → ローカルパスとして処理（存在する場合は読み取りアップロード；存在しない場合は標準エラー応答を返す）
 
 ```python
 def _resolve_media(self, file: "str | bytes") -> bytes:
@@ -12863,57 +12987,57 @@ def _resolve_media(self, file: "str | bytes") -> bytes:
     if isinstance(file, (bytes, bytearray)):
         return bytes(file)
     if file.startswith(("http://", "https://")):
-        return self._download(file)          # プラットフォームがURLを参照できない場合はダウンロード
+        return self._download(file)          # プラットフォームがURLを参照できない場合、ダウンロード
     if file.startswith("file://"):
         file = file[len("file://"):]
-    with open(file, "rb") as f:              # 本地ファイル
+    with open(file, "rb") as f:              # 本地パス
         return f.read()
 ```
 
 #### 2.1.3 `File`のファイル名の意味
 
-`File`メソッドの署名：`File(file, filename=None)`（`filename`はオプション引数、基底クラスに既に実装済み）。
+`File`メソッドのシグネチャ：`File(file, filename=None)`（`filename`はオプション、基底クラスに既に実装済み）。
 
-ファイル名**推導順序**（アダプタが明示的に`filename`を提供しない場合にこの順序で生成）：
+ファイル名**推導順序**（アダプタが`filename`を明示的に提供しない場合に使用）：
 
-1. 明示的な`filename`引数（最高優先）
-2. URLのbasename（例：`https://host/a/b/report.pdf` → `report.pdf`、クエリ文字列は剥がす）
-3. 本地ファイルパスのbasename（例：`/tmp/data/backup.zip` → `backup.zip`）
-4. プラットフォームが生成するデフォルト名（例：`file_{timestamp}`；**拡張子を保持する**。拡張子はプラットフォーム側の種類識別とプレビュー動作に影響する）
+1. 明示的な`filename`パラメータ（最優先）
+2. URLのbasename（例：`https://host/a/b/report.pdf` → `report.pdf`、クエリ文字列を剥離）
+3. 本地パスのbasename（例：`/tmp/data/backup.zip` → `backup.zip`）
+4. プラットフォームがデフォルトで生成（例：`file_{timestamp}`；**拡張子は保持すべき**。拡張子はプラットフォーム側のタイプ識別とプレビュー動作に影響する）
 
-> `Image` / `Voice` / `Video`も**`filename`を受けることができる**（メッセージセグメント`data.filename`を通じて渡される）、ただし`File`のファイル名だけが跨プラットフォームの意味保証がある。
+> `Image` / `Voice` / `Video`も**`filename`を受け取れる**（メッセージセグメント`data.filename`を通じて渡される）、ただし`File`のファイル名のみがクロスプラットフォームで意味が保証される。
 
 #### 2.1.4 プラットフォーム制限の宣言義務
 
-各プラットフォームはメディアのサイズ上限、形式（MIME）、音声/動画の長さなどの制約が異なる。アダプタは**宣言する義務**がある：
+各プラットフォームはメディアのサイズ制限、形式（MIME）、音声/動画の長さなどの制約が異なる。アダプタは**宣言すべき**：
 
-- アダプタドキュメントにサポートするメディア形式と制限範囲を宣言する
-- 制限を超えるか、サポートしない入力は**標準エラーレスポンス**を返す（`status: "failed"`；`retcode`は`10002`またはプラットフォームの意味化されたエラーコードを使用、`message`は原因を説明）、**例外をスローしてモジュールのロジックを中断してはならない**
+- アダプタドキュメントにサポートするメディア形式と制限範囲を記載
+- 制限を超えるまたはサポートされない入力に対しては**標準エラー応答**を返す（`status: "failed"`；`retcode`は`10002`またはプラットフォームの意味化されたエラーコードを使用、`message`に原因を説明）、**例外を投げてモジュールの処理を中断してはならない**
 
 #### 2.1.5 機能降格の段階
 
-プラットフォームがメディアの**特定のタイプ**をサポートしない場合、以下の段階で降格する（総則「機能降格はエラーを出さない」を遵守）：
+プラットフォームがメディアの**特定のタイプ**をサポートしない場合、以下の段階で降格する（総則「機能降格はエラーを出さない」に従う）：
 
-| 状況 | 降格動作 |
+| 情報 | 降格動作 |
 |------|---------|
-| `Voice`が音声メッセージをサポートしない場合 | **推奨** `File`（またはプラットフォームに近縁な形態）で送信；表現できない場合は`retcode=10002`を返す |
-| `Video`が動画メッセージをサポートしない場合 | 同上 |
-| メディアタイプが完全にサポートされていない場合（ファイル機能がない） | `retcode=10002`を返し、`message`にサポートしていないデータタイプを明記する |
-| 形態がサポートされていない場合（例：Base64を処理できない） | `retcode=10002`を返す、**`message`にモジュールにURL/bytesに変更するよう提示できる** |
+| `Voice`が音声メッセージをサポートしない | **推奨**`File`（またはプラットフォームの類似形態）として送信；表現できない場合は`retcode=10002`を返す |
+| `Video`が動画メッセージをサポートしない | 同上 |
+| メディアタイプが完全にサポートされていない（ファイル機能がない） | `retcode=10002`を返し、`message`にサポートされていないデータタイプを明記 |
+| 形態がサポートされていない（Base64を処理できないなど） | `retcode=10002`を返し、`message`にモジュールにURL/bytesを使用するよう提示できる |
 
-**禁止される動作**：静かに破棄（返さない）、例外をスローする、モジュールにプラットフォーム分岐処理を書かせる。
+**禁止される動作**：静かに破棄（返却がない）、例外を投げる、モジュールにプラットフォーム分岐処理を書かせる。
 
-### 2.2 @ユーザー引数の規則
+### 2.2 @ユーザーのパラメータ規則
 
 **メソッド**：`At`（修飾メソッド）
 
-**引数**：`user_id` (`str`)
+**パラメータ**：`user_id` (`str`)
 
 **要件**：
 - `user_id`は文字列型のユーザー識別子であるべき
-- 各プラットフォームの`user_id`形式は異なる可能性がある（数値、UUID、文字列など）
+- 各プラットフォームの`user_id`の形式は異なる可能性がある（数字、UUID、文字列など）
 - アダプタは`user_id`をプラットフォーム固有の形式に変換する責任がある
-- 実際の送信メソッドの呼び出しは最後の位置に置くこと
+- 実際の送信メソッドの呼び出しは最後に位置させる
 
 **例**：
 ```python
@@ -12924,25 +13048,80 @@ Send.To("group", "g123").At("123456").Text("你好")
 send.To("group", "g123").At("123456").At("789012").Text("大家好")
 ```
 
-### 2.3 メッセージ返信引数の規則
+### 2.3 返信メッセージのパラメータ規則
 
 **メソッド**：`Reply`（修飾メソッド）
 
-**引数**：`message_id` (`str`)
+**パラメータ**：`message_id` (`str`)
 
 **要件**：
 - `message_id`は文字列型のメッセージ識別子であるべき
 - 以前に受信したメッセージのIDであるべき
-- 一部のプラットフォームは返信機能をサポートしていない可能性があり、アダプタは優雅に降格するべき
+- プラットフォームによっては返信機能がサポートされていない可能性があり、アダプタは優雅に降格する
 
 **例**：
 ```python
 send.To("group", "g123").Reply("msg_123456").Text("收到")
 ```
 
+### 2.4 合併転送機能（`MergeForward`、オプション）
+
+`MergeForward(nodes)`は**オプションの機能メソッド**：複数の内容を「合併転送 / ファイバーテキスト折りたたみ」形式で送信する。アダプタはプラットフォームの能力に応じて最適な表示方法を決定する。§1.1の`Forward(from_chat_id, message_id)`（既存メッセージの転送）とは意味が異なり、両者は共存する。
+
+> **標準の背景**：OneBot12のコア標準にはnodeメッセージセグメントも、合併転送APIも含まれていない。"メッセージノード"はOneBot v11エコシステム（go-cqhttp拡張）の実装層の概念であり、v12ではこのようなプラットフォーム固有の機能を拡張メカニズムに委譲した。ErisPulseの実装方法は拡張メカニズムと同等物：**標準メッセージセグメントを追加せず、オプション機能メソッド + `list_sends`ランタイム検出**——`MergeForward`を実装したアダプタは自動的に機能を得る。未実装の場合は呼び出し元は普通のテキストに自動的に降格し、モジュールは変更を必要としない。
+
+**メソッドシグネチャ**：
+
+```python
+def MergeForward(self, nodes: List[Dict]) -> asyncio.Task:
+    """
+    合併転送 / ファイバーテキスト折りたたみメッセージを送信
+
+    :param nodes: 合併転送ノード配列（go-cqhttp拡張のOneBot v11ノード形式）：
+        [
+            {
+                "type": "node",
+                "data": {
+                    "user_id": "10000",     # 表示用送信者ID
+                    "nickname": "QvQChat",  # 表示用送信者ニックネーム
+                    "content": [            # メッセージセグメント配列、現在はtextセグメント
+                        {"type": "text", "data": {"text": "【1/3】タイトル\n本文…"}}
+                    ],
+                },
+            },
+        ]
+    :return: asyncio.Task、await後に標準応答形式を返す
+    """
+```
+
+**実装要件**：
+
+1. **プラットフォームに元生の合併転送がある**（OneBot11系）：**必須**プロトコル専用エンドポイントを呼び出す
+   （`send_group_forward_msg` / `send_private_forward_msg`）——NapCat等の実装は
+   `send_msg`に含まれるnodeセグメントを拒否する（retcode 1400）；専用エンドポイントが失敗した場合は**`send_msg`に回退**できる
+2. **プラットフォームに元生の転送はなく、富文本がある**（云湖 / Telegram / Kook / Discord / Matrix等）：
+   **推奨**ノードをプラットフォームの富文本折りたたみ形態（HTML折りたたみカード / Card / Embed / blockquoteリスト）にレンダリングする。
+   スタイルと各アダプタのタスクリストは`SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`を参照
+3. **両者ともない**：**実装してはならない**（retcode 1400を返すだけでは不十分）——未実装の場合は`list_sends`に`MergeForward`が含まれず、呼び出し元は自動的に普通のテキストに降格
+4. **失敗の意味**：標準エラー応答（`status: "failed"`）を返すか、例外を投げてもよい、呼び出し元は普通のテキスト送信に回復し、内容は失われない
+5. **`MergeForward`内部で`Raw_ob12`を再呼び出して同じnodesを送信してはならない**（OneBot11の`Raw_ob12`は既に純nodeセグメントの自動ルーティングを内蔵しており、ループになる）
+
+**呼び出し元の検出例**：
+
+```python
+sends = adapter.list_sends(platform)
+if "MergeForward" in sends:
+    await adapter.Send.To("group", "123").MergedForward(nodes)
+else:
+    await adapter.Send.To("group", "123").Text(plain_text)
+```
+
+> 参考実装：`ErisPulse-OneBot11Adapter`（専用エンドポイント → `send_msg`回退）；レンダリングテンプレートと各アダプタのタスクリストは
+> `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`を参照。
+
 ## 3. プラットフォーム固有メソッドの命名
 
-Sendクラスに直接プラットフォームプレフィックス付きのメソッドを追加することは**推奨されない**。汎用メソッド名または`Raw_{プロトコル}`メソッドを使用することを推奨する。
+`Send`クラスに直接プラットフォームプレフィックス付きメソッドを追加することは**推奨されない**。一般的なメソッド名または`Raw_{プロトコル}`メソッドを使用することを推奨する。
 
 **推奨されない**：
 ```python
@@ -12953,12 +13132,12 @@ def TelegramSticker(self, sticker_id: str):  # ❌ 推奨されない
     pass
 ```
 
-**推奨される**：
+**推奨**：
 ```python
-def Form(self, form_id: str):  # ✅ 汎用メソッド名
+def Form(self, form_id: str):  # ✅ 一般的なメソッド名
     pass
 
-def Sticker(self, sticker_id: str):  # ✅ 汎用メソッド名
+def Sticker(self, sticker_id: str):  # ✅ 一般的なメソッド名
     pass
 
 def Raw_ob12(self, message):  # ✅ OneBot12形式を送信
@@ -12969,15 +13148,15 @@ def Raw_ob12(self, message):  # ✅ OneBot12形式を送信
 - メソッド名はPascalCaseを使用し、プラットフォームプレフィックスを付けない
 - `asyncio.Task`オブジェクトを返す必要がある
 - 完全な型注釈とドキュメント文字列を提供する必要がある
-- 引数設計は標準メソッドのスタイルにできるだけ一致させる
+- パラメータ設計は標準メソッドスタイルにできるだけ合わせる
 
-## 4. 引数名の規則
+## 4. パラメータ名の命名規則
 
-| 引数名 | 説明 | 型 |
+| パラメータ名 | 説明 | 型 |
 |-------|------|------|
 | `text` | テキスト内容 | `str` |
-| `file` | メディア内容（URL / パス / 二進数、§2.1.1参照） | `str` / `bytes` |
-| `filename` | ファイル名（`File`のオプション、§2.1.3参照） | `str` / `None` |
+| `file` | メディア内容（URL / パス / 二進、§2.1.1参照） | `str` / `bytes` |
+| `filename` | ファイル名（`File`はオプション、§2.1.3参照） | `str` / `None` |
 | `user_id` | ユーザーID | `str` / `int` |
 | `group_id` | グループID | `str` / `int` |
 | `message_id` | メッセージID | `str` |
@@ -12986,13 +13165,13 @@ def Raw_ob12(self, message):  # ✅ OneBot12形式を送信
 ## 5. 戻り値の規則
 
 - **送信メソッド**（例：`Text`, `Image`）：`asyncio.Task`オブジェクトを返す必要がある
-- **修飾メソッド**（例：`At`, `Reply`, `AtAll`）：`self`を返してチェーン呼び出しを可能にする必要がある
+- **修飾メソッド**（例：`At`, `Reply`, `AtAll`）：`self`を返して、チェーン呼び出しを可能にする必要がある
 
 ---
 
 ## 6. 逆変換規則（OneBot12 → プラットフォーム）
 
-アダプタは、プラットフォーム固有のイベントをOneBot12形式に変換する（正変換）だけでなく、**OneBot12メッセージセグメントをプラットフォーム固有のAPI呼び出しに変換する**能力（逆変換）も提供しなければならない。逆変換の統一エントリーポイントは`Raw_ob12`メソッドである。
+アダプタは、プラットフォーム固有イベントをOneBot12形式に変換する（正変換）だけでなく、**OneBot12メッセージセグメントをプラットフォーム固有API呼び出しに変換する**（逆変換）能力も**必須**である。逆変換の統一エントリーポイントは`Raw_ob12`メソッドである。
 
 ### 6.1 変換モデル
 
@@ -13005,17 +13184,17 @@ def Raw_ob12(self, message):  # ✅ OneBot12形式を送信
 Converter.convert()               Send.Raw_ob12()
     │                                  │
     ▼                                  ▼
-OneBot12標準イベント（含{platform}_raw）             プラットフォーム固有API呼び出し
-（含{platform}_raw）                     （標準レスポンス形式を返す）
+OneBot12標準イベント                  プラットフォーム固有API呼び出し
+（含{platform}_raw）             （標準応答形式を返す）
 ```
 
-**コアの対称性**：正変換では元のデータを`{platform}_raw`に保持し、逆変換ではOneBot12標準形式を受け取り、プラットフォーム呼び出しに還元する。
+**コアの対称性**：正変換は `{platform}_raw` に元のデータを保持し、逆変換はOneBot12標準形式を受け取り、プラットフォーム呼び出しに還元する。
 
-### 6.2 `Raw_ob12`の実装規則
+### 6.2 `Raw_ob12`実装規則
 
-`Raw_ob12`はOneBot12標準メッセージセグメントリストを受け取り、それをプラットフォーム固有のAPI呼び出しに変換する。
+`Raw_ob12`はOneBot12標準メッセージセグメントリストを受け取り、それをプラットフォーム固有API呼び出しに変換する必要がある。
 
-**メソッド署名**：
+**メソッドシグネチャ**：
 
 ```python
 def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
@@ -13028,16 +13207,16 @@ def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
             {"type": "image", "data": {"file": "https://..."}},
             {"type": "mention", "data": {"user_id": "123"}},
         ]
-    :return: asyncio.Task、await後に標準レスポンス形式を返す
+    :return: asyncio.Task、await後に標準応答形式を返す
     """
 ```
 
 **実装要件**：
 
-1. **すべての標準メッセージセグメントタイプを処理する必要がある**：少なくとも`text`、`image`、`audio`、`video`、`file`、`mention`、`reply`をサポートする
-2. **プラットフォーム拡張メッセージセグメントを処理する必要がある**：`{platform}_xxx`形式のメッセージセグメントは、プラットフォームに対応する固有の呼び出しに変換する
-3. **標準レスポンス形式を返す必要がある**：[APIレスポンス規格](api-response.md)に従う
-4. **サポートしないメッセージセグメントは警告を記録してスキップし、例外をスローしてメッセージ全体の送信を失敗させるべきではない**
+1. **すべての標準メッセージセグメントタイプを処理する必要がある**：少なくとも`text`、`image`、`audio`、`video`、`file`、`mention`、`reply`をサポート
+2. **プラットフォーム拡張メッセージセグメントを処理する必要がある**：`{platform}_xxx`タイプのメッセージセグメントは、プラットフォームに対応する原生呼び出しに変換する
+3. **標準応答形式を返す必要がある**：[API応答規格](api-response.md)に従う
+4. **サポートしないメッセージセグメントは警告を記録してスキップする**、例外を投げてメッセージ全体の送信失敗を引き起こしてはならない
 
 ### 6.3 メッセージセグメント変換ルール
 
@@ -13048,22 +13227,22 @@ def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
 | OneBot12メッセージセグメント | 変換要件 |
 |----------------|---------|
 | `text` | `data.text`をそのまま使用 |
-| `image` | `data.file`を§2.1のメディアプロトコルに従って処理（3つの必須形態 + 判定順序） |
-| `audio` | `image`の処理ロジックと同じ |
-| `video` | `image`の処理ロジックと同じ |
-| `file` | `image`の処理ロジックと同じ；ファイル名は§2.1.3の推導順序に従って`data.filename`を処理 |
-| `mention` | プラットフォームの@ユーザー機能に変換（例：Telegramの`entities`、雲湖の`at_uid`） |
-| `reply` | プラットフォームの返信引用機能に変換 |
-| `face` | プラットフォームの絵文字送信機能に変換、サポートしない場合はスキップ |
-| `location` | プラットフォームの位置送信機能に変換、サポートしない場合はスキップ |
+| `image` | `data.file`を§2.1メディアプロトコルに従って処理（3つの必須形態 + 判定順序） |
+| `audio` | `image`と同様の処理ロジック |
+| `video` | `image`と同様の処理ロジック |
+| `file` | `image`と同様の処理ロジック；ファイル名は§2.1.3の推導順序に従って`data.filename`を処理 |
+| `mention` | プラットフォームの@ユーザーメカニズムに変換（例：Telegramの`entities`、云湖の`at_uid`） |
+| `reply` | プラットフォームの返信引用メカニズムに変換 |
+| `face` | プラットフォームの表情送信メカニズムに変換、不支持の場合はスキップ |
+| `location` | プラットフォームの位置送信メカニズムに変換、不支持の場合はスキップ |
 
 #### 6.3.2 プラットフォーム拡張メッセージセグメント変換
 
-プラットフォームプレフィックス付きのメッセージセグメントは、アダプタが認識して変換する：
+プラットフォームプレフィックス付きメッセージセグメントについては、アダプタは認識して変換する：
 
 ```python
 def _convert_ob12_segments(self, segments: List[Dict]) -> Any:
-    """OneBot12メッセージセグメントをプラットフォーム固有形式に変換"""
+    """OneBot12メッセージセグメントをプラットフォーム原生形式に変換"""
     platform_prefix = f"{self._platform_name}_"
     
     for segment in segments:
@@ -13071,22 +13250,22 @@ def _convert_ob12_segments(self, segments: List[Dict]) -> Any:
         seg_data = segment["data"]
         
         if seg_type.startswith(platform_prefix):
-            # プラットフォーム拡張メッセージセグメント → プラットフォーム固有の呼び出し
+            # プラットフォーム拡張メッセージセグメント → プラットフォーム原生呼び出し
             self._handle_platform_segment(seg_type, seg_data)
         elif seg_type in self._standard_segment_handlers:
-            # 標準メッセージセグメント → プラットフォーム等価操作
+            # 標準メッセージセグメント → プラットフォーム同等操作
             self._standard_segment_handlers[seg_type](seg_data)
         else:
             # 未知のメッセージセグメント → 警告を記録してスキップ
-            logger.warning(f"サポートしないメッセージセグメント: {seg_type}")
+            logger.warning(f"サポートされていないメッセージセグメントタイプ: {seg_type}")
 ```
 
 #### 6.3.3 複合メッセージセグメント処理
 
-1つのメッセージは複数のメッセージセグメントを含む可能性があり、アダプタは複合メッセージを正しく処理する：
+1つのメッセージは複数のメッセージセグメントを含む可能性があり、アダプタは複合メッセージを正しく処理する必要がある：
 
 ```python
-# モジュールがテキスト+画像+@ユーザーを含むメッセージを送信
+# モジュールがテキスト+画像+@ユーザーのメッセージを送信
 await send.Raw_ob12([
     {"type": "mention", "data": {"user_id": "123"}},
     {"type": "text", "data": {"text": "你好"}},
@@ -13095,13 +13274,13 @@ await send.Raw_ob12([
 ```
 
 **処理戦略**：
-- **優先して結合**：プラットフォームがテキスト、画像、@などを1つのメッセージに同時に含めることが可能であれば、結合して送信する
-- **次善として分割**：プラットフォームが結合をサポートしない場合は、順番に複数のメッセージに分割して送信する
-- **順序を保持**：メッセージセグメントの送信順序はリストの順序と一致する
+- **優先的に結合**：プラットフォームが1つのメッセージにテキスト、画像、@などを同時に含められる場合、結合して送信する
+- **次善として分割**：プラットフォームが結合をサポートしない場合、順序に従って複数のメッセージに分割して送信する
+- **順序の保持**：メッセージセグメントの送信順序はリストの順序と一致する
 
-### 6.4 `Raw_ob12`と標準メソッドの関係
+### 6.4 `Raw_ob12` と標準メソッドの関係
 
-アダプタの標準送信メソッド（`Text`、`Image`等）は**`SendDSL`基底クラスに既に実装され、デフォルトで`Raw_ob12`に委譲されている**。アダプタのサブクラスは再実装する必要はない：
+アダプタの標準送信メソッド（`Text`、`Image`など）は**`SendDSL`基底クラスに内蔵され、デフォルトで`Raw_ob12`に委譲される**ため、アダプタのサブクラスは再実装する必要はない：
 
 ```python
 class Send(SendDSL):
@@ -13109,26 +13288,26 @@ class Send(SendDSL):
         """コア実装：OneBot12メッセージセグメント → プラットフォームAPI（必須実装）"""
         return asyncio.create_task(self._send_ob12(message_segments))
 
-    # Text/Image/Voice/Video/Fileは基底クラスから継承され、自動的にRaw_ob12に委譲される
-    # プラットフォーム固有のロジックが必要な場合は、個々のメソッドをオーバーライドできる：
+    # Text/Image/Voice/Video/Fileは基底クラスから継承され、Raw_ob12に自動的に委譲される
+    # プラットフォーム特有のロジックが必要な場合、個々のメソッドをオーバーライドする：
     # def Text(self, text: str) -> asyncio.Task:
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 **メリット**：
-- 変換ロジックは`Raw_ob12`の1か所に集中し、重複コードを減らす
+- 変換ロジックは`Raw_ob12`に集中し、重複コードを減らす
 - 標準メソッドと`Raw_ob12`の動作は完全に一致する
-- モジュールは`Text()`または`Raw_ob12()`を使用しても同じ結果を得られる
-- 基底クラスがタイプ署名を提供し、IDEが標準メソッドを補完できる
+- モジュールは`Text()`でも`Raw_ob12()`でも同じ結果を得られる
+- 基底クラスが型のシグネチャを提供し、IDEが標準メソッドの補完を提供する
 
 ### 6.5 実装例
 
 ```python
 class YunhuSend(SendDSL):
-    """雲湖プラットフォーム用Send実装"""
+    """云湖プラットフォームのSend実装"""
     
     def Raw_ob12(self, message_segments: list) -> asyncio.Task:
-        """OneBot12メッセージセグメント → 雲湖API呼び出し"""
+        """OneBot12メッセージセグメント → 云湖API呼び出し"""
         return asyncio.create_task(self._do_send(message_segments))
     
     async def _do_send(self, segments: list) -> dict:
@@ -13156,12 +13335,12 @@ class YunhuSend(SendDSL):
                 # プラットフォーム拡張メッセージセグメント
                 yunhu_elements.append({"type": "form", "form_id": seg_data["form_id"]})
             else:
-                logger.warning(f"雲湖がサポートしないメッセージセグメント: {seg_type}")
+                logger.warning(f"云湖がサポートしていないメッセージセグメント: {seg_type}")
         
-        # 3. 雲湖APIを呼び出す
+        # 3. 云湖APIを呼び出す
         response = await self._call_yunhu_api(yunhu_elements, at_users, reply_to, at_all)
         
-        # 4. 標準レスポンス形式を返す
+        # 4. 標準応答形式を返す
         return {
             "status": "ok" if response["code"] == 0 else "failed",
             "retcode": response["code"],
@@ -13176,7 +13355,7 @@ class YunhuSend(SendDSL):
 
 ## 7. メソッド発見
 
-モジュール開発者は、適切な送信メソッドを発見するためにAPIを使用できる（**プラットフォーム固有のメソッドリストをモジュールにハードコードしてはならない**—各アダプタの拡張メソッドはバージョンの進化に伴い変化するため、実行時の発見をベースとする）：
+モジュール開発者は、アダプタがサポートする送信メソッドをAPIで取得できる（**モジュールにハードコードしないでください**——各アダプタの拡張メソッドはバージョンの進化に伴い変化するため、ランタイムで検出する必要があります）：
 
 ```python
 from ErisPulse import adapter
@@ -13185,21 +13364,21 @@ from ErisPulse import adapter
 methods = adapter.list_sends("myplatform")
 # ["Batch", "Form", "Image", "Recall", "Sticker", "Text", ...]
 
-# メソッド詳細を取得
+# メソッドの詳細を取得
 info = adapter.send_info("myplatform", "Form")
 # {
 #     "name": "Form",
 #     "parameters": [{"name": "form_id", "type": "str", ...}],
 #     "return_type": "Awaitable[Any]",
-#     "docstring": "雲湖フォームを送信"
+#     "docstring": "云湖フォームを送信"
 # }
 ```
 
 ---
 
-## 9. アダプタ開発の注意点
+## 9. アダプタ開発の注意事項
 
-`BaseAdapter`、`Send`、`Request`の`__init__`を正しくオーバーライドする方法については、[アダプタ開発入門 - `__init__`の注意点](../developer-guide/adapters/getting-started.md#init-の注意点)を参照。
+`BaseAdapter`、`Send`、`Request`の`__init__`を正しくオーバーライドする方法については、[アダプタ開発入門 - `__init__`の注意事項](../developer-guide/adapters/getting-started.md#init-の注意事項)を参照してください。
 
 ---
 
@@ -13208,34 +13387,32 @@ info = adapter.send_info("myplatform", "Form")
 ## 10. アダプタ実装チェックリスト
 
 ### 送信メソッド
-- [ ] 標準メソッド（`Text`, `Image`等）が実装されている
-- [ ] 戻り値はすべて`asyncio.Task`である
+- [ ] 標準メソッド（`Text`, `Image`など）が実装されている
+- [ ] 戻り値はすべて`asyncio.Task`
 - [ ] 修飾メソッド（`At`, `Reply`, `AtAll`）は`self`を返す
 - [ ] プラットフォーム拡張メソッドはPascalCaseを使用し、プラットフォームプレフィックスを付けない
-- [ ] すべてのメソッドに完全な型注釈とドキュメント文字列がある
+- [ ] すべてのメソッドには完全な型注釈とドキュメント文字列がある
 
 ### メディア送信プロトコル
-- [ ] `file`引数の**必須形態**（HTTP(S) URL / 本地ファイルパス / `bytes`、§2.1.1参照）がすべてサポートされている
-- [ ] 形態判定順序は§2.1.2（bytes → URL → `file://` → ファイルパス）に従っている
-- [ ] `File`のファイル名推導順序は§2.1.3（明示的な`filename` > URLのbasename > ファイルパスのbasename > プラットフォームデフォルト）に従っている
-- [ ] プラットフォームのメディア制限（サイズ / MIME / 時長）がアダプタドキュメントに宣言されている（§2.1.4）
-- [ ] 不支持のメディアタイプは§2.1.5の降格段階に従って処理されている：近縁タイプに降格するか`retcode=10002`を返す、例外をスローしたり、静かに破棄したりしない
+- [ ] `file`パラメータの**必須形態**すべてをサポートしている：HTTP(S) URL / 本地パス / `bytes`（§2.1.1参照）
+- [ ] 形態判定順序は§2.1.2に従っている（bytes → URL → `file://` → パス）
+- [ ] `File`のファイル名の推導順序は§2.1.3に従っている（明示的な`filename` > URLのbasename > パスのbasename > プラットフォームのデフォルト）
+- [ ] プラットフォームのメディア制限（サイズ / MIME / 時長）はアダプタドキュメントに記載されている（§2.1.4）
+- [ ] メディアタイプがサポートされていない場合は、§2.1.5の降格段階に従って処理している：近縁なタイプに降格するか、`retcode=10002`を返す。例外を投げたり、静かに破棄したりしない
 
-### 逆変換
-- [ ] `Raw_ob12`が**実装されている**（必須、スキップ不可）
-- [ ] `Raw_ob12`はすべての標準メッセージセグメント（`text`, `image`, `audio`, `video`, `file`, `mention`, `reply`）を処理できる
-- [ ] `Raw_ob12`はプラットフォーム拡張メッセージセグメント（`{platform}_xxx`形式）を処理できる
-- [ ] 標準送信メソッド（`Text`, `Image`等）は内部で`Raw_ob12`に委譲しており、個別の変換ロジックを実装していない
-- [ ] 不支持のメッセージセグメントは警告を記録してスキップし、例外をスローしない
-- [ ] 複合メッセージセグメントは正しく処理されている（結合または順序に従って分割）
+### 合併転送（オプション、§2.4参照）
+- [ ] プラットフォームに原生の合併転送がある場合、`MergeForward`はプロトコル専用エンドポイントを呼び出し、失敗した場合は`send_msg`に回退する（OneBot11系）
+- [ ] プラットフォームに原生の転送がないが、富文本がある場合、`MergeForward`はプラットフォームの折りたたみ形態（HTMLカード / Card / Embed / blockquoteリスト）にレンダリングする。スタイルとアダプタごとのタスクリストは`SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`を参照
+- [ ] 両方ない場合は`MergeForward`を実装しない。`retcode=10002`を返すだけでは不十分。実装していない場合、`list_sends`に`MergeForward`が含まれず、呼び出し元は普通のテキストに自動的に降格する
+- [ ] `MergeForward`内部で`Raw_ob12`を呼び出して同じnodesを送信しない（OneBot11の`Raw_ob12`は既に純nodeセグメントの自動ルーティングを内蔵しており、ループになる）
 
 ---
 
-## 11. メッセージビルダ（MessageBuilder）
+## 11. メッセージビルダー（MessageBuilder）
 
-`MessageBuilder`はErisPulseが提供するメッセージセグメント構築ツールで、`Raw_ob12`と併用することでOneBot12メッセージセグメントの構築プロセスを簡素化する。
+`MessageBuilder`はErisPulseが提供するメッセージセグメント構築ツールで、`Raw_ob12`と併用してOneBot12メッセージセグメントの構築を簡素化する。
 
-### 11.1 導入
+### 11.1 インポート
 
 ```python
 from ErisPulse.Core import MessageBuilder
@@ -13263,7 +13440,7 @@ await adapter.Send.To("group", "456").Raw_ob12(segments)
 ### 11.3 単一セグメントの高速構築
 
 ```python
-# 単一メッセージセグメントを高速に構築（Raw_ob12に直接渡せるlist[dict]を返す）
+# 単一メッセージセグメントを構築（list[dict]を返し、Raw_ob12に直接渡せる）
 await adapter.Send.To("user", "123").Raw_ob12(MessageBuilder.text("Hello"))
 await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.image("https://..."))
 await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.mention("123"))
@@ -13281,12 +13458,12 @@ async def handle(event: Event):
     await event.reply_ob12(
         MessageBuilder()
         .mention(event.get_user_id())
-        .text("あなたのメッセージを受け取りました")
+        .text("收到你的消息")
         .build()
     )
 ```
 
-### 11.5 支持するメッセージセグメントメソッド
+### 11.5 支援されるメッセージセグメントメソッド
 
 | メソッド | 説明 | dataフィールド |
 |------|------|----------|
@@ -13296,36 +13473,36 @@ async def handle(event: Event):
 | `video(file)` | 動画 | `file` |
 | `file(file, filename=None)` | ファイル | `file`, `filename`(オプション) |
 | `mention(user_id, user_name=None)` | @ユーザー | `user_id`, `user_name`(オプション) |
-| `at(user_id, user_name=None)` | @ユーザー（`mention`の別名） | `mention`と同じ |
+| `at(user_id, user_name=None)` | @ユーザー（`mention`の別名） | 同`mention` |
 | `reply(message_id)` | 返信 | `message_id` |
-| `at_all()` | 全員@ | `{}` |
+| `at_all()` | @全員 | `{}` |
 | `custom(type, data)` | 自定義/プラットフォーム拡張 | 自定義 |
 
 ### 11.6 ユーティリティメソッド
 
 ```python
-builder = MessageBuilder().text("基本内容")
+builder = MessageBuilder().text("基礎内容")
 
-# コピー（ディープコピー）
+# コピー（深コピー）
 msg1 = builder.copy().image("img1").build()
 msg2 = builder.copy().image("img2").build()
 
 # クリア
-builder.clear().text("新しい内容").build()
+builder.clear().text("新内容").build()
 
 # 空かどうか判定
 if builder:
-    print(f"メッセージセグメントが {len(builder)} 個含まれています")
+    print(f"メッセージセグメント数: {len(builder)}")
 ```
 
 ---
 
-## 12. 関連ドキュメント
+## 12. 関連文書
 
-- [イベント変換標準](event-conversion.md) - 完全なイベント変換規則、拡張命名、メッセージセグメント標準
-- [APIレスポンス標準](api-response.md) - アダプタAPIレスポンス形式の標準
-- [セッションタイプ標準](session-types.md) - セッションタイプの定義とマッピング
-- [リクエスト操作規則](request-action-spec.md) - リクエストイベントのフィールド要件、HandleRequest DSL、およびアダプタ実装要件
+- [イベント変換規格](event-conversion.md) - 完全なイベント変換規格、拡張命名とメッセージセグメント標準
+- [API応答規格](api-response.md) - アダプタAPI応答形式の標準
+- [セッションタイプ規格](session-types.md) - セッションタイプの定義とマッピング
+- [リクエスト操作規格](request-action-spec.md) - リクエストイベントのフィールド要件、HandleRequest DSL、およびアダプタ実装要件
 
 
 

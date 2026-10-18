@@ -87,7 +87,34 @@ init 命令
 ---
 
 
-##### `_interactive_init(project_name: str | None = None, force: bool = False, here: bool = False, target_dir: Path | None = None, create_venv: bool = True) -> bool`
+##### `_parse_adapter_preset(raw) -> list`（staticmethod）
+
+解析 ``--adapter`` 参数为去重的适配器名列表
+
+支持重复传参与逗号分隔两种写法（``-a yunhu -a telegram`` 等价于
+``-a yunhu,telegram``）；空片段与重复名自动剔除，保持首现顺序。
+
+- **raw** (`list|None`): argparse append 收集到的原始值列表
+
+**返回值** (`list`): 去重后的适配器名称列表（无传参时为空列表）
+
+---
+
+
+##### `_apply_adapter_preset(project_path: Path, adapter_names: list)`
+
+应用 ``--adapter`` 预选：启用状态开关并安装到项目环境
+
+显式传参视为同意安装，不再询问；安装后的配置向导仅在可交互
+环境衔接（``_install_adapters`` 内部已守卫）。
+
+- **project_path** (`Path`): 项目路径（配置文件重定向目标）
+- **adapter_names** (`list`): 适配器名称列表（去重、非空）
+
+---
+
+
+##### `_interactive_init(project_name: str | None = None, force: bool = False, here: bool = False, target_dir: Path | None = None, create_venv: bool = True, adapter_preset: list | None = None) -> bool`
 
 交互式初始化项目，引导用户配置项目位置及基本参数
 
@@ -96,7 +123,9 @@ init 命令
 - **here** (`bool`): 是否在当前目录初始化 (默认: False)
 - **target_dir** (`Path | None`): 项目父目录 (默认: None)
 - **create_venv** (`bool`): 是否创建虚拟环境并安装依赖 (默认: True)
+- **adapter_preset** (`list`): ``--adapter`` 预选的适配器列表，传入时
 
+    跳过适配器问询与选择 (默认: None)
 **返回值** (`bool`): 初始化成功返回 True，失败返回 False
 
 ---
@@ -111,14 +140,13 @@ init 命令
 ---
 
 
-##### `_install_adapters(adapter_names, adapters_info)`
+##### `_install_adapters(adapter_names: list[str])`
 
 安装选中的适配器
 
 安装成功后衔接交互式配置向导（写入新项目的 config.toml）
 
 - **adapter_names** (`list`): 适配器简称列表
-- **adapters_info** (`dict`): 适配器信息
 
 ---
 

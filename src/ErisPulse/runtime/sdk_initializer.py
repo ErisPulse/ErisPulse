@@ -610,6 +610,23 @@ class Uninitializer:
             except Exception as e:
                 self.logger.warning(i18n.t("core.storage.aclose_failed", error=e))
 
+            # 7.6 显式确定性关停常驻线程：同步桥接循环（连接已按 7.5 先行关闭，
+            # 此处停桥不再有 aiosqlite worker 竞态）与配置监视线程——
+            # 此前仅靠 atexit 兜底，退出期 join/worker 竞态产生
+            # "Event loop is closed" 噪音与偶发的进程退出挂死
+            try:
+                from ..Core.Bases.storage import AsyncBridge
+
+                AsyncBridge().close()
+            except Exception:
+                pass
+            try:
+                from ..Core.config import ConfigManager
+
+                ConfigManager.stop_all_watchers()
+            except Exception:
+                pass
+
             # 8. 清理 SDK 对象上的模块属性
             module_properties_cleared = 0
             for module_name in module_properties_to_clear:

@@ -2,7 +2,7 @@
 
 ErisPulse 命令行工具（`epsdk`）提供项目管理和包管理功能。
 
-> **提示**：所有命令均可通过 `epsdk <命令> --help` 查看详细的参数说明。
+> **提示**：所有命令均可通过 `epsdk <命令> --help` 查看详细的参数说明。`epsdk`（不带命令）的主帮助按类别分组展示：**项目**（init / create / run）、**组件管理**（install / uninstall / upgrade / list / list-remote / types）、**配置与诊断**（config / doctor / i18n）、**其他**（self-update / version）。
 
 ---
 
@@ -19,7 +19,7 @@ ErisPulse 命令行工具（`epsdk`）提供项目管理和包管理功能。
 
 | 命令 | 别名 | 参数 | 说明 |
 |------|------|------|------|
-| `doctor` | `diag` | `[--verbose]` | 诊断环境并输出健康报告 |
+| `doctor` | `diag` | `[--verbose] [--fix]` | 诊断环境并输出健康报告；`--fix` 尝试自动修复 |
 
 ### install
 
@@ -290,7 +290,7 @@ epsdk config MyModule
 
 | 命令 | 别名 | 参数 | 说明 |
 |------|------|------|------|
-| `run` | `r` | `[script] [--reload]` | 运行指定脚本或 SDK |
+| `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | 运行指定脚本或 SDK |
 
 ### run
 
@@ -304,6 +304,7 @@ epsdk config MyModule
 |------|------|
 | `[script]` | 要运行的脚本文件，不指定则运行 SDK |
 | `--reload` | 启用热重载模式，监控文件变化自动重启 |
+| `--strict` / `--no-strict` | 临时开启 / 关闭严格模式（仅本次生效，不写入配置）；缺省跟随 `ErisPulse.framework.strict_mode` |
 
 **示例：**
 
@@ -319,7 +320,15 @@ epsdk run main.py --reload
 
 # SDK 热重载模式
 epsdk run --reload
+
+# 临时严格模式：启动前自检失败即退出，框架严格级别本次提升为至少 1
+epsdk run main.py --strict
+
+# 临时宽松模式（配置里开了 strict_mode 但本次想先跑起来）
+epsdk run main.py --no-strict
 ```
+
+**启动前自检：** `run` 启动前会快速检查 `config/config.toml` 可解析性与已安装组件的必填配置完整性，严格性默认跟随 `ErisPulse.framework.strict_mode`（非 0 时检查失败即退出，0 时仅警告继续）。配置文件缺失视为正常首次启动，仅提示不判失败。`--strict` 临时开启：预检失败即退出，同时框架严格级别本次提升为至少 1（跳过不合规组件，经 `ERISPULSE_FRAMEWORK_STRICT_MODE` 环境变量传导到运行进程，不写入配置文件）；`--no-strict` 反之临时压到宽松。自检自身异常时自动跳过，不含网络探测，不会阻塞启动。
 
 ---
 
@@ -327,8 +336,8 @@ epsdk run --reload
 
 | 命令 | 别名 | 参数 | 说明 |
 |------|------|------|------|
-| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 项目 |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | 创建模块/适配器脚手架 |
+| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--adapter/-a <name>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 项目 |
+| `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | 创建模块/适配器脚手架；`pack` 将本地插件转换为可发布项目 |
 
 ### init
 
@@ -341,6 +350,7 @@ epsdk run --reload
 | `[path]` | | 目标路径（可包含父目录，如 `../apps/mybot`；纯名称等价 `--project-name`） |
 | `--project-name` | `-n` | 项目名称 |
 | `--path` | | 项目父目录（与 `-n` 组合指定创建位置） |
+| `--adapter` | `-a` | 预选要安装的适配器（可重复传参或逗号分隔），传入时跳过适配器问询与选择 |
 | `--quick` | `-q` | 快速模式，跳过交互式向导（默认创建 `.venv` 并安装依赖） |
 | `--force` | `-f` | 强制覆盖现有配置文件 |
 | `--here` | | 在当前目录初始化，不创建子目录 |
@@ -355,6 +365,9 @@ epsdk init
 
 # 快速初始化（当前目录下创建 my_bot/，含 pyproject.toml + .venv）
 epsdk init -q -n my_bot
+
+# 快速初始化并预装适配器（免交互，脚本 / CI 场景）
+epsdk init -q -n my_bot --adapter yunhu,telegram
 
 # 指定任意目录初始化（../apps/mybot）
 epsdk init ../apps/mybot
@@ -382,13 +395,13 @@ init 产物：`main.py`、`pyproject.toml`（依赖清单）、`config/config.to
 
 ### create
 
-创建 ErisPulse 模块或适配器的脚手架项目。
+创建 ErisPulse 模块或适配器的脚手架项目；`pack` 子命令将本地插件（`plugins/` 目录）转换为可发布的标准项目。
 
 **参数：**
 
 | 参数 | 短参数 | 说明 |
 |------|--------|------|
-| `{module,adapter}` | | 要创建的类型：`module` 或 `adapter` |
+| `{module,adapter,pack}` | | 要创建的类型：`module` / `adapter` / `pack`（插件转项目）|
 | `--name` | `-n` | 项目名称（PascalCase） |
 | `--description` | `-d` | 项目描述 |
 | `--author` | `-a` | 作者名称 |
@@ -396,7 +409,7 @@ init 产物：`main.py`、`pyproject.toml`（依赖清单）、`config/config.to
 | `--homepage` | | 项目主页 URL |
 | `--output` | `-o` | 输出目录（默认当前目录） |
 | `--force` | `-f` | 强制覆盖已存在的目录 |
-| `--local` | | 创建本地插件（仅 `module` 可用）：生成 `plugins/<name>/` 包结构，免打包安装 |
+| `--local` | | 创建本地插件（`module` / `adapter` 可用）：生成 `plugins/<name>/` 包结构，免打包安装 |
 
 **示例：**
 
@@ -407,11 +420,17 @@ epsdk create
 # 直接创建 Module 项目
 epsdk create module -n MyModule
 
-# 创建本地插件（放入项目 plugins/ 目录，启动时自动发现，支持热重载）
+# 创建本地插件（放入项目 plugins/ 目录，启动时自动发现）
 epsdk create module -n MyModule --local
+
+# 创建本地适配器插件（同上，免打包开发）
+epsdk create adapter -n MyAdapter --local
 
 # 直接创建 Adapter 项目
 epsdk create adapter -n MyAdapter
+
+# 将本地插件转换为可发布项目（交互选择插件 → 补全元信息 → 生成标准项目）
+epsdk create pack
 
 # 完整参数
 epsdk create module -n MyModule -d "模块描述" -a "作者" -e "mail@example.com"
@@ -530,14 +549,21 @@ epsdk types --force
 | 参数 | 说明 |
 |------|------|
 | `--verbose` | 显示详细诊断信息 |
+| `--fix` | 诊断后尝试自动修复可修复的问题 |
 
 **检查项**：
 - **Python**：解释器版本与路径
 - **安装后端**：使用 `uv` 还是 `pip`
 - **目标解释器**：包实际安装到的目标 Python 环境
 - **配置文件**：`config/config.toml` 是否存在
+- **组件配置**：已安装组件的声明式配置完整性（"装好了跑不起来"多因必填项缺失）
 - **PyPI 连通性**：能否访问 PyPI（并显示发现的组件数）
 - **系统代理**：是否检测到代理
+
+**自动修复（`--fix`）**：
+- `config.toml` 缺失 → 按当前语言生成初始配置文件（与 `init` 建项同源）
+- 组件配置"待完善" → 逐个拉起交互式配置向导补全必填项（非交互环境提示改用 `epsdk config <名称>`）
+- Python 版本过低、PyPI 无法访问等需人工介入的问题 → 仅输出行动建议
 
 ```bash
 # 运行环境诊断
@@ -545,6 +571,9 @@ epsdk doctor
 
 # 使用别名
 epsdk diag
+
+# 诊断并尝试自动修复
+epsdk doctor --fix
 ```
 
 ---

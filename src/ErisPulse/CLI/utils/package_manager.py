@@ -1711,21 +1711,21 @@ def append_pyproject_dependencies(project_dir: Path, packages: "list[str]") -> b
     """
     手动向 pyproject.toml 的 project.dependencies 追加依赖（pip 回退路径用）
 
-    使用 tomlkit 保留文件注释与格式。
+    使用 tomlclass 无损引擎保留文件注释与格式。
 
     :param project_dir: 项目目录
     :param packages: 依赖包名列表
     :return: 是否成功（pyproject 不存在 / 解析失败返回 False）
     """
-    import tomlkit
+    import tomlclass
 
     pyproject = Path(project_dir) / "pyproject.toml"
     if not pyproject.exists():
         return False
     try:
-        # tomlkit 解析保留注释与格式（其文档为 dict 子类，get 行为与
-        # tomllib 一致；不用 tomllib——它是 Python 3.11+ 标准库）
-        doc_kit = tomlkit.parse(pyproject.read_text(encoding="utf-8"))
+        # tomlclass 解析保留注释与格式（文档为 dict 子类，get 行为与
+        # tomllib 一致；渲染未触碰行逐字节保真）
+        doc_kit = tomlclass.parse(pyproject.read_text(encoding="utf-8"))
         proj = doc_kit.get("project")
         if proj is None:
             return False
@@ -1738,7 +1738,8 @@ def append_pyproject_dependencies(project_dir: Path, packages: "list[str]") -> b
         if not added:
             return True
         proj["dependencies"] = deps
-        pyproject.write_text(tomlkit.dumps(doc_kit), encoding="utf-8")
+        # newline=""：渲染结果自带源文件行尾风格，禁用文本模式换行翻译
+        pyproject.write_text(doc_kit.dumps(), encoding="utf-8", newline="")
         return True
     except Exception as e:
         console.print(f"[warning]  {i18n.t('cli.package.pyproject_writeback_failed', error=e)}[/]")

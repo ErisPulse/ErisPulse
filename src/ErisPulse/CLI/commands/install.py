@@ -34,6 +34,7 @@ class InstallCommand(Command):
     name = "install"
     description = i18n.t("cli.install.description")
     aliases = ["i", "add"]
+    category = "components"
 
     def __init__(self):
         """

@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "b1b6ea166f381fe0a1988079282c0be5",
-  "file_hash": "b1b6ea166f381fe0a1988079282c0be5",
-  "translated_at": "2026-10-03T14:50:06.573329",
+  "hash": "98f20fcd78832392b6c462139b515d16",
+  "file_hash": "98f20fcd78832392b6c462139b515d16",
+  "translated_at": "2026-10-14T03:11:41.868969",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "a2691f1926097465b63b1e427826516c",
-      "translation": "# Module Testing (ErisPulse-Testing)\n\n[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) is the official testing toolkit (RFC EPRFC-2026-001 Direction 3):  \nIt provides `TestBot`, test event factories, outbound message capture and assertion interface, making module testing as simple as writing regular pytest.\n\n```bash\npip install ErisPulse-Testing\n```\n\n> A one-way dependency development-time tool, with zero runtime intervention. For smoke tests that truly connect to adapter platforms, please use the framework repository's `tests/devs/test_adapter.py`."
+      "hash": "1394c83e232620e4e71cfe077e2eb677",
+      "translation": "# Module Testing (ErisPulse-Testing)\n\n> [!TIP]\n> **When to read this**: When writing automated tests for your own module. If not needed, skip this section as it does not affect the use of other features.\n\n[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) is the official testing toolkit (RFC EPRFC-2026-001 Direction 3):\nIt provides `TestBot`, test event factories, outbound message capture and assertion utilities, making module testing as simple as writing regular pytest.\n\n```bash\npip install ErisPulse-Testing\n```\n\n> A development-time tool with a one-way dependency on the framework, requiring zero integration at runtime. For smoke tests that actually connect to adapter platforms, please use `tests/devs/test_adapter.py` from the framework repository."
     },
     {
       "hash": "f737589ee49948d2216f43e9ab8c7843",

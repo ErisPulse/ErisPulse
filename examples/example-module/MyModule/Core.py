@@ -123,6 +123,10 @@ class Main(BaseModule):
         services 字段（可选）：对外服务白名单（模块间调用契约）。声明后其他模块可通过
         `await sdk.module.call("MyModule", "get_welcome_message")` 调用白名单内方法；
         缺省时公开方法全开放（开发者无感，限制由用户通过 scope.actions 配置）。
+
+        dict 形态可为每个服务声明 description 与 parameters 参数提示（均支持 i18n 字典），
+        供 `sdk.module.services()` 服务目录（AI 智能体发现能力的主要入口）消费；
+        未声明的参数自动取方法 docstring 的 :param: 行。
         """
         return ModuleMeta(
             name="MyModule",
@@ -131,7 +135,15 @@ class Main(BaseModule):
             author="ErisDev",
             group="示例",
             tags=["示例", "demo"],
-            services=["get_welcome_message", "subscribe"],
+            services=[
+                {
+                    "name": "get_welcome_message",
+                    "description": "返回欢迎消息",
+                    "parameters": {"name": "可选的用户名，空串返回默认欢迎语"},
+                },
+                # 简单形态：介绍与参数提示自动取 docstring（首行 / :param: 行）
+                "subscribe",
+            ],
         )
 
     @staticmethod

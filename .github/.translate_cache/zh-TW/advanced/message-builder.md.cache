@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "ccf145605ccbcde6645ba7b1fd9d02a4",
-  "file_hash": "ccf145605ccbcde6645ba7b1fd9d02a4",
-  "translated_at": "2026-09-07T10:49:19.602346",
+  "hash": "1fac5bb37de4ea824d5547dc48aaabf6",
+  "file_hash": "1fac5bb37de4ea824d5547dc48aaabf6",
+  "translated_at": "2026-10-14T03:13:46.671029",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "beaaca1a9a89664f37264436e23a6a42",
-      "translation": "# MessageBuilder 詳解\n\n`MessageBuilder` 是 ErisPulse 提供的 OneBot12 標準訊息段建構工具，用於建構結構化的訊息內容，配合 `Send.Raw_ob12()` 使用。"
+      "hash": "4bafc7cbfc9d915b4083731a2c6f9613",
+      "translation": "# MessageBuilder 詳解\n\n> [!TIP]\n> **什麼時候需要閱讀這篇**：當需要建構複雜或多段消息時。若不需要則可跳過，這不會影響其他功能的使用。\n\n`MessageBuilder` 是 ErisPulse 提供的 OneBot12 標準訊息段建構工具，用於建構結構化的訊息內容，並配合 `Send.Raw_ob12()` 使用。"
     },
     {
       "hash": "2500525151763f3bec08079067fc08cb",

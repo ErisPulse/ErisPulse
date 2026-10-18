@@ -1,4 +1,8 @@
 # 配置文件说明
+
+> [!NOTE]
+> **L1 核心必读**——首页"阅读路径"中的五篇核心文档之一，模块开发必备。
+
 > 这个文档会介绍框架的配置文件，如果有第三方模块需要配置，请参考模块的文档。
 
 ErisPulse 使用 TOML 格式的配置文件 `config/config.toml` 来管理项目配置。
@@ -45,7 +49,8 @@ project/
 
 config.toml 中的**注释与键顺序在框架写入后完整保留**：无论是代码 `setConfig()`、
 CLI 配置向导保存还是适配器/模块首次生成配置模板，框架都只改动涉及的键，
-你写的注释、整理的顺序不会被抹掉或重排（基于 tomlkit 注释保留往返实现）。
+你写的注释、整理的顺序不会被抹掉或重排（基于 tomlclass 无损 TOML 引擎，
+未触碰的内容逐字节保真，文件原有的 CRLF/LF 行尾风格也不会被改变）。
 
 框架对落盘内容保持克制：
 
@@ -58,6 +63,9 @@ CLI 配置向导保存还是适配器/模块首次生成配置模板，框架都
   组件）时启动会刷新一次，删除/改动首行即转为手动接管、框架不再覆盖
 - **适配器/模块配置模板**：首次初始化时以带注释的模板落盘（字段描述即注释）；
   声明为 `example` 标志的字段不落盘，仅记录在 config.full.example 供参考
+- **声明式注释回读**：配置文件里的注释本身就是文档——`ep doctor` 与配置校验
+  失败提示会引用该字段在文件中的注释原文（即使你手动改过注释，提示跟随文件
+  现状），报错时无需再翻文档查找字段含义
 
 ## 环境变量覆盖
 
@@ -70,7 +78,7 @@ CLI 配置向导保存还是适配器/模块首次生成配置模板，框架都
 | `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |
 | `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |
 | `ErisPulse.logger.level` | `ERISPULSE_LOGGER_LEVEL` | `DEBUG` |
-| `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
+| `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `2` |
 
 行为说明：
 - **优先级最高**：环境变量覆盖「配置文件」与「默认值」，按原值类型自动转换（`bool` / `int` / `float` / 逗号分隔的 `list` / 字符串）
@@ -484,6 +492,10 @@ adapters = ["OldAdapter"]
 ```
 
 > 当某个组件被严格模式拒绝时，日志会明确提示如何恢复加载（加入豁免清单或调低级别）。
+
+#### 与 CLI 的联动
+
+`epsdk run` 的启动前自检（配置文件可解析性、组件必填配置完整性）默认跟随本配置：非 0 时检查失败即拒绝启动，0 时仅警告继续。也可以不改配置临时切换：`epsdk run --strict` 本次将自检与严格级别同时开启（级别只升不降，经 `ERISPULSE_FRAMEWORK_STRICT_MODE` 环境变量传导到运行进程），`--no-strict` 本次临时压到宽松并仅警告。
 
 ## 存储配置
 

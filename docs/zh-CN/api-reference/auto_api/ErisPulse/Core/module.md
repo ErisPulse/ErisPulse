@@ -929,9 +929,9 @@ print(topology["modules"]["Chat"]["commands"])
 
 - **module_name**: 模块名称
 
-**返回值**: ``[{"name": ..., "description": <str|i18n dict|None>}, ...]``；
+**返回值**: ``[{"name": ..., "description": <str|i18n dict|None>,
 
-    未声明时返回 None（公开方法全开放）
+    "parameters": <dict|None>}, ...]``；未声明时返回 None（公开方法全开放）
 
 ---
 
@@ -976,23 +976,62 @@ print(topology["modules"]["Chat"]["commands"])
 ---
 
 
-##### `services(module_name: str | None = None) -> dict[str, list[dict[str, str]]]`
+##### `_docstring_params(func: Any) -> dict[str, str]`（staticmethod）
+
+**内部方法**
+从 docstring 提取参数说明（``:param name: 文本`` 行），作为服务参数提示的自动兜底
+
+兼容 Sphinx 带类型形态（``:param int n: ...``，取末位词为参数名）；
+每个参数取说明首行，重复声明取首个。
+
+- **func**: 函数 / 绑定方法
+
+**返回值**: ``{参数名: 说明文本}``（无 docstring 或无参数区时为空字典）
+
+---
+
+
+##### `_service_parameters(module_name: str, entry: dict[str, Any]) -> dict[str, str]`
+
+**内部方法**
+解析服务参数提示：显式声明（i18n 字典解析）与方法 docstring ``:param:`` 行按参数合并，
+单参数内显式声明优先
+
+仅保留方法签名中实际存在的参数（首个 ``self`` / ``cls`` 与变长参数除外）——
+声明与签名不一致时以签名为准，保证提示不会描述不存在的调用面。
+
+- **module_name**: 模块名
+- **entry**: 规范化服务条目（{"name", "description", "parameters"}）
+
+**返回值**: ``{参数名: 提示文本}``（无任何提示来源时为空字典）
+
+---
+
+
+##### `services(module_name: str | None = None) -> 'dict[str, list[dict[str, Any]]]'`
 
 服务目录：列出模块通过 ``get_meta().services`` 声明的对外服务
 
 仅包含**显式声明**的模块（未声明的模块不出现在结果中）；
-每个服务附带方法签名字符串与介绍文本：
+每个服务附带方法签名字符串、介绍文本与参数提示：
 
 - **介绍来源**：``services`` 中 ``{"name", "description"}`` 的显式声明
 
   （支持 i18n 字典，解析为当前语言）> 方法 docstring 首行 > 空串
 - **签名**：``inspect.signature`` 提取
+- **参数提示**：``parameters`` 中 ``{参数名: 说明}`` 显式声明
+
+  （支持 i18n 字典）与方法 docstring ``:param:`` 行按参数合并，
+  单参数内显式声明优先；仅含签名内实际存在的参数
+
+懒加载（已注册未加载）模块同样进入目录——服务发现先于加载发生，
+调用方可据此决定是否 ``call()`` 唤醒目标模块。
 
 为后续 MCP 化（调用点暴露给 AI）与生态服务发现提供数据基础。
 
 - **module_name**: 仅查询指定模块；None 时列出全部已注册模块中声明了服务的
 
-**返回值**: ``{模块名: [{"name", "signature", "description"}]}``
+**返回值**: ``{模块名: [{"name", "signature", "description", "parameters"}]}``
 
 **示例**:
 
@@ -1000,7 +1039,8 @@ print(topology["modules"]["Chat"]["commands"])
 sdk.module.services()
 {'Chat': [{'name': 'get_history',
            'signature': '(session_id, n=20)',
-           'description': '查询会话历史'}]}
+           'description': '查询会话历史',
+           'parameters': {'session_id': '会话 ID', 'n': '返回条数'}}]}
 sdk.module.services("Chat")
 {'Chat': [{'name': 'get_history', ...}]}
 ```

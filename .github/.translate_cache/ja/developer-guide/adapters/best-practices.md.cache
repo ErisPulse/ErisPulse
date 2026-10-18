@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "07c2ae3b438df1f8df2b5b8184f2fc5d",
-  "file_hash": "07c2ae3b438df1f8df2b5b8184f2fc5d",
-  "translated_at": "2026-09-07T12:38:00.623896",
+  "hash": "2b17565450e6ba9198a496bbbe2796f2",
+  "file_hash": "2b17565450e6ba9198a496bbbe2796f2",
+  "translated_at": "2026-10-14T03:14:22.623459",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "a233b474d0708b15cf9c594cbd6df072",
-      "translation": "# アダプタ開発のベストプラクティス\n\nこのドキュメントは、ErisPulse アダプタ開発におけるベストプラクティスの提案を提供します。"
+      "hash": "6aca0c0a115f304f615472b14011a91d",
+      "translation": "# アダプター開発のベストプラクティス\n\n> [!TIP]\n> **この記事を読むタイミング**：アダプターの基本構造が動作確認できた後にお勧めします（エンジニアリングのベストプラクティス）。不要な場合は読み飛ばしても、他の機能に影響はありません。\n\n\n本文書では、ErisPulse アダプター開発におけるベストプラクティスの提案を提供します。"
     },
     {
       "hash": "89a26208c4ded06ed8092c30d27ecfda",

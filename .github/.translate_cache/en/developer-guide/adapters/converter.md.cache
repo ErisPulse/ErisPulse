@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "519904b241003647135502f6825da279",
-  "file_hash": "519904b241003647135502f6825da279",
-  "translated_at": "2026-09-07T11:09:03.748500",
+  "hash": "c2b5d068ffbc2848eeee805b99e02ff9",
+  "file_hash": "c2b5d068ffbc2848eeee805b99e02ff9",
+  "translated_at": "2026-10-14T03:13:03.486974",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "6a3343ecbacbbe56e5e13ece3df87a63",
-      "translation": "# Event Converter Implementation Guide\n\nThe Event Converter is one of the core components of the adapter, responsible for converting platform-native events into the unified OneBot12 standard event format of ErisPulse."
+      "hash": "b7e3ab73f17ae5e32ef30e02f4065438",
+      "translation": "# Event Converter Implementation Guide\n\n> [!TIP]\n> **When to read this**: Required reading within the adapter development path (Event Converter). Skip if not needed, as it does not affect the use of other features.\n\nThe Event Converter (Converter) is one of the core components of the adapter, responsible for converting native platform events into ErisPulse's unified OneBot12 standard event format."
     },
     {
       "hash": "9378718b4e9cea27747fab845b30a03a",

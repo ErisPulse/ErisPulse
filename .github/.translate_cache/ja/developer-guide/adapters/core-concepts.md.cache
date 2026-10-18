@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "0785406f62a10f43695b317615d1978d",
-  "file_hash": "0785406f62a10f43695b317615d1978d",
-  "translated_at": "2026-09-21T14:42:17.522198",
+  "hash": "269621db2da80d9c64f0cf4f07f9283a",
+  "file_hash": "269621db2da80d9c64f0cf4f07f9283a",
+  "translated_at": "2026-10-14T14:13:10.472224",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "4b303cef6296757249af76851f2b6328",
-      "translation": "# アダプタのコアコンセプト\n\nErisPulseアダプタのコアコンセプトを理解することは、アダプタ開発の基礎です。"
+      "hash": "a8fff3226209cbdbb8ea8898cf9a9a72",
+      "translation": "# アダプタのコアコンセプト\n\n> [!TIP]\n> **この記事を読むタイミングは**：アダプタ開発の経路では必須です（BaseAdapter / SendDSL / ライフサイクルなどのコアメカニズムの完全な説明）。開発を始めるだけであれば、まずは [アダプタ開発の入門](getting-started.md) を読んでください。疑問が生じた場合は、この記事に戻って確認してください。\n\nErisPulse アダプタのコアコンセプトを理解することは、アダプタを開発するための基礎です。"
     },
     {
       "hash": "bad4417a91b525594f1d0720805eca17",

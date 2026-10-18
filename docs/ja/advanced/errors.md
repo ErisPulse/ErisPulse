@@ -1,11 +1,14 @@
-# エラーシステムとキャッチガイド
+# エラー体系とキャッチのガイド
 
-ErisPulse におけるすべての独自例外は `ErisPulseError` を継承しており、aiohttp や aiomysql などの下層ライブラリの例外は、フレームワーク内でキャッチされ、対応する ErisPulse 例外に変換されます。業務コードでは**下層ライブラリの例外型に依存する必要はありません**。
+> [!NOTE]
+> **L1の必須項目** —— ホームページの「読むべき順」にある5つのコアドキュメントの1つで、モジュール開発に不可欠です。
+
+ErisPulseのすべてのカスタムエラーは `ErisPulseError` を継承しており、aiohttp、aiomysqlなどのライブラリのエラーは、フレームワーク内でキャッチされ、対応するErisPulseのエラーに変換されます。業務コードでは**下位ライブラリのエラー型に依存する必要はありません**。
 
 {!--< tips >!--}
-1. 幅広くカバーしたい場合：`ErisPulseError`（すべてのフレームワーク例外の基底クラス）をキャッチ
-2. 精度を重視した処理をしたい場合：モジュールごとにキャッチ（例：`ModuleCallTimeoutError`、`StorageUnreachableError`）
-3. ストレージ操作はデフォルトで例外をスローしません：失敗時はログを記録し、`False / None / default` を返します。接続状態の変化は `storage.unreachable` / `storage.recovered` イベントをサブスクライブしてください。
+1. 一般的なエラーを網羅的に処理したい場合：`ErisPulseError` をキャッチする（フレームワークのすべてのエラーの基底クラス）
+2. 精度を高めて処理したい場合：モジュールごとにキャッチする（例：`ModuleCallTimeoutError`、`StorageUnreachableError`）
+3. ストレージ操作はデフォルトでエラーをスローしない：失敗時はログを記録し、`False / None / default` を返す。接続状態の変化は `storage.unreachable` / `storage.recovered` イベントをサブスクライブする。
 {!--< /tips >!--}
 
 ## エラーの概要

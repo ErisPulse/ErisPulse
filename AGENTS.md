@@ -61,7 +61,7 @@
   - **框架默认配置项**：唯一真相源是 `runtime/frame_config.py` 的 `DEFAULT_ERISPULSE_CONFIG`（默认值仅内存合并返回、不落盘；`ErisPulse.<path>` → `ERISPULSE_<PATH>` 环境变量覆盖自动生效，无需额外代码）
   - **`config.full.example`**：生成器唯一源在 `runtime/example_config.py`；静态段 `cfg.*` 文案键在 `CLI/utils/scaffold_text.py`（en 兜底 + zh-CN）；静态段结构变化时递增该文件 `_GEN`，框架启动会自动刷新带标记的用户文件（用户删除首行标记即手动接管）
   - **声明式配置（ConfigClass）行为**：全部消费逻辑在 `Core/Bases/config_schema.py`，五处消费点语义必须一致（schema / TOML 模板 / 默认值 / dict 填充 / 校验）：下划线前缀字段一律排除、`example` 字段仅进 full.example、嵌套 dataclass 递归；`_schema_meta` 必须声明为 `ClassVar[dict]`
-  - **配置写入**：必须走 tomlkit 注释保留路径（`ConfigManager._flush_config` / `setConfigTemplate`），禁止引入 `toml.dump` 等纯 dict 序列化（会抹掉用户注释与顺序）
+  - **配置写入**：必须走 tomlclass 无损编辑路径（`ConfigManager._flush_config` / `setConfigTemplate`，注释/顺序/行尾逐字节保真），禁止引入 `toml.dump`/`tomli_w` 等纯 dict 序列化（会抹掉用户注释与顺序）
   - **配置事件消费者**（`Core/scope.py`、`Core/Event/overrides.py` 等）：遵循"精确失效"——仅本模块相关配置节实际变化时才重建状态；运行时 `persist=False` 写入走覆盖层记录 + 配置重载后重放（#432 模式）
   - **文档同步**：`user-guide/configuration.md`（配置节说明）、相关 advanced 文档（如 `storage-backends.md`）
 - 24. 行为参数（重试次数、超时、冷却期、阈值等）**必须定义在 `Core/constants.py`** 并注明使用位置与修改影响，禁止散落在实现文件内部硬编码；实现文件以类属性/局部引用常量导入使用

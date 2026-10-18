@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "5296ab5e162bbe403d630d153562fec1",
-  "file_hash": "5296ab5e162bbe403d630d153562fec1",
-  "translated_at": "2026-09-23T07:37:46.106075",
+  "hash": "b8518df82f5b4a9120e963531f41d0de",
+  "file_hash": "b8518df82f5b4a9120e963531f41d0de",
+  "translated_at": "2026-10-14T03:12:57.171498",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "e7ee1375b57c8f4dbb50b50a7bfe7e55",
-      "translation": "# 模組排查指南\n\n當模組「沒有反應」時，可依症狀分為三類問題，每類皆有對應的框架診斷工具（RFC EPRFC-2026-001 方向五）：\n\n| 症狀 | 診斷工具 | 定位層面 |\n|------|---------|---------|\n| 模組未載入 | `ErisPulse.runtime.explain_module(name)` | 注冊與載入鏈 |\n| 事件未響應 | `ErisPulse.runtime.explain_event(event)` | 分發入口檢查 |\n| 命令未觸發 | 分發決策鏈（測試端 `DispatchTrace` / 框架內建 `trace`） | 命令判定鏈 |\n\n這兩個診斷函數皆為**純讀取**操作，不會改變任何狀態，可在任意時刻調用；返回機器可讀的 dict，搭配 `format_report()` 可渲染為人類可讀的文本。"
+      "hash": "533bdfe89cafe6b6653248c0b45c082b",
+      "translation": "# 模組排查指南\n\n> [!TIP]\n> **什麼時候需要閱讀本文**：當模組「沒有反應」、命令未觸發或事件未收到時進行排查。若無此情況則可跳過，不會影響其他功能的使用。\n\n\n當模組「沒有反應」時，根據症狀可分為三類問題，每類問題皆有對應的框架診斷工具（RFC EPRFC-2026-001 方向五）：\n\n| 症狀 | 診斷工具 | 定位層面 |\n|------|---------|---------|\n| 模組未加載 | `ErisPulse.runtime.explain_module(name)` | 注冊與加載鏈 |\n| 事件未響應 | `ErisPulse.runtime.explain_event(event)` | 分發入口檢查 |\n| 命令未觸發 | 分發決策鏈（測試端 `DispatchTrace` / 框架內建 `trace`） | 命令判定鏈 |\n\n這兩個診斷函數均為**純讀取**操作，不會改變任何狀態，可在任意時刻調用；返回機器可讀取的 dict，搭配 `format_report()` 可渲染為人類可讀取的文本。"
     },
     {
       "hash": "68b8a2d39c9da82c2710f7523960f0ac",

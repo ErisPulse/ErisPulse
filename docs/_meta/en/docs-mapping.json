@@ -170,13 +170,13 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Event Wrapper Class Detailed Explanation",
+              "title": "Event Wrapper Class Guide",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
             },
             {
-              "title": "Module Development Best Practices",
+              "title": "Best Practices for Module Development",
               "path": "developer-guide/modules/best-practices.md",
               "level": 1,
               "icon": "fa-award"
@@ -194,7 +194,7 @@
               "icon": "fa-network-wired"
             },
             {
-              "title": "Core Concepts of Adapters",
+              "title": "Core Adapter Concepts",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1,
               "icon": "fa-microchip"
@@ -393,7 +393,7 @@
           "icon": "fa-route"
         },
         {
-          "title": "MessageBuilder Explained",
+          "title": "MessageBuilder Detailed Explanation",
           "path": "advanced/message-builder.md",
           "level": 1,
           "icon": "fa-comment-dots"
@@ -429,13 +429,13 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "Ownership (owner) System",
+          "title": "Ownership (Owner) System",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
         },
         {
-          "title": "Interactive Session System",
+          "title": "Interactive Conversation System",
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"
@@ -453,7 +453,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Storage Backends",
+          "title": "Storage Backend",
           "path": "advanced/storage-backends.md",
           "level": 1,
           "icon": "fa-server"
@@ -477,7 +477,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Transcript",
+          "title": "Transcript (Conversation Inbox)",
           "path": "advanced/transcript.md",
           "level": 1,
           "icon": "fa-fire"
@@ -488,7 +488,7 @@
     "Ecosystem Modules": {
       "description": "Community-maintained third-party modules",
       "icon": "fa-cubes",
-      "count": 5,
+      "count": 6,
       "documents": [
         {
           "title": "Ecosystem Modules",
@@ -519,6 +519,12 @@
           "path": "ecosystem/takumi.md",
           "level": 1,
           "icon": "fa-image"
+        },
+        {
+          "title": "ErisPulse-QvQChat General Agent",
+          "path": "ecosystem/qvqchat.md",
+          "level": 1,
+          "icon": "fa-cubes"
         }
       ],
       "subgroups": {}

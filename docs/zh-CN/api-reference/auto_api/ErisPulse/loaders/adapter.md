@@ -7,10 +7,11 @@
 
 ErisPulse 适配器加载器
 
-专门用于从 PyPI 包加载和初始化适配器
+从 PyPI entry-points 与本地插件文件夹加载和初始化适配器
 
 > **提示**
-> 1. 适配器必须通过 entry-points 机制注册到 erispulse.adapter 组
+> 1. 适配器必须通过 entry-points 机制注册到 erispulse.adapter 组，
+> 或放入本地插件目录（默认 ``plugins/``，经 ``discover_adapters`` 发现）
 > 2. 适配器类必须继承 BaseAdapter
 > 3. 适配器不适用懒加载
 
@@ -23,7 +24,8 @@ ErisPulse 适配器加载器
 
 适配器加载器
 
-负责从 PyPI entry-points 加载适配器
+负责从 PyPI entry-points 与本地插件文件夹加载适配器
+（本地插件优先：与 entry-point 适配器同名时覆盖，便于本地覆盖调试）
 
 > **提示**
 > 使用方式：
@@ -88,6 +90,22 @@ ErisPulse 适配器加载器
     bool: 是否为新适配器
 
 **异常**: `ImportError` - 当适配器加载失败时抛出
+
+---
+
+
+##### `_merge_plugin_folder(objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any) -> None`
+
+**内部方法**
+发现本地适配器插件并并入加载结果
+
+本地插件优先：与 entry-point 适配器同名时，本地插件覆盖安装包条目
+（便于本地覆盖调试）。启用状态沿用 ``ErisPulse.adapters.status``。
+
+- **objs**: 适配器对象字典（原地修改）
+- **enabled_list**: 启用列表（原地修改）
+- **disabled_list**: 禁用列表（原地修改）
+- **manager_instance**: 适配器管理器实例
 
 ---
 

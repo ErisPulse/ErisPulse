@@ -1949,8 +1949,8 @@ class ModuleManager(ManagerBase):
         解析模块的服务契约（get_meta().services），规范化为字典列表
 
         :param module_name: 模块名称
-        :return: ``[{"name": ..., "description": <str|i18n dict|None>}, ...]``；
-            未声明时返回 None（公开方法全开放）
+        :return: ``[{"name": ..., "description": <str|i18n dict|None>,
+            "parameters": <dict|None>}, ...]``；未声明时返回 None（公开方法全开放）
         """
         module_class = self._module_classes.get(module_name)
         if module_class is None:
@@ -1966,9 +1966,14 @@ class ModuleManager(ManagerBase):
                 seen: set[str] = set()
                 for item in services:
                     if isinstance(item, dict) and item.get("name"):
-                        entry = {"name": str(item["name"]), "description": item.get("description")}
+                        parameters = item.get("parameters")
+                        entry = {
+                            "name": str(item["name"]),
+                            "description": item.get("description"),
+                            "parameters": parameters if isinstance(parameters, dict) else None,
+                        }
                     elif item:
-                        entry = {"name": str(item), "description": None}
+                        entry = {"name": str(item), "description": None, "parameters": None}
                     else:
                         continue
                     # 保序去重（重复声明取首个，含 description 的首个优先）
@@ -2039,42 +2044,120 @@ class ModuleManager(ManagerBase):
         func = getattr(owner, entry.get("name", ""), None)
         return self._docstring_first_line(func)
 
-    def services(self, module_name: str | None = None) -> dict[str, list[dict[str, str]]]:
+    @staticmethod
+    def _docstring_params(func: Any) -> dict[str, str]:
+        """
+        {!--< internal-use >!--}
+        从 docstring 提取参数说明（``:param name: 文本`` 行），作为服务参数提示的自动兜底
+
+        兼容 Sphinx 带类型形态（``:param int n: ...``，取末位词为参数名）；
+        每个参数取说明首行，重复声明取首个。
+
+        :param func: 函数 / 绑定方法
+        :return: ``{参数名: 说明文本}``（无 docstring 或无参数区时为空字典）
+        """
+        doc = inspect.getdoc(func) if func is not None else None
+        if not doc:
+            return {}
+        hints: dict[str, str] = {}
+        for line in doc.splitlines():
+            stripped = line.strip()
+            if not stripped.startswith(":param"):
+                continue
+            prefix, sep, text = stripped[len(":param"):].strip().partition(":")
+            name_parts = prefix.split()
+            if not sep or not name_parts:
+                continue
+            hints.setdefault(name_parts[-1], text.strip())
+        return hints
+
+    def _service_parameters(self, module_name: str, entry: dict[str, Any]) -> dict[str, str]:
+        """
+        {!--< internal-use >!--}
+        解析服务参数提示：显式声明（i18n 字典解析）与方法 docstring ``:param:`` 行按参数合并，
+        单参数内显式声明优先
+
+        仅保留方法签名中实际存在的参数（首个 ``self`` / ``cls`` 与变长参数除外）——
+        声明与签名不一致时以签名为准，保证提示不会描述不存在的调用面。
+
+        :param module_name: 模块名
+        :param entry: 规范化服务条目（{"name", "description", "parameters"}）
+        :return: ``{参数名: 提示文本}``（无任何提示来源时为空字典）
+        """
+        declared: dict[str, str] = {}
+        raw = entry.get("parameters")
+        if isinstance(raw, dict):
+            for key, value in raw.items():
+                if isinstance(value, dict) and "i18n" in value:
+                    value = self._resolve_meta_value(value)
+                if value:
+                    declared[str(key)] = str(value)
+
+        instance = self._modules.get(module_name)
+        owner = instance if instance is not None else self._module_classes.get(module_name)
+        func = getattr(owner, entry.get("name", ""), None)
+
+        # 无签名可依据（方法缺失等）：显式声明原样透出
+        if func is None:
+            return declared
+        try:
+            signature = inspect.signature(func)
+        except (ValueError, TypeError):
+            return declared
+
+        doc_hints = self._docstring_params(func)
+        hints: dict[str, str] = {}
+        for index, param in enumerate(signature.parameters.values()):
+            if index == 0 and param.name in ("self", "cls"):
+                continue
+            if param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
+                continue
+            hint = declared.get(param.name) or doc_hints.get(param.name)
+            if hint:
+                hints[param.name] = hint
+        return hints
+
+    def services(self, module_name: str | None = None) -> "dict[str, list[dict[str, Any]]]":
         """
         服务目录：列出模块通过 ``get_meta().services`` 声明的对外服务
 
         仅包含**显式声明**的模块（未声明的模块不出现在结果中）；
-        每个服务附带方法签名字符串与介绍文本：
+        每个服务附带方法签名字符串、介绍文本与参数提示：
 
         - **介绍来源**：``services`` 中 ``{"name", "description"}`` 的显式声明
           （支持 i18n 字典，解析为当前语言）> 方法 docstring 首行 > 空串
         - **签名**：``inspect.signature`` 提取
+        - **参数提示**：``parameters`` 中 ``{参数名: 说明}`` 显式声明
+          （支持 i18n 字典）与方法 docstring ``:param:`` 行按参数合并，
+          单参数内显式声明优先；仅含签名内实际存在的参数
+
+        懒加载（已注册未加载）模块同样进入目录——服务发现先于加载发生，
+        调用方可据此决定是否 ``call()`` 唤醒目标模块。
 
         为后续 MCP 化（调用点暴露给 AI）与生态服务发现提供数据基础。
 
         :param module_name: 仅查询指定模块；None 时列出全部已注册模块中声明了服务的
-        :return: ``{模块名: [{"name", "signature", "description"}]}``
+        :return: ``{模块名: [{"name", "signature", "description", "parameters"}]}``
 
         :example:
         >>> sdk.module.services()
         {'Chat': [{'name': 'get_history',
                    'signature': '(session_id, n=20)',
-                   'description': '查询会话历史'}]}
+                   'description': '查询会话历史',
+                   'parameters': {'session_id': '会话 ID', 'n': '返回条数'}}]}
         >>> sdk.module.services("Chat")
         {'Chat': [{'name': 'get_history', ...}]}
         """
-        result: dict[str, list[dict[str, str]]] = {}
+        result: dict[str, list[dict[str, Any]]] = {}
         targets = [module_name] if module_name else list(self._module_classes.keys())
         for name in targets:
             services_list = self._module_services.get(name)
             if services_list is None and name not in self._module_services:
-                # 未加载（无缓存）时现场解析一次
+                # 未加载（无缓存）时现场解析一次：懒加载模块已声明的服务同样进入目录
                 services_list = self._resolve_services(name)
-                if module_name is None:
-                    continue  # 全量目录模式：未声明模块直接跳过
             if not services_list:
                 continue
-            entries: list[dict[str, str]] = []
+            entries: list[dict[str, Any]] = []
             for svc in services_list:
                 svc_name = svc["name"]
                 sig = ""
@@ -2091,6 +2174,7 @@ class ModuleManager(ManagerBase):
                         "name": svc_name,
                         "signature": sig,
                         "description": self._service_description(name, svc),
+                        "parameters": self._service_parameters(name, svc),
                     }
                 )
             result[name] = entries

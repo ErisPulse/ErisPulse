@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ErisPulse"
-version = "2.10.0"
+version = "2.10.2"
 description = "Event-driven modular async bot framework — write once, deploy to any platform | 事件驱动的模块化异步机器人框架，一次编写，多平台部署"
 readme = "README.pypi.md"
 requires-python = ">=3.10"
@@ -62,12 +62,17 @@ classifiers = [
 
 dependencies = [
     "rich>=13.0.0",
-    "tomlkit>=0.15.1",
+    "tomlclass>=0.3.2,<0.4",
+
     # network 相关
     "websockets>=12.0",
     "aiohttp>=3.9.0",
     "fastapi>=0.116.1",
-    "uvicorn>=0.35.0",
+
+    # uvicorn的内嵌启动依赖私有接口 Server._serve()（0.34.0 引入，用于跳过 serve() 的信号捕获），
+    # 上限锁定 0.x 线；启动期按能力探测，接口缺失时仅告警并回退公开 serve()
+    "uvicorn>=0.35.0,<1.0",
+
     # storage 相关（默认 SQLite 后端异步驱动，开箱即用）
     "aiosqlite>=0.20.0",
 ]
@@ -98,6 +103,7 @@ test = [
     "pytest-timeout>=2.1.0",
     "pytest-mock>=3.10.0",
     "httpx>=0.24.0",
+    "tomli>=2.0.0; python_version < '3.11'",
 ]
 
 [dependency-groups]

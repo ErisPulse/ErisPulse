@@ -1,13 +1,16 @@
 # モジュールテスト（ErisPulse-Testing）
 
-[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) は公式のテストツールキット（RFC EPRFC-2026-001 方向三）です。  
-`TestBot`、テストイベント工場、出力メッセージのキャプチャとアサーション機能を提供し、モジュールのテストを通常の pytest と同じように簡単に実現します。
+> [!TIP]
+> **このドキュメントを読むタイミング**：自身のモジュールに自動テストを書く必要がある場合。不要であれば飛ばしても、他の機能の使用に影響はありません。
+
+[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) は公式のテストツールキット（RFC EPRFC-2026-001 方向三）です：
+`TestBot`、テストイベント工場、出力メッセージのキャプチャとアサーション機能を提供し、モジュールのテストを通常の pytest と同じように簡単に実行できます。
 
 ```bash
 pip install ErisPulse-Testing
 ```
 
-> 開発期にフレームワークに依存するツールであり、実行時には一切介入しません。本格的なアダプタープラットフォームのスモークテストは、フレームワークのリポジトリにある `tests/devs/test_adapter.py` を使用してください。
+> フレームワークの開発時のみに依存するツールで、実行時には一切介入しません。実際のアダプタープラットフォームとの冒険テスト（スモークテスト）は、フレームワークリポジトリの `tests/devs/test_adapter.py` を使用してください。
 
 ## 快速开始
 

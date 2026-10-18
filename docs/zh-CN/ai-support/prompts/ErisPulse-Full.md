@@ -3039,7 +3039,7 @@ sudo apt install python3-venv
 
 ErisPulse 命令行工具（`epsdk`）提供项目管理和包管理功能。
 
-> **提示**：所有命令均可通过 `epsdk <命令> --help` 查看详细的参数说明。
+> **提示**：所有命令均可通过 `epsdk <命令> --help` 查看详细的参数说明。`epsdk`（不带命令）的主帮助按类别分组展示：**项目**（init / create / run）、**组件管理**（install / uninstall / upgrade / list / list-remote / types）、**配置与诊断**（config / doctor / i18n）、**其他**（self-update / version）。
 
 ---
 
@@ -3056,7 +3056,7 @@ ErisPulse 命令行工具（`epsdk`）提供项目管理和包管理功能。
 
 | 命令 | 别名 | 参数 | 说明 |
 |------|------|------|------|
-| `doctor` | `diag` | `[--verbose]` | 诊断环境并输出健康报告 |
+| `doctor` | `diag` | `[--verbose] [--fix]` | 诊断环境并输出健康报告；`--fix` 尝试自动修复 |
 
 ### install
 
@@ -3327,7 +3327,7 @@ epsdk config MyModule
 
 | 命令 | 别名 | 参数 | 说明 |
 |------|------|------|------|
-| `run` | `r` | `[script] [--reload]` | 运行指定脚本或 SDK |
+| `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | 运行指定脚本或 SDK |
 
 ### run
 
@@ -3341,6 +3341,7 @@ epsdk config MyModule
 |------|------|
 | `[script]` | 要运行的脚本文件，不指定则运行 SDK |
 | `--reload` | 启用热重载模式，监控文件变化自动重启 |
+| `--strict` / `--no-strict` | 临时开启 / 关闭严格模式（仅本次生效，不写入配置）；缺省跟随 `ErisPulse.framework.strict_mode` |
 
 **示例：**
 
@@ -3356,7 +3357,15 @@ epsdk run main.py --reload
 
 # SDK 热重载模式
 epsdk run --reload
+
+# 临时严格模式：启动前自检失败即退出，框架严格级别本次提升为至少 1
+epsdk run main.py --strict
+
+# 临时宽松模式（配置里开了 strict_mode 但本次想先跑起来）
+epsdk run main.py --no-strict
 ```
+
+**启动前自检：** `run` 启动前会快速检查 `config/config.toml` 可解析性与已安装组件的必填配置完整性，严格性默认跟随 `ErisPulse.framework.strict_mode`（非 0 时检查失败即退出，0 时仅警告继续）。配置文件缺失视为正常首次启动，仅提示不判失败。`--strict` 临时开启：预检失败即退出，同时框架严格级别本次提升为至少 1（跳过不合规组件，经 `ERISPULSE_FRAMEWORK_STRICT_MODE` 环境变量传导到运行进程，不写入配置文件）；`--no-strict` 反之临时压到宽松。自检自身异常时自动跳过，不含网络探测，不会阻塞启动。
 
 ---
 
@@ -3364,8 +3373,8 @@ epsdk run --reload
 
 | 命令 | 别名 | 参数 | 说明 |
 |------|------|------|------|
-| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 项目 |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | 创建模块/适配器脚手架 |
+| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--adapter/-a <name>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 项目 |
+| `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | 创建模块/适配器脚手架；`pack` 将本地插件转换为可发布项目 |
 
 ### init
 
@@ -3378,6 +3387,7 @@ epsdk run --reload
 | `[path]` | | 目标路径（可包含父目录，如 `../apps/mybot`；纯名称等价 `--project-name`） |
 | `--project-name` | `-n` | 项目名称 |
 | `--path` | | 项目父目录（与 `-n` 组合指定创建位置） |
+| `--adapter` | `-a` | 预选要安装的适配器（可重复传参或逗号分隔），传入时跳过适配器问询与选择 |
 | `--quick` | `-q` | 快速模式，跳过交互式向导（默认创建 `.venv` 并安装依赖） |
 | `--force` | `-f` | 强制覆盖现有配置文件 |
 | `--here` | | 在当前目录初始化，不创建子目录 |
@@ -3392,6 +3402,9 @@ epsdk init
 
 # 快速初始化（当前目录下创建 my_bot/，含 pyproject.toml + .venv）
 epsdk init -q -n my_bot
+
+# 快速初始化并预装适配器（免交互，脚本 / CI 场景）
+epsdk init -q -n my_bot --adapter yunhu,telegram
 
 # 指定任意目录初始化（../apps/mybot）
 epsdk init ../apps/mybot
@@ -3419,13 +3432,13 @@ init 产物：`main.py`、`pyproject.toml`（依赖清单）、`config/config.to
 
 ### create
 
-创建 ErisPulse 模块或适配器的脚手架项目。
+创建 ErisPulse 模块或适配器的脚手架项目；`pack` 子命令将本地插件（`plugins/` 目录）转换为可发布的标准项目。
 
 **参数：**
 
 | 参数 | 短参数 | 说明 |
 |------|--------|------|
-| `{module,adapter}` | | 要创建的类型：`module` 或 `adapter` |
+| `{module,adapter,pack}` | | 要创建的类型：`module` / `adapter` / `pack`（插件转项目）|
 | `--name` | `-n` | 项目名称（PascalCase） |
 | `--description` | `-d` | 项目描述 |
 | `--author` | `-a` | 作者名称 |
@@ -3433,7 +3446,7 @@ init 产物：`main.py`、`pyproject.toml`（依赖清单）、`config/config.to
 | `--homepage` | | 项目主页 URL |
 | `--output` | `-o` | 输出目录（默认当前目录） |
 | `--force` | `-f` | 强制覆盖已存在的目录 |
-| `--local` | | 创建本地插件（仅 `module` 可用）：生成 `plugins/<name>/` 包结构，免打包安装 |
+| `--local` | | 创建本地插件（`module` / `adapter` 可用）：生成 `plugins/<name>/` 包结构，免打包安装 |
 
 **示例：**
 
@@ -3444,11 +3457,17 @@ epsdk create
 # 直接创建 Module 项目
 epsdk create module -n MyModule
 
-# 创建本地插件（放入项目 plugins/ 目录，启动时自动发现，支持热重载）
+# 创建本地插件（放入项目 plugins/ 目录，启动时自动发现）
 epsdk create module -n MyModule --local
+
+# 创建本地适配器插件（同上，免打包开发）
+epsdk create adapter -n MyAdapter --local
 
 # 直接创建 Adapter 项目
 epsdk create adapter -n MyAdapter
+
+# 将本地插件转换为可发布项目（交互选择插件 → 补全元信息 → 生成标准项目）
+epsdk create pack
 
 # 完整参数
 epsdk create module -n MyModule -d "模块描述" -a "作者" -e "mail@example.com"
@@ -3567,14 +3586,21 @@ epsdk types --force
 | 参数 | 说明 |
 |------|------|
 | `--verbose` | 显示详细诊断信息 |
+| `--fix` | 诊断后尝试自动修复可修复的问题 |
 
 **检查项**：
 - **Python**：解释器版本与路径
 - **安装后端**：使用 `uv` 还是 `pip`
 - **目标解释器**：包实际安装到的目标 Python 环境
 - **配置文件**：`config/config.toml` 是否存在
+- **组件配置**：已安装组件的声明式配置完整性（"装好了跑不起来"多因必填项缺失）
 - **PyPI 连通性**：能否访问 PyPI（并显示发现的组件数）
 - **系统代理**：是否检测到代理
+
+**自动修复（`--fix`）**：
+- `config.toml` 缺失 → 按当前语言生成初始配置文件（与 `init` 建项同源）
+- 组件配置"待完善" → 逐个拉起交互式配置向导补全必填项（非交互环境提示改用 `epsdk config <名称>`）
+- Python 版本过低、PyPI 无法访问等需人工介入的问题 → 仅输出行动建议
 
 ```bash
 # 运行环境诊断
@@ -3582,6 +3608,9 @@ epsdk doctor
 
 # 使用别名
 epsdk diag
+
+# 诊断并尝试自动修复
+epsdk doctor --fix
 ```
 
 ---
@@ -3733,6 +3762,10 @@ epsdk create module -n MyModule -f
 ### 配置文件说明
 
 # 配置文件说明
+
+> [!NOTE]
+> **L1 核心必读**——首页"阅读路径"中的五篇核心文档之一，模块开发必备。
+
 > 这个文档会介绍框架的配置文件，如果有第三方模块需要配置，请参考模块的文档。
 
 ErisPulse 使用 TOML 格式的配置文件 `config/config.toml` 来管理项目配置。
@@ -3779,7 +3812,8 @@ project/
 
 config.toml 中的**注释与键顺序在框架写入后完整保留**：无论是代码 `setConfig()`、
 CLI 配置向导保存还是适配器/模块首次生成配置模板，框架都只改动涉及的键，
-你写的注释、整理的顺序不会被抹掉或重排（基于 tomlkit 注释保留往返实现）。
+你写的注释、整理的顺序不会被抹掉或重排（基于 tomlclass 无损 TOML 引擎，
+未触碰的内容逐字节保真，文件原有的 CRLF/LF 行尾风格也不会被改变）。
 
 框架对落盘内容保持克制：
 
@@ -3792,6 +3826,9 @@ CLI 配置向导保存还是适配器/模块首次生成配置模板，框架都
   组件）时启动会刷新一次，删除/改动首行即转为手动接管、框架不再覆盖
 - **适配器/模块配置模板**：首次初始化时以带注释的模板落盘（字段描述即注释）；
   声明为 `example` 标志的字段不落盘，仅记录在 config.full.example 供参考
+- **声明式注释回读**：配置文件里的注释本身就是文档——`ep doctor` 与配置校验
+  失败提示会引用该字段在文件中的注释原文（即使你手动改过注释，提示跟随文件
+  现状），报错时无需再翻文档查找字段含义
 
 ## 环境变量覆盖
 
@@ -3804,7 +3841,7 @@ CLI 配置向导保存还是适配器/模块首次生成配置模板，框架都
 | `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |
 | `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |
 | `ErisPulse.logger.level` | `ERISPULSE_LOGGER_LEVEL` | `DEBUG` |
-| `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
+| `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `2` |
 
 行为说明：
 - **优先级最高**：环境变量覆盖「配置文件」与「默认值」，按原值类型自动转换（`bool` / `int` / `float` / 逗号分隔的 `list` / 字符串）
@@ -4218,6 +4255,10 @@ adapters = ["OldAdapter"]
 ```
 
 > 当某个组件被严格模式拒绝时，日志会明确提示如何恢复加载（加入豁免清单或调低级别）。
+
+#### 与 CLI 的联动
+
+`epsdk run` 的启动前自检（配置文件可解析性、组件必填配置完整性）默认跟随本配置：非 0 时检查失败即拒绝启动，0 时仅警告继续。也可以不改配置临时切换：`epsdk run --strict` 本次将自检与严格级别同时开启（级别只升不降，经 `ERISPULSE_FRAMEWORK_STRICT_MODE` 环境变量传导到运行进程），`--no-strict` 本次临时压到宽松并仅警告。
 
 ## 存储配置
 
@@ -4687,6 +4728,30 @@ stderr_logfile=/var/log/erispulse-bot/err.log
 stdout_logfile=/var/log/erispulse-bot/out.log
 ```
 
+### uv tool 分离部署（CLI 与项目环境隔离）
+
+`uv tool install` 将 `epsdk` 安装为**独立的工具环境**，CLI 自身与项目依赖彻底隔离：升级 CLI 不会触碰项目 `.venv`，项目依赖变动也不会影响 CLI。
+
+```bash
+# 1. 全局安装 CLI（自动暴露 epsdk / ep 命令）
+uv tool install ErisPulse
+
+# 2. 项目内只放机器人依赖（.venv 由 uv 管理）
+cd /opt/erispulse-bot
+uv add erispulse ErisPulse-Adapter-Yunhu   # 按需追加适配器
+
+# 3. 用 CLI 运行（自动探测并使用项目 .venv 中的解释器）
+epsdk run main.py
+```
+
+行为要点：
+
+- `epsdk run` 的目标解释器解析顺序：`ERISPULSE_PYTHON` 环境变量 → 项目 `.venv` → 当前解释器；工具环境本身只承载 CLI，组件（适配器/模块）应装进项目 `.venv`
+- `epsdk install` / `uninstall` / `upgrade` / `list` 同样作用于项目 `.venv`，不会污染工具环境
+- 升级 CLI：`uv tool upgrade ErisPulse`（或直接 `epsdk self-update`，uv tool 环境下自动改走 `uv tool upgrade`）；升级项目依赖：在项目目录执行 `uv sync` / `uv add`，两者互不影响
+- 服务器场景下工具环境由 uv 统一管理（`uv tool list` 查看、`uv tool upgrade --all` 批量升级），无需手工维护全局 pip 包
+- 若在无项目的目录用 `uv run epsdk ...` 执行，会落入**一次性隔离环境**（安装的组件不持久化）；服务器上请始终用 `epsdk` 直接调用，或先 `cd` 进项目目录
+
 ## 安全建议
 
 1. **设置 Dashboard 令牌**：使用强随机令牌，不要使用默认值
@@ -4721,6 +4786,16 @@ docker compose up -d
 ```bash
 epsdk self-update
 epsdk upgrade
+```
+
+### uv tool 方式
+
+```bash
+# 升级 CLI 工具环境
+uv tool upgrade ErisPulse
+
+# 升级项目依赖（项目目录内执行）
+uv sync
 ```
 
 ### 运行时热重载服务器配置
@@ -4858,6 +4933,10 @@ level = "DEBUG"
 ### 模块开发入门
 
 # 模块开发入门
+
+> [!NOTE]
+> **L1 核心必读**——首页"阅读路径"中的五篇核心文档之一，模块开发必备。
+
 
 本指南带你从零开始创建一个 ErisPulse 模块。
 
@@ -5062,6 +5141,10 @@ sdk.lifecycle  # 生命周期系统
 ### 模块核心概念
 
 # 模块核心概念
+
+> [!NOTE]
+> **L1 核心必读**——首页"阅读路径"中的五篇核心文档之一，模块开发必备。
+
 
 了解 ErisPulse 模块的核心概念是开发高质量模块的基础。
 
@@ -5458,6 +5541,10 @@ self.logger.critical("致命错误") # 致命错误
 ### Event 包装类详解
 
 # Event 包装类详解
+
+> [!NOTE]
+> **L1 核心必读**——首页"阅读路径"中的五篇核心文档之一，模块开发必备。
+
 
 Event 模块提供了功能强大的 Event 包装类，简化事件处理。
 
@@ -5944,6 +6031,10 @@ async def ai_chat(self, prompt: str):
 ### 模块开发最佳实践
 
 # 模块开发最佳实践
+
+> [!TIP]
+> **什么时候需要读这篇**：写完第一个模块后建议阅读（工程化最佳实践）。不需要则跳过，不影响其它功能的使用。
+
 
 本文档提供了 ErisPulse 模块开发的最佳实践建议。
 
@@ -6497,6 +6588,10 @@ version = "1.0.0"
 
 # 数据模型层（ORM）
 
+> [!TIP]
+> **什么时候需要读这篇**：需要数据模型、自动建表或关系映射时。不需要则跳过，不影响其它功能的使用。
+
+
 2.9.0 起框架内置声明式数据模型层：继承 `Model` 并用 `Field` 声明字段，即可获得自动建表与增删改查能力。模型直接构建在内置存储层之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置决定，**切换后端无需修改模型代码**。
 
 ## 声明模型
@@ -6689,6 +6784,10 @@ await writer.posts.count()          # 双向互通
 
 # 模块排查指南
 
+> [!TIP]
+> **什么时候需要读这篇**：模块"没反应"、命令不触发或事件没收到时排查。不需要则跳过，不影响其它功能的使用。
+
+
 模块"没反应"时，按症状分为三类问题，每类都有对应的框架诊断工具（RFC EPRFC-2026-001 方向五）：
 
 | 症状 | 诊断工具 | 定位层面 |
@@ -6814,6 +6913,9 @@ print(final_verdict(records))           # 总结论
 
 # 适配器开发入门
 
+> [!TIP]
+> **什么时候需要读这篇**：适配器开发路径的入口篇（必读）。从零写一个适配器、了解适配器的职责边界与项目结构都在这里；读完后再按需进入 [事件转换器](converter.md) 与 [SendDSL 详解](send-dsl.md)。
+
 本指南帮助你开始开发 ErisPulse 适配器，连接新的消息平台。
 
 ## 适配器简介
@@ -6859,6 +6961,18 @@ MyAdapter/
 ## 快速开始
 
 ### 1. 创建项目
+
+推荐直接用脚手架生成完整骨架（含 pyproject、主类、转换器）：
+
+```bash
+# 标准项目（打包发布用）
+epsdk create adapter -n MyAdapter
+
+# 本地适配器插件（免打包，放入 plugins/ 目录即可被自动加载，见下方"本地开发"）
+epsdk create adapter -n MyAdapter --local
+```
+
+也可以手动创建：
 
 ```bash
 mkdir MyAdapter && cd MyAdapter
@@ -7164,7 +7278,42 @@ async def handle_friend_request(event):
 from .Core import MyAdapter
 ```
 
+## 本地开发（免打包）
+
+与模块一致，适配器也可以放入项目的本地插件目录（默认 `plugins/`，可通过 `ErisPulse.framework.plugins_dir` 配置）直接开发，**无需 `pip install -e .`**：
+
+```bash
+# 生成本地适配器插件
+epsdk create adapter -n MyAdapter --local
+# 生成结构：
+# plugins/
+# └── MyAdapter/
+#     ├── __init__.py
+#     ├── Core.py
+#     └── Converter.py
+```
+
+框架启动时自动扫描插件目录并加载其中的模块与适配器（与 entry-point 安装包同等待遇：启用状态、配置声明、热更新、卸载清理全部一致）：
+
+- **识别规则**：包目录（含 `__init__.py`）或单 `.py` 文件均可；优先识别 `Main` 命名类，否则取插件内首个 `BaseAdapter` / `BaseModule` 子类
+- **同名覆盖**：本地插件与 PyPI 安装的适配器同名时，本地插件优先（便于覆盖调试）
+- **热重载**：`sdk.enable_plugin_hot_reload()` 开启的插件目录监控同样覆盖适配器；适配器代码级热重载将在 2.11 提供（当前版本修改适配器代码后需重启框架生效）
+
+### 从本地插件到发布
+
+本地验证完成后，用 `pack` 子命令把插件一键转换为可发布的标准项目（交互式选择插件、补全元信息，生成含 entry-point 的 pyproject）：
+
+```bash
+epsdk create pack
+# 选择插件目录中的插件 → 输入项目名/描述/作者 → 生成 MyAdapter/ 项目目录
+cd MyAdapter
+pip install -e .   # 转为标准安装；随后按发布流程上传 PyPI
+```
+
+> **提示**：转换完成后建议移除 `plugins/` 中的原件，避免本地插件与安装包重复加载（两者同名时本地优先，会让你误以为安装包生效）。
+
 ## 依赖声明（可选，2.8.0+）
+
 
 适配器可以声明对其它适配器或模块的依赖，实现适配器间联动与可选功能：
 
@@ -7403,6 +7552,9 @@ sdk.router.get_module_urls("MyModule")
 ### 适配器核心概念
 
 # 适配器核心概念
+
+> [!TIP]
+> **什么时候需要读这篇**：适配器开发路径内必读（BaseAdapter / SendDSL / 生命周期等核心机制的完整说明）。只想起步可先读 [适配器开发入门](getting-started.md)，遇到"为什么"层面的疑问再回到本篇查阅。
 
 了解 ErisPulse 适配器的核心概念是开发适配器的基础。
 
@@ -8553,6 +8705,10 @@ async def on_bot_offline(data):
 
 # SendDSL 详解
 
+> [!TIP]
+> **什么时候需要读这篇**：适配器开发路径内必读（发送 DSL）。不需要则跳过，不影响其它功能的使用。
+
+
 SendDSL 是 ErisPulse 适配器提供的链式调用风格的消息发送接口。
 
 ## 基本调用方式
@@ -9281,6 +9437,10 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消�
 
 # 适配器开发最佳实践
 
+> [!TIP]
+> **什么时候需要读这篇**：适配器骨架跑通后建议阅读（工程化最佳实践）。不需要则跳过，不影响其它功能的使用。
+
+
 本文档提供了 ErisPulse 适配器开发的最佳实践建议。
 
 ## Bot 状态管理与 Meta 事件
@@ -9932,6 +10092,10 @@ version = "2.0.0"  # 更新版本号
 
 # 事件转换器实现指南
 
+> [!TIP]
+> **什么时候需要读这篇**：适配器开发路径内必读（事件转换器）。不需要则跳过，不影响其它功能的使用。
+
+
 事件转换器 (Converter) 是适配器的核心组件之一，负责将平台原生事件转换为 ErisPulse 统一的 OneBot12 标准事件格式。
 
 ## Converter 职责
@@ -10309,6 +10473,10 @@ import time
 ### 发布与模块商店指南
 
 # 发布与模块商店指南
+
+> [!TIP]
+> **什么时候需要读这篇**：将作品发布到 PyPI / 模块商店时。不需要则跳过，不影响其它功能的使用。
+
 
 将你开发的模块或适配器发布到 ErisPulse 模块商店，让其他用户可以方便地发现和安装。
 
@@ -13733,6 +13901,68 @@ send.To("group", "g123").At("123456").At("789012").Text("大家好")
 send.To("group", "g123").Reply("msg_123456").Text("收到")
 ```
 
+### 2.4 合并转发能力（`MergeForward`，可选）
+
+`MergeForward(nodes)` 是**可选的能力方法**：把多段内容打包为「合并转发 / 富文本折叠」形式发送，
+由适配器按平台能力决定最佳呈现。与 §1.1 的 `Forward(from_chat_id, message_id)`（转发**已有**消息）
+语义不同，二者并存。
+
+> **标准背景**：OneBot12 核心标准没有 node 消息段，也没有合并转发 API——"消息结点"是 OneBot v11
+> 生态（go-cqhttp 扩展）的实现层概念，v12 把这类平台特有能力下放给扩展机制。ErisPulse 的落地方式
+> 即扩展机制等价物：**不新增标准消息段，而是可选能力方法 + `list_sends` 运行时探测**——实现了
+> `MergeForward` 的适配器自动获得能力，未实现的调用方自动回退普通文本，模块零改动。
+
+**方法签名：**
+
+```python
+def MergeForward(self, nodes: List[Dict]) -> asyncio.Task:
+    """
+    发送合并转发 / 富文本折叠消息
+
+    :param nodes: 合并转发节点数组（go-cqhttp 扩展的 OneBot v11 节点格式）：
+        [
+            {
+                "type": "node",
+                "data": {
+                    "user_id": "10000",     # 展示用发送者 id
+                    "nickname": "QvQChat",  # 展示用发送者昵称
+                    "content": [            # 消息段数组，当前为 text 段
+                        {"type": "text", "data": {"text": "【1/3】标题\n正文…"}}
+                    ],
+                },
+            },
+        ]
+    :return: asyncio.Task，await 后返回标准响应格式
+    """
+```
+
+**实现要求：**
+
+1. **平台有原生合并转发**（OneBot11 系）：**必须**调用协议端专用端点
+   （`send_group_forward_msg` / `send_private_forward_msg`）——NapCat 等实现会拒绝
+   `send_msg` 携带的 node 段（retcode 1400）；专用端点失败时**可以**回退 `send_msg` 直发 node 段
+2. **平台无原生转发但有富文本**（云湖 / Telegram / Kook / Discord / Matrix 等）：
+   **应当**将节点渲染为平台的富文本折叠形态（HTML 折叠卡 / Card / Embed / blockquote 列表），
+   参考样式与逐适配器任务清单见 `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`
+3. **两者皆无**：**不得**实现本方法（更不得返回成功却把 node 字典当纯文本发出）——
+   不实现时 `list_sends` 不含 `MergeForward`，调用方自动回退普通文本
+4. **失败语义**：返回标准错误响应（`status: "failed"`）或抛出异常均可，调用方会回退纯文本发送，内容不丢失
+5. **不得**在 `MergeForward` 内部再调用 `Raw_ob12` 发送同样的 nodes（OneBot11 的 `Raw_ob12`
+   已内置纯 node 段自动路由，会成环）
+
+**调用方探测示例：**
+
+```python
+sends = adapter.list_sends(platform)
+if "MergeForward" in sends:
+    await adapter.Send.To("group", "123").MergedForward(nodes)
+else:
+    await adapter.Send.To("group", "123").Text(plain_text)
+```
+
+> 参考实现：`ErisPulse-OneBot11Adapter`（专用端点 → `send_msg` 回退）；渲染模板与各适配器任务清单见
+> `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`。
+
 ## 3. 平台特有方法命名
 
 **不推荐**在 Send 类中直接添加平台前缀方法。建议使用通用方法名或 `Raw_{协议}` 方法。
@@ -14014,6 +14244,12 @@ info = adapter.send_info("myplatform", "Form")
 - [ ] `File` 的文件名推导顺序符合 §2.1.3（显式 `filename` > URL basename > 路径 basename > 平台默认）
 - [ ] 平台的媒体限制（大小 / MIME / 时长）已在适配器文档声明（§2.1.4）
 - [ ] 不支持的媒体类型按 §2.1.5 降级阶梯处理：近缘类型降级或返回 `retcode=10002`，不抛异常、不静默丢弃
+
+### 合并转发（可选，见 §2.4）
+- [ ] 平台有原生合并转发时，`MergeForward` 走协议专用端点，失败回退 `send_msg`（OneBot11 系）
+- [ ] 平台无原生转发但有富文本时，`MergeForward` 渲染为平台折叠形态（HTML 卡 / Card / Embed / blockquote）
+- [ ] 两者皆无时**不实现** `MergeForward`，不返回成功却发出 node 字典纯文本
+- [ ] `MergeForward` 内部不再调 `Raw_ob12` 转发同样 nodes
 
 ### 反向转换
 - [ ] `Raw_ob12` **已实现**（必须，不可跳过）
@@ -14866,6 +15102,10 @@ if result["retcode"] == 10002:
 
 # 网络客户端
 
+> [!TIP]
+> **什么时候需要读这篇**：需要出站 HTTP / WebSocket 请求时。不需要则跳过，不影响其它功能的使用。
+
+
 ErisPulse 提供了统一的网络客户端，聚合了 HTTP 请求、WebSocket 连接和连接池管理。模块和适配器**必须优先使用**此客户端，而非自行导入 `aiohttp` / `httpx` / `requests` 等第三方库。
 
 ## 概述
@@ -15369,6 +15609,10 @@ class MyAdapter(BaseAdapter):
 
 # SQL 查询构建器
 
+> [!TIP]
+> **什么时候需要读这篇**：需要链式 SQL 查询或自定义存储后端时。不需要则跳过，不影响其它功能的使用。
+
+
 ErisPulse 的 Storage 模块提供链式调用风格的通用 SQL 查询构建器，支持自定义表的创建、查询、更新和删除操作。
 
 ## 架构设计
@@ -15810,6 +16054,10 @@ class MyStorage(BaseStorage):
 
 # 懒加载模块系统
 
+> [!TIP]
+> **什么时候需要读这篇**：使用懒加载模块或 activate_on 事件驱动激活时。不需要则跳过，不影响其它功能的使用。
+
+
 ErisPulse SDK 提供了强大的懒加载模块系统，允许模块在实际需要时才进行初始化，从而显著提升应用启动速度和内存效率。
 
 ## 概述
@@ -16042,6 +16290,10 @@ flowchart TD
 ### 生命周期管理
 
 # 生命周期管理
+
+> [!TIP]
+> **什么时候需要读这篇**：需要订阅框架生命周期事件（启动 / 加载 / 状态变化）时。不需要则跳过，不影响其它功能的使用。
+
 
 ErisPulse 提供统一的钩子/生命周期系统，用于监控系统各组件的运行状态，以及实现审计、统计、自定义逻辑等扩展功能。
 
@@ -16493,6 +16745,10 @@ async def _poll(self):
 ### 路由系统
 
 # 路由管理器
+
+> [!TIP]
+> **什么时候需要读这篇**：需要 HTTP / WebSocket / SSE 路由（含连接池广播）时。不需要则跳过，不影响其它功能的使用。
+
 
 ErisPulse 路由管理器提供统一的 HTTP 和 WebSocket 路由管理，支持多适配器路由注册和生命周期管理。底层通过抽象层封装（当前为 FastAPI + Uvicorn）
 
@@ -16967,6 +17223,10 @@ async def on_server_stop(event):
 
 # MessageBuilder 详解
 
+> [!TIP]
+> **什么时候需要读这篇**：构建复杂 / 多段消息时。不需要则跳过，不影响其它功能的使用。
+
+
 `MessageBuilder` 是 ErisPulse 提供的 OneBot12 标准消息段构建工具，用于构建结构化的消息内容，配合 `Send.Raw_ob12()` 使用。
 
 ## 导入方式
@@ -17154,6 +17414,10 @@ complex_msg = (
 ### Conversation 多轮对话
 
 # Conversation 多轮对话
+
+> [!TIP]
+> **什么时候需要读这篇**：需要多轮对话状态机与检查点恢复时。不需要则跳过，不影响其它功能的使用。
+
 
 `Conversation` 类提供了在同一会话中进行多轮交互的便捷方法，适合实现引导式操作、信息收集、对话式问答等场景。
 
@@ -17577,6 +17841,10 @@ async def chat_handler(event):
 
 # 交互会话系统
 
+> [!TIP]
+> **什么时候需要读这篇**：需要 wait_reply、多轮对话、定时提醒、会话互斥或链路追踪时。不需要则跳过，不影响其它功能的使用。
+
+
 > [!NOTE]
 > 本章内容需要 ErisPulse **2.8.0+**。
 
@@ -17626,6 +17894,13 @@ reply = await event.wait_reply("请输入金额:", regex=r"\d+\s*元", timeout=3
 # 会话级等待：群协作场景，任何群友回答均可
 reply = await event.wait_reply(session=True, prompt="哪位大佬帮忙答一下？")
 ```
+
+### 等待与命令的边界（命令穿透）
+
+等待期间收到**已注册命令**（如 `/cancel`）的消息时，默认放行给命令分发器执行、
+不作为回复消费（配置项 `ErisPulse.event.wait_reply.cmdpass`，`True` 则反转——
+消息一律作为回复）。判定文本口径与命令分发一致：`alt_message` 优先、
+缺失时回退消息段拼接（2.10.1 起纯 message 段适配器同样生效）。
 
 ### 等待会在什么时候被取消
 
@@ -17730,6 +18005,15 @@ elif which == 1:
 命中事件自动认领、权限复查与归属清理全部生效——不需要自己管任何 Future。
 {!--< /tips >!--}
 
+> [!NOTE]
+> 2.10.1 起 `select` 为**聚合等待**：全部期望合并为单条目 + 自定义命中判定，
+> 同键多路（如同一 user 挂两条不同 pattern）不再互相取消，任一路先命中即返回。
+> 回复文本的判定口径为 `alt_message` 优先 + 消息段回退（与命令分发一致）。
+>
+> 边界说明：`event.wait_for(...)` 直挂在适配器事件总线上，**不经过**中间件与
+> detail_type 条件过滤（身份准入由分发入口兜底）；需要完整管线的等待请用
+> `wait_reply` / `select`。
+
 ## 会话互斥：acquire / hold / get_owner_of
 
 归属权从"资源"走向"会话"——"这个用户当前正被谁占用"成为一等查询。
@@ -17820,6 +18104,10 @@ async with event.message_tx():
 
 # 模块间通信
 
+> [!TIP]
+> **什么时候需要读这篇**：需要跨模块调用（RPC）、服务契约、定向事件或冷启动回放时。不需要则跳过，不影响其它功能的使用。
+
+
 > [!NOTE]
 > 本章内容需要 ErisPulse **2.8.0+**。
 
@@ -17905,12 +18193,32 @@ async def translate(self, text, target_lang):
     ...
 ```
 
-需要精细控制（覆盖 docstring / 多语言）时用 dict 形态声明 description（支持 i18n 字典）：
+**参数提示**：调用方（尤其是 AI 智能体）需要知道每个参数的含义。不需要就什么都不写，
+提示自动取方法 docstring 的 **`:param:` 行**：
+
+```python
+async def render_card(self, html, width=800, height=0):
+    """渲染 HTML 为图片文件
+
+    :param html: 要渲染的 HTML 文本          ← 自动成为参数提示
+    :param width: 画布宽度像素，0 为按内容自适应
+    :param height: 画布高度像素，0 为按内容自适应
+    """
+```
+
+需要精细控制（覆盖 docstring / 多语言）时用 dict 形态声明 description 与 parameters
+（均支持 i18n 字典；`parameters` 按**参数**与 docstring 合并，单参数内显式声明优先，
+声明了签名中不存在的参数会被过滤）：
 
 ```python
 services=[
     {"name": "translate", "description": "把文本翻译成指定语言"},
     {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "摘要对话"}},
+    {
+        "name": "render_card",
+        "description": "渲染 HTML 为图片文件",
+        "parameters": {"html": "HTML 文本", "width": "宽度像素，0 为自适应"},
+    },
 ]
 ```
 
@@ -17919,17 +18227,20 @@ services=[
 ```python
 sdk.module.services()
 # {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
-#            'description': '把文本翻译成指定语言'}]}
+#            'description': '把文本翻译成指定语言',
+#            'parameters': {'session_id': '会话 ID', 'n': '返回条数'}}]}
 
 sdk.module.services("Chat")   # 仅查询指定模块
 ```
 
 - 只列出**显式声明** `meta.services` 的模块（未声明模块不出现在目录中）
-- 每个服务带方法签名字符串（`inspect.signature` 提取）与介绍文本
+- 每个服务带方法签名字符串（`inspect.signature` 提取）、介绍文本与参数提示
+- **懒加载模块同样进入目录**（服务发现先于加载发生）——调用方可据此决定是否
+  `call()` 唤醒目标模块
 - 同时进入拓扑：`sdk.module.get_topology()` 的各模块条目带 `services` 字段
 
 {!--< tips >!--}
-**MCP 化路线**：服务目录（名称 + 签名 + 描述）即 MCP tool 的形状——
+**MCP 化路线**：服务目录（名称 + 签名 + 描述 + 参数提示）即 MCP tool 的形状——
 每个服务天然长成 ``{"name", "description", "parameters"}``。
 未来框架可把 ``services()`` 直接暴露为 MCP server 端点，让 AI 发现并调用模块能力；
 ``scope.actions.call`` 审计天然成为 AI 调用的安全闸口。
@@ -18047,6 +18358,10 @@ event_dedupe = true   # 默认开启；测试环境固定 id 合成事件可关�
 ### 国际化（i18n）系统
 
 # 国际化 (i18n) 系统
+
+> [!TIP]
+> **什么时候需要读这篇**：需要多语言文案、翻译注册或语言检测时。不需要则跳过，不影响其它功能的使用。
+
 
 ErisPulse v2.5.0 起内置了完整的国际化支持。框架核心及 CLI 界面均可根据您的系统语言自动切换显示文本，也支持外部模块注册自己的翻译。
 
@@ -18647,6 +18962,10 @@ CLI 拥有**独立**的国际化模块（`ErisPulse.CLI.i18n`），与框架核�
 
 # 作用域（scope）
 
+> [!TIP]
+> **什么时候需要读这篇**：需要控制模块可用性、事件准入或出站动作限制时。不需要则跳过，不影响其它功能的使用。
+
+
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
@@ -19083,6 +19402,10 @@ topology = sdk.get_topology()
 
 # 归属权（owner）系统
 
+> [!TIP]
+> **什么时候需要读这篇**：排查资源泄漏、理解卸载清理链路或声明归属资源时。不需要则跳过，不影响其它功能的使用。
+
+
 归属权是模块"即插即用"的基石：模块在加载期间注册的一切框架资源自动记名，
 卸载/禁用时按记名一键回收——模块作者只需声明资源，无需手写清理逻辑。
 
@@ -19404,6 +19727,10 @@ class CronModule(BaseModule):
 
 # 影子模块与灰度转正
 
+> [!TIP]
+> **什么时候需要读这篇**：需要灰度发布——新版本并行试运行、行为对比与转正回滚时。不需要则跳过，不影响其它功能的使用。
+
+
 影子 = 同一模块的**新版本**，以独立 owner（如 `roll_shadow`）与线上旧版
 并存试运行：它收到真实事件的**副本**、其出站被**拦截记账**而非真正发出——
 在 `shadow_diff` 里对比两个版本的行为，确认无害后 `promote` 一键转正，
@@ -19487,6 +19814,10 @@ await sdk.module.dismiss_shadow("roll")   # 或：放弃影子
 ### 启动流程与手动控制
 
 # 启动流程与手动控制
+
+> [!TIP]
+> **什么时候需要读这篇**：需要手动驱动启动链路、定制启动顺序或排查启动失败时。不需要则跳过，不影响其它功能的使用。
+
 
 ErisPulse 的 `await sdk.run()` / `await sdk.init()` 把一整条启动链路封装成了"一行代码"。但当你需要完全自定义启动流程（例如部分加载、动态注册、热插拔、注入自定义加载策略）时，就需要了解这条链路内部到底发生了什么、以及如何手动驱动每一步。
 

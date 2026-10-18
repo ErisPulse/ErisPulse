@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "cb8cf510ba50db85b476d3de3362a9fc",
-  "file_hash": "cb8cf510ba50db85b476d3de3362a9fc",
-  "translated_at": "2026-10-03T14:20:24.854238",
+  "hash": "eb87e6eb87f506aa3705665540c1736d",
+  "file_hash": "eb87e6eb87f506aa3705665540c1736d",
+  "translated_at": "2026-10-16T15:23:34.549348",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -30,8 +30,8 @@
       "translation": "## 反向代理\n\n如果需要透過 Nginx 等反向代理公開 Dashboard：\n\n```nginx\nserver {\n    listen 80;\n    server_name bot.example.com;\n\n    location / {\n        proxy_pass http://127.0.0.1:8000;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n    }\n\n    # WebSocket 支援（Dashboard 實時事件流需要）\n    location /Dashboard/ws {\n        proxy_pass http://127.0.0.1:8000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n    }\n}\n```\n\nSSL 可使用 Let's Encrypt：\n\n```bash\nsudo certbot --nginx -d bot.example.com\n```"
     },
     {
-      "hash": "7e444a39202a9c8f2054040bd5af42d9",
-      "translation": "## 手動部署（pip）\n\n如果不使用 Docker，也可以手動部署。\n\n### 生產環境配置\n\n```toml\n# config/config.toml\n\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\n\n[ErisPulse.logger]\nlevel = \"INFO\"\nlog_files = [\"app.log\"]\nmemory_limit = 5000\n\n[ErisPulse.framework]\nenable_lazy_loading = true\n```\n\n### systemd (Linux)\n\n建立 `/etc/systemd/system/erispulse-bot.service`：\n\n```ini\n[Unit]\nDescription=ErisPulse Bot\nAfter=network.target\n\n[Service]\nType=simple\nUser=bot\nWorkingDirectory=/opt/erispulse-bot\nExecStart=/opt/erispulse-bot/venv/bin/epsdk run main.py\nRestart=always\nRestartSec=5\nStandardOutput=journal\nStandardError=journal\n\n[Install]\nWantedBy=multi-user.target\n```\n\n管理：\n\n```bash\nsudo systemctl daemon-reload\nsudo systemctl start erispulse-bot\nsudo systemctl enable erispulse-bot\nsudo journalctl -u erispulse-bot -f\n```\n\n### Supervisor\n\n建立 `/etc/supervisor/conf.d/erispulse-bot.conf`：\n\n```ini\n[program:erispulse-bot]\ncommand=/opt/erispulse-bot/venv/bin/python -m ErisPulse run main.py\ndirectory=/opt/erispulse-bot\nuser=bot\nautostart=true\nautorestart=true\nstderr_logfile=/var/log/erispulse-bot/err.log\nstdout_logfile=/var/log/erispulse-bot/out.log\n```"
+      "hash": "179fafa0e0e23fbb1a0dc0aaadc1183a",
+      "translation": "## 手動部署（pip）\n\n如果不使用 Docker，也可以手動部署。\n\n### 生產環境配置\n\n```toml\n# config/config.toml\n\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\n\n[ErisPulse.logger]\nlevel = \"INFO\"\nlog_files = [\"app.log\"]\nmemory_limit = 5000\n\n[ErisPulse.framework]\nenable_lazy_loading = true\n```\n\n### systemd (Linux)\n\n建立 `/etc/systemd/system/erispulse-bot.service`：\n\n```ini\n[Unit]\nDescription=ErisPulse Bot\nAfter=network.target\n\n[Service]\nType=simple\nUser=bot\nWorkingDirectory=/opt/erispulse-bot\nExecStart=/opt/erispulse-bot/venv/bin/epsdk run main.py\nRestart=always\nRestartSec=5\nStandardOutput=journal\nStandardError=journal\n\n[Install]\nWantedBy=multi-user.target\n```\n\n管理：\n\n```bash\nsudo systemctl daemon-reload\nsudo systemctl start erispulse-bot\nsudo systemctl enable erispulse-bot\nsudo journalctl -u erispulse-bot -f\n```\n\n### Supervisor\n\n建立 `/etc/supervisor/conf.d/erispulse-bot.conf`：\n\n```ini\n[program:erispulse-bot]\ncommand=/opt/erispulse-bot/venv/bin/python -m ErisPulse run main.py\ndirectory=/opt/erispulse-bot\nuser=bot\nautostart=true\nautorestart=true\nstderr_logfile=/var/log/erispulse-bot/err.log\nstdout_logfile=/var/log/erispulse-bot/out.log\n```\n\n### uv tool 分離部署（CLI 與項目環境隔離）\n\n`uv tool install` 將 `epsdk` 安裝為**獨立的工具環境**，CLI 自身與項目依賴徹底隔離：升級 CLI 不會觸碰項目 `.venv`，項目依賴變動也不會影響 CLI。\n\n```bash\n# 1. 全域安裝 CLI（自動暴露 epsdk / ep 命令）\nuv tool install ErisPulse\n\n# 2. 項目內只放機器人依賴（.venv 由 uv 管理）\ncd /opt/erispulse-bot\nuv add erispulse ErisPulse-Adapter-Yunhu   # 按需追加適配器\n\n# 3. 用 CLI 運行（自動探測並使用項目 .venv 中的解釋器）\nepsdk run main.py\n```\n\n行為要點：\n\n- `epsdk run` 的目標解釋器解析順序：`ERISPULSE_PYTHON` 環境變數 → 項目 `.venv` → 當前解釋器；工具環境本身只承載 CLI，組件（適配器/模組）應裝進項目 `.venv`\n- `epsdk install` / `uninstall` / `upgrade` / `list` 同樣作用於項目 `.venv`，不會污染工具環境\n- 升級 CLI：`uv tool upgrade ErisPulse`（或直接 `epsdk self-update`，uv tool 環境下自動改走 `uv tool upgrade`）；升級項目依賴：在項目目錄執行 `uv sync` / `uv add`，兩者互不影響\n- 伺服器場景下工具環境由 uv 統一管理（`uv tool list` 查看、`uv tool upgrade --all` 批量升級），無需手動維護全域 pip 包\n- 若在無項目的目錄用 `uv run epsdk ...` 執行，會落入**一次性隔離環境**（安裝的組件不持久化）；伺服器上請始終用 `epsdk` 直接呼叫，或先 `cd` 進項目目錄"
     },
     {
       "hash": "b634cb064eb3e5689c793eb3ae87b330",
@@ -42,8 +42,8 @@
       "translation": "## 多實例部署\n\n執行多個機器人實例時：\n\n1. 每個實例使用獨立的專案目錄和 `docker-compose.yml`\n2. 使用不同的端口號：`ERISPULSE_PORT=8001`\n3. 使用不同的容器名：`container_name: erispulse-bot2`"
     },
     {
-      "hash": "0de22d03bc9c01297f2b04f088e120a3",
-      "translation": "## 更新與維護\n\n### Docker 方式\n\n```bash\n# 拉取最新鏡像\ndocker compose pull\n\n# 重啟使用新鏡像\ndocker compose up -d\n```\n\n### pip 方式\n\n```bash\nepsdk self-update\nepsdk upgrade\n```\n\n### 運行時熱重載伺服器配置\n\n修改監聽地址 / 端口 / SSL 證書後無需重啟進程，在任意協程中呼叫 `router.reload()`：\n\n```python\nawait sdk.router.reload(port=9000)                                # 更換端口\nawait sdk.router.reload(ssl_cert=new_pem, ssl_key=new_key)        # 熱更換證書（證書續期場景）\nawait sdk.router.reload(host=\"0.0.0.0\", port=9000)                # 缺省參數沿用當前配置\n```\n\n- 重用同一 FastAPI 應用，模組註冊的 HTTP / WebSocket / SSE 路由全部保留\n- 先驗證新配置（證書可構建、端口可用）再切換；失敗時以舊配置恢復服務並返回 `False`，\n  保證返回 `False` = 舊服務保持可用\n- 伺服器未運行時返回 `False`（首次啟動請使用 `sdk.router.start()`）\n\n### 備份\n\n定期備份 `config/` 目錄：\n\n```bash\n# Docker 部署\ntar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/\n\n# 或在 Dashboard 中使用「備份」功能導出\n```"
+      "hash": "949c67b1bfcb2f4f89fcbb0d5a4fc186",
+      "translation": "## 更新與維護\n\n### Docker 方式\n\n```bash\n# 拉取最新鏡像\ndocker compose pull\n\n# 重啟使用新鏡像\ndocker compose up -d\n```\n\n### pip 方式\n\n```bash\nepsdk self-update\nepsdk upgrade\n```\n\n### uv tool 方式\n\n```bash\n# 升級 CLI 工具環境\nuv tool upgrade ErisPulse\n\n# 升級專案相依性（於專案目錄內執行）\nuv sync\n```\n\n### 運行時熱重載伺服器設定\n\n修改監聽位址 / 端口 / SSL 證書後無需重新啟動程序，在任意協程中呼叫 `router.reload()`：\n\n```python\nawait sdk.router.reload(port=9000)                                # 更改端口\nawait sdk.router.reload(ssl_cert=new_pem, ssl_key=new_key)        # 熱更換證書（證書續期場景）\nawait sdk.router.reload(host=\"0.0.0.0\", port=9000)                # 缺省參數沿用當前設定\n```\n\n- 重用同一 FastAPI 應用，模組註冊的 HTTP / WebSocket / SSE 路由全部保留\n- 先驗證新設定（證書可建立、端口可用）再切換；失敗時以舊設定恢復服務並回傳 `False`，\n  保證回傳 `False` = 舊服務保持可用\n- 伺服器未運行時回傳 `False`（首次啟動請使用 `sdk.router.start()`）\n\n### 備份\n\n定期備份 `config/` 目錄：\n\n```bash\n# Docker 部署\ntar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/\n\n# 或在 Dashboard 中使用「備份」功能匯出\n```"
     }
   ]
 }

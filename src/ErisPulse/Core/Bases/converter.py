@@ -55,8 +55,17 @@ class BaseConverter:
 
     @staticmethod
     def at(user_id: str) -> dict:
-        """构造 @ 消息段"""
-        return {"type": "at", "data": {"user_id": user_id}}
+        """
+        构造 @ 消息段
+
+        方法名保留 ``at`` 别名，产出为 OB12 规范的 ``mention`` 段——
+        此前产出 ``{"type": "at"}``（OB11 遗留形态），框架全部 mention
+        判定（must_at_bot / has_mention / on_at_message）均不识别该形态。
+        """
+        return {"type": "mention", "data": {"user_id": user_id}}
+
+    # mention 为规范名别名（2.10.1 起推荐显式使用）
+    mention = at
 
     @staticmethod
     def image(file: str) -> dict:

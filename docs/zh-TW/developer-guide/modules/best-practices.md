@@ -1,5 +1,8 @@
 # 模組開發最佳實踐
 
+> [!TIP]  
+> **何時需要閱讀本文**：寫完第一個模組後建議閱讀（工程化最佳實踐）。不需要則跳過，不會影響其他功能的使用。
+
 本文檔提供了 ErisPulse 模組開發的最佳實踐建議。
 
 ## 模組設計
@@ -90,9 +93,9 @@ class MyModule(BaseModule):
         )
 ```
 
-詳細用法見 [i18n 文檔](../../advanced/i18n.md#推薦寫法通過-i18nclass-宣告翻譯鍵-v270)。
+詳細用法見 [i18n 文檔](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
 
-## 異步編程
+## 異步程式設計
 
 ### 1. 使用異步庫
 
@@ -113,7 +116,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# 不要使用 aiohttp 直接導入（不便於框架統一管理）
+# 不要使用 aiohttp 直接匯入（不便於框架統一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -133,10 +136,10 @@ class MyModule(BaseModule):
 ### 2. 正確的異步操作
 
 ```python
-from ErisPulse.Core.Event import Event  # event: Event 注解可獲得 IDE 补全
+from ErisPulse.Core.Event import Event  # event: Event 注解可獲得 IDE 補全
 
 async def handle_command(self, event: Event):
-    # 需要等待結果的耗時操作：直接 await（生命周期明確）
+    # 需要等待結果的耗時操作：直接 await（生命週期明確）
     result = await self._long_operation()
 
 async def on_load(self, event: dict):
@@ -145,12 +148,12 @@ async def on_load(self, event: dict):
     self.spawn(self._poll())
 ```
 
-> [!NOTE]
+> [!NOTE]  
 > 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**）。**2.8.3 起**裸 `asyncio.create_task`
-> 也會自動隱式歸屬模組（Task Factory 自動登記，卸載時兜底取消，不再泄漏 `self` 引用）；
-> `self.spawn()` 仍是推薦寫法——支援非主循環線程調度回主循環、顯式 `owner=` 指定。
-> **2.8.3 之前**的版本裸任務不歸屬、會持有 `self` 引用導致模組實例無法被回收
-> （熱重載泄漏），必須用 `self.spawn()`。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
+> 也會自動隱式歸屬模組（Task Factory 自動登記，卸載時兜底取消，不再泄漏 `self` 引用）；  
+> `self.spawn()` 仍是推薦寫法——支援非主循環執行緒調度回主循環、顯式 `owner=` 指定。  
+> **2.8.3 之前的版本**裸任務不歸屬、會持有 `self` 引用導致模組實例無法被回收  
+> （熱重載泄漏），必須用 `self.spawn()`。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。自動取消)。
 
 ### 3. 資源管理
 
@@ -176,7 +179,7 @@ async def info_command(event: Event):
     nickname = event.get_user_nickname()
     await event.reply(f"你好，{nickname}！")
 
-# 而非直接存取字典
+# 而非直接訪問字典
 @command("info")
 async def info_command(event: Event):
     user_id = event["user_id"]  # 不夠清晰，容易出錯
@@ -201,7 +204,7 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# 高頻觸發（每條訊息都要處理）或啟動時就必須就緒的模組：立即加載
+# 高頻觸發（每條訊息都要處理）或啟動時必須就緒的模組：立即加載
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -214,7 +217,7 @@ class UtilityModule(BaseModule):
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> `activate_on` 的完整語法（事件三形式 / 命令簡寫與 dict 聲明 / help 回退鏈）見
+> `activate_on` 的完整語法（事件三形式 / 命令簡寫與 dict 聲明 / help 回退鏈）見  
 > [懶加載模組系統](../../advanced/lazy-loading.md#事件驅動懶激活activate_on)。
 
 ### 3. 事件處理器註冊
@@ -233,9 +236,9 @@ async def on_load(self, event):
     # 不需要手動註銷，框架會自動處理
 ```
 
-## 工具模組：托管别人东西时要接住"卸载通知"
+## 工具模組：托管別人東西時要接住"卸載通知"
 
-**什么时候需要**：你的模組替其他模組保管东西（定時回調、訂閱者、連接、快取條目……）。這些引用在對方模組卸載後如果一直不丟棄，對方實例就永遠無法被回收——這是工具模組最常見的記憶體泄漏來源。
+**何時需要**：你的模組替其他模組保管東西（定時回調、訂閱者、連接、快取條目……）。這些引用在對方模組卸載後如果一直不丟棄，對方實例就永遠無法被回收——這是工具模組最常見的記憶體洩漏來源。
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -260,13 +263,13 @@ class MyToolModule(BaseModule):
 
 - 對方模組被**卸載 / 禁用**（或適配器關閉）時，`_drop("對方模組名")` 一定會被呼叫
 - **呼叫方識別全自動**：對方在 `on_load` 裡直接調 `sdk.MyToolModule.register(...)`，或經 `sdk.module.call("MyToolModule", "register", ...)` 調用，都能正確識別是誰
-- 不用操心時機——鉤子在框架清理鏈內觸發，早於泄漏診斷，不會誤報
+- 不用操心時機——鉤子在框架清理鏈內觸發，早於洩漏診斷，不會誤報
 
-不接入的後果：對方 `purge` 彻底卸載時實例無法回收（泄漏診斷報"不可回收"）；若對方自己也不在 `on_unload` 裡向你註銷，泄漏就是永久性的。
+不接入的後果：對方 `purge` 彻底卸載時實例無法回收（洩漏診斷報"不可回收"）；若對方自己也不在 `on_unload` 裡向你註銷，洩漏就是永久性的。
 
-**普通模組（不托管别人东西）不需要關心這個**——框架資源（命令 / 處理器 / 路由 / 後台任務……）的卸載清理是全自動的。
+**普通模組（不托管別人東西）不需要關心這個**——框架資源（命令 / 處理器 / 路由 / 後台任務……）的卸載清理是全自動的。
 
-> 觸發時機、呼叫方識別規則、超時與容錯等細節見
+> 觸發時機、呼叫方識別規則、超時與容錯等細節見  
 > [歸屬權系統 · 工具模組指南](../../advanced/ownership.md#工具模組指南托管其它模組的句柄)。
 
 ## 錯誤處理
@@ -310,7 +313,7 @@ async def fetch_with_timeout(self, url, timeout=30):
         raise
 ```
 
-## 存儲系統
+## 儲存系統
 
 ### 1. 使用事務
 
@@ -367,14 +370,14 @@ self.logger.error(f"處理事件失敗: {e}", exc_info=True)
 self.logger.critical("資料庫連線失敗，機器人無法正常運行")
 ```
 
-### 2. 構造化日誌
+### 2. 條件化日誌
 
 ```python
-# 使用構造化日誌，便於解析
+# 使用條件化日誌，便於解析
 self.logger.info(f"處理請求: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
-# ❌ 使用非構造化日誌
-self.logger.info(f"處理請求了，來自使用者 {user_id}，用時 {duration} 毫秒")
+# ❌ 使用非條件化日誌
+self.logger.info(f"處理請求了，來自用戶 {user_id}，用時 {duration} 毫秒")
 ```
 
 ## 性能優化
@@ -410,7 +413,7 @@ async def process_message(self, event: Event):
 
 # ❌ 阻塞操作
 async def process_message(self, event: Event):
-    # 同步操作，阻塞事件迴圈
+    # 同步操作，阻塞事件循環
     result = self._sync_process(event)
 ```
 
@@ -435,7 +438,7 @@ class MyModule(BaseModule):
 
     def check_api_key(self):
         if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("請在 config.toml 中設定有效的 API 密鑰")
+            raise ValueError("請在 config.toml 中配置有效的 API 密鑰")
 
 # ❌ 敏感資料硬編碼
 class MyModule(BaseModule):
@@ -499,15 +502,15 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-遵循語意化版本：
-- MAJOR.MINOR.PATCH
-- 主版本：不相容的 API 變更
-- 次版本：向下相容的功能新增
-- 修訂號：向下相容的問題修正
+遵循語意化版本：  
+- MAJOR.MINOR.PATCH  
+- 主版本：不相容的 API 變更  
+- 次版本：向下兼容的功能新增  
+- 修訂號：向下兼容的問題修正  
 
 ### 2. README 頭部
 
-`epsdk create` 生成的 README 已內建 ErisPulse 頭部標識（Logo + 徽章行）。兩種推薦模式：
+`epsdk create` 產生的 README 已內建 ErisPulse 頭部標識（Logo + 徽章行）。兩種推薦模式：
 
 **模式 A — 僅 ErisPulse Logo（預設）：**
 
@@ -548,6 +551,6 @@ version = "1.0.0"
 
 ## 相關文件
 
-- [模組開發入門](getting-started.md) - 創建第一個模組
-- [模組核心概念](core-concepts.md) - 理解模組架構
+- [模組開發入門](getting-started.md) - 創建第一個模組  
+- [模組核心概念](core-concepts.md) - 理解模組架構  
 - [Event 包裝類](event-wrapper.md) - 事件處理詳解

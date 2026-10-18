@@ -105,6 +105,21 @@ create 命令
 ---
 
 
+##### `_create_pack(args)`
+
+将本地插件（plugins/ 目录）转换为可发布的标准项目结构
+
+交互式选择插件目录中的插件，识别类型（模块/适配器）后输入包元信息，
+输出含 pyproject.toml（entry-point 按插件类型生成）与插件源码的完整
+项目目录，可直接 ``pip install -e .`` 或打包发布。
+
+- **args** (`Any`): 解析后的命令参数对象
+
+**返回值** (`None`): 无返回值
+
+---
+
+
 ##### `_create_module(args, name: str)`
 
 创建 Module 项目脚手架
@@ -123,6 +138,18 @@ create 命令
 
 - **args** (`Any`): 解析后的命令参数对象
 - **name** (`str`): 模块名称
+
+**返回值** (`None`): 无返回值
+
+---
+
+
+##### `_create_adapter_local(args, name: str)`
+
+创建本地适配器插件（--local）：生成 plugins/ 目录结构，免打包安装
+
+- **args** (`Any`): 解析后的命令参数对象
+- **name** (`str`): 适配器名称
 
 **返回值** (`None`): 无返回值
 

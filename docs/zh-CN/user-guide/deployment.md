@@ -245,6 +245,30 @@ stderr_logfile=/var/log/erispulse-bot/err.log
 stdout_logfile=/var/log/erispulse-bot/out.log
 ```
 
+### uv tool 分离部署（CLI 与项目环境隔离）
+
+`uv tool install` 将 `epsdk` 安装为**独立的工具环境**，CLI 自身与项目依赖彻底隔离：升级 CLI 不会触碰项目 `.venv`，项目依赖变动也不会影响 CLI。
+
+```bash
+# 1. 全局安装 CLI（自动暴露 epsdk / ep 命令）
+uv tool install ErisPulse
+
+# 2. 项目内只放机器人依赖（.venv 由 uv 管理）
+cd /opt/erispulse-bot
+uv add erispulse ErisPulse-Adapter-Yunhu   # 按需追加适配器
+
+# 3. 用 CLI 运行（自动探测并使用项目 .venv 中的解释器）
+epsdk run main.py
+```
+
+行为要点：
+
+- `epsdk run` 的目标解释器解析顺序：`ERISPULSE_PYTHON` 环境变量 → 项目 `.venv` → 当前解释器；工具环境本身只承载 CLI，组件（适配器/模块）应装进项目 `.venv`
+- `epsdk install` / `uninstall` / `upgrade` / `list` 同样作用于项目 `.venv`，不会污染工具环境
+- 升级 CLI：`uv tool upgrade ErisPulse`（或直接 `epsdk self-update`，uv tool 环境下自动改走 `uv tool upgrade`）；升级项目依赖：在项目目录执行 `uv sync` / `uv add`，两者互不影响
+- 服务器场景下工具环境由 uv 统一管理（`uv tool list` 查看、`uv tool upgrade --all` 批量升级），无需手工维护全局 pip 包
+- 若在无项目的目录用 `uv run epsdk ...` 执行，会落入**一次性隔离环境**（安装的组件不持久化）；服务器上请始终用 `epsdk` 直接调用，或先 `cd` 进项目目录
+
 ## 安全建议
 
 1. **设置 Dashboard 令牌**：使用强随机令牌，不要使用默认值
@@ -279,6 +303,16 @@ docker compose up -d
 ```bash
 epsdk self-update
 epsdk upgrade
+```
+
+### uv tool 方式
+
+```bash
+# 升级 CLI 工具环境
+uv tool upgrade ErisPulse
+
+# 升级项目依赖（项目目录内执行）
+uv sync
 ```
 
 ### 运行时热重载服务器配置

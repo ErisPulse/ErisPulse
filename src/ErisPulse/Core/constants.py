@@ -62,6 +62,13 @@ SERVER_SHUTDOWN_TIMEOUT_SECS: Final[float] = 5.0
 # 超时视为启动失败并回退旧配置（修改影响：过大延长失败感知，过小误判慢启动）
 ROUTER_RELOAD_STARTUP_TIMEOUT_SECS: Final[float] = 10.0
 
+# 内嵌 uvicorn 所依赖的已验证版本范围（与 pyproject.toml 的依赖约束保持一致）。
+# 使用位置: Core/router.py -> _create_uvicorn_server() 接口缺失告警的文案。
+# 修改影响: 内嵌启动走私有接口 Server._serve()（0.34.0 引入），兼容性按能力
+# 探测判定（不比较版本）；缺失时经此文案告警并回退公开 serve()。收紧
+# pyproject 上限时需同步本值。
+UVICORN_COMPAT_RANGE: Final[str] = ">=0.35.0,<1.0"
+
 # ==============================================================================
 # 配置键模板
 #
@@ -1137,6 +1144,12 @@ CLEANUP_CALLBACK_TIMEOUT_SECS: Final[float] = 10.0
 # 修改影响: 必须与 plugin_folder.py 写入的 source 值保持一致。
 MODULE_SOURCE_PLUGIN_FOLDER: Final[str] = "plugin_folder"
 
+# 适配器注册来源标识：本地插件文件夹（plugins/ 目录）。
+# 使用位置: loaders/plugin_folder.py（构造 adapterInfo meta.source）与
+# loaders/adapter.py（热重载路由：仅本地插件适配器可经 reload_adapter 热重载）。
+# 修改影响: 必须与 plugin_folder.py 写入的 source 值保持一致。
+ADAPTER_SOURCE_PLUGIN_FOLDER: Final[str] = "adapter_plugin_folder"
+
 # ==============================================================================
 # 进程 / 版本 / 日志展示常量
 #
@@ -1205,6 +1218,7 @@ __all__ = [
     "ADAPTER_EVENT_MIXIN_PLATFORM",
     "ADAPTER_RETRY_BACKOFF_INTERVALS",
     "ADAPTER_RETRY_FIXED_DELAY_SECS",
+    "ADAPTER_SOURCE_PLUGIN_FOLDER",
     "ADAPTER_STATUS_DISABLED",
     "ADAPTER_STATUS_SKIPPED_DEPENDENCY",
     "ADAPTER_STATUS_STARTED",
@@ -1413,6 +1427,7 @@ __all__ = [
     "UNINIT_SETTLE_DELAY_SECS",
     "UNKNOWN_PLATFORM",
     "UNKNOWN_VERSION",
+    "UVICORN_COMPAT_RANGE",
     "WILDCARD_IPV4",
     "WILDCARD_IPV6",
     "WS_CLOSE_INTERNAL_ERROR",

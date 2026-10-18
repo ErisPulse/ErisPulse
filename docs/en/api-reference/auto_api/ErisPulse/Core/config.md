@@ -10,7 +10,7 @@ ErisPulse 配置中心
 集中管理所有配置项，避免循环导入问题
 提供自动补全缺失配置项的功能
 添加内存缓存和延迟写入机制以提高性能
-基于 tomlkit 实现注释保留写入：配置文件中的注释与键顺序在任何框架写入后均不丢失
+基于 tomlclass（无损 TOML 编辑引擎）实现注释保留写入：配置文件中的注释与键顺序在任何框架写入后均不丢失
 配置写入采用"唯一临时文件 + fsync + 原子替换"（``os.replace``）：
 进程被杀（OOM / SIGKILL）或断电时磁盘上的配置文件要么是完整旧内容、要么是完整新内容，
 不会出现空文件或半写状态；临时文件名按进程唯一，多实例共享配置目录时不再互相争抢踩踏
@@ -105,6 +105,23 @@ ConfigManager 类提供相关功能。
 自动重载缓存并发射 ``config.updated`` 生命周期事件。
 
 **内部方法**
+
+---
+
+
+##### `stop_all_watchers() -> int`（classmethod）
+
+停止全部配置监视线程（向所有实例发出停止信号并提前唤醒）
+
+框架 uninit 链与测试会话收尾的**确定性关停入口**：显式调用后 watcher
+至多等一个轮询周期自然退出，不再依赖解释器退出阶段的兜底钩子
+（自由线程构建下收尾期参与锁竞争曾导致进程退出挂死）。
+
+**返回值**: 发出停止信号的实例数（幂等，重复调用返回 0）
+
+> **提示**
+> `threading._register_atexit` 的解释器退出兜底仍保留，本方法是它的
+> 提前显式形态
 
 ---
 
@@ -227,31 +244,15 @@ POSIX 下额外 fsync 配置目录，尽力保证断电后替换结果不回退�
 ---
 
 
-##### `_set_doc_path(doc: Any, keys: list[str], value: Any) -> None`（staticmethod）
-
-在 tomlkit 文档树中按点分路径写入值
-
-中间层节点缺失或非表时以空表替换（与 dict 语义一致）；
-叶子写入保留既有注释与顺序，新键追加至所在节末尾。
-
-- **doc** (`tomlkit`): 文档/表对象
-- **keys**: 点分路径拆分后的键列表
-- **value**: 待写入的值（plain dict 会转换为标准 table）
-
-**内部方法**
-
----
-
-
 ##### `_delete_doc_path(doc: Any, keys: list[str]) -> None`（staticmethod）
 
-在 tomlkit 文档树中按点分路径删除键
+在无损文档树中按点分路径删除键
 
 中间层缺失或非表时视为已删除（幂等）；仅触碰目标键所在行，
 文件其余内容与注释保持不变。删除子表的最后一个键后，空表头
 原样保留（与后续重设同名键的行为兼容）。
 
-- **doc** (`tomlkit`): 文档/表对象
+- **doc** (`tomlclass`): 文档/表对象
 - **keys**: 点分路径拆分后的键列表
 
 **内部方法**
@@ -267,11 +268,13 @@ TOML 没有 null：``setConfig`` 置空语义的 ``None`` 在落盘时等价于
 "键不存在"——标量 ``None`` 返回 ``None``（由调用方跳过该键），
 字典内的 ``None`` 叶子递归剔除（其余键值原样保留，不改变顺序之外
 的内容）。列表内的 ``None`` 属于数组元素，剔除会改变元素位置，
-保持原样交由单键隔离丢弃并告警。
+显式拒绝（交由单键隔离丢弃并告警），不静默改写用户数据。
 
 - **value**: 待写入的值
 
-**返回值**: 可直接交给 tomlkit 的值；标量 ``None`` 原样返回
+**返回值**: 可直接交给 tomlclass 的值；标量 ``None`` 原样返回
+
+**异常**: `ValueError` - 嵌套数组中含 ``None`` 元素时抛出
 
 **内部方法**
 
@@ -294,12 +297,9 @@ TOML 没有 null：``setConfig`` 置空语义的 ``None`` 在落盘时等价于
 
 ##### `_doc_to_plain_dict(doc: Any) -> dict[str, Any]`（staticmethod）
 
-将 tomlkit 文档转为 plain dict 缓存
+将无损文档树转为 plain dict 缓存
 
-经 body 低层插入的条目不进入容器索引，直接 ``unwrap()`` 会丢失；
-渲染后重新解析可保证缓存与文件内容严格一致。
-
-- **doc** (`tomlkit`): 文档对象
+- **doc** (`tomlclass`): 文档对象
 
 **返回值** (`dict`): 纯字典形式的配置内容
 
@@ -313,7 +313,7 @@ TOML 没有 null：``setConfig`` 置空语义的 ``None`` 在落盘时等价于
 将待写入的配置刷新到文件
 
 使用文件锁确保多线程环境下的原子性操作。
-基于 tomlkit 在解析出的文档树上做增量修改后整体回写，
+基于无损文档树做增量修改后整体回写，
 文件中已有的注释与键顺序不因框架写入而丢失或重排。
 
 **内部方法**
@@ -513,7 +513,7 @@ config["ErisPulse"]["server"]["port"]
 与 ``setConfig(key, None)`` 的"置空但键仍在"不同：delete 会把键
 从配置文件中移除。存在性按当前读取视图判定（缓存 + 待写叠加，
 与 :meth:`getConfig` 同口径——待写整节内的键、已删除的键均如实
-判定）。落盘走 tomlkit 增量修改路径，文件其余内容与注释不受
+判定）。落盘走无损引擎增量修改路径，文件其余内容与注释不受
 影响；删除复用 ``config.set`` 事件广播（``new_value=None``），
 现有监听方（如适配器的 ``on_config_update``）零改动即可感知。
 
@@ -605,6 +605,8 @@ sdk.config.delConfig("OneBot.deprecated_key", immediate=True)
 用于适配器/模块首次生成配置模板：模板中的字段注释原样落盘。
 目标节已存在时不覆盖（由调用方保证仅在配置缺失时调用）；
 文件其余内容与注释不受影响。
+模板中相对命名的子表头（如嵌套 dataclass 生成的 ``[Nested]``）
+会自动重锚为 ``[<key>.Nested]``，与所在节保持父子关系。
 
 - **key** (`str`): 配置节键（支持点分路径，如 ``"MyAdapter"``）
 - **toml_text** (`str`): 模板 TOML 文本（仅键值与注释，不含节头）
@@ -617,6 +619,118 @@ sdk.config.delConfig("OneBot.deprecated_key", immediate=True)
 ```python
 sdk.config.setConfigTemplate("MyAdapter", '# API 令牌\ntoken = ""')
 ```
+
+---
+
+
+##### `get_field_comment(section_key: str, field_path: str) -> 'str | None'`
+
+读取配置文件中指定字段的说明注释（声明式配置"文件即文档"回读）
+
+声明式配置（ConfigClass）的 description 以注释形式落盘后，配置文件
+本身就是自带文档的数据源。覆盖两种注释布局：字段行尾注释（无损
+引擎注释 API 直读）与字段上方的独立注释行（模板生成器的 description
+布局，文本级扫描）。注释只存在于文件中（内存缓存是纯字典），故按需
+解析文件；文件缺失或损坏时返回 None（容错，不阻塞调用方主流程）。
+
+- **section_key** (`str`): 配置节键（点分路径，如 ``"MyAdapter"``）
+- **field_path** (`str`): 节内字段路径（点分，如 ``"token"`` 或
+
+    ``"Nested.inner"``）
+**返回值** (`str`): 注释文本（不含 ``#``）；无注释/键不存在/文件不可解析
+
+    时返回 None
+
+**示例**:
+
+```python
+sdk.config.get_field_comment("MyAdapter", "token")
+```
+
+---
+
+
+##### `_standalone_comment_above(text: str, section_key: str, field_path: str) -> 'str | None'`（staticmethod）
+
+文本级回读字段上方紧邻的独立注释行（模板生成器的 description 布局）
+
+定位目标节头后向下扫描：命中字段行（含被注释化的 required 字段，
+如 ``# token = ""``）时返回其上方积累的连续注释行（空格拼接）；
+遇到空行、其他字段行或其他被注释化的字段行则重置积累。
+
+- **text** (`str`): 配置文件全文
+- **section_key** (`str`): 配置节键（点分路径）
+- **field_path** (`str`): 节内字段路径（点分；嵌套字段按子表头定位）
+
+**返回值** (`str`): 注释文本；未命中返回 None
+
+**内部方法**
+
+---
+
+
+##### `_splice_config_section(text: str, key: str, template: str, parsed_template: Any) -> str`（staticmethod）
+
+将模板文本作为一节拼接到配置文本末尾（文本级拼接，注释零损耗）
+
+新节始终追加在文件末尾（TOML 中任意位置的节头都合法开启新表），
+现有内容不做任何重排。模板内相对命名的子表头按已知路径集合精确
+重锚到 ``<key>.`` 前缀下，仅重写行首精确匹配已知子表路径的行。
+
+- **text** (`str`): 现有配置文件文本（可为空/纯注释）
+- **key** (`str`): 目标节键（点分路径）
+- **template** (`str`): 模板 TOML 文本（不含节头）
+- **parsed_template** (`tomlclass`): 文档对象（模板解析结果，用于枚举子表路径）
+
+**返回值** (`str`): 拼接后的完整配置文本
+
+**内部方法**
+
+---
+
+
+##### `_anchor_template_headers(key: str, template: str, parsed_template: Any) -> str`（staticmethod）
+
+将模板中相对命名的子表头重锚到 ``<key>.`` 前缀下
+
+仅重写与已知子表路径精确相等的行首表头（``[Nested]`` →
+``[MyAdapter.Nested]``，含 ``[[...]]`` 形式）；带行尾注释等
+非精确匹配的表头保持原样。无子表的模板原样返回。
+
+- **key** (`str`): 目标节键
+- **template** (`str`): 模板 TOML 文本
+- **parsed_template** (`tomlclass`): 文档对象
+
+**返回值** (`str`): 重锚后的模板文本
+
+**内部方法**
+
+---
+
+
+##### `_collect_table_paths(node: Any, prefix: str = '') -> set[str]`（staticmethod）
+
+收集文档子树中所有实表（非 inline table）的点分路径
+
+- **node** (`tomlclass`): 表/文档对象
+- **prefix**: 递归用路径前缀
+
+**返回值** (`set`): 子表点分路径集合
+
+**内部方法**
+
+---
+
+
+##### `_quote_key_segment(segment: str) -> str`（staticmethod）
+
+将单个键段格式化为 TOML 表头键（非法裸键字符加引号转义）
+
+- **segment** (`str`): 键段原文
+
+**返回值** (`str`): 可直接用于 ``[表头]`` 的键形式
+
+**内部方法**
 
 ---
 

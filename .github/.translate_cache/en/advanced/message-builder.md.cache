@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "ccf145605ccbcde6645ba7b1fd9d02a4",
-  "file_hash": "ccf145605ccbcde6645ba7b1fd9d02a4",
-  "translated_at": "2026-09-07T10:45:11.167464",
+  "hash": "1fac5bb37de4ea824d5547dc48aaabf6",
+  "file_hash": "1fac5bb37de4ea824d5547dc48aaabf6",
+  "translated_at": "2026-10-14T03:10:48.889287",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "beaaca1a9a89664f37264436e23a6a42",
-      "translation": "# MessageBuilder Explained\n\n`MessageBuilder` is a OneBot12 standard message segment builder provided by ErisPulse, used to construct structured message content, and should be used in conjunction with `Send.Raw_ob12()`."
+      "hash": "4bafc7cbfc9d915b4083731a2c6f9613",
+      "translation": "# MessageBuilder Detailed Explanation\n\n> [!TIP]\n> **When to read this**: When constructing complex/multi-segment messages. Skip if not needed, as it won't affect the use of other features.\n\n`MessageBuilder` is a OneBot12 standard message segment builder provided by ErisPulse, used to construct structured message content, and is used in conjunction with `Send.Raw_ob12()`."
     },
     {
       "hash": "2500525151763f3bec08079067fc08cb",

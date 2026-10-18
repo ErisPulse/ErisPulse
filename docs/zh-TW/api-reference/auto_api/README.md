@@ -21,8 +21,8 @@
 
 - **模块总数**: 131
 - **类总数**: 182（包括 4 个嵌套类）
-- **函数总数**: 339
-- **方法总数**: 1613
+- **函数总数**: 341
+- **方法总数**: 1639
 
 ---
 
@@ -41,7 +41,7 @@
 
 ### [ErisPulse.CLI.cli](ErisPulse/CLI/cli.md)
 
-1 个类 | 9 个方法
+1 个类 | 10 个方法
 
 
 ### [ErisPulse.CLI.commands.__init__](ErisPulse/CLI/commands/__init__.md)
@@ -56,17 +56,17 @@
 
 ### [ErisPulse.CLI.commands.create](ErisPulse/CLI/commands/create.md)
 
-1 个类 | 5 个方法 | 5 个函数
+1 个类 | 7 个方法 | 5 个函数
 
 
 ### [ErisPulse.CLI.commands.doctor](ErisPulse/CLI/commands/doctor.md)
 
-1 个类 | 2 个方法
+1 个类 | 5 个方法
 
 
 ### [ErisPulse.CLI.commands.init](ErisPulse/CLI/commands/init.md)
 
-1 个类 | 7 个方法 | 2 个函数
+1 个类 | 9 个方法 | 2 个函数
 
 
 ### [ErisPulse.CLI.commands.install](ErisPulse/CLI/commands/install.md)
@@ -91,7 +91,7 @@
 
 ### [ErisPulse.CLI.commands.run](ErisPulse/CLI/commands/run.md)
 
-2 个类 | 7 个方法
+2 个类 | 10 个方法
 
 
 ### [ErisPulse.CLI.commands.self_update](ErisPulse/CLI/commands/self_update.md)
@@ -201,7 +201,7 @@
 
 ### [ErisPulse.CLI.utils.scaffold_text](ErisPulse/CLI/utils/scaffold_text.md)
 
-1 个类 | 4 个方法
+1 个类 | 5 个方法
 
 
 ### [ErisPulse.Core.Bases.__init__](ErisPulse/Core/Bases/__init__.md)
@@ -226,7 +226,7 @@
 
 ### [ErisPulse.Core.Bases.config_schema](ErisPulse/Core/Bases/config_schema.md)
 
-3 个类 | 28 个函数
+3 个类 | 30 个函数
 
 
 ### [ErisPulse.Core.Bases.converter](ErisPulse/Core/Bases/converter.md)
@@ -401,7 +401,7 @@
 
 ### [ErisPulse.Core.config](ErisPulse/Core/config.md)
 
-3 个类 | 39 个方法 | 2 个函数
+3 个类 | 45 个方法 | 2 个函数
 
 
 ### [ErisPulse.Core.connections](ErisPulse/Core/connections.md)
@@ -476,7 +476,7 @@
 
 ### [ErisPulse.Core.module](ErisPulse/Core/module.md)
 
-1 个类 | 62 个方法
+1 个类 | 64 个方法
 
 
 ### [ErisPulse.Core.ownership](ErisPulse/Core/ownership.md)
@@ -486,7 +486,7 @@
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
 
-3 个类 | 83 个方法 | 3 个函数
+3 个类 | 84 个方法 | 3 个函数
 
 
 ### [ErisPulse.Core.scope](ErisPulse/Core/scope.md)
@@ -566,7 +566,7 @@
 
 ### [ErisPulse.loaders.adapter](ErisPulse/loaders/adapter.md)
 
-1 个类 | 5 个方法
+1 个类 | 6 个方法
 
 
 ### [ErisPulse.loaders.bases.loader](ErisPulse/loaders/bases/loader.md)
@@ -581,7 +581,7 @@
 
 ### [ErisPulse.loaders.plugin_folder](ErisPulse/loaders/plugin_folder.md)
 
-1 个类 | 8 个方法
+1 个类 | 12 个方法
 
 
 ### [ErisPulse.loaders.strategy](ErisPulse/loaders/strategy.md)

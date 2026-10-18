@@ -356,7 +356,28 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 ---
 
 
-### `validate_config(instance) -> list[str]`
+### `_file_comment_suffix(section_key: 'str | None', field_path: str) -> str`
+
+取配置文件中字段行尾注释并格式化为错误消息后缀（"文件即文档"回读）
+
+声明式字段的 description 以注释落盘后，配置文件本身就是用户眼前的
+文档；校验失败时引用文件里的原文比 schema 元数据更贴近用户所见。
+按需无损解析配置文件，任何失败静默返回空串（注释是增强信息，
+不允许拖垮校验主流程）。
+
+- **section_key** (`str`): 配置节键（点分路径）；None 表示调用方未提供
+
+    节上下文，跳过回读
+- **field_path** (`str`): 节内字段路径（点分，嵌套字段含祖先路径）
+
+**返回值** (`str`): 形如 ``" （配置文件注释：…）"`` 的后缀；无注释返回空串
+
+**内部方法**
+
+---
+
+
+### `validate_config(instance, section_key: 'str | None' = None) -> list[str]`
 
 校验 dataclass 实例
 
@@ -366,11 +387,27 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 - 检查 ``min``/``max`` 数值范围约束
 
 返回错误信息列表（空列表表示通过）。description 若为 i18n 字典，
-错误信息使用其 fallback/default 文本。
+错误信息使用其 fallback/default 文本。传入 ``section_key`` 时，
+配置文件中该字段的行尾注释（如有）会附在对应错误消息之后。
 
 - **instance** (`dataclass`): 实例
+- **section_key** (`str`): 实例对应的配置节键（点分路径，如
 
+    ``"MyAdapter"``）；传入后启用文件注释回读（默认 None 不回读）
 **返回值**: 错误信息列表
+
+---
+
+
+### `_validate_config(instance, section_key: 'str | None', prefix: str) -> list[str]`
+
+:meth:`validate_config` 的递归实现
+
+- **instance** (`dataclass`): 实例
+- **section_key** (`str`): 配置节键（透传，用于文件注释回读）
+- **prefix** (`str`): 嵌套字段的路径前缀（如 ``"Nested."``）
+
+**内部方法**
 
 ---
 
