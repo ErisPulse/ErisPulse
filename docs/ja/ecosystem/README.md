@@ -16,14 +16,15 @@ ErisPulse フレームワーク自体は、イベントシステム、モジュ�
 
 ---
 
-## 推奨モジュールと公式クライアント
+## 推荐モジュールと公式クライアント
 
 | 項目 | タイプ | 用途 | ドキュメント |
 |------|------|------|------|
-| [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) | 公式クライアント | 公式の全プラットフォームクライアント（Android / Windows / Linux / macOS）：ネイティブインターフェースで複数のインスタンスを作成 / 実行 / 管理、内蔵のモジュールストアとイベントビルダー；**スマートフォンで直接実行可能**、デスクトップのトレイに常駐 | [ErisPulse-App インストールと使用](app.md) |
-| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | モジュール | Web 管理パネル：モジュールの起動 / 停止、設定の編集、ログの表示、イベントの監視；他のモジュールがサイドバーにカスタムウィンドウを登録可能 | [Dashboard 使用とウィンドウ登録](dashboard.md) |
-| [ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) | モジュール | タイミングタスクスケジューラ：一回限り / 間隔 / Cron 式、コールバック引数、SQLite 永続化（再起動時にタスクを失わない）、Dashboard ウィンドウ管理対応 | [Cron タイミングタスク](cron.md) |
-| [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi)（作者 [@ccd2s](https://github.com/ccd2s)） | モジュール | 画像レンダリング：HTML / ノードツリー / Jinja / SVG / アニメーション、[takumi-py](https://github.com/BalconyJH/takumi-py) に基づく；内蔵の中英文字体、すぐに使用可能 | [Takumi 画像レンダリング](takumi.md) |
+| [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) | 公式クライアント | 公式の全プラットフォームクライアント（Android / Windows / Linux / macOS）：ネイティブインターフェースで複数のインスタンスを作成 / 実行 / 管理、モジュールストアとイベントビルダーを内蔵；**スマートフォンで直接実行可能**、デスクトップのトレイに常駐 | [ErisPulse-App インストールと使用方法](app.md) |
+| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | モジュール | Web管理パネル：モジュールの起動 / 停止、設定編集、ログの表示、イベントの監視；他のモジュールがサイドバーにカスタムウィンドウを登録可能 | [Dashboard の使用方法とウィンドウ登録](dashboard.md) |
+| [ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) | モジュール | タイミングタスクスケジューラ：1回限り / 間隔 / Cron式、コールバック引数、SQLiteによる永続化（再起動してもタスクが失われない）、Dashboardウィンドウ管理対応 | [Cron 定時タスク](cron.md) |
+| [ErisPulse-QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) | モジュール | 一般的なエージェント：ツールループ（メッセージの送受信 / コード実行 / コンピュータ操作 / 画像生成 / 音声 / MCP / 子エージェント）、内蔵のDashboard、ストリーミング対話とツールの連続実行 | [QvQChat エージェント](qvqchat.md) |
+| [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi)（作者 [@ccd2s](https://github.com/ccd2s)） | モジュール | 画像レンダリング：HTML / ノードツリー / Jinja / SVG / アニメーション、[takumi-py](https://github.com/BalconyJH/takumi-py) をベース；内蔵の中英文字体、すぐに使用可能 | [Takumi 画像レンダリング](takumi.md) |
 
 ---
 
