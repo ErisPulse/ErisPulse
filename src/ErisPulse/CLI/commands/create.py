@@ -235,8 +235,13 @@ class Main(BaseModule):
             group=\"default\",
             tags=[\"{name}\"],
             # 对外服务白名单（可选）：声明后其他模块可经 sdk.module.call() 调用这些方法；
-            # 缺省时公开方法全开放（限制由用户通过 scope.actions 配置）
-            # services=[\"get_welcome_message\"],
+            # 缺省时公开方法全开放（限制由用户通过 scope.actions 配置）。
+            # dict 形态可声明 description 与 parameters 参数提示（供 sdk.module.services()
+            # 服务目录 / AI 智能体消费）；未声明的参数自动取方法 docstring 的 :param: 行
+            # services=[
+            #     "get_welcome_message",
+            #     {{"name": "render", "description": "渲染", "parameters": {{"html": "HTML 文本"}}}},
+            # ],
         )
 
     @staticmethod

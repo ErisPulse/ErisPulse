@@ -124,6 +124,53 @@ class _OpenModule(BaseModule):
         return "hi"
 
 
+class _ParamModule(BaseModule):
+    """服务参数提示：显式 parameters 声明 + docstring :param: 自动推导"""
+
+    def __init__(self, sdk=None):
+        self.sdk = sdk
+
+    @staticmethod
+    def get_meta():
+        from ErisPulse.Core.Bases import ModuleMeta
+
+        return ModuleMeta(
+            services=[
+                {
+                    "name": "render",
+                    "description": "渲染 HTML",
+                    "parameters": {
+                        "html": "HTML 文本",
+                        "ghost": "签名中不存在的参数（应被过滤）",
+                    },
+                },
+                "doc_only",
+            ]
+        )
+
+    async def on_load(self, event):
+        return True
+
+    async def on_unload(self, event):
+        return True
+
+    async def render(self, html, width=800):
+        """渲染 HTML
+
+        :param html: docstring 版 HTML 说明（应被显式声明覆盖）
+        :param width: 画布宽度，0 为按内容自适应
+        """
+        return html
+
+    async def doc_only(self, session_id, n=20):
+        """仅靠 docstring 提供参数说明
+
+        :param session_id: 会话 ID
+        :param n: 返回条数
+        """
+        return session_id
+
+
 class _SyncSvcModule(BaseModule):
     """契约含同步方法的模块"""
 
@@ -465,6 +512,64 @@ class TestServicesDirectory:
         assert await manager.call("Desc", "translate", "hi", "zh") == "hi"
         # 白名单外的公开方法被拒（no_docstring_method 不在声明内……在 services 里）
         assert await manager.call("Desc", "no_docstring_method") == "x"
+
+    @pytest.mark.asyncio
+    async def test_lazy_declared_module_in_full_directory(self, manager):
+        """懒加载（注册未加载）模块声明了服务同样进入全量目录"""
+        manager.register("Param", _ParamModule)  # 不 load：无 _module_services 缓存
+        catalog = manager.services()
+        assert "Param" in catalog
+        names = [e["name"] for e in catalog["Param"]]
+        assert names == ["render", "doc_only"]
+        # 未加载时签名从模块类提取
+        entry = next(e for e in catalog["Param"] if e["name"] == "render")
+        assert "width" in entry["signature"]
+
+    @pytest.mark.asyncio
+    async def test_lazy_undeclared_module_still_excluded(self, manager):
+        """懒加载模块未声明 services 时仍不进入全量目录"""
+        manager.register("Open", _OpenModule)
+        assert manager.services() == {}
+
+    @pytest.mark.asyncio
+    async def test_service_parameters_declared_and_docstring(self, manager):
+        """参数提示：显式 parameters > docstring :param: 行（按参数合并）"""
+        await _load(manager, "Param", _ParamModule)
+        by_name = {e["name"]: e for e in manager.services("Param")["Param"]}
+        # 显式声明的参数提示
+        assert by_name["render"]["parameters"]["html"] == "HTML 文本"
+        # 未显式声明的参数自动取 docstring :param: 行
+        assert by_name["render"]["parameters"]["width"] == "画布宽度，0 为按内容自适应"
+        # 声明了但签名中不存在的参数被过滤
+        assert "ghost" not in by_name["render"]["parameters"]
+        # 纯名字声明：全部参数来自 docstring
+        assert by_name["doc_only"]["parameters"] == {"session_id": "会话 ID", "n": "返回条数"}
+
+    @pytest.mark.asyncio
+    async def test_service_parameters_i18n_resolved(self, manager):
+        """参数提示支持 i18n 字典，目录输出为当前语言文本"""
+        await _load(manager, "Svc", _SvcModule)
+        params = manager._service_parameters(
+            "Svc",
+            {
+                "name": "get_value",
+                "parameters": {"n": {"i18n": "core.module.call_not_registered", "default": "兜底"}},
+            },
+        )
+        assert params["n"]
+        assert params["n"] != "兜底"  # locale 有该键，用的是翻译而非 default
+
+    def test_docstring_params_sphinx_typed_form(self):
+        """:param int n: 带类型形态取末位词为参数名"""
+        def fn(self, n, verbose=False):
+            """
+            摘要
+
+            :param int n: 数量
+            :param verbose: 是否详细输出
+            """
+        hints = ModuleManager._docstring_params(fn)
+        assert hints == {"n": "数量", "verbose": "是否详细输出"}
 
 
 # ==================== 冷启动回放 ====================
