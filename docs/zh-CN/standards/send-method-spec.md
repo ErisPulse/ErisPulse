@@ -182,6 +182,68 @@ send.To("group", "g123").At("123456").At("789012").Text("大家好")
 send.To("group", "g123").Reply("msg_123456").Text("收到")
 ```
 
+### 2.4 合并转发能力（`MergeForward`，可选）
+
+`MergeForward(nodes)` 是**可选的能力方法**：把多段内容打包为「合并转发 / 富文本折叠」形式发送，
+由适配器按平台能力决定最佳呈现。与 §1.1 的 `Forward(from_chat_id, message_id)`（转发**已有**消息）
+语义不同，二者并存。
+
+> **标准背景**：OneBot12 核心标准没有 node 消息段，也没有合并转发 API——"消息结点"是 OneBot v11
+> 生态（go-cqhttp 扩展）的实现层概念，v12 把这类平台特有能力下放给扩展机制。ErisPulse 的落地方式
+> 即扩展机制等价物：**不新增标准消息段，而是可选能力方法 + `list_sends` 运行时探测**——实现了
+> `MergeForward` 的适配器自动获得能力，未实现的调用方自动回退普通文本，模块零改动。
+
+**方法签名：**
+
+```python
+def MergeForward(self, nodes: List[Dict]) -> asyncio.Task:
+    """
+    发送合并转发 / 富文本折叠消息
+
+    :param nodes: 合并转发节点数组（go-cqhttp 扩展的 OneBot v11 节点格式）：
+        [
+            {
+                "type": "node",
+                "data": {
+                    "user_id": "10000",     # 展示用发送者 id
+                    "nickname": "QvQChat",  # 展示用发送者昵称
+                    "content": [            # 消息段数组，当前为 text 段
+                        {"type": "text", "data": {"text": "【1/3】标题\n正文…"}}
+                    ],
+                },
+            },
+        ]
+    :return: asyncio.Task，await 后返回标准响应格式
+    """
+```
+
+**实现要求：**
+
+1. **平台有原生合并转发**（OneBot11 系）：**必须**调用协议端专用端点
+   （`send_group_forward_msg` / `send_private_forward_msg`）——NapCat 等实现会拒绝
+   `send_msg` 携带的 node 段（retcode 1400）；专用端点失败时**可以**回退 `send_msg` 直发 node 段
+2. **平台无原生转发但有富文本**（云湖 / Telegram / Kook / Discord / Matrix 等）：
+   **应当**将节点渲染为平台的富文本折叠形态（HTML 折叠卡 / Card / Embed / blockquote 列表），
+   参考样式与逐适配器任务清单见 `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`
+3. **两者皆无**：**不得**实现本方法（更不得返回成功却把 node 字典当纯文本发出）——
+   不实现时 `list_sends` 不含 `MergeForward`，调用方自动回退普通文本
+4. **失败语义**：返回标准错误响应（`status: "failed"`）或抛出异常均可，调用方会回退纯文本发送，内容不丢失
+5. **不得**在 `MergeForward` 内部再调用 `Raw_ob12` 发送同样的 nodes（OneBot11 的 `Raw_ob12`
+   已内置纯 node 段自动路由，会成环）
+
+**调用方探测示例：**
+
+```python
+sends = adapter.list_sends(platform)
+if "MergeForward" in sends:
+    await adapter.Send.To("group", "123").MergedForward(nodes)
+else:
+    await adapter.Send.To("group", "123").Text(plain_text)
+```
+
+> 参考实现：`ErisPulse-OneBot11Adapter`（专用端点 → `send_msg` 回退）；渲染模板与各适配器任务清单见
+> `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`。
+
 ## 3. 平台特有方法命名
 
 **不推荐**在 Send 类中直接添加平台前缀方法。建议使用通用方法名或 `Raw_{协议}` 方法。
@@ -463,6 +525,12 @@ info = adapter.send_info("myplatform", "Form")
 - [ ] `File` 的文件名推导顺序符合 §2.1.3（显式 `filename` > URL basename > 路径 basename > 平台默认）
 - [ ] 平台的媒体限制（大小 / MIME / 时长）已在适配器文档声明（§2.1.4）
 - [ ] 不支持的媒体类型按 §2.1.5 降级阶梯处理：近缘类型降级或返回 `retcode=10002`，不抛异常、不静默丢弃
+
+### 合并转发（可选，见 §2.4）
+- [ ] 平台有原生合并转发时，`MergeForward` 走协议专用端点，失败回退 `send_msg`（OneBot11 系）
+- [ ] 平台无原生转发但有富文本时，`MergeForward` 渲染为平台折叠形态（HTML 卡 / Card / Embed / blockquote）
+- [ ] 两者皆无时**不实现** `MergeForward`，不返回成功却发出 node 字典纯文本
+- [ ] `MergeForward` 内部不再调 `Raw_ob12` 转发同样 nodes
 
 ### 反向转换
 - [ ] `Raw_ob12` **已实现**（必须，不可跳过）
