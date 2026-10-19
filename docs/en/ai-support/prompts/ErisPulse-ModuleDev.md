@@ -12985,49 +12985,49 @@ enabled = true
 # ErisPulse PlatformFeatures Documentation
 
 > Base Protocol: [OneBot12](https://12.onebot.dev/)  
-> 
 > This document is a **platform-specific feature guide**, including:
-> - Examples of Send method chain calls supported by each adapter
-> - Platform-specific event/message format descriptions
+> - Examples of chainable Send method calls supported by each adapter
+> - Explanations of platform-specific event/message formats
 > 
-> General usage methods are referenced in:
+> For general usage, please refer to:
 > - [Basic Concepts](../getting-started/basic-concepts.md)
-> - [Event Conversion Standards](../standards/event-conversion.md)  
-> - [API Response Specifications](../standards/api-response.md)
+> - [Event Conversion Standard](../standards/event-conversion.md)
+> - [API Response Specification](../standards/api-response.md)
 
 ---
 
 ## Platform-Specific Features
 
-This section is maintained by each adapter developer to document differences and extension features of the adapter compared to the OneBot12 standard. Please refer to the detailed documentation for each platform below:
+This section is maintained by each adapter developer and describes the differences and extended features of the adapter compared to the OneBot12 standard. Please refer to the detailed documentation for each platform below:
 
-- [Maintainer Notes](maintain-notes.md)
-
+- [Maintain Notes](maintain-notes.md)
 - [Yunhu Platform Features](yunhu.md)
 - [Yunhu User Platform Features](yunhu_user.md)
 - [Telegram Platform Features](telegram.md)
 - [OneBot11 Platform Features](onebot11.md)
 - [OneBot12 Platform Features](onebot12.md)
+- [SnowLuma Platform Features](snowluma.md)
 - [Email Platform Features](email.md)
-- [Kook (Let's Game) Platform Features](kook.md)
+- [Kook (Open Black) Platform Features](kook.md)
 - [Matrix Platform Features](matrix.md)
 - [Official QQ Bot Platform Features](qqbot.md)
-- [Ideaura Coffeehouse](ideaura.md)
+- [Ideaura Coffee Shop](ideaura.md)
 - [Discord](discord.md)
 - [Webhook Protocol Bridge](webhook.md)
 - [WeChat Official Account](wechatmp.md)
 
-> Additionally, there is a `sandbox` adapter, but this adapter does not require a platform-specific features documentation.
+> Additionally, there is a `sandbox` adapter, but this adapter does not require a platform-specific feature documentation.
 
-## General Interface
+---
 
-### Send Method Chaining
+## General Interfaces
 
+### Chainable Send Calls
 All adapters support the following standard calling methods:
 
-> **Note:** The `{AdapterName}` in the documentation should be replaced with the actual adapter name (e.g., `yunhu`, `telegram`, `onebot11`, `email`, etc.).
+> **Note:** `{AdapterName}` in the documentation must be replaced with the actual adapter name (such as `yunhu`, `telegram`, `onebot11`, `email`, etc.).
 
-1. Specify type and ID: `To(type, id).Func()`
+1. Specify type and ID: `To(type,id).Func()`
    ```python
    # Get adapter instance
    my_adapter = adapter.get("{AdapterName}")
@@ -13039,7 +13039,7 @@ All adapters support the following standard calling methods:
    yunhu = adapter.get("yunhu")
    await yunhu.Send.To("user", "U1001").Text("Hello")
    ```
-2. Specify ID only: `To(id).Func()`
+2. Specify only ID: `To(id).Func()`
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.To("U1001").Text("Hello")
@@ -13048,7 +13048,7 @@ All adapters support the following standard calling methods:
    telegram = adapter.get("telegram")
    await telegram.Send.To("U1001").Text("Hello")
    ```
-3. Specify sender account: `Using(account_id)`
+3. Specify sending account: `Using(account_id)`
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.Using("bot1").To("U1001").Text("Hello")
@@ -13075,24 +13075,24 @@ The methods of the Send DSL return an `asyncio.Task` object, which means you can
 # Get adapter instance
 my_adapter = adapter.get("{AdapterName}")
 
-# Do not wait for result, message is sent in the background
+# Do not wait for the result, the message is sent in the background
 task = my_adapter.Send.To("user", "123").Text("Hello")
 
 # If you need to get the sending result, you can wait later
 result = await task
 ```
 
-#### Send Rule Decorators
+#### Sending Rule Decorators
 
-In practical development, you often need to: execute subsequent logic only after successful sending, automatically retry on failure, cancel on timeout, monitor sending progress, etc. The Send DSL includes a set of built-in send rule decorators, which can be attached via chained methods:
+In actual development, it is often necessary to: execute subsequent logic only after successful sending, automatically retry on failure, cancel on timeout, and monitor sending progress. The Send DSL includes a set of built-in sending rule decorators, which can be added via chained methods:
 
 | Method | Description |
 |--------|-------------|
 | `.Hook(callback)` | Callback executed after successful sending (can be called multiple times) |
-| `.Retry(times=1)` | Automatic retry N times on failure (total of N+1 attempts including the first) |
-| `.Timeout(seconds)` | Single send timeout, cancel on timeout (can be stacked with Retry) |
-| `.Defer(seconds)` | Delay sending (in-process timer, not persisted) |
-| `.OnProgress(callback)` | Progress callback at each stage, passing in SendContext |
+| `.Retry(times=1)` | Automatic retry on failure N times (total of N+1 attempts, including the first) |
+| `.Timeout(seconds)` | Single sending timeout, cancellation on timeout (can be stacked with Retry) |
+| `.Defer(seconds)` | Delay sending (in-process timing, not persisted) |
+| `.OnProgress(callback)` | Progress callback at each stage, passing SendContext |
 | `.OnError(callback)` | Error callback on final failure (triggers only once) |
 
 ```python
@@ -13101,7 +13101,7 @@ yunhu = adapter.get("yunhu")
 # Deduct points only after successful sending
 await (yunhu.Send.To("user", "123")
        .Hook(lambda r: deduct_points("123"))
-       .Text("Success"))
+       .Text("Consumption successful"))
 
 # Retry on failure + timeout cancellation + progress monitoring
 def on_progress(ctx):
@@ -13112,19 +13112,19 @@ task = (yunhu.Send.To("user", "123")
         .Timeout(10)           # Timeout of 10 seconds per attempt
         .OnProgress(on_progress)
         .OnError(lambda ctx: notify_admin(ctx.error))
-        .Text("Important notification"))
+        .Text("Important notice"))
 ```
 
-Rule methods return `self`, and must be called before the sending methods (Text/Image, etc.). `SendContext` includes fields such as `stage` (pending/sending/retrying/success/failed/timeout), `attempt`, `elapsed`, `error`, and `result`, which are useful for monitoring.
+Rule methods return `self`, so they must be called before the sending methods (such as Text/Image). `SendContext` contains fields such as `stage` (pending/sending/retrying/success/failed/timeout), `attempt`, `elapsed`, `error`, `result`, which are useful for monitoring.
 
 #### Batch Build Mode (Build)
 
-Build multiple sending methods in a single chain, then execute them all at once. This is suitable for scenarios where you need to send multiple messages in one go:
+Multiple sending methods can be built within a single chain, and executed together at the end. This is suitable for scenarios where multiple messages are sent at once:
 
 ```python
 yunhu = adapter.get("yunhu")
 
-# Build multiple messages and send them all at once
+# Build multiple messages and send them together
 results = await (yunhu.Send.To("user", "123")
                 .Build()                     # Enter build mode
                 .Text("Notification 1")
@@ -13134,25 +13134,24 @@ results = await (yunhu.Send.To("user", "123")
 # results = [Text result, Image result, Text result]
 ```
 
-`.send_all()` executes by default in **parallel** (concurrent sending, high efficiency). To ensure the order of message arrival, call `.Sequential()` for sequential execution:
+`.send_all()` executes by default **in parallel** (concurrent sending, high efficiency). If the order of message arrival needs to be guaranteed, call `.Sequential()` to execute serially:
 
 ```python
-# Sequential execution (ensures order) + retry on failure
+# Sequential execution (guarantee order) + retry on failure
 await (yunhu.Send.To("group", "456")
        .Build()
        .Sequential()                # Send in order
-       .Retry(2)                     # Retry failed items individually
+       .Retry(2)                     # Retry failed entries individually
        .Text("First message").Text("Second message")
        .send_all())
 ```
 
-Batch execution uses a **fail-continue** strategy: failure of one message does not interrupt others, and failed items are automatically retried. The batch also supports `Hook` (triggered after all succeed), `OnError` (triggered when any fail), and `OnProgress` (progress callback) for the entire batch.
+Batch execution adopts a **fail-continue** strategy: failure of one message does not interrupt others, and failed entries are automatically retried. Batch also supports `Hook` for the entire batch (triggered after all succeed), `OnError` (triggered when there are failures), and `OnProgress` (progress callback).
 
-> For more detailed rules and batch build instructions, refer to [SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md).
+> For more detailed information on rules and batch building, please refer to [SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md).
 
 ### Event Listening
-
-There are three ways to listen for events:
+There are three ways to listen to events:
 
 1. Platform-native event listening:
    ```python
@@ -13160,26 +13159,26 @@ There are three ways to listen for events:
    
    @adapter.on("event_type", raw=True, platform="{AdapterName}")
    async def handler(data):
-       logger.info(f"Received native {AdapterName} event: {data}")
+       logger.info(f"Received raw {AdapterName} event: {data}")
    ```
 
 2. OneBot12 standard event listening:
    ```python
    from ErisPulse.Core import adapter, logger
 
-   # Listen for OneBot12 standard events
+   # Listen to OneBot12 standard events
    @adapter.on("event_type")
    async def handler(data):
        logger.info(f"Received standard event: {data}")
 
-   # Listen for standard events from a specific platform
+   # Listen to specific platform's standard events
    @adapter.on("event_type", platform="{AdapterName}")
    async def handler(data):
        logger.info(f"Received {AdapterName} standard event: {data}")
    ```
 
 3. Event module listening:
-    Events provided by the `Event` module are based on the `adapter.on()` function, so the event format provided by `Event` is a OneBot12 standard event.
+    Events in the `Event` module are based on the `adapter.on()` function, so the event format provided by `Event` is a OneBot12 standard event.
 
     ```python
     from ErisPulse.Core.Event import message, notice, request, command
@@ -13187,7 +13186,7 @@ There are three ways to listen for events:
     message.on_message()(message_handler)
     notice.on_notice()(notice_handler)
     request.on_request()(request_handler)
-    command("hello", help="Send greeting message", usage="hello")(command_handler)
+    command("hello", help="Send a greeting message", usage="hello")(command_handler)
 
     async def message_handler(event):
         logger.info(f"Received message: {event}")
@@ -13199,15 +13198,17 @@ There are three ways to listen for events:
         logger.info(f"Received command: {event}")
     ```
 
-Among these, it is most recommended to use the `Event` module for event handling, as the `Event` module provides a rich set of event types and methods for handling events.
+Among these, it is most recommended to use the `Event` module for event handling, because the `Event` module provides rich event types and event handling methods.
 
-## Standard Format
-For easy reference, a simple event format is provided here. For detailed information, please refer to the links above.
+---
 
-> **Note:** The following format is the basic OneBot12 standard format. Each adapter may have extended fields based on this format. For details, please refer to the specific feature documentation of each adapter.
+## Standard Formats
+For easy reference, the following are basic event formats. For detailed information, please refer to the links above.
+
+> **Note:** The following formats are basic OneBot12 standard formats. Each adapter may have extended fields based on this. Please refer to the specific feature descriptions of each adapter for details.
 
 ### Standard Event Format
-The event transformation format that all adapters must implement:
+All adapters must implement the event conversion format:
 ```json
 {
   "id": "event_123",
@@ -13228,7 +13229,7 @@ The event transformation format that all adapters must implement:
 ```
 
 ### Standard Response Format
-#### Message Sent Successfully
+#### Message Sending Success
 ```json
 {
   "status": "ok",
@@ -13244,7 +13245,7 @@ The event transformation format that all adapters must implement:
 }
 ```
 
-#### Message Sent Failed
+#### Message Sending Failure
 ```json
 {
   "status": "failed",
@@ -13257,12 +13258,14 @@ The event transformation format that all adapters must implement:
 }
 ```
 
-## Reference Links
+---
+
+## References
 ErisPulse Project:
 - [Main Repository](https://github.com/ErisPulse/ErisPulse/)
-- [Yunhu Adapter Library](https://github.com/ErisPulse/ErisPulse-YunhuAdapter)
-- [Telegram Adapter Library](https://github.com/ErisPulse/ErisPulse-TelegramAdapter)
-- [OneBot Adapter Library](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
+- [Yunhu Adapter Repository](https://github.com/ErisPulse/ErisPulse-YunhuAdapter)
+- [Telegram Adapter Repository](https://github.com/ErisPulse/ErisPulse-TelegramAdapter)
+- [OneBot Adapter Repository](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
 
 Related Official Documentation:
 - [OneBot V11 Protocol Documentation](https://github.com/botuniverse/onebot-11)
@@ -13271,11 +13274,10 @@ Related Official Documentation:
 
 ## Contributing
 
-We welcome more developers to contribute to and maintain adapter documentation! Please follow these steps to submit your contribution:
-
+We welcome more developers to contribute and maintain adapter documentation! Please follow these steps to submit your contribution:
 1. Fork the [ErisPulse](https://github.com/ErisPulse/ErisPulse) repository.
 2. Create a Markdown file in the `docs/platform-features/` directory, naming it in the format `<Platform Name>.md`.
-3. Add a link to your contributed adapter and the relevant official documentation in this `README.md` file.
+3. Add a link to your contributed adapter and related official documentation in this `README.md` file.
 4. Submit a Pull Request.
 
 Thank you for your support!

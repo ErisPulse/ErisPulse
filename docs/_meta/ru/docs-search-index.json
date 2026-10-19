@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1779,
+  "total_keywords": 1773,
   "keywords": {
     "0 Успешно (OK)": [
       {
@@ -421,7 +421,7 @@
     "10. Проверочный список реализации адаптера": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 494,
+        "line": 504,
         "level": 2,
         "title": "10. Проверочный список реализации адаптера"
       }
@@ -445,7 +445,7 @@
     "11. Конструктор сообщений (MessageBuilder)": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 526,
+        "line": 536,
         "level": 2,
         "title": "11. Конструктор сообщений (MessageBuilder)"
       }
@@ -461,7 +461,7 @@
     "11.1 Импорт": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 530,
+        "line": 540,
         "level": 3,
         "title": "11.1 Импорт"
       }
@@ -469,7 +469,7 @@
     "11.2 Цепочечное построение": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 538,
+        "line": 548,
         "level": 3,
         "title": "11.2 Цепочечное построение"
       }
@@ -477,7 +477,7 @@
     "11.3 Быстрое построение одного сегмента": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 555,
+        "line": 565,
         "level": 3,
         "title": "11.3 Быстрое построение одного сегмента"
       }
@@ -485,7 +485,7 @@
     "11.4 Использование с Event.reply_ob12": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 566,
+        "line": 576,
         "level": 3,
         "title": "11.4 Использование с Event.reply_ob12"
       }
@@ -493,7 +493,7 @@
     "11.5 Поддерживаемые методы сегментов": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 581,
+        "line": 591,
         "level": 3,
         "title": "11.5 Поддерживаемые методы сегментов"
       }
@@ -501,7 +501,7 @@
     "11.6 Вспомогательные методы": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 596,
+        "line": 606,
         "level": 3,
         "title": "11.6 Вспомогательные методы"
       }
@@ -509,7 +509,7 @@
     "12. Связанные документы": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 615,
+        "line": 625,
         "level": 2,
         "title": "12. Связанные документы"
       }
@@ -560,14 +560,6 @@
         "line": 472,
         "level": 3,
         "title": "2. Внутренний класс Send (в большинстве случаев не нужно переопределять)"
-      }
-    ],
-    "2. Детальное описание стандартов параметров": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 69,
-        "level": 2,
-        "title": "2. Детальное описание стандартов параметров"
       }
     ],
     "2. Заголовок README": [
@@ -678,6 +670,14 @@
         "line": 20,
         "level": 3,
         "title": "2. Отправка мета-событий"
+      }
+    ],
+    "2. Параметры стандарта": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 69,
+        "level": 2,
+        "title": "2. Параметры стандарта"
       }
     ],
     "2. Поддерживаемые типы отправки сообщений": [
@@ -864,20 +864,20 @@
         "title": "2. Я хочу разрабатывать модули / адаптеры"
       }
     ],
+    "2.1 Единый протокол отправки медиа-сообщений (`Image` / `Voice` / `Video` / `File`)": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 71,
+        "level": 3,
+        "title": "2.1 Единый протокол отправки медиа-сообщений (`Image` / `Voice` / `Video` / `File`)"
+      }
+    ],
     "2.1 Обязательные поля": [
       {
         "document": "standards/event-conversion.md",
         "line": 12,
         "level": 3,
         "title": "2.1 Обязательные поля"
-      }
-    ],
-    "2.1 Протокол отправки медиафайлов (`Image` / `Voice` / `Video` / `File`)": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 71,
-        "level": 3,
-        "title": "2.1 Протокол отправки медиафайлов (`Image` / `Voice` / `Video` / `File`)"
       }
     ],
     "2.1 Стандартные поля": [
@@ -912,12 +912,12 @@
         "title": "2.1.2 Порядок определения формы"
       }
     ],
-    "2.1.3 Семантика имени файла в `File`": [
+    "2.1.3 Формат имени файла в `File`": [
       {
         "document": "standards/send-method-spec.md",
         "line": 109,
         "level": 4,
-        "title": "2.1.3 Семантика имени файла в `File`"
+        "title": "2.1.3 Формат имени файла в `File`"
       }
     ],
     "2.1.4 Обязанность декларации ограничений платформы": [
@@ -928,12 +928,20 @@
         "title": "2.1.4 Обязанность декларации ограничений платформы"
       }
     ],
-    "2.1.5 Ступенчатое снижение возможностей": [
+    "2.1.5 Ступенчатое понижение возможностей": [
       {
         "document": "standards/send-method-spec.md",
         "line": 129,
         "level": 4,
-        "title": "2.1.5 Ступенчатое снижение возможностей"
+        "title": "2.1.5 Ступенчатое понижение возможностей"
+      }
+    ],
+    "2.2 Параметры `@` пользователя": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 142,
+        "level": 3,
+        "title": "2.2 Параметры `@` пользователя"
       }
     ],
     "2.2 Поле `request_id`": [
@@ -960,12 +968,12 @@
         "title": "2.2 Расширенные типы ErisPulse"
       }
     ],
-    "2.2 Стандарт параметров @пользователя": [
+    "2.3 Параметры ответа на сообщение": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 142,
+        "line": 163,
         "level": 3,
-        "title": "2.2 Стандарт параметров @пользователя"
+        "title": "2.3 Параметры ответа на сообщение"
       }
     ],
     "2.3 Поля для уведомлений": [
@@ -984,20 +992,12 @@
         "title": "2.3 Пример события запроса"
       }
     ],
-    "2.3 Стандарт параметров ответа на сообщение": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 163,
-        "level": 3,
-        "title": "2.3 Стандарт параметров ответа на сообщение"
-      }
-    ],
-    "2.4 Возможности объединённой пересылки (`MergeForward`, необязательно)": [
+    "2.4 Возможность объединённой пересылки (`MergeForward`, необязательно)": [
       {
         "document": "standards/send-method-spec.md",
         "line": 179,
         "level": 3,
-        "title": "2.4 Возможности объединённой пересылки (`MergeForward`, необязательно)"
+        "title": "2.4 Возможность объединённой пересылки (`MergeForward`, необязательно)"
       }
     ],
     "2.4 Поля для запросов": [
@@ -1083,7 +1083,7 @@
     "3. Именование платформо-специфических методов": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 229,
+        "line": 239,
         "level": 2,
         "title": "3. Именование платформо-специфических методов"
       }
@@ -1539,7 +1539,7 @@
     "4. Стандарт именования параметров": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 260,
+        "line": 270,
         "level": 2,
         "title": "4. Стандарт именования параметров"
       }
@@ -1763,7 +1763,7 @@
     "5. Стандарт возвращаемых значений": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 272,
+        "line": 282,
         "level": 2,
         "title": "5. Стандарт возвращаемых значений"
       }
@@ -2011,7 +2011,7 @@
     "6. Стандарт обратного преобразования (OneBot12 → платформа)": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 279,
+        "line": 289,
         "level": 2,
         "title": "6. Стандарт обратного преобразования (OneBot12 → платформа)"
       }
@@ -2035,7 +2035,7 @@
     "6.1 Модель преобразования": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 283,
+        "line": 293,
         "level": 3,
         "title": "6.1 Модель преобразования"
       }
@@ -2067,7 +2067,7 @@
     "6.2 Стандарт реализации `Raw_ob12`": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 300,
+        "line": 310,
         "level": 3,
         "title": "6.2 Стандарт реализации `Raw_ob12`"
       }
@@ -2091,7 +2091,7 @@
     "6.3 Правила преобразования сегментов": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 328,
+        "line": 338,
         "level": 3,
         "title": "6.3 Правила преобразования сегментов"
       }
@@ -2099,7 +2099,7 @@
     "6.3.1 Преобразование стандартных сегментов": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 330,
+        "line": 340,
         "level": 4,
         "title": "6.3.1 Преобразование стандартных сегментов"
       }
@@ -2107,7 +2107,7 @@
     "6.3.2 Преобразование платформо-расширений": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 346,
+        "line": 356,
         "level": 4,
         "title": "6.3.2 Преобразование платформо-расширений"
       }
@@ -2115,7 +2115,7 @@
     "6.3.3 Обработка составных сегментов": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 370,
+        "line": 380,
         "level": 4,
         "title": "6.3.3 Обработка составных сегментов"
       }
@@ -2123,7 +2123,7 @@
     "6.4 `Raw_ob12` и стандартные методы": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 388,
+        "line": 398,
         "level": 3,
         "title": "6.4 `Raw_ob12` и стандартные методы"
       }
@@ -2147,7 +2147,7 @@
     "6.5 Пример реализации": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 410,
+        "line": 420,
         "level": 3,
         "title": "6.5 Пример реализации"
       }
@@ -2163,7 +2163,7 @@
     "7. Обнаружение методов": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 463,
+        "line": 473,
         "level": 2,
         "title": "7. Обнаружение методов"
       }
@@ -2369,7 +2369,7 @@
     "9. Примечания по разработке адаптеров": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 486,
+        "line": 496,
         "level": 2,
         "title": "9. Примечания по разработке адаптеров"
       }
@@ -2433,7 +2433,7 @@
     "@Механизм обнаружения бота (важно)": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 124,
+        "line": 127,
         "level": 2,
         "title": "@Механизм обнаружения бота (важно)"
       }
@@ -2460,14 +2460,6 @@
         "line": 59,
         "level": 2,
         "title": "API TestBot"
-      }
-    ],
-    "API вызовы": [
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 631,
-        "level": 2,
-        "title": "API вызовы"
       }
     ],
     "API для переопределения во время выполнения": [
@@ -2601,7 +2593,7 @@
     "Chain-вызов Send": [
       {
         "document": "platform-guide/README.md",
-        "line": 42,
+        "line": 43,
         "level": 3,
         "title": "Chain-вызов Send"
       }
@@ -2758,22 +2750,6 @@
         "title": "ErisPulse-Takumi"
       }
     ],
-    "Event Mixin Расширения": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 540,
-        "level": 2,
-        "title": "Event Mixin Расширения"
-      }
-    ],
-    "Event Mixin расширения методов": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 308,
-        "level": 2,
-        "title": "Event Mixin расширения методов"
-      }
-    ],
     "GET": [
       {
         "document": "advanced/http-client.md",
@@ -2921,7 +2897,7 @@
     "OneBot12 стандартный API-действия": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 93,
+        "line": 96,
         "level": 2,
         "title": "OneBot12 стандартный API-действия"
       }
@@ -3038,14 +3014,6 @@
         "title": "Supervisor"
       }
     ],
-    "Sync API подключение": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 360,
-        "level": 2,
-        "title": "Sync API подключение"
-      }
-    ],
     "TTL контрольной точки": [
       {
         "document": "advanced/conversation.md",
@@ -3097,7 +3065,7 @@
     "WebSocket / Webhook подключение": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 148,
+        "line": 151,
         "level": 2,
         "title": "WebSocket / Webhook подключение"
       }
@@ -3926,14 +3894,6 @@
         "title": "Автоматическая отмена при тайм-ауте (Timeout)"
       }
     ],
-    "Автоматическая отправка ответа с помощью event.reply() (система автоматически выбирает правильный способ отправки в зависимости от платформы)": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 451,
-        "level": 1,
-        "title": "Автоматическая отправка ответа с помощью event.reply() (система автоматически выбирает правильный способ отправки в зависимости от платформы)"
-      }
-    ],
     "Автоматическая регистрация Dashboard": [
       {
         "document": "advanced/router.md",
@@ -4155,7 +4115,7 @@
     "Асинхронная отправка и обработка результатов": [
       {
         "document": "platform-guide/README.md",
-        "line": 87,
+        "line": 88,
         "level": 4,
         "title": "Асинхронная отправка и обработка результатов"
       }
@@ -4601,7 +4561,7 @@
     "Возвращаемое значение метода отправки": [
       {
         "document": "platform-guide/email.md",
-        "line": 278,
+        "line": 279,
         "level": 2,
         "title": "Возвращаемое значение метода отправки"
       }
@@ -4609,13 +4569,7 @@
     "Возвращаемое значение методов отправки": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 118,
-        "level": 2,
-        "title": "Возвращаемое значение методов отправки"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 341,
+        "line": 120,
         "level": 2,
         "title": "Возвращаемое значение методов отправки"
       }
@@ -4631,7 +4585,7 @@
     "Возвращаемые значения методов отправки": [
       {
         "document": "platform-guide/discord.md",
-        "line": 195,
+        "line": 197,
         "level": 2,
         "title": "Возвращаемые значения методов отправки"
       },
@@ -4643,7 +4597,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 183,
+        "line": 184,
         "level": 2,
         "title": "Возвращаемые значения методов отправки"
       },
@@ -4660,8 +4614,14 @@
         "title": "Возвращаемые значения методов отправки"
       },
       {
+        "document": "platform-guide/yunhu.md",
+        "line": 343,
+        "level": 2,
+        "title": "Возвращаемые значения методов отправки"
+      },
+      {
         "document": "platform-guide/yunhu_user.md",
-        "line": 203,
+        "line": 207,
         "level": 2,
         "title": "Возвращаемые значения методов отправки"
       }
@@ -4838,6 +4798,12 @@
       {
         "document": "api-reference/adapter-system.md",
         "line": 169,
+        "level": 2,
+        "title": "Вызов API"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 635,
         "level": 2,
         "title": "Вызов API"
       }
@@ -5205,7 +5171,7 @@
     "Декораторы правил отправки": [
       {
         "document": "platform-guide/README.md",
-        "line": 102,
+        "line": 103,
         "level": 4,
         "title": "Декораторы правил отправки"
       }
@@ -5338,12 +5304,28 @@
         "title": "Документация по функционалу платформы RockyChat"
       }
     ],
+    "Документация по функциональным возможностям платформы Matrix": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 1,
+        "level": 1,
+        "title": "Документация по функциональным возможностям платформы Matrix"
+      }
+    ],
     "Документация по функциональным возможностям почтовой платформы": [
       {
         "document": "platform-guide/email.md",
         "line": 1,
         "level": 1,
         "title": "Документация по функциональным возможностям почтовой платформы"
+      }
+    ],
+    "Документация по функциям Telegram-платформы": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 1,
+        "level": 1,
+        "title": "Документация по функциям Telegram-платформы"
       }
     ],
     "Документация по функциям платформы Discord": [
@@ -5368,14 +5350,6 @@
         "line": 1,
         "level": 1,
         "title": "Документация по функциям платформы Kook"
-      }
-    ],
-    "Документация по функциям платформы Matrix": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 1,
-        "level": 1,
-        "title": "Документация по функциям платформы Matrix"
       }
     ],
     "Документация по функциям платформы OneBot11": [
@@ -5410,14 +5384,6 @@
         "title": "Документация по функциям платформы Sandbox"
       }
     ],
-    "Документация по функциям платформы Telegram": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 1,
-        "level": 1,
-        "title": "Документация по функциям платформы Telegram"
-      }
-    ],
     "Документация по функциям платформы Terminal": [
       {
         "document": "platform-guide/terminal.md",
@@ -5426,12 +5392,12 @@
         "title": "Документация по функциям платформы Terminal"
       }
     ],
-    "Документация по функциям платформы Yunhu": [
+    "Документация по функциям платформы пользователей Yunhu": [
       {
-        "document": "platform-guide/yunhu.md",
+        "document": "platform-guide/yunhu_user.md",
         "line": 1,
         "level": 1,
-        "title": "Документация по функциям платформы Yunhu"
+        "title": "Документация по функциям платформы пользователей Yunhu"
       }
     ],
     "Дополнительные методы": [
@@ -5745,7 +5711,7 @@
     "Запуск нескольких аккаунтов": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 210,
+        "line": 213,
         "level": 3,
         "title": "Запуск нескольких аккаунтов"
       }
@@ -5780,18 +5746,28 @@
         "title": "Зарезервированные диапазоны ошибок"
       }
     ],
+    "Защита конфиденциальности (4.3.0)": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 67,
+        "level": 2,
+        "title": "Защита конфиденциальности (4.3.0)"
+      }
+    ],
     "Идентификатор аккаунта в событиях": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 447,
+        "line": 449,
         "level": 3,
         "title": "Идентификатор аккаунта в событиях"
-      },
+      }
+    ],
+    "Идентификатор бота в событиях": [
       {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 581,
+        "document": "platform-guide/yunhu.md",
+        "line": 687,
         "level": 3,
-        "title": "Идентификатор аккаунта в событиях"
+        "title": "Идентификатор бота в событиях"
       }
     ],
     "Идентификатор запроса (X-Request-ID)": [
@@ -5816,14 +5792,6 @@
         "title": "Идентификаторы сессии"
       }
     ],
-    "Идентификация бота в событиях": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 684,
-        "level": 3,
-        "title": "Идентификация бота в событиях"
-      }
-    ],
     "Иерархия исключений": [
       {
         "document": "advanced/http-client.md",
@@ -5832,12 +5800,12 @@
         "title": "Иерархия исключений"
       }
     ],
-    "Извлечение данных сегментов сообщений": [
+    "Извлечение данных сообщений": [
       {
         "document": "platform-guide/telegram.md",
         "line": 332,
         "level": 3,
-        "title": "Извлечение данных сегментов сообщений"
+        "title": "Извлечение данных сообщений"
       }
     ],
     "Изменение конфигурации": [
@@ -5918,14 +5886,6 @@
         "title": "Инициализация проекта и установка модулей"
       }
     ],
-    "Инструкция по использованию": [
-      {
-        "document": "platform-guide/sandbox.md",
-        "line": 38,
-        "level": 2,
-        "title": "Инструкция по использованию"
-      }
-    ],
     "Инструкция по конфигурации": [
       {
         "document": "platform-guide/email.md",
@@ -5937,6 +5897,12 @@
     "Инструкция по настройке": [
       {
         "document": "platform-guide/kook.md",
+        "line": 22,
+        "level": 2,
+        "title": "Инструкция по настройке"
+      },
+      {
+        "document": "platform-guide/matrix.md",
         "line": 22,
         "level": 2,
         "title": "Инструкция по настройке"
@@ -6035,31 +6001,15 @@
     "Интерфейс управления": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 715,
+        "line": 718,
         "level": 3,
         "title": "Интерфейс управления"
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 613,
+        "line": 617,
         "level": 3,
         "title": "Интерфейс управления"
-      }
-    ],
-    "Информация в журнале": [
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 603,
-        "level": 3,
-        "title": "Информация в журнале"
-      }
-    ],
-    "Информация в логах": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 706,
-        "level": 3,
-        "title": "Информация в логах"
       }
     ],
     "Информация о боте": [
@@ -6155,7 +6105,7 @@
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 5,
+        "line": 7,
         "level": 2,
         "title": "Информация о документации"
       }
@@ -6224,10 +6174,24 @@
     ],
     "Использование": [
       {
+        "document": "platform-guide/sandbox.md",
+        "line": 38,
+        "level": 2,
+        "title": "Использование"
+      },
+      {
         "document": "platform-guide/terminal.md",
         "line": 33,
         "level": 2,
         "title": "Использование"
+      }
+    ],
+    "Использование DSL Send для указания учетной записи": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 563,
+        "level": 3,
+        "title": "Использование DSL Send для указания учетной записи"
       }
     ],
     "Использование Docker": [
@@ -6241,13 +6205,7 @@
     "Использование Send DSL для указания аккаунта": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 429,
-        "level": 3,
-        "title": "Использование Send DSL для указания аккаунта"
-      },
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 559,
+        "line": 431,
         "level": 3,
         "title": "Использование Send DSL для указания аккаунта"
       }
@@ -6255,7 +6213,7 @@
     "Использование Send DSL для указания бота": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 662,
+        "line": 665,
         "level": 3,
         "title": "Использование Send DSL для указания бота"
       }
@@ -6359,7 +6317,7 @@
     "Использование примеров": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 179,
+        "line": 182,
         "level": 2,
         "title": "Использование примеров"
       }
@@ -6399,7 +6357,7 @@
     "Использование специфических методов Discord": [
       {
         "document": "platform-guide/discord.md",
-        "line": 451,
+        "line": 453,
         "level": 3,
         "title": "Использование специфических методов Discord"
       }
@@ -6884,6 +6842,22 @@
         "title": "Конфигурация нескольких аккаунтов"
       }
     ],
+    "Конфигурация нескольких ботов": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 632,
+        "level": 2,
+        "title": "Конфигурация нескольких ботов"
+      }
+    ],
+    "Конфигурация нескольких учетных записей": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 519,
+        "level": 2,
+        "title": "Конфигурация нескольких учетных записей"
+      }
+    ],
     "Конфигурация области действия (scope)": [
       {
         "document": "user-guide/configuration.md",
@@ -7000,14 +6974,6 @@
         "title": "Краткий справочник"
       }
     ],
-    "Криптография с конечной точкой (4.3.0)": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 67,
-        "level": 2,
-        "title": "Криптография с конечной точкой (4.3.0)"
-      }
-    ],
     "Ленивая загрузка и вызов": [
       {
         "document": "advanced/module-communication.md",
@@ -7024,12 +6990,12 @@
         "title": "Ленивая система загрузки модулей"
       }
     ],
-    "Личные сообщения": [
+    "Логи": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 171,
+        "document": "platform-guide/yunhu_user.md",
+        "line": 607,
         "level": 3,
-        "title": "Личные сообщения"
+        "title": "Логи"
       }
     ],
     "Логика выполнения после успешной отправки (Hook)": [
@@ -7045,6 +7011,12 @@
         "document": "developer-guide/modules/best-practices.md",
         "line": 347,
         "level": 2,
+        "title": "Логирование"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 709,
+        "level": 3,
         "title": "Логирование"
       }
     ],
@@ -7240,18 +7212,10 @@
         "title": "Метод уведомления события"
       }
     ],
-    "Методы Api DSL (YunhuHTTPClient → конечные точки API v1 для пользователя)": [
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 41,
-        "level": 3,
-        "title": "Методы Api DSL (YunhuHTTPClient → конечные точки API v1 для пользователя)"
-      }
-    ],
     "Методы Event Mixin": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 334,
+        "line": 335,
         "level": 3,
         "title": "Методы Event Mixin"
       }
@@ -7291,7 +7255,7 @@
     "Методы запроса сообщений": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 105,
+        "line": 107,
         "level": 3,
         "title": "Методы запроса сообщений"
       }
@@ -7335,7 +7299,7 @@
       },
       {
         "document": "standards/send-method-spec.md",
-        "line": 496,
+        "line": 506,
         "level": 3,
         "title": "Методы отправки"
       }
@@ -7416,18 +7380,16 @@
         "title": "Методы уведомлений"
       }
     ],
-    "Методы управления группами": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 85,
-        "level": 3,
-        "title": "Методы управления группами"
-      }
-    ],
     "Методы управления группой": [
       {
         "document": "platform-guide/onebot11.md",
         "line": 104,
+        "level": 3,
+        "title": "Методы управления группой"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 87,
         "level": 3,
         "title": "Методы управления группой"
       }
@@ -7462,36 +7424,12 @@
         "title": "Методы цепочечного изменения"
       }
     ],
-    "Методы цепочечного модифицирования (можно комбинировать)": [
+    "Методы цепочечного модификатора (можно комбинировать)": [
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 167,
+        "document": "platform-guide/discord.md",
+        "line": 128,
         "level": 3,
-        "title": "Методы цепочечного модифицирования (можно комбинировать)"
-      }
-    ],
-    "Методы цепочечного синтаксиса (возвращают self, могут использоваться в комбинации)": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 111,
-        "level": 3,
-        "title": "Методы цепочечного синтаксиса (возвращают self, могут использоваться в комбинации)"
-      }
-    ],
-    "Методы цепочечного синтаксиса (можно комбинировать)": [
-      {
-        "document": "platform-guide/ideaura.md",
-        "line": 58,
-        "level": 3,
-        "title": "Методы цепочечного синтаксиса (можно комбинировать)"
-      }
-    ],
-    "Методы цепочечного форматирования (можно комбинировать)": [
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 155,
-        "level": 3,
-        "title": "Методы цепочечного форматирования (можно комбинировать)"
+        "title": "Методы цепочечного модификатора (можно комбинировать)"
       }
     ],
     "Методы цепочечных модификаторов (можно комбинировать)": [
@@ -7508,6 +7446,14 @@
         "line": 34,
         "level": 2,
         "title": "Методы цепочки"
+      }
+    ],
+    "Методы цепочки вызовов (могут использоваться совместно)": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 60,
+        "level": 3,
+        "title": "Методы цепочки вызовов (могут использоваться совместно)"
       }
     ],
     "Методы, специфичные для платформы": [
@@ -7574,18 +7520,18 @@
         "title": "Механизм распределения событий"
       }
     ],
-    "Механизм сердцебиения": [
+    "Механизм таймера": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 372,
+        "line": 373,
         "level": 3,
-        "title": "Механизм сердцебиения"
+        "title": "Механизм таймера"
       }
     ],
     "Механизм心跳": [
       {
         "document": "platform-guide/discord.md",
-        "line": 389,
+        "line": 391,
         "level": 3,
         "title": "Механизм心跳"
       }
@@ -7609,23 +7555,9 @@
     "Многоаккаунтная конфигурация": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 392,
+        "line": 394,
         "level": 2,
         "title": "Многоаккаунтная конфигурация"
-      },
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 515,
-        "level": 2,
-        "title": "Многоаккаунтная конфигурация"
-      }
-    ],
-    "Многоботная конфигурация": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 629,
-        "level": 2,
-        "title": "Многоботная конфигурация"
       }
     ],
     "Многопоточное ожидание: expect + select": [
@@ -7972,12 +7904,12 @@
         "title": "Не ждать результата"
       }
     ],
-    "Не поддерживаемые стандартные действия": [
+    "Не реализованные функции (конечные точки известны, сообщения в full.proto полны, можно расширять по требованию)": [
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 307,
+        "document": "platform-guide/yunhu_user.md",
+        "line": 71,
         "level": 3,
-        "title": "Не поддерживаемые стандартные действия"
+        "title": "Не реализованные функции (конечные точки известны, сообщения в full.proto полны, можно расширять по требованию)"
       }
     ],
     "Не сохраняемые поля `example` (v2.8.0+)": [
@@ -8012,6 +7944,14 @@
         "title": "Необязательные поля"
       }
     ],
+    "Неподдерживаемые стандартные действия": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 309,
+        "level": 3,
+        "title": "Неподдерживаемые стандартные действия"
+      }
+    ],
     "Неразличительность регистра": [
       {
         "document": "platform-guide/onebot12.md",
@@ -8023,7 +7963,7 @@
     "Неудачная отправка сообщения": [
       {
         "document": "platform-guide/README.md",
-        "line": 263,
+        "line": 264,
         "level": 4,
         "title": "Неудачная отправка сообщения"
       }
@@ -8250,6 +8190,28 @@
         "title": "Обновление до v5 (4.2.0)"
       }
     ],
+    "Обновление до версии v5 (4.2.0)": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 58,
+        "level": 2,
+        "title": "Обновление до версии v5 (4.2.0)"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 22,
+        "level": 2,
+        "title": "Обновление до версии v5 (4.2.0)"
+      }
+    ],
+    "Обновление до парадигмы v5 (4.4.0)": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 20,
+        "level": 2,
+        "title": "Обновление до парадигмы v5 (4.4.0)"
+      }
+    ],
     "Обновление и обслуживание": [
       {
         "document": "user-guide/deployment.md",
@@ -8320,12 +8282,6 @@
         "line": 10,
         "level": 2,
         "title": "Обновление парадигмы v5 (4.2.0)"
-      },
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 20,
-        "level": 2,
-        "title": "Обновление парадигмы v5 (4.2.0)"
       }
     ],
     "Обновление парадигмы v5 (4.3.0)": [
@@ -8342,26 +8298,10 @@
         "title": "Обновление парадигмы v5 (4.3.0)"
       }
     ],
-    "Обновление парадигмы v5 (4.4.0)": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 20,
-        "level": 2,
-        "title": "Обновление парадигмы v5 (4.4.0)"
-      }
-    ],
-    "Обновление формата v5 (4.2.0)": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 58,
-        "level": 2,
-        "title": "Обновление формата v5 (4.2.0)"
-      }
-    ],
     "Обработка взаимодействий": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 195,
+        "line": 198,
         "level": 3,
         "title": "Обработка взаимодействий"
       }
@@ -8369,7 +8309,7 @@
     "Обработка групповых сообщений": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 385,
+        "line": 386,
         "level": 3,
         "title": "Обработка групповых сообщений"
       }
@@ -8377,25 +8317,9 @@
     "Обработка групповых сообщений (по @)": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 181,
+        "line": 184,
         "level": 3,
         "title": "Обработка групповых сообщений (по @)"
-      }
-    ],
-    "Обработка изменений настроек бота": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 464,
-        "level": 1,
-        "title": "Обработка изменений настроек бота"
-      }
-    ],
-    "Обработка изменений участников": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 460,
-        "level": 3,
-        "title": "Обработка изменений участников"
       }
     ],
     "Обработка изображений": [
@@ -8417,7 +8341,7 @@
     "Обработка личных сообщений": [
       {
         "document": "platform-guide/discord.md",
-        "line": 418,
+        "line": 420,
         "level": 3,
         "title": "Обработка личных сообщений"
       },
@@ -8431,7 +8355,7 @@
     "Обработка медиафайлов": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 120,
+        "line": 124,
         "level": 3,
         "title": "Обработка медиафайлов"
       }
@@ -8517,17 +8441,17 @@
     "Обработка реакций": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 409,
+        "line": 410,
         "level": 3,
         "title": "Обработка реакций"
       }
     ],
-    "Обработка редактирования сообщений": [
+    "Обработка редактированных сообщений": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 447,
+        "line": 448,
         "level": 3,
-        "title": "Обработка редактирования сообщений"
+        "title": "Обработка редактированных сообщений"
       }
     ],
     "Обработка с помощью подстановочных знаков и регулярных выражений": [
@@ -8553,7 +8477,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 170,
+        "line": 171,
         "level": 3,
         "title": "Обработка событий"
       }
@@ -8561,7 +8485,7 @@
     "Обработка событий взаимодействия": [
       {
         "document": "platform-guide/discord.md",
-        "line": 471,
+        "line": 473,
         "level": 3,
         "title": "Обработка событий взаимодействия"
       }
@@ -8574,28 +8498,12 @@
         "title": "Обработка событий запросов"
       }
     ],
-    "Обработка событий кнопок A2UI": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 469,
-        "level": 1,
-        "title": "Обработка событий кнопок A2UI"
-      }
-    ],
     "Обработка событий команд": [
       {
         "document": "getting-started/event-handling.md",
         "line": 89,
         "level": 2,
         "title": "Обработка событий команд"
-      }
-    ],
-    "Обработка событий контекстного меню": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 459,
-        "level": 1,
-        "title": "Обработка событий контекстного меню"
       }
     ],
     "Обработка событий сообщений": [
@@ -8617,7 +8525,7 @@
     "Обработка сообщений в канале": [
       {
         "document": "platform-guide/discord.md",
-        "line": 398,
+        "line": 400,
         "level": 3,
         "title": "Обработка сообщений в канале"
       },
@@ -8647,7 +8555,7 @@
     "Обратное преобразование": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 516,
+        "line": 526,
         "level": 3,
         "title": "Обратное преобразование"
       }
@@ -8655,7 +8563,7 @@
     "Обратное преобразование OB12-сегментов сообщений (Raw_ob12)": [
       {
         "document": "platform-guide/email.md",
-        "line": 121,
+        "line": 122,
         "level": 3,
         "title": "Обратное преобразование OB12-сегментов сообщений (Raw_ob12)"
       }
@@ -8719,7 +8627,7 @@
     "Общие интерфейсы": [
       {
         "document": "platform-guide/README.md",
-        "line": 40,
+        "line": 41,
         "level": 2,
         "title": "Общие интерфейсы"
       }
@@ -8775,7 +8683,7 @@
     "Объединённая пересылка (необязательно, см. §2.4)": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 510,
+        "line": 520,
         "level": 3,
         "title": "Объединённая пересылка (необязательно, см. §2.4)"
       }
@@ -8964,6 +8872,14 @@
         "title": "Операции запросов"
       }
     ],
+    "Операции запросов (DSL запросов)": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 49,
+        "level": 2,
+        "title": "Операции запросов (DSL запросов)"
+      }
+    ],
     "Операции с запросами": [
       {
         "document": "standards/README.md",
@@ -8986,18 +8902,12 @@
         "line": 54,
         "level": 2,
         "title": "Операции с запросами (Request DSL)"
-      },
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 49,
-        "level": 2,
-        "title": "Операции с запросами (Request DSL)"
       }
     ],
     "Операции с запросами (одобрение заявки на вступление в группу)": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 108,
+        "line": 111,
         "level": 2,
         "title": "Операции с запросами (одобрение заявки на вступление в группу)"
       }
@@ -9005,7 +8915,7 @@
     "Операции с сообщениями": [
       {
         "document": "platform-guide/discord.md",
-        "line": 181,
+        "line": 183,
         "level": 3,
         "title": "Операции с сообщениями"
       }
@@ -9013,7 +8923,7 @@
     "Описание Opcode": [
       {
         "document": "platform-guide/discord.md",
-        "line": 368,
+        "line": 370,
         "level": 3,
         "title": "Описание Opcode"
       }
@@ -9029,7 +8939,7 @@
     "Описание дополнительных полей": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 463,
+        "line": 465,
         "level": 2,
         "title": "Описание дополнительных полей"
       }
@@ -9053,7 +8963,7 @@
     "Описание кодов ошибок": [
       {
         "document": "platform-guide/discord.md",
-        "line": 210,
+        "line": 212,
         "level": 3,
         "title": "Описание кодов ошибок"
       },
@@ -9065,13 +8975,13 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 198,
+        "line": 199,
         "level": 3,
         "title": "Описание кодов ошибок"
       },
       {
         "document": "platform-guide/qqbot.md",
-        "line": 165,
+        "line": 168,
         "level": 2,
         "title": "Описание кодов ошибок"
       }
@@ -9085,25 +8995,19 @@
       },
       {
         "document": "platform-guide/ideaura.md",
-        "line": 394,
+        "line": 396,
         "level": 3,
         "title": "Описание конфигурации"
       },
       {
-        "document": "platform-guide/matrix.md",
-        "line": 22,
-        "level": 2,
-        "title": "Описание конфигурации"
-      },
-      {
         "document": "platform-guide/yunhu.md",
-        "line": 631,
+        "line": 634,
         "level": 3,
         "title": "Описание конфигурации"
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 517,
+        "line": 521,
         "level": 3,
         "title": "Описание конфигурации"
       }
@@ -9146,20 +9050,26 @@
         "title": "Описание основных модулей"
       }
     ],
-    "Описание параметра кнопок": [
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 132,
-        "level": 3,
-        "title": "Описание параметра кнопок"
-      }
-    ],
     "Описание параметров": [
       {
         "document": "ecosystem/dashboard.md",
         "line": 55,
         "level": 3,
         "title": "Описание параметров"
+      }
+    ],
+    "Описание параметров кнопок": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 144,
+        "level": 3,
+        "title": "Описание параметров кнопок"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 136,
+        "level": 3,
+        "title": "Описание параметров кнопок"
       }
     ],
     "Описание полей": [
@@ -9181,7 +9091,7 @@
     "Описание расширенных полей": [
       {
         "document": "platform-guide/email.md",
-        "line": 206,
+        "line": 207,
         "level": 2,
         "title": "Описание расширенных полей"
       },
@@ -9199,13 +9109,13 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 577,
+        "line": 578,
         "level": 2,
         "title": "Описание расширенных полей"
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 425,
+        "line": 429,
         "level": 2,
         "title": "Описание расширенных полей"
       }
@@ -9355,7 +9265,7 @@
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 10,
+        "line": 12,
         "level": 2,
         "title": "Основная информация"
       }
@@ -9527,7 +9437,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 83,
+        "line": 82,
         "level": 3,
         "title": "Основные методы отправки"
       }
@@ -9573,19 +9483,19 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 211,
+        "line": 212,
         "level": 3,
         "title": "Основные отличия"
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 361,
+        "line": 363,
         "level": 3,
         "title": "Основные отличия"
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 222,
+        "line": 226,
         "level": 3,
         "title": "Основные отличия"
       }
@@ -9637,19 +9547,19 @@
     "Основные различия": [
       {
         "document": "platform-guide/discord.md",
-        "line": 222,
+        "line": 224,
         "level": 3,
         "title": "Основные различия"
       },
       {
         "document": "platform-guide/email.md",
-        "line": 134,
+        "line": 135,
         "level": 3,
         "title": "Основные различия"
       },
       {
         "document": "platform-guide/ideaura.md",
-        "line": 138,
+        "line": 140,
         "level": 3,
         "title": "Основные различия"
       }
@@ -9697,7 +9607,7 @@
     "Особенности обработки файлов": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 477,
+        "line": 479,
         "level": 3,
         "title": "Особенности обработки файлов"
       }
@@ -9825,7 +9735,7 @@
     "Отображение detail_type": [
       {
         "document": "platform-guide/discord.md",
-        "line": 238,
+        "line": 240,
         "level": 3,
         "title": "Отображение detail_type"
       }
@@ -9833,7 +9743,7 @@
     "Отображение типов событий": [
       {
         "document": "platform-guide/discord.md",
-        "line": 245,
+        "line": 247,
         "level": 3,
         "title": "Отображение типов событий"
       }
@@ -9849,7 +9759,7 @@
     "Отправка в разные цели": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 89,
+        "line": 91,
         "level": 3,
         "title": "Отправка в разные цели"
       }
@@ -9857,9 +9767,17 @@
     "Отправка встроенного сообщения": [
       {
         "document": "platform-guide/discord.md",
-        "line": 434,
+        "line": 436,
         "level": 3,
         "title": "Отправка встроенного сообщения"
+      }
+    ],
+    "Отправка личных сообщений": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 173,
+        "level": 3,
+        "title": "Отправка личных сообщений"
       }
     ],
     "Отправка медиа (Image / Voice / Video / File)": [
@@ -9870,16 +9788,18 @@
         "title": "Отправка медиа (Image / Voice / Video / File)"
       }
     ],
+    "Отправка медиа-сообщений": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 427,
+        "level": 3,
+        "title": "Отправка медиа-сообщений"
+      }
+    ],
     "Отправка медиафайлов": [
       {
         "document": "platform-guide/kook.md",
         "line": 462,
-        "level": 3,
-        "title": "Отправка медиафайлов"
-      },
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 426,
         "level": 3,
         "title": "Отправка медиафайлов"
       }
@@ -9890,6 +9810,14 @@
         "line": 1066,
         "level": 3,
         "title": "Отправка мета-событий адаптером"
+      }
+    ],
+    "Отправка оригинальных сообщений": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 119,
+        "level": 3,
+        "title": "Отправка оригинальных сообщений"
       }
     ],
     "Отправка ответа": [
@@ -9924,14 +9852,6 @@
         "title": "Отправка сообщений (Send)"
       }
     ],
-    "Отправка сообщений в исходном виде": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 119,
-        "level": 3,
-        "title": "Отправка сообщений в исходном виде"
-      }
-    ],
     "Отправка сообщений в исходном формате": [
       {
         "document": "platform-guide/onebot12.md",
@@ -9959,31 +9879,25 @@
     "Отправка сообщения A2UI": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 498,
-        "level": 3,
-        "title": "Отправка сообщения A2UI"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 506,
+        "line": 507,
         "level": 1,
         "title": "Отправка сообщения A2UI"
       }
     ],
-    "Отправка сообщения с кнопками в группу": [
+    "Отправка сообщения с кнопками в группе": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 492,
+        "line": 493,
         "level": 1,
-        "title": "Отправка сообщения с кнопками в группу"
+        "title": "Отправка сообщения с кнопками в группе"
       }
     ],
-    "Отправка сообщения с кнопками в личный чат пользователя": [
+    "Отправка сообщения с кнопками в личном чате": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 495,
+        "line": 496,
         "level": 1,
-        "title": "Отправка сообщения с кнопками в личный чат пользователя"
+        "title": "Отправка сообщения с кнопками в личном чате"
       }
     ],
     "Отправка сообщения с указанием аккаунта": [
@@ -10016,6 +9930,14 @@
         "line": 1125,
         "level": 3,
         "title": "Отслеживание жизненного цикла бота"
+      }
+    ],
+    "Отслеживание изменений участников": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 461,
+        "level": 3,
+        "title": "Отслеживание изменений участников"
       }
     ],
     "Отслеживание личных сообщений": [
@@ -10144,14 +10066,6 @@
         "line": 193,
         "level": 3,
         "title": "Параметры ws_connect"
-      }
-    ],
-    "Параметры кнопок": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 142,
-        "level": 3,
-        "title": "Параметры кнопок"
       }
     ],
     "Параметры командной строки": [
@@ -10295,7 +10209,7 @@
     "Переподключение и RESUME": [
       {
         "document": "platform-guide/discord.md",
-        "line": 381,
+        "line": 383,
         "level": 3,
         "title": "Переподключение и RESUME"
       }
@@ -10324,10 +10238,18 @@
         "title": "Перехват исключений"
       }
     ],
+    "Перечень подключенных функций платформы": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 32,
+        "level": 2,
+        "title": "Перечень подключенных функций платформы"
+      }
+    ],
     "Письмо с вложением": [
       {
         "document": "platform-guide/email.md",
-        "line": 169,
+        "line": 170,
         "level": 3,
         "title": "Письмо с вложением"
       }
@@ -10354,14 +10276,6 @@
         "line": 189,
         "level": 3,
         "title": "Платформенно-специфические ответы"
-      }
-    ],
-    "Платформенно-специфические функции": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 16,
-        "level": 2,
-        "title": "Платформенно-специфические функции"
       }
     ],
     "Платформенно-специфичные методы": [
@@ -10394,20 +10308,20 @@
         "title": "Платформенные расширения"
       }
     ],
-    "Платформенные расширенные действия (call / метод Api)": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 30,
-        "level": 3,
-        "title": "Платформенные расширенные действия (call / метод Api)"
-      }
-    ],
     "Платформо-специфичные события (префикс onebot11_)": [
       {
         "document": "platform-guide/onebot11.md",
         "line": 286,
         "level": 3,
         "title": "Платформо-специфичные события (префикс onebot11_)"
+      }
+    ],
+    "Платформо-специфичные функции": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 16,
+        "level": 2,
+        "title": "Платформо-специфичные функции"
       }
     ],
     "Поведение при отключении модуля": [
@@ -10469,7 +10383,7 @@
     "Поддерживаемые detail_type OneBot12": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 252,
+        "line": 256,
         "level": 3,
         "title": "Поддерживаемые detail_type OneBot12"
       }
@@ -10510,12 +10424,12 @@
         "title": "Поддерживаемые возможности платформы"
       }
     ],
-    "Поддерживаемые оригинальные типы событий": [
+    "Поддерживаемые исходные типы событий": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 241,
+        "line": 245,
         "level": 3,
-        "title": "Поддерживаемые оригинальные типы событий"
+        "title": "Поддерживаемые исходные типы событий"
       }
     ],
     "Поддерживаемые платформы": [
@@ -10529,7 +10443,7 @@
     "Поддерживаемые стандартные действия": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 294,
+        "line": 296,
         "level": 3,
         "title": "Поддерживаемые стандартные действия"
       }
@@ -10545,7 +10459,13 @@
     "Поддерживаемые типы отправки сообщений": [
       {
         "document": "platform-guide/discord.md",
-        "line": 107,
+        "line": 108,
+        "level": 2,
+        "title": "Поддерживаемые типы отправки сообщений"
+      },
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 36,
         "level": 2,
         "title": "Поддерживаемые типы отправки сообщений"
       },
@@ -10562,6 +10482,12 @@
         "title": "Поддерживаемые типы отправки сообщений"
       },
       {
+        "document": "platform-guide/telegram.md",
+        "line": 72,
+        "level": 2,
+        "title": "Поддерживаемые типы отправки сообщений"
+      },
+      {
         "document": "platform-guide/wechatmp.md",
         "line": 24,
         "level": 2,
@@ -10569,13 +10495,13 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 60,
+        "line": 61,
         "level": 2,
         "title": "Поддерживаемые типы отправки сообщений"
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 94,
+        "line": 98,
         "level": 2,
         "title": "Поддерживаемые типы отправки сообщений"
       }
@@ -10583,7 +10509,7 @@
     "Поддерживаемые типы файлов": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 485,
+        "line": 487,
         "level": 3,
         "title": "Поддерживаемые типы файлов"
       }
@@ -10615,25 +10541,25 @@
     "Поддержка OneBot12 сообщений": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 102,
+        "line": 104,
         "level": 3,
         "title": "Поддержка OneBot12 сообщений"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 161,
+        "line": 162,
         "level": 3,
         "title": "Поддержка OneBot12 сообщений"
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 251,
+        "line": 253,
         "level": 3,
         "title": "Поддержка OneBot12 сообщений"
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 182,
+        "line": 186,
         "level": 3,
         "title": "Поддержка OneBot12 сообщений"
       }
@@ -10679,7 +10605,7 @@
     "Подключение к Gateway": [
       {
         "document": "platform-guide/discord.md",
-        "line": 356,
+        "line": 358,
         "level": 2,
         "title": "Подключение к Gateway"
       }
@@ -10823,7 +10749,7 @@
     "Полное событие электронной почты": [
       {
         "document": "platform-guide/email.md",
-        "line": 218,
+        "line": 219,
         "level": 3,
         "title": "Полное событие электронной почты"
       }
@@ -10926,12 +10852,12 @@
         "title": "Получение подробной информации о методе"
       }
     ],
-    "Получение событий (WebSocket, protobuf-кодирование)": [
+    "Получение событий (WebSocket, кодировка protobuf)": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 32,
+        "line": 34,
         "level": 3,
-        "title": "Получение событий (WebSocket, protobuf-кодирование)"
+        "title": "Получение событий (WebSocket, кодировка protobuf)"
       }
     ],
     "Получение сообщений": [
@@ -11049,7 +10975,7 @@
     "Поток WebSocket": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 150,
+        "line": 153,
         "level": 3,
         "title": "Поток WebSocket"
       }
@@ -11183,7 +11109,7 @@
     "Приглашения в комнаты": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 378,
+        "line": 379,
         "level": 3,
         "title": "Приглашения в комнаты"
       }
@@ -11236,14 +11162,6 @@
         "title": "Пример использования"
       }
     ],
-    "Пример использования API пользователя": [
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 80,
-        "level": 3,
-        "title": "Пример использования API пользователя"
-      }
-    ],
     "Пример использования в модуле": [
       {
         "document": "advanced/lifecycle.md",
@@ -11291,19 +11209,19 @@
     "Пример обработки событий": [
       {
         "document": "platform-guide/email.md",
-        "line": 297,
+        "line": 298,
         "level": 2,
         "title": "Пример обработки событий"
       },
       {
         "document": "platform-guide/ideaura.md",
-        "line": 322,
+        "line": 324,
         "level": 3,
         "title": "Пример обработки событий"
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 357,
+        "line": 361,
         "level": 3,
         "title": "Пример обработки событий"
       }
@@ -11335,23 +11253,23 @@
     "Пример события доски объявлений бота": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 331,
+        "line": 335,
         "level": 3,
         "title": "Пример события доски объявлений бота"
       }
     ],
-    "Пример события супер-файла-раздачи": [
+    "Пример события супер-файлового обмена": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 307,
+        "line": 311,
         "level": 3,
-        "title": "Пример события супер-файла-раздачи"
+        "title": "Пример события супер-файлового обмена"
       }
     ],
     "Пример уведомления об изменении сообщения": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 286,
+        "line": 290,
         "level": 3,
         "title": "Пример уведомления об изменении сообщения"
       }
@@ -11378,10 +11296,18 @@
         "title": "Примеры"
       }
     ],
+    "Примеры API для пользователей": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 82,
+        "level": 3,
+        "title": "Примеры API для пользователей"
+      }
+    ],
     "Примеры запроса сообщений": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 232,
+        "line": 234,
         "level": 3,
         "title": "Примеры запроса сообщений"
       }
@@ -11397,7 +11323,7 @@
     "Примеры использования": [
       {
         "document": "platform-guide/discord.md",
-        "line": 396,
+        "line": 398,
         "level": 2,
         "title": "Примеры использования"
       },
@@ -11409,7 +11335,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 383,
+        "line": 384,
         "level": 2,
         "title": "Примеры использования"
       },
@@ -11428,12 +11354,12 @@
         "title": "Примеры обработки возвращаемых значений"
       }
     ],
-    "Примеры отправки сообщений": [
+    "Примеры отправки": [
       {
         "document": "platform-guide/telegram.md",
         "line": 135,
         "level": 3,
-        "title": "Примеры отправки сообщений"
+        "title": "Примеры отправки"
       }
     ],
     "Примеры распространенных задач": [
@@ -11461,7 +11387,7 @@
     "Примеры событий сообщений": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 260,
+        "line": 264,
         "level": 3,
         "title": "Примеры событий сообщений"
       }
@@ -11469,7 +11395,7 @@
     "Примеры специальных полей": [
       {
         "document": "platform-guide/discord.md",
-        "line": 261,
+        "line": 263,
         "level": 3,
         "title": "Примеры специальных полей"
       },
@@ -11481,24 +11407,26 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 228,
+        "line": 229,
         "level": 3,
         "title": "Примеры специальных полей"
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 378,
+        "line": 380,
         "level": 3,
         "title": "Примеры специальных полей"
       }
     ],
-    "Примеры стандартных API-действий": [
+    "Примеры стандартных API действий": [
       {
         "document": "platform-guide/matrix.md",
         "line": 87,
         "level": 3,
-        "title": "Примеры стандартных API-действий"
-      },
+        "title": "Примеры стандартных API действий"
+      }
+    ],
+    "Примеры стандартных API-действий": [
       {
         "document": "platform-guide/sandbox.md",
         "line": 27,
@@ -11509,23 +11437,23 @@
     "Примеры стандартных событий": [
       {
         "document": "platform-guide/email.md",
-        "line": 216,
+        "line": 217,
         "level": 2,
         "title": "Примеры стандартных событий"
       }
     ],
-    "Примеры управления группами": [
+    "Примеры управления группой": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 189,
+        "line": 191,
         "level": 3,
-        "title": "Примеры управления группами"
+        "title": "Примеры управления группой"
       }
     ],
     "Примеры цепочечного вызова": [
       {
         "document": "platform-guide/discord.md",
-        "line": 134,
+        "line": 136,
         "level": 3,
         "title": "Примеры цепочечного вызова"
       },
@@ -11537,29 +11465,21 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 136,
+        "line": 137,
         "level": 3,
         "title": "Примеры цепочечного вызова"
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 176,
+        "line": 178,
         "level": 3,
         "title": "Примеры цепочечного вызова"
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 166,
+        "line": 170,
         "level": 3,
         "title": "Примеры цепочечного вызова"
-      }
-    ],
-    "Примеры цепочечного синтаксиса": [
-      {
-        "document": "platform-guide/ideaura.md",
-        "line": 67,
-        "level": 3,
-        "title": "Примеры цепочечного синтаксиса"
       }
     ],
     "Примеры цепочечных вызовов": [
@@ -11568,6 +11488,14 @@
         "line": 141,
         "level": 3,
         "title": "Примеры цепочечных вызовов"
+      }
+    ],
+    "Примеры цепочки вызовов": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 69,
+        "level": 3,
+        "title": "Примеры цепочки вызовов"
       }
     ],
     "Примечания": [
@@ -11591,7 +11519,7 @@
       },
       {
         "document": "platform-guide/ideaura.md",
-        "line": 496,
+        "line": 498,
         "level": 2,
         "title": "Примечания"
       },
@@ -11794,14 +11722,6 @@
         "title": "Проверка установки"
       }
     ],
-    "Проверка, является ли событие нажатием кнопки": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 443,
-        "level": 1,
-        "title": "Проверка, является ли событие нажатием кнопки"
-      }
-    ],
     "Продолжение при ошибках и повторная отправка": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -11885,7 +11805,7 @@
     "Протокол отправки медиа": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 503,
+        "line": 513,
         "level": 3,
         "title": "Протокол отправки медиа"
       }
@@ -11937,7 +11857,7 @@
     "Процесс подключения": [
       {
         "document": "platform-guide/discord.md",
-        "line": 358,
+        "line": 360,
         "level": 3,
         "title": "Процесс подключения"
       },
@@ -11959,7 +11879,7 @@
     "Процесс синхронизации": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 362,
+        "line": 363,
         "level": 3,
         "title": "Процесс синхронизации"
       }
@@ -12175,7 +12095,13 @@
     "Расширения Event Mixin": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 360,
+        "line": 362,
+        "level": 2,
+        "title": "Расширения Event Mixin"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 308,
         "level": 2,
         "title": "Расширения Event Mixin"
       }
@@ -12229,9 +12155,25 @@
     "Расширенные действия платформы": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 314,
+        "line": 316,
         "level": 3,
         "title": "Расширенные действия платформы"
+      }
+    ],
+    "Расширенные действия платформы (методы call / Api)": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 30,
+        "level": 3,
+        "title": "Расширенные действия платформы (методы call / Api)"
+      }
+    ],
+    "Расширенные методы Event Mixin": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 541,
+        "level": 2,
+        "title": "Расширенные методы Event Mixin"
       }
     ],
     "Расширенные методы события (WebhookEventMixin)": [
@@ -12245,13 +12187,13 @@
     "Расширенные поля": [
       {
         "document": "platform-guide/discord.md",
-        "line": 230,
+        "line": 232,
         "level": 3,
         "title": "Расширенные поля"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 222,
+        "line": 223,
         "level": 3,
         "title": "Расширенные поля"
       }
@@ -12395,7 +12337,7 @@
     "Режим Webhook": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 157,
+        "line": 160,
         "level": 3,
         "title": "Режим Webhook"
       }
@@ -12419,7 +12361,7 @@
     "Режим построения пакетов (Build)": [
       {
         "document": "platform-guide/README.md",
-        "line": 137,
+        "line": 138,
         "level": 4,
         "title": "Режим построения пакетов (Build)"
       }
@@ -12906,12 +12848,12 @@
         "title": "Связанные документы"
       }
     ],
-    "Связанные с обратными запросами": [
+    "Связанные с запросами обратного вызова": [
       {
         "document": "platform-guide/telegram.md",
         "line": 325,
         "level": 3,
-        "title": "Связанные с обратными запросами"
+        "title": "Связанные с запросами обратного вызова"
       }
     ],
     "Связанные с сообщениями": [
@@ -12975,65 +12917,25 @@
     "Сегмент пересланного сообщения (ideaura_forwarded)": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 286,
+        "line": 288,
         "level": 3,
         "title": "Сегмент пересланного сообщения (ideaura_forwarded)"
-      }
-    ],
-    "Сегмент сообщения A2UI (a2ui)": [
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 500,
-        "level": 4,
-        "title": "Сегмент сообщения A2UI (a2ui)"
-      }
-    ],
-    "Сегмент сообщения кнопки (yunhu_user_button)": [
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 487,
-        "level": 4,
-        "title": "Сегмент сообщения кнопки (yunhu_user_button)"
       }
     ],
     "Сегмент сообщения с командой бота (ideaura_command)": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 305,
+        "line": 307,
         "level": 3,
         "title": "Сегмент сообщения с командой бота (ideaura_command)"
       }
     ],
-    "Сегмент сообщения с эмодзи/наклейками (yunhu_expression)": [
+    "Сегмент эмодзи/стикера (yunhu_expression)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 589,
+        "line": 590,
         "level": 3,
-        "title": "Сегмент сообщения с эмодзи/наклейками (yunhu_expression)"
-      }
-    ],
-    "Сегмент сообщения статьи (yunhu_user_post)": [
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 449,
-        "level": 4,
-        "title": "Сегмент сообщения статьи (yunhu_user_post)"
-      }
-    ],
-    "Сегмент сообщения стикера (yunhu_user_sticker)": [
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 470,
-        "level": 4,
-        "title": "Сегмент сообщения стикера (yunhu_user_sticker)"
-      }
-    ],
-    "Сегмент сообщения формы (yunhu_user_form)": [
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 436,
-        "level": 4,
-        "title": "Сегмент сообщения формы (yunhu_user_form)"
+        "title": "Сегмент эмодзи/стикера (yunhu_expression)"
       }
     ],
     "Семантика выгрузки и очистки": [
@@ -13055,7 +12957,7 @@
     "Семейство методов платформенных API": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 135,
+        "line": 138,
         "level": 2,
         "title": "Семейство методов платформенных API"
       }
@@ -13152,6 +13054,14 @@
         "line": 408,
         "level": 3,
         "title": "Синтаксис отправки с несколькими аккаунтами"
+      }
+    ],
+    "Синхронизация через API": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 361,
+        "level": 2,
+        "title": "Синхронизация через API"
       }
     ],
     "Синхронная инициализация": [
@@ -13321,23 +13231,23 @@
     "Событие запроса на добавление в друзья": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 257,
+        "line": 259,
         "level": 3,
         "title": "Событие запроса на добавление в друзья"
       }
     ],
-    "Событие запроса обратной связи": [
+    "Событие запроса обратного вызова": [
       {
         "document": "platform-guide/telegram.md",
         "line": 262,
         "level": 4,
-        "title": "Событие запроса обратной связи"
+        "title": "Событие запроса обратного вызова"
       }
     ],
     "Событие изменения статуса пользователя": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 244,
+        "line": 246,
         "level": 3,
         "title": "Событие изменения статуса пользователя"
       }
@@ -13345,7 +13255,7 @@
     "Событие нового письма (email_new)": [
       {
         "document": "platform-guide/email.md",
-        "line": 142,
+        "line": 143,
         "level": 3,
         "title": "Событие нового письма (email_new)"
       }
@@ -13353,7 +13263,7 @@
     "Событие онлайн друга": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 218,
+        "line": 220,
         "level": 3,
         "title": "Событие онлайн друга"
       }
@@ -13361,7 +13271,7 @@
     "Событие ответа на письмо (email_reply)": [
       {
         "document": "platform-guide/email.md",
-        "line": 192,
+        "line": 193,
         "level": 3,
         "title": "Событие ответа на письмо (email_reply)"
       }
@@ -13369,7 +13279,7 @@
     "Событие отказа в добавлении в друзья": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 271,
+        "line": 273,
         "level": 3,
         "title": "Событие отказа в добавлении в друзья"
       }
@@ -13377,7 +13287,7 @@
     "Событие отмены сообщения": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 174,
+        "line": 176,
         "level": 3,
         "title": "Событие отмены сообщения"
       }
@@ -13385,7 +13295,7 @@
     "Событие оффлайн друга": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 232,
+        "line": 234,
         "level": 3,
         "title": "Событие оффлайн друга"
       }
@@ -13393,7 +13303,7 @@
     "Событие пересылки сообщения": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 190,
+        "line": 192,
         "level": 3,
         "title": "Событие пересылки сообщения"
       }
@@ -13409,7 +13319,7 @@
     "Событие прочтения сообщения": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 205,
+        "line": 207,
         "level": 3,
         "title": "Событие прочтения сообщения"
       }
@@ -13417,7 +13327,7 @@
     "Событие редактирования сообщения": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 159,
+        "line": 161,
         "level": 3,
         "title": "Событие редактирования сообщения"
       }
@@ -13575,7 +13485,7 @@
     "Совместимость со старой конфигурацией": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 731,
+        "line": 734,
         "level": 3,
         "title": "Совместимость со старой конфигурацией"
       }
@@ -13688,12 +13598,28 @@
         "title": "Создание шаблона"
       }
     ],
+    "Сообщение A2UI (a2ui)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 504,
+        "level": 4,
+        "title": "Сообщение A2UI (a2ui)"
+      }
+    ],
     "Сообщение в группе (с упоминанием)": [
       {
         "document": "platform-guide/telegram.md",
         "line": 238,
         "level": 4,
         "title": "Сообщение в группе (с упоминанием)"
+      }
+    ],
+    "Сообщение кнопки (yunhu_user_button)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 491,
+        "level": 4,
+        "title": "Сообщение кнопки (yunhu_user_button)"
       }
     ],
     "Сообщение с встроенной клавиатурой": [
@@ -13704,10 +13630,26 @@
         "title": "Сообщение с встроенной клавиатурой"
       }
     ],
+    "Сообщение статьи (yunhu_user_post)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 453,
+        "level": 4,
+        "title": "Сообщение статьи (yunhu_user_post)"
+      }
+    ],
+    "Сообщение стикера (yunhu_user_sticker)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 474,
+        "level": 4,
+        "title": "Сообщение стикера (yunhu_user_sticker)"
+      }
+    ],
     "Сообщение типа discord_embed": [
       {
         "document": "platform-guide/discord.md",
-        "line": 337,
+        "line": 339,
         "level": 3,
         "title": "Сообщение типа discord_embed"
       }
@@ -13728,6 +13670,14 @@
         "title": "Сообщение упоминания всех (mention_all)"
       }
     ],
+    "Сообщение формы (yunhu_user_form)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 440,
+        "level": 4,
+        "title": "Сообщение формы (yunhu_user_form)"
+      }
+    ],
     "Соотношение self.user_id и Using": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -13736,12 +13686,20 @@
         "title": "Соотношение self.user_id и Using"
       }
     ],
-    "Сопоставление detail_type для событий сообщений": [
+    "Сопоставление detail_type событий сообщений": [
       {
         "document": "platform-guide/telegram.md",
         "line": 185,
         "level": 3,
-        "title": "Сопоставление detail_type для событий сообщений"
+        "title": "Сопоставление detail_type событий сообщений"
+      }
+    ],
+    "Сопоставление методов Api DSL (YunhuHTTPClient → конечная точка v1 API пользователя)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 43,
+        "level": 3,
+        "title": "Сопоставление методов Api DSL (YunhuHTTPClient → конечная точка v1 API пользователя)"
       }
     ],
     "Сопоставление отношений (relationship)": [
@@ -13826,22 +13784,26 @@
     ],
     "Специфические типы событий": [
       {
-        "document": "platform-guide/matrix.md",
-        "line": 207,
+        "document": "platform-guide/yunhu.md",
+        "line": 359,
         "level": 2,
         "title": "Специфические типы событий"
-      },
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 194,
-        "level": 3,
-        "title": "Специфические типы событий"
-      },
+      }
+    ],
+    "Специфичные типы событий": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 218,
+        "line": 222,
         "level": 2,
-        "title": "Специфические типы событий"
+        "title": "Специфичные типы событий"
+      }
+    ],
+    "Специфичные типы сообщений": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 438,
+        "level": 3,
+        "title": "Специфичные типы сообщений"
       }
     ],
     "Список документации": [
@@ -13922,14 +13884,6 @@
         "line": 7,
         "level": 2,
         "title": "Список стандартных документов"
-      }
-    ],
-    "Список функций, подключённых к платформе": [
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 30,
-        "level": 2,
-        "title": "Список функций, подключённых к платформе"
       }
     ],
     "Способ 1: Локальный процесс (рекомендуется)": [
@@ -14131,7 +14085,7 @@
     "Ссылки": [
       {
         "document": "platform-guide/README.md",
-        "line": 276,
+        "line": 277,
         "level": 2,
         "title": "Ссылки"
       }
@@ -14224,6 +14178,14 @@
         "title": "Стандартные API"
       }
     ],
+    "Стандартные API действия (ApiDSL)": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 269,
+        "level": 2,
+        "title": "Стандартные API действия (ApiDSL)"
+      }
+    ],
     "Стандартные API-действия": [
       {
         "document": "platform-guide/discord.md",
@@ -14246,14 +14208,6 @@
         "line": 317,
         "level": 3,
         "title": "Стандартные действия"
-      }
-    ],
-    "Стандартные действия API (ApiDSL)": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 267,
-        "level": 2,
-        "title": "Стандартные действия API (ApiDSL)"
       }
     ],
     "Стандартные действия API (DSL API)": [
@@ -14317,7 +14271,7 @@
     "Стандартный формат": [
       {
         "document": "platform-guide/README.md",
-        "line": 220,
+        "line": 221,
         "level": 2,
         "title": "Стандартный формат"
       }
@@ -14325,7 +14279,7 @@
     "Стандартный формат ответа": [
       {
         "document": "platform-guide/README.md",
-        "line": 246,
+        "line": 247,
         "level": 3,
         "title": "Стандартный формат ответа"
       }
@@ -14333,7 +14287,7 @@
     "Стандартный формат событий": [
       {
         "document": "platform-guide/README.md",
-        "line": 225,
+        "line": 226,
         "level": 3,
         "title": "Стандартный формат событий"
       }
@@ -14684,20 +14638,8 @@
     ],
     "Типы поддерживаемых сообщений": [
       {
-        "document": "platform-guide/ideaura.md",
-        "line": 36,
-        "level": 2,
-        "title": "Типы поддерживаемых сообщений"
-      },
-      {
         "document": "platform-guide/onebot12.md",
         "line": 82,
-        "level": 2,
-        "title": "Типы поддерживаемых сообщений"
-      },
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 73,
         "level": 2,
         "title": "Типы поддерживаемых сообщений"
       }
@@ -14707,12 +14649,6 @@
         "document": "advanced/message-builder.md",
         "line": 50,
         "level": 2,
-        "title": "Типы сегментов сообщений"
-      },
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 279,
-        "level": 3,
         "title": "Типы сегментов сообщений"
       }
     ],
@@ -14749,7 +14685,7 @@
     "Типы событий, специфичные для платформы": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 134,
+        "line": 136,
         "level": 2,
         "title": "Типы событий, специфичные для платформы"
       },
@@ -14758,18 +14694,12 @@
         "line": 215,
         "level": 2,
         "title": "Типы событий, специфичные для платформы"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 357,
-        "level": 2,
-        "title": "Типы событий, специфичные для платформы"
       }
     ],
     "Типы событий, специфичные для почты": [
       {
         "document": "platform-guide/email.md",
-        "line": 132,
+        "line": 133,
         "level": 2,
         "title": "Типы событий, специфичные для почты"
       }
@@ -14789,7 +14719,7 @@
       },
       {
         "document": "platform-guide/discord.md",
-        "line": 320,
+        "line": 322,
         "level": 3,
         "title": "Типы сообщений"
       },
@@ -14798,14 +14728,12 @@
         "line": 310,
         "level": 3,
         "title": "Типы сообщений"
-      }
-    ],
-    "Типы специфических событий": [
+      },
       {
-        "document": "platform-guide/telegram.md",
-        "line": 181,
-        "level": 2,
-        "title": "Типы специфических событий"
+        "document": "platform-guide/matrix.md",
+        "line": 280,
+        "level": 3,
+        "title": "Типы сообщений"
       }
     ],
     "Типы уведомлений": [
@@ -14814,14 +14742,6 @@
         "line": 208,
         "level": 4,
         "title": "Типы уведомлений"
-      }
-    ],
-    "Типы уникальных сегментов сообщений": [
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 434,
-        "level": 3,
-        "title": "Типы уникальных сегментов сообщений"
       }
     ],
     "Традиционный способ регистрации": [
@@ -15015,8 +14935,26 @@
     "Уникальные типы событий": [
       {
         "document": "platform-guide/discord.md",
-        "line": 218,
+        "line": 220,
         "level": 2,
+        "title": "Уникальные типы событий"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 208,
+        "level": 2,
+        "title": "Уникальные типы событий"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 181,
+        "level": 2,
+        "title": "Уникальные типы событий"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 194,
+        "level": 3,
         "title": "Уникальные типы событий"
       }
     ],
@@ -15221,7 +15159,7 @@
     "Успешная отправка сообщения": [
       {
         "document": "platform-guide/README.md",
-        "line": 247,
+        "line": 248,
         "level": 4,
         "title": "Успешная отправка сообщения"
       }
@@ -15329,9 +15267,17 @@
     "Участие в разработке": [
       {
         "document": "platform-guide/README.md",
-        "line": 288,
+        "line": 289,
         "level": 2,
         "title": "Участие в разработке"
+      }
+    ],
+    "Учетная запись в событиях": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 585,
+        "level": 3,
+        "title": "Учетная запись в событиях"
       }
     ],
     "Фабрика событий": [
@@ -15414,14 +15360,6 @@
         "title": "Функции управления"
       }
     ],
-    "Функции, ещё не подключены (конечные точки известны, сообщения в full.proto полны, можно расширять по мере необходимости)": [
-      {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 69,
-        "level": 3,
-        "title": "Функции, ещё не подключены (конечные точки известны, сообщения в full.proto полны, можно расширять по мере необходимости)"
-      }
-    ],
     "Функциональные возможности": [
       {
         "document": "ecosystem/app.md",
@@ -15452,12 +15390,12 @@
         "title": "Функция поиска"
       }
     ],
-    "Характеристики платформы пользователей Yunhu": [
+    "Характеристики платформы Yunhu": [
       {
-        "document": "platform-guide/yunhu_user.md",
+        "document": "platform-guide/yunhu.md",
         "line": 1,
         "level": 1,
-        "title": "Характеристики платформы пользователей Yunhu"
+        "title": "Характеристики платформы Yunhu"
       }
     ],
     "Хранение данных": [
@@ -15500,6 +15438,14 @@
         "title": "Целевая аудитория"
       }
     ],
+    "Цепочечные методы-модификаторы (возвращают self, могут комбинироваться)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 112,
+        "level": 3,
+        "title": "Цепочечные методы-модификаторы (возвращают self, могут комбинироваться)"
+      }
+    ],
     "Цепочечные модификаторы": [
       {
         "document": "api-reference/adapter-system.md",
@@ -15508,24 +15454,22 @@
         "title": "Цепочечные модификаторы"
       }
     ],
-    "Цепочечные модификаторы (можно использовать вместе)": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 128,
-        "level": 3,
-        "title": "Цепочечные модификаторы (можно использовать вместе)"
-      }
-    ],
     "Цепочечные модификаторы (можно комбинировать)": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 126,
+        "document": "platform-guide/kook.md",
+        "line": 117,
         "level": 3,
         "title": "Цепочечные модификаторы (можно комбинировать)"
       },
       {
-        "document": "platform-guide/kook.md",
-        "line": 117,
+        "document": "platform-guide/matrix.md",
+        "line": 129,
+        "level": 3,
+        "title": "Цепочечные модификаторы (можно комбинировать)"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 169,
         "level": 3,
         "title": "Цепочечные модификаторы (можно комбинировать)"
       }
@@ -15616,6 +15560,14 @@
         "line": 298,
         "level": 3,
         "title": "Цепочки модификаторов"
+      }
+    ],
+    "Цепочные модификаторы (можно комбинировать)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 159,
+        "level": 3,
+        "title": "Цепочные модификаторы (можно комбинировать)"
       }
     ],
     "Циклический диалог": [

@@ -12917,32 +12917,32 @@ If adapters need to support sending non-OneBot12 formatted raw data (such as pla
 
 **Message Builder (`MessageBuilder`)**: ErisPulse provides the `MessageBuilder` utility class to conveniently build OneBot12 message segment lists, used in conjunction with `Raw_ob12`. See the [Message Builder](#11-message-builder-messagebuilder) section.
 
-## 2. Detailed Parameter Specification
+## 2. Parameter Specification Details
 
 ### 2.1 Media Message Sending Protocol (`Image` / `Voice` / `Video` / `File`)
 
-This section is the **unified protocol standard** for media sending: modules use the same code to call the four media methods, and adapters are responsible for converting the various forms of the `file` parameter into native platform upload/send behavior.
+This section defines the **unified protocol standard** for media sending: the module uses the same code to call four media methods, and the adapter is responsible for converting the various forms of the `file` parameter into native platform upload/send behavior.
 
 #### 2.1.1 Valid Forms of the `file` Parameter
 
-| Form | Example | Adapter Requirement |
+| Form | Example | Adapter Requirements |
 |------|------|-----------|
-| HTTP(S) URL | `https://example.com/image.jpg` | **MUST** accept |
-| Local file path | `/path/to/file.jpg`, `C:\path\to\file.jpg` | **MUST** accept |
-| Binary data | `b"\x89PNG..."` | **MUST** accept |
-| `file://` URI | `file:///path/to/file.jpg` | **SHOULD** accept (can be forwarded as a local path) |
-| Base64 string / Data URI | `iVBORw0KGgo=...`, `data:image/png;base64,...` | **SHOULD** accept (compatible with OneBot12 ecosystem convention) |
+| HTTP(S) URL | `https://example.com/image.jpg` | **Must** accept |
+| Local file path | `/path/to/file.jpg`、`C:\path\to\file.jpg` | **Must** accept |
+| Binary data | `b"\x89PNG..."` | **Must** accept |
+| `file://` URI | `file:///path/to/file.jpg` | **Should** accept (can be forwarded as a local path) |
+| Base64 string / Data URI | `iVBORw0KGgo=...`、`data:image/png;base64,...` | **Should** accept (compatible with OneBot12 ecosystem conventions) |
 
-> Adapters **must** behave consistently across the three mandatory forms—modules receive the same message regardless of whether they pass a URL, path, or bytes. When the platform cannot directly use a certain form (e.g., the platform API does not support referencing external URLs), the adapter should download/read and then upload it, **not** require the module to retry with a different form.
+> The adapter **must** behave consistently across the three mandatory forms—regardless of whether the module passes a URL, path, or bytes, the platform receives the same message. When the platform cannot directly use a certain form (e.g., the platform API does not support referencing external URLs), the adapter should handle the download/read/upload internally, and **must not** require the module to retry with a different form.
 
 #### 2.1.2 Form Determination Order
 
-When implementing media parameter handling, adapters **should** follow this order to determine the form:
+When implementing media parameter handling, adapters **should** determine the form in the following order:
 
 1. `bytes` type → Upload directly
-2. String starting with `http://` or `https://` → Process as URL (reference directly or download and upload, depending on platform capability)
-3. String starting with `file://` → Strip the prefix and process as a local path
-4. Other strings → Process as a local path (read and upload if it exists; return standard error response if it does not)
+2. String starting with `http://` / `https://` → Process as URL (reference directly or download and upload, depending on platform capability)
+3. String starting with `file://` → Strip prefix and process as local path
+4. Other strings → Process as local path (read and upload if exists; return standard error response if not)
 
 ```python
 def _resolve_media(self, file: "str | bytes") -> bytes:
@@ -12959,12 +12959,12 @@ def _resolve_media(self, file: "str | bytes") -> bytes:
 
 #### 2.1.3 File Name Semantics for `File`
 
-`File` method signature: `File(file, filename=None)` (`filename` is optional, built-in in base class).
+`File` method signature: `File(file, filename=None)` (where `filename` is optional, already built into the base class).
 
-**File name derivation order** (adapter generates this when `filename` is not explicitly provided):
+File name **derivation order** (when the adapter generates a name without an explicit `filename`):
 
 1. Explicit `filename` parameter (highest priority)
-2. URL's basename (e.g., `https://host/a/b/report.pdf` → `report.pdf`, query string stripped)
+2. URL's basename (e.g., `https://host/a/b/report.pdf` → `report.pdf`, query string must be stripped)
 3. Local path's basename (e.g., `/tmp/data/backup.zip` → `backup.zip`)
 4. Platform default generation (e.g., `file_{timestamp}`; **should** retain the real extension—the extension affects platform-side type recognition and preview behavior)
 
@@ -12972,25 +12972,25 @@ def _resolve_media(self, file: "str | bytes") -> bytes:
 
 #### 2.1.4 Declaration of Platform Limitations
 
-Each platform has different constraints on media size, format (MIME), duration (audio/video), etc. Adapters **should**:
+Platforms have different constraints on media size, format (MIME), duration (audio/video), etc. Adapters **should**:
 
-- Declare supported media types and limitation ranges in the adapter documentation
-- Return **standard error response** for over-limit or unsupported input (`status: "failed"`; `retcode` uses `10002` or platform-specific error code, `message` explains the reason); **do not** throw exceptions to interrupt module logic
+- Declare supported media types and limitations in the adapter documentation
+- Return **standard error responses** for over-limit or unsupported inputs (`status: "failed"`; `retcode` uses `10002` or platform-specific error codes; `message` explains the reason); **must not** throw exceptions to interrupt module logic
 
 #### 2.1.5 Capability Degradation Hierarchy
 
-When a platform does not support a certain media **type**, follow this degradation hierarchy (adhering to the principle of "capability degradation without error reporting"):
+When a platform does not support a certain media **type**, the following degradation hierarchy should be followed (adhering to the general principle "capability degradation without errors"):
 
 | Scenario | Degradation Behavior |
 |------|---------|
 | `Voice` does not support voice messages | **Should** send as `File` (or platform-adjacent form); return `retcode=10002` if unable to express |
 | `Video` does not support video messages | Same as above |
-| Media type completely unsupported (no file capability) | Return `retcode=10002`, `message` indicates unsupported data type |
-| Form not supported (e.g., cannot handle base64) | Return `retcode=10002`, **can** include a message suggesting the module switch to URL/bytes |
+| Media type not supported at all (no file capability) | Return `retcode=10002`, `message` indicates unsupported data type |
+| Form not supported (e.g., cannot handle base64) | Return `retcode=10002`, **can** suggest in `message` that the module use URL/bytes instead |
 
-**Prohibited actions**: Silent drop (no return), throw exceptions, or require the module to write platform-specific handling code.
+**Prohibited behaviors:** silent discarding (no return), throwing exceptions, requiring the module to write platform-specific handling.
 
-### 2.2 @ User Parameter Specification
+### 2.2 @User Parameter Specification
 
 **Method:** `At` (modifier method)
 
@@ -12998,17 +12998,17 @@ When a platform does not support a certain media **type**, follow this degradati
 
 **Requirements:**
 - `user_id` should be a string-type user identifier
-- Different platforms may have different `user_id` formats (numbers, UUIDs, strings, etc.)
-- The adapter is responsible for converting `user_id` into the platform-specific format
-- Note that the actual send method call should be placed at the last position
+- Different platforms may have different `user_id` formats (numbers, UUID, strings, etc.)
+- The adapter is responsible for converting `user_id` into platform-specific format
+- Note that the actual send method call should be placed at the final position
 
 **Example:**
 ```python
 # Single @ user
-Send.To("group", "g123").At("123456").Text("Hello")
+Send.To("group", "g123").At("123456").Text("你好")
 
 # Multiple @ users (chained calls)
-send.To("group", "g123").At("123456").At("789012").Text("Hello everyone")
+send.To("group", "g123").At("123456").At("789012").Text("大家好")
 ```
 
 ### 2.3 Reply Message Parameter Specification
@@ -13020,68 +13020,72 @@ send.To("group", "g123").At("123456").At("789012").Text("Hello everyone")
 **Requirements:**
 - `message_id` should be a string-type message identifier
 - Should be the ID of a previously received message
-- Some platforms may not support reply functionality; adapters should gracefully degrade
+- Some platforms may not support reply functionality; adapters should degrade gracefully
 
 **Example:**
 ```python
-send.To("group", "g123").Reply("msg_123456").Text("Received")
+send.To("group", "g123").Reply("msg_123456").Text("收到")
 ```
 
-### 2.4 Merge Forward Capability (`MergeForward`, Optional)
+### 2.4 Forward Merge Capability (`MergeForward`, Optional)
 
-`MergeForward(nodes)` is an **optional capability method**: it packages multiple contents into a "merged forward / rich text fold" format for sending, and the adapter decides the best presentation based on platform capability. This differs from §1.1's `Forward(from_chat_id, message_id)` (forwarding **existing** messages), and both exist in parallel.
+`MergeForward(nodes)` is an **optional capability method**: it packs multiple contents into a "forward merged / rich text collapsed" format for sending, with the adapter determining the best presentation based on platform capabilities. This differs semantically from §1.1's `Forward(from_chat_id, message_id)` (forwarding **existing** messages), and both coexist.
 
-> **Standard background**: OneBot12 core standard does not have a node message segment, nor does it have a merge forward API—“message node” is a OneBot v11 ecosystem (go-cqhttp extension) implementation layer concept, and v12 has delegated such platform-specific capabilities to the extension mechanism. ErisPulse's landing approach is the equivalent of the extension mechanism: **no new standard message segments, but optional capability methods + `list_sends` runtime detection**—adapters that implement `MergeForward` automatically gain the capability, and those that do not implement it automatically fall back to plain text, with zero module changes.
+> **Standard Background:** OneBot12 core standard does not have node message segments, nor does it have a forward merge API—"message node" is an implementation-level concept from the OneBot v11 ecosystem (go-cqhttp extension). v12 delegates such platform-specific capabilities to the extension mechanism. ErisPulse's implementation approach is the equivalent of an extension mechanism: **no new standard message segments are added, but optional capability methods + `list_sends` runtime detection are used**—adapters that implement `MergeForward` automatically gain the capability, and those that don't will automatically fall back to plain text, requiring no module changes.
 
-**Method signature:**
+**Method Signature:**
 
 ```python
 def MergeForward(self, nodes: List[Dict]) -> asyncio.Task:
     """
-    Send merged forward / rich text fold message
+    Send merged forward / rich text collapsed message
 
-    :param nodes: Array of merged forward nodes (go-cqhttp OneBot v11 node format extension):
+    :param nodes: Array of merged forward nodes (go-cqhttp OneBot v11 node format):
         [
             {
                 "type": "node",
                 "data": {
-                    "user_id": "10000",     # ID for display
-                    "nickname": "QvQChat",  # Display name for sender
+                    "user_id": "10000",     # Display sender ID
+                    "nickname": "MyBot",     # Display sender nickname
                     "content": [            # Array of message segments, currently text segments
-                        {"type": "text", "data": {"text": "【1/3】Title\nBody…"}}
+                        {"type": "text", "data": {"text": "【1/3】Title\nBody..."}}
                     ],
                 },
             },
         ]
-    :return: asyncio.Task, await returns standard response format
+    :return: asyncio.Task, await to return standard response format
     """
 ```
 
-**Implementation requirements:**
+**Implementation Requirements:**
 
-1. **Platform has native merge forward** (OneBot11 system): **Must** call the protocol-specific endpoint
-   (`send_group_forward_msg` / `send_private_forward_msg`)—NapCat and similar implementations will reject
-   `send_msg` carrying node segments (retcode 1400); if the dedicated endpoint fails, **can** fall back to `send_msg` sending node segments directly
-2. **Platform has no native forward but has rich text** (Yunhu / Telegram / Kook / Discord / Matrix, etc.):
-   **Should** render the nodes into the platform's rich text fold format (HTML fold card / Card / Embed / blockquote list),
-   reference style and adapter-specific task lists are in `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`
-3. **Neither exists**: **Do not** implement this method (let alone return success while sending node dictionaries as plain text)—if not implemented, `list_sends` does not contain `MergeForward`, and the caller automatically falls back to plain text
-4. **Failure semantics**: Return standard error response (`status: "failed"`) or throw an exception is acceptable; the caller will fall back to plain text sending, content is not lost
-5. **Do not** call `Raw_ob12` inside `MergeForward` to send the same nodes (OneBot11's `Raw_ob12`
-   has built-in automatic routing for pure node segments, which would cause a loop)
+1. **Platform has native forward merge** (OneBot11 family): **Must** call the protocol-specific endpoint (`send_group_forward_msg` / `send_private_forward_msg`)—NapCat and similar implementations will reject `send_msg` carrying node segments (retcode 1400); if the dedicated endpoint fails, **can** fall back to `send_msg` to directly send node segments
+2. **Platform has no native forward but has rich text** (CloudLake / Telegram / Kook / Discord / Matrix, etc.): **Should** render the nodes as the platform's rich text collapsed form (HTML collapse card / Card / Embed / blockquote list), reference style and adapter-specific task list in `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`
+3. **Neither is available**: **Must not** implement this method (and **must not** return success while sending node dictionaries as plain text)—if not implemented, `list_sends` does not contain `MergeForward`, and the caller automatically falls back to plain text
+4. **Failure semantics**: Standard error response (`status: "failed"`) or exception is acceptable; the caller will fall back to plain text sending, and content is not lost
+5. **Must not** call `Raw_ob12` to send the same nodes inside `MergeForward` (OneBot11's `Raw_ob12` already has built-in automatic routing for pure node segments, which would cause a loop)
+6. **Outbound node segment parsing** (all adapters convention): Each adapter's `Raw_ob12` segment distribution should register `node` segments—pure node lists are automatically routed to the adapter's merged forward presentation (for platforms with `MergeForward`, equivalent to direct call; for platforms without this method, extract each node's text to output as "nickname: body" line by line in original form). Any adapter receiving a node segment must not silently discard it.
 
-**Caller detection example:**
+**Platform Implementation Forms** (see `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`):
+
+- Native endpoint: OneBot11, SnowLuma (three-level fallback: `send_group/private_forward_msg` dedicated endpoint → `upload_forward_msg` to get resid and send forward segment → directly send node segment; SnowLuma API fully aligned with NapCat, adapters can directly connect to NapCat backend)
+- Collapsible HTML `<details>` card: CloudLake (bot/user protocol), Email, Sandbox, Allons(Ideaura)
+- Whitelisted HTML / quote block: Telegram (`<b>`+`<blockquote>`), Matrix (blockquote variant, whitelisted to strip details/inline styles)
+- Platform card: Kook (Card header+section), Discord (Embed fields)
+- Official Markdown quote list: QQBot (official md has no collapse syntax, server-side validation rejects invalid tags 40034011)
+- Not implemented (node segments output as plain text for degradation): OneBot12 (standard has no node segments), WeCom, Terminal, Webhook, WechatMp
+
+**Caller Detection Example:**
 
 ```python
 sends = adapter.list_sends(platform)
 if "MergeForward" in sends:
-    await adapter.Send.To("group", "123").MergedForward(nodes)
+    await adapter.Send.To("group", "123").MergeForward(nodes)
 else:
     await adapter.Send.To("group", "123").Text(plain_text)
 ```
 
-> Reference implementation: `ErisPulse-OneBot11Adapter` (dedicated endpoint → `send_msg` fallback); rendering templates and adapter-specific task lists are in
-> `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`.
+> Reference Implementation: `ErisPulse-OneBot11Adapter` (dedicated endpoint → `send_msg` fallback); render templates and adapter-specific task lists are in `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`.
 
 ## 3. Platform-Specific Method Naming
 
@@ -15098,49 +15102,49 @@ enabled = true
 # ErisPulse PlatformFeatures Documentation
 
 > Base Protocol: [OneBot12](https://12.onebot.dev/)  
-> 
 > This document is a **platform-specific feature guide**, including:
-> - Examples of Send method chain calls supported by each adapter
-> - Platform-specific event/message format descriptions
+> - Examples of chainable Send method calls supported by each adapter
+> - Explanations of platform-specific event/message formats
 > 
-> General usage methods are referenced in:
+> For general usage, please refer to:
 > - [Basic Concepts](../getting-started/basic-concepts.md)
-> - [Event Conversion Standards](../standards/event-conversion.md)  
-> - [API Response Specifications](../standards/api-response.md)
+> - [Event Conversion Standard](../standards/event-conversion.md)
+> - [API Response Specification](../standards/api-response.md)
 
 ---
 
 ## Platform-Specific Features
 
-This section is maintained by each adapter developer to document differences and extension features of the adapter compared to the OneBot12 standard. Please refer to the detailed documentation for each platform below:
+This section is maintained by each adapter developer and describes the differences and extended features of the adapter compared to the OneBot12 standard. Please refer to the detailed documentation for each platform below:
 
-- [Maintainer Notes](maintain-notes.md)
-
+- [Maintain Notes](maintain-notes.md)
 - [Yunhu Platform Features](yunhu.md)
 - [Yunhu User Platform Features](yunhu_user.md)
 - [Telegram Platform Features](telegram.md)
 - [OneBot11 Platform Features](onebot11.md)
 - [OneBot12 Platform Features](onebot12.md)
+- [SnowLuma Platform Features](snowluma.md)
 - [Email Platform Features](email.md)
-- [Kook (Let's Game) Platform Features](kook.md)
+- [Kook (Open Black) Platform Features](kook.md)
 - [Matrix Platform Features](matrix.md)
 - [Official QQ Bot Platform Features](qqbot.md)
-- [Ideaura Coffeehouse](ideaura.md)
+- [Ideaura Coffee Shop](ideaura.md)
 - [Discord](discord.md)
 - [Webhook Protocol Bridge](webhook.md)
 - [WeChat Official Account](wechatmp.md)
 
-> Additionally, there is a `sandbox` adapter, but this adapter does not require a platform-specific features documentation.
+> Additionally, there is a `sandbox` adapter, but this adapter does not require a platform-specific feature documentation.
 
-## General Interface
+---
 
-### Send Method Chaining
+## General Interfaces
 
+### Chainable Send Calls
 All adapters support the following standard calling methods:
 
-> **Note:** The `{AdapterName}` in the documentation should be replaced with the actual adapter name (e.g., `yunhu`, `telegram`, `onebot11`, `email`, etc.).
+> **Note:** `{AdapterName}` in the documentation must be replaced with the actual adapter name (such as `yunhu`, `telegram`, `onebot11`, `email`, etc.).
 
-1. Specify type and ID: `To(type, id).Func()`
+1. Specify type and ID: `To(type,id).Func()`
    ```python
    # Get adapter instance
    my_adapter = adapter.get("{AdapterName}")
@@ -15152,7 +15156,7 @@ All adapters support the following standard calling methods:
    yunhu = adapter.get("yunhu")
    await yunhu.Send.To("user", "U1001").Text("Hello")
    ```
-2. Specify ID only: `To(id).Func()`
+2. Specify only ID: `To(id).Func()`
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.To("U1001").Text("Hello")
@@ -15161,7 +15165,7 @@ All adapters support the following standard calling methods:
    telegram = adapter.get("telegram")
    await telegram.Send.To("U1001").Text("Hello")
    ```
-3. Specify sender account: `Using(account_id)`
+3. Specify sending account: `Using(account_id)`
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.Using("bot1").To("U1001").Text("Hello")
@@ -15188,24 +15192,24 @@ The methods of the Send DSL return an `asyncio.Task` object, which means you can
 # Get adapter instance
 my_adapter = adapter.get("{AdapterName}")
 
-# Do not wait for result, message is sent in the background
+# Do not wait for the result, the message is sent in the background
 task = my_adapter.Send.To("user", "123").Text("Hello")
 
 # If you need to get the sending result, you can wait later
 result = await task
 ```
 
-#### Send Rule Decorators
+#### Sending Rule Decorators
 
-In practical development, you often need to: execute subsequent logic only after successful sending, automatically retry on failure, cancel on timeout, monitor sending progress, etc. The Send DSL includes a set of built-in send rule decorators, which can be attached via chained methods:
+In actual development, it is often necessary to: execute subsequent logic only after successful sending, automatically retry on failure, cancel on timeout, and monitor sending progress. The Send DSL includes a set of built-in sending rule decorators, which can be added via chained methods:
 
 | Method | Description |
 |--------|-------------|
 | `.Hook(callback)` | Callback executed after successful sending (can be called multiple times) |
-| `.Retry(times=1)` | Automatic retry N times on failure (total of N+1 attempts including the first) |
-| `.Timeout(seconds)` | Single send timeout, cancel on timeout (can be stacked with Retry) |
-| `.Defer(seconds)` | Delay sending (in-process timer, not persisted) |
-| `.OnProgress(callback)` | Progress callback at each stage, passing in SendContext |
+| `.Retry(times=1)` | Automatic retry on failure N times (total of N+1 attempts, including the first) |
+| `.Timeout(seconds)` | Single sending timeout, cancellation on timeout (can be stacked with Retry) |
+| `.Defer(seconds)` | Delay sending (in-process timing, not persisted) |
+| `.OnProgress(callback)` | Progress callback at each stage, passing SendContext |
 | `.OnError(callback)` | Error callback on final failure (triggers only once) |
 
 ```python
@@ -15214,7 +15218,7 @@ yunhu = adapter.get("yunhu")
 # Deduct points only after successful sending
 await (yunhu.Send.To("user", "123")
        .Hook(lambda r: deduct_points("123"))
-       .Text("Success"))
+       .Text("Consumption successful"))
 
 # Retry on failure + timeout cancellation + progress monitoring
 def on_progress(ctx):
@@ -15225,19 +15229,19 @@ task = (yunhu.Send.To("user", "123")
         .Timeout(10)           # Timeout of 10 seconds per attempt
         .OnProgress(on_progress)
         .OnError(lambda ctx: notify_admin(ctx.error))
-        .Text("Important notification"))
+        .Text("Important notice"))
 ```
 
-Rule methods return `self`, and must be called before the sending methods (Text/Image, etc.). `SendContext` includes fields such as `stage` (pending/sending/retrying/success/failed/timeout), `attempt`, `elapsed`, `error`, and `result`, which are useful for monitoring.
+Rule methods return `self`, so they must be called before the sending methods (such as Text/Image). `SendContext` contains fields such as `stage` (pending/sending/retrying/success/failed/timeout), `attempt`, `elapsed`, `error`, `result`, which are useful for monitoring.
 
 #### Batch Build Mode (Build)
 
-Build multiple sending methods in a single chain, then execute them all at once. This is suitable for scenarios where you need to send multiple messages in one go:
+Multiple sending methods can be built within a single chain, and executed together at the end. This is suitable for scenarios where multiple messages are sent at once:
 
 ```python
 yunhu = adapter.get("yunhu")
 
-# Build multiple messages and send them all at once
+# Build multiple messages and send them together
 results = await (yunhu.Send.To("user", "123")
                 .Build()                     # Enter build mode
                 .Text("Notification 1")
@@ -15247,25 +15251,24 @@ results = await (yunhu.Send.To("user", "123")
 # results = [Text result, Image result, Text result]
 ```
 
-`.send_all()` executes by default in **parallel** (concurrent sending, high efficiency). To ensure the order of message arrival, call `.Sequential()` for sequential execution:
+`.send_all()` executes by default **in parallel** (concurrent sending, high efficiency). If the order of message arrival needs to be guaranteed, call `.Sequential()` to execute serially:
 
 ```python
-# Sequential execution (ensures order) + retry on failure
+# Sequential execution (guarantee order) + retry on failure
 await (yunhu.Send.To("group", "456")
        .Build()
        .Sequential()                # Send in order
-       .Retry(2)                     # Retry failed items individually
+       .Retry(2)                     # Retry failed entries individually
        .Text("First message").Text("Second message")
        .send_all())
 ```
 
-Batch execution uses a **fail-continue** strategy: failure of one message does not interrupt others, and failed items are automatically retried. The batch also supports `Hook` (triggered after all succeed), `OnError` (triggered when any fail), and `OnProgress` (progress callback) for the entire batch.
+Batch execution adopts a **fail-continue** strategy: failure of one message does not interrupt others, and failed entries are automatically retried. Batch also supports `Hook` for the entire batch (triggered after all succeed), `OnError` (triggered when there are failures), and `OnProgress` (progress callback).
 
-> For more detailed rules and batch build instructions, refer to [SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md).
+> For more detailed information on rules and batch building, please refer to [SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md).
 
 ### Event Listening
-
-There are three ways to listen for events:
+There are three ways to listen to events:
 
 1. Platform-native event listening:
    ```python
@@ -15273,26 +15276,26 @@ There are three ways to listen for events:
    
    @adapter.on("event_type", raw=True, platform="{AdapterName}")
    async def handler(data):
-       logger.info(f"Received native {AdapterName} event: {data}")
+       logger.info(f"Received raw {AdapterName} event: {data}")
    ```
 
 2. OneBot12 standard event listening:
    ```python
    from ErisPulse.Core import adapter, logger
 
-   # Listen for OneBot12 standard events
+   # Listen to OneBot12 standard events
    @adapter.on("event_type")
    async def handler(data):
        logger.info(f"Received standard event: {data}")
 
-   # Listen for standard events from a specific platform
+   # Listen to specific platform's standard events
    @adapter.on("event_type", platform="{AdapterName}")
    async def handler(data):
        logger.info(f"Received {AdapterName} standard event: {data}")
    ```
 
 3. Event module listening:
-    Events provided by the `Event` module are based on the `adapter.on()` function, so the event format provided by `Event` is a OneBot12 standard event.
+    Events in the `Event` module are based on the `adapter.on()` function, so the event format provided by `Event` is a OneBot12 standard event.
 
     ```python
     from ErisPulse.Core.Event import message, notice, request, command
@@ -15300,7 +15303,7 @@ There are three ways to listen for events:
     message.on_message()(message_handler)
     notice.on_notice()(notice_handler)
     request.on_request()(request_handler)
-    command("hello", help="Send greeting message", usage="hello")(command_handler)
+    command("hello", help="Send a greeting message", usage="hello")(command_handler)
 
     async def message_handler(event):
         logger.info(f"Received message: {event}")
@@ -15312,15 +15315,17 @@ There are three ways to listen for events:
         logger.info(f"Received command: {event}")
     ```
 
-Among these, it is most recommended to use the `Event` module for event handling, as the `Event` module provides a rich set of event types and methods for handling events.
+Among these, it is most recommended to use the `Event` module for event handling, because the `Event` module provides rich event types and event handling methods.
 
-## Standard Format
-For easy reference, a simple event format is provided here. For detailed information, please refer to the links above.
+---
 
-> **Note:** The following format is the basic OneBot12 standard format. Each adapter may have extended fields based on this format. For details, please refer to the specific feature documentation of each adapter.
+## Standard Formats
+For easy reference, the following are basic event formats. For detailed information, please refer to the links above.
+
+> **Note:** The following formats are basic OneBot12 standard formats. Each adapter may have extended fields based on this. Please refer to the specific feature descriptions of each adapter for details.
 
 ### Standard Event Format
-The event transformation format that all adapters must implement:
+All adapters must implement the event conversion format:
 ```json
 {
   "id": "event_123",
@@ -15341,7 +15346,7 @@ The event transformation format that all adapters must implement:
 ```
 
 ### Standard Response Format
-#### Message Sent Successfully
+#### Message Sending Success
 ```json
 {
   "status": "ok",
@@ -15357,7 +15362,7 @@ The event transformation format that all adapters must implement:
 }
 ```
 
-#### Message Sent Failed
+#### Message Sending Failure
 ```json
 {
   "status": "failed",
@@ -15370,12 +15375,14 @@ The event transformation format that all adapters must implement:
 }
 ```
 
-## Reference Links
+---
+
+## References
 ErisPulse Project:
 - [Main Repository](https://github.com/ErisPulse/ErisPulse/)
-- [Yunhu Adapter Library](https://github.com/ErisPulse/ErisPulse-YunhuAdapter)
-- [Telegram Adapter Library](https://github.com/ErisPulse/ErisPulse-TelegramAdapter)
-- [OneBot Adapter Library](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
+- [Yunhu Adapter Repository](https://github.com/ErisPulse/ErisPulse-YunhuAdapter)
+- [Telegram Adapter Repository](https://github.com/ErisPulse/ErisPulse-TelegramAdapter)
+- [OneBot Adapter Repository](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
 
 Related Official Documentation:
 - [OneBot V11 Protocol Documentation](https://github.com/botuniverse/onebot-11)
@@ -15384,11 +15391,10 @@ Related Official Documentation:
 
 ## Contributing
 
-We welcome more developers to contribute to and maintain adapter documentation! Please follow these steps to submit your contribution:
-
+We welcome more developers to contribute and maintain adapter documentation! Please follow these steps to submit your contribution:
 1. Fork the [ErisPulse](https://github.com/ErisPulse/ErisPulse) repository.
 2. Create a Markdown file in the `docs/platform-features/` directory, naming it in the format `<Platform Name>.md`.
-3. Add a link to your contributed adapter and the relevant official documentation in this `README.md` file.
+3. Add a link to your contributed adapter and related official documentation in this `README.md` file.
 4. Submit a Pull Request.
 
 Thank you for your support!
@@ -15405,7 +15411,7 @@ OneBot11Adapter is an adapter built based on the OneBot V11 protocol.
 
 ## Document Information
 
-- Corresponding Module Version: 4.3.0
+- Corresponding Module Version: 4.4.0
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -15977,33 +15983,32 @@ OneBot12Adapter is an adapter built based on the OneBot V12 protocol, serving as
 
 ## Document Information
 
-- Corresponding Module Version: 4.3.0
+- Corresponding Module Version: 4.4.0
 - Maintainer: ErisPulse
 - Protocol Version: OneBot V12
 
 ## Basic Information
 
-- Platform Overview: OneBot V12 is a general-purpose chatbot application interface standard, serving as the baseline protocol for the ErisPulse framework.
+- Platform Introduction: OneBot V12 is a general chatbot application interface standard and serves as the baseline protocol for the ErisPulse framework.
 - Adapter Name: OneBot12Adapter
 - Supported Protocol/API Version: OneBot V12
-- Multi-Account Support: Fully multi-account architecture, supporting the configuration and operation of multiple OneBot12 accounts simultaneously.
+- Multi-Account Support: Fully multi-account architecture, supporting simultaneous configuration and operation of multiple OneBot12 accounts.
 
 ## v5 Paradigm Update (4.3.0)
 
-This adapter has completed alignment with the v5 paradigm (incremental upgrade, API compatible):
+This adapter has completed the alignment with the v5 paradigm (incremental upgrade, API compatible):
 
-- **BaseConverter Inheritance**: Common fields of the converter (id/time/platform/self/raw) are built by the framework's `build_base_event`, and are overridden by OB11 field names (echo/time/self_id).
-- **spawn_background Task Ownership**: The Client mode connection task now uses `runtime.spawn_background` (owner assignment, automatic shutdown cleanup).
-- **Framework Soft Dependency**: Installing the adapter no longer declares a hard dependency on ErisPulse, avoiding pip resolution issues that adjust framework versions; at runtime, ErisPulse>=2.7.1 is detected, and a log warning is issued if the version is too low.
-- **Startup Version Log**: Outputs "OneBotAdapter v4.3.0 loaded" during initialization.
+- **BaseConverter Inheritance**: Common fields of the converter (id/time/platform/self/raw) are built by the framework build_base_event, and are overwritten by the OB11 field names (echo/time/self_id).
+- **spawn_background Task Ownership**: Client mode connection tasks are changed to use runtime.spawn_background (owner ownership, automatic shutdown recovery).
+- **Framework Soft Dependency**: Installing the adapter no longer declares a hard dependency on ErisPulse, avoiding pip resolution adjustments for the framework version; ErisPulse>=2.7.1 is detected at runtime and a log warning is issued if the version is too low.
+- **Startup Version Log**: Outputs "OneBotAdapter v4.3.0 has been loaded" during initialization.
 
-Existing capabilities (supported since 4.2.0): Multi-account, standard API DSL action mapping (e.g., `get_self_info` → `get_login_info`), Request DSL (friend/group request approval: `event.approve()` / `event.reject()`), EventMixin, i18n.
+Existing capabilities (supported since 4.2.0): multi-account, standard action mapping for Api DSL (get_self_info→get_login_info, etc.), Request DSL (friend/group request approval: event.approve() / event.reject()), EventMixin, i18n.
 
 ---
-
 ## Standard API Actions (Api DSL)
 
-OneBot12 backends natively support all OB12 standard action names. The Api DSL is by default directly delegated to call_api for transparent transmission (no mapping required):
+The OneBot12 backend natively supports all OB12 standard action names. The Api DSL defaults to directly delegating call_api for transparent transmission (no mapping required):
 
 ```python
 from ErisPulse import sdk
@@ -16020,11 +16025,13 @@ result = await ob12.Api.Using("main").get_self_info()
 result = await ob12.Api.call("extend_action", param=1)
 ```
 
-> Supported actions are subject to backend implementation (NapCat/Lagrange/LLOneBot, etc.); unsupported actions will return errors from the backend and be transparently transmitted.
+> Supported actions are based on the backend implementation (e.g., NapCat/Lagrange/LLOneBot); unsupported actions return errors from the backend and are transparently passed through.
+
+---
 
 ## Request Operations (Request DSL)
 
-Based on the OneBot12 standard `handle_quick_request` action, handle the approval/rejection of friend requests and group invitation requests:
+Based on the OneBot12 standard handle_quick_request action, handles approval/rejection of friend requests and group invitation requests:
 
 ### Event Convenience Methods
 
@@ -16051,10 +16058,9 @@ await ob12.Request("request_flag").Using("main").accept()
 ```
 
 ---
-
 ## Supported Message Sending Types
 
-All sending methods are implemented using a fluent interface syntax, for example:
+All sending methods are implemented through chain syntax, for example:
 
 ```python
 from ErisPulse.Core import adapter
@@ -16063,21 +16069,21 @@ onebot12 = adapter.get("onebot12")
 # Send using the default account
 await onebot12.Send.To("group", group_id).Text("Hello World!")
 
-# Specify a particular account for sending
+# Send using a specific account
 await onebot12.Send.To("group", group_id).Account("main").Text("Message from main account")
 ```
 
 ### Case-Insensitive Method Calls
 
-All sending methods and fluent modifiers support case-insensitive calls, and the adapter automatically maps them to the correct standard method names:
+All sending methods and chain modifiers support case-insensitive calls, and the adapter automatically maps them to the correct standard method names:
 
 ```python
-# All of the following calls are equivalent
+# All the following calls are equivalent
 await onebot12.Send.To("user", 123).Text("hello")
 await onebot12.Send.To("user", 123).text("hello")
 await onebot12.Send.To("user", 123).TEXT("hello")
 
-# Fluent modifiers also support case-insensitivity
+# Chain modifiers are also supported
 await onebot12.Send.To("group", 123).At(456).Text("hello")
 await onebot12.Send.To("group", 123).at(456).TEXT("hello")
 await onebot12.Send.To("group", 123).AT(456).text("hello")
@@ -16088,50 +16094,50 @@ await onebot12.Send.To("group", 123).AT(456).text("hello")
 When calling an unsupported method, the adapter returns a friendly text message instead of throwing an exception:
 
 ```python
-# Calling an unsupported method
+# Call an unsupported method
 result = await onebot12.Send.To("user", 123).UnsupportedMethod("test")
 
-# The returned result is the sent text message
-# Message content: [Unsupported sending type] Method name: UnsupportedMethod, Parameters: [args[0]: 'test']
+# The returned result is a sent text message
+# Message content: [Unsupported send type] Method name: UnsupportedMethod, Parameter: [args[0]: 'test']
 ```
 
 ### Basic Message Types
 
-- `.Text(text: str)` - Send plain text message
-- `.Image(file: Union[str, bytes], filename: str = "image.png")` - Send image message (supports URL, Base64, or bytes)
-- `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")` - Send audio message
-- `.Voice(file: Union[str, bytes], filename: str = "voice.ogg")` - Send voice message (alias of Audio, compatible with OneBot11)
-- `.Video(file: Union[str, bytes], filename: str = "video.mp4")` - Send video message
+- `.Text(text: str)`: Send plain text message
+- `.Image(file: Union[str, bytes], filename: str = "image.png")`: Send image message (supports URL, Base64, or bytes)
+- `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")`: Send audio message
+- `.Voice(file: Union[str, bytes], filename: str = "voice.ogg")`: Send voice message (alias for Audio, compatible with OneBot11)
+- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`: Send video message
 
-### Fluent Modifier Methods (return self to support fluent chaining)
+### Chain Modifier Methods (Return self to support chain calls)
 
-- `.At(user_id: Union[str, int])` - Mention user (can be called multiple times)
-- `.AtAll()` - Mention all group members
-- `.Reply(message_id: Union[str, int])` - Reply to a message
+- `.At(user_id: Union[str, int])`: @ user (can be called multiple times)
+- `.AtAll()`: @ all members
+- `.Reply(message_id: Union[str, int])`: Reply to message
 
 ### Raw Message Sending
 
-- `.Raw_ob12(message: Union[Dict, List[Dict]], **kwargs)` - Send raw OneBot12 format message (follows naming conventions)
+- `.Raw_ob12(message: Union[Dict, List[Dict]], **kwargs)`: Send OneBot12 raw format message (conforms to naming conventions)
 
 ### Other Message Types
 
-- `.Sticker(file_id: str)` - Send sticker/gift
-- `.Location(latitude: float, longitude: float, title: str = "", content: str = "")` - Send location
+- `.Sticker(file_id: str)`: Send sticker/emoticon
+- `.Location(latitude: float, longitude: float, title: str = "", content: str = "")`: Send location
 
 ### Management Functions
 
-- `.Recall(message_id: Union[str, int])` - Recall message
-- `.Edit(message_id: Union[str, int], content: Union[str, List[Dict]])` - Edit message
-- `.Raw(message_segments: List[Dict])` - Send native OneBot12 message segments
-- `.Batch(target_ids: List[str], message: Union[str, List[Dict]], target_type: str = "user")` - Batch send messages
+- `.Recall(message_id: Union[str, int])`: Recall message
+- `.Edit(message_id: Union[str, int], content: Union[str, List[Dict]])`: Edit message
+- `.Raw(message_segments: List[Dict])`: Send native OneBot12 message segments
+- `.Batch(target_ids: List[str], message: Union[str, List[Dict]], target_type: str = "user")`: Batch send messages
 
 ## OneBot12 Standard Events
 
-The OneBot12 adapter fully complies with the OneBot12 standard, and event formats do not require conversion, they are directly submitted to the framework.
+The OneBot12 adapter fully complies with the OneBot12 standard, and event formats do not require conversion, being directly submitted to the framework.
 
 ### New Feature: Raw Event Type Field
 
-In accordance with the `standards/event-conversion.md` specification, all events will retain the raw event type field `onebot12_raw_type`:
+Conforms to the `standards/event-conversion.md` specification, all events will retain the raw event type field `onebot12_raw_type`:
 
 ```python
 {
@@ -16147,7 +16153,7 @@ In accordance with the `standards/event-conversion.md` specification, all events
 }
 ```
 
-### Message Events
+### Message Events (Message Events)
 
 ```python
 # Private message
@@ -16178,7 +16184,7 @@ In accordance with the `standards/event-conversion.md` specification, all events
 }
 ```
 
-### Notice Events
+### Notice Events (Notice Events)
 
 ```python
 # Group member increase
@@ -16210,7 +16216,7 @@ In accordance with the `standards/event-conversion.md` specification, all events
 }
 ```
 
-### Request Events
+### Request Events (Request Events)
 
 ```python
 # Friend request
@@ -16221,7 +16227,7 @@ In accordance with the `standards/event-conversion.md` specification, all events
     "detail_type": "friend",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
-    "comment": "申请消息",
+    "comment": "application message",
     "flag": "request-flag",
     "time": 1234567890
 }
@@ -16235,14 +16241,14 @@ In accordance with the `standards/event-conversion.md` specification, all events
     "self": {"user_id": "bot-id"},
     "group_id": "group-id",
     "user_id": "user-id",
-    "comment": "申请消息",
+    "comment": "application message",
     "flag": "request-flag",
     "sub_type": "invite",
     "time": 1234567890
 }
 ```
 
-### Meta Events
+### Meta Events (Meta Events)
 
 ```python
 # Lifecycle event
@@ -16273,16 +16279,16 @@ In accordance with the `standards/event-conversion.md` specification, all events
 
 ### Account Configuration
 
-Each account has the following independent configuration options:
+Each account independently configures the following options:
 
-- `mode`: The running mode of the account ("server" or "client")
-- `server_path`: The WebSocket path for Server mode
-- `server_token`: The authentication token for Server mode (optional)
-- `client_url`: The WebSocket address to connect to in Client mode
-- `client_token`: The authentication token for Client mode (optional)
+- `mode`: The running mode of this account ("server" or "client")
+- `server_path`: WebSocket path in Server mode
+- `server_token`: Authentication token in Server mode (optional)
+- `client_url`: WebSocket address to connect in Client mode
+- `client_token`: Authentication token in Client mode (optional)
 - `enabled`: Whether to enable this account
-- `platform`: The platform identifier, default is "onebot12"
-- `implementation`: The implementation identifier, such as "go-cqhttp" (optional)
+- `platform`: Platform identifier, default is "onebot12"
+- `implementation`: Implementation identifier, such as "go-cqhttp" (optional)
 
 ### Configuration Example
 
@@ -16311,7 +16317,7 @@ enabled = false
 
 ### Default Configuration
 
-If no accounts are configured, the adapter will automatically create:
+If no account is configured, the adapter will automatically create:
 
 ```toml
 [OneBotv12_Adapter.accounts.default]
@@ -16321,51 +16327,51 @@ enabled = true
 platform = "onebot12"
 ```
 
-## Return Values of Send Methods
+## Send Method Return Values
 
 ### Message Sending Methods
-All message sending methods (such as `.Text()`, `.Image()`, `.Raw_ob12()` etc.) return an `asyncio.Task` object, which can be awaited directly to obtain the sending result:
+All message sending methods (such as `.Text()`, `.Image()`, `.Raw_ob12()`, etc.) return an `asyncio.Task` object, which can be directly awaited to get the sending result:
 
 ```python
 task = await onebot12.Send.To("group", 123456).Text("Hello")
 ```
 
-### Chained Modifier Methods
-All chained modifier methods (such as `.At()`, `.AtAll()`, `.Reply()`) return `self`, supporting chained calls:
+### Chain Modifier Methods
+All chain modifier methods (such as `.At()`, `.AtAll()`, `.Reply()`) return `self`, supporting chain calls:
 
 ```python
-# Combining multiple modifier methods
-await onebot12.Send.To("group", 123456).Reply("msg123").At(789).At(790).Text("Text")
+# Combine multiple modifier methods
+await onebot12.Send.To("group", 123456).Reply("msg123").At(789).At(790).Text("text")
 ```
 
 ## API Response Standard
 
-Adapters follow the ErisPulse standardized response specification (`standards/api-response.md`):
+The adapter follows the ErisPulse standardized return specification (`standards/api-response.md`):
 
 ```python
-# Success Response
+# Success response
 {
-    "status": "ok",              # Required: execution status
-    "retcode": 0,                # Required: return code (0 indicates success)
-    "data": {                     # Required: response data
+    "status": "ok",              // Required: execution status
+    "retcode": 0,                // Required: return code (0 indicates success)
+    "data": {                     // Required: response data
         "message_id": "123456",
         "time": 1632847927.599013
     },
-    "message_id": "123456",       # Required: message ID (empty string if not present)
-    "message": "",                # Required: error message (empty if successful)
-    "echo": "1234",               # Optional: echo value from the request returned as-is
-    "onebot12_raw": {...}        # Optional: raw response data
+    "message_id": "123456",       // Required: message ID (empty string if none)
+    "message": "",                // Required: error message (empty if successful)
+    "echo": "1234",               // Optional: echo returned as-is from the request
+    "onebot12_raw": {...}        // Optional: raw response data
 }
 
-# Failure Response
+# Failure response
 {
-    "status": "failed",           # Required: execution status
-    "retcode": 10003,            # Required: return code (non-zero indicates failure)
-    "data": None,                # Required: null for failures
-    "message_id": "",            # Required: empty string for failures
-    "message": "Missing required parameters",    # Required: error description
-    "echo": "1234",              # Optional: echo value from the request returned as-is
-    "onebot12_raw": {...}        # Optional: raw response data
+    "status": "failed",           // Required: execution status
+    "retcode": 10003,            // Required: return code (non-zero indicates failure)
+    "data": None,                // Required: null on failure
+    "message_id": "",            // Required: empty string on failure
+    "message": "Missing required parameter",    // Required: error description
+    "echo": "1234",              // Optional: echo returned as-is from the request
+    "onebot12_raw": {...}        // Optional: raw response data
 }
 ```
 
@@ -16375,8 +16381,8 @@ Follows OneBot12 standard error codes:
 
 - **0**: Success
 - **1xxxx**: Action request error
-- **2xxxx**: Action processor error
-- **3xxxx**: Action execution error (33001 indicates network timeout)
+- **2xxxx**: Action handler error
+- **3xxxx**: Action execution error (33001 for network timeout)
 
 ### Multi-Account Sending Syntax
 
@@ -16393,33 +16399,33 @@ await onebot12.call_api("send_message", account_id="main",
 
 ## Asynchronous Processing Mechanism
 
-The OneBot12 adapter adopts an asynchronous non-blocking design:
+The OneBot12 adapter uses an asynchronous non-blocking design:
 
 1. Message sending does not block the event handling loop.
 2. Multiple concurrent sending operations can be performed simultaneously.
-3. API responses can be handled promptly.
+3. API responses are handled promptly.
 4. WebSocket connections remain active.
-5. Concurrent processing of multiple accounts, with each account running independently.
+5. Multi-account concurrent processing, with each account running independently.
 
 ## Error Handling
 
-Adapters provide a comprehensive error handling mechanism:
+The adapter provides a comprehensive error handling mechanism:
 
-1. Automatic reconnection for network connection exceptions (supports independent reconnection for each account, with a 30-second interval)
-2. Handling API call timeouts (fixed 30-second timeout)
-3. Automatic retry for failed message sending (up to 3 retries)
-4. Calling unsupported methods will return a friendly text prompt
+1. Network connection exceptions are automatically reconnected (supports independent reconnection for each account, with a 30-second interval).
+2. API call timeout handling (fixed 30-second timeout).
+3. Message sending failures are automatically retried (up to 3 retries).
+4. Calls to unsupported methods return friendly text prompts.
 
 ## Event Handling Enhancement
 
-In multi-account mode, all events will automatically have account information added:
+In multi-account mode, all events are automatically appended with account information:
 
 ```python
 {
     "type": "message",
-    "onebot12_raw_type": "message",  // Original event type
+    "onebot12_raw_type": "message",  // Raw event type
     "detail_type": "private",
-    "self": {"user_id": "123456"},  // The account ID that sent the event (standard field)
+    "self": {"user_id": "123456"},  // Account ID that sent the event (standard field)
     "platform": "onebot12",
     // ... other event fields
 }
@@ -16434,10 +16440,10 @@ accounts = onebot12.accounts
 # Check account connection status
 connection_status = {
     account_id: connection is not None and not connection.closed
-    for account_id, connection in oneobot12.connections.items()
+    for account_id, connection in onebot12.connections.items()
 }
 
-# Dynamically enable/disable account (adapter needs to be restarted)
+# Dynamically enable/disable accounts (requires adapter restart)
 onebot12.accounts["test"].enabled = False
 ```
 
@@ -16445,7 +16451,7 @@ onebot12.accounts["test"].enabled = False
 
 ### Message Segment Standard
 
-OneBot12 uses a standardized message segment format:
+OneBot12 uses standardized message segment formats:
 
 ```python
 # Text message segment
@@ -16463,58 +16469,58 @@ OneBot12 uses a standardized message segment format:
 
 ### API Standard
 
-Follows the OneBot12 standard API specification:
+Follows OneBot12 standard API specifications:
 
-- `send_message`: Send a message
-- `delete_message`: Recall a message
-- `edit_message`: Edit a message
-- `get_message`: Retrieve a message
+- `send_message`: Send message
+- `delete_message`: Recall message
+- `edit_message`: Edit message
+- `get_message`: Get message
 - `get_self_info`: Get self information
 - `get_user_info`: Get user information
 - `get_group_info`: Get group information
 
 ## Best Practices
 
-1. **Configuration Management**: It is recommended to use multi-account configurations to manage robots with different purposes separately.
+1. **Configuration Management**: It is recommended to use multi-account configuration to separate management of robots with different purposes.
 2. **Error Handling**: Always check the return status of API calls.
-3. **Message Sending**: Use appropriate message types to avoid sending unsupported messages.
-4. **Connection Monitoring**: Regularly check the connection status to ensure service availability.
-5. **Performance Optimization**: When sending in batches, use the Batch method to reduce network overhead.
-6. **Method Calls**: It is recommended to use standard PascalCase naming (e.g., `.Text()`), but lowercase forms are also supported for compatibility with different programming styles (this approach may be incompatible with older versions).
+3. **Message Sending**: Use appropriate message types and avoid sending unsupported messages.
+4. **Connection Monitoring**: Regularly check connection status to ensure service availability.
+5. **Performance Optimization**: Use the Batch method for batch sending to reduce network overhead.
+6. **Method Calls**: Standard camelCase naming (e.g., `.Text()`) is recommended, but lowercase forms are also supported for compatibility with different programming styles (this may be incompatible with older versions).
 
 
 
 ### Telegram 适配
 
-# Telegram Platform Features Documentation
+# Telegram Platform Feature Documentation
 
-TelegramAdapter is an adapter built on top of the Telegram Bot API, supporting various message types and event handling.
+TelegramAdapter is an adapter built on top of the Telegram Bot API, supporting multiple message types and event handling.
 
 ---
 
-## Documentation Information
+## Document Information
 
-- Corresponding Module Version: 4.2.0
+- Corresponding Module Version: 4.3.0
 - Maintainer: ErisPulse
 
 ## Basic Information
 
-- Platform Introduction: Telegram is a cross-platform instant messaging software
+- Platform Overview: Telegram is a cross-platform instant messaging application
 - Adapter Name: TelegramAdapter
 - Supported Protocol/API Version: Telegram Bot API
 - Session Type Mapping: `private` → use `user` when sending, `group`/`supergroup` → `group`, `channel` → `channel`
 
 ## Standard API Actions (API DSL)
 
-Adapters map OB12 standard actions to the Telegram Bot API and standardize the `data` field:
+The adapter maps OB12 standard actions to the Telegram Bot API and standardizes the data field:
 
-| OB12 Standard Action | Telegram API | data Field |
+| OB12 Standard Action | Telegram API | Data Field |
 |----------------------|--------------|------------|
 | get_self_info | getMe | user_id / user_name / user_displayname |
 | get_user_info(user_id) | getChat | user_id / user_name / user_displayname |
 | get_group_info(group_id) | getChat | group_id / group_name |
 | get_group_member_info(group_id, user_id) | getChatMember | user_id / user_name / telegram_role |
-| delete_message(message_id) | deleteMessage | chat_id is automatically completed via message registry |
+| delete_message(message_id) | deleteMessage | chat_id automatically completed via message registry |
 | leave_group(group_id) | leaveChat | - |
 
 Extended actions: get_group_admin_list(group_id) (admin list), get_chat_member_count(chat_id) (member count).
@@ -16526,17 +16532,17 @@ telegram = sdk.adapter.get("telegram")
 result = await telegram.Api.get_self_info()
 result = await telegram.Api.get_group_info(group_id=-100123)
 result = await telegram.Api.get_group_admin_list(-100123)
-await telegram.Api.delete_message(message_id=55)   # chat_id is automatically completed
+await telegram.Api.delete_message(message_id=55)   # chat_id automatically completed
 result = await telegram.Api.Using("main").get_self_info()
 ```
 
-> The Telegram Bot API does not provide an interface to retrieve friend/group lists; get_friend_list/get_group_list return errorcode=10002.
+> Telegram Bot API does not provide an interface to retrieve friend or group lists; get_friend_list/get_group_list returns code=10002.
 
 ---
 
 ## Request Operations (Request DSL)
 
-Handle group join requests (chat_join_request event), based on `approveChatJoinRequest` / `declineChatJoinRequest`:
+Handles group join requests (chat_join_request event), based on approveChatJoinRequest / declineChatJoinRequest:
 
 ```python
 from ErisPulse.Core.Event import request
@@ -16545,22 +16551,21 @@ from ErisPulse.Core.Event import request
 async def handle_join_request(event):
     if event.get("platform") != "telegram":
         return
-    # event["request_id"] is a synthetic identifier (tjr_{chat_id}_{user_id}_{date})
+    # event["request_id"] is a synthesized identifier (tjr_{chat_id}_{user_id}_{date})
     if event.get("user_nickname"):
         await event.approve()          # Approve
     # await event.reject()             # Reject
 
-# Manual invocation (requires prior receipt of the corresponding request event to register context)
+# Manual invocation (must have received corresponding request event to register context)
 await telegram.Request(event["request_id"]).accept()
 await telegram.Request(event["request_id"]).reject()
 await telegram.Request(event["request_id"]).Using("main").accept()
 ```
 
 ---
-
 ## Supported Message Sending Types
 
-All sending methods are implemented using a fluent (chained) syntax, for example:
+All sending methods use a fluent interface, for example:
 ```python
 from ErisPulse.Core import adapter
 telegram = adapter.get("telegram")
@@ -16573,9 +16578,10 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 | Method | Description | Parameters |
 |--------|-------------|------------|
 | `.Text(text)` | Send plain text message | `text: str` |
-| `.Face(emoji)` | Send emoji dice | `emoji: str` (e.g., 🎲 🎯 🏀) |
-| `.Markdown(text, content_type)` | Send Markdown-formatted message | `content_type` defaults to `"MarkdownV2"` |
-| `.HTML(text)` | Send HTML-formatted message | `text: str` |
+| `.Face(emoji)` | Send emoji dice | `emoji: str` (e.g. 🎲 🎯 🏀) |
+| `.Markdown(text, content_type)` | Send Markdown formatted message | `content_type` defaults to `"MarkdownV2"` |
+| `.HTML(text)` | Send HTML formatted message | `text: str` |
+| `.MergeForward(nodes, title)` | Send merged forward message (title + each blockquote block, truncated at 4096) | `nodes: List[Dict]`, `title: str` |
 | `.Sticker(file)` | Send sticker | `file: str (file_id/URL) \| bytes` |
 | `.Location(lat, lng)` | Send location | `latitude: float, longitude: float` |
 | `.Venue(lat, lng, title, addr)` | Send venue | Includes title and address |
@@ -16583,7 +16589,7 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 
 ### Media Sending Methods
 
-All media methods support both `bytes` (upload) and `str` (file_id / URL) input:
+All media methods support both `bytes` (upload) and `str` (file_id / URL) inputs:
 
 | Method | Description |
 |--------|-------------|
@@ -16592,33 +16598,33 @@ All media methods support both `bytes` (upload) and `str` (file_id / URL) input:
 | `.Voice(file, caption)` | Send voice |
 | `.Audio(file, caption, content_type)` | Send audio |
 | `.File(file, caption)` | Send file |
-| `.Document(file, caption, content_type)` | Alias for `File` |
+| `.Document(file, caption, content_type)` | Alias for File |
 
 ### Message Management Methods
 
 | Method | Description |
 |--------|-------------|
-| `.Edit(message_id, text, content_type)` | Edit an existing message |
-| `.Recall(message_id)` | Delete a specified message |
-| `.Forward(from_chat_id, message_id)` | Forward a message (retains source) |
-| `.CopyMessage(from_chat_id, message_id)` | Copy a message (without source) |
-| `.AnswerCallback(callback_query_id, text, show_alert)` | Answer a callback query |
+| `.Edit(message_id, text, content_type)` | Edit existing message |
+| `.Recall(message_id)` | Delete specified message |
+| `.Forward(from_chat_id, message_id)` | Forward message (retaining source) |
+| `.CopyMessage(from_chat_id, message_id)` | Copy message (without source) |
+| `.AnswerCallback(callback_query_id, text, show_alert)` | Respond to callback query |
 
 ### Raw Message Sending
 
-- `.Raw_ob12(message: List[Dict])`: Send a OneBot12 standard format message
-- `.Raw_json(json_str: str)`: Send a raw JSON format message
+- `.Raw_ob12(message: List[Dict])`: Send OneBot12 standard format message
+- `.Raw_json(json_str: str)`: Send raw JSON format message
 
 ### Fluent Modifier Methods
 
 | Method | Description |
 |--------|-------------|
-| `.At(user_id)` | @ a specified user (implemented via Telegram entities, can be called multiple times) |
-| `.AtAll()` | @ all members (sends `@All` text) |
-| `.Reply(message_id)` | Reply to a specified message |
-| `.Keyboard(inline_keyboard)` | Set inline keyboard (list[list[dict]]) |
-| `.ProtectContent(protect)` | Protect content (prevents forwarding and saving) |
-| `.Silent(silent)` | Send silently (does not notify the user) |
+| `.At(user_id)` | @ specified user (implemented via Telegram entities, can be called multiple times) |
+| `.AtAll()` | @ all members (send `@All` text) |
+| `.Reply(message_id)` | Reply to specified message |
+| `.Keyboard(inline_keyboard)` | Set inline keyboard (`list[list[dict]]`) |
+| `.ProtectContent(protect)` | Protect content (prevent forwarding and saving) |
+| `.Silent(silent)` | Silent send (no notification to user) |
 
 ### Sending Examples
 
@@ -16635,24 +16641,24 @@ keyboard = [
 ]
 await telegram.Send.To("group", group_id).Keyboard(keyboard).Text("Please select:")
 
-# Media sending (using URL)
+# Media sending (URL method)
 await telegram.Send.To("group", group_id).Image("https://example.com/image.jpg", caption="Image")
 
 # @ user
 await telegram.Send.To("group", group_id).At("6117725680").Text("Hello!")
 
-# Reply + protected content
+# Reply + protect content
 await telegram.Send.To("group", group_id).Reply("12345").ProtectContent().Text("Confidential message")
 
-# Silent sending
+# Silent send
 await telegram.Send.To("group", group_id).Silent().Text("Silent notification")
 
-# Answer callback query
+# Respond to callback query
 await telegram.Send.AnswerCallback(callback_query_id, text="Processed", show_alert=False)
 
 # OneBot12 composite message
 ob12_message = [
-    {"type": "text", "data": {"text": "Complex message:"}},
+    {"type": "text", "data": {"text": "Complex message: "}},
     {"type": "mention", "data": {"user_id": "6117725680", "user_name": "Username"}},
     {"type": "reply", "data": {"message_id": "12345"}},
     {"type": "image", "data": {"file": "https://http.cat/200"}}
@@ -16666,20 +16672,20 @@ await telegram.Send.To("user", user_id).Sticker("CAACAgIAAxkBAA...")  # file_id
 await telegram.Send.To("user", user_id).Location(39.9042, 116.4074)
 ```
 
-## Unique Event Types
+## Platform-Specific Event Types
 
-Telegram event conversion follows the OneBot12 standard, while providing platform extensions through the `telegram_` prefix.
+Telegram events are converted following the OneBot12 standard, with platform extensions provided via the `telegram_` prefix.
 
 ### Message Event detail_type Mapping
 
-| Telegram chat.type | OneBot12 detail_type | Target Type |
+| Telegram chat.type | OneBot12 detail_type | Sending Target Type |
 |---|---|---|
 | `private` | `private` | `user` |
 | `group` | `group` | `group` |
 | `supergroup` | `group` | `group` |
 | `channel` | `channel` | `channel` |
 
-### Unique Event Types
+### Platform-Specific Event Types
 
 | detail_type | Description |
 |---|---|
@@ -16696,12 +16702,12 @@ Telegram event conversion follows the OneBot12 standard, while providing platfor
 
 ### Standard Message Segment Types
 
-Converted message segments use the OneBot12 standard format:
+Converted message segments use OneBot12 standard format:
 
-| Message Segment Type | Description | data Fields |
+| Message Segment Type | Description | Data Field |
 |---|---|---|
 | `text` | Plain text (without @username) | `text` |
-| `mention` | @User (standard OB12) | `user_id`, `user_name` |
+| `mention` | @ user (standard OB12) | `user_id`, `user_name` |
 | `reply` | Reply reference | `message_id`, `user_id` |
 | `image` | Image | `file_id`, `url` |
 | `video` | Video | `file_id`, `url`, `duration`, `width`, `height` |
@@ -16712,9 +16718,9 @@ Converted message segments use the OneBot12 standard format:
 
 ### Platform Extension Message Segments
 
-Extension message segments identified by the `telegram_` prefix:
+Message segments with `telegram_` prefix:
 
-| Message Segment Type | Description | data Fields |
+| Message Segment Type | Description | Data Field |
 |---|---|---|
 | `telegram_sticker` | Sticker | `file_id`, `emoji`, `sticker_type`, `url` |
 | `telegram_animation` | GIF animation | `file_id`, `url`, `duration`, `caption` |
@@ -16723,7 +16729,7 @@ Extension message segments identified by the `telegram_` prefix:
 
 ### Event Examples
 
-#### Group Chat Message (with @mention)
+#### Group Message (with @ mention)
 ```python
 {
   "type": "message",
@@ -16779,13 +16785,13 @@ Extension message segments identified by the `telegram_` prefix:
   "type": "message",
   "detail_type": "group",
   "message": [
-    {"type": "text", "data": {"text": "请选择："}},
+    {"type": "text", "data": {"text": "Please select:"}},
     {
       "type": "telegram_inline_keyboard",
       "data": {
         "inline_keyboard": [
-          [{"text": "按钮1", "callback_data": "btn1"}],
-          [{"text": "访问", "url": "https://example.com"}]
+          [{"text": "Button 1", "callback_data": "btn1"}],
+          [{"text": "Visit", "url": "https://example.com"}]
         ]
       }
     }
@@ -16801,30 +16807,30 @@ The adapter registers the following platform-specific methods, available only wh
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `is_bot_message()` | `bool` | Check if the message is from a bot |
-| `is_edited_message()` | `bool` | Check if the message has been edited |
-| `is_topic_message()` | `bool` | Check if the message is a topic/Topic message |
-| `get_update_id()` | `int` | Get the Telegram update ID |
-| `get_chat_title()` | `str` | Get the chat title |
-| `get_chat_username()` | `str` | Get the chat username |
-| `get_forward_from()` | `dict` | Get the forwarding source information |
-| `get_topic_id()` | `str` | Get the topic ID |
+| `is_bot_message()` | `bool` | Check if message is from bot |
+| `is_edited_message()` | `bool` | Check if message is edited |
+| `is_topic_message()` | `bool` | Check if message is topic/Topic message |
+| `get_update_id()` | `int` | Get Telegram update ID |
+| `get_chat_title()` | `str` | Get chat title |
+| `get_chat_username()` | `str` | Get chat username |
+| `get_forward_from()` | `dict` | Get forwarding source info |
+| `get_topic_id()` | `str` | Get topic ID |
 
 ### Callback Query-related
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `get_callback_data()` | `str` | Get the callback_data of the callback query |
-| `get_callback_id()` | `str` | Get the callback query ID (used for responding) |
+| `get_callback_data()` | `str` | Get callback query's callback_data |
+| `get_callback_id()` | `str` | Get callback query ID (used for response) |
 
 ### Message Segment Data Extraction
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `get_inline_keyboard()` | `list` | Get the inline keyboard from the message |
-| `get_sticker_info()` | `dict` | Get the sticker information |
-| `get_contact_info()` | `dict` | Get the contact information |
-| `get_location()` | `dict` | Get the location information |
+| `get_inline_keyboard()` | `list` | Get inline keyboard from message |
+| `get_sticker_info()` | `dict` | Get sticker info |
+| `get_contact_info()` | `dict` | Get contact info |
+| `get_location()` | `dict` | Get location info |
 
 ### Usage Example
 
@@ -16843,11 +16849,11 @@ async def handle_message(event):
     if event.is_edited_message():
         print("This is an edited message")
 
-    # Chat information
+    # Chat info
     title = event.get_chat_title()
     username = event.get_chat_username()
 
-    # Forwarding source
+    # Forward source
     forward = event.get_forward_from()
 
     # Message segment data
@@ -16869,23 +16875,23 @@ async def handle_notice(event):
         callback_data = event.get_callback_data()
         callback_id = event.get_callback_id()
 
-        # Respond to the callback query
+        # Respond to callback query
         telegram = sdk.adapter.get("telegram")
         await telegram.Send.AnswerCallback(callback_id, text="Clicked")
 
-        # Reply to the message
+        # Reply to message
         await event.reply(f"You clicked: {callback_data}")
 ```
 
-## Extension Field Description
+## Extension Field Explanation
 
 - All unique fields are prefixed with `telegram_`
 - Original data is preserved in the `telegram_raw` field
 - Original event type is preserved in the `telegram_raw_type` field
 - Channel messages use `detail_type="channel"`
-- Private chat messages use `detail_type="private"` (must be converted to `user` when sending)
-- Thread messages include the `thread_id` field
-- `@` mentions use the standard `mention` message segment type (`type: "mention"`), with no @username in the text
+- Private messages use `detail_type="private"` (must be converted to `user` when sending)
+- Topic messages include the `thread_id` field
+- `@` mentions use the standard `mention` message segment type (`type: "mention"`), with no `@username` in the text
 
 ## Configuration Options
 
@@ -16904,22 +16910,22 @@ enabled = true
 
 ### Running Mode
 
-The Telegram adapter only supports **Polling (polling)** mode; the Webhook mode has been removed.
+The Telegram adapter only supports **Polling (polling)** mode; Webhook mode has been removed.
 
 ### Proxy Configuration
 
-If you need to connect to the Telegram API through a proxy, use a system-level proxy (environment variables `ALL_PROXY` / `HTTPS_PROXY`).
+If you need to connect to the Telegram API through a proxy, use system-level proxy (environment variables `ALL_PROXY` / `HTTPS_PROXY`).
 
 ### Migration from Old Configuration
 
-The old single-token configuration is automatically compatible:
+Old single-token configuration is automatically compatible:
 ```toml
 # Old format (still usable, but migration is recommended)
 [Telegram_Adapter]
 token = "YOUR_BOT_TOKEN"
 ```
 
-It is recommended to migrate to the new format:
+Migration is recommended to the new format:
 ```toml
 [Telegram_Adapter.accounts.default]
 token = "YOUR_BOT_TOKEN"
@@ -16930,7 +16936,7 @@ enabled = true
 
 ### 云湖适配
 
-# Yunhu Platform Feature Documentation
+# Yunhu Platform Features Documentation
 
 YunhuAdapter is an adapter built on the Yunhu protocol, integrating all Yunhu functional modules and providing a unified interface for event handling and message operations.
 
@@ -16938,26 +16944,26 @@ YunhuAdapter is an adapter built on the Yunhu protocol, integrating all Yunhu fu
 
 ## Document Information
 
-- Corresponding module version: 4.4.0
+- Corresponding Module Version: 4.5.0
 - Maintainer: ErisPulse
 
 ## Basic Information
 
 - Platform Overview: Yunhu is an enterprise-level instant messaging platform
 - Adapter Name: YunhuAdapter
-- Multi-account Support: Supports identifying and configuring multiple Yunhu robot accounts via bot_id
-- Chainable Modifier Support: Supports chainable modifier methods such as `.Reply()`
+- Multi-account Support: Supports multiple Yunhu robot accounts identified and configured via bot_id
+- Chainable Modifiers: Supports chainable modifier methods such as `.Reply()`
 - OneBot12 Compatibility: Supports sending OneBot12 format messages
 
 ## v5 Paradigm Update (4.4.0)
 
 This adapter has completed alignment with the v5 paradigm (incremental upgrade, API compatible):
 
-- **Full set of official server APIs** (Api DSL extension methods): Edit messages, batch sending, message lists, user/global dashboards, group member mute, remove group members, group message type control, group tag CRUD, user tagging
-- **Standard keyboard segment** (cross-platform interactive component standard): {"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}} segment automatically converted to Yunhu buttons; .Buttons(rows) / .Keyboard(rows) modifiers accept generic structure (native structure backward compatible)
-- **Standard fields for interaction callbacks**: Button click/A2UI event includes standard fields interaction_id / button_data
-- **spawn_background task ownership**: WS connection tasks changed to use runtime.spawn_background
-- **Framework soft dependency**: Runtime detection of ErisPulse>=2.7.1 with prompt; version logs output on startup
+- **Official Server-side API Set** (Api DSL extension methods): Edit messages, batch sending, message lists, user/global dashboards, group member mute, remove group members, group message type control, group tag CRUD, user tagging
+- **Standard keyboard segment** (cross-platform interaction component standard): {"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}} segment automatically converted to Yunhu buttons; .Buttons(rows) / .Keyboard(rows) modifiers accept generic structure (native structure backward compatibility)
+- **Interaction callback standard fields**: Button click/A2UI events include standard fields interaction_id / button_data
+- **spawn_background task ownership**: WS connection tasks use runtime.spawn_background
+- **Framework soft dependency**: Runtime detection of ErisPulse>=2.7.1 and prompt; version logs output on startup
 
 ### Platform Extension Actions (call / Api methods)
 
@@ -16965,11 +16971,11 @@ This adapter has completed alignment with the v5 paradigm (incremental upgrade, 
 from ErisPulse import sdk
 yunhu = sdk.adapter.get("yunhu")
 
-# Api methods (official server API)
-await yunhu.Api.edit_message(msg_id, recv_id, "group", "text", {"text": "New content"})
+# Api methods (official server-side API)
+await yunhu.Api.edit_message(msg_id, recv_id, "group", "text", {"text": "New Content"})
 await yunhu.Api.batch_send(["userId1", "userId2"], "text", {"text": "Announcement"})
 await yunhu.Api.get_message_list(group_id, "group", before=10)
-await yunhu.Api.set_user_board(chat_id, "group", "Dashboard content", expire_time=3600)
+await yunhu.Api.set_user_board(chat_id, "group", "Dashboard Content", expire_time=3600)
 await yunhu.Api.dismiss_global_board()
 await yunhu.Api.gag_group_member(group_id, user_id, 600)      # Mute for 600 seconds, 0=unmute
 await yunhu.Api.remove_group_member(group_id, user_id)
@@ -16987,7 +16993,7 @@ async def handle_button(event):
         interaction_id = event["interaction_id"]
 ```
 
-> Complete standard documentation is available at [Cross-Platform Interactive Component Standard](../standards/standardization-guide.md).
+> Complete standard documentation is available at [Cross-platform Interaction Component Standard](../standards/standardization-guide.md).
 
 ---
 ## Supported Message Sending Types
@@ -17000,24 +17006,25 @@ yunhu = adapter.get("yunhu")
 await yunhu.Send.To("user", user_id).Text("Hello World!")
 ```
 
-The supported sending types include:
-- `.Text(text: str)`: Send plain text message.
-- `.Html(html: str)`: Send HTML formatted message.
-- `.Markdown(markdown: str)`: Send Markdown formatted message.
-- `.A2UI(text: str)`: Send A2UI formatted message.
-- `.Image(file: bytes, stream: bool = False, filename: str = None)`: Send image message, supports streaming upload and custom filename.
-- `.Video(file: bytes, stream: bool = False, filename: str = None)`: Send video message, supports streaming upload and custom filename.
-- `.File(file: bytes, stream: bool = False, filename: str = None)`: Send file message, supports streaming upload and custom filename.
+Supported sending types include:
+- `.Text(text: str)`: Send plain text messages.
+- `.Html(html: str)`: Send HTML formatted messages.
+- `.Markdown(markdown: str)`: Send Markdown formatted messages.
+- `.MergeForward(nodes, title="Merged Chat Record")`: Send merged forward messages (rendered as `<details>` collapsible HTML cards, sent via html channel).
+- `.A2UI(text: str)`: Send A2UI formatted messages.
+- `.Image(file: bytes, stream: bool = False, filename: str = None)`: Send image messages, supporting stream upload and custom filename.
+- `.Video(file: bytes, stream: bool = False, filename: str = None)`: Send video messages, supporting stream upload and custom filename.
+- `.File(file: bytes, stream: bool = False, filename: str = None)`: Send file messages, supporting stream upload and custom filename.
 - `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`: Batch send messages.
-- `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`: Edit existing message.
-- `.Recall(msg_id: str)`: Recall message.
-- `.Board(content: str, content_type: str = "text")`: Publish announcement board. Scope inferred from `To()` (specifying target=local board, not specifying=global board). Chainable modifiers: `.Expire(duration)` relative expiration (seconds), `.ExpireAt(timestamp)` absolute expiration (second-level timestamp), `.ForMember(member_id)` group member board; **automatically撤销 board when content is empty**. Still compatible with old-style `Board("local", "announcement")` explicit scope syntax.
-- `.DismissBoard()`: Recall announcement board. Scope inferred from `To()`, supports `.ForMember(member_id)`; still compatible with old-style `DismissBoard("local")` syntax.
-- `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`: Send streaming message.
+- `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`: Edit existing messages.
+- `.Recall(msg_id: str)`: Recall messages.
+- `.Board(content: str, content_type: str = "text")`: Publish dashboard announcements. Scope inferred by `To()` (specified target=local dashboard, unspecified=global dashboard). Chainable modifiers: `.Expire(duration)` relative expiration (seconds), `.ExpireAt(timestamp)` absolute expiration (second-level timestamp), `.ForMember(member_id)` group member dashboard; **automatically撤销 dashboard when content is empty**. Still compatible with old-style `Board("local", "announcement")` explicit scope writing.
+- `.DismissBoard()`: Recall dashboard announcements. Scope inferred by `To()`, supports `.ForMember(member_id)`; still compatible with old-style `DismissBoard("local")` writing.
+- `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`: Send streaming messages.
 
 ### Group Management Methods
 
-All group management methods need to specify the group through chainable syntax, for example:
+All group management methods require chainable syntax to specify the group, for example:
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
@@ -17027,17 +17034,17 @@ await yunhu.Send.To("group", group_id).Kick(user_id)
 
 - `.Kick(user_id: str)`: Remove group member. The bot needs `Allow removing group members` permission.
 - `.Ban(user_id: str, duration: int = 600)`: Mute user. `duration` is mute duration (seconds), 0 is unmute, -1 is permanent mute. The bot needs `Allow muting users` permission.
-- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)`: Create group tag. `color` format is #RRGGBB, `sort` smaller is more forward. The bot needs `Allow controlling tag group` permission.
-- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)`: Modify group tag. Optional parameters, if not passed, will not modify. The bot needs `Allow controlling tag group` permission.
+- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)`: Create group tag. `color` format is #RRGGBB, `sort` smaller is more front. The bot needs `Allow controlling tag group` permission.
+- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)`: Modify group tag. Optional parameters, not passed means no modification. The bot needs `Allow controlling tag group` permission.
 - `.DeleteTag(tag: str)`: Delete group tag. The bot needs `Allow controlling tag group` permission.
-- `.GetTagList()` : Get group tag list. Returns response data containing `list` array.
+- `.GetTagList()`: Get group tag list. Returns response data containing `list` array.
 - `.AddUserTag(user_id: str, tag: str)`: Add tag to user. The bot needs `Allow controlling tag group` permission.
 - `.RemoveUserTag(user_id: str, tag: str)`: Remove tag from user. The bot needs `Allow controlling tag group` permission.
-- `.SetMsgTypeLimit(types: str)`: Control group message types. `types` is message type name, multiple separated by commas (e.g. `"text,image,video"`), empty string means no restriction. The bot needs `Allow modifying group information` permission.
+- `.SetMsgTypeLimit(types: str)`: Control group message types. `types` is message type name, multiple separated by commas (e.g. "text,image,video"), empty string means no restriction. The bot needs `Allow modifying group information` permission.
 
 ### Message Query Methods
 
-To get the historical message list of a specified session (user/group), you need to specify the target through chainable syntax, for example:
+Get historical messages of specified session (user/group), need chainable syntax to specify target, for example:
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
@@ -17046,42 +17053,42 @@ result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
 ```
 
 - `.GetMessages(message_id: str = None, before: int = None, after: int = None)`: Get session history messages. Returns response data containing `list` array and `total` count.
-  - `message_id`: Message ID (optional). If not filled, combined with `before` returns the most recent N messages.
-  - `before`: Returns the N messages before the specified message ID.
-  - `after`: Returns the N messages after the specified message ID.
+  - `message_id`: Message ID (optional). Not filled in with `before` returns the latest N messages.
+  - `before`: Returns N messages before the specified message ID.
+  - `after`: Returns N messages after the specified message ID.
   - > **Note:** At least one of `before` and `after` must be specified and greater than 0, otherwise the server will not return any message.
 
-Board scope is automatically inferred by `To()`:
-- Specifying `To(target_type, target_id)` → Local board (specified user/group)
-- Not specifying `To()` → Global board
+Board scope inferred by `To()` automatically:
+- Specified `To(target_type, target_id)` → Local dashboard (specified user/group)
+- Unspecified `To()` → Global dashboard
 
 ```python
-# Local board (expires in 60 seconds)
+# Local dashboard (expires in 60 seconds relatively)
 await yunhu.Send.To("group", group_id).Expire(60).Board("Announcement", content_type="markdown")
 
-# Group member board (visible only to specified member)
+# Group member dashboard (visible only to specified member)
 await yunhu.Send.To("group", group_id).ForMember(user_id).Board("Visible only to you")
 
 # Absolute timestamp expiration
 await yunhu.Send.To("group", group_id).ExpireAt(1785208268).Board("Expires at specified time")
 
-# Global board
+# Global dashboard
 await yunhu.Send.Board("Global Announcement")
 
-# Clear local board (content empty → automatically recall)
+# Clear local dashboard (empty content → automatically recall)
 await yunhu.Send.To("group", group_id).Board("")
 ```
 
 ### Button Parameter Description
 
-The `buttons` parameter is a nested list representing the button layout and functionality. Each button object contains the following fields:
+The `buttons` parameter is a nested list representing button layout and functionality. Each button object contains the following fields:
 
 | Field        | Type   | Required | Description                                                                 |
 |--------------|--------|----------|-----------------------------------------------------------------------------|
 | `text`       | string | Yes      | Text on the button                                                          |
-| `actionType` | int    | Yes      | Action type: <br>`1`: Navigate URL<br>`2`: Copy<br>`3`: Click report        |
-| `url`        | string | No       | Used when `actionType=1`, indicating the target URL for navigation          |
-| `value`      | string | No       | When `actionType=2`, this value will be copied to the clipboard<br>When `actionType=3`, this value will be sent to the subscriber |
+| `actionType` | int    | Yes      | Action type:<br>`1`: Navigate URL<br>`2`: Copy<br>`3`: Report click         |
+| `url`        | string | No       | Used when `actionType=1`, represents the target URL for navigation          |
+| `value`      | string | No       | When `actionType=2`, this value is copied to clipboard<br>When `actionType=3`, this value is sent to the subscriber |
 
 Example:
 ```python
@@ -17095,21 +17102,21 @@ buttons = [
 await yunhu.Send.To("user", user_id).Buttons(buttons).Text("Message with buttons")
 ```
 > **Note:**
-> - Only user clicks on the **report event** button will receive a push notification, **copy** and **navigate URL** cannot receive a push notification.
+> - Only events reported by clicking the **Report Event** button will receive a push notification; neither **Copy** nor **Navigate URL** will trigger a push notification.
 
 ### Chainable Modifier Methods (can be combined)
 
-Chainable modifier methods return `self`, support chained calls, must be called before the final send method:
+Chainable modifier methods return `self`, supporting chained calls, must be called before the final sending method:
 
-- `.Reply(message_id: str)`: Reply to a specified message.
-- `.At(user_id: str)`: @ a specified user.
+- `.Reply(message_id: str)`: Reply to a specific message.
+- `.At(user_id: str)`: @ a specific user.
 - `.AtAll()`: @ all users.
 - `.Buttons(buttons: List)`: Add buttons.
 
-### Chainable Call Examples
+### Chained Call Example
 
 ```python
-# Basic send
+# Basic sending
 await yunhu.Send.To("user", user_id).Text("Hello")
 
 # Reply to message
@@ -17168,27 +17175,27 @@ await yunhu.Send.To("group", group_id).SetMsgTypeLimit("")
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# Get the last 10 messages in the group (returns 10 messages in total)
+# Get 10 recent messages from the group (returns 10 in total)
 result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
 
-# Get the 10 messages before the specified message ID in the group (returns 11 messages in total)
+# Get 10 messages before the specified message ID from the group (returns 11 in total)
 result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10)
 
-# Get 10 messages before and after the specified message ID in the group (returns 21 messages in total)
+# Get 10 messages before and after the specified message ID from the group (returns 21 in total)
 result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10, after=10)
 
-# Get history messages in user session
+# Get history messages from user session
 result = await yunhu.Send.To("user", user_id).GetMessages(message_id="msg_xxx", before=10)
 ```
 
 ### OneBot12 Message Support
 
-The adapter supports sending OneBot12 format messages, facilitating cross-platform message compatibility:
+The adapter supports sending OneBot12 formatted messages, facilitating cross-platform message compatibility:
 
-- `.Raw_ob12(message: List[Dict], **kwargs)`: Send OneBot12 format message.
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Send OneBot12 formatted messages.
 
 ```python
-# Send OneBot12 format message
+# Send OneBot12 formatted message
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await yunhu.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
@@ -17202,7 +17209,7 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 > [!NOTE]
 > This feature requires ErisPulse **2.7.0+** and YunhuAdapter **4.3.0+**.
 
-In addition to the `Send` chainable sending, the adapter also provides the `Api` inner class, exposing OneBot12 standard API actions and Yunhu platform extension actions. All methods return a standard response format.
+In addition to `Send` chainable sending, the adapter provides an `Api` internal class, exposing OneBot12 standard API actions and Yunhu platform extension actions. All methods return standard response format.
 
 ```python
 from ErisPulse.Core import adapter
@@ -17231,22 +17238,22 @@ info = await yunhu.Api.Using("bot1").get_self_info()
 | `get_self_info()` | Robot self information | Public Web API (bot-info) |
 | `get_user_info(user_id)` | User information (any user can query) | Public Web API (user/homepage) |
 | `get_group_info(group_id)` | Group information | Public Web API (group-info) |
-| `upload_file(*, type, name, ...)` | Upload file (automatically determine image/video/file) | Bot open API |
+| `upload_file(*, type, name, ...)` | Upload file (automatically determine image/video/file) | Bot Open API |
 | `get_file(file_id)` | Get file (file_id is URL) | — |
-| `delete_message(message_id, *, chat_id, chat_type)` | Recall message | Bot open API (/bot/recall) |
+| `delete_message(message_id, *, chat_id, chat_type)` | Recall message | Bot Open API (/bot/recall) |
 
-> **Note**: `get_self_info` / `get_user_info` / `get_group_info` are implemented through **non-official public Web API** (chat-web-go.jwzhd.com). These interfaces require no authentication but are not officially documented and may change with platform updates; failure returns a standard error response.
+> **Note:** `get_self_info` / `get_user_info` / `get_group_info` are implemented through **non-official public Web API** (chat-web-go.jwzhd.com). These interfaces do not require authentication but are not official documentation and may change with platform updates; failures return standard error responses.
 
 ### Unsupported Standard Actions
 
 The following standard actions have no corresponding API in Yunhu, and calling them returns `retcode=10002` (unsupported operation):
-- `get_friend_list` (Bot open API's "robot user list" is still pending launch)
+- `get_friend_list` (Bot Open API's "robot user list" is still in pending launch status)
 - `get_group_list` / `get_group_member_info` / `get_group_member_list`
 - `set_group_name` / `leave_group`
 
 ### Platform Extension Actions
 
-Call Yunhu-specific actions via `Api.call("yunhu.xxx", **params)` (parameters use OB12-style naming, adapter automatically translates to Yunhu fields):
+Call Yunhu-specific actions through `Api.call("yunhu.xxx", **params)` (parameters use OB12-style naming, adapter automatically translates to Yunhu fields):
 
 | Extension Action | Description | Equivalent Send Method |
 |------------------|-------------|------------------------|
@@ -17255,7 +17262,7 @@ Call Yunhu-specific actions via `Api.call("yunhu.xxx", **params)` (parameters us
 | `yunhu.ban` | Mute (group_id, user_id, duration) | `Send.To("group", g).Ban(uid, duration)` |
 | `yunhu.unban` | Unmute (group_id, user_id) | `Send.To("group", g).Ban(uid, duration=0)` |
 | `yunhu.tag.create/edit/delete/list` | Group tag CRUD (group_id, ...) | `Send.To("group", g).CreateTag(...)` etc. |
-| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | Add/Remove tag from user | `Send.To("group", g).AddUserTag(...)` etc. |
+| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | Add/remove tag from user | `Send.To("group", g).AddUserTag(...)` etc. |
 | `yunhu.set_member_title` / `yunhu.unset_member_title` | **Member title semantic alias** (tag ≈ title, internally mapped to tag.relate) | — |
 | `yunhu.msg_type_limit` | Group message type limit (group_id, type) | `Send.To("group", g).SetMsgTypeLimit(...)` |
 | `yunhu.get_messages` | Get history messages (chat_id, chat_type, message_id?, before?, after?) | `Send.To(...).GetMessages(...)` |
@@ -17263,50 +17270,50 @@ Call Yunhu-specific actions via `Api.call("yunhu.xxx", **params)` (parameters us
 | `yunhu.user_homepage` | Public user homepage query (user_id) | — |
 
 ```python
-# Example of platform extension
+# Platform extension example
 await yunhu.Api.call("yunhu.kick", group_id="123", user_id="456")
 await yunhu.Api.call("yunhu.set_member_title", group_id="123", user_id="456", title="VIP")
 result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="group", before=10)
 ```
 
-> **Tags and Titles**: In Yunhu, "tag" semantics are equivalent to OneBot12 group member `title`. `yunhu.set_member_title` is a native semantic alias for `yunhu.tag.relate`, both internally mapping to the same endpoint. In group message events, the sender's role is mapped to the standard `role` field from Yunhu's `senderUserLevel` (owner/admin/member).
+> **Tags and Titles:** Yunhu's "tag" semantics are equivalent to OneBot12 group member `title`. `yunhu.set_member_title` is a native semantic alias for `yunhu.tag.relate`, both internally mapped to the same endpoint. In group message events, the sender's role is mapped to the standard `role` field (`owner/admin/member`) from Yunhu's `senderUserLevel`.
 
 ## Send Method Return Values
 
-All send methods return a Task object, which can be awaited to get the send result. The return result follows the ErisPulse adapter standardization return specification:
+All send methods return a Task object, which can be awaited directly to get the send result. The returned result follows ErisPulse adapter standardized return specifications:
 
 ```python
 {
     "status": "ok",           // Execution status
     "retcode": 0,             // Return code
     "data": {...},            // Response data
-    "self": {...},            // Self information (includes bot_id)
+    "self": {...},            // Self information (including bot_id)
     "message_id": "123456",   // Message ID
     "message": "",            // Error message
     "yunhu_raw": {...}        // Raw response data
 }
 ```
 
-## Unique Event Types
+## Platform-Specific Event Types
 
 Platform-specific features should be used only after checking platform=="yunhu"
 
 ### Core Differences
 
-1. Unique event types:
+1. Platform-specific event types:
     - Forms (e.g., form commands): yunhu_form
-    - Emoticon/pack sticker message segments: yunhu_expression
-    - Button click: yunhu_button_click
-    - A2UI button click: yunhu_a2ui_button
+    - Emoji/pack messages: yunhu_expression
+    - Button clicks: yunhu_button_click
+    - A2UI button clicks: yunhu_a2ui_button
     - Bot settings: yunhu_bot_setting
-    - Quick menu: yunhu_shortcut_menu
-2. Standard field extension (4.3.0+):
+    - Quick menus: yunhu_shortcut_menu
+2. Standard field extensions (4.3.0+):
     - Message events add standard `role` field (mapped from Yunhu `senderUserLevel` to `owner`/`admin`/`member`)
-    - Add `user_avatar` field (sender's avatar URL)
+    - New `user_avatar` field (sender's avatar URL)
 3. Extension fields:
-    - All unique fields are prefixed with yunhu_
-    - Original data is retained in the yunhu_raw field
-    - In private chat, self.user_id represents the robot ID
+    - All platform-specific fields are prefixed with yunhu_
+    - Original data is preserved in the yunhu_raw field
+    - In private chats, self.user_id represents the bot ID
 
 ### Special Field Examples
 
@@ -17346,7 +17353,7 @@ Platform-specific features should be used only after checking platform=="yunhu"
 {
   "type": "notice",
   "detail_type": "yunhu_a2ui_button",
-  "user_id": "Operation user ID",
+  "user_id": "User ID who operated",
   "user_nickname": "User nickname",
   "message_id": "Message ID",
   "yunhu_a2ui": {
@@ -17355,7 +17362,7 @@ Platform-specific features should be used only after checking platform=="yunhu"
     "action_name": "Action name",
     "source_component_id": "Source component ID",
     "form_context": {},
-    "interaction_json": "Interaction data JSON string"
+    "interaction_json": "JSON string of interaction data"
   }
 }
 
@@ -17366,11 +17373,11 @@ from ErisPulse.Core.Event import notice
 
 @notice.on_notice()
 async def handle_yunhu_notice(event):
-    """Handle Yunhu notice events
+    """Handle Yunhu notification events
 
-    Use the generic on_notice() decorator to handle all notice events,
-    then distinguish different types of notices by detail_type
-    event.reply() will automatically reply through the Yunhu platform
+    Use the generic on_notice() decorator to handle all notification events,
+    then distinguish different types of notifications by detail_type
+    event.reply() will automatically reply via the Yunhu platform
     """
     # Check if it is a button click event
     if event.get("detail_type") == "yunhu_button_click":
@@ -17380,7 +17387,7 @@ async def handle_yunhu_notice(event):
 
         print(f"User {user_nickname}({user_id}) clicked the button: {button_value}")
 
-        # Use event.reply() to automatically reply (will automatically select the correct sending method based on platform)
+        # Use event.reply() to automatically reply (will automatically select the correct sending method based on the platform)
         if button_value == "confirm":
             await event.reply("You clicked the confirm button!")
         elif button_value == "cancel":
@@ -17393,7 +17400,7 @@ async def handle_yunhu_notice(event):
         menu_id = event.get("yunhu_menu", {}).get("id", "")
         await event.reply(f"Triggered quick menu: {menu_id}")
 
-    # Handle bot setting change
+    # Handle bot setting changes
     elif event.get("detail_type") == "yunhu_bot_setting":
         settings = event.get("yunhu_setting", {})
         await event.reply(f"Settings updated: {settings}")
@@ -17406,7 +17413,7 @@ async def handle_yunhu_notice(event):
         await event.reply(f"A2UI operation: {action_name}, form data: {form_context}")
 ```
 
-### Sending Message with Buttons Using Chainable Calls
+### Sending Message with Buttons Using Chained Calls
 
 ```python
 from ErisPulse import sdk
@@ -17421,14 +17428,14 @@ buttons = [
     ]
 ]
 
-# Send message with buttons to group
+# Send a message with buttons to a group
 await yunhu.Send.To("group", "123456").Buttons(buttons).Text("Please confirm the following operation")
 
-# Send message with buttons to private chat
+# Send a message with buttons to a private chat
 await yunhu.Send.To("user", "789").Buttons(buttons).Text("Please select your preference settings")
 ```
 
-### Sending A2UI Message
+### Sending A2UI Messages
 
 ```python
 from ErisPulse import sdk
@@ -17436,7 +17443,7 @@ from ErisPulse import sdk
 yunhu = sdk.adapter.get("yunhu")
 
 # Send A2UI message
-await yunhu.Send.To("user", user_id).A2UI("A2UI interactive card content")
+await yunhu.Send.To("user", user_id).A2UI("A2UI interaction card content")
 ```
 
 # Bot Settings
@@ -17449,7 +17456,7 @@ await yunhu.Send.To("user", user_id).A2UI("A2UI interactive card content")
     "Setting Item ID": {
       "id": "Setting Item ID",
       "type": "input/radio/checkbox/select/switch",
-      "value": "Setting value"
+      "value": "Setting Value"
     }
   }
 }
@@ -17474,18 +17481,18 @@ await yunhu.Send.To("user", user_id).A2UI("A2UI interactive card content")
 The adapter registers the following platform-specific methods, available only when `platform == "yunhu"`:
 
 | Method | Return Type | Description |
-|------|----------|------|
-| `get_raw_event()` | `dict` | Get Yunhu raw event data (`yunhu_raw`) |
-| `get_sender_level()` | `str` | Sender's original Yunhu level (`owner/administrator/member/unknown`) |
-| `get_sender_role()` | `str` | Sender's OneBot12 standard role (`owner/admin/member`) |
+|--------|-------------|-------------|
+| `get_raw_event()` | `dict` | Get raw Yunhu event data (yunhu_raw) |
+| `get_sender_level()` | `str` | Sender's original Yunhu level (owner/administrator/member/unknown) |
+| `get_sender_role()` | `str` | Sender's OneBot12 standard role (owner/admin/member) |
 | `get_sender_title()` | `str` | Sender's title (standard `title` field accessor, reserved) |
 | `get_sender_avatar()` | `str` | Sender's avatar URL |
-| `get_command()` | `dict` | Command data (only for command message events, `yunhu_command`) |
-| `get_button_value()` | `str` | Button click event's value (`yunhu_button.value`) |
+| `get_command()` | `dict` | Command data (only for command message events, yunhu_command) |
+| `get_button_value()` | `str` | Button click event's value (yunhu_button.value) |
 | `get_a2ui_action()` | `str` | A2UI button event's actionName |
 | `get_a2ui_form_context()` | `dict` | A2UI button event's form context |
-| `get_menu_id()` | `str` | Quick menu event ID (`yunhu_menu.id`) |
-| `get_setting()` | `dict` | Bot setting event's setting data (`yunhu_setting`) |
+| `get_menu_id()` | `str` | Quick menu event ID (yunhu_menu.id) |
+| `get_setting()` | `dict` | Bot setting event's setting data (yunhu_setting) |
 | `is_command_message()` | `bool` | Whether it is a command message |
 | `is_button_click()` | `bool` | Whether it is a button click event |
 | `is_a2ui_button()` | `bool` | Whether it is an A2UI button event |
@@ -17508,19 +17515,19 @@ async def handle_yunhu_notice(event):
 
 ## Extension Field Descriptions
 
-- All unique fields are prefixed with `yunhu_` to avoid conflicts with standard fields
-- Original data is retained in the `yunhu_raw` field for accessing complete Yunhu platform data
-- `self.user_id` represents the robot ID (obtained from the bot_id in configuration)
-- Form commands provide structured data through the `yunhu_command` field
-- Button click events provide button information through the `yunhu_button` field
-- A2UI button events provide A2UI interaction information through the `yunhu_a2ui` field
-- Bot setting changes provide setting item data through the `yunhu_setting` field
-- Quick menu operations provide menu information through the `yunhu_menu` field
-- Emoticon/sticker message segments provide sticker data (sticker_id, sticker pack ID, image size, etc.) through the `yunhu_expression` segment
+- All platform-specific fields are prefixed with `yunhu_` to avoid conflicts with standard fields
+- Original data is preserved in the `yunhu_raw` field, facilitating access to complete original Yunhu platform data
+- `self.user_id` represents the bot ID (obtained from the bot_id in configuration)
+- Form commands are provided through the `yunhu_command` field as structured data
+- Button click events are provided through the `yunhu_button` field with button-related information
+- A2UI button events are provided through the `yunhu_a2ui` field with A2UI interaction-related information
+- Bot setting changes are provided through the `yunhu_setting` field with setting item data
+- Quick menu operations are provided through the `yunhu_menu` field with menu-related information
+- Emoji/pack message segments are provided through the `yunhu_expression` message segment with sticker data (sticker_id, pack ID, image size, etc.)
 
-### Emoticon/Sticker Message Segment (yunhu_expression)
+### Emoji/Pack Message Segment (yunhu_expression)
 
-When a user sends an emoticon or sticker, the message segment type is `yunhu_expression`:
+When a user sends an emoji or sticker, the message segment type is `yunhu_expression`:
 
 ```json
 {
@@ -17562,7 +17569,7 @@ async def handle_message(event):
 
 ## Multi-Bot Configuration
 
-### Configuration Instructions
+### Configuration Description
 
 The Yunhu adapter supports configuring and running multiple Yunhu robot accounts simultaneously.
 
@@ -17572,31 +17579,31 @@ The Yunhu adapter supports configuring and running multiple Yunhu robot accounts
 token = "your_bot1_token"  # Robot token (required)
 mode = "ws"  # Receive mode (optional, default "ws", options: "ws", "webhook")
 webhook_path = "/webhook/bot1"  # Webhook path (optional, default "/webhook", used in webhook mode)
-enabled = true  # Enable (optional, default true)
+enabled = true  # Whether to enable (optional, default true)
 
 [Yunhu_Adapter.accounts.bot2]
 token = "your_bot2_token"  # Second robot's token
-webhook_path = "/webhook/bot2"  # Unique webhook path
+webhook_path = "/webhook/bot2"  # Independent webhook path
 enabled = true
 ```
 
 **Configuration Item Description:**
-- `token`: Yunhu platform's API token (required)
+- `token`: Yunhu platform-provided API token (required)
 - `mode`: Receive mode (optional, default "ws", options "ws", "webhook")
 - `webhook_path`: HTTP path for receiving Yunhu events (optional, default "/webhook", used in webhook mode)
-- `enabled`: Whether to enable the account (optional, default true)
+- `enabled`: Whether to enable this account (optional, default true)
 
 **Important Notes:**
-1. The robot ID in the Yunhu platform is automatically detected at runtime and does not need to be specified in the configuration
-2. Each bot in webhook mode should have a unique `webhook_path` to receive its own webhook events
-3. When configuring webhooks on the Yunhu platform, please set up corresponding URLs for each bot, for example:
+1. The robot ID in the Yunhu platform is automatically detected at runtime, no need to specify in the configuration
+2. In webhook mode, each bot should have an independent `webhook_path` to receive its own webhook events
+3. When configuring webhook in the Yunhu platform, please set corresponding URLs for each bot, for example:
    - Bot1: `https://your-domain.com/webhook/bot1`
    - Bot2: `https://your-domain.com/webhook/bot2`
 
 ### Using Send DSL to Specify Bot
 
 You can specify which bot to use for sending messages via the `Using()` method. This method supports two types of parameters:
-- **Account name**: The name of the bot in the configuration (e.g., `bot1`, `bot2`)
+- **Account name**: The bot name in the configuration (e.g., `bot1`, `bot2`)
 - **bot_id**: The `bot_id` value in the configuration
 
 ```python
@@ -17609,11 +17616,11 @@ await yunhu.Send.Using("bot1").To("user", "user123").Text("Hello from bot1!")
 # Send message using bot_id (automatically matches the corresponding account)
 await yunhu.Send.Using("30535459").To("group", "group456").Text("Hello from bot!")
 
-# Send message without specifying, uses the first enabled bot
+# Use the first enabled bot if not specified
 await yunhu.Send.To("user", "user123").Text("Hello from default bot!")
 ```
 
-> **Note:** When using `bot_id`, the system will automatically find the matching account in the configuration. This is especially useful when handling event replies, where you can directly use `event["self"]["user_id"]` to reply with the same account.
+> **Note:** When using `bot_id`, the system will automatically find the matching account in the configuration. This is especially useful when handling event replies, where you can directly use `event["self"]["user_id"]` to reply with the same bot.
 
 ### Bot Identifier in Events
 
@@ -17625,11 +17632,11 @@ from ErisPulse.Core.Event import message
 @message.on_message()
 async def handle_message(event):
     if event["platform"] == "yunhu":
-        # Get the robot ID that triggered the event
+        # Get the bot ID that triggered the event
         bot_id = event["self"]["user_id"]
         print(f"Message from Bot: {bot_id}")
         
-        # Reply using the same bot
+        # Reply with the same bot
         yunhu = adapter.get("yunhu")
         await yunhu.Send.Using(bot_id).To(
             event["detail_type"],
@@ -17637,9 +17644,9 @@ async def handle_message(event):
         ).Text("Reply message")
 ```
 
-### Logging Information
+### Log Information
 
-The adapter will automatically include `bot_id` information in the logs, which is helpful for debugging and tracking:
+The adapter will automatically include `bot_id` information in logs, facilitating debugging and tracking:
 
 ```
 [INFO] [yunhu] [bot:30535459] Received private message from user user123
@@ -17658,13 +17665,13 @@ bot_status = {
     for bot_name, bot_config in yunhu.bots.items()
 }
 
-# Dynamically enable/disable account (requires adapter restart)
+# Dynamically enable/disable accounts (requires adapter restart)
 yunhu.bots["bot1"].enabled = False
 ```
 
-### Backward Compatibility for Old Configuration
+### Old Configuration Compatibility
 
-Old configuration format `[Yunhu_Adapter.bots.*]` (with `bot_id` field) will be automatically migrated to the `accounts` format (`bot_id` is now automatically detected at runtime, and the value in the configuration will be ignored); it is recommended to migrate to the new format as soon as possible.
+Old configuration format `[Yunhu_Adapter.bots.*]` (with `bot_id` field) will be automatically migrated to the `accounts` format (`bot_id` is now automatically detected at runtime, the value in the configuration will be ignored); it is recommended to migrate to the new format as soon as possible.
 
 
 
@@ -17676,9 +17683,9 @@ EmailAdapter is an email adapter based on the SMTP/IMAP protocol, supporting ema
 
 ---
 
-## Document Information
+## Documentation Information
 
-- Corresponding Module Version: 4.2.0
+- Corresponding Module Version: 4.3.0  
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -17746,13 +17753,13 @@ enabled = true
 
 ## Supported Message Sending Types
 
-All sending methods are implemented using a chainable syntax:
+All sending methods are implemented through a fluent API syntax:
 
 ```python
 from ErisPulse.Core import adapter
 mail = adapter.get("email")
 
-# Simple text email
+# Simple plain text email
 await mail.Send.To("private", "to@example.com").Subject("Test").Text("Content")
 
 # HTML email with attachments
@@ -17768,27 +17775,28 @@ await mail.Send.To("private", "to@example.com").Raw_ob12([
     {"type": "file", "data": {"file": "/path/to/attachment.pdf"}},
 ])
 
-# Specify sending account (multi-account)
+# Specify the sending account (for multiple accounts)
 await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 ```
 
-> Note: When using chainable syntax, parameter methods (Subject / Cc / Attachment, etc.) must be called before the sending method (Text / Html / Raw_ob12).
+> Note: When using the fluent API syntax, parameter methods (Subject / Cc / Attachment, etc.) must be called before the sending method (Text / Html / Raw_ob12).
 
 ### Basic Sending Methods
 
 | Method | Description |
 |--------|-------------|
-| `.Text(text: str)` | Send a plain text email |
-| `.Html(html: str)` | Send an HTML formatted email |
-| `.Raw_ob12(message, **kwargs)` | Send a OneBot12 formatted message |
+| `.Text(text: str)` | Send plain text email |
+| `.Html(html: str)` | Send HTML formatted email |
+| `.MergeForward(nodes, title)` | Send merged forward email (body is a `<details>` collapsed HTML card, subject defaults to the title) |
+| `.Raw_ob12(message, **kwargs)` | Send OneBot12 formatted message |
 
-### Chainable Modifier Methods (Return self, can be combined)
+### Fluent Modifier Methods (return self, can be chained)
 
 | Method | Description |
 |--------|-------------|
 | `.Subject(subject: str)` | Set the email subject |
-| `.Cc(emails: Union[str, List[str]])` | Set the CC addresses |
-| `.Bcc(emails: Union[str, List[str]])` | Set the BCC addresses |
+| `.Cc(emails: Union[str, List[str]])` | Set the CC recipients |
+| `.Bcc(emails: Union[str, List[str]])` | Set the BCC recipients |
 | `.ReplyTo(email: str)` | Set the reply-to address |
 | `.Attachment(file, filename: str = None)` | Add an attachment |
 
@@ -18547,41 +18555,41 @@ async def handle_private_notice(event):
 
 ### Matrix 适配
 
-# Matrix Platform Features Document
+# Matrix Platform Feature Documentation
 
-MatrixAdapter is an adapter built based on the [Matrix protocol](https://spec.matrix.org/), integrating all core functional modules of the Matrix protocol and providing a unified interface for event handling and message operations.
+MatrixAdapter is an adapter built on the [Matrix protocol](https://spec.matrix.org/), integrating all core functional modules of the Matrix protocol and providing unified event handling and message operation interfaces.
 
 ---
 
-## Documentation Information
+## Document Information
 
-- Corresponding Module Version: 4.2.0
+- Corresponding module version: 4.4.0
 - Maintainer: ErisPulse
 
 ## Basic Information
 
-- Platform Overview: Matrix is an open, decentralized communication protocol that supports various scenarios, including private chats and group chats.
+- Platform Overview: Matrix is an open, decentralized communication protocol supporting various scenarios such as private chats and group chats.
 - Adapter Name: MatrixAdapter
-- Multi-account Support: Supports configuring multiple Matrix accounts simultaneously.
+- Multi-account Support: Supports simultaneous configuration of multiple Matrix accounts
 - Connection Method: Long Polling (via Matrix Sync API `/sync`)
-- Authentication Method: Token-based authentication using `access_token` or login with `user_id` and `password` to obtain a token.
-- Chained Modifiers Support: Supports chained modifier methods such as `.Reply()`, `.At()`, and `.AtAll()`.
-- OneBot12 Compatibility: Supports sending OneBot12 formatted messages.
+- Authentication Method: Based on access_token or user_id + password to obtain token
+- Chainable Modifier Support: Supports chainable modifier methods such as `.Reply()`, `.At()`, and `.AtAll()`
+- OneBot12 Compatibility: Supports sending OneBot12 formatted messages
 
-## Configuration Instructions
+## Configuration Explanation
 
-MatrixAdapter supports multi-account configuration, with each account having its own homeserver and authentication information.
+MatrixAdapter supports multi-account configuration, with each account having independent homeserver and authentication information.
 
 ```toml
 # config.toml
 # Account 1
 [Matrix_Adapter.accounts.default]
 homeserver = "https://matrix.org"          # Matrix server address (required)
-access_token = "YOUR_ACCESS_TOKEN"          # Access token (choose either this or user_id+password)
-user_id = ""                                # Matrix user ID (e.g., @bot:matrix.org)
+access_token = "YOUR_ACCESS_TOKEN"          # Access token (either this or user_id+password)
+user_id = ""                                # Matrix user ID (e.g. @bot:matrix.org)
 password = ""                               # Matrix user password
-auto_accept_invites = true                  # Whether to automatically accept room invitations (optional, default is true)
-enabled = true                              # Whether to enable this account (optional, default is true)
+auto_accept_invites = true                  # Whether to automatically accept room invites (optional, default is true)
+enabled = true                              # Whether to enable (optional, default is true)
 
 # Account 2
 [Matrix_Adapter.accounts.bot2]
@@ -18590,32 +18598,32 @@ access_token = "ANOTHER_TOKEN"
 enabled = true
 ```
 
-> Backward compatibility: If an old single-account `[Matrix_Adapter]` configuration (including access_token) is detected, it will be automatically migrated to `accounts.default`.
+> Compatibility with old configuration: If an old single-account `[Matrix_Adapter]` configuration (including access_token) is detected, it will be automatically migrated to `accounts.default`.
 
-**Configuration Item Descriptions (per account):**
+**Configuration Item Explanation (per account):**
 - `homeserver`: Matrix server address (required), default is `https://matrix.org`
-- `access_token`: Access token, which can be obtained from a Matrix client. If you already have a token, simply fill it in
-- `user_id`: Matrix user ID (e.g., `@bot:matrix.org`), used together with `password` for login
-- `password`: Matrix user password, used for automatic login to obtain the access token
-- `auto_accept_invites`: Whether to automatically accept room invitations, default is `true`
+- `access_token`: Access token, obtainable from a Matrix client. If you already have a token, simply fill it in
+- `user_id`: Matrix user ID (e.g. `@bot:matrix.org`), used in conjunction with `password` for login
+- `password`: Matrix user password, used for automatic login to obtain access_token
+- `auto_accept_invites`: Whether to automatically accept room invites, default is `true`
 - `enabled`: Whether to enable this account (optional, default is true)
 
-**Authentication Methods:**
-- Method 1 (Recommended): Provide `access_token` directly
-- Method 2: Provide `user_id` and `password`, the adapter will automatically call the login API to obtain the token
+**Authentication Method:**
+- Method 1 (Recommended): Directly provide `access_token`
+- Method 2: Provide `user_id` and `password`, the adapter will automatically call the login interface to obtain the token
 
 ## v5 Paradigm Update (4.2.0)
 
-- **BaseConverter Inheritance**: Common fields of converters are built by the framework's build_base_event
+- **BaseConverter Inheritance**: Common fields of converters are built by framework build_base_event
 - **Api DSL**: get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + meta actions
-- **Message Event Supplement message_id** (event_id); Message registry table supports delete_message
-- **spawn_background Task Ownership**: Synchronous/heartbeat tasks use runtime.spawn_background
-- **Framework Soft Dependency**: Runtime detects ErisPulse>=2.7.1 and provides a prompt; Version logs are output on startup
-- Matrix does not have native button capabilities, the standard keyboard segment is gracefully ignored (no error reported)
+- **Message Event Supplement message_id** (event_id); Message registration table supports delete_message
+- **spawn_background Task Assignment**: Synchronous/heartbeat tasks use runtime.spawn_background
+- **Framework Soft Dependency**: Runtime detects ErisPulse>=2.7.1 and prompts; Version logs output on startup
+- Matrix has no native button capability, standard keyboard segment is gracefully ignored (no error)
 
 ## End-to-End Encryption (4.3.0)
 
-Starting from version 4.3.0, the adapter natively supports end-to-end encryption for rooms (based on matrix-nio[e2e] / vodozemac):
+Starting from 4.3.0, the adapter natively supports end-to-end encryption for encrypted rooms (based on matrix-nio[e2e] / vodozemac):
 
 ```toml
 [Matrix_Adapter.accounts.default]
@@ -18625,13 +18633,13 @@ encryption_enabled = true       # Enable (default false, existing deployments un
 trust_all_devices = true        # Automatically trust unverified devices (default; false for strict mode)
 ```
 
-- Messages in encrypted rooms are automatically decrypted/sent encrypted, media is end-to-end encrypted (`m.file.encrypted`)
-- `device_id` is automatically parsed and persisted; session storage is located at `store_path` (default `data/matrix/<account_name>`, **do not delete**, otherwise historical messages cannot be decrypted)
-- New event Mixin adds `event.is_encrypted()`; media segments carry `matrix_encrypted_file` (JWK), which can be decrypted using `MatrixAdapter.decrypt_media()`
+- Automatic decryption/encryption for encrypted room message sending/receiving, media end-to-end encryption (`m.file.encrypted`)
+- `device_id` is automatically parsed and persisted; sessions are stored in `store_path` (default `data/matrix/<account name>`, **do not delete**, otherwise historical messages cannot be decrypted)
+- Event Mixin adds `event.is_encrypted()`; media segment carries `matrix_encrypted_file` (JWK), which can be decrypted using `MatrixAdapter.decrypt_media()`
 - Cross-signing and server-side key backup are not supported; requires Python >= 3.10
 - If not enabled or matrix-nio is not installed, it automatically falls back to plaintext mode
 
-For detailed instructions, see the [adapter README](https://github.com/ErisPulse/ErisPulse-MatrixAdapter).
+See the [adapter README](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) for detailed explanation.
 
 ### Standard API Action Examples
 
@@ -18641,20 +18649,22 @@ matrix = sdk.adapter.get("matrix")
 result = await matrix.Api.get_self_info()            # /account/whoami
 result = await matrix.Api.get_group_info(room_id)    # m.room.name
 result = await matrix.Api.get_group_list()           # /joined_rooms
-await matrix.Api.delete_message(event_id)            # redact (room_id must be provided in the table)
+await matrix.Api.delete_message(event_id)            # redact (room_id completed in registration table)
 ```
 
 ---
 
 ### Supported Platform Capabilities
 
-- **Events**: Messages (m.room.message: text/image/file/audio/video/reply/edit), member additions/removals (m.room.member), room name changes, and other state events
-- **Conversations**: Direct messages (DM rooms discovered automatically) / group chats (rooms); supports sending Text/Image/File/Voice/Video/Markdown/Raw_ob12
-- **API**: whoami/profile/joined_rooms/room status/member list/leave/redact (see above API DSL)
+- **Events**: Message events (m.room.message: text/image/file/audio/video/reply/edit), member changes (m.room.member), room name changes, and other status events
+- **Sessions**: Private chat (DM rooms are automatically discovered) / group (room); Supports sending Text/Image/File/Voice/Video/Markdown/Raw_ob12
+- **API**: whoami/profile/joined_rooms/room status/member list/leave/redact (see above Api DSL)
+
+---
 
 ## Supported Message Sending Types
 
-All sending methods are implemented using a fluent interface, for example:
+All sending methods use chainable syntax, for example:
 ```python
 from ErisPulse.Core import adapter
 matrix = adapter.get("matrix")
@@ -18662,40 +18672,41 @@ matrix = adapter.get("matrix")
 await matrix.Send.To("group", room_id).Text("Hello World!")
 ```
 
-The supported sending types include:
-- `.Text(text: str)` - Sends plain text messages.
-- `.Image(file: bytes | str)` - Sends image messages, supporting file paths, URLs, MXC URIs, and binary data.
-- `.Voice(file: bytes | str)` - Sends voice messages, supporting file paths, URLs, MXC URIs, and binary data.
-- `.Video(file: bytes | str)` - Sends video messages, supporting file paths, URLs, MXC URIs, and binary data.
-- `.File(file: bytes | str, filename: str = "")` - Sends file messages, supporting file paths, URLs, MXC URIs, and binary data.
-- `.Notice(text: str)` - Sends notification messages (Matrix's m.notice type).
-- `.Html(html: str, fallback: str = "")` - Sends HTML formatted messages, supporting rich text content.
-- `.Raw_ob12(message: List[Dict], **kwargs)` - Sends OneBot12 formatted messages.
+Supported sending types include:
+- `.Text(text: str)`: Send plain text messages.
+- `.Image(file: bytes | str)`: Send image messages, supporting file paths, URLs, MXC URIs, and binary data.
+- `.Voice(file: bytes | str)`: Send voice messages, supporting file paths, URLs, MXC URIs, and binary data.
+- `.Video(file: bytes | str)`: Send video messages, supporting file paths, URLs, MXC URIs, and binary data.
+- `.File(file: bytes | str, filename: str = "")`: Send file messages, supporting file paths, URLs, MXC URIs, and binary data.
+- `.Notice(text: str)`: Send notification messages (m.notice type in Matrix).
+- `.Html(html: str, fallback: str = "")`: Send HTML formatted messages, supporting rich text content.
+- `.MergeForward(nodes, title="Merged Chat Record")`: Send merged forward messages (formatted_body blockquote form; whitelist will strip details/inline styles).
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Send OneBot12 formatted messages.
 
-### Fluent Modifier Methods (Combinable)
+### Chainable Modifier Methods (can be combined)
 
-Modifier methods return `self`, enabling fluent method chaining. They must be called before the final sending method:
+Chainable modifier methods return `self`, supporting chained calls, and must be called before the final sending method:
 
-- `.Reply(message_id: str)` - Replies to a specified message (using Matrix's `m.in_reply_to` relationship).
-- `.At(user_id: str)` - Mentions a specified user (using Matrix's `m.mentions` field).
-- `.AtAll()` - Mentions everyone in the room (using Matrix's `@room` mention).
+- `.Reply(message_id: str)`: Reply to a specific message (via Matrix `m.in_reply_to` relationship).
+- `.At(user_id: str)`: Mention a specific user (via Matrix `m.mentions` field).
+- `.AtAll()`: Mention everyone in the room (via Matrix `@room` mention).
 
-### Fluent Chaining Examples
+### Chained Call Examples
 
 ```python
-# Basic send
+# Basic sending
 await matrix.Send.To("user", dm_room_id).Text("Hello")
 
-# Reply to message
+# Reply to a message
 await matrix.Send.To("group", room_id).Reply("$event_id").Text("Reply message")
 
-# Mention user
+# Mention a user
 await matrix.Send.To("group", room_id).At("@user:matrix.org").Text("Hello")
 
 # Mention everyone
 await matrix.Send.To("group", room_id).AtAll().Text("Announcement")
 
-# Combinable: Reply + Mention
+# Combination: Reply + Mention
 await matrix.Send.To("group", room_id).Reply("$event_id").At("@user:matrix.org").Text("Composite message")
 
 # Send HTML message
@@ -18714,22 +18725,22 @@ The adapter supports sending OneBot12 formatted messages, facilitating cross-pla
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await matrix.Send.To("user", dm_room_id).Raw_ob12(ob12_msg)
 
-# Combinable with modifiers
+# Combined with chainable modifiers
 ob12_msg = [{"type": "text", "data": {"text": "Reply message"}}]
 await matrix.Send.To("group", room_id).Reply("$event_id").Raw_ob12(ob12_msg)
 
 # Complex message
 ob12_msg = [
-    {"type": "text", "data": {"text": "Look at this image: "}},
+    {"type": "text", "data": {"text": "Look at this picture: "}},
     {"type": "image", "data": {"file": "https://example.com/image.png"}},
-    {"type": "text", "data": {"text": "Isn't it great?"}}
+    {"type": "text", "data": {"text": "Isn't it nice? "}}
 ]
 await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 ```
 
 ## Send Method Return Values
 
-All send methods return a Task object, which can be awaited directly to obtain the send result. The returned result follows the ErisPulse adapter's standardized return specification:
+All sending methods return a Task object, which can be awaited to obtain the sending result. The returned result follows the ErisPulse adapter standard return specification:
 
 ```python
 {
@@ -18742,7 +18753,7 @@ All send methods return a Task object, which can be awaited directly to obtain t
 }
 ```
 
-### Error Code Description
+### Error Code Explanation
 
 | retcode | Description |
 |---------|-------------|
@@ -18751,26 +18762,26 @@ All send methods return a Task object, which can be awaited directly to obtain t
 | 33000 | API call exception |
 | 34000 | API returned unexpected format or business error |
 
-## Platform-Specific Event Types
+## Unique Event Types
 
-Platform-specific features require `platform=="matrix"` detection before use.
+Use `platform=="matrix"` to detect and use this platform-specific feature
 
 ### Core Differences
 
-1. **Decentralized Architecture**: Matrix is a decentralized communication protocol. User IDs are formatted as `@user:server.domain`, and room IDs are formatted as `!room_id:server.domain`.
-2. **Room Concept**: Matrix does not distinguish between group chats and private chats; all conversations are "rooms." The adapter automatically identifies private chat rooms through DM (Direct Message) account data.
-3. **Long Polling Sync**: Uses the `/sync` API for long polling to retrieve new events instead of WebSocket.
-4. **MXC URI**: Media files are referenced using the `mxc://server.domain/media_id` format.
-5. **HTML Rich Text**: Supports sending HTML-formatted messages via `formatted_body`.
-6. **Reaction Emojis**: Supports message-level emoji reactions (Reaction), distinct from traditional reply messages.
-7. **Message Editing**: Supports editing previously sent messages via the `m.replace` relationship.
-8. **Message Retraction**: Supports retracting or deleting messages via `m.room.redaction`.
+1. **Decentralized Architecture**: Matrix is a decentralized communication protocol, with user IDs in the format `@user:server.domain` and room IDs in the format `!room_id:server.domain`
+2. **Room Concept**: Matrix does not distinguish between group chats and private chats; all conversations are "rooms." The adapter automatically identifies private chat rooms through DM (Direct Message) account data
+3. **Long Polling Synchronization**: Uses the `/sync` API for long polling to fetch new events, rather than WebSocket
+4. **MXC URI**: Media files are referenced using the `mxc://server.domain/media_id` format
+5. **HTML Rich Text**: Supports sending HTML formatted messages through `formatted_body`
+6. **Reaction Emojis**: Supports emoji reactions at the message level (Reaction), distinct from traditional reply messages
+7. **Message Editing**: Supports editing previously sent messages via `m.replace` relationship
+8. **Message Recall**: Supports recalling/deleting messages via `m.room.redaction`
 
 ### Extended Fields
 
-- All platform-specific fields are prefixed with `matrix_`.
-- Original data is retained in the `matrix_raw` field.
-- `matrix_raw_type` indicates the original Matrix event type (e.g., `m.room.message`, `m.room.member`).
+- All unique fields are prefixed with `matrix_`
+- Original data is retained in the `matrix_raw` field
+- `matrix_raw_type` indicates the original Matrix event type (such as `m.room.message`, `m.room.member`)
 
 ### Special Field Examples
 
@@ -18800,7 +18811,7 @@ Platform-specific features require `platform=="matrix"` detection before use.
   "matrix_reaction_key": "👍"
 }
 
-# Message retraction
+# Message recall
 {
   "type": "notice",
   "detail_type": "matrix_redaction",
@@ -18825,12 +18836,12 @@ Platform-specific features require `platform=="matrix"` detection before use.
 
 ### Message Segment Types
 
-Matrix messages are automatically converted into corresponding message segments based on `msgtype`:
+Matrix messages are automatically converted to corresponding message segments based on `msgtype`:
 
 | msgtype | Converted Type | Description |
 |---|---|---|
 | m.text | `text` | Text message |
-| m.notice | `text` | Notice message |
+| m.notice | `text` | Notification message |
 | m.emote | `text` | Action message |
 | m.image | `image` | Image message |
 | m.audio | `voice` | Audio message |
@@ -18838,7 +18849,7 @@ Matrix messages are automatically converted into corresponding message segments 
 | m.file | `file` | File message |
 | m.location | `location` | Location message |
 
-Example message segment structure:
+Message segment structure example:
 
 ```json
 // Text message (with HTML)
@@ -18880,7 +18891,7 @@ Example message segment structure:
 
 ### Event Mixin Methods
 
-The `MatrixAdapter` registers the following event mixin methods, which can be directly called in event handling:
+MatrixAdapter registers the following event mixin methods, which can be directly called in event handling:
 
 | Method | Return Type | Description |
 |------|----------|------|
@@ -18888,8 +18899,8 @@ The `MatrixAdapter` registers the following event mixin methods, which can be di
 | `get_matrix_event_type()` | `str` | Get original Matrix event type |
 | `get_matrix_sender()` | `str` | Get original sender ID |
 | `get_reaction_key()` | `str` | Get reaction emoji |
-| `is_edited()` | `bool` | Determine if the message is edited |
-| `is_notice()` | `bool` | Determine if the message is of type `m.notice` |
+| `is_edited()` | `bool` | Determine if the message is an edited message |
+| `is_notice()` | `bool` | Determine if the message is of m.notice type |
 
 ```python
 @message.on_message()
@@ -18906,26 +18917,26 @@ async def handle_message(event):
 
 ## Sync API Connection
 
-### Synchronization Flow
+### Synchronization Process
 
-1. Authenticate using `access_token` or `user_id` + `password`
-2. Call `/_matrix/client/v3/account/whoami` to get `bot_user_id`
-3. Send a `connect` metadata event
-4. Perform initial sync (`/_matrix/client/v3/sync?timeout=0`) to get the `next_batch` token
+1. Authenticate using access_token or user_id + password
+2. Call `/_matrix/client/v3/account/whoami` to get bot_user_id
+3. Emit connect meta event
+4. Perform initial synchronization (`/_matrix/client/v3/sync?timeout=0`) to obtain `next_batch` token
 5. Discover DM rooms (`/_matrix/client/v3/user/{user_id}/account_data/m.direct`)
-6. Start Long Polling synchronization loop (`/_matrix/client/v3/sync?since={next_batch}&timeout=30000`)
-7. Process new events returned from each sync and convert them for emission
+6. Begin Long Polling synchronization loop (`/_matrix/client/v3/sync?since={next_batch}&timeout=30000`)
+7. Process new events returned from each synchronization and convert and emit them
 
 ### Heartbeat Mechanism
 
-- The adapter sends a `heartbeat` metadata event every 30 seconds
-- The adapter sends a `connect` metadata event upon successful connection
-- The adapter sends a `disconnect` metadata event upon disconnection
+- The adapter emits a `heartbeat` meta event every 30 seconds
+- Emits a `connect` meta event upon successful connection
+- Emits a `disconnect` meta event upon disconnection
 
 ### Room Invitations
 
-- When receiving a room invitation (room with `invite` state), if the `auto_accept_invites` configuration is set to `true` (default), the adapter will automatically join the room
-- Joining the room calls the `/_matrix/client/v3/join/{room_id}` API
+- When receiving a room invitation (room with `invite` status), if the `auto_accept_invites` configuration is `true` (default), the adapter will automatically join the room
+- Joining the room calls the `/_matrix/client/v3/join/{room_id}` interface
 
 ## Usage Examples
 
@@ -18953,7 +18964,7 @@ async def handle_group_msg(event):
         ).Text("Hello!")
 ```
 
-### Handling Reaction Events
+### Handling Reaction Emojis
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -18967,27 +18978,27 @@ async def handle_reaction(event):
         reaction_key = event.get("matrix_reaction_key")
         reacted_event_id = event.get("matrix_reaction_event_id")
         room_id = event.get_room_id()
-        # Handle reaction event...
+        # Handle reaction emoji...
 ```
 
 ### Sending Media Messages
 
 ```python
-# Sending an image (URL)
+# Send image (URL)
 await matrix.Send.To("group", room_id).Image("https://example.com/image.png")
 
-# Sending an image (MXC URI)
+# Send image (MXC URI)
 await matrix.Send.To("group", room_id).Image("mxc://matrix.org/abc123")
 
-# Sending an image (binary data)
+# Send image (binary data)
 with open("image.png", "rb") as f:
     image_bytes = f.read()
 await matrix.Send.To("group", room_id).Image(image_bytes)
 
-# Sending an image (local file path)
+# Send image (local file path)
 await matrix.Send.To("group", room_id).Image("/path/to/image.png")
 
-# Sending a file (with filename)
+# Send file (with filename)
 await matrix.Send.To("group", room_id).File("/path/to/document.pdf", filename="document.pdf")
 ```
 
@@ -19261,104 +19272,106 @@ Two accounts start in parallel: bot_a uses WebSocket, bot_b uses Webhook, and th
 
 ### 云湖用户端适配
 
-# Yunhu User Platform Features Documentation
+# Yunhu User Adapter Feature Documentation
 
-YunhuUserAdapter is an adapter built based on the Yunhu User Account Protocol. It enables login via user email accounts, uses WebSocket to receive events, and provides a unified interface for event handling and message operations.
+YunhuUserAdapter is an adapter built based on the Yunhu User Account Protocol. It allows login via user email accounts, uses WebSocket to receive events, and provides a unified interface for event handling and message operations.
 
 ---
 
 ## Document Information
 
-- Corresponding Module Version: 4.2.0
+- Corresponding Module Version: 4.4.0
 - Maintainer: wsu2059
 
 ## Basic Information
 
-- **Platform Introduction**: Yunhu is an enterprise-level instant messaging platform. This adapter interacts with it through **user accounts** (not bot accounts).
-- **Adapter Name**: YunhuUserAdapter
-- **Multiple Account Support**: Supports identifying and configuring multiple user accounts via account names.
-- **Chained Modifier Support**: Supports chained modifier methods such as `.Reply()`.
-- **OneBot12 Compatibility**: Supports sending OneBot12 formatted messages.
-- **Communication Method**: Logs in via email to obtain a token, uses WebSocket to receive events, and sends messages using the HTTP + Protobuf protocol.
-- **Session Types**: Supports private chat (user), group chat (group), and bot sessions (bot).
+- Platform Overview: Yunhu is an enterprise-level instant messaging platform. This adapter interacts with it using **user accounts** (not bot accounts).
+- Adapter Name: YunhuUserAdapter
+- Multi-account Support: Supports identification and configuration of multiple user accounts via account names.
+- Chainable Modifier Support: Supports chainable modifier methods such as `.Reply()`.
+- OneBot12 Compatibility: Supports sending OneBot12 format messages.
+- Communication Method: Uses email login to obtain a token, receives events via WebSocket, and sends messages using HTTP + Protobuf protocol.
+- Session Types: Supports private chats (user), group chats (group), and bot sessions (bot).
 
 ## v5 Paradigm Update (4.2.0)
 
-- **BaseConverter Inheritance**; **spawn_background Task Ownership** (WS Listening Task)
-- **Complete User API Suite** (Based on yhchatAPI full.proto / v1 endpoints, protobuf over HTTP):
+- **BaseConverter Inheritance**; **spawn_background Task Assignment** (WS listening task)
+- **Full User API** (based on yhchatAPI full.proto / v1 endpoint, protobuf over HTTP):
   - User: get_user / edit_nickname / edit_avatar
-  - Friends: Address Book / Application List / Application / Accept / Ignore / Delete
-  - Groups: Group Info / Member List / Create / Dissolve / Invite / Remove / Mute / Robot List
-  - Conversations: Conversation List; Messages: List / Recall / Button Submission
-- **Framework Soft Dependencies**: Runtime detection of ErisPulse>=2.7.1 with prompt; Version logs output on startup
+  - Friends: Address book / request list / apply / agree / ignore / delete
+  - Groups: Group info / member list / create / dismiss / invite / remove / mute / bot list
+  - Conversations: Conversation list; Messages: list / recall / button report
+- **Framework Soft Dependency**: Runtime detection of ErisPulse>=2.7.1 with prompts; Version logs output on startup
 
-## List of Functionality Already Integrated
+## Connected Platform Functionality List
 
 ### Event Reception (WebSocket, protobuf encoding)
 
 | WS cmd | Event | Description |
 |--------|-------|-------------|
-| `push_message` | `message` | Private chat/group chat/Bot session messages (text/HTML/Markdown/image/video/audio/file/emotion/form/article/sticker/button/A2UI) |
+| `push_message` | `message` | Private chat/group chat/Bot session messages (text/HTML/Markdown/image/video/audio/file/emoji/article/sticker/button/A2UI) |
 | `edit_message` | `notice` (`message_edit`) | Message edit notification |
 | `file_send_message` | `notice` (`yunhu_user_file_send`) | Super file sharing |
 | `bot_board_message` | `notice` (`yunhu_user_bot_board`) | Bot bulletin board |
 
-### Api DSL Method Mapping (YunhuHTTPClient → UserAPI v1 Endpoints)
+### Api DSL Method Mapping ( YunhuHTTPClient → User API v1 endpoint )
 
 | Category | Api Method | Endpoint | Description |
 |----------|------------|----------|-------------|
-| Account | `get_self_info()` | `/user/info` | Login user information (nickname/avatar/user_id) |
-| User | `get_user(user_id)` | `/user/get-user` | Detailed user information |
+| Account | `get_self_info()` | `/user/info` | Logged-in user information (nickname/avatar/user_id) |
+| User | `get_user(user_id)` | `/user/get-user` | User details |
 | User | `edit_nickname(nickname)` | `/user/edit-nickname` | Modify own nickname |
 | User | `edit_avatar(url)` | `/user/edit-avatar` | Modify own avatar |
 | Friends | `get_friend_address_book(md5)` | `/friend/address-book-list` | Address book (cursor pagination) |
-| Friends | `get_friend_requests()` | `/friend/request-list` | List of friend/group join requests |
-| Friends | `friend_apply(user_id, desc)` | `/friend/apply` | Apply to add a friend |
-| Friends | `friend_agree_apply(user_id)` | `/friend/agree-apply` | Accept friend request |
-| Friends | `friend_ignore_apply(user_id)` | `/friend/ignore-apply` | Ignore friend request |
-| Friends | `friend_delete(user_id)` | `/friend/delete-friend` | Delete a friend |
-| Group | `get_group_info(group_id)` | `/group/info` | Group information |
-| Group | `get_group_member_list(group_id)` | `/group/list-member` | List of group members (supports keyword search) |
-| Group | `create_group(name, ...)` | `/group/create-group` | Create a group |
-| Group | `dismiss_group(group_id)` | `/group/dismiss-group` | Dissolve a group |
-| Group | `group_invite(group_id, user_ids)` | `/group/invite` | Invite users to join the group |
-| Group | `group_remove_member(group_id, user_id)` | `/group/remove-member` | Remove a member from the group |
-| Group | `group_gag_member(group_id, user_id, seconds)` | `/group/gag-member` | Mute a group member (0=unmute) |
-| Group | `get_group_bot_list(group_id)` | `/group/bot-list` | List of bots in the group |
-| Conversation | `get_conversation_list(md5)` | `/conversation/list` | List of conversations (cursor pagination) |
-| Message | `get_message_list(chat_id, chat_type, ...)` | `/msg/list-message` | List of messages (multiple pagination variants available in HTTP client) |
-| Message | `delete_message(msg_id, chat_id, chat_type)` | `/msg/recall-msg` | Recall messages (batch recall available in HTTP client) |
-| Message | `button_report(...)` | `/msg/button-report` | Button click reporting |
-| Actions | `get_status` / `get_version` / `get_supported_actions` | - | Runtime status/version/supported actions |
+| Friends | `get_friend_requests()` | `/friend/request-list` | Friend/group join application list |
+| Friends | `friend_apply(user_id, desc)` | `/friend/apply` | Apply to add friend |
+| Friends | `friend_agree_apply(user_id)` | `/friend/agree-apply` | Agree to friend application |
+| Friends | `friend_ignore_apply(user_id)` | `/friend/ignore-apply` | Ignore friend application |
+| Friends | `friend_delete(user_id)` | `/friend/delete-friend` | Delete friend |
+| Groups | `get_group_info(group_id)` | `/group/info` | Group information |
+| Groups | `get_group_member_list(group_id)` | `/group/list-member` | Group member list (supports keyword search) |
+| Groups | `create_group(name, ...)` | `/group/create-group` | Create group |
+| Groups | `dismiss_group(group_id)` | `/group/dismiss-group` | Dissolve group |
+| Groups | `group_invite(group_id, user_ids)` | `/group/invite` | Invite to group |
+| Groups | `group_remove_member(group_id, user_id)` | `/group/remove-member` | Remove group member |
+| Groups | `group_gag_member(group_id, user_id, seconds)` | `/group/gag-member` | Mute group member (0=unmute) |
+| Groups | `get_group_bot_list(group_id)` | `/group/bot-list` | List of bots in group |
+| Conversations | `get_conversation_list(md5)` | `/conversation/list` | Conversation list (cursor pagination) |
+| Messages | `get_message_list(chat_id, chat_type, ...)` | `/msg/list-message` | Message list (multiple pagination variants see HTTP client) |
+| Messages | `delete_message(msg_id, chat_id, chat_type)` | `/msg/recall-msg` | Recall message (batch recall see HTTP client) |
+| Messages | `button_report(...)` | `/msg/button-report` | Button click report |
+| Meta Actions | `get_status` / `get_version` / `get_supported_actions` | - | Runtime status/version/supported actions |
 
-### Not Yet Integrated (Endpoints Known, full.proto Messages Complete, Extendable as Needed)
+### Not Yet Connected (Endpoint Known, full.proto Messages Complete, Extendable as Needed)
 
-- User: Verification code login, badges, gold bean records, bind phone/email, notification settings, user data storage/retrieval
-- Friends: Do-not-disturb (no-notify), delete request records
-- Group: Command list, categories, recommendations, live room, edit group info/group nickname/keywords, auto-approval for group join, group file restrictions, event SSE
-- Conversation: Pin/sort/delete, do-not-disturb
-- Message: Forward, A2UI submission, message list image retrieval, file download records
+- User: Verification code login, badges, gold bean records, bind phone/email, notification settings, user data storage
+- Friends: Do not disturb (no-notify), delete application records
+- Groups: Command list, categories, recommendations, live room, edit group info/group nickname/keywords, auto-approval on group join, group file limits, event SSE
+- Conversations: Pin/sort/delete, do not disturb
+- Messages: Forward, A2UI submission, message list image retrieval, file download records
 - Group Tags: list / relate / relate-cancel / create / edit / delete / members (endpoint `/group-tag/*`)
 
-> Extension Method: Add new methods in `YunhuHTTPClient` following the existing pattern (`_proto_request` / `_json_request` for generic wrapping), then expose them in the `Api` class. Refer to `yhchatAPI/src/api/v1/*.md` and `yhchatAPI/src/full.proto` for endpoints and message definitions.
+> Extension Method: Add methods in `YunhuHTTPClient` following the existing pattern (`_proto_request` / `_json_request` general encapsulation), then expose them in the `Api` class. Endpoint and message definition reference `yhchatAPI/src/api/v1/*.md` and `yhchatAPI/src/full.proto`.
 
-### UserAPI Example
+### User API Example
 
 ```python
 from ErisPulse import sdk
 yunhu_user = sdk.adapter.get("yunhu_user")
 
 result = await yunhu_user.Api.get_self_info()
-result = await yunhu_user.Api.get_friend_requests()          # List of friend requests
-await yunhu_user.Api.friend_agree_apply(user_id)             # Accept friend request
+result = await yunhu_user.Api.get_friend_requests()          # Friend application list
+await yunhu_user.Api.friend_agree_apply(user_id)             # Agree to friend application
 result = await yunhu_user.Api.get_group_member_list(group_id)
-result = await yunhu_user.Api.get_conversation_list()        # List of conversations
-await yunhu_user.Api.delete_message(msg_id, chat_id, chat_type)  # Recall message
+result = await yunhu_user.Api.get_conversation_list()        # Conversation list
+await yunhu_user.Api.delete_message(msg_id, chat_id, chat_type)  # Recall
 ```
 
-## Supported Message Types
+---
 
-All send methods are implemented using a fluent syntax, for example:
+## Supported Message Sending Types
+
+All send methods are implemented through chainable syntax, for example:
 ```python
 from ErisPulse.Core import adapter
 yunhu_user = adapter.get("yunhu_user")
@@ -19366,43 +19379,44 @@ yunhu_user = adapter.get("yunhu_user")
 await yunhu_user.Send.To("user", user_id).Text("Hello World!")
 ```
 
-The supported message types include:
-- `.Text(text: str, buttons: Optional[List] = None)` - Send plain text messages.
-- `.Html(html: str, buttons: Optional[List] = None)` - Send HTML formatted messages.
-- `.Markdown(markdown: str, buttons: Optional[List] = None)` - Send Markdown formatted messages.
-- `.Image(file: Union[str, bytes], buttons: Optional[List] = None)` - Send image messages, supporting URLs, local paths, or binary data.
-- `.Video(file: Union[str, bytes], buttons: Optional[List] = None)` - Send video messages, supporting URLs, local paths, or binary data.
-- `.Audio(file: Union[str, bytes], buttons: Optional[List] = None)` - Send voice messages, supporting URLs, local paths, or binary data, with automatic audio duration detection.
-- `.Voice(file: Union[str, bytes], buttons: Optional[List] = None)` - Alias for `.Audio()`.
-- `.File(file: Union[str, bytes], file_name: Optional[str] = None, buttons: Optional[List] = None)` - Send file messages, supporting URLs, local paths, or binary data.
-- `.Face(file: Union[str, bytes], buttons: Optional[List] = None)` - Send emoticons/stickers, supporting sticker IDs, sticker URLs, or binary image data.
-- `.A2ui(a2ui_data: Union[str, Dict, List], buttons: Optional[List] = None)` - Send A2UI messages (message type 14), where A2UI JSON data is filled into the text field for sending.
-- `.Edit(msg_id: str, text: str, content_type: str = "text")` - Edit an existing message.
-- `.Recall(msg_id: str)` - Recall a message.
-- `.Raw_ob12(message: Union[List, Dict])` - Send OneBot12 formatted messages.
+Supported send types include:
+- `.Text(text: str, buttons: Optional[List] = None)`: Send plain text message.
+- `.Html(html: str, buttons: Optional[List] = None)`: Send HTML formatted message.
+- `.Markdown(markdown: str, buttons: Optional[List] = None)`: Send Markdown formatted message.
+- `.MergeForward(nodes, title="Merged Chat Record")`: Send merged forwarded message (rendered as `<details>` collapsed HTML card, sent via msg_type=8 HTML channel).
+- `.Image(file: Union[str, bytes], buttons: Optional[List] = None)`: Send image message, supports URL, local path, or binary data.
+- `.Video(file: Union[str, bytes], buttons: Optional[List] = None)`: Send video message, supports URL, local path, or binary data.
+- `.Audio(file: Union[str, bytes], buttons: Optional[List] = None)`: Send audio message, supports URL, local path, or binary data, automatically detects audio duration.
+- `.Voice(file: Union[str, bytes], buttons: Optional[List] = None)`: Alias for `.Audio()`.
+- `.File(file: Union[str, bytes], file_name: Optional[str] = None, buttons: Optional[List] = None)`: Send file message, supports URL, local path, or binary data.
+- `.Face(file: Union[str, bytes], buttons: Optional[List] = None)`: Send emoji/sticker message, supports sticker ID, sticker URL, or binary image data.
+- `.A2ui(a2ui_data: Union[str, Dict, List], buttons: Optional[List] = None)`: Send A2UI message (message type 14), A2UI JSON data will be filled into the text field for sending.
+- `.Edit(msg_id: str, text: str, content_type: str = "text")`: Edit existing message.
+- `.Recall(msg_id: str)`: Recall message.
+- `.Raw_ob12(message: Union[List, Dict])`: Send OneBot12 formatted message.
 
 ### Media File Handling
 
-All media types (images, videos, audio, files) support the following input methods:
-- **URL**: `"https://example.com/image.jpg"` — Automatically downloads and uploads
-- **Local Path**: `"/path/to/file.jpg"` — Automatically reads and uploads
-- **Binary Data**: `open("file.jpg", "rb").read()` — Directly uploads
+All media types (image, video, audio, file) support the following input methods:
+- **URL**: `"https://example.com/image.jpg"` — automatically downloads and uploads
+- **Local Path**: `"/path/to/file.jpg"` — automatically reads and uploads
+- **Binary Data**: `open("file.jpg", "rb").read()` — directly uploads
 
 Media files are automatically uploaded to Qiniu Cloud storage, supporting the following features:
-- Automatic file type and MIME detection using the `filetype` library
-- Automatic file size calculation
-- Automatic audio duration detection for audio files (supports MP3, MP4/M4A formats)
+- Automatically detects file type and MIME using the `filetype` library
+- Automatically calculates file size
+- Automatically detects audio duration (supports MP3, MP4/M4A formats)
 
 ### Button Parameter Description
 
-The `buttons` parameter is a nested list representing the layout and functionality of buttons. Each button object contains the following fields:
+The `buttons` parameter is a nested list, representing the layout and functionality of buttons. Each button object contains the following fields:
 
-| Field        | Type   | Required | Description                                                                 |
-|--------------|--------|----------|-----------------------------------------------------------------------------|
-| `text`       | string | Yes      | Text on the button                                                          |
-| `actionType` | int    | Yes      | Action type:<br>`1`: Navigate to URL<br>`2`: Copy<br>`3`: Report on click    |
-| `url`        | string | No       | Used when `actionType=1`, indicating the target URL for navigation          |
-| `value`      | string | No       | When `actionType=2`, this value is copied to the clipboard<br>When `actionType=3`, this value is sent to the subscriber |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `text` | string | Yes | Text on the button |
+| `actionType` | int | Yes | Action type:<br>`1`: Navigate to URL<br>`2`: Copy<br>`3`: Click report |
+| `url` | string | No | When `actionType=1`, this is the target URL for navigation |
+| `value` | string | No | When `actionType=2`, this value is copied to the clipboard<br>When `actionType=3`, this value is sent to the subscriber |
 
 Example:
 ```python
@@ -19416,57 +19430,57 @@ buttons = [
 await yunhu_user.Send.To("user", user_id).Buttons(buttons).Text("Message with buttons")
 ```
 
-### Fluent Modifier Methods (Combinable)
+### Chainable Modifier Methods (Can be Combined)
 
-Fluent modifier methods return `self`, supporting fluent calls, and must be called before the final send method:
+Chainable modifier methods return `self`, supporting chained calls, must be called before the final send method:
 
-- `.Reply(message_id: str)` - Reply to a specified message.
-- `.At(user_id: str)` - Mention a specified user (text format @user_id).
-- `.AtAll()` - Mention everyone (pseudo @all, sends @all text).
-- `.Buttons(buttons: List)` - Add buttons.
+- `.Reply(message_id: str)`: Reply to a specific message.
+- `.At(user_id: str)`: Mention a specific user (text format @user_id).
+- `.AtAll()`: Mention everyone (pseudo @all, sends @all text).
+- `.Buttons(buttons: List)`: Add buttons.
 
-> **Note:** Since user accounts are special, even non-admin users can pseudo-mention everyone, but `AtAll()` here only sends an @all text, which is a pseudo-mention everyone.
+> **Note:** Because user accounts are special, even non-admin users can @all, but here `AtAll()` only sends a text that mentions everyone, which is a pseudo @all.
 
-### Fluent Call Examples
+### Chained Call Example
 
 ```python
-# Basic sending
+# Basic send
 await yunhu_user.Send.To("user", user_id).Text("Hello")
 
-# Reply to a message
+# Reply to message
 await yunhu_user.Send.To("group", group_id).Reply(msg_id).Text("Reply message")
 
 # Reply + buttons
 await yunhu_user.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("Message with reply and buttons")
 
 # Specify account + reply + buttons
-await yunhu_user.Send.Using("default").To("group", group_id).Reply(msg_id).Buttons(buttons).Text("Full fluent call")
+await yunhu_user.Send.Using("default").To("group", group_id).Reply(msg_id).Buttons(buttons).Text("Complete chained call")
 ```
 
 ### OneBot12 Message Support
 
-The adapter supports sending OneBot12 formatted messages for cross-platform message compatibility:
+The adapter supports sending OneBot12 formatted messages, facilitating cross-platform message compatibility:
 
-- `.Raw_ob12(message: List[Dict], **kwargs)` - Send OneBot12 formatted messages.
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Send OneBot12 formatted message.
 
 ```python
 # Send OneBot12 formatted message
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await yunhu_user.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# Combined with fluent modifiers
+# Combine with chained modifiers
 ob12_msg = [{"type": "text", "data": {"text": "Reply message"}}]
 await yunhu_user.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 ```
 
-`Raw_ob12` supports automatic grouping of mixed message segments:
-- `text`, `mention` types can be merged into a single group for sending
+Raw_ob12 supports automatic grouping of mixed message segments:
+- `text`, `mention` types can be merged into one group
 - `image`, `video`, `audio`, `file`, `face`, `markdown`, `html`, `a2ui` types are each sent as separate groups
 - `reply` type can be attached to any group
 
-## Return Values of Send Methods
+## Send Method Return Values
 
-All send methods return a Task object, which can be awaited directly to obtain the send result. The returned result follows the ErisPulse adapter's standardized return specification:
+All send methods return a Task object, which can be awaited to get the send result. The return result follows the ErisPulse adapter standardized return specification:
 
 ```python
 {
@@ -19479,28 +19493,28 @@ All send methods return a Task object, which can be awaited directly to obtain t
 }
 ```
 
-## Unique Event Types
+## Platform-Specific Event Types
 
-Use platform-specific features only after checking `platform == "yunhu_user"`
+Use `platform == "yunhu_user"` to detect and use platform-specific features.
 
 ### Core Differences
 
-1. Unique event types:
+1. Platform-specific event types:
     - Super file sharing: `yunhu_user_file_send`
-    - Bot announcement board: `yunhu_user_bot_board`
+    - Bot bulletin board: `yunhu_user_bot_board`
     - Message edit notification: `message_edit`
     - Message delete notification: `message_delete` (recall)
-2. Unique message segment types:
+2. Platform-specific message segment types:
     - Form message segment: `yunhu_user_form`
     - Article message segment: `yunhu_user_post`
     - Sticker message segment: `yunhu_user_sticker`
     - Button message segment: `yunhu_user_button`
     - A2UI message segment: `a2ui`
 3. Extended fields:
-    - All unique fields are prefixed with `yunhu_user_`
+    - All platform-specific fields are prefixed with `yunhu_user_`
     - Original data is preserved in the `yunhu_user_raw` field
     - Original event type is recorded in the `yunhu_user_raw_type` field
-    - In private chats, `self.user_id` represents the currently logged-in user ID
+    - In private chats, `self.user_id` indicates the current logged-in user ID
 
 ### Supported Original Event Types
 
@@ -19509,9 +19523,9 @@ Use platform-specific features only after checking `platform == "yunhu_user"`
 | `push_message` | `message` | Pushed message (private chat, group chat, Bot session) |
 | `edit_message` | `notice` (`message_edit`) | Message edit event |
 | `file_send_message` | `notice` (`yunhu_user_file_send`) | Super file sharing event |
-| `bot_board_message` | `notice` (`yunhu_user_bot_board`) | Bot announcement board event |
+| `bot_board_message` | `notice` (`yunhu_user_bot_board`) | Bot bulletin board event |
 
-> Other event types (such as `heartbeat_ack`, `draft_input`, `stream_message`, etc.) will be ignored.
+> Other event types (such as `heartbeat_ack`, `draft_input`, `stream_message`, etc.) are ignored.
 
 ### OneBot12 Supported detail_type
 
@@ -19539,7 +19553,7 @@ Use platform-specific features only after checking `platform == "yunhu_user"`
     ],
     "alt_message": "Message content",
     "user_id": "sender_user_id",
-    "user_nickname": "Sender nickname",
+    "user_nickname": "Sender's nickname",
     "group_id": "group_id",
     "message_id": "msg_id",
     "yunhu_user_raw": {...},
@@ -19560,7 +19574,7 @@ Use platform-specific features only after checking `platform == "yunhu_user"`
     },
     "message_id": "msg_id",
     "user_id": "sender_user_id",
-    "user_nickname": "Sender nickname",
+    "user_nickname": "Sender's nickname",
     "edit_time": 1234567890,
     "group_id": "group_id",
     "yunhu_user_raw": {...},
@@ -19592,7 +19606,7 @@ Use platform-specific features only after checking `platform == "yunhu_user"`
 }
 ```
 
-### Bot Announcement Board Event Example
+### Bot Bulletin Board Event Example
 
 ```python
 {
@@ -19625,7 +19639,7 @@ from ErisPulse.Core.Event import message, notice
 
 @message.on_message()
 async def handle_yunhu_user_message(event):
-    """Handle Yunhu user messages"""
+    """Handle Yunhu user message"""
     if event.get("platform") != "yunhu_user":
         return
     
@@ -19635,7 +19649,7 @@ async def handle_yunhu_user_message(event):
     
     print(f"User {user_nickname}({user_id}): {alt_message}")
     
-    # Check for unique segment types in the message
+    # Check for specific message segment types
     for segment in event.get("message", []):
         seg_type = segment.get("type", "")
         
@@ -19686,20 +19700,20 @@ async def handle_yunhu_user_notice(event):
         print(f"Bot {bot_name} published announcement: {board_data.get('content', '')}")
 ```
 
-## Extension Field Description
+## Extended Field Description
 
-- All custom fields are prefixed with `yunhu_user_` to avoid conflicts with standard fields.
-- The original data is preserved in the `yunhu_user_raw` field, allowing access to the complete raw data from the Yunhu platform.
-- The original event type is recorded in the `yunhu_user_raw_type` field (such as `push_message`, `edit_message`, etc.).
-- `self.user_id` represents the current logged-in user ID (obtained from the login response).
-- Super file sharing is provided through the `yunhu_user_file_send` field, which contains file sharing data.
-- Robot announcement board data is provided through the `yunhu_user_bot_board` field.
+- All platform-specific fields are prefixed with `yunhu_user_` to avoid conflicts with standard fields
+- Original data is preserved in the `yunhu_user_raw` field, facilitating access to the complete raw data from the Yunhu platform
+- Original event type is recorded in the `yunhu_user_raw_type` field (e.g., `push_message`, `edit_message`, etc.)
+- `self.user_id` indicates the current logged-in user ID (obtained from the login response)
+- Super file sharing is provided through the `yunhu_user_file_send` field for file sharing data
+- Bot bulletin board is provided through the `yunhu_user_bot_board` field for announcement data
 
-### Custom Message Segment Types
+### Platform-Specific Message Segment Types
 
 #### Form Message Segment (yunhu_user_form)
 
-When `content_type` is 5, the message segment type is `yunhu_user_form`:
+When content_type is 5, the message segment type is `yunhu_user_form`:
 
 ```json
 {
@@ -19712,15 +19726,15 @@ When `content_type` is 5, the message segment type is `yunhu_user_form`:
 
 #### Article Message Segment (yunhu_user_post)
 
-When `content_type` is 6, the message segment type is `yunhu_user_post`:
+When content_type is 6, the message segment type is `yunhu_user_post`:
 
 ```json
 {
     "type": "yunhu_user_post",
     "data": {
         "post_id": "Article ID",
-        "post_title": "Article title",
-        "post_content": "Article content"
+        "post_title": "Article Title",
+        "post_content": "Article Content"
     }
 }
 ```
@@ -19733,7 +19747,7 @@ When `content_type` is 6, the message segment type is `yunhu_user_post`:
 
 #### Sticker Message Segment (yunhu_user_sticker)
 
-When `content_type` is 7, the message segment type is `yunhu_user_sticker`:
+When content_type is 7, the message segment type is `yunhu_user_sticker`:
 
 ```json
 {
@@ -19750,20 +19764,20 @@ When `content_type` is 7, the message segment type is `yunhu_user_sticker`:
 
 #### Button Message Segment (yunhu_user_button)
 
-When the message contains buttons, a `yunhu_user_button` message segment is appended:
+When the message contains buttons, a `yunhu_user_button` message segment is attached:
 
 ```json
 {
     "type": "yunhu_user_button",
     "data": {
-        "buttons": [[{"text": "Button text", "actionType": 3, "value": "value"}]]
+        "buttons": [[{"text": "Button text", "actionType": 3, "value": "Value"}]]
     }
 }
 ```
 
 #### A2UI Message Segment (a2ui)
 
-When `content_type` is 14, the message segment type is `a2ui`:
+When content_type is 14, the message segment type is `a2ui`:
 
 ```json
 {
@@ -19774,24 +19788,26 @@ When `content_type` is 14, the message segment type is `a2ui`:
 }
 ```
 
+---
+
 ## Multi-Account Configuration
 
 ### Configuration Description
 
-The `YunhuUserAdapter` supports configuring and running multiple user accounts simultaneously.
+YunhuUserAdapter supports configuring and running multiple user accounts simultaneously.
 
 ```toml
 # config.toml
 [YunhuUserAdapter]
 ws_reconnect_interval = 30  # WebSocket reconnection interval (seconds)
-ws_timeout = 70             # WebSocket timeout (seconds)
+ws_timeout = 70             # WebSocket timeout time (seconds)
 
 [YunhuUserAdapter.accounts.default]
 email = "user1@example.com"  # User email (required)
 password = "password1"       # User password (required)
-platform = "windows"         # Login platform (optional, default: windows)
+platform = "windows"         # Login platform (optional, default windows)
 device_id = ""               # Device ID (optional, auto-generated if not provided)
-enabled = true               # Whether to enable this account (optional, default: true)
+enabled = true               # Whether to enable (optional, default true)
 
 [YunhuUserAdapter.accounts.account2]
 email = "user2@example.com"
@@ -19804,25 +19820,25 @@ enabled = true
 **Configuration Item Description:**
 - `email`: User email (required), used to log in to the Yunhu platform
 - `password`: User password (required)
-- `platform`: Login platform identifier (optional, default: `windows`), valid values: `windows`, `macos`, `linux`, `ios`, `android`
-- `device_id`: Device ID (optional, auto-generated if not provided), it is recommended to set a fixed value to maintain session consistency
-- `enabled`: Whether to enable this account (optional, default: `true`)
+- `platform`: Login platform identifier (optional, default `windows`), available values: `windows`, `macos`, `linux`, `ios`, `android`
+- `device_id`: Device ID (optional, auto-generated if not provided), it is recommended to fill in a fixed value to maintain session consistency
+- `enabled`: Whether to enable this account (optional, default `true`)
 
 **Adapter-Level Configuration:**
-- `ws_reconnect_interval`: WebSocket reconnection interval (seconds, default: 30)
-- `ws_timeout`: WebSocket timeout (seconds, default: 70)
+- `ws_reconnect_interval`: WebSocket reconnection interval (seconds, default 30)
+- `ws_timeout`: WebSocket timeout time (seconds, default 70)
 
 **Important Notes:**
-1. The adapter uses email login to obtain a token, and receives events via WebSocket after login.
-2. After a WebSocket connection is disconnected, it will automatically reconnect, with up to 3 retry attempts.
-3. It is recommended to set a fixed `device_id` for each account to maintain session consistency.
-4. Template accounts (default email and password) that have not been modified will be automatically skipped.
+1. The adapter uses email login to obtain a token, and receives events via WebSocket after logging in
+2. WebSocket connection will automatically reconnect after disconnection, with a maximum of 3 retries
+3. It is recommended to set a fixed `device_id` for each account to maintain session consistency
+4. Unmodified template accounts (default email and password) will be automatically skipped
 
 ### Using Send DSL to Specify Account
 
-You can specify which account to use for sending messages using the `Using()` method. This method supports two types of parameters:
-- **Account name**: The account name in the configuration (e.g., `default`, `account2`)
-- **user_id**: The user ID obtained after login
+You can specify which account to use for sending messages through the `Using()` method. This method supports two types of parameters:
+- **Account Name**: The account name in the configuration (e.g., `default`, `account2`)
+- **user_id**: The user ID obtained after logging in
 
 ```python
 from ErisPulse.Core import adapter
@@ -19838,11 +19854,11 @@ await yunhu_user.Send.Using("user_id_here").To("group", "group456").Text("Hello 
 await yunhu_user.Send.To("user", "user123").Text("Hello from default account!")
 ```
 
-> **Note:** When using `user_id`, the system automatically finds the matching account in the configuration. This is especially useful when handling event replies, where you can directly use `event["self"]["user_id"]` to reply from the same account.
+> **Tip:** When using `user_id`, the system will automatically find the matching account in the configuration. This is especially useful when handling event replies, where you can directly use `event["self"]["user_id"]` to reply from the same account.
 
-### Account Identifier in Events
+### Account Identification in Events
 
-Received events will automatically include the corresponding user ID information:
+Events received will automatically include the corresponding user ID information:
 
 ```python
 from ErisPulse.Core.Event import message
@@ -19850,11 +19866,11 @@ from ErisPulse.Core.Event import message
 @message.on_message()
 async def handle_message(event):
     if event["platform"] == "yunhu_user":
-        # Get current logged-in user ID
+        # Get the current logged-in user ID
         my_user_id = event["self"]["user_id"]
-        print(f"Message received from account: {my_user_id}")
+        print(f"Message from account: {my_user_id}")
         
-        # Reply to the message using the same account
+        # Reply using the same account
         yunhu_user = adapter.get("yunhu_user")
         await yunhu_user.Send.Using(my_user_id).To(
             event["detail_type"],
@@ -19867,9 +19883,9 @@ async def handle_message(event):
 The adapter will automatically include account information in the logs, which is useful for debugging and tracking:
 
 ```
-[INFO] Account default (user1@example.com) logged in successfully, user ID: 12345678
+[INFO] Account default (user1@example.com) login successful, user ID: 12345678
 [INFO] Account default WebSocket listening task started
-[INFO] Account account2 (user2@example.com) logged in successfully, user ID: 87654321
+[INFO] Account account2 (user2@example.com) login successful, user ID: 87654321
 ```
 
 ### Management Interface
@@ -19879,7 +19895,7 @@ The adapter will automatically include account information in the logs, which is
 accounts = yunhu_user.accounts
 # Return format: {"default": {"name": "default", "email": "...", "token": "...", "user_id": "...", ...}, ...}
 
-# Check if an account is enabled
+# Check if account is enabled
 for account_name, account_config in yunhu_user._account_configs.items():
     print(f"{account_name}: enabled={account_config.enabled}")
 
@@ -19892,10 +19908,10 @@ account_name = yunhu_user._get_account_by_user_id("12345678")
 
 ## API Calls
 
-The adapter provides a `call_api` method that supports directly calling the platform API:
+The adapter provides a `call_api` method, supporting direct calls to the platform API:
 
 ```python
-# Send a message
+# Send message
 result = await yunhu_user.call_api("/send", 
     target_type="group", 
     target_id="group_id",
@@ -19903,7 +19919,7 @@ result = await yunhu_user.call_api("/send",
     message={"text": "Hello", "msg_type": 1}
 )
 
-# Edit a message
+# Edit message
 result = await yunhu_user.call_api("/edit",
     target_type="group",
     target_id="group_id",
@@ -19912,14 +19928,14 @@ result = await yunhu_user.call_api("/edit",
     content_type="text"
 )
 
-# Recall a message
+# Recall message
 result = await yunhu_user.call_api("/recall",
     target_type="group",
     target_id="group_id",
     msg_id="msg_id"
 )
 
-# Recall multiple messages
+# Batch recall message
 result = await yunhu_user.call_api("/recall_batch",
     target_type="group",
     target_id="group_id",
@@ -19934,14 +19950,14 @@ result = await yunhu_user.call_api("/list",
     msg_id=""
 )
 
-# Get message edit records
+# Get message edit record
 result = await yunhu_user.call_api("/list_edit_record",
     msg_id="msg_id",
     size=10,
     page=1
 )
 
-# Report button event
+# Button event report
 result = await yunhu_user.call_api("/button_report",
     chat_id="group_id",
     chat_type=2,
@@ -19951,19 +19967,19 @@ result = await yunhu_user.call_api("/button_report",
 )
 ```
 
-**Supported API endpoints:**
+**Supported API Endpoints:**
 
 | Endpoint | Description |
 |----------|-------------|
-| `/send` | Send a message |
-| `/edit` | Edit a message |
-| `/recall` | Recall a message |
-| `/recall_batch` | Recall multiple messages |
+| `/send` | Send message |
+| `/edit` | Edit message |
+| `/recall` | Recall message |
+| `/recall_batch` | Batch recall message |
 | `/list` | Get message list |
-| `/list_by_seq` | Get messages by sequence |
-| `/list_by_mid_seq` | Get messages by message ID and sequence |
-| `/list_edit_record` | Get message edit records |
-| `/button_report` | Report button event |
+| `/list_by_seq` | Get message by sequence |
+| `/list_by_mid_seq` | Get message by message ID and sequence |
+| `/list_edit_record` | Get message edit record |
+| `/button_report` | Button event report |
 
 
 
@@ -20126,8 +20142,8 @@ IdeauraAdapter is an adapter built on the RockyChat platform API, integrating al
 
 ## Documentation Information
 
-- Corresponding Module: ErisPulse-Ideaura
-- Corresponding Module Version: 4.1.0
+- Corresponding Module: ErisPulse-Ideaura  
+- Corresponding Module Version: 4.2.0  
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -20155,7 +20171,8 @@ IdeauraAdapter is an adapter built on the RockyChat platform API, integrating al
 
 ## Supported Message Sending Types
 
-All sending methods are implemented through a fluent interface, for example:
+All sending methods are implemented using a fluent (chainable) syntax. For example:
+
 ```python
 from ErisPulse.Core import adapter
 ideaura = adapter.get("ideaura")
@@ -20164,25 +20181,26 @@ await ideaura.Send.To("group", "chatroom").Text("Hello World!")
 ```
 
 The supported sending types include:
-- `.Text(text: str)` : Send plain text messages.
-- `.Image(file, filename: str = None)` : Send image messages, supporting bytes/URL/local path.
-- `.Video(file, filename: str = None)` : Send video messages, supporting bytes/URL/local path.
-- `.File(file, filename: str = None)` : Send file messages, supporting bytes/URL/local path.
-- `.Voice(file, filename: str = None)` : Send voice messages (sent as files).
-- `.Face(face_id: str)` : Send emoticons (sent as plain text emoji).
-- `.Markdown(text: str)` : Send Markdown formatted messages.
-- `.Html(html: str)` : Send HTML formatted messages.
-- `.Edit(message_id: str, text: str, content_type: str = "text")` : Edit existing messages.
-- `.Recall(message_id: str)` : Recall messages.
+- `.Text(text: str)`: Send a plain text message.
+- `.Image(file, filename: str = None)`: Send an image message, supporting bytes/URL/local path.
+- `.Video(file, filename: str = None)`: Send a video message, supporting bytes/URL/local path.
+- `.File(file, filename: str = None)`: Send a file message, supporting bytes/URL/local path.
+- `.Voice(file, filename: str = None)`: Send a voice message (sent as a file).
+- `.Face(face_id: str)`: Send an emoji (sent as a plain text emoji).
+- `.Markdown(text: str)`: Send a message in Markdown format.
+- `.Html(html: str)`: Send a message in HTML format.
+- `.MergeForward(nodes, title="Merged Chat Record")`: Send a merged-forward message (rendered as a `<details>` collapsed HTML card).
+- `.Edit(message_id: str, text: str, content_type: str = "text")`: Edit an existing message.
+- `.Recall(message_id: str)`: Recall a message.
 
-### Fluent Modifier Methods (Combinable)
+### Fluent Modifier Methods (Combination Supported)
 
-Modifier methods return `self`, supporting fluent calls, and must be called before the final sending method:
+Fluent modifier methods return `self`, supporting chainable calls, and must be called before the final sending method:
 
-- `.At(user_id: str, name: str = None)` : At a specific user.
-- `.AtAll()` : At all users.
-- `.Reply(message_id: str)` : Reply to a specific message.
-- `.Command(command_id: str)` : Trigger a Bot command, used in conjunction with sending methods (sends the message as the specified command).
+- `.At(user_id: str, name: str = None)`: @ a specific user.
+- `.AtAll()`: @ everyone.
+- `.Reply(message_id: str)`: Reply to a specific message.
+- `.Command(command_id: str)`: Trigger a Bot command, used in combination with sending methods (sends the message as a specific command).
 
 ### Fluent Call Examples
 
@@ -20193,16 +20211,16 @@ await ideaura.Send.To("user", user_id).Text("Hello")
 # Trigger Bot command
 await ideaura.Send.To("group", "chatroom").Command("550e8400-e29b-41d4-a716-446655440000").Text("/weather 北京")
 
-# At a user
+# @ user
 await ideaura.Send.To("group", "chatroom").At("456").Text("@李四 你好")
 
-# At multiple users
+# @ multiple users
 await ideaura.Send.To("group", "chatroom").At("456").At("789").Text("@多人")
 
-# Reply to a message
+# Reply to message
 await ideaura.Send.To("group", "chatroom").Reply(msg_id).Text("回复消息")
 
-# Reply + At
+# Reply + @
 await ideaura.Send.To("group", "chatroom").Reply(msg_id).At("456").Text("回复并@")
 ```
 
@@ -20221,12 +20239,12 @@ await ideaura.Send.To("user", "user_id").Text("私聊消息")
 
 ### OneBot12 Message Support
 
-The adapter supports sending OneBot12 formatted messages for cross-platform message compatibility:
+The adapter supports sending OneBot12 formatted messages, facilitating cross-platform message compatibility:
 
-- `.Raw_ob12(message: List[Dict], **kwargs)` : Send OneBot12 formatted messages.
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Send a OneBot12 formatted message.
 
 ```python
-# Send OneBot12 formatted message
+# Send a OneBot12 formatted message
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await ideaura.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
@@ -20632,9 +20650,9 @@ DiscordAdapter is an adapter built on the Discord Gateway (WebSocket) and REST A
 
 ---
 
-## Documentation Information
+## Document Information
 
-- Corresponding Module Version: 4.2.0
+- Corresponding Module Version: 4.3.0
 - Maintainer: ErisPulse
 - Discord API Version: v10
 
@@ -20735,7 +20753,7 @@ await discord.Send.To("channel", channel_id).Keyboard(rows).Text("Please Select"
 
 ## Supported Message Sending Types
 
-All sending methods are implemented through a fluent interface, for example:
+All sending methods are implemented using a fluent interface syntax, for example:
 ```python
 from ErisPulse.Core import adapter
 discord = adapter.get("discord")
@@ -20744,23 +20762,24 @@ await discord.Send.To("group", channel_id).Text("Hello World!")
 ```
 
 The supported sending types include:
-- `.Text(text: str)` - Sends plain text messages.
-- `.Embed(embed: dict | list)` - Sends Embed messages, supporting single or multiple Embeds.
-- `.Image(file: bytes | str, filename: str = "image.png")` - Sends images, supporting binary data or URLs.
-- `.File(file: bytes | str, filename: str = None)` - Sends files, supporting binary data or URLs.
-- `.Reply(content: str, message_id: str)` - Replies to a specified message (convenience terminal method).
-- `.Raw_ob12(message: List[Dict], **kwargs)` - Sends OneBot12 formatted messages.
-- `.Raw_json(json_str: str)` - Sends arbitrary Discord API request JSON.
+- `.Text(text: str)`: Sends a plain text message.
+- `.Embed(embed: dict | list)`: Sends an Embed message, supporting single or multiple Embeds.
+- `.MergeForward(nodes, title="Merged Chat Records")`: Sends a merged forward message (Embed: title + one field per message, ≤25 fields, value ≤1024).
+- `.Image(file: bytes | str, filename: str = "image.png")`: Sends an image, supporting binary data or URL.
+- `.File(file: bytes | str, filename: str = None)`: Sends a file, supporting binary data or URL.
+- `.Reply(content: str, message_id: str)`: Replies to a specified message (convenient terminal method).
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Sends a OneBot12 formatted message.
+- `.Raw_json(json_str: str)`: Sends any Discord API request JSON.
 
-### Fluent Modifier Methods (Can Be Combined)
+### Fluent Modifier Methods (Combinable)
 
-Fluent modifier methods return `self` and support fluent chaining, must be called before the final sending method:
+Fluent modifier methods return `self`, supporting chained calls, and must be called before the final sending method:
 
-- `.Reply(message_id: str)` - Replies (references) to a specified message, sets `message_reference`.
-- `.At(user_id: str)` - Mentions a specified user, converts to `<@user_id>`, can be called multiple times.
-- `.AtAll()` - Mentions everyone, converts to `@everyone`.
+- `.Reply(message_id: str)`: Replies (references) a specified message, setting `message_reference`.
+- `.At(user_id: str)`: Mentions a specified user, converting to `<@user_id>`, can be called multiple times.
+- `.AtAll()`: Mentions everyone, converting to `@everyone`.
 
-### Fluent Chaining Examples
+### Chained Call Examples
 
 ```python
 # Basic sending
@@ -20769,16 +20788,16 @@ await discord.Send.To("group", channel_id).Text("Hello")
 # Reply to message
 await discord.Send.To("group", channel_id).Reply(msg_id).Text("Reply message")
 
-# Convenient reply (one-step)
+# Convenient reply (one step)
 await discord.Send.To("group", channel_id).Reply("Reply content", msg_id)
 
 # Mention user
 await discord.Send.To("group", channel_id).At("user_id").Text("Hello")
 
 # Mention multiple users
-await discord.Send.To("group", channel_id).At("user1").At("user2").Text("Multiple @")
+await discord.Send.To("group", channel_id).At("user1").At("user2").Text("Multiple users @")
 
-# Mention everyone
+# Mention all
 await discord.Send.To("group", channel_id).AtAll().Text("Announcement")
 
 # Combine methods
@@ -21354,7 +21373,7 @@ If the request fails, an error response is returned (with `status: "failed"`, `r
 ## Basic Information
 - Module Name: `ErisPulse-WechatMpAdapter`
 - Platform Identifier: `mp` (Alias: `wechat_mp`)
-- Module Version: 4.1.0
+- Module Version: 4.3.0
 - Maintainer: ErisPulse
 - Dependencies: `cryptography`
 

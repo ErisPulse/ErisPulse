@@ -245,7 +245,7 @@
           "icon": "fa-comments"
         },
         {
-          "title": "Telegram Platform Features Documentation",
+          "title": "Telegram Platform Feature Documentation",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
@@ -257,13 +257,13 @@
           "icon": "fa-envelope"
         },
         {
-          "title": "Yunhu Platform Feature Documentation",
+          "title": "Yunhu Platform Features Documentation",
           "path": "platform-guide/yunhu.md",
           "level": 1,
           "icon": "fa-cloud"
         },
         {
-          "title": "Yunhu User Platform Features Documentation",
+          "title": "Yunhu User Adapter Feature Documentation",
           "path": "platform-guide/yunhu_user.md",
           "level": 1,
           "icon": "fa-user"
@@ -281,7 +281,7 @@
           "icon": "fa-headset"
         },
         {
-          "title": "Matrix Platform Features Document",
+          "title": "Matrix Platform Feature Documentation",
           "path": "platform-guide/matrix.md",
           "level": 1,
           "icon": "fa-th-large"

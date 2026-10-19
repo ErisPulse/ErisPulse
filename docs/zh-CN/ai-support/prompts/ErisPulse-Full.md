@@ -13925,7 +13925,7 @@ def MergeForward(self, nodes: List[Dict]) -> asyncio.Task:
                 "type": "node",
                 "data": {
                     "user_id": "10000",     # 展示用发送者 id
-                    "nickname": "QvQChat",  # 展示用发送者昵称
+                    "nickname": "MyBot",     # 展示用发送者昵称
                     "content": [            # 消息段数组，当前为 text 段
                         {"type": "text", "data": {"text": "【1/3】标题\n正文…"}}
                     ],
@@ -13949,13 +13949,27 @@ def MergeForward(self, nodes: List[Dict]) -> asyncio.Task:
 4. **失败语义**：返回标准错误响应（`status: "failed"`）或抛出异常均可，调用方会回退纯文本发送，内容不丢失
 5. **不得**在 `MergeForward` 内部再调用 `Raw_ob12` 发送同样的 nodes（OneBot11 的 `Raw_ob12`
    已内置纯 node 段自动路由，会成环）
+6. **出站 node 段解析**（全适配器约定）：各适配器的 `Raw_ob12` 段分发应注册 `node` 段——
+   纯 node 列表自动路由到本适配器的合并转发呈现（有 `MergeForward` 的平台等价于直接调用；
+   无该方法的平台提取各节点文本以「昵称: 正文」逐行**原文输出**）；混合列表中 node 段的文本并入正文。
+   任何适配器收到 node 段都不得静默丢弃。
+
+**平台实现形态（详见 `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`）：**
+
+- 原生端点：OneBot11、SnowLuma（三级回退：`send_group/private_forward_msg` 专用端点 → `upload_forward_msg`
+  取 resid 发 forward 段 → 直发 node 段；SnowLuma API 全面向 NapCat 对齐，适配器可直接连接 NapCat 后端）
+- 折叠 HTML `<details>` 卡：云湖（bot/用户协议）、Email、Sandbox、Allons(Ideaura)
+- 白名单 HTML / 引用块：Telegram（`<b>`+`<blockquote>`）、Matrix（blockquote 变体，白名单剥离 details/内联样式）
+- 平台卡片：Kook（Card header+section）、Discord（Embed fields）
+- 官方 Markdown 引用列表：QQBot（官方 md 无折叠语法，服务端校验拒绝无效标签 40034011）
+- 不实现（node 段原文输出降级）：OneBot12（标准无 node 段）、WeCom、Terminal、Webhook、WechatMp
 
 **调用方探测示例：**
 
 ```python
 sends = adapter.list_sends(platform)
 if "MergeForward" in sends:
-    await adapter.Send.To("group", "123").MergedForward(nodes)
+    await adapter.Send.To("group", "123").MergeForward(nodes)
 else:
     await adapter.Send.To("group", "123").Text(plain_text)
 ```
@@ -21219,6 +21233,7 @@ enabled = true
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)
 - [OneBot12平台特性](onebot12.md)
+- [SnowLuma平台特性](snowluma.md)
 - [邮件平台特性](email.md)
 - [Kook(开黑啦)平台特性](kook.md)
 - [Matrix平台特性](matrix.md)
@@ -21506,7 +21521,7 @@ OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 
 ## 文档信息
 
-- 对应模块版本: 4.3.0
+- 对应模块版本: 4.4.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -22079,7 +22094,7 @@ OneBot12Adapter 是基于 OneBot V12 协议构建的适配器，作为 ErisPulse
 
 ## 文档信息
 
-- 对应模块版本: 4.3.0
+- 对应模块版本: 4.4.0
 - 维护者: ErisPulse
 - 协议版本: OneBot V12
 
@@ -22597,7 +22612,7 @@ TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消�
 
 ## 文档信息
 
-- 对应模块版本: 4.2.0
+- 对应模块版本: 4.3.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -22679,6 +22694,7 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 | `.Face(emoji)` | 发送表情骰子 | `emoji: str`（如 🎲 🎯 🏀） |
 | `.Markdown(text, content_type)` | 发送 Markdown 格式消息 | `content_type` 默认 `"MarkdownV2"` |
 | `.HTML(text)` | 发送 HTML 格式消息 | `text: str` |
+| `.MergeForward(nodes, title)` | 发送合并转发消息（标题 + 每条 blockquote 引用块，4096 截断） | `nodes: List[Dict]`, `title: str` |
 | `.Sticker(file)` | 发送贴纸 | `file: str (file_id/URL) \| bytes` |
 | `.Location(lat, lng)` | 发送位置 | `latitude: float, longitude: float` |
 | `.Venue(lat, lng, title, addr)` | 发送地点 | 含标题和地址 |
@@ -23041,7 +23057,7 @@ YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功�
 
 ## 文档信息
 
-- 对应模块版本: 4.4.0
+- 对应模块版本: 4.5.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -23108,6 +23124,7 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 - `.Text(text: str)`：发送纯文本消息。
 - `.Html(html: str)`：发送HTML格式消息。
 - `.Markdown(markdown: str)`：发送Markdown格式消息。
+- `.MergeForward(nodes, title="合并聊天记录")`：发送合并转发消息（渲染为 `<details>` 折叠 HTML 卡片，经 html 通道发出）。
 - `.A2UI(text: str)`：发送A2UI格式消息。
 - `.Image(file: bytes, stream: bool = False, filename: str = None)`：发送图片消息，支持流式上传和自定义文件名。
 - `.Video(file: bytes, stream: bool = False, filename: str = None)`：发送视频消息，支持流式上传和自定义文件名。
@@ -23782,7 +23799,7 @@ EmailAdapter 是基于 SMTP/IMAP 协议的邮件适配器，支持邮件发送�
 
 ## 文档信息
 
-- 对应模块版本: 4.2.0
+- 对应模块版本: 4.3.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -23885,6 +23902,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
 |------|------|
 | `.Text(text: str)` | 发送纯文本邮件 |
 | `.Html(html: str)` | 发送 HTML 格式邮件 |
+| `.MergeForward(nodes, title)` | 发送合并转发邮件（正文为 `<details>` 折叠 HTML 卡片，主题默认取标题） |
 | `.Raw_ob12(message, **kwargs)` | 发送 OneBot12 格式消息 |
 
 ### 链式修饰方法（返回 self，可组合使用）
@@ -24120,7 +24138,7 @@ KookAdapter 是基于Kook（开黑啦）Bot WebSocket 协议构建的适配器�
 
 ## 文档信息
 
-- 对应模块版本: 4.1.0
+- 对应模块版本: 4.2.0
 - 维护者: ShanFish
 
 ## 基本信息
@@ -24228,6 +24246,7 @@ await kook.Send.To("group", channel_id).Text("Hello World!")
 - `.Voice(file: bytes | str)`：发送语音消息，支持文件路径、URL、二进制数据。
 - `.Markdown(text: str)`：发送KMarkdown格式消息。
 - `.Card(card_data: dict)`：发送卡片消息（CardMessage）。
+- `.MergeForward(nodes, title="合并聊天记录")`：发送合并转发消息（渲染为卡片：标题 header + 每条消息一个 section，KMD 转义，≤40 节点）。
 - `.Raw_ob12(message: List[Dict], **kwargs)`：发送 OneBot12 格式消息。
 
 ### 链式修饰方法（可组合使用）
@@ -24661,7 +24680,7 @@ MatrixAdapter 是基于 [Matrix协议](https://spec.matrix.org/) 构建的适配
 
 ## 文档信息
 
-- 对应模块版本: 4.2.0
+- 对应模块版本: 4.4.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -24779,6 +24798,7 @@ await matrix.Send.To("group", room_id).Text("Hello World!")
 - `.File(file: bytes | str, filename: str = "")`：发送文件消息，支持文件路径、URL、MXC URI、二进制数据。
 - `.Notice(text: str)`：发送通知消息（Matrix的 m.notice 类型）。
 - `.Html(html: str, fallback: str = "")`：发送HTML格式消息，支持富文本内容。
+- `.MergeForward(nodes, title="合并聊天记录")`：发送合并转发消息（formatted_body blockquote 引用块形态；白名单会剥离 details/内联样式）。
 - `.Raw_ob12(message: List[Dict], **kwargs)`：发送 OneBot12 格式消息。
 
 ### 链式修饰方法（可组合使用）
@@ -25147,7 +25167,7 @@ QQBotAdapter 是基于QQ官方机器人（QQ OpenAPI）协议构建的适配器�
 
 ## 文档信息
 
-- 对应模块版本: 5.0.0
+- 对应模块版本: 5.1.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -25222,6 +25242,9 @@ await qqbot.Send.To("group", gid).Image("https://example.com/img.png")
 # Markdown（原生 / 模板）
 await qqbot.Send.To("group", gid).Markdown("# 标题\n- 列表")
 await qqbot.Send.To("user", uid).Markdown(template_id=1, kv=[{"key": "title", "value": "通知"}])
+
+# 合并转发（官方 md 无折叠语法，渲染为引用列表；需原生 Markdown 权限，失败自动回退纯文本）
+await qqbot.Send.To("group", gid).MergeForward(nodes)
 
 # 键盘（自动置为 markdown 类型并附带 bot_appid）
 await qqbot.Send.To("group", gid).Keyboard(keyboard).Text("请选择")
@@ -25379,7 +25402,7 @@ YunhuUserAdapter 是基于云湖用户账户协议构建的适配器，通过用
 
 ## 文档信息
 
-- 对应模块版本: 4.2.0
+- 对应模块版本: 4.4.0
 - 维护者: wsu2059
 
 ## 基本信息
@@ -25482,6 +25505,7 @@ await yunhu_user.Send.To("user", user_id).Text("Hello World!")
 - `.Text(text: str, buttons: Optional[List] = None)`：发送纯文本消息。
 - `.Html(html: str, buttons: Optional[List] = None)`：发送HTML格式消息。
 - `.Markdown(markdown: str, buttons: Optional[List] = None)`：发送Markdown格式消息。
+- `.MergeForward(nodes, title="合并聊天记录")`：发送合并转发消息（渲染为 `<details>` 折叠 HTML 卡片，msg_type=8 HTML 通道发出）。
 - `.Image(file: Union[str, bytes], buttons: Optional[List] = None)`：发送图片消息，支持URL、本地路径或二进制数据。
 - `.Video(file: Union[str, bytes], buttons: Optional[List] = None)`：发送视频消息，支持URL、本地路径或二进制数据。
 - `.Audio(file: Union[str, bytes], buttons: Optional[List] = None)`：发送语音消息，支持URL、本地路径或二进制数据，自动检测音频时长。
@@ -26241,7 +26265,7 @@ IdeauraAdapter 是基于花枫咖啡馆（RockyChat）平台 API 构建的适配
 ## 文档信息
 
 - 对应模块: ErisPulse-Ideaura
-- 对应模块版本: 4.1.0
+- 对应模块版本: 4.2.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -26289,6 +26313,7 @@ await ideaura.Send.To("group", "chatroom").Text("Hello World!")
 - `.Face(face_id: str)`：发送表情（以纯文本形式发送 emoji）。
 - `.Markdown(text: str)`：发送 Markdown 格式消息。
 - `.Html(html: str)`：发送 HTML 格式消息。
+- `.MergeForward(nodes, title="合并聊天记录")`：发送合并转发消息（渲染为 `<details>` 折叠 HTML 卡片）。
 - `.Edit(message_id: str, text: str, content_type: str = "text")`：编辑已有消息。
 - `.Recall(message_id: str)`：撤回消息。
 
@@ -26757,7 +26782,7 @@ DiscordAdapter 是基于 Discord Gateway (WebSocket) 和 REST API v10 协议构�
 
 ## 文档信息
 
-- 对应模块版本: 4.2.0
+- 对应模块版本: 4.3.0
 - 维护者: ErisPulse
 - Discord API 版本: v10
 
@@ -26869,6 +26894,7 @@ await discord.Send.To("group", channel_id).Text("Hello World!")
 支持的发送类型包括：
 - `.Text(text: str)`：发送纯文本消息。
 - `.Embed(embed: dict | list)`：发送 Embed 嵌入消息，支持单个或多个 Embed。
+- `.MergeForward(nodes, title="合并聊天记录")`：发送合并转发消息（Embed：标题 + 每条消息一个 field，≤25 fields，value ≤1024）。
 - `.Image(file: bytes | str, filename: str = "image.png")`：发送图片，支持二进制数据或 URL。
 - `.File(file: bytes | str, filename: str = None)`：发送文件，支持二进制数据或 URL。
 - `.Reply(content: str, message_id: str)`：回复指定消息（便捷终端方法）。
@@ -27482,7 +27508,7 @@ Webhook 适配器是一个**协议级桥接器**，不绑定任何特定平台�
 ## 基本信息
 - 模块名称: `ErisPulse-WechatMpAdapter`
 - 平台标识: `mp`（别名: `wechat_mp`）
-- 模块版本: 4.1.0
+- 模块版本: 4.3.0
 - 维护者: ErisPulse
 - 依赖: `cryptography`
 

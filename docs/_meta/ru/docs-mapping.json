@@ -245,7 +245,7 @@
           "icon": "fa-comments"
         },
         {
-          "title": "Документация по функциям платформы Telegram",
+          "title": "Документация по функциям Telegram-платформы",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
@@ -257,13 +257,13 @@
           "icon": "fa-envelope"
         },
         {
-          "title": "Документация по функциям платформы Yunhu",
+          "title": "Характеристики платформы Yunhu",
           "path": "platform-guide/yunhu.md",
           "level": 1,
           "icon": "fa-cloud"
         },
         {
-          "title": "Характеристики платформы пользователей Yunhu",
+          "title": "Документация по функциям платформы пользователей Yunhu",
           "path": "platform-guide/yunhu_user.md",
           "level": 1,
           "icon": "fa-user"
@@ -281,7 +281,7 @@
           "icon": "fa-headset"
         },
         {
-          "title": "Документация по функциям платформы Matrix",
+          "title": "Документация по функциональным возможностям платформы Matrix",
           "path": "platform-guide/matrix.md",
           "level": 1,
           "icon": "fa-th-large"

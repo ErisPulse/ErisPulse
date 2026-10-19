@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1776,
+  "total_keywords": 1780,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -10,12 +10,12 @@
         "title": "0 成功（OK）"
       }
     ],
-    "0. キーワードの約束": [
+    "0. キーワードの定義": [
       {
         "document": "standards/send-method-spec.md",
         "line": 5,
         "level": 2,
-        "title": "0. キーワードの約束"
+        "title": "0. キーワードの定義"
       }
     ],
     "1 つでインストールするスクリプト（推奨）": [
@@ -290,12 +290,12 @@
         "title": "1. 概要"
       }
     ],
-    "1. 標準メソッド命名": [
+    "1. 標準メソッドの命名": [
       {
         "document": "standards/send-method-spec.md",
         "line": 15,
         "level": 2,
-        "title": "1. 標準メソッド命名"
+        "title": "1. 標準メソッドの命名"
       }
     ],
     "1. 標準化されたレスポンス形式": [
@@ -429,7 +429,7 @@
     "10. アダプタ実装チェックリスト": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 499,
+        "line": 506,
         "level": 2,
         "title": "10. アダプタ実装チェックリスト"
       }
@@ -445,7 +445,7 @@
     "11. メッセージビルダー（MessageBuilder）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 523,
+        "line": 538,
         "level": 2,
         "title": "11. メッセージビルダー（MessageBuilder）"
       }
@@ -458,18 +458,18 @@
         "title": "11. 関連ドキュメント"
       }
     ],
-    "11.1 インポート": [
+    "11.1 導入": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 527,
+        "line": 542,
         "level": 3,
-        "title": "11.1 インポート"
+        "title": "11.1 導入"
       }
     ],
     "11.2 チェーン呼び出しによる構築": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 535,
+        "line": 550,
         "level": 3,
         "title": "11.2 チェーン呼び出しによる構築"
       }
@@ -477,7 +477,7 @@
     "11.3 単一セグメントの高速構築": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 552,
+        "line": 567,
         "level": 3,
         "title": "11.3 単一セグメントの高速構築"
       }
@@ -485,23 +485,23 @@
     "11.4 Event.reply_ob12と併用": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 563,
+        "line": 578,
         "level": 3,
         "title": "11.4 Event.reply_ob12と併用"
       }
     ],
-    "11.5 支援されるメッセージセグメントメソッド": [
+    "11.5 支援するメッセージセグメントメソッド": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 578,
+        "line": 593,
         "level": 3,
-        "title": "11.5 支援されるメッセージセグメントメソッド"
+        "title": "11.5 支援するメッセージセグメントメソッド"
       }
     ],
     "11.6 ユーティリティメソッド": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 593,
+        "line": 608,
         "level": 3,
         "title": "11.6 ユーティリティメソッド"
       }
@@ -509,7 +509,7 @@
     "12. 関連文書": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 612,
+        "line": 627,
         "level": 2,
         "title": "12. 関連文書"
       }
@@ -910,12 +910,12 @@
         "title": "2.1.1 `file`パラメータの合法な形態"
       }
     ],
-    "2.1.2 形態判定順序": [
+    "2.1.2 形態判定の順序": [
       {
         "document": "standards/send-method-spec.md",
         "line": 87,
         "level": 4,
-        "title": "2.1.2 形態判定順序"
+        "title": "2.1.2 形態判定の順序"
       }
     ],
     "2.1.3 `File`のファイル名の意味": [
@@ -1161,7 +1161,7 @@
     "3. プラットフォーム固有メソッドの命名": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 234,
+        "line": 241,
         "level": 2,
         "title": "3. プラットフォーム固有メソッドの命名"
       }
@@ -1481,7 +1481,7 @@
     "4. パラメータ名の命名規則": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 265,
+        "line": 272,
         "level": 2,
         "title": "4. パラメータ名の命名規則"
       }
@@ -1737,7 +1737,7 @@
     "5. 戻り値の規則": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 277,
+        "line": 284,
         "level": 2,
         "title": "5. 戻り値の規則"
       }
@@ -2001,7 +2001,7 @@
     "6. 逆変換規則（OneBot12 → プラットフォーム）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 284,
+        "line": 291,
         "level": 2,
         "title": "6. 逆変換規則（OneBot12 → プラットフォーム）"
       }
@@ -2025,17 +2025,17 @@
     "6.1 変換モデル": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 288,
+        "line": 295,
         "level": 3,
         "title": "6.1 変換モデル"
       }
     ],
-    "6.2 `Raw_ob12`実装規則": [
+    "6.2 `Raw_ob12`の実装規則": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 305,
+        "line": 312,
         "level": 3,
-        "title": "6.2 `Raw_ob12`実装規則"
+        "title": "6.2 `Raw_ob12`の実装規則"
       }
     ],
     "6.2 イベントの返信": [
@@ -2065,7 +2065,7 @@
     "6.3 メッセージセグメント変換ルール": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 333,
+        "line": 340,
         "level": 3,
         "title": "6.3 メッセージセグメント変換ルール"
       }
@@ -2081,7 +2081,7 @@
     "6.3.1 標準メッセージセグメント変換": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 335,
+        "line": 342,
         "level": 4,
         "title": "6.3.1 標準メッセージセグメント変換"
       }
@@ -2089,7 +2089,7 @@
     "6.3.2 プラットフォーム拡張メッセージセグメント変換": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 351,
+        "line": 358,
         "level": 4,
         "title": "6.3.2 プラットフォーム拡張メッセージセグメント変換"
       }
@@ -2097,17 +2097,17 @@
     "6.3.3 複合メッセージセグメント処理": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 375,
+        "line": 382,
         "level": 4,
         "title": "6.3.3 複合メッセージセグメント処理"
       }
     ],
-    "6.4 `Raw_ob12` と標準メソッドの関係": [
+    "6.4 `Raw_ob12`と標準メソッドの関係": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 393,
+        "line": 400,
         "level": 3,
-        "title": "6.4 `Raw_ob12` と標準メソッドの関係"
+        "title": "6.4 `Raw_ob12`と標準メソッドの関係"
       }
     ],
     "6.4 プラットフォーム固有フィールドの例": [
@@ -2121,7 +2121,7 @@
     "6.5 実装例": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 415,
+        "line": 422,
         "level": 3,
         "title": "6.5 実装例"
       }
@@ -2182,12 +2182,12 @@
         "title": "7. セッションタイプ拡張"
       }
     ],
-    "7. メソッド発見": [
+    "7. メソッドの発見": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 468,
+        "line": 475,
         "level": 2,
-        "title": "7. メソッド発見"
+        "title": "7. メソッドの発見"
       }
     ],
     "7. 新しいアダプター開発者の標準チェックリスト": [
@@ -2343,7 +2343,7 @@
     "9. アダプタ開発の注意事項": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 491,
+        "line": 498,
         "level": 2,
         "title": "9. アダプタ開発の注意事項"
       }
@@ -2431,41 +2431,25 @@
     "@ロボット検出メカニズム（重要）": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 126,
+        "line": 131,
         "level": 2,
         "title": "@ロボット検出メカニズム（重要）"
-      }
-    ],
-    "A2UI メッセージの送信": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 502,
-        "level": 3,
-        "title": "A2UI メッセージの送信"
       }
     ],
     "A2UI メッセージセグメント (a2ui)": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 503,
+        "line": 505,
         "level": 4,
         "title": "A2UI メッセージセグメント (a2ui)"
       }
     ],
-    "A2UIボタンイベントの処理": [
+    "A2UIメッセージを送信": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 473,
+        "line": 511,
         "level": 1,
-        "title": "A2UIボタンイベントの処理"
-      }
-    ],
-    "A2UIメッセージの送信": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 510,
-        "level": 1,
-        "title": "A2UIメッセージの送信"
+        "title": "A2UIメッセージを送信"
       }
     ],
     "AI補助開発": [
@@ -2561,7 +2545,7 @@
     "APIの呼び出し": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 634,
+        "line": 636,
         "level": 2,
         "title": "APIの呼び出し"
       }
@@ -3109,7 +3093,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 307,
+        "line": 308,
         "level": 2,
         "title": "Event Mixin 拡張メソッド"
       },
@@ -3339,7 +3323,7 @@
     "KMarkdown とカードメッセージの送信": [
       {
         "document": "platform-guide/kook.md",
-        "line": 484,
+        "line": 486,
         "level": 3,
         "title": "KMarkdown とカードメッセージの送信"
       }
@@ -3403,7 +3387,7 @@
     "Mentionメッセージセグメント": [
       {
         "document": "platform-guide/kook.md",
-        "line": 336,
+        "line": 338,
         "level": 3,
         "title": "Mentionメッセージセグメント"
       }
@@ -3472,10 +3456,18 @@
         "title": "Notice 通知モジュール"
       }
     ],
+    "OB11 拡張アクション（Api DSL）": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 163,
+        "level": 2,
+        "title": "OB11 拡張アクション（Api DSL）"
+      }
+    ],
     "OB12 メッセージセグメントの逆変換（Raw_ob12）": [
       {
         "document": "platform-guide/email.md",
-        "line": 121,
+        "line": 122,
         "level": 3,
         "title": "OB12 メッセージセグメントの逆変換（Raw_ob12）"
       }
@@ -3486,6 +3478,14 @@
         "line": 112,
         "level": 4,
         "title": "OneBot11"
+      }
+    ],
+    "OneBot11 アダプタとの関係": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 20,
+        "level": 3,
+        "title": "OneBot11 アダプタとの関係"
       }
     ],
     "OneBot11プラットフォーム特徴ドキュメント": [
@@ -3499,7 +3499,7 @@
     "OneBot12 でサポートされる detail_type": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 255,
+        "line": 257,
         "level": 3,
         "title": "OneBot12 でサポートされる detail_type"
       }
@@ -3515,7 +3515,7 @@
     "OneBot12 標準APIアクション": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 95,
+        "line": 100,
         "level": 2,
         "title": "OneBot12 標準APIアクション"
       }
@@ -3545,7 +3545,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 148,
+        "line": 150,
         "level": 3,
         "title": "OneBot12メッセージのサポート"
       },
@@ -3557,13 +3557,13 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 255,
+        "line": 257,
         "level": 3,
         "title": "OneBot12メッセージのサポート"
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 185,
+        "line": 187,
         "level": 3,
         "title": "OneBot12メッセージのサポート"
       }
@@ -3670,6 +3670,14 @@
         "line": 1,
         "level": 1,
         "title": "QQBotプラットフォームの特徴ドキュメント"
+      }
+    ],
+    "QQスペース": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 139,
+        "level": 3,
+        "title": "QQスペース"
       }
     ],
     "RPC: module.call": [
@@ -3798,12 +3806,12 @@
         "title": "SVG出力の例"
       }
     ],
-    "Sandbox プラットフォームの機能ドキュメント": [
+    "Sandboxプラットフォームの特徴ドキュメント": [
       {
         "document": "platform-guide/sandbox.md",
         "line": 1,
         "level": 1,
-        "title": "Sandbox プラットフォームの機能ドキュメント"
+        "title": "Sandboxプラットフォームの特徴ドキュメント"
       }
     ],
     "Send DSL でアカウントを指定する": [
@@ -3817,7 +3825,7 @@
     "Send DSL を使用してアカウントを指定する": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 562,
+        "line": 564,
         "level": 3,
         "title": "Send DSL を使用してアカウントを指定する"
       }
@@ -3825,7 +3833,7 @@
     "Send DSLを使用してBotを指定": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 667,
+        "line": 669,
         "level": 3,
         "title": "Send DSLを使用してBotを指定"
       }
@@ -3878,6 +3886,14 @@
         "title": "Send 嵌套クラス"
       }
     ],
+    "Send 鏈式呼び出し": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 42,
+        "level": 3,
+        "title": "Send 鏈式呼び出し"
+      }
+    ],
     "SendDSL の詳細": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3910,20 +3926,20 @@
         "title": "SendDSL 標準メソッドとの関係"
       }
     ],
-    "Sendのチェーン呼び出し": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 40,
-        "level": 3,
-        "title": "Sendのチェーン呼び出し"
-      }
-    ],
     "Shadow 系列 — `Core/shadow.py`（影子モジュール）": [
       {
         "document": "advanced/errors.md",
         "line": 163,
         "level": 3,
         "title": "Shadow 系列 — `Core/shadow.py`（影子モジュール）"
+      }
+    ],
+    "SnowLumaプラットフォームの特徴ドキュメント": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 1,
+        "level": 1,
+        "title": "SnowLumaプラットフォームの特徴ドキュメント"
       }
     ],
     "SseEmitter API": [
@@ -3990,12 +4006,12 @@
         "title": "Telegram"
       }
     ],
-    "Telegramプラットフォームの特徴ドキュメント": [
+    "Telegramプラットフォーム特徴ドキュメント": [
       {
         "document": "platform-guide/telegram.md",
         "line": 1,
         "level": 1,
-        "title": "Telegramプラットフォームの特徴ドキュメント"
+        "title": "Telegramプラットフォーム特徴ドキュメント"
       }
     ],
     "Terminal プラットフォーム機能ドキュメント": [
@@ -4057,7 +4073,7 @@
     "WebSocket / Webhook 接続": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 150,
+        "line": 155,
         "level": 2,
         "title": "WebSocket / Webhook 接続"
       }
@@ -4073,7 +4089,7 @@
     "WebSocket フロー": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 152,
+        "line": 157,
         "level": 3,
         "title": "WebSocket フロー"
       }
@@ -4125,7 +4141,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 360,
+        "line": 362,
         "level": 2,
         "title": "WebSocket接続"
       }
@@ -4149,7 +4165,7 @@
     "Webhook モード": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 159,
+        "line": 164,
         "level": 3,
         "title": "Webhook モード"
       }
@@ -4901,7 +4917,7 @@
     "mention_allメッセージセグメント": [
       {
         "document": "platform-guide/kook.md",
-        "line": 349,
+        "line": 351,
         "level": 3,
         "title": "mention_allメッセージセグメント"
       }
@@ -5058,6 +5074,14 @@
         "title": "self.user_id と Using の関係"
       }
     ],
+    "self_id の自動マッピング": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 293,
+        "level": 2,
+        "title": "self_id の自動マッピング"
+      }
+    ],
     "self_id 自自動マッピング": [
       {
         "document": "platform-guide/onebot11.md",
@@ -5178,14 +5202,6 @@
         "title": "v5 ファンダメンタルの更新（4.2.0）"
       }
     ],
-    "v5 ファンダメンタルの更新（4.4.0）": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 20,
-        "level": 2,
-        "title": "v5 ファンダメンタルの更新（4.4.0）"
-      }
-    ],
     "v5 フレームワークの更新 (1.1.0)": [
       {
         "document": "platform-guide/terminal.md",
@@ -5224,18 +5240,18 @@
         "line": 54,
         "level": 2,
         "title": "v5 フレームワークの更新（4.1.0）"
-      },
-      {
-        "document": "platform-guide/sandbox.md",
-        "line": 20,
-        "level": 2,
-        "title": "v5 フレームワークの更新（4.1.0）"
       }
     ],
     "v5 フレームワークの更新（4.2.0）": [
       {
         "document": "platform-guide/email.md",
         "line": 58,
+        "level": 2,
+        "title": "v5 フレームワークの更新（4.2.0）"
+      },
+      {
+        "document": "platform-guide/sandbox.md",
+        "line": 20,
         "level": 2,
         "title": "v5 フレームワークの更新（4.2.0）"
       }
@@ -5246,6 +5262,14 @@
         "line": 20,
         "level": 2,
         "title": "v5 フレームワークの更新（4.3.0）"
+      }
+    ],
+    "v5 フレームワークアップデート (4.4.0)": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 20,
+        "level": 2,
+        "title": "v5 フレームワークアップデート (4.4.0)"
       }
     ],
     "wait(prompt=None, timeout=None)": [
@@ -5470,6 +5494,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 422,
+        "level": 3,
+        "title": "アカウント設定フィールド"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 238,
         "level": 3,
         "title": "アカウント設定フィールド"
       }
@@ -5783,7 +5813,7 @@
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 584,
+        "line": 586,
         "level": 3,
         "title": "イベントにおけるアカウント識別"
       }
@@ -5794,14 +5824,6 @@
         "line": 107,
         "level": 2,
         "title": "イベントのサブスクライブ"
-      }
-    ],
-    "イベントの例": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 235,
-        "level": 3,
-        "title": "イベントの例"
       }
     ],
     "イベントの冪等性と重複除去": [
@@ -5816,12 +5838,6 @@
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 156,
-        "level": 3,
-        "title": "イベントの監視"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 168,
         "level": 3,
         "title": "イベントの監視"
       }
@@ -5884,6 +5900,12 @@
         "line": 266,
         "level": 2,
         "title": "イベントタイプのマッピング"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 181,
+        "level": 2,
+        "title": "イベントタイプのマッピング"
       }
     ],
     "イベントタイプの概要": [
@@ -5934,20 +5956,26 @@
         "title": "イベントフロー"
       }
     ],
+    "イベント中のBot識別子": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 691,
+        "level": 3,
+        "title": "イベント中のBot識別子"
+      }
+    ],
     "イベント例": [
       {
         "document": "platform-guide/onebot11.md",
         "line": 296,
         "level": 3,
         "title": "イベント例"
-      }
-    ],
-    "イベント内のBot識別子": [
+      },
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 689,
+        "document": "platform-guide/telegram.md",
+        "line": 236,
         "level": 3,
-        "title": "イベント内のBot識別子"
+        "title": "イベント例"
       }
     ],
     "イベント処理": [
@@ -5975,7 +6003,7 @@
     "イベント処理の例": [
       {
         "document": "platform-guide/email.md",
-        "line": 297,
+        "line": 298,
         "level": 2,
         "title": "イベント処理の例"
       },
@@ -5987,7 +6015,7 @@
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 360,
+        "line": 362,
         "level": 3,
         "title": "イベント処理の例"
       }
@@ -6078,6 +6106,12 @@
     ],
     "イベント拡張メソッド": [
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 210,
+        "level": 2,
+        "title": "イベント拡張メソッド"
+      },
+      {
         "document": "platform-guide/wechatmp.md",
         "line": 95,
         "level": 2,
@@ -6090,6 +6124,14 @@
         "line": 200,
         "level": 2,
         "title": "イベント拡張メソッド (WebhookEventMixin)"
+      }
+    ],
+    "イベント監視": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 171,
+        "level": 3,
+        "title": "イベント監視"
       }
     ],
     "イベント設定": [
@@ -6237,7 +6279,7 @@
     "インラインキーボード付きメッセージ": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 287,
+        "line": 288,
         "level": 4,
         "title": "インラインキーボード付きメッセージ"
       }
@@ -6245,7 +6287,7 @@
     "インラインクエリイベント": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 274,
+        "line": 275,
         "level": 4,
         "title": "インラインクエリイベント"
       }
@@ -6283,7 +6325,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 201,
+        "line": 203,
         "level": 3,
         "title": "エラーコードの説明"
       },
@@ -6295,7 +6337,7 @@
       },
       {
         "document": "platform-guide/qqbot.md",
-        "line": 167,
+        "line": 172,
         "level": 2,
         "title": "エラーコードの説明"
       }
@@ -6463,17 +6505,17 @@
     "グループにボタン付きメッセージを送信": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 496,
+        "line": 497,
         "level": 1,
         "title": "グループにボタン付きメッセージを送信"
       }
     ],
-    "グループチャットメッセージ（@ユーザーのメンション付き）": [
+    "グループファイル / メッセージ履歴 / 読み取り状態": [
       {
-        "document": "platform-guide/telegram.md",
-        "line": 237,
-        "level": 4,
-        "title": "グループチャットメッセージ（@ユーザーのメンション付き）"
+        "document": "platform-guide/snowluma.md",
+        "line": 146,
+        "level": 3,
+        "title": "グループファイル / メッセージ履歴 / 読み取り状態"
       }
     ],
     "グループメッセージの処理": [
@@ -6490,6 +6532,14 @@
         "line": 46,
         "level": 3,
         "title": "グループメッセージを監視"
+      }
+    ],
+    "グループメッセージ（@ユーザーを含む）": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 238,
+        "level": 4,
+        "title": "グループメッセージ（@ユーザーを含む）"
       }
     ],
     "グループメンバーの増加": [
@@ -6522,6 +6572,12 @@
         "line": 104,
         "level": 3,
         "title": "グループ操作メソッド"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 118,
+        "level": 3,
+        "title": "グループ操作メソッド"
       }
     ],
     "グループ権限": [
@@ -6535,7 +6591,7 @@
     "グループ管理の例": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 193,
+        "line": 195,
         "level": 3,
         "title": "グループ管理の例"
       }
@@ -6543,7 +6599,7 @@
     "グループ管理メソッド": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 87,
+        "line": 89,
         "level": 3,
         "title": "グループ管理メソッド"
       }
@@ -6947,7 +7003,7 @@
     "コールバッククエリイベント": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 261,
+        "line": 262,
         "level": 4,
         "title": "コールバッククエリイベント"
       }
@@ -6955,7 +7011,7 @@
     "コールバッククエリ関連": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 324,
+        "line": 325,
         "level": 3,
         "title": "コールバッククエリ関連"
       }
@@ -7059,7 +7115,7 @@
     "シグナルタイプ": [
       {
         "document": "platform-guide/kook.md",
-        "line": 371,
+        "line": 373,
         "level": 3,
         "title": "シグナルタイプ"
       }
@@ -7112,14 +7168,6 @@
         "title": "シャドウモジュールとグレーディングの正式化"
       }
     ],
-    "ショートカットメニューイベントの処理": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 463,
-        "level": 1,
-        "title": "ショートカットメニューイベントの処理"
-      }
-    ],
     "シンプルなカウンター": [
       {
         "document": "getting-started/common-tasks.md",
@@ -7155,7 +7203,7 @@
     "ステッカー・メッセージセグメント (yunhu_user_sticker)": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 473,
+        "line": 475,
         "level": 4,
         "title": "ステッカー・メッセージセグメント (yunhu_user_sticker)"
       }
@@ -7217,7 +7265,7 @@
     "スーパーファイル共有イベントの例": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 310,
+        "line": 312,
         "level": 3,
         "title": "スーパーファイル共有イベントの例"
       }
@@ -7374,22 +7422,6 @@
         "title": "ダッシュボードの自動登録"
       }
     ],
-    "チェイン修飾メソッド（複数組み合わせて使用可能）": [
-      {
-        "document": "platform-guide/kook.md",
-        "line": 118,
-        "level": 3,
-        "title": "チェイン修飾メソッド（複数組み合わせて使用可能）"
-      }
-    ],
-    "チェイン呼び出しの例": [
-      {
-        "document": "platform-guide/kook.md",
-        "line": 126,
-        "level": 3,
-        "title": "チェイン呼び出しの例"
-      }
-    ],
     "チェックポイント TTL": [
       {
         "document": "advanced/conversation.md",
@@ -7426,24 +7458,28 @@
         "title": "チェーン修飾メソッド"
       }
     ],
-    "チェーン修飾メソッド（組み合わせて使用可能）": [
+    "チェーン修飾メソッド（self を返すため、組み合わせて使用可能）": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 129,
+        "document": "platform-guide/email.md",
+        "line": 112,
         "level": 3,
-        "title": "チェーン修飾メソッド（組み合わせて使用可能）"
-      },
+        "title": "チェーン修飾メソッド（self を返すため、組み合わせて使用可能）"
+      }
+    ],
+    "チェーン修飾メソッド（組み合わせて使用可能）": [
       {
         "document": "platform-guide/matrix.md",
         "line": 128,
         "level": 3,
         "title": "チェーン修飾メソッド（組み合わせて使用可能）"
-      },
+      }
+    ],
+    "チェーン修飾子メソッド（複数使用可能）": [
       {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 158,
+        "document": "platform-guide/yunhu.md",
+        "line": 173,
         "level": 3,
-        "title": "チェーン修飾メソッド（組み合わせて使用可能）"
+        "title": "チェーン修飾子メソッド（複数使用可能）"
       }
     ],
     "チェーン呼び出し": [
@@ -7464,20 +7500,14 @@
     ],
     "チェーン呼び出しの例": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 137,
-        "level": 3,
-        "title": "チェーン呼び出しの例"
-      },
-      {
         "document": "platform-guide/matrix.md",
         "line": 136,
         "level": 3,
         "title": "チェーン呼び出しの例"
       },
       {
-        "document": "platform-guide/yunhu_user.md",
-        "line": 169,
+        "document": "platform-guide/yunhu.md",
+        "line": 182,
         "level": 3,
         "title": "チェーン呼び出しの例"
       }
@@ -7493,17 +7523,9 @@
     "チェーン式修飾メソッド": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 123,
+        "line": 124,
         "level": 3,
         "title": "チェーン式修飾メソッド"
-      }
-    ],
-    "チェーン式修飾メソッド（self を返すため、組み合わせて使用可能）": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 111,
-        "level": 3,
-        "title": "チェーン式修飾メソッド（self を返すため、組み合わせて使用可能）"
       }
     ],
     "チェーン式修飾メソッド（selfを返してチェーン式呼び出しをサポート）": [
@@ -7514,32 +7536,62 @@
         "title": "チェーン式修飾メソッド（selfを返してチェーン式呼び出しをサポート）"
       }
     ],
+    "チェーン式修飾メソッド（組み合わせて使用可能）": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 129,
+        "level": 3,
+        "title": "チェーン式修飾メソッド（組み合わせて使用可能）"
+      },
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 60,
+        "level": 3,
+        "title": "チェーン式修飾メソッド（組み合わせて使用可能）"
+      },
+      {
+        "document": "platform-guide/kook.md",
+        "line": 120,
+        "level": 3,
+        "title": "チェーン式修飾メソッド（組み合わせて使用可能）"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 155,
+        "level": 3,
+        "title": "チェーン式修飾メソッド（組み合わせて使用可能）"
+      }
+    ],
     "チェーン式修飾メソッド（組み合わせ可能）": [
       {
         "document": "platform-guide/onebot11.md",
         "line": 133,
         "level": 3,
         "title": "チェーン式修飾メソッド（組み合わせ可能）"
-      }
-    ],
-    "チェーン式修飾メソッド（複数使用可能）": [
-      {
-        "document": "platform-guide/ideaura.md",
-        "line": 60,
-        "level": 3,
-        "title": "チェーン式修飾メソッド（複数使用可能）"
       },
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 171,
+        "document": "platform-guide/yunhu_user.md",
+        "line": 160,
         "level": 3,
-        "title": "チェーン式修飾メソッド（複数使用可能）"
+        "title": "チェーン式修飾メソッド（組み合わせ可能）"
       }
     ],
     "チェーン式呼び出しの例": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 137,
+        "level": 3,
+        "title": "チェーン式呼び出しの例"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 69,
+        "level": 3,
+        "title": "チェーン式呼び出しの例"
+      },
+      {
+        "document": "platform-guide/kook.md",
+        "line": 128,
         "level": 3,
         "title": "チェーン式呼び出しの例"
       },
@@ -7550,8 +7602,8 @@
         "title": "チェーン式呼び出しの例"
       },
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 180,
+        "document": "platform-guide/yunhu_user.md",
+        "line": 171,
         "level": 3,
         "title": "チェーン式呼び出しの例"
       }
@@ -7565,7 +7617,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 400,
+        "line": 402,
         "level": 3,
         "title": "チャンネルメッセージの処理"
       }
@@ -7958,6 +8010,12 @@
         "title": "ドキュメント情報"
       },
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 7,
+        "level": 2,
+        "title": "ドキュメント情報"
+      },
+      {
         "document": "platform-guide/telegram.md",
         "line": 7,
         "level": 2,
@@ -8141,7 +8199,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 135,
+        "line": 138,
         "level": 4,
         "title": "バッチ構築モード（Build）"
       }
@@ -8291,7 +8349,7 @@
     "フォームメッセージセグメント (yunhu_user_form)": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 439,
+        "line": 441,
         "level": 4,
         "title": "フォームメッセージセグメント (yunhu_user_form)"
       }
@@ -8369,7 +8427,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 422,
+        "line": 424,
         "level": 3,
         "title": "プライベートメッセージの処理"
       }
@@ -8377,17 +8435,9 @@
     "プライベートメッセージの編集と削除通知の処理": [
       {
         "document": "platform-guide/kook.md",
-        "line": 517,
+        "line": 519,
         "level": 3,
         "title": "プライベートメッセージの編集と削除通知の処理"
-      }
-    ],
-    "プライベートメッセージの送信": [
-      {
-        "document": "platform-guide/discord.md",
-        "line": 174,
-        "level": 3,
-        "title": "プライベートメッセージの送信"
       }
     ],
     "プライベートメッセージを監視": [
@@ -8396,6 +8446,14 @@
         "line": 37,
         "level": 3,
         "title": "プライベートメッセージを監視"
+      }
+    ],
+    "プライベートメッセージ送信": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 174,
+        "level": 3,
+        "title": "プライベートメッセージ送信"
       }
     ],
     "プラットフォームの一覧表示": [
@@ -8441,7 +8499,7 @@
     "プラットフォームネイティブAPIメソッド族": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 137,
+        "line": 142,
         "level": 2,
         "title": "プラットフォームネイティブAPIメソッド族"
       }
@@ -8452,6 +8510,14 @@
         "line": 550,
         "level": 4,
         "title": "プラットフォームメソッドの分離"
+      }
+    ],
+    "プラットフォーム固有のイベントと拡張セグメント": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 198,
+        "level": 3,
+        "title": "プラットフォーム固有のイベントと拡張セグメント"
       }
     ],
     "プラットフォーム固有のメソッド": [
@@ -8481,7 +8547,7 @@
     "プラットフォーム固有の機能": [
       {
         "document": "platform-guide/README.md",
-        "line": 16,
+        "line": 15,
         "level": 2,
         "title": "プラットフォーム固有の機能"
       }
@@ -8500,6 +8566,14 @@
         "line": 286,
         "level": 3,
         "title": "プラットフォーム固有イベント（onebot11_ 前綴）"
+      }
+    ],
+    "プラットフォーム拡張アクション": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 320,
+        "level": 3,
+        "title": "プラットフォーム拡張アクション"
       }
     ],
     "プラットフォーム拡張アクション（call / Api メソッド）": [
@@ -8547,17 +8621,9 @@
     "プラットフォーム拡張メッセージセグメント": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 224,
+        "line": 225,
         "level": 3,
         "title": "プラットフォーム拡張メッセージセグメント"
-      }
-    ],
-    "プラットフォーム拡張動作": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 318,
-        "level": 3,
-        "title": "プラットフォーム拡張動作"
       }
     ],
     "プラットフォーム機能の照会": [
@@ -8606,6 +8672,14 @@
         "line": 437,
         "level": 3,
         "title": "プロアクティブ GC 設定"
+      }
+    ],
+    "プロキシ設定": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 421,
+        "level": 3,
+        "title": "プロキシ設定"
       }
     ],
     "プロジェクトの初期化": [
@@ -8744,24 +8818,16 @@
         "title": "ホームページ"
       }
     ],
-    "ボタンクリックイベントかどうかを確認する": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 447,
-        "level": 1,
-        "title": "ボタンクリックイベントかどうかを確認する"
-      }
-    ],
     "ボタンパラメータの説明": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 146,
+        "line": 148,
         "level": 3,
         "title": "ボタンパラメータの説明"
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 135,
+        "line": 137,
         "level": 3,
         "title": "ボタンパラメータの説明"
       }
@@ -8769,7 +8835,7 @@
     "ボタン・メッセージセグメント (yunhu_user_button)": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 490,
+        "line": 492,
         "level": 4,
         "title": "ボタン・メッセージセグメント (yunhu_user_button)"
       }
@@ -8806,10 +8872,18 @@
         "title": "マテリアルドキュメント"
       }
     ],
+    "マルチBot設定": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 636,
+        "level": 2,
+        "title": "マルチBot設定"
+      }
+    ],
     "マルチアカウントの設定": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 518,
+        "line": 520,
         "level": 2,
         "title": "マルチアカウントの設定"
       }
@@ -8981,7 +9055,7 @@
     "メッセージの編集と撤回": [
       {
         "document": "platform-guide/kook.md",
-        "line": 503,
+        "line": 505,
         "level": 3,
         "title": "メッセージの編集と撤回"
       }
@@ -9021,7 +9095,7 @@
     "メッセージイベント detail_type マッピング": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 184,
+        "line": 185,
         "level": 3,
         "title": "メッセージイベント detail_type マッピング"
       }
@@ -9029,7 +9103,7 @@
     "メッセージイベントの例": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 263,
+        "line": 265,
         "level": 3,
         "title": "メッセージイベントの例"
       }
@@ -9095,17 +9169,17 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 311,
+        "line": 313,
         "level": 3,
         "title": "メッセージセグメントタイプ"
       }
     ],
-    "メッセージセグメントデータの抽出": [
+    "メッセージセグメントデータ抽出": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 331,
+        "line": 332,
         "level": 3,
-        "title": "メッセージセグメントデータの抽出"
+        "title": "メッセージセグメントデータ抽出"
       }
     ],
     "メッセージセグメント構造（送信方向）": [
@@ -9204,26 +9278,26 @@
         "title": "メッセージ既読イベント"
       }
     ],
-    "メッセージ照会の例": [
+    "メッセージ検索の例": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 236,
+        "line": 238,
         "level": 3,
-        "title": "メッセージ照会の例"
+        "title": "メッセージ検索の例"
       }
     ],
-    "メッセージ照会メソッド": [
+    "メッセージ検索メソッド": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 108,
+        "line": 110,
         "level": 3,
-        "title": "メッセージ照会メソッド"
+        "title": "メッセージ検索メソッド"
       }
     ],
     "メッセージ番号メカニズム": [
       {
         "document": "platform-guide/kook.md",
-        "line": 389,
+        "line": 391,
         "level": 3,
         "title": "メッセージ番号メカニズム"
       }
@@ -9231,7 +9305,7 @@
     "メッセージ管理メソッド": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 108,
+        "line": 109,
         "level": 3,
         "title": "メッセージ管理メソッド"
       }
@@ -9255,7 +9329,7 @@
     "メッセージ編集通知の例": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 289,
+        "line": 291,
         "level": 3,
         "title": "メッセージ編集通知の例"
       }
@@ -9309,7 +9383,7 @@
     "メッセージ送信失敗": [
       {
         "document": "platform-guide/README.md",
-        "line": 261,
+        "line": 267,
         "level": 4,
         "title": "メッセージ送信失敗"
       }
@@ -9317,7 +9391,7 @@
     "メッセージ送信成功": [
       {
         "document": "platform-guide/README.md",
-        "line": 245,
+        "line": 251,
         "level": 4,
         "title": "メッセージ送信成功"
       }
@@ -9325,7 +9399,7 @@
     "メッセージ関連": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 311,
+        "line": 312,
         "level": 3,
         "title": "メッセージ関連"
       }
@@ -9341,7 +9415,7 @@
     "メディアファイル処理": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 123,
+        "line": 125,
         "level": 3,
         "title": "メディアファイル処理"
       }
@@ -9349,7 +9423,7 @@
     "メディアメッセージの送信": [
       {
         "document": "platform-guide/kook.md",
-        "line": 463,
+        "line": 465,
         "level": 3,
         "title": "メディアメッセージの送信"
       },
@@ -9363,7 +9437,7 @@
     "メディア送信プロトコル": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 508,
+        "line": 515,
         "level": 3,
         "title": "メディア送信プロトコル"
       }
@@ -9371,7 +9445,7 @@
     "メディア送信メソッド": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 95,
+        "line": 96,
         "level": 3,
         "title": "メディア送信メソッド"
       }
@@ -9403,7 +9477,7 @@
     "メール返信イベント（email_reply）": [
       {
         "document": "platform-guide/email.md",
-        "line": 192,
+        "line": 193,
         "level": 3,
         "title": "メール返信イベント（email_reply）"
       }
@@ -9725,7 +9799,7 @@
     "ユーザーのプライベートチャットにボタン付きメッセージを送信": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 499,
+        "line": 500,
         "level": 1,
         "title": "ユーザーのプライベートチャットにボタン付きメッセージを送信"
       }
@@ -10273,13 +10347,13 @@
     "ログ情報": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 711,
+        "line": 713,
         "level": 3,
         "title": "ログ情報"
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 606,
+        "line": 608,
         "level": 3,
         "title": "ログ情報"
       }
@@ -10309,7 +10383,7 @@
     "ロボット公告ボードイベントの例": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 334,
+        "line": 336,
         "level": 3,
         "title": "ロボット公告ボードイベントの例"
       }
@@ -10320,14 +10394,6 @@
         "line": 161,
         "level": 4,
         "title": "ロボット情報"
-      }
-    ],
-    "ロボット設定の処理": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 468,
-        "level": 1,
-        "title": "ロボット設定の処理"
       }
     ],
     "ローカルテスト": [
@@ -10402,6 +10468,14 @@
         "title": "一回限りの登録（once）"
       }
     ],
+    "一撃 / ソーシャル": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 132,
+        "level": 3,
+        "title": "一撃 / ソーシャル"
+      }
+    ],
     "一般的 CSS クラス名": [
       {
         "document": "ecosystem/dashboard.md",
@@ -10416,6 +10490,14 @@
         "line": 166,
         "level": 3,
         "title": "一般的なrequest"
+      }
+    ],
+    "一般的なインターフェース": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 40,
+        "level": 2,
+        "title": "一般的なインターフェース"
       }
     ],
     "一般的なフィールド（すべてのイベント型に共通）": [
@@ -10494,14 +10576,6 @@
         "line": 110,
         "level": 2,
         "title": "一般的アドバイス"
-      }
-    ],
-    "一般的インターフェース": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 38,
-        "level": 2,
-        "title": "一般的インターフェース"
       }
     ],
     "一般的タスクの例": [
@@ -10609,7 +10683,7 @@
       },
       {
         "document": "platform-guide/qqbot.md",
-        "line": 197,
+        "line": 202,
         "level": 3,
         "title": "交互イベントの処理"
       }
@@ -10652,14 +10726,6 @@
         "line": 99,
         "level": 2,
         "title": "他のメカニズムとの境界"
-      }
-    ],
-    "代理設定": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 420,
-        "level": 3,
-        "title": "代理設定"
       }
     ],
     "代表的なフロー・パターン": [
@@ -10750,14 +10816,6 @@
         "title": "作用域フィルタ：なぜ私のモジュールがメッセージを受け取らないのか"
       }
     ],
-    "使用 event.reply() 自動返信（プラットフォームに応じて正しい送信方法が自動選択されます）": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 455,
-        "level": 1,
-        "title": "使用 event.reply() 自動返信（プラットフォームに応じて正しい送信方法が自動選択されます）"
-      }
-    ],
     "使用例": [
       {
         "document": "platform-guide/discord.md",
@@ -10767,7 +10825,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 398,
+        "line": 400,
         "level": 2,
         "title": "使用例"
       },
@@ -10785,13 +10843,13 @@
       },
       {
         "document": "platform-guide/qqbot.md",
-        "line": 181,
+        "line": 186,
         "level": 2,
         "title": "使用例"
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 340,
+        "line": 341,
         "level": 3,
         "title": "使用例"
       }
@@ -11365,7 +11423,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 118,
+        "line": 119,
         "level": 3,
         "title": "原始メッセージ送信"
       }
@@ -11378,18 +11436,10 @@
         "title": "厳格モード"
       }
     ],
-    "参加貢献": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 286,
-        "level": 2,
-        "title": "参加貢献"
-      }
-    ],
     "参考リンク": [
       {
         "document": "platform-guide/README.md",
-        "line": 274,
+        "line": 282,
         "level": 2,
         "title": "参考リンク"
       }
@@ -11490,10 +11540,18 @@
         "title": "各環節の詳細解説"
       }
     ],
+    "合併転送": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 94,
+        "level": 3,
+        "title": "合併転送"
+      }
+    ],
     "合併転送（オプション、§2.4参照）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 515,
+        "line": 522,
         "level": 3,
         "title": "合併転送（オプション、§2.4参照）"
       }
@@ -11674,6 +11732,12 @@
         "title": "基本情報"
       },
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 12,
+        "level": 2,
+        "title": "基本情報"
+      },
+      {
         "document": "platform-guide/telegram.md",
         "line": 12,
         "level": 2,
@@ -11766,6 +11830,12 @@
         "line": 47,
         "level": 3,
         "title": "基本的な使い方"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 42,
+        "level": 3,
+        "title": "基本的な使い方"
       }
     ],
     "基本的な使用": [
@@ -11810,12 +11880,24 @@
         "line": 285,
         "level": 3,
         "title": "基本的な送信"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 61,
+        "level": 3,
+        "title": "基本的な送信"
       }
     ],
     "基本的な送信メソッド": [
       {
         "document": "platform-guide/email.md",
         "line": 103,
+        "level": 3,
+        "title": "基本的な送信メソッド"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 82,
         "level": 3,
         "title": "基本的な送信メソッド"
       }
@@ -11826,14 +11908,6 @@
         "line": 338,
         "level": 3,
         "title": "基本要件"
-      }
-    ],
-    "基本送信": [
-      {
-        "document": "platform-guide/qqbot.md",
-        "line": 61,
-        "level": 3,
-        "title": "基本送信"
       }
     ],
     "基本送信メソッド": [
@@ -11888,14 +11962,6 @@
         "line": 121,
         "level": 2,
         "title": "外部キー（リレーションマッピングの基礎）"
-      }
-    ],
-    "多Bot設定": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 634,
-        "level": 2,
-        "title": "多Bot設定"
       }
     ],
     "多アカウントサポート": [
@@ -11995,7 +12061,7 @@
     "完全なメールイベント": [
       {
         "document": "platform-guide/email.md",
-        "line": 218,
+        "line": 219,
         "level": 3,
         "title": "完全なメールイベント"
       }
@@ -12057,7 +12123,7 @@
     "実行モード": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 416,
+        "line": 417,
         "level": 3,
         "title": "実行モード"
       }
@@ -12176,20 +12242,20 @@
         "title": "審査にはどのくらい時間がかかりますか？"
       }
     ],
-    "対応していない標準動作": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 311,
-        "level": 3,
-        "title": "対応していない標準動作"
-      }
-    ],
     "対応しているプラットフォームの機能": [
       {
         "document": "platform-guide/matrix.md",
         "line": 100,
         "level": 3,
         "title": "対応しているプラットフォームの機能"
+      }
+    ],
+    "対応しない標準アクション": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 313,
+        "level": 3,
+        "title": "対応しない標準アクション"
       }
     ],
     "対応する i18n フィールド": [
@@ -12208,12 +12274,12 @@
         "title": "対応するファイルタイプ"
       }
     ],
-    "対応する標準動作": [
+    "対応する標準アクション": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 298,
+        "line": 300,
         "level": 3,
-        "title": "対応する標準動作"
+        "title": "対応する標準アクション"
       }
     ],
     "対応する送信メソッドの一覧表示": [
@@ -12699,7 +12765,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 228,
+        "line": 230,
         "level": 3,
         "title": "拡張フィールド"
       },
@@ -12713,7 +12779,7 @@
     "拡張フィールドの説明": [
       {
         "document": "platform-guide/email.md",
-        "line": 206,
+        "line": 207,
         "level": 2,
         "title": "拡張フィールドの説明"
       },
@@ -12730,8 +12796,14 @@
         "title": "拡張フィールドの説明"
       },
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 204,
+        "level": 3,
+        "title": "拡張フィールドの説明"
+      },
+      {
         "document": "platform-guide/telegram.md",
-        "line": 391,
+        "line": 392,
         "level": 2,
         "title": "拡張フィールドの説明"
       },
@@ -12743,7 +12815,7 @@
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 428,
+        "line": 430,
         "level": 2,
         "title": "拡張フィールドの説明"
       }
@@ -12821,7 +12893,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 362,
+        "line": 364,
         "level": 3,
         "title": "接続フロー"
       }
@@ -12960,14 +13032,14 @@
         "title": "支援されるメッセージ送信タイプ"
       },
       {
-        "document": "platform-guide/telegram.md",
-        "line": 71,
+        "document": "platform-guide/snowluma.md",
+        "line": 64,
         "level": 2,
         "title": "支援されるメッセージ送信タイプ"
       },
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 60,
+        "document": "platform-guide/telegram.md",
+        "line": 72,
         "level": 2,
         "title": "支援されるメッセージ送信タイプ"
       },
@@ -12981,7 +13053,7 @@
     "支援される元のイベントタイプ": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 244,
+        "line": 246,
         "level": 3,
         "title": "支援される元のイベントタイプ"
       }
@@ -12990,6 +13062,12 @@
       {
         "document": "platform-guide/wechatmp.md",
         "line": 24,
+        "level": 2,
+        "title": "支援するメッセージ送信タイプ"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 61,
         "level": 2,
         "title": "支援するメッセージ送信タイプ"
       }
@@ -13005,7 +13083,7 @@
     "断線再接続": [
       {
         "document": "platform-guide/kook.md",
-        "line": 382,
+        "line": 384,
         "level": 3,
         "title": "断線再接続"
       }
@@ -13021,7 +13099,7 @@
     "新しいメールイベント（email_new）": [
       {
         "document": "platform-guide/email.md",
-        "line": 142,
+        "line": 143,
         "level": 3,
         "title": "新しいメールイベント（email_new）"
       }
@@ -13117,17 +13195,17 @@
     "旧版設定の移行": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 424,
+        "line": 425,
         "level": 3,
         "title": "旧版設定の移行"
       }
     ],
-    "旧設定の互換性": [
+    "旧配置の互換性": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 736,
+        "line": 738,
         "level": 3,
-        "title": "旧設定の互換性"
+        "title": "旧配置の互換性"
       }
     ],
     "早速体験": [
@@ -13381,7 +13459,7 @@
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 225,
+        "line": 227,
         "level": 3,
         "title": "核心的な差異点"
       }
@@ -13403,19 +13481,19 @@
       },
       {
         "document": "platform-guide/email.md",
-        "line": 134,
+        "line": 135,
         "level": 3,
         "title": "核心的な違い"
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 220,
+        "line": 222,
         "level": 3,
         "title": "核心的な違い"
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 365,
+        "line": 367,
         "level": 3,
         "title": "核心的な違い"
       }
@@ -13508,22 +13586,6 @@
         "title": "構造化属性"
       }
     ],
-    "標準 API アクションの例": [
-      {
-        "document": "platform-guide/sandbox.md",
-        "line": 27,
-        "level": 2,
-        "title": "標準 API アクションの例"
-      }
-    ],
-    "標準 API 動作（ApiDSL）": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 271,
-        "level": 2,
-        "title": "標準 API 動作（ApiDSL）"
-      }
-    ],
     "標準 Api アクション": [
       {
         "document": "platform-guide/discord.md",
@@ -13538,6 +13600,12 @@
         "line": 268,
         "level": 3,
         "title": "標準 OB12 マッピング"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 183,
+        "level": 3,
+        "title": "標準 OB12 マッピング"
       }
     ],
     "標準APIアクションの例": [
@@ -13548,16 +13616,34 @@
         "title": "標準APIアクションの例"
       }
     ],
+    "標準APIアクション（API DSL）": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 19,
+        "level": 2,
+        "title": "標準APIアクション（API DSL）"
+      }
+    ],
+    "標準APIアクション（ApiDSL）": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 273,
+        "level": 2,
+        "title": "標準APIアクション（ApiDSL）"
+      }
+    ],
+    "標準Apiの動作例": [
+      {
+        "document": "platform-guide/sandbox.md",
+        "line": 27,
+        "level": 2,
+        "title": "標準Apiの動作例"
+      }
+    ],
     "標準Apiアクション（Api DSL）": [
       {
         "document": "platform-guide/onebot12.md",
         "line": 31,
-        "level": 2,
-        "title": "標準Apiアクション（Api DSL）"
-      },
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 19,
         "level": 2,
         "title": "標準Apiアクション（Api DSL）"
       }
@@ -13566,6 +13652,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 33,
+        "level": 2,
+        "title": "標準Api動作（Api DSL）"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 30,
         "level": 2,
         "title": "標準Api動作（Api DSL）"
       }
@@ -13597,7 +13689,7 @@
     "標準イベントの例": [
       {
         "document": "platform-guide/email.md",
-        "line": 216,
+        "line": 217,
         "level": 2,
         "title": "標準イベントの例"
       }
@@ -13605,7 +13697,7 @@
     "標準イベントフォーマット": [
       {
         "document": "platform-guide/README.md",
-        "line": 223,
+        "line": 229,
         "level": 3,
         "title": "標準イベントフォーマット"
       }
@@ -13629,7 +13721,7 @@
     "標準フォーマット": [
       {
         "document": "platform-guide/README.md",
-        "line": 218,
+        "line": 224,
         "level": 2,
         "title": "標準フォーマット"
       }
@@ -13637,7 +13729,7 @@
     "標準メッセージセグメントタイプ": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 208,
+        "line": 209,
         "level": 3,
         "title": "標準メッセージセグメントタイプ"
       }
@@ -13645,7 +13737,7 @@
     "標準レスポンスフォーマット": [
       {
         "document": "platform-guide/README.md",
-        "line": 244,
+        "line": 250,
         "level": 3,
         "title": "標準レスポンスフォーマット"
       }
@@ -13872,8 +13964,26 @@
         "title": "特有のイベントタイプ"
       },
       {
+        "document": "platform-guide/telegram.md",
+        "line": 181,
+        "level": 2,
+        "title": "特有のイベントタイプ"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 194,
+        "level": 3,
+        "title": "特有のイベントタイプ"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 363,
+        "level": 2,
+        "title": "特有のイベントタイプ"
+      },
+      {
         "document": "platform-guide/yunhu_user.md",
-        "line": 221,
+        "line": 223,
         "level": 2,
         "title": "特有のイベントタイプ"
       }
@@ -13881,7 +13991,7 @@
     "特有のメッセージセグメントタイプ": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 437,
+        "line": 439,
         "level": 3,
         "title": "特有のメッセージセグメントタイプ"
       }
@@ -13895,7 +14005,7 @@
       },
       {
         "document": "platform-guide/email.md",
-        "line": 132,
+        "line": 133,
         "level": 2,
         "title": "特有イベントタイプ"
       },
@@ -13907,25 +14017,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 216,
-        "level": 2,
-        "title": "特有イベントタイプ"
-      },
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 180,
-        "level": 2,
-        "title": "特有イベントタイプ"
-      },
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 193,
-        "level": 3,
-        "title": "特有イベントタイプ"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 361,
+        "line": 218,
         "level": 2,
         "title": "特有イベントタイプ"
       }
@@ -13939,7 +14031,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 234,
+        "line": 236,
         "level": 3,
         "title": "特殊フィールドの例"
       },
@@ -13951,7 +14043,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 382,
+        "line": 384,
         "level": 3,
         "title": "特殊フィールドの例"
       }
@@ -14020,12 +14112,12 @@
         "title": "画像認識の例"
       }
     ],
-    "異なる送信先への送信": [
+    "異なる送信先へ送信": [
       {
         "document": "platform-guide/ideaura.md",
         "line": 91,
         "level": 3,
-        "title": "異なる送信先への送信"
+        "title": "異なる送信先へ送信"
       }
     ],
     "異スレッド API": [
@@ -14147,13 +14239,13 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 720,
+        "line": 722,
         "level": 3,
         "title": "管理インターフェース"
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 616,
+        "line": 618,
         "level": 3,
         "title": "管理インターフェース"
       }
@@ -14257,7 +14349,7 @@
     "群メッセージの処理（@検出）": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 183,
+        "line": 188,
         "level": 3,
         "title": "群メッセージの処理（@検出）"
       }
@@ -14423,9 +14515,17 @@
     "複数アカウントの起動": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 212,
+        "line": 217,
         "level": 3,
         "title": "複数アカウントの起動"
+      }
+    ],
+    "複数アカウントの送信構文": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 283,
+        "level": 3,
+        "title": "複数アカウントの送信構文"
       }
     ],
     "複数アカウントモデル": [
@@ -14519,7 +14619,7 @@
     "要求操作（Request DSL）": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 47,
+        "line": 49,
         "level": 2,
         "title": "要求操作（Request DSL）"
       }
@@ -14527,7 +14627,7 @@
     "要求操作（グループ参加申請の承認）": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 110,
+        "line": 115,
         "level": 2,
         "title": "要求操作（グループ参加申請の承認）"
       }
@@ -14583,7 +14683,7 @@
     "記事メッセージセグメント (yunhu_user_post)": [
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 452,
+        "line": 454,
         "level": 4,
         "title": "記事メッセージセグメント (yunhu_user_post)"
       }
@@ -14664,8 +14764,14 @@
         "title": "設定の説明"
       },
       {
+        "document": "platform-guide/yunhu.md",
+        "line": 638,
+        "level": 3,
+        "title": "設定の説明"
+      },
+      {
         "document": "platform-guide/yunhu_user.md",
-        "line": 520,
+        "line": 522,
         "level": 3,
         "title": "設定の説明"
       }
@@ -14708,8 +14814,14 @@
         "title": "設定オプション"
       },
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 234,
+        "level": 2,
+        "title": "設定オプション"
+      },
+      {
         "document": "platform-guide/telegram.md",
-        "line": 401,
+        "line": 402,
         "level": 2,
         "title": "設定オプション"
       },
@@ -14796,8 +14908,14 @@
         "title": "設定例"
       },
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 252,
+        "level": 3,
+        "title": "設定例"
+      },
+      {
         "document": "platform-guide/telegram.md",
-        "line": 405,
+        "line": 406,
         "level": 3,
         "title": "設定例"
       }
@@ -14847,12 +14965,6 @@
         "document": "platform-guide/terminal.md",
         "line": 20,
         "level": 2,
-        "title": "設定説明"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 636,
-        "level": 3,
         "title": "設定説明"
       }
     ],
@@ -14916,6 +15028,14 @@
         "line": 469,
         "level": 4,
         "title": "豁免リスト"
+      }
+    ],
+    "貢献の参加": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 294,
+        "level": 2,
+        "title": "貢献の参加"
       }
     ],
     "貢献フロー": [
@@ -15028,12 +15148,12 @@
         "title": "返信機能"
       }
     ],
-    "追加操作メソッド": [
+    "追加の操作メソッド": [
       {
         "document": "platform-guide/kook.md",
-        "line": 170,
+        "line": 172,
         "level": 3,
-        "title": "追加操作メソッド"
+        "title": "追加の操作メソッド"
       }
     ],
     "送信アカウントの指定": [
@@ -15047,7 +15167,7 @@
     "送信メソッド": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 501,
+        "line": 508,
         "level": 3,
         "title": "送信メソッド"
       }
@@ -15061,7 +15181,7 @@
       },
       {
         "document": "platform-guide/email.md",
-        "line": 278,
+        "line": 279,
         "level": 2,
         "title": "送信メソッドの戻り値"
       },
@@ -15073,7 +15193,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 186,
+        "line": 188,
         "level": 2,
         "title": "送信メソッドの戻り値"
       },
@@ -15096,14 +15216,20 @@
         "title": "送信メソッドの戻り値"
       },
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 268,
+        "level": 2,
+        "title": "送信メソッドの戻り値"
+      },
+      {
         "document": "platform-guide/yunhu.md",
-        "line": 345,
+        "line": 347,
         "level": 2,
         "title": "送信メソッドの戻り値"
       },
       {
         "document": "platform-guide/yunhu_user.md",
-        "line": 206,
+        "line": 208,
         "level": 2,
         "title": "送信メソッドの戻り値"
       }
@@ -15151,7 +15277,7 @@
     "送信ルールデコレータ": [
       {
         "document": "platform-guide/README.md",
-        "line": 100,
+        "line": 103,
         "level": 4,
         "title": "送信ルールデコレータ"
       }
@@ -15159,7 +15285,7 @@
     "送信例": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 134,
+        "line": 135,
         "level": 3,
         "title": "送信例"
       }
@@ -15212,6 +15338,14 @@
         "title": "适配器送信メソッドの照会"
       }
     ],
+    "逆変換": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 528,
+        "level": 3,
+        "title": "逆変換"
+      }
+    ],
     "通常イベントの自動発見": [
       {
         "document": "api-reference/adapter-system.md",
@@ -15255,7 +15389,7 @@
     "通知イベントの処理（絵文字反応など）": [
       {
         "document": "platform-guide/kook.md",
-        "line": 438,
+        "line": 440,
         "level": 3,
         "title": "通知イベントの処理（絵文字反応など）"
       }
@@ -15691,7 +15825,7 @@
     "附件付きメール": [
       {
         "document": "platform-guide/email.md",
-        "line": 169,
+        "line": 170,
         "level": 3,
         "title": "附件付きメール"
       }
@@ -15704,12 +15838,12 @@
         "title": "雙モードメカニズム"
       }
     ],
-    "雲湖プラットフォームの機能ドキュメント": [
+    "雲湖プラットフォームの特徴ドキュメント": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 1,
         "level": 1,
-        "title": "雲湖プラットフォームの機能ドキュメント"
+        "title": "雲湖プラットフォームの特徴ドキュメント"
       }
     ],
     "雲湖ユーザープラットフォーム特徴ドキュメント": [
@@ -15785,7 +15919,7 @@
     "非同期送信と結果処理": [
       {
         "document": "platform-guide/README.md",
-        "line": 85,
+        "line": 88,
         "level": 4,
         "title": "非同期送信と結果処理"
       }

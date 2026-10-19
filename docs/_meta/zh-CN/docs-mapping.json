@@ -224,7 +224,7 @@
     "平台特性指南": {
       "description": "各平台特性和适配器说明",
       "icon": "fa-plug",
-      "count": 17,
+      "count": 18,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures 文档",
@@ -319,6 +319,12 @@
         {
           "title": "Sandbox 平台特性文档",
           "path": "platform-guide/sandbox.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "SnowLuma平台特性文档",
+          "path": "platform-guide/snowluma.md",
           "level": 1,
           "icon": "fa-plug"
         },
