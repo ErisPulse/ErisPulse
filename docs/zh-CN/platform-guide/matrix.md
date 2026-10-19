@@ -6,7 +6,7 @@ MatrixAdapter 是基于 [Matrix协议](https://spec.matrix.org/) 构建的适配
 
 ## 文档信息
 
-- 对应模块版本: 4.2.0
+- 对应模块版本: 4.4.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -124,6 +124,7 @@ await matrix.Send.To("group", room_id).Text("Hello World!")
 - `.File(file: bytes | str, filename: str = "")`：发送文件消息，支持文件路径、URL、MXC URI、二进制数据。
 - `.Notice(text: str)`：发送通知消息（Matrix的 m.notice 类型）。
 - `.Html(html: str, fallback: str = "")`：发送HTML格式消息，支持富文本内容。
+- `.MergeForward(nodes, title="合并聊天记录")`：发送合并转发消息（formatted_body blockquote 引用块形态；白名单会剥离 details/内联样式）。
 - `.Raw_ob12(message: List[Dict], **kwargs)`：发送 OneBot12 格式消息。
 
 ### 链式修饰方法（可组合使用）

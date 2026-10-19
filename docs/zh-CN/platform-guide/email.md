@@ -6,7 +6,7 @@ EmailAdapter 是基于 SMTP/IMAP 协议的邮件适配器，支持邮件发送�
 
 ## 文档信息
 
-- 对应模块版本: 4.2.0
+- 对应模块版本: 4.3.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -109,6 +109,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
 |------|------|
 | `.Text(text: str)` | 发送纯文本邮件 |
 | `.Html(html: str)` | 发送 HTML 格式邮件 |
+| `.MergeForward(nodes, title)` | 发送合并转发邮件（正文为 `<details>` 折叠 HTML 卡片，主题默认取标题） |
 | `.Raw_ob12(message, **kwargs)` | 发送 OneBot12 格式消息 |
 
 ### 链式修饰方法（返回 self，可组合使用）
