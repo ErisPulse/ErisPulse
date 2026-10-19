@@ -4,9 +4,9 @@ EmailAdapter is an email adapter based on the SMTP/IMAP protocol, supporting ema
 
 ---
 
-## Document Information
+## Documentation Information
 
-- Corresponding Module Version: 4.2.0
+- Corresponding Module Version: 4.3.0  
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -74,13 +74,13 @@ enabled = true
 
 ## Supported Message Sending Types
 
-All sending methods are implemented using a chainable syntax:
+All sending methods are implemented through a fluent API syntax:
 
 ```python
 from ErisPulse.Core import adapter
 mail = adapter.get("email")
 
-# Simple text email
+# Simple plain text email
 await mail.Send.To("private", "to@example.com").Subject("Test").Text("Content")
 
 # HTML email with attachments
@@ -96,27 +96,28 @@ await mail.Send.To("private", "to@example.com").Raw_ob12([
     {"type": "file", "data": {"file": "/path/to/attachment.pdf"}},
 ])
 
-# Specify sending account (multi-account)
+# Specify the sending account (for multiple accounts)
 await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 ```
 
-> Note: When using chainable syntax, parameter methods (Subject / Cc / Attachment, etc.) must be called before the sending method (Text / Html / Raw_ob12).
+> Note: When using the fluent API syntax, parameter methods (Subject / Cc / Attachment, etc.) must be called before the sending method (Text / Html / Raw_ob12).
 
 ### Basic Sending Methods
 
 | Method | Description |
 |--------|-------------|
-| `.Text(text: str)` | Send a plain text email |
-| `.Html(html: str)` | Send an HTML formatted email |
-| `.Raw_ob12(message, **kwargs)` | Send a OneBot12 formatted message |
+| `.Text(text: str)` | Send plain text email |
+| `.Html(html: str)` | Send HTML formatted email |
+| `.MergeForward(nodes, title)` | Send merged forward email (body is a `<details>` collapsed HTML card, subject defaults to the title) |
+| `.Raw_ob12(message, **kwargs)` | Send OneBot12 formatted message |
 
-### Chainable Modifier Methods (Return self, can be combined)
+### Fluent Modifier Methods (return self, can be chained)
 
 | Method | Description |
 |--------|-------------|
 | `.Subject(subject: str)` | Set the email subject |
-| `.Cc(emails: Union[str, List[str]])` | Set the CC addresses |
-| `.Bcc(emails: Union[str, List[str]])` | Set the BCC addresses |
+| `.Cc(emails: Union[str, List[str]])` | Set the CC recipients |
+| `.Bcc(emails: Union[str, List[str]])` | Set the BCC recipients |
 | `.ReplyTo(email: str)` | Set the reply-to address |
 | `.Attachment(file, filename: str = None)` | Add an attachment |
 

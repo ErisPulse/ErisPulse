@@ -7,8 +7,8 @@ IdeauraAdapter は、花楓カフェ（RockyChat）プラットフォームの A
 ## ドキュメント情報
 
 - 対応モジュール: ErisPulse-Ideaura
-- 対応モジュールのバージョン: 4.1.0
-- 維持管理者: ErisPulse
+- 対応モジュールバージョン: 4.2.0
+- メンテナー: ErisPulse
 
 ## 基本情報
 
@@ -35,7 +35,7 @@ IdeauraAdapter は、花楓カフェ（RockyChat）プラットフォームの A
 
 ## 支援されるメッセージ送信タイプ
 
-すべての送信メソッドは、チェーン式構文で実装されています。たとえば：
+すべての送信メソッドは、チェーン式の構文で実装されています。たとえば：
 
 ```python
 from ErisPulse.Core import adapter
@@ -45,26 +45,26 @@ await ideaura.Send.To("group", "chatroom").Text("Hello World!")
 ```
 
 サポートされている送信タイプは以下の通りです：
-
 - `.Text(text: str)`：純粋なテキストメッセージを送信します。
 - `.Image(file, filename: str = None)`：画像メッセージを送信します。bytes/URL/ローカルパスをサポートします。
 - `.Video(file, filename: str = None)`：動画メッセージを送信します。bytes/URL/ローカルパスをサポートします。
 - `.File(file, filename: str = None)`：ファイルメッセージを送信します。bytes/URL/ローカルパスをサポートします。
-- `.Voice(file, filename: str = None)`：音声メッセージを送信します（ファイルとして送信します）。
-- `.Face(face_id: str)`：絵文字を送信します（emojiとして純粋なテキスト形式で送信します）。
+- `.Voice(file, filename: str = None)`：音声メッセージを送信します（ファイルとして送信）。
+- `.Face(face_id: str)`：絵文字を送信します（純粋なテキスト形式で emoji を送信）。
 - `.Markdown(text: str)`：Markdown形式のメッセージを送信します。
 - `.Html(html: str)`：HTML形式のメッセージを送信します。
+- `.MergeForward(nodes, title="合併チャット記録")`：合併転送メッセージを送信します（`<details>`折りたたみHTMLカードとしてレンダリング）。
 - `.Edit(message_id: str, text: str, content_type: str = "text")`：既存のメッセージを編集します。
 - `.Recall(message_id: str)`：メッセージを撤回します。
 
-### チェーン式修飾メソッド（複数使用可能）
+### チェーン式修飾メソッド（組み合わせて使用可能）
 
-チェーン式修飾メソッドは `self` を返し、チェーン式で呼び出すことができます。最終的な送信メソッドの前に呼び出す必要があります：
+チェーン式修飾メソッドは `self` を返し、チェーン呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
 
 - `.At(user_id: str, name: str = None)`：指定ユーザーを@します。
 - `.AtAll()`：全員を@します。
-- `.Reply(message_id: str)`：指定されたメッセージに返信します。
-- `.Command(command_id: str)`：Botのコマンドをトリガーします。送信メソッドと併用して使用します（メッセージを指定されたコマンドとして送信します）。
+- `.Reply(message_id: str)`：指定メッセージに返信します。
+- `.Command(command_id: str)`：Botコマンドをトリガーします。送信メソッドと併用して使用します（メッセージを指定されたコマンドとして送信します）。
 
 ### チェーン式呼び出しの例
 
@@ -72,29 +72,29 @@ await ideaura.Send.To("group", "chatroom").Text("Hello World!")
 # 基本的な送信
 await ideaura.Send.To("user", user_id).Text("Hello")
 
-# Botのコマンドをトリガー
+# Botコマンドをトリガー
 await ideaura.Send.To("group", "chatroom").Command("550e8400-e29b-41d4-a716-446655440000").Text("/weather 北京")
 
 # ユーザーを@する
 await ideaura.Send.To("group", "chatroom").At("456").Text("@李四 你好")
 
-# 複数ユーザーを@する
+# 複数人を@する
 await ideaura.Send.To("group", "chatroom").At("456").At("789").Text("@多人")
 
 # メッセージに返信する
 await ideaura.Send.To("group", "chatroom").Reply(msg_id).Text("返信メッセージ")
 
 # 返信 + @
-await ideaura.Send.To("group", "chatroom").Reply(msg_id).At("456").Text("返信して@する")
+await ideaura.Send.To("group", "chatroom").Reply(msg_id).At("456").Text("返信して@")
 ```
 
-### 異なる送信先への送信
+### 異なる送信先へ送信
 
 ```python
-# チャットルームに送信
+# チャットルームへ送信
 await ideaura.Send.To("group", "chatroom").Text("チャットルームメッセージ")
 
-# トピックに送信
+# トピックへ送信
 await ideaura.Send.To("group", "topic_id").Text("トピックメッセージ")
 
 # プライベートチャットメッセージを送信
@@ -103,7 +103,7 @@ await ideaura.Send.To("user", "user_id").Text("プライベートチャットメ
 
 ### OneBot12メッセージのサポート
 
-アダプターはOneBot12形式のメッセージを送信する機能をサポートしており、これにより異なるプラットフォーム間でのメッセージ互換性が確保されます：
+アダプターはOneBot12形式のメッセージを送信する機能を備えており、プラットフォーム間のメッセージ互換性を確保します：
 
 - `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します。
 
@@ -112,7 +112,7 @@ await ideaura.Send.To("user", "user_id").Text("プライベートチャットメ
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await ideaura.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# チェーン式修飾を併用
+# 修飾メソッドと併用
 ob12_msg = [{"type": "text", "data": {"text": "返信メッセージ"}}]
 await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 ```

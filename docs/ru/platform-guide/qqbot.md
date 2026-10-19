@@ -4,7 +4,7 @@ QQBotAdapter — это адаптер, построенный на основе
 
 ## Информация о документации
 
-- Версия соответствующего модуля: 5.0.0
+- Версия соответствующего модуля: 5.1.0
 - Ответственный: ErisPulse
 
 ## Основная информация
@@ -64,30 +64,33 @@ qqbot = sdk.adapter.get("qqbot")
 
 await qqbot.Send.To("user", user_openid).Text("Hello World!")
 
-# Упоминание в чате (автоматически использует формат <qqbot-at-user id="x" />)
+# Сообщение упоминания в группе (автоматически использует формат <qqbot-at-user id="x" />)
 await qqbot.Send.To("group", group_openid).At("member_openid").Text("@你")
 
 # Сообщение в канале (автоматически использует формат <@user_id>)
-await qqbot.Send.To("channel", channel_id).Text("Сообщение в канале")
+await qqbot.Send.To("channel", channel_id).Text("сообщение канала")
 
-# Ответ на сообщение (автоматически включает msg_id, не нужно использовать Reply вручную)
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("Содержимое ответа")
+# Пассивный ответ (автоматически включает msg_id, не нужно вручную Reply)
+await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("ответ")
 
-# Мультимедиа (URL / локальный путь / бинарные данные; файлы больше 5 МБ загружаются по частям)
+# Мультимедиа (URL / локальный путь / бинарные данные; более 5 МБ автоматически разбиваются на части)
 await qqbot.Send.To("group", gid).Image("https://example.com/img.png")
 
-# Markdown (в виде исходного текста / шаблона)
+# Markdown (оригинальный / шаблон)
 await qqbot.Send.To("group", gid).Markdown("# Заголовок\n- Список")
-await qqbot.Send.To("user", uid).Markdown(template_id=1, kv=[{"key": "title", "value": "Уведомление"}])
+await qqbot.Send.To("user", uid).Markdown(template_id=1, kv=[{"key": "title", "value": "уведомление"}])
 
-# Клавиатура (автоматически устанавливается тип markdown и добавляется bot_appid)
-await qqbot.Send.To("group", gid).Keyboard(keyboard).Text("Выберите опцию")
+# Объединённая пересылка (официальный md не поддерживает скрытый синтаксис, отображается как список цитат; требуется разрешение на оригинальный Markdown, в случае ошибки автоматически возвращается обычный текст)
+await qqbot.Send.To("group", gid).MergeForward(nodes)
+
+# Клавиатура (автоматически устанавливается как тип markdown и добавляется bot_appid)
+await qqbot.Send.To("group", gid).Keyboard(keyboard).Text("выберите")
 
 # Потоковое сообщение (личный чат)
-await qqbot.Send.To("user", openid).Stream("Содержимое ответа")
+await qqbot.Send.To("user", openid).Stream("ответ")
 
-# Множественные аккаунты
-await qqbot.Send.Using("account2").To("group", gid).Text("От второго бота")
+# Многоаккаунтность
+await qqbot.Send.Using("account2").To("group", gid).Text("сообщение от второго бота")
 ```
 
 ## OneBot12 стандартный API-действия

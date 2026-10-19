@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "9422c5b2da437d7afcf63105595c778f",
-  "file_hash": "9422c5b2da437d7afcf63105595c778f",
-  "translated_at": "2026-09-12T10:23:43.874193",
+  "hash": "1568a93b78175b74ec638244c9d67247",
+  "file_hash": "1568a93b78175b74ec638244c9d67247",
+  "translated_at": "2026-10-19T09:22:29.927551",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 微信公眾號（WechatMp）適配器 - 平台特性文件"
     },
     {
-      "hash": "4f7ae8b760f8f5e1b905891b2753c320",
-      "translation": "## 基本資訊\n- 模組名稱: `ErisPulse-WechatMpAdapter`\n- 平台標識: `mp`（別名: `wechat_mp`）\n- 模組版本: 4.1.0\n- 維護者: ErisPulse\n- 依賴: `cryptography`"
+      "hash": "8d03ebf6fb75f1b343dd75a0aef750d7",
+      "translation": "## 基本資訊\n- 模組名稱: `ErisPulse-WechatMpAdapter`\n- 平台標識: `mp`（別名: `wechat_mp`）\n- 模組版本: 4.3.0\n- 維護者: ErisPulse\n- 依賴: `cryptography`"
     },
     {
       "hash": "c3e718ebdaa0d944a6d5e231bfc3b6b4",

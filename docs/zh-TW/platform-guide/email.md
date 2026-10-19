@@ -6,7 +6,7 @@ EmailAdapter 是基於 SMTP/IMAP 協議的郵件適配器，支援郵件發送�
 
 ## 文件資訊
 
-- 對應模組版本: 4.2.0
+- 對應模組版本: 4.3.0
 - 維護者: ErisPulse
 
 ## 基本資訊
@@ -74,13 +74,13 @@ enabled = true
 
 ## 支援的消息傳送類型
 
-所有傳送方法均透過鏈式語法實現：
+所有傳送方法均透過串接語法實作：
 
 ```python
 from ErisPulse.Core import adapter
 mail = adapter.get("email")
 
-# 簡單純文字郵件
+# 簡單文字郵件
 await mail.Send.To("private", "to@example.com").Subject("測試").Text("內容")
 
 # 帶附件的 HTML 郵件
@@ -100,7 +100,7 @@ await mail.Send.To("private", "to@example.com").Raw_ob12([
 await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
 ```
 
-> 注意：使用鏈式語法時，參數方法（Subject / Cc / Attachment 等）必須在發送方法（Text / Html / Raw_ob12）之前調用。
+> 注意：使用串接語法時，參數方法（Subject / Cc / Attachment 等）必須在發送方法（Text / Html / Raw_ob12）之前呼叫。
 
 ### 基礎發送方法
 
@@ -108,9 +108,10 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
 |------|------|
 | `.Text(text: str)` | 發送純文字郵件 |
 | `.Html(html: str)` | 發送 HTML 格式郵件 |
-| `.Raw_ob12(message, **kwargs)` | 發送 OneBot12 格式消息 |
+| `.MergeForward(nodes, title)` | 發送合併轉發郵件（正文為 `<details>` 折疊 HTML 卡片，主題預設取標題） |
+| `.Raw_ob12(message, **kwargs)` | 發送 OneBot12 格式訊息 |
 
-### 鏈式修飾方法（返回 self，可組合使用）
+### 串接修飾方法（返回 self，可組合使用）
 
 | 方法 | 說明 |
 |------|------|

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "9422c5b2da437d7afcf63105595c778f",
-  "file_hash": "9422c5b2da437d7afcf63105595c778f",
-  "translated_at": "2026-09-12T10:23:09.032742",
+  "hash": "1568a93b78175b74ec638244c9d67247",
+  "file_hash": "1568a93b78175b74ec638244c9d67247",
+  "translated_at": "2026-10-19T09:22:40.525933",
   "target_lang": "ru",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Адаптер WeChatMp - Документация по функциональности платформы"
     },
     {
-      "hash": "4f7ae8b760f8f5e1b905891b2753c320",
-      "translation": "## Основная информация\n- Название модуля: `ErisPulse-WechatMpAdapter`\n- Идентификатор платформы: `mp` (альтернативное имя: `wechat_mp`)\n- Версия модуля: 4.1.0\n- Разработчик: ErisPulse\n- Зависимости: `cryptography`"
+      "hash": "8d03ebf6fb75f1b343dd75a0aef750d7",
+      "translation": "## Основная информация\n- Название модуля: `ErisPulse-WechatMpAdapter`\n- Идентификатор платформы: `mp` (альтернативное имя: `wechat_mp`)\n- Версия модуля: 4.3.0\n- Разработчик: ErisPulse\n- Зависимости: `cryptography`"
     },
     {
       "hash": "c3e718ebdaa0d944a6d5e231bfc3b6b4",

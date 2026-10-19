@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "f1b46940e620e8a6edccbbcb6a8021a3",
-  "file_hash": "f1b46940e620e8a6edccbbcb6a8021a3",
-  "translated_at": "2026-09-12T10:25:06.474180",
+  "hash": "aeef3ba52c08433ed425138ed07d6773",
+  "file_hash": "aeef3ba52c08433ed425138ed07d6773",
+  "translated_at": "2026-10-19T09:22:36.040370",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Email Platform Feature Documentation\n\nEmailAdapter is an email adapter based on the SMTP/IMAP protocol, supporting email sending, receiving, and processing.\n\n---"
     },
     {
-      "hash": "d5769e0ae79f68cdc351193894aba07b",
-      "translation": "## Document Information\n\n- Corresponding Module Version: 4.2.0\n- Maintainer: ErisPulse"
+      "hash": "a1376ffeea270fa68d8b22165af6dbcc",
+      "translation": "## Documentation Information\n\n- Corresponding Module Version: 4.3.0  \n- Maintainer: ErisPulse"
     },
     {
       "hash": "ebfd0de1173b98b4565e6eea62e7b86a",
@@ -26,8 +26,8 @@
       "translation": "## v5 Paradigm Update (4.2.0)\n\n- **Api DSL Minimal Set**: get_self_info (email address) / get_status / get_version / get_supported_actions\n- **spawn_background Task Ownership**: IMAP polling tasks now use runtime.spawn_background\n- **Framework Soft Dependency**: Runtime checks for ErisPulse>=2.7.1 and prompts; version logs are output on startup\n- Import paths updated to Core.Bases; _load_accounts retained (global default values merged into adapter-specific logic)\n\n---\n\n### Platform Capabilities Already Integrated\n\n- **Receiving**: IMAP polling for receiving messages (body/HTML/attachments parsed into message segments), incremental unread detection\n- **Sending**: SMTP sending (Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment), supports multiple accounts\n- **API**: Account information and runtime status (minimal set); concepts like email recall/group are not applicable\n\n---"
     },
     {
-      "hash": "388ede0e2e56f886d2fdd2b97965aca1",
-      "translation": "## Supported Message Sending Types\n\nAll sending methods are implemented using a chainable syntax:\n\n```python\nfrom ErisPulse.Core import adapter\nmail = adapter.get(\"email\")\n\n# Simple text email\nawait mail.Send.To(\"private\", \"to@example.com\").Subject(\"Test\").Text(\"Content\")\n\n# HTML email with attachments\nawait mail.Send.To(\"private\", \"to@example.com\") \\\n    .Subject(\"HTML Email\") \\\n    .Cc([\"cc1@example.com\", \"cc2@example.com\"]) \\\n    .Attachment(\"report.pdf\") \\\n    .Html(\"<h1>HTML Content</h1>\")\n\n# Use Raw_ob12 to send standard OB12 messages\nawait mail.Send.To(\"private\", \"to@example.com\").Raw_ob12([\n    {\"type\": \"text\", \"data\": {\"text\": \"Email body\"}},\n    {\"type\": \"file\", \"data\": {\"file\": \"/path/to/attachment.pdf\"}},\n])\n\n# Specify sending account (multi-account)\nawait mail.Send.Using(\"default\").To(\"private\", \"to@example.com\").Text(\"Content\")\n```\n\n> Note: When using chainable syntax, parameter methods (Subject / Cc / Attachment, etc.) must be called before the sending method (Text / Html / Raw_ob12).\n\n### Basic Sending Methods\n\n| Method | Description |\n|--------|-------------|\n| `.Text(text: str)` | Send a plain text email |\n| `.Html(html: str)` | Send an HTML formatted email |\n| `.Raw_ob12(message, **kwargs)` | Send a OneBot12 formatted message |\n\n### Chainable Modifier Methods (Return self, can be combined)\n\n| Method | Description |\n|--------|-------------|\n| `.Subject(subject: str)` | Set the email subject |\n| `.Cc(emails: Union[str, List[str]])` | Set the CC addresses |\n| `.Bcc(emails: Union[str, List[str]])` | Set the BCC addresses |\n| `.ReplyTo(email: str)` | Set the reply-to address |\n| `.Attachment(file, filename: str = None)` | Add an attachment |\n\n### OB12 Message Segment Reverse Conversion (Raw_ob12)\n\n| OB12 Message Segment | Converted to Email Content |\n|----------------------|----------------------------|\n| `text` | Plain text body |\n| `image` | Image attachment |\n| `video` | Video attachment |\n| `file` | File attachment |\n| `audio` | Audio attachment |\n| `markdown` | Converted to HTML body |"
+      "hash": "16bbac23ed97065442928bed7b4d0e95",
+      "translation": "## Supported Message Sending Types\n\nAll sending methods are implemented through a fluent API syntax:\n\n```python\nfrom ErisPulse.Core import adapter\nmail = adapter.get(\"email\")\n\n# Simple plain text email\nawait mail.Send.To(\"private\", \"to@example.com\").Subject(\"Test\").Text(\"Content\")\n\n# HTML email with attachments\nawait mail.Send.To(\"private\", \"to@example.com\") \\\n    .Subject(\"HTML Email\") \\\n    .Cc([\"cc1@example.com\", \"cc2@example.com\"]) \\\n    .Attachment(\"report.pdf\") \\\n    .Html(\"<h1>HTML Content</h1>\")\n\n# Use Raw_ob12 to send standard OB12 messages\nawait mail.Send.To(\"private\", \"to@example.com\").Raw_ob12([\n    {\"type\": \"text\", \"data\": {\"text\": \"Email body\"}},\n    {\"type\": \"file\", \"data\": {\"file\": \"/path/to/attachment.pdf\"}},\n])\n\n# Specify the sending account (for multiple accounts)\nawait mail.Send.Using(\"default\").To(\"private\", \"to@example.com\").Text(\"Content\")\n```\n\n> Note: When using the fluent API syntax, parameter methods (Subject / Cc / Attachment, etc.) must be called before the sending method (Text / Html / Raw_ob12).\n\n### Basic Sending Methods\n\n| Method | Description |\n|--------|-------------|\n| `.Text(text: str)` | Send plain text email |\n| `.Html(html: str)` | Send HTML formatted email |\n| `.MergeForward(nodes, title)` | Send merged forward email (body is a `<details>` collapsed HTML card, subject defaults to the title) |\n| `.Raw_ob12(message, **kwargs)` | Send OneBot12 formatted message |\n\n### Fluent Modifier Methods (return self, can be chained)\n\n| Method | Description |\n|--------|-------------|\n| `.Subject(subject: str)` | Set the email subject |\n| `.Cc(emails: Union[str, List[str]])` | Set the CC recipients |\n| `.Bcc(emails: Union[str, List[str]])` | Set the BCC recipients |\n| `.ReplyTo(email: str)` | Set the reply-to address |\n| `.Attachment(file, filename: str = None)` | Add an attachment |\n\n### OB12 Message Segment Reverse Conversion (Raw_ob12)\n\n| OB12 Message Segment | Converted to Email Content |\n|----------------------|----------------------------|\n| `text` | Plain text body |\n| `image` | Image attachment |\n| `video` | Video attachment |\n| `file` | File attachment |\n| `audio` | Audio attachment |\n| `markdown` | Converted to HTML body |"
     },
     {
       "hash": "5a97e6de64ee11d020fab94b6d690237",

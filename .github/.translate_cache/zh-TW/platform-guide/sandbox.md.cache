@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "c8d1e938deeefd08c50aa9da8cba1192",
-  "file_hash": "c8d1e938deeefd08c50aa9da8cba1192",
-  "translated_at": "2026-09-12T10:25:56.418561",
+  "hash": "64ca7795f481d5f4a7994c8482dbe3bc",
+  "file_hash": "64ca7795f481d5f4a7994c8482dbe3bc",
+  "translated_at": "2026-10-19T09:13:46.210694",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Sandbox 平台特性文件\n\nSandboxAdapter 是 ErisPulse 內建的沙盒適配器，用於本地開發與模組調試——無需真實平台即可模擬訊息的收發。\n\n---"
     },
     {
-      "hash": "6e2010b0836c4c98adf0292ff78ea9b2",
-      "translation": "## 文件資訊\n\n- 對應模組版本: 4.1.0\n- 維護者: ErisPulse"
+      "hash": "d5769e0ae79f68cdc351193894aba07b",
+      "translation": "## 文件資訊\n\n- 對應模組版本: 4.2.0\n- 維護者: ErisPulse"
     },
     {
       "hash": "2add3b0a800daa6ba7f573b133226bfe",
@@ -26,8 +26,8 @@
       "translation": "## 標準 API 動作示例\n\n```python\nfrom ErisPulse import sdk\nsandbox = sdk.adapter.get(\"sandbox\")\n\nresult = await sandbox.Api.get_self_info()   # 沙盒機器人身份\nresult = await sandbox.Api.get_status()\nresult = await sandbox.Api.get_supported_actions()\n```"
     },
     {
-      "hash": "950ff6ddaab682b592bd7f92b398dfaf",
-      "translation": "## 使用說明\n\n- 沙盒提供虛擬用戶與群組，模組可像真實平台一樣收發訊息\n- Web 調試面板可手動發送訊息觸發模組處理邏輯\n- 訊息數據持久化儲存，重啟後可恢復"
+      "hash": "8b4b19e35ab08e37d869c26528a09944",
+      "translation": "## 使用說明\n\n- 沙盒提供虛擬用戶與群組，模組可像真實平台一樣收發訊息\n- Web 調試面板可手動發送訊息觸發模組處理邏輯\n- 訊息資料持久化儲存，重啟後可恢復\n- `.MergeForward(nodes, title=\"合併聊天記錄\")`：發送合併轉發訊息（渲染為 `<details>` 折疊 HTML 卡片，html 通道發出），用於驗證模組的合併轉發邏輯"
     }
   ]
 }

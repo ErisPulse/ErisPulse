@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "f1b46940e620e8a6edccbbcb6a8021a3",
-  "file_hash": "f1b46940e620e8a6edccbbcb6a8021a3",
-  "translated_at": "2026-09-12T10:26:14.678429",
+  "hash": "aeef3ba52c08433ed425138ed07d6773",
+  "file_hash": "aeef3ba52c08433ed425138ed07d6773",
+  "translated_at": "2026-10-19T09:25:24.830959",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 郵件平台特性文件\n\nEmailAdapter 是基於 SMTP/IMAP 協議的郵件適配器，支援郵件發送、接收和處理。\n\n---"
     },
     {
-      "hash": "d5769e0ae79f68cdc351193894aba07b",
-      "translation": "## 文件資訊\n\n- 對應模組版本: 4.2.0\n- 維護者: ErisPulse"
+      "hash": "a1376ffeea270fa68d8b22165af6dbcc",
+      "translation": "## 文件資訊\n\n- 對應模組版本: 4.3.0\n- 維護者: ErisPulse"
     },
     {
       "hash": "ebfd0de1173b98b4565e6eea62e7b86a",
@@ -26,8 +26,8 @@
       "translation": "## v5 範式更新（4.2.0）\n\n- **Api DSL 最小集**：get_self_info（電子信箱）/get_status/get_version/get_supported_actions\n- **spawn_background 任務歸屬**：IMAP 輪詢任務改用 runtime.spawn_background\n- **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌\n- 導入路徑更新至 Core.Bases；_load_accounts 保留（全域預設值合併為該適配器特有邏輯）\n\n---\n\n### 已對接平台能力\n\n- **接收**：IMAP 輪詢收信（正文/HTML/附件解析為訊息段），未讀增量檢測\n- **发送**：SMTP 發信（Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment），支援多帳戶\n- **API**：帳戶資訊與運行狀態（最小集）；郵件撤回/群組等概念不適用\n\n---"
     },
     {
-      "hash": "388ede0e2e56f886d2fdd2b97965aca1",
-      "translation": "## 支援的消息傳送類型\n\n所有傳送方法均透過鏈式語法實現：\n\n```python\nfrom ErisPulse.Core import adapter\nmail = adapter.get(\"email\")\n\n# 簡單純文字郵件\nawait mail.Send.To(\"private\", \"to@example.com\").Subject(\"測試\").Text(\"內容\")\n\n# 帶附件的 HTML 郵件\nawait mail.Send.To(\"private\", \"to@example.com\") \\\n    .Subject(\"HTML郵件\") \\\n    .Cc([\"cc1@example.com\", \"cc2@example.com\"]) \\\n    .Attachment(\"report.pdf\") \\\n    .Html(\"<h1>HTML內容</h1>\")\n\n# 使用 Raw_ob12 發送標準 OB12 消息\nawait mail.Send.To(\"private\", \"to@example.com\").Raw_ob12([\n    {\"type\": \"text\", \"data\": {\"text\": \"郵件正文\"}},\n    {\"type\": \"file\", \"data\": {\"file\": \"/path/to/attachment.pdf\"}},\n])\n\n# 指定發送帳戶（多帳戶）\nawait mail.Send.Using(\"default\").To(\"private\", \"to@example.com\").Text(\"內容\")\n```\n\n> 注意：使用鏈式語法時，參數方法（Subject / Cc / Attachment 等）必須在發送方法（Text / Html / Raw_ob12）之前調用。\n\n### 基礎發送方法\n\n| 方法 | 說明 |\n|------|------|\n| `.Text(text: str)` | 發送純文字郵件 |\n| `.Html(html: str)` | 發送 HTML 格式郵件 |\n| `.Raw_ob12(message, **kwargs)` | 發送 OneBot12 格式消息 |\n\n### 鏈式修飾方法（返回 self，可組合使用）\n\n| 方法 | 說明 |\n|------|------|\n| `.Subject(subject: str)` | 設定郵件主題 |\n| `.Cc(emails: Union[str, List[str]])` | 設定抄送地址 |\n| `.Bcc(emails: Union[str, List[str]])` | 設定密送地址 |\n| `.ReplyTo(email: str)` | 設定回覆地址 |\n| `.Attachment(file, filename: str = None)` | 添加附件 |\n\n### OB12 消息段反向轉換（Raw_ob12）\n\n| OB12 消息段 | 轉換為郵件內容 |\n|------------|--------------|\n| `text` | 純文字正文 |\n| `image` | 圖片附件 |\n| `video` | 影片附件 |\n| `file` | 檔案附件 |\n| `audio` | 音訊附件 |\n| `markdown` | 轉為 HTML 正文 |"
+      "hash": "16bbac23ed97065442928bed7b4d0e95",
+      "translation": "## 支援的消息傳送類型\n\n所有傳送方法均透過串接語法實作：\n\n```python\nfrom ErisPulse.Core import adapter\nmail = adapter.get(\"email\")\n\n# 簡單文字郵件\nawait mail.Send.To(\"private\", \"to@example.com\").Subject(\"測試\").Text(\"內容\")\n\n# 帶附件的 HTML 郵件\nawait mail.Send.To(\"private\", \"to@example.com\") \\\n    .Subject(\"HTML郵件\") \\\n    .Cc([\"cc1@example.com\", \"cc2@example.com\"]) \\\n    .Attachment(\"report.pdf\") \\\n    .Html(\"<h1>HTML內容</h1>\")\n\n# 使用 Raw_ob12 發送標準 OB12 消息\nawait mail.Send.To(\"private\", \"to@example.com\").Raw_ob12([\n    {\"type\": \"text\", \"data\": {\"text\": \"郵件正文\"}},\n    {\"type\": \"file\", \"data\": {\"file\": \"/path/to/attachment.pdf\"}},\n])\n\n# 指定發送帳戶（多帳戶）\nawait mail.Send.Using(\"default\").To(\"private\", \"to@example.com\").Text(\"內容\")\n```\n\n> 注意：使用串接語法時，參數方法（Subject / Cc / Attachment 等）必須在發送方法（Text / Html / Raw_ob12）之前呼叫。\n\n### 基礎發送方法\n\n| 方法 | 說明 |\n|------|------|\n| `.Text(text: str)` | 發送純文字郵件 |\n| `.Html(html: str)` | 發送 HTML 格式郵件 |\n| `.MergeForward(nodes, title)` | 發送合併轉發郵件（正文為 `<details>` 折疊 HTML 卡片，主題預設取標題） |\n| `.Raw_ob12(message, **kwargs)` | 發送 OneBot12 格式訊息 |\n\n### 串接修飾方法（返回 self，可組合使用）\n\n| 方法 | 說明 |\n|------|------|\n| `.Subject(subject: str)` | 設定郵件主題 |\n| `.Cc(emails: Union[str, List[str]])` | 設定抄送地址 |\n| `.Bcc(emails: Union[str, List[str]])` | 設定密送地址 |\n| `.ReplyTo(email: str)` | 設定回覆地址 |\n| `.Attachment(file, filename: str = None)` | 添加附件 |\n\n### OB12 消息段反向轉換（Raw_ob12）\n\n| OB12 消息段 | 轉換為郵件內容 |\n|------------|--------------|\n| `text` | 純文字正文 |\n| `image` | 圖片附件 |\n| `video` | 影片附件 |\n| `file` | 檔案附件 |\n| `audio` | 音訊附件 |\n| `markdown` | 轉為 HTML 正文 |"
     },
     {
       "hash": "5a97e6de64ee11d020fab94b6d690237",

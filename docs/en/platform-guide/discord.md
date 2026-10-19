@@ -4,9 +4,9 @@ DiscordAdapter is an adapter built on the Discord Gateway (WebSocket) and REST A
 
 ---
 
-## Documentation Information
+## Document Information
 
-- Corresponding Module Version: 4.2.0
+- Corresponding Module Version: 4.3.0
 - Maintainer: ErisPulse
 - Discord API Version: v10
 
@@ -107,7 +107,7 @@ await discord.Send.To("channel", channel_id).Keyboard(rows).Text("Please Select"
 
 ## Supported Message Sending Types
 
-All sending methods are implemented through a fluent interface, for example:
+All sending methods are implemented using a fluent interface syntax, for example:
 ```python
 from ErisPulse.Core import adapter
 discord = adapter.get("discord")
@@ -116,23 +116,24 @@ await discord.Send.To("group", channel_id).Text("Hello World!")
 ```
 
 The supported sending types include:
-- `.Text(text: str)` - Sends plain text messages.
-- `.Embed(embed: dict | list)` - Sends Embed messages, supporting single or multiple Embeds.
-- `.Image(file: bytes | str, filename: str = "image.png")` - Sends images, supporting binary data or URLs.
-- `.File(file: bytes | str, filename: str = None)` - Sends files, supporting binary data or URLs.
-- `.Reply(content: str, message_id: str)` - Replies to a specified message (convenience terminal method).
-- `.Raw_ob12(message: List[Dict], **kwargs)` - Sends OneBot12 formatted messages.
-- `.Raw_json(json_str: str)` - Sends arbitrary Discord API request JSON.
+- `.Text(text: str)`: Sends a plain text message.
+- `.Embed(embed: dict | list)`: Sends an Embed message, supporting single or multiple Embeds.
+- `.MergeForward(nodes, title="Merged Chat Records")`: Sends a merged forward message (Embed: title + one field per message, ≤25 fields, value ≤1024).
+- `.Image(file: bytes | str, filename: str = "image.png")`: Sends an image, supporting binary data or URL.
+- `.File(file: bytes | str, filename: str = None)`: Sends a file, supporting binary data or URL.
+- `.Reply(content: str, message_id: str)`: Replies to a specified message (convenient terminal method).
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Sends a OneBot12 formatted message.
+- `.Raw_json(json_str: str)`: Sends any Discord API request JSON.
 
-### Fluent Modifier Methods (Can Be Combined)
+### Fluent Modifier Methods (Combinable)
 
-Fluent modifier methods return `self` and support fluent chaining, must be called before the final sending method:
+Fluent modifier methods return `self`, supporting chained calls, and must be called before the final sending method:
 
-- `.Reply(message_id: str)` - Replies (references) to a specified message, sets `message_reference`.
-- `.At(user_id: str)` - Mentions a specified user, converts to `<@user_id>`, can be called multiple times.
-- `.AtAll()` - Mentions everyone, converts to `@everyone`.
+- `.Reply(message_id: str)`: Replies (references) a specified message, setting `message_reference`.
+- `.At(user_id: str)`: Mentions a specified user, converting to `<@user_id>`, can be called multiple times.
+- `.AtAll()`: Mentions everyone, converting to `@everyone`.
 
-### Fluent Chaining Examples
+### Chained Call Examples
 
 ```python
 # Basic sending
@@ -141,16 +142,16 @@ await discord.Send.To("group", channel_id).Text("Hello")
 # Reply to message
 await discord.Send.To("group", channel_id).Reply(msg_id).Text("Reply message")
 
-# Convenient reply (one-step)
+# Convenient reply (one step)
 await discord.Send.To("group", channel_id).Reply("Reply content", msg_id)
 
 # Mention user
 await discord.Send.To("group", channel_id).At("user_id").Text("Hello")
 
 # Mention multiple users
-await discord.Send.To("group", channel_id).At("user1").At("user2").Text("Multiple @")
+await discord.Send.To("group", channel_id).At("user1").At("user2").Text("Multiple users @")
 
-# Mention everyone
+# Mention all
 await discord.Send.To("group", channel_id).AtAll().Text("Announcement")
 
 # Combine methods

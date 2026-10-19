@@ -6,8 +6,8 @@ QQBotAdapter は、QQ公式のロボット（QQ OpenAPI）プロトコルに基�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 5.0.0
-- メンテナー: ErisPulse
+- 対応モジュールバージョン: 5.1.0
+- 維持管理者: ErisPulse
 
 ## 基本情報
 
@@ -58,7 +58,7 @@ enabled = true
 
 ## メッセージ送信
 
-### 基本送信
+### 基本的な送信
 
 ```python
 from ErisPulse import sdk
@@ -66,31 +66,36 @@ qqbot = sdk.adapter.get("qqbot")
 
 await qqbot.Send.To("user", user_openid).Text("Hello World!")
 
-# グループメンション（自動的に <qqbot-at-user id="x" /> 形式を使用）
+# グループチャットでのメンション（自動的に <qqbot-at-user id="x" /> 形式を使用）
 await qqbot.Send.To("group", group_openid).At("member_openid").Text("@あなた")
 
-# チャンネルメッセージ（自動的に <@user_id> 形式を使用）
+# チャンネルメッセージ（@ は自動的に <@user_id> 形式を使用）
 await qqbot.Send.To("channel", channel_id).Text("チャンネルメッセージ")
 
-# パッシブリプライ（自動的に msg_id を付与、手動での Reply は不要）
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("返信内容")
+# パッシブリプライ（自動的に msg_id を付与し、手動で Reply を行う必要がない）
+await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("リプライ内容")
 
-# フルメディア（URL / 本地パス / 二進制；5MBを超える場合は自動的に分割アップロード）
+# リッチメディア（URL / ローカルパス / 2進数データ；5MBを超える場合は自動的に分割アップロード）
 await qqbot.Send.To("group", gid).Image("https://example.com/img.png")
 
 # Markdown（ネイティブ / テンプレート）
 await qqbot.Send.To("group", gid).Markdown("# タイトル\n- リスト")
 await qqbot.Send.To("user", uid).Markdown(template_id=1, kv=[{"key": "title", "value": "通知"}])
 
-# キーボード（自動的に markdown タイプに設定し、bot_appid を付与）
+# マージフォワード（公式の md には折りたたみ構文がないため、引用リストとしてレンダリングされる；ネイティブ Markdown 権限が必要、失敗時は自動的にプレーンテキストに回復）
+await qqbot.Send.To("group", gid).MergeForward(nodes)
+
+# キーボード（自動的に markdown タイプに設定され、bot_appid が添付される）
 await qqbot.Send.To("group", gid).Keyboard(keyboard).Text("選択してください")
 
-# ストリームメッセージ（1:1チャット）
+# ストリームメッセージ（1対1チャット）
 await qqbot.Send.To("user", openid).Stream("回答内容")
 
 # 複数アカウント
-await qqbot.Send.Using("account2").To("group", gid).Text("2番目のボットからのメッセージ")
+await qqbot.Send.Using("account2").To("group", gid).Text("2番目のロボットからのメッセージ")
 ```
+
+[docs/ja/quick-start.md]
 
 ## OneBot12 標準APIアクション
 

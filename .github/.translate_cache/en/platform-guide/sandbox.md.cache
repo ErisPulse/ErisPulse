@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "c8d1e938deeefd08c50aa9da8cba1192",
-  "file_hash": "c8d1e938deeefd08c50aa9da8cba1192",
-  "translated_at": "2026-09-12T10:25:53.997427",
+  "hash": "64ca7795f481d5f4a7994c8482dbe3bc",
+  "file_hash": "64ca7795f481d5f4a7994c8482dbe3bc",
+  "translated_at": "2026-10-19T09:13:45.548017",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Sandbox Platform Feature Documentation\n\nSandboxAdapter is the built-in sandbox adapter of ErisPulse, used for local development and module debugging—simulating message sending and receiving without requiring a real platform.\n\n---"
     },
     {
-      "hash": "6e2010b0836c4c98adf0292ff78ea9b2",
-      "translation": "## Documentation Information\n\n- Corresponding Module Version: 4.1.0\n- Maintainer: ErisPulse"
+      "hash": "d5769e0ae79f68cdc351193894aba07b",
+      "translation": "## Document Information\n\n- Corresponding Module Version: 4.2.0\n- Maintainer: ErisPulse"
     },
     {
       "hash": "2add3b0a800daa6ba7f573b133226bfe",
@@ -26,8 +26,8 @@
       "translation": "## Standard API Action Examples\n\n```python\nfrom ErisPulse import sdk\nsandbox = sdk.adapter.get(\"sandbox\")\n\nresult = await sandbox.Api.get_self_info()   # Sandbox bot identity\nresult = await sandbox.Api.get_status()\nresult = await sandbox.Api.get_supported_actions()\n```"
     },
     {
-      "hash": "950ff6ddaab682b592bd7f92b398dfaf",
-      "translation": "## Usage Instructions\n\n- The sandbox provides virtual users and groups, and modules can send and receive messages just like on a real platform.\n- The web debugging panel allows you to manually send messages to trigger the module's processing logic.\n- Message data is persistently stored and can be restored after a restart."
+      "hash": "8b4b19e35ab08e37d869c26528a09944",
+      "translation": "## Usage Instructions\n\n- The sandbox provides virtual users and groups, allowing modules to send and receive messages just like on a real platform.\n- The Web debugging panel allows manual message sending to trigger module processing logic.\n- Message data is persistently stored and can be restored after a restart.\n- `.MergeForward(nodes, title=\"Merge Chat Records\")`: Sends a merged forward message (rendered as a `<details>` collapsed HTML card, sent via the HTML channel), used to verify the module's merged forward logic."
     }
   ]
 }

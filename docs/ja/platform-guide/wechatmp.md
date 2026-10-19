@@ -3,8 +3,8 @@
 ## 基本情報
 - モジュール名: `ErisPulse-WechatMpAdapter`
 - プラットフォーム識別子: `mp`（別名: `wechat_mp`）
-- モジュールバージョン: 4.1.0
-- メンテナー: ErisPulse
+- モジュールバージョン: 4.3.0
+- 維持管理者: ErisPulse
 - 依存: `cryptography`
 
 ## v5 フレームワークの更新 (4.2.0)

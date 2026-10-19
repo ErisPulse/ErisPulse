@@ -3,7 +3,7 @@
 ## Basic Information
 - Module Name: `ErisPulse-WechatMpAdapter`
 - Platform Identifier: `mp` (Alias: `wechat_mp`)
-- Module Version: 4.1.0
+- Module Version: 4.3.0
 - Maintainer: ErisPulse
 - Dependencies: `cryptography`
 

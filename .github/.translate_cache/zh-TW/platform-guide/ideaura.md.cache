@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "581ad372f3548c98bdbc894300302fbf",
-  "file_hash": "581ad372f3548c98bdbc894300302fbf",
-  "translated_at": "2026-09-12T10:23:25.994547",
+  "hash": "8551be255c3aec4e272d228c6420ebf7",
+  "file_hash": "8551be255c3aec4e272d228c6420ebf7",
+  "translated_at": "2026-10-19T09:23:57.623192",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 花楓咖啡館（RockyChat）平台特性文件\n\nIdeauraAdapter 是基於花楓咖啡館（RockyChat）平台 API 建構的適配器，整合了所有平台功能模組，提供統一的事件處理和訊息操作介面。\n\n---"
     },
     {
-      "hash": "d7e638b601683aec3afc08ef61c8cfaa",
-      "translation": "## 文件資訊\n\n- 對應模組: ErisPulse-Ideaura\n- 對應模組版本: 4.1.0\n- 維護者: ErisPulse"
+      "hash": "fcc7bb6aba2f23636d55b50c5aa34aec",
+      "translation": "## 文件資訊\n\n- 對應模組: ErisPulse-Ideaura\n- 對應模組版本: 4.2.0\n- 維護者: ErisPulse"
     },
     {
       "hash": "ba7be8ca44b3a3db8900b4ac53a42094",
@@ -22,8 +22,8 @@
       "translation": "## v5 範式更新（4.1.0）\n\n- **BaseConverter 繼承**：轉換器公共欄位由框架 build_base_event 建構\n- **spawn_background 任務歸屬**：帳戶連接任務改用 runtime.spawn_background\n- **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌\n- Request DSL 暫緩（好友申請審批 API 待平台提供）\n\n---\n\n### 已對接平台能力\n\n- **事件**：消息編輯/撤回/轉發/已讀（ideaura_message_*）、好友申請（friend_request）、好友增刪（friend_increase/decrease）、在線狀態（friend_online/offline）\n- **發送**：Text / Image / Markdown / Raw_ob12（鏈式 Reply/At/AtAll 修飾）\n- **未對接**：好友申請審批 API（平台暫未提供）、Api DSL（平台 REST 面待開放後補充）\n\n---"
     },
     {
-      "hash": "8c46bdfd3a1bffee8e956d87d7b3aabe",
-      "translation": "## 支援的消息傳送類型\n\n所有傳送方法均透過鏈式語法實現，例如：\n```python\nfrom ErisPulse.Core import adapter\nideaura = adapter.get(\"ideaura\")\n\nawait ideaura.Send.To(\"group\", \"chatroom\").Text(\"Hello World!\")\n```\n\n支援的傳送類型包括：\n- `.Text(text: str)`：傳送純文字訊息。\n- `.Image(file, filename: str = None)`：傳送圖片訊息，支援 bytes/URL/本地路徑。\n- `.Video(file, filename: str = None)`：傳送影片訊息，支援 bytes/URL/本地路徑。\n- `.File(file, filename: str = None)`：傳送檔案訊息，支援 bytes/URL/本地路徑。\n- `.Voice(file, filename: str = None)`：傳送語音訊息（以檔案形式傳送）。\n- `.Face(face_id: str)`：傳送表情（以純文字形式傳送 emoji）。\n- `.Markdown(text: str)`：傳送 Markdown 格式訊息。\n- `.Html(html: str)`：傳送 HTML 格式訊息。\n- `.Edit(message_id: str, text: str, content_type: str = \"text\")`：編輯已有訊息。\n- `.Recall(message_id: str)`：撤回訊息。\n\n### 鏈式修飾方法（可組合使用）\n\n鏈式修飾方法返回 `self`，支援鏈式呼叫，必須在最終傳送方法前呼叫：\n\n- `.At(user_id: str, name: str = None)`：@指定使用者。\n- `.AtAll()`：@所有人。\n- `.Reply(message_id: str)`：回覆指定訊息。\n- `.Command(command_id: str)`：觸發 Bot 指令，配合傳送方法使用（將訊息作為指定指令傳送）。\n\n### 鏈式呼叫範例\n\n```python\n# 基礎傳送\nawait ideaura.Send.To(\"user\", user_id).Text(\"Hello\")\n\n# 觸發 Bot 指令\nawait ideaura.Send.To(\"group\", \"chatroom\").Command(\"550e8400-e29b-41d4-a716-446655440000\").Text(\"/weather 北京\")\n\n# @使用者\nawait ideaura.Send.To(\"group\", \"chatroom\").At(\"456\").Text(\"@李四 你好\")\n\n# @多人\nawait ideaura.Send.To(\"group\", \"chatroom\").At(\"456\").At(\"789\").Text(\"@多人\")\n\n# 回覆訊息\nawait ideaura.Send.To(\"group\", \"chatroom\").Reply(msg_id).Text(\"回覆訊息\")\n\n# 回覆 + @\nawait ideaura.Send.To(\"group\", \"chatroom\").Reply(msg_id).At(\"456\").Text(\"回覆並@\")\n```\n\n### 發送到不同目標\n\n```python\n# 發送到聊天室\nawait ideaura.Send.To(\"group\", \"chatroom\").Text(\"聊天室訊息\")\n\n# 發送到主題\nawait ideaura.Send.To(\"group\", \"topic_id\").Text(\"主題訊息\")\n\n# 發送私訊\nawait ideaura.Send.To(\"user\", \"user_id\").Text(\"私訊訊息\")\n```\n\n### OneBot12 訊息支援\n\n適配器支援傳送 OneBot12 格式的訊息，便於跨平台訊息相容：\n\n- `.Raw_ob12(message: List[Dict], **kwargs)`：傳送 OneBot12 格式訊息。\n\n```python\n# 發送 OneBot12 格式訊息\nob12_msg = [{\"type\": \"text\", \"data\": {\"text\": \"Hello\"}}]\nawait ideaura.Send.To(\"user\", user_id).Raw_ob12(ob12_msg)\n\n# 配合鏈式修飾\nob12_msg = [{\"type\": \"text\", \"data\": {\"text\": \"回覆訊息\"}}]\nawait ideaura.Send.To(\"group\", \"chatroom\").Reply(msg_id).Raw_ob12(ob12_msg)\n```"
+      "hash": "4e3dfec54d8a0af9fc3d69173148751f",
+      "translation": "## 支援的消息傳送類型\n\n所有傳送方法均透過串接語法實作，例如：\n```python\nfrom ErisPulse.Core import adapter\nideaura = adapter.get(\"ideaura\")\n\nawait ideaura.Send.To(\"group\", \"chatroom\").Text(\"Hello World!\")\n```\n\n支援的傳送類型包括：\n- `.Text(text: str)`：傳送純文字訊息。\n- `.Image(file, filename: str = None)`：傳送圖片訊息，支援 bytes/URL/本機路徑。\n- `.Video(file, filename: str = None)`：傳送影片訊息，支援 bytes/URL/本機路徑。\n- `.File(file, filename: str = None)`：傳送檔案訊息，支援 bytes/URL/本機路徑。\n- `.Voice(file, filename: str = None)`：傳送語音訊息（以檔案形式傳送）。\n- `.Face(face_id: str)`：傳送表情（以純文字形式傳送 emoji）。\n- `.Markdown(text: str)`：傳送 Markdown 格式訊息。\n- `.Html(html: str)`：傳送 HTML 格式訊息。\n- `.MergeForward(nodes, title=\"合併聊天記錄\")`：傳送合併轉發訊息（渲染為 `<details>` 折疊 HTML 卡片）。\n- `.Edit(message_id: str, text: str, content_type: str = \"text\")`：編輯已有訊息。\n- `.Recall(message_id: str)`：撤回訊息。\n\n### 串接修飾方法（可組合使用）\n\n串接修飾方法返回 `self`，支援串接呼叫，必須在最終傳送方法前呼叫：\n\n- `.At(user_id: str, name: str = None)`：@指定用戶。\n- `.AtAll()`：@所有人。\n- `.Reply(message_id: str)`：回覆指定訊息。\n- `.Command(command_id: str)`：觸發 Bot 指令，配合傳送方法使用（將訊息作為指定指令傳送）。\n\n### 串接呼叫示例\n\n```python\n# 基礎傳送\nawait ideaura.Send.To(\"user\", user_id).Text(\"Hello\")\n\n# 觸發 Bot 指令\nawait ideaura.Send.To(\"group\", \"chatroom\").Command(\"550e8400-e29b-41d4-a716-446655440000\").Text(\"/weather 北京\")\n\n# @用戶\nawait ideaura.Send.To(\"group\", \"chatroom\").At(\"456\").Text(\"@李四 你好\")\n\n# @多人\nawait ideaura.Send.To(\"group\", \"chatroom\").At(\"456\").At(\"789\").Text(\"@多人\")\n\n# 回覆訊息\nawait ideaura.Send.To(\"group\", \"chatroom\").Reply(msg_id).Text(\"回覆訊息\")\n\n# 回覆 + @\nawait ideaura.Send.To(\"group\", \"chatroom\").Reply(msg_id).At(\"456\").Text(\"回覆並@\")\n```\n\n### 發送到不同目標\n\n```python\n# 發送到聊天室\nawait ideaura.Send.To(\"group\", \"chatroom\").Text(\"聊天室訊息\")\n\n# 發送到話題\nawait ideaura.Send.To(\"group\", \"topic_id\").Text(\"話題訊息\")\n\n# 發送私聊訊息\nawait ideaura.Send.To(\"user\", \"user_id\").Text(\"私聊訊息\")\n```\n\n### OneBot12 訊息支援\n\n適配器支援傳送 OneBot12 格式訊息，便於跨平台訊息相容：\n\n- `.Raw_ob12(message: List[Dict], **kwargs)`：傳送 OneBot12 格式訊息。\n\n```python\n# 發送 OneBot12 格式訊息\nob12_msg = [{\"type\": \"text\", \"data\": {\"text\": \"Hello\"}}]\nawait ideaura.Send.To(\"user\", user_id).Raw_ob12(ob12_msg)\n\n# 配合串接修飾\nob12_msg = [{\"type\": \"text\", \"data\": {\"text\": \"回覆訊息\"}}]\nawait ideaura.Send.To(\"group\", \"chatroom\").Reply(msg_id).Raw_ob12(ob12_msg)\n```"
     },
     {
       "hash": "3214c515d5a38d1303b3ad6dcfa0663d",

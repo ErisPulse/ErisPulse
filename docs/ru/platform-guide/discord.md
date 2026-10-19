@@ -6,8 +6,8 @@ DiscordAdapter — это адаптер, построенный на прото
 
 ## Информация о документации
 
-- Версия соответствующего модуля: 4.2.0
-- Ответственный: ErisPulse
+- Версия соответствующего модуля: 4.3.0
+- Поддержка: ErisPulse
 - Версия Discord API: v10
 
 ## Основная информация
@@ -104,9 +104,10 @@ await discord.Send.To("channel", channel_id).Keyboard(rows).Text("Выберит
 ```
 
 ---
+
 ## Поддерживаемые типы отправки сообщений
 
-Все методы отправки сообщений реализованы с использованием цепочечного синтаксиса, например:
+Все методы отправки реализованы с использованием цепочечного синтаксиса, например:
 ```python
 from ErisPulse.Core import adapter
 discord = adapter.get("discord")
@@ -114,22 +115,23 @@ discord = adapter.get("discord")
 await discord.Send.To("group", channel_id).Text("Hello World!")
 ```
 
-Поддерживаемые типы отправки сообщений включают:
-- `.Text(text: str)` — отправка текстового сообщения.
-- `.Embed(embed: dict | list)` — отправка встроенных сообщений Embed, поддерживается как одно, так и несколько Embed.
-- `.Image(file: bytes | str, filename: str = "image.png")` — отправка изображения, поддерживается бинарные данные или URL.
-- `.File(file: bytes | str, filename: str = None)` — отправка файла, поддерживается бинарные данные или URL.
-- `.Reply(content: str, message_id: str)` — ответ на указанное сообщение (удобный метод).
-- `.Raw_ob12(message: List[Dict], **kwargs)` — отправка сообщений в формате OneBot12.
-- `.Raw_json(json_str: str)` — отправка произвольных JSON-запросов Discord API.
+Поддерживаемые типы отправки включают:
+- `.Text(text: str)` — отправка обычного текстового сообщения.
+- `.Embed(embed: dict | list)` — отправка встраиваемого сообщения Embed, поддерживает одно или несколько Embed.
+- `.MergeForward(nodes, title="Объединённые сообщения")` — отправка объединённого сообщения (Embed: заголовок + каждое сообщение как поле, ≤25 полей, значение ≤1024).
+- `.Image(file: bytes | str, filename: str = "image.png")` — отправка изображения, поддерживает бинарные данные или URL.
+- `.File(file: bytes | str, filename: str = None)` — отправка файла, поддерживает бинарные данные или URL.
+- `.Reply(content: str, message_id: str)` — ответ на указанное сообщение (удобный метод для терминала).
+- `.Raw_ob12(message: List[Dict], **kwargs)` — отправка сообщения в формате OneBot12.
+- `.Raw_json(json_str: str)` — отправка произвольного JSON-запроса Discord API.
 
-### Цепочечные модификаторы (можно комбинировать)
+### Методы цепочечного модификатора (можно комбинировать)
 
-Цепочечные модификаторы возвращают `self`, позволяя цепочечное использование, обязательно должны вызываться перед окончательным методом отправки:
+Методы цепочечного модификатора возвращают `self`, поддерживают цепочечный вызов, должны вызываться перед окончательным методом отправки:
 
 - `.Reply(message_id: str)` — ответ (ссылка) на указанное сообщение, устанавливает `message_reference`.
-- `.At(user_id: str)` — упоминание пользователя, преобразуется в `<@user_id>`, можно вызывать несколько раз.
-- `.AtAll()` — упоминание всех, преобразуется в `@everyone`.
+- `.At(user_id: str)` — упоминание пользователя, преобразуется в `<@user_id>`, может вызываться несколько раз.
+- `.AtAll()` — упоминание всех участников, преобразуется в `@everyone`.
 
 ### Примеры цепочечного вызова
 
@@ -141,24 +143,24 @@ await discord.Send.To("group", channel_id).Text("Hello")
 await discord.Send.To("group", channel_id).Reply(msg_id).Text("Ответ на сообщение")
 
 # Удобный ответ (одно действие)
-await discord.Send.To("group", channel_id).Reply("Содержимое ответа", msg_id)
+await discord.Send.To("group", channel_id).Reply("Содержание ответа", msg_id)
 
 # Упоминание пользователя
 await discord.Send.To("group", channel_id).At("user_id").Text("Привет")
 
 # Упоминание нескольких пользователей
-await discord.Send.To("group", channel_id).At("user1").At("user2").Text("Упоминание нескольких пользователей")
+await discord.Send.To("group", channel_id).At("user1").At("user2").Text("Несколько пользователей@")
 
 # Упоминание всех
-await discord.Send.To("group", channel_id).AtAll().Text("Анонс")
+await discord.Send.To("group", channel_id).AtAll().Text("Объявление")
 
-# Комбинированное использование
+# Комбинированный вызов
 await discord.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("Сложное сообщение")
 
-# Встроенное сообщение
+# Встраиваемое сообщение
 embed = {
     "title": "Уведомление",
-    "description": "Это встроенное сообщение",
+    "description": "Это встраиваемое сообщение",
     "color": 5814783,
     "fields": [{"name": "Поле", "value": "Значение", "inline": True}],
 }
@@ -168,13 +170,13 @@ await discord.Send.To("group", channel_id).Embed(embed)
 await discord.Send.To("group", channel_id).Image("https://example.com/image.png")
 ```
 
-### Личные сообщения
+### Отправка личных сообщений
 
-При отправке личных сообщений адаптер автоматически создает DM-канал:
+При отправке личных сообщений адаптер автоматически создает канал DM:
 
 ```python
 # Отправка личного сообщения
-await discord.Send.To("user", user_id).Text("Содержимое личного сообщения")
+await discord.Send.To("user", user_id).Text("Содержание личного сообщения")
 await discord.Send.To("user", user_id).Embed(embed)
 ```
 
@@ -184,7 +186,7 @@ await discord.Send.To("user", user_id).Embed(embed)
 # Отмена отправки сообщения
 await discord.Send.To("group", channel_id).Recall(msg_id)
 
-# OneBot12 формат
+# Формат OneBot12
 ob12_msg = [
     {"type": "text", "data": {"text": "Hello "}},
     {"type": "mention", "data": {"user_id": "user_id"}},

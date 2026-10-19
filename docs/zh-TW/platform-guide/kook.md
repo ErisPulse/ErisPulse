@@ -6,7 +6,7 @@ KookAdapter 是基於 Kook（開黑啦）Bot WebSocket 協議建構的適配器�
 
 ## 文件資訊
 
-- 對應模組版本: 4.1.0
+- 對應模組版本: 4.2.0
 - 維護者: ShanFish
 
 ## 基本資訊
@@ -106,12 +106,13 @@ await kook.Send.To("group", channel_id).Text("Hello World!")
 
 支援的傳送類型包括：
 - `.Text(text: str)`：傳送純文字訊息。
-- `.Image(file: bytes | str)`：傳送圖片訊息，支援檔案路徑、URL、二進位元資料。
-- `.Video(file: bytes | str)`：傳送影片訊息，支援檔案路徑、URL、二進位元資料。
-- `.File(file: bytes | str, filename: str = None)`：傳送檔案訊息，支援檔案路徑、URL、二進位元資料。
-- `.Voice(file: bytes | str)`：傳送語音訊息，支援檔案路徑、URL、二進位元資料。
-- `.Markdown(text: str)`：傳送KMarkdown格式訊息。
+- `.Image(file: bytes | str)`：傳送圖片訊息，支援檔案路徑、URL、二進位數據。
+- `.Video(file: bytes | str)`：傳送影片訊息，支援檔案路徑、URL、二進位數據。
+- `.File(file: bytes | str, filename: str = None)`：傳送檔案訊息，支援檔案路徑、URL、二進位數據。
+- `.Voice(file: bytes | str)`：傳送語音訊息，支援檔案路徑、URL、二進位數據。
+- `.Markdown(text: str)`：傳送 KMarkdown 格式訊息。
 - `.Card(card_data: dict)`：傳送卡片訊息（CardMessage）。
+- `.MergeForward(nodes, title="合併聊天記錄")`：傳送合併轉發訊息（渲染為卡片：標題 header + 每條訊息一個 section，KMD 轉義，≤40 節點）。
 - `.Raw_ob12(message: List[Dict], **kwargs)`：傳送 OneBot12 格式訊息。
 
 ### 鏈式修飾方法（可組合使用）
@@ -144,7 +145,7 @@ await kook.Send.To("group", channel_id).AtAll().Text("公告")
 await kook.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("複合訊息")
 ```
 
-### OneBot12訊息支援
+### OneBot12 訊息支援
 
 適配器支援傳送 OneBot12 格式的訊息，便於跨平台訊息相容：
 
@@ -166,7 +167,7 @@ ob12_msg = [
 await kook.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 ```
 
-### 頂外操作方法
+### 額外操作方法
 
 除了傳送訊息外，Kook 適配器還支援以下操作：
 
@@ -177,7 +178,7 @@ await kook.Send.To("group", channel_id).Edit(msg_id, "**更新後的內容**")
 # 撤回訊息
 await kook.Send.To("group", channel_id).Recall(msg_id)
 
-# 上傳檔案（取得檔案URL）
+# 上傳檔案（取得檔案 URL）
 result = await kook.Send.Upload("C:/path/to/file.jpg")
 file_url = result["data"]["url"]
 ```

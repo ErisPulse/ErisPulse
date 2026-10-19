@@ -66,32 +66,32 @@ If adapters need to support sending non-OneBot12 formatted raw data (such as pla
 
 **Message Builder (`MessageBuilder`)**: ErisPulse provides the `MessageBuilder` utility class to conveniently build OneBot12 message segment lists, used in conjunction with `Raw_ob12`. See the [Message Builder](#11-message-builder-messagebuilder) section.
 
-## 2. Detailed Parameter Specification
+## 2. Parameter Specification Details
 
 ### 2.1 Media Message Sending Protocol (`Image` / `Voice` / `Video` / `File`)
 
-This section is the **unified protocol standard** for media sending: modules use the same code to call the four media methods, and adapters are responsible for converting the various forms of the `file` parameter into native platform upload/send behavior.
+This section defines the **unified protocol standard** for media sending: the module uses the same code to call four media methods, and the adapter is responsible for converting the various forms of the `file` parameter into native platform upload/send behavior.
 
 #### 2.1.1 Valid Forms of the `file` Parameter
 
-| Form | Example | Adapter Requirement |
+| Form | Example | Adapter Requirements |
 |------|------|-----------|
-| HTTP(S) URL | `https://example.com/image.jpg` | **MUST** accept |
-| Local file path | `/path/to/file.jpg`, `C:\path\to\file.jpg` | **MUST** accept |
-| Binary data | `b"\x89PNG..."` | **MUST** accept |
-| `file://` URI | `file:///path/to/file.jpg` | **SHOULD** accept (can be forwarded as a local path) |
-| Base64 string / Data URI | `iVBORw0KGgo=...`, `data:image/png;base64,...` | **SHOULD** accept (compatible with OneBot12 ecosystem convention) |
+| HTTP(S) URL | `https://example.com/image.jpg` | **Must** accept |
+| Local file path | `/path/to/file.jpg`、`C:\path\to\file.jpg` | **Must** accept |
+| Binary data | `b"\x89PNG..."` | **Must** accept |
+| `file://` URI | `file:///path/to/file.jpg` | **Should** accept (can be forwarded as a local path) |
+| Base64 string / Data URI | `iVBORw0KGgo=...`、`data:image/png;base64,...` | **Should** accept (compatible with OneBot12 ecosystem conventions) |
 
-> Adapters **must** behave consistently across the three mandatory forms—modules receive the same message regardless of whether they pass a URL, path, or bytes. When the platform cannot directly use a certain form (e.g., the platform API does not support referencing external URLs), the adapter should download/read and then upload it, **not** require the module to retry with a different form.
+> The adapter **must** behave consistently across the three mandatory forms—regardless of whether the module passes a URL, path, or bytes, the platform receives the same message. When the platform cannot directly use a certain form (e.g., the platform API does not support referencing external URLs), the adapter should handle the download/read/upload internally, and **must not** require the module to retry with a different form.
 
 #### 2.1.2 Form Determination Order
 
-When implementing media parameter handling, adapters **should** follow this order to determine the form:
+When implementing media parameter handling, adapters **should** determine the form in the following order:
 
 1. `bytes` type → Upload directly
-2. String starting with `http://` or `https://` → Process as URL (reference directly or download and upload, depending on platform capability)
-3. String starting with `file://` → Strip the prefix and process as a local path
-4. Other strings → Process as a local path (read and upload if it exists; return standard error response if it does not)
+2. String starting with `http://` / `https://` → Process as URL (reference directly or download and upload, depending on platform capability)
+3. String starting with `file://` → Strip prefix and process as local path
+4. Other strings → Process as local path (read and upload if exists; return standard error response if not)
 
 ```python
 def _resolve_media(self, file: "str | bytes") -> bytes:
@@ -108,12 +108,12 @@ def _resolve_media(self, file: "str | bytes") -> bytes:
 
 #### 2.1.3 File Name Semantics for `File`
 
-`File` method signature: `File(file, filename=None)` (`filename` is optional, built-in in base class).
+`File` method signature: `File(file, filename=None)` (where `filename` is optional, already built into the base class).
 
-**File name derivation order** (adapter generates this when `filename` is not explicitly provided):
+File name **derivation order** (when the adapter generates a name without an explicit `filename`):
 
 1. Explicit `filename` parameter (highest priority)
-2. URL's basename (e.g., `https://host/a/b/report.pdf` → `report.pdf`, query string stripped)
+2. URL's basename (e.g., `https://host/a/b/report.pdf` → `report.pdf`, query string must be stripped)
 3. Local path's basename (e.g., `/tmp/data/backup.zip` → `backup.zip`)
 4. Platform default generation (e.g., `file_{timestamp}`; **should** retain the real extension—the extension affects platform-side type recognition and preview behavior)
 
@@ -121,25 +121,25 @@ def _resolve_media(self, file: "str | bytes") -> bytes:
 
 #### 2.1.4 Declaration of Platform Limitations
 
-Each platform has different constraints on media size, format (MIME), duration (audio/video), etc. Adapters **should**:
+Platforms have different constraints on media size, format (MIME), duration (audio/video), etc. Adapters **should**:
 
-- Declare supported media types and limitation ranges in the adapter documentation
-- Return **standard error response** for over-limit or unsupported input (`status: "failed"`; `retcode` uses `10002` or platform-specific error code, `message` explains the reason); **do not** throw exceptions to interrupt module logic
+- Declare supported media types and limitations in the adapter documentation
+- Return **standard error responses** for over-limit or unsupported inputs (`status: "failed"`; `retcode` uses `10002` or platform-specific error codes; `message` explains the reason); **must not** throw exceptions to interrupt module logic
 
 #### 2.1.5 Capability Degradation Hierarchy
 
-When a platform does not support a certain media **type**, follow this degradation hierarchy (adhering to the principle of "capability degradation without error reporting"):
+When a platform does not support a certain media **type**, the following degradation hierarchy should be followed (adhering to the general principle "capability degradation without errors"):
 
 | Scenario | Degradation Behavior |
 |------|---------|
 | `Voice` does not support voice messages | **Should** send as `File` (or platform-adjacent form); return `retcode=10002` if unable to express |
 | `Video` does not support video messages | Same as above |
-| Media type completely unsupported (no file capability) | Return `retcode=10002`, `message` indicates unsupported data type |
-| Form not supported (e.g., cannot handle base64) | Return `retcode=10002`, **can** include a message suggesting the module switch to URL/bytes |
+| Media type not supported at all (no file capability) | Return `retcode=10002`, `message` indicates unsupported data type |
+| Form not supported (e.g., cannot handle base64) | Return `retcode=10002`, **can** suggest in `message` that the module use URL/bytes instead |
 
-**Prohibited actions**: Silent drop (no return), throw exceptions, or require the module to write platform-specific handling code.
+**Prohibited behaviors:** silent discarding (no return), throwing exceptions, requiring the module to write platform-specific handling.
 
-### 2.2 @ User Parameter Specification
+### 2.2 @User Parameter Specification
 
 **Method:** `At` (modifier method)
 
@@ -147,17 +147,17 @@ When a platform does not support a certain media **type**, follow this degradati
 
 **Requirements:**
 - `user_id` should be a string-type user identifier
-- Different platforms may have different `user_id` formats (numbers, UUIDs, strings, etc.)
-- The adapter is responsible for converting `user_id` into the platform-specific format
-- Note that the actual send method call should be placed at the last position
+- Different platforms may have different `user_id` formats (numbers, UUID, strings, etc.)
+- The adapter is responsible for converting `user_id` into platform-specific format
+- Note that the actual send method call should be placed at the final position
 
 **Example:**
 ```python
 # Single @ user
-Send.To("group", "g123").At("123456").Text("Hello")
+Send.To("group", "g123").At("123456").Text("你好")
 
 # Multiple @ users (chained calls)
-send.To("group", "g123").At("123456").At("789012").Text("Hello everyone")
+send.To("group", "g123").At("123456").At("789012").Text("大家好")
 ```
 
 ### 2.3 Reply Message Parameter Specification
@@ -169,68 +169,72 @@ send.To("group", "g123").At("123456").At("789012").Text("Hello everyone")
 **Requirements:**
 - `message_id` should be a string-type message identifier
 - Should be the ID of a previously received message
-- Some platforms may not support reply functionality; adapters should gracefully degrade
+- Some platforms may not support reply functionality; adapters should degrade gracefully
 
 **Example:**
 ```python
-send.To("group", "g123").Reply("msg_123456").Text("Received")
+send.To("group", "g123").Reply("msg_123456").Text("收到")
 ```
 
-### 2.4 Merge Forward Capability (`MergeForward`, Optional)
+### 2.4 Forward Merge Capability (`MergeForward`, Optional)
 
-`MergeForward(nodes)` is an **optional capability method**: it packages multiple contents into a "merged forward / rich text fold" format for sending, and the adapter decides the best presentation based on platform capability. This differs from §1.1's `Forward(from_chat_id, message_id)` (forwarding **existing** messages), and both exist in parallel.
+`MergeForward(nodes)` is an **optional capability method**: it packs multiple contents into a "forward merged / rich text collapsed" format for sending, with the adapter determining the best presentation based on platform capabilities. This differs semantically from §1.1's `Forward(from_chat_id, message_id)` (forwarding **existing** messages), and both coexist.
 
-> **Standard background**: OneBot12 core standard does not have a node message segment, nor does it have a merge forward API—“message node” is a OneBot v11 ecosystem (go-cqhttp extension) implementation layer concept, and v12 has delegated such platform-specific capabilities to the extension mechanism. ErisPulse's landing approach is the equivalent of the extension mechanism: **no new standard message segments, but optional capability methods + `list_sends` runtime detection**—adapters that implement `MergeForward` automatically gain the capability, and those that do not implement it automatically fall back to plain text, with zero module changes.
+> **Standard Background:** OneBot12 core standard does not have node message segments, nor does it have a forward merge API—"message node" is an implementation-level concept from the OneBot v11 ecosystem (go-cqhttp extension). v12 delegates such platform-specific capabilities to the extension mechanism. ErisPulse's implementation approach is the equivalent of an extension mechanism: **no new standard message segments are added, but optional capability methods + `list_sends` runtime detection are used**—adapters that implement `MergeForward` automatically gain the capability, and those that don't will automatically fall back to plain text, requiring no module changes.
 
-**Method signature:**
+**Method Signature:**
 
 ```python
 def MergeForward(self, nodes: List[Dict]) -> asyncio.Task:
     """
-    Send merged forward / rich text fold message
+    Send merged forward / rich text collapsed message
 
-    :param nodes: Array of merged forward nodes (go-cqhttp OneBot v11 node format extension):
+    :param nodes: Array of merged forward nodes (go-cqhttp OneBot v11 node format):
         [
             {
                 "type": "node",
                 "data": {
-                    "user_id": "10000",     # ID for display
-                    "nickname": "QvQChat",  # Display name for sender
+                    "user_id": "10000",     # Display sender ID
+                    "nickname": "MyBot",     # Display sender nickname
                     "content": [            # Array of message segments, currently text segments
-                        {"type": "text", "data": {"text": "【1/3】Title\nBody…"}}
+                        {"type": "text", "data": {"text": "【1/3】Title\nBody..."}}
                     ],
                 },
             },
         ]
-    :return: asyncio.Task, await returns standard response format
+    :return: asyncio.Task, await to return standard response format
     """
 ```
 
-**Implementation requirements:**
+**Implementation Requirements:**
 
-1. **Platform has native merge forward** (OneBot11 system): **Must** call the protocol-specific endpoint
-   (`send_group_forward_msg` / `send_private_forward_msg`)—NapCat and similar implementations will reject
-   `send_msg` carrying node segments (retcode 1400); if the dedicated endpoint fails, **can** fall back to `send_msg` sending node segments directly
-2. **Platform has no native forward but has rich text** (Yunhu / Telegram / Kook / Discord / Matrix, etc.):
-   **Should** render the nodes into the platform's rich text fold format (HTML fold card / Card / Embed / blockquote list),
-   reference style and adapter-specific task lists are in `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`
-3. **Neither exists**: **Do not** implement this method (let alone return success while sending node dictionaries as plain text)—if not implemented, `list_sends` does not contain `MergeForward`, and the caller automatically falls back to plain text
-4. **Failure semantics**: Return standard error response (`status: "failed"`) or throw an exception is acceptable; the caller will fall back to plain text sending, content is not lost
-5. **Do not** call `Raw_ob12` inside `MergeForward` to send the same nodes (OneBot11's `Raw_ob12`
-   has built-in automatic routing for pure node segments, which would cause a loop)
+1. **Platform has native forward merge** (OneBot11 family): **Must** call the protocol-specific endpoint (`send_group_forward_msg` / `send_private_forward_msg`)—NapCat and similar implementations will reject `send_msg` carrying node segments (retcode 1400); if the dedicated endpoint fails, **can** fall back to `send_msg` to directly send node segments
+2. **Platform has no native forward but has rich text** (CloudLake / Telegram / Kook / Discord / Matrix, etc.): **Should** render the nodes as the platform's rich text collapsed form (HTML collapse card / Card / Embed / blockquote list), reference style and adapter-specific task list in `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`
+3. **Neither is available**: **Must not** implement this method (and **must not** return success while sending node dictionaries as plain text)—if not implemented, `list_sends` does not contain `MergeForward`, and the caller automatically falls back to plain text
+4. **Failure semantics**: Standard error response (`status: "failed"`) or exception is acceptable; the caller will fall back to plain text sending, and content is not lost
+5. **Must not** call `Raw_ob12` to send the same nodes inside `MergeForward` (OneBot11's `Raw_ob12` already has built-in automatic routing for pure node segments, which would cause a loop)
+6. **Outbound node segment parsing** (all adapters convention): Each adapter's `Raw_ob12` segment distribution should register `node` segments—pure node lists are automatically routed to the adapter's merged forward presentation (for platforms with `MergeForward`, equivalent to direct call; for platforms without this method, extract each node's text to output as "nickname: body" line by line in original form). Any adapter receiving a node segment must not silently discard it.
 
-**Caller detection example:**
+**Platform Implementation Forms** (see `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`):
+
+- Native endpoint: OneBot11, SnowLuma (three-level fallback: `send_group/private_forward_msg` dedicated endpoint → `upload_forward_msg` to get resid and send forward segment → directly send node segment; SnowLuma API fully aligned with NapCat, adapters can directly connect to NapCat backend)
+- Collapsible HTML `<details>` card: CloudLake (bot/user protocol), Email, Sandbox, Allons(Ideaura)
+- Whitelisted HTML / quote block: Telegram (`<b>`+`<blockquote>`), Matrix (blockquote variant, whitelisted to strip details/inline styles)
+- Platform card: Kook (Card header+section), Discord (Embed fields)
+- Official Markdown quote list: QQBot (official md has no collapse syntax, server-side validation rejects invalid tags 40034011)
+- Not implemented (node segments output as plain text for degradation): OneBot12 (standard has no node segments), WeCom, Terminal, Webhook, WechatMp
+
+**Caller Detection Example:**
 
 ```python
 sends = adapter.list_sends(platform)
 if "MergeForward" in sends:
-    await adapter.Send.To("group", "123").MergedForward(nodes)
+    await adapter.Send.To("group", "123").MergeForward(nodes)
 else:
     await adapter.Send.To("group", "123").Text(plain_text)
 ```
 
-> Reference implementation: `ErisPulse-OneBot11Adapter` (dedicated endpoint → `send_msg` fallback); rendering templates and adapter-specific task lists are in
-> `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`.
+> Reference Implementation: `ErisPulse-OneBot11Adapter` (dedicated endpoint → `send_msg` fallback); render templates and adapter-specific task lists are in `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`.
 
 ## 3. Platform-Specific Method Naming
 
