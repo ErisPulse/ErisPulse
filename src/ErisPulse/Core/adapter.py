@@ -1303,6 +1303,55 @@ class AdapterManager(ManagerBase):
         )
         return True
 
+    async def reload(self, name: str, *, full: bool = True) -> bool:
+        """
+        热重载指定平台适配器（代码级：卸载 → 清缓存重导 → 重新注册并拉起）
+
+        经适配器加载器完整执行 语法预检 → 卸载（shutdown 即清理 + 注销）→
+        清理 ``sys.modules`` 子树与 ``__pycache__`` 字节码 → 重新发现/导入 →
+        重新注册 → 原运行态则重新拉起 流程；任一步失败自动回滚旧注册状态
+        （尽力而为语义：断连 / bot offline 等 unload 副作用不可撤销，日志会
+        明确提示旧实例处于已收尾状态）。依赖本适配器的其它适配器不会被
+        级联重载（仅告警）。代码已换新而启动暂时失败时不算重载失败——
+        异步重试链接管（状态经 ``adapter.status.change`` 播报）。
+
+        :param name: 平台名称
+        :param full: 保留参数位（当前两种来源均执行全量清理，与模块语义对齐）
+        :return: 是否重载成功（适配器被移除视为成功）
+
+        :example:
+        >>> await sdk.adapter.reload("aiocqhttp")
+        """
+        from .constants import EVENT_ADAPTER_RELOAD
+        from .lifecycle import lifecycle
+
+        loader = getattr(self._sdk, "_adapter_loader", None) if self._sdk else None
+        if loader is None:
+            logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
+            return False
+        started = time.monotonic()
+        success = await loader.reload_adapter(name, self, self._sdk, full=full)
+        payload: dict[str, Any] = {
+            "adapter_name": name,
+            "success": success,
+            "full": full,
+            "duration_ms": int((time.monotonic() - started) * 1000),
+        }
+        # 加载器回填的重载明细（身份是否变化 / 版本迁移 / 原运行态），透传给事件载荷
+        details = getattr(loader, "_last_adapter_reload_details", None)
+        if isinstance(details, dict):
+            for key in (
+                "identity_changed",
+                "version_old",
+                "version_new",
+                "was_started",
+                "source",
+            ):
+                if key in details:
+                    payload[key] = details[key]
+        await lifecycle.emit(EVENT_ADAPTER_RELOAD, payload)
+        return success
+
     async def unload(self, platform: str) -> bool:
         """
         卸载并注销单个平台适配器
