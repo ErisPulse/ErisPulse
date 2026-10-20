@@ -28,7 +28,9 @@ class MyModule(BaseModule):
 > `depends` 声明的模块如果未注册，当前模块将被跳过并记录警告。加载顺序由拓扑排序决定，同层级按 `priority` 降序。
 
 > [!NOTE]
-> **级联卸载 / 级联重载**（ErisPulse **2.8.0+**）：卸载被其它模块依赖的模块时，依赖它的模块会**先被级联卸载**（日志说明级联链）；热重载任意模块（本地插件 / PyPI 安装包）时，依赖它的模块同样**级联重载**，避免依赖者持有失效实例引用继续运行。声明循环依赖会在加载时以 `RuntimeError` 拒绝。
+> **级联卸载 / 级联重载**（ErisPulse **2.8.0+**）：卸载被其它模块依赖的模块时，依赖它的模块会**先被级联卸载**（日志说明级联链）；热重载任意模块（本地插件 / 运行时注册 / PyPI 安装包）时，依赖它的模块同样**级联重载**，避免依赖者持有失效实例引用继续运行。声明循环依赖会在加载时以 `RuntimeError` 拒绝。
+>
+> **reload 即全量重载**（ErisPulse **2.11.0+**）：`reload()` 默认按顶层包名清理 import 缓存并重导依赖者代码，卸载前自动语法预检（失败拒绝卸载、旧实例继续服务），成功后核对代码身份（假重载告警 / `stale` 标记）；load 失败现场可经 `sdk.module.last_error(名字)` 直接查询（含 traceback）。
 
 ### on_load 方法
 
@@ -59,6 +61,25 @@ async def on_unload(self, event):
 ```
 
 > 后台任务的创建与清理（`self.spawn()` / 框架兜底取消）详见 [生命周期管理](../../advanced/lifecycle.md#后台任务归属与自动取消)。
+
+### on_before_unload 方法
+
+> [!NOTE]
+> 本钩子需要 ErisPulse **2.11.0+**。
+
+卸载流水线**第一步**（先于 `on_unload` 与资源回收）触发的可选钩子——此时模块的一切
+资源仍然完好，适合在卸载 / 归眠 / 重载前把状态保存到 `sdk.storage`，下次 `on_load`
+恢复（懒加载休眠的状态接续即基于此）：
+
+```python
+async def on_before_unload(self, event):
+    # event["reason"] 标注来意：unload / reload / disable / cascade / dormant
+    if event["reason"] in ("reload", "dormant"):
+        await self.sdk.storage.aset(f"{self._module_name}:state", self.collect_state())
+```
+
+钩子失败仅告警，不阻塞卸载流程；未声明该钩子的模块行为不变。归眠 / 唤醒语义详见
+[懒加载休眠](../../advanced/lazy-loading.md#懒加载休眠dormant_after)。
 
 ### 卸载与彻底卸载（purge）
 

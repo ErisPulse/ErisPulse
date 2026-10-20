@@ -108,6 +108,35 @@ print(final_verdict(records))           # 总结论
 
 `cooldown=` / `rate_limit=` / `usage_limit=` 命中时**默认静默丢弃**（命令仍被认领，不漏给低优先级处理器），容易误判为"命令坏了"：现象是部分用户可用、部分用户无响应，且决策链中出现对应 `stage` 的 `dropped` 记录。`deprecated=` 命令则表现为调用时自动回复废弃文案（`deprecated_reject=True` 时拒绝执行）。
 
+## 场景四：改了代码 reload 后还是旧行为（2.11+）
+
+按顺序核对：
+
+1. **看返回值与失败现场**：`reload` / `load` 返回 `False` 时，直接调用
+   `sdk.module.last_error("模块名")`——返回异常与完整 traceback（含出错行号），
+   无需翻日志文件；`module.get_info(名字)["last_error"]` 同源。
+2. **语法错误不会卸载**：reload 在卸载前做语法预检，失败即拒绝（旧实例继续服务），
+   日志给出文件 + 行号；修好语法再 reload 即可。
+3. **身份未变化告警**：日志出现"重载后代码身份未变化"或事件 `identity_changed: false`
+   时，说明进程内仍运行旧代码（常见于 C 扩展等无法清除的缓存）——这类模块需要重启框架。
+4. **确认模块来源可重导**：运行时注册（`sdk.module.register()`）的模块，类定义在
+   `__main__` / 入口脚本内时拒绝重导（守卫告警）；请把类移入可导入的模块文件。
+5. **懒加载模块被强制激活**：重载会把原本懒加载的模块激活（显式日志）；归眠
+   （休眠）中的模块保持归眠。
+
+## 场景五：模块"明明启用却收不到事件"（懒加载休眠，2.11+）
+
+声明了 `dormant_after` 的懒加载模块闲置超阈值后会**自动归眠**：运行时资源释放、
+事件处理器注销，因此不再接收事件（`activate_on` 声明的事件除外——事件先唤醒再转发）。
+
+- 确认是否归眠：日志中检索"已归眠" / `module.sleep` 事件，或观察
+  `sdk.module.get_status_summary()` 中该模块不再是 `loaded`
+- 立即唤醒：任意属性访问（`sdk.模块名.任意属性`）或 `await sdk.module.call(...)`
+- 不希望自动归眠：去掉 `get_load_strategy()` 中的 `dormant_after` 声明
+- 状态是否丢失：归眠前会触发 `on_before_unload(reason="dormant")`，若模块未实现
+  该钩子保存状态，归眠即丢失内存态（与卸载一致）——需要接续状态请参考
+  [懒加载休眠](../advanced/lazy-loading.md#懒加载休眠dormant_after)
+
 ## 通用建议
 
 - 排查前先把日志调到 `DEBUG` / `TRACE`（配置见[开发者指南](README.md#调试技巧)），可以看到模块加载、路由注册、事件分发等框架内部流程；

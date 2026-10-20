@@ -384,7 +384,7 @@ epsdk create adapter -n MyAdapter --local
 
 - **识别规则**：包目录（含 `__init__.py`）或单 `.py` 文件均可；优先识别 `Main` 命名类，否则取插件内首个 `BaseAdapter` / `BaseModule` 子类
 - **同名覆盖**：本地插件与 PyPI 安装的适配器同名时，本地插件优先（便于覆盖调试）
-- **热重载**：`sdk.enable_plugin_hot_reload()` 开启的插件目录监控同样覆盖适配器；适配器代码级热重载将在 2.11 提供（当前版本修改适配器代码后需重启框架生效）
+- **热重载**：`sdk.enable_plugin_hot_reload()` 开启的插件目录监控同样覆盖适配器；适配器代码级热重载自 2.11 提供——`await sdk.adapter.reload("平台名")` 或 `await sdk.reload_adapter("平台名")`（语法预检 → 卸载清理 → 清缓存重导 → 重新注册拉起，失败自动回滚；详见[架构概览](../../architecture.md)）
 
 ### 从本地插件到发布
 
