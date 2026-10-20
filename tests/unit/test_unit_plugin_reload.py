@@ -98,7 +98,7 @@ class TestSDKLoaderWiring:
 
         captured = {}
 
-        async def fake_reload(module_name, manager_instance, sdk_instance, *, full=False):
+        async def fake_reload(module_name, manager_instance, sdk_instance, *, full=True):
             captured["args"] = (module_name, manager_instance, sdk_instance)
             captured["full"] = full
             return True
@@ -109,7 +109,7 @@ class TestSDKLoaderWiring:
         assert name == "dice"
         assert manager is sdk.module
         assert sdk_instance is sdk
-        assert captured["full"] is False
+        assert captured["full"] is True
 
     def test_reload_module_full_passthrough(self):
         """full=True 透传到加载器"""
