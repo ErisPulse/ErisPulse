@@ -33,6 +33,8 @@ EXPECTED_COMMANDS = {
     "list": ["l", "ls"],
     "list-remote": ["lsr"],
     "run": ["r"],
+    "stop": [],
+    "restart": [],
     "i18n": ["language", "lang"],
     "types": ["t", "stub"],
     "doctor": ["diag"],
@@ -355,6 +357,8 @@ class TestAliasScheme:
             list         -> l, ls
             list-remote  -> lsr
             run          -> r
+            stop         -> (none)
+            restart      -> (none)
             i18n         -> language, lang
             types        -> t, stub
             doctor       -> diag

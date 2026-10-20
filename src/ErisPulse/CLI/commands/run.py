@@ -32,6 +32,7 @@ from ..constants import (
     RUN_RESTART_PAUSE_SECS,
 )
 from ..i18n import i18n
+from ..utils import runtime_state
 from ..utils.package_manager import (
     resolve_target_python,
     warn_if_uv_isolated,
@@ -310,28 +311,34 @@ class RunCommand(Command):
         """
 
         if reload_mode:
-
-            async def _run():
-                """
-                设置文件监控并运行 SDK
-
-                :return: [None] 无返回值
-                """
-                from ... import sdk
-
-                loop = asyncio.get_running_loop()
-                self._setup_watchdog(".", loop)
-                await sdk.run(keep_running=True)
-
+            # 运行状态登记（epsdk stop / restart 的定位依据）；内联模式监督者 = 当前进程
+            runtime_state.write(os.getpid(), argv=sys.argv)
             try:
-                asyncio.run(_run())
-            except KeyboardInterrupt:
-                pass
+
+                async def _run():
+                    """
+                    设置文件监控并运行 SDK
+
+                    :return: [None] 无返回值
+                    """
+                    from ... import sdk
+
+                    loop = asyncio.get_running_loop()
+                    self._setup_watchdog(".", loop)
+                    await sdk.run(keep_running=True)
+
+                try:
+                    asyncio.run(_run())
+                except KeyboardInterrupt:
+                    pass
             finally:
                 if hasattr(self, "_observer"):
                     self._observer.stop()
                     self._observer.join()
+                runtime_state.clear()
             return
+
+        runtime_state.write(os.getpid(), argv=sys.argv)
 
         cmd = [
             getattr(self, "python_exe", sys.executable),
@@ -354,6 +361,8 @@ class RunCommand(Command):
                 child_env = dict(os.environ)
                 child_env[ENV_SUPERVISED] = "cli"
                 process = subprocess.Popen(cmd, env=child_env)
+                # 每次拉起新子进程都更新状态文件（stop 先断子进程再停监督者）
+                runtime_state.update_child(process.pid)
                 process.wait()
 
                 if process.returncode == self._RESTART_EXIT_CODE:
@@ -406,6 +415,7 @@ class RunCommand(Command):
                 except subprocess.TimeoutExpired:
                     process.kill()
                     process.wait()
+            runtime_state.clear()
 
     def _run_script(self, script_path: str, reload_mode: bool):
         """
@@ -417,17 +427,25 @@ class RunCommand(Command):
         script_path_abs = str(Path(script_path).resolve())
 
         if reload_mode:
-            self._run_script_with_reload(script_path_abs)
-        else:
-            script_dir = str(Path(script_path_abs).parent)
-            if script_dir not in sys.path:
-                sys.path.insert(0, script_dir)
+            runtime_state.write(os.getpid(), argv=sys.argv)
             try:
-                runpy.run_path(script_path_abs, run_name="__main__")
-            except SystemExit:
-                pass
-            except KeyboardInterrupt:
-                pass
+                self._run_script_with_reload(script_path_abs)
+            finally:
+                runtime_state.clear()
+        else:
+            runtime_state.write(os.getpid(), argv=sys.argv)
+            try:
+                script_dir = str(Path(script_path_abs).parent)
+                if script_dir not in sys.path:
+                    sys.path.insert(0, script_dir)
+                try:
+                    runpy.run_path(script_path_abs, run_name="__main__")
+                except SystemExit:
+                    pass
+                except KeyboardInterrupt:
+                    pass
+            finally:
+                runtime_state.clear()
 
     def _run_script_with_reload(self, script_path_abs: str):
         """
@@ -453,6 +471,7 @@ class RunCommand(Command):
             reload_state["process"] = subprocess.Popen(
                 [getattr(self, "python_exe", sys.executable), script_path_abs]
             )
+            runtime_state.update_child(reload_state["process"].pid)
 
         class _ScriptReloadHandler(FileSystemEventHandler):
             """
