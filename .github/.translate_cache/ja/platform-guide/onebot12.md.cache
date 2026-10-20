@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "b49060faface9b230d6892d418125992",
-  "file_hash": "b49060faface9b230d6892d418125992",
-  "translated_at": "2026-09-12T10:23:26.664029",
+  "hash": "0e7a25c2c7db5bafa05557382e26926b",
+  "file_hash": "0e7a25c2c7db5bafa05557382e26926b",
+  "translated_at": "2026-10-20T12:15:33.570652",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# OneBot12プラットフォーム仕様ドキュメント\n\nOneBot12Adapter は、OneBot V12 プロトコルに基づいて構築されたアダプターであり、ErisPulse フレームワークの基本プロトコルアダプターです。\n\n---"
     },
     {
-      "hash": "297b86753895e9c5004a7d330a197c38",
-      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.3.0\n- メンテナ: ErisPulse\n- プロトコルバージョン: OneBot V12"
+      "hash": "8c173c0740e1d23ca849c801afa7af2b",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.4.0\n- メンテナー: ErisPulse\n- プロトコルバージョン: OneBot V12"
     },
     {
       "hash": "7cb073c9fc9ab7b7662e50a0ec987111",

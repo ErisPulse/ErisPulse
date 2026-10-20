@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "b4775b1d856afdcb5ac636854921a7d7",
-  "file_hash": "b4775b1d856afdcb5ac636854921a7d7",
-  "translated_at": "2026-10-16T15:26:52.814615",
+  "hash": "f99ffa50148bf080d5e0ca2668fbc193",
+  "file_hash": "f99ffa50148bf080d5e0ca2668fbc193",
+  "translated_at": "2026-10-20T12:07:33.230311",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Configuration File Guide\n\n> [!NOTE]\n> **L1 Core Reading** — One of the five core documents in the \"Reading Path\" on the homepage, essential for module development.\n\n> This document introduces the framework's configuration file. If a third-party module requires configuration, please refer to the module's documentation.\n\nErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project configurations."
     },
     {
-      "hash": "e642dc8e9b37f9f9f2466648852c173c",
-      "translation": "## Configuration File Location\n\nThe configuration file is located in the `config/` folder in the project root directory:\n\n```\nproject/\n├── config/\n│   └── config.toml\n├── main.py\n```\n\n### Multi-Instance Warning and Lock File\n\nWhen the framework starts, it creates a `.erispulse_config.lock` lock file in the `config/` directory and holds it until the process exits (used to detect multiple instances sharing the same configuration directory). If the log shows a warning \"Detected that the configuration file may be in use by another ErisPulse instance,\" it means there are **two or more ErisPulse processes writing to the same configuration file** (typical scenario: multiple containers mounted the same host `config/` directory) — concurrent writes will overwrite each other. Please use a separate configuration directory for each instance."
+      "hash": "38075a6514106057ad6d3f271a4695be",
+      "translation": "## Configuration File Location\n\nThe configuration file is located in the `config/` folder at the project root:\n\n```\nproject/\n├── config/\n│   └── config.toml\n├── main.py\n```\n\n### Multi-Instance Notes and Lock Files\n\nWhen the framework starts, it creates a `config.lock` lock file in the runtime status directory **`.erispulse/`** at the project root and holds it until the process exits (used to detect multiple instances sharing the configuration directory; prior to version 2.10, the `.erispulse_config.lock` file located in the `config/` directory will be automatically cleared during the first startup after an upgrade). If the log shows the warning \"Detected that the configuration file may be in use by another ErisPulse instance,\" it means that **two or more ErisPulse processes are writing to the same configuration file** (typical scenario: multiple containers mounted with the same host `config/` directory) — concurrent writes will overwrite each other. Please use separate configuration directories for each instance.\n\n### Sensitive Configuration Not Stored in Repository\n\nThe configuration file contains sensitive information such as tokens (token / API key): the framework initialization and `epsdk init` will automatically generate a `.gitignore` file in the `config/` directory (with a single line `*` — **all files in the directory are excluded from version control, and the ignore file itself is also excluded**); existing `.gitignore` files will not be overwritten. The `.erispulse/` runtime status directory (instance lock, CLI runtime status files) is considered local machine state, and the project template's `.gitignore` already defaults to ignoring it."
     },
     {
       "hash": "c7415e0952873a87e47a603240234bff",

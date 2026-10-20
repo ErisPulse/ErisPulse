@@ -6,7 +6,7 @@ OneBot12Adapter 是基於 OneBot V12 協議所建構的適配器，作為 ErisPu
 
 ## 文件資訊
 
-- 對應模組版本: 4.3.0
+- 對應模組版本: 4.4.0
 - 維護者: ErisPulse
 - 協定版本: OneBot V12
 

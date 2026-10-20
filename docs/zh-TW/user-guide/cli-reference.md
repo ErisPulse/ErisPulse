@@ -283,18 +283,20 @@ epsdk config MyModule
 
 ## 運行控制命令
 
-> [!TIP]
-> `epsdk run` 會自動檢測並使用專案目錄下的 `.venv` 虛擬環境運行機器人
-> （也可透過 `ERISPULSE_PYTHON` 環境變數顯式指定解釋器）。`epsdk install` /
-> `uninstall` / `upgrade` / `list` 同樣作用於專案虛擬環境。
+> [!TIP]  
+> `epsdk run` 會自動檢測並使用項目目錄下的 `.venv` 虛擬環境運行機器人  
+> （也可透過 `ERISPULSE_PYTHON` 環境變數明確指定解釋器）。`epsdk install` /  
+> `uninstall` / `upgrade` / `list` 同樣作用於項目虛擬環境。
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
 | `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | 運行指定腳本或 SDK |
+| `stop` | — | `[--force] [--pid PID]` | 停止正在運行的實例（由 `epsdk run` 啟動） |
+| `restart` | — | `[--force] [--pid PID]` | 重新啟動正在運行的實例（停止後按原參數重新啟動） |
 
 ### run
 
-運行 ErisPulse 專案腳本或直接啟動 SDK。支援熱重載模式。
+運行 ErisPulse 項目腳本或直接啟動 SDK。支援熱重載模式。
 
 **別名：** `r`
 
@@ -303,8 +305,8 @@ epsdk config MyModule
 | 參數 | 說明 |
 |------|------|
 | `[script]` | 要運行的腳本檔案，不指定則運行 SDK |
-| `--reload` | 啟用熱重載模式，監控檔案變更自動重啟 |
-| `--strict` / `--no-strict` | 臨時開啟 / 關閉嚴格模式（僅本次生效，不寫入配置）；預設跟隨 `ErisPulse.framework.strict_mode` |
+| `--reload` | 啟用熱重載模式，監控檔案變化自動觸發組件級程式碼熱重載（聯動熱重載系統，無需整進程重啟） |
+| `--strict` / `--no-strict` | 臨時開啟 / 關閉嚴格模式（僅本次生效，不寫入設定）；預設遵循 `ErisPulse.framework.strict_mode` |
 
 **範例：**
 
@@ -315,7 +317,7 @@ epsdk run
 # 運行指定腳本檔案
 epsdk run main.py
 
-# 熱重載模式運行（檔案變更自動重啟）
+# 熱重載模式運行（檔案變更自動觸發程式級熱重載）
 epsdk run main.py --reload
 
 # SDK 熱重載模式
@@ -324,13 +326,58 @@ epsdk run --reload
 # 臨時嚴格模式：啟動前自檢失敗即退出，框架嚴格級別本次提升為至少 1
 epsdk run main.py --strict
 
-# 臨時寬鬆模式（配置裡開了 strict_mode 但本次想先跑起來）
+# 臨時寬鬆模式（設定裡開了 strict_mode 但本次想先跑起來）
 epsdk run main.py --no-strict
 ```
 
-**啟動前自檢：** `run` 啟動前會快速檢查 `config/config.toml` 可解析性與已安裝組件的必填配置完整性，嚴格性預設跟隨 `ErisPulse.framework.strict_mode`（非 0 時檢查失敗即退出，0 時僅警告繼續）。配置檔案缺失視為正常首次啟動，僅提示不判失敗。`--strict` 臨時開啟：預檢失敗即退出，同時框架嚴格級別本次提升為至少 1（跳過不合規組件，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到運行進程，不寫入配置檔案）；`--no-strict` 反之臨時壓到寬鬆。自檢自身異常時自動跳過，不含網路探測，不會阻塞啟動。
+**啟動前自檢：** `run` 啟動前會快速檢查 `config/config.toml` 可解析性與已安裝組件的必填設定完整性，嚴格性預設遵循 `ErisPulse.framework.strict_mode`（非 0 時檢查失敗即退出，0 時僅警告繼續）。設定檔遺失視為正常首次啟動，僅提示不判失敗。`--strict` 臨時開啟：預檢失敗即退出，同時框架嚴格級別本次提升為至少 1（跳過不合規組件，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到運行進程，不寫入設定檔）；`--no-strict` 反之臨時壓到寬鬆。自檢自身異常時自動跳過，不含網路探測，不會阻塞啟動。
 
----
+### stop
+
+停止正在運行的 ErisPulse 實例（由 `epsdk run` 啟動、並在同一項目目錄下執行）。  
+`run` 啟動時會把監督進程 PID、當前框架子進程 PID 與原始啟動命令寫入  
+`.erispulse/runtime.json`，`stop` 據此定位實例。
+
+**停止順序：** POSIX 下先向監督進程發 SIGINT（與 Ctrl+C 同款優雅收尾路徑——  
+finally 鏈自動終止框架子進程），超時逐級升級 SIGTERM / SIGKILL；Windows 無  
+進程訊號語義，先終止框架子進程再終止監督進程（避免監督者把強殺誤判為崩潰  
+重新拉起）。
+
+**參數：**
+
+| 參數 | 說明 |
+|------|------|
+| `--force` | 跳過優雅停止，直接強制終止 |
+| `--pid PID` | 直接指定目標進程 PID（覆蓋運行狀態檔案，用於非標準啟動方式） |
+
+**範例：**
+
+```bash
+# 停止當前項目的運行實例
+epsdk stop
+
+# 強制終止
+epsdk stop --force
+```
+
+### restart
+
+重新啟動正在運行的 ErisPulse 實例：按 `stop` 的語義停止後，以狀態檔案中記錄的  
+**原始啟動命令**重新啟動（前檯接管當前終端，新實例會寫入新的運行狀態檔案）。
+
+**參數：** 同 `stop`（`--force` / `--pid PID`）。
+
+**範例：**
+
+```bash
+# 優雅重新啟動（pip 升級適配器/模組後讓程式碼生效；運行中模組也可用  
+# sdk.reload_module / sdk.adapter.reload 程式級熱重載，無需重新啟動）
+epsdk restart
+```
+
+> [!NOTE]  
+> `python main.py` 等繞過 `epsdk run` 的啟動方式不會寫運行狀態檔案——此類  
+> 進程請用系統工具管理，或用 `epsdk stop --pid <PID>` 指定 PID。
 
 ## 專案管理命令
 

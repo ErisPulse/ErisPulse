@@ -281,54 +281,98 @@ epsdk config MyModule
 
 ---
 
-## Runtime Control Commands
+## Control Commands
 
 > [!TIP]
-> `epsdk run` automatically detects and uses the `.venv` virtual environment in the project directory to run the bot
-> (can also explicitly specify the interpreter via `ERISPULSE_PYTHON` environment variable). `epsdk install` /
-> `uninstall` / `upgrade` / `list` also operate on the project virtual environment.
+> `epsdk run` will automatically detect and use the `.venv` virtual environment in the project directory to run the robot
+> (the interpreter can also be explicitly specified via the `ERISPULSE_PYTHON` environment variable). `epsdk install` /
+> `uninstall` / `upgrade` / `list` also act on the project's virtual environment.
 
 | Command | Alias | Parameters | Description |
-|------|------|------|------|
+|---------|-------|------------|-------------|
 | `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | Run a specified script or SDK |
+| `stop` | — | `[--force] [--pid PID]` | Stop a running instance (started by `epsdk run`) |
+| `restart` | — | `[--force] [--pid PID]` | Restart a running instance (stop and restart with original parameters) |
 
 ### run
 
-Run ErisPulse project script or directly start SDK. Supports hot-reload mode.
+Run an ErisPulse project script or directly start the SDK. Hot-reload mode is supported.
 
-**Aliases:** `r`
+**Alias:** `r`
 
 **Parameters:**
 
 | Parameter | Description |
-|------|------|
-| `[script]` | Script file to run, not specified runs SDK |
-| `--reload` | Enable hot-reload mode, monitor file changes and automatically restart |
-| `--strict` / `--no-strict` | Temporarily enable / disable strict mode (effective only for this run, not written to configuration); defaults to follow `ErisPulse.framework.strict_mode` |
+|-----------|-------------|
+| `[script]` | The script file to run; if unspecified, run the SDK |
+| `--reload` | Enable hot-reload mode, monitoring file changes to automatically trigger component-level code hot-reload (linked with the hot-reload system, no full process restart required) |
+| `--strict` / `--no-strict` | Temporarily enable/disable strict mode (effective only for this run, not written to configuration); defaults to follow `ErisPulse.framework.strict_mode` |
 
 **Examples:**
 
 ```bash
-# Run SDK directly
+# Directly run the SDK
 epsdk run
 
-# Run specified script file
+# Run a specified script file
 epsdk run main.py
 
-# Hot-reload mode (auto-restart on file change)
+# Run with hot-reload mode (automatic code-level hot-reload triggered on file changes)
 epsdk run main.py --reload
 
 # SDK hot-reload mode
 epsdk run --reload
 
-# Temporary strict mode: exit if startup self-check fails, framework strict level temporarily raised to at least 1
+# Temporary strict mode: exit if pre-check fails before startup, framework strict level temporarily raised to at least 1 for this run
 epsdk run main.py --strict
 
-# Temporary relaxed mode (strict_mode enabled in configuration but want to run first)
+# Temporary relaxed mode (strict_mode is enabled in configuration but want to run this time)
 epsdk run main.py --no-strict
 ```
 
-**Startup Self-Check:** `run` performs a quick check on `config/config.toml` parseability and required configuration completeness of installed components before startup. The strictness defaults to `ErisPulse.framework.strict_mode` (exits if check fails when non-zero, warns and continues when zero). Missing configuration file is considered normal for first startup, only prompts without failure. `--strict` temporarily enables: exits if pre-check fails, and framework strict level temporarily raised to at least 1 (skips non-compliant components, propagated to running process via `ERISPULSE_FRAMEWORK_STRICT_MODE` environment variable, not written to configuration file); `--no-strict` temporarily lowers it. Self-check exceptions are automatically skipped, does not include network probing, and will not block startup.
+**Pre-start self-check:** Before `run` starts, the system quickly checks the parseability of `config/config.toml` and the completeness of required configurations for installed components. The strictness defaults to follow `ErisPulse.framework.strict_mode` (if non-zero, check failure results in exit; if zero, only a warning is issued and continues). Missing configuration files are considered normal for first-time startup, only a prompt is issued without failure evaluation. `--strict` temporarily enables: pre-check failure results in exit, and the framework strict level is temporarily raised to at least 1 (skipping non-compliant components, propagated via `ERISPULSE_FRAMEWORK_STRICT_MODE` environment variable to the running process, not written to configuration file); `--no-strict` temporarily relaxes. If self-check itself encounters an exception, it is automatically skipped, excluding network detection, and will not block startup.
+
+### stop
+
+Stop a running ErisPulse instance (started by `epsdk run` and executed in the same project directory).
+When `run` starts, it writes the supervisor process PID, current framework subprocess PID, and the original startup command to
+`.erispulse/runtime.json`. `stop` uses this to locate the instance.
+
+**Stop sequence:** On POSIX systems, first send SIGINT to the supervisor process (same as Ctrl+C, an elegant shutdown path—
+the finally chain automatically terminates the framework subprocess), escalating to SIGTERM / SIGKILL if timeout occurs; on Windows, there is no process signal semantics, so first terminate the framework subprocess and then the supervisor process (to avoid the supervisor mistakenly interpreting forced termination as a crash and restarting).
+
+**Parameters:**
+
+| Parameter | Description |
+|-----------|-------------|
+| `--force` | Skip graceful stop and directly force terminate |
+| `--pid PID` | Directly specify the target process PID (overrides the runtime status file, used for non-standard startup methods) |
+
+**Examples:**
+
+```bash
+# Stop the running instance of the current project
+epsdk stop
+
+# Force terminate
+epsdk stop --force
+```
+
+### restart
+
+Restart a running ErisPulse instance: after stopping according to the semantics of `stop`, restart using the **original startup command** recorded in the status file (foreground takes over the current terminal, and the new instance writes a new runtime status file).
+
+**Parameters:** Same as `stop` (`--force` / `--pid PID`).
+
+**Example:**
+
+```bash
+# Graceful restart (useful after pip upgrade of adapter/module to make code changes effective; code-level hot reload via sdk.reload_module / sdk.adapter.reload is also possible during runtime, no restart required)
+epsdk restart
+```
+
+> [!NOTE]
+> Startup methods such as `python main.py` that bypass `epsdk run` do not write runtime status files—processes started this way should be managed using system tools, or stopped by specifying the PID with `epsdk stop --pid <PID>`.
 
 ---
 

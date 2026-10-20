@@ -108,6 +108,35 @@ print(final_verdict(records))           # 總結論
 
 `cooldown=` / `rate_limit=` / `usage_limit=` 命中時**預設靜默丟棄**（命令仍被認領，不漏給低优先級處理器），容易誤判為「命令壞了」：現象是部分使用者可用、部分使用者無回應，且決策鏈中出現對應 `stage` 的 `dropped` 記錄。`deprecated=` 命令則表現為呼叫時自動回覆廢棄文案（`deprecated_reject=True` 時拒絕執行）。
 
+## 場景四：改了程式碼 reload 後還是舊行為（2.11+）
+
+請依序核對：
+
+1. **看回傳值與失敗現場**：`reload` / `load` 回傳 `False` 時，直接呼叫
+   `sdk.module.last_error("模組名")`——回傳例外與完整 traceback（含出錯行號），
+   無需翻查日誌檔案；`module.get_info(名字)["last_error"]` 同源。
+2. **語法錯誤不會卸載**：reload 在卸載前做語法預檢，失敗即拒絕（舊實例繼續提供服務），
+   日誌會給出檔案 + 行號；修正語法後再 reload 即可。
+3. **身份未變更警示**：日誌出現「重載後程式碼身份未變更」或事件 `identity_changed: false`
+   時，表示進程內仍執行舊程式碼（常見於 C 擴展等無法清除的快取）——這類模組需要重啟框架。
+4. **確認模組來源可重導入**：執行時註冊（`sdk.module.register()`）的模組，類定義在
+   `__main__` / 入口腳本內時拒絕重導入（守衛警示）；請將類移入可導入的模組檔案。
+5. **懶加載模組被強制激活**：重載會把原本懶加載的模組激活（明確日誌）；休眠
+   （歸眠）中的模組保持休眠。
+
+## 場景五：模組「明明啟用卻收不到事件」（懶加載休眠，2.11+）
+
+宣告了 `dormant_after` 的懶加載模組在閒置超過閾值後會**自動歸眠**：運行時資源釋放、
+事件處理器註銷，因此不再接收事件（`activate_on` 宣告的事件除外——事件先喚醒再轉發）。
+
+- 確認是否歸眠：日誌中檢索「已歸眠」 / `module.sleep` 事件，或觀察
+  `sdk.module.get_status_summary()` 中該模組不再是 `loaded`
+- 立即喚醒：任意屬性存取（`sdk.模組名.任意屬性`）或 `await sdk.module.call(...)`
+- 不希望自動歸眠：移除 `get_load_strategy()` 中的 `dormant_after` 宣告
+- 狀態是否遺失：歸眠前會觸發 `on_before_unload(reason="dormant")`，若模組未實現
+  該鈎子保存狀態，歸眠即遺失記憶體態（與卸載一致）——需要接續狀態請參考
+  [懶加載休眠](../advanced/lazy-loading.md#懶加載休眠dormant_after)
+
 ## 通用建議
 
 - 排查前先把日誌調到 `DEBUG` / `TRACE`（配置見[開發者指南](README.md#調試技巧)），可以看到模組載入、路由註冊、事件分發等框架內部流程；

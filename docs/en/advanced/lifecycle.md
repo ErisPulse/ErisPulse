@@ -1,14 +1,14 @@
 # Lifecycle Management
 
 > [!TIP]
-> **When to read this**: When you need to subscribe to framework lifecycle events (startup / load / state changes). Skip if not needed, as it does not affect other features.
+> **When to read this**: When you need to subscribe to framework lifecycle events (startup / load / state changes). Skip if not needed, as it does not affect the use of other features.
 
-ErisPulse provides a unified hook/lifecycle system for monitoring the runtime status of system components and implementing extension features such as auditing, statistics, and custom logic.
+ErisPulse provides a unified hook/lifecycle system to monitor the running status of system components and implement extension features such as auditing, statistics, and custom logic.
 
 The system supports three triggering methods:
-- `await lifecycle.emit("event", data)` — A concise version that passes arbitrary data (direct delivery when `to="Owner"`)
-- `lifecycle.emit_sync("event", data)` — A synchronous version (for non-async contexts)
-- `await lifecycle.submit_event("event", ...)` — Backward compatible, automatically builds standard event format
+- `await lifecycle.emit("event", data)` — A concise version, passing any data (`to="Owner"` for targeted delivery)
+- `lifecycle.emit_sync("event", data)` — Synchronous version (for non-async contexts)
+- `await lifecycle.submit_event("event", ...)` — Backward compatible, automatically constructs standard event format
 
 ## Event Handling Mechanism
 
@@ -28,28 +28,28 @@ sdk.lifecycle.register("module.load", on_module_load, priority=10)
 # Unregister
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# Batch unregister by owner (automatically called by framework on module/adapter unload)
+# Batch unregister by owner (automatically called by framework during module/adapter unload)
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
 print(f"Cleaned up {removed} lifecycle hooks")
 ```
 
 ### Priority
 
-Handlers support `priority` parameter. The higher the value, the earlier the execution (consistent with module loader):
+Handlers support the `priority` parameter, where higher values execute first (consistent with the module loader):
 
 ```python
-@sdk.lifecycle.on("adapter.event.receive", priority=10)  # First to execute
+@sdk.lifecycle.on("adapter.event.receive", priority=10)  # Executes first
 async def first_handler(data):
     pass
 
-@sdk.lifecycle.on("adapter.event.receive", priority=0)  # Later execution
+@sdk.lifecycle.on("adapter.event.receive", priority=0)  # Executes later
 async def second_handler(data):
     pass
 ```
 
 ### Dot-Structure Events
 
-When a specific event is triggered, its parent events are also triggered:
+Triggering a specific event also triggers its parent events:
 - Triggering `module.load` also triggers `module`
 - Triggering `adapter.event.receive` also triggers `adapter.event` and `adapter`
 
@@ -63,31 +63,32 @@ async def on_anything(data):
     print(f"Received event: {data}")
 ```
 
-### Directed Propagation (`emit to=`)
+### Targeted Propagation (`emit to=`)
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-When `emit()` is specified with the `to` parameter, it enters directed propagation: the event is only distributed to handlers registered by the owner (hooks registered by a module in `on_load` are automatically assigned to the module), and other modules and wildcard `*` handlers are not notified.
+When `emit()` specifies the `to` parameter, it enters targeted propagation: events are only distributed to handlers registered with that owner identity (hooks registered by modules in `on_load` are automatically assigned to the module), and other modules and wildcard `*` handlers are not aware.
 
 ```python
-# Sender: Event only delivered to hooks registered by Chat module
+# Emitter: Events are only sent to hooks registered by the Chat module
 await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 
-# Subscriber (within Chat module): Register hooks with the same name, owner is automatically recorded during registration
+# Subscriber (inside Chat module): Register hooks with the same name, owner is automatically recorded during registration
 @sdk.lifecycle.on("message_received")
 async def on_message_received(data): ...
 
-@sdk.lifecycle.on("message")   # Dot-structure parent prefixes also apply (filtered by owner)
+@sdk.lifecycle.on("message")   # Dot-structure parent prefix also applies (filtered by owner)
 async def on_any(data): ...
 ```
 
-- If the target owner has no registered hooks → the event is **not consumed** (can be probed in advance using `has_handlers()`)
-- When `data` is a dict, it automatically carries `_trace_id` (does not overwrite existing values)
-- `emit_sync` / `submit_event` also support `to=` parameter
-- Three-layer model for inter-module communication (RPC / directed / broadcast) is described in [Inter-Module Communication](module-communication.md)
+- If the target owner has no registered hooks → the event is **not consumed** (use `has_handlers()` to detect beforehand)
+- If `data` is a dict, it automatically carries `_trace_id` (does not overwrite existing values)
+- `emit_sync` / `submit_event` also support the `to=` parameter
+- The three-layer model for inter-module communication (RPC / targeted / broadcast) is detailed in
+  [Inter-Module Communication](module-communication.md)
 
-### One-Time Registration (`once`)
+### One-time Registration (`once`)
 
 Since 2.7.0, handlers registered with `lifecycle.once()` are automatically unregistered after being triggered once, suitable for "first ready" type one-time hooks:
 
@@ -97,13 +98,13 @@ async def on_first_ready(data):
     print("First ready, will not trigger again")
 ```
 
-- Same priority semantics as `on()` (higher `priority` value means earlier execution)
-- Automatically unregistered, no need to manually `unregister`
+- Same priority semantics as `on()` (`priority` value higher executes earlier)
+- Automatically unregisters, no need to manually `unregister`
 - Both synchronous and asynchronous handlers are supported
 
 ### Listener Query (`has_handlers`)
 
-For hot-path short-circuit scenarios, use `has_handlers()` to check if there are listeners in advance, avoiding unnecessary event traversal and task scheduling:
+In hot-path short-circuit scenarios, use `has_handlers()` to check if there are listeners beforehand, avoiding unnecessary event traversal and task scheduling:
 
 ```python
 if sdk.lifecycle.has_handlers("message.sending"):
@@ -111,28 +112,28 @@ if sdk.lifecycle.has_handlers("message.sending"):
 ```
 
 - Covers **exact event name**, wildcard `*`, and parent event matching
-- Returns `False` if there are no listeners, allowing safe skipping of `emit`
+- Returns `False` if no listeners exist, allowing safe skipping of `emit`
 
-## Hook Breakpoints Overview
+## Lifecycle Hook Breakpoints Overview
 
-A typical lifecycle event sequence for a message from platform entry to processing completion in the framework:
+The typical lifecycle event sequence for a message from the platform entering the framework to completion:
 
 ```mermaid
 sequenceDiagram
     participant P as Platform
     participant A as Adapter
-    participant F as Core Framework
+    participant F as Framework Core
     participant M as Module Processors
 
     P->>A: Native event arrives
     A->>F: adapter.event.receive (earliest)
-    F->>F: event.pre_process (before handler execution)
-    F->>M: Distribute to processors (commands/messages/notifications, etc.)
+    F->>F: event.pre_process (before processor execution)
+    F->>M: Distributed to processors (commands/messages/notifications, etc.)
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending (before sending)
     F->>A: SendDSL send
-    A->>P: Send to platform
+    A->>P: Sent to platform
     A->>F: message.sent (after sending)
     F->>F: adapter.event.dispatched (after distribution)
 ```
@@ -143,8 +144,8 @@ The framework includes the following built-in hook breakpoints, which users can 
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `core.init.start` | SDK initialization begins | `{}` |
-| `core.init.stage` | Each initialization stage begins (emitted in background) | `{"stage": str}`, values: `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.start` | SDK initialization starts | `{}` |
+| `core.init.stage` | Initialization stages start (emitted in background) | `{"stage": str}`, values: `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
 | `core.init.complete` | SDK initialization completes | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str (only if failed)}` |
 | `core.uninit.complete` | SDK deinitialization completes | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (only if failed)}` |
 
@@ -160,10 +161,10 @@ def show_stage(data):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `config.set` | A configuration item is modified | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | Entire config tree change detected after external edit to config.toml | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.set` | Configuration item is modified | `{"key": str, "old_value": Any, "new_value": Any}` |
+| `config.updated` | Whole tree change detected after external edit of config.toml | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
-**Example: Configuration Audit**
+**Example: Configuration Auditing**
 
 ```python
 @sdk.lifecycle.on("config.set")
@@ -176,18 +177,23 @@ def audit_config(data):
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `module.register` | Module class registered to manager | `{"module_name": str, "success": bool}` |
-| `module.load` | Module loaded (instantiation successful) | `{"module_name": str, "success": bool}` |
-| `module.init` | Module initialization complete (including lazy loading) | `{"module_name": str, "success": bool}` |
+| `module.load` | Module loaded (instance created successfully); if failed, payload also carries `"error": str, "traceback": str` (failure context can also be queried via `module.last_error(name)`) | `{"module_name": str, "success": bool}` |
+| `module.init` | Module initialization completed (including lazy loading) | `{"module_name": str, "success": bool}` |
+| `module.before_unload` | First step in unload pipeline (before `on_unload` and resource release; module instance hooks `on_before_unload` also trigger synchronously) | `{"module_name": str, "reason": str}`; `reason` values: `unload` / `reload` / `disable` / `cascade` / `dormant` |
+| `module.sleep` | Module sleep completed (lazy loading sleep: resources released, automatically awakened on access) | `{"module_name": str, "success": bool}` |
 | `module.unload` | Module unloaded | `{"module_name": str, "success": bool}` |
-| `module.reload` | Module hot-reloaded (including cascading reload of dependencies) | `{"module_name": str, "success": bool, "full": bool}`; for full reload (`reload_all`), `module_name` is `"All"`, payload additionally carries `"results": dict[str, bool]` |
+| `module.reload` | Module hot-reloaded (including cascading reload of dependencies) | `{"module_name": str, "success": bool, "full": bool, "duration_ms": int}`; single module additionally carries `"identity_changed": bool` (False = old code may still run in process, such as C extension cache) and `"version_old": str, "version_new": str`; full reload (`reload_all`) has `module_name` as `"All"`, payload additionally carries `"results": dict[str, bool]` |
+
+> **Module instance hook `on_before_unload`**: The optional lifecycle method corresponding to the `module.before_unload` event—`event["reason"]` indicates the reason, suitable for saving state to `sdk.storage` before resource release, and restoring it in `on_load` when awakened/reloaded (the state continuation of lazy loading sleep is based on this). Hook failure only logs a warning, does not block the unload process.
 
 ### Adapter Lifecycle
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `adapter.load` | Adapter registered | `{"platform": str, "success": bool}` |
+| `adapter.load` | Adapter registration completed | `{"platform": str, "success": bool}` |
+| `adapter.reload` | Adapter code-level hot-reloaded | `{"adapter_name": str, "success": bool, "full": bool, "duration_ms": int, "identity_changed": bool, "version_old": str, "version_new": str, "was_started": bool, "source": str}`; `identity_changed=False` = old code may still run in process |
 | `adapter.start` | Adapter started | `{"platforms": [str]}` |
-| `adapter.status.change` | Adapter status changed | `{"platform": str, "status": str, "retry_count": int, "error": str (only if failed)}`; status values: `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
+| `adapter.status.change` | Adapter status changed | `{"platform": str, "status": str, "retry_count": int, "error": str (only if failed)}`; full status values: `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
 | `adapter.stop` | Adapter stopped | `{"platforms": [str]}` |
 | `adapter.stopped` | Adapter stopped completely | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot online | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
@@ -197,12 +203,12 @@ def audit_config(data):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `adapter.event.receive` | External platform event received (earliest) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.blocked` | Middleware blocks event (returns `False`, event discarded and not delivered to any processor) | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
+| `adapter.event.receive` | Received external platform event (earliest) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.blocked` | Middleware blocks event (returns `False`, event discarded and not entered any processor) | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
 | `adapter.event.dispatched` | Event distribution completed | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | Before event processor execution begins | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `event.pre_process` | Event processor starts execution | `{"event_type": str, "platform": str, "detail_type": str}` |
 
-**Example: Event Counting**
+**Example: Event Statistics**
 
 ```python
 event_counter = {}
@@ -215,7 +221,7 @@ def count_events(data):
 @sdk.lifecycle.on("adapter.event.dispatched")
 def log_unhandled(data):
     if data["onebot_handlers_count"] == 0:
-        print(f"[Unprocessed] {data['platform']}/{data['event_type']}")
+        print(f"[Unhandled] {data['platform']}/{data['event_type']}")
 ```
 
 ### Message Sending
@@ -223,7 +229,7 @@ def log_unhandled(data):
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `message.sending` | Message about to be sent | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | Message sent successfully | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | Message sent | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **Example: Message Sending Audit**
 
@@ -238,9 +244,9 @@ def log_sending(data):
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `command.matched` | Command matched and about to execute | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | Command execution completed | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (only if failed)}` |
+| `command.executed` | Command executed | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (only if failed)}` |
 
-**Example: Command Counting**
+**Example: Command Statistics**
 
 ```python
 @sdk.lifecycle.on("command.matched")
@@ -284,26 +290,26 @@ def on_ws_disconnect(data):
     print(f"[WS] Disconnected: {data['path']} ({data['reason']})")
 ```
 
-### Storage Connection Status
+### Storage Connection State
 
-Backend storage connection pool establishment, failure, and recovery (all emitted in background, not blocking storage operations):
+Backend storage connection pool established, failure, and recovery (all emitted in background, not blocking storage operations):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `storage.ready` | Storage backend connection pool ready (first pool creation successful in each event loop) | `{"backend": str}` |
-| `storage.unreachable` | Retry exhaustion leads to cooldown period (during which operations fail quickly) | `{"backend": str, "error": str, "cooldown": float}` |
-| `storage.recovered` | Cool-down ends, reconnection successful, storage becomes available | `{"backend": str}` |
+| `storage.ready` | Storage backend connection pool ready (first pool creation success per event loop) | `{"backend": str}` |
+| `storage.unreachable` | Connection retry exhausted, entering cooldown period (operations fail quickly during cooldown) | `{"backend": str, "error": str, "cooldown": float}` |
+| `storage.recovered` | Cooldown ended, reconnection successful, storage restored | `{"backend": str}` |
 
 **Example: Storage Failure Alert**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
 def alert_storage_down(data):
-    print(f"[Alert] Storage backend {data['backend']} unreachable: {data['error']}, will automatically reconnect in {data['cooldown']}s")
+    print(f"[Alert] Storage backend {data['backend']} unreachable: {data['error']}, auto-reconnect in {data['cooldown']}s")
 
 @sdk.lifecycle.on("storage.recovered")
 def notify_storage_back(data):
-    print(f"[Recovery] Storage backend {data['backend']} is back online")
+    print(f"[Restored] Storage backend {data['backend']} is available again")
 ```
 
 ### HTTP Client
@@ -313,24 +319,24 @@ def notify_storage_back(data):
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `client.request.success` | HTTP request successful | `{"method": str, "url": str, "status": int, "elapsed": float}` |
-| `client.request.failed` | HTTP request failed after exhausting retries | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
+| `client.request.failed` | HTTP request exhausted retries and finally failed | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
 | `client.ws.connect` | WebSocket connection established | `{"url": str}` |
 
 ### Internationalization
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `i18n.language.changed` | Framework language switched (via `i18n.set_language`) | `{"language": str, "previous": str}` |
+| `i18n.language.changed` | Framework language switched (`i18n.set_language`) | `{"language": str, "previous": str}` |
 
 ## Standard Event Definitions
 
 ```python
 STANDARD_EVENTS = {
     "core": ["init.start", "init.stage", "init.complete", "uninit.complete"],
-    "module": ["load", "init", "unload", "register", "reload"],
+    "module": ["load", "before_unload", "init", "sleep", "unload", "register", "reload"],
     "adapter": [
-        "load", "start", "status.change", "stop", "stopped",
-        "event.receive", "event.dispatched",
+        "load", "start", "status.change", "reload", "stop", "stopped",
+        "event.receive", "event.blocked", "event.dispatched",
         "bot.online", "bot.offline",
     ],
     "server": [
@@ -350,7 +356,7 @@ STANDARD_EVENTS = {
 
 ## Complete API Reference
 
-### Registration and Unregistration
+### Registering and Unregistering
 
 | Method | Description |
 |------|------|
@@ -362,10 +368,10 @@ STANDARD_EVENTS = {
 
 | Method | Description |
 |------|------|
-| `await lifecycle.emit(event, data=None, *, to=None)` | Asynchronous trigger, handlers execute **in parallel** (non-blocking each other, returns when all complete), returns non-None values in order of priority to chain-replace data; `to` specifies owner for directed delivery |
-| `lifecycle.fire(event, data=None, *, to=None)` | **Background emission (fire-and-forget)**: handlers execute in background tasks in parallel, no waiting, no return value; zero overhead if no listeners; suitable for high-frequency hot paths and pure observation events; for shutdown sequences and ordered consumption (e.g., `config.set`) use `emit` |
-| `lifecycle.emit_sync(event, data=None, *, to=None)` | Synchronous trigger, asynchronous handlers scheduled with create_task |
-| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | Backward compatible, automatically builds standard event format; `background=True` uses `fire` background emission |
+| `await lifecycle.emit(event, data=None, *, to=None)` | Asynchronous trigger, handlers execute **in parallel** (do not block each other, return when all complete), return non-None values replay in priority order; `to` specifies owner for targeted delivery |
+| `lifecycle.fire(event, data=None, *, to=None)` | **Background emission (fire and forget)**: Handlers execute in background tasks in parallel, no waiting, no return value; zero overhead if no listeners; suitable for high-frequency hot paths and pure observation events; shutdown sequences and order-sensitive consumption (e.g., `config.set`) use `emit` |
+| `lifecycle.emit_sync(event, data=None, *, to=None)` | Synchronous trigger, asynchronous handlers scheduled via create_task |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | Backward compatible, automatically constructs standard event format; `background=True` uses `fire` background emission |
 
 ### Utilities
 
@@ -401,7 +407,7 @@ class Main(BaseModule):
         # Configuration change audit
         @sdk.lifecycle.on("config.set")
         def audit(data):
-            sdk.logger.info(f"Configuration changed: {data['key']} = {data['new_value']}")
+            sdk.logger.info(f"Configuration change: {data['key']} = {data['new_value']}")
 ```
 
 ## Background Task Ownership and Automatic Cancellation
@@ -409,19 +415,19 @@ class Main(BaseModule):
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Background tasks created by modules, if not cancelled in `on_unload`, will hold a reference to `self`, preventing the module instance from being garbage collected (residual old instances after hot reload). The framework provides the following fallback mechanism:
+Background asyncio tasks created by modules that are not canceled in `on_unload` will retain a reference to `self`, preventing the module instance from being collected (old instances remain after hot reload). The framework provides the following fallback mechanisms:
 
-- **`self.spawn(coro)`** (recommended within modules): Tasks are automatically assigned to the module name. When the module is unloaded, the framework automatically cancels unfinished tasks after `on_unload` and logs a warning.
-- **`spawn_background(coro)`** (in `ErisPulse.runtime`): Automatically captures the current `owner_scope` context; `cancel_owner_tasks(owner)` cancels by assignment, `cancel_all_background_tasks()` is provided for `sdk.uninit()` fallback.
-- **Adapters**: Background tasks under platform names are also automatically cancelled on shutdown.
+- **`self.spawn(coro)`** (recommended within modules): Tasks are automatically assigned to the module name, and the framework cancels unfinished tasks and logs warnings after `on_unload` in the module unload process
+- **`spawn_background(coro)`** (in `ErisPulse.runtime`): Automatically captures the current `owner_scope` context; `cancel_owner_tasks(owner)` cancels by assignment, `cancel_all_background_tasks()` is provided for `sdk.uninit()` fallback
+- **Adapters**: Background tasks under the platform name are also canceled as a fallback when stopping
 
 ```python
 async def on_load(self, event):
-    # Recommended: Use self.spawn() for background tasks, framework automatically cancels on unload
+    # Recommended: Use self.spawn() for background tasks; framework automatically cancels as fallback after unload
     self.spawn(self._poll())
 
 async def on_unload(self, event):
-    # For fine control, still recommend manually cancelling and awaiting completion
+    # For fine-grained control, still recommend manually canceling and waiting for completion
     if self._poll_task:
         self._poll_task.cancel()
         await asyncio.gather(self._poll_task, return_exceptions=True)
@@ -433,17 +439,17 @@ async def _poll(self):
 ```
 
 > [!IMPORTANT]
-> The framework's fallback is **forced cancellation** (`cancel_owner_tasks`), which occurs after `on_unload` returns. Therefore, tasks requiring graceful completion (flush buffers, persist state, close connections) **must** be manually cancelled and awaited in `on_unload`—don't expect the fallback to preserve cleanup logic. The framework only guarantees "no residual tasks holding `self`", not "graceful". For tasks requiring `await` results, directly `await` instead of dropping them into background tasks.
+> Framework fallback is **forced cancel** (`cancel_owner_tasks`), which occurs after `on_unload` returns. Therefore, tasks requiring graceful termination (flush buffers, persist state, close connections) **must** be manually `cancel()` + `await` in `on_unload`—don't rely on the fallback to preserve termination logic. The framework only guarantees that "no tasks holding `self` are left behind," not "graceful termination." For tasks requiring `await` results, directly `await`, don't delegate to background tasks.
 
 ## Notes
 
-1. **Handlers can be synchronous or asynchronous**: The system automatically identifies and calls them correctly.
-2. **Data passing**: In `emit()` mode, if a handler returns a non-None value, it modifies the data passed to subsequent handlers.
-3. **Event naming conventions**: Use dot-structure event names for easier parent event listening.
-4. **Error isolation**: An exception in a single handler does not affect the execution of other handlers.
-5. **Synchronous trigger limitation**: In `emit_sync()`, asynchronous handlers are scheduled fire-and-forget, and return values cannot be returned.
-6. **Lifecycle cleanup**: When `sdk.uninit()` is called, all registered handlers and timers are cleared.
-7. **Loading priority**: If you need to listen to events during the framework initialization phase, set a high priority and disable lazy loading.
+1. **Handlers can be synchronous or asynchronous**: The system automatically recognizes and calls them correctly
+2. **Data passing**: In `emit()` mode, handlers returning non-None values modify the data passed to subsequent handlers
+3. **Event naming conventions**: Use dot-structure event names for easier parent listening
+4. **Error isolation**: An exception in a single handler does not affect other handler executions
+5. **Synchronous trigger limitations**: In `emit_sync()`, asynchronous handlers are scheduled fire-and-forget, and return values cannot be returned
+6. **Lifecycle cleanup**: When `sdk.uninit()` is called, all registered handlers and timers are cleared
+7. **Loading priority**: If you need to listen to events during the framework initialization phase, set a high priority and disable lazy loading
 
 ## Related Documentation
 

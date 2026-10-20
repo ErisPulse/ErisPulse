@@ -4,9 +4,9 @@ QQBotAdapter is an adapter built based on the official QQ Bot (QQ OpenAPI) proto
 
 ---
 
-## Documentation Information
+## Document Information
 
-- Corresponding Module Version: 5.0.0
+- Corresponding Module Version: 5.1.0
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -66,29 +66,32 @@ qqbot = sdk.adapter.get("qqbot")
 
 await qqbot.Send.To("user", user_openid).Text("Hello World!")
 
-# Group mention message (automatically uses <qqbot-at-user id="x" /> format)
-await qqbot.Send.To("group", group_openid).At("member_openid").Text("@you")
+# Group chat @ message (automatically uses <qqbot-at-user id="x" /> format)
+await qqbot.Send.To("group", group_openid).At("member_openid").Text("@You")
 
-# Channel message (automatically uses <@user_id> format for mentions)
+# Channel message (@ automatically uses <@user_id> format)
 await qqbot.Send.To("channel", channel_id).Text("Channel message")
 
 # Passive reply (automatically includes msg_id, no need to manually Reply)
 await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("Reply content")
 
-# Rich Media (supports URL / local path / binary; automatically splits uploads over 5MB)
+# Rich media (URL / local path / binary; automatically splits and uploads if over 5MB)
 await qqbot.Send.To("group", gid).Image("https://example.com/img.png")
 
 # Markdown (native / template)
 await qqbot.Send.To("group", gid).Markdown("# Title\n- List")
-await qqbot.Send.To("user", uid).Markdown(template_id=1, kv=[{"key": "title", "value": "Notice"}])
+await qqbot.Send.To("user", uid).Markdown(template_id=1, kv=[{"key": "title", "value": "Notification"}])
 
-# Keyboard (automatically sets type to markdown and attaches bot_appid)
+# Merge Forward (official md has no collapse syntax, renders as a quoted list; requires native Markdown permission, falls back to plain text on failure)
+await qqbot.Send.To("group", gid).MergeForward(nodes)
+
+# Keyboard (automatically set to markdown type and includes bot_appid)
 await qqbot.Send.To("group", gid).Keyboard(keyboard).Text("Please select")
 
-# Streaming Message (for private chats)
+# Streaming message (1-on-1 chat)
 await qqbot.Send.To("user", openid).Stream("Answer content")
 
-# Multiple Accounts
+# Multiple accounts
 await qqbot.Send.Using("account2").To("group", gid).Text("Sent from second bot")
 ```
 
