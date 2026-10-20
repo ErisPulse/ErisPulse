@@ -59,6 +59,7 @@ from .session_type import (
     unregister_custom_type,
     unregister_custom_types_by_owner,
 )
+from .command_flow import CommandFlow
 from .wrapper import (
     CONFIRM_NO_WORDS,
     CONFIRM_YES_WORDS,
@@ -118,6 +119,7 @@ __all__ = [
     "SendType",
     "SessionOccupiedError",
     "clear_custom_types",
+    "CommandFlow",
     "command",
     "convert_to_receive_type",
     "convert_to_send_type",
