@@ -224,7 +224,7 @@
     "平台特性指南": {
       "description": "各平台特性和適配器說明",
       "icon": "fa-plug",
-      "count": 17,
+      "count": 18,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures 文件",
@@ -323,6 +323,12 @@
           "icon": "fa-plug"
         },
         {
+          "title": "SnowLuma 平台特性文件",
+          "path": "platform-guide/snowluma.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
           "title": "終端平台特性文件",
           "path": "platform-guide/terminal.md",
           "level": 1,
@@ -375,7 +381,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "生命週期管理",
+          "title": "生命周期管理",
           "path": "advanced/lifecycle.md",
           "level": 1,
           "icon": "fa-clock-rotate-left"

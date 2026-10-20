@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1780,
+  "total_keywords": 1790,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3107,7 +3107,7 @@
     "Event Mixinメソッド": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 334,
+        "line": 335,
         "level": 3,
         "title": "Event Mixinメソッド"
       }
@@ -3551,7 +3551,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 161,
+        "line": 162,
         "level": 3,
         "title": "OneBot12メッセージのサポート"
       },
@@ -3739,7 +3739,7 @@
     "SDK オブジェクト": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 131,
+        "line": 149,
         "level": 2,
         "title": "SDK オブジェクト"
       },
@@ -3774,12 +3774,12 @@
         "title": "SDKとの関係"
       }
     ],
-    "SDKのコアアーキテクチャ": [
+    "SDKコアアーキテクチャ": [
       {
         "document": "architecture.md",
         "line": 5,
         "level": 2,
-        "title": "SDKのコアアーキテクチャ"
+        "title": "SDKコアアーキテクチャ"
       }
     ],
     "SQL クエリビルダ": [
@@ -3985,7 +3985,7 @@
     "Sync API接続": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 360,
+        "line": 361,
         "level": 2,
         "title": "Sync API接続"
       }
@@ -4717,7 +4717,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 396,
+        "line": 441,
         "level": 3,
         "title": "create"
       }
@@ -4725,7 +4725,7 @@
     "delConfig：設定キーの削除": [
       {
         "document": "user-guide/configuration.md",
-        "line": 198,
+        "line": 201,
         "level": 3,
         "title": "delConfig：設定キーの削除"
       }
@@ -4773,7 +4773,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 542,
+        "line": 587,
         "level": 3,
         "title": "doctor"
       }
@@ -4786,12 +4786,12 @@
         "title": "dump_state()"
       }
     ],
-    "escalate：時間通りに必ず届くアップグレード": [
+    "escalate：時間経過で必ず到達するアップグレード": [
       {
         "document": "advanced/interaction.md",
-        "line": 103,
+        "line": 140,
         "level": 3,
-        "title": "escalate：時間通りに必ず届くアップグレード"
+        "title": "escalate：時間経過で必ず到達するアップグレード"
       }
     ],
     "event パラメータに型注釈を追加する": [
@@ -4810,12 +4810,12 @@
         "title": "get() メソッド"
       }
     ],
-    "getAllConfig：全設定のスナップショット": [
+    "getAllConfig：全量設定のスナップショット": [
       {
         "document": "user-guide/configuration.md",
-        "line": 187,
+        "line": 190,
         "level": 3,
-        "title": "getAllConfig：全設定のスナップショット"
+        "title": "getAllConfig：全量設定のスナップショット"
       }
     ],
     "group": [
@@ -4853,7 +4853,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 453,
+        "line": 498,
         "level": 3,
         "title": "i18n"
       }
@@ -4869,7 +4869,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 342,
+        "line": 387,
         "level": 3,
         "title": "init"
       }
@@ -4946,10 +4946,18 @@
         "title": "metadataの約束事"
       }
     ],
+    "on_before_unload メソッド": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 64,
+        "level": 3,
+        "title": "on_before_unload メソッド"
+      }
+    ],
     "on_load メソッド": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 32,
+        "line": 34,
         "level": 3,
         "title": "on_load メソッド"
       }
@@ -4957,7 +4965,7 @@
     "on_unload メソッド": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 47,
+        "line": 49,
         "level": 3,
         "title": "on_unload メソッド"
       }
@@ -5005,7 +5013,7 @@
     "remind：返信がなければリマインダー": [
       {
         "document": "advanced/interaction.md",
-        "line": 86,
+        "line": 123,
         "level": 3,
         "title": "remind：返信がなければリマインダー"
       }
@@ -5018,10 +5026,18 @@
         "title": "reply メソッドを使用して返信を送信"
       }
     ],
+    "restart": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 361,
+        "level": 3,
+        "title": "restart"
+      }
+    ],
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 295,
+        "line": 297,
         "level": 3,
         "title": "run"
       }
@@ -5090,6 +5106,14 @@
         "title": "self_id 自自動マッピング"
       }
     ],
+    "stop": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 335,
+        "level": 3,
+        "title": "stop"
+      }
+    ],
     "stop()": [
       {
         "document": "advanced/conversation.md",
@@ -5117,7 +5141,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 490,
+        "line": 535,
         "level": 3,
         "title": "types"
       }
@@ -5342,14 +5366,6 @@
         "title": "③ 出力次元（モジュールの出力呼び出し制限）"
       }
     ],
-    "いつ待機がキャンセルされるか": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 56,
-        "level": 3,
-        "title": "いつ待機がキャンセルされるか"
-      }
-    ],
     "すぐに始める": [
       {
         "document": "quick-start.md",
@@ -5512,6 +5528,14 @@
         "title": "アカウント設定（EmailAdapter.accounts）"
       }
     ],
+    "アクティブ GC 設定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 437,
+        "level": 3,
+        "title": "アクティブ GC 設定"
+      }
+    ],
     "アクティブ状態の管理": [
       {
         "document": "advanced/conversation.md",
@@ -5558,6 +5582,14 @@
         "line": 1,
         "level": 1,
         "title": "アダプタのコアコンセプト"
+      }
+    ],
+    "アダプタのホットリロードアーキテクチャ": [
+      {
+        "document": "architecture.md",
+        "line": 324,
+        "level": 2,
+        "title": "アダプタのホットリロードアーキテクチャ"
       }
     ],
     "アダプタのホット起動・停止": [
@@ -5785,7 +5817,7 @@
     "アンロードと完全アンロード（purge）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 62,
+        "line": 80,
         "level": 3,
         "title": "アンロードと完全アンロード（purge）"
       }
@@ -5927,7 +5959,7 @@
     "イベントハンドラのライフサイクル": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 341,
+        "line": 359,
         "level": 3,
         "title": "イベントハンドラのライフサイクル"
       }
@@ -5935,7 +5967,7 @@
     "イベントハンドラの登録": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 325,
+        "line": 343,
         "level": 3,
         "title": "イベントハンドラの登録"
       }
@@ -5987,7 +6019,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 323,
+        "line": 341,
         "level": 2,
         "title": "イベント処理"
       }
@@ -6150,14 +6182,6 @@
         "title": "イベント配信メカニズム"
       }
     ],
-    "イベント駆動の遅延起動（activate_on）": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 33,
-        "level": 2,
-        "title": "イベント駆動の遅延起動（activate_on）"
-      }
-    ],
     "イベント駆動アーキテクチャ": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -6166,12 +6190,20 @@
         "title": "イベント駆動アーキテクチャ"
       }
     ],
-    "イベント駆動型遅延アクティブ化（`activate_on`）のトリガーアーキテクチャ": [
+    "イベント駆動型遅延起動（activate_on）": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 33,
+        "level": 2,
+        "title": "イベント駆動型遅延起動（activate_on）"
+      }
+    ],
+    "イベント駆動遅延アクティベーション（`activate_on`）のトリガーアーキテクチャ": [
       {
         "document": "architecture.md",
         "line": 215,
         "level": 3,
-        "title": "イベント駆動型遅延アクティブ化（`activate_on`）のトリガーアーキテクチャ"
+        "title": "イベント駆動遅延アクティベーション（`activate_on`）のトリガーアーキテクチャ"
       }
     ],
     "インストールと有効化": [
@@ -6331,7 +6363,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 198,
+        "line": 199,
         "level": 3,
         "title": "エラーコードの説明"
       },
@@ -6389,7 +6421,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 368,
+        "line": 386,
         "level": 2,
         "title": "エラー処理"
       },
@@ -6521,7 +6553,7 @@
     "グループメッセージの処理": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 385,
+        "line": 386,
         "level": 3,
         "title": "グループメッセージの処理"
       }
@@ -6623,7 +6655,7 @@
     "グローバルパラメータ": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 525,
+        "line": 570,
         "level": 2,
         "title": "グローバルパラメータ"
       }
@@ -6631,7 +6663,7 @@
     "グローバル設定": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 108,
+        "line": 146,
         "level": 3,
         "title": "グローバル設定"
       }
@@ -6695,7 +6727,7 @@
     "コアモジュールへのアクセス": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 133,
+        "line": 151,
         "level": 3,
         "title": "コアモジュールへのアクセス"
       }
@@ -6719,7 +6751,7 @@
     "コマンド dict 形式の宣言パラメータ": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 70,
+        "line": 69,
         "level": 3,
         "title": "コマンド dict 形式の宣言パラメータ"
       }
@@ -6872,12 +6904,12 @@
         "title": "コマンド管理（cooldown= / rate_limit= / usage_limit= / deprecated=）"
       }
     ],
-    "コマンド解析の設定（event.command）": [
+    "コマンド解析設定（event.command）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 700,
+        "line": 692,
         "level": 2,
-        "title": "コマンド解析の設定（event.command）"
+        "title": "コマンド解析設定（event.command）"
       }
     ],
     "コマンド設定": [
@@ -6894,6 +6926,14 @@
         "line": 483,
         "level": 2,
         "title": "コマンド配信の決定チェーン：なぜコマンドが発動しなかったのか"
+      }
+    ],
+    "コメントの保持と最小限の書き込み": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 52,
+        "level": 2,
+        "title": "コメントの保持と最小限の書き込み"
       }
     ],
     "コンテキストと永続化": [
@@ -6915,7 +6955,7 @@
     "コンポーネントのアップグレード": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 648,
+        "line": 693,
         "level": 3,
         "title": "コンポーネントのアップグレード"
       }
@@ -6923,7 +6963,7 @@
     "コンポーネントのアンインストール": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 625,
+        "line": 670,
         "level": 3,
         "title": "コンポーネントのアンインストール"
       }
@@ -6931,7 +6971,7 @@
     "コンポーネントの一覧表示": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 609,
+        "line": 654,
         "level": 3,
         "title": "コンポーネントの一覧表示"
       }
@@ -6939,7 +6979,7 @@
     "コンポーネントの設定": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 635,
+        "line": 680,
         "level": 3,
         "title": "コンポーネントの設定"
       }
@@ -7067,7 +7107,7 @@
     "サーバー設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 265,
+        "line": 268,
         "level": 2,
         "title": "サーバー設定"
       }
@@ -7184,12 +7224,12 @@
         "title": "シンプルなタイマー"
       }
     ],
-    "スコープの設定（scope）": [
+    "スコープ設定（scope）": [
       {
         "document": "user-guide/configuration.md",
         "line": 603,
         "level": 2,
-        "title": "スコープの設定（scope）"
+        "title": "スコープ設定（scope）"
       }
     ],
     "スコープ（scope）": [
@@ -7217,7 +7257,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 298,
+        "line": 316,
         "level": 2,
         "title": "ストレージシステム"
       }
@@ -7294,28 +7334,28 @@
         "title": "セキュリティヘッダー"
       }
     ],
-    "セッションタイマー：remind / escalate": [
+    "セッションのタイマー：remind / escalate": [
       {
         "document": "advanced/interaction.md",
-        "line": 82,
+        "line": 119,
         "level": 2,
-        "title": "セッションタイマー：remind / escalate"
+        "title": "セッションのタイマー：remind / escalate"
       }
     ],
-    "セッション受信箱：event.history": [
+    "セッションの受信箱：event.history": [
       {
         "document": "advanced/interaction.md",
-        "line": 181,
+        "line": 218,
         "level": 2,
-        "title": "セッション受信箱：event.history"
+        "title": "セッションの受信箱：event.history"
       }
     ],
-    "セッション排他：acquire / hold / get_owner_of": [
+    "セッションの排他制御：acquire / hold / get_owner_of": [
       {
         "document": "advanced/interaction.md",
-        "line": 150,
+        "line": 187,
         "level": 2,
-        "title": "セッション排他：acquire / hold / get_owner_of"
+        "title": "セッションの排他制御：acquire / hold / get_owner_of"
       }
     ],
     "セッション識別子": [
@@ -7353,7 +7393,7 @@
     "タイプストアブの生成": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 684,
+        "line": 729,
         "level": 3,
         "title": "タイプストアブの生成"
       }
@@ -7361,7 +7401,7 @@
     "タイプストアブコマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 484,
+        "line": 529,
         "level": 2,
         "title": "タイプストアブコマンド"
       }
@@ -7466,12 +7506,12 @@
         "title": "チェーン修飾メソッド（self を返すため、組み合わせて使用可能）"
       }
     ],
-    "チェーン修飾メソッド（組み合わせて使用可能）": [
+    "チェーン修飾子メソッド（組み合わせて使用可能）": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 128,
+        "line": 129,
         "level": 3,
-        "title": "チェーン修飾メソッド（組み合わせて使用可能）"
+        "title": "チェーン修飾子メソッド（組み合わせて使用可能）"
       }
     ],
     "チェーン修飾子メソッド（複数使用可能）": [
@@ -7501,7 +7541,7 @@
     "チェーン呼び出しの例": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 136,
+        "line": 137,
         "level": 3,
         "title": "チェーン呼び出しの例"
       },
@@ -7869,7 +7909,7 @@
     "トランザクションの使用": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 313,
+        "line": 331,
         "level": 3,
         "title": "トランザクションの使用"
       }
@@ -7882,6 +7922,14 @@
         "title": "トランザクション操作"
       }
     ],
+    "トリガの意味": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 94,
+        "level": 3,
+        "title": "トリガの意味"
+      }
+    ],
     "トリガー": [
       {
         "document": "advanced/lifecycle.md",
@@ -7890,20 +7938,12 @@
         "title": "トリガー"
       }
     ],
-    "トリガーの意味": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 95,
-        "level": 3,
-        "title": "トリガーの意味"
-      }
-    ],
-    "トレースID：trace-id": [
+    "トレースID": [
       {
         "document": "advanced/interaction.md",
-        "line": 212,
+        "line": 249,
         "level": 2,
-        "title": "トレースID：trace-id"
+        "title": "トレースID"
       }
     ],
     "ドキュメント": [
@@ -8113,7 +8153,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 372,
+        "line": 373,
         "level": 3,
         "title": "ハートビートメカニズム"
       }
@@ -8274,6 +8314,14 @@
         "title": "パラメータ化されたクエリ"
       }
     ],
+    "パラメータ説明": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 100,
+        "level": 3,
+        "title": "パラメータ説明"
+      }
+    ],
     "ビューポートと出力形式": [
       {
         "document": "ecosystem/takumi.md",
@@ -8365,7 +8413,7 @@
     "フットスタジアムの作成": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 704,
+        "line": 749,
         "level": 3,
         "title": "フットスタジアムの作成"
       }
@@ -8392,6 +8440,14 @@
         "line": 688,
         "level": 3,
         "title": "フレームワーク補助メソッド"
+      }
+    ],
+    "フレームワーク設定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 416,
+        "level": 2,
+        "title": "フレームワーク設定"
       }
     ],
     "ブラックリストフィルタリング": [
@@ -8658,22 +8714,6 @@
         "title": "プラットフォーム登録メソッドの照会"
       }
     ],
-    "プレースホルダーコマンドの help 回帰チェーン": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 85,
-        "level": 3,
-        "title": "プレースホルダーコマンドの help 回帰チェーン"
-      }
-    ],
-    "プロアクティブ GC 設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 437,
-        "level": 3,
-        "title": "プロアクティブ GC 設定"
-      }
-    ],
     "プロキシ設定": [
       {
         "document": "platform-guide/telegram.md",
@@ -8691,7 +8731,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 694,
+        "line": 739,
         "level": 3,
         "title": "プロジェクトの初期化"
       }
@@ -8713,7 +8753,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 661,
+        "line": 706,
         "level": 3,
         "title": "プロジェクトの実行"
       }
@@ -8743,7 +8783,7 @@
     "プロジェクト管理コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 335,
+        "line": 380,
         "level": 2,
         "title": "プロジェクト管理コマンド"
       }
@@ -8786,20 +8826,20 @@
         "title": "ヘルプを求める"
       }
     ],
-    "ホットアップデートの内部処理の詳細": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 137,
-        "level": 3,
-        "title": "ホットアップデートの内部処理の詳細"
-      }
-    ],
     "ホットリロード失敗ロールバック": [
       {
         "document": "advanced/ownership.md",
         "line": 129,
         "level": 2,
         "title": "ホットリロード失敗ロールバック"
+      }
+    ],
+    "ホット更新の内部の詳細": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 139,
+        "level": 3,
+        "title": "ホット更新の内部の詳細"
       }
     ],
     "ホームエントリ": [
@@ -8856,6 +8896,14 @@
         "title": "ボタン（keyboard）"
       }
     ],
+    "マスターシステム設定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 298,
+        "level": 2,
+        "title": "マスターシステム設定"
+      }
+    ],
     "マッチングエントリの構文（全システムで統一）": [
       {
         "document": "advanced/scope.md",
@@ -8886,14 +8934,6 @@
         "line": 520,
         "level": 2,
         "title": "マルチアカウントの設定"
-      }
-    ],
-    "マルチウェイティング：expect + select": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 118,
-        "level": 2,
-        "title": "マルチウェイティング：expect + select"
       }
     ],
     "マルチメソッド登録（Mixin クラス）": [
@@ -8985,7 +9025,7 @@
     "メソッドの詳細情報の取得": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 164,
+        "line": 182,
         "level": 3,
         "title": "メソッドの詳細情報の取得"
       }
@@ -9058,14 +9098,6 @@
         "line": 505,
         "level": 3,
         "title": "メッセージの編集と撤回"
-      }
-    ],
-    "メッセージの編集の処理": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 447,
-        "level": 3,
-        "title": "メッセージの編集の処理"
       }
     ],
     "メッセージイベント": [
@@ -9152,12 +9184,6 @@
         "line": 50,
         "level": 2,
         "title": "メッセージセグメントの種類"
-      },
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 279,
-        "level": 3,
-        "title": "メッセージセグメントの種類"
       }
     ],
     "メッセージセグメントタイプ": [
@@ -9170,6 +9196,12 @@
       {
         "document": "platform-guide/kook.md",
         "line": 313,
+        "level": 3,
+        "title": "メッセージセグメントタイプ"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 280,
         "level": 3,
         "title": "メッセージセグメントタイプ"
       }
@@ -9217,7 +9249,7 @@
     "メッセージトランザクション：message_tx": [
       {
         "document": "advanced/interaction.md",
-        "line": 199,
+        "line": 236,
         "level": 2,
         "title": "メッセージトランザクション：message_tx"
       }
@@ -9316,6 +9348,14 @@
         "line": 337,
         "level": 2,
         "title": "メッセージ統計"
+      }
+    ],
+    "メッセージ編集の処理": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 448,
+        "level": 3,
+        "title": "メッセージ編集の処理"
       }
     ],
     "メッセージ編集イベント": [
@@ -9429,7 +9469,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 426,
+        "line": 427,
         "level": 3,
         "title": "メディアメッセージの送信"
       }
@@ -9461,7 +9501,7 @@
     "メンバー変更の監視": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 460,
+        "line": 461,
         "level": 3,
         "title": "メンバー変更の監視"
       }
@@ -9523,7 +9563,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 596,
+        "line": 641,
         "level": 3,
         "title": "モジュールのインストール"
       }
@@ -9585,17 +9625,17 @@
     "モジュールの取得の統一されたエントリーポイント": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 149,
+        "line": 187,
         "level": 3,
         "title": "モジュールの取得の統一されたエントリーポイント"
       }
     ],
-    "モジュールの設定": [
+    "モジュールの設定の環境変数バインディング（2.9.0+）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 574,
-        "level": 2,
-        "title": "モジュールの設定"
+        "line": 89,
+        "level": 3,
+        "title": "モジュールの設定の環境変数バインディング（2.9.0+）"
       }
     ],
     "モジュールクラスでの使用": [
@@ -9633,7 +9673,7 @@
     "モジュールレベルの制御": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 117,
+        "line": 155,
         "level": 3,
         "title": "モジュールレベルの制御"
       }
@@ -9686,12 +9726,12 @@
         "title": "モジュール紹介メタ情報"
       }
     ],
-    "モジュール設定の環境変数バインディング（2.9.0+）": [
+    "モジュール設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 85,
-        "level": 3,
-        "title": "モジュール設定の環境変数バインディング（2.9.0+）"
+        "line": 574,
+        "level": 2,
+        "title": "モジュール設定"
       }
     ],
     "モジュール設計": [
@@ -9767,7 +9807,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 144,
+        "line": 162,
         "level": 3,
         "title": "モジュール間通信"
       }
@@ -9836,12 +9876,12 @@
         "title": "ユーザー使用ガイド"
       }
     ],
-    "ユーザー優先：主人生効果範囲はユーザーが最終決定": [
+    "ユーザー優先：マスターの有効範囲はユーザーが最終決定": [
       {
         "document": "user-guide/configuration.md",
         "line": 362,
         "level": 3,
-        "title": "ユーザー優先：主人生効果範囲はユーザーが最終決定"
+        "title": "ユーザー優先：マスターの有効範囲はユーザーが最終決定"
       }
     ],
     "ユーザー状態変更イベント": [
@@ -9887,7 +9927,7 @@
     "ライフサイクルの全体像": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 89,
+        "line": 107,
         "level": 3,
         "title": "ライフサイクルの全体像"
       }
@@ -9985,7 +10025,7 @@
     "ラグロードメカニズム": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 345,
+        "line": 363,
         "level": 2,
         "title": "ラグロードメカニズム"
       }
@@ -9993,7 +10033,7 @@
     "ラグロードモジュールの使用": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 135,
+        "line": 173,
         "level": 2,
         "title": "ラグロードモジュールの使用"
       }
@@ -10195,7 +10235,7 @@
     "ルーム招待": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 378,
+        "line": 379,
         "level": 3,
         "title": "ルーム招待"
       }
@@ -10262,22 +10302,6 @@
         "line": 400,
         "level": 3,
         "title": "レプリメソッド"
-      }
-    ],
-    "レプリーが命中したときの完全な判定チェーン": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 70,
-        "level": 3,
-        "title": "レプリーが命中したときの完全な判定チェーン"
-      }
-    ],
-    "レプリーの待機：wait_reply": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 15,
-        "level": 2,
-        "title": "レプリーの待機：wait_reply"
       }
     ],
     "レプリ機能": [
@@ -10367,7 +10391,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 385,
+        "line": 403,
         "level": 3,
         "title": "ログ記録"
       }
@@ -10410,22 +10434,6 @@
         "line": 387,
         "level": 3,
         "title": "ローカルプラグインから公開へ"
-      }
-    ],
-    "ローカルプラグインフォルダアーキテクチャ": [
-      {
-        "document": "architecture.md",
-        "line": 251,
-        "level": 2,
-        "title": "ローカルプラグインフォルダアーキテクチャ"
-      }
-    ],
-    "ローカル開発（パッケージ化不要）": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 366,
-        "level": 2,
-        "title": "ローカル開発（パッケージ化不要）"
       }
     ],
     "ロード戦略": [
@@ -10525,7 +10533,7 @@
     "一般的な使い方": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 594,
+        "line": 639,
         "level": 2,
         "title": "一般的な使い方"
       }
@@ -10618,14 +10626,6 @@
         "title": "並列イベント処理"
       }
     ],
-    "主人システム設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 295,
-        "level": 2,
-        "title": "主人システム設定"
-      }
-    ],
     "事件基础信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -10715,7 +10715,7 @@
     "他のシステムとの関係": [
       {
         "document": "advanced/interaction.md",
-        "line": 223,
+        "line": 260,
         "level": 2,
         "title": "他のシステムとの関係"
       }
@@ -10831,7 +10831,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 383,
+        "line": 384,
         "level": 2,
         "title": "使用例"
       },
@@ -10897,7 +10897,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 370,
+        "line": 388,
         "level": 3,
         "title": "例外のキャッチ"
       }
@@ -11242,6 +11242,14 @@
         "title": "初心者向け"
       }
     ],
+    "初期化フェーズの詳細": [
+      {
+        "document": "architecture.md",
+        "line": 80,
+        "level": 3,
+        "title": "初期化フェーズの詳細"
+      }
+    ],
     "初期化フロー": [
       {
         "document": "architecture.md",
@@ -11264,14 +11272,6 @@
         "title": "初期化プロセス"
       }
     ],
-    "初期化段階の詳細": [
-      {
-        "document": "architecture.md",
-        "line": 80,
-        "level": 3,
-        "title": "初期化段階の詳細"
-      }
-    ],
     "判定の意味": [
       {
         "document": "advanced/scope.md",
@@ -11280,12 +11280,12 @@
         "title": "判定の意味"
       }
     ],
-    "判定チェーンと実行時追加・削除": [
+    "判定チェーンと実行時追加": [
       {
         "document": "user-guide/configuration.md",
-        "line": 321,
+        "line": 324,
         "level": 3,
-        "title": "判定チェーンと実行時追加・削除"
+        "title": "判定チェーンと実行時追加"
       }
     ],
     "判定（3つの質問）": [
@@ -11328,12 +11328,12 @@
         "title": "加載失敗時の診断情報"
       }
     ],
-    "加载戦略": [
+    "加載戦略": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 10,
         "level": 3,
-        "title": "加载戦略"
+        "title": "加載戦略"
       }
     ],
     "動作原理": [
@@ -11351,7 +11351,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 347,
+        "line": 365,
         "level": 3,
         "title": "動作原理"
       },
@@ -11404,6 +11404,14 @@
         "line": 149,
         "level": 4,
         "title": "単一行の取得"
+      }
+    ],
+    "占位コマンドの Help フォールバックチェーン": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 84,
+        "level": 3,
+        "title": "占位コマンドの Help フォールバックチェーン"
       }
     ],
     "原始メッセージとメッセージ構築": [
@@ -11556,18 +11564,18 @@
         "title": "合併転送（オプション、§2.4参照）"
       }
     ],
-    "同期の流れ": [
+    "同期フロー": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 362,
+        "line": 363,
         "level": 3,
-        "title": "同期の流れ"
+        "title": "同期フロー"
       }
     ],
     "同期初期化": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 184,
+        "line": 222,
         "level": 3,
         "title": "同期初期化"
       }
@@ -11809,7 +11817,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 137,
+        "line": 175,
         "level": 3,
         "title": "基本的な使い方"
       },
@@ -11855,7 +11863,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 300,
+        "line": 318,
         "level": 3,
         "title": "基本的な使用方法"
       }
@@ -12101,7 +12109,7 @@
     "完全な設定例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 211,
+        "line": 214,
         "level": 2,
         "title": "完全な設定例"
       }
@@ -12120,20 +12128,20 @@
         "title": "完整例"
       }
     ],
+    "実行コントロールコマンド": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 284,
+        "level": 2,
+        "title": "実行コントロールコマンド"
+      }
+    ],
     "実行モード": [
       {
         "document": "platform-guide/telegram.md",
         "line": 417,
         "level": 3,
         "title": "実行モード"
-      }
-    ],
-    "実行制御コマンド": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 284,
-        "level": 2,
-        "title": "実行制御コマンド"
       }
     ],
     "実行時API": [
@@ -12184,12 +12192,28 @@
         "title": "宣言式構成クラスとの関係"
       }
     ],
+    "宣言方法": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 112,
+        "level": 3,
+        "title": "宣言方法"
+      }
+    ],
     "宣言的イベント拡張メソッド（v2.7.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 579,
         "level": 3,
         "title": "宣言的イベント拡張メソッド（v2.7.0+）"
+      }
+    ],
+    "宣言的多段対話：`.got()` チェーン（2.11+）": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 82,
+        "level": 2,
+        "title": "宣言的多段対話：`.got()` チェーン（2.11+）"
       }
     ],
     "宣言的引数とオプション（args= / options=）": [
@@ -12215,7 +12239,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 240,
+        "line": 258,
         "level": 3,
         "title": "宣言的翻訳キー（v2.7.0+）"
       }
@@ -12229,7 +12253,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 182,
+        "line": 200,
         "level": 3,
         "title": "宣言的設定（推奨）"
       }
@@ -12240,14 +12264,6 @@
         "line": 192,
         "level": 3,
         "title": "審査にはどのくらい時間がかかりますか？"
-      }
-    ],
-    "対応しているプラットフォームの機能": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 100,
-        "level": 3,
-        "title": "対応しているプラットフォームの機能"
       }
     ],
     "対応しない標準アクション": [
@@ -12285,12 +12301,18 @@
     "対応する送信メソッドの一覧表示": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 156,
+        "line": 174,
         "level": 3,
         "title": "対応する送信メソッドの一覧表示"
       }
     ],
     "対応プラットフォーム機能": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 100,
+        "level": 3,
+        "title": "対応プラットフォーム機能"
+      },
       {
         "document": "platform-guide/webhook.md",
         "line": 1,
@@ -12345,7 +12367,7 @@
     "対話形式でのインストール": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 581,
+        "line": 626,
         "level": 2,
         "title": "対話形式でのインストール"
       }
@@ -12432,6 +12454,14 @@
         "line": 41,
         "level": 2,
         "title": "建表と CRUD"
+      }
+    ],
+    "待機がいつキャンセルされるか": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 56,
+        "level": 3,
+        "title": "待機がいつキャンセルされるか"
       }
     ],
     "待機とコマンドの境界（コマンドの透過）": [
@@ -12548,10 +12578,32 @@
         "title": "情報照会コマンド"
       }
     ],
+    "意味と境界": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 112,
+        "level": 3,
+        "title": "意味と境界"
+      },
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 138,
+        "level": 3,
+        "title": "意味と境界"
+      }
+    ],
+    "懒惰ロードの休眠（dormant_after）": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 105,
+        "level": 2,
+        "title": "懒惰ロードの休眠（dormant_after）"
+      }
+    ],
     "懒惰ロードの設定": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 106,
+        "line": 144,
         "level": 2,
         "title": "懒惰ロードの設定"
       }
@@ -12559,7 +12611,7 @@
     "懒惰ロードを禁止することを推奨する場面（lazy_load=False）": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 214,
+        "line": 252,
         "level": 3,
         "title": "懒惰ロードを禁止することを推奨する場面（lazy_load=False）"
       }
@@ -12567,7 +12619,7 @@
     "懒惰ロード（lazy_load=True）を使用することを推奨する場面": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 209,
+        "line": 247,
         "level": 3,
         "title": "懒惰ロード（lazy_load=True）を使用することを推奨する場面"
       }
@@ -12711,7 +12763,7 @@
     "手動設定読み取り（廃止）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 281,
+        "line": 299,
         "level": 3,
         "title": "手動設定読み取り（廃止）"
       }
@@ -12771,7 +12823,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 222,
+        "line": 223,
         "level": 3,
         "title": "拡張フィールド"
       }
@@ -13032,6 +13084,12 @@
         "title": "支援されるメッセージ送信タイプ"
       },
       {
+        "document": "platform-guide/matrix.md",
+        "line": 108,
+        "level": 2,
+        "title": "支援されるメッセージ送信タイプ"
+      },
+      {
         "document": "platform-guide/snowluma.md",
         "line": 64,
         "level": 2,
@@ -13078,6 +13136,14 @@
         "line": 8,
         "level": 2,
         "title": "支援言語"
+      }
+    ],
+    "敏感な設定はバージョン管理に含めない": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 25,
+        "level": 3,
+        "title": "敏感な設定はバージョン管理に含めない"
       }
     ],
     "断線再接続": [
@@ -13257,7 +13323,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 193,
+        "line": 231,
         "level": 2,
         "title": "最佳実践"
       },
@@ -13338,6 +13404,22 @@
         "line": 71,
         "level": 3,
         "title": "未対応（エンドポイントは既知、full.proto メッセージは完全、必要に応じて拡張可能）"
+      }
+    ],
+    "本地プラグインフォルダアーキテクチャ": [
+      {
+        "document": "architecture.md",
+        "line": 251,
+        "level": 2,
+        "title": "本地プラグインフォルダアーキテクチャ"
+      }
+    ],
+    "本地開発（バンドル不要）": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 366,
+        "level": 2,
+        "title": "本地開発（バンドル不要）"
       }
     ],
     "本番環境の設定": [
@@ -13467,7 +13549,7 @@
     "核心的な相違点": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 211,
+        "line": 212,
         "level": 3,
         "title": "核心的な相違点"
       }
@@ -13512,14 +13594,6 @@
         "line": 6,
         "level": 2,
         "title": "核心設計原則"
-      }
-    ],
-    "框架設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 416,
-        "level": 2,
-        "title": "框架設定"
       }
     ],
     "検索メソッド": [
@@ -13608,14 +13682,6 @@
         "title": "標準 OB12 マッピング"
       }
     ],
-    "標準APIアクションの例": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 87,
-        "level": 3,
-        "title": "標準APIアクションの例"
-      }
-    ],
     "標準APIアクション（API DSL）": [
       {
         "document": "platform-guide/telegram.md",
@@ -13638,6 +13704,14 @@
         "line": 27,
         "level": 2,
         "title": "標準Apiの動作例"
+      }
+    ],
+    "標準Apiアクションの例": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 87,
+        "level": 3,
+        "title": "標準Apiアクションの例"
       }
     ],
     "標準Apiアクション（Api DSL）": [
@@ -13813,7 +13887,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 702,
+        "line": 694,
         "level": 2,
         "title": "次に進む"
       }
@@ -13889,7 +13963,7 @@
     "注意事項": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 223,
+        "line": 261,
         "level": 2,
         "title": "注意事項"
       },
@@ -13924,14 +13998,6 @@
         "title": "注意事項"
       }
     ],
-    "注釈の保持と最小限の書き込み": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 48,
-        "level": 2,
-        "title": "注釈の保持と最小限の書き込み"
-      }
-    ],
     "深度統合（オプション）": [
       {
         "document": "ecosystem/qvqchat.md",
@@ -13959,7 +14025,7 @@
     "特有のイベントタイプ": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 207,
+        "line": 208,
         "level": 2,
         "title": "特有のイベントタイプ"
       },
@@ -14037,7 +14103,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 228,
+        "line": 229,
         "level": 3,
         "title": "特殊フィールドの例"
       },
@@ -14046,6 +14112,14 @@
         "line": 384,
         "level": 3,
         "title": "特殊フィールドの例"
+      }
+    ],
+    "状態の継続": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 125,
+        "level": 3,
+        "title": "状態の継続"
       }
     ],
     "独立レンダラー": [
@@ -14067,7 +14141,7 @@
     "環境変数による上書き": [
       {
         "document": "user-guide/configuration.md",
-        "line": 59,
+        "line": 63,
         "level": 2,
         "title": "環境変数による上書き"
       }
@@ -14083,7 +14157,7 @@
     "環境診断": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 540,
+        "line": 585,
         "level": 2,
         "title": "環境診断"
       }
@@ -14195,7 +14269,7 @@
     "立即ロード": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 355,
+        "line": 373,
         "level": 3,
         "title": "立即ロード"
       }
@@ -14306,12 +14380,12 @@
         "title": "結果を待つ"
       }
     ],
-    "統一イベントオーバーライド設定 (event.overrides)": [
+    "統一イベントオーバーライド設定（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 655,
+        "line": 649,
         "level": 2,
-        "title": "統一イベントオーバーライド設定 (event.overrides)"
+        "title": "統一イベントオーバーライド設定（event.overrides）"
       }
     ],
     "統一的なキャッチ": [
@@ -14333,7 +14407,7 @@
     "絵文字反応の処理": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 409,
+        "line": 410,
         "level": 3,
         "title": "絵文字反応の処理"
       }
@@ -14434,20 +14508,20 @@
         "title": "自定义 SQL バックエンド"
       }
     ],
-    "自定义アイデンティティソース（provider）": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 335,
-        "level": 3,
-        "title": "自定义アイデンティティソース（provider）"
-      }
-    ],
     "自定义メッセージセグメント": [
       {
         "document": "advanced/message-builder.md",
         "line": 138,
         "level": 2,
         "title": "自定义メッセージセグメント"
+      }
+    ],
+    "自定義アイデンティティソース（provider）": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 338,
+        "level": 3,
+        "title": "自定義アイデンティティソース（provider）"
       }
     ],
     "自定義フォント": [
@@ -14480,6 +14554,14 @@
         "line": 137,
         "level": 3,
         "title": "複数のプラットフォームをサポートするには？"
+      }
+    ],
+    "複数の待機：expect + select": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 155,
+        "level": 2,
+        "title": "複数の待機：expect + select"
       }
     ],
     "複数アカウントでの送信構文": [
@@ -14659,7 +14741,7 @@
     "言語の切り替え": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 671,
+        "line": 716,
         "level": 3,
         "title": "言語の切り替え"
       }
@@ -14667,7 +14749,7 @@
     "言語コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 447,
+        "line": 492,
         "level": 2,
         "title": "言語コマンド"
       }
@@ -14722,12 +14804,14 @@
         "line": 623,
         "level": 4,
         "title": "設定のホットアップデート"
-      },
+      }
+    ],
+    "設定のホット更新": [
       {
         "document": "user-guide/configuration.md",
-        "line": 115,
+        "line": 117,
         "level": 2,
-        "title": "設定のホットアップデート"
+        "title": "設定のホット更新"
       }
     ],
     "設定の翻訳登録": [
@@ -14779,7 +14863,7 @@
     "設定の読み取りと削除 API": [
       {
         "document": "user-guide/configuration.md",
-        "line": 185,
+        "line": 188,
         "level": 2,
         "title": "設定の読み取りと削除 API"
       }
@@ -14787,7 +14871,7 @@
     "設定の読み込みエラー処理": [
       {
         "document": "user-guide/configuration.md",
-        "line": 25,
+        "line": 29,
         "level": 2,
         "title": "設定の読み込みエラー処理"
       }
@@ -14862,12 +14946,12 @@
         "title": "設定ファイルによる切り替え"
       }
     ],
-    "設定ファイルの場所": [
+    "設定ファイルの位置": [
       {
         "document": "user-guide/configuration.md",
         "line": 10,
         "level": 2,
-        "title": "設定ファイルの場所"
+        "title": "設定ファイルの位置"
       }
     ],
     "設定ファイルの説明": [
@@ -14943,7 +15027,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 180,
+        "line": 198,
         "level": 2,
         "title": "設定管理"
       }
@@ -15132,6 +15216,22 @@
         "title": "近接マッピング原則"
       }
     ],
+    "返信が一致する完全な判定チェーン": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 70,
+        "level": 3,
+        "title": "返信が一致する完全な判定チェーン"
+      }
+    ],
+    "返信の待機：wait_reply": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 15,
+        "level": 2,
+        "title": "返信の待機：wait_reply"
+      }
+    ],
     "返信待ち機能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -15199,7 +15299,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 183,
+        "line": 184,
         "level": 2,
         "title": "送信メソッドの戻り値"
       },
@@ -15290,14 +15390,6 @@
         "title": "送信例"
       }
     ],
-    "送信可能なメッセージの種類": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 108,
-        "level": 2,
-        "title": "送信可能なメッセージの種類"
-      }
-    ],
     "送信成功後に実行するロジック": [
       {
         "document": "getting-started/common-tasks.md",
@@ -15333,7 +15425,7 @@
     "适配器送信メソッドの照会": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 152,
+        "line": 170,
         "level": 2,
         "title": "适配器送信メソッドの照会"
       }
@@ -15637,13 +15729,13 @@
       },
       {
         "document": "advanced/interaction.md",
-        "line": 229,
+        "line": 266,
         "level": 2,
         "title": "関連ドキュメント"
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 230,
+        "line": 268,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -15751,7 +15843,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 396,
+        "line": 414,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -15911,7 +16003,7 @@
     "非同期初期化": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 172,
+        "line": 210,
         "level": 3,
         "title": "非同期初期化"
       }

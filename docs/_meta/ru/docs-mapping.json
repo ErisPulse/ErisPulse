@@ -96,13 +96,13 @@
           "icon": "fa-download"
         },
         {
-          "title": "Описание конфигурационного файла",
+          "title": "Конфигурационный файл",
           "path": "user-guide/configuration.md",
           "level": 1,
           "icon": "fa-sliders"
         },
         {
-          "title": "Справочник командной строки",
+          "title": "Справочник команд CLI",
           "path": "user-guide/cli-reference.md",
           "level": 1,
           "icon": "fa-terminal"
@@ -224,7 +224,7 @@
     "Руководство по платформам": {
       "description": "Возможности платформ и документация адаптеров",
       "icon": "fa-plug",
-      "count": 17,
+      "count": 18,
       "documents": [
         {
           "title": "Документация по функциям платформы ErisPulse",
@@ -319,6 +319,12 @@
         {
           "title": "Документация по функциям платформы Sandbox",
           "path": "platform-guide/sandbox.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Документация по функциям платформы SnowLuma",
+          "path": "platform-guide/snowluma.md",
           "level": 1,
           "icon": "fa-plug"
         },

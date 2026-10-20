@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1716,
+  "total_keywords": 1728,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3063,7 +3063,7 @@
     "HTTP 客户端": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 313,
+        "line": 318,
         "level": 3,
         "title": "HTTP 客户端"
       }
@@ -3103,7 +3103,7 @@
     "HTTP 路由": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 255,
+        "line": 260,
         "level": 3,
         "title": "HTTP 路由"
       }
@@ -3551,7 +3551,7 @@
     "SDK 对象": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 132,
+        "line": 153,
         "level": 2,
         "title": "SDK 对象"
       },
@@ -3829,7 +3829,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 270,
+        "line": 275,
         "level": 3,
         "title": "WebSocket"
       }
@@ -4491,7 +4491,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 396,
+        "line": 445,
         "level": 3,
         "title": "create"
       }
@@ -4499,7 +4499,7 @@
     "delConfig：删除配置键": [
       {
         "document": "user-guide/configuration.md",
-        "line": 211,
+        "line": 215,
         "level": 3,
         "title": "delConfig：删除配置键"
       }
@@ -4547,7 +4547,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 542,
+        "line": 591,
         "level": 3,
         "title": "doctor"
       }
@@ -4563,7 +4563,7 @@
     "escalate：到点必达的升级": [
       {
         "document": "advanced/interaction.md",
-        "line": 119,
+        "line": 164,
         "level": 3,
         "title": "escalate：到点必达的升级"
       }
@@ -4579,7 +4579,7 @@
     "getAllConfig：全量配置快照": [
       {
         "document": "user-guide/configuration.md",
-        "line": 199,
+        "line": 203,
         "level": 3,
         "title": "getAllConfig：全量配置快照"
       }
@@ -4611,7 +4611,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 453,
+        "line": 502,
         "level": 3,
         "title": "i18n"
       }
@@ -4619,7 +4619,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 342,
+        "line": 391,
         "level": 3,
         "title": "init"
       }
@@ -4704,10 +4704,18 @@
         "title": "metadata 约定"
       }
     ],
+    "on_before_unload 方法": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 65,
+        "level": 3,
+        "title": "on_before_unload 方法"
+      }
+    ],
     "on_load 方法": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 33,
+        "line": 35,
         "level": 3,
         "title": "on_load 方法"
       }
@@ -4715,7 +4723,7 @@
     "on_unload 方法": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 48,
+        "line": 50,
         "level": 3,
         "title": "on_unload 方法"
       }
@@ -4755,15 +4763,23 @@
     "remind：没回复就提醒": [
       {
         "document": "advanced/interaction.md",
-        "line": 99,
+        "line": 144,
         "level": 3,
         "title": "remind：没回复就提醒"
+      }
+    ],
+    "restart": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 363,
+        "level": 3,
+        "title": "restart"
       }
     ],
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 295,
+        "line": 297,
         "level": 3,
         "title": "run"
       }
@@ -4830,6 +4846,14 @@
         "title": "self_id 自动映射"
       }
     ],
+    "stop": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 335,
+        "level": 3,
+        "title": "stop"
+      }
+    ],
     "stop()": [
       {
         "document": "advanced/conversation.md",
@@ -4857,7 +4881,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 490,
+        "line": 539,
         "level": 3,
         "title": "types"
       }
@@ -5159,7 +5183,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 717,
+        "line": 721,
         "level": 2,
         "title": "下一步"
       },
@@ -5221,7 +5245,7 @@
     "与 CLI 的联动": [
       {
         "document": "user-guide/configuration.md",
-        "line": 496,
+        "line": 500,
         "level": 4,
         "title": "与 CLI 的联动"
       }
@@ -5253,7 +5277,7 @@
     "与其他系统的关系": [
       {
         "document": "advanced/interaction.md",
-        "line": 253,
+        "line": 298,
         "level": 2,
         "title": "与其他系统的关系"
       }
@@ -5293,7 +5317,7 @@
     "严格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 467,
+        "line": 471,
         "level": 3,
         "title": "严格模式"
       }
@@ -5379,7 +5403,7 @@
     "主人系统配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 309,
+        "line": 313,
         "level": 2,
         "title": "主人系统配置"
       }
@@ -5387,7 +5411,7 @@
     "主动 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 452,
+        "line": 456,
         "level": 3,
         "title": "主动 GC 配置"
       }
@@ -5463,7 +5487,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 324,
+        "line": 345,
         "level": 2,
         "title": "事件处理"
       }
@@ -5479,7 +5503,7 @@
     "事件处理器注册": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 326,
+        "line": 347,
         "level": 3,
         "title": "事件处理器注册"
       }
@@ -5487,7 +5511,7 @@
     "事件处理器生命周期": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 342,
+        "line": 363,
         "level": 3,
         "title": "事件处理器生命周期"
       }
@@ -5605,7 +5629,7 @@
     "事件接收与处理": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 200,
+        "line": 205,
         "level": 3,
         "title": "事件接收与处理"
       }
@@ -5769,7 +5793,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 549,
+        "line": 553,
         "level": 2,
         "title": "事件配置"
       }
@@ -5817,7 +5841,7 @@
     "事务使用": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 314,
+        "line": 335,
         "level": 3,
         "title": "事务使用"
       }
@@ -5911,7 +5935,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 581,
+        "line": 630,
         "level": 2,
         "title": "交互式安装"
       }
@@ -6037,7 +6061,7 @@
     "会话互斥：acquire / hold / get_owner_of": [
       {
         "document": "advanced/interaction.md",
-        "line": 176,
+        "line": 221,
         "level": 2,
         "title": "会话互斥：acquire / hold / get_owner_of"
       }
@@ -6045,7 +6069,7 @@
     "会话定时器：remind / escalate": [
       {
         "document": "advanced/interaction.md",
-        "line": 94,
+        "line": 139,
         "level": 2,
         "title": "会话定时器：remind / escalate"
       }
@@ -6061,7 +6085,7 @@
     "会话收件箱：event.history": [
       {
         "document": "advanced/interaction.md",
-        "line": 209,
+        "line": 254,
         "level": 2,
         "title": "会话收件箱：event.history"
       }
@@ -6131,7 +6155,7 @@
     "作用域配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 618,
+        "line": 622,
         "level": 2,
         "title": "作用域配置（scope）"
       }
@@ -6203,7 +6227,7 @@
     "使用懒加载模块": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 140,
+        "line": 189,
         "level": 2,
         "title": "使用懒加载模块"
       }
@@ -6453,7 +6477,7 @@
     "全局参数": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 525,
+        "line": 574,
         "level": 2,
         "title": "全局参数"
       }
@@ -6461,7 +6485,7 @@
     "全局配置": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 113,
+        "line": 162,
         "level": 3,
         "title": "全局配置"
       }
@@ -6705,7 +6729,7 @@
     "切换语言": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 671,
+        "line": 720,
         "level": 3,
         "title": "切换语言"
       }
@@ -6721,7 +6745,7 @@
     "列出支持的发送方法": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 157,
+        "line": 178,
         "level": 3,
         "title": "列出支持的发送方法"
       }
@@ -6729,7 +6753,7 @@
     "列出组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 609,
+        "line": 658,
         "level": 3,
         "title": "列出组件"
       }
@@ -6761,7 +6785,7 @@
     "创建脚手架": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 704,
+        "line": 753,
         "level": 3,
         "title": "创建脚手架"
       }
@@ -6821,7 +6845,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 694,
+        "line": 743,
         "level": 3,
         "title": "初始化项目"
       }
@@ -6853,7 +6877,7 @@
     "判定链与运行时增删": [
       {
         "document": "user-guide/configuration.md",
-        "line": 335,
+        "line": 339,
         "level": 3,
         "title": "判定链与运行时增删"
       }
@@ -6977,7 +7001,7 @@
     "升级组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 648,
+        "line": 697,
         "level": 3,
         "title": "升级组件"
       }
@@ -7025,7 +7049,7 @@
     "卸载与彻底卸载（purge）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 63,
+        "line": 84,
         "level": 3,
         "title": "卸载与彻底卸载（purge）"
       }
@@ -7049,7 +7073,7 @@
     "卸载组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 625,
+        "line": 674,
         "level": 3,
         "title": "卸载组件"
       }
@@ -7121,6 +7145,12 @@
         "document": "advanced/http-client.md",
         "line": 179,
         "level": 2,
+        "title": "参数说明"
+      },
+      {
+        "document": "advanced/interaction.md",
+        "line": 115,
+        "level": 3,
         "title": "参数说明"
       },
       {
@@ -7535,7 +7565,7 @@
     "同步初始化": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 188,
+        "line": 237,
         "level": 3,
         "title": "同步初始化"
       }
@@ -7551,7 +7581,7 @@
     "后台任务归属与自动取消": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 411,
+        "line": 416,
         "level": 2,
         "title": "后台任务归属与自动取消"
       }
@@ -7731,7 +7761,7 @@
     "命令系统": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 240,
+        "line": 245,
         "level": 3,
         "title": "命令系统"
       }
@@ -7755,7 +7785,7 @@
     "命令解析配置（event.command）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 715,
+        "line": 719,
         "level": 2,
         "title": "命令解析配置（event.command）"
       }
@@ -7771,7 +7801,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 551,
+        "line": 555,
         "level": 3,
         "title": "命令配置"
       }
@@ -7895,7 +7925,7 @@
     "国际化": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 323,
+        "line": 328,
         "level": 3,
         "title": "国际化"
       }
@@ -7911,7 +7941,7 @@
     "国际化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 578,
+        "line": 582,
         "level": 2,
         "title": "国际化配置"
       }
@@ -8020,10 +8050,26 @@
         "title": "场景二：事件没响应"
       }
     ],
+    "场景五：模块\"明明启用却收不到事件\"（懒加载休眠，2.11+）": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 127,
+        "level": 2,
+        "title": "场景五：模块\"明明启用却收不到事件\"（懒加载休眠，2.11+）"
+      }
+    ],
+    "场景四：改了代码 reload 后还是旧行为（2.11+）": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 111,
+        "level": 2,
+        "title": "场景四：改了代码 reload 后还是旧行为（2.11+）"
+      }
+    ],
     "基本使用": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 142,
+        "line": 191,
         "level": 3,
         "title": "基本使用"
       },
@@ -8047,7 +8093,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 301,
+        "line": 322,
         "level": 3,
         "title": "基本使用"
       }
@@ -8346,6 +8392,14 @@
         "title": "声明式参数与选项（args= / options=）"
       }
     ],
+    "声明式多轮：`.got()` 链（2.11+）": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 94,
+        "level": 2,
+        "title": "声明式多轮：`.got()` 链（2.11+）"
+      }
+    ],
     "声明式翻译键（v2.7.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8361,7 +8415,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 241,
+        "line": 262,
         "level": 3,
         "title": "声明式翻译键（v2.7.0+）"
       }
@@ -8375,9 +8429,17 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 183,
+        "line": 204,
         "level": 3,
         "title": "声明式配置（推荐）"
+      }
+    ],
+    "声明方式": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 122,
+        "level": 3,
+        "title": "声明方式"
       }
     ],
     "声明模型": [
@@ -8639,7 +8701,7 @@
     "多路等待：expect + select": [
       {
         "document": "advanced/interaction.md",
-        "line": 135,
+        "line": 180,
         "level": 2,
         "title": "多路等待：expect + select"
       }
@@ -8869,7 +8931,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 299,
+        "line": 320,
         "level": 2,
         "title": "存储系统"
       }
@@ -8877,7 +8939,7 @@
     "存储连接状态": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 291,
+        "line": 296,
         "level": 3,
         "title": "存储连接状态"
       }
@@ -8885,7 +8947,7 @@
     "存储配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 500,
+        "line": 504,
         "level": 2,
         "title": "存储配置"
       }
@@ -9001,7 +9063,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 596,
+        "line": 645,
         "level": 3,
         "title": "安装模块"
       }
@@ -9009,7 +9071,7 @@
     "完整 API 参考": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 355,
+        "line": 360,
         "level": 2,
         "title": "完整 API 参考"
       }
@@ -9067,7 +9129,7 @@
     "完整配置示例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 225,
+        "line": 229,
         "level": 2,
         "title": "完整配置示例"
       }
@@ -9219,7 +9281,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 348,
+        "line": 369,
         "level": 3,
         "title": "工作原理"
       },
@@ -9245,7 +9307,7 @@
     "工具": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 374,
+        "line": 379,
         "level": 3,
         "title": "工具"
       }
@@ -9401,7 +9463,7 @@
     "常见用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 594,
+        "line": 643,
         "level": 2,
         "title": "常见用法"
       }
@@ -9797,7 +9859,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 371,
+        "line": 392,
         "level": 3,
         "title": "异常捕获"
       }
@@ -9805,7 +9867,7 @@
     "异步初始化": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 176,
+        "line": 225,
         "level": 3,
         "title": "异步初始化"
       }
@@ -10126,10 +10188,18 @@
         "title": "懒加载与调用"
       }
     ],
+    "懒加载休眠（dormant_after）": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 112,
+        "level": 2,
+        "title": "懒加载休眠（dormant_after）"
+      }
+    ],
     "懒加载机制": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 346,
+        "line": 367,
         "level": 2,
         "title": "懒加载机制"
       }
@@ -10217,7 +10287,7 @@
     "手动读取配置（已废弃）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 282,
+        "line": 303,
         "level": 3,
         "title": "手动读取配置（已废弃）"
       }
@@ -10491,7 +10561,7 @@
     "推荐使用懒加载的场景（lazy_load=True）": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 213,
+        "line": 262,
         "level": 3,
         "title": "推荐使用懒加载的场景（lazy_load=True）"
       }
@@ -10523,7 +10593,7 @@
     "推荐禁用懒加载的场景（lazy_load=False）": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 218,
+        "line": 267,
         "level": 3,
         "title": "推荐禁用懒加载的场景（lazy_load=False）"
       }
@@ -10680,6 +10750,14 @@
         "line": 933,
         "level": 3,
         "title": "收集表单 (collect)"
+      }
+    ],
+    "敏感配置不入库": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 25,
+        "level": 3,
+        "title": "敏感配置不入库"
       }
     ],
     "数据持久化": [
@@ -11075,7 +11153,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 386,
+        "line": 407,
         "level": 3,
         "title": "日志记录"
       }
@@ -11083,7 +11161,7 @@
     "日志配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 383,
+        "line": 387,
         "level": 2,
         "title": "日志配置"
       }
@@ -11159,7 +11237,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 197,
+        "line": 246,
         "level": 2,
         "title": "最佳实践"
       },
@@ -11193,7 +11271,7 @@
     "服务器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 279,
+        "line": 283,
         "level": 2,
         "title": "服务器配置"
       }
@@ -11467,7 +11545,7 @@
     "标准事件定义": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 329,
+        "line": 334,
         "level": 2,
         "title": "标准事件定义"
       }
@@ -11767,7 +11845,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 431,
+        "line": 435,
         "level": 2,
         "title": "框架配置"
       }
@@ -11841,7 +11919,7 @@
     "模块中使用示例": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 384,
+        "line": 389,
         "level": 2,
         "title": "模块中使用示例"
       }
@@ -12013,7 +12091,7 @@
     "模块级别控制": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 122,
+        "line": 171,
         "level": 3,
         "title": "模块级别控制"
       }
@@ -12029,7 +12107,7 @@
     "模块配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 589,
+        "line": 593,
         "level": 2,
         "title": "模块配置"
       }
@@ -12037,7 +12115,7 @@
     "模块配置的环境变量绑定（2.9.0+）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 95,
+        "line": 99,
         "level": 3,
         "title": "模块配置的环境变量绑定（2.9.0+）"
       }
@@ -12059,7 +12137,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 145,
+        "line": 166,
         "level": 3,
         "title": "模块间通信"
       }
@@ -12099,7 +12177,7 @@
     "注册与取消": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 357,
+        "line": 362,
         "level": 3,
         "title": "注册与取消"
       }
@@ -12171,13 +12249,13 @@
     "注意事项": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 227,
+        "line": 276,
         "level": 2,
         "title": "注意事项"
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 442,
+        "line": 447,
         "level": 2,
         "title": "注意事项"
       },
@@ -12209,7 +12287,7 @@
     "注释保留与最小化落盘": [
       {
         "document": "user-guide/configuration.md",
-        "line": 48,
+        "line": 52,
         "level": 2,
         "title": "注释保留与最小化落盘"
       }
@@ -12365,7 +12443,7 @@
     "消息事务：message_tx": [
       {
         "document": "advanced/interaction.md",
-        "line": 228,
+        "line": 273,
         "level": 2,
         "title": "消息事务：message_tx"
       }
@@ -12381,7 +12459,7 @@
     "消息发送": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 225,
+        "line": 230,
         "level": 3,
         "title": "消息发送"
       },
@@ -12627,7 +12705,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 567,
+        "line": 571,
         "level": 3,
         "title": "消息配置"
       }
@@ -12699,7 +12777,7 @@
     "热更新链路内部拆解": [
       {
         "document": "user-guide/configuration.md",
-        "line": 148,
+        "line": 152,
         "level": 3,
         "title": "热更新链路内部拆解"
       }
@@ -12826,6 +12904,14 @@
         "title": "特殊字段示例"
       }
     ],
+    "状态接续": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 137,
+        "level": 3,
+        "title": "状态接续"
+      }
+    ],
     "独立 Renderer": [
       {
         "document": "ecosystem/takumi.md",
@@ -12845,7 +12931,7 @@
     "环境变量覆盖": [
       {
         "document": "user-guide/configuration.md",
-        "line": 70,
+        "line": 74,
         "level": 2,
         "title": "环境变量覆盖"
       }
@@ -12853,7 +12939,7 @@
     "环境诊断": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 540,
+        "line": 589,
         "level": 2,
         "title": "环境诊断"
       }
@@ -12895,7 +12981,7 @@
     "生命周期全景": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 90,
+        "line": 111,
         "level": 3,
         "title": "生命周期全景"
       }
@@ -12935,7 +13021,7 @@
     "生成类型存根": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 684,
+        "line": 733,
         "level": 3,
         "title": "生成类型存根"
       }
@@ -12951,7 +13037,7 @@
     "用户优先：主人生效范围由用户最终决定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 377,
+        "line": 381,
         "level": 3,
         "title": "用户优先：主人生效范围由用户最终决定"
       }
@@ -13091,19 +13177,19 @@
       },
       {
         "document": "advanced/interaction.md",
-        "line": 260,
+        "line": 305,
         "level": 2,
         "title": "相关文档"
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 234,
+        "line": 283,
         "level": 2,
         "title": "相关文档"
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 452,
+        "line": 457,
         "level": 2,
         "title": "相关文档"
       },
@@ -13211,7 +13297,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 397,
+        "line": 418,
         "level": 2,
         "title": "相关文档"
       },
@@ -13299,7 +13385,7 @@
     "立即加载": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 356,
+        "line": 377,
         "level": 3,
         "title": "立即加载"
       }
@@ -13485,7 +13571,7 @@
     "类型存根命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 484,
+        "line": 533,
         "level": 2,
         "title": "类型存根命令"
       }
@@ -13549,7 +13635,7 @@
     "统一事件覆写配置（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 668,
+        "line": 672,
         "level": 2,
         "title": "统一事件覆写配置（event.overrides）"
       }
@@ -13565,7 +13651,7 @@
     "统一的模块获取入口": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 154,
+        "line": 203,
         "level": 3,
         "title": "统一的模块获取入口"
       }
@@ -13779,7 +13865,7 @@
     "自定义身份源（provider）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 349,
+        "line": 353,
         "level": 3,
         "title": "自定义身份源（provider）"
       }
@@ -13827,7 +13913,7 @@
     "获取方法详细信息": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 165,
+        "line": 186,
         "level": 3,
         "title": "获取方法详细信息"
       }
@@ -13931,7 +14017,7 @@
     "触发": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 365,
+        "line": 370,
         "level": 3,
         "title": "触发"
       }
@@ -13979,7 +14065,7 @@
     "访问核心模块": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 134,
+        "line": 155,
         "level": 3,
         "title": "访问核心模块"
       }
@@ -14000,10 +14086,24 @@
         "title": "诚实边界（拦不住的）"
       }
     ],
+    "语义与边界": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 127,
+        "level": 3,
+        "title": "语义与边界"
+      },
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 151,
+        "level": 3,
+        "title": "语义与边界"
+      }
+    ],
     "语言命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 447,
+        "line": 496,
         "level": 2,
         "title": "语言命令"
       }
@@ -14171,7 +14271,7 @@
     "豁免清单": [
       {
         "document": "user-guide/configuration.md",
-        "line": 484,
+        "line": 488,
         "level": 4,
         "title": "豁免清单"
       }
@@ -14509,7 +14609,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 661,
+        "line": 710,
         "level": 3,
         "title": "运行项目"
       }
@@ -14721,7 +14821,7 @@
     "适配器发送方法查询": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 153,
+        "line": 174,
         "level": 2,
         "title": "适配器发送方法查询"
       }
@@ -14812,10 +14912,18 @@
         "title": "适配器热启停"
       }
     ],
+    "适配器热重载架构": [
+      {
+        "document": "architecture.md",
+        "line": 324,
+        "level": 2,
+        "title": "适配器热重载架构"
+      }
+    ],
     "适配器生命周期": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 188,
+        "line": 192,
         "level": 3,
         "title": "适配器生命周期"
       }
@@ -14903,7 +15011,7 @@
     "通用建议": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 111,
+        "line": 140,
         "level": 2,
         "title": "通用建议"
       }
@@ -15129,7 +15237,7 @@
     "配置加载错误处理": [
       {
         "document": "user-guide/configuration.md",
-        "line": 25,
+        "line": 29,
         "level": 2,
         "title": "配置加载错误处理"
       }
@@ -15169,7 +15277,7 @@
     "配置懒加载": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 111,
+        "line": 160,
         "level": 2,
         "title": "配置懒加载"
       }
@@ -15221,7 +15329,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 126,
+        "line": 130,
         "level": 2,
         "title": "配置热更新"
       }
@@ -15267,7 +15375,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 181,
+        "line": 202,
         "level": 2,
         "title": "配置管理"
       }
@@ -15275,7 +15383,7 @@
     "配置组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 635,
+        "line": 684,
         "level": 3,
         "title": "配置组件"
       }
@@ -15347,7 +15455,7 @@
     "配置读取与删除 API": [
       {
         "document": "user-guide/configuration.md",
-        "line": 197,
+        "line": 201,
         "level": 2,
         "title": "配置读取与删除 API"
       }
@@ -15627,7 +15735,7 @@
     "链路追踪：trace-id": [
       {
         "document": "advanced/interaction.md",
-        "line": 242,
+        "line": 287,
         "level": 2,
         "title": "链路追踪：trace-id"
       }
@@ -15653,7 +15761,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 369,
+        "line": 390,
         "level": 2,
         "title": "错误处理"
       },
@@ -15747,7 +15855,7 @@
     "项目管理命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 335,
+        "line": 384,
         "level": 2,
         "title": "项目管理命令"
       }

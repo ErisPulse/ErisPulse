@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1741,
+  "total_keywords": 1764,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1402,12 +1402,12 @@
         "title": "4. Event 便捷方法"
       }
     ],
-    "4. PM2（Node 生態運維）": [
+    "4. PM2（Node 生態維運）": [
       {
         "document": "advanced/startup.md",
         "line": 405,
         "level": 4,
-        "title": "4. PM2（Node 生態運維）"
+        "title": "4. PM2（Node 生態維運）"
       }
     ],
     "4. `self` 字段自動發現": [
@@ -1962,12 +1962,12 @@
         "title": "6. 注意事項"
       }
     ],
-    "6. 純 Python 自定義監督者": [
+    "6. 純 Python 自訂監督者": [
       {
         "document": "advanced/startup.md",
         "line": 422,
         "level": 4,
-        "title": "6. 純 Python 自定義監督者"
+        "title": "6. 純 Python 自訂監督者"
       }
     ],
     "6. 适配器實現檢查清單": [
@@ -3061,7 +3061,7 @@
     "HTTP 客戶端": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 313,
+        "line": 315,
         "level": 3,
         "title": "HTTP 客戶端"
       }
@@ -3101,7 +3101,7 @@
     "HTTP 路由": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 255,
+        "line": 257,
         "level": 3,
         "title": "HTTP 路由"
       }
@@ -3288,6 +3288,14 @@
         "line": 201,
         "level": 2,
         "title": "Notice 通知模組"
+      }
+    ],
+    "OB11 扩展動作（Api DSL）": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 161,
+        "level": 2,
+        "title": "OB11 扩展動作（Api DSL）"
       }
     ],
     "OB12 消息段反向轉換（Raw_ob12）": [
@@ -3490,6 +3498,14 @@
         "title": "QQBot 平台特性文件"
       }
     ],
+    "QQ空間": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 139,
+        "level": 3,
+        "title": "QQ空間"
+      }
+    ],
     "RPC：module.call": [
       {
         "document": "advanced/module-communication.md",
@@ -3680,6 +3696,14 @@
         "title": "Shadow 系列 — `Core/shadow.py`（影子模組）"
       }
     ],
+    "SnowLuma 平台特性文件": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 1,
+        "level": 1,
+        "title": "SnowLuma 平台特性文件"
+      }
+    ],
     "SseEmitter API": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -3795,7 +3819,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 270,
+        "line": 272,
         "level": 3,
         "title": "WebSocket"
       }
@@ -4425,7 +4449,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 396,
+        "line": 443,
         "level": 3,
         "title": "create"
       }
@@ -4433,7 +4457,7 @@
     "delConfig：刪除配置鍵": [
       {
         "document": "user-guide/configuration.md",
-        "line": 211,
+        "line": 214,
         "level": 3,
         "title": "delConfig：刪除配置鍵"
       }
@@ -4481,7 +4505,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 542,
+        "line": 589,
         "level": 3,
         "title": "doctor"
       }
@@ -4497,7 +4521,7 @@
     "escalate：到點必達的升級": [
       {
         "document": "advanced/interaction.md",
-        "line": 118,
+        "line": 163,
         "level": 3,
         "title": "escalate：到點必達的升級"
       }
@@ -4513,7 +4537,7 @@
     "getAllConfig：全量配置快照": [
       {
         "document": "user-guide/configuration.md",
-        "line": 199,
+        "line": 202,
         "level": 3,
         "title": "getAllConfig：全量配置快照"
       }
@@ -4545,7 +4569,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 453,
+        "line": 500,
         "level": 3,
         "title": "i18n"
       }
@@ -4553,7 +4577,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 342,
+        "line": 389,
         "level": 3,
         "title": "init"
       }
@@ -4689,15 +4713,23 @@
     "remind：沒回覆就提醒": [
       {
         "document": "advanced/interaction.md",
-        "line": 98,
+        "line": 143,
         "level": 3,
         "title": "remind：沒回覆就提醒"
+      }
+    ],
+    "restart": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 363,
+        "level": 3,
+        "title": "restart"
       }
     ],
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 295,
+        "line": 297,
         "level": 3,
         "title": "run"
       }
@@ -4756,6 +4788,20 @@
         "line": 553,
         "level": 2,
         "title": "self_id 自動映射"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 296,
+        "level": 2,
+        "title": "self_id 自動映射"
+      }
+    ],
+    "stop": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 335,
+        "level": 3,
+        "title": "stop"
       }
     ],
     "stop()": [
@@ -4785,7 +4831,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 490,
+        "line": 537,
         "level": 3,
         "title": "types"
       }
@@ -4999,7 +5045,7 @@
     "一次性註冊（once）": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 94,
+        "line": 91,
         "level": 3,
         "title": "一次性註冊（once）"
       }
@@ -5087,7 +5133,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 717,
+        "line": 720,
         "level": 2,
         "title": "下一步"
       },
@@ -5235,7 +5281,7 @@
     "主人系統配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 309,
+        "line": 312,
         "level": 2,
         "title": "主人系統配置"
       }
@@ -5243,7 +5289,7 @@
     "主動 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 452,
+        "line": 455,
         "level": 3,
         "title": "主動 GC 配置"
       }
@@ -5329,7 +5375,7 @@
     "事件接收與處理": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 200,
+        "line": 202,
         "level": 3,
         "title": "事件接收與處理"
       }
@@ -5346,6 +5392,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 364,
+        "level": 2,
+        "title": "事件擴展方法"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 211,
         "level": 2,
         "title": "事件擴展方法"
       },
@@ -5487,7 +5539,7 @@
     "事件處理機制": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 14,
+        "line": 13,
         "level": 2,
         "title": "事件處理機制"
       }
@@ -5579,7 +5631,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 549,
+        "line": 552,
         "level": 2,
         "title": "事件配置"
       }
@@ -5608,6 +5660,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 261,
+        "level": 2,
+        "title": "事件類型映射"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 180,
         "level": 2,
         "title": "事件類型映射"
       }
@@ -5703,7 +5761,7 @@
     "互動式安裝": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 581,
+        "line": 628,
         "level": 2,
         "title": "互動式安裝"
       }
@@ -5821,7 +5879,7 @@
     "伺服器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 279,
+        "line": 282,
         "level": 2,
         "title": "伺服器配置"
       }
@@ -5832,14 +5890,6 @@
         "line": 325,
         "level": 4,
         "title": "低階方法"
-      }
-    ],
-    "佔位命令 help 回退鏈": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 87,
-        "level": 3,
-        "title": "佔位命令 help 回退鏈"
       }
     ],
     "何時重新產生": [
@@ -5869,7 +5919,7 @@
     "作用域配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 618,
+        "line": 621,
         "level": 2,
         "title": "作用域配置（scope）"
       }
@@ -5941,7 +5991,7 @@
     "使用懶加載模組": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 138,
+        "line": 188,
         "level": 2,
         "title": "使用懶加載模組"
       }
@@ -6145,7 +6195,7 @@
     "優先級": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 37,
+        "line": 36,
         "level": 3,
         "title": "優先級"
       }
@@ -6317,7 +6367,7 @@
     "全域參數": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 525,
+        "line": 572,
         "level": 2,
         "title": "全域參數"
       }
@@ -6333,7 +6383,7 @@
     "全局配置": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 111,
+        "line": 161,
         "level": 3,
         "title": "全局配置"
       }
@@ -6477,7 +6527,7 @@
     "切換語言": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 671,
+        "line": 718,
         "level": 3,
         "title": "切換語言"
       }
@@ -6501,7 +6551,7 @@
     "列出組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 609,
+        "line": 656,
         "level": 3,
         "title": "列出組件"
       }
@@ -6509,7 +6559,7 @@
     "初始化專案": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 694,
+        "line": 741,
         "level": 3,
         "title": "初始化專案"
       }
@@ -6565,7 +6615,7 @@
     "判定鏈與運行時增刪": [
       {
         "document": "user-guide/configuration.md",
-        "line": 335,
+        "line": 338,
         "level": 3,
         "title": "判定鏈與運行時增刪"
       }
@@ -6715,7 +6765,7 @@
     "升級組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 648,
+        "line": 695,
         "level": 3,
         "title": "升級組件"
       }
@@ -6726,6 +6776,14 @@
         "line": 73,
         "level": 3,
         "title": "協議方法"
+      }
+    ],
+    "占位命令 help 回退鏈": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 87,
+        "level": 3,
+        "title": "占位命令 help 回退鏈"
       }
     ],
     "卸載 / 禁用清理序列": [
@@ -6747,7 +6805,7 @@
     "卸載組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 625,
+        "line": 672,
         "level": 3,
         "title": "卸載組件"
       }
@@ -6827,6 +6885,12 @@
         "document": "advanced/http-client.md",
         "line": 178,
         "level": 2,
+        "title": "參數說明"
+      },
+      {
+        "document": "advanced/interaction.md",
+        "line": 114,
+        "level": 3,
         "title": "參數說明"
       },
       {
@@ -6948,6 +7012,14 @@
         "title": "各異常說明與發生位置"
       }
     ],
+    "合併轉發": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 94,
+        "level": 3,
+        "title": "合併轉發"
+      }
+    ],
     "合併轉發（可選，見 §2.4）": [
       {
         "document": "standards/send-method-spec.md",
@@ -6967,7 +7039,7 @@
     "同步初始化": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 186,
+        "line": 236,
         "level": 3,
         "title": "同步初始化"
       }
@@ -7063,7 +7135,7 @@
     "命令系統": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 240,
+        "line": 242,
         "level": 3,
         "title": "命令系統"
       }
@@ -7095,7 +7167,7 @@
     "命令解析配置（event.command）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 715,
+        "line": 718,
         "level": 2,
         "title": "命令解析配置（event.command）"
       }
@@ -7139,7 +7211,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 551,
+        "line": 554,
         "level": 3,
         "title": "命令配置"
       }
@@ -7211,7 +7283,7 @@
     "嚴格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 467,
+        "line": 470,
         "level": 3,
         "title": "嚴格模式"
       }
@@ -7351,7 +7423,7 @@
     "國際化": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 323,
+        "line": 325,
         "level": 3,
         "title": "國際化"
       }
@@ -7367,7 +7439,7 @@
     "國際化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 578,
+        "line": 581,
         "level": 2,
         "title": "國際化配置"
       }
@@ -7463,7 +7535,7 @@
     "基本使用": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 140,
+        "line": 190,
         "level": 3,
         "title": "基本使用"
       },
@@ -7556,6 +7628,12 @@
         "line": 46,
         "level": 3,
         "title": "基本用法"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 42,
+        "level": 3,
+        "title": "基本用法"
       }
     ],
     "基本發送": [
@@ -7633,6 +7711,12 @@
       },
       {
         "document": "platform-guide/sandbox.md",
+        "line": 12,
+        "level": 2,
+        "title": "基本資訊"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
         "line": 12,
         "level": 2,
         "title": "基本資訊"
@@ -7718,6 +7802,12 @@
         "line": 89,
         "level": 3,
         "title": "基礎發送方法"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 82,
+        "level": 3,
+        "title": "基礎發送方法"
       }
     ],
     "基礎要求": [
@@ -7768,6 +7858,22 @@
         "title": "場景二：事件沒響應"
       }
     ],
+    "場景五：模組「明明啟用卻收不到事件」（懶加載休眠，2.11+）": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 127,
+        "level": 2,
+        "title": "場景五：模組「明明啟用卻收不到事件」（懶加載休眠，2.11+）"
+      }
+    ],
+    "場景四：改了程式碼 reload 後還是舊行為（2.11+）": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 111,
+        "level": 2,
+        "title": "場景四：改了程式碼 reload 後還是舊行為（2.11+）"
+      }
+    ],
     "声明式事件扩展方法（v2.7.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -7816,12 +7922,12 @@
         "title": "多元素訊息"
       }
     ],
-    "多實例提示與鎖文件": [
+    "多實例提示與鎖檔案": [
       {
         "document": "user-guide/configuration.md",
         "line": 21,
         "level": 3,
-        "title": "多實例提示與鎖文件"
+        "title": "多實例提示與鎖檔案"
       }
     ],
     "多實例部署": [
@@ -7922,10 +8028,18 @@
         "title": "多账户支持"
       }
     ],
+    "多账户發送語法": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 286,
+        "level": 3,
+        "title": "多账户發送語法"
+      }
+    ],
     "多路等待：expect + select": [
       {
         "document": "advanced/interaction.md",
-        "line": 134,
+        "line": 179,
         "level": 2,
         "title": "多路等待：expect + select"
       }
@@ -8149,7 +8263,7 @@
     "存儲連接狀態": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 291,
+        "line": 293,
         "level": 3,
         "title": "存儲連接狀態"
       }
@@ -8157,7 +8271,7 @@
     "存儲配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 500,
+        "line": 503,
         "level": 2,
         "title": "存儲配置"
       }
@@ -8267,7 +8381,7 @@
     "安裝模組": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 596,
+        "line": 643,
         "level": 3,
         "title": "安裝模組"
       }
@@ -8283,7 +8397,7 @@
     "完整 API 參考": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 355,
+        "line": 357,
         "level": 2,
         "title": "完整 API 參考"
       }
@@ -8343,7 +8457,7 @@
     "完整配置範例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 225,
+        "line": 228,
         "level": 2,
         "title": "完整配置範例"
       }
@@ -8359,7 +8473,7 @@
     "定向傳播（emit to=）": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 67,
+        "line": 66,
         "level": 3,
         "title": "定向傳播（emit to=）"
       }
@@ -8407,7 +8521,7 @@
     "專案管理命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 335,
+        "line": 382,
         "level": 2,
         "title": "專案管理命令"
       }
@@ -8529,7 +8643,7 @@
     "工具": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 374,
+        "line": 376,
         "level": 3,
         "title": "工具"
       }
@@ -8640,6 +8754,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 417,
+        "level": 3,
+        "title": "帳戶配置字段"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 239,
         "level": 3,
         "title": "帳戶配置字段"
       }
@@ -8759,7 +8879,7 @@
     "常見用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 594,
+        "line": 641,
         "level": 2,
         "title": "常見用法"
       }
@@ -8912,6 +9032,14 @@
         "title": "平台特性說明 — Webhook 通用橋接適配器"
       }
     ],
+    "平台特有事件與擴展段": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 197,
+        "level": 3,
+        "title": "平台特有事件與擴展段"
+      }
+    ],
     "平台特有事件（onebot11_ 前綴）": [
       {
         "document": "platform-guide/onebot11.md",
@@ -8975,7 +9103,7 @@
     "建立腳手架": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 704,
+        "line": 751,
         "level": 3,
         "title": "建立腳手架"
       }
@@ -9276,6 +9404,14 @@
         "title": "慢載與呼叫"
       }
     ],
+    "懶加載休眠（dormant_after）": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 111,
+        "level": 2,
+        "title": "懶加載休眠（dormant_after）"
+      }
+    ],
     "成功响应": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -9424,6 +9560,14 @@
         "title": "抽象類型"
       }
     ],
+    "拍一戳 / 社交": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 132,
+        "level": 3,
+        "title": "拍一戳 / 社交"
+      }
+    ],
     "拓撲樹 API": [
       {
         "document": "advanced/scope.md",
@@ -9529,7 +9673,7 @@
     "推薦使用懶載入的場景（lazy_load=True）": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 211,
+        "line": 261,
         "level": 3,
         "title": "推薦使用懶載入的場景（lazy_load=True）"
       }
@@ -9561,7 +9705,7 @@
     "推薦禁用懶載入的場景（lazy_load=False）": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 216,
+        "line": 266,
         "level": 3,
         "title": "推薦禁用懶載入的場景（lazy_load=False）"
       }
@@ -9588,6 +9732,14 @@
         "line": 338,
         "level": 3,
         "title": "擴展動作"
+      }
+    ],
+    "擴展字段說明": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 203,
+        "level": 3,
+        "title": "擴展字段說明"
       }
     ],
     "擴展欄位": [
@@ -9748,6 +9900,12 @@
         "line": 82,
         "level": 2,
         "title": "支援的消息發送類型"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 64,
+        "level": 2,
+        "title": "支援的消息發送類型"
       }
     ],
     "支援的訊息發送類型": [
@@ -9790,6 +9948,14 @@
         "line": 925,
         "level": 3,
         "title": "收集表單 (collect)"
+      }
+    ],
+    "敏感配置不入庫": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 25,
+        "level": 3,
+        "title": "敏感配置不入庫"
       }
     ],
     "整批規則與回調": [
@@ -9929,6 +10095,12 @@
       },
       {
         "document": "platform-guide/sandbox.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件資訊"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
         "line": 7,
         "level": 2,
         "title": "文件資訊"
@@ -10173,7 +10345,7 @@
     "日誌配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 383,
+        "line": 386,
         "level": 2,
         "title": "日誌配置"
       }
@@ -10233,7 +10405,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 195,
+        "line": 245,
         "level": 2,
         "title": "最佳實踐"
       },
@@ -10275,7 +10447,7 @@
     "會話互斥：acquire / hold / get_owner_of": [
       {
         "document": "advanced/interaction.md",
-        "line": 174,
+        "line": 220,
         "level": 2,
         "title": "會話互斥：acquire / hold / get_owner_of"
       }
@@ -10283,7 +10455,7 @@
     "會話定時器：remind / escalate": [
       {
         "document": "advanced/interaction.md",
-        "line": 93,
+        "line": 138,
         "level": 2,
         "title": "會話定時器：remind / escalate"
       }
@@ -10299,7 +10471,7 @@
     "會話收件箱：event.history": [
       {
         "document": "advanced/interaction.md",
-        "line": 207,
+        "line": 253,
         "level": 2,
         "title": "會話收件箱：event.history"
       }
@@ -10487,7 +10659,7 @@
     "核心初始化": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 146,
+        "line": 143,
         "level": 3,
         "title": "核心初始化"
       }
@@ -10683,7 +10855,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 431,
+        "line": 434,
         "level": 2,
         "title": "框架配置"
       }
@@ -10774,6 +10946,12 @@
         "title": "標準 Api 動作（Api DSL）"
       },
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 30,
+        "level": 2,
+        "title": "標準 Api 動作（Api DSL）"
+      },
+      {
         "document": "platform-guide/telegram.md",
         "line": 19,
         "level": 2,
@@ -10784,6 +10962,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 263,
+        "level": 3,
+        "title": "標準 OB12 映射"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 182,
         "level": 3,
         "title": "標準 OB12 映射"
       }
@@ -10799,7 +10983,7 @@
     "標準事件定義": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 329,
+        "line": 331,
         "level": 2,
         "title": "標準事件定義"
       }
@@ -10908,12 +11092,12 @@
         "title": "模組"
       }
     ],
-    "模組中使用範例": [
+    "模組中使用示例": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 384,
+        "line": 386,
         "level": 2,
-        "title": "模組中使用範例"
+        "title": "模組中使用示例"
       }
     ],
     "模組介紹 meta": [
@@ -10975,7 +11159,7 @@
     "模組層級控制": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 120,
+        "line": 170,
         "level": 3,
         "title": "模組層級控制"
       }
@@ -11039,7 +11223,7 @@
     "模組生命週期": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 178,
+        "line": 175,
         "level": 3,
         "title": "模組生命週期"
       },
@@ -11075,7 +11259,7 @@
     "模組配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 589,
+        "line": 592,
         "level": 2,
         "title": "模組配置"
       }
@@ -11083,7 +11267,7 @@
     "模組配置的環境變數綁定（2.9.0+）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 95,
+        "line": 99,
         "level": 3,
         "title": "模組配置的環境變數綁定（2.9.0+）"
       }
@@ -11227,13 +11411,13 @@
     "注意事項": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 225,
+        "line": 275,
         "level": 2,
         "title": "注意事項"
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 442,
+        "line": 444,
         "level": 2,
         "title": "注意事項"
       },
@@ -11265,7 +11449,7 @@
     "注釋保留與最小化落盤": [
       {
         "document": "user-guide/configuration.md",
-        "line": 48,
+        "line": 52,
         "level": 2,
         "title": "注釋保留與最小化落盤"
       }
@@ -11348,14 +11532,6 @@
         "title": "消息事件額外字段"
       }
     ],
-    "消息事務：message_tx": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 226,
-        "level": 2,
-        "title": "消息事務：message_tx"
-      }
-    ],
     "消息內容": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -11423,7 +11599,7 @@
     "消息發送": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 225,
+        "line": 227,
         "level": 3,
         "title": "消息發送"
       },
@@ -11509,7 +11685,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 567,
+        "line": 570,
         "level": 3,
         "title": "消息配置"
       }
@@ -11665,7 +11841,7 @@
     "熱更新鏈路內部拆解": [
       {
         "document": "user-guide/configuration.md",
-        "line": 148,
+        "line": 152,
         "level": 3,
         "title": "熱更新鏈路內部拆解"
       }
@@ -11794,6 +11970,14 @@
         "title": "特殊欄位範例"
       }
     ],
+    "狀態接續": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 136,
+        "level": 3,
+        "title": "狀態接續"
+      }
+    ],
     "獨立 Renderer": [
       {
         "document": "ecosystem/takumi.md",
@@ -11845,7 +12029,7 @@
     "環境診斷": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 540,
+        "line": 587,
         "level": 2,
         "title": "環境診斷"
       }
@@ -11861,9 +12045,17 @@
     "環境變數覆蓋": [
       {
         "document": "user-guide/configuration.md",
-        "line": 70,
+        "line": 74,
         "level": 2,
         "title": "環境變數覆蓋"
+      }
+    ],
+    "生命周期管理": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 1,
+        "level": 1,
+        "title": "生命周期管理"
       }
     ],
     "生命週期事件": [
@@ -11900,14 +12092,6 @@
         "title": "生命週期全景"
       }
     ],
-    "生命週期管理": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 1,
-        "level": 1,
-        "title": "生命週期管理"
-      }
-    ],
     "生命週期鉤子": [
       {
         "document": "advanced/http-client.md",
@@ -11935,7 +12119,7 @@
     "生成類型存根": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 684,
+        "line": 731,
         "level": 3,
         "title": "生成類型存根"
       }
@@ -11959,7 +12143,7 @@
     "用戶優先：主人生效範圍由用戶最終決定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 377,
+        "line": 380,
         "level": 3,
         "title": "用戶優先：主人生效範圍由用戶最終決定"
       }
@@ -12059,7 +12243,7 @@
     "異步初始化": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 174,
+        "line": 224,
         "level": 3,
         "title": "異步初始化"
       }
@@ -12320,6 +12504,12 @@
         "line": 351,
         "level": 2,
         "title": "發送方法返回值"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 271,
+        "level": 2,
+        "title": "發送方法返回值"
       }
     ],
     "發送渲染結果": [
@@ -12445,7 +12635,7 @@
     "監聽者查詢（has_handlers）": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 108,
+        "line": 105,
         "level": 3,
         "title": "監聽者查詢（has_handlers）"
       }
@@ -12481,19 +12671,13 @@
       },
       {
         "document": "advanced/interaction.md",
-        "line": 258,
+        "line": 304,
         "level": 2,
         "title": "相關文件"
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 232,
-        "level": 2,
-        "title": "相關文件"
-      },
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 452,
+        "line": 282,
         "level": 2,
         "title": "相關文件"
       },
@@ -12624,6 +12808,14 @@
         "title": "相關文件"
       }
     ],
+    "相關文檔": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 454,
+        "level": 2,
+        "title": "相關文檔"
+      }
+    ],
     "相關連結": [
       {
         "document": "README.md",
@@ -12714,14 +12906,6 @@
         "title": "第二步：執行機器人"
       }
     ],
-    "等待什麼時候會被取消": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 63,
-        "level": 3,
-        "title": "等待什麼時候會被取消"
-      }
-    ],
     "等待任意事件 (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
@@ -12752,6 +12936,14 @@
         "line": 19,
         "level": 2,
         "title": "等待回覆：wait_reply"
+      }
+    ],
+    "等待會在什麼時候被取消": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 63,
+        "level": 3,
+        "title": "等待會在什麼時候被取消"
       }
     ],
     "等待用戶回覆": [
@@ -12933,7 +13125,7 @@
     "統一事件覆寫配置（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 668,
+        "line": 671,
         "level": 2,
         "title": "統一事件覆寫配置（event.overrides）"
       }
@@ -12949,7 +13141,7 @@
     "統一的模組獲取入口": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 152,
+        "line": 202,
         "level": 3,
         "title": "統一的模組獲取入口"
       }
@@ -13040,6 +13232,20 @@
         "line": 100,
         "level": 3,
         "title": "群操作方法"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 118,
+        "level": 3,
+        "title": "群操作方法"
+      }
+    ],
+    "群檔案 / 訊息歷史 / 已讀狀態": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 146,
+        "level": 3,
+        "title": "群檔案 / 訊息歷史 / 已讀狀態"
       }
     ],
     "群組/頻道資訊": [
@@ -13114,6 +13320,14 @@
         "title": "聲明式參數與選項（args= / options=）"
       }
     ],
+    "聲明式多輪：`.got()` 鏈（2.11+）": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 93,
+        "level": 2,
+        "title": "聲明式多輪：`.got()` 鏈（2.11+）"
+      }
+    ],
     "聲明式翻譯鍵（v2.7.0+）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -13130,6 +13344,14 @@
         "title": "聲明式配置（推薦）"
       }
     ],
+    "聲明方式": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 121,
+        "level": 3,
+        "title": "聲明方式"
+      }
+    ],
     "聲明模型": [
       {
         "document": "developer-guide/orm.md",
@@ -13141,7 +13363,7 @@
     "背景任務歸屬與自動取消": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 411,
+        "line": 413,
         "level": 2,
         "title": "背景任務歸屬與自動取消"
       }
@@ -13205,7 +13427,7 @@
     "自定義身份源（provider）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 349,
+        "line": 352,
         "level": 3,
         "title": "自定義身份源（provider）"
       }
@@ -13253,9 +13475,17 @@
     "與 CLI 的聯動": [
       {
         "document": "user-guide/configuration.md",
-        "line": 496,
+        "line": 499,
         "level": 4,
         "title": "與 CLI 的聯動"
+      }
+    ],
+    "與 OneBot11 適配器的關係": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 20,
+        "level": 3,
+        "title": "與 OneBot11 適配器的關係"
       }
     ],
     "與 SDK 的關係": [
@@ -13277,7 +13507,7 @@
     "與其他系統的關係": [
       {
         "document": "advanced/interaction.md",
-        "line": 251,
+        "line": 297,
         "level": 2,
         "title": "與其他系統的關係"
       }
@@ -13513,7 +13743,7 @@
     "觸發": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 365,
+        "line": 367,
         "level": 3,
         "title": "觸發"
       }
@@ -13556,6 +13786,14 @@
         "line": 264,
         "level": 3,
         "title": "訊息事件範例"
+      }
+    ],
+    "訊息事務：message_tx": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 272,
+        "level": 2,
+        "title": "訊息事務：message_tx"
       }
     ],
     "訊息序號機制": [
@@ -13725,7 +13963,7 @@
     "註冊與取消": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 357,
+        "line": 359,
         "level": 3,
         "title": "註冊與取消"
       }
@@ -13733,7 +13971,7 @@
     "註冊處理器": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 16,
+        "line": 15,
         "level": 3,
         "title": "註冊處理器"
       }
@@ -13770,10 +14008,26 @@
         "title": "認證與 API 調用"
       }
     ],
+    "語意與限制": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 150,
+        "level": 3,
+        "title": "語意與限制"
+      }
+    ],
+    "語義與邊界": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 126,
+        "level": 3,
+        "title": "語義與邊界"
+      }
+    ],
     "語言命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 447,
+        "line": 494,
         "level": 2,
         "title": "語言命令"
       }
@@ -13949,7 +14203,7 @@
     "豁免清單": [
       {
         "document": "user-guide/configuration.md",
-        "line": 484,
+        "line": 487,
         "level": 4,
         "title": "豁免清單"
       }
@@ -14323,7 +14577,7 @@
     "通用建議": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 111,
+        "line": 140,
         "level": 2,
         "title": "通用建議"
       }
@@ -14409,7 +14663,7 @@
     "通配符": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 57,
+        "line": 56,
         "level": 3,
         "title": "通配符"
       }
@@ -14527,7 +14781,7 @@
     "運行專案": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 661,
+        "line": 708,
         "level": 3,
         "title": "運行專案"
       }
@@ -14698,10 +14952,18 @@
         "title": "適配器熱啟停"
       }
     ],
+    "適配器熱重載架構": [
+      {
+        "document": "architecture.md",
+        "line": 324,
+        "level": 2,
+        "title": "適配器熱重載架構"
+      }
+    ],
     "適配器生命週期": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 188,
+        "line": 189,
         "level": 3,
         "title": "適配器生命週期"
       }
@@ -14889,7 +15151,7 @@
     "配置懶加載": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 109,
+        "line": 159,
         "level": 2,
         "title": "配置懶加載"
       }
@@ -14945,7 +15207,7 @@
     "配置熱更新": [
       {
         "document": "user-guide/configuration.md",
-        "line": 126,
+        "line": 130,
         "level": 2,
         "title": "配置熱更新"
       }
@@ -14954,6 +15216,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 434,
+        "level": 3,
+        "title": "配置示例"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 253,
         "level": 3,
         "title": "配置示例"
       },
@@ -14995,7 +15263,7 @@
     "配置組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 635,
+        "line": 682,
         "level": 3,
         "title": "配置組件"
       }
@@ -15067,7 +15335,7 @@
     "配置讀取與刪除 API": [
       {
         "document": "user-guide/configuration.md",
-        "line": 197,
+        "line": 200,
         "level": 2,
         "title": "配置讀取與刪除 API"
       }
@@ -15075,7 +15343,7 @@
     "配置變更": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 163,
+        "line": 160,
         "level": 3,
         "title": "配置變更"
       }
@@ -15083,7 +15351,7 @@
     "配置載入錯誤處理": [
       {
         "document": "user-guide/configuration.md",
-        "line": 25,
+        "line": 29,
         "level": 2,
         "title": "配置載入錯誤處理"
       }
@@ -15098,6 +15366,12 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 299,
+        "level": 2,
+        "title": "配置選項"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 235,
         "level": 2,
         "title": "配置選項"
       },
@@ -15162,12 +15436,12 @@
         "title": "重設建構器"
       }
     ],
-    "鈎子斷點一覽": [
+    "鉤子斷點一覽": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 120,
+        "line": 117,
         "level": 2,
-        "title": "鈎子斷點一覽"
+        "title": "鉤子斷點一覽"
       }
     ],
     "錯誤碼規範": [
@@ -15298,6 +15572,12 @@
         "title": "鏈式修飾方法（可組合使用）"
       },
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 155,
+        "level": 3,
+        "title": "鏈式修飾方法（可組合使用）"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 169,
         "level": 3,
@@ -15401,7 +15681,7 @@
     "鏈路追蹤：trace-id": [
       {
         "document": "advanced/interaction.md",
-        "line": 240,
+        "line": 286,
         "level": 2,
         "title": "鏈路追蹤：trace-id"
       }
@@ -15637,7 +15917,7 @@
     "類型存根命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 484,
+        "line": 531,
         "level": 2,
         "title": "類型存根命令"
       }
@@ -15701,7 +15981,7 @@
     "點式結構事件": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 51,
+        "line": 50,
         "level": 3,
         "title": "點式結構事件"
       }

@@ -45,7 +45,7 @@
 
 # 架構概覽
 
-本文檔透過可視化圖表介紹 ErisPulse SDK 的技術架構，幫助你快速理解框架的設計理念和模組關係。
+本文檔透過視覺化圖表介紹 ErisPulse SDK 的技術架構，幫助你快速理解框架的設計理念與模組關係。
 
 ## SDK 核心架構
 
@@ -92,10 +92,10 @@ graph TB
 | **Module** | 模組管理器，管理插件的註冊、加載和卸載，支援依賴聲明和拓撲排序 |
 | **Lifecycle** | 生命週期管理器，提供事件驅動的生命週期鉤子 |
 | **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 串流查詢 |
-| **Config** | TOML 格式的配置檔案管理 |
+| **Config** | TOML 格式的配置文件管理 |
 | **Logger** | 模組化日誌系統，支援子日誌器 |
 | **Router** | HTTP/WebSocket 路由管理，透過抽象層封裝底層後端（目前為 FastAPI + Uvicorn），支援裝飾器路由、中間件、分組、限流、CORS |
-| **Client** | 統一 HTTP/WS 客戶端（2.8.0 前為 `HttpClient`，保留相容別名），透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 客戶端、ErisPulse 異常體系等功能。客戶端和伺服器 WebSocket 共享 `WebSocketConnectionBase` 基類 |
+| **Client** | 統一 HTTP/WS 客戶端（2.8.0 前為 `HttpClient`，保留相容別名），透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 客戶端、ErisPulse 異常體系等功能。客戶端和服務端 WebSocket 共享 `WebSocketConnectionBase` 基類 |
 
 ## 初始化流程
 
@@ -104,22 +104,22 @@ graph TB
 ```mermaid
 flowchart TD
     A["sdk.init()"] --> B["準備執行環境"]
-    B --> B1["載入配置檔案"]
+    B --> B1["載入配置文件"]
     B1 --> B2["設定全域異常處理"]
     B2 --> C["適配器 & 模組發現"]
-    C --> D{"並行加載"}
+    C --> D{"平行加載"}
     D --> D1["從 PyPI 加載適配器"]
     D --> D2["從 PyPI 加載模組"]
     D1 & D2 --> E["註冊適配器"]
     E --> E1["啟動適配器"]
     E1 --> F["註冊模組"]
     F --> F1{"依賴驗證"}
-    F1 -->|"缺失依賴"| F2["跳過該模組並記錄警告"]
+    F1 -->|"缺少依賴"| F2["跳過該模組並記錄警告"]
     F1 -->|"依賴滿足"| F3["拓撲排序<br/>（Kahn 算法 + 優先級）"]
-    F3 --> G["按序初始化模組<br/>（實例化 + on_load）"]
+    F3 --> G["依序初始化模組<br/>（實例化 + on_load）"]
     F2 --> G
     G --> H["啟動路由伺服器"]
-    H --> K["運行就緒"]
+    H --> K["執行就緒"]
 ```
 
 ### 初始化階段詳解
@@ -128,7 +128,7 @@ flowchart TD
 
 ## 事件處理流程
 
-下圖展示了訊息從平台到處理器的完整轉流路徑：
+下圖展示了訊息從平台到處理器的完整傳遞路徑：
 
 ```mermaid
 flowchart LR
@@ -159,37 +159,37 @@ sequenceDiagram
     participant E as Event 模組層<br/>_process_event
 
     P->>A: 原生事件
-    A->>A: 提取 platform/type/detail_type + 原始字段
+    A->>A: 提取 platform/type/detail_type + 原始欄位
     A->>A: [Recv] 接收日誌
     A->>A: lifecycle.adapter.event.receive（最早期鉤子）
-    A->>A: 處理 self 字段（meta 分支 / Bot 自動註冊）
+    A->>A: 處理 self 欄位（meta 分支 / Bot 自動註冊）
     A->>A: 中間件鏈（串行，可改寫事件資料）
     A->>A: 收集 handler（具體類型 + 通配符 *）
     A->>A: 身份准入 + 作用域過濾（建立 Task 前，靜默丟棄/跳過）
     A->>T: asyncio.create_task（fire-and-forget）
     A->>A: lifecycle.adapter.event.dispatched（最末鉤子）
-    T->>T: 獲取併發信號量（預設上限 64）
+    T->>T: 取得併發信號量（預設上限 64）
     T->>E: 調用 Event 模組掛載的處理器
     E->>E: lifecycle.event.pre_process
     E->>E: ignore_self（訊息事件預設忽略自身）
     E->>E: 按優先級分組：高→低、組間串行、組內併發
-    E->>E: 組內副本執行 + 字段合併（衝突告警）
+    E->>E: 組內副本執行 + 欄位合併（衝突警告）
     E->>E: 組後檢查 stop() 阻斷更低優先級
-    T->>T: 慢日誌（超過 1s 告警，wait_reply 時間白名單）
+    T->>T: 慢日誌（超過 1s 警告，wait_reply 時間白名單）
 ```
 
 **每一步框架做了什麼、你能干預什麼：**
 
 | 階段 | 框架做了什麼 | 你能干預的 |
 |------|-------------|-----------|
-| 接收 | 提取標準字段，保留 `{platform}_raw` 原始資料；寫 `[Recv]` 日誌 | 監聽 `adapter.event.receive` 拿到最早期事件 |
-| self 字段 | meta 事件走 connect/disconnect/heartbeat 分支；普通事件自動註冊 Bot 並觸發 `adapter.bot.online` | 監聽 `adapter.bot.online` / `bot.offline` |
-| 中間件 | **串行**執行，返回值非 None 則取代事件資料 | 註冊中間件改寫/攔截事件 |
+| 接收 | 提取標準欄位，保留 `{platform}_raw` 原始資料；寫 `[Recv]` 日誌 | 監聽 `adapter.event.receive` 拿到最早期事件 |
+| self 欄位 | meta 事件走 connect/disconnect/heartbeat 分支；一般事件自動註冊 Bot 並觸發 `adapter.bot.online` | 監聽 `adapter.bot.online` / `bot.offline` |
+| 中間件 | **串行**執行，回傳值非 None 則取代事件資料 | 註冊中間件改寫/攔截事件 |
 | 分發收集 | 先取具體類型 handler，再取 `*` 通配符 handler | — |
 | 身份維度 | 分發入口按 用戶>會話>Bot>適配器 判定事件收不收（`scope.is_identity_allowed`），**拒絕則整個事件丟棄** | `ErisPulse.scope.identity` 綁定 |
 | 作用域過濾 | 按模組 owner 判定 `scope.is_allowed`（會話級>Bot級>平台級），**不通過則靜默跳過** | 配置作用域白名單/黑名單 |
-| 調度 | 每個匹配 handler 獨立 `asyncio.Task`，`emit()` **不等待** handler 完成即返回 | — |
-| 優先級 | 高優先級組先執行；**組間串行、組內併發**（組內各自持有事件副本，改字段合併回原事件，衝突打 WARNING） | `@command(..., priority=N)` / 註冊時指定 priority |
+| 調度 | 每個匹配 handler 獨立 `asyncio.Task`，`emit()` **不等待** handler 完成即回傳 | — |
+| 優先級 | 高優先級組先執行；**組間串行、組內併發**（組內各自持有事件副本，改欄位合併回原事件，衝突打 WARNING） | `@command(..., priority=N)` / 註冊時指定 priority |
 | 阻斷 | 每處理完一組檢查 `event.is_stopped()`，命中則**不再執行更低優先級** | `event.mark_processed(stop=True)` / `event.done()` |
 
 > **常見誤區**：
@@ -237,7 +237,7 @@ flowchart LR
 
 ## 模組加載策略
 
-ErisPulse 支援三種模組加載策略，由 `get_load_strategy()` 返回的 `ModuleLoadStrategy` 聲明：
+ErisPulse 支援三種模組加載策略，由 `get_load_strategy()` 回傳的 `ModuleLoadStrategy` 聲明：
 
 ```mermaid
 flowchart TD
@@ -248,7 +248,7 @@ flowchart TD
     C --> F["註冊事件/命令 stub 到分發器"]
     F --> G["掛載到 sdk 屬性"]
     G --> H["事件到達觸發激活"]
-    H --> I["實例化 + on_load() + 注銷 stub"]
+    H --> I["實例化 + on_load() + 解除 stub"]
     D --> J["掛載到 sdk 屬性"]
     J --> K["首次屬性存取時初始化"]
     E --> L["呼叫 on_load()"]
@@ -262,19 +262,19 @@ flowchart TD
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-`activate_on` 允許模組在**首個匹配事件/命令到達時**才加載，避免常駐記憶體，同時確保事件不丟失：
+`activate_on` 允許模組在**首個匹配事件/命令到達時**才加載，避免常駐記憶體，同時保證事件不遺失：
 
 ```mermaid
 flowchart LR
     subgraph Declare["模組聲明"]
-        S1["get_load_strategy() 返回<br/>ModuleLoadStrategy(activate_on=...)"] --> S2["activate_on 語法：<br/>str / dict / list 自由混合"]
+        S1["get_load_strategy() 回傳<br/>ModuleLoadStrategy(activate_on=...)"] --> S2["activate_on 語法：<br/>str / dict / list 自由混合"]
         S2 --> S2a["'message' → 事件類型級"]
         S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ 類型 + detail_type"]
         S2 --> S2c["{'command': 'roll'}<br/>→ 命令觸發（簡寫/列表）"]
         S2 --> S2d["{'command': {'name': 'dice', 'help': ...,<br/>'aliases': [...], 'hidden': ...}}<br/>→ 命令觸發（dict 聲明）"]
     end
 
-    subgraph Runtime["運行期"]
+    subgraph Runtime["執行期"]
         R1["ModuleActivator 註冊 stub"] --> R1a["事件 stub → message/notice/request/meta 管理器<br/>優先級 ACTIVATION_STUB_PRIORITY（極低）"]
         R1 --> R1b["命令 stub → 命令管理器<br/>佔位命令（鏡像 dict 聲明的 help/usage/group/aliases/hidden）"]
         R1a --> R2{"觸發事件到達"}
@@ -282,7 +282,7 @@ flowchart LR
         R2 --> R3["按 owner 過作用域過濾"]
         R3 --> R4["asyncio.Lock 防止重複激活"]
         R4 --> R5["實例化模組 + 呼叫 on_load()"]
-        R5 --> R6["註銷全部 stub"]
+        R5 --> R6["解除全部 stub"]
         R6 --> R7["事件轉發到真實處理器"]
     end
 
@@ -304,10 +304,10 @@ flowchart LR
 flowchart TD
     A["專案 plugins/ 目錄<br/>（ErisPulse.framework.plugins_dir，支援多目錄）"] --> B{"PluginFolderLoader.discover()"}
     B --> C["單檔案：dice.py → 插件名 = 檔案名"]
-    B --> D["包形式：weather/（含 __init__.py）→ 插件名 = 目錄名"]
+    B --> D["套件形式：weather/（含 __init__.py）→ 插件名 = 目錄名"]
     B --> E["忽略：__pycache__ / _ 開頭 / 非 .py / 無 __init__.py 目錄"]
-    C --> F["導入模組（spec_from_file_location）"]
-    D --> G["導入模組（sys.path + import_module）"]
+    C --> F["匯入模組（spec_from_file_location）"]
+    D --> G["匯入模組（sys.path + import_module）"]
     F --> H["識別模組類：Main（BaseModule 子類）優先，回落首個子類"]
     G --> H
     H --> I["構造與 entry-point 一致的 moduleInfo"]
@@ -317,46 +317,82 @@ flowchart TD
 
 **約定與特性：**
 
-- 插件名來源：單檔案取檔案名，包形式取目錄名
+- 插件名來源：單檔案取檔案名，套件形式取目錄名
 - 本地插件 `moduleInfo.meta.source == "plugin_folder"`，與 PyPI 安裝包模組無縫共存
 - 同名時本地優先（便於本地覆蓋調試），被禁用時同時移除同名 entry-point 條目
 
 ## 模組熱重載架構
 
-熱重載對**全部模組來源**一致：本地插件可監控檔案變更自動觸發，任意模組也可透過 `sdk.reload_module()` / `sdk.module.reload()` 手動重載（PyPI 安裝包模組在 pip 升級後呼叫即可生效）；`sdk.reload_all_modules()` / `sdk.module.reload_all()` 可一次全量重載所有已註冊模組（pip 批量升級後呼叫即可全部生效）：
+熱重載對**全部模組來源**一致：本地插件（`plugins/` 目錄）、執行時註冊（`sdk.module.register()`）、PyPI 安裝包模組均可透過 `sdk.reload_module()` / `sdk.module.reload()` 熱重載——**預設即全量重載**（按頂層包名清除 import 緩存並重導依賴者程式碼，`full=False` 為輕量逃生門）；`sdk.reload_all_modules()` / `sdk.module.reload_all()` 可一次全量重載所有已註冊模組（pip 批量升級後呼叫即可全部生效）：
 
 ```mermaid
 flowchart TD
     A["sdk.enable_plugin_hot_reload()<br/>（自動監控，僅本地插件目錄）"] --> B["PluginReloadWatcher 啟動"]
-    B --> C["PollingObserver（後台守護執行緒）<br/>定期比較 .py 檔案 mtime"]
+    B --> C["PollingObserver（背景守護執行緒）<br/>定期比較 .py 檔案 mtime"]
     C --> D{"插件檔案變更"}
     D --> E["變更去抖（預設 1 秒）"]
-    E --> F["_handle_change 解析插件名<br/>（單檔案 / 包形式）"]
+    E --> F["_handle_change 解析插件名<br/>（單檔案 / 套件形式）"]
     F --> G["asyncio.run_coroutine_threadsafe<br/>調度回主事件迴圈"]
-    G --> H["sdk.reload_module(name, full=…)<br/>（也可對任意模組手動呼叫）"]
-    H --> I["卸載舊實例（觸發 on_unload）<br/>收集依賴者準備級聯重載"]
-    I --> J{"模組來源？"}
-    J -->|"plugin_folder"| K["清理註冊與插件 sys.modules<br/>重掃描 plugins/ 目錄"]
-    J -->|"PyPI 安裝包"| L["清理註冊 + 按 top_level 清理包<br/>sys.modules 子樹（full=True 時疊加<br/>舊模組物件頂層段兜底）<br/>刷新導入快取後重查 entry-point"]
-    K --> M["重新 register + load"]
-    L --> M
-    M --> N["掛載新實例到 sdk 屬性"]
-    N --> O["級聯重載依賴者<br/>（插件完整重載 / PyPI 重新實例化；<br/>full=True 時依賴者同樣重導程式碼）"]
-    K -.->|"檔案已刪除"| P["從加載結果移除"]
-    L -.->|"entry-point 已消失（已卸載）"| P
+    G --> H["sdk.reload_module(name, full=True 預設)<br/>（也可對任意模組手動呼叫）"]
+    H --> I["語法預檢（逐檔案解析）<br/>失敗即拒絕重載，舊實例繼續服務"]
+    I --> J["卸載舊實例（on_before_unload → on_unload）<br/>收集依賴者準備級聯重載"]
+    J --> K{"模組來源？"}
+    K -->|"plugin_folder"| L["清理註冊與插件 sys.modules<br/>重掃描 plugins/ 目錄"]
+    K -->|"runtime 執行時註冊"| M["按定義模組清緩存重導<br/>按類名重取（__main__ 守衛）"]
+    K -->|"PyPI 安裝包"| N["清理註冊 + 按 top_level 清理包<br/>sys.modules 子樹 + __pycache__ 字節碼<br/>（元資料缺失時按舊模組物件頂層段兜底）<br/>刷新匯入緩存後重查 entry-point"]
+    L --> O["重新 register + load"]
+    M --> O
+    N --> O
+    O --> P["掛載新實例到 sdk 屬性<br/>核對新舊類身份（假重載警告）"]
+    P --> Q["級聯重載依賴者<br/>（插件/執行時完整重載；<br/>PyPI 依賴者預設同樣重導程式碼）"]
+    L -.->|"檔案已刪除"| R["從加載結果移除"]
+    M -.->|"定義不可安全重導"| R
+    N -.->|"entry-point 已消失（已卸載）"| R
 ```
 
-**兩種來源的差異僅在發現階段**，註冊、加載、級聯重載完全一致：
+**三種來源的差異僅在發現階段**，預檢、卸載、級聯重載完全一致：
 
 - **本地插件**（`moduleInfo.meta.source == "plugin_folder"`）：清理插件名對應 `sys.modules` 後重掃描 `plugins/` 目錄；檔案已刪除則從加載結果移除
-- **PyPI 安裝包**：按 `meta.top_level` 清理包的 `sys.modules` 子樹，刷新導入快取（突破 entry-point 60 秒快取）後重查並重新導入；entry-point 已消失（pip 卸載）則從加載結果移除
+- **執行時註冊**（`source == "runtime"`）：按定義模組重導、按類名重取並重建註冊；定義於 `__main__` / 無源檔案的類拒絕重導（守衛警告，避免重執行入口腳本）
+- **PyPI 安裝包**：按 `meta.top_level` 清理包的 `sys.modules` 子樹，刷新匯入緩存（突破 entry-point 60 秒緩存）後重查並重新匯入；entry-point 已消失（pip 卸載）則從加載結果移除
 
-**全量重載（`full=True`）與整體重載（`reload_all_modules`）：**
+**預設語義與可靠性保障（2.11）：**
 
-- `top_level` 元數據缺失且無法推導時，預設重載**不清理** import 快取（重導入複用舊模組物件，即"假重載"），框架會顯式告警並建議改用 `full=True`——全量重載會疊加舊模組物件頂層包名兜底清理，確保重載後運行最新程式碼
-- `full=True` 時 PyPI 依賴者級聯走完整重載（重導程式碼），預設模式僅重新實例化（既有語義）
-- 重載會把原本懶加載的模組強制激活（無提示的差異已改為顯式日誌）；`reload_all_modules()` 則保持懶加載策略、僅將重載前處於已加載態的模組重新激活
+- **reload 即全量重載**：預設按頂層包名清理 `sys.modules` 並重導依賴者程式碼；`full=False` 僅按元資料清理、PyPI 依賴者直接重新實例化（超大依賴樹的效能逃生門）
+- **語法預檢閘門**：進入卸載流程之前逐檔案語法解析，失敗即拒絕重載——舊實例未卸載、繼續服務，語法錯誤永遠不會把模組推進"半死狀態"（超大包超過檔案數上限時跳過預檢）
+- **緩存兜底**：`top_level` 元資料缺失時按「舊模組物件 `__name__` 前綴 → 模組類 `__module__` 前綴」兩級推導清理範圍；重載同時清除源檔案字節碼緩存（`__pycache__`），同秒同長度的小改寫也能生效
+- **身份核對**：重載成功後斷言新舊類身份變化，未變化（C 扩展等清不掉的緩存）顯式警告並隨 `module.reload` 事件攜帶 `identity_changed: false`；`module.get_info()` 以 `running_identity` / `stale` 欄位暴露"註冊版本 ≠ 運行版本"
+- **失敗可查**：load 失敗現場（異常 + traceback）可經 `module.last_error(名字)` / `get_info()["last_error"]` 直接查詢，失敗路徑同時清洗該模組 import 緩存——"改完程式碼再 reload 一次"必定讀到新程式碼
+- 重載會把原本懶加載的模組強制激活（顯式日誌）；`reload_all_modules()` 則保持懶加載策略、僅將重載前處於已加載態的模組重新激活，歸眠（休眠）中的模組保持歸眠
 - `reload_all_modules()` 按依賴拓撲序重新加載，單模組失敗僅記錄診斷並跳過（無整體回滾——on_unload 副作用不可撤銷，與單模組熱重載的盡力而為語義一致）；重載失敗已回滾的場景同樣如此，日誌會明確提示舊實例處於已收尾狀態
+
+## 適配器熱重載架構
+
+適配器程式級熱重載（2.11）與模組管線同構：`sdk.adapter.reload(平台名)` / `sdk.reload_adapter(平台名)` 對**本地插件**與 **PyPI 安裝包**兩種來源執行——
+
+```mermaid
+flowchart TD
+    A["sdk.adapter.reload(平台名)"] --> B["語法預檢（逐檔案解析）<br/>失敗即拒絕重載，舊適配器繼續服務"]
+    B --> C["快照：adapterInfo / 實例 / 啟動態 /<br/>啟動任務 / bots / sys.modules 條目"]
+    C --> D["unload（shutdown 即清理：<br/>路由/事件/命令/任務/連線/bot offline + 注銷）"]
+    D --> E["清緩存：__pycache__ 字節碼 →<br/>sys.modules 子樹 → invalidate_caches<br/>→ finder 緩存 → 插件路徑記錄"]
+    E --> F{"來源？"}
+    F -->|"插件目錄"| G["重掃描 plugins/（discover_adapters）"]
+    F -->|"PyPI 安裝包"| H["重查 entry-point 並重匯入<br/>（top_level 清理 + 類 __module__ 兜底）"]
+    G --> I["重新 register + startup（原執行態）<br/>核對類身份（假重載警告）"]
+    H --> I
+    I --> J["adapter.reload 事件<br/>identity_changed / version_old→new / was_started"]
+    G -.->|"插件已刪除"| K["從加載結果移除"]
+    H -.->|"entry-point 已消失"| K
+    I -.->|"失敗"| L["回滾：恢復 sys.modules /<br/>註冊存根 / 實例 / 啟動態"]
+```
+
+**與模組管線的差異：**
+
+- 適配器無懶加載與依賴級聯：重載**不級聯**依賴它的其它適配器（僅告警——依賴方經註冊表間接消費，無實例級聯語義）
+- 啟動是異步鏈（`startup` 經 `_run_adapter` 派發，含依賴跳過與指數退避重試）：啟動暫時失敗**不判重載失敗**（程式碼已換新），結果經 `adapter.status.change` 播報
+- `register()` 的實例重用陷阱（類同物件則舊實例被重用）由「pyc 清理 + sys.modules 清除 + 身份核對」三件套兜底
+- 生命週期事件：`adapter.reload`（payload 携帶 `adapter_name` / `success` / `full` / `duration_ms` / `identity_changed` / `version_old→new` / `was_started` / `source`）
 
 
 
@@ -3317,18 +3353,20 @@ epsdk config MyModule
 
 ## 運行控制命令
 
-> [!TIP]
-> `epsdk run` 會自動檢測並使用專案目錄下的 `.venv` 虛擬環境運行機器人
-> （也可透過 `ERISPULSE_PYTHON` 環境變數顯式指定解釋器）。`epsdk install` /
-> `uninstall` / `upgrade` / `list` 同樣作用於專案虛擬環境。
+> [!TIP]  
+> `epsdk run` 會自動檢測並使用項目目錄下的 `.venv` 虛擬環境運行機器人  
+> （也可透過 `ERISPULSE_PYTHON` 環境變數明確指定解釋器）。`epsdk install` /  
+> `uninstall` / `upgrade` / `list` 同樣作用於項目虛擬環境。
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
 | `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | 運行指定腳本或 SDK |
+| `stop` | — | `[--force] [--pid PID]` | 停止正在運行的實例（由 `epsdk run` 啟動） |
+| `restart` | — | `[--force] [--pid PID]` | 重新啟動正在運行的實例（停止後按原參數重新啟動） |
 
 ### run
 
-運行 ErisPulse 專案腳本或直接啟動 SDK。支援熱重載模式。
+運行 ErisPulse 項目腳本或直接啟動 SDK。支援熱重載模式。
 
 **別名：** `r`
 
@@ -3337,8 +3375,8 @@ epsdk config MyModule
 | 參數 | 說明 |
 |------|------|
 | `[script]` | 要運行的腳本檔案，不指定則運行 SDK |
-| `--reload` | 啟用熱重載模式，監控檔案變更自動重啟 |
-| `--strict` / `--no-strict` | 臨時開啟 / 關閉嚴格模式（僅本次生效，不寫入配置）；預設跟隨 `ErisPulse.framework.strict_mode` |
+| `--reload` | 啟用熱重載模式，監控檔案變化自動觸發組件級程式碼熱重載（聯動熱重載系統，無需整進程重啟） |
+| `--strict` / `--no-strict` | 臨時開啟 / 關閉嚴格模式（僅本次生效，不寫入設定）；預設遵循 `ErisPulse.framework.strict_mode` |
 
 **範例：**
 
@@ -3349,7 +3387,7 @@ epsdk run
 # 運行指定腳本檔案
 epsdk run main.py
 
-# 熱重載模式運行（檔案變更自動重啟）
+# 熱重載模式運行（檔案變更自動觸發程式級熱重載）
 epsdk run main.py --reload
 
 # SDK 熱重載模式
@@ -3358,13 +3396,58 @@ epsdk run --reload
 # 臨時嚴格模式：啟動前自檢失敗即退出，框架嚴格級別本次提升為至少 1
 epsdk run main.py --strict
 
-# 臨時寬鬆模式（配置裡開了 strict_mode 但本次想先跑起來）
+# 臨時寬鬆模式（設定裡開了 strict_mode 但本次想先跑起來）
 epsdk run main.py --no-strict
 ```
 
-**啟動前自檢：** `run` 啟動前會快速檢查 `config/config.toml` 可解析性與已安裝組件的必填配置完整性，嚴格性預設跟隨 `ErisPulse.framework.strict_mode`（非 0 時檢查失敗即退出，0 時僅警告繼續）。配置檔案缺失視為正常首次啟動，僅提示不判失敗。`--strict` 臨時開啟：預檢失敗即退出，同時框架嚴格級別本次提升為至少 1（跳過不合規組件，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到運行進程，不寫入配置檔案）；`--no-strict` 反之臨時壓到寬鬆。自檢自身異常時自動跳過，不含網路探測，不會阻塞啟動。
+**啟動前自檢：** `run` 啟動前會快速檢查 `config/config.toml` 可解析性與已安裝組件的必填設定完整性，嚴格性預設遵循 `ErisPulse.framework.strict_mode`（非 0 時檢查失敗即退出，0 時僅警告繼續）。設定檔遺失視為正常首次啟動，僅提示不判失敗。`--strict` 臨時開啟：預檢失敗即退出，同時框架嚴格級別本次提升為至少 1（跳過不合規組件，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到運行進程，不寫入設定檔）；`--no-strict` 反之臨時壓到寬鬆。自檢自身異常時自動跳過，不含網路探測，不會阻塞啟動。
 
----
+### stop
+
+停止正在運行的 ErisPulse 實例（由 `epsdk run` 啟動、並在同一項目目錄下執行）。  
+`run` 啟動時會把監督進程 PID、當前框架子進程 PID 與原始啟動命令寫入  
+`.erispulse/runtime.json`，`stop` 據此定位實例。
+
+**停止順序：** POSIX 下先向監督進程發 SIGINT（與 Ctrl+C 同款優雅收尾路徑——  
+finally 鏈自動終止框架子進程），超時逐級升級 SIGTERM / SIGKILL；Windows 無  
+進程訊號語義，先終止框架子進程再終止監督進程（避免監督者把強殺誤判為崩潰  
+重新拉起）。
+
+**參數：**
+
+| 參數 | 說明 |
+|------|------|
+| `--force` | 跳過優雅停止，直接強制終止 |
+| `--pid PID` | 直接指定目標進程 PID（覆蓋運行狀態檔案，用於非標準啟動方式） |
+
+**範例：**
+
+```bash
+# 停止當前項目的運行實例
+epsdk stop
+
+# 強制終止
+epsdk stop --force
+```
+
+### restart
+
+重新啟動正在運行的 ErisPulse 實例：按 `stop` 的語義停止後，以狀態檔案中記錄的  
+**原始啟動命令**重新啟動（前檯接管當前終端，新實例會寫入新的運行狀態檔案）。
+
+**參數：** 同 `stop`（`--force` / `--pid PID`）。
+
+**範例：**
+
+```bash
+# 優雅重新啟動（pip 升級適配器/模組後讓程式碼生效；運行中模組也可用  
+# sdk.reload_module / sdk.adapter.reload 程式級熱重載，無需重新啟動）
+epsdk restart
+```
+
+> [!NOTE]  
+> `python main.py` 等繞過 `epsdk run` 的啟動方式不會寫運行狀態檔案——此類  
+> 進程請用系統工具管理，或用 `epsdk stop --pid <PID>` 指定 PID。
 
 ## 專案管理命令
 
@@ -3769,7 +3852,7 @@ ErisPulse 使用 TOML 格式的配置文件 `config/config.toml` 來管理專案
 
 ## 配置文件位置
 
-配置文件位於專案根目錄的 `config/` 檔案夾中：
+配置文件位於專案根目錄的 `config/` 資料夾中：
 
 ```
 project/
@@ -3778,9 +3861,13 @@ project/
 ├── main.py
 ```
 
-### 多實例提示與鎖文件
+### 多實例提示與鎖檔案
 
-框架啟動時會在 `config/` 目錄下建立 `.erispulse_config.lock` 鎖文件並持有到進程退出（用於檢測多實例共享配置目錄）。如果日誌出現「檢測到配置文件可能正被另一個 ErisPulse 實例同時使用」的告警，說明有**兩個以上的 ErisPulse 進程在寫同一份配置**（典型場景：多個容器掛載了同一個宿主機 `config/` 目錄）——併發寫入會互相覆蓋，請為每個實例使用獨立的配置目錄。
+框架啟動時會在專案根目錄的執行狀態目錄 **`.erispulse/`** 下建立 `config.lock` 鎖檔案並持有至進程退出（用於檢測多實例共享配置目錄；2.10 及以前位於 `config/` 目錄的 `.erispulse_config.lock` 會在升級後首次啟動時自動清除）。如果日誌出現「檢測到配置檔案可能正被另一個 ErisPulse 實例同時使用」的警告，說明有**兩個以上的 ErisPulse 進程在寫同一份配置**（典型場景：多個容器掛載了同一個主機 `config/` 目錄）——並發寫入會互相覆蓋，請為每個實例使用獨立的配置目錄。
+
+### 敏感配置不入庫
+
+配置檔案包含令牌（token / API key）等敏感資訊：框架初始化與 `epsdk init` 會自動在 `config/` 目錄產生 `.gitignore`（內容僅一行 `*`——**目錄內全部檔案不入版本庫，忽略檔案自身也在排除範圍內**）；已存在的 `.gitignore` 不會被覆蓋。`.erispulse/` 執行狀態目錄（實例鎖、CLI 執行狀態檔案）同屬機器本地狀態，專案範本的 `.gitignore` 已預設忽略。
 
 ## 配置載入錯誤處理
 
@@ -3952,7 +4039,6 @@ flowchart TD
 | 模組 | 路由到 `on_config_update` | 各模組 `on_config_update(old, new)` 回調 |
 | 存儲 | `config.updated` | `use_global_db` 變更**僅告警**（需重啟） |
 | 路由 | `config.updated` | `cors.*` / `security.*` 變更**僅告警**（需重啟） |
-
 
 ## 配置讀取與刪除 API
 
@@ -6907,6 +6993,35 @@ print(final_verdict(records))           # 總結論
 ### 治理類靜默命中的辨別
 
 `cooldown=` / `rate_limit=` / `usage_limit=` 命中時**預設靜默丟棄**（命令仍被認領，不漏給低优先級處理器），容易誤判為「命令壞了」：現象是部分使用者可用、部分使用者無回應，且決策鏈中出現對應 `stage` 的 `dropped` 記錄。`deprecated=` 命令則表現為呼叫時自動回覆廢棄文案（`deprecated_reject=True` 時拒絕執行）。
+
+## 場景四：改了程式碼 reload 後還是舊行為（2.11+）
+
+請依序核對：
+
+1. **看回傳值與失敗現場**：`reload` / `load` 回傳 `False` 時，直接呼叫
+   `sdk.module.last_error("模組名")`——回傳例外與完整 traceback（含出錯行號），
+   無需翻查日誌檔案；`module.get_info(名字)["last_error"]` 同源。
+2. **語法錯誤不會卸載**：reload 在卸載前做語法預檢，失敗即拒絕（舊實例繼續提供服務），
+   日誌會給出檔案 + 行號；修正語法後再 reload 即可。
+3. **身份未變更警示**：日誌出現「重載後程式碼身份未變更」或事件 `identity_changed: false`
+   時，表示進程內仍執行舊程式碼（常見於 C 擴展等無法清除的快取）——這類模組需要重啟框架。
+4. **確認模組來源可重導入**：執行時註冊（`sdk.module.register()`）的模組，類定義在
+   `__main__` / 入口腳本內時拒絕重導入（守衛警示）；請將類移入可導入的模組檔案。
+5. **懶加載模組被強制激活**：重載會把原本懶加載的模組激活（明確日誌）；休眠
+   （歸眠）中的模組保持休眠。
+
+## 場景五：模組「明明啟用卻收不到事件」（懶加載休眠，2.11+）
+
+宣告了 `dormant_after` 的懶加載模組在閒置超過閾值後會**自動歸眠**：運行時資源釋放、
+事件處理器註銷，因此不再接收事件（`activate_on` 宣告的事件除外——事件先喚醒再轉發）。
+
+- 確認是否歸眠：日誌中檢索「已歸眠」 / `module.sleep` 事件，或觀察
+  `sdk.module.get_status_summary()` 中該模組不再是 `loaded`
+- 立即喚醒：任意屬性存取（`sdk.模組名.任意屬性`）或 `await sdk.module.call(...)`
+- 不希望自動歸眠：移除 `get_load_strategy()` 中的 `dormant_after` 宣告
+- 狀態是否遺失：歸眠前會觸發 `on_before_unload(reason="dormant")`，若模組未實現
+  該鈎子保存狀態，歸眠即遺失記憶體態（與卸載一致）——需要接續狀態請參考
+  [懶加載休眠](../advanced/lazy-loading.md#懶加載休眠dormant_after)
 
 ## 通用建議
 
@@ -16140,7 +16255,7 @@ ErisPulse SDK 提供了強大的慢載模組系統，允許模組在實際需要
 ## 事件驅動懶激活（activate_on）
 
 > [!NOTE]  
-> 本特性需要 ErisPulse **2.8.0+**。
+> 此功能需要 ErisPulse **2.8.0+**。
 
 `lazy_load=True` 的模組預設只在**首次屬性存取**時載入。若模組註冊了命令/事件處理器，  
 傳統做法只能 `lazy_load=False` 立即載入。`activate_on` 提供了第三種選擇：**宣告觸發器，  
@@ -16160,7 +16275,7 @@ class MyModule(BaseModule):
                 {"notice": "group_member_increase"},          # 類型 + 單個 detail_type
                 {"message": ["private", "group"]},            # 類型 + 多個 detail_type
 
-                # ---- 命令觸發（主動輸入，佔位命令對 Help 可見）----
+                # ---- 命令觸發（主動輸入，占位命令對 Help 可見）----
                 {"command": "roll"},                          # 簡寫：命令名
                 {"command": ["roll", "dice"]},                # 命令名列表
                 {"command": {                                 # dict 聲明（name 必填）
@@ -16177,21 +16292,21 @@ class MyModule(BaseModule):
 
 ### 命令 dict 聲明參數
 
-dict 形式鏡像 `@command()` 裝飾器的使用者級參數，用於在模組載入前就註冊佔位命令：
+dict 形式鏡像 `@command()` 裝飾器的使用者級參數，用於在模組載入前就註冊占位命令：
 
 | 參數 | 類型 | 預設 | 說明 |
 |------|------|------|------|
-| `name` | `str` | **必填** | 命令名；須與 `on_load` 中 `@command(name)` 一致，否則激活後佔位註銷、命令不存在 |
+| `name` | `str` | **必填** | 命令名；須與 `on_load` 中 `@command(name)` 一致，否則激活後占位註銷、命令不存在 |
 | `help` | `str` | 回退鏈 | Help 中顯示的介紹；未聲明時按回退鏈取值（見下） |
-| `usage` | `str` | 自动生成 | 用法行，預設 `{prefix}{name}` |
+| `usage` | `str` | 自動生成 | 用法行，預設 `{prefix}{name}` |
 | `group` | `str` | `None` | 命令分組 |
 | `aliases` | `list[str]` | `[]` | 別名同時註冊，**輸入別名同樣觸發激活** |
-| `hidden` | `bool` | `False` | `True` 時佔位命令同樣隱藏（與激活後真實命令的隱藏語義對齊）；知道命令名的使用者輸入仍可觸發 |
+| `hidden` | `bool` | `False` | `True` 時占位命令同樣隱藏（與激活後真實命令的隱藏語義對齊）；知道命令名的使用者輸入仍可觸發 |
 
-**不支援** `priority` / `permission` / `master`：佔位命令的使命只是觸發激活，  
-權限檢查由激活後的真實命令執行（佔位階段攔截權限反而會讓「輸入命令激活」失效）。
+**不支援** `priority` / `permission` / `master`：占位命令的使命只是觸發激活，  
+權限檢查由激活後的真實命令執行（占位階段攔截權限反而會讓「輸入命令激活」失效）。
 
-### 佔位命令 help 回退鏈
+### 占位命令 help 回退鏈
 
 模組未載入時 Help 顯示的命令介紹，按以下順序取值（取到即止）：
 
@@ -16205,13 +16320,63 @@ dict 形式鏡像 `@command()` 裝飾器的使用者級參數，用於在模組�
 
 - **事件 stub**：以極低優先級（`ACTIVATION_STUB_PRIORITY`）註冊到對應事件管理器，  
   在所有普通處理器之後兜底觸發；激活後將當前事件轉發給模組的真實處理器  
-- **命令 stub**：註冊佔位命令；激活後佔位註銷、真實命令接管當次觸發  
+- **命令 stub**：註冊占位命令；激活後占位註銷、真實命令接管當次觸發  
 - **防重入**：`asyncio.Lock` 保證併發觸發下只激活一次  
 - **作用域過濾**：stub 帶模組 owner 身份，模組未對該 Bot / 會話 / 平台啟用時不觸發  
-- **失敗語義**：激活失敗不重試，stub 一併註銷  
-- **去重**：同名命令以簡寫 + dict 混合聲明時去重（dict 优先）；dict 缺 `name` 或事件 `detail_type` 误写 dict 时告警并忽略
+- **失敗語義**：激活失敗進入冷卻期（`ACTIVATE_RETRY_COOLDOWN_SECS`，30 秒），  
+  冷卻內事件短路避免重複嘗試；冷卻結束後再次觸發自動重試，stub 全程保留  
+- **去重**：同名命令以簡寫 + dict 混合聲明時去重（dict 优先）；dict 缺 `name`  
+  或事件 `detail_type` 误寫 dict 時告警並忽略  
 
 > 架構圖與完整語義詳見 [架構概覽](../architecture.md#事件驅動懶激活activate_on觸發架構)。
+
+## 懶加載休眠（dormant_after）
+
+> [!NOTE]  
+> 此功能需要 ErisPulse **2.11.0+**。
+
+當懶加載的模組長期閒置時，框架可將其**歸眠**：釋放運行時資源（包括任務、連接、事件註冊等），  
+但保留懶加載代理與註冊存根——模組回到「已註冊未加載」狀態。下次透過屬性存取、  
+`module.call` 或 `activate_on` 事件將**透明地喚醒**（重新實例化並執行 `on_load`），  
+無需任何額外的喚醒 API。歸眠後的系統狀態與「從未激活」完全一致。
+
+### 聲明方式
+
+```python
+@staticmethod
+def get_load_strategy():
+    return ModuleLoadStrategy(
+        lazy_load=True,
+        dormant_after="30m",   # 閒置 30 分鐘自動歸眠；不聲明則永不休眠（預設）
+    )
+```
+
+時間長度語法與命令治理的 `cooldown` 完全一致（例如：`90s`、`1h30m`、`1d`）。  
+掃描器會以固定間隔（60 秒）進行掃描，實際歸眠時間 = 閾值 + 最多一個掃描間隔；  
+也可隨時手動歸眠：`await sdk.module.sleep("模組名")`。顯式呼叫 `unload` 仍是徹底卸載（懶代理一併移除）。
+
+### 狀態接續
+
+歸眠前框架會觸發 `on_before_unload(reason="dormant")`（卸載流程的第一步，資源仍完好），  
+模組將狀態儲存到 `sdk.storage`；喚醒後在 `on_load` 中恢復：
+
+```python
+async def on_before_unload(self, event):
+    if event["reason"] in ("dormant", "reload", "disable"):
+        await self.sdk.storage.aset(f"{self._module_name}:counter", self._count)
+
+async def on_load(self, event):
+    self._count = await self.sdk.storage.aget(f"{self._module_name}:counter") or 0
+```
+
+### 語意與限制
+
+- **依賴方安全**：懶模組的依賴方透過持久代理（`sdk.<Name>`）或 `module.call` 訪問，  
+  歸眠前後行為一致；直接持有真實實例引用屬反模式（會被泄漏審計器檢測到）
+- **事件不達**：歸眠模組不再接收事件——需要事件喚醒的模組請同時聲明 `activate_on`  
+  （事件先喚醒再轉發）；排查「命令沒反應」時，請確認模組是否處於歸眠狀態
+- **喚醒失敗可自愈**：喚醒（重新初始化）失敗將進入 30 秒冷卻，冷卻後再次訪問會自動重試，  
+  不會永久失效
 
 ## 配置懶加載
 
@@ -16345,18 +16510,17 @@ flowchart TD
 
 ### 生命周期管理
 
-# 生命週期管理
+# 生命周期管理
 
-> [!TIP]
+> [!TIP]  
 > **什麼時候需要閱讀這篇**：需要訂閱框架生命週期事件（啟動 / 加載 / 狀態變化）時。不需要則跳過，不會影響其他功能的使用。
 
-
-ErisPulse 提供統一的鉤子/生命週期系統，用於監控系統各組件的運行狀態，以及實現審計、統計、自訂邏輯等擴展功能。
+ErisPulse 提供統一的鉤子/生命週期系統，用於監控系統各組件的運行狀態，以及實現審計、統計、自定義邏輯等擴展功能。
 
 系統支援三種觸發方式：
-- `await lifecycle.emit("event", data)` — 精簡版，傳遞任意資料（`to="Owner"` 時定向投遞）
+- `await lifecycle.emit("event", data)` — 精簡版，傳遞任意數據（`to="Owner"` 時定向投遞）
 - `lifecycle.emit_sync("event", data)` — 同步版（用於非異步上下文）
-- `await lifecycle.submit_event("event", ...)` — 兼容舊版，自動建構標準事件格式
+- `await lifecycle.submit_event("event", ...)` — 兼容舊版，自動構建標準事件格式
 
 ## 事件處理機制
 
@@ -16376,9 +16540,9 @@ sdk.lifecycle.register("module.load", on_module_load, priority=10)
 # 取消註冊
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# 按所有者批量取消註冊（模組/適配器卸載時框架自動呼叫）
+# 按所有者批量取消註冊（模組/適配器卸載時框架自動調用）
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
-print(f"清理了 {removed} 個生命週期鈎子")
+print(f"清理了 {removed} 個生命週期鉤子")
 ```
 
 ### 優先級
@@ -16413,18 +16577,16 @@ async def on_anything(data):
 
 ### 定向傳播（emit to=）
 
-> [!NOTE]
+> [!NOTE]  
 > 本特性需要 ErisPulse **2.8.0+**。
 
-`emit()` 指定 `to` 參數後進入定向傳播：事件只分發給以該擁有者（owner）身份註冊的
-處理器（模組在 `on_load` 內註冊的鈎子自動歸屬本模組），其它模組與通配符 `*`
-處理器不感知。
+`emit()` 指定 `to` 參數後進入定向傳播：事件只分發給以該擁有者（owner）身份註冊的處理器（模組在 `on_load` 內註冊的鉤子自動歸屬本模組），其它模組與通配符 `*` 處理器不感知。
 
 ```python
-# 投遞方：事件只投給 Chat 模組註冊的鈎子
+# 投遞方：事件只投給 Chat 模組註冊的鉤子
 await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 
-# 訂閱方（Chat 模組內）：註冊同名鈎子，owner 在註冊時自動記錄
+# 訂閱方（Chat 模組內）：註冊同名鉤子，owner 在註冊時自動記錄
 @sdk.lifecycle.on("message_received")
 async def on_message_received(data): ...
 
@@ -16432,15 +16594,15 @@ async def on_message_received(data): ...
 async def on_any(data): ...
 ```
 
-- 目標 owner 無已註冊鈎子 → 事件**不被消費**（可用 `has_handlers()` 提前探測）
+- 目標 owner 無已註冊鉤子 → 事件**不被消費**（可用 `has_handlers()` 提前探測）
 - `data` 為 dict 時自動攜帶 `_trace_id`（不覆蓋已有值）
 - `emit_sync` / `submit_event` 同樣支援 `to=` 參數
-- 模組間通訊的三層模型（RPC / 定向 / 廣播）見
-  [模組間通訊](module-communication.md)
+- 模組間通信的三層模型（RPC / 定向 / 廣播）見
+  [模組間通信](module-communication.md)
 
 ### 一次性註冊（once）
 
-從 2.7.0 起，`lifecycle.once()` 註冊的處理器在**觸發一次後自動註銷**，適合"首次就緒"這類一次性鈎子：
+從 2.7.0 起，`lifecycle.once()` 註冊的處理器在**觸發一次後自動註銷**，適合"首次就緒"這類一次性鉤子：
 
 ```python
 @sdk.lifecycle.once("core.init.complete")
@@ -16464,9 +16626,9 @@ if sdk.lifecycle.has_handlers("message.sending"):
 - 覆蓋**精確事件名、通配符 `*`、父級事件**三種匹配
 - 無任何監聽者時返回 `False`，可安全跳過 `emit`
 
-## 鈎子斷點一覽
+## 鉤子斷點一覽
 
-一條訊息從平台進入框架到處理完成的典型生命週期事件時序：
+一條消息從平台進入框架到處理完成的典型生命週期事件時序：
 
 ```mermaid
 sequenceDiagram
@@ -16478,7 +16640,7 @@ sequenceDiagram
     P->>A: 原生事件到達
     A->>F: adapter.event.receive（最早期）
     F->>F: event.pre_process（處理器執行前）
-    F->>M: 分發到處理器（命令/訊息/通知等）
+    F->>M: 分發到處理器（命令/消息/通知等）
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending（發送前）
@@ -16488,11 +16650,11 @@ sequenceDiagram
     F->>F: adapter.event.dispatched（分發完成）
 ```
 
-框架內建了以下鈎子斷點，使用者可以透過 `@sdk.lifecycle.on()` 監聽任意斷點實現自訂邏輯。
+框架內建了以下鉤子斷點，用戶可以透過 `@sdk.lifecycle.on()` 監聽任意斷點實現自定義邏輯。
 
 ### 核心初始化
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鉤子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `core.init.start` | SDK 初始化開始 | `{}` |
 | `core.init.stage` | 初始化各階段開始（背景發射） | `{"stage": str}`，取值 `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
@@ -16509,10 +16671,10 @@ def show_stage(data):
 
 ### 配置變更
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鉤子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `config.set` | 配置項被修改 | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | 外部編輯 config.toml 後偵測到整樹變更 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.updated` | 外部編輯 config.toml 後檢測到整樹變更 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **示例：配置審計**
 
@@ -16524,19 +16686,24 @@ def audit_config(data):
 
 ### 模組生命週期
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鉤子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `module.register` | 模組類註冊到管理器 | `{"module_name": str, "success": bool}` |
-| `module.load` | 模組載入完成（實例化成功） | `{"module_name": str, "success": bool}` |
+| `module.load` | 模組加載完成（實例化成功）；失敗時 payload 預留 `"error": str, "traceback": str`（失敗現場亦可經 `module.last_error(名字)` 查詢） | `{"module_name": str, "success": bool}` |
 | `module.init` | 模組初始化完畢（含懶加載） | `{"module_name": str, "success": bool}` |
+| `module.before_unload` | 卸載流水線第一步（先於 `on_unload` 與資源回收；模組實例鉤子 `on_before_unload` 同步觸發） | `{"module_name": str, "reason": str}`；`reason` 取值：`unload` / `reload` / `disable` / `cascade` / `dormant` |
+| `module.sleep` | 模組歸眠完成（懶加載休眠：資源已釋放，訪問時自動喚醒） | `{"module_name": str, "success": bool}` |
 | `module.unload` | 模組卸載 | `{"module_name": str, "success": bool}` |
-| `module.reload` | 模組熱重載完成（含級聯重載依賴者） | `{"module_name": str, "success": bool, "full": bool}`；全量重載（`reload_all`）時 `module_name` 為 `"All"`，payload 預留 `"results": dict[str, bool]` |
+| `module.reload` | 模組熱重載完成（含級聯重載依賴者） | `{"module_name": str, "success": bool, "full": bool, "duration_ms": int}`；單模組額外攜帶 `"identity_changed": bool`（False = 進程內可能仍運行舊代碼，如 C 扩展緩存）與 `"version_old": str, "version_new": str`；全量重載（`reload_all`）時 `module_name` 為 `"All"`，payload 預留 `"results": dict[str, bool]` |
+
+> **模組實例鉤子 `on_before_unload`**：與 `module.before_unload` 事件對應的可選生命週期方法——`event["reason"]` 標註來意，適合在資源釋放前把狀態保存到 `sdk.storage`，喚醒 / 重載後在 `on_load` 中恢復（懶加載休眠的狀態接續即基於此）。鉤子失敗僅告警，不阻塞卸載流程。
 
 ### 適配器生命週期
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鉤子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `adapter.load` | 適配器註冊完成 | `{"platform": str, "success": bool}` |
+| `adapter.reload` | 適配器代碼級熱重載完成 | `{"adapter_name": str, "success": bool, "full": bool, "duration_ms": int, "identity_changed": bool, "version_old": str, "version_new": str, "was_started": bool, "source": str}`；`identity_changed=False` = 進程內可能仍運行舊代碼 |
 | `adapter.start` | 適配器啟動 | `{"platforms": [str]}` |
 | `adapter.status.change` | 適配器狀態變化 | `{"platform": str, "status": str, "retry_count": int, "error": str(僅失敗時)}`；status 完整取值：`starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
 | `adapter.stop` | 適配器關閉 | `{"platforms": [str]}` |
@@ -16546,7 +16713,7 @@ def audit_config(data):
 
 ### 事件接收與處理
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鉤子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `adapter.event.receive` | 收到外部平台事件（最早期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
 | `adapter.event.blocked` | 中間件否決事件（返回 `False`，事件被丟棄不進入任何處理器） | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
@@ -16571,7 +16738,7 @@ def log_unhandled(data):
 
 ### 消息發送
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鉤子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `message.sending` | 消息即將發送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | 消息發送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
@@ -16586,7 +16753,7 @@ def log_sending(data):
 
 ### 命令系統
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鉤子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `command.matched` | 命令被匹配並即將執行 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
 | `command.executed` | 命令執行完成 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(僅失敗時)}` |
@@ -16601,7 +16768,7 @@ def count_commands(data):
 
 ### HTTP 路由
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鉤子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `server.request` | HTTP 請求接收 | `{"method": str, "path": str, "client_ip": str}` |
 | `server.response` | HTTP 回應發送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
@@ -16616,7 +16783,7 @@ def log_http(data):
 
 ### WebSocket
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鉤子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `server.start` | 路由伺服器啟動 | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(僅失敗時)}` |
 | `server.stop` | 路由伺服器停止 | `{}` |
@@ -16637,31 +16804,31 @@ def on_ws_disconnect(data):
 
 ### 存儲連接狀態
 
-儲存後端連接池的建立、故障與恢復（均背景發射，不阻塞儲存操作）：
+存儲後端連接池的建立、故障與恢復（均背景發射，不阻塞存儲操作）：
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鉤子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
-| `storage.ready` | 儲存後端連接池就緒（每事件循環首次建池成功） | `{"backend": str}` |
+| `storage.ready` | 存儲後端連接池就緒（每事件循環首次建池成功） | `{"backend": str}` |
 | `storage.unreachable` | 連接重試耗盡進入冷卻期（期間操作快速失敗） | `{"backend": str, "error": str, "cooldown": float}` |
-| `storage.recovered` | 冷卻結束重連成功，儲存恢復可用 | `{"backend": str}` |
+| `storage.recovered` | 冷卻結束重連成功，存儲恢復可用 | `{"backend": str}` |
 
-**示例：儲存故障告警**
+**示例：存儲故障告警**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
 def alert_storage_down(data):
-    print(f"[告警] 儲存後端 {data['backend']} 不可達: {data['error']}，{data['cooldown']}s 後自動重連")
+    print(f"[告警] 存儲後端 {data['backend']} 不可達: {data['error']}，{data['cooldown']}s 後自動重連")
 
 @sdk.lifecycle.on("storage.recovered")
 def notify_storage_back(data):
-    print(f"[恢復] 儲存後端 {data['backend']} 已恢復可用")
+    print(f"[恢復] 存儲後端 {data['backend']} 已恢復可用")
 ```
 
 ### HTTP 客戶端
 
 `sdk.client` 的請求與連接事件（均背景發射）：
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鉤子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `client.request.success` | HTTP 請求成功 | `{"method": str, "url": str, "status": int, "elapsed": float}` |
 | `client.request.failed` | HTTP 請求重試耗盡最終失敗 | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
@@ -16669,7 +16836,7 @@ def notify_storage_back(data):
 
 ### 國際化
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鉤子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `i18n.language.changed` | 框架語言切換（`i18n.set_language`） | `{"language": str, "previous": str}` |
 
@@ -16678,10 +16845,10 @@ def notify_storage_back(data):
 ```python
 STANDARD_EVENTS = {
     "core": ["init.start", "init.stage", "init.complete", "uninit.complete"],
-    "module": ["load", "init", "unload", "register", "reload"],
+    "module": ["load", "before_unload", "init", "sleep", "unload", "register", "reload"],
     "adapter": [
-        "load", "start", "status.change", "stop", "stopped",
-        "event.receive", "event.dispatched",
+        "load", "start", "status.change", "reload", "stop", "stopped",
+        "event.receive", "event.blocked", "event.dispatched",
         "bot.online", "bot.offline",
     ],
     "server": [
@@ -16716,7 +16883,7 @@ STANDARD_EVENTS = {
 | `await lifecycle.emit(event, data=None, *, to=None)` | 異步觸發，處理器**並行執行**（互不阻塞，返回時全部完成），返回非 None 值按優先級順序回放鏈式替換 data；`to` 指定 owner 時定向投遞 |
 | `lifecycle.fire(event, data=None, *, to=None)` | **背景發射（扔桶即走）**：處理器在背景任務中並行執行、不等待、無返回值；無監聽者時零開銷。適用於高頻熱路徑與純觀測事件；關停序列與順序敏感消費（如 `config.set`）請用 `emit` |
 | `lifecycle.emit_sync(event, data=None, *, to=None)` | 同步觸發，異步處理器以 create_task 調度 |
-| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 兼容舊版，自動建構標準事件格式；`background=True` 時走 `fire` 背景發射 |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 兼容舊版，自動構建標準事件格式；`background=True` 時走 `fire` 背景發射 |
 
 ### 工具
 
@@ -16725,10 +16892,10 @@ STANDARD_EVENTS = {
 | `lifecycle.start_timer(timer_id)` | 開始計時 |
 | `lifecycle.get_duration(timer_id)` | 獲取已持續時間（秒） |
 | `lifecycle.stop_timer(timer_id)` | 停止計時並返回持續時間 |
-| `lifecycle.list_hooks()` | 列出所有已註冊鈎子及處理器數量 |
+| `lifecycle.list_hooks()` | 列出所有已註冊鉤子及處理器數量 |
 | `lifecycle.clear()` | 清除所有處理器和計時器 |
 
-## 模組中使用範例
+## 模組中使用示例
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -16736,7 +16903,7 @@ from ErisPulse import sdk
 
 class Main(BaseModule):
     async def on_load(self, event):
-        # 實現簡單的訊息統計
+        # 實現簡單的消息統計
         self.msg_count = 0
         
         @sdk.lifecycle.on("adapter.event.receive")
@@ -16757,10 +16924,10 @@ class Main(BaseModule):
 
 ## 背景任務歸屬與自動取消
 
-> [!NOTE]
+> [!NOTE]  
 > 本特性需要 ErisPulse **2.8.0+**。
 
-模組建立的 asyncio 背景任務若未在 `on_unload` 中取消，會持有 `self` 引用導致模組實例無法被回收（熱重載後舊實例殘留）。框架提供以下兜底機制：
+模組創建的 asyncio 背景任務若未在 `on_unload` 中取消，會持有 `self` 引用導致模組實例無法被回收（熱重載後舊實例殘留）。框架提供以下兜底機制：
 
 - **`self.spawn(coro)`**（模組內推薦）：任務自動歸屬模組名，模組卸載時框架在 `on_unload` **之後**兜底取消未結束的任務並記錄警告
 - **`spawn_background(coro)`**（`ErisPulse.runtime`）：自動捕獲當前 `owner_scope` 上下文；`cancel_owner_tasks(owner)` 按歸屬取消，`cancel_all_background_tasks()` 供 `sdk.uninit()` 兜底
@@ -16783,23 +16950,18 @@ async def _poll(self):
         ...
 ```
 
-> [!IMPORTANT]
-> 框架兜底是**強制 cancel**（`cancel_owner_tasks`），它發生在 `on_unload` 返回之後。因此需要優雅收尾的任務（flush 缓衝、持久化狀態、關閉連接）**必須**在 `on_unload` 裡自行 `cancel()` + `await` 完成——別指望兜底能保留收尾邏輯。框架只保證「不殘留持有 `self` 的任務」，不保證「優雅」。需要 `await` 結果的任務請直接 `await`，不要丟給背景任務。
+> [!IMPORTANT]  
+> 框架兜底是**強制 cancel**（`cancel_owner_tasks`），它發生在 `on_unload` 返回之後。因此需要優雅收尾的任務（flush 緩衝、持久化狀態、關閉連接）**必須**在 `on_unload` 裡自行 `cancel()` + `await` 完成——別指望兜底能保留收尾邏輯。框架只保證「不殘留持有 `self` 的任務」，不保證「優雅」。需要 `await` 結果的任務請直接 `await`，不要丟給背景任務。
 
 ## 注意事項
 
-1. **處理器可以是同步或異步**：系統自動辨識並正確呼叫
-2. **資料傳遞**：`emit()` 模式下，處理器返回非 None 值會修改傳遞給後續處理器的 data
+1. **處理器可以是同步或異步**：系統自動識別並正確調用
+2. **數據傳遞**：`emit()` 模式下，處理器返回非 None 值會修改傳遞給後續處理器的 data
 3. **事件命名規範**：建議使用點式結構命名事件，便於使用父級監聽
 4. **錯誤隔離**：單個處理器異常不會影響其他處理器執行
 5. **同步觸發限制**：`emit_sync()` 中異步處理器以 fire-and-forget 方式調度，返回值無法回傳
-6. **生命週期清理**：呼叫 `sdk.uninit()` 時，所有已註冊的處理器和計時器會被清理
-7. **加載優先性**：如需在框架初始化階段就監聽事件，建議設定高優先級並禁用懶加載
-
-## 相關文件
-
-- [模組開發指南](../developer-guide/modules/getting-started.md) - 了解模組生命週期方法
-- [最佳實踐](../developer-guide/modules/best-practices.md) - 生命週期事件使用建議
+6. **生命週期清理**：調用 `sdk.uninit()` 時，所有已註冊的處理器和計時器會被清理
+7. **加載優先性**：如需在框架初始化階段就監聽事件，建議設置高優先級並禁用懶加載
 
 
 
@@ -17917,13 +18079,13 @@ async def chat_handler(event):
 # 互動對話系統
 
 > [!TIP]
-> **什麼時候需要閱讀這篇**：需要 `wait_reply`、多輪對話、定時提醒、會話互斥或鏈路追蹤時。不需要則跳過，不會影響其他功能的使用。
+> **什麼時候需要閱讀這篇**：需要 `wait_reply`、多輪對話、定時提醒、對話互斥或鏈路追蹤時。不需要則跳過，不影響其他功能的使用。
 
 > [!NOTE]
 > 本章內容需要 ErisPulse **2.8.0+**。
 
-ErisPulse 將「與使用者的持續互動」做成了框架級基礎設施：從一條 `wait_reply`，
-到定時提醒、多路等待、會話互斥、重啟恢復，全部由統一的
+ErisPulse 將「與使用者的持續互動」做成框架級基礎設施：從一條 `wait_reply`，
+到定時提醒、多路等待、對話互斥、重啟恢復，全部由統一的
 **互動對話管理器**（`Core/Event/interaction.py`，`sdk.interaction`）調度。
 
 {!--< tips >!--}
@@ -17934,7 +18096,7 @@ ErisPulse 將「與使用者的持續互動」做成了框架級基礎設施：�
 
 ## 等待回覆：wait_reply
 
-`wait_reply` 是互動會話的基石——掛起當前協程，等待目標使用者在下一條訊息中「回覆」。
+`wait_reply` 是互動對話的基石——掛起當前協程，等待目標使用者在下一條訊息中「回覆」。
 
 ```python
 from ErisPulse.Core.Event import command
@@ -17976,18 +18138,18 @@ reply = await event.wait_reply(session=True, prompt="哪位大神幫忙答一下
 訊息一律作為回覆）。判定文字口徑與命令分發一致：`alt_message` 优先、
 缺失時回退訊息段拼接（2.10.1 起純 message 段適配器同樣生效）。
 
-### 等待什麼時候會被取消
+### 等待會在什麼時候被取消
 
 等待不再是「只能等超時」——以下情況會讓等待**立即終止**（`wait_reply` 返回 `None`），
-而不是讓呼叫方一直等到超時：
+而不是讓呼叫方干等到超時：
 
 | 觸發 | 取消原因（`InteractionCancelled.reason`） | 說明 |
 |------|------|------|
 | 歸屬模組被卸載 / 禁用 | `owner_unload` | 歸屬清理：誰註冊的等待，誰消失時一併回收 |
 | 適配器關閉 / 重啟 | `platform_stop` | 該平台掛起的等待全部取消 |
 | 同會話被新的等待 / 租約取代 | `conflict` | 見下方「會話仲裁」 |
-| 回覆者被拉黑 / owner 模組被解綁 | `revoked` | 回覆命中的**權限複查**：scope 身份維度 + 模組維度 |
-| 用戶回覆命中 | —— | 正常路徑，返回回覆事件 |
+| 回覆者被拉黑 / owner 模組被解綁 | `revoked` | 回覆命中的**權限复查**：scope 身份維度 + 模組維度 |
+| 使用者回覆命中 | —— | 正常路徑，返回回覆事件 |
 
 底層異常為 `InteractionCancelled`（掛在 `InteractionError` 異常體系下），
 `wait_reply` 已將其轉換為返回 `None`；需要原因的呼叫方可直接使用
@@ -18002,14 +18164,59 @@ reply = await event.wait_reply(session=True, prompt="哪位大神幫忙答一下
 會話鍵命中（精確 user 維度 → 會話級回退）
   → pattern / regex 文本過濾（不匹配繼續等）
   → validator 校驗（失敗繼續等）
-  → 權限複查（scope 身份維度 + owner 模組維度，失敗則終止等待）
+  → 權限复查（scope 身份維度 + owner 模組維度，失敗則終止等待）
   → 喚醒等待方 + 認領事件（mark_processed）
 ```
 
+## 聲明式多輪：`.got()` 鏈（2.11+）
+
+`@command` 返回**多輪流控代理**，用 `.got()` 逐步聲明收集步驟——步驟函數按
+參數名接收已收集的值（含命令入口參數），類型跟隨 `type=` / 注解自動解析。
+底層編譯到 Conversation：每步一個分支、跳轉自動保存檢查點，**重啟後使用者
+回覆會從存檔步驟繼續**（恢復工廠在裝飾期自動註冊，隨模組卸載自動註銷）。
+
+```python
+@command("weather")
+async def weather(event):
+    pass  # 入口：首個 .got 的 prompt 會自動發送，無需手動提問
+
+@weather.got("city", prompt="請直接回覆城市名")
+async def weather_city(event, city: str):
+    await event.reply(f"{city}：晴，25℃")
+
+@weather.got("days", prompt="預報幾天？", type=int, retry_prompt="請輸入數字")
+async def weather_days(event, city: str, days: int):
+    await event.reply(f"{city} 未來 {days} 天……")
+```
+
+### 參數說明
+
+| 參數 | 說明 |
+|------|------|
+| `name` | 收集值名稱（注入後續步驟函數的參數名；流程內唯一，重複聲明註冊期報錯） |
+| `prompt` | 進入該步驟時自動發送的提問 |
+| `timeout` | 單步等待超時（秒數或 `"90s"` / `"1h30m"` 時長串，預設 60s） |
+| `type` | 值類型（`int` / `float` / `str`…；解析失敗自動重發 `retry_prompt`，最多 `max_retries` 次） |
+| `validator` / `pattern` / `regex` | 回覆過濾與校驗（語義與 [`wait_reply`](#等待回覆wait_reply) 一致） |
+| `session` | 會話級等待（同會話任何人可命中） |
+| `cmdpass` | 命令放行三態（預設 `/cancel` 等命令在等待期間照常執行） |
+
+### 語義與邊界
+
+- **任一步超時 / 被打斷 → 整條流程結束**並清除檢查點（與 `wait_reply` 語義一致）；
+  步驟函數內可隨時 `event.reply(...)` 輸出中間結果
+- **同一使用者同時只能有一條掛起互動**——第二個流程的等待會頂掉前一個
+  （`InteractionCancelled("conflict")`）；需要互斥提示請配合
+  [會話租約](#會話互斥acquire--hold--get_owner_of)
+- 收集值僅存在於流程內；需要跨重啟攜帶複雜狀態的編排請直接使用
+  [Conversation](conversation.md)（`context` + `branch/goto` + 手動檢查點）
+- `@command` 返回的是代理物件：呼叫行為、`__name__`、docstring、自定義屬性
+  與原函數完全一致；`command.unregister(代理)` 自動解包
+
 ## 會話定時器：remind / escalate
 
-將「超時」從回傳值變成可編排的原語。定時器掛在互動會話上，  
-隨模組卸載 / 適配器關閉自動取消，單一會話活躍 remind 上限 5 個。
+把「超時」從回傳值變成可編排的原語。定時器掛在互動會話上，
+隨模組卸載 / 適配器關閉自動取消，單會話活躍 remind 上限 5 個。
 
 ### remind：沒回覆就提醒
 
@@ -18017,18 +18224,18 @@ reply = await event.wait_reply(session=True, prompt="哪位大神幫忙答一下
 @command("ticket")
 async def ticket_command(event):
     await event.reply("工單已提交，處理結果會在這裡通知")
-    # 5 分鐘無回覆則溫和催一次；用戶任何回覆都會自動取消它
+    # 5 分鐘無回覆則溫和催一次；使用者任何回覆都會自動取消它
     event.remind(300, "還在嗎？有結果了會第一時間告訴你")
     reply = await event.wait_reply(timeout=3600)
     ...
 ```
 
-- `event.remind(delay, text=None, *, callback=None)`：到期向當前會話發送 `text`  
-  （或執行 `callback(event)`，支援同步 / 異步）。**強制校驗**：`text` 與  
-  `callback` 必須二選一（都不給則拋 `ValueError`）
-- 回傳 `Reminder` 句柄：`reminder.cancel()` 手動取消、`reminder.expired` 查詢狀態
-- 用戶在該會話**回覆後自動取消**——這正是「提醒」語意：  
-  提醒只在用戶沉默時出現
+- `event.remind(delay, text=None, *, callback=None)`：到期向當前會話發送 `text`
+  （或執行 `callback(event)`，支援同步 / 異步）。**強制校驗**：`text` 與
+  `callback` 必須二選一（都不給拋 `ValueError`）
+- 返回 `Reminder` 句柄：`reminder.cancel()` 手動取消、`reminder.expired` 查詢狀態
+- 使用者在該會話**回覆後自動取消**——這正是「提醒」語義：
+  提醒只在使用者沉默時出現
 - `Conversation` 內同樣可用：`conv.remind(120, "還在考慮嗎？")`
 
 ### escalate：到點必達的升級
@@ -18037,19 +18244,20 @@ async def ticket_command(event):
 event.escalate(1800, lambda e: notify_master(f"工單 30 分鐘未處理：{event.get_command_args()}"))
 ```
 
-與 `remind` 的唯一區別：**不受用戶回覆取消**——升級動作（通知主人、轉人工）  
+與 `remind` 的唯一區別：**不被使用者回覆取消**——升級動作（通知主人、轉人工）
 是「超時必達」承諾，僅手動 `cancel()` / 模組卸載 / 適配器關閉才取消。
 
 | | `remind` | `escalate` |
 |---|---|---|
-| 到期行為 | 發文本 / 執行 callback | 執行 callback |
-| 用戶回覆 | **自動取消** | 不受影響 |
+| 到期行為 | 發文字 / 執行 callback | 執行 callback |
+| 使用者回覆 | **自動取消** | 不受影響 |
 | 歸屬清理（卸載 / 關平台） | 取消 | 取消 |
-| 單一會話上限 | 5 | 不限（隨歸屬清理兜底） |
+| 單會話上限 | 5 | 不限（隨歸屬清理兜底） |
 
 ## 多路等待：expect + select
 
-同時掛起多條期望，**先到先得**——典型場景：等待管理員審批的同時等待使用者撤回、多人協作投票。
+同時掛起多條期望，**先到先得**——典型場景：等管理員審批的同時等使用者撤回、
+多人協作投票。
 
 ```python
 which, reply = await event.select(
@@ -18066,7 +18274,7 @@ elif which == 1:
     await event.reply("已拒絕")
 ```
 
-- `event.expect(...)` 建構**期望描述**（不註冊任何等待）：支援
+- `event.expect(...)` 構造**期望描述**（不註冊任何等待）：支援
   `pattern` / `regex` / `validator` / `user`（限定回覆者）/ `session`（任何人可答）
 - `event.select(*expectations, timeout=60)`：統一註冊 → 任一命中即返回
   `(下標, 回覆事件)` → 未命中的等待自動取消；全部超時返回 `(None, None)`。
@@ -18074,16 +18282,16 @@ elif which == 1:
 - 命中的事件已被框架認領（`mark_processed`），不會被其他處理器重複消費
 
 {!--< tips >!--}
-`select` 與多執行緒 `asyncio.wait` 手工編排相比：期望未命中時自動清理、
-命中事件自動認領、權限複查與歸屬清理全部生效——不需要自己管任何 Future。
+`select` 與多線程 `asyncio.wait` 手工編排相比：期望未命中時自動清理、
+命中事件自動認領、權限复查與歸屬清理全部生效——不需要自己管任何 Future。
 {!--< /tips >!--}
 
 > [!NOTE]
-> 2.10.1 起 `select` 為**聚合等待**：全部期望合併為單條目 + 自訂命中判定，
+> 2.10.1 起 `select` 為**聚合等待**：全部期望合併為單條目 + 自定義命中判定，
 > 同鍵多路（如同一 user 掛兩條不同 pattern）不再互相取消，任一路先命中即返回。
-> 回覆文字的判定口徑為 `alt_message` 優先 + 消息段回退（與命令分發一致）。
+> 回覆文字的判定口徑為 `alt_message` 优先 + 消息段回退（與命令分發一致）。
 >
-> 边界說明：`event.wait_for(...)` 直掛在適配器事件總線上，**不經過**中間件與
+> 邊界說明：`event.wait_for(...)` 直掛在適配器事件總線上，**不經過**中間件與
 > detail_type 條件過濾（身份准入由分發入口兜底）；需要完整管線的等待請用
 > `wait_reply` / `select`。
 
@@ -18098,7 +18306,7 @@ if owner and owner != "MyModule":
     return  # 其他模組正在對話中，避免打擾
 
 # 互斥租約：獨佔會話（deny 策略，被佔用返回 None）
-lease = sdk.interaction.acquire(event)          # 默認 TTL 1 小時，可傳 ttl=
+lease = sdk.interaction.acquire(event)          # 預設 TTL 1 小時，可傳 ttl=
 if lease is None:
     return  # 已被佔用
 try:
@@ -18114,7 +18322,7 @@ with sdk.interaction.hold(event) as lease:
     ...  # 退出自動釋放
 ```
 
-租約支援 `renew(ttl)` 續期；TTL 慣性過期——過期的租約在下次存取時自動清理。
+租約支援 `renew(ttl)` 續期；TTL 慢性過期——過期的租約在下次訪問時自動清理。
 
 `Conversation.resume()` 恢復對話時框架會自動 acquire 租約（見
 [Conversation 多輪對話](conversation.md)的「恢復即接管」）——
@@ -18122,10 +18330,10 @@ with sdk.interaction.hold(event) as lease:
 
 ## 會話收件箱：event.history
 
-> 保留策略（7 天 / 條數上限）與執行時覆蓋 API、風險與審計請參閱[會話收件箱](transcript.md)專題。
+> 保留策略（7 天 / 條數上限）與運行時覆蓋 API、風險與審計見[會話收件箱](transcript.md)專題。
 
 每會話近期訊息流的統一記錄（使用者 + 機器人雙方），作為 AI 上下文、
-防重複發送、行為分析類模組的**共享事實底座**——各模組不再各自儲存歷史。
+防重複、行為分析類模組的**共享事實底座**——各模組不再各自存歷史。
 
 ```python
 messages = await event.history(20)   # 當前會話最近 20 條，時間升序
@@ -18134,49 +18342,49 @@ for m in messages:
 ```
 
 - 自動記錄：入站訊息（role=user）+ 機器人出站文字（role=bot）
-- 儲存：獨立 SQLite 表，保留策略 = 每會話上限（預設 50）+ 全局 TTL（預設 7 天）
-- 寫入方式：記憶體緩衝 + 後台批量落盤（延遲最多 1 秒），查詢介面自動合併未落盤的緩衝行——同進程「讀你的寫」不受影響；正常退出（`sdk.uninit` / 進程退出）自動刷盤。**硬體崩潰 / 強制終止時最近約 1 秒的記錄可能遺失**：該底座定位為近期上下文快取，不適合作為審計級的永久儲存
+- 存儲：獨立 SQLite 表，保留策略 = 每會話上限（預設 50）+ 全局 TTL（預設 7 天）
+- 寫入方式：記憶體緩衝 + 後台批量落盤（延遲至多 1 秒），查詢介面自動合併未落盤的緩衝行——同進程「讀你的寫」不受影響；正常退出（`sdk.uninit` / 進程退出）自動刷盤。**硬崩潰 / 強殺時最近約 1 秒的記錄可能遺失**：該底座定位為近期上下文緩存，不適合作為審計級持久化
 - 配置：`ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`
 - 管理器 API：`sdk.transcript.append() / get() / clear()`，`aflush()` / `flush()` 手動刷盤
 
-## 消息事務：message_tx
+## 訊息事務：message_tx
 
-事務內的所有出站發送自動記帳；**異常退出時逆序自動撤回**已發送的訊息  
-（適配器未實作 `delete_message` 時跳過，帳本仍正常記錄）。
+事務內的所有出站發送自動記帳；**異常退出時逆序自動撤回**已發送的訊息
+（適配器未實現 `delete_message` 時跳過，帳本仍正常記錄）。
 
 ```python
 async with event.message_tx():
     await event.reply("正在處理，請稍候")
     result = await do_something()          # 這裡拋異常 →
-    await event.reply(f"完成: {result}")   # 前面的"處理中"自動撤回
+    await event.reply(f"完成: {result}")   # 前面的「處理中」自動撤回
 ```
 
-事務外發送不記帳（零開銷）；`get_send_receipts()` 可查看目前事務已發送的回執。
+事務外發送不記帳（零開銷）；`get_send_receipts()` 可查看當前事務已發送的回執。
 
 ## 鏈路追蹤：trace-id
 
-每個入站事件自動獲得追蹤 ID（複用 `event["id"]`，若缺失則生成），貫穿：
+每個入站事件自動獲得追蹤 ID（複用 `event["id"]`，缺失則生成），貫穿：
 
-- handler 上下文（使用 `get_current_trace_id()` 讀取）
-- 出站發送（`[Send]` 日誌行附加 `[trace:...]`，`message.sending/sent` 鈎子的 `trace_id` 欄位）
-- 生命週期鈎子資料（dict 自動補 `_trace_id`）
+- handler 上下文（`get_current_trace_id()` 讀取）
+- 出站發送（`[Send]` 日誌行附加 `[trace:...]`，`message.sending/sent` 鉤子的 `trace_id` 字段）
+- 生命週期鉤子資料（dict 自動補 `_trace_id`）
 - 定向事件（`lifecycle.emit(..., to=...)`）與訊息事務回執
 
-當一條訊息被多個模組接力處理時，全鏈路可使用同一 ID 串聯（日誌 / 慢查詢 / 審計）。
+一條訊息被多個模組接力處理時，全鏈路可用同一 ID 串聯（日誌 / 慢查詢 / 審計）。
 
 ## 與其他系統的關係
 
 - **歸屬權**：等待 / 租約 / 定時器全部記錄 owner，卸載即回收（[歸屬權系統](ownership.md)）
-- **作用域**：回應命中複查身份 + 模組維度；跨模組呼叫審計走出站維度（[作用域](scope.md)）
-- **Conversation**：多輪對話是交互會話之上的分支狀態機（[Conversation](conversation.md)），
-  其等待同樣享有本頁全部取消 / 複查 / 歸屬語義
+- **作用域**：回覆命中复查身份 + 模組維度；跨模組呼叫審計走出站維度（[作用域](scope.md)）
+- **Conversation**：多輪對話是互動會話之上的分支狀態機（[Conversation](conversation.md)），
+  其等待同樣享有本頁全部取消 / 复查 / 归属语义
 
 ## 相關文件
 
-- [Conversation 多輪對話](conversation.md) - 分支狀態機、自動檢查點與重新啟動恢復
+- [Conversation 多輪對話](conversation.md) - 分支狀態機、自動檢查點與重啟恢復
 - [歸屬權（owner）系統](ownership.md) - 歸屬清理的全景與設計邊界
-- [作用域（scope）](scope.md) - 權限復查與出站審計的配置方式
-- [模組間通訊](module-communication.md) - 跨模組呼叫與定向事件
+- [作用域（scope）](scope.md) - 權限复查與出站審計的配置方式
+- [模組間通信](module-communication.md) - 跨模組呼叫與定向事件
 
 
 
@@ -20224,11 +20432,11 @@ SDK 提供兩種重啟方式，都不需要你自己先卸載——框架會自�
 
 | 方式 | 調用 | 行為 | 適用場景 |
 |------|------|------|----------|
-| 熱重啟 | `await sdk.restart()` | 同一進程內 `uninit()` 後重新 `init()`，重新加載適配器/模塊 | 重新加載配置、熱更新模塊 |
-| 硬重啟 | `await sdk.hard_restart()` | `uninit()` 後以**退出碼 42** 退出進程，由外部監督者拉起全新進程 | 懷疑有記憶體/資源洩漏、需要徹底乾淨重啟 |
+| 熱重啟 | `await sdk.restart()` | 同一進程內**元件層代碼級熱重載**：全部模組與適配器走統一重載管線（語法預檢 / 快照回滾 / 身份核對），不再整體 `uninit()` / `init()` | pip 升級元件後讓代碼生效、熱更新模組 |
+| 硬重啟 | `await sdk.hard_restart()` | `uninit()` 後以**退出碼 42** 退出進程，由外部監督者拉起全新進程 | 懷疑有記憶體/資源泄漏、需要徹底乾淨重啟 |
 
 ```python
-# 熱重啟：同進程內重新加載（最常用）
+# 熱重啟：元件層代碼級熱重載（最常用）
 await sdk.restart()
 
 # 硬重啟：退出進程，交由外部監督者重啟（見下方「監督者指南」）
@@ -20236,16 +20444,16 @@ await sdk.hard_restart()
 ```
 
 > **兩點注意**：
-> 1. 這兩個方法都用背景任務執行重啟，**立即返回 `True` 表示「重啟任務已排程」**，而非「重啟已完成」。實際重啟在背景進行，避免中斷當前事件鏈路。
+> 1. 這兩個方法都用後台任務執行重啟，**立即返回 `True` 表示「重啟任務已排程」**，而非「重啟已完成」。實際重啟在後台進行，避免中斷當前事件鏈路。
 > 2. `hard_restart()` 的原理是：卸載並刷盤配置後，以**退出碼 42**（`HARD_RESTART_EXIT_CODE`）退出進程——**它自身不拉起新進程**，必須由外部監督者檢測到退出碼 42 後重新啟動。若直接 `python main.py` 運行且無任何監督者，進程以碼 42 退出後就結束了，**不會自動重啟**（框架會打警告提示）。
 
 ### 什麼時候該用硬重啟？
 
-硬重啟不只是"更徹底的重啟"，它在以下場景比熱重啟更合適、甚至更高效：
+硬重啟不只是「更徹底的重啟」，它在以下場景比熱重啟更合適、甚至更高效：
 
-- **二進制庫（C 扩展）副作用**：熱重啟在同一進程內進行，無法釋放 C 扩展、打開的文件描述符、線程等進程級資源；硬重啟換一個全新進程，這些副作用隨之徹底清零。
-- **資源洩漏排查**：懷疑存在記憶體或句柄洩漏時，硬重啟能拿到一個乾淨的環境。
-- **對效能敏感的頻繁重啟**：硬重啟省去了同進程內卸載→重新加載的開銷，實際比熱重啟更高效。
+- **二進制庫（C 擴展）副作用**：熱重啟在同一進程內進行，無法釋放 C 擴展、打開的檔案描述符、線程等進程級資源；硬重啟換一個全新進程，這些副作用隨之徹底清零。
+- **資源泄漏排查**：懷疑存在記憶體或句柄泄漏時，硬重啟能拿到一個乾淨的環境。
+- **對效能敏感的頻繁重啟**：硬重啟省去了同進程內卸載→重新載入的開銷，實際比熱重啟更高效。
 
 > Dashboard 管理面板裡的「框架重啟」功能，底層調用的就是 `hard_restart()`。
 
@@ -20258,7 +20466,7 @@ await sdk.hard_restart()
 | SDK（被硬重啟時） | `uninit()` → 刷盤配置 → `os._exit(42)` |
 | 監督者 | 檢測到子進程退出碼為 42 → 重新啟動同一命令 |
 
-> `sdk.is_supervised()` 可查詢當前進程是否由監督者啟動（檢測環境變數 `ERISPULSE_SUPERVISED`）。CLI `run` 命令啟動子進程時會自動注入該標記；systemd / Docker 等外部監督者不會注入，`is_supervised()` 返回 `False`，此時硬重啟後框架會打「未檢測到監督者」警告。
+> `sdk.is_supervised()` 可查詢當前進程是否由監督者啟動（檢測環境變數 `ERISPULSE_SUPERVISED`）。CLI `run` 命令啟動子進程時會自動注入該標記；systemd / Docker 等外部監督者不會注入，`is_supervised()` 回傳 `False`，此時硬重啟後框架會打「未檢測到監督者」警告。
 
 ### 監督者指南
 
@@ -20266,7 +20474,7 @@ await sdk.hard_restart()
 
 #### 1. CLI run 命令（開發/簡單部署，推薦）
 
-`epsdk run main.py` 內置監督循環：檢測子進程退出碼，42 時立即重啟；其它異常退出碼按指數退避自動重試；`Ctrl+C` 會先優雅終止子進程（碼 0 視為正常退出，不再拉起）。
+`epsdk run main.py` 內建監督循環：檢測子進程退出碼，42 時立即重啟；其它異常退出碼按指數退避自動重試；`Ctrl+C` 會先優雅終止子進程（碼 0 視為正常退出，不再拉起）。
 
 ```bash
 epsdk run main.py
@@ -20296,11 +20504,11 @@ services:
     restart: unless-stopped   # 任何退出（含 42）都重啟
 ```
 
-#### 4. PM2（Node 生態運維）
+#### 4. PM2（Node 生態維運）
 
 ```bash
 pm2 start main.py --name mybot --interpreter python3
-# 42 被視為退出碼，PM2 預設重啟；設置 restart_delay 防抖
+# 42 被視為退出碼，PM2 預設重啟；設定 restart_delay 防抖
 pm2 set mybot.restart_delay 2000
 ```
 
@@ -20313,7 +20521,7 @@ autorestart=true
 exitcodes=0,2,42    # 42 也視為"正常退出需重啟"
 ```
 
-#### 6. 純 Python 自定義監督者
+#### 6. 純 Python 自訂監督者
 
 ```python
 import subprocess, sys, time
@@ -22122,7 +22330,7 @@ OneBot12Adapter 是基於 OneBot V12 協議所建構的適配器，作為 ErisPu
 
 ## 文件資訊
 
-- 對應模組版本: 4.3.0
+- 對應模組版本: 4.4.0
 - 維護者: ErisPulse
 - 協定版本: OneBot V12
 

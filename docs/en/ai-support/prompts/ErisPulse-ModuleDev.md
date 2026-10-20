@@ -45,7 +45,7 @@ This document introduces the technical architecture of the ErisPulse SDK through
 
 ## SDK Core Architecture
 
-The following diagram shows the core module composition and their relationships:
+The following diagram shows the core modules of the SDK and their relationships:
 
 ```mermaid
 graph TB
@@ -53,7 +53,7 @@ graph TB
 
     SDK --> Event["Event<br/>Event System"]
     SDK --> Lifecycle["Lifecycle<br/>Lifecycle Management"]
-    SDK --> Logger["Logger<br/>Log Management"]
+    SDK --> Logger["Logger<br/>Logging Management"]
     SDK --> Storage["Storage / env<br/>Storage Management"]
     SDK --> Config["Config<br/>Configuration Management"]
     SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
@@ -68,7 +68,7 @@ graph TB
     Event --> Conversation["Conversation<br/>Branch + Persistence"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
-    BaseAdapter --> P1["Cloud Lake"]
+    BaseAdapter --> P1["Yunhu"]
     BaseAdapter --> P2["Telegram"]
     BaseAdapter --> P3["OneBot11/12"]
     BaseAdapter --> PN["..."]
@@ -79,21 +79,21 @@ graph TB
     BaseAdapter -.-> SendDSL["SendDSL<br/>Message Sending"]
 ```
 
-### Core Module Descriptions
+### Core Module Description
 
 | Module | Description |
 |--------|-------------|
-| **Event** | Event system, providing handling for five types of events: command / message / notice / request / meta, and Conversation for multi-turn dialogues |
+| **Event** | Event system, providing five types of event handling: command / message / notice / request / meta, and Conversation for multi-turn dialogue |
 | **Adapter** | Adapter manager, managing registration, startup, and shutdown of multi-platform adapters |
 | **Module** | Module manager, managing plugin registration, loading, and unloading, supporting dependency declaration and topological sorting |
 | **Lifecycle** | Lifecycle manager, providing event-driven lifecycle hooks |
-| **Storage** | SQLite-based key-value storage system, supporting general SQL chain queries |
+| **Storage** | SQLite-based key-value storage system, supporting generic SQL chain query |
 | **Config** | TOML-formatted configuration file management |
 | **Logger** | Modular logging system, supporting sub-loggers |
-| **Router** | HTTP/WebSocket routing management, encapsulating the underlying backend (currently FastAPI + Uvicorn) through an abstraction layer, supporting decorator routing, middleware, grouping, rate limiting, and CORS |
-| **Client** | Unified HTTP/WS client (previously `HttpClient` before version 2.8.0, retaining a compatible alias), encapsulating the underlying request library (currently aiohttp) through an abstraction layer, providing request statistics, retry, logging, WebSocket client, and ErisPulse exception system. The WebSocket client and server share the `WebSocketConnectionBase` base class |
+| **Router** | HTTP/WebSocket routing management, encapsulating underlying backends (currently FastAPI + Uvicorn) through an abstraction layer, supporting decorator routing, middleware, grouping, rate limiting, CORS |
+| **Client** | Unified HTTP/WS client (previously `HttpClient` before 2.8.0, retains compatibility alias), encapsulating underlying request libraries (currently aiohttp) through an abstraction layer, providing request statistics, retry, logging, WebSocket client, ErisPulse exception system, etc. The client and server-side WebSocket share the `WebSocketConnectionBase` base class |
 
-## Initialization Flow
+## Initialization Process
 
 The following diagram shows the complete initialization process of `sdk.init()`:
 
@@ -101,30 +101,30 @@ The following diagram shows the complete initialization process of `sdk.init()`:
 flowchart TD
     A["sdk.init()"] --> B["Prepare Runtime Environment"]
     B --> B1["Load Configuration File"]
-    B1 --> B2["Set Global Exception Handling"]
+    B1 --> B2["Set Global Exception Handler"]
     B2 --> C["Adapter & Module Discovery"]
     C --> D{"Parallel Loading"}
-    D --> D1["Load Adapters from PyPI"]
-    D --> D2["Load Modules from PyPI"]
-    D1 & D2 --> E["Register Adapters"]
-    E --> E1["Start Adapters"]
-    E1 --> F["Register Modules"]
+    D --> D1["Load Adapter from PyPI"]
+    D --> D2["Load Module from PyPI"]
+    D1 & D2 --> E["Register Adapter"]
+    E --> E1["Start Adapter"]
+    E1 --> F["Register Module"]
     F --> F1{"Dependency Validation"}
     F1 -->|"Missing Dependency"| F2["Skip Module and Log Warning"]
-    F1 -->|"Dependency Met"| F3["Topological Sorting<br/>(Kahn Algorithm + Priority)"]
+    F1 -->|"Dependency Satisfied"| F3["Topological Sorting<br/>(Kahn Algorithm + Priority)"]
     F3 --> G["Initialize Modules in Order<br/>(Instantiation + on_load)"]
     F2 --> G
     G --> H["Start Router Server"]
     H --> K["Ready to Run"]
 ```
 
-### Detailed Initialization Phases
+### Detailed Initialization Stages
 
-> The complete initialization chain is broken down into Finder / Loader / Manager / Router layers, the underlying entry points (`init()` / `init_task()` / `init_sync()`), and manual full startup are detailed in [Startup Flow and Manual Control](advanced/startup.md).
+> The complete initialization chain breakdown (Finder / Loader / Manager / Router), underlying entry points (`init()` / `init_task()` / `init_sync()`), and manual full startup are detailed in [Startup Process and Manual Control](advanced/startup.md).
 
-## Event Handling Flow
+## Event Handling Process
 
-The following diagram shows the complete message flow from platform to handler:
+The following diagram shows the complete flow of messages from the platform to the handler:
 
 ```mermaid
 flowchart LR
@@ -132,7 +132,7 @@ flowchart LR
     B --> C["Convert to OneBot12 Standard"]
     C --> D["adapter.emit()"]
     D --> E["Execute Middleware Chain"]
-    E --> F{"Event Dispatch"}
+    E --> F{"Event Dispatching"}
     F --> G1["command<br/>Command Handler"]
     F --> G2["message<br/>Message Handler"]
     F --> G3["notice<br/>Notice Handler"]
@@ -145,7 +145,7 @@ flowchart LR
 
 ### Detailed Event Handling Chain
 
-The above diagram shows the result; below, we break down what happens behind the scenes after `adapter.emit()` — this is a three-layer dispatch chain:
+The above diagram shows the result; below, we break down what the framework does behind `adapter.emit()`—this is a three-layer dispatch chain:
 
 ```mermaid
 sequenceDiagram
@@ -154,51 +154,51 @@ sequenceDiagram
     participant T as Handler Task Layer<br/>_dispatch_handler_task
     participant E as Event Module Layer<br/>_process_event
 
-    P->>A: Native Event
+    P->>A: Raw Event
     A->>A: Extract platform/type/detail_type + raw fields
     A->>A: [Recv] Receive Log
     A->>A: lifecycle.adapter.event.receive (earliest hook)
     A->>A: Process self field (meta branch / Bot auto-registration)
-    A->>A: Middleware Chain (serial, can rewrite event data)
+    A->>A: Middleware Chain (serial, event data can be rewritten)
     A->>A: Collect Handlers (specific type + wildcard *)
-    A->>A: Identity Admission + Scope Filtering (before Task creation, silently discard/skip)
+    A->>A: Identity Access + Scope Filtering (before Task creation, silently discard/skip)
     A->>T: asyncio.create_task (fire-and-forget)
     A->>A: lifecycle.adapter.event.dispatched (latest hook)
-    T->>T: Get Concurrency Semaphore (default limit 64)
+    T->>T: Get Concurrent Semaphore (default limit 64)
     T->>E: Call Event Module-registered Handlers
     E->>E: lifecycle.event.pre_process
-    E->>E: ignore_self (message events default to ignore self)
+    E->>E: ignore_self (message events default ignore self)
     E->>E: Group by Priority: High→Low, serial between groups, concurrent within groups
-    E->>E: Execute within groups + field merging (conflict warnings)
-    E->>E: Check stop() after group to block lower priorities
-    T->>T: Slow Log (warn if >1s, wait_reply time whitelist)
+    E->>E: Execute within group + field merge (conflict warning)
+    E->>E: Post-group check stop() to block lower priority
+    T->>T: Slow Log (warning if > 1s, wait_reply time whitelist)
 ```
 
 **What the framework does at each step and what you can intervene:**
 
-| Phase | What the framework does | What you can intervene |
-|-------|--------------------------|------------------------|
-| Receive | Extract standard fields, retain `{platform}_raw` raw data; write `[Recv]` log | Listen to `adapter.event.receive` to get the earliest event |
-| self field | meta events go through connect/disconnect/heartbeat branches; normal events auto-register Bot and trigger `adapter.bot.online` | Listen to `adapter.bot.online` / `bot.offline` |
-| Middleware | **Serial** execution, if return value is not None, replace event data | Register middleware to rewrite/intercept events |
-| Dispatch Collection | First get specific type handlers, then get `*` wildcard handlers | — |
-| Identity Dimension | At dispatch entry point, determine whether to receive events by user>session>Bot>adapter (`scope.is_identity_allowed`), **reject means discard the entire event** | `ErisPulse.scope.identity` binding |
-| Scope Filtering | Determine `scope.is_allowed` by module owner (session level>Bot level>platform level), **silent skip if not passed** | Configure scope whitelist/blacklist |
-| Scheduling | Each matching handler is an independent `asyncio.Task`, `emit()` **returns immediately without waiting** for handler completion | — |
-| Priority | High priority groups execute first; **serial between groups, concurrent within groups** (each group holds its own event copy, modifies fields and merges back, conflicts warn), | `@command(..., priority=N)` / specify priority during registration |
-| Blocking | After each group is processed, check `event.is_stopped()`, if triggered, **no lower priority is executed** | `event.mark_processed(stop=True)` / `event.done()` |
+| Stage | What the framework does | What you can intervene |
+|-------|-------------------------|------------------------|
+| Receive | Extract standard fields, preserve `{platform}_raw` raw data; write `[Recv]` log | Listen to `adapter.event.receive` to get earliest event |
+| self field | Meta event goes through connect/disconnect/heartbeat branch; normal event auto-registers Bot and triggers `adapter.bot.online` | Listen to `adapter.bot.online` / `bot.offline` |
+| Middleware | **Serial** execution, if returned value is not None, replace event data | Register middleware to rewrite/intercept event |
+| Dispatch Collection | First get specific type handler, then get `*` wildcard handler | — |
+| Identity Dimension | At dispatch entry, decide whether to receive event by User>Session>Bot>Adapter (`scope.is_identity_allowed`), **discard entire event if denied** | `ErisPulse.scope.identity` binding |
+| Scope Filtering | Determine `scope.is_allowed` by module owner (session level > Bot level > platform level), **silently skip if not passed** | Configure scope whitelist/blacklist |
+| Scheduling | Each matching handler gets independent `asyncio.Task`, `emit()` **returns immediately without waiting for handler completion** | — |
+| Priority | High priority group executes first; **serial between groups, concurrent within groups** (each group holds event copy, changes merged back, conflicts warn) | `@command(..., priority=N)` / specify priority during registration |
+| Blocking | After each group, check `event.is_stopped()`, if triggered, **do not execute lower priority** | `event.mark_processed(stop=True)` / `event.done()` |
 
 > **Common Misunderstandings**:
-> 1. **Scope filtering is silent** — filtered handlers do not error or respond, only visible in TRACE-level logs (`core.scope.denied`). If "my module didn't receive a message," first check scope binding.
-> 2. **Handlers are naturally concurrent** — the framework has created an independent Task for each handler, you **do not** need to wrap it with `asyncio.create_task`.
-> 3. **No blocking within the same priority group** — `mark_processed(stop=True)` only blocks lower priority groups, handlers within the same group will not be interrupted.
-> 4. **Slow log threshold is fixed at 1 second** — handlers taking over 1 second will issue a WARNING in the log (wait_reply time is excluded from the duration), but execution is not interrupted.
+> 1. **Scope filtering is silent**—filtered handlers do not report errors or respond, only visible in TRACE-level logs (`core.scope.denied`). If "my module didn't receive a message," first check scope binding.
+> 2. **Handlers are inherently concurrent**—the framework already creates independent Tasks for each handler, you **do not need** to wrap them in `asyncio.create_task` again.
+> 3. **No blocking within the same priority group**—`mark_processed(stop=True)` only blocks lower priority groups, not already concurrent handlers within the same group.
+> 4. **Slow log threshold is fixed at 1 second**—handlers taking over 1s will be warned in logs (`wait_reply` time is excluded from duration), but execution is not interrupted.
 
-> Details on scope (scope) module-level binding, identity admission and outbound action restrictions are in [Scope (scope)](advanced/scope.md); event scope text filtering and command user ACL are in [Event Handling Introduction](getting-started/event-handling.md); concurrency limit configuration is in [Configuration Guide](user-guide/configuration.md#Framework Configuration).
+> Details on scope's module-level three-tier binding, identity-level access and outbound action restrictions are in [Scope (scope)](advanced/scope.md); event scope text filtering and command user ACL are in [Event Handling Introduction](getting-started/event-handling.md); concurrency limit configuration is in [Configuration Guide](user-guide/configuration.md#Framework Configuration).
 
 ## Lifecycle Events
 
-The following diagram shows the lifecycle event trigger order for each component of the framework:
+The following diagram shows the order in which lifecycle events are triggered by the framework components:
 
 ```mermaid
 flowchart LR
@@ -229,19 +229,19 @@ flowchart LR
 
 ### Listening to Lifecycle Events
 
-> Complete event listening methods (`lifecycle.on()` / `once()` / `has_handlers()`), all lifecycle event lists and data formats are in [Lifecycle Management](advanced/lifecycle.md).
+> The complete event listening methods (`lifecycle.on()` / `once()` / `has_handlers()`), all lifecycle event lists and data formats are detailed in [Lifecycle Management](advanced/lifecycle.md).
 
-## Module Loading Strategies
+## Module Loading Strategy
 
 ErisPulse supports three module loading strategies, declared by `get_load_strategy()` returning a `ModuleLoadStrategy`:
 
 ```mermaid
 flowchart TD
     A["Module Registered to ModuleManager"] --> B{"Load Strategy"}
-    B -->|"lazy_load = true<br/>+ activate_on declaration"| C["Create ModuleActivator Proxy"]
+    B -->|"lazy_load = true<br/>+ activate_on declared"| C["Create ModuleActivator Proxy"]
     B -->|"lazy_load = true<br/>No activate_on"| D["Create LazyModule Proxy"]
     B -->|"lazy_load = false"| E["Create Instance Immediately"]
-    C --> F["Register Event/Command stubs to Dispatcher"]
+    C --> F["Register Event/Command stub to Dispatcher"]
     F --> G["Mount to sdk Attribute"]
     G --> H["Event Arrival Triggers Activation"]
     H --> I["Instantiate + on_load() + Unregister stub"]
@@ -258,7 +258,7 @@ flowchart TD
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-`activate_on` allows a module to load only when the **first matching event/command arrives**, avoiding constant memory usage while ensuring no events are lost:
+`activate_on` allows modules to load only when the **first matching event/command arrives**, avoiding constant memory usage while ensuring no events are lost:
 
 ```mermaid
 flowchart LR
@@ -266,14 +266,14 @@ flowchart LR
         S1["get_load_strategy() returns<br/>ModuleLoadStrategy(activate_on=...)"] --> S2["activate_on Syntax:<br/>str / dict / list freely mixed"]
         S2 --> S2a["'message' → Event Type Level"]
         S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ Type + detail_type"]
-        S2 --> S2c["{'command': 'roll'}<br/>→ Command Trigger (short/ list)"]
+        S2 --> S2c["{'command': 'roll'}<br/>→ Command Trigger (short/long list)"]
         S2 --> S2d["{'command': {'name': 'dice', 'help': ...,<br/>'aliases': [...], 'hidden': ...}}<br/>→ Command Trigger (dict declaration)"]
     end
 
     subgraph Runtime["Runtime"]
         R1["ModuleActivator Registers stub"] --> R1a["Event stub → message/notice/request/meta manager<br/>priority ACTIVATION_STUB_PRIORITY (very low)"]
-        R1 --> R1b["Command stub → Command Manager<br/>Placeholder command (mirrors dict-declared help/usage/group/aliases/hidden)"]
-        R1a --> R2{"Event Triggered"}
+        R1 --> R1b["Command stub → Command Manager<br/>Placeholder command (mirrors help/usage/group/aliases/hidden in dict declaration)"]
+        R1a --> R2{"Trigger Event Arrives"}
         R1b --> R2
         R2 --> R3["Filter by owner scope"]
         R3 --> R4["asyncio.Lock to prevent duplicate activation"]
@@ -294,65 +294,104 @@ flowchart LR
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Local plugins (`plugins/` directory) do not require packaging and publishing; the framework automatically discovers and loads them at startup:
+Local plugins (`plugins/` directory) do not require packaging for release; the framework automatically discovers and loads them at startup:
 
 ```mermaid
 flowchart TD
-    A["Project plugins/ Directory<br/> (ErisPulse.framework.plugins_dir, supports multiple directories)"] --> B{"PluginFolderLoader.discover()"}
+    A["Project plugins/ Directory<br/>(ErisPulse.framework.plugins_dir, supports multiple directories)"] --> B{"PluginFolderLoader.discover()"}
     B --> C["Single File: dice.py → Plugin Name = Filename"]
     B --> D["Package Form: weather/ (with __init__.py) → Plugin Name = Directory Name"]
-    B --> E["Ignored: __pycache__ / _-prefixed / Non .py / Directories without __init__.py"]
+    B --> E["Ignore: __pycache__ / _-prefixed / non-.py / directories without __init__.py"]
     C --> F["Import Module (spec_from_file_location)"]
     D --> G["Import Module (sys.path + import_module)"]
-    F --> H["Identify Module Class: Main (BaseModule subclass) preferred, fallback to first subclass"]
+    F --> H["Identify Module Class: Main (BaseModule subclass) first, fallback to first subclass"]
     G --> H
-    H --> I["Construct moduleInfo consistent with entry-point"]
-    I --> J["ModuleLoader.load() merges<br/>Local takes precedence over PyPI same-name installed package"]
-    J --> K["Shared with Installed Package Modules:<br/>Enabled status / Scope / meta / i18n / context"]
+    H --> I["Construct moduleInfo with entry-point consistent"]
+    I --> J["ModuleLoader.load() merges<br/>Local takes precedence over PyPI same-named package"]
+    J --> K["Shared with installed package:<br/>Enabled status / scope / meta / i18n / context"]
 ```
 
 **Conventions and Features:**
 
 - Plugin name source: filename for single file, directory name for package form
 - Local plugin `moduleInfo.meta.source == "plugin_folder"`, seamlessly coexists with PyPI installed package modules
-- When names are the same, local takes precedence (for local override debugging), and if disabled, the same entry-point item is removed
+- Same name takes local precedence (for local override debugging), disabled entries are removed simultaneously
 
 ## Module Hot Reload Architecture
 
-Hot reload applies consistently to **all module sources**: local plugins can monitor file changes and trigger automatically, any module can be manually reloaded via `sdk.reload_module()` / `sdk.module.reload()` (PyPI installed package modules take effect after pip upgrade); `sdk.reload_all_modules()` / `sdk.module.reload_all()` can fully reload all registered modules at once (take effect after pip batch upgrade):
+Hot reload is consistent for **all module sources**: local plugins (`plugins/` directory), runtime registration (`sdk.module.register()`), and PyPI installed package modules can all be hot reloaded via `sdk.reload_module()` / `sdk.module.reload()`—**default is full reload** (clear import cache by top-level package name and re-import dependent code, `full=False` is a lightweight escape route); `sdk.reload_all_modules()` / `sdk.module.reload_all()` can fully reload all registered modules at once (call after pip batch upgrade to make all effective):
 
 ```mermaid
 flowchart TD
-    A["sdk.enable_plugin_hot_reload()<br/> (Auto-monitoring, only local plugin directories)"] --> B["PluginReloadWatcher Starts"]
-    B --> C["PollingObserver (Background Daemon Thread)<br/>Regularly compare .py file mtime"]
-    C --> D{"Plugin File Changed"}
+    A["sdk.enable_plugin_hot_reload()<br/>（Auto Monitor, Only Local Plugin Directory）"] --> B["PluginReloadWatcher Start"]
+    B --> C["PollingObserver (Background Daemon Thread)<br/>Regularly Compare .py File mtime"]
+    C --> D{"Plugin File Change"}
     D --> E["Change Debounce (Default 1 Second)"]
-    E --> F["_handle_change Parses Plugin Name<br/> (Single File / Package Form)"]
-    F --> G["asyncio.run_coroutine_threadsafe<br/>Schedules Back to Main Event Loop"]
-    G --> H["sdk.reload_module(name, full=…)<br/> (Can also be manually called for any module)"]
-    H --> I["Unload Old Instance (Triggers on_unload)<br/>Collect Dependencies for Cascading Reload"]
-    I --> J{"Module Source?"}
-    J -->|"plugin_folder"| K["Clear Registration and Plugin sys.modules<br/>Re-scan plugins/ Directory"]
-    J -->|"PyPI Installed Package"| L["Clear Registration + Clear Package by top_level<br/>sys.modules subtree (full=True overlays<br/>Old Module Object Top-Level Segment as Backup)<br/>Refresh Import Cache and Re-Check entry-point"]
-    K --> M["Re-register + Load"]
-    L --> M
-    M --> N["Mount New Instance to sdk Attribute"]
-    N --> O["Cascading Reload Dependencies<br/> (Full Reload for Plugin / Re-instantiate PyPI; <br/>full=True Reloads Code for Dependencies)"]
-    K -.->|"File Deleted"| P["Remove from Load Results"]
-    L -.->|"entry-point Disappeared (Uninstalled)"| P
+    E --> F["_handle_change Parse Plugin Name<br/>(Single File / Package Form)"]
+    F --> G["asyncio.run_coroutine_threadsafe<br/>Schedule Back to Main Event Loop"]
+    G --> H["sdk.reload_module(name, full=True Default)<br/>（Can Also Manually Call for Any Module）"]
+    H --> I["Syntax Pre-check (File-by-file Parsing)<br/>Failure Rejects Reload, Old Instance Continues Serving"]
+    I --> J["Unload Old Instance (on_before_unload → on_unload)<br/>Collect Dependent Modules for Cascading Reload"]
+    J --> K{"Module Source?"}
+    K -->|"plugin_folder"| L["Clear Registration and Plugin sys.modules<br/>Re-scan plugins/ Directory"]
+    K -->|"runtime Runtime Registration"| M["Clear Cache and Re-import by Defined Module<br/>Re-fetch by Class Name (__main__ Guard)"]
+    K -->|"PyPI Installed Package"| N["Clear Registration + Clear Package by top_level<br/>sys.modules subtree + __pycache__ Bytecode<br/>(When Metadata Missing, Fall Back to Old Module Object Top Segment)<br/>Refresh Import Cache and Re-query entry-point"]
+    L --> O["Re-register + Load"]
+    M --> O
+    N --> O
+    O --> P["Mount New Instance to sdk Attribute<br/>Verify New and Old Class Identity (Fake Reload Warning)"]
+    P --> Q["Cascading Reload Dependent Modules<br/>(Plugins/Runtime Full Reload; PyPI Dependent Modules Default Re-import Code)"]
+    L -.->|"File Deleted"| R["Remove from Load Result"]
+    M -.->|"Definition Not Safe for Re-import"| R
+    N -.->|"entry-point Disappeared (Uninstalled)"| R
 ```
 
-**Differences between the two sources are only in the discovery phase**, registration, loading, and cascading reload are completely consistent:
+**Differences Only in Discovery Phase for Three Sources**, Pre-check, Unload, and Cascading Reload are Fully Consistent:
 
-- **Local Plugin** (`moduleInfo.meta.source == "plugin_folder"`): After clearing the plugin name corresponding `sys.modules`, re-scan the `plugins/` directory; if the file is deleted, remove it from the load results
-- **PyPI Installed Package**: Clear the package's `sys.modules` subtree by `meta.top_level`, refresh the import cache (break entry-point 60-second cache) and re-check and re-import; if the entry-point disappears (pip uninstalled), remove it from the load results
+- **Local Plugin** (`moduleInfo.meta.source == "plugin_folder"`): Clear sys.modules corresponding to plugin name and re-scan plugins/ directory; if file is deleted, remove from load result
+- **Runtime Registration** (`source == "runtime"`): Re-import by defined module, re-fetch by class name and re-register; classes defined in `__main__` / without source file are rejected for re-import (guard warning, avoid re-executing entry script)
+- **PyPI Installed Package**: Clear package's sys.modules subtree by `meta.top_level`, refresh import cache (break entry-point 60-second cache) and re-query and re-import; if entry-point disappears (pip uninstalled), remove from load result
 
-**Full Reload (`full=True`) and Overall Reload (`reload_all_modules`):**
+**Default Semantics and Reliability Guarantees (2.11):**
 
-- When `top_level` metadata is missing and cannot be inferred, the default reload **does not clear** the import cache (re-import reuses old module objects, i.e., "fake reload"), the framework will explicitly warn and suggest using `full=True`—full reload will overlay old module object top-level package name for backup cleanup, ensuring the latest code runs after reload
-- When `full=True`, PyPI dependencies cascade through full reload (re-import code), the default mode only re-instantiates (existing semantics)
-- Reload forces activation of previously lazy-loaded modules (the previously silent difference has been changed to explicit logging); `reload_all_modules()` maintains lazy loading strategy, only re-activating modules that were loaded before the reload
-- `reload_all_modules()` reloads in dependency topological order, single module failure only records diagnosis and skips (no overall rollback—on_unload side effects are irreversible, consistent with the best-effort semantics of single module hot reload); scenarios with failed reload and rollback are the same, logs will clearly indicate that the old instance is in a completed state
+- **Reload = Full Reload**: By default, clear sys.modules by top-level package name and re-import dependent code; `full=False` only clears metadata, PyPI dependent modules directly re-instantiate (performance escape for large dependency trees)
+- **Syntax Pre-check Gate**: Before entering the unload process, parse each file for syntax, failure rejects reload—old instance is not unloaded, continues serving, syntax errors never put the module into a "half-dead state" (exceeds file count limit for large packages skips pre-check)
+- **Cache Fallback**: When `top_level` metadata is missing, clear range by "old module object `__name__` prefix → module class `__module__` prefix" two-tier deduction; clear source file bytecode cache (pycache) during reload, small changes in the same second and length take effect
+- **Identity Verification**: After successful reload, assert the change of new and old class identity, if unchanged (C extension cache not cleared), explicitly warn and carry `identity_changed: false` with `module.reload` event; `module.get_info()` exposes "registered version ≠ running version" via `running_identity` / `stale` fields
+- **Failure Traceability**: Load failure scene (exception + traceback) can be directly queried via `module.last_error(name)` / `get_info()["last_error"]`, failure path also clears import cache of this module—"after modifying code, reload once again" will definitely read new code
+- Reload will force activate modules that were previously lazy-loaded (explicit log); `reload_all_modules()` keeps lazy-loading strategy, only re-activates modules that were loaded before reload, dormant modules remain dormant
+- `reload_all_modules()` reloads in dependency topological order, single module failure only records diagnostics and skips (no overall rollback—on_unload side effects are irreversible, consistent with the best-effort semantics of single module hot reload); scenarios where reload failure has been rolled back are similarly indicated in logs, old instances are in a terminated state
+
+## Adapter Hot Reload Architecture
+
+Adapter code-level hot reload (2.11) is structurally identical to the module pipeline: `sdk.adapter.reload(adapter_name)` / `sdk.reload_adapter(adapter_name)` executes for both **local plugin** and **PyPI installed package** sources—
+
+```mermaid
+flowchart TD
+    A["sdk.adapter.reload(Platform Name)"] --> B["Syntax Pre-check (File-by-file Parsing)<br/>Failure Rejects Reload, Old Adapter Continues Serving"]
+    B --> C["Snapshot: adapterInfo / Instance / Startup State /<br/>Startup Task / Bots / sys.modules Entries"]
+    C --> D["Unload (shutdown means cleanup:<br/>Routing/Event/Command/Task/Connection/bot offline + unregistration)"]
+    D --> E["Clear Cache: __pycache__ Bytecode →<br/>sys.modules Subtree → invalidate_caches<br/>→ Finder Cache → Plugin Path Record"]
+    E --> F{"Source?"}
+    F -->|"Plugin Directory"| G["Re-scan plugins/ (discover_adapters)"]
+    F -->|"PyPI Installed Package"| H["Re-query entry-point and re-import<br/>(top_level cleanup + class __module__ fallback)"]
+    G --> I["Re-register + startup (Original Running State)<br/>Verify Class Identity (Fake Reload Warning)"]
+    H --> I
+    I --> J["adapter.reload Event<br/>identity_changed / version_old→new / was_started"]
+    G -.->|"Plugin Deleted"| K["Remove from Load Result"]
+    H -.->|"entry-point Disappeared"| K
+    I -.->|"Failure"| L["Rollback: Restore sys.modules /<br/>Registration Stub / Instance / Startup State"]
+```
+
+**Differences from Module Pipeline:**
+
+- Adapter has no lazy loading or dependency cascading: Reload **does not cascade** dependent other adapters (only warnings—dependent parties indirectly consume through the registry, no instance-level cascading semantics)
+- Startup is an asynchronous chain (`startup` dispatched via `_run_adapter`, including dependency skipping and exponential backoff retry): Startup temporarily failing **does not judge reload failure** (code has been replaced), results are broadcast via `adapter.status.change`
+- The instance reuse trap of `register()` (same class object reuses old instance) is covered by the "pyc cleanup + sys.modules clear + identity verification" three-piece set
+- Lifecycle events: `adapter.reload` (payload carries `adapter_name` / `success` / `full` / `duration_ms` / `identity_changed` / `version_old→new` / `was_started` / `source`)
+
+> [!NOTE]
+> This feature requires ErisPulse **2.8.0+**.
 
 
 
@@ -4084,17 +4123,17 @@ await writer.posts.count()          # Bidirectional access
 # Module Troubleshooting Guide
 
 > [!TIP]
-> **When to read this**: When a module "doesn't respond", commands don't trigger, or events aren't received. Skip if not needed, as it does not affect the use of other features.
+> **When to read this**: When a module "doesn't respond", commands don't trigger, or events aren't received. Skip if not needed; it won't affect other features.
 
-When a module "doesn't respond", symptoms are categorized into three types, each with corresponding framework diagnostic tools (RFC EPRFC-2026-001 Direction Five):
+When a module "doesn't respond", symptoms are divided into three types of issues, each with corresponding framework diagnostic tools (RFC EPRFC-2026-001 Direction Five):
 
 | Symptom | Diagnostic Tool | Positioning Level |
 |------|---------|---------|
-| Module not loaded | `ErisPulse.runtime.explain_module(name)` | Registration and Loading Chain |
-| Event not responded | `ErisPulse.runtime.explain_event(event)` | Distribution Entry Check |
-| Command not triggered | Distribution Decision Chain (Test side `DispatchTrace` / Framework built-in `trace`) | Command Determination Chain |
+| Module not loaded | `ErisPulse.runtime.explain_module(name)` | Registration and loading chain |
+| Event not responded | `ErisPulse.runtime.explain_event(event)` | Distribution entry check |
+| Command not triggered | Distribution decision chain (Test side `DispatchTrace` / framework built-in `trace`) | Command determination chain |
 
-Both diagnostic functions are **pure read** operations that do not change any state and can be called at any time; they return machine-readable dicts, which can be rendered into human-readable text using `format_report()`.
+Both diagnostic functions are **pure read** operations, do not change any state, and can be called at any time; they return machine-readable dicts, which can be rendered as human-readable text with `format_report()`.
 
 ## Scenario 1: Module Not Loaded
 
@@ -4105,59 +4144,59 @@ report = explain_module("MyModule")
 print(format_report(report))
 ```
 
-`explain_module()` checks each item and provides a conclusion, covering the following reasons:
+`explain_module()` checks each item and provides conclusions, covering the following causes:
 
 | Check Item | Description |
 |-------|------|
-| Not Registered | The package is not installed, the entry-point group name is incorrect, or the registered name does not match the query name |
-| Lazy Loading Not Instantiated | **Normal state, not a fault**: The lazy-loaded module is instantiated only when it is first called (e.g., `module.call` / command triggered) |
-| Configuration Disabled | `ErisPulse.modules.status.<module_name> = false` (default enabled if not configured) |
-| Dependencies Not Loaded | There are modules in the module's declared `depends` list that are not ready |
-| SDK Version Not Satisfied | The module's metadata declares a `min_sdk_version` higher than the current framework version |
-| on_load Exception | Registered normally but not loaded and none of the above reasons apply—check the ERROR record corresponding to the module name in the startup log |
+| Not registered | Package not installed, entry-point group name incorrect, or registration name inconsistent with query name |
+| Lazy loading not instantiated | **Normal state, not a fault**: Lazy-loaded modules are instantiated only when first called (`module.call` / command triggered, etc.) |
+| Configuration disabled | `ErisPulse.modules.status.<module name> = false` (default enabled if not configured) |
+| Dependencies not loaded | There are modules in the module's declared `depends` list that are not ready |
+| SDK version not satisfied | The module's metadata declares a `min_sdk_version` higher than the current framework version |
+| on_load exception | Registered normally but not loaded and no above reasons — check the ERROR record corresponding to the module name in the startup log |
 
-The returned dict contains structured fields: `registered` / `loaded` / `lazy` / `enabled` (`None` means default enabled if not configured) / `missing_dependencies` / `sdk_version_ok` / `conclusion` (a one-sentence conclusion) / `reasons` (list of reasons).
+The returned dict's structured fields: `registered` / `loaded` / `lazy` / `enabled` (`None` means default enabled if not configured) / `missing_dependencies` / `sdk_version_ok` / `conclusion` (one-sentence conclusion) / `reasons` (list of reasons).
 
-## Scenario 2: Event Not Responding
+## Scenario 2: Event Not Responded
 
 ```python
 from ErisPulse.runtime import explain_event, format_report
 
-report = explain_event(event)   # Event received within the processor or the original event dict
+report = explain_event(event)   # Processor gets Event or raw event dict
 print(format_report(report))
 ```
 
-`explain_event()` outputs conclusions in the actual order of checks at the distribution entry point:
+`explain_event()` outputs conclusions in the actual check order of distribution entry points:
 
-1. **Platform Adapter Not Registered**: The adapter instance corresponding to `platform` does not exist—the event never enters the framework.
-2. **Identity Dimension Rejected by Scope**: The user/session/Bot/adapter is blacklisted—the event is completely discarded at the distribution entry point. See [Module Configuration](../user-guide/configuration.md) for scope configuration.
-3. **Module Blocked by Session**: Distinguish between the current session's `available_modules` (available) and `blocked_modules` (blocked by scope).
-4. **Text Resembles Command but Not Matched**: The text has a command prefix but does not match any registered command—check the prefix configuration and command name.
+1. **Platform adapter not registered**: The `platform` adapter instance does not exist — the event never enters the framework.
+2. **Identity dimension rejected by scope**: User / session / Bot / adapter is blacklisted — the event is completely discarded at the distribution entry point. Scope configuration is found in [Module Configuration](../user-guide/configuration.md).
+3. **Module blocked by session**: Distinguish between the current session's `available_modules` (available) and `blocked_modules` (blocked by scope).
+4. **Text resembles command but not matched**: Has command prefix but does not match any registered command — check prefix configuration and command name.
 
-If all entry point checks pass but there is still no response, the conclusion will guide you to further check two places:
+If entry checks pass but there is still no response, the conclusion will guide further checks at two locations:
 
-- **Processor Filter Conditions**: Conditions such as `detail_type` / `pattern=` / `regex=` are not satisfied;
-- **Middleware Rejection**: Middleware explicitly returning `False` will discard the event at the event level and trigger the `adapter.event.blocked` lifecycle hook (carrying the middleware name and the full event)—you can register this hook to audit "who discarded the event."
+- **Processor filtering conditions**: `detail_type` / `pattern=` / `regex=` conditions are not met;
+- **Middleware rejection**: Middleware explicitly returning `False` discards the event at the event level and triggers the `adapter.event.blocked` lifecycle hook (carrying middleware name and full event) — you can register this hook to audit "who discarded the event".
 
-## Scenario 3: Command Not Triggered (Dispatch Decision Chain)
+## Scenario 3: Command Not Triggered (Distribution Decision Chain)
 
-For a message with a prefix to truly execute a command, it must sequentially pass through: command text determination → command match (with spelling suggestions if not matched) → scope → user ACL → owner check → permission function → cooldown / rate limiting / usage silent discard → deprecated rejection and notification → parameter parsing → execution. The framework records each decision point as a causal chain, providing a conclusion on "why the command was not triggered."
+For a message with a prefix to truly execute a command, it must sequentially pass through: command text determination → command match (with spelling suggestions if not matched) → scope → user ACL → owner check → permission function → cooldown / rate limiting / usage silently discarded → deprecated rejection and notification → parameter parsing → execution. The framework records each decision point as a causal chain, providing a conclusion on "why it wasn't triggered."
 
-### Testing: TestBot.dispatch returns DispatchTrace
+### In Testing: TestBot.dispatch returns DispatchTrace
 
-It is recommended to use tests to reproduce issues and directly read the causal chain (tool usage is described in [Module Testing](testing.md)):
+It is recommended to use testing to reproduce the issue and directly read the causal chain (tool usage is described in [Module Testing](testing.md)):
 
 ```python
 trace = await bot.dispatch(create_command_event("dailyx", user_id="123"))
 
 trace.verdict          # executed / rejected / dropped / failed / no_match / passed
-print(trace.explain()) # Line-by-line causal explanation (in current language)
+print(trace.explain()) # Line-by-line causal explanation (current language)
 trace.assert_no_match()
 ```
 
 ### Framework Built-in trace Module
 
-The decision chain is provided by `ErisPulse.Core.Event.trace`, with **zero overhead** by default — decision points are skipped when not within a collection context, and the production path remains unaffected:
+The decision chain is provided by `ErisPulse.Core.Event.trace`, defaulting to **zero overhead** — decision points are skipped when not in the collection context, and the production path is imperceptible:
 
 ```python
 from ErisPulse.Core.Event import (
@@ -4167,34 +4206,53 @@ from ErisPulse.Core.Event import (
 )
 
 with start_dispatch_trace() as records:
-    ...  # Collect dispatch events (including their derived handler tasks) within the collection context
+    ...  # Collect distribution events (including their derived processor tasks) within the collection context
 
-print(format_dispatch_trace(records))   # Human-readable causal chain (in current language)
+print(format_dispatch_trace(records))   # Human-readable causal chain (current language)
 print(final_verdict(records))           # Overall conclusion
 ```
 
-The values of `final_verdict()` are:
+The `final_verdict()` values:
 
 | Conclusion | Meaning |
-|------------|---------|
-| `executed` | The command was executed |
-| `rejected` | Rejected by permission-related checks (scope / ACL / owner / permission function) |
-| `dropped` | Silently discarded (cooldown / rate limiting / usage / middleware rejection) |
-| `failed` | Execution failed |
-| `no_match` | Message has a prefix but does not match any command |
-| `passed` | Not a command text, passed to the message handler |
+|------|------|
+| `executed` | Command executed |
+| `rejected` | Rejected by permission-type determination (scope / ACL / owner / permission function) |
+| `dropped` | Silently discarded (cooldown / rate limit / usage / middleware rejection) |
+| `failed` | Execution error |
+| `no_match` | Has prefix but does not match any command |
+| `passed` | Non-command text, passed to message processor |
 
-The records are in machine-readable dict format (`stage` / `verdict` / `message_key` / `params`), and custom display can filter by `stage` (e.g., only show `cooldown`).
+Records are machine-readable dicts (`stage` / `verdict` / `message_key` / `params`), and custom displays can filter by `stage` (e.g., only see `cooldown`).
 
-### Identifying Governance Silent Matches
+### Identifying Governance-Type Silent Matches
 
-When `cooldown=`, `rate_limit=`, or `usage_limit=` are triggered, they are **silently discarded by default** (the command is still claimed, not passed to lower-priority handlers), which can be mistaken for a "broken command": the phenomenon is that some users can use it while others get no response, and the corresponding `stage`'s `dropped` record appears in the decision chain. Deprecated commands (`deprecated=`) automatically reply with the deprecation message upon invocation (rejected from execution when `deprecated_reject=True`).
+When `cooldown=` / `rate_limit=` / `usage_limit=` is matched, it is **silently discarded by default** (command is still claimed, not passed to lower-priority processors), which can be mistaken for a "broken command": the phenomenon is that some users can use it, some users have no response, and the corresponding `stage`'s `dropped` record appears in the decision chain. Deprecated commands (`deprecated=`) manifest as automatically replying with deprecation text upon invocation (`deprecated_reject=True` rejects execution).
+
+## Scenario 4: After Code Changes Reload, Still Old Behavior (2.11+)
+
+Check in order:
+
+1. **Check return values and failure scenarios**: When `reload` / `load` returns `False`, directly call `sdk.module.last_error("module name")` — returns exception and full traceback (including line numbers), no need to search log files; `module.get_info(name)["last_error"]` is the same source.
+2. **Syntax errors won't unload**: `reload` performs a syntax pre-check before unloading; if it fails, it is rejected (old instance continues to serve), and the log gives file + line number; fix the syntax and reload again.
+3. **Identity unchanged warning**: When the log shows "code identity unchanged after reload" or the event `identity_changed: false`, it means the old code is still running in the process (common for C extensions with non-clearable caches) — such modules need a framework restart.
+4. **Confirm module source is reloadable**: Modules registered at runtime (`sdk.module.register()`) are refused to reload if the class definition is in `__main__` / entry script (guard warning); move the class to a reloadable module file.
+5. **Lazy-loaded modules forcibly activated**: Reloading activates modules that were originally lazy-loaded (explicit log); modules in sleep (dormant) state remain dormant.
+
+## Scenario 5: Module "Enabled but Not Receiving Events" (Lazy-loaded Dormant, 2.11+)
+
+A lazy-loaded module declared with `dormant_after` will **automatically go dormant** after idle time exceeds the threshold: runtime resources are released, event handlers are unregistered, so it no longer receives events (except those declared in `activate_on` — events first wake up then forward).
+
+- **Confirm if dormant**: Search logs for "dormant" / `module.sleep` events, or observe `sdk.module.get_status_summary()` where the module is no longer `loaded`.
+- **Wake up immediately**: Any attribute access (`sdk.module_name.any_attribute`) or `await sdk.module.call(...)`.
+- **Don't want automatic dormancy**: Remove the `dormant_after` declaration in `get_load_strategy()`.
+- **State lost?**: Before dormancy, `on_before_unload(reason="dormant")` is triggered; if the module does not implement this hook to save state, dormancy loses memory state (same as unloading) — for continued state, refer to [Lazy Loading Dormant](../advanced/lazy-loading.md#lazy-loading-dormant-dormant_after).
 
 ## General Recommendations
 
-- Before troubleshooting, set the log level to `DEBUG` / `TRACE` (see [Developer Guide](README.md#Debugging_Tips) for configuration). This will show internal framework processes such as module loading, route registration, and event dispatching;
-- `explain_module` / `explain_event` can be called at any time and are purely read-only with no side effects, making them suitable for direct attachment to operations commands or management panels;
-- For issues related to commands not triggering, first write a `DispatchTrace` assertion test to reproduce the problem—when assertions like `assert_executed` / `assert_rejected` fail, a complete causal chain will be automatically provided.
+- Before troubleshooting, set logs to `DEBUG` / `TRACE` (configuration in [Developer Guide](README.md#Debugging_Tips)) to see internal framework processes such as module loading, routing registration, and event distribution;
+- `explain_module` / `explain_event` can be called anytime, pure read, no side effects, suitable for direct attachment to operations commands or management panels;
+- For "command not triggered" issues, first write a `DispatchTrace` assertion test to reproduce — `assert_executed` / `assert_rejected` assertion failures will automatically include the full causal chain.
 
 
 
@@ -5032,54 +5090,98 @@ epsdk config MyModule
 
 ---
 
-## Runtime Control Commands
+## Control Commands
 
 > [!TIP]
-> `epsdk run` automatically detects and uses the `.venv` virtual environment in the project directory to run the bot
-> (can also explicitly specify the interpreter via `ERISPULSE_PYTHON` environment variable). `epsdk install` /
-> `uninstall` / `upgrade` / `list` also operate on the project virtual environment.
+> `epsdk run` will automatically detect and use the `.venv` virtual environment in the project directory to run the robot
+> (the interpreter can also be explicitly specified via the `ERISPULSE_PYTHON` environment variable). `epsdk install` /
+> `uninstall` / `upgrade` / `list` also act on the project's virtual environment.
 
 | Command | Alias | Parameters | Description |
-|------|------|------|------|
+|---------|-------|------------|-------------|
 | `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | Run a specified script or SDK |
+| `stop` | — | `[--force] [--pid PID]` | Stop a running instance (started by `epsdk run`) |
+| `restart` | — | `[--force] [--pid PID]` | Restart a running instance (stop and restart with original parameters) |
 
 ### run
 
-Run ErisPulse project script or directly start SDK. Supports hot-reload mode.
+Run an ErisPulse project script or directly start the SDK. Hot-reload mode is supported.
 
-**Aliases:** `r`
+**Alias:** `r`
 
 **Parameters:**
 
 | Parameter | Description |
-|------|------|
-| `[script]` | Script file to run, not specified runs SDK |
-| `--reload` | Enable hot-reload mode, monitor file changes and automatically restart |
-| `--strict` / `--no-strict` | Temporarily enable / disable strict mode (effective only for this run, not written to configuration); defaults to follow `ErisPulse.framework.strict_mode` |
+|-----------|-------------|
+| `[script]` | The script file to run; if unspecified, run the SDK |
+| `--reload` | Enable hot-reload mode, monitoring file changes to automatically trigger component-level code hot-reload (linked with the hot-reload system, no full process restart required) |
+| `--strict` / `--no-strict` | Temporarily enable/disable strict mode (effective only for this run, not written to configuration); defaults to follow `ErisPulse.framework.strict_mode` |
 
 **Examples:**
 
 ```bash
-# Run SDK directly
+# Directly run the SDK
 epsdk run
 
-# Run specified script file
+# Run a specified script file
 epsdk run main.py
 
-# Hot-reload mode (auto-restart on file change)
+# Run with hot-reload mode (automatic code-level hot-reload triggered on file changes)
 epsdk run main.py --reload
 
 # SDK hot-reload mode
 epsdk run --reload
 
-# Temporary strict mode: exit if startup self-check fails, framework strict level temporarily raised to at least 1
+# Temporary strict mode: exit if pre-check fails before startup, framework strict level temporarily raised to at least 1 for this run
 epsdk run main.py --strict
 
-# Temporary relaxed mode (strict_mode enabled in configuration but want to run first)
+# Temporary relaxed mode (strict_mode is enabled in configuration but want to run this time)
 epsdk run main.py --no-strict
 ```
 
-**Startup Self-Check:** `run` performs a quick check on `config/config.toml` parseability and required configuration completeness of installed components before startup. The strictness defaults to `ErisPulse.framework.strict_mode` (exits if check fails when non-zero, warns and continues when zero). Missing configuration file is considered normal for first startup, only prompts without failure. `--strict` temporarily enables: exits if pre-check fails, and framework strict level temporarily raised to at least 1 (skips non-compliant components, propagated to running process via `ERISPULSE_FRAMEWORK_STRICT_MODE` environment variable, not written to configuration file); `--no-strict` temporarily lowers it. Self-check exceptions are automatically skipped, does not include network probing, and will not block startup.
+**Pre-start self-check:** Before `run` starts, the system quickly checks the parseability of `config/config.toml` and the completeness of required configurations for installed components. The strictness defaults to follow `ErisPulse.framework.strict_mode` (if non-zero, check failure results in exit; if zero, only a warning is issued and continues). Missing configuration files are considered normal for first-time startup, only a prompt is issued without failure evaluation. `--strict` temporarily enables: pre-check failure results in exit, and the framework strict level is temporarily raised to at least 1 (skipping non-compliant components, propagated via `ERISPULSE_FRAMEWORK_STRICT_MODE` environment variable to the running process, not written to configuration file); `--no-strict` temporarily relaxes. If self-check itself encounters an exception, it is automatically skipped, excluding network detection, and will not block startup.
+
+### stop
+
+Stop a running ErisPulse instance (started by `epsdk run` and executed in the same project directory).
+When `run` starts, it writes the supervisor process PID, current framework subprocess PID, and the original startup command to
+`.erispulse/runtime.json`. `stop` uses this to locate the instance.
+
+**Stop sequence:** On POSIX systems, first send SIGINT to the supervisor process (same as Ctrl+C, an elegant shutdown path—
+the finally chain automatically terminates the framework subprocess), escalating to SIGTERM / SIGKILL if timeout occurs; on Windows, there is no process signal semantics, so first terminate the framework subprocess and then the supervisor process (to avoid the supervisor mistakenly interpreting forced termination as a crash and restarting).
+
+**Parameters:**
+
+| Parameter | Description |
+|-----------|-------------|
+| `--force` | Skip graceful stop and directly force terminate |
+| `--pid PID` | Directly specify the target process PID (overrides the runtime status file, used for non-standard startup methods) |
+
+**Examples:**
+
+```bash
+# Stop the running instance of the current project
+epsdk stop
+
+# Force terminate
+epsdk stop --force
+```
+
+### restart
+
+Restart a running ErisPulse instance: after stopping according to the semantics of `stop`, restart using the **original startup command** recorded in the status file (foreground takes over the current terminal, and the new instance writes a new runtime status file).
+
+**Parameters:** Same as `stop` (`--force` / `--pid PID`).
+
+**Example:**
+
+```bash
+# Graceful restart (useful after pip upgrade of adapter/module to make code changes effective; code-level hot reload via sdk.reload_module / sdk.adapter.reload is also possible during runtime, no restart required)
+epsdk restart
+```
+
+> [!NOTE]
+> Startup methods such as `python main.py` that bypass `epsdk run` do not write runtime status files—processes started this way should be managed using system tools, or stopped by specifying the PID with `epsdk stop --pid <PID>`.
 
 ---
 
@@ -7156,23 +7258,23 @@ async def chat_handler(event):
 
 ### 交互会话系统
 
-# Interactive Conversation System
+# Interactive Session System
 
 > [!TIP]
-> **When to read this section**: When you need `wait_reply`, multi-turn conversation, timed reminders, session mutual exclusion, or traceability. If not needed, you can skip this section without affecting the use of other features.
+> **When to read this**: When you need `wait_reply`, multi-turn dialogues, scheduled reminders, session mutual exclusion, or traceability. Skip if not needed—other features remain unaffected.
 
 > [!NOTE]
 > This chapter requires ErisPulse **2.8.0+**.
 
-ErisPulse has made "continuous interaction with users" into a framework-level infrastructure: from a single `wait_reply`, to timed reminders, multi-path waiting, session mutual exclusion, and restart recovery, all are scheduled by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
+ErisPulse has made "continuous interaction with users" into a framework-level infrastructure: from a single `wait_reply`, to scheduled reminders, multi-path waiting, session mutual exclusion, and restart recovery—all managed by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
 
 {!--< tips >!--}
-Each capability covered in this article comes with its own **ownership (owner)**: interaction waiting, leases, and timers are all recorded with the module name at registration time. When the module is unloaded or the adapter is closed, the framework automatically cleans up and the waiting party immediately receives a notification instead of waiting for a timeout—this is an extension of the ownership system in the interaction dimension (see [Ownership System](ownership.md)).
+Each capability covered in this document comes with its own **ownership** (owner): interactive waiting, leases, and timers all record the module name at registration. When the module is unloaded or the adapter is closed, the framework automatically cleans up and immediately notifies the waiting party instead of waiting for timeout—this is an extension of the ownership system in the interactive dimension (see [Ownership System](ownership.md)).
 {!--< /tips >!--}
 
 ## Waiting for Reply: wait_reply
 
-`wait_reply` is the cornerstone of interactive sessions — it suspends the current coroutine and waits for the target user to "reply" in the next message.
+`wait_reply` is the foundation of interactive sessions—pausing the current coroutine and waiting for a reply from the target user in the next message.
 
 ```python
 from ErisPulse.Core.Event import command
@@ -7181,7 +7283,7 @@ from ErisPulse.Core.Event import command
 async def ask_command(event):
     reply = await event.wait_reply(prompt="Please enter your name:", timeout=30)
     if reply is None:
-        await event.reply("Timeout.")
+        await event.reply("Timeout")
         return
     await event.reply(f"Hello, {reply.get_text()}!")
 ```
@@ -7190,102 +7292,139 @@ async def ask_command(event):
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `prompt` | The prompt message sent before suspension | None |
+| `prompt` | Message sent before pausing | None |
 | `timeout` | Wait timeout (seconds) | 60 |
 | `pattern` | Glob filter (`*` / `?` / `[seq]`), continue waiting if not matched | None |
-| `regex` | Regex filter (must match both pattern and regex if both are given), continue waiting if not matched | None |
+| `regex` | Regex filter (must match both pattern and regex if both provided), continue waiting if not matched | None |
 | `validator` | Validation function (receives Event, returns bool), continue waiting if failed | None |
-| `callback` | Callback when reply is received (alternative to returning values) | None |
-| `method` | Method to send the prompt | "Text" |
-| `session` | **Session-level waiting**: replies from anyone in the same session (group/channel) can match | False |
+| `callback` | Callback when reply received (alternative to value-returning style) | None |
+| `method` | Method to send prompt | "Text" |
+| `session` | **Session-level waiting**: any reply from the same session (group/channel) can match | False |
 
 ```python
 # Only accept numeric amounts, otherwise continue waiting
 reply = await event.wait_reply("Please enter the amount:", regex=r"\d+\s*元", timeout=30)
 
-# Session-level waiting: for group collaboration, replies from any group member can match
-reply = await event.wait_reply(session=True, prompt="Which expert can help answer?")
+# Session-level waiting: group collaboration scenario, any group member's reply can match
+reply = await event.wait_reply(session=True, prompt="Which expert can help answer this?")
 ```
 
-### The Boundary Between Waiting and Commands (Command Bypass)
+### Boundary Between Waiting and Commands (Command Bypass)
 
-During waiting, if a message containing a **registered command** (e.g., `/cancel`) is received, it is by default passed to the command dispatcher and not consumed as a reply (configuration item `ErisPulse.event.wait_reply.cmdpass`, if `True` it reverses — all messages are treated as replies). The text judgment criteria are consistent with command dispatch: `alt_message` takes precedence, and if missing, falls back to message segment concatenation (effective for pure message segment adapters since 2.10.1).
+During waiting, if a message containing a **registered command** (e.g., `/cancel`) is received, it is by default passed to the command dispatcher and not consumed as a reply (configuration item `ErisPulse.event.wait_reply.cmdpass`, `True` reverses this—messages are always treated as replies). The text judgment follows the command dispatcher's criteria: `alt_message` takes precedence, and if missing, falls back to message segment concatenation (effective for pure message segment adapters since 2.10.1).
 
 ### When Will Waiting Be Cancelled
 
-Waiting is no longer "just waiting until timeout" — the following situations will **immediately terminate** the waiting (`wait_reply` returns `None`), rather than letting the caller wait until timeout:
+Waiting is no longer "only wait for timeout"—the following situations will **immediately terminate** the waiting (`wait_reply` returns `None`), rather than letting the caller wait until timeout:
 
 | Trigger | Cancellation Reason (`InteractionCancelled.reason`) | Description |
-|---------|-----------------------------------------------------|-------------|
-| The owning module is unloaded / disabled | `owner_unload` | Ownership cleanup: whoever registered the waiting is canceled when they disappear |
-| Adapter is stopped / restarted | `platform_stop` | All waiting suspended on this platform is canceled |
-| Conflicting with a new waiting / lease in the same session | `conflict` | See "Session Arbitration" below |
-| The replier is blacklisted / owner module is unbound | `revoked` | Permission复查 on reply match: scope identity dimension + module dimension |
-| The reply is matched | — | Normal path, returns the reply event |
+|---------|----------------------------------------------------|-------------|
+| Owner module unloaded / disabled | `owner_unload` | Ownership cleanup: whoever registered the waiting is canceled when it disappears |
+| Adapter closed / restarted | `platform_stop` | All waiting suspended on this platform is canceled |
+| Same session replaced by new waiting / lease | `conflict` | See "Session Arbitration" below |
+| Replier blacklisted / owner module unbound | `revoked` | Permission recheck for reply match: scope identity dimension + module dimension |
+| User reply matched | — | Normal path, returns reply event |
 
-The underlying exception is `InteractionCancelled` (part of the `InteractionError` exception hierarchy), and `wait_reply` has converted it to return `None`. If the reason is needed, the caller can directly use the low-level API `sdk.interaction.register()`.
+The underlying exception is `InteractionCancelled` (part of the `InteractionError` exception hierarchy); `wait_reply` has converted it to return `None`. Callers needing the reason can directly use the low-level API `sdk.interaction.register()`.
 
-### Complete Matching Chain for Reply
+### Complete Reply Matching Decision Chain
 
-When a reply message arrives, the interaction manager executes the following sequence of judgments (executed before command matching, prioritizing conversation continuity — even if the message has been claimed by another high-priority processor, the suspended conversation can still complete):
+When a reply message arrives, the interactive manager executes the following sequence (executed **before** command matching, prioritizing conversation continuity—even if the message has been claimed by another high-priority handler, the suspended conversation can still complete):
 
 ```
 Session key match (exact user dimension → session-level fallback)
-  → pattern / regex text filter (continue waiting if not matched)
-  → validator check (continue waiting if failed)
-  → Permission复查 (scope identity dimension + owner module dimension, cancel if failed)
-  → Wake up the waiting party + claim the event (mark_processed)
+  → pattern / regex text filtering (continue waiting if not matched)
+  → validator validation (continue waiting if failed)
+  → permission recheck (scope identity dimension + module dimension, cancel if failed)
+  → wake up waiting party + claim event (mark_processed)
 ```
+
+## Declarative Multi-turn: `.got()` Chain (2.11+)
+
+`@command` returns a **multi-turn control proxy**, declaring collection steps sequentially using `.got()`—steps receive collected values by parameter name (including command entry parameters), and types are automatically parsed according to `type=` or annotations. Underneath, it compiles into a Conversation: each step is a branch, automatic checkpoint saving, and **user replies resume from the saved step after restart** (the recovery factory is automatically registered during decoration and unregistered with module unload).
+
+```python
+@command("weather")
+async def weather(event):
+    pass  # Entry: the prompt of the first .got is automatically sent, no manual question needed
+
+@weather.got("city", prompt="Please directly reply with the city name")
+async def weather_city(event, city: str):
+    await event.reply(f"{city}: Sunny, 25℃")
+
+@weather.got("days", prompt="How many days to forecast?", type=int, retry_prompt="Please enter a number")
+async def weather_days(event, city: str, days: int):
+    await event.reply(f"{city} future {days} days...")
+```
+
+### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| `name` | Collected value name (injected into subsequent step functions by parameter name; unique within the flow, duplicate declarations cause registration-time errors) |
+| `prompt` | Question automatically sent when entering this step |
+| `timeout` | Single-step waiting timeout (seconds or "90s" / "1h30m" duration string, default 60s) |
+| `type` | Value type (`int` / `float` / `str`…; if parsing fails, `retry_prompt` is automatically resent, up to `max_retries` times) |
+| `validator` / `pattern` / `regex` | Reply filtering and validation (semantically consistent with [`wait_reply`](#waiting-for-replywait_reply)) |
+| `session` | Session-level waiting (anyone in the same session can match) |
+| `cmdpass` | Command pass three-state (default `/cancel` and other commands execute normally during waiting) |
+
+### Semantics and Boundaries
+
+- **Any step timeout / interruption → entire flow ends** and checkpoints are cleared (consistent with `wait_reply` semantics); intermediate results can be output at any time within step functions using `event.reply(...)`
+- **Only one suspended interaction per user at a time**—the second flow's waiting will replace the previous one (`InteractionCancelled("conflict")`); for mutual exclusion prompts, please use [Session Lease](#session-mutual-exclusionacquire--hold--get_owner_of)
+- Collected values exist only within the flow; for complex state that needs to be carried across restarts, use [Conversation](conversation.md) directly (`context` + `branch/goto` + manual checkpoint)
+- `@command` returns a proxy object: calling behavior, `__name__`, docstring, and custom attributes are identical to the original function; `command.unregister(代理)` automatically unpacks
 
 ## Session Timers: remind / escalate
 
-Transform "timeout" from a return value into a composable primitive. Timers are attached to interactive sessions and are automatically canceled when the module is unloaded or the adapter is stopped. The single session active remind limit is 5.
+Turn "timeout" from a return value into a compositional primitive. Timers are attached to interactive sessions and automatically canceled with module unload or adapter shutdown, with a single session active remind limit of 5.
 
 ### remind: Gentle Reminder if No Reply
 
 ```python
 @command("ticket")
 async def ticket_command(event):
-    await event.reply("Your ticket has been submitted. You will be notified here with the processing result.")
-    # Remind gently after 5 minutes of no reply; any reply from the user will automatically cancel it
-    event.remind(300, "Are you still there? We will notify you as soon as there is a result.")
+    await event.reply("The ticket has been submitted, the result will be notified here")
+    # Remind gently after 5 minutes of no reply; any user reply automatically cancels it
+    event.remind(300, "Are you still there? We will notify you as soon as there is a result")
     reply = await event.wait_reply(timeout=3600)
     ...
 ```
 
-- `event.remind(delay, text=None, *, callback=None)`: Sends `text` (or executes `callback(event)`, supporting synchronous / asynchronous) to the current session upon expiration. **Mandatory check**: `text` and `callback` must be chosen exclusively (neither given throws `ValueError`)
-- Returns a `Reminder` handle: `reminder.cancel()` manually cancels, `reminder.expired` queries the status
-- Automatically canceled by user reply in the same session — this is the semantics of "reminder": reminders only appear when the user is silent
+- `event.remind(delay, text=None, *, callback=None)`: Sends `text` (or executes `callback(event)`, supporting synchronous/asynchronous) to the current session upon expiration. **Mandatory check**: `text` and `callback` must be chosen exclusively (neither raises `ValueError`)
+- Returns a `Reminder` handle: `reminder.cancel()` manually cancels, `reminder.expired` queries status
+- Automatically cancels upon user reply in the session—this is the "reminder" semantics: reminders only appear when the user is silent
 - Also available within `Conversation`: `conv.remind(120, "Are you still considering?")`
 
-### escalate: Guaranteed Escalation on Time
+### escalate: Guaranteed Escalation at Deadline
 
 ```python
 event.escalate(1800, lambda e: notify_master(f"Ticket not processed for 30 minutes: {event.get_command_args()}"))
 ```
 
-The only difference from `remind` is that it is **not canceled by user reply** — escalation actions (notifying the owner, transferring to human) are a "guaranteed timeout" commitment, canceled only by manual `cancel()` / module unload / adapter stop.
+The only difference from `remind` is that it is **not canceled by user reply**—escalation actions (notifying the master, transferring to human) are a "guaranteed timeout" promise, canceled only by manual `cancel()` / module unload / adapter shutdown.
 
 | | `remind` | `escalate` |
 |---|---|---|
-| Behavior on expiration | Send text / execute callback | Execute callback |
-| User reply | **Automatically canceled** | Unaffected |
-| Ownership cleanup (unload / stop platform) | Canceled | Canceled |
-| Single session limit | 5 | Unlimited (canceled by ownership cleanup as a fallback) |
+| Expiration Behavior | Send text / execute callback | Execute callback |
+| User Reply | **Automatically canceled** | Unaffected |
+| Ownership Cleanup (Unload / Close Platform) | Canceled | Canceled |
+| Single Session Limit | 5 | Unlimited (canceled by ownership cleanup as fallback) |
 
 ## Multi-path Waiting: expect + select
 
-Simultaneously suspends multiple expectations, **first-come, first-served** — typical scenarios: waiting for admin approval while also waiting for user withdrawal, or multi-person collaborative voting.
+Simultaneously suspends multiple expectations, **first-come, first-served**—typical scenarios: waiting for admin approval while also waiting for user withdrawal, or multi-person collaborative voting.
 
 ```python
 which, reply = await event.select(
-    event.expect(pattern="Agree*", user="10001"),
-    event.expect(pattern="Reject*", user="10002"),
-    event.expect(validator=lambda e: e.get_text() == "Suspend", session=True),
+    event.expect(pattern="同意*", user="10001"),
+    event.expect(pattern="拒绝*", user="10002"),
+    event.expect(validator=lambda e: e.get_text() == "搁置", session=True),
     timeout=60,
 )
 if which is None:
-    await event.reply("No approval result received within 60 seconds")
+    await event.reply("No approval results received within 60 seconds")
 elif which == 0:
     await event.reply("Approved")
 elif which == 1:
@@ -7293,29 +7432,29 @@ elif which == 1:
 ```
 
 - `event.expect(...)` constructs an **expectation description** (does not register any waiting): supports `pattern` / `regex` / `validator` / `user` (limits the replier) / `session` (anyone can reply)
-- `event.select(*expectations, timeout=60)`: Registers uniformly → returns `(index, reply event)` as soon as any match is found → unmet expectations are automatically canceled; returns `(None, None)` if all timeout. **Mandatory check**: at least one expectation must be provided, otherwise `ValueError` is thrown
-- The matched event is claimed by the framework (`mark_processed`), and will not be consumed by other processors
+- `event.select(*expectations, timeout=60)`: Registers uniformly → returns `(index, reply event)` upon any match → unmet expectations are automatically canceled; returns `(None, None)` if all timeout. **Mandatory check**: at least one expectation must be provided, otherwise raises `ValueError`
+- The matched event is claimed by the framework (`mark_processed`), and will not be consumed repeatedly by other handlers
 
 {!--< tips >!--}
-`select` compared to manually orchestrated multi-threading `asyncio.wait`: unmet expectations are automatically cleaned up, matched events are automatically claimed, permission复查 and ownership cleanup are fully effective — no need to manage any Future yourself.
+`select` compared to multi-threaded `asyncio.wait` manual orchestration: automatically cleans up unmet expectations, automatically claims matched events, and ownership cleanup is fully effective—no need to manage any Future yourself.
 {!--< /tips >!--}
 
 > [!NOTE]
-> As of 2.10.1, `select` is a **aggregated waiting**: all expectations are merged into a single entry + custom match judgment, multiple paths with the same key (e.g., two different patterns for the same user) no longer cancel each other, and the first path to match returns. The judgment criterion for reply text is `alt_message` priority + message segment fallback (consistent with command dispatch).
+> As of 2.10.1, `select` is a **aggregated waiting**: all expectations are merged into a single entry with custom match criteria. Multiple paths with the same key (e.g., two different patterns for the same user) no longer cancel each other; the first path to match returns. The text match criterion is `alt_message` priority + message segment fallback (consistent with command dispatch).
 >
-> Boundary explanation: `event.wait_for(...)` is directly attached to the adapter event bus, **not passing** through middleware and `detail_type` condition filtering (identity admission is covered by the dispatch entrance); for complete pipeline waiting, use `wait_reply` / `select`.
+> Boundary explanation: `event.wait_for(...)` is directly attached to the adapter event bus, **not passing** through middleware and detail_type filtering (identity admission is covered by the dispatch entry); for complete pipeline waiting, use `wait_reply` / `select`.
 
 ## Session Mutual Exclusion: acquire / hold / get_owner_of
 
-Ownership moves from "resources" to "session" — "who is currently occupying this user" becomes a first-class query.
+Ownership moves from "resources" to "session"—"who is currently occupying this user" becomes a first-class query.
 
 ```python
-# Query: Is this session currently being interacted with? (Returns None if idle)
+# Query: who is currently interacting in this session? (Returns None if idle)
 owner = sdk.interaction.get_owner_of(event)
 if owner and owner != "MyModule":
-    return  # Another module is currently in conversation, avoid interrupting
+    return  # Another module is already in conversation, avoid interruption
 
-# Mutual exclusion lease: exclusive session (deny policy, returns None if occupied)
+# Mutual exclusion lease: exclusively occupy the session (deny policy, returns None if occupied)
 lease = sdk.interaction.acquire(event)          # Default TTL 1 hour, can pass ttl=
 if lease is None:
     return  # Already occupied
@@ -7325,54 +7464,54 @@ finally:
     lease.release()
 ```
 
-Context manager form (throws `SessionOccupiedError` if acquisition fails):
+Context manager form (throws `SessionOccupiedError` on failure):
 
 ```python
 with sdk.interaction.hold(event) as lease:
-    ...  # Lease is automatically released on exit
+    ...  # Lease automatically released on exit
 ```
 
-The lease supports `renew(ttl)` to extend; TTL is lazily expired — expired leases are automatically cleaned up on next access.
+Leases support `renew(ttl)` renewal; TTL is lazily expired—the expired lease is automatically cleaned up on next access.
 
-When `Conversation.resume()` resumes a conversation, the framework automatically acquires the lease (see [Conversation Multi-turn Dialogue](conversation.md)'s "Resume Takes Over") — the resumed conversation naturally holds the session, and other modules cannot insert.
+`Conversation.resume()` automatically acquires the lease when resuming a conversation (see [Conversation Multi-turn Dialogue](conversation.md)'s "resume takes over")—the resumed conversation naturally holds the session, and other modules cannot intervene.
 
 ## Session Inbox: event.history
 
-> Retention policy (7 days / maximum number of entries) and runtime override API, risks, and audit are covered in the dedicated [Session Inbox](transcript.md) topic.
+> Retention policy (7 days / maximum number of entries) and runtime override API, risks, and audit are covered in the [Session Inbox](transcript.md) special topic.
 
-A unified record of recent message streams per session (both user and bot), serving as a shared factual base for AI context, anti-spam, and behavioral analysis modules — each module no longer stores history individually.
+Unified record of recent message streams per session (both user and bot), serving as a **shared fact base** for AI context, anti-repetition, and behavioral analysis modules—modules no longer store history individually.
 
 ```python
-messages = await event.history(20)   # The most recent 20 entries in the current session, in ascending order
+messages = await event.history(20)   # Last 20 messages in the current session, ascending order
 for m in messages:
     print(m["role"], ":", m["text"])  # role: "user" / "bot"
 ```
 
 - Automatic recording: inbound messages (role=user) + bot outbound text (role=bot)
 - Storage: separate SQLite table, retention policy = per session limit (default 50) + global TTL (default 7 days)
-- Writing method: memory buffer + background batch persistence (delay up to 1 second), query interface automatically merges un-persisted buffer rows — reads within the same process are unaffected; automatic flush on normal exit (`sdk.uninit` / process exit). **Hard crash / force kill may lose the last ~1 second of records**: this base is positioned as a recent context cache, not suitable for audit-level persistence
+- Writing method: memory buffer + background batch persistence (delay up to 1 second), query interface automatically merges un-persisted buffer rows—reading your own writes in the same process is unaffected; normal exit (`sdk.uninit` / process exit) automatically flushes. **Hard crash / forced kill may lose recent about 1 second of records**: this base is positioned as a recent context cache, not suitable for audit-level persistence
 - Configuration: `ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`
-- Manager API: `sdk.transcript.append() / get() / clear()`, `aflush()` / `flush()` to manually flush
+- Manager API: `sdk.transcript.append() / get() / clear()`, `aflush()` / `flush()` manually flush
 
 ## Message Transaction: message_tx
 
-All outbound sends within a transaction are automatically logged; **on abnormal exit, previously sent messages are automatically recalled in reverse order** (skipped if the adapter does not implement `delete_message`, but the ledger is still recorded).
+All outbound sends within the transaction are automatically logged; **on abnormal exit, previously sent messages are automatically withdrawn in reverse order** (skipped if adapter does not implement `delete_message`, but the ledger is still recorded normally).
 
 ```python
 async with event.message_tx():
     await event.reply("Processing, please wait")
-    result = await do_something()          # If an exception is thrown here →
-    await event.reply(f"Completed: {result}")   # The previous "processing" is automatically recalled
+    result = await do_something()          # Exception thrown here →
+    await event.reply(f"Completed: {result}")   # The previous "processing" message is automatically withdrawn
 ```
 
-Outbound sends outside a transaction are not logged (zero overhead); `get_send_receipts()` can view receipts of messages sent in the current transaction.
+Sends outside the transaction are not logged (zero overhead); `get_send_receipts()` can view receipts of messages already sent in the current transaction.
 
 ## Trace ID
 
 Each inbound event automatically receives a trace ID (reusing `event["id"], generating one if missing), which is carried through:
 
 - Handler context (`get_current_trace_id()` to read)
-- Outbound sends (`[Send]` log lines append `[trace:...]`, `message.sending/sent` hooks have a `trace_id` field)
+- Outbound sends (`[Send]` log line appends `[trace:...]`, `message.sending/sent` hooks have `trace_id` field)
 - Lifecycle hook data (dict automatically adds `_trace_id`)
 - Directed events (`lifecycle.emit(..., to=...)`) and message transaction receipts
 
@@ -7380,9 +7519,9 @@ When a message is processed by multiple modules, the same ID can be used to link
 
 ## Relationship with Other Systems
 
-- **Ownership**: Waiting / leases / timers all record owner, and are recycled when unloaded (see [Ownership System](ownership.md))
-- **Scope**: Reply matching checks identity + module dimension; cross-module calls audit outbound dimension (see [Scope](scope.md))
-- **Conversation**: Multi-turn dialogue is a state machine on top of interactive sessions (see [Conversation](conversation.md)), and its waiting also enjoys all cancellation /复查 / ownership semantics described on this page
+- **Ownership**: Waiting / leases / timers all record owner, and are reclaimed on unload (see [Ownership System](ownership.md))
+- **Scope**: Reply match checks identity + module dimension; cross-module audit goes through outbound dimension (see [Scope](scope.md))
+- **Conversation**: Multi-turn dialogue is a branch state machine above interactive sessions (see [Conversation](conversation.md)), and its waiting also enjoys all cancellation / recheck / ownership semantics in this page
 
 
 
@@ -9242,14 +9381,14 @@ async def on_server_stop(event):
 # Lifecycle Management
 
 > [!TIP]
-> **When to read this**: When you need to subscribe to framework lifecycle events (startup / load / state changes). Skip if not needed, as it does not affect other features.
+> **When to read this**: When you need to subscribe to framework lifecycle events (startup / load / state changes). Skip if not needed, as it does not affect the use of other features.
 
-ErisPulse provides a unified hook/lifecycle system for monitoring the runtime status of system components and implementing extension features such as auditing, statistics, and custom logic.
+ErisPulse provides a unified hook/lifecycle system to monitor the running status of system components and implement extension features such as auditing, statistics, and custom logic.
 
 The system supports three triggering methods:
-- `await lifecycle.emit("event", data)` — A concise version that passes arbitrary data (direct delivery when `to="Owner"`)
-- `lifecycle.emit_sync("event", data)` — A synchronous version (for non-async contexts)
-- `await lifecycle.submit_event("event", ...)` — Backward compatible, automatically builds standard event format
+- `await lifecycle.emit("event", data)` — A concise version, passing any data (`to="Owner"` for targeted delivery)
+- `lifecycle.emit_sync("event", data)` — Synchronous version (for non-async contexts)
+- `await lifecycle.submit_event("event", ...)` — Backward compatible, automatically constructs standard event format
 
 ## Event Handling Mechanism
 
@@ -9269,28 +9408,28 @@ sdk.lifecycle.register("module.load", on_module_load, priority=10)
 # Unregister
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# Batch unregister by owner (automatically called by framework on module/adapter unload)
+# Batch unregister by owner (automatically called by framework during module/adapter unload)
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
 print(f"Cleaned up {removed} lifecycle hooks")
 ```
 
 ### Priority
 
-Handlers support `priority` parameter. The higher the value, the earlier the execution (consistent with module loader):
+Handlers support the `priority` parameter, where higher values execute first (consistent with the module loader):
 
 ```python
-@sdk.lifecycle.on("adapter.event.receive", priority=10)  # First to execute
+@sdk.lifecycle.on("adapter.event.receive", priority=10)  # Executes first
 async def first_handler(data):
     pass
 
-@sdk.lifecycle.on("adapter.event.receive", priority=0)  # Later execution
+@sdk.lifecycle.on("adapter.event.receive", priority=0)  # Executes later
 async def second_handler(data):
     pass
 ```
 
 ### Dot-Structure Events
 
-When a specific event is triggered, its parent events are also triggered:
+Triggering a specific event also triggers its parent events:
 - Triggering `module.load` also triggers `module`
 - Triggering `adapter.event.receive` also triggers `adapter.event` and `adapter`
 
@@ -9304,31 +9443,32 @@ async def on_anything(data):
     print(f"Received event: {data}")
 ```
 
-### Directed Propagation (`emit to=`)
+### Targeted Propagation (`emit to=`)
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-When `emit()` is specified with the `to` parameter, it enters directed propagation: the event is only distributed to handlers registered by the owner (hooks registered by a module in `on_load` are automatically assigned to the module), and other modules and wildcard `*` handlers are not notified.
+When `emit()` specifies the `to` parameter, it enters targeted propagation: events are only distributed to handlers registered with that owner identity (hooks registered by modules in `on_load` are automatically assigned to the module), and other modules and wildcard `*` handlers are not aware.
 
 ```python
-# Sender: Event only delivered to hooks registered by Chat module
+# Emitter: Events are only sent to hooks registered by the Chat module
 await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 
-# Subscriber (within Chat module): Register hooks with the same name, owner is automatically recorded during registration
+# Subscriber (inside Chat module): Register hooks with the same name, owner is automatically recorded during registration
 @sdk.lifecycle.on("message_received")
 async def on_message_received(data): ...
 
-@sdk.lifecycle.on("message")   # Dot-structure parent prefixes also apply (filtered by owner)
+@sdk.lifecycle.on("message")   # Dot-structure parent prefix also applies (filtered by owner)
 async def on_any(data): ...
 ```
 
-- If the target owner has no registered hooks → the event is **not consumed** (can be probed in advance using `has_handlers()`)
-- When `data` is a dict, it automatically carries `_trace_id` (does not overwrite existing values)
-- `emit_sync` / `submit_event` also support `to=` parameter
-- Three-layer model for inter-module communication (RPC / directed / broadcast) is described in [Inter-Module Communication](module-communication.md)
+- If the target owner has no registered hooks → the event is **not consumed** (use `has_handlers()` to detect beforehand)
+- If `data` is a dict, it automatically carries `_trace_id` (does not overwrite existing values)
+- `emit_sync` / `submit_event` also support the `to=` parameter
+- The three-layer model for inter-module communication (RPC / targeted / broadcast) is detailed in
+  [Inter-Module Communication](module-communication.md)
 
-### One-Time Registration (`once`)
+### One-time Registration (`once`)
 
 Since 2.7.0, handlers registered with `lifecycle.once()` are automatically unregistered after being triggered once, suitable for "first ready" type one-time hooks:
 
@@ -9338,13 +9478,13 @@ async def on_first_ready(data):
     print("First ready, will not trigger again")
 ```
 
-- Same priority semantics as `on()` (higher `priority` value means earlier execution)
-- Automatically unregistered, no need to manually `unregister`
+- Same priority semantics as `on()` (`priority` value higher executes earlier)
+- Automatically unregisters, no need to manually `unregister`
 - Both synchronous and asynchronous handlers are supported
 
 ### Listener Query (`has_handlers`)
 
-For hot-path short-circuit scenarios, use `has_handlers()` to check if there are listeners in advance, avoiding unnecessary event traversal and task scheduling:
+In hot-path short-circuit scenarios, use `has_handlers()` to check if there are listeners beforehand, avoiding unnecessary event traversal and task scheduling:
 
 ```python
 if sdk.lifecycle.has_handlers("message.sending"):
@@ -9352,28 +9492,28 @@ if sdk.lifecycle.has_handlers("message.sending"):
 ```
 
 - Covers **exact event name**, wildcard `*`, and parent event matching
-- Returns `False` if there are no listeners, allowing safe skipping of `emit`
+- Returns `False` if no listeners exist, allowing safe skipping of `emit`
 
-## Hook Breakpoints Overview
+## Lifecycle Hook Breakpoints Overview
 
-A typical lifecycle event sequence for a message from platform entry to processing completion in the framework:
+The typical lifecycle event sequence for a message from the platform entering the framework to completion:
 
 ```mermaid
 sequenceDiagram
     participant P as Platform
     participant A as Adapter
-    participant F as Core Framework
+    participant F as Framework Core
     participant M as Module Processors
 
     P->>A: Native event arrives
     A->>F: adapter.event.receive (earliest)
-    F->>F: event.pre_process (before handler execution)
-    F->>M: Distribute to processors (commands/messages/notifications, etc.)
+    F->>F: event.pre_process (before processor execution)
+    F->>M: Distributed to processors (commands/messages/notifications, etc.)
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending (before sending)
     F->>A: SendDSL send
-    A->>P: Send to platform
+    A->>P: Sent to platform
     A->>F: message.sent (after sending)
     F->>F: adapter.event.dispatched (after distribution)
 ```
@@ -9384,8 +9524,8 @@ The framework includes the following built-in hook breakpoints, which users can 
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `core.init.start` | SDK initialization begins | `{}` |
-| `core.init.stage` | Each initialization stage begins (emitted in background) | `{"stage": str}`, values: `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.start` | SDK initialization starts | `{}` |
+| `core.init.stage` | Initialization stages start (emitted in background) | `{"stage": str}`, values: `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
 | `core.init.complete` | SDK initialization completes | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str (only if failed)}` |
 | `core.uninit.complete` | SDK deinitialization completes | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (only if failed)}` |
 
@@ -9401,10 +9541,10 @@ def show_stage(data):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `config.set` | A configuration item is modified | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | Entire config tree change detected after external edit to config.toml | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.set` | Configuration item is modified | `{"key": str, "old_value": Any, "new_value": Any}` |
+| `config.updated` | Whole tree change detected after external edit of config.toml | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
-**Example: Configuration Audit**
+**Example: Configuration Auditing**
 
 ```python
 @sdk.lifecycle.on("config.set")
@@ -9417,18 +9557,23 @@ def audit_config(data):
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `module.register` | Module class registered to manager | `{"module_name": str, "success": bool}` |
-| `module.load` | Module loaded (instantiation successful) | `{"module_name": str, "success": bool}` |
-| `module.init` | Module initialization complete (including lazy loading) | `{"module_name": str, "success": bool}` |
+| `module.load` | Module loaded (instance created successfully); if failed, payload also carries `"error": str, "traceback": str` (failure context can also be queried via `module.last_error(name)`) | `{"module_name": str, "success": bool}` |
+| `module.init` | Module initialization completed (including lazy loading) | `{"module_name": str, "success": bool}` |
+| `module.before_unload` | First step in unload pipeline (before `on_unload` and resource release; module instance hooks `on_before_unload` also trigger synchronously) | `{"module_name": str, "reason": str}`; `reason` values: `unload` / `reload` / `disable` / `cascade` / `dormant` |
+| `module.sleep` | Module sleep completed (lazy loading sleep: resources released, automatically awakened on access) | `{"module_name": str, "success": bool}` |
 | `module.unload` | Module unloaded | `{"module_name": str, "success": bool}` |
-| `module.reload` | Module hot-reloaded (including cascading reload of dependencies) | `{"module_name": str, "success": bool, "full": bool}`; for full reload (`reload_all`), `module_name` is `"All"`, payload additionally carries `"results": dict[str, bool]` |
+| `module.reload` | Module hot-reloaded (including cascading reload of dependencies) | `{"module_name": str, "success": bool, "full": bool, "duration_ms": int}`; single module additionally carries `"identity_changed": bool` (False = old code may still run in process, such as C extension cache) and `"version_old": str, "version_new": str`; full reload (`reload_all`) has `module_name` as `"All"`, payload additionally carries `"results": dict[str, bool]` |
+
+> **Module instance hook `on_before_unload`**: The optional lifecycle method corresponding to the `module.before_unload` event—`event["reason"]` indicates the reason, suitable for saving state to `sdk.storage` before resource release, and restoring it in `on_load` when awakened/reloaded (the state continuation of lazy loading sleep is based on this). Hook failure only logs a warning, does not block the unload process.
 
 ### Adapter Lifecycle
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `adapter.load` | Adapter registered | `{"platform": str, "success": bool}` |
+| `adapter.load` | Adapter registration completed | `{"platform": str, "success": bool}` |
+| `adapter.reload` | Adapter code-level hot-reloaded | `{"adapter_name": str, "success": bool, "full": bool, "duration_ms": int, "identity_changed": bool, "version_old": str, "version_new": str, "was_started": bool, "source": str}`; `identity_changed=False` = old code may still run in process |
 | `adapter.start` | Adapter started | `{"platforms": [str]}` |
-| `adapter.status.change` | Adapter status changed | `{"platform": str, "status": str, "retry_count": int, "error": str (only if failed)}`; status values: `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
+| `adapter.status.change` | Adapter status changed | `{"platform": str, "status": str, "retry_count": int, "error": str (only if failed)}`; full status values: `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
 | `adapter.stop` | Adapter stopped | `{"platforms": [str]}` |
 | `adapter.stopped` | Adapter stopped completely | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot online | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
@@ -9438,12 +9583,12 @@ def audit_config(data):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `adapter.event.receive` | External platform event received (earliest) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.blocked` | Middleware blocks event (returns `False`, event discarded and not delivered to any processor) | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
+| `adapter.event.receive` | Received external platform event (earliest) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.blocked` | Middleware blocks event (returns `False`, event discarded and not entered any processor) | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
 | `adapter.event.dispatched` | Event distribution completed | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | Before event processor execution begins | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `event.pre_process` | Event processor starts execution | `{"event_type": str, "platform": str, "detail_type": str}` |
 
-**Example: Event Counting**
+**Example: Event Statistics**
 
 ```python
 event_counter = {}
@@ -9456,7 +9601,7 @@ def count_events(data):
 @sdk.lifecycle.on("adapter.event.dispatched")
 def log_unhandled(data):
     if data["onebot_handlers_count"] == 0:
-        print(f"[Unprocessed] {data['platform']}/{data['event_type']}")
+        print(f"[Unhandled] {data['platform']}/{data['event_type']}")
 ```
 
 ### Message Sending
@@ -9464,7 +9609,7 @@ def log_unhandled(data):
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `message.sending` | Message about to be sent | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | Message sent successfully | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | Message sent | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **Example: Message Sending Audit**
 
@@ -9479,9 +9624,9 @@ def log_sending(data):
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `command.matched` | Command matched and about to execute | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | Command execution completed | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (only if failed)}` |
+| `command.executed` | Command executed | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (only if failed)}` |
 
-**Example: Command Counting**
+**Example: Command Statistics**
 
 ```python
 @sdk.lifecycle.on("command.matched")
@@ -9525,26 +9670,26 @@ def on_ws_disconnect(data):
     print(f"[WS] Disconnected: {data['path']} ({data['reason']})")
 ```
 
-### Storage Connection Status
+### Storage Connection State
 
-Backend storage connection pool establishment, failure, and recovery (all emitted in background, not blocking storage operations):
+Backend storage connection pool established, failure, and recovery (all emitted in background, not blocking storage operations):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `storage.ready` | Storage backend connection pool ready (first pool creation successful in each event loop) | `{"backend": str}` |
-| `storage.unreachable` | Retry exhaustion leads to cooldown period (during which operations fail quickly) | `{"backend": str, "error": str, "cooldown": float}` |
-| `storage.recovered` | Cool-down ends, reconnection successful, storage becomes available | `{"backend": str}` |
+| `storage.ready` | Storage backend connection pool ready (first pool creation success per event loop) | `{"backend": str}` |
+| `storage.unreachable` | Connection retry exhausted, entering cooldown period (operations fail quickly during cooldown) | `{"backend": str, "error": str, "cooldown": float}` |
+| `storage.recovered` | Cooldown ended, reconnection successful, storage restored | `{"backend": str}` |
 
 **Example: Storage Failure Alert**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
 def alert_storage_down(data):
-    print(f"[Alert] Storage backend {data['backend']} unreachable: {data['error']}, will automatically reconnect in {data['cooldown']}s")
+    print(f"[Alert] Storage backend {data['backend']} unreachable: {data['error']}, auto-reconnect in {data['cooldown']}s")
 
 @sdk.lifecycle.on("storage.recovered")
 def notify_storage_back(data):
-    print(f"[Recovery] Storage backend {data['backend']} is back online")
+    print(f"[Restored] Storage backend {data['backend']} is available again")
 ```
 
 ### HTTP Client
@@ -9554,24 +9699,24 @@ def notify_storage_back(data):
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `client.request.success` | HTTP request successful | `{"method": str, "url": str, "status": int, "elapsed": float}` |
-| `client.request.failed` | HTTP request failed after exhausting retries | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
+| `client.request.failed` | HTTP request exhausted retries and finally failed | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
 | `client.ws.connect` | WebSocket connection established | `{"url": str}` |
 
 ### Internationalization
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `i18n.language.changed` | Framework language switched (via `i18n.set_language`) | `{"language": str, "previous": str}` |
+| `i18n.language.changed` | Framework language switched (`i18n.set_language`) | `{"language": str, "previous": str}` |
 
 ## Standard Event Definitions
 
 ```python
 STANDARD_EVENTS = {
     "core": ["init.start", "init.stage", "init.complete", "uninit.complete"],
-    "module": ["load", "init", "unload", "register", "reload"],
+    "module": ["load", "before_unload", "init", "sleep", "unload", "register", "reload"],
     "adapter": [
-        "load", "start", "status.change", "stop", "stopped",
-        "event.receive", "event.dispatched",
+        "load", "start", "status.change", "reload", "stop", "stopped",
+        "event.receive", "event.blocked", "event.dispatched",
         "bot.online", "bot.offline",
     ],
     "server": [
@@ -9591,7 +9736,7 @@ STANDARD_EVENTS = {
 
 ## Complete API Reference
 
-### Registration and Unregistration
+### Registering and Unregistering
 
 | Method | Description |
 |------|------|
@@ -9603,10 +9748,10 @@ STANDARD_EVENTS = {
 
 | Method | Description |
 |------|------|
-| `await lifecycle.emit(event, data=None, *, to=None)` | Asynchronous trigger, handlers execute **in parallel** (non-blocking each other, returns when all complete), returns non-None values in order of priority to chain-replace data; `to` specifies owner for directed delivery |
-| `lifecycle.fire(event, data=None, *, to=None)` | **Background emission (fire-and-forget)**: handlers execute in background tasks in parallel, no waiting, no return value; zero overhead if no listeners; suitable for high-frequency hot paths and pure observation events; for shutdown sequences and ordered consumption (e.g., `config.set`) use `emit` |
-| `lifecycle.emit_sync(event, data=None, *, to=None)` | Synchronous trigger, asynchronous handlers scheduled with create_task |
-| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | Backward compatible, automatically builds standard event format; `background=True` uses `fire` background emission |
+| `await lifecycle.emit(event, data=None, *, to=None)` | Asynchronous trigger, handlers execute **in parallel** (do not block each other, return when all complete), return non-None values replay in priority order; `to` specifies owner for targeted delivery |
+| `lifecycle.fire(event, data=None, *, to=None)` | **Background emission (fire and forget)**: Handlers execute in background tasks in parallel, no waiting, no return value; zero overhead if no listeners; suitable for high-frequency hot paths and pure observation events; shutdown sequences and order-sensitive consumption (e.g., `config.set`) use `emit` |
+| `lifecycle.emit_sync(event, data=None, *, to=None)` | Synchronous trigger, asynchronous handlers scheduled via create_task |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | Backward compatible, automatically constructs standard event format; `background=True` uses `fire` background emission |
 
 ### Utilities
 
@@ -9642,7 +9787,7 @@ class Main(BaseModule):
         # Configuration change audit
         @sdk.lifecycle.on("config.set")
         def audit(data):
-            sdk.logger.info(f"Configuration changed: {data['key']} = {data['new_value']}")
+            sdk.logger.info(f"Configuration change: {data['key']} = {data['new_value']}")
 ```
 
 ## Background Task Ownership and Automatic Cancellation
@@ -9650,19 +9795,19 @@ class Main(BaseModule):
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Background tasks created by modules, if not cancelled in `on_unload`, will hold a reference to `self`, preventing the module instance from being garbage collected (residual old instances after hot reload). The framework provides the following fallback mechanism:
+Background asyncio tasks created by modules that are not canceled in `on_unload` will retain a reference to `self`, preventing the module instance from being collected (old instances remain after hot reload). The framework provides the following fallback mechanisms:
 
-- **`self.spawn(coro)`** (recommended within modules): Tasks are automatically assigned to the module name. When the module is unloaded, the framework automatically cancels unfinished tasks after `on_unload` and logs a warning.
-- **`spawn_background(coro)`** (in `ErisPulse.runtime`): Automatically captures the current `owner_scope` context; `cancel_owner_tasks(owner)` cancels by assignment, `cancel_all_background_tasks()` is provided for `sdk.uninit()` fallback.
-- **Adapters**: Background tasks under platform names are also automatically cancelled on shutdown.
+- **`self.spawn(coro)`** (recommended within modules): Tasks are automatically assigned to the module name, and the framework cancels unfinished tasks and logs warnings after `on_unload` in the module unload process
+- **`spawn_background(coro)`** (in `ErisPulse.runtime`): Automatically captures the current `owner_scope` context; `cancel_owner_tasks(owner)` cancels by assignment, `cancel_all_background_tasks()` is provided for `sdk.uninit()` fallback
+- **Adapters**: Background tasks under the platform name are also canceled as a fallback when stopping
 
 ```python
 async def on_load(self, event):
-    # Recommended: Use self.spawn() for background tasks, framework automatically cancels on unload
+    # Recommended: Use self.spawn() for background tasks; framework automatically cancels as fallback after unload
     self.spawn(self._poll())
 
 async def on_unload(self, event):
-    # For fine control, still recommend manually cancelling and awaiting completion
+    # For fine-grained control, still recommend manually canceling and waiting for completion
     if self._poll_task:
         self._poll_task.cancel()
         await asyncio.gather(self._poll_task, return_exceptions=True)
@@ -9674,17 +9819,17 @@ async def _poll(self):
 ```
 
 > [!IMPORTANT]
-> The framework's fallback is **forced cancellation** (`cancel_owner_tasks`), which occurs after `on_unload` returns. Therefore, tasks requiring graceful completion (flush buffers, persist state, close connections) **must** be manually cancelled and awaited in `on_unload`—don't expect the fallback to preserve cleanup logic. The framework only guarantees "no residual tasks holding `self`", not "graceful". For tasks requiring `await` results, directly `await` instead of dropping them into background tasks.
+> Framework fallback is **forced cancel** (`cancel_owner_tasks`), which occurs after `on_unload` returns. Therefore, tasks requiring graceful termination (flush buffers, persist state, close connections) **must** be manually `cancel()` + `await` in `on_unload`—don't rely on the fallback to preserve termination logic. The framework only guarantees that "no tasks holding `self` are left behind," not "graceful termination." For tasks requiring `await` results, directly `await`, don't delegate to background tasks.
 
 ## Notes
 
-1. **Handlers can be synchronous or asynchronous**: The system automatically identifies and calls them correctly.
-2. **Data passing**: In `emit()` mode, if a handler returns a non-None value, it modifies the data passed to subsequent handlers.
-3. **Event naming conventions**: Use dot-structure event names for easier parent event listening.
-4. **Error isolation**: An exception in a single handler does not affect the execution of other handlers.
-5. **Synchronous trigger limitation**: In `emit_sync()`, asynchronous handlers are scheduled fire-and-forget, and return values cannot be returned.
-6. **Lifecycle cleanup**: When `sdk.uninit()` is called, all registered handlers and timers are cleared.
-7. **Loading priority**: If you need to listen to events during the framework initialization phase, set a high priority and disable lazy loading.
+1. **Handlers can be synchronous or asynchronous**: The system automatically recognizes and calls them correctly
+2. **Data passing**: In `emit()` mode, handlers returning non-None values modify the data passed to subsequent handlers
+3. **Event naming conventions**: Use dot-structure event names for easier parent listening
+4. **Error isolation**: An exception in a single handler does not affect other handler executions
+5. **Synchronous trigger limitations**: In `emit_sync()`, asynchronous handlers are scheduled fire-and-forget, and return values cannot be returned
+6. **Lifecycle cleanup**: When `sdk.uninit()` is called, all registered handlers and timers are cleared
+7. **Loading priority**: If you need to listen to events during the framework initialization phase, set a high priority and disable lazy loading
 
 
 
@@ -9727,7 +9872,7 @@ When a module is first accessed, `LazyModule` performs the following operations:
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Modules with `lazy_load=True` are loaded only on their **first attribute access** by default. If a module registers command/event handlers, the traditional approach would require `lazy_load=False` to load immediately. `activate_on` provides a third option: **declare triggers, and the module activates automatically when the first matching event/command arrives**—neither staying in memory constantly nor losing the trigger entry.
+Modules with `lazy_load=True` are loaded by default only on the **first attribute access**. If a module registers command/event handlers, the traditional approach is to set `lazy_load=False` for immediate loading. `activate_on` provides a third option: **declaring triggers, and automatically activating the module when the first matching event/command arrives**—keeping it out of memory unless needed, while not losing the trigger entry point.
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -9741,12 +9886,12 @@ class MyModule(BaseModule):
                 # ---- Event triggers (passive arrival, no user awareness) ----
                 "message",                                    # Type-level: any message event
                 {"notice": "group_member_increase"},          # Type + single detail_type
-                {"message": ["private", "group"]},            # Type + multiple detail_types
+                {"message": ["private", "group"]},            # Type + multiple detail_type
 
                 # ---- Command triggers (active input, placeholder commands visible in Help) ----
                 {"command": "roll"},                          # Shorthand: command name
                 {"command": ["roll", "dice"]},                # List of command names
-                {"command": {                                 # Dict declaration (name required)
+                {"command": {                                 # Dict declaration (name is required)
                     "name": "dice",
                     "help": "Roll a dice",
                     "usage": "/dice",
@@ -9764,35 +9909,74 @@ The dict form mirrors the user-level parameters of the `@command()` decorator, u
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `name` | `str` | **Required** | Command name; must match `@command(name)` in `on_load`, otherwise the placeholder is unregistered after activation, and the command becomes unavailable |
-| `help` | `str` | Fallback chain | Description shown in Help; if not declared, falls back to the chain (see below) |
+| `name` | `str` | **Required** | Command name; must match `@command(name)` in `on_load`, otherwise the placeholder is unregistered and the command does not exist after activation |
+| `help` | `str` | Fallback chain | Description displayed in Help; if not declared, falls back to the chain (see below) |
 | `usage` | `str` | Auto-generated | Usage line, defaulting to `{prefix}{name}` |
 | `group` | `str` | `None` | Command group |
 | `aliases` | `list[str]` | `[]` | Aliases are registered simultaneously; **inputting an alias also triggers activation** |
-| `hidden` | `bool` | `False` | If `True`, the placeholder command is hidden (aligned with the hidden semantics of the activated real command); users who know the command name can still trigger activation |
+| `hidden` | `bool` | `False` | If `True`, the placeholder command is also hidden (aligning with the hiding semantics of the real command after activation); users who know the command name can still trigger it by input |
 
-**Not supported**: `priority` / `permission` / `master`: The placeholder command's role is only to trigger activation. Permission checks are performed by the real command after activation (blocking permissions at the placeholder stage would make "activating on command input" ineffective).
+**Not supported**: `priority` / `permission` / `master`: The placeholder command's role is only to trigger activation; permission checks are performed by the real command after activation (blocking permissions during the placeholder phase would otherwise make "activating by command input" ineffective).
 
 ### Placeholder Command Help Fallback Chain
 
-When the module is not loaded, the Help displays command descriptions according to the following priority (first match wins):
+When the module is not loaded, the command description shown in Help is taken from the following sequence (the first found value is used):
 
-1. The command-level `help` declared in the dict (most precise)
-2. The module's `get_meta()` `description`
-3. The module's `__description__` attribute
-4. The package metadata's `Summary` (PyPI package summary)
-5. Generic prompt: "This command comes from a lazy-loaded module X. The module will be automatically loaded on first use."
+1. Command-level `help` declared in the dict (most precise)
+2. Module `get_meta()`'s `description`
+3. Module `__description__` attribute
+4. Package metadata's `Summary` (PyPI package summary)
+5. Generic prompt: "This command comes from a lazy-loaded module X, which will be automatically loaded on first use"
 
 ### Trigger Semantics
 
-- **Event stub**: Registered to the corresponding event manager with very low priority (`ACTIVATION_STUB_PRIORITY`), acting as a fallback after all regular handlers; after activation, the current event is forwarded to the module's real handler
+- **Event stub**: Registered to the corresponding event manager at a very low priority (`ACTIVATION_STUB_PRIORITY`), acting as a fallback after all ordinary handlers; after activation, the current event is forwarded to the module's real handler
 - **Command stub**: Registers a placeholder command; after activation, the placeholder is unregistered, and the real command takes over the current trigger
-- **Reentrancy protection**: An `asyncio.Lock` ensures activation occurs only once, even under concurrent triggers
-- **Scope filtering**: The stub includes the module owner identity, and does not trigger if the module is not enabled for the Bot / session / platform
-- **Failure semantics**: Activation failure does not retry; the stub is also unregistered
-- **Deduplication**: When mixing shorthand and dict declarations of the same command name, deduplication occurs (dict takes precedence); if the dict is missing `name` or the event `detail_type` is incorrectly written as a dict, a warning is issued and it is ignored
+- **Reentrancy protection**: An `asyncio.Lock` ensures activation occurs only once even under concurrent triggers
+- **Scope filtering**: The stub carries the module owner's identity; it does not trigger if the module is not enabled for the Bot / session / platform
+- **Failure semantics**: Activation failure enters a cooldown period (`ACTIVATE_RETRY_COOLDOWN_SECS`, 30 seconds); during cooldown, events are short-circuited to avoid repeated attempts; after cooldown, the trigger is automatically retried, and the stub remains throughout
+- **Deduplication**: When mixing shorthand and dict declarations for the same command name, deduplication occurs (dict takes precedence); if `name` is missing in dict or `detail_type` is miswritten as dict for events, a warning is issued and the entry is ignored
 
-> For architecture diagrams and full semantics, see [Architecture Overview](../architecture.md#event-driven-lazy-activationactivate_on-trigger-architecture).
+> For an architecture diagram and full semantics, see [Architecture Overview](../architecture.md#event-driven-lazy-activationactivate-on-trigger-architecture).
+
+## Dormant After (Lazy Loading Sleep)
+
+> [!NOTE]
+> This feature requires ErisPulse **2.11.0+**.
+
+After a lazy-loaded module remains idle for an extended period, the framework can **put it to sleep**: releasing runtime resources (associated tasks / connections / event registrations), while retaining the lazy-loading proxy and registration stubs. The module returns to a "registered but unloaded" state, and is transparently awakened next time a property is accessed, `module.call`, or an `activate_on` event occurs (it is re-instantiated and `on_load` is executed again), without requiring any explicit wake-up API. After being put to sleep, the system state is identical to that of a module that has never been activated.
+
+### Declaration Method
+
+```python
+@staticmethod
+def get_load_strategy():
+    return ModuleLoadStrategy(
+        lazy_load=True,
+        dormant_after="30m",   # Automatically put to sleep after 30 minutes of inactivity; omitting this means never sleeping (default)
+    )
+```
+
+The duration syntax is identical to the `cooldown` used in command governance (`90s` / `1h30m` / `1d`). The cleanup scanner runs at a fixed interval (60 seconds) and the actual sleep time is the threshold plus at most one scan interval; manual sleep can also be triggered at any time: `await sdk.module.sleep("module name")`. Explicit `unload` still completely unloads the module (including removing the lazy proxy).
+
+### State Continuation
+
+Before being put to sleep, the framework triggers `on_before_unload(reason="dormant")` (the first step in the unload pipeline, with resources still intact), and the module saves its state to `sdk.storage`. After being awakened, the state is restored in `on_load`:
+
+```python
+async def on_before_unload(self, event):
+    if event["reason"] in ("dormant", "reload", "disable"):
+        await self.sdk.storage.aset(f"{self._module_name}:counter", self._count)
+
+async def on_load(self, event):
+    self._count = await self.sdk.storage.aget(f"{self._module_name}:counter") or 0
+```
+
+### Semantics and Boundaries
+
+- **Safe for Dependencies**: Lazy modules are accessed by their dependents through persistent proxies (`sdk.<Name>`) or `module.call`, and their behavior remains consistent before and after being put to sleep; directly holding a reference to the actual instance is an anti-pattern (visible to the leak auditor)
+- **Events Not Delivered**: A module that is put to sleep no longer receives events—modules that require event-based awakening should also declare `activate_on` (the event first awakens then forwards); when troubleshooting "no command response," confirm whether the module is in a dormant state
+- **Self-Healing on Wake-Up Failure**: If the wake-up (re-initialization) fails, a 30-second cooldown is entered, after which subsequent access automatically retries, preventing permanent failure
 
 ## Configuring Lazy Loading
 
@@ -11598,53 +11782,53 @@ finally:
 
 ## Restart
 
-The SDK provides two restart methods, neither requiring you to manually unload first—the framework handles it itself:
+The SDK provides two restart methods, both of which do not require you to manually uninstall first—the framework handles it automatically:
 
-| Method | Call | Behavior | Use Cases |
-|--------|------|----------|-----------|
-| Hot Restart | `await sdk.restart()` | Same process, `uninit()` then `init()` again, reload adapters/modules | Reload configuration, hot update modules |
-| Hard Restart | `await sdk.hard_restart()` | `uninit()` then exit process with **exit code 42**, restarted by external supervisor | Suspected memory/resource leak, need completely clean restart |
+| Method | Call | Behavior | Applicable Scenarios |
+|------|------|------|----------|
+| Hot Restart | `await sdk.restart()` | Hot reload at the component layer code level within the same process: all modules and adapters follow a unified reload pipeline (syntax pre-check / snapshot rollback / identity verification), without overall `uninit()` / `init()` | To make code changes effective after pip upgrading components, or for hot module updates |
+| Hard Restart | `await sdk.hard_restart()` | Exit the process with exit code 42 after `uninit()`, and let an external supervisor launch a new process | When suspecting memory/resource leaks, or needing a completely clean restart |
 
 ```python
-# Hot Restart: Reload within the same process (most commonly used)
+# Hot restart: component layer code-level hot reload (most commonly used)
 await sdk.restart()
 
-# Hard Restart: Exit process, handed over to external supervisor for restart (see "Supervisor Guide" below)
+# Hard restart: exit the process and let an external supervisor restart it (see "Supervisor Guide" below)
 await sdk.hard_restart()
 ```
 
 > **Two points to note**:
-> 1. These methods execute restart in the background task and **immediately return `True` indicating "restart task scheduled"**, not "restart completed". Actual restart happens in the background to avoid interrupting the current event chain.
-> 2. The principle of `hard_restart()` is: after uninit and flush configuration, exit the process with **exit code 42** (`HARD_RESTART_EXIT_CODE`)—**it does not start a new process itself**. It must be restarted by an external supervisor detecting exit code 42. If running directly via `python main.py` without any supervisor, the process ends with code 42 and **will not automatically restart** (the framework will warn).
+> 1. Both methods execute the restart as a background task, immediately returning `True` to indicate that the "restart task has been scheduled," not that the restart has completed. The actual restart occurs in the background, avoiding interruption of the current event chain.
+> 2. The principle of `hard_restart()` is: after uninstalling and flushing configuration, the process exits with **exit code 42** (`HARD_RESTART_EXIT_CODE`) — it **does not launch a new process itself**. It must be restarted by an external supervisor that detects exit code 42. If you run `python main.py` directly without any supervisor, the process ends after exiting with code 42, and **does not automatically restart** (the framework will issue a warning message).
 
-### When to Use Hard Restart?
+### When should I use a hard restart?
 
-Hard restart is not just a "more thorough restart," it is more suitable and even more efficient in the following scenarios compared to hot restart:
+A hard restart is not just a "more thorough restart." It is more suitable, and even more efficient, in the following scenarios compared to a hot restart:
 
-- **Binary Library (C Extension) Side Effects**: Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources; hard restart switches to a new process, thoroughly clearing these side effects.
-- **Resource Leak Diagnosis**: When suspecting memory or handle leaks, hard restart provides a clean environment.
-- **Frequent Restart with Performance Sensitivity**: Hard restart avoids the overhead of unloading and reloading within the same process, making it more efficient than hot restart in practice.
+- **Side effects of binary libraries (C extensions):** Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources. A hard restart switches to a new process, thoroughly clearing these side effects.
+- **Resource leak troubleshooting:** When suspecting memory or handle leaks, a hard restart provides a clean environment.
+- **Frequent restarts sensitive to performance:** A hard restart avoids the overhead of unloading and reloading within the same process, making it more efficient than a hot restart.
 
-> The "Framework Restart" function in the Dashboard management panel calls `hard_restart()` underneath.
+> The "Framework Restart" function in the Dashboard management panel internally calls `hard_restart()`.
 
 ### Exit Code 42 Contract
 
-Hard restart is cross-process collaboration: **SDK is responsible for exiting (code 42), supervisor is responsible for restarting**.
+A hard restart involves cross-process collaboration: **the SDK is responsible for exiting (code 42), and the supervisor is responsible for launching**.
 
 | Role | Behavior |
-|------|----------|
-| SDK (when hard restarted) | `uninit()` → flush configuration → `os._exit(42)` |
+|------|------|
+| SDK (when hard restarted) | `uninit()` → flush configuration to disk → `os._exit(42)` |
 | Supervisor | Detects child process exit code 42 → restart the same command |
 
-> `sdk.is_supervised()` can query whether the current process is started by a supervisor (detects environment variable `ERISPULSE_SUPERVISED`). CLI `run` command starts a subprocess and automatically injects this marker; external supervisors like systemd / Docker do not inject it, `is_supervised()` returns `False`, and in this case, the framework will warn "supervisor not detected" after hard restart.
+> `sdk.is_supervised()` can query whether the current process was started by a supervisor (detects the environment variable `ERISPULSE_SUPERVISED`). The CLI `run` command injects this mark automatically when starting a child process; external supervisors like systemd or Docker do not inject it, so `is_supervised()` returns `False`, and the framework will issue a "supervisor not detected" warning after a hard restart.
 
 ### Supervisor Guide
 
-Choose the supervisor that suits you to make hard restart truly effective:
+Choose a supervisor suitable for your needs to make hard restart truly effective:
 
 #### 1. CLI run command (development/simple deployment, recommended)
 
-`epsdk run main.py` includes an internal supervision loop: detects the child process exit code, restarts immediately if it's 42; other abnormal exit codes retry with exponential backoff; `Ctrl+C` first gracefully terminates the child process (code 0 is considered normal exit, no restart).
+`epsdk run main.py` includes a built-in supervision loop: it detects the child process exit code, restarts immediately if it is 42; otherwise, it retries with exponential backoff for abnormal exit codes; `Ctrl+C` first gracefully terminates the child process (code 0 is considered normal exit, and no restart is triggered).
 
 ```bash
 epsdk run main.py
@@ -11652,7 +11836,7 @@ epsdk run main.py
 
 #### 2. systemd (Linux server)
 
-`RestartForceExitStatus=42` makes exit code 42 trigger a restart (default `on-failure` only applies to non-zero codes):
+`RestartForceExitStatus=42` makes exit code 42 trigger a restart (by default `on-failure` only applies to non-zero codes):
 
 ```ini
 [Service]
@@ -11665,7 +11849,7 @@ User=mybot
 
 #### 3. Docker / docker-compose
 
-The container's PID 1 is the application process, and exit code 42 causes the container to exit—use `restart` policy to automatically restart it:
+The container's PID 1 is the application process. After exiting with code 42, the container exits — use the `restart` policy to make it automatically restart:
 
 ```yaml
 services:
@@ -11678,7 +11862,7 @@ services:
 
 ```bash
 pm2 start main.py --name mybot --interpreter python3
-# 42 is treated as an exit code, PM2 defaults to restart; set restart_delay to debounce
+# 42 is treated as an exit code, PM2 defaults to restarting; set restart_delay to prevent jitter
 pm2 set mybot.restart_delay 2000
 ```
 
@@ -11688,10 +11872,10 @@ pm2 set mybot.restart_delay 2000
 [program:mybot]
 command=python3 /opt/mybot/main.py
 autorestart=true
-exitcodes=0,2,42    # 42 is also considered "normal exit requiring restart"
+exitcodes=0,2,42    # 42 is also treated as "normal exit requiring restart"
 ```
 
-#### 6. Pure Python Custom Supervisor
+#### 6. Pure Python custom supervisor
 
 ```python
 import subprocess, sys, time
@@ -11704,10 +11888,10 @@ while True:
         continue
     if code == 0:           # Normal exit
         break
-    time.sleep(3)           # Exception exit, backoff retry
+    time.sleep(3)           # Abnormal exit, retry with backoff
 ```
 
-> **Behavior without supervisor**: Running directly via `python main.py`, calling `hard_restart()` exits the process with code 42 and does not restart. In this case, you should integrate one of the above supervisors.
+> **Behavior without a supervisor:** Running directly with `python main.py`, calling `hard_restart()` causes the process to exit with code 42 and not restart. In this case, you should integrate one of the above supervisors.
 
 
 

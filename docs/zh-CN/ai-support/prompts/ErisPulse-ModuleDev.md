@@ -319,7 +319,7 @@ flowchart TD
 
 ## 模块热重载架构
 
-热重载对**全部模块来源**一致：本地插件可监控文件变更自动触发，任意模块也可通过 `sdk.reload_module()` / `sdk.module.reload()` 手动重载（PyPI 安装包模块在 pip 升级后调用即可生效）；`sdk.reload_all_modules()` / `sdk.module.reload_all()` 可一次全量重载所有已注册模块（pip 批量升级后调用即可全部生效）：
+热重载对**全部模块来源**一致：本地插件（`plugins/` 目录）、运行时注册（`sdk.module.register()`）、PyPI 安装包模块均可通过 `sdk.reload_module()` / `sdk.module.reload()` 热重载——**默认即全量重载**（按顶层包名清理 import 缓存并重导依赖者代码，`full=False` 为轻量逃生门）；`sdk.reload_all_modules()` / `sdk.module.reload_all()` 可一次全量重载所有已注册模块（pip 批量升级后调用即可全部生效）：
 
 ```mermaid
 flowchart TD
@@ -329,30 +329,66 @@ flowchart TD
     D --> E["变更去抖（默认 1 秒）"]
     E --> F["_handle_change 解析插件名<br/>（单文件 / 包形式）"]
     F --> G["asyncio.run_coroutine_threadsafe<br/>调度回主事件循环"]
-    G --> H["sdk.reload_module(name, full=…)<br/>（也可对任意模块手动调用）"]
-    H --> I["卸载旧实例（触发 on_unload）<br/>收集依赖者准备级联重载"]
-    I --> J{"模块来源？"}
-    J -->|"plugin_folder"| K["清理注册与插件 sys.modules<br/>重扫描 plugins/ 目录"]
-    J -->|"PyPI 安装包"| L["清理注册 + 按 top_level 清理包<br/>sys.modules 子树（full=True 时叠加<br/>旧模块对象顶层段兜底）<br/>刷新导入缓存后重查 entry-point"]
-    K --> M["重新 register + load"]
-    L --> M
-    M --> N["挂载新实例到 sdk 属性"]
-    N --> O["级联重载依赖者<br/>（插件完整重载 / PyPI 重新实例化；<br/>full=True 时依赖者同样重导代码）"]
-    K -.->|"文件已删除"| P["从加载结果移除"]
-    L -.->|"entry-point 已消失（已卸载）"| P
+    G --> H["sdk.reload_module(name, full=True 默认)<br/>（也可对任意模块手动调用）"]
+    H --> I["语法预检（逐文件解析）<br/>失败即拒绝重载，旧实例继续服务"]
+    I --> J["卸载旧实例（on_before_unload → on_unload）<br/>收集依赖者准备级联重载"]
+    J --> K{"模块来源？"}
+    K -->|"plugin_folder"| L["清理注册与插件 sys.modules<br/>重扫描 plugins/ 目录"]
+    K -->|"runtime 运行时注册"| M["按定义模块清缓存重导<br/>按类名重取（__main__ 守卫）"]
+    K -->|"PyPI 安装包"| N["清理注册 + 按 top_level 清理包<br/>sys.modules 子树 + __pycache__ 字节码<br/>（元数据缺失时按旧模块对象顶层段兜底）<br/>刷新导入缓存后重查 entry-point"]
+    L --> O["重新 register + load"]
+    M --> O
+    N --> O
+    O --> P["挂载新实例到 sdk 属性<br/>核对新旧类身份（假重载告警）"]
+    P --> Q["级联重载依赖者<br/>（插件/运行时完整重载；<br/>PyPI 依赖者默认同样重导代码）"]
+    L -.->|"文件已删除"| R["从加载结果移除"]
+    M -.->|"定义不可安全重导"| R
+    N -.->|"entry-point 已消失（已卸载）"| R
 ```
 
-**两种来源的差异仅在发现阶段**，注册、加载、级联重载完全一致：
+**三种来源的差异仅在发现阶段**，预检、卸载、级联重载完全一致：
 
 - **本地插件**（`moduleInfo.meta.source == "plugin_folder"`）：清理插件名对应 `sys.modules` 后重扫描 `plugins/` 目录；文件已删除则从加载结果移除
+- **运行时注册**（`source == "runtime"`）：按定义模块重导、按类名重取并重建注册；定义于 `__main__` / 无源文件的类拒绝重导（守卫告警，避免重执行入口脚本）
 - **PyPI 安装包**：按 `meta.top_level` 清理包的 `sys.modules` 子树，刷新导入缓存（突破 entry-point 60 秒缓存）后重查并重新导入；entry-point 已消失（pip 卸载）则从加载结果移除
 
-**全量重载（`full=True`）与整体重载（`reload_all_modules`）：**
+**默认语义与可靠性保障（2.11）：**
 
-- `top_level` 元数据缺失且无法推导时，默认重载**不清理** import 缓存（重导入复用旧模块对象，即"假重载"），框架会显式告警并建议改用 `full=True`——全量重载会叠加旧模块对象顶层包名兜底清理，确保重载后运行最新代码
-- `full=True` 时 PyPI 依赖者级联走完整重载（重导代码），默认模式仅重新实例化（既有语义）
-- 重载会把原本懒加载的模块强制激活（无提示的差异已改为显式日志）；`reload_all_modules()` 则保持懒加载策略、仅将重载前处于已加载态的模块重新激活
+- **reload 即全量重载**：默认按顶层包名清理 `sys.modules` 并重导依赖者代码；`full=False` 仅按元数据清理、PyPI 依赖者直接重新实例化（超大依赖树的性能逃生门）
+- **语法预检闸门**：进入卸载流程之前逐文件语法解析，失败即拒绝重载——旧实例未卸载、继续服务，语法错误永远不会把模块推进"半死状态"（超大包超过文件数上限时跳过预检）
+- **缓存兜底**：`top_level` 元数据缺失时按「旧模块对象 `__name__` 前缀 → 模块类 `__module__` 前缀」两级推导清理范围；重载同时清除源文件字节码缓存（`__pycache__`），同秒同长度的小改写也能生效
+- **身份核对**：重载成功后断言新旧类身份变化，未变化（C 扩展等清不掉的缓存）显式告警并随 `module.reload` 事件携带 `identity_changed: false`；`module.get_info()` 以 `running_identity` / `stale` 字段暴露"注册版本 ≠ 运行版本"
+- **失败可查**：load 失败现场（异常 + traceback）可经 `module.last_error(名字)` / `get_info()["last_error"]` 直接查询，失败路径同时清洗该模块 import 缓存——"改完代码再 reload 一次"必定读到新代码
+- 重载会把原本懒加载的模块强制激活（显式日志）；`reload_all_modules()` 则保持懒加载策略、仅将重载前处于已加载态的模块重新激活，归眠（休眠）中的模块保持归眠
 - `reload_all_modules()` 按依赖拓扑序重新加载，单模块失败仅记录诊断并跳过（无整体回滚——on_unload 副作用不可撤销，与单模块热重载的尽力而为语义一致）；重载失败已回滚的场景同样如此，日志会明确提示旧实例处于已收尾状态
+
+## 适配器热重载架构
+
+适配器代码级热重载（2.11）与模块管线同构：`sdk.adapter.reload(平台名)` / `sdk.reload_adapter(平台名)` 对**本地插件**与 **PyPI 安装包**两种来源执行——
+
+```mermaid
+flowchart TD
+    A["sdk.adapter.reload(平台名)"] --> B["语法预检（逐文件解析）<br/>失败即拒绝重载，旧适配器继续服务"]
+    B --> C["快照：adapterInfo / 实例 / 启动态 /<br/>启动任务 / bots / sys.modules 条目"]
+    C --> D["unload（shutdown 即清理：<br/>路由/事件/命令/任务/连接/bot offline + 注销）"]
+    D --> E["清缓存：__pycache__ 字节码 →<br/>sys.modules 子树 → invalidate_caches<br/>→ finder 缓存 → 插件路径记录"]
+    E --> F{"来源？"}
+    F -->|"插件目录"| G["重扫描 plugins/（discover_adapters）"]
+    F -->|"PyPI 安装包"| H["重查 entry-point 并重导入<br/>（top_level 清理 + 类 __module__ 兜底）"]
+    G --> I["重新 register + startup（原运行态）<br/>核对类身份（假重载告警）"]
+    H --> I
+    I --> J["adapter.reload 事件<br/>identity_changed / version_old→new / was_started"]
+    G -.->|"插件已删除"| K["从加载结果移除"]
+    H -.->|"entry-point 已消失"| K
+    I -.->|"失败"| L["回滚：恢复 sys.modules /<br/>注册存根 / 实例 / 启动态"]
+```
+
+**与模块管线的差异：**
+
+- 适配器无懒加载与依赖级联：重载**不级联**依赖它的其它适配器（仅告警——依赖方经注册表间接消费，无实例级联语义）
+- 启动是异步链（`startup` 经 `_run_adapter` 派发，含依赖跳过与指数退避重试）：启动暂时失败**不判重载失败**（代码已换新），结果经 `adapter.status.change` 播报
+- `register()` 的实例重用陷阱（类同对象则旧实例被复用）由「pyc 清理 + sys.modules 清除 + 身份核对」三件套兜底
+- 生命周期事件：`adapter.reload`（payload 携带 `adapter_name` / `success` / `full` / `duration_ms` / `identity_changed` / `version_old→new` / `was_started` / `source`）
 
 
 
@@ -2533,7 +2569,9 @@ class MyModule(BaseModule):
 > `depends` 声明的模块如果未注册，当前模块将被跳过并记录警告。加载顺序由拓扑排序决定，同层级按 `priority` 降序。
 
 > [!NOTE]
-> **级联卸载 / 级联重载**（ErisPulse **2.8.0+**）：卸载被其它模块依赖的模块时，依赖它的模块会**先被级联卸载**（日志说明级联链）；热重载任意模块（本地插件 / PyPI 安装包）时，依赖它的模块同样**级联重载**，避免依赖者持有失效实例引用继续运行。声明循环依赖会在加载时以 `RuntimeError` 拒绝。
+> **级联卸载 / 级联重载**（ErisPulse **2.8.0+**）：卸载被其它模块依赖的模块时，依赖它的模块会**先被级联卸载**（日志说明级联链）；热重载任意模块（本地插件 / 运行时注册 / PyPI 安装包）时，依赖它的模块同样**级联重载**，避免依赖者持有失效实例引用继续运行。声明循环依赖会在加载时以 `RuntimeError` 拒绝。
+>
+> **reload 即全量重载**（ErisPulse **2.11.0+**）：`reload()` 默认按顶层包名清理 import 缓存并重导依赖者代码，卸载前自动语法预检（失败拒绝卸载、旧实例继续服务），成功后核对代码身份（假重载告警 / `stale` 标记）；load 失败现场可经 `sdk.module.last_error(名字)` 直接查询（含 traceback）。
 
 ### on_load 方法
 
@@ -2564,6 +2602,25 @@ async def on_unload(self, event):
 ```
 
 > 后台任务的创建与清理（`self.spawn()` / 框架兜底取消）详见 [生命周期管理](../../advanced/lifecycle.md#后台任务归属与自动取消)。
+
+### on_before_unload 方法
+
+> [!NOTE]
+> 本钩子需要 ErisPulse **2.11.0+**。
+
+卸载流水线**第一步**（先于 `on_unload` 与资源回收）触发的可选钩子——此时模块的一切
+资源仍然完好，适合在卸载 / 归眠 / 重载前把状态保存到 `sdk.storage`，下次 `on_load`
+恢复（懒加载休眠的状态接续即基于此）：
+
+```python
+async def on_before_unload(self, event):
+    # event["reason"] 标注来意：unload / reload / disable / cascade / dormant
+    if event["reason"] in ("reload", "dormant"):
+        await self.sdk.storage.aset(f"{self._module_name}:state", self.collect_state())
+```
+
+钩子失败仅告警，不阻塞卸载流程；未声明该钩子的模块行为不变。归眠 / 唤醒语义详见
+[懒加载休眠](../../advanced/lazy-loading.md#懒加载休眠dormant_after)。
 
 ### 卸载与彻底卸载（purge）
 
@@ -4255,6 +4312,35 @@ print(final_verdict(records))           # 总结论
 
 `cooldown=` / `rate_limit=` / `usage_limit=` 命中时**默认静默丢弃**（命令仍被认领，不漏给低优先级处理器），容易误判为"命令坏了"：现象是部分用户可用、部分用户无响应，且决策链中出现对应 `stage` 的 `dropped` 记录。`deprecated=` 命令则表现为调用时自动回复废弃文案（`deprecated_reject=True` 时拒绝执行）。
 
+## 场景四：改了代码 reload 后还是旧行为（2.11+）
+
+按顺序核对：
+
+1. **看返回值与失败现场**：`reload` / `load` 返回 `False` 时，直接调用
+   `sdk.module.last_error("模块名")`——返回异常与完整 traceback（含出错行号），
+   无需翻日志文件；`module.get_info(名字)["last_error"]` 同源。
+2. **语法错误不会卸载**：reload 在卸载前做语法预检，失败即拒绝（旧实例继续服务），
+   日志给出文件 + 行号；修好语法再 reload 即可。
+3. **身份未变化告警**：日志出现"重载后代码身份未变化"或事件 `identity_changed: false`
+   时，说明进程内仍运行旧代码（常见于 C 扩展等无法清除的缓存）——这类模块需要重启框架。
+4. **确认模块来源可重导**：运行时注册（`sdk.module.register()`）的模块，类定义在
+   `__main__` / 入口脚本内时拒绝重导（守卫告警）；请把类移入可导入的模块文件。
+5. **懒加载模块被强制激活**：重载会把原本懒加载的模块激活（显式日志）；归眠
+   （休眠）中的模块保持归眠。
+
+## 场景五：模块"明明启用却收不到事件"（懒加载休眠，2.11+）
+
+声明了 `dormant_after` 的懒加载模块闲置超阈值后会**自动归眠**：运行时资源释放、
+事件处理器注销，因此不再接收事件（`activate_on` 声明的事件除外——事件先唤醒再转发）。
+
+- 确认是否归眠：日志中检索"已归眠" / `module.sleep` 事件，或观察
+  `sdk.module.get_status_summary()` 中该模块不再是 `loaded`
+- 立即唤醒：任意属性访问（`sdk.模块名.任意属性`）或 `await sdk.module.call(...)`
+- 不希望自动归眠：去掉 `get_load_strategy()` 中的 `dormant_after` 声明
+- 状态是否丢失：归眠前会触发 `on_before_unload(reason="dormant")`，若模块未实现
+  该钩子保存状态，归眠即丢失内存态（与卸载一致）——需要接续状态请参考
+  [懒加载休眠](../advanced/lazy-loading.md#懒加载休眠dormant_after)
+
 ## 通用建议
 
 - 排查前先把日志调到 `DEBUG` / `TRACE`（配置见[开发者指南](README.md#调试技巧)），可以看到模块加载、路由注册、事件分发等框架内部流程；
@@ -5121,6 +5207,8 @@ epsdk config MyModule
 | 命令 | 别名 | 参数 | 说明 |
 |------|------|------|------|
 | `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | 运行指定脚本或 SDK |
+| `stop` | — | `[--force] [--pid PID]` | 停止正在运行的实例（由 `epsdk run` 启动） |
+| `restart` | — | `[--force] [--pid PID]` | 重启正在运行的实例（停止后按原参数重新启动） |
 
 ### run
 
@@ -5133,7 +5221,7 @@ epsdk config MyModule
 | 参数 | 说明 |
 |------|------|
 | `[script]` | 要运行的脚本文件，不指定则运行 SDK |
-| `--reload` | 启用热重载模式，监控文件变化自动重启 |
+| `--reload` | 启用热重载模式，监控文件变化自动触发组件级代码热重载（联动热重载系统，无需整进程重启） |
 | `--strict` / `--no-strict` | 临时开启 / 关闭严格模式（仅本次生效，不写入配置）；缺省跟随 `ErisPulse.framework.strict_mode` |
 
 **示例：**
@@ -5145,7 +5233,7 @@ epsdk run
 # 运行指定脚本文件
 epsdk run main.py
 
-# 热重载模式运行（文件变更自动重启）
+# 热重载模式运行（文件变更自动触发代码级热重载）
 epsdk run main.py --reload
 
 # SDK 热重载模式
@@ -5159,6 +5247,53 @@ epsdk run main.py --no-strict
 ```
 
 **启动前自检：** `run` 启动前会快速检查 `config/config.toml` 可解析性与已安装组件的必填配置完整性，严格性默认跟随 `ErisPulse.framework.strict_mode`（非 0 时检查失败即退出，0 时仅警告继续）。配置文件缺失视为正常首次启动，仅提示不判失败。`--strict` 临时开启：预检失败即退出，同时框架严格级别本次提升为至少 1（跳过不合规组件，经 `ERISPULSE_FRAMEWORK_STRICT_MODE` 环境变量传导到运行进程，不写入配置文件）；`--no-strict` 反之临时压到宽松。自检自身异常时自动跳过，不含网络探测，不会阻塞启动。
+
+### stop
+
+停止正在运行的 ErisPulse 实例（由 `epsdk run` 启动、并在同一项目目录下执行）。
+`run` 启动时会把监督进程 PID、当前框架子进程 PID 与原始启动命令写入
+`.erispulse/runtime.json`，`stop` 据此定位实例。
+
+**停止顺序：** POSIX 下先向监督进程发 SIGINT（与 Ctrl+C 同款优雅收尾路径——
+finally 链自动终止框架子进程），超时逐级升级 SIGTERM / SIGKILL；Windows 无
+进程信号语义，先终止框架子进程再终止监督进程（避免监督者把强杀误判为崩溃
+重新拉起）。
+
+**参数：**
+
+| 参数 | 说明 |
+|------|------|
+| `--force` | 跳过优雅停止，直接强制终止 |
+| `--pid PID` | 直接指定目标进程 PID（覆盖运行状态文件，用于非标启动方式） |
+
+**示例：**
+
+```bash
+# 停止当前项目的运行实例
+epsdk stop
+
+# 强制终止
+epsdk stop --force
+```
+
+### restart
+
+重启正在运行的 ErisPulse 实例：按 `stop` 的语义停止后，以状态文件中记录的
+**原始启动命令**重新启动（前台接管当前终端，新实例会写入新的运行状态文件）。
+
+**参数：** 同 `stop`（`--force` / `--pid PID`）。
+
+**示例：**
+
+```bash
+# 优雅重启（pip 升级适配器/模块后让代码生效；运行中模块也可用
+# sdk.reload_module / sdk.adapter.reload 代码级热重载，无需重启）
+epsdk restart
+```
+
+> [!NOTE]
+> `python main.py` 等绕过 `epsdk run` 的启动方式不会写运行状态文件——此类
+> 进程请用系统工具管理，或用 `epsdk stop --pid <PID>` 指定 PID。
 
 ---
 
@@ -7339,6 +7474,51 @@ reply = await event.wait_reply(session=True, prompt="哪位大佬帮忙答一下
   → 权限复查（scope 身份维度 + owner 模块维度，失败则终止等待）
   → 唤醒等待方 + 认领事件（mark_processed）
 ```
+
+## 声明式多轮：`.got()` 链（2.11+）
+
+`@command` 返回**多轮流控代理**，用 `.got()` 逐步声明收集步骤——步骤函数按
+参数名接收已收集的值（含命令入口参数），类型跟随 `type=` / 注解自动解析。
+底层编译到 Conversation：每步一个分支、跳转自动保存检查点，**重启后用户
+回复会从存档步骤继续**（恢复工厂在装饰期自动注册，随模块卸载自动注销）。
+
+```python
+@command("weather")
+async def weather(event):
+    pass  # 入口：首个 .got 的 prompt 会自动发送，无需手动提问
+
+@weather.got("city", prompt="请直接回复城市名")
+async def weather_city(event, city: str):
+    await event.reply(f"{city}：晴，25℃")
+
+@weather.got("days", prompt="预报几天？", type=int, retry_prompt="请输入数字")
+async def weather_days(event, city: str, days: int):
+    await event.reply(f"{city} 未来 {days} 天……")
+```
+
+### 参数说明
+
+| 参数 | 说明 |
+|------|------|
+| `name` | 收集值名称（注入后续步骤函数的参数名；流程内唯一，重复声明注册期报错） |
+| `prompt` | 进入该步骤时自动发送的提问 |
+| `timeout` | 单步等待超时（秒数或 `"90s"` / `"1h30m"` 时长串，默认 60s） |
+| `type` | 值类型（`int` / `float` / `str`…；解析失败自动重发 `retry_prompt`，最多 `max_retries` 次） |
+| `validator` / `pattern` / `regex` | 回复过滤与校验（语义与 [`wait_reply`](#等待回复wait_reply) 一致） |
+| `session` | 会话级等待（同会话任何人可命中） |
+| `cmdpass` | 命令放行三态（默认 `/cancel` 等命令在等待期间照常执行） |
+
+### 语义与边界
+
+- **任一步超时 / 被打断 → 整条流程结束**并清除检查点（与 `wait_reply` 语义一致）；
+  步骤函数内可随时 `event.reply(...)` 输出中间结果
+- **同一用户同时只能有一条挂起交互**——第二个流程的等待会顶掉前一个
+  （`InteractionCancelled("conflict")`）；需要互斥提示请配合
+  [会话租约](#会话互斥acquire--hold--get_owner_of)
+- 收集值仅存在于流程内；需要跨重启携带复杂状态的编排请直接使用
+  [Conversation](conversation.md)（`context` + `branch/goto` + 手动检查点）
+- `@command` 返回的是代理对象：调用行为、`__name__`、docstring、自定义属性
+  与原函数完全一致；`command.unregister(代理)` 自动解包
 
 ## 会话定时器：remind / escalate
 
@@ -9568,16 +9748,21 @@ def audit_config(data):
 | 钩子名称 | 触发时机 | 数据 |
 |---------|---------|------|
 | `module.register` | 模块类注册到管理器 | `{"module_name": str, "success": bool}` |
-| `module.load` | 模块加载完成（实例化成功） | `{"module_name": str, "success": bool}` |
+| `module.load` | 模块加载完成（实例化成功）；失败时 payload 额外携带 `"error": str, "traceback": str`（失败现场亦可经 `module.last_error(名字)` 查询） | `{"module_name": str, "success": bool}` |
 | `module.init` | 模块初始化完毕（含懒加载） | `{"module_name": str, "success": bool}` |
+| `module.before_unload` | 卸载流水线第一步（先于 `on_unload` 与资源回收；模块实例钩子 `on_before_unload` 同步触发） | `{"module_name": str, "reason": str}`；`reason` 取值：`unload` / `reload` / `disable` / `cascade` / `dormant` |
+| `module.sleep` | 模块归眠完成（懒加载休眠：资源已释放，访问时自动唤醒） | `{"module_name": str, "success": bool}` |
 | `module.unload` | 模块卸载 | `{"module_name": str, "success": bool}` |
-| `module.reload` | 模块热重载完成（含级联重载依赖者） | `{"module_name": str, "success": bool, "full": bool}`；全量重载（`reload_all`）时 `module_name` 为 `"All"`，payload 额外携带 `"results": dict[str, bool]` |
+| `module.reload` | 模块热重载完成（含级联重载依赖者） | `{"module_name": str, "success": bool, "full": bool, "duration_ms": int}`；单模块额外携带 `"identity_changed": bool`（False = 进程内可能仍运行旧代码，如 C 扩展缓存）与 `"version_old": str, "version_new": str`；全量重载（`reload_all`）时 `module_name` 为 `"All"`，payload 额外携带 `"results": dict[str, bool]` |
+
+> **模块实例钩子 `on_before_unload`**：与 `module.before_unload` 事件对应的可选生命周期方法——`event["reason"]` 标注来意，适合在资源释放前把状态保存到 `sdk.storage`，唤醒 / 重载后在 `on_load` 中恢复（懒加载休眠的状态接续即基于此）。钩子失败仅告警，不阻塞卸载流程。
 
 ### 适配器生命周期
 
 | 钩子名称 | 触发时机 | 数据 |
 |---------|---------|------|
 | `adapter.load` | 适配器注册完成 | `{"platform": str, "success": bool}` |
+| `adapter.reload` | 适配器代码级热重载完成 | `{"adapter_name": str, "success": bool, "full": bool, "duration_ms": int, "identity_changed": bool, "version_old": str, "version_new": str, "was_started": bool, "source": str}`；`identity_changed=False` = 进程内可能仍运行旧代码 |
 | `adapter.start` | 适配器启动 | `{"platforms": [str]}` |
 | `adapter.status.change` | 适配器状态变化 | `{"platform": str, "status": str, "retry_count": int, "error": str(仅失败时)}`；status 完整取值：`starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
 | `adapter.stop` | 适配器关闭 | `{"platforms": [str]}` |
@@ -9719,10 +9904,10 @@ def notify_storage_back(data):
 ```python
 STANDARD_EVENTS = {
     "core": ["init.start", "init.stage", "init.complete", "uninit.complete"],
-    "module": ["load", "init", "unload", "register", "reload"],
+    "module": ["load", "before_unload", "init", "sleep", "unload", "register", "reload"],
     "adapter": [
-        "load", "start", "status.change", "stop", "stopped",
-        "event.receive", "event.dispatched",
+        "load", "start", "status.change", "reload", "stop", "stopped",
+        "event.receive", "event.blocked", "event.dispatched",
         "bot.online", "bot.offline",
     ],
     "server": [
@@ -9945,11 +10130,60 @@ dict 形式镜像 `@command()` 装饰器的用户级参数，用于在模块加�
 - **命令 stub**：注册占位命令；激活后占位注销、真实命令接管当次触发
 - **防重入**：`asyncio.Lock` 保证并发触发下只激活一次
 - **作用域过滤**：stub 带模块 owner 身份，模块未对该 Bot / 会话 / 平台启用时不触发
-- **失败语义**：激活失败不重试，stub 一并注销
+- **失败语义**：激活失败进入冷却期（`ACTIVATE_RETRY_COOLDOWN_SECS`，30 秒），
+  冷却内事件短路避免重复尝试；冷却结束后再次触发自动重试，stub 全程保留
 - **去重**：同名命令以简写 + dict 混合声明时去重（dict 优先）；dict 缺 `name`
   或事件 `detail_type` 误写 dict 时告警并忽略
 
 > 架构图与完整语义详见 [架构概览](../architecture.md#事件驱动懒激活activate_on触发架构)。
+
+## 懒加载休眠（dormant_after）
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.11.0+**。
+
+懒激活的模块长期闲置后，框架可将其**归眠**：释放运行时资源（归属任务 / 连接 / 事件注册），
+但保留懒加载代理与注册存根——模块回到"已注册未加载"状态，下次属性访问 /
+`module.call` / `activate_on` 事件**透明唤醒**（重新实例化并执行 `on_load`），
+无需任何唤醒 API。归眠后的系统状态与"从未激活"完全一致。
+
+### 声明方式
+
+```python
+@staticmethod
+def get_load_strategy():
+    return ModuleLoadStrategy(
+        lazy_load=True,
+        dormant_after="30m",   # 闲置 30 分钟自动归眠；不声明 = 永不休眠（默认）
+    )
+```
+
+时长语法与命令治理的 `cooldown` 完全一致（`90s` / `1h30m` / `1d`）。清扫器按固定间隔
+（60 秒）扫描，实际归眠时点 = 阈值 + 最多一个扫描间隔；也可随时手动归眠：
+`await sdk.module.sleep("模块名")`。显式 `unload` 仍是彻底卸载（懒代理一并移除）。
+
+### 状态接续
+
+归眠前框架触发 `on_before_unload(reason="dormant")`（卸载流水线第一步，资源仍完好），
+模块把状态保存到 `sdk.storage`；唤醒后在 `on_load` 中恢复：
+
+```python
+async def on_before_unload(self, event):
+    if event["reason"] in ("dormant", "reload", "disable"):
+        await self.sdk.storage.aset(f"{self._module_name}:counter", self._count)
+
+async def on_load(self, event):
+    self._count = await self.sdk.storage.aget(f"{self._module_name}:counter") or 0
+```
+
+### 语义与边界
+
+- **依赖方安全**：懒模块的依赖方经由持久代理（`sdk.<Name>`）或 `module.call` 访问，
+  归眠前后行为一致；直接持有真实实例引用属反模式（泄漏审计器可见）
+- **事件不达**：归眠模块不再接收事件——需要事件唤醒的模块请同时声明 `activate_on`
+  （事件先唤醒再转发）；排查"命令没反应"时注意确认模块是否处于归眠态
+- **唤醒失败可自愈**：唤醒（重新初始化）失败进入 30 秒冷却，冷却后再次访问自动重试，
+  不会永久失效
 
 ## 配置懒加载
 
@@ -11867,11 +12101,11 @@ SDK 提供两种重启方式，都不需要你自己先卸载——框架会自�
 
 | 方式 | 调用 | 行为 | 适用场景 |
 |------|------|------|----------|
-| 热重启 | `await sdk.restart()` | 同一进程内 `uninit()` 后重新 `init()`，重新加载适配器/模块 | 重新加载配置、热更新模块 |
+| 热重启 | `await sdk.restart()` | 同一进程内**组件层代码级热重载**：全部模块与适配器走统一重载管线（语法预检 / 快照回滚 / 身份核对），不再整体 `uninit()` / `init()` | pip 升级组件后让代码生效、热更新模块 |
 | 硬重启 | `await sdk.hard_restart()` | `uninit()` 后以**退出码 42** 退出进程，由外部监督者拉起全新进程 | 怀疑有内存/资源泄漏、需要彻底干净重启 |
 
 ```python
-# 热重启：同进程内重新加载（最常用）
+# 热重启：组件层代码级热重载（最常用）
 await sdk.restart()
 
 # 硬重启：退出进程，交由外部监督者重启（见下方「监督者指南」）
