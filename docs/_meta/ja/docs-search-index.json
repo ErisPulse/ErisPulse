@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1790,
+  "total_keywords": 1792,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -242,14 +242,6 @@
         "title": "1. 必ず Task オブジェクトを返す"
       }
     ],
-    "1. 探索層：Finder": [
-      {
-        "document": "advanced/startup.md",
-        "line": 56,
-        "level": 3,
-        "title": "1. 探索層：Finder"
-      }
-    ],
     "1. 接続の再試行実装": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -320,6 +312,14 @@
         "line": 458,
         "level": 3,
         "title": "1. 異常の分類処理"
+      }
+    ],
+    "1. 発見層: Finder": [
+      {
+        "document": "advanced/startup.md",
+        "line": 56,
+        "level": 3,
+        "title": "1. 発見層: Finder"
       }
     ],
     "1. 設定の階層と上書き": [
@@ -760,20 +760,20 @@
         "title": "2. ログ記録"
       }
     ],
+    "2. ロード層: Loader": [
+      {
+        "document": "advanced/startup.md",
+        "line": 76,
+        "level": 3,
+        "title": "2. ロード層: Loader"
+      }
+    ],
     "2. 入力検証": [
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 446,
         "level": 3,
         "title": "2. 入力検証"
-      }
-    ],
-    "2. 加載層：Loader": [
-      {
-        "document": "advanced/startup.md",
-        "line": 76,
-        "level": 3,
-        "title": "2. 加載層：Loader"
       }
     ],
     "2. 基礎レスポンス構造": [
@@ -1238,12 +1238,12 @@
         "title": "3. 特有のイベントタイプ"
       }
     ],
-    "3. 登録層：register_to_manager": [
+    "3. 登録層: register_to_manager": [
       {
         "document": "advanced/startup.md",
         "line": 125,
         "level": 3,
-        "title": "3. 登録層：register_to_manager"
+        "title": "3. 登録層: register_to_manager"
       }
     ],
     "3. 送信アカウントを指定する": [
@@ -1990,12 +1990,12 @@
         "title": "6. 注意事項"
       }
     ],
-    "6. 純粋な Python によるカスタム監督者": [
+    "6. 純粋な Python 自作監視者": [
       {
         "document": "advanced/startup.md",
         "line": 422,
         "level": 4,
-        "title": "6. 純粋な Python によるカスタム監督者"
+        "title": "6. 純粋な Python 自作監視者"
       }
     ],
     "6. 逆変換規則（OneBot12 → プラットフォーム）": [
@@ -3200,6 +3200,14 @@
         "title": "HTML のレンダリング"
       }
     ],
+    "HTTP クライアント": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 314,
+        "level": 3,
+        "title": "HTTP クライアント"
+      }
+    ],
     "HTTP クライアント モジュール": [
       {
         "document": "api-reference/core-modules.md",
@@ -3216,20 +3224,20 @@
         "title": "HTTP デコレータ"
       }
     ],
+    "HTTP ルーティング": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 256,
+        "level": 3,
+        "title": "HTTP ルーティング"
+      }
+    ],
     "HTTPStatusError": [
       {
         "document": "advanced/http-client.md",
         "line": 456,
         "level": 3,
         "title": "HTTPStatusError"
-      }
-    ],
-    "HTTPクライアント": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 309,
-        "level": 3,
-        "title": "HTTPクライアント"
       }
     ],
     "HTTPリクエスト": [
@@ -3254,14 +3262,6 @@
         "line": 180,
         "level": 3,
         "title": "HTTPリクエストパラメータ"
-      }
-    ],
-    "HTTPルーティング": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 251,
-        "level": 3,
-        "title": "HTTPルーティング"
       }
     ],
     "HttpResponse": [
@@ -3758,12 +3758,12 @@
         "title": "SDK デバッグ"
       }
     ],
-    "SDK トップレベルのエントリーポイント一覧": [
+    "SDK トップレベルのエントリポイント一覧": [
       {
         "document": "advanced/startup.md",
         "line": 12,
         "level": 2,
-        "title": "SDK トップレベルのエントリーポイント一覧"
+        "title": "SDK トップレベルのエントリポイント一覧"
       }
     ],
     "SDKとの関係": [
@@ -4065,7 +4065,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 266,
+        "line": 271,
         "level": 3,
         "title": "WebSocket"
       }
@@ -5592,12 +5592,12 @@
         "title": "アダプタのホットリロードアーキテクチャ"
       }
     ],
-    "アダプタのホット起動・停止": [
+    "アダプタのライフサイクル": [
       {
-        "document": "advanced/startup.md",
-        "line": 254,
+        "document": "advanced/lifecycle.md",
+        "line": 188,
         "level": 3,
-        "title": "アダプタのホット起動・停止"
+        "title": "アダプタのライフサイクル"
       }
     ],
     "アダプタの停止": [
@@ -5654,6 +5654,14 @@
         "title": "アダプターでの使用"
       }
     ],
+    "アダプターのホット起動/停止": [
+      {
+        "document": "advanced/startup.md",
+        "line": 254,
+        "level": 3,
+        "title": "アダプターのホット起動/停止"
+      }
+    ],
     "アダプターの取得": [
       {
         "document": "api-reference/adapter-system.md",
@@ -5700,14 +5708,6 @@
         "line": 5,
         "level": 2,
         "title": "アダプターマネージャー"
-      }
-    ],
-    "アダプターライフサイクル": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 184,
-        "level": 3,
-        "title": "アダプターライフサイクル"
       }
     ],
     "アダプター接続例": [
@@ -5790,14 +5790,6 @@
         "title": "アニメーションの例"
       }
     ],
-    "アンインストールの手順": [
-      {
-        "document": "advanced/startup.md",
-        "line": 309,
-        "level": 2,
-        "title": "アンインストールの手順"
-      }
-    ],
     "アンロード/無効化クリーンアップシーケンス": [
       {
         "document": "advanced/ownership.md",
@@ -5820,6 +5812,14 @@
         "line": 80,
         "level": 3,
         "title": "アンロードと完全アンロード（purge）"
+      }
+    ],
+    "アンロードフロー": [
+      {
+        "document": "advanced/startup.md",
+        "line": 309,
+        "level": 2,
+        "title": "アンロードフロー"
       }
     ],
     "アーキテクチャ概要": [
@@ -5864,6 +5864,14 @@
         "line": 219,
         "level": 2,
         "title": "イベントの冪等性と重複除去"
+      }
+    ],
+    "イベントの受信と処理": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 201,
+        "level": 3,
+        "title": "イベントの受信と処理"
       }
     ],
     "イベントの監視": [
@@ -6096,14 +6104,6 @@
         "line": 1,
         "level": 1,
         "title": "イベント処理入門"
-      }
-    ],
-    "イベント受信と処理": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 196,
-        "level": 3,
-        "title": "イベント受信と処理"
       }
     ],
     "イベント受信（WebSocket、protobuf エンコード）": [
@@ -6839,7 +6839,7 @@
     "コマンドシステム": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 236,
+        "line": 241,
         "level": 3,
         "title": "コマンドシステム"
       }
@@ -7200,6 +7200,22 @@
         "title": "シナリオ3：コマンドがトリガーされない（配信決定チェーン）"
       }
     ],
+    "シナリオ4：コードを変更した後、reloadしても以前と同じ動作が続く（2.11以降）": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 110,
+        "level": 2,
+        "title": "シナリオ4：コードを変更した後、reloadしても以前と同じ動作が続く（2.11以降）"
+      }
+    ],
+    "シナリオ5：モジュール「有効化されているのにイベントが届かない」（遅延ロード休眠、2.11+）": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 125,
+        "level": 2,
+        "title": "シナリオ5：モジュール「有効化されているのにイベントが届かない」（遅延ロード休眠、2.11+）"
+      }
+    ],
     "シャドウモジュールとグレーディングの正式化": [
       {
         "document": "advanced/shadow.md",
@@ -7281,7 +7297,7 @@
     "ストレージ接続状態": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 287,
+        "line": 292,
         "level": 3,
         "title": "ストレージ接続状態"
       }
@@ -7933,7 +7949,7 @@
     "トリガー": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 361,
+        "line": 366,
         "level": 3,
         "title": "トリガー"
       }
@@ -8158,12 +8174,12 @@
         "title": "ハートビートメカニズム"
       }
     ],
-    "ハード再起動はいつ使うべきか？": [
+    "ハードリスタートを使うべき時": [
       {
         "document": "advanced/startup.md",
         "line": 348,
         "level": 3,
-        "title": "ハード再起動はいつ使うべきか？"
+        "title": "ハードリスタートを使うべき時"
       }
     ],
     "バインディング継承（merge）": [
@@ -8198,12 +8214,12 @@
         "title": "バックエンドの選択"
       }
     ],
-    "バックグラウンドタスクの所有者と自動解除": [
+    "バックグラウンドタスクの所有者と自動キャンセル": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 407,
+        "line": 412,
         "level": 2,
-        "title": "バックグラウンドタスクの所有者と自動解除"
+        "title": "バックグラウンドタスクの所有者と自動キャンセル"
       }
     ],
     "バックグラウンド実行": [
@@ -8896,6 +8912,14 @@
         "title": "ボタン（keyboard）"
       }
     ],
+    "ポイント構造イベント": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 50,
+        "level": 3,
+        "title": "ポイント構造イベント"
+      }
+    ],
     "マスターシステム設定": [
       {
         "document": "user-guide/configuration.md",
@@ -9098,6 +9122,14 @@
         "line": 505,
         "level": 3,
         "title": "メッセージの編集と撤回"
+      }
+    ],
+    "メッセージの送信": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 226,
+        "level": 3,
+        "title": "メッセージの送信"
       }
     ],
     "メッセージイベント": [
@@ -9392,12 +9424,6 @@
     ],
     "メッセージ送信": [
       {
-        "document": "advanced/lifecycle.md",
-        "line": 221,
-        "level": 3,
-        "title": "メッセージ送信"
-      },
-      {
         "document": "platform-guide/qqbot.md",
         "line": 59,
         "level": 2,
@@ -9541,7 +9567,7 @@
     "モジュールでの使用例": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 380,
+        "line": 385,
         "level": 2,
         "title": "モジュールでの使用例"
       }
@@ -9602,6 +9628,12 @@
     ],
     "モジュールのライフサイクル": [
       {
+        "document": "advanced/lifecycle.md",
+        "line": 174,
+        "level": 3,
+        "title": "モジュールのライフサイクル"
+      },
+      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 8,
         "level": 2,
@@ -9660,14 +9692,6 @@
         "line": 1,
         "level": 1,
         "title": "モジュールトラブルシューティングガイド"
-      }
-    ],
-    "モジュールライフサイクル": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 174,
-        "level": 3,
-        "title": "モジュールライフサイクル"
       }
     ],
     "モジュールレベルの制御": [
@@ -9903,7 +9927,7 @@
     "ユーティリティ": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 370,
+        "line": 375,
         "level": 3,
         "title": "ユーティリティ"
       }
@@ -10136,6 +10160,14 @@
         "title": "リクエスト関連ID（X-Request-ID）"
       }
     ],
+    "リスタート": [
+      {
+        "document": "advanced/startup.md",
+        "line": 327,
+        "level": 2,
+        "title": "リスタート"
+      }
+    ],
     "リバースプロキシ": [
       {
         "document": "user-guide/deployment.md",
@@ -10184,20 +10216,20 @@
         "title": "リンク制御：認領とブロック"
       }
     ],
-    "ルーター・サーバー": [
-      {
-        "document": "advanced/startup.md",
-        "line": 270,
-        "level": 3,
-        "title": "ルーター・サーバー"
-      }
-    ],
     "ルーティンググループ": [
       {
         "document": "advanced/router.md",
         "line": 250,
         "level": 2,
         "title": "ルーティンググループ"
+      }
+    ],
+    "ルーティングサーバー": [
+      {
+        "document": "advanced/startup.md",
+        "line": 270,
+        "level": 3,
+        "title": "ルーティングサーバー"
       }
     ],
     "ルーティングマネージャー": [
@@ -10436,6 +10468,14 @@
         "title": "ローカルプラグインから公開へ"
       }
     ],
+    "ロード失敗時の診断情報": [
+      {
+        "document": "advanced/startup.md",
+        "line": 100,
+        "level": 4,
+        "title": "ロード失敗時の診断情報"
+      }
+    ],
     "ロード戦略": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -10581,7 +10621,7 @@
     "一般的アドバイス": [
       {
         "document": "developer-guide/module-troubleshooting.md",
-        "line": 110,
+        "line": 134,
         "level": 2,
         "title": "一般的アドバイス"
       }
@@ -11138,14 +11178,6 @@
         "title": "再生成のタイミング"
       }
     ],
-    "再起動": [
-      {
-        "document": "advanced/startup.md",
-        "line": 327,
-        "level": 2,
-        "title": "再起動"
-      }
-    ],
     "再起動時の自動復元": [
       {
         "document": "advanced/conversation.md",
@@ -11318,14 +11350,6 @@
         "line": 41,
         "level": 2,
         "title": "前提知識"
-      }
-    ],
-    "加載失敗時の診断情報": [
-      {
-        "document": "advanced/startup.md",
-        "line": 100,
-        "level": 4,
-        "title": "加載失敗時の診断情報"
       }
     ],
     "加載戦略": [
@@ -11524,6 +11548,14 @@
         "title": "各エラーの説明と発生位置"
       }
     ],
+    "各ステップの詳細説明": [
+      {
+        "document": "advanced/startup.md",
+        "line": 54,
+        "level": 2,
+        "title": "各ステップの詳細説明"
+      }
+    ],
     "各プラットフォームのコールバックイベントマッピング": [
       {
         "document": "standards/standardization-guide.md",
@@ -11538,14 +11570,6 @@
         "line": 117,
         "level": 4,
         "title": "各プラットフォームのマッピング照会"
-      }
-    ],
-    "各環節の詳細解説": [
-      {
-        "document": "advanced/startup.md",
-        "line": 54,
-        "level": 2,
-        "title": "各環節の詳細解説"
       }
     ],
     "合併転送": [
@@ -11623,7 +11647,7 @@
     "国際化": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 319,
+        "line": 324,
         "level": 3,
         "title": "国際化"
       }
@@ -12058,12 +12082,12 @@
         "title": "学習パス"
       }
     ],
-    "完全なAPIリファレンス": [
+    "完全な API リファレンス": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 351,
+        "line": 356,
         "level": 2,
-        "title": "完全なAPIリファレンス"
+        "title": "完全な API リファレンス"
       }
     ],
     "完全なメールイベント": [
@@ -12098,12 +12122,12 @@
         "title": "完全な実装例"
       }
     ],
-    "完全な手動起動の例": [
+    "完全な手動起動例": [
       {
         "document": "advanced/startup.md",
         "line": 176,
         "level": 2,
-        "title": "完全な手動起動の例"
+        "title": "完全な手動起動例"
       }
     ],
     "完全な設定例": [
@@ -12126,6 +12150,14 @@
         "line": 690,
         "level": 2,
         "title": "完整例"
+      }
+    ],
+    "定向伝播（emit to=）": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 66,
+        "level": 3,
+        "title": "定向伝播（emit to=）"
       }
     ],
     "実行コントロールコマンド": [
@@ -12768,12 +12800,12 @@
         "title": "手動設定読み取り（廃止）"
       }
     ],
-    "手動起動が必要な場面": [
+    "手動起動が必要な場合": [
       {
         "document": "advanced/startup.md",
         "line": 240,
         "level": 3,
-        "title": "手動起動が必要な場面"
+        "title": "手動起動が必要な場合"
       }
     ],
     "技術標準": [
@@ -12894,14 +12926,6 @@
         "line": 149,
         "level": 2,
         "title": "指定イベント: lifecycle.emit の to パラメータ"
-      }
-    ],
-    "指定送信（emit to=）": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 66,
-        "level": 3,
-        "title": "指定送信（emit to=）"
       }
     ],
     "接続の自動登録（接続プール、2.10+）": [
@@ -13768,20 +13792,20 @@
         "title": "標準イベントの例"
       }
     ],
+    "標準イベントの定義": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 330,
+        "level": 2,
+        "title": "標準イベントの定義"
+      }
+    ],
     "標準イベントフォーマット": [
       {
         "document": "platform-guide/README.md",
         "line": 229,
         "level": 3,
         "title": "標準イベントフォーマット"
-      }
-    ],
-    "標準イベント定義": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 325,
-        "level": 2,
-        "title": "標準イベント定義"
       }
     ],
     "標準ドキュメントリスト": [
@@ -13969,7 +13993,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 438,
+        "line": 443,
         "level": 2,
         "title": "注意事項"
       },
@@ -14004,14 +14028,6 @@
         "line": 55,
         "level": 3,
         "title": "深度統合（オプション）"
-      }
-    ],
-    "点式構造イベント": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 50,
-        "level": 3,
-        "title": "点式構造イベント"
       }
     ],
     "特性マトリクス": [
@@ -14213,7 +14229,7 @@
     "登録と解除": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 353,
+        "line": 358,
         "level": 3,
         "title": "登録と解除"
       }
@@ -14234,20 +14250,20 @@
         "title": "登録形態：単引数（推奨）と二引数"
       }
     ],
-    "監督者ガイド": [
+    "監視者ガイド": [
       {
         "document": "advanced/startup.md",
         "line": 369,
         "level": 3,
-        "title": "監督者ガイド"
+        "title": "監視者ガイド"
       }
     ],
-    "監視者検索（has_handlers）": [
+    "監視者クエリ（has_handlers）": [
       {
         "document": "advanced/lifecycle.md",
         "line": 104,
         "level": 3,
-        "title": "監視者検索（has_handlers）"
+        "title": "監視者クエリ（has_handlers）"
       }
     ],
     "確認対話 (confirm)": [
@@ -15154,6 +15170,14 @@
         "title": "起動フローと手動制御"
       }
     ],
+    "起動フローの概要": [
+      {
+        "document": "advanced/startup.md",
+        "line": 26,
+        "level": 2,
+        "title": "起動フローの概要"
+      }
+    ],
     "跨プラットフォームメソッドの登録": [
       {
         "document": "api-reference/event-system.md",
@@ -15634,14 +15658,6 @@
         "title": "重要な制限事項"
       }
     ],
-    "鍵路の起動概要": [
-      {
-        "document": "advanced/startup.md",
-        "line": 26,
-        "level": 2,
-        "title": "鍵路の起動概要"
-      }
-    ],
     "開発の準備": [
       {
         "document": "developer-guide/README.md",
@@ -15736,12 +15752,6 @@
       {
         "document": "advanced/lazy-loading.md",
         "line": 268,
-        "level": 2,
-        "title": "関連ドキュメント"
-      },
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 448,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -15899,6 +15909,12 @@
       }
     ],
     "関連文書": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 453,
+        "level": 2,
+        "title": "関連文書"
+      },
       {
         "document": "api-reference/core-modules.md",
         "line": 521,

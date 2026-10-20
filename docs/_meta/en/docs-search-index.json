@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1751,
+  "total_keywords": 1761,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2593,7 +2593,7 @@
     "Accessing Core Modules": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 133,
+        "line": 151,
         "level": 3,
         "title": "Accessing Core Modules"
       }
@@ -2626,6 +2626,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 418,
+        "level": 3,
+        "title": "Account Configuration Fields"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 243,
         "level": 3,
         "title": "Account Configuration Fields"
       }
@@ -2829,7 +2835,7 @@
     "Adapter Send Method Query": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 152,
+        "line": 170,
         "level": 2,
         "title": "Adapter Send Method Query"
       }
@@ -2917,7 +2923,7 @@
     "Additional Operation Methods": [
       {
         "document": "platform-guide/kook.md",
-        "line": 170,
+        "line": 171,
         "level": 3,
         "title": "Additional Operation Methods"
       }
@@ -3402,6 +3408,12 @@
         "title": "Basic Information"
       },
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      },
+      {
         "document": "platform-guide/telegram.md",
         "line": 12,
         "level": 2,
@@ -3514,6 +3526,12 @@
         "title": "Basic Sending Methods"
       },
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 83,
+        "level": 3,
+        "title": "Basic Sending Methods"
+      },
+      {
         "document": "platform-guide/telegram.md",
         "line": 82,
         "level": 3,
@@ -3567,7 +3585,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 300,
+        "line": 318,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -3580,6 +3598,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 45,
+        "level": 3,
+        "title": "Basic Usage"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 43,
         "level": 3,
         "title": "Basic Usage"
       }
@@ -4110,6 +4134,12 @@
         "title": "Chained Call Examples"
       },
       {
+        "document": "platform-guide/kook.md",
+        "line": 127,
+        "level": 3,
+        "title": "Chained Call Examples"
+      },
+      {
         "document": "platform-guide/matrix.md",
         "line": 137,
         "level": 3,
@@ -4136,6 +4166,20 @@
         "line": 130,
         "level": 3,
         "title": "Chained Modifier Methods (Combinable)"
+      }
+    ],
+    "Chained Modifier Methods (can be combined)": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 119,
+        "level": 3,
+        "title": "Chained Modifier Methods (can be combined)"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 156,
+        "level": 3,
+        "title": "Chained Modifier Methods (can be combined)"
       }
     ],
     "Chained Modifiers": [
@@ -4672,12 +4716,6 @@
         "line": 23,
         "level": 2,
         "title": "Configuration"
-      },
-      {
-        "document": "platform-guide/kook.md",
-        "line": 22,
-        "level": 2,
-        "title": "Configuration"
       }
     ],
     "Configuration Changes": [
@@ -4734,6 +4772,12 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 316,
+        "level": 3,
+        "title": "Configuration Example"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 256,
         "level": 3,
         "title": "Configuration Example"
       },
@@ -4828,6 +4872,12 @@
         "title": "Configuration Instructions"
       },
       {
+        "document": "platform-guide/kook.md",
+        "line": 22,
+        "level": 2,
+        "title": "Configuration Instructions"
+      },
+      {
         "document": "platform-guide/qqbot.md",
         "line": 22,
         "level": 2,
@@ -4865,7 +4915,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 180,
+        "line": 198,
         "level": 2,
         "title": "Configuration Management"
       }
@@ -4880,6 +4930,12 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 301,
+        "level": 2,
+        "title": "Configuration Options"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 239,
         "level": 2,
         "title": "Configuration Options"
       },
@@ -4966,12 +5022,6 @@
         "line": 360,
         "level": 3,
         "title": "Connection Flow"
-      },
-      {
-        "document": "platform-guide/kook.md",
-        "line": 362,
-        "level": 3,
-        "title": "Connection Flow"
       }
     ],
     "Connection Management": [
@@ -5002,6 +5052,14 @@
         "line": 1,
         "level": 1,
         "title": "Connection Pool and Broadcasting"
+      }
+    ],
+    "Connection Process": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 363,
+        "level": 3,
+        "title": "Connection Process"
       }
     ],
     "Connection Registry Series — `Core/connections.py` (2.10+)": [
@@ -5170,6 +5228,14 @@
         "title": "Core Concepts"
       }
     ],
+    "Core Concepts of Modules": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 1,
+        "level": 1,
+        "title": "Core Concepts of Modules"
+      }
+    ],
     "Core Design Principles": [
       {
         "document": "getting-started/ide-completion.md",
@@ -5199,7 +5265,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 220,
+        "line": 221,
         "level": 3,
         "title": "Core Differences"
       },
@@ -5280,14 +5346,6 @@
         "line": 1,
         "level": 1,
         "title": "Core Module API"
-      }
-    ],
-    "Core Module Concepts": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 1,
-        "level": 1,
-        "title": "Core Module Concepts"
       }
     ],
     "Core Module Description": [
@@ -5559,7 +5617,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 182,
+        "line": 200,
         "level": 3,
         "title": "Declarative Configuration (Recommended)"
       }
@@ -5595,7 +5653,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 240,
+        "line": 258,
         "level": 3,
         "title": "Declarative Translation Keys (v2.7.0+)"
       }
@@ -5862,12 +5920,12 @@
         "title": "Directory Structure"
       }
     ],
-    "Disconnection and Reconnection": [
+    "Disconnection Reconnection": [
       {
         "document": "platform-guide/kook.md",
-        "line": 382,
+        "line": 383,
         "level": 3,
-        "title": "Disconnection and Reconnection"
+        "title": "Disconnection Reconnection"
       }
     ],
     "Discord": [
@@ -5981,6 +6039,12 @@
       },
       {
         "document": "platform-guide/sandbox.md",
+        "line": 7,
+        "level": 2,
+        "title": "Document Information"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
         "line": 7,
         "level": 2,
         "title": "Document Information"
@@ -6134,14 +6198,6 @@
         "line": 1,
         "level": 1,
         "title": "Ecosystem Modules"
-      }
-    ],
-    "Editing and Deleting Messages": [
-      {
-        "document": "platform-guide/kook.md",
-        "line": 503,
-        "level": 3,
-        "title": "Editing and Deleting Messages"
       }
     ],
     "Email Platform Feature Documentation": [
@@ -6328,6 +6384,12 @@
         "title": "Error Code Description"
       },
       {
+        "document": "platform-guide/kook.md",
+        "line": 202,
+        "level": 3,
+        "title": "Error Code Description"
+      },
+      {
         "document": "platform-guide/qqbot.md",
         "line": 170,
         "level": 2,
@@ -6335,12 +6397,6 @@
       }
     ],
     "Error Code Explanation": [
-      {
-        "document": "platform-guide/kook.md",
-        "line": 201,
-        "level": 3,
-        "title": "Error Code Explanation"
-      },
       {
         "document": "platform-guide/matrix.md",
         "line": 199,
@@ -6377,7 +6433,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 368,
+        "line": 386,
         "level": 2,
         "title": "Error Handling"
       },
@@ -6480,6 +6536,12 @@
         "title": "Event Extension Methods"
       },
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 215,
+        "level": 2,
+        "title": "Event Extension Methods"
+      },
+      {
         "document": "platform-guide/wechatmp.md",
         "line": 97,
         "level": 2,
@@ -6513,7 +6575,7 @@
     "Event Handler Lifecycle": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 341,
+        "line": 359,
         "level": 3,
         "title": "Event Handler Lifecycle"
       }
@@ -6521,7 +6583,7 @@
     "Event Handler Registration": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 325,
+        "line": 343,
         "level": 3,
         "title": "Event Handler Registration"
       }
@@ -6535,7 +6597,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 323,
+        "line": 341,
         "level": 2,
         "title": "Event Handling"
       }
@@ -6742,6 +6804,12 @@
         "line": 262,
         "level": 2,
         "title": "Event Type Mapping"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 184,
+        "level": 2,
+        "title": "Event Type Mapping"
       }
     ],
     "Event Types": [
@@ -6837,7 +6905,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 370,
+        "line": 388,
         "level": 3,
         "title": "Exception Handling"
       }
@@ -6937,7 +7005,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 228,
+        "line": 229,
         "level": 3,
         "title": "Extended Fields"
       },
@@ -6966,6 +7034,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 356,
+        "level": 3,
+        "title": "Extension Field Description"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 207,
         "level": 3,
         "title": "Extension Field Description"
       }
@@ -7114,28 +7188,12 @@
         "title": "Fluent Call Examples"
       }
     ],
-    "Fluent Chaining Examples": [
-      {
-        "document": "platform-guide/kook.md",
-        "line": 126,
-        "level": 3,
-        "title": "Fluent Chaining Examples"
-      }
-    ],
     "Fluent Modifier Methods": [
       {
         "document": "platform-guide/telegram.md",
         "line": 124,
         "level": 3,
         "title": "Fluent Modifier Methods"
-      }
-    ],
-    "Fluent Modifier Methods (Can Be Combined)": [
-      {
-        "document": "platform-guide/kook.md",
-        "line": 118,
-        "level": 3,
-        "title": "Fluent Modifier Methods (Can Be Combined)"
       }
     ],
     "Fluent Modifier Methods (Combinable)": [
@@ -7424,20 +7482,20 @@
         "title": "Get Adapter Instance"
       }
     ],
+    "Get Detailed Method Information": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 182,
+        "level": 3,
+        "title": "Get Detailed Method Information"
+      }
+    ],
     "Get Help": [
       {
         "document": "README.md",
         "line": 106,
         "level": 2,
         "title": "Get Help"
-      }
-    ],
-    "Get Method Detailed Information": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 164,
-        "level": 3,
-        "title": "Get Method Detailed Information"
       }
     ],
     "Get an Adapter": [
@@ -7534,6 +7592,14 @@
         "title": "Graceful Shutdown"
       }
     ],
+    "Group Files / Message History / Read Status": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 147,
+        "level": 3,
+        "title": "Group Files / Message History / Read Status"
+      }
+    ],
     "Group Invitation Request": [
       {
         "document": "getting-started/event-handling.md",
@@ -7586,6 +7652,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 101,
+        "level": 3,
+        "title": "Group Operation Methods"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 119,
         "level": 3,
         "title": "Group Operation Methods"
       }
@@ -7703,17 +7775,9 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 400,
+        "line": 401,
         "level": 3,
         "title": "Handling Channel Messages"
-      }
-    ],
-    "Handling Edit and Delete Notifications for Private Messages": [
-      {
-        "document": "platform-guide/kook.md",
-        "line": 517,
-        "level": 3,
-        "title": "Handling Edit and Delete Notifications for Private Messages"
       }
     ],
     "Handling Group Messages": [
@@ -7754,12 +7818,20 @@
         "title": "Handling Message Edits"
       }
     ],
-    "Handling Notification Events (like emoji reactions)": [
+    "Handling Notification Events (Emoji Reactions, etc.)": [
       {
         "document": "platform-guide/kook.md",
-        "line": 438,
+        "line": 439,
         "level": 3,
-        "title": "Handling Notification Events (like emoji reactions)"
+        "title": "Handling Notification Events (Emoji Reactions, etc.)"
+      }
+    ],
+    "Handling Private Message Edit and Delete Notifications": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 518,
+        "level": 3,
+        "title": "Handling Private Message Edit and Delete Notifications"
       }
     ],
     "Handling Private Messages": [
@@ -7771,7 +7843,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 422,
+        "line": 423,
         "level": 3,
         "title": "Handling Private Messages"
       }
@@ -7884,6 +7956,12 @@
         "title": "How It Works"
       },
       {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 365,
+        "level": 3,
+        "title": "How It Works"
+      },
+      {
         "document": "ecosystem/app.md",
         "line": 61,
         "level": 2,
@@ -7993,7 +8071,7 @@
     "Immediate Loading": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 355,
+        "line": 373,
         "level": 3,
         "title": "Immediate Loading"
       }
@@ -8241,7 +8319,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 144,
+        "line": 162,
         "level": 3,
         "title": "Inter-Module Communication"
       }
@@ -8428,12 +8506,12 @@
         "title": "Keyword Filtering"
       }
     ],
-    "Kook Platform Features Documentation": [
+    "Kook Platform Feature Documentation": [
       {
         "document": "platform-guide/kook.md",
         "line": 1,
         "level": 1,
-        "title": "Kook Platform Features Documentation"
+        "title": "Kook Platform Feature Documentation"
       }
     ],
     "Language Commands": [
@@ -8455,7 +8533,7 @@
     "Lazy Loading Mechanism": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 345,
+        "line": 363,
         "level": 2,
         "title": "Lazy Loading Mechanism"
       }
@@ -8577,7 +8655,7 @@
     "Lifecycle Overview": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 89,
+        "line": 107,
         "level": 3,
         "title": "Lifecycle Overview"
       }
@@ -8609,7 +8687,7 @@
     "List Supported Send Methods": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 156,
+        "line": 174,
         "level": 3,
         "title": "List Supported Send Methods"
       }
@@ -8787,7 +8865,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 385,
+        "line": 403,
         "level": 3,
         "title": "Logging"
       }
@@ -8885,7 +8963,7 @@
     "Manual Configuration Reading (Deprecated)": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 281,
+        "line": 299,
         "level": 3,
         "title": "Manual Configuration Reading (Deprecated)"
       }
@@ -9021,7 +9099,7 @@
     "Mention Message Segment": [
       {
         "document": "platform-guide/kook.md",
-        "line": 336,
+        "line": 337,
         "level": 3,
         "title": "Mention Message Segment"
       }
@@ -9032,6 +9110,14 @@
         "line": 520,
         "level": 3,
         "title": "Merge Forward (Optional, see §2.4)"
+      }
+    ],
+    "Merged Forward": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 95,
+        "level": 3,
+        "title": "Merged Forward"
       }
     ],
     "Message Configuration": [
@@ -9072,6 +9158,14 @@
         "line": 290,
         "level": 3,
         "title": "Message Edit Notification Example"
+      }
+    ],
+    "Message Editing and Recall": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 504,
+        "level": 3,
+        "title": "Message Editing and Recall"
       }
     ],
     "Message Event Example": [
@@ -9263,7 +9357,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 311,
+        "line": 312,
         "level": 3,
         "title": "Message Segment Types"
       },
@@ -9315,7 +9409,7 @@
     "Message Sequence Number Mechanism": [
       {
         "document": "platform-guide/kook.md",
-        "line": 389,
+        "line": 390,
         "level": 3,
         "title": "Message Sequence Number Mechanism"
       }
@@ -9918,6 +10012,14 @@
         "title": "Multi-Platform Adaptation"
       }
     ],
+    "Multi-account Send Syntax": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 289,
+        "level": 3,
+        "title": "Multi-account Send Syntax"
+      }
+    ],
     "Multi-element Message": [
       {
         "document": "advanced/message-builder.md",
@@ -10240,6 +10342,14 @@
         "title": "Notification Events (notice)"
       }
     ],
+    "OB11 Extension Actions (API DSL)": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 164,
+        "level": 2,
+        "title": "OB11 Extension Actions (API DSL)"
+      }
+    ],
     "OB12 Message Segment Reverse Conversion (Raw_ob12)": [
       {
         "document": "platform-guide/email.md",
@@ -10297,7 +10407,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 148,
+        "line": 149,
         "level": 3,
         "title": "OneBot12 Message Support"
       },
@@ -10814,6 +10924,12 @@
     ],
     "Platform-Specific Event Types": [
       {
+        "document": "platform-guide/kook.md",
+        "line": 217,
+        "level": 2,
+        "title": "Platform-Specific Event Types"
+      },
+      {
         "document": "platform-guide/telegram.md",
         "line": 181,
         "level": 2,
@@ -10844,6 +10960,14 @@
         "line": 282,
         "level": 3,
         "title": "Platform-Specific Events (onebot11_ prefix)"
+      }
+    ],
+    "Platform-Specific Events and Extension Segments": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 201,
+        "level": 3,
+        "title": "Platform-Specific Events and Extension Segments"
       }
     ],
     "Platform-Specific Features": [
@@ -10886,14 +11010,6 @@
         "title": "Platform-Specific Responses"
       }
     ],
-    "Platform-specific Event Types": [
-      {
-        "document": "platform-guide/kook.md",
-        "line": 216,
-        "level": 2,
-        "title": "Platform-specific Event Types"
-      }
-    ],
     "Platform-specific Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -10916,6 +11032,14 @@
         "line": 30,
         "level": 3,
         "title": "Platforms Supported"
+      }
+    ],
+    "Poke / Social": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 133,
+        "level": 3,
+        "title": "Poke / Social"
       }
     ],
     "PostgreSQL (`ErisPulse.storage.postgres`)": [
@@ -11138,6 +11262,14 @@
         "line": 356,
         "level": 3,
         "title": "Q5: How to handle special platforms such as email?"
+      }
+    ],
+    "QQ Space": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 140,
+        "level": 3,
+        "title": "QQ Space"
       }
     ],
     "QQBot Platform Features Documentation": [
@@ -11642,6 +11774,12 @@
         "title": "Related Documentation"
       },
       {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 414,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
         "document": "getting-started/ide-completion.md",
         "line": 84,
         "level": 2,
@@ -11670,12 +11808,6 @@
       {
         "document": "developer-guide/adapters/converter.md",
         "line": 378,
-        "level": 2,
-        "title": "Related Documents"
-      },
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 396,
         "level": 2,
         "title": "Related Documents"
       },
@@ -11742,6 +11874,14 @@
         "line": 77,
         "level": 2,
         "title": "Relationship with Declarative Configuration Class"
+      }
+    ],
+    "Relationship with OneBot11 Adapter": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 20,
+        "level": 3,
+        "title": "Relationship with OneBot11 Adapter"
       }
     ],
     "Relationship with Other Systems": [
@@ -12126,14 +12266,6 @@
         "title": "Return Values"
       }
     ],
-    "Return Values of Send Methods": [
-      {
-        "document": "platform-guide/kook.md",
-        "line": 186,
-        "level": 2,
-        "title": "Return Values of Send Methods"
-      }
-    ],
     "Reusing Query Conditions": [
       {
         "document": "advanced/sql-builder.md",
@@ -12352,16 +12484,18 @@
     ],
     "SDK Object": [
       {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 131,
-        "level": 2,
-        "title": "SDK Object"
-      },
-      {
         "document": "developer-guide/modules/getting-started.md",
         "line": 189,
         "level": 3,
         "title": "SDK Object"
+      }
+    ],
+    "SDK Objects": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 149,
+        "level": 2,
+        "title": "SDK Objects"
       }
     ],
     "SQL Chain Query": [
@@ -12576,6 +12710,12 @@
         "title": "Send Method Return Values"
       },
       {
+        "document": "platform-guide/kook.md",
+        "line": 187,
+        "level": 2,
+        "title": "Send Method Return Values"
+      },
+      {
         "document": "platform-guide/matrix.md",
         "line": 184,
         "level": 2,
@@ -12590,6 +12730,12 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 353,
+        "level": 2,
+        "title": "Send Method Return Values"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 274,
         "level": 2,
         "title": "Send Method Return Values"
       },
@@ -12713,7 +12859,7 @@
     "Sending KMarkdown and Card Messages": [
       {
         "document": "platform-guide/kook.md",
-        "line": 484,
+        "line": 485,
         "level": 3,
         "title": "Sending KMarkdown and Card Messages"
       }
@@ -12721,7 +12867,7 @@
     "Sending Media Messages": [
       {
         "document": "platform-guide/kook.md",
-        "line": 463,
+        "line": 464,
         "level": 3,
         "title": "Sending Media Messages"
       },
@@ -12925,7 +13071,7 @@
     "Signal Types": [
       {
         "document": "platform-guide/kook.md",
-        "line": 371,
+        "line": 372,
         "level": 3,
         "title": "Signal Types"
       }
@@ -12970,6 +13116,14 @@
         "title": "Single Method Registration"
       }
     ],
+    "SnowLuma Platform Feature Document": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 1,
+        "level": 1,
+        "title": "SnowLuma Platform Feature Document"
+      }
+    ],
     "Sorting and Pagination": [
       {
         "document": "advanced/sql-builder.md",
@@ -12987,7 +13141,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 234,
+        "line": 235,
         "level": 3,
         "title": "Special Field Examples"
       },
@@ -13067,6 +13221,12 @@
     "Standard API Actions (API DSL)": [
       {
         "document": "platform-guide/onebot11.md",
+        "line": 31,
+        "level": 2,
+        "title": "Standard API Actions (API DSL)"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
         "line": 31,
         "level": 2,
         "title": "Standard API Actions (API DSL)"
@@ -13162,6 +13322,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 264,
+        "level": 3,
+        "title": "Standard OB12 Mapping"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 186,
         "level": 3,
         "title": "Standard OB12 Mapping"
       }
@@ -13335,7 +13501,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 298,
+        "line": 316,
         "level": 2,
         "title": "Storage System"
       }
@@ -13476,6 +13642,12 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 84,
+        "level": 2,
+        "title": "Supported Message Sending Types"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 65,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -13805,7 +13977,7 @@
     "Transaction Usage": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 313,
+        "line": 331,
         "level": 3,
         "title": "Transaction Usage"
       }
@@ -13980,12 +14152,12 @@
         "title": "Unload and Cleanup Semantics"
       }
     ],
-    "Unload vs. Purge": [
+    "Unload vs. Purge Unload": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 62,
+        "line": 80,
         "level": 3,
-        "title": "Unload vs. Purge"
+        "title": "Unload vs. Purge Unload"
       }
     ],
     "Unload/Disable Cleanup Sequence": [
@@ -14101,7 +14273,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 398,
+        "line": 399,
         "level": 2,
         "title": "Usage Examples"
       },
@@ -14563,7 +14735,7 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 360,
+        "line": 361,
         "level": 2,
         "title": "WebSocket Connection"
       }
@@ -14725,12 +14897,6 @@
         "document": "advanced/lazy-loading.md",
         "line": 17,
         "level": 2,
-        "title": "Working Principle"
-      },
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 347,
-        "level": 3,
         "title": "Working Principle"
       }
     ],
@@ -15150,22 +15316,6 @@
         "title": "`keep_running` Parameter"
       }
     ],
-    "`on_load` Method": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 32,
-        "level": 3,
-        "title": "`on_load` Method"
-      }
-    ],
-    "`on_unload` Method": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 47,
-        "level": 3,
-        "title": "`on_unload` Method"
-      }
-    ],
     "`qvq_personas()` → Register personality presets": [
       {
         "document": "ecosystem/qvqchat.md",
@@ -15481,7 +15631,7 @@
     "mention_all Message Segment": [
       {
         "document": "platform-guide/kook.md",
-        "line": 349,
+        "line": 350,
         "level": 3,
         "title": "mention_all Message Segment"
       }
@@ -15508,6 +15658,30 @@
         "line": 398,
         "level": 4,
         "title": "metadata Convention"
+      }
+    ],
+    "on_before_unload Method": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 64,
+        "level": 3,
+        "title": "on_before_unload Method"
+      }
+    ],
+    "on_load Method": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 34,
+        "level": 3,
+        "title": "on_load Method"
+      }
+    ],
+    "on_unload Method": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 49,
+        "level": 3,
+        "title": "on_unload Method"
       }
     ],
     "pip Method": [
@@ -15596,6 +15770,14 @@
         "line": 554,
         "level": 2,
         "title": "self_id Auto Mapping"
+      }
+    ],
+    "self_id Automatic Mapping": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 299,
+        "level": 2,
+        "title": "self_id Automatic Mapping"
       }
     ],
     "stop": [

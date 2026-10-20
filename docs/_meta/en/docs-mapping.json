@@ -164,7 +164,7 @@
               "icon": "fa-puzzle-piece"
             },
             {
-              "title": "Core Module Concepts",
+              "title": "Core Concepts of Modules",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1,
               "icon": "fa-cubes-stacked"
@@ -224,7 +224,7 @@
     "Platform Guide": {
       "description": "Platform features and adapter documentation",
       "icon": "fa-plug",
-      "count": 17,
+      "count": 18,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures Documentation",
@@ -275,7 +275,7 @@
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Kook Platform Features Documentation",
+          "title": "Kook Platform Feature Documentation",
           "path": "platform-guide/kook.md",
           "level": 1,
           "icon": "fa-headset"
@@ -319,6 +319,12 @@
         {
           "title": "Sandbox Platform Feature Documentation",
           "path": "platform-guide/sandbox.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "SnowLuma Platform Feature Document",
+          "path": "platform-guide/snowluma.md",
           "level": 1,
           "icon": "fa-plug"
         },

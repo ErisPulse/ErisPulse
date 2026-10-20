@@ -6980,6 +6980,30 @@ print(final_verdict(records))           # 総合的な結論
 
 `cooldown=` / `rate_limit=` / `usage_limit=` が一致した場合、**デフォルトで静かにドロップ**されます（コマンドは引き続き認識され、低優先度のハンドラには渡されません）。これは「コマンドが壊れている」誤解されやすい状況です：現象としては一部のユーザーでは使えるが、一部のユーザーでは応答がなく、決定チェーンに該当する `stage` の `dropped` 記録が表示されます。`deprecated=` コマンドは、呼び出し時に自動的に廃棄文案を返します（`deprecated_reject=True` の場合、実行を拒否します）。
 
+## シナリオ4：コードを変更した後、reloadしても以前と同じ動作が続く（2.11以降）
+
+順番に確認してください：
+
+1. **戻り値と失敗現場を確認**：`reload` / `load` が `False` を返した場合、直ちに
+   `sdk.module.last_error("モジュール名")` を呼び出す——エラーと完全な traceback（エラー行番号含む）が返されます。
+   ログファイルを調べる必要はありません。`module.get_info(名字)["last_error"]` も同じソースです。
+2. **構文エラーはアンロードされない**：reload はアンロード前に構文の事前チェックを行い、失敗すると拒否されます（古いインスタンスが引き続きサービスを提供します）。
+   ログにはファイル名と行番号が表示されます。構文エラーを修正してから reload すればよいです。
+3. **アイデンティティが変化していない警告**：ログに「重載後にコードのアイデンティティが変化していない」またはイベント `identity_changed: false`
+   が表示された場合、プロセス内では依然として古いコードが実行されています（C拡張などクリアできないキャッシュが原因です）——このようなモジュールはフレームワークを再起動する必要があります。
+4. **モジュールのソースが再インポート可能か確認**：実行時に登録されたモジュール（`sdk.module.register()`）で、クラス定義が
+   `__main__` / 入口スクリプト内にある場合、再インポートは拒否されます（ガードによる警告）；クラスをインポート可能なモジュールファイルに移動してください。
+5. **遅延ロードモジュールが強制的に有効化される**：重載はもともと遅延ロードのモジュールを有効化します（明示的なログが出力されます）；休眠（スリープ中）のモジュールは休眠状態のままです。
+
+## シナリオ5：モジュール「有効化されているのにイベントが届かない」（遅延ロード休眠、2.11+）
+
+`dormant_after` を宣言した遅延ロードモジュールは、非アクティブ時間が閾値を超えると**自動的に休眠**します。これにより、実行時リソースが解放され、イベントハンドラが登録解除されるため、イベントを受け取らなくなります（`activate_on` で宣言されたイベントは例外です——イベントが先にモジュールを起動してから転送されます）。
+
+- 休眠しているか確認する方法：ログで「休眠済み」または `module.sleep` イベントを検索するか、`sdk.module.get_status_summary()` でそのモジュールが `loaded` でないことを確認する。
+- 即時起動する方法：任意の属性にアクセス（`sdk.モジュール名.任意属性`）または `await sdk.module.call(...)` を実行する。
+- 自動休眠を無効にしたい場合：`get_load_strategy()` から `dormant_after` の宣言を削除する。
+- 状態が失われるか確認する方法：休眠前に `on_before_unload(reason="dormant")` がトリガーされます。モジュールがこのフックを実装して状態を保存していない場合、休眠時にメモリ内の状態は失われます（アンロードと同じです）——状態を継続したい場合は、[遅延ロード休眠](../advanced/lazy-loading.md#遅延ロード休眠dormant_after)を参照してください。
+
 ## 一般的アドバイス
 
 - 問題を調査する前に、ログレベルを `DEBUG` / `TRACE` に設定してください（設定方法は[開発者ガイド](README.md#デバッグのテクニック)を参照）。これにより、モジュールのロード、ルートの登録、イベントの配信など、フレームワークの内部処理を確認できます。
@@ -16359,14 +16383,14 @@ flowchart TD
 # ライフサイクル管理
 
 > [!TIP]
-> **この記事を読む必要があるのはいつか**：フレームワークのライフサイクルイベント（起動 / 加載 / 状態変化）をサブスクライブする必要がある場合。必要ない場合はスキップしても、他の機能の使用に影響はありません。
+> **この記事を読むべきタイミング**：フレームワークのライフサイクルイベント（起動 / 加載 / 状態変化）をサブスクライブする必要がある場合です。必要がない場合はスキップしても、他の機能の使用に影響はありません。
 
 ErisPulse は、システムの各コンポーネントの実行状態を監視し、監査、統計、カスタムロジックなどの拡張機能を実現するための統一されたフック/ライフサイクルシステムを提供します。
 
-システムは以下の3種類のトリガー方式をサポートしています：
-- `await lifecycle.emit("event", data)` — 精簡版、任意のデータを渡す（`to="Owner"` で指定送信）
+システムは以下の3種類のトリガ方法をサポートしています：
+- `await lifecycle.emit("event", data)` — 精簡版、任意のデータを渡す（`to="Owner"` の場合、指定された宛先に投递）
 - `lifecycle.emit_sync("event", data)` — 同期版（非非同期コンテキストで使用）
-- `await lifecycle.submit_event("event", ...)` — 旧バージョンとの互換性、標準イベント形式を自動構築
+- `await lifecycle.submit_event("event", ...)` — 旧版との互換性、自動的に標準的なイベント形式を構築
 
 ## イベント処理メカニズム
 
@@ -16378,15 +16402,15 @@ from ErisPulse import sdk
 # デコレータ形式
 @sdk.lifecycle.on("module.load")
 async def on_module_load(data):
-    print(f"モジュール加載: {data}")
+    print(f"モジュールのロード: {data}")
 
-# プログラム形式での登録
+# プログラミング形式での登録
 sdk.lifecycle.register("module.load", on_module_load, priority=10)
 
 # 登録解除
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# 所有者ごとの一括登録解除（モジュール/アダプターのアンロード時にフレームワークが自動的に呼び出す）
+# 所有者ごとに一括登録解除（モジュール/アダプタのアンロード時にフレームワークが自動的に呼び出す）
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
 print(f"クリーンアップしたライフサイクルフック数: {removed}")
 ```
@@ -16405,7 +16429,7 @@ async def second_handler(data):
     pass
 ```
 
-### 点式構造イベント
+### ポイント構造イベント
 
 具体的なイベントをトリガーすると、その親イベントもトリガーされます：
 - `module.load` をトリガーすると、`module` もトリガーされます
@@ -16413,55 +16437,55 @@ async def second_handler(data):
 
 ### ワイルドカード
 
-`*` を登録することで、すべてのイベントをキャッチできます：
+`*` を登録すると、すべてのイベントをキャッチできます：
 
 ```python
 @sdk.lifecycle.on("*")
 async def on_anything(data):
-    print(f"イベント受信: {data}")
+    print(f"イベントを受信: {data}")
 ```
 
-### 指定送信（emit to=）
+### 定向伝播（emit to=）
 
 > [!NOTE]
 > この機能は ErisPulse **2.8.0+** が必要です。
 
-`emit()` で `to` パラメータを指定すると、指定された所有者（owner）に登録されたハンドラにのみイベントが送信されます（モジュールは `on_load` 内で登録したフックは自動的に所属モジュールになります）。他のモジュールやワイルドカード `*` ハンドラはイベントを感知しません。
+`emit()` で `to` パラメータを指定すると、定向伝播モードになります。この場合、イベントは所有者（owner）として登録されたハンドラにのみ配信されます（モジュールが `on_load` 内で登録したフックは自動的に本モジュールに属します）。他のモジュールやワイルドカード `*` ハンドラは感知しません。
 
 ```python
-# 送信元：イベントは Chat モジュールに登録されたハンドラにのみ送信される
+# 投递元：イベントは Chat モジュールが登録したハンドラにのみ投递
 await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 
-# 受信元（Chat モジュール内）：同名のハンドラを登録し、owner は登録時に自動的に記録される
+# 訂読元（Chat モジュール内）：同名のフックを登録し、owner は登録時に自動的に記録されます
 @sdk.lifecycle.on("message_received")
 async def on_message_received(data): ...
 
-@sdk.lifecycle.on("message")   # 点式の親プレフィックスも同様に有効（owner でフィルタリング）
+@sdk.lifecycle.on("message")   # ポイント構造の親プレフィックスも同様に有効（owner でフィルタリング）
 async def on_any(data): ...
 ```
 
-- 対象の所有者が登録されたハンドラがない場合 → イベントは**消費されない**（`has_handlers()` で事前に検出可能）
-- `data` が dict の場合、自動で `_trace_id` を追加（既存値は上書きしない）
-- `emit_sync` / `submit_event` も `to=` パラメータをサポート
-- モジュール間通信の3層モデル（RPC / 指定送信 / ブロードキャスト）は [モジュール間通信](module-communication.md) を参照してください
+- 目標の owner に登録されたハンドラがない場合 → イベントは**消費されません**（`has_handlers()` で事前に検出可能です）
+- `data` が dict の場合、自動的に `_trace_id` を付与します（既存値を上書きしません）
+- `emit_sync` / `submit_event` でも `to=` パラメータがサポートされます
+- モジュール間通信の3層モデル（RPC / 定向 / ブロードキャスト）は [モジュール間通信](module-communication.md) を参照してください
 
 ### 一回限りの登録（once）
 
-2.7.0 から、`lifecycle.once()` で登録されたハンドラは**一度実行後自動で登録解除**されます。これは「初期準備完了」のような一回限りのフックに適しています。
+2.7.0 から、`lifecycle.once()` で登録されたハンドラは**一度実行された後に自動的に登録解除**されます。これは「初回準備完了」のような一回限りのフックに適しています：
 
 ```python
 @sdk.lifecycle.once("core.init.complete")
 async def on_first_ready(data):
-    print("初期準備完了、以降はトリガーされない")
+    print("初回準備完了、以降はトリガーされません")
 ```
 
-- `on()` と同じ優先度パラメータの意味（`priority` 数値が大きいほど先に実行）
-- 自動で登録解除、手動での `unregister` は不要
-- 同期/非同期ハンドラの両方をサポート
+- `on()` と同じ優先度パラメータの意味（`priority` の数値が大きいほど先に実行されます）
+- 自動的に登録解除され、手動で `unregister` する必要はありません
+- 同期/非同期のハンドラが両方サポートされています
 
-### 監視者検索（has_handlers）
+### 監視者クエリ（has_handlers）
 
-ホットパスの短絡処理では、`has_handlers()` を使って監視者がいるかどうかを事前に判断し、無駄なイベントのループやタスクのスケジューリングを避けることができます。
+ホットパスの短絡処理では、`has_handlers()` を使って監視者が存在するか事前に判定し、不要なイベントのループやタスクのスケジューリングを避けることができます：
 
 ```python
 if sdk.lifecycle.has_handlers("message.sending"):
@@ -16469,49 +16493,49 @@ if sdk.lifecycle.has_handlers("message.sending"):
 ```
 
 - 精確なイベント名、ワイルドカード `*`、親イベントの3種類のマッチングをカバー
-- 監視者がいない場合、`False` を返し、`emit` を安全にスキップできる
+- 監視者がいない場合、`False` を返し、`emit` を安全にスキップできます
 
 ## フックの断点一覧
 
-プラットフォームからフレームワークにメッセージが到達して処理が完了するまでの典型的なライフサイクルイベントの順序：
+プラットフォームからフレームワークにメッセージが入力されて処理完了までの典型的なライフサイクルイベントの時系列：
 
 ```mermaid
 sequenceDiagram
     participant P as プラットフォーム
-    participant A as アダプター
-    participant F as フレームワークコア
-    participant M as モジュールハンドラ
+    participant A as アダプタ
+    participant F as フレームワーク
+    participant M as モジュール
 
-    P->>A: プラットフォームのイベント到達
+    P->>A: プラットフォームのイベントが到着
     A->>F: adapter.event.receive（最も初期）
     F->>F: event.pre_process（ハンドラ実行前）
-    F->>M: ハンドラに分散（コマンド/メッセージ/通知など）
+    F->>M: プラットフォームのイベントをハンドラに分散（コマンド/メッセージ/通知など）
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending（送信前）
-    F->>A: SendDSL 送信
+    F->>A: SendDSL で送信
     A->>P: プラットフォームに送信
     A->>F: message.sent（送信完了）
     F->>F: adapter.event.dispatched（分散完了）
 ```
 
-フレームワークは以下のフック断点を内蔵しており、ユーザーは `@sdk.lifecycle.on()` を使って任意の断点を監視してカスタムロジックを実装できます。
+フレームワークは以下のフック断点を内蔵しており、`@sdk.lifecycle.on()` で任意の断点をサブスクライブしてカスタムロジックを実装できます。
 
 ### コア初期化
 
 | フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `core.init.start` | SDK 初期化開始 | `{}` |
-| `core.init.stage` | 初期化各段階開始（バックグラウンドで発射） | `{"stage": str}`、値は `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
-| `core.init.complete` | SDK 初期化完了 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
-| `core.uninit.complete` | SDK 反初期化完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
+| `core.init.start` | SDK の初期化開始 | `{}` |
+| `core.init.stage` | 初期化の各段階開始（バックグラウンドで発行） | `{"stage": str}`、値は `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.complete` | SDK の初期化完了 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
+| `core.uninit.complete` | SDK の逆初期化完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
 
-**例：起動進捗表示**
+**例：起動プロセスの表示**
 
 ```python
 @sdk.lifecycle.on("core.init.stage")
 def show_stage(data):
-    print(f"[起動] 段階に移行: {data['stage']}")
+    print(f"[起動] 段階に進入: {data['stage']}")
 ```
 
 ### 設定変更
@@ -16519,9 +16543,9 @@ def show_stage(data):
 | フック名 | トリガータイミング | データ |
 |---------|---------|------|
 | `config.set` | 設定項目が変更された | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | 外部で config.toml を編集した後に検出されたツリー全体の変更 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.updated` | 外部から `config.toml` を編集して木全体が変更されたことを検知した | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
-**例：設定監査**
+**例：設定の監査**
 
 ```python
 @sdk.lifecycle.on("config.set")
@@ -16529,38 +16553,43 @@ def audit_config(data):
     print(f"[監査] {data['key']}: {data['old_value']} -> {data['new_value']}")
 ```
 
-### モジュールライフサイクル
+### モジュールのライフサイクル
 
 | フック名 | トリガータイミング | データ |
 |---------|---------|------|
 | `module.register` | モジュールクラスがマネージャーに登録された | `{"module_name": str, "success": bool}` |
-| `module.load` | モジュールのロードが完了した（インスタンス化成功） | `{"module_name": str, "success": bool}` |
+| `module.load` | モジュールのロードが完了した（インスタンス化成功）；失敗時は `payload` に `"error": str, "traceback": str`（失敗現場は `module.last_error(名前)` でも確認可能）が追加 | `{"module_name": str, "success": bool}` |
 | `module.init` | モジュールの初期化が完了した（遅延ロード含む） | `{"module_name": str, "success": bool}` |
+| `module.before_unload` | アンロードのフローの最初のステップ（`on_unload` とリソース回収の前に；モジュールインスタンスのフック `on_before_unload` は同期的にトリガーされる） | `{"module_name": str, "reason": str}`；`reason` の値は `unload` / `reload` / `disable` / `cascade` / `dormant` |
+| `module.sleep` | モジュールのスリープが完了した（遅延ロードの休眠：リソースは解放され、アクセス時に自動的に再起動） | `{"module_name": str, "success": bool}` |
 | `module.unload` | モジュールのアンロード | `{"module_name": str, "success": bool}` |
-| `module.reload` | モジュールのホットリロードが完了した（依存者を含む連鎖リロード） | `{"module_name": str, "success": bool, "full": bool}`；全量リロード（`reload_all`）の場合は `module_name` が `"All"` になり、payload に `"results": dict[str, bool]` が追加される |
+| `module.reload` | モジュールのホットリロードが完了した（依存するモジュールも含む） | `{"module_name": str, "success": bool, "full": bool, "duration_ms": int}`；単一モジュールの場合は `"identity_changed": bool`（False = 進程内では古いコードが実行されている可能性がある、例：C拡張のキャッシュ）と `"version_old": str, "version_new": str` が追加される；全量リロード（`reload_all`）の場合は `module_name` は `"All"` で、`payload` に `"results": dict[str, bool]` が追加される |
 
-### アダプターライフサイクル
+> **モジュールインスタンスフック `on_before_unload`**：`module.before_unload` イベントに対応するオプションのライフサイクルメソッドです。`event["reason"]` に理由が記録され、`sdk.storage` に状態を保存して、再起動後に `on_load` で復元するのに適しています（遅延ロードの状態継続はこれに基づいています）。フックの失敗は警告として扱われ、アンロードのフローをブロックしません。
 
-| フック名 | トリガータイミング | データ |
-|---------|---------|------|
-| `adapter.load` | アダプターの登録が完了した | `{"platform": str, "success": bool}` |
-| `adapter.start` | アダプターの起動 | `{"platforms": [str]}` |
-| `adapter.status.change` | アダプターのステータスが変化した | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}`；status の完全な値は `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
-| `adapter.stop` | アダプターの停止 | `{"platforms": [str]}` |
-| `adapter.stopped` | アダプターの停止が完了した | `{"platforms": [str]}` |
-| `adapter.bot.online` | Bot のオンライン | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
-| `adapter.bot.offline` | Bot のオフライン | `{"platform": str, "bot_id": str, "status": str}` |
-
-### イベント受信と処理
+### アダプタのライフサイクル
 
 | フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `adapter.event.receive` | 外部プラットフォームのイベントを受信した（最も初期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.blocked` | ミドルウェアがイベントをブロックした（`False` を返した場合、イベントは他のハンドラに渡されず破棄される） | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
+| `adapter.load` | アダプタの登録が完了した | `{"platform": str, "success": bool}` |
+| `adapter.reload` | アダプタのコードレベルのホットリロードが完了した | `{"adapter_name": str, "success": bool, "full": bool, "duration_ms": int, "identity_changed": bool, "version_old": str, "version_new": str, "was_started": bool, "source": str}`；`identity_changed=False` = 進程内では古いコードが実行されている可能性がある |
+| `adapter.start` | アダプタの起動 | `{"platforms": [str]}` |
+| `adapter.status.change` | アダプタのステータスが変化した | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}`；status の完全な値は `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
+| `adapter.stop` | アダプタの停止 | `{"platforms": [str]}` |
+| `adapter.stopped` | アダプタの停止が完了した | `{"platforms": [str]}` |
+| `adapter.bot.online` | Bot がオンラインになった | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
+| `adapter.bot.offline` | Bot がオフラインになった | `{"platform": str, "bot_id": str, "status": str}` |
+
+### イベントの受信と処理
+
+| フック名 | トリガータイミング | データ |
+|---------|---------|------|
+| `adapter.event.receive` | 外部プラットフォームのイベントを受け取った（最も初期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.blocked` | 中間処理がイベントを拒否した（`False` を返した、イベントは処理されず他のハンドラにも渡されない） | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
 | `adapter.event.dispatched` | イベントの分散が完了した | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | イベントハンドラの実行前に | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `event.pre_process` | イベントハンドラが実行される直前 | `{"event_type": str, "platform": str, "detail_type": str}` |
 
-**例：イベント統計**
+**例：イベントの統計**
 
 ```python
 event_counter = {}
@@ -16576,14 +16605,14 @@ def log_unhandled(data):
         print(f"[未処理] {data['platform']}/{data['event_type']}")
 ```
 
-### メッセージ送信
+### メッセージの送信
 
 | フック名 | トリガータイミング | データ |
 |---------|---------|------|
 | `message.sending` | メッセージが送信される直前 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | メッセージの送信が完了した | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
-**例：メッセージ送信監査**
+**例：メッセージ送信の監査**
 
 ```python
 @sdk.lifecycle.on("message.sending")
@@ -16595,10 +16624,10 @@ def log_sending(data):
 
 | フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `command.matched` | コマンドがマッチして実行される直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
+| `command.matched` | コマンドがマッチし、実行される直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
 | `command.executed` | コマンドの実行が完了した | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(失敗時のみ)}` |
 
-**例：コマンド統計**
+**例：コマンドの統計**
 
 ```python
 @sdk.lifecycle.on("command.matched")
@@ -16606,12 +16635,12 @@ def count_commands(data):
     print(f"[コマンド] /{data['command']} from {data['user_id']}@{data['platform']}")
 ```
 
-### HTTPルーティング
+### HTTP ルーティング
 
 | フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `server.request` | HTTPリクエストの受信 | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | HTTPレスポンスの送信 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.request` | HTTP リクエストが受信された | `{"method": str, "path": str, "client_ip": str}` |
+| `server.response` | HTTP レスポンスが送信された | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
 **例：リクエストログ**
 
@@ -16625,12 +16654,12 @@ def log_http(data):
 
 | フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `server.start` | ルーティングサーバーの起動 | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(失敗時のみ)}` |
-| `server.stop` | ルーティングサーバーの停止 | `{}` |
-| `server.websocket.connect` | WebSocket接続の確立 | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | WebSocket接続の切断 | `{"path": str, "module_name": str, "reason": str, "error": str(異常時のみ)}` |
+| `server.start` | ルーティングサーバーが起動した | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(失敗時のみ)}` |
+| `server.stop` | ルーティングサーバーが停止した | `{}` |
+| `server.websocket.connect` | WebSocket 接続が確立した | `{"path": str, "module_name": str, "client_ip": str}` |
+| `server.websocket.disconnect` | WebSocket 接続が切断した | `{"path": str, "module_name": str, "reason": str, "error": str(異常時のみ)}` |
 
-**例：WebSocket接続監視**
+**例：WebSocket 接続監視**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
@@ -16644,35 +16673,35 @@ def on_ws_disconnect(data):
 
 ### ストレージ接続状態
 
-ストレージバックエンドの接続プールの確立、障害、回復（すべてバックグラウンドで発射され、ストレージ操作をブロックしない）：
+ストレージバックエンドの接続プールの確立、障害、および回復（すべてバックグラウンドで発行され、ストレージ操作をブロックしません）：
 
 | フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `storage.ready` | ストレージバックエンドの接続プールが準備完了（各イベントループで最初にプールが確立された場合） | `{"backend": str}` |
-| `storage.unreachable` | 接続リトライが尽き、クールダウン期間に入る（この間、操作は即座に失敗する） | `{"backend": str, "error": str, "cooldown": float}` |
-| `storage.recovered` | クールダウン終了後、再接続に成功し、ストレージが再利用可能になる | `{"backend": str}` |
+| `storage.ready` | ストレージバックエンドの接続プールが準備完了（各イベントループで最初のプール確立に成功した） | `{"backend": str}` |
+| `storage.unreachable` | 接続リトライが尽き、冷却期間に入る（この間、操作は即座に失敗する） | `{"backend": str, "error": str, "cooldown": float}` |
+| `storage.recovered` | 冷却が終了し、再接続に成功し、ストレージが再び利用可能になる | `{"backend": str}` |
 
-**例：ストレージ障害アラート**
+**例：ストレージ障害のアラート**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
 def alert_storage_down(data):
-    print(f"[アラート] ストレージバックエンド {data['backend']} が利用不可: {data['error']}、{data['cooldown']}秒後に自動再接続")
+    print(f"[アラート] ストレージバックエンド {data['backend']} が利用不可: {data['error']}、{data['cooldown']}秒後に自動的に再接続されます")
 
 @sdk.lifecycle.on("storage.recovered")
 def notify_storage_back(data):
-    print(f"[回復] ストレージバックエンド {data['backend']} が再利用可能になりました")
+    print(f"[回復] ストレージバックエンド {data['backend']} が再び利用可能になりました")
 ```
 
-### HTTPクライアント
+### HTTP クライアント
 
-`sdk.client` のリクエストと接続イベント（すべてバックグラウンドで発射）：
+`sdk.client` のリクエストと接続イベント（すべてバックグラウンドで発行されます）：
 
 | フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `client.request.success` | HTTPリクエストが成功 | `{"method": str, "url": str, "status": int, "elapsed": float}` |
-| `client.request.failed` | HTTPリクエストがリトライを尽くし最終的に失敗 | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
-| `client.ws.connect` | WebSocket接続の確立 | `{"url": str}` |
+| `client.request.success` | HTTP リクエストが成功した | `{"method": str, "url": str, "status": int, "elapsed": float}` |
+| `client.request.failed` | HTTP リクエストのリトライが尽き、最終的に失敗した | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
+| `client.ws.connect` | WebSocket 接続が確立した | `{"url": str}` |
 
 ### 国際化
 
@@ -16680,15 +16709,15 @@ def notify_storage_back(data):
 |---------|---------|------|
 | `i18n.language.changed` | フレームワークの言語が切り替わった（`i18n.set_language`） | `{"language": str, "previous": str}` |
 
-## 標準イベント定義
+## 標準イベントの定義
 
 ```python
 STANDARD_EVENTS = {
     "core": ["init.start", "init.stage", "init.complete", "uninit.complete"],
-    "module": ["load", "init", "unload", "register", "reload"],
+    "module": ["load", "before_unload", "init", "sleep", "unload", "register", "reload"],
     "adapter": [
-        "load", "start", "status.change", "stop", "stopped",
-        "event.receive", "event.dispatched",
+        "load", "start", "status.change", "reload", "stop", "stopped",
+        "event.receive", "event.blocked", "event.dispatched",
         "bot.online", "bot.offline",
     ],
     "server": [
@@ -16706,34 +16735,34 @@ STANDARD_EVENTS = {
 }
 ```
 
-## 完全なAPIリファレンス
+## 完全な API リファレンス
 
 ### 登録と解除
 
 | メソッド | 説明 |
 |------|------|
 | `@lifecycle.on(event, *, priority=0)` | デコレータでハンドラを登録 |
-| `lifecycle.register(event, handler, *, priority=0)` | プログラム形式で登録 |
+| `lifecycle.register(event, handler, *, priority=0)` | プログラミング形式で登録 |
 | `lifecycle.unregister(event, handler=None)` | 登録解除（handler=None の場合、該当イベントのすべてのハンドラを解除） |
 
 ### トリガー
 
 | メソッド | 説明 |
 |------|------|
-| `await lifecycle.emit(event, data=None, *, to=None)` | 非同期でトリガーし、ハンドラを**並列実行**（互いにブロックせず、返却時にすべて完了）、返り値がNoneでない場合、優先度順にdataを置換してチェーンバック；`to` で所有者を指定すると、指定所有者のハンドラにのみ送信 |
-| `lifecycle.fire(event, data=None, *, to=None)` | **バックグラウンドで発射（投げた後は即離）**：ハンドラをバックグラウンドタスクで並列実行、待機せず、返り値なし；ハンドラがいない場合、オーバーヘッドなし。高頻度のホットパスや観測イベントに適している。停止シーケンスや順序依存消費（例：`config.set`）は `emit` を使用すること |
+| `await lifecycle.emit(event, data=None, *, to=None)` | 非同期でトリガーし、ハンドラは**並列実行**（互いにブロックせず、返却時に全て完了）、返り値が None 以外の場合は優先度順に data を置き換え、`to` に owner を指定すると定向投递 | 
+| `lifecycle.fire(event, data=None, *, to=None)` | **バックグラウンドで発行（投げて即終了）**：ハンドラはバックグラウンドタスクで並列実行、待機せず、返り値なし；ハンドラがいない場合、オーバーヘッドなし。高頻度なホットパスや純粋な観測イベントに適しています；停止シーケンスや順序が重要な消費（例：`config.set`）は `emit` を使用してください |
 | `lifecycle.emit_sync(event, data=None, *, to=None)` | 同期でトリガーし、非同期ハンドラは create_task でスケジュール |
-| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 旧バージョンとの互換性、標準イベント形式を自動構築；`background=True` の場合は `fire` のバックグラウンド発射を使用 |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 旧版との互換性、標準イベント形式を自動的に構築；`background=True` の場合、`fire` でバックグラウンドで発行 |
 
 ### ユーティリティ
 
 | メソッド | 説明 |
 |------|------|
-| `lifecycle.start_timer(timer_id)` | タイマーの開始 |
-| `lifecycle.get_duration(timer_id)` | 経過時間を取得（秒） |
-| `lifecycle.stop_timer(timer_id)` | タイマーを停止し、経過時間を返す |
-| `lifecycle.list_hooks()` | すべての登録されたフックとハンドラ数をリストする |
-| `lifecycle.clear()` | すべてのハンドラとタイマーをクリアする |
+| `lifecycle.start_timer(timer_id)` | タイマーを開始 |
+| `lifecycle.get_duration(timer_id)` | 継続時間を取得（秒） |
+| `lifecycle.stop_timer(timer_id)` | タイマーを停止し、継続時間を返す |
+| `lifecycle.list_hooks()` | すべての登録されたフックとハンドラ数をリスト |
+| `lifecycle.clear()` | すべてのハンドラとタイマーをクリア |
 
 ## モジュールでの使用例
 
@@ -16762,24 +16791,24 @@ class Main(BaseModule):
             sdk.logger.info(f"設定変更: {data['key']} = {data['new_value']}")
 ```
 
-## バックグラウンドタスクの所有者と自動解除
+## バックグラウンドタスクの所有者と自動キャンセル
 
 > [!NOTE]
 > この機能は ErisPulse **2.8.0+** が必要です。
 
-モジュールが作成した asyncio バックグラウンドタスクが `on_unload` で解除されない場合、`self` の参照が保持され、モジュールインスタンスが回収されない（ホットリロード後に古いインスタンスが残る）可能性があります。フレームワークは以下のバックアップメカニズムを提供しています：
+モジュールが作成した asyncio バックグラウンドタスクは、`on_unload` でキャンセルしない場合、`self` を保持してモジュールインスタンスの回収ができない（ホットリロード後に古いインスタンスが残る）。フレームワークは以下のバックアップメカニズムを提供します：
 
-- **`self.spawn(coro)`**（モジュール内で推奨）：タスクは自動的にモジュール名に所属し、モジュールのアンロード時にフレームワークが `on_unload` **の後に**未完了のタスクをバックアップでキャンセルし、警告を記録します。
-- **`spawn_background(coro)`**（`ErisPulse.runtime`）：現在の `owner_scope` コンテキストを自動的にキャプチャします。`cancel_owner_tasks(owner)` で所属をキャンセルし、`cancel_all_background_tasks()` は `sdk.uninit()` のバックアップ用です。
-- **アダプター**：プラットフォーム名の下のバックグラウンドタスクも同様にバックアップでキャンセルされます。
+- **`self.spawn(coro)`**（モジュール内で推奨）：タスクは自動的にモジュール名に属し、モジュールのアンロード時にフレームワークが `on_unload` **の後に**未完了のタスクをキャンセルし、警告を記録します
+- **`spawn_background(coro)`**（`ErisPulse.runtime`）：現在の `owner_scope` コンテキストを自動的にキャプチャします；`cancel_owner_tasks(owner)` で所有者ごとにキャンセル、`cancel_all_background_tasks()` は `sdk.uninit()` のバックアップとして使用
+- **アダプタ**：プラットフォーム名以下のバックグラウンドタスクも同様にアンロード時にキャンセルされます
 
 ```python
 async def on_load(self, event):
-    # 推奨：バックグラウンドタスクは self.spawn() を使用し、アンロード時にフレームワークがバックアップで自動的にキャンセルされます
+    # 推奨：バックグラウンドタスクは self.spawn() を使用し、アンロード時にフレームワークが自動的にバックアップでキャンセル
     self.spawn(self._poll())
 
 async def on_unload(self, event):
-    # 精密制御の場合は、自分でキャンセルし、終了処理を待つ必要があります
+    # 精密制御が必要な場合は、キャンセルして終了を待つことを推奨
     if self._poll_task:
         self._poll_task.cancel()
         await asyncio.gather(self._poll_task, return_exceptions=True)
@@ -16791,17 +16820,17 @@ async def _poll(self):
 ```
 
 > [!IMPORTANT]
-> フレームワークのバックアップは**強制キャンセル**（`cancel_owner_tasks`）です。これは `on_unload` の返り値の後に発生します。そのため、優雅な終了処理が必要なタスク（バッファのフラッシュ、状態の永続化、接続の閉じる）は **`on_unload` で `cancel()` と `await` を行う必要があります**—バックアップが終了処理を保証するとは思わないでください。フレームワークは「`self` を保持するタスクが残らない」ことを保証するだけで、「優雅」を保証するものではありません。`await` の結果が必要なタスクは `await` してください、バックグラウンドタスクに投げないでください。
+> フレームワークのバックアップは**強制キャンセル**（`cancel_owner_tasks`）です。これは `on_unload` の返り値の後に発生します。したがって、優雅な終了が必要なタスク（バッファのフラッシュ、状態の永続化、接続の閉鎖）は**必ず**`on_unload` で `cancel()` して `await` で完了させる必要があります。バックアップが終了処理を保証するとは考えないでください。`await` の結果が必要なタスクは、`await` してバックグラウンドタスクに投げないでください。
 
 ## 注意事項
 
 1. **ハンドラは同期または非同期**：システムは自動的に正しく呼び出します
-2. **データの渡し方**：`emit()` モードでは、ハンドラが `None` 以外の値を返すと、後続のハンドラに渡される `data` が変更されます
-3. **イベント命名規則**：点式構造でイベント名を付けることを推奨し、親イベントの監視がしやすくなります
-4. **エラーの分離**：1つのハンドラのエラーは他のハンドラの実行に影響しません
-5. **同期トリガーの制限**：`emit_sync()` 中の非同期ハンドラは fire-and-forget 方式でスケジュールされ、返り値は戻されません
+2. **データの渡し方**：`emit()` モードでは、ハンドラが None 以外の値を返すと、後続のハンドラに渡される data が変更されます
+3. **イベント名の命名規則**：点構造の命名を使用することを推奨し、親イベントの監視がしやすくなります
+4. **エラーの隔離**：1つのハンドラの例外は他のハンドラの実行に影響しません
+5. **同期トリガーの制限**：`emit_sync()` では非同期ハンドラは fire-and-forget 方式でスケジュールされ、返り値は戻されません
 6. **ライフサイクルのクリーンアップ**：`sdk.uninit()` を呼び出すと、すべての登録されたハンドラとタイマーがクリーンアップされます
-7. **ロードの優先性**：フレームワークの初期化段階でイベントを監視する必要がある場合、高優先度を設定し、遅延ロードを無効化することを推奨します
+7. **ロードの優先性**：フレームワークの初期化段階でイベントをサブスクライブする必要がある場合、高優先度を設定し、遅延ロードを無効にすることを推奨します
 
 
 
@@ -19739,37 +19768,37 @@ await sdk.module.dismiss_shadow("roll")   # または：シャドウを放棄
 
 # 起動フローと手動制御
 
-> [!TIP]  
-> **この記事を読むタイミング**：手動で起動フローを制御し、起動順序をカスタマイズしたり、起動失敗をトラブルシューティングする必要がある場合。必要がない場合はスキップしても、他の機能の使用に影響はありません。
+> [!TIP]
+> **いつ読む必要があるか**: 起動フローを手動で駆動し、起動順序をカスタマイズする場合、または起動失敗をトラブルシューティングする場合。必要ない場合は飛ばしても、他の機能の使用に影響はありません。
 
-ErisPulse の `await sdk.run()` / `await sdk.init()` は、一連の起動フローを「一行のコード」に抽象化しています。しかし、部分的なロード、動的な登録、ホットプラグ、カスタムロード戦略の注入など、起動フローを完全にカスタマイズしたい場合は、このフローの内部で何が起こっているのか、そして各ステップをどのように手動で制御するのかを理解する必要があります。
+ErisPulse の `await sdk.run()` / `await sdk.init()` は、一連の起動フローを「一行のコード」にラップしています。しかし、部分的なロード、動的登録、ホットプラグ、カスタムロード戦略の注入など、完全にカスタムの起動フローが必要な場合は、このフローの内部で何が起こっているのか、そして各ステップを手動で駆動する方法を理解する必要があります。
 
-本文では、起動フローを独立したステップに分解し、それぞれの役割と呼び出し順序を説明します。また、手動で完全に起動するための例も示します。
+本文では、起動フローを個々のステップに分解し、各ステップの役割と呼び出し順序を説明し、手動で完全な起動を行う例を示します。
 
-> 本文は、[最初のロボット](../getting-started/first-bot.md)を実行し、`sdk.run(keep_running=True/False)` の2つのモードを理解していることを前提としています。本文では、`init()` **内部**のフローの分解と、`init()` / `init_task()` / `init_sync()` などのより低レベルなエントリポイントに焦点を当てています。
+> 本文では、[最初のロボット](../getting-started/first-bot.md)を実行し、`sdk.run(keep_running=True/False)` の 2 つのモードを理解していることを前提としています。本文は `init()` **内部**のフロー分解と、`init()` / `init_task()` / `init_sync()` などのより下層のエントリポイントに焦点を当てています。
 
-## SDK トップレベルのエントリーポイント一覧
+## SDK トップレベルのエントリポイント一覧
 
-`run()` の 2 種類の `keep_running` モードに加えて、SDK はいくつかのより低レベルの初期化エントリーポイントを提供しています。これらの違いは、**非同期性、戻り値、および例外のラッピング有無**にあります。
+`run()` の 2 つの `keep_running` モードに加えて、SDK はいくつかのより下層の初期化エントリポイントを提供しており、それぞれの違いは**非同期性、戻り値、および例外のラッピング**です。
 
-| エントリーポイント | 非同期性 | 戻り値 | 例外処理 | 適用される場面 |
+| エントリポイント | 非同期性 | 戻り値 | 例外処理 | 適用場面 |
 |------|--------|--------|----------|----------|
-| `await sdk.run(True)` | async、ブロッキングして維持 | `None`（終了時に自動 `uninit`） | モジュール/アダプターのエラーは捕捉され、プロセスをクラッシュさせない | ボット専用アプリケーション |
-| `await sdk.run(False)` | async、ブロッキングしない | `None`（自動リリースしない） | 同上 | 初期化後にカスタムロジックを実行する |
-| `await sdk.init()` | async、awaitが必要 | `bool` | 内部でコンポーネントの例外を捕捉し、失敗時は `False` を返す | 手動でライフサイクルを制御（`uninit()` と併用） |
-| `sdk.init_task()` | async、Task を返す、ブロッキングしない | `asyncio.Task` | `init()` と同じ | 別の初期化処理を並行実行する、またはイベントループがまだ実行されていない場合 |
-| `sdk.init_sync()` | **同期**、現在のスレッドをブロッキング | `bool` | `init()` と同じ | コマンドラインスクリプト、イベントループのない同期エントリーポイント |
+| `await sdk.run(True)` | async, 阻塞維持 | `None`（終了時に自動 `uninit`） | モジュール/アダプターのエラーはブロックされず、プロセスを破綻させない | 純粋な bot アプリケーション |
+| `await sdk.run(False)` | async, 非阻塞 | `None`（自動アンロードしない） | 同上 | 初期化後にカスタムロジックを実行する |
+| `await sdk.init()` | async, await 必要 | `bool` | 内部でコンポーネントの例外をキャッチし、失敗時は `False` を返す | 手動でライフサイクルを制御する場合（`uninit()` と組み合わせる） |
+| `sdk.init_task()` | async, Task を返す非阻塞 | `asyncio.Task` | `init()` と同じ | 並列に他の初期化を実行する場合、またはイベントループがまだ実行されていない場合 |
+| `sdk.init_sync()` | **同期**, 現在のスレッドを阻塞 | `bool` | `init()` と同じ | コマンドラインスクリプト、イベントループのない同期エントリポイント |
 
-> **よくある誤解**：`await sdk.init()` は `await sdk.run(keep_running=False)` と**等価ではありません**。2 つの違いがあります：① `init()` は `bool` を返します（失敗時は `False`）、`run()` は `None` を返します；② `init()` は初期化のみを行い、**自動リリースはしません**、`run()` はイベントループの終了時に自動で `uninit()` を呼び出します。したがって、手動でリリースやカスタムライフサイクルを制御する必要がある場合は、`init()` と `uninit()` を併用してください。
+> **よくある誤解**: `await sdk.init()` は `await sdk.run(keep_running=False)` と**等価ではない**。2 つの違いがある: ① `init()` は `bool` を返す（失敗時は `False`）、`run()` は `None` を返す；② `init()` は初期化のみを行い、**自動アンロードしない**、`run()` はイベントループの終了時に自動 `uninit()` を行う。したがって、アンロードやカスタムライフサイクルを手動で制御する必要がある場合は、`init()` + `uninit()` を使用する。
 
-## 鍵路の起動概要
+## 起動フローの概要
 
-`sdk.init()`（正確にはその内部の `Initializer.init()`）は、以下のようにフレームワーク全体を起動します。
+`sdk.init()`（正確にはその内部の `Initializer.init()`）は、以下のようにフレームワーク全体を起動します:
 
 ```mermaid
 flowchart TD
     A[0. 環境準備<br/>設定の読み込み / 例外処理] --> B
-    B[1. 並列的な発見とロード<br/>AdapterLoader.load / ModuleLoader.load<br/>内部で Finder.find_all を呼び出す] --> C
+    B[1. 並列発見とロード<br/>AdapterLoader.load / ModuleLoader.load<br/>内部で Finder.find_all を呼び出す] --> C
     C[2. アダプターの登録<br/>AdapterLoader.register_to_manager] --> D
     D[3. アダプターの起動<br/>adapter.startup] --> E
     E[4. モジュールの登録<br/>ModuleLoader.register_to_manager] --> F
@@ -19777,24 +19806,24 @@ flowchart TD
     G[6. ルーティングサーバーの起動<br/>router.start]
 ```
 
-対応するコアコンポーネント：
+対応するコアコンポーネント:
 
-| 層 | コンポーネント | 機能 |
+| 層 | コンポーネント | 役割 |
 |----|------|------|
-| 発見 | `AdapterFinder` / `ModuleFinder` | インストール済みパッケージの entry-points から**発見**する |
-| ロード | `AdapterLoader` / `ModuleLoader` | 発見 + インポート + メタデータの読み取り + 有効/無効の判定を行い、オブジェクトのリストを返す |
+| 発見 | `AdapterFinder` / `ModuleFinder` | エントリポイントから**発見**する（インストール済みパッケージ内） |
+| ロード | `AdapterLoader` / `ModuleLoader` | 発見 + インポート + メタデータの読み込み + 启用/無効の判断、オブジェクトのリストを返す |
 | 登録 | `*Loader.register_to_manager` | オブジェクトを対応するマネージャーに登録する |
-| 管理 | `sdk.adapter` / `sdk.module` | アダプターやモジュールのインスタンスを管理し、起動/停止のインターフェースを提供する |
-| 初期化 | `ModuleLoader.initialize_modules` | モジュールのインスタンスを作成し、`sdk` にマウントする（依存関係のトポロジカルソートを処理する） |
+| 管理 | `sdk.adapter` / `sdk.module` | アダプター/モジュールのインスタンスを維持し、起動/停止のインターフェースを提供する |
+| 初期化 | `ModuleLoader.initialize_modules` | モジュールのインスタンスを作成し、`sdk` にマウントする（依存関係のトポロジカルソートを処理） |
 | ルーティング | `sdk.router` | HTTP / WebSocket サーバー |
 
-> **重要**：`Finder` と `Loader` は2つの層です。`Loader` は内部で**既に** `Finder` を保持しています（`AdapterLoader` は `AdapterFinder` を内蔵し、`ModuleLoader` は `ModuleFinder` を内蔵しています）。ほとんどの場面では `Loader` を使用するだけで十分です。"インポートせずにリストアップする"必要がある場合にのみ、`Finder` を個別に使用します。
+> **重要**: `Finder` と `Loader` は 2 層です。`Loader` は内部で**すでに** `Finder` を保持しています（`AdapterLoader` は `AdapterFinder` を、`ModuleLoader` は `ModuleFinder` を持っています）。ほとんどの場合、`Loader` を使用するだけで十分です。"インポートしない"でリストアップする必要がある場合にのみ、`Finder` を個別に使用します。
 
-## 各環節の詳細解説
+## 各ステップの詳細説明
 
-### 1. 探索層：Finder
+### 1. 発見層: Finder
 
-Finder は「どのパッケージがアダプター/モジュールを提供しているか」を見つけるだけの役割を持ち、インポートやインスタンス化は行いません。
+Finder は、"どのパッケージがアダプター/モジュールを提供しているか"を**検索する**だけです。インポートやインスタンス化は行いません。
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -19802,19 +19831,19 @@ from ErisPulse.finders import AdapterFinder, ModuleFinder
 adapter_finder = AdapterFinder()
 module_finder = ModuleFinder()
 
-# すべてのインストール済みのアダプター/モジュールエントリポイントを検索
+# すべてのインストール済みアダプター/モジュールのエントリポイントを検索
 adapter_entries = adapter_finder.find_all()    # list[EntryPoint]
 module_entries = module_finder.find_all()      # list[EntryPoint]
 
-# 名称で個別に検索
+# 名前で個別に検索
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
-各 `EntryPoint` は `.load()` を呼び出すことで対応するクラスを得られますが、通常は手動で呼び出す必要はありません。Loader が自動的に行います。
+各 `EntryPoint` は `.load()` で対応するクラスを得ることができますが、通常は手動で呼び出す必要はありません。`Loader` が行います。
 
-### 2. 加載層：Loader
+### 2. ロード層: Loader
 
-Loader は Finder をベースに「インポート + メタデータの読み込み + 有効/無効の判定」を行います。
+Loader は、Finder の上に「インポート + メタデータの読み取り + 启用/無効の判断」を行います。
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -19823,32 +19852,32 @@ from ErisPulse import sdk
 adapter_loader = AdapterLoader()
 module_loader = ModuleLoader()
 
-# load() 内部：finder.find_all() を呼び出し → 各エントリポイントを順次処理 → 三つ組を返す
+# load() 内部: finder.find_all() を呼び出す → 各エントリポイントを処理 → 3 つのタプルを返す
 adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sdk.adapter)
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
 
-`load()` が返す三つ組：
+`load()` が返す 3 つのタプル:
 
 | 戻り値 | 意味 |
 |--------|------|
 | `objs` (`dict`) | 名称 → オブジェクト（アダプタークラス / モジュールラッパー） |
-| `enabled` (`list[str]`) | 有効化された名称（設定で無効化されていない） |
+| `enabled` (`list[str]`) | 启用された名称（設定で無効化されていない） |
 | `disabled` (`list[str]`) | 無効化された名称 |
 
-#### 加載失敗時の診断情報
+#### ロード失敗時の診断情報
 
-モジュール/アダプターが加載または初期化段階で例外を投げた場合、フレームワークはそのコンポーネントをスキップして他のコンポーネントの加載を継続し、**ユーザーのコードフレームの要約**を出力します。これにより、デフォルトの INFO レベルでもエラー箇所を特定でき、手動で DEBUG モードを有効化する必要がありません。
+モジュール/アダプターがロードまたは初期化段階で例外を送出した場合、フレームワークはそのコンポーネントをスキップして他のコンポーネントのロードを継続し、**ユーザーのコードのフレームの要約**を出力します。これにより、デフォルトの INFO レベルでもエラー箇所を特定でき、手動で DEBUG モードを有効にする必要がありません:
 
 ```
-[ERROR] [ModuleLoader] entry-point からモジュール MyModule の加載に失敗しました。スキップしました: 'NoneType' object has no attribute 'platform'
+[ERROR] [ModuleLoader] entry-point からモジュール MyModule をロードできませんでした。スキップしました: 'NoneType' object has no attribute 'platform'
   → MyModule/Core.py:42 in on_load
       adapter = sdk.platform
   → AttributeError: 'NoneType' object has no attribute 'platform'
-  → ヒント: ログレベルを DEBUG に上げると完全なスタックトレースが表示されます。モジュール MyModule の実装コードを確認してください。
+  → ヒント: ログレベルを DEBUG に上げて完全なスタックを確認する。モジュール MyModule の実装コードを確認する
 ```
 
-診断情報は `ErisPulse.runtime.diagnostics` モジュールによって生成され、フレームワーク内部のフレームは自動的にフィルタリングされ、ユーザーのコードフレームのみが残されます。カスタム加載ロジックで再利用する場合：
+診断情報は `ErisPulse.runtime.diagnostics` モジュールで生成され、フレームワーク内部のフレームを自動的にフィルタリングし、ユーザーのコードフレームのみを残します。カスタムロードロジックで再利用する場合は:
 
 ```python
 from ErisPulse.runtime import log_diagnostic
@@ -19856,40 +19885,40 @@ from ErisPulse.runtime import log_diagnostic
 try:
     risky_init()
 except Exception as e:
-    log_diagnostic(e)  # ユーザーコードフレームを自動的に抽出し、ERROR ログに記録
+    log_diagnostic(e)  # 自動的にユーザーのコードフレームを抽出して ERROR ログに記録
 ```
 
-このモジュールには `extract_user_frame()`（構造化されたフレーム情報を返す）と `format_diagnostic_block()`（複数行のテキストを返す）という2つの低レベル関数も提供されています。
+このモジュールには、`extract_user_frame()`（構造化されたフレーム情報を返す）と `format_diagnostic_block()`（複数行のテキストを返す）という 2 つの低レベル関数も提供されています。
 
-### 3. 登録層：register_to_manager
+### 3. 登録層: register_to_manager
 
-Loader が出力したオブジェクトをマネージャーに登録し、`sdk.adapter` / `sdk.module` がそれらを認識できるようにします。
+Loader が生成したオブジェクトをマネージャーに登録し、`sdk.adapter` / `sdk.module` がそれらを認識できるようにします。
 
 ```python
-# アダプターの登録（すべて成功した場合に True を返す）
+# アダプターの登録（すべて成功した場合は True を返す）
 await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.adapter)
 
 # モジュールの登録
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
-登録後、アダプターはアダプターマネージャーに、モジュールはモジュールマネージャーに登録されますが、**まだ起動/インスタンス化は行われていません**。
+登録後、アダプターはアダプター管理マネージャーに登録され、モジュールはモジュール管理マネージャーに登録されますが、**まだ起動/インスタンス化されていません**。
 
 ### 4. アダプターの起動
 
 ```python
 # すべての登録済みアダプターを起動
 await sdk.adapter.startup()
-# 特定のプラットフォームを指定
+# または特定のプラットフォームを指定
 await sdk.adapter.startup("yunhu")
 await sdk.adapter.startup(["yunhu", "telegram"])
 ```
 
-> 登録 ≠ 起動。`register_to_manager` は単に登録するだけです。`startup` がアダプターの `start()` を呼び出し、プラットフォームとの接続を確立します。
+> 登録 ≠ 起動。`register_to_manager` は単に登録するだけです。`startup` はアダプターの `start()` を呼び出し、プラットフォームとの接続を確立します。
 
 ### 5. モジュールの初期化
 
-モジュールはアダプターに比べて1段階多く、**インスタンス化**して `sdk` にアタッチする必要があります（これにより `sdk.MyModule.xxx` で呼び出せるようになります）。この段階では、モジュール間の依存宣言とトポロジカルソートも処理されます。
+モジュールはアダプターに比べて 1 つ追加のステップがあります。**インスタンス化**して `sdk` にマウントする必要があります（これにより `sdk.MyModule.xxx` で呼び出せるようになります）。このステップでは、モジュール間の依存関係の宣言とトポロジカルソートも処理されます。
 
 ```python
 success = await module_loader.initialize_modules(
@@ -19897,7 +19926,7 @@ success = await module_loader.initialize_modules(
 )
 ```
 
-インスタンス化が成功すると、モジュールは `sdk.<ModuleName>` に登録されます。
+インスタンス化が成功すると、モジュールは `sdk.<ModuleName>` に表示されます。
 
 ### 6. ルーティングサーバーの起動
 
@@ -19910,11 +19939,11 @@ await sdk.router.start(
 )
 ```
 
-ルーティングサーバーは、アダプターからの Webhook / WebSocket コールバックを受信します。このサーバーを起動しないと、server モードのアダプターはメッセージを受け取れません。
+ルーティングサーバーは、アダプターの Webhook / WebSocket コールバックを受信する役割を担います。これを起動しないと、サーバーモードのアダプターはメッセージを受信できません。
 
-## 完全な手動起動の例
+## 完全な手動起動例
 
-以下のコードは `await sdk.init()` のコアプロセスと**同等**ですが、各ステップが明示的に公開されており、任意の段階でカスタムロジックを挿入できます：
+次のコードは `await sdk.init()` のコアフローと**等価**ですが、各ステップが公開されており、任意の段階でカスタムロジックを挿入できます:
 
 ```python
 import asyncio
@@ -19922,9 +19951,9 @@ from ErisPulse import sdk
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
 
 async def manual_startup():
-    # 0. 環境の準備（設定のロード、グローバル例外処理の登録）
-    #    _prepare_environment は init() 内部の前置ステップです。手動プロセスでも最初に呼び出す必要があり、
-    #    そうでなければ Loader は設定を読み取れず、すべてのアダプタ/モジュールを無効と誤認します。
+    # 0. 環境準備（設定の読み込み、グローバル例外処理の登録）
+    #    _prepare_environment は init() 内部の前置ステップです。手動フローでも先に呼び出す必要があります。
+    #    そうしないと、Loader は設定を読めず、すべてのアダプター/モジュールを誤って無効化します。
     if not await sdk._prepare_environment():
         print("環境準備に失敗しました")
         return False
@@ -19933,19 +19962,19 @@ async def manual_startup():
     adapter_loader = AdapterLoader()
     module_loader = ModuleLoader()
 
-    # 2. 並行的な発見とロード（init() 内部と同じ gather を使用）
+    # 2. 並列発見とロード（init() 内部と同じ gather を使用）
     (adapter_objs, enabled_adapters, disabled_adapters), \
     (module_objs, enabled_modules, disabled_modules) = await asyncio.gather(
         adapter_loader.load(sdk.adapter),
         module_loader.load(sdk.module),
     )
 
-    # 3. アダプタの登録
+    # 3. アダプターの登録
     await adapter_loader.register_to_manager(
         enabled_adapters, adapter_objs, sdk.adapter
     )
 
-    # 4. アダプタの起動
+    # 4. アダプターの起動
     if enabled_adapters:
         await sdk.adapter.startup()
 
@@ -19969,149 +19998,149 @@ async def manual_startup():
 async def main():
     ok = await manual_startup()
     if ok:
-        # 実行を維持するためのブロッキング（手動プロセスでは自動的にブロックされません）
+        # 阻塞して実行を維持（手動フローでは自動的に阻塞しない）
         await asyncio.Event().wait()
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### 手動起動が必要な場面
+### 手動起動が必要な場合
 
-ほとんどの場合、手動起動は必要ありません。`await sdk.run()` は上記のすべてをすでに処理しています。手動起動は以下のケースでのみ価値があります：
+ほとんどの場合、**手動起動は必要ありません**。`await sdk.run()` は上記すべてを処理しています。手動起動は、以下の場面でのみ価値があります:
 
-- **部分的なロード**：指定されたアダプタ/モジュールのみをロードし、他のものはスキップ
-- **動的登録**：実行時に条件に応じて新しいアダプタ/モジュールを登録
-- **カスタム順序**：デフォルトのロード順序を変更したい場合（例：特定のモジュールを先に起動してからアダプタを起動）
-- **注入戦略**：Loader にカスタムの厳格モードマネージャーやロード戦略などを注入
-- **デバッグ/診断**：特定の段階で失敗した際に、手動でプロセスを進め問題を特定
+- **部分的ロード**: 指定されたアダプター/モジュールのみをロードし、他のものをスキップ
+- **動的登録**: 実行時に条件に応じて新しいアダプター/モジュールを登録
+- **カスタム順序**: デフォルトのロード順序を変更する必要がある場合（例: あるモジュールを起動後にアダプターを起動）
+- **戦略の注入**: Loader にカスタムの厳密モードマネージャー、ロード戦略などを注入
+- **デバッグ/診断**: ある段階で失敗した際に、手動で駆動して問題を特定する
 
 ## 実行時細粒度制御
 
-`sdk.run()` を使用して起動した後でも、SDK 全体を再起動することなく、実行時に個々のサブシステムを個別に制御できます。
+`sdk.run()` を使用して起動した後でも、再起動せずに各サブシステムを個別に制御することができます。
 
-### アダプタのホット起動・停止
+### アダプターのホット起動/停止
 
 ```python
-# 接続の修復など、特定のアダプタをホットリスタート（他のプラットフォームには影響しない）
+# アダプターのホットリスタート（接続を修復し、他のプラットフォームに影響を与えない）
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
 # 実行中に新しいプラットフォームを起動
 await sdk.adapter.startup("telegram")
 
-# 一時的に特定のプラットフォームをオフラインにする
+# 一時的にプラットフォームをオフラインにする
 await sdk.adapter.shutdown("telegram")
 ```
 
-> `adapter.startup()` は、アダプタが**管理者に登録されている**ことを前提としています。登録は `init()`/`run()` の内部で行われるため、起動**後**の細粒度制御となります。
+> `adapter.startup()` はアダプターが**管理マネージャーに登録されている**ことを要求します。登録は `init()` / `run()` 内部で行われるため、これは起動**後の**細粒度制御です。
 
-### ルーター・サーバー
+### ルーティングサーバー
 
 ```python
 # 一時的に webhook サーバーをオフラインにする
 await sdk.router.stop()
 
-# 再度起動（たとえばポートを変更した場合）
+# 例えばポートを変更して再起動する
 await sdk.router.start(host="0.0.0.0", port=9000)
 ```
 
 ### モジュールのオンデマンドロード
 
 ```python
-# モジュールを手動でロード（遅延ロードされる可能性のあるモジュール）
+# モジュールを手動でロードする（おそらく遅延ロードのモジュール）
 await sdk.load_module("MyModule")
 ```
 
 ## エレガントなシャットダウン
 
-2.7.0 以降、`sdk.shutdown()` は**プログラムによるエレガントなシャットダウン**を提供します。シャットダウンイベントを設定し、`await sdk.run(keep_running=True)` で待機中のメインループが戻り、`uninit()` が実行されてリソースのクリーンアップが完了します。
+2.7.0 以降、`sdk.shutdown()` は**プログラム的なエレガントなシャットダウン**を提供します: シャットダウンイベントを設定し、`await sdk.run(keep_running=True)` で待機中のメインループが戻るようになり、`uninit()` がトリガーされてリソースのクリーンアップが行われます。
 
 ```python
-# 任意のコルーチン内で呼び出すことで、エレガントな終了をトリガー（run() は待機から戻り、自動的に uninit() が実行される）
+# 任意のコルーチンで呼び出すことで、エレガントな終了をトリガー（run() は待機を戻し、自動 uninit を行う）
 sdk.shutdown()
 ```
 
-典型的な用途：
+典型的な用途:
 
 ```python
 async def shutdown_after_idle():
     await asyncio.sleep(3600)
-    sdk.shutdown()  # 空き状態が1時間続いたらエレガントに終了
+    sdk.shutdown()  # 空き 1 時間後にエレガントに終了
 ```
 
-**シグナル処理**：`run()` 内部では `SIGTERM` / `SIGHUP` ハンドラが登録され、システムシグナルをエレガントなシャットダウンに変換します。これにより、コンテナオーケストレーション（Docker `docker stop`）や `systemd` でサービスを停止した場合、プロセスは強制終了されるのではなく、`uninit()` のクリーンアップを完了します。
+**シグナル処理**: `run()` 内部では `SIGTERM` / `SIGHUP` ハンドラが登録され、システムシグナルをエレガントなシャットダウンに変換します—コンテナオーケストレーション（Docker `docker stop`）や `systemd` でサービスを停止する場合、プロセスは強制終了ではなく `uninit()` のクリーンアップを完了します。
 
-- Windows では `loop.add_signal_handler` がサポートされていないため、シグナルハンドラは自動的にスキップされます（`sdk.shutdown()` または Ctrl+C でシャットダウンをトリガーできます）
-- `sdk.shutdown()` を繰り返し呼び出しても安全です（イベントが設定された後は、再度呼び出しても無操作になります）
+- Windows は `loop.add_signal_handler` をサポートしていないため、シグナルハンドラは自動的にスキップされます（ただし `sdk.shutdown()` または Ctrl+C でシャットダウンは可能です）
+- `sdk.shutdown()` を繰り返し呼び出すことは安全です（イベントが設定された後は無操作になります）
 
-## アンインストールの手順
+## アンロードフロー
 
-初期化の逆の操作は `await sdk.uninit()` であり、これは逆の順序でクリーンアップを行います：
+起動の逆操作は `await sdk.uninit()` で、反対の順序でクリーンアップを行います:
 
 1. すべてのアダプターを閉じる（`adapter.shutdown()`）
 2. すべてのモジュールをアンロードする
 3. すべてのイベントハンドラをクリーンアップする
 4. マネージャーと SDK 上のモジュール属性をクリーンアップする
 
-手動で起動する場合、正常に終了するために終了前に `uninit()` を呼び出すことを忘れないでください：
+手動起動の場合は、終了前に `uninit()` を呼び出してエレガントなシャットダウンを保証してください:
 
 ```python
 try:
-    await asyncio.Event().wait()   # 実行を維持する
+    await asyncio.Event().wait()   # 実行を維持
 finally:
     await sdk.uninit()
 ```
 
-## 再起動
+## リスタート
 
-SDK は、自分でアンインストールする必要のない2つの再起動方法を提供しています。フレームワークが自動的に処理します。
+SDK は 2 通りのリスタート方法を提供しており、いずれも自分自身でアンロードする必要はありません—フレームワークが自動的に処理します:
 
-| 方法 | 呼び出し | 挙動 | 適用場面 |
+| 方法 | 呼び出し | 行動 | 適用場面 |
 |------|------|------|----------|
-| ホット再起動 | `await sdk.restart()` | 同一プロセス内で `uninit()` の後に再び `init()` を呼び出し、アダプタ/モジュールを再読み込み | 設定の再読み込み、モジュールのホットアップデート |
-| ハード再起動 | `await sdk.hard_restart()` | `uninit()` の後に**終了コード 42**でプロセスを終了し、外部の監督者によって新しいプロセスが起動される | メモリやリソースリークが疑われる場合、完全にクリーンな再起動が必要な場合 |
+| ホットリスタート | `await sdk.restart()` | 同一プロセス内で**コンポーネント層のコードレベルのホットリロード**: 全てのモジュールとアダプターは統一されたリロードパイプラインを実行（構文検証 / スナップショットロールバック / アイデンティティ確認）、`uninit()` / `init()` を行いません | pip でコンポーネントをアップグレードした後にコードを有効にする、モジュールのホットアップデート |
+| ハードリスタート | `await sdk.hard_restart()` | `uninit()` の後に**終了コード 42**でプロセスを終了し、外部監視者が新しいプロセスを起動します | メモリ/リソースリークが疑われる場合、完全にクリーンなリスタートが必要な場合 |
 
 ```python
-# ホット再起動：同一プロセス内で再読み込み（最も一般的）
+# ホットリスタート: コンポーネント層のコードレベルのホットリロード（最も一般的）
 await sdk.restart()
 
-# ハード再起動：プロセスを終了し、外部の監督者に新しいプロセスの起動を任せる（下記「監督者ガイド」参照）
+# ハードリスタート: プロセスを終了し、外部監視者が起動します（下記「監視者ガイド」参照）
 await sdk.hard_restart()
 ```
 
-> **2点の注意事項**：
-> 1. これらのメソッドはバックグラウンドタスクで再起動を実行します。**`True` が返却されたのは「再起動タスクがスケジュールされた」ことを示すだけで、実際の再起動が完了したわけではありません**。現在のイベントフローを中断しないように、実際の再起動はバックグラウンドで行われます。
-> 2. `hard_restart()` の仕組みは、アンロードと設定のフラッシュ後、**終了コード 42**（`HARD_RESTART_EXIT_CODE`）でプロセスを終了することです。**自身で新しいプロセスを起動するものではなく、外部の監督者が終了コード 42 を検知した後に再起動を行う必要があります**。`python main.py` で直接実行し、監督者が存在しない場合、終了コード 42 でプロセスが終了した後、**自動的に再起動されません**（フレームワークは警告が表示されます）。
+> **2 つの注意点**:
+> 1. これらのメソッドはバックグラウンドタスクで実行されるため、**リスタートのタスクがスケジュールされたことを示す `True` を即座に返します**、リスタートが完了したことを示すわけではありません。実際のリスタートはバックグラウンドで行われ、現在のイベントチェーンを中断しません。
+> 2. `hard_restart()` の仕組みは: アンロードして設定を書き込み、**終了コード 42**（`HARD_RESTART_EXIT_CODE`）でプロセスを終了します—**自身で新しいプロセスを起動するわけではありません**。外部監視者が終了コード 42 を検知した後に再起動する必要があります。`python main.py` で直接実行し、監視者がいない場合は、終了コード 42 でプロセスが終了した後、**自動的に再起動しません**（フレームワークは警告を出力します）。
 
-### ハード再起動はいつ使うべきか？
+### ハードリスタートを使うべき時
 
-ハード再起動は単に「より徹底的な再起動」ではなく、以下の場面ではホット再起動よりも適切で、場合によってはより効率的です。
+ハードリスタートは単に「より完全なリスタート」ではなく、以下の場面ではハードリスタートの方が適切で、場合によってはより効率的です:
 
-- **バイナリライブラリ（C拡張）の副作用**：ホット再起動は同一プロセス内で行われるため、C拡張、開かれたファイルディスクリプタ、スレッドなどのプロセスレベルのリソースを解放できません。ハード再起動は新しいプロセスを起動するため、これらの副作用は完全にクリアされます。
-- **リソースリークの調査**：メモリやハンドルリークが疑われる場合、ハード再起動はクリーンな環境を得ることができます。
-- **頻繁な再起動に性能が敏感な場合**：ハード再起動は同一プロセス内でアンロード→再読み込みするオーバーヘッドを省くため、実際にはホット再起動よりも効率的です。
+- **バイナリライブラリ（C 拡張）の副作用**: ホットリスタートは同一プロセス内で行われるため、C 拡張、開かれたファイルディスクリプター、スレッドなどのプロセスレベルのリソースを解放できません。ハードリスタートは新しいプロセスを起動するため、これらの副作用は完全にクリアされます。
+- **リソースリークの診断**: メモリやハンドルのリークが疑われる場合、ハードリスタートでクリーンな環境を取得できます。
+- **頻繁なリスタートに性能が敏感な場合**: ハードリスタートは同一プロセス内のアンロード→再ロードのオーバーヘッドを省くため、実際にはホットリスタートよりも効率的です。
 
-> Dashboard管理パネルの「フレームワーク再起動」機能は、内部的に `hard_restart()` を呼び出しています。
+> ダッシュボード管理パネルの「フレームワークリスタート」機能は、`hard_restart()` を呼び出しています。
 
 ### 終了コード 42 の契約
 
-ハード再起動はプロセス間の協力です：**SDK は終了（コード 42）を担当し、監督者はプロセスの再起動を担当**します。
+ハードリスタートはプロセス間の協力です: **SDK が終了（コード 42）し、監視者が再起動**します。
 
-| 角色 | 挙動 |
+| 角色 | 行動 |
 |------|------|
-| SDK（ハード再起動される際） | `uninit()` → 設定のフラッシュ → `os._exit(42)` |
-| 監督者 | 子プロセスの終了コードが 42 であることを検知 → 同一コマンドで再起動 |
+| SDK（ハードリスタートされるとき） | `uninit()` → 設定を書き込む → `os._exit(42)` |
+| 監視者 | 子プロセスの終了コードが 42 であるかを検出 → 同じコマンドで再起動 |
 
-> `sdk.is_supervised()` を使用して、現在のプロセスが監督者によって起動されたかどうかを確認できます（環境変数 `ERISPULSE_SUPERVISED` を検出）。CLI `run` コマンドでサブプロセスを起動する際は、このマーカーが自動的に注入されます。systemd / Docker などの外部監督者は注入しないため、`is_supervised()` は `False` を返し、この場合ハード再起動後に「監督者を検出できませんでした」という警告が表示されます。
+> `sdk.is_supervised()` は、現在のプロセスが監視者によって起動されたかどうかを検出します（環境変数 `ERISPULSE_SUPERVISED` を検出）。CLI `run` コマンドが子プロセスを起動する際、このマーカーを自動的に注入します。systemd / Docker などの外部監視者は注入しないため、`is_supervised()` は `False` を返し、このときハードリスタート後に「監視者が検出されない」という警告が表示されます。
 
-### 監督者ガイド
+### 監視者ガイド
 
-あなたの環境に適した監督者を選択し、ハード再起動を有効にしましょう。
+適切な監視者を選択し、ハードリスタートを有効にします:
 
 #### 1. CLI run コマンド（開発/簡単なデプロイ、推奨）
 
-`epsdk run main.py` には、サブプロセスの終了コードを監視し、42 であれば即座に再起動する監督ループが内蔵されています。他の異常終了コードは指数退避で自動的に再試行されます。`Ctrl+C` は、サブプロセスを優雅に終了し（コード 0 を正常終了と見なし、再起動しない）ます。
+`epsdk run main.py` には内部監視ループが含まれており、子プロセスの終了コードを検出し、42 の場合はすぐに再起動します。他の異常終了コードは指数退避で自動的に再試行します。`Ctrl+C` はまず子プロセスをエレガントに終了します（コード 0 は正常終了と見なされ、再起動されません）。
 
 ```bash
 epsdk run main.py
@@ -20119,7 +20148,7 @@ epsdk run main.py
 
 #### 2. systemd（Linux サーバー）
 
-`RestartForceExitStatus=42` を設定することで、終了コード 42 も再起動をトリガーします（デフォルトの `on-failure` は非ゼロ終了コードのみ対象）。
+`RestartForceExitStatus=42` で終了コード 42 も再起動をトリガーします（デフォルトの `on-failure` は非ゼロコードのみ有効）:
 
 ```ini
 [Service]
@@ -20132,20 +20161,20 @@ User=mybot
 
 #### 3. Docker / docker-compose
 
-コンテナ内の PID 1 がアプリケーションプロセスであるため、終了コード 42 でコンテナが終了します。`restart` ポリシーを使用して自動再起動させましょう。
+コンテナ内の PID 1 はアプリケーションプロセスであり、終了コード 42 でコンテナが終了します—`restart` サイクルを使って自動的に再起動します:
 
 ```yaml
 services:
   bot:
     build: .
-    restart: unless-stopped   # 42 を含むすべての終了コードで再起動
+    restart: unless-stopped   # 42 を含むすべての終了で再起動
 ```
 
 #### 4. PM2（Node 生態系の運用）
 
 ```bash
 pm2 start main.py --name mybot --interpreter python3
-# 42 は終了コードとして PM2 がデフォルトで再起動します。`restart_delay` を設定して、防抖します
+# 42 は終了コードとして扱われ、PM2 はデフォルトで再起動します。再起動の遅延を設定
 pm2 set mybot.restart_delay 2000
 ```
 
@@ -20155,10 +20184,10 @@ pm2 set mybot.restart_delay 2000
 [program:mybot]
 command=python3 /opt/mybot/main.py
 autorestart=true
-exitcodes=0,2,42    # 42 も「正常終了で再起動」扱い
+exitcodes=0,2,42    # 42 も「正常終了」として再起動
 ```
 
-#### 6. 純粋な Python によるカスタム監督者
+#### 6. 純粋な Python 自作監視者
 
 ```python
 import subprocess, sys, time
@@ -20166,7 +20195,7 @@ import subprocess, sys, time
 while True:
     p = subprocess.Popen([sys.executable, "main.py"])
     code = p.wait()
-    if code == 42:          # ハード再起動リクエスト
+    if code == 42:          # ハードリスタート要求
         time.sleep(0.5)
         continue
     if code == 0:           # 正常終了
@@ -20174,7 +20203,7 @@ while True:
     time.sleep(3)           # 異常終了、退避して再試行
 ```
 
-> **監督者がいない場合の挙動**：`python main.py` で直接実行し、`hard_restart()` を呼び出した場合、プロセスは終了コード 42 で終了し、再起動されません。この場合、上記の監督者をいずれかに接続する必要があります。
+> **監視者がいない場合の動作**: `python main.py` で直接実行し、`hard_restart()` を呼び出すと、プロセスはコード 42 で終了し、再起動しません。このとき、上記のいずれかの監視者を接続する必要があります。
 
 
 

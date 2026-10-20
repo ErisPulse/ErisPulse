@@ -5130,10 +5130,10 @@ sdk.lifecycle  # Lifecycle system
 
 ### 模块核心概念
 
-# Core Module Concepts
+# Core Concepts of Modules
 
 > [!NOTE]
-> **L1 Core Must-Read** — One of the five core documents in the "Reading Path" on the homepage, essential for module development.
+> **L1 Core Reading** – One of the five core documents in the "Reading Path" on the homepage, essential for module development.
 
 Understanding the core concepts of ErisPulse modules is the foundation for developing high-quality modules.
 
@@ -5156,12 +5156,14 @@ class MyModule(BaseModule):
         )
 ```
 
-> If modules declared in `depends` are not registered, the current module will be skipped and a warning will be logged. The loading order is determined by topological sorting, with same-level modules sorted by `priority` in descending order.
+> If modules declared in `depends` are not registered, the current module will be skipped and a warning is logged. The loading order is determined by topological sorting, with modules at the same level sorted by `priority` in descending order.
 
 > [!NOTE]
-> **Cascading Unload / Cascading Reload** (ErisPulse **2.8.0+**): When unloading a module that is depended on by other modules, the dependent modules will be **cascading unloaded first** (with a log explaining the cascade chain); during hot reload of any module (local plugin / PyPI-installed package), dependent modules will also be **cascading reloaded**, preventing dependent modules from holding invalid instance references and continuing execution. Circular dependencies will be rejected at load time with a `RuntimeError`.
+> **Cascading Unload / Cascading Reload** (ErisPulse **2.8.0+**): When unloading a module that is depended on by other modules, the dependent modules will be **first cascaded unloaded** (with logs explaining the cascade chain). When hot-reloading any module (local plugin / runtime registered / PyPI installed package), dependent modules are also **cascaded reloaded**, preventing dependent modules from holding invalid instance references and continuing to run. Circular dependencies are rejected at load time with a `RuntimeError`.
+>
+> **Reload means full reload** (ErisPulse **2.11.0+**): `reload()` by default clears the import cache by the top-level package name and re-imports dependent codes. Before unloading, a syntax pre-check is automatically performed (fails and refuses to unload, old instances continue to serve), and after success, code identity is verified (false reload warning / `stale` flag); load failures can be directly queried on-site via `sdk.module.last_error(name)` (including traceback).
 
-### `on_load` Method
+### on_load Method
 
 Called when the module is loaded, used for initializing resources and registering event handlers:
 
@@ -5173,10 +5175,10 @@ async def on_load(self, event):
         await event.reply("Hello!")
     
     # Use the SDK's built-in HTTP client (automatically manages connection pool, no need to manually create session)
-    # Send requests via sdk.client
+    # Requests can be sent through sdk.client
 ```
 
-### `on_unload` Method
+### on_unload Method
 
 Called when the module is unloaded, used for cleaning up resources:
 
@@ -5186,88 +5188,104 @@ async def on_unload(self, event):
     # sdk.client is managed by the framework, no need to manually close
     
     # Cancel event handlers (handled automatically by the framework)
-    self.logger.info("Module unloaded")
+    self.logger.info("Module has been unloaded")
 ```
 
-> Background task creation and cleanup (`self.spawn()` / framework's automatic cancellation) is detailed in [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
+> Creation and cleanup of background tasks (`self.spawn()` / framework's default cancellation) are detailed in [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
 
-### Unload vs. Purge
+### on_before_unload Method
+
+> [!NOTE]
+> This hook requires ErisPulse **2.11.0+**.
+
+An optional hook triggered in the **first step** of the unload pipeline (before `on_unload` and resource cleanup) — at this point, all module resources are still intact, suitable for saving state to `sdk.storage` before unloading / sleeping / reloading, which can be restored next time in `on_load` (lazy-loaded sleep state continuation is based on this):
+
+```python
+async def on_before_unload(self, event):
+    # event["reason"] indicates the reason: unload / reload / disable / cascade / dormant
+    if event["reason"] in ("reload", "dormant"):
+        await self.sdk.storage.aset(f"{self._module_name}:state", self.collect_state())
+```
+
+A failed hook only logs a warning and does not block the unload process; modules without this hook behave as before. The semantics of sleep / wake are detailed in [Lazy Loading Sleep](../../advanced/lazy-loading.md#lazy-loading-sleep-dormant_after).
+
+### Unload vs. Purge Unload
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-`unload()` by default only **cancels loading** (unloads the instance and resources) but retains registration stubs (module class and metadata) — the module can still be discovered and reloaded via `load()` without needing to `register()` again.
+`unload()` by default only **unloads** (unloads the instance and resources), but retains the registration stub (module class and metadata) — the module can be rediscovered and reloaded via `load()` without needing to `register()` again.
 
-When you need to **completely unload** (release module class references, clean `sys.modules`, allowing the plugin and its exclusive dependencies to be garbage collected), pass `purge=True`:
+When you need to **completely unload** (release module class references, clean up `sys.modules`, allowing plugins and their exclusive dependencies to be garbage collected), pass `purge=True`:
 
 ```python
-# Only cancels loading: retains registration stubs, can be reloaded anytime
+# Only unloads: retains registration stub, can be reloaded anytime
 await sdk.module.unload("MyModule")
 
-# Completely unloads: deletes registration stubs + cleans sys.modules (only for plugin folder sources)
+# Completely unloads: deletes registration stub + cleans sys.modules (only for plugin folder sources)
 await sdk.module.unload("MyModule", purge=True)
 ```
 
 | Semantics | `unload()` default | `unload(purge=True)` |
 |-----------|--------------------|----------------------|
-| Unload instance and resources (events/task/routing/lifecycle/i18n) | ✅ | ✅ |
-| Retain registration stubs (module class and metadata) | ✅ | ❌ Deleted |
-| Clean `sys.modules` (only for plugin folder sources) | ❌ | ✅ |
+| Unload instance and resources (events/task/route/lifecycle/i18n) | ✅ | ✅ |
+| Retain registration stub (module class and metadata) | ✅ | ❌ Deleted |
+| Clean up `sys.modules` (only for plugin folder sources) | ❌ | ✅ |
 | Module class can be garbage collected | ❌ | ✅ |
-| Reload | `load()` directly usable | Requires `register()` + `load()` |
+| Reload | `load()` directly usable | Must `register()` + `load()` first |
 
-> When `purge=True`, dependent modules in cascading unload are also purged; after unload, the framework will `gc.collect()` and check if the module class/instance is garbage collectable, with any residual references warned in the log (including the referencing party, at DEBUG level).
+> When `purge=True`, cascading unloaded dependents are also purged; after unloading, the framework will `gc.collect()` and check if module class/instance is collectible, residual references will be warned in logs (including reference source, DEBUG level).
 
 ### Lifecycle Overview
 
-Putting the above methods together, here is what the framework does **behind the scenes** when loading and unloading a module:
+Putting the above methods together, here is **everything the framework does behind the scenes** when loading and unloading a module:
 
 ```mermaid
 flowchart TD
-    subgraph Load["Loading (register → load)"]
+    subgraph Load["Load (register → load)"]
         L1["register: Register module class and metadata"] --> L2["Dependency validation<br/>Skips if missing"]
         L2 --> L3["Topological sorting (Kahn + priority)"]
-        L3 --> L4["Inject owner: current_owner"]
+        L3 --> L4["Inject owner into current_owner"]
         L4 --> L5["Generate configuration template + register i18n translation keys"]
         L5 --> L6["Instantiate module (inject sdk)"]
         L6 --> L7["Call on_load()"]
         L7 --> L8["Mount to sdk attribute + emit module.load"]
     end
 
-    subgraph Unload["Unloading (unload)"]
-        U1["Call on_unload()"] --> U2["Cascading cancel background tasks (self.spawn ownership)"]
-        U2 --> U3["Clean i18n translation keys"]
+    subgraph Unload["Unload (unload)"]
+        U1["Call on_unload()"] --> U2["Default cancel background tasks (self.spawn ownership)"]
+        U2 --> U3["Clean up i18n translation keys"]
         U3 --> U4["Remove routes / commands / event handlers (by owner)"]
-        U4 --> U5["Clean lifecycle hooks (by owner)"]
-        U5 --> U6["Remove SDK attribute + lazy loading proxy"]
+        U4 --> U5["Clean up lifecycle hooks (by owner)"]
+        U5 --> U6["Remove SDK attribute + lazy-load proxy"]
         U6 --> U7["emit module.unload"]
     end
 
     Load --> Unload
 ```
 
-**What the framework does for you during loading** (you only need to write `on_load`, everything else is automatic):
+**What the framework does for you during loading** (you only need to write `on_load`, the rest is automatic):
 
-| Step | Framework automatically does |
-|------|-----------------------------|
-| Owner injection | During instantiation, wrap the module name with `owner_scope` — commands/events/hooks/background tasks registered in `on_load` are **automatically assigned to this module**, and cleaned up in one click during unload |
-| Configuration template | Modules declaring `ConfigClass` have the framework automatically generate/populate the `ErisPulse.<ModuleName>` configuration section |
-| i18n translation keys | Modules declaring `I18nClass` have translation keys automatically registered (and unregistered during unload) |
-| Dependency topology | Sort by `depends` declaration to ensure dependent modules load first; circular dependencies are rejected with a `RuntimeError` |
-| SDK mounting | After instantiation, mount to `sdk.<ModuleName>`, allowing access via `sdk.MyModule.xxx` |
+| Step | What the framework does automatically |
+|------|---------------------------------------|
+| Owner injection | Wrap the module name with `owner_scope` during instantiation — all commands/events/hooks/background tasks you register in `on_load` are **automatically assigned to this module**, and are cleaned up in one click during unload by owner |
+| Configuration template | Modules declaring `ConfigClass` automatically generate/populate the `ErisPulse.<ModuleName>` configuration section |
+| i18n translation keys | Modules declaring `I18nClass` automatically register translation keys (automatically unregistered during unload) |
+| Dependency topology | Sort by `depends` declaration, ensuring dependent modules are loaded first; circular dependencies are rejected with a `RuntimeError` |
+| SDK mounting | After instantiation, mount to `sdk.<ModuleName>`, allowing you to access via `sdk.MyModule.xxx` |
 
-**What the framework cleans up during unloading** (corresponding to U1→U7): After `on_unload` runs, the framework does a final cleanup — background tasks are forcibly canceled (created via `self.spawn`, graceful closure should be handled in `on_unload`), i18n keys, routes, commands/event handlers, lifecycle hooks, and finally removes the SDK attribute. `purge=True` additionally deletes registration stubs and cleans `sys.modules`.
+**What the framework cleans up during unload** (corresponding to U1→U7 above): After `on_unload` runs, it performs a default cleanup — background tasks are forcibly canceled (created via `self.spawn`, please handle gracefully in `on_unload`), i18n keys, routes, commands/event handlers, lifecycle hooks, and finally removes SDK attributes. `purge=True` additionally deletes the registration stub and cleans up `sys.modules`.
 
-> This automatic cleanup is the basis for the statement "you only need to write `on_load`/`on_unload`, no need to manually unregister" — the framework uses owner assignment to make "who registers cleans up" a one-click operation.
+> This automatic cleanup is the foundation for the principle of "you only need to write `on_load`/`on_unload`, no need to manually unregister" — the framework uses owner assignment to make "who registers, who cleans up" into a one-click operation.
 
-## SDK Object
+## SDK Objects
 
 ### Accessing Core Modules
 
 ```python
 from ErisPulse import sdk
 
-# Access all core modules via the sdk object
+# Access all core modules through the sdk object
 sdk.logger.info("Log")
 sdk.storage.set("key", "value")
 config = sdk.config.getConfig("MyModule")
@@ -5283,7 +5301,7 @@ result = await other_module.some_method()
 
 ## Adapter Send Method Query
 
-Due to the new standard specification requiring the use of the rewritten `__getattr__` method to implement the fallback sending mechanism, it is no longer possible to use `hasattr` to check for method existence. Starting from `2.3.5`, a new feature for querying send methods has been added.
+Due to the new standard specification requiring the use of the rewritten `__getattr__` method to implement the fallback sending mechanism, it is no longer possible to use the `hasattr` method to check if a method exists. Starting from `2.3.5`, a new feature has been added to query send methods.
 
 ### List Supported Send Methods
 
@@ -5293,10 +5311,10 @@ methods = sdk.adapter.list_sends("onebot11")
 # Returns: ["Text", "Image", "Voice", "Markdown", ...]
 ```
 
-### Get Method Detailed Information
+### Get Detailed Method Information
 
 ```python
-# Get detailed information about a method
+# Get detailed information about a specific method
 info = sdk.adapter.send_info("onebot11", "Text")
 # Returns:
 # {
@@ -5305,7 +5323,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
 #     ],
 #     "return_type": "Awaitable[Any]",
-#     "docstring": "Send text message..."
+#     "docstring": "Send a text message..."
 # }
 ```
 
@@ -5313,7 +5331,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 
 ### Declarative Configuration (Recommended)
 
-Starting from v2.5.2, modules can declare configuration classes via `ConfigClass`, using the same configuration Schema system as adapters. Configuration is read in real-time via `self.cfg`, and changes take effect immediately:
+Starting from v2.5.2, modules can declare configuration classes using `ConfigClass`, which shares the same configuration Schema system with adapters. Configuration is read in real-time via `self.cfg`, and changes take effect immediately:
 
 ```python
 from dataclasses import dataclass, field
@@ -5358,20 +5376,20 @@ class MyModule(BaseModule):
         timeout = cfg.timeout
 ```
 
-`BaseConfig` is a generic configuration base class, suitable for adapters, modules, external projects, and any scenario. Configuration fields support i18n multilingual descriptions (see [i18n documentation](../../advanced/i18n.md#multilingual-configuration-field-descriptions)).
+`BaseConfig` is a generic configuration base class suitable for adapters, modules, external projects, and any scenario. Configuration fields support i18n multilingual descriptions (see [i18n documentation](../../advanced/i18n.md#multi-language-configuration-fields)).
 
 > [!NOTE]
-> The lifecycle of modules (including adapters) such as loading, unloading, starting, and stopping is managed by the framework (module manager / scope provides query and control APIs). `ConfigClass` should only carry business parameters; modules should not embed logic inside to determine whether "they should start".
+> The lifecycle of modules (including adapters) such as loading, unloading, starting, and stopping is managed uniformly by the framework (`module manager` / `scope` provides query and control APIs). `ConfigClass` should only carry business parameters; modules should not embed logic inside to determine whether they should start.
 
 The configuration Schema system also supports (v2.8.0+, see [Adapter core-concepts](../adapters/core-concepts.md#metadata-conventions)):
 
-- **docstring auto-generates field descriptions**: When `metadata` `description` is not declared, it is automatically extracted from the docstring's `:ivar field: description` or `Attributes:` section as a fallback
-- **Nested dataclass configuration**: When a field type is a nested dataclass, schema/template/validation is recursively processed, and the WebUI renders it as a nested group
-- **`example` non-persistent field**: `metadata={"example": True}` fields are not written to config.toml, only recorded in `config.full.example` (suitable for complex, rarely touched advanced configuration items), and are persisted normally after user manual setting
+- **Automatic docstring-based field description generation**: When `metadata.description` is not declared, the system automatically extracts fallback descriptions from the docstring's `:ivar field: description` or `Attributes:` section.
+- **Nested dataclass configuration**: When a field type is a nested dataclass, schema/template/validation is recursively processed, and the WebUI renders it as nested groups.
+- **`example` non-persistent field**: Fields with `metadata={"example": True}` are not written to `config.toml`, but recorded in `config.full.example` (suitable for complex and rarely touched advanced configuration items). After manual user settings, these fields are persisted normally.
 
 ### Declarative Translation Keys (v2.7.0+)
 
-Starting from v2.7.0, modules can also declare translation keys in a centralized manner, similar to declaring `ConfigClass`, by using the nested class `I18nClass`. The framework will **automatically register** all declared translation keys during loading, without needing to manually call `i18n.register()`, and the registration occurs before configuration template generation, ensuring that i18n keys referenced in configuration descriptions are available.
+Starting from v2.7.0, modules can also declare translation keys centrally using a nested class `I18nClass`, just like declaring `ConfigClass`. The framework automatically registers all declared translation keys during loading, without requiring manual calls to `i18n.register()`, and the registration occurs before the configuration template is generated, ensuring that i18n keys referenced in configuration descriptions are available.
 
 ```python
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
@@ -5389,7 +5407,7 @@ class MyModule(BaseModule):
 
     # Translation key collection class (optional)
     class I18nClass(BaseI18n):
-        # Property name is automatically concatenated into the full key path: <module_name>.<property_name>
+        # Property names are automatically concatenated into full key paths: <module_name>.<property_name>
         welcome_msg: I18nKey = I18nKey(
             default="Welcome Message",   # Language-agnostic fallback
             zh_CN="欢迎消息",
@@ -5408,7 +5426,7 @@ class MyModule(BaseModule):
         )
 ```
 
-See details in [Recommended i18n Writing](../../advanced/i18n.md#recommended-writing-using-i18nclass-to-declare-translation-keys-v270).
+See [Recommended i18n Writing Style](../../advanced/i18n.md#recommended-approach-declaring-translation-keys-via-i18nclass).
 
 ### Manual Configuration Reading (Deprecated)
 
@@ -5445,7 +5463,7 @@ sdk.storage.delete("user:123")
 ### Transaction Usage
 
 ```python
-# Use a transaction to ensure data consistency
+# Use transactions to ensure data consistency
 with sdk.storage.transaction():
     sdk.storage.set("key1", "value1")
     sdk.storage.set("key2", "value2")
@@ -5459,12 +5477,12 @@ with sdk.storage.transaction():
 ```python
 from ErisPulse.Core.Event import command, message
 
-# Register commands
+# Register command
 @command("info", help="Get information")
 async def info_handler(event):
     await event.reply("This is information")
 
-# Register message handlers
+# Register message handler
 @message.on_group_message()
 async def group_handler(event):
     sdk.logger.info(f"Received group message: {event.get_text()}")
@@ -5472,11 +5490,11 @@ async def group_handler(event):
 
 ### Event Handler Lifecycle
 
-The framework automatically manages the registration and unregistration of event handlers; you only need to register them in `on_load`.
+The framework automatically manages the registration and unregistration of event handlers. You only need to register them in `on_load`.
 
 ## Lazy Loading Mechanism
 
-### Working Principle
+### How It Works
 
 ```python
 # The module is initialized only when first accessed
@@ -5486,13 +5504,13 @@ result = await sdk.my_module.some_method()
 
 ### Immediate Loading
 
-For modules that need immediate initialization (such as listeners, timers):
+For modules that need to be initialized immediately (such as listeners or timers):
 
 ```python
 @staticmethod
 def get_load_strategy():
     return ModuleLoadStrategy(
-        lazy_load=False,  # Immediate load
+        lazy_load=False,  # Immediate loading
         priority=100
     )
 ```
@@ -5518,9 +5536,9 @@ async def handle_event(self, event):
 
 ```python
 # Use different logging levels
-self.logger.debug("Debug information")    # Detailed debugging information
+self.logger.debug("Debug information")    # Detailed debug information
 self.logger.info("Running status")        # Normal running information
-self.logger.warning("Warning information")  # Warning information
+self.logger.warning("Warning information") # Warning information
 self.logger.error("Error information")    # Error information
 self.logger.critical("Critical error")    # Critical error
 ```
@@ -23934,39 +23952,39 @@ async def handle_email(event):
 
 ### Kook 适配
 
-# Kook Platform Features Documentation
+# Kook Platform Feature Documentation
 
-KookAdapter is an adapter built on the Kook (Kaihei La) Bot WebSocket protocol, integrating all Kook functionality modules and providing a unified interface for event handling and message operations.
+KookAdapter is an adapter built on the Kook (Kaihei La) Bot WebSocket protocol, integrating all Kook functional modules and providing unified event handling and message operation interfaces.
 
 ---
 
 ## Document Information
 
-- Corresponding Module Version: 4.1.0
+- Corresponding Module Version: 4.2.0
 - Maintainer: ShanFish
 
 ## Basic Information
 
-- Platform Introduction: Kook (formerly Kaihei La) is a community platform that supports text, voice, and video communication, providing a complete Bot development interface.
+- Platform Overview: Kook (formerly Kaihei La) is a community platform supporting text, voice, and video communication, providing a complete Bot development interface.
 - Adapter Name: KookAdapter
-- Multi-account Support: Supports configuring multiple Kook bots simultaneously.
+- Multi-account Support: Supports configuring multiple Kook robots simultaneously.
 - Connection Method: WebSocket long connection (via Kook gateway).
 - Authentication Method: Identity authentication based on Bot Token.
 - Chained Modifier Support: Supports chained modifier methods such as `.Reply()`, `.At()`, `.AtAll()`.
-- OneBot12 Compatibility: Supports sending OneBot12 formatted messages.
+- OneBot12 Compatibility: Supports sending OneBot12 format messages.
 
-## Configuration
+## Configuration Instructions
 
-KookAdapter supports multi-account configuration, where each account corresponds to an independent Kook bot.
+KookAdapter supports multi-account configuration, with each account corresponding to a distinct Kook robot.
 
 ```toml
 # config.toml
 # Account 1
 [KookAdapter.accounts.default]
 token = "YOUR_BOT_TOKEN"     # Kook Bot Token (required, format: Bot xxx/xxx)
-bot_id = ""                   # Bot User ID (optional, if not set, it will be parsed from token)
-compress = true               # Whether to enable WebSocket compression (optional, default is true)
-enabled = true                # Whether to enable this account (optional, default is true)
+bot_id = ""                   # Bot user ID (optional, if not filled, parsed from token)
+compress = true               # Whether to enable WebSocket compression (optional, default: true)
+enabled = true                # Whether to enable (optional, default: true)
 
 # Account 2
 [KookAdapter.accounts.bot2]
@@ -23975,27 +23993,27 @@ bot_id = ""
 enabled = true
 ```
 
-> Compatibility with old configurations: If an old single-account `[KookAdapter]` configuration (including token) is detected, it will be automatically migrated to `accounts.default`.
+> Backward Compatibility: If an old single-account `[KookAdapter]` configuration (including token) is detected, it will be automatically migrated to `accounts.default`.
 
-**Configuration item description (per account):**
-- `token`: The Token of the Kook Bot (required), obtained from [Kook Developer Center](https://developer.kookapp.cn), format is `Bot xxx/xxx`
-- `bot_id`: The User ID of the Bot (optional), if not set, the adapter will try to automatically parse it from the token. It is recommended to manually set it to ensure accuracy
-- `compress`: Whether to enable WebSocket data compression (optional, default is `true`), enables zlib decompression of data
-- `enabled`: Whether to enable this account (optional, default is true)
+**Configuration Item Description (per account):**
+- `token`: Kook Bot's Token (required), obtained from [Kook Developer Center](https://developer.kookapp.cn), format: `Bot xxx/xxx`
+- `bot_id`: Bot's user ID (optional), if not filled, the adapter will attempt to automatically parse from the token. It is recommended to manually fill to ensure accuracy.
+- `compress`: Whether to enable WebSocket data compression (optional, default: `true`), zlib is used to decompress data when enabled.
+- `enabled`: Whether to enable this account (optional, default: true)
 
 **API Environment:**
 - Kook API base address: `https://www.kookapp.cn/api/v3`
-- WebSocket gateway is dynamically obtained through API: `POST /gateway/index`
+- WebSocket gateway is dynamically obtained via API: `POST /gateway/index`
 
 ## v5 Paradigm Update (4.1.0)
 
-This adapter has completed alignment with the v5 paradigm (incremental upgrade, API compatible):
+This adapter has completed v5 paradigm alignment (incremental upgrade, API compatible):
 
-- **BaseConverter Inheritance**: Common fields of converters are built by the framework `build_base_event`
+- **BaseConverter Inheritance**: Common fields of converters are built by framework `build_base_event`
 - **Api DSL**: Standard API action mapping (see below)
-- **Standard keyboard segment**: `{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}}` Text + keyboard automatically combine into Kook card messages (section + action-group); .Keyboard(rows) decorator accepts generic structure
-- **spawn_background task ownership**: Connection tasks use runtime.spawn_background
-- **Framework soft dependency**: Runtime detection of ErisPulse>=2.7.1 with prompt; version logs output on startup
+- **Standard keyboard segment**: `{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}}` text+keyboard automatically combined into Kook card message (section + action-group); .Keyboard(rows) modifier accepts generic structure
+- **spawn_background task assignment**: Connection tasks use runtime.spawn_background
+- **Framework Soft Dependency**: Runtime detects ErisPulse>=2.7.1 and prompts; startup outputs version logs
 
 ### Standard API Actions
 
@@ -24017,9 +24035,9 @@ result = await kook.Api.Using("main").get_self_info()
 
 ```python
 rows = [[{"label": "Option A", "type": "callback", "data": "vote:A"},
-         {"label": "Website",  "type": "link",     "data": "https://example.com"}]]
+         {"label": "Official Site",  "type": "link",     "data": "https://example.com"}]]
 await kook.Send.To("channel", channel_id).Keyboard(rows).Text("Please select")
-# Text and buttons automatically combine into Kook card messages (section + action-group)
+# Text and buttons automatically combined into Kook card message (section + action-group)
 
 # Button click callback (standard fields)
 from ErisPulse.Core.Event import notice
@@ -24029,11 +24047,11 @@ async def handle_button(event):
     if event.get("platform") == "kook" and event.get("button_data"):
         data = event["button_data"]
 ```
----
 
+---
 ## Supported Message Sending Types
 
-All sending methods are implemented through a fluent API syntax, for example:
+All sending methods use chained syntax, for example:
 ```python
 from ErisPulse.Core import adapter
 kook = adapter.get("kook")
@@ -24041,60 +24059,61 @@ kook = adapter.get("kook")
 await kook.Send.To("group", channel_id).Text("Hello World!")
 ```
 
-The supported sending types include:
-- `.Text(text: str)`: Sends a plain text message.
-- `.Image(file: bytes | str)`: Sends an image message, supports file paths, URLs, and binary data.
-- `.Video(file: bytes | str)`: Sends a video message, supports file paths, URLs, and binary data.
-- `.File(file: bytes | str, filename: str = None)`: Sends a file message, supports file paths, URLs, and binary data.
-- `.Voice(file: bytes | str)`: Sends a voice message, supports file paths, URLs, and binary data.
-- `.Markdown(text: str)`: Sends a message in KMarkdown format.
-- `.Card(card_data: dict)`: Sends a card message (CardMessage).
-- `.Raw_ob12(message: List[Dict], **kwargs)`: Sends a OneBot12 formatted message.
+Supported sending types include:
+- `.Text(text: str)`: Send plain text message.
+- `.Image(file: bytes | str)`: Send image message, supports file path, URL, binary data.
+- `.Video(file: bytes | str)`: Send video message, supports file path, URL, binary data.
+- `.File(file: bytes | str, filename: str = None)`: Send file message, supports file path, URL, binary data.
+- `.Voice(file: bytes | str)`: Send voice message, supports file path, URL, binary data.
+- `.Markdown(text: str)`: Send KMarkdown format message.
+- `.Card(card_data: dict)`: Send card message (CardMessage).
+- `.MergeForward(nodes, title="Merged Chat Record")`: Send merged forward message (rendered as card: title header + each message as a section, KMD escaped, ≤40 nodes).
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Send OneBot12 format message.
 
-### Fluent Modifier Methods (Can Be Combined)
+### Chained Modifier Methods (can be combined)
 
-Modifier methods return `self` and support fluent chaining, which must be called before the final sending method:
+Chained modifier methods return `self`, supporting chained calls, must be called before the final sending method:
 
-- `.Reply(message_id: str)`: Replies (references) a specified message.
-- `.At(user_id: str)`: Mentions a specified user, can be called multiple times to mention multiple users.
-- `.AtAll()`: Mentions everyone.
+- `.Reply(message_id: str)`: Reply (quote) to a specified message.
+- `.At(user_id: str)`: At a specified user, can be called multiple times to mention multiple users.
+- `.AtAll()`: At all users.
 
-### Fluent Chaining Examples
+### Chained Call Examples
 
 ```python
 # Basic sending
 await kook.Send.To("group", channel_id).Text("Hello")
 
-# Reply to a message
-await kook.Send.To("group", channel_id).Reply(msg_id).Text("Replied message")
+# Reply to message
+await kook.Send.To("group", channel_id).Reply(msg_id).Text("Reply message")
 
-# Mention a user
+# At user
 await kook.Send.To("group", channel_id).At("user_id").Text("Hello")
 
-# Mention multiple users
+# At multiple users
 await kook.Send.To("group", channel_id).At("user1").At("user2").Text("Multiple users @")
 
-# Mention everyone
+# At all
 await kook.Send.To("group", channel_id).AtAll().Text("Announcement")
 
-# Combine methods
+# Combined usage
 await kook.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("Composite message")
 ```
 
 ### OneBot12 Message Support
 
-The adapter supports sending OneBot12 formatted messages for cross-platform message compatibility:
+The adapter supports sending OneBot12 format messages, facilitating cross-platform message compatibility:
 
 ```python
-# Send a OneBot12 formatted message
+# Send OneBot12 format message
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await kook.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 
-# Combine with fluent modifiers
-ob12_msg = [{"type": "text", "data": {"text": "Replied message"}}]
+# Combined with chained modifiers
+ob12_msg = [{"type": "text", "data": {"text": "Reply message"}}]
 await kook.Send.To("group", channel_id).Reply(msg_id).Raw_ob12(ob12_msg)
 
-# Use mention and reply message segments within Raw_ob12
+# Use mention and reply message segments in Raw_ob12
 ob12_msg = [
     {"type": "text", "data": {"text": "Hello "}},
     {"type": "mention", "data": {"user_id": "user_id"}},
@@ -24108,20 +24127,20 @@ await kook.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 In addition to sending messages, the Kook adapter supports the following operations:
 
 ```python
-# Edit a message (supports only KMarkdown type=9 and CardMessage type=10)
+# Edit message (only supports KMarkdown type=9 and CardMessage type=10)
 await kook.Send.To("group", channel_id).Edit(msg_id, "**Updated content**")
 
-# Recall a message
+# Recall message
 await kook.Send.To("group", channel_id).Recall(msg_id)
 
-# Upload a file (get file URL)
+# Upload file (get file URL)
 result = await kook.Send.Upload("C:/path/to/file.jpg")
 file_url = result["data"]["url"]
 ```
 
-## Return Values of Send Methods
+## Send Method Return Values
 
-All send methods return a Task object, which can be awaited directly to obtain the send result. The returned result follows the ErisPulse adapter's standardized return specification:
+All send methods return a Task object, which can be directly awaited to get the send result. The return result follows the ErisPulse adapter standardized return specification:
 
 ```python
 {
@@ -24130,42 +24149,42 @@ All send methods return a Task object, which can be awaited directly to obtain t
     "data": {...},            // Response data
     "message_id": "xxx",      // Message ID
     "message": "",            // Error message
-    "kook_raw": {...}         // Raw response data
+    "kook_raw": {...}         // Original response data
 }
 ```
 
-### Error Code Explanation
+### Error Code Description
 
 | retcode | Description |
 |---------|-------------|
 | 0 | Success |
-| 40100 | Invalid or missing Token |
+| 40100 | Token invalid or not provided |
 | 40101 | Token expired |
 | 40102 | Token does not match Bot |
-| 40103 | Missing permissions |
-| 40000 | Invalid parameter |
+| 40103 | Missing permission |
+| 40000 | Parameter error |
 | 40400 | Target does not exist |
-| 40300 | No permission to perform operation |
-| 50000 | Internal server error |
-| -1 | Internal adapter error |
+| 40300 | No permission to operate |
+| 50000 | Server internal error |
+| -1 | Adapter internal error |
 
-## Platform-specific Event Types
+## Platform-Specific Event Types
 
-Use `platform=="kook"` to detect and utilize platform-specific features.
+Use platform=="kook" check before using platform-specific features
 
 ### Core Differences
 
-1. **Channel System**: Kook uses a two-tier structure of servers (Guild) and channels (Channel), with channels serving as the basic message sending targets.
-2. **Message Types**: Kook supports various message types, including text (1), image (2), video (3), file (4), voice (8), KMarkdown (9), and card messages (10).
+1. **Channel System**: Kook uses a two-layer structure of server (Guild) and channel (Channel), with channels being the basic message sending target.
+2. **Message Types**: Kook supports multiple message types including text (1), image (2), video (3), file (4), voice (8), KMarkdown (9), and card messages (10).
 3. **Private Messaging System**: Kook distinguishes between channel messages and private messages, using different API endpoints.
-4. **Message Sequence Numbers**: Kook's WebSocket uses `sn` sequence numbers to ensure message ordering, supporting message buffering and out-of-order reordering.
-5. **Message Editing and Deletion**: Supports editing sent messages (only KMarkdown and CardMessage) and deleting messages.
+4. **Message Sequence Numbers**: Kook WebSocket uses `sn` sequence numbers to ensure message order, supporting message buffering and out-of-order reordering.
+5. **Message Editing and Recall**: Supports editing sent messages (only KMarkdown and CardMessage) and recalling messages.
 
 ### Extended Fields
 
-- All platform-specific fields are prefixed with `kook_`.
-- Original data is retained in the `kook_raw` field.
-- `kook_raw_type` indicates the original Kook message type number (e.g., `1` for text, `255` for notification events).
+- All unique fields are prefixed with `kook_`
+- Original data is preserved in the `kook_raw` field
+- `kook_raw_type` indicates the original Kook message type number (e.g., `1` for text, `255` for notification events)
 
 ### Special Field Examples
 
@@ -24277,14 +24296,14 @@ When a message contains @ information, a `mention` message segment is inserted b
 {
   "type": "mention",
   "data": {
-    "user_id": "Mentioned User ID"
+    "user_id": "Mentioned user ID"
   }
 }
 ```
 
 ### mention_all Message Segment
 
-When a message is a mention to all, a `mention_all` message segment is inserted:
+When the message is a @all, a `mention_all` message segment is inserted:
 
 ```json
 {
@@ -24295,41 +24314,41 @@ When a message is a mention to all, a `mention_all` message segment is inserted:
 
 ## WebSocket Connection
 
-### Connection Flow
+### Connection Process
 
-1. Use the Bot Token to call `POST /gateway/index` to obtain the WebSocket gateway address.
+1. Use Bot Token to call `POST /gateway/index` to obtain the WebSocket gateway address.
 2. Connect to the WebSocket gateway.
-3. Upon receiving the HELLO (s=1) signal, verify the connection status.
-4. Begin the heartbeat loop (PING, s=2, sent every 30 seconds).
-5. Receive message events (s=0), using the sn sequence number to ensure order.
-6. Receive the heartbeat response PONG (s=3).
+3. Receive HELLO (s=1) signal, verify connection status.
+4. Start heartbeat loop (PING, s=2, every 30 seconds).
+5. Receive message events (s=0), use sn sequence number to ensure order.
+6. Receive heartbeat response PONG (s=3).
 
 ### Signal Types
 
-| Signal | s Value | Description |
+| Signal | s value | Description |
 |--------|---------|-------------|
-| HELLO | 1 | Server welcome signal, received after successful connection. |
-| PING | 2 | Client heartbeat, sent every 30 seconds, includes the current sn. |
-| PONG | 3 | Heartbeat response. |
-| RESUME | 4 | Resume connection signal, includes sn to resume session. |
-| RECONNECT | 5 | Server requests reconnection, requires obtaining a new gateway. |
-| RESUME_ACK | 6 | Response indicating successful RESUME. |
+| HELLO | 1 | Server welcome signal, received after successful connection |
+| PING | 2 | Client heartbeat, sent every 30 seconds, carries current sn |
+| PONG | 3 | Heartbeat response |
+| RESUME | 4 | Resume connection signal, carries sn to resume session |
+| RECONNECT | 5 | Server requests reconnection, need to re-obtain gateway |
+| RESUME_ACK | 6 | RESUME success response |
 
-### Disconnection and Reconnection
+### Disconnection Reconnection
 
 - After an abnormal disconnection, the adapter automatically retries the connection.
-- If there was a previous `sn > 0`, it first attempts to RESUME (s=4) the connection.
-- After a failed RESUME, reset sn and the message queue, then perform a new connection (HELLO flow).
-- Upon receiving the RECONNECT (s=5) signal, clear the status and reconnect.
+- If there was a previous `sn > 0`, it first attempts RESUME (s=4) to restore the connection.
+- After RESUME failure, reset sn and message queue, and reconnect from scratch (HELLO process).
+- Upon receiving RECONNECT (s=5) signal, clear status and reconnect.
 
 ### Message Sequence Number Mechanism
 
 Kook WebSocket uses `sn` (incrementing sequence number) to ensure message order:
 
-- Each time a message event (s=0) is received, sn is incremented.
-- If a received message has a non-continuous sn, enter the temporary storage mode.
-- Messages in the temporary storage area are sorted by sn, waiting for missing messages to arrive before processing in order.
-- After the temporary storage area is cleared, automatically exit the temporary storage mode.
+- Each received message event (s=0) increments sn.
+- If a message with a non-continuous sn is received, it enters buffering mode.
+- Messages in the buffer are sorted by sn, waiting for missing messages to arrive before processing in order.
+- After the buffer is cleared, it automatically exits buffering mode.
 
 ## Usage Examples
 
@@ -24371,7 +24390,7 @@ async def handle_private_msg(event):
     await kook.Send.To("user", user_id).Text(f"You said: {text}")
 ```
 
-### Handling Notification Events (like emoji reactions)
+### Handling Notification Events (Emoji Reactions, etc.)
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -24387,33 +24406,33 @@ async def handle_notice(event):
         emoji = event.get("emoji", {})
         user_id = event.get("user_id")
         msg_id = event.get("message_id")
-        print(f"User {user_id} added an emoji reaction to message {msg_id}")
+        print(f"User {user_id} added emoji reaction to message {msg_id}")
 
     elif sub_type == "deleted_reaction":
         emoji = event.get("emoji", {})
         user_id = event.get("user_id")
         msg_id = event.get("message_id")
-        print(f"User {user_id} removed an emoji reaction from message {msg_id}")
+        print(f"User {user_id} removed emoji reaction from message {msg_id}")
 ```
 
 ### Sending Media Messages
 
 ```python
-# Sending an image (URL)
+# Send image (URL)
 await kook.Send.To("group", channel_id).Image("https://example.com/image.png")
 
-# Sending an image (binary)
+# Send image (binary)
 with open("image.png", "rb") as f:
     image_bytes = f.read()
 await kook.Send.To("group", channel_id).Image(image_bytes)
 
-# Sending a video
+# Send video
 await kook.Send.To("group", channel_id).Video("https://example.com/video.mp4")
 
-# Sending a file
+# Send file
 await kook.Send.To("group", channel_id).File("https://example.com/file.pdf", filename="document.pdf")
 
-# Sending a voice message
+# Send voice
 await kook.Send.To("group", channel_id).Voice("https://example.com/voice.mp3")
 ```
 
@@ -24436,21 +24455,21 @@ card = {
 await kook.Send.To("group", channel_id).Card(card)
 ```
 
-### Editing and Deleting Messages
+### Message Editing and Recall
 
 ```python
-# Sending a message
+# Send message
 result = await kook.Send.To("group", channel_id).Markdown("**Original content**")
 msg_id = result["data"]["msg_id"]
 
-# Editing a message (only supports KMarkdown and CardMessage)
+# Edit message (only supports KMarkdown and CardMessage)
 await kook.Send.To("group", channel_id).Edit(msg_id, "**Updated content**")
 
-# Deleting a message
+# Recall message
 await kook.Send.To("group", channel_id).Recall(msg_id)
 ```
 
-### Handling Edit and Delete Notifications for Private Messages
+### Handling Private Message Edit and Delete Notifications
 
 ```python
 @notice.on_notice()
@@ -24463,7 +24482,7 @@ async def handle_private_notice(event):
     if sub_type == "updated_private_message":
         msg_id = event.get("message_id")
         content = event.get("content")
-        print(f"Private message updated: {msg_id}, New content: {content}")
+        print(f"Private message updated: {msg_id}, new content: {content}")
 
     elif sub_type == "deleted_private_message":
         msg_id = event.get("message_id")

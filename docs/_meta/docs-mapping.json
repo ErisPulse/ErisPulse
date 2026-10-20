@@ -3,7 +3,7 @@
   "total_languages": 5,
   "languages": {
     "en": {
-      "docs_count": 84,
+      "docs_count": 85,
       "mapping_path": "_meta/en/docs-mapping.json"
     },
     "ja": {
