@@ -74,6 +74,46 @@
 
 ---
 
+## [2.11.0-dev.0] - 2026/10/20
+> 开发版
+
+**版本摘要**
+本版本聚焦「改代码 → 看效果」的开发闭环：热重载默认即全量重载（按顶层包名清理 import 缓存并重导依赖者代码，卸载前语法预检失败即拒绝、成功后核对代码身份），运行时注册模块纳入重载体系，load 失败现场可经 `module.last_error()` 直接查询。同期新增懒加载休眠（`dormant_after` 闲置自动归眠、访问透明唤醒、状态经 `on_before_unload` / `on_load` 接续）。
+
+**升级建议**
+- **是否建议升级**：可选升级
+- 常规模块零改动即可受益；仅依赖旧「默认轻量重载」行为的调用方需显式传 `reload(name, full=False)`
+
+**注意事项**
+- `reload()` / `reload_module()` 的 `full` 参数默认值由 `False` 翻转为 `True`：默认档现在会清理整个顶层包的 import 缓存并级联重导依赖者代码；`module.reload` 事件 payload 的 `full` 字段语义变为「本次是否全量」
+- 懒加载初始化失败由「永久失效」改为冷却（30 秒）后再次访问自动重试
+- 声明 `dormant_after` 的懒加载模块闲置超阈值会自动归眠：运行时资源释放、事件处理器注销（不再接收事件，`activate_on` 事件除外）；未声明则行为不变
+- 依赖「注册版本 ≠ 运行版本无从判断」的下游展示组件（Dashboard 等）可跟进 `get_info()` 新增的 `running_identity` / `stale` 字段与 `module.before_unload` / `module.sleep` 事件
+
+### 变更
+
+- @YingXinche
+  - 软重启 API 联动热重载系统：`sdk.restart()` 由"整体 `uninit()` / `init()`"改为**组件层代码级热重载**——全部模块走统一热重载管线（预检/快照回滚/身份核对）、全部适配器逐个代码级重载，框架进程/路由/配置监听保持在线；框架自身更新与 entry-point 增删场景请使用 `hard_restart()`（语义分界见文档）。`epsdk run --reload` 的文件监控随之受益：保存即触发热重载，不再整框架重启
+  - 实例锁文件迁移：多实例检测锁从 `config/.erispulse_config.lock` 迁至运行状态目录 **`.erispulse/config.lock`**（与 CLI 运行状态文件 `runtime.json` 同居一处，`config/` 目录此后只含用户可编辑配置）；升级后首次启动自动清除旧锁残留。新增常量 `RUNTIME_STATE_DIR_NAME`
+  - 配置目录自带 `.gitignore`：框架初始化与 `epsdk init` 均会生成（规则仅一行 `*`——目录内全部文件不入版本库，忽略文件自身也在排除范围内）；已存在的 `.gitignore` 不会被覆盖；项目模板 `.gitignore` 运行时区块同步忽略 `.erispulse/`
+  - 热重载默认语义翻转：`reload()` / `reload_module()` 默认全量重载——按顶层包名递归清理 `sys.modules` + 刷新导入缓存 + 清除源文件字节码缓存（`__pycache__`，同秒同字节数的小改写也能生效），依赖者模块默认级联重导代码；`full=False` 保留为轻量逃生门
+  - `top_level` 元数据缺失时按「旧模块对象 `__name__` 前缀 → 模块类 `__module__` 前缀」两级兜底清理——原「元数据缺失即假重载（仅告警不兜底）」的盲区消除
+  - 懒加载初始化失败语义：由失败后代理永久死亡改为冷却后可重试（与事件驱动懒激活的冷却语义对齐）；冷却窗口内仍短路避免重复尝试
+
+### 新增
+
+- @YingXinche
+  - 卸载前语法预检：reload 在卸载之前对目标源码树逐文件语法解析，失败即拒绝卸载（旧实例继续服务，语法错误不再把模块推进"半死状态"，日志给出文件 + 行号）；超大包（超过 500 文件）自动跳过预检
+  - 运行时注册模块纳入热重载：`sdk.module.register()` 登记重载快照并推导 `top_level`（runtime 来源标记），重载按定义模块重导 + 按类名重取；定义于 `__main__` / 无源文件的类守卫拒绝并告警（避免重执行入口脚本）
+  - 加载失败可观测：`sdk.module.last_error(名字)` / `get_info()["last_error"]` 返回失败现场（异常 + traceback + 时间戳，加载成功即清除）；`get_info()` 新增 `running_identity` / `stale` 字段（注册版本 ≠ 运行版本一眼可见）；失败路径同时自清洗该模块 import 缓存——「改完代码再 reload 一次」必定读到新代码
+  - 卸载前钩子 `on_before_unload(event)`：卸载 / 重载 / 禁用 / 级联 / 归眠流水线第一步触发（先于 `on_unload` 与资源回收，`event["reason"]` 标注来意），配套 `module.before_unload` 生命周期事件；钩子失败仅告警不阻塞卸载
+  - 懒加载休眠：`get_load_strategy(dormant_after="30m")` 声明后闲置自动归眠——释放运行时资源但保留懒代理与注册存根（与"从未激活"不可区分），属性访问 / `module.call` / `activate_on` 事件透明唤醒，状态经 `on_before_unload` / `on_load` 接续；手动归眠 `sdk.module.sleep(名字)`；配套 `module.sleep` 生命周期事件与 `module.load` 失败载荷的 `error` / `traceback` 字段
+  - 命令多轮流控语法糖（`.got()` 链）：`@command` 返回对原函数完全透明的流代理，`.got("名字", prompt=..., type=int, timeout="90s")` 逐步声明收集步骤，收集值按参数名注入后续步骤函数；底层编译到 Conversation（分支跳转自动存检查点），重启后经自动注册的恢复工厂从存档步骤继续；解析失败自动重发 `retry_prompt`（上限 `max_retries`）；`Event.wait_reply` 补齐 `session` 参数（与文档对齐）
+  - 适配器代码级热重载：`sdk.adapter.reload(平台名)` / `sdk.reload_adapter(平台名)`（支持本地插件与 PyPI 安装包）——语法预检 → 卸载清理 → 清 `sys.modules` 子树与 `__pycache__` 字节码 → 重发现重导 → 重新注册 → 原运行态自动重新拉起；失败自动回滚旧注册状态；身份核对防假重载；配套 `adapter.reload` 生命周期事件（携带 `identity_changed` / `version_old→new` / `was_started` / `source`）
+  - CLI 运行时控制：新增 `epsdk stop` / `epsdk restart`——`epsdk run` 启动时在 `.erispulse/runtime.json` 登记监督进程与框架子进程 PID 及原始启动命令；`stop` 优雅终止（POSIX SIGINT 走 Ctrl+C 同款收尾链，超时升级强杀；Windows 先断子进程再停监督者）；`restart` 停止后按原参数重新启动（前台接管）；支持 `--force` 与 `--pid`
+
+---
+
 ## [2.10.2] - 2026/10/18
 > 正式发布
 
