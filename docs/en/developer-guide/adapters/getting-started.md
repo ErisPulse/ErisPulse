@@ -365,14 +365,14 @@ async def handle_friend_request(event):
 from .Core import MyAdapter
 ```
 
-## Local Development (No Packaging)
+## Local Development (Without Bundling)
 
-Like modules, adapters can also be placed in the project's local plugin directory (default `plugins/`, configurable via `ErisPulse.framework.plugins_dir`) for direct development, **no need for `pip install -e .`**:
+Like modules, adapters can also be placed in the project's local plugin directory (default `plugins/`, configurable via `ErisPulse.framework.plugins_dir`) for direct development, **without `pip install -e .`**:
 
 ```bash
-# Generate local adapter plugin
+# Generate a local adapter plugin
 epsdk create adapter -n MyAdapter --local
-# Structure generated:
+# Generated structure:
 # plugins/
 # └── MyAdapter/
 #     ├── __init__.py
@@ -380,24 +380,24 @@ epsdk create adapter -n MyAdapter --local
 #     └── Converter.py
 ```
 
-The framework automatically scans the plugin directory and loads modules and adapters (same treatment as entry-point installed packages: enabling status, configuration declaration, hot reload, uninstall cleanup are all consistent):
+When the framework starts, it automatically scans the plugin directory and loads modules and adapters within it (treated equally with entry-point installed packages: enabling status, configuration declaration, hot updates, and uninstallation cleanup are all consistent):
 
-- **Identification Rules**: Package directories (with `__init__.py`) or single `.py` files are both recognized; `Main` named class is prioritized, otherwise the first `BaseAdapter` / `BaseModule` subclass in the plugin is taken
-- **Name Overlap**: When a local plugin and a PyPI-installed adapter have the same name, the local plugin takes precedence (for easy debugging)
-- **Hot Reload**: `sdk.enable_plugin_hot_reload()` enables plugin directory monitoring, covering adapters as well; code-level hot reload for adapters will be available in 2.11 (current version requires restarting the framework after modifying adapter code)
+- **Identification Rules**: Both package directories (containing `__init__.py`) or single `.py` files are recognized; `Main` named classes are prioritized, otherwise the first `BaseAdapter` / `BaseModule` subclass within the plugin is used.
+- **Name Overriding**: When a local plugin shares the same name as a PyPI-installed adapter, the local plugin takes precedence (useful for overriding and debugging).
+- **Hot Reload**: The plugin directory monitoring enabled by `sdk.enable_plugin_hot_reload()` also applies to adapters. Adapter-level hot reloading is available since version 2.11—`await sdk.adapter.reload("platform name")` or `await sdk.reload_adapter("platform name")` (syntax pre-check → uninstallation cleanup → cache clearing and re-import → re-registration and startup; failure automatically rolls back; see [Architecture Overview](../../architecture.md)).
 
 ### From Local Plugin to Release
 
-After local verification, use the `pack` subcommand to convert the plugin into a release-ready standard project (interactive selection of plugin, completion of metadata, generation of `pyproject` with entry-point):
+After local validation, use the `pack` subcommand to convert the plugin into a standard, release-ready project in one step (interactive selection of the plugin, completion of metadata, and generation of a `pyproject` with entry-point):
 
 ```bash
 epsdk create pack
-# Select plugin directory in plugin → Enter project name/description/author → Generate MyAdapter/ project directory
+# Select the plugin from the plugin directory → Enter project name/description/author → Generate MyAdapter/ project directory
 cd MyAdapter
-pip install -e .   # Convert to standard installation; then follow release process to upload to PyPI
+pip install -e .   # Convert to standard installation; then follow the release process to upload to PyPI
 ```
 
-> **Note**: After conversion, it is recommended to remove the original from `plugins/` to avoid duplicate loading of local plugin and installed package (both take precedence when names overlap, which might make you think the installed package is effective).
+> **Tip**: After conversion, it is recommended to remove the original from `plugins/` to avoid duplicate loading of local plugins and installed packages (when both share the same name, the local one takes precedence, which may make you mistakenly believe the installed package is effective).
 
 ## Dependency Declaration (Optional, 2.8.0+)
 

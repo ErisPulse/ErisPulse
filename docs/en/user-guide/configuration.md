@@ -9,7 +9,7 @@ ErisPulse uses a TOML-formatted configuration file `config/config.toml` to manag
 
 ## Configuration File Location
 
-The configuration file is located in the `config/` folder in the project root directory:
+The configuration file is located in the `config/` folder at the project root:
 
 ```
 project/
@@ -18,9 +18,13 @@ project/
 ├── main.py
 ```
 
-### Multi-Instance Warning and Lock File
+### Multi-Instance Notes and Lock Files
 
-When the framework starts, it creates a `.erispulse_config.lock` lock file in the `config/` directory and holds it until the process exits (used to detect multiple instances sharing the same configuration directory). If the log shows a warning "Detected that the configuration file may be in use by another ErisPulse instance," it means there are **two or more ErisPulse processes writing to the same configuration file** (typical scenario: multiple containers mounted the same host `config/` directory) — concurrent writes will overwrite each other. Please use a separate configuration directory for each instance.
+When the framework starts, it creates a `config.lock` lock file in the runtime status directory **`.erispulse/`** at the project root and holds it until the process exits (used to detect multiple instances sharing the configuration directory; prior to version 2.10, the `.erispulse_config.lock` file located in the `config/` directory will be automatically cleared during the first startup after an upgrade). If the log shows the warning "Detected that the configuration file may be in use by another ErisPulse instance," it means that **two or more ErisPulse processes are writing to the same configuration file** (typical scenario: multiple containers mounted with the same host `config/` directory) — concurrent writes will overwrite each other. Please use separate configuration directories for each instance.
+
+### Sensitive Configuration Not Stored in Repository
+
+The configuration file contains sensitive information such as tokens (token / API key): the framework initialization and `epsdk init` will automatically generate a `.gitignore` file in the `config/` directory (with a single line `*` — **all files in the directory are excluded from version control, and the ignore file itself is also excluded**); existing `.gitignore` files will not be overwritten. The `.erispulse/` runtime status directory (instance lock, CLI runtime status files) is considered local machine state, and the project template's `.gitignore` already defaults to ignoring it.
 
 ## Configuration Loading Error Handling
 

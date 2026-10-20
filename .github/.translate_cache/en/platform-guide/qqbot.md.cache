@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a115e127ca22131c76acbf42a05ccfab",
-  "file_hash": "a115e127ca22131c76acbf42a05ccfab",
-  "translated_at": "2026-09-12T10:26:14.517483",
+  "hash": "433fce81d84b8eb513969bfd8ddb38c5",
+  "file_hash": "433fce81d84b8eb513969bfd8ddb38c5",
+  "translated_at": "2026-10-20T12:15:09.290200",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# QQBot Platform Features Documentation\n\nQQBotAdapter is an adapter built based on the official QQ Bot (QQ OpenAPI) protocol, integrating full-scene functionalities such as group chats, private chats, and channels. It provides OneBot12 standard events, standard API actions, and request operation interfaces.\n\n---"
     },
     {
-      "hash": "82d791b169b28a80cebb85dd14fdb2fa",
-      "translation": "## Documentation Information\n\n- Corresponding Module Version: 5.0.0\n- Maintainer: ErisPulse"
+      "hash": "8f1444c30f38fc1f404f8d188e775c92",
+      "translation": "## Document Information\n\n- Corresponding Module Version: 5.1.0\n- Maintainer: ErisPulse"
     },
     {
       "hash": "393093b86ccb1fc1342a6dd20f91636c",
@@ -22,8 +22,8 @@
       "translation": "## Configuration Instructions\n\n```toml\n# config.toml\n[QQBot_Adapter]\nintents = \"[0, 9, 12, 25, 26, 27]\"   # Global: Subscribed event intents (JSON array, supports event names)\n\n[QQBot_Adapter.accounts.default]\nappid = \"YOUR_APPID\"                 # QQ Bot Application ID (required)\nsecret = \"YOUR_CLIENT_SECRET\"        # QQ Bot Client Secret (required)\nmode = \"websocket\"                   # Event reception method: websocket / webhook\nbot_id = \"\"                          # Bot ID (left empty to auto-fetch; can be manually filled for Using() location)\ngateway_url = \"\"                     # WebSocket Gateway URL (left empty to dynamically fetch via /gateway/bot)\napi_base_url = \"https://api.bot.qq.com\"  # API root URL (customizable for proxy use)\nwebhook_path = \"/webhook\"            # Webhook callback path (生效于 mode=webhook)\nenabled = true\n```\n\n**Breaking Changes in v5:**\n- The official unified use of `api.bot.qq.com`, `sandbox` configuration is deprecated (old configurations are automatically migrated and ignored)\n- Old flat configuration (directly writing appid/secret under `[QQBot_Adapter]`) is automatically migrated to `accounts.default`\n- Framework is a **soft dependency**: Installing the adapter does not pull the framework version; runtime checks for `ErisPulse>=2.7.1` and prompts accordingly\n\n**Intents Explanation (supports bit positions or event names):**\n\n| Bit | Event Name | Description |\n|----|------------|-------------|\n| 0 | GUILDS | Channel changes |\n| 1 | GUILD_MEMBERS | Channel member changes |\n| 9 | GUILD_MESSAGES | Channel messages (private domain) |\n| 12 | DIRECT_MESSAGE | Channel direct messages |\n| 24 | GROUP_MEMBER | Group member changes (v5 addition) |\n| 25 | GROUP_AND_C2C_EVENT | Group @ messages and private chat messages |\n| 26 | INTERACTION | Interaction events (buttons, etc.) |\n| 27 | MESSAGE_AUDIT | Message audit events |\n| 30 | PUBLIC_GUILD_MESSAGES | Channel messages (public domain) |"
     },
     {
-      "hash": "59b79b6dee491f6c0bfa2afc417d9732",
-      "translation": "## Message Sending\n\n### Basic Sending\n\n```python\nfrom ErisPulse import sdk\nqqbot = sdk.adapter.get(\"qqbot\")\n\nawait qqbot.Send.To(\"user\", user_openid).Text(\"Hello World!\")\n\n# Group mention message (automatically uses <qqbot-at-user id=\"x\" /> format)\nawait qqbot.Send.To(\"group\", group_openid).At(\"member_openid\").Text(\"@you\")\n\n# Channel message (automatically uses <@user_id> format for mentions)\nawait qqbot.Send.To(\"channel\", channel_id).Text(\"Channel message\")\n\n# Passive reply (automatically includes msg_id, no need to manually Reply)\nawait qqbot.Send.To(\"group\", group_openid).Reply(msg_id).Text(\"Reply content\")\n\n# Rich Media (supports URL / local path / binary; automatically splits uploads over 5MB)\nawait qqbot.Send.To(\"group\", gid).Image(\"https://example.com/img.png\")\n\n# Markdown (native / template)\nawait qqbot.Send.To(\"group\", gid).Markdown(\"# Title\\n- List\")\nawait qqbot.Send.To(\"user\", uid).Markdown(template_id=1, kv=[{\"key\": \"title\", \"value\": \"Notice\"}])\n\n# Keyboard (automatically sets type to markdown and attaches bot_appid)\nawait qqbot.Send.To(\"group\", gid).Keyboard(keyboard).Text(\"Please select\")\n\n# Streaming Message (for private chats)\nawait qqbot.Send.To(\"user\", openid).Stream(\"Answer content\")\n\n# Multiple Accounts\nawait qqbot.Send.Using(\"account2\").To(\"group\", gid).Text(\"Sent from second bot\")\n```"
+      "hash": "60d82de0f59d8cb50fa234fe3f50885e",
+      "translation": "## Message Sending\n\n### Basic Sending\n\n```python\nfrom ErisPulse import sdk\nqqbot = sdk.adapter.get(\"qqbot\")\n\nawait qqbot.Send.To(\"user\", user_openid).Text(\"Hello World!\")\n\n# Group chat @ message (automatically uses <qqbot-at-user id=\"x\" /> format)\nawait qqbot.Send.To(\"group\", group_openid).At(\"member_openid\").Text(\"@You\")\n\n# Channel message (@ automatically uses <@user_id> format)\nawait qqbot.Send.To(\"channel\", channel_id).Text(\"Channel message\")\n\n# Passive reply (automatically includes msg_id, no need to manually Reply)\nawait qqbot.Send.To(\"group\", group_openid).Reply(msg_id).Text(\"Reply content\")\n\n# Rich media (URL / local path / binary; automatically splits and uploads if over 5MB)\nawait qqbot.Send.To(\"group\", gid).Image(\"https://example.com/img.png\")\n\n# Markdown (native / template)\nawait qqbot.Send.To(\"group\", gid).Markdown(\"# Title\\n- List\")\nawait qqbot.Send.To(\"user\", uid).Markdown(template_id=1, kv=[{\"key\": \"title\", \"value\": \"Notification\"}])\n\n# Merge Forward (official md has no collapse syntax, renders as a quoted list; requires native Markdown permission, falls back to plain text on failure)\nawait qqbot.Send.To(\"group\", gid).MergeForward(nodes)\n\n# Keyboard (automatically set to markdown type and includes bot_appid)\nawait qqbot.Send.To(\"group\", gid).Keyboard(keyboard).Text(\"Please select\")\n\n# Streaming message (1-on-1 chat)\nawait qqbot.Send.To(\"user\", openid).Stream(\"Answer content\")\n\n# Multiple accounts\nawait qqbot.Send.Using(\"account2\").To(\"group\", gid).Text(\"Sent from second bot\")\n```"
     },
     {
       "hash": "4d0370dcd379e9caf7b5b019ce40cc3b",

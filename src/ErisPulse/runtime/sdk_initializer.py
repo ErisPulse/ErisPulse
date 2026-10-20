@@ -54,9 +54,10 @@ class Initializer:
         self._sdk = sdk_instance
         self._adapter_loader = AdapterLoader()
         self._module_loader = ModuleLoader()
-        # 将加载器引用注入 SDK：热重载（sdk.reload_module / 热重载监控）
-        # 经由 SDK 访问，若仅持有在 Initializer 内部则 SDK 侧永远读不到
+        # 将加载器引用注入 SDK：热重载（sdk.reload_module / sdk.reload_adapter /
+        # 热重载监控）经由 SDK 访问，若仅持有在 Initializer 内部则 SDK 侧永远读不到
         sdk_instance._module_loader = self._module_loader
+        sdk_instance._adapter_loader = self._adapter_loader
         # 创建共享的严格模式管理器并注入到两个加载器，
         # 确保跨加载器统一收集违规、在检查点统一报告
         self._strict_manager = StrictModeManager.from_config()
@@ -647,6 +648,7 @@ class Uninitializer:
             self._sdk._initialized = False
             self._sdk._initializer = None
             self._sdk._module_loader = None  # 加载器随 Initializer 生命周期一并失效
+            self._sdk._adapter_loader = None
             # 停止主动 GC 后台任务
             self._sdk._stop_proactive_gc()
             duration_str = (

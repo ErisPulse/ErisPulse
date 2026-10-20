@@ -278,7 +278,7 @@ flowchart TD
 
 ## 模块热重载架构
 
-热重载对**全部模块来源**一致：本地插件可监控文件变更自动触发，任意模块也可通过 `sdk.reload_module()` / `sdk.module.reload()` 手动重载（PyPI 安装包模块在 pip 升级后调用即可生效）；`sdk.reload_all_modules()` / `sdk.module.reload_all()` 可一次全量重载所有已注册模块（pip 批量升级后调用即可全部生效）：
+热重载对**全部模块来源**一致：本地插件（`plugins/` 目录）、运行时注册（`sdk.module.register()`）、PyPI 安装包模块均可通过 `sdk.reload_module()` / `sdk.module.reload()` 热重载——**默认即全量重载**（按顶层包名清理 import 缓存并重导依赖者代码，`full=False` 为轻量逃生门）；`sdk.reload_all_modules()` / `sdk.module.reload_all()` 可一次全量重载所有已注册模块（pip 批量升级后调用即可全部生效）：
 
 ```mermaid
 flowchart TD
@@ -288,27 +288,63 @@ flowchart TD
     D --> E["变更去抖（默认 1 秒）"]
     E --> F["_handle_change 解析插件名<br/>（单文件 / 包形式）"]
     F --> G["asyncio.run_coroutine_threadsafe<br/>调度回主事件循环"]
-    G --> H["sdk.reload_module(name, full=…)<br/>（也可对任意模块手动调用）"]
-    H --> I["卸载旧实例（触发 on_unload）<br/>收集依赖者准备级联重载"]
-    I --> J{"模块来源？"}
-    J -->|"plugin_folder"| K["清理注册与插件 sys.modules<br/>重扫描 plugins/ 目录"]
-    J -->|"PyPI 安装包"| L["清理注册 + 按 top_level 清理包<br/>sys.modules 子树（full=True 时叠加<br/>旧模块对象顶层段兜底）<br/>刷新导入缓存后重查 entry-point"]
-    K --> M["重新 register + load"]
-    L --> M
-    M --> N["挂载新实例到 sdk 属性"]
-    N --> O["级联重载依赖者<br/>（插件完整重载 / PyPI 重新实例化；<br/>full=True 时依赖者同样重导代码）"]
-    K -.->|"文件已删除"| P["从加载结果移除"]
-    L -.->|"entry-point 已消失（已卸载）"| P
+    G --> H["sdk.reload_module(name, full=True 默认)<br/>（也可对任意模块手动调用）"]
+    H --> I["语法预检（逐文件解析）<br/>失败即拒绝重载，旧实例继续服务"]
+    I --> J["卸载旧实例（on_before_unload → on_unload）<br/>收集依赖者准备级联重载"]
+    J --> K{"模块来源？"}
+    K -->|"plugin_folder"| L["清理注册与插件 sys.modules<br/>重扫描 plugins/ 目录"]
+    K -->|"runtime 运行时注册"| M["按定义模块清缓存重导<br/>按类名重取（__main__ 守卫）"]
+    K -->|"PyPI 安装包"| N["清理注册 + 按 top_level 清理包<br/>sys.modules 子树 + __pycache__ 字节码<br/>（元数据缺失时按旧模块对象顶层段兜底）<br/>刷新导入缓存后重查 entry-point"]
+    L --> O["重新 register + load"]
+    M --> O
+    N --> O
+    O --> P["挂载新实例到 sdk 属性<br/>核对新旧类身份（假重载告警）"]
+    P --> Q["级联重载依赖者<br/>（插件/运行时完整重载；<br/>PyPI 依赖者默认同样重导代码）"]
+    L -.->|"文件已删除"| R["从加载结果移除"]
+    M -.->|"定义不可安全重导"| R
+    N -.->|"entry-point 已消失（已卸载）"| R
 ```
 
-**两种来源的差异仅在发现阶段**，注册、加载、级联重载完全一致：
+**三种来源的差异仅在发现阶段**，预检、卸载、级联重载完全一致：
 
 - **本地插件**（`moduleInfo.meta.source == "plugin_folder"`）：清理插件名对应 `sys.modules` 后重扫描 `plugins/` 目录；文件已删除则从加载结果移除
+- **运行时注册**（`source == "runtime"`）：按定义模块重导、按类名重取并重建注册；定义于 `__main__` / 无源文件的类拒绝重导（守卫告警，避免重执行入口脚本）
 - **PyPI 安装包**：按 `meta.top_level` 清理包的 `sys.modules` 子树，刷新导入缓存（突破 entry-point 60 秒缓存）后重查并重新导入；entry-point 已消失（pip 卸载）则从加载结果移除
 
-**全量重载（`full=True`）与整体重载（`reload_all_modules`）：**
+**默认语义与可靠性保障（2.11）：**
 
-- `top_level` 元数据缺失且无法推导时，默认重载**不清理** import 缓存（重导入复用旧模块对象，即"假重载"），框架会显式告警并建议改用 `full=True`——全量重载会叠加旧模块对象顶层包名兜底清理，确保重载后运行最新代码
-- `full=True` 时 PyPI 依赖者级联走完整重载（重导代码），默认模式仅重新实例化（既有语义）
-- 重载会把原本懒加载的模块强制激活（无提示的差异已改为显式日志）；`reload_all_modules()` 则保持懒加载策略、仅将重载前处于已加载态的模块重新激活
+- **reload 即全量重载**：默认按顶层包名清理 `sys.modules` 并重导依赖者代码；`full=False` 仅按元数据清理、PyPI 依赖者直接重新实例化（超大依赖树的性能逃生门）
+- **语法预检闸门**：进入卸载流程之前逐文件语法解析，失败即拒绝重载——旧实例未卸载、继续服务，语法错误永远不会把模块推进"半死状态"（超大包超过文件数上限时跳过预检）
+- **缓存兜底**：`top_level` 元数据缺失时按「旧模块对象 `__name__` 前缀 → 模块类 `__module__` 前缀」两级推导清理范围；重载同时清除源文件字节码缓存（`__pycache__`），同秒同长度的小改写也能生效
+- **身份核对**：重载成功后断言新旧类身份变化，未变化（C 扩展等清不掉的缓存）显式告警并随 `module.reload` 事件携带 `identity_changed: false`；`module.get_info()` 以 `running_identity` / `stale` 字段暴露"注册版本 ≠ 运行版本"
+- **失败可查**：load 失败现场（异常 + traceback）可经 `module.last_error(名字)` / `get_info()["last_error"]` 直接查询，失败路径同时清洗该模块 import 缓存——"改完代码再 reload 一次"必定读到新代码
+- 重载会把原本懒加载的模块强制激活（显式日志）；`reload_all_modules()` 则保持懒加载策略、仅将重载前处于已加载态的模块重新激活，归眠（休眠）中的模块保持归眠
 - `reload_all_modules()` 按依赖拓扑序重新加载，单模块失败仅记录诊断并跳过（无整体回滚——on_unload 副作用不可撤销，与单模块热重载的尽力而为语义一致）；重载失败已回滚的场景同样如此，日志会明确提示旧实例处于已收尾状态
+
+## 适配器热重载架构
+
+适配器代码级热重载（2.11）与模块管线同构：`sdk.adapter.reload(平台名)` / `sdk.reload_adapter(平台名)` 对**本地插件**与 **PyPI 安装包**两种来源执行——
+
+```mermaid
+flowchart TD
+    A["sdk.adapter.reload(平台名)"] --> B["语法预检（逐文件解析）<br/>失败即拒绝重载，旧适配器继续服务"]
+    B --> C["快照：adapterInfo / 实例 / 启动态 /<br/>启动任务 / bots / sys.modules 条目"]
+    C --> D["unload（shutdown 即清理：<br/>路由/事件/命令/任务/连接/bot offline + 注销）"]
+    D --> E["清缓存：__pycache__ 字节码 →<br/>sys.modules 子树 → invalidate_caches<br/>→ finder 缓存 → 插件路径记录"]
+    E --> F{"来源？"}
+    F -->|"插件目录"| G["重扫描 plugins/（discover_adapters）"]
+    F -->|"PyPI 安装包"| H["重查 entry-point 并重导入<br/>（top_level 清理 + 类 __module__ 兜底）"]
+    G --> I["重新 register + startup（原运行态）<br/>核对类身份（假重载告警）"]
+    H --> I
+    I --> J["adapter.reload 事件<br/>identity_changed / version_old→new / was_started"]
+    G -.->|"插件已删除"| K["从加载结果移除"]
+    H -.->|"entry-point 已消失"| K
+    I -.->|"失败"| L["回滚：恢复 sys.modules /<br/>注册存根 / 实例 / 启动态"]
+```
+
+**与模块管线的差异：**
+
+- 适配器无懒加载与依赖级联：重载**不级联**依赖它的其它适配器（仅告警——依赖方经注册表间接消费，无实例级联语义）
+- 启动是异步链（`startup` 经 `_run_adapter` 派发，含依赖跳过与指数退避重试）：启动暂时失败**不判重载失败**（代码已换新），结果经 `adapter.status.change` 播报
+- `register()` 的实例重用陷阱（类同对象则旧实例被复用）由「pyc 清理 + sys.modules 清除 + 身份核对」三件套兜底
+- 生命周期事件：`adapter.reload`（payload 携带 `adapter_name` / `success` / `full` / `duration_ms` / `identity_changed` / `version_old→new` / `was_started` / `source`）

@@ -35,7 +35,7 @@ When a module is first accessed, `LazyModule` performs the following operations:
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Modules with `lazy_load=True` are loaded only on their **first attribute access** by default. If a module registers command/event handlers, the traditional approach would require `lazy_load=False` to load immediately. `activate_on` provides a third option: **declare triggers, and the module activates automatically when the first matching event/command arrives**—neither staying in memory constantly nor losing the trigger entry.
+Modules with `lazy_load=True` are loaded by default only on the **first attribute access**. If a module registers command/event handlers, the traditional approach is to set `lazy_load=False` for immediate loading. `activate_on` provides a third option: **declaring triggers, and automatically activating the module when the first matching event/command arrives**—keeping it out of memory unless needed, while not losing the trigger entry point.
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -49,12 +49,12 @@ class MyModule(BaseModule):
                 # ---- Event triggers (passive arrival, no user awareness) ----
                 "message",                                    # Type-level: any message event
                 {"notice": "group_member_increase"},          # Type + single detail_type
-                {"message": ["private", "group"]},            # Type + multiple detail_types
+                {"message": ["private", "group"]},            # Type + multiple detail_type
 
                 # ---- Command triggers (active input, placeholder commands visible in Help) ----
                 {"command": "roll"},                          # Shorthand: command name
                 {"command": ["roll", "dice"]},                # List of command names
-                {"command": {                                 # Dict declaration (name required)
+                {"command": {                                 # Dict declaration (name is required)
                     "name": "dice",
                     "help": "Roll a dice",
                     "usage": "/dice",
@@ -72,35 +72,74 @@ The dict form mirrors the user-level parameters of the `@command()` decorator, u
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `name` | `str` | **Required** | Command name; must match `@command(name)` in `on_load`, otherwise the placeholder is unregistered after activation, and the command becomes unavailable |
-| `help` | `str` | Fallback chain | Description shown in Help; if not declared, falls back to the chain (see below) |
+| `name` | `str` | **Required** | Command name; must match `@command(name)` in `on_load`, otherwise the placeholder is unregistered and the command does not exist after activation |
+| `help` | `str` | Fallback chain | Description displayed in Help; if not declared, falls back to the chain (see below) |
 | `usage` | `str` | Auto-generated | Usage line, defaulting to `{prefix}{name}` |
 | `group` | `str` | `None` | Command group |
 | `aliases` | `list[str]` | `[]` | Aliases are registered simultaneously; **inputting an alias also triggers activation** |
-| `hidden` | `bool` | `False` | If `True`, the placeholder command is hidden (aligned with the hidden semantics of the activated real command); users who know the command name can still trigger activation |
+| `hidden` | `bool` | `False` | If `True`, the placeholder command is also hidden (aligning with the hiding semantics of the real command after activation); users who know the command name can still trigger it by input |
 
-**Not supported**: `priority` / `permission` / `master`: The placeholder command's role is only to trigger activation. Permission checks are performed by the real command after activation (blocking permissions at the placeholder stage would make "activating on command input" ineffective).
+**Not supported**: `priority` / `permission` / `master`: The placeholder command's role is only to trigger activation; permission checks are performed by the real command after activation (blocking permissions during the placeholder phase would otherwise make "activating by command input" ineffective).
 
 ### Placeholder Command Help Fallback Chain
 
-When the module is not loaded, the Help displays command descriptions according to the following priority (first match wins):
+When the module is not loaded, the command description shown in Help is taken from the following sequence (the first found value is used):
 
-1. The command-level `help` declared in the dict (most precise)
-2. The module's `get_meta()` `description`
-3. The module's `__description__` attribute
-4. The package metadata's `Summary` (PyPI package summary)
-5. Generic prompt: "This command comes from a lazy-loaded module X. The module will be automatically loaded on first use."
+1. Command-level `help` declared in the dict (most precise)
+2. Module `get_meta()`'s `description`
+3. Module `__description__` attribute
+4. Package metadata's `Summary` (PyPI package summary)
+5. Generic prompt: "This command comes from a lazy-loaded module X, which will be automatically loaded on first use"
 
 ### Trigger Semantics
 
-- **Event stub**: Registered to the corresponding event manager with very low priority (`ACTIVATION_STUB_PRIORITY`), acting as a fallback after all regular handlers; after activation, the current event is forwarded to the module's real handler
+- **Event stub**: Registered to the corresponding event manager at a very low priority (`ACTIVATION_STUB_PRIORITY`), acting as a fallback after all ordinary handlers; after activation, the current event is forwarded to the module's real handler
 - **Command stub**: Registers a placeholder command; after activation, the placeholder is unregistered, and the real command takes over the current trigger
-- **Reentrancy protection**: An `asyncio.Lock` ensures activation occurs only once, even under concurrent triggers
-- **Scope filtering**: The stub includes the module owner identity, and does not trigger if the module is not enabled for the Bot / session / platform
-- **Failure semantics**: Activation failure does not retry; the stub is also unregistered
-- **Deduplication**: When mixing shorthand and dict declarations of the same command name, deduplication occurs (dict takes precedence); if the dict is missing `name` or the event `detail_type` is incorrectly written as a dict, a warning is issued and it is ignored
+- **Reentrancy protection**: An `asyncio.Lock` ensures activation occurs only once even under concurrent triggers
+- **Scope filtering**: The stub carries the module owner's identity; it does not trigger if the module is not enabled for the Bot / session / platform
+- **Failure semantics**: Activation failure enters a cooldown period (`ACTIVATE_RETRY_COOLDOWN_SECS`, 30 seconds); during cooldown, events are short-circuited to avoid repeated attempts; after cooldown, the trigger is automatically retried, and the stub remains throughout
+- **Deduplication**: When mixing shorthand and dict declarations for the same command name, deduplication occurs (dict takes precedence); if `name` is missing in dict or `detail_type` is miswritten as dict for events, a warning is issued and the entry is ignored
 
-> For architecture diagrams and full semantics, see [Architecture Overview](../architecture.md#event-driven-lazy-activationactivate_on-trigger-architecture).
+> For an architecture diagram and full semantics, see [Architecture Overview](../architecture.md#event-driven-lazy-activationactivate-on-trigger-architecture).
+
+## Dormant After (Lazy Loading Sleep)
+
+> [!NOTE]
+> This feature requires ErisPulse **2.11.0+**.
+
+After a lazy-loaded module remains idle for an extended period, the framework can **put it to sleep**: releasing runtime resources (associated tasks / connections / event registrations), while retaining the lazy-loading proxy and registration stubs. The module returns to a "registered but unloaded" state, and is transparently awakened next time a property is accessed, `module.call`, or an `activate_on` event occurs (it is re-instantiated and `on_load` is executed again), without requiring any explicit wake-up API. After being put to sleep, the system state is identical to that of a module that has never been activated.
+
+### Declaration Method
+
+```python
+@staticmethod
+def get_load_strategy():
+    return ModuleLoadStrategy(
+        lazy_load=True,
+        dormant_after="30m",   # Automatically put to sleep after 30 minutes of inactivity; omitting this means never sleeping (default)
+    )
+```
+
+The duration syntax is identical to the `cooldown` used in command governance (`90s` / `1h30m` / `1d`). The cleanup scanner runs at a fixed interval (60 seconds) and the actual sleep time is the threshold plus at most one scan interval; manual sleep can also be triggered at any time: `await sdk.module.sleep("module name")`. Explicit `unload` still completely unloads the module (including removing the lazy proxy).
+
+### State Continuation
+
+Before being put to sleep, the framework triggers `on_before_unload(reason="dormant")` (the first step in the unload pipeline, with resources still intact), and the module saves its state to `sdk.storage`. After being awakened, the state is restored in `on_load`:
+
+```python
+async def on_before_unload(self, event):
+    if event["reason"] in ("dormant", "reload", "disable"):
+        await self.sdk.storage.aset(f"{self._module_name}:counter", self._count)
+
+async def on_load(self, event):
+    self._count = await self.sdk.storage.aget(f"{self._module_name}:counter") or 0
+```
+
+### Semantics and Boundaries
+
+- **Safe for Dependencies**: Lazy modules are accessed by their dependents through persistent proxies (`sdk.<Name>`) or `module.call`, and their behavior remains consistent before and after being put to sleep; directly holding a reference to the actual instance is an anti-pattern (visible to the leak auditor)
+- **Events Not Delivered**: A module that is put to sleep no longer receives events—modules that require event-based awakening should also declare `activate_on` (the event first awakens then forwards); when troubleshooting "no command response," confirm whether the module is in a dormant state
+- **Self-Healing on Wake-Up Failure**: If the wake-up (re-initialization) fails, a 30-second cooldown is entered, after which subsequent access automatically retries, preventing permanent failure
 
 ## Configuring Lazy Loading
 

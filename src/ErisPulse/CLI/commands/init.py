@@ -231,6 +231,16 @@ class InitCommand(Command):
                 with config_file.open("w", encoding="utf-8") as f:
                     f.write(st.initial_config_toml())
 
+            # 配置目录自带 .gitignore：配置含令牌等敏感信息，全部文件不入库
+            # （规则仅一行 *——忽略文件自身也在排除范围内）
+            config_gitignore = project_path / "config" / ".gitignore"
+            if not config_gitignore.exists():
+                with config_gitignore.open("w", encoding="utf-8") as f:
+                    f.write(
+                        "# ErisPulse: sensitive config — keep out of VCS / 配置含敏感信息，全部不入库\n"
+                        "*\n"
+                    )
+
             example_file = project_path / "config" / "config.full.example"
             if not example_file.exists():
                 with example_file.open("w", encoding="utf-8") as f:
@@ -295,6 +305,7 @@ class InitCommand(Command):
                         f"{st.t('init.gitignore_section_runtime')}\n"
                         "config/\n"
                         "logs/\n"
+                        ".erispulse/\n"
                         "\n"
                         f"{st.t('init.gitignore_section_editor')}\n"
                         ".idea/\n"

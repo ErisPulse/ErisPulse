@@ -326,53 +326,53 @@ finally:
 
 ## Restart
 
-The SDK provides two restart methods, neither requiring you to manually unload first—the framework handles it itself:
+The SDK provides two restart methods, both of which do not require you to manually uninstall first—the framework handles it automatically:
 
-| Method | Call | Behavior | Use Cases |
-|--------|------|----------|-----------|
-| Hot Restart | `await sdk.restart()` | Same process, `uninit()` then `init()` again, reload adapters/modules | Reload configuration, hot update modules |
-| Hard Restart | `await sdk.hard_restart()` | `uninit()` then exit process with **exit code 42**, restarted by external supervisor | Suspected memory/resource leak, need completely clean restart |
+| Method | Call | Behavior | Applicable Scenarios |
+|------|------|------|----------|
+| Hot Restart | `await sdk.restart()` | Hot reload at the component layer code level within the same process: all modules and adapters follow a unified reload pipeline (syntax pre-check / snapshot rollback / identity verification), without overall `uninit()` / `init()` | To make code changes effective after pip upgrading components, or for hot module updates |
+| Hard Restart | `await sdk.hard_restart()` | Exit the process with exit code 42 after `uninit()`, and let an external supervisor launch a new process | When suspecting memory/resource leaks, or needing a completely clean restart |
 
 ```python
-# Hot Restart: Reload within the same process (most commonly used)
+# Hot restart: component layer code-level hot reload (most commonly used)
 await sdk.restart()
 
-# Hard Restart: Exit process, handed over to external supervisor for restart (see "Supervisor Guide" below)
+# Hard restart: exit the process and let an external supervisor restart it (see "Supervisor Guide" below)
 await sdk.hard_restart()
 ```
 
 > **Two points to note**:
-> 1. These methods execute restart in the background task and **immediately return `True` indicating "restart task scheduled"**, not "restart completed". Actual restart happens in the background to avoid interrupting the current event chain.
-> 2. The principle of `hard_restart()` is: after uninit and flush configuration, exit the process with **exit code 42** (`HARD_RESTART_EXIT_CODE`)—**it does not start a new process itself**. It must be restarted by an external supervisor detecting exit code 42. If running directly via `python main.py` without any supervisor, the process ends with code 42 and **will not automatically restart** (the framework will warn).
+> 1. Both methods execute the restart as a background task, immediately returning `True` to indicate that the "restart task has been scheduled," not that the restart has completed. The actual restart occurs in the background, avoiding interruption of the current event chain.
+> 2. The principle of `hard_restart()` is: after uninstalling and flushing configuration, the process exits with **exit code 42** (`HARD_RESTART_EXIT_CODE`) — it **does not launch a new process itself**. It must be restarted by an external supervisor that detects exit code 42. If you run `python main.py` directly without any supervisor, the process ends after exiting with code 42, and **does not automatically restart** (the framework will issue a warning message).
 
-### When to Use Hard Restart?
+### When should I use a hard restart?
 
-Hard restart is not just a "more thorough restart," it is more suitable and even more efficient in the following scenarios compared to hot restart:
+A hard restart is not just a "more thorough restart." It is more suitable, and even more efficient, in the following scenarios compared to a hot restart:
 
-- **Binary Library (C Extension) Side Effects**: Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources; hard restart switches to a new process, thoroughly clearing these side effects.
-- **Resource Leak Diagnosis**: When suspecting memory or handle leaks, hard restart provides a clean environment.
-- **Frequent Restart with Performance Sensitivity**: Hard restart avoids the overhead of unloading and reloading within the same process, making it more efficient than hot restart in practice.
+- **Side effects of binary libraries (C extensions):** Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources. A hard restart switches to a new process, thoroughly clearing these side effects.
+- **Resource leak troubleshooting:** When suspecting memory or handle leaks, a hard restart provides a clean environment.
+- **Frequent restarts sensitive to performance:** A hard restart avoids the overhead of unloading and reloading within the same process, making it more efficient than a hot restart.
 
-> The "Framework Restart" function in the Dashboard management panel calls `hard_restart()` underneath.
+> The "Framework Restart" function in the Dashboard management panel internally calls `hard_restart()`.
 
 ### Exit Code 42 Contract
 
-Hard restart is cross-process collaboration: **SDK is responsible for exiting (code 42), supervisor is responsible for restarting**.
+A hard restart involves cross-process collaboration: **the SDK is responsible for exiting (code 42), and the supervisor is responsible for launching**.
 
 | Role | Behavior |
-|------|----------|
-| SDK (when hard restarted) | `uninit()` → flush configuration → `os._exit(42)` |
+|------|------|
+| SDK (when hard restarted) | `uninit()` → flush configuration to disk → `os._exit(42)` |
 | Supervisor | Detects child process exit code 42 → restart the same command |
 
-> `sdk.is_supervised()` can query whether the current process is started by a supervisor (detects environment variable `ERISPULSE_SUPERVISED`). CLI `run` command starts a subprocess and automatically injects this marker; external supervisors like systemd / Docker do not inject it, `is_supervised()` returns `False`, and in this case, the framework will warn "supervisor not detected" after hard restart.
+> `sdk.is_supervised()` can query whether the current process was started by a supervisor (detects the environment variable `ERISPULSE_SUPERVISED`). The CLI `run` command injects this mark automatically when starting a child process; external supervisors like systemd or Docker do not inject it, so `is_supervised()` returns `False`, and the framework will issue a "supervisor not detected" warning after a hard restart.
 
 ### Supervisor Guide
 
-Choose the supervisor that suits you to make hard restart truly effective:
+Choose a supervisor suitable for your needs to make hard restart truly effective:
 
 #### 1. CLI run command (development/simple deployment, recommended)
 
-`epsdk run main.py` includes an internal supervision loop: detects the child process exit code, restarts immediately if it's 42; other abnormal exit codes retry with exponential backoff; `Ctrl+C` first gracefully terminates the child process (code 0 is considered normal exit, no restart).
+`epsdk run main.py` includes a built-in supervision loop: it detects the child process exit code, restarts immediately if it is 42; otherwise, it retries with exponential backoff for abnormal exit codes; `Ctrl+C` first gracefully terminates the child process (code 0 is considered normal exit, and no restart is triggered).
 
 ```bash
 epsdk run main.py
@@ -380,7 +380,7 @@ epsdk run main.py
 
 #### 2. systemd (Linux server)
 
-`RestartForceExitStatus=42` makes exit code 42 trigger a restart (default `on-failure` only applies to non-zero codes):
+`RestartForceExitStatus=42` makes exit code 42 trigger a restart (by default `on-failure` only applies to non-zero codes):
 
 ```ini
 [Service]
@@ -393,7 +393,7 @@ User=mybot
 
 #### 3. Docker / docker-compose
 
-The container's PID 1 is the application process, and exit code 42 causes the container to exit—use `restart` policy to automatically restart it:
+The container's PID 1 is the application process. After exiting with code 42, the container exits — use the `restart` policy to make it automatically restart:
 
 ```yaml
 services:
@@ -406,7 +406,7 @@ services:
 
 ```bash
 pm2 start main.py --name mybot --interpreter python3
-# 42 is treated as an exit code, PM2 defaults to restart; set restart_delay to debounce
+# 42 is treated as an exit code, PM2 defaults to restarting; set restart_delay to prevent jitter
 pm2 set mybot.restart_delay 2000
 ```
 
@@ -416,10 +416,10 @@ pm2 set mybot.restart_delay 2000
 [program:mybot]
 command=python3 /opt/mybot/main.py
 autorestart=true
-exitcodes=0,2,42    # 42 is also considered "normal exit requiring restart"
+exitcodes=0,2,42    # 42 is also treated as "normal exit requiring restart"
 ```
 
-#### 6. Pure Python Custom Supervisor
+#### 6. Pure Python custom supervisor
 
 ```python
 import subprocess, sys, time
@@ -432,10 +432,10 @@ while True:
         continue
     if code == 0:           # Normal exit
         break
-    time.sleep(3)           # Exception exit, backoff retry
+    time.sleep(3)           # Abnormal exit, retry with backoff
 ```
 
-> **Behavior without supervisor**: Running directly via `python main.py`, calling `hard_restart()` exits the process with code 42 and does not restart. In this case, you should integrate one of the above supervisors.
+> **Behavior without a supervisor:** Running directly with `python main.py`, calling `hard_restart()` causes the process to exit with code 42 and not restart. In this case, you should integrate one of the above supervisors.
 
 ## Related Documentation
 

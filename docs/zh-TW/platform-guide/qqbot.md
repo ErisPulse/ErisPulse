@@ -6,7 +6,7 @@ QQBotAdapter 是基於 QQ 官方機器人（QQ OpenAPI）協定建構的適配�
 
 ## 文件資訊
 
-- 對應模組版本: 5.0.0
+- 對應模組版本: 5.1.0
 - 維護者: ErisPulse
 
 ## 基本資訊
@@ -81,6 +81,9 @@ await qqbot.Send.To("group", gid).Image("https://example.com/img.png")
 # Markdown（原生 / 模板）
 await qqbot.Send.To("group", gid).Markdown("# 標題\n- 列表")
 await qqbot.Send.To("user", uid).Markdown(template_id=1, kv=[{"key": "title", "value": "通知"}])
+
+# 合併轉發（官方 md 無摺疊語法，渲染為引用列表；需原生 Markdown 權限，失敗自動回退純文字）
+await qqbot.Send.To("group", gid).MergeForward(nodes)
 
 # 鍵盤（自動置為 markdown 類型並附帶 bot_appid）
 await qqbot.Send.To("group", gid).Keyboard(keyboard).Text("請選擇")

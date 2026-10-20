@@ -6,7 +6,7 @@ KookAdapter 是基于Kook（开黑啦）Bot WebSocket 协议构建的适配器�
 
 ## 文档信息
 
-- 对应模块版本: 4.1.0
+- 对应模块版本: 4.2.0
 - 维护者: ShanFish
 
 ## 基本信息
@@ -58,7 +58,8 @@ enabled = true
 - **BaseConverter 继承**：转换器公共字段由框架 `build_base_event` 构建
 - **Api DSL**：标准Api动作映射（见下）
 - **标准 keyboard 段**：`{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}}` 文本+键盘自动组合为 Kook 卡片消息（section + action-group）；.Keyboard(rows) 修饰器接受通用结构
-- **spawn_background 任务归属**：连接任务改用 untime.spawn_background
+- **spawn_background 任务归属**：连接任务改用 
+untime.spawn_background
 - **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
 
 ### 标准Api动作
@@ -113,6 +114,7 @@ await kook.Send.To("group", channel_id).Text("Hello World!")
 - `.Voice(file: bytes | str)`：发送语音消息，支持文件路径、URL、二进制数据。
 - `.Markdown(text: str)`：发送KMarkdown格式消息。
 - `.Card(card_data: dict)`：发送卡片消息（CardMessage）。
+- `.MergeForward(nodes, title="合并聊天记录")`：发送合并转发消息（渲染为卡片：标题 header + 每条消息一个 section，KMD 转义，≤40 节点）。
 - `.Raw_ob12(message: List[Dict], **kwargs)`：发送 OneBot12 格式消息。
 
 ### 链式修饰方法（可组合使用）

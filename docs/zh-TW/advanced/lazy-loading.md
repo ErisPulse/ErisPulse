@@ -33,7 +33,7 @@ ErisPulse SDK 提供了強大的慢載模組系統，允許模組在實際需要
 ## 事件驅動懶激活（activate_on）
 
 > [!NOTE]  
-> 本特性需要 ErisPulse **2.8.0+**。
+> 此功能需要 ErisPulse **2.8.0+**。
 
 `lazy_load=True` 的模組預設只在**首次屬性存取**時載入。若模組註冊了命令/事件處理器，  
 傳統做法只能 `lazy_load=False` 立即載入。`activate_on` 提供了第三種選擇：**宣告觸發器，  
@@ -53,7 +53,7 @@ class MyModule(BaseModule):
                 {"notice": "group_member_increase"},          # 類型 + 單個 detail_type
                 {"message": ["private", "group"]},            # 類型 + 多個 detail_type
 
-                # ---- 命令觸發（主動輸入，佔位命令對 Help 可見）----
+                # ---- 命令觸發（主動輸入，占位命令對 Help 可見）----
                 {"command": "roll"},                          # 簡寫：命令名
                 {"command": ["roll", "dice"]},                # 命令名列表
                 {"command": {                                 # dict 聲明（name 必填）
@@ -70,21 +70,21 @@ class MyModule(BaseModule):
 
 ### 命令 dict 聲明參數
 
-dict 形式鏡像 `@command()` 裝飾器的使用者級參數，用於在模組載入前就註冊佔位命令：
+dict 形式鏡像 `@command()` 裝飾器的使用者級參數，用於在模組載入前就註冊占位命令：
 
 | 參數 | 類型 | 預設 | 說明 |
 |------|------|------|------|
-| `name` | `str` | **必填** | 命令名；須與 `on_load` 中 `@command(name)` 一致，否則激活後佔位註銷、命令不存在 |
+| `name` | `str` | **必填** | 命令名；須與 `on_load` 中 `@command(name)` 一致，否則激活後占位註銷、命令不存在 |
 | `help` | `str` | 回退鏈 | Help 中顯示的介紹；未聲明時按回退鏈取值（見下） |
-| `usage` | `str` | 自动生成 | 用法行，預設 `{prefix}{name}` |
+| `usage` | `str` | 自動生成 | 用法行，預設 `{prefix}{name}` |
 | `group` | `str` | `None` | 命令分組 |
 | `aliases` | `list[str]` | `[]` | 別名同時註冊，**輸入別名同樣觸發激活** |
-| `hidden` | `bool` | `False` | `True` 時佔位命令同樣隱藏（與激活後真實命令的隱藏語義對齊）；知道命令名的使用者輸入仍可觸發 |
+| `hidden` | `bool` | `False` | `True` 時占位命令同樣隱藏（與激活後真實命令的隱藏語義對齊）；知道命令名的使用者輸入仍可觸發 |
 
-**不支援** `priority` / `permission` / `master`：佔位命令的使命只是觸發激活，  
-權限檢查由激活後的真實命令執行（佔位階段攔截權限反而會讓「輸入命令激活」失效）。
+**不支援** `priority` / `permission` / `master`：占位命令的使命只是觸發激活，  
+權限檢查由激活後的真實命令執行（占位階段攔截權限反而會讓「輸入命令激活」失效）。
 
-### 佔位命令 help 回退鏈
+### 占位命令 help 回退鏈
 
 模組未載入時 Help 顯示的命令介紹，按以下順序取值（取到即止）：
 
@@ -98,13 +98,63 @@ dict 形式鏡像 `@command()` 裝飾器的使用者級參數，用於在模組�
 
 - **事件 stub**：以極低優先級（`ACTIVATION_STUB_PRIORITY`）註冊到對應事件管理器，  
   在所有普通處理器之後兜底觸發；激活後將當前事件轉發給模組的真實處理器  
-- **命令 stub**：註冊佔位命令；激活後佔位註銷、真實命令接管當次觸發  
+- **命令 stub**：註冊占位命令；激活後占位註銷、真實命令接管當次觸發  
 - **防重入**：`asyncio.Lock` 保證併發觸發下只激活一次  
 - **作用域過濾**：stub 帶模組 owner 身份，模組未對該 Bot / 會話 / 平台啟用時不觸發  
-- **失敗語義**：激活失敗不重試，stub 一併註銷  
-- **去重**：同名命令以簡寫 + dict 混合聲明時去重（dict 优先）；dict 缺 `name` 或事件 `detail_type` 误写 dict 时告警并忽略
+- **失敗語義**：激活失敗進入冷卻期（`ACTIVATE_RETRY_COOLDOWN_SECS`，30 秒），  
+  冷卻內事件短路避免重複嘗試；冷卻結束後再次觸發自動重試，stub 全程保留  
+- **去重**：同名命令以簡寫 + dict 混合聲明時去重（dict 优先）；dict 缺 `name`  
+  或事件 `detail_type` 误寫 dict 時告警並忽略  
 
 > 架構圖與完整語義詳見 [架構概覽](../architecture.md#事件驅動懶激活activate_on觸發架構)。
+
+## 懶加載休眠（dormant_after）
+
+> [!NOTE]  
+> 此功能需要 ErisPulse **2.11.0+**。
+
+當懶加載的模組長期閒置時，框架可將其**歸眠**：釋放運行時資源（包括任務、連接、事件註冊等），  
+但保留懶加載代理與註冊存根——模組回到「已註冊未加載」狀態。下次透過屬性存取、  
+`module.call` 或 `activate_on` 事件將**透明地喚醒**（重新實例化並執行 `on_load`），  
+無需任何額外的喚醒 API。歸眠後的系統狀態與「從未激活」完全一致。
+
+### 聲明方式
+
+```python
+@staticmethod
+def get_load_strategy():
+    return ModuleLoadStrategy(
+        lazy_load=True,
+        dormant_after="30m",   # 閒置 30 分鐘自動歸眠；不聲明則永不休眠（預設）
+    )
+```
+
+時間長度語法與命令治理的 `cooldown` 完全一致（例如：`90s`、`1h30m`、`1d`）。  
+掃描器會以固定間隔（60 秒）進行掃描，實際歸眠時間 = 閾值 + 最多一個掃描間隔；  
+也可隨時手動歸眠：`await sdk.module.sleep("模組名")`。顯式呼叫 `unload` 仍是徹底卸載（懶代理一併移除）。
+
+### 狀態接續
+
+歸眠前框架會觸發 `on_before_unload(reason="dormant")`（卸載流程的第一步，資源仍完好），  
+模組將狀態儲存到 `sdk.storage`；喚醒後在 `on_load` 中恢復：
+
+```python
+async def on_before_unload(self, event):
+    if event["reason"] in ("dormant", "reload", "disable"):
+        await self.sdk.storage.aset(f"{self._module_name}:counter", self._count)
+
+async def on_load(self, event):
+    self._count = await self.sdk.storage.aget(f"{self._module_name}:counter") or 0
+```
+
+### 語意與限制
+
+- **依賴方安全**：懶模組的依賴方透過持久代理（`sdk.<Name>`）或 `module.call` 訪問，  
+  歸眠前後行為一致；直接持有真實實例引用屬反模式（會被泄漏審計器檢測到）
+- **事件不達**：歸眠模組不再接收事件——需要事件喚醒的模組請同時聲明 `activate_on`  
+  （事件先喚醒再轉發）；排查「命令沒反應」時，請確認模組是否處於歸眠狀態
+- **喚醒失敗可自愈**：喚醒（重新初始化）失敗將進入 30 秒冷卻，冷卻後再次訪問會自動重試，  
+  不會永久失效
 
 ## 配置懶加載
 

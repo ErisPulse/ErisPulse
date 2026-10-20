@@ -6,7 +6,7 @@ TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消�
 
 ## 文档信息
 
-- 对应模块版本: 4.2.0
+- 对应模块版本: 4.3.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -42,7 +42,8 @@ await telegram.Api.delete_message(message_id=55)   # 自动补全 chat_id
 result = await telegram.Api.Using("main").get_self_info()
 ```
 
-> Telegram Bot API 无获取好友列表/群列表接口，get_friend_list/get_group_list 返回 etcode=10002。
+> Telegram Bot API 无获取好友列表/群列表接口，get_friend_list/get_group_list 返回 
+etcode=10002。
 
 ---
 
@@ -87,6 +88,7 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 | `.Face(emoji)` | 发送表情骰子 | `emoji: str`（如 🎲 🎯 🏀） |
 | `.Markdown(text, content_type)` | 发送 Markdown 格式消息 | `content_type` 默认 `"MarkdownV2"` |
 | `.HTML(text)` | 发送 HTML 格式消息 | `text: str` |
+| `.MergeForward(nodes, title)` | 发送合并转发消息（标题 + 每条 blockquote 引用块，4096 截断） | `nodes: List[Dict]`, `title: str` |
 | `.Sticker(file)` | 发送贴纸 | `file: str (file_id/URL) \| bytes` |
 | `.Location(lat, lng)` | 发送位置 | `latitude: float, longitude: float` |
 | `.Venue(lat, lng, title, addr)` | 发送地点 | 含标题和地址 |

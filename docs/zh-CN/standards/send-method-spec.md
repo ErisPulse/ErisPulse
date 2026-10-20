@@ -206,7 +206,7 @@ def MergeForward(self, nodes: List[Dict]) -> asyncio.Task:
                 "type": "node",
                 "data": {
                     "user_id": "10000",     # 展示用发送者 id
-                    "nickname": "QvQChat",  # 展示用发送者昵称
+                    "nickname": "MyBot",     # 展示用发送者昵称
                     "content": [            # 消息段数组，当前为 text 段
                         {"type": "text", "data": {"text": "【1/3】标题\n正文…"}}
                     ],
@@ -230,13 +230,27 @@ def MergeForward(self, nodes: List[Dict]) -> asyncio.Task:
 4. **失败语义**：返回标准错误响应（`status: "failed"`）或抛出异常均可，调用方会回退纯文本发送，内容不丢失
 5. **不得**在 `MergeForward` 内部再调用 `Raw_ob12` 发送同样的 nodes（OneBot11 的 `Raw_ob12`
    已内置纯 node 段自动路由，会成环）
+6. **出站 node 段解析**（全适配器约定）：各适配器的 `Raw_ob12` 段分发应注册 `node` 段——
+   纯 node 列表自动路由到本适配器的合并转发呈现（有 `MergeForward` 的平台等价于直接调用；
+   无该方法的平台提取各节点文本以「昵称: 正文」逐行**原文输出**）；混合列表中 node 段的文本并入正文。
+   任何适配器收到 node 段都不得静默丢弃。
+
+**平台实现形态（详见 `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`）：**
+
+- 原生端点：OneBot11、SnowLuma（三级回退：`send_group/private_forward_msg` 专用端点 → `upload_forward_msg`
+  取 resid 发 forward 段 → 直发 node 段；SnowLuma API 全面向 NapCat 对齐，适配器可直接连接 NapCat 后端）
+- 折叠 HTML `<details>` 卡：云湖（bot/用户协议）、Email、Sandbox、Allons(Ideaura)
+- 白名单 HTML / 引用块：Telegram（`<b>`+`<blockquote>`）、Matrix（blockquote 变体，白名单剥离 details/内联样式）
+- 平台卡片：Kook（Card header+section）、Discord（Embed fields）
+- 官方 Markdown 引用列表：QQBot（官方 md 无折叠语法，服务端校验拒绝无效标签 40034011）
+- 不实现（node 段原文输出降级）：OneBot12（标准无 node 段）、WeCom、Terminal、Webhook、WechatMp
 
 **调用方探测示例：**
 
 ```python
 sends = adapter.list_sends(platform)
 if "MergeForward" in sends:
-    await adapter.Send.To("group", "123").MergedForward(nodes)
+    await adapter.Send.To("group", "123").MergeForward(nodes)
 else:
     await adapter.Send.To("group", "123").Text(plain_text)
 ```

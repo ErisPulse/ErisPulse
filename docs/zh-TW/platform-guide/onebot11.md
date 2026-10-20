@@ -7,7 +7,7 @@ docs/zh-TW/quick-start.md
 
 ## 文件資訊
 
-- 對應模組版本: 4.3.0
+- 對應模組版本: 4.4.0
 - 維護者: ErisPulse
 
 ## 基本資訊

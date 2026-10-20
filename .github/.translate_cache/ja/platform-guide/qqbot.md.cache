@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a115e127ca22131c76acbf42a05ccfab",
-  "file_hash": "a115e127ca22131c76acbf42a05ccfab",
-  "translated_at": "2026-09-12T10:27:33.755078",
+  "hash": "433fce81d84b8eb513969bfd8ddb38c5",
+  "file_hash": "433fce81d84b8eb513969bfd8ddb38c5",
+  "translated_at": "2026-10-19T09:23:09.552697",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# QQBotプラットフォームの特徴ドキュメント\n\nQQBotAdapter は、QQ公式のロボット（QQ OpenAPI）プロトコルに基づいて構築されたアダプターです。グループチャット、プライベートチャット、チャンネルなど、全シーンの機能を統合し、OneBot12 標準イベント、標準APIアクション、およびリクエスト操作インターフェースを提供します。\n\n---"
     },
     {
-      "hash": "82d791b169b28a80cebb85dd14fdb2fa",
-      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 5.0.0\n- メンテナー: ErisPulse"
+      "hash": "8f1444c30f38fc1f404f8d188e775c92",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 5.1.0\n- 維持管理者: ErisPulse"
     },
     {
       "hash": "393093b86ccb1fc1342a6dd20f91636c",
@@ -22,8 +22,8 @@
       "translation": "## 設定の説明\n\n```toml\n# config.toml\n[QQBot_Adapter]\nintents = \"[0, 9, 12, 25, 26, 27]\"   # グローバル：サブスクライブするイベント intents（JSON配列、イベント名をサポート）\n\n[QQBot_Adapter.accounts.default]\nappid = \"YOUR_APPID\"                 # QQボットアプリID（必須）\nsecret = \"YOUR_CLIENT_SECRET\"        # QQボットクライアントシークレット（必須）\nmode = \"websocket\"                   # イベント受信方式：websocket / webhook\nbot_id = \"\"                          # ボットID（空欄の場合は自動取得；Using()で指定する場合に手動で記入可能）\ngateway_url = \"\"                     # WebSocketゲートウェイアドレス（空欄の場合は /gateway/bot から動的に取得）\napi_base_url = \"https://api.bot.qq.com\"  # APIルートアドレス（プロキシに使用する場合にカスタマイズ可能）\nwebhook_path = \"/webhook\"            # Webhookコールバックパス（mode=webhook の場合に有効）\nenabled = true\n```\n\n**v5の破壊的変更：**\n- 公式では `api.bot.qq.com` を統一使用し、`sandbox` 設定は廃止されました（旧設定は自動的に移行され無視されます）\n- 旧バージョンのフラットな設定（`[QQBot_Adapter]` の下に直接 appid/secret を記述）は `accounts.default` に自動的に移行されます\n- フレームワークは**ソフト依存**です：アダプタをインストールしてもフレームワークのバージョンは引きずりません；実行時に `ErisPulse>=2.7.1` を検出し、警告を表示します\n\n**intentsの説明（ビット番号またはイベント名をサポート）：**\n\n| ビット | イベント名 | 説明 |\n|----|--------|------|\n| 0 | GUILDS | チャンネルの変更 |\n| 1 | GUILD_MEMBERS | チャンネルメンバーの変更 |\n| 9 | GUILD_MESSAGES | チャンネルメッセージ（プライベートドメイン） |\n| 12 | DIRECT_MESSAGE | チャンネルのダイレクトメッセージ |\n| 24 | GROUP_MEMBER | グループメンバーの変更（v5で追加） |\n| 25 | GROUP_AND_C2C_EVENT | グループメンションメッセージとプライベートチャットメッセージ |\n| 26 | INTERACTION | インタラクションイベント（ボタンなど） |\n| 27 | MESSAGE_AUDIT | メッセージ審査イベント |\n| 30 | PUBLIC_GUILD_MESSAGES | チャンネルメッセージ（パブリックドメイン） |"
     },
     {
-      "hash": "59b79b6dee491f6c0bfa2afc417d9732",
-      "translation": "## メッセージ送信\n\n### 基本送信\n\n```python\nfrom ErisPulse import sdk\nqqbot = sdk.adapter.get(\"qqbot\")\n\nawait qqbot.Send.To(\"user\", user_openid).Text(\"Hello World!\")\n\n# グループメンション（自動的に <qqbot-at-user id=\"x\" /> 形式を使用）\nawait qqbot.Send.To(\"group\", group_openid).At(\"member_openid\").Text(\"@あなた\")\n\n# チャンネルメッセージ（自動的に <@user_id> 形式を使用）\nawait qqbot.Send.To(\"channel\", channel_id).Text(\"チャンネルメッセージ\")\n\n# パッシブリプライ（自動的に msg_id を付与、手動での Reply は不要）\nawait qqbot.Send.To(\"group\", group_openid).Reply(msg_id).Text(\"返信内容\")\n\n# フルメディア（URL / 本地パス / 二進制；5MBを超える場合は自動的に分割アップロード）\nawait qqbot.Send.To(\"group\", gid).Image(\"https://example.com/img.png\")\n\n# Markdown（ネイティブ / テンプレート）\nawait qqbot.Send.To(\"group\", gid).Markdown(\"# タイトル\\n- リスト\")\nawait qqbot.Send.To(\"user\", uid).Markdown(template_id=1, kv=[{\"key\": \"title\", \"value\": \"通知\"}])\n\n# キーボード（自動的に markdown タイプに設定し、bot_appid を付与）\nawait qqbot.Send.To(\"group\", gid).Keyboard(keyboard).Text(\"選択してください\")\n\n# ストリームメッセージ（1:1チャット）\nawait qqbot.Send.To(\"user\", openid).Stream(\"回答内容\")\n\n# 複数アカウント\nawait qqbot.Send.Using(\"account2\").To(\"group\", gid).Text(\"2番目のボットからのメッセージ\")\n```"
+      "hash": "60d82de0f59d8cb50fa234fe3f50885e",
+      "translation": "## メッセージ送信\n\n### 基本的な送信\n\n```python\nfrom ErisPulse import sdk\nqqbot = sdk.adapter.get(\"qqbot\")\n\nawait qqbot.Send.To(\"user\", user_openid).Text(\"Hello World!\")\n\n# グループチャットでのメンション（自動的に <qqbot-at-user id=\"x\" /> 形式を使用）\nawait qqbot.Send.To(\"group\", group_openid).At(\"member_openid\").Text(\"@あなた\")\n\n# チャンネルメッセージ（@ は自動的に <@user_id> 形式を使用）\nawait qqbot.Send.To(\"channel\", channel_id).Text(\"チャンネルメッセージ\")\n\n# パッシブリプライ（自動的に msg_id を付与し、手動で Reply を行う必要がない）\nawait qqbot.Send.To(\"group\", group_openid).Reply(msg_id).Text(\"リプライ内容\")\n\n# リッチメディア（URL / ローカルパス / 2進数データ；5MBを超える場合は自動的に分割アップロード）\nawait qqbot.Send.To(\"group\", gid).Image(\"https://example.com/img.png\")\n\n# Markdown（ネイティブ / テンプレート）\nawait qqbot.Send.To(\"group\", gid).Markdown(\"# タイトル\\n- リスト\")\nawait qqbot.Send.To(\"user\", uid).Markdown(template_id=1, kv=[{\"key\": \"title\", \"value\": \"通知\"}])\n\n# マージフォワード（公式の md には折りたたみ構文がないため、引用リストとしてレンダリングされる；ネイティブ Markdown 権限が必要、失敗時は自動的にプレーンテキストに回復）\nawait qqbot.Send.To(\"group\", gid).MergeForward(nodes)\n\n# キーボード（自動的に markdown タイプに設定され、bot_appid が添付される）\nawait qqbot.Send.To(\"group\", gid).Keyboard(keyboard).Text(\"選択してください\")\n\n# ストリームメッセージ（1対1チャット）\nawait qqbot.Send.To(\"user\", openid).Stream(\"回答内容\")\n\n# 複数アカウント\nawait qqbot.Send.Using(\"account2\").To(\"group\", gid).Text(\"2番目のロボットからのメッセージ\")\n```\n\n[docs/ja/quick-start.md]"
     },
     {
       "hash": "4d0370dcd379e9caf7b5b019ce40cc3b",

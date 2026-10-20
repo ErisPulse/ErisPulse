@@ -123,10 +123,46 @@ class TestAtomicWrite:
         self._stop(cfg1)
         self._stop(cfg2)
 
-    def test_lock_file_created_and_held(self, config_manager, config_dir):
-        """测试初始化后在配置目录创建实例锁文件并持有"""
-        assert (Path(config_dir) / CONFIG_LOCK_FILE_NAME).exists()
-        assert config_manager._instance_lock_fd is not None
+    @pytest.fixture
+    def nested_project(self, tmp_path):
+        """真实布局的迷你项目：<root>/config/config.toml（锁/状态目录推导基准）"""
+        cfg = ConfigManager(config_file=str(tmp_path / "config" / "config.toml"))
+        yield tmp_path, cfg
+        self._stop(cfg)
+
+    def test_lock_file_created_and_held(self, nested_project):
+        """测试初始化后在运行状态目录创建实例锁文件并持有"""
+        root, cfg = nested_project
+        assert (root / ".erispulse" / CONFIG_LOCK_FILE_NAME).exists()
+        assert cfg._instance_lock_fd is not None
+
+    def test_legacy_lock_file_cleaned(self, tmp_path):
+        """测试旧版（config/ 内）锁文件残留被自动清除"""
+        legacy = tmp_path / "config" / ".erispulse_config.lock"
+        legacy.parent.mkdir(parents=True, exist_ok=True)
+        legacy.write_text("", encoding="utf-8")
+        cfg = ConfigManager(config_file=str(tmp_path / "config" / "config.toml"))
+        self._stop(cfg)
+        assert not legacy.exists()
+        assert (tmp_path / ".erispulse" / CONFIG_LOCK_FILE_NAME).exists()
+
+    def test_config_gitignore_generated(self, nested_project):
+        """测试配置目录自带 .gitignore（敏感配置全部不入库，含忽略文件自身）"""
+        root, _cfg = nested_project
+        gitignore = root / "config" / ".gitignore"
+        assert gitignore.exists()
+        lines = gitignore.read_text(encoding="utf-8").splitlines()
+        assert "*" in lines
+        assert "!.gitignore" not in lines  # 排除列表自身也不入库
+
+    def test_config_gitignore_not_overwritten(self, tmp_path):
+        """测试已有 .gitignore 不被覆盖（尊重用户自定义）"""
+        gitignore = tmp_path / "config" / ".gitignore"
+        gitignore.parent.mkdir(parents=True, exist_ok=True)
+        gitignore.write_text("# custom rules\n", encoding="utf-8")
+        cfg = ConfigManager(config_file=str(tmp_path / "config" / "config.toml"))
+        self._stop(cfg)
+        assert gitignore.read_text(encoding="utf-8") == "# custom rules\n"
 
     def test_multi_instance_detected_warning(self, config_dir, monkeypatch):
         """测试锁被其他实例占用时记录告警（不阻塞启动）"""

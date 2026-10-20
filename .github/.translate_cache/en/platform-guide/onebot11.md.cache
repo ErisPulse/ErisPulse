@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "8e71d3a4c2dfbd3ef5a4e332b8b98aa8",
-  "file_hash": "8e71d3a4c2dfbd3ef5a4e332b8b98aa8",
-  "translated_at": "2026-09-12T10:26:18.442963",
+  "hash": "81ab0937c0aaaaedf2995df3ebe1aab3",
+  "file_hash": "81ab0937c0aaaaedf2995df3ebe1aab3",
+  "translated_at": "2026-10-19T09:22:13.672359",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# OneBot11 Platform Feature Documentation\n\nOneBot11Adapter is an adapter built based on the OneBot V11 protocol.\n\n---"
     },
     {
-      "hash": "a1376ffeea270fa68d8b22165af6dbcc",
-      "translation": "## Document Information\n\n- Corresponding Module Version: 4.3.0\n- Maintainer: ErisPulse"
+      "hash": "c461de40d423dc82175b0ac2c05feab4",
+      "translation": "## Document Information\n\n- Corresponding Module Version: 4.4.0\n- Maintainer: ErisPulse"
     },
     {
       "hash": "41ee104b8f054db6dc1094d1cc97d583",

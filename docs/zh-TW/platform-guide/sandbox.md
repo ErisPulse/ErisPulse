@@ -6,7 +6,7 @@ SandboxAdapter 是 ErisPulse 內建的沙盒適配器，用於本地開發與模
 
 ## 文件資訊
 
-- 對應模組版本: 4.1.0
+- 對應模組版本: 4.2.0
 - 維護者: ErisPulse
 
 ## 基本資訊
@@ -39,4 +39,5 @@ result = await sandbox.Api.get_supported_actions()
 
 - 沙盒提供虛擬用戶與群組，模組可像真實平台一樣收發訊息
 - Web 調試面板可手動發送訊息觸發模組處理邏輯
-- 訊息數據持久化儲存，重啟後可恢復
+- 訊息資料持久化儲存，重啟後可恢復
+- `.MergeForward(nodes, title="合併聊天記錄")`：發送合併轉發訊息（渲染為 `<details>` 折疊 HTML 卡片，html 通道發出），用於驗證模組的合併轉發邏輯

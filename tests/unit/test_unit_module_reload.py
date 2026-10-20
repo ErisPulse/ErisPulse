@@ -26,7 +26,7 @@ class FakeManager:
     def _collect_dependents(self, name):
         return []
 
-    async def unload(self, name):
+    async def unload(self, name, *, reason="unload"):
         self.calls.append(("unload", name))
         return True
 
@@ -266,7 +266,7 @@ class TestManagerReloadPassthrough:
             pass
 
         class FakeLoader:
-            async def reload_module(self, name, manager_instance, sdk_instance, *, full=False):
+            async def reload_module(self, name, manager_instance, sdk_instance, *, full=True):
                 captured["args"] = (name, manager_instance, sdk_instance)
                 captured["full"] = full
                 return True
@@ -280,7 +280,7 @@ class TestManagerReloadPassthrough:
         assert name == "Weather"
         assert manager_instance is mgr
         assert sdk_instance is sdk
-        assert captured["full"] is False
+        assert captured["full"] is True
 
     def test_no_loader_on_sdk_returns_false(self):
         from ErisPulse.Core.module import ModuleManager
@@ -320,8 +320,8 @@ class TestFullReload:
             sys.modules.pop("fake_meteor_pkg", None)
             sys.modules.pop("fake_meteor_pkg.core", None)
 
-    def test_default_mode_keeps_cache_when_metadata_missing(self):
-        """默认模式 + 元数据缺失：清理名单为空（假重载），现以显式告警提示"""
+    def test_default_mode_falls_back_to_module_object_prefix(self):
+        """默认（全量）模式 + 元数据缺失：按旧模块对象顶层段兜底清理缓存"""
         old_mod, _ = _make_module_in_sys("fake_comet_pkg")
         new_mod, _ = _make_module_in_sys("fake_comet_pkg")
         old_mod.moduleInfo = {"meta": {"name": "Comet", "package": None}}
@@ -336,8 +336,9 @@ class TestFullReload:
         try:
             ok = asyncio.run(loader.reload_module("Comet", manager, types.SimpleNamespace()))
             assert ok is True
-            # 默认模式不清理元数据外的缓存（保持既有语义，行为差异由 full=True 承担）
-            assert "fake_comet_pkg.core" in sys.modules
+            # 兜底生效：__name__ 前缀推导出顶层段，子模块缓存被清理
+            assert "fake_comet_pkg.core" not in sys.modules
+            assert loader._finder.cache_cleared is True
         finally:
             sys.modules.pop("fake_comet_pkg", None)
             sys.modules.pop("fake_comet_pkg.core", None)
@@ -394,8 +395,8 @@ class TestFullReload:
             for name in ("fake_root_pkg", "fake_dep_pkg"):
                 sys.modules.pop(name, None)
 
-    def test_default_mode_dependent_skips_reimport(self):
-        """默认模式：PyPI 依赖者仅重新实例化，不重导代码（既有语义）"""
+    def test_light_mode_dependent_skips_reimport(self):
+        """轻量模式（full=False）：PyPI 依赖者仅重新实例化，不重导代码（性能逃生门）"""
         old_mod, _ = _make_module_in_sys("fake_root2_pkg")
         new_mod, _ = _make_module_in_sys("fake_root2_pkg")
         old_mod.moduleInfo = {
@@ -425,7 +426,9 @@ class TestFullReload:
         manager._collect_dependents = lambda name: ["Helper"] if name == "Root" else []
 
         try:
-            ok = asyncio.run(loader.reload_module("Root", manager, types.SimpleNamespace()))
+            ok = asyncio.run(
+                loader.reload_module("Root", manager, types.SimpleNamespace(), full=False)
+            )
             assert ok is True
             # 依赖者只 manager.load 重新实例化，entry-point 不重导
             assert dep_entry.load_count == 0
@@ -503,7 +506,7 @@ class TestReloadAll:
             def _collect_dependents(self, name):
                 return []
 
-            async def unload(self, name, *, purge=False):
+            async def unload(self, name, *, purge=False, reason="unload"):
                 self.calls.append(("unload", name, purge))
                 self._loaded_modules.clear()
                 return True
@@ -586,7 +589,7 @@ class TestReloadAll:
             def _collect_dependents(self, name):
                 return []
 
-            async def unload(self, name, *, purge=False):
+            async def unload(self, name, *, purge=False, reason="unload"):
                 return True
 
             def exists(self, name):
@@ -612,3 +615,134 @@ class TestReloadAll:
 
         results = asyncio.run(loader.reload_all(EmptyManager(), types.SimpleNamespace()))
         assert results == {}
+
+
+@pytest.mark.unit
+class TestRuntimeModuleReload:
+    """运行时注册模块 reload：按定义模块重导 + __main__ 安全守卫"""
+
+    def test_runtime_registered_module_reloads_fresh_code(self, tmp_path):
+        """运行时注册 → 改磁盘代码 → reload：新代码生效（无 entry-point 参与）"""
+        import importlib
+
+        from ErisPulse.Core.module import ModuleManager
+
+        mod_name = "fake_rt_v1_mod"
+        (tmp_path / f"{mod_name}.py").write_text(
+            "class Main:\n    def version(self):\n        return 'v1'\n",
+            encoding="utf-8",
+        )
+        sys.path.insert(0, str(tmp_path))
+        try:
+            importlib.invalidate_caches()
+            mod = importlib.import_module(mod_name)
+
+            loader = _make_loader()
+            sdk = types.SimpleNamespace(_module_loader=loader)
+            manager = ModuleManager()
+            manager.set_sdk_ref(sdk)
+            # 注册即登记重载快照（runtime 来源，top_level 由定义模块推导）
+            manager.register("RT", mod.Main)
+            assert asyncio.run(manager.load("RT")) is True
+            assert manager.get("RT").version() == "v1"
+
+            # 改磁盘代码 → reload → 新代码生效
+            (tmp_path / f"{mod_name}.py").write_text(
+                "class Main:\n    def version(self):\n        return 'v2'\n",
+                encoding="utf-8",
+            )
+            ok = asyncio.run(loader.reload_module("RT", manager, sdk))
+            assert ok is True
+            assert loader._last_reload_details["identity_changed"] is True
+            assert manager.get("RT").version() == "v2"
+            assert sdk.RT.version() == "v2"
+        finally:
+            sys.path.remove(str(tmp_path))
+            sys.modules.pop(mod_name, None)
+
+    def test_runtime_reload_rejects_main_definition(self):
+        """定义于 __main__ 的运行时模块：拒绝重导（避免重执行入口脚本）"""
+        loader = _make_loader()
+        old_mod = types.ModuleType("fake_mainmod")
+        old_mod.moduleInfo = {
+            "meta": {
+                "name": "MM",
+                "source": "runtime",
+                "defining_module": "__main__",
+                "top_level": ["fake_mainmod"],
+            }
+        }
+        loader._last_module_objs = {"MM": old_mod}
+        manager = FakeManager()
+
+        ok = asyncio.run(loader.reload_module("MM", manager, types.SimpleNamespace()))
+        assert ok is False
+        # 未进入卸载流程（守卫在快照/卸载之前）
+        assert ("unload", "MM") not in manager.calls
+
+
+@pytest.mark.unit
+class TestLoadFailureObservability:
+    """load 失败现场（last_error / get_info.last_error / failed 标记 / 自清洗）"""
+
+    async def test_failure_recorded_and_cleared_on_success(self):
+        from ErisPulse.Core.Bases import BaseModule
+        from ErisPulse.Core.module import ModuleManager
+
+        manager = ModuleManager()
+
+        class Boom(BaseModule):
+            async def on_load(self, event):
+                raise ValueError("boom-on-load")
+
+            async def on_unload(self, event):
+                return True
+
+        manager.register("Boom", Boom)
+        assert await manager.load("Boom") is False
+        err = manager.last_error("Boom")
+        assert err is not None
+        assert "boom-on-load" in err["traceback"]
+        assert err["at"] > 0
+        # get_info 同源暴露 + failed 标记
+        assert "boom-on-load" in manager.get_info("Boom")["last_error"]["traceback"]
+        assert manager.get_status_summary()["modules"]["Boom"]["failed"] is True
+
+        # 修复（换新类注册）后加载成功 → 失败现场清除
+        class Fixed(BaseModule):
+            async def on_load(self, event):
+                return True
+
+            async def on_unload(self, event):
+                return True
+
+        manager.register("Boom", Fixed)
+        assert await manager.load("Boom") is True
+        assert manager.last_error("Boom") is None
+        assert manager.get_status_summary()["modules"]["Boom"]["failed"] is False
+
+    async def test_stale_marker_reflects_running_identity(self):
+        """注册版本 ≠ 运行版本 → stale 一眼可见"""
+        from ErisPulse.Core.Bases import BaseModule
+        from ErisPulse.Core.module import ModuleManager
+
+        manager = ModuleManager()
+
+        class S(BaseModule):
+            async def on_load(self, event):
+                return True
+
+            async def on_unload(self, event):
+                return True
+
+        manager.register("S", S, {"meta": {"name": "S", "version": "1.0.0"}})
+        await manager.load("S")
+        info = manager.get_info("S")
+        assert info["stale"] is False
+        assert info["running_identity"]["version"] == "1.0.0"
+
+        # 注册元数据被升级覆盖而实例未重载 → stale
+        manager._module_info["S"]["meta"]["version"] = "2.0.0"
+        info = manager.get_info("S")
+        assert info["stale"] is True
+        assert manager.get_status_summary()["modules"]["S"]["stale"] is True

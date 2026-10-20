@@ -1593,9 +1593,9 @@ class TestCascadeUnload:
 
         original_unload = manager._unload_single_module
 
-        async def _record(name):
+        async def _record(name, **kwargs):
             order.append(name)
-            return await original_unload(name)
+            return await original_unload(name, **kwargs)
 
         manager._unload_single_module = _record
         manager.register("A", base_cls, {"meta": {"name": "A"}})

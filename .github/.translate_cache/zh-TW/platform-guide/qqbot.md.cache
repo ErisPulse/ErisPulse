@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a115e127ca22131c76acbf42a05ccfab",
-  "file_hash": "a115e127ca22131c76acbf42a05ccfab",
-  "translated_at": "2026-09-12T10:27:22.365708",
+  "hash": "433fce81d84b8eb513969bfd8ddb38c5",
+  "file_hash": "433fce81d84b8eb513969bfd8ddb38c5",
+  "translated_at": "2026-10-19T09:23:03.682418",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# QQBot 平台特性文件\n\nQQBotAdapter 是基於 QQ 官方機器人（QQ OpenAPI）協定建構的適配器，整合群聊、私聊、頻道等全場景功能，提供 OneBot12 標準事件、標準 API 動作與請求操作介面。\n\n---"
     },
     {
-      "hash": "82d791b169b28a80cebb85dd14fdb2fa",
-      "translation": "## 文件資訊\n\n- 對應模組版本: 5.0.0\n- 維護者: ErisPulse"
+      "hash": "8f1444c30f38fc1f404f8d188e775c92",
+      "translation": "## 文件資訊\n\n- 對應模組版本: 5.1.0\n- 維護者: ErisPulse"
     },
     {
       "hash": "393093b86ccb1fc1342a6dd20f91636c",
@@ -22,8 +22,8 @@
       "translation": "## 配置說明\n\n```toml\n# config.toml\n[QQBot_Adapter]\nintents = \"[0, 9, 12, 25, 26, 27]\"   # 全局：訂閱的事件 intents（JSON數組，支援事件名）\n\n[QQBot_Adapter.accounts.default]\nappid = \"YOUR_APPID\"                 # QQ機器人應用ID（必填）\nsecret = \"YOUR_CLIENT_SECRET\"        # QQ機器人客戶端密鑰（必填）\nmode = \"websocket\"                   # 事件接收方式：websocket / webhook\nbot_id = \"\"                          # 機器人ID（留空自動獲取；可手動填寫用於 Using() 定位）\ngateway_url = \"\"                     # WebSocket網關地址（留空通過 /gateway/bot 動態獲取）\napi_base_url = \"https://api.bot.qq.com\"  # API根地址（可自定義用於代理）\nwebhook_path = \"/webhook\"            # Webhook回調路徑（mode=webhook 時生效）\nenabled = true\n```\n\n**v5 破壞性變更：**\n- 官方統一使用 `api.bot.qq.com`，`sandbox` 配置廢棄（舊配置自動遷移並忽略）\n- 舊版扁平配置（`[QQBot_Adapter]` 下直接寫 appid/secret）自動遷移到 `accounts.default`\n- 框架為**軟依賴**：安裝適配器不會拉取框架版本；運行時檢測 `ErisPulse>=2.7.1` 並提示\n\n**intents 說明（支援位序號或事件名）：**\n\n| 位 | 事件名 | 說明 |\n|----|--------|------|\n| 0 | GUILDS | 頻道變更 |\n| 1 | GUILD_MEMBERS | 頻道成員變更 |\n| 9 | GUILD_MESSAGES | 頻道消息（私域） |\n| 12 | DIRECT_MESSAGE | 頻道私信 |\n| 24 | GROUP_MEMBER | 群成員變更（v5新增） |\n| 25 | GROUP_AND_C2C_EVENT | 群@消息與私聊消息 |\n| 26 | INTERACTION | 交互事件（按鈕等） |\n| 27 | MESSAGE_AUDIT | 消息審核事件 |\n| 30 | PUBLIC_GUILD_MESSAGES | 頻道消息（公域） |"
     },
     {
-      "hash": "59b79b6dee491f6c0bfa2afc417d9732",
-      "translation": "## 消息發送\n\n### 基礎發送\n\n```python\nfrom ErisPulse import sdk\nqqbot = sdk.adapter.get(\"qqbot\")\n\nawait qqbot.Send.To(\"user\", user_openid).Text(\"Hello World!\")\n\n# 群聊@消息（自動使用 <qqbot-at-user id=\"x\" /> 格式）\nawait qqbot.Send.To(\"group\", group_openid).At(\"member_openid\").Text(\"@你\")\n\n# 頻道消息（@ 自動使用 <@user_id> 格式）\nawait qqbot.Send.To(\"channel\", channel_id).Text(\"頻道消息\")\n\n# 被動回覆（自動攜帶 msg_id，無需手動 Reply）\nawait qqbot.Send.To(\"group\", group_openid).Reply(msg_id).Text(\"回覆內容\")\n\n# 富媒體（URL / 本地路徑 / 二進制；超過5MB自動分片上傳）\nawait qqbot.Send.To(\"group\", gid).Image(\"https://example.com/img.png\")\n\n# Markdown（原生 / 模板）\nawait qqbot.Send.To(\"group\", gid).Markdown(\"# 標題\\n- 列表\")\nawait qqbot.Send.To(\"user\", uid).Markdown(template_id=1, kv=[{\"key\": \"title\", \"value\": \"通知\"}])\n\n# 鍵盤（自動置為 markdown 類型並附帶 bot_appid）\nawait qqbot.Send.To(\"group\", gid).Keyboard(keyboard).Text(\"請選擇\")\n\n# 流式消息（單聊）\nawait qqbot.Send.To(\"user\", openid).Stream(\"回答內容\")\n\n# 多賬戶\nawait qqbot.Send.Using(\"account2\").To(\"group\", gid).Text(\"來自第二個機器人\")\n```"
+      "hash": "60d82de0f59d8cb50fa234fe3f50885e",
+      "translation": "## 消息發送\n\n### 基礎發送\n\n```python\nfrom ErisPulse import sdk\nqqbot = sdk.adapter.get(\"qqbot\")\n\nawait qqbot.Send.To(\"user\", user_openid).Text(\"Hello World!\")\n\n# 群聊@消息（自動使用 <qqbot-at-user id=\"x\" /> 格式）\nawait qqbot.Send.To(\"group\", group_openid).At(\"member_openid\").Text(\"@你\")\n\n# 頻道消息（@ 自動使用 <@user_id> 格式）\nawait qqbot.Send.To(\"channel\", channel_id).Text(\"頻道消息\")\n\n# 被動回覆（自動攜帶 msg_id，無需手動 Reply）\nawait qqbot.Send.To(\"group\", group_openid).Reply(msg_id).Text(\"回覆內容\")\n\n# 富媒體（URL / 本地路徑 / 二進制；超過5MB自動分片上傳）\nawait qqbot.Send.To(\"group\", gid).Image(\"https://example.com/img.png\")\n\n# Markdown（原生 / 模板）\nawait qqbot.Send.To(\"group\", gid).Markdown(\"# 標題\\n- 列表\")\nawait qqbot.Send.To(\"user\", uid).Markdown(template_id=1, kv=[{\"key\": \"title\", \"value\": \"通知\"}])\n\n# 合併轉發（官方 md 無摺疊語法，渲染為引用列表；需原生 Markdown 權限，失敗自動回退純文字）\nawait qqbot.Send.To(\"group\", gid).MergeForward(nodes)\n\n# 鍵盤（自動置為 markdown 類型並附帶 bot_appid）\nawait qqbot.Send.To(\"group\", gid).Keyboard(keyboard).Text(\"請選擇\")\n\n# 流式消息（單聊）\nawait qqbot.Send.To(\"user\", openid).Stream(\"回答內容\")\n\n# 多賬戶\nawait qqbot.Send.Using(\"account2\").To(\"group\", gid).Text(\"來自第二個機器人\")\n```"
     },
     {
       "hash": "4d0370dcd379e9caf7b5b019ce40cc3b",

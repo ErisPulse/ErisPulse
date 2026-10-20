@@ -9,7 +9,7 @@ ErisPulse 使用 TOML 格式的配置文件 `config/config.toml` 來管理專案
 
 ## 配置文件位置
 
-配置文件位於專案根目錄的 `config/` 檔案夾中：
+配置文件位於專案根目錄的 `config/` 資料夾中：
 
 ```
 project/
@@ -18,9 +18,13 @@ project/
 ├── main.py
 ```
 
-### 多實例提示與鎖文件
+### 多實例提示與鎖檔案
 
-框架啟動時會在 `config/` 目錄下建立 `.erispulse_config.lock` 鎖文件並持有到進程退出（用於檢測多實例共享配置目錄）。如果日誌出現「檢測到配置文件可能正被另一個 ErisPulse 實例同時使用」的告警，說明有**兩個以上的 ErisPulse 進程在寫同一份配置**（典型場景：多個容器掛載了同一個宿主機 `config/` 目錄）——併發寫入會互相覆蓋，請為每個實例使用獨立的配置目錄。
+框架啟動時會在專案根目錄的執行狀態目錄 **`.erispulse/`** 下建立 `config.lock` 鎖檔案並持有至進程退出（用於檢測多實例共享配置目錄；2.10 及以前位於 `config/` 目錄的 `.erispulse_config.lock` 會在升級後首次啟動時自動清除）。如果日誌出現「檢測到配置檔案可能正被另一個 ErisPulse 實例同時使用」的警告，說明有**兩個以上的 ErisPulse 進程在寫同一份配置**（典型場景：多個容器掛載了同一個主機 `config/` 目錄）——並發寫入會互相覆蓋，請為每個實例使用獨立的配置目錄。
+
+### 敏感配置不入庫
+
+配置檔案包含令牌（token / API key）等敏感資訊：框架初始化與 `epsdk init` 會自動在 `config/` 目錄產生 `.gitignore`（內容僅一行 `*`——**目錄內全部檔案不入版本庫，忽略檔案自身也在排除範圍內**）；已存在的 `.gitignore` 不會被覆蓋。`.erispulse/` 執行狀態目錄（實例鎖、CLI 執行狀態檔案）同屬機器本地狀態，專案範本的 `.gitignore` 已預設忽略。
 
 ## 配置載入錯誤處理
 
@@ -192,7 +196,6 @@ flowchart TD
 | 模組 | 路由到 `on_config_update` | 各模組 `on_config_update(old, new)` 回調 |
 | 存儲 | `config.updated` | `use_global_db` 變更**僅告警**（需重啟） |
 | 路由 | `config.updated` | `cors.*` / `security.*` 變更**僅告警**（需重啟） |
-
 
 ## 配置讀取與刪除 API
 

@@ -6,7 +6,7 @@ OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 
 ## 文档信息
 
-- 对应模块版本: 4.3.0
+- 对应模块版本: 4.4.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -22,7 +22,8 @@ OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 本适配器已完成 v5 范式对齐（增量升级，API 兼容）：
 
 - **BaseConverter 继承**：转换器公共字段（id/time/platform/self/raw）由框架 uild_base_event 构建，按 OB11 字段名（echo/time/self_id）覆盖
-- **spawn_background 任务归属**：Client 模式连接任务改用 untime.spawn_background（owner 归属，shutdown 自动回收）
+- **spawn_background 任务归属**：Client 模式连接任务改用 
+untime.spawn_background（owner 归属，shutdown 自动回收）
 - **框架软依赖**：安装适配器不再声明 ErisPulse 硬依赖，避免 pip 解析时调整框架版本；运行时检测 ErisPulse>=2.7.1 并在版本过低时打日志提示
 - **启动版本日志**：初始化时输出 OneBotAdapter v4.3.0 已加载
 

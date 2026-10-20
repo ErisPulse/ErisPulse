@@ -6,7 +6,7 @@ DiscordAdapter 是基于 Discord Gateway (WebSocket) 和 REST API v10 协议构�
 
 ## 文档信息
 
-- 对应模块版本: 4.2.0
+- 对应模块版本: 4.3.0
 - 维护者: ErisPulse
 - Discord API 版本: v10
 
@@ -74,7 +74,8 @@ Intents 使用位掩码，计算方式为各 Intent 值按位或（`|`）：
 - **Api DSL**：标准Api动作映射（见下）
 - **标准 keyboard 段**：转换为 Discord components（action row + buttons）；.Keyboard(rows) 修饰器接受通用结构
 - **交互回调标准字段**：INTERACTION_CREATE 事件包含 interaction_id / utton_data
-- **spawn_background 任务归属**：连接任务改用 untime.spawn_background
+- **spawn_background 任务归属**：连接任务改用 
+untime.spawn_background
 - **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
 
 ### 标准Api动作
@@ -117,6 +118,7 @@ await discord.Send.To("group", channel_id).Text("Hello World!")
 支持的发送类型包括：
 - `.Text(text: str)`：发送纯文本消息。
 - `.Embed(embed: dict | list)`：发送 Embed 嵌入消息，支持单个或多个 Embed。
+- `.MergeForward(nodes, title="合并聊天记录")`：发送合并转发消息（Embed：标题 + 每条消息一个 field，≤25 fields，value ≤1024）。
 - `.Image(file: bytes | str, filename: str = "image.png")`：发送图片，支持二进制数据或 URL。
 - `.File(file: bytes | str, filename: str = None)`：发送文件，支持二进制数据或 URL。
 - `.Reply(content: str, message_id: str)`：回复指定消息（便捷终端方法）。

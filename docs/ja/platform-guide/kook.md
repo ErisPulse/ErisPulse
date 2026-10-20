@@ -6,7 +6,7 @@ KookAdapter は、Kook（開黒啦）Bot WebSocket プロトコルに基づい�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.1.0
+- 対応モジュールバージョン: 4.2.0
 - メンテナー: ShanFish
 
 ## 基本情報
@@ -96,7 +96,7 @@ async def handle_button(event):
 
 ## 支援されるメッセージ送信タイプ
 
-すべての送信メソッドは、メソッドチェーン構文で実装されています。たとえば、次のように使用します：
+すべての送信メソッドは、チェーン式の構文で実装されています。たとえば：
 
 ```python
 from ErisPulse.Core import adapter
@@ -105,7 +105,8 @@ kook = adapter.get("kook")
 await kook.Send.To("group", channel_id).Text("Hello World!")
 ```
 
-サポートされている送信タイプは以下の通りです：
+サポートされる送信タイプは以下の通りです：
+
 - `.Text(text: str)`：純粋なテキストメッセージを送信します。
 - `.Image(file: bytes | str)`：画像メッセージを送信します。ファイルパス、URL、バイナリデータをサポートします。
 - `.Video(file: bytes | str)`：動画メッセージを送信します。ファイルパス、URL、バイナリデータをサポートします。
@@ -113,17 +114,18 @@ await kook.Send.To("group", channel_id).Text("Hello World!")
 - `.Voice(file: bytes | str)`：音声メッセージを送信します。ファイルパス、URL、バイナリデータをサポートします。
 - `.Markdown(text: str)`：KMarkdown形式のメッセージを送信します。
 - `.Card(card_data: dict)`：カードメッセージ（CardMessage）を送信します。
-- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します。
+- `.MergeForward(nodes, title="合併チャット記録")`：合併転送メッセージを送信します（カードにレンダリング：タイトル header + 各メッセージを section として、KMD エスケープ、≤40 ノード）。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12 形式のメッセージを送信します。
 
-### チェイン修飾メソッド（複数組み合わせて使用可能）
+### チェーン式修飾メソッド（組み合わせて使用可能）
 
-チェイン修飾メソッドは `self` を返し、メソッドチェーンで呼び出すことができます。最終的な送信メソッドの前に呼び出す必要があります：
+チェーン式修飾メソッドは `self` を返し、チェーン式で呼び出すことができます。最終的な送信メソッドの前に呼び出す必要があります：
 
-- `.Reply(message_id: str)`：指定したメッセージに返信（引用）します。
-- `.At(user_id: str)`：指定したユーザーを@します。複数回呼び出すことで複数のユーザーを@できます。
+- `.Reply(message_id: str)`：指定されたメッセージに返信します。
+- `.At(user_id: str)`：指定されたユーザーを@します。複数回呼び出すことで、複数のユーザーを@できます。
 - `.AtAll()`：全員を@します。
 
-### チェイン呼び出しの例
+### チェーン式呼び出しの例
 
 ```python
 # 基本的な送信
@@ -141,20 +143,20 @@ await kook.Send.To("group", channel_id).At("user1").At("user2").Text("複数ユ�
 # 全員を@する
 await kook.Send.To("group", channel_id).AtAll().Text("お知らせ")
 
-# 修飾メソッドを組み合わせる
+# 組み合わせて使用する
 await kook.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("複合メッセージ")
 ```
 
 ### OneBot12メッセージのサポート
 
-アダプタは、OneBot12形式のメッセージを送信する機能をサポートしており、プラットフォーム間のメッセージ互換性を確保します。
+アダプターはOneBot12形式のメッセージの送信をサポートしており、プラットフォーム間のメッセージ互換性を確保します：
 
 ```python
 # OneBot12形式のメッセージを送信する
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await kook.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 
-# 修飾メソッドと組み合わせる
+# チェーン式修飾と組み合わせる
 ob12_msg = [{"type": "text", "data": {"text": "返信メッセージ"}}]
 await kook.Send.To("group", channel_id).Reply(msg_id).Raw_ob12(ob12_msg)
 
@@ -167,18 +169,18 @@ ob12_msg = [
 await kook.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 ```
 
-### 追加操作メソッド
+### 追加の操作メソッド
 
-メッセージ送信以外にも、Kookアダプタは以下の操作をサポートしています：
+メッセージ送信以外にも、Kookアダプターは以下の操作をサポートします：
 
 ```python
-# メッセージの編集（KMarkdown type=9 と CardMessage type=10 にのみ対応）
+# メッセージを編集する（KMarkdown type=9 と CardMessage type=10 のみサポート）
 await kook.Send.To("group", channel_id).Edit(msg_id, "**更新後の内容**")
 
-# メッセージの撤回
+# メッセージを撤回する
 await kook.Send.To("group", channel_id).Recall(msg_id)
 
-# ファイルのアップロード（ファイルURLの取得）
+# ファイルをアップロードする（ファイルURLを取得）
 result = await kook.Send.Upload("C:/path/to/file.jpg")
 file_url = result["data"]["url"]
 ```

@@ -100,11 +100,12 @@ class LifecycleManager:
     # 预定义的标准事件列表
     STANDARD_EVENTS = {
         "core": ["init.start", EVENT_CORE_INIT_STAGE, "init.complete", "uninit.complete"],
-        "module": ["load", "init", "unload", "register", EVENT_MODULE_RELOAD],
+        "module": ["load", "before_unload", "init", "sleep", "unload", "register", EVENT_MODULE_RELOAD],
         "adapter": [
             "load",
             "start",
             "status.change",
+            "reload",
             "stop",
             "stopped",
             "event.receive",

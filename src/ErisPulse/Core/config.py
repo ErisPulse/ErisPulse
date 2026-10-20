@@ -35,6 +35,7 @@ from .constants import (
     CONFIG_WRITE_DELAY_SECS,
     CONFIG_WRITE_RETRY_DELAY_SECS,
     DEFAULT_CONFIG_FILE_PATH,
+    RUNTIME_STATE_DIR_NAME,
 )
 from .i18n import i18n
 
@@ -108,6 +109,7 @@ class ConfigManager:
         self._last_self_write_mtime: float = 0.0  # 框架自身最后一次刷盘的 mtime
         self._migrate_config()  # 迁移旧配置文件
         self._acquire_instance_lock()  # 尝试独占配置目录（多实例共享检测，仅告警不阻塞）
+        self._ensure_config_gitignore()  # 配置目录自带 .gitignore（敏感配置不入库）
         self._load_config()  # 初始化时加载配置
         self._watch_config_file()  # 记录配置文件 mtime 以便后续监听
         self._start_config_watcher()  # 启动后台文件变化监听
@@ -451,19 +453,25 @@ class ConfigManager:
 
     def _acquire_instance_lock(self) -> None:
         """
-        尝试以独占方式锁定配置目录的实例锁文件，检测多实例共享配置目录
+        尝试以独占方式锁定运行状态目录的实例锁文件，检测多实例共享配置目录
 
-        锁文件位于配置文件同级目录（:data:`~.constants.CONFIG_LOCK_FILE_NAME`），
-        进程持锁后全生命周期不释放，由 OS 在进程退出时自动归还——
-        无需清理逻辑，进程被强杀也不会留下"幽灵锁"。
-        锁被占用说明另一个 ErisPulse 实例正在使用同一配置目录，
+        锁文件位于项目根的运行状态目录（``.erispulse/config.lock``，
+        :data:`~.constants.RUNTIME_STATE_DIR_NAME` +
+        :data:`~.constants.CONFIG_LOCK_FILE_NAME`），进程持锁后全生命周期
+        不释放，由 OS 在进程退出时自动归还——无需清理逻辑，进程被强杀也不会
+        留下"幽灵锁"。锁被占用说明另一个 ErisPulse 实例正在使用同一配置目录，
         此时仅记录告警（并发写入可能互相覆盖），不阻塞框架启动。
+        持锁成功后顺带清除 2.10 及以前位于 ``config/`` 目录的旧版锁文件残留。
 
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
         """
         self._instance_lock_fd: int | None = None
-        lock_path = Path(self.CONFIG_FILE).parent / CONFIG_LOCK_FILE_NAME
+        # 配置文件父目录的上一级（项目根）+ 运行状态目录：
+        # 不做 resolve()——保持与调用方一致的路径形态（Windows 短路径场景下
+        # resolve 展开会让测试/外部工具按原路径找不到锁文件）
+        state_dir = Path(self.CONFIG_FILE).parent.parent / RUNTIME_STATE_DIR_NAME
+        lock_path = state_dir / CONFIG_LOCK_FILE_NAME
         try:
             lock_path.parent.mkdir(parents=True, exist_ok=True)
             fd = os.open(str(lock_path), os.O_CREAT | os.O_RDWR, 0o644)
@@ -488,6 +496,36 @@ class ConfigManager:
         except Exception:
             # 平台不支持等异常场景：静默放弃检测，不影响框架启动
             os.close(fd)
+            return
+        # 持锁成功（本实例是当前项目唯一的 2.11+ 实例）：清除旧版锁文件残留
+        try:
+            legacy_lock = Path(self.CONFIG_FILE).parent / ".erispulse_config.lock"
+            legacy_lock.unlink(missing_ok=True)
+        except Exception:
+            pass
+
+    def _ensure_config_gitignore(self) -> None:
+        """
+        确保配置目录自带 ``.gitignore``（幂等：已存在则不覆盖）
+
+        配置文件含令牌等敏感信息——目录内全部文件不入版本库。规则只有一行
+        ``*``：忽略文件自身也在排除范围内（目录整体对 git 不可见）。
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        try:
+            gitignore_path = Path(self.CONFIG_FILE).parent / ".gitignore"
+            if gitignore_path.exists():
+                return
+            gitignore_path.parent.mkdir(parents=True, exist_ok=True)
+            gitignore_path.write_text(
+                "# ErisPulse: sensitive config — keep out of VCS / 配置含敏感信息，全部不入库\n"
+                "*\n",
+                encoding="utf-8",
+            )
+        except Exception:
+            pass
 
     def _atomic_write_text(self, text: str) -> None:
         """

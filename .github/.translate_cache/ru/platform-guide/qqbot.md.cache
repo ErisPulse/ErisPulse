@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a115e127ca22131c76acbf42a05ccfab",
-  "file_hash": "a115e127ca22131c76acbf42a05ccfab",
-  "translated_at": "2026-09-12T10:29:44.538128",
+  "hash": "433fce81d84b8eb513969bfd8ddb38c5",
+  "file_hash": "433fce81d84b8eb513969bfd8ddb38c5",
+  "translated_at": "2026-10-19T09:22:11.298407",
   "target_lang": "ru",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Документация по функциям платформы QQBot\n\nQQBotAdapter — это адаптер, построенный на основе протокола QQ-бота (QQ OpenAPI), объединяющий функции для чатов в группах, личных сообщений и каналов, предоставляющий стандартные события OneBot12, стандартные API-действия и интерфейсы для выполнения запросов."
     },
     {
-      "hash": "82d791b169b28a80cebb85dd14fdb2fa",
-      "translation": "## Информация о документации\n\n- Версия соответствующего модуля: 5.0.0\n- Ответственный: ErisPulse"
+      "hash": "8f1444c30f38fc1f404f8d188e775c92",
+      "translation": "## Информация о документации\n\n- Версия соответствующего модуля: 5.1.0\n- Ответственный: ErisPulse"
     },
     {
       "hash": "393093b86ccb1fc1342a6dd20f91636c",
@@ -22,8 +22,8 @@
       "translation": "## Конфигурация\n\n```toml\n# config.toml\n[QQBot_Adapter]\nintents = \"[0, 9, 12, 25, 26, 27]\"   # Глобально: подписанные события intents (JSON массив, поддерживает имена событий)\n\n[QQBot_Adapter.accounts.default]\nappid = \"YOUR_APPID\"                 # ID приложения QQ-бота (обязательно)\nsecret = \"YOUR_CLIENT_SECRET\"        # Секретный ключ клиента QQ-бота (обязательно)\nmode = \"websocket\"                   # Способ получения событий: websocket / webhook\nbot_id = \"\"                          # ID бота (оставьте пустым для автоматического получения; можно вручную указать для использования в Using())\ngateway_url = \"\"                     # URL WebSocket-шлюза (оставьте пустым для динамического получения через /gateway/bot)\napi_base_url = \"https://api.bot.qq.com\"  # Корневой URL API (можно настроить для прокси)\nwebhook_path = \"/webhook\"            # Путь обратного вызова webhook (действует при mode=webhook)\nenabled = true\n```\n\n**Версия v5 — критические изменения:**\n- Официальный единый URL `api.bot.qq.com`, конфигурация `sandbox` устарела (старые настройки автоматически переносятся и игнорируются)\n- Старая плоская конфигурация (appid/secret непосредственно в `[QQBot_Adapter]`) автоматически переносится в `accounts.default`\n- Фреймворк является **опциональной зависимостью**: установка адаптера не влияет на версию фреймворка; в процессе выполнения проверяется наличие `ErisPulse>=2.7.1` и выводится соответствующее уведомление\n\n**Описание intents (поддерживает номера позиций или имена событий):**\n\n| Позиция | Имя события | Описание |\n|----|--------|------|\n| 0 | GUILDS | Изменения каналов |\n| 1 | GUILD_MEMBERS | Изменения участников канала |\n| 9 | GUILD_MESSAGES | Сообщения канала (внутриканальные) |\n| 12 | DIRECT_MESSAGE | Личные сообщения канала |\n| 24 | GROUP_MEMBER | Изменения участников группы (ново в v5) |\n| 25 | GROUP_AND_C2C_EVENT | Сообщения упоминания в группе и личные сообщения |\n| 26 | INTERACTION | Взаимодействие (кнопки и т.д.) |\n| 27 | MESSAGE_AUDIT | События проверки сообщений |\n| 30 | PUBLIC_GUILD_MESSAGES | Сообщения канала (внешние каналы) |"
     },
     {
-      "hash": "59b79b6dee491f6c0bfa2afc417d9732",
-      "translation": "## Отправка сообщений\n\n### Базовая отправка\n\n```python\nfrom ErisPulse import sdk\nqqbot = sdk.adapter.get(\"qqbot\")\n\nawait qqbot.Send.To(\"user\", user_openid).Text(\"Hello World!\")\n\n# Упоминание в чате (автоматически использует формат <qqbot-at-user id=\"x\" />)\nawait qqbot.Send.To(\"group\", group_openid).At(\"member_openid\").Text(\"@你\")\n\n# Сообщение в канале (автоматически использует формат <@user_id>)\nawait qqbot.Send.To(\"channel\", channel_id).Text(\"Сообщение в канале\")\n\n# Ответ на сообщение (автоматически включает msg_id, не нужно использовать Reply вручную)\nawait qqbot.Send.To(\"group\", group_openid).Reply(msg_id).Text(\"Содержимое ответа\")\n\n# Мультимедиа (URL / локальный путь / бинарные данные; файлы больше 5 МБ загружаются по частям)\nawait qqbot.Send.To(\"group\", gid).Image(\"https://example.com/img.png\")\n\n# Markdown (в виде исходного текста / шаблона)\nawait qqbot.Send.To(\"group\", gid).Markdown(\"# Заголовок\\n- Список\")\nawait qqbot.Send.To(\"user\", uid).Markdown(template_id=1, kv=[{\"key\": \"title\", \"value\": \"Уведомление\"}])\n\n# Клавиатура (автоматически устанавливается тип markdown и добавляется bot_appid)\nawait qqbot.Send.To(\"group\", gid).Keyboard(keyboard).Text(\"Выберите опцию\")\n\n# Потоковое сообщение (личный чат)\nawait qqbot.Send.To(\"user\", openid).Stream(\"Содержимое ответа\")\n\n# Множественные аккаунты\nawait qqbot.Send.Using(\"account2\").To(\"group\", gid).Text(\"От второго бота\")\n```"
+      "hash": "60d82de0f59d8cb50fa234fe3f50885e",
+      "translation": "## Отправка сообщений\n\n### Базовая отправка\n\n```python\nfrom ErisPulse import sdk\nqqbot = sdk.adapter.get(\"qqbot\")\n\nawait qqbot.Send.To(\"user\", user_openid).Text(\"Hello World!\")\n\n# Сообщение упоминания в группе (автоматически использует формат <qqbot-at-user id=\"x\" />)\nawait qqbot.Send.To(\"group\", group_openid).At(\"member_openid\").Text(\"@你\")\n\n# Сообщение в канале (автоматически использует формат <@user_id>)\nawait qqbot.Send.To(\"channel\", channel_id).Text(\"сообщение канала\")\n\n# Пассивный ответ (автоматически включает msg_id, не нужно вручную Reply)\nawait qqbot.Send.To(\"group\", group_openid).Reply(msg_id).Text(\"ответ\")\n\n# Мультимедиа (URL / локальный путь / бинарные данные; более 5 МБ автоматически разбиваются на части)\nawait qqbot.Send.To(\"group\", gid).Image(\"https://example.com/img.png\")\n\n# Markdown (оригинальный / шаблон)\nawait qqbot.Send.To(\"group\", gid).Markdown(\"# Заголовок\\n- Список\")\nawait qqbot.Send.To(\"user\", uid).Markdown(template_id=1, kv=[{\"key\": \"title\", \"value\": \"уведомление\"}])\n\n# Объединённая пересылка (официальный md не поддерживает скрытый синтаксис, отображается как список цитат; требуется разрешение на оригинальный Markdown, в случае ошибки автоматически возвращается обычный текст)\nawait qqbot.Send.To(\"group\", gid).MergeForward(nodes)\n\n# Клавиатура (автоматически устанавливается как тип markdown и добавляется bot_appid)\nawait qqbot.Send.To(\"group\", gid).Keyboard(keyboard).Text(\"выберите\")\n\n# Потоковое сообщение (личный чат)\nawait qqbot.Send.To(\"user\", openid).Stream(\"ответ\")\n\n# Многоаккаунтность\nawait qqbot.Send.Using(\"account2\").To(\"group\", gid).Text(\"сообщение от второго бота\")\n```"
     },
     {
       "hash": "4d0370dcd379e9caf7b5b019ce40cc3b",

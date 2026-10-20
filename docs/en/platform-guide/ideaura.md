@@ -6,8 +6,8 @@ IdeauraAdapter is an adapter built on the RockyChat platform API, integrating al
 
 ## Documentation Information
 
-- Corresponding Module: ErisPulse-Ideaura
-- Corresponding Module Version: 4.1.0
+- Corresponding Module: ErisPulse-Ideaura  
+- Corresponding Module Version: 4.2.0  
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -35,7 +35,8 @@ IdeauraAdapter is an adapter built on the RockyChat platform API, integrating al
 
 ## Supported Message Sending Types
 
-All sending methods are implemented through a fluent interface, for example:
+All sending methods are implemented using a fluent (chainable) syntax. For example:
+
 ```python
 from ErisPulse.Core import adapter
 ideaura = adapter.get("ideaura")
@@ -44,25 +45,26 @@ await ideaura.Send.To("group", "chatroom").Text("Hello World!")
 ```
 
 The supported sending types include:
-- `.Text(text: str)` : Send plain text messages.
-- `.Image(file, filename: str = None)` : Send image messages, supporting bytes/URL/local path.
-- `.Video(file, filename: str = None)` : Send video messages, supporting bytes/URL/local path.
-- `.File(file, filename: str = None)` : Send file messages, supporting bytes/URL/local path.
-- `.Voice(file, filename: str = None)` : Send voice messages (sent as files).
-- `.Face(face_id: str)` : Send emoticons (sent as plain text emoji).
-- `.Markdown(text: str)` : Send Markdown formatted messages.
-- `.Html(html: str)` : Send HTML formatted messages.
-- `.Edit(message_id: str, text: str, content_type: str = "text")` : Edit existing messages.
-- `.Recall(message_id: str)` : Recall messages.
+- `.Text(text: str)`: Send a plain text message.
+- `.Image(file, filename: str = None)`: Send an image message, supporting bytes/URL/local path.
+- `.Video(file, filename: str = None)`: Send a video message, supporting bytes/URL/local path.
+- `.File(file, filename: str = None)`: Send a file message, supporting bytes/URL/local path.
+- `.Voice(file, filename: str = None)`: Send a voice message (sent as a file).
+- `.Face(face_id: str)`: Send an emoji (sent as a plain text emoji).
+- `.Markdown(text: str)`: Send a message in Markdown format.
+- `.Html(html: str)`: Send a message in HTML format.
+- `.MergeForward(nodes, title="Merged Chat Record")`: Send a merged-forward message (rendered as a `<details>` collapsed HTML card).
+- `.Edit(message_id: str, text: str, content_type: str = "text")`: Edit an existing message.
+- `.Recall(message_id: str)`: Recall a message.
 
-### Fluent Modifier Methods (Combinable)
+### Fluent Modifier Methods (Combination Supported)
 
-Modifier methods return `self`, supporting fluent calls, and must be called before the final sending method:
+Fluent modifier methods return `self`, supporting chainable calls, and must be called before the final sending method:
 
-- `.At(user_id: str, name: str = None)` : At a specific user.
-- `.AtAll()` : At all users.
-- `.Reply(message_id: str)` : Reply to a specific message.
-- `.Command(command_id: str)` : Trigger a Bot command, used in conjunction with sending methods (sends the message as the specified command).
+- `.At(user_id: str, name: str = None)`: @ a specific user.
+- `.AtAll()`: @ everyone.
+- `.Reply(message_id: str)`: Reply to a specific message.
+- `.Command(command_id: str)`: Trigger a Bot command, used in combination with sending methods (sends the message as a specific command).
 
 ### Fluent Call Examples
 
@@ -73,16 +75,16 @@ await ideaura.Send.To("user", user_id).Text("Hello")
 # Trigger Bot command
 await ideaura.Send.To("group", "chatroom").Command("550e8400-e29b-41d4-a716-446655440000").Text("/weather 北京")
 
-# At a user
+# @ user
 await ideaura.Send.To("group", "chatroom").At("456").Text("@李四 你好")
 
-# At multiple users
+# @ multiple users
 await ideaura.Send.To("group", "chatroom").At("456").At("789").Text("@多人")
 
-# Reply to a message
+# Reply to message
 await ideaura.Send.To("group", "chatroom").Reply(msg_id).Text("回复消息")
 
-# Reply + At
+# Reply + @
 await ideaura.Send.To("group", "chatroom").Reply(msg_id).At("456").Text("回复并@")
 ```
 
@@ -101,12 +103,12 @@ await ideaura.Send.To("user", "user_id").Text("私聊消息")
 
 ### OneBot12 Message Support
 
-The adapter supports sending OneBot12 formatted messages for cross-platform message compatibility:
+The adapter supports sending OneBot12 formatted messages, facilitating cross-platform message compatibility:
 
-- `.Raw_ob12(message: List[Dict], **kwargs)` : Send OneBot12 formatted messages.
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Send a OneBot12 formatted message.
 
 ```python
-# Send OneBot12 formatted message
+# Send a OneBot12 formatted message
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await ideaura.Send.To("user", user_id).Raw_ob12(ob12_msg)
 

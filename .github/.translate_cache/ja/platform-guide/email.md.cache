@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "f1b46940e620e8a6edccbbcb6a8021a3",
-  "file_hash": "f1b46940e620e8a6edccbbcb6a8021a3",
-  "translated_at": "2026-09-12T10:27:56.961702",
+  "hash": "aeef3ba52c08433ed425138ed07d6773",
+  "file_hash": "aeef3ba52c08433ed425138ed07d6773",
+  "translated_at": "2026-10-19T09:25:59.593158",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# メールプラットフォームの機能ドキュメント\n\nEmailAdapter は SMTP/IMAP プロトコルに基づいたメールアダプタであり、メールの送信、受信、および処理をサポートしています。\n\n---"
     },
     {
-      "hash": "d5769e0ae79f68cdc351193894aba07b",
-      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.2.0\n- メンテナー: ErisPulse"
+      "hash": "a1376ffeea270fa68d8b22165af6dbcc",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.3.0\n- メンテナー: ErisPulse"
     },
     {
       "hash": "ebfd0de1173b98b4565e6eea62e7b86a",
@@ -26,8 +26,8 @@
       "translation": "## v5 フレームワークの更新（4.2.0）\n\n- **API DSL 最小セット**：get_self_info（メールアドレス）/get_status/get_version/get_supported_actions\n- **spawn_background でのタスクの所有権**：IMAP ポーリングタスクを runtime.spawn_background に変更\n- **フレームワークのソフト依存**：ErisPulse>=2.7.1 の実行時検出と警告；起動時にバージョンログを出力\n- インポートパスを Core.Bases に更新；_load_accounts は保持（グローバルのデフォルト値はこのアダプタ固有のロジックに統合）\n\n---\n\n### 対応済みプラットフォーム機能\n\n- **受信**：IMAP ポーリングによるメール受信（本文/HTML/添付ファイルをメッセージセグメントに解析）、未読メールの増分検出\n- **送信**：SMTP によるメール送信（Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment）、複数アカウント対応\n- **API**：アカウント情報と実行状態（最小セット）；メールの取り消しやグループなどの概念は適用されない"
     },
     {
-      "hash": "388ede0e2e56f886d2fdd2b97965aca1",
-      "translation": "## 支援されるメッセージ送信タイプ\n\nすべての送信メソッドは、チェーン式の構文で実装されています：\n\n```python\nfrom ErisPulse.Core import adapter\nmail = adapter.get(\"email\")\n\n# 簡単なテキストメール\nawait mail.Send.To(\"private\", \"to@example.com\").Subject(\"テスト\").Text(\"内容\")\n\n# 附件付きの HTML メール\nawait mail.Send.To(\"private\", \"to@example.com\") \\\n    .Subject(\"HTMLメール\") \\\n    .Cc([\"cc1@example.com\", \"cc2@example.com\"]) \\\n    .Attachment(\"report.pdf\") \\\n    .Html(\"<h1>HTML内容</h1>\")\n\n# Raw_ob12 を使用して標準の OB12 メッセージを送信\nawait mail.Send.To(\"private\", \"to@example.com\").Raw_ob12([\n    {\"type\": \"text\", \"data\": {\"text\": \"メール本文\"}},\n    {\"type\": \"file\", \"data\": {\"file\": \"/path/to/attachment.pdf\"}},\n])\n\n# 送信アカウントを指定（複数アカウントの場合）\nawait mail.Send.Using(\"default\").To(\"private\", \"to@example.com\").Text(\"内容\")\n```\n\n> 注意：チェーン式構文を使用する場合、パラメータメソッド（Subject / Cc / Attachment など）は送信メソッド（Text / Html / Raw_ob12）の前に呼び出す必要があります。\n\n### 基本的な送信メソッド\n\n| メソッド | 説明 |\n|------|------|\n| `.Text(text: str)` | 純粋なテキストメールを送信 |\n| `.Html(html: str)` | HTML形式のメールを送信 |\n| `.Raw_ob12(message, **kwargs)` | OneBot12形式のメッセージを送信 |\n\n### チェーン式修飾メソッド（self を返すため、組み合わせて使用可能）\n\n| メソッド | 説明 |\n|------|------|\n| `.Subject(subject: str)` | メールの件名を設定 |\n| `.Cc(emails: Union[str, List[str]])` | 抄送先アドレスを設定 |\n| `.Bcc(emails: Union[str, List[str]])` | 密送先アドレスを設定 |\n| `.ReplyTo(email: str)` | 回信先アドレスを設定 |\n| `.Attachment(file, filename: str = None)` | 附件を追加 |\n\n### OB12 メッセージセグメントの逆変換（Raw_ob12）\n\n| OB12 メッセージセグメント | メール本文に変換 |\n|------------|--------------|\n| `text` | 純粋な本文 |\n| `image` | 画像の添付 |\n| `video` | 動画の添付 |\n| `file` | ファイルの添付 |\n| `audio` | 音声の添付 |\n| `markdown` | HTML本文に変換 |"
+      "hash": "16bbac23ed97065442928bed7b4d0e95",
+      "translation": "## 支援されるメッセージ送信タイプ\n\nすべての送信メソッドは、チェーン式の構文で実装されています：\n\n```python\nfrom ErisPulse.Core import adapter\nmail = adapter.get(\"email\")\n\n# 簡単なテキストメール\nawait mail.Send.To(\"private\", \"to@example.com\").Subject(\"テスト\").Text(\"内容\")\n\n# アタッチメント付きの HTML メール\nawait mail.Send.To(\"private\", \"to@example.com\") \\\n    .Subject(\"HTMLメール\") \\\n    .Cc([\"cc1@example.com\", \"cc2@example.com\"]) \\\n    .Attachment(\"report.pdf\") \\\n    .Html(\"<h1>HTML内容</h1>\")\n\n# Raw_ob12 を使用して標準の OB12 メッセージを送信\nawait mail.Send.To(\"private\", \"to@example.com\").Raw_ob12([\n    {\"type\": \"text\", \"data\": {\"text\": \"メール本文\"}},\n    {\"type\": \"file\", \"data\": {\"file\": \"/path/to/attachment.pdf\"}},\n])\n\n# 送信アカウントを指定（複数アカウント） \nawait mail.Send.Using(\"default\").To(\"private\", \"to@example.com\").Text(\"内容\")\n```\n\n> 注意：チェーン式構文を使用する場合、パラメータメソッド（Subject / Cc / Attachment など）は、送信メソッド（Text / Html / Raw_ob12）の前に呼び出す必要があります。\n\n### 基本的な送信メソッド\n\n| メソッド | 説明 |\n|------|------|\n| `.Text(text: str)` | 純粋なテキストメールを送信 |\n| `.Html(html: str)` | HTML形式のメールを送信 |\n| `.MergeForward(nodes, title)` | 合併転送メールを送信（本文は `<details>` 折りたたみHTMLカード、件名はデフォルトでタイトルを取得） |\n| `.Raw_ob12(message, **kwargs)` | OneBot12形式のメッセージを送信 |\n\n### チェーン修飾メソッド（self を返すため、組み合わせて使用可能）\n\n| メソッド | 説明 |\n|------|------|\n| `.Subject(subject: str)` | メールの件名を設定 |\n| `.Cc(emails: Union[str, List[str]])` | 抄送先を設定 |\n| `.Bcc(emails: Union[str, List[str]])` | 暗送信先を設定 |\n| `.ReplyTo(email: str)` | 回信先を設定 |\n| `.Attachment(file, filename: str = None)` | アタッチメントを追加 |\n\n### OB12 メッセージセグメントの逆変換（Raw_ob12）\n\n| OB12 メッセージセグメント | メール本文に変換 |\n|------------|--------------|\n| `text` | 純粋な本文 |\n| `image` | 画像アタッチメント |\n| `video` | 動画アタッチメント |\n| `file` | ファイルアタッチメント |\n| `audio` | 音声アタッチメント |\n| `markdown` | HTML本文に変換 |"
     },
     {
       "hash": "5a97e6de64ee11d020fab94b6d690237",

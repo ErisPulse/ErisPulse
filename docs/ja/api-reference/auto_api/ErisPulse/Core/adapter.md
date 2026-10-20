@@ -349,6 +349,32 @@ await sdk.adapter.restart("OneBot11")
 ---
 
 
+##### `async reload(name: str, *, full: bool = True) -> bool`
+
+热重载指定平台适配器（代码级：卸载 → 清缓存重导 → 重新注册并拉起）
+
+经适配器加载器完整执行 语法预检 → 卸载（shutdown 即清理 + 注销）→
+清理 ``sys.modules`` 子树与 ``__pycache__`` 字节码 → 重新发现/导入 →
+重新注册 → 原运行态则重新拉起 流程；任一步失败自动回滚旧注册状态
+（尽力而为语义：断连 / bot offline 等 unload 副作用不可撤销，日志会
+明确提示旧实例处于已收尾状态）。依赖本适配器的其它适配器不会被
+级联重载（仅告警）。代码已换新而启动暂时失败时不算重载失败——
+异步重试链接管（状态经 ``adapter.status.change`` 播报）。
+
+- **name**: 平台名称
+- **full**: 保留参数位（当前两种来源均执行全量清理，与模块语义对齐）
+
+**返回值**: 是否重载成功（适配器被移除视为成功）
+
+**示例**:
+
+```python
+await sdk.adapter.reload("aiocqhttp")
+```
+
+---
+
+
 ##### `async unload(platform: str) -> bool`
 
 卸载并注销单个平台适配器

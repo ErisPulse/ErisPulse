@@ -6,7 +6,7 @@ EmailAdapter は SMTP/IMAP プロトコルに基づいたメールアダプタ�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.2.0
+- 対応モジュールバージョン: 4.3.0
 - メンテナー: ErisPulse
 
 ## 基本情報
@@ -81,7 +81,7 @@ mail = adapter.get("email")
 # 簡単なテキストメール
 await mail.Send.To("private", "to@example.com").Subject("テスト").Text("内容")
 
-# 附件付きの HTML メール
+# アタッチメント付きの HTML メール
 await mail.Send.To("private", "to@example.com") \
     .Subject("HTMLメール") \
     .Cc(["cc1@example.com", "cc2@example.com"]) \
@@ -94,11 +94,11 @@ await mail.Send.To("private", "to@example.com").Raw_ob12([
     {"type": "file", "data": {"file": "/path/to/attachment.pdf"}},
 ])
 
-# 送信アカウントを指定（複数アカウントの場合）
+# 送信アカウントを指定（複数アカウント） 
 await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
 ```
 
-> 注意：チェーン式構文を使用する場合、パラメータメソッド（Subject / Cc / Attachment など）は送信メソッド（Text / Html / Raw_ob12）の前に呼び出す必要があります。
+> 注意：チェーン式構文を使用する場合、パラメータメソッド（Subject / Cc / Attachment など）は、送信メソッド（Text / Html / Raw_ob12）の前に呼び出す必要があります。
 
 ### 基本的な送信メソッド
 
@@ -106,27 +106,28 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
 |------|------|
 | `.Text(text: str)` | 純粋なテキストメールを送信 |
 | `.Html(html: str)` | HTML形式のメールを送信 |
+| `.MergeForward(nodes, title)` | 合併転送メールを送信（本文は `<details>` 折りたたみHTMLカード、件名はデフォルトでタイトルを取得） |
 | `.Raw_ob12(message, **kwargs)` | OneBot12形式のメッセージを送信 |
 
-### チェーン式修飾メソッド（self を返すため、組み合わせて使用可能）
+### チェーン修飾メソッド（self を返すため、組み合わせて使用可能）
 
 | メソッド | 説明 |
 |------|------|
 | `.Subject(subject: str)` | メールの件名を設定 |
-| `.Cc(emails: Union[str, List[str]])` | 抄送先アドレスを設定 |
-| `.Bcc(emails: Union[str, List[str]])` | 密送先アドレスを設定 |
-| `.ReplyTo(email: str)` | 回信先アドレスを設定 |
-| `.Attachment(file, filename: str = None)` | 附件を追加 |
+| `.Cc(emails: Union[str, List[str]])` | 抄送先を設定 |
+| `.Bcc(emails: Union[str, List[str]])` | 暗送信先を設定 |
+| `.ReplyTo(email: str)` | 回信先を設定 |
+| `.Attachment(file, filename: str = None)` | アタッチメントを追加 |
 
 ### OB12 メッセージセグメントの逆変換（Raw_ob12）
 
 | OB12 メッセージセグメント | メール本文に変換 |
 |------------|--------------|
 | `text` | 純粋な本文 |
-| `image` | 画像の添付 |
-| `video` | 動画の添付 |
-| `file` | ファイルの添付 |
-| `audio` | 音声の添付 |
+| `image` | 画像アタッチメント |
+| `video` | 動画アタッチメント |
+| `file` | ファイルアタッチメント |
+| `audio` | 音声アタッチメント |
 | `markdown` | HTML本文に変換 |
 
 ## 特有イベントタイプ

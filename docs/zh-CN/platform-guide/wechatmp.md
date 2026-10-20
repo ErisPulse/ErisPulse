@@ -3,7 +3,7 @@
 ## 基本信息
 - 模块名称: `ErisPulse-WechatMpAdapter`
 - 平台标识: `mp`（别名: `wechat_mp`）
-- 模块版本: 4.1.0
+- 模块版本: 4.3.0
 - 维护者: ErisPulse
 - 依赖: `cryptography`
 

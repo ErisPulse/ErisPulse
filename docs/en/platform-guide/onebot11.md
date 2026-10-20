@@ -6,7 +6,7 @@ OneBot11Adapter is an adapter built based on the OneBot V11 protocol.
 
 ## Document Information
 
-- Corresponding Module Version: 4.3.0
+- Corresponding Module Version: 4.4.0
 - Maintainer: ErisPulse
 
 ## Basic Information
