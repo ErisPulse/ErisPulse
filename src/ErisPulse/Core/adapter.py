@@ -367,7 +367,7 @@ class AdapterManager(ManagerBase):
             if dep not in self._adapters
         )
 
-        module_manager = getattr(self._sdk, "module", None) if self._sdk else None
+        module_manager = getattr(self.sdk_ref(), "module", None)
         module_classes = getattr(module_manager, "_module_classes", {}) or {}
         missing.extend(
             f"module:{dep}"
@@ -527,11 +527,7 @@ class AdapterManager(ManagerBase):
                     p for p in init_signature.parameters.values() if p.name != "self"
                 ]
 
-                sdk_to_use = self._sdk
-                if sdk_to_use is None:
-                    from .. import sdk
-
-                    sdk_to_use = sdk
+                sdk_to_use = self.sdk_ref()
 
                 # 根据参数情况创建实例
                 if params:

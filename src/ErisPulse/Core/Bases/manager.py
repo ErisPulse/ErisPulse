@@ -158,5 +158,25 @@ class ManagerBase(ABC):
         """
         ...
 
+    # ==================== SDK 引用 ====================
+
+    # 显式注入的 SDK 引用（set_sdk_ref 可选覆盖）；正常路径经 sdk_ref() 懒导入根单例
+    _sdk: Any = None
+
+    def sdk_ref(self) -> Any:
+        """
+        获取 SDK 引用
+
+        优先返回显式注入的引用（set_sdk_ref），未注入时懒导入根 SDK 单例。
+        管理器在任何启动流程下都无需手动注入即可获得正确引用。
+
+        :return: SDK 实例
+        """
+        if self._sdk is not None:
+            return self._sdk
+        from ... import sdk as root_sdk
+
+        return root_sdk
+
 
 __all__ = ["ManagerBase"]
