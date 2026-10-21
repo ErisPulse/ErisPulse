@@ -28,8 +28,29 @@ class ManagerBase(ABC):
     - is_enabled(): 检查是否启用
     - is_running(): 检查是否运行
     - list_*(): 列出相关项
+    - sdk_ref(): 运行时 SDK 引用解析
     {!--< /tips >!--}
     """
+
+    # 显式注入的 SDK 引用（可选覆盖，供测试直赋）；正常路径经 sdk_ref() 懒导入根单例
+    _sdk: Any = None
+
+    def sdk_ref(self) -> Any:
+        """
+        解析运行时 SDK 引用
+
+        显式注入的 ``_sdk`` 优先（测试 / 高级用法直赋）；缺失时懒导入根包
+        单例——管理器不再依赖外部接线调用（旧 ``set_sdk_ref`` 从未被生产
+        链路调用，导致热重载 / 依赖通知在真实部署中静默失效）。
+
+        :return: SDK 实例
+        """
+        sdk = self._sdk
+        if sdk is not None:
+            return sdk
+        from ... import sdk as root_sdk
+
+        return root_sdk
 
     # ==================== 注册与取消注册 ====================
 

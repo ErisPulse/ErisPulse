@@ -273,7 +273,7 @@ class TestManagerReloadPassthrough:
 
         sdk = FakeSDK()
         sdk._module_loader = FakeLoader()
-        mgr.set_sdk_ref(sdk)
+        mgr._sdk = (sdk)
 
         assert asyncio.run(mgr.reload("Weather")) is True
         name, manager_instance, sdk_instance = captured["args"]
@@ -286,8 +286,17 @@ class TestManagerReloadPassthrough:
         from ErisPulse.Core.module import ModuleManager
 
         mgr = ModuleManager()
-        mgr.set_sdk_ref(types.SimpleNamespace(_module_loader=None))
+        mgr._sdk = (types.SimpleNamespace(_module_loader=None))
         assert asyncio.run(mgr.reload("Weather")) is False
+
+    def test_sdk_ref_lazy_fallback(self):
+        """未注入 _sdk 的管理器：sdk_ref() 懒解析返回根 SDK 单例，用户无需手动注入"""
+        from ErisPulse import sdk as root_sdk
+        from ErisPulse.Core.module import ModuleManager
+
+        mgr = ModuleManager()
+        assert mgr._sdk is None
+        assert mgr.sdk_ref() is root_sdk
 
 
 @pytest.mark.unit
@@ -640,7 +649,7 @@ class TestRuntimeModuleReload:
             loader = _make_loader()
             sdk = types.SimpleNamespace(_module_loader=loader)
             manager = ModuleManager()
-            manager.set_sdk_ref(sdk)
+            manager._sdk = (sdk)
             # 注册即登记重载快照（runtime 来源，top_level 由定义模块推导）
             manager.register("RT", mod.Main)
             assert asyncio.run(manager.load("RT")) is True

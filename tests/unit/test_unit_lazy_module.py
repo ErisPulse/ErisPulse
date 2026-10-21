@@ -357,7 +357,7 @@ class TestManagerLazyTransparency:
         # 注册模块类，并创建懒加载代理
         manager.register("bm", BModule)
         sdk = _make_sdk()
-        manager.set_sdk_ref(sdk)
+        manager._sdk = (sdk)
         info = {"meta": {"name": "bm", "is_base_module": True}}
         lm = LazyModule("bm", BModule, sdk, info, manager)
         manager.register_lazy("bm", lm)

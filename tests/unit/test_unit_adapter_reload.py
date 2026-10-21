@@ -333,7 +333,7 @@ class TestAdapterManagerReload:
         manager = AdapterManager()
         sdk = FakeSDK()
         sdk._adapter_loader = FakeLoader()
-        manager.set_sdk_ref(sdk)
+        manager._sdk = (sdk)
 
         def _capture(data):
             captured["event"] = dict(data)
@@ -356,5 +356,5 @@ class TestAdapterManagerReload:
 
     def test_reload_without_loader_returns_false(self):
         manager = AdapterManager()
-        manager.set_sdk_ref(types.SimpleNamespace(_adapter_loader=None))
+        manager._sdk = (types.SimpleNamespace(_adapter_loader=None))
         assert asyncio.run(manager.reload("Plat")) is False

@@ -158,7 +158,6 @@ class AdapterManager(ManagerBase):
         self._onebot_middleware_owners: dict[int, str] = {}
         # 原生事件处理器
         self._raw_handlers = defaultdict(list)
-        self._sdk = None
 
         # 后台任务追踪 - {platform: asyncio.Task}
         self._adapter_tasks: dict[str, asyncio.Task] = {}
@@ -217,20 +216,6 @@ class AdapterManager(ManagerBase):
         except Exception:
             pass
         return float(DEFAULT_UNINIT_TIMEOUT_SECS)
-
-    def set_sdk_ref(self, sdk) -> bool:
-        """
-        设置 SDK 引用
-
-        :param sdk: SDK 实例
-        :return: 是否设置成功
-        """
-        try:
-            self._sdk = sdk
-            return True
-        except Exception as e:
-            logger.error(i18n.t("core.adapter.set_sdk_failed", error=e))
-            return False
 
     # ==================== 配置变更路由 ====================
 
@@ -367,7 +352,7 @@ class AdapterManager(ManagerBase):
             if dep not in self._adapters
         )
 
-        module_manager = getattr(self._sdk, "module", None) if self._sdk else None
+        module_manager = getattr(self.sdk_ref(), "module", None) if self.sdk_ref() else None
         module_classes = getattr(module_manager, "_module_classes", {}) or {}
         missing.extend(
             f"module:{dep}"
@@ -527,7 +512,7 @@ class AdapterManager(ManagerBase):
                     p for p in init_signature.parameters.values() if p.name != "self"
                 ]
 
-                sdk_to_use = self._sdk
+                sdk_to_use = self.sdk_ref()
                 if sdk_to_use is None:
                     from .. import sdk
 
@@ -1325,12 +1310,12 @@ class AdapterManager(ManagerBase):
         from .constants import EVENT_ADAPTER_RELOAD
         from .lifecycle import lifecycle
 
-        loader = getattr(self._sdk, "_adapter_loader", None) if self._sdk else None
+        loader = getattr(self.sdk_ref(), "_adapter_loader", None) if self.sdk_ref() else None
         if loader is None:
             logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return False
         started = time.monotonic()
-        success = await loader.reload_adapter(name, self, self._sdk, full=full)
+        success = await loader.reload_adapter(name, self, self.sdk_ref(), full=full)
         payload: dict[str, Any] = {
             "adapter_name": name,
             "success": success,

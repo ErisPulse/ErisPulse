@@ -126,25 +126,8 @@ class ModuleManager(ManagerBase):
         self._module_activity: dict[str, float] = {}  # 模块活跃时间戳（休眠清扫判定用）
         self._dormant_after: dict[str, float] = {}  # 休眠阈值（秒；initialize_modules 挂载时解析 dormant_after）
         self._dormancy_sweeper_started = False  # 休眠清扫器防重入标记
-        self._sdk = None
         # 注册配置变更路由：将 config.set / config.updated 事件转发到各模块的 on_config_update
         self._register_config_change_routing()
-
-    def set_sdk_ref(self, sdk) -> bool:
-        """
-        设置 SDK 引用
-
-        :param sdk: SDK 实例
-        :return: bool 是否设置成功
-        """
-        try:
-            self._sdk = sdk
-            return True
-        except Exception as e:
-            from .logger import logger
-
-            logger.error(i18n.t("core.module.set_sdk_failed", error=e))
-            return False
 
     # ==================== 配置变更路由 ====================
 
@@ -202,8 +185,8 @@ class ModuleManager(ManagerBase):
         :param module_name: 模块名称
         """
         self.unregister_lazy(module_name)
-        if self._sdk is not None:
-            sdk_dict = getattr(self._sdk, "__dict__", {})
+        if self.sdk_ref() is not None:
+            sdk_dict = getattr(self.sdk_ref(), "__dict__", {})
             if module_name in sdk_dict:
                 try:
                     del sdk_dict[module_name]
@@ -337,7 +320,7 @@ class ModuleManager(ManagerBase):
         # 登记模块加载器的重载快照：注册即可重载（此前仅 loader.load() 写入
         # _last_module_objs，运行时注册模块 reload 会报 reload_unknown）。
         # loader 未就绪（SDK 早期注册）时跳过，行为与旧版一致。
-        loader = getattr(self._sdk, "_module_loader", None) if self._sdk else None
+        loader = getattr(self.sdk_ref(), "_module_loader", None) if self.sdk_ref() else None
         if loader is not None:
             try:
                 self._register_reload_snapshot(loader, module_name, module_class)
@@ -476,7 +459,7 @@ class ModuleManager(ManagerBase):
                 if p.name != "self" and p.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
             ]
 
-            if (sdk_to_use := self._sdk) is None:
+            if (sdk_to_use := self.sdk_ref()) is None:
                 from .. import sdk
 
                 sdk_to_use = sdk
@@ -867,12 +850,12 @@ class ModuleManager(ManagerBase):
         >>> await sdk.module.reload("MyRuntime") # 运行时注册模块
         >>> await sdk.module.reload("Weather")   # PyPI 安装包模块（默认全量）
         """
-        loader = getattr(self._sdk, "_module_loader", None) if self._sdk else None
+        loader = getattr(self.sdk_ref(), "_module_loader", None) if self.sdk_ref() else None
         if loader is None:
             logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return False
         started = time.monotonic()
-        success = await loader.reload_module(name, self, self._sdk, full=full)
+        success = await loader.reload_module(name, self, self.sdk_ref(), full=full)
         payload: dict[str, Any] = {
             "module_name": name,
             "success": success,
@@ -904,11 +887,11 @@ class ModuleManager(ManagerBase):
         :example:
         >>> await sdk.module.reload_all()
         """
-        loader = getattr(self._sdk, "_module_loader", None) if self._sdk else None
+        loader = getattr(self.sdk_ref(), "_module_loader", None) if self.sdk_ref() else None
         if loader is None:
             logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return {}
-        results = await loader.reload_all(self, self._sdk)
+        results = await loader.reload_all(self, self.sdk_ref())
         await lifecycle.emit(
             EVENT_MODULE_RELOAD,
             {
@@ -1072,16 +1055,16 @@ class ModuleManager(ManagerBase):
                         except Exception:
                             pass
                     # sdk 属性若被真实实例覆盖（重载路径），换回代理保持透明
-                    if self._sdk is not None:
-                        sdk_dict = getattr(self._sdk, "__dict__", {})
+                    if self.sdk_ref() is not None:
+                        sdk_dict = getattr(self.sdk_ref(), "__dict__", {})
                         if sdk_dict.get(module_name) is not proxy:
                             try:
-                                setattr(self._sdk, module_name, proxy)
+                                setattr(self.sdk_ref(), module_name, proxy)
                             except Exception:
                                 pass
-                elif self._sdk is not None:
+                elif self.sdk_ref() is not None:
                     # 无代理（如运行时注册模块）：移除 sdk 属性，恢复未加载语义
-                    getattr(self._sdk, "__dict__", {}).pop(module_name, None)
+                    getattr(self.sdk_ref(), "__dict__", {}).pop(module_name, None)
                 await lifecycle.submit_event(
                     "module.sleep",
                     msg=i18n.t("loader.module.dormant_sleep", name=module_name),
@@ -1089,8 +1072,8 @@ class ModuleManager(ManagerBase):
                 )
                 return True
 
-            if self._sdk is not None:
-                sdk_dict = getattr(self._sdk, "__dict__", {})
+            if self.sdk_ref() is not None:
+                sdk_dict = getattr(self.sdk_ref(), "__dict__", {})
                 if module_name in sdk_dict:
                     try:
                         del sdk_dict[module_name]
@@ -1161,7 +1144,7 @@ class ModuleManager(ManagerBase):
         for mod_name in list(sys.modules):
             if any(mod_name == n or mod_name.startswith(f"{n}.") for n in purge_names):
                 sys.modules.pop(mod_name, None)
-        loader = getattr(self._sdk, "_module_loader", None) if self._sdk else None
+        loader = getattr(self.sdk_ref(), "_module_loader", None) if self.sdk_ref() else None
         plugin_loader = getattr(loader, "_plugin_loader", None) if loader is not None else None
         if plugin_loader is not None:
             try:
@@ -1294,7 +1277,7 @@ class ModuleManager(ManagerBase):
         from .shadow import shadow_manager
 
         return await shadow_manager.start(
-            module_name, source, manager=self, sdk=self._sdk, owner=owner
+            module_name, source, manager=self, sdk=self.sdk_ref(), owner=owner
         )
 
     async def promote_shadow(self, module_name: str) -> bool:
@@ -1314,8 +1297,8 @@ class ModuleManager(ManagerBase):
         """
         from .shadow import shadow_manager
 
-        loader = getattr(self._sdk, "_module_loader", None) if self._sdk else None
-        return await shadow_manager.promote(module_name, self, self._sdk, loader)
+        loader = getattr(self.sdk_ref(), "_module_loader", None) if self.sdk_ref() else None
+        return await shadow_manager.promote(module_name, self, self.sdk_ref(), loader)
 
     async def dismiss_shadow(self, module_name: str) -> bool:
         """
@@ -1329,7 +1312,7 @@ class ModuleManager(ManagerBase):
         """
         from .shadow import shadow_manager
 
-        return await shadow_manager.dismiss(module_name, self, self._sdk)
+        return await shadow_manager.dismiss(module_name, self, self.sdk_ref())
 
     def shadow_diff(self, module_name: str) -> "dict[str, Any]":
         """
@@ -1761,8 +1744,8 @@ class ModuleManager(ManagerBase):
         # 含 master provider / 适配器处理器 / 自定义会话类型等，保持卸载对等）
         self._cleanup_module_registrations(module_name)
 
-        if self._sdk is not None:
-            sdk_dict = getattr(self._sdk, "__dict__", {})
+        if self.sdk_ref() is not None:
+            sdk_dict = getattr(self.sdk_ref(), "__dict__", {})
             if module_name in sdk_dict:
                 try:
                     del sdk_dict[module_name]
