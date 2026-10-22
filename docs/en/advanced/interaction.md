@@ -1,20 +1,26 @@
-# Interactive Session System
+# Interactive Conversation System
 
 > [!TIP]
-> **When to read this**: When you need `wait_reply`, multi-turn dialogues, scheduled reminders, session mutual exclusion, or traceability. Skip if not needed—other features remain unaffected.
+> **When you need to read this**: When you need `wait_reply`, multi-turn conversations, timed reminders, conversation mutual exclusion, or session tracing. If not needed, you can skip it without affecting the use of other features.
+
+> **What you will learn after reading**: The full parameter usage and cancellation reasons for `wait_reply`, the declarative multi-turn chain with `.got()`, session timers (remind / escalate), multi-path waiting (expect / select), and session mutual exclusion leases.
+
+> **What this chapter does not cover**: Multi-turn conversation branch state machines and restart recovery (see [Conversation Multi-turn Conversations](conversation.md)); mailbox retention policy knobs and runtime overrides (see [Conversation Mailbox](transcript.md)).
 
 > [!NOTE]
 > This chapter requires ErisPulse **2.8.0+**.
 
-ErisPulse has made "continuous interaction with users" into a framework-level infrastructure: from a single `wait_reply`, to scheduled reminders, multi-path waiting, session mutual exclusion, and restart recovery—all managed by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
+ErisPulse has made "continuous interaction with users" into a framework-level infrastructure: from a single `wait_reply`, to timed reminders, multi-path waiting, session mutual exclusion, and restart recovery, all are scheduled by a unified **Interactive Conversation Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
 
 {!--< tips >!--}
-Each capability covered in this document comes with its own **ownership** (owner): interactive waiting, leases, and timers all record the module name at registration. When the module is unloaded or the adapter is closed, the framework automatically cleans up and immediately notifies the waiting party instead of waiting for timeout—this is an extension of the ownership system in the interactive dimension (see [Ownership System](ownership.md)).
+Each capability covered in this article comes with its own **ownership (owner)**: interaction waiting, leases, and timers all record the module name at registration time. When a module is unloaded or an adapter is closed, the framework automatically cleans up and immediately notifies the waiting party instead of waiting for a timeout—this is an extension of the ownership system in the interaction dimension (see [Ownership System](ownership.md)).
 {!--< /tips >!--}
 
 ## Waiting for Reply: wait_reply
 
-`wait_reply` is the foundation of interactive sessions—pausing the current coroutine and waiting for a reply from the target user in the next message.
+**In one sentence**: Suspends the current coroutine to wait for the next message from the target user, returns the reply event on match, returns `None` on timeout or cancellation, `pattern` / `regex` / `validator` can filter out invalid replies.
+
+`wait_reply` is the foundation of interactive sessions — it suspends the current coroutine and waits for the target user's next message as a "reply".
 
 ```python
 from ErisPulse.Core.Event import command
@@ -23,59 +29,59 @@ from ErisPulse.Core.Event import command
 async def ask_command(event):
     reply = await event.wait_reply(prompt="Please enter your name:", timeout=30)
     if reply is None:
-        await event.reply("Timeout")
+        await event.reply("Timed out.")
         return
     await event.reply(f"Hello, {reply.get_text()}!")
 ```
 
-### Full Parameter Overview
+### All Parameters Overview
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `prompt` | Message sent before pausing | None |
-| `timeout` | Wait timeout (seconds) | 60 |
-| `pattern` | Glob filter (`*` / `?` / `[seq]`), continue waiting if not matched | None |
-| `regex` | Regex filter (must match both pattern and regex if both provided), continue waiting if not matched | None |
-| `validator` | Validation function (receives Event, returns bool), continue waiting if failed | None |
-| `callback` | Callback when reply received (alternative to value-returning style) | None |
-| `method` | Method to send prompt | "Text" |
-| `session` | **Session-level waiting**: any reply from the same session (group/channel) can match | False |
+| `prompt` | The prompt message sent before suspension | None |
+| `timeout` | Timeout for waiting (seconds) | 60 |
+| `pattern` | Glob filter (`*` / `?` / `[seq]`), continues waiting if not matched | None |
+| `regex` | Regular expression filter (must match both `pattern` and `regex` if both provided), continues waiting if not matched | None |
+| `validator` | Validation function (receives Event, returns bool), continues waiting if failed | None |
+| `callback` | Callback when reply is received (alternative to returning values) | None |
+| `method` | Method for sending the prompt | "Text" |
+| `session` | **Session-level waiting**: Any reply from anyone in the same session (group/channel) can match | False |
 
 ```python
-# Only accept numeric amounts, otherwise continue waiting
+# Only accepts numeric amounts, otherwise continues waiting
 reply = await event.wait_reply("Please enter the amount:", regex=r"\d+\s*元", timeout=30)
 
-# Session-level waiting: group collaboration scenario, any group member's reply can match
+# Session-level waiting: In group collaboration scenarios, any group member's reply can match
 reply = await event.wait_reply(session=True, prompt="Which expert can help answer this?")
 ```
 
-### Boundary Between Waiting and Commands (Command Bypass)
+### The Boundary Between Waiting and Commands (Command Bypass)
 
-During waiting, if a message containing a **registered command** (e.g., `/cancel`) is received, it is by default passed to the command dispatcher and not consumed as a reply (configuration item `ErisPulse.event.wait_reply.cmdpass`, `True` reverses this—messages are always treated as replies). The text judgment follows the command dispatcher's criteria: `alt_message` takes precedence, and if missing, falls back to message segment concatenation (effective for pure message segment adapters since 2.10.1).
+During waiting, if a message containing a **registered command** (e.g., `/cancel`) is received, it is by default passed to the command dispatcher and not consumed as a reply (configuration item `ErisPulse.event.wait_reply.cmdpass`, if `True` it reverses — all messages are treated as replies). The text matching criterion is consistent with the command dispatcher: `alt_message` is prioritized, and if missing, falls back to message segment concatenation (effective for pure message segment adapters since 2.10.1).
 
-### When Will Waiting Be Cancelled
+### When Does Waiting Get Cancelled
 
-Waiting is no longer "only wait for timeout"—the following situations will **immediately terminate** the waiting (`wait_reply` returns `None`), rather than letting the caller wait until timeout:
+Waiting is no longer "only waiting until timeout" — the following situations will **immediately terminate** the waiting (causing `wait_reply` to return `None`), rather than letting the caller wait until timeout:
 
 | Trigger | Cancellation Reason (`InteractionCancelled.reason`) | Description |
 |---------|----------------------------------------------------|-------------|
-| Owner module unloaded / disabled | `owner_unload` | Ownership cleanup: whoever registered the waiting is canceled when it disappears |
-| Adapter closed / restarted | `platform_stop` | All waiting suspended on this platform is canceled |
-| Same session replaced by new waiting / lease | `conflict` | See "Session Arbitration" below |
-| Replier blacklisted / owner module unbound | `revoked` | Permission recheck for reply match: scope identity dimension + module dimension |
-| User reply matched | — | Normal path, returns reply event |
+| Module owner is unloaded / disabled | `owner_unload` | Ownership cleanup: whoever registered the wait is cancelled when the owner disappears |
+| Adapter shutdown / restart | `platform_stop` | All waits suspended by this platform are cancelled |
+| New wait / lease replaces in the same session | `conflict` | See "Session Arbitration" below |
+| Replier is blacklisted / owner module is unbound | `revoked` | Reply match **permission recheck**: scope identity dimension + module dimension |
+| User reply matches | — | Normal path, returns reply event |
 
-The underlying exception is `InteractionCancelled` (part of the `InteractionError` exception hierarchy); `wait_reply` has converted it to return `None`. Callers needing the reason can directly use the low-level API `sdk.interaction.register()`.
+The underlying exception is `InteractionCancelled` (part of the `InteractionError` exception hierarchy), and `wait_reply` has converted it to return `None`. Callers needing the reason can directly use the low-level API `sdk.interaction.register()`.
 
-### Complete Reply Matching Decision Chain
+### Complete Matching Chain for Reply Events
 
-When a reply message arrives, the interactive manager executes the following sequence (executed **before** command matching, prioritizing conversation continuity—even if the message has been claimed by another high-priority handler, the suspended conversation can still complete):
+When a reply message arrives, the interaction manager performs the following sequential checks (executed **before** command matching, prioritizing conversation continuity — even if the message has been claimed by a higher-priority processor, the suspended conversation can still complete):
 
 ```
 Session key match (exact user dimension → session-level fallback)
-  → pattern / regex text filtering (continue waiting if not matched)
-  → validator validation (continue waiting if failed)
-  → permission recheck (scope identity dimension + module dimension, cancel if failed)
+  → pattern / regex text filtering (continues waiting if not matched)
+  → validator check (continues waiting if failed)
+  → permission recheck (scope identity dimension + owner module dimension, fails to terminate waiting)
   → wake up waiting party + claim event (mark_processed)
 ```
 
@@ -152,9 +158,11 @@ The only difference from `remind` is that it is **not canceled by user reply**�
 | Ownership Cleanup (Unload / Close Platform) | Canceled | Canceled |
 | Single Session Limit | 5 | Unlimited (canceled by ownership cleanup as fallback) |
 
-## Multi-path Waiting: expect + select
+## Multi-Way Waiting: expect + select
 
-Simultaneously suspends multiple expectations, **first-come, first-served**—typical scenarios: waiting for admin approval while also waiting for user withdrawal, or multi-person collaborative voting.
+**In one sentence**: `expect` only describes the expectation without registering any waiting, while `select` suspends multiple expectations at once, returning `(index, reply event)` as soon as any one matches, and automatically cleans up unmatched ones.
+
+Suspend multiple expectations at once, **first come, first served**—typical scenarios: waiting for an admin approval while also waiting for a user to withdraw, or multi-person collaborative voting.
 
 ```python
 which, reply = await event.select(
@@ -164,25 +172,25 @@ which, reply = await event.select(
     timeout=60,
 )
 if which is None:
-    await event.reply("No approval results received within 60 seconds")
+    await event.reply("60 秒内未收到任何审批结果")
 elif which == 0:
-    await event.reply("Approved")
+    await event.reply("已同意")
 elif which == 1:
-    await event.reply("Rejected")
+    await event.reply("已拒绝")
 ```
 
-- `event.expect(...)` constructs an **expectation description** (does not register any waiting): supports `pattern` / `regex` / `validator` / `user` (limits the replier) / `session` (anyone can reply)
-- `event.select(*expectations, timeout=60)`: Registers uniformly → returns `(index, reply event)` upon any match → unmet expectations are automatically canceled; returns `(None, None)` if all timeout. **Mandatory check**: at least one expectation must be provided, otherwise raises `ValueError`
-- The matched event is claimed by the framework (`mark_processed`), and will not be consumed repeatedly by other handlers
+- `event.expect(...)` constructs an **expectation description** (without registering any waiting): supports `pattern` / `regex` / `validator` / `user` (limit reply sender) / `session` (anyone can reply)
+- `event.select(*expectations, timeout=60)`: registers all expectations uniformly → returns `(index, reply event)` as soon as any one matches → unmet expectations are automatically canceled; returns `(None, None)` if all timeout. **Mandatory validation**: at least one expectation must be provided, otherwise a `ValueError` is thrown
+- The matched event is marked as processed by the framework (`mark_processed`), so it won't be consumed again by other handlers
 
 {!--< tips >!--}
-`select` compared to multi-threaded `asyncio.wait` manual orchestration: automatically cleans up unmet expectations, automatically claims matched events, and ownership cleanup is fully effective—no need to manage any Future yourself.
+Compared to manually orchestrating `asyncio.wait` in multi-threading: automatically cleans up unmet expectations, automatically acknowledges matched events, and all permission checks and cleanup are automatically handled—no need to manage any Future yourself.
 {!--< /tips >!--}
 
 > [!NOTE]
-> As of 2.10.1, `select` is a **aggregated waiting**: all expectations are merged into a single entry with custom match criteria. Multiple paths with the same key (e.g., two different patterns for the same user) no longer cancel each other; the first path to match returns. The text match criterion is `alt_message` priority + message segment fallback (consistent with command dispatch).
+> Starting from 2.10.1, `select` is a **collective waiting**: all expectations are merged into a single entry + custom matching logic, and multiple paths with the same key (e.g., two different patterns for the same user) no longer cancel each other out; the first matched path returns. The matching criterion for reply text is `alt_message` priority + message segment fallback (consistent with command dispatching).
 >
-> Boundary explanation: `event.wait_for(...)` is directly attached to the adapter event bus, **not passing** through middleware and detail_type filtering (identity admission is covered by the dispatch entry); for complete pipeline waiting, use `wait_reply` / `select`.
+> Boundary clarification: `event.wait_for(...)` is directly attached to the adapter event bus, **not passing** through middleware and `detail_type` condition filtering (identity access is handled at the dispatch entry). For complete pipeline waiting, use `wait_reply` / `select`.
 
 ## Session Mutual Exclusion: acquire / hold / get_owner_of
 

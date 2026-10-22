@@ -1,18 +1,21 @@
 # 部署ガイド
 
-ErisPulse ロボットを本番環境にデプロイするためのベストプラクティス。
+> [!TIP]
+> **このドキュメントを読むべきタイミング**：ロボットを長期間稼働させる場合に必要です。Dockerでのデプロイ、systemd / Supervisorによるプロセス監視、リバースプロキシとSSL、バックアップとアップグレードはすべてここに記載されています。ローカル開発やデバッグの段階では不要です。
+
+ロボットの開発が完了したのは始まりに過ぎません。このドキュメントでは、サーバー上で安定して稼働させるために必要な3つのデプロイ方法（Docker / systemd / Supervisor）、およびリバースプロキシ、セキュリティ強化、バックアップについて説明します。
 
 ## Docker 部署（推奨）
 
 ErisPulse は公式の Docker イメージを提供しており、ErisPulse フレームワークと Dashboard 管理パネルが内蔵されており、`linux/amd64` および `linux/arm64` アーキテクチャをサポートしています。
 
-### すぐに始める
+### 速攻起動
 
 ```bash
-# イメージの取得
+# イメージを取得
 docker pull erispulse/erispulse:latest
 
-# docker-compose.yml のダウンロード
+# docker-compose.yml をダウンロード
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
 # Dashboard のログイントークンを設定して起動
@@ -21,7 +24,7 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
 起動後、`http://localhost:8000/Dashboard` にアクセスし、設定したトークンをパスワードとしてログインします。
 
-### 国内向けのイメージ加速
+### 国内用のイメージ加速
 
 Docker Hub にアクセスできない場合は、GitHub Container Registry を使用してイメージを取得できます：
 
@@ -29,7 +32,7 @@ Docker Hub にアクセスできない場合は、GitHub Container Registry を�
 docker pull ghcr.io/erispulse/erispulse:latest
 ```
 
-`ghcr.io` のイメージを使用する場合、`docker-compose.yml` の `image` を変更する必要があります：
+ghcr.io のイメージを使用する場合、`docker-compose.yml` の `image` を変更する必要があります：
 
 ```yaml
 services:
@@ -42,43 +45,54 @@ services:
 ```yaml
 services:
   erispulse:
-    image: erispulse/erispulse:latest
-    container_name: erispulse
+    image: erispulse/erispulse:${ERISPULSE_TAG:-latest}
+    container_name: ${CONTAINER_NAME:-erispulse}
     ports:
       - "${ERISPULSE_PORT:-8000}:8000"
     volumes:
       - ./config:/app/config
-      # Python パッケージディレクトリの永続化
+      # 永続化 Python パッケージディレクトリ
       - ./config/.packages:/usr/local/lib/python3.13/site-packages
     environment:
       - TZ=${TZ:-Asia/Shanghai}
+      - LANG=${LANG:-en_US.UTF-8}
+      - ERISPULSE_LANG=${ERISPULSE_LANG:-}
       - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
     init: true
+    # シグナル処理による優雅な停止（SIGTERM）、ここでは停止の猶予期間のみ制御
     stop_grace_period: 30s
-    restart: unless-stopped
+    restart: on-failure:5
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ping')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
 ```
 
-> 推奨されるのは、リポジトリのルートにある [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml) を直接使用することです。これには、上記の設定とヘルスチェック、タイムゾーン、言語環境変数が含まれています。
+> 以上はリポジトリのルートにある [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml) と同一です（リポジトリのバージョンには、イメージ加速と環境変数に関する注釈が追加されています）。直接ダウンロードして使用することを推奨します。
 
 ### 環境変数
 
 | 変数 | デフォルト値 | 説明 |
 |------|--------|------|
 | `ERISPULSE_PORT` | `8000` | Dashboard のポートマッピング |
+| `ERISPULSE_TAG` | `latest` | イメージタグ（バージョンを固定したい場合は具体的なバージョン番号を指定） |
+| `CONTAINER_NAME` | `erispulse` | コンテナ名（複数インスタンスを展開する場合、インスタンスを識別） |
 | `ERISPULSE_DASHBOARD_TOKEN` | 自動生成 | Dashboard のログイントークン（強く設定することを推奨） |
 | `TZ` | `Asia/Shanghai` | タイムゾーン |
-| `LANG` | `en_US.UTF-8` | システム言語、起動画面の言語を自動検出 |
-| `ERISPULSE_LANG` | 空 | 起動画面の言語を強制指定：`zh` / `zh_TW` / `en` / `ja` / `ru`（`LANG` を上書き） |
+| `LANG` | `en_US.UTF-8` | システム言語、起動時のインターフェース言語を自動検出 |
+| `ERISPULSE_LANG` | 空 | 起動時のインターフェース言語を強制指定：`zh` / `zh_TW` / `en` / `ja` / `ru`（`LANG` を上書き） |
 
 ### データの永続化
 
 `./config` ディレクトリは設定ファイルとデータベースをマウントしており、以下の内容を含みます：
 
 - `config/config.toml` — 設定ファイル
-- `config/config.db` — SQLite ストレージデータベース
-- `config/.packages` — Python site-packages の永続化ボリューム、フレームワーク、アダプタ、およびインストールされたモジュールを保存します（初期起動時にエントリポイントがイメージに含まれるバックアップから自動的に初期化され、以降のモジュールインストールとフレームワークのホットアップデートはこのディレクトリに書き込まれます）
+- `config/config.db` — SQLite によるデータベース
+- `config/.packages` — Python site-packages の永続化ボリューム、フレームワーク、アダプター、およびインストールされたモジュールを保存（最初の起動時にエントリーポイントがイメージ内に含まれるバックアップから自動的に初期化され、以降のモジュールのインストールやフレームワークのホットアップデートはこのディレクトリに書き込まれます）
 
-> **フレームワークのアップグレード（pre/rcを含む）とイメージの自己修復**：エントリポイントは、各コンテナ起動時にコアパッケージの整合性を自己チェックし、損傷した場合は「ユーザーがインストールしたバージョンを優先」する原則で修復します — 損傷した場合、PyPIから**同じバージョン**を再インストールし、イメージに含まれるバージョンに静かにロールバックすることはありません。したがって、Dashboard でフレームワークをアップグレードした後、任意回のコンテナ再起動でも目標バージョンが維持されます。
+> **フレームワークのアップグレード（pre/rc 含む）とイメージの自己修復**：エントリーポイントは、コンテナの起動時に毎回コアパッケージの整合性を自己チェックし、破損した場合は「ユーザーがインストールしたバージョンを優先」する原則で修復します。永続ボリューム内に明示的にインストールまたはアップグレードされたバージョン（例：Dashboard でインストールした pre バージョン）は、PyPI から**同じバージョンを再インストール**し、静かにイメージ内に含まれるバージョンにロールバックすることはありません。したがって、Dashboard でフレームワークをアップグレードした後、任意回のコンテナ再起動でも目標バージョンが維持されます。
 
 ## Dashboard 管理パネル
 
@@ -110,25 +124,25 @@ Dashboard にはモジュールストア機能が統合されており、以下�
 
 ## プロセス監督とハードリスタート
 
-ErisPulse のハードリスタート（`sdk.hard_restart()`）は、**外部監督者**がプロセスの終了コードが 42 のときにプロセスを再起動することに依存します — SDK 自体は新しいプロセスを起動しません。本番環境では、監督者を設定する必要があります。そうでなければ、ハードリスタート後にプロセスは自動的に復元されません：
+ErisPulse のハードリスタート（`sdk.hard_restart()`）は、**外部監督者**がプロセスの終了コードが 42 のときにプロセスを再起動することに依存しています。SDK 自身は新しいプロセスを起動しません。本番環境では監督者の設定が必須です。監督者が設定されていない場合、ハードリスタート後にプロセスは自動的に復帰しません：
 
-- Docker: `restart: unless-stopped`（終了コード 42 を含むすべての終了コードで再起動）
-- systemd: `Restart=on-failure` + `RestartForceExitStatus=42`
-- PM2 / supervisord: 42 を再起動可能な終了コードに追加
-- 純粋な Python の独自監督者: ループ `Popen` + `returncode == 42` の検出
+- Docker：公式の compose では `restart: on-failure:5` を使用しています。これは、非ゼロの終了コードでプロセスを再起動します（ハードリスタートの終了コード 42 を上書きします）。連続5回の上限は、無限ループを防ぐためです。再起動回数を無制限にしたい場合は、`unless-stopped` に変更してください。
+- systemd：`Restart=on-failure` + `RestartForceExitStatus=42`
+- PM2 / supervisord：42 を再起動可能な終了コードに追加します。
+- 純粋な Python によるカスタム監督者：`Popen` のループ + `returncode == 42` の検出
 
-各監督者の完全な設定例と終了コード 42 の契約に関する説明は、[起動フロー → 監督者ガイド](../advanced/startup.md#監督者ガイド)をご覧ください。
+各監督者の完全な設定例と終了コード 42 の契約内容については、[起動プロセス → 監督者ガイド](../advanced/startup.md#監督者ガイド)をご覧ください。
 
 ## ヘルスチェック
 
-SDK にはヘルスチェックエンドポイントが内蔵されています：
+SDK には、ヘルスチェック用エンドポイントが内蔵されています：
 
 ```bash
 # ヘルスチェック
 curl http://localhost:8000/health
 ```
 
-Docker のヘルスチェックは `docker-compose.yml` に追加できます：
+公式の docker-compose.yml には、以下のヘルスチェックが既に内蔵されています。独自の compose ファイルを作成する際には、こちらを参考にしてください：
 
 ```yaml
 services:
@@ -266,14 +280,14 @@ epsdk run main.py
 - サーバー環境では、ツール環境は uv で統一管理されます（`uv tool list` で確認、`uv tool upgrade --all` で一括アップグレード）；グローバルな pip パッケージの手動管理は不要です
 - プロジェクトのないディレクトリで `uv run epsdk ...` を実行した場合、一時的な隔離環境に移行し、インストールされたコンポーネントは永続化されません；サーバーでは常に `epsdk` を直接呼び出すか、まず `cd` でプロジェクトディレクトリに移動してください
 
-## セキュリティの推奨事項
+## セキュリティに関する推奨事項
 
-1. **Dashboard トークンの設定**：強力なランダムトークンを使用し、デフォルト値を使用しないでください
-2. **ポートをパブリックに公開しない**：リバースプロキシ + SSL を使用しない限り、Dashboard のポートをローカルネットワークに制限してください
-3. **データディレクトリの保護**：`config/` ディレクトリには設定とデータベースが含まれており、適切なファイル権限を設定してください
-4. **定期的な更新**：`epsdk self-update` または最新の Docker イメージを取得して更新してください
-5. **root で実行しない**：手動デプロイ時は専用ユーザーを作成してください
-6. **Docker のリスタートポリシーを使用する**：`restart: unless-stopped` を使用して、異常終了後に自動的に再起動できるようにしてください
+1. **Dashboard トークンの設定**：強力なランダムなトークンを使用し、デフォルト値は使用しないでください。
+2. **ポートをインターネットに公開しない**：リバースプロキシ + SSL を使用しない限り、Dashboard のポートをローカルネットワーク内に限定してください。
+3. **データディレクトリを保護する**：`config/` ディレクトリには設定とデータベースが含まれているため、適切なファイル権限を設定してください。
+4. **定期的なアップデート**：`epsdk self-update` を使用するか、最新の Docker イメージを取得してください。
+5. **root で実行しない**：手動でデプロイする場合は、専用のユーザーを作成してください。
+6. **Docker の再起動ポリシーを使用する**：公式の compose では `restart: on-failure:5` が設定されており、エラー終了（ハードリスタート終了コード 42 を含む）後に自動的に再起動されます。
 
 ## 複数インスタンスのデプロイ
 
@@ -336,3 +350,9 @@ tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
 # または Dashboard の「バックアップ」機能を使用してエクスポート
 ```
+
+## 次に進む
+
+- **可視化管理したい場合**：[ErisPulse-Dashboard](../ecosystem/dashboard.md) をインストールし、ブラウザ上でモジュールを管理し、ログを確認し、設定を変更します。
+- **環境に問題があると疑う場合**：まず `epsdk doctor` を実行して健全性レポートを出力します。[CLI コマンドリファレンス · doctor](cli-reference.md#doctor) を参照してください。
+- **フレームワークとコンポーネントの設定を調整したい場合**：[設定ファイルの説明](configuration.md)を確認してください。環境変数によるオーバーライドは特にコンテナデプロイに適しています。

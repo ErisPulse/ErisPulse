@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "b17d9cbb34f4d4c8357ce166e4f2357e",
-  "file_hash": "b17d9cbb34f4d4c8357ce166e4f2357e",
-  "translated_at": "2026-10-18T03:47:08.038322",
+  "hash": "3ccd3ac77a710862c82a2e723d7cbbed",
+  "file_hash": "3ccd3ac77a710862c82a2e723d7cbbed",
+  "translated_at": "2026-10-22T09:31:50.975405",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "9a626d9b1e532ad183560359a9b33316",
-      "translation": "# 模組間通信\n\n> [!TIP]\n> **什麼時候需要閱讀本章**：需要跨模組呼叫（RPC）、服務契約、定向事件或冷啟動回放時。不需要則跳過，不影響其他功能的使用。\n\n> [!NOTE]\n> 本章內容需要 ErisPulse **2.8.0+**。\n\nErisPulse 的模組之間有**三層通信模型**，依「點對點 → 定向 → 廣播」排列：\n\n| 層 | API | 語意 | 典型場景 |\n|---|---|---|---|\n| **RPC** | `await sdk.module.call(\"Chat\", \"get_history\", ...)` | 點對點請求-回應，帶契約 / 審計 / 超時 | 呼叫另一模組的能力（查詢歷史、翻譯、退款） |\n| **定向事件** | `await lifecycle.emit(\"message_received\", {...}, to=\"Chat\")` | 僅分發給指定模組註冊的生命周期鉤子 | 上游狀態變化通知下游（「收到新訊息了」） |\n| **廣播** | `await lifecycle.emit(\"config.updated\", {...})` | 全框架可見的生命周期事件 | 配置熱更新、模組上下線 |\n\n{!--< tips >!--}\n選型口訣：**要回傳值用 `call`，只通知一個模組的鉤子用 `emit(..., to=...)`，通知所有人用 `emit(...)`**。\n{!--< /tips >!--}"
+      "hash": "b15c1b9e7fffddfd109e239dc9a1e860",
+      "translation": "# 模塊間通信\n\n> [!TIP]\n> **什麼時候需要閱讀這篇**：需要跨模組呼叫（RPC）、服務契約、定向事件或冷啟動回放時。不需要則跳過，不會影響其他功能的使用。\n\n> **讀完你會知道**：三層通信模型（RPC / 定向事件 / 廣播）的選型口訣、\n> `meta.services` 服務契約與服務目錄、出站審計的配置方式、懶喚醒與冷啟動回放。\n>\n> **本篇不涉及**：生命週期事件系統本身的註冊 / 觸發 / 優先級機制\n> （見[生命週期管理](lifecycle.md)）；懶加載的配置與 activate_on 聲明\n> （見[懶加載系統](lazy-loading.md)）。\n\n> [!NOTE]\n> 本章內容需要 ErisPulse **2.8.0+**。\n\nErisPulse 的模組之間有**三層通信模型**，依「點對點 → 定向 → 廣播」排列：\n\n| 層 | API | 語義 | 典型場景 |\n|---|---|---|---|\n| **RPC** | `await sdk.module.call(\"Chat\", \"get_history\", ...)` | 點對點請求-回應，帶契約 / 審計 / 超時 | 呼叫另一模組的能力（查詢歷史、翻譯、退款） |\n| **定向事件** | `await lifecycle.emit(\"message_received\", {...}, to=\"Chat\")` | 僅分發給指定模組註冊的生命週期鉤子 | 上游狀態變化的通知下游（「收到新訊息了」） |\n| **廣播** | `await lifecycle.emit(\"config.updated\", {...})` | 全框架可見的生命週期事件 | 配置熱更新、模組上下線 |\n\n{!--< tips >!--}\n選型口訣：**要回傳值用 `call`，只通知一個模組的鉤子用 `emit(..., to=...)`，通知所有人用 `emit(...)`**。\n{!--< /tips >!--}"
     },
     {
       "hash": "5b51074c006e2010d6be572866c8f80d",

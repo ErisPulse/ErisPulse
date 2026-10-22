@@ -3,8 +3,18 @@
 > [!TIP]
 > **什么时候需要读这篇**：需要订阅框架生命周期事件（启动 / 加载 / 状态变化）时。不需要则跳过，不影响其它功能的使用。
 
+> **读完你会知道**：生命周期事件的注册 / 触发 / 定向传播机制，四套触发 API 的
+> 差异与选用，以及框架预埋的全部钩子断点（core / module / adapter / server / message
+> 等）各自的数据格式。
+>
+> **本篇不涉及**：模块自身要实现的生命周期方法（`on_load` / `on_unload`，见
+> [模块开发指南](../developer-guide/modules/getting-started.md)）；启动链路各阶段的
+> 来龙去脉（见[启动流程与手动控制](startup.md)）。
 
-ErisPulse 提供统一的钩子/生命周期系统，用于监控系统各组件的运行状态，以及实现审计、统计、自定义逻辑等扩展功能。
+
+想在模块加载失败、配置被修改、消息发出、命令执行这些节点上收到通知并执行自己的
+逻辑（审计、统计、告警、联动），订阅框架生命周期事件即可——框架在每个关键节点
+预埋了钩子断点，`@sdk.lifecycle.on("事件名")` 一行接入，本文末尾附全部断点一览。
 
 系统支持三种触发方式：
 - `await lifecycle.emit("event", data)` — 精简版，传递任意数据（`to="Owner"` 时定向投递）
@@ -184,7 +194,7 @@ def audit_config(data):
 | `module.init` | 模块初始化完毕（含懒加载） | `{"module_name": str, "success": bool}` |
 | `module.before_unload` | 卸载流水线第一步（先于 `on_unload` 与资源回收；模块实例钩子 `on_before_unload` 同步触发） | `{"module_name": str, "reason": str}`；`reason` 取值：`unload` / `reload` / `disable` / `cascade` / `dormant` |
 | `module.sleep` | 模块归眠完成（懒加载休眠：资源已释放，访问时自动唤醒） | `{"module_name": str, "success": bool}` |
-| `module.unload` | 模块卸载 | `{"module_name": str, "success": bool}` |
+| `module.unload` | 模块卸载或禁用（`disable` 与 `unload` 对等通知依赖方，`on_dependency_lost` 契约含"禁用"） | `{"module_name": str, "success": bool}` |
 | `module.reload` | 模块热重载完成（含级联重载依赖者） | `{"module_name": str, "success": bool, "full": bool, "duration_ms": int}`；单模块额外携带 `"identity_changed": bool`（False = 进程内可能仍运行旧代码，如 C 扩展缓存）与 `"version_old": str, "version_new": str`；全量重载（`reload_all`）时 `module_name` 为 `"All"`，payload 额外携带 `"results": dict[str, bool]` |
 
 > **模块实例钩子 `on_before_unload`**：与 `module.before_unload` 事件对应的可选生命周期方法——`event["reason"]` 标注来意，适合在资源释放前把状态保存到 `sdk.storage`，唤醒 / 重载后在 `on_load` 中恢复（懒加载休眠的状态接续即基于此）。钩子失败仅告警，不阻塞卸载流程。
@@ -261,8 +271,10 @@ def count_commands(data):
 
 | 钩子名称 | 触发时机 | 数据 |
 |---------|---------|------|
-| `server.request` | HTTP 请求接收 | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | HTTP 响应发送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.request` | HTTP 请求接收 | `{"method": str, "path": str, "client_ip": str, "request_id": str}` |
+| `server.response` | HTTP 响应发送 | `{"method": str, "path": str, "status_code": int, "client_ip": str, "request_id": str}` |
+
+> `request_id` 即 [X-Request-ID 请求关联 ID](router.md#请求关联-idx-request-id)：优先沿用客户端请求头，否则自动生成 UUID，可用它把请求与响应两条事件串联。
 
 **示例：请求日志**
 
@@ -376,6 +388,15 @@ STANDARD_EVENTS = {
 | `lifecycle.emit_sync(event, data=None, *, to=None)` | 同步触发，异步处理器以 create_task 调度 |
 | `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 兼容旧版，自动构建标准事件格式；`background=True` 时走 `fire` 后台发射 |
 
+**四套触发 API 对照**：
+
+| 方法 | 调用形态 | 是否等待处理器完成 | 典型场景 |
+|------|---------|------------------|---------|
+| `emit` | `await`（异步） | **等待**——处理器并行执行，返回时全部完成，返回值链式回放 | 常规触发；顺序敏感消费（`config.set`）与关停序列必须用它 |
+| `fire` | 直接调用（同步返回） | **不等待**——后台任务并行执行，无返回值；无监听者时零开销 | 高频热路径与纯观测事件（`server.request` / `storage.ready`） |
+| `emit_sync` | 直接调用（同步） | 同步处理器立即完成；异步处理器以 `create_task` 调度（返回值无法回传） | 非异步上下文（同步代码）中触发事件 |
+| `submit_event` | `await`（异步） | 等待（`background=True` 时同 `fire` 不等待） | 兼容旧版：自动构建标准事件格式（`source` / `msg` / `timestamp`） |
+
 ### 工具
 
 | 方法 | 说明 |
@@ -456,5 +477,10 @@ async def _poll(self):
 
 ## 相关文档
 
-- [模块开发指南](../developer-guide/modules/getting-started.md) - 了解模块生命周期方法
-- [最佳实践](../developer-guide/modules/best-practices.md) - 生命周期事件使用建议
+按下一步意图选择：
+
+- **想看事件从适配器到处理器的全链路怎么流动** → [架构概览](../architecture.md)
+- **写模块时该实现哪些生命周期方法（on_load / on_unload）** → [模块开发指南](../developer-guide/modules/getting-started.md)
+- **想兜底后台任务与资源回收** → [归属权（owner）系统](ownership.md)
+- **启动链路各阶段（`core.init.*` 事件的来源）** → [启动流程与手动控制](startup.md)
+- **生命周期事件的使用建议** → [模块最佳实践](../developer-guide/modules/best-practices.md)

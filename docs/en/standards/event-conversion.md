@@ -1,4 +1,7 @@
-# Adapter Standardization Specification
+# Adapter Standardization Conversion Specification
+
+> [!TIP]
+> **When to read this**: When you are converting platform-native events to OneBot12 standard events in an adapter—use this document as a reference for verifying required fields, message segment structure, extension field naming (the `{platform}_` prefix), and session type inference. Otherwise, skip it.
 
 ## 1. Core Principles
 
@@ -574,10 +577,15 @@ Ensure `notice`/`request` events contain correct ID fields:
 
 ---
 
-## 10. Related Documents
+## 10. Related Documentation
 
-- [Platform-Specific Features Documentation](../platform-guide/README.md) - You can access this document to learn about platform-specific features, known extension events, and message segments.
-- [Session Type Standard](session-types.md) - Session type definitions and mapping relationships.
-- [Sending Method Specification](send-method-spec.md) - Naming, parameter specifications, and reverse conversion requirements for Send class methods.
-- [API Response Standard](api-response.md) - Standard response format for adapter APIs.
-- [API Action Specification](api-action-spec.md) - Unified interface for OneBot12 standard API actions.
+**Companion reference when implementing converters**:
+- [Session Types Standard](session-types.md) - Session type definitions and mapping relationships
+- [API Response Standard](api-response.md) - Adapter API response format standard
+
+**Sending side of the same adapter**:
+- [Send Method Specification](send-method-spec.md) - Method naming, parameter specifications for Send-type methods, and reverse conversion requirements
+- [API Action Standard](api-action-spec.md) - Unified interface for OneBot12 standard API actions
+
+**Look up known extended events and message segments for each platform**:
+- [Platform Features Documentation](../platform-guide/README.md) - You can visit this documentation to learn about the features of each platform, as well as known extended events and message segments.

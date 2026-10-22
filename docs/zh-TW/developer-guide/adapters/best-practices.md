@@ -1,21 +1,22 @@
-# 適配器開發最佳實踐
+# 配接器開發最佳實踐
 
 > [!TIP]
-> **何時需要閱讀本文**：建議在適配器骨架跑通後閱讀（工程化最佳實踐）。如不需要則可跳過，不會影響其他功能的使用。
+> **什麼時候需要讀這篇**：配接器骨架跑通後建議閱讀（工程化最佳實踐）。不需要則跳過，不影響其它功能的使用。
 
-本文檔提供了 ErisPulse 適配器開發的最佳實踐建議。
+
+這裡彙總配接器開發的工程約定：Bot 狀態上報、連線重試與心跳、多帳戶解析、標準化錯誤回應——照著做能避開斷線無感知、多帳戶傳錯目標、報錯難定位這類接入平台時的常見問題。
 
 ## Bot 狀態管理與 Meta 事件
 
-適配器應主動透過 `adapter.emit()` 發送 meta 事件，讓框架自動追蹤 Bot 的連接狀態、上下線和心跳資訊。
+轉接器應主動透過 `adapter.emit()` 發送 meta 事件，讓框架自動追蹤 Bot 的連線狀態、上下線與心跳資訊。
 
 ### 1. 何時發送 Meta 事件
 
 | 事件 | `detail_type` | 觸發時機 | 框架行為 |
 |------|--------------|---------|---------|
-| 連接 | `"connect"` | Bot 與平台建立連接時 | 註冊 Bot，觸發 `adapter.bot.online` 生命週期事件 |
-| 斷開 | `"disconnect"` | Bot 與平台斷開連接時 | 標記 Bot 離線，觸發 `adapter.bot.offline` 生命週期事件 |
-| 心跳 | `"heartbeat"` | 定期發送（建議 30-60 秒） | 更新 Bot 活躍時間和元資訊 |
+| 連線 | `"connect"` | Bot 與平台建立連線時 | 註冊 Bot，觸發 `adapter.bot.online` 生命週期事件 |
+| 斷線 | `"disconnect"` | Bot 與平台斷開連線時 | 標記 Bot 離線，觸發 `adapter.bot.offline` 生命週期事件 |
+| 心跳 | `"heartbeat"` | 定期發送（建議 30-60 秒） | 更新 Bot 活躍時間與元資訊 |
 
 ### 2. 發送 Meta 事件
 
@@ -42,9 +43,29 @@ class MyAdapter(BaseAdapter):
             await self.emit_meta("disconnect", bot_id)
 ```
 
+也可手動建構標準 meta 事件（舊版方式仍然相容）：
+
+```python
+await self.adapter.emit({
+    "id": str(uuid4()),
+    "time": int(time.time()),
+    "type": "meta",
+    "detail_type": "connect",
+    "platform": "myplatform",
+    "self": {
+        "platform": "myplatform",
+        "user_id": bot_id,
+        "user_name": "MyBot",
+        "avatar": "https://example.com/avatar.jpg",
+    },
+    "myplatform_raw": raw_data,
+    "myplatform_raw_type": "connected",
+})
+```
+
 ### 3. 心跳事件
 
-適配器應在連接存活期間定期發送心跳事件，更新 Bot 的活躍時間：
+轉接器應在連線存活期間定期發送心跳事件，更新 Bot 的活躍時間：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -55,15 +76,15 @@ class MyAdapter(BaseAdapter):
             await asyncio.sleep(30)
 ```
 
-### 4. `self` 字段自動發現
+### 4. `self` 欄位自動發現
 
-框架的 `adapter.emit()` 會自動處理所有事件（不僅是 meta 事件）中的 `self` 字段：
+框架的 `adapter.emit()` 會自動處理所有事件（不僅是 meta 事件）中的 `self` 欄位：
 
-- **一般事件**（message/notice/request）中的 `self` 字段會自動發現並註冊 Bot
-- **`self` 字段擴展資訊**：支援 `user_name`、`nickname`、`avatar`、`account_id` 可選字段
+- **普通事件**（message/notice/request）中的 `self` 欄位會自動發現並註冊 Bot
+- **`self` 欄位擴充資訊**：支援 `user_name`、`nickname`、`avatar`、`account_id` 可選欄位
 
 ```python
-# 轉換器中包含 self 字段即可自動註冊 Bot
+# 轉換器中包含 self 欄位即可自動註冊 Bot
 onebot_event = {
     "type": "message",
     "detail_type": "private",
@@ -74,7 +95,7 @@ onebot_event = {
         "user_name": "MyBot",
         "nickname": "我的機器人",
     },
-    # ... 其他字段
+    # ... 其他欄位
 }
 await self.adapter.emit(onebot_event)
 # Bot "bot123" 已自動註冊並更新活躍時間
@@ -82,28 +103,7 @@ await self.adapter.emit(onebot_event)
 
 ### 5. Bot 狀態查詢
 
-框架提供以下查詢方法：
-
-```python
-from ErisPulse import sdk
-
-# 獲取 Bot 詳細資訊
-info = sdk.adapter.get_bot_info("myplatform", "bot123")
-# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
-
-# 列出所有 Bot（按平台分組）
-all_bots = sdk.adapter.list_bots()
-
-# 列出指定平台的 Bot
-platform_bots = sdk.adapter.list_bots("myplatform")
-
-# 檢查 Bot 是否在線
-is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
-
-# 獲取完整狀態摘要（適合 WebUI 展示）
-summary = sdk.adapter.get_status_summary()
-# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
-```
+查詢 API（`get_bot_info()` / `list_bots()` / `is_bot_online()` / `get_status_summary()`）與 Bot 生命週期事件表見 [轉接器系統 API - Bot 狀態管理](../../api-reference/adapter-system.md#bot-狀態管理)。
 
 ## 連接管理
 
@@ -650,6 +650,12 @@ version = "2.0.0"  # 更新版本號
 
 ## 相關文件
 
+### 回顧前置知識
+
 - [適配器開發入門](getting-started.md) - 建立第一個適配器
-- [適配器核心概念](core-concepts.md) - 瞭解適配器架構
+- [適配器核心概念](core-concepts.md) - 了解適配器架構
 - [SendDSL 詳解](send-dsl.md) - 學習訊息傳送
+
+### 適配器完善之後
+
+- [發布與模組商店指南](../publishing.md) - 發布到 PyPI 與模組商店

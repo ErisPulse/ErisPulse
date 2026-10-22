@@ -1,9 +1,9 @@
 # Core Concepts of Modules
 
 > [!NOTE]
-> **L1 Core Reading** – One of the five core documents in the "Reading Path" on the homepage, essential for module development.
+> **L1 Essential Reading** — One of the five core documents in the "Reading Path" on the homepage, essential for module development.
 
-Understanding the core concepts of ErisPulse modules is the foundation for developing high-quality modules.
+This article explains the complete lifecycle of a module from loading to unloading, as well as the usage of declarative configuration and storage. It clarifies what the framework automatically handles for you and what you need to write yourself. After reading this, you'll have a clear understanding.
 
 ## Module Lifecycle
 
@@ -413,6 +413,12 @@ self.logger.critical("Critical error")    # Critical error
 
 ## Related Documentation
 
-- [Getting Started with Module Development](getting-started.md) - Create your first module
-- [Event Wrapper Class](event-wrapper.md) - Detailed explanation of event handling
-- [Best Practices](best-practices.md) - Develop high-quality modules
+### Further Learning Path
+
+- [Event Wrapper](event-wrapper.md) - Detailed explanation of event handling
+
+### In-depth and Troubleshooting
+
+- [Module Best Practices](best-practices.md) - Developing high-quality modules
+- [Getting Started with Module Development](getting-started.md) - Review the steps for building your first module
+- [Module Troubleshooting Guide](../module-troubleshooting.md) - Diagnose issues when module behavior does not meet expectations

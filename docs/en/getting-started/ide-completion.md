@@ -1,7 +1,10 @@
 # Type Stub Generation (IDE Completion)
 
-ErisPulse dynamically discovers modules/adapters via entry-points, and the entry points cannot statically know the specific types of user classes.  
-The `epsdk types` command scans installed modules/adapters to generate a type stub file, allowing users to use these types as variable annotations to obtain IDE completion.
+> [!TIP]
+> **When to read this**: If IDE completion doesn't surface an adapter's platform-specific methods (such as Yunhu's `Board`) or a module's custom methods, simply run the `epsdk types` command to generate type stubs; otherwise, skip this.
+
+ErisPulse dynamically discovers modules/adapters via entry-points, so the concrete types of user classes cannot be known statically from entry points.
+The `epsdk types` command scans installed modules/adapters and generates a type stub file, allowing users to use these types as variable annotations and thereby get IDE completion.
 
 ## Core Design Principles
 
@@ -81,7 +84,7 @@ if TYPE_CHECKING:
 The `SendDSL` base class already has built-in standard sending methods (Text/Image/Voice/Video/File), and any instance of `SendDSL` obtained through any method can complete these methods.  
 The `types` command is mainly used to complete **platform-specific methods** (such as `Board` for Yunhu, `Dice` for Sandbox) and **module-specific methods**.
 
-## Related Documentation
+## Next Steps
 
-- [SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md) - Standard sending method description
-- [Getting Started with Adapter Development](../developer-guide/adapters/getting-started.md) - Creating an adapter
+- **Want to know which send methods work across all platforms**: See [SendDSL in Detail](../developer-guide/adapters/send-dsl.md) for the authoritative reference on standard methods such as Text / Image / Voice
+- **Developing your own adapter**: Start with [Getting Started with Adapter Development](../developer-guide/adapters/getting-started.md) to create your adapter project

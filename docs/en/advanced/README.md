@@ -1,32 +1,55 @@
 # Advanced Topics
 
-This directory contains advanced features and in-depth topics of the ErisPulse framework.
+This directory contains advanced topics of the ErisPulse framework—deep capabilities such as permission control, canary release, multi-round interaction, and storage backends—each addressing a specific category of problems.
 
 > [!NOTE]
-> All documents in this directory are **on-demand reference topics**—please first read the five core Level 1 articles on the homepage,
-> and refer to this section when you encounter corresponding needs. Each article begins with a note indicating "When to read this article."
+> All topics in this directory are **on-demand reference documents**—please first read the five core L1 articles in the homepage, and then refer to this directory when encountering corresponding needs. Each article begins with a note indicating "When you need to read this article."
 
-## Document List
+## Four Must-Reads for L2
 
-- [Startup Process and Manual Control](startup.md) - Breakdown of the startup chain (Finder/Loader/Manager/Router) and manual full startup
-- [Lazy Loading System](lazy-loading.md) - Working principles, configuration, and event-driven lazy activation (activate_on) of the lazy loading module system
-- [Scope](scope.md) - Three-dimensional scope control: module availability / event access / outbound action restriction (including method-level granular rules and binding inheritance merge)
-- [Ownership System](ownership.md) - Resource ownership and automatic recycling: owner context mechanism, full view of owned resources, unload cleanup sequence, and design boundaries
-- [Shadow Modules and Gray Promotion](shadow.md) - Independent owner parallel testing of new module versions: outbound interception and accounting, behavior diff comparison, promote promotion, and rollback on failure
-- [Interaction Session System](interaction.md) - wait_reply / session timer / multi-path waiting / session mutual exclusion lease / inbox / message transaction / chain tracing
-- [Inter-Module Communication](module-communication.md) - RPC protocol (module.call), service contracts and directory, directed events, cold-start replay, event idempotency deduplication
-- [Internationalization (i18n)](i18n.md) - Multi-language support, translation registration, and language detection
-- [Lifecycle Management](lifecycle.md) - Usage methods of the lifecycle event system
-- [Router Manager](router.md) - HTTP and WebSocket routing management (including single-argument registration, tuple response conventions)
-- [Connection Pool and Broadcasting](connections.md) - Connection registry: broadcasting, group subscriptions, cross-module passing and reuse, connection pool viewing
+These four articles are essential when writing production-level modules. It is recommended to read them thoroughly before working on complex modules (consistent with the guidelines in the documentation homepage):
+
+- [Scope](scope.md) - Three-dimensional scope control: module availability / event entry / outbound action restrictions (including method-level granular rules and binding inheritance merge)
+- [Ownership (owner) System](ownership.md) - Resource ownership and automatic cleanup: owner context mechanism, ownership resource overview, unload cleanup sequence, and design boundaries
+- [Lifecycle Management](lifecycle.md) - Lifecycle event system: what each module / adapter should do during loading, unloading, reloading, and disabling
+- [Interaction Session System](interaction.md) - wait_reply / session timer / multi-path waiting / session mutual exclusion lease / inbox / message transaction / link tracing
+
+## Group by Scenario
+
+Grouped in the same way as the "Deep Understanding of Principles" section on the documentation homepage. The first article in each group is marked with "What pitfalls will you encounter if you don't understand this?"
+
+**Startup** —— If you don't understand the startup chain (Finder / Loader / Manager / Router), you'll be left staring helplessly at the logs when module loading fails.
+
+- [Startup Flow and Manual Control](startup.md) - Breakdown of the startup chain (Finder/Loader/Manager/Router) and manual full startup
+- [Lazy Loading System](lazy-loading.md) - Working principle, configuration, and event-driven lazy activation (activate_on) of the lazy loading module system
+
+**Communication & Connection** —— If you don't understand service contracts (`meta.services`) whitelists, cross-module `module.call` will be rejected by `ServiceNotProvidedError` without knowing the reason.
+
+- [Module Communication](module-communication.md) - RPC protocol (module.call), service contracts and directories, directed events, cold-start replay, event idempotency deduplication
+- [Connection Pool & Broadcasting](connections.md) - Connection registry: broadcasting, group subscriptions, cross-module passing and reuse, and viewing connection pools
+- [Router Manager](router.md) - HTTP and WebSocket routing management (including single-argument registration and tuple response conventions)
+
+**Data Storage** —— If you don't understand the semantics of connection failure cooldown periods, you may mistakenly conclude that the framework has crashed during database fluctuations (when in fact it is a rapid failure followed by automatic reconnection after cooldown).
+
+- [Storage Backends](storage-backends.md) - Selecting, configuring, and switching asynchronous native storage backends such as sqlite / mysql / postgres
+- [SQL Query Builder](sql-builder.md) - A generic SQL chainable query builder and storage backend abstraction
 - [HTTP Client](http-client.md) - Unified HTTP request client
-- [Session Inbox](transcript.md) - Automatic message recording: retention policy knobs, runtime override APIs, and risk/audit
-- [MessageBuilder Detailed Explanation](message-builder.md) - Dual-mode usage of the OneBot12 message segment builder
-- [SQL Query Builder](sql-builder.md) - General SQL chain query builder and storage backend abstraction
-- [Storage Backends](storage-backends.md) - Asynchronous native storage backends selection, configuration, and switching (sqlite / mysql / postgres)
-- [Exception System and Capture Guide](errors.md) - Framework-wide exception types, occurrence locations, and capture recommendations
-- [Session Type System](../standards/session-types.md) - Session type definition, mapping, and custom type registration
+
+**Messaging & Conversation** —— If you don't understand session mutual exclusion leases, two modules simultaneously waiting for the same user's reply will kick each other off.
+
 - [Conversation Multi-turn Dialogue](conversation.md) - Interaction methods for multi-turn dialogue context
+- [Session Inbox](transcript.md) - Automatic message recording: retention policy controls, runtime override APIs, and risk/audit considerations
+- [MessageBuilder Detailed Explanation](message-builder.md) - Dual-mode usage of the OneBot12 message segment builder
+- [Internationalization (i18n)](i18n.md) - Multi-language support, translation registration, and language detection
+
+**Gray Shadow** —— If you don't understand the five isolation gates before promoting to production, shadow outbound messages will leak to real users.
+
+- [Shadow Modules and Gray Promotion](shadow.md) - Independent parallel testing of new module versions with separate owners: outbound interception and accounting, behavior diff comparison, promote to production, and rollback on failure
+
+**Exceptions & Standards Reference**
+
+- [Exception System and Capture Guide](errors.md) - All framework exception types, occurrence locations, and capture recommendations
+- [Session Type System](../standards/session-types.md) - Session type definitions, mappings, and custom type registration
 
 > [!NOTE]
 > Documentation for **third-party ecosystem modules** such as Dashboard view registration and Takumi image rendering has been moved to the [Ecosystem Modules](../ecosystem/README.md) directory.

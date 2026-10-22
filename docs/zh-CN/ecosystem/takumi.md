@@ -1,5 +1,8 @@
 # ErisPulse-Takumi
 
+> [!TIP]
+> **什么时候需要读这篇**：当你需要把 HTML / 节点树 / Jinja 模板渲染成图片发到聊天平台（统计卡片、排行榜、图文长文）时读这篇。不需要则跳过。
+
 [ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) 是 ccd2s 维护的 **第三方图片渲染模块**，基于 [takumi-py](https://github.com/BalconyJH/takumi-py)，让 Bot 能够将 HTML、节点树、Jinja 模板、SVG、动画渲染为图片。模块 **内置中英文字体**（Noto Sans SC / Roboto / Source Code Pro），无需额外配置。
 
 > [!IMPORTANT]
@@ -368,3 +371,11 @@ enabled = true
 - 仓库：<https://github.com/ccd2s/ErisPulse-Takumi>（作者 [@ccd2s](https://github.com/ccd2s)）
 - 底层引擎：<https://github.com/BalconyJH/takumi-py>
 - takumi-py 文档：<https://github.com/BalconyJH/takumi-py/blob/main/docs/index.md>
+
+---
+
+## 下一步
+
+- **把渲染结果发出去**：`event.reply(png, method="Image")` 等回复方式见[事件系统 API - 回复方法](../api-reference/event-system.md)
+- **组合更复杂的出站消息**（图 + 文 + @）：[消息构建器](../advanced/message-builder.md)
+- **渲染 + 定时推送**：配合 [ErisPulse-Cron](cron.md) 做周期性数据卡片

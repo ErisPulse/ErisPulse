@@ -1,6 +1,9 @@
 # Architecture Overview
 
-This document introduces the technical architecture of the ErisPulse SDK through visual diagrams, helping you quickly understand the framework's design philosophy and module relationships.
+> [!TIP]
+> **When to read this**: When you want to understand what the framework is doing behind the scenes—how a message flows, the order in which modules are initialized, what happens during hot reload, or when troubleshooting "why the framework behaves this way." If you only want to write handlers, see [Getting Started with Event Handling](getting-started/event-handling.md); otherwise, skip this.
+
+A message from a user to a bot reply goes through several stages: adapter transformation, middleware, scope filtering, and priority-based scheduling. Modules are not all loaded at startup. This article uses diagrams to clearly illustrate this chain and explain what you can intervene at each stage.
 
 ## SDK Core Architecture
 
@@ -351,3 +354,9 @@ flowchart TD
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
+
+## Next Steps
+
+- **Want to manually control startup/shutdown**: See [Startup Process and Manual Control](advanced/startup.md), which breaks down the initialization process step by step, allowing individual adapters and routers to be started or stopped independently.
+- **Want to understand lazy loading and sleeping**: See [Lazy Loading System](advanced/lazy-loading.md), which includes the complete syntax for lazy activation driven by `activate_on` events.
+- **Want to use lifecycle events effectively when writing modules**: See [Lifecycle Management](advanced/lifecycle.md), which covers all lifecycle events and listener methods.

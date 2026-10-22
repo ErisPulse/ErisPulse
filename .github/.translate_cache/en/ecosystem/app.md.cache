@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "3d0a29940bc6373fe64b99b5fbf15f84",
-  "file_hash": "3d0a29940bc6373fe64b99b5fbf15f84",
-  "translated_at": "2026-09-07T11:20:56.673125",
+  "hash": "fa76696698bd642a8f58e33d72e11634",
+  "file_hash": "fa76696698bd642a8f58e33d72e11634",
+  "translated_at": "2026-10-22T10:53:29.995781",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "8192180e711fe5d48fdb7d5a1f63d59f",
-      "translation": "# ErisPulse-App\n\n[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) is the **official multi-platform client** directly maintained by ErisDev (released for Android / Windows / Linux / macOS), providing a fully native graphical management interface: create, run, and manage multiple bot instances on your phone or computer, without the need for a terminal or a separate Python environment.\n\n> [!IMPORTANT]\n> ErisPulse-App is an **independently installed client application**, not a module installed via `epsdk install`. It includes a built-in Python runtime and ErisPulse SDK, ready to use upon installation—**can even run directly on mobile devices**."
+      "hash": "781f3492c77018399780ea720b854c3a",
+      "translation": "# ErisPulse-App\n\n> [!TIP]\n> **When to read this**: Read this when you want to create, run, and manage bot instances with a graphical interface on your phone or computer—without touching a terminal or installing a separate Python environment. Skip it if you don't need that.\n\n[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) is the **official multi-platform client** maintained directly by ErisDev (already released for Android / Windows / Linux / macOS).\nIt provides a fully native graphical management interface: create, run, and manage multiple bot instances on your phone or computer,\nwith no terminal required and no separate Python environment installation needed.\n\n> [!IMPORTANT]\n> ErisPulse-App is an **independently installed client application**, not a module installed via `epsdk install`.\n> It comes with a built-in Python runtime and the ErisPulse SDK, ready to use right after installation—**it even runs directly on mobile phones**."
     },
     {
       "hash": "cdebbf4787647b0a9a637d3290657ed2",
@@ -30,8 +30,12 @@
       "translation": "## Relationship with SDK\n\n- ErisPulse SDK is embedded in the App: Android is bundled in the Ubuntu image, desktop is installed from PyPI (optional version on welcome page, default latest)\n- Instances in the App are equivalent to those created by the command line `epsdk`, and can use the same modules/adapters\n- Module developers can register custom pages via the [Dashboard window registration API](dashboard.md): the window will automatically appear in the App's side navigation (grouped the same as Dashboard), and clicking will navigate to the corresponding page for rendering\n\n---"
     },
     {
-      "hash": "fb97cf3223f74fee1201ee377b9d9ee5",
-      "translation": "## Related Links\n\n- GitHub Repository: [https://github.com/ErisPulse/ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App)\n- Download: [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases)\n- Discussion: [Discussions](https://github.com/ErisPulse/ErisPulse-App/discussions)"
+      "hash": "4ad30f3ded46406de2cfc99f632fdcb9",
+      "translation": "## Related Links\n\n- GitHub Repository: [https://github.com/ErisPulse/ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App)\n- Download: [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases)\n- Discussions: [Discussions](https://github.com/ErisPulse/ErisPulse-App/discussions)\n\n---"
+    },
+    {
+      "hash": "cc1e1d5c942c9732ae108ab164019771",
+      "translation": "## Next Steps\n\n- **Manage via browser on desktop / server**: [ErisPulse-Dashboard](dashboard.md) (shares the same API set and window grouping as the App)\n- **Connect your first platform**: Configuration can be completed through the App's built-in management interface; see [Platform Features Overview](../platform-guide/README.md) for platform-specific details\n- **Prefer the command line**: Instances in the App are fully equivalent to those created with `epsdk`; start with [Quick Start](../quick-start.md)"
     }
   ]
 }

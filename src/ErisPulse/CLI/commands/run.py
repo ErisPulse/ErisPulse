@@ -24,6 +24,7 @@ from ...runtime.file_watcher import (
 from ..base import Command
 from ..console import console
 from ..constants import (
+    CLI_CHILD_TERMINATE_WAIT_SECS,
     ENV_SUPERVISED,
     HARD_RESTART_EXIT_CODE,
     RUN_CRASH_BACKOFF_MAX_SECS,
@@ -63,7 +64,7 @@ class ReloadHandler(FileSystemEventHandler):
         self._loop = loop
         self._last_reload = 0.0
 
-    def on_modified(self, event: FileChangeEvent):
+    def on_modified(self, event: FileChangeEvent) -> None:
         """
         文件修改事件回调，对 .py 文件触发热重载
 
@@ -113,7 +114,7 @@ class RunCommand(Command):
     aliases = ["r"]
     category = "project"
 
-    def add_arguments(self, parser: ArgumentParser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "script", nargs="?", default=None, help=i18n.t("cli.run.script_help")
         )
@@ -130,7 +131,7 @@ class RunCommand(Command):
             help=i18n.t("cli.run.strict_help"),
         )
 
-    def execute(self, args: Namespace):
+    def execute(self, args: Namespace) -> None:
         script = args.script
         reload_mode = args.reload
 
@@ -411,7 +412,7 @@ class RunCommand(Command):
                 console.print(f"[info]{i18n.t('cli.run.terminating_child')}[/]")
                 process.terminate()
                 try:
-                    process.wait(timeout=5)
+                    process.wait(timeout=CLI_CHILD_TERMINATE_WAIT_SECS)
                 except subprocess.TimeoutExpired:
                     process.kill()
                     process.wait()
@@ -480,7 +481,7 @@ class RunCommand(Command):
             仅设置重载事件，不直接操作子进程（终止/重启由主线程统一处理）。
             """
 
-            def on_modified(self, event: FileChangeEvent):
+            def on_modified(self, event: FileChangeEvent) -> None:
                 """
                 文件修改事件回调，设置重载信号供主线程处理
 
@@ -523,7 +524,7 @@ class RunCommand(Command):
                     reload_state["reload_event"].clear()
                     proc.terminate()
                     try:
-                        proc.wait(timeout=5)
+                        proc.wait(timeout=CLI_CHILD_TERMINATE_WAIT_SECS)
                     except subprocess.TimeoutExpired:
                         proc.kill()
                         proc.wait()
@@ -554,7 +555,7 @@ class RunCommand(Command):
             if proc is not None and proc.poll() is None:
                 proc.terminate()
                 try:
-                    proc.wait(timeout=5)
+                    proc.wait(timeout=CLI_CHILD_TERMINATE_WAIT_SECS)
                 except subprocess.TimeoutExpired:
                     proc.kill()
                     proc.wait()

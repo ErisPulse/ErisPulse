@@ -9618,8 +9618,8 @@ async def on_server_stop(event):
 
 # 生命周期管理
 
-> [!TIP]  
-> **什麼時候需要閱讀這篇**：需要訂閱框架生命週期事件（啟動 / 加載 / 狀態變化）時。不需要則跳過，不會影響其他功能的使用。
+> [!TIP]
+> **什麼時候需要閱讀這篇**：需要訂閱框架生命週期事件（啟動 / 加載 / 狀態變化）時。不需要則跳過，不影響其它功能的使用。
 
 ErisPulse 提供統一的鉤子/生命週期系統，用於監控系統各組件的運行狀態，以及實現審計、統計、自定義邏輯等擴展功能。
 
@@ -9683,10 +9683,12 @@ async def on_anything(data):
 
 ### 定向傳播（emit to=）
 
-> [!NOTE]  
+> [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-`emit()` 指定 `to` 參數後進入定向傳播：事件只分發給以該擁有者（owner）身份註冊的處理器（模組在 `on_load` 內註冊的鉤子自動歸屬本模組），其它模組與通配符 `*` 處理器不感知。
+`emit()` 指定 `to` 參數後進入定向傳播：事件只分發給以該擁有者（owner）身份註冊的
+處理器（模組在 `on_load` 內註冊的鉤子自動歸屬本模組），其它模組與通配符 `*`
+處理器不感知。
 
 ```python
 # 投遞方：事件只投給 Chat 模組註冊的鉤子
@@ -9703,8 +9705,8 @@ async def on_any(data): ...
 - 目標 owner 無已註冊鉤子 → 事件**不被消費**（可用 `has_handlers()` 提前探測）
 - `data` 為 dict 時自動攜帶 `_trace_id`（不覆蓋已有值）
 - `emit_sync` / `submit_event` 同樣支援 `to=` 參數
-- 模組間通信的三層模型（RPC / 定向 / 廣播）見
-  [模組間通信](module-communication.md)
+- 模組間通訊的三層模型（RPC / 定向 / 廣播）見
+  [模組間通訊](module-communication.md)
 
 ### 一次性註冊（once）
 
@@ -9734,7 +9736,7 @@ if sdk.lifecycle.has_handlers("message.sending"):
 
 ## 鉤子斷點一覽
 
-一條消息從平台進入框架到處理完成的典型生命週期事件時序：
+一條訊息從平台進入框架到處理完成的典型生命週期事件時序：
 
 ```mermaid
 sequenceDiagram
@@ -9746,7 +9748,7 @@ sequenceDiagram
     P->>A: 原生事件到達
     A->>F: adapter.event.receive（最早期）
     F->>F: event.pre_process（處理器執行前）
-    F->>M: 分發到處理器（命令/消息/通知等）
+    F->>M: 分發到處理器（命令/訊息/通知等）
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending（發送前）
@@ -9795,12 +9797,12 @@ def audit_config(data):
 | 鉤子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `module.register` | 模組類註冊到管理器 | `{"module_name": str, "success": bool}` |
-| `module.load` | 模組加載完成（實例化成功）；失敗時 payload 預留 `"error": str, "traceback": str`（失敗現場亦可經 `module.last_error(名字)` 查詢） | `{"module_name": str, "success": bool}` |
+| `module.load` | 模組加載完成（實例化成功）；失敗時 payload 項外加 `"error": str, "traceback": str`（失敗現場亦可經 `module.last_error(名字)` 查詢） | `{"module_name": str, "success": bool}` |
 | `module.init` | 模組初始化完畢（含懶加載） | `{"module_name": str, "success": bool}` |
 | `module.before_unload` | 卸載流水線第一步（先於 `on_unload` 與資源回收；模組實例鉤子 `on_before_unload` 同步觸發） | `{"module_name": str, "reason": str}`；`reason` 取值：`unload` / `reload` / `disable` / `cascade` / `dormant` |
 | `module.sleep` | 模組歸眠完成（懶加載休眠：資源已釋放，訪問時自動喚醒） | `{"module_name": str, "success": bool}` |
-| `module.unload` | 模組卸載 | `{"module_name": str, "success": bool}` |
-| `module.reload` | 模組熱重載完成（含級聯重載依賴者） | `{"module_name": str, "success": bool, "full": bool, "duration_ms": int}`；單模組額外攜帶 `"identity_changed": bool`（False = 進程內可能仍運行舊代碼，如 C 扩展緩存）與 `"version_old": str, "version_new": str`；全量重載（`reload_all`）時 `module_name` 為 `"All"`，payload 預留 `"results": dict[str, bool]` |
+| `module.unload` | 模組卸載或禁用（`disable` 與 `unload` 對等通知依賴方，`on_dependency_lost` 契約含"禁用"） | `{"module_name": str, "success": bool}` |
+| `module.reload` | 模組熱重載完成（含級聯重載依賴者） | `{"module_name": str, "success": bool, "full": bool, "duration_ms": int}`；單模組額外攜帶 `"identity_changed": bool`（False = 進程內可能仍運行舊代碼，如 C 扩展緩存）與 `"version_old": str, "version_new": str`；全量重載（`reload_all`）時 `module_name` 為 `"All"`，payload 項外加 `"results": dict[str, bool]` |
 
 > **模組實例鉤子 `on_before_unload`**：與 `module.before_unload` 事件對應的可選生命週期方法——`event["reason"]` 標註來意，適合在資源釋放前把狀態保存到 `sdk.storage`，喚醒 / 重載後在 `on_load` 中恢復（懶加載休眠的狀態接續即基於此）。鉤子失敗僅告警，不阻塞卸載流程。
 
@@ -10009,7 +10011,7 @@ from ErisPulse import sdk
 
 class Main(BaseModule):
     async def on_load(self, event):
-        # 實現簡單的消息統計
+        # 實現簡單的訊息統計
         self.msg_count = 0
         
         @sdk.lifecycle.on("adapter.event.receive")
@@ -10030,7 +10032,7 @@ class Main(BaseModule):
 
 ## 背景任務歸屬與自動取消
 
-> [!NOTE]  
+> [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
 模組創建的 asyncio 背景任務若未在 `on_unload` 中取消，會持有 `self` 引用導致模組實例無法被回收（熱重載後舊實例殘留）。框架提供以下兜底機制：
@@ -10056,7 +10058,7 @@ async def _poll(self):
         ...
 ```
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > 框架兜底是**強制 cancel**（`cancel_owner_tasks`），它發生在 `on_unload` 返回之後。因此需要優雅收尾的任務（flush 緩衝、持久化狀態、關閉連接）**必須**在 `on_unload` 裡自行 `cancel()` + `await` 完成——別指望兜底能保留收尾邏輯。框架只保證「不殘留持有 `self` 的任務」，不保證「優雅」。需要 `await` 結果的任務請直接 `await`，不要丟給背景任務。
 
 ## 注意事項
@@ -10068,6 +10070,11 @@ async def _poll(self):
 5. **同步觸發限制**：`emit_sync()` 中異步處理器以 fire-and-forget 方式調度，返回值無法回傳
 6. **生命週期清理**：調用 `sdk.uninit()` 時，所有已註冊的處理器和計時器會被清理
 7. **加載優先性**：如需在框架初始化階段就監聽事件，建議設置高優先級並禁用懶加載
+
+## 相關文件
+
+- [模組開發指南](../developer-guide/modules/getting-started.md) - 了解模組生命週期方法
+- [最佳實踐](../developer-guide/modules/best-practices.md) - 生命週期事件使用建議
 
 
 

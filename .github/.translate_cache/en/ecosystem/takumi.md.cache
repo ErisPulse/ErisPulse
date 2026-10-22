@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "d498e3abf7c4b084ec60821dc0ec8737",
-  "file_hash": "d498e3abf7c4b084ec60821dc0ec8737",
-  "translated_at": "2026-09-07T11:28:25.098713",
+  "hash": "a4f5a4fb193b526f2bb9972a05d9b711",
+  "file_hash": "a4f5a4fb193b526f2bb9972a05d9b711",
+  "translated_at": "2026-10-22T11:01:33.991637",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "7a75dce2001bf5e3c5ee302d83e117f9",
-      "translation": "# ErisPulse-Takumi\n\n[ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) is a **third-party image rendering module** maintained by ccd2s, based on [takumi-py](https://github.com/BalconyJH/takumi-py), allowing the Bot to render HTML, node trees, Jinja templates, SVG, and animations into images. The module **includes built-in Chinese and English fonts** (Noto Sans SC / Roboto / Source Code Pro), requiring no additional configuration.\n\n> [!IMPORTANT]\n> Takumi is **not** a built-in feature of the ErisPulse framework and needs to be installed separately:\n>\n> ```bash\n> epsdk install Takumi\n> ```\n\nApplicable scenarios:\n\n- Rendering data/statistics into card images\n- Rendering Markdown / long text into well-formatted images, avoiding platform style differences\n- Generating SVG / animations to achieve dynamic visual effects\n- Mixed Chinese and English text and image (built-in fonts ready to use out of the box)"
+      "hash": "5db7d5995c44eb9b60ccc676fa42f182",
+      "translation": "# ErisPulse-Takumi\n\n> [!TIP]\n> **When to read this**: Read this when you need to render HTML / node trees / Jinja templates into images for sending to chat platforms (e.g., statistics cards, leaderboards,图文长文). Skip if not needed.\n\n[ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) is a **third-party image rendering module** maintained by ccd2s, based on [takumi-py](https://github.com/BalconyJH/takumi-py), allowing Bots to render HTML, node trees, Jinja templates, SVG, and animations into images. The module **includes built-in Chinese and English fonts** (Noto Sans SC / Roboto / Source Code Pro), requiring no additional configuration.\n\n> [!IMPORTANT]\n> Takumi is **not** a built-in feature of the ErisPulse framework and must be installed separately:\n>\n> ```bash\n> epsdk install Takumi\n> ```\n\nApplicable scenarios:\n\n- Rendering data/statistics into card images\n- Rendering Markdown / long text into well-formatted images to avoid platform style differences\n- Generating SVG / animations for dynamic visual effects\n- Mixed Chinese and English text images (built-in fonts work out-of-the-box)"
     },
     {
       "hash": "8d3be7878bf04202867dc246dab94e3b",
@@ -42,8 +42,12 @@
       "translation": "## Configuration\n\n```toml\n[Takumi]\nenabled = true\n```\n\n---"
     },
     {
-      "hash": "2cd844d13efa281021967a7fc3978594",
-      "translation": "## Related Links\n\n- PyPI: <https://pypi.org/project/ErisPulse-Takumi/>\n- Repository: <https://github.com/ccd2s/ErisPulse-Takumi> (author [@ccd2s](https://github.com/ccd2s))\n- Underlying Engine: <https://github.com/BalconyJH/takumi-py>\n- takumi-py Documentation: <https://github.com/BalconyJH/takumi-py/blob/main/docs/en/index.md>"
+      "hash": "cecb74a2a25816046ee498f9e4ca81d6",
+      "translation": "## Related Links\n\n- PyPI: <https://pypi.org/project/ErisPulse-Takumi/>\n- Repository: <https://github.com/ccd2s/ErisPulse-Takumi> (author [@ccd2s](https://github.com/ccd2s))\n- Underlying Engine: <https://github.com/BalconyJH/takumi-py>\n- takumi-py Documentation: <https://github.com/BalconyJH/takumi-py/blob/main/docs/index.md>\n\n---"
+    },
+    {
+      "hash": "7720e8fab7bd2e1c330405073636764a",
+      "translation": "## Next Steps\n\n- **Send the rendered result**: See [Event System API - Reply Methods](../api-reference/event-system.md) for reply methods such as `event.reply(png, method=\"Image\")`.\n- **Compose more complex outbound messages** (image + text + @): [Message Builder](../advanced/message-builder.md)\n- **Render + scheduled push**: Use [ErisPulse-Cron](cron.md) for periodic data cards"
     }
   ]
 }

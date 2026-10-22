@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "4a394bc5750c7cab730eba17a454af2c",
-  "file_hash": "4a394bc5750c7cab730eba17a454af2c",
-  "translated_at": "2026-10-20T12:07:56.372760",
+  "hash": "bda33cfb5163f844781a8e81c95fad16",
+  "file_hash": "bda33cfb5163f844781a8e81c95fad16",
+  "translated_at": "2026-10-22T14:28:10.807231",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "f30901b5e0eed6e80d136dfc76df17f3",
-      "translation": "# CLI 命令參考\n\nErisPulse 命令行工具（`epsdk`）提供項目管理和套件管理功能。\n\n> **提示**：所有命令均可透過 `epsdk <命令> --help` 查看詳細的參數說明。`epsdk`（不帶命令）的主幫助按類別分組展示：**項目**（init / create / run）、**組件管理**（install / uninstall / upgrade / list / list-remote / types）、**配置與診斷**（config / doctor / i18n）、**其他**（self-update / version）。\n\n---"
+      "hash": "0f9461d42b9df713285d751b28d8deb3",
+      "translation": "# CLI 指令參考\n\n> [!TIP]\n> **什麼時候需要讀這篇**：忘記某個 `epsdk` 指令的參數、想把元件管理寫進腳本，或要控制 run / stop / restart 行為時查閱。日常只用 `init` / `install` / `run` 的話，記住一條就夠：`epsdk <指令> --help` 隨時可查參數說明，不需要通讀本文。\n\n`epsdk` 是 ErisPulse 的命令列工具：初始化專案、安裝 / 升級模組與適配器、互動式設定元件、執行與停止機器人、診斷環境，都在這一條指令下。\n\n> **提示**：`epsdk`（不帶指令）的主說明按類別分組顯示：**專案**（init / create / run）、**元件管理**（install / uninstall / upgrade / list / list-remote / types）、**設定與診斷**（config / doctor / i18n）、**其他**（self-update / version）。\n\n---"
     },
     {
       "hash": "0d4ed74df0f54e266ec04c1ce62da262",
@@ -56,6 +56,10 @@
     {
       "hash": "61c804d1024b9ca4c76a2f12a84507c7",
       "translation": "## 常見用法\n\n### 安裝模組\n\n```bash\n# 安裝單個模組\nepsdk install Weather\n\n# 安裝多個模組\nepsdk install Yunhu Weather\n\n# 升級模組\nepsdk install Weather -U\n```\n\n### 列出組件\n\n```bash\n# 列出所有組件\nepsdk list\n\n# 只列出適配器\nepsdk list -t adapters\n\n# 只列出可升級的組件\nepsdk list -o\n\n# 查看遠端可用組件\nepsdk list-remote\n```\n\n### 卸載組件\n\n```bash\n# 卸載單個組件\nepsdk uninstall Weather\n\n# 卸載多個組件\nepsdk uninstall Yunhu Weather\n```\n\n### 配置組件\n\n```bash\n# 查看配置狀態\nepsdk config --list\n\n# 互動選擇目標配置\nepsdk config\n\n# 配置指定適配器\nepsdk config yunhu\n```\n\n### 升級組件\n\n```bash\n# 升級所有組件\nepsdk upgrade\n\n# 升級指定組件\nepsdk upgrade Weather\n\n# 強制升級\nepsdk upgrade -f\n```\n\n### 運行專案\n\n```bash\n# 普通運行\nepsdk run main.py\n\n# 熱重載模式\nepsdk run main.py --reload\n```\n\n### 切換語言\n\n```bash\n# 互動式選擇語言\nepsdk i18n\n\n# 直接切換到英文\nepsdk i18n en\n\n# 列出支援的語言\nepsdk i18n --list\n```\n\n### 生成類型存根\n\n```bash\n# 生成所有類型存根\nepsdk types\n\n# 僅生成模組類型存根\nepsdk types --modules-only\n```\n\n### 初始化專案\n\n```bash\n# 互動式初始化\nepsdk init\n\n# 快速初始化\nepsdk init -q -n my_bot\n```\n\n### 建立腳手架\n\n```bash\n# 互動式建立（引導選擇類型和填寫資訊）\nepsdk create\n\n# 直接建立 Module 專案\nepsdk create module -n MyModule\n\n# 直接建立 Adapter 專案\nepsdk create adapter -n MyAdapter\n\n# 完整參數\nepsdk create module -n MyModule -d \"模組描述\" -a \"作者\" -e \"mail@example.com\"\n\n# 強制覆蓋已有目錄\nepsdk create module -n MyModule -f\n```"
+    },
+    {
+      "hash": "f53b18036ffa50356aba4f89d1c9e6e4",
+      "translation": "## 下一步\n\n- **元件裝好了要填配置**：用 `epsdk config` 互動式精靈，或看 [配置檔說明](configuration.md) 手動編輯\n- **程式碼寫完想要 IDE 補全**：跑 `epsdk types`，詳見 [型別存根生成](../getting-started/ide-completion.md)\n- **機器人跑不起來**：先 `epsdk doctor` 診斷環境（見[環境診斷](#環境診斷)），要長期部署再看 [部署指南](deployment.md)"
     }
   ]
 }

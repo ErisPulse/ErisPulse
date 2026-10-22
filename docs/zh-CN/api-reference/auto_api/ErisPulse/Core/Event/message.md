@@ -38,7 +38,7 @@ ErisPulse 消息处理模块
 ---
 
 
-##### `on_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user', debounce: str | None = None, debounce_key: str = 'user')`
+##### `on_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user', debounce: str | None = None, debounce_key: str = 'user') -> Callable`
 
 消息事件装饰器
 
@@ -82,7 +82,7 @@ ErisPulse 消息处理模块
 ---
 
 
-##### `on_private_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user', debounce: str | None = None, debounce_key: str = 'user')`
+##### `on_private_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user', debounce: str | None = None, debounce_key: str = 'user') -> Callable`
 
 私聊消息事件装饰器
 
@@ -115,7 +115,7 @@ ErisPulse 消息处理模块
 ---
 
 
-##### `on_group_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user', debounce: str | None = None, debounce_key: str = 'user')`
+##### `on_group_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user', debounce: str | None = None, debounce_key: str = 'user') -> Callable`
 
 群聊消息事件装饰器
 
@@ -148,7 +148,7 @@ ErisPulse 消息处理模块
 ---
 
 
-##### `on_at_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user', debounce: str | None = None, debounce_key: str = 'user')`
+##### `on_at_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user', debounce: str | None = None, debounce_key: str = 'user') -> Callable`
 
 @消息事件装饰器
 

@@ -1,7 +1,10 @@
 # Contributing to ErisPulse
 
+> [!TIP]
+> **When to read this**: If you want to contribute to ErisPulse but are unsure what to do or where to start. Skip this if you are only using the bot and not involved in development.
+
 > **For those contributing for the first time**
-> Open-source projects are never sustained solely by the "big moves" of one or two core developers. More often, it's the accumulation of countless small changes — a typo fix, a translation, a minor bug fix — that pushes ErisPulse forward. So, don't measure whether your contribution is "significant enough." As long as you're willing to submit a PR, you are already part of this journey.
+> Open-source projects are never built solely on the "big moves" of one or two core developers. More often, progress comes from countless small changes—such as a typo fix, a translation, or a minor bug fix—that collectively push ErisPulse forward. So, don't measure the "weight" of your contribution; if you're willing to submit a PR, you're already part of this journey.
 
 ## Ways You Can Contribute
 

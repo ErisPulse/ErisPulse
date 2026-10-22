@@ -30,7 +30,7 @@ ErisPulse 基础发现器
 #### 方法列表
 
 
-##### `metadata`（property）
+##### `metadata -> dict`（property）
 
 模拟 Distribution.metadata，提供 Summary 等字段的查询
 
@@ -53,7 +53,7 @@ ErisPulse 基础发现器
 #### 方法列表
 
 
-##### `load()`
+##### `load() -> Any`
 
 加载 entry-point 引用对象
 

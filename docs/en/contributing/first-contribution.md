@@ -1,8 +1,11 @@
-# First Contribution in Practice
+# Hands-On Guide to Your First Contribution
 
-> It's normal to feel uncertain when submitting your first PR. This tutorial breaks the entire process into several small steps—just follow along. If you encounter any issues, feel free to ask in Issues or Discussions. No one will say anything about your questions being "too basic." What matters most is that you're moving forward.
+> [!TIP]
+> **When to read this**: When you're about to submit your first Pull Request—every step from fork to merge comes with commands you can copy and paste directly. If you already have PR experience and just want to check the repository guidelines, head straight to [CONTRIBUTING.md](../../../CONTRIBUTING.md).
 
-This article uses the example of "adding an i18n translation key" because it involves the smallest change and is the easiest to complete successfully. However, the same process applies to other types of contributions as well.
+> It's perfectly normal to feel a little unsure when submitting your first PR. This tutorial breaks the whole process down into a few small steps—just follow along. If you run into any problems along the way, feel free to ask in Issues or Discussions—no one will call you out for asking something "too basic"; what people really care about is that you're moving forward.
+
+This guide uses "adding an i18n translation key" as its example, since it involves the smallest change and is the easiest to get working end to end. That said, the same workflow applies to other types of contributions as well.
 
 ## Prerequisites
 
@@ -74,17 +77,17 @@ Open the five files under `src/ErisPulse/Core/i18n/locales/` and add one line to
 
 > If this change involves new public methods, remember to add documentation comments. See [Documentation Comment Guidelines](../styleguide/docstring.md) for details.
 
-## 5. Local Validation
+## 5. Local Verification
 
 ```bash
 uv run ruff check .            # Code style check
-uv run basedpyright src/ErisPulse   # Type checking (only needed if you modified the source code) - you might encounter hundreds of warnings (just ignore them... hehe.. hehehe)
+uv run basedpyright src/ErisPulse   # Type check (only needed if you modified source code)
 uv run pytest -m unit -q       # Run tests
 ```
 
-Passing all three checks is sufficient. The `reportAny` / `Unknown*` warnings in type checking are due to "types still being gradually improved" and won't block merging.
+All three passing is enough. The type check may report some warnings like `reportAny` / `Unknown*` (type annotations are still being gradually improved); these **do not block merging**, so there's no need to eliminate them one by one. However, real type errors (e.g., return types not matching annotations, incompatible parameter types, or accessing attributes on potentially `None` values) will be escalated to errors, and CI will block them—those must be fixed.
 
-> If you modify core modules (Bases / runtime / config / loaders), it's recommended to add corresponding test cases for easier future maintenance.
+> If you have modified core modules (Bases / runtime / config / loaders), it's recommended to add a corresponding test case along the way to make future maintenance easier.
 
 ## 6. Update CHANGELOG
 
@@ -147,3 +150,15 @@ Use `git pull upstream Develop/v2`, resolve the conflicts, and then push again.
 
 **Can I directly submit to `main`?**  
 No, all changes must go through `Develop/v2`, and then maintainers will release them to `main` collectively.
+
+## Next Steps
+
+### Want to Stay Involved
+
+- [Contributing to ErisPulse](README.md) - All ways to contribute: documentation / translation / bugs / modules / adapters and more
+
+### Want to Develop Modules or Adapters
+
+- [Module Development Getting Started](../developer-guide/modules/getting-started.md)
+- [Adapter Development Getting Started](../developer-guide/adapters/getting-started.md)
+- [Publishing and Module Store Guide](../developer-guide/publishing.md)

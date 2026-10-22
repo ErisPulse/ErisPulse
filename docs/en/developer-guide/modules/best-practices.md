@@ -1,9 +1,10 @@
-# Best Practices for Module Development
+# Module Development Best Practices
 
 > [!TIP]
-> **When to read this**: It is recommended to read after completing the first module (engineering best practices). Skip if not needed, as it does not affect the use of other features.
+> **When to read this**: Recommended after you finish writing your first module (engineering best practices). Skip it if not needed—doing so will not affect the use of any other features.
 
-This document provides best practice recommendations for ErisPulse module development.
+
+This section summarizes the engineering conventions for module development: asynchronous operations must not block the event loop, configuration should be declarative, and resources hosted on behalf of others must be released upon unloading—following these guidelines helps you avoid the most common pitfalls in module development, such as memory leaks, residual background tasks, and hot-reload failures.
 
 ## Module Design
 
@@ -97,10 +98,10 @@ See [i18n documentation](../../advanced/i18n.md#recommended-usage-declaring-tran
 
 ## Asynchronous Programming
 
-### 1. Use Asynchronous Libraries
+### 1. Using Asynchronous Libraries
 
 ```python
-# Recommended to use SDK built-in HTTP client (asynchronous, automatic logging and statistics)
+# Recommended: use the SDK's built-in HTTP client (async, with automatic logging and statistics)
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -108,7 +109,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# Alternatively, use sdk.client (same effect)
+# Can also be used via sdk.client (equivalent behavior)
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -116,7 +117,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# Do not use aiohttp directly (not easy for framework to manage uniformly)
+# Do not import aiohttp directly (makes it harder for the framework to manage uniformly)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -130,40 +131,44 @@ import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # Blocks the event loop
+        return requests.get(url).json()  # blocks the event loop
 ```
 
-### 2. Correct Asynchronous Operations
+### 2. Proper Async Operations
 
 ```python
-from ErisPulse.Core.Event import Event  # event: Event annotation provides IDE completion
+from ErisPulse.Core.Event import Event  # the event: Event annotation enables IDE autocompletion
 
 async def handle_command(self, event: Event):
-    # Time-consuming operations that need to wait for results: directly await (clear lifecycle)
+    # Time-consuming operations whose results are needed: await directly (clear lifecycle)
     result = await self._long_operation()
 
 async def on_load(self, event: dict):
-    # Background tasks (polling/timing/fire-and-forget): use self.spawn(),
-    # when the module unloads, the framework cancels in on_unload, avoiding holding self causing leaks
+    # Background tasks (polling/scheduled/fire-and-forget): use self.spawn();
+    # when the module is unloaded, the framework cancels them as a fallback after on_unload,
+    # avoiding leaks caused by holding self
     self.spawn(self._poll())
 ```
 
 > [!NOTE]
-> Background tasks are recommended to use `self.spawn()` (ErisPulse **2.8.0+**). **From 2.8.3 onwards**, raw `asyncio.create_task`
-> will also be automatically registered to the module (Task Factory automatically registers, cancels in on_unload, no longer leaks `self` reference);
-> `self.spawn()` remains the recommended approach—supports non-main thread scheduling back to main loop, explicit `owner=` specification.
-> **Before 2.8.3**, raw tasks are not registered, holding `self` reference causing module instance unable to be recycled
-> (hot reload leak), must use `self.spawn()`. See [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
+> For background tasks, prefer `self.spawn()` (ErisPulse **2.8.0+**). From **2.8.3 onward**, bare
+> `asyncio.create_task` calls are also implicitly attributed to the module automatically
+> (auto-registered by the Task Factory, cancelled as a fallback on unload, no longer leaking `self` references);
+> `self.spawn()` remains the recommended approach—it supports dispatching back to the main loop
+> from non-main-loop threads and explicit `owner=` designation.
+> In versions **before 2.8.3**, bare tasks are not attributed and hold `self` references,
+> preventing module instances from being garbage-collected (hot-reload leaks); you must use `self.spawn()`.
+> For details, see [Lifecycle Management](../../advanced/lifecycle.md#background-task-attribution-and-automatic-cancellation).
 
 ### 3. Resource Management
 
 ```python
 async def on_load(self, event):
-    # SDK client automatically manages connection pool, no need to manually create session
+    # The SDK client already manages the connection pool automatically; no need to create sessions manually
     pass
     
 async def on_unload(self, event):
-    # If you need a custom client, remember to clean up resources
+    # If you use a custom client, remember to clean up resources
     pass
 ```
 
@@ -551,6 +556,12 @@ You can add GitHub Stars, Downloads, and other badges as needed. The logo can al
 
 ## Related Documentation
 
+### Back to the Learning Path
+
 - [Module Development Getting Started](getting-started.md) - Create your first module
-- [Module Core Concepts](core-concepts.md) - Understand module architecture
-- [Event Wrapper Class](event-wrapper.md) - Detailed event handling
+- [Module Core Concepts](core-concepts.md) - Understand the module architecture
+
+### Deep Dive by Scenario
+
+- [Event Wrapper Class](event-wrapper.md) - A detailed guide to event handling
+- [Publishing and Module Store Guide](../publishing.md) - Publish your module to PyPI and the Module Store once it's ready

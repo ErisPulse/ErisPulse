@@ -4,7 +4,7 @@
 > **什么时候需要读这篇**：使用懒加载模块或 activate_on 事件驱动激活时。不需要则跳过，不影响其它功能的使用。
 
 
-ErisPulse SDK 提供了强大的懒加载模块系统，允许模块在实际需要时才进行初始化，从而显著提升应用启动速度和内存效率。
+ErisPulse SDK 的懒加载模块系统让模块推迟到**实际被访问时**才初始化——启动阶段只登记占位代理，未被用到的模块不占用启动时间与内存。
 
 ## 概述
 
@@ -282,5 +282,8 @@ flowchart TD
 
 ## 相关文档
 
-- [模块开发指南](../developer-guide/modules/getting-started.md) - 学习开发模块
-- [最佳实践](../developer-guide/modules/best-practices.md) - 了解更多最佳实践
+按下一步意图选择：
+
+- **拿不准选哪种加载策略（立即加载 / 懒加载 / activate_on）** → [模块最佳实践](../developer-guide/modules/best-practices.md)
+- **归眠与卸载时，后台任务、连接等资源的回收链路** → [归属权（owner）系统](ownership.md)
+- **从头开发一个模块** → [模块开发指南](../developer-guide/modules/getting-started.md)

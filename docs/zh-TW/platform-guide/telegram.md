@@ -70,6 +70,7 @@ await telegram.Request(event["request_id"]).Using("main").accept()
 ```
 
 ---
+
 ## 支援的訊息發送類型
 
 所有發送方法均透過鏈式語法實現，例如：

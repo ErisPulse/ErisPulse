@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "fd85cfd326b35f5f0567a22d760f67c1",
-  "file_hash": "fd85cfd326b35f5f0567a22d760f67c1",
-  "translated_at": "2026-10-14T03:11:50.511321",
+  "hash": "fad9fece07d5815501a8f7c903fc0732",
+  "file_hash": "fad9fece07d5815501a8f7c903fc0732",
+  "translated_at": "2026-10-22T09:55:17.903111",
   "target_lang": "ja",
   "chunks": [
     {
@@ -74,8 +74,8 @@
       "translation": "## ライフサイクル統合\n\n```python\nfrom ErisPulse.Core import lifecycle\n\n@lifecycle.on(\"server.start\")\nasync def on_server_start(event):\n    print(f\"サーバーが起動しました: {event['data']['base_url']}\")\n\n@lifecycle.on(\"server.stop\")\nasync def on_server_stop(event):\n    print(\"サーバーが停止しています...\")\n```"
     },
     {
-      "hash": "cb12a4c48b9d354f1e4847810d6e2d09",
-      "translation": "## 最適実践\n\n1. **抽象型を優先使用**：`HttpRequest` / `WebSocketConnection` を `fastapi.Request` / `fastapi.WebSocket` の代わりに使用し、ハードな依存を避ける\n2. **自動注入を活用**：ハンドラの最初の引数を `request` または `req` とし、型注釈なしでも `HttpRequest` を取得できる\n3. **module_name を明示的に渡す**：デコレータの最初の引数はモジュール名でなければならず、省略不可\n4. **ルーティンググループを使用**：同一モジュールの複数のルーティングを `group()` で整理する\n5. **セキュリティの考慮**：機密操作には認証メカニズムとセキュリティヘッダーを実装する\n6. **適切なレート制限**：高頻度のインターフェースにはレート制限を設定する\n7. **ライフサイクルフックを使用**：`@ws.on_disconnect` / `@ws.on_error` を使用して WebSocket の例外を処理し、手動の try/catch を避ける"
+      "hash": "3eac3415ddcbff9ff9cb74a350551851",
+      "translation": "## ベストプラクティス\n\n1. **抽象型を優先使用する**： `fastapi.Request` / `fastapi.WebSocket` の代わりに `HttpRequest` / `WebSocketConnection` を使用し、ハードな依存を避ける\n2. **自動注入の活用**： ハンドラーの最初の引数を `request` または `req` と名付ければ、型アノテーションなしで `HttpRequest` を取得できる\n3. **単一引数形式を優先**： モジュール読み込みコンテキストでは単一引数形式を優先する（自動的に名前空間に帰属）。モジュール間/ユーティリティコードでの登録時は明示的にモジュール名を渡す\n4. **ルートグループの使用**： 同一モジュールの複数ルートは `group()` で整理する\n5. **セキュリティへの配慮**： 機密性の高い操作には認証機構とセキュリティヘッダーを実装する\n6. **適切なレート制限**： 高頻度で呼び出されるインターフェースにはレート制限を設定する\n7. **ライフサイクルフックの使用**： `@ws.on_disconnect` / `@ws.on_error` で WebSocket の例外を処理し、手動の try/catch を避ける"
     },
     {
       "hash": "dc4f0228caff64ab42ab9a73d617da34",

@@ -22,7 +22,14 @@ from rich.panel import Panel
 
 from ...finders import AdapterFinder, ModuleFinder
 from ..console import console
-from ..constants import PYPI_PACKAGE_JSON_URL_TEMPLATE
+from ..constants import (
+    CLI_CHILD_TERMINATE_WAIT_SECS,
+    CLI_PACKAGE_POLL_INTERVAL_SECS,
+    CLI_SELFUPDATE_BOOT_DELAY_SECS,
+    CLI_SELFUPDATE_RUN_TIMEOUT_SECS,
+    CLI_UV_PROBE_TIMEOUT_SECS,
+    PYPI_PACKAGE_JSON_URL_TEMPLATE,
+)
 from ..i18n import i18n
 from .interactive import confirm
 
@@ -547,7 +554,7 @@ class PackageManager:
             result = subprocess.run(
                 [sys.executable, "-m", "uv", "--version"],
                 capture_output=True,
-                timeout=5,
+                timeout=CLI_UV_PROBE_TIMEOUT_SECS,
                 check=False,
             )
             if result.returncode == 0:
@@ -652,14 +659,14 @@ class PackageManager:
 
         try:
             while process.poll() is None:
-                time.sleep(0.5)
+                time.sleep(CLI_PACKAGE_POLL_INTERVAL_SECS)
         except KeyboardInterrupt:
             process.terminate()
             try:
-                process.wait(timeout=5)
+                process.wait(timeout=CLI_CHILD_TERMINATE_WAIT_SECS)
             except subprocess.TimeoutExpired:
                 process.kill()
-                process.wait(timeout=5)
+                process.wait(timeout=CLI_CHILD_TERMINATE_WAIT_SECS)
             console.print(
                 f"\n[warning]{i18n.t('cli.package.operation_interrupted')}[/]"
             )
@@ -1526,7 +1533,7 @@ import sys
 import os
 import traceback
 
-time.sleep(2)
+time.sleep({CLI_SELFUPDATE_BOOT_DELAY_SECS})
 
 base_cmd = {base_cmd!r}
 backend_name = {backend_name!r}
@@ -1544,7 +1551,7 @@ def ensure_pip():
 
 def run(cmd):
     print(T["using_command"].format(command=" ".join(cmd)))
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout={CLI_SELFUPDATE_RUN_TIMEOUT_SECS})
     if r.returncode == 0:
         if r.stdout:
             print(r.stdout)

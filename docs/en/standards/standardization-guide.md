@@ -1,8 +1,9 @@
 # Adapter Standardization Guide (General Overview)
 
-This document is the **general overview** of ErisPulse adapter standardization: it establishes cross-platform standardization principles, standard maps, difference handling models, the process for new capabilities to enter the standard, and provides complete definitions for **interaction component standards** (buttons/keyboard, dropdowns, etc.) and **interaction callback events**. Any adapter developer implementing new features should **prioritize using the standard definitions**, ensuring that module developers can achieve a consistent experience across any platform with the same code—consistent naming, consistent parameters, and consistent returns.
+> [!TIP]
+> **When to read this**: When you are developing a new adapter, or adding new capabilities to a platform and need to decide whether to integrate into the standard or use a `{platform}_` extension, how to name things, or how to handle platform differences, read this first. If you are just looking up specific standards for a particular domain, you can directly jump to §2, the document corresponding to the standard map.
 
----
+This document serves as the **general overview** of ErisPulse adapter standardization: it establishes cross-platform standardization principles, standard maps, difference handling patterns, and the process for new capabilities to enter the standard. It also provides complete definitions for **standardized interactive components** (such as buttons, keyboard inputs, dropdown selections) and **interactive callback events**. Any adapter developer should **prioritize using standard definitions** when implementing new features, so that module developers can achieve a consistent experience on any platform with the same code—consistent naming, parameters, and return values.
 
 ## 1. Standardization Principles
 
@@ -77,105 +78,89 @@ Standard segments/actions (no prefix) — modules can be used across platforms
 | **Normalization** | Platform dirty data → standard format | QQBot @-tagged openid → bot_id (name normalized) |
 | **Dual-track Compatibility** | Accept both standard and platform-native structures | `.Keyboard()` accepts either generic rows or native structure |
 
-## 5. Interaction Component Standards
+## 5. Standard for Interactive Components
 
 ### 5.1 Component List and States
 
 | Component | Standard Segment type | Status | Supported Platforms |
-|-----------|-----------------------|--------|---------------------|
+|---------|----------------------|--------|-------------------|
 | Button/Keyboard (keyboard) | `keyboard` | ✅ Standardized | Telegram / Yunhu / QQBot |
 | Dropdown Selection (select) | `select` | 📋 Reserved (structure in §5.4) | Discord / Telegram(bot) |
 | Card (card) | `card` | 📋 Reserved (see §5.5) | Kook / Yunhu(html) |
 | Modal (modal) | `modal` | 📋 Reserved | Discord |
 
-> Modifier Hierarchy Convention: Send modifiers for generic interaction components are implemented by the **adapter's Send class** (not built into the framework base class), following the naming convention in §5.2, with parameters conforming to the standard structure defined in this document.
+> **Decorator Hierarchy Convention**: The Send decorators for generic interactive components are implemented by the **adapter's Send class** (not built into the framework base class), named according to the conventions in §5.2, and parameters follow the standard structure defined in this document.
 
 ### 5.2 keyboard Button/Inline Keyboard
 
 #### Message Segment Structure (Sending Direction)
 
-```json
-{
-  "type": "keyboard",
-  "data": {
-    "rows": [
-      [
-        {"label": "Option A", "type": "callback", "data": "vote:A"},
-        {"label": "Website",   "type": "link",     "data": "https://example.com"}
-      ]
-    ]
-  }
-}
-```
+The standard `keyboard` segment is a `rows` 2D array, with each button defined as:
+`{"label": "display text", "type": "callback" | "link", "data": "callback data or redirect address"}`,
+with optional platform-specific fields allowed (adapter maps or ignores based on capability).
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `data.rows` | 2D array | Yes | Each sub-array represents a row of buttons |
-| `rows[][].label` | str | Yes | Text displayed on the button |
-| `rows[][].type` | str | Yes | `callback` (click sends back data) / `link` (redirects to URL) |
-| `rows[][].data` | str | Yes | Callback data (for `callback`) or redirect address (for `link`) |
-| `rows[][].*` | Any | No | Platform-specific optional fields (e.g., `web_app`, `menus`), adapter maps or ignores based on capability |
+> **Authoritative Structure Definition**: The complete message segment JSON, field table, and field semantics are defined in [Event Conversion Standard §4.1.1 keyboard Button/Inline Keyboard Segment (Cross-platform Common)](event-conversion.md#411-keyboard-按钮内联键盘段跨平台通用). This section does not repeat them.
 
 #### Platform Mapping Comparison
 
 | Platform | Standard Segment → Native Structure | Native Structure Reference |
-|----------|-------------------------------------|----------------------------|
+|---------|----------------------------------|--------------------------|
 | Telegram | `reply_markup.inline_keyboard`: `[{text, callback_data \| url}]` | callback→`callback_data` (≤64 bytes), link→`url` |
 | Yunhu | `content.buttons`: `[{label, action_type}]` | callback→`action_type:2` + `action` + `value`, link→`action_type:1` + `url` |
 | QQBot | `keyboard.content.rows`: `[{label, type, data}]` | callback→`type:2` + `data`, link→`type:0` + `data` (message must be markdown type) |
 | Kook | Card `action-group` module: `[{type, text, value, click}]` | callback→`click:return` + `value`, link→`click:link` + `url` |
 | Discord | `components[].components`: `[{label, style, custom_id \| url}]` | callback→`style:1` + `custom_id`, link→`style:5` + `url` |
 
-#### Send Modifier (Implemented by Each Adapter's Send Class)
+#### Send Decorators (Implemented by Each Adapter's Send Class)
 
-The generic modifier is implemented by **each adapter in its own Send class** (without modifying the framework base class):
+The generic decorators are implemented by **each adapter in their own Send class** (without modifying the framework base class):
 
-- `.Keyboard(rows)`: Standard naming, accepts the generic rows structure in §5.2, internally generates the standard `keyboard` message segment (or directly converts to the platform-native structure), handled uniformly by `Raw_ob12`
-- `.Buttons(rows)`: Optional semantic alias, behavior is identical
-- **Backward Compatibility**: When platform-native structures are detected, they are directly passed through (no error, no conversion)
-- Platform-native extension segments (e.g., `telegram_inline_keyboard`) continue to be passed through and remain unaffected
+- `.Keyboard(rows)`: Standard naming, accepts the generic rows structure defined in §5.2, internally generates the standard `keyboard` message segment (or directly converts to native platform structure), handled uniformly by `Raw_ob12`.
+- `.Buttons(rows)`: Optional semantic alias, behavior is identical.
+- **Backward Compatibility**: If native platform structures are detected, they are directly passed through (no error, no conversion).
+- Platform-native extended segments (e.g., `telegram_inline_keyboard`) continue to be passed through, unaffected.
 
 ```python
-# Same code, any platform (adapters provide modifier and conversion)
+# Same code, any platform (adapters provide decorators and conversion)
 rows = [[{"label": "Like", "type": "callback", "data": "like:1"},
          {"label": "Homepage", "type": "link", "data": "https://example.com"}]]
 await adapter.Send.To("group", gid).Keyboard(rows).Text("Please select")
 ```
 
-> Adapter Compatibility List: QQBot / Telegram / Yunhu have implemented (modifier + standard segment conversion); new adapters can implement as described in this document (see §7 Checklist).
+> Adapter Compatibility List: QQBot / Telegram / Yunhu have implemented (decorators + standard segment conversion); new adapters should implement according to this document (see §7 Checklist).
 
-### 5.3 Interaction Callback Events (After Button Click)
+### 5.3 Interactive Callback Events (After Button Click)
 
-After the user clicks a button, the event pushed by the platform **must** provide the following standard fields (detail_type may retain platform naming):
+After a user clicks a button, the event pushed by the platform **must** provide the following standard fields (detail_type may retain platform naming):
 
 | Standard Field | Type | Required | Description |
-|----------------|------|----------|-------------|
-| `interaction_id` | str | Yes | ID for this interaction (can be used to respond, e.g., show loading/feedback) |
-| `button_data` | str | Yes | Button callback data (i.e., `data` in §5.2) |
+|---------------|------|----------|-------------|
+| `interaction_id` | str | Yes | ID for this interaction (can be used for response, e.g., spinning/loading indicator) |
+| `button_data` | str | Yes | Button return data (i.e., `data` in §5.2) |
 | `button_label` | str | No | Button display text |
 | `user_id` | str | Yes | Clicker |
-| `message_id` | str | No | Message where the button is located |
+| `message_id` | str | No | Message containing the button |
 | `group_id` / `channel_id` | str | No | Source session |
 
-**detail_type Convention**: Retain existing platform naming (`qqbot_interaction` / `telegram_callback_query` / `yunhu_a2ui_button` etc.), but **standard fields must be complete**—modules can retrieve values cross-platform using `event.get("button_data")`.
+**detail_type Convention**: Retain existing platform naming (`qqbot_interaction` / `telegram_callback_query` / `yunhu_a2ui_button`, etc.), but **standard fields must be complete**—modules can retrieve values cross-platform using `event.get("button_data")`.
 
-**Recommended Event Extension Methods** (provided by adapter EventMixin):
+**Event Extension Method Suggestion** (provided by adapter EventMixin):
 
 ```python
 def get_button_data(self) -> str: ...     # button_data
 def get_interaction_id(self) -> str: ...  # interaction_id
 ```
 
-**Responding to Interaction** (according to platform capability): `adapter.reply_interaction(interaction_id, code=0)` (QQBot) / `answerCallbackQuery` (Telegram), naming follows the platform method family, no mandatory unification.
+**Responding to Interaction** (according to platform capability): `adapter.reply_interaction(interaction_id, code=0)` (QQBot) / `answerCallbackQuery` (Telegram), etc., named following platform method families, no forced unification.
 
 #### Platform Callback Event Mapping
 
 | Platform | Native Event | detail_type | interaction_id Source | button_data Source |
-|----------|--------------|-------------|-----------------------|--------------------|
+|---------|-------------|-------------|----------------------|-------------------|
 | Telegram | `callback_query` | `telegram_callback_query` (notice) | `callback_query.id` | `callback_query.data` |
-| Yunhu | Button click event | `yunhu_button_click` / `yunhu_a2ui_button` | `buttonId` / `sourceComponentId` | `value` / `actionName` |
+| Yunhu | Button Click Event | `yunhu_button_click` / `yunhu_a2ui_button` | `buttonId` / `sourceComponentId` | `value` / `actionName` |
 | QQBot | `INTERACTION_CREATE` | `qqbot_interaction` | `interaction.id` | `data.resolved.button_data` |
-| Kook | Button click event | `kook_button_click` | `msg_id`+`value` | `value` |
+| Kook | Button Click Event | `kook_button_click` | `msg_id`+`value` | `value` |
 | Discord | `INTERACTION_CREATE` | `discord_interaction` | `interaction.id` | `data.custom_id` |
 
 ### 5.4 select Dropdown Selection (Reserved)
@@ -195,15 +180,17 @@ def get_interaction_id(self) -> str: ...  # interaction_id
 }
 ```
 
-Callback events reuse the fields in §5.3 (`button_data` = selected `data`, array for multiple selections). First platforms to implement: Discord (select menu), Telegram (keyboard switching). Platforms not implementing this segment should degrade to a text list in `alt_message`.
+Callback events reuse the fields from §5.3 (`button_data` = selected `data`, array for multiple selections). First platforms to implement: Discord (select menu), Telegram (keyboard switching). Platforms not implementing this segment should degrade to a text list in `alt_message`.
 
-### 5.5 card Card (Reserved, Postponed Standardization)
+### 5.5 card Cards (Reserved, Postponed Standardization)
 
-Card structures vary greatly (Kook full-featured card module vs Yunhu html vs QQ markdown+keyboard), so no strict standard is enforced yet. Suggestions:
+Card structures vary greatly (Kook full-featured card module vs Yunhu html vs QQ markdown+keyboard), so no strong standard is enforced yet. Suggested approaches:
 
 - Express rich text cards using `text` + `keyboard` combinations (sufficient for most scenarios)
-- Continue using `{platform}_card` extension segments (e.g., `kook_card`) for full-featured cards
-- Re-evaluate and upgrade once ≥2 platforms have similar card capabilities
+- Continue using platform-specific extended segments for full-featured cards (e.g., `kook_card`)
+- Re-evaluate and upgrade when ≥2 platforms have similar card capabilities
+
+---
 
 ## 6. Future Candidates (Roadmap)
 

@@ -1,8 +1,11 @@
-# CLI 命令參考
+# CLI 指令參考
 
-ErisPulse 命令行工具（`epsdk`）提供項目管理和套件管理功能。
+> [!TIP]
+> **什麼時候需要讀這篇**：忘記某個 `epsdk` 指令的參數、想把元件管理寫進腳本，或要控制 run / stop / restart 行為時查閱。日常只用 `init` / `install` / `run` 的話，記住一條就夠：`epsdk <指令> --help` 隨時可查參數說明，不需要通讀本文。
 
-> **提示**：所有命令均可透過 `epsdk <命令> --help` 查看詳細的參數說明。`epsdk`（不帶命令）的主幫助按類別分組展示：**項目**（init / create / run）、**組件管理**（install / uninstall / upgrade / list / list-remote / types）、**配置與診斷**（config / doctor / i18n）、**其他**（self-update / version）。
+`epsdk` 是 ErisPulse 的命令列工具：初始化專案、安裝 / 升級模組與適配器、互動式設定元件、執行與停止機器人、診斷環境，都在這一條指令下。
+
+> **提示**：`epsdk`（不帶指令）的主說明按類別分組顯示：**專案**（init / create / run）、**元件管理**（install / uninstall / upgrade / list / list-remote / types）、**設定與診斷**（config / doctor / i18n）、**其他**（self-update / version）。
 
 ---
 
@@ -766,3 +769,9 @@ epsdk create module -n MyModule -d "模組描述" -a "作者" -e "mail@example.c
 # 強制覆蓋已有目錄
 epsdk create module -n MyModule -f
 ```
+
+## 下一步
+
+- **元件裝好了要填配置**：用 `epsdk config` 互動式精靈，或看 [配置檔說明](configuration.md) 手動編輯
+- **程式碼寫完想要 IDE 補全**：跑 `epsdk types`，詳見 [型別存根生成](../getting-started/ide-completion.md)
+- **機器人跑不起來**：先 `epsdk doctor` 診斷環境（見[環境診斷](#環境診斷)），要長期部署再看 [部署指南](deployment.md)

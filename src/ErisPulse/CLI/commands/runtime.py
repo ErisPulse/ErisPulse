@@ -70,7 +70,7 @@ class StopCommand(Command):
     aliases: list = []
     category = "project"
 
-    def add_arguments(self, parser: ArgumentParser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--force",
             action="store_true",
@@ -84,7 +84,7 @@ class StopCommand(Command):
             help=i18n.t("cli.stop.pid_help"),
         )
 
-    def execute(self, args: Namespace):
+    def execute(self, args: Namespace) -> None:
         state = runtime_state.read()
         if args.pid is not None:
             state = {"pid": args.pid, "child_pid": None}
@@ -115,7 +115,7 @@ class RestartCommand(Command):
     aliases: list = []
     category = "project"
 
-    def add_arguments(self, parser: ArgumentParser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--force",
             action="store_true",
@@ -129,7 +129,7 @@ class RestartCommand(Command):
             help=i18n.t("cli.stop.pid_help"),
         )
 
-    def execute(self, args: Namespace):
+    def execute(self, args: Namespace) -> None:
         state = runtime_state.read()
         if args.pid is not None:
             state = {"pid": args.pid, "child_pid": None}

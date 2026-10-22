@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "3d0a29940bc6373fe64b99b5fbf15f84",
-  "file_hash": "3d0a29940bc6373fe64b99b5fbf15f84",
-  "translated_at": "2026-09-07T11:25:28.149176",
+  "hash": "fa76696698bd642a8f58e33d72e11634",
+  "file_hash": "fa76696698bd642a8f58e33d72e11634",
+  "translated_at": "2026-10-22T11:54:21.974120",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "8192180e711fe5d48fdb7d5a1f63d59f",
-      "translation": "# ErisPulse-App\n\n[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) は、ErisDev が直接管理する **公式のマルチプラットフォームクライアント**（Android / Windows / Linux / macOS に対応）で、完全にネイティブのグラフィカル管理インターフェースを提供します。スマートフォンやパソコン上で複数のボットインスタンスを作成、実行、管理でき、ターミナルも不要で、個別の Python 環境のインストールも不要です。\n\n> [!IMPORTANT]\n> ErisPulse-App は**独立してインストールされるクライアントプログラム**であり、`epsdk install` でインストールされるモジュールではありません。Python 実行環境と ErisPulse SDK が内蔵されており、インストール後すぐに使用できます。**スマートフォンでも直接実行可能です**。"
+      "hash": "781f3492c77018399780ea720b854c3a",
+      "translation": "# ErisPulse-App\n\n> [!TIP]\n> **このドキュメントを読むべきとき**：スマートフォンやパソコン上でグラフィカルインターフェースを使ってボットインスタンスの作成・実行・管理を行いたい場合——ターミナルに触れず、Python 環境も別途インストールせずに済むようにしたいときに読んでください。不要な場合はスキップしてください。\n\n[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) は ErisDev が直接メンテナンスしている**公式マルチプラットフォームクライアント**（Android / Windows / Linux / macOS すべてリリース済み）です。\n完全にネイティブなグラフィカル管理インターフェースを提供し、スマートフォンやパソコン上で複数のボットインスタンスを作成・実行・管理できます。\nターミナルも、Python 環境の別途インストールも不要です。\n\n> [!IMPORTANT]\n> ErisPulse-App は**スタンドアロンでインストールするクライアントプログラム**であり、`epsdk install` でインストールするモジュールではありません。\n> Python ランタイムと ErisPulse SDK が内蔵されており、インストールするだけで使用可能——**スマートフォン上でも直接実行できます**。"
     },
     {
       "hash": "cdebbf4787647b0a9a637d3290657ed2",
@@ -30,8 +30,12 @@
       "translation": "## SDKとの関係\n\n- Appに埋め込まれたErisPulse SDK：Android用はUbuntuイメージにパッケージ化され、デスクトップ用はPyPIからインストールされます\n  （歓迎ページでバージョンを選択可能、デフォルトは最新版）\n- App内のインスタンスとコマンドライン`epsdk`で作成されたインスタンスは同等であり、同じモジュール/アダプタを使用できます\n- モジュール開発者は[Dashboardウィンドウ登録API](dashboard.md)を使用してカスタムページを登録できます：\n  ウィンドウは自動的にAppのサイドナビゲーションに表示され（Dashboardと同じグループに分類）、クリックすると対応するページがレンダリングされます\n\n---"
     },
     {
-      "hash": "fb97cf3223f74fee1201ee377b9d9ee5",
-      "translation": "## 関連リンク\n\n- GitHub リポジトリ: [https://github.com/ErisPulse/ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App)\n- ダウンロード: [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases)\n- 議論: [Discussions](https://github.com/ErisPulse/ErisPulse-App/discussions)"
+      "hash": "4ad30f3ded46406de2cfc99f632fdcb9",
+      "translation": "## 関連リンク\n\n- GitHub リポジトリ：[https://github.com/ErisPulse/ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App)\n- ダウンロード：[GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases)\n- ディスカッション：[Discussions](https://github.com/ErisPulse/ErisPulse-App/discussions)\n\n---"
+    },
+    {
+      "hash": "cc1e1d5c942c9732ae108ab164019771",
+      "translation": "## 次のステップ\n\n- **デスクトップ / サーバー上でブラウザを使って管理**：[ErisPulse-Dashboard](dashboard.md)（App と同一の API とウィンドウグループを共有）\n- **最初のプラットフォームに接続**：App 内蔵の管理画面で設定が完了でき、各プラットフォームの詳細は[プラットフォーム特性一覧](../platform-guide/README.md)を参照\n- **コマンドラインに慣れている方へ**：App 内のインスタンスは `epsdk` で作成したものと完全に同等です。[クイックスタート](../quick-start.md)から始めてください"
     }
   ]
 }

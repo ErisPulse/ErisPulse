@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "b3ee22e8ded19c24762af23606818f68",
-  "file_hash": "b3ee22e8ded19c24762af23606818f68",
-  "translated_at": "2026-10-20T12:10:10.501940",
+  "hash": "2f2be13cd34149d4f86312b1bf4e32b3",
+  "file_hash": "2f2be13cd34149d4f86312b1bf4e32b3",
+  "translated_at": "2026-10-22T09:26:30.991136",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "afab549f06f412052ba7f9a4f409402b",
-      "translation": "# Architecture Overview\n\nThis document introduces the technical architecture of the ErisPulse SDK through visual diagrams, helping you quickly understand the framework's design philosophy and module relationships."
+      "hash": "261001f4b4b10071048f497ca771b974",
+      "translation": "# Architecture Overview\n\n> [!TIP]\n> **When to read this**: When you want to understand what the framework is doing behind the scenes—how a message flows, the order in which modules are initialized, what happens during hot reload, or when troubleshooting \"why the framework behaves this way.\" If you only want to write handlers, see [Getting Started with Event Handling](getting-started/event-handling.md); otherwise, skip this.\n\nA message from a user to a bot reply goes through several stages: adapter transformation, middleware, scope filtering, and priority-based scheduling. Modules are not all loaded at startup. This article uses diagrams to clearly illustrate this chain and explain what you can intervene at each stage."
     },
     {
       "hash": "7653e71964450c15eb40515fee6d2bb1",
@@ -40,6 +40,10 @@
     {
       "hash": "1f1ef4dda25843be9b9e1ba3793dbec0",
       "translation": "## Adapter Hot Reload Architecture\n\nAdapter code-level hot reload (2.11) is structurally identical to the module pipeline: `sdk.adapter.reload(adapter_name)` / `sdk.reload_adapter(adapter_name)` executes for both **local plugin** and **PyPI installed package** sources—\n\n```mermaid\nflowchart TD\n    A[\"sdk.adapter.reload(Platform Name)\"] --> B[\"Syntax Pre-check (File-by-file Parsing)<br/>Failure Rejects Reload, Old Adapter Continues Serving\"]\n    B --> C[\"Snapshot: adapterInfo / Instance / Startup State /<br/>Startup Task / Bots / sys.modules Entries\"]\n    C --> D[\"Unload (shutdown means cleanup:<br/>Routing/Event/Command/Task/Connection/bot offline + unregistration)\"]\n    D --> E[\"Clear Cache: __pycache__ Bytecode →<br/>sys.modules Subtree → invalidate_caches<br/>→ Finder Cache → Plugin Path Record\"]\n    E --> F{\"Source?\"}\n    F -->|\"Plugin Directory\"| G[\"Re-scan plugins/ (discover_adapters)\"]\n    F -->|\"PyPI Installed Package\"| H[\"Re-query entry-point and re-import<br/>(top_level cleanup + class __module__ fallback)\"]\n    G --> I[\"Re-register + startup (Original Running State)<br/>Verify Class Identity (Fake Reload Warning)\"]\n    H --> I\n    I --> J[\"adapter.reload Event<br/>identity_changed / version_old→new / was_started\"]\n    G -.->|\"Plugin Deleted\"| K[\"Remove from Load Result\"]\n    H -.->|\"entry-point Disappeared\"| K\n    I -.->|\"Failure\"| L[\"Rollback: Restore sys.modules /<br/>Registration Stub / Instance / Startup State\"]\n```\n\n**Differences from Module Pipeline:**\n\n- Adapter has no lazy loading or dependency cascading: Reload **does not cascade** dependent other adapters (only warnings—dependent parties indirectly consume through the registry, no instance-level cascading semantics)\n- Startup is an asynchronous chain (`startup` dispatched via `_run_adapter`, including dependency skipping and exponential backoff retry): Startup temporarily failing **does not judge reload failure** (code has been replaced), results are broadcast via `adapter.status.change`\n- The instance reuse trap of `register()` (same class object reuses old instance) is covered by the \"pyc cleanup + sys.modules clear + identity verification\" three-piece set\n- Lifecycle events: `adapter.reload` (payload carries `adapter_name` / `success` / `full` / `duration_ms` / `identity_changed` / `version_old→new` / `was_started` / `source`)\n\n> [!NOTE]\n> This feature requires ErisPulse **2.8.0+**."
+    },
+    {
+      "hash": "0346aec04d3ea0da6122e7e1b92f5c17",
+      "translation": "## Next Steps\n\n- **Want to manually control startup/shutdown**: See [Startup Process and Manual Control](advanced/startup.md), which breaks down the initialization process step by step, allowing individual adapters and routers to be started or stopped independently.\n- **Want to understand lazy loading and sleeping**: See [Lazy Loading System](advanced/lazy-loading.md), which includes the complete syntax for lazy activation driven by `activate_on` events.\n- **Want to use lifecycle events effectively when writing modules**: See [Lifecycle Management](advanced/lifecycle.md), which covers all lifecycle events and listener methods."
     }
   ]
 }

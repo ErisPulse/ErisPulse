@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "f99ffa50148bf080d5e0ca2668fbc193",
-  "file_hash": "f99ffa50148bf080d5e0ca2668fbc193",
-  "translated_at": "2026-10-20T12:07:33.230311",
+  "hash": "d50f03ef31446d0126e3b58e2da02939",
+  "file_hash": "d50f03ef31446d0126e3b58e2da02939",
+  "translated_at": "2026-10-22T11:52:33.694574",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "edc5c1ada2d16779d0a6a14624d4b788",
-      "translation": "# Configuration File Guide\n\n> [!NOTE]\n> **L1 Core Reading** — One of the five core documents in the \"Reading Path\" on the homepage, essential for module development.\n\n> This document introduces the framework's configuration file. If a third-party module requires configuration, please refer to the module's documentation.\n\nErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project configurations."
+      "hash": "1274ec84366184e5af7966cd4b124d49",
+      "translation": "# Configuration File Guide\n\n> [!NOTE]\n> **L1 Core Required Reading** — One of the five core documents in the \"Reading Path\" on the homepage, essential for module development.\n\n> This document covers the framework's own configuration file `config/config.toml`: what each configuration section controls, which ones support hot-reloading, and how to override them with environment variables. For configuration options of third-party modules, please refer to each module's own documentation.\n\nErisPulse uses the TOML-format configuration file `config/config.toml` to manage project configuration."
     },
     {
       "hash": "38075a6514106057ad6d3f271a4695be",
@@ -78,12 +78,8 @@
       "translation": "## Unified Event Override Configuration (event.overrides)\n\nUnified override system: Overwrite behavior of any module handler by **event type** without modifying module code. OneBot12 standard types (meta / message / notice / request) and extension types (command) each have their own configurable parameters:\n\n```toml\n[ErisPulse.event.overrides]\n\n# message: Text trigger conditions (AND with code-side conditions)\n[ErisPulse.event.overrides.message.ChatModule]\npattern = \"闲聊*\"\n\n# notice / request / meta: detail_type whitelist (entries support exact / glob / re: regex)\n[ErisPulse.event.overrides.notice.MyModule]\ndetail_types = [\"group_increase\"]\n\n# command (extension type): Overwrite command parameters (user priority; disable via acl deny)\n[ErisPulse.event.overrides.command.MyModule.restart]\nmaster = true               # Overwrite to only allow framework master (false opens developer's master restriction)\nhidden = true               # Hide in help list\naliases = [\"rs\"]            # Effective alias\n\n# acl (command-specific): User allow/deny lists (command names support glob / re: regex, exact keys have priority)\n[ErisPulse.event.overrides.acl.\"roll*\"]\nallow = [\"onebot11:u_vip\"]  # User identifier \"platform:user_id\"\ndeny = [\"onebot11:u_bad\"]\n\n# ACL fallback: Allow (true) or strictly deny (false) commands without ACL configuration\nacl_default_allow = true\n```\n\n| Configuration Item | Type | Description |\n|---------|------|------|\n| `event.overrides.message.<module>` | table | Text condition: `{pattern=\"...\", regex=\"...\"}` |\n| `event.overrides.notice / request.<module>` | table | `{detail_types=[...], pattern, regex}` |\n| `event.overrides.meta.<module>` | table | `{detail_types=[...]}` |\n| `event.overrides.command.<module>` | table | Module-level parameter override (scalar values like `hidden = true`) |\n| `event.overrides.command.<module>.<command>` | table | Command-level override (command-level takes precedence) |\n| `event.overrides.acl.<command name>` | table | User allow/deny lists: `{allow=[...], deny=[...]}` |\n| `event.overrides.acl_default_allow` | boolean | ACL fallback: Allow (true) or strictly deny (false) commands without ACL configuration |\n\n> Runtime API (after `from ErisPulse.Core.Event import overrides`, call sub-namespace methods like `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` or access via `sdk.Event.overrides`) is available at [Event Handling Introduction · Event Override](../getting-started/event-handling.md#event-override-no-modify-module-code-overwrite-behavior-of-any-event-type)."
     },
     {
-      "hash": "535502cb12bad70bfa3f8948dd468108",
-      "translation": "## Command Parsing Configuration (event.command)"
-    },
-    {
-      "hash": "d2dcbae56f1416aaf7447764914e07af",
-      "translation": "## Next Steps\n\n- [CLI Command Reference](cli-reference.md) - Learn all command-line commands\n- [Developer Guide](../developer-guide/) - Learn how to develop custom modules"
+      "hash": "cc23d8d9a83f339705ef373d258404dc",
+      "translation": "## Next Steps\n\n- **Continue with the L1 path**: Next up is [Exception Handling](../advanced/errors.md), where you'll learn to write error handling that won't bring down the framework\n- **Don't want to hand-write TOML**: Use the `epsdk config` interactive wizard to fill in declarative configuration options, see [CLI Command Reference · config](cli-reference.md#config)\n- **Don't want to modify config files during deployment**: Override configuration options with environment variables, combined with the Docker usage described in the [Deployment Guide](deployment.md)"
     }
   ]
 }

@@ -38,7 +38,7 @@ CLI 命令注册器
 ---
 
 
-##### `register(command: Command)`
+##### `register(command: Command) -> None`
 
 注册命令
 

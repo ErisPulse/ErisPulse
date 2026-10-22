@@ -58,6 +58,7 @@ async def handle_button(event):
 > Полное описание стандарта см. в [стандарте компонента взаимодействия между платформами](../standards/standardization-guide.md).
 
 ---
+
 ## Поддерживаемые типы отправки сообщений
 
 Все методы отправки реализованы с помощью цепочечной синтаксис, например:
@@ -338,7 +339,7 @@ await yunhu.Api.call("yunhu.set_member_title", group_id="123", user_id="456", ti
 result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="group", before=10)
 ```
 
-> **Теги и титулы:** Семантика "тегов" в Yunhu эквивалентна OneBot12 "титулу" участника группы. `yunhu.set_member_title` — это синоним семантического названия `yunhu.tag.relate`, оба внутренне отображаются на один и тот же конечный точку. Роль отправителя в событии сообщения отображается из `senderUserLevel` в стандартное поле `role` (`owner/admin/member`). 
+> **Теги и титулы:** Семантика "тегов" в Yunhu эквивалентна OneBot12 "титулу" участника группы. `yunhu.set_member_title` — это синоним семантического названия `yunhu.tag.relate`, оба внутренне отображаются на один и тот же конечный точку. Роль отправителя в событии сообщения отображается из `senderUserLevel` в стандартное поле `role` (`owner/admin/member`).
 
 ## Возвращаемые значения методов отправки
 
@@ -441,7 +442,8 @@ async def handle_yunhu_notice(event):
     затем с помощью detail_type различать типы уведомлений
     event.reply() автоматически отправит ответ через платформу Yunhu
     """
-    # Проверка, является ли это событием нажатия кнопки
+
+# Проверка, является ли это событием нажатия кнопки
     if event.get("detail_type") == "yunhu_button_click":
         user_id = event.get_user_id()
         user_nickname = event.get_user_nickname()
@@ -449,7 +451,7 @@ async def handle_yunhu_notice(event):
 
         print(f"Пользователь {user_nickname}({user_id}) нажал кнопку: {button_value}")
 
-        # Использование event.reply() для автоматической отправки ответа (в зависимости от платформы будет выбран правильный способ отправки)
+# Использование event.reply() для автоматической отправки ответа (в зависимости от платформы будет выбран правильный способ отправки)
         if button_value == "confirm":
             await event.reply("Вы нажали кнопку подтверждения!")
         elif button_value == "cancel":
@@ -457,17 +459,17 @@ async def handle_yunhu_notice(event):
         else:
             await event.reply(f"Получен ваш выбор: {button_value}")
 
-    # Обработка события быстрого меню
+# Обработка события быстрого меню
     elif event.get("detail_type") == "yunhu_shortcut_menu":
         menu_id = event.get("yunhu_menu", {}).get("id", "")
         await event.reply(f"Запущено быстрое меню: {menu_id}")
 
-    # Обработка изменения настроек бота
+# Обработка изменения настроек бота
     elif event.get("detail_type") == "yunhu_bot_setting":
         settings = event.get("yunhu_setting", {})
         await event.reply(f"Настройки обновлены: {settings}")
 
-    # Обработка события кнопки A2UI
+# Обработка события кнопки A2UI
     elif event.get("detail_type") == "yunhu_a2ui_button":
         a2ui = event.get("yunhu_a2ui", {})
         action_name = a2ui.get("action_name", "")

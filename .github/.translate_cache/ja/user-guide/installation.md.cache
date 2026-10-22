@@ -1,17 +1,17 @@
 {
   "version": 2,
-  "hash": "673fd305b4e3c288f5a193fbe9fad8fd",
-  "file_hash": "673fd305b4e3c288f5a193fbe9fad8fd",
-  "translated_at": "2026-10-04T12:09:14.603453",
+  "hash": "5143caf8fc20c04105e8c58ea14360a8",
+  "file_hash": "5143caf8fc20c04105e8c58ea14360a8",
+  "translated_at": "2026-10-22T14:44:44.028525",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "1b3f0ec4bfba51e600c605ef706bd0e7",
-      "translation": "# インストールの参考\n\n> 本文はインストール方法の**完全な参考**（pip / uv / Docker / 問題解決）です。  \n> すぐに起動したい場合は、[5分で始める](../quick-start.md)が最も簡易な手順をカバーしています。"
+      "hash": "d1d33a006931469871192bdf896299c8",
+      "translation": "# インストールリファレンス\n\n> [!TIP]\n> **このページを読むべきタイミング**：インストール方法（pip / uv / Docker / ErisPulse-App クライアント）を選ぶ必要があるときや、インストールに失敗してトラブルシューティングが必要なときに読んでください。とにかく最速で動かしたいだけなら、[5分クイックスタート](../quick-start.md) に最短の手順がまとめられているため、不要であればスキップしてください。"
     },
     {
-      "hash": "0673dda01e551a4430a223406abc48f9",
-      "translation": "## システム要件\n\n- Python 3.10 以上\n- pip または uv（推奨）\n- 十分なディスク容量（少なくとも 100MB）"
+      "hash": "853b0788f299164923cc37e6dccc5237",
+      "translation": "## システム要件\n\n- Python 3.10 – 3.14（3.14t のフリースレッド / GIL なしビルドは実験的なサポートであり、フレームワーク側では実験的な CI スモークテストにより継続的に監視していますが、正式な保証は行いません）\n- pip または uv（推奨）\n- 十分なディスク容量（最低 100MB）"
     },
     {
       "hash": "d3978c861bb20b22c15d0f0cf940e47f",
@@ -26,12 +26,12 @@
       "translation": "## インストールの確認\n\n### インストールの確認\n\n```bash\n# ErisPulse のバージョンを確認\nepsdk --version\n```\n\n### テストの実行\n\n```bash\n# プロジェクトを実行\nepsdk run main.py\n```\n\n上記のような出力が表示された場合、インストールが正常に完了しています。\n\n```\n[INFO] ErisPulse の初期化を開始しています...\n[INFO] アダプタをロードしました: Yunhu\n[INFO] モジュールをロードしました: MyModule\n[INFO] ErisPulse の初期化が完了しました\n```"
     },
     {
-      "hash": "727664c87a983ef55dd04fd57ec28a48",
-      "translation": "## よくある質問\n\n### インストール失敗\n\n1. Python のバージョンが 3.10 以上であるか確認してください（推奨バージョンは 3.10 - 3.14。3.14t free-threaded は GIL なしビルドで、現時点では正式サポート対象外です。フレームワークは実験的な CI スモークテストにより継続的に監視しています）\n2. `pip install` の代わりに `uv pip install ErisPulse` を使用してみてください\n3. 権限エラーが発生する場合は、`pip install --user ErisPulse` を試すか、仮想環境を使用してください\n4. 企業のプロキシ環境で SSL 証明書エラーが発生した場合は、`pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse` を試してください\n5. ネットワーク接続が正常であることを確認し、pip ソースがアクセス可能であることを確認してください\n\n### 設定エラー\n\n1. `config.toml` の構文が正しいか確認してください（TOML 形式はインデントや引用符に敏感です）\n2. 必須の設定項目がすべて記入されているか確認してください\n3. 端末ログを確認し、詳細なエラー情報を取得してください\n4. `epsdk init` を使用して設定ファイルを再生成してください\n\n### モジュールのインストール失敗\n\n1. モジュール名のスペルが正しいか確認してください（大文字・小文字が区別されます）\n2. ネットワーク接続を確認してください\n3. `epsdk list-remote` を使用して利用可能なモジュールリストを確認してください\n4. モジュールが現在使用している SDK バージョンと互換性があるか確認してください\n\n### Windows PowerShell 実行ポリシー\n\nPowerShell で「ファイルをロードできません。このシステムではスクリプトの実行が禁止されています」というメッセージが表示された場合：\n\n```powershell\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser\n```\n\n### Debian/Ubuntu 仮想環境作成失敗\n\nインストールスクリプトで「仮想環境の作成に失敗しました」と表示され、エラーメッセージに `ensurepip is not available` が含まれている場合は、Debian/Ubuntu ではデフォルトで `python3-venv` がインストールされていないため（システム Python の `ensurepip` が無効になっています）です：\n\n```bash\nsudo apt install python3.13-venv   # 実際の Python バージョンに合わせて対応するパッケージをインストール\n# または、汎用的なメタパッケージをインストール：\nsudo apt install python3-venv\n```\n\nインストール後、再度インストールスクリプトを実行してください。新しいインストールスクリプトでは、この問題を検出すると自動的に対応するシステムパッケージのインストールを試みるか、ユーザーに尋ねます。また、`uv venv`（`ensurepip` に依存しない）を使用することもできます。"
+      "hash": "0384f664d06e6bafd6afd8059a20717c",
+      "translation": "## よくある質問\n\n### インストールに失敗する場合\n\n1. Pythonのバージョンがサポート範囲内か確認してください（3.10 ～ 3.14 をサポート。3.14t のフリースレッド / GIL フリービルドは実験的サポートであり、正式な保証はありません）\n2. `pip install` の代わりに `uv pip install ErisPulse` を試してください\n3. 権限エラーが表示される場合は、`pip install --user ErisPulse` を試すか、仮想環境を使用してください\n4. 企業プロキシ環境でSSL証明書エラーが発生する場合は、`pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse` を試してください\n5. ネットワーク接続が正常で、pip のパッケージソースにアクセスできることを確認してください\n\n### 設定エラー\n\n1. `config.toml` の構文が正しいか確認してください（TOML形式はインデントや引用符に敏感です）\n2. 必須の設定項目がすべて記入されていることを確認してください\n3. ターミナルのログで詳細なエラー情報を確認してください\n4. `epsdk init` を使用して設定ファイルを再生成してください\n\n### モジュールのインストールに失敗する場合\n\n1. モジュール名のスペルが正しいか確認してください（大文字・小文字は区別されます）\n2. ネットワーク接続を確認してください\n3. `epsdk list-remote` で利用可能なモジュール一覧を確認してください\n4. モジュールが現在使用中の SDK バージョンと互換性があることを確認してください\n\n### Windows PowerShell の実行ポリシー\n\nPowerShell で「このシステムではスクリプトの実行が無効になっているため、ファイルを読み込むことができません」というようなメッセージが表示される場合：\n\n```powershell\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser\n```\n\n### Debian/Ubuntu での仮想環境作成の失敗\n\nインストールスクリプトが「仮想環境の作成に失敗しました」というメッセージを表示し、エラー情報に `ensurepip is not available` が含まれている場合、Debian/Ubuntu ではデフォルトで `python3-venv` がインストールされていないことが原因です（システムの Python では `ensurepip` が無効化されています）：\n\n```bash\nsudo apt install python3.13-venv   # 実際の Python バージョンに対応するパッケージをインストール\n# または汎用メタパッケージをインストール：\nsudo apt install python3-venv\n```\n\nインストール後、インストールスクリプトを再実行してください。最新のインストールスクリプトは、この問題を検出すると自動的に確認を行い、対応するシステムパッケージのインストールを試みます。また、uv を使用することもできます（`uv venv` は `ensurepip` に依存しません）。"
     },
     {
-      "hash": "f8f13704538cc520848853879c0ee83f",
-      "translation": "## 次のステップ\n\n- [CLI コマンドリファレンス](cli-reference.md) - すべてのコマンドラインコマンドを確認\n- [設定ファイルの説明](configuration.md) - 設定オプションの詳細を確認"
+      "hash": "8a354683d7f9d64162e53caa80283966",
+      "translation": "## 次のステップ\n\n- **インストール後にプロジェクトを初期化し、アダプターをインストールする**：[5分クイックスタート](../quick-start.md) に沿って残りの手順を完了しましょう\n- **日常的にコマンドラインでコンポーネントを管理する**：[CLI コマンドリファレンス](cli-reference.md) を参照\n- **トークンの設定やポートの調整**：[設定ファイルの説明](configuration.md) をご覧ください"
     }
   ]
 }

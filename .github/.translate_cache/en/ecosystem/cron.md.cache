@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "e523160c99fc952497915ef1ab070d45",
-  "file_hash": "e523160c99fc952497915ef1ab070d45",
-  "translated_at": "2026-09-10T11:50:36.546466",
+  "hash": "1b189d17adcd178dbc13cf39b718d5a7",
+  "file_hash": "1b189d17adcd178dbc13cf39b718d5a7",
+  "translated_at": "2026-10-22T10:05:32.567048",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "99cbf532c64c02b92299e7ffb6e2baf0",
-      "translation": "# ErisPulse-Cron\n\n[ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) is the **scheduling module** for ErisPulse, providing a unified API for other modules to handle scheduled tasks: supports one-time, interval-based, and Cron expression-based tasks, callback parameters, and SQLite persistence (tasks are not lost after restart).\n\n> [!IMPORTANT]\n> Cron is **not** a built-in feature of the ErisPulse framework and must be installed separately:\n>\n> ```bash\n> epsdk install Cron\n> ```\n\nAfter installation, access all interfaces via `sdk.Cron`."
+      "hash": "d3fa44d7a51d01bb9fb9f8cedb4e85fe",
+      "translation": "# ErisPulse-Cron\n\n> [!TIP]\n> **When to read this**: Read this when your module needs to trigger logic at a scheduled or delayed time (such as reminders, periodic monitoring, or scheduling with Cron expressions), and you want the tasks to persist after a framework restart. Skip this if you don't need it.\n\n[ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) is the **scheduling module** in the ErisPulse ecosystem, providing a unified API for other modules to schedule timed tasks: it supports one-time timers, interval loops, and Cron expressions, with callback parameters and SQLite persistence (tasks are not lost after a restart).\n\n> [!IMPORTANT]\n> Cron is **not** a built-in feature of the ErisPulse framework and must be installed separately:\n>\n> ```bash\n> epsdk install Cron\n> ```\n\nAfter installation, access all interfaces through `sdk.Cron`.\n\n---"
     },
     {
       "hash": "5ebd1ec7ac212e0bafb877a370d1f90f",
@@ -26,8 +26,12 @@
       "translation": "## Behavior on Module Unload\n\nCron's task data is a **persistent asset**: unloading or disabling the module that created the task does not delete the created task. However, the callback handles registered by the module will be cleaned up. Based on the ownership system's [external cleanup hooks](../advanced/ownership.md#Tool_Module_Guide_Handling_Handles_of_Other_Modules), Cron automatically names callbacks it manages on behalf of other modules. When the corresponding module is unloaded or disabled, its callback handles are automatically discarded, ensuring that the module instance can be properly reclaimed.\n\n- After the task creator module is **reloaded**, re-registering `on_trigger` resumes receiving triggers.\n- Tasks that are no longer needed can be cleaned up using `sdk.Cron.cancel(task_id)` / `delete_task(task_id)`."
     },
     {
-      "hash": "085dbb7129d2816884289cb6ae3cc23e",
-      "translation": "## Related Links\n\n- [GitHub Repository](https://github.com/wsu2059q/ErisPulse-Cron)\n- [PyPI Page](https://pypi.org/project/ErisPulse-Cron/)\n- [Ownership (owner) System](../advanced/ownership.md)"
+      "hash": "be6c0aaa8c8ea00f0f1bb7e2bb7067c3",
+      "translation": "## Related Links\n\n- [GitHub Repository](https://github.com/wsu2059q/ErisPulse-Cron)\n- [PyPI Page](https://pypi.org/project/ErisPulse-Cron/)\n\n---"
+    },
+    {
+      "hash": "2a4b310486131a226cc087ff52a9e057",
+      "translation": "## Next Steps\n\n- **Send message to user after task trigger**: Use [Send DSL](../developer-guide/adapters/send-dsl.md) or `event.reply()` (see [Event System API](../api-reference/event-system.md)) in the callback to deliver the reminder.\n- **Visually manage scheduled tasks**: After installing [ErisPulse-Dashboard](dashboard.md), a Cron auto-registration management window will be available.\n- **Callback cleanup details when module is uninstalled**: [Ownership system](../advanced/ownership.md)"
     }
   ]
 }

@@ -3,8 +3,7 @@
 > [!NOTE]
 > **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
 
-
-Event 模組提供了功能強大的 Event 包裝類，簡化事件處理。
+處理器中的 `event` 參數之所以能直接使用 `.get_text()` / `.reply()` / `.wait_reply()`，靠的就是 Event 包裝類。本篇是它的完整方法清單——寫事件處理器時按需查閱，方法簽名與行為都以這裡為準。
 
 ## 為 event 參數添加類型註解
 
@@ -486,5 +485,12 @@ async def ai_chat(self, prompt: str):
 
 ## 相關文件
 
+### 繼續模組開發路徑
+
 - [模組開發入門](getting-started.md) - 建立第一個模組
-- [最佳實務](best-practices.md) - 開發高品質模組
+- [模組最佳實踐](best-practices.md) - 開發高品質模組
+
+### 深入互動能力
+
+- [Conversation 多輪對話](../../advanced/conversation.md) - `wait_reply` 之上的完整會話引擎（收集、驗證、分支跳轉）
+- [模組排查指南](../module-troubleshooting.md) - 當事件沒有回應時對症排查

@@ -1,5 +1,8 @@
 # 事件系统 API
 
+> [!TIP]
+> **什么时候需要读这篇**：当你需要注册命令、监听消息/通知/请求事件，或使用 `event.reply()` / `wait_reply()` / `confirm()` 等事件交互方法时查阅本文。不需要则跳过。
+
 本文档详细介绍了 ErisPulse 事件系统的 API。
 
 事件系统将平台事件按类型分发到五类处理器：
@@ -288,207 +291,22 @@ async def heartbeat_handler(event):
 
 ## Event 包装类
 
-Event 模块的事件处理器接收一个 Event 包装类实例，它继承自 dict 并提供了便捷方法。
+Event 模块的事件处理器接收一个 Event 包装类实例，它继承自 dict 并提供了便捷方法。完整方法清单、参数签名与行为以 [Event 包装类详解](../developer-guide/modules/event-wrapper.md) 为准，本节仅作速览。
 
-### 核心方法
+### 能力速览
 
-```python
-# 获取事件信息
-event_id = event.get_id()
-event_time = event.get_time()
-event_type = event.get_type()
-detail_type = event.get_detail_type()
-platform = event.get_platform()
+- **事件基础信息**：`get_id()` / `get_time()` / `get_type()` / `get_detail_type()` / `get_platform()`
+- **机器人信息**：`get_self_platform()` / `get_self_user_id()` / `get_self_account_id()` / `get_self_info()`
+- **会话标识**：`get_target_id()`（统一目标 ID，按 `group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id` 取首个非空值）；`get_session_id()`（格式 `{platform}:{detail_type}:{target_id}`，如 `"telegram:private:12345"`）
+- **消息内容与发送者**：`get_message()` / `get_alt_message()` / `get_text()` / `get_user_id()` / `get_sender()` / `get_group_id()` 等
+- **消息类型判断**：`is_message()` / `is_private_message()` / `is_group_message()` / `is_at_message()` / `has_mention()` / `get_mentions()`
+- **回复**：`reply(content, method=..., at_sender=..., quote=..., at_users=..., reply_to=..., at_all=..., via=...)` / `reply_ob12()`；平台能力查询 `supports()` / `available_methods()`；自由发送链 `send_chain()` 见 [SendDSL 详解](../developer-guide/adapters/send-dsl.md#方式二eventsend_chain)
+- **命令信息**：`get_command_name()` / `get_command_args()` / `is_command()` 等
+- **交互会话**：`wait_reply()` / `confirm()` / `choose()` / `collect()` / `wait_for()` / `conversation()`
+- **工具**：`to_dict()`（过滤内部键）/ `get_raw()` / `get_raw_type()`
 
-# 获取机器人信息
-self_platform = event.get_self_platform()
-self_user_id = event.get_self_user_id()
-self_info = event.get_self_info()
-```
-
-### 会话标识
-
-```python
-# 统一目标 ID：群聊返回 group_id，私聊返回 user_id，以此类推
-target_id = event.get_target_id()
-
-# 会话唯一标识，格式: {platform}:{detail_type}:{target_id}
-session_id = event.get_session_id()
-# 示例: "telegram:private:12345"、"qq:group:67890"
-```
-
-`get_target_id()` 按以下顺序返回首个非空值：`group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`。适用于上下文管理、状态存储等需要统一标识会话的场景。
-
-### 消息方法
-
-```python
-# 获取消息内容
-message_segments = event.get_message()
-alt_message = event.get_alt_message()
-text = event.get_text()
-
-# 获取发送者信息
-user_id = event.get_user_id()
-nickname = event.get_user_nickname()
-sender = event.get_sender()
-
-# 获取群组信息
-group_id = event.get_group_id()
-
-# 判断消息类型
-is_msg = event.is_message()
-is_private = event.is_private_message()
-is_group = event.is_group_message()
-
-# @消息相关
-is_at = event.is_at_message()
-has_mention = event.has_mention()
-mentions = event.get_mentions()
-```
-
-### 命令信息
-
-```python
-# 获取命令信息
-cmd_name = event.get_command_name()
-cmd_args = event.get_command_args()
-cmd_raw = event.get_command_raw()
-
-# 判断是否为命令
-is_cmd = event.is_command()
-```
-
-### 回复功能
-
-```python
-# 基本回复
-await event.reply("这是一条消息")
-
-# 指定发送方法
-await event.reply("http://example.com/image.jpg", method="Image")
-
-# 带 @用户 和回复消息
-await event.reply("你好", at_users=["user1"], reply_to="msg_id")
-
-# @全体成员
-await event.reply("公告", at_all=True)
-
-# 使用平台专有修饰方法（via 参数）
-await event.reply("看板内容", method="Board",
-                  via=[("Expire", 3600), ("ForMember", "114514")])
-
-# 获取发送链，自由追加修饰方法和发送方法（适合连续多个修饰 / 动作型方法）
-await event.send_chain().Expire(3600).Board("看板内容")
-await event.send_chain().DismissBoard()
-
-# 使用 OneBot12 消息段回复
-from ErisPulse.Core.Event import MessageBuilder
-msg = MessageBuilder().text("Hello").image("url").build()
-await event.reply_ob12(msg)
-
-# 等待回复
-reply = await event.wait_reply(timeout=30)
-```
-
-### 平台能力查询
-
-```python
-# 检查当前平台是否支持某种发送方法
-if event.supports("Image"):
-    await event.reply(url, method="Image")
-
-# 列出当前平台所有可用发送方法
-methods = event.available_methods()
-# ["Text", "Image", "Voice", ...]
-```
-
-### 回复方法
-
-`reply()` 方法支持通过 `method` 参数指定发送类型，以及两个便捷的布尔参数：
-
-```python
-# 简单文本回复
-await event.reply("你好")
-
-# 回复并@发送者
-await event.reply("你好", at_sender=True)
-
-# 回复并引用当前消息
-await event.reply("收到", quote=True)
-
-# 组合使用
-await event.reply("收到", at_sender=True, quote=True)
-
-# 发送图片（使用 method 参数）
-if event.supports("Image"):
-    await event.reply("http://example.com/img.jpg", method="Image")
-else:
-    await event.reply("[图片] http://example.com/img.jpg")
-```
-
-**参数说明**：
-
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| `content` | str | 发送内容 |
-| `method` | str | 发送方法，默认 "Text"，可选 "Image"/"Voice"/"Video"/"File" 等 |
-| `at_sender` | bool | 是否@发送者（自动提取 user_id） |
-| `quote` | bool | 是否引用回复当前消息（自动提取 message_id） |
-| `at_users` | list[str] | @指定用户列表 |
-| `reply_to` | str | 手动指定回复的消息 ID |
-| `at_all` | bool | 是否@全体成员 |
-
-### 交互方法
-
-```python
-# confirm — 确认对话（返回 True/False/None）
-if await event.confirm("确定要执行此操作吗？"):
-    await event.reply("已确认")
-
-# 使用非 Text 方式发送确认提示
-if await event.confirm("http://example.com/image.jpg", method="Image"):
-    await event.reply("已确认图片提示")
-
-# choose — 选择菜单（返回选项索引或 None）
-choice = await event.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
-
-# options_format="auto"（默认）根据 method 自动选择样式：
-# Markdown→无序列表（- 1.选项），Html→有序列表（<ol>），其他→纯文本列表
-# 文本类方法（Markdown/Html 等）默认合并选项到末尾
-# merge_prompt=True 可强制任意 method 合并；placeholder 可自定义占位符
-choice = await event.choose(
-    "## 请选择\n{options}", ["A", "B"],
-    method="Markdown", merge_prompt=True,
-)
-
-# collect — 表单收集（返回 {key: value} 字典或 None）
-data = await event.collect([
-    {"key": "name", "prompt": "请输入姓名："},
-    {"key": "age", "prompt": "请输入年龄：",
-     "validator": lambda e: e.get_text().isdigit()},
-    {"key": "avatar", "prompt": "请发送头像：", "method": "Image"},
-])
-
-# wait_for — 等待满足条件的任意事件
-evt = await event.wait_for(event_type="notice", condition=lambda e: ..., timeout=120)
-
-# conversation — 多轮对话上下文
-conv = event.conversation(timeout=60)
-await conv.say("欢迎！")
-```
-
-> 完整的交互方法参数说明和更多示例请参考 [Event 包装类详解](../developer-guide/modules/event-wrapper.md) 和 [Conversation 多轮对话](../advanced/conversation.md)。
-
-### 工具方法
-
-```python
-# 转换为字典（过滤以 _ 开头的内部键）
-event_dict = event.to_dict()
-
-# 获取原始数据
-raw = event.get_raw()
-raw_type = event.get_raw_type()
-```
+> 各方法的完整参数说明与示例见 [Event 包装类详解](../developer-guide/modules/event-wrapper.md)；
+> 多轮对话进阶见 [Conversation 多轮对话](../advanced/conversation.md)。
 
 ### 链路控制
 
@@ -728,6 +546,10 @@ async def low_priority_handler(event):
 
 ## 相关文档
 
+**继续查 API**：
 - [核心模块 API](core-modules.md) - 核心模块 API
 - [适配器系统 API](adapter-system.md) - Adapter 管理 API
+
+**从示例学事件处理**：
 - [模块开发指南](../developer-guide/modules/) - 开发自定义模块
+- [事件处理](../getting-started/event-handling.md) - 事件处理入门教程

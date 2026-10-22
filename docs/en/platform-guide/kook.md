@@ -95,6 +95,7 @@ async def handle_button(event):
 ```
 
 ---
+
 ## Supported Message Sending Types
 
 All sending methods use chained syntax, for example:

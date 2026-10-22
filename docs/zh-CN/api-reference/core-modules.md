@@ -1,10 +1,13 @@
 # 核心模块 API
 
+> [!TIP]
+> **什么时候需要读这篇**：当你需要用存储、配置、日志、模块管理、路由、HTTP 客户端等核心能力，记不清具体方法签名时快速查阅本文。不需要则跳过。
+
 本文档提供 ErisPulse 核心模块的 API 快速参考，包含方法签名和简要说明。详细用法和示例请点击各模块的"完整文档"链接。
 
 ## Storage 模块
 
-基于 SQLite 的键值存储系统，支持通用 SQL 链式查询。
+基于可配置后端（SQLite/MySQL/PostgreSQL）的键值存储系统，支持通用 SQL 链式查询，后端通过配置一键切换，详见 [存储后端](../advanced/storage-backends.md)。
 
 ### 基本操作
 
@@ -66,7 +69,7 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ### 异步接口
 
-Storage 和 Config 模块均提供异步方法（前缀 `a`），可在异步处理器中安全调用。同步方法继续保留，无需修改现有代码。
+Storage 和 Config 模块均提供异步方法（前缀 `a`）：**异步为原生主接口，同步方法为兼容层**（内部桥接到后台事件循环执行）。现有同步代码无需修改；新代码在异步处理器中请优先使用异步方法。
 
 ```python
 # 异步存储
@@ -98,13 +101,14 @@ TOML 格式的配置文件管理，支持点号分隔的键路径。
 |------|------|
 | `getConfig(key, default)` | 读取配置，支持点号路径如 `"MyModule.subkey"` |
 | `getAllConfig()` | 全量配置快照（深拷贝，含未落盘的待写值视图） |
-| `adelConfig(key, immediate)` | 异步删除配置键 |
-| `delConfig(key, immediate=False)` | 删除配置键（区别于置空），从文件中移除；触发 `config.set` 事件（`new_value=None`） |
 | `setConfig(key, value, immediate=False)` | 写入配置。`immediate=True` 时立即保存到文件 |
+| `delConfig(key, immediate=False)` | 删除配置键（区别于置空），从文件中移除；触发 `config.set` 事件（`new_value=None`） |
 | `force_save()` | 强制将内存中的配置写入文件 |
 | `reload()` | 从文件重新加载配置 |
 | `agetConfig(key, default)` | 异步读取配置 |
+| `agetAllConfig()` | 异步获取全量配置快照 |
 | `asetConfig(key, value, immediate)` | 异步写入配置 |
+| `adelConfig(key, immediate)` | 异步删除配置键（行为同 `delConfig`） |
 | `aforce_save()` | 异步强制保存 |
 | `areload()` | 异步重新加载 |
 
@@ -119,6 +123,10 @@ sdk.config.delConfig("MyModule.deprecated")  # 删除键（延迟写入）
 
 sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
+
+# 异步接口（异步处理器中优先使用）
+snapshot = await sdk.config.agetAllConfig()
+await sdk.config.adelConfig("MyModule.deprecated")  # 异步删除键
 ```
 
 > `setConfig` 默认采用延迟写入（每 5 秒批量保存），设置 `immediate=True` 可立即持久化到配置文件。配置变更会触发 `config.set` 生命周期事件。
@@ -521,8 +529,11 @@ sdk.transcript.clear(event)
 
 ## 相关文档
 
+**继续查 API**：
 - [事件系统 API](event-system.md) - Event 模块 API
 - [适配器系统 API](adapter-system.md) - Adapter 管理 API
+
+**深入某个子系统的完整文档**：
 - [SQL 查询构建器](../advanced/sql-builder.md) - SQL 链式查询完整文档
 - [路由管理器](../advanced/router.md) - 路由管理器完整文档
 - [网络客户端](../advanced/http-client.md) - 网络客户端完整文档

@@ -1,17 +1,17 @@
 {
   "version": 2,
-  "hash": "48d5a7e2a8fbdac7a601cf9abddfa45c",
-  "file_hash": "48d5a7e2a8fbdac7a601cf9abddfa45c",
-  "translated_at": "2026-09-23T07:37:21.431882",
+  "hash": "c1ce1f46f64d7398ade00f74b38ce476",
+  "file_hash": "c1ce1f46f64d7398ade00f74b38ce476",
+  "translated_at": "2026-10-22T11:00:07.330491",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "50184277316fdd1067cf7466d518c086",
-      "translation": "# 開發者指南\n\n本指南協助您開發自訂模組和適配器，以擴充 ErisPulse 的功能。"
+      "hash": "27bf7be1e26a07d8b4a373978d55c550",
+      "translation": "# 開發者指南\n\n> [!TIP]\n> **什麼時候需要讀這篇**：準備為 ErisPulse 開發擴充——給機器人加功能（模組）或接入新平台（配接器）——時。只想使用機器人則跳過，直接看[快速開始](../quick-start.md)。\n\n從這裡找到你的開發路徑：**模組開發**讓你用命令、訊息處理器擴充機器人功能；**配接器開發**讓機器人連上新的訊息平台。兩條路徑都涵蓋從建立專案到測試、發布的完整流程。"
     },
     {
-      "hash": "320eb128f6e1fc910011103bd09fa231",
-      "translation": "## 內容列表\n\n### 模組開發\n\n1. [模組開發入門](modules/getting-started.md) - 創建第一個模組\n2. [模組核心概念](modules/core-concepts.md) - 模組的核心概念和架構\n3. [Event 包裝類詳解](modules/event-wrapper.md) - Event 物件的完整說明\n4. [模組最佳實踐](modules/best-practices.md) - 開發高品質模組的建議\n\n### 資料模型\n\n1. [資料模型層（ORM）](orm.md) - 聲明式模型、自動建表與增刪改查\n\n### 適配器開發\n\n1. [適配器開發入門](adapters/getting-started.md) - 創建第一個適配器\n2. [適配器核心概念](adapters/core-concepts.md) - 適配器的核心概念\n3. [SendDSL 詳解](adapters/send-dsl.md) - Send 消息發送 DSL 的完整說明\n4. [事件轉換器](adapters/converter.md) - 實現事件轉換器\n5. [適配器最佳實踐](adapters/best-practices.md) - 開發高品質適配器的建議\n\n### 測試與排查\n\n1. [模組測試（ErisPulse-Testing）](testing.md) - TestBot、事件工廠與斷言面\n2. [模組排查指南](module-troubleshooting.md) - 模組未加載 / 事件未響應 / 命令未觸發的定位方法\n\n### 發布指南\n\n- [發布與模組商店指南](publishing.md) - 將你的作品發布到 PyPI 和 ErisPulse 模組商店"
+      "hash": "ae9bc38e5c60617d60eb6edf69075811",
+      "translation": "## 內容列表\n\n### 模組開發\n\n1. [模組開發入門](modules/getting-started.md) - 建立第一個模組\n2. [模組核心概念](modules/core-concepts.md) - 模組的核心概念和架構\n3. [Event 包裝類別詳解](modules/event-wrapper.md) - Event 物件的完整說明\n4. [模組最佳實踐](modules/best-practices.md) - 開發高品質模組的建議\n5. [資料模型層（ORM）](orm.md) - 模組開發進階：宣告式模型、自動建表與增刪改查\n\n### 配接器開發\n\n1. [配接器開發入門](adapters/getting-started.md) - 建立第一個配接器\n2. [配接器核心概念](adapters/core-concepts.md) - 配接器的核心概念\n3. [SendDSL 詳解](adapters/send-dsl.md) - Send 訊息傳送 DSL 的完整說明\n4. [事件轉換器](adapters/converter.md) - 實作事件轉換器\n5. [配接器最佳實踐](adapters/best-practices.md) - 開發高品質配接器的建議\n\n### 測試與排查\n\n1. [模組測試（ErisPulse-Testing）](testing.md) - TestBot、事件工廠與斷言面\n2. [模組排查指南](module-troubleshooting.md) - 模組沒載入 / 事件沒回應 / 命令沒觸發的定位方法\n\n### 發布指南\n\n- [發布與模組商店指南](publishing.md) - 將你的作品發布到 PyPI 和 ErisPulse 模組商店"
     },
     {
       "hash": "a69f12905cab94d5d7c997a0184db083",
@@ -19,11 +19,11 @@
     },
     {
       "hash": "20bd8cf355eeee226e64f56b062017ba",
-      "translation": "## 開發類型選擇\n\n根據你的需求選擇合適的開發類型：\n\n| 開發類型 | 適用場景 | 入門指南 |\n|---------|---------|---------|\n| **模組開發** | 擴展機器人功能、實現業務邏輯、提供命令和訊息處理 | [模組開發入門](modules/getting-started.md) |\n| **適配器開發** | 連接新的訊息平台、實現跨平台通信、提供平台特定功能 | [適配器開發入門](adapters/getting-started.md) |\n\n> 如果你想擴展機器人的功能（如新增命令、處理訊息），選擇**模組開發**。如果你需要讓機器人連接到一個新的平台，選擇**適配器開發**。"
+      "translation": "## 開發類型選擇\n\n根據你的需求選擇合適的開發類型：\n\n| 開發類型 | 適用場景 | 入門指南 |\n|---------|---------|---------|\n| **模組開發** | 擴充機器人功能、實作業務邏輯、提供命令和訊息處理 | [模組開發入門](modules/getting-started.md) |\n| **配接器開發** | 連接新的訊息平台、實作跨平台通訊、提供平台特定功能 | [配接器開發入門](adapters/getting-started.md) |\n\n> 如果你想擴充機器人的功能（如新增命令、處理訊息），選擇**模組開發**。如果你需要讓機器人連接到一個新的平台，選擇**配接器開發**。"
     },
     {
       "hash": "df55c8acea3081490090bb2ad7dfa656",
-      "translation": "## 開發工具\n\n### 項目模板\n\nErisPulse 提供了示例項目作為參考：\n\n- [模組示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模組的完整項目結構\n- [適配器示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 適配器的完整項目結構\n\n### 開發模式\n\n使用熱重載模式進行開發，程式碼修改後自動重新載入：\n\n```bash\nepsdk run main.py --reload\n```\n\n### 調試技巧\n\n在 `config/config.toml` 中啟用 DEBUG 或 TRACE 級別日誌：\n\n```toml\n[ErisPulse.logger]\n# DEBUG: 輸出模組載入、路由註冊等開發調試資訊\n# TRACE: 最低級別，輸出事件分發、儲存寫入、懶加載等框架內部詳細流程\nlevel = \"DEBUG\"\n```"
+      "translation": "## 開發工具\n\n### 專案範本\n\nErisPulse 提供了範例專案作為參考：\n\n- [模組範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模組的完整專案結構\n- [配接器範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 配接器的完整專案結構\n\n### 開發模式\n\n使用熱重載模式進行開發，程式碼修改後自動重新載入：\n\n```bash\nepsdk run main.py --reload\n```\n\n### 偵錯技巧\n\n在 `config/config.toml` 中啟用 DEBUG 或 TRACE 級別日誌：\n\n```toml\n[ErisPulse.logger]\n# DEBUG: 輸出模組載入、路由註冊等開發偵錯資訊\n# TRACE: 最低級別，輸出事件分發、儲存寫入、懶載入等框架內部詳細流程\nlevel = \"DEBUG\"\n```"
     },
     {
       "hash": "786840a3da60cbc55439693abdaaedee",
@@ -31,7 +31,7 @@
     },
     {
       "hash": "2f89acabcdf406828738372366a4a32d",
-      "translation": "## 相關文件\n\n- [標準規範](../standards/) - 確保相容性的技術標準\n- [平台特性指南](../platform-guide/) - 瞭解各平台適配器的特性"
+      "translation": "## 相關文件\n\n- [標準規範](../standards/) - 確保相容性的技術標準\n- [平台特性指南](../platform-guide/) - 了解各平台配接器的特性"
     }
   ]
 }

@@ -1,16 +1,17 @@
 # 模組測試（ErisPulse-Testing）
 
 > [!TIP]
-> **何時需要閱讀本文**：為自己的模組編寫自動化測試時。不需要則跳過，不會影響其他功能的使用。
+> **何時需要閱讀本文**：為自己的模組編寫自動化測試時。若不需要則可跳過，不會影響其他功能的使用。
 
-[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) 是官方測試工具包（RFC EPRFC-2026-001 方向三）：
-提供 `TestBot`、測試事件工廠、出站訊息捕獲與斷言介面，讓模組測試像寫普通 pytest 一樣簡單。
+
+[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) 是官方測試工具包：
+提供 `TestBot`、測試事件工廠、出站訊息捕獲與斷言介面，讓模組測試像撰寫一般 pytest 一樣簡單。
 
 ```bash
 pip install ErisPulse-Testing
 ```
 
-> 單向依賴框架的開發期工具，執行時零介入。真連適配器平台的冒煙測試請使用框架倉庫的 `tests/devs/test_adapter.py`。
+> 單向依賴框架的開發期工具，運行時零介入。若需進行真正連接適配器平台的冒煙測試，請使用框架倉庫的 `tests/devs/test_adapter.py`。
 
 ## 快速開始
 
@@ -152,3 +153,14 @@ trace.assert_no_match()         # 斷言未命中命令
 
 生產環境同樣可用框架內建的 `ErisPulse.Core.Event.trace`（`start_dispatch_trace()` /
 `format_dispatch_trace()`）採集與渲染決策鏈。
+
+## 下一步
+
+### 測試中發現「指令未觸發」類問題
+
+- [模組排查指南](module-troubleshooting.md) — 從測試復現走向生產環境排查，對照症狀逐一排查
+
+### 測試通過、準備分發
+
+- [模組核心概念](modules/core-concepts.md) — 回顧模組架構與配置宣告的細節
+- [發布與模組商店指南](publishing.md) — 發布到 PyPI 與模組商店的完整流程

@@ -1,9 +1,12 @@
 # ErisPulse-Takumi
 
-[ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) is a **third-party image rendering module** maintained by ccd2s, based on [takumi-py](https://github.com/BalconyJH/takumi-py), allowing the Bot to render HTML, node trees, Jinja templates, SVG, and animations into images. The module **includes built-in Chinese and English fonts** (Noto Sans SC / Roboto / Source Code Pro), requiring no additional configuration.
+> [!TIP]
+> **When to read this**: Read this when you need to render HTML / node trees / Jinja templates into images for sending to chat platforms (e.g., statistics cards, leaderboards,图文长文). Skip if not needed.
+
+[ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) is a **third-party image rendering module** maintained by ccd2s, based on [takumi-py](https://github.com/BalconyJH/takumi-py), allowing Bots to render HTML, node trees, Jinja templates, SVG, and animations into images. The module **includes built-in Chinese and English fonts** (Noto Sans SC / Roboto / Source Code Pro), requiring no additional configuration.
 
 > [!IMPORTANT]
-> Takumi is **not** a built-in feature of the ErisPulse framework and needs to be installed separately:
+> Takumi is **not** a built-in feature of the ErisPulse framework and must be installed separately:
 >
 > ```bash
 > epsdk install Takumi
@@ -12,9 +15,9 @@
 Applicable scenarios:
 
 - Rendering data/statistics into card images
-- Rendering Markdown / long text into well-formatted images, avoiding platform style differences
-- Generating SVG / animations to achieve dynamic visual effects
-- Mixed Chinese and English text and image (built-in fonts ready to use out of the box)
+- Rendering Markdown / long text into well-formatted images to avoid platform style differences
+- Generating SVG / animations for dynamic visual effects
+- Mixed Chinese and English text images (built-in fonts work out-of-the-box)
 
 ## Installation and Activation
 
@@ -355,4 +358,12 @@ enabled = true
 - PyPI: <https://pypi.org/project/ErisPulse-Takumi/>
 - Repository: <https://github.com/ccd2s/ErisPulse-Takumi> (author [@ccd2s](https://github.com/ccd2s))
 - Underlying Engine: <https://github.com/BalconyJH/takumi-py>
-- takumi-py Documentation: <https://github.com/BalconyJH/takumi-py/blob/main/docs/en/index.md>
+- takumi-py Documentation: <https://github.com/BalconyJH/takumi-py/blob/main/docs/index.md>
+
+---
+
+## Next Steps
+
+- **Send the rendered result**: See [Event System API - Reply Methods](../api-reference/event-system.md) for reply methods such as `event.reply(png, method="Image")`.
+- **Compose more complex outbound messages** (image + text + @): [Message Builder](../advanced/message-builder.md)
+- **Render + scheduled push**: Use [ErisPulse-Cron](cron.md) for periodic data cards

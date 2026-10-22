@@ -1,6 +1,9 @@
 # 架构概览
 
-本文档通过可视化图表介绍 ErisPulse SDK 的技术架构，帮助你快速理解框架的设计思想和模块关系。
+> [!TIP]
+> **什么时候需要读这篇**：想搞懂框架在背后做了什么——一条消息如何流转、模块按什么顺序初始化、热重载时发生了什么，或排查"框架为什么这样表现"时读。只想写处理器的话，看 [事件处理入门](getting-started/event-handling.md) 就够；不需要则跳过。
+
+一条消息从用户发出到机器人回复，要经过适配器转换、中间件、作用域过滤、优先级调度好几道环节；模块也不是启动时就全部加载。这篇用图表把这条链路画清楚，并说明每个环节你能干预什么。
 
 ## SDK 核心架构
 
@@ -348,3 +351,9 @@ flowchart TD
 - 启动是异步链（`startup` 经 `_run_adapter` 派发，含依赖跳过与指数退避重试）：启动暂时失败**不判重载失败**（代码已换新），结果经 `adapter.status.change` 播报
 - `register()` 的实例重用陷阱（类同对象则旧实例被复用）由「pyc 清理 + sys.modules 清除 + 身份核对」三件套兜底
 - 生命周期事件：`adapter.reload`（payload 携带 `adapter_name` / `success` / `full` / `duration_ms` / `identity_changed` / `version_old→new` / `was_started` / `source`）
+
+## 下一步
+
+- **想手动控制启动 / 关闭**：看 [启动流程与手动控制](advanced/startup.md)，初始化链路逐环节拆解、可单独启停适配器与路由
+- **想弄清懒加载与休眠**：看 [懒加载系统](advanced/lazy-loading.md)，含 `activate_on` 事件驱动懒激活的完整语法
+- **写模块要用好生命周期**：看 [生命周期管理](advanced/lifecycle.md)，全部生命周期事件与监听方法

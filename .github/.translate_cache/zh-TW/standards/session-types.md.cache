@@ -1,17 +1,17 @@
 {
   "version": 2,
-  "hash": "79be5b890c4f83fcf11676e876df99c7",
-  "file_hash": "79be5b890c4f83fcf11676e876df99c7",
-  "translated_at": "2026-09-07T12:08:56.124300",
+  "hash": "ed1b83b05f85521ac22053467b226c86",
+  "file_hash": "ed1b83b05f85521ac22053467b226c86",
+  "translated_at": "2026-10-22T12:57:10.087249",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "dd52388159675b5f7ecdfbad43d7fccf",
-      "translation": "# ErisPulse 會話類型標準\n\n本文檔定義了 ErisPulse 支援的會話類型標準，包括接收事件類型和發送目標類型。"
+      "hash": "4e4f352b67b8a1f0c8a390591e905230",
+      "translation": "# ErisPulse 會話類型標準\n\n> [!TIP]\n> **何時需要閱讀本文**：當你在適配器中將平台原生會話映射到標準類型（private/group/channel/guild/thread），或在模組中不確定 `Send.To()` 應傳入什麼目標類型、想釐清 `event.reply()` 的自動轉換時對照本文。不需要則跳過。\n\n本文檔定義了 ErisPulse 支援的會話類型標準，包括接收事件類型和發送目標類型。"
     },
     {
-      "hash": "c66c5ea7141edd6d99fa876b9376f28c",
-      "translation": "## 1. 核心概念\n\n### 1.1 接收類型 && 發送類型\n\nErisPulse 區分兩種會話類型：\n\n- **接收類型（Receive Type）**：用於接收的事件的 `detail_type` 欄位\n- **發送類型（Send Type）**：用於發送訊息時 `Send.To()` 方法的目標類型\n\n### 1.2 類型映射關係\n\n```\n接收類型 (detail_type)     發送類型 (Send.To)\n─────────────────        ────────────────\nprivate                 →        user\ngroup                   →        group\nchannel                 →        channel\nguild                   →        guild\nthread                  →        thread\nuser                    →        user\n```\n\n**關鍵點**：\n- `private` 是接收時的類型，發送時必須使用 `user`\n- `group`、`channel`、`guild`、`thread` 在接收和發送時類型相同\n- 系統會自動進行類型轉換，無需手動處理（代表著你可以直接使用獲得的接收類型進行發送），但實際上，你無需考慮這些，Event 的包裝類的存在，你可以直接使用 event.reply() 方法，而無需考慮類型轉換"
+      "hash": "b234f78d19e2f7b363bf0fdb505851b7",
+      "translation": "## 1. 核心概念\n\n### 1.1 接收類型 && 發送類型\n\nErisPulse 區分兩種會話類型：\n\n- **接收類型（Receive Type）**：用於接收的事件的 `detail_type` 欄位\n- **發送類型（Send Type）**：用於發送訊息時 `Send.To()` 方法的目標類型\n\n### 1.2 類型對應關係\n\n```\n接收類型 (detail_type)     發送類型 (Send.To)\n─────────────────        ────────────────\nprivate                 →        user\ngroup                   →        group\nchannel                 →        channel\nguild                   →        guild\nthread                  →        thread\nuser                    →        user\n```\n\n**關鍵點**：\n- `private` 是接收時的類型，發送時的標準類型是 `user`\n- `group`、`channel`、`guild`、`thread` 在接收和發送時類型相同\n- **推薦路徑**：直接使用 `event.reply()`——自動完成類型轉換與目標推斷，無需手動處理（`private` → `user` 的自動轉換即在此發生）\n- **手動發送時**：請直接傳發送類型（如 `Send.To(\"user\", ...)`）；手動 `Send.To(\"private\", ...)` 傳接收類型雖也能被自動轉換，但不推薦（見 §6.1）"
     },
     {
       "hash": "4eb0f514717513a28e6c8762528d86e6",
@@ -30,8 +30,8 @@
       "translation": "## 5. 自動類型推斷\n\n當事件沒有明確的 `detail_type` 欄位時，系統會根據存在的 ID 欄位自動推斷類型：\n\n> [!NOTE]  \n> **2.7.0+ 行為變更**：`detail_type` 只有在是**已知會話類型**（標準或自定義）時才直接採用。notice/request 事件的 `detail_type`（如 `group_member_increase`、`friend_increase`）是**語義子類型**而非會話類型，會轉而根據 ID 欄位推斷正確的會話類型。\n\n### 5.1 推斷優先級\n\n```\n優先級（從高到低）：\n1. group_id     → group\n2. channel_id   → channel\n3. guild_id     → guild\n4. thread_id    → thread\n5. user_id      → private\n```\n\n### 5.2 使用範例\n\n```python\n# 事件只有 group_id\nevent = {\"group_id\": \"123\", \"user_id\": \"456\"}\nreceive_type = infer_receive_type(event)\n# 返回: \"group\"（優先使用 group_id）\n\n# 事件只有 user_id\nevent = {\"user_id\": \"123\"}\nreceive_type = infer_receive_type(event)\n# 返回: \"private\"\n\n# notice 事件的 detail_type 是語義子類型，2.7.0+ 會從 ID 欄位推斷\nevent = {\"type\": \"notice\", \"detail_type\": \"group_member_increase\", \"group_id\": \"123\"}\nreceive_type = infer_receive_type(event)\n# 返回: \"group\"（而非 \"group_member_increase\"）\n```"
     },
     {
-      "hash": "1980c78f1f20c234b70e0faace1b76e4",
-      "translation": "## 6. API 使用示例\n\n### 6.1 發送訊息\n\n```python\nfrom ErisPulse import adapter\n\n# 發送給使用者\nawait adapter.myplatform.Send.To(\"user\", \"123\").Text(\"Hello\")\n\n# 發送給群組\nawait adapter.myplatform.Send.To(\"group\", \"456\").Text(\"Hello\")\n\n# 自動轉換 private → user（不推薦，可能會有相容性問題）\nawait adapter.myplatform.Send.To(\"private\", \"789\").Text(\"Hello\")\n# 內部自動轉換為: Send.To(\"user\", \"789\") # 直接使用user作為會話類型是更優的選擇\n```\n\n### 6.2 事件回覆\n\n```python\nfrom ErisPulse.Core.Event import Event\n\n# Event.reply() 自動處理類型轉換\nawait event.reply(\"回覆內容\")\n# 內部自動使用正確的發送類型\n```\n\n### 6.3 命令處理\n\n```python\nfrom ErisPulse.Core.Event import command\n\n@command(name=\"test\")\nasync def handle_test(event):\n    # 系統自動處理會話類型\n    # 無需手動判斷 group_id 還是 user_id\n    await event.reply(\"命令執行成功\")\n```"
+      "hash": "3c8a1e1777a03ceccbd2c061e18c63dc",
+      "translation": "## 6. API 使用示例\n\n### 6.1 發送訊息\n\n```python\nfrom ErisPulse import adapter\n\n# 發送給使用者\nawait adapter.myplatform.Send.To(\"user\", \"123\").Text(\"Hello\")\n\n# 發送給群組\nawait adapter.myplatform.Send.To(\"group\", \"456\").Text(\"Hello\")\n\n# 自動轉換 private → user：手動傳遞接收類型屬不推薦寫法（可能有相容性問題）\nawait adapter.myplatform.Send.To(\"private\", \"789\").Text(\"Hello\")\n# 內部自動轉換為: Send.To(\"user\", \"789\")\n# 推薦做法：手動發送時直接用發送類型 user，或用 event.reply() 自動完成轉換（見 6.2）\n```\n\n### 6.2 事件回覆\n\n```python\nfrom ErisPulse.Core.Event import Event\n\n# Event.reply() 自動處理類型轉換（推薦路徑）\nawait event.reply(\"回覆內容\")\n# 內部自動使用正確的發送類型（private → user 等轉換在此自動完成）\n```\n\n### 6.3 命令處理\n\n```python\nfrom ErisPulse.Core.Event import command\n\n@command(name=\"test\")\nasync def handle_test(event):\n    # 系統自動處理會話類型\n    # 無需手動判斷 group_id 還是 user_id\n    await event.reply(\"命令執行成功\")\n```"
     },
     {
       "hash": "2b28514869a631272854572571730c8a",
@@ -50,8 +50,8 @@
       "translation": "## 10. 常見問題\n\n### Q1: 為什麼發送時 private 要轉換為 user？\n\nA: 這是 OneBot12 標準的要求。`private` 是接收時的概念，發送時使用 `user` 更符合語義。\n\n### Q2: 如何支援新的會話類型？\n\nA: 透過 `register_custom_type()` 註冊自定義類型，或直接使用標準類型中的 `channel`、`guild` 等。\n\n### Q3: 事件沒有 detail_type 怎麼辦？\n\nA: 系統會根據存在的 ID 欄位自動推斷。優先級為：group > channel > guild > thread > user。\n\n### Q4: 適配器如何映射 Telegram supergroup？\n\nA: 在適配器的轉換邏輯中，將 `supergroup` 映射為標準的 `group` 類型。\n\n### Q5: 郵箱等特殊平台如何處理？\n\nA: 對於不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platform}_raw_type` 保留原始數據，適配器自行處理。"
     },
     {
-      "hash": "14c712cf83ae9e20d888899e22ee4afe",
-      "translation": "## 11. 相關文件\n\n- [事件轉換標準](event-conversion.md) - 完整的事件轉換規範\n- [發送方法規範](send-method-spec.md) - Send 類的方法命名和參數規範\n- [適配器開發指南](../developer-guide/adapters/) - 適配器開發完整指南"
+      "hash": "35fc0fab015e6ef26f46cddcd72e1262",
+      "translation": "## 11. 相關文件\n\n**適配器側（映射與轉換）**：\n- [事件轉換標準](event-conversion.md) - 完整的事件轉換規範\n- [發送方法規範](send-method-spec.md) - Send 類的方法命名和參數規範\n- [適配器開發指南](../developer-guide/adapters/) - 適配器開發完整指南\n\n**模組側（不想手動處理類型轉換）**：\n- 使用 `event.reply()` 即可自動完成類型轉換與目標推斷，詳見 [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md)"
     }
   ]
 }

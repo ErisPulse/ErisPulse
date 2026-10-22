@@ -29,6 +29,7 @@ This adapter has completed the alignment with the v5 paradigm (incremental upgra
 Existing capabilities (supported since 4.2.0): multi-account, standard action mapping for Api DSL (get_self_info→get_login_info, etc.), Request DSL (friend/group request approval: event.approve() / event.reject()), EventMixin, i18n.
 
 ---
+
 ## Standard API Actions (Api DSL)
 
 The OneBot12 backend natively supports all OB12 standard action names. The Api DSL defaults to directly delegating call_api for transparent transmission (no mapping required):
@@ -81,6 +82,7 @@ await ob12.Request("request_flag").Using("main").accept()
 ```
 
 ---
+
 ## Supported Message Sending Types
 
 All sending methods are implemented through chain syntax, for example:

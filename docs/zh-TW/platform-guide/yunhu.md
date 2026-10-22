@@ -58,6 +58,7 @@ async def handle_button(event):
 > 完整標準說明見 [跨平台互動元件標準](../standards/standardization-guide.md)。
 
 ---
+
 ## 支援的訊息發送類型
 
 所有發送方法均透過鏈式語法實現，例如：
@@ -441,7 +442,8 @@ async def handle_yunhu_notice(event):
     然後透過 detail_type 區分不同類型的通知
     event.reply() 會自動透過雲湖平台回覆
     """
-    # 檢查是否是按鈕點擊事件
+
+# 檢查是否是按鈕點擊事件
     if event.get("detail_type") == "yunhu_button_click":
         user_id = event.get_user_id()
         user_nickname = event.get_user_nickname()
@@ -449,7 +451,7 @@ async def handle_yunhu_notice(event):
 
         print(f"使用者 {user_nickname}({user_id}) 點擊了按鈕: {button_value}")
 
-        # 使用 event.reply() 自動回覆（會根據平台自動選擇正確的發送方式）
+# 使用 event.reply() 自動回覆（會根據平台自動選擇正確的發送方式）
         if button_value == "confirm":
             await event.reply("你點擊了確認按鈕！")
         elif button_value == "cancel":
@@ -457,17 +459,17 @@ async def handle_yunhu_notice(event):
         else:
             await event.reply(f"收到你的選擇: {button_value}")
 
-    # 處理快捷選單事件
+# 處理快捷選單事件
     elif event.get("detail_type") == "yunhu_shortcut_menu":
         menu_id = event.get("yunhu_menu", {}).get("id", "")
         await event.reply(f"觸發了快捷選單: {menu_id}")
 
-    # 處理機器人設定變更
+# 處理機器人設定變更
     elif event.get("detail_type") == "yunhu_bot_setting":
         settings = event.get("yunhu_setting", {})
         await event.reply(f"設定已更新: {settings}")
 
-    # 處理A2UI按鈕事件
+# 處理A2UI按鈕事件
     elif event.get("detail_type") == "yunhu_a2ui_button":
         a2ui = event.get("yunhu_a2ui", {})
         action_name = a2ui.get("action_name", "")

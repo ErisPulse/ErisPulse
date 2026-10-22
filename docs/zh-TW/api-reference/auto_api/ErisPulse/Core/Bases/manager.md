@@ -33,9 +33,48 @@ ErisPulse 管理器基类
 > - is_enabled(): 检查是否启用
 > - is_running(): 检查是否运行
 > - list_*(): 列出相关项
+> - sdk_ref(): 运行时 SDK 引用解析
 
 
 #### 方法列表
+
+
+##### `sdk_ref() -> Any`
+
+解析运行时 SDK 引用
+
+显式注入的 ``_sdk`` 优先（测试 / 高级用法直赋）；缺失时懒导入根包
+单例——管理器不再依赖外部接线调用（旧 ``set_sdk_ref`` 从未被生产
+链路调用，导致热重载 / 依赖通知在真实部署中静默失效）。
+
+**返回值** (`SDK`): 实例
+
+---
+
+
+##### `_warn_deprecated_kwarg(owner: str, old: str, new: str) -> None`（staticmethod）
+
+**内部方法**
+当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
+
+- **owner**: 所属方法名（如 "ModuleManager.get"）
+- **old**: 已弃用的旧参数名
+- **new**: 推荐使用的新参数名
+
+---
+
+
+##### `_shutdown_timeout() -> float`（staticmethod）
+
+**内部方法**
+读取组件优雅收尾（on_unload / shutdown）的超时（秒）
+
+复用 ``ErisPulse.framework.uninit_timeout`` 配置（反初始化流程的统一
+超时预算，整体仍有 uninit 的 wait_for 兜底）；未配置或非法时回退常量默认值。
+
+**返回值**: 超时秒数（>0）
+
+---
 
 
 ##### `register(name: str, class_type: type, info: dict | None = None) -> bool`

@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "44d66e906990e21d6989c7efc7ca0f39",
-  "file_hash": "44d66e906990e21d6989c7efc7ca0f39",
-  "translated_at": "2026-10-14T03:14:01.555006",
+  "hash": "7e0ae7dcbf79fb76c3a12ca789ca224e",
+  "file_hash": "7e0ae7dcbf79fb76c3a12ca789ca224e",
+  "translated_at": "2026-10-22T11:38:23.131072",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "05bfb1629104093d05a47c1b0d431596",
-      "translation": "# SendDSL の詳細\n\n> [!TIP]  \n> **この記事を読むべきタイミング**：アダプタ開発経路内では必須（送信 DSL）。不要な場合は飛ばしても、他の機能の使用に影響はありません。\n\nSendDSL は ErisPulse アダプタが提供する、メソッドチェーン形式のメッセージ送信インターフェースです。"
+      "hash": "0a3c5eef8aa05f7e017c5fc9b875d7df",
+      "translation": "# SendDSL の詳細解説\n\n> [!TIP]\n> **この記事を読む必要があるのはいつか**：アダプター開発の経路において必須（送信 DSL）。必要ない場合は飛ばしても、他の機能の使用に影響はありません。\n\nSendDSL は、メッセージ送信を一連のチェーンとして指定する方法を提供します：送信先の指定、@ / 返信、リトライ / タイムアウト / 遅延、一括送信。一行のチェーン呼び出しで全てを完了できます。本記事では、送信メソッド、修飾メソッド、送信ルール、および送信チェーンの内部メカニズムについて説明します。"
     },
     {
       "hash": "f2c153ebdef11bbf3d2ca6f9bec5fcac",
@@ -62,8 +62,8 @@
       "translation": "## 完整例\n\n### 基本使用\n\n```python\nfrom ErisPulse.Core import adapter\n\nmy_adapter = adapter.get(\"myplatform\")\n\n# テキストの送信\nawait my_adapter.Send.To(\"user\", \"123\").Text(\"Hello World!\")\n\n# 画像の送信\nawait my_adapter.Send.To(\"group\", \"456\").Image(\"https://example.com/image.jpg\")\n\n# ファイルの送信\nwith open(\"document.pdf\", \"rb\") as f:\n    await my_adapter.Send.To(\"user\", \"123\").File(f.read())\n```\n\n### チェーン呼び出し\n\n```python\n# @ユーザー + リプライ\nawait my_adapter.Send.To(\"group\", \"456\").At(\"789\").Reply(\"msg123\").Text(\"リプライ@のメッセージ\")\n\n# @全員 + 複数の修飾\nawait my_adapter.Send.Using(\"bot1\").To(\"group\", \"456\").AtAll().Text(\"お知らせメッセージ\")\n```\n\n### 原始メッセージとメッセージ構築\n\n`Raw_ob12` は逆変換の中心となるエントリポイントです（OB12 メッセージセグメント → プラットフォーム API 呼び出し）。`MessageBuilder` はそれに伴うチェーン式メッセージセグメント構築ツールです。\n\n> 完全な `Raw_ob12` 実装の規格、`MessageBuilder` の使い方およびコード例については、以下のドキュメントを参照してください：\n> - [送信メソッド規格 §6 逆変換規格 (OneBot12 → プラットフォーム)](../../standards/send-method-spec.md#6-逆変換規格onebot12--プラットフォーム)\n> - [送信メソッド規格 §11 メッセージビルダー](../../standards/send-method-spec.md#11-メッセージビルダー-messagebuilder)"
     },
     {
-      "hash": "f18fa989ba4dcf97d94f48fe4cf77ff7",
-      "translation": "## 関連ドキュメント\n\n- [アダプター開発の入門](getting-started.md) - アダプターの作成\n- [アダプターのコアコンセプト](core-concepts.md) - アダプターのアーキテクチャの理解\n- [アダプターのベストプラクティス](best-practices.md) - 高品質なアダプターの開発\n- [送信メソッドの仕様](../../standards/send-method-spec.md) - 送信メソッドの完全な仕様"
+      "hash": "5ddfee999a91b5b02c3f99ae1de4b775",
+      "translation": "## 関連ドキュメント\n\n### アダプタ開発の続き\n\n- [アダプタ開発の入門](getting-started.md) - アダプタの作成\n- [アダプタのコアコンセプト](core-concepts.md) - アダプタアーキテクチャの理解\n- [アダプタのベストプラクティス](best-practices.md) - 高品質なアダプタの開発\n\n### 公式規格の遵守\n\n- [送信メソッド規格](../../standards/send-method-spec.md) - 送信メソッドの完全な規格（`Raw_ob12` 実装と `MessageBuilder`）"
     }
   ]
 }

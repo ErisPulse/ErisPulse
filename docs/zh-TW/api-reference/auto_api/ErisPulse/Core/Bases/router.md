@@ -95,7 +95,7 @@ HTTP 方法
 ---
 
 
-##### `url`（property）
+##### `url -> Any`（property）
 
 完整请求 URL
 
@@ -104,7 +104,7 @@ HTTP 方法
 ---
 
 
-##### `base_url`（property）
+##### `base_url -> Any`（property）
 
 基础 URL
 
@@ -113,7 +113,7 @@ HTTP 方法
 ---
 
 
-##### `headers`（property）
+##### `headers -> Any`（property）
 
 请求头 (大小写不敏感)
 
@@ -122,7 +122,7 @@ HTTP 方法
 ---
 
 
-##### `query_params`（property）
+##### `query_params -> Any`（property）
 
 查询参数
 
@@ -149,7 +149,7 @@ Cookie 字典
 ---
 
 
-##### `client`（property）
+##### `client -> Any`（property）
 
 客户端地址
 
@@ -158,7 +158,7 @@ Cookie 字典
 ---
 
 
-##### `state`（property）
+##### `state -> Any`（property）
 
 请求级状态存储
 
@@ -167,7 +167,7 @@ Cookie 字典
 ---
 
 
-##### `app`（property）
+##### `app -> Any`（property）
 
 ASGI 应用实例
 
@@ -209,7 +209,7 @@ ASGI 应用实例
 ---
 
 
-##### `raw`（property）
+##### `raw -> Any`（property）
 
 底层框架原生 Request 对象
 
@@ -236,7 +236,7 @@ ASGI 应用实例
 ---
 
 
-##### `async form(**kwargs)`
+##### `async form(**kwargs) -> Any`
 
 解析表单数据
 
@@ -248,7 +248,7 @@ ASGI 应用实例
 ---
 
 
-##### `async stream()`
+##### `async stream() -> Any`
 
 流式读取请求体
 
@@ -273,7 +273,7 @@ ASGI 应用实例
 ---
 
 
-##### `url_for(name: str, /, **path_params: Any)`
+##### `url_for(name: str, /, **path_params: Any) -> Any`
 
 根据路由名反向生成 URL
 
@@ -327,7 +327,7 @@ async def chat(ws: WebSocketConnection):
 ---
 
 
-##### `base_url`（property）
+##### `base_url -> Any`（property）
 
 基础 URL
 
@@ -336,7 +336,7 @@ async def chat(ws: WebSocketConnection):
 ---
 
 
-##### `query_params`（property）
+##### `query_params -> Any`（property）
 
 查询参数
 
@@ -363,7 +363,7 @@ Cookie 字典
 ---
 
 
-##### `client`（property）
+##### `client -> Any`（property）
 
 客户端地址
 
@@ -372,7 +372,7 @@ Cookie 字典
 ---
 
 
-##### `state`（property）
+##### `state -> Any`（property）
 
 连接级状态存储
 
@@ -381,7 +381,7 @@ Cookie 字典
 ---
 
 
-##### `app`（property）
+##### `app -> Any`（property）
 
 ASGI 应用实例
 
@@ -494,7 +494,7 @@ ASGI 应用实例
 ---
 
 
-##### `async receive()`
+##### `async receive() -> dict`
 
 低级 ASGI receive
 
@@ -505,7 +505,7 @@ ASGI 应用实例
 ---
 
 
-##### `async send(message) -> None`
+##### `async send(message: dict) -> None`
 
 低级 ASGI send
 
@@ -561,7 +561,7 @@ async def event_stream(sse: SseEmitter):
 ---
 
 
-##### `request`（property）
+##### `request -> Any`（property）
 
 底层 HTTP 请求对象
 
@@ -582,7 +582,7 @@ async def event_stream(sse: SseEmitter):
 ---
 
 
-##### `async send(data = None, event: str | None = None, id: str | None = None, retry: int | None = None) -> None`
+##### `async send(data: Any = None, event: str | None = None, id: str | None = None, retry: int | None = None) -> None`
 
 发送一个 SSE 事件
 

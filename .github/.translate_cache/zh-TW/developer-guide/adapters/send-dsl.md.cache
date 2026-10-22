@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "44d66e906990e21d6989c7efc7ca0f39",
-  "file_hash": "44d66e906990e21d6989c7efc7ca0f39",
-  "translated_at": "2026-10-14T03:13:52.672393",
+  "hash": "7e0ae7dcbf79fb76c3a12ca789ca224e",
+  "file_hash": "7e0ae7dcbf79fb76c3a12ca789ca224e",
+  "translated_at": "2026-10-22T11:37:06.287390",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "05bfb1629104093d05a47c1b0d431596",
-      "translation": "# SendDSL 詳解\n\n> [!TIP]\n> **何時需要閱讀這篇**：在開發適配器的過程中必讀（發送 DSL）。若不需要則可跳過，不會影響其他功能的使用。\n\nSendDSL 是 ErisPulse 適配器提供的鏈式呼叫風格的消息發送介面。"
+      "hash": "0a3c5eef8aa05f7e017c5fc9b875d7df",
+      "translation": "# SendDSL 詳解\n\n> [!TIP]\n> **什麼時候需要讀這篇**：配接器開發路徑內必讀（傳送 DSL）。不需要則跳過，不影響其他功能的使用。\n\n\nSendDSL 讓訊息傳送串成一條鏈完成：指定目標、@ / 回覆、重試 / 逾時 / 延遲、批次傳送，一行鏈式呼叫搞定。本篇涵蓋傳送方法、修飾方法、傳送規則與傳送鏈路的內部機制。"
     },
     {
       "hash": "f2c153ebdef11bbf3d2ca6f9bec5fcac",
@@ -62,8 +62,8 @@
       "translation": "## 完整示例\n\n### 基本使用\n\n```python\nfrom ErisPulse.Core import adapter\n\nmy_adapter = adapter.get(\"myplatform\")\n\n# 發送文字\nawait my_adapter.Send.To(\"user\", \"123\").Text(\"Hello World!\")\n\n# 發送圖片\nawait my_adapter.Send.To(\"group\", \"456\").Image(\"https://example.com/image.jpg\")\n\n# 發送文件\nwith open(\"document.pdf\", \"rb\") as f:\n    await my_adapter.Send.To(\"user\", \"123\").File(f.read())\n```\n\n### 鏈式呼叫\n\n```python\n# @用戶 + 回覆\nawait my_adapter.Send.To(\"group\", \"456\").At(\"789\").Reply(\"msg123\").Text(\"回覆@的消息\")\n\n# @全體 + 多個修飾\nawait my_adapter.Send.Using(\"bot1\").To(\"group\", \"456\").AtAll().Text(\"公告消息\")\n```\n\n### 原始訊息與訊息建構\n\n`Raw_ob12` 是反向轉換的核心入口（接收 OB12 訊息段 → 平台 API 呼叫），`MessageBuilder` 是配合其使用的鏈式訊息段建構工具。\n\n> 完整的 `Raw_ob12` 實現規範、`MessageBuilder` 用法及程式碼範例請參閱：\n> - [發送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台)\n> - [發送方法規範 §11 訊息建構器](../../standards/send-method-spec.md#11-訊息建構器-messagebuilder)"
     },
     {
-      "hash": "f18fa989ba4dcf97d94f48fe4cf77ff7",
-      "translation": "## 相關文件\n\n- [適配器開發入門](getting-started.md) - 建立適配器\n- [適配器核心概念](core-concepts.md) - 瞭解適配器架構\n- [適配器最佳實踐](best-practices.md) - 開發高品質適配器\n- [發送方法規範](../../standards/send-method-spec.md) - 發送方法完整規範"
+      "hash": "5ddfee999a91b5b02c3f99ae1de4b775",
+      "translation": "## 相關文件\n\n### 繼續轉接器開發路徑\n\n- [轉接器開發入門](getting-started.md) - 建立轉接器\n- [轉接器核心概念](core-concepts.md) - 瞭解轉接器架構\n- [轉接器最佳實踐](best-practices.md) - 開發高品質轉接器\n\n### 遵循正式規範\n\n- [傳送方法規範](../../standards/send-method-spec.md) - 傳送方法完整規範（`Raw_ob12` 實作與 `MessageBuilder`）"
     }
   ]
 }

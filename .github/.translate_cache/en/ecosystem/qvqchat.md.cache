@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "b321b74ff0af484a456c9887a903911d",
-  "file_hash": "b321b74ff0af484a456c9887a903911d",
-  "translated_at": "2026-10-18T15:23:00.541966",
+  "hash": "cdbaec96299f681c8fa40219039c8cd4",
+  "file_hash": "cdbaec96299f681c8fa40219039c8cd4",
+  "translated_at": "2026-10-22T10:59:22.372412",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "d556deeda8e4194a937a18325a69993d",
-      "translation": "# ErisPulse-QvQChat General Agent\n\n[ErisPulse-QvQChat](https://pypi.org/project/ErisPulse-QvQChat/) is a **general-purpose agent module** built around a tool loop: sending and receiving messages, calling ecosystem module services, writing and running code, operating the computer, generating images and voice, managing scheduled tasks and long-term memory—all accomplished through the same tool protocol.\n\n> [!IMPORTANT]\n> QvQChat needs to be installed separately:\n>\n> ```bash\n> epsdk install ErisPulse-QvQChat\n> ```\n>\n> Additionally, you need to add at least one OpenAI-compatible model (Base URL, API Key, model name) to the \"model pool\"."
+      "hash": "c27c5f8045fc05e9b2695288c2e753ae",
+      "translation": "# ErisPulse-QvQChat General Agent\n\n> [!TIP]\n> **When to read this**: Read this when you want to add AI agent capabilities (tool loops, streaming chat, MCP, long-term memory) to your robot, or when you want to expose your module's services for agent calls. Skip if not needed.\n\n[ErisPulse-QvQChat](https://pypi.org/project/ErisPulse-QvQChat/) is a **general-purpose agent module** built around tool loops: sending and receiving messages, calling ecosystem module services, writing and running code, operating the computer, generating images and voice, managing scheduled tasks and long-term memory—all through the same tool protocol.\n\n> [!IMPORTANT]\n> QvQChat needs to be installed separately:\n>\n> ```bash\n> epsdk install ErisPulse-QvQChat\n> ```\n>\n> You also need to add at least one OpenAI-compatible model (Base URL, API Key, model name) to the \"Model Pool\"."
     },
     {
       "hash": "140d00806656351ad40ae78b41d8c897",
@@ -26,8 +26,12 @@
       "translation": "## Invoked as a Service\n\n| Service | Signature | Description |\n|---|---|---|\n| `chat` | `(session_id, prompt, persona=\"\")` | Interact with the agent, return text |\n| `run_prompt` | `(chat_key, prompt, ...)` | Execute a prompt, the result can be sent to the target session |\n| `get_status` | `()` | Status summary of execution |"
     },
     {
-      "hash": "4d951a46e7efd72567ef41c447a80316",
-      "translation": "## Interface\n\nAccess independently via `/QvQChat/view`, or embed in the Dashboard sidebar.\n\n![Overview](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/overview.png)\n\n![Conversation](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/chat.png)"
+      "hash": "15f97e1080e165ff47b97b09320ff78e",
+      "translation": "## Interface\n\nAccess independently via `/QvQChat/view`, or embed in the Dashboard sidebar.\n\n![Overview](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/overview.png)\n\n![Conversation](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/chat.png)\n\n---"
+    },
+    {
+      "hash": "18543118ab6853e339cc06ff3d69f1d5",
+      "translation": "## Next Steps\n\n- **Turn your module into an agent tool**: Declare `services` in `get_meta()` to do so; see [Core Module API - Service Contract](../api-reference/core-modules.md) for field semantics.\n- **Subscribe to agent messages for integration**: Use [Lifecycle Events](../advanced/lifecycle.md) to listen for `qvq.message` / `qvq.replied`.\n- **Use only multi-turn questionnaires, not agents**: The built-in [Conversation Multi-turn Dialogue](../advanced/conversation.md) is a lighter option.\n- **Web management**: Use in conjunction with the [ErisPulse-Dashboard](dashboard.md) sidebar."
     }
   ]
 }

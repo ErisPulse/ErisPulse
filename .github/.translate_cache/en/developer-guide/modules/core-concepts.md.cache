@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "e564ecbd28f1f4b0814652ba351a22c7",
-  "file_hash": "e564ecbd28f1f4b0814652ba351a22c7",
-  "translated_at": "2026-10-20T13:31:42.385284",
+  "hash": "dcfc093ab000240caede1086e85fc838",
+  "file_hash": "dcfc093ab000240caede1086e85fc838",
+  "translated_at": "2026-10-22T10:03:56.759778",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "0ad5f1e3296cc12c4224a3f4da99f5c1",
-      "translation": "# Core Concepts of Modules\n\n> [!NOTE]\n> **L1 Core Reading** – One of the five core documents in the \"Reading Path\" on the homepage, essential for module development.\n\nUnderstanding the core concepts of ErisPulse modules is the foundation for developing high-quality modules."
+      "hash": "4855b818f6eb6bc7c1642f748a8bf16f",
+      "translation": "# Core Concepts of Modules\n\n> [!NOTE]\n> **L1 Essential Reading** — One of the five core documents in the \"Reading Path\" on the homepage, essential for module development.\n\nThis article explains the complete lifecycle of a module from loading to unloading, as well as the usage of declarative configuration and storage. It clarifies what the framework automatically handles for you and what you need to write yourself. After reading this, you'll have a clear understanding."
     },
     {
       "hash": "bea564319e4c5330a34e388112d2f485",
@@ -42,8 +42,8 @@
       "translation": "## Error Handling\n\n### Exception Handling\n\n```python\nasync def handle_event(self, event):\n    try:\n        # Business logic\n        await self.process_event(event)\n    except ValueError as e:\n        self.logger.warning(f\"Parameter error: {e}\")\n        await event.reply(f\"Parameter error: {e}\")\n    except Exception as e:\n        self.logger.error(f\"Processing failed: {e}\")\n        raise\n```\n\n### Logging\n\n```python\n# Use different logging levels\nself.logger.debug(\"Debug information\")    # Detailed debug information\nself.logger.info(\"Running status\")        # Normal running information\nself.logger.warning(\"Warning information\") # Warning information\nself.logger.error(\"Error information\")    # Error information\nself.logger.critical(\"Critical error\")    # Critical error\n```"
     },
     {
-      "hash": "72c73e04458506afa97ab44c59dd77a3",
-      "translation": "## Related Documentation\n\n- [Getting Started with Module Development](getting-started.md) - Create your first module\n- [Event Wrapper Class](event-wrapper.md) - Detailed explanation of event handling\n- [Best Practices](best-practices.md) - Develop high-quality modules"
+      "hash": "b70aa5c5cfe13f8542a902e77b4e1d23",
+      "translation": "## Related Documentation\n\n### Further Learning Path\n\n- [Event Wrapper](event-wrapper.md) - Detailed explanation of event handling\n\n### In-depth and Troubleshooting\n\n- [Module Best Practices](best-practices.md) - Developing high-quality modules\n- [Getting Started with Module Development](getting-started.md) - Review the steps for building your first module\n- [Module Troubleshooting Guide](../module-troubleshooting.md) - Diagnose issues when module behavior does not meet expectations"
     }
   ]
 }

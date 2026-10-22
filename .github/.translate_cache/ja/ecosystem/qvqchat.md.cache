@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "b321b74ff0af484a456c9887a903911d",
-  "file_hash": "b321b74ff0af484a456c9887a903911d",
-  "translated_at": "2026-10-18T15:23:10.921469",
+  "hash": "cdbaec96299f681c8fa40219039c8cd4",
+  "file_hash": "cdbaec96299f681c8fa40219039c8cd4",
+  "translated_at": "2026-10-22T12:03:51.314379",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "d556deeda8e4194a937a18325a69993d",
-      "translation": "# ErisPulse-QvQChat 一般エージェント\n\n[ErisPulse-QvQChat](https://pypi.org/project/ErisPulse-QvQChat/) は、**一般エージェントモジュール**です。ツールループを構築し、メッセージの送受信、エコシステムモジュールサービスの呼び出し、コードの作成と実行、コンピュータの操作、画像や音声の生成、スケジュールされたタスクと長期記憶の管理を、すべて同じツールプロトコルで行います。\n\n> [!IMPORTANT]\n> QvQChat は個別にインストールする必要があります：\n>\n> ```bash\n> epsdk install ErisPulse-QvQChat\n> ```\n>\n> また、「モデルプール」に少なくとも1つの OpenAI 互換モデル（Base URL、API Key、モデル名）を追加する必要があります。"
+      "hash": "c27c5f8045fc05e9b2695288c2e753ae",
+      "translation": "# ErisPulse-QvQChat 通用インテリジェントエージェント\n\n> [!TIP]\n> **このドキュメントを読む必要があるのは**、ロボットに AI インテリジェントエージェントの機能（ツールループ、ストリーミング対話、MCP、長期記憶）を追加したい場合、または独自のモジュールサービスをインテリジェントエージェントから呼び出せるようにしたい場合です。必要ない場合はこのドキュメントは飛ばしてください。\n\n[ErisPulse-QvQChat](https://pypi.org/project/ErisPulse-QvQChat/) は、**汎用的なインテリジェントエージェントモジュール**です。ツールループを基盤として、メッセージの送受信、エコシステムモジュールサービスの呼び出し、コードの作成と実行、コンピュータの操作、画像や音声の生成、スケジュールタスクと長期記憶の管理など、すべてを同一のツールプロトコルで行います。\n\n> [!IMPORTANT]\n> QvQChat は個別にインストールする必要があります：\n>\n> ```bash\n> epsdk install ErisPulse-QvQChat\n> ```\n>\n> また、「モデルプール」に少なくとも1つの OpenAI 互換モデル（Base URL、API Key、モデル名）を追加する必要があります。"
     },
     {
       "hash": "140d00806656351ad40ae78b41d8c897",
@@ -26,8 +26,12 @@
       "translation": "## サービスとして呼び出される\n\n| サービス | シグネチャ | 説明 |\n|---|---|---|\n| `chat` | `(session_id, prompt, persona=\"\")` | スマートエージェントと対話し、テキストを返す |\n| `run_prompt` | `(chat_key, prompt, ...)` | プロンプトを実行し、結果をターゲットセッションに送信できる |\n| `get_status` | `()` | 実行状態の概要 |"
     },
     {
-      "hash": "4d951a46e7efd72567ef41c447a80316",
-      "translation": "## インターフェース\n\n`/QvQChat/view` から個別にアクセスするか、ダッシュボードのサイドバーに埋め込むことができます。\n\n![概要](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/overview.png)\n\n![チャット](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/chat.png)"
+      "hash": "15f97e1080e165ff47b97b09320ff78e",
+      "translation": "## インターフェース\n\n`/QvQChat/view` に独立してアクセスするか、ダッシュボードのサイドバーに埋め込むことができます。\n\n![概要](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/overview.png)\n\n![会話](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/chat.png)\n\n---"
+    },
+    {
+      "hash": "18543118ab6853e339cc06ff3d69f1d5",
+      "translation": "## 次に進む\n\n- **自分のモジュールをエージェントツールにする**：`get_meta()` で `services` を宣言するだけで可能。フィールドの意味は [コアモジュール API - サービス契約](../api-reference/core-modules.md) を参照してください。\n- **エージェントメッセージのサブスクライブで連携させる**：[ライフサイクルイベント](../advanced/lifecycle.md) を使って `qvq.message` / `qvq.replied` を監視します。\n- **エージェントを使わず、ただの複数回対話フォームが欲しい場合**：内蔵の [Conversation 複数回対話](../advanced/conversation.md) がより軽量な選択です。\n- **ウェブ管理**：[ErisPulse-Dashboard](dashboard.md) のサイドバーと併用してください。"
     }
   ]
 }

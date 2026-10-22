@@ -1,5 +1,8 @@
 # 適配器標準化轉換規範
 
+> [!TIP]
+> **什麼時候需要閱讀本文**：當你在適配器中將平台原生事件轉換為 OneBot12 標準事件時——確認必須欄位、訊息段結構、擴展欄位命名（`{platform}_` 前綴）、會話類型推斷時對照本文。不需要則跳過。
+
 ## 1. 核心原則
 1. 嚴格相容：所有標準欄位必須完全遵循 OneBot12 規範
 2. 明確擴展：平台特有的功能必須添加 {platform}_ 前綴（例如 yunhu_form）
@@ -561,8 +564,13 @@ async def handle_welcome(event):
 
 ## 10. 相關文件
 
-- [各平台特性文件](../platform-guide/README.md) - 您可以訪問此文件以了解各平台特性以及已知的擴展事件和消息段等。
-- [會話類型標準](session-types.md) - 會話類型定義和映射關係
-- [發送方法規範](send-method-spec.md) - Send 類的方法命名、參數規範及反向轉換要求
-- [API 回應標準](api-response.md) - 適配器 API 回應格式標準
+**實作轉換器時的對照表**：
+- [會話類型標準](session-types.md) - 會話類型的定義和對應關係
+- [API 回應標準](api-response.md) - 適配器 API 回應格式的標準
+
+**同一適配器的發送端**：
+- [發送方法規範](send-method-spec.md) - Send 類的方法命名、參數規範及反向轉換的要求
 - [API 動作標準](api-action-spec.md) - OneBot12 標準 API 動作的統一介面
+
+**查詢各平台已知的擴展事件與訊息段**：
+- [各平台特性文件](../platform-guide/README.md) - 您可以訪問此文件來了解各個平台的特性以及已知的擴展事件和訊息段等。

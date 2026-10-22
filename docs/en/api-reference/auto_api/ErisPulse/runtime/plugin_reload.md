@@ -30,7 +30,7 @@ ErisPulse 本地插件热重载监控
 #### 方法列表
 
 
-##### `on_modified(event)`
+##### `on_modified(event) -> None`
 
 文件修改回调：去抖后调度重载
 

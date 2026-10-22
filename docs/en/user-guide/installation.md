@@ -1,11 +1,11 @@
 # Installation Reference
 
-> This document is a **complete reference** for installation methods (pip / uv / Docker / troubleshooting).
-> If you just want to get started quickly, [the 5-minute quick start](../quick-start.md) covers the minimal workflow.
+> [!TIP]
+> **When to read this**: Read this when you need to choose an installation method (pip / uv / Docker / ErisPulse-App client) or troubleshoot a failed installation. If you just want to get up and running as quickly as possible, the [5-Minute Quick Start](../quick-start.md) already covers the simplest process — skip this page if that's all you need.
 
 ## System Requirements
 
-- Python 3.10 or higher
+- Python 3.10 – 3.14 (the 3.14t free-threading / no-GIL build is supported experimentally; the framework continuously monitors it via experimental CI smoke tests, without a formal commitment)
 - pip or uv (recommended)
 - Sufficient disk space (at least 100MB)
 
@@ -122,51 +122,52 @@ If you see output similar to the following, the installation was successful:
 [INFO] ErisPulse initialization complete
 ```
 
-## Frequently Asked Questions
+## FAQ
 
-### Installation Failed
+### Installation Failure
 
-1. Check if the Python version is >= 3.10 (recommended 3.10 - 3.14; 3.14t free-threaded without GIL build is not officially supported yet, the framework is continuously monitored via experimental CI smoke tests)
+1. Check that your Python version is within the supported range (3.10 – 3.14 is supported; 3.14t free-threaded / no-GIL builds are experimentally supported without a formal commitment)
 2. Try using `uv pip install ErisPulse` instead of `pip install`
-3. If permission errors occur, try `pip install --user ErisPulse` or use a virtual environment
-4. If SSL certificate errors occur under enterprise proxy environments, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
-5. Ensure network connectivity and that the pip source is accessible
+3. If a permission error occurs, try `pip install --user ErisPulse` or use a virtual environment
+4. If you encounter SSL certificate errors in a corporate proxy environment, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
+5. Ensure your network connection is working and the pip index is accessible
 
 ### Configuration Errors
 
-1. Check if the `config.toml` syntax is correct (TOML format is sensitive to indentation and quotes)
-2. Confirm all required configuration items are filled
-3. Check terminal logs for detailed error information
+1. Check that the `config.toml` syntax is correct (TOML format is sensitive to indentation and quotation marks)
+2. Confirm that all required configuration items have been filled in
+3. Check the terminal logs for detailed error messages
 4. Use `epsdk init` to regenerate the configuration file
 
-### Module Installation Failed
+### Module Installation Failure
 
-1. Confirm the module name is spelled correctly (case-sensitive)
-2. Check network connectivity
+1. Confirm that the module name is spelled correctly (case-sensitive)
+2. Check your network connection
 3. Use `epsdk list-remote` to view the list of available modules
-4. Confirm the module is compatible with your current SDK version
+4. Confirm that the module is compatible with your current SDK version
 
 ### Windows PowerShell Execution Policy
 
-If PowerShell prompts "Cannot load the file... because running scripts is disabled on this system":
+If PowerShell shows "cannot be loaded... because running scripts is disabled on this system":
 
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-### Debian/Ubuntu Virtual Environment Creation Failed
+### Debian/Ubuntu Virtual Environment Creation Failure
 
-If the installation script prompts "Virtual environment creation failed" and the error message contains `ensurepip is not available`, it is because Debian/Ubuntu does not have `python3-venv` installed by default (the system Python's `ensurepip` is disabled):
+If the installation script reports "virtual environment creation failed" and the error message contains `ensurepip is not available`, it is because Debian/Ubuntu does not install `python3-venv` by default (the system Python's `ensurepip` is disabled):
 
 ```bash
-sudo apt install python3.13-venv   # Install the corresponding package based on your actual Python version
-# Or install the generic meta-package:
+sudo apt install python3.13-venv   # Install the corresponding package for your actual Python version
+# Or install the generic metapackage:
 sudo apt install python3-venv
 ```
 
-After installation, run the installation script again. The new installation script will actively detect this issue, prompt for confirmation, and attempt to automatically install the corresponding system package. Alternatively, you can use uv (`uv venv` does not depend on `ensurepip`).
+After installation, simply re-run the installation script. The newer installation script will proactively prompt and attempt to automatically install the corresponding system package when this issue is detected; you can also switch to uv instead (`uv venv` does not depend on `ensurepip`).
 
 ## Next Steps
 
-- [CLI Command Reference](cli-reference.md) - Learn about all command-line commands
-- [Configuration File Guide](configuration.md) - Learn more about configuration options
+- **To initialize your project and install adapters after installation**: Follow the [5-Minute Quick Start](../quick-start.md) to complete the remaining steps
+- **To manage components from the command line in daily use**: Check the [CLI Command Reference](cli-reference.md)
+- **To fill in tokens or adjust ports**: See the [Configuration Guide](configuration.md)

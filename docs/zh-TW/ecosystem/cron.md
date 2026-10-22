@@ -1,5 +1,8 @@
 # ErisPulse-Cron
 
+> [!TIP]
+> **什麼時候需要讀這篇**：當你的模組需要定時/延時觸發邏輯（定時提醒、週期監控、Cron 表達式調度），且希望任務在框架重啟後不遺失時讀這篇。不需要則跳過。
+
 [ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) 是 ErisPulse 生態的**定時任務調度模組**，為其他模組提供統一的定時任務 API：支援一次性定時、間隔循環、Cron 表達式三種任務類型，回呼傳參，SQLite 持久化（重啟不丟任務）。
 
 > [!IMPORTANT]
@@ -9,7 +12,9 @@
 > epsdk install Cron
 > ```
 
-安裝後透過 `sdk.Cron` 訪問全部接口。
+安裝後透過 `sdk.Cron` 存取全部介面。
+
+---
 
 ## 功能速覽
 
@@ -104,6 +109,13 @@ Cron 的任務資料是**持久化資產**：任務創建方模組被卸載或�
 
 ## 相關連結
 
-- [GitHub 倉庫](https://github.com/wsu2059q/ErisPulse-Cron)
+- [GitHub 儲存庫](https://github.com/wsu2059q/ErisPulse-Cron)
 - [PyPI 頁面](https://pypi.org/project/ErisPulse-Cron/)
-- [歸屬權（owner）系統](../advanced/ownership.md)
+
+---
+
+## 下一步
+
+- **任務觸發後給使用者發送訊息**：在回呼裡用 [Send DSL](../developer-guide/adapters/send-dsl.md) 或 `event.reply()`（見[事件系統 API](../api-reference/event-system.md)）送達提醒
+- **視覺化管理定時任務**：安裝 [ErisPulse-Dashboard](dashboard.md) 後 Cron 自動註冊管理視窗
+- **模組卸載時的回呼清理細節**：[歸屬權（owner）系統](../advanced/ownership.md)

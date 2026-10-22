@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "f99ffa50148bf080d5e0ca2668fbc193",
-  "file_hash": "f99ffa50148bf080d5e0ca2668fbc193",
-  "translated_at": "2026-10-20T12:12:04.102015",
+  "hash": "d50f03ef31446d0126e3b58e2da02939",
+  "file_hash": "d50f03ef31446d0126e3b58e2da02939",
+  "translated_at": "2026-10-22T14:42:29.177949",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "edc5c1ada2d16779d0a6a14624d4b788",
-      "translation": "# 設定ファイルの説明\n\n> [!NOTE]\n> **L1 コア必読**——ホーム画面の「読むルート」にある5つのコアドキュメントの1つで、モジュール開発に必須です。\n\n> このドキュメントでは、フレームワークの設定ファイルについて説明します。サードパーティのモジュールに設定が必要な場合は、モジュールのドキュメントを参照してください。\n\nErisPulse は、プロジェクトの設定を管理するために TOML 形式の設定ファイル `config/config.toml` を使用しています。"
+      "hash": "1274ec84366184e5af7966cd4b124d49",
+      "translation": "# 設定ファイルの説明\n\n> [!NOTE]\n> **L1 コア必読**——トップページの「学習パス」にある5つのコアドキュメントの1つで、モジュール開発に必須です。\n\n> このドキュメントでは、フレームワーク自体の設定ファイル `config/config.toml` について説明します。各設定セクションが何を管理しているか、どのセクションがホットリロードに対応しているか、環境変数で上書きする方法などです。サードパーティモジュールの設定項目については、各モジュール自身のドキュメントを参照してください。\n\nErisPulse は、TOML 形式の設定ファイル `config/config.toml` を使用してプロジェクトの設定を管理します。"
     },
     {
       "hash": "38075a6514106057ad6d3f271a4695be",
@@ -78,12 +78,8 @@
       "translation": "## 統一イベントオーバーライド設定（event.overrides）\n\n統一オーバーライドシステム：イベントの**タイプ**ごとに任意のモジュールハンドラの動作をオーバーライドし、モジュールのコードを変更せずに実現します。OneBot12 標準タイプ（meta / message / notice / request）と拡張タイプ（command）はそれぞれ独自のオーバーライド可能なパラメータを持ちます：\n\n```toml\n[ErisPulse.event.overrides]\n\n# message：テキストのトリガー条件（コード内の条件と AND）\n[ErisPulse.event.overrides.message.ChatModule]\npattern = \"闲聊*\"\n\n# notice / request / meta：detail_type ホワイトリスト（条目は正確 / glob / re: 正則に対応）\n[ErisPulse.event.overrides.notice.MyModule]\ndetail_types = [\"group_increase\"]\n\n# command（拡張タイプ）：パラメータのオーバーライドを実現（ユーザーが優先；無効化は acl deny を使う）\n[ErisPulse.event.overrides.command.MyModule.restart]\nmaster = true               # フレームワークマスターのみに設定（false で開発者のマスター制限を解除）\nhidden = true               # ヘルプリストから非表示\naliases = [\"rs\"]            # 生効果のエイリアス\n\n# acl（command 専用）：コマンドのユーザーホワイトリスト/ブラックリスト（コマンド名は glob / re: 正則に対応、正確なキーが優先）\n[ErisPulse.event.overrides.acl.\"roll*\"]\nallow = [\"onebot11:u_vip\"]  # ユーザー識別子 \"platform:user_id\"\ndeny = [\"onebot11:u_bad\"]\n\n# ACL デフォルト：ACL が設定されていないコマンドの許可（true）/ 厳密拒否（false）\nacl_default_allow = true\n```\n\n| 設定項目 | 型 | 説明 |\n|---------|------|------|\n| `event.overrides.message.<module>` | table | テキスト条件：`{pattern=\"...\", regex=\"...\"}` |\n| `event.overrides.notice / request.<module>` | table | `{detail_types=[...], pattern, regex}` |\n| `event.overrides.meta.<module>` | table | `{detail_types=[...]}` |\n| `event.overrides.command.<module>` | table | モジュールレベルのパラメータオーバーライド（`hidden = true` などのスカラー） |\n| `event.overrides.command.<module>.<command>` | table | コマンドレベルのオーバーライド（コマンドレベルが優先） |\n| `event.overrides.acl.<command名>` | table | ユーザーホワイトリスト/ブラックリスト：`{allow=[...], deny=[...]}` |\n| `event.overrides.acl_default_allow` | boolean | ACL デフォルト：ACL が設定されていないコマンドの許可（`true`）/ 厳密拒否（`false`） |\n\n> 実行時 API（`from ErisPulse.Core.Event import overrides` 後、タイプのサブネームスペースで `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` などを呼び出す、または `sdk.Event.overrides` でアクセス）\n> 詳細は [イベント処理入門 · イベントオーバーライド](../getting-started/event-handling.md#イベントオーバーライドしないでモジュールコードを変更せずに任意のイベントタイプの動作をオーバーライド) を参照してください。"
     },
     {
-      "hash": "535502cb12bad70bfa3f8948dd468108",
-      "translation": "## コマンド解析設定（event.command）"
-    },
-    {
-      "hash": "d2dcbae56f1416aaf7447764914e07af",
-      "translation": "## 次に進む\n\n- [CLI コマンドリファレンス](cli-reference.md) - すべてのコマンドラインコマンドを参照\n- [開発者ガイド](../developer-guide/) - 自作モジュールの開発方法を学ぶ"
+      "hash": "cc23d8d9a83f339705ef373d258404dc",
+      "translation": "## 次のステップ\n\n- **L1 パスで継続**：次は [例外のキャッチ](../advanced/errors.md)。フレームワークをダウンさせないエラー処理の書き方を学びましょう\n- **TOML を手書きしたくない場合**：`epsdk config` のインタラクティブウィザードで宣言型の設定項目を入力できます。詳しくは [CLI コマンドリファレンス · config](cli-reference.md#config) を参照\n- **デプロイ時に設定ファイルを変更したくない場合**：環境変数で設定項目を上書きし、[デプロイガイド](deployment.md) の Docker の使い方と組み合わせてください"
     }
   ]
 }

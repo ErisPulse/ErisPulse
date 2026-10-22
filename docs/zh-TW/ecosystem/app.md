@@ -1,6 +1,9 @@
 # ErisPulse-App
 
-[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) 是由 ErisDev 直接維護的 **官方多端客戶端**（Android / Windows / Linux / macOS 均已發布），
+> [!TIP]
+> **什麼時候需要閱讀這篇**：當你想在手機或電腦上使用圖形介面建立、執行、管理機器人實例——不碰終端、不單獨安裝 Python 環境時閱讀這篇。不需要則跳過。
+
+[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) 是 ErisDev 直接維護的 **官方多端客戶端**（Android / Windows / Linux / macOS 均已發布），
 提供完全原生的圖形化管理介面：在手機或電腦上建立、執行、管理多個機器人實例，
 無需終端，也無需單獨安裝 Python 環境。
 
@@ -95,3 +98,11 @@
 - GitHub 倉庫：[https://github.com/ErisPulse/ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App)
 - 下載：[GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases)
 - 討論：[Discussions](https://github.com/ErisPulse/ErisPulse-App/discussions)
+
+---
+
+## 下一步
+
+- **在桌面 / 伺服器上用瀏覽器管理**：[ErisPulse-Dashboard](dashboard.md)（與 App 共用同一套 API 與視窗分組）
+- **接入第一個平台**：App 內建管理介面可完成配置，各平台細節見[平台特性總覽](../platform-guide/README.md)
+- **習慣命令列**：App 中的實例與 `epsdk` 創建的完全等價，從[快速上手](../quick-start.md)開始

@@ -105,7 +105,7 @@ argparse 的子命令 choices 验证遇到无效命令时会直接打印错误�
 ---
 
 
-##### `run()`
+##### `run() -> None`
 
 运行 CLI
 

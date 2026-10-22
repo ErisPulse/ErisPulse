@@ -1,9 +1,9 @@
 # Getting Started with Module Development
 
-> [!NOTE]
-> **L1 Core Reading** — One of the five essential documents in the "Reading Path" on the homepage, a must-read for module development.
+> [!NOTE]  
+> **L1 Core Reading** — One of the five core documents in the "Reading Path" on the homepage, essential for module development.
 
-This guide walks you through creating an ErisPulse module from scratch.
+By following this guide, you will create a runnable module that responds to the `/hello` command, and gain an understanding of the module's project structure, registration method, and load/unload hooks — all subsequent module documentation is built upon this foundation.
 
 ## Project Structure
 
@@ -203,6 +203,12 @@ sdk.lifecycle  # Lifecycle system
 
 ## Next Steps
 
-- [Core Concepts of Modules](core-concepts.md) - Dive deeper into the module architecture
+### Continue Learning Path
+
+- [Core Concepts of Modules](core-concepts.md) - Learn more about the module architecture
 - [Event Wrapper Class Details](event-wrapper.md) - Learn about the Event object
+
+### After Completion
+
 - [Best Practices for Modules](best-practices.md) - Develop high-quality modules
+- [Module Troubleshooting Guide](../module-troubleshooting.md) - Diagnose and resolve issues when modules fail to load or commands don't trigger

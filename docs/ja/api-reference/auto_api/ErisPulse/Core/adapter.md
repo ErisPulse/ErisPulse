@@ -42,42 +42,6 @@ ErisPulse 适配器系统
 ---
 
 
-##### `_warn_deprecated_kwarg(owner: str, old: str, new: str) -> None`（staticmethod）
-
-**内部方法**
-当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
-
-- **owner**: 所属方法名（如 "AdapterManager.get"）
-- **old**: 已弃用的旧参数名
-- **new**: 推荐使用的新参数名
-
----
-
-
-##### `_shutdown_timeout() -> float`（staticmethod）
-
-**内部方法**
-读取适配器 shutdown 优雅收尾的超时（秒）
-
-复用 ``ErisPulse.framework.uninit_timeout`` 配置（反初始化流程的统一超时预算）；
-未配置或非法时回退常量默认值。
-
-**返回值**: 超时秒数（>0）
-
----
-
-
-##### `set_sdk_ref(sdk) -> bool`
-
-设置 SDK 引用
-
-- **sdk** (`SDK`): 实例
-
-**返回值**: 是否设置成功
-
----
-
-
 ##### `_register_config_change_routing() -> None`
 
 **内部方法**
@@ -315,10 +279,21 @@ await adapter.shutdown(["Platform1", "Platform2"])
 ##### `async _cleanup_adapter_resources(platform: str) -> None`
 
 **内部方法**
-适配器资源兜底清理（与模块卸载对齐颗粒度）。
+适配器资源兜底清理（与模块卸载对齐颗粒度，复用 ownership 统一回收门面）。
 
-清理该平台在运行期间注册的所有路由、命令与事件处理器，并兜底取消
-该平台名下的后台任务。同时覆盖两种注册方式：
+两段式：
+1) 运行时资源——取消该平台名下后台任务、关闭该平台全部连接、触发外部
+   归属清理钩子（on_cleanup）；任务/连接类运行时资源不属于注册表回收
+   范畴，须先行处理。
+2) 注册类资源统一交 ownership 门面回收（路由/命令/四类事件处理器/
+   自有事件处理器与中间件/自定义会话类型/事件覆写/作用域覆写/主人
+   身份源/生命周期钩子/日志订阅/对话恢复工厂/owner 同名 i18n 域，
+   单步失败不阻断）——与模块卸载路径同一条管线。
+
+平台特有补清：平台维度交互会话取消、平台事件方法注入（以平台名为键）、
+i18n 翻译域（domain 为适配器配置键，可能与平台名不同）。
+
+同时覆盖两种路由注册方式：
 - 直接以平台名为命名空间注册的路由（unregister_all_by_namespace）
 - 适配器以平台名为 owner、用细颗粒度命名空间（如 onebot11_default）注册的路由
   （unregister_all_by_owner，依赖 start() 期间注入的 current_owner）

@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "b17d9cbb34f4d4c8357ce166e4f2357e",
-  "file_hash": "b17d9cbb34f4d4c8357ce166e4f2357e",
-  "translated_at": "2026-10-18T03:47:06.348936",
+  "hash": "3ccd3ac77a710862c82a2e723d7cbbed",
+  "file_hash": "3ccd3ac77a710862c82a2e723d7cbbed",
+  "translated_at": "2026-10-22T09:32:23.304543",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "9a626d9b1e532ad183560359a9b33316",
-      "translation": "# Inter-Module Communication\n\n> [!TIP]\n> **When to read this**: When you need cross-module calls (RPC), service contracts, directed events, or cold-start replay. Skip if not needed, as it does not affect other features.\n\n> [!NOTE]\n> This chapter requires ErisPulse **2.8.0+**.\n\nErisPulse has a **three-layer communication model** between modules, arranged as \"point-to-point → directed → broadcast\":\n\n| Layer | API | Semantics | Typical Scenario |\n|---|---|---|---|\n| **RPC** | `await sdk.module.call(\"Chat\", \"get_history\", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking another module's capability (e.g., check history, translate, refund) |\n| **Directed Events** | `await lifecycle.emit(\"message_received\", {...}, to=\"Chat\")` | Only delivered to lifecycle hooks registered by the specified module | Upstream state change notification to downstream (\"new message received\") |\n| **Broadcast** | `await lifecycle.emit(\"config.updated\", {...})` | Framework-wide visible lifecycle event | Hot configuration updates, module up/down |\n\n{!--< tips >!--}\nSelection mnemonic: **Use `call` for return values, `emit(..., to=...)` for notifying a specific module's hooks, and `emit(...)` for notifying everyone.** \n{!--< /tips >!--}"
+      "hash": "b15c1b9e7fffddfd109e239dc9a1e860",
+      "translation": "# Inter-Module Communication\n\n> [!TIP]\n> **When to read this**: When you need cross-module calls (RPC), service contracts, directed events, or cold-start replay. Skip if not needed, as it won't affect the usage of other features.\n\n> **After reading, you will know**: The selection mnemonic for the three-layer communication model (RPC / directed events / broadcast), `meta.services` service contracts and service directory, outbound audit configuration, lazy wake-up, and cold-start replay.\n>\n> **This section does not cover**: The registration / triggering / priority mechanism of the lifecycle event system itself (see [Lifecycle Management](lifecycle.md)); lazy loading configuration and `activate_on` declaration (see [Lazy Loading System](lazy-loading.md)).\n\n> [!NOTE]\n> This chapter requires ErisPulse **2.8.0+**.\n\nErisPulse's modules have a **three-layer communication model**, arranged from \"point-to-point → directed → broadcast\":\n\n| Layer | API | Semantics | Typical Scenarios |\n|---|---|---|---|\n| **RPC** | `await sdk.module.call(\"Chat\", \"get_history\", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking capabilities of another module (e.g., fetching history, translation, refund) |\n| **Directed Events** | `await lifecycle.emit(\"message_received\", {...}, to=\"Chat\")` | Distributed only to lifecycle hooks registered by the specified module | Upstream state change notification to downstream (e.g., \"a new message was received\") |\n| **Broadcast** | `await lifecycle.emit(\"config.updated\", {...})` | Framework-wide lifecycle events | Hot configuration updates, module up/down events |\n\n{!--< tips >!--}\nSelection Mnemonic: **Use `call` when you need a return value, use `emit(..., to=...)` to notify a specific module's hooks, and use `emit(...)` to notify everyone.**\n{!--< /tips >!--}"
     },
     {
       "hash": "5b51074c006e2010d6be572866c8f80d",

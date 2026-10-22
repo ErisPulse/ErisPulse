@@ -3200,14 +3200,6 @@
         "title": "HTML のレンダリング"
       }
     ],
-    "HTTP クライアント": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 314,
-        "level": 3,
-        "title": "HTTP クライアント"
-      }
-    ],
     "HTTP クライアント モジュール": [
       {
         "document": "api-reference/core-modules.md",
@@ -3227,7 +3219,7 @@
     "HTTP ルーティング": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 256,
+        "line": 257,
         "level": 3,
         "title": "HTTP ルーティング"
       }
@@ -3238,6 +3230,14 @@
         "line": 456,
         "level": 3,
         "title": "HTTPStatusError"
+      }
+    ],
+    "HTTPクライアント": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 315,
+        "level": 3,
+        "title": "HTTPクライアント"
       }
     ],
     "HTTPリクエスト": [
@@ -4065,7 +4065,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 271,
+        "line": 272,
         "level": 3,
         "title": "WebSocket"
       }
@@ -5592,14 +5592,6 @@
         "title": "アダプタのホットリロードアーキテクチャ"
       }
     ],
-    "アダプタのライフサイクル": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 188,
-        "level": 3,
-        "title": "アダプタのライフサイクル"
-      }
-    ],
     "アダプタの停止": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5708,6 +5700,14 @@
         "line": 5,
         "level": 2,
         "title": "アダプターマネージャー"
+      }
+    ],
+    "アダプターライフサイクル": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 189,
+        "level": 3,
+        "title": "アダプターライフサイクル"
       }
     ],
     "アダプター接続例": [
@@ -5864,14 +5864,6 @@
         "line": 219,
         "level": 2,
         "title": "イベントの冪等性と重複除去"
-      }
-    ],
-    "イベントの受信と処理": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 201,
-        "level": 3,
-        "title": "イベントの受信と処理"
       }
     ],
     "イベントの監視": [
@@ -6104,6 +6096,14 @@
         "line": 1,
         "level": 1,
         "title": "イベント処理入門"
+      }
+    ],
+    "イベント受信と処理": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 202,
+        "level": 3,
+        "title": "イベント受信と処理"
       }
     ],
     "イベント受信（WebSocket、protobuf エンコード）": [
@@ -6735,7 +6735,7 @@
     "コア初期化": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 142,
+        "line": 143,
         "level": 3,
         "title": "コア初期化"
       }
@@ -6839,7 +6839,7 @@
     "コマンドシステム": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 241,
+        "line": 242,
         "level": 3,
         "title": "コマンドシステム"
       }
@@ -7297,7 +7297,7 @@
     "ストレージ接続状態": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 292,
+        "line": 293,
         "level": 3,
         "title": "ストレージ接続状態"
       }
@@ -7949,7 +7949,7 @@
     "トリガー": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 366,
+        "line": 367,
         "level": 3,
         "title": "トリガー"
       }
@@ -8217,7 +8217,7 @@
     "バックグラウンドタスクの所有者と自動キャンセル": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 412,
+        "line": 413,
         "level": 2,
         "title": "バックグラウンドタスクの所有者と自動キャンセル"
       }
@@ -8421,7 +8421,7 @@
     "フックの断点一覧": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 116,
+        "line": 117,
         "level": 2,
         "title": "フックの断点一覧"
       }
@@ -9124,14 +9124,6 @@
         "title": "メッセージの編集と撤回"
       }
     ],
-    "メッセージの送信": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 226,
-        "level": 3,
-        "title": "メッセージの送信"
-      }
-    ],
     "メッセージイベント": [
       {
         "document": "api-reference/event-system.md",
@@ -9424,6 +9416,12 @@
     ],
     "メッセージ送信": [
       {
+        "document": "advanced/lifecycle.md",
+        "line": 227,
+        "level": 3,
+        "title": "メッセージ送信"
+      },
+      {
         "document": "platform-guide/qqbot.md",
         "line": 59,
         "level": 2,
@@ -9567,7 +9565,7 @@
     "モジュールでの使用例": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 385,
+        "line": 386,
         "level": 2,
         "title": "モジュールでの使用例"
       }
@@ -9628,12 +9626,6 @@
     ],
     "モジュールのライフサイクル": [
       {
-        "document": "advanced/lifecycle.md",
-        "line": 174,
-        "level": 3,
-        "title": "モジュールのライフサイクル"
-      },
-      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 8,
         "level": 2,
@@ -9692,6 +9684,14 @@
         "line": 1,
         "level": 1,
         "title": "モジュールトラブルシューティングガイド"
+      }
+    ],
+    "モジュールライフサイクル": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 175,
+        "level": 3,
+        "title": "モジュールライフサイクル"
       }
     ],
     "モジュールレベルの制御": [
@@ -9927,7 +9927,7 @@
     "ユーティリティ": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 375,
+        "line": 376,
         "level": 3,
         "title": "ユーティリティ"
       }
@@ -10511,7 +10511,7 @@
     "一回限りの登録（once）": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 90,
+        "line": 91,
         "level": 3,
         "title": "一回限りの登録（once）"
       }
@@ -11647,7 +11647,7 @@
     "国際化": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 324,
+        "line": 325,
         "level": 3,
         "title": "国際化"
       }
@@ -12082,12 +12082,12 @@
         "title": "学習パス"
       }
     ],
-    "完全な API リファレンス": [
+    "完全なAPIリファレンス": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 356,
+        "line": 357,
         "level": 2,
-        "title": "完全な API リファレンス"
+        "title": "完全なAPIリファレンス"
       }
     ],
     "完全なメールイベント": [
@@ -12152,12 +12152,12 @@
         "title": "完整例"
       }
     ],
-    "定向伝播（emit to=）": [
+    "定向送信（emit to=）": [
       {
         "document": "advanced/lifecycle.md",
         "line": 66,
         "level": 3,
-        "title": "定向伝播（emit to=）"
+        "title": "定向送信（emit to=）"
       }
     ],
     "実行コントロールコマンド": [
@@ -13792,20 +13792,20 @@
         "title": "標準イベントの例"
       }
     ],
-    "標準イベントの定義": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 330,
-        "level": 2,
-        "title": "標準イベントの定義"
-      }
-    ],
     "標準イベントフォーマット": [
       {
         "document": "platform-guide/README.md",
         "line": 229,
         "level": 3,
         "title": "標準イベントフォーマット"
+      }
+    ],
+    "標準イベント定義": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 331,
+        "level": 2,
+        "title": "標準イベント定義"
       }
     ],
     "標準ドキュメントリスト": [
@@ -13993,7 +13993,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 443,
+        "line": 444,
         "level": 2,
         "title": "注意事項"
       },
@@ -14229,7 +14229,7 @@
     "登録と解除": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 358,
+        "line": 359,
         "level": 3,
         "title": "登録と解除"
       }
@@ -14258,12 +14258,12 @@
         "title": "監視者ガイド"
       }
     ],
-    "監視者クエリ（has_handlers）": [
+    "監視者確認（has_handlers）": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 104,
+        "line": 105,
         "level": 3,
-        "title": "監視者クエリ（has_handlers）"
+        "title": "監視者確認（has_handlers）"
       }
     ],
     "確認対話 (confirm)": [
@@ -15023,7 +15023,7 @@
     "設定変更": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 159,
+        "line": 160,
         "level": 3,
         "title": "設定変更"
       }
@@ -15756,6 +15756,12 @@
         "title": "関連ドキュメント"
       },
       {
+        "document": "advanced/lifecycle.md",
+        "line": 454,
+        "level": 2,
+        "title": "関連ドキュメント"
+      },
+      {
         "document": "advanced/message-builder.md",
         "line": 188,
         "level": 2,
@@ -15909,12 +15915,6 @@
       }
     ],
     "関連文書": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 453,
-        "level": 2,
-        "title": "関連文書"
-      },
       {
         "document": "api-reference/core-modules.md",
         "line": 521,

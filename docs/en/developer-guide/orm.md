@@ -184,3 +184,13 @@ await writer.posts.count()          # Bidirectional access
 - `related` accepts a class name string (lazily resolved by the model class name registry, order of definition on both sides is irrelevant) or directly passes the model class
 - Relationship queries and the other model use their respective storage backends (cross-backend JOINs are not supported—relationship queries are independent SQL statements)
 - Relationship queries are not cached; each access is an immediate query; use `User.where(...)` for any custom queries
+
+## Next Steps
+
+### Need to switch databases or deploy to a cloud database
+
+- [Storage Backends](../advanced/storage-backends.md) — Configuration and switching between SQLite / MySQL / PostgreSQL, with zero model code changes
+
+### Don't need table structures, just store a few key-value pairs
+
+- [Module Core Concepts - Storage System](modules/core-concepts.md#storage-system) — Lightweight usage of key-value storage without declaring models

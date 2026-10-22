@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "be1f1caf5482403cd1d7f97c38cbb5d0",
-  "file_hash": "be1f1caf5482403cd1d7f97c38cbb5d0",
-  "translated_at": "2026-10-14T02:09:59.996265",
+  "hash": "6b995df0d0c2ebcc939f094ef89dfbcf",
+  "file_hash": "6b995df0d0c2ebcc939f094ef89dfbcf",
+  "translated_at": "2026-10-22T10:04:21.352315",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "6ac7fcfa418a1e0b78a17a9900a59700",
-      "translation": "# Getting Started with Module Development\n\n> [!NOTE]\n> **L1 Core Reading** — One of the five essential documents in the \"Reading Path\" on the homepage, a must-read for module development.\n\nThis guide walks you through creating an ErisPulse module from scratch."
+      "hash": "46f0a20caa8e72c359036a8161e7adb8",
+      "translation": "# Getting Started with Module Development\n\n> [!NOTE]  \n> **L1 Core Reading** — One of the five core documents in the \"Reading Path\" on the homepage, essential for module development.\n\nBy following this guide, you will create a runnable module that responds to the `/hello` command, and gain an understanding of the module's project structure, registration method, and load/unload hooks — all subsequent module documentation is built upon this foundation."
     },
     {
       "hash": "a0073e5af21db81bec6138a64a0fdceb",
@@ -34,8 +34,8 @@
       "translation": "## Core Concepts\n\n### BaseModule Base Class\n\nAll modules must inherit from `BaseModule`, providing the following methods:\n\n| Method | Description | Required |\n|--------|-------------|----------|\n| `__init__(self, sdk)` | Constructor (framework passes `sdk` instance) | No |\n| `get_load_strategy()` | Returns the load strategy | No |\n| `get_meta()` | Returns module metadata (optional) | No |\n| `on_load(self, event)` | Called when the module is loaded | Yes |\n| `on_unload(self, event)` | Called when the module is unloaded | Yes |\n\n### Module Meta Information\n\n> [!NOTE]\n> This feature requires ErisPulse **2.8.0+**.\n\nDeclare module metadata (what the module does, its category, etc.) via `get_meta()`.  \nMetadata is the **general introduction data** of a module, consumed by help modules, dashboard module lists, module stores, and other interfaces/ecosystem modules.\n\nSimilar to `get_load_strategy()` returning `ModuleLoadStrategy`, **it is recommended to return an instance of the `ModuleMeta` configuration class** (with type hints and IDE completion), but direct return of a dict is also supported:\n\n```python\nclass MyModule(BaseModule):\n    @staticmethod\n    def get_meta() -> ModuleMeta:\n        return ModuleMeta(\n            name=\"Weather\",               # Display name (default registration name)\n            description=\"Query city weather\",  # Module description\n            version=\"1.0.0\",\n            author=\"ErisDev\",\n            group=\"Tools\",               # Function group\n            tags=[\"Weather\", \"Query\"],\n        )\n```\n\nAlternative dict-based approach:\n\n```python\nclass MyModule(BaseModule):\n    @staticmethod\n    def get_meta() -> dict:\n        return {\n            \"name\": \"Weather\",\n            \"description\": \"Query city weather\",\n            \"version\": \"1.0.0\",\n            \"author\": \"ErisDev\",\n            \"group\": \"Tools\",\n            \"tags\": [\"Weather\", \"Query\"],\n        }\n```\n\n- `module.get_meta(\"MyModule\")` retrieves the parsed metadata (class declaration > registered info, automatically completing the module's command name).\n- `module.get_commands_overview()` aggregates \"module meta + its registered commands (aliases/groups/help)\" into a module-organized command overview.\n- The module owner of a command can be obtained via `cmd_info[\"owner\"]` (automatically injected by the context system during registration).\n\n#### i18n Support for Meta Fields\n\nThe values of meta information fields can be plain strings or i18n dictionaries `{\"i18n\": \"key.path\", \"default\": \"fallback text\"}` (consistent with the `description` configuration convention).  \nTranslation keys are declared and registered via `I18nClass`. When reading with `module.get_meta()`, the values are automatically resolved into the current language text:\n\n```python\nclass MyModule(BaseModule):\n    class I18nClass(BaseI18n):\n        meta_description: I18nKey = I18nKey(\n            default=\"Weather lookup\",\n            zh_CN=\"查询城市天气\",\n            en=\"Weather lookup\",\n        )\n\n    @staticmethod\n    def get_meta() -> ModuleMeta:\n        return ModuleMeta(\n            name=\"Weather\",\n            description={\"i18n\": \"MyModule.meta_description\", \"default\": \"Weather lookup\"},\n        )\n```\n\n### SDK Object\n\nAccess core features through the `sdk` object:\n\n```python\nfrom ErisPulse import sdk\n\nsdk.storage    # Storage system\nsdk.config     # Configuration system\nsdk.logger     # Logging system\nsdk.adapter    # Adapter system\nsdk.router     # Routing system\nsdk.lifecycle  # Lifecycle system\n```"
     },
     {
-      "hash": "396851cc7f0728c2b96c0a9dece48ec5",
-      "translation": "## Next Steps\n\n- [Core Concepts of Modules](core-concepts.md) - Dive deeper into the module architecture\n- [Event Wrapper Class Details](event-wrapper.md) - Learn about the Event object\n- [Best Practices for Modules](best-practices.md) - Develop high-quality modules"
+      "hash": "d88e1f4337fb995fb9a6b9a2b03dfca2",
+      "translation": "## Next Steps\n\n### Continue Learning Path\n\n- [Core Concepts of Modules](core-concepts.md) - Learn more about the module architecture\n- [Event Wrapper Class Details](event-wrapper.md) - Learn about the Event object\n\n### After Completion\n\n- [Best Practices for Modules](best-practices.md) - Develop high-quality modules\n- [Module Troubleshooting Guide](../module-troubleshooting.md) - Diagnose and resolve issues when modules fail to load or commands don't trigger"
     }
   ]
 }

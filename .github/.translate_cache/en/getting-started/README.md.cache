@@ -1,17 +1,17 @@
 {
   "version": 2,
-  "hash": "d98766b423e445c28357e4effda48f9f",
-  "file_hash": "d98766b423e445c28357e4effda48f9f",
-  "translated_at": "2026-09-07T11:30:52.002513",
+  "hash": "2fb28c00d912c1d73d0f239bbabf9986",
+  "file_hash": "2fb28c00d912c1d73d0f239bbabf9986",
+  "translated_at": "2026-10-22T11:11:31.290799",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "c67bd4276dfef7e7fdd800581ca814b1",
-      "translation": "# Getting Started\n\n> This guide is a **detailed supplement** to the [5-Minute Quick Start](../quick-start.md). If you haven't yet run your first robot, please complete the quick start first.\n\nAfter your robot is up and running, this guide will help you systematically understand the framework's core concepts and common capabilities."
+      "hash": "1d02bd3834913aa2e80d8092a696843c",
+      "translation": "# Getting Started\n\n> [!TIP]\n> **When to read this**: The robot has already been started using [5-Minute Quick Start](../quick-start.md), and you want to systematically understand the framework's core concepts and learn all the commonly used capabilities. If you haven't started yet, complete the quick start first; if you just want to look up a specific issue, go directly to the corresponding article.\n\nAfter the robot is up and running, here we will guide you to systematically understand the framework's core concepts and commonly used capabilities."
     },
     {
-      "hash": "2a013cccadd1b226cfaf67a3ab240632",
-      "translation": "## Learning Path\n\nIt is recommended to read in the following order:\n\n| Step | Topic | Description |\n|------|-------|-------------|\n| 1 | [Create Your First Bot](first-bot.md) | Write a command handler and understand the runtime mechanism |\n| 2 | [Basic Concepts](basic-concepts.md) | Understand the core architecture and module design of ErisPulse |\n| 3 | [Event Handling Introduction](event-handling.md) | Learn how to handle various events such as messages, commands, and notifications |\n| 4 | [Common Task Examples](common-tasks.md) | Master commonly used features such as data persistence, scheduled tasks, and permission control |\n| 5 | [IDE Completion Guide](ide-completion.md) | Generate type stubs to enable IDE auto-completion for platform-specific methods |"
+      "hash": "23f7929e52d14e068eb5ce38fa86a915",
+      "translation": "## Learning Path\n\nThe following is the **L1 Core Five** defined on the documentation homepage — reading them in order (about 1–2 hours) will allow you to independently develop 90% of the features:\n\n| Step | Topic | Description |\n|------|-------|-------------|\n| 1 | [Getting Started with Module Development](../developer-guide/modules/getting-started.md) | Create a standalone module package, understand module structure and registration mechanism |\n| 2 | [Basic Concepts](basic-concepts.md) | Understand the core architecture of ErisPulse and module design |\n| 3 | [Event Wrapper Class](../developer-guide/modules/event-wrapper.md) | Master reply, request, and field access of event objects |\n| 4 | [Configuration File Guide](../user-guide/configuration.md) | Learn to fill in configurations, understand hot updates, and environment variable overrides |\n| 5 | [Exception Handling](../advanced/errors.md) | Recognize the exception hierarchy of the framework and write robust handling chains |\n\nThere are also several **optional reference documents** in this directory:\n\n| Document | When to Read |\n|----------|--------------|\n| [Create Your First Bot](first-bot.md) | If you want to start by writing an embedded processor before learning modular development |\n| [Event Handling Guide](event-handling.md) | If you need to quickly check how to handle different event types (message / command / notification / request) |\n| [Common Task Examples](common-tasks.md) | If you want to copy ready-to-use complete code for tasks such as storage, scheduled tasks, and permission control |\n| [IDE Completion Guide](ide-completion.md) | If you want IDE auto-completion support for platform-specific methods |"
     },
     {
       "hash": "4aa00b789df7bd8851d4ef496bac3e58",
@@ -22,8 +22,8 @@
       "translation": "## Architecture Overview\n\nErisPulse adopts an event-driven architecture, and its core consists of the following systems:\n\n- **Adapter System** — Communicates with various platforms, converting platform events into the unified OneBot12 standard format\n- **Event System** — Handles five types of events: messages, commands, notifications, requests, and meta-events\n- **Module System** — Extends functionality through independent modules, supporting dependency management and lazy loading\n- **Core Modules** — Provide foundational capabilities such as Storage (storage), Config (configuration), Logger (logging), and Router (routing)\n\n> For a detailed architecture diagram and initialization flow, please refer to [Architecture Overview](../architecture.md)."
     },
     {
-      "hash": "81d2ca0cf2f8dbc6cebf47b9c51f74f4",
-      "translation": "## Getting Started\n\nReady to get started?\n\n- [Create Your First Bot](first-bot.md) — 5 minutes to get started"
+      "hash": "e6e3443a7b0883eaa29d8bc20ac8a94f",
+      "translation": "## Next Steps\n\nFollow the learning path above (L1 Core Five) in order. You can also jump directly based on your objectives:\n\n- **Want to get started hands-on**: Begin with [Create Your First Bot](first-bot.md) to write your first `/hello` command handler, then proceed to [Module Development Introduction](../developer-guide/modules/getting-started.md).\n- **Want to understand the principles first**: Read [Basic Concepts](basic-concepts.md) to understand how adapters / modules / events collaborate.\n- **Want to solve specific problems**: Check [Common Task Examples](common-tasks.md), which include complete, copy-paste-ready code for storage, scheduled tasks, and permission control.\n- **After completing the L1 Core Five articles**: For advanced topics, consult [Advanced Topics](../advanced/README.md) as needed. When developing complex modules, start with the four essential L2 articles there."
     }
   ]
 }

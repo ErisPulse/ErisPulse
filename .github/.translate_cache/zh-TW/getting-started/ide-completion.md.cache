@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "6549a858efa75fc7349ae8fd72f4dba2",
-  "file_hash": "6549a858efa75fc7349ae8fd72f4dba2",
-  "translated_at": "2026-09-07T11:30:19.970097",
+  "hash": "8da94c37dfc645d99e6a01081be2c435",
+  "file_hash": "8da94c37dfc645d99e6a01081be2c435",
+  "translated_at": "2026-10-22T12:29:41.119901",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "f48742451b078f07d13cc4252be48f34",
-      "translation": "# 類型存根生成（IDE 補全）\n\nErisPulse 透過 entry-points 動態發現模組/適配器，入口點無法在靜態層面獲知使用者類別的具體類型。  \n`epsdk types` 命令透過掃描已安裝的模組/適配器，產生一個類型存根檔案，讓使用者可以將這些類型用作變數標註，進而獲得 IDE 補全。"
+      "hash": "3c8f5d153967671ed46f29cde788f1b9",
+      "translation": "# 類型存根生成（IDE 補全）\n\n> [!TIP]\n> **何時需要閱讀本文**：當 IDE 補全無法顯示適配器的平台特定方法（如雲湖的 `Board`）或模組的自訂方法時，只需執行一條 `epsdk types` 命令生成類型存根即可解決；若不需要則可跳過。\n\nErisPulse 透過 entry-points 動態發現模組/適配器，入口點無法在靜態層面得知使用者類別的具體類型。  \n`epsdk types` 命令透過掃描已安裝的模組/適配器，生成一個類型存根檔案，讓使用者可以將這些類型作為變數標註，進而獲得 IDE 補全功能。"
     },
     {
       "hash": "8780a8d8f2a48f16c6713153d5a2f32d",
@@ -38,8 +38,8 @@
       "translation": "## 與 SendDSL 標準方法的關係\n\n`SendDSL` 基類已內建標準發送方法（Text/Image/Voice/Video/File），無論以何種方式取得的 SendDSL 實例都能補全這些方法。  \n`types` 命令主要用於補全**平台特有方法**（如雲湖的 `Board`、沙盒的 `Dice`）以及**模組特有方法**。"
     },
     {
-      "hash": "ed9b0793c8cf000eb1938745c25f0758",
-      "translation": "## 相關文件\n\n- [SendDSL 詳解](../developer-guide/adapters/send-dsl.md) - 標準發送方法說明\n- [適配器開發入門](../developer-guide/adapters/getting-started.md) - 建立適配器"
+      "hash": "830cf5ccb7c91065ba47dcc4b3a777cc",
+      "translation": "## 下一步\n\n- **想知道哪些發送方法所有平台通用**：請參閱 [SendDSL 詳解](../developer-guide/adapters/send-dsl.md)，獲取 Text / Image / Voice 等標準方法的權威說明\n- **正在開發自己的適配器**：請從 [適配器開發入門](../developer-guide/adapters/getting-started.md) 開始建立適配器項目"
     }
   ]
 }

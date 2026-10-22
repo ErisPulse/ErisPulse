@@ -1,9 +1,9 @@
-# SendDSL Explained
+# SendDSL Detailed Explanation
 
 > [!TIP]
-> **When to read this**: This is a must-read for adapter development (Send DSL). If not needed, you can skip it without affecting the use of other features.
+> **When to read this**: This is a must-read for adapter development paths (Send DSL). If not needed, you can skip it without affecting the use of other features.
 
-SendDSL is a fluent, chain-call style message sending interface provided by ErisPulse adapters.
+SendDSL allows message sending to be completed as a chain: specify the target, @ / reply, retry / timeout / delay, batch sending, all accomplished with a single chained call. This article covers the sending methods, modifier methods, sending rules, and the internal mechanism of the sending chain.
 
 ## Basic Calling Methods
 
@@ -727,7 +727,12 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("Announcemen
 
 ## Related Documentation
 
+### Continue the Adapter Development Path
+
 - [Getting Started with Adapter Development](getting-started.md) - Create an adapter
 - [Core Concepts of Adapters](core-concepts.md) - Understand the adapter architecture
-- [Best Practices for Adapters](best-practices.md) - Develop high-quality adapters
-- [Send Method Specification](../../standards/send-method-spec.md) - Complete specification for the send method
+- [Adapter Best Practices](best-practices.md) - Develop high-quality adapters
+
+### Follow Formal Specifications
+
+- [Send Method Specification](../../standards/send-method-spec.md) - Complete specification for send methods (`Raw_ob12` implementation and `MessageBuilder`)

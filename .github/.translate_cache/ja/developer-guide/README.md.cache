@@ -1,17 +1,17 @@
 {
   "version": 2,
-  "hash": "48d5a7e2a8fbdac7a601cf9abddfa45c",
-  "file_hash": "48d5a7e2a8fbdac7a601cf9abddfa45c",
-  "translated_at": "2026-09-23T07:37:22.504362",
+  "hash": "c1ce1f46f64d7398ade00f74b38ce476",
+  "file_hash": "c1ce1f46f64d7398ade00f74b38ce476",
+  "translated_at": "2026-10-22T10:07:22.554170",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "50184277316fdd1067cf7466d518c086",
-      "translation": "# 開発者ガイド\n\nこのガイドは、ErisPulse の機能を拡張するためのカスタムモジュールやアダプターを開発する方法を説明します。"
+      "hash": "27bf7be1e26a07d8b4a373978d55c550",
+      "translation": "# 開発者ガイド\n\n> [!TIP]  \n> **このドキュメントを読むタイミング**：ErisPulse に拡張機能を開発する場合——ロボットに機能（モジュール）を追加するか、新しいプラットフォーム（アダプター）に接続する場合——です。ロボットの使用のみを希望する場合は、このドキュメントを飛ばして、[クイックスタート](../quick-start.md)をご覧ください。\n\nここから、あなたの開発の道筋を見つけてください：**モジュール開発**では、コマンドやメッセージハンドラを使ってロボットの機能を拡張できます。**アダプター開発**では、ロボットを新しいメッセージプラットフォームに接続できます。どちらの道筋も、プロジェクトの作成からテスト、リリースまでの完全なプロセスをカバーしています。"
     },
     {
-      "hash": "320eb128f6e1fc910011103bd09fa231",
-      "translation": "## 内容リスト\n\n### モジュール開発\n\n1. [モジュール開発入門](modules/getting-started.md) - 最初のモジュールを作成する\n2. [モジュールのコアコンセプト](modules/core-concepts.md) - モジュールのコアコンセプトとアーキテクチャ\n3. [Event 包装クラスの詳細](modules/event-wrapper.md) - Event オブジェクトの完全な説明\n4. [モジュールのベストプラクティス](modules/best-practices.md) - 高品質なモジュールを開発するための提案\n\n### データモデル\n\n1. [データモデル層（ORM）](orm.md) - 宣言的モデル、自動テーブル作成、追加・削除・更新・検索\n\n### アダプタ開発\n\n1. [アダプタ開発入門](adapters/getting-started.md) - 最初のアダプタを作成する\n2. [アダプタのコアコンセプト](adapters/core-concepts.md) - アダプタのコアコンセプト\n3. [SendDSL 詳解](adapters/send-dsl.md) - Send メッセージ送信 DSL の完全な説明\n4. [イベントコンバーター](adapters/converter.md) - イベントコンバーターの実装\n5. [アダプタのベストプラクティス](adapters/best-practices.md) - 高品質なアダプタを開発するための提案\n\n### テストとトラブルシューティング\n\n1. [モジュールテスト（ErisPulse-Testing）](testing.md) - TestBot、イベントファクトリー、アサーション面\n2. [モジュールトラブルシューティングガイド](module-troubleshooting.md) - モジュールがロードされない / イベントが反応しない / コマンドがトリガーされない問題の解決方法\n\n### パブリッシングガイド\n\n- [パブリッシュとモジュールストアガイド](publishing.md) - あなたの作品を PyPI および ErisPulse モジュールストアに公開する方法"
+      "hash": "ae9bc38e5c60617d60eb6edf69075811",
+      "translation": "## 内容リスト\n\n### モジュール開発\n\n1. [モジュール開発入門](modules/getting-started.md) - 最初のモジュールを作成する\n2. [モジュールの基本概念](modules/core-concepts.md) - モジュールの基本概念とアーキテクチャ\n3. [Event 包装クラスの詳細](modules/event-wrapper.md) - Event オブジェクトの完全な説明\n4. [モジュールのベストプラクティス](modules/best-practices.md) - 高品質なモジュールを開発するための提案\n5. [データモデル層（ORM）](orm.md) - モジュール開発の高度な内容：宣言的モデル、自動テーブル作成、追加・削除・変更・検索\n\n### アダプタ開発\n\n1. [アダプタ開発入門](adapters/getting-started.md) - 最初のアダプタを作成する\n2. [アダプタの基本概念](adapters/core-concepts.md) - アダプタの基本概念\n3. [SendDSL 詳解](adapters/send-dsl.md) - Send メッセージ送信 DSL の完全な説明\n4. [イベントコンバーター](adapters/converter.md) - イベントコンバーターの実装\n5. [アダプタのベストプラクティス](adapters/best-practices.md) - 高品質なアダプタを開発するための提案\n\n### テストとトラブルシューティング\n\n1. [モジュールテスト（ErisPulse-Testing）](testing.md) - TestBot、イベントファクトリー、アサーション面\n2. [モジュールトラブルシューティングガイド](module-troubleshooting.md) - モジュールがロードされない / イベントが反応しない / コマンドがトリガーされない場合の問題解決方法\n\n### パブリッシングガイド\n\n- [パブリッシングとモジュールストアガイド](publishing.md) - あなたの作品を PyPI と ErisPulse モジュールストアに公開する方法"
     },
     {
       "hash": "a69f12905cab94d5d7c997a0184db083",

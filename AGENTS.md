@@ -4,7 +4,7 @@
 
 ## 代码修改
 - 1. 修改源代码时必须确定供应链上下游正常
-- 2. 必须参照 docstring 文档的注释风格来为ErisPulse方法添加方法注释/模块注释
+- 2. 必须参照 docstring 文档的注释风格来为ErisPulse方法添加方法注释/模块注释；工程健壮性纪律（异常留痕分级、日志分级、行为参数集中、API 契约等）见 `docs/zh-CN/styleguide/engineering.md`
 - 3. 必须遵守 CONTRIBUTING.md 的内容
 - 4. 新增或修改公共 API（导出符号、类属性、方法签名）时：
   - 同步更新对应模块的 `__all__` 列表
@@ -14,7 +14,7 @@
 - 6. 遇到问题必须定位根因、从架构层面修复，而非不断叠加补丁绕过。优先根本解决，禁止补丁式更新。
 
 ## 测试与检查
-- 7. 修改完毕后必须进行 pytest 测试，必须进行 python check 检查
+- 7. 修改完毕后必须通过 `uv run pytest`、`uv run ruff check .`、`uv run basedpyright src/ErisPulse` 三项检查（与 CI 门禁一致；pytest 需先 `uv sync --extra test`）
 - 8. 涉及核心模块（Bases、runtime、config、loaders）的修改，必须补充或更新对应的 pytest 用例
 - 9. 修改 `src/ErisPulse/CLI/commands/create.py` 中的模板后，须运行 `.format()` 并 `compile()` 验证生成代码合法
 
@@ -29,17 +29,11 @@
 - 15. 声明了 i18n key 的地方（如配置 `description`），必须确保对应翻译已注册；示例项目默认使用纯文本，不使用未注册的 i18n key
 
 ## 文档
-- 16. 只需要修改 `docs/zh-CN` 下的相关文档，其余语言文档会由 CI/CD 翻译流程自动更新（**内容变更**会自动同步）
-  - ⚠️ **删除/移动/重命名文档时，翻译流程不会自动清理其它语言**：`scripts/tools/translate-docs.py` 仅遍历源目录（`docs/zh-CN`），对源文件已不存在的目标文件不做删除，会留下死文件
-  - 因此**删除或移动 `docs/zh-CN` 下的文档时，必须手动同步清理**：
-    - 删除其它语言目录下的对应文件（`docs/en`、`docs/ja`、`docs/ru`、`docs/zh-TW`）
-    - 删除 `.github/.translate_cache/<lang>/` 下对应的 `.cache` 文件
-    - 检查各语言 `README.md` / 索引文件中是否有指向旧路径的死链接并修正
-  - 同理，**重命名**文档时也要同步迁移其它语言版本与缓存，避免产生孤立文件
-- 17. 以下文档路径请务必不要读取/修改，也**不要在本地运行生成脚本更新它们**！它们完全由 CI/CD 统一生成，本地生成会污染提交：
-  - 不要读取或修改任何语言 `ai-support/prompts` 下的文档，这是自动生成的AI提示词；不要本地运行 `scripts/tools/generate-ai-prompts.py`
-  - 不要读取或修改任何语言 `api-reference/auto_api` 下的文档，这是自动生成的API文档；不要本地运行 `scripts/tools/generate-api-docs.py`
-  - 源码 docstring 与 `docs/zh-CN` 的修改会在 CI 流程中自动反映到上述文档，无需（也不应）手动同步
+- 16. 只需要修改 `docs/zh-CN` 下的相关文档。**zh-CN 是唯一维护源**；其余语言由 CI 翻译流程生成，以 `docs-generated` 分支（单提交强推，永久持久层）+ workflow artifact（400 天，查验副本）形式发布，**不再提交进开发分支**——仓库内现存其它语言文档为历史快照，不会自动更新
+  - ⚠️ **删除/移动/重命名 `docs/zh-CN` 文档时**，需手动清理仓库内其它语言的对应存量文件（`docs/en`、`docs/ja`、`docs/ru`、`docs/zh-TW`）与 `.github/.translate_cache/<lang>/` 缓存，并检查死链接
+- 17. 以下文档路径由 CI 生成，以 `docs-generated` 分支（持久层）+ workflow artifact（400 天查验副本）形式发布（不提交进开发分支），请勿读取/手改，也**不要在本地运行生成脚本**（源码 docstring 与 `docs/zh-CN` 是唯一内容来源）：
+  - 不要读取或修改任何语言 `ai-support/prompts` 下的文档（自动生成的AI提示词；生成脚本 `scripts/tools/generate-ai-prompts.py`）
+  - 不要读取或修改任何语言 `api-reference/auto_api` 下的文档（自动生成的API文档；生成脚本 `scripts/tools/generate-api-docs.py`）
 - 18. 用户可感知的变更必须更新 `CHANGELOG.md` **当前开发版本**条目，并遵循其头部「写作规范」：
   - 同一主题的多次修改应**更新既有条目为最终形态**，而非追加新条目（禁止"后期迭代 / 修正 / 不再…"式过程记录）
   - 本版本内引入又在本版本内修复 / 回退的内容不单独记录（并入特性条目或不记）
@@ -49,6 +43,7 @@
 - 19. 如果你有新增/重构文档，请务必进行以下两项任务：
   - 更新根文档README即相关总结性文档的内容，添加/修改新的文档的相关连接 
   - 更新文档相关生成脚本：`scripts/tools/generate-ai-prompts.py`, `scripts/tools/generate-docs-index.py` 是否需要更新
+  - 行文与对外页面写作遵循 `docs/zh-CN/styleguide/docs-writing.md`（注意：`styleguide/` 不进入 AI 提示词生成包）
   
 ## 模板与示例同步
 - 20. 修改适配器/模块的基类或配置规范时，必须同步更新 `src/ErisPulse/CLI/commands/create.py` 中的 `_ADAPTER_CORE` 和 `_MODULE_CORE` 模板
@@ -71,7 +66,7 @@
 ## 发布流程
 
 - 27. 版本发布（本项目一般不打 rc，dev 浸泡后直接正式版）：
-  - `pyproject.toml` 版本号收口（如 `2.8.0-dev.2` → `2.8.0`）
+  - `pyproject.toml` 版本号收口（如 `x.y.z-dev.N` → `x.y.z`）
   - CHANGELOG 新增 `[x.y.z]` 正式条目 = **全部 dev 条目的净差异总结**（凝练式：版本摘要 + 升级建议 + 注意事项，细节保留在 dev 条目中作为历史）
   - 合并 `Develop/v2` → `main`（auto-tag 生效）→ 打 tag 触发 `pypi-publish`（stable tag 走正式发布）与 `docker-publish`（production stable 镜像）
   - 生态组件（ErisPulse-Dashboard、核心适配器）需配套发版并验证兼容

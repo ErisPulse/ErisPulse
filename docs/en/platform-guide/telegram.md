@@ -69,6 +69,7 @@ await telegram.Request(event["request_id"]).Using("main").accept()
 ```
 
 ---
+
 ## Supported Message Sending Types
 
 All sending methods use a fluent interface, for example:

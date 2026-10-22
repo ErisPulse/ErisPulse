@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "be1f1caf5482403cd1d7f97c38cbb5d0",
-  "file_hash": "be1f1caf5482403cd1d7f97c38cbb5d0",
-  "translated_at": "2026-10-14T03:16:07.449865",
+  "hash": "6b995df0d0c2ebcc939f094ef89dfbcf",
+  "file_hash": "6b995df0d0c2ebcc939f094ef89dfbcf",
+  "translated_at": "2026-10-22T11:52:31.644842",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "6ac7fcfa418a1e0b78a17a9900a59700",
-      "translation": "# 模組開發入門\n\n> [!NOTE]  \n> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。\n\n本指南將帶你從零開始建立一個 ErisPulse 模組。"
+      "hash": "46f0a20caa8e72c359036a8161e7adb8",
+      "translation": "# 模組開發入門\n\n> [!NOTE]\n> **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。\n\n跟著這篇走完，你會得到一個能響應 `/hello` 命令的可執行模組，並了解模組的專案結構、註冊方式與載入 / 卸載鉤子——後續所有模組文件都建立在這套骨架上。"
     },
     {
       "hash": "a0073e5af21db81bec6138a64a0fdceb",
@@ -34,8 +34,8 @@
       "translation": "## 核心概念\n\n### BaseModule 基類\n\n所有模組必須繼承 `BaseModule`，提供以下方法：\n\n| 方法 | 說明 | 必須 |\n|------|------|------|\n| `__init__(self, sdk)` | 建構函數（框架傳入 `sdk` 實例） | 否 |\n| `get_load_strategy()` | 返回載入策略 | 否 |\n| `get_meta()` | 返回模組介紹元資訊（可選） | 否 |\n| `on_load(self, event)` | 模組載入時呼叫 | 是 |\n| `on_unload(self, event)` | 模組卸載時呼叫 | 是 |\n\n### 模組介紹 meta\n\n> [!NOTE]\n> 本特性需要 ErisPulse **2.8.0+**。\n\n透過 `get_meta()` 聲明模組的介紹元資訊（這個模組是用來做什麼的、屬於哪一類等）。\n元資訊是模組的**通用介紹資料**，供 help 模組、Dashboard 模組列表、模組商店等各類介面/生態模組消費。\n\n與 `get_load_strategy()` 返回 `ModuleLoadStrategy` 一致，**推薦返回 `ModuleMeta` 配置類實例**（屬性類型、IDE 自動補全），也兼容直接返回 dict：\n\n```python\nclass MyModule(BaseModule):\n    @staticmethod\n    def get_meta() -> ModuleMeta:\n        return ModuleMeta(\n            name=\"天氣\",               # 顯示名（預設註冊名）\n            description=\"查詢城市天氣\",  # 模組簡介\n            version=\"1.0.0\",\n            author=\"ErisDev\",\n            group=\"工具\",               # 功能分組\n            tags=[\"天氣\", \"查詢\"],\n        )\n```\n\n相容寫法（dict）：\n\n```python\nclass MyModule(BaseModule):\n    @staticmethod\n    def get_meta() -> dict:\n        return {\n            \"name\": \"天氣\",\n            \"description\": \"查詢城市天氣\",\n            \"version\": \"1.0.0\",\n            \"author\": \"ErisDev\",\n            \"group\": \"工具\",\n            \"tags\": [\"天氣\", \"查詢\"],\n        }\n```\n\n- `module.get_meta(\"MyModule\")` 讀取已解析的元資訊（類宣告 > 註冊 info，自動補全該模組的命令名）。\n- `module.get_commands_overview()` 聚合「模組 meta + 其註冊的命令（別名/分組/幫助）」，按模組組織的命令總覽。\n- 命令歸屬模組透過 `cmd_info[\"owner\"]` 取得（註冊時由上下文系統自動注入）。\n\n#### meta 字段的 i18n 支援\n\n元資訊字段值可用純字串，或 i18n 字典 `{\"i18n\": \"key.path\", \"default\": \"兜底文本\"}`（與配置 `description` 約定一致）。\n翻譯鍵透過 `I18nClass` 聲明註冊，`module.get_meta()` 讀取時自動解析為當前語言文本：\n\n```python\nclass MyModule(BaseModule):\n    class I18nClass(BaseI18n):\n        meta_description: I18nKey = I18nKey(\n            default=\"Weather lookup\",\n            zh_CN=\"查詢城市天氣\",\n            en=\"Weather lookup\",\n        )\n\n    @staticmethod\n    def get_meta() -> ModuleMeta:\n        return ModuleMeta(\n            name=\"天氣\",\n            description={\"i18n\": \"MyModule.meta_description\", \"default\": \"Weather lookup\"},\n        )\n```\n\n### SDK 物件\n\n透過 `sdk` 物件存取核心功能：\n\n```python\nfrom ErisPulse import sdk\n\nsdk.storage    # 存儲系統\nsdk.config     # 配置系統\nsdk.logger     # 日誌系統\nsdk.adapter    # 適配器系統\nsdk.router     # 路由系統\nsdk.lifecycle  # 生命週期系統\n```"
     },
     {
-      "hash": "396851cc7f0728c2b96c0a9dece48ec5",
-      "translation": "## 下一步\n\n- [模組核心概念](core-concepts.md) - 深入了解模組架構  \n- [Event 包裝類別詳解](event-wrapper.md) - 學習 Event 物件  \n- [模組最佳實踐](best-practices.md) - 開發高品質模組"
+      "hash": "d88e1f4337fb995fb9a6b9a2b03dfca2",
+      "translation": "## 下一步\n\n### 繼續學習路徑\n\n- [模組核心概念](core-concepts.md) - 深入了解模組架構\n- [Event 包裝類別詳解](event-wrapper.md) - 學習 Event 物件\n\n### 寫完之後\n\n- [模組最佳實踐](best-practices.md) - 開發高品質模組\n- [模組排查指南](../module-troubleshooting.md) - 模組沒載入 / 命令沒觸發時對症排查"
     }
   ]
 }

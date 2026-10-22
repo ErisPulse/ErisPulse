@@ -178,7 +178,7 @@ ErisPulse 多轮对话上下文模块
 ---
 
 
-##### `stop()`
+##### `stop() -> None`
 
 结束对话
 
@@ -220,7 +220,7 @@ conv.remind(120, "还在考虑吗？需要帮助请输入「帮助」")
 ---
 
 
-##### `branch(name: str)`
+##### `branch(name: str) -> Callable`
 
 注册分支处理器
 
@@ -253,7 +253,7 @@ conv.start("menu")
 ---
 
 
-##### `goto(branch_name: str, event: 'Event | None' = None)`
+##### `goto(branch_name: str, event: 'Event | None' = None) -> None`
 
 跳转到指定分支
 
@@ -271,7 +271,7 @@ conv.goto("drink")
 ---
 
 
-##### `start(branch_name: str, event: 'Event | None' = None)`
+##### `start(branch_name: str, event: 'Event | None' = None) -> None`
 
 启动对话，从指定分支开始
 
@@ -352,7 +352,7 @@ conv.start("menu")
 ---
 
 
-##### `async save()`
+##### `async save() -> None`
 
 保存对话状态到 storage（自动检查点）
 
@@ -405,7 +405,7 @@ if await conv.resume():
 ---
 
 
-##### `async clear_saved()`
+##### `async clear_saved() -> None`
 
 清除保存的对话状态
 

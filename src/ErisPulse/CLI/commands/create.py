@@ -7,7 +7,7 @@ Create 命令实现
 import datetime
 import shutil
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from rich.prompt import IntPrompt, Prompt
@@ -796,7 +796,7 @@ class CreateCommand(Command):
     aliases = ["c", "new"]
     category = "project"
 
-    def add_arguments(self, parser: ArgumentParser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "create_type",
             nargs="?",
@@ -829,7 +829,7 @@ class CreateCommand(Command):
             help=i18n.t("cli.create.local_help"),
         )
 
-    def execute(self, args):
+    def execute(self, args: Namespace) -> None:
         create_type = getattr(args, "create_type", None)
         if not create_type:
             create_type = self._interactive_select_type()

@@ -101,3 +101,8 @@ SELECT COUNT(*) FROM transcript;
 - **對話恢復的歷史帶回**：`resume(with_history=N)` 從收件箱取最近 N 條——
   收件箱被裁剪後能帶回的歷史隨之變少（調大 `max_per_session` 可延長可恢復窗口）；
 - **影子模組 diff**：依賴 `get_by_trace` 鏈路查詢，TTL 過短的收件箱會縮短可 diff 窗口。
+
+## 相關文件
+
+- **消費收件箱歷史的地方**：對話恢復 [Conversation](conversation.md)、事件級讀取 [event.history](interaction.md#會話收件箱eventhistory)、影子 diff [影子模組與灰度轉正](shadow.md)
+- **審計表規模用到的儲存介面** → [儲存後端](storage-backends.md) 與 [SQL 查詢建構器](sql-builder.md)

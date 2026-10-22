@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "6dd9d96b6c61411b482f7ad12f58902d",
-  "file_hash": "6dd9d96b6c61411b482f7ad12f58902d",
-  "translated_at": "2026-09-07T11:59:19.728141",
+  "hash": "82976c1b48a72f583a03f56ddf3e3418",
+  "file_hash": "82976c1b48a72f583a03f56ddf3e3418",
+  "translated_at": "2026-10-22T11:12:07.043793",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "8ac818619ccf19f24d0ff2ed3dd6f00a",
-      "translation": "# ErisPulse Adapter Standardized Return Specification"
+      "hash": "72071db06e5d0f69e471da1e5e475dd8",
+      "translation": "# ErisPulse Adapter Standardized Return Specification\n\n> [!TIP]\n> **When to read this**: When you are implementing the return values of `call_api` / Send / Request in an adapter and need to confirm that the response structure and return codes conform to the ErisPulse standard, or when troubleshooting the meaning of a particular `retcode`, refer to this document. Skip if not needed."
     },
     {
       "hash": "0a41e60f1c139a77a183b326303327a9",
@@ -30,8 +30,12 @@
       "translation": "## 5. Extension Specifications\n\nErisPulse extends the OneBot12 standard return structure as follows:\n\n### 5.1 `message_id` Required Field\n\nIn the OneBot12 standard, `message_id` is located within the `data` object and is not mandatory. ErisPulse elevates it to a **required** top-level field:\n\n- When `message_id` cannot be obtained, it should be set as an empty string `\"\"`\n- Ensure `message_id` always exists, so modules do not need to perform null checks\n\n### 5.2 `{platform}_raw` Raw Response Field\n\nThe return value should include the `{platform}_raw` field, which stores a complete copy of the raw response data from the platform:\n\n```json\n{\n    \"status\": \"ok\",\n    \"retcode\": 0,\n    \"data\": {\"message_id\": \"1234\", \"time\": 1632847927},\n    \"message_id\": \"1234\",\n    \"message\": \"\",\n    \"telegram_raw\": {\n        \"ok\": true,\n        \"result\": {\"message_id\": 1234, \"date\": 1632847927, ...}\n    }\n}\n```\n\n**Requirements**:\n- `{platform}_raw` must be a deep copy of the original response, not a reference\n- `platform` must exactly match the platform name registered by the adapter (case-sensitive)\n- Error information from the original response should also be retained for debugging purposes\n\n### 5.3 Framework Extension Return Codes (Custom Low Three Digits in the 34xxx Platform Error Segment)\n\nThe OneBot12 specification allows implementations to define custom low three digits of `3xxxx`. The `34xxx` segment semantics are **Platform Error** (robot platform error, such as failures caused by platform restrictions). The `34xxx` segment is used hierarchically according to responsibilities:\n\n| Low Three Digits Segment | Ownership | Purpose |\n|---------|------|------|\n| `340xx` | Adapter Implementation | Request operation group (Request Not Found / Already Handled / Not Supported / Permission Denied, see request-action-spec §7) |\n| `341xx`～`345xx` | Adapter Implementation | Platform-side permission / risk control / account restriction errors (implement custom low three digits, original error placed in `{platform}_raw`) |\n| `346xx` | **ErisPulse Framework (reserved)** | Framework-level interception and general failures; adapters/modules should not occupy these codes |\n| `347xx`～`349xx` | Adapter Implementation | Other platform execution errors |\n\nErisPulse framework currently uses the `346xx` codes:\n\n| Error Code | Error Name | Description |\n|-------|-------|------|\n| 34600 | SDK Failure | General failure in the framework (`make_error()` default return code) |\n| 34601 | Action Denied | Outbound action denied by scope (`scope.actions`), call not initiated, directly return this response |\n\n> Responsibility distinction: `34601` is **framework-level interception before the call** (the module has no right to initiate the action); `34004` / `34xxx` platform codes are **actions already sent but rejected by the platform** (e.g., Bot lacks permission, is restricted). When modules check for permission issues, they should check both types: first check `34601` (the module's own scope is disabled), then check `34xxx` (platform-side restrictions).\n\nThe return structure is the standard failure response as defined in §2:\n\n```json\n{\n    \"status\": \"failed\",\n    \"retcode\": 34601,\n    \"data\": null,\n    \"message_id\": \"\",\n    \"message\": \"action 'send' denied by scope.actions\"\n}\n```\n\n### 5.4 Adapter Implementation Checklist\n\n- [ ] Include `status`, `retcode`, `data`, `message_id`, `message` fields\n- [ ] Return codes follow the OneBot12 specification (see §3.2)\n- [ ] `message_id` always exists (set as empty string if unavailable)\n- [ ] `{platform}_raw` contains the raw response data from the platform"
     },
     {
-      "hash": "2f1c197acf90bdaed8c349abc2fa667a",
-      "translation": "## 6. Notes\n- For error codes in the 3xxxx range, the last three digits can be defined by the implementation.\n- Avoid using reserved error ranges (4xxxx, 5xxxx).\n- **`34600` / `34601` are reserved error codes for the ErisPulse framework** (see §5.3); adapters/modules should avoid using them.\n- Error messages should be concise and clear for easier debugging."
+      "hash": "2641d1765ca1c7ab6e2e715527743410",
+      "translation": "## 6. Notes\n- For error codes starting with 3xxxx, the last three digits can be defined by the implementation.\n- Avoid using reserved error ranges (4xxxx, 5xxxx).\n- **`34600` / `34601` are reserved error codes for the ErisPulse framework** (see §5.3); adapters/modules should avoid using them.\n- Error messages should be concise and clear for easier debugging."
+    },
+    {
+      "hash": "fdf756e62ca577389f105d3d5946b557",
+      "translation": "## Next Steps\n\n- **Implement corresponding value mapping for each DSL**: [API Action Specification](api-action-spec.md) (the data field of standard actions), [Request Action Specification](request-action-spec.md) (the 34001-34004 extensions for request actions), [Send Method Specification](send-method-spec.md) (the degradation semantics for failed sends)\n- **Troubleshoot permission-related failures**: First check `34601` (the module is disabled by scope, the framework intercepts before calling, see §5.3), then check `34xxx` (the action has been sent but rejected by the platform side)"
     }
   ]
 }

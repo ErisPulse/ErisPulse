@@ -1,17 +1,18 @@
 # Common Task Examples
 
-This guide provides implementation examples for common features to help you quickly implement commonly used functions.
+> [!TIP]
+> **When to read this**: When you want to add a specific feature to your bot, refer to each section—persistence, scheduled tasks, message filtering, permission control, batch sending. Each section is a complete example you can copy directly. If you want to learn event handling patterns systematically, start with [Introduction to Event Handling](event-handling.md); otherwise, skip it.
 
-## Table of Contents
+## Content List
 
-1. Data Persistence
-2. Scheduled Tasks
-3. Message Filtering
-4. Multi-Platform Adaptation
-5. Advanced Message Sending (Retry/Timeout/Batch)
-6. Permission Control
-7. Message Statistics
-8. Search Functionality
+1. Data Persistence  
+2. Scheduled Tasks  
+3. Message Filtering  
+4. Multi-Platform Adaptation  
+5. Advanced Message Sending (Retry/Timeout/Batch)  
+6. Permission Control  
+7. Message Statistics  
+8. Search Functionality  
 9. Image Processing
 
 ## Data Persistence
@@ -22,16 +23,16 @@ This guide provides implementation examples for common features to help you quic
 from ErisPulse import sdk
 from ErisPulse.Core.Event import command
 
-@command("count", help="View command call count")
+@command("count", help="View command invocation count")
 async def count_handler(event):
-    # Get count
+    # Get the count
     count = sdk.storage.get("command_count", 0)
     
-    # Increment count
+    # Increment the count
     count += 1
     sdk.storage.set("command_count", count)
     
-    await event.reply(f"This is the {count}th call of this command")
+    await event.reply(f"This is the {count}th invocation of this command")
 ```
 
 ### User Data Storage
@@ -50,8 +51,8 @@ async def profile_handler(event):
     
     profile_text = f"""
 Nickname: {user_data['nickname']}
-Join date: {user_data['join_date']}
-Message count: {user_data['message_count']}
+Join Date: {user_data['join_date']}
+Message Count: {user_data['message_count']}
     """
     
     await event.reply(profile_text.strip())
@@ -70,7 +71,7 @@ async def setnick_handler(event):
     user_data["nickname"] = " ".join(args)
     sdk.storage.set(f"user:{user_id}", user_data)
     
-    await event.reply(f"Nickname set to: {' '.join(args)}")
+    await event.reply(f"Nickname has been set to: {' '.join(args)}")
 ```
 
 ## Scheduled Tasks
@@ -88,12 +89,12 @@ class TimerModule:
         self._tasks = []
     
     async def on_load(self, event):
-        """Start scheduled tasks when module loads"""
+        """Start scheduled tasks when the module is loaded"""
         self._start_timers()
         
         @command("timer", help="Timer management")
         async def timer_handler(event):
-            await event.reply("Timer is running...")
+            await event.reply("The timer is running...")
     
     def _start_timers(self):
         """Start scheduled tasks"""
@@ -111,11 +112,11 @@ class TimerModule:
         # Your logic...
     
     async def _daily_task(self):
-        """Task executed daily at midnight (Note: Based on UTC time calculation, adjust for local time if needed)"""
+        """Task executed daily at midnight (Note: based on UTC time calculation, adjust for local time if needed)"""
         import time
         
         while True:
-            # Calculate time to midnight
+            # Calculate time until midnight
             now = time.time()
             midnight = now + (86400 - now % 86400)
             
@@ -150,19 +151,19 @@ async def init_complete_handler(event_data):
 ```python
 from ErisPulse.Core.Event import message
 
-blocked_words = ["spam", "advertisement", "phishing"]
+blocked_words = ["垃圾", "广告", "钓鱼"]
 
 @message.on_message()
 async def filter_handler(event):
     text = event.get_text()
     
-    # Check if message contains blocked words
+    # Check if the message contains any blocked words
     for word in blocked_words:
         if word in text:
             sdk.logger.warning(f"Blocked sensitive message: {word}")
             return  # Do not process this message
     
-    # Process message normally
+    # Process the message normally
     await event.reply(f"Received: {text}")
 ```
 
@@ -177,7 +178,7 @@ async def blacklist_handler(event):
     user_id = event.get_user_id()
     
     if user_id in blacklist:
-        sdk.logger.info(f"Blacklisted user: {user_id}")
+        sdk.logger.info(f"User on blacklist: {user_id}")
         return  # Do not process
     
     # Process normally
@@ -229,18 +230,18 @@ async def rich_handler(event):
 
 ## Advanced Message Sending (Retry/Timeout/Batch)
 
-In addition to simple `event.reply()`, you can use the adapter's Send DSL to implement more complex sending scenarios: automatic retry on failure, timeout cancellation, logic execution after success, and batch sending of multiple messages.
+In addition to the simple `event.reply()`, you can use the adapter's Send DSL to implement more complex sending scenarios: automatic retry on failure, timeout cancellation, executing logic after success, and batch sending of multiple messages.
 
-> The following examples use `event.get_detail_type()` and `event.get_target_id()` to retrieve the target type and ID from the event (group ID for group messages, user ID for private messages), avoiding hardcoding.
+> The following examples use `event.get_detail_type()` and `event.get_target_id()` to retrieve the target type and ID from the event (automatically getting `group_id` for group chats and `user_id` for private chats), avoiding hardcoding.
 
-### Execute Logic After Successful Send
+### Execute Logic After Successful Sending
 
 ```python
 @command("pay", help="Simulate payment")
 async def pay_handler(event):
     yunhu = sdk.adapter.get(event.get_platform())
     user_id = event.get_user_id()
-    # Deduct points only after successful send
+    # Deduct points only after successful sending
     await (yunhu.Send.To(event.get_detail_type(), event.get_target_id())
            .Hook(lambda r: sdk.storage.set(f"points:{user_id}", -10))
            .Text("Payment successful, 10 points deducted"))
@@ -249,49 +250,49 @@ async def pay_handler(event):
 ### Retry on Failure + Timeout Cancellation
 
 ```python
-@command("notice", help="Send important notice")
+@command("notice", help="Send important notification")
 async def notice_handler(event):
     adapter_inst = sdk.adapter.get(event.get_platform())
-    # Retry up to 3 times, each with a 10-second timeout
+    # Retry up to 3 times, with each attempt timed out after 10 seconds
     task = (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
             .Retry(3)
             .Timeout(10)
-            .OnError(lambda ctx: sdk.logger.error(f"Notice send failed: {ctx.error}"))
-            .Text("This is an important notice"))
-    # Send asynchronously without waiting
+            .OnError(lambda ctx: sdk.logger.error(f"Notification sending failed: {ctx.error}"))
+            .Text("This is an important notification"))
+    # Send in the background without waiting
 ```
 
 ### Batch Send Multiple Messages
 
-Send multiple messages in a single chain, executing them together:
+Send multiple messages in a single chain, with unified execution:
 
 ```python
 @command("announce", help="Send announcement")
 async def announce_handler(event):
     adapter_inst = sdk.adapter.get(event.get_platform())
-    # Build multiple messages and send them together (default parallel)
+    # Build multiple messages and send them together (default is parallel)
     results = await (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
                     .Build()
                     .Text("📋 Today's announcement")
                     .Image("https://example.com/banner.jpg")
-                    .Text("See the above image for details")
-                    .Retry(2)            # Retry failed items individually
+                    .Text("See the image above for details")
+                    .Retry(2)            # Each failed item retries individually
                     .send_all())
-    sdk.logger.info(f"Batch send completed, total {len(results)} messages")
+    sdk.logger.info(f"Batch sending completed, {len(results)} messages in total")
 ```
 
-> For more complete rules and batch instructions, refer to [Platform Features Guide](../platform-guide/README.md#send-rules-decorators).
+> For a more complete explanation of rules and batch operations, see the [Platform Features Guide](../platform-guide/README.md#sending-rules-decorators).
 
 ## Permission Control
 
 ### Administrator Check
 
 ```python
-# Configure owner list
+# Configure the list of owners
 MASTERS = ["user123", "user456"]
 
 def is_master(user_id):
-    """Check if user is framework owner"""
+    """Check if the user is the framework owner"""
     return user_id in MASTERS
 
 @command("master", help="Framework owner command")
@@ -299,7 +300,7 @@ async def master_handler(event):
     user_id = event.get_user_id()
     
     if not is_master(user_id):
-        await event.reply("Insufficient permissions, this command is only available to framework owners")
+        await event.reply("Insufficient permissions, this command is only available to the framework owner")
         return
     
     await event.reply("Framework owner command executed successfully")
@@ -384,7 +385,7 @@ async def stats_handler(event):
 
 ### Simple Search
 
-> **Note**: The following example uses an in-memory list to store message history, **data will be lost after program restart**. For production environments, it is recommended to use `sdk.storage` or an SQLite table for persistent storage.
+> **Note**: The following example uses an in-memory list to store message history; **data will be lost after program restart**. For production environments, it is recommended to use `sdk.storage` or SQLite tables for persistent storage.
 
 ```python
 from ErisPulse.Core.Event import command, message
@@ -394,7 +395,7 @@ message_history = []
 
 @message.on_message()
 async def store_handler(event):
-    """Store messages for search"""
+    """Store messages for searching"""
     user_id = event.get_user_id()
     text = event.get_text()
     
@@ -404,7 +405,7 @@ async def store_handler(event):
         "time": event.get_time()
     })
     
-    # Limit history record count
+    # Limit the number of history records
     if len(message_history) > 1000:
         message_history.pop(0)
 
@@ -419,7 +420,7 @@ async def search_handler(event):
     keyword = " ".join(args)
     results = []
     
-    # Search history records
+    # Search through history
     for msg in message_history:
         if keyword in msg["text"]:
             results.append(msg)
@@ -430,7 +431,7 @@ async def search_handler(event):
     
     # Display results
     result_text = f"Found {len(results)} matching messages:\n\n"
-    for i, msg in enumerate(results[:10], 1):  # Show at most 10 messages
+    for i, msg in enumerate(results[:10], 1):  # Show at most 10 results
         result_text += f"{i}. {msg['text']}\n"
     
     await event.reply(result_text)
@@ -445,7 +446,7 @@ from ErisPulse.Core import client
 
 @message.on_message()
 async def image_handler(event):
-    """Process image messages"""
+    """Handle image messages"""
     message_segments = event.get_message()
     
     for segment in message_segments:
@@ -453,7 +454,7 @@ async def image_handler(event):
             file_url = segment.get("data", {}).get("file")
             
             if file_url:
-                # Recommended to use SDK's built-in client to download images
+                # Recommended to use the SDK built-in client to download images
                 resp = await client.get(file_url)
                 if resp.status == 200:
                     image_data = await resp.read()
@@ -469,21 +470,21 @@ async def image_handler(event):
 
 ### Image Recognition Example
 
-> **Note**: The following example uses a placeholder API address; replace it with your own image recognition service when actually used.
+> **Note**: The following example uses a placeholder API address. Please replace it with your own image recognition service when using it.
 
 ```python
 from ErisPulse.Core import client
 
 @command("identify", help="Identify image")
 async def identify_handler(event):
-    """Identify images in messages"""
+    """Identify images in the message"""
     message_segments = event.get_message()
     
     for segment in message_segments:
         if segment.get("type") == "image":
             file_url = segment.get("data", {}).get("file")
             
-            # Call image recognition API
+            # Call the image recognition API
             result = await _identify_image(file_url)
             
             await event.reply(f"Recognition result: {result}")
@@ -492,7 +493,7 @@ async def identify_handler(event):
     await event.reply("No image found")
 
 async def _identify_image(url):
-    """Call image recognition API (example) - Use SDK's built-in client"""
+    """Call the image recognition API (example) - Use the SDK built-in client"""
     resp = await client.post(
         "https://api.example.com/identify",
         json={"url": url}
@@ -501,8 +502,8 @@ async def _identify_image(url):
     return data.get("description", "Recognition failed")
 ```
 
-## Next Steps
+## What's Next
 
-- [User Guide](../user-guide/) - Learn about configuration and module management
-- [Developer Guide](../developer-guide/) - Learn to develop modules and adapters
-- [Advanced Topics](../advanced/) - Deepen understanding of framework features
+- **Function is ready, want to run it long-term**: See [Deployment Guide](../user-guide/deployment.md), Docker / systemd daemon and backup & upgrade
+- **Want to distribute your own function to others**: Start from [Module Development Introduction](../developer-guide/modules/getting-started.md), upgrade your script to an installable module
+- **Need to adjust configuration or troubleshoot "module not responding"**: Check [Configuration File Description](../user-guide/configuration.md) and [Scope](../advanced/scope.md)

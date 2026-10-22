@@ -903,7 +903,7 @@ await event.reply_ob12(
 ---
 
 
-##### `send_chain()`
+##### `send_chain() -> Any`
 
 获取已配置好目标和发送账号的发送链
 
@@ -1431,7 +1431,7 @@ async with event.message_tx():
 ---
 
 
-##### `mark_processed(claim: bool = True, stop: bool = True)`
+##### `mark_processed(claim: bool = True, stop: bool = True) -> None`
 
 标记事件为已处理
 
@@ -1465,7 +1465,7 @@ event.mark_processed(claim=False) # 仅阻断，不标记已处理
 ---
 
 
-##### `done(claim: bool = True, stop: bool = True)`
+##### `done(claim: bool = True, stop: bool = True) -> None`
 
 标记事件完成（:meth:`mark_processed` 的别名）
 

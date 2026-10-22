@@ -1,17 +1,21 @@
 {
   "version": 2,
-  "hash": "77bc4639cc0dedb535be5ea3116e8633",
-  "file_hash": "77bc4639cc0dedb535be5ea3116e8633",
-  "translated_at": "2026-10-04T12:09:08.600355",
+  "hash": "711eb42f6e93dbfb4c70ba2c3dc79873",
+  "file_hash": "711eb42f6e93dbfb4c70ba2c3dc79873",
+  "translated_at": "2026-10-22T09:27:14.376768",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "4afb6aa3427bfc693cb05b020feca75c",
-      "translation": "# すぐに始める\n\n> **これはあなたの最初の一歩です。** 5 分でゼロから ErisPulse ロボットを立ち上げましょう。"
+      "hash": "23e4d34812632e12802f7f5ef532763f",
+      "translation": "# 速習\n\n> **これが最初の一歩です。** 5 分でゼロから ErisPulse ロボットを起動しましょう。まずは効果を見て、その後各ステップを詳しく説明します。"
     },
     {
-      "hash": "c2988959b0e3ee836781ecd5d8eae0b3",
-      "translation": "## ErisPulse のインストール\n\n### 1 つでインストールするスクリプト（推奨）\n\nインストールスクリプトは、Docker、Python、uv の環境を自動的に検出し、最適なインストール方法を選択できるよう案内します。\n\nWindows (PowerShell):\n```powershell\nirm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1\n```\n\nmacOS / Linux:\n```bash\ncurl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh\n```\n\nスクリプトは以下をガイドします：\n\n- **Docker インストール**（Docker が検出された場合に推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャネル（安定版 / プレビュー版）、Dashboard 管理パネルの設定、ポートの設定\n- **グローバル CLI インストール（uv tool、推奨）**：`epsdk` をグローバルコマンドとしてインストールし、仮想環境を必要とせず、uv が Python を自動管理します（システムの Python バージョンが低くても問題ありません）。プロジェクトディレクトリ内で実行すると、プロジェクトの `.venv` を自動的に認識します。\n- **従来のインストール**：自動的に仮想環境を作成し、ErisPulse のバージョンを選択し、オプションで Dashboard 管理パネルモジュールをインストールできます。\n\n### Docker を使用する\n\nDocker イメージには、ErisPulse フレームワークと Dashboard 管理パネルが事前にインストールされています。\n\n```bash\n# docker-compose.yml をダウンロード\ncurl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml\n\n# Dashboard トークンを設定して起動\nERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d\n```\n\n<details>\n<summary>Docker Hub が利用できない場合？</summary>\n\nGitHub Container Registry のイメージを使用する場合は、`docker-compose.yml` の image を次のように変更します：\n\n```yaml\nimage: ghcr.io/erispulse/erispulse:latest\n```\n\n</details>\n\n起動後、`http://<host>:8000/Dashboard` にアクセスし、設定したトークンでログインします。\n\n### pip を使用してインストールする\n\nPython のバージョンが 3.10 以上であることを確認した上で、pip を使用してインストールします：\n\n```bash\npip install ErisPulse\n```\n\n既に [uv](https://github.com/astral-sh/uv) をインストールしている場合は、`uv pip install ErisPulse` を使用してインストール速度を向上させることもできます。\n\n`epsdk` コマンドラインツールをグローバルにインストールし、プロジェクト環境を汚染したくない場合は、`uv tool install` を推奨します：\n\n```bash\nuv tool install ErisPulse\n```\n\nインストール後、`epsdk` はグローバルに利用可能になります。プロジェクトディレクトリ内で実行すると、プロジェクトの `.venv` を自動的に認識します（`epsdk install` でプロジェクト環境にインストールし、`epsdk run` でプロジェクト環境で実行）。フレームワーク本体はツール環境から提供されます。詳しくは[インストールの参考](user-guide/installation.md)をご覧ください。"
+      "hash": "bccf53bd363cecc78ed231ab74008daf",
+      "translation": "## 60 秒効果：まずロボットが 1 文だけ返信するようにする\n\n**1. インストール**（Python >= 3.10）：\n\n```bash\npip install ErisPulse\n```\n\n**2. プロジェクトの初期化**。ウィザードがプロジェクト名の設定、プラットフォームアダプターの選択、および設定の完了を促し、`main.py` と `config/config.toml` を生成します：\n\n```bash\nepsdk init\n```\n\n**3. `main.py` を開き、以下の 9 行のコードに置き換えます**：\n\n```python\nfrom ErisPulse import sdk\nfrom ErisPulse.Core.Event import command\n\n@command(\"ping\", help=\"ロボットがオンラインかどうかをテストする\")\nasync def ping_handler(event):\n    await event.reply(\"Pong！ロボットは正常に動作しています。\")\n\nif __name__ == \"__main__\":\n    import asyncio\n    asyncio.run(sdk.run(keep_running=True))\n```\n\n**4. 実行**：\n\n```bash\nepsdk run main.py\n```\n\nターミナルには、フレームワークの起動ログとアダプターの接続情報が出力されます。この時点で、接続したプラットフォームでロボットに `/ping` を送信すると、以下のように返信されます：\n\n> Pong！ロボットは正常に動作しています。\n\nこの返信が見られれば、フレームワーク、アダプター、イベント処理の連携が確立されたことを意味します。連携がうまくいかない場合は、文末の[問題が発生した場合](#問題が発生した場合)を参照してください。うまくいく場合は、各ステップの選択肢についても以下に説明します。"
+    },
+    {
+      "hash": "9f188e1329352e24cda5e3766f2d63ba",
+      "translation": "## ErisPulse のインストール：3 つの方法\n\n上記では最も直接的な pip を使用しています。環境に応じて選択してください。\n\n### pip を使用したインストール\n\nPython のバージョンが 3.10 以上であることを確認し、pip を使用してインストールします：\n\n```bash\npip install ErisPulse\n```\n\n既に [uv](https://github.com/astral-sh/uv) をインストールしている場合は、`uv pip install ErisPulse` を使用して、より高速にインストールできます。\n\nプロジェクト環境を汚染せずに `epsdk` コマンドラインツールをグローバルにインストールしたい場合は、`uv tool install` を推奨します：\n\n```bash\nuv tool install ErisPulse\n```\n\nインストール後、`epsdk` はグローバルに利用可能になります。プロジェクトディレクトリ内で実行すると、プロジェクトの `.venv` を自動的に感知し、`epsdk install` でプロジェクト環境にインストールし、`epsdk run` でプロジェクト環境で実行されます。フレームワーク本体はツール環境から提供されます。詳しくは[インストールの参考](user-guide/installation.md)を参照してください。\n\n### 1 つでインストールするスクリプト（新規環境に推奨）\n\nインストールスクリプトは、環境（Docker、Python、uv）を自動検出し、最適なインストール方法を選択するよう誘導します。多言語（中国語/English/日本語/Русский/繁体中国語）に対応しています。\n\nWindows (PowerShell):\n```powershell\nirm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1\n```\n\nmacOS / Linux:\n```bash\ncurl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh\n```\n\nスクリプトは以下を完了するよう誘導します：\n\n- **Docker インストール**（Docker が検出された場合に推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャネル（安定版 / プレビュー版）、Dashboard 管理パネルの設定、ポートの設定を選択\n- **グローバル CLI インストール（uv tool、推奨）**：`epsdk` をグローバルコマンドとしてインストールし、仮想環境を必要とせず、uv が Python を自動管理します（システムのバージョンが低くても可能です）；プロジェクトディレクトリ内で実行すると、プロジェクトの `.venv` を自動的に感知します\n- **従来のインストール**：自動的に仮想環境を作成し、ErisPulse のバージョンを選択し、オプションで Dashboard 管理パネルモジュールをインストールできます\n\n### Docker を使用する\n\nDocker イメージには、ErisPulse フレームワークと Dashboard 管理パネルが事前インストールされており、`linux/amd64` および `linux/arm64` アーキテクチャをサポートしています。\n\n```bash\n# docker-compose.yml をダウンロード\ncurl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml\n\n# Dashboard トークンを設定して起動\nERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d\n```\n\n<details>\n<summary>Docker Hub が利用できない場合？</summary>\n\nGitHub Container Registry のイメージを使用する場合は、`docker-compose.yml` の image を次のように変更します：\n\n```yaml\nimage: ghcr.io/erispulse/erispulse:latest\n```\n\n</details>\n\n起動後、`http://<host>:8000/Dashboard` にアクセスし、設定したトークンでログインします。"
     },
     {
       "hash": "7e317def5cef55f71b87c93ecb0233fd",
@@ -38,8 +42,8 @@
       "translation": "## 設定ファイル\n\n基本的な `config.toml` 設定：\n\n```toml\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\n\n[ErisPulse.logger]\nlevel = \"INFO\"\n\n[Yunhu_Adapter]\n# アダプターの設定\n```"
     },
     {
-      "hash": "5a9ac1241d385afd519d196a946694da",
-      "translation": "## 次のステップ\n\nロボットが起動した後、必要に応じて以下を進めてください。\n\n**フレームワークの仕組みを知りたい?**\n- [基本概念](getting-started/basic-concepts.md) — アダプター / モジュール / イベントの設計\n- [アーキテクチャ概要](architecture.md) — 可視化されたアーキテクチャ図\n\n**もっと多くの機能を実装したい?**\n- [一般的なタスクの例](getting-started/common-tasks.md) — ストレージ、スケジューリング、権限制御\n- [イベント処理の入門](getting-started/event-handling.md) — メッセージ、通知、リクエストの処理\n\n**独自のモジュール / アダプターを開発したい?**\n- [モジュール開発の入門](developer-guide/modules/getting-started.md)\n- [アダプター開発の入門](developer-guide/adapters/getting-started.md)\n\n**必要に応じて参照:**\n- [設定ファイルの説明](user-guide/configuration.md) · [CLI コマンド](user-guide/cli-reference.md) · [デプロイガイド](user-guide/deployment.md)"
+      "hash": "c9ab76ca02a25c6bcd720728c7189b33",
+      "translation": "## 次のステップ\n\nロボットが起動したら、目的に応じて選択してください：\n\n### グループ用ロボットを作りたい（メッセージ処理、グループ管理、通知）\n\n- [イベント処理の入門](getting-started/event-handling.md) — メッセージ、通知、リクエストイベントの書き方\n- [一般的なタスクの例](getting-started/common-tasks.md) — ストレージ、定期タスク、権限制御\n\n### 自分のモジュール / アダプターを書きたい\n\n- [基本概念](getting-started/basic-concepts.md) — アダプター / モジュール / イベントの設計を理解する\n- [モジュール開発の入門](developer-guide/modules/getting-started.md)\n- [アダプター開発の入門](developer-guide/adapters/getting-started.md)\n- [アーキテクチャ概要](architecture.md) — 可視化されたアーキテクチャ図\n\n### ロボットを長期的に動かしたい\n\n- [デプロイガイド](user-guide/deployment.md)\n- [設定ファイルの説明](user-guide/configuration.md)\n\n### 問題に遭遇した場合\n\n- [最初のロボットを作成する](getting-started/first-bot.md) — 最初のロボットの詳細な手順\n- [起動プロセスと手動制御](advanced/startup.md) — モジュール / アダプターのロード失敗の診断\n- [CLIコマンドリファレンス](user-guide/cli-reference.md) — `epsdk` のすべてのサブコマンド"
     }
   ]
 }

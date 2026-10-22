@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "9354351ef11ac35774d15703ecd37113",
-  "file_hash": "9354351ef11ac35774d15703ecd37113",
-  "translated_at": "2026-10-14T03:11:08.914659",
+  "hash": "1f1499ba8bab2e25922f61362cb4ff17",
+  "file_hash": "1f1499ba8bab2e25922f61362cb4ff17",
+  "translated_at": "2026-10-22T09:35:09.179574",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "97506026078ce5102241fe7b5422b9f6",
-      "translation": "# 归屬權（owner）系統\n\n> [!TIP]\n> **何時需要閱讀本文**：排查資源泄漏、理解卸載清理鏈路或聲明歸屬資源時。若無需求則可跳過，不影響其他功能的使用。\n\n歸屬權是模組「即插即用」的基石：模組在加載期間註冊的所有框架資源會自動標記所有者，卸載/禁用時則根據標記的所有者進行一鍵回收——模組作者只需聲明資源，無需手動編寫清理邏輯。\n\n> **相關系統**：作用域（scope）在事件分發時決定「資源是否生效」，歸屬權在生命週期中決定「資源歸誰所有、誰卸載時被回收」。作用域詳見[統一控制面（scope）](scope.md)，背景任務詳見 [生命週期管理](lifecycle.md#背景任務歸屬與自動取消)。\n\n{!--< tips >!--}\n1. 歸屬在**註冊瞬間**按 `current_owner` 自動記錄，模組程式碼無需修改\n2. 卸載/禁用共用同一條清理鏈（`_cleanup_module_registrations`），每步失敗僅發出警告而不中斷\n3. 用戶配置語義的資源（持久化覆寫 / scope 規則 / 命令 ACL）**不**隨模組卸載清理\n4. 工具模組托管的外部句柄可用 `on_cleanup(cb)` 掛入清理鏈，對方模組卸載時自動回調（見[工具模組指南](#工具模組指南托管其它模組的句柄)）\n{!--< /tips >!--}"
+      "hash": "bf824246ba6609e5f6c122ece42a0b18",
+      "translation": "# 所屬權（owner）系統\n\n> [!TIP]  \n> **何時需要閱讀本文**：排查資源洩漏、理解卸載清理鏈路或宣告所屬資源時。不需要則跳過，不會影響其他功能的使用。\n\n> **閱讀完你將知道**：owner 上下文如何自動歸屬資源、所屬資源全景表、卸載/禁用時清理鏈的完整時序，以及哪些資源不會隨卸載清理（設計邊界）。\n>\n> **本文不涉及**：資源「何時生效」的權限判定（見[作用域（scope）](scope.md)）；後台任務的推薦寫法與強制取消邊界（見[生命週期管理 · 後台任務歸屬與自動取消](lifecycle.md#後台任務歸屬與自動取消)）。\n\n所屬權是模組「即插即用」的基石：模組在載入期間註冊的一切框架資源會自動記名，卸載/禁用時按記名一鍵回收——模組作者只需宣告資源，無需手寫清理邏輯。\n\n> **相關系統**：作用域（scope）在事件分發時決定「資源是否生效」，所屬權在生命週期中決定「資源歸誰、誰卸載時被回收」。作用域詳見[統一控制面（scope）](scope.md)，後台任務詳見 [生命週期管理](lifecycle.md#後台任務歸屬與自動取消)。\n\n{!--< tips >!--}\n1. 所屬權在**註冊瞬間**按 `current_owner` 自動記錄，模組程式碼無需修改\n2. 卸載/禁用共用同一條清理鏈（`_cleanup_module_registrations`），每一步失敗僅發出警告而不中斷\n3. 用戶設定語意的資源（持久化覆寫 / scope 規則 / 命令 ACL）**不**會隨模組卸載清理\n4. 工具模組托管的外部句柄可用 `on_cleanup(cb)` 掛入清理鏈，對方模組卸載時自動回呼（見[工具模組指南](#工具模組指南托管其它模組的句柄)）\n{!--< /tips >!--}"
     },
     {
       "hash": "54d5b708e6654f301502c28228063e32",
@@ -34,8 +34,8 @@
       "translation": "## 設計邊界：哪些資源不隨卸載清理\n\n所有權只回收**模組程式碼註冊的執行時資源**。以下資源屬**用戶配置語意**\n（控制權在用戶，可能刻意配置），模組卸載後隨配置持久保留：\n\n| 資源 | 語意 | 說明 |\n|------|------|------|\n| `overrides.*.set(persist=True)` | 持久化覆寫 | 寫入配置檔案，跨重啟生效；模組卸載不刪（用戶顯式配置） |\n| `scope.set_action()` 等作用域規則 | 權限控制面 | 由用戶/Dashboard 管理，卸載模組不回收規則 |\n| `overrides.acl.set(persist=True)` | 命令 ACL | 同上 |\n| Conversation `save()` 持久化 | 多輪對話存檔 | 數據資產不清理 |\n\n執行時臨時寫入（`persist=False`）則隨 owner 回收——**持久化與否即**\n\"用戶資產\"與\"模組執行時狀態\"的分界線。"
     },
     {
-      "hash": "a58a44cd04d09922c8e30e70bbfc6c56",
-      "translation": "## 內部實現：所有權如何工作\n\n所有權系統由**兩條獨立鏈路**構成，理解它們的分工是排查所有權問題的前提：\n\n### 歸因鏈（contextvar 傳播）\n\n`runtime/context.py` 的 `current_owner` 等 ContextVar 負責**歸因**——\n\"此刻這段程式碼註冊的資源/發起的呼叫記在誰頭上\"。傳播規則遵循 Python\ncontextvars 語意：\n\n| 執行路徑 | context 是否傳播 | 歸因結果 |\n|---------|----------------|---------|\n| 同步呼叫鏈 / `await` 鏈 | ✅ 傳播 | 正確歸因 |\n| `owner_scope` 內 `asyncio.create_task` | ✅ 傳播（task 拷貝建立時刻的 context） | 任務**內部**的框架呼叫正確歸因 |\n| `run_in_executor` / 裸執行緒 | ❌ 不傳播 | 歸因丟失 |\n| 自建事件迴圈 | ❌ 不傳播 | 歸因丟失 |\n\n> 歸因 ≠ 登記：context 傳播只影響\"記在誰頭上\"，資源能否被清理\n> 取決於是否進入了下述取消鏈。\n\n### 取消鏈（任務登記表）\n\n`runtime/tasks.py` 的 `_owner_tasks` 登記表負責**生命週期**——\n\"owner 名下有哪些未完成任務，卸載時統一取消\"。任務進入登記表的途徑：\n\n1. **顯式調度**：`spawn_background()` / `self.spawn()` → 建立時捕獲\n   `current_owner`（或顯式 `owner=` 參數）→ 登記入表；\n2. **Task Factory 自動登記**（2.8.3）：`install_owner_task_factory()`\n   在框架啟動時安裝到主事件迴圈——**任何**任務建立（含第三方庫內部的\n   `create_task`）經過工廠時讀取 `current_owner`，非 None 即登記。\n\n登記表自清理：每個任務帶 `done_callback`，完成即從表中移除，無泄漏。\n\n### 取消時序（模組卸載）\n\n```\nmodule.unload()\n  → on_unload(event)                    # 模組自行清理（兜底超時保護）\n  → 框架註銷該 owner 的命令/事件/鈎子/路由\n  → cancel_owner_tasks(owner)           # 任務登記表兜底取消\n      → 逐個 task.cancel()              # 排除當前執行取消邏輯的任務自身\n      → await gather(pending, timeout)  # 等待回收（超時不再阻塞）\n```\n\n### 排查思路\n\n- **資源沒被清理** → 查登記表：`get_owner_tasks(\"MyModule\")` 是否含該任務；\n  不含即註冊路徑未經過所有權鏈（import 期 / 執行緒 / 獨立迴圈），對照上表定位。\n- **歸因錯誤** → 查 `get_current_owner()` 在出錯時刻的值；異步延遲執行\n  （回調/任務）的歸因取自建立時刻 context，而非執行時刻。"
+      "hash": "606b6b7486ebf9e3928febdadbeb651e",
+      "translation": "## 內部實現：歸屬如何運作\n\n**一句話**：歸因鏈（contextvar 传播）決定「記在誰頭上」，取消鏈（任務登記表）決定「卸載時能否被取消」——兩條鏈路獨立運作，資源被正確清理需二者兼備。\n\n歸屬系統由**兩條獨立鏈路**構成，理解它們的分工是排查歸屬問題的前提：\n\n### 歸因鏈（contextvar 传播）\n\n`runtime/context.py` 的 `current_owner` 等 ContextVar 負責**歸因**——  \n「此刻這段代碼註冊的資源 / 發起的調用記在誰頭上」。傳播規則遵循 Python  \ncontextvars 語義：\n\n| 執行路徑 | context 是否傳播 | 歸因結果 |\n|---------|----------------|---------|\n| 同步調用鏈 / `await` 鏈 | ✅ 傳播 | 正確歸因 |\n| `owner_scope` 內 `asyncio.create_task` | ✅ 傳播（task 拷貝創建時刻的 context） | 任務**內部**的框架調用正確歸因 |\n| `run_in_executor` / 裸線程 | ❌ 不傳播 | 歸因丟失 |\n| 自建事件循環 | ❌ 不傳播 | 歸因丟失 |\n\n> 歸因 ≠ 登記：context 傳播只影響「記在誰頭上」，資源能否被清理  \n> 取決於是否進入了下述取消鏈。\n\n### 取消鏈（任務登記表）\n\n`runtime/tasks.py` 的 `_owner_tasks` 登記表負責**生命週期**——  \n「owner 名下有哪些未完成任務，卸載時統一取消」。任務進入登記表的途徑：\n\n1. **顯式調度**：`spawn_background()` / `self.spawn()` → 創建時捕獲  \n   `current_owner`（或顯式 `owner=` 參數）→ 登記入表；\n2. **Task Factory 自動登記**（2.8.3）：`install_owner_task_factory()`  \n   在框架啟動時安裝到主事件循環——**任何**任務創建（含第三方庫內部的  \n   `create_task`）經過工廠時讀取 `current_owner`，非 None 即登記。\n\n登記表自清理：每個任務帶 `done_callback`，完成即從表中移除，無泄漏。\n\n### 取消時序（模組卸載）\n\n```\nmodule.unload()\n  → on_unload(event)                    # 模組自行清理（兜底超時保護）\n  → 框架註銷該 owner 的命令/事件/鉤子/路由\n  → cancel_owner_tasks(owner)           # 任務登記表兜底取消\n      → 逐個 task.cancel()              # 排除當前執行取消邏輯的任務自身\n      → await gather(pending, timeout)  # 等待回收（超時不再阻塞）\n```\n\n### 排查思路\n\n- **資源沒被清理** → 查登記表：`get_owner_tasks(\"MyModule\")` 是否含該任務；  \n  不含即註冊路徑未經過歸屬鏈（import 期 / 線程 / 獨立循環），對照上表定位。\n- **歸因錯誤** → 查 `get_current_owner()` 在出錯時刻的值；異步延遲執行  \n  （回調 / 任務）的歸因取自創建時刻 context，而非執行時刻。"
     },
     {
       "hash": "393573a46d10d58e8350566cf95a1ee7",
@@ -44,6 +44,10 @@
     {
       "hash": "32e031ba67630135a56b3bc832479f62",
       "translation": "## 工具模組指南：託管其他模組的句柄\n\n**場景**：定時任務、註冊表、連接池之類的「工具模組」會替其他模組保管物件——\n對方在 `on_load` 中呼叫 `sdk.Cron.on_trigger(handler)`，你的容器中就會儲存下\n一個指向對方實例的回調。框架會自動清理對方註冊的所有框架資源，但無法清理\n你**私有容器中的引用**：對方卸載後你的容器仍持有它的實例，它就無法被\nGC 回收（記憶體洩漏，`purge` 泄漏診斷報告「不可回收」）。\n\n**解法**：在登記對方物件的同一個函數中呼叫 `on_cleanup()`，\n框架會在對方卸載 / 禁用時自動回呼你的清理函數：\n\n```python\nfrom ErisPulse.Core.Bases import BaseModule\nfrom ErisPulse.runtime import off_cleanup, on_cleanup\n\nclass CronModule(BaseModule):\n    def __init__(self):\n        self._entries = {}  # {模組名: 該模組託管的回調列表}\n\n    def on_trigger(self, handler):\n        # 自動識別呼叫方模組名（on_load 直接呼叫 / module.call 均正確），\n        # 返回值是解析出的 owner，可直接用作記名鍵\n        owner = on_cleanup(self._drop)\n        self._entries.setdefault(owner, []).append(handler)\n\n    def _drop(self, owner: str):\n        \"\"\"對方模組被卸載/禁用時由框架自動呼叫：拋棄它的句柄即可\"\"\"\n        self._entries.pop(owner, None)\n\n    async def on_unload(self, event):\n        off_cleanup(self._drop)  # ③ 自己卸載前註銷鉤子，避免鉤子表持有 self\n```\n\n框架保證的行為：\n\n| 關注點 | 行為 |\n|--------|------|\n| 觸發時機 | 對方模組 unload / disable，或適配器關閉——均在框架清理鏈內觸發，早於 purge 泄漏診斷 |\n| 呼叫方識別 | 直接呼叫取 `current_owner`；經 `module.call()` 被呼叫取呼叫方（`current_caller`）；也可 `on_cleanup(cb, owner=\"模組名\")` 明確指定。**強制校驗**：owner 無法解析（三種來源均缺失）時拋 `ValueError`——私有工具模組應在自身載入上下文中登記鉤子 |\n| 回呼簽名 | `cb(owner: str)`，同步 / 異步均可；異步帶超時保護（`CLEANUP_CALLBACK_TIMEOUT_SECS`，預設 10 秒） |\n| 容錯 | 單個回呼異常 / 超時只記錄日誌，不影響其餘鉤子與清理鏈 |\n| 重複登記 | 同一 `(owner, callback)` 幂等去重 |\n\n**什麼時候不需要**：如果對方註冊的是框架資源（命令、事件處理器、路由、\n後台任務……），框架已自動清理（見上文[歸屬資源全景](#歸屬資源全景)）。\n只有你私有容器中持有的對方句柄才需要 `on_cleanup`。\n模組開發視角的速查版見\n[最佳實踐 · 工具模組](../developer-guide/modules/best-practices.md#工具模組託管別人東西時要接住卸載通知)。"
+    },
+    {
+      "hash": "a066c9cb5b8192cca8929676e96e5e11",
+      "translation": "## 相關文件\n\n請依下一步意圖選擇：\n\n- **想控制「資源是否生效」（權限面）** → [作用域（scope）](scope.md)——歸屬權管理「資源歸誰、卸載誰回收」，作用域管理「資源何時生效」\n- **背景工作 / 定時器的兜底取消** → [生命週期管理 · 背景工作歸屬與自動取消](lifecycle.md#背景工作歸屬與自動取消)\n- **以獨立 owner 隔離進行灰階發佈** → [影子模組與灰階轉正](shadow.md)\n- **模組開發視角的速查與推薦寫法** → [模組最佳實踐](../developer-guide/modules/best-practices.md)"
     }
   ]
 }

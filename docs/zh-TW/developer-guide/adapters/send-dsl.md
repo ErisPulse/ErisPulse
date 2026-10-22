@@ -1,9 +1,10 @@
 # SendDSL 詳解
 
 > [!TIP]
-> **何時需要閱讀這篇**：在開發適配器的過程中必讀（發送 DSL）。若不需要則可跳過，不會影響其他功能的使用。
+> **什麼時候需要讀這篇**：配接器開發路徑內必讀（傳送 DSL）。不需要則跳過，不影響其他功能的使用。
 
-SendDSL 是 ErisPulse 適配器提供的鏈式呼叫風格的消息發送介面。
+
+SendDSL 讓訊息傳送串成一條鏈完成：指定目標、@ / 回覆、重試 / 逾時 / 延遲、批次傳送，一行鏈式呼叫搞定。本篇涵蓋傳送方法、修飾方法、傳送規則與傳送鏈路的內部機制。
 
 ## 基本呼叫方式
 
@@ -727,7 +728,12 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消�
 
 ## 相關文件
 
-- [適配器開發入門](getting-started.md) - 建立適配器
-- [適配器核心概念](core-concepts.md) - 瞭解適配器架構
-- [適配器最佳實踐](best-practices.md) - 開發高品質適配器
-- [發送方法規範](../../standards/send-method-spec.md) - 發送方法完整規範
+### 繼續轉接器開發路徑
+
+- [轉接器開發入門](getting-started.md) - 建立轉接器
+- [轉接器核心概念](core-concepts.md) - 瞭解轉接器架構
+- [轉接器最佳實踐](best-practices.md) - 開發高品質轉接器
+
+### 遵循正式規範
+
+- [傳送方法規範](../../standards/send-method-spec.md) - 傳送方法完整規範（`Raw_ob12` 實作與 `MessageBuilder`）

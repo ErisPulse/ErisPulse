@@ -28,7 +28,7 @@ ErisPulse 通知处理模块
 #### 方法列表
 
 
-##### `on_notice(priority: int = 0)`
+##### `on_notice(priority: int = 0) -> Callable`
 
 通用通知事件装饰器
 
@@ -61,7 +61,7 @@ ErisPulse 通知处理模块
 ---
 
 
-##### `on_friend_add(priority: int = 0)`
+##### `on_friend_add(priority: int = 0) -> Callable`
 
 好友添加通知事件装饰器
 
@@ -83,7 +83,7 @@ ErisPulse 通知处理模块
 ---
 
 
-##### `on_friend_remove(priority: int = 0)`
+##### `on_friend_remove(priority: int = 0) -> Callable`
 
 好友删除通知事件装饰器
 
@@ -105,7 +105,7 @@ ErisPulse 通知处理模块
 ---
 
 
-##### `on_group_increase(priority: int = 0)`
+##### `on_group_increase(priority: int = 0) -> Callable`
 
 群成员增加通知事件装饰器
 
@@ -127,7 +127,7 @@ ErisPulse 通知处理模块
 ---
 
 
-##### `on_group_decrease(priority: int = 0)`
+##### `on_group_decrease(priority: int = 0) -> Callable`
 
 群成员减少通知事件装饰器
 

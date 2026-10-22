@@ -1,12 +1,73 @@
 # 快速开始
 
-> **这是你的第一步。** 用 5 分钟从零跑起一个 ErisPulse 机器人。
+> **这是你的第一步。** 5 分钟从零跑起一个 ErisPulse 机器人——先看效果，再展开每一步。
 
-## 安装 ErisPulse
+## 60 秒效果：先让机器人回你一句话
 
-### 一键安装脚本（推荐）
+**1. 安装**（Python >= 3.10）：
 
-安装脚本会自动检测您的环境（Docker、Python、uv），并引导您选择最适合的安装方式。
+```bash
+pip install ErisPulse
+```
+
+**2. 初始化项目**。向导会让你设置项目名、选择要接入的平台适配器并完成配置，然后生成 `main.py` 和 `config/config.toml`：
+
+```bash
+epsdk init
+```
+
+**3. 打开 `main.py`，替换为这 9 行代码**：
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+
+@command("ping", help="测试机器人是否在线")
+async def ping_handler(event):
+    await event.reply("Pong！机器人运行正常。")
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(sdk.run(keep_running=True))
+```
+
+**4. 运行**：
+
+```bash
+epsdk run main.py
+```
+
+终端会输出框架启动日志和适配器的连接信息。这时在你接入的平台里给机器人发 `/ping`，它会回复：
+
+> Pong！机器人运行正常。
+
+看到这条回复，说明框架、适配器、事件处理这条链路已经打通。没跑通？直接翻到文末[遇到问题](#遇到问题)；跑通了，往下看每一步还有哪些选择。
+
+## 安装 ErisPulse：三种方式
+
+上面用的是最直接的 pip。按你的环境选择：
+
+### 使用 pip 安装
+
+确保你的 Python 版本 >= 3.10，然后使用 pip 安装：
+
+```bash
+pip install ErisPulse
+```
+
+如果你已安装 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安装速度更快。
+
+只想把 `epsdk` 命令行工具装到全局、不污染项目环境时，推荐 `uv tool install`：
+
+```bash
+uv tool install ErisPulse
+```
+
+安装后 `epsdk` 全局可用：在项目目录内运行时会自动感知项目 `.venv`（`epsdk install` 装进项目环境、`epsdk run` 用项目环境运行），框架本体由工具环境提供。详见[安装参考](user-guide/installation.md)。
+
+### 一键安装脚本（新环境推荐）
+
+安装脚本会自动检测您的环境（Docker、Python、uv），并引导您选择最适合的安装方式，支持多语言（中文/English/日本語/Русский/繁體中文）。
 
 Windows (PowerShell):
 ```powershell
@@ -26,7 +87,7 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 ### 使用 Docker
 
-Docker 镜像已内置 ErisPulse 框架和 Dashboard 管理面板。
+Docker 镜像已内置 ErisPulse 框架和 Dashboard 管理面板，支持 `linux/amd64` 和 `linux/arm64` 架构。
 
 ```bash
 # 下载 docker-compose.yml
@@ -48,24 +109,6 @@ image: ghcr.io/erispulse/erispulse:latest
 </details>
 
 启动后访问 `http://<host>:8000/Dashboard`，使用设置的令牌登录。
-
-### 使用 pip 安装
-
-确保你的 Python 版本 >= 3.10，然后使用 pip 安装：
-
-```bash
-pip install ErisPulse
-```
-
-如果你已安装 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安装速度更快。
-
-只想把 `epsdk` 命令行工具装到全局、不污染项目环境时，推荐 `uv tool install`：
-
-```bash
-uv tool install ErisPulse
-```
-
-安装后 `epsdk` 全局可用：在项目目录内运行时会自动感知项目 `.venv`（`epsdk install` 装进项目环境、`epsdk run` 用项目环境运行），框架本体由工具环境提供。详见[安装参考](user-guide/installation.md)。
 
 ## 初始化项目
 
@@ -182,19 +225,27 @@ level = "INFO"
 
 ## 下一步
 
-机器人跑起来后，你可以按需继续：
+机器人跑起来后，按你的目标选路：
 
-**想了解框架怎么运作?**
-- [基础概念](getting-started/basic-concepts.md) — 适配器 / 模块 / 事件 的设计
-- [架构概览](architecture.md) — 可视化架构图
+### 想做群机器人（处理消息、群管、通知）
 
-**想实现更多功能?**
+- [事件处理入门](getting-started/event-handling.md) — 消息、通知、请求事件的写法
 - [常见任务示例](getting-started/common-tasks.md) — 存储、定时任务、权限控制
-- [事件处理入门](getting-started/event-handling.md) — 消息、通知、请求处理
 
-**想开发自己的模块 / 适配器?**
+### 想写自己的模块 / 适配器
+
+- [基础概念](getting-started/basic-concepts.md) — 先理解适配器 / 模块 / 事件 的设计
 - [模块开发入门](developer-guide/modules/getting-started.md)
 - [适配器开发入门](developer-guide/adapters/getting-started.md)
+- [架构概览](architecture.md) — 可视化架构图
 
-**按需查阅:**
-- [配置文件说明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md)
+### 想把机器人长期跑起来
+
+- [部署指南](user-guide/deployment.md)
+- [配置文件说明](user-guide/configuration.md)
+
+### 遇到问题
+
+- [创建第一个机器人](getting-started/first-bot.md) — 第一个机器人的逐步详解
+- [启动流程与手动控制](advanced/startup.md) — 模块 / 适配器加载失败的诊断
+- [CLI 命令参考](user-guide/cli-reference.md) — `epsdk` 全部子命令

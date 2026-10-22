@@ -4,7 +4,7 @@
 > **什么时候需要读这篇**：适配器骨架跑通后建议阅读（工程化最佳实践）。不需要则跳过，不影响其它功能的使用。
 
 
-本文档提供了 ErisPulse 适配器开发的最佳实践建议。
+这里汇总适配器开发的工程约定：Bot 状态上报、连接重试与心跳、多账户解析、标准化错误响应——照着做能避开掉线无感知、多账户发错目标、报错难定位这类接入平台时的常见问题。
 
 ## Bot 状态管理与 Meta 事件
 
@@ -41,6 +41,26 @@ class MyAdapter(BaseAdapter):
         finally:
             # Bot 下线
             await self.emit_meta("disconnect", bot_id)
+```
+
+也可手动构造标准 meta 事件（旧版方式仍然兼容）：
+
+```python
+await self.adapter.emit({
+    "id": str(uuid4()),
+    "time": int(time.time()),
+    "type": "meta",
+    "detail_type": "connect",
+    "platform": "myplatform",
+    "self": {
+        "platform": "myplatform",
+        "user_id": bot_id,
+        "user_name": "MyBot",
+        "avatar": "https://example.com/avatar.jpg",
+    },
+    "myplatform_raw": raw_data,
+    "myplatform_raw_type": "connected",
+})
 ```
 
 ### 3. 心跳事件
@@ -83,28 +103,7 @@ await self.adapter.emit(onebot_event)
 
 ### 5. Bot 状态查询
 
-框架提供以下查询方法：
-
-```python
-from ErisPulse import sdk
-
-# 获取 Bot 详细信息
-info = sdk.adapter.get_bot_info("myplatform", "bot123")
-# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
-
-# 列出所有 Bot（按平台分组）
-all_bots = sdk.adapter.list_bots()
-
-# 列出指定平台的 Bot
-platform_bots = sdk.adapter.list_bots("myplatform")
-
-# 检查 Bot 是否在线
-is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
-
-# 获取完整状态摘要（适合 WebUI 展示）
-summary = sdk.adapter.get_status_summary()
-# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
-```
+查询 API（`get_bot_info()` / `list_bots()` / `is_bot_online()` / `get_status_summary()`）与 Bot 生命周期事件表见 [适配器系统 API - Bot 状态管理](../../api-reference/adapter-system.md#bot-状态管理)。
 
 ## 连接管理
 
@@ -651,6 +650,12 @@ version = "2.0.0"  # 更新版本号
 
 ## 相关文档
 
+### 回看前置知识
+
 - [适配器开发入门](getting-started.md) - 创建第一个适配器
 - [适配器核心概念](core-concepts.md) - 了解适配器架构
 - [SendDSL 详解](send-dsl.md) - 学习消息发送
+
+### 适配器完善之后
+
+- [发布与模块商店指南](../publishing.md) - 发布到 PyPI 与模块商店

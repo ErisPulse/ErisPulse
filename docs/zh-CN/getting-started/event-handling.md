@@ -1,6 +1,9 @@
 # 事件处理入门
 
-本指南介绍如何处理 ErisPulse 中的各类事件。
+> [!TIP]
+> **什么时候需要读这篇**：想让机器人响应消息、命令、通知、请求，或要实现等待回复 / 多轮对话、排查"命令为什么没触发"时读。只想了解框架设计，看 [基础概念](basic-concepts.md) 即可；不需要则跳过。
+
+事件处理器就是机器人"听懂"用户并作出反应的地方——这篇按五类事件给出可直接复制的写法，并覆盖参数解析、权限、节流、多轮交互这些实战场景。
 
 ## 事件类型概览
 
@@ -1137,7 +1140,6 @@ async def conditional_handler(event):
 
 ## 下一步
 
-- [常见任务示例](common-tasks.md) - 学习常用功能的实现（含消息发送进阶：重试/超时/批量）
-- [平台特性指南](../platform-guide/README.md) - Send DSL 链式发送、发送规则、批量构建的完整说明
-- [Event 包装类详解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 对象
-- [用户使用指南](../user-guide/) - 了解配置和模块管理
+- **想操纵事件对象本身**：看 [Event 包装类详解](../developer-guide/modules/event-wrapper.md)，Event 全部方法的权威参考
+- **想发更复杂的消息**：[平台特性指南](../platform-guide/README.md) 讲透 SendDSL 链式发送、发送规则与批量构建；[常见任务示例](common-tasks.md) 里有重试 / 超时 / 批量的现成代码
+- **功能写完要配置和部署**：进入 [用户使用指南](../user-guide/)，配置文件与 CLI 管理都在那里

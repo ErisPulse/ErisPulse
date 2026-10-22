@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "795f5b53084e84ad636041be5cea2b3e",
-  "file_hash": "795f5b53084e84ad636041be5cea2b3e",
-  "translated_at": "2026-10-20T12:11:23.473263",
+  "hash": "3fa727381c707af77faf9c9386e39671",
+  "file_hash": "3fa727381c707af77faf9c9386e39671",
+  "translated_at": "2026-10-22T09:50:54.988604",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "29d6a177451c286642ef54d5b430e762",
-      "translation": "# 慢載模組系統\n\n> [!TIP]  \n> **何時需要閱讀此篇**：使用慢載模組或 activate_on 事件驅動激活時。若不需要則可跳過，不會影響其他功能的使用。\n\nErisPulse SDK 提供了強大的慢載模組系統，允許模組在實際需要時才進行初始化，從而顯著提升應用啟動速度和記憶體效率。"
+      "hash": "16a2246fd98425f6c27f27ea51006bbf",
+      "translation": "# 慢載模組系統\n\n> [!TIP]  \n> **何時需要閱讀本文**：使用慢載模組或 activate_on 事件驅動激活時。若不需要則可跳過，這不會影響其他功能的使用。\n\nErisPulse SDK 的慢載模組系統讓模組延遲到**實際被存取時**才初始化——啟動階段只註冊占位代理，未被使用的模組不會占用啟動時間與記憶體。"
     },
     {
       "hash": "6b2c94d48cfeaba0069c82bfd2e12c13",
@@ -42,8 +42,8 @@
       "translation": "## 注意事項\n\n1. 如果您的模組使用了懶加載，如果其他模組從未在 ErisPulse 內進行過呼叫，則您的模組永遠不會被初始化。\n2. 如果您的模組中包含了例如監聽事件的模組，或其它主動監聽類似模組，有兩種選擇：聲明 `activate_on` 觸發器（保持懶加載，事件到達時自動激活），或聲明需要立即被加載（`lazy_load=False`），否則會影響您模組的正常業務。\n3. 我們不建議您禁用懶加載，除非有特殊需求，否則它可能為您帶來例如依賴管理和生命週期事件等的問題。\n4. `activate_on` 的命令 dict 聲明中，`name` 必須與模組 `on_load` 中 `@command()` 註冊的真實命令名一致——否則模組激活後占位命令註銷，聲明與實現不一致的命令將不存在。"
     },
     {
-      "hash": "7db1785f0940ea74df26261994c25788",
-      "translation": "## 相關文件\n\n- [模組開發指南](../developer-guide/modules/getting-started.md) - 學習開發模組\n- [最佳實踐](../developer-guide/modules/best-practices.md) - 了解更多最佳實踐"
+      "hash": "2c144526329f438958a207149fb71377",
+      "translation": "## 相關文件\n\n請依下一步意圖選擇：\n\n- **不清楚該選哪種載入策略（立即載入 / 懶載入 / activate_on）** → [模組最佳實踐](../developer-guide/modules/best-practices.md)\n- **休眠與卸載時，背景任務、連線等資源的回收鏈路** → [所有權（owner）系統](ownership.md)\n- **從頭開發一個模組** → [模組開發指南](../developer-guide/modules/getting-started.md)"
     }
   ]
 }

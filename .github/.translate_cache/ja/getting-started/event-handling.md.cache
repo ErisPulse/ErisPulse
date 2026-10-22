@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "b4f6ae8af4657538862fa3083e7de991",
-  "file_hash": "b4f6ae8af4657538862fa3083e7de991",
-  "translated_at": "2026-10-02T11:17:55.231326",
+  "hash": "705edf822184c6da921da5c1a0aa8345",
+  "file_hash": "705edf822184c6da921da5c1a0aa8345",
+  "translated_at": "2026-10-22T12:42:40.779644",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "e6c86b500bc8456d5a31e03768a079ad",
-      "translation": "# イベント処理入門\n\nこのガイドでは、ErisPulse における各種イベントの処理方法について説明します。"
+      "hash": "2e27d084c4afc3cf47589c93429f3633",
+      "translation": "# イベント処理入門\n\n> [!TIP]\n> **このドキュメントを読むべきタイミング**：ボットにメッセージ、コマンド、通知、リクエストへ応答させたい場合や、返信の待機 / マルチターン会話の実装、「コマンドがトリガーされないのはなぜか」のトラブルシューティングが必要なときに読んでください。フレームワークの設計だけを知りたい場合は、[基本概念](basic-concepts.md) を参照すれば十分です。必要なければスキップしてください。\n\nイベントハンドラーとは、ボットがユーザーの意図を「理解」して反応する場です。このドキュメントでは、5種類のイベントごとにそのままコピーして使える実装例を示し、パラメータ解析、権限、スロットリング、マルチターン対話といった実践的なシナリオも網羅します。"
     },
     {
       "hash": "6bf62fa983db3eea33826ae14a780e96",
@@ -66,8 +66,8 @@
       "translation": "## イベント処理のベストプラクティス\n\n### 1. エラーハンドリング\n\n```python\n@command(\"process\")\nasync def process_handler(event):\n    try:\n        # ビジネスロジック\n        result = await do_some_work()\n        await event.reply(f\"結果: {result}\")\n    except ValueError as e:\n        # 予期されたビジネスエラー\n        await event.reply(f\"パラメータエラー: {e}\")\n    except Exception as e:\n        # 予期されないエラー\n        sdk.logger.error(f\"処理失敗: {e}\")\n        await event.reply(\"処理失敗、後で再試行してください\")\n```\n\n### 2. ログ記録\n\n```python\n@message.on_message()\nasync def message_handler(event):\n    user_id = event.get_user_id()\n    text = event.get_text()\n    \n    sdk.logger.info(f\"メッセージを処理: {user_id} - {text}\")\n    \n    # モジュール独自のログを使用\n    from ErisPulse import sdk\n    logger = sdk.logger.get_child(\"MyHandler\")\n    logger.debug(f\"詳細なデバッグ情報\")\n```\n\n### 3. 条件処理\n\n```python\n@message.on_message(priority=0)\nasync def conditional_handler(event):\n    \"\"\"条件処理 - ハンドラ内で判定\"\"\"\n    # 特定ユーザーのメッセージだけを処理\n    if event.get_user_id() in [\"bot1\", \"bot2\"]:\n        return\n    \n    # 特定キーワードを含むメッセージだけを処理\n    if \"关键词\" not in event.get_text():\n        return\n    \n    await event.reply(\"条件が満たされた、メッセージを処理します\")\n```"
     },
     {
-      "hash": "4ae64a0d1fa3836e9a98d54bcaae0bed",
-      "translation": "## 次のステップ\n\n- [よくあるタスクの例](common-tasks.md) - メッセージ送信の高度な機能（リトライ/タイムアウト/バッチ）を含む、一般的な機能の実装を学ぶ\n- [プラットフォーム特性ガイド](../platform-guide/README.md) - Send DSLチェーン送信、送信ルール、バッチ構築の完全な説明\n- [Event 包装クラスの詳細](../developer-guide/modules/event-wrapper.md) - Event オブジェクトの詳細を理解する\n- [ユーザー使用ガイド](../user-guide/) - 設定とモジュール管理を理解する"
+      "hash": "02cf05c9ff5326949e506bf5563a96cf",
+      "translation": "## 次のステップ\n\n- **イベントオブジェクトそのものを操作したい**：[Event ラッパークラス詳解](../developer-guide/modules/event-wrapper.md) を参照してください。Event の全メソッドに関する権威あるリファレンスです\n- **より複雑なメッセージを送りたい**：[プラットフォーム特性ガイド](../platform-guide/README.md) では、SendDSL によるチェーン送信、送信ルール、一括構築について詳しく解説しています。[よくあるタスクの例](common-tasks.md) には、リトライ / タイムアウト / 一括処理のすぐに使えるコードが用意されています\n- **機能を実装し終えたら設定とデプロイ**：[ユーザーガイド](../user-guide/) に進みましょう。設定ファイルと CLI の管理はすべてそこにあります"
     }
   ]
 }

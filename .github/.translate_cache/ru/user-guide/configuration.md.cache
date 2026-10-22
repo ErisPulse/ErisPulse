@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "f99ffa50148bf080d5e0ca2668fbc193",
-  "file_hash": "f99ffa50148bf080d5e0ca2668fbc193",
-  "translated_at": "2026-10-20T12:12:11.937364",
+  "hash": "d50f03ef31446d0126e3b58e2da02939",
+  "file_hash": "d50f03ef31446d0126e3b58e2da02939",
+  "translated_at": "2026-10-22T13:28:47.970817",
   "target_lang": "ru",
   "chunks": [
     {
-      "hash": "edc5c1ada2d16779d0a6a14624d4b788",
-      "translation": "# Конфигурационный файл\n\n> [!NOTE]\n> **Обязательный к прочтению** — одна из пяти ключевых статей в \"Путь к чтению\" на главной странице, необходимая для разработки модулей.\n\n> Этот документ расскажет о конфигурационном файле фреймворка. Если у стороннего модуля есть какие-либо настройки, обратитесь к документации модуля.\n\nErisPulse использует конфигурационный файл в формате TOML `config/config.toml` для управления конфигурацией проекта."
+      "hash": "1274ec84366184e5af7966cd4b124d49",
+      "translation": "# Описание конфигурационного файла\n\n> [!NOTE]\n> **Обязательно к прочтению для ядра L1** — одна из пяти ключевых статей в разделе \"Путь к чтению\" на главной странице, необходима для разработки модулей.\n\n> В этой статье описывается конфигурационный файл самого фреймворка `config/config.toml`: что управляет каждый раздел конфигурации, какие параметры поддерживают горячую перезагрузку, как использовать переменные окружения для переопределения значений. Для параметров сторонних модулей обратитесь к документации самого модуля.\n\nErisPulse использует конфигурационный файл в формате TOML `config/config.toml` для управления настройками проекта."
     },
     {
       "hash": "38075a6514106057ad6d3f271a4695be",
@@ -78,12 +78,8 @@
       "translation": "## Единая конфигурация перезаписи событий (event.overrides)\n\nСистема перезаписи событий: по типу события перезаписывает поведение любого модуля, не изменяя код модуля. Стандартные типы OneBot12 (meta / message / notice / request) и расширенные типы (command) имеют свои собственные настраиваемые параметры:\n\n```toml\n[ErisPulse.event.overrides]\n\n# message: текстовые условия (AND с условиями в коде)\n[ErisPulse.event.overrides.message.ChatModule]\npattern = \"闲聊*\"\n\n# notice / request / meta: detail_type белый список (записи поддерживают точные / glob / re: регулярные выражения)\n[ErisPulse.event.overrides.notice.MyModule]\ndetail_types = [\"group_increase\"]\n\n# command (расширение): параметры перезаписи (приоритет пользователя; отключение через acl deny)\n[ErisPulse.event.overrides.command.MyModule.restart]\nmaster = true               # Перезапись только для владельца фреймворка (false — разрешить ограничения владельца)\nhidden = true               # Скрыть в списке помощи\naliases = [\"rs\"]            # Активные псевдонимы\n\n# acl (только для command): черный/белый список пользователей (имя команды поддерживает glob / re: регулярные выражения, точные ключи имеют приоритет)\n[ErisPulse.event.overrides.acl.\"roll*\"]\nallow = [\"onebot11:u_vip\"]  # Идентификатор пользователя \"platform:user_id\"\ndeny = [\"onebot11:u_bad\"]\n\n# ACL фолбэк: разрешение (true) / строгий отказ (false) для команд без ACL\nacl_default_allow = true\n```\n\n| Параметр | Тип | Описание |\n|---------|------|------|\n| `event.overrides.message.<module>` | table | Текстовое условие: `{pattern=\"...\", regex=\"...\"}` |\n| `event.overrides.notice / request.<module>` | table | `{detail_types=[...], pattern, regex}` |\n| `event.overrides.meta.<module>` | table | `{detail_types=[...]}` |\n| `event.overrides.command.<module>` | table | Параметры перезаписи модуля (скаляры) |\n| `event.overrides.command.<module>.<command>` | table | Параметры перезаписи команды (командный приоритет) |\n| `event.overrides.acl.<command>` | table | Черный/белый список пользователей: `{allow=[...], deny=[...]}` |\n| `event.overrides.acl_default_allow` | boolean | ACL фолбэк: разрешение (true) / строгий отказ (false) для команд без ACL |\n\n> API времени выполнения (после `from ErisPulse.Core.Event import overrides` по подпространствам типа вызывать `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` и т.д., или через `sdk.Event.overrides` доступ к `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` и т.д.)\n> См. [Введение в обработку событий · Перезапись событий](../getting-started/event-handling.md#перезапись-событий-без-изменения-кода-модуля-перезапись-поведения-любого-типа-события)."
     },
     {
-      "hash": "535502cb12bad70bfa3f8948dd468108",
-      "translation": "## Конфигурация парсинга команд (event.command)"
-    },
-    {
-      "hash": "d2dcbae56f1416aaf7447764914e07af",
-      "translation": "## Далее\n\n- [Справочник команд CLI](cli-reference.md) - узнать все команды командной строки\n- [Руководство для разработчиков](../developer-guide/) - изучить разработку пользовательских модулей"
+      "hash": "cc23d8d9a83f339705ef373d258404dc",
+      "translation": "## Далее\n\n- **Продолжить по пути L1**: следующая статья [Обработка ошибок](../advanced/errors.md), научитесь писать обработку ошибок, не тормозящих фреймворк\n- **Не хотите вручную писать TOML** : используйте интерактивный мастер `epsdk config` для заполнения декларативных конфигурационных элементов, см. [Справочник команд CLI · config](cli-reference.md#config)\n- **Не хотите изменять файл конфигурации при развертывании** : используйте переменные среды для перекрытия конфигурационных элементов, в сочетании с методами Docker в [Руководстве по развертыванию](deployment.md)"
     }
   ]
 }

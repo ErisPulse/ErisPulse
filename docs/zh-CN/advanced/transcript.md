@@ -106,3 +106,8 @@ SELECT COUNT(*) FROM transcript;
 - **对话恢复的历史带回**：`resume(with_history=N)` 从收件箱取最近 N 条——
   收件箱被裁剪后能带回的历史随之变少（调大 `max_per_session` 可延长可恢复窗口）；
 - **影子模块 diff**：依赖 `get_by_trace` 链路查询，TTL 过短的收件箱会缩短可 diff 窗口。
+
+## 相关文档
+
+- **消费收件箱历史的地方**：对话恢复 [Conversation](conversation.md)、事件级读取 [event.history](interaction.md#会话收件箱eventhistory)、影子 diff [影子模块与灰度转正](shadow.md)
+- **审计表规模用到的存储接口** → [存储后端](storage-backends.md) 与 [SQL 查询构建器](sql-builder.md)

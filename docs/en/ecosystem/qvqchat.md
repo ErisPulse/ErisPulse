@@ -1,6 +1,9 @@
 # ErisPulse-QvQChat General Agent
 
-[ErisPulse-QvQChat](https://pypi.org/project/ErisPulse-QvQChat/) is a **general-purpose agent module** built around a tool loop: sending and receiving messages, calling ecosystem module services, writing and running code, operating the computer, generating images and voice, managing scheduled tasks and long-term memory—all accomplished through the same tool protocol.
+> [!TIP]
+> **When to read this**: Read this when you want to add AI agent capabilities (tool loops, streaming chat, MCP, long-term memory) to your robot, or when you want to expose your module's services for agent calls. Skip if not needed.
+
+[ErisPulse-QvQChat](https://pypi.org/project/ErisPulse-QvQChat/) is a **general-purpose agent module** built around tool loops: sending and receiving messages, calling ecosystem module services, writing and running code, operating the computer, generating images and voice, managing scheduled tasks and long-term memory—all through the same tool protocol.
 
 > [!IMPORTANT]
 > QvQChat needs to be installed separately:
@@ -9,7 +12,7 @@
 > epsdk install ErisPulse-QvQChat
 > ```
 >
-> Additionally, you need to add at least one OpenAI-compatible model (Base URL, API Key, model name) to the "model pool".
+> You also need to add at least one OpenAI-compatible model (Base URL, API Key, model name) to the "Model Pool".
 
 ## Core Capabilities
 
@@ -133,3 +136,12 @@ Access independently via `/QvQChat/view`, or embed in the Dashboard sidebar.
 ![Overview](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/overview.png)
 
 ![Conversation](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/chat.png)
+
+---
+
+## Next Steps
+
+- **Turn your module into an agent tool**: Declare `services` in `get_meta()` to do so; see [Core Module API - Service Contract](../api-reference/core-modules.md) for field semantics.
+- **Subscribe to agent messages for integration**: Use [Lifecycle Events](../advanced/lifecycle.md) to listen for `qvq.message` / `qvq.replied`.
+- **Use only multi-turn questionnaires, not agents**: The built-in [Conversation Multi-turn Dialogue](../advanced/conversation.md) is a lighter option.
+- **Web management**: Use in conjunction with the [ErisPulse-Dashboard](dashboard.md) sidebar.

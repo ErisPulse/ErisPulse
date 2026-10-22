@@ -58,6 +58,7 @@ async def handle_button(event):
 > Complete standard documentation is available at [Cross-platform Interaction Component Standard](../standards/standardization-guide.md).
 
 ---
+
 ## Supported Message Sending Types
 
 All sending methods are implemented through chainable syntax, for example:
@@ -441,7 +442,8 @@ async def handle_yunhu_notice(event):
     then distinguish different types of notifications by detail_type
     event.reply() will automatically reply via the Yunhu platform
     """
-    # Check if it is a button click event
+
+# Check if it is a button click event
     if event.get("detail_type") == "yunhu_button_click":
         user_id = event.get_user_id()
         user_nickname = event.get_user_nickname()
@@ -449,7 +451,7 @@ async def handle_yunhu_notice(event):
 
         print(f"User {user_nickname}({user_id}) clicked the button: {button_value}")
 
-        # Use event.reply() to automatically reply (will automatically select the correct sending method based on the platform)
+# Use event.reply() to automatically reply (will automatically select the correct sending method based on the platform)
         if button_value == "confirm":
             await event.reply("You clicked the confirm button!")
         elif button_value == "cancel":
@@ -457,17 +459,17 @@ async def handle_yunhu_notice(event):
         else:
             await event.reply(f"Received your selection: {button_value}")
 
-    # Handle quick menu event
+# Handle quick menu event
     elif event.get("detail_type") == "yunhu_shortcut_menu":
         menu_id = event.get("yunhu_menu", {}).get("id", "")
         await event.reply(f"Triggered quick menu: {menu_id}")
 
-    # Handle bot setting changes
+# Handle bot setting changes
     elif event.get("detail_type") == "yunhu_bot_setting":
         settings = event.get("yunhu_setting", {})
         await event.reply(f"Settings updated: {settings}")
 
-    # Handle A2UI button event
+# Handle A2UI button event
     elif event.get("detail_type") == "yunhu_a2ui_button":
         a2ui = event.get("yunhu_a2ui", {})
         action_name = a2ui.get("action_name", "")

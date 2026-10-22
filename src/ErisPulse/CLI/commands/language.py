@@ -5,7 +5,7 @@ Language 命令实现
 """
 
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 from rich.text import Text
 
@@ -27,7 +27,7 @@ class LanguageCommand(Command):
     aliases = ["language", "lang"]
     category = "config"
 
-    def add_arguments(self, parser: ArgumentParser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "lang",
             nargs="?",
@@ -41,7 +41,7 @@ class LanguageCommand(Command):
             help=i18n.t("cli.language.list_help"),
         )
 
-    def execute(self, args):
+    def execute(self, args: Namespace) -> None:
         current = i18n.get_language()
 
         if args.list:

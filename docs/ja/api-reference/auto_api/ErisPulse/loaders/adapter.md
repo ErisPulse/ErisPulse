@@ -156,9 +156,8 @@ ErisPulse 适配器加载器
 **内部方法**
 按捕获的 ``sys.modules`` 条目清除源文件字节码缓存（``__pycache__``）
 
-同秒内且字节数不变的源码改写不会使 pyc 失效（mtime 秒级粒度 + size
-校验），重载路径必须显式清除。须在 purge ``sys.modules`` **之前**用
-快照条目调用（快照条目持有 ``__file__``）。
+须在 purge ``sys.modules`` **之前**用快照条目调用（快照条目持有
+``__file__``）。
 
 - **entries**: 将被清除的 sys.modules 条目快照
 
@@ -171,7 +170,7 @@ ErisPulse 适配器加载器
 重载卸载前的语法预检：对目标源码树逐文件 ``ast.parse``
 
 失败（语法错误）即拒绝重载——旧适配器未卸载、继续服务。源码无法
-定位或超过 ``MODULE_RELOAD_PRECHECK_MAX_FILES`` 时跳过预检并记 debug。
+定位时跳过预检并记 debug。
 
 - **adapter_name**: 适配器名（日志用）
 - **old_obj**: 重载前的快照条目（适配器模块对象）

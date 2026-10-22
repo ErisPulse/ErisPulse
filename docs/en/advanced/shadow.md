@@ -1,15 +1,19 @@
 # Shadow Modules and Gradual Promotion
 
 > [!TIP]
-> **When to read this**: When you need a gradual release — running a new version in parallel with the old one, comparing behaviors, and promoting or rolling back. If not needed, you can skip this section without affecting other features.
+> **When to read this**: When you need gradual release—running a new version in parallel, comparing behaviors, and promoting or rolling back. Skip if not needed; it won't affect other features.
 
-A shadow module is a **new version** of the same module, running in parallel with the live old version under a separate owner (e.g., `roll_shadow`). It receives **copies** of real events, and its outbound calls are **intercepted and recorded** instead of being actually sent — allowing you to compare behaviors between the two versions in `shadow_diff`. After confirming the new version is safe, you can `promote` it to become the new live version with a single click, or `dismiss` it at any time to abandon the shadow version. **No code changes are required**; the entire process is driven by runtime APIs: similar to `load / unload / reload`, these operational actions can be directly called from the Dashboard or custom management modules, with no configuration needed.
+> **After reading, you will know**: The five isolation gates of shadow modules, alignment methods for behavior diff, the `promote` promotion and rollback flow when promotion fails, and the honest boundaries that the framework cannot block.
+>
+> **This section does not cover**: The general hot reload and ownership cleanup mechanism for ordinary modules (see [Ownership (owner) System](ownership.md)).
+
+A shadow module is a **new version** of the same module, running in parallel with the live version under an independent owner (e.g., `roll_shadow`). It receives **copies** of real events, and its outbound messages are **intercepted and recorded** rather than actually sent. By comparing behaviors in `shadow_diff`, you can confirm the new version is harmless before promoting it with one click via `promote`, or discarding it at any time with `dismiss`. **No code changes are required**; the entire process is driven by runtime APIs: similar to `load / unload / reload`, these operations can be directly invoked by the Dashboard or custom management modules, with no configuration needed.
 
 {!--< tips >!--}
 1. Start: ``await sdk.module.shadow_start("roll", source="path/to/v2")``
-   —— The new version runs in parallel with the old version under a separate owner (defaulting to the path name).
+   ——The new version runs in parallel with the old version under an independent owner (default is the path name).
 2. The shadow does not participate in real distribution or dependency graphs: commands with the same name go into the shadow directory, routes are registered but not mounted, lifecycle broadcasts are silent, and `module.call` and dependency resolution still point to v1.
-3. Promotion is always confirmed by a human: ``await sdk.module.promote_shadow("roll")``, and if it fails, the old instance automatically rolls back and continues serving; ``dismiss_shadow`` abandons the shadow version at any time.
+3. Promotion is always confirmed by a human: ``await sdk.module.promote_shadow("roll")``; if it fails, the old instance automatically rolls back and continues serving; ``dismiss_shadow`` discards the shadow at any time.
 {!--< /tips >!--}
 
 ## Quick Start

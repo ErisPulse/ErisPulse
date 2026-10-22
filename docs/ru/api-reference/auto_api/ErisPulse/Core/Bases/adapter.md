@@ -256,7 +256,7 @@ await self._api_call(
 ---
 
 
-##### `Raw_ob12(message, **kwargs) -> Awaitable[Any]`
+##### `Raw_ob12(message: dict, **kwargs) -> Awaitable[Any]`
 
 发送 OneBot12 格式消息段（必须由适配器子类重写）
 
@@ -607,7 +607,7 @@ await adapter.Send.To("user", "123").Retry(2).OnError(on_error).Text("带错误�
 ---
 
 
-##### `Build()`
+##### `Build() -> 'SendBuilder'`
 
 进入批量构建模式，返回 :class:`SendBuilder`
 
@@ -877,7 +877,7 @@ await adapter.Send.To("123").Example("Hello")
 ---
 
 
-####### `Raw_ob12(message, **kwargs: Any) -> Awaitable[Any]`
+####### `Raw_ob12(message: dict, **kwargs: Any) -> Awaitable[Any]`
 
 发送 OneBot12 格式消息段（必须由适配器子类重写）
 
@@ -908,7 +908,7 @@ await adapter.Send.To("user", "123").Raw_ob12([
 ])
 
 # 适配器子类重写示例（推荐：使用框架辅助方法）
-def Raw_ob12(self, message, **kwargs):
+def Raw_ob12(self, message: dict, **kwargs):
     async def _do_send():
         segments = self._apply_modifiers(message)
         return await self._api_call(
@@ -984,7 +984,7 @@ def Raw_ob12(self, message, **kwargs):
 ---
 
 
-##### `cfg`（property）
+##### `cfg -> Any`（property）
 
 类型安全的配置对象（实时读取）
 
@@ -1002,14 +1002,14 @@ def Raw_ob12(self, message, **kwargs):
 ---
 
 
-##### `cfg(value)`
+##### `cfg(value: Any) -> None`
 
 设置配置实例，同时同步写入配置存储（保证实时性）
 
 ---
 
 
-##### `config`（property）
+##### `config -> Any`（property）
 
 ``self.cfg`` 的兼容别名
 
@@ -1031,7 +1031,7 @@ def Raw_ob12(self, message, **kwargs):
 ---
 
 
-##### `accounts(value)`
+##### `accounts(value: Any) -> None`
 
 设置账户配置字典，同时同步写入配置存储
 
@@ -1142,7 +1142,7 @@ def Raw_ob12(self, message, **kwargs):
 ---
 
 
-##### `async emit_meta(detail_type: str, bot_id: str, **extra_info)`
+##### `async emit_meta(detail_type: str, bot_id: str, **extra_info) -> None`
 
 发送 meta 事件的便捷方法
 
@@ -1153,7 +1153,7 @@ def Raw_ob12(self, message, **kwargs):
 ---
 
 
-##### `make_response(*, status: str = STATUS_OK, retcode: int = RETCODE_OK, data = None, message_id: str = '', message: str = '', raw = None) -> dict`
+##### `make_response(*, status: str = STATUS_OK, retcode: int = RETCODE_OK, data: Any = None, message_id: str = '', message: str = '', raw: Any = None) -> dict`
 
 构造标准化响应
 
@@ -1169,7 +1169,7 @@ def Raw_ob12(self, message, **kwargs):
 ---
 
 
-##### `make_error(retcode: int = RETCODE_SDK_FAILURE, message: str = '', raw = None) -> dict`
+##### `make_error(retcode: int = RETCODE_SDK_FAILURE, message: str = '', raw: Any = None) -> dict`
 
 构造错误响应
 
@@ -1182,7 +1182,7 @@ def Raw_ob12(self, message, **kwargs):
 ---
 
 
-##### `on_config_update(old_config, new_config)`
+##### `on_config_update(old_config: Any, new_config: Any) -> None`
 
 配置变更回调（可选实现）
 

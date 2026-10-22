@@ -1,20 +1,25 @@
 # ErisPulse-Takumi
 
-[ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) は ccd2s が維持する **サードパーティの画像レンダリングモジュール** です。[takumi-py](https://github.com/BalconyJH/takumi-py) をベースに、Bot が HTML、ノードツリー、Jinja テンプレート、SVG、アニメーションを画像にレンダリングできるようにします。モジュールには **中英文字体**（Noto Sans SC / Roboto / Source Code Pro）が内蔵されており、追加の設定は不要です。
+> [!TIP]
+> **このドキュメントを読むタイミング**：HTML / ノードツリー / Jinjaテンプレートを画像にレンダリングしてチャットプラットフォームに送信したい場合（統計カード、ランキング、長文の画像）に読む。必要なければスキップしてください。
+
+[ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) は ccd2s が維持する **サードパーティの画像レンダリングモジュール** です。[takumi-py](https://github.com/BalconyJH/takumi-py) に基づいており、Bot が HTML、ノードツリー、Jinja テンプレート、SVG、アニメーションを画像にレンダリングできるようにします。モジュールには **中英文字体**（Noto Sans SC / Roboto / Source Code Pro）が内蔵されており、追加の設定は不要です。
 
 > [!IMPORTANT]
-> Takumi は ErisPulse フレームワークの組み込み機能ではなく、個別にインストールする必要があります：
+> Takumi **は** ErisPulse フレームワークの組み込み機能ではなく、個別にインストールする必要があります：
 >
 > ```bash
 > epsdk install Takumi
 > ```
 
-利用シーン：
+適用シーン：
 
-- データや統計情報をカード画像にレンダリングする
+- データ/統計をカード画像にレンダリングする
 - Markdown / 長文をレイアウトが安定した画像にレンダリングし、プラットフォームのスタイル差異を回避する
-- SVG / アニメーションを生成して、動的な視覚効果を実現する
-- 中英混排の图文（内蔵フォントで即座に使用可能）
+- SVG / アニメーションを生成し、動的な視覚効果を実現する
+- 中英混排の画像（内蔵フォントで即座に使用可能）
+
+---
 
 ## インストールと有効化
 
@@ -22,7 +27,7 @@
 epsdk install Takumi
 ```
 
-インストール後、モジュールは自動的に読み込まれます。設定ファイルで有効化を確認してください：
+インストール後、モジュールは自動的にロードされ、設定で有効化を確認します：
 
 ```toml
 [Takumi]
@@ -31,15 +36,15 @@ enabled = true
 
 ---
 
-## 快速上手
+## 速習
 
-モジュールが自動的にロードされた後、モジュールマネージャーから取得するか、`sdk` のショートカットを使用します。
+モジュールが自動的にロードされた後、モジュールマネージャーから取得するか、`sdk` ショートカットを使用します：
 
 ```python
 from ErisPulse import sdk
 
 takumi = sdk.module.get("Takumi")
-# 等価な書き方: takumi = sdk.Takumi
+# 同義の書き方：takumi = sdk.Takumi
 ```
 
 ### HTML のレンダリング
@@ -62,7 +67,7 @@ png = takumi.render_html(
     }
     """],
     width=800,
-    height=None,   # 内容に応じて高さを自動調整
+    height=None,   # 内容に応じて自動的に高さを調整
     lang="zh-CN",
 )
 ```
@@ -82,56 +87,58 @@ png = takumi.render_node(
 )
 ```
 
-`png` は `bytes` であり、`event.reply(png, method="Image")` を使用して送信できます（詳細は [レンダリング結果の送信](#发送渲染结果) を参照してください）。
+`png` は `bytes` であり、`event.reply(png, method="Image")` を使用して送信できます（[レンダリング結果の送信](#レンダリング結果の送信)を参照）。
+
+---
 
 ## レンダリング API
 
-`sdk.Takumi` は、下層の `takumi_py.Renderer` のすべての機能をラップしています。すべてのレンダリング、測定、SVG、アニメーション、テンプレートメソッドは、`sdk.Takumi` で直接呼び出すことができます。これらのメソッドに対して、モジュールは呼び出し時に**自動的に組み込みのフォントフォールバックスタック**（`takumi.families`）を注入します。`font_families` を手動で渡す必要はありません。明示的に渡した場合は、呼び出し元の設定を尊重します。
+`sdk.Takumi` は、下層の `takumi_py.Renderer` のすべての機能をプロキシしています：すべてのレンダリング、測定、SVG、アニメーション、テンプレートメソッドは `sdk.Takumi` 上で直接呼び出すことができます。これらのメソッドに対して、モジュールは**自動的に内蔵フォントのフォールバックスタック**（`takumi.families`）を注入します。手動で `font_families` を渡す場合は、呼び出し側の設定を尊重します。
 
-### メソッド一覧
+### メソッド概要
 
 | カテゴリ | メソッド | 戻り値 | 説明 |
 |------|------|------|------|
-| 静的レンダリング | `render_html(html, ...)` | `bytes` | HTML文字列をレンダリング |
-| | `render_node(node, ...)` | `bytes` | ノードツリー（dict）をレンダリング |
-| | `render_template(name, ctx, ...)` | `bytes` | Jinjaテンプレートをレンダリング |
-| | `render_compiled(node, ...)` | `bytes` | 事前コンパイルされたノードをレンダリング |
-| SVG出力 | `render_svg_html(html, ...)` | `str` | SVGを出力（HTML入力） |
-| | `render_svg_node(node, ...)` | `str` | SVGを出力（ノードツリー入力） |
-| | `render_svg_template(name, ctx, ...)` | `str` | SVGを出力（テンプレート入力） |
-| | `render_svg_compiled(node, ...)` | `str` | SVGを出力（事前コンパイル入力） |
-| アニメーション | `render_animation(scenes, ...)` | `bytes` | 複数フレームアニメーションをエンコード |
-| | `render_sequence_at_time(scenes, time_ms, ...)` | `bytes` | シーケンスの特定時間のフレームを取得 |
-| 測定 | `measure_node(node, ...)` | `dict` | ノードツリーのレイアウトを測定 |
-| | `measure_html(html, ...)` | `dict` | HTMLのレイアウトを測定 |
-| | `measure_compiled(node, ...)` | `dict` | 事前コンパイルされたノードを測定 |
-| コンパイル | `compile_node(node)` | `CompiledNode` | ノードツリーをコンパイル |
-| | `compile_html(html, ...)` | `CompiledNode` | HTMLをコンパイル |
+| 静的レンダリング | `render_html(html, ...)` | `bytes` | HTML文字列をレンダリングする |
+| | `render_node(node, ...)` | `bytes` | ノードツリー（dict）をレンダリングする |
+| | `render_template(name, ctx, ...)` | `bytes` | Jinjaテンプレートをレンダリングする |
+| | `render_compiled(node, ...)` | `bytes` | 事前コンパイルされたノードをレンダリングする |
+| SVG 出力 | `render_svg_html(html, ...)` | `str` | SVGを出力する（HTML入力） |
+| | `render_svg_node(node, ...)` | `str` | SVGを出力する（ノードツリー入力） |
+| | `render_svg_template(name, ctx, ...)` | `str` | SVGを出力する（テンプレート入力） |
+| | `render_svg_compiled(node, ...)` | `str` | SVGを出力する（事前コンパイル入力） |
+| アニメーション | `render_animation(scenes, ...)` | `bytes` | 複数フレームのアニメーションをエンコードする |
+| | `render_sequence_at_time(scenes, time_ms, ...)` | `bytes` | シーケンスの特定の時間フレームを取得する |
+| 測定 | `measure_node(node, ...)` | `dict` | ノードツリーのレイアウトを測定する |
+| | `measure_html(html, ...)` | `dict` | HTMLのレイアウトを測定する |
+| | `measure_compiled(node, ...)` | `dict` | 事前コンパイルされたノードを測定する |
+| コンパイル | `compile_node(node)` | `CompiledNode` | ノードツリーをコンパイルする |
+| | `compile_html(html, ...)` | `CompiledNode` | HTMLをコンパイルする |
 | フォント | `register_font(font)` | `list[str]` | 自定義フォントを登録し、familyリストを返す |
-| | `register_fonts(fonts)` | `list[str]` | フォントを一括登録 |
+| | `register_fonts(fonts)` | `list[str]` | フォントを一括登録する |
 
-> `CompiledNode` は `resource_urls()` メソッドを公開しており、HTTP(S) 画像参照を事前に検出できるため、リソースの事前準備が可能です。
+> `CompiledNode` は `resource_urls()` メソッドを公開しており、HTTP(S) イメージ参照を事前に発見できるため、リソースの事前準備が可能です。
 
-### 一般的パラメータ
+### 一般的なパラメータ
 
-以下のパラメータは、静的レンダリングおよびSVGメソッドに適用されます（アニメーションメソッドには `fps` などがあります。対応する例を参照してください）：
+以下のパラメータは、静的レンダリングと SVG メソッドに適用されます（アニメーションメソッドには `fps` などがあります。対応する例を参照してください）：
 
 | パラメータ | 型 | デフォルト値 | 説明 |
 |------|------|--------|------|
-| `stylesheets` | `list[str]` | `None` | ドキュメントレベルのCSS文字列リスト。インラインの `style` はHTMLとともに解析されます |
-| `width` | `int \| None` | `1200` | ビューポートの幅（ピクセル）。`None` の場合はレイアウトに基づいて推定されます |
-| `height` | `int \| None` | `630` | 画布の高さ（ピクセル）。`None` の場合は内容に応じて自動的に高さが設定されます（[ビューポートと出力形式](#ビューポートと出力形式)を参照） |
-| `lang` | `str \| None` | `None` | BCP-47言語タグ（例：`zh-CN`）。テキスト整形と改行に影響します |
-| `font_families` | `list[str]` | 自動注入 | フォントフォールバックスタック。便利なメソッドでは組み込みフォントが自動的に注入されます |
+| `stylesheets` | `list[str]` | `None` | ドキュメントレベルの CSS 文字列リスト；内側の `style` は HTML と一緒に解析されます |
+| `width` | `int \| None` | `1200` | ビューポートの幅（ピクセル）；`None` はレイアウトに応じて推測されます |
+| `height` | `int \| None` | `630` | ブレンドの高さ（ピクセル）；`None` は内容に応じて自動的に高さを調整します（[ビューポートと出力形式](#ビューポートと出力形式)を参照） |
+| `lang` | `str \| None` | `None` | BCP-47 言語タグ（例：`zh-CN`）、テキスト整形と改行に影響します |
+| `font_families` | `list[str]` | 自動注入 | フォントフォールバックスタック；便利なメソッドは自動的に内蔵フォントを注入します |
 | `format` | `str` | `"png"` | 出力形式（[ビューポートと出力形式](#ビューポートと出力形式)を参照） |
-| `device_pixel_ratio` | `float` | `1.0` | デバイスピクセル比。出力解像度を制御します |
+| `device_pixel_ratio` | `float` | `1.0` | デバイスピクセル比、出力解像度を制御します |
 | `time_ms` | `int` | `0` | アニメーションのサンプリング時刻（ミリ秒） |
-| `dithering` | `str` | `"none"` | ドイジングアルゴリズム：`none` / `ordered-bayer` / `floyd-steinberg` |
-| `quality` | `int \| None` | `None` | 有損圧縮の品質 |
-| `lossless` | `bool \| None` | `None` | 無損圧縮を行うかどうか |
-| `images` | `list` | `None` | 今回のレンダリングに使用する画像リソース（`ImageResource` または `(src, bytes)` タプル） |
-| `keyframes` | `Mapping` | `None` | 構造化されたキーフレーム。`@keyframes` に記述する必要はありません |
-| `options` | `RenderOptions` | — | `RenderOptions(...)` でパラメータをまとめて渡す。上表のフィールドと一致します |
+| `dithering` | `str` | `"none"` | ドッジングアルゴリズム：`none` / `ordered-bayer` / `floyd-steinberg` |
+| `quality` | `int \| None` | `None` | 有損エンコードの品質 |
+| `lossless` | `bool \| None` | `None` | 無損圧縮かどうか |
+| `images` | `list` | `None` | 今回のレンダリングの画像リソース（`ImageResource` または `(src, bytes)` タプル） |
+| `keyframes` | `Mapping` | `None` | 構造化されたキーフレーム、`@keyframes` を書く必要はありません |
+| `options` | `RenderOptions` | — | `RenderOptions(...)` でパラメータを一括で渡す、上表のフィールドと同じ |
 
 完全なフィールド定義は `takumi_py.RenderOptions` を参照してください。
 
@@ -153,7 +160,7 @@ png = takumi.render_node(
 )
 ```
 
-### Jinjaテンプレートの例
+### Jinja テンプレートの例
 
 ```python
 png = takumi.render_template(
@@ -173,9 +180,9 @@ png = takumi.render_template(
 )
 ```
 
-> `filters={...}` を使用してカスタムJinjaフィルターを注入したり、`environment=...` で完全な `jinja2.Environment` を渡すことができます。テンプレートディレクトリと環境設定は、[takumi-pyのテンプレートドキュメント](https://github.com/BalconyJH/takumi-py/blob/main/docs/guides/templates.md)を参照してください。
+> `filters={...}` を使用してカスタム Jinja フィルターを注入するか、`environment=...` を使用して完全な `jinja2.Environment` を渡すことができます。テンプレートディレクトリと環境設定は [takumi-py テンプレートドキュメント](https://github.com/BalconyJH/takumi-py/blob/main/docs/guides/templates.md) を参照してください。
 
-### SVG出力の例
+### SVG 出力の例
 
 ```python
 svg = takumi.render_svg_html(
@@ -211,29 +218,33 @@ webp = takumi.render_animation(
 
 > 各フレームは `AnimationScene(node, duration_ms=...)` で構成され、`duration_ms` は正数でなければなりません。
 
+---
+
 ## ビューポートと出力形式
 
 ### 出力形式
 
-| 場合 | `format` の値 |
+| シナリオ | `format` の値 |
 |------|---------------|
-| 静的画像 | `png`（デフォルト） / `jpeg` / `jpg` / `webp` / `ico` / `raw` |
-| アニメーション | `webp`（デフォルト） / `apng` / `gif` |
+| 静的画像 | `png`（デフォルト）/ `jpeg` / `jpg` / `webp` / `ico` / `raw` |
+| アニメーション | `webp`（デフォルト）/ `apng` / `gif` |
 
-`format="raw"` は、行優先の RGBA バイトストリームを返し、ピクセル単位でのカスタム処理に使用します。
+`format="raw"` は行主序の RGBA バイナリを返し、カスタムピクセル処理に使用します。
 
-### width と height について
+### `width` と `height` について
 
 `width` と `height` の役割は非対称です：
 
-- `width` は**ビューポートの幅**であり、テキストとレイアウトはこれに基づいて改行や再レイアウトを行います。**具体的な数値（例：`800`）で固定する必要があります**。そうでないと、画布は内容の自然な幅に引き伸ばされ、テキストが改行せず、サイズが制御不能になります。
-- `height` は**画布の高さ**で、内容に応じて伸びます。`height` のデフォルト値は `630` です。`height=None` を渡すと、Takumi は**内容に応じて画布の高さを自動的に伸ばします**（自動ビューポート）。
+- `width` は**ビューポートの幅**で、テキストとレイアウトはそれに応じて改行、リフローようにします。**固定値**（例：`800`）でなければなりません。そうでなければ、画布は内容の自然な幅に伸縮し、テキストは改行せず、サイズは制御できません。
+- `height` は**画布の高さ**で、内容に応じて増加します。`height` のデフォルト値は `630` です。`height=None` を渡すと、Takumi は**内容に応じて自動的に画布の高さを調整**します（auto viewport）。
 
 > [!TIP]
-> **推奨の組み合わせ：`width` を固定 + `height=None`**。固定サイズの画布や切り抜き効果が必要な場合にのみ、具体的な `height` を渡してください。
+> **推奨の組み合わせ：固定 `width` + `height=None`。** 固定サイズの画布や切り抜き効果が必要な場合にのみ、具体的な `height` を渡してください。
 
 > [!NOTE]
-> `width` / `height` のいずれかは技術的に `None` を渡すことで、レイアウトに応じて推定させることも可能です（例：ノードが自身でサイズを宣言している場合）。両方とも渡した場合、出力サイズは確定値になります。
+> `width` / `height` のいずれかは技術的に `None` を渡して、レイアウトに応じて推測させることもできます（ノード自身がサイズを宣言している場合）。両方を渡した場合、出力サイズは確定値になります。
+
+---
 
 ## フォント
 
@@ -249,14 +260,14 @@ webp = takumi.render_animation(
 
 モジュール属性：
 
-| 属性 | 说明 |
+| 属性 | 説明 |
 |------|------|
-| `takumi.fonts` | 内蔵フォントのファイル名リスト |
-| `takumi.families` | 登録済みのフォント family リスト |
+| `takumi.fonts` | 内蔵フォントファイル名リスト |
+| `takumi.families` | 登録されたフォント familyリスト |
 
 ### 自動注入
 
-`sdk.Takumi` のすべての描画、測定、SVG、アニメーション、テンプレートメソッドは、`takumi.families` をフォントのフォールバックスタックとして自動的に注入します。直接 `takumi.renderer`（元のインスタンス）を呼び出す場合、または `create_renderer()` で作成された独立したインスタンスを使用する場合は、`font_families=takumi.families` を手動で渡す必要があります。
+`sdk.Takumi` 上のすべてのレンダリング、測定、SVG、アニメーション、テンプレートメソッドは、自動的に `takumi.families` をフォントフォールバックスタックとして注入します。`takumi.renderer`（原生インスタンス）または `create_renderer()` で作成された独立したインスタンスを直接呼び出す場合は、`font_families=takumi.families` を手動で渡す必要があります。
 
 ### 自定義フォント
 
@@ -274,13 +285,15 @@ families = takumi.renderer.register_font(
 )
 ```
 
-`register_font` は登録された family 名のリストを返し、後続の描画時に `font_families` として渡すことができます。
+`register_font` は登録された family 名のリストを返し、後続のレンダリング時に `font_families` として渡すことができます。
 
-## レンダラーアン instance
+---
 
-### ネイティブレンダラー
+## レンダラーインスタンス
 
-`takumi.renderer` は、元の `takumi_py.Renderer` インスタンスです。直接呼び出す場合は、`font_families` を手動で渡す必要があります：
+### 原生 Renderer
+
+`takumi.renderer` は元の `takumi_py.Renderer` インスタンスです。直接呼び出す場合は、`font_families` を手動で渡す必要があります：
 
 ```python
 png = takumi.renderer.render_html(
@@ -290,9 +303,9 @@ png = takumi.renderer.render_html(
 )
 ```
 
-### 独立レンダラー
+### 独立 Renderer
 
-フォント / 画像 / リソースのキャッシュを分離する必要がある場合（長寿命のプロセス、マルチテナント環境など）、独立した `Renderer` を作成できます。この場合、内蔵フォントは自動的に登録されます：
+フォント / 画像 / リソースキャッシュを分離する必要がある場合（長寿命プロセス、マルチテナント環境）、独立した `Renderer` を作成できます。内蔵のフォントは自動的に登録されます：
 
 ```python
 renderer = takumi.create_renderer(cache_max_bytes=64 * 1024 * 1024)
@@ -306,20 +319,22 @@ png = renderer.render_html(
 )
 ```
 
-`create_renderer()` は `takumi_py.Renderer` のコンストラクター引数を受け取ります：
+`create_renderer()` は `takumi_py.Renderer` の構造子パラメータを受け取ります：
 
-| 引数 | 型 | デフォルト値 | 説明 |
+| パラメータ | 型 | デフォルト値 | 説明 |
 |------|------|--------|------|
-| `load_default_fonts` | `bool` | `False` | takumi-py に付属するフォントをロードするかどうか（内蔵フォントは常にロードされます） |
-| `fonts` | `list[FontResource]` | `None` | 追加で登録するカスタムフォント |
-| `cache_max_bytes` | `int \| None` | `None` | リソースキャッシュの上限（バイト）；`0` で無効化 |
+| `load_default_fonts` | `bool` | `False` | takumi-py に含まれるフォントをロードするかどうか（内蔵フォントは常にロードされます） |
+| `fonts` | `list[FontResource]` | `None` | 追加で登録する自定義フォント |
+| `cache_max_bytes` | `int \| None` | `None` | リソースキャッシュの上限（バイト）；`0` は無効化 |
 | `persistent_images` | `list` | `None` | 永続化する画像リソース |
 
-> 独立インスタンスはモジュールのプロキシを経由しないため、統一された内蔵フォントのフォールバックスタックを保持するには、`font_families=takumi.families` を明示的に渡す必要があります。`font_families` を明示的に渡した場合、モジュールは呼び出し元の設定を尊重し、デフォルトのフォールバックスタックを挿入しません。`RenderOptions(font_families=...)` でも同様です。
+> 独立したインスタンスはモジュールのプロキシを経由しないため、統一された内蔵フォントフォールバックスタックを保持するには、`font_families=takumi.families` を明示的に渡す必要があります。`font_families` を明示的に渡した場合、モジュールは呼び出し側の設定を尊重し、デフォルトのフォールバックスタックを注入しません。`RenderOptions(font_families=...)` でも同様です。
+
+---
 
 ## レンダリング結果の送信
 
-レンダリングされた画像は `bytes` 形式で取得でき、イベントの返信として直接送信することができます。
+レンダリングされた画像は `bytes` であり、イベントの返信として直接送信できます：
 
 ```python
 from ErisPulse import sdk
@@ -327,17 +342,19 @@ from ErisPulse import sdk
 takumi = sdk.Takumi
 png = takumi.render_html("<div>hello</div>", lang="zh-CN")
 
-# 方法1：Imageメソッドで返信
+# 方法1：Imageメソッドで返信する
 await event.reply(png, method="Image")
 
-# 方法2：OneBot12メッセージセグメントで返信
+# 方法2：OneBot12メッセージセグメントで返信する
 from ErisPulse.Core.Event import MessageBuilder
 await event.reply_ob12(
     MessageBuilder().image(png).build()
 )
 ```
 
-> 画像の異なるプラットフォームへのラッピングはアダプターによって統一的に処理されます。詳しくは [MessageBuilderの詳細](../advanced/message-builder.md) および [送信メソッドの規格](../standards/send-method-spec.md) を参照してください。
+> 画像の異なるプラットフォームでのラッピングは、アダプタによって統一的に処理されます。詳しくは [MessageBuilder 詳解](../advanced/message-builder.md) と [送信メソッド仕様](../standards/send-method-spec.md) を参照してください。
+
+---
 
 ## 設定
 
@@ -352,5 +369,13 @@ enabled = true
 
 - PyPI：<https://pypi.org/project/ErisPulse-Takumi/>
 - リポジトリ：<https://github.com/ccd2s/ErisPulse-Takumi>（作者 [@ccd2s](https://github.com/ccd2s)）
-- ベースエンジン：<https://github.com/BalconyJH/takumi-py>
+- 下層エンジン：<https://github.com/BalconyJH/takumi-py>
 - takumi-py ドキュメント：<https://github.com/BalconyJH/takumi-py/blob/main/docs/index.md>
+
+---
+
+## 次に進む
+
+- **レンダリング結果を送信する方法**：`event.reply(png, method="Image")` などの返信方法は [イベントシステム API - 返信メソッド](../api-reference/event-system.md) を参照
+- **より複雑な出力メッセージの構築**（画像 + 文字 + @）：[メッセージビルダー](../advanced/message-builder.md)
+- **レンダリング + 定期送信**：[ErisPulse-Cron](cron.md) と組み合わせて周期的なデータカードを作成

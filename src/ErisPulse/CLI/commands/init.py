@@ -8,14 +8,14 @@ import asyncio
 import concurrent.futures
 import re
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from rich.text import Text
 
 from ..base import Command
 from ..console import console
-from ..constants import INIT_ERISPULSE_DEPENDENCY
+from ..constants import CLI_FETCH_METADATA_TIMEOUT_SECS, INIT_ERISPULSE_DEPENDENCY
 from ..i18n import i18n
 from ..utils import PackageManager
 from ..utils.display import _input, prompt_validated, section_header
@@ -66,7 +66,7 @@ class InitCommand(Command):
         """
         self.package_manager = PackageManager()
 
-    def add_arguments(self, parser: ArgumentParser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "path",
             nargs="?",
@@ -97,7 +97,7 @@ class InitCommand(Command):
             help=i18n.t("cli.init.adapter_help"),
         )
 
-    def execute(self, args):
+    def execute(self, args: Namespace) -> None:
         self.no_uv = getattr(args, "no_uv", False)
         self.no_venv = getattr(args, "no_venv", False)
         here = getattr(args, "here", False)
@@ -626,7 +626,7 @@ class InitCommand(Command):
             try:
                 with concurrent.futures.ThreadPoolExecutor() as executor:
                     future = executor.submit(asyncio.run, self._fetch_available_adapters())
-                    adapters = future.result(timeout=10)
+                    adapters = future.result(timeout=CLI_FETCH_METADATA_TIMEOUT_SECS)
             except Exception as e:
                 console.print(f"[error]  {i18n.t('cli.init.fetch_adapters_failed', error=e)}[/]")
                 return
@@ -692,7 +692,7 @@ class InitCommand(Command):
                 if not remote_packages:
                     with concurrent.futures.ThreadPoolExecutor() as executor:
                         future = executor.submit(asyncio.run, pkg_manager.get_remote_packages())
-                        remote_packages = future.result(timeout=10)
+                        remote_packages = future.result(timeout=CLI_FETCH_METADATA_TIMEOUT_SECS)
                 if adapter_name in remote_packages.get("adapters", {}):
                     package_name = remote_packages["adapters"][adapter_name].get("package")
             except Exception:

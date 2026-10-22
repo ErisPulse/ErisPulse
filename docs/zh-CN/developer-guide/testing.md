@@ -4,7 +4,7 @@
 > **什么时候需要读这篇**：为自己的模块编写自动化测试时。不需要则跳过，不影响其它功能的使用。
 
 
-[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) 是官方测试工具包（RFC EPRFC-2026-001 方向三）：
+[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) 是官方测试工具包：
 提供 `TestBot`、测试事件工厂、出站消息捕获与断言面，让模块测试像写普通 pytest 一样简单。
 
 ```bash
@@ -155,3 +155,14 @@ trace.assert_no_match()         # 断言未命中命令
 
 生产环境同样可用框架内置的 `ErisPulse.Core.Event.trace`（`start_dispatch_trace()` /
 `format_dispatch_trace()`）采集与渲染决策链。
+
+## 下一步
+
+### 测试暴露了"命令没触发"类问题
+
+- [模块排查指南](module-troubleshooting.md) — 从测试复现走向生产排查，症状对号入座
+
+### 测试通过、准备分发
+
+- [模块核心概念](modules/core-concepts.md) — 回补模块架构与配置声明的细节
+- [发布与模块商店指南](publishing.md) — 发布到 PyPI 与模块商店的完整流程

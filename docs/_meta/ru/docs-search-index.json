@@ -2806,12 +2806,12 @@
         "title": "HTTP-клиент"
       }
     ],
-    "HTTP-роутинг": [
+    "HTTP-маршрутизация": [
       {
         "document": "advanced/lifecycle.md",
         "line": 256,
         "level": 3,
-        "title": "HTTP-роутинг"
+        "title": "HTTP-маршрутизация"
       }
     ],
     "HTTPStatusError": [
@@ -4824,6 +4824,14 @@
         "title": "Выгрузка и полная выгрузка (purge)"
       }
     ],
+    "Вызов": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 366,
+        "level": 3,
+        "title": "Вызов"
+      }
+    ],
     "Вызов API": [
       {
         "document": "api-reference/adapter-system.md",
@@ -5708,14 +5716,6 @@
         "title": "Запрос на добавление в друзья"
       }
     ],
-    "Запрос слушателя (has_handlers)": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 104,
-        "level": 3,
-        "title": "Запрос слушателя (has_handlers)"
-      }
-    ],
     "Запрос состояния бота": [
       {
         "document": "api-reference/core-modules.md",
@@ -6596,14 +6596,6 @@
         "line": 120,
         "level": 3,
         "title": "Команда не отвечает?"
-      }
-    ],
-    "Командная система": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 241,
-        "level": 3,
-        "title": "Командная система"
       }
     ],
     "Команды диагностики": [
@@ -7934,12 +7926,12 @@
         "title": "Назначение методов отправки"
       }
     ],
-    "Направленная рассылка (emit to=)": [
+    "Направленная передача (emit to=)": [
       {
         "document": "advanced/lifecycle.md",
         "line": 66,
         "level": 3,
-        "title": "Направленная рассылка (emit to=)"
+        "title": "Направленная передача (emit to=)"
       }
     ],
     "Направленные события: параметр to в lifecycle.emit": [
@@ -11260,14 +11252,6 @@
         "title": "Приглашения в комнаты"
       }
     ],
-    "Прием и обработка событий": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 201,
-        "level": 3,
-        "title": "Прием и обработка событий"
-      }
-    ],
     "Пример Jinja-шаблона": [
       {
         "document": "ecosystem/takumi.md",
@@ -11780,6 +11764,14 @@
         "title": "Приоритет разрешения аккаунта"
       }
     ],
+    "Приём и обработка событий": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 201,
+        "level": 3,
+        "title": "Приём и обработка событий"
+      }
+    ],
     "Проверка администратора": [
       {
         "document": "getting-started/common-tasks.md",
@@ -11834,6 +11826,14 @@
         "line": 124,
         "level": 2,
         "title": "Проверка работоспособности"
+      }
+    ],
+    "Проверка слушателей (has_handlers)": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 104,
+        "level": 3,
+        "title": "Проверка слушателей (has_handlers)"
       }
     ],
     "Проверка статуса платформы": [
@@ -12452,12 +12452,12 @@
         "title": "Регистрация маршрутов: одиночный и двойной параметры"
       }
     ],
-    "Регистрация обработчика": [
+    "Регистрация обработчиков": [
       {
         "document": "advanced/lifecycle.md",
         "line": 15,
         "level": 3,
-        "title": "Регистрация обработчика"
+        "title": "Регистрация обработчиков"
       }
     ],
     "Регистрация обработчиков событий": [
@@ -12870,12 +12870,6 @@
         "title": "Связанная документация"
       },
       {
-        "document": "advanced/lifecycle.md",
-        "line": 453,
-        "level": 2,
-        "title": "Связанная документация"
-      },
-      {
         "document": "advanced/message-builder.md",
         "line": 188,
         "level": 2,
@@ -12918,6 +12912,12 @@
       {
         "document": "advanced/lazy-loading.md",
         "line": 275,
+        "level": 2,
+        "title": "Связанные документы"
+      },
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 453,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -13334,6 +13334,14 @@
         "line": 1,
         "level": 1,
         "title": "Система исключений и руководство по обработке"
+      }
+    ],
+    "Система команд": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 241,
+        "level": 3,
+        "title": "Система команд"
       }
     ],
     "Система ленивой загрузки": [
@@ -14116,12 +14124,12 @@
         "title": "Список стандартных документов"
       }
     ],
-    "Список точек хуков": [
+    "Список точек хуков жизненного цикла": [
       {
         "document": "advanced/lifecycle.md",
         "line": 116,
         "level": 2,
-        "title": "Список точек хуков"
+        "title": "Список точек хуков жизненного цикла"
       }
     ],
     "Способ 1: Локальный процесс (рекомендуется)": [
@@ -14408,14 +14416,6 @@
         "title": "Стандартизированный протокол возврата адаптера ErisPulse"
       }
     ],
-    "Стандартное определение событий": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 330,
-        "level": 2,
-        "title": "Стандартное определение событий"
-      }
-    ],
     "Стандартное сопоставление OB12": [
       {
         "document": "platform-guide/onebot11.md",
@@ -14504,6 +14504,14 @@
         "line": 19,
         "level": 2,
         "title": "Стандартные действия API (DSL API)"
+      }
+    ],
+    "Стандартные определения событий": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 330,
+        "level": 2,
+        "title": "Стандартные определения событий"
       }
     ],
     "Стандартные ответы API": [
@@ -15098,14 +15106,6 @@
         "line": 1,
         "level": 1,
         "title": "Трекер ошибок"
-      }
-    ],
-    "Триггер событий": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 366,
-        "level": 3,
-        "title": "Триггер событий"
       }
     ],
     "Увеличение участников группы": [
@@ -15932,20 +15932,20 @@
         "title": "Шаблон записи"
       }
     ],
-    "Шаблон звездочки": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 56,
-        "level": 3,
-        "title": "Шаблон звездочки"
-      }
-    ],
     "Шаблон описания задачи": [
       {
         "document": "ai-support/README.md",
         "line": 36,
         "level": 3,
         "title": "Шаблон описания задачи"
+      }
+    ],
+    "Шаблоны": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 56,
+        "level": 3,
+        "title": "Шаблоны"
       }
     ],
     "Шаблоны проектов": [

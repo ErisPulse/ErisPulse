@@ -1,5 +1,8 @@
 # API 参考
 
+> [!TIP]
+> **什么时候需要读这篇**：当你在写模块或适配器时需要查某个核心模块（Storage/Config/Logger/Router 等）、事件系统或适配器管理 API 的用法示例——按下面文档列表跳到对应篇目。不需要则跳过。
+
 本目录包含 ErisPulse 框架的 API 参考文档。
 
 ## 文档列表
@@ -47,7 +50,12 @@
 
 ## 相关文档
 
+**第一次接触框架**：
 - [核心概念](../getting-started/basic-concepts.md) - 理解框架核心概念
+
+**按身份深入**：
 - [模块开发指南](../developer-guide/modules/) - 开发自定义模块
 - [适配器开发指南](../developer-guide/adapters/) - 开发平台适配器
+
+**查某个子系统怎么用**：
 - [高级主题](../advanced/) - 路由、HTTP 客户端、SQL 构建器等深入文档

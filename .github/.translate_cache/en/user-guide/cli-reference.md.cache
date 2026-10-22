@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "4a394bc5750c7cab730eba17a454af2c",
-  "file_hash": "4a394bc5750c7cab730eba17a454af2c",
-  "translated_at": "2026-10-20T12:07:51.454840",
+  "hash": "bda33cfb5163f844781a8e81c95fad16",
+  "file_hash": "bda33cfb5163f844781a8e81c95fad16",
+  "translated_at": "2026-10-22T11:43:02.002288",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "f30901b5e0eed6e80d136dfc76df17f3",
-      "translation": "# CLI Command Reference\n\nThe ErisPulse command-line tool (`epsdk`) provides project management and package management features.\n\n> **Tip**: All commands can be viewed with detailed parameter descriptions using `epsdk <command> --help`. The main help for `epsdk` (without a command) groups commands by category: **Projects** (init / create / run), **Component Management** (install / uninstall / upgrade / list / list-remote / types), **Configuration & Diagnostics** (config / doctor / i18n), **Others** (self-update / version).\n\n---"
+      "hash": "0f9461d42b9df713285d751b28d8deb3",
+      "translation": "# CLI Command Reference\n\n> [!TIP]\n> **When to read this**: When you forget the parameters of a `epsdk` command, want to script component management, or need to control the behavior of `run` / `stop` / `restart`, consult this section. For daily use of just `init` / `install` / `run`, remember one thing: `epsdk <command> --help` always provides parameter descriptions, so you don't need to read this entire document.\n\n`epsdk` is ErisPulse's command-line tool: it initializes projects, installs/upgrades modules and adapters, interactively configures components, runs and stops robots, and diagnoses environments, all within a single command.\n\n> **Tip**: The main help for `epsdk` (without a command) is grouped by category: **Project** (`init` / `create` / `run`), **Component Management** (`install` / `uninstall` / `upgrade` / `list` / `list-remote` / `types`), **Configuration and Diagnosis** (`config` / `doctor` / `i18n`), and **Others** (`self-update` / `version`)."
     },
     {
       "hash": "0d4ed74df0f54e266ec04c1ce62da262",
@@ -56,6 +56,10 @@
     {
       "hash": "61c804d1024b9ca4c76a2f12a84507c7",
       "translation": "## Common Usage\n\n### Install Modules\n\n```bash\n# Install a single module\nepsdk install Weather\n\n# Install multiple modules\nepsdk install Yunhu Weather\n\n# Upgrade module\nepsdk install Weather -U\n```\n\n### List Components\n\n```bash\n# List all components\nepsdk list\n\n# List only adapters\nepsdk list -t adapters\n\n# List only upgradable components\nepsdk list -o\n\n# View remote available components\nepsdk list-remote\n```\n\n### Uninstall Components\n\n```bash\n# Uninstall a single component\nepsdk uninstall Weather\n\n# Uninstall multiple components\nepsdk uninstall Yunhu Weather\n```\n\n### Configure Components\n\n```bash\n# View configuration status\nepsdk config --list\n\n# Interactive selection of target configuration\nepsdk config\n\n# Configure specified adapter\nepsdk config yunhu\n```\n\n### Upgrade Components\n\n```bash\n# Upgrade all components\nepsdk upgrade\n\n# Upgrade specified component\nepsdk upgrade Weather\n\n# Force upgrade\nepsdk upgrade -f\n```\n\n### Run Project\n\n```bash\n# Run normally\nepsdk run main.py\n\n# Hot-reload mode\nepsdk run main.py --reload\n```\n\n### Switch Language\n\n```bash\n# Interactive language selection\nepsdk i18n\n\n# Directly switch to English\nepsdk i18n en\n\n# List supported languages\nepsdk i18n --list\n```\n\n### Generate Type Stubs\n\n```bash\n# Generate all type stubs\nepsdk types\n\n# Generate only module type stubs\nepsdk types --modules-only\n```\n\n### Initialize Project\n\n```bash\n# Interactive initialization\nepsdk init\n\n# Quick initialization\nepsdk init -q -n my_bot\n```\n\n### Create Scaffolding\n\n```bash\n# Interactive creation (guides selection of type and filling information)\nepsdk create\n\n# Directly create Module project\nepsdk create module -n MyModule\n\n# Directly create Adapter project\nepsdk create adapter -n MyAdapter\n\n# Complete parameters\nepsdk create module -n MyModule -d \"Module description\" -a \"Author\" -e \"mail@example.com\"\n\n# Force overwrite existing directory\nepsdk create module -n MyModule -f\n```"
+    },
+    {
+      "hash": "f53b18036ffa50356aba4f89d1c9e6e4",
+      "translation": "## Next Steps\n\n- **After installing components, you need to fill in the configuration**: Use the `epsdk config` interactive wizard, or manually edit the configuration file as described in [Configuration File Description](configuration.md).\n- **After writing code and wanting IDE auto-completion**: Run `epsdk types`, see [Type Stub Generation](../getting-started/ide-completion.md) for details.\n- **If the robot fails to run**: First, use `epsdk doctor` to diagnose the environment (see [Environment Diagnosis](#environment-diagnosis)). For long-term deployment, refer to the [Deployment Guide](deployment.md)."
     }
   ]
 }

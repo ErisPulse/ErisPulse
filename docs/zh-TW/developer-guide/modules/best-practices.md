@@ -1,9 +1,9 @@
 # 模組開發最佳實踐
 
-> [!TIP]  
-> **何時需要閱讀本文**：寫完第一個模組後建議閱讀（工程化最佳實踐）。不需要則跳過，不會影響其他功能的使用。
+> [!TIP]
+> **何時需要閱讀本文**：寫完第一個模組後建議閱讀（工程化最佳實踐）。若不需要則可跳過，這不會影響其他功能的使用。
 
-本文檔提供了 ErisPulse 模組開發的最佳實踐建議。
+這裡匯總了模組開發的工程寫法約定：異步操作不阻塞事件循環、配置使用宣告式、托管別人的資源要隨著卸載釋放——照著寫能避開記憶體洩漏、後台任務殘留、熱重載失效這些模組開發中最常見的坑。
 
 ## 模組設計
 
@@ -95,7 +95,7 @@ class MyModule(BaseModule):
 
 詳細用法見 [i18n 文檔](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
 
-## 異步程式設計
+## 異步編程
 
 ### 1. 使用異步庫
 
@@ -116,7 +116,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# 不要使用 aiohttp 直接匯入（不便於框架統一管理）
+# 不要使用 aiohttp 直接導入（不便於框架統一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -148,12 +148,12 @@ async def on_load(self, event: dict):
     self.spawn(self._poll())
 ```
 
-> [!NOTE]  
+> [!NOTE]
 > 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**）。**2.8.3 起**裸 `asyncio.create_task`
-> 也會自動隱式歸屬模組（Task Factory 自動登記，卸載時兜底取消，不再泄漏 `self` 引用）；  
-> `self.spawn()` 仍是推薦寫法——支援非主循環執行緒調度回主循環、顯式 `owner=` 指定。  
-> **2.8.3 之前的版本**裸任務不歸屬、會持有 `self` 引用導致模組實例無法被回收  
-> （熱重載泄漏），必須用 `self.spawn()`。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。自動取消)。
+> 也會自動隱式歸屬模組（Task Factory 自動登記，卸載時兜底取消，不再泄漏 `self` 引用）；
+> `self.spawn()` 仍是推薦寫法——支援非主迴圈執行緒調度回主迴圈、顯式 `owner=` 指定。
+> **2.8.3 之前**的版本裸任務不歸屬、會持有 `self` 引用導致模組實例無法被回收
+> （熱重載泄漏），必須用 `self.spawn()`。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
 
 ### 3. 資源管理
 
@@ -551,6 +551,12 @@ version = "1.0.0"
 
 ## 相關文件
 
-- [模組開發入門](getting-started.md) - 創建第一個模組  
-- [模組核心概念](core-concepts.md) - 理解模組架構  
+### 回到學習路徑
+
+- [模組開發入門](getting-started.md) - 建立第一個模組
+- [模組核心概念](core-concepts.md) - 理解模組架構
+
+### 按場景深入
+
 - [Event 包裝類](event-wrapper.md) - 事件處理詳解
+- [發布與模組商店指南](../publishing.md) - 模組寫好後發布到 PyPI 與模組商店

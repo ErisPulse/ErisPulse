@@ -1,10 +1,10 @@
 # 模块排查指南
 
 > [!TIP]
-> **什么时候需要读这篇**：模块"没反应"、命令不触发或事件没收到时排查。不需要则跳过，不影响其它功能的使用。
+> **什么时候需要读这篇**：机器人"没反应"时——模块装上了但没加载、发了命令没回应、事件处理器不执行、改了代码 reload 后还是旧行为、模块明明启用却收不到事件——按症状到对应场景对号入座。不需要则跳过，不影响其它功能的使用。
 
 
-模块"没反应"时，按症状分为三类问题，每类都有对应的框架诊断工具（RFC EPRFC-2026-001 方向五）：
+模块"没反应"时，按症状到对应场景排查；前三类场景有框架诊断工具直接给出结论：
 
 | 症状 | 诊断工具 | 定位层面 |
 |------|---------|---------|
@@ -142,3 +142,9 @@ print(final_verdict(records))           # 总结论
 - 排查前先把日志调到 `DEBUG` / `TRACE`（配置见[开发者指南](README.md#调试技巧)），可以看到模块加载、路由注册、事件分发等框架内部流程；
 - `explain_module` / `explain_event` 随时可调、纯读无副作用，适合直接挂到运维命令或管理面板；
 - "命令没触发"类问题优先写一个 `DispatchTrace` 断言测试复现——`assert_executed` / `assert_rejected` 等断言失败时会自动附上完整因果链。
+
+## 问题仍未解决
+
+- **先查已知问题**：对照 [Bug 追踪](../bug-tracker.md)，确认是否为已记录的问题及其规避方法；
+- **提交反馈**：到 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 报告问题时，附上 `explain_module` / `explain_event` 的输出、`DispatchTrace` 因果链与框架版本号，能大幅缩短定位时间；
+- **讨论与求助**：拿不准是不是 Bug 时，先在 [Discussions](https://github.com/ErisPulse/ErisPulse/discussions) 描述症状与复现步骤。

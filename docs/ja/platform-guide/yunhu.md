@@ -58,6 +58,7 @@ async def handle_button(event):
 > 完全な標準説明は [跨プラットフォームインタラクションコンポーネント標準](../standards/standardization-guide.md) を参照してください。
 
 ---
+
 ## 支援するメッセージ送信タイプ
 
 すべての送信メソッドはチェーン構文で実現されます。例えば:
@@ -445,7 +446,8 @@ async def handle_yunhu_notice(event):
     detail_type で異なるタイプの通知を区別する
     event.reply() は自動的に雲湖プラットフォームを介して返信する
     """
-    # ボタンクリックイベントかどうかを確認
+
+# ボタンクリックイベントかどうかを確認
     if event.get("detail_type") == "yunhu_button_click":
         user_id = event.get_user_id()
         user_nickname = event.get_user_nickname()
@@ -453,7 +455,7 @@ async def handle_yunhu_notice(event):
 
         print(f"ユーザー {user_nickname}({user_id}) がボタンをクリックしました: {button_value}")
 
-        # event.reply() を使用して返信（プラットフォームに応じて正しい送信方法を選択）
+# event.reply() を使用して返信（プラットフォームに応じて正しい送信方法を選択）
         if button_value == "confirm":
             await event.reply("確認ボタンをクリックしました！")
         elif button_value == "cancel":
@@ -461,17 +463,17 @@ async def handle_yunhu_notice(event):
         else:
             await event.reply(f"選択を受け取りました: {button_value}")
 
-    # ショートカットメニューイベントの処理
+# ショートカットメニューイベントの処理
     elif event.get("detail_type") == "yunhu_shortcut_menu":
         menu_id = event.get("yunhu_menu", {}).get("id", "")
         await event.reply(f"ショートカットメニューが起動されました: {menu_id}")
 
-    # ロボットの設定変更
+# ロボットの設定変更
     elif event.get("detail_type") == "yunhu_bot_setting":
         settings = event.get("yunhu_setting", {})
         await event.reply(f"設定が更新されました: {settings}")
 
-    # A2UIボタンイベントの処理
+# A2UIボタンイベントの処理
     elif event.get("detail_type") == "yunhu_a2ui_button":
         a2ui = event.get("yunhu_a2ui", {})
         action_name = a2ui.get("action_name", "")

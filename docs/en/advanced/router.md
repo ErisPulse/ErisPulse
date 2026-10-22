@@ -458,13 +458,13 @@ async def on_server_stop(event):
 
 ## Best Practices
 
-1. **Prefer Abstract Types**: Use `HttpRequest` / `WebSocketConnection` instead of `fastapi.Request` / `fastapi.WebSocket` to avoid hard dependencies.
-2. **Leverage Automatic Injection**: Name the first parameter of the handler `request` or `req`, and obtain `HttpRequest` without any type annotation.
-3. **Explicitly Pass module_name**: The first parameter of the decorator must be the module name, and cannot be omitted.
-4. **Use Route Grouping**: Use `group()` to organize multiple routes within the same module.
-5. **Security Consideration**: Implement authentication mechanisms and security headers for sensitive operations.
-6. **Reasonable Rate Limiting**: Set rate limits for high-frequency interfaces.
-7. **Use Lifecycle Hooks**: Use `@ws.on_disconnect` / `@ws.on_error` to handle WebSocket exceptions, avoiding manual try/catch.
+1. **Prefer abstract types**: Use `HttpRequest` / `WebSocketConnection` instead of `fastapi.Request` / `fastapi.WebSocket` to avoid hard dependencies
+2. **Leverage automatic injection**: Name the first parameter of a handler `request` or `req` to obtain `HttpRequest` without any type annotation
+3. **Prefer the single-parameter form**: In module loading contexts, prefer the single-parameter form (automatically assigned to the namespace); when registering in cross-module/utility code, explicitly pass the module name
+4. **Use route grouping**: Use `group()` to organize multiple routes within the same module
+5. **Security considerations**: Implement authentication mechanisms and security headers for sensitive operations
+6. **Apply rate limiting appropriately**: Set rate limits for high-frequency endpoints
+7. **Use lifecycle hooks**: Handle WebSocket exceptions via `@ws.on_disconnect` / `@ws.on_error` instead of manual try/catch
 
 ## Related Documentation
 

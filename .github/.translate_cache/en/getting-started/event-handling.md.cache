@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "b4f6ae8af4657538862fa3083e7de991",
-  "file_hash": "b4f6ae8af4657538862fa3083e7de991",
-  "translated_at": "2026-10-03T08:51:33.694086",
+  "hash": "705edf822184c6da921da5c1a0aa8345",
+  "file_hash": "705edf822184c6da921da5c1a0aa8345",
+  "translated_at": "2026-10-22T11:13:34.466563",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "e6c86b500bc8456d5a31e03768a079ad",
-      "translation": "# Getting Started with Event Handling\n\nThis guide introduces how to handle various event types in ErisPulse."
+      "hash": "2e27d084c4afc3cf47589c93429f3633",
+      "translation": "# Getting Started with Event Handling\n\n> [!TIP]\n> **When to read this**: Read this if you want your bot to respond to messages, commands, notifications, or requests, or if you need to implement reply waiting / multi-turn conversations, or troubleshoot \"why isn't my command triggering\". If you only want to understand the framework design, [Basic Concepts](basic-concepts.md) is all you need; otherwise, feel free to skip this.\n\nEvent handlers are where the bot \"understands\" users and reacts to them. This guide provides copy-paste-ready code patterns for the five event types, covering practical scenarios such as argument parsing, permissions, throttling, and multi-turn interaction."
     },
     {
       "hash": "6bf62fa983db3eea33826ae14a780e96",
@@ -66,8 +66,8 @@
       "translation": "## Event Handling Best Practices\n\n### 1. Exception Handling\n\n```python\n@command(\"process\")\nasync def process_handler(event):\n    try:\n        # Business logic\n        result = await do_some_work()\n        await event.reply(f\"Result: {result}\")\n    except ValueError as e:\n        # Expected business error\n        await event.reply(f\"Parameter error: {e}\")\n    except Exception as e:\n        # Unexpected error\n        sdk.logger.error(f\"Processing failed: {e}\")\n        await event.reply(\"Processing failed, please try again later\")\n```\n\n### 2. Logging\n\n```python\n@message.on_message()\nasync def message_handler(event):\n    user_id = event.get_user_id()\n    text = event.get_text()\n    \n    sdk.logger.info(f\"Processing message: {user_id} - {text}\")\n    \n    # Use the module's own logger\n    from ErisPulse import sdk\n    logger = sdk.logger.get_child(\"MyHandler\")\n    logger.debug(f\"Detailed debug information\")\n```\n\n### 3. Conditional Handling\n\n```python\n@message.on_message(priority=0)\nasync def conditional_handler(event):\n    \"\"\"Conditional handling - judge within the handler\"\"\"\n    # Only process messages from specific users\n    if event.get_user_id() in [\"bot1\", \"bot2\"]:\n        return\n    \n    # Only process messages containing specific keywords\n    if \"keyword\" not in event.get_text():\n        return\n    \n    await event.reply(\"Condition met, processing message\")\n```"
     },
     {
-      "hash": "4ae64a0d1fa3836e9a98d54bcaae0bed",
-      "translation": "## Next Steps\n\n- [Common Tasks Examples](common-tasks.md) - Learn the implementation of common features (including advanced message sending: retry/timeout/batch building)\n- [Platform Features Guide](../platform-guide/README.md) - Complete explanation of Send DSL chaining, sending rules, and batch building\n- [Event Wrapper Class Detailed Explanation](../developer-guide/modules/event-wrapper.md) - Deep understanding of the Event object\n- [User Guide](../user-guide/) - Learn about configuration and module management"
+      "hash": "02cf05c9ff5326949e506bf5563a96cf",
+      "translation": "## Next Steps\n\n- **Want to manipulate the event object itself**: See [Event Wrapper Class Explained](../developer-guide/modules/event-wrapper.md) — the authoritative reference for all Event methods\n- **Want to send more complex messages**: The [Platform Features Guide](../platform-guide/README.md) covers SendDSL chained sending, sending rules, and batch building in depth; [Common Task Examples](common-tasks.md) contains ready-made code for retry / timeout / batch scenarios\n- **Need to configure and deploy after finishing your features**: Head over to the [User Guide](../user-guide/) — configuration files and CLI management are all covered there"
     }
   ]
 }

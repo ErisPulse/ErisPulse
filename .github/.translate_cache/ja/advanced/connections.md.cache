@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "8a440839fcdb026fca9de57b6e504800",
-  "file_hash": "8a440839fcdb026fca9de57b6e504800",
-  "translated_at": "2026-10-14T03:07:23.759990",
+  "hash": "7dfbd0d9bffb010ff773851204c06c2e",
+  "file_hash": "7dfbd0d9bffb010ff773851204c06c2e",
+  "translated_at": "2026-10-22T09:51:05.402565",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "6f42ccb0908824a8603465c010119c3d",
-      "translation": "# 接続プールとブロードキャスト\n\n> [!TIP]  \n> **この記事を読む必要があるのは**：WebSocket/SSE の接続プール、ブロードキャストのグループ化、モジュール間での通知、または接続を確認する必要がある場合です。それ以外の場合はスキップしても、他の機能の使用に影響はありません。\n\nErisPulse における接続（サーバ側 WebSocket / SSE / クライアント出力 WebSocket）は**フレームワークレベルの第一級リソース**です。  \n接続の確立に伴い、自動的に統一されたレジストリに登録され、ブロードキャスト、業務用のグループサブスクリプション、モジュール間での転送/再利用がサポートされています。  \nモジュールのアンロード時には、フレームワークが自動的に接続を閉じてリソースを回収します。  \nこれにより、業務コードで `_ws_clients` のような集合を手動で管理する必要がなくなり、忘れずにクリーンアップしないためのリソースリークの懸念も解消されます。\n\n> 本文の例はすべて**ルートインポート**の書き方を前提としています（2.10 以降で推奨）：  \n> `from ErisPulse import connections, router, client, WebSocketConnection`"
+      "hash": "e1b235bb891f3721edfdd8609c5c66cb",
+      "translation": "# 接続プールとブロードキャスト\n\n> [!TIP]\n> **この記事を読むタイミング**：WebSocket/SSE 接続プール、ブロードキャストのグループ分け、モジュール間のプッシュ、または接続を確認する必要がある場合に読んでください。必要がない場合は飛ばしても、他の機能の使用には影響しません。\n\n> **読了後は**：3 種類の接続がどのように自動的にレジストリに登録されるか、グループサブスクリプションとブロードキャスト API、\n> モジュール間での再利用とクローズ権の帰属、およびモジュールのアンロード時に接続がどのようにクリーンアップされるかがわかります。\n>\n> **本記事では扱いません**：WebSocket / SSE ルーティングの登録方法と接続のライフサイクルフック\n> （[ルーティングマネージャー](docs/ja/router.md)を参照）；クライアントからの HTTP リクエスト（[ネットワーククライアント](docs/ja/http-client.md)を参照）。\n\nErisPulse における接続（サーバー側 WebSocket / SSE / クライアント出向き WebSocket）は**フレームワークレベルで一等のリソース**です：\n接続の確立に伴い、自動的に統一されたレジストリに登録され、ブロードキャスト、業務グループのサブスクリプション、モジュール間での転送/再利用が可能であり、\nモジュールのアンロード時にはフレームワークが自動的にクローズしてリソースを回収します。これにより、業務コード側で `_ws_clients` 集合を自前で管理する必要がなくなり、\n忘れずにクリーンアップしないことでリソースリークが発生する心配もありません。\n\n> 本文書の例はすべて**ルートインポート**の書き方（2.10+ で推奨）を前提としています：\n> `from ErisPulse import connections, router, client, WebSocketConnection`"
     },
     {
       "hash": "082ac18ecfe481fd554932f5f21338db",
@@ -40,6 +40,10 @@
     {
       "hash": "1af6c3a4d287b18aa6c300957ca84d60",
       "translation": "## API 一覧\n\n| API | 说明 |\n|-----|------|\n| `connections.get(id)` | 接続を取得（モジュール間のエントリーポイント）、存在しない場合は `ConnectionNotFoundError` を送出 |\n| `connections.list(namespace=, owner=, group=, kind=)` | 接続のリストをフィルタリングして取得 |\n| `connections.stats(namespace=, owner=)` | 各条件のカウント統計 |\n| `connections.assign(id, *groups)` / `dismiss(id, *groups)` | 管理側によるグループ参加/退出 |\n| `await connections.broadcast(data, ...)` | ブロードキャスト、`BroadcastResult` を返す |\n| `await connections.close(id, force=False)` | 閉じて登録を解除（権限チェックあり） |\n| `await connections.close_owner(owner)` | 指定 owner 名下のすべての接続を閉じて登録を解除（フレームワークのアンロードチェーンで呼び出される） |\n| `conn.join_group(*groups)` / `conn.leave_group(*groups)` | 接続側によるグループ参加/退出 |\n| `conn.send_json / send_text / iter_text / ...` | 受信/送信（サーバ側/クライアント側のインターフェースは同一） |\n| `conn.meta` | 業務用メタデータ辞書 |\n| `conn.close(force=False)` | 閉じる（非 owner は `ConnectionPermissionError` を送出） |"
+    },
+    {
+      "hash": "a5fc5683e14e86a5f5f7a128a5b0971c",
+      "translation": "## 関連ドキュメント\n\n- **登録サービス側 WS / SSE ルート** → [ルートマネージャー](router.md)\n- **クライアント側出力 WebSocket の構築** → [ネットワーククライアント](v2/client.md)\n- **モジュールのアンロード時に接続がどのように回収されるか** → [所有権（owner）システム](ownership.md)\n- **接続関連の例外（`ConnectionNotFoundError` / `ConnectionPermissionError`）** → [例外体系とキャッチガイド](errors.md)"
     }
   ]
 }

@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "44d66e906990e21d6989c7efc7ca0f39",
-  "file_hash": "44d66e906990e21d6989c7efc7ca0f39",
-  "translated_at": "2026-10-14T03:15:11.441140",
+  "hash": "7e0ae7dcbf79fb76c3a12ca789ca224e",
+  "file_hash": "7e0ae7dcbf79fb76c3a12ca789ca224e",
+  "translated_at": "2026-10-22T10:02:50.160277",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "05bfb1629104093d05a47c1b0d431596",
-      "translation": "# SendDSL Explained\n\n> [!TIP]\n> **When to read this**: This is a must-read for adapter development (Send DSL). If not needed, you can skip it without affecting the use of other features.\n\nSendDSL is a fluent, chain-call style message sending interface provided by ErisPulse adapters."
+      "hash": "0a3c5eef8aa05f7e017c5fc9b875d7df",
+      "translation": "# SendDSL Detailed Explanation\n\n> [!TIP]\n> **When to read this**: This is a must-read for adapter development paths (Send DSL). If not needed, you can skip it without affecting the use of other features.\n\nSendDSL allows message sending to be completed as a chain: specify the target, @ / reply, retry / timeout / delay, batch sending, all accomplished with a single chained call. This article covers the sending methods, modifier methods, sending rules, and the internal mechanism of the sending chain."
     },
     {
       "hash": "f2c153ebdef11bbf3d2ca6f9bec5fcac",
@@ -62,8 +62,8 @@
       "translation": "## Complete Examples\n\n### Basic Usage\n\n```python\nfrom ErisPulse.Core import adapter\n\nmy_adapter = adapter.get(\"myplatform\")\n\n# Send text message\nawait my_adapter.Send.To(\"user\", \"123\").Text(\"Hello World!\")\n\n# Send image\nawait my_adapter.Send.To(\"group\", \"456\").Image(\"https://example.com/image.jpg\")\n\n# Send file\nwith open(\"document.pdf\", \"rb\") as f:\n    await my_adapter.Send.To(\"user\", \"123\").File(f.read())\n```\n\n### Chained Calls\n\n```python\n# @user + reply\nawait my_adapter.Send.To(\"group\", \"456\").At(\"789\").Reply(\"msg123\").Text(\"Reply to @ message\")\n\n# @all + multiple modifiers\nawait my_adapter.Send.Using(\"bot1\").To(\"group\", \"456\").AtAll().Text(\"Announcement message\")\n```\n\n### Raw Messages and Message Building\n\n`Raw_ob12` is the core entry point for reverse conversion (OneBot 12 message segments → platform API calls), and `MessageBuilder` is a chainable message segment builder designed to work with it.\n\n> For the complete `Raw_ob12` implementation specification, `MessageBuilder` usage, and code examples, please refer to:\n> - [Send Method Specification §6 Reverse Conversion Specification (OneBot 12 → Platform)](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)\n> - [Send Method Specification §11 MessageBuilder](../../standards/send-method-spec.md#11-消息构建器-messagebuilder)"
     },
     {
-      "hash": "f18fa989ba4dcf97d94f48fe4cf77ff7",
-      "translation": "## Related Documentation\n\n- [Getting Started with Adapter Development](getting-started.md) - Create an adapter\n- [Core Concepts of Adapters](core-concepts.md) - Understand the adapter architecture\n- [Best Practices for Adapters](best-practices.md) - Develop high-quality adapters\n- [Send Method Specification](../../standards/send-method-spec.md) - Complete specification for the send method"
+      "hash": "5ddfee999a91b5b02c3f99ae1de4b775",
+      "translation": "## Related Documentation\n\n### Continue the Adapter Development Path\n\n- [Getting Started with Adapter Development](getting-started.md) - Create an adapter\n- [Core Concepts of Adapters](core-concepts.md) - Understand the adapter architecture\n- [Adapter Best Practices](best-practices.md) - Develop high-quality adapters\n\n### Follow Formal Specifications\n\n- [Send Method Specification](../../standards/send-method-spec.md) - Complete specification for send methods (`Raw_ob12` implementation and `MessageBuilder`)"
     }
   ]
 }

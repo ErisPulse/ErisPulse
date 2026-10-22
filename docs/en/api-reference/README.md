@@ -1,5 +1,8 @@
 # API Reference
 
+> [!TIP]
+> **When to read this**: When you are writing modules or adapters and need to look up usage examples for a core module (Storage/Config/Logger/Router, etc.), event system, or adapter management API — jump to the corresponding section in the list below. Skip if not needed.
+
 This directory contains the API reference documentation for the ErisPulse framework.
 
 ## Documentation List
@@ -47,7 +50,12 @@ This directory contains the API reference documentation for the ErisPulse framew
 
 ## Related Documentation
 
+**New to the framework**:
 - [Core Concepts](../getting-started/basic-concepts.md) - Understand the framework's core concepts
+
+**Deep dive by role**:
 - [Module Development Guide](../developer-guide/modules/) - Develop custom modules
 - [Adapter Development Guide](../developer-guide/adapters/) - Develop platform adapters
+
+**Looking for how to use a subsystem**:
 - [Advanced Topics](../advanced/) - In-depth documentation on routing, HTTP clients, SQL builders, and more

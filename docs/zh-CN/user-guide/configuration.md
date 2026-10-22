@@ -3,7 +3,7 @@
 > [!NOTE]
 > **L1 核心必读**——首页"阅读路径"中的五篇核心文档之一，模块开发必备。
 
-> 这个文档会介绍框架的配置文件，如果有第三方模块需要配置，请参考模块的文档。
+> 这篇讲框架自身的配置文件 `config/config.toml`：每个配置节管什么、哪些支持热更新、如何用环境变量覆盖。第三方模块的配置项请参考模块自己的文档。
 
 ErisPulse 使用 TOML 格式的配置文件 `config/config.toml` 来管理项目配置。
 
@@ -716,9 +716,8 @@ acl_default_allow = true
 > 或经 `sdk.Event.overrides` 访问）
 > 见 [事件处理入门 · 事件覆写](../getting-started/event-handling.md#事件覆写不改模块代码覆写任意事件类型的行为)。
 
-## 命令解析配置（event.command）
-
 ## 下一步
 
-- [CLI 命令参考](cli-reference.md) - 了解所有命令行命令
-- [开发者指南](../developer-guide/) - 学习开发自定义模块
+- **按 L1 路径继续**：下一篇 [异常捕获](../advanced/errors.md)，学会写不拖垮框架的错误处理
+- **不想手写 TOML**：用 `epsdk config` 交互式向导填写声明式配置项，见 [CLI 命令参考 · config](cli-reference.md#config)
+- **部署时不想改配置文件**：用环境变量覆盖配置项，配合 [部署指南](deployment.md) 的 Docker 用法

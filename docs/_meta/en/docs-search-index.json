@@ -2803,7 +2803,7 @@
     "Adapter Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 189,
+        "line": 188,
         "level": 3,
         "title": "Adapter Lifecycle"
       }
@@ -3267,7 +3267,7 @@
     "Background Task Ownership and Automatic Cancellation": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 413,
+        "line": 412,
         "level": 2,
         "title": "Background Task Ownership and Automatic Cancellation"
       }
@@ -4461,7 +4461,7 @@
     "Command System": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 242,
+        "line": 241,
         "level": 3,
         "title": "Command System"
       }
@@ -4587,7 +4587,7 @@
     "Complete API Reference": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 357,
+        "line": 356,
         "level": 2,
         "title": "Complete API Reference"
       }
@@ -4721,7 +4721,7 @@
     "Configuration Changes": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 160,
+        "line": 159,
         "level": 3,
         "title": "Configuration Changes"
       }
@@ -5315,7 +5315,7 @@
     "Core Initialization": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 143,
+        "line": 142,
         "level": 3,
         "title": "Core Initialization"
       }
@@ -5910,6 +5910,14 @@
         "line": 156,
         "level": 2,
         "title": "Directed Events: lifecycle.emit with to parameter"
+      }
+    ],
+    "Directed Propagation (`emit to=`)": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 66,
+        "level": 3,
+        "title": "Directed Propagation (`emit to=`)"
       }
     ],
     "Directory Structure": [
@@ -6739,7 +6747,7 @@
     "Event Reception and Processing": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 202,
+        "line": 201,
         "level": 3,
         "title": "Event Reception and Processing"
       }
@@ -6864,6 +6872,14 @@
         "line": 215,
         "level": 3,
         "title": "Event-Driven Lazy Activation (`activate_on`) Trigger Architecture"
+      }
+    ],
+    "Example Usage in Module": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 385,
+        "level": 2,
+        "title": "Example Usage in Module"
       }
     ],
     "Example of Return Value Handling": [
@@ -7697,7 +7713,7 @@
     "HTTP Client": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 315,
+        "line": 314,
         "level": 3,
         "title": "HTTP Client"
       }
@@ -7745,7 +7761,7 @@
     "HTTP Routing": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 257,
+        "line": 256,
         "level": 3,
         "title": "HTTP Routing"
       }
@@ -7922,6 +7938,14 @@
         "line": 54,
         "level": 2,
         "title": "Honest Boundaries (Can't Be Blocked)"
+      }
+    ],
+    "Hook Breakpoint Overview": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 116,
+        "level": 2,
+        "title": "Hook Breakpoint Overview"
       }
     ],
     "Hot Reload Failure Rollback": [
@@ -8445,7 +8469,7 @@
     "Internationalization": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 325,
+        "line": 324,
         "level": 3,
         "title": "Internationalization"
       }
@@ -8612,14 +8636,6 @@
         "title": "Lifecycle Events"
       }
     ],
-    "Lifecycle Hook Breakpoints Overview": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 117,
-        "level": 2,
-        "title": "Lifecycle Hook Breakpoints Overview"
-      }
-    ],
     "Lifecycle Hooks": [
       {
         "document": "advanced/http-client.md",
@@ -8711,7 +8727,7 @@
     "Listener Query (`has_handlers`)": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 105,
+        "line": 104,
         "level": 3,
         "title": "Listener Query (`has_handlers`)"
       }
@@ -9371,7 +9387,7 @@
     "Message Sending": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 227,
+        "line": 226,
         "level": 3,
         "title": "Message Sending"
       },
@@ -9805,7 +9821,7 @@
     "Module Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 175,
+        "line": 174,
         "level": 3,
         "title": "Module Lifecycle"
       },
@@ -9892,14 +9908,6 @@
         "line": 1,
         "level": 1,
         "title": "Module Troubleshooting Guide"
-      }
-    ],
-    "Module Usage Example": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 386,
-        "level": 2,
-        "title": "Module Usage Example"
       }
     ],
     "Module-Level Control": [
@@ -10243,7 +10251,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 444,
+        "line": 443,
         "level": 2,
         "title": "Notes"
       },
@@ -10377,7 +10385,7 @@
     "One-time Registration (`once`)": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 91,
+        "line": 90,
         "level": 3,
         "title": "One-time Registration (`once`)"
       }
@@ -11628,14 +11636,6 @@
         "title": "Registering Handlers"
       }
     ],
-    "Registering and Unregistering": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 359,
-        "level": 3,
-        "title": "Registering and Unregistering"
-      }
-    ],
     "Registration Forms: Single-Parameter (Recommended) and Dual-Parameter": [
       {
         "document": "advanced/router.md",
@@ -11650,6 +11650,14 @@
         "line": 222,
         "level": 3,
         "title": "Registration Timing → Ownership Result Comparison Table"
+      }
+    ],
+    "Registration and Unregistration": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 358,
+        "level": 3,
+        "title": "Registration and Unregistration"
       }
     ],
     "Related Documentation": [
@@ -11679,7 +11687,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 454,
+        "line": 453,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -13281,7 +13289,7 @@
     "Standard Event Definitions": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 331,
+        "line": 330,
         "level": 2,
         "title": "Standard Event Definitions"
       }
@@ -13471,7 +13479,7 @@
     "Storage Connection State": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 293,
+        "line": 292,
         "level": 3,
         "title": "Storage Connection State"
       }
@@ -13832,14 +13840,6 @@
         "title": "Table of Contents"
       }
     ],
-    "Targeted Propagation (`emit to=`)": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 66,
-        "level": 3,
-        "title": "Targeted Propagation (`emit to=`)"
-      }
-    ],
     "Task Object": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -14025,7 +14025,7 @@
     "Triggering": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 367,
+        "line": 366,
         "level": 3,
         "title": "Triggering"
       }
@@ -14533,7 +14533,7 @@
     "Utilities": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 376,
+        "line": 375,
         "level": 3,
         "title": "Utilities"
       }
@@ -14699,7 +14699,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 272,
+        "line": 271,
         "level": 3,
         "title": "WebSocket"
       }

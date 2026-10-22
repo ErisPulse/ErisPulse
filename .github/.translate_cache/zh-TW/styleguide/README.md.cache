@@ -1,33 +1,25 @@
 {
   "version": 2,
-  "hash": "de8b493022d6c7deb7f51a01c1ea33b7",
-  "file_hash": "de8b493022d6c7deb7f51a01c1ea33b7",
-  "translated_at": "2026-09-07T12:06:00.281012",
+  "hash": "ba0b5b2398908c39288867cd8609c7b3",
+  "file_hash": "ba0b5b2398908c39288867cd8609c7b3",
+  "translated_at": "2026-10-22T14:17:47.610964",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "a9c969d423bd4bf23a986c4115f1e17f",
-      "translation": "# 風格指南\n\n本目錄包含 ErisPulse 項目的程式碼和文件風格規範。"
+      "hash": "a2826176226e22afc801d8887e07131b",
+      "translation": "# 風格指南\n\n本目錄包含 ErisPulse 項目之工程紀律與寫作規範。"
     },
     {
-      "hash": "6774ad62931ef9fcedef2253d670031f",
-      "translation": "## 文件清單\n\n- [註釋風格規範](docstring.md) - 方法註釋和文件字串的格式規範"
+      "hash": "2bbfb4e3bc57a5ece3d8b487cc697dca",
+      "translation": "## 文件列表\n\n- [術語表（唯一真相來源）](glossary.md) - Client/HttpClient、storage/env/StorageManager、BaseConfig/AdapterConfig、scope 三維、歸屬權、服務契約/目錄/白名單等易漂移術語的唯一定義\n- [註釋風格規範](docstring.md) - 方法註釋和文件字串的格式規範與標籤解析契約\n- [工程健壯性規則](engineering.md) - 異常留痕分級、日誌分級、行為參數集中、API 契約、單例回引禁忌、清理與回滾紀律、測試紀律\n- [文件與對外寫作規則](docs-writing.md) - 文件行文、版本標註、README 與發布頁的三段式骨架、場景化表達、變更記錄寫作"
     },
     {
-      "hash": "5e96064bfe736def571882ab2221b786",
-      "translation": "## 適用對象\n\n這些文件適合以下開發者：\n\n- ErisPulse 核心貢獻者\n- 模組和適配器開發者\n- 需要產生 API 文件的開發者"
+      "hash": "eb8f2a2249fdb18046b48845b65058ef",
+      "translation": "## 適用對象\n\n- ErisPulse 核心貢獻者\n- 模塊和適配器開發者\n- 維護 README 與對外頁面的貢獻者\n- 需要產生 API 文件的開發者"
     },
     {
-      "hash": "d22a1241f0f7871b3c00c197b08801df",
-      "translation": "## 目的\n\n風格指南的目的：\n\n- 確保程式碼註釋的一致性\n- 支援自動 API 文件產生\n- 提高程式碼的可讀性與可維護性"
-    },
-    {
-      "hash": "7d20269d5fa16cabaefcddd10e4cc0e5",
-      "translation": "## 遵循規範的好處\n\n- 統一的代碼風格\n- 完善的 API 文件\n- 更好的團隊協作\n- 自動化文件生成支援"
-    },
-    {
-      "hash": "400b11aacd455871332cf4d7d312162c",
-      "translation": "## 相關文件\n\n- [開發者指南](../developer-guide/) - 開發自訂模組和適配器\n- [技術標準](../standards/) - 框架技術規範"
+      "hash": "2a7b196a3ec9298686a9be7411963106",
+      "translation": "## 與其他規範的關係\n\n- [技術標準](../standards/) - 適配器的**技術**規範（會話類型、事件轉換、API 形態）；本目錄是**工程與寫作**紀律，兩者互補不重疊\n- `CONTRIBUTING.md` - 貢獻流程與 CI 門禁（本目錄規則中的可機檢部分由門禁腳本執行）\n- `CHANGELOG.md` 頭部「寫作規範」 - 變更記錄的詳細規範（本文檔只做引用，不重複正文）"
     }
   ]
 }

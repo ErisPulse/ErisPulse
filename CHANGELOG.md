@@ -99,6 +99,9 @@
   - 热重载默认语义翻转：`reload()` / `reload_module()` 默认全量重载——按顶层包名递归清理 `sys.modules` + 刷新导入缓存 + 清除源文件字节码缓存（`__pycache__`，同秒同字节数的小改写也能生效），依赖者模块默认级联重导代码；`full=False` 保留为轻量逃生门
   - `top_level` 元数据缺失时按「旧模块对象 `__name__` 前缀 → 模块类 `__module__` 前缀」两级兜底清理——原「元数据缺失即假重载（仅告警不兜底）」的盲区消除
   - 懒加载初始化失败语义：由失败后代理永久死亡改为冷却后可重试（与事件驱动懒激活的冷却语义对齐）；冷却窗口内仍短路避免重复尝试
+  - 移除死接口 `set_sdk_ref`：管理器 SDK 引用改为懒解析根单例（`ManagerBase.sdk_ref()`），任何启动流程下均无需（也不再可能需要）手动注入；该接口自 2.5 起从未被生产链路调用，热重载 / 影子模块 / 依赖通知在真实部署中静默失效（已随 2.10.3 同步热修 stable 线）
+  - 全库公共方法契约标注补齐（约 160 处缺参数/返回标注归零，含路由装饰器、日志器、请求/WS 访问器、事件装饰器与 CLI 命令族）——IDE 补全与自动生成 API 文档随之受益
+  - `docs/zh-CN/styleguide/` 新增工程健壮性规则与文档/对外写作规则两页；该目录不再进入AI 提示词生成包（`ai-support/prompts/` 产物不再包含风格指南节）
 
 ### 新增
 
@@ -111,6 +114,17 @@
   - 命令多轮流控语法糖（`.got()` 链）：`@command` 返回对原函数完全透明的流代理，`.got("名字", prompt=..., type=int, timeout="90s")` 逐步声明收集步骤，收集值按参数名注入后续步骤函数；底层编译到 Conversation（分支跳转自动存检查点），重启后经自动注册的恢复工厂从存档步骤继续；解析失败自动重发 `retry_prompt`（上限 `max_retries`）；`Event.wait_reply` 补齐 `session` 参数（与文档对齐）
   - 适配器代码级热重载：`sdk.adapter.reload(平台名)` / `sdk.reload_adapter(平台名)`（支持本地插件与 PyPI 安装包）——语法预检 → 卸载清理 → 清 `sys.modules` 子树与 `__pycache__` 字节码 → 重发现重导 → 重新注册 → 原运行态自动重新拉起；失败自动回滚旧注册状态；身份核对防假重载；配套 `adapter.reload` 生命周期事件（携带 `identity_changed` / `version_old→new` / `was_started` / `source`）
   - CLI 运行时控制：新增 `epsdk stop` / `epsdk restart`——`epsdk run` 启动时在 `.erispulse/runtime.json` 登记监督进程与框架子进程 PID 及原始启动命令；`stop` 优雅终止（POSIX SIGINT 走 Ctrl+C 同款收尾链，超时升级强杀；Windows 先断子进程再停监督者）；`restart` 停止后按原参数重新启动（前台接管）；支持 `--force` 与 `--pid`
+
+### 修复
+
+- @YingXinche
+  - `module.disable()` 现在与 `unload` 对等发出 `module.unload` 生命周期事件：依赖它的适配器在"禁用"路径同样收到 `on_dependency_lost`（契约文档一直承诺"卸载/禁用"，此前仅卸载路径生效）；级联禁用的每个依赖者各自通知
+  - `sdk.dump_state()` 的 router 段字段与实现对齐：`running` 读取真实 uvicorn 服务器状态（原读取不存在的属性恒为 False）、`http_routes` / `ws_routes` 按路径数累计（原 `ws_routes` 读取不存在的属性恒为 0、`http_routes` 给出的是命名空间数）
+  - 入站消息写会话收件箱（transcript）失败不再静默吞掉：以 warning 级留痕（写失败无线索会让 `shadow_diff` / `get_by_trace` 排查时静默缺数据）
+  - 适配器停止/重启的资源回收改走归属权（ownership）统一回收管线：与模块卸载同一条管线，此前停止适配器时漏收的事件覆写、作用域覆写、主人身份源、日志订阅、对话恢复工厂五类注册资源现一并回收（第三方适配器反复 restart 不再累积残留）；自有事件处理器/中间件仍由管理器直接自清
+  - 进程退出前最后一次配置刷盘失败不再静默：留 warning（日志不可用时降级 stderr），此前配置改动可能无痕迹丢失；HTTP 客户端替换会话时旧会话关闭失败留 debug 痕迹（连接资源泄漏可排查）
+  - 失败类日志升级：事件重放失败、路由安全配置（CORS/安全头）应用失败、配置变更广播失败升为 warning——此前订阅方静默失效或安全配置未生效只有 debug 级线索；主动 GC 循环持续异常改为"首次 warning、恢复前降 debug"防刷屏
+  - 连接回收与 ORM JSON 列反序列化失败留 debug 痕迹；散落各处的裸超时/轮询参数收拢为命名常量（`CLI/constants.py` 与 `Core/constants.py`，行为不变）
 
 ---
 

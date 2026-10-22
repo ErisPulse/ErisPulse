@@ -1,10 +1,11 @@
 # CLI Command Reference
 
-The ErisPulse command-line tool (`epsdk`) provides project management and package management features.
+> [!TIP]
+> **When to read this**: When you forget the parameters of a `epsdk` command, want to script component management, or need to control the behavior of `run` / `stop` / `restart`, consult this section. For daily use of just `init` / `install` / `run`, remember one thing: `epsdk <command> --help` always provides parameter descriptions, so you don't need to read this entire document.
 
-> **Tip**: All commands can be viewed with detailed parameter descriptions using `epsdk <command> --help`. The main help for `epsdk` (without a command) groups commands by category: **Projects** (init / create / run), **Component Management** (install / uninstall / upgrade / list / list-remote / types), **Configuration & Diagnostics** (config / doctor / i18n), **Others** (self-update / version).
+`epsdk` is ErisPulse's command-line tool: it initializes projects, installs/upgrades modules and adapters, interactively configures components, runs and stops robots, and diagnoses environments, all within a single command.
 
----
+> **Tip**: The main help for `epsdk` (without a command) is grouped by category: **Project** (`init` / `create` / `run`), **Component Management** (`install` / `uninstall` / `upgrade` / `list` / `list-remote` / `types`), **Configuration and Diagnosis** (`config` / `doctor` / `i18n`), and **Others** (`self-update` / `version`).
 
 ## Package Management Commands
 
@@ -763,3 +764,9 @@ epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@exa
 # Force overwrite existing directory
 epsdk create module -n MyModule -f
 ```
+
+## Next Steps
+
+- **After installing components, you need to fill in the configuration**: Use the `epsdk config` interactive wizard, or manually edit the configuration file as described in [Configuration File Description](configuration.md).
+- **After writing code and wanting IDE auto-completion**: Run `epsdk types`, see [Type Stub Generation](../getting-started/ide-completion.md) for details.
+- **If the robot fails to run**: First, use `epsdk doctor` to diagnose the environment (see [Environment Diagnosis](#environment-diagnosis)). For long-term deployment, refer to the [Deployment Guide](deployment.md).

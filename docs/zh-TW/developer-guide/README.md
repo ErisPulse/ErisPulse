@@ -1,32 +1,32 @@
 # 開發者指南
 
-本指南協助您開發自訂模組和適配器，以擴充 ErisPulse 的功能。
+> [!TIP]
+> **什麼時候需要讀這篇**：準備為 ErisPulse 開發擴充——給機器人加功能（模組）或接入新平台（配接器）——時。只想使用機器人則跳過，直接看[快速開始](../quick-start.md)。
+
+從這裡找到你的開發路徑：**模組開發**讓你用命令、訊息處理器擴充機器人功能；**配接器開發**讓機器人連上新的訊息平台。兩條路徑都涵蓋從建立專案到測試、發布的完整流程。
 
 ## 內容列表
 
 ### 模組開發
 
-1. [模組開發入門](modules/getting-started.md) - 創建第一個模組
+1. [模組開發入門](modules/getting-started.md) - 建立第一個模組
 2. [模組核心概念](modules/core-concepts.md) - 模組的核心概念和架構
-3. [Event 包裝類詳解](modules/event-wrapper.md) - Event 物件的完整說明
+3. [Event 包裝類別詳解](modules/event-wrapper.md) - Event 物件的完整說明
 4. [模組最佳實踐](modules/best-practices.md) - 開發高品質模組的建議
+5. [資料模型層（ORM）](orm.md) - 模組開發進階：宣告式模型、自動建表與增刪改查
 
-### 資料模型
+### 配接器開發
 
-1. [資料模型層（ORM）](orm.md) - 聲明式模型、自動建表與增刪改查
-
-### 適配器開發
-
-1. [適配器開發入門](adapters/getting-started.md) - 創建第一個適配器
-2. [適配器核心概念](adapters/core-concepts.md) - 適配器的核心概念
-3. [SendDSL 詳解](adapters/send-dsl.md) - Send 消息發送 DSL 的完整說明
-4. [事件轉換器](adapters/converter.md) - 實現事件轉換器
-5. [適配器最佳實踐](adapters/best-practices.md) - 開發高品質適配器的建議
+1. [配接器開發入門](adapters/getting-started.md) - 建立第一個配接器
+2. [配接器核心概念](adapters/core-concepts.md) - 配接器的核心概念
+3. [SendDSL 詳解](adapters/send-dsl.md) - Send 訊息傳送 DSL 的完整說明
+4. [事件轉換器](adapters/converter.md) - 實作事件轉換器
+5. [配接器最佳實踐](adapters/best-practices.md) - 開發高品質配接器的建議
 
 ### 測試與排查
 
 1. [模組測試（ErisPulse-Testing）](testing.md) - TestBot、事件工廠與斷言面
-2. [模組排查指南](module-troubleshooting.md) - 模組未加載 / 事件未響應 / 命令未觸發的定位方法
+2. [模組排查指南](module-troubleshooting.md) - 模組沒載入 / 事件沒回應 / 命令沒觸發的定位方法
 
 ### 發布指南
 
@@ -47,19 +47,19 @@
 
 | 開發類型 | 適用場景 | 入門指南 |
 |---------|---------|---------|
-| **模組開發** | 擴展機器人功能、實現業務邏輯、提供命令和訊息處理 | [模組開發入門](modules/getting-started.md) |
-| **適配器開發** | 連接新的訊息平台、實現跨平台通信、提供平台特定功能 | [適配器開發入門](adapters/getting-started.md) |
+| **模組開發** | 擴充機器人功能、實作業務邏輯、提供命令和訊息處理 | [模組開發入門](modules/getting-started.md) |
+| **配接器開發** | 連接新的訊息平台、實作跨平台通訊、提供平台特定功能 | [配接器開發入門](adapters/getting-started.md) |
 
-> 如果你想擴展機器人的功能（如新增命令、處理訊息），選擇**模組開發**。如果你需要讓機器人連接到一個新的平台，選擇**適配器開發**。
+> 如果你想擴充機器人的功能（如新增命令、處理訊息），選擇**模組開發**。如果你需要讓機器人連接到一個新的平台，選擇**配接器開發**。
 
 ## 開發工具
 
-### 項目模板
+### 專案範本
 
-ErisPulse 提供了示例項目作為參考：
+ErisPulse 提供了範例專案作為參考：
 
-- [模組示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模組的完整項目結構
-- [適配器示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 適配器的完整項目結構
+- [模組範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模組的完整專案結構
+- [配接器範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 配接器的完整專案結構
 
 ### 開發模式
 
@@ -69,14 +69,14 @@ ErisPulse 提供了示例項目作為參考：
 epsdk run main.py --reload
 ```
 
-### 調試技巧
+### 偵錯技巧
 
 在 `config/config.toml` 中啟用 DEBUG 或 TRACE 級別日誌：
 
 ```toml
 [ErisPulse.logger]
-# DEBUG: 輸出模組載入、路由註冊等開發調試資訊
-# TRACE: 最低級別，輸出事件分發、儲存寫入、懶加載等框架內部詳細流程
+# DEBUG: 輸出模組載入、路由註冊等開發偵錯資訊
+# TRACE: 最低級別，輸出事件分發、儲存寫入、懶載入等框架內部詳細流程
 level = "DEBUG"
 ```
 
@@ -87,4 +87,4 @@ level = "DEBUG"
 ## 相關文件
 
 - [標準規範](../standards/) - 確保相容性的技術標準
-- [平台特性指南](../platform-guide/) - 瞭解各平台適配器的特性
+- [平台特性指南](../platform-guide/) - 了解各平台配接器的特性

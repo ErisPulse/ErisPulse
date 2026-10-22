@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "27b0e632bd1dfe88f44cfdfe8732a184",
-  "file_hash": "27b0e632bd1dfe88f44cfdfe8732a184",
-  "translated_at": "2026-10-20T12:11:15.391381",
+  "hash": "7620b1f2fbeb3c72ab50efad2d4ef6b4",
+  "file_hash": "7620b1f2fbeb3c72ab50efad2d4ef6b4",
+  "translated_at": "2026-10-22T10:03:01.362481",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "533bdfe89cafe6b6653248c0b45c082b",
-      "translation": "# 模組排查指南\n\n> [!TIP]\n> **什麼時候需要閱讀本文**：當模組「沒有反應」、命令未觸發或事件未收到時進行排查。若無此情況則可跳過，不會影響其他功能的使用。\n\n\n當模組「沒有反應」時，根據症狀可分為三類問題，每類問題皆有對應的框架診斷工具（RFC EPRFC-2026-001 方向五）：\n\n| 症狀 | 診斷工具 | 定位層面 |\n|------|---------|---------|\n| 模組未加載 | `ErisPulse.runtime.explain_module(name)` | 注冊與加載鏈 |\n| 事件未響應 | `ErisPulse.runtime.explain_event(event)` | 分發入口檢查 |\n| 命令未觸發 | 分發決策鏈（測試端 `DispatchTrace` / 框架內建 `trace`） | 命令判定鏈 |\n\n這兩個診斷函數均為**純讀取**操作，不會改變任何狀態，可在任意時刻調用；返回機器可讀取的 dict，搭配 `format_report()` 可渲染為人類可讀取的文本。"
+      "hash": "5761177b4f6a661099ac385f3b31336a",
+      "translation": "# 模組排查指南\n\n> [!TIP]  \n> **什麼時候需要閱讀本文**：當機器人「沒有反應」時——模組已安裝但未載入、發出指令卻無回應、事件處理器未執行、修改程式碼 reload 後仍維持舊行為、模組明明已啟用卻收不到事件——請根據症狀對應到相應的排查場景。若不需排查則可跳過，這不會影響其他功能的使用。\n\n當模組「沒有反應」時，請根據症狀對應到相應的排查場景；前三類場景有框架內建的診斷工具可直接提供結論：\n\n| 症狀 | 診斷工具 | 定位層面 |\n|------|---------|---------|\n| 模組未載入 | `ErisPulse.runtime.explain_module(name)` | 注冊與載入鏈 |\n| 事件未響應 | `ErisPulse.runtime.explain_event(event)` | 分發入口檢查 |\n| 命令未觸發 | 分發決策鏈（測試側 `DispatchTrace` / 框架內建 `trace`） | 命令判定鏈 |\n\n上述兩個診斷函數均為**純讀取**操作，不會改變任何狀態，可在任何時刻調用；返回的 dict 為機器可讀取格式，搭配 `format_report()` 可渲染為人類可閱讀的文本。"
     },
     {
       "hash": "68b8a2d39c9da82c2710f7523960f0ac",
@@ -32,6 +32,10 @@
     {
       "hash": "2564121c34f0d750ad084b9dc57b1191",
       "translation": "## 通用建議\n\n- 排查前先把日誌調到 `DEBUG` / `TRACE`（配置見[開發者指南](README.md#調試技巧)），可以看到模組載入、路由註冊、事件分發等框架內部流程；\n- `explain_module` / `explain_event` 隨時可調、純讀無副作用，適合直接掛到運維命令或管理面板；\n- \"命令沒觸發\"類問題優先寫一個 `DispatchTrace` 斷言測試復現——`assert_executed` / `assert_rejected` 等斷言失敗時會自動附上完整因果鏈。"
+    },
+    {
+      "hash": "a80822a4a30d04f325f7079c4c99a44a",
+      "translation": "## 問題仍未解決\n\n- **先查已知問題**：對照 [Bug 追蹤](../bug-tracker.md)，確認是否為已記錄的問題及其避開方法；\n- **提交回饋**：到 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 報告問題時，附上 `explain_module` / `explain_event` 的輸出、`DispatchTrace` 因果鏈與框架版本號，能大幅縮短定位時間；\n- **討論與求助**：拿不定是不是 Bug 時，先在 [Discussions](https://github.com/ErisPulse/ErisPulse/discussions) 描述症狀與重現步驟。"
     }
   ]
 }

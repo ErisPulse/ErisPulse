@@ -6,7 +6,7 @@ Install 命令实现
 
 import asyncio
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 from rich.prompt import Prompt
 from rich.text import Text
@@ -43,7 +43,7 @@ class InstallCommand(Command):
         py_exec, _py_source = resolve_target_python()
         self.package_manager = PackageManager(python_executable=py_exec)
 
-    def add_arguments(self, parser: ArgumentParser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("package", nargs="*", help=i18n.t("cli.install.package_help"))
         parser.add_argument(
             "--upgrade",
@@ -210,7 +210,7 @@ class InstallCommand(Command):
 
         return extra
 
-    def execute(self, args):
+    def execute(self, args: Namespace) -> None:
         warn_if_uv_isolated()
         # uv tool 环境且无项目环境：组件应装进项目 .venv 而非工具环境
         warn_if_uv_tool_env_without_project()

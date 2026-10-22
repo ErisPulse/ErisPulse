@@ -69,6 +69,7 @@ await telegram.Request(event["request_id"]).Using("main").accept()
 ```
 
 ---
+
 ## 支援されるメッセージ送信タイプ
 
 すべての送信メソッドは、チェーン式構文で実装されています。例えば：

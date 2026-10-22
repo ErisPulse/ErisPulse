@@ -500,7 +500,7 @@ scope.set_module("onebot11", bot_id="123456", modules=["Music"], merge=True)
 ---
 
 
-##### `get_module(platform: str, bot_id: str | None = None, session_id: str | None = None, default = None)`
+##### `get_module(platform: str, bot_id: str | None = None, session_id: str | None = None, default: Any = None) -> Any`
 
 读取该层级原始模块绑定（不含 merge 跨级合并的最终生效结果，
 需判定生效性请用 :meth:`is_allowed`）
@@ -554,7 +554,7 @@ scope.set_identity("onebot11", session_id="g1", allow=True)  # 例外放行
 ---
 
 
-##### `get_identity(platform: str, bot_id: str | None = None, session_id: str | None = None, user_id: str | None = None, default = None)`
+##### `get_identity(platform: str, bot_id: str | None = None, session_id: str | None = None, user_id: str | None = None, default: Any = None) -> Any`
 
 读取该来源的身份绑定（原始配置形态，含 glob 键不展开；
 需判定生效性请用 :meth:`is_identity_allowed`）
@@ -609,7 +609,7 @@ scope.set_action("MyModule", "api", deny=["set_*", "leave_*"]) # 禁管理类 AP
 ---
 
 
-##### `get_action(module: str, action: str, default = None)`
+##### `get_action(module: str, action: str, default: Any = None) -> Any`
 
 读取模块某类出站动作的原始规则（bool 原样存储，判定层归一化）
 
@@ -649,7 +649,7 @@ scope.set_action("MyModule", "api", deny=["set_*", "leave_*"]) # 禁管理类 AP
 ---
 
 
-##### `get(path: str, default = None)`
+##### `get(path: str, default: Any = None) -> Any`
 
 读取作用域配置树中任意节（深拷贝）
 
@@ -671,7 +671,7 @@ scope.get("actions.MyModule.send", {})
 ---
 
 
-##### `set(path: str, value, persist: bool = True) -> None`
+##### `set(path: str, value: Any, persist: bool = True) -> None`
 
 写入作用域配置树中任意节（dict 深合并，标量直接覆盖）
 

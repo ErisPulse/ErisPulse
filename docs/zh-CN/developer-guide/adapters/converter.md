@@ -4,7 +4,7 @@
 > **什么时候需要读这篇**：适配器开发路径内必读（事件转换器）。不需要则跳过，不影响其它功能的使用。
 
 
-事件转换器 (Converter) 是适配器的核心组件之一，负责将平台原生事件转换为 ErisPulse 统一的 OneBot12 标准事件格式。
+适配器收到平台原生事件后，由事件转换器 (Converter) 把它转换为 ErisPulse 统一的 OneBot12 标准格式——平台事件怎么进框架，就由这一个类决定。
 
 ## Converter 职责
 
@@ -378,7 +378,12 @@ import time
 
 ## 相关文档
 
+### 继续适配器开发路径
+
 - [适配器核心概念](core-concepts.md) - 适配器整体架构
 - [SendDSL 详解](send-dsl.md) - 反向转换（发送方向）
+
+### 遵循正式规范
+
 - [事件转换标准](../../standards/event-conversion.md) - 正式的事件转换规范
 - [会话类型系统](../../standards/session-types.md) - 会话类型映射规则

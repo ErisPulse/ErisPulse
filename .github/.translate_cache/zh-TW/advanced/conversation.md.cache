@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "8c8b430c9e4af5a586178e92fc8248dc",
-  "file_hash": "8c8b430c9e4af5a586178e92fc8248dc",
-  "translated_at": "2026-10-14T14:14:42.539231",
+  "hash": "a7ab6671f23f51dd9a864ceec0e18546",
+  "file_hash": "a7ab6671f23f51dd9a864ceec0e18546",
+  "translated_at": "2026-10-22T09:28:18.242780",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "29487ab615bc5d01fd118940d64e176a",
-      "translation": "# Conversation 多輪對話\n\n> [!TIP]\n> **什麼時候需要讀這篇**：需要多輪對話狀態機與檢查點恢復時。不需要則跳過，不影響其它功能的使用。\n\n`Conversation` 類提供了在同一會話中進行多輪互動的便捷方法，適合實現引導式操作、資訊收集、對話式問答等場景。"
+      "hash": "64f38c6efe8c176c3d08afcc88f82fbd",
+      "translation": "# Conversation 多輪對話\n\n> [!TIP]\n> **何時需要閱讀本文**：當需要多輪對話狀態機與檢查點恢復時。若不需要則可跳過，這不會影響其他功能的使用。\n\n當一條命令需要連續向用戶追問多步資訊（如註冊收集資料、問卷、設定嚮導），可使用 `Conversation` 在同一會話中串起「提問 → 等待回覆 → 校驗 → 下一步」的流程，並在超時或重新啟動後從檢查點恢復。"
     },
     {
       "hash": "ab8c3f2fca9b3830bbd697cfad5e9975",

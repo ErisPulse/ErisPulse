@@ -1,5 +1,8 @@
 # 类型存根生成（IDE 补全）
 
+> [!TIP]
+> **什么时候需要读这篇**：IDE 补全不出适配器的平台特有方法（如云湖的 `Board`）或模块的自定义方法时，跑一条 `epsdk types` 命令生成类型存根即可解决；不需要则跳过。
+
 ErisPulse 通过 entry-points 动态发现模块/适配器，入口点无法在静态层面获知用户类的具体类型。
 `epsdk types` 命令通过扫描已安装的模块/适配器，生成一个类型存根文件，让用户可以用这些类型作为变量标注，从而获得 IDE 补全。
 
@@ -81,7 +84,7 @@ if TYPE_CHECKING:
 `SendDSL` 基类已内置标准发送方法（Text/Image/Voice/Video/File），任何方式获取的 SendDSL 实例都能补全这些方法。
 `types` 命令主要用于补全**平台特有方法**（如云湖的 `Board`、沙盒的 `Dice`）和**模块特有方法**。
 
-## 相关文档
+## 下一步
 
-- [SendDSL 详解](../developer-guide/adapters/send-dsl.md) - 标准发送方法说明
-- [适配器开发入门](../developer-guide/adapters/getting-started.md) - 创建适配器
+- **想知道哪些发送方法所有平台通用**：看 [SendDSL 详解](../developer-guide/adapters/send-dsl.md)，Text / Image / Voice 等标准方法的权威说明
+- **正在开发自己的适配器**：从 [适配器开发入门](../developer-guide/adapters/getting-started.md) 开始创建适配器项目

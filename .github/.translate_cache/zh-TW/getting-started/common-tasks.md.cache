@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "de6b3d933a0151d4a3f34778aaaf5510",
-  "file_hash": "de6b3d933a0151d4a3f34778aaaf5510",
-  "translated_at": "2026-09-07T11:26:52.825539",
+  "hash": "41b34cd5ca094d2daefa3e09b14cd145",
+  "file_hash": "41b34cd5ca094d2daefa3e09b14cd145",
+  "translated_at": "2026-10-22T12:16:23.654389",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "38581f42199cb42fa00e9ce2463e5ecb",
-      "translation": "# 常見任務範例\n\n本指南提供常見功能的實現範例，幫助你快速實現常用功能。"
+      "hash": "122a5022b5b3342faf08065b141a313a",
+      "translation": "# 常見任務範例\n\n> [!TIP]\n> **什麼時候需要讀這篇**：想給機器人加某個具體功能時按節查閱——持久化、定時任務、訊息過濾、權限控制、批次傳送，每一節都是可直接複製的完整範例。想系統學事件處理寫法先看 [事件處理入門](event-handling.md)；不需要則跳過。"
     },
     {
       "hash": "553678e3be3e2896f8e997f48db2ac0e",
@@ -50,8 +50,8 @@
       "translation": "## 圖片處理\n\n### 圖片下載和存儲\n\n```python\nfrom ErisPulse.Core import client\n\n@message.on_message()\nasync def image_handler(event):\n    \"\"\"處理圖片訊息\"\"\"\n    message_segments = event.get_message()\n    \n    for segment in message_segments:\n        if segment.get(\"type\") == \"image\":\n            file_url = segment.get(\"data\", {}).get(\"file\")\n            \n            if file_url:\n                # 推薦使用 SDK 內建客戶端下載圖片\n                resp = await client.get(file_url)\n                if resp.status == 200:\n                    image_data = await resp.read()\n                    \n                    # 存儲到檔案\n                    filename = f\"images/{event.get_time()}.jpg\"\n                    with open(filename, \"wb\") as f:\n                        f.write(image_data)\n                    \n                    sdk.logger.info(f\"圖片已儲存: {filename}\")\n                    await event.reply(\"圖片已儲存\")\n```\n\n### 圖片識別範例\n\n> **注意**：以下範例使用佔位 API 地址，實際使用時請替換為你自己的圖片識別服務。\n\n```python\nfrom ErisPulse.Core import client\n\n@command(\"identify\", help=\"識別圖片\")\nasync def identify_handler(event):\n    \"\"\"識別訊息中的圖片\"\"\"\n    message_segments = event.get_message()\n    \n    for segment in message_segments:\n        if segment.get(\"type\") == \"image\":\n            file_url = segment.get(\"data\", {}).get(\"file\")\n            \n            # 調用圖片識別 API\n            result = await _identify_image(file_url)\n            \n            await event.reply(f\"識別結果: {result}\")\n            return\n    \n    await event.reply(\"未找到圖片\")\n\nasync def _identify_image(url):\n    \"\"\"調用圖片識別 API（範例）- 使用 SDK 內建客戶端\"\"\"\n    resp = await client.post(\n        \"https://api.example.com/identify\",\n        json={\"url\": url}\n    )\n    data = await resp.json()\n    return data.get(\"description\", \"識別失敗\")\n```"
     },
     {
-      "hash": "a9705b1326fdada037a6cdf95120a9e6",
-      "translation": "## 下一步\n\n- [使用者指南](../user-guide/) - 了解設定和模組管理\n- [開發者指南](../developer-guide/) - 學習開發模組和適配器\n- [進階主題](../advanced/) - 深入了解框架特性"
+      "hash": "0b214cec7d98be59db7916082dba9988",
+      "translation": "## 下一步\n\n- **功能寫好了，要長期掛著跑**：看 [部署指南](../user-guide/deployment.md)，Docker / systemd 守護與備份升級\n- **想把自己寫的功能分發給別人**：從 [模組開發入門](../developer-guide/modules/getting-started.md) 開始，把腳本升級為可安裝的模組\n- **要調整設定或排查「模組沒反應」**：查 [設定檔說明](../user-guide/configuration.md) 與 [作用域（scope）](../advanced/scope.md)"
     }
   ]
 }

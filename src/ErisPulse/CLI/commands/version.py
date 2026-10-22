@@ -6,6 +6,7 @@ Version 命令实现
 
 import platform
 import sys
+from argparse import ArgumentParser, Namespace
 
 from rich.panel import Panel
 
@@ -26,10 +27,10 @@ class VersionCommand(Command):
     aliases = ["ver"]
     category = "misc"
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         """version 命令无额外参数"""
 
-    def execute(self, args):
+    def execute(self, args: Namespace) -> None:
         """
         输出版本信息面板
 

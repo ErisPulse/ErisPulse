@@ -1,16 +1,16 @@
 # Module Testing (ErisPulse-Testing)
 
 > [!TIP]
-> **When to read this**: When writing automated tests for your own module. If not needed, skip this section as it does not affect the use of other features.
+> **When to read this**: When writing automated tests for your own modules. If not needed, feel free to skip — this won't affect the use of any other features.
 
-[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) is the official testing toolkit (RFC EPRFC-2026-001 Direction 3):
-It provides `TestBot`, test event factories, outbound message capture and assertion utilities, making module testing as simple as writing regular pytest.
+[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) is the official testing toolkit:
+providing `TestBot`, test event factories, outbound message capture, and assertion interfaces, making module testing as easy as writing ordinary pytest tests.
 
 ```bash
 pip install ErisPulse-Testing
 ```
 
-> A development-time tool with a one-way dependency on the framework, requiring zero integration at runtime. For smoke tests that actually connect to adapter platforms, please use `tests/devs/test_adapter.py` from the framework repository.
+> A development-time tool with a one-way dependency on the framework and zero runtime intervention. For smoke tests that actually connect to adapter platforms, use `tests/devs/test_adapter.py` from the framework repository.
 
 ## Quick Start
 
@@ -21,7 +21,7 @@ from ErisPulse_Testing import TestBot, create_command_event
 
 async def test_daily(make_testbot):
     async with make_testbot(prefix="/") as bot:
-        @command("daily", cooldown="1d", cooldown_reply="Today already checked in")
+        @command("daily", cooldown="1d", cooldown_reply="Already checked in today")
         async def daily(event):
             await event.reply("Check-in successful!")
 
@@ -29,73 +29,71 @@ async def test_daily(make_testbot):
         assert bot.last_reply.text == "Check-in successful!"
 
         await bot.dispatch(create_command_event("daily", user_id="123"))
-        bot.assert_reply_contains("Today already checked in")   # Second hit cooldown
+        bot.assert_reply_contains("Already checked in today")   # Second attempt hits the cooldown
 ```
 
-`TestBot` is recommended to be used with `async with`: it registers MockAdapter (captures all outbound), disables event deduplication, and applies configuration overrides at startup; and automatically cleans up framework global state at exit, ensuring test cases do not pollute each other.
+`TestBot` is recommended to be used with `async with`: on startup it registers the MockAdapter (capturing all outbound messages), disables event deduplication, and applies config overrides; on exit it automatically cleans up the framework's global state, so test cases do not pollute one another.
 
-配套 pytest fixtures (automatically available after installation):
+Accompanying pytest fixtures (automatically available after installation):
 
-- `testbot`: standard TestBot at function level (platform=`test`, prefix `/`)
-- `make_testbot(**kwargs)`: factory for custom parameters (`prefix` / `config` / `platform` / `bot_id` ...)
+- `testbot`: function-scoped standard TestBot (platform=`test`, prefix `/`)
+- `make_testbot(**kwargs)`: factory with customizable parameters (`prefix` / `config` / `platform` / `bot_id` ...)
 
-建议在测试项目配置 `asyncio_mode = "auto"` (`[tool.pytest.ini_options]`),  
-or add `@pytest.mark.asyncio` to test cases.
+It is recommended to set `asyncio_mode = "auto"` (`[tool.pytest.ini_options]`) in your test project's configuration, or add `@pytest.mark.asyncio` to your test cases.
 
-## Event Factory
+## Event Factories
 
 | Function | Description |
-|----------|-------------|
-| `create_message_event(text, user_id=..., group_id=None, ...)` | Message event; if `group_id` is empty, it is a private chat |
-| `create_command_event("roll 3", prefix="/")` | Command message (automatically adds prefix, no duplication if already prefixed) |
+|------|------|
+| `create_message_event(text, user_id=..., group_id=None, ...)` | Message event; an empty `group_id` means a private chat |
+| `create_command_event("roll 3", prefix="/")` | Command message (prefix added automatically; not duplicated if already present) |
 | `create_notice_event(type, ...)` | Notice event (e.g., `friend_add`) |
 | `create_request_event(type, ...)` | Request event (e.g., friend request) |
-| `create_meta_event("connect", ...)` | Meta event (e.g., `connect` makes the Bot go online) |
+| `create_meta_event("connect", ...)` | Meta event (connect brings the Bot online) |
 
-All events use uuid for unique `id`, naturally avoiding framework event deduplication.
+All events use a unique uuid `id`, naturally bypassing the framework's event deduplication.
 
-Note: Synthetic events **do not contain platform raw messages** (`event.get_raw()` returns an empty dict). To determine scenarios like group chat / private chat, use accessors such as `event.is_group_message()` / `event.get_detail_type()` / `event.get_group_id()`, do not read raw.
+Note: Synthetic events **do not contain the platform's raw payloads** (`event.get_raw()` returns an empty dict). To determine scenarios such as group chat / private chat, use accessors like `event.is_group_message()` / `event.get_detail_type()` / `event.get_group_id()`, instead of reading raw data.
 
 ## TestBot API
 
 ### Dispatch
 
 ```python
-trace = await bot.dispatch(event)          # Dispatch and wait for handlers to land, return decision chain
-await bot.dispatch(event, drain=False)     # Interactive first message: no wait (wait_reply handlers stay active)
-await bot.send_message("Hello")             # Shortcut for message dispatch
-await bot.reply_as("18", user_id="u1")     # Simulate wait_reply user reply (automatically waits for waiter ready)
+trace = await bot.dispatch(event)          # Dispatch and wait for handlers to settle; returns the decision chain
+await bot.dispatch(event, drain=False)     # First message of an interaction: don't wait (wait_reply handlers stay resident)
+await bot.send_message("Hello")            # Shortcut for message dispatch
+await bot.reply_as("18", user_id="u1")     # Simulate a user reply to wait_reply (automatically waits for the waiter to be ready)
 ```
 
-`dispatch()` gathers all in-flight handler tasks after emit, returns immediately after processing is complete — **no need for sleep in tests**.
+`dispatch()` gathers all in-flight handler Tasks after emit; by the time it returns, processing is complete — **no need for sleep in tests**.
 
 ### Outbound Assertions
 
 ```python
-bot.replies                # All outbound (list of SentMessage)
+bot.replies                # All outbound messages (list of SentMessage)
 bot.last_reply.text        # Text of the most recent reply
 bot.replies_to("123")      # Filter by target
-bot.clear_replies()        # Isolate assertions between stages
-bot.assert_replied()                       # Presence of outbound
-bot.assert_replied(contains="Check-in", to="123")
-bot.assert_not_replied()                   # No outbound at all
-bot.assert_reply_contains("Check-in successful")       # Presence of outbound containing specified text
-await bot.wait_for_reply(timeout=2)        # Wait for asynchronous reply to appear
+bot.clear_replies()        # Isolate assertions between phases
+bot.assert_replied()                       # Outbound messages exist
+bot.assert_replied(contains="check-in", to="123")
+bot.assert_not_replied()                   # No outbound messages at all
+bot.assert_reply_contains("Check-in successful")       # An outbound message containing the specified text exists
+await bot.wait_for_reply(timeout=2)        # Wait for an asynchronous reply to appear
 ```
 
-`SentMessage` fields: `text` (first text segment), `segments` (full message segments),  
-`target_type` / `target_id` / `bot_id` (send context), `has_modifier("at")`, etc.
+`SentMessage` fields: `text` (the first text segment), `segments` (full message segments), `target_type` / `target_id` / `bot_id` (sending context), `has_modifier("at")`, and more.
 
 ### Module Loading
 
 ```python
-await bot.load_module("MyModule")   # Registered module name (requires framework sdk.init() to complete entry-point discovery)
-await bot.load_module(MyModule)     # Or BaseModule subclass (auto register + load, recommended)
+await bot.load_module("MyModule")   # Registered module name (requires the framework's sdk.init() to complete entry-point discovery)
+await bot.load_module(MyModule)     # Or a BaseModule subclass (automatic register + load, recommended)
 await bot.unload_module("MyModule")
 ```
 
-Handlers registered in `on_load` are tied to the module, and are automatically cleaned up on unload, allowing direct assertions like "commands become invalid after unload".  
-Note: String forms **do not perform entry-point scanning** (TestBot does not initialize framework discovery process); for testing soft-dependency modules, directly pass class objects (or manually `module.register` before passing the name).
+Commands / event handlers registered inside `on_load` belong to the module and are automatically cleaned up on unload, so you can directly assert that "commands stop working after unloading".
+Note: The string form **does not perform entry-point scanning** (TestBot does not initialize the framework's discovery process); to test modules that are soft dependencies, pass the class object directly (or call `module.register` yourself and then pass the name).
 
 ### Dependency Replacement (requires EP>=2.9.0-dev)
 
@@ -105,40 +103,51 @@ with bot.patch_dependency(get_session, fake_session) as mock:
     assert mock.called
 ```
 
-Replaces the function referenced in the command registry via `Depends(get_session)`, restoring automatically when exiting the `with` block.
+What is replaced is the function referenced by the `Depends(get_session)` declaration in the command registry; upon exiting the with block, everything is automatically restored.
 
-### Configuration Override
+### Config Overrides
 
 ```python
 bot = TestBot(prefix="//", config={
     "ErisPulse.event.command.case_sensitive": False,
-    "MyModule.api_key": "test-key",     # Module configuration (self.cfg can read)
+    "MyModule.api_key": "test-key",     # Module config (readable via self.cfg)
 })
 ```
 
-Configuration is injected into the memory layer, and changes like command prefix take effect immediately via hot update. Two points to note:
+Injected through the config memory layer; command prefixes and the like take effect immediately via hot reload. Two caveats:
 
-1. **Persistence**: Overrides will be written to disk following the framework's delayed write strategy (default ~5 seconds) into `config/config.toml` in the cwd—projects under test should add `config/` to `.gitignore`;
-2. **Conflict with runtime module configuration writes (known limitation)**: When module runtime configuration writes (e.g., `self.cfg = ...` for subscription lists) coexist with these dot-separated overrides, there is a consistency issue in ConfigManager's read/write — modules reading entire sections may not see override values, and overrides may be overwritten during disk writes (fixed in ErisPulse 2.9.0-dev.2, still affected in 2.8.x). For test cases involving "runtime configuration writes", in 2.8.x it is recommended to reset relevant configuration sections via full-section write in the fixture.
+1. **Persistence to disk**: Overrides will be written to `config/config.toml` under the cwd according to the framework's deferred disk-write policy (about 5 seconds by default) — please add `config/` to `.gitignore` in the repository of the project under test;
+2. **Conflict with module runtime write-backs (known limitation)**: When a module under test writes back entire config sections (`self.cfg = ...`, e.g., subscription lists) alongside the dotted overrides here, there is a read/write consistency issue in ConfigManager — a module reading an entire section may not see the overridden values, and overrides may be overwritten by whole-section write-backs when persisted (fixed in ErisPulse 2.9.0-dev.2; 2.8.x is still affected). For test cases involving "runtime config write-backs" on 2.8.x, it is recommended to reset the relevant config sections in a fixture using whole-section write-backs.
 
-## Dispatch Decision Chain (for troubleshooting "why command didn't trigger"; requires EP>=2.9.0-dev)
+## Dispatch Decision Chain (troubleshooting "why didn't the command trigger"; requires EP>=2.9.0-dev)
 
-`dispatch()` returns `DispatchTrace` — the causal chain of each decision point in this dispatch:
+`dispatch()` returns a `DispatchTrace` — the causal chain of every decision point traversed during this dispatch:
 
 ```python
 trace = await bot.dispatch(create_command_event("dailyx", user_id="123"))
 
 trace.verdict        # executed / rejected / dropped / failed / no_match / passed
-trace.explain()      # Line-by-line causal explanation (in current language)
+trace.explain()      # Line-by-line causal explanation (in the current language)
 trace.command        # Name of the matched command (None if not matched)
-trace.steps("cooldown")  # Filter decision records by stage
+trace.steps("cooldown")  # Filter decision records by phase
 
-trace.assert_executed("daily")  # Assert execution (failure includes full causal chain)
-trace.assert_rejected()         # Assert rejection by permission-based decision
-trace.assert_dropped()          # Assert silent discard (e.g., cooldown)
-trace.assert_no_match()         # Assert no command matched
+trace.assert_executed("daily")  # Assert execution (attaches the full causal chain on failure)
+trace.assert_rejected()         # Assert rejection by a permission-related verdict
+trace.assert_dropped()          # Assert silent dropping (cooldown, etc.)
+trace.assert_no_match()         # Assert no command was matched
 ```
 
-Decision coverage: command text matching, command hit (with spelling suggestions if unmatched), scope, user ACL, owner check, permission functions, cooldown silent discard, parameter parsing, execution result, middleware rejection.
+Verdict coverage: command text validation, command matching (with spelling suggestions when unmatched), scopes, user ACLs, owner checks, permission functions, silent cooldown drops, argument parsing, execution results, and middleware vetoes.
 
-The production environment can also use the framework's built-in `ErisPulse.Core.Event.trace` (`start_dispatch_trace()` / `format_dispatch_trace()`) to collect and render the decision chain.
+In production environments, you can likewise use the framework's built-in `ErisPulse.Core.Event.trace` (`start_dispatch_trace()` / `format_dispatch_trace()`) to collect and render decision chains.
+
+## Next Steps
+
+### Tests Reveal "Command Not Triggered" Issues
+
+- [Module Troubleshooting Guide](module-troubleshooting.md) — Move from test reproduction to production troubleshooting; match symptoms to their causes
+
+### Tests Passed, Ready to Distribute
+
+- [Module Core Concepts](modules/core-concepts.md) — Fill in the details of module architecture and config declarations
+- [Publishing and Module Store Guide](publishing.md) — The complete process for publishing to PyPI and the module store

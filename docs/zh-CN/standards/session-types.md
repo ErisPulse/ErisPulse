@@ -1,5 +1,8 @@
 # ErisPulse 会话类型标准
 
+> [!TIP]
+> **什么时候需要读这篇**：当你在适配器中把平台原生会话映射到标准类型（private/group/channel/guild/thread），或在模块中不确定 `Send.To()` 该传什么目标类型、想搞清 `event.reply()` 的自动转换时对照本文。不需要则跳过。
+
 本文档定义了 ErisPulse 支持的会话类型标准，包括接收事件类型和发送目标类型。
 
 ## 1. 核心概念
@@ -25,9 +28,10 @@ user                    →        user
 ```
 
 **关键点**：
-- `private` 是接收时的类型，发送时必须使用 `user`
+- `private` 是接收时的类型，发送时的标准类型是 `user`
 - `group`、`channel`、`guild`、`thread` 在接收和发送时类型相同
-- 系统会自动进行类型转换，无需手动处理(代表着你可以直接使用获得的接收类型进行发送)，但实际上，你无需考虑这些，Event的包装类的存在，你可以直接使用event.reply()方法，而无需考虑类型转换
+- **推荐路径**：直接使用 `event.reply()`——自动完成类型转换与目标推断，无需手动处理（`private` → `user` 的自动转换即在此发生）
+- **手动发送时**：请直接传发送类型（如 `Send.To("user", ...)`）；手动 `Send.To("private", ...)` 传接收类型虽也能被自动转换，但不推荐（见 §6.1）
 
 ## 2. 标准会话类型
 
@@ -212,9 +216,10 @@ await adapter.myplatform.Send.To("user", "123").Text("Hello")
 # 发送给群组
 await adapter.myplatform.Send.To("group", "456").Text("Hello")
 
-# 自动转换 private → user（不推荐，可能会有兼容性问题）
+# 自动转换 private → user：手动传接收类型属不推荐写法（可能有兼容性问题）
 await adapter.myplatform.Send.To("private", "789").Text("Hello")
-# 内部自动转换为: Send.To("user", "789") # 直接使用user作为会话类型是更优的选择
+# 内部自动转换为: Send.To("user", "789")
+# 推荐做法：手动发送时直接用发送类型 user，或用 event.reply() 自动完成转换（见 6.2）
 ```
 
 ### 6.2 事件回复
@@ -222,9 +227,9 @@ await adapter.myplatform.Send.To("private", "789").Text("Hello")
 ```python
 from ErisPulse.Core.Event import Event
 
-# Event.reply() 自动处理类型转换
+# Event.reply() 自动处理类型转换（推荐路径）
 await event.reply("回复内容")
-# 内部自动使用正确的发送类型
+# 内部自动使用正确的发送类型（private → user 等转换在此自动完成）
 ```
 
 ### 6.3 命令处理
@@ -359,6 +364,10 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
 
 ## 11. 相关文档
 
+**适配器侧（映射与转换）**：
 - [事件转换标准](event-conversion.md) - 完整的事件转换规范
 - [发送方法规范](send-method-spec.md) - Send 类的方法命名和参数规范
 - [适配器开发指南](../developer-guide/adapters/) - 适配器开发完整指南
+
+**模块侧（不想手动处理类型转换）**：
+- 用 `event.reply()` 即可自动完成类型转换与目标推断，详见 [Event 包装类详解](../developer-guide/modules/event-wrapper.md)

@@ -1,6 +1,7 @@
 # 常见任务示例
 
-本指南提供常见功能的实现示例，帮助你快速实现常用功能。
+> [!TIP]
+> **什么时候需要读这篇**：想给机器人加某个具体功能时按节查阅——持久化、定时任务、消息过滤、权限控制、批量发送，每一节都是可直接复制的完整示例。想系统学事件处理写法先看 [事件处理入门](event-handling.md)；不需要则跳过。
 
 ## 内容列表
 
@@ -503,6 +504,6 @@ async def _identify_image(url):
 
 ## 下一步
 
-- [用户使用指南](../user-guide/) - 了解配置和模块管理
-- [开发者指南](../developer-guide/) - 学习开发模块和适配器
-- [高级主题](../advanced/) - 深入了解框架特性
+- **功能写好了，要长期挂着跑**：看 [部署指南](../user-guide/deployment.md)，Docker / systemd 守护与备份升级
+- **想把自己写的功能分发给别人**：从 [模块开发入门](../developer-guide/modules/getting-started.md) 开始，把脚本升级为可安装的模块
+- **要调配置或排查"模块没反应"**：查 [配置文件说明](../user-guide/configuration.md) 与 [作用域（scope）](../advanced/scope.md)

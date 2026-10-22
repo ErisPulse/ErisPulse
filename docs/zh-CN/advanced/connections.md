@@ -3,6 +3,12 @@
 > [!TIP]
 > **什么时候需要读这篇**：需要 WebSocket/SSE 连接池、广播分组、跨模块推送或查看连接时。不需要则跳过，不影响其它功能的使用。
 
+> **读完你会知道**：三种连接如何自动登记进注册表、分组订阅与广播 API、
+> 跨模块复用与关闭权归属，以及模块卸载时连接的清理语义。
+>
+> **本篇不涉及**：WebSocket / SSE 路由的注册写法与连接生命周期钩子
+> （见[路由管理器](router.md)）；客户端 HTTP 请求（见[网络客户端](http-client.md)）。
+
 
 连接（服务端 WebSocket / SSE / 客户端出站 WebSocket）在 ErisPulse 中是**框架级一等资源**：
 随连接建立自动登记进统一注册表，支持广播、业务分组订阅与跨模块传递/复用，
@@ -215,3 +221,10 @@ spawn_later(30, push_tick, owner="MyModule")
 | `conn.send_json / send_text / iter_text / ...` | 收发（服务端/客户端接口一致） |
 | `conn.meta` | 业务元数据字典 |
 | `conn.close(force=False)` | 关闭（非 owner 抛 `ConnectionPermissionError`） |
+
+## 相关文档
+
+- **注册服务端 WS / SSE 路由** → [路由管理器](router.md)
+- **建立客户端出站 WebSocket** → [网络客户端](http-client.md)
+- **模块卸载时连接如何被回收** → [归属权（owner）系统](ownership.md)
+- **连接相关异常（`ConnectionNotFoundError` / `ConnectionPermissionError`）** → [异常体系与捕获指南](errors.md)

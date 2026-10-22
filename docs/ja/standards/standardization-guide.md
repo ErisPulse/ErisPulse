@@ -1,6 +1,9 @@
-# アダプター標準化ガイドライン（概要）
+# アダプター標準化ガイド（概要）
 
-このドキュメントは、ErisPulse アダプターの標準化の**概要**です。これは、多様なプラットフォーム間で標準化された原則や、標準マップ、差異処理のモード、新機能の標準化への導入プロセスを定義し、**インタラクティブコンポーネントの標準**（ボタン/キーボード、ドロップダウン選択など）と**インタラクティブコールバックイベント**の完全な定義を提供します。アダプター開発者は、新機能を実装する際に**まず標準定義を採用**し、モジュール開発者が同一のコードで任意のプラットフォームで一貫した体験を得られるようにする必要があります。つまり、命名規則、パラメータ、返り値がすべて一貫している必要があります。
+> [!TIP]
+> **このドキュメントを読むタイミング**：新しいアダプターを開発するとき、または特定のプラットフォームに新機能を追加する際、"標準に追加するか、`{platform}_` 拡張を用いるか"、命名規則、プラットフォーム間の差異をどのように処理するかを決める必要があるときは、まず本文を読んでください。特定の分野の詳細な規格を調べるだけであれば、§2の標準マップに対応するドキュメントに直接移動してください。
+
+本文は、ErisPulse アダプターの標準化に関する**概要**です。ここでは、多様なプラットフォーム間で標準化を実現するための原則、標準マップ、差異処理のモード、新機能を標準に追加するプロセス、さらに**インタラクティブコンポーネントの標準**（ボタン/キーボード、ドロップダウン選択など）と**インタラクティブコールバックイベント**の完全な定義を示します。アダプター開発者は、新しい機能を実装する際には**まず標準定義を採用**し、モジュール開発者が同一のコードで任意のプラットフォームで一貫した体験を得られるようにすることが求められます。つまり、命名、パラメータ、返り値がすべて一貫している必要があります。
 
 ## 1. 標準化原則
 
@@ -79,96 +82,78 @@
 
 ### 5.1 コンポーネント一覧とステータス
 
-| コンポーネント | 標準セグメント type | ステータス | 対応プラットフォーム |
+| コンポーネント | 標準段 type | 状態 | 対応プラットフォーム |
 |------|------------|------|-----------|
 | ボタン/キーボード（keyboard） | `keyboard` | ✅ 標準化済み | Telegram / 云湖 / QQBot |
-| ドロップダウン選択（select） | `select` | 📋 保留中（構造は §5.4 参照） | Discord / Telegram(bot) |
-| カード（card） | `card` | 📋 保留中（§5.5 参照） | Kook / 云湖(html) |
-| モーダル（modal） | `modal` | 📋 保留中 | Discord |
+| ドロップダウン選択（select） | `select` | 📋 予約済み（構造は§5.4参照） | Discord / Telegram(bot) |
+| カード（card） | `card` | 📋 予約済み（§5.5参照） | Kook / 云湖(html) |
+| モーダル（modal） | `modal` | 📋 予約済み | Discord |
 
-> 修飾子の階層規約：汎用のインタラクティブコンポーネントの Send 修飾子は**アダプターの Send クラスで実装**（フレームワークの基底クラスには内蔵しない）。命名は §5.2 の規約に従い、パラメータは本文書の標準構造に従う。
+> 修飾子の階層規約：汎用的なインタラクティブコンポーネントの Send 修飾子は**アダプタの Send クラスが実装**する（フレームワークの基底クラスには内蔵しない）。命名は §5.2 の規約に従い、引数は本文書の標準構造に従う。
 
 ### 5.2 keyboard ボタン/インラインキーボード
 
-#### メッセージセグメント構造（送信方向）
+#### メッセージ段構造（送信方向）
 
-```json
-{
-  "type": "keyboard",
-  "data": {
-    "rows": [
-      [
-        {"label": "選択肢A", "type": "callback", "data": "vote:A"},
-        {"label": "公式サイト",   "type": "link",     "data": "https://example.com"}
-      ]
-    ]
-  }
-}
-```
+標準 `keyboard` 段 = `rows` 二次元配列。各ボタンは `{"label": "表示テキスト", "type": "callback" | "link", "data": "コールバックデータまたは遷移先アドレス"}`。プラットフォーム固有のオプションフィールドも許容（アダプタは機能に応じてマッピングまたは無視する）。
 
-| フィールド | 型 | 必須 | 説明 |
-|------|------|------|------|
-| `data.rows` | 2次元配列 | はい | 各サブ配列が1行のボタンを表す |
-| `rows[][].label` | str | はい | ボタンに表示されるテキスト |
-| `rows[][].type` | str | はい | `callback`（クリック時にデータを返す）/ `link`（URLに飛ぶ） |
-| `rows[][].data` | str | はい | コールバック用データ（callback）または飛ぶURL（link） |
-| `rows[][].*` | Any | いいえ | プラットフォーム固有のオプションフィールド（例：`web_app`、`menus`）は、アダプターが対応度に応じてマッピングまたは無視する |
+> **構造定義の権威**：完全なメッセージ段の JSON、フィールド表、およびフィールドの意味は [イベント変換標準 §4.1.1 keyboard ボタン/インラインキーボード段](event-conversion.md#411-keyboard-ボタン内联键盘段跨平台通用) を参照。本節では繰り返さない。
 
-#### 各プラットフォームのマッピング照会
+#### 各プラットフォームのマッピング対照
 
-| プラットフォーム | 標準セグメント → ネイティブ構造 | ネイティブ構造の参考 |
+| プラットフォーム | 標準段 → ネイティブ構造 | ネイティブ構造の参考 |
 |------|------------------|-------------|
 | Telegram | `reply_markup.inline_keyboard`：`[{text, callback_data \| url}]` | callback→`callback_data`（≤64バイト）、link→`url` |
 | 云湖 | `content.buttons`：`[{label, action_type}]` | callback→`action_type:2` + `action` + `value`、link→`action_type:1` + `url` |
-| QQBot | `keyboard.content.rows`：`[{label, type, data}]` | callback→`type:2` + `data`、link→`type:0` + `data`（メッセージはmarkdown形式） |
+| QQBot | `keyboard.content.rows`：`[{label, type, data}]` | callback→`type:2` + `data`、link→`type:0` + `data`（メッセージは markdown 型でなければならない） |
 | Kook | カード `action-group` モジュール：`[{type, text, value, click}]` | callback→`click:return` + `value`、link→`click:link` + `url` |
 | Discord | `components[].components`：`[{label, style, custom_id \| url}]` | callback→`style:1` + `custom_id`、link→`style:5` + `url` |
 
-#### Send 修飾子（各アダプターの Send クラスで実装）
+#### Send 修飾子（各アダプタの Send クラスで実装）
 
-汎用修飾子は**各アダプターが独自の Send クラスで実装**（フレームワークの基底クラスは変更しない）：
+汎用的な修飾子は**各アダプタが自分の Send クラスで実装**する（フレームワークの基底クラスは変更しない）：
 
-- `.Keyboard(rows)`：標準的な命名、§5.2 の一般的な rows 構造を受け取り、内部で標準 `keyboard` メッセージセグメント（または直接プラットフォームのネイティブ構造）を生成し、`Raw_ob12` で統一的に処理する
-- `.Buttons(rows)`：オプションの別名、動作は同じ
-- **後方互換性**：プラットフォームのネイティブ構造を検出したらそのまま透過する（エラーを出さず、変換しない）
-- プラットフォームのネイティブ拡張セグメント（例：`telegram_inline_keyboard`）はそのまま透過され、影響を受けない
+- `.Keyboard(rows)`：標準命名。§5.2 の汎用 rows 構造を受ける。内部で標準 `keyboard` メッセージ段（または直接プラットフォームのネイティブ構造に変換）を生成し、`Raw_ob12` で統一処理する。
+- `.Buttons(rows)`：オプションの別名。動作は同一。
+- **後方互換性**：プラットフォームのネイティブ構造を検出した場合は直接透過する（エラーを発生させず、変換しない）。
+- プラットフォームのネイティブ拡張段（例：`telegram_inline_keyboard`）は透過し、影響を受けない。
 
 ```python
-# 同じコードで任意のプラットフォームに対応（各アダプターが修飾子と変換を提供）
+# 同じコード、任意のプラットフォーム（各アダプタが修飾子と変換を提供）
 rows = [[{"label": "いいね", "type": "callback", "data": "like:1"},
          {"label": "ホーム", "type": "link", "data": "https://example.com"}]]
 await adapter.Send.To("group", gid).Keyboard(rows).Text("選択してください")
 ```
 
-> アダプターの互換性リスト：QQBot / Telegram / 云湖 は実装済み（修飾子 + 標準セグメント変換）；新規アダプターは本文書に従って実装すればよい（§7 Checklist 参照）。
+> アダプタの互換性リスト：QQBot / Telegram / 云湖 は実装済み（修飾子 + 標準段変換）；新規アダプタは本文書に従って実装すればよい（§7 Checklist参照）。
 
 ### 5.3 インタラクティブコールバックイベント（ボタンクリック後）
 
-ユーザーがボタンをクリックした後に、プラットフォームが送信するイベントは**必ず**以下の標準フィールドを提供する必要がある（detail_type はプラットフォーム固有の名前を保持してもよい）：
+ユーザーがボタンをクリックした後、プラットフォームが送信するイベントは**必ず**以下の標準フィールドを提供する必要がある（detail_type はプラットフォームの命名を保持する）：
 
 | 標準フィールド | 型 | 必須 | 説明 |
 |---------|------|------|------|
-| `interaction_id` | str | はい | このインタラクションのID（返信に使用可能、例：回転アイコン/通知） |
+| `interaction_id` | str | はい | 今回のインタラクションのID（応答に使用可能、例：回転/通知） |
 | `button_data` | str | はい | ボタンが返すデータ（§5.2 の `data`） |
-| `button_label` | str | いいえ | ボタンに表示されるテキスト |
+| `button_label` | str | いいえ | ボタンの表示テキスト |
 | `user_id` | str | はい | クリックしたユーザー |
 | `message_id` | str | いいえ | ボタンが含まれるメッセージ |
-| `group_id` / `channel_id` | str | いいえ | 送信元の会話 |
+| `group_id` / `channel_id` | str | いいえ | ソース会話 |
 
-**detail_type の規約**：各プラットフォームの既存の命名（`qqbot_interaction` / `telegram_callback_query` / `yunhu_a2ui_button` など）を保持するが、**標準フィールドはすべて揃っていること**——モジュールは `event.get("button_data")` で跨プラットフォームで値を取得できる。
+**detail_type 約定**：各プラットフォームの既存命名を保持する（`qqbot_interaction` / `telegram_callback_query` / `yunhu_a2ui_button` など）。ただし**標準フィールドは必須**であるため、モジュールは `event.get("button_data")` で跨プラットフォームに渡って値を取得できる。
 
-**Event 拡張メソッドの提案**（アダプターの EventMixin が提供）：
+**Event 拡張メソッドの提案**（アダプタの EventMixin が提供）：
 
 ```python
 def get_button_data(self) -> str: ...     # button_data
 def get_interaction_id(self) -> str: ...  # interaction_id
 ```
 
-**インタラクションへの返信**（プラットフォームの機能に応じて）：`adapter.reply_interaction(interaction_id, code=0)`（QQBot）/ `answerCallbackQuery`（Telegram）など、プラットフォームのメソッド名に従い、統一は強制しない。
+**インタラクションへの応答**（プラットフォームの能力に応じて）：`adapter.reply_interaction(interaction_id, code=0)`（QQBot）/ `answerCallbackQuery`（Telegram）など、プラットフォームのメソッド族に従い、統一は強制しない。
 
 #### 各プラットフォームのコールバックイベントマッピング
 
-| プラットフォーム | ネイティブイベント | detail_type | interaction_id の出所 | button_data の出所 |
+| プラットフォーム | ネイティブイベント | detail_type | interaction_id のソース | button_data のソース |
 |------|---------|-------------|--------------------|-----------------|
 | Telegram | `callback_query` | `telegram_callback_query`（notice） | `callback_query.id` | `callback_query.data` |
 | 云湖 | ボタンクリックイベント | `yunhu_button_click` / `yunhu_a2ui_button` | `buttonId` / `sourceComponentId` | `value` / `actionName` |
@@ -176,7 +161,7 @@ def get_interaction_id(self) -> str: ...  # interaction_id
 | Kook | ボタンクリックイベント | `kook_button_click` | `msg_id`+`value` | `value` |
 | Discord | `INTERACTION_CREATE` | `discord_interaction` | `interaction.id` | `data.custom_id` |
 
-### 5.4 select ドロップダウン選択（保留中）
+### 5.4 select ドロップダウン選択（予約）
 
 ```json
 {
@@ -193,15 +178,15 @@ def get_interaction_id(self) -> str: ...  # interaction_id
 }
 ```
 
-コールバックイベントは §5.3 のフィールドを再利用する（`button_data` = 選択された `data`、複数選択時は JSON 配列）。最初に実装されたプラットフォーム：Discord（select menu）、Telegram（keyboard 切り替え）。未実装のプラットフォームは、このセグメントを受け取ったら `alt_message` でテキストリストに降格する。
+コールバックイベントは §5.3 のフィールドを再利用する（`button_data` = 選択された `data`、複数選択時は JSON 配列）。最初に実装するプラットフォーム：Discord（select menu）、Telegram（keyboard 切り替え）。実装していないプラットフォームは、この段を `alt_message` に降格してテキストリストとして表示する。
 
-### 5.5 card カード（保留中、標準化は保留）
+### 5.5 card カード（予約、標準化を保留）
 
-カードの構造は非常に多様（Kook のフル機能カードモジュール vs 云湖の html vs QQ markdown+keyboard）で、現時点では強制的な標準化は行わない。提案：
+カードの構造は非常に多様（Kook の全機能カードモジュール vs 云湖 html vs QQ markdown+keyboard）、強制的な標準化は保留。提案：
 
-- フルテキストカードは `text` + `keyboard` の組み合わせで表現する（多くの場面で十分）
-- プラットフォームのフル機能カードは `{platform}_card` 拡張セグメント（例：`kook_card`）を継続的に使用する
-- 2つ以上のプラットフォームが同構造のカード機能を持つようになったら、再評価して標準化を進める
+- フルテキストのカードは `text` + `keyboard` の組み合わせで表現する（多くの場面で十分）
+- プラットフォームの全機能カードは `{platform}_card` 拡張段（例：`kook_card`）を使用し続ける
+- 2つ以上のプラットフォームで同構造のカード機能が登場した際に、再評価して標準化を検討
 
 ---
 

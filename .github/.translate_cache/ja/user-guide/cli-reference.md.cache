@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "4a394bc5750c7cab730eba17a454af2c",
-  "file_hash": "4a394bc5750c7cab730eba17a454af2c",
-  "translated_at": "2026-10-20T12:08:07.474465",
+  "hash": "bda33cfb5163f844781a8e81c95fad16",
+  "file_hash": "bda33cfb5163f844781a8e81c95fad16",
+  "translated_at": "2026-10-22T14:28:49.031351",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "f30901b5e0eed6e80d136dfc76df17f3",
-      "translation": "# CLI コマンドリファレンス\n\nErisPulse コマンドラインツール（`epsdk`）は、プロジェクト管理およびパッケージ管理機能を提供します。\n\n> **ヒント**：すべてのコマンドは `epsdk <コマンド> --help` を使用して詳細なパラメータの説明を表示できます。`epsdk`（コマンドなし）の主なヘルプはカテゴリ別にグループ化され、**プロジェクト**（init / create / run）、**コンポーネント管理**（install / uninstall / upgrade / list / list-remote / types）、**設定と診断**（config / doctor / i18n）、**その他**（self-update / version）が含まれます。\n\n---"
+      "hash": "0f9461d42b9df713285d751b28d8deb3",
+      "translation": "# CLI コマンドリファレンス\n\n> [!TIP]\n> **このドキュメントを読むタイミング**：`epsdk` コマンドの引数を忘れてしまったとき、またはスクリプトにコンポーネント管理を組み込みたい場合、あるいは `run` / `stop` / `restart` の動作を制御したいときに参照してください。通常は `init` / `install` / `run` のみを使用する場合は、`epsdk <コマンド> --help` という1つのコマンドを覚えておくだけで十分です。いつでも引数の説明を確認できますので、このドキュメントを全文読む必要はありません。\n\n`epsdk` は ErisPulse のコマンドラインツールです。プロジェクトの初期化、モジュールやアダプタのインストール / アップグレード、コンポーネントの対話的設定、ロボットの起動と停止、環境の診断など、すべてをこの1つのコマンドで行います。\n\n> **ヒント**：`epsdk`（コマンドなし）のヘルプはカテゴリ別にグループ化されて表示されます：**プロジェクト**（init / create / run）、**コンポーネント管理**（install / uninstall / upgrade / list / list-remote / types）、**設定と診断**（config / doctor / i18n）、**その他**（self-update / version）。"
     },
     {
       "hash": "0d4ed74df0f54e266ec04c1ce62da262",
@@ -56,6 +56,10 @@
     {
       "hash": "61c804d1024b9ca4c76a2f12a84507c7",
       "translation": "## 一般的な使い方\n\n### モジュールのインストール\n\n```bash\n# 単一モジュールのインストール\nepsdk install Weather\n\n# 複数モジュールのインストール\nepsdk install Yunhu Weather\n\n# モジュールのアップグレード\nepsdk install Weather -U\n```\n\n### コンポーネントの一覧表示\n\n```bash\n# すべてのコンポーネントを一覧表示\nepsdk list\n\n# アダプタのみを一覧表示\nepsdk list -t adapters\n\n# アップグレード可能なコンポーネントのみを一覧表示\nepsdk list -o\n\n# リモートで利用可能なコンポーネントを一覧表示\nepsdk list-remote\n```\n\n### コンポーネントのアンインストール\n\n```bash\n# 単一コンポーネントのアンインストール\nepsdk uninstall Weather\n\n# 複数コンポーネントのアンインストール\nepsdk uninstall Yunhu Weather\n```\n\n### コンポーネントの設定\n\n```bash\n# 設定状態を表示\nepsdk config --list\n\n# 対話形式で対象を選択して設定\nepsdk config\n\n# 指定アダプタを直接設定\nepsdk config yunhu\n```\n\n### コンポーネントのアップグレード\n\n```bash\n# すべてのコンポーネントをアップグレード\nepsdk upgrade\n\n# 指定コンポーネントをアップグレード\nepsdk upgrade Weather\n\n# 強制アップグレード\nepsdk upgrade -f\n```\n\n### プロジェクトの実行\n\n```bash\n# 普通に実行\nepsdk run main.py\n\n# ホットリロードモードで実行（ファイル変更で自動的に再起動）\nepsdk run main.py --reload\n```\n\n### 言語の切り替え\n\n```bash\n# 対話形式で言語を選択\nepsdk i18n\n\n# 英語に直接切り替え\nepsdk i18n en\n\n# 利用可能な言語を一覧表示\nepsdk i18n --list\n```\n\n### タイプストアブの生成\n\n```bash\n# すべてのタイプストアブを生成\nepsdk types\n\n# モジュールのタイプストアブのみを生成\nepsdk types --modules-only\n```\n\n### プロジェクトの初期化\n\n```bash\n# 対話形式で初期化\nepsdk init\n\n# クイックモードで初期化\nepsdk init -q -n my_bot\n```\n\n### フットスタジアムの作成\n\n```bash\n# 対話形式で作成（タイプの選択と情報を入力するガイド）\nepsdk create\n\n# Module プロジェクトを直接作成\nepsdk create module -n MyModule\n\n# Adapter プロジェクトを直接作成\nepsdk create adapter -n MyAdapter\n\n# 完全なパラメータ\nepsdk create module -n MyModule -d \"モジュールの説明\" -a \"作者\" -e \"mail@example.com\"\n\n# 既存のディレクトリを上書き\nepsdk create module -n MyModule -f\n```"
+    },
+    {
+      "hash": "f53b18036ffa50356aba4f89d1c9e6e4",
+      "translation": "## 次のステップ\n\n- **コンポーネントのインストール後、設定を記入する必要があります**：`epsdk config` によるインタラクティブなガイドを使用するか、[設定ファイルの説明](configuration.md)を参照して手動で編集してください。\n- **コードを書き終えて IDE の補完が欲しい場合**：`epsdk types` を実行し、[型のスタブ生成](../getting-started/ide-completion.md)を参照してください。\n- **ロボットが起動しない場合**：まず `epsdk doctor` を実行して環境を診断してください（[環境診断](#環境診断)を参照）。長期的なデプロイが必要な場合は、[デプロイガイド](deployment.md)をご覧ください。"
     }
   ]
 }

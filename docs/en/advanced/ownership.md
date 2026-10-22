@@ -1,17 +1,21 @@
-# Ownership (Owner) System
+# Ownership (owner) System
 
 > [!TIP]
-> **When to read this**: When troubleshooting resource leaks, understanding the unload/cleanup chain, or declaring owned resources. If not needed, skip this section—it won't affect the use of other features.
+> **When to read this**: When troubleshooting resource leaks, understanding the cleanup chain during unload/disable, or declaring owned resources. Skip if not needed, as it does not affect the use of other features.
 
-Ownership is the foundation of the module's "plug-and-play" capability: all framework resources registered during module loading are automatically named, and are automatically reclaimed when the module is unloaded or disabled—module authors only need to declare resources, without manually writing cleanup logic.
+> **After reading, you will know**: How the owner context automatically assigns resources, the complete overview of owned resources, the full sequence of cleanup chains during unload/disable, and which resources are not cleaned up during unload (design boundaries).
+>
+> **This section does not cover**: Permission checks for "when resources become effective" (see [Scope (scope)](scope.md)); recommended practices and forced cancellation boundaries for background tasks (see [Lifecycle Management · Background Task Ownership and Automatic Cancellation](lifecycle.md#background-task-ownership-and-automatic-cancellation)).
 
-> **Related systems**: Scopes determine whether resources are active during event dispatching, while ownership determines which module owns a resource and who is responsible for reclaiming it during the lifecycle. See [Unified Control Plane (Scope)](scope.md) for scopes, and [Lifecycle Management](lifecycle.md#background-task-ownership-and-automatic-cancellation) for background tasks.
+Ownership is the foundation for modules' "plug-and-play" functionality: all framework resources registered during module loading are automatically named, and are recycled with a single click during unload/disable—module authors only need to declare resources, without manually writing cleanup logic.
+
+> **Related systems**: Scope determines "whether resources are effective" during event dispatching, while ownership determines "who owns the resources and who is recycled during unload" during the lifecycle. Scope is detailed in [Unified Control Plane (scope)](scope.md), and background tasks are covered in [Lifecycle Management](lifecycle.md#background-task-ownership-and-automatic-cancellation).
 
 {!--< tips >!--}
 1. Ownership is automatically recorded at the **moment of registration** based on `current_owner`, requiring zero changes to module code.
-2. Unload and disable share the same cleanup chain (`_cleanup_module_registrations`), where each step failure only generates a warning and does not interrupt the process.
-3. User-configured resources (persistent overrides, scope rules, command ACLs) are **not** cleaned up when the module is unloaded.
-4. External handles managed by utility modules can be attached to the cleanup chain using `on_cleanup(cb)`, which automatically calls back when the dependent module is unloaded (see [Utility Module Guide](#utility-module-guide-handling-handles-of-other-modules)).
+2. Unload and disable share the same cleanup chain (`_cleanup_module_registrations`), where failures at each step only trigger warnings and do not interrupt the process.
+3. Resources with user configuration semantics (persistent overrides / scope rules / command ACL) are **not** cleaned up during module unload.
+4. External handles hosted by utility modules can be attached to the cleanup chain using `on_cleanup(cb)`, which are automatically called back when the corresponding module is unloaded (see [Guide to Utility Modules: Hosting Handles of Other Modules](#guide-to-utility-modules-hosting-handles-of-other-modules)).
 {!--< /tips >!--}
 
 ## Owner Context Mechanism
@@ -148,44 +152,46 @@ Runtime temporary writes (`persist=False`) are reclaimed by owner—**persistenc
 
 ## Internal Implementation: How Ownership Works
 
-The ownership system consists of **two independent chains**. Understanding their division of labor is essential for troubleshooting ownership issues:
+**In one sentence**: The attribution chain (contextvar propagation) determines "whose responsibility it is," while the cancellation chain (task registry) determines "whether it can be canceled upon unloading." — These two chains operate independently, and proper resource cleanup requires both.
 
-### Attribution Chain (contextvar Propagation)
+The ownership system consists of **two independent chains**. Understanding their division of labor is essential for troubleshooting ownership issues.
 
-The `ContextVar`s in `runtime/context.py`, such as `current_owner`, are responsible for **attribution** — "whom does the resource registered or the call initiated by the code at this moment belong to?" The propagation rules follow the semantics of Python's `contextvars`:
+### Attribution Chain (Contextvar Propagation)
 
-| Execution Path | Context Propagated? | Attribution Result |
-|----------------|---------------------|---------------------|
+The `ContextVar`s such as `current_owner` in `runtime/context.py` are responsible for **attribution** — "Whose responsibility is this resource registration or call initiated by the code at this moment?" The propagation follows the semantics of Python's `contextvars`:
+
+| Execution Path | Context Propagated | Attribution Result |
+|----------------|--------------------|--------------------|
 | Synchronous call chain / `await` chain | ✅ Propagated | Correct attribution |
-| `asyncio.create_task` within `owner_scope` | ✅ Propagated (task copies context at creation) | Framework calls **inside** the task are correctly attributed |
+| `asyncio.create_task` within `owner_scope` | ✅ Propagated (task copies the context at creation) | Correct attribution for framework calls within the task |
 | `run_in_executor` / bare thread | ❌ Not propagated | Attribution lost |
 | Custom event loop | ❌ Not propagated | Attribution lost |
 
-> Attribution ≠ Registration: Context propagation only affects "to whom it is attributed." Whether the resource is cleaned up depends on whether it enters the subsequent cancellation chain.
+> Attribution ≠ Registration: Context propagation only affects "whose responsibility it is." Whether a resource can be cleaned up depends on whether it enters the subsequent cancellation chain.
 
 ### Cancellation Chain (Task Registry)
 
-The `_owner_tasks` registry in `runtime/tasks.py` manages **lifecycle** — "which unfinished tasks belong to the owner, and cancel them all together during unload." Tasks enter the registry through:
+The `_owner_tasks` registry in `runtime/tasks.py` manages **lifecycle** — "Which unfinished tasks belong to the owner, and should be canceled together during unloading." Tasks enter the registry through:
 
 1. **Explicit Scheduling**: `spawn_background()` / `self.spawn()` → captures `current_owner` at creation (or explicitly via `owner=` parameter) → registers into the table;
-2. **Task Factory Automatic Registration** (2.8.3): `install_owner_task_factory()` is installed into the main event loop at framework startup — **any** task creation (including `create_task` inside third-party libraries) is processed by the factory, reading `current_owner`; if not None, it registers.
+2. **Task Factory Automatic Registration** (2.8.3): `install_owner_task_factory()` is installed at the main event loop during framework startup — **any** task creation (including `create_task` inside third-party libraries) passing through the factory reads `current_owner`, and registers if it is not None.
 
-Registry self-cleans: Each task includes a `done_callback`, and once completed, it is removed from the table, preventing leaks.
+The registry self-cleans: Each task has a `done_callback`, and is removed from the table upon completion, with no leaks.
 
 ### Cancellation Timing (Module Unload)
 
 ```
 module.unload()
-  → on_unload(event)                    # Module self-cleans (fallback timeout protection)
-  → Framework deregisters commands/events/hooks/routes for this owner
+  → on_unload(event)                    # Module-specific cleanup (fallback timeout protection)
+  → Framework unregisters commands/events/hooks/routes for this owner
   → cancel_owner_tasks(owner)           # Registry fallback cancellation
-      → cancel each task.cancel()       # Excludes the task itself executing cancellation logic
+      → cancel each task individually   # Excludes the task itself executing the cancellation logic
       → await gather(pending, timeout)  # Wait for cleanup (no blocking after timeout)
 ```
 
 ### Troubleshooting Approach
 
-- **Resources not cleaned up** → Check the registry: `get_owner_tasks("MyModule")` whether it contains the task; if not, the registration path did not pass through the ownership chain (import phase / thread / independent loop), refer to the table above for identification.
+- **Resources not cleaned up** → Check the registry: Does `get_owner_tasks("MyModule")` contain the task? If not, the registration path did not pass through the attribution chain (import phase / thread / independent loop), refer to the table above to locate the issue.
 - **Incorrect attribution** → Check the value of `get_current_owner()` at the time of error; for asynchronously delayed execution (callbacks/tasks), attribution is taken from the context at creation, not at execution time.
 
 ## Module Author Guide
@@ -273,3 +279,12 @@ Guaranteed framework behavior:
 | Duplicate Registration | Identical `(owner, callback)` pairs are idempotently deduplicated |
 
 **When Not Needed**: If the module registers framework-level resources (commands, event handlers, routes, background tasks, etc.), the framework automatically cleans them up (see [Resource Ownership Overview](#resource-ownership-overview) above). Only references held in your private container require `on_cleanup`. A quick-reference version from a module developer's perspective is available at [Best Practices · Tool Modules](../developer-guide/modules/best-practices.md#tool-modules-handling-references-to-other-modules-should-catch-unload-notifications).
+
+## Related Documentation
+
+Choose the next step based on your intent:
+
+- **Want to control "whether a resource is active" (permission aspect)** → [Scope](scope.md) — Ownership manages "which resource belongs to whom and who recovers it upon unloading," while scope manages "when the resource becomes active."
+- **Background tasks / timers with fallback cancellation** → [Lifecycle Management · Background Task Ownership and Automatic Cancellation](lifecycle.md#Background-Task-Ownership-and-Automatic-Cancellation)
+- **Isolate gray release using independent owner** → [Shadow Modules and Gray Release Promotion](shadow.md)
+- **Quick reference and recommended writing style from a module development perspective** → [Module Best Practices](../developer-guide/modules/best-practices.md)

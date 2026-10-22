@@ -5,7 +5,7 @@ List-Remote 命令实现
 """
 
 import asyncio
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 from rich.box import SIMPLE
 from rich.table import Table
@@ -37,7 +37,7 @@ class ListRemoteCommand(Command):
         py_exec, _py_source = resolve_target_python()
         self.package_manager = PackageManager(python_executable=py_exec)
 
-    def add_arguments(self, parser: ArgumentParser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--type",
             "-t",
@@ -52,7 +52,7 @@ class ListRemoteCommand(Command):
             help=i18n.t("cli.list_remote.refresh_help"),
         )
 
-    def execute(self, args):
+    def execute(self, args: Namespace) -> None:
         with console.status(
             f"[bold green]{i18n.t('cli.list_remote.fetching')}[/]", spinner="dots"
         ):

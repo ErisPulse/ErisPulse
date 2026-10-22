@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "a0732eca0dead46a89e189a7dfefc96e",
-  "file_hash": "a0732eca0dead46a89e189a7dfefc96e",
-  "translated_at": "2026-09-07T12:05:03.722780",
+  "hash": "23f6dc52b204b5d391eafb39943038a1",
+  "file_hash": "23f6dc52b204b5d391eafb39943038a1",
+  "translated_at": "2026-10-22T12:42:29.263688",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "16cd6820e8899e916287793c4422d2d0",
-      "translation": "# ErisPulse 請求操作規範\n\n本文檔定義了 ErisPulse 適配器中請求事件操作的標準化規範，包括請求事件的欄位要求、Request DSL 的使用方式和適配器實現要求。"
+      "hash": "fab8cee79d502e30d932bb3d40d93d93",
+      "translation": "# ErisPulse 請求操作規範\n\n> [!TIP]\n> **什麼時候需要閱讀本文**：當你的適配器需要處理好友請求/群邀請（轉換請求事件、實現 `accept`/`reject`），或模組中要用 `event.approve()` / `event.reject()` 審批請求時對照本文。不需要則跳過。\n\n本文檔定義了 ErisPulse 適配器中請求事件操作的標準化規範，包括請求事件的欄位要求、Request DSL 的使用方式和適配器實現要求。"
     },
     {
       "hash": "8dce68569368b5053b74c52185f68439",
@@ -38,8 +38,8 @@
       "translation": "## 7. 錯誤碼擴展\n\n請求操作相關的**適配器實現層**推薦錯誤碼（遵循 [API 響應標準](api-response.md) §3.2，  \n落在 `34xxx` 平台錯誤段的低三位自定義）：\n\n| 錯誤碼 | 錯誤名 | 說明 |\n|-------|-------|------|\n| 34001 | Request Not Found | 請求不存在或已過期 |\n| 34002 | Request Already Handled | 請求已被處理 |\n| 34003 | Request Not Supported | 平台不支援該類型的請求操作 |\n| 34004 | Permission Denied | Bot 無權處理此請求（平台回傳） |\n\n> **與框架碼的邊界**：以上 `340xx` 是**平台/適配器**回傳的請求處理失敗；  \n> ErisPulse 框架在 `scope.actions` 禁用某模組的 request 動作時，**在呼叫適配器之前**  \n> 直接回傳 `34601`（Action Denied，見 [API 響應標準 §5.3](api-response.md#53-框架擴展回傳碼34xxx-平台錯誤段的低三位自定義)），  \n> 兩者互不替代：先過 `34601` 框架閘口，再落到平台層 `340xx` 錯誤。"
     },
     {
-      "hash": "5dd220ab998c9401a0447294dd0f699f",
-      "translation": "## 8. 相關文件\n\n- [事件轉換標準](event-conversion.md) - 完整的事件轉換規範\n- [API 回應標準](api-response.md) - 適配器 API 回應格式標準\n- [發送方法規範](send-method-spec.md) - Send 類的方法命名和參數規範\n- [會話類型標準](session-types.md) - 會話類型定義和映射關係"
+      "hash": "efd53668c7659ac598825c64cbdbb86c",
+      "translation": "## 8. 相關文件\n\n**實現請求操作時配套對照**：\n- [事件轉換標準](event-conversion.md) - 完整的事件轉換規範（含 `request_id` 欄位要求）\n- [API 回應標準](api-response.md) - 適配器 API 回應格式標準（操作回傳值與錯誤碼）\n\n**同一適配器的其它 DSL**：\n- [發送方法規範](send-method-spec.md) - Send 類的方法命名和參數規範\n- [會話類型標準](session-types.md) - 會話類型定義和映射關係"
     }
   ]
 }

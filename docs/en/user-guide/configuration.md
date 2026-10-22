@@ -1,11 +1,11 @@
 # Configuration File Guide
 
 > [!NOTE]
-> **L1 Core Reading** — One of the five core documents in the "Reading Path" on the homepage, essential for module development.
+> **L1 Core Required Reading** — One of the five core documents in the "Reading Path" on the homepage, essential for module development.
 
-> This document introduces the framework's configuration file. If a third-party module requires configuration, please refer to the module's documentation.
+> This document covers the framework's own configuration file `config/config.toml`: what each configuration section controls, which ones support hot-reloading, and how to override them with environment variables. For configuration options of third-party modules, please refer to each module's own documentation.
 
-ErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project configurations.
+ErisPulse uses the TOML-format configuration file `config/config.toml` to manage project configuration.
 
 ## Configuration File Location
 
@@ -684,9 +684,8 @@ acl_default_allow = true
 
 > Runtime API (after `from ErisPulse.Core.Event import overrides`, call sub-namespace methods like `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` or access via `sdk.Event.overrides`) is available at [Event Handling Introduction · Event Override](../getting-started/event-handling.md#event-override-no-modify-module-code-overwrite-behavior-of-any-event-type).
 
-## Command Parsing Configuration (event.command)
-
 ## Next Steps
 
-- [CLI Command Reference](cli-reference.md) - Learn all command-line commands
-- [Developer Guide](../developer-guide/) - Learn how to develop custom modules
+- **Continue with the L1 path**: Next up is [Exception Handling](../advanced/errors.md), where you'll learn to write error handling that won't bring down the framework
+- **Don't want to hand-write TOML**: Use the `epsdk config` interactive wizard to fill in declarative configuration options, see [CLI Command Reference · config](cli-reference.md#config)
+- **Don't want to modify config files during deployment**: Override configuration options with environment variables, combined with the Docker usage described in the [Deployment Guide](deployment.md)

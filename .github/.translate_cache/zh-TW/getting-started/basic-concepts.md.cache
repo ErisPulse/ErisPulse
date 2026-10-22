@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "f7920b727895b35257538f65f8a1d0f1",
-  "file_hash": "f7920b727895b35257538f65f8a1d0f1",
-  "translated_at": "2026-09-07T11:26:15.078217",
+  "hash": "5726637d4eb687b01ddde55c3838a8db",
+  "file_hash": "5726637d4eb687b01ddde55c3838a8db",
+  "translated_at": "2026-10-22T12:14:24.535609",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "aa6621885aa7f70d9db9ab7817af113b",
-      "translation": "# 基礎概念\n\n本指南介紹 ErisPulse 的核心概念，幫助你理解框架的設計理念和基本架構。"
+      "hash": "14073a1513d75b3e12d89f77fe122b5b",
+      "translation": "# 基礎概念\n\n> [!NOTE]\n> **L1 核心必讀**——文件首頁「L1 核心五篇」中的第 2 篇（模組開發入門 → **基礎概念** → Event 包裝類 → 配置文件說明 → 異常捕獲）。\n\n一條訊息從使用者發出到機器人回應，中間經過了哪些組件？適配器和模組各自負責什麼？讀完這篇，撰寫處理器時遇到的設計問題你都能自己回答，而不是只能照抄範例。"
     },
     {
       "hash": "ca451be13997e3fb4f97663fac919db6",
@@ -34,8 +34,8 @@
       "translation": "## 慢載系統\n\nErisPulse 預設啟用模組慢載，模組僅在首次被存取時（如 `sdk.MyModule`）才會初始化，顯著提升啟動速度。\n\n```python\nfrom ErisPulse.loaders import ModuleLoadStrategy\n\nclass Main(BaseModule):\n    @staticmethod\n    def get_load_strategy():\n        return ModuleLoadStrategy(\n            lazy_load=True,   # 啟用慢載（預設）\n            priority=0        # 加載優先級，數值越大越先初始化\n        )\n```\n\n**需要停用慢載的場景（`lazy_load=False`）：**\n- 監聽生命週期事件的模組（如 `core.init.complete`）\n- 啟動定時任務或後台服務的模組\n- 需要在其他模組加載前完成初始化的模組\n\n> 詳細的慢載機制和注意事項請參考 [慢載系統](../advanced/lazy-loading.md)。"
     },
     {
-      "hash": "fb3b4a0d008f35baac6c5a453d263597",
-      "translation": "## 下一步\n\n- [事件處理入門](event-handling.md) - 學習如何處理各類事件\n- [常見任務範例](common-tasks.md) - 掌握常用功能的實現"
+      "hash": "549eba23bf23955fea398857efbaaf69",
+      "translation": "## 下一步\n\n- **按 L1 路徑繼續**：下一篇 [Event 包裝類](../developer-guide/modules/event-wrapper.md)，掌握事件物件的全部讀寫方法\n- **想邊寫邊學**：[事件處理入門](event-handling.md) 按事件類型給出可直接複製的處理器寫法；[常見任務示例](common-tasks.md) 覆蓋持久化、定時任務、權限控制等常用功能"
     }
   ]
 }

@@ -28,7 +28,7 @@ ErisPulse 元事件处理模块
 #### 方法列表
 
 
-##### `on_meta(priority: int = 0)`
+##### `on_meta(priority: int = 0) -> Callable`
 
 通用元事件装饰器
 
@@ -61,7 +61,7 @@ ErisPulse 元事件处理模块
 ---
 
 
-##### `on_connect(priority: int = 0)`
+##### `on_connect(priority: int = 0) -> Callable`
 
 连接事件装饰器
 
@@ -83,7 +83,7 @@ ErisPulse 元事件处理模块
 ---
 
 
-##### `on_disconnect(priority: int = 0)`
+##### `on_disconnect(priority: int = 0) -> Callable`
 
 断开连接事件装饰器
 
@@ -105,7 +105,7 @@ ErisPulse 元事件处理模块
 ---
 
 
-##### `on_heartbeat(priority: int = 0)`
+##### `on_heartbeat(priority: int = 0) -> Callable`
 
 心跳事件装饰器
 
