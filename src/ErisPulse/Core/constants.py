@@ -142,11 +142,21 @@ CONFIG_WRITE_DELAY_SECS: Final[int] = 5
 # 修改影响: watcher 发现脏键仍在（刷盘失败被吞异常保留）时按此间隔补写；调小重试更频繁。
 CONFIG_WRITE_RETRY_DELAY_SECS: Final[float] = 1.0
 
-# 多实例检测锁文件名（位于配置文件同级目录，进程独占持有，退出由 OS 自动释放）。
+# 运行状态目录名（项目根下）：存放机器本地运行状态——配置目录实例锁、CLI
+# 运行状态文件（runtime.json）等；不入版本库（项目模板 .gitignore 忽略本目录）。
+# 使用位置: Core/config.py（实例锁路径推导）、CLI/commands/run.py（runtime.json）。
+RUNTIME_STATE_DIR_NAME: Final[str] = ".erispulse"
+
+# 多实例检测锁文件名（位于 RUNTIME_STATE_DIR_NAME 目录下，进程独占持有，
+# 退出由 OS 自动释放）。
 # 使用位置: Core/config.py -> ConfigManager._acquire_instance_lock()
-# 修改影响: 检测"多个 ErisPulse 实例共享同一配置目录"所用的锁文件路径。
-# 变更后旧版本实例不再能被新版本检测到（跨版本互检失效）。
-CONFIG_LOCK_FILE_NAME: Final[str] = ".erispulse_config.lock"
+# 修改影响: 检测"多个 ErisPulse 实例共享同一配置目录"所用的锁文件路径——
+#           路径由配置文件父目录的上一级（项目根）+ RUNTIME_STATE_DIR_NAME
+#           推导，两个实例须解析到同一路径才能互相检测。
+#           变更后旧版本实例不再能被新版本检测到（跨版本互检失效）。
+#           2.10 及以前位于 config/ 目录（.erispulse_config.lock），升级后
+#           由框架自动清除残留。
+CONFIG_LOCK_FILE_NAME: Final[str] = "config.lock"
 
 # ==============================================================================
 # 日志系统
@@ -410,6 +420,7 @@ DEFAULT_EVENT_SOURCE: Final[str] = "ErisPulse"
 #           改名只需动这里，但仍需同步文档（advanced/lifecycle.md）。
 EVENT_CORE_INIT_STAGE: Final[str] = "core.init.stage"
 EVENT_MODULE_RELOAD: Final[str] = "module.reload"
+EVENT_ADAPTER_RELOAD: Final[str] = "adapter.reload"
 EVENT_STORAGE_READY: Final[str] = "storage.ready"
 EVENT_STORAGE_UNREACHABLE: Final[str] = "storage.unreachable"
 EVENT_STORAGE_RECOVERED: Final[str] = "storage.recovered"
@@ -1150,6 +1161,27 @@ MODULE_SOURCE_PLUGIN_FOLDER: Final[str] = "plugin_folder"
 # 修改影响: 必须与 plugin_folder.py 写入的 source 值保持一致。
 ADAPTER_SOURCE_PLUGIN_FOLDER: Final[str] = "adapter_plugin_folder"
 
+# 模块注册来源标识：运行时注册（代码内 sdk.module.register()，无 entry-point
+# 与插件目录来源）。
+# 使用位置: Core/module.py（register() 为未携带 info 的模块合成 meta.source）
+# 与 loaders/module.py（reload_module 三路分派：plugin_folder / runtime /
+# PyPI entry-point；runtime 路径按定义模块重导 + 按类名重取）。
+# 修改影响: 必须与 Core/module.py register() 写入的 source 值保持一致。
+MODULE_SOURCE_RUNTIME: Final[str] = "runtime"
+
+# 模块热重载语法预检的源文件数上限。
+# 使用位置: loaders/module.py（reload 在卸载前对目标源码树逐文件 ast.parse
+# 预检；超过上限的包跳过预检并记 debug，避免大型依赖树拖慢重载）。
+# 修改影响: 设大扩大预检覆盖面（重载变慢），设小加速重载（大包跳过预检）。
+MODULE_RELOAD_PRECHECK_MAX_FILES: Final[int] = 500
+
+# 懒加载休眠清扫器的扫描间隔（秒）。
+# 使用位置: Core/module.py（_dormancy_sweep_loop 循环间隔；清扫器仅在存在
+# dormant_after 声明的模块时启动）。
+# 修改影响: 设小休眠判定更及时（空转开销略增），设大更省但归眠延迟增大
+# （实际归眠时点 = 阈值 + 最多一个扫描间隔）。
+MODULE_DORMANCY_SWEEP_INTERVAL_SECS: Final[float] = 60.0
+
 # ==============================================================================
 # 进程 / 版本 / 日志展示常量
 #
@@ -1170,6 +1202,12 @@ ENV_SUPERVISED: Final[str] = "ERISPULSE_SUPERVISED"
 # 版本元数据缺失时的回退字符串。
 # 使用位置: sdk.py / ErisPulse/__init__.py / Core/router.py 的版本探测兜底。
 UNKNOWN_VERSION: Final[str] = "UnknownVersion"
+
+# AsyncBridge 桥接线程停止时的 join 等待上限（秒）。
+# 使用位置: Core/Bases/storage.py 的 AsyncBridge 停止路径（stop 信号发出后等
+# 线程退出）；超时未退不阻塞调用方，线程随进程收尾。
+# 修改影响: 调小会放大"桥接线程未及退出"窗口，调大会拖慢存储关闭。
+STORAGE_BRIDGE_JOIN_TIMEOUT_SECS: Final[float] = 5.0
 
 # 日志中消息内容截断阈值（字符数）。
 # 使用位置: Core/adapter.py（接收日志）与 Core/Bases/adapter.py（发送日志）。
@@ -1271,6 +1309,7 @@ __all__ = [
     "CONFIG_ROOT_KEY",
     "CONFIG_WRITE_DELAY_SECS",
     "CONFIG_WRITE_RETRY_DELAY_SECS",
+    "RUNTIME_STATE_DIR_NAME",
     "CONFIRM_HINT_WORDS",
     "CONFIRM_NO_WORDS",
     "CONFIRM_YES_WORDS",
@@ -1298,6 +1337,7 @@ __all__ = [
     "EVENT_CONNECTION_UNREGISTERED",
     "EVENT_CORE_INIT_STAGE",
     "EVENT_I18N_LANGUAGE_CHANGED",
+    "EVENT_ADAPTER_RELOAD",
     "EVENT_MODULE_RELOAD",
     "EVENT_STORAGE_READY",
     "EVENT_STORAGE_RECOVERED",
@@ -1411,7 +1451,10 @@ __all__ = [
     "LOG_MESSAGE_TRUNCATE_CHARS",
     "LOG_RICH_THEME",
     "LOG_TIME_FORMAT",
+    "MODULE_DORMANCY_SWEEP_INTERVAL_SECS",
+    "MODULE_RELOAD_PRECHECK_MAX_FILES",
     "MODULE_SOURCE_PLUGIN_FOLDER",
+    "MODULE_SOURCE_RUNTIME",
     "RETCODE_NOT_IMPLEMENTED",
     "RETCODE_OK",
     "RETCODE_PERMISSION_DENIED",
@@ -1427,6 +1470,7 @@ __all__ = [
     "UNINIT_SETTLE_DELAY_SECS",
     "UNKNOWN_PLATFORM",
     "UNKNOWN_VERSION",
+    "STORAGE_BRIDGE_JOIN_TIMEOUT_SECS",
     "UVICORN_COMPAT_RANGE",
     "WILDCARD_IPV4",
     "WILDCARD_IPV6",

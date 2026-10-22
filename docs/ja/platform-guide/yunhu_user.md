@@ -6,8 +6,8 @@ YunhuUserAdapter は、雲湖ユーザーアカウントプロトコルに基づ
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.2.0
-- 維持管理者: wsu2059
+- 対応モジュールバージョン: 4.4.0
+- メンテナー: wsu2059
 
 ## 基本情報
 
@@ -97,7 +97,8 @@ await yunhu_user.Api.delete_message(msg_id, chat_id, chat_type)  # メッセー�
 
 ## 支援されるメッセージ送信タイプ
 
-すべての送信メソッドはチェーン構文で実装されています。例：
+すべての送信メソッドは、チェーン式の構文で実装されています。たとえば：
+
 ```python
 from ErisPulse.Core import adapter
 yunhu_user = adapter.get("yunhu_user")
@@ -105,32 +106,33 @@ yunhu_user = adapter.get("yunhu_user")
 await yunhu_user.Send.To("user", user_id).Text("Hello World!")
 ```
 
-サポートされる送信タイプは以下の通りです：
-- `.Text(text: str, buttons: Optional[List] = None)`：テキストメッセージを送信します。
+サポートされている送信タイプは以下の通りです：
+- `.Text(text: str, buttons: Optional[List] = None)`：純粋なテキストメッセージを送信します。
 - `.Html(html: str, buttons: Optional[List] = None)`：HTML形式のメッセージを送信します。
 - `.Markdown(markdown: str, buttons: Optional[List] = None)`：Markdown形式のメッセージを送信します。
-- `.Image(file: Union[str, bytes], buttons: Optional[List] = None)`：画像メッセージを送信します。URL、ローカルパスまたはバイナリデータをサポートします。
-- `.Video(file: Union[str, bytes], buttons: Optional[List] = None)`：動画メッセージを送信します。URL、ローカルパスまたはバイナリデータをサポートします。
-- `.Audio(file: Union[str, bytes], buttons: Optional[List] = None)`：音声メッセージを送信します。URL、ローカルパスまたはバイナリデータをサポートし、音声の長さを自動検出します。
-- `.Voice(file: Union[str, bytes], buttons: Optional[List] = None)`：`.Audio()` の別名です。
-- `.File(file: Union[str, bytes], file_name: Optional[str] = None, buttons: Optional[List] = None)`：ファイルメッセージを送信します。URL、ローカルパスまたはバイナリデータをサポートします。
-- `.Face(file: Union[str, bytes], buttons: Optional[List] = None)`：絵文字/ステッカーメッセージを送信します。ステッカーID、ステッカーURLまたはバイナリ画像データをサポートします。
-- `.A2ui(a2ui_data: Union[str, Dict, List], buttons: Optional[List] = None)`：A2UIメッセージ（メッセージタイプ14）を送信します。A2UI JSONデータはtextフィールドに埋め込まれて送信されます。
+- `.MergeForward(nodes, title="合併チャット記録")`：合併転送メッセージを送信します（`<details>`折りたたみHTMLカードとしてレンダリングされ、msg_type=8 HTMLチャネル経由で送信されます）。
+- `.Image(file: Union[str, bytes], buttons: Optional[List] = None)`：画像メッセージを送信します。URL、ローカルパス、またはバイナリデータをサポートします。
+- `.Video(file: Union[str, bytes], buttons: Optional[List] = None)`：動画メッセージを送信します。URL、ローカルパス、またはバイナリデータをサポートします。
+- `.Audio(file: Union[str, bytes], buttons: Optional[List] = None)`：音声メッセージを送信します。URL、ローカルパス、またはバイナリデータをサポートし、音声長を自動検出します。
+- `.Voice(file: Union[str, bytes], buttons: Optional[List] = None)`：`.Audio()`の別名です。
+- `.File(file: Union[str, bytes], file_name: Optional[str] = None, buttons: Optional[List] = None)`：ファイルメッセージを送信します。URL、ローカルパス、またはバイナリデータをサポートします。
+- `.Face(file: Union[str, bytes], buttons: Optional[List] = None)`：絵文字/ステッカーのメッセージを送信します。ステッカーID、ステッカーURL、またはバイナリ画像データをサポートします。
+- `.A2ui(a2ui_data: Union[str, Dict, List], buttons: Optional[List] = None)`：A2UIメッセージを送信します（メッセージタイプ14）。A2UI JSONデータはtextフィールドに埋め込まれて送信されます。
 - `.Edit(msg_id: str, text: str, content_type: str = "text")`：既存のメッセージを編集します。
 - `.Recall(msg_id: str)`：メッセージを撤回します。
 - `.Raw_ob12(message: Union[List, Dict])`：OneBot12形式のメッセージを送信します。
 
 ### メディアファイル処理
 
-すべてのメディアタイプ（画像、動画、音声、ファイル）は以下の入力方法をサポートしています：
-- **URL**：`"https://example.com/image.jpg"` — 自動的にダウンロードしてアップロード
-- **ローカルパス**：`"/path/to/file.jpg"` — 自動的に読み込んでアップロード
-- **バイナリデータ**：`open("file.jpg", "rb").read()` — 直接アップロード
+すべてのメディアタイプ（画像、動画、音声、ファイル）は以下の入力方法をサポートします：
+- **URL**：`"https://example.com/image.jpg"` — 自動的にダウンロードしてアップロードします
+- **ローカルパス**：`"/path/to/file.jpg"` — 自動的に読み取ってアップロードします
+- **バイナリデータ**：`open("file.jpg", "rb").read()` — 直接アップロードします
 
-メディアファイルは自動的に七牛雲ストレージにアップロードされ、以下の特徴をサポートします：
-- 自動的に `filetype` ライブラリを使ってファイルタイプとMIMEを検出します
+メディアファイルは、七牛雲ストレージに自動的にアップロードされ、以下の機能をサポートします：
+- 自動的に `filetype` ライブラリを介してファイルタイプとMIMEを検出します
 - 自動的にファイルサイズを計算します
-- 音声ファイルはMP3、MP4/M4A形式を自動的に検出します
+- 音声ファイルは、MP3、MP4/M4A形式をサポートして自動的に長さを検出します
 
 ### ボタンパラメータの説明
 
@@ -138,35 +140,35 @@ await yunhu_user.Send.To("user", user_id).Text("Hello World!")
 
 | フィールド         | タイプ   | 必須 | 説明                                                                 |
 |--------------|--------|----------|----------------------------------------------------------------------|
-| `text`       | string | 是       | ボタン上の文字                                                         |
-| `actionType` | int    | 是       | アクションタイプ：<br>`1`: URLにジャンプ<br>`2`: コピー<br>`3`: クリック報告            |
-| `url`        | string | 否       | `actionType=1` の場合、ジャンプ先のURLとして使用されます                         |
-| `value`      | string | 否       | `actionType=2` の場合、この値がクリップボードにコピーされます<br>`actionType=3` の場合、この値がサブスクライバに送信されます |
+| `text`       | string | はい       | ボタン上の文字                                                         |
+| `actionType` | int    | はい       | 動作タイプ：<br>`1`: URLに移動<br>`2`: コピー<br>`3`: クリック報告            |
+| `url`        | string | いいえ       | `actionType=1` の場合、移動先のURLを示します                         |
+| `value`      | string | いいえ       | `actionType=2` の場合、この値がクリップボードにコピーされます<br>`actionType=3` の場合、この値がサブスクライバに送信されます |
 
 例：
 ```python
 buttons = [
     [
         {"text": "コピー", "actionType": 2, "value": "xxxx"},
-        {"text": "クリックしてジャンプ", "actionType": 1, "url": "http://www.baidu.com"},
-        {"text": "イベントを報告", "actionType": 3, "value": "xxxxx"}
+        {"text": "クリックで移動", "actionType": 1, "url": "http://www.baidu.com"},
+        {"text": "イベント報告", "actionType": 3, "value": "xxxxx"}
     ]
 ]
 await yunhu_user.Send.To("user", user_id).Buttons(buttons).Text("ボタン付きメッセージ")
 ```
 
-### チェーン修飾メソッド（組み合わせて使用可能）
+### チェーン式修飾メソッド（組み合わせ可能）
 
-チェーン修飾メソッドは `self` を返すため、チェーンで呼び出すことができます。最終的な送信メソッドの前に呼び出す必要があります：
+チェーン式修飾メソッドは `self` を返し、チェーン呼び出しをサポートし、最終的な送信メソッドの前に呼び出す必要があります：
 
 - `.Reply(message_id: str)`：指定されたメッセージに返信します。
-- `.At(user_id: str)`：指定されたユーザーを@します（テキスト形式の@user_id）。
-- `.AtAll()`：全員を@します（偽@全員、@allテキストを送信）。
+- `.At(user_id: str)`：指定されたユーザーを@します（テキスト形式 @user_id）。
+- `.AtAll()`：全員を@します（偽@全員、@allテキストを送信します）。
 - `.Buttons(buttons: List)`：ボタンを追加します。
 
-> **注意：** ユーザーアカウントは特殊であるため、管理者でなくても全員を@できますが、この `AtAll()` は単に全員を@するテキストを送信するだけです。これは偽@全員です。
+> **注意：** ユーザーアカウントは特殊なため、管理者でなくても全員を@できますが、この `AtAll()` は全員を@するテキストを送信するだけで、偽@全員です。
 
-### チェーン呼び出しの例
+### チェーン式呼び出しの例
 
 ```python
 # 基本的な送信
@@ -179,12 +181,12 @@ await yunhu_user.Send.To("group", group_id).Reply(msg_id).Text("返信メッセ�
 await yunhu_user.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("返信とボタン付きメッセージ")
 
 # 指定アカウント + 返信 + ボタン
-await yunhu_user.Send.Using("default").To("group", group_id).Reply(msg_id).Buttons(buttons).Text("完全なチェーン呼び出し")
+await yunhu_user.Send.Using("default").To("group", group_id).Reply(msg_id).Buttons(buttons).Text("完全なチェーン式呼び出し")
 ```
 
 ### OneBot12メッセージのサポート
 
-アダプターはOneBot12形式のメッセージを送信することができ、クロスプラットフォームのメッセージ互換性を確保します：
+アダプタはOneBot12形式のメッセージを送信する機能をサポートしており、プラットフォーム間のメッセージ互換性を確保します：
 
 - `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します。
 
@@ -193,15 +195,15 @@ await yunhu_user.Send.Using("default").To("group", group_id).Reply(msg_id).Butto
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await yunhu_user.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# チェーン修飾と組み合わせて使用
+# チェーン式修飾との組み合わせ
 ob12_msg = [{"type": "text", "data": {"text": "返信メッセージ"}}]
 await yunhu_user.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 ```
 
-Raw_ob12は、混合メッセージセグメントを自動的に処理します：
-- `text`、`mention` などのタイプはグループにまとめられます
+Raw_ob12は、混合メッセージセグメントをグループ化して処理します：
+- `text`、`mention` タイプは1グループにまとめられます
 - `image`、`video`、`audio`、`file`、`face`、`markdown`、`html`、`a2ui` などのタイプはそれぞれ独立したグループになります
-- `reply` などのタイプは、どのグループにも追加できます
+- `reply` タイプはどのグループにも追加できます
 
 ## 送信メソッドの戻り値
 

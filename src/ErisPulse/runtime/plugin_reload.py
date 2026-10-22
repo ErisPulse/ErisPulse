@@ -33,7 +33,7 @@ class _PluginChangeHandler(FileSystemEventHandler):
         self._last_trigger = 0.0
         self._debounce = 1.0
 
-    def on_modified(self, event):
+    def on_modified(self, event) -> None:
         """文件修改回调：去抖后调度重载"""
         now = time.monotonic()
         if now - self._last_trigger < self._debounce:

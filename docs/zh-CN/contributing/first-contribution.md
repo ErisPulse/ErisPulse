@@ -1,5 +1,8 @@
 # 首次贡献实战
 
+> [!TIP]
+> **什么时候需要读这篇**：准备提交你的第一个 Pull Request 时——从 fork 到合并的每一步都有可直接复制的命令。已有 PR 经验、只想查仓库规范，直接看 [CONTRIBUTING.md](../../../CONTRIBUTING.md)。
+
 > 第一次提 PR 难免会有些不确定，这很正常。这篇教程把整个过程拆成了几个小步骤，跟着走就行。中间遇到任何问题都可以在 Issue 或 Discussions 里问——没有人会因为你的问题「太基础」而说什么，大家更在意的是你在往前走。
 
 本文用「补一个 i18n 翻译键」当例子，因为它改动最小、最容易跑通。不过同样的流程，对其他类型的贡献也适用。
@@ -78,11 +81,11 @@ git checkout -b docs/add-hello-translation
 
 ```bash
 uv run ruff check .            # 代码风格检查
-uv run basedpyright src/ErisPulse   # 类型检查（改了源码才需要） - 你可能遇到几百个warning（不用在意忽略就行...嘻..嘻嘻）
+uv run basedpyright src/ErisPulse   # 类型检查（改了源码才需要）
 uv run pytest -m unit -q       # 跑测试
 ```
 
-三条都过就行。类型检查里那些 `reportAny` / `Unknown*` 警告属于「类型还在逐步完善」，不会卡住合并。
+三条都过就行。类型检查可能报出一些 `reportAny` / `Unknown*` 类 warning（类型标注还在逐步完善），这些**不阻断合并**，不用逐个消灭；但真实类型错误（比如返回类型和注解对不上、参数类型不兼容、对可能为 `None` 的值取属性）会被提级为 error，CI 会拦下来——这种就得修了。
 
 > 如果动了核心模块（Bases / runtime / config / loaders），建议顺手补个对应的测试用例，方便后续维护。
 
@@ -149,3 +152,15 @@ epsdk create    # 选择 module 或 adapter
 
 **能直接提到 `main` 吗？**
 不行，所有改动都走 `Develop/v2`，再由维护者统一发布到 `main`。
+
+## 下一步
+
+### 想持续参与
+
+- [为 ErisPulse 贡献](README.md) - 文档 / 翻译 / Bug / 模块 / 适配器等全部贡献方式
+
+### 想开发模块或适配器
+
+- [模块开发入门](../developer-guide/modules/getting-started.md)
+- [适配器开发入门](../developer-guide/adapters/getting-started.md)
+- [发布与模块商店指南](../developer-guide/publishing.md)

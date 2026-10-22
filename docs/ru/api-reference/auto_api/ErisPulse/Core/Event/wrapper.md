@@ -136,7 +136,7 @@ def ai_chat(self, prompt):
 ---
 
 
-### `async _builtin_wait_reply(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None, cmdpass: bool | None = None) -> Optional['Event']`
+### `async _builtin_wait_reply(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None, cmdpass: bool | None = None, session: bool = False) -> Optional['Event']`
 
 内置 wait_reply 实现
 
@@ -903,7 +903,7 @@ await event.reply_ob12(
 ---
 
 
-##### `send_chain()`
+##### `send_chain() -> Any`
 
 获取已配置好目标和发送账号的发送链
 
@@ -975,7 +975,7 @@ methods = event.available_methods()
 ---
 
 
-##### `async wait_reply(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None, cmdpass: bool | None = None) -> Optional['Event']`
+##### `async wait_reply(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None, cmdpass: bool | None = None, session: bool = False) -> Optional['Event']`
 
 等待用户回复
 
@@ -990,6 +990,8 @@ methods = event.available_methods()
 
     等待期间命中已注册命令的消息（如 /cancel）放行给命令分发器执行，
     等待继续挂起；True=跳过命令匹配，等待期间消息一律作为回复消费）
+- **session**: 会话级等待——同会话任何人可命中（忽略 user 维度）
+
 **返回值**: 用户回复的事件数据，如果超时则返回None
 
 **示例**:
@@ -1429,7 +1431,7 @@ async with event.message_tx():
 ---
 
 
-##### `mark_processed(claim: bool = True, stop: bool = True)`
+##### `mark_processed(claim: bool = True, stop: bool = True) -> None`
 
 标记事件为已处理
 
@@ -1463,7 +1465,7 @@ event.mark_processed(claim=False) # 仅阻断，不标记已处理
 ---
 
 
-##### `done(claim: bool = True, stop: bool = True)`
+##### `done(claim: bool = True, stop: bool = True) -> None`
 
 标记事件完成（:meth:`mark_processed` 的别名）
 

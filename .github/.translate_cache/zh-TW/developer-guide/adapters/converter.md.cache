@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "c2b5d068ffbc2848eeee805b99e02ff9",
-  "file_hash": "c2b5d068ffbc2848eeee805b99e02ff9",
-  "translated_at": "2026-10-14T03:15:22.151880",
+  "hash": "4f1868501be47a13b9a64cb3fa6fcfee",
+  "file_hash": "4f1868501be47a13b9a64cb3fa6fcfee",
+  "translated_at": "2026-10-22T11:04:30.626250",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "b7e3ab73f17ae5e32ef30e02f4065438",
-      "translation": "# 事件轉換器實現指南\n\n> [!TIP]\n> **什麼時候需要閱讀這篇**：適配器開發路徑內必讀（事件轉換器）。不需要則跳過，不會影響其他功能的使用。\n\n事件轉換器 (Converter) 是適配器的核心組件之一，負責將平台原生事件轉換為 ErisPulse 統一的 OneBot12 標準事件格式。"
+      "hash": "a46d9d30acc5da93fb416cbaf948d24f",
+      "translation": "# 事件轉換器實現指南\n\n> [!TIP]\n> **什麼時候需要閱讀這篇**：在開發適配器時必讀（事件轉換器）。不需要則可跳過，不會影響其他功能的使用。\n\n當適配器收到平台原生事件後，由事件轉換器 (Converter) 將其轉換為 ErisPulse 統一的 OneBot12 標準格式——平台事件如何進入框架，就由這一個類來決定。"
     },
     {
       "hash": "9378718b4e9cea27747fab845b30a03a",
@@ -50,8 +50,8 @@
       "translation": "## 最佳實踐\n\n1. **始終保留原始資料**：`{platform}_raw` 欄位不能省略\n2. **使用標準訊息段**：盡量將平台訊息轉換為 OneBot12 標準訊息段\n3. **合理設定 detail_type**：使用標準類型（`private`/`group`/`channel` 等），不要自訂\n4. **處理邊界情況**：原始事件可能缺少某些欄位，使用 `.get()` 並提供合理的預設值\n5. **效能考量**：`convert()` 在每個事件上被呼叫，避免在其中執行耗時操作"
     },
     {
-      "hash": "974f7625dfa73d0e91af91b5f73b7dae",
-      "translation": "## 相關文件\n\n- [適配器核心概念](core-concepts.md) - 適配器整體架構\n- [SendDSL 詳解](send-dsl.md) - 反向轉換（發送方向）\n- [事件轉換標準](../../standards/event-conversion.md) - 正式的事件轉換規範\n- [會話類型系統](../../standards/session-types.md) - 會話類型映射規則"
+      "hash": "350adff7128a5bb8b93f1e437b0a934b",
+      "translation": "## 相關文件\n\n### 繼續適配器開發路徑\n\n- [適配器核心概念](core-concepts.md) - 適配器整體架構\n- [SendDSL 詳解](send-dsl.md) - 反向轉換（發送方向）\n\n### 遵循正式規範\n\n- [事件轉換標準](../../standards/event-conversion.md) - 正式的事件轉換規範\n- [會話類型系統](../../standards/session-types.md) - 會話類型映射規則"
     }
   ]
 }

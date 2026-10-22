@@ -1,24 +1,32 @@
-# 互動對話系統
+# 互動會話系統
 
 > [!TIP]
-> **什麼時候需要閱讀這篇**：需要 `wait_reply`、多輪對話、定時提醒、會話互斥或鏈路追蹤時。不需要則跳過，不會影響其他功能的使用。
+> **何時需要閱讀本文**：需要使用 `wait_reply`、多輪對話、定時提醒、會話互斥或鏈路追蹤時。若不需要則可跳過，這不會影響其他功能的使用。
+
+> **閱讀本文後你將了解**：`wait_reply` 的完整參數用法與取消原因、`.got()` 聲明式多輪鏈、
+> 會話定時器（remind / escalate）、多路等待（expect / select）與會話互斥租約。
+>
+> **本文未涵蓋**：多輪對話的分支狀態機與重啟恢復（請見[Conversation 多輪對話](conversation.md)）；
+> 收件箱保留策略旋鈕與執行時覆蓋（請見[會話收件箱](transcript.md)）。
 
 > [!NOTE]
 > 本章內容需要 ErisPulse **2.8.0+**。
 
-ErisPulse 將「與使用者的持續互動」做成了框架級基礎設施：從一條 `wait_reply`，
+ErisPulse 將「與使用者的持續互動」建構為框架級基礎設施：從一條 `wait_reply`，
 到定時提醒、多路等待、會話互斥、重啟恢復，全部由統一的
-**互動對話管理器**（`Core/Event/interaction.py`，`sdk.interaction`）調度。
+**互動會話管理器**（`Core/Event/interaction.py`，`sdk.interaction`）調度。
 
 {!--< tips >!--}
 本文涵蓋的每一項能力都附帶**歸屬（owner）**：互動等待、租約、定時器全部記錄
-註冊時的模組名，模組卸載 / 適配器關閉時由框架自動清理，等待方立即得到通知
-而非干等超時——這是歸屬權系統在互動維度的延伸（見 [歸屬權系統](ownership.md)）。
+註冊時的模組名，模組卸載 / 适配器關閉時由框架自動清理，等待方立即得到通知
+而非干等超時——這是歸屬權系統在互動維度的延伸（請見 [歸屬權系統](ownership.md)）。
 {!--< /tips >!--}
 
 ## 等待回覆：wait_reply
 
-`wait_reply` 是互動會話的基石——掛起當前協程，等待目標使用者在下一條訊息中「回覆」。
+**簡介**：掛起當前協程，等待目標用戶的下一個消息，命中則返回回覆事件，超時或被取消則返回 `None`，`pattern` / `regex` / `validator` 可過濾不合格的回覆。
+
+`wait_reply` 是交互會話的基石——掛起當前協程，等待目標用戶在下一個消息中「回覆」。
 
 ```python
 from ErisPulse.Core.Event import command
@@ -34,14 +42,14 @@ async def ask_command(event):
 
 ### 全參數一覽
 
-| 參數 | 說明 | 預設 |
+| 參數 | 說明 | 預設值 |
 |------|------|------|
 | `prompt` | 掛起前發送的提示訊息 | None |
 | `timeout` | 等待超時（秒） | 60 |
-| `pattern` | glob 過濾（`*` / `?` / `[seq]`），不匹配繼續等待 | None |
-| `regex` | 正則過濾（與 pattern 同時給定時須都匹配），不匹配繼續等待 | None |
-| `validator` | 校驗函數（接收 Event，返回 bool），失敗繼續等待 | None |
-| `callback` | 收到回覆時的回調（替代回傳值式的另一種寫法） | None |
+| `pattern` | glob 過濾（`*` / `?` / `[seq]`），不匹配則繼續等待 | None |
+| `regex` | 正則過濾（與 pattern 同時設定時須都匹配），不匹配則繼續等待 | None |
+| `validator` | 校驗函數（接收 Event，返回 bool），失敗則繼續等待 | None |
+| `callback` | 收到回覆時的回調（替代回傳值式的一種寫法） | None |
 | `method` | prompt 的發送方法 | "Text" |
 | `session` | **會話級等待**：同會話（群 / 頻道）中任何人的回覆均可命中 | False |
 
@@ -57,10 +65,10 @@ reply = await event.wait_reply(session=True, prompt="哪位大神幫忙答一下
 
 等待期間收到**已註冊命令**（如 `/cancel`）的訊息時，預設放行給命令分發器執行、
 不作為回覆消費（設定項 `ErisPulse.event.wait_reply.cmdpass`，`True` 則反轉——
-訊息一律作為回覆）。判定文字口徑與命令分發一致：`alt_message` 优先、
+訊息一律作為回覆）。判定文字口徑與命令分發一致：`alt_message` 優先、
 缺失時回退訊息段拼接（2.10.1 起純 message 段適配器同樣生效）。
 
-### 等待什麼時候會被取消
+### 等待何時會被取消
 
 等待不再是「只能等超時」——以下情況會讓等待**立即終止**（`wait_reply` 返回 `None`），
 而不是讓呼叫方一直等到超時：
@@ -70,7 +78,7 @@ reply = await event.wait_reply(session=True, prompt="哪位大神幫忙答一下
 | 歸屬模組被卸載 / 禁用 | `owner_unload` | 歸屬清理：誰註冊的等待，誰消失時一併回收 |
 | 適配器關閉 / 重啟 | `platform_stop` | 該平台掛起的等待全部取消 |
 | 同會話被新的等待 / 租約取代 | `conflict` | 見下方「會話仲裁」 |
-| 回覆者被拉黑 / owner 模組被解綁 | `revoked` | 回覆命中的**權限複查**：scope 身份維度 + 模組維度 |
+| 回覆者被拉黑 / owner 模組被解綁 | `revoked` | 回覆命中的**權限复查**：scope 身份維度 + 模組維度 |
 | 用戶回覆命中 | —— | 正常路徑，返回回覆事件 |
 
 底層異常為 `InteractionCancelled`（掛在 `InteractionError` 異常體系下），
@@ -79,21 +87,66 @@ reply = await event.wait_reply(session=True, prompt="哪位大神幫忙答一下
 
 ### 回覆命中的完整判定鏈
 
-一條回覆訊息到達時，互動管理器按以下順序判定（在命令匹配**之前**執行，
+一條回覆訊息到達時，交互管理器按以下順序判定（在命令匹配**之前**執行，
 對話連續性優先——即使訊息已被其他高優先級處理器認領，掛起的對話也能完成）：
 
 ```
 會話鍵命中（精確 user 維度 → 會話級回退）
-  → pattern / regex 文本過濾（不匹配繼續等）
-  → validator 校驗（失敗繼續等）
-  → 權限複查（scope 身份維度 + owner 模組維度，失敗則終止等待）
+  → pattern / regex 文本過濾（不匹配則繼續等）
+  → validator 校驗（失敗則繼續等）
+  → 權限复查（scope 身份維度 + owner 模組維度，失敗則終止等待）
   → 喚醒等待方 + 認領事件（mark_processed）
 ```
 
+## 聲明式多輪：`.got()` 鏈（2.11+）
+
+`@command` 返回**多輪流控代理**，用 `.got()` 逐步聲明收集步驟——步驟函數按
+參數名接收已收集的值（含命令入口參數），類型跟隨 `type=` / 注解自動解析。
+底層編譯到 Conversation：每步一個分支、跳轉自動保存檢查點，**重啟後使用者
+回覆會從存檔步驟繼續**（恢復工廠在裝飾期自動註冊，隨模組卸載自動註銷）。
+
+```python
+@command("weather")
+async def weather(event):
+    pass  # 入口：首個 .got 的 prompt 會自動發送，無需手動提問
+
+@weather.got("city", prompt="請直接回覆城市名")
+async def weather_city(event, city: str):
+    await event.reply(f"{city}：晴，25℃")
+
+@weather.got("days", prompt="預報幾天？", type=int, retry_prompt="請輸入數字")
+async def weather_days(event, city: str, days: int):
+    await event.reply(f"{city} 未來 {days} 天……")
+```
+
+### 參數說明
+
+| 參數 | 說明 |
+|------|------|
+| `name` | 收集值名稱（注入後續步驟函數的參數名；流程內唯一，重複聲明註冊期報錯） |
+| `prompt` | 進入該步驟時自動發送的提問 |
+| `timeout` | 單步等待超時（秒數或 `"90s"` / `"1h30m"` 時長串，預設 60s） |
+| `type` | 值類型（`int` / `float` / `str`…；解析失敗自動重發 `retry_prompt`，最多 `max_retries` 次） |
+| `validator` / `pattern` / `regex` | 回覆過濾與校驗（語義與 [`wait_reply`](#等待回覆wait_reply) 一致） |
+| `session` | 會話級等待（同會話任何人可命中） |
+| `cmdpass` | 命令放行三態（預設 `/cancel` 等命令在等待期間照常執行） |
+
+### 語義與邊界
+
+- **任一步超時 / 被打斷 → 整條流程結束**並清除檢查點（與 `wait_reply` 語義一致）；
+  步驟函數內可隨時 `event.reply(...)` 輸出中間結果
+- **同一使用者同時只能有一條掛起互動**——第二個流程的等待會頂掉前一個
+  （`InteractionCancelled("conflict")`）；需要互斥提示請配合
+  [會話租約](#會話互斥acquire--hold--get_owner_of)
+- 收集值僅存在於流程內；需要跨重啟攜帶複雜狀態的編排請直接使用
+  [Conversation](conversation.md)（`context` + `branch/goto` + 手動檢查點）
+- `@command` 返回的是代理物件：呼叫行為、`__name__`、docstring、自定義屬性
+  與原函數完全一致；`command.unregister(代理)` 自動解包
+
 ## 會話定時器：remind / escalate
 
-將「超時」從回傳值變成可編排的原語。定時器掛在互動會話上，  
-隨模組卸載 / 適配器關閉自動取消，單一會話活躍 remind 上限 5 個。
+把「超時」從回傳值變成可編排的原語。定時器掛在互動會話上，
+隨模組卸載 / 適配器關閉自動取消，單會話活躍 remind 上限 5 個。
 
 ### remind：沒回覆就提醒
 
@@ -101,18 +154,18 @@ reply = await event.wait_reply(session=True, prompt="哪位大神幫忙答一下
 @command("ticket")
 async def ticket_command(event):
     await event.reply("工單已提交，處理結果會在這裡通知")
-    # 5 分鐘無回覆則溫和催一次；用戶任何回覆都會自動取消它
+    # 5 分鐘無回覆則溫和催一次；使用者任何回覆都會自動取消它
     event.remind(300, "還在嗎？有結果了會第一時間告訴你")
     reply = await event.wait_reply(timeout=3600)
     ...
 ```
 
-- `event.remind(delay, text=None, *, callback=None)`：到期向當前會話發送 `text`  
-  （或執行 `callback(event)`，支援同步 / 異步）。**強制校驗**：`text` 與  
-  `callback` 必須二選一（都不給則拋 `ValueError`）
-- 回傳 `Reminder` 句柄：`reminder.cancel()` 手動取消、`reminder.expired` 查詢狀態
-- 用戶在該會話**回覆後自動取消**——這正是「提醒」語意：  
-  提醒只在用戶沉默時出現
+- `event.remind(delay, text=None, *, callback=None)`：到期向當前會話發送 `text`
+  （或執行 `callback(event)`，支援同步 / 異步）。**強制校驗**：`text` 與
+  `callback` 必須二選一（都不給拋 `ValueError`）
+- 返回 `Reminder` 句柄：`reminder.cancel()` 手動取消、`reminder.expired` 查詢狀態
+- 使用者在該會話**回覆後自動取消**——這正是「提醒」語義：
+  提醒只在使用者沉默時出現
 - `Conversation` 內同樣可用：`conv.remind(120, "還在考慮嗎？")`
 
 ### escalate：到點必達的升級
@@ -121,17 +174,19 @@ async def ticket_command(event):
 event.escalate(1800, lambda e: notify_master(f"工單 30 分鐘未處理：{event.get_command_args()}"))
 ```
 
-與 `remind` 的唯一區別：**不受用戶回覆取消**——升級動作（通知主人、轉人工）  
+與 `remind` 的唯一區別：**不被使用者回覆取消**——升級動作（通知主人、轉人工）
 是「超時必達」承諾，僅手動 `cancel()` / 模組卸載 / 適配器關閉才取消。
 
 | | `remind` | `escalate` |
 |---|---|---|
-| 到期行為 | 發文本 / 執行 callback | 執行 callback |
-| 用戶回覆 | **自動取消** | 不受影響 |
+| 到期行為 | 發文字 / 執行 callback | 執行 callback |
+| 使用者回覆 | **自動取消** | 不受影響 |
 | 歸屬清理（卸載 / 關平台） | 取消 | 取消 |
-| 單一會話上限 | 5 | 不限（隨歸屬清理兜底） |
+| 單會話上限 | 5 | 不限（隨歸屬清理兜底） |
 
 ## 多路等待：expect + select
+
+**一句話**：`expect` 只描述期望而不註冊等待，`select` 綜合掛起多條期望，任一先命中即返回 `(下標, 回覆事件)`，未命中的自動清理。
 
 同時掛起多條期望，**先到先得**——典型場景：等待管理員審批的同時等待使用者撤回、多人協作投票。
 
@@ -150,7 +205,7 @@ elif which == 1:
     await event.reply("已拒絕")
 ```
 
-- `event.expect(...)` 建構**期望描述**（不註冊任何等待）：支援
+- `event.expect(...)` 構造**期望描述**（不註冊任何等待）：支援
   `pattern` / `regex` / `validator` / `user`（限定回覆者）/ `session`（任何人可答）
 - `event.select(*expectations, timeout=60)`：統一註冊 → 任一命中即返回
   `(下標, 回覆事件)` → 未命中的等待自動取消；全部超時返回 `(None, None)`。
@@ -158,14 +213,14 @@ elif which == 1:
 - 命中的事件已被框架認領（`mark_processed`），不會被其他處理器重複消費
 
 {!--< tips >!--}
-`select` 與多執行緒 `asyncio.wait` 手工編排相比：期望未命中時自動清理、
-命中事件自動認領、權限複查與歸屬清理全部生效——不需要自己管任何 Future。
+`select` 與多線程 `asyncio.wait` 手工編排相比：期望未命中時自動清理、
+命中事件自動認領、權限复查與歸屬清理全部生效——不需要自己管任何 Future。
 {!--< /tips >!--}
 
 > [!NOTE]
-> 2.10.1 起 `select` 為**聚合等待**：全部期望合併為單條目 + 自訂命中判定，
+> 2.10.1 起 `select` 為**聚合等待**：全部期望合併為單條目 + 自定義命中判定，
 > 同鍵多路（如同一 user 掛兩條不同 pattern）不再互相取消，任一路先命中即返回。
-> 回覆文字的判定口徑為 `alt_message` 優先 + 消息段回退（與命令分發一致）。
+> 回覆文本的判定口徑為 `alt_message` 优先 + 消息段回退（與命令分發一致）。
 >
 > 边界說明：`event.wait_for(...)` 直掛在適配器事件總線上，**不經過**中間件與
 > detail_type 條件過濾（身份准入由分發入口兜底）；需要完整管線的等待請用
@@ -182,7 +237,7 @@ if owner and owner != "MyModule":
     return  # 其他模組正在對話中，避免打擾
 
 # 互斥租約：獨佔會話（deny 策略，被佔用返回 None）
-lease = sdk.interaction.acquire(event)          # 默認 TTL 1 小時，可傳 ttl=
+lease = sdk.interaction.acquire(event)          # 預設 TTL 1 小時，可傳 ttl=
 if lease is None:
     return  # 已被佔用
 try:
@@ -198,7 +253,7 @@ with sdk.interaction.hold(event) as lease:
     ...  # 退出自動釋放
 ```
 
-租約支援 `renew(ttl)` 續期；TTL 慣性過期——過期的租約在下次存取時自動清理。
+租約支援 `renew(ttl)` 續期；TTL 慢性過期——過期的租約在下次訪問時自動清理。
 
 `Conversation.resume()` 恢復對話時框架會自動 acquire 租約（見
 [Conversation 多輪對話](conversation.md)的「恢復即接管」）——
@@ -206,10 +261,10 @@ with sdk.interaction.hold(event) as lease:
 
 ## 會話收件箱：event.history
 
-> 保留策略（7 天 / 條數上限）與執行時覆蓋 API、風險與審計請參閱[會話收件箱](transcript.md)專題。
+> 保留策略（7 天 / 條數上限）與運行時覆蓋 API、風險與審計見[會話收件箱](transcript.md)專題。
 
 每會話近期訊息流的統一記錄（使用者 + 機器人雙方），作為 AI 上下文、
-防重複發送、行為分析類模組的**共享事實底座**——各模組不再各自儲存歷史。
+防重複、行為分析類模組的**共享事實底座**——各模組不再各自存歷史。
 
 ```python
 messages = await event.history(20)   # 當前會話最近 20 條，時間升序
@@ -218,46 +273,46 @@ for m in messages:
 ```
 
 - 自動記錄：入站訊息（role=user）+ 機器人出站文字（role=bot）
-- 儲存：獨立 SQLite 表，保留策略 = 每會話上限（預設 50）+ 全局 TTL（預設 7 天）
-- 寫入方式：記憶體緩衝 + 後台批量落盤（延遲最多 1 秒），查詢介面自動合併未落盤的緩衝行——同進程「讀你的寫」不受影響；正常退出（`sdk.uninit` / 進程退出）自動刷盤。**硬體崩潰 / 強制終止時最近約 1 秒的記錄可能遺失**：該底座定位為近期上下文快取，不適合作為審計級的永久儲存
+- 存儲：獨立 SQLite 表，保留策略 = 每會話上限（預設 50）+ 全局 TTL（預設 7 天）
+- 寫入方式：記憶體緩衝 + 後台批量落盤（延遲至多 1 秒），查詢介面自動合併未落盤的緩衝行——同進程「讀你的寫」不受影響；正常退出（`sdk.uninit` / 進程退出）自動刷盤。**硬崩潰 / 強殺時最近約 1 秒的記錄可能遺失**：該底座定位為近期上下文緩存，不適合作為審計級持久化
 - 配置：`ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`
 - 管理器 API：`sdk.transcript.append() / get() / clear()`，`aflush()` / `flush()` 手動刷盤
 
-## 消息事務：message_tx
+## 訊息事務：message_tx
 
-事務內的所有出站發送自動記帳；**異常退出時逆序自動撤回**已發送的訊息  
-（適配器未實作 `delete_message` 時跳過，帳本仍正常記錄）。
+事務內的所有出站發送自動記帳；**異常退出時逆序自動撤回**已發送的訊息
+（適配器未實現 `delete_message` 時跳過，帳本仍正常記錄）。
 
 ```python
 async with event.message_tx():
     await event.reply("正在處理，請稍候")
     result = await do_something()          # 這裡拋異常 →
-    await event.reply(f"完成: {result}")   # 前面的"處理中"自動撤回
+    await event.reply(f"完成: {result}")   # 前面的「處理中」自動撤回
 ```
 
-事務外發送不記帳（零開銷）；`get_send_receipts()` 可查看目前事務已發送的回執。
+事務外發送不記帳（零開銷）；`get_send_receipts()` 可查看當前事務已發送的回執。
 
 ## 鏈路追蹤：trace-id
 
-每個入站事件自動獲得追蹤 ID（複用 `event["id"]`，若缺失則生成），貫穿：
+每個入站事件自動獲得追蹤 ID（複用 `event["id"]`，缺失則生成），貫穿：
 
-- handler 上下文（使用 `get_current_trace_id()` 讀取）
-- 出站發送（`[Send]` 日誌行附加 `[trace:...]`，`message.sending/sent` 鈎子的 `trace_id` 欄位）
-- 生命週期鈎子資料（dict 自動補 `_trace_id`）
+- handler 上下文（`get_current_trace_id()` 讀取）
+- 出站發送（`[Send]` 日誌行附加 `[trace:...]`，`message.sending/sent` 鉤子的 `trace_id` 字段）
+- 生命週期鉤子資料（dict 自動補 `_trace_id`）
 - 定向事件（`lifecycle.emit(..., to=...)`）與訊息事務回執
 
-當一條訊息被多個模組接力處理時，全鏈路可使用同一 ID 串聯（日誌 / 慢查詢 / 審計）。
+一條訊息被多個模組接力處理時，全鏈路可用同一 ID 串聯（日誌 / 慢查詢 / 審計）。
 
 ## 與其他系統的關係
 
 - **歸屬權**：等待 / 租約 / 定時器全部記錄 owner，卸載即回收（[歸屬權系統](ownership.md)）
-- **作用域**：回應命中複查身份 + 模組維度；跨模組呼叫審計走出站維度（[作用域](scope.md)）
-- **Conversation**：多輪對話是交互會話之上的分支狀態機（[Conversation](conversation.md)），
-  其等待同樣享有本頁全部取消 / 複查 / 歸屬語義
+- **作用域**：回覆命中复查身份 + 模組維度；跨模組呼叫審計走出站維度（[作用域](scope.md)）
+- **Conversation**：多輪對話是互動會話之上的分支狀態機（[Conversation](conversation.md)），
+  其等待同樣享有本頁全部取消 / 复查 / 归属语义
 
 ## 相關文件
 
-- [Conversation 多輪對話](conversation.md) - 分支狀態機、自動檢查點與重新啟動恢復
+- [Conversation 多輪對話](conversation.md) - 分支狀態機、自動檢查點與重啟恢復
 - [歸屬權（owner）系統](ownership.md) - 歸屬清理的全景與設計邊界
-- [作用域（scope）](scope.md) - 權限復查與出站審計的配置方式
-- [模組間通訊](module-communication.md) - 跨模組呼叫與定向事件
+- [作用域（scope）](scope.md) - 權限复查與出站審計的配置方式
+- [模組間通信](module-communication.md) - 跨模組呼叫與定向事件

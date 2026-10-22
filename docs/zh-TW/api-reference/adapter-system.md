@@ -1,5 +1,8 @@
 # 適配器系統 API
 
+> [!TIP]
+> **什麼時候需要閱讀這篇**：當你需要管理適配器（獲取實例、啟停、查詢 Bot 的線上狀態）、使用 Send DSL 發送訊息、註冊中間件，或為適配器接入 Bot 狀態上報（meta 事件）時請參閱本文。不需要則可跳過。
+
 本文檔詳細介紹了 ErisPulse 適配器系統的 API。
 
 ## Adapter 管理器
@@ -242,133 +245,14 @@ class MyAdapter(BaseAdapter):
 
 ## Bot 狀態管理
 
-適配器透過發送 OneBot12 標準的 **`meta` 事件**來告知框架 Bot 的連接狀態。系統自動從中提取 Bot 資訊進行狀態追蹤。
+適配器透過發送 OneBot12 標準的 **`meta` 事件**來告知框架 Bot 的連線狀態。系統會自動從中提取 Bot 資訊進行狀態追蹤。
 
-### meta 事件類型
+### meta 事件上報
 
-適配器應發送以下三種 `meta` 事件：
+適配器透過 `meta` 事件上報 Bot 狀態，三種 `detail_type`：`connect`（註冊上線）、`heartbeat`（心跳保活）、`disconnect`（標記離線）。推薦使用 `emit_meta()` 一行發送；即使不發送 meta 事件，框架也會從普通事件（message/notice/request）的 `self` 欄位自動發現 Bot。
 
-| `type` | `detail_type` | 說明 | 觸發時機 |
-|--------|--------------|------|---------|
-| `meta` | `connect` | Bot 連接上線 | 適配器與平台建立連接成功後 |
-| `meta` | `heartbeat` | Bot 心跳 | 定期發送（建議 30-60 秒） |
-| `meta` | `disconnect` | Bot 斷開連接 | 檢測到連接斷開時 |
-
-### self 字段擴展
-
-ErisPulse 在 OneBot12 標準的 `self` 字段上擴展了以下可選字段：
-
-| 字段 | 類型 | 說明 |
-|------|------|------|
-| `self.platform` | string | 平台名稱（OB12 標準） |
-| `self.user_id` | string | Bot 用戶 ID（OB12 標準） |
-| `self.user_name` | string | Bot 昵稱（ErisPulse 擴展） |
-| `self.avatar` | string | Bot 頭像 URL（ErisPulse 擴展） |
-| `self.account_id` | string | 多帳號標識（ErisPulse 擴展） |
-
-### meta 事件格式
-
-#### connect — 連接上線
-
-```python
-await adapter.emit({
-    "id": "unique_id",
-    "time": 1712345678,
-    "type": "meta",
-    "detail_type": "connect",
-    "platform": "telegram",
-    "self": {
-        "platform": "telegram",
-        "user_id": "123456",
-        "user_name": "MyBot",
-        "avatar": "https://example.com/avatar.jpg"
-    },
-    "telegram_raw": {...},
-    "telegram_raw_type": "bot_connected"
-})
-```
-
-系統處理：註冊 Bot，標記為 `online`，觸發 `adapter.bot.online` 生命週期事件。
-
-#### heartbeat — 心跳
-
-```python
-await adapter.emit({
-    "id": "unique_id",
-    "time": 1712345708,
-    "type": "meta",
-    "detail_type": "heartbeat",
-    "platform": "telegram",
-    "self": {
-        "platform": "telegram",
-        "user_id": "123456"
-    }
-})
-```
-
-系統處理：更新 `last_active` 時間（心跳中也支援更新元資訊）。
-
-#### disconnect — 斷開連接
-
-```python
-await adapter.emit({
-    "id": "unique_id",
-    "time": 1712345738,
-    "type": "meta",
-    "detail_type": "disconnect",
-    "platform": "telegram",
-    "self": {
-        "platform": "telegram",
-        "user_id": "123456"
-    }
-})
-```
-
-系統處理：標記 Bot 為 `offline`，觸發 `adapter.bot.offline` 生命週期事件。
-
-### 普通事件的自動發現
-
-除了 `meta` 事件外，普通事件（`message`/`notice`/`request`）中的 `self` 字段也會自動發現並註冊 Bot、更新活躍時間。這意味著即使適配器不發送 `connect` 事件，框架也能從第一條普通事件中發現 Bot。
-
-### 適配器接入示例
-
-```python
-class MyAdapter(BaseAdapter):
-    async def start(self):
-        # 與平台建立連接...
-        connection = await self._connect()
-        
-        # 連接成功，發送 connect 事件
-        await adapter.emit({
-            "id": str(uuid4()),
-            "time": int(time.time()),
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": self.bot_id,
-                "user_name": self.bot_name,
-                "avatar": self.bot_avatar
-            },
-            "myplatform_raw": raw_data,
-            "myplatform_raw_type": "connected"
-        })
-    
-    async def on_disconnect(self):
-        # 斷開連接，發送 disconnect 事件
-        await adapter.emit({
-            "id": str(uuid4()),
-            "time": int(time.time()),
-            "type": "meta",
-            "detail_type": "disconnect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": self.bot_id
-            }
-        })
-```
+- **meta 事件格式與發送方式**（何時發送、`emit_meta()` 用法、手動構造格式）請見 [適配器最佳實踐 - Bot 狀態管理與 Meta 事件](../developer-guide/adapters/best-practices.md#bot-狀態管理與-meta-事件)
+- **自動發現機制與框架行為**請見 [適配器核心概念 - Bot 狀態管理](../developer-guide/adapters/core-concepts.md#bot-狀態管理)
 
 ### 查詢 Bot 狀態
 
@@ -435,6 +319,10 @@ def on_status_change(event):
 
 ## 相關文件
 
+**繼續查 API**：
 - [核心模組 API](core-modules.md) - 核心模組 API
 - [事件系統 API](event-system.md) - Event 模組 API
+
+**動手寫適配器**：
 - [適配器開發指南](../developer-guide/adapters/) - 開發平台適配器
+- [適配器標準化指南（總綱）](../standards/standardization-guide.md) - 實現新適配器前的標準對照與 Checklist

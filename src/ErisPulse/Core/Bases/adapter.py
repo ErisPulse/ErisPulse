@@ -19,6 +19,8 @@ if TYPE_CHECKING:
     # typing.Self 仅在 3.11+ 提供，3.10 需 typing_extensions 兜底
     from typing_extensions import Self
 
+    from .send_builder import SendBuilder
+
 from ..config import config as config_mgr
 from ..constants import (
     DEFAULT_SEND_METHOD,
@@ -613,7 +615,7 @@ class SendDSL:
             "account_id": self._account_id,
         }
 
-    def Raw_ob12(self, message, **kwargs) -> Awaitable[Any]:
+    def Raw_ob12(self, message: dict, **kwargs) -> Awaitable[Any]:
         """
         发送 OneBot12 格式消息段（必须由适配器子类重写）
 
@@ -972,7 +974,7 @@ class SendDSL:
 
     # ==================== 批量构建模式 ====================
 
-    def Build(self):
+    def Build(self) -> "SendBuilder":
         """
         进入批量构建模式，返回 :class:`SendBuilder`
 
@@ -1282,7 +1284,7 @@ class BaseAdapter(ABC):
 
             return asyncio.create_task(_send_example())
 
-        def Raw_ob12(self, message, **kwargs: Any) -> Awaitable[Any]:
+        def Raw_ob12(self, message: dict, **kwargs: Any) -> Awaitable[Any]:
             """
             发送 OneBot12 格式消息段（必须由适配器子类重写）
 
@@ -1309,7 +1311,7 @@ class BaseAdapter(ABC):
             >>> ])
             >>>
             >>> # 适配器子类重写示例（推荐：使用框架辅助方法）
-            >>> def Raw_ob12(self, message, **kwargs):
+            >>> def Raw_ob12(self, message: dict, **kwargs):
             >>>     async def _do_send():
             >>>         segments = self._apply_modifiers(message)
             >>>         return await self._api_call(
@@ -1439,7 +1441,7 @@ class BaseAdapter(ABC):
         raise NotImplementedError(i18n.t("core.adapter.must_implement_shutdown"))
 
     @property
-    def cfg(self):
+    def cfg(self) -> Any:
         """
         类型安全的配置对象（实时读取）
 
@@ -1470,7 +1472,7 @@ class BaseAdapter(ABC):
         return dict_to_dataclass(self.ConfigClass, data)
 
     @cfg.setter
-    def cfg(self, value):
+    def cfg(self, value: Any) -> None:
         """设置配置实例，同时同步写入配置存储（保证实时性）"""
         self._config_instance = value
         if value is not None:
@@ -1482,7 +1484,7 @@ class BaseAdapter(ABC):
                 pass
 
     @property
-    def config(self):
+    def config(self) -> Any:
         """
         ``self.cfg`` 的兼容别名
 
@@ -1491,7 +1493,7 @@ class BaseAdapter(ABC):
         return self.cfg
 
     @config.setter
-    def config(self, value):
+    def config(self, value: Any) -> None:
         self.cfg = value
 
     @property
@@ -1532,7 +1534,7 @@ class BaseAdapter(ABC):
         return accounts
 
     @accounts.setter
-    def accounts(self, value):
+    def accounts(self, value: Any) -> None:
         """设置账户配置字典，同时同步写入配置存储"""
         self._accounts_data = value
         if value is not None:
@@ -1731,7 +1733,7 @@ class BaseAdapter(ABC):
 
         raise ValueError(i18n.t("core.adapter.account_not_found", account_id=account_id))
 
-    async def emit_meta(self, detail_type: str, bot_id: str, **extra_info):
+    async def emit_meta(self, detail_type: str, bot_id: str, **extra_info) -> None:
         """
         发送 meta 事件的便捷方法
 
@@ -1763,10 +1765,10 @@ class BaseAdapter(ABC):
         *,
         status: str = STATUS_OK,
         retcode: int = RETCODE_OK,
-        data=None,
+        data: Any = None,
         message_id: str = "",
         message: str = "",
-        raw=None,
+        raw: Any = None,
     ) -> dict:
         """
         构造标准化响应
@@ -1794,7 +1796,7 @@ class BaseAdapter(ABC):
         self,
         retcode: int = RETCODE_SDK_FAILURE,
         message: str = "",
-        raw=None,
+        raw: Any = None,
     ) -> dict:
         """
         构造错误响应
@@ -1811,7 +1813,7 @@ class BaseAdapter(ABC):
             raw=raw,
         )
 
-    def on_config_update(self, old_config, new_config):  # noqa: B027
+    def on_config_update(self, old_config: Any, new_config: Any) -> None:  # noqa: B027
         """
         配置变更回调（可选实现）
 
@@ -1847,7 +1849,7 @@ class BaseAdapter(ABC):
         :param module_name: 丢失的模块名
         """
 
-    async def emit(self, *args, **kwargs):
+    async def emit(self, *args, **kwargs) -> Any:
         raise NotImplementedError(i18n.t("core.adapter.emit_deprecated"))
 
     def send(self, target_type: str, target_id: str, message: Any, **kwargs: Any) -> asyncio.Task:

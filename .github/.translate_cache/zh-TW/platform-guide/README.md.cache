@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "18927db6f4088983407b7f12eda7a270",
-  "file_hash": "18927db6f4088983407b7f12eda7a270",
-  "translated_at": "2026-09-07T11:48:08.162978",
+  "hash": "2b5d04cec2f0af6e5cc8a238a8ffc1c0",
+  "file_hash": "2b5d04cec2f0af6e5cc8a238a8ffc1c0",
+  "translated_at": "2026-10-19T09:25:08.325837",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# ErisPulse PlatformFeatures 文件\n\n> 基線協議：[OneBot12](https://12.onebot.dev/)  \n> \n> 本文檔為**平台特定功能指南**，包含：\n> - 各適配器支援的Send方法鏈式呼叫範例\n> - 平台特有的事件/訊息格式說明\n> \n> 通用使用方法請參考：\n> - [基礎概念](../getting-started/basic-concepts.md)\n> - [事件轉換標準](../standards/event-conversion.md)  \n> - [API回應規範](../standards/api-response.md)\n\n---"
     },
     {
-      "hash": "f63a0fcfd07c6d5314eab98b2ebcf4e0",
-      "translation": "## 平台特定功能\n\n此部分由各适配器開發者維護，用於說明該適配器與 OneBot12 標準的差異和擴展功能。請參考以下各平台的詳細文件：\n\n- [維護說明](maintain-notes.md)\n\n- [雲湖平台特性](yunhu.md)\n- [雲湖使用者平台特性](yunhu_user.md)\n- [Telegram平台特性](telegram.md)\n- [OneBot11平台特性](onebot11.md)\n- [OneBot12平台特性](onebot12.md)\n- [郵件平台特性](email.md)\n- [Kook(開黑啦)平台特性](kook.md)\n- [Matrix平台特性](matrix.md)\n- [QQ官方機器人平台特性](qqbot.md)\n- [花楓咖啡館](ideaura.md)\n- [Discord](discord.md)\n- [Webhook協定橋](webhook.md)\n- [微信公眾號](wechatmp.md)\n\n> 此外還有 `sandbox` 適配器，但此適配器無需維護平台特性文件\n\n---"
+      "hash": "b4f1c4ee74fb2404f705461b9832afa5",
+      "translation": "## 平台特定功能\n\n此部分由各适配器開發者維護，用於說明該適配器與 OneBot12 標準的差異和擴展功能。請參考以下各平台的詳細文件：\n\n- [維護說明](maintain-notes.md)\n\n- [雲湖平台特性](yunhu.md)\n- [雲湖使用者平台特性](yunhu_user.md)\n- [Telegram平台特性](telegram.md)\n- [OneBot11平台特性](onebot11.md)\n- [OneBot12平台特性](onebot12.md)\n- [SnowLuma平台特性](snowluma.md)\n- [郵件平台特性](email.md)\n- [Kook(開黑啦)平台特性](kook.md)\n- [Matrix平台特性](matrix.md)\n- [QQ官方機器人平台特性](qqbot.md)\n- [花楓咖啡館](ideaura.md)\n- [Discord](discord.md)\n- [Webhook協議橋](webhook.md)\n- [微信公眾號](wechatmp.md)\n\n> 此外還有 `sandbox` 適配器，但此適配器無需維護平台特性文件\n\n---"
     },
     {
       "hash": "98f6593d1e3961cc8fc3ee0945986047",

@@ -1,9 +1,15 @@
 # ErisPulse-App
 
-[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) is the **official multi-platform client** directly maintained by ErisDev (released for Android / Windows / Linux / macOS), providing a fully native graphical management interface: create, run, and manage multiple bot instances on your phone or computer, without the need for a terminal or a separate Python environment.
+> [!TIP]
+> **When to read this**: Read this when you want to create, run, and manage bot instances with a graphical interface on your phone or computer—without touching a terminal or installing a separate Python environment. Skip it if you don't need that.
+
+[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) is the **official multi-platform client** maintained directly by ErisDev (already released for Android / Windows / Linux / macOS).
+It provides a fully native graphical management interface: create, run, and manage multiple bot instances on your phone or computer,
+with no terminal required and no separate Python environment installation needed.
 
 > [!IMPORTANT]
-> ErisPulse-App is an **independently installed client application**, not a module installed via `epsdk install`. It includes a built-in Python runtime and ErisPulse SDK, ready to use upon installation—**can even run directly on mobile devices**.
+> ErisPulse-App is an **independently installed client application**, not a module installed via `epsdk install`.
+> It comes with a built-in Python runtime and the ErisPulse SDK, ready to use right after installation—**it even runs directly on mobile phones**.
 
 ## Feature Overview
 
@@ -88,4 +94,12 @@ Both builds follow the same installation steps:
 
 - GitHub Repository: [https://github.com/ErisPulse/ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App)
 - Download: [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases)
-- Discussion: [Discussions](https://github.com/ErisPulse/ErisPulse-App/discussions)
+- Discussions: [Discussions](https://github.com/ErisPulse/ErisPulse-App/discussions)
+
+---
+
+## Next Steps
+
+- **Manage via browser on desktop / server**: [ErisPulse-Dashboard](dashboard.md) (shares the same API set and window grouping as the App)
+- **Connect your first platform**: Configuration can be completed through the App's built-in management interface; see [Platform Features Overview](../platform-guide/README.md) for platform-specific details
+- **Prefer the command line**: Instances in the App are fully equivalent to those created with `epsdk`; start with [Quick Start](../quick-start.md)

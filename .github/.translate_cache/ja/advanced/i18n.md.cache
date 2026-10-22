@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "9cf464142bb2557725246f5d5bffa2c6",
-  "file_hash": "9cf464142bb2557725246f5d5bffa2c6",
-  "translated_at": "2026-10-14T03:08:13.659090",
+  "hash": "53bbb72fc0ac4f5eccaf6bb3962f88a0",
+  "file_hash": "53bbb72fc0ac4f5eccaf6bb3962f88a0",
+  "translated_at": "2026-10-22T09:32:33.036371",
   "target_lang": "ja",
   "chunks": [
     {
@@ -44,6 +44,10 @@
     {
       "hash": "686e8a4ebe8bf58dbe7cc4afa6230e2e",
       "translation": "## CLI i18n との関係\n\nCLI には**独立**した国際化モジュール (`ErisPulse.CLI.i18n`) があり、フレームワークのコアの国際化モジュールとは完全に分離されています。\n\n- **Core i18n** — フレームワークのコアモジュールで使用され、外部モジュールは翻訳を登録できます。\n- **CLI i18n** — コマンドラインインターフェース内で使用され、Core と翻訳データを共有しません。\n\nこの設計により、CLI の翻訳の変更がフレームワークのコアの安定性に影響を与えることがありません。"
+    },
+    {
+      "hash": "6dfa5dc6aa7d39f0141a907fd4c969f4",
+      "translation": "## 関連ドキュメント\n\n- **モジュールの設定フィールドに多言語の説明を追加する (ConfigClass)** → [設定ガイド](../user-guide/configuration.md)\n- **モジュールのアンインストール時に翻訳ドメインの自動回収** → [所有権（owner）システム](ownership.md)\n- **多言語対応のモジュールをゼロから開発する** → [モジュール開発ガイド](../developer-guide/modules/getting-started.md)"
     }
   ]
 }

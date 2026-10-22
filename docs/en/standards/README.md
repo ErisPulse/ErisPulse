@@ -1,8 +1,11 @@
 # Technical Standards
 
-> **General Principles**: [Adapter Standardization Guide](standardization-guide.md) — Standardization principles, standard maps, naming conventions, difference handling patterns, and developer Checklist. Please read it first for new adapters/new capabilities.
+> [!TIP]
+> **When to read this**: When you are developing or modifying an adapter and need to confirm whether event transformations, API responses, send methods, etc. comply with ErisPulse's cross-platform standards, refer to the corresponding specifications in this section. If you're unsure where to start, read the overview below first.
 
-This document contains the technical standards specifications for ErisPulse, ensuring consistency and compatibility among components.
+> **Overview**: [Adapter Standardization Guide](standardization-guide.md) —— Standardization principles, standard map, naming conventions, difference handling patterns, and developer Checklist. Please read it first for new adapters or new capabilities.
+
+This document contains the technical standards of ErisPulse to ensure consistency and compatibility among components.
 
 ## Standard Document List
 
@@ -74,43 +77,44 @@ Standardized specifications help:
 
 - [ ] All standard fields have been correctly mapped
 - [ ] Platform-specific fields have been prefixed
-- [ ] Timestamps have been converted to 10-digit second-level
-- [ ] Raw data has been saved in {platform}_raw
-- [ ] Raw event type has been saved in {platform}_raw_type
-- [ ] alt_message for message segments has been generated
-- [ ] Request events contain the request_id field
+- [ ] Timestamps have been converted to 10-digit second-level format
+- [ ] Raw data has been saved in `{platform}_raw`
+- [ ] Raw event type has been saved in `{platform}_raw_type`
+- [ ] The `alt_message` for message segments has been generated
+- [ ] Request events contain the `request_id` field
 
 ### API Response
 
-- [ ] Contains status field
-- [ ] Contains retcode field
-- [ ] Contains data field
-- [ ] Contains message_id field
-- [ ] Contains message field
+- [ ] Contains `status` field
+- [ ] Contains `retcode` field
+- [ ] Contains `data` field
+- [ ] Contains `message_id` field
+- [ ] Contains `message` field
 - [ ] Return codes follow the OneBot12 specification
 
-### Sending Method Naming
+### Send Method Naming
 
 - [ ] Uses PascalCase naming convention
 - [ ] Returns a Task object
-- [ ] Modifier methods return self
-- [ ] Parameter naming conforms to the specification
+- [ ] Modifier methods return `self`
+- [ ] Parameter names conform to the specification
 
 ### Media Sending (Image / Voice / Video / File)
 
-- [ ] The `file` parameter must support all forms: HTTP(S) URL / local path / `bytes`
-- [ ] Form determination follows the specification order (bytes → URL → `file://` → path)
-- [ ] The filename for `File` is generated in the following order (explicit `filename` > URL basename > path basename > platform default)
-- [ ] Platform media limits are declared in the adapter documentation
-- [ ] Unsupported media types are handled via a degradation ladder (nearby types degraded or `retcode=10002`, no exceptions thrown, no silent discarding)
+- [ ] The `file` parameter must support all forms: HTTP(S) URL / Local path / `bytes`
+- [ ] The `file` parameter should support as many forms as possible: `file://` URI / Base64 / Data URI (if not supported, return `retcode=10002` in descending order)
+- [ ] Form determination order conforms to the specification (bytes → URL → `file://` → path)
+- [ ] The `File` filename is generated in the following order (explicit `filename` > URL basename > path basename > platform default)
+- [ ] Platform media limitations have been declared in the adapter documentation
+- [ ] Unsupported media types are handled in descending order (nearby types are downgraded or `retcode=10002`, no exception is thrown, no silent discard)
 
-> See [Sending Method Specification §2.1](send-method-spec.md#21-media-message-sending-protocolimage--voice--video--file) for detailed protocol
+> For detailed protocol, see [Send Method Specification §2.1](send-method-spec.md#21-media-message-send-protocolimage--voice--video--file)
 
 ### Request Operations
 
-- [ ] HandleRequest class has implemented _do_accept / _do_reject
-- [ ] Operation returns standard API response format
-- [ ] Unsupported operations return retcode=10002
+- [ ] The `HandleRequest` class has implemented `_do_accept` / `_do_reject`
+- [ ] The operation returns the standard API response format
+- [ ] Unsupported operations return `retcode=10002`
 
 ## Related Documentation
 

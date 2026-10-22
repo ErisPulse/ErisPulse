@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "98f20fcd78832392b6c462139b515d16",
-  "file_hash": "98f20fcd78832392b6c462139b515d16",
-  "translated_at": "2026-10-14T03:12:31.861454",
+  "hash": "d40b8518d8ac008d06a378087d4a8f14",
+  "file_hash": "d40b8518d8ac008d06a378087d4a8f14",
+  "translated_at": "2026-10-22T11:17:29.382048",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "1394c83e232620e4e71cfe077e2eb677",
-      "translation": "# モジュールテスト（ErisPulse-Testing）\n\n> [!TIP]\n> **このドキュメントを読むタイミング**：自身のモジュールに自動テストを書く必要がある場合。不要であれば飛ばしても、他の機能の使用に影響はありません。\n\n[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) は公式のテストツールキット（RFC EPRFC-2026-001 方向三）です：\n`TestBot`、テストイベント工場、出力メッセージのキャプチャとアサーション機能を提供し、モジュールのテストを通常の pytest と同じように簡単に実行できます。\n\n```bash\npip install ErisPulse-Testing\n```\n\n> フレームワークの開発時のみに依存するツールで、実行時には一切介入しません。実際のアダプタープラットフォームとの冒険テスト（スモークテスト）は、フレームワークリポジトリの `tests/devs/test_adapter.py` を使用してください。"
+      "hash": "b0d4c82669d264cac128e30233cdb228",
+      "translation": "# モジュールテスト（ErisPulse-Testing）\n\n> [!TIP]\n> **このドキュメントを読むべきケース**：自分のモジュール向けに自動テストを書くとき。必要なければ読み飛ばしても、他の機能の利用には影響しません。\n\n\n[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) は公式のテストツールキットです：\n`TestBot`、テストイベントファクトリ、送信メッセージのキャプチャとアサーション用インターフェースを提供し、モジュールテストを普通の pytest を書くのと同じくらい簡単にします。\n\n```bash\npip install ErisPulse-Testing\n```\n\n> フレームワークへの一方向依存のみの開発期ツールであり、実行時には一切介入しません。アダプタープラットフォームに実接続して行うスモークテストは、フレームワークリポジトリの `tests/devs/test_adapter.py` を使用してください。"
     },
     {
       "hash": "f737589ee49948d2216f43e9ab8c7843",
@@ -24,6 +24,10 @@
     {
       "hash": "4f0849b7f984f0233219b26d132084c6",
       "translation": "## 分发决策链（\"命令为什么没触发\"の調査；需 EP>=2.9.0-dev）\n\n`dispatch()` は `DispatchTrace` を返します。これは、今回の分発が経過した各判定ポイントの因果関係のチェーンです。\n\n```python\ntrace = await bot.dispatch(create_command_event(\"dailyx\", user_id=\"123\"))\n\ntrace.verdict        # executed / rejected / dropped / failed / no_match / passed\ntrace.explain()      # 逐行因果説明（当前语言）\ntrace.command        # 命中のコマンド名（未命中は None）\ntrace.steps(\"cooldown\")  # 段階で判定記録をフィルタ\n\ntrace.assert_executed(\"daily\")  # 断言実行（失敗時は因果関係の詳細を添付）\ntrace.assert_rejected()         # 断言権限系判定による拒否\ntrace.assert_dropped()          # 断言クールダウン等による静かにドロップ\ntrace.assert_no_match()         # 断言未命中\n```\n\n判定のカバレッジ：コマンドテキスト判定、コマンド命中（未命中時は類似語の提案）、作用域、ユーザー ACL、主人チェック、権限関数、クールダウンによる静かにドロップ、パラメータ解析、実行結果、ミドルウェアによる拒否。\n\n本番環境でも、フレームワークの `ErisPulse.Core.Event.trace`（`start_dispatch_trace()` / `format_dispatch_trace()`）を使用して、分発の判定チェーンを収集・レンダリングできます。"
+    },
+    {
+      "hash": "9a85c6ee6513e45ab377ae9048b89bbc",
+      "translation": "## 次のステップ\n\n### テストで発覚した「コマンドがトリガーされない」系の問題\n\n- [モジュールトラブルシューティングガイド](module-troubleshooting.md) — テストでの再現から本番環境の調査へ、症状別に対処方法を探す\n\n### テスト合格、配布の準備\n\n- [モジュールのコア概念](modules/core-concepts.md) — モジュールアーキテクチャと設定宣言の詳細を補完\n- [公開とモジュールストアガイド](publishing.md) — PyPI とモジュールストアへの公開の完全なフロー"
     }
   ]
 }

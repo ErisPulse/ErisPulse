@@ -1,21 +1,25 @@
 {
   "version": 2,
-  "hash": "6357f90f2b05c540a56a598d0a0ac480",
-  "file_hash": "6357f90f2b05c540a56a598d0a0ac480",
-  "translated_at": "2026-10-18T15:22:33.212858",
+  "hash": "f42f291e386c47a3705dd73afb1f374a",
+  "file_hash": "f42f291e386c47a3705dd73afb1f374a",
+  "translated_at": "2026-10-22T12:02:59.153294",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "6bd3cce836b1cccf009b5e840ebb94f5",
-      "translation": "# 生態模組\n\nErisPulse 框架本身只提供核心能力（事件系統、模組系統、配置、路由、日誌等），**不內建** GUI、圖片渲染、可視化等「重型」功能。這些能力由社群維護的 **第三方模組** 提供，按需安裝即可。\n\n> [!IMPORTANT]\n> 本目錄下的文件分為兩類，安裝方式不同：\n>\n> - **模組**（如 Dashboard / Takumi）使用 `epsdk install` 安裝：\n>\n>   ```bash\n>   epsdk install <模組名>\n>   ```\n>\n> - **獨立程式**（如 ErisPulse-App 客戶端）直接從對應的 GitHub Releases 下載安裝，無需 `epsdk`。\n>\n\n---"
+      "hash": "23205a1b65da9c3efe1514af73c6ac22",
+      "translation": "# 生態模組\n\nErisPulse 框架本身僅提供核心能力（事件系統、模組系統、配置、路由、日誌等），**不內建** GUI、圖片渲染、可視化等「重型」功能。這些能力由社區維護的 **第三方模組** 提供，按需安裝即可。\n\n> [!IMPORTANT]\n> 本目錄下的文件分為兩類，安裝方式不同：\n>\n> - **模組**（如 Dashboard / Takumi）使用 `epsdk install` 安裝：\n>\n>   ```bash\n>   epsdk install <模組名>\n>   ```\n>\n> - **獨立程式**（如 ErisPulse-App 客戶端）直接從對應 GitHub Releases 下載安裝，無需 `epsdk`。"
     },
     {
-      "hash": "6c3d70f4d8069b1d79c2ebcc9eeb7bb7",
-      "translation": "## 推薦模組與官方客戶端\n\n| 項目 | 類型 | 用途 | 文件 |\n|------|------|------|------|\n| [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) | 官方客戶端 | 官方全平台客戶端（Android / Windows / Linux / macOS）：原生介面建立 / 運行 / 管理多個實例，內建模組商店與事件建構器；**手機直接運行**，桌面托盤常駐 | [ErisPulse-App 安裝與使用](app.md) |\n| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | 模組 | Web 管理面板：模組啟停、配置編輯、日誌查看、事件監控；支援其他模組向側邊欄註冊自訂視窗 | [Dashboard 使用與視窗註冊](dashboard.md) |\n| [ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) | 模組 | 定時任務排程：一次性 / 間隔 / Cron 表達式，回呼傳參，SQLite 持久化（重啟不丟任務），支援 Dashboard 視窗管理 | [Cron 定時任務](cron.md) |\n| [ErisPulse-QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) | 模組 | 通用智能體：工具循環（收發訊息 / 程式碼執行 / 電腦操作 / 產生圖片 / 語音 / MCP / 子智能體），內建 Dashboard，串流對話與串行工具回放 | [QvQChat 智能體](qvqchat.md) |\n| [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi)（作者 [@ccd2s](https://github.com/ccd2s)） | 模組 | 圖片渲染：HTML / 節點樹 / Jinja / SVG / 動畫，基於 [takumi-py](https://github.com/BalconyJH/takumi-py)；內建中英文字型，開箱即用 | [Takumi 圖片渲染](takumi.md) |\n\n---"
+      "hash": "564cc002ef4056ad9c9cffd91b0687f0",
+      "translation": "## 推薦模組\n\n### ErisPulse-Dashboard：瀏覽器中的管理面板\n\n機器人掛在伺服器上，啟停模組、改設定、看日誌還得登終端？Dashboard 把這些功能搬到瀏覽器中：模組啟停、設定編輯、日誌查看、事件監控；其他模組還能向側邊欄註冊自訂視窗，管理頁面集中在同一處。\n\n```bash\nepsdk install Dashboard\n```\n\n文件：[Dashboard 使用與視窗註冊](dashboard.md) ｜ 項目首頁：[PyPI](https://pypi.org/project/ErisPulse-Dashboard/)\n\n### ErisPulse-Cron：定時任務\n\n要每天定時發簽到提醒、按 Cron 表達式執行週期任務、每隔幾分鐘輪詢一次資料？Cron 提供一次性 / 间隔 / Cron 表達式三種任務類型，回調傳參，SQLite 持久化（重啟不丟任務）。\n\n```bash\nepsdk install Cron\n```\n\n文件：[Cron 定時任務](cron.md) ｜ 項目首頁：[GitHub](https://github.com/wsu2059q/ErisPulse-Cron)\n\n### ErisPulse-QvQChat：通用智能體\n\n想讓群裡有一個會工作的 AI 助手，而不是只會關鍵字回覆？QvQChat 是通用智能體：工具循環覆蓋收發訊息 / 程式碼執行 / 電腦操作 / 生成圖片 / 語音 / MCP / 子智能體，支援流式對話與串行工具回放，內建 Dashboard 視窗。\n\n```bash\nepsdk install ErisPulse-QvQChat\n```\n\n文件：[QvQChat 智能體](qvqchat.md) ｜ 項目首頁：[GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)\n\n### ErisPulse-Takumi：圖片渲染\n\n排行榜、戰報、日程卡這類需要「發圖」的場景，寫個模板渲染成圖片發進群裡即可：支援 HTML / 節點樹 / Jinja / SVG / 動畫（基於 [takumi-py](https://github.com/BalconyJH/takumi-py)），內建中英文字型，開箱即用。\n\n```bash\nepsdk install Takumi\n```\n\n文件：[Takumi 圖片渲染](takumi.md) ｜ 項目首頁：[GitHub](https://github.com/ccd2s/ErispulseTakumi)（作者 [@ccd2s](https://github.com/ccd2s)）"
     },
     {
-      "hash": "313e3e4c95c26587b54e456998ea229e",
-      "translation": "## 我也想把自己的模組列在這裡？\n\n歡迎推薦優質的、可廣泛複用的 ErisPulse 生態模組。要求如下：\n\n1. 已發布到 [PyPI](https://pypi.org/)，且套件名稱以 `ErisPulse-` 開頭\n2. 提供基本的 README 與使用範例\n3. 积极維護，對 Issue 有回應\n\n符合以上條件的模組作者可以透過 PR 在本目錄下新增 `<模組名>.md` 文件，並在本表的「推薦模組」中新增一行。"
+      "hash": "d2a7502dc7794e8136711ace59a57362",
+      "translation": "## 官方客戶端（獨立程式）\n\n### ErisPulse-App：手機上直接跑機器人\n\n沒有常開的伺服器，也想隨時建立實例、安裝模組、查看事件流？ErisPulse-App 是官方全平台客戶端（Android / Windows / Linux / macOS）：原生介面建立 / 運行 / 管理多個機器人實例，內建模組商店與事件建構器，**手機直接運行**，桌面托盤常駐。\n\n所有平台的安裝包均從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 下載，無需 `epsdk`。\n\n文件：[ErisPulse-App 安裝與使用](app.md)"
+    },
+    {
+      "hash": "c8d44851900ae891ba4d6571498d0eaa",
+      "translation": "## 我也想把自己的模組列在這裡？\n\n歡迎推薦優質的、可被廣泛重用的 ErisPulse 生態模組。要求如下：\n\n1. 已發布到 [PyPI](https://pypi.org/)，且套件名以 `ErisPulse-` 開頭\n2. 提供基本的 README 與使用範例\n3. 積極維護，對 Issue 有回應\n\n符合以上條件的模組作者可以透過 PR 在本目錄下新增 `<模組名>.md` 文件，並在上方推薦列表中補充對應的小節。"
     }
   ]
 }

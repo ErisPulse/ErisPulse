@@ -1,6 +1,9 @@
 # Getting Started with Event Handling
 
-This guide introduces how to handle various event types in ErisPulse.
+> [!TIP]
+> **When to read this**: Read this if you want your bot to respond to messages, commands, notifications, or requests, or if you need to implement reply waiting / multi-turn conversations, or troubleshoot "why isn't my command triggering". If you only want to understand the framework design, [Basic Concepts](basic-concepts.md) is all you need; otherwise, feel free to skip this.
+
+Event handlers are where the bot "understands" users and reacts to them. This guide provides copy-paste-ready code patterns for the five event types, covering practical scenarios such as argument parsing, permissions, throttling, and multi-turn interaction.
 
 ## Overview of Event Types
 
@@ -1082,7 +1085,6 @@ async def conditional_handler(event):
 
 ## Next Steps
 
-- [Common Tasks Examples](common-tasks.md) - Learn the implementation of common features (including advanced message sending: retry/timeout/batch building)
-- [Platform Features Guide](../platform-guide/README.md) - Complete explanation of Send DSL chaining, sending rules, and batch building
-- [Event Wrapper Class Detailed Explanation](../developer-guide/modules/event-wrapper.md) - Deep understanding of the Event object
-- [User Guide](../user-guide/) - Learn about configuration and module management
+- **Want to manipulate the event object itself**: See [Event Wrapper Class Explained](../developer-guide/modules/event-wrapper.md) — the authoritative reference for all Event methods
+- **Want to send more complex messages**: The [Platform Features Guide](../platform-guide/README.md) covers SendDSL chained sending, sending rules, and batch building in depth; [Common Task Examples](common-tasks.md) contains ready-made code for retry / timeout / batch scenarios
+- **Need to configure and deploy after finishing your features**: Head over to the [User Guide](../user-guide/) — configuration files and CLI management are all covered there

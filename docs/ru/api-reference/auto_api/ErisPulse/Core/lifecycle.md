@@ -97,7 +97,7 @@ def on_adapter_event(data):
 ---
 
 
-##### `register(event: str, handler: Callable, *, priority: int = 0)`
+##### `register(event: str, handler: Callable, *, priority: int = 0) -> None`
 
 注册事件处理器（函数调用模式）
 
@@ -154,7 +154,7 @@ if lifecycle.has_handlers("message.sending"):
 ---
 
 
-##### `unregister(event: str, handler: Callable | None = None)`
+##### `unregister(event: str, handler: Callable | None = None) -> None`
 
 取消注册事件处理器
 
@@ -404,7 +404,7 @@ await lifecycle.submit_event("maintenance", data={"action": "reload"}, to="Chat"
 ---
 
 
-##### `clear()`
+##### `clear() -> None`
 
 清除所有已注册的处理器和计时器
 

@@ -222,7 +222,7 @@ async for msg in ws.iter_text():
 ---
 
 
-##### `url`（property）
+##### `url -> Any`（property）
 
 连接 URL
 
@@ -231,7 +231,7 @@ async for msg in ws.iter_text():
 ---
 
 
-##### `headers`（property）
+##### `headers -> Any`（property）
 
 请求头
 
@@ -240,7 +240,7 @@ async for msg in ws.iter_text():
 ---
 
 
-##### `raw`（property）
+##### `raw -> Any`（property）
 
 底层框架原生对象
 
@@ -312,7 +312,7 @@ async for msg in ws.iter_text():
 ---
 
 
-##### `async iter_text()`
+##### `async iter_text() -> AsyncIterator[str]`
 
 迭代文本消息直到断开
 
@@ -321,7 +321,7 @@ async for msg in ws.iter_text():
 ---
 
 
-##### `async iter_bytes()`
+##### `async iter_bytes() -> AsyncIterator[bytes]`
 
 迭代二进制消息直到断开
 
@@ -330,7 +330,7 @@ async for msg in ws.iter_text():
 ---
 
 
-##### `async iter_json()`
+##### `async iter_json() -> AsyncIterator[Any]`
 
 迭代 JSON 消息直到断开
 
@@ -366,7 +366,7 @@ async for msg in ws.iter_text():
 ---
 
 
-##### `on_disconnect(handler: Callable | None = None)`
+##### `on_disconnect(handler: Callable | None = None) -> Callable`
 
 注册断开连接回调
 
@@ -385,7 +385,7 @@ async def handle_disconnect(ws, reason="unknown"):
 ---
 
 
-##### `on_error(handler: Callable | None = None)`
+##### `on_error(handler: Callable | None = None) -> Callable`
 
 注册错误回调
 

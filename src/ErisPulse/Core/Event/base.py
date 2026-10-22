@@ -109,6 +109,14 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
     # 注入 owner 上下文：handler 执行期间 current_owner = 模块 owner，
     # 使其内部发起的出站调用（Send / Api / Request）能被作用域权限识别与按 owner 清理
     _owner_token = current_owner.set(_owner) if _owner else None
+    if _owner:
+        # 活跃度埋点（懒加载休眠清扫判定）：owner 已定位，一次字典写入
+        try:
+            from ..module import module as _module_manager
+
+            _module_manager.touch_activity(_owner)
+        except Exception:
+            pass
     try:
         # 依赖注入解析（Depends）：上下文为 Event；依赖异常走本函数统一错误路径
         _depends = handler_info.get("depends")
@@ -244,7 +252,7 @@ class BaseEventHandler:
         priority: int = DEFAULT_HANDLER_PRIORITY,
         condition: Callable | None = None,
         scope_exempt: bool = False,
-    ):
+    ) -> None:
         """
         注册事件处理器
 

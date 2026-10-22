@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "da5661895cd51183aee62df02092e326",
-  "file_hash": "da5661895cd51183aee62df02092e326",
-  "translated_at": "2026-09-07T11:33:00.602630",
+  "hash": "bd626ae847cface2aada500581d23a14",
+  "file_hash": "bd626ae847cface2aada500581d23a14",
+  "translated_at": "2026-10-22T12:42:48.590719",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "80785c13e86bb626713499d36f921521",
-      "translation": "# 最初のロボットを作成する\n\nこのガイドでは、[5 分鐘のクイックスタート](../quick-start.md) をベースに、最初のコマンド処理プログラムを書き、その実行メカニズムを理解します。\n\n> ErisPulse のインストールやプロジェクトの初期化をまだ完了していない場合は、まず [クイックスタート](../quick-start.md) の「インストール」「プロジェクトの初期化」「プロジェクトの実行」の 3 つの手順を完了してください。"
+      "hash": "feac99262781dcfdbd5014f3b38c33af",
+      "translation": "# 最初のロボットを作成する\n\n> [!TIP]\n> **この記事を読むタイミング**：ロボットが動作している状態で、最初の `/hello` コマンドハンドラを実装し、`sdk.run` とコマンドデコレータがそれぞれ何をしているのかを理解したい場合。まだ ErisPulse をインストールしておらず、プロジェクトを初期化していない場合は、まず [5 分間クイックスタート](../quick-start.md) の「インストール」「プロジェクトの初期化」「プロジェクトの実行」の 3 ステップを完了してください。必要ない場合はスキップしてください。\n\nクイックスタートを実行したのは第一歩です。この記事では、最初のコマンドハンドラを実装し、フレームワーク内で各行のコードが何を行っているのかを解説します。"
     },
     {
       "hash": "cbeb879600e1efd43f5c92662070ba8b",
@@ -34,8 +34,8 @@
       "translation": "## よくある質問\n\n### コマンドが反応しない？\n\n1. アダプタが正しく設定されているか確認し、`config/config.toml` 内のアダプタの `status` が `true` であることを確認します。\n2. ターミナルのログ出力を確認し、エラー情報（特に `ERROR` レベルのログ）がないか確認します。\n3. コマンドのプレフィックスが正しいか確認します（デフォルトは `/` です）。設定ファイルの `[ErisPulse.event.command]` 部分で確認できます。\n4. コマンド名のスペルが正しいか、大文字小文字の区別が正しく設定されているか確認します。\n\n### コマンドのプレフィックスを変更するには？\n\n`config.toml` に以下を追加します：\n\n```toml\n[ErisPulse.event.command]\nprefix = \"!\"\ncase_sensitive = false\n```\n\n### 複数のプラットフォームをサポートするには？\n\nErisPulse は OneBot12 標準を用いて、異なるプラットフォームのイベント形式を統一しています。`@command` および `@message` で登録されたハンドラは、すべてのプラットフォームからのイベントを自動的に受け取ります。イベントの元プラットフォームを区別するには、`event.get_platform()` を使用します：\n\n```python\n@command(\"hello\")\nasync def hello_handler(event):\n    platform = event.get_platform()\n    \n    if platform == \"yunhu\":\n        await event.reply(\"你好！来自云湖\")\n    elif platform == \"telegram\":\n        await event.reply(\"Hello! From Telegram\")\n    else:\n        await event.reply(\"你好！\")\n```\n\n> 詳細な多プラットフォーム対応のテクニックについては、[よくあるタスクの例](common-tasks.md#多プラットフォーム適応) を参照してください。"
     },
     {
-      "hash": "b0e41b365f41f1da5f78f4b91615b618",
-      "translation": "## 次のステップ\n\n- [基本概念](basic-concepts.md) - ErisPulse のコアコンセプトを詳しく理解する\n- [イベント処理の入門](event-handling.md) - さまざまなイベントの処理方法を学ぶ\n- [一般的なタスクの例](common-tasks.md) - より多くの実用的な機能を習得する"
+      "hash": "e25f8d01dd1460bce9a0e19a2e3692b0",
+      "translation": "## 次のステップ\n\n- **学習の流れに従って進む**：[基本概念](basic-concepts.md)を読んで、コマンドプロセッサの背後でフレームワークが何をしているかを理解する\n- **より多くのメッセージタイプに対応したい**：[イベント処理の入門](event-handling.md)、メッセージ / 通知 / 要求 / メタイベントのハンドラの書き方\n- **実用的な機能を追加したい**：[一般的なタスクの例](common-tasks.md)、永続化、定時タスク、権限制御の既製コード"
     }
   ]
 }

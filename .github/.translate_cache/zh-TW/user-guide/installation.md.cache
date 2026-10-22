@@ -1,37 +1,37 @@
 {
   "version": 2,
-  "hash": "673fd305b4e3c288f5a193fbe9fad8fd",
-  "file_hash": "673fd305b4e3c288f5a193fbe9fad8fd",
-  "translated_at": "2026-10-04T12:09:09.359182",
+  "hash": "5143caf8fc20c04105e8c58ea14360a8",
+  "file_hash": "5143caf8fc20c04105e8c58ea14360a8",
+  "translated_at": "2026-10-22T14:42:05.071552",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "1b3f0ec4bfba51e600c605ef706bd0e7",
-      "translation": "# 安裝參考\n\n> 本文是安裝方式的**完整參考**（pip / uv / Docker / 故障排除）。\n> 如果你只想快速上手，[5 分鐘快速入門](../quick-start.md) 已經涵蓋了最簡流程。"
+      "hash": "d1d33a006931469871192bdf896299c8",
+      "translation": "# 安裝參考\n\n> [!TIP]\n> **何時需要閱讀本文**：需要選擇一種安裝方式（pip / uv / Docker / ErisPulse-App 客戶端），或遇到安裝失敗需要排查時閱讀。只想快速運行，[5 分鐘快速入門](../quick-start.md) 已涵蓋最簡流程，不需要則跳過。"
     },
     {
-      "hash": "0673dda01e551a4430a223406abc48f9",
-      "translation": "## 系統要求\n\n- Python 3.10 或更高版本\n- pip 或 uv（推薦）\n- 足夠的磁碟空間（至少 100MB）"
+      "hash": "853b0788f299164923cc37e6dccc5237",
+      "translation": "## 系統要求\n\n- Python 3.10 – 3.14（3.14t 自由線程 / 無 GIL 構建為實驗性支持，框架以實驗性 CI 冒煙持續監測，不作正式承諾）\n- pip 或 uv（推薦）\n- 足夠的磁盤空間（至少 100MB）"
     },
     {
       "hash": "d3978c861bb20b22c15d0f0cf940e47f",
-      "translation": "## 安裝方式\n\n### 方式一：使用 pip 安裝\n\n```bash\n# 安裝 ErisPulse\npip install ErisPulse\n\n# 升級到最新版本\npip install ErisPulse --upgrade\n```\n\n### 方式二：使用 uv 安裝（推薦）\n\nuv 是一個更快的 Python 工具鏈，推薦用於開發環境。\n\n#### 安裝 uv\n\n```bash\n# 使用 pip 安裝 uv\npip install uv\n\n# 驗證安裝\nuv --version\n```\n\n#### 建立虛擬環境\n\n```bash\n# 建立專案目錄\nmkdir my_bot && cd my_bot\n\n# 安裝 Python 3.12\nuv python install 3.12\n\n# 建立虛擬環境\nuv venv\n```\n\n#### 激活虛擬環境\n\n```bash\n# Windows\n.venv\\Scripts\\activate\n\n# Linux/Mac\nsource .venv/bin/activate\n```\n\n#### 安裝 ErisPulse\n\n```bash\n# 安裝 ErisPulse\nuv pip install ErisPulse --upgrade\n```\n\n### 方式三：使用 uv tool 安裝（全域 CLI，推薦）\n\n如果只想把 `epsdk` 當全域命令列工具使用，`uv tool install` 是最乾淨的方式——\nepsdk 運行在獨立的工具環境中，不會污染任何專案環境：\n\n```bash\n# 安裝（epsdk 立即可用，無需激活任何虛擬環境）\nuv tool install ErisPulse\n\n# 升級（或直接使用 epsdk self-update，會自動走此通道）\nuv tool upgrade ErisPulse\n```\n\n> [!NOTE]\n> 工具環境中的 epsdk 在專案目錄內運行時會自動感知專案 `.venv`：\n> `epsdk install` 會將元件安裝進專案環境、`epsdk run` 使用專案環境運行機器人，\n> 框架本體仍由工具環境提供，兩邊互不干擾。\n>\n> 一鍵安裝腳本（`get.erisdev.com/install.sh` / `install.ps1`）的選單中\n> 同樣提供「全域 CLI 安裝（uv tool）」方式，會自動安裝 uv 並引導完成。"
+      "translation": "## 安裝方式\n\n### 方式一：使用 pip 安裝\n\n```bash\n# 安裝 ErisPulse\npip install ErisPulse\n\n# 升級到最新版本\npip install ErisPulse --upgrade\n```\n\n### 方式二：使用 uv 安裝（推薦）\n\nuv 是一個更快的 Python 工具鏈，推薦用於開發環境。\n\n#### 安裝 uv\n\n```bash\n# 使用 pip 安裝 uv\npip install uv\n\n# 驗證安裝\nuv --version\n```\n\n#### 建立虛擬環境\n\n```bash\n# 建立項目目錄\nmkdir my_bot && cd my_bot\n\n# 安裝 Python 3.12\nuv python install 3.12\n\n# 建立虛擬環境\nuv venv\n```\n\n#### 激活虛擬環境\n\n```bash\n# Windows\n.venv\\Scripts\\activate\n\n# Linux/Mac\nsource .venv/bin/activate\n```\n\n#### 安裝 ErisPulse\n\n```bash\n# 安裝 ErisPulse\nuv pip install ErisPulse --upgrade\n```\n\n### 方式三：使用 uv tool 安裝（全域 CLI，推薦）\n\n只想把 `epsdk` 當全域命令列工具使用時，`uv tool install` 是最乾淨的方式——\nepsdk 運行在獨立的工具環境中，不污染任何專案環境：\n\n```bash\n# 安裝（epsdk 立即可用，無需激活任何虛擬環境）\nuv tool install ErisPulse\n\n# 升級（或直接使用 epsdk self-update，會自動走此通道）\nuv tool upgrade ErisPulse\n```\n\n> [!NOTE]\n> 工具環境裡的 epsdk 在專案目錄內運行時會自動感知專案 `.venv`：\n> `epsdk install` 將組件安裝進專案環境、`epsdk run` 使用專案環境運行機器人，\n> 框架本體仍由工具環境提供，兩邊互不干擾。\n>\n> 一鍵安裝腳本（`get.erisdev.com/install.sh` / `install.ps1`）的選單中\n> 同樣提供「全域 CLI 安裝（uv tool）」方式，會自動安裝 uv 並引導完成。"
     },
     {
       "hash": "ecbe440ceb6ced627662296077022155",
-      "translation": "## 項目初始化與模組安裝\n\n安裝完成後，項目初始化、模組安裝、運行的完整流程見 [5 分鐘快速開始](../quick-start.md)。\n\n### 方式四：使用 ErisPulse-App 客戶端（免終端）\n\n不想安裝 Python 環境？[ErisPulse-App](../ecosystem/app-tw.md) 是官方全平台客戶端\n（Android / Windows / Linux / macOS），**手機直接運行**，桌面版支援最小化到\n系統托盤後台常駐；內建 Python 運行時與 ErisPulse SDK，無需終端與手動配置：\n\n- 從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 按平台選擇下載\n  （Android `online`/`offline` APK、Windows `setup.exe`/`zip`、Linux `tar.gz`、macOS `zip`）\n- 在 App 內建立並啟動實例，透過原生介面管理適配器與模組、瀏覽模組商店\n\n> 完整說明見 [ErisPulse-App 安裝與使用](../ecosystem/app-tw.md)。"
+      "translation": "## 專案初始化與模組安裝\n\n安裝完成後，專案初始化、模組安裝、運行的完整流程見 [5 分鐘快速入門](../quick-start.md)。\n\n### 方式四：使用 ErisPulse-App 客戶端（免終端）\n\n不想裝 Python 環境？[ErisPulse-App](../ecosystem/app-tw.md) 是官方全平台客戶端\n（Android / Windows / Linux / macOS），**手機直接運行**，桌面版支援最小化到\n系統托盤後台常駐；內建 Python 運行時與 ErisPulse SDK，無需終端與手動配置：\n\n- 從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 按平台選擇下載\n  （Android `online`/`offline` APK、Windows `setup.exe`/`zip`、Linux `tar.gz`、macOS `zip`）\n- 在 App 內建立並啟動實例，透過原生介面管理適配器與模組、瀏覽模組商店\n\n> 完整說明見 [ErisPulse-App 安裝與使用](../ecosystem/app-tw.md)。"
     },
     {
       "hash": "0cba7617f7a40bf89b6ae47d67267c5f",
-      "translation": "## 驗證安裝\n\n### 檢查安裝\n\n```bash\n# 檢查 ErisPulse 版本\nepsdk --version\n```\n\n### 執行測試\n\n```bash\n# 執行項目\nepsdk run main.py\n```\n\n如果看到類似的輸出，表示安裝成功：\n\n```\n[INFO] 正在初始化 ErisPulse...\n[INFO] 適配器已載入: Yunhu\n[INFO] 模組已載入: MyModule\n[INFO] ErisPulse 初始化完成\n```"
+      "translation": "## 驗證安裝\n\n### 檢查安裝\n\n```bash\n# 檢查 ErisPulse 版本\nepsdk --version\n```\n\n### 運行測試\n\n```bash\n# 運行專案\nepsdk run main.py\n```\n\n如果看到類似的輸出說明安裝成功：\n\n```\n[INFO] 正在初始化 ErisPulse...\n[INFO] 適配器已加載: Yunhu\n[INFO] 模組已加載: MyModule\n[INFO] ErisPulse 初始化完成\n```"
     },
     {
-      "hash": "727664c87a983ef55dd04fd57ec28a48",
-      "translation": "## 常見問題\n\n### 安裝失敗\n\n1. 檢查 Python 版本是否 >= 3.10（推薦 3.10 - 3.14；3.14t free-threaded 無 GIL 建構暫未列入正式支援，框架以實驗性 CI 冒煙持續監測）\n2. 嘗試使用 `uv pip install ErisPulse` 替代 `pip install`\n3. 如果提示權限錯誤，嘗試 `pip install --user ErisPulse` 或使用虛擬環境\n4. 如果在企業代理環境下遇到 SSL 證書錯誤，嘗試 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`\n5. 確保網路連接正常，pip 源可訪問\n\n### 配置錯誤\n\n1. 檢查 `config.toml` 語法是否正確（TOML 格式對縮進和引號敏感）\n2. 確認所有必需的配置項都已填寫\n3. 查看終端日誌獲取詳細錯誤資訊\n4. 使用 `epsdk init` 重新生成配置檔案\n\n### 模組安裝失敗\n\n1. 確認模組名稱拼寫正確（大小寫敏感）\n2. 檢查網路連接\n3. 使用 `epsdk list-remote` 查看可用模組列表\n4. 確認模組與你目前 SDK 版本相容\n\n### Windows PowerShell 執行策略\n\n如果 PowerShell 提示「無法載入檔案...因為在此系統上禁止執行腳本」：\n\n```powershell\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser\n```\n\n### Debian/Ubuntu 虛擬環境建立失敗\n\n如果安裝腳本提示「虛擬環境建立失敗」，且錯誤資訊包含 `ensurepip is not available`，是因為 Debian/Ubuntu 預設未安裝 `python3-venv`（系統 Python 的 `ensurepip` 被禁用）：\n\n```bash\nsudo apt install python3.13-venv   # 按實際 Python 版本安裝對應套件\n# 或安裝通用元套件：\nsudo apt install python3-venv\n```\n\n安裝後重新執行安裝腳本即可。新版安裝腳本在偵測到該問題時會主動詢問並嘗試自動安裝對應系統套件；也可以改用 uv（`uv venv` 不依賴 `ensurepip`）。"
+      "hash": "0384f664d06e6bafd6afd8059a20717c",
+      "translation": "## 常見問題\n\n### 安裝失敗\n\n1. 檢查 Python 版本是否在支援範圍內（支援 3.10 – 3.14；3.14t 自由線程 / 無 GIL 構建為實驗性支持，不作正式承諾）\n2. 嘗試使用 `uv pip install ErisPulse` 替代 `pip install`\n3. 如果提示權限錯誤，嘗試 `pip install --user ErisPulse` 或使用虛擬環境\n4. 如果在企業代理環境下遇到 SSL 證書錯誤，嘗試 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`\n5. 確保網路連接正常，pip 源可存取\n\n### 配置錯誤\n\n1. 檢查 `config.toml` 語法是否正確（TOML 格式對縮進和引號敏感）\n2. 確認所有必需的配置項都已填寫\n3. 查看終端日誌獲取詳細錯誤資訊\n4. 使用 `epsdk init` 重新生成配置檔案\n\n### 模組安裝失敗\n\n1. 確認模組名稱拼寫正確（大小寫敏感）\n2. 檢查網路連接\n3. 使用 `epsdk list-remote` 查看可用模組列表\n4. 確認模組與你當前 SDK 版本相容\n\n### Windows PowerShell 執行策略\n\n如果 PowerShell 提示「無法載入檔案...在此系統上禁止執行腳本」：\n\n```powershell\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser\n```\n\n### Debian/Ubuntu 虛擬環境建立失敗\n\n如果安裝腳本提示「虛擬環境建立失敗」，且錯誤資訊包含 `ensurepip is not available`，是因為 Debian/Ubuntu 預設未安裝 `python3-venv`（系統 Python 的 `ensurepip` 被禁用）：\n\n```bash\nsudo apt install python3.13-venv   # 按實際 Python 版本安裝對應套件\n# 或安裝通用元套件：\nsudo apt install python3-venv\n```\n\n安裝後重新執行安裝腳本即可。新版安裝腳本在偵測到該問題時會主動詢問並嘗試自動安裝對應系統套件；也可以改用 uv（`uv venv` 不依賴 `ensurepip`）。"
     },
     {
-      "hash": "f8f13704538cc520848853879c0ee83f",
-      "translation": "## 下一步\n\n- [CLI 命令參考](cli-reference.md) - 瞭解所有命令列指令\n- [配置檔說明](configuration.md) - 詳細了解配置選項"
+      "hash": "8a354683d7f9d64162e53caa80283966",
+      "translation": "## 下一步\n\n- **裝好後初始化專案、安裝適配器**：跟著 [5 分鐘快速入門](../quick-start.md) 走完剩餘步驟\n- **日常用命令列管理組件**：查 [CLI 命令參考](cli-reference-tw.md)\n- **要填令牌、調端口**：看 [配置檔案說明](configuration-tw.md)"
     }
   ]
 }

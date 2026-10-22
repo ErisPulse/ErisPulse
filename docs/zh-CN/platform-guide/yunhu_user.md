@@ -6,7 +6,7 @@ YunhuUserAdapter 是基于云湖用户账户协议构建的适配器，通过用
 
 ## 文档信息
 
-- 对应模块版本: 4.2.0
+- 对应模块版本: 4.4.0
 - 维护者: wsu2059
 
 ## 基本信息
@@ -109,6 +109,7 @@ await yunhu_user.Send.To("user", user_id).Text("Hello World!")
 - `.Text(text: str, buttons: Optional[List] = None)`：发送纯文本消息。
 - `.Html(html: str, buttons: Optional[List] = None)`：发送HTML格式消息。
 - `.Markdown(markdown: str, buttons: Optional[List] = None)`：发送Markdown格式消息。
+- `.MergeForward(nodes, title="合并聊天记录")`：发送合并转发消息（渲染为 `<details>` 折叠 HTML 卡片，msg_type=8 HTML 通道发出）。
 - `.Image(file: Union[str, bytes], buttons: Optional[List] = None)`：发送图片消息，支持URL、本地路径或二进制数据。
 - `.Video(file: Union[str, bytes], buttons: Optional[List] = None)`：发送视频消息，支持URL、本地路径或二进制数据。
 - `.Audio(file: Union[str, bytes], buttons: Optional[List] = None)`：发送语音消息，支持URL、本地路径或二进制数据，自动检测音频时长。

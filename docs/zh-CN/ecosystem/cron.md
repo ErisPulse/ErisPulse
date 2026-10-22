@@ -1,5 +1,8 @@
 # ErisPulse-Cron
 
+> [!TIP]
+> **什么时候需要读这篇**：当你的模块需要定时/延时触发逻辑（定时提醒、周期监控、Cron 表达式调度），且希望任务在框架重启后不丢失时读这篇。不需要则跳过。
+
 [ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) 是 ErisPulse 生态的**定时任务调度模块**，为其他模块提供统一的定时任务 API：支持一次性定时、间隔循环、Cron 表达式三种任务类型，回调传参，SQLite 持久化（重启不丢任务）。
 
 > [!IMPORTANT]
@@ -114,4 +117,11 @@ Cron 的任务数据是**持久化资产**：任务创建方模块被卸载或�
 
 - [GitHub 仓库](https://github.com/wsu2059q/ErisPulse-Cron)
 - [PyPI 页面](https://pypi.org/project/ErisPulse-Cron/)
-- [归属权（owner）系统](../advanced/ownership.md)
+
+---
+
+## 下一步
+
+- **任务触发后给用户发消息**：在回调里用 [Send DSL](../developer-guide/adapters/send-dsl.md) 或 `event.reply()`（见[事件系统 API](../api-reference/event-system.md)）送达提醒
+- **可视化管理定时任务**：安装 [ErisPulse-Dashboard](dashboard.md) 后 Cron 自动注册管理视窗
+- **模块卸载时的回调清理细节**：[归属权（owner）系统](../advanced/ownership.md)

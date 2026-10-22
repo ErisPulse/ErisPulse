@@ -369,7 +369,7 @@ finally:
 ---
 
 
-##### `hold(event: Any, owner: str | None = None, ttl: float = DEFAULT_INTERACTION_LEASE_TTL_SECS)`
+##### `hold(event: Any, owner: str | None = None, ttl: float = DEFAULT_INTERACTION_LEASE_TTL_SECS) -> Any`
 
 会话互斥租约的上下文管理器形式
 

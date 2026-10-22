@@ -18,6 +18,8 @@
 
 # Contribution Guide
 
+> **Rule of precedence**: The contributor rulebook in [`AGENTS.md`](AGENTS.md) is authoritative; this guide describes the workflows and steps. Where the two conflict, `AGENTS.md` prevails.
+
 Thank you for your interest in ErisPulse! ErisPulse aims to build an easy-to-use, efficient, and extensible multi-platform bot development framework. Every contribution — whether code, documentation, issue reports, or ideas — helps make this project better.
 
 ## Getting Started
@@ -83,7 +85,7 @@ uv sync --extra test
 # Activate venv: source .venv/bin/activate (macOS/Linux) or .venv\Scripts\activate (Windows)
 ```
 
-> ErisPulse is developed with Python 3.13, compatible with Python 3.10+
+> ErisPulse is developed with Python 3.13, supporting Python 3.10–3.14 (3.14t free-threaded is experimental, monitored by CI smoke tests)
 
 ### Project Structure
 
@@ -215,6 +217,8 @@ Thank you for contributing!
 
 # 项目贡献指南
 
+> **规则优先级**：贡献细则以 [`AGENTS.md`](AGENTS.md) 为权威；本文描述流程与步骤；两者冲突时以 `AGENTS.md` 为准。
+
 感谢您对 ErisPulse 的关注！ErisPulse 致力于打造一个易用、高效、可扩展的多平台机器人开发框架。每一个贡献，无论是代码、文档、问题报告还是想法建议，都帮助这个项目变得更好。
 
 ## 第一次为 ErisPulse 贡献需要什么
@@ -280,7 +284,7 @@ uv sync --extra test
 # 激活虚拟环境: source .venv/bin/activate (macOS/Linux) 或 .venv\Scripts\activate (Windows)
 ```
 
-> ErisPulse 使用 Python 3.13 开发，兼容 Python 3.10+
+> ErisPulse 使用 Python 3.13 开发，支持 Python 3.10–3.14（3.14t 自由线程 / 无 GIL 构建为实验性，由 CI 冒烟持续监测）
 
 ### 项目结构
 
@@ -429,6 +433,8 @@ uv run basedpyright src/ErisPulse
 
 # 專案貢獻指南
 
+> **規則優先級**：貢獻細則以 [`AGENTS.md`](AGENTS.md) 為權威；本文描述流程與步驟；兩者衝突時以 `AGENTS.md` 為準。
+
 感謝您對 ErisPulse 的關注！ErisPulse 致力於打造一個易用、高效、可擴充的多平台機器人開發框架。每一個貢獻，無論是程式碼、文件、問題回報還是想法建議，都幫助這個專案變得更好。
 
 ## 第一次為 ErisPulse 貢獻需要什麼
@@ -494,7 +500,7 @@ uv sync --extra test
 # 啟用虛擬環境: source .venv/bin/activate (macOS/Linux) 或 .venv\Scripts\activate (Windows)
 ```
 
-> ErisPulse 使用 Python 3.13 開發，相容 Python 3.10+
+> ErisPulse 使用 Python 3.13 開發，支援 Python 3.10–3.14（3.14t 自由執行緒 / 無 GIL 建置為實驗性，由 CI 冒煙持續監測）
 
 ### 專案結構
 
@@ -633,6 +639,8 @@ uv run basedpyright src/ErisPulse
 
 # プロジェクト貢献ガイド
 
+> **ルールの優先順位**：貢献ルールの詳細は [`AGENTS.md`](AGENTS.md) が権威です。本文書はプロセスと手順を記述します。両者が矛盾する場合は `AGENTS.md` を優先します。
+
 ErisPulse に関心をお寄せいただきありがとうございます！ErisPulse は、使いやすく、効率的で、拡張性のあるマルチプラットフォームボット開発フレームワークの構築を目指しています。コード、ドキュメント、問題報告、アイデアなど、すべての貢献がこのプロジェクトをより良くします。
 
 ## 初めての貢献
@@ -698,7 +706,7 @@ uv sync --extra test
 # 仮想環境を有効化: source .venv/bin/activate (macOS/Linux) または .venv\Scripts\activate (Windows)
 ```
 
-> ErisPulse は Python 3.13 で開発、Python 3.10+ と互換
+> ErisPulse は Python 3.13 で開発され、Python 3.10–3.14 をサポートします（3.14t フリースレッド / GIL なしビルドは実験的で、CI スモークテストで継続監視）
 
 ### プロジェクト構成
 
@@ -827,6 +835,8 @@ uv run basedpyright src/ErisPulse
 
 # Руководство по вкладу
 
+> **Приоритет правил**: подробные правила вклада — в [`AGENTS.md`](AGENTS.md); этот документ описывает процессы и шаги. При противоречии приоритет у `AGENTS.md`.
+
 Благодарим за интерес к ErisPulse! ErisPulse стремится создать простой в использовании, эффективный и расширяемый фреймворк для разработки мультиплатформенных ботов. Каждый вклад — будь то код, документация, отчёты об ошибках или идеи — помогает сделать проект лучше.
 
 ## С чего начать
@@ -892,7 +902,7 @@ uv sync --extra test
 # Активация venv: source .venv/bin/activate (macOS/Linux) или .venv\Scripts\activate (Windows)
 ```
 
-> ErisPulse разрабатывается на Python 3.13, совместим с Python 3.10+
+> ErisPulse разрабатывается на Python 3.13, поддерживается Python 3.10–3.14 (3.14t free-threaded — экспериментально, отслеживается CI-смоками)
 
 ### Структура проекта
 

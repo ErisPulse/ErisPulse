@@ -558,7 +558,8 @@ class TestDuplicateRegistrationWarning:
                 current_owner.reset(token_b)
 
         assert log_mock.warning.called  # 输出重名覆盖告警
-        assert command_handler.commands["dup"]["func"] is dup_b  # 后注册者生效
+        # 后注册者生效（@command 返回流代理，注册表存原函数）
+        assert command_handler.commands["dup"]["func"] is dup_b._flow_func
 
     def test_same_owner_reregister_no_warning(self):
         with patch.object(command_module, "logger") as log_mock:
@@ -577,7 +578,7 @@ class TestDuplicateRegistrationWarning:
                 current_owner.reset(token)
 
         assert not log_mock.warning.called  # 同 owner 重注册（如懒激活占位替换）不告警
-        assert command_handler.commands["dup2"]["func"] is dup2_b
+        assert command_handler.commands["dup2"]["func"] is dup2_b._flow_func
 
 
 class TestHelpGrouping:

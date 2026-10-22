@@ -11,6 +11,7 @@ ErisPulse 基础加载器
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from typing import Any
 
 from ...Core.config import config
@@ -160,6 +161,65 @@ class BaseLoader(ABC):
             detail=f"min_sdk_version={declared}, current={current}",
         )
         return False
+
+    def _ep_gate(self, meta_name: str, manager_instance: Any) -> tuple[bool, bool]:
+        """
+        entry-point 统一前闸门：未注册则补配置注册（默认启用），已禁用则跳过
+
+        :param meta_name: 组件名称
+        :param manager_instance: 管理器实例
+        :return: (是否继续加载, 是否为新注册)
+
+        {!--< internal-use >!--}
+        供 ModuleLoader / AdapterLoader 的 _process_entry_point 序言调用
+        {!--< /internal-use >!--}
+        """
+        is_new = False
+        if not manager_instance.exists(meta_name):
+            manager_instance._config_register(meta_name)
+            is_new = True
+        return manager_instance.is_enabled(meta_name), is_new
+
+    def _guarded_ep_load(
+        self, kind: str, meta_name: str, load_fn: Callable[[], Any]
+    ) -> Any | None:
+        """
+        entry-point 加载统一错误信封
+
+        SystemExit 与异常在此统一转为"严格模式登记 + 错误日志 + 诊断留痕"并
+        返回 None——单组件加载失败不阻断同组其余组件，也绝不静默。
+
+        :param kind: 组件类别（``module`` / ``adapter``，用于严格模式登记与文案键）
+        :param meta_name: 组件名称
+        :param load_fn: 实际加载与信息构建逻辑（"跳过该组件"分支返回 False 即可）
+        :return: load_fn 的返回值；加载失败时 None
+
+        {!--< internal-use >!--}
+        供 ModuleLoader / AdapterLoader 的 _process_entry_point 包裹中段逻辑
+        {!--< /internal-use >!--}
+        """
+        try:
+            return load_fn()
+        except SystemExit as e:
+            self._strict().record_failure(
+                meta_name, kind, "systemexit", detail=f"SystemExit({e.code})"
+            )
+            logger.error(
+                i18n.t(f"loader.{kind}.systemexit_single", name=meta_name, code=e.code)
+            )
+        except Exception as e:
+            self._strict().record_failure(meta_name, kind, "load_failed", detail=str(e))
+            logger.error(
+                i18n.t(f"loader.{kind}.load_single_failed", name=meta_name, error=e)
+            )
+            from ...runtime.diagnostics import log_diagnostic
+
+            log_diagnostic(
+                e,
+                hint_key=f"loader.{kind}.diag_hint",
+                hint_params={"name": meta_name},
+            )
+        return None
 
     @abstractmethod
     def _get_entry_point_group(self) -> str:

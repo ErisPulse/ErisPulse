@@ -351,7 +351,7 @@ class CLI:
         )
         i18n.increment_lang_hint()
 
-    def run(self):
+    def run(self) -> None:
         """
         运行 CLI
 

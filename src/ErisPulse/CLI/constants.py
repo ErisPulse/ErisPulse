@@ -62,6 +62,40 @@ RUN_PERSISTENT_CRASH_HINT_THRESHOLD: int = 3
 #           正式版本（与 create.py 的 _TEMPLATE_MIN_SDK_VERSION 同步升版）。
 INIT_ERISPULSE_DEPENDENCY: str = "erispulse>=2.10.0"
 
+# 子进程终止后的等待上限（秒）：terminate() 发出后等待退出，超时即 kill()。
+# 使用位置: CLI/commands/run.py（框架子进程三处停止路径）、
+#           CLI/utils/package_manager.py（pip/uv 子进程中断收尾）。
+# 修改影响: 调小会更容易走强杀分支（可能留下半完成的安装状态），调大拖慢停止体感。
+CLI_CHILD_TERMINATE_WAIT_SECS: float = 5.0
+
+# uv 可用性探测（python -m uv --version）的超时（秒）。
+# 使用位置: CLI/utils/package_manager.py 的 _resolve_uv_command。
+# 修改影响: 调大会在无 uv 环境下拖慢首次安装探测，调小可能误判 uv 不可用。
+CLI_UV_PROBE_TIMEOUT_SECS: float = 5.0
+
+# 安装/卸载进度轮询间隔（秒）。
+# 使用位置: CLI/utils/package_manager.py 的子进程输出轮询循环。
+# 修改影响: 调小 CPU 占用略增、输出更即时；调大进度条变钝。
+CLI_PACKAGE_POLL_INTERVAL_SECS: float = 0.5
+
+# 拉取远端包元数据（适配器/模块索引）的超时（秒）。
+# 使用位置: CLI/commands/init.py 的两处 future.result 等待。
+# 修改影响: 调大弱网更宽容，调小弱网下更易失败进降级路径。
+CLI_FETCH_METADATA_TIMEOUT_SECS: float = 10.0
+
+# 组件内省子进程（python -c 脚本）的超时（秒）。
+# 使用位置: CLI/commands/types.py 的 import-or-load 内省。
+# 修改影响: 调大可容纳冷启动慢的目标环境，调大会拉长 doctor/create 体感。
+CLI_INTROSPECT_TIMEOUT_SECS: float = 60.0
+
+# 自更新子脚本启动后的静置延时（秒）：等旧进程释放文件锁/环境稳定。
+# 使用位置: CLI/utils/package_manager.py 的自更新 f-string 脚本（值内插为字面量）。
+CLI_SELFUPDATE_BOOT_DELAY_SECS: float = 2.0
+
+# 自更新子脚本内单次 pip/uv 命令的超时（秒）。
+# 使用位置: 同上（值内插为字面量）。
+CLI_SELFUPDATE_RUN_TIMEOUT_SECS: float = 300.0
+
 __all__ = [
     "ADAPTER_ENTRY_POINT_GROUP",
     "INIT_ERISPULSE_DEPENDENCY",
@@ -73,4 +107,11 @@ __all__ = [
     "HARD_RESTART_EXIT_CODE",
     "MODULE_ENTRY_POINT_GROUP",
     "PYPI_PACKAGE_JSON_URL_TEMPLATE",
+    "CLI_CHILD_TERMINATE_WAIT_SECS",
+    "CLI_UV_PROBE_TIMEOUT_SECS",
+    "CLI_PACKAGE_POLL_INTERVAL_SECS",
+    "CLI_FETCH_METADATA_TIMEOUT_SECS",
+    "CLI_INTROSPECT_TIMEOUT_SECS",
+    "CLI_SELFUPDATE_BOOT_DELAY_SECS",
+    "CLI_SELFUPDATE_RUN_TIMEOUT_SECS",
 ]

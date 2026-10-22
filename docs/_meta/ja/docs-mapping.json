@@ -224,7 +224,7 @@
     "プラットフォームガイド": {
       "description": "各プラットフォームの機能とアダプターの説明",
       "icon": "fa-plug",
-      "count": 17,
+      "count": 18,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures ドキュメント",
@@ -245,7 +245,7 @@
           "icon": "fa-comments"
         },
         {
-          "title": "Telegramプラットフォームの特徴ドキュメント",
+          "title": "Telegramプラットフォーム特徴ドキュメント",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
@@ -257,7 +257,7 @@
           "icon": "fa-envelope"
         },
         {
-          "title": "雲湖プラットフォームの機能ドキュメント",
+          "title": "雲湖プラットフォームの特徴ドキュメント",
           "path": "platform-guide/yunhu.md",
           "level": 1,
           "icon": "fa-cloud"
@@ -317,8 +317,14 @@
           "icon": "fa-wrench"
         },
         {
-          "title": "Sandbox プラットフォームの機能ドキュメント",
+          "title": "Sandboxプラットフォームの特徴ドキュメント",
           "path": "platform-guide/sandbox.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "SnowLumaプラットフォームの特徴ドキュメント",
+          "path": "platform-guide/snowluma.md",
           "level": 1,
           "icon": "fa-plug"
         },

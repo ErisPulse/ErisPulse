@@ -24,14 +24,14 @@ version 命令
 #### 方法列表
 
 
-##### `add_arguments(parser)`
+##### `add_arguments(parser: ArgumentParser) -> None`
 
 version 命令无额外参数
 
 ---
 
 
-##### `execute(args)`
+##### `execute(args: Namespace) -> None`
 
 输出版本信息面板
 

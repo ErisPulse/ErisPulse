@@ -1,15 +1,20 @@
 # ErisPulse-Cron
 
-[ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) は ErisPulse エコシステムの**スケジュールタスクモジュール**です。他のモジュールに統一されたスケジュールタスク API を提供します。1回限りのスケジュール、間隔ループ、Cron 表現式の3種類のタスクタイプをサポートし、コールバックにパラメータを渡すことができます。SQLite を用いた永続化により、再起動してもタスクが失われることはありません。
+> [!TIP]  
+> **このドキュメントを読む必要があるタイミング**:  
+> モジュールで定時/遅延実行のロジック（定時アラーム、周期的な監視、Cron 式によるスケジューリング）が必要で、フレームワークの再起動後にタスクが失われないことを望む場合にこのドキュメントを読む。不要であればスキップしてください。
 
-> [!IMPORTANT]
-> Cron は ErisPulse フレームワークの組み込み機能ではなく、個別にインストールする必要があります：
->
+[ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) は ErisPulse エコシステムの**定時タスクスケジューラーモジュール**であり、他のモジュールに統一された定時タスク API を提供します。このモジュールは、一度限りのタイマー、間隔繰り返し、Cron 式の 3 種類のタスクタイプをサポートし、コールバックにパラメータを渡すことができ、SQLite による永続化により、再起動してもタスクが失われません。
+
+> [!IMPORTANT]  
+> Cron は ErisPulse フレームワークの内蔵機能ではなく、個別にインストールする必要があります:  
+>  
 > ```bash
 > epsdk install Cron
 > ```
 
-インストール後は `sdk.Cron` を使ってすべてのインターフェースにアクセスできます。
+インストール後は `sdk.Cron` を通じてすべてのインターフェースにアクセスできます。  
+---
 
 ## 機能速覧
 
@@ -104,6 +109,13 @@ Cron のタスクデータは**永続化されたアセット**です。タス�
 
 ## 関連リンク
 
-- [GitHub リポジトリ](https://github.com/wsu2059q/ErisPulse-Cron)
+- [GitHub 仓库](https://github.com/wsu2059q/ErisPulse-Cron)
 - [PyPI ページ](https://pypi.org/project/ErisPulse-Cron/)
-- [所有権（owner）システム](../advanced/ownership.md)
+
+---
+
+## 次のステップ
+
+- **タスクのトリガー後にユーザーにメッセージを送信**：コールバック内で [Send DSL](../developer-guide/adapters/send-dsl.md) または `event.reply()`（[イベントシステム API](../api-reference/event-system.md) を参照）を使用してリマインダーを送信します。
+- **視覚的にスケジュールされたタスクを管理**：[ErisPulse-Dashboard](dashboard.md) をインストールすると、Cron が自動的に管理用のウィンドウを登録します。
+- **モジュールのアンインストール時のコールバックのクリーンアップの詳細**：[所有権（owner）システム](../advanced/ownership.md)

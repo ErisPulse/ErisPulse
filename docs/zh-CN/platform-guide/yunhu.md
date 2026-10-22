@@ -6,7 +6,7 @@ YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功�
 
 ## 文档信息
 
-- 对应模块版本: 4.4.0
+- 对应模块版本: 4.5.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -73,6 +73,7 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 - `.Text(text: str)`：发送纯文本消息。
 - `.Html(html: str)`：发送HTML格式消息。
 - `.Markdown(markdown: str)`：发送Markdown格式消息。
+- `.MergeForward(nodes, title="合并聊天记录")`：发送合并转发消息（渲染为 `<details>` 折叠 HTML 卡片，经 html 通道发出）。
 - `.A2UI(text: str)`：发送A2UI格式消息。
 - `.Image(file: bytes, stream: bool = False, filename: str = None)`：发送图片消息，支持流式上传和自定义文件名。
 - `.Video(file: bytes, stream: bool = False, filename: str = None)`：发送视频消息，支持流式上传和自定义文件名。

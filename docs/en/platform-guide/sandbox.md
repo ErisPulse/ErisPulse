@@ -4,9 +4,9 @@ SandboxAdapter is the built-in sandbox adapter of ErisPulse, used for local deve
 
 ---
 
-## Documentation Information
+## Document Information
 
-- Corresponding Module Version: 4.1.0
+- Corresponding Module Version: 4.2.0
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -37,6 +37,7 @@ result = await sandbox.Api.get_supported_actions()
 
 ## Usage Instructions
 
-- The sandbox provides virtual users and groups, and modules can send and receive messages just like on a real platform.
-- The web debugging panel allows you to manually send messages to trigger the module's processing logic.
+- The sandbox provides virtual users and groups, allowing modules to send and receive messages just like on a real platform.
+- The Web debugging panel allows manual message sending to trigger module processing logic.
 - Message data is persistently stored and can be restored after a restart.
+- `.MergeForward(nodes, title="Merge Chat Records")`: Sends a merged forward message (rendered as a `<details>` collapsed HTML card, sent via the HTML channel), used to verify the module's merged forward logic.

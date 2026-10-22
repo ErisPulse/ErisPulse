@@ -1,5 +1,8 @@
 # ErisPulse 请求操作规范
 
+> [!TIP]
+> **什么时候需要读这篇**：当你的适配器需要处理好友请求/群邀请（转换请求事件、实现 `accept`/`reject`），或模块中要用 `event.approve()` / `event.reject()` 审批请求时对照本文。不需要则跳过。
+
 本文档定义了 ErisPulse 适配器中请求事件操作的标准化规范，包括请求事件的字段要求、Request DSL 的使用方式和适配器实现要求。
 
 ## 1. 概述
@@ -371,7 +374,10 @@ BaseAdapter
 
 ## 8. 相关文档
 
-- [事件转换标准](event-conversion.md) - 完整的事件转换规范
-- [API 响应标准](api-response.md) - 适配器 API 响应格式标准
+**实现请求操作时配套对照**：
+- [事件转换标准](event-conversion.md) - 完整的事件转换规范（含 `request_id` 字段要求）
+- [API 响应标准](api-response.md) - 适配器 API 响应格式标准（操作返回值与错误码）
+
+**同一适配器的其它 DSL**：
 - [发送方法规范](send-method-spec.md) - Send 类的方法命名和参数规范
 - [会话类型标准](session-types.md) - 会话类型定义和映射关系

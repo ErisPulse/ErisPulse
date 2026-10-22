@@ -327,8 +327,13 @@ class TestTargetResolution:
     async def test_disabled(self, manager):
         await _load(manager, "Svc", _SvcModule)
         manager.disable("Svc")
-        with pytest.raises(ModuleNotAvailableError):
-            await manager.call("Svc", "get_value")
+        try:
+            with pytest.raises(ModuleNotAvailableError):
+                await manager.call("Svc", "get_value")
+        finally:
+            # 恢复启用态：disable 的落盘写入若残留（配置 watcher 与夹具还原
+            # 存在竞态窗口），会让后续 Svc 用例不定时读到「未启用」
+            manager.enable("Svc")
 
     @pytest.mark.asyncio
     async def test_lazy_wakeup(self, manager):

@@ -46,6 +46,7 @@ from .constants import (
     EVENT_CONNECTION_UNREGISTERED,
 )
 from .lifecycle import lifecycle
+from .logger import logger
 
 
 @dataclass
@@ -517,8 +518,9 @@ class ConnectionManager:
                     conn.close(force=True),
                     timeout=DEFAULT_CONNECTION_CLOSE_TIMEOUT_SECS,
                 )
-            except Exception:
-                pass  # 单条关闭失败不阻塞回收链；连接随后由底层自行收尾
+            except Exception as e:
+                # 单条关闭失败不阻塞回收链；连接随后由底层自行收尾，但需留痕
+                logger.debug(f"connection close failed during reclaim: {e}")
             self.unregister(conn)
             closed += 1
         return closed

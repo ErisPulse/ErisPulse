@@ -389,3 +389,15 @@ services:
 | 多架构 | 支持 amd64/arm64 | 与架构无关 |
 
 两种方式不冲突——你可以同时通过 PyPI 发布模块到模块商店，又通过 GHCR 提供开箱即用的 Docker 镜像。
+
+## 下一步
+
+### 发布前把质量关
+
+- [模块测试（ErisPulse-Testing）](testing.md) — 用自动化测试先跑一遍上面的检查清单
+- [模块最佳实践](modules/best-practices.md) / [适配器最佳实践](adapters/best-practices.md) — 发布前的工程化收尾
+
+### 发布后让用户用起来
+
+- [CLI 命令](../user-guide/cli-reference.md) — 用户侧 `epsdk install` / `epsdk upgrade` 的行为
+- [平台特性指南](../platform-guide/README.md) — 适配器作者维护平台文档的落点

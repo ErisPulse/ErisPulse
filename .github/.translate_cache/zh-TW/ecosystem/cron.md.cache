@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "e523160c99fc952497915ef1ab070d45",
-  "file_hash": "e523160c99fc952497915ef1ab070d45",
-  "translated_at": "2026-09-10T11:50:39.040219",
+  "hash": "1b189d17adcd178dbc13cf39b718d5a7",
+  "file_hash": "1b189d17adcd178dbc13cf39b718d5a7",
+  "translated_at": "2026-10-22T11:54:45.067576",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "99cbf532c64c02b92299e7ffb6e2baf0",
-      "translation": "# ErisPulse-Cron\n\n[ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) 是 ErisPulse 生態的**定時任務調度模組**，為其他模組提供統一的定時任務 API：支援一次性定時、間隔循環、Cron 表達式三種任務類型，回呼傳參，SQLite 持久化（重啟不丟任務）。\n\n> [!IMPORTANT]\n> Cron **不是** ErisPulse 框架的內建功能，需要單獨安裝：\n>\n> ```bash\n> epsdk install Cron\n> ```\n\n安裝後透過 `sdk.Cron` 訪問全部接口。"
+      "hash": "d3fa44d7a51d01bb9fb9f8cedb4e85fe",
+      "translation": "# ErisPulse-Cron\n\n> [!TIP]\n> **什麼時候需要讀這篇**：當你的模組需要定時/延時觸發邏輯（定時提醒、週期監控、Cron 表達式調度），且希望任務在框架重啟後不遺失時讀這篇。不需要則跳過。\n\n[ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) 是 ErisPulse 生態的**定時任務調度模組**，為其他模組提供統一的定時任務 API：支援一次性定時、間隔循環、Cron 表達式三種任務類型，回呼傳參，SQLite 持久化（重啟不丟任務）。\n\n> [!IMPORTANT]\n> Cron **不是** ErisPulse 框架的內建功能，需要單獨安裝：\n>\n> ```bash\n> epsdk install Cron\n> ```\n\n安裝後透過 `sdk.Cron` 存取全部介面。\n\n---"
     },
     {
       "hash": "5ebd1ec7ac212e0bafb877a370d1f90f",
@@ -26,8 +26,12 @@
       "translation": "## 模組卸載時的行為\n\nCron 的任務資料是**持久化資產**：任務創建方模組被卸載或停用不會刪除已建立的任務。但該模組註冊的回呼句柄會被清除——基於歸屬權系統的[外部清理鉤子](../advanced/ownership.md#工具模組指南托管其它模組的句柄)，Cron 在替其他模組托管回呼時會自動記名，當對方模組被卸載/停用時會自動拋棄其回呼句柄，確保對方模組實例可以被正常回收。\n\n- 任務創建方**重新載入**後重新 `on_trigger` 即恢復接收觸發\n- 不再需要的任務可用 `sdk.Cron.cancel(task_id)` / `delete_task(task_id)` 清理"
     },
     {
-      "hash": "085dbb7129d2816884289cb6ae3cc23e",
-      "translation": "## 相關連結\n\n- [GitHub 倉庫](https://github.com/wsu2059q/ErisPulse-Cron)\n- [PyPI 頁面](https://pypi.org/project/ErisPulse-Cron/)\n- [歸屬權（owner）系統](../advanced/ownership.md)"
+      "hash": "be6c0aaa8c8ea00f0f1bb7e2bb7067c3",
+      "translation": "## 相關連結\n\n- [GitHub 儲存庫](https://github.com/wsu2059q/ErisPulse-Cron)\n- [PyPI 頁面](https://pypi.org/project/ErisPulse-Cron/)\n\n---"
+    },
+    {
+      "hash": "2a4b310486131a226cc087ff52a9e057",
+      "translation": "## 下一步\n\n- **任務觸發後給使用者發送訊息**：在回呼裡用 [Send DSL](../developer-guide/adapters/send-dsl.md) 或 `event.reply()`（見[事件系統 API](../api-reference/event-system.md)）送達提醒\n- **視覺化管理定時任務**：安裝 [ErisPulse-Dashboard](dashboard.md) 後 Cron 自動註冊管理視窗\n- **模組卸載時的回呼清理細節**：[歸屬權（owner）系統](../advanced/ownership.md)"
     }
   ]
 }

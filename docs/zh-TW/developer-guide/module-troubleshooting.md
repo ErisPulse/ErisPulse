@@ -1,18 +1,17 @@
 # 模組排查指南
 
-> [!TIP]
-> **什麼時候需要閱讀本文**：當模組「沒有反應」、命令未觸發或事件未收到時進行排查。若無此情況則可跳過，不會影響其他功能的使用。
+> [!TIP]  
+> **什麼時候需要閱讀本文**：當機器人「沒有反應」時——模組已安裝但未載入、發出指令卻無回應、事件處理器未執行、修改程式碼 reload 後仍維持舊行為、模組明明已啟用卻收不到事件——請根據症狀對應到相應的排查場景。若不需排查則可跳過，這不會影響其他功能的使用。
 
-
-當模組「沒有反應」時，根據症狀可分為三類問題，每類問題皆有對應的框架診斷工具（RFC EPRFC-2026-001 方向五）：
+當模組「沒有反應」時，請根據症狀對應到相應的排查場景；前三類場景有框架內建的診斷工具可直接提供結論：
 
 | 症狀 | 診斷工具 | 定位層面 |
 |------|---------|---------|
-| 模組未加載 | `ErisPulse.runtime.explain_module(name)` | 注冊與加載鏈 |
+| 模組未載入 | `ErisPulse.runtime.explain_module(name)` | 注冊與載入鏈 |
 | 事件未響應 | `ErisPulse.runtime.explain_event(event)` | 分發入口檢查 |
-| 命令未觸發 | 分發決策鏈（測試端 `DispatchTrace` / 框架內建 `trace`） | 命令判定鏈 |
+| 命令未觸發 | 分發決策鏈（測試側 `DispatchTrace` / 框架內建 `trace`） | 命令判定鏈 |
 
-這兩個診斷函數均為**純讀取**操作，不會改變任何狀態，可在任意時刻調用；返回機器可讀取的 dict，搭配 `format_report()` 可渲染為人類可讀取的文本。
+上述兩個診斷函數均為**純讀取**操作，不會改變任何狀態，可在任何時刻調用；返回的 dict 為機器可讀取格式，搭配 `format_report()` 可渲染為人類可閱讀的文本。
 
 ## 場景一：模組未載入
 
@@ -108,8 +107,43 @@ print(final_verdict(records))           # 總結論
 
 `cooldown=` / `rate_limit=` / `usage_limit=` 命中時**預設靜默丟棄**（命令仍被認領，不漏給低优先級處理器），容易誤判為「命令壞了」：現象是部分使用者可用、部分使用者無回應，且決策鏈中出現對應 `stage` 的 `dropped` 記錄。`deprecated=` 命令則表現為呼叫時自動回覆廢棄文案（`deprecated_reject=True` 時拒絕執行）。
 
+## 場景四：改了程式碼 reload 後還是舊行為（2.11+）
+
+請依序核對：
+
+1. **看回傳值與失敗現場**：`reload` / `load` 回傳 `False` 時，直接呼叫
+   `sdk.module.last_error("模組名")`——回傳例外與完整 traceback（含出錯行號），
+   無需翻查日誌檔案；`module.get_info(名字)["last_error"]` 同源。
+2. **語法錯誤不會卸載**：reload 在卸載前做語法預檢，失敗即拒絕（舊實例繼續提供服務），
+   日誌會給出檔案 + 行號；修正語法後再 reload 即可。
+3. **身份未變更警示**：日誌出現「重載後程式碼身份未變更」或事件 `identity_changed: false`
+   時，表示進程內仍執行舊程式碼（常見於 C 擴展等無法清除的快取）——這類模組需要重啟框架。
+4. **確認模組來源可重導入**：執行時註冊（`sdk.module.register()`）的模組，類定義在
+   `__main__` / 入口腳本內時拒絕重導入（守衛警示）；請將類移入可導入的模組檔案。
+5. **懶加載模組被強制激活**：重載會把原本懶加載的模組激活（明確日誌）；休眠
+   （歸眠）中的模組保持休眠。
+
+## 場景五：模組「明明啟用卻收不到事件」（懶加載休眠，2.11+）
+
+宣告了 `dormant_after` 的懶加載模組在閒置超過閾值後會**自動歸眠**：運行時資源釋放、
+事件處理器註銷，因此不再接收事件（`activate_on` 宣告的事件除外——事件先喚醒再轉發）。
+
+- 確認是否歸眠：日誌中檢索「已歸眠」 / `module.sleep` 事件，或觀察
+  `sdk.module.get_status_summary()` 中該模組不再是 `loaded`
+- 立即喚醒：任意屬性存取（`sdk.模組名.任意屬性`）或 `await sdk.module.call(...)`
+- 不希望自動歸眠：移除 `get_load_strategy()` 中的 `dormant_after` 宣告
+- 狀態是否遺失：歸眠前會觸發 `on_before_unload(reason="dormant")`，若模組未實現
+  該鈎子保存狀態，歸眠即遺失記憶體態（與卸載一致）——需要接續狀態請參考
+  [懶加載休眠](../advanced/lazy-loading.md#懶加載休眠dormant_after)
+
 ## 通用建議
 
 - 排查前先把日誌調到 `DEBUG` / `TRACE`（配置見[開發者指南](README.md#調試技巧)），可以看到模組載入、路由註冊、事件分發等框架內部流程；
 - `explain_module` / `explain_event` 隨時可調、純讀無副作用，適合直接掛到運維命令或管理面板；
 - "命令沒觸發"類問題優先寫一個 `DispatchTrace` 斷言測試復現——`assert_executed` / `assert_rejected` 等斷言失敗時會自動附上完整因果鏈。
+
+## 問題仍未解決
+
+- **先查已知問題**：對照 [Bug 追蹤](../bug-tracker.md)，確認是否為已記錄的問題及其避開方法；
+- **提交回饋**：到 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 報告問題時，附上 `explain_module` / `explain_event` 的輸出、`DispatchTrace` 因果鏈與框架版本號，能大幅縮短定位時間；
+- **討論與求助**：拿不定是不是 Bug 時，先在 [Discussions](https://github.com/ErisPulse/ErisPulse/discussions) 描述症狀與重現步驟。

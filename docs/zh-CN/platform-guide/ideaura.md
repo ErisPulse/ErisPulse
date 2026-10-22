@@ -7,7 +7,7 @@ IdeauraAdapter 是基于花枫咖啡馆（RockyChat）平台 API 构建的适配
 ## 文档信息
 
 - 对应模块: ErisPulse-Ideaura
-- 对应模块版本: 4.1.0
+- 对应模块版本: 4.2.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -55,6 +55,7 @@ await ideaura.Send.To("group", "chatroom").Text("Hello World!")
 - `.Face(face_id: str)`：发送表情（以纯文本形式发送 emoji）。
 - `.Markdown(text: str)`：发送 Markdown 格式消息。
 - `.Html(html: str)`：发送 HTML 格式消息。
+- `.MergeForward(nodes, title="合并聊天记录")`：发送合并转发消息（渲染为 `<details>` 折叠 HTML 卡片）。
 - `.Edit(message_id: str, text: str, content_type: str = "text")`：编辑已有消息。
 - `.Recall(message_id: str)`：撤回消息。
 

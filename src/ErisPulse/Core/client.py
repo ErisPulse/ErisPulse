@@ -96,7 +96,7 @@ class HttpResponse(BaseHttpResponse):
         return self._response.reason
 
     @property
-    def headers(self):
+    def headers(self) -> Any:
         """
         响应头
 
@@ -123,7 +123,7 @@ class HttpResponse(BaseHttpResponse):
         return self._response.charset
 
     @property
-    def url(self):
+    def url(self) -> Any:
         """
         响应 URL (可能因重定向而与请求 URL 不同)
 
@@ -132,7 +132,7 @@ class HttpResponse(BaseHttpResponse):
         return self._response.url
 
     @property
-    def raw(self):
+    def raw(self) -> Any:
         """
         底层框架原生 Response 对象
 
@@ -504,13 +504,13 @@ class Client(BaseClient):
         if old_session and not old_session.closed:
             try:
                 await old_session.close()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(i18n.t("core.client.old_session_close_failed", error=e))
         if old_ws and not old_ws.closed:
             try:
                 await old_ws.close()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(i18n.t("core.client.old_session_close_failed", error=e))
 
     async def _get_http_session(self):
         async with self._session_lock:

@@ -1,6 +1,9 @@
 # ErisPulse-Cron
 
-[ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) is the **scheduling module** for ErisPulse, providing a unified API for other modules to handle scheduled tasks: supports one-time, interval-based, and Cron expression-based tasks, callback parameters, and SQLite persistence (tasks are not lost after restart).
+> [!TIP]
+> **When to read this**: Read this when your module needs to trigger logic at a scheduled or delayed time (such as reminders, periodic monitoring, or scheduling with Cron expressions), and you want the tasks to persist after a framework restart. Skip this if you don't need it.
+
+[ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) is the **scheduling module** in the ErisPulse ecosystem, providing a unified API for other modules to schedule timed tasks: it supports one-time timers, interval loops, and Cron expressions, with callback parameters and SQLite persistence (tasks are not lost after a restart).
 
 > [!IMPORTANT]
 > Cron is **not** a built-in feature of the ErisPulse framework and must be installed separately:
@@ -9,7 +12,9 @@
 > epsdk install Cron
 > ```
 
-After installation, access all interfaces via `sdk.Cron`.
+After installation, access all interfaces through `sdk.Cron`.
+
+---
 
 ## Feature Overview
 
@@ -106,4 +111,11 @@ Cron's task data is a **persistent asset**: unloading or disabling the module th
 
 - [GitHub Repository](https://github.com/wsu2059q/ErisPulse-Cron)
 - [PyPI Page](https://pypi.org/project/ErisPulse-Cron/)
-- [Ownership (owner) System](../advanced/ownership.md)
+
+---
+
+## Next Steps
+
+- **Send message to user after task trigger**: Use [Send DSL](../developer-guide/adapters/send-dsl.md) or `event.reply()` (see [Event System API](../api-reference/event-system.md)) in the callback to deliver the reminder.
+- **Visually manage scheduled tasks**: After installing [ErisPulse-Dashboard](dashboard.md), a Cron auto-registration management window will be available.
+- **Callback cleanup details when module is uninstalled**: [Ownership system](../advanced/ownership.md)

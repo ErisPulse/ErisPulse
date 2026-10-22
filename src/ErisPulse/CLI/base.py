@@ -5,7 +5,7 @@ CLI 命令基类
 """
 
 from abc import ABC, abstractmethod
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 
 class Command(ABC):
@@ -29,7 +29,7 @@ class Command(ABC):
     category: str = ""  # 主帮助分组类别标识（project/components/config/misc；空串归入 misc）
 
     @abstractmethod
-    def add_arguments(self, parser: ArgumentParser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         """
         添加命令参数
 
@@ -38,7 +38,7 @@ class Command(ABC):
         ...
 
     @abstractmethod
-    def execute(self, args):
+    def execute(self, args: Namespace) -> None:
         """
         执行命令
 

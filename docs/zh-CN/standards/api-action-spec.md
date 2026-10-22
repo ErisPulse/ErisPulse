@@ -1,5 +1,8 @@
 # ErisPulse API 动作标准
 
+> [!TIP]
+> **什么时候需要读这篇**：当你在适配器中实现 Api DSL 标准动作（get_user_info / delete_message 等），或在模块中跨平台调用这些标准动作、需要确认参数与 data 字段时对照本文。不需要则跳过。
+
 本文档定义 ErisPulse 适配器中 **OneBot12 标准 API 动作**的统一接口规范，使模块开发者可以面向标准接口编程，由适配器负责映射到平台原生 API。
 
 > **覆盖范围**：OneBot12 标准动作中，`ApiDSL` 提供用户 / 群组 / 频道（Guild）/
@@ -251,7 +254,8 @@ class MyAdapter(BaseAdapter):
             # 映射到平台原生 API
             raw = await self._adapter._request("GET", f"/users/{user_id}")
             if raw.get("code") != 0:
-                return self._adapter.make_error(retcode=34600, message="用户不存在")
+                # 平台侧错误：用 341xx～345xx 段自定义低三位（346xx 为框架保留，勿占用）
+                return self._adapter.make_error(retcode=34400, message="用户不存在")
 
             user = raw["data"]
             return self._adapter.make_response(
@@ -341,7 +345,12 @@ if result["retcode"] == 10002:
 
 ## 9. 相关文档
 
+**实现 Api DSL 返回值时配套对照**：
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
+
+**同一适配器的其它 DSL**：
 - [发送方法规范](send-method-spec.md) - Send 类的方法命名和参数规范
 - [请求操作规范](request-action-spec.md) - Request DSL 的使用方式
+
+**事件侧配套**：
 - [事件转换标准](event-conversion.md) - 事件格式和消息段标准

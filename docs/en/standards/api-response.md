@@ -1,5 +1,8 @@
 # ErisPulse Adapter Standardized Return Specification
 
+> [!TIP]
+> **When to read this**: When you are implementing the return values of `call_api` / Send / Request in an adapter and need to confirm that the response structure and return codes conform to the ErisPulse standard, or when troubleshooting the meaning of a particular `retcode`, refer to this document. Skip if not needed.
+
 ## 1. Description
 
 Why does this specification exist?
@@ -179,7 +182,12 @@ The return structure is the standard failure response as defined in §2:
 - [ ] `{platform}_raw` contains the raw response data from the platform
 
 ## 6. Notes
-- For error codes in the 3xxxx range, the last three digits can be defined by the implementation.
+- For error codes starting with 3xxxx, the last three digits can be defined by the implementation.
 - Avoid using reserved error ranges (4xxxx, 5xxxx).
 - **`34600` / `34601` are reserved error codes for the ErisPulse framework** (see §5.3); adapters/modules should avoid using them.
 - Error messages should be concise and clear for easier debugging.
+
+## Next Steps
+
+- **Implement corresponding value mapping for each DSL**: [API Action Specification](api-action-spec.md) (the data field of standard actions), [Request Action Specification](request-action-spec.md) (the 34001-34004 extensions for request actions), [Send Method Specification](send-method-spec.md) (the degradation semantics for failed sends)
+- **Troubleshoot permission-related failures**: First check `34601` (the module is disabled by scope, the framework intercepts before calling, see §5.3), then check `34xxx` (the action has been sent but rejected by the platform side)

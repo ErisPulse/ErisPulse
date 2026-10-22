@@ -1,20 +1,21 @@
-# Примеры распространенных задач
+# Примеры типичных задач
 
-В этом руководстве приведены примеры реализации распространенных функций, чтобы помочь вам быстро реализовать часто используемые функции.
+> [!TIP]
+> **Когда читать этот документ**: когда нужно добавить боту какую-то конкретную функцию, обращайтесь к нужному разделу — персистентность, задачи по расписанию, фильтрация сообщений, контроль прав, пакетная отправка; каждый раздел — законченный пример, который можно сразу скопировать. Для системного изучения обработки событий сначала прочитайте [Введение в обработку событий](event-handling.md); если это не нужно — пропустите.
 
 ## Содержание
 
-1. Данные и постоянное хранение
-2. Планирование задач
+1. Персистентность данных
+2. Задачи по расписанию
 3. Фильтрация сообщений
-4. Многоуровневая адаптация платформ
-5. Расширенная отправка сообщений (повторная попытка/тайм-аут/пакетная отправка)
-6. Управление правами
+4. Адаптация к разным платформам
+5. Продвинутая отправка сообщений (повторы/таймауты/пакетная отправка)
+6. Контроль прав доступа
 7. Статистика сообщений
 8. Функция поиска
 9. Обработка изображений
 
-## Данные постоянного хранения
+## Персистентность данных
 
 ### Простой счётчик
 
@@ -22,12 +23,12 @@
 from ErisPulse import sdk
 from ErisPulse.Core.Event import command
 
-@command("count", help="Посмотреть количество вызовов команды")
+@command("count", help="Просмотр количества вызовов команды")
 async def count_handler(event):
-    # Получить счёт
+    # Получить счётчик
     count = sdk.storage.get("command_count", 0)
     
-    # Увеличить счёт
+    # Увеличить счётчик
     count += 1
     sdk.storage.set("command_count", count)
     
@@ -37,7 +38,7 @@ async def count_handler(event):
 ### Хранение данных пользователя
 
 ```python
-@command("profile", help="Посмотреть профиль")
+@command("profile", help="Просмотр профиля")
 async def profile_handler(event):
     user_id = event.get_user_id()
     
@@ -50,7 +51,7 @@ async def profile_handler(event):
     
     profile_text = f"""
 Ник: {user_data['nickname']}
-Дата регистрации: {user_data['join_date']}
+Дата присоединения: {user_data['join_date']}
 Количество сообщений: {user_data['message_count']}
     """
     
@@ -62,7 +63,7 @@ async def setnick_handler(event):
     args = event.get_command_args()
     
     if not args:
-        await event.reply("Введите ник")
+        await event.reply("Пожалуйста, введите ник")
         return
     
     # Обновить данные пользователя
@@ -70,10 +71,10 @@ async def setnick_handler(event):
     user_data["nickname"] = " ".join(args)
     sdk.storage.set(f"user:{user_id}", user_data)
     
-    await event.reply(f"Ник установлен на: {' '.join(args)}")
+    await event.reply(f"Ник установлен: {' '.join(args)}")
 ```
 
-## Планировщик задач
+## Задачи по расписанию
 
 ### Простой таймер
 
@@ -88,15 +89,15 @@ class TimerModule:
         self._tasks = []
     
     async def on_load(self, event):
-        """Запуск периодических задач при загрузке модуля"""
+        """Запуск задач по расписанию при загрузке модуля"""
         self._start_timers()
         
-        @command("timer", help="Управление таймерами")
+        @command("timer", help="Управление таймером")
         async def timer_handler(event):
-            await event.reply("Таймеры запущены...")
+            await event.reply("Таймер работает...")
     
     def _start_timers(self):
-        """Запуск периодических задач"""
+        """Запуск задач по расписанию"""
         # Выполнять каждые 60 секунд
         task = asyncio.create_task(self._every_minute())
         self._tasks.append(task)
@@ -107,21 +108,21 @@ class TimerModule:
     
     async def _every_minute(self):
         """Задача, выполняемая каждую минуту"""
-        self.sdk.logger.info("Выполнение задачи каждую минуту")
+        self.sdk.logger.info("Выполнение минутной задачи")
         # Ваша логика...
     
     async def _daily_task(self):
-        """Задача, выполняемая каждый день в полночь (замечание: расчет основан на UTC, если нужен локальный часовой пояс, измените самостоятельно)"""
+        """Задача, выполняемая каждый день в полночь (примечание: расчёт по времени UTC; при необходимости локального времени скорректируйте самостоятельно)"""
         import time
         
         while True:
-            # Вычисление времени до полночи
+            # Вычислить время до полуночи
             now = time.time()
             midnight = now + (86400 - now % 86400)
             
             await asyncio.sleep(midnight - now)
             
-            # Выполнение задачи
+            # Выполнить задачу
             self.sdk.logger.info("Выполнение ежедневной задачи")
             # Ваша логика...
 ```
@@ -131,7 +132,7 @@ class TimerModule:
 ```python
 @sdk.lifecycle.on("core.init.complete")
 async def init_complete_handler(event_data):
-    """Запуск периодических задач после завершения инициализации SDK"""
+    """Запуск задач по расписанию после инициализации SDK"""
     import asyncio
     
     async def daily_reminder():
@@ -139,7 +140,7 @@ async def init_complete_handler(event_data):
         await asyncio.sleep(86400)  # 24 часа
         sdk.logger.info("Выполнение ежедневной задачи")
     
-    # Запуск фоновой задачи
+    # Запустить фоновую задачу
     asyncio.create_task(daily_reminder())
 ```
 
@@ -150,26 +151,26 @@ async def init_complete_handler(event_data):
 ```python
 from ErisPulse.Core.Event import message
 
-blocked_words = ["мусор", "реклама", "фишинг"]
+blocked_words = ["спам", "реклама", "фишинг"]
 
 @message.on_message()
 async def filter_handler(event):
     text = event.get_text()
     
-    # Проверка на наличие запрещённых слов
+    # Проверить наличие запрещённых слов
     for word in blocked_words:
         if word in text:
-            sdk.logger.warning(f"Заблокировано сообщение: {word}")
+            sdk.logger.warning(f"Заблокировано сообщение с запрещённым словом: {word}")
             return  # Не обрабатывать это сообщение
     
-    # Обработка сообщения
+    # Обычная обработка сообщения
     await event.reply(f"Получено: {text}")
 ```
 
 ### Фильтрация по чёрному списку
 
 ```python
-# Загрузка чёрного списка из конфигурации или хранилища
+# Загрузить чёрный список из конфигурации или хранилища
 blacklist = sdk.storage.get("user_blacklist", [])
 
 @message.on_message()
@@ -177,16 +178,16 @@ async def blacklist_handler(event):
     user_id = event.get_user_id()
     
     if user_id in blacklist:
-        sdk.logger.info(f"Пользователь в чёрном списке: {user_id}")
+        sdk.logger.info(f"Пользователь из чёрного списка: {user_id}")
         return  # Не обрабатывать
     
     # Обычная обработка
     await event.reply(f"Привет, {user_id}")
 ```
 
-## Многофункциональная адаптация
+## Адаптация к разным платформам
 
-### Платформенно-специфические ответы
+### Ответы для конкретных платформ
 
 ```python
 @command("help", help="Показать справку")
@@ -194,19 +195,19 @@ async def help_handler(event):
     platform = event.get_platform()
     
     if platform == "yunhu":
-        await event.reply("Справка по платформе Yunhu...")
+        await event.reply("Справка для платформы Yunhu...")
     elif platform == "telegram":
         await event.reply("Telegram platform help...")
     elif platform == "onebot11":
         await event.reply("OneBot11 help...")
     else:
-        await event.reply("Общая информация о справке")
+        await event.reply("Общая справка")
 ```
 
-### Обнаружение особенностей платформы
+### Определение возможностей платформы
 
 ```python
-@command("rich", help="Отправить богатый текст")
+@command("rich", help="Отправить форматированное сообщение")
 async def rich_handler(event):
     platform = event.get_platform()
     
@@ -223,75 +224,75 @@ async def rich_handler(event):
             "**Жирный текст** *Курсивный текст*"
         )
     else:
-        # Другие платформы используют обычный текст
+        # На других платформах использовать простой текст
         await event.reply("Жирный текст Курсивный текст")
 ```
 
-## Расширенная отправка сообщений (повтор/таймаут/пакетная отправка)
+## Продвинутая отправка сообщений (повторы/таймауты/пакетная отправка)
 
-Помимо простого `event.reply()`, вы можете реализовать более сложные сценарии отправки с помощью DSL-инструментов адаптера: автоматический повтор при неудаче, отмена по таймауту, выполнение логики после успешной отправки, пакетная отправка нескольких сообщений.
+Помимо простого `event.reply()`, с помощью Send DSL адаптера можно реализовать более сложные сценарии отправки: автоматический повтор при неудаче, отмена по таймауту, выполнение логики после успешной отправки, пакетная отправка нескольких сообщений.
 
-> В следующих примерах используются `event.get_detail_type()` и `event.get_target_id()` для получения типа и ID цели из события (для группового чата автоматически берется `group_id`, для личного чата — `user_id`), чтобы избежать жесткой привязки к конкретным значениям.
+> В примерах ниже `event.get_detail_type()` и `event.get_target_id()` используются для получения типа цели и ID из события (в групповом чате автоматически берётся group_id, в личном — user_id), чтобы избежать жёсткого кодирования.
 
 ### Выполнение логики после успешной отправки
 
 ```python
-@command("pay", help="Симуляция оплаты")
+@command("pay", help="Имитация оплаты")
 async def pay_handler(event):
     yunhu = sdk.adapter.get(event.get_platform())
     user_id = event.get_user_id()
-    # Вычитание баллов только после успешной отправки
+    # Списывать баллы только после успешной отправки
     await (yunhu.Send.To(event.get_detail_type(), event.get_target_id())
            .Hook(lambda r: sdk.storage.set(f"points:{user_id}", -10))
-           .Text("Оплата прошла успешно, вычтено 10 баллов"))
+           .Text("Оплата прошла успешно, списано 10 баллов"))
 ```
 
 ### Повтор при неудаче + отмена по таймауту
 
 ```python
-@command("notice", help="Отправка важного уведомления")
+@command("notice", help="Отправить важное уведомление")
 async def notice_handler(event):
     adapter_inst = sdk.adapter.get(event.get_platform())
-    # Максимум 3 попытки, каждая с таймаутом 10 секунд
+    # Не более 3 повторов, таймаут 10 секунд каждый
     task = (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
             .Retry(3)
             .Timeout(10)
             .OnError(lambda ctx: sdk.logger.error(f"Не удалось отправить уведомление: {ctx.error}"))
             .Text("Это важное уведомление"))
-    # Отправка в фоновом режиме без ожидания
+    # Не ждать, отправка в фоне
 ```
 
 ### Пакетная отправка нескольких сообщений
 
-Отправка нескольких сообщений по одной цепочке с единым выполнением:
+Несколько сообщений по одной цепочке, единое выполнение:
 
 ```python
-@command("announce", help="Отправка объявления")
+@command("announce", help="Отправить объявление")
 async def announce_handler(event):
     adapter_inst = sdk.adapter.get(event.get_platform())
-    # Создание нескольких сообщений и их отправка (по умолчанию параллельно)
+    # Собрать несколько сообщений и отправить вместе (по умолчанию параллельно)
     results = await (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
                     .Build()
-                    .Text("📋 Сегодняшнее объявление")
+                    .Text("📋 Объявление на сегодня")
                     .Image("https://example.com/banner.jpg")
                     .Text("Подробности смотрите на изображении выше")
-                    .Retry(2)            # Каждое неудачное сообщение повторяет отправку
+                    .Retry(2)            # Каждый неудавшийся элемент повторяется отдельно
                     .send_all())
     sdk.logger.info(f"Пакетная отправка завершена, всего {len(results)} сообщений")
 ```
 
-> Более полное описание правил и пакетной отправки см. в [Руководстве по особенностям платформы](../platform-guide/README.md#декораторы-правил-отправки).
+> Более полные правила и описание пакетной отправки смотрите в [Руководстве по возможностям платформ](../platform-guide/README.md#发送规则装饰器).
 
-## Контроль доступа
+## Контроль прав доступа
 
 ### Проверка администратора
 
 ```python
-# Список владельцев
+# Список владельцев в конфигурации
 MASTERS = ["user123", "user456"]
 
 def is_master(user_id):
-    """Проверка, является ли пользователь владельцем фреймворка"""
+    """Проверить, является ли пользователь владельцем фреймворка"""
     return user_id in MASTERS
 
 @command("master", help="Команда владельца фреймворка")
@@ -316,10 +317,10 @@ async def addmaster_handler(event):
     
     new_master = args[0]
     MASTERS.append(new_master)
-    await event.reply(f"Добавлен владелец фреймворка: {new_master}")
+    await event.reply(f"Владелец фреймворка добавлен: {new_master}")
 ```
 
-### Права группы
+### Права в группах
 
 ```python
 @command("groupinfo", help="Просмотр информации о группе")
@@ -331,14 +332,14 @@ async def groupinfo_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     
-    await event.reply(f"ID группы: {group_id}, твой ID: {user_id}")
+    await event.reply(f"ID группы: {group_id}, ваш ID: {user_id}")
 ```
 
 ## Статистика сообщений
 
-### Подсчет сообщений
+### Подсчёт сообщений
 
-> **Внимание**: В следующем примере для простого подсчета используется `sdk.storage.get/set`. В сценариях с высокой并发ностью рекомендуется использовать `sdk.storage.transaction()`, чтобы гарантировать атомарность.
+> **Примечание**: в следующих примерах для простого подсчёта используются `sdk.storage.get/set`. В сценариях с высокой конкурентностью рекомендуется использовать `sdk.storage.transaction()` для обеспечения атомарности.
 
 ```python
 @message.on_message()
@@ -377,14 +378,14 @@ async def stats_handler(event):
         f"{uid}: {count} сообщений" for uid, count in top_users
     )
     
-    await event.reply(f"Общее количество сообщений: {stats['total']}\n\nАктивные пользователи:\n{top_text}")
+    await event.reply(f"Всего сообщений: {stats['total']}\n\nАктивные пользователи:\n{top_text}")
 ```
 
 ## Функция поиска
 
 ### Простой поиск
 
-> **Внимание**: В следующем примере история сообщений сохраняется в памяти, **данные будут потеряны при перезапуске программы**. В продакшн-среде рекомендуется использовать `sdk.storage` или SQLite-таблицы для постоянного хранения.
+> **Примечание**: в следующем примере история сообщений хранится в списке в памяти, **после перезапуска программы данные будут потеряны**. В продакшене рекомендуется использовать `sdk.storage` или таблицу SQLite для персистентного хранения.
 
 ```python
 from ErisPulse.Core.Event import command, message
@@ -404,7 +405,7 @@ async def store_handler(event):
         "time": event.get_time()
     })
     
-    # Ограничение количества записей в истории
+    # Ограничить количество записей истории
     if len(message_history) > 1000:
         message_history.pop(0)
 
@@ -413,24 +414,24 @@ async def search_handler(event):
     args = event.get_command_args()
     
     if not args:
-        await event.reply("Введите ключевое слово для поиска")
+        await event.reply("Пожалуйста, введите ключевое слово для поиска")
         return
     
     keyword = " ".join(args)
     results = []
     
-    # Поиск в истории сообщений
+    # Поиск по истории
     for msg in message_history:
         if keyword in msg["text"]:
             results.append(msg)
     
     if not results:
-        await event.reply("Сообщения не найдены")
+        await event.reply("Совпадающих сообщений не найдено")
         return
     
-    # Отображение результатов
-    result_text = f"Найдено {len(results)} сообщений:\n\n"
-    for i, msg in enumerate(results[:10], 1):  # Показать максимум 10 сообщений
+    # Показать результаты
+    result_text = f"Найдено {len(results)} совпадающих сообщений:\n\n"
+    for i, msg in enumerate(results[:10], 1):  # Показывать максимум 10 сообщений
         result_text += f"{i}. {msg['text']}\n"
     
     await event.reply(result_text)
@@ -438,7 +439,7 @@ async def search_handler(event):
 
 ## Обработка изображений
 
-### Загрузка и хранение изображений
+### Скачивание и сохранение изображений
 
 ```python
 from ErisPulse.Core import client
@@ -453,12 +454,12 @@ async def image_handler(event):
             file_url = segment.get("data", {}).get("file")
             
             if file_url:
-                # Рекомендуется использовать встроенный клиент SDK для загрузки изображений
+                # Рекомендуется использовать встроенный клиент SDK для скачивания изображений
                 resp = await client.get(file_url)
                 if resp.status == 200:
                     image_data = await resp.read()
                     
-                    # Сохранение в файл
+                    # Сохранить в файл
                     filename = f"images/{event.get_time()}.jpg"
                     with open(filename, "wb") as f:
                         f.write(image_data)
@@ -469,7 +470,7 @@ async def image_handler(event):
 
 ### Пример распознавания изображений
 
-> **Важно**: В следующем примере используется заглушка API-адреса, при фактическом использовании замените на свой собственный сервис распознавания изображений.
+> **Примечание**: в следующем примере используется адрес-заглушка API; при реальном использовании замените его на свой сервис распознавания изображений.
 
 ```python
 from ErisPulse.Core import client
@@ -492,17 +493,17 @@ async def identify_handler(event):
     await event.reply("Изображение не найдено")
 
 async def _identify_image(url):
-    """Вызов API распознавания изображений (пример) - используя встроенный клиент SDK"""
+    """Вызов API распознавания изображений (пример) — с использованием встроенного клиента SDK"""
     resp = await client.post(
         "https://api.example.com/identify",
         json={"url": url}
     )
     data = await resp.json()
-    return data.get("description", "Распознавание не удалось")
+    return data.get("description", "Не удалось распознать")
 ```
 
-## Далее
+## Дальнейшие шаги
 
-- [Руководство пользователя](../user-guide/) - узнать о настройке и управлении модулями
-- [Руководство для разработчиков](../developer-guide/) - узнать о разработке модулей и адаптеров
-- [Расширенные темы](../advanced/) - углубиться в особенности фреймворка
+- **Функция написана и должна работать постоянно**: смотрите [Руководство по развёртыванию](../user-guide/deployment.md) — демон Docker / systemd, резервное копирование и обновление
+- **Хотите распространять написанные функции среди других**: начните с [Введения в разработку модулей](../developer-guide/modules/getting-started.md) и превратите скрипт в устанавливаемый модуль
+- **Нужно настроить конфигурацию или разобраться, почему «модуль не реагирует»**: смотрите [Описание файла конфигурации](../user-guide/configuration.md) и [Области видимости (scope)](../advanced/scope.md)

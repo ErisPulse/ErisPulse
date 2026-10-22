@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "02652abfd9545c64284e2a855dd4bf44",
-  "file_hash": "02652abfd9545c64284e2a855dd4bf44",
-  "translated_at": "2026-09-07T12:14:53.965477",
+  "hash": "1e122d4539539cc74a00b123d56b40bd",
+  "file_hash": "1e122d4539539cc74a00b123d56b40bd",
+  "translated_at": "2026-10-22T11:55:43.021714",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "ba96c76949a16f4365b59641440be885",
-      "translation": "# User Guide\n\nThis guide helps you install, configure, and manage the ErisPulse project."
+      "hash": "fa692f8c62244aec4a96a30c91b15ab4",
+      "translation": "# User Guide\n\n> [!TIP]  \n> **When to read this guide**: When you need to install the environment, configure `config.toml`, manage components using `epsdk`, or deploy the robot online, refer to this guide; otherwise, you can skip it.\n\nThis guide covers all daily operations of the robot after it is up and running: installation, configuration, command-line management, deployment, and upgrades."
     },
     {
       "hash": "8c83143bb3b9498306193aacbe172e21",
@@ -18,8 +18,8 @@
       "translation": "## Quick Reference\n\n### Common Commands\n\n| Command | Description |\n|---------|-------------|\n| `epsdk init` | Initialize project (`-q` for quick mode, `-n` to specify name) |\n| `epsdk install <package-name>` | Install module/adapter (enters interactive mode without parameters) |\n| `epsdk config <name>` | Interactive configuration of declarative configuration items for adapter/module |\n| `epsdk run main.py` | Run project (`--reload` for hot-reload mode) |\n| `epsdk list` | List installed modules/adapters |\n| `epsdk upgrade <package-name>` | Upgrade module/adapter |\n| `epsdk doctor` | Diagnose environment (Python/backend/configuration/PyPI connectivity) |\n\n> For the complete list of commands and parameter descriptions, see [CLI Command Reference](cli-reference.md).\n\n### Common Configuration Locations\n\n| Configuration | Description | See Also |\n|---------------|-------------|----------|\n| `[ErisPulse.server]` | Server configuration (host, port) | [Configuration File Guide](configuration.md#server-configuration) |\n| `[ErisPulse.logger]` | Logging configuration (level, output file) | [Configuration File Guide](configuration.md#logging-configuration) |\n| `[ErisPulse.framework]` | Framework configuration (lazy loading) | [Configuration File Guide](configuration.md#framework-configuration) |\n| `[ErisPulse.event.command]` | Command event configuration (prefix) | [Configuration File Guide](configuration.md#event-configuration) |\n| `[Adapter Name]` | Adapter-specific configuration | [Platform Features Guide](../platform-guide/) |"
     },
     {
-      "hash": "0b20cfa96c53ab9bf5b4401abfe7697b",
-      "translation": "## Related Documentation\n\n- [Quick Start](../quick-start.md) - Quick start guide\n- [Getting Started](../getting-started/) - Getting started tutorial\n- [Developer Guide](../developer-guide/) - Guide to developing custom modules and adapters\n- [API Reference](../api-reference/) - API documentation"
+      "hash": "ce40c51bb013636fa9dcc54fa6540ed8",
+      "translation": "## Next Steps\n\n- **Not started yet**: First, see [Quick Start](../quick-start.md), then systematically learn with [Getting Started](../getting-started/)\n- **Want to write your own module / adapter**: Go to [Developer Guide](../developer-guide/)\n- **Looking for specific methods of a class**: Check the [API Reference](../api-reference/)"
     }
   ]
 }

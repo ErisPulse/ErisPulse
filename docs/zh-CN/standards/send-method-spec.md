@@ -1,5 +1,8 @@
 # ErisPulse 发送方法规范
 
+> [!TIP]
+> **什么时候需要读这篇**：当你在适配器中实现 Send 类——方法命名、媒体参数（URL/路径/bytes）的形态支持、`Raw_ob12` 反向转换、合并转发能力时对照本文。不需要则跳过。
+
 本文档定义了 ErisPulse 适配器中 Send 类发送方法的命名规范、参数规范和反向转换要求。
 
 ## 0. 关键词约定
@@ -64,7 +67,7 @@
 
 **注意**：这些方法**不是**基类提供的默认方法，也不强制要求实现。它们仅作为命名约定，适配器可根据需要自行定义。如果适配器不支持这些格式，则无需定义。
 
-**消息构建器（MessageBuilder）**：ErisPulse 提供了 `MessageBuilder` 工具类，用于方便地构建 OneBot12 消息段列表，配合 `Raw_ob12` 使用。详见 [消息构建器](#11-消息构建器-messagebuilder) 章节。
+**消息构建器（MessageBuilder）**：ErisPulse 提供了 `MessageBuilder` 工具类，用于方便地构建 OneBot12 消息段列表，配合 `Raw_ob12` 使用。详见 [MessageBuilder 详解](../advanced/message-builder.md)。
 
 ## 2. 参数规范详解
 
@@ -206,7 +209,7 @@ def MergeForward(self, nodes: List[Dict]) -> asyncio.Task:
                 "type": "node",
                 "data": {
                     "user_id": "10000",     # 展示用发送者 id
-                    "nickname": "QvQChat",  # 展示用发送者昵称
+                    "nickname": "MyBot",     # 展示用发送者昵称
                     "content": [            # 消息段数组，当前为 text 段
                         {"type": "text", "data": {"text": "【1/3】标题\n正文…"}}
                     ],
@@ -230,13 +233,27 @@ def MergeForward(self, nodes: List[Dict]) -> asyncio.Task:
 4. **失败语义**：返回标准错误响应（`status: "failed"`）或抛出异常均可，调用方会回退纯文本发送，内容不丢失
 5. **不得**在 `MergeForward` 内部再调用 `Raw_ob12` 发送同样的 nodes（OneBot11 的 `Raw_ob12`
    已内置纯 node 段自动路由，会成环）
+6. **出站 node 段解析**（全适配器约定）：各适配器的 `Raw_ob12` 段分发应注册 `node` 段——
+   纯 node 列表自动路由到本适配器的合并转发呈现（有 `MergeForward` 的平台等价于直接调用；
+   无该方法的平台提取各节点文本以「昵称: 正文」逐行**原文输出**）；混合列表中 node 段的文本并入正文。
+   任何适配器收到 node 段都不得静默丢弃。
+
+**平台实现形态（详见 `SDK/Adapter/ADAPTER_FORWARD_GUIDE.md`）：**
+
+- 原生端点：OneBot11、SnowLuma（三级回退：`send_group/private_forward_msg` 专用端点 → `upload_forward_msg`
+  取 resid 发 forward 段 → 直发 node 段；SnowLuma API 全面向 NapCat 对齐，适配器可直接连接 NapCat 后端）
+- 折叠 HTML `<details>` 卡：云湖（bot/用户协议）、Email、Sandbox、Allons(Ideaura)
+- 白名单 HTML / 引用块：Telegram（`<b>`+`<blockquote>`）、Matrix（blockquote 变体，白名单剥离 details/内联样式）
+- 平台卡片：Kook（Card header+section）、Discord（Embed fields）
+- 官方 Markdown 引用列表：QQBot（官方 md 无折叠语法，服务端校验拒绝无效标签 40034011）
+- 不实现（node 段原文输出降级）：OneBot12（标准无 node 段）、WeCom、Terminal、Webhook、WechatMp
 
 **调用方探测示例：**
 
 ```python
 sends = adapter.list_sends(platform)
 if "MergeForward" in sends:
-    await adapter.Send.To("group", "123").MergedForward(nodes)
+    await adapter.Send.To("group", "123").MergeForward(nodes)
 else:
     await adapter.Send.To("group", "123").Text(plain_text)
 ```
@@ -542,98 +559,26 @@ info = adapter.send_info("myplatform", "Form")
 
 ---
 
-## 11. 消息构建器（MessageBuilder）
+## 11. 消息构建器（MessageBuilder）——适配器侧须知
 
-`MessageBuilder` 是 ErisPulse 提供的消息段构建工具，配合 `Raw_ob12` 使用，简化 OneBot12 消息段的构建过程。
+`MessageBuilder` 是 ErisPulse 提供的 OneBot12 消息段构建工具，供**模块侧**构建消息：
+链式调用（或静态快速构建）最终产出标准消息段列表 `[{"type": ..., "data": ...}]`，
+由调用方直接传给 `Raw_ob12`。
 
-### 11.1 导入
+**适配器侧只需知道这一点**：`Raw_ob12` 接收到的就是这份产物——与手写的消息段列表
+完全同构，按 §6.2 的段分发逻辑处理即可，无需感知它来自 MessageBuilder 还是字面量。
 
-```python
-from ErisPulse.Core import MessageBuilder
-# 或
-from ErisPulse.Core.Event import MessageBuilder
-```
-
-### 11.2 链式调用构建
-
-```python
-# 构建包含文本、图片、@用户的消息
-segments = (
-    MessageBuilder()
-    .mention("123456")
-    .text("你好，看看这张图")
-    .image("https://example.com/img.jpg")
-    .reply("msg_789")
-    .build()
-)
-
-# 发送
-await adapter.Send.To("group", "456").Raw_ob12(segments)
-```
-
-### 11.3 快速构建单段
-
-```python
-# 快速构建单个消息段（返回 list[dict]，可直接传给 Raw_ob12）
-await adapter.Send.To("user", "123").Raw_ob12(MessageBuilder.text("Hello"))
-await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.image("https://..."))
-await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.mention("123"))
-await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.reply("msg_id"))
-await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.at_all())
-```
-
-### 11.4 配合 Event.reply_ob12 使用
-
-```python
-from ErisPulse.Core import MessageBuilder
-
-@message()
-async def handle(event: Event):
-    await event.reply_ob12(
-        MessageBuilder()
-        .mention(event.get_user_id())
-        .text("收到你的消息")
-        .build()
-    )
-```
-
-### 11.5 支持的消息段方法
-
-| 方法 | 说明 | data 字段 |
-|------|------|----------|
-| `text(text)` | 文本 | `text` |
-| `image(file)` | 图片 | `file` |
-| `audio(file)` | 音频 | `file` |
-| `video(file)` | 视频 | `file` |
-| `file(file, filename=None)` | 文件 | `file`, `filename`(可选) |
-| `mention(user_id, user_name=None)` | @用户 | `user_id`, `user_name`(可选) |
-| `at(user_id, user_name=None)` | @用户（`mention` 的别名） | 同 `mention` |
-| `reply(message_id)` | 回复 | `message_id` |
-| `at_all()` | @全体成员 | `{}` |
-| `custom(type, data)` | 自定义/平台扩展 | 自定义 |
-
-### 11.6 工具方法
-
-```python
-builder = MessageBuilder().text("基础内容")
-
-# 复制（深拷贝）
-msg1 = builder.copy().image("img1").build()
-msg2 = builder.copy().image("img2").build()
-
-# 清空
-builder.clear().text("新内容").build()
-
-# 判断是否为空
-if builder:
-    print(f"包含 {len(builder)} 个消息段")
-```
+> 完整用法（双模式机制、全部消息段方法、`copy()` / `clear()` 工具方法与示例）见
+> [MessageBuilder 详解](../advanced/message-builder.md)，本篇不再重复。
 
 ---
 
 ## 12. 相关文档
 
-- [事件转换标准](event-conversion.md) - 完整的事件转换规范、扩展命名和消息段标准
+**实现发送返回值时配套对照**：
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
+
+**同一适配器的其它侧**：
+- [事件转换标准](event-conversion.md) - 完整的事件转换规范、扩展命名和消息段标准
 - [会话类型标准](session-types.md) - 会话类型定义和映射关系
 - [请求操作规范](request-action-spec.md) - 请求事件字段要求、HandleRequest DSL 及适配器实现要求

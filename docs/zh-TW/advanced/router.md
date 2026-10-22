@@ -464,11 +464,11 @@ async def on_server_stop(event):
 
 1. **優先使用抽象類型**：使用 `HttpRequest` / `WebSocketConnection` 替代 `fastapi.Request` / `fastapi.WebSocket`，避免硬性依賴
 2. **利用自動注入**：處理器第一個參數命名為 `request` 或 `req`，無需任何類型註解即可獲得 `HttpRequest`
-3. **明確傳入 module_name**：裝飾器第一個參數必須為模組名，不可省略
+3. **優先使用單參數形態**：模組加載上下文中優先使用單參數形態（自動歸屬命名空間）；跨模組/工具代碼註冊時顯式傳入模組名
 4. **使用路由分組**：對同一模組的多個路由使用 `group()` 進行組織
 5. **安全性考量**：為敏感操作實現認證機制和安全頭
-6. **合理限流**：對高頻接口設定速率限制
-7. **使用生命週期鉤子**：透過 `@ws.on_disconnect` / `@ws.on_error` 處理 WebSocket 異常，避免手動 try/catch
+6. **合理限流**：對高頻接口設置速率限制
+7. **使用生命週期鉤子**：通過 `@ws.on_disconnect` / `@ws.on_error` 處理 WebSocket 異常，避免手動 try/catch
 
 ## 相關文件
 

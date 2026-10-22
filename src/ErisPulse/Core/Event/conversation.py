@@ -263,7 +263,7 @@ class Conversation:
             self.context.update(result)
         return result
 
-    def stop(self):
+    def stop(self) -> None:
         """
         结束对话
 
@@ -302,7 +302,7 @@ class Conversation:
 
     # 分支系统
 
-    def branch(self, name: str):
+    def branch(self, name: str) -> Callable:
         """
         注册分支处理器
 
@@ -335,7 +335,7 @@ class Conversation:
 
         return decorator
 
-    def goto(self, branch_name: str, event: "Event | None" = None):
+    def goto(self, branch_name: str, event: "Event | None" = None) -> None:
         """
         跳转到指定分支
 
@@ -381,7 +381,7 @@ class Conversation:
         except RuntimeError:
             pass
 
-    def start(self, branch_name: str, event: "Event | None" = None):
+    def start(self, branch_name: str, event: "Event | None" = None) -> None:
         """
         启动对话，从指定分支开始
 
@@ -479,7 +479,7 @@ class Conversation:
         except Exception as _e:
             logger.trace(i18n.t("core.event.conversation_checkpoint_failed", error=_e))
 
-    async def save(self):
+    async def save(self) -> None:
         """
         保存对话状态到 storage（自动检查点）
 
@@ -592,7 +592,7 @@ class Conversation:
             logger.trace(i18n.t("core.event.conversation_resume_failed", error=_e))
         return False
 
-    async def clear_saved(self):
+    async def clear_saved(self) -> None:
         """
         清除保存的对话状态
 

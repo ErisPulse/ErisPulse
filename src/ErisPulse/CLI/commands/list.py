@@ -5,7 +5,7 @@ List 命令实现
 """
 
 import asyncio
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 from rich.box import SIMPLE
 from rich.table import Table
@@ -36,7 +36,7 @@ class ListCommand(Command):
         py_exec, _py_source = resolve_target_python()
         self.package_manager = PackageManager(python_executable=py_exec)
 
-    def add_arguments(self, parser: ArgumentParser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--type",
             "-t",
@@ -51,7 +51,7 @@ class ListCommand(Command):
             help=i18n.t("cli.list.outdated_help"),
         )
 
-    def execute(self, args):
+    def execute(self, args: Namespace) -> None:
         pkg_type = args.type
         outdated_only = args.outdated
 

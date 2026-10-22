@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "da5661895cd51183aee62df02092e326",
-  "file_hash": "da5661895cd51183aee62df02092e326",
-  "translated_at": "2026-09-07T11:29:44.469340",
+  "hash": "bd626ae847cface2aada500581d23a14",
+  "file_hash": "bd626ae847cface2aada500581d23a14",
+  "translated_at": "2026-10-22T11:11:14.018151",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "80785c13e86bb626713499d36f921521",
-      "translation": "# Create Your First Bot\n\nThis guide builds on the [5-Minute Quick Start](../quick-start.md) to walk you through writing your first command handler and understanding the underlying mechanics.\n\n> If you haven't installed ErisPulse or initialized your project yet, please complete the \"Install,\" \"Initialize Project,\" and \"Run Project\" steps in the [Quick Start](../quick-start.md) first."
+      "hash": "feac99262781dcfdbd5014f3b38c33af",
+      "translation": "# Create Your First Bot\n\n> [!TIP]\n> **When to read this**: Your bot is already running, and you want to write your first `/hello` command handler and understand what `sdk.run` and command decorators do. If you haven't installed ErisPulse, initialized a project, or run the project yet, complete the \"Install\", \"Initialize Project\", and \"Run Project\" steps in [5-Minute Quick Start](../quick-start.md) first; otherwise, skip this section.\n\nRunning through the quick start is just the first step—this guide walks you through writing your first command handler and explains what each line of code does within the framework."
     },
     {
       "hash": "cbeb879600e1efd43f5c92662070ba8b",
@@ -34,8 +34,8 @@
       "translation": "## FAQ\n\n### No response from command?\n\n1. Check if the adapter is correctly configured, and confirm that the `status` of the adapter in `config/config.toml` is set to `true`.\n2. Check the terminal log output to confirm if there are any error messages (especially those with `ERROR` level).\n3. Confirm that the command prefix is correct (the default is `/`), and check the `[ErisPulse.event.command]` section in the configuration file.\n4. Confirm that the command name is spelled correctly, and pay attention to case sensitivity settings.\n\n### How to change the command prefix?\n\nAdd the following to `config.toml`:\n\n```toml\n[ErisPulse.event.command]\nprefix = \"!\"\ncase_sensitive = false\n```\n\n### How to support multiple platforms?\n\nErisPulse uses the OneBot12 standard to unify the event formats of different platforms. Handlers registered with `@command` and `@message` will automatically receive events from all platforms. You can distinguish the source platform using `event.get_platform()`:\n\n```python\n@command(\"hello\")\nasync def hello_handler(event):\n    platform = event.get_platform()\n    \n    if platform == \"yunhu\":\n        await event.reply(\"你好！来自云湖\")\n    elif platform == \"telegram\":\n        await event.reply(\"Hello! From Telegram\")\n    else:\n        await event.reply(\"你好！\")\n```\n\n> For more multi-platform adaptation techniques, please refer to [Common Tasks Examples](common-tasks.md#multi-platform-adaptation)."
     },
     {
-      "hash": "b0e41b365f41f1da5f78f4b91615b618",
-      "translation": "## Next Steps\n\n- [Basic Concepts](basic-concepts.md) - Dive deeper into the core concepts of ErisPulse\n- [Getting Started with Event Handling](event-handling.md) - Learn how to handle various events\n- [Common Tasks Examples](common-tasks.md) - Master more practical features"
+      "hash": "e25f8d01dd1460bce9a0e19a2e3692b0",
+      "translation": "## What's Next\n\n- **Continue along the learning path**: Read [Basic Concepts](basic-concepts.md) to understand what the framework behind command handlers does.\n- **Want to handle more message types**: [Event Handling Introduction](event-handling.md), how to write handlers for messages / notifications / requests / meta-events.\n- **Want to add practical features**: [Common Tasks Examples](common-tasks.md), ready-to-use code for persistence, scheduled tasks, and permission control."
     }
   ]
 }

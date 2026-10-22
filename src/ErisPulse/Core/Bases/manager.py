@@ -9,7 +9,7 @@ ErisPulse 管理器基类
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, ClassVar
 
 
 class ManagerBase(ABC):
@@ -28,8 +28,100 @@ class ManagerBase(ABC):
     - is_enabled(): 检查是否启用
     - is_running(): 检查是否运行
     - list_*(): 列出相关项
+    - sdk_ref(): 运行时 SDK 引用解析
     {!--< /tips >!--}
     """
+
+    # 显式注入的 SDK 引用（可选覆盖，供测试直赋）；正常路径经 sdk_ref() 懒导入根单例
+    _sdk: Any = None
+
+    def sdk_ref(self) -> Any:
+        """
+        解析运行时 SDK 引用
+
+        显式注入的 ``_sdk`` 优先（测试 / 高级用法直赋）；缺失时懒导入根包
+        单例——管理器不再依赖外部接线调用（旧 ``set_sdk_ref`` 从未被生产
+        链路调用，导致热重载 / 依赖通知在真实部署中静默失效）。
+
+        :return: SDK 实例
+        """
+        sdk = self._sdk
+        if sdk is not None:
+            return sdk
+        from ... import sdk as root_sdk
+
+        return root_sdk
+
+    # ==================== 共享工具 ====================
+
+    # 弃用参数告警去重集合；(owner, old) 键已含管理器类名，共享一份即可保持"每处仅告警一次"
+    _DEPRECATED_KWARG_WARNED: ClassVar[set[tuple[str, str]]] = set()
+
+    @staticmethod
+    def _warn_deprecated_kwarg(owner: str, old: str, new: str) -> None:
+        """
+        {!--< internal-use >!--}
+        当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
+
+        :param owner: 所属方法名（如 "ModuleManager.get"）
+        :param old: 已弃用的旧参数名
+        :param new: 推荐使用的新参数名
+        """
+        key = (owner, old)
+        if key in ManagerBase._DEPRECATED_KWARG_WARNED:
+            return
+        ManagerBase._DEPRECATED_KWARG_WARNED.add(key)
+        from ..i18n import i18n
+        from ..logger import logger
+
+        logger.warning(
+            i18n.t(
+                "core.deprecated.kwarg",
+                owner=owner,
+                old=old,
+                new=new,
+            )
+        )
+
+    @staticmethod
+    def _is_subclass(klass: type, base_cls: type) -> bool:
+        # 安全 issubclass：klass 非类型时不抛 TypeError；跨导入路径重载的同名类按 MRO 名字比对兜底
+        try:
+            if issubclass(klass, base_cls):
+                return True
+        except TypeError:
+            pass
+        if base_cls.__name__ == klass.__name__:
+            return False
+        for parent in klass.__mro__:
+            if (
+                parent.__name__ == base_cls.__name__
+                and parent.__module__ == base_cls.__module__
+            ):
+                return True
+        return False
+
+    @staticmethod
+    def _shutdown_timeout() -> float:
+        """
+        {!--< internal-use >!--}
+        读取组件优雅收尾（on_unload / shutdown）的超时（秒）
+
+        复用 ``ErisPulse.framework.uninit_timeout`` 配置（反初始化流程的统一
+        超时预算，整体仍有 uninit 的 wait_for 兜底）；未配置或非法时回退常量默认值。
+
+        :return: 超时秒数（>0）
+        """
+        from ...runtime import get_framework_config
+        from ..constants import DEFAULT_UNINIT_TIMEOUT_SECS
+
+        try:
+            value = get_framework_config().get("uninit_timeout")
+            if isinstance(value, (int, float)) and value > 0:
+                return float(value)
+        except Exception:
+            pass
+        return float(DEFAULT_UNINIT_TIMEOUT_SECS)
 
     # ==================== 注册与取消注册 ====================
 

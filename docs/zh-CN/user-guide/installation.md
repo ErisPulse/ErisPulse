@@ -1,11 +1,11 @@
 # 安装参考
 
-> 本文是安装方式的**完整参考**（pip / uv / Docker / 故障排查）。
-> 如果你只想快速跑起来，[5 分钟快速开始](../quick-start.md) 已经覆盖了最简流程。
+> [!TIP]
+> **什么时候需要读这篇**：需要挑一种安装方式（pip / uv / Docker / ErisPulse-App 客户端），或安装失败要排查时读。只想最快跑起来，[5 分钟快速开始](../quick-start.md) 已覆盖最简流程，不需要则跳过。
 
 ## 系统要求
 
-- Python 3.10 或更高版本
+- Python 3.10 – 3.14（3.14t 自由线程 / 无 GIL 构建为实验性支持，框架以实验性 CI 冒烟持续监测，不作正式承诺）
 - pip 或 uv（推荐）
 - 足够的磁盘空间（至少 100MB）
 
@@ -131,7 +131,7 @@ epsdk run main.py
 
 ### 安装失败
 
-1. 检查 Python 版本是否 >= 3.10（推荐 3.10 - 3.14；3.14t free-threaded 无 GIL 构建暂未列入正式支持，框架以实验性 CI 冒烟持续监测）
+1. 检查 Python 版本是否在支持范围内（支持 3.10 – 3.14；3.14t 自由线程 / 无 GIL 构建为实验性支持，不作正式承诺）
 2. 尝试使用 `uv pip install ErisPulse` 替代 `pip install`
 3. 如果提示权限错误，尝试 `pip install --user ErisPulse` 或使用虚拟环境
 4. 如果在企业代理环境下遇到 SSL 证书错误，尝试 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
@@ -173,5 +173,6 @@ sudo apt install python3-venv
 
 ## 下一步
 
-- [CLI 命令参考](cli-reference.md) - 了解所有命令行命令
-- [配置文件说明](configuration.md) - 详细了解配置选项
+- **装好后初始化项目、安装适配器**：跟着 [5 分钟快速开始](../quick-start.md) 走完剩余步骤
+- **日常用命令行管理组件**：查 [CLI 命令参考](cli-reference.md)
+- **要填令牌、调端口**：看 [配置文件说明](configuration.md)

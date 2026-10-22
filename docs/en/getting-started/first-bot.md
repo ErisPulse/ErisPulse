@@ -1,8 +1,9 @@
 # Create Your First Bot
 
-This guide builds on the [5-Minute Quick Start](../quick-start.md) to walk you through writing your first command handler and understanding the underlying mechanics.
+> [!TIP]
+> **When to read this**: Your bot is already running, and you want to write your first `/hello` command handler and understand what `sdk.run` and command decorators do. If you haven't installed ErisPulse, initialized a project, or run the project yet, complete the "Install", "Initialize Project", and "Run Project" steps in [5-Minute Quick Start](../quick-start.md) first; otherwise, skip this section.
 
-> If you haven't installed ErisPulse or initialized your project yet, please complete the "Install," "Initialize Project," and "Run Project" steps in the [Quick Start](../quick-start.md) first.
+Running through the quick start is just the first step—this guide walks you through writing your first command handler and explains what each line of code does within the framework.
 
 ## Step 1: Write Your First Command
 
@@ -153,8 +154,8 @@ async def hello_handler(event):
 
 > For more multi-platform adaptation techniques, please refer to [Common Tasks Examples](common-tasks.md#multi-platform-adaptation).
 
-## Next Steps
+## What's Next
 
-- [Basic Concepts](basic-concepts.md) - Dive deeper into the core concepts of ErisPulse
-- [Getting Started with Event Handling](event-handling.md) - Learn how to handle various events
-- [Common Tasks Examples](common-tasks.md) - Master more practical features
+- **Continue along the learning path**: Read [Basic Concepts](basic-concepts.md) to understand what the framework behind command handlers does.
+- **Want to handle more message types**: [Event Handling Introduction](event-handling.md), how to write handlers for messages / notifications / requests / meta-events.
+- **Want to add practical features**: [Common Tasks Examples](common-tasks.md), ready-to-use code for persistence, scheduled tasks, and permission control.

@@ -3,7 +3,7 @@
 > [!TIP]
 > **什么时候需要读这篇**：适配器开发路径的入口篇（必读）。从零写一个适配器、了解适配器的职责边界与项目结构都在这里；读完后再按需进入 [事件转换器](converter.md) 与 [SendDSL 详解](send-dsl.md)。
 
-本指南帮助你开始开发 ErisPulse 适配器，连接新的消息平台。
+跟着这篇走完，你会得到一个能收事件、发消息的最小可用适配器（主类 + 转换器 + Send），并清楚每个部件的职责边界——接入一个新平台的所有工作都从这里展开。
 
 ## 适配器简介
 
@@ -384,7 +384,7 @@ epsdk create adapter -n MyAdapter --local
 
 - **识别规则**：包目录（含 `__init__.py`）或单 `.py` 文件均可；优先识别 `Main` 命名类，否则取插件内首个 `BaseAdapter` / `BaseModule` 子类
 - **同名覆盖**：本地插件与 PyPI 安装的适配器同名时，本地插件优先（便于覆盖调试）
-- **热重载**：`sdk.enable_plugin_hot_reload()` 开启的插件目录监控同样覆盖适配器；适配器代码级热重载将在 2.11 提供（当前版本修改适配器代码后需重启框架生效）
+- **热重载**：`sdk.enable_plugin_hot_reload()` 开启的插件目录监控同样覆盖适配器；适配器代码级热重载自 2.11 提供——`await sdk.adapter.reload("平台名")` 或 `await sdk.reload_adapter("平台名")`（语法预检 → 卸载清理 → 清缓存重导 → 重新注册拉起，失败自动回滚；详见[架构概览](../../architecture.md)）
 
 ### 从本地插件到发布
 
@@ -636,7 +636,13 @@ sdk.router.get_module_urls("MyModule")
 
 ## 下一步
 
-- [适配器核心概念](core-concepts.md) - 了解适配器架构
-- [SendDSL 详解](send-dsl.md) - 学习消息发送
-- [转换器实现](converter.md) - 了解事件转换
-- [适配器最佳实践](best-practices.md) - 开发高质量适配器
+### 补齐适配器的三大件
+
+- [事件转换器](converter.md) - 平台事件 → OneBot12 的实现细节与常见陷阱
+- [SendDSL 详解](send-dsl.md) - 消息发送链、修饰方法与发送规则
+- [适配器核心概念](core-concepts.md) - BaseAdapter / 生命周期 / 多账户的机制说明
+
+### 骨架跑通之后
+
+- [适配器最佳实践](best-practices.md) - 连接重试、心跳、错误处理的工程化收尾
+- [发布与模块商店指南](../publishing.md) - 发布到 PyPI 与模块商店

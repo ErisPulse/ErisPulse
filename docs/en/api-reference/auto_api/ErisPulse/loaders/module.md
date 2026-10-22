@@ -192,29 +192,27 @@ dict 声明，简写不产生元数据条目，天然被 dict 覆盖）。
 ---
 
 
-##### `async reload_module(module_name: str, manager_instance: Any, sdk_instance: Any, *, full: bool = False) -> bool`
+##### `async reload_module(module_name: str, manager_instance: Any, sdk_instance: Any, *, full: bool = True) -> bool`
 
-热重载单个模块（支持任意来源：本地插件 / PyPI 安装包）
+热重载单个模块（支持任意来源：本地插件 / 运行时注册 / PyPI 安装包）
 
-完整执行 卸载旧实例 → 清理注册与模块缓存 → 重新发现/导入 →
-重新注册并加载 流程。本地插件（moduleInfo meta 的 source 为
-``plugin_folder``）重扫描插件目录；PyPI 安装包模块重新查询
-entry-point 并按顶层模块名清理 ``sys.modules`` 后重导入
-（pip 升级后重载即可生效）。
+完整执行 语法预检 → 卸载旧实例 → 清理注册与模块缓存（默认全量：
+按顶层包名清理 ``sys.modules`` + ``invalidate_caches``）→
+重新发现/导入 → 重新注册并加载 流程。本地插件（moduleInfo meta 的
+source 为 ``plugin_folder``）重扫描插件目录；运行时注册（source 为
+``runtime``）按定义模块重导并按类名重取；PyPI 安装包模块重新查询
+entry-point 并重导入（pip 升级后重载即可生效）。
 
-依赖该模块的模块会**级联重载**：本地插件依赖者与 ``full=True``
-时的 PyPI 依赖者走完整重载流程（重新导入代码）；默认模式下
-PyPI 依赖者卸载后直接重新实例化。
+依赖该模块的模块会**级联重载**：默认（全量）模式下依赖者同样完整
+重导代码；``full=False`` 轻量模式下 PyPI 依赖者卸载后直接重新实例化。
 
-``full=True`` 启用全量重载：``sys.modules`` 清理名单在
-``top_level`` 元数据之外叠加旧模块对象的顶层包名——元数据缺失
-（部分打包产物无 top_level.txt）时仍能彻底清理 import 缓存，
-确保重载后运行的是最新代码。
+``full=False`` 切换为**轻量重载**：``sys.modules`` 清理名单仅按
+元数据，仅供超大依赖树的性能敏感场景。
 
-- **module_name**: 模块名（entry-point 名称或插件名）
+- **module_name**: 模块名（entry-point 名称、插件名或运行时注册名）
 - **manager_instance**: 模块管理器实例
 - **sdk_instance** (`SDK`): 实例
-- **full**: 是否全量重载（默认 False；True 时依赖者同样重导代码）
+- **full**: 是否全量重载（默认 True；False 为轻量逃生门）
 
 **返回值**: 是否重载成功
 
@@ -342,6 +340,56 @@ sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日�
 - **top_level**: 顶层 Python 模块名列表（重导入前清理 sys.modules）
 
 **返回值**: 是否重载成功
+
+---
+
+
+##### `_invalidate_source_caches(top_level: 'list[str]') -> None`（staticmethod）
+
+**内部方法**
+清除顶层模块源文件的字节码缓存（``__pycache__``/*.pyc）
+
+必须在 ``_purge_installed_modules`` **之前**调用（依赖 sys.modules
+中尚存的旧条目定位源文件）。
+
+- **top_level**: 顶层模块名列表
+
+---
+
+
+##### `async _reload_runtime_module(module_name: str, manager_instance: Any, sdk_instance: Any) -> bool`
+
+**内部方法**
+重载单个运行时注册模块：按定义模块重导 → 按类名重取 → 注册并加载
+
+调用前须通过 reload_module 的安全守卫（定义模块非 ``__main__``
+且源文件存在）。无 entry-point 参与：定义模块 ``import_module``
+重导后按原类名 ``getattr`` 重取类。
+
+- **module_name**: 模块注册名
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+
+**返回值**: 是否重载成功
+
+---
+
+
+##### `async _precheck_sources(module_name: str, old_obj: Any, is_plugin: bool, top_level: 'list[str]') -> bool`
+
+**内部方法**
+重载卸载前的语法预检：对目标源码树逐文件 ``ast.parse``
+
+预检失败（语法错误）即拒绝重载——旧实例未卸载、继续服务，语法
+错误永远不会把模块推进"半死状态"。源码树无法定位（C 扩展 / 内存
+模块）时跳过预检并记 debug，交由快照回滚兜底。
+
+- **module_name**: 模块名（日志用）
+- **old_obj**: 重载前的快照条目（模块对象）
+- **is_plugin**: 是否插件文件夹来源
+- **top_level**: 顶层模块名列表
+
+**返回值**: 是否通过（True = 允许继续重载流程）
 
 ---
 
@@ -593,6 +641,31 @@ sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日�
 ---
 
 
+##### `_maybe_reset_init_failed() -> None`
+
+**内部方法**
+初始化失败冷却：超过 ``ACTIVATE_RETRY_COOLDOWN_SECS`` 后清除失败标志
+
+旧语义为失败后代理永久死亡（``_init_failed`` 永久短路）；现改为与
+ModuleActivator 对齐的冷却重试——冷却窗口内保持短路（避免每次属性
+访问都重试的开销），冷却结束自动允许重试。休眠唤醒失败因此具备
+自恢复路径。
+
+---
+
+
+##### `reset_for_sleep() -> None`
+
+**内部方法**
+归眠：清空实例态，使代理回到"未激活"状态
+
+代理对象本身保留（sdk 属性与管理器懒注册不动），下次访问照常走
+懒初始化路径透明复活。ModuleActivator 覆写本方法以同时重置激活态
+并重新武装触发器 stub。
+
+---
+
+
 ##### `_ensure_initialized() -> None`
 
 确保模块已初始化
@@ -806,6 +879,17 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 加载失败的半卸载（模块重载完备性）会按 owner 回收事件处理器与
 占位命令——此处先清残留再重建，保证冷却结束后用户再次触发仍可
 自动重试（stub 丢失 = 模块失联无恢复路径）。
+
+---
+
+
+##### `reset_for_sleep() -> None`
+
+**内部方法**
+归眠：重置激活态并重新武装触发器 stub
+
+归眠的注册资源清理会按 owner 回收激活 stub（与激活失败路径同一
+问题），须 ``_rearm_stubs()`` 保证事件再次触发时模块被重新唤醒。
 
 ---
 

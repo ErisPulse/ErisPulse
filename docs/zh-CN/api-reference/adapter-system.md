@@ -1,5 +1,8 @@
 # 适配器系统 API
 
+> [!TIP]
+> **什么时候需要读这篇**：当你需要管理适配器（获取实例、启停、查 Bot 在线状态）、用 Send DSL 发消息、注册中间件，或为适配器接入 Bot 状态上报（meta 事件）时查阅本文。不需要则跳过。
+
 本文档详细介绍了 ErisPulse 适配器系统的 API。
 
 ## Adapter 管理器
@@ -244,131 +247,12 @@ class MyAdapter(BaseAdapter):
 
 适配器通过发送 OneBot12 标准的 **`meta` 事件**来告知框架 Bot 的连接状态。系统自动从中提取 Bot 信息进行状态追踪。
 
-### meta 事件类型
+### meta 事件上报
 
-适配器应发送以下三种 `meta` 事件：
+适配器通过 `meta` 事件上报 Bot 状态，三种 `detail_type`：`connect`（注册上线）、`heartbeat`（心跳保活）、`disconnect`（标记离线）。推荐用 `emit_meta()` 一行发送；即使不发 meta 事件，框架也会从普通事件（message/notice/request）的 `self` 字段自动发现 Bot。
 
-| `type` | `detail_type` | 说明 | 触发时机 |
-|--------|--------------|------|---------|
-| `meta` | `connect` | Bot 连接上线 | 适配器与平台建立连接成功后 |
-| `meta` | `heartbeat` | Bot 心跳 | 定期发送（建议 30-60 秒） |
-| `meta` | `disconnect` | Bot 断开连接 | 检测到连接断开时 |
-
-### self 字段扩展
-
-ErisPulse 在 OneBot12 标准的 `self` 字段上扩展了以下可选字段：
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `self.platform` | string | 平台名称（OB12 标准） |
-| `self.user_id` | string | Bot 用户 ID（OB12 标准） |
-| `self.user_name` | string | Bot 昵称（ErisPulse 扩展） |
-| `self.avatar` | string | Bot 头像 URL（ErisPulse 扩展） |
-| `self.account_id` | string | 多账户标识（ErisPulse 扩展） |
-
-### meta 事件格式
-
-#### connect — 连接上线
-
-```python
-await adapter.emit({
-    "id": "unique_id",
-    "time": 1712345678,
-    "type": "meta",
-    "detail_type": "connect",
-    "platform": "telegram",
-    "self": {
-        "platform": "telegram",
-        "user_id": "123456",
-        "user_name": "MyBot",
-        "avatar": "https://example.com/avatar.jpg"
-    },
-    "telegram_raw": {...},
-    "telegram_raw_type": "bot_connected"
-})
-```
-
-系统处理：注册 Bot，标记为 `online`，触发 `adapter.bot.online` 生命周期事件。
-
-#### heartbeat — 心跳
-
-```python
-await adapter.emit({
-    "id": "unique_id",
-    "time": 1712345708,
-    "type": "meta",
-    "detail_type": "heartbeat",
-    "platform": "telegram",
-    "self": {
-        "platform": "telegram",
-        "user_id": "123456"
-    }
-})
-```
-
-系统处理：更新 `last_active` 时间（心跳中也支持更新元信息）。
-
-#### disconnect — 断开连接
-
-```python
-await adapter.emit({
-    "id": "unique_id",
-    "time": 1712345738,
-    "type": "meta",
-    "detail_type": "disconnect",
-    "platform": "telegram",
-    "self": {
-        "platform": "telegram",
-        "user_id": "123456"
-    }
-})
-```
-
-系统处理：标记 Bot 为 `offline`，触发 `adapter.bot.offline` 生命周期事件。
-
-### 普通事件的自动发现
-
-除了 `meta` 事件外，普通事件（`message`/`notice`/`request`）中的 `self` 字段也会自动发现并注册 Bot、更新活跃时间。这意味着即使适配器不发送 `connect` 事件，框架也能从第一条普通事件中发现 Bot。
-
-### 适配器接入示例
-
-```python
-class MyAdapter(BaseAdapter):
-    async def start(self):
-        # 与平台建立连接...
-        connection = await self._connect()
-        
-        # 连接成功，发送 connect 事件
-        await adapter.emit({
-            "id": str(uuid4()),
-            "time": int(time.time()),
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": self.bot_id,
-                "user_name": self.bot_name,
-                "avatar": self.bot_avatar
-            },
-            "myplatform_raw": raw_data,
-            "myplatform_raw_type": "connected"
-        })
-    
-    async def on_disconnect(self):
-        # 断开连接，发送 disconnect 事件
-        await adapter.emit({
-            "id": str(uuid4()),
-            "time": int(time.time()),
-            "type": "meta",
-            "detail_type": "disconnect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": self.bot_id
-            }
-        })
-```
+- **meta 事件格式与发送方式**（何时发送、`emit_meta()` 用法、手动构造格式）见 [适配器最佳实践 - Bot 状态管理与 Meta 事件](../developer-guide/adapters/best-practices.md#bot-状态管理与-meta-事件)
+- **自动发现机制与框架行为**见 [适配器核心概念 - Bot 状态管理](../developer-guide/adapters/core-concepts.md#bot-状态管理)
 
 ### 查询 Bot 状态
 
@@ -435,6 +319,10 @@ def on_status_change(event):
 
 ## 相关文档
 
+**继续查 API**：
 - [核心模块 API](core-modules.md) - 核心模块 API
 - [事件系统 API](event-system.md) - Event 模块 API
+
+**动手写适配器**：
 - [适配器开发指南](../developer-guide/adapters/) - 开发平台适配器
+- [适配器标准化指南（总纲）](../standards/standardization-guide.md) - 实现新适配器前的标准对照与 Checklist

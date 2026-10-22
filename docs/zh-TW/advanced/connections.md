@@ -1,13 +1,19 @@
 # 連接池與廣播
 
 > [!TIP]  
-> **什麼時候需要閱讀本文**：需要 WebSocket/SSE 連接池、廣播分組、跨模組推送或查看連接時。不需要則可跳過，不會影響其他功能的使用。
+> **何時需要閱讀本文**：當需要 WebSocket/SSE 連接池、廣播分組、跨模組推送，或查看連接狀態時。若無此需求則可跳過，不會影響其他功能的使用。
+
+> **讀完你將了解**：三種連接如何自動登記進註冊表、分組訂閱與廣播 API、  
+> 跨模組重用與關閉權的歸屬，以及模組卸載時連接的清理語意。  
+>  
+> **本文不涉及**：WebSocket / SSE 路由的註冊寫法與連接生命週期鈎子  
+> （見[路由管理器](router.md)）；客戶端 HTTP 請求（見[網路客戶端](http-client.md)）。
 
 連接（服務端 WebSocket / SSE / 客戶端出站 WebSocket）在 ErisPulse 中是**框架級一等資源**：  
-隨著連接建立自動登記至統一註冊表，支援廣播、業務分組訂閱與跨模組傳遞/複用，  
-模組卸載時由框架自動關閉回收——業務不再需要自行建立 `_ws_clients` 集合，也不會因忘記清理而造成資源洩漏。
+隨著連接建立自動登記進統一註冊表，支援廣播、業務分組訂閱與跨模組傳遞/重用，  
+模組卸載時由框架自動關閉回收——業務不再需自行建立 `_ws_clients` 集合，也不會因忘記清理而造成資源洩漏。
 
-> 本文文件範例均為**根匯入**寫法（2.10+ 推薦）：  
+> 本文文件範例均為**根導入**寫法（2.10+ 推薦）：  
 > `from ErisPulse import connections, router, client, WebSocketConnection`
 
 ## 概述
@@ -214,3 +220,10 @@ spawn_later(30, push_tick, owner="MyModule")
 | `conn.send_json / send_text / iter_text / ...` | 收發（服務端/客戶端介面一致） |
 | `conn.meta` | 業務元數據字典 |
 | `conn.close(force=False)` | 關閉（非 owner 拋出 `ConnectionPermissionError`） |
+
+## 相關文件
+
+- **註冊服務端 WS / SSE 路由** → [路由管理器](router.md)
+- **建立客戶端出站 WebSocket** → [網路客戶端](network-client.md)
+- **模組卸載時連線如何被回收** → [歸屬權（owner）系統](ownership.md)
+- **連線相關異常（`ConnectionNotFoundError` / `ConnectionPermissionError`）** → [異常體系與捕獲指南](errors.md)

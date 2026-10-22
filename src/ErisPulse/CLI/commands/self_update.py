@@ -6,7 +6,7 @@ Self-Update 命令实现
 
 import asyncio
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 from rich.box import SIMPLE
 from rich.prompt import Prompt
@@ -39,7 +39,7 @@ class SelfUpdateCommand(Command):
         """
         self.package_manager = PackageManager()
 
-    def add_arguments(self, parser: ArgumentParser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "version", nargs="?", help=i18n.t("cli.self_update.version_help")
         )
@@ -56,7 +56,7 @@ class SelfUpdateCommand(Command):
             "--no-uv", action="store_true", help=i18n.t("cli.self_update.no_uv_help")
         )
 
-    def execute(self, args):
+    def execute(self, args: Namespace) -> None:
         self.package_manager.no_uv = getattr(args, "no_uv", False)
         current_version = self.package_manager.get_installed_version()
         console.print(

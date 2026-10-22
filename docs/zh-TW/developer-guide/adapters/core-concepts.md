@@ -1,9 +1,9 @@
 # 適配器核心概念
 
 > [!TIP]
-> **何時需要閱讀這篇**：適配器開發路徑內必讀（BaseAdapter / SendDSL / 生命周期等核心機制的完整說明）。只想入門可先閱讀 [適配器開發入門](getting-started.md)，遇到"為什麼"層面的疑問再回到本篇查閱。
+> **什麼時候需要讀這篇**：適配器開發路徑內必讀（BaseAdapter / SendDSL / 生命週期等核心機制的完整說明）。只想起步可先讀 [適配器開發入門](getting-started.md)，遇到「為什麼」層面的疑問再回到本篇查閱。
 
-了解 ErisPulse 適配器的核心概念是開發適配器的基礎。
+這篇解釋適配器的運作機制：AdapterManager 如何註冊與分發事件、`BaseAdapter` 在初始化時替你做了什麼、設定與多帳號怎麼宣告——寫適配器時遇到「為什麼要這樣寫」的疑問，來這裡查。
 
 ## 適配器架構
 
@@ -1039,115 +1039,66 @@ async def call_api(self, endpoint: str, **params):
 
 > **向后兼容**：直接使用 `aiohttp.ClientSession` 的旧适配器代码不受影响，仍然可以捕获 `aiohttp.ClientError`。两种方式可以共存。推荐新代码使用 `sdk.client` + ErisPulse 异常体系。
 
-## Bot 状态管理
+## Bot 狀態管理
 
-AdapterManager 内置了 Bot 状态追踪系统，自动维护所有已注册 Bot 的在线状态、活跃时间和元信息。
+AdapterManager 內建了 Bot 狀態追蹤系統，自動維護所有已註冊 Bot 的線上狀態、活躍時間和元資訊。
 
-### 自动发现机制
+### 自動發現機制
 
-当适配器通过 `adapter.emit()` 发送事件时，框架会自动检查事件中的 `self` 字段：
+當適配器透過 `adapter.emit()` 傳送事件時，框架會自動檢查事件中的 `self` 欄位：
 
-- **meta 事件**：根据 `detail_type` 执行对应操作（connect 注册/断开标记离线/heartbeat 更新活跃时间）
-- **普通事件**（message/notice/request）：自动发现 Bot 并更新活跃时间
+- **meta 事件**：根據 `detail_type` 執行對應操作（connect 註冊/斷線標記離線/heartbeat 更新活躍時間）
+- **普通事件**（message/notice/request）：自動發現 Bot 並更新活躍時間
 
 ```python
-# 所有包含 self 字段的事件都会触发自动发现
+# 所有包含 self 欄位的事件都會觸發自動發現
 await self.adapter.emit({
     "type": "message",
     "platform": "myplatform",
     "self": {"platform": "myplatform", "user_id": "bot123"},
     # ...
 })
-# Bot "bot123" 已自动注册（如果首次出现）并更新活跃时间
+# Bot "bot123" 已自動註冊（如果首次出現）並更新活躍時間
 ```
 
-### Meta 事件类型
+### Meta 事件類型
 
-| `detail_type` | 说明 | 框架行为 |
+| `detail_type` | 說明 | 框架行為 |
 |---|---|---|
-| `connect` | Bot 连接 | 注册 Bot 并触发 `adapter.bot.online` 生命週期事件 |
-| `disconnect` | Bot 断开 | 标记 Bot 离线并触发 `adapter.bot.offline` 生命週期事件 |
-| `heartbeat` | Bot 心跳 | 更新 Bot 活跃时间和元信息 |
+| `connect` | Bot 連線 | 註冊 Bot 並觸發 `adapter.bot.online` 生命週期事件 |
+| `disconnect` | Bot 斷線 | 標記 Bot 離線並觸發 `adapter.bot.offline` 生命週期事件 |
+| `heartbeat` | Bot 心跳 | 更新 Bot 活躍時間和元資訊 |
 
-### 适配器发送 Meta 事件
+### 適配器傳送 Meta 事件
 
-使用 `emit_meta()` 一行即可发送 meta 事件：
+傳送方式（`emit_meta()` 一行傳送、心跳事件與手動建構格式）見 [適配器最佳實踐 - Bot 狀態管理與 Meta 事件](best-practices.md#bot-狀態管理與-meta-事件)。
 
-```python
-class MyAdapter(BaseAdapter):
-    async def _on_bot_connect(self, bot_id: str):
-        # 一行发送 connect 事件
-        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的機器人")
+### `self` 欄位擴充資訊
 
-    async def _on_bot_disconnect(self, bot_id: str):
-        await self.emit_meta("disconnect", bot_id)
-```
+`self` 欄位除必需的 `platform` 和 `user_id` 外，還支援以下可選欄位：
 
-也支持手动构造（旧版方式仍然兼容）：
-
-```python
-await self.adapter.emit({
-    "type": "meta",
-    "detail_type": "connect",
-    "platform": "myplatform",
-    "self": {"platform": "myplatform", "user_id": bot_id}
-})
-```
-
-### `self` 字段扩展信息
-
-`self` 字段除必需的 `platform` 和 `user_id` 外，还支持以下可选字段：
-
-| 字段 | 说明 |
+| 欄位 | 說明 |
 |---|---|
-| `user_name` | Bot 用户名 |
-| `nickname` | Bot 昵称 |
-| `avatar` | Bot 头像 URL |
-| `account_id` | 多账户标识 |
+| `user_name` | Bot 使用者名稱 |
+| `nickname` | Bot 暱稱 |
+| `avatar` | Bot 頭像 URL |
+| `account_id` | 多帳戶識別碼 |
 
-### Bot 状态查询
+### Bot 狀態查詢
 
-```python
-from ErisPulse import sdk
+查詢 API（`get_bot_info()` / `list_bots()` / `is_bot_online()` / `get_status_summary()`）見 [適配器系統 API - Bot 狀態管理](../../api-reference/adapter-system.md#bot-狀態管理)。
 
-# 获取单个 Bot 信息
-info = sdk.adapter.get_bot_info("myplatform", "bot123")
-# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+### 監聽 Bot 生命週期
 
-# 列出所有 Bot
-all_bots = sdk.adapter.list_bots()
+`adapter.bot.online` / `adapter.bot.offline` 生命週期事件表與監聽範例見 [適配器系統 API - Bot 狀態管理](../../api-reference/adapter-system.md#bot-狀態管理)。
 
-# 列出指定平台的 Bot
-platform_bots = sdk.adapter.list_bots("myplatform")
+## 相關文檔
 
-# 检查 Bot 是否在线
-is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
+### 實現層面深入
 
-# 获取完整状态摘要（适合 WebUI 展示）
-summary = sdk.adapter.get_status_summary()
-# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
-```
+- [SendDSL 詳解](send-dsl.md) - 學習訊息發送
+- [適配器最佳實踐](best-practices.md) - 開發高品質適配器
 
-### 监听 Bot 生命周期
+### 回看起步步驟
 
-```python
-from ErisPulse import sdk
-
-@sdk.lifecycle.on("adapter.bot.online")
-async def on_bot_online(data):
-    platform = data.get("platform")
-    bot_id = data.get("bot_id")
-    sdk.logger.info(f"Bot 上線: {platform}/{bot_id}")
-
-@sdk.lifecycle.on("adapter.bot.offline")
-async def on_bot_offline(data):
-    platform = data.get("platform")
-    bot_id = data.get("bot_id")
-    sdk.logger.info(f"Bot 下線: {platform}/{bot_id}")
-```
-
-## 相关文档
-
-- [适配器开发入门](getting-started.md) - 創建第一個适配器
-- [SendDSL 详解](send-dsl.md) - 學習訊息發送
-- [适配器最佳实践](best-practices.md) - 開發高品質适配器
+- [適配器開發入門](getting-started.md) - 建立第一個適配器

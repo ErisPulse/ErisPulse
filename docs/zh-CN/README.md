@@ -1,6 +1,6 @@
 # ErisPulse 文档
 
-ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配器与不同平台交互，提供灵活的模块系统用于功能扩展。
+ErisPulse 是事件驱动的模块化异步机器人框架——业务代码只写一遍，通过适配器部署到 QQ、Telegram、Kook、云湖等多个平台，插件系统、热重载与完整开发者工具链开箱即用。
 
 > **第一次使用?** 直接看 [5 分钟快速开始](quick-start.md) —— 从安装到运行第一个机器人，一条龙走完。
 
@@ -53,23 +53,49 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 
 ### 三、我要深入理解原理
 
-了解框架内部如何运作。
+了解框架内部如何运作。先看架构与 API 参考，再按下面对照表进入专题。
+
+**架构与 API 参考**
 
 | 文档 | 说明 |
 |------|------|
 | [架构概览](architecture.md) | 可视化图表：核心架构、初始化流程、事件处理、生命周期、模块加载策略（含 `activate_on` 事件驱动懒激活）、本地插件文件夹与模块热重载架构（支持全部模块来源） |
-| [启动流程与手动控制](advanced/startup.md) | 启动链路拆解、手动驱动各环节、加载失败诊断 |
 | [事件系统](api-reference/event-system.md) | 五大类事件的完整 API |
 | [适配器系统](api-reference/adapter-system.md) | 适配器注册、启停、API 调用 |
 | [核心模块](api-reference/core-modules.md) | Storage / Config / Logger / Router 等基础能力 |
-| [生命周期管理](advanced/lifecycle.md) · [懶加载](advanced/lazy-loading.md) · [路由系统](advanced/router.md) | 内部子系统 |
-| [连接池与广播](advanced/connections.md) · [会话收件箱](advanced/transcript.md) | 连接一等资源：广播/分组/跨模块传递与复用、连接池查看；消息记录保留策略与运行时覆盖 |
+
+**L2 必读（写生产级模块绕不开）**
+
+| 文档 | 说明 |
+|------|------|
 | [作用域（scope）](advanced/scope.md) | 三维作用域控制：模块可用性 / 事件准入 / 出站动作限制（含方法级细粒度规则、绑定继承 merge） |
 | [归属权（owner）系统](advanced/ownership.md) | 资源归属与自动回收：owner 上下文、归属资源全景、卸载清理序列、设计边界与模块作者指南 |
-| [影子模块与灰度转正](advanced/shadow.md) | 模块新版本以独立 owner 并行试运行：五道隔离闸、行为 diff 对齐、promote 转正与失败回滚 |
+| [生命周期管理](advanced/lifecycle.md) | 生命周期事件系统：模块 / 适配器加载、卸载、重载、禁用时各自该做什么 |
 | [交互会话系统](advanced/interaction.md) | wait_reply 全解、会话定时器（remind/escalate）、多路等待（select）、会话互斥租约、收件箱、消息事务、链路追踪 |
-| [模块间通信](advanced/module-communication.md) | RPC 协议化（module.call）、meta.services 服务契约与目录、定向事件 emit(to=)、冷启动回放、事件幂等去重 |
-| [Conversation 多轮对话](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL 构建](advanced/sql-builder.md) · [存储后端](advanced/storage-backends.md) · [HTTP 客户端](advanced/http-client.md) · [国际化](advanced/i18n.md) | 进阶工具 |
+
+**按场景分组（按需查阅）**
+
+| 分组 | 文档 | 不懂首篇会踩的坑 |
+|------|------|------|
+| 运行启动 | [启动流程与手动控制](advanced/startup.md) · [懒加载](advanced/lazy-loading.md) | 不懂启动链路（Finder / Loader / Manager / Router），模块加载失败时只能对着日志干瞪眼 |
+| 通信连接 | [模块间通信](advanced/module-communication.md) · [连接池与广播](advanced/connections.md) · [路由系统](advanced/router.md) | 不懂服务契约（`meta.services`）白名单，跨模块 `module.call` 会被 `ServiceNotProvidedError` 拒绝且不知原因 |
+| 数据存储 | [存储后端](advanced/storage-backends.md) · [SQL 构建](advanced/sql-builder.md) · [HTTP 客户端](advanced/http-client.md) | 不懂连接失败冷却期语义，数据库抖动时会误判"框架挂了"（实际是存储操作快速失败、冷却后自动重连） |
+| 消息对话 | [Conversation 多轮对话](advanced/conversation.md) · [会话收件箱](advanced/transcript.md) · [MessageBuilder](advanced/message-builder.md) · [国际化](advanced/i18n.md) | 不懂会话互斥租约，两个模块同时等同一用户的回复会互相踢掉 |
+| 灰度影子 | [影子模块与灰度转正](advanced/shadow.md) | 不懂五道隔离闸就提前转正，影子的出站消息会外溢到真实用户 |
+
+**概念关系总表**
+
+分不清哪个子系统管什么时，按这张表对号入座：
+
+| 子系统 | 回答什么问题 | 一句话口诀 |
+|--------|------------|-----------|
+| [通信](advanced/module-communication.md)（module-communication） | 模块之间怎么互相调用、怎么定向发事件？ | 跨模块走 `module.call`；对方声明了 `meta.services` 就只能调白名单内的方法 |
+| [权限](advanced/scope.md)（scope） | 谁能用这个模块、谁能触发事件、能执行哪些动作？ | 三道闸——模块绑定、身份准入、出站限制，全部由用户配置说了算 |
+| [归属](advanced/ownership.md)（ownership） | 模块卸载后，它开的连接、定时器、订阅去哪了？ | 谁注册谁归属，卸载即回收，不留悬挂资源 |
+| [懒加载与休眠](advanced/lazy-loading.md)（lazy-loading） | 模块什么时候才真正加载、闲置后去哪？ | `activate_on` 用到才醒，`dormant_after` 闲置归眠 |
+| [交互](advanced/interaction.md)（interaction） | 怎么等用户下一条回复、多轮收集怎么写？ | `wait_reply` 等一条、`.got()` 链收多轮，租约保证不打架 |
+| [影子灰度](advanced/shadow.md)（shadow） | 新版模块怎么在不影响线上的情况下试运行？ | 影子收副本、出站只记账，`promote` 由人确认才转正 |
+| [存储](advanced/storage-backends.md)（storage-backends） | 数据存哪、后端怎么换？ | 同一套存储 API，sqlite / mysql / postgres 配置切换 |
 
 ### 四、生态与官方客户端
 
@@ -93,6 +119,18 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 | [首次贡献](contributing/first-contribution.md) | 从 fork 到提交 PR |
 
 ---
+
+## 高级特性版本速查表
+
+做版本兼容判断、或接手旧项目想知道"这个能力是哪个版本引入的"时，按此表对号入座（以仓库根 [CHANGELOG.md](https://github.com/ErisPulse/ErisPulse/blob/main/CHANGELOG.md) 各版本条目为准）。
+
+| 版本 | 引入的能力 |
+|------|-----------|
+| **2.7** | 生产化基座：OneBot12 标准化基类（`ApiDSL` / `BaseConverter`）、配置热更新系统化、优雅关闭与 SIGTERM/SIGHUP 信号处理、环境变量配置覆盖、生命周期回调钩子、Web 栈懒加载；2.7.1 补配置写入可靠性与 GC 分代治理 |
+| **2.8** | 权限与通信骨架：作用域三维体系（scope）、交互会话基础设施（租约 / 检查点 / 消息事务 / 会话收件箱 transcript）、模块间 RPC 协议化（`module.call` / `meta.services` 服务契约 / 定向事件 emit(to=)）、多后端异步存储（sqlite / mysql / postgres，连接失败不阻塞框架）、归属权清理、配置注释保留；2.8.x 后续版本为 CLI 脚手架、子命令等打磨 |
+| **2.9** | 「模块开发体验」主线（EPRFC-2026-001）：声明式命令参数（`args=` / `options=`）与命令治理（`cooldown=` / `rate_limit=`）、统一依赖注入（`Depends`）、中间件事件否决权、内置 ORM（自动迁移 + 关系映射）、影子模块灰度转正、分发决策链追踪与排查诊断、正式支持 Python 3.14 |
+| **2.10** | 连接一等资源（`connections` 注册表：广播 / 业务分组 / 跨模块传递复用 / 卸载自动回收）、根导入契约（常用 API 全部可 `from ErisPulse import`）、归属权体系补全、收件箱保留策略运行时覆盖；2.10.2 适配器本地插件目录（`plugins/`）+ `epsdk create pack` + tomlclass 无损配置写入 |
+| **2.11**（dev） | 「改代码 → 看效果」开发闭环：热重载默认全量语义（语法预检 + 代码身份核对 + 依赖者级联重导）、懒加载休眠（`dormant_after`）、适配器代码级热重载（`sdk.adapter.reload`）、`.got()` 命令流语法糖、`epsdk stop` / `restart` 运行时控制 |
 
 ## 开发方式
 

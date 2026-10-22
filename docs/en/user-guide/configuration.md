@@ -1,15 +1,15 @@
 # Configuration File Guide
 
 > [!NOTE]
-> **L1 Core Reading** — One of the five core documents in the "Reading Path" on the homepage, essential for module development.
+> **L1 Core Required Reading** — One of the five core documents in the "Reading Path" on the homepage, essential for module development.
 
-> This document introduces the framework's configuration file. If a third-party module requires configuration, please refer to the module's documentation.
+> This document covers the framework's own configuration file `config/config.toml`: what each configuration section controls, which ones support hot-reloading, and how to override them with environment variables. For configuration options of third-party modules, please refer to each module's own documentation.
 
-ErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project configurations.
+ErisPulse uses the TOML-format configuration file `config/config.toml` to manage project configuration.
 
 ## Configuration File Location
 
-The configuration file is located in the `config/` folder in the project root directory:
+The configuration file is located in the `config/` folder at the project root:
 
 ```
 project/
@@ -18,9 +18,13 @@ project/
 ├── main.py
 ```
 
-### Multi-Instance Warning and Lock File
+### Multi-Instance Notes and Lock Files
 
-When the framework starts, it creates a `.erispulse_config.lock` lock file in the `config/` directory and holds it until the process exits (used to detect multiple instances sharing the same configuration directory). If the log shows a warning "Detected that the configuration file may be in use by another ErisPulse instance," it means there are **two or more ErisPulse processes writing to the same configuration file** (typical scenario: multiple containers mounted the same host `config/` directory) — concurrent writes will overwrite each other. Please use a separate configuration directory for each instance.
+When the framework starts, it creates a `config.lock` lock file in the runtime status directory **`.erispulse/`** at the project root and holds it until the process exits (used to detect multiple instances sharing the configuration directory; prior to version 2.10, the `.erispulse_config.lock` file located in the `config/` directory will be automatically cleared during the first startup after an upgrade). If the log shows the warning "Detected that the configuration file may be in use by another ErisPulse instance," it means that **two or more ErisPulse processes are writing to the same configuration file** (typical scenario: multiple containers mounted with the same host `config/` directory) — concurrent writes will overwrite each other. Please use separate configuration directories for each instance.
+
+### Sensitive Configuration Not Stored in Repository
+
+The configuration file contains sensitive information such as tokens (token / API key): the framework initialization and `epsdk init` will automatically generate a `.gitignore` file in the `config/` directory (with a single line `*` — **all files in the directory are excluded from version control, and the ignore file itself is also excluded**); existing `.gitignore` files will not be overwritten. The `.erispulse/` runtime status directory (instance lock, CLI runtime status files) is considered local machine state, and the project template's `.gitignore` already defaults to ignoring it.
 
 ## Configuration Loading Error Handling
 
@@ -680,9 +684,8 @@ acl_default_allow = true
 
 > Runtime API (after `from ErisPulse.Core.Event import overrides`, call sub-namespace methods like `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` or access via `sdk.Event.overrides`) is available at [Event Handling Introduction · Event Override](../getting-started/event-handling.md#event-override-no-modify-module-code-overwrite-behavior-of-any-event-type).
 
-## Command Parsing Configuration (event.command)
-
 ## Next Steps
 
-- [CLI Command Reference](cli-reference.md) - Learn all command-line commands
-- [Developer Guide](../developer-guide/) - Learn how to develop custom modules
+- **Continue with the L1 path**: Next up is [Exception Handling](../advanced/errors.md), where you'll learn to write error handling that won't bring down the framework
+- **Don't want to hand-write TOML**: Use the `epsdk config` interactive wizard to fill in declarative configuration options, see [CLI Command Reference · config](cli-reference.md#config)
+- **Don't want to modify config files during deployment**: Override configuration options with environment variables, combined with the Docker usage described in the [Deployment Guide](deployment.md)

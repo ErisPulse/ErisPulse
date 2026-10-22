@@ -12,7 +12,7 @@ Types 命令实现
 {!--< /tips >!--}
 """
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +20,11 @@ from rich.panel import Panel
 
 from ..base import Command
 from ..console import console
-from ..constants import ADAPTER_ENTRY_POINT_GROUP, MODULE_ENTRY_POINT_GROUP
+from ..constants import (
+    ADAPTER_ENTRY_POINT_GROUP,
+    CLI_INTROSPECT_TIMEOUT_SECS,
+    MODULE_ENTRY_POINT_GROUP,
+)
 from ..i18n import i18n
 
 # 生成文件名（带前导下划线，避免与用户业务模块冲突）
@@ -202,7 +206,7 @@ class TypesCommand(Command):
     aliases = ["t", "stub"]
     category = "components"
 
-    def add_arguments(self, parser: ArgumentParser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--output", "-o",
             default=None,
@@ -227,7 +231,7 @@ class TypesCommand(Command):
             help=i18n.t("cli.types.modules_only_help"),
         )
 
-    def execute(self, args):
+    def execute(self, args: Namespace) -> None:
         output_path = Path(args.output) if args.output else Path.cwd() / STUB_FILENAME
 
         # 检查文件是否已存在
@@ -365,7 +369,7 @@ class TypesCommand(Command):
             result = subprocess.run(
                 [python_executable, "-c", script],
                 capture_output=True,
-                timeout=60,
+                timeout=CLI_INTROSPECT_TIMEOUT_SECS,
                 text=True,
                 check=False,
             )

@@ -195,10 +195,21 @@ except ErisPulseError as e:
 - 異常均已從 `ErisPulse.Core` 聚合導出（含 `SessionOccupiedError` / `InteractionCancelled` / `StrictModeError`），也可從 `ErisPulse.Core.Bases.errors` 導入
 - 完整定義見 `src/ErisPulse/Core/Bases/errors.py`
 
-## 關閉雜訊折疊
+## 關閉噪音折疊
 
-長期駐留的進程在關閉（或後台循環被取消）時，事件循環通常會刷出一批無處理價值的
-`Task was destroyed but it is pending!` 類似的解釋器雜訊。框架內建**同類雜訊折疊**：
-2 秒視窗內的同類訊息降級為 TRACE 並合併計數，只輸出一次，結尾帶有
+長期駐留進程在關閉（或背景循環被取消）時，事件循環常會刷出一批無處理價值的
+`Task was destroyed but it is pending!` 類解釋器噪音。框架內建**同類噪音折疊**：
+2 秒視窗內的同類訊息降級為 TRACE 並合併計數，只輸出一次，結尾帶
 「（另有 N 次同類訊息被折疊）」後綴。這是刻意的降噪行為——看到折疊後綴不代表
-框架吞掉了真實異常，業務異常（上表各類）照常完整輸出。
+框架吞掉了真實異常，業務異常（上表各類）照常完整輸出。折疊僅針對解釋器退出噪音，
+業務異常不受影響。什麼級別的異常值得留痕、什麼可以降級/折疊，遵循
+[工程健壯性規則 · 異常留痕分級](../styleguide/engineering.md#1-異常留痕分級)。
+
+## 相關文件
+
+根據排查意圖選擇：
+
+- **儲存操作返回 `False` / `None`，想搞清連接狀態** → [儲存後端 · 連接失敗行為](storage-backends.md#連接失敗行為)，或訂閱 [storage.unreachable / storage.recovered 事件](lifecycle.md#儲存連接狀態)
+- **`wait_reply` 返回 `None`，想知道被什麼取消** → [互動會話系統](interaction.md)（取消原因對照表）
+- **`module.call` 抛模組呼叫異常** → [模組間通信](module-communication.md)
+- **連接 / WebSocket 報錯** → [網路用戶端](http-client.md)（ClientError 體系）與[連接池與廣播](connections.md)（連接註冊表異常）

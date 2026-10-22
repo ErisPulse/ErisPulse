@@ -1,33 +1,37 @@
-# ErisPulse Session Type Standards
+# ErisPulse Session Type Standard
 
-This document defines the session type standards supported by ErisPulse, including receiving event types and sending target types.
+> [!TIP]
+> **When to read this**: When mapping platform-native session types to standard types (private/group/channel/guild/thread) in an adapter, or when unsure what target type to pass to `Send.To()` in a module, or to understand the automatic conversion of `event.reply()` — refer to this document. Skip it otherwise.
+
+This document defines the session type standard supported by ErisPulse, covering receive event types and send target types.
 
 ## 1. Core Concepts
 
-### 1.1 Receive Type && Send Type
+### 1.1 Receive Types && Send Types
 
-ErisPulse distinguishes two session types:
+ErisPulse distinguishes between two session types:
 
-- **Receive Type**: The `detail_type` field used for receiving events
-- **Send Type**: The target type used in the `Send.To()` method when sending messages
+- **Receive Type**: The `detail_type` field of received events
+- **Send Type**: The target type of the `Send.To()` method when sending messages
 
-### 1.2 Type Mapping Relationship
+### 1.2 Type Mapping Relationships
 
 ```
-Receive Type (detail_type)    Send Type (Send.To)
-─────────────────             ────────────────
-private                       →        user
-group                         →        group
-channel                       →        channel
-guild                         →        guild
-thread                        →        thread
-user                          →        user
+Receive Type (detail_type)     Send Type (Send.To)
+─────────────────        ────────────────
+private                 →        user
+group                   →        group
+channel                 →        channel
+guild                   →        guild
+thread                  →        thread
+user                    →        user
 ```
 
 **Key Points**:
-- `private` is the receive type; `user` must be used for sending
-- `group`, `channel`, `guild`, and `thread` have the same type for both receiving and sending
-- The system automatically performs type conversion, so manual handling is not required (meaning you can directly use the received type for sending). In practice, you don't need to worry about these details, as the wrapper class of Event allows you to directly use the `event.reply()` method without considering type conversion.
+- `private` is the receive-time type; the standard send type is `user`
+- `group`, `channel`, `guild`, and `thread` use the same type for both receiving and sending
+- **Recommended path**: Use `event.reply()` directly — it automatically completes type conversion and target inference, with no manual handling needed (the `private` → `user` automatic conversion happens here)
+- **For manual sending**: Pass the send type directly (e.g., `Send.To("user", ...)`); manually passing a receive type such as `Send.To("private", ...)` can still be auto-converted, but is not recommended (see §6.1)
 
 ## 2. Standard Session Types
 
@@ -36,25 +40,25 @@ user                          →        user
 #### private
 - **Receive Type**: `private`
 - **Send Type**: `user`
-- **Description**: One-on-one private chat messages
+- **Description**: One-to-one private chat messages
 - **ID Field**: `user_id`
-- **Applicable Platforms**: All platforms that support private chats
+- **Applicable Platforms**: All platforms supporting private chats
 
 #### group
 - **Receive Type**: `group`
 - **Send Type**: `group`
-- **Description**: Group chat messages, including various forms of group (e.g., Telegram supergroup)
+- **Description**: Group chat messages, including various forms of groups (e.g., Telegram supergroup)
 - **ID Field**: `group_id`
-- **Applicable Platforms**: All platforms that support group chats
+- **Applicable Platforms**: All platforms supporting group chats
 
 #### user
 - **Receive Type**: `user`
 - **Send Type**: `user`
-- **Description**: User type, some platforms (e.g., Telegram) represent private chats as `user` rather than `private`
+- **Description**: User type; some platforms (e.g., Telegram) represent private chats as user instead of private
 - **ID Field**: `user_id`
 - **Applicable Platforms**: Telegram and similar platforms
 
-### 2.2 ErisPulse Extended Types
+### 2.2 ErisPulse Extension Types
 
 #### channel
 - **Receive Type**: `channel`
@@ -68,12 +72,12 @@ user                          →        user
 - **Send Type**: `guild`
 - **Description**: Server/community messages, typically used for Discord Guild-level events
 - **ID Field**: `guild_id`
-- **Applicable Platforms**: Discord and similar platforms
+- **Applicable Platforms**: Discord, etc.
 
 #### thread
 - **Receive Type**: `thread`
 - **Send Type**: `thread`
-- **Description**: Thread/subchannel messages, used for sub-discussion areas within communities
+- **Description**: Thread/sub-channel messages, used for sub-discussion areas within a community
 - **ID Field**: `thread_id`
 - **Applicable Platforms**: Discord Threads, Telegram Topics, etc.
 
@@ -81,17 +85,17 @@ user                          →        user
 
 ### 3.1 Mapping Principles
 
-The adapter is responsible for mapping the native types of platforms to ErisPulse standard types:
+Adapters are responsible for mapping platform-native types to ErisPulse standard types:
 
 ```
-Platform native type → ErisPulse standard type → Sending type
+Platform Native Type → ErisPulse Standard Type → Send Type
 ```
 
 ### 3.2 Common Platform Mapping Examples
 
 #### Telegram
 ```
-Telegram Type          ErisPulse Receive Type    Sending Type
+Telegram Type          ErisPulse Receive Type    Send Type
 ─────────────────      ────────────────       ───────────
 private                private                 user
 group                  group                   group
@@ -101,7 +105,7 @@ channel                channel                 channel
 
 #### Discord
 ```
-Discord Type          ErisPulse Receive Type    Sending Type
+Discord Type          ErisPulse Receive Type    Send Type
 ─────────────────      ────────────────       ───────────
 Direct Message         private                user
 Text Channel           channel                channel
@@ -111,7 +115,7 @@ Thread                 thread                 thread
 
 #### OneBot11
 ```
-OneBot11 Type        ErisPulse Receive Type    Sending Type
+OneBot11 Type        ErisPulse Receive Type    Send Type
 ─────────────────      ────────────────       ───────────
 private                private                user
 group                  group                  group
@@ -120,14 +124,14 @@ discuss                group                  group  # Mapped to group
 
 ## 4. Custom Type Extension
 
-### 4.1 Register Custom Type
+### 4.1 Registering Custom Types
 
-The adapter can register custom session types:
+Adapters can register custom session types:
 
 ```python
 from ErisPulse.Core.Event import register_custom_type
 
-# Register custom type
+# Register a custom type
 register_custom_type(
     receive_type="my_custom_type",
     send_type="custom",
@@ -136,9 +140,9 @@ register_custom_type(
 )
 ```
 
-### 4.2 Use Custom Type
+### 4.2 Using Custom Types
 
-After registration, the system will automatically handle conversion and inference for this type:
+After registration, the system automatically handles conversion and inference for that type:
 
 ```python
 # Automatic inference
@@ -149,12 +153,12 @@ receive_type = infer_receive_type(event, platform="MyPlatform")
 send_type = convert_to_send_type(receive_type, platform="MyPlatform")
 # Returns: "custom"
 
-# Get corresponding ID
+# Get the corresponding ID
 target_id = get_target_id(event, platform="MyPlatform")
 # Returns: event["custom_id"]
 ```
 
-### 4.3 Unregister Custom Type
+### 4.3 Unregistering Custom Types
 
 ```python
 from ErisPulse.Core.Event import unregister_custom_type
@@ -164,15 +168,15 @@ unregister_custom_type("my_custom_type", platform="MyPlatform")
 
 ## 5. Automatic Type Inference
 
-When an event does not have an explicit `detail_type` field, the system automatically infers the type based on the available ID fields:
+When an event has no explicit `detail_type` field, the system automatically infers the type based on existing ID fields:
 
 > [!NOTE]
-> **Behavior change in 2.7.0+**: `detail_type` is directly adopted only if it is a **known session type** (standard or custom). For `notice`/`request` events, `detail_type` (e.g., `group_member_increase`, `friend_increase`) is a **semantic subtype** rather than a session type, and the correct session type will be inferred from the ID field instead.
+> **2.7.0+ Behavior Change**: `detail_type` is adopted directly only when it is a **known session type** (standard or custom). The `detail_type` of notice/request events (such as `group_member_increase` and `friend_increase`) are **semantic subtypes** rather than session types, so the correct session type is instead inferred from ID fields.
 
 ### 5.1 Inference Priority
 
 ```
-Priority (from highest to lowest):
+Priority (high to low):
 1. group_id     → group
 2. channel_id   → channel
 3. guild_id     → guild
@@ -186,14 +190,14 @@ Priority (from highest to lowest):
 # Event has only group_id
 event = {"group_id": "123", "user_id": "456"}
 receive_type = infer_receive_type(event)
-# Returns: "group" (group_id is prioritized)
+# Returns: "group" (group_id takes priority)
 
 # Event has only user_id
 event = {"user_id": "123"}
 receive_type = infer_receive_type(event)
 # Returns: "private"
 
-# For notice events, detail_type is a semantic subtype; 2.7.0+ will infer from ID fields
+# A notice event's detail_type is a semantic subtype; 2.7.0+ infers from ID fields
 event = {"type": "notice", "detail_type": "group_member_increase", "group_id": "123"}
 receive_type = infer_receive_type(event)
 # Returns: "group" (not "group_member_increase")
@@ -212,9 +216,10 @@ await adapter.myplatform.Send.To("user", "123").Text("Hello")
 # Send to a group
 await adapter.myplatform.Send.To("group", "456").Text("Hello")
 
-# Automatically convert private → user (not recommended, may cause compatibility issues)
+# Automatic private → user conversion: manually passing a receive type is not recommended (may cause compatibility issues)
 await adapter.myplatform.Send.To("private", "789").Text("Hello")
-# Internally automatically converted to: Send.To("user", "789") # Using user as session type directly is a better choice
+# Internally auto-converted to: Send.To("user", "789")
+# Recommended practice: use the send type user directly for manual sending, or use event.reply() to complete the conversion automatically (see 6.2)
 ```
 
 ### 6.2 Event Reply
@@ -222,9 +227,9 @@ await adapter.myplatform.Send.To("private", "789").Text("Hello")
 ```python
 from ErisPulse.Core.Event import Event
 
-# Event.reply() automatically handles type conversion
+# Event.reply() automatically handles type conversion (recommended path)
 await event.reply("Reply content")
-# Internally automatically uses the correct sending type
+# Internally uses the correct send type automatically (conversions like private → user happen here)
 ```
 
 ### 6.3 Command Handling
@@ -234,8 +239,8 @@ from ErisPulse.Core.Event import command
 
 @command(name="test")
 async def handle_test(event):
-    # The system automatically handles session type
-    # No need to manually determine group_id or user_id
+    # The system automatically handles session types
+    # No need to manually check whether it is group_id or user_id
     await event.reply("Command executed successfully")
 ```
 
@@ -267,7 +272,7 @@ get_receive_type("group_id")  # → "group"
 get_receive_type("user_id")   # → "private"
 ```
 
-### 7.3 One-step Retrieval of Send Information
+### 7.3 One-Step Send Information Retrieval
 
 ```python
 from ErisPulse.Core.Event import get_send_type_and_target_id
@@ -276,11 +281,11 @@ event = {"detail_type": "private", "user_id": "123"}
 send_type, target_id = get_send_type_and_target_id(event)
 # send_type = "user", target_id = "123"
 
-# Directly used in Send.To()
+# Use directly with Send.To()
 await adapter.Send.To(send_type, target_id).Text("Hello")
 ```
 
-### 7.4 Retrieve Target ID
+### 7.4 Getting the Target ID
 
 ```python
 from ErisPulse.Core.Event import get_target_id
@@ -310,55 +315,59 @@ get_standard_types()  # {"private", "group", "channel", "guild", "thread", "user
 get_send_types()      # {"user", "group", "channel", "guild", "thread"}
 
 clear_custom_types()                # Clear all
-clear_custom_types(platform="discord")  # Clear only for the specified platform
+clear_custom_types(platform="discord")  # Clear only those for the specified platform
 ```
 
 ## 9. Best Practices
 
 ### 7.1 Adapter Developers
 
-1. **Use Standard Mappings**: Map to standard types as much as possible, rather than creating new types.
-2. **Correct Conversion**: Ensure the mapping relationship between received and sent types is correct.
-3. **Retain Raw Data**: Keep the raw event type in `{platform}_raw`.
-4. **Document Mappings**: Explain the type mapping relationships in the adapter documentation.
+1. **Use standard mappings**: Map to standard types whenever possible, rather than creating new types
+2. **Convert correctly**: Ensure the mapping relationship between receive and send types is correct
+3. **Preserve original data**: Keep original event types in `{platform}_raw`
+4. **Document it**: Describe the type mapping relationships in the adapter documentation
 
 ### 7.2 Module Developers
 
-1. **Use Utility Methods**: Use utility methods like `get_send_type_and_target_id()`.
-2. **Avoid Hardcoding**: Do not write code like `if group_id else "private"`.
-3. **Consider All Types**: Code should support all standard types, not just private/group.
-4. **Flexible Design**: Use event wrapper methods, rather than directly accessing fields.
+1. **Use utility methods**: Use utility methods such as `get_send_type_and_target_id()`
+2. **Avoid hardcoding**: Do not write code like `if group_id else "private"`
+3. **Consider all types**: Code should support all standard types, not just private/group
+4. **Design flexibly**: Use event wrapper methods instead of accessing fields directly
 
-### 9. Type Inference
+### 7.3 Type Inference
 
-- **Prefer detail_type**: If there is a clear field, do not perform inference.
-- **Use Inference Judiciously**: Only use inference when there is no clear type.
-- **Pay Attention to Priority**: Understand the inference priority to avoid unexpected results.
+- **Prefer detail_type**: If an explicit field exists, do not perform inference
+- **Use inference sensibly**: Only use it when there is no explicit type
+- **Mind the priority**: Understand the inference priority to avoid unexpected results
 
-## 10. Frequently Asked Questions
+## 10. FAQ
 
-### Q1: Why is `private` converted to `user` when sending?
+### Q1: Why is private converted to user when sending?
 
-A: This is a requirement of the OneBot12 specification. `private` is a concept for receiving, and using `user` when sending is more semantically appropriate.
+A: This is required by the OneBot12 standard. `private` is a receive-time concept; `user` is more semantically appropriate when sending.
 
-### Q2: How to support new session types?
+### Q2: How do I support new session types?
 
-A: Register custom types using `register_custom_type()`, or directly use standard types such as `channel` and `guild`.
+A: Register custom types via `register_custom_type()`, or directly use standard types such as `channel` and `guild`.
 
-### Q3: What to do if an event does not have a `detail_type`?
+### Q3: What if an event has no detail_type?
 
-A: The system will automatically infer based on the available ID fields. The priority order is: group > channel > guild > thread > user.
+A: The system automatically infers it based on existing ID fields. Priority: group > channel > guild > thread > user.
 
-### Q4: How does the adapter map Telegram supergroup?
+### Q4: How should adapters map Telegram supergroup?
 
 A: In the adapter's conversion logic, map `supergroup` to the standard `group` type.
 
-### Q5: How to handle special platforms such as email?
+### Q5: How are special platforms like email handled?
 
-A: For non-generic or platform-specific types, use `{platform}_raw` and `{platform}_raw_type` to preserve raw data, and let the adapter handle it.
+A: For non-universal or platform-specific types, use `{platform}_raw` and `{platform}_raw_type` to preserve the original data, and let the adapter handle them itself.
 
 ## 11. Related Documentation
 
+**Adapter side (mapping and conversion)**:
 - [Event Conversion Standard](event-conversion.md) - Complete event conversion specification
-- [Send Method Specification](send-method-spec.md) - Naming and parameter specification for methods in the Send class
+- [Send Method Specification](send-method-spec.md) - Send class method naming and parameter specifications
 - [Adapter Development Guide](../developer-guide/adapters/) - Complete guide to adapter development
+
+**Module side (avoiding manual type conversion)**:
+- Use `event.reply()` to automatically complete type conversion and target inference; see [Event Wrapper Class Explained](../developer-guide/modules/event-wrapper.md) for details

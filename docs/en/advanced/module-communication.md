@@ -1,21 +1,25 @@
 # Inter-Module Communication
 
 > [!TIP]
-> **When to read this**: When you need cross-module calls (RPC), service contracts, directed events, or cold-start replay. Skip if not needed, as it does not affect other features.
+> **When to read this**: When you need cross-module calls (RPC), service contracts, directed events, or cold-start replay. Skip if not needed, as it won't affect the usage of other features.
+
+> **After reading, you will know**: The selection mnemonic for the three-layer communication model (RPC / directed events / broadcast), `meta.services` service contracts and service directory, outbound audit configuration, lazy wake-up, and cold-start replay.
+>
+> **This section does not cover**: The registration / triggering / priority mechanism of the lifecycle event system itself (see [Lifecycle Management](lifecycle.md)); lazy loading configuration and `activate_on` declaration (see [Lazy Loading System](lazy-loading.md)).
 
 > [!NOTE]
 > This chapter requires ErisPulse **2.8.0+**.
 
-ErisPulse has a **three-layer communication model** between modules, arranged as "point-to-point → directed → broadcast":
+ErisPulse's modules have a **three-layer communication model**, arranged from "point-to-point → directed → broadcast":
 
-| Layer | API | Semantics | Typical Scenario |
+| Layer | API | Semantics | Typical Scenarios |
 |---|---|---|---|
-| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking another module's capability (e.g., check history, translate, refund) |
-| **Directed Events** | `await lifecycle.emit("message_received", {...}, to="Chat")` | Only delivered to lifecycle hooks registered by the specified module | Upstream state change notification to downstream ("new message received") |
-| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide visible lifecycle event | Hot configuration updates, module up/down |
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking capabilities of another module (e.g., fetching history, translation, refund) |
+| **Directed Events** | `await lifecycle.emit("message_received", {...}, to="Chat")` | Distributed only to lifecycle hooks registered by the specified module | Upstream state change notification to downstream (e.g., "a new message was received") |
+| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide lifecycle events | Hot configuration updates, module up/down events |
 
 {!--< tips >!--}
-Selection mnemonic: **Use `call` for return values, `emit(..., to=...)` for notifying a specific module's hooks, and `emit(...)` for notifying everyone.** 
+Selection Mnemonic: **Use `call` when you need a return value, use `emit(..., to=...)` to notify a specific module's hooks, and use `emit(...)` to notify everyone.**
 {!--< /tips >!--}
 
 ## RPC: module.call

@@ -1,12 +1,73 @@
 # Quick Start
 
-> **This is your first step.** Get an ErisPulse robot up and running in 5 minutes from scratch.
+> **This is your first step.** Run an ErisPulse robot from scratch in 5 minutes—see the result first, then expand each step.
 
-## Installing ErisPulse
+## 60-Second Demo: Let the Bot Reply to You First
 
-### One-Click Installation Script (Recommended)
+**1. Install** (Python >= 3.10):
 
-The installation script automatically detects your environment (Docker, Python, uv) and guides you through the most suitable installation method.
+```bash
+pip install ErisPulse
+```
+
+**2. Initialize the project.** The wizard will prompt you to set the project name, select the platform adapter to connect, and complete the configuration, then generate `main.py` and `config/config.toml`:
+
+```bash
+epsdk init
+```
+
+**3. Open `main.py`, and replace it with these 9 lines of code:**
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+
+@command("ping", help="Test if the bot is online")
+async def ping_handler(event):
+    await event.reply("Pong! The bot is running normally.")
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(sdk.run(keep_running=True))
+```
+
+**4. Run**:
+
+```bash
+epsdk run main.py
+```
+
+The terminal will output framework startup logs and adapter connection information. At this point, send `/ping` to the bot in your connected platform; it will reply:
+
+> Pong! The bot is running normally.
+
+Seeing this reply confirms that the framework, adapter, and event handling chain are all working. If it doesn't work, go directly to the [Troubleshooting section](#troubleshooting) at the end of the document; if it works, continue reading to see what other options are available at each step.
+
+## Install ErisPulse: Three Ways
+
+The above uses the most direct pip method. Choose according to your environment:
+
+### Install with pip
+
+Ensure your Python version is >= 3.10, then install using pip:
+
+```bash
+pip install ErisPulse
+```
+
+If you have already installed [uv](https://github.com/astral-sh/uv), you can also use `uv pip install ErisPulse` for faster installation.
+
+When you only want to install the `epsdk` command-line tool globally without polluting the project environment, it is recommended to use `uv tool install`:
+
+```bash
+uv tool install ErisPulse
+```
+
+After installation, `epsdk` will be globally available: when running within a project directory, it will automatically detect the project's `.venv` (installing `epsdk install` into the project environment, and running `epsdk run` using the project environment), while the framework itself is provided by the tool environment. See [Installation Reference](user-guide/installation.md) for details.
+
+### One-Click Installation Script (Recommended for New Environments)
+
+The installation script will automatically detect your environment (Docker, Python, uv), and guide you to select the most suitable installation method, supporting multiple languages (Chinese/English/Japanese/Russian/Traditional Chinese).
 
 Windows (PowerShell):
 ```powershell
@@ -20,26 +81,26 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 The script will guide you through:
 
-- **Docker Installation** (recommended if Docker is detected): Select image source (Docker Hub / GHCR), version channel (Stable / Preview), Dashboard management panel configuration, port settings
-- **Global CLI Installation (uv tool, recommended)**: Install `epsdk` as a global command, without virtual environments; uv automatically manages Python (even if the system version is too low); when running in a project directory, it automatically detects the project `.venv`
-- **Traditional Installation**: Automatically create a virtual environment, select ErisPulse version, optionally install Dashboard management panel module
+- **Docker Installation** (recommended if Docker is detected): Choose image source (Docker Hub / GHCR), version channel (stable / pre-release), Dashboard management panel configuration, and port settings
+- **Global CLI Installation (uv tool, recommended)**: Install `epsdk` as a global command, without virtual environments; uv automatically manages Python (even if the system version is too low); when running within a project directory, it automatically detects the project's `.venv`
+- **Traditional Installation**: Automatically create a virtual environment, select the ErisPulse version, and optionally install the Dashboard management panel module
 
 ### Using Docker
 
-The Docker image already includes the ErisPulse framework and Dashboard management panel.
+The Docker image comes with the ErisPulse framework and the Dashboard management panel, supporting `linux/amd64` and `linux/arm64` architectures.
 
 ```bash
 # Download docker-compose.yml
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-# Set Dashboard token and start
+# Set the Dashboard token and start
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
 <details>
 <summary>Is Docker Hub unavailable?</summary>
 
-Use the GitHub Container Registry image, modify the `docker-compose.yml` file's image:
+Use the GitHub Container Registry image, and modify the `image` in `docker-compose.yml`:
 
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
@@ -48,24 +109,6 @@ image: ghcr.io/erispulse/erispulse:latest
 </details>
 
 After starting, access `http://<host>:8000/Dashboard` and log in using the set token.
-
-### Using pip Installation
-
-Ensure your Python version is >= 3.10, then use pip to install:
-
-```bash
-pip install ErisPulse
-```
-
-If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `uv pip install ErisPulse` for faster installation.
-
-To install the `epsdk` command-line tool globally without polluting the project environment, use `uv tool install`:
-
-```bash
-uv tool install ErisPulse
-```
-
-After installation, `epsdk` is globally available: when running in a project directory, it automatically detects the project `.venv` (use `epsdk install` to install into the project environment and `epsdk run` to run using the project environment), with the framework core provided by the tool environment. See [Installation Reference](user-guide/installation.md) for more details.
 
 ## Initialize Project
 
@@ -182,19 +225,27 @@ level = "INFO"
 
 ## Next Steps
 
-After the bot is running, you can proceed as needed:
+After the bot is running, choose your path based on your goals:
 
-**Want to understand how the framework works?**
-- [Basic Concepts](getting-started/basic-concepts.md) — Design of Adapters / Modules / Events
-- [Architecture Overview](architecture.md) — Visual architecture diagram
+### Want to build a group bot (handle messages, group management, notifications)
 
-**Want to implement more features?**
+- [Event Handling Introduction](getting-started/event-handling.md) — How to write message, notification, and request events
 - [Common Tasks Examples](getting-started/common-tasks.md) — Storage, scheduled tasks, permission control
-- [Event Handling Introduction](getting-started/event-handling.md) — Message, notification, request handling
 
-**Want to develop your own module / adapter?**
+### Want to write your own module / adapter
+
+- [Basic Concepts](getting-started/basic-concepts.md) — First understand the design of adapters / modules / events
 - [Module Development Introduction](developer-guide/modules/getting-started.md)
 - [Adapter Development Introduction](developer-guide/adapters/getting-started.md)
+- [Architecture Overview](architecture.md) — Visual architecture diagram
 
-**Check as needed:**
-- [Configuration File Reference](user-guide/configuration.md) · [CLI Commands](user-guide/cli-reference.md) · [Deployment Guide](user-guide/deployment.md)
+### Want to keep the bot running long-term
+
+- [Deployment Guide](user-guide/deployment.md)
+- [Configuration File Explanation](user-guide/configuration.md)
+
+### Encountered problems
+
+- [Create Your First Bot](getting-started/first-bot.md) — Step-by-step guide to creating your first bot
+- [Startup Process and Manual Control](advanced/startup.md) — Diagnosing module / adapter loading failures
+- [CLI Command Reference](user-guide/cli-reference.md) — All `epsdk` subcommands

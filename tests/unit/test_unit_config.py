@@ -2353,3 +2353,28 @@ class TestTomlclassEngineMigration:
         p.write_bytes(source.encode("utf-8"))
         doc = tomlclass.load_path(p)
         assert doc.dumps() == source
+
+
+class TestFlushOnExitRobustness:
+    """退出刷盘失败必须留痕（warning 或 stderr 兜底），不允许静默丢失"""
+
+    def test_flush_failure_logs_warning(self, monkeypatch):
+
+        from ErisPulse.Core.config import config
+
+        def _boom():
+            raise RuntimeError("exit-flush-boom")
+
+        monkeypatch.setattr(config, "_flush_config", _boom)
+        messages = []
+        monkeypatch.setattr(
+            config_module_logger(), "warning", lambda msg: messages.append(str(msg))
+        )
+        config._flush_on_exit()
+        assert any("刷盘" in m or "flush" in m.lower() for m in messages)
+
+
+def config_module_logger():
+    from ErisPulse.Core.logger import logger
+
+    return logger

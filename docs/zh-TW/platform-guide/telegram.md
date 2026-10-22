@@ -6,21 +6,21 @@ TelegramAdapter 是基於 Telegram Bot API 建構的適配器，支援多種訊�
 
 ## 文件資訊
 
-- 對應模組版本: 4.2.0
+- 對應模組版本: 4.3.0
 - 維護者: ErisPulse
 
 ## 基本資訊
 
 - 平台簡介：Telegram 是一個跨平台的即時通訊軟體
 - 適配器名稱：TelegramAdapter
-- 支援的協定/API版本：Telegram Bot API
+- 支援的協定/API 版本：Telegram Bot API
 - 會話類型映射：`private` → 發送時用 `user`，`group`/`supergroup` → `group`，`channel` → `channel`
 
 ## 標準 Api 動作（Api DSL）
 
-適配器將 OB12 標準動作映射到 Telegram Bot API 並標準化 data 欄位：
+適配器將 OB12 標準動作映射到 Telegram Bot API 並標準化 data 字段：
 
-| OB12 標準動作 | Telegram API | data 欄位 |
+| OB12 標準動作 | Telegram API | data 字段 |
 |--------------|--------------|----------|
 | get_self_info | getMe | user_id / user_name / user_displayname |
 | get_user_info(user_id) | getChat | user_id / user_name / user_displayname |
@@ -42,11 +42,14 @@ await telegram.Api.delete_message(message_id=55)   # 自動補全 chat_id
 result = await telegram.Api.Using("main").get_self_info()
 ```
 
-> Telegram Bot API 無獲取好友列表/群列表介面，get_friend_list/get_group_list 返回 errorcode=10002。
+> Telegram Bot API 無獲取好友列表/群列表介面，get_friend_list/get_group_list 返回 
+etcode=10002。
+
+---
 
 ## 請求操作（Request DSL）
 
-處理加群申請（chat_join_request 事件），基於 `approveChatJoinRequest` / `declineChatJoinRequest`：
+處理加群申請（chat_join_request 事件），基於 pproveChatJoinRequest / declineChatJoinRequest：
 
 ```python
 from ErisPulse.Core.Event import request
@@ -68,9 +71,9 @@ await telegram.Request(event["request_id"]).Using("main").accept()
 
 ---
 
-## 支援的消息傳送類型
+## 支援的訊息發送類型
 
-所有傳送方法均透過鏈式語法實作，例如：
+所有發送方法均透過鏈式語法實現，例如：
 ```python
 from ErisPulse.Core import adapter
 telegram = adapter.get("telegram")
@@ -78,20 +81,21 @@ telegram = adapter.get("telegram")
 await telegram.Send.To("user", user_id).Text("Hello World!")
 ```
 
-### 基本傳送方法
+### 基本發送方法
 
 | 方法 | 說明 | 參數 |
 |------|------|------|
 | `.Text(text)` | 發送純文字訊息 | `text: str` |
 | `.Face(emoji)` | 發送表情骰子 | `emoji: str`（如 🎲 🎯 🏀） |
-| `.Markdown(text, content_type)` | 發送 Markdown 格式訊息 | `content_type` 預設為 `"MarkdownV2"` |
+| `.Markdown(text, content_type)` | 發送 Markdown 格式訊息 | `content_type` 預設 `"MarkdownV2"` |
 | `.HTML(text)` | 發送 HTML 格式訊息 | `text: str` |
+| `.MergeForward(nodes, title)` | 發送合併轉發訊息（標題 + 每條 blockquote 引用塊，4096 截斷） | `nodes: List[Dict]`, `title: str` |
 | `.Sticker(file)` | 發送貼紙 | `file: str (file_id/URL) \| bytes` |
 | `.Location(lat, lng)` | 發送位置 | `latitude: float, longitude: float` |
 | `.Venue(lat, lng, title, addr)` | 發送地點 | 含標題和地址 |
 | `.Contact(phone, first, last)` | 發送聯絡人 | 含電話號碼和姓名 |
 
-### 媒體傳送方法
+### 媒體發送方法
 
 所有媒體方法支援 `bytes`（上傳）和 `str`（file_id / URL）兩種輸入：
 
@@ -112,9 +116,9 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 | `.Recall(message_id)` | 刪除指定訊息 |
 | `.Forward(from_chat_id, message_id)` | 轉發訊息（保留來源） |
 | `.CopyMessage(from_chat_id, message_id)` | 複製訊息（不帶來源） |
-| `.AnswerCallback(callback_query_id, text, show_alert)` | 回應回調查詢 |
+| `.AnswerCallback(callback_query_id, text, show_alert)` | 回應查詢 |
 
-### 原始訊息傳送
+### 原始訊息發送
 
 - `.Raw_ob12(message: List[Dict])`：發送 OneBot12 標準格式訊息
 - `.Raw_json(json_str: str)`：發送原始 JSON 格式訊息
@@ -123,17 +127,17 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 
 | 方法 | 說明 |
 |------|------|
-| `.At(user_id)` | @指定用戶（透過 Telegram entities 實現，可多次調用） |
+| `.At(user_id)` | @指定用戶（透過 Telegram entities 實現，可多次呼叫） |
 | `.AtAll()` | @全體成員（發送 `@All` 文字） |
 | `.Reply(message_id)` | 回覆指定訊息 |
 | `.Keyboard(inline_keyboard)` | 設定內聯鍵盤（`list[list[dict]]`） |
-| `.ProtectContent(protect)` | 保護內容（防止轉發和儲存） |
-| `.Silent(silent)` | 靜默傳送（不通知使用者） |
+| `.ProtectContent(protect)` | 保護內容（防止轉發和保存） |
+| `.Silent(silent)` | 靜默發送（不通知使用者） |
 
-### 發送範例
+### 發送示例
 
 ```python
-# 基本文本傳送
+# 基本文字發送
 await telegram.Send.To("user", user_id).Text("Hello World!")
 
 # 帶內聯鍵盤的訊息
@@ -145,7 +149,7 @@ keyboard = [
 ]
 await telegram.Send.To("group", group_id).Keyboard(keyboard).Text("請選擇：")
 
-# 媒體傳送（URL 方式）
+# 媒體發送（URL 方式）
 await telegram.Send.To("group", group_id).Image("https://example.com/image.jpg", caption="圖片")
 
 # @用戶
@@ -154,10 +158,10 @@ await telegram.Send.To("group", group_id).At("6117725680").Text("你好！")
 # 回覆 + 保護內容
 await telegram.Send.To("group", group_id).Reply("12345").ProtectContent().Text("機密訊息")
 
-# 靜默傳送
+# 靜默發送
 await telegram.Send.To("group", group_id).Silent().Text("靜默通知")
 
-# 回應回調查詢
+# 回應查詢
 await telegram.Send.AnswerCallback(callback_query_id, text="已處理", show_alert=False)
 
 # OneBot12 組合訊息
@@ -180,7 +184,7 @@ await telegram.Send.To("user", user_id).Location(39.9042, 116.4074)
 
 Telegram 事件轉換遵循 OneBot12 標準，同時透過 `telegram_` 前綴提供平台擴展。
 
-### 消息事件 detail_type 映射
+### 訊息事件 detail_type 映射
 
 | Telegram chat.type | OneBot12 detail_type | 發送目標類型 |
 |---|---|---|
@@ -193,7 +197,7 @@ Telegram 事件轉換遵循 OneBot12 標準，同時透過 `telegram_` 前綴提
 
 | detail_type | 說明 |
 |---|---|
-| `telegram_callback_query` | 回調查詢（內聯鍵盤按鈕點擊） |
+| `telegram_callback_query` | 回應查詢（內聯鍵盤按鈕點擊） |
 | `telegram_inline_query` | 內聯查詢 |
 | `telegram_chosen_inline_result` | 選擇的內聯結果 |
 | `telegram_poll` | 投票事件 |
@@ -204,13 +208,13 @@ Telegram 事件轉換遵循 OneBot12 標準，同時透過 `telegram_` 前綴提
 | `telegram_shipping_query` | 運費查詢 |
 | `telegram_pre_checkout_query` | 預付款查詢 |
 
-### 標準消息段類型
+### 標準訊息段類型
 
-轉換後的消息段使用 OneBot12 標準格式：
+轉換後的訊息段使用 OneBot12 標準格式：
 
-| 消息段類型 | 說明 | data 字段 |
+| 訊息段類型 | 說明 | data 字段 |
 |---|---|---|
-| `text` | 純文本（不含 @使用者名稱） | `text` |
+| `text` | 純文字（不含 @使用者名） | `text` |
 | `mention` | @使用者（標準 OB12） | `user_id`, `user_name` |
 | `reply` | 回覆引用 | `message_id`, `user_id` |
 | `image` | 圖片 | `file_id`, `url` |
@@ -220,20 +224,20 @@ Telegram 事件轉換遵循 OneBot12 標準，同時透過 `telegram_` 前綴提
 | `file` | 檔案 | `file_id`, `url`, `file_name`, `file_size`, `mime_type` |
 | `location` | 位置 | `latitude`, `longitude`, 可選 `title`, `address` |
 
-### 平台擴展消息段
+### 平台擴展訊息段
 
-以 `telegram_` 前綴標識的擴展消息段：
+以 `telegram_` 前綴標示的擴展訊息段：
 
-| 消息段類型 | 說明 | data 字段 |
+| 訊息段類型 | 說明 | data 字段 |
 |---|---|---|
 | `telegram_sticker` | 貼紙 | `file_id`, `emoji`, `sticker_type`, `url` |
 | `telegram_animation` | GIF 動畫 | `file_id`, `url`, `duration`, `caption` |
 | `telegram_contact` | 聯絡人 | `phone_number`, `first_name`, `last_name`, `user_id` |
 | `telegram_inline_keyboard` | 內聯鍵盤 | `inline_keyboard` |
 
-### 事件範例
+### 事件示例
 
-#### 群聊消息（含 @提及）
+#### 群聊訊息（含 @提及）
 ```python
 {
   "type": "message",
@@ -257,7 +261,7 @@ Telegram 事件轉換遵循 OneBot12 標準，同時透過 `telegram_` 前綴提
 }
 ```
 
-#### 回調查詢事件
+#### 回應查詢事件
 ```python
 {
   "type": "notice",
@@ -283,7 +287,7 @@ Telegram 事件轉換遵循 OneBot12 標準，同時透過 `telegram_` 前綴提
 }
 ```
 
-#### 帶內聯鍵盤的消息
+#### 帶內聯鍵盤的訊息
 ```python
 {
   "type": "message",
@@ -303,33 +307,33 @@ Telegram 事件轉換遵循 OneBot12 標準，同時透過 `telegram_` 前綴提
 }
 ```
 
-## Event Mixin 扩展方法
+## Event Mixin 擴展方法
 
 適配器註冊了以下平台專有方法，僅在 `platform == "telegram"` 時可用：
 
-### 消息相關
+### 訊息相關
 
-| 方法 | 返回類型 | 說明 |
+| 方法 | 回傳類型 | 說明 |
 |------|----------|------|
-| `is_bot_message()` | `bool` | 判斷消息是否來自機器人 |
-| `is_edited_message()` | `bool` | 判斷是否為編輯過的消息 |
-| `is_topic_message()` | `bool` | 判斷是否為主題/Topic 消息 |
+| `is_bot_message()` | `bool` | 判斷訊息是否來自機器人 |
+| `is_edited_message()` | `bool` | 判斷是否為編輯過的訊息 |
+| `is_topic_message()` | `bool` | 判斷是否為主題/Topic 訊息 |
 | `get_update_id()` | `int` | 獲取 Telegram update ID |
 | `get_chat_title()` | `str` | 獲取聊天標題 |
-| `get_chat_username()` | `str` | 獲取聊天用戶名 |
+| `get_chat_username()` | `str` | 獲取聊天使用者名 |
 | `get_forward_from()` | `dict` | 獲取轉發來源資訊 |
 | `get_topic_id()` | `str` | 獲取主題 ID |
 
-### 回調查詢相關
+### 回應查詢相關
 
-| 方法 | 返回類型 | 說明 |
+| 方法 | 回傳類型 | 說明 |
 |------|----------|------|
-| `get_callback_data()` | `str` | 獲取回調查詢的 callback_data |
-| `get_callback_id()` | `str` | 獲取回調查詢 ID（用於應答） |
+| `get_callback_data()` | `str` | 獲取回應查詢的 callback_data |
+| `get_callback_id()` | `str` | 獲取回應查詢 ID（用於回應） |
 
-### 消息段數據提取
+### 訊息段資料提取
 
-| 方法 | 返回類型 | 說明 |
+| 方法 | 回傳類型 | 說明 |
 |------|----------|------|
 | `get_inline_keyboard()` | `list` | 獲取消息中的內聯鍵盤 |
 | `get_sticker_info()` | `dict` | 獲取貼紙資訊 |
@@ -346,12 +350,12 @@ async def handle_message(event):
     if event.get("platform") != "telegram":
         return
 
-    # 消息屬性
+    # 訊息屬性
     if event.is_bot_message():
-        return  # 忽略機器人消息
+        return  # 忽略機器人訊息
 
     if event.is_edited_message():
-        print("這是編輯過的消息")
+        print("這是編輯過的訊息")
 
     # 聊天資訊
     title = event.get_chat_title()
@@ -360,7 +364,7 @@ async def handle_message(event):
     # 轉發來源
     forward = event.get_forward_from()
 
-    # 消息段數據
+    # 訊息段資料
     sticker = event.get_sticker_info()
     contact = event.get_contact_info()
     location = event.get_location()
@@ -379,27 +383,27 @@ async def handle_notice(event):
         callback_data = event.get_callback_data()
         callback_id = event.get_callback_id()
 
-        # 應答回調查詢
+        # 回應查詢
         telegram = sdk.adapter.get("telegram")
         await telegram.Send.AnswerCallback(callback_id, text="已點擊")
 
-        # 回覆消息
+        # 回覆訊息
         await event.reply(f"你點擊了：{callback_data}")
 ```
 
-## 扩展字段說明
+## 擴展欄位說明
 
-- 所有特有字段均以 `telegram_` 前綴標識
-- 保留原始數據在 `telegram_raw` 字段
-- 保留原始事件類型在 `telegram_raw_type` 字段
-- 頻道消息使用 `detail_type="channel"`
-- 私聊消息使用 `detail_type="private"`（發送時需轉換為 `user`）
-- 話題消息包含 `thread_id` 字段
-- `@` 提及使用標準 `mention` 消息段類型（`type: "mention"`），文本中不含 @用戶名
+- 所有特有欄位均以 `telegram_` 前綴標示
+- 保留原始資料在 `telegram_raw` 欄位
+- 保留原始事件類型在 `telegram_raw_type` 欄位
+- 頻道訊息使用 `detail_type="channel"`
+- 私聊訊息使用 `detail_type="private"`（發送時需轉換為 `user`）
+- 主題訊息包含 `thread_id` 欄位
+- `@` 提及使用標準 `mention` 訊息段類型（`type: "mention"`），文字中不含 @使用者名
 
 ## 配置選項
 
-Telegram 适配器支援多帳號配置：
+Telegram 適配器支援多帳號配置：
 
 ### 配置示例
 ```toml
@@ -414,7 +418,7 @@ enabled = true
 
 ### 運行模式
 
-Telegram 适配器僅支援 **Polling（輪詢）** 模式，Webhook 模式已移除。
+Telegram 適配器僅支援 **Polling（輪詢）** 模式，Webhook 模式已移除。
 
 ### 代理配置
 

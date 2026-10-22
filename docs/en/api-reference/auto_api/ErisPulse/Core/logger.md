@@ -114,7 +114,7 @@ JSON 日志格式化器
 #### 方法列表
 
 
-##### `handler(handler_id: str = '', *, min_level: str = 'TRACE', owner: str | None = None)`
+##### `handler(handler_id: str = '', *, min_level: str = 'TRACE', owner: str | None = None) -> Callable`
 
 日志订阅装饰器
 
@@ -325,7 +325,7 @@ logger.set_excluded_levels([])
 ---
 
 
-##### `set_output_file(path) -> bool`
+##### `set_output_file(path: str | Path) -> bool`
 
 设置日志输出
 
@@ -421,7 +421,7 @@ logger.set_json_format(True)
 ---
 
 
-##### `save_logs(path) -> bool`
+##### `save_logs(path: str | Path) -> bool`
 
 保存所有在内存中记录的日志
 
@@ -445,7 +445,7 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 ---
 
 
-##### `iter_logs(module_name: str | None = None)`
+##### `iter_logs(module_name: str | None = None) -> 'Iterator[dict[str, Any]]'`
 
 流式迭代日志（生成器）
 
@@ -523,7 +523,7 @@ if logger.should_log(EVENT):
 ---
 
 
-##### `get_child(child_name: str = 'UnknownChild', *, relative: bool = True)`
+##### `get_child(child_name: str = 'UnknownChild', *, relative: bool = True) -> 'LoggerChild'`
 
 获取子日志记录器
 
@@ -552,49 +552,49 @@ my_logger = logger.get_child()
 ---
 
 
-##### `trace(msg, *args, **kwargs)`
+##### `trace(msg: str, *args, **kwargs) -> None`
 
 记录 TRACE 级别日志（比 DEBUG 更细粒度）
 
 ---
 
 
-##### `event(msg, *args, **kwargs)`
+##### `event(msg: str, *args, **kwargs) -> None`
 
 记录 EVENT 级别日志（事件收发专用，级别等同 INFO）
 
 ---
 
 
-##### `debug(msg, *args, **kwargs)`
+##### `debug(msg: str, *args, **kwargs) -> None`
 
 记录 DEBUG 级别日志
 
 ---
 
 
-##### `info(msg, *args, **kwargs)`
+##### `info(msg: str, *args, **kwargs) -> None`
 
 记录 INFO 级别日志
 
 ---
 
 
-##### `warning(msg, *args, **kwargs)`
+##### `warning(msg: str, *args, **kwargs) -> None`
 
 记录 WARNING 级别日志
 
 ---
 
 
-##### `error(msg, *args, **kwargs)`
+##### `error(msg: str, *args, **kwargs) -> None`
 
 记录 ERROR 级别日志
 
 ---
 
 
-##### `critical(msg, *args, **kwargs)`
+##### `critical(msg: str, *args, **kwargs) -> None`
 
 记录 CRITICAL 级别日志
 这是最高级别的日志，表示严重的系统错误
@@ -625,7 +625,7 @@ my_logger = logger.get_child()
 ---
 
 
-##### `print_section_header(title: str)`
+##### `print_section_header(title: str) -> None`
 
 打印日志分组标题
 
@@ -634,14 +634,14 @@ my_logger = logger.get_child()
 ---
 
 
-##### `print_section_footer()`
+##### `print_section_footer() -> None`
 
 打印分组结束标记
 
 ---
 
 
-##### `print_tree_item(text: str, level: int = 0, is_last: bool = False, tag: str = '', tag_style: str = 'dim')`
+##### `print_tree_item(text: str, level: int = 0, is_last: bool = False, tag: str = '', tag_style: str = 'dim') -> None`
 
 打印树状结构项目
 
@@ -654,7 +654,7 @@ my_logger = logger.get_child()
 ---
 
 
-##### `print_info(text: str, level: int = 1)`
+##### `print_info(text: str, level: int = 1) -> None`
 
 打印信息
 
@@ -664,7 +664,7 @@ my_logger = logger.get_child()
 ---
 
 
-##### `print_section_separator()`
+##### `print_section_separator() -> None`
 
 打印简单的分隔线
 
@@ -741,49 +741,49 @@ logger.mymodule.database.info("db message")
 ---
 
 
-##### `trace(msg, *args, **kwargs)`
+##### `trace(msg: str, *args, **kwargs) -> None`
 
 记录 TRACE 级别日志（比 DEBUG 更细粒度）
 
 ---
 
 
-##### `event(msg, *args, **kwargs)`
+##### `event(msg: str, *args, **kwargs) -> None`
 
 记录 EVENT 级别日志（事件收发专用，级别等同 INFO）
 
 ---
 
 
-##### `debug(msg, *args, **kwargs)`
+##### `debug(msg: str, *args, **kwargs) -> None`
 
 记录 DEBUG 级别日志
 
 ---
 
 
-##### `info(msg, *args, **kwargs)`
+##### `info(msg: str, *args, **kwargs) -> None`
 
 记录 INFO 级别日志
 
 ---
 
 
-##### `warning(msg, *args, **kwargs)`
+##### `warning(msg: str, *args, **kwargs) -> None`
 
 记录 WARNING 级别日志
 
 ---
 
 
-##### `error(msg, *args, **kwargs)`
+##### `error(msg: str, *args, **kwargs) -> None`
 
 记录 ERROR 级别日志
 
 ---
 
 
-##### `critical(msg, *args, **kwargs)`
+##### `critical(msg: str, *args, **kwargs) -> None`
 
 记录 CRITICAL 级别日志
 这是最高级别的日志，表示严重的系统错误
@@ -792,7 +792,7 @@ logger.mymodule.database.info("db message")
 ---
 
 
-##### `get_child(child_name: str)`
+##### `get_child(child_name: str) -> 'LoggerChild'`
 
 获取子日志记录器的子记录器
 

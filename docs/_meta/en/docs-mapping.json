@@ -164,7 +164,7 @@
               "icon": "fa-puzzle-piece"
             },
             {
-              "title": "Core Module Concepts",
+              "title": "Core Concepts of Modules",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1,
               "icon": "fa-cubes-stacked"
@@ -224,7 +224,7 @@
     "Platform Guide": {
       "description": "Platform features and adapter documentation",
       "icon": "fa-plug",
-      "count": 17,
+      "count": 18,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures Documentation",
@@ -245,7 +245,7 @@
           "icon": "fa-comments"
         },
         {
-          "title": "Telegram Platform Features Documentation",
+          "title": "Telegram Platform Feature Documentation",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
@@ -257,13 +257,13 @@
           "icon": "fa-envelope"
         },
         {
-          "title": "Yunhu Platform Feature Documentation",
+          "title": "Yunhu Platform Features Documentation",
           "path": "platform-guide/yunhu.md",
           "level": 1,
           "icon": "fa-cloud"
         },
         {
-          "title": "Yunhu User Platform Features Documentation",
+          "title": "Yunhu User Adapter Feature Documentation",
           "path": "platform-guide/yunhu_user.md",
           "level": 1,
           "icon": "fa-user"
@@ -275,13 +275,13 @@
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Kook Platform Features Documentation",
+          "title": "Kook Platform Feature Documentation",
           "path": "platform-guide/kook.md",
           "level": 1,
           "icon": "fa-headset"
         },
         {
-          "title": "Matrix Platform Features Document",
+          "title": "Matrix Platform Feature Documentation",
           "path": "platform-guide/matrix.md",
           "level": 1,
           "icon": "fa-th-large"
@@ -319,6 +319,12 @@
         {
           "title": "Sandbox Platform Feature Documentation",
           "path": "platform-guide/sandbox.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "SnowLuma Platform Feature Document",
+          "path": "platform-guide/snowluma.md",
           "level": 1,
           "icon": "fa-plug"
         },
@@ -435,7 +441,7 @@
           "icon": "fa-user-tag"
         },
         {
-          "title": "Interactive Conversation System",
+          "title": "Interactive Session System",
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"

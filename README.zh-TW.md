@@ -6,9 +6,7 @@
 
 **一次編寫，部署到 QQ / Telegram / Kook / 雲湖 / 微信公眾號 / OneBot12 / ... 多個平台。**
 
-事件驅動的多平台聊天機器人開發框架。
-
-基於 OneBot12 標準介面，一次編寫多平台部署；靈活的插件系統、熱重載支援和完整的開發者工具鏈，適用於從簡單聊天機器人到複雜自動化系統的各種場景。
+基於 OneBot12 標準介面，事件驅動的模組化異步機器人框架。業務程式碼只寫一次，適配器負責屏蔽各平台差異；插件系統、熱重載與完整開發者工具鏈開箱即用。
 
 <p>
   <a href="https://pypi.org/project/ErisPulse/"><img src="https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -20,10 +18,10 @@
   <a href="https://pepy.tech/project/ErisPulse"><img src="https://img.shields.io/pepy/dt/ErisPulse?style=for-the-badge&color=blue" alt="Downloads"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&style=for-the-badge" alt="Ruff"></a>
   <a href="https://socket.dev/pypi/package/erispulse"><img src="https://img.shields.io/badge/Socket-Secure-2ea043?style=for-the-badge&logo=socket&logoColor=white" alt="Socket"></a>
-  <a href="https://www.erisdev.com"><img src="https://img.shields.io/badge/文檔-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="文檔"></a>
+  <a href="https://www.erisdev.com"><img src="https://img.shields.io/badge/文件-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="文件"></a>
   <a href="https://deepwiki.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/DeepWiki-ErisPulse-8A2BE2?style=for-the-badge&logo=readthedocs&logoColor=white" alt="DeepWiki"></a>
   <a href="https://www.erisdev.com/#market"><img src="https://img.shields.io/badge/模組市場-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white" alt="模組市場"></a>
-  <a href="https://github.com/ErisPulse/ErisPulse/discussions"><img src="https://img.shields.io/badge/GitHub-Discussion-181717?style=for-the-badge&logo=github" alt="討論"></a>
+  <a href="https://github.com/ErisPulse/ErisPulse/discussions"><img src="https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github" alt="討論"></a>
 </p>
 
 <br clear="both">
@@ -51,11 +49,11 @@
 <td width="33%" align="center" valign="top">
 <br/>
 
-<img src=".github/assets/icon/icon_cross_platform.png.png" width="50" alt="跨平台兼容" />
+<img src=".github/assets/icon/icon_cross_platform.png.png" width="50" alt="跨平台相容" />
 
-### 跨平台兼容
+### 跨平台相容
 
-QQ / Telegram / Kook / 雲湖 等 15+ 平台，業務程式碼零修改
+QQ / Telegram / Kook / 雲湖 等 15+ 平台，業務程式碼零更改
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -87,7 +85,7 @@ QQ / Telegram / Kook / 雲湖 等 15+ 平台，業務程式碼零修改
 
 ### AI 輔助
 
-自然語言描述需求，直接生成可用模組
+自然語言描述需求，直接產生可用模組
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -97,7 +95,7 @@ QQ / Telegram / Kook / 雲湖 等 15+ 平台，業務程式碼零修改
 
 ### 簡潔優雅
 
-鏈式 API：@ 用戶、回覆、重試、批量發送一行完成
+鏈式 API：@ 使用者、回覆、重試、批量發送一行完成
 
 </td>
 </tr>
@@ -111,57 +109,19 @@ ErisPulse 透過適配器層屏蔽平台差異，讓業務程式碼只關心事�
 
 ```mermaid
 graph LR
-    subgraph Platforms[平台]
-        QQ["QQ"]
-        TG["Telegram"]
-        Kook["Kook"]
-        YH["雲湖"]
-        WX["微信公眾號"]
-    end
-
-    subgraph Adapters[適配器層]
-        A1["QQ 適配器"]
-        A2["Telegram 適配器"]
-        A3["Kook 適配器"]
-        A4["雲湖適配器"]
-        A5["微信適配器"]
-    end
-
+    P["15+ 平台<br/>QQ · Telegram · Kook · 雲湖 · 微信公眾號 · 郵件 · Webhook ..."]
+    A["適配器層<br/>原生協定 → OneBot12 標準事件"]
     Event["Event 事件總線<br/>中間件 → 分發 command/message/notice/request/meta"]
-
-    subgraph Modules[業務模組]
-        M1["命令處理器<br/>@command"]
-        M2["消息處理器<br/>@message"]
-        M3["你的模組"]
-    end
-
-    QQ --> A1
-    TG --> A2
-    Kook --> A3
-    YH --> A4
-    WX --> A5
-
-    A1 -->|"OB12 事件"| Event
-    A2 -->|"OB12 事件"| Event
-    A3 -->|"OB12 事件"| Event
-    A4 -->|"OB12 事件"| Event
-    A5 -->|"OB12 事件"| Event
-
-    Event -->|"分發"| M1
-    Event -->|"分發"| M2
-    Event -->|"分發"| M3
-
-    M1 -.->|"event.reply()<br/>SendDSL"| Event
-    Event -.->|"發送"| A1
+    M["業務模組<br/>@command / @message 處理器 · 你的模組"]
+    P --> A --> Event --> M
+    M -.->|"event.reply() / SendDSL"| Event
 ```
 
-- **適配器層**將各平台原生協議轉換為 OneBot12 標準事件，業務模組看不到平台差異
+- **適配器層**將各平台原生協定轉換為 OneBot12 標準事件，業務模組看不到平台差異
 - **Event 總線**先執行中間件鏈，再按事件類型分發到五類處理器
-- **你的程式碼**透過裝飾器訂閱事件，用 `event.reply()` 或 SendDSL 回覆——回覆訊息沿同一條路徑逆流回平台
+- **你的程式碼**透過裝飾器訂閱事件，使用 `event.reply()` 或 SendDSL 回覆——回覆訊息沿同一條路徑逆流回平台
 
-完整的模組組成、初始化流程、生命週期事件等設計詳情，見[架構概覽](docs/zh-TW/architecture.md)。
-
----
+完整的模組組成、初始化流程、生命週期事件等設計細節，請見[架構概覽](docs/zh-TW/architecture.md)。
 
 ## 快速開始
 
@@ -385,137 +345,58 @@ epsdk run main.py --reload
 
 ## 鏈式發送 DSL
 
-一條鏈式呼叫完成 @、回覆、重試、超時、回調等全部發送邏輯：
+@ 用戶、回覆、重試、超時、成功回調——複雜的發送邏輯，一條鏈寫完：
 
 ```python
 yunhu = sdk.adapter.get("yunhu")
 
-# 單發：@使用者 + 回覆 + 重試 + 成功回調
-await (yunhu.Send.To("group", "123")
-       .At("456").Reply("msg_789")
+# 單發：@用戶 + 回覆 + 重試 + 成功回調
+await (yunhu.Send.To("group", "123").At("456").Reply("msg_789")
        .Retry(3).Timeout(10)
-       .Hook(lambda r: print("發送成功！"))
-       .Text("你好"))
+       .Hook(lambda r: print("發送成功！")).Text("你好"))
 
-# 批量發送：一條鏈發多條訊息
-results = await (yunhu.Send.To("user", "123")
-                .Build()
-                .Text("通知一")
-                .Image("pic.jpg")
-                .Retry(2)
-                .send_all())
+# 批量：一條鏈發多條訊息
+results = await (yunhu.Send.To("user", "123").Build()
+                 .Text("通知一").Image("pic.jpg").Retry(2).send_all())
 ```
 
-> 支援 Hook（成功回調）、Retry（失敗重試）、Timeout（超時取消）、OnProgress（進度監控）、Defer（延遲發送）、Build（批量建構）等鏈式方法，詳見 [SendDSL 文檔](docs/zh-TW/developer-guide/adapters/send-dsl.md)。
+> Hook / Retry / Timeout / OnProgress / Defer / Build 等全部鏈式方法，見 [SendDSL 文檔](docs/zh-TW/developer-guide/adapters/send-dsl.md)。
 
 ---
 
-## 多輪對話範例
+## 多輪對話示例
 
-ErisPulse 內建了強大的多輪對話引擎，輕鬆實現引導式操作、資訊收集等互動場景：
+收集資訊、驗證輸入、確認提交，不用自己管對話狀態：
 
 ```python
-from ErisPulse.Core.Event import command, request
+from ErisPulse.Core.Event import command
 
 @command("register")
 async def register_handler(event):
     conv = event.conversation(timeout=60)
-    
     await conv.say("歡迎註冊！")
-    
-    # 多步驟收集使用者資訊，自動驗證
     data = await conv.collect([
         {"key": "name", "prompt": "請輸入姓名"},
         {"key": "age", "prompt": "請輸入年齡",
          "validator": lambda e: e.get_text().strip().isdigit(),
          "retry_prompt": "年齡必須是數字，請重新輸入"},
     ])
-    
     if data and await conv.confirm(f"確認註冊？姓名: {data['name']}, 年齡: {data['age']}"):
-        # 透過 SendDSL 主動推送通知
-        await sdk.adapter.get(event.get_platform()).Send.To(
-            "user", event.get_user_id()
-        ).Text(f"註冊成功！歡迎 {data['name']}")
-        # 或 await event.reply("註冊成功！")
-
-# 自動處理好友請求
-@request.on_friend_request()
-async def handle_friend_request(event):
-    user_name = event.get_user_nickname() or event.get_user_id()
-    
-    # 同意請求
-    result = await event.approve()
-    if result.get("status") == "ok":
-        await event.reply(f"已自動通過好友請求，歡迎 {user_name}")
+        await event.reply(f"註冊成功！歡迎 {data['name']}")
 ```
 
-<details>
-<summary>查看更多 Conversation API（分支跳轉 / 選擇 / 持久化）</summary>
-
-```python
-@command("quiz")
-async def quiz_handler(event):
-    conv = event.conversation(timeout=30)
-    
-    # 選項式問答
-    answer = await conv.choose("Python 的創造者是誰？", [
-        "Guido van Rossum",
-        "James Gosling", 
-        "Dennis Ritchie",
-    ])
-    
-    if answer == 0:
-        await conv.say("正確！")
-    elif answer is None:
-        await conv.say("超時了，下次再來吧！")
-    else:
-        await conv.say("錯誤了，正確答案是 Guido van Rossum")
-
-@command("menu")
-async def menu_handler(event):
-    conv = event.conversation(timeout=60)
-    
-    # 分支跳轉，建構複雜互動流程
-    @conv.branch("main")
-    async def main_menu():
-        await conv.say("=== 主選單 ===\n1. 個人資訊\n2. 設定\n3. 退出")
-        resp = await conv.wait()
-        if resp and resp.get_text().strip() == "1":
-            await conv.goto("profile")
-    
-    @conv.branch("profile")
-    async def profile():
-        await conv.say("姓名: Alice\n0. 返回")
-        resp = await conv.wait()
-        if resp and resp.get_text().strip() == "0":
-            await conv.goto("main")
-    
-    await conv.start()
-```
-
-詳見 [Conversation 多輪對話](docs/zh-TW/advanced/conversation.md)
-
-</details>
+> 選項問答（choose）、分支跳轉（branch / goto）、持久化等完整功能，請見 [Conversation 多輪對話](docs/zh-TW/advanced/conversation.md)。
 
 ---
 
 ## 核心模組
 
-ErisPulse 提供完整的多平台機器人開發工具鏈，核心模組各司其職：
+一個 `sdk` 入口，串起全部核心能力：
 
 ```mermaid
-graph TB
-    SDK["sdk<br/>統一入口"]
-
-    SDK --> Event["Event<br/>事件系統"]
-    SDK --> AdapterMgr["Adapter<br/>適配器管理"]
-    SDK --> ModuleMgr["Module<br/>模組管理"]
-    SDK --> Router["Router<br/>HTTP/WS 路由"]
-    SDK --> Storage["Storage<br/>SQLite 存儲"]
-    SDK --> Config["Config<br/>配置管理"]
-    SDK --> Lifecycle["Lifecycle<br/>生命週期"]
-    SDK --> Logger["Logger<br/>日誌系統"]
-    SDK --> Client["HttpClient<br/>HTTP 客戶端"]
+graph LR
+    SDK["sdk 統一入口"] --> Event & Adapter & Module & Router & Storage
+    SDK --> Config & Lifecycle & Logger & HttpClient
 ```
 
 | 模組 | 說明 |
@@ -527,13 +408,11 @@ graph TB
 | **Router** | HTTP/WebSocket 路由系統（FastAPI + Uvicorn）|
 | **Storage** | 基於 SQLite 的鍵值儲存 + 通用 SQL 鏈式查詢 |
 | **Config** | TOML 配置管理 |
-| **Lifecycle** | 生命週期事件鈎子（core.init / adapter.* / module.*）|
+| **Lifecycle** | 生命週期事件鉤子（core.init / adapter.* / module.*）|
 | **Logger** | 模組化日誌系統，支援子日誌器 |
 | **HttpClient** | 統一 HTTP/WS 客戶端（基於 aiohttp），內建重試與 ErisPulse 異常體系 |
 
 更多設計詳情（初始化流程、生命週期事件、模組載入策略），見[架構概覽](docs/zh-TW/architecture.md)。
-
----
 
 ## 作用域（Scope）——三維權限控制面
 
@@ -560,14 +439,16 @@ sdk.scope.set_action("MyModule", "api", deny=["set_*"])
 
 ---
 
-## 事件覆寫——不改模組程式碼，覆寫任意事件類型的行為
+## 事件覆寫——不改模組代碼，覆寫任意事件類型的行為
+
+換個觸發詞、給命令加管理員限制，不動模組原始碼，設定即生效：
 
 ```toml
-# 覆寫消息處理器觸發條件（與程式碼內條件 AND；meta/message/notice/request/command 全類型支援）
+# 覆寫訊息處理器觸發條件（與程式碼內條件 AND；meta/message/notice/request/command 全類型支援）
 [ErisPulse.event.overrides.message.ChatModule]
 pattern = "閒聊*"
 
-# 覆寫命令實作參數（master / hidden / aliases / prefix 等，使用者優先）
+# 覆寫命令實現參數（master / hidden / aliases / prefix 等，使用者優先）
 [ErisPulse.event.overrides.command.MyModule.restart]
 master = true
 ```
@@ -704,9 +585,9 @@ ErisPulse 不僅是框架。裝上就能開始，不需要從零造輪子。
 ErisPulse 項目的健全性還需要您的一份力！我們歡迎各種形式的貢獻：
 
 1. **報告問題** — 在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交 bug 報告
-2. **功能請求** — 透過 [社區討論](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
+2. **功能請求** — 通過 [社區討論](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
 3. **程式碼貢獻** — 提交 PR 前請閱讀 [程式碼風格](docs/zh-TW/styleguide/) 及 [貢獻指南](CONTRIBUTING.md)
-4. **文檔改進** — 幫助完善文檔和示例程式碼
+4. **文件改進** — 幫助完善文件和範例程式碼
 
 **第一次貢獻？** 從這裡開始 👉 [首次貢獻實戰](docs/zh-TW/contributing/first-contribution.md)
 
@@ -720,15 +601,10 @@ ErisPulse 項目的健全性還需要您的一份力！我們歡迎各種形式�
 
 <img src=".github/assets/thanks.png" width="200" alt="感謝" />
 
-本專案部分程式碼基於 [sdkFrame](https://github.com/runoneall/sdkFrame)。
+本項目部分程式碼基於 [sdkFrame](https://github.com/runoneall/sdkFrame)，核心適配器標準化層參考並受益於 [OneBot12 規範](https://12.onebot.dev/)。
 
-核心適配器標準化層參考並受益於 [OneBot12 規範](https://12.onebot.dev/)。
+ErisPulse 的早期探索與成長離不開雲湖開發者社區的支持，許多想法、適配器和實踐經驗都誕生於此。
 
-特別感謝雲湖生態與社區。
-
-ErisPulse 的早期探索與成長離不開雲湖開發者社區的支持，
-許多想法、適配器和實踐經驗都誕生於此。
-
-同時感謝所有為 ErisPulse、OneBot 生態以及開源社區做出貢獻的開發者與專案作者。
+同時感謝所有為 ErisPulse、OneBot 生態以及開源社區做出貢獻的開發者與項目作者。
 
 </div>

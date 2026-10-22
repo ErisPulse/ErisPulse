@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "3d0a29940bc6373fe64b99b5fbf15f84",
-  "file_hash": "3d0a29940bc6373fe64b99b5fbf15f84",
-  "translated_at": "2026-09-07T11:20:05.025431",
+  "hash": "fa76696698bd642a8f58e33d72e11634",
+  "file_hash": "fa76696698bd642a8f58e33d72e11634",
+  "translated_at": "2026-10-22T11:52:55.045034",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "8192180e711fe5d48fdb7d5a1f63d59f",
-      "translation": "# ErisPulse-App\n\n[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) 是由 ErisDev 直接維護的 **官方多端客戶端**（Android / Windows / Linux / macOS 均已發布），\n提供完全原生的圖形化管理介面：在手機或電腦上建立、執行、管理多個機器人實例，\n無需終端，也無需單獨安裝 Python 環境。\n\n> [!IMPORTANT]\n> ErisPulse-App 是**獨立安裝的客戶端程式**，不是 `epsdk install` 安裝的模組。\n> 它內建了 Python 運行時與 ErisPulse SDK，安裝即用——**手機上也能直接執行**。"
+      "hash": "781f3492c77018399780ea720b854c3a",
+      "translation": "# ErisPulse-App\n\n> [!TIP]\n> **什麼時候需要閱讀這篇**：當你想在手機或電腦上使用圖形介面建立、執行、管理機器人實例——不碰終端、不單獨安裝 Python 環境時閱讀這篇。不需要則跳過。\n\n[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) 是 ErisDev 直接維護的 **官方多端客戶端**（Android / Windows / Linux / macOS 均已發布），\n提供完全原生的圖形化管理介面：在手機或電腦上建立、執行、管理多個機器人實例，\n無需終端，也無需單獨安裝 Python 環境。\n\n> [!IMPORTANT]\n> ErisPulse-App 是**獨立安裝的客戶端程式**，不是 `epsdk install` 安裝的模組。\n> 它內建了 Python 運行時與 ErisPulse SDK，安裝即用——**手機上也能直接執行**。"
     },
     {
       "hash": "cdebbf4787647b0a9a637d3290657ed2",
@@ -30,8 +30,12 @@
       "translation": "## 與 SDK 的關係\n\n- App 內建 ErisPulse SDK：Android 端打包於 Ubuntu 鏡像中，桌面端從 PyPI 安裝  \n  （歡迎頁可選版本，預設為最新）\n- App 中的實例與命令列 `epsdk` 創建的實例等價，可使用相同的模組 / 適配器\n- 模組開發者可透過 [Dashboard 視窗註冊 API](dashboard.md) 註冊自訂頁面：  \n  視窗會自動出現在 App 邊欄導航（分組與 Dashboard 一致），點擊後跳轉至對應頁面進行渲染\n\n---"
     },
     {
-      "hash": "fb97cf3223f74fee1201ee377b9d9ee5",
-      "translation": "## 相關連結\n\n- GitHub 倉庫：[https://github.com/ErisPulse/ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App)\n- 下載：[GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases)\n- 討論：[Discussions](https://github.com/ErisPulse/ErisPulse-App/discussions)"
+      "hash": "4ad30f3ded46406de2cfc99f632fdcb9",
+      "translation": "## 相關連結\n\n- GitHub 倉庫：[https://github.com/ErisPulse/ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App)\n- 下載：[GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases)\n- 討論：[Discussions](https://github.com/ErisPulse/ErisPulse-App/discussions)\n\n---"
+    },
+    {
+      "hash": "cc1e1d5c942c9732ae108ab164019771",
+      "translation": "## 下一步\n\n- **在桌面 / 伺服器上用瀏覽器管理**：[ErisPulse-Dashboard](dashboard.md)（與 App 共用同一套 API 與視窗分組）\n- **接入第一個平台**：App 內建管理介面可完成配置，各平台細節見[平台特性總覽](../platform-guide/README.md)\n- **習慣命令列**：App 中的實例與 `epsdk` 創建的完全等價，從[快速上手](../quick-start.md)開始"
     }
   ]
 }

@@ -74,6 +74,81 @@
 
 ---
 
+## [2.11.0] - 2026/10/22
+> 正式发布（@wsu2059q）
+
+**版本摘要**
+本版本围绕「改代码 → 看效果」交付完整开发闭环：热重载默认全量语义（卸载前语法预检、代码身份核对、依赖级联重导），新增懒加载休眠（`dormant_after` 闲置归眠、访问透明唤醒）与适配器代码级热重载（`sdk.adapter.reload`），`.got()` 命令流语法糖与 `epsdk stop` / `epsdk restart` 补齐运行时控制。同期完成全库工程治理——公共 API 契约标注清零、失败路径留痕、四道工程棘轮闸门进 CI——并将全库文档按新写作规范改造，多语言翻译产物改由 `docs-generated` 持久分支发布。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 常规模块零改动即可受益；仅依赖旧「reload() 默认轻量重载」行为的调用方需显式传 `reload(name, full=False)`
+- 第三方适配器/模块无需为工程治理批次做任何改动（均为框架内部纪律与工具）
+
+**注意事项**
+- `reload()` / `reload_module()` 默认翻转为全量重载（清理顶层包 import 缓存并级联重导依赖者代码）；`module.reload` 事件 payload 的 `full` 语义变为「本次是否全量」
+- 懒加载初始化失败由「永久失效」改为冷却 30 秒后可重试；声明 `dormant_after` 的模块闲置归眠期间不接收事件（`activate_on` 除外）
+- `set_sdk_ref` 死接口移除：管理器 SDK 引用懒解析根单例，任何启动流程无需手动注入（2.10.3 已同步热修 stable 线）
+- 实例锁迁移至 `.erispulse/config.lock`（首次启动自动清理旧锁）；配置目录自带 `.gitignore`
+- `sdk.restart()` 语义变为组件级热重载（不再整体 uninit/init）；框架自更新与 entry-point 增删场景请使用 `hard_restart()`
+- 多语言文档/翻译缓存/AI 提示词等生成产物改由 `docs-generated` 分支 + workflow artifact 发布，开发分支不再提交；`styleguide/` 退出 AI 提示词包
+
+（本条目为开发条目 [2.11.0-dev.0] 的净差异总结，细节保留于下方开发条目作为历史。）
+
+---
+
+## [2.11.0-dev.0] - 2026/10/20
+> 开发版
+
+**版本摘要**
+本版本聚焦「改代码 → 看效果」的开发闭环：热重载默认即全量重载（按顶层包名清理 import 缓存并重导依赖者代码，卸载前语法预检失败即拒绝、成功后核对代码身份），运行时注册模块纳入重载体系，load 失败现场可经 `module.last_error()` 直接查询。同期新增懒加载休眠（`dormant_after` 闲置自动归眠、访问透明唤醒、状态经 `on_before_unload` / `on_load` 接续）。
+
+**升级建议**
+- **是否建议升级**：可选升级
+- 常规模块零改动即可受益；仅依赖旧「默认轻量重载」行为的调用方需显式传 `reload(name, full=False)`
+
+**注意事项**
+- `reload()` / `reload_module()` 的 `full` 参数默认值由 `False` 翻转为 `True`：默认档现在会清理整个顶层包的 import 缓存并级联重导依赖者代码；`module.reload` 事件 payload 的 `full` 字段语义变为「本次是否全量」
+- 懒加载初始化失败由「永久失效」改为冷却（30 秒）后再次访问自动重试
+- 声明 `dormant_after` 的懒加载模块闲置超阈值会自动归眠：运行时资源释放、事件处理器注销（不再接收事件，`activate_on` 事件除外）；未声明则行为不变
+- 依赖「注册版本 ≠ 运行版本无从判断」的下游展示组件（Dashboard 等）可跟进 `get_info()` 新增的 `running_identity` / `stale` 字段与 `module.before_unload` / `module.sleep` 事件
+
+### 变更
+
+- @YingXinche
+  - 软重启 API 联动热重载系统：`sdk.restart()` 由"整体 `uninit()` / `init()`"改为**组件层代码级热重载**——全部模块走统一热重载管线（预检/快照回滚/身份核对）、全部适配器逐个代码级重载，框架进程/路由/配置监听保持在线；框架自身更新与 entry-point 增删场景请使用 `hard_restart()`（语义分界见文档）。`epsdk run --reload` 的文件监控随之受益：保存即触发热重载，不再整框架重启
+  - 实例锁文件迁移：多实例检测锁从 `config/.erispulse_config.lock` 迁至运行状态目录 **`.erispulse/config.lock`**（与 CLI 运行状态文件 `runtime.json` 同居一处，`config/` 目录此后只含用户可编辑配置）；升级后首次启动自动清除旧锁残留。新增常量 `RUNTIME_STATE_DIR_NAME`
+  - 配置目录自带 `.gitignore`：框架初始化与 `epsdk init` 均会生成（规则仅一行 `*`——目录内全部文件不入版本库，忽略文件自身也在排除范围内）；已存在的 `.gitignore` 不会被覆盖；项目模板 `.gitignore` 运行时区块同步忽略 `.erispulse/`
+  - 热重载默认语义翻转：`reload()` / `reload_module()` 默认全量重载——按顶层包名递归清理 `sys.modules` + 刷新导入缓存 + 清除源文件字节码缓存（`__pycache__`，同秒同字节数的小改写也能生效），依赖者模块默认级联重导代码；`full=False` 保留为轻量逃生门
+  - `top_level` 元数据缺失时按「旧模块对象 `__name__` 前缀 → 模块类 `__module__` 前缀」两级兜底清理——原「元数据缺失即假重载（仅告警不兜底）」的盲区消除
+  - 懒加载初始化失败语义：由失败后代理永久死亡改为冷却后可重试（与事件驱动懒激活的冷却语义对齐）；冷却窗口内仍短路避免重复尝试
+  - 移除死接口 `set_sdk_ref`：管理器 SDK 引用改为懒解析根单例（`ManagerBase.sdk_ref()`），任何启动流程下均无需（也不再可能需要）手动注入；该接口自 2.5 起从未被生产链路调用，热重载 / 影子模块 / 依赖通知在真实部署中静默失效（已随 2.10.3 同步热修 stable 线）
+  - 全库公共方法契约标注补齐（约 160 处缺参数/返回标注归零，含路由装饰器、日志器、请求/WS 访问器、事件装饰器与 CLI 命令族）——IDE 补全与自动生成 API 文档随之受益
+  - `docs/zh-CN/styleguide/` 新增工程健壮性规则与文档/对外写作规则两页；该目录不再进入AI 提示词生成包（`ai-support/prompts/` 产物不再包含风格指南节）
+  - 文档翻译 CI 收敛性修复：翻译缓存 key 改为每次运行唯一并以 `restore-keys` 前缀回退恢复最近一版（原固定分支名会在 exact key 命中时被 `actions/cache` 跳过保存，导致同一分支第二次运行起每轮重译同一积压、永远收敛不了）；翻译时间预算调整为 4.5 小时（job 硬上限 5h）；文件级缓存命中的文档每轮从缓存重建落盘，产物 artifact 对各语言保持完整快照
+
+### 新增
+
+- @YingXinche
+  - 卸载前语法预检：reload 在卸载之前对目标源码树逐文件语法解析，失败即拒绝卸载（旧实例继续服务，语法错误不再把模块推进"半死状态"，日志给出文件 + 行号）；超大包（超过 500 文件）自动跳过预检
+  - 运行时注册模块纳入热重载：`sdk.module.register()` 登记重载快照并推导 `top_level`（runtime 来源标记），重载按定义模块重导 + 按类名重取；定义于 `__main__` / 无源文件的类守卫拒绝并告警（避免重执行入口脚本）
+  - 加载失败可观测：`sdk.module.last_error(名字)` / `get_info()["last_error"]` 返回失败现场（异常 + traceback + 时间戳，加载成功即清除）；`get_info()` 新增 `running_identity` / `stale` 字段（注册版本 ≠ 运行版本一眼可见）；失败路径同时自清洗该模块 import 缓存——「改完代码再 reload 一次」必定读到新代码
+  - 卸载前钩子 `on_before_unload(event)`：卸载 / 重载 / 禁用 / 级联 / 归眠流水线第一步触发（先于 `on_unload` 与资源回收，`event["reason"]` 标注来意），配套 `module.before_unload` 生命周期事件；钩子失败仅告警不阻塞卸载
+  - 懒加载休眠：`get_load_strategy(dormant_after="30m")` 声明后闲置自动归眠——释放运行时资源但保留懒代理与注册存根（与"从未激活"不可区分），属性访问 / `module.call` / `activate_on` 事件透明唤醒，状态经 `on_before_unload` / `on_load` 接续；手动归眠 `sdk.module.sleep(名字)`；配套 `module.sleep` 生命周期事件与 `module.load` 失败载荷的 `error` / `traceback` 字段
+  - 命令多轮流控语法糖（`.got()` 链）：`@command` 返回对原函数完全透明的流代理，`.got("名字", prompt=..., type=int, timeout="90s")` 逐步声明收集步骤，收集值按参数名注入后续步骤函数；底层编译到 Conversation（分支跳转自动存检查点），重启后经自动注册的恢复工厂从存档步骤继续；解析失败自动重发 `retry_prompt`（上限 `max_retries`）；`Event.wait_reply` 补齐 `session` 参数（与文档对齐）
+  - 适配器代码级热重载：`sdk.adapter.reload(平台名)` / `sdk.reload_adapter(平台名)`（支持本地插件与 PyPI 安装包）——语法预检 → 卸载清理 → 清 `sys.modules` 子树与 `__pycache__` 字节码 → 重发现重导 → 重新注册 → 原运行态自动重新拉起；失败自动回滚旧注册状态；身份核对防假重载；配套 `adapter.reload` 生命周期事件（携带 `identity_changed` / `version_old→new` / `was_started` / `source`）
+  - CLI 运行时控制：新增 `epsdk stop` / `epsdk restart`——`epsdk run` 启动时在 `.erispulse/runtime.json` 登记监督进程与框架子进程 PID 及原始启动命令；`stop` 优雅终止（POSIX SIGINT 走 Ctrl+C 同款收尾链，超时升级强杀；Windows 先断子进程再停监督者）；`restart` 停止后按原参数重新启动（前台接管）；支持 `--force` 与 `--pid`
+
+### 修复
+
+- @YingXinche
+  - `module.disable()` 现在与 `unload` 对等发出 `module.unload` 生命周期事件：依赖它的适配器在"禁用"路径同样收到 `on_dependency_lost`（契约文档一直承诺"卸载/禁用"，此前仅卸载路径生效）；级联禁用的每个依赖者各自通知
+  - `sdk.dump_state()` 的 router 段字段与实现对齐：`running` 读取真实 uvicorn 服务器状态（原读取不存在的属性恒为 False）、`http_routes` / `ws_routes` 按路径数累计（原 `ws_routes` 读取不存在的属性恒为 0、`http_routes` 给出的是命名空间数）
+  - 入站消息写会话收件箱（transcript）失败不再静默吞掉：以 warning 级留痕（写失败无线索会让 `shadow_diff` / `get_by_trace` 排查时静默缺数据）
+  - 适配器停止/重启的资源回收改走归属权（ownership）统一回收管线：与模块卸载同一条管线，此前停止适配器时漏收的事件覆写、作用域覆写、主人身份源、日志订阅、对话恢复工厂五类注册资源现一并回收（第三方适配器反复 restart 不再累积残留）；自有事件处理器/中间件仍由管理器直接自清
+  - 进程退出前最后一次配置刷盘失败不再静默：留 warning（日志不可用时降级 stderr），此前配置改动可能无痕迹丢失；HTTP 客户端替换会话时旧会话关闭失败留 debug 痕迹（连接资源泄漏可排查）
+  - 失败类日志升级：事件重放失败、路由安全配置（CORS/安全头）应用失败、配置变更广播失败升为 warning——此前订阅方静默失效或安全配置未生效只有 debug 级线索；主动 GC 循环持续异常改为"首次 warning、恢复前降 debug"防刷屏
+  - 连接回收与 ORM JSON 列反序列化失败留 debug 痕迹；散落各处的裸超时/轮询参数收拢为命名常量（`CLI/constants.py` 与 `Core/constants.py`，行为不变）
 ## [2.10.3] - 2026/10/21
 > 正式发布（@wsu2059q）
 

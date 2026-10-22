@@ -1,5 +1,8 @@
 # ErisPulse-App
 
+> [!TIP]
+> **什么时候需要读这篇**：当你想在手机或电脑上用图形界面创建、运行、管理机器人实例——不碰终端、不单独装 Python 环境时读这篇。不需要则跳过。
+
 [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) 是 ErisDev 直接维护的 **官方多端客户端**（Android / Windows / Linux / macOS 均已发布），
 提供完全原生的图形化管理界面：在手机或电脑上创建、运行、管理多个机器人实例，
 无需终端，也无需单独安装 Python 环境。
@@ -102,3 +105,11 @@
 - GitHub 仓库：[https://github.com/ErisPulse/ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App)
 - 下载：[GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases)
 - 讨论：[Discussions](https://github.com/ErisPulse/ErisPulse-App/discussions)
+
+---
+
+## 下一步
+
+- **在桌面 / 服务器上用浏览器管理**：[ErisPulse-Dashboard](dashboard.md)（与 App 共用同一套 API 与视窗分组）
+- **接入第一个平台**：App 内置管理界面可完成配置，各平台细节见[平台特性总览](../platform-guide/README.md)
+- **习惯命令行**：App 中的实例与 `epsdk` 创建的完全等价，从[快速上手](../quick-start.md)开始

@@ -1,17 +1,17 @@
 {
   "version": 2,
-  "hash": "673fd305b4e3c288f5a193fbe9fad8fd",
-  "file_hash": "673fd305b4e3c288f5a193fbe9fad8fd",
-  "translated_at": "2026-10-04T12:09:08.644037",
+  "hash": "5143caf8fc20c04105e8c58ea14360a8",
+  "file_hash": "5143caf8fc20c04105e8c58ea14360a8",
+  "translated_at": "2026-10-22T11:55:36.339827",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "1b3f0ec4bfba51e600c605ef706bd0e7",
-      "translation": "# Installation Reference\n\n> This document is a **complete reference** for installation methods (pip / uv / Docker / troubleshooting).\n> If you just want to get started quickly, [the 5-minute quick start](../quick-start.md) covers the minimal workflow."
+      "hash": "d1d33a006931469871192bdf896299c8",
+      "translation": "# Installation Reference\n\n> [!TIP]\n> **When to read this**: Read this when you need to choose an installation method (pip / uv / Docker / ErisPulse-App client) or troubleshoot a failed installation. If you just want to get up and running as quickly as possible, the [5-Minute Quick Start](../quick-start.md) already covers the simplest process — skip this page if that's all you need."
     },
     {
-      "hash": "0673dda01e551a4430a223406abc48f9",
-      "translation": "## System Requirements\n\n- Python 3.10 or higher\n- pip or uv (recommended)\n- Sufficient disk space (at least 100MB)"
+      "hash": "853b0788f299164923cc37e6dccc5237",
+      "translation": "## System Requirements\n\n- Python 3.10 – 3.14 (the 3.14t free-threading / no-GIL build is supported experimentally; the framework continuously monitors it via experimental CI smoke tests, without a formal commitment)\n- pip or uv (recommended)\n- Sufficient disk space (at least 100MB)"
     },
     {
       "hash": "d3978c861bb20b22c15d0f0cf940e47f",
@@ -26,12 +26,12 @@
       "translation": "## Verification of Installation\n\n### Check Installation\n\n```bash\n# Check ErisPulse version\nepsdk --version\n```\n\n### Run Tests\n\n```bash\n# Run the project\nepsdk run main.py\n```\n\nIf you see output similar to the following, the installation was successful:\n\n```\n[INFO] Initializing ErisPulse...\n[INFO] Adapter loaded: Yunhu\n[INFO] Module loaded: MyModule\n[INFO] ErisPulse initialization complete\n```"
     },
     {
-      "hash": "727664c87a983ef55dd04fd57ec28a48",
-      "translation": "## Frequently Asked Questions\n\n### Installation Failed\n\n1. Check if the Python version is >= 3.10 (recommended 3.10 - 3.14; 3.14t free-threaded without GIL build is not officially supported yet, the framework is continuously monitored via experimental CI smoke tests)\n2. Try using `uv pip install ErisPulse` instead of `pip install`\n3. If permission errors occur, try `pip install --user ErisPulse` or use a virtual environment\n4. If SSL certificate errors occur under enterprise proxy environments, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`\n5. Ensure network connectivity and that the pip source is accessible\n\n### Configuration Errors\n\n1. Check if the `config.toml` syntax is correct (TOML format is sensitive to indentation and quotes)\n2. Confirm all required configuration items are filled\n3. Check terminal logs for detailed error information\n4. Use `epsdk init` to regenerate the configuration file\n\n### Module Installation Failed\n\n1. Confirm the module name is spelled correctly (case-sensitive)\n2. Check network connectivity\n3. Use `epsdk list-remote` to view the list of available modules\n4. Confirm the module is compatible with your current SDK version\n\n### Windows PowerShell Execution Policy\n\nIf PowerShell prompts \"Cannot load the file... because running scripts is disabled on this system\":\n\n```powershell\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser\n```\n\n### Debian/Ubuntu Virtual Environment Creation Failed\n\nIf the installation script prompts \"Virtual environment creation failed\" and the error message contains `ensurepip is not available`, it is because Debian/Ubuntu does not have `python3-venv` installed by default (the system Python's `ensurepip` is disabled):\n\n```bash\nsudo apt install python3.13-venv   # Install the corresponding package based on your actual Python version\n# Or install the generic meta-package:\nsudo apt install python3-venv\n```\n\nAfter installation, run the installation script again. The new installation script will actively detect this issue, prompt for confirmation, and attempt to automatically install the corresponding system package. Alternatively, you can use uv (`uv venv` does not depend on `ensurepip`)."
+      "hash": "0384f664d06e6bafd6afd8059a20717c",
+      "translation": "## FAQ\n\n### Installation Failure\n\n1. Check that your Python version is within the supported range (3.10 – 3.14 is supported; 3.14t free-threaded / no-GIL builds are experimentally supported without a formal commitment)\n2. Try using `uv pip install ErisPulse` instead of `pip install`\n3. If a permission error occurs, try `pip install --user ErisPulse` or use a virtual environment\n4. If you encounter SSL certificate errors in a corporate proxy environment, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`\n5. Ensure your network connection is working and the pip index is accessible\n\n### Configuration Errors\n\n1. Check that the `config.toml` syntax is correct (TOML format is sensitive to indentation and quotation marks)\n2. Confirm that all required configuration items have been filled in\n3. Check the terminal logs for detailed error messages\n4. Use `epsdk init` to regenerate the configuration file\n\n### Module Installation Failure\n\n1. Confirm that the module name is spelled correctly (case-sensitive)\n2. Check your network connection\n3. Use `epsdk list-remote` to view the list of available modules\n4. Confirm that the module is compatible with your current SDK version\n\n### Windows PowerShell Execution Policy\n\nIf PowerShell shows \"cannot be loaded... because running scripts is disabled on this system\":\n\n```powershell\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser\n```\n\n### Debian/Ubuntu Virtual Environment Creation Failure\n\nIf the installation script reports \"virtual environment creation failed\" and the error message contains `ensurepip is not available`, it is because Debian/Ubuntu does not install `python3-venv` by default (the system Python's `ensurepip` is disabled):\n\n```bash\nsudo apt install python3.13-venv   # Install the corresponding package for your actual Python version\n# Or install the generic metapackage:\nsudo apt install python3-venv\n```\n\nAfter installation, simply re-run the installation script. The newer installation script will proactively prompt and attempt to automatically install the corresponding system package when this issue is detected; you can also switch to uv instead (`uv venv` does not depend on `ensurepip`)."
     },
     {
-      "hash": "f8f13704538cc520848853879c0ee83f",
-      "translation": "## Next Steps\n\n- [CLI Command Reference](cli-reference.md) - Learn about all command-line commands\n- [Configuration File Guide](configuration.md) - Learn more about configuration options"
+      "hash": "8a354683d7f9d64162e53caa80283966",
+      "translation": "## Next Steps\n\n- **To initialize your project and install adapters after installation**: Follow the [5-Minute Quick Start](../quick-start.md) to complete the remaining steps\n- **To manage components from the command line in daily use**: Check the [CLI Command Reference](cli-reference.md)\n- **To fill in tokens or adjust ports**: See the [Configuration Guide](configuration.md)"
     }
   ]
 }

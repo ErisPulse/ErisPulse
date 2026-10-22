@@ -97,3 +97,8 @@ A warning log stating "Retention policy has been disabled" means someone disable
 - **Interactive session timer / wait_reply**: See [Interactive Session System](interaction.md), which is unrelated to the inbox;
 - **History back for conversation recovery**: `resume(with_history=N)` retrieves the most recent N messages from the inbox—after the inbox is trimmed, the amount of history that can be recovered decreases (increasing `max_per_session` extends the recoverable window);
 - **Shadow module diff**: Relies on the `get_by_trace` query chain; an inbox with a short TTL shortens the diff window.
+
+## Related Documentation
+
+- **Where to consume inbox history**: Conversation Restoration [Conversation](conversation.md), Event-level Read [event.history](interaction.md#conversation-inbox-eventhistory), Shadow Diff [Shadow Module and Gray Release to Production](shadow.md)
+- **Storage interfaces used for audit table sizing** → [Storage Backends](storage-backends.md) and [SQL Query Builder](sql-builder.md)

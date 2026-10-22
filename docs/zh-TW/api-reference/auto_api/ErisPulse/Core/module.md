@@ -29,42 +29,6 @@ ErisPulse 模块系统
 #### 方法列表
 
 
-##### `_warn_deprecated_kwarg(owner: str, old: str, new: str) -> None`（staticmethod）
-
-**内部方法**
-当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
-
-- **owner**: 所属方法名（如 "ModuleManager.get"）
-- **old**: 已弃用的旧参数名
-- **new**: 推荐使用的新参数名
-
----
-
-
-##### `_unload_timeout() -> float`（staticmethod）
-
-**内部方法**
-读取模块 on_unload 优雅收尾的超时（秒）
-
-复用 ``ErisPulse.framework.uninit_timeout`` 配置（反初始化流程的统一超时预算，
-整体仍有 uninit 的 wait_for 兜底）；未配置或非法时回退常量默认值。
-
-**返回值**: 超时秒数（>0）
-
----
-
-
-##### `set_sdk_ref(sdk) -> bool`
-
-设置 SDK 引用
-
-- **sdk** (`SDK`): 实例
-
-**返回值** (`bool`): 是否设置成功
-
----
-
-
 ##### `_register_config_change_routing() -> None`
 
 **内部方法**
@@ -147,6 +111,31 @@ module.register("MyModule", MyModuleClass)
 ---
 
 
+##### `_synthesize_runtime_meta(module_name: str, module_class: type) -> dict[str, Any]`（staticmethod）
+
+**内部方法**
+为运行时注册的模块合成最小 meta（来源标记 / top_level / 定义模块）
+
+``top_level`` 取定义模块 ``__module__`` 的顶层段（与 sdk 层推导规则
+一致），供 reload 清理 ``sys.modules`` 使用；描述 / 版本 / 作者字段
+从 ``get_meta()`` 尽力补全（不可用则省略）。
+
+---
+
+
+##### `_register_reload_snapshot(loader: Any, module_name: str, module_class: type) -> None`
+
+**内部方法**
+运行时注册后同步登记模块加载器的重载快照条目
+
+快照条目为模块类定义所在的模块对象（``sys.modules`` 项），并为其
+挂载合成 moduleInfo（若尚无）——reload 编排经该条目读取 meta 与
+top_level。定义模块不可用或已被占用 moduleInfo 时回退为轻量命名
+空间载体（reload 仅读取 ``__name__`` 与 ``moduleInfo``）。
+
+---
+
+
 ##### `register_lazy(name: str, lazy_proxy: Any) -> None`
 
 注册懒加载代理
@@ -206,7 +195,7 @@ await module.load("MyModule")
 ---
 
 
-##### `async unload(name: str | None = None, *, module_name: str | None = None, purge: bool = False) -> bool`
+##### `async unload(name: str | None = None, *, module_name: str | None = None, purge: bool = False, reason: str = 'unload') -> bool`
 
 卸载指定模块或所有模块
 
@@ -226,7 +215,10 @@ await module.load("MyModule")
 - **name**: 模块名称，None表示卸载所有模块（默认None）
 - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
 - **purge**: 是否一并删除注册存根并清理 sys.modules（默认 False）
+- **reason**: 卸载来意标注，透传给 ``on_before_unload`` 钩子与
 
+         ``module.before_unload`` 事件（``"unload"`` / ``"reload"`` /
+         ``"disable"`` / ``"cascade"``；框架内部使用，常规调用保持默认）
 **返回值**: 是否卸载成功
 
 **示例**:
@@ -240,21 +232,92 @@ await module.unload()  # 卸载所有模块
 ---
 
 
-##### `async reload(name: str, *, full: bool = False) -> bool`
+##### `async sleep(name: str | None = None, *, module_name: str | None = None) -> bool`
 
-热重载单个模块（支持任意来源：本地插件 / PyPI 安装包）
+归眠指定模块（懒加载休眠）
 
-经模块加载器完整执行 卸载旧实例 → 清理注册与 ``sys.modules`` 缓存 →
-重新发现/导入 → 重新注册并加载 流程；依赖该模块的模块会**级联重载**。
-本地插件（``plugins/`` 目录）来源重扫描插件目录；PyPI 安装包来源
+与 unload 的差异：释放运行时资源（on_unload / 归属任务 / 连接 /
+注册资源），但**保留懒加载代理与注册存根**——模块回到"已注册未
+加载"状态（与从未激活不可区分），下次属性访问 / ``module.call`` /
+``activate_on`` 事件将透明唤醒（重新实例化并 on_load）。
+
+归眠前触发 ``on_before_unload``（reason=``"dormant"``），模块可借
+此把状态保存到 storage，唤醒后在 ``on_load`` 中恢复。自动归眠需在
+加载策略中声明 ``get_load_strategy(dormant_after="30m")``；任何已
+加载模块均可手动归眠。
+
+- **name**: 模块名称
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值**: 是否归眠成功（未加载/未注册返回 True——无事可做）
+
+**示例**:
+
+```python
+await module.sleep("HeavyTool")   # 闲置归眠，释放资源
+```
+
+---
+
+
+##### `touch_activity(module_name: str) -> None`
+
+**内部方法**
+记录模块活跃时间戳（休眠清扫判定用）
+
+埋点位置：事件处理器调用（Core/Event/base._invoke_handler）、
+命令执行（Core/Event/command）、``module.call`` 目标解析。
+
+- **module_name**: 模块注册名
+
+---
+
+
+##### `_ensure_dormancy_sweeper() -> None`
+
+**内部方法**
+确保休眠清扫器后台循环已启动（幂等；无休眠声明时不启动）
+
+---
+
+
+##### `async _dormancy_sweep_loop() -> None`
+
+**内部方法**
+休眠清扫循环：按固定间隔扫描已加载且声明 dormant_after 的模块，
+闲置超阈值即自动归眠（uninit 时随后台任务统一取消）
+
+---
+
+
+##### `async _dormancy_sweep() -> None`
+
+**内部方法**
+单轮休眠扫描：对闲置超过阈值的已加载模块自动归眠
+
+依赖方策略：不级联、不跳过——懒模块的依赖方经由持久代理
+（``sdk.<Name>``）/ ``module.call`` 访问，归眠后与"从未激活"不可
+区分，唤醒路径照常生效。
+
+---
+
+
+##### `async reload(name: str, *, full: bool = True) -> bool`
+
+热重载单个模块（支持任意来源：本地插件 / 运行时注册 / PyPI 安装包）
+
+经模块加载器完整执行 语法预检 → 卸载旧实例 → 清理注册与
+``sys.modules`` 缓存（按顶层包名 + ``invalidate_caches``，默认全量）
+→ 重新发现/导入 → 重新注册并加载 流程；依赖该模块的模块会**级联
+重载**并默认重导代码。本地插件（``plugins/`` 目录）来源重扫描插件
+目录；运行时注册来源按定义模块重导并按类名重取；PyPI 安装包来源
 重新查询 entry-point 并重导入模块代码（pip 升级后调用即可生效）。
 
-``full=True`` 启用全量重载：``sys.modules`` 清理名单在元数据之外
-叠加旧模块对象顶层包名（元数据缺失也能彻底刷新 import 缓存），
-且依赖者模块同样重导代码。
+``full=False`` 切换为**轻量重载**：仅按元数据清理 ``sys.modules``，
+PyPI 依赖者卸载后直接重新实例化——仅供超大依赖树的性能敏感场景。
 
-- **name**: 模块名（entry-point 名称或插件名）
-- **full**: 是否全量重载（默认 False）
+- **name**: 模块名（entry-point 名称、插件名或运行时注册名）
+- **full**: 是否全量重载（默认 True；False 为轻量逃生门）
 
 **返回值**: 是否重载成功（SDK 未初始化时返回 False）
 
@@ -262,8 +325,8 @@ await module.unload()  # 卸载所有模块
 
 ```python
 await sdk.module.reload("dice")      # 本地插件
-await sdk.module.reload("Weather")   # PyPI 安装包模块
-await sdk.module.reload("Weather", full=True)  # 全量重载
+await sdk.module.reload("MyRuntime") # 运行时注册模块
+await sdk.module.reload("Weather")   # PyPI 安装包模块（默认全量）
 ```
 
 ---
@@ -292,14 +355,58 @@ await sdk.module.reload_all()
 ---
 
 
-##### `async _unload_single_module(module_name: str) -> bool`
+##### `async _run_before_unload(module_name: str, instance: Any, reason: str, timeout: float) -> None`
 
 **内部方法**
-卸载单个模块
+触发卸载前钩子与 ``module.before_unload`` 事件（卸载/禁用流水线第一步）
+
+先广播事件（第三方状态管家模块可观测），再调用实例可选钩子
+``on_before_unload(event)``——event 携带 ``module_name`` 与 ``reason``
+（``"reload"`` / ``"unload"`` / ``"disable"`` / ``"cascade"``）。
+任一失败仅告警，不阻塞后续卸载流程（与 on_unload 容忍语义一致）。
+
+- **module_name**: 模块注册名
+- **instance**: 模块实例（可为 None——仅广播事件）
+- **reason**: 卸载来意
+- **timeout**: 钩子优雅执行超时（秒）
+
+---
+
+
+##### `async _unload_single_module(module_name: str, *, reason: str = 'unload', sleep: bool = False) -> bool`
+
+**内部方法**
+卸载单个模块（``sleep=True`` 时为归眠：释放资源但保留懒加载代理）
 
 - **module_name**: 模块名称
+- **reason**: 卸载来意（透传给 on_before_unload 钩子与 before_unload 事件）
+- **sleep**: 归眠模式——保留懒加载代理与注册存根，模块回到"已注册未加载"状态
 
 **返回值**: 是否卸载成功
+
+---
+
+
+##### `_record_load_error(module_name: str, e: BaseException) -> None`
+
+**内部方法**
+记录模块加载失败现场（``last_error()`` / ``get_info().last_error`` 消费）
+
+- **module_name**: 模块注册名
+- **e**: 失败异常
+
+---
+
+
+##### `_cleanup_failed_module_cache(module_name: str) -> None`
+
+**内部方法**
+加载失败后的缓存自清洗
+
+失败模块的 ``sys.modules`` 条目没有任何保留价值——主动弹出并刷新
+插件路径记录，保证「改完代码再 load / reload 一次」必定读到磁盘
+新代码，而不是复用失败存根 + 旧 import 缓存的组合。不影响注册表
+中已登记的模块类（重新 load 无需重新 register）。
 
 ---
 
@@ -715,14 +822,46 @@ loaded = module.list_loaded()
 ---
 
 
-##### `get_info(name: str | None = None, *, module_name: str | None = None) -> dict | None`
+##### `last_error(name: str | None = None, *, module_name: str | None = None) -> dict | None`
 
-获取模块信息
+查询模块最近一次加载失败现场
+
+``load()`` 失败（构造 / on_load 异常 / SystemExit）时记录异常对象、
+完整 traceback 与时间戳；下次加载成功后自动清除。失败详情同时随
+``get_info()`` 以 ``last_error`` 字段暴露——RPC / 编程调用方直接
+取用，无需翻日志文件。
 
 - **name**: 模块名称
 - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
 
-**返回值**: 模块信息字典，不存在则返回None
+**返回值**: 失败现场字典 ``{"exception", "traceback", "at"}``，无记录返回 None
+
+**示例**:
+
+```python
+await module.load("X")  # doctest: +SKIP
+False
+module.last_error("X")["exception"]  # doctest: +SKIP
+"AttributeError('...')"
+```
+
+---
+
+
+##### `get_info(name: str | None = None, *, module_name: str | None = None) -> dict | None`
+
+获取模块信息
+
+返回值为注册元信息的浅拷贝，附加运行时诊断字段：
+
+- ``last_error``：最近一次加载失败现场（见 :meth:`last_error`）
+- ``running_identity``：实际在跑的代码身份（``{"module", "version"}``）
+- ``stale``：注册版本 ≠ 运行版本时为 True（"改了代码忘 reload" 一眼可见）
+
+- **name**: 模块名称
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值**: 模块信息字典（含诊断字段），不存在则返回None
 
 **示例**:
 

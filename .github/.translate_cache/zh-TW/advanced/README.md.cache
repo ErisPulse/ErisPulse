@@ -1,17 +1,21 @@
 {
   "version": 2,
-  "hash": "6dcbeec0f1c015614d537c03ab704f70",
-  "file_hash": "6dcbeec0f1c015614d537c03ab704f70",
-  "translated_at": "2026-10-14T03:12:37.833456",
+  "hash": "f5e7d65a24e3b148aabffa0e9a043696",
+  "file_hash": "f5e7d65a24e3b148aabffa0e9a043696",
+  "translated_at": "2026-10-22T09:35:11.200351",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "199a065f76f6105c4ce475b5a2294cc8",
-      "translation": "# 高級主題\n\n本目錄包含 ErisPulse 框架的高級特性與深入主題。\n\n> [!NOTE]  \n> 本目錄全部為**按需查閱**的專題文件——請先讀完首頁的 L1 核心五篇，  \n> 遇到對應需求再來翻閱。每篇開頭標有「什麼時候需要讀這篇」。"
+      "hash": "bfba4d3ab71cc75fb66607c0ee345e0e",
+      "translation": "# 高級主題\n\n本目錄收錄 ErisPulse 框架的進階專題——權限管控、灰度發布、多輪互動、儲存後端等\n深度能力，每篇解決一類具體問題。\n\n> [!NOTE]\n> 本目錄全部為**按需查閱**的專題文件——請先讀完首頁的 L1 核心五篇，\n> 遇到對應需求再來翻。每篇開頭標有「什麼時候需要讀這篇」。"
     },
     {
-      "hash": "5bc742cb0b04d8c643768d2e60ff5226",
-      "translation": "## 文件列表\n\n- [啟動流程與手動控制](startup.md) - 啟動鏈路拆解（Finder/Loader/Manager/Router）與手動完整啟動  \n- [懶加載系統](lazy-loading.md) - 懶加載模組系統的工作原理、配置與事件驅動懶激活（activate_on）  \n- [作用域（scope）](scope.md) - 三維作用域控制：模組可用性 / 事件准入 / 出站動作限制（含方法級細粒度規則與綁定繼承 merge）  \n- [歸屬權（owner）系統](ownership.md) - 資源歸屬與自動回收：owner 上下文機制、歸屬資源全景、卸載清理序列與設計邊界  \n- [影子模組與灰度轉正](shadow.md) - 模組新版本獨立 owner 並行試運行：出站拦截記帳、行為 diff 對比、promote 轉正與失敗回滾  \n- [互動會話系統](interaction.md) - wait_reply / 會話定時器 / 多路等待 / 會話互斥租約 / 收件箱 / 消息事務 / 鏈路追蹤  \n- [模組間通信](module-communication.md) - RPC 協議化（module.call）、服務契約與目錄、定向事件、冷啟動回放、事件冪等去重  \n- [國際化 (i18n)](i18n.md) - 多語言支援、翻譯註冊與語言檢測  \n- [生命週期管理](lifecycle.md) - 生命週期事件系統的使用方法  \n- [路由管理器](router.md) - HTTP 和 WebSocket 路由管理（含單參數註冊、元組響應約定）  \n- [連接池與廣播](connections.md) - 連接註冊表：廣播、分組訂閱、跨模組傳遞與複用、連接池查看  \n- [HTTP 客戶端](http-client.md) - 統一 HTTP 請求客戶端  \n- [會話收件箱](transcript.md) - 消息自動記錄：保留策略旋鈕、運行時覆蓋 API 與風險/審計  \n- [MessageBuilder 詳解](message-builder.md) - OneBot12 消息段建構器的雙模式用法  \n- [SQL 查詢建構器](sql-builder.md) - 通用 SQL 鏈式查詢建構器及儲存後端抽象  \n- [儲存後端](storage-backends.md) - sqlite / mysql / postgres 異步原生存儲後端的選擇、配置與切換  \n- [異常體系與捕獲指南](errors.md) - 框架全部異常類型、發生位置與捕獲建議  \n- [會話類型系統](../standards/session-types.md) - 會話類型定義、映射與自定義類型註冊  \n- [Conversation 多輪對話](conversation.md) - 多輪對話上下文的互動方法  \n\n> [!NOTE]  \n> Dashboard 視窗註冊、Takumi 圖片渲染等 **第三方生態模組** 的文件已遷移至 [生態模組](../ecosystem/README.md) 目錄。"
+      "hash": "9fdd9c4225b295d6fb99a56e700a254a",
+      "translation": "## L2 必讀四篇\n\n撰寫生產級模組時無法繞過的四篇，建議在製作複雜模組前通讀（語氣與文件首頁一致）：\n\n- [作用域（scope）](scope.md) - 三維作用域控制：模組可用性 / 事件准入 / 出站動作限制（含方法級細粒度規則與綁定繼承 merge）\n- [歸屬權（owner）系統](ownership.md) - 資源歸屬與自動回收：owner 上下文機制、歸屬資源全景、卸載清理序列與設計邊界\n- [生命週期管理](lifecycle.md) - 生命週期事件系統：模組 / 適配器加載、卸載、重載、禁用時各自該做什麼\n- [互動會話系統](interaction.md) - wait_reply / 會話定時器 / 多路等待 / 會話互斥租約 / 收件箱 / 消息事務 / 鏈路追蹤"
+    },
+    {
+      "hash": "3b20a1ed179d03236d16daace0c5b239",
+      "translation": "## 按場景分組\n\n與文件首頁「深入理解原理」的分組標準一致，每組首篇標註「不懂會踩什麼坑」。\n\n**執行啟動** —— 不懂啟動鏈路（Finder / Loader / Manager / Router），模組加載失敗時只能對著日誌干瞪眼\n\n- [啟動流程與手動控制](startup.md) - 啟動鏈路拆解（Finder/Loader/Manager/Router）與手動完整啟動\n- [懶加載系統](lazy-loading.md) - 懶加載模組系統的工作原理、配置與事件驅動懶激活（activate_on）\n\n**通信連接** —— 不懂服務契約（`meta.services`）白名單，跨模組 `module.call` 會被 `ServiceNotProvidedError` 拒絕且不知原因\n\n- [模組間通信](module-communication.md) - RPC 協議化（module.call）、服務契約與目錄、定向事件、冷啟動回放、事件冪等去重\n- [連接池與廣播](connections.md) - 連接註冊表：廣播、分組訂閱、跨模組傳遞與複用、連接池查看\n- [路由管理器](router.md) - HTTP 和 WebSocket 路由管理（含單參數註冊、元組回應約定）\n\n**數據存儲** —— 不懂連接失敗冷卻期語義，資料庫抖動時會誤判「框架掛了」（實際是快速失敗、冷卻後自動重連）\n\n- [存儲後端](storage-backends.md) - sqlite / mysql / postgres 異步原生存儲後端的選擇、配置與切換\n- [SQL 查詢建構器](sql-builder.md) - 通用 SQL 鏈式查詢建構器及存儲後端抽象\n- [HTTP 客戶端](http-client.md) - 統一 HTTP 請求客戶端\n\n**消息對話** —— 不懂會話互斥租約，兩個模組同時等同一用戶的回覆會互相踢掉\n\n- [Conversation 多輪對話](conversation.md) - 多輪對話上下文的交互方法\n- [會話收件箱](transcript.md) - 消息自動記錄：保留策略旋鈕、運行時覆蓋 API 與風險/審計\n- [MessageBuilder 詳解](message-builder.md) - OneBot12 消息段建構器的雙模式用法\n- [國際化 (i18n)](i18n.md) - 多語言支援、翻譯註冊與語言檢測\n\n**灰度影子** —— 不懂五道隔離閘就提前轉正，影子的出站消息會外溢到真實用戶\n\n- [影子模組與灰度轉正](shadow.md) - 模組新版本獨立 owner 並行試運行：出站攔截記帳、行為 diff 對比、promote 轉正與失敗回滾\n\n**異常與規範參考**\n\n- [異常體系與捕獲指南](errors.md) - 框架全部異常類型、發生位置與捕獲建議\n- [會話類型系統](../standards/session-types.md) - 會話類型定義、映射與自定義類型註冊\n\n> [!NOTE]\n> Dashboard 視窗註冊、Takumi 圖片渲染等 **第三方生態模組** 的文件已遷移至 [生態模組](../ecosystem/README.md) 目錄。"
     },
     {
       "hash": "81b5854fa95b29d89b547d92b77468de",

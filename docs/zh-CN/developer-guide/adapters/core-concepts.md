@@ -3,7 +3,7 @@
 > [!TIP]
 > **什么时候需要读这篇**：适配器开发路径内必读（BaseAdapter / SendDSL / 生命周期等核心机制的完整说明）。只想起步可先读 [适配器开发入门](getting-started.md)，遇到"为什么"层面的疑问再回到本篇查阅。
 
-了解 ErisPulse 适配器的核心概念是开发适配器的基础。
+这篇解释适配器的运行机制：AdapterManager 如何注册与分发事件、`BaseAdapter` 在初始化时替你做了什么、配置与多账户怎么声明——写适配器时遇到"为什么要这样写"的疑问，来这里查。
 
 ## 适配器架构
 
@@ -1071,28 +1071,7 @@ await self.adapter.emit({
 
 ### 适配器发送 Meta 事件
 
-使用 `emit_meta()` 一行即可发送 meta 事件：
-
-```python
-class MyAdapter(BaseAdapter):
-    async def _on_bot_connect(self, bot_id: str):
-        # 一行发送 connect 事件
-        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的机器人")
-
-    async def _on_bot_disconnect(self, bot_id: str):
-        await self.emit_meta("disconnect", bot_id)
-```
-
-也支持手动构造（旧版方式仍然兼容）：
-
-```python
-await self.adapter.emit({
-    "type": "meta",
-    "detail_type": "connect",
-    "platform": "myplatform",
-    "self": {"platform": "myplatform", "user_id": bot_id}
-})
-```
+发送方式（`emit_meta()` 一行发送、心跳事件与手动构造格式）见 [适配器最佳实践 - Bot 状态管理与 Meta 事件](best-practices.md#bot-状态管理与-meta-事件)。
 
 ### `self` 字段扩展信息
 
@@ -1107,47 +1086,19 @@ await self.adapter.emit({
 
 ### Bot 状态查询
 
-```python
-from ErisPulse import sdk
-
-# 获取单个 Bot 信息
-info = sdk.adapter.get_bot_info("myplatform", "bot123")
-# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
-
-# 列出所有 Bot
-all_bots = sdk.adapter.list_bots()
-
-# 列出指定平台的 Bot
-platform_bots = sdk.adapter.list_bots("myplatform")
-
-# 检查 Bot 是否在线
-is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
-
-# 获取完整状态摘要（适合 WebUI 展示）
-summary = sdk.adapter.get_status_summary()
-# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
-```
+查询 API（`get_bot_info()` / `list_bots()` / `is_bot_online()` / `get_status_summary()`）见 [适配器系统 API - Bot 状态管理](../../api-reference/adapter-system.md#bot-状态管理)。
 
 ### 监听 Bot 生命周期
 
-```python
-from ErisPulse import sdk
-
-@sdk.lifecycle.on("adapter.bot.online")
-async def on_bot_online(data):
-    platform = data.get("platform")
-    bot_id = data.get("bot_id")
-    sdk.logger.info(f"Bot 上线: {platform}/{bot_id}")
-
-@sdk.lifecycle.on("adapter.bot.offline")
-async def on_bot_offline(data):
-    platform = data.get("platform")
-    bot_id = data.get("bot_id")
-    sdk.logger.info(f"Bot 下线: {platform}/{bot_id}")
-```
+`adapter.bot.online` / `adapter.bot.offline` 生命周期事件表与监听示例见 [适配器系统 API - Bot 状态管理](../../api-reference/adapter-system.md#bot-状态管理)。
 
 ## 相关文档
 
-- [适配器开发入门](getting-started.md) - 创建第一个适配器
+### 实现层面深入
+
 - [SendDSL 详解](send-dsl.md) - 学习消息发送
 - [适配器最佳实践](best-practices.md) - 开发高质量适配器
+
+### 回看起步步骤
+
+- [适配器开发入门](getting-started.md) - 创建第一个适配器

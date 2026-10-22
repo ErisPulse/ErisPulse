@@ -59,7 +59,7 @@ class MessageHandler:
         throttle_key: str = "user",
         debounce: str | None = None,
         debounce_key: str = "user",
-    ):
+    ) -> Callable:
         """
         消息事件装饰器
 
@@ -120,7 +120,7 @@ class MessageHandler:
         throttle_key: str = "user",
         debounce: str | None = None,
         debounce_key: str = "user",
-    ):
+    ) -> Callable:
         """
         私聊消息事件装饰器
 
@@ -175,7 +175,7 @@ class MessageHandler:
         throttle_key: str = "user",
         debounce: str | None = None,
         debounce_key: str = "user",
-    ):
+    ) -> Callable:
         """
         群聊消息事件装饰器
 
@@ -230,7 +230,7 @@ class MessageHandler:
         throttle_key: str = "user",
         debounce: str | None = None,
         debounce_key: str = "user",
-    ):
+    ) -> Callable:
         """
         @消息事件装饰器
 

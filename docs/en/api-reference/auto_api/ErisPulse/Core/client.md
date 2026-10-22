@@ -71,7 +71,7 @@ HTTP 状态码
 ---
 
 
-##### `headers`（property）
+##### `headers -> Any`（property）
 
 响应头
 
@@ -98,7 +98,7 @@ Content-Type 值
 ---
 
 
-##### `url`（property）
+##### `url -> Any`（property）
 
 响应 URL (可能因重定向而与请求 URL 不同)
 
@@ -107,7 +107,7 @@ Content-Type 值
 ---
 
 
-##### `raw`（property）
+##### `raw -> Any`（property）
 
 底层框架原生 Response 对象
 

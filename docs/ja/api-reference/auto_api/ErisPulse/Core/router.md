@@ -110,7 +110,7 @@ async def users(request):
 ---
 
 
-##### `http(path: str, methods: list[str] | None = None, **kwargs)`
+##### `http(path: str, methods: list[str] | None = None, **kwargs) -> Callable`
 
 HTTP 路由装饰器
 
@@ -122,7 +122,7 @@ HTTP 路由装饰器
 ---
 
 
-##### `get(path: str, **kwargs)`
+##### `get(path: str, **kwargs) -> Callable`
 
 GET 路由装饰器
 
@@ -133,7 +133,7 @@ GET 路由装饰器
 ---
 
 
-##### `post(path: str, **kwargs)`
+##### `post(path: str, **kwargs) -> Callable`
 
 POST 路由装饰器
 
@@ -144,7 +144,7 @@ POST 路由装饰器
 ---
 
 
-##### `put(path: str, **kwargs)`
+##### `put(path: str, **kwargs) -> Callable`
 
 PUT 路由装饰器
 
@@ -155,7 +155,7 @@ PUT 路由装饰器
 ---
 
 
-##### `delete(path: str, **kwargs)`
+##### `delete(path: str, **kwargs) -> Callable`
 
 DELETE 路由装饰器
 
@@ -166,7 +166,7 @@ DELETE 路由装饰器
 ---
 
 
-##### `ws(path: str, **kwargs)`
+##### `ws(path: str, **kwargs) -> Callable`
 
 WebSocket 路由装饰器
 
@@ -177,7 +177,7 @@ WebSocket 路由装饰器
 ---
 
 
-##### `sse(path: str, **kwargs)`
+##### `sse(path: str, **kwargs) -> Callable`
 
 SSE (Server-Sent Events) 路由装饰器
 
@@ -399,7 +399,7 @@ POST 等非 GET 请求仍然返回 JSON 格式的错误响应。
 ---
 
 
-##### `middleware(*paths: str)`
+##### `middleware(*paths: str) -> Callable`
 
 路由中间件装饰器
 
@@ -428,7 +428,7 @@ async def auth_check(request):
 ---
 
 
-##### `add_middleware(before: Callable | None = None, after: Callable | None = None, *paths: str)`
+##### `add_middleware(before: Callable | None = None, after: Callable | None = None, *paths: str) -> None`
 
 添加中间件函数
 
@@ -575,7 +575,7 @@ WebSocket 路由装饰器内部实现
 ---
 
 
-##### `http(module_name_or_path: str, path: str | None = None, methods: list[str] | None = None, **kwargs)`
+##### `http(module_name_or_path: str, path: str | None = None, methods: list[str] | None = None, **kwargs) -> Callable`
 
 HTTP 路由装饰器
 
@@ -614,7 +614,7 @@ async def handle_data(request):
 ---
 
 
-##### `get(module_name_or_path: str, path: str | None = None, **kwargs)`
+##### `get(module_name_or_path: str, path: str | None = None, **kwargs) -> Callable`
 
 GET 路由装饰器
 
@@ -629,7 +629,7 @@ GET 路由装饰器
 ---
 
 
-##### `post(module_name_or_path: str, path: str | None = None, **kwargs)`
+##### `post(module_name_or_path: str, path: str | None = None, **kwargs) -> Callable`
 
 POST 路由装饰器（单参/双参形态见 :meth:`get`）
 
@@ -641,7 +641,7 @@ POST 路由装饰器（单参/双参形态见 :meth:`get`）
 ---
 
 
-##### `put(module_name_or_path: str, path: str | None = None, **kwargs)`
+##### `put(module_name_or_path: str, path: str | None = None, **kwargs) -> Callable`
 
 PUT 路由装饰器（单参/双参形态见 :meth:`get`）
 
@@ -653,7 +653,7 @@ PUT 路由装饰器（单参/双参形态见 :meth:`get`）
 ---
 
 
-##### `delete(module_name_or_path: str, path: str | None = None, **kwargs)`
+##### `delete(module_name_or_path: str, path: str | None = None, **kwargs) -> Callable`
 
 DELETE 路由装饰器（单参/双参形态见 :meth:`get`）
 
@@ -665,7 +665,7 @@ DELETE 路由装饰器（单参/双参形态见 :meth:`get`）
 ---
 
 
-##### `ws(module_name_or_path: str, path: str | None = None, **kwargs)`
+##### `ws(module_name_or_path: str, path: str | None = None, **kwargs) -> Callable`
 
 WebSocket 路由装饰器
 
@@ -704,7 +704,7 @@ async def chat(websocket):
 ---
 
 
-##### `sse(module_name_or_path: str, path: str | None = None, **kwargs)`
+##### `sse(module_name_or_path: str, path: str | None = None, **kwargs) -> Callable`
 
 SSE (Server-Sent Events) 路由装饰器
 
@@ -1102,7 +1102,7 @@ async def users(request):
 ---
 
 
-##### `setup_cors(allow_origins: list[str] | None = None, allow_methods: list[str] | None = None, allow_headers: list[str] | None = None, allow_credentials: bool = False, max_age: int = DEFAULT_CORS_MAX_AGE_SECS, expose_headers: list[str] | None = None)`
+##### `setup_cors(allow_origins: list[str] | None = None, allow_methods: list[str] | None = None, allow_headers: list[str] | None = None, allow_credentials: bool = False, max_age: int = DEFAULT_CORS_MAX_AGE_SECS, expose_headers: list[str] | None = None) -> None`
 
 配置 CORS
 
@@ -1125,7 +1125,7 @@ sdk.router.setup_cors(
 ---
 
 
-##### `setup_security_headers(headers: dict[str, str] | None = None)`
+##### `setup_security_headers(headers: dict[str, str] | None = None) -> None`
 
 配置安全响应头
 
@@ -1142,7 +1142,7 @@ sdk.router.setup_security_headers({
 ---
 
 
-##### `disable_docs()`
+##### `disable_docs() -> None`
 
 关闭 API 文档端点（生产环境推荐）
 
@@ -1155,7 +1155,7 @@ sdk.router.disable_docs()
 ---
 
 
-##### `set_docs_info(title: str | None = None, description: str | None = None)`
+##### `set_docs_info(title: str | None = None, description: str | None = None) -> None`
 
 更新 API 文档信息
 

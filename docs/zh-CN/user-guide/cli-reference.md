@@ -1,8 +1,11 @@
 # CLI 命令参考
 
-ErisPulse 命令行工具（`epsdk`）提供项目管理和包管理功能。
+> [!TIP]
+> **什么时候需要读这篇**：忘记某个 `epsdk` 命令的参数、想把组件管理写进脚本，或要控制 run / stop / restart 行为时查阅。日常只用 `init` / `install` / `run` 的话，记住一条就够：`epsdk <命令> --help` 随时可查参数说明，不需要通读本文。
 
-> **提示**：所有命令均可通过 `epsdk <命令> --help` 查看详细的参数说明。`epsdk`（不带命令）的主帮助按类别分组展示：**项目**（init / create / run）、**组件管理**（install / uninstall / upgrade / list / list-remote / types）、**配置与诊断**（config / doctor / i18n）、**其他**（self-update / version）。
+`epsdk` 是 ErisPulse 的命令行工具：初始化项目、安装 / 升级模块与适配器、交互式配置组件、运行与停止机器人、诊断环境，都在这一条命令下。
+
+> **提示**：`epsdk`（不带命令）的主帮助按类别分组展示：**项目**（init / create / run）、**组件管理**（install / uninstall / upgrade / list / list-remote / types）、**配置与诊断**（config / doctor / i18n）、**其他**（self-update / version）。
 
 ---
 
@@ -291,6 +294,8 @@ epsdk config MyModule
 | 命令 | 别名 | 参数 | 说明 |
 |------|------|------|------|
 | `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | 运行指定脚本或 SDK |
+| `stop` | — | `[--force] [--pid PID]` | 停止正在运行的实例（由 `epsdk run` 启动） |
+| `restart` | — | `[--force] [--pid PID]` | 重启正在运行的实例（停止后按原参数重新启动） |
 
 ### run
 
@@ -303,7 +308,7 @@ epsdk config MyModule
 | 参数 | 说明 |
 |------|------|
 | `[script]` | 要运行的脚本文件，不指定则运行 SDK |
-| `--reload` | 启用热重载模式，监控文件变化自动重启 |
+| `--reload` | 启用热重载模式，监控文件变化自动触发组件级代码热重载（联动热重载系统，无需整进程重启） |
 | `--strict` / `--no-strict` | 临时开启 / 关闭严格模式（仅本次生效，不写入配置）；缺省跟随 `ErisPulse.framework.strict_mode` |
 
 **示例：**
@@ -315,7 +320,7 @@ epsdk run
 # 运行指定脚本文件
 epsdk run main.py
 
-# 热重载模式运行（文件变更自动重启）
+# 热重载模式运行（文件变更自动触发代码级热重载）
 epsdk run main.py --reload
 
 # SDK 热重载模式
@@ -329,6 +334,53 @@ epsdk run main.py --no-strict
 ```
 
 **启动前自检：** `run` 启动前会快速检查 `config/config.toml` 可解析性与已安装组件的必填配置完整性，严格性默认跟随 `ErisPulse.framework.strict_mode`（非 0 时检查失败即退出，0 时仅警告继续）。配置文件缺失视为正常首次启动，仅提示不判失败。`--strict` 临时开启：预检失败即退出，同时框架严格级别本次提升为至少 1（跳过不合规组件，经 `ERISPULSE_FRAMEWORK_STRICT_MODE` 环境变量传导到运行进程，不写入配置文件）；`--no-strict` 反之临时压到宽松。自检自身异常时自动跳过，不含网络探测，不会阻塞启动。
+
+### stop
+
+停止正在运行的 ErisPulse 实例（由 `epsdk run` 启动、并在同一项目目录下执行）。
+`run` 启动时会把监督进程 PID、当前框架子进程 PID 与原始启动命令写入
+`.erispulse/runtime.json`，`stop` 据此定位实例。
+
+**停止顺序：** POSIX 下先向监督进程发 SIGINT（与 Ctrl+C 同款优雅收尾路径——
+finally 链自动终止框架子进程），超时逐级升级 SIGTERM / SIGKILL；Windows 无
+进程信号语义，先终止框架子进程再终止监督进程（避免监督者把强杀误判为崩溃
+重新拉起）。
+
+**参数：**
+
+| 参数 | 说明 |
+|------|------|
+| `--force` | 跳过优雅停止，直接强制终止 |
+| `--pid PID` | 直接指定目标进程 PID（覆盖运行状态文件，用于非标启动方式） |
+
+**示例：**
+
+```bash
+# 停止当前项目的运行实例
+epsdk stop
+
+# 强制终止
+epsdk stop --force
+```
+
+### restart
+
+重启正在运行的 ErisPulse 实例：按 `stop` 的语义停止后，以状态文件中记录的
+**原始启动命令**重新启动（前台接管当前终端，新实例会写入新的运行状态文件）。
+
+**参数：** 同 `stop`（`--force` / `--pid PID`）。
+
+**示例：**
+
+```bash
+# 优雅重启（pip 升级适配器/模块后让代码生效；运行中模块也可用
+# sdk.reload_module / sdk.adapter.reload 代码级热重载，无需重启）
+epsdk restart
+```
+
+> [!NOTE]
+> `python main.py` 等绕过 `epsdk run` 的启动方式不会写运行状态文件——此类
+> 进程请用系统工具管理，或用 `epsdk stop --pid <PID>` 指定 PID。
 
 ---
 
@@ -719,3 +771,9 @@ epsdk create module -n MyModule -d "模块描述" -a "作者" -e "mail@example.c
 # 强制覆盖已有目录
 epsdk create module -n MyModule -f
 ```
+
+## 下一步
+
+- **组件装好了要填配置**：用 `epsdk config` 交互式向导，或看 [配置文件说明](configuration.md) 手动编辑
+- **代码写完想要 IDE 补全**：跑 `epsdk types`，详见 [类型存根生成](../getting-started/ide-completion.md)
+- **机器人跑不起来**：先 `epsdk doctor` 诊断环境（见[环境诊断](#环境诊断)），要长期部署再看 [部署指南](deployment.md)

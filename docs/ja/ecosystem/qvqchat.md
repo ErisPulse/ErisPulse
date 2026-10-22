@@ -1,6 +1,9 @@
-# ErisPulse-QvQChat 一般エージェント
+# ErisPulse-QvQChat 通用インテリジェントエージェント
 
-[ErisPulse-QvQChat](https://pypi.org/project/ErisPulse-QvQChat/) は、**一般エージェントモジュール**です。ツールループを構築し、メッセージの送受信、エコシステムモジュールサービスの呼び出し、コードの作成と実行、コンピュータの操作、画像や音声の生成、スケジュールされたタスクと長期記憶の管理を、すべて同じツールプロトコルで行います。
+> [!TIP]
+> **このドキュメントを読む必要があるのは**、ロボットに AI インテリジェントエージェントの機能（ツールループ、ストリーミング対話、MCP、長期記憶）を追加したい場合、または独自のモジュールサービスをインテリジェントエージェントから呼び出せるようにしたい場合です。必要ない場合はこのドキュメントは飛ばしてください。
+
+[ErisPulse-QvQChat](https://pypi.org/project/ErisPulse-QvQChat/) は、**汎用的なインテリジェントエージェントモジュール**です。ツールループを基盤として、メッセージの送受信、エコシステムモジュールサービスの呼び出し、コードの作成と実行、コンピュータの操作、画像や音声の生成、スケジュールタスクと長期記憶の管理など、すべてを同一のツールプロトコルで行います。
 
 > [!IMPORTANT]
 > QvQChat は個別にインストールする必要があります：
@@ -128,8 +131,17 @@ async def setup(self):
 
 ## インターフェース
 
-`/QvQChat/view` から個別にアクセスするか、ダッシュボードのサイドバーに埋め込むことができます。
+`/QvQChat/view` に独立してアクセスするか、ダッシュボードのサイドバーに埋め込むことができます。
 
 ![概要](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/overview.png)
 
-![チャット](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/chat.png)
+![会話](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/chat.png)
+
+---
+
+## 次に進む
+
+- **自分のモジュールをエージェントツールにする**：`get_meta()` で `services` を宣言するだけで可能。フィールドの意味は [コアモジュール API - サービス契約](../api-reference/core-modules.md) を参照してください。
+- **エージェントメッセージのサブスクライブで連携させる**：[ライフサイクルイベント](../advanced/lifecycle.md) を使って `qvq.message` / `qvq.replied` を監視します。
+- **エージェントを使わず、ただの複数回対話フォームが欲しい場合**：内蔵の [Conversation 複数回対話](../advanced/conversation.md) がより軽量な選択です。
+- **ウェブ管理**：[ErisPulse-Dashboard](dashboard.md) のサイドバーと併用してください。

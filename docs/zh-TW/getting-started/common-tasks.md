@@ -1,6 +1,7 @@
 # 常見任務範例
 
-本指南提供常見功能的實現範例，幫助你快速實現常用功能。
+> [!TIP]
+> **什麼時候需要讀這篇**：想給機器人加某個具體功能時按節查閱——持久化、定時任務、訊息過濾、權限控制、批次傳送，每一節都是可直接複製的完整範例。想系統學事件處理寫法先看 [事件處理入門](event-handling.md)；不需要則跳過。
 
 ## 內容清單
 
@@ -503,6 +504,6 @@ async def _identify_image(url):
 
 ## 下一步
 
-- [使用者指南](../user-guide/) - 了解設定和模組管理
-- [開發者指南](../developer-guide/) - 學習開發模組和適配器
-- [進階主題](../advanced/) - 深入了解框架特性
+- **功能寫好了，要長期掛著跑**：看 [部署指南](../user-guide/deployment.md)，Docker / systemd 守護與備份升級
+- **想把自己寫的功能分發給別人**：從 [模組開發入門](../developer-guide/modules/getting-started.md) 開始，把腳本升級為可安裝的模組
+- **要調整設定或排查「模組沒反應」**：查 [設定檔說明](../user-guide/configuration.md) 與 [作用域（scope）](../advanced/scope.md)

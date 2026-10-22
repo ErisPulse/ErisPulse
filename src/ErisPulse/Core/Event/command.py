@@ -652,7 +652,11 @@ class CommandHandler:
             # 命令名集合变化，重算最长前缀匹配的 token 数缓存
             self._recompute_max_name_tokens()
 
-            return func
+            # 返回多轮流控代理（.got() 链）：对原函数完全透明，
+            # 命令分发器注册/调用的仍是原 func，仅模块命名空间持有代理
+            from .command_flow import CommandFlow
+
+            return CommandFlow(func)
 
         return decorator
 
@@ -663,6 +667,10 @@ class CommandHandler:
         :param handler: 要注销的命令处理器
         :return: 是否成功注销
         """
+        # 流代理解包：注册表登记的是原函数，用户持有的是 .got() 代理
+        flow_func = getattr(handler, "_flow_func", None)
+        if flow_func is not None:
+            handler = flow_func
         # 从共享 handler 中注销命令函数（如已注册）
         result = False
         if self._bound_handler is not None:
@@ -1455,6 +1463,14 @@ class CommandHandler:
                 )
                 cmd_owner = cmd_info.get("owner")
                 _owner_token = current_owner.set(cmd_owner) if cmd_owner else None
+                if cmd_owner:
+                    # 活跃度埋点（懒加载休眠清扫判定）
+                    try:
+                        from ..module import module as _module_manager
+
+                        _module_manager.touch_activity(cmd_owner)
+                    except Exception:
+                        pass
                 try:
                     # 依赖注入解析（Depends）：上下文为 Event；依赖异常走统一错误路径
                     _depends = _effective.get("depends")

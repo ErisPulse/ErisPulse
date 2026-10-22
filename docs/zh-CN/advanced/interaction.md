@@ -3,6 +3,11 @@
 > [!TIP]
 > **什么时候需要读这篇**：需要 wait_reply、多轮对话、定时提醒、会话互斥或链路追踪时。不需要则跳过，不影响其它功能的使用。
 
+> **读完你会知道**：`wait_reply` 的全参数用法与取消原因、`.got()` 声明式多轮链、
+> 会话定时器（remind / escalate）、多路等待（expect / select）与会话互斥租约。
+>
+> **本篇不涉及**：多轮对话的分支状态机与重启恢复（见[Conversation 多轮对话](conversation.md)）；
+> 收件箱保留策略旋钮与运行时覆盖（见[会话收件箱](transcript.md)）。
 
 > [!NOTE]
 > 本章内容需要 ErisPulse **2.8.0+**。
@@ -18,6 +23,8 @@ ErisPulse 把"与用户的持续交互"做成了框架级基础设施：从一�
 {!--< /tips >!--}
 
 ## 等待回复：wait_reply
+
+**一句话**：挂起当前协程等目标用户的下一条消息，命中返回回复事件、超时或被取消返回 `None`，`pattern` / `regex` / `validator` 可过滤不合格回复。
 
 `wait_reply` 是交互会话的基石——挂起当前协程，等待目标用户在下一条消息中"回复"。
 
@@ -91,6 +98,51 @@ reply = await event.wait_reply(session=True, prompt="哪位大佬帮忙答一下
   → 唤醒等待方 + 认领事件（mark_processed）
 ```
 
+## 声明式多轮：`.got()` 链（2.11+）
+
+`@command` 返回**多轮流控代理**，用 `.got()` 逐步声明收集步骤——步骤函数按
+参数名接收已收集的值（含命令入口参数），类型跟随 `type=` / 注解自动解析。
+底层编译到 Conversation：每步一个分支、跳转自动保存检查点，**重启后用户
+回复会从存档步骤继续**（恢复工厂在装饰期自动注册，随模块卸载自动注销）。
+
+```python
+@command("weather")
+async def weather(event):
+    pass  # 入口：首个 .got 的 prompt 会自动发送，无需手动提问
+
+@weather.got("city", prompt="请直接回复城市名")
+async def weather_city(event, city: str):
+    await event.reply(f"{city}：晴，25℃")
+
+@weather.got("days", prompt="预报几天？", type=int, retry_prompt="请输入数字")
+async def weather_days(event, city: str, days: int):
+    await event.reply(f"{city} 未来 {days} 天……")
+```
+
+### 参数说明
+
+| 参数 | 说明 |
+|------|------|
+| `name` | 收集值名称（注入后续步骤函数的参数名；流程内唯一，重复声明注册期报错） |
+| `prompt` | 进入该步骤时自动发送的提问 |
+| `timeout` | 单步等待超时（秒数或 `"90s"` / `"1h30m"` 时长串，默认 60s） |
+| `type` | 值类型（`int` / `float` / `str`…；解析失败自动重发 `retry_prompt`，最多 `max_retries` 次） |
+| `validator` / `pattern` / `regex` | 回复过滤与校验（语义与 [`wait_reply`](#等待回复wait_reply) 一致） |
+| `session` | 会话级等待（同会话任何人可命中） |
+| `cmdpass` | 命令放行三态（默认 `/cancel` 等命令在等待期间照常执行） |
+
+### 语义与边界
+
+- **任一步超时 / 被打断 → 整条流程结束**并清除检查点（与 `wait_reply` 语义一致）；
+  步骤函数内可随时 `event.reply(...)` 输出中间结果
+- **同一用户同时只能有一条挂起交互**——第二个流程的等待会顶掉前一个
+  （`InteractionCancelled("conflict")`）；需要互斥提示请配合
+  [会话租约](#会话互斥acquire--hold--get_owner_of)
+- 收集值仅存在于流程内；需要跨重启携带复杂状态的编排请直接使用
+  [Conversation](conversation.md)（`context` + `branch/goto` + 手动检查点）
+- `@command` 返回的是代理对象：调用行为、`__name__`、docstring、自定义属性
+  与原函数完全一致；`command.unregister(代理)` 自动解包
+
 ## 会话定时器：remind / escalate
 
 把"超时"从返回值变成可编排的原语。定时器挂在交互会话上，
@@ -133,6 +185,8 @@ event.escalate(1800, lambda e: notify_master(f"工单 30 分钟未处理：{even
 | 单会话上限 | 5 | 不限（随归属清理兜底） |
 
 ## 多路等待：expect + select
+
+**一句话**：`expect` 只描述期望不注册等待，`select` 统一挂起多条期望，任一先命中即返回 `(下标, 回复事件)`，未命中的自动清理。
 
 同时挂起多条期望，**先到先得**——典型场景：等管理员审批的同时等用户撤回、
 多人协作投票。

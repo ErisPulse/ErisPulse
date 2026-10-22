@@ -4,7 +4,7 @@
 > **L1 核心必读**——首页"阅读路径"中的五篇核心文档之一，模块开发必备。
 
 
-Event 模块提供了功能强大的 Event 包装类，简化事件处理。
+处理器里的 `event` 参数之所以能直接 `.get_text()` / `.reply()` / `.wait_reply()`，靠的就是 Event 包装类。本篇是它的完整方法清单——写事件处理器时按需查阅，方法签名与行为都以这里为准。
 
 ## 为 event 参数添加类型注解
 
@@ -486,5 +486,12 @@ async def ai_chat(self, prompt: str):
 
 ## 相关文档
 
+### 继续模块开发路径
+
 - [模块开发入门](getting-started.md) - 创建第一个模块
-- [最佳实践](best-practices.md) - 开发高质量模块
+- [模块最佳实践](best-practices.md) - 开发高质量模块
+
+### 深入交互能力
+
+- [Conversation 多轮对话](../../advanced/conversation.md) - `wait_reply` 之上的完整会话引擎（收集、校验、分支跳转）
+- [模块排查指南](../module-troubleshooting.md) - 事件没响应时对症排查

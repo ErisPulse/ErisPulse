@@ -388,3 +388,15 @@ services:
 | 多架構 | 支援 amd64/arm64 | 與架構無關 |
 
 兩種方式不衝突——你可以同時透過 PyPI 發布模組到模組商店，又透過 GHCR 提供開箱即用的 Docker 鏡像。
+
+## 下一步
+
+### 發布前把質量關
+
+- [模組測試（ErisPulse-Testing）](testing.md) — 使用自動化測試先跑一遍上面的檢查清單
+- [模組最佳實踐](modules/best-practices.md) / [適配器最佳實踐](adapters/best-practices.md) — 發布前的工程化收尾
+
+### 發布後讓使用者用起來
+
+- [CLI 命令](../user-guide/cli-reference.md) — 使用者端 `epsdk install` / `epsdk upgrade` 的行為
+- [平台特性指南](../platform-guide/README.md) — 適配器作者維護平台文件的落點

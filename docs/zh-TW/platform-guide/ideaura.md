@@ -7,7 +7,7 @@ IdeauraAdapter 是基於花楓咖啡館（RockyChat）平台 API 建構的適配
 ## 文件資訊
 
 - 對應模組: ErisPulse-Ideaura
-- 對應模組版本: 4.1.0
+- 對應模組版本: 4.2.0
 - 維護者: ErisPulse
 
 ## 基本資訊
@@ -37,7 +37,7 @@ IdeauraAdapter 是基於花楓咖啡館（RockyChat）平台 API 建構的適配
 
 ## 支援的消息傳送類型
 
-所有傳送方法均透過鏈式語法實現，例如：
+所有傳送方法均透過串接語法實作，例如：
 ```python
 from ErisPulse.Core import adapter
 ideaura = adapter.get("ideaura")
@@ -47,26 +47,27 @@ await ideaura.Send.To("group", "chatroom").Text("Hello World!")
 
 支援的傳送類型包括：
 - `.Text(text: str)`：傳送純文字訊息。
-- `.Image(file, filename: str = None)`：傳送圖片訊息，支援 bytes/URL/本地路徑。
-- `.Video(file, filename: str = None)`：傳送影片訊息，支援 bytes/URL/本地路徑。
-- `.File(file, filename: str = None)`：傳送檔案訊息，支援 bytes/URL/本地路徑。
+- `.Image(file, filename: str = None)`：傳送圖片訊息，支援 bytes/URL/本機路徑。
+- `.Video(file, filename: str = None)`：傳送影片訊息，支援 bytes/URL/本機路徑。
+- `.File(file, filename: str = None)`：傳送檔案訊息，支援 bytes/URL/本機路徑。
 - `.Voice(file, filename: str = None)`：傳送語音訊息（以檔案形式傳送）。
 - `.Face(face_id: str)`：傳送表情（以純文字形式傳送 emoji）。
 - `.Markdown(text: str)`：傳送 Markdown 格式訊息。
 - `.Html(html: str)`：傳送 HTML 格式訊息。
+- `.MergeForward(nodes, title="合併聊天記錄")`：傳送合併轉發訊息（渲染為 `<details>` 折疊 HTML 卡片）。
 - `.Edit(message_id: str, text: str, content_type: str = "text")`：編輯已有訊息。
 - `.Recall(message_id: str)`：撤回訊息。
 
-### 鏈式修飾方法（可組合使用）
+### 串接修飾方法（可組合使用）
 
-鏈式修飾方法返回 `self`，支援鏈式呼叫，必須在最終傳送方法前呼叫：
+串接修飾方法返回 `self`，支援串接呼叫，必須在最終傳送方法前呼叫：
 
-- `.At(user_id: str, name: str = None)`：@指定使用者。
+- `.At(user_id: str, name: str = None)`：@指定用戶。
 - `.AtAll()`：@所有人。
 - `.Reply(message_id: str)`：回覆指定訊息。
 - `.Command(command_id: str)`：觸發 Bot 指令，配合傳送方法使用（將訊息作為指定指令傳送）。
 
-### 鏈式呼叫範例
+### 串接呼叫示例
 
 ```python
 # 基礎傳送
@@ -75,7 +76,7 @@ await ideaura.Send.To("user", user_id).Text("Hello")
 # 觸發 Bot 指令
 await ideaura.Send.To("group", "chatroom").Command("550e8400-e29b-41d4-a716-446655440000").Text("/weather 北京")
 
-# @使用者
+# @用戶
 await ideaura.Send.To("group", "chatroom").At("456").Text("@李四 你好")
 
 # @多人
@@ -94,16 +95,16 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).At("456").Text("回覆�
 # 發送到聊天室
 await ideaura.Send.To("group", "chatroom").Text("聊天室訊息")
 
-# 發送到主題
-await ideaura.Send.To("group", "topic_id").Text("主題訊息")
+# 發送到話題
+await ideaura.Send.To("group", "topic_id").Text("話題訊息")
 
-# 發送私訊
-await ideaura.Send.To("user", "user_id").Text("私訊訊息")
+# 發送私聊訊息
+await ideaura.Send.To("user", "user_id").Text("私聊訊息")
 ```
 
 ### OneBot12 訊息支援
 
-適配器支援傳送 OneBot12 格式的訊息，便於跨平台訊息相容：
+適配器支援傳送 OneBot12 格式訊息，便於跨平台訊息相容：
 
 - `.Raw_ob12(message: List[Dict], **kwargs)`：傳送 OneBot12 格式訊息。
 
@@ -112,7 +113,7 @@ await ideaura.Send.To("user", "user_id").Text("私訊訊息")
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await ideaura.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# 配合鏈式修飾
+# 配合串接修飾
 ob12_msg = [{"type": "text", "data": {"text": "回覆訊息"}}]
 await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 ```

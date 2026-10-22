@@ -1,32 +1,36 @@
 # ErisPulse-Dashboard
 
-[ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) 是由 ErisDev 直接維護的 **Web 管理面板模組**，為 ErisPulse 提供可視化的執行時管理介面：模組啟停、配置編輯、日誌查看、事件流監控等。
+> [!TIP]  
+> **什麼時候需要閱讀這篇**：當你想使用網頁可視化管理機器人（啟停模組、編輯設定、查看日誌、監控事件流），或想為自己的模組註冊一個 Dashboard 管理頁面時閱讀這篇。不需要則跳過。
 
-> [!IMPORTANT]
-> Dashboard **不是** ErisPulse 框架的內建功能，需要單獨安裝：
->
+[ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) 是 ErisDev 直接維護的 **Web 管理面板模組**，為 ErisPulse 提供可視化的運行時管理介面：模組啟停、設定編輯、日誌查看、事件流監控等。
+
+> [!IMPORTANT]  
+> Dashboard **不是** ErisPulse 框架的內建功能，需要單獨安裝：  
+>  
 > ```bash
 > epsdk install Dashboard
 > ```
 
 Dashboard 還支援其他 ErisPulse 模組將自訂的管理頁面註冊到側邊欄。註冊後，使用者可以直接在 Dashboard 中切換到該模組的專屬視窗頁面，無需額外開發獨立的前端介面。
 
-> [!NOTE]
-> 視窗註冊是**可選功能**。
->
-> - 如果 Dashboard 模組**未安裝**或**未載入**，呼叫 `sdk.Dashboard.register_view()` 會拋出例外
-> - 請務必使用 `try/except` 包裹註冊程式碼，確保模組本身的其他功能不受影響
+> [!NOTE]  
+> 視窗註冊是**可選功能**。  
+> - 如果 Dashboard 模組**未安裝**或**未載入**，呼叫 `sdk.Dashboard.register_view()` 會拋出異常  
+> - 請務必使用 `try/except` 包裹註冊程式碼，確保模組本身的其他功能不受影響  
 > - 建議在註冊前檢查 Dashboard 是否可用：`hasattr(sdk, 'Dashboard') and sdk.Dashboard`
+
+---
 
 ## 工作原理
 
 ```
 模組 on_load()
-  → 呼叫 sdk.Dashboard.register_view(...)
+  → 調用 sdk.Dashboard.register_view(...)
   → Dashboard 後端儲存視窗資訊
   → WebSocket 通知前端
   → 前端動態建立側邊欄導航項目 + 頁面容器
-  → 用戶點擊即可查看模組視窗
+  → 使用者點擊即可查看模組視窗
 ```
 
 ---
@@ -38,15 +42,15 @@ sdk.Dashboard.register_view(
     id="MyModule",                    # 必填，唯一標識
     title="我的模組",                  # 中文名稱
     title_en="My Module",             # 英文名稱
-    icon_svg='<svg>...</svg>',        # 頁籃側欄圖標 SVG
+    icon_svg='<svg>...</svg>',        # 側邊欄圖標 SVG
     html_content='<div>...</div>',     # 頁面 HTML 內容
     js_content='function xxx() {}',    # 頁面 JavaScript 逻辑
-    css_content='.my-style {}',        # 可選自定義 CSS
+    css_content='.my-style {}',        # 可選自訂 CSS
     iframe_url='',                     # iframe 模式 URL（與 html_content 二選一）
     loader="loadMyModuleView",         # 切換到該頁面時調用的 JS 函數名
-    group="group_extensions",          # 頁籃側欄分組
-    group_title="",                    # 自定義分組中文名
-    group_title_en="",                 # 自定義分組英文名
+    group="group_extensions",          # 側邊欄分組
+    group_title="",                    # 自訂分組中文名
+    group_title_en="",                 # 自訂分組英文名
 )
 ```
 
@@ -57,17 +61,19 @@ sdk.Dashboard.register_view(
 | `id` | `str` | 是 | 視窗唯一標識，建議使用模組名稱 |
 | `title` | `str` | 否 | 中文顯示名稱，預設使用 `id` |
 | `title_en` | `str` | 否 | 英文顯示名稱，預設使用 `title` |
-| `icon_svg` | `str` | 否 | 頁籃側欄圖標的完整 SVG 字符串 |
+| `icon_svg` | `str` | 否 | 側邊欄圖標的完整 SVG 字串 |
 | `html_content` | `str` | 否* | 注入模式的頁面 HTML 內容 |
 | `js_content` | `str` | 否 | 頁面 JavaScript 代碼 |
-| `css_content` | `str` | 否 | 頁面自定義 CSS 樣式 |
+| `css_content` | `str` | 否 | 頁面自訂 CSS 樣式 |
 | `iframe_url` | `str` | 否* | iframe 模式的 URL，設置後忽略 `html_content` |
 | `loader` | `str` | 否 | 頁面激活時自動調用的 JS 函數名 |
-| `group` | `str` | 否 | 頁籃側欄分組標識，預設 `group_extensions` |
-| `group_title` | `str` | 否 | 自定義分組的中文標題 |
-| `group_title_en` | `str` | 否 | 自定義分組的英文標題 |
+| `group` | `str` | 否 | 側邊欄分組標識，預設 `group_extensions` |
+| `group_title` | `str` | 否 | 自訂分組的中文標題 |
+| `group_title_en` | `str` | 否 | 自訂分組的英文標題 |
 
 > *`html_content` 和 `iframe_url` 至少提供一個，否則頁面為空白。
+
+---
 
 ## 兩種注入模式
 
@@ -80,12 +86,12 @@ sdk.Dashboard.register_view(
     id="HelloPage",
     title="你好頁面", title_en="Hello",
     icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>',
-    html_content='<h1 class="page-title">Hello World</h1><div class="card"><div class="card-body">這是一個範例頁面</div></div>',
+    html_content='<h1 class="page-title">Hello World</h1><div class="card"><div class="card-body">這是一個示例頁面</div></div>',
     group="group_tools",
 )
 ```
 
-> 完整的天氣模組範例（包含 API 路由、JS 互動等）請見下方 [完整模組範例](#完整模組範例)。
+> 完整的天氣模組示例（包含 API 路由、JS 互動等）請見下方 [完整模組示例](#完整模組示例)。
 
 ### 模式二：iframe 嵌入
 
@@ -94,13 +100,15 @@ sdk.Dashboard.register_view(
 ```python
 sdk.Dashboard.register_view(
     id="MyVisualizer",
-    title="資料可視化", title_en="Data Visualizer",
+    title="數據可視化", title_en="Data Visualizer",
     iframe_url="/MyVisualizer/view",
     group="group_tools",
 )
 ```
 
 > iframe 模式會自動在 URL 後追加 `token` 參數用於認證。
+
+---
 
 ## 側邊欄分組
 
@@ -120,7 +128,7 @@ sdk.Dashboard.register_view(
 group="group_tools"  # 追加到"工具"分組
 ```
 
-也可以使用自定義分組名（不以 `group_` 開頭），Dashboard 會自動創建新分組：
+也可以使用自訂分組名（不以 `group_` 開頭），Dashboard 會自動創建新分組：
 
 ```python
 group="my_group",
@@ -128,22 +136,24 @@ group_title="我的分組",
 group_title_en="My Group",
 ```
 
+---
+
 ## 常用 CSS 類名
 
 模組視窗使用 HTML 注入模式時，可直接使用 Dashboard 已有的 CSS 類名來保持視覺一致性：
 
 | 類名 | 用途 |
 |------|------|
-| `page-title` | 頁面標題，例如 `<h1 class="page-title">標題</h1>` |
+| `page-title` | 頁面標題，如 `<h1 class="page-title">標題</h1>` |
 | `card` | 卡片容器 |
 | `card-header` | 卡片標題欄 |
 | `card-body` | 卡片內容區域 |
-| `grid-2` | 兩欄格佈局 |
-| `grid-3` | 三欄格佈局 |
+| `grid-2` | 兩列網格佈局 |
+| `grid-3` | 三列網格佈局 |
 | `btn` | 基礎按鈕 |
 | `btn-primary` | 主按鈕（藍色） |
 | `btn-secondary` | 次要按鈕 |
-| `btn-icon` | 圖示按鈕 |
+| `btn-icon` | 圖標按鈕 |
 | `btn-danger` | 危險操作按鈕 |
 
 Dashboard 使用 CSS 變數控制主題色，你可以在模組視窗中直接引用：
@@ -163,9 +173,11 @@ Dashboard 使用 CSS 變數控制主題色，你可以在模組視窗中直接�
 
 這些變數會根據 Dashboard 的亮色/暗色主題自動切換，模組無需額外處理。
 
+---
+
 ## 認證與 API 調用
 
-在模組視窗的 JS 中呼叫模組自己的 API 時，需要攜帶 Dashboard 的 Token 進行認證：
+在模組視窗的 JS 中調用模組自己的 API 時，需要攜帶 Dashboard 的 Token 進行認證：
 
 ```javascript
 var token = localStorage.getItem('__ep_tk__');
@@ -187,9 +199,9 @@ async def _api_data(self, request):
 
 ---
 
-## 完整模組範例
+## 完整模組示例
 
-以下是一個完整的天氣模組範例，展示如何註冊視窗、提供 API 數據，以及在卸載時清理資源：
+以下是一個完整的天氣模組示例，展示如何註冊視窗、提供 API 數據、以及在卸載時清理資源：
 
 ```python
 from ErisPulse import sdk
@@ -301,7 +313,7 @@ class Main(BaseModule):
 
 ## 注銷視窗
 
-模組卸載時應呼叫 `unregister_view()` 以清除已註冊的視窗：
+模組卸載時應呼叫 `unregister_view()` 清理已註冊的視窗：
 
 ```python
 async def on_unload(self, event):
@@ -309,16 +321,24 @@ async def on_unload(self, event):
         self.sdk.Dashboard.unregister_view("Weather")
 ```
 
-註銷後，Dashboard 前端會透過 WebSocket 即時移除側邊欄導航項目和頁面內容，無需使用者重新整理。
+註銷後 Dashboard 前端會透過 WebSocket 實時移除側邊欄導航項目和頁面內容，無需使用者刷新。
 
 ---
 
 ## 注意事項
 
-1. **載入順序** — Dashboard 的載入優先級為 `99999`（高優先級），你的模組優先級應低於此值（如 `50`），以確保 Dashboard 先完成載入
+1. **載入順序** — Dashboard 的載入優先級為 `99999`（高優先級），你的模組優先級應低於此值（如 `50`），確保 Dashboard 先載入完成
 2. **防禦性編程** — 註冊視窗時使用 `try/except` 包裹，因為 Dashboard 模組可能未安裝或未載入
-3. **資源清理** — 在 `on_unload` 中呼叫 `unregister_view()` 來移除已註冊的視窗
+3. **資源清理** — 在 `on_unload` 中呼叫 `unregister_view()` 移除已註冊的視窗
 4. **ID 唯一性** — `id` 參數在整個 Dashboard 中必須唯一，建議直接使用模組名稱
-5. **SVG 圖標** — `icon_svg` 應為完整的 `<svg>` 標籤，建議尺寸使用 `viewBox="0 0 24 24"`，使用 `stroke="currentColor"` 來繼承 Dashboard 主題色
-6. **JS 函數命名** — `js_content` 中的函數名應具有唯一性（如 `loadWeatherView`），以避免與其他模組衝突
-7. **動態更新** — 模組註冊/取消註冊視窗後，Dashboard 前端會透過 WebSocket 即時更新側邊欄，無需重新整理頁面
+5. **SVG 圖標** — `icon_svg` 應為完整的 `<svg>` 標籤，建議尺寸使用 `viewBox="0 0 24 24"`，使用 `stroke="currentColor"` 繼承 Dashboard 主題色
+6. **JS 函數命名** — `js_content` 中的函數名應具有唯一性（如 `loadWeatherView`），避免與其他模組衝突
+7. **動態更新** — 模組註冊/註銷視窗後，Dashboard 前端會透過 WebSocket 實時更新側邊欄，無需刷新頁面
+
+---
+
+## 下一步
+
+- **不想開電腦，手機上管理機器人**：[ErisPulse-App](app.md)（官方多端客戶端，與 Dashboard 共用同一套 API，模組視窗同樣可用）
+- **為視窗提供後端數據 API**：[路由管理器](../advanced/router.md)註冊 HTTP 路由，方法速查見 [核心模組 API - Router](../api-reference/core-modules.md)
+- **視窗裡看實時日誌 / 事件流**：[日誌訂閱（推模式）](../api-reference/core-modules.md)與[生命週期管理](../advanced/lifecycle.md)

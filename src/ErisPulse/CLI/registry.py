@@ -35,7 +35,7 @@ class CommandRegistry:
             cls._instance._aliases = {}
         return cls._instance
 
-    def register(self, command: Command):
+    def register(self, command: Command) -> None:
         """
         注册命令
 

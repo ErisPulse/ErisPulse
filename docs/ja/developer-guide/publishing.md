@@ -1,46 +1,47 @@
 # リリースとモジュールストアガイド
 
 > [!TIP]
-> **この記事を読むタイミング**：作品を PyPI / モジュールストアにリリースする場合。不要な場合は飛ばしても、他の機能の使用には影響しません。
+> **いつこのドキュメントを読むべきか**：作品を PyPI / モジュールストアにリリースする場合。必要なければスキップしても、他の機能の利用には影響しません。
 
-ErisPulse モジュールストアに開発したモジュールやアダプタをリリースし、他のユーザーが簡単に発見・インストールできるようにしましょう。
 
-## モジュール商店の概要
+開発したモジュールやアダプターを ErisPulse モジュールストアにリリースすることで、他のユーザーが簡単に発見・インストールできるようになります。
 
-ErisPulse モジュール商店は、集中管理されたモジュール登録表です。ユーザーは CLI ツールを使用して、コミュニティが提供するモジュールやアダプタを閲覧、検索、インストールできます。
+## モジュールストアの概要
 
-### 閲覧と発見
+ErisPulse モジュールストアは集中型のモジュールレジストリであり、ユーザーは CLI ツールを使ってコミュニティが提供するモジュールやアダプターを閲覧・検索・インストールできます。
+
+### 閲覧と検索
 
 ```bash
-# リモートに利用可能なすべてのパッケージをリスト表示
+# リモートで利用可能なすべてのパッケージを一覧表示
 epsdk list-remote
 
 # モジュールのみ表示
 epsdk list-remote -t modules
 
-# アダプタのみ表示
+# アダプターのみ表示
 epsdk list-remote -t adapters
 
-# リモートパッケージリストを強制的に更新
+# リモートパッケージリストを強制更新
 epsdk list-remote -r
 ```
 
-また、[ErisPulse 公式サイト](https://www.erisdev.com/#market)にアクセスして、オンラインでモジュール商店を閲覧することもできます。
+[ErisPulse 公式サイト](https://www.erisdev.com/#market) にアクセスして、オンラインでモジュールストアを閲覧することもできます。
 
-### 提出可能なタイプ
+### サポートされている提出タイプ
 
-| タイプ | 説明 | エントリポイントのグループ |
+| タイプ | 説明 | Entry-point グループ |
 |------|------|----------------|
-| モジュール (Module) | ロボットの機能拡張、ビジネスロジックの実装 | `erispulse.module` |
-| アダプタ (Adapter) | 新しいメッセージプラットフォームへの接続 | `erispulse.adapter` |
+| モジュール (Module) | ボット機能の拡張、ビジネスロジックの実装 | `erispulse.module` |
+| アダプター (Adapter) | 新しいメッセージプラットフォームへの接続 | `erispulse.adapter` |
 
-## 速攻公開
+## クイックリリース
 
-公開プロセスは以下の3ステップで完了します：プロジェクトの設定 → PyPI への公開 → モジュール商店への登録。
+全体のプロセスは 3 つのステップのみです：プロジェクトの設定 → PyPI へのリリース → モジュールストアへの提出。
 
 ### 1. pyproject.toml の設定
 
-プロジェクトディレクトリに `pyproject.toml`、`README.md` を含め、タイプに応じて entry-points を設定してください。
+プロジェクトディレクトリに `pyproject.toml` と `README.md` が含まれていることを確認し、タイプに応じて entry-points を設定します：
 
 #### モジュール
 
@@ -48,7 +49,7 @@ epsdk list-remote -r
 [project]
 name = "ErisPulse-MyModule"
 version = "1.0.0"
-description = "モジュールの機能説明"
+description = "モジュール機能の説明"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [ { name = "yourname" } ]
@@ -60,112 +61,112 @@ dependencies = [
 "MyModule" = "MyModule:Main"
 ```
 
-#### アダプタ
+#### アダプター
 
 ```toml
 [project]
 name = "ErisPulse-MyAdapter"
 version = "1.0.0"
-description = "アダプタの機能説明"
+description = "アダプター機能の説明"
 requires-python = ">=3.10"
 
 [project.entry-points."erispulse.adapter"]
 "myplatform" = "MyAdapter:MyAdapter"
 ```
 
-> **注意**：パッケージ名は `ErisPulse-` で始めるのが推奨です。エントリポイントのキー名（例：`"MyModule"`）は、SDK 内でのモジュールのアクセス名として使用されます。
+> **注意**：パッケージ名は `ErisPulse-` で始めることを推奨します。ユーザーが識別しやすくなります。Entry-point のキー名（例：`"MyModule"`）は、SDK 内でモジュールにアクセスする際の名前として使用されます。
 
-### 2. PyPI への公開
+### 2. PyPI へのリリース
 
 ```bash
-# ビルド + 公開（PyPI アカウントが必要）
+# ビルド + リリース（PyPI アカウントが必要）
 pip install build twine
 python -m build
 python -m twine upload dist/*
 ```
 
-公開が成功したら、インストールを確認します：
+リリースが成功したら、インストールを検証します：
 
 ```bash
 pip install ErisPulse-MyModule
 ```
 
-### 3. モジュール商店への登録
+### 3. モジュールストアへの提出
 
-[ErisPulse 模块商店](https://www.erisdev.com/#market)にアクセスし、「モジュールを登録」をクリックして、ログイン後、モジュール情報を入力してください。
+[ErisPulse モジュールストア](https://www.erisdev.com/#market) にアクセスし、「モジュールを提出」をクリックして、ログイン後にモジュール情報を入力するだけです。
 
-サポートされているログイン方法：**GitHub**、**Codeberg**、**云湖**、いずれかを選択してください。
+サポートされているログイン方式：**GitHub**、**Codeberg**、**云湖**、いずれかを選択できます。
 
-入力のポイント：
-- モジュール名、説明、リポジトリのアドレス
-- 最低 SDK バージョン：わからない場合は、[ErisPulse 最新リリース版](https://pypi.org/project/ErisPulse/)のバージョン番号を入力してください
+記入のポイント：
+- モジュール名、説明、リポジトリ URL
+- 最低 SDK バージョン：不明な場合は、[ErisPulse 最新リリース](https://pypi.org/project/ErisPulse/) のバージョン番号を記入すれば OK です
 
-登録後、即座に有効になり、ユーザーはモジュールソースからインストールできます。モジュールは「未検証」と表示され、メンテナの審査が通ると「検証済み」に変わります。
+提出後すぐに有効になり、ユーザーはモジュールソースからインストールできます。モジュールは「未検証」としてマークされ、メンテナーによる審査が通ると「検証済み」に変わります。
 
 > **検証ステータスについて**：
-> - 「未検証」は公式の審査がまだ行われていないことを意味し、モジュールに問題があるわけではありません
-> - ユーザーが `epsdk install` で未検証モジュールをインストールする際、リスク警告が表示され、確認後にインストールを進めることができます
+> - 「未検証」は公式審査をまだ受けていないことを示すだけで、モジュールに問題があることを意味しません
+> - ユーザーが `epsdk install` で未検証モジュールをインストールする際にはリスク警告が表示され、確認後にインストールを続行できます
 
-### 4. 公開済みモジュールの管理
+### 4. リリース済みモジュールの管理
 
-モジュール商店で「モジュールを登録」をクリックし、ログイン後、「私のモジュール」タブに切り替えると、以下のことができます：
+モジュールストアで「モジュールを提出」をクリックしてログインすると、「マイモジュール」タブに切り替えて、以下の操作ができます：
 
-- **編集** — モジュールの説明、リポジトリのアドレス、タグなどの情報を変更できます。バージョン番号は PyPI から自動的に同期されます
-- **削除** — モジュール商店からモジュールを削除します（取り消しはできません）
+- **編集** — モジュールの説明、リポジトリ URL、タグなどの情報を変更。バージョン番号は PyPI から自動同期されます
+- **削除** — モジュールストアからモジュールを削除（取り消し不可）
 
-> 新しく登録したモジュールは、「私のモジュール」リストに表示されるまで数分かかる場合があります。
+> 提出したばかりのモジュールが「マイモジュール」リストに表示されるまで、数分かかる場合があります。
 
-## 公開済みモジュールの更新
+## リリース済みモジュールの更新
 
 1. `pyproject.toml` の `version` を更新
-2. 再びビルドしてアップロード：`python -m build && python -m twine upload dist/*`
-3. モジュール商店は自動的に PyPI 上の最新バージョンを同期します
+2. 再ビルドしてアップロード：`python -m build && python -m twine upload dist/*`
+3. モジュールストアは PyPI 上の最新バージョンを自動同期します
 
 ユーザーは `epsdk upgrade MyModule` でアップグレードできます。
 
-## 公開前のチェックリスト
+## リリース前チェックリスト
 
-PyPI に送信する前に、以下の項目を1つずつ確認してください：
+PyPI にプッシュする前に、以下の項目を一つずつ確認してください：
 
 ### コード品質
 
-- [ ] すべての公開 API に型注釈（関数シグネチャと戻り値）
-- [ ] すべての公開メソッドにドキュメント文字列（`"""..."""` 形式、`:param` / `:return` / `:raises` を含む）
-- [ ] `ruff check` で警告がない
-- [ ] テストカバレッジが 80% 以上
-- [ ] `pytest` で全テストが通過
+- [ ] すべての公開 API に型アノテーションがある（関数シグネチャと戻り値）
+- [ ] すべての公開メソッドに docstring がある（`"""..."""` 形式、`:param` / `:return` / `:raises` を含む）
+- [ ] `ruff check` に合格（警告なし）
+- [ ] テストカバレッジ ≥ 80%
+- [ ] `pytest` の全テストケースに合格
 
-### 兼容性
+### 互換性
 
-- [ ] `pyproject.toml` に最低 SDK バージョンを宣言：`dependencies = ["ErisPulse>=x.y.z"]`
-- [ ] `get_meta()` の `ModuleMeta(min_sdk_version="x.y.z")` で実行時の最低 SDK バージョンを宣言（アダプタはクラス属性 `min_sdk_version` を使用）— ユーザー環境の SDK が低すぎると、フレームワークは読み込み時に明確なエラーを発生させ、ランタイムエラーを回避します
-- [ ] Python 3.10 / 3.11 / 3.12 / 3.13 でテスト済み
-- [ ] 対象オペレーティングシステム（Windows / Linux / macOS、該当する場合）でテスト済み
+- [ ] `pyproject.toml` で最低 SDK バージョンを宣言している：`dependencies = ["ErisPulse>=x.y.z"]`
+- [ ] モジュールが `get_meta()` の `ModuleMeta(min_sdk_version="x.y.z")` で実行時の最低 SDK バージョンを宣言している（アダプターはクラス属性 `min_sdk_version` を使用）——ユーザー環境の SDK バージョンが低すぎる場合、フレームワークがロード時に明確なエラーを出してスキップし、原因を特定しにくいランタイム例外を発生させないようにするため
+- [ ] Python 3.10 / 3.11 / 3.12 / 3.13 でテストした
+- [ ] 対象 OS でテストした（Windows / Linux / macOS、該当する場合）
 - [ ] 循環インポート依存がない
 
 ### 設定
 
-- [ ] 宣言的設定（`ConfigClass` + `BaseConfig` / `BotAccountConfig`）を使用している場合、設定フィールドに `description`（i18n 形式を推奨）と `ui` メタデータを含む
-- [ ] i18n 翻訳キーを登録している場合、5か国語（zh-CN / zh-TW / en / ja / ru）をすべてカバーしている
-- [ ] 敏感フィールドは `secret=True` とマーク
+- [ ] 宣言的設定（`ConfigClass` + `BaseConfig` / `BotAccountConfig`）を使用する場合、設定フィールドに `description`（i18n 形式を推奨）と `ui` メタデータがある
+- [ ] i18n 翻訳キーを登録した場合、すべての 5 言語（zh-CN / zh-TW / en / ja / ru）をカバーしている
+- [ ] 機密フィールドに `secret=True` をマークしている
 
 ### ドキュメント
 
-- [ ] `README.md` にインストール方法と基本的な使用例を記載
-- [ ] `README.md` に設定方法（設定ファイルの例 + 環境変数）を記載
-- [ ] `CHANGELOG.md` にすべての変更を記録
-- [ ] アダプタはプラットフォームの機能ドキュメントを更新（サポートする Send タイプ、イベントタイプなど）
+- [ ] `README.md` にインストール手順と基本的な使用例がある
+- [ ] `README.md` に設定方法が記載されている（設定ファイル例 + 環境変数）
+- [ ] `CHANGELOG.md` にすべての変更が記録されている
+- [ ] アダプターのプラットフォーム機能ドキュメントを更新した（対応する Send タイプ、イベントタイプなど）
 
-### 公開
+### リリース
 
-- [ ] `pyproject.toml` のバージョン番号を更新
-- [ ] ビルドが通る：`python -m build`
-- [ ] PyPI に送信：`python -m twine upload dist/*`
-- [ ] インストールの検証が通る：`pip install ErisPulse-xxx && epsdk run`
+- [ ] `pyproject.toml` のバージョン番号を更新した
+- [ ] ビルドに合格：`python -m build`
+- [ ] PyPI にプッシュ済み：`python -m twine upload dist/*`
+- [ ] インストール検証に合格：`pip install ErisPulse-xxx && epsdk run`
 
 ## 開発モードでのテスト
 
-正式公開前に、ローカルで編集可能なモードでテストできます：
+正式なリリース前に、編集可能モード（editable mode）でローカルテストができます：
 
 ```bash
 epsdk install -e /path/to/MyModule
@@ -173,15 +174,15 @@ epsdk install -e /path/to/MyModule
 pip install -e /path/to/MyModule
 ```
 
-## 一般的な質問
+## よくある質問
 
-### パッケージ名は `ErisPulse-` で始める必要がありますか？
+### パッケージ名は必ず `ErisPulse-` で始める必要がありますか？
 
-必須ではありませんが、強く推奨します。これにより、ユーザーが PyPI 上で ErisPulse エコシステムのパッケージを識別しやすくなります。
+必須ではありませんが、強く推奨します。ユーザーが PyPI 上で ErisPulse エコシステムのパッケージを識別しやすくなります。
 
-### 1つのパッケージで複数のモジュールを登録できますか？
+### 1 つのパッケージで複数のモジュールを登録できますか？
 
-できます。`entry-points` に複数のキーと値を設定できます：
+できます。`entry-points` に複数のキーと値のペアを設定するだけです：
 
 ```toml
 [project.entry-points."erispulse.module"]
@@ -191,21 +192,21 @@ pip install -e /path/to/MyModule
 
 ### 審査にはどのくらい時間がかかりますか？
 
-通常 1〜3 営業日で完了します。モジュール商店の「私のモジュール」で検証ステータスを確認できます。
+通常 1〜3 営業日以内に完了します。モジュールストアの「マイモジュール」で検証ステータスを確認できます。
 
-## Docker イメージによるアプリケーションの配布
+## Docker イメージによるアプリの配布
 
-PyPI に公開するのに適さないアプリケーション（例：プライベート依存、事前設定環境が必要な場合）は、**GitHub Container Registry (GHCR)** を使って Docker イメージを公開し、他のユーザーが `docker pull` でワンクリックで起動できるようにすることができます。
+アプリが PyPI へのリリースに適さない場合（プライベート依存関係を含む、事前設定済み環境が必要など）、**GitHub Container Registry (GHCR)** で Docker イメージを公開することで、他のユーザーが `docker pull` でワンクリック起動できるようになります。
 
-### 適用場面
+### 適用シナリオ
 
-- あなたが**完全なロボットアプリケーション**（モジュール + 設定 + エントリスクリプト）を持っていて、ワンクリックで配布したい
-- モジュール/アダプタが**プライベートパッケージ**や特別なインストールプロセスを必要とするため、PyPI には適さない
-- **出荷時から使用可能な**デプロイメント・ソリューションを提供して、ユーザーの使用のハードルを下げたい
+- **完全なボットアプリケーション**（モジュール + 設定 + エントリースクリプト）があり、ワンクリックで配布したい
+- モジュール/アダプターが**プライベートパッケージ**に依存していたり、特殊なインストール手順があり、PyPI に適さない
+- **すぐに使える**デプロイソリューションを提供し、ユーザーの利用ハードルを下げたい
 
 ### 1. Dockerfile の作成
 
-ErisPulse 公式イメージをベースに、あなたのモジュールを追加するだけです：
+ErisPulse 公式イメージをベースにビルドし、自分のモジュールを追加するだけです：
 
 ```dockerfile
 FROM erispulse/erispulse:latest
@@ -221,7 +222,7 @@ COPY MyModule/ ./MyModule/
 RUN uv pip install --system -e .
 ```
 
-モジュールに追加のシステム依存（例：SSHクライアントなど）が必要な場合は、`RUN uv pip install` の後に追加します：
+モジュールに追加のシステム依存関係（SSH クライアントなど）が必要な場合は、`RUN uv pip install` の後に追加します：
 
 ```dockerfile
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -229,7 +230,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 ```
 
-> `erispulse/erispulse:latest` には ErisPulse、ErisPulse-Dashboard、Pythonランタイム、uv が含まれており、再びインストールする必要はありません。
+> `erispulse/erispulse:latest` には ErisPulse、ErisPulse-Dashboard、Python ランタイム、uv が既に含まれているため、再インストールは不要です。
 
 ### 2. GitHub Actions ワークフローの作成
 
@@ -259,23 +260,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: コードをチェックアウト
+      - name: コードのチェックアウト
         uses: actions/checkout@v4
 
-      - name: QEMU のセットアップ (マルチアーキテクチャ対応)
+      - name: QEMU のセットアップ（マルチアーキテクチャ対応）
         uses: docker/setup-qemu-action@v3
 
       - name: Docker Buildx のセットアップ
         uses: docker/setup-buildx-action@v3
 
-      - name: GitHub Container Registry にログイン
+      - name: GitHub Container Registry へのログイン
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Docker のメタデータを取得
+      - name: Docker メタデータの抽出
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -285,7 +286,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest
 
-      - name: Docker イメージをビルドしてプッシュ
+      - name: Docker イメージのビルドとプッシュ
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -298,33 +299,33 @@ jobs:
           cache-to: type=gha,mode=max
 ```
 
-> `GITHUB_TOKEN` は GitHub Actions によって自動的に提供されるため、手動でキーを作成する必要はありません。
+> `GITHUB_TOKEN` は GitHub Actions が自動的に提供するため、手動でシークレットを作成する必要はありません。
 
-### 3. ビルドの起動
+### 3. ビルドのトリガー
 
-コードをプッシュするか、タグを打つことで自動的にビルドされます：
+コードをプッシュするか、タグを打つだけで自動ビルドされます：
 
 ```bash
-# main ブランチにプッシュして起動
+# main ブランチへのプッシュでトリガー
 git push origin main
 
-# またはタグを打って起動
+# またはタグを打ってトリガー
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-GitHub リポジトリの **Actions** ページから手動で起動することもできます。
+GitHub リポジトリの **Actions** ページから手動でトリガーすることもできます。
 
-### 4. イメージを公開に設定
+### 4. イメージを公開設定にする
 
-GHCR イメージはデフォルトで **private** です。他のユーザーがログインなしでプルできるようにするには、GitHub で公開に設定する必要があります：
+GHCR イメージはデフォルトで **private** です。GitHub で Public に設定しないと、他のユーザーはログインなしでプルできません：
 
-1. リポジトリにアクセス → **Packages** → 対応するパッケージをクリック
+1. リポジトリに入る → **Packages** → 該当する Package をクリック
 2. **Package settings** → **Danger Zone** → **Change visibility** → **Public**
 
 ### 5. ユーザーの使用
 
-ビルドが完了したら、ユーザーは `docker run` で1行で起動できます：
+ビルドが完了すると、ユーザーは `docker run` の 1 行で起動できます：
 
 ```bash
 docker run -d \
@@ -356,17 +357,17 @@ services:
 
 ### Docker Hub への同時公開
 
-ワークフローを拡張して、ログイン手順の前に Docker Hub にログインし、`images` に Docker Hub アドレスを追加します：
+ワークフローを拡張し、ログインステップの前に Docker Hub ログインを追加し、`images` に Docker Hub アドレスを追加します：
 
 ```yaml
-      - name: Docker Hub にログイン
+      - name: Docker Hub へのログイン
         uses: docker/login-action@v3
         with:
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Docker のメタデータを取得
+      - name: Docker メタデータの抽出
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -375,16 +376,28 @@ services:
             ghcr.io/${{ github.repository_owner }}/my-bot
 ```
 
-> `DOCKERHUB_USERNAME` と `DOCKERHUB_TOKEN` は、リポジトリの **Settings → Secrets** に追加する必要があります。
+> リポジトリの **Settings → Secrets** に `DOCKERHUB_USERNAME` と `DOCKERHUB_TOKEN` を追加する必要があります。
 
-### Docker イメージ vs PyPI 公開
+### Docker イメージ vs PyPI リリース
 
-| 特性 | Docker イメージ (GHCR) | PyPI 公開 |
+| 特徴 | Docker イメージ (GHCR) | PyPI リリース |
 |------|---------------------|-----------|
-| 分布方法 | `docker pull` でワンクリック実行 | `pip install` + 手動設定 |
-| 適用範囲 | 完全なアプリケーション/ソリューション | 単一モジュール/アダプタ |
-| プライベート依存 | 天然にサポート | プライベート PyPI ソースが必要 |
-| モジュール商店 | 不適切 | モジュール商店に登録可能 |
-| マルチアーキテクチャ | amd64/arm64 をサポート | アーキテクチャに依存しない |
+| 配布方法 | `docker pull` でワンクリック実行 | `pip install` + 手動設定 |
+| 適用範囲 | 完全なアプリ/ソリューション | 単一のモジュール/アダプター |
+| プライベート依存関係 | 標準で対応 | プライベート PyPI ソースが必要 |
+| モジュールストア | 対象外 | モジュールストアに提出可能 |
+| マルチアーキテクチャ | amd64/arm64 対応 | アーキテクチャに依存しない |
 
-両方の方法は互いに矛盾しません。モジュール商店に PyPI でモジュールを公開すると同時に、GHCR でワンクリック可能な Docker イメージを提供することも可能です。
+2 つの方法は競合しません——PyPI 経由でモジュールをモジュールストアにリリースすると同時に、GHCR 経由ですぐに使える Docker イメージを提供することもできます。
+
+## 次のステップ
+
+### リリース前に品質を確保する
+
+- [モジュールテスト（ErisPulse-Testing）](testing.md) — 自動テストで上記のチェックリストを先に一通り実行
+- [モジュールのベストプラクティス](modules/best-practices.md) / [アダプターのベストプラクティス](adapters/best-practices.md) — リリース前のエンジニアリング仕上げ
+
+### リリース後にユーザーが使えるようにする
+
+- [CLI コマンド](../user-guide/cli-reference.md) — ユーザー側の `epsdk install` / `epsdk upgrade` の動作
+- [プラットフォーム機能ガイド](../platform-guide/README.md) — アダプター作者がプラットフォームドキュメントを整備するための参照先

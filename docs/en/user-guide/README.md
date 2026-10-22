@@ -1,6 +1,9 @@
 # User Guide
 
-This guide helps you install, configure, and manage the ErisPulse project.
+> [!TIP]  
+> **When to read this guide**: When you need to install the environment, configure `config.toml`, manage components using `epsdk`, or deploy the robot online, refer to this guide; otherwise, you can skip it.
+
+This guide covers all daily operations of the robot after it is up and running: installation, configuration, command-line management, deployment, and upgrades.
 
 ## Content List
 
@@ -38,9 +41,8 @@ This guide helps you install, configure, and manage the ErisPulse project.
 | `[ErisPulse.event.command]` | Command event configuration (prefix) | [Configuration File Guide](configuration.md#event-configuration) |
 | `[Adapter Name]` | Adapter-specific configuration | [Platform Features Guide](../platform-guide/) |
 
-## Related Documentation
+## Next Steps
 
-- [Quick Start](../quick-start.md) - Quick start guide
-- [Getting Started](../getting-started/) - Getting started tutorial
-- [Developer Guide](../developer-guide/) - Guide to developing custom modules and adapters
-- [API Reference](../api-reference/) - API documentation
+- **Not started yet**: First, see [Quick Start](../quick-start.md), then systematically learn with [Getting Started](../getting-started/)
+- **Want to write your own module / adapter**: Go to [Developer Guide](../developer-guide/)
+- **Looking for specific methods of a class**: Check the [API Reference](../api-reference/)

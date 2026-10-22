@@ -38,7 +38,7 @@ Run 命令实现
 ---
 
 
-##### `on_modified(event: FileChangeEvent)`
+##### `on_modified(event: FileChangeEvent) -> None`
 
 文件修改事件回调，对 .py 文件触发热重载
 

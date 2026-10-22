@@ -1,9 +1,9 @@
 # 適配器開發入門
 
 > [!TIP]
-> **何時需要閱讀這篇**：適配器開發路徑的入門篇（必讀）。從零開始寫一個適配器、了解適配器的職責邊界與專案結構都在這裡；讀完後再按需進入 [事件轉換器](converter.md) 與 [SendDSL 詳解](send-dsl.md)。
+> **何時需要閱讀這篇**：適配器開發路徑的入門篇（必讀）。從零寫一個適配器、了解適配器的職責邊界與專案結構都在這裡；讀完後再按需進入 [事件轉換器](converter.md) 與 [SendDSL 詳解](send-dsl.md)。
 
-本指南幫助你開始開發 ErisPulse 適配器，連接新的訊息平台。
+跟著這篇走完，你會得到一個能收事件、發訊息的最小可用適配器（主類 + 轉換器 + Send），並清楚每個部件的職責邊界——接入一個新平台的所有工作都從這裡展開。
 
 ## 適配器簡介
 
@@ -38,7 +38,7 @@ flowchart LR
 MyAdapter/
 ├── pyproject.toml          # 專案配置
 ├── README.md               # 專案說明
-├── LICENSE                 # 授權證
+├── LICENSE                 # 許可證
 └── MyAdapter/
     ├── __init__.py          # 包入口
     ├── Core.py               # 適配器主類
@@ -49,10 +49,10 @@ MyAdapter/
 
 ### 1. 建立專案
 
-建議直接使用腳手架生成完整骨架（含 pyproject、主類、轉換器）：
+推薦直接用腳手架生成完整骨架（含 pyproject、主類、轉換器）：
 
 ```bash
-# 標準專案（打包發佈用）
+# 標準專案（打包發布用）
 epsdk create adapter -n MyAdapter
 
 # 本地適配器插件（免打包，放入 plugins/ 目錄即可被自動加載，見下方"本地開發"）
@@ -90,7 +90,7 @@ dependencies = [
 
 ### 3. 建立適配器主類
 
-框架提供了 `ConfigClass` / `AccountConfigClass` 宣告式配置管理，適配器只需宣告配置類即可自動加載、驗證和生成配置範本。
+框架提供了 `ConfigClass` / `AccountConfigClass` 聲明式配置管理，適配器只需聲明配置類即可自動加載、校驗和生成配置範本。
 
 ```python
 # MyAdapter/Core.py
@@ -120,7 +120,7 @@ class MyAdapterConfig(BaseConfig):
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyAdapterConfig  # 宣告配置類，框架自動管理
+    ConfigClass = MyAdapterConfig  # 聲明配置類，框架自動管理
     
     # 不需要覆寫 __init__！框架自動處理：
     # - self.sdk / self.logger 自動設定
@@ -132,9 +132,9 @@ class MyAdapter(BaseAdapter):
         return MyPlatformConverter()
 ```
 
-> ⚠️ **關於 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 會自動處理 SDK 引用、日誌初始化和配置加載。大多數適配器**不再需要覆寫 `__init__`**。詳見 [__init__ 注意事項](#init-注意事項)。
+> ⚠️ **關於 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 會自動處理 SDK 引用、日誌初始化和配置加載。大多數適配器**不再需要覆寫 `__init__`**。詳見 [__init__ 注意事項](#init-注意事项)。
 
-> ⚠️ **關於 `super().__init__()`**：`BaseAdapter.__init__()` 負責建立 `Send` 和 `Request` 工廠實例。如果忘記呼叫，所有訊息發送和請求操作都會報 `AttributeError`。詳見 [__init__ 注意事項](#init-注意事項)。
+> ⚠️ **關於 `super().__init__()`**：`BaseAdapter.__init__()` 負責建立 `Send` 和 `Request` 工廠實例。如果忘記呼叫，所有訊息發送和請求操作都會報 `AttributeError`。詳見 [__init__ 注意事項](#init-注意事项)。
 
 ### 4. 實現必需方法
 
@@ -143,7 +143,7 @@ class MyAdapter(BaseAdapter):
     # ... __init__ 代碼 ...
     
     async def start(self):
-        """啟動適配器（必須實作）"""
+        """啟動適配器（必須實現）"""
         # 註冊 WebSocket 或 WebHook 路由
         router.register_websocket(
             module_name="myplatform",
@@ -153,7 +153,7 @@ class MyAdapter(BaseAdapter):
         self.logger.info("適配器已啟動")
     
     async def shutdown(self):
-        """關閉適配器（必須實作）"""
+        """關閉適配器（必須實現）"""
         router.unregister_websocket(
             module_name="myplatform",
             path="/ws"
@@ -162,8 +162,8 @@ class MyAdapter(BaseAdapter):
         self.logger.info("適配器已關閉")
     
     async def call_api(self, endpoint: str, **params):
-        """呼叫平台 API（必須實作）"""
-        raise NotImplementedError("需要實作 call_api")
+        """呼叫平台 API（必須實現）"""
+        raise NotImplementedError("需要實現 call_api")
 ```
 
 #### 主動發送 Meta 事件
@@ -191,15 +191,15 @@ class MyAdapter(BaseAdapter):
             await self.emit_meta("disconnect", bot_id)
 ```
 
-> 詳細的 Bot 狀態管理和 Meta 事件說明請參閱 [適配器最佳實踐 - Bot 狀態管理](best-practices.md#bot-狀態管理與-meta-事件)。
+> 詳細的 Bot 狀態管理和 Meta 事件說明請參閱 [適配器最佳實踐 - Bot 狀態管理與-meta-事件](best-practices.md#bot-狀態管理與-meta-事件)。
 
 ### 5. 實現 Send 類
 
-`At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建實作，適配器只需實作 `Raw_ob12` 和具體的發送方法即可。
+`At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建實現，適配器只需實現 `Raw_ob12` 和具體的發送方法即可。
 
 框架提供兩個關鍵輔助方法：
 - `self._apply_modifiers(message)` — 自動合併 At/AtAll/Reply 修飾器到訊息段
-- `self.send_context` — 取得發送上下文字典（`target_type`、`target_id`、`account_id`）
+- `self.send_context` — 獲取發送上下文字典（`target_type`、`target_id`、`account_id`）
 
 ```python
 import asyncio
@@ -211,10 +211,10 @@ class MyAdapter(BaseAdapter):
 
         def Raw_ob12(self, message, **kwargs):
             """
-            發送 OneBot12 格式訊息（必須實作）
+            發送 OneBot12 格式訊息（必須實現）
 
             使用 _apply_modifiers 自動合併修飾器狀態，
-            使用 send_context 取得發送上下文。
+            使用 send_context 獲取發送上下文。
             """
             async def _do_send():
                 segments = self._apply_modifiers(message)
@@ -227,23 +227,23 @@ class MyAdapter(BaseAdapter):
             return asyncio.create_task(_do_send())
 
         # Text/Image/Voice/Video/File 已從 SendDSL 基類繼承，
-        # 預設委託給 Raw_ob12，無需重複實作。
+        # 預設委託給 Raw_ob12，無需重複實現。
         # 如需平台特定邏輯，可覆蓋單個方法：
         # def Text(self, text: str):
         #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-**媒體類發送方法（Image/Video/File）實作要點：**
+**媒體類發送方法（Image/Video/File）實現要點：**
 
-- 基類的預設實作會將 `file` 參數封裝為 OneBot12 訊息段傳給 `Raw_ob12`，適配器需在 `Raw_ob12` 中處理下載/上傳
-- `file` 參數應同時支援 `bytes` 二進位資料和 `str` URL 兩種類型
+- 基類的預設實現會將 `file` 參數封裝為 OneBot12 訊息段傳給 `Raw_ob12`，適配器需在 `Raw_ob12` 中處理下載/上傳
+- `file` 參數應同時支援 `bytes` 二進位元數據和 `str` URL 兩種類型
 - 當傳入 URL 時，需先下載檔案再上傳到平台
-- 平台通常需要先呼叫上傳介面取得檔案標識，再呼叫發送介面
+- 平台通常需要先呼叫上傳介面獲取檔案標識，再呼叫發送介面
 
 **`__getattr__` 魔術方法：**
 
 - 實現方法名大小寫不敏感（`Text`、`text`、`TEXT` 都能呼叫）
-- 未定義的方法應返回提示訊息而非報錯
+- 未定義的方法應返回提示資訊而非報錯
 
 **`Raw_ob12` 方法：**
 
@@ -295,7 +295,7 @@ class MyPlatformConverter:
 
 ### 7. 實現 Request 類（請求操作）
 
-如果你的平台支援好友請求、群邀請等需要 Bot 做出決策的請求，可以實作 `Request` 內部類：
+如果你的平台支援好友請求、群邀請等需要 Bot 做出決策的請求，可以實現 `Request` 內部類：
 
 ```python
 from ErisPulse import BaseAdapter, RequestDSL
@@ -304,7 +304,7 @@ class MyAdapter(BaseAdapter):
     # ... Send 和其他代碼 ...
 
     class Request(RequestDSL):
-        """請求操作實作（好友請求、群邀請等）"""
+        """請求操作實現（好友請求、群邀請等）"""
 
         def accept(self, **kwargs):
             """同意請求"""
@@ -356,7 +356,7 @@ async def handle_friend_request(event):
     await adapter.myplatform.Request("req_id").accept()
 ```
 
-> 如果平台不支援請求操作，可以不實作 `Request` 內部類。基類預設返回 `retcode=10002`（不支援的操作）。詳見 [請求操作規範](../../standards/request-action-spec.md)。
+> 如果平台不支援請求操作，可以不實現 `Request` 內部類。基類預設返回 `retcode=10002`（不支援的操作）。詳見 [請求操作規範](../../standards/request-action-spec.md)。
 
 ### 8. 建立包入口
 
@@ -367,12 +367,12 @@ from .Core import MyAdapter
 
 ## 本地開發（免打包）
 
-與模組一致，適配器也可以放入專案的本地插件目錄（預設 `plugins/`，可透過 `ErisPulse.framework.plugins_dir` 配置）直接開發，**無需 `pip install -e .`**：
+與模組一致，適配器也可以放入項目的本地插件目錄（預設 `plugins/`，可透過 `ErisPulse.framework.plugins_dir` 配置）直接開發，**無需 `pip install -e .`**：
 
 ```bash
-# 生成本地適配器插件
+# 產生本地適配器插件
 epsdk create adapter -n MyAdapter --local
-# 生成結構：
+# 產生結構：
 # plugins/
 # └── MyAdapter/
 #     ├── __init__.py
@@ -380,28 +380,29 @@ epsdk create adapter -n MyAdapter --local
 #     └── Converter.py
 ```
 
-框架啟動時自動掃描插件目錄並加載其中的模組與適配器（與 entry-point 安裝包同等待遇：啟用狀態、配置宣告、熱更新、卸載清理全部一致）：
+框架啟動時自動掃描插件目錄並加載其中的模組與適配器（與 entry-point 安裝包同等待遇：啟用狀態、配置聲明、熱更新、卸載清理全部一致）：
 
-- **識別規則**：包目錄（含 `__init__.py`）或單 `.py` 檔案均可；優先識別 `Main` 命名類，否則取插件內首個 `BaseAdapter` / `BaseModule` 子類
+- **識別規則**：套件目錄（含 `__init__.py`）或單個 `.py` 檔均可；優先識別 `Main` 命名類，否則取插件內首個 `BaseAdapter` / `BaseModule` 子類
 - **同名覆蓋**：本地插件與 PyPI 安裝的適配器同名時，本地插件優先（便於覆蓋調試）
-- **熱重載**：`sdk.enable_plugin_hot_reload()` 開啟的插件目錄監控同樣覆蓋適配器；適配器代碼級熱重載將在 2.11 提供（目前版本修改適配器代碼後需重啟框架生效）
+- **熱重載**：`sdk.enable_plugin_hot_reload()` 開啟的插件目錄監控同樣覆蓋適配器；適配器程式碼級熱重載自 2.11 提供——`await sdk.adapter.reload("平台名")` 或 `await sdk.reload_adapter("平台名")`（語法預檢 → 卸載清理 → 清快取重導 → 重新註冊拉起，失敗自動回滾；詳見[架構概覽](../../architecture.md)）
 
 ### 從本地插件到發布
 
-本地驗證完成後，用 `pack` 子命令把插件一鍵轉換為可發布的標準專案（互動式選擇插件、補全元資訊，生成含 entry-point 的 pyproject）：
+本地驗證完成後，用 `pack` 子命令把插件一鍵轉換為可發布的標準專案（互動式選擇插件、補全元資訊，產生含 entry-point 的 pyproject）：
 
 ```bash
 epsdk create pack
-# 選擇插件目錄中的插件 → 輸入專案名/描述/作者 → 生成 MyAdapter/ 專案目錄
+# 選擇插件目錄中的插件 → 輸入專案名/描述/作者 → 產生 MyAdapter/ 專案目錄
 cd MyAdapter
 pip install -e .   # 轉為標準安裝；隨後按發布流程上傳 PyPI
 ```
 
 > **提示**：轉換完成後建議移除 `plugins/` 中的原件，避免本地插件與安裝包重複加載（兩者同名時本地優先，會讓你誤以為安裝包生效）。
 
-## 依賴宣告（可選，2.8.0+）
+## 依賴聲明（可選，2.8.0+）
 
-適配器可以宣告對其他適配器或模組的依賴，實現適配器間聯動與可選功能：
+
+適配器可以聲明對其它適配器或模組的依賴，實現適配器間聯動與可選功能：
 
 ```python
 from typing import ClassVar
@@ -416,8 +417,8 @@ class MyAdapter(BaseAdapter):
     optional_modules: ClassVar[list] = ["TranslateEngine"]
 ```
 
-- **啟動順序**：宣告了模組硬依賴的適配器會**延遲到模組初始化完成後**再啟動
-- **軟依賴通知**：`optional_modules`（或模組硬依賴）中的模組被加載時呼叫 `on_dependency_ready(module_name)`；被卸載時呼叫 `on_dependency_lost(module_name)`（預設空實作，可覆寫）——覆蓋晚加載與熱重載場景：
+- **啟動順序**：聲明了模組硬依賴的適配器會**延遲到模組初始化完成後**再啟動
+- **軟依賴通知**：`optional_modules`（或模組硬依賴）中的模組被加載時呼叫 `on_dependency_ready(module_name)`；被卸載時呼叫 `on_dependency_lost(module_name)`（預設空實作，可覆寫）——覆寫晚加載與熱重載場景：
 
 ```python
 async def on_dependency_ready(self, module_name):
@@ -443,21 +444,21 @@ async def on_dependency_lost(self, module_name):
 `BaseAdapter.__init__(self, sdk=None)` 負責建立 `Send` / `Request` 工廠實例，並自動完成以下工作：
 
 - 接受 `sdk` 參數並設定 `self.sdk`、`self.logger`
-- 如果宣告了 `ConfigClass`，可透過 `self.cfg` 實時讀取全域配置
-- 如果宣告了 `AccountConfigClass`，可透過 `self.accounts` 實時讀取多帳號配置
+- 如果聲明了 `ConfigClass`，可透過 `self.cfg` 實時讀取全域配置
+- 如果聲明了 `AccountConfigClass`，可透過 `self.accounts` 實時讀取多帳號配置
 
-**大多數情況下不需要覆寫 `__init__`**，只需宣告 `ConfigClass` 即可：
+**大多數情況下不需要覆寫 `__init__`**，只需聲明 `ConfigClass` 即可：
 
 ```python
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyAdapterConfig  # 宣告後框架自動管理配置
+    ConfigClass = MyAdapterConfig  # 聲明後框架自動管理配置
     
     async def start(self):
         cfg = self.cfg  # 類型安全，實時讀取
         ...
 ```
 
-如果確實需要自定義初始化，呼叫 `super().__init__(sdk)` 即可：
+如果確實需要自訂初始化，呼叫 `super().__init__(sdk)` 即可：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -510,19 +511,19 @@ class MyAdapter(BaseAdapter):
 
 | 層面 | 什麼時候重寫 | 必須做的事 |
 |------|------------|-----------|
-| **BaseAdapter** | 需要自定義初始化邏輯時 | `super().__init__(sdk)` （傳入 sdk 參數） |
+| **BaseAdapter** | 需要自訂初始化邏輯時 | `super().__init__(sdk)` （傳入 sdk 參數） |
 | **Send 內部類** | 需要初始化發送相關狀態時 | `super().__init__(adapter, target_type, target_id, account_id)` |
 | **Request 內部類** | 需要初始化請求相關狀態時 | `super().__init__(adapter, request_id, account_id)` |
-| 三個層面 | 大多數情況 | **宣告 ConfigClass 即可，不碰 `__init__`** |
+| 三個層面 | 大多數情況 | **聲明 ConfigClass 即可，不碰 `__init__`** |
 
 ### 9. 連接資訊與路由發現
 
-適配器註冊路由後，框架會記錄所有路由資訊。使用者可以透過以下 API 查看適配器的連接地址：
+適配器註冊路由後，框架會記錄所有路由資訊。使用者可以透過以下 API 查看適配器的連接位址：
 
 ```python
 from ErisPulse import sdk
 
-# 取得適配器完整連接資訊
+# 獲取適配器完整連接資訊
 info = sdk.adapter.get_connection_info("myplatform")
 # {
 #   "platform": "myplatform",
@@ -544,17 +545,17 @@ info = sdk.adapter.get_connection_info("myplatform")
 namespaces = sdk.router.list_namespaces()
 # {"myplatform": {"http": ["/myplatform/webhook"], "websocket": ["/myplatform/ws"]}}
 
-# 取得命名空間的完整連接 URL
+# 獲取命名空間的完整連接 URL
 urls = sdk.router.get_module_urls("myplatform")
 # {"base_url": "http://localhost:8080", "http": [...], "websocket": [...]}
 
-# 取得命名空間的詳細路由資訊
+# 獲取命名空間的詳細路由資訊
 routes = sdk.router.get_module_routes("myplatform")
 # {"http": [{"path": "/myplatform/webhook", "methods": ["POST"]}],
 #  "websocket": [{"path": "/myplatform/ws", "auth": false}]}
 ```
 
-> **提示**：`get_connection_info()` 返回的資訊適合展示給使用者（如 WebUI），幫助使用者配置平台側的回調地址或 WebSocket 連接地址。路由註冊時的 `module_name` 必須與適配器在 ErisPulse 中註冊的 `platform` 名稱完全一致，否則路由發現將無法正確關聯。
+> **提示**：`get_connection_info()` 回傳的資訊適合展示給使用者（如 WebUI），幫助使用者配置平台側的回調位址或 WebSocket 連接位址。路由註冊時的 `module_name` 必須與適配器在 ErisPulse 中註冊的 `platform` 名稱完全一致，否則路由發現將無法正確關聯。
 
 ### 10. SSE (Server-Sent Events) 支援
 
@@ -578,7 +579,7 @@ async def event_stream(sse):
 
 #### 使用請求參數
 
-處理器可以宣告 `request` 參數來存取用戶端請求資訊：
+處理器可以聲明 `request` 參數來存取客戶端請求資訊：
 
 ```python
 @sdk.router.sse("MyModule", "/events")
@@ -626,7 +627,7 @@ sdk.router.list_namespaces()
 sdk.router.get_module_routes("MyModule")
 # {"http": [...], "websocket": [...], "sse": [{"path": "/MyModule/events", "streaming": true}]}
 
-# get_module_urls 會生成完整 URL
+# get_module_urls 會產生完整 URL
 sdk.router.get_module_urls("MyModule")
 # {"sse": [{"path": "/MyModule/events", "url": "http://localhost:8080/MyModule/events"}]}
 ```
@@ -635,7 +636,13 @@ sdk.router.get_module_urls("MyModule")
 
 ## 下一步
 
-- [適配器核心概念](core-concepts.md) - 了解適配器架構
-- [SendDSL 詳解](send-dsl.md) - 學習訊息發送
-- [轉換器實作](converter.md) - 了解事件轉換
-- [適配器最佳實踐](best-practices.md) - 開發高品質適配器
+### 補齊適配器的三大件
+
+- [事件轉換器](converter.md) - 平台事件 → OneBot12 的實現細節與常見陷阱
+- [SendDSL 詳解](send-dsl.md) - 訊息發送鏈、修飾方法與發送規則
+- [適配器核心概念](core-concepts.md) - BaseAdapter / 生命週期 / 多帳號的機制說明
+
+### 骨架跑通之後
+
+- [適配器最佳實踐](best-practices.md) - 連接重試、心跳、錯誤處理的工程化收尾
+- [發布與模組商店指南](../publishing.md) - 發布到 PyPI 與模組商店

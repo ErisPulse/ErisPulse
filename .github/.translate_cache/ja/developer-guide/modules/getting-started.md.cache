@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "be1f1caf5482403cd1d7f97c38cbb5d0",
-  "file_hash": "be1f1caf5482403cd1d7f97c38cbb5d0",
-  "translated_at": "2026-10-14T03:15:55.162055",
+  "hash": "6b995df0d0c2ebcc939f094ef89dfbcf",
+  "file_hash": "6b995df0d0c2ebcc939f094ef89dfbcf",
+  "translated_at": "2026-10-22T11:52:50.800882",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "6ac7fcfa418a1e0b78a17a9900a59700",
-      "translation": "# モジュール開発入門\n\n> [!NOTE]\n> **L1 コア必須読書**——「リーディングパス」の5本のコアドキュメントの1つで、モジュール開発に不可欠です。\n\nこのガイドでは、ErisPulse モジュールをゼロから作成する方法を紹介します。"
+      "hash": "46f0a20caa8e72c359036a8161e7adb8",
+      "translation": "# モジュール開発入門\n\n> [!NOTE]\n> **L1 核心必読**——「読み進む」パスの中の5つのコアドキュメントの1つで、モジュール開発に必須です。\n\nこのドキュメントを完了すると、`/hello` コマンドに応答できる実行可能なモジュールが得られ、モジュールのプロジェクト構造、登録方法、およびロード/アンロードのフックについて理解できるようになります。以降のすべてのモジュール関連ドキュメントは、この基本構造に基づいています。"
     },
     {
       "hash": "a0073e5af21db81bec6138a64a0fdceb",
@@ -34,8 +34,8 @@
       "translation": "## 核心概念\n\n### BaseModule 基底クラス\n\nすべてのモジュールは `BaseModule` を継承し、以下のメソッドを提供する必要があります：\n\n| メソッド | 説明 | 必須 |\n|------|------|------|\n| `__init__(self, sdk)` | コンストラクタ（フレームワークから `sdk` インスタンスが渡される） | いいえ |\n| `get_load_strategy()` | ロード戦略を返す | いいえ |\n| `get_meta()` | モジュールの説明メタ情報を返す（オプション） | いいえ |\n| `on_load(self, event)` | モジュールがロードされたときに呼び出される | はい |\n| `on_unload(self, event)` | モジュールがアンロードされたときに呼び出される | はい |\n\n### モジュール紹介メタ情報\n\n> [!NOTE]\n> この機能は ErisPulse **2.8.0+** が必要です。\n\n`get_meta()` を使ってモジュールの紹介メタ情報を宣言します（このモジュールが何をするものか、どのカテゴリに属するかなど）。  \nメタ情報はモジュールの**一般的な紹介データ**であり、help モジュール、Dashboard モジュールリスト、モジュールストアなど、さまざまなインターフェースやエコシステムモジュールが利用できます。\n\n`get_load_strategy()` が `ModuleLoadStrategy` を返すのと同様に、**推奨されるのは `ModuleMeta` 設定クラスのインスタンスを返すこと**（属性の型付け、IDE の補完機能）、dict で直接返すこともサポートされています：\n\n```python\nclass MyModule(BaseModule):\n    @staticmethod\n    def get_meta() -> ModuleMeta:\n        return ModuleMeta(\n            name=\"天気\",               # 表示名（デフォルトの登録名）\n            description=\"都市の天気を照会\",  # モジュールの概要\n            version=\"1.0.0\",\n            author=\"ErisDev\",\n            group=\"ツール\",               # 機能分類\n            tags=[\"天気\", \"照会\"],\n        )\n```\n\n互換性のある書き方（dict）：\n\n```python\nclass MyModule(BaseModule):\n    @staticmethod\n    def get_meta() -> dict:\n        return {\n            \"name\": \"天気\",\n            \"description\": \"都市の天気を照会\",\n            \"version\": \"1.0.0\",\n            \"author\": \"ErisDev\",\n            \"group\": \"ツール\",\n            \"tags\": [\"天気\", \"照会\"],\n        }\n```\n\n- `module.get_meta(\"MyModule\")` は、解析済みのメタ情報を読み取ります（クラス宣言 > 登録情報、自動的にこのモジュールのコマンド名が補完されます）。\n- `module.get_commands_overview()` は、「モジュールメタ情報 + 登録されたコマンド（エイリアス/グループ/ヘルプ）」を統合し、モジュールごとに整理されたコマンドの概要を提供します。\n- コマンドが属するモジュールは、`cmd_info[\"owner\"]` で取得できます（登録時にコンテキストシステムが自動的に注入します）。\n\n#### メタフィールドの i18n 支援\n\nメタ情報のフィールド値は、単純な文字列または i18n ディクショナリ `{\"i18n\": \"key.path\", \"default\": \"バックアップテキスト\"}`（設定 `description` と同様の約束）で指定できます。  \n翻訳キーは `I18nClass` で宣言・登録され、`module.get_meta()` で読み取る際に、自動的に現在の言語に翻訳されます：\n\n```python\nclass MyModule(BaseModule):\n    class I18nClass(BaseI18n):\n        meta_description: I18nKey = I18nKey(\n            default=\"Weather lookup\",\n            zh_CN=\"都市の天気を照会\",\n            en=\"Weather lookup\",\n        )\n\n    @staticmethod\n    def get_meta() -> ModuleMeta:\n        return ModuleMeta(\n            name=\"天気\",\n            description={\"i18n\": \"MyModule.meta_description\", \"default\": \"Weather lookup\"},\n        )\n```\n\n### SDK オブジェクト\n\n`sdk` オブジェクトを通じて、コア機能にアクセスします：\n\n```python\nfrom ErisPulse import sdk\n\nsdk.storage    # ストレージシステム\nsdk.config     # 設定システム\nsdk.logger     # ログシステム\nsdk.adapter    # アダプタシステム\nsdk.router     # ルーティングシステム\nsdk.lifecycle  # ライフサイクルシステム\n```"
     },
     {
-      "hash": "396851cc7f0728c2b96c0a9dece48ec5",
-      "translation": "## 次に進む\n\n- [モジュールのコアコンセプト](core-concepts.md) - モジュールアーキテクチャの詳細\n- [Eventラッパークラスの詳細](event-wrapper.md) - Eventオブジェクトの学習\n- [モジュールのベストプラクティス](best-practices.md) - 高品質なモジュールの開発"
+      "hash": "d88e1f4337fb995fb9a6b9a2b03dfca2",
+      "translation": "## 次のステップ\n\n### 学習の継続\n\n- [モジュールの基本概念](core-concepts.md) - モジュールのアーキテクチャを深く理解する\n- [Event オブジェクトの詳細](event-wrapper.md) - Event オブジェクトの使い方を学ぶ\n\n### 作業完了後\n\n- [モジュールのベストプラクティス](best-practices.md) - 高品質なモジュールの開発\n- [モジュールのトラブルシューティングガイド](../module-troubleshooting.md) - モジュールがロードされない / コマンドが実行されない場合の対処法"
     }
   ]
 }

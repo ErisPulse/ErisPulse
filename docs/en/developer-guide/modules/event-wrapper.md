@@ -1,33 +1,33 @@
-# Event Wrapper Class Guide
+# Event Wrapper Class in Detail
 
 > [!NOTE]
-> **L1 Core Reading** — One of the five core documents in the "Reading Path" on the homepage. Essential for module development.
+> **L1 Core Must-Read** — One of the five core documents in the "Reading Path" on the homepage, essential for module development.
 
-The Event module provides a powerful Event wrapper class that simplifies event handling.
+The reason the `event` parameter in handlers can directly call `.get_text()` / `.reply()` / `.wait_reply()` is the Event wrapper class. This document is its complete method reference — consult it as needed when writing event handlers; the method signatures and behaviors here are authoritative.
 
-## Adding Type Annotations to Event Parameters
+## Adding Type Annotations to the event Parameter
 
-The `event` parameter of event handlers is an **Event wrapper class** (a subclass of dict). It is highly recommended to add type annotations:
+The `event` parameter of an event handler is the **Event wrapper class** (a dict subclass). It is strongly recommended to add a type annotation to it:
 
 ```python
 from ErisPulse.Core.Event import Event
 
 @message.on_private_message()
 async def handler(event: Event):
-    text = event.get_text()   # IDE auto-completes all convenient methods
-    await event.reply(text)   # Spelling errors are caught during static analysis
+    text = event.get_text()   # IDE auto-completes all convenience methods
+    await event.reply(text)   # Typos can be caught during static checks
 ```
 
-Without annotations, the IDE cannot recognize methods on Event (such as `get_text()`, `reply()`, `wait_reply()`, and platform extension methods), and you must rely on memory for correct spelling.
+Without the annotation, the IDE cannot recognize methods on Event (`get_text()` / `reply()` / `wait_reply()` / platform extension methods get no completion hints), and you would have to spell them from memory.
 
-> **Note**: The `event` in event handler callbacks is an **Event wrapper class** (annotated as `Event`); the `event` in module lifecycle methods `on_load` / `on_unload` is a regular **dict** (annotated as `dict`), and these should not be confused.
+> **Note the distinction**: the `event` in event handler callbacks is the **Event wrapper class** (annotated as `Event`); the `event` in module lifecycle methods `on_load` / `on_unload` is a plain **dict** (annotated as `dict`). Do not confuse the two.
 
 ## Core Features
 
-- **Full compatibility with dictionaries**: Event inherits from dict
-- **Convenient methods**: Provides a large number of convenient methods
-- **Dot notation access**: Supports accessing event fields using dot notation
-- **Backward compatibility**: All methods are optional
+- **Fully dict-compatible**: Event inherits from dict
+- **Convenience methods**: Provides a large number of convenience methods
+- **Dot-style access**: Supports accessing event fields with dot notation
+- **Backward compatible**: All methods are optional
 
 ## Core Field Methods
 
@@ -65,7 +65,7 @@ async def group_handler(event: Event):
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
-    await event.reply(f"Type: {'Private Message' if is_private else 'Group Message'}")
+    await event.reply(f"Type: {'Private' if is_private else 'Group'}")
 ```
 
 ## Reply Functionality
@@ -84,48 +84,48 @@ async def ask_command(event: Event):
 @command("price")
 async def price_command(event: Event):
     await event.reply("Please enter the amount (e.g., 5 yuan):")
-    # Reply must match the regex, otherwise continue waiting until timeout
-    reply = await event.wait_reply(timeout=30, regex=r"\d+\s*元")
+    # The reply must match the regex, otherwise keep waiting until timeout
+    reply = await event.wait_reply(timeout=30, regex=r"\d+\s*yuan")
     if reply:
-        await event.reply(f"Received amount: {reply.get_text()}")
+        await event.reply(f"Amount received: {reply.get_text()}")
 ```
 
-## Advanced Interaction Sessions
+## Advanced Interactive Sessions
 
 > [!NOTE]
-> This section requires ErisPulse **2.8.0+**.
+> The capabilities in this section require ErisPulse **2.8.0+**.
 
 ```python
-# Session timeout reminder: Remind after 5 minutes of no reply, user reply cancels it
-reminder = event.remind(300, "Are you still there? Reply 'exit' if you don't want to chat")
-reminder.cancel()  # Can also be manually canceled
+# Session timed reminder: remind after 5 minutes without a reply; auto-cancelled once the user replies
+reminder = event.remind(300, "Are you still there? Reply 'exit' if you don't want to chat anymore")
+reminder.cancel()  # Can also be cancelled manually
 
-# Escalation: Guaranteed to reach the timeout (not canceled by reply), e.g., notify owner if long processing
-event.escalate(1800, lambda e: notify_master("Ticket timeout"))
+# Timeout escalation: guaranteed to fire at the deadline (not cancelled by a reply), e.g., notify the owner when an issue has been unhandled for a long time
+event.escalate(1800, lambda e: notify_master("Ticket timed out"))
 
-# Multiple waits: Wait for "agree" and "refuse", first to arrive wins
+# Multi-way wait: wait for "approve" and "reject" at the same time; first reply wins
 which, reply = await event.select(
-    event.expect(pattern="agree*", user="10001"),
-    event.expect(pattern="refuse*", user="10002"),
+    event.expect(pattern="approve*", user="10001"),
+    event.expect(pattern="reject*", user="10002"),
     timeout=60,
 )
 if which is None:
-    await event.reply("Timeout, no approval received")
+    await event.reply("Approval not received before timeout")
 
-# Session-level wait: Any reply from the group can match (group collaboration)
-reply = await event.wait_reply(session=True, prompt="Which expert can help answer?")
+# Session-level wait: replies from anyone in the same group can match (group collaboration)
+reply = await event.wait_reply(session=True, prompt="Could any expert help answer this?")
 
-# Session inbox: Recent 20 messages in the current session (including bot, AI context / anti-spam base)
+# Session inbox: the last 20 messages of the current session (includes the bot; the foundation for AI context / anti-repetition)
 messages = await event.history(20)
 
-# Message transaction: Automatically withdraw messages sent within the transaction on exception
+# Message transaction: automatically recalls messages sent within the transaction when an exception occurs
 async with event.message_tx():
     await event.reply("Processing, please wait...")
     result = await do_something()
-    await event.reply(f"Completed: {result}")
+    await event.reply(f"Done: {result}")
 ```
 
-## Command Information Retrieval
+## Getting Command Information
 
 ```python
 from ErisPulse.Core.Event import command
@@ -144,68 +144,68 @@ from ErisPulse.Core.Event import notice
 
 @notice.on_friend_add()
 async def friend_add_handler(event: Event):
-    await event.reply("Welcome to add me as a friend!")
+    await event.reply("Thanks for adding me as a friend!")
 ```
 
 ## Method Quick Reference
 
 ### Core Methods
 
-#### Event Basic Information
-- `get_id()` - Get event ID
-- `get_time()` - Get event timestamp (Unix seconds)
-- `get_type()` - Get event type (message/notice/request/meta)
-- `get_detail_type()` - Get event detail type (private/group/friend, etc.)
-- `get_platform()` - Get platform name
+#### Basic Event Information
+- `get_id()` - Get the event ID
+- `get_time()` - Get the event timestamp (Unix seconds)
+- `get_type()` - Get the event type (message/notice/request/meta)
+- `get_detail_type()` - Get the event detail type (private/group/friend, etc.)
+- `get_platform()` - Get the platform name
 
 #### Bot Information
-- `get_self_platform()` - Get bot platform name
-- `get_self_user_id()` - Get bot user ID
-- `get_self_account_id()` - Get bot account ID (multi-bot mode)
-- `get_self_info()` - Get full bot info dictionary
+- `get_self_platform()` - Get the bot platform name
+- `get_self_user_id()` - Get the bot user ID
+- `get_self_account_id()` - Get the bot account ID (multi-bot mode)
+- `get_self_info()` - Get the full bot info dictionary
 
 #### Session Identifiers
-- `get_target_id()` - Get unified target ID (returns `group_id` for group chats, `channel_id` for channels, `user_id` for private chats, prioritizing group → channel → guild → thread → user)
-- `get_session_id()` - Get unique session identifier, format: `{platform}:{detail_type}:{target_id}`
+- `get_target_id()` - Get the unified target ID (returns `group_id` for group chats, `channel_id` for channels, `user_id` for private chats; takes the first non-empty value in the order group → channel → guild → thread → user)
+- `get_session_id()` - Get the unique session identifier, in the format `{platform}:{detail_type}:{target_id}`
 
 ### Message Event Methods
 
 #### Message Content
-- `get_message()` - Get message segment array (OneBot12 format)
-- `get_alt_message()` - Get alternate message text
-- `get_text()` - Get plain text content (`get_alt_message()` alias)
-- `get_message_text()` - Get plain text content (`get_alt_message()` alias)
+- `get_message()` - Get the message segment array (OneBot12 format)
+- `get_alt_message()` - Get the alternative message text
+- `get_text()` - Get the plain text content (alias of `get_alt_message()`)
+- `get_message_text()` - Get the plain text content (alias of `get_alt_message()`)
 
 #### Sender Information
-- `get_user_id()` - Get sender user ID
-- `get_user_nickname()` - Get sender nickname
-- `get_sender()` - Get sender full info dictionary
+- `get_user_id()` - Get the sender's user ID
+- `get_user_nickname()` - Get the sender's nickname
+- `get_sender()` - Get the full sender info dictionary
 
 #### Group/Channel Information
-- `get_group_id()` - Get group ID (group message)
-- `get_channel_id()` - Get channel ID (channel message)
-- `get_guild_id()` - Get server ID (server message)
-- `get_thread_id()` - Get topic/sub-channel ID (topic message)
+- `get_group_id()` - Get the group ID (group chat messages)
+- `get_channel_id()` - Get the channel ID (channel messages)
+- `get_guild_id()` - Get the guild ID (guild messages)
+- `get_thread_id()` - Get the thread/sub-channel ID (thread messages)
 
 #### @Message Related
-- `has_mention()` - Whether the message contains a mention of the bot
-- `get_mentions()` - Get list of all mentioned user IDs
+- `has_mention()` - Whether the message mentions the bot
+- `get_mentions()` - Get the list of all mentioned user IDs
 
 ### Message Type Detection
 
-#### Basic Detection
+#### Basic Checks
 - `is_message()` - Whether it is a message event
 - `is_private_message()` - Whether it is a private message
 - `is_group_message()` - Whether it is a group message
-- `is_at_message()` - Whether it is an @message (`has_mention()` alias)
+- `is_at_message()` - Whether it is an @ message (alias of `has_mention()`)
 
 ### Notice Event Methods
 
 #### Notice Operator
-- `get_operator_id()` - Get operator ID
-- `get_operator_nickname()` - Get operator nickname
+- `get_operator_id()` - Get the operator ID
+- `get_operator_nickname()` - Get the operator's nickname
 
-#### Notice Type Detection
+#### Notice Type Checks
 - `is_notice()` - Whether it is a notice event
 - `is_group_member_increase()` - Group member increase event
 - `is_group_member_decrease()` - Group member decrease event
@@ -215,9 +215,9 @@ async def friend_add_handler(event: Event):
 ### Request Event Methods
 
 #### Request Information
-- `get_comment()` - Get request comment
+- `get_comment()` - Get the request comment
 
-#### Request Type Detection
+#### Request Type Checks
 - `is_request()` - Whether it is a request event
 - `is_friend_request()` - Whether it is a friend request
 - `is_group_request()` - Whether it is a group request
@@ -225,112 +225,112 @@ async def friend_add_handler(event: Event):
 ### Reply Functionality
 
 #### Basic Reply
-- `reply(content, method="Text", at_sender=False, quote=False, at_users=None, reply_to=None, at_all=False, via=None, **kwargs)` - General reply method
-  - `content`: content to send (text, URL, etc.)
-  - `method`: send method, default "Text", optional "Image"/"Voice"/"Video"/"File", etc.
-  - `at_sender`: whether to @ sender (auto-extract user_id)
-  - `quote`: whether to quote reply current message (auto-extract message_id)
-  - `at_users`: list of users to @, e.g., `["user1", "user2"]`
-  - `reply_to`: manually specify the message ID to reply to
-  - `at_all`: whether to @ all members
-  - `**kwargs`: additional parameters (e.g., user_id for Mention method)
+- `reply(content, method="Text", at_sender=False, quote=False, at_users=None, reply_to=None, at_all=False, via=None, **kwargs)` - General-purpose reply method
+  - `content`: Content to send (text, URL, etc.)
+  - `method`: Send method, defaults to "Text"; options include "Image"/"Voice"/"Video"/"File", etc.
+  - `at_sender`: Whether to @ the sender (user_id extracted automatically)
+  - `quote`: Whether to quote-reply to the current message (message_id extracted automatically)
+  - `at_users`: List of users to @, e.g. `["user1", "user2"]`
+  - `reply_to`: Manually specify the message ID to reply to
+  - `at_all`: Whether to @ all members
+  - `**kwargs`: Extra parameters (e.g., user_id for the Mention method)
 
 - `reply_ob12(message)` - Reply using OneBot12 message segments
-  - `message`: OneBot12 message segment list or dict, can be built with MessageBuilder
+  - `message`: OneBot12 message segment list or dict; can be built together with MessageBuilder
 
-#### Platform Capability Query
-- `supports(method)` - Check if current platform supports a send method (e.g., `"Image"`, `"Voice"`), returns `bool`
-- `available_methods()` - List all available send methods for current platform, returns list of method names
+#### Platform Capability Queries
+- `supports(method)` - Check whether the current platform supports a given send method (e.g., `"Image"`, `"Voice"`); returns `bool`
+- `available_methods()` - List all send methods available on the current platform; returns a list of method names
 
-#### Forward Functionality
+#### Forwarding
 
-> **Note**: Forward functionality must be implemented through the adapter's Send DSL; the Event wrapper class itself does not provide a direct forward method.
+> **Note**: Forwarding must be implemented via the adapter's Send DSL; the Event wrapper class itself does not provide a direct forwarding method.
 
 ```python
-# Forward message to group
+# Forward a message to a group
 adapter = sdk.adapter.get(event.get_platform())
-target_id = event.get_group_id()  # or specify other group ID
+target_id = event.get_group_id()  # Or specify another group ID
 await adapter.Send.To("group", target_id).Text(event.get_text())
 ```
 
-### Wait Reply Functionality
+### Waiting for Replies
 
-- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text", pattern=None, regex=None)` - Wait for user reply
-  - `prompt`: prompt message, if provided, it will be sent to the user
-  - `timeout`: timeout for waiting (seconds), default 60 seconds
-  - `callback`: callback function, executed when a reply is received
-  - `validator`: validation function, used to validate if the reply is valid
-  - `method`: send method for the prompt, default "Text"
-  - `pattern`: glob wildcard (`*` / `?` / `[seq]`), reply text must match, otherwise continue waiting
-  - `regex`: regular expression, reply text must match (either `pattern` or `regex`), otherwise continue waiting
-  - Returns the Event object of the user reply, returns None on timeout
+- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text", pattern=None, regex=None)` - Wait for a user reply
+  - `prompt`: Prompt message; sent to the user if provided
+  - `timeout`: Wait timeout in seconds, defaults to 60 seconds
+  - `callback`: Callback function executed when a reply is received
+  - `validator`: Validation function used to check whether the reply is valid
+  - `method`: Method used to send the prompt message, defaults to "Text"
+  - `pattern`: Glob wildcard (`*` / `?` / `[seq]`); the reply text must match, otherwise keep waiting
+  - `regex`: Regular expression; the reply text must match (choose either `pattern` or `regex`), otherwise keep waiting
+  - Returns the Event object of the user's reply; returns None on timeout
 
-#### Interactive Methods
+#### Interaction Methods
 
 - `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - Confirmation dialog
-  - Returns `True` (confirmed) / `False` (rejected) / `None` (timeout)
-  - Built-in Chinese and English confirmation words are automatically recognized, custom word sets can be provided
-  - `method`: send method, default "Text"; supports non-text methods like "Image"/"Markdown"
-  - `hint`: whether to automatically append confirmation word prompts at the end of the prompt (e.g., "(Yes/No)"), default False
+  - Returns `True` (confirmed) / `False` (denied) / `None` (timeout)
+  - Built-in auto-recognition of Chinese and English confirmation words; custom word sets are supported
+  - `method`: Send method, defaults to "Text"; non-text methods such as "Image"/"Markdown" are supported for sending the prompt
+  - `hint`: Whether to automatically append a confirmation-word hint at the end of the prompt (e.g., "(yes/no)"); defaults to False
 
-- `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - Selection menu
-  - `options`: list of option texts
-  - Returns the index of the option (0-based), returns `None` on timeout
-  - `method`: send method, default "Text"; text-based methods (Text/Markdown/md/Html/h5) automatically merge options to the end
-  - `options_format`: option format (default: "auto", automatically select built-in style based on method)
+- `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - Choice menu
+  - `options`: List of option texts
+  - Returns the option index (0-based); returns `None` on timeout
+  - `method`: Send method, defaults to "Text"; text-based methods (Text/Markdown/md/Html/h5) merge the options at the end by default
+  - `options_format`: Option format (default: "auto", automatically selects a built-in style based on method)
     - `"auto"`: Markdown → unordered list (`- 1. Option`), Html → ordered list (`<ol>`), others → plain text list
-    - `"list"`: one per line, e.g. ``1. Option A\n2. Option B``
-    - `"inline"`: display on a single line, e.g. ``1.A | 2.B``
+    - `"list"`: One per line, e.g. ``1. Option A\n2. Option B``
+    - `"inline"`: Single-line display, e.g. ``1.A | 2.B``
     - `"md"`: Markdown unordered list
     - `"html"`: Html ordered list
-    - `callable`: custom function, receives ``list[str]`` and returns ``str``
-  - `merge_prompt`: whether to force merge into a single message, default False
-    - `False` (default): text-based methods automatically merge; non-text methods send prompt first then Text options
-    - `True`: regardless of method, merge into a single message, sent using the specified method
-  - `placeholder`: option insertion placeholder, default `{options}`; the position of this marker in the prompt is replaced with option text, set to empty string to always append at the end
+    - `callable`: Custom function that receives ``list[str]`` and returns ``str``
+  - `merge_prompt`: Whether to force merging into a single message; defaults to False
+    - `False` (default): text-based methods merge automatically; non-text methods send the prompt first and then the options as Text
+    - `True`: merged into a single message regardless of method, sent with the user-specified method
+  - `placeholder`: Placeholder for inserting the options, defaults to `{options}`; positions in the prompt containing this marker are replaced with the option text; if set to an empty string, the options are always appended to the end
 
 - `collect(fields, timeout_per_field=60.0)` - Form collection
-  - `fields`: list of fields, each containing `key`, `prompt`, optional `validator`, optional `method`
-  - Returns `{key: value}` dictionary, returns `None` if any field times out
-  - Each field supports `method` key to specify send method, e.g., collecting images with `{"key": "avatar", "prompt": "Please send avatar", "method": "Image"}`
-  - Each field can have an optional `options` key (list), when provided, the field becomes a multiple-choice question (automatically calls `choose` logic)
-  - Each field can have optional `options_format`, `merge_prompt`, `placeholder` keys to control option format, message merge behavior, and placeholder
+  - `fields`: List of fields; each item contains `key`, `prompt`, an optional `validator`, and an optional `method`
+  - Returns a `{key: value}` dict; returns `None` if any field times out
+  - Each field supports a `method` key to specify the send method, e.g. use `{"key": "avatar", "prompt": "Please send an avatar", "method": "Image"}` when collecting an image
+  - Each field can have an optional `options` key (a list); when provided, the field becomes a multiple-choice question (the choose logic is invoked automatically)
+  - Each field can have optional `options_format`, `merge_prompt`, and `placeholder` keys to control the option format, message merging behavior, and placeholder
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - Wait for any event
-  - `condition`: filter function, returns `True` when matched
-  - Returns the matching Event object, returns `None` on timeout
+  - `condition`: Filter function; it matches when the function returns `True`
+  - Returns the matching Event object; returns `None` on timeout
 
-- `conversation(timeout=60.0)` - Create multi-turn conversation context
-  - Returns a `Conversation` object, supporting `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
-  - `is_active` property indicates whether the conversation is active
+- `conversation(timeout=60.0)` - Create a multi-turn conversation context
+  - Returns a `Conversation` object supporting `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
+  - The `is_active` property indicates whether the conversation is active
 
-#### Interactive Method Examples
+#### Interaction Method Examples
 
-**confirm() - Confirmation Dialog:**
+**confirm() - Confirmation dialog:**
 
 ```python
 @command("delete", help="Delete data")
 async def delete_handler(event: Event):
     if await event.confirm("Are you sure you want to delete all data?"):
         sdk.storage.delete("all_data")
-        await event.reply("Data has been deleted")
+        await event.reply("Data deleted")
     else:
         await event.reply("Cancelled")
 ```
 
-**confirm() - With Prompt Words:**
+**confirm() - With hint:**
 
 ```python
-# hint=True appends "（是/否）" at the end of the prompt
+# hint=True appends "(yes/no)" at the end of the prompt
 if await event.confirm("Continue?", hint=True):
     await event.reply("Continued")
-# User sees: Continue? (Yes/No)
+# What the user sees: Continue? (yes/no)
 ```
 
-**choose() - Selection Menu:**
+**choose() - Choice menu:**
 
 ```python
-@command("color", help="Choose color")
+@command("color", help="Choose a color")
 async def color_handler(event: Event):
     choice = await event.choose("Please choose a color:", ["Red", "Green", "Blue"])
     if choice is not None:
@@ -338,7 +338,7 @@ async def color_handler(event: Event):
         await event.reply(f"You chose: {colors[choice]}")
 ```
 
-**choose() - Option Formatting and Message Merging:**
+**choose() - Option formatting and message merging:**
 
 ```python
 # inline format: options displayed on the same line
@@ -350,11 +350,11 @@ choice = await event.choose("Please choose:", ["Cat", "Dog"],
     options_format=lambda opts: " / ".join(opts))
 # Output: Cat / Dog
 
-# options_format="auto" (default): automatically select built-in style based on method
+# options_format="auto" (default): automatically selects a built-in style based on method
 # Markdown → unordered list
 choice = await event.choose(
     "## Please choose", ["Cat", "Dog"],
-    method="Markdown",  # auto recognizes as md list
+    method="Markdown",  # auto recognizes it as an md list
 )
 # Output:
 # ## Please choose
@@ -364,7 +364,7 @@ choice = await event.choose(
 # Html → ordered list
 choice = await event.choose(
     "<h2>Please choose</h2>", ["Cat", "Dog"],
-    method="Html", merge_prompt=True,  # auto recognizes as html list
+    method="Html", merge_prompt=True,  # auto recognizes it as an html list
 )
 # Output:
 # <h2>Please choose</h2>
@@ -372,7 +372,7 @@ choice = await event.choose(
 
 # Merge mode + placeholder
 choice = await event.choose(
-    "## Please choose\n{options}\nPlease reply with number",
+    "## Please choose\n{options}\nPlease reply with a number",
     ["Cat", "Dog"],
     method="Markdown", merge_prompt=True,
 )
@@ -385,7 +385,7 @@ choice = await event.choose(
 )
 ```
 
-**collect() - Form Collection:**
+**collect() - Form collection:**
 
 ```python
 @command("register", help="Register")
@@ -399,56 +399,56 @@ async def register_handler(event: Event):
         await event.reply(f"Registration successful! {data['name']}, {data['age']} years old")
 ```
 
-**Non-Text Method Reply:**
+**reply with non-Text methods:**
 
 ```python
 await event.reply("http://example.com/img.jpg", method="Image")
 await event.reply("http://example.com/audio.mp3", method="Voice")
 
 from ErisPulse.Core.Event import MessageBuilder
-segments = MessageBuilder.text("Look at this image:").image("http://example.com/img.jpg").build()
+segments = MessageBuilder.text("Take a look at this image:").image("http://example.com/img.jpg").build()
 await event.reply_ob12(segments)
 ```
 
-> For complete Conversation multi-turn dialog usage, see [Conversation Multi-turn Dialog](../../advanced/conversation.md).
+> For complete multi-turn conversation usage, see [Conversation Multi-Turn Dialog](../../advanced/conversation.md).
 
 ### Command Information
 
 #### Command Basics
-- `get_command_name()` - Get command name
-- `get_command_args()` - Get command argument list
-- `get_command_raw()` - Get original command text
-- `get_command_info()` - Get full command info dictionary
+- `get_command_name()` - Get the command name
+- `get_command_args()` - Get the command argument list
+- `get_command_raw()` - Get the raw command text
+- `get_command_info()` - Get the full command info dictionary
 - `is_command()` - Whether it is a command
 
 ### Raw Data
 
-- `get_raw()` - Get raw platform event data
-- `get_raw_type()` - Get raw platform event type
+- `get_raw()` - Get the platform's raw event data
+- `get_raw_type()` - Get the platform's raw event type
 
 ### Platform Extension Methods
 
-Adapters can register platform-specific methods for the Event wrapper class. Methods are only available on Event instances of the corresponding platform, and accessing them on other platforms raises `AttributeError`.
+Adapters can register platform-specific methods on the Event wrapper class. These methods are only available on Event instances of the corresponding platform; accessing them from other platforms raises an `AttributeError`.
 
-Platform methods take precedence over built-in methods via `Event.__getattribute__`, allowing overwriting built-in interactive methods like `confirm`, `choose`, `collect`, `wait_reply` to provide platform-specific implementations (e.g., buttons, cards). Built-in implementations are exported as `_builtin_*` functions for overwriting.
+Platform methods take effect through `Event.__getattribute__` with higher priority than built-in methods, so they can override built-in interaction methods such as `confirm`, `choose`, `collect`, and `wait_reply` to provide platform-specific implementations (e.g., buttons, cards). The built-in implementations are exported as `_builtin_*` functions for overriders to call.
 
 ```python
-# Email event - only email methods
+# Email event - email methods only
 event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
-event.get_subject()      # ✅ Returns "Hello"
+event.get_subject()      # ✅ returns "Hello"
 event.get_chat_type()    # ❌ AttributeError
 
-# Telegram event - only Telegram methods
+# Telegram event - Telegram methods only
 event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
-event.get_chat_type()    # ✅ Returns "private"
+event.get_chat_type()    # ✅ returns "private"
 event.get_subject()      # ❌ AttributeError
 
 # Built-in methods are always available
-event.get_text()         # ✅ Any platform
-event.reply("hi")        # ✅ Any platform
+event.get_text()         # ✅ any platform
+event.reply("hi")        # ✅ any platform
 ```
 
-### Query Registered Methods
+### Querying Registered Methods
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
@@ -464,26 +464,33 @@ hasattr(event, "get_subject")   # Returns True only when platform="email"
 "get_subject" in dir(event)     # Same as above
 ```
 
-### Cross-platform Extension (Wildcard)
+### Cross-Platform Extensions (Wildcard)
 
-`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name, registering methods that are available on Event instances of **all platforms**. Suitable for AI dialogue, context management, and other features requiring cross-platform reuse.
+`register_event_method` and `register_event_mixin` accept `"*"` as the platform name, making the registered methods available on Event instances of **all platforms**. This suits features that need cross-platform reuse, such as AI chat and context management.
 
 ```python
 from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    # self is the Event instance, can access event data and built-in methods
+    # self is an Event instance; event data and built-in methods are accessible
     await self.reply(f"AI: {prompt}")
 ```
 
-After registration, `event.ai_chat(...)` can be called from any platform's event handler.
+After registration, event handlers on any platform can call `event.ai_chat(...)`.
 
-Method resolution priority (from high to low): platform-specific methods → wildcard methods → built-in methods → dictionary key access.
+Method resolution priority (from high to low): platform-specific methods → wildcard methods → built-in methods → dict key access.
 
-> Adapter developers should refer to [Event System API - Cross-platform Extension Wildcard](../../api-reference/event-system.md#跨平台扩展通配符) for how to register extension methods.
+> For how adapter developers register extension methods, see [Event System API - Cross-Platform Extensions](../../api-reference/event-system.md#cross-platform-extensions-wildcard).
 
 ## Related Documents
 
-- [Module Development Introduction](getting-started.md) - Create your first module
-- [Best Practices](best-practices.md) - Develop high-quality modules
+### Continue the Module Development Path
+
+- [Module Development Getting Started](getting-started.md) - Create your first module
+- [Module Best Practices](best-practices.md) - Develop high-quality modules
+
+### Deepen Interaction Capabilities
+
+- [Conversation Multi-Turn Dialog](../../advanced/conversation.md) - A complete session engine built on top of `wait_reply` (collection, validation, branching)
+- [Module Troubleshooting Guide](../module-troubleshooting.md) - Targeted troubleshooting when events get no response

@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "f26ba456c21cb9e6edb81134960f017a",
-  "file_hash": "f26ba456c21cb9e6edb81134960f017a",
-  "translated_at": "2026-09-29T05:41:34.118840",
+  "hash": "64ae44cb8932ed8aba9a58f0fdd48aba",
+  "file_hash": "64ae44cb8932ed8aba9a58f0fdd48aba",
+  "translated_at": "2026-10-22T12:35:28.517617",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "f08e5442af02b5a2e551ac73d8e9a0ae",
-      "translation": "# 適配器標準化轉換規範"
+      "hash": "69b4a722445a9609da8f1b71f63d2c23",
+      "translation": "# 適配器標準化轉換規範\n\n> [!TIP]\n> **什麼時候需要閱讀本文**：當你在適配器中將平台原生事件轉換為 OneBot12 標準事件時——確認必須欄位、訊息段結構、擴展欄位命名（`{platform}_` 前綴）、會話類型推斷時對照本文。不需要則跳過。"
     },
     {
       "hash": "5d1ce4e238cb26cc2bd6fdacc8859775",
@@ -46,8 +46,8 @@
       "translation": "## 9. notice / request 事件的會話類型推斷\n\n### 9.1 問題背景\n\nnotice 事件和 request 事件的 `detail_type` 是**語義子類型**（如 `group_member_increase`、`friend_increase`），而不是會話類型（如 `group`、`private`）。\n\n```\ntype        detail_type                  含義            會話類型\n────        ───────────                  ────            ────────\nmessage     group                        群聊訊息         group（detail_type 即會話類型）\nmessage     private                      私聊訊息         private（detail_type 即會話類型）\nnotice      group_member_increase        群成員增加       group（需從 group_id 推斷）\nnotice      friend_increase              好友增加         private（需從 user_id 推斷）\nrequest     friend                       好友請求         private（需從 user_id 推斷）\nrequest     group                        群請求           group（detail_type 即會話類型）\n```\n\n### 9.2 推斷規則\n\n`infer_receive_type()` 的推斷順序：\n\n1. 如果 `detail_type` 是已知會話類型（`private`/`group`/`channel`/`guild`/`thread`/`user`），直接使用\n2. 如果 `detail_type` 是自定義會話類型，直接使用\n3. 否則（notice/request 的語義子類型），根據 ID 字段推斷：\n   - 有 `group_id` → `\"group\"`\n   - 有 `channel_id` → `\"channel\"`\n   - 有 `guild_id` → `\"guild\"`\n   - 有 `thread_id` → `\"thread\"`\n   - 有 `user_id` → `\"private\"`\n\n### 9.3 `event.reply()` 目標推斷\n\nnotice/request 事件中 `event.reply()` 的發送目標由會話類型推斷決定：\n\n- 群通知事件（含 `group_id`）→ 回覆到**群**\n- 好友通知事件（僅含 `user_id`）→ 回覆到**用戶私聊**\n\n```python\nfrom ErisPulse.Core.Event import notice\n\n@notice.on_group_increase()\nasync def handle_welcome(event):\n    group_id = event.get(\"group_id\")    # \"group_789\"\n    user_id = event.get(\"user_id\")      # \"user_456\"\n\n    # event.reply() 發送到群（group/group_789）\n    await event.reply(\"歡迎入群！\")\n\n    # 如需通知管理員（私聊），顯式指定目標：\n    await adapter.Send.To(\"user\", \"admin_id\").Text(f\"新成員 {user_id} 加入了 {group_id}\")\n```\n\n### 9.4 適配器開發建議\n\n確保 notice/request 事件中包含正確的 ID 字段：\n\n| detail_type | 必須包含的 ID 字段 | 推斷的會話類型 |\n|-------------|-------------------|---------------|\n| `group_member_increase` | `group_id` + `user_id` | `group` |\n| `group_member_decrease` | `group_id` + `user_id` | `group` |\n| `friend_increase` | `user_id` | `private` |\n| `friend_decrease` | `user_id` | `private` |\n| `friend`（請求） | `user_id` | `private` |\n| `group`（請求） | `group_id` | `group` |"
     },
     {
-      "hash": "a55465b4e3da1c6434c7d16fcc7cf0a0",
-      "translation": "## 10. 相關文件\n\n- [各平台特性文件](../platform-guide/README.md) - 您可以訪問此文件以了解各平台特性以及已知的擴展事件和消息段等。\n- [會話類型標準](session-types.md) - 會話類型定義和映射關係\n- [發送方法規範](send-method-spec.md) - Send 類的方法命名、參數規範及反向轉換要求\n- [API 回應標準](api-response.md) - 適配器 API 回應格式標準\n- [API 動作標準](api-action-spec.md) - OneBot12 標準 API 動作的統一介面"
+      "hash": "3e42a226410c2c3446be9f4d56fb3d73",
+      "translation": "## 10. 相關文件\n\n**實作轉換器時的對照表**：\n- [會話類型標準](session-types.md) - 會話類型的定義和對應關係\n- [API 回應標準](api-response.md) - 適配器 API 回應格式的標準\n\n**同一適配器的發送端**：\n- [發送方法規範](send-method-spec.md) - Send 類的方法命名、參數規範及反向轉換的要求\n- [API 動作標準](api-action-spec.md) - OneBot12 標準 API 動作的統一介面\n\n**查詢各平台已知的擴展事件與訊息段**：\n- [各平台特性文件](../platform-guide/README.md) - 您可以訪問此文件來了解各個平台的特性以及已知的擴展事件和訊息段等。"
     }
   ]
 }

@@ -1,6 +1,9 @@
 # 部署指南
 
-将 ErisPulse 机器人部署到生产环境的最佳实践。
+> [!TIP]
+> **什么时候需要读这篇**：机器人要长期挂着跑时——Docker 部署、systemd / Supervisor 进程守护、反向代理与 SSL、备份与升级都在这里。本地开发调试阶段不需要则跳过。
+
+机器人开发完只是开始。这篇覆盖把它稳定挂在服务器上所需的三种部署方式（Docker / systemd / Supervisor），以及反向代理、安全加固与备份。
 
 ## Docker 部署（推荐）
 
@@ -42,8 +45,8 @@ services:
 ```yaml
 services:
   erispulse:
-    image: erispulse/erispulse:latest
-    container_name: erispulse
+    image: erispulse/erispulse:${ERISPULSE_TAG:-latest}
+    container_name: ${CONTAINER_NAME:-erispulse}
     ports:
       - "${ERISPULSE_PORT:-8000}:8000"
     volumes:
@@ -52,19 +55,30 @@ services:
       - ./config/.packages:/usr/local/lib/python3.13/site-packages
     environment:
       - TZ=${TZ:-Asia/Shanghai}
+      - LANG=${LANG:-en_US.UTF-8}
+      - ERISPULSE_LANG=${ERISPULSE_LANG:-}
       - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
     init: true
+    # 优雅停机由框架内信号处理完成（SIGTERM），此处仅控制宽限时长
     stop_grace_period: 30s
-    restart: unless-stopped
+    restart: on-failure:5
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ping')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
 ```
 
-> 推荐直接使用仓库根目录的 [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml)，它已包含上述配置及健康检查、时区与语言环境变量。
+> 以上与仓库根 [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml) 保持一致（仓库版本头部另有镜像加速与环境变量说明注释），推荐直接下载使用。
 
 ### 环境变量
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
 | `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |
+| `ERISPULSE_TAG` | `latest` | 镜像 tag（如需锁定版本可设为具体版本号） |
+| `CONTAINER_NAME` | `erispulse` | 容器名（多实例部署时区分实例） |
 | `ERISPULSE_DASHBOARD_TOKEN` | 自动生成 | Dashboard 登录令牌（强烈建议设置） |
 | `TZ` | `Asia/Shanghai` | 时区 |
 | `LANG` | `en_US.UTF-8` | 系统语言，自动检测启动界面语言 |
@@ -115,7 +129,7 @@ Dashboard 集成了模块商店功能，你可以：
 
 ErisPulse 的硬重启（`sdk.hard_restart()`）依赖**外部监督者**在进程退出码为 42 时重新拉起进程——SDK 自己不拉起新进程。生产环境务必配置监督者，否则硬重启后进程不会自动恢复：
 
-- Docker：`restart: unless-stopped`（任何退出码都会重启，含 42）
+- Docker：官方 compose 使用 `restart: on-failure:5`——非零退出码即重启（覆盖硬重启的退出码 42），连续 5 次上限防死循环；需要不限次数可自行改为 `unless-stopped`
 - systemd：`Restart=on-failure` + `RestartForceExitStatus=42`
 - PM2 / supervisord：将 42 加入可重启退出码
 - 纯 Python 自定义监督者：循环 `Popen` + 检测 `returncode == 42`
@@ -131,7 +145,7 @@ SDK 内置健康检查端点：
 curl http://localhost:8000/health
 ```
 
-Docker 健康检查可在 `docker-compose.yml` 中添加：
+官方 docker-compose.yml 已内置以下健康检查；自写 compose 文件时可参考：
 
 ```yaml
 services:
@@ -276,7 +290,7 @@ epsdk run main.py
 3. **保护数据目录**：`config/` 目录包含配置和数据库，设置适当的文件权限
 4. **定期更新**：使用 `epsdk self-update` 或拉取最新 Docker 镜像
 5. **不要以 root 运行**：手动部署时创建专用用户
-6. **使用 Docker 重启策略**：`restart: unless-stopped` 确保异常退出后自动重启
+6. **使用 Docker 重启策略**：官方 compose 的 `restart: on-failure:5` 已确保异常退出（含硬重启退出码 42）后自动重启
 
 ## 多实例部署
 
@@ -340,3 +354,9 @@ tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
 # 或在 Dashboard 中使用「备份」功能导出
 ```
+
+## 下一步
+
+- **部署完想可视化管理**：装 [ErisPulse-Dashboard](../ecosystem/dashboard.md)，浏览器里管模块、看日志、改配置
+- **怀疑环境有问题**：先跑 `epsdk doctor` 输出健康报告，见 [CLI 命令参考 · doctor](cli-reference.md#doctor)
+- **要调框架与组件配置**：查 [配置文件说明](configuration.md)，环境变量覆盖尤其适合容器部署

@@ -1,0 +1,41 @@
+{
+  "version": 2,
+  "hash": "a6b62f516649e34b8b9dadf9be62a207",
+  "file_hash": "a6b62f516649e34b8b9dadf9be62a207",
+  "translated_at": "2026-10-22T14:17:40.463062",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "df4e9c9d4a815d0a4640347217ce3719",
+      "translation": "# 術語表（唯一真相源）\n\n> [!TIP]\n> **什麼時候需要讀這篇**：寫文件 / 改文件時拿不準一個概念該叫什麼，或發現兩篇文件對同一概念說法不一致時。不需要則跳過。\n\n本表收斂 ErisPulse 文件中曾經多處不一致的核心概念。每個術語只給一個**正式名**、一組**中英對照**與一段**歷史別名說明**；正文與其它文件衝突時，以本表為準，並請順手修正衝突文件。\n\n收錄原則：\n\n- 只收「歷史上叫法漂移過、或中英混用易歧義」的概念；純程式碼識別碼（如 `BaseModule`）不加收錄\n- 每條定義均先在 `docs/zh-TW` 全庫與原始碼中 grep 驗證過實際用法，定義與主流用法一致\n- 文件內首次出現時給全稱（中文 + 括注英文），後續用簡稱\n\n---"
+    },
+    {
+      "hash": "4a6192936913e2f6b06db21afcc79519",
+      "translation": "## 1. Client 與 HttpClient\n\n| 項目 | 內容 |\n|------|------|\n| 正式名稱 | `Client`（基底類別 `BaseClient`） |\n| 中英對照 | Client（統一 HTTP/WS 用戶端） |\n| 歷史別名 | `HttpClient`（2.8.0 前類別名稱，保留相容別名）；`BaseHttpClient`（2.8.0 前基底類別名稱，保留相容別名） |\n\n**唯一定義**：統一 HTTP/WS 用戶端，透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 用戶端與 ErisPulse 例外體系。2.8.0 起類別名稱由 `HttpClient` 更名為 `Client`，**`sdk.client` 屬性名稱不變**。\n\n**文件寫法**：一律寫 `Client`；僅在「舊程式碼遷移 / 相容」語境提及 `HttpClient`，並括注「相容別名」。定義出處見 [http-client](../advanced/http-client.md) 與 [架構總覽](../architecture.md)。"
+    },
+    {
+      "hash": "230b4b5f13332723801cec21ca8638d4",
+      "translation": "## 2. storage、env 與 StorageManager\n\n| 項 | 內容 |\n|------|------|\n| 正式名 | 實例：`storage`（類型 `BaseStorage`）；基底類別：`BaseStorage` |\n| 中英對照 | storage（儲存）；StorageManager（儲存管理器，舊類別名） |\n| 歷史別名 | `env`（v1 遺留別名，= 同一實例）；`StorageManager`（多後端重構前 SQLite 實作的原類別名，現為 `SQLiteStorage` 的相容別名） |\n\n**唯一定義**：執行時儲存透過實例 `storage` 存取（`sdk.storage` 或 `from ErisPulse import storage`），具體後端由 `ErisPulse.storage.backend` 設定調度（預設 sqlite，可切換 mysql / postgres），三後端 API 一致。\n\n**文件寫法**：描述「儲存系統 / 儲存能力」用「儲存（storage）」；指類型寫 `BaseStorage`；指具體後端寫 `SQLiteStorage` / `MySQLStorage` / `PostgresStorage`。`StorageManager` **只是 SQLite 實作類別的相容舊名**，不代表儲存系統整體，新文件不使用；`env` 是 v1 遺留別名（同一實例），僅存量舊程式碼相容，文件與範例一律用 `sdk.storage`。定義出處見 [儲存後端](../advanced/storage-backends.md) 與 [SQL 建構器](../advanced/sql-builder.md)。"
+    },
+    {
+      "hash": "51175dbcd7ee5916d077c1cbf495dcb1",
+      "translation": "## 3. BaseConfig 與 AdapterConfig（含 ui / webui 元資料鍵）\n\n| 項目 | 內容 |\n|------|------|\n| 正式名稱 | 配置基底類別：`BaseConfig`；欄位控制項配置鍵：`\"ui\"` |\n| 中英對照 | BaseConfig（宣告式配置基底類別）；AdapterConfig（舊名，相容別名） |\n| 歷史別名 | `AdapterConfig`（= `BaseConfig` 的向後相容別名）；`\"webui\"` 欄位元資料鍵（舊名，仍相容） |\n\n**唯一定義**：`BaseConfig` 是通用宣告式配置基底類別，適用於配接器、模組、外部專案等任何場景（配置類別以巢狀類別 `ConfigClass` 宣告掛到模組 / 配接器上）。欄位 `metadata` 中 WebUI 控制項配置鍵的正式名稱是 `\"ui\"`；讀取優先順序為 `\"ui\"` > `\"webui\"`，`\"webui\"` 僅為相容舊程式碼而保留。\n\n**文件寫法**：一律寫 `BaseConfig` 與 `\"ui\"`。注意區分：範例程式碼裡 `MyAdapterConfig` 這類名稱是**開發者自己為配置子類別命名的習慣**，與 `AdapterConfig` 別名無關。定義出處見 [配接器基礎概念](../developer-guide/adapters/core-concepts.md) 與 [模組基礎概念](../developer-guide/modules/core-concepts.md)。"
+    },
+    {
+      "hash": "c573b3f9d8d04f9b887f0ece2f75acc0",
+      "translation": "## 4. 作用域（scope）三維\n\n| 項目 | 內容 |\n|------|------|\n| 正式名稱 | 整體：作用域（scope）；三維：**模組維度 / 身分維度 / 出站維度** |\n| 中英對照 | module dimension（模組維度）、identity dimension（身分維度）、outbound dimension（出站維度） |\n| 歷史別名 | 無舊名，但歷史上出現過「權限系統 / 黑白名單系統」等不準確的泛稱 |\n\n**唯一定義**（對應原始碼 `Core/scope.py` 的三個判定入口）：\n\n- **模組維度**：某個上下文裡哪些模組可用——`scope.is_allowed`，綁定三級：平台 / Bot / 會話（優先順序 會話 > Bot > 平台）\n- **身分維度**：誰的事件收不收（事件准入）——`scope.is_identity_allowed`，策略四級：使用者 / 會話 / Bot / 配接器（取最具體者）\n- **出站維度**：模組能向外做什麼（出站動作限制）——`scope.is_action_allowed`，預設全允許、明確收緊才禁，支援方法級細粒度\n\n**文件寫法**：三個維度名固定用「模組維度 / 身分維度 / 出站維度」，不用「模組過濾 / 身分驗證 / 動作限制」等變體作正式名稱；文件中的 ①②③ 編號只是行文標記，不屬於名稱。黑白名單僅是模組維度配置的一種形態，不用它指稱整個作用域系統。定義出處見 [作用域（scope）](../advanced/scope.md)。"
+    },
+    {
+      "hash": "a11895d1cb19bb4ad1994133cd88c53b",
+      "translation": "## 5. owner / 歸屬權 / owner 上下文\n\n| 項 | 內容 |\n|------|------|\n| 正式名 | 系統名：**歸屬權（owner）系統**；機制名：**owner 上下文** |\n| 中英對照 | ownership（歸屬權）、owner context（owner 上下文）、`current_owner`（當前歸屬者） |\n| 歷史別名 | 中英混用：文件中「歸屬權」「owner」曾交替指同一系統 |\n\n**唯一定義**：歸屬權是模組「即插即用」的基石——模組在 owner 上下文中註冊的一切框架資源（任務、連線、定時器、翻譯域等）自動記名，模組卸載時統一回收。**owner 上下文**指模組程式碼執行期間由框架記錄的當前歸屬者（`current_owner` 上下文變數），資源在該上下文內建立即歸屬當前模組；上下文不可用時（如工具執行緒回呼）應顯式傳入 `owner` 參數。統一回收門面為 `ErisPulse.Core.ownership`。\n\n**文件寫法**：中文行文用「歸屬權」，系統名首次出現寫全「歸屬權（owner）系統」；程式碼識別字與上下文機制名保留英文（owner 上下文、`current_owner`、`owner_scope`）。不用「所有權」「屬主」等譯法。定義出處見 [歸屬權（owner）系統](../advanced/ownership.md)。"
+    },
+    {
+      "hash": "fd2b9599d882e6b1c0340336ea042d68",
+      "translation": "## 6. module.call 三詞邊界：服務契約 / 服務目錄 / 服務白名單\n\n| 項目 | 內容 |\n|------|------|\n| 機制名稱 | **服務契約**（`meta.services` 宣告端） |\n| 介面名稱 | **服務目錄**（`sdk.module.services()` 查詢端） |\n| 描述性詞彙 | **服務白名單**（僅描述宣告後的收緊語義，不作機制標題） |\n\n**唯一定義**：\n\n- **服務契約（meta.services）**：模組作者在 `get_meta()` 的 `services` 欄位宣告對外可呼叫的方法——契約的**宣告端**。未宣告時任意公開方法皆可呼叫（向後相容），宣告後呼叫面收緊、越界時拋出 `ServiceNotProvidedError`\n- **服務目錄（services()）**：`sdk.module.services()` 執行時期查詢介面，列出已顯式宣告契約的模組及其方法簽名與介紹——契約的**消費端**視圖，為 MCP 化（呼叫點暴露給 AI）提供資料基礎\n- **服務白名單**：只用來**描述**「宣告後僅白名單內方法可呼叫」這一語義的行文詞彙，不作為機制或介面的名稱出現在標題中\n\n一句話邊界：**作者宣告稱為契約，執行時期查詢稱為目錄，「白名單」只描述收緊語義**。定義出處見 [模組間通訊](../advanced/module-communication.md) 與 [核心模組 API](../api-reference/core-modules.md)。\n\n---"
+    },
+    {
+      "hash": "7bf01fabe78e749a5267ba227b54f4b5",
+      "translation": "## 相關頁面\n\n- [註解風格規範](docstring.md) - docstring 內特殊標籤的寫法與解析契約\n- [文件與對外寫作規則](docs-writing.md) - 術語之外的行文與結構規範"
+    }
+  ]
+}

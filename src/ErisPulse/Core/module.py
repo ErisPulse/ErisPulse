@@ -6,6 +6,8 @@ ErisPulse 模块系统
 
 import asyncio
 import inspect
+import time
+import traceback
 import warnings
 from typing import Any, TypeVar
 
@@ -25,6 +27,7 @@ from .constants import (
     DEFAULT_MODULE_ENABLED,
     EVENT_MODULE_RELOAD,
     MODULE_SOURCE_PLUGIN_FOLDER,
+    MODULE_SOURCE_RUNTIME,
 )
 from .di import call_with_depends, call_with_depends_sync
 from .i18n import i18n
@@ -49,68 +52,6 @@ class ModuleManager(ManagerBase):
     {!--< /tips >!--}
     """
 
-    # 已记录过的弃用警告（owner, old_kwarg），每个组合只警告一次，避免热路径日志刷屏
-    _DEPRECATED_KWARG_WARNED: set[tuple[str, str]] = set()
-
-    @staticmethod
-    def _warn_deprecated_kwarg(owner: str, old: str, new: str) -> None:
-        """
-        {!--< internal-use >!--}
-        当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
-
-        :param owner: 所属方法名（如 "ModuleManager.get"）
-        :param old: 已弃用的旧参数名
-        :param new: 推荐使用的新参数名
-        """
-        key = (owner, old)
-        if key in ModuleManager._DEPRECATED_KWARG_WARNED:
-            return
-        ModuleManager._DEPRECATED_KWARG_WARNED.add(key)
-        logger.warning(
-            i18n.t(
-                "core.deprecated.kwarg",
-                owner=owner,
-                old=old,
-                new=new,
-            )
-        )
-
-    @staticmethod
-    def _is_subclass(klass: type, base_cls: type) -> bool:
-        try:
-            if issubclass(klass, base_cls):
-                return True
-        except TypeError:
-            pass
-        if base_cls.__name__ == klass.__name__:
-            return False
-        for parent in klass.__mro__:
-            if parent.__name__ == base_cls.__name__ and parent.__module__ == base_cls.__module__:
-                return True
-        return False
-
-    @staticmethod
-    def _unload_timeout() -> float:
-        """
-        {!--< internal-use >!--}
-        读取模块 on_unload 优雅收尾的超时（秒）
-
-        复用 ``ErisPulse.framework.uninit_timeout`` 配置（反初始化流程的统一超时预算，
-        整体仍有 uninit 的 wait_for 兜底）；未配置或非法时回退常量默认值。
-
-        :return: 超时秒数（>0）
-        """
-        from ..runtime import get_framework_config
-        from .constants import DEFAULT_UNINIT_TIMEOUT_SECS
-
-        try:
-            value = get_framework_config().get("uninit_timeout")
-            if isinstance(value, (int, float)) and value > 0:
-                return float(value)
-        except Exception:
-            pass
-        return float(DEFAULT_UNINIT_TIMEOUT_SECS)
-
     def __init__(self):
         # 模块存储
         self._modules: dict[str, Any] = {}  # 已加载的模块实例
@@ -119,25 +60,12 @@ class ModuleManager(ManagerBase):
         self._module_info: dict[str, dict] = {}  # 模块信息
         self._lazy_modules: dict[str, Any] = {}  # 懒加载代理（未触发初始化时 get() 返回它）
         self._module_services: dict[str, list[dict[str, Any]] | None] = {}  # meta.services 契约缓存（load 时解析，规范化 dict 列表）
-        self._sdk = None
+        self._last_errors: dict[str, dict] = {}  # load 失败现场（last_error / get_info.last_error 消费）
+        self._module_activity: dict[str, float] = {}  # 模块活跃时间戳（休眠清扫判定用）
+        self._dormant_after: dict[str, float] = {}  # 休眠阈值（秒；initialize_modules 挂载时解析 dormant_after）
+        self._dormancy_sweeper_started = False  # 休眠清扫器防重入标记
         # 注册配置变更路由：将 config.set / config.updated 事件转发到各模块的 on_config_update
         self._register_config_change_routing()
-
-    def set_sdk_ref(self, sdk) -> bool:
-        """
-        设置 SDK 引用
-
-        :param sdk: SDK 实例
-        :return: bool 是否设置成功
-        """
-        try:
-            self._sdk = sdk
-            return True
-        except Exception as e:
-            from .logger import logger
-
-            logger.error(i18n.t("core.module.set_sdk_failed", error=e))
-            return False
 
     # ==================== 配置变更路由 ====================
 
@@ -195,12 +123,13 @@ class ModuleManager(ManagerBase):
         :param module_name: 模块名称
         """
         self.unregister_lazy(module_name)
-        sdk_dict = getattr(self.sdk_ref(), "__dict__", {})
-        if module_name in sdk_dict:
-            try:
-                del sdk_dict[module_name]
-            except Exception:
-                pass
+        if self.sdk_ref() is not None:
+            sdk_dict = getattr(self.sdk_ref(), "__dict__", {})
+            if module_name in sdk_dict:
+                try:
+                    del sdk_dict[module_name]
+                except Exception:
+                    pass
 
     @staticmethod
     def _resolve_config_key(instance: Any) -> str:
@@ -318,6 +247,23 @@ class ModuleManager(ManagerBase):
         self._module_classes[module_name] = module_class
         if module_info:
             self._module_info[module_name] = module_info
+        else:
+            # 运行时注册（无加载器组装的 moduleInfo）：合成最小元信息——
+            # top_level 由定义模块推导，使运行时注册的模块同样纳入热重载体系
+            self._module_info[module_name] = {
+                "meta": self._synthesize_runtime_meta(module_name, module_class),
+                "module_class": module_class,
+            }
+
+        # 登记模块加载器的重载快照：注册即可重载（此前仅 loader.load() 写入
+        # _last_module_objs，运行时注册模块 reload 会报 reload_unknown）。
+        # loader 未就绪（SDK 早期注册）时跳过，行为与旧版一致。
+        loader = getattr(self.sdk_ref(), "_module_loader", None) if self.sdk_ref() else None
+        if loader is not None:
+            try:
+                self._register_reload_snapshot(loader, module_name, module_class)
+            except Exception:
+                pass
 
         # 触发模块注册事件
         lifecycle.emit_sync(
@@ -330,6 +276,58 @@ class ModuleManager(ManagerBase):
 
         logger.info(i18n.t("core.module.registered", name=module_name))
         return True
+
+    @staticmethod
+    def _synthesize_runtime_meta(module_name: str, module_class: type) -> dict[str, Any]:
+        """
+        {!--< internal-use >!--}
+        为运行时注册的模块合成最小 meta（来源标记 / top_level / 定义模块）
+
+        ``top_level`` 取定义模块 ``__module__`` 的顶层段（与 sdk 层推导规则
+        一致），供 reload 清理 ``sys.modules`` 使用；描述 / 版本 / 作者字段
+        从 ``get_meta()`` 尽力补全（不可用则省略）。
+        """
+        meta: dict[str, Any] = {
+            "name": module_name,
+            "source": MODULE_SOURCE_RUNTIME,
+            "top_level": [module_class.__module__.split(".")[0]],
+            "defining_module": module_class.__module__,
+            "is_base_module": ModuleManager._is_subclass(module_class, BaseModule),
+        }
+        try:
+            m = module_class.get_meta()
+            for field_name in ("description", "version", "author"):
+                value = getattr(m, field_name, None)
+                if value:
+                    meta.setdefault(field_name, value)
+        except Exception:
+            pass
+        return meta
+
+    def _register_reload_snapshot(self, loader: Any, module_name: str, module_class: type) -> None:
+        """
+        {!--< internal-use >!--}
+        运行时注册后同步登记模块加载器的重载快照条目
+
+        快照条目为模块类定义所在的模块对象（``sys.modules`` 项），并为其
+        挂载合成 moduleInfo（若尚无）——reload 编排经该条目读取 meta 与
+        top_level。定义模块不可用或已被占用 moduleInfo 时回退为轻量命名
+        空间载体（reload 仅读取 ``__name__`` 与 ``moduleInfo``）。
+        """
+        import sys
+
+        objs = getattr(loader, "_last_module_objs", None)
+        if objs is None:
+            return
+        info = self._module_info.get(module_name) or {}
+        defining = sys.modules.get(module_class.__module__)
+        if defining is not None and not hasattr(defining, "moduleInfo"):
+            defining.moduleInfo = info  # type: ignore[attr-defined]
+            objs[module_name] = defining
+            return
+        from types import SimpleNamespace
+
+        objs[module_name] = SimpleNamespace(__name__=module_class.__module__, moduleInfo=info)
 
     def register_lazy(self, name: str, lazy_proxy: Any) -> None:
         """
@@ -399,7 +397,10 @@ class ModuleManager(ManagerBase):
                 if p.name != "self" and p.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
             ]
 
-            sdk_to_use = self.sdk_ref()
+            if (sdk_to_use := self.sdk_ref()) is None:
+                from .. import sdk
+
+                sdk_to_use = sdk
 
             token = current_owner.set(module_name)
             try:
@@ -430,9 +431,13 @@ class ModuleManager(ManagerBase):
                         await call_with_depends(instance.on_load, {"module_name": module_name})
                     except Exception as e:
                         logger.error(i18n.t("core.module.on_load_failed", name=module_name, error=e))
+                        self._record_load_error(module_name, e)
                         # 半卸载：on_load 半途注册的资源（处理器/路由/任务/i18n）
                         # 不回收会成为"有主孤儿"（实例从未进入注册表，purge 无从追踪）
                         await self._half_unload_failed_module(module_name, instance)
+                        # 失败自清洗：失败模块的 import 缓存没有保留价值，
+                        # 保证「改完代码再 load / reload」必定读到磁盘新代码
+                        self._cleanup_failed_module_cache(module_name)
                         return False
             finally:
                 current_owner.reset(token)
@@ -442,6 +447,20 @@ class ModuleManager(ManagerBase):
             self._loaded_modules.add(module_name)
             # 解析并缓存 meta.services 服务契约（模块间调用白名单）
             self._module_services[module_name] = self._resolve_services(module_name)
+
+            # 加载成功：清除失败现场；记录运行身份（stale 判定与重载后身份核对依据）；
+            # 初始化活跃时间戳（休眠清扫判定起点）
+            self._last_errors.pop(module_name, None)
+            self._module_activity[module_name] = time.monotonic()
+            try:
+                meta = (self._module_info.get(module_name) or {}).get("meta") or {}
+                instance._code_identity = (
+                    module_class.__module__,
+                    id(module_class),
+                    meta.get("version"),
+                )
+            except Exception:
+                pass
 
             # 冷启动事件回放（get_load_strategy(replay="5m") 声明时）：
             # 模块就绪后从会话收件箱回放最近消息，热插拔进进行中的聊天
@@ -485,10 +504,14 @@ class ModuleManager(ManagerBase):
                 data={
                     "module_name": module_name,
                     "success": False,
+                    "error": repr(e),
+                    "traceback": traceback.format_exc(),
                 },
                 msg=i18n.t("core.module.systemexit", name=module_name, code=e.code),
             )
             logger.error(i18n.t("core.module.systemexit", name=module_name, code=e.code))
+            self._record_load_error(module_name, e)
+            self._cleanup_failed_module_cache(module_name)
             return False
         except Exception as e:
             # 半卸载：构造成功但后续阶段（moduleInfo 注入 / i18n 预注册 /
@@ -498,11 +521,15 @@ class ModuleManager(ManagerBase):
                     await self._half_unload_failed_module(module_name, instance)
                 except Exception:
                     pass
+            self._record_load_error(module_name, e)
+            self._cleanup_failed_module_cache(module_name)
             await lifecycle.submit_event(
                 "module.load",
                 data={
                     "module_name": module_name,
                     "success": False,
+                    "error": repr(e),
+                    "traceback": traceback.format_exc(),
                 },
                 msg=i18n.t(
                     "core.module.load_failed",
@@ -545,6 +572,7 @@ class ModuleManager(ManagerBase):
         *,
         module_name: str | None = None,
         purge: bool = False,
+        reason: str = "unload",
     ) -> bool:
         """
         卸载指定模块或所有模块
@@ -565,6 +593,9 @@ class ModuleManager(ManagerBase):
         :param name: 模块名称，None表示卸载所有模块（默认None）
         :param module_name: [已弃用] 兼容旧关键字参数，等同 name
         :param purge: 是否一并删除注册存根并清理 sys.modules（默认 False）
+        :param reason: 卸载来意标注，透传给 ``on_before_unload`` 钩子与
+                 ``module.before_unload`` 事件（``"unload"`` / ``"reload"`` /
+                 ``"disable"`` / ``"cascade"``；框架内部使用，常规调用保持默认）
         :return: 是否卸载成功
 
         :example:
@@ -583,7 +614,7 @@ class ModuleManager(ManagerBase):
             # 卸载所有模块
             success = True
             for loaded_name in list(self._loaded_modules):
-                if not await self._unload_single_module(loaded_name):
+                if not await self._unload_single_module(loaded_name, reason=reason):
                     success = False
                 if purge:
                     purge_refs.append(self._purge_module_stub(loaded_name))
@@ -609,11 +640,11 @@ class ModuleManager(ManagerBase):
             # 最深层的间接依赖者先卸载，保证每个模块卸载时其依赖仍可用
             for dep_name in reversed(dependents):
                 if dep_name in self._loaded_modules or dep_name in self._lazy_modules:
-                    if not await self._unload_single_module(dep_name):
+                    if not await self._unload_single_module(dep_name, reason="cascade"):
                         success = False
                     if purge:
                         purge_refs.append(self._purge_module_stub(dep_name))
-            if not await self._unload_single_module(module_name):
+            if not await self._unload_single_module(module_name, reason=reason):
                 success = False
             if purge:
                 purge_refs.append(self._purge_module_stub(module_name))
@@ -633,37 +664,149 @@ class ModuleManager(ManagerBase):
         )
         return success
 
-    async def reload(self, name: str, *, full: bool = False) -> bool:
+    async def sleep(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
-        热重载单个模块（支持任意来源：本地插件 / PyPI 安装包）
+        归眠指定模块（懒加载休眠）
 
-        经模块加载器完整执行 卸载旧实例 → 清理注册与 ``sys.modules`` 缓存 →
-        重新发现/导入 → 重新注册并加载 流程；依赖该模块的模块会**级联重载**。
-        本地插件（``plugins/`` 目录）来源重扫描插件目录；PyPI 安装包来源
+        与 unload 的差异：释放运行时资源（on_unload / 归属任务 / 连接 /
+        注册资源），但**保留懒加载代理与注册存根**——模块回到"已注册未
+        加载"状态（与从未激活不可区分），下次属性访问 / ``module.call`` /
+        ``activate_on`` 事件将透明唤醒（重新实例化并 on_load）。
+
+        归眠前触发 ``on_before_unload``（reason=``"dormant"``），模块可借
+        此把状态保存到 storage，唤醒后在 ``on_load`` 中恢复。自动归眠需在
+        加载策略中声明 ``get_load_strategy(dormant_after="30m")``；任何已
+        加载模块均可手动归眠。
+
+        :param name: 模块名称
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
+        :return: 是否归眠成功（未加载/未注册返回 True——无事可做）
+
+        :example:
+        >>> await module.sleep("HeavyTool")   # 闲置归眠，释放资源
+        """
+        if module_name is not None:
+            self._warn_deprecated_kwarg("ModuleManager.sleep", "module_name", "name")
+            name = module_name
+        if name is None or name not in self._loaded_modules:
+            return True
+        success = await self._unload_single_module(name, reason="dormant", sleep=True)
+        self._module_activity.pop(name, None)
+        return success
+
+    def touch_activity(self, module_name: str) -> None:
+        """
+        {!--< internal-use >!--}
+        记录模块活跃时间戳（休眠清扫判定用）
+
+        埋点位置：事件处理器调用（Core/Event/base._invoke_handler）、
+        命令执行（Core/Event/command）、``module.call`` 目标解析。
+
+        :param module_name: 模块注册名
+        """
+        self._module_activity[module_name] = time.monotonic()
+
+    def _ensure_dormancy_sweeper(self) -> None:
+        """
+        {!--< internal-use >!--}
+        确保休眠清扫器后台循环已启动（幂等；无休眠声明时不启动）
+        """
+        if self._dormancy_sweeper_started or not self._dormant_after:
+            return
+        self._dormancy_sweeper_started = True
+        from ..runtime.tasks import spawn_background
+
+        spawn_background(self._dormancy_sweep_loop())
+
+    async def _dormancy_sweep_loop(self) -> None:
+        """
+        {!--< internal-use >!--}
+        休眠清扫循环：按固定间隔扫描已加载且声明 dormant_after 的模块，
+        闲置超阈值即自动归眠（uninit 时随后台任务统一取消）
+        """
+        from .constants import MODULE_DORMANCY_SWEEP_INTERVAL_SECS
+
+        while True:
+            await asyncio.sleep(MODULE_DORMANCY_SWEEP_INTERVAL_SECS)
+            try:
+                await self._dormancy_sweep()
+            except asyncio.CancelledError:
+                raise
+            except Exception as e:
+                logger.warning(f"dormancy sweep failed: {e}")
+
+    async def _dormancy_sweep(self) -> None:
+        """
+        {!--< internal-use >!--}
+        单轮休眠扫描：对闲置超过阈值的已加载模块自动归眠
+
+        依赖方策略：不级联、不跳过——懒模块的依赖方经由持久代理
+        （``sdk.<Name>``）/ ``module.call`` 访问，归眠后与"从未激活"不可
+        区分，唤醒路径照常生效。
+        """
+        now = time.monotonic()
+        for name, threshold in list(self._dormant_after.items()):
+            if name not in self._loaded_modules:
+                continue
+            last_active = self._module_activity.get(name)
+            if last_active is None:
+                self._module_activity[name] = now
+                continue
+            idle = now - last_active
+            if idle < threshold:
+                continue
+            logger.info(
+                i18n.t(
+                    "loader.module.dormant_sweep",
+                    name=name,
+                    idle=int(idle),
+                    threshold=int(threshold),
+                )
+            )
+            await self.sleep(name)
+
+    async def reload(self, name: str, *, full: bool = True) -> bool:
+        """
+        热重载单个模块（支持任意来源：本地插件 / 运行时注册 / PyPI 安装包）
+
+        经模块加载器完整执行 语法预检 → 卸载旧实例 → 清理注册与
+        ``sys.modules`` 缓存（按顶层包名 + ``invalidate_caches``，默认全量）
+        → 重新发现/导入 → 重新注册并加载 流程；依赖该模块的模块会**级联
+        重载**并默认重导代码。本地插件（``plugins/`` 目录）来源重扫描插件
+        目录；运行时注册来源按定义模块重导并按类名重取；PyPI 安装包来源
         重新查询 entry-point 并重导入模块代码（pip 升级后调用即可生效）。
 
-        ``full=True`` 启用全量重载：``sys.modules`` 清理名单在元数据之外
-        叠加旧模块对象顶层包名（元数据缺失也能彻底刷新 import 缓存），
-        且依赖者模块同样重导代码。
+        ``full=False`` 切换为**轻量重载**：仅按元数据清理 ``sys.modules``，
+        PyPI 依赖者卸载后直接重新实例化——仅供超大依赖树的性能敏感场景。
 
-        :param name: 模块名（entry-point 名称或插件名）
-        :param full: 是否全量重载（默认 False）
+        :param name: 模块名（entry-point 名称、插件名或运行时注册名）
+        :param full: 是否全量重载（默认 True；False 为轻量逃生门）
         :return: 是否重载成功（SDK 未初始化时返回 False）
 
         :example:
         >>> await sdk.module.reload("dice")      # 本地插件
-        >>> await sdk.module.reload("Weather")   # PyPI 安装包模块
-        >>> await sdk.module.reload("Weather", full=True)  # 全量重载
+        >>> await sdk.module.reload("MyRuntime") # 运行时注册模块
+        >>> await sdk.module.reload("Weather")   # PyPI 安装包模块（默认全量）
         """
-        sdk = self.sdk_ref()
-        loader = getattr(sdk, "_module_loader", None)
+        loader = getattr(self.sdk_ref(), "_module_loader", None) if self.sdk_ref() else None
         if loader is None:
             logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return False
-        success = await loader.reload_module(name, self, sdk, full=full)
-        await lifecycle.emit(
-            EVENT_MODULE_RELOAD, {"module_name": name, "success": success, "full": full}
-        )
+        started = time.monotonic()
+        success = await loader.reload_module(name, self, self.sdk_ref(), full=full)
+        payload: dict[str, Any] = {
+            "module_name": name,
+            "success": success,
+            "full": full,
+            "duration_ms": int((time.monotonic() - started) * 1000),
+        }
+        # 加载器回填的重载明细（身份是否变化 / 版本迁移），透传给事件载荷
+        details = getattr(loader, "_last_reload_details", None)
+        if isinstance(details, dict):
+            for key in ("identity_changed", "version_old", "version_new"):
+                if key in details:
+                    payload[key] = details[key]
+        await lifecycle.emit(EVENT_MODULE_RELOAD, payload)
         return success
 
     async def reload_all(self) -> "dict[str, bool]":
@@ -682,12 +825,11 @@ class ModuleManager(ManagerBase):
         :example:
         >>> await sdk.module.reload_all()
         """
-        sdk = self.sdk_ref()
-        loader = getattr(sdk, "_module_loader", None)
+        loader = getattr(self.sdk_ref(), "_module_loader", None) if self.sdk_ref() else None
         if loader is None:
             logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return {}
-        results = await loader.reload_all(self, sdk)
+        results = await loader.reload_all(self, self.sdk_ref())
         await lifecycle.emit(
             EVENT_MODULE_RELOAD,
             {
@@ -698,12 +840,59 @@ class ModuleManager(ManagerBase):
         )
         return results
 
-    async def _unload_single_module(self, module_name: str) -> bool:
+    async def _run_before_unload(self, module_name: str, instance: Any, reason: str, timeout: float) -> None:
         """
         {!--< internal-use >!--}
-        卸载单个模块
+        触发卸载前钩子与 ``module.before_unload`` 事件（卸载/禁用流水线第一步）
+
+        先广播事件（第三方状态管家模块可观测），再调用实例可选钩子
+        ``on_before_unload(event)``——event 携带 ``module_name`` 与 ``reason``
+        （``"reload"`` / ``"unload"`` / ``"disable"`` / ``"cascade"``）。
+        任一失败仅告警，不阻塞后续卸载流程（与 on_unload 容忍语义一致）。
+
+        :param module_name: 模块注册名
+        :param instance: 模块实例（可为 None——仅广播事件）
+        :param reason: 卸载来意
+        :param timeout: 钩子优雅执行超时（秒）
+        """
+        try:
+            await lifecycle.emit(
+                "module.before_unload",
+                data={"module_name": module_name, "reason": reason},
+            )
+        except Exception:
+            pass
+        if instance is None or not hasattr(instance, "on_before_unload"):
+            return
+        import asyncio
+
+        try:
+            await asyncio.wait_for(
+                call_with_depends(
+                    instance.on_before_unload,
+                    {"module_name": module_name, "reason": reason},
+                ),
+                timeout=timeout,
+            )
+        except asyncio.TimeoutError:
+            logger.warning(
+                i18n.t("core.module.on_unload_timeout", name=module_name, timeout=timeout)
+            )
+        except Exception as e:
+            logger.warning(
+                i18n.t("core.module.on_before_unload_failed", name=module_name, error=e)
+            )
+
+    async def _unload_single_module(
+        self, module_name: str, *, reason: str = "unload", sleep: bool = False
+    ) -> bool:
+        """
+        {!--< internal-use >!--}
+        卸载单个模块（``sleep=True`` 时为归眠：释放资源但保留懒加载代理）
 
         :param module_name: 模块名称
+        :param reason: 卸载来意（透传给 on_before_unload 钩子与 before_unload 事件）
+        :param sleep: 归眠模式——保留懒加载代理与注册存根，模块回到"已注册未加载"状态
         :return: 是否卸载成功
         """
         # 模块未加载，返回 True（表示没有需要卸载的模块，这不是错误）。
@@ -718,8 +907,13 @@ class ModuleManager(ManagerBase):
         try:
             import asyncio
 
-            unload_timeout = self._unload_timeout()
+            unload_timeout = self._shutdown_timeout()
             instance = self._modules.get(module_name)
+
+            # 卸载前钩子：流水线第一步（先于 on_unload 与任务取消 / 连接关闭）——
+            # 模块借此把状态保存到 storage 等介质；reason 标注来意
+            await self._run_before_unload(module_name, instance, reason, unload_timeout)
+
             if instance and hasattr(instance, "on_unload"):
                 try:
                     # 优雅收尾超时保护：on_unload 卡死不再阻塞卸载/级联/重载/uninit
@@ -783,12 +977,46 @@ class ModuleManager(ManagerBase):
             # 清理模块在加载上下文内注册的全部框架资源（unload / disable 共用）
             self._cleanup_module_registrations(module_name)
 
-            sdk_dict = getattr(self.sdk_ref(), "__dict__", {})
-            if module_name in sdk_dict:
-                try:
-                    del sdk_dict[module_name]
-                except Exception:
-                    pass
+            if sleep:
+                # 归眠模式：保留身份（懒代理 + 注册存根），仅移除运行实例——
+                # 与"从未激活"不可区分，下次访问走既有懒初始化路径透明复活
+                self._modules.pop(module_name, None)
+                self._loaded_modules.discard(module_name)
+                proxy = self._lazy_modules.get(module_name)
+                if proxy is not None:
+                    # 经 type() 取方法：代理会把非下划线属性转发给实例，
+                    # 实例上不存在 reset_for_sleep，直接 getattr 会漏掉重置
+                    reset_for_sleep = getattr(type(proxy), "reset_for_sleep", None)
+                    if reset_for_sleep is not None:
+                        try:
+                            reset_for_sleep(proxy)
+                        except Exception:
+                            pass
+                    # sdk 属性若被真实实例覆盖（重载路径），换回代理保持透明
+                    if self.sdk_ref() is not None:
+                        sdk_dict = getattr(self.sdk_ref(), "__dict__", {})
+                        if sdk_dict.get(module_name) is not proxy:
+                            try:
+                                setattr(self.sdk_ref(), module_name, proxy)
+                            except Exception:
+                                pass
+                elif self.sdk_ref() is not None:
+                    # 无代理（如运行时注册模块）：移除 sdk 属性，恢复未加载语义
+                    getattr(self.sdk_ref(), "__dict__", {}).pop(module_name, None)
+                await lifecycle.submit_event(
+                    "module.sleep",
+                    msg=i18n.t("loader.module.dormant_sleep", name=module_name),
+                    data={"module_name": module_name, "success": True},
+                )
+                return True
+
+            if self.sdk_ref() is not None:
+                sdk_dict = getattr(self.sdk_ref(), "__dict__", {})
+                if module_name in sdk_dict:
+                    try:
+                        del sdk_dict[module_name]
+                    except Exception:
+                        pass
 
             del self._modules[module_name]
             self._loaded_modules.discard(module_name)
@@ -817,6 +1045,51 @@ class ModuleManager(ManagerBase):
             logger.error(i18n.t("core.module.unload_failed", name=module_name, error=e))
             return False
 
+    def _record_load_error(self, module_name: str, e: BaseException) -> None:
+        """
+        {!--< internal-use >!--}
+        记录模块加载失败现场（``last_error()`` / ``get_info().last_error`` 消费）
+
+        :param module_name: 模块注册名
+        :param e: 失败异常
+        """
+        self._last_errors[module_name] = {
+            "exception": repr(e),
+            "traceback": traceback.format_exc(),
+            "at": time.time(),
+        }
+
+    def _cleanup_failed_module_cache(self, module_name: str) -> None:
+        """
+        {!--< internal-use >!--}
+        加载失败后的缓存自清洗
+
+        失败模块的 ``sys.modules`` 条目没有任何保留价值——主动弹出并刷新
+        插件路径记录，保证「改完代码再 load / reload 一次」必定读到磁盘
+        新代码，而不是复用失败存根 + 旧 import 缓存的组合。不影响注册表
+        中已登记的模块类（重新 load 无需重新 register）。
+        """
+        import sys
+
+        purge_names = {module_name}
+        meta = (self._module_info.get(module_name) or {}).get("meta") or {}
+        for n in meta.get("top_level") or []:
+            # 守卫：__main__ / 无源文件的命名空间不可清除（存在重执行入口
+            # 脚本的风险），仅清理可安全重建的 import 缓存
+            if n == "__main__" or getattr(sys.modules.get(n), "__file__", None) is None:
+                continue
+            purge_names.add(n)
+        for mod_name in list(sys.modules):
+            if any(mod_name == n or mod_name.startswith(f"{n}.") for n in purge_names):
+                sys.modules.pop(mod_name, None)
+        loader = getattr(self.sdk_ref(), "_module_loader", None) if self.sdk_ref() else None
+        plugin_loader = getattr(loader, "_plugin_loader", None) if loader is not None else None
+        if plugin_loader is not None:
+            try:
+                getattr(plugin_loader, "_loaded_paths", {}).pop(module_name, None)
+            except Exception:
+                pass
+
     async def _half_unload_failed_module(self, module_name: str, instance: Any) -> None:
         """
         {!--< internal-use >!--}
@@ -838,14 +1111,14 @@ class ModuleManager(ManagerBase):
             try:
                 await asyncio.wait_for(
                     call_with_depends(instance.on_unload, {"module_name": module_name}),
-                    timeout=self._unload_timeout(),
+                    timeout=self._shutdown_timeout(),
                 )
             except asyncio.TimeoutError:
                 logger.warning(
                     i18n.t(
                         "core.module.on_unload_timeout",
                         name=module_name,
-                        timeout=self._unload_timeout(),
+                        timeout=self._shutdown_timeout(),
                     )
                 )
             except Exception as e:
@@ -962,9 +1235,8 @@ class ModuleManager(ManagerBase):
         """
         from .shadow import shadow_manager
 
-        sdk = self.sdk_ref()
-        loader = getattr(sdk, "_module_loader", None)
-        return await shadow_manager.promote(module_name, self, sdk, loader)
+        loader = getattr(self.sdk_ref(), "_module_loader", None) if self.sdk_ref() else None
+        return await shadow_manager.promote(module_name, self, self.sdk_ref(), loader)
 
     async def dismiss_shadow(self, module_name: str) -> bool:
         """
@@ -1328,9 +1600,22 @@ class ModuleManager(ManagerBase):
         if module_name not in self._loaded_modules:
             # 即使模块尚未实例化（懒加载代理），也要清理代理与 SDK 属性
             self._cleanup_lazy(module_name)
+            # 与 unload 对等：禁用同样通知依赖方（on_dependency_lost 契约含"禁用"）
+            lifecycle.fire(
+                "module.unload",
+                data={"module_name": module_name, "success": True},
+            )
             return True
 
         instance = self._modules.get(module_name)
+        if instance is not None:
+            # 卸载前钩子（禁用来意）：先于 on_unload 派发；disable 为同步
+            # 入口，此处以后台任务并行触发（创建顺序在前，尽力而为保序）
+            from ..runtime.tasks import spawn_background
+
+            spawn_background(
+                self._run_before_unload(module_name, instance, "disable", self._shutdown_timeout())
+            )
         if instance and hasattr(instance, "on_unload"):
             from ..runtime.owner_cleanup import run_owner_cleanups
             from ..runtime.tasks import cancel_owner_tasks, spawn_background
@@ -1362,7 +1647,7 @@ class ModuleManager(ManagerBase):
                     """异步 on_unload：完成后兜底取消（与 unload 时序一致）"""
                     import asyncio
 
-                    unload_timeout = self._unload_timeout()
+                    unload_timeout = self._shutdown_timeout()
                     try:
                         await asyncio.wait_for(
                             call_with_depends(instance.on_unload, {"module_name": module_name}),
@@ -1402,18 +1687,24 @@ class ModuleManager(ManagerBase):
         # 含 master provider / 适配器处理器 / 自定义会话类型等，保持卸载对等）
         self._cleanup_module_registrations(module_name)
 
-        sdk_dict = getattr(self.sdk_ref(), "__dict__", {})
-        if module_name in sdk_dict:
-            try:
-                del sdk_dict[module_name]
-            except Exception:
-                pass
+        if self.sdk_ref() is not None:
+            sdk_dict = getattr(self.sdk_ref(), "__dict__", {})
+            if module_name in sdk_dict:
+                try:
+                    del sdk_dict[module_name]
+                except Exception:
+                    pass
 
         if module_name in self._modules:
             del self._modules[module_name]
         self._loaded_modules.discard(module_name)
         # 同步移除懒加载代理，保持与 SDK 属性被删除的状态一致
         self.unregister_lazy(module_name)
+        # 与 unload 对等：禁用同样通知依赖方（on_dependency_lost 契约含"禁用"）
+        lifecycle.fire(
+            "module.unload",
+            data={"module_name": module_name, "success": True},
+        )
         return True
 
     def unregister(self, name: str | None = None, *, module_name: str | None = None) -> bool:
@@ -1495,6 +1786,11 @@ class ModuleManager(ManagerBase):
         # 清除服务契约缓存
         self._module_services.clear()
 
+        # 清除休眠状态（活跃时间戳 / 阈值 / 清扫器标记）
+        self._module_activity.clear()
+        self._dormant_after.clear()
+        self._dormancy_sweeper_started = False
+
         logger.debug(i18n.t("core.module.cleared"))
 
     def list_items(self) -> dict[str, bool]:
@@ -1512,13 +1808,45 @@ class ModuleManager(ManagerBase):
                 items[name] = self.is_enabled(name)
         return items
 
+    def last_error(self, name: str | None = None, *, module_name: str | None = None) -> dict | None:
+        """
+        查询模块最近一次加载失败现场
+
+        ``load()`` 失败（构造 / on_load 异常 / SystemExit）时记录异常对象、
+        完整 traceback 与时间戳；下次加载成功后自动清除。失败详情同时随
+        ``get_info()`` 以 ``last_error`` 字段暴露——RPC / 编程调用方直接
+        取用，无需翻日志文件。
+
+        :param name: 模块名称
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
+        :return: 失败现场字典 ``{"exception", "traceback", "at"}``，无记录返回 None
+
+        :example:
+        >>> await module.load("X")  # doctest: +SKIP
+        False
+        >>> module.last_error("X")["exception"]  # doctest: +SKIP
+        "AttributeError('...')"
+        """
+        if module_name is not None:
+            self._warn_deprecated_kwarg("ModuleManager.last_error", "module_name", "name")
+            name = module_name
+        if name is None:
+            return None
+        return self._last_errors.get(name)
+
     def get_info(self, name: str | None = None, *, module_name: str | None = None) -> dict | None:
         """
         获取模块信息
 
+        返回值为注册元信息的浅拷贝，附加运行时诊断字段：
+
+        - ``last_error``：最近一次加载失败现场（见 :meth:`last_error`）
+        - ``running_identity``：实际在跑的代码身份（``{"module", "version"}``）
+        - ``stale``：注册版本 ≠ 运行版本时为 True（"改了代码忘 reload" 一眼可见）
+
         :param name: 模块名称
         :param module_name: [已弃用] 兼容旧关键字参数，等同 name
-        :return: 模块信息字典，不存在则返回None
+        :return: 模块信息字典（含诊断字段），不存在则返回None
 
         :example:
         >>> info = module.get_info("MyModule")
@@ -1528,7 +1856,23 @@ class ModuleManager(ManagerBase):
             name = module_name
         if name is None:
             return None
-        return self._module_info.get(name)
+        info = self._module_info.get(name)
+        if info is None:
+            return None
+        # 浅拷贝附加诊断字段，避免污染注册表原数据
+        result = dict(info)
+        last_error = self._last_errors.get(name)
+        if last_error is not None:
+            result["last_error"] = last_error
+        instance = self._modules.get(name)
+        identity = getattr(instance, "_code_identity", None) if instance is not None else None
+        if identity is not None:
+            result["running_identity"] = {"module": identity[0], "version": identity[2]}
+            registered_version = (info.get("meta") or {}).get("version")
+            result["stale"] = bool(
+                registered_version and identity[2] and registered_version != identity[2]
+            )
+        return result
 
     def get_meta(
         self,
@@ -1715,11 +2059,20 @@ class ModuleManager(ManagerBase):
         modules_summary = {}
         for name in self._module_classes:
             module_class = self._module_classes[name]
-            modules_summary[name] = {
+            entry: dict[str, Any] = {
                 "status": "loaded" if name in self._loaded_modules else "registered",
                 "enabled": self.is_enabled(name),
                 "is_base_module": self._is_subclass(module_class, BaseModule),
+                "failed": name in self._last_errors,
             }
+            instance = self._modules.get(name)
+            identity = getattr(instance, "_code_identity", None) if instance is not None else None
+            if identity is not None:
+                registered_version = ((self._module_info.get(name) or {}).get("meta") or {}).get("version")
+                entry["stale"] = bool(
+                    registered_version and identity[2] and registered_version != identity[2]
+                )
+            modules_summary[name] = entry
 
         # 补充配置中存在但未加载的模块（被禁用的模块），方便管理界面显示并开启
         config_status = config.getConfig(CONFIG_KEY_MODULES_STATUS, {})
@@ -1915,7 +2268,7 @@ class ModuleManager(ManagerBase):
 
             records = _transcript.recent(seconds)
         except Exception as e:
-            logger.trace(i18n.t("loader.module.replay_failed", name=module_name, error=e))
+            logger.warning(i18n.t("loader.module.replay_failed", name=module_name, error=e))
             return
         if not records:
             return
@@ -1928,7 +2281,7 @@ class ModuleManager(ManagerBase):
             try:
                 delivered += await _message.handler.dispatch_to_owner(module_name, synth)
             except Exception as e:
-                logger.trace(i18n.t("loader.module.replay_failed", name=module_name, error=e))
+                logger.warning(i18n.t("loader.module.replay_failed", name=module_name, error=e))
                 break
         if delivered:
             logger.info(
@@ -2321,6 +2674,8 @@ class ModuleManager(ManagerBase):
 
         # 执行：owner 归因到目标模块（与命令执行语义一致——执行谁的代码归因谁），
         # 调用方身份保留在 current_caller，供被调方识别调用来源
+        # （同时记录活跃时间戳：休眠清扫判定）
+        self._module_activity[module_name] = time.monotonic()
         owner_token = current_owner.set(module_name)
         caller_token = current_caller.set(caller)
         try:

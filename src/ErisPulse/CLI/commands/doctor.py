@@ -7,7 +7,7 @@ Doctor 命令实现
 import asyncio
 import platform
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from rich.table import Table
@@ -37,7 +37,7 @@ class DoctorCommand(Command):
         py_exec, _py_source = resolve_target_python()
         self.package_manager = PackageManager(python_executable=py_exec)
 
-    def add_arguments(self, parser: ArgumentParser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--verbose",
             action="store_true",
@@ -49,7 +49,7 @@ class DoctorCommand(Command):
             help=i18n.t("cli.doctor.fix_help"),
         )
 
-    def execute(self, args):
+    def execute(self, args: Namespace) -> None:
         rows, failed, fix_context = self._collect_diagnosis()
         self._print_report(rows, failed)
 

@@ -17,10 +17,13 @@ import time
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 from ...Core.i18n import i18n
 from ...Core.logger import logger
+
+# 入口点发现子进程的超时（秒）：finders 为最底层，常量就近定义避免反向依赖 Core
+_DISCOVER_TIMEOUT_SECS: Final[float] = 30.0
 
 
 class _RemoteDist:
@@ -37,7 +40,7 @@ class _RemoteDist:
         self._summary = summary
 
     @property
-    def metadata(self):
+    def metadata(self) -> dict:
         """模拟 Distribution.metadata，提供 Summary 等字段的查询"""
         return {"Summary": self._summary}
 
@@ -69,7 +72,7 @@ class _RemoteEntryPoint:
             else None
         )
 
-    def load(self):
+    def load(self) -> Any:
         """
         加载 entry-point 引用对象
 
@@ -199,7 +202,7 @@ class BaseFinder(ABC):
             result = subprocess.run(
                 [self._python_executable, "-c", script],
                 capture_output=True,
-                timeout=30,
+                timeout=_DISCOVER_TIMEOUT_SECS,
                 text=True,
                 check=False,
             )

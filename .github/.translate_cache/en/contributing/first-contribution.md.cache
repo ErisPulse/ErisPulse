@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "565995d6a25a4f2b25d3b031fa9ce045",
-  "file_hash": "565995d6a25a4f2b25d3b031fa9ce045",
-  "translated_at": "2026-09-07T10:58:43.189133",
+  "hash": "5f5c9860c1d17a821d463a11d566c671",
+  "file_hash": "5f5c9860c1d17a821d463a11d566c671",
+  "translated_at": "2026-10-22T10:26:05.400871",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "0975bf0f258d8a8b68e3282b6546aede",
-      "translation": "# First Contribution in Practice\n\n> It's normal to feel uncertain when submitting your first PR. This tutorial breaks the entire process into several small steps—just follow along. If you encounter any issues, feel free to ask in Issues or Discussions. No one will say anything about your questions being \"too basic.\" What matters most is that you're moving forward.\n\nThis article uses the example of \"adding an i18n translation key\" because it involves the smallest change and is the easiest to complete successfully. However, the same process applies to other types of contributions as well."
+      "hash": "18f3d99ec5fc247fbe48912b8c6f5164",
+      "translation": "# Hands-On Guide to Your First Contribution\n\n> [!TIP]\n> **When to read this**: When you're about to submit your first Pull Request—every step from fork to merge comes with commands you can copy and paste directly. If you already have PR experience and just want to check the repository guidelines, head straight to [CONTRIBUTING.md](../../../CONTRIBUTING.md).\n\n> It's perfectly normal to feel a little unsure when submitting your first PR. This tutorial breaks the whole process down into a few small steps—just follow along. If you run into any problems along the way, feel free to ask in Issues or Discussions—no one will call you out for asking something \"too basic\"; what people really care about is that you're moving forward.\n\nThis guide uses \"adding an i18n translation key\" as its example, since it involves the smallest change and is the easiest to get working end to end. That said, the same workflow applies to other types of contributions as well."
     },
     {
       "hash": "56c84b7550c88246177ca08639b1c2f0",
@@ -30,8 +30,8 @@
       "translation": "## 4. Make Changes\n\nTo add a new translation key as an example, suppose you need to add the phrase `mymodule.hello`.\n\nThere is only one rule: **When adding a new translation key, you must add it in all five languages (zh-CN / en / zh-TW / ja / ru)**, otherwise users of other languages will see missing content.\n\nOpen the five files under `src/ErisPulse/Core/i18n/locales/` and add one line to each:\n\n```python\n# zh_cn.py\n\"mymodule.hello\": \"你好\",\n# en.py\n\"mymodule.hello\": \"Hello\",\n# zh_tw.py\n\"mymodule.hello\": \"你好\",\n# ja.py\n\"mymodule.hello\": \"こんにちは\",\n# ru.py\n\"mymodule.hello\": \"Привет\",\n```\n\n> If this change involves new public methods, remember to add documentation comments. See [Documentation Comment Guidelines](../styleguide/docstring.md) for details."
     },
     {
-      "hash": "ce2d8c1b3717035e6622b693c0b3b818",
-      "translation": "## 5. Local Validation\n\n```bash\nuv run ruff check .            # Code style check\nuv run basedpyright src/ErisPulse   # Type checking (only needed if you modified the source code) - you might encounter hundreds of warnings (just ignore them... hehe.. hehehe)\nuv run pytest -m unit -q       # Run tests\n```\n\nPassing all three checks is sufficient. The `reportAny` / `Unknown*` warnings in type checking are due to \"types still being gradually improved\" and won't block merging.\n\n> If you modify core modules (Bases / runtime / config / loaders), it's recommended to add corresponding test cases for easier future maintenance."
+      "hash": "94ac1c8ee0a0f882d8e0513e7ff66b8c",
+      "translation": "## 5. Local Verification\n\n```bash\nuv run ruff check .            # Code style check\nuv run basedpyright src/ErisPulse   # Type check (only needed if you modified source code)\nuv run pytest -m unit -q       # Run tests\n```\n\nAll three passing is enough. The type check may report some warnings like `reportAny` / `Unknown*` (type annotations are still being gradually improved); these **do not block merging**, so there's no need to eliminate them one by one. However, real type errors (e.g., return types not matching annotations, incompatible parameter types, or accessing attributes on potentially `None` values) will be escalated to errors, and CI will block them—those must be fixed.\n\n> If you have modified core modules (Bases / runtime / config / loaders), it's recommended to add a corresponding test case along the way to make future maintenance easier."
     },
     {
       "hash": "c69d4e370187ea1cd428a473c242f1c9",
@@ -52,6 +52,10 @@
     {
       "hash": "dc910191dd5f7638b5598d76b837c62f",
       "translation": "## Possible Issues\n\n**How long will it take for someone to review my PR?**  \nIt usually takes a few days. Maintainers will leave review comments, and you can make adjustments as needed and push again.\n\n**The code check failed?**  \nFirst, try `uv run ruff check . --fix`, which can automatically fix most issues.\n\n**There is a conflict with the main repository?**  \nUse `git pull upstream Develop/v2`, resolve the conflicts, and then push again.\n\n**Can I directly submit to `main`?**  \nNo, all changes must go through `Develop/v2`, and then maintainers will release them to `main` collectively."
+    },
+    {
+      "hash": "baa52511c091fb60d35cfa6535d1cd5c",
+      "translation": "## Next Steps\n\n### Want to Stay Involved\n\n- [Contributing to ErisPulse](README.md) - All ways to contribute: documentation / translation / bugs / modules / adapters and more\n\n### Want to Develop Modules or Adapters\n\n- [Module Development Getting Started](../developer-guide/modules/getting-started.md)\n- [Adapter Development Getting Started](../developer-guide/adapters/getting-started.md)\n- [Publishing and Module Store Guide](../developer-guide/publishing.md)"
     }
   ]
 }

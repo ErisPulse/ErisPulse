@@ -216,7 +216,7 @@ class MyModule(BaseModule):
 ---
 
 
-##### `spawn(coro)`
+##### `spawn(coro: Any) -> Any`
 
 调度一个归属于本模块的后台任务（推荐的任务创建方式）
 
@@ -282,7 +282,7 @@ async def on_load(self, event):
 ---
 
 
-##### `cfg`（property）
+##### `cfg -> Any`（property）
 
 类型安全的配置对象（实时读取）
 
@@ -296,14 +296,14 @@ async def on_load(self, event):
 ---
 
 
-##### `cfg(value)`
+##### `cfg(value: Any) -> None`
 
 设置配置实例，同时同步写入配置存储（保证实时性）
 
 ---
 
 
-##### `on_config_update(old_config, new_config)`
+##### `on_config_update(old_config: Any, new_config: Any) -> None`
 
 配置变更回调（可选实现）
 

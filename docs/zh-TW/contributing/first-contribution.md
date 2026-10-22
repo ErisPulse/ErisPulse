@@ -1,8 +1,11 @@
 # 首次貢獻實戰
 
-> 第一次提交 PR 難免會有些不確定，這很正常。這篇教程把整個過程拆成了幾個小步驟，跟著走就行。中間遇到任何問題都可以在 Issue 或 Discussions 裡問——沒有人會因為你的問題「太基礎」而說什麼，大家更在意的是你在往前走。
+> [!TIP]
+> **何時需要閱讀本文**：準備提交你的第一個 Pull Request 時——從 fork 到合併的每一步都有可以直接複製的命令。如果你已有 PR 經驗，只想查閱倉庫規範，直接看 [CONTRIBUTING.md](../../../CONTRIBUTING.md)。
 
-本文用「補一個 i18n 翻譯鍵」當例子，因為它修改最小、最容易跑通。不過同樣的流程，對其他類型的貢獻也適用。
+> 第一次提交 PR 時難免會有些不確定，這很正常。這篇教程將整個過程拆分成幾個小步驟，跟著做即可。過程中遇到任何問題都可以在 Issue 或 Discussions 裡詢問——沒有人會因為你的問題「太基礎」而說什麼，大家更在意的是你是否在前進。
+
+本文以「補一個 i18n 翻譯鍵」為例，因為它修改最小、最容易跑通。不過同樣的流程，對其他類型的貢獻也適用。
 
 ## 準備工作
 
@@ -78,11 +81,11 @@ git checkout -b docs/add-hello-translation
 
 ```bash
 uv run ruff check .            # 代碼風格檢查
-uv run basedpyright src/ErisPulse   # 類型檢查（修改了原始碼才需要） - 你可能會遇到幾百個 warning（不用在意忽略就可以...嘻..嘻嘻）
+uv run basedpyright src/ErisPulse   # 類型檢查（修改了原始碼才需要）
 uv run pytest -m unit -q       # 執行測試
 ```
 
-只要這三條都通過即可。類型檢查中那些 `reportAny` / `Unknown*` 警告屬於「類型系統仍在逐步完善中」，不會阻礙合併。
+只要這三條都通過即可。類型檢查可能會產生一些 `reportAny` / `Unknown*` 類的 warning（類型註解仍在逐步完善），這些**不會阻斷合併**，無需逐一消除；但真實的類型錯誤（例如返回類型與註解不符、參數類型不兼容、對可能為 `None` 的值取屬性）會被提升為 error，CI 會攔截——這種情況就需要修復。
 
 > 如果修改了核心模組（Bases / runtime / config / loaders），建議順手補上對應的測試用例，方便後續維護。
 
@@ -145,3 +148,15 @@ epsdk create    # 選擇 module 或 adapter
 
 **能直接提到 `main` 嗎？**  
 不行，所有更改都走 `Develop/v2`，再由維護者統一發布到 `main`。
+
+## 下一步
+
+### 想持續參與
+
+- [為 ErisPulse 貢獻](README.md) - 文件 / 翻譯 / Bug / 模組 / 適配器等全部貢獻方式
+
+### 想開發模組或適配器
+
+- [模組開發入門](../developer-guide/modules/getting-started.md)
+- [適配器開發入門](../developer-guide/adapters/getting-started.md)
+- [發佈與模組商店指南](../developer-guide/publishing.md)

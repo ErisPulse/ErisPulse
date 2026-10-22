@@ -29,7 +29,7 @@ ErisPulse 请求处理模块
 #### 方法列表
 
 
-##### `on_request(priority: int = 0)`
+##### `on_request(priority: int = 0) -> Callable`
 
 通用请求事件装饰器
 
@@ -62,7 +62,7 @@ ErisPulse 请求处理模块
 ---
 
 
-##### `on_friend_request(priority: int = 0)`
+##### `on_friend_request(priority: int = 0) -> Callable`
 
 好友请求事件装饰器
 
@@ -84,7 +84,7 @@ ErisPulse 请求处理模块
 ---
 
 
-##### `on_group_request(priority: int = 0)`
+##### `on_group_request(priority: int = 0) -> Callable`
 
 群邀请请求事件装饰器
 

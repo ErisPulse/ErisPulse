@@ -3,7 +3,7 @@
 ## 基本資訊
 - 模組名稱: `ErisPulse-WechatMpAdapter`
 - 平台標識: `mp`（別名: `wechat_mp`）
-- 模組版本: 4.1.0
+- 模組版本: 4.3.0
 - 維護者: ErisPulse
 - 依賴: `cryptography`
 

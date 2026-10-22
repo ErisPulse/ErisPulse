@@ -61,7 +61,7 @@ class HttpRequest:
         return self._request.method
 
     @property
-    def url(self):
+    def url(self) -> Any:
         """
         完整请求 URL
 
@@ -70,7 +70,7 @@ class HttpRequest:
         return self._request.url
 
     @property
-    def base_url(self):
+    def base_url(self) -> Any:
         """
         基础 URL
 
@@ -79,7 +79,7 @@ class HttpRequest:
         return self._request.base_url
 
     @property
-    def headers(self):
+    def headers(self) -> Any:
         """
         请求头 (大小写不敏感)
 
@@ -88,7 +88,7 @@ class HttpRequest:
         return self._request.headers
 
     @property
-    def query_params(self):
+    def query_params(self) -> Any:
         """
         查询参数
 
@@ -115,7 +115,7 @@ class HttpRequest:
         return self._request.cookies
 
     @property
-    def client(self):
+    def client(self) -> Any:
         """
         客户端地址
 
@@ -124,7 +124,7 @@ class HttpRequest:
         return self._request.client
 
     @property
-    def state(self):
+    def state(self) -> Any:
         """
         请求级状态存储
 
@@ -133,7 +133,7 @@ class HttpRequest:
         return self._request.state
 
     @property
-    def app(self):
+    def app(self) -> Any:
         """
         ASGI 应用实例
 
@@ -178,7 +178,7 @@ class HttpRequest:
         return self._request.user
 
     @property
-    def raw(self):
+    def raw(self) -> Any:
         """
         底层框架原生 Request 对象
 
@@ -204,7 +204,7 @@ class HttpRequest:
         """
         return await self._request.json()
 
-    async def form(self, **kwargs):
+    async def form(self, **kwargs) -> Any:
         """
         解析表单数据
 
@@ -214,7 +214,7 @@ class HttpRequest:
         """
         return await self._request.form(**kwargs)
 
-    async def stream(self):
+    async def stream(self) -> Any:
         """
         流式读取请求体
 
@@ -236,7 +236,7 @@ class HttpRequest:
         """
         return await self._request.is_disconnected()
 
-    def url_for(self, name: str, /, **path_params: Any):
+    def url_for(self, name: str, /, **path_params: Any) -> Any:
         """
         根据路由名反向生成 URL
 
@@ -313,7 +313,7 @@ class WebSocketConnection(WebSocketConnectionBase):
     # ---- Server-specific properties ----
 
     @property
-    def base_url(self):
+    def base_url(self) -> Any:
         """
         基础 URL
 
@@ -322,7 +322,7 @@ class WebSocketConnection(WebSocketConnectionBase):
         return self._ws.base_url
 
     @property
-    def query_params(self):
+    def query_params(self) -> Any:
         """
         查询参数
 
@@ -349,7 +349,7 @@ class WebSocketConnection(WebSocketConnectionBase):
         return self._ws.cookies
 
     @property
-    def client(self):
+    def client(self) -> Any:
         """
         客户端地址
 
@@ -358,7 +358,7 @@ class WebSocketConnection(WebSocketConnectionBase):
         return self._ws.client
 
     @property
-    def state(self):
+    def state(self) -> Any:
         """
         连接级状态存储
 
@@ -367,7 +367,7 @@ class WebSocketConnection(WebSocketConnectionBase):
         return self._ws.state
 
     @property
-    def app(self):
+    def app(self) -> Any:
         """
         ASGI 应用实例
 
@@ -482,7 +482,7 @@ class WebSocketConnection(WebSocketConnectionBase):
 
     # ---- Low-level ----
 
-    async def receive(self):
+    async def receive(self) -> dict:
         """
         低级 ASGI receive
 
@@ -493,7 +493,7 @@ class WebSocketConnection(WebSocketConnectionBase):
         """
         return await self._ws.receive()
 
-    async def send(self, message) -> None:
+    async def send(self, message: dict) -> None:
         """
         低级 ASGI send
 
@@ -577,7 +577,7 @@ class SseEmitter(_ConnectionIdentity):
         self._id_counter = 1
 
     @property
-    def request(self):
+    def request(self) -> Any:
         """
         底层 HTTP 请求对象
 
@@ -599,7 +599,7 @@ class SseEmitter(_ConnectionIdentity):
 
     async def send(
         self,
-        data=None,
+        data: Any = None,
         event: str | None = None,
         id: str | None = None,
         retry: int | None = None,

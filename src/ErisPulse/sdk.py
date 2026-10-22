@@ -36,6 +36,7 @@ from .Core.i18n import i18n
 from .loaders.module import LazyModule
 from .runtime import proactive_gc as _pgc
 from .runtime import sdk_initializer as _sdk_initializer
+from .runtime.kernel import Kernel
 
 if TYPE_CHECKING:
 
@@ -206,8 +207,10 @@ class SDK:
         不缓存任何核心模块引用。核心属性通过 __getattr__ 动态解析，
         确保软重启后始终指向最新的模块级单例。
         """
+        self._kernel = Kernel(self)  # 统一编排内核（组合根：加载器与协调器的唯一组装点）
         self._initializer: SDK.Initializer | None = None
         self._module_loader: Any = None  # 模块加载器（Initializer 创建后注入，热重载使用）
+        self._adapter_loader: Any = None  # 适配器加载器（Initializer 创建后注入，适配器热重载使用）
         self._initialized: bool = False
         self._gc_task: asyncio.Task | None = None  # 主动 GC 后台任务
         self._gc_config_snapshot: tuple | None = None  # 主动 GC 配置快照（变更检测）
@@ -443,9 +446,12 @@ class SDK:
 
         try:
             router_mgr = self.router
-            state["router"]["running"] = getattr(router_mgr, "_server_started", False)
-            state["router"]["http_routes"] = len(getattr(router_mgr, "_http_routes", []))
-            state["router"]["ws_routes"] = len(getattr(router_mgr, "_ws_routes", []))
+            state["router"]["running"] = getattr(router_mgr, "_uvicorn_server", None) is not None
+            # _http_routes/_websocket_routes 均为 namespace → 路径表 的两级结构，按路径数累计
+            http_routes = getattr(router_mgr, "_http_routes", {}) or {}
+            state["router"]["http_routes"] = sum(len(paths) for paths in http_routes.values())
+            ws_routes = getattr(router_mgr, "_websocket_routes", {}) or {}
+            state["router"]["ws_routes"] = sum(len(paths) for paths in ws_routes.values())
         except Exception:
             state["router"]["error"] = "failed to get router state"
 
@@ -481,11 +487,17 @@ class SDK:
         >>> await sdk.init(before_init=setup, after_init=ready)
         """
         if self._initialized:
-            # 已初始化时仅警告并直接返回成功，避免重复初始化破坏内部状态
+            # 已初始化时仅警告并直接返回成功，避免重复初始化破坏内部状态。
+            # 告警通道不可用（i18n/logger 未就绪）时降级 stderr，不允许静默。
             try:
                 self.logger.warning(i18n.t("core.sdk.init.already_initialized"))
             except Exception:
-                pass
+                import sys
+
+                print(
+                    "[ErisPulse] sdk.init() called but already initialized",
+                    file=sys.stderr,
+                )
             return True
 
         # before_init 回调：在环境准备之前执行
@@ -501,7 +513,7 @@ class SDK:
             return False
 
         # 创建初始化协调器
-        self._initializer = self.Initializer(self)
+        self._initializer = self._kernel.get_initializer()
 
         # 执行初始化
         self._initialized = await self._initializer.init()
@@ -621,7 +633,7 @@ class SDK:
             if not await self._prepare_environment():
                 return False
 
-            self._initializer = self.Initializer(self)
+            self._initializer = self._kernel.get_initializer()
             self._initialized = await self._initializer.init()
 
             if self._initialized and after_init is not None:
@@ -845,31 +857,57 @@ class SDK:
             self.logger.info(i18n.t("core.sdk.hot_reload.enabled"))
         return ok
 
-    async def reload_module(self, module_name: str, *, full: bool = False) -> bool:
+    async def reload_module(self, module_name: str, *, full: bool = True) -> bool:
         """
         热重载单个模块（手动触发，支持任意来源）
 
-        完整执行 卸载旧实例 → 清理注册与 ``sys.modules`` 缓存 →
-        重新发现/导入 → 重新注册并加载 流程；依赖该模块的模块会**级联重载**。
-        本地插件（``plugins/`` 目录）来源重扫描插件目录；PyPI 安装包来源
-        重新查询 entry-point 并重导入模块代码（pip 升级后调用即可生效）。
+        完整执行 语法预检 → 卸载旧实例 → 清理注册与 ``sys.modules`` 缓存
+        （按顶层包名 + ``invalidate_caches``，默认全量）→ 重新发现/导入 →
+        重新注册并加载 流程；依赖该模块的模块会**级联重载**并默认重导代码。
+        本地插件（``plugins/`` 目录）来源重扫描插件目录；运行时注册来源按
+        定义模块重导并按类名重取；PyPI 安装包来源重新查询 entry-point 并
+        重导入模块代码（pip 升级后调用即可生效）。
 
-        :param module_name: 模块名（entry-point 名称或插件名）
-        :param full: 是否全量重载（默认 False）。True 时 ``sys.modules``
-            清理名单在元数据之外叠加旧模块对象顶层包名（元数据缺失也能
-            彻底刷新 import 缓存），且依赖者模块同样重导代码
+        :param module_name: 模块名（entry-point 名称、插件名或运行时注册名）
+        :param full: 是否全量重载（默认 True；False 为轻量逃生门——仅按
+            元数据清理缓存、PyPI 依赖者直接重新实例化，仅供超大依赖树的
+            性能敏感场景）
         :return: 是否重载成功
 
         :example:
         >>> await sdk.reload_module("dice")      # 本地插件
-        >>> await sdk.reload_module("Weather")   # PyPI 安装包模块
-        >>> await sdk.reload_module("Weather", full=True)  # 全量重载
+        >>> await sdk.reload_module("MyRuntime") # 运行时注册模块
+        >>> await sdk.reload_module("Weather")   # PyPI 安装包模块（默认全量）
         """
         if getattr(self, "_module_loader", None) is None:
             self.logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return False
         return await self._module_loader.reload_module(
             module_name, self.module, self, full=full
+        )
+
+    async def reload_adapter(self, adapter_name: str, *, full: bool = True) -> bool:
+        """
+        热重载单个适配器（代码级，手动触发）
+
+        完整执行 语法预检 → 卸载（shutdown 即清理：路由/事件/任务/bot offline
+        + 注销）→ 清理 ``sys.modules`` 子树与 ``__pycache__`` 字节码 → 重新
+        发现/导入 → 重新注册 → 原运行态则重新拉起 流程；任一步失败自动回滚
+        旧注册状态（尽力而为语义：断连等 unload 副作用不可撤销）。支持本地
+        插件（``plugins/`` 目录）与 PyPI 安装包两种来源。
+
+        :param adapter_name: 适配器名（平台名称）
+        :param full: 保留参数位（当前两种来源均执行全量清理，与模块语义对齐）
+        :return: 是否重载成功（适配器被移除视为成功）
+
+        :example:
+        >>> await sdk.reload_adapter("aiocqhttp")  # pip 升级后调用即可生效
+        """
+        if getattr(self, "_adapter_loader", None) is None:
+            self.logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
+            return False
+        return await self._adapter_loader.reload_adapter(
+            adapter_name, self.adapter, self, full=full
         )
 
     async def reload_all_modules(self) -> dict[str, bool]:
@@ -941,231 +979,93 @@ class SDK:
     async def _do_restart(self) -> bool:
         """
         {!--< internal-use >!--}
-        实际执行重启逻辑的内部方法
+        实际执行软重启的内部方法（联动热重载系统）
 
-        在后台任务中运行，与调用 restart() 的事件处理器解耦
-        确保即使调用者被取消，重启流程也能完整执行
+        在后台任务中运行，与调用 restart() 的事件处理器解耦，
+        确保即使调用者被取消，重启流程也能完整执行。
 
-        重启流程:
-        1. 收集已加载包的顶层模块名（必须在 uninit 之前）
-        2. 反初始化（关闭适配器、卸载模块、清理状态）
-        3. 清除外部包的 sys.modules 缓存
-        4. 清除 ErisPulse 框架子模块缓存（支持框架自身热更新）
-        5. 清除 importlib.metadata 缓存（确保 entry_points 返回最新数据）
-        6. 重新初始化
-        7. 重新启动适配器
+        软重启 = **组件层代码级热重载**（2.11 起不再整体 uninit/init）：
+        1. 全部已加载模块走统一热重载管线（``reload_all_modules``：
+           语法预检 → 卸载 → 清 sys.modules / __pycache__ → 重发现重导 →
+           重新注册加载 → 懒激活；失败快照回滚，单模块失败不影响其余）
+        2. 全部适配器逐个走 ``reload_adapter``（卸载清理 → 清缓存重发现 →
+           重新注册 → 原运行态重新拉起）
 
-        :return: bool 重新加载是否成功
+        配置热更新由配置监听器处理；框架自身更新 / entry-point 增删等
+        整进程场景请使用 ``hard_restart()``。
+
+        :return: bool 软重启是否全部成功（任一组件失败即为 False，
+                 失败清单见日志）
         """
         try:
-            # 获取所有已加载包的顶层 Python 模块名（必须在 uninit 之前，因为 uninit 会清除管理器注册信息）
-            top_level_modules = self._collect_top_level_modules()
-            self.logger.debug(
-                i18n.t(
-                    "core.sdk.reload.collected_top_modules", modules=top_level_modules
-                )
+            self.logger.info(i18n.t("core.sdk.reload.starting"))
+
+            # 1. 模块层：统一热重载管线（含预检 / 快照回滚 / 身份核对）
+            module_results = await self.reload_all_modules()
+
+            # 2. 适配器层：逐个代码级热重载
+            adapter_results: dict[str, bool] = {}
+            for adapter_name in list(
+                getattr(self.adapter, "_adapter_info", {}) or {}
+            ):
+                try:
+                    adapter_results[adapter_name] = await self.reload_adapter(
+                        adapter_name
+                    )
+                except Exception as e:
+                    self.logger.error(
+                        i18n.t(
+                            "core.sdk.reload.adapter_failed",
+                            name=adapter_name,
+                            error=e,
+                        )
+                    )
+                    adapter_results[adapter_name] = False
+
+            failed_modules = sorted(
+                n for n, ok in module_results.items() if not ok
             )
-
-            # 反初始化
-            await self.uninit()
-
-            # 清除外部包的 sys.modules 缓存
-            self._invalidate_module_cache(top_level_modules)
-
-            # 清除 ErisPulse 框架子模块缓存（支持框架自身热更新）
-            self._invalidate_framework_cache()
-
-            # 清除 importlib.metadata 缓存（确保 entry_points 返回最新数据）
-            self._invalidate_metadata_cache()
-
-            # 重新初始化
-            if not await self.init():
-                self.logger.error(i18n.t("core.sdk.reload.init_failed"))
-                return False
-
-            # SDK 核心属性通过 __getattr__ 动态解析，无需手动刷新引用。
-            # init() 触发的新 import 会创建新单例，
-            # 后续 self.logger / self.adapter 等访问自动获取最新单例。
+            failed_adapters = sorted(
+                n for n, ok in adapter_results.items() if not ok
+            )
+            if failed_modules or failed_adapters:
+                self.logger.warning(
+                    i18n.t(
+                        "core.sdk.reload.partial_failed",
+                        modules=", ".join(failed_modules) or "-",
+                        adapters=", ".join(failed_adapters) or "-",
+                    )
+                )
 
             self.logger.info(i18n.t("core.sdk.reload.complete"))
             self.logger.info(i18n.t("core.sdk.reload.done"))
-            return True
+            return not failed_modules and not failed_adapters
         except Exception as e:
             self.logger.error(i18n.t("core.sdk.reload.failed", error=e))
             return False
 
-    def _collect_top_level_modules(self) -> set[str]:
-        """
-        {!--< internal-use >!--}
-        从模块和适配器管理器中收集所有已加载包的顶层 Python 模块名
-
-        必须在 uninit() 之前调用，因为 uninit 会清除管理器中的注册信息
-
-        :return: set[str] 顶层 Python 模块名集合
-        """
-        top_level_set = set()
-
-        for module_name, info in self.module._module_info.items():
-            tl = info.get("meta", {}).get("top_level", [])
-            if tl:
-                top_level_set.update(tl)
-            else:
-                fallback = self._infer_top_level(info)
-                if fallback:
-                    top_level_set.update(fallback)
-                else:
-                    self.logger.warning(
-                        i18n.t("core.sdk.reload.module_top_infer", name=module_name)
-                    )
-
-        for adapter_name, info in self.adapter._adapter_info.items():
-            tl = info.get("meta", {}).get("top_level", [])
-            if tl:
-                top_level_set.update(tl)
-            else:
-                fallback = self._infer_top_level(info)
-                if fallback:
-                    top_level_set.update(fallback)
-                else:
-                    self.logger.warning(
-                        i18n.t("core.sdk.reload.adapter_top_infer", name=adapter_name)
-                    )
-
-        self.logger.debug(
-            i18n.t("core.sdk.reload.collected_top", modules=top_level_set)
-        )
-        return top_level_set
-
-    @staticmethod
-    def _infer_top_level(info: dict) -> list[str]:
-        """
-        {!--< internal-use >!--}
-        从模块/适配器信息中推导顶层 Python 模块名
-
-        优先使用 top_level.txt，fallback 从 entry-point value 推导
-
-        :param info: 模块或适配器信息字典
-        :return: 顶层 Python 模块名列表
-        """
-        module_class = info.get("module_class") or info.get("adapter_class")
-        if module_class and hasattr(module_class, "__module__"):
-            top_level_name = module_class.__module__.split(".")[0]
-            return [top_level_name]
-        return []
-
-    def _invalidate_module_cache(self, top_level_modules: set[str]) -> None:
-        """
-        {!--< internal-use >!--}
-        清理 sys.modules 中属于已加载包的缓存，并刷新 importlib 缓存
-
-        :param top_level_modules: 需要清理的顶层 Python 模块名集合
-        """
-        if not top_level_modules:
-            return
-
-        modules_to_remove = [
-            key
-            for key in sys.modules
-            if any(
-                key == name or key.startswith(name + ".") for name in top_level_modules
-            )
-        ]
-
-        for key in modules_to_remove:
-            del sys.modules[key]
-
-        importlib.invalidate_caches()
-
-        if modules_to_remove:
-            self.logger.debug(
-                i18n.t(
-                    "core.sdk.reload.cleaned_modules",
-                    count=len(modules_to_remove),
-                    modules=modules_to_remove,
-                )
-            )
-
-    def _invalidate_framework_cache(self) -> None:
-        """
-        {!--< internal-use >!--}
-        清理 ErisPulse 框架自身的子模块缓存，以支持框架热更新
-
-        清除所有 ErisPulse.* 子模块的 sys.modules 缓存，但保留 ErisPulse 包本身。
-        这样可以避免重新运行 __init__.py（防止创建新的 SDK 实例），
-        同时确保后续的 import 语句从磁盘加载最新的框架代码。
-
-        设计说明:
-        - 保留 ErisPulse 包本身（不删除 sys.modules['ErisPulse']），
-          防止 __init__.py 重新执行导致创建新的 SDK 单例
-        - 清除所有 ErisPulse.* 子模块，使后续 import 从磁盘重新加载
-        - 当前正在执行的代码（self 及其方法）不受影响，
-          因为 Python 函数/方法持有对代码对象的直接引用
-        - 新的 import 语句将加载更新后的框架代码
-        """
-        framework_modules = [key for key in sys.modules if key.startswith("ErisPulse.")]
-
-        for key in framework_modules:
-            del sys.modules[key]
-
-        importlib.invalidate_caches()
-
-        if framework_modules:
-            self.logger.debug(
-                i18n.t(
-                    "core.sdk.reload.cleaned_framework", count=len(framework_modules)
-                )
-            )
-
-    def _invalidate_metadata_cache(self) -> None:
-        """
-        {!--< internal-use >!--}
-        清理 importlib.metadata 相关缓存，确保 entry_points() 返回最新数据
-
-        当 pip install --upgrade 更新包后，importlib.metadata 的内部缓存
-        可能仍然引用旧的分发元数据。清除这些缓存可以强制重新扫描
-        .dist-info 目录，获取最新的 entry_points 数据。
-
-        这对于以下场景至关重要:
-        - Dashboard 热更新模块/适配器后，需要发现新安装的版本
-        - 框架自身更新后，需要获取最新的 entry_points 配置
-        """
-        metadata_modules = [
-            key for key in list(sys.modules) if key.startswith("importlib.metadata")
-        ]
-
-        for key in metadata_modules:
-            try:
-                del sys.modules[key]
-            except KeyError:
-                pass
-
-        importlib.invalidate_caches()
-
-        if metadata_modules:
-            self.logger.debug(
-                i18n.t("core.sdk.reload.cleaned_metadata", count=len(metadata_modules))
-            )
-
     async def restart(self) -> bool:
         """
-        SDK 重新启动
+        SDK 软重启（联动热重载系统）
 
-        执行完整的反初始化后再初始化过程，并重新启动适配器。
+        全部已加载模块与适配器走统一**代码级热重载管线**（语法预检 → 卸载 →
+        清 ``sys.modules`` / ``__pycache__`` → 重发现重导 → 重新注册加载 /
+        拉起；失败快照回滚，单组件失败不影响其余），不再整体 ``uninit()`` /
+        ``init()``——框架进程、路由与配置监听保持在线，组件代码（pip 升级后）
+        即刻生效。
 
         {!--< tips >!--}
         **重要设计说明**：
 
-        此方法使用 `asyncio.ensure_future()` 将重启任务注册到事件循环调度器，
-        与调用栈完全解耦。这是有意为之的设计，原因如下：
+        此方法使用后台任务将重启流程注册到事件循环调度器，与调用栈完全解耦
+        （事件处理器内调用不会中断当前事件链路）；立即返回 ``True`` 表示
+        "重启任务已成功调度"而非"重启已完成"。
 
-        1. **事件链路保护**：如果模块在事件处理器内部调用 `restart()`，而重启过程
-           是同步等待的，那么重启会中断当前事件链路，导致事件处理不完整。
+        **语义分界**（2.11 起）：
 
-        2. **后台执行**：重启是一个耗时操作（需要关闭适配器、卸载模块、重新加载），
-           使用 `ensure_future` 可以让它在后台执行，不阻塞调用者。
-
-        3. **返回值语义**：方法立即返回 `True` 表示"重启任务已成功调度"，
-           而不是"重启已完成"。实际的重启过程在后台进行。
+        - ``restart()``：组件层代码热重载（模块 + 适配器；pip 升级组件后生效）
+        - ``hard_restart()``：整进程重启（框架自身更新 / entry-point 增删 /
+          结构性配置变更等场景）
         {!--< /tips >!--}
 
         :return: bool 重启任务是否成功调度（并非重启是否完成）
@@ -1292,7 +1192,7 @@ class SDK:
         >>> await sdk.uninit()
         """
         # 创建反初始化协调器
-        uninitializer = self.Uninitializer(self)
+        uninitializer = self._kernel.get_uninitializer()
 
         # 执行反初始化
         return await uninitializer.uninit()

@@ -1,5 +1,8 @@
 # ErisPulse-QvQChat 通用智能体
 
+> [!TIP]
+> **什么时候需要读这篇**：当你想给机器人加 AI 智能体能力（工具循环、流式对话、MCP、长期记忆），或想把自己模块的服务暴露给智能体调用时读这篇。不需要则跳过。
+
 [ErisPulse-QvQChat](https://pypi.org/project/ErisPulse-QvQChat/) 是一个 **通用智能体模块**，围绕工具循环构建：收发消息、调用生态模块服务、编写并运行代码、操作电脑、生成图片语音、管理定时任务与长期记忆——全部通过同一套工具协议完成。
 
 > [!IMPORTANT]
@@ -133,3 +136,12 @@ async def setup(self):
 ![概览](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/overview.png)
 
 ![对话](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/chat.png)
+
+---
+
+## 下一步
+
+- **把自己的模块变成智能体工具**：在 `get_meta()` 声明 `services` 即可，字段语义见 [核心模块 API - 服务契约](../api-reference/core-modules.md)
+- **订阅智能体消息做联动**：用[生命周期事件](../advanced/lifecycle.md)监听 `qvq.message` / `qvq.replied`
+- **不用智能体、只要多轮问答表单**：内置的 [Conversation 多轮对话](../advanced/conversation.md)是更轻的选择
+- **网页端管理**：配合 [ErisPulse-Dashboard](dashboard.md) 侧边栏使用

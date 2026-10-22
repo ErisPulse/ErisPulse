@@ -803,8 +803,13 @@ class Model:
             if field_obj.is_json and isinstance(value, str):
                 try:
                     row[name] = json.loads(value)
-                except (ValueError, TypeError):
-                    pass
+                except (ValueError, TypeError) as e:
+                    from ..logger import logger as _logger
+
+                    _logger.debug(
+                        f"JSON column {cls.__name__}.{name} value is not valid "
+                        f"JSON, keeping raw string: {e}"
+                    )
             elif field_obj.category == "bool" and value is not None:
                 # sqlite 无原生 BOOLEAN（存 0/1，读回 int）——统一转 bool，
                 # 保证 `instance.active is True` 等跨后端一致的判等语义

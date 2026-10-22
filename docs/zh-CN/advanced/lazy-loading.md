@@ -4,7 +4,7 @@
 > **什么时候需要读这篇**：使用懒加载模块或 activate_on 事件驱动激活时。不需要则跳过，不影响其它功能的使用。
 
 
-ErisPulse SDK 提供了强大的懒加载模块系统，允许模块在实际需要时才进行初始化，从而显著提升应用启动速度和内存效率。
+ErisPulse SDK 的懒加载模块系统让模块推迟到**实际被访问时**才初始化——启动阶段只登记占位代理，未被用到的模块不占用启动时间与内存。
 
 ## 概述
 
@@ -102,11 +102,60 @@ dict 形式镜像 `@command()` 装饰器的用户级参数，用于在模块加�
 - **命令 stub**：注册占位命令；激活后占位注销、真实命令接管当次触发
 - **防重入**：`asyncio.Lock` 保证并发触发下只激活一次
 - **作用域过滤**：stub 带模块 owner 身份，模块未对该 Bot / 会话 / 平台启用时不触发
-- **失败语义**：激活失败不重试，stub 一并注销
+- **失败语义**：激活失败进入冷却期（`ACTIVATE_RETRY_COOLDOWN_SECS`，30 秒），
+  冷却内事件短路避免重复尝试；冷却结束后再次触发自动重试，stub 全程保留
 - **去重**：同名命令以简写 + dict 混合声明时去重（dict 优先）；dict 缺 `name`
   或事件 `detail_type` 误写 dict 时告警并忽略
 
 > 架构图与完整语义详见 [架构概览](../architecture.md#事件驱动懒激活activate_on触发架构)。
+
+## 懒加载休眠（dormant_after）
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.11.0+**。
+
+懒激活的模块长期闲置后，框架可将其**归眠**：释放运行时资源（归属任务 / 连接 / 事件注册），
+但保留懒加载代理与注册存根——模块回到"已注册未加载"状态，下次属性访问 /
+`module.call` / `activate_on` 事件**透明唤醒**（重新实例化并执行 `on_load`），
+无需任何唤醒 API。归眠后的系统状态与"从未激活"完全一致。
+
+### 声明方式
+
+```python
+@staticmethod
+def get_load_strategy():
+    return ModuleLoadStrategy(
+        lazy_load=True,
+        dormant_after="30m",   # 闲置 30 分钟自动归眠；不声明 = 永不休眠（默认）
+    )
+```
+
+时长语法与命令治理的 `cooldown` 完全一致（`90s` / `1h30m` / `1d`）。清扫器按固定间隔
+（60 秒）扫描，实际归眠时点 = 阈值 + 最多一个扫描间隔；也可随时手动归眠：
+`await sdk.module.sleep("模块名")`。显式 `unload` 仍是彻底卸载（懒代理一并移除）。
+
+### 状态接续
+
+归眠前框架触发 `on_before_unload(reason="dormant")`（卸载流水线第一步，资源仍完好），
+模块把状态保存到 `sdk.storage`；唤醒后在 `on_load` 中恢复：
+
+```python
+async def on_before_unload(self, event):
+    if event["reason"] in ("dormant", "reload", "disable"):
+        await self.sdk.storage.aset(f"{self._module_name}:counter", self._count)
+
+async def on_load(self, event):
+    self._count = await self.sdk.storage.aget(f"{self._module_name}:counter") or 0
+```
+
+### 语义与边界
+
+- **依赖方安全**：懒模块的依赖方经由持久代理（`sdk.<Name>`）或 `module.call` 访问，
+  归眠前后行为一致；直接持有真实实例引用属反模式（泄漏审计器可见）
+- **事件不达**：归眠模块不再接收事件——需要事件唤醒的模块请同时声明 `activate_on`
+  （事件先唤醒再转发）；排查"命令没反应"时注意确认模块是否处于归眠态
+- **唤醒失败可自愈**：唤醒（重新初始化）失败进入 30 秒冷却，冷却后再次访问自动重试，
+  不会永久失效
 
 ## 配置懒加载
 
@@ -233,5 +282,8 @@ flowchart TD
 
 ## 相关文档
 
-- [模块开发指南](../developer-guide/modules/getting-started.md) - 学习开发模块
-- [最佳实践](../developer-guide/modules/best-practices.md) - 了解更多最佳实践
+按下一步意图选择：
+
+- **拿不准选哪种加载策略（立即加载 / 懒加载 / activate_on）** → [模块最佳实践](../developer-guide/modules/best-practices.md)
+- **归眠与卸载时，后台任务、连接等资源的回收链路** → [归属权（owner）系统](ownership.md)
+- **从头开发一个模块** → [模块开发指南](../developer-guide/modules/getting-started.md)

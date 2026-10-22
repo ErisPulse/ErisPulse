@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "33050f4fc663186789be438774de85f9",
-  "file_hash": "33050f4fc663186789be438774de85f9",
-  "translated_at": "2026-09-07T11:01:59.053852",
+  "hash": "ecaad74d7f2ffd2740f782e04472f06c",
+  "file_hash": "ecaad74d7f2ffd2740f782e04472f06c",
+  "translated_at": "2026-10-22T09:55:45.403181",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "768b3404d3bd556def2933dbccb0843c",
-      "translation": "# Contributing to ErisPulse\n\n> **For those contributing for the first time**\n> Open-source projects are never sustained solely by the \"big moves\" of one or two core developers. More often, it's the accumulation of countless small changes — a typo fix, a translation, a minor bug fix — that pushes ErisPulse forward. So, don't measure whether your contribution is \"significant enough.\" As long as you're willing to submit a PR, you are already part of this journey."
+      "hash": "e1bcca1f17a3887618346170bcbc52ef",
+      "translation": "# Contributing to ErisPulse\n\n> [!TIP]\n> **When to read this**: If you want to contribute to ErisPulse but are unsure what to do or where to start. Skip this if you are only using the bot and not involved in development.\n\n> **For those contributing for the first time**\n> Open-source projects are never built solely on the \"big moves\" of one or two core developers. More often, progress comes from countless small changes—such as a typo fix, a translation, or a minor bug fix—that collectively push ErisPulse forward. So, don't measure the \"weight\" of your contribution; if you're willing to submit a PR, you're already part of this journey."
     },
     {
       "hash": "8d6445009476ae25e95b673cdc17766d",

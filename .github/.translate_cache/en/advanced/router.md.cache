@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "fd85cfd326b35f5f0567a22d760f67c1",
-  "file_hash": "fd85cfd326b35f5f0567a22d760f67c1",
-  "translated_at": "2026-10-14T03:09:11.626051",
+  "hash": "fad9fece07d5815501a8f7c903fc0732",
+  "file_hash": "fad9fece07d5815501a8f7c903fc0732",
+  "translated_at": "2026-10-22T09:51:40.587096",
   "target_lang": "en",
   "chunks": [
     {
@@ -74,8 +74,8 @@
       "translation": "## Lifecycle Integration\n\n```python\nfrom ErisPulse.Core import lifecycle\n\n@lifecycle.on(\"server.start\")\nasync def on_server_start(event):\n    print(f\"Server started: {event['data']['base_url']}\")\n\n@lifecycle.on(\"server.stop\")\nasync def on_server_stop(event):\n    print(\"Server is stopping...\")\n```"
     },
     {
-      "hash": "cb12a4c48b9d354f1e4847810d6e2d09",
-      "translation": "## Best Practices\n\n1. **Prefer Abstract Types**: Use `HttpRequest` / `WebSocketConnection` instead of `fastapi.Request` / `fastapi.WebSocket` to avoid hard dependencies.\n2. **Leverage Automatic Injection**: Name the first parameter of the handler `request` or `req`, and obtain `HttpRequest` without any type annotation.\n3. **Explicitly Pass module_name**: The first parameter of the decorator must be the module name, and cannot be omitted.\n4. **Use Route Grouping**: Use `group()` to organize multiple routes within the same module.\n5. **Security Consideration**: Implement authentication mechanisms and security headers for sensitive operations.\n6. **Reasonable Rate Limiting**: Set rate limits for high-frequency interfaces.\n7. **Use Lifecycle Hooks**: Use `@ws.on_disconnect` / `@ws.on_error` to handle WebSocket exceptions, avoiding manual try/catch."
+      "hash": "3eac3415ddcbff9ff9cb74a350551851",
+      "translation": "## Best Practices\n\n1. **Prefer abstract types**: Use `HttpRequest` / `WebSocketConnection` instead of `fastapi.Request` / `fastapi.WebSocket` to avoid hard dependencies\n2. **Leverage automatic injection**: Name the first parameter of a handler `request` or `req` to obtain `HttpRequest` without any type annotation\n3. **Prefer the single-parameter form**: In module loading contexts, prefer the single-parameter form (automatically assigned to the namespace); when registering in cross-module/utility code, explicitly pass the module name\n4. **Use route grouping**: Use `group()` to organize multiple routes within the same module\n5. **Security considerations**: Implement authentication mechanisms and security headers for sensitive operations\n6. **Apply rate limiting appropriately**: Set rate limits for high-frequency endpoints\n7. **Use lifecycle hooks**: Handle WebSocket exceptions via `@ws.on_disconnect` / `@ws.on_error` instead of manual try/catch"
     },
     {
       "hash": "dc4f0228caff64ab42ab9a73d617da34",

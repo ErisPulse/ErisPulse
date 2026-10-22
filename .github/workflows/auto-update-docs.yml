@@ -11,12 +11,8 @@ concurrency:
 on:
   push:
     branches: [Develop/v2]
-    paths-ignore:
-      # 防递归：避免 workflow 自己 push 的 docs 变更重新触发自己
-      - 'docs/**'
-      - '.github/.translate_cache/**'
-      - 'README.md'
-      - 'README.*.md'
+    # 注：翻译产物已 artifact 化（不再提交进仓库），workflow 自身不会产生
+    # docs 提交，因此无需 paths-ignore 防递归——纯文档推送也会触发翻译
   workflow_dispatch:
     inputs:
       force_translate:
@@ -27,8 +23,8 @@ on:
 jobs:
   update-and-generate-docs:
     runs-on: ubuntu-latest
-    # 硬上限：防止翻译卡死耗尽 runner 时间
-    timeout-minutes: 90
+    # 硬上限：5h（GitHub 允许的 job 上限内），为翻译预算外的生成/检查/收尾留 30 分钟
+    timeout-minutes: 300
     steps:
       - name: Generate App Token
         id: app-token
@@ -83,6 +79,13 @@ jobs:
           echo "==================="
 
 
+      - name: Pre-clean broken translation caches
+        continue-on-error: true
+        run: |
+          # 检测上一轮产物中的截断/乱码等错误并删除其缓存，
+          # 使本轮翻译自动重译这些文件（否则坏译文会因源 hash 未变被一直复用）
+          python scripts/tools/check-translation.py --fix || true
+
       - name: Auto-translate docs (time-budgeted rounds)
         id: translate-docs
         env:
@@ -117,9 +120,10 @@ jobs:
             exit 0
           fi
 
-          # 翻译总预算（分钟）：job 上限 90 分钟，为生成/提交/收尾留出余量。
-          # 脚本到点优雅退出（缓存落盘），下一轮从缓存续译；轮次用于异常退出后的快速恢复。
-          TOTAL_BUDGET_MINUTES=55
+          # 翻译总预算（分钟）：job 硬上限 300 分钟（5h），翻译占 270 分钟（4.5h），
+          # 为生成/检查/收尾留 30 分钟余量。脚本到点优雅退出（缓存落盘），
+          # 下一轮从缓存续译；轮次用于异常退出后的快速恢复。
+          TOTAL_BUDGET_MINUTES=270
           MAX_ROUNDS=3
           ROUND=0
           FINAL_REMAINING=0
@@ -194,39 +198,6 @@ jobs:
         run: |
           python scripts/tools/check-translation.py --fix
 
-      - name: Configure Git identity for translation commit
-        if: steps.translate-docs.outputs.docs_updated == 'true'
-        env:
-          BOT_USER_ID: ${{ steps.bot-info.outputs.bot-user-id }}
-          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
-        run: |
-          git config user.name "${APP_SLUG}[bot]"
-          git config user.email "${BOT_USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
-
-      - name: Refresh token for translation commit
-        id: refresh-token-translate
-        if: steps.translate-docs.outputs.docs_updated == 'true'
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.ERISBOT_APP_ID }}
-          private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
-
-      - name: Commit translated docs
-        if: steps.translate-docs.outputs.docs_updated == 'true'
-        env:
-          GH_TOKEN: ${{ steps.refresh-token-translate.outputs.token }}
-        run: |
-          echo "Committing translated docs and cache..."
-
-          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git config --unset-all http.https://github.com/.extraheader || true
-
-          git add docs/ .github/.translate_cache/ README.md README.*.md
-          git commit -m "chore(docs): auto-update docs" || echo "No changes to commit"
-          git pull --rebase --autostash || echo "Failed to pull remote updates, attempting direct push"
-          git push || echo "No new commits to push"
-
-
       # ==================== 生成类文档（API / AI Prompt / 索引，基于本轮最新翻译） ====================
       # ai-prompts / docs-index 扫描各语言 docs 内容生成，必须在翻译之后运行；
       # 否则产物基于上一轮旧翻译，且 docs/** 变更不会再触发本 workflow（滞后无法自愈）。
@@ -298,59 +269,54 @@ jobs:
             echo "docs_index_updated=true" >> $GITHUB_OUTPUT
           fi
 
-      # ==================== 提交 #2：生成类文档 ====================
-      # 翻译结果已在上一提交落盘；生成仅需几分钟，超时/取消风险低，
-      # 即使本提交失败，下一轮 push 会基于源码与翻译重新生成
-
-      - name: Configure Git identity
-        if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
-        env:
-          BOT_USER_ID: ${{ steps.bot-info.outputs.bot-user-id }}
-          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
-        run: |
-          echo "App slug: $APP_SLUG"
-          echo "Bot user ID: $BOT_USER_ID"
-          git config user.name "${APP_SLUG}[bot]"
-          git config user.email "${BOT_USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
-
-      - name: Refresh token for generated docs commit
-        id: refresh-token-gen
-        if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
-        uses: actions/create-github-app-token@v2
+      - name: Upload translated docs as artifact
+        if: steps.translate-docs.outputs.docs_updated == 'true'
+        uses: actions/upload-artifact@v4
         with:
-          app-id: ${{ secrets.ERISBOT_APP_ID }}
-          private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
+          name: translated-docs
+          path: |
+            docs/
+            README.md
+            README.*.md
+          retention-days: 400
+          if-no-files-found: ignore
 
-      - name: Commit generated docs
+      - name: Upload generated docs as artifact
         if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-docs
+          path: docs/
+          retention-days: 400
+          if-no-files-found: ignore
+
+      - name: Publish docs tree to docs-generated branch (durable)
+        if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
         env:
-          GH_TOKEN: ${{ steps.refresh-token-gen.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "Committing generated docs (API / AI Prompt / index)..."
-
-          # Reconfigure remote with fresh token
-          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-
-          # 防御性清理：移除 checkout 可能遗留的 http.extraheader（虽然已设
-          # persist-credentials: false，但 extraheader 优先级高于 URL 认证，
-          # 一旦残留就会覆盖上面的新 token）
-          git config --unset-all http.https://github.com/.extraheader || true
-
-          git add docs/ .github/.translate_cache/ README.md README.*.md
-          git commit -m "chore(docs): auto-update generated docs" || echo "No changes to commit"
-          # Pull latest remote changes before pushing to avoid push rejection due to concurrent pushes
-          git pull --rebase --autostash || echo "Failed to pull remote updates, attempting direct push"
-          git push || echo "No new commits to push"
+          # 多语言文档树的持久层：单提交强推到 orphan 分支（分支永久，artifact 会过期）。
+          # GITHUB_TOKEN 推送不触发 workflow，天然防递归。
+          rm -rf /tmp/docs-pub && mkdir -p /tmp/docs-pub
+          cp -r docs /tmp/docs-pub/docs
+          cd /tmp/docs-pub
+          git init -q -b docs-generated
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -qm "docs build ${{ github.sha }} $(date -u '+%Y-%m-%dT%H:%MZ')"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --force origin docs-generated:docs-generated
 
       - name: Summarize updates
         if: always()
         run: |
           echo "Summarizing document updates..."
-          echo "Generated docs committed in this run:"
+          echo "Generated docs produced in this run (uploaded as artifacts, not committed):"
           echo "  - API reference docs: ${{ steps.update-api.outputs.api_updated }}"
           echo "  - AI Prompt docs: ${{ steps.generate-ai-prompts.outputs.ai_prompts_updated }}"
           echo "  - Docs index: ${{ steps.generate-docs-index.outputs.docs_index_updated }}"
-          echo "  - Translated docs committed: ${{ steps.translate-docs.outputs.docs_updated }}"
+          echo "  - Translated docs produced: ${{ steps.translate-docs.outputs.docs_updated }}"
           echo "  - Remaining translations (time budget): ${{ steps.translate-docs.outputs.remaining }}"
           echo "  - Translation script failure: ${{ steps.translate-docs.outputs.translate_failed }}"
 
@@ -358,7 +324,7 @@ jobs:
         if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
         run: |
           echo "Document update complete"
-          echo "All documents have been updated and committed to the repository"
+          echo "All documents have been updated and uploaded as build artifacts (not committed to the repository)"
           echo "Includes:"
           if [ "${{ steps.update-api.outputs.api_updated }}" == "true" ]; then
             echo "  - API reference docs (multilingual)"

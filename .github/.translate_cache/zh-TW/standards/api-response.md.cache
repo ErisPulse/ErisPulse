@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "6dd9d96b6c61411b482f7ad12f58902d",
-  "file_hash": "6dd9d96b6c61411b482f7ad12f58902d",
-  "translated_at": "2026-09-07T11:57:16.093220",
+  "hash": "82976c1b48a72f583a03f56ddf3e3418",
+  "file_hash": "82976c1b48a72f583a03f56ddf3e3418",
+  "translated_at": "2026-10-22T12:35:19.847145",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "8ac818619ccf19f24d0ff2ed3dd6f00a",
-      "translation": "# ErisPulse 适配器標準化回傳規範"
+      "hash": "72071db06e5d0f69e471da1e5e475dd8",
+      "translation": "# ErisPulse 轉接器標準化回傳規範\n\n> [!TIP]\n> **什麼時候需要讀這篇**：當你在轉接器中實作 `call_api` / Send / Request 的回傳值，需要確認回應結構與回傳碼是否符合 ErisPulse 標準，或排查某個 `retcode` 的含義時對照本文。不需要則跳過。"
     },
     {
       "hash": "0a41e60f1c139a77a183b326303327a9",
@@ -30,8 +30,12 @@
       "translation": "## 5. 擴展規範\n\nErisPulse 在 OneBot12 標準返回結構之上做了以下擴展：\n\n### 5.1 `message_id` 必選欄位\n\nOneBot12 標準中 `message_id` 位於 `data` 對象內部且非強制。ErisPulse 將其提升為頂層**必選**欄位：\n\n- 無法獲取 `message_id` 時應設為空字串 `\"\"`\n- 確保 `message_id` 始終存在，模組無需做 null 檢查\n\n### 5.2 `{platform}_raw` 原始回應欄位\n\n回應值中應包含 `{platform}_raw` 欄位，存放平台原始回應資料的完整副本：\n\n```json\n{\n    \"status\": \"ok\",\n    \"retcode\": 0,\n    \"data\": {\"message_id\": \"1234\", \"time\": 1632847927},\n    \"message_id\": \"1234\",\n    \"message\": \"\",\n    \"telegram_raw\": {\n        \"ok\": true,\n        \"result\": {\"message_id\": 1234, \"date\": 1632847927, ...}\n    }\n}\n```\n\n**要求**：\n- `{platform}_raw` 必須是原始回應的深拷貝，而非引用\n- `platform` 必須與適配器註冊時的平台名完全一致（大小寫敏感）\n- 原始回應中的錯誤資訊也應保留，便於除錯\n\n### 5.3 框架擴展回應碼（34xxx 平台錯誤段的低三位自定義）\n\nOneBot12 規範允許實現自定義 `3xxxx` 的低三位。`34xxx` 語義為 **Platform Error**\n（機器人平台錯誤，如平台限制導致失敗）。`34xxx` 內部按職責分層使用：\n\n| 低三位段 | 歸屬 | 用途 |\n|---------|------|------|\n| `340xx` | 適配器實現 | 請求操作族（Request Not Found / Already Handled / Not Supported / Permission Denied，見 request-action-spec §7） |\n| `341xx`～`345xx` | 適配器實現 | 平台側權限 / 風控 / 帳號限制等錯誤（實現自定低三位，原始錯誤放 `{platform}_raw`） |\n| `346xx` | **ErisPulse 框架（保留）** | 框架自身擋截與通用失敗，適配器/模組請勿占用 |\n| `347xx`～`349xx` | 適配器實現 | 其它平台執行錯誤 |\n\nErisPulse 框架當前使用的 `346xx` 碼：\n\n| 錯誤碼 | 錯誤名 | 說明 |\n|-------|-------|------|\n| 34600 | SDK Failure | 框架通用失敗（`make_error()` 預設回傳碼） |\n| 34601 | Action Denied | 出站動作被作用域禁用（`scope.actions`），呼叫未發起，直接回傳該回應 |\n\n> 職責區分：`34601` 是**框架在呼叫前擋截**（模組根本沒資格發起動作）；\n> `34004` / `34xxx` 平台碼是**動作已發出但平台拒絕**（如 Bot 無權限、被風控）。\n> 模組判斷權限問題時同時檢查這兩種：先看 `34601`（自己模組被 scope 禁），\n> 再看 `34xxx`（平台側限制）。\n\n回傳結構為 §2 標準失敗回應：\n\n```json\n{\n    \"status\": \"failed\",\n    \"retcode\": 34601,\n    \"data\": null,\n    \"message_id\": \"\",\n    \"message\": \"action 'send' denied by scope.actions\"\n}\n```\n\n### 5.4 適配器實現檢查清單\n\n- [ ] 包含 `status`, `retcode`, `data`, `message_id`, `message` 欄位\n- [ ] 回傳碼遵循 OneBot12 規範（詳見 §3.2）\n- [ ] `message_id` 始終存在（無法獲取時為空字串）\n- [ ] `{platform}_raw` 包含平台原始回應資料"
     },
     {
-      "hash": "2f1c197acf90bdaed8c349abc2fa667a",
-      "translation": "## 6. 注意事項\n- 對於 3xxxx 錯誤碼，低三位可由實作自行定義\n- 避免使用保留錯誤區段 (4xxxx、5xxxx)\n- **`34600` / `34601` 為 ErisPulse 框架保留碼**（見 §5.3），適配器/模組應避免使用\n- 錯誤訊息應當簡潔明瞭，便於除錯"
+      "hash": "2641d1765ca1c7ab6e2e715527743410",
+      "translation": "## 6. 注意事項\n- 對於 3xxxx 錯誤碼，低三位可由實作自行定義\n- 避免使用保留錯誤段(4xxxx、5xxxx)\n- **`34600` / `34601` 為 ErisPulse 框架保留碼**（見 §5.3），適配器/模組避免使用\n- 錯誤訊息應當簡潔明瞭，便於除錯\n\n---"
+    },
+    {
+      "hash": "fdf756e62ca577389f105d3d5946b557",
+      "translation": "## 下一步\n\n- **實作各 DSL 回傳值時的配套對照**：[API 動作標準](api-action-spec.md)（標準動作的 data 欄位）、[請求操作規範](request-action-spec.md)（請求操作的 34001-34004 擴充）、[傳送方法規範](send-method-spec.md)（傳送失敗的降級語義）\n- **排查權限類失敗**：先看 `34601`（模組被 scope 停用，框架在呼叫前攔截，見 §5.3），再看 `34xxx`（動作已發出但平台端拒絕）"
     }
   ]
 }

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a14fefc46a19f5e1b985d0f2a56484f6",
-  "file_hash": "a14fefc46a19f5e1b985d0f2a56484f6",
-  "translated_at": "2026-10-14T03:11:11.983352",
+  "hash": "db403ab121230f9df11de71d6e66ad25",
+  "file_hash": "db403ab121230f9df11de71d6e66ad25",
+  "translated_at": "2026-10-22T10:05:40.615362",
   "target_lang": "ja",
   "chunks": [
     {
@@ -44,6 +44,10 @@
     {
       "hash": "3bc63b2b6aa493301f11e1712a5b2615",
       "translation": "## 関係マッピング（relationship）\n\nモデルクラス内で `relationship()` をクラス属性として宣言することで、**外キー列がどのテーブルに宣言されているかによって自動的に方向が判定されます**：\n\n```python\nfrom ErisPulse.Core.Bases import Model, Field, relationship\n\nclass User(Model):\n    __tablename__ = \"orm_users\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    name: str = Field(max_length=64)\n\n    posts = relationship(\"Post\", foreign_key=\"author\")   # 外キーが相手のテーブルにある → has-many\n\nclass Post(Model):\n    __tablename__ = \"posts\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    author: int = Field(foreign_key=\"orm_users.id\")\n    content: str = Field(max_length=255)\n\n    writer = relationship(\"User\", foreign_key=\"author\")  # 外キーがこのテーブルにある → belongs-to\n```\n\n**has-many**：インスタンス属性はクエリセットを返し、`QuerySet` の全チェイン機能が利用可能で、`create` は自動的に本テーブルの主キーを相手の外キー列に埋め込みます：\n\n```python\nalice = await User.get(name=\"Alice\")\n\nposts = await alice.posts.all()                          # このユーザーの全記事\nlatest = await alice.posts.order_by(\"-id\").first()\ntotal = await alice.posts.count()\nhot = await alice.posts.where(Post.content != \"\").all()  # 相手のテーブルのフィールド条件を追加\nawait alice.posts.delete()                               # このユーザーのものだけ削除\n\nnew_post = await alice.posts.create(content=\"hi\")        # author は自動的に alice.id に設定\n```\n\n**belongs-to**：`await` を直接実行すると相手のインスタンスが得られます（一致するものがない場合や外キーが NULL の場合は `None` を返します）：\n\n```python\npost = await Post.get(id=1)\nwriter = await post.writer          # User インスタンスまたは None\nawait writer.posts.count()          # 双方向にアクセス可能\n```\n\n**ポイント**：\n\n- `related` にはクラス名の文字列（モデルクラス名の登録表を惰性で解析）または直接モデルクラスを渡すことができます。\n- 関係のクエリと相手のモデルはそれぞれ独自のストレージバックエンドを使用します（バックエンド間の JOIN はサポートされていません。関係のクエリは独立した 2 つの SQL です）。\n- 関係のクエリはキャッシュされず、アクセスするたびに即時クエリが実行されます。`User.where(...)` を使用して任意のカスタムクエリを行うことも可能です。"
+    },
+    {
+      "hash": "6b6e4e5acf626dfc062ee95e1234f817",
+      "translation": "## 次のステップ\n\n### データベースの変更やクラウドデータベースへのデプロイが必要な場合\n\n- [ストアバックエンド](../advanced/storage-backends.md) — SQLite / MySQL / PostgreSQL の設定と切り替え、モデルコードに変更なし\n\n### テーブル構造は不要で、いくつかのキーと値だけを保存したい場合\n\n- [モジュールのコアコンセプト - ストレージシステム](modules/core-concepts.md#ストレージシステム) — モデルを宣言せずに軽量なキー/値ストアの使い方"
     }
   ]
 }

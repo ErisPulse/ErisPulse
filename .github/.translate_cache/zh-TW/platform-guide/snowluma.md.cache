@@ -1,0 +1,53 @@
+{
+  "version": 2,
+  "hash": "952e8fc819e2c98d8d4d113ceee9d040",
+  "file_hash": "952e8fc819e2c98d8d4d113ceee9d040",
+  "translated_at": "2026-10-20T12:20:56.808586",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "0f11a21d0ca791b85e1219b104fbf0fe",
+      "translation": "# SnowLuma 平台特性文件\n\nSnowLumaAdapter 是基於 SnowLuma 後端（NTQQ hook）所建構的適配器，使用 OneBot v11 協議進行通訊。\n\n---"
+    },
+    {
+      "hash": "60e1b88c6dac705e8df300523e98c7c7",
+      "translation": "## 文件資訊\n\n- 對應模組版本: 0.1.0\n- 維護者: ErisPulse"
+    },
+    {
+      "hash": "8336a1bda50d2861ccfc09838423f5fe",
+      "translation": "## 基本資訊\n\n- 平台簡介：SnowLuma 是基於 NTQQ hook 的 QQ 協議實現，API 全面向 NapCat 對齊，透過 OneBot v11 協議對外提供服務（預設端口：HTTP 3000、WS 3001）\n- 適配器名稱：SnowLumaAdapter\n- 支援的協定/API版本：OneBot V11（含 SnowLuma 扩展动作，全面兼容 NapCat，可直接連接 NapCat 後端）\n- 多帳戶支援：預設多帳戶架構，支援同時配置和運行多個帳戶\n- 配置鍵名：`SnowLuma_Adapter`\n\n### 與 OneBot11 適配器的關係\n\nSnowLuma 使用 OB11 協議，標準動作與事件轉換與 OneBot11 適配器同構（OB12 標準動作名自動映射）。\n主要差異：\n\n1. **預設 client 模式**：主動連接 SnowLuma WS（`ws://127.0.0.1:3001`），無需公網監聽\n2. **bot_id 自動識別**：無需在帳戶配置中填寫 QQ 號，適配器啟動後自動探測並維護 `self_id → account_name` 映射\n3. **109 個擴展動作**：拍一戳、QQ空間、群檔案/群相冊、訊息歷史、精華、已讀狀態等 SnowLuma/NapCat 兼容擴展\n4. **合併轉發擴展鏈路**：專用端點 + `upload_forward_msg`（上傳節點取 resid）+ `get_forward_msg`（解析轉發內容）三級回退"
+    },
+    {
+      "hash": "51004fdd8be5fb18c5f1d39a07704c9f",
+      "translation": "## 標準 Api 動作（Api DSL）\n\n適配器將 OneBot12 標準動作名自動映射到 OB11 動作名，模組可跨平台統一呼叫：\n\n| OB12 標準動作 | OB11 動作 | 說明 |\n|--------------|-----------|------|\n| get_self_info | get_login_info | 欄位標準化 user_id/user_name/user_displayname |\n| get_user_info | get_stranger_info | 欄位標準化 |\n| delete_message | delete_msg | 撤回訊息 |\n| leave_group | set_group_leave | 退出群組 |\n| upload_file | upload_group_file / upload_private_file | 擴展 group_id/user_id 可選參數 |\n\n### 基本用法\n\n```python\nfrom ErisPulse import sdk\nsnowluma = sdk.adapter.get(\"snowluma\")\n\n# 獲取機器人資訊\nresult = await snowluma.Api.get_self_info()\nprint(result[\"data\"][\"user_id\"], result[\"data\"][\"user_name\"])\n\n# 撤回訊息\nawait snowluma.Api.delete_message(message_id=123456)\n\n# 指定帳戶（多帳戶）\nresult = await snowluma.Api.Using(\"main\").get_self_info()\n\n# 擴展動作透過 call() 逃生艙呼叫（SnowLuma/NapCat 通用）\nresult = await snowluma.Api.call(\"send_poke\", group_id=123, user_id=456)\n```\n\n---"
+    },
+    {
+      "hash": "dfa448f96be004eae0340659f850f94a",
+      "translation": "## 支援的消息發送類型\n\n所有發送方法均透過鏈式語法實現，例如：\n\n```python\nfrom ErisPulse import sdk\nsnowluma = sdk.adapter.get(\"snowluma\")\n\n# 使用預設帳戶發送\nawait snowluma.Send.To(\"group\", group_id).Text(\"Hello World!\")\n\n# 指定特定帳戶發送\nawait snowluma.Send.Using(\"main\").To(\"group\", group_id).Text(\"來自主帳戶的消息\")\n\n# 鏈式修飾：@用戶 + 回覆\nawait snowluma.Send.To(\"group\", group_id).At(123456).Reply(msg_id).Text(\"回覆訊息\")\n```\n\n### 基礎發送方法\n\n- `.Text(text: str)`：發送純文字訊息。\n- `.Image(file: Union[str, bytes], filename: str = \"image.png\")`：發送圖片（支援 URL、Base64 或 bytes）。\n- `.Voice(file: Union[str, bytes], filename: str = \"voice.amr\")`：發送語音訊息。\n- `.Video(file: Union[str, bytes], filename: str = \"video.mp4\")`：發送影片訊息。\n- `.Face(id: Union[str, int])`：發送 QQ 表情。\n- `.File(file: Union[str, bytes], filename: str = \"file.dat\")`：發送檔案。\n- `.MergeForward(nodes, title=\"合併聊天記錄\")`：發送合併轉發訊息（見下節）。\n- `.Raw_ob12(message: List[Dict], **kwargs)`：發送 OneBot12 格式訊息（自動轉換為 OB11；純 node 段列表自動路由合併轉發）。\n- `.Recall(message_id: Union[str, int])`：撤回訊息。\n\n### 合併轉發\n\n```python\nnodes = [\n    {\n        \"type\": \"node\",\n        \"data\": {\n            \"user_id\": \"10000\",\n            \"nickname\": \"MyBot\",\n            \"content\": [{\"type\": \"text\", \"data\": {\"text\": \"【1/3】標題\\n正文…\"}}],\n        },\n    },\n]\n\n# 發送合併轉發（三級回退，SnowLuma / NapCat 後端均適用）：\n# ① send_group/private_forward_msg 專用端點（NapCat 原生，SnowLuma 兼容）\n# ② upload_forward_msg 取 resid → send_msg 發 forward 段（SnowLuma 擴展鏈路）\n# ③ send_msg 直發 node 段\nawait snowluma.Send.To(\"group\", group_id).MergeForward(nodes)\n\n# 解析已收到的合併轉發訊息（入站 forward 段以 onebot11_forward 透傳，data.id 為 resid）\nresult = await snowluma.Api.get_forward_msg(id=\"resid_xxx\")\n```\n\n### 群操作方法\n\n以下方法需透過 `To(\"group\", group_id)` 指定目標群：\n\n- `.Kick(user_id, reject_add_request=False)`：踢出群成員。\n- `.Ban(user_id, duration=1800)`：禁言群成員（秒），0 表示解禁。\n- `.WholeBan(enable=True)`：開啟/關閉全體禁言。\n- `.SetAdmin(user_id, enable=True)`：設定/取消群管理員。\n- `.SetCard(user_id, card=\"\")`：設定群名片。\n- `.SetGroupName(name)`：修改群名稱。\n- `.Leave(is_dismiss=False)`：退群（群主可解散）。\n- `.SetTitle(user_id, title=\"\")`：設定群頭銜。\n- `.SetPortrait(file)`：設定群頭像。\n\n### 拍一戳 / 社交\n\n- `.GroupPoke(user_id)`：群內戳一戳（需 `To(\"group\", group_id)`）。\n- `.FriendPoke(user_id)`：好友戳一戳。\n- `.SendPoke(user_id)`：發送戳一戳（通用）。\n- `.SetMsgEmojiLike(message_id, emoji_id)`：訊息表情回應。\n\n### QQ空間\n\n- `.QzoneMsg(content)`：發表 QQ 空間說說。\n- `.QzoneLike(tid)` / `.QzoneUnlike(tid)`：點贊/取消點贊。\n- `.QzoneComment(tid, content)`：評論。\n- `.QzoneDelete(tid)`：刪除。\n\n### 群檔案 / 訊息歷史 / 已讀狀態\n\n- `.UploadGroupFile(file, name)`：上傳群檔案（需 `To(\"group\", group_id)`）。\n- `.GetGroupFileUrl(file_id)`：取得群檔案下載連結。\n- `.GetGroupMsgHistory(message_seq=0, count=20)`：取得群訊息歷史。\n- `.GetFriendMsgHistory(user_id, count=20)`：取得好友訊息歷史。\n- `.MarkMsgAsRead()`：標記當前會話已讀。\n- `.SetOnlineStatus(status)`：設定線上狀態。\n\n### 鏈式修飾方法（可組合使用）\n\n- `.At(user_id: Union[str, int])`：@指定用戶（可多次調用）。\n- `.AtAll()`：@全體成員。\n- `.Reply(message_id: Union[str, int])`：回覆指定訊息。"
+    },
+    {
+      "hash": "c62cff0392a727451befde85fdf0b0c8",
+      "translation": "## OB11 扩展動作（Api DSL）\n\n除了標準動作外，`OB11ExtensionApi` 混入提供了 60 多個類型化的擴展方法，所有 109 個擴展動作均可透過\n`Api.call(\"action_name\", ...)` 直接呼叫（SnowLuma/NapCat 通用）。分組概覽：\n\n| 分組 | 代表動作 |\n|------|----------|\n| 拍一戳 / 社交 | send_poke / group_poke / friend_poke / send_like |\n| 消息回應 / 精華 | set_msg_emoji_like / get_emoji_likes / set_essence_msg / get_essence_msg_list |\n| 已讀 / 狀態 | mark_msg_as_read / mark_group_msg_as_read / mark_all_as_read / set_online_status / set_input_status |\n| 消息歷史 | get_group_msg_history / get_friend_msg_history |\n| 群管理擴展 | set_group_reaction / set_group_remark / set_group_sign / set_group_todo / get_group_info_ex / get_group_shut_list / get_group_at_all_remain |\n| 好友 / 聯絡人 | set_friend_remark / get_unidirectional_friend_list / get_friends_with_category / get_recent_contact |\n| 群檔案 | get_group_file_url / get_private_file_url / get_group_root_files / get_group_files_by_folder / create_group_file_folder / delete_group_file |\n| 群相簿 | get_group_album_list / get_group_album_media_list |\n| QQ空間 | send_qzone_msg / get_qzone_msg_list / get_qzone_feeds |\n| 合併轉發 | get_forward_msg / upload_forward_msg |\n| 媒體 / OCR | ocr_image / get_image |"
+    },
+    {
+      "hash": "4786292717ebdeddf69015cae9d36000",
+      "translation": "## 事件類型映射\n\n### 標準 OB12 映射\n\n| OB11 原始類型 | 轉換後 detail_type | 說明 |\n|--------------|-------------------|------|\n| message_type: private | `private` | 私聊消息 |\n| message_type: group | `group` | 群聊消息 |\n| notice_type: group_upload | `group_file_upload` | 群文件上傳 |\n| notice_type: group_admin | `group_admin_change` | 群管理員變動 |\n| notice_type: group_increase | `group_member_increase` | 群成員增加 |\n| notice_type: group_decrease | `group_member_decrease` | 群成員減少 |\n| notice_type: group_ban | `group_ban` | 群禁言 |\n| notice_type: friend_add | `friend_increase` | 好友添加 |\n| notice_type: friend_delete | `friend_decrease` | 好友刪除 |\n| notice_type: group_recall / friend_recall | `message_recall` | 消息撤回 |\n\n### 平台特有事件與擴展段\n\n- 平台特有事件（poke/honor 等）使用 `snowluma_` 前綴的 detail_type\n- 未識別的 CQ 碼類型以 `onebot11_{type}` 前綴透傳（協定級前綴）\n- 入站合併轉發消息段為 `onebot11_forward`（`data.id` 為 resid，可用 `Api.get_forward_msg(id=...)` 解析內容）\n\n### 擴展字段說明\n\n- 所有特有字段均以 `snowluma_` 前綴標識\n- 保留原始事件數據在 `snowluma_raw` 字段\n- 保留原始事件類型在 `snowluma_raw_type` 字段\n\n---"
+    },
+    {
+      "hash": "2af81cae12c48d3acd7cf9a6f27b5822",
+      "translation": "## 事件擴展方法\n\n```python\nfrom ErisPulse.Core.Event import message\n\n@message.on_message()\nasync def handle_message(event):\n    raw_self_id = event.get_raw_self_id()\n    sender_info = event.get_sender_info()\n    sender_role = event.get_sender_role()\n```\n\n| 方法 | 回傳類型 | 說明 |\n|------|----------|------|\n| `get_raw_event()` | `dict` | 取得 SnowLuma 完整原始事件資料 |\n| `get_raw_self_id()` | `str` | 取得原始 self_id（Bot 的 QQ 號） |\n| `get_sender_info()` | `dict` | 取得完整的發送者資訊（包含 nickname、role、level 等） |\n| `get_sender_role()` | `str` | 取得發送者在群內的角色（owner/admin/member） |\n| `get_sender_level()` | `int` | 取得發送者等級 |\n| `get_sender_title()` | `str` | 取得發送者群頭銜 |\n| `is_system_message()` | `bool` | 判斷是否為系統訊息 |\n\n---"
+    },
+    {
+      "hash": "aa20cbd84a5726f9bd6a35158a7153a2",
+      "translation": "## 配置選項\n\nSnowLuma 适配器採用多帳戶架構，每個帳戶獨立配置。配置鍵名為 `SnowLuma_Adapter`。\n\n### 帳戶配置字段\n\n| 字段 | 類型 | 必填 | 默認值 | 說明 |\n|------|------|------|--------|------|\n| `mode` | `str` | 否 | `\"client\"` | 運行模式：`\"client\"`（主動連接，推薦）或 `\"server\"`（被動監聽） |\n| `url` | `str` | 否 | `\"ws://127.0.0.1:3001\"` | Client 模式的 WebSocket 位址（SnowLuma 預設 WS 端口 3001） |\n| `token` | `str` | 否 | `\"\"` | 訪問令牌（Bearer 認證） |\n| `server_path` | `str` | 否 | `\"/\"` | Server 模式的 WebSocket 路徑 |\n| `enabled` | `bool` | 否 | `true` | 是否啟用該帳戶 |\n| `name` | `str` | 否 | `\"\"` | 帳戶備註名稱 |\n\n> bot_id（QQ 號）無需配置：適配器連接後自動識別，並維護 `self_id → account_name` 映射，  \n> `event.reply()` 自動路由到來源帳戶。\n\n### 配置示例\n\n```toml\n[SnowLuma_Adapter.accounts.main]\nmode = \"client\"\nurl = \"ws://127.0.0.1:3001\"\ntoken = \"\"\nenabled = true\n\n[SnowLuma_Adapter.accounts.second]\nmode = \"client\"\nurl = \"ws://192.168.1.100:3001\"\ntoken = \"second_token\"\nenabled = true\n```\n\n---"
+    },
+    {
+      "hash": "8eecdbd62ded9679b6f3b75728bb83d4",
+      "translation": "## 發送方法返回值\n\n所有發送方法均返回一個 Task 對象，可以直接 await 獲取發送結果。返回結果遵循 ErisPulse 适配器标准化返回规范：\n\n```python\n{\n    \"status\": \"ok\",\n    \"retcode\": 0,\n    \"data\": {...},\n    \"message_id\": \"123456\",\n    \"message\": \"\",\n    \"snowluma_raw\": {...}\n}\n```\n\n### 多账户發送語法\n\n```python\n# 賬戶選擇方法\nawait snowluma.Send.Using(\"main\").To(\"group\", 123456).Text(\"主账户消息\")\n\n# API調用方式\nawait snowluma.call_api(\"send_msg\", account_id=\"main\", group_id=123456, message=\"Hello\")\n```"
+    },
+    {
+      "hash": "3948091b7c509461ff0fbd4a062eb595",
+      "translation": "## self_id 自動映射\n\n適配器會自動建立 OneBot `self_id`（QQ號）到 `account_name` 的映射關係，用於事件回傳路由：\n\n```python\n@message.on_message()\nasync def handler(event):\n    # 自動路由到正確的帳戶\n    await event.reply(\"自動路由到來源帳戶\")\n```"
+    }
+  ]
+}

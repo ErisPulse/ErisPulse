@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "e523160c99fc952497915ef1ab070d45",
-  "file_hash": "e523160c99fc952497915ef1ab070d45",
-  "translated_at": "2026-09-10T11:50:45.462836",
+  "hash": "1b189d17adcd178dbc13cf39b718d5a7",
+  "file_hash": "1b189d17adcd178dbc13cf39b718d5a7",
+  "translated_at": "2026-10-22T11:54:34.245191",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "99cbf532c64c02b92299e7ffb6e2baf0",
-      "translation": "# ErisPulse-Cron\n\n[ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) は ErisPulse エコシステムの**スケジュールタスクモジュール**です。他のモジュールに統一されたスケジュールタスク API を提供します。1回限りのスケジュール、間隔ループ、Cron 表現式の3種類のタスクタイプをサポートし、コールバックにパラメータを渡すことができます。SQLite を用いた永続化により、再起動してもタスクが失われることはありません。\n\n> [!IMPORTANT]\n> Cron は ErisPulse フレームワークの組み込み機能ではなく、個別にインストールする必要があります：\n>\n> ```bash\n> epsdk install Cron\n> ```\n\nインストール後は `sdk.Cron` を使ってすべてのインターフェースにアクセスできます。"
+      "hash": "d3fa44d7a51d01bb9fb9f8cedb4e85fe",
+      "translation": "# ErisPulse-Cron\n\n> [!TIP]  \n> **このドキュメントを読む必要があるタイミング**:  \n> モジュールで定時/遅延実行のロジック（定時アラーム、周期的な監視、Cron 式によるスケジューリング）が必要で、フレームワークの再起動後にタスクが失われないことを望む場合にこのドキュメントを読む。不要であればスキップしてください。\n\n[ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) は ErisPulse エコシステムの**定時タスクスケジューラーモジュール**であり、他のモジュールに統一された定時タスク API を提供します。このモジュールは、一度限りのタイマー、間隔繰り返し、Cron 式の 3 種類のタスクタイプをサポートし、コールバックにパラメータを渡すことができ、SQLite による永続化により、再起動してもタスクが失われません。\n\n> [!IMPORTANT]  \n> Cron は ErisPulse フレームワークの内蔵機能ではなく、個別にインストールする必要があります:  \n>  \n> ```bash\n> epsdk install Cron\n> ```\n\nインストール後は `sdk.Cron` を通じてすべてのインターフェースにアクセスできます。  \n---"
     },
     {
       "hash": "5ebd1ec7ac212e0bafb877a370d1f90f",
@@ -26,8 +26,12 @@
       "translation": "## モジュールのアンロード時の動作\n\nCron のタスクデータは**永続化されたアセット**です。タスクを作成したモジュールがアンロードまたは無効化されても、既に作成されたタスクは削除されません。ただし、そのモジュールが登録したコールバックハンドルはクリーンアップされます。所有権システムに基づく[外部クリーンアップフック](../advanced/ownership.md#ツールモジュールガイド-他のモジュールのハンドルを管理する)により、Cron が他のモジュールのコールバックを管理する場合、自動的に所有者を記録します。その他のモジュールがアンロードまたは無効化された際に、そのコールバックハンドルは自動的に破棄され、他のモジュールのインスタンスが正常にリサイクルされることが保証されます。\n\n- タスク作成元のモジュールが**再ロード**された後、`on_trigger` を再び実行することで、再びトリガーを受け取ることができます。\n- 使用しなくなったタスクは `sdk.Cron.cancel(task_id)` / `delete_task(task_id)` を使用してクリーンアップできます。"
     },
     {
-      "hash": "085dbb7129d2816884289cb6ae3cc23e",
-      "translation": "## 関連リンク\n\n- [GitHub リポジトリ](https://github.com/wsu2059q/ErisPulse-Cron)\n- [PyPI ページ](https://pypi.org/project/ErisPulse-Cron/)\n- [所有権（owner）システム](../advanced/ownership.md)"
+      "hash": "be6c0aaa8c8ea00f0f1bb7e2bb7067c3",
+      "translation": "## 関連リンク\n\n- [GitHub 仓库](https://github.com/wsu2059q/ErisPulse-Cron)\n- [PyPI ページ](https://pypi.org/project/ErisPulse-Cron/)\n\n---"
+    },
+    {
+      "hash": "2a4b310486131a226cc087ff52a9e057",
+      "translation": "## 次のステップ\n\n- **タスクのトリガー後にユーザーにメッセージを送信**：コールバック内で [Send DSL](../developer-guide/adapters/send-dsl.md) または `event.reply()`（[イベントシステム API](../api-reference/event-system.md) を参照）を使用してリマインダーを送信します。\n- **視覚的にスケジュールされたタスクを管理**：[ErisPulse-Dashboard](dashboard.md) をインストールすると、Cron が自動的に管理用のウィンドウを登録します。\n- **モジュールのアンインストール時のコールバックのクリーンアップの詳細**：[所有権（owner）システム](../advanced/ownership.md)"
     }
   ]
 }

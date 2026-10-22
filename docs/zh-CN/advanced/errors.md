@@ -202,4 +202,15 @@ except ErisPulseError as e:
 `Task was destroyed but it is pending!` 类解释器噪音。框架内置**同类噪音折叠**：
 2 秒窗口内的同类消息降级为 TRACE 并合并计数，只输出一次，结尾带
 「（另有 N 次同类消息被折叠）」后缀。这是刻意的降噪行为——看到折叠后缀不代表
-框架吞掉了真实异常，业务异常（上表各类）照常完整输出。
+框架吞掉了真实异常，业务异常（上表各类）照常完整输出。折叠仅针对解释器退出噪音，
+业务异常不受影响。什么级别的异常值得留痕、什么可以降级/折叠，遵循
+[工程健壮性规则 · 异常留痕分级](../styleguide/engineering.md#1-异常留痕分级)。
+
+## 相关文档
+
+按排查意图选择：
+
+- **存储操作返回 `False` / `None`，想搞清连接状态** → [存储后端 · 连接失败行为](storage-backends.md#连接失败行为)，或订阅 [storage.unreachable / storage.recovered 事件](lifecycle.md#存储连接状态)
+- **`wait_reply` 返回 `None`，想知道被什么取消** → [交互会话系统](interaction.md)（取消原因对照表）
+- **`module.call` 抛模块调用异常** → [模块间通信](module-communication.md)
+- **连接 / WebSocket 报错** → [网络客户端](http-client.md)（ClientError 体系）与[连接池与广播](connections.md)（连接注册表异常）

@@ -5,7 +5,7 @@ Uninstall 命令实现
 """
 
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 from ..base import Command
 from ..console import console
@@ -34,7 +34,7 @@ class UninstallCommand(Command):
         py_exec, _py_source = resolve_target_python()
         self.package_manager = PackageManager(python_executable=py_exec)
 
-    def add_arguments(self, parser: ArgumentParser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "package", nargs="*", help=i18n.t("cli.uninstall.package_help")
         )
@@ -42,7 +42,7 @@ class UninstallCommand(Command):
             "--no-uv", action="store_true", help=i18n.t("cli.uninstall.no_uv_help")
         )
 
-    def execute(self, args):
+    def execute(self, args: Namespace) -> None:
         warn_if_uv_isolated()
         self.package_manager.no_uv = getattr(args, "no_uv", False)
         if args.package:

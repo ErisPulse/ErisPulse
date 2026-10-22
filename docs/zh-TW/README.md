@@ -1,8 +1,10 @@
 # ErisPulse 文件
 
-ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配器與不同平台互動，提供靈活的模組系統用於功能擴展。
+ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式碼只寫一次，透過適配器部署到 QQ、Telegram、Kook、雲湖等多個平台，插件系統、熱重載與完整的開發者工具鏈開箱即用。
 
 > **第一次使用？** 直接看 [5 分鐘快速入門](docs/zh-TW/quick-start.md) —— 從安裝到執行第一個機器人，一氣呵成。
+
+---
 
 ## 選擇你的路徑
 
@@ -31,9 +33,9 @@ ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配�
 |------|------|------|
 | **① 上手** | [5 分鐘快速開始](quick-start.md) | 安裝、初始化、運行 —— 唯一的起步入口 |
 | App 直裝 | [ErisPulse-App 客戶端](ecosystem/app.md) | 官方全平台客戶端：手機 / 電腦圖形介面直接運行與管理，免終端 |
-| ② 深入 | [創建第一個機器人](getting-started/first-bot.md) | 編寫第一個命令處理器 |
+| ② 深入 | [建立第一個機器人](getting-started/first-bot.md) | 編寫第一個命令處理器 |
 | ③ 概念 | [基礎概念](getting-started/basic-concepts.md) | 理解適配器/模組/事件的設計 |
-| ④ 實戰 | [常見任務示例](getting-started/common-tasks.md) | 存儲、定時任務、權限控制 |
+| ④ 實戰 | [常見任務範例](getting-started/common-tasks.md) | 存儲、定時任務、權限控制 |
 | 參考 | [配置文件說明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md) | 按需查閱 |
 | 參考 | [平台特性指南](platform-guide/README.md) | 各平台（雲湖/QQ/Telegram…）的差異 |
 
@@ -51,23 +53,49 @@ ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配�
 
 ### 三、我要深入理解原理
 
-了解框架內部如何運作。
+了解框架內部如何運作。先看架構與 API 參考，再按下面對照表進入專題。
+
+**架構與 API 參考**
 
 | 文件 | 說明 |
 |------|------|
-| [架構概覽](architecture.md) | 可視化圖表：核心架構、初始化流程、事件處理、生命週期、模組加載策略（含 `activate_on` 事件驅動懶激活）、本地插件文件夾與模組熱重載架構（支持全部模組來源） |
-| [啟動流程與手動控制](advanced/startup.md) | 啟動鏈路拆解、手動驅動各環節、加載失敗診斷 |
+| [架構概覽](architecture.md) | 可視化圖表：核心架構、初始化流程、事件處理、生命週期、模組加載策略（含 `activate_on` 事件驅動懶加載）、本地插件文件夾與模組熱重載架構（支援全部模組來源） |
 | [事件系統](api-reference/event-system.md) | 五大類事件的完整 API |
 | [適配器系統](api-reference/adapter-system.md) | 適配器註冊、啟停、API 調用 |
 | [核心模組](api-reference/core-modules.md) | Storage / Config / Logger / Router 等基礎能力 |
-| [生命週期管理](advanced/lifecycle.md) · [懶加載](advanced/lazy-loading.md) · [路由系統](advanced/router.md) | 內部子系統 |
-| [連接池與廣播](advanced/connections.md) · [會話收件箱](advanced/transcript.md) | 連接一等資源：廣播/分組/跨模組傳遞與復用、連接池查看；消息記錄保留策略與運行時覆蓋 |
+
+**L2 必讀（寫生產級模組繞不開）**
+
+| 文件 | 說明 |
+|------|------|
 | [作用域（scope）](advanced/scope.md) | 三維作用域控制：模組可用性 / 事件准入 / 出站動作限制（含方法級細粒度規則、綁定繼承 merge） |
 | [歸屬權（owner）系統](advanced/ownership.md) | 資源歸屬與自動回收：owner 上下文、歸屬資源全景、卸載清理序列、設計邊界與模組作者指南 |
-| [影子模組與灰度轉正](advanced/shadow.md) | 模組新版本以獨立 owner 並行試運行：五道隔離閘、行為 diff 對齊、promote 轉正與失敗回滾 |
-| [交互會話系統](advanced/interaction.md) | wait_reply 全解、會話定時器（remind/escalate）、多路等待（select）、會話互斥租約、收件箱、消息事務、鏈路追蹤 |
-| [模組間通信](advanced/module-communication.md) | RPC 協議化（module.call）、meta.services 服務契約與目錄、定向事件 emit(to=)、冷啟動回放、事件幂等去重 |
-| [Conversation 多輪對話](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL 构建](advanced/sql-builder.md) · [存儲後端](advanced/storage-backends.md) · [HTTP 客戶端](advanced/http-client.md) · [國際化](advanced/i18n.md) | 進階工具 |
+| [生命週期管理](advanced/lifecycle.md) | 生命週期事件系統：模組 / 適配器加載、卸載、重載、禁用時各自該做什麼 |
+| [互動會話系統](advanced/interaction.md) | wait_reply 全解、會話定時器（remind/escalate）、多路等待（select）、會話互斥租約、收件箱、消息事務、鏈路追踪 |
+
+**按場景分組（按需查閱）**
+
+| 分組 | 文件 | 不懂首篇會踩的坑 |
+|------|------|------|
+| 運行啟動 | [啟動流程與手動控制](advanced/startup.md) · [懶加載](advanced/lazy-loading.md) | 不懂啟動鏈路（Finder / Loader / Manager / Router），模組加載失敗時只能對著日誌干瞪眼 |
+| 通信連接 | [模組間通信](advanced/module-communication.md) · [連接池與廣播](advanced/connections.md) · [路由系統](advanced/router.md) | 不懂服務契約（`meta.services`）白名單，跨模組 `module.call` 會被 `ServiceNotProvidedError` 拒絕且不知原因 |
+| 數據存儲 | [存儲後端](advanced/storage-backends.md) · [SQL 構建](advanced/sql-builder.md) · [HTTP 客戶端](advanced/http-client.md) | 不懂連接失敗冷卻期語義，數據庫抖動時會誤判"框架掛了"（實際是存儲操作快速失敗、冷卻後自動重連） |
+| 消息對話 | [Conversation 多輪對話](advanced/conversation.md) · [會話收件箱](advanced/transcript.md) · [MessageBuilder](advanced/message-builder.md) · [國際化](advanced/i18n.md) | 不懂會話互斥租約，兩個模組同時等同一用戶的回覆會互相踢掉 |
+| 灰度影子 | [影子模組與灰度轉正](advanced/shadow.md) | 不懂五道隔離閘就提前轉正，影子的出站消息會外溢到真實用戶 |
+
+**概念關係總表**
+
+分不清哪個子系統管什麼時，按這張表對號入座：
+
+| 子系統 | 回答什麼問題 | 一句話口訣 |
+|--------|------------|-----------|
+| [通信](advanced/module-communication.md)（module-communication） | 模組之間怎麼互相調用、怎麼定向發事件？ | 跨模組走 `module.call`；對方聲明了 `meta.services` 就只能調白名單內的方法 |
+| [權限](advanced/scope.md)（scope） | 誰能用這個模組、誰能觸發事件、能執行哪些動作？ | 三道閘——模組綁定、身份准入、出站限制，全部由用戶配置說了算 |
+| [歸屬](advanced/ownership.md)（ownership） | 模組卸載後，它開的連接、定時器、訂閱去哪了？ | 誰註冊誰歸屬，卸載即回收，不留懸掛資源 |
+| [懶加載與休眠](advanced/lazy-loading.md)（lazy-loading） | 模組什麼時候才真正加載、閒置後去哪？ | `activate_on` 用到才醒，`dormant_after` 閑置歸眠 |
+| [互動](advanced/interaction.md)（interaction） | 怎麼等用戶下一條回覆、多輪收集怎麼寫？ | `wait_reply` 等一條、`.got()` 鏈收多輪，租約保證不打架 |
+| [影子灰度](advanced/shadow.md)（shadow） | 新版模組怎麼在不影響線上的情況下試運行？ | 影子收副本、出站只記賬，`promote` 由人確認才轉正 |
+| [存儲](advanced/storage-backends.md)（storage-backends） | 數據存哪、後端怎麼換？ | 同一套存儲 API，sqlite / mysql / postgres 配置切換 |
 
 ### 四、生態與官方客戶端
 
@@ -89,6 +117,18 @@ ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配�
 |------|------|
 | [為 ErisPulse 貢獻](contributing/README.md) | 貢獻方式總覽：文件 / i18n / Bug / 模組 / 適配器 |
 | [首次貢獻](contributing/first-contribution.md) | 從 fork 到提交 PR |
+
+## 高級特性版本速查表
+
+在進行版本相容性判斷，或接手舊項目時想要知道「這個功能是哪個版本引入的」，可依照此表對號入座（以倉庫根目錄 [CHANGELOG.md](https://github.com/ErisPulse/ErisPulse/blob/main/CHANGELOG.md) 各版本條目為準）。
+
+| 版本 | 引入的功能 |
+|------|-----------|
+| **2.7** | 生產化基座：OneBot12 標準化基類（`ApiDSL` / `BaseConverter`）、配置熱更新系統化、優雅關閉與 SIGTERM/SIGHUP 信號處理、環境變數配置覆蓋、生命週期回調鉤子、Web 栈懶加載；2.7.1 修補配置寫入可靠性和 GC 分代治理 |
+| **2.8** | 權限與通信骨架：作用域三維體系（scope）、交互會話基礎設施（租約 / 檢查點 / 消息事務 / 會話收件箱 transcript）、模組間 RPC 協議化（`module.call` / `meta.services` 服務契約 / 定向事件 emit(to=)）、多後端異步存儲（sqlite / mysql / postgres，連接失敗不阻塞框架）、歸屬權清理、配置註釋保留；2.8.x 後續版本為 CLI 腳手架、子命令等打磨 |
+| **2.9** | 「模組開發體驗」主線（EPRFC-2026-001）：宣告式命令參數（`args=` / `options=`）與命令治理（`cooldown=` / `rate_limit=`）、統一依賴注入（`Depends`）、中間件事件否決權、內建 ORM（自動遷移 + 關係映射）、影子模組灰度轉正、分發決策鏈追蹤與排查診斷、正式支援 Python 3.14 |
+| **2.10** | 連接一等資源（`connections` 註冊表：廣播 / 業務分組 / 跨模組傳遞複用 / 卸載自動回收）、根導入契約（常用 API 全部可 `from ErisPulse import`）、歸屬權體系補全、收件箱保留策略執行時覆蓋；2.10.2 適配器本地插件目錄（`plugins/`）+ `epsdk create pack` + tomlclass 無損配置寫入 |
+| **2.11**（dev） | 「改代碼 → 看效果」開發閉環：熱重載預設全量語義（語法預檢 + 代碼身份核對 + 依賴者級聯重導）、懶加載休眠（`dormant_after`）、適配器代碼級熱重載（`sdk.adapter.reload`）、`.got()` 命令流語法糖、`epsdk stop` / `restart` 運行時控制 |
 
 ## 開發方式
 

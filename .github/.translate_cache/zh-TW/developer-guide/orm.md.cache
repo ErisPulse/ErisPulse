@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a14fefc46a19f5e1b985d0f2a56484f6",
-  "file_hash": "a14fefc46a19f5e1b985d0f2a56484f6",
-  "translated_at": "2026-10-14T03:12:53.381317",
+  "hash": "db403ab121230f9df11de71d6e66ad25",
+  "file_hash": "db403ab121230f9df11de71d6e66ad25",
+  "translated_at": "2026-10-22T10:05:31.802393",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -44,6 +44,10 @@
     {
       "hash": "3bc63b2b6aa493301f11e1712a5b2615",
       "translation": "## 關係映射（relationship）\n\n在模型類體中以類屬性宣告 `relationship()`，**方向依外鍵欄位宣告在哪張表自動判定**：\n\n```python\nfrom ErisPulse.Core.Bases import Model, Field, relationship\n\nclass User(Model):\n    __tablename__ = \"orm_users\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    name: str = Field(max_length=64)\n\n    posts = relationship(\"Post\", foreign_key=\"author\")   # 外鍵在對方表 → has-many\n\nclass Post(Model):\n    __tablename__ = \"posts\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    author: int = Field(foreign_key=\"orm_users.id\")\n    content: str = Field(max_length=255)\n\n    writer = relationship(\"User\", foreign_key=\"author\")  # 外鍵在本表 → belongs-to\n```\n\n**has-many**：實例屬性返回查詢集，`QuerySet` 全部鏈式能力可用，  \n`create` 自動回填本表主鍵到對方外鍵欄位：\n\n```python\nalice = await User.get(name=\"Alice\")\n\nposts = await alice.posts.all()                          # 該用戶的全部文章\nlatest = await alice.posts.order_by(\"-id\").first()\ntotal = await alice.posts.count()\nhot = await alice.posts.where(Post.content != \"\").all()  # 追加對方表欄位條件\nawait alice.posts.delete()                               # 只刪該用戶的\n\nnew_post = await alice.posts.create(content=\"hi\")        # author 自動 = alice.id\n```\n\n**belongs-to**：直接 `await` 得到對方實例（無匹配或外鍵為 NULL 返回 `None`）：\n\n```python\npost = await Post.get(id=1)\nwriter = await post.writer          # User 實例或 None\nawait writer.posts.count()          # 雙向互通\n```\n\n**要點**：\n\n- `related` 傳入類名字串（按模型類名註冊表惰性解析，兩側定義順序無關）或直接傳模型類\n- 關係查詢與對方模型使用各自的儲存後端（不支援跨後端 JOIN——關係查詢是獨立的兩條 SQL）\n- 關係查詢不快取，每次存取都是即時查詢；改用 `User.where(...)` 仍可做任意自訂查詢"
+    },
+    {
+      "hash": "6b6e4e5acf626dfc062ee95e1234f817",
+      "translation": "## 下一步\n\n### 需要換資料庫或部署到雲端資料庫\n\n- [儲存後端](../advanced/storage-backends.md) — SQLite / MySQL / PostgreSQL 的設定與切換，模型程式碼零改動\n\n### 不需要表結構、只存幾個鍵值\n\n- [模組核心概念 - 儲存系統](modules/core-concepts.md#儲存系統) — 鍵值儲存的輕量用法，無需宣告模型"
     }
   ]
 }

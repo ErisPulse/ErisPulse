@@ -1,7 +1,7 @@
 {
   "source_lang": "zh-CN",
   "target_langs": ["en", "zh-TW", "ja", "ru"],
-  "concurrent": 3,
+  "concurrent": 1,
   "time_budget_minutes": 40,
   "ignore_dirs": ["ai-support/prompts", "api-reference/auto_api", "_meta"],
   "cache_dir": ".github/.translate_cache",
@@ -22,6 +22,14 @@
       "base_url": "https://api.siliconflow.cn/v1",
       "api_key_env": "SILICONFLOW_API_KEY",
       "model": "Qwen/Qwen3-Omni-30B-A3B-Captioner",
+      "supports_thinking": false,
+      "max_tokens": 40000
+    },
+    {
+      "name": "bigmodel",
+      "base_url": "https://open.bigmodel.cn/api/coding/paas/v4",
+      "api_key_env": "BIGMODEL_API_KEY",
+      "model": "GLM-5.3-Flash",
       "supports_thinking": false,
       "max_tokens": 40000
     }

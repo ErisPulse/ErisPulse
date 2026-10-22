@@ -31,7 +31,7 @@ CLI 命令基类
 #### 方法列表
 
 
-##### `add_arguments(parser: ArgumentParser)`
+##### `add_arguments(parser: ArgumentParser) -> None`
 
 添加命令参数
 
@@ -40,7 +40,7 @@ CLI 命令基类
 ---
 
 
-##### `execute(args)`
+##### `execute(args: Namespace) -> None`
 
 执行命令
 

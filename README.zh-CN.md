@@ -4,11 +4,9 @@
 
 # ErisPulse
 
-**一次编写，部署到 QQ / Telegram / Kook / Yunhu / 微信公众号 / OneBot12 / ... 多个平台。**
+**一次编写，部署到 QQ / Telegram / Kook / 云湖 / 微信公众号 / OneBot12 / ... 多个平台。**
 
-事件驱动的多平台聊天机器人开发框架。
-
-基于 OneBot12 标准接口，一次编写多平台部署；灵活的插件系统、热重载支持和完整的开发者工具链，适用于从简单聊天机器人到复杂自动化系统的各种场景。
+基于 OneBot12 标准接口，事件驱动的模块化异步机器人框架。业务代码只写一遍，适配器负责屏蔽各平台差异；插件系统、热重载与完整开发者工具链开箱即用。
 
 <p>
   <a href="https://pypi.org/project/ErisPulse/"><img src="https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -111,48 +109,12 @@ ErisPulse 通过适配器层屏蔽平台差异，让业务代码只关心事件�
 
 ```mermaid
 graph LR
-    subgraph Platforms[平台]
-        QQ["QQ"]
-        TG["Telegram"]
-        Kook["Kook"]
-        YH["云湖"]
-        WX["微信公众号"]
-    end
-
-    subgraph Adapters[适配器层]
-        A1["QQ 适配器"]
-        A2["Telegram 适配器"]
-        A3["Kook 适配器"]
-        A4["云湖适配器"]
-        A5["微信适配器"]
-    end
-
+    P["15+ 平台<br/>QQ · Telegram · Kook · 云湖 · 微信公众号 · 邮件 · Webhook ..."]
+    A["适配器层<br/>原生协议 → OneBot12 标准事件"]
     Event["Event 事件总线<br/>中间件 → 分发 command/message/notice/request/meta"]
-
-    subgraph Modules[业务模块]
-        M1["命令处理器<br/>@command"]
-        M2["消息处理器<br/>@message"]
-        M3["你的模块"]
-    end
-
-    QQ --> A1
-    TG --> A2
-    Kook --> A3
-    YH --> A4
-    WX --> A5
-
-    A1 -->|"OB12 事件"| Event
-    A2 -->|"OB12 事件"| Event
-    A3 -->|"OB12 事件"| Event
-    A4 -->|"OB12 事件"| Event
-    A5 -->|"OB12 事件"| Event
-
-    Event -->|"分发"| M1
-    Event -->|"分发"| M2
-    Event -->|"分发"| M3
-
-    M1 -.->|"event.reply()<br/>SendDSL"| Event
-    Event -.->|"发送"| A1
+    M["业务模块<br/>@command / @message 处理器 · 你的模块"]
+    P --> A --> Event --> M
+    M -.->|"event.reply() / SendDSL"| Event
 ```
 
 - **适配器层**将各平台原生协议转换为 OneBot12 标准事件，业务模块看不到平台差异
@@ -385,137 +347,58 @@ epsdk run main.py --reload
 
 ## 链式发送 DSL
 
-一条链式调用完成 @、回复、重试、超时、回调等全部发送逻辑：
+@ 用户、回复、重试、超时、成功回调——复杂的发送逻辑，一条链写完：
 
 ```python
 yunhu = sdk.adapter.get("yunhu")
 
 # 单发：@用户 + 回复 + 重试 + 成功回调
-await (yunhu.Send.To("group", "123")
-       .At("456").Reply("msg_789")
+await (yunhu.Send.To("group", "123").At("456").Reply("msg_789")
        .Retry(3).Timeout(10)
-       .Hook(lambda r: print("发送成功！"))
-       .Text("你好"))
+       .Hook(lambda r: print("发送成功！")).Text("你好"))
 
-# 批量发送：一条链发多条消息
-results = await (yunhu.Send.To("user", "123")
-                .Build()
-                .Text("通知一")
-                .Image("pic.jpg")
-                .Retry(2)
-                .send_all())
+# 批量：一条链发多条消息
+results = await (yunhu.Send.To("user", "123").Build()
+                 .Text("通知一").Image("pic.jpg").Retry(2).send_all())
 ```
 
-> 支持 Hook（成功回调）、Retry（失败重试）、Timeout（超时取消）、OnProgress（进度监控）、Defer（延迟发送）、Build（批量构建）等链式方法，详见 [SendDSL 文档](docs/zh-CN/developer-guide/adapters/send-dsl.md)。
+> Hook / Retry / Timeout / OnProgress / Defer / Build 等全部链式方法，见 [SendDSL 文档](docs/zh-CN/developer-guide/adapters/send-dsl.md)。
 
 ---
 
 ## 多轮对话示例
 
-ErisPulse 内置了强大的多轮对话引擎，轻松实现引导式操作、信息收集等交互场景：
+收集信息、校验输入、确认提交，不用自己管对话状态：
 
 ```python
-from ErisPulse.Core.Event import command, request
+from ErisPulse.Core.Event import command
 
 @command("register")
 async def register_handler(event):
     conv = event.conversation(timeout=60)
-    
     await conv.say("欢迎注册！")
-    
-    # 多步骤收集用户信息，自动验证
     data = await conv.collect([
         {"key": "name", "prompt": "请输入姓名"},
         {"key": "age", "prompt": "请输入年龄",
          "validator": lambda e: e.get_text().strip().isdigit(),
          "retry_prompt": "年龄必须是数字，请重新输入"},
     ])
-    
     if data and await conv.confirm(f"确认注册？姓名: {data['name']}, 年龄: {data['age']}"):
-        # 通过 SendDSL 主动推送通知
-        await sdk.adapter.get(event.get_platform()).Send.To(
-            "user", event.get_user_id()
-        ).Text(f"注册成功！欢迎 {data['name']}")
-        # 或 await event.reply("注册成功！")
-
-# 自动处理好友请求
-@request.on_friend_request()
-async def handle_friend_request(event):
-    user_name = event.get_user_nickname() or event.get_user_id()
-    
-    # 同意请求
-    result = await event.approve()
-    if result.get("status") == "ok":
-        await event.reply(f"已自动通过好友请求，欢迎 {user_name}")
+        await event.reply(f"注册成功！欢迎 {data['name']}")
 ```
 
-<details>
-<summary>查看更多 Conversation API（分支跳转 / 选择 / 持久化）</summary>
-
-```python
-@command("quiz")
-async def quiz_handler(event):
-    conv = event.conversation(timeout=30)
-    
-    # 选项式问答
-    answer = await conv.choose("Python 的创造者是谁？", [
-        "Guido van Rossum",
-        "James Gosling", 
-        "Dennis Ritchie",
-    ])
-    
-    if answer == 0:
-        await conv.say("正确！")
-    elif answer is None:
-        await conv.say("超时了，下次再来吧！")
-    else:
-        await conv.say("错误了，正确答案是 Guido van Rossum")
-
-@command("menu")
-async def menu_handler(event):
-    conv = event.conversation(timeout=60)
-    
-    # 分支跳转，构建复杂交互流程
-    @conv.branch("main")
-    async def main_menu():
-        await conv.say("=== 主菜单 ===\n1. 个人信息\n2. 设置\n3. 退出")
-        resp = await conv.wait()
-        if resp and resp.get_text().strip() == "1":
-            await conv.goto("profile")
-    
-    @conv.branch("profile")
-    async def profile():
-        await conv.say("姓名: Alice\n0. 返回")
-        resp = await conv.wait()
-        if resp and resp.get_text().strip() == "0":
-            await conv.goto("main")
-    
-    await conv.start()
-```
-
-详见 [Conversation 多轮对话](docs/zh-CN/advanced/conversation.md)
-
-</details>
+> 选项问答（choose）、分支跳转（branch / goto）、持久化等完整能力，见 [Conversation 多轮对话](docs/zh-CN/advanced/conversation.md)。
 
 ---
 
 ## 核心模块
 
-ErisPulse 提供完整的多平台机器人开发工具链，核心模块各司其职：
+一个 `sdk` 入口，串起全部核心能力：
 
 ```mermaid
-graph TB
-    SDK["sdk<br/>统一入口"]
-
-    SDK --> Event["Event<br/>事件系统"]
-    SDK --> AdapterMgr["Adapter<br/>适配器管理"]
-    SDK --> ModuleMgr["Module<br/>模块管理"]
-    SDK --> Router["Router<br/>HTTP/WS 路由"]
-    SDK --> Storage["Storage<br/>SQLite 存储"]
-    SDK --> Config["Config<br/>配置管理"]
-    SDK --> Lifecycle["Lifecycle<br/>生命周期"]
-    SDK --> Logger["Logger<br/>日志系统"]
-    SDK --> Client["HttpClient<br/>HTTP 客户端"]
+graph LR
+    SDK["sdk 统一入口"] --> Event & Adapter & Module & Router & Storage
+    SDK --> Config & Lifecycle & Logger & HttpClient
 ```
 
 | 模块 | 说明 |
@@ -561,6 +444,8 @@ sdk.scope.set_action("MyModule", "api", deny=["set_*"])
 ---
 
 ## 事件覆写——不改模块代码，覆写任意事件类型的行为
+
+换个触发词、给命令加管理员限制，不动模块源码，配置即生效：
 
 ```toml
 # 覆写消息处理器触发条件（与代码内条件 AND；meta/message/notice/request/command 全类型支持）
@@ -720,14 +605,9 @@ ErisPulse 项目的健全性还需要您的一份力！我们欢迎各种形式�
 
 <img src=".github/assets/thanks.png" width="200" alt="感谢" />
 
-本项目部分代码基于 [sdkFrame](https://github.com/runoneall/sdkFrame)。
+本项目部分代码基于 [sdkFrame](https://github.com/runoneall/sdkFrame)，核心适配器标准化层参考并受益于 [OneBot12 规范](https://12.onebot.dev/)。
 
-核心适配器标准化层参考并受益于 [OneBot12 规范](https://12.onebot.dev/)。
-
-特别感谢云湖生态与社区。
-
-ErisPulse 的早期探索与成长离不开云湖开发者社区的支持，
-许多想法、适配器和实践经验都诞生于此。
+ErisPulse 的早期探索与成长离不开云湖开发者社区的支持，许多想法、适配器和实践经验都诞生于此。
 
 同时感谢所有为 ErisPulse、OneBot 生态以及开源社区做出贡献的开发者与项目作者。
 

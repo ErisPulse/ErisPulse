@@ -234,7 +234,6 @@ pyvenv.cfg
 # docs/ar/
 
 # 翻译缓存（已提交到版本控制）
-# .translate_cache/
 
 # 但保留源中文文档
 !docs/zh-CN/

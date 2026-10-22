@@ -14,7 +14,7 @@ send/receive/iter 方法签名在两端保持一致，具体实现由子类提�
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import AsyncIterator, Callable
 from typing import Any
 
 from .errors import WebSocketDisconnect
@@ -275,7 +275,7 @@ class WebSocketConnectionBase(_ConnectionIdentity):
     # ---- Properties ----
 
     @property
-    def url(self):
+    def url(self) -> Any:
         """
         连接 URL
 
@@ -284,7 +284,7 @@ class WebSocketConnectionBase(_ConnectionIdentity):
         return self._ws.url
 
     @property
-    def headers(self):
+    def headers(self) -> Any:
         """
         请求头
 
@@ -293,7 +293,7 @@ class WebSocketConnectionBase(_ConnectionIdentity):
         return self._ws.headers
 
     @property
-    def raw(self):
+    def raw(self) -> Any:
         """
         底层框架原生对象
 
@@ -360,7 +360,7 @@ class WebSocketConnectionBase(_ConnectionIdentity):
 
     # ---- Iterators (concrete) ----
 
-    async def iter_text(self):
+    async def iter_text(self) -> AsyncIterator[str]:
         """
         迭代文本消息直到断开
 
@@ -372,7 +372,7 @@ class WebSocketConnectionBase(_ConnectionIdentity):
         except WebSocketDisconnect:
             pass
 
-    async def iter_bytes(self):
+    async def iter_bytes(self) -> AsyncIterator[bytes]:
         """
         迭代二进制消息直到断开
 
@@ -384,7 +384,7 @@ class WebSocketConnectionBase(_ConnectionIdentity):
         except WebSocketDisconnect:
             pass
 
-    async def iter_json(self):
+    async def iter_json(self) -> AsyncIterator[Any]:
         """
         迭代 JSON 消息直到断开
 
@@ -426,7 +426,7 @@ class WebSocketConnectionBase(_ConnectionIdentity):
 
     # ---- Lifecycle hooks ----
 
-    def on_disconnect(self, handler: Callable | None = None):
+    def on_disconnect(self, handler: Callable | None = None) -> Callable:
         """
         注册断开连接回调
 
@@ -449,7 +449,7 @@ class WebSocketConnectionBase(_ConnectionIdentity):
 
         return decorator
 
-    def on_error(self, handler: Callable | None = None):
+    def on_error(self, handler: Callable | None = None) -> Callable:
         """
         注册错误回调
 

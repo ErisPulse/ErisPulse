@@ -24,6 +24,7 @@
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)
 - [OneBot12平台特性](onebot12.md)
+- [SnowLuma平台特性](snowluma.md)
 - [邮件平台特性](email.md)
 - [Kook(开黑啦)平台特性](kook.md)
 - [Matrix平台特性](matrix.md)

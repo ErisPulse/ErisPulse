@@ -1,97 +1,102 @@
 # ErisPulse-Dashboard
 
-[ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) は、ErisDev が直接管理する **Web 管理パネルモジュール** であり、ErisPulse に視覚的な実行時管理インターフェースを提供します。モジュールの起動・停止、設定の編集、ログの表示、イベントストリームの監視などが可能です。
+> [!TIP]
+> **このドキュメントを読むべきとき**：Web画面でボットを視覚的に管理したい場合（モジュールの有効化・無効化、設定編集、ログ閲覧、イベントストリームの監視など）、または自分のモジュール用のDashboard管理ページを登録したい場合にお読みください。必要ない場合はスキップして構いません。
+
+[ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) はErisDevが直接メンテナンスする**Web管理パネルモジュール**で、ErisPulseに視覚的なランタイム管理インターフェースを提供します：モジュールの有効化・無効化、設定編集、ログ閲覧、イベントストリーム監視など。
 
 > [!IMPORTANT]
-> Dashboard は **ErisPulse フレームワークの組み込み機能ではなく**、個別にインストールする必要があります：
+> DashboardはErisPulseフレームワークの**内蔵機能ではありません**。別途インストールが必要です：
 >
 > ```bash
 > epsdk install Dashboard
 > ```
 
-Dashboard は、他の ErisPulse モジュールがサイドバーにカスタム管理ページを登録することもサポートしています。登録後、ユーザーは Dashboard でそのモジュールの専用ウィンドウページに切り替えることができ、追加のフロントエンド開発を必要としません。
+Dashboardは、他のErisPulseモジュールがカスタム管理ページをサイドバーに登録することもサポートしています。登録後、ユーザーはDashboard内で直接そのモジュール専用のビューページに切り替えることができ、独立したフロントエンドを別途開発する必要はありません。
 
 > [!NOTE]
-> ウィンドウの登録は**オプション機能**です。
+> ビュー登録は**オプション機能**です。
 >
-> - Dashboard モジュールが**インストールされていない**、または**ロードされていない**場合、`sdk.Dashboard.register_view()` を呼び出すと例外が発生します
-> - 他のモジュール機能に影響を与えないように、登録コードを `try/except` で囲むことを推奨します
-> - 登録前に Dashboard の利用可能性を確認することを推奨します：`hasattr(sdk, 'Dashboard') and sdk.Dashboard`
+> - Dashboardモジュールが**未インストール**または**未ロード**の場合、`sdk.Dashboard.register_view()` を呼び出すと例外がスローされます
+> - モジュール自体の他の機能に影響が及ばないよう、登録コードは必ず `try/except` で囲んでください
+> - 登録前にDashboardが利用可能かどうかを確認することをお勧めします：`hasattr(sdk, 'Dashboard') and sdk.Dashboard`
+
+---
 
 ## 動作原理
 
 ```
-モジュール on_load()
-  → sdk.Dashboard.register_view(...) を呼び出す
-  → Dashboard は後端にウィンドウ情報を保存
-  → WebSocket でフロントエンドに通知
-  → フロントエンドは動的にサイドバーのナビゲーション項目とページコンテナを作成
-  → ユーザーがクリックするとモジュールのウィンドウが表示される
+モジュールの on_load()
+  → sdk.Dashboard.register_view(...) を呼び出し
+  → Dashboardバックエンドがビュー情報を保存
+  → WebSocketでフロントエンドに通知
+  → フロントエンドがサイドバーナビ項目 + ページコンテナを動的に作成
+  → ユーザーがクリックしてモジュールのビューを表示
 ```
 
 ---
 
-## APIの登録
+## 登録API
 
 ```python
 sdk.Dashboard.register_view(
-    id="MyModule",                    # 必須、一意な識別子
-    title="私のモジュール",            # 中文名
-    title_en="My Module",             # 英文名
-    icon_svg='<svg>...</svg>',        # サイドバーのアイコン SVG
-    html_content='<div>...</div>',     # ページ HTML 内容
-    js_content='function xxx() {}',    # ページ JavaScript ロジック
-    css_content='.my-style {}',        # オプションのカスタム CSS
-    iframe_url='',                     # iframe モードの URL（html_content と二択）
-    loader="loadMyModuleView",         # このページに切り替わる際に呼び出される JS 関数名
-    group="group_extensions",          # サイドバーのグループ
-    group_title="",                    # カスタムグループの中文名
-    group_title_en="",                 # カスタマグループの英文名
+    id="MyModule",                    # 必須、一意の識別子
+    title="マイモジュール",             # 中国語名
+    title_en="My Module",             # 英語名
+    icon_svg='<svg>...</svg>',        # サイドバーアイコンSVG
+    html_content='<div>...</div>',     # ページのHTMLコンテンツ
+    js_content='function xxx() {}',    # ページのJavaScriptロジック
+    css_content='.my-style {}',        # 任意のカスタムCSS
+    iframe_url='',                     # iframeモードのURL（html_contentとどちらか一方を指定）
+    loader="loadMyModuleView",         # このページに切り替えた際に呼び出されるJS関数名
+    group="group_extensions",          # サイドバーグループ
+    group_title="",                    # カスタムグループの中国語名
+    group_title_en="",                 # カスタムグループの英語名
 )
 ```
 
-### パラメータの説明
+### パラメータ説明
 
 | パラメータ | 型 | 必須 | 説明 |
 |------|------|------|------|
-| `id` | `str` | はい | ウィンドウの一意な識別子、モジュール名を使用することを推奨 |
-| `title` | `str` | いいえ | 中文表示名、デフォルトは `id` を使用 |
-| `title_en` | `str` | いいえ | 英文表示名、デフォルトは `title` を使用 |
-| `icon_svg` | `str` | いいえ | サイドバーのアイコンの完全な SVG 文字列 |
-| `html_content` | `str` | いいえ* | インジェクションモードのページ HTML 内容 |
-| `js_content` | `str` | いいえ | ページ JavaScript コード |
-| `css_content` | `str` | いいえ | ページのカスタム CSS スタイル |
-| `iframe_url` | `str` | いいえ* | iframe モードの URL、設定すると `html_content` は無視される |
-| `loader` | `str` | いいえ | ページがアクティブになった際に自動的に呼び出される JS 関数名 |
-| `group` | `str` | いいえ | サイドバーのグループ識別子、デフォルトは `group_extensions` |
-| `group_title` | `str` | いいえ | カスタムグループの中文タイトル |
-| `group_title_en` | `str` | いいえ | カスタムグループの英文タイトル |
+| `id` | `str` | はい | ビューの一意識別子、モジュール名の使用を推奨 |
+| `title` | `str` | いいえ | 中国語表示名、デフォルトは `id` を使用 |
+| `title_en` | `str` | いいえ | 英語表示名、デフォルトは `title` を使用 |
+| `icon_svg` | `str` | いいえ | サイドバーアイコンの完全なSVG文字列 |
+| `html_content` | `str` | いいえ* | インジェクションモードのページHTMLコンテンツ |
+| `js_content` | `str` | いいえ | ページのJavaScriptコード |
+| `css_content` | `str` | いいえ | ページのカスタムCSSスタイル |
+| `iframe_url` | `str` | いいえ* | iframeモードのURL、設定すると `html_content` は無視されます |
+| `loader` | `str` | いいえ | ページアクティブ時に自動的に呼び出されるJS関数名 |
+| `group` | `str` | いいえ | サイドバーグループ識別子、デフォルトは `group_extensions` |
+| `group_title` | `str` | いいえ | カスタムグループの中国語タイトル |
+| `group_title_en` | `str` | いいえ | カスタムグループの英語タイトル |
 
-> *`html_content` と `iframe_url` のどちらか一方は必ず提供する必要がある。両方指定しない場合、ページは空白になる。
+> *`html_content` と `iframe_url` のうち少なくとも一方を指定する必要があります。そうでない場合、ページは空白になります。
 
 ---
 
-## 2 種の注入モード
+## 2つのインジェクションモード
 
-### モード 1：HTML/JS 注入（推奨）
+### モード1：HTML/JSインジェクション（推奨）
 
-HTML、JS、CSS の文字列を直接提供し、Dashboard がページに内容を注入します。このモードでは Dashboard のスタイルと完全に一致し、Dashboard が提供する CSS クラス名の使用が推奨されます。
+HTML、JS、CSSの文字列を直接提供すると、Dashboardがその内容をページに注入します。このモードはDashboardのスタイルと完全に一致しており、Dashboardが提供するCSSクラス名の使用を推奨します。
 
 ```python
 sdk.Dashboard.register_view(
     id="HelloPage",
-    title="こんにちはページ", title_en="Hello",
+    title="ハローページ", title_en="Hello",
     icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>',
     html_content='<h1 class="page-title">Hello World</h1><div class="card"><div class="card-body">これはサンプルページです</div></div>',
     group="group_tools",
 )
 ```
 
-> API ルート、JS によるインタラクションなどを含む、完全な天気モジュールの例は、下記の [完全なモジュールの例](#完全なモジュールの例) を参照してください。
+> APIルートやJSインタラクションなどを含む完全な天気モジュールの例は、下記の[完全なモジュール例](#完全なモジュール例)を参照してください。
 
-### モード 2：iframe 埋め込み
+### モード2：iframe埋め込み
 
-独自の HTML ページの URL を提供し（独自にルートを登録する必要があります）、Dashboard が iframe で埋め込みます。完全に独立した UI または複雑なインタラクションが必要な場合に適しています。
+モジュールが独自のHTMLページURLを提供し（ルートの登録は自身で行う必要があります）、Dashboardがiframeとして埋め込みます。完全に独立したUIや複雑なインタラクションが必要なシナリオに適しています。
 
 ```python
 sdk.Dashboard.register_view(
@@ -102,74 +107,78 @@ sdk.Dashboard.register_view(
 )
 ```
 
-> iframe モードでは、認証のために URL に `token` パラメータが自動的に追加されます。
+> iframeモードでは、認証用の `token` パラメータがURLに自動的に追加されます。
 
-## サイドバーのグループ化
+---
 
-モジュールは、ウィンドウが所属するサイドバーのグループを指定できます。Dashboard には、以下のグループが内蔵されています：
+## サイドバーグループ
 
-| グループ識別子 | 中文名 | 位置 |
+モジュールはビューが属するサイドバーグループを指定できます。Dashboardには以下の組み込みグループがあります：
+
+| グループ識別子 | 中国語名 | 位置 |
 |---------|--------|------|
-| `group_overview` | 概観 | 第1グループ |
+| `group_overview` | 概要 | 第1グループ |
 | `group_events` | イベント | 第2グループ |
-| `group_extensions` | 拡張機能 | 第3グループ（デフォルト） |
+| `group_extensions` | 拡張 | 第3グループ（デフォルト） |
 | `group_system` | システム | 第4グループ |
 | `group_tools` | ツール | 第5グループ |
 
-内蔵されたグループ名を指定すると、モジュールのウィンドウはそのグループの末尾に追加されます：
+組み込みグループ名を指定すると、モジュールのビューはそのグループの末尾に追加されます：
 
 ```python
 group="group_tools"  # "ツール"グループに追加
 ```
 
-`group_` で始まらないカスタムグループ名を使用することもできます。Dashboard は自動的に新しいグループを作成します：
+カスタムグループ名（`group_` で始まらない名前）を使用することもでき、Dashboardが自動的に新しいグループを作成します：
 
 ```python
 group="my_group",
-group_title="私のグループ",
+group_title="マイグループ",
 group_title_en="My Group",
 ```
 
 ---
 
-## 一般的 CSS クラス名
+## よく使うCSSクラス名
 
-モジュールウィンドウで HTML インジェクションモードを使用する場合、ダッシュボードで既に用意されている CSS クラス名を使用することで、視覚的な一貫性を保つことができます。
+モジュールのビューでHTMLインジェクションモードを使用する場合、視覚的一貫性を保つためにDashboardの既存のCSSクラス名を直接使用できます：
 
 | クラス名 | 用途 |
 |------|------|
-| `page-title` | ページタイトル、例: `<h1 class="page-title">タイトル</h1>` |
+| `page-title` | ページタイトル、例：`<h1 class="page-title">タイトル</h1>` |
 | `card` | カードコンテナ |
 | `card-header` | カードのタイトルバー |
 | `card-body` | カードのコンテンツ領域 |
-| `grid-2` | 2 列のグリッドレイアウト |
-| `grid-3` | 3 列のグリッドレイアウト |
+| `grid-2` | 2カラムグリッドレイアウト |
+| `grid-3` | 3カラムグリッドレイアウト |
 | `btn` | 基本ボタン |
-| `btn-primary` | 主なボタン（青色） |
-| `btn-secondary` | 次要なボタン |
-| `btn-icon` | アイコン付きボタン |
-| `btn-danger` | 危険な操作を表すボタン |
+| `btn-primary` | メインボタン（青） |
+| `btn-secondary` | サブボタン |
+| `btn-icon` | アイコンボタン |
+| `btn-danger` | 危険な操作用ボタン |
 
-ダッシュボードは CSS 変数を使ってテーマカラーを制御しており、モジュールウィンドウでも直接参照することができます。
+DashboardはCSS変数でテーマカラーを制御しており、モジュールのビュー内で直接参照できます：
 
-| CSS 変数 | 用途 |
+| CSS変数 | 用途 |
 |----------|------|
-| `var(--bg-p)` | 主な背景色 |
-| `var(--bg-s)` | 次の背景色 |
-| `var(--bg-t)` | 3 番目の背景色（カードなど） |
-| `var(--tx-p)` | 主な文字色 |
-| `var(--tx-s)` | 次の文字色 |
-| `var(--tx-t)` | 補助的な文字色 |
+| `var(--bg-p)` | メイン背景色 |
+| `var(--bg-s)` | サブ背景色 |
+| `var(--bg-t)` | 第3背景色（カードなど） |
+| `var(--tx-p)` | メインテキスト色 |
+| `var(--tx-s)` | サブテキスト色 |
+| `var(--tx-t)` | 補助テキスト色 |
 | `var(--bd)` | ボーダー色 |
-| `var(--accent)` | 強調色 |
+| `var(--accent)` | アクセントカラー |
 | `var(--ok-c)` | 成功色 |
-| `var(--er-c)` | エラーカラー |
+| `var(--er-c)` | エラー色 |
 
-これらの変数は、ダッシュボードのライト/ダークテーマに応じて自動的に切り替えられ、モジュール側で追加の処理は不要です。
+これらの変数はDashboardのライト/ダークテーマに応じて自動的に切り替わるため、モジュール側で追加の処理は不要です。
 
-## 認証と API 呼び出し
+---
 
-モジュールウィンドウの JS で、モジュール自身の API を呼び出す際には、Dashboard のトークンを付けて認証を行う必要があります：
+## 認証とAPI呼び出し
+
+モジュールのビューのJSからモジュール独自のAPIを呼び出す際は、認証のためにDashboardのトークンを付ける必要があります：
 
 ```javascript
 var token = localStorage.getItem('__ep_tk__');
@@ -179,7 +188,7 @@ var resp = await fetch('/YourModule/api/data', {
 var data = await resp.json();
 ```
 
-モジュールの API エンドポイントは、トークンの検証を行うかどうかを独自に決定できます。検証が必要な場合は、リクエストヘッダーから抽出できます：
+モジュールのAPIエンドポイントがトークンを検証するかどうかは自由に決定できます。検証が必要な場合は、リクエストヘッダーから抽出できます：
 
 ```python
 async def _api_data(self, request):
@@ -189,9 +198,11 @@ async def _api_data(self, request):
     return {"data": "hello"}
 ```
 
-## 完全なモジュールの例
+---
 
-以下は、ウィンドウの登録、APIデータの提供、およびアンロード時にリソースをクリーンアップする方法を示す、完全な天気モジュールの例です。
+## 完全なモジュール例
+
+以下は完全な天気モジュールの例で、ビューの登録方法、APIデータの提供方法、アンロード時のリソースクリーンアップ方法を示しています：
 
 ```python
 from ErisPulse import sdk
@@ -256,13 +267,13 @@ class Main(BaseModule):
                 title="天気", title_en="Weather",
                 icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
                 html_content='''
-                    <h1 class="page-title">天気照会</h1>
-                    <p style="color:var(--tx-s);margin-bottom:16px">現在の天気情報を表示します</p>
+                    <h1 class="page-title">天気検索</h1>
+                    <p style="color:var(--tx-s);margin-bottom:16px">現在の天気情報を表示</p>
                     <div class="grid-2">
                         <div class="card">
                             <div class="card-header">現在の天気</div>
                             <div class="card-body">
-                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">クリックして更新</div>
+                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">「更新」をクリックして読み込み</div>
                             </div>
                         </div>
                         <div class="card">
@@ -296,14 +307,14 @@ class Main(BaseModule):
                 group="group_tools",
             )
         except Exception as e:
-            self.logger.warning(f"Dashboardウィンドウの登録に失敗しました: {e}")
+            self.logger.warning(f"Dashboardビューの登録に失敗しました: {e}")
 ```
 
 ---
 
-## 視窗の登録解除
+## ビューの登録解除
 
-モジュールのアンロード時に、`unregister_view()` を呼び出して登録済みの視窗をクリーンアップする必要があります。
+モジュールのアンロード時には `unregister_view()` を呼び出して、登録済みのビューをクリーンアップする必要があります：
 
 ```python
 async def on_unload(self, event):
@@ -311,14 +322,24 @@ async def on_unload(self, event):
         self.sdk.Dashboard.unregister_view("Weather")
 ```
 
-登録解除後、Dashboard のフロントエンドは WebSocket を介してサイドバーのナビゲーション項目とページコンテンツをリアルタイムに削除します。ユーザーによるリフレッシュは不要です。
+登録解除後、DashboardのフロントエンドはWebSocketを通じてサイドバーナビ項目とページコンテンツをリアルタイムで削除するため、ユーザーがページを再読み込みする必要はありません。
+
+---
 
 ## 注意事項
 
-1. **ロード順序** — Dashboard のロード優先度は `99999`（高優先度）です。あなたのモジュールの優先度はこの値より低くする必要があります（例：`50`）。これにより、Dashboard が先にロード完了するようにします。
-2. **防御的プログラミング** — Dashboard モジュールがインストールされていない、またはロードされていない可能性があるため、ウィンドウを登録する際には `try/except` で囲んでください。
-3. **リソースのクリーンアップ** — `on_unload` で `unregister_view()` を呼び出し、登録されたウィンドウを削除します。
-4. **ID の一意性** — `id` パラメータは、Dashboard 全体で一意である必要があります。モジュール名を直接使用することを推奨します。
-5. **SVG アイコン** — `icon_svg` は完全な `<svg>` タグである必要があります。推奨サイズは `viewBox="0 0 24 24"` です。`stroke="currentColor"` を使用して、Dashboard のテーマ色を継承します。
-6. **JS 関数名** — `js_content` 内の関数名は一意である必要があります（例：`loadWeatherView`）。他のモジュールとの衝突を避けるためです。
-7. **動的更新** — モジュールがウィンドウを登録または解除した後、Dashboard のフロントエンドは WebSocket を使用してサイドバーをリアルタイムに更新します。ページをリフレッシュする必要はありません。
+1. **ロード順序** — Dashboardのロード優先度は `99999`（高優先度）です。あなたのモジュールの優先度はこれより低い値（例：`50`）にし、Dashboardが先にロードを完了するようにしてください
+2. **防御的プログラミング** — Dashboardモジュールが未インストールまたは未ロードの可能性があるため、ビュー登録時は `try/except` で囲んでください
+3. **リソースクリーンアップ** — `on_unload` 内で `unregister_view()` を呼び出し、登録済みのビューを削除してください
+4. **IDの一意性** — `id` パラメータはDashboard全体で一意である必要があります。モジュール名をそのまま使用することを推奨します
+5. **SVGアイコン** — `icon_svg` は完全な `<svg>` タグである必要があります。サイズは `viewBox="0 0 24 24"` を使用し、`stroke="currentColor"` でDashboardのテーマカラーを継承することを推奨します
+6. **JS関数の命名** — `js_content` 内の関数名は一意なもの（例：`loadWeatherView`）にし、他のモジュールとの衝突を避けてください
+7. **動的更新** — モジュールがビューを登録/登録解除すると、DashboardのフロントエンドはWebSocketを通じてサイドバーをリアルタイムで更新します。ページの再読み込みは不要です
+
+---
+
+## 次のステップ
+
+- **PCを開かずにスマホでボットを管理したい**：[ErisPulse-App](app.md)（公式マルチプラットフォームクライアント。Dashboardと同じAPIセットを共有しており、モジュールのビューも同様に利用可能）
+- **ビューにバックエンドデータAPIを提供したい**：[ルートマネージャー](../advanced/router.md)でHTTPルートを登録します。メソッドの早見表は[コアモジュールAPI - Router](../api-reference/core-modules.md)を参照
+- **ビュー内でリアルタイムログ / イベントストリームを表示したい**：[ログサブスクリプション（プッシュモード）](../api-reference/core-modules.md)と[ライフサイクル管理](../advanced/lifecycle.md)

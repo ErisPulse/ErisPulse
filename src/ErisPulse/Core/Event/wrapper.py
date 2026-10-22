@@ -296,6 +296,7 @@ async def _builtin_wait_reply(
     pattern: str | None = None,
     regex: str | None = None,
     cmdpass: bool | None = None,
+    session: bool = False,
 ) -> Optional["Event"]:
     """
     内置 wait_reply 实现
@@ -320,6 +321,7 @@ async def _builtin_wait_reply(
         pattern=pattern,
         regex=regex,
         cmdpass=cmdpass,
+        session=session,
     )
 
     if result:
@@ -1447,7 +1449,7 @@ class Event(dict):
 
     # ==================== 发送链获取 ====================
 
-    def send_chain(self):
+    def send_chain(self) -> Any:
         """
         获取已配置好目标和发送账号的发送链
 
@@ -1534,6 +1536,7 @@ class Event(dict):
         pattern: str | None = None,
         regex: str | None = None,
         cmdpass: bool | None = None,
+        session: bool = False,
     ) -> Optional["Event"]:
         """
         等待用户回复
@@ -1548,13 +1551,14 @@ class Event(dict):
         :param cmdpass: 是否跳过命令匹配的三态（None=跟随全局配置，默认不跳过——
             等待期间命中已注册命令的消息（如 /cancel）放行给命令分发器执行，
             等待继续挂起；True=跳过命令匹配，等待期间消息一律作为回复消费）
+        :param session: 会话级等待——同会话任何人可命中（忽略 user 维度）
         :return: 用户回复的事件数据，如果超时则返回None
 
         :example:
         >>> reply = await event.wait_reply(prompt="请输入金额:", regex=r"\\\\d+\\\\s*元")
         """
         return await _builtin_wait_reply(
-            self, prompt, timeout, callback, validator, method, pattern, regex, cmdpass
+            self, prompt, timeout, callback, validator, method, pattern, regex, cmdpass, session
         )
 
     # ==================== 交互式对话方法 ====================
@@ -2109,7 +2113,7 @@ class Event(dict):
         """
         return self.get("_processed", False)
 
-    def mark_processed(self, claim: bool = True, stop: bool = True):
+    def mark_processed(self, claim: bool = True, stop: bool = True) -> None:
         """
         标记事件为已处理
 
@@ -2140,7 +2144,7 @@ class Event(dict):
         if stop:
             self["_propagation_stopped"] = True
 
-    def done(self, claim: bool = True, stop: bool = True):
+    def done(self, claim: bool = True, stop: bool = True) -> None:
         """
         标记事件完成（:meth:`mark_processed` 的别名）
 

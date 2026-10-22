@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "310a226fadbdb1e4f9438119924810d5",
-  "file_hash": "310a226fadbdb1e4f9438119924810d5",
-  "translated_at": "2026-10-14T03:08:05.738027",
+  "hash": "9e0e6b277989ce90169b0c347611580c",
+  "file_hash": "9e0e6b277989ce90169b0c347611580c",
+  "translated_at": "2026-10-22T09:28:37.403459",
   "target_lang": "en",
   "chunks": [
     {
@@ -26,8 +26,12 @@
       "translation": "## Handling Recommendations\n\n```python\nfrom ErisPulse.Core import ErisPulseError  # Base class is aggregated and exported from Core\n\ntry:\n    ...\nexcept ErisPulseError as e:\n    ...  # Unified fallback: all framework custom exceptions\n```\n\n- For module development: catch as needed (see table above), use `ErisPulseError` as a fallback at the outermost layer\n- All exceptions are aggregated and exported from `ErisPulse.Core` (including `SessionOccupiedError` / `InteractionCancelled` / `StrictModeError`), also available from `ErisPulse.Core.Bases.errors`\n- Full definitions are in `src/ErisPulse/Core/Bases/errors.py`"
     },
     {
-      "hash": "5495899f8f8b18b238a580e7f8350e54",
-      "translation": "## Shutdown Noise Folding\n\nLong-running processes often generate a batch of unactionable `Task was destroyed but it is pending!`-like interpreter noise when shutting down (or background loops are canceled). The framework includes **noise folding for similar messages**: within a 2-second window, identical messages are downgraded to TRACE and merged with a count, outputting only once, followed by a suffix indicating \"another N similar messages were folded.\" This is deliberate noise reduction — seeing the folding suffix does not mean the framework swallowed real exceptions; business exceptions (all types above) are still fully output."
+      "hash": "7109b6127cab550636ef081e8fd012ef",
+      "translation": "## Noise Folding on Shutdown\n\nWhen long-running processes shut down (or background loops are cancelled), the event loop often emits a batch of `Task was destroyed but it is pending!`-like noise from the interpreter, which lacks actionable value. The framework includes built-in **noise folding for similar events**: within a 2-second window, similar messages are downgraded to TRACE level and merged with a count, outputting only once and appending a suffix such as 「(N additional similar messages have been folded)」. This intentional noise reduction does not mean the framework is suppressing real exceptions; business exceptions (all types listed above) are still fully output as usual. The folding mechanism targets only interpreter exit noise, leaving business exceptions unaffected. What level of exception is worth retaining, and what can be downgraded or folded, follows the [Engineering Robustness Rules · Exception Logging Levels](../styleguide/engineering.md#1-异常留痕分级)."
+    },
+    {
+      "hash": "d0d1ddca6ca071127808db44c737ac05",
+      "translation": "## Related Documentation\n\nChoose according to troubleshooting intent:\n\n- **Storage operations return `False` / `None`, want to understand connection status** → [Storage Backends · Connection Failure Behavior](storage-backends.md#connection-failure-behavior), or subscribe to [storage.unreachable / storage.recovered events](lifecycle.md#storage-connection-status)\n- **`wait_reply` returns `None`, want to know what canceled it** → [Interactive Session System](interaction.md) (cancellation reason reference table)\n- **`module.call` throws module call exception** → [Inter-Module Communication](module-communication.md)\n- **Connection / WebSocket errors** → [Network Client](http-client.md) (ClientError hierarchy) and [Connection Pool and Broadcasting](connections.md) (connection registry exceptions)"
     }
   ]
 }

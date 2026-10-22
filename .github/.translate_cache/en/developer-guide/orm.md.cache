@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a14fefc46a19f5e1b985d0f2a56484f6",
-  "file_hash": "a14fefc46a19f5e1b985d0f2a56484f6",
-  "translated_at": "2026-10-14T03:11:07.087911",
+  "hash": "db403ab121230f9df11de71d6e66ad25",
+  "file_hash": "db403ab121230f9df11de71d6e66ad25",
+  "translated_at": "2026-10-22T09:57:34.173404",
   "target_lang": "en",
   "chunks": [
     {
@@ -44,6 +44,10 @@
     {
       "hash": "3bc63b2b6aa493301f11e1712a5b2615",
       "translation": "## Relationship Mapping (relationship)\n\nIn the model class body, declare `relationship()` as a class attribute; **the direction is automatically determined by where the foreign key column is declared**:\n\n```python\nfrom ErisPulse.Core.Bases import Model, Field, relationship\n\nclass User(Model):\n    __tablename__ = \"orm_users\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    name: str = Field(max_length=64)\n\n    posts = relationship(\"Post\", foreign_key=\"author\")   # Foreign key in the other table → has-many\n\nclass Post(Model):\n    __tablename__ = \"posts\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    author: int = Field(foreign_key=\"orm_users.id\")\n    content: str = Field(max_length=255)\n\n    writer = relationship(\"User\", foreign_key=\"author\")  # Foreign key in this table → belongs-to\n```\n\n**Has-Many**: The instance attribute returns a query set, and all `QuerySet` chainable capabilities are available; `create` automatically fills the primary key of this table into the foreign key column of the other table:\n\n```python\nalice = await User.get(name=\"Alice\")\n\nposts = await alice.posts.all()                          # All posts of this user\nlatest = await alice.posts.order_by(\"-id\").first()\ntotal = await alice.posts.count()\nhot = await alice.posts.where(Post.content != \"\").all()  # Add conditions from the other table's fields\nawait alice.posts.delete()                               # Delete only this user's posts\n\nnew_post = await alice.posts.create(content=\"hi\")        # author automatically = alice.id\n```\n\n**Belongs-To**: Direct `await` returns the other instance (returns `None` if no match or foreign key is NULL):\n\n```python\npost = await Post.get(id=1)\nwriter = await post.writer          # User instance or None\nawait writer.posts.count()          # Bidirectional access\n```\n\n**Key Points**:\n\n- `related` accepts a class name string (lazily resolved by the model class name registry, order of definition on both sides is irrelevant) or directly passes the model class\n- Relationship queries and the other model use their respective storage backends (cross-backend JOINs are not supported—relationship queries are independent SQL statements)\n- Relationship queries are not cached; each access is an immediate query; use `User.where(...)` for any custom queries"
+    },
+    {
+      "hash": "6b6e4e5acf626dfc062ee95e1234f817",
+      "translation": "## Next Steps\n\n### Need to switch databases or deploy to a cloud database\n\n- [Storage Backends](../advanced/storage-backends.md) — Configuration and switching between SQLite / MySQL / PostgreSQL, with zero model code changes\n\n### Don't need table structures, just store a few key-value pairs\n\n- [Module Core Concepts - Storage System](modules/core-concepts.md#storage-system) — Lightweight usage of key-value storage without declaring models"
     }
   ]
 }

@@ -465,7 +465,7 @@ async def on_server_stop(event):
 
 1. **优先使用抽象类型**：使用 `HttpRequest` / `WebSocketConnection` 替代 `fastapi.Request` / `fastapi.WebSocket`，避免硬依赖
 2. **利用自动注入**：处理器第一个参数命名为 `request` 或 `req`，无需任何类型注解即可获得 `HttpRequest`
-3. **显式传入 module_name**：装饰器第一个参数必须为模块名，不可省略
+3. **单参形态优先**：模块加载上下文中优先单参形态（自动归属命名空间）；跨模块/工具代码注册时显式传模块名
 4. **使用路由分组**：对同一模块的多个路由使用 `group()` 组织
 5. **安全性考虑**：为敏感操作实现认证机制和安全头
 6. **合理限流**：对高频接口设置速率限制

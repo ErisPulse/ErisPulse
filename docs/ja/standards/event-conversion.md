@@ -1,59 +1,62 @@
-# アダプタ標準化変換規格
+# アダプター標準化変換仕様
 
-## 1. 核心原則
-1. 严格的互換性：すべての標準フィールドはOneBot12仕様に完全に準拠する必要があります。
-2. 明確な拡張：プラットフォーム固有の機能には必ず {platform}_ 前置きを付ける必要があります（例：yunhu_form）。
-3. データの完全性：元のイベントデータは {platform}_raw フィールドに、元のイベントタイプは {platform}_raw_type フィールドに保持する必要があります。
-4. 時間の統一：すべてのタイムスタンプは10桁のUnixタイムスタンプ（秒単位）に変換する必要があります。
-5. プラットフォームの統一：platform項目の命名は、ErisPulseで登録した名称/別称と一致する必要があります。
+> [!TIP]
+> **この文書を読むべきとき**：アダプターでプラットフォームネイティブイベントを OneBot12 標準イベントに変換する際——必須フィールド、メッセージセグメント構造、拡張フィールド命名（`{platform}_` プレフィックス）、セッションタイプ推定を確認するときに、この文書を参照してください。不要な場合は読み飛ばしてください。
+
+## 1. コア原則
+1. 厳格な互換性：すべての標準フィールドは OneBot12 仕様に完全に準拠しなければならない
+2. 明確な拡張：プラットフォーム固有機能には {platform}_ プレフィックスを追加しなければならない（例：yunhu_form）
+3. データの完全性：元のイベントデータは {platform}_raw フィールドに保持しなければならず、元のイベントタイプは {platform}_raw_type フィールドに保持しなければならない
+4. 時間の統一：すべてのタイムスタンプは 10 桁の Unix タイムスタンプ（秒単位）に変換しなければならない
+5. プラットフォームの統一：platform 項目の命名は、ErisPulse に登録した名前/別名と一致しなければならない
 
 ## 2. 標準フィールド要件
 
 ### 2.1 必須フィールド
 | フィールド | 型 | 説明 |
 |------|------|------|
-| id | string | イベントの一意の識別子 |
-| time | integer | Unixタイムスタンプ（秒単位） |
-| type | string | イベントの種類 |
-| detail_type | string | イベントの詳細な種類（[会話タイプ標準](session-types.md)を参照） |
+| id | string | イベントの一意識別子 |
+| time | integer | Unix タイムスタンプ（秒単位） |
+| type | string | イベントタイプ |
+| detail_type | string | イベントの詳細タイプ（詳細は[セッションタイプ標準](session-types.md)を参照） |
 | platform | string | プラットフォーム名 |
-| self | object | ロボット自身の情報 |
+| self | object | ボット自身の情報 |
 | self.platform | string | プラットフォーム名 |
-| self.user_id | string | ロボットのユーザーID |
+| self.user_id | string | ボットのユーザー ID |
 
-**detail_type の規格**：
-- ErisPulse 標準会話タイプを使用する必要があります（[会話タイプ標準](session-types.md)を参照）
-- 対応するタイプ：`private`, `group`, `user`, `channel`, `guild`, `thread`
-- アダプターは、プラットフォーム固有のタイプを標準タイプにマッピングする責任があります
+**detail_type 仕様**：
+- ErisPulse 標準セッションタイプを使用しなければならない（詳細は [セッションタイプ標準](session-types.md) を参照）
+- サポートされるタイプ：`private`、`group`、`user`、`channel`、`guild`、`thread`
+- アダプターは、プラットフォームネイティブタイプを標準タイプへマッピングする責任を負う
 
 ### 2.2 メッセージイベントフィールド
 | フィールド | 型 | 説明 |
 |------|------|------|
-| message | array | メッセージセグメントの配列 |
+| message | array | メッセージセグメント配列 |
 | alt_message | string | メッセージセグメントの代替テキスト |
-| user_id | string | ユーザーID |
-| user_nickname | string | ユーザーのニックネーム（オプション） |
+| user_id | string | ユーザー ID |
+| user_nickname | string | ユーザーニックネーム（任意） |
 
 ### 2.3 通知イベントフィールド
 | フィールド | 型 | 説明 |
 |------|------|------|
-| user_id | string | ユーザーID |
-| user_nickname | string | ユーザーのニックネーム（オプション） |
-| operator_id | string | 操作者のID（オプション） |
+| user_id | string | ユーザー ID |
+| user_nickname | string | ユーザーニックネーム（任意） |
+| operator_id | string | 操作者 ID（任意） |
 
-### 2.4 要求イベントフィールド
+### 2.4 リクエストイベントフィールド
 | フィールド | 型 | 説明 |
 |------|------|------|
-| user_id | string | ユーザーID |
-| user_nickname | string | ユーザーのニックネーム（オプション） |
-| comment | string | 要求の付言（オプション） |
-| request_id | string | 要求の識別子（**強く推奨**、同意/拒否操作に使用） |
+| user_id | string | ユーザー ID |
+| user_nickname | string | ユーザーニックネーム（任意） |
+| comment | string | リクエストの添えメッセージ（任意） |
+| request_id | string | リクエスト識別子（**強く推奨**、リクエストの承認/拒否操作に使用） |
 
 **`request_id` フィールドの説明**：
-- `request_id` は要求イベントの一意の操作識別子であり、`HandleRequest` DSL を使用して同意/拒否操作を実行するために使用されます
-- アダプターは、要求イベントを変換する際に、プラットフォーム固有の要求識別子をこのフィールドにマッピングする必要があります
-- プラットフォームに要求IDがない場合、アダプターは一意の識別子（例：タイムスタンプ+ユーザーIDのハッシュ）を生成する必要があります
-- `request_id` が欠落している場合、`event.approve()` / `event.reject()` は `ValueError` をスローします
+- `request_id` はリクエストイベントの一意の操作識別子であり、`HandleRequest` DSL による承認/拒否操作の実行に使用される
+- アダプターはリクエストイベントの変換時に、プラットフォームネイティブのリクエスト識別子をこのフィールドにマッピングすべきである
+- プラットフォーム自体にリクエスト ID がない場合、アダプターは一意の識別子を生成すべきである（例：タイムスタンプ＋ユーザー ID に基づくハッシュ）
+- `request_id` が欠落している場合、`event.approve()` / `event.reject()` は `ValueError` をスローする
 
 ## 3. イベント形式の例
 
@@ -73,11 +76,11 @@
     {
       "type": "text",
       "data": {
-        "text": "抽選 超大賞"
+        "text": "抽選 スーパー大賞"
       }
     }
   ],
-  "alt_message": "抽選 超大賞",
+  "alt_message": "抽選 スーパー大賞",
   "user_id": "user_456",
   "user_nickname": "YingXinche",
   "group_id": "group_789",
@@ -85,7 +88,7 @@
   "yunhu_raw_type": "message.receive.normal",
   "yunhu_command": {
     "name": "抽選",
-    "args": "超大賞"
+    "args": "スーパー大賞"
   }
 }
 ```
@@ -111,7 +114,7 @@
 }
 ```
 
-### 3.3 要求イベント (request)
+### 3.3 リクエストイベント (request)
 ```json
 {
   "id": "1234567892",
@@ -125,7 +128,7 @@
   },
   "user_id": "user_456",
   "user_nickname": "YingXinche",
-  "comment": "友達追加してください",
+  "comment": "フレンド申請をお願いします",
   "request_id": "req_abc123",
   "onebot11_raw": {...},
   "onebot11_raw_type": "request"
@@ -136,40 +139,40 @@
 
 ### 4.1 標準メッセージセグメント
 
-標準メッセージセグメントには**プラットフォームプレフィックス**は不要です。
+標準メッセージセグメントにプラットフォームプレフィックスは**不要**です。
 
 | タイプ | 説明 | data フィールド |
 |------|------|----------|
-| `text` | 純粋なテキスト | `text: str` |
+| `text` | プレーンテキスト | `text: str` |
 | `image` | 画像 | `file`, `url: str` |
 | `audio` | 音声 | `file`, `url: str` |
 | `video` | 動画 | `file`, `url: str` |
 | `file` | ファイル | `file`, `url: str`, `filename: str` |
-| `mention` | ユーザーへのメンション | `user_id: str`, `user_name: str` |
-| `reply` | メッセージへの返信 | `message_id: str` |
-| `face` | エモート | `id: str` |
+| `mention` | @ユーザー | `user_id: str`, `user_name: str` |
+| `reply` | 返信 | `message_id: str` |
+| `face` | 絵文字 | `id: str` |
 | `location` | 位置情報 | `latitude: float`, `longitude: float` |
-| `keyboard` | ボタン/インラインキーボード | `rows: list[list[button]]`（4.1.1を参照） |
+| `keyboard` | ボタン/インラインキーボード | `rows: list[list[button]]`（4.1.1 を参照） |
 
-**メディアセグメント `file` のフィールド形式**（送信方向、`image` / `audio` / `video` / `file` に共通）：
+**メディアセグメントの `file` フィールド形式**（送信方向、`image` / `audio` / `video` / `file` 共通）：
 
-| 形態 | 例 | アダプタの要件 |
+| 形態 | 例 | アダプター要件 |
 |------|------|-----------|
-| HTTP(S) URL | `https://example.com/a.png` | **必須**で受け入れること |
-| ローカルファイルパス | `/tmp/a.png`、`C:\tmp\a.png` | **必須**で受け入れること |
-| 2進数データ | `bytes` | **必須**で受け入れること |
-| `file://` URI / Base64 / Data URI | `file:///tmp/a.png`、`data:image/png;base64,...` | **推奨**で受け入れること |
+| HTTP(S) URL | `https://example.com/a.png` | **必須**で受け付ける |
+| ローカルファイルパス | `/tmp/a.png`、`C:\tmp\a.png` | **必須**で受け付ける |
+| バイナリデータ | `bytes` | **必須**で受け付ける |
+| `file://` URI / Base64 / Data URI | `file:///tmp/a.png`、`data:image/png;base64,...` | **推奨**で受け付ける |
 
-> 完全なメディア送信プロトコル（形態の判定順序、ファイル名の推定、機能の降格段階）は
-> [送信メソッド仕様 §2.1](send-method-spec.md#21-メディアメッセージ送信プロトコルimage--voice--video--file) を参照してください。
+> メディア送信プロトコルの全体（形態判定順序、ファイル名導出、能力ダウングレードの段階）については
+> [送信メソッド仕様 §2.1](send-method-spec.md#21-媒体消息发送协议image--voice--video--file) を参照してください。
 
-**フィールドの方向性の意味**：
+**フィールドの方向セマンティクス**：
 
-- `file`：**送信方向**のコンテンツソース（上記の形態）；**受信方向**はアダプタがプラットフォームで再取得可能な形態を埋める
-  （通常はダウンロード可能な URL、または `get_file` 類のアクションで利用可能なリソース識別子）
-- `url`：受信方向のプラットフォームの戻りリンク（アダプタがプラットフォームイベントを変換する際に可能な限り埋める、モジュールが直接利用できるようにする）；送信方向は未記入でも可
-- `filename`：`file` セグメントのファイル名（送信方向はオプション、省略時はアダプタが
-  [送信メソッド仕様 §2.1.3](send-method-spec.md) の推定順序に従って生成する；受信方向は**必ず**プラットフォームの元のファイル名を埋める）
+- `file`：**送信方向**のコンテンツソース（上述の形態）；**受信方向**では、アダプターがプラットフォームから取得可能な形態を記入する
+  （通常はダウンロード可能な URL、または `get_file` 系アクションで利用可能なリソース識別子）
+- `url`：受信方向のプラットフォーム返却リンク（アダプターはプラットフォームイベントの変換時に可能な限り記入し、モジュールが直接利用できるようにする）；送信方向では省略可能
+- `filename`：`file` セグメントのファイル名（送信方向では任意、省略時はアダプターが
+  [送信メソッド仕様 §2.1.3](send-method-spec.md) の導出順序に従って生成；受信方向ではプラットフォームの元のファイル名を記入することが**推奨**される）
 
 ```json
 {
@@ -182,9 +185,7 @@
 
 ### 4.1.1 keyboard ボタン/インラインキーボードセグメント（クロスプラットフォーム共通）
 
-ボタンやインラインキーボードは、Telegram / 云湖 / QQBot / Kook / Discord などの複数のプラットフォームで対応しており、
-**クロスプラットフォーム共通の概念**であるため、プラットフォームプレフィックスのない標準メッセージセグメントとして扱います。アダプタは標準セグメントを
-プラットフォームのネイティブ構造に変換する必要があります。プラットフォーム固有の拡張セグメント（例：`telegram_inline_keyboard`）は引き続き透過的に保持します。
+ボタン/インラインキーボードは複数のプラットフォーム（Telegram / 云湖 / QQBot / Kook / Discord など）に対応機能が存在し、**クロスプラットフォーム共通の概念**であるため、標準メッセージセグメント（プラットフォームプレフィックスなし）として扱われます。アダプターは標準セグメントをプラットフォームネイティブ構造に変換してください。プラットフォームネイティブの拡張セグメント（例：`telegram_inline_keyboard`）は引き続きそのまま透過します。
 
 ```json
 {
@@ -192,7 +193,7 @@
   "data": {
     "rows": [
       [
-        {"label": "オプションA", "type": "callback", "data": "vote:A"},
+        {"label": "選択肢A", "type": "callback", "data": "vote:A"},
         {"label": "公式サイト",   "type": "link",     "data": "https://example.com"}
       ]
     ]
@@ -200,47 +201,46 @@
 }
 ```
 
-**フィールドの説明**：
+**フィールドの説明：**
 
-| フィールド | タイプ | 必須 | 説明 |
+| フィールド | 型 | 必須 | 説明 |
 |------|------|------|------|
-| `rows` | 2次元配列 | 是 | 各サブ配列が1行のボタンを表す |
-| `rows[][].label` | str | 是 | ボタンに表示するテキスト |
-| `rows[][].type` | str | 是 | `callback`（クリック時にデータを返す）/ `link`（URLに移動する） |
-| `rows[][].data` | str | 是 | コールバックデータ（type=callback）または移動先アドレス（type=link） |
-| `rows[][].*` | Any | 否 | プラットフォーム固有のオプションフィールド（例：`web_app`、`menus`）、アダプタは機能に応じてマッピングするか無視する |
+| `rows` | 二次元配列 | はい | 各サブ配列が 1 行のボタンに対応 |
+| `rows[][].label` | str | はい | ボタンの表示テキスト |
+| `rows[][].type` | str | はい | `callback`（クリックでデータを返送）/ `link`（URL へジャンプ） |
+| `rows[][].data` | str | はい | コールバックデータ（type=callback）またはジャンプ先アドレス（type=link） |
+| `rows[][].*` | Any | いいえ | プラットフォーム固有の任意フィールド（例：`web_app`、`menus`）。アダプターは能力に応じてマッピングまたは無視する |
 
-**アダプタの変換例**（完全なマッピングとインタラクションコールバックイベントの標準は [クロスプラットフォームインタラクションコンポーネント標準](standardization-guide.md) を参照）：
+**アダプター変換リファレンス**（完全なマッピングとインタラクションコールバックイベント標準については [クロスプラットフォームインタラクションコンポーネント標準](standardization-guide.md) を参照）：
 
 | プラットフォーム | 標準セグメント → プラットフォームネイティブ |
 |------|------------------|
 | Telegram | `inline_keyboard`：`[{text, callback_data \| url}]` |
-| 云湖 | `buttons`：`[{label, action_type: 2=コールバック \| 1=移動, ...}]` |
-| QQBot | `keyboard.content.rows`：`[{label, type: 2=コールバック \| 0=移動, data}]`（markdown形式のメッセージが必要） |
+| 云湖 | `buttons`：`[{label, action_type: 2=コールバック \| 1=ジャンプ, ...}]` |
+| QQBot | `keyboard.content.rows`：`[{label, type: 2=コールバック \| 0=ジャンプ, data}]`（markdown タイプのメッセージが必要） |
 | Kook | カードの action-group モジュール |
 | Discord | components：`action_row` + `buttons`（custom_id/url） |
 
 ### 4.2 プラットフォーム拡張メッセージセグメント
 
-プラットフォーム固有のメッセージセグメントには、プラットフォームプレフィックスを付ける必要があります：
+プラットフォーム固有のメッセージセグメントにはプラットフォームプレフィックスを追加する必要があります：
 
 ```json
 // 云湖 - フォーム
-{"type": "yunhu_form", "data": {"form_id": "123456", "form_name": "応募フォーム"}}
+{"type": "yunhu_form", "data": {"form_id": "123456", "form_name": "申込フォーム"}}
 
-// Telegram - ステッカー
+// Telegram - スタンプ
 {"type": "telegram_sticker", "data": {"file_id": "CAACAgIAAxkBAA...", "emoji": "😂"}}
 ```
 
 **拡張メッセージセグメントの要件**：
-1. **data 内部のフィールドにプレフィックスを付けない**：`{"type": "yunhu_form", "data": {"form_id": "..."}}` ではなく `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
-2. **降格対応を提供する**：モジュールが拡張メッセージセグメントを認識しない場合、アダプタは `alt_message` にテキストによる代替を提供する
-3. **ドキュメントの完全性**：各拡張メッセージセグメントは、適切なドキュメントで `type`、`data` の構造と使用シーンを説明する必要がある
+1. **data 内部のフィールドにはプレフィックスを付けない**：`{"type": "yunhu_form", "data": {"form_id": "..."}}` とするべきであり、`{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}` としてはならない
+2. **フォールバック手段を提供する**：モジュールは拡張メッセージセグメントを認識できない可能性があるため、アダプターは `alt_message` にテキストによる代替を提供すべきである
+3. **ドキュメントの完備**：各拡張メッセージセグメントについて、`type`、`data` の構造および使用シーンをアダプターのドキュメントで説明しなければならない
 
-## 5. 未知イベントの処理
+## 5. 不明なイベントの処理
 
-イベントの種類が識別できない場合、警告イベントを生成する必要があります：
-
+識別できないイベントタイプについては、警告イベントを生成すべきです：
 ```json
 {
   "id": "1234567893",
@@ -249,59 +249,61 @@
   "platform": "yunhu",
   "yunhu_raw": {...},
   "yunhu_raw_type": "unknown",
-  "warning": "サポートされていないイベントタイプ: special_event",
-  "alt_message": "このシステムではこのイベントタイプはサポートされていません。"
+  "warning": "Unsupported event type: special_event",
+  "alt_message": "This event type is not supported by this system."
 }
 ```
 
-## 6. 拡張名命名規則
+---
 
-### 6.1 フィールド名
+## 6. 拡張命名規約
 
-**規則**: `{platform}_{field_name}`
+### 6.1 フィールド命名
+
+**ルール**：`{platform}_{field_name}`
 
 ```
-プラットフォーム接頭辞    フィールド名            完全なフィールド名
-────────    ───────          ──────────
+プラットフォームプレフィックス   フィールド名         完全なフィールド名
+──────────                   ───────            ──────────
 yunhu       command           yunhu_command
 telegram    sticker_file_id   telegram_sticker_file_id
 onebot11    anonymous         onebot11_anonymous
 email       subject           email_subject
 ```
 
-**要件**:
-- `platform` は、アダプタ登録時のプラットフォーム名と完全に一致する必要があります（大文字小文字を区別）
-- `field_name` は `snake_case` で命名する
-- `__` で始まるダブルアンダースコアは使用禁止（Python 予約）
-- 標準フィールド名（`type`、`time`、`message` など）と重複しないこと
+**要件**：
+- `platform` はアダプター登録時のプラットフォーム名と完全に一致しなければならない（大文字小文字を区別）
+- `field_name` は `snake_case` 命名を使用する
+- ダブルアンダースコア `__` で始まる名前は禁止（Python の予約）
+- 標準フィールドと同名にすることは禁止（例：`type`、`time`、`message` など）
 
-### 6.2 メッセージセグメント型名
+### 6.2 メッセージセグメントタイプ命名
 
-**規則**: `{platform}_{segment_type}`
+**ルール**：`{platform}_{segment_type}`
 
-標準のメッセージセグメント型（`text`、`image`、`audio`、`video`、`mention`、`reply` など）には、プラットフォーム接頭辞を追加しないでください。プラットフォーム固有のメッセージセグメント型のみ接頭辞を追加する必要があります。
+標準メッセージセグメントタイプ（`text`、`image`、`audio`、`video`、`mention`、`reply` など）にプラットフォームプレフィックスを追加しては**なりません**。プラットフォーム固有のメッセージセグメントタイプのみがプレフィックスを追加する必要があります。
 
-### 6.3 元データフィールド名
+### 6.3 生データフィールド命名
 
-以下のフィールド名は**予約フィールド**であり、すべてのアダプタは以下の要件を遵守する必要があります：
+以下のフィールド名は**予約フィールド**であり、すべてのアダプターが従わなければなりません：
 
 | 予約フィールド | 型 | 説明 |
 |---------|------|------|
-| `{platform}_raw` | `any` | プラットフォームの元のイベントデータの完全なコピー |
-| `{platform}_raw_type` | `string` | プラットフォームの元のイベントタイプの識別子 |
+| `{platform}_raw` | `any` | プラットフォーム元イベントデータの完全なコピー |
+| `{platform}_raw_type` | `string` | プラットフォーム元イベントタイプの識別子 |
 
-**要件**:
-- `{platform}_raw` は、参照ではなく元データのディープコピーである必要があります
-- `{platform}_raw_type` は文字列型である必要があります。プラットフォームが数値型を使用している場合でも、文字列に変換する必要があります
-- これらの2つのフィールドは、すべてのイベントで**必ず存在する**必要があります（取得できない場合は `null` と空文字列 `""` とする）
+**要件**：
+- `{platform}_raw` は元データのディープコピーでなければならず、参照であってはならない
+- `{platform}_raw_type` は文字列でなければならず、プラットフォームが数値型を使用している場合でも文字列に変換すること
+- これら 2 つのフィールドはすべてのイベントに**存在しなければならない**（取得できない場合は `null` と空文字列 `""`）
 
 ### 6.4 プラットフォーム固有フィールドの例
 
 ```json
 {
   "yunhu_command": {
-    "name": "抽奖",
-    "args": "超级大奖"
+    "name": "抽選",
+    "args": "スーパー大賞"
   },
   "yunhu_form": {
     "form_id": "123456"
@@ -312,9 +314,9 @@ email       subject           email_subject
 }
 ```
 
-### 6.5 嵌套拡張フィールド
+### 6.5 ネストした拡張フィールド
 
-拡張フィールドは単純な値でも、ネストされたオブジェクトでも構いません：
+拡張フィールドは単純な値でも、ネストしたオブジェクトでもかまいません：
 
 ```json
 {
@@ -330,77 +332,81 @@ email       subject           email_subject
 }
 ```
 
-**ネストされたフィールドの要件**:
-- トップレベルのキーには必ずプラットフォーム接頭辞を付ける
-- ネストされた内部フィールドには、プラットフォーム接頭辞を追加しない
-- ネストの深さは3層を超えないようにすることを推奨
+**ネストフィールドの要件**：
+- トップレベルのキーにはプラットフォームプレフィックスを付けなければならない
+- ネストした内部フィールドにはプラットフォームプレフィックスを**追加しない**
+- ネストの深さは 3 層を超えないことを推奨
 
 ### 6.6 `self` フィールドの拡張
 
-`self` オブジェクトの標準必須フィールド（`platform`、`user_id`）は §2.1 を参照してください。以下は ErisPulse が拡張したオプションフィールドです：
+`self` オブジェクトの標準必須フィールド（`platform`、`user_id`）は §2.1 を参照してください。以下は ErisPulse が拡張した任意フィールドです：
 
 | フィールド | 型 | 説明 |
 |------|------|------|
-| `self.user_name` | `string` | ロボットのニックネーム |
-| `self.avatar` | `string` | ロボットのアバター URL |
+| `self.user_name` | `string` | ボットのニックネーム |
+| `self.avatar` | `string` | ボットのアバター URL |
 | `self.account_id` | `string` | マルチアカウントモードにおけるアカウント識別子 |
 
-> **Bot 状態の追跡**: アダプタは `type: "meta"` イベントを送信して、フレームワークに Bot の接続状態を通知します。サポートされる `detail_type`: `connect`（オンライン）、`heartbeat`（ハートビート）、`disconnect`（オフライン）。システムは、この `detail_type` から `self` フィールドの Bot 元情報を取り出して自動的に状態を追跡します。また、通常のイベントにおける `self` フィールドも自動的に Bot を検出します。詳細は [アダプタシステム API - Bot 状態管理](../api-reference/adapter-system.md) を参照してください。
+> **Bot 状態トラッキング**：アダプターは `type: "meta"` イベントを送信することで、フレームワークに Bot の接続状態を通知します。サポートされる `detail_type`：`connect`（オンライン）、`heartbeat`（ハートビート）、`disconnect`（オフライン）。システムはそこから `self` フィールドの Bot メタ情報を自動的に抽出し、状態をトラッキングします。また、通常のイベント内の `self` フィールドからも Bot が自動的に検出されます。詳細は [アダプターシステム API - Bot 状態管理](../api-reference/adapter-system.md) を参照してください。
 
-## 7. セッションタイプ拡張
+---
 
-ErisPulse は OneBot12 標準の `private`、`group` の上に以下のセッションタイプを拡張しています。
+## 7. セッションタイプの拡張
+
+ErisPulse は OneBot12 標準の `private`、`group` をベースに、以下のセッションタイプを拡張しました：
 
 | タイプ | OneBot12 標準 | ErisPulse 拡張 | 説明 |
 |------|:-----------:|:------------:|------|
 | `private` | ✅ | — | 1対1のプライベートチャット |
 | `group` | ✅ | — | グループチャット |
 | `user` | — | ✅ | ユーザータイプ（Telegram など） |
-| `channel` | — | ✅ | チャンネル（放送型） |
+| `channel` | — | ✅ | チャンネル（ブロードキャスト型） |
 | `guild` | — | ✅ | サーバー/コミュニティ |
 | `thread` | — | ✅ | トピック/サブチャンネル |
 
-**アダプタ独自のタイプ拡張**：
+**アダプターのカスタムタイプ拡張**：
 
 ```python
 from ErisPulse.Core.Event.session_type import register_custom_type
 
-# アダプタ起動時に登録
+# アダプター起動時に登録する
 register_custom_type(
-    receive_type="email",      # 受信イベント中の detail_type
-    send_type="email",         # 送信時の対象タイプ
-    id_field="email_id",       # 対応するIDフィールド名
+    receive_type="email",      # 受信イベントにおける detail_type
+    send_type="email",         # 送信時のターゲットタイプ
+    id_field="email_id",       # 対応する ID フィールド名
     platform="email"           # プラットフォーム識別子
 )
 ```
 
-**独自タイプの要件**：
-- アダプタの `start()` 時に登録し、`shutdown()` 時に登録解除する必要があります
-- `receive_type` は標準タイプと重複しないようにする必要があります
-- `id_field` は `{対象}_id` の命名規則に従う必要があります
+**カスタムタイプの要件**：
+- アダプターの `start()` 時に登録し、`shutdown()` 時に登録解除しなければならない
+- `receive_type` は標準タイプと同名にすべきではない
+- `id_field` は `{ターゲット}_id` の命名パターンに従うべきである
 
-> 完全なセッションタイプ定義とマッピング関係は、[セッションタイプ標準](docs/ja/session-types.md)を参照してください。
+> セッションタイプの完全な定義とマッピング関係については [セッションタイプ標準](session-types.md) を参照してください。
+
+---
 
 ## 8. モジュール開発者ガイド
 
-### 8.1 拡張フィールドのアクセス
+### 8.1 拡張フィールドへのアクセス
 
 ```python
 from ErisPulse.Core.Event import message
 
 @message()
 async def handle_message(event):
-    # 標準フィールドのアクセス
+    # 標準フィールドへのアクセス
     text = event.get_text()
     user_id = event.get_user_id()
 
-    # プラットフォーム拡張フィールドのアクセス - 方法1: 直接 get
+    # プラットフォーム拡張フィールドへのアクセス - 方法1：直接 get
     yunhu_command = event.get("yunhu_command")
 
-    # プラットフォーム拡張フィールドのアクセス - 方法2: 点式アクセス (Event ラッパークラス)
+    # プラットフォーム拡張フィールドへのアクセス - 方法2：ドットアクセス（Event ラッパークラス）
     # event.yunhu_command
 
-    # 送信元データのアクセス
+    # 生データへのアクセス
     raw_data = event.get("yunhu_raw")
     raw_type = event.get_raw_type()
 
@@ -433,103 +439,105 @@ async def handle_message(event):
                 file_id = seg_data["file_id"]
 ```
 
-### 8.3 最適な実践方法
+### 8.3 ベストプラクティス
 
-1. **標準フィールドの優先使用**: 拡張フィールドが必ず存在すると仮定しないこと
-2. **プラットフォームの判定**: 拡張フィールドの存在によってプラットフォームを推測するのではなく、`event.get_platform()` を使用すること
-3. **エラーハンドリング**: 拡張メッセージセグメントを処理できない場合は、`alt_message` をバックアップとして使用すること
-4. **プレフィックスのハードコーディングを避ける**: `platform` 変数を使って動的に文字列を連結すること
+1. **標準フィールドを優先して使用する**：拡張フィールドが必ず存在すると仮定しないこと
+2. **プラットフォーム判定**：`event.get_platform()` によってプラットフォームを判定し、拡張フィールドの存在有無から推測しないこと
+3. **グレースフルデグラデーション**：拡張メッセージセグメントを処理できない場合は、`alt_message` をフォールバックとして使用すること
+4. **プレフィックスをハードコードしない**：`platform` 変数を使って動的に連結すること
 
 ```python
 # ✅ 推奨
 platform = event.get_platform()
 raw_data = event.get(f"{platform}_raw")
 
-# ❌ 推奨されない
+# ❌ 非推奨
 raw_data = event.get("yunhu_raw")
 ```
 
-### 8.4 要求イベントの処理
+### 8.4 リクエストイベントの処理
 
-モジュール開発者は、`event.approve()` および `event.reject()` を使用して要求イベントを処理することができます。
+モジュール開発者は `event.approve()` および `event.reject()` を通じてリクエストイベントに対する操作を行うことができます：
 
 ```python
 from ErisPulse.Core.Event import request
 
-# フレンドリクエスト: 自動的に承認
+# フレンドリクエスト：自動承認
 @request.on_friend_request()
 async def handle_friend_request(event):
     user_name = event.get_user_nickname() or event.get_user_id()
     comment = event.get_comment()
     
-    # 承認リクエスト
+    # リクエストを承認
     result = await event.approve()
     if result.get("status") == "ok":
-        print(f"{user_name} からのフレンドリクエストを承認しました")
+        print(f"{user_name} のフレンドリクエストを承認しました")
     else:
         print(f"フレンドリクエストの承認に失敗しました: {result.get('message')}")
 
-# グループ招待: 条件に応じて決定
+# グループ招待：条件に応じて判断
 @request.on_group_request()
 async def handle_group_request(event):
     comment = event.get_comment()
     
-    # 拒否リクエスト
-    result = await event.reject(comment="暫定的に新しいグループに参加しません")
+    # リクエストを拒否
+    result = await event.reject(comment="当分の間、新しいグループに参加しません")
 ```
 
-**アダプターを介した直接操作**（イベントハンドラ以外の場面に適用可能）:
+**アダプターを通じた直接操作**（イベントハンドラー以外のシーンに適用）：
 
 ```python
 from ErisPulse import adapter
 
-# request_id を使用して直接操作
+# request_id による直接操作
 await adapter.myplatform.Request("req_abc123").accept()
 await adapter.myplatform.Request("req_abc123").reject()
 
-# 特定の Bot アカウントで操作
+# Bot アカウントを指定して操作
 await adapter.myplatform.Request("req_abc123").Using("bot1").accept()
 
-# 備考を付けて操作
+# 備考を添える
 await adapter.myplatform.Request("req_abc123").accept(comment="ようこそ")
 ```
 
-## 9. notice / request イベントのセッションタイプ推論
+---
+
+## 9. notice / request イベントのセッションタイプ推定
 
 ### 9.1 問題の背景
 
-notice イベントと request イベントの `detail_type` は**意味論的なサブタイプ**（例: `group_member_increase`、`friend_increase`）であり、セッションタイプ（例: `group`、`private`）ではありません。
+notice イベントと request イベントの `detail_type` は**セマンティックサブタイプ**（例：`group_member_increase`、`friend_increase`）であり、セッションタイプ（例：`group`、`private`）ではありません。
 
 ```
-type        detail_type                  含意            セッションタイプ
-────        ───────────                  ────            ────────
-message     group                        群チャットメッセージ         group（detail_type がセッションタイプ）
-message     private                      プライベートチャットメッセージ         private（detail_type がセッションタイプ）
-notice      group_member_increase        群メンバーの増加       group（group_id から推論）
-notice      friend_increase              友達の増加         private（user_id から推論）
-request     friend                       友達リクエスト         private（user_id から推論）
-request     group                        群リクエスト           group（detail_type がセッションタイプ）
+type        detail_type                  意味                セッションタイプ
+────        ───────────                  ────                ────────
+message     group                        グループメッセージ     group（detail_type がそのままセッションタイプ）
+message     private                      プライベートメッセージ  private（detail_type がそのままセッションタイプ）
+notice      group_member_increase        グループメンバー増加   group（group_id からの推定が必要）
+notice      friend_increase              フレンド増加          private（user_id からの推定が必要）
+request     friend                       フレンドリクエスト     private（user_id からの推定が必要）
+request     group                        グループリクエスト     group（detail_type がそのままセッションタイプ）
 ```
 
-### 9.2 推論ルール
+### 9.2 推定ルール
 
-`infer_receive_type()` の推論順序は以下の通りです：
+`infer_receive_type()` の推定順序：
 
-1. `detail_type` が既知のセッションタイプ（`private`/`group`/`channel`/`guild`/`thread`/`user`）である場合、そのまま使用する
-2. `detail_type` がカスタムセッションタイプである場合、そのまま使用する
-3. それ以外（notice/request の意味論的サブタイプ）の場合、ID フィールドに基づいて推論する：
+1. `detail_type` が既知のセッションタイプ（`private`/`group`/`channel`/`guild`/`thread`/`user`）である場合は、そのまま使用する
+2. `detail_type` がカスタムセッションタイプである場合は、そのまま使用する
+3. それ以外の場合（notice/request のセマンティックサブタイプ）、ID フィールドに基づいて推定する：
    - `group_id` がある → `"group"`
    - `channel_id` がある → `"channel"`
    - `guild_id` がある → `"guild"`
    - `thread_id` がある → `"thread"`
    - `user_id` がある → `"private"`
 
-### 9.3 `event.reply()` の送信先推論
+### 9.3 `event.reply()` のターゲット推定
 
-notice/request イベントにおける `event.reply()` の送信先は、セッションタイプの推論によって決まります：
+notice/request イベントにおける `event.reply()` の送信ターゲットは、セッションタイプの推定によって決まります：
 
-- グループ通知イベント（`group_id` を含む）→ グループに返信
-- 友達通知イベント（`user_id` だけを含む）→ ユーザーのプライベートチャットに返信
+- グループ通知イベント（`group_id` を含む）→ **グループ**に返信
+- フレンド通知イベント（`user_id` のみを含む）→ **ユーザーのプライベートチャット**に返信
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -539,18 +547,18 @@ async def handle_welcome(event):
     group_id = event.get("group_id")    # "group_789"
     user_id = event.get("user_id")      # "user_456"
 
-    # event.reply() はグループ（group/group_789）に送信
-    await event.reply("ようこそ！")
+    # event.reply() はグループに送信（group/group_789）
+    await event.reply("グループへようこそ！")
 
-    # 管理者に通知する場合（プライベートチャット）、明示的に送信先を指定する：
-    await adapter.Send.To("user", "admin_id").Text(f"新メンバー {user_id} が {group_id} に参加しました")
+    # 管理者に通知する場合（プライベートチャット）、ターゲットを明示的に指定：
+    await adapter.Send.To("user", "admin_id").Text(f"新しいメンバー {user_id} が {group_id} に参加しました")
 ```
 
-### 9.4 アダプタ開発の推奨事項
+### 9.4 アダプター開発の推奨事項
 
-notice/request イベントにおいて、正しい ID フィールドが含まれていることを確認してください：
+notice/request イベントに正しい ID フィールドが含まれるようにしてください：
 
-| detail_type | 必須の ID フィールド | 推論されるセッションタイプ |
+| detail_type | 含まれるべき ID フィールド | 推定されるセッションタイプ |
 |-------------|-------------------|---------------|
 | `group_member_increase` | `group_id` + `user_id` | `group` |
 | `group_member_decrease` | `group_id` + `user_id` | `group` |
@@ -559,10 +567,17 @@ notice/request イベントにおいて、正しい ID フィールドが含ま�
 | `friend`（リクエスト） | `user_id` | `private` |
 | `group`（リクエスト） | `group_id` | `group` |
 
+---
+
 ## 10. 関連ドキュメント
 
-- [各プラットフォームの機能ドキュメント](../platform-guide/README.md) - ここでは、各プラットフォームの機能や既知の拡張イベントやメッセージセグメントなどについて説明しています。
-- [会話タイプの標準](session-types.md) - 会話タイプの定義とマッピング関係
-- [送信メソッドの規格](send-method-spec.md) - Send クラスのメソッド命名、パラメータ規格および逆変換の要件
-- [API 応答の標準](api-response.md) - アダプターの API 応答形式の標準
-- [API アクションの標準](api-action-spec.md) - OneBot12 標準 API アクションの統一インターフェース
+**コンバーター実装時に併せて参照**：
+- [セッションタイプ標準](session-types.md) - セッションタイプの定義とマッピング関係
+- [API レスポンス標準](api-response.md) - アダプター API レスポンス形式の標準
+
+**同一アダプターの送信側**：
+- [送信メソッド仕様](send-method-spec.md) - Send クラスのメソッド命名、パラメータ仕様および逆変換の要件
+- [API アクション標準](api-action-spec.md) - OneBot12 標準 API アクションの統一インターフェース
+
+**各プラットフォームの既知の拡張イベントとメッセージセグメントの確認**：
+- [各プラットフォーム特性ドキュメント](../platform-guide/README.md) - このドキュメントにアクセスすることで、各プラットフォームの特性や既知の拡張イベント、メッセージセグメントなどを知ることができます。

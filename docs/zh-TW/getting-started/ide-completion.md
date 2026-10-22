@@ -1,7 +1,10 @@
 # 類型存根生成（IDE 補全）
 
-ErisPulse 透過 entry-points 動態發現模組/適配器，入口點無法在靜態層面獲知使用者類別的具體類型。  
-`epsdk types` 命令透過掃描已安裝的模組/適配器，產生一個類型存根檔案，讓使用者可以將這些類型用作變數標註，進而獲得 IDE 補全。
+> [!TIP]
+> **何時需要閱讀本文**：當 IDE 補全無法顯示適配器的平台特定方法（如雲湖的 `Board`）或模組的自訂方法時，只需執行一條 `epsdk types` 命令生成類型存根即可解決；若不需要則可跳過。
+
+ErisPulse 透過 entry-points 動態發現模組/適配器，入口點無法在靜態層面得知使用者類別的具體類型。  
+`epsdk types` 命令透過掃描已安裝的模組/適配器，生成一個類型存根檔案，讓使用者可以將這些類型作為變數標註，進而獲得 IDE 補全功能。
 
 ## 核心設計原則
 
@@ -81,7 +84,7 @@ if TYPE_CHECKING:
 `SendDSL` 基類已內建標準發送方法（Text/Image/Voice/Video/File），無論以何種方式取得的 SendDSL 實例都能補全這些方法。  
 `types` 命令主要用於補全**平台特有方法**（如雲湖的 `Board`、沙盒的 `Dice`）以及**模組特有方法**。
 
-## 相關文件
+## 下一步
 
-- [SendDSL 詳解](../developer-guide/adapters/send-dsl.md) - 標準發送方法說明
-- [適配器開發入門](../developer-guide/adapters/getting-started.md) - 建立適配器
+- **想知道哪些發送方法所有平台通用**：請參閱 [SendDSL 詳解](../developer-guide/adapters/send-dsl.md)，獲取 Text / Image / Voice 等標準方法的權威說明
+- **正在開發自己的適配器**：請從 [適配器開發入門](../developer-guide/adapters/getting-started.md) 開始建立適配器項目

@@ -1,33 +1,37 @@
 {
   "version": 2,
-  "hash": "b321b74ff0af484a456c9887a903911d",
-  "file_hash": "b321b74ff0af484a456c9887a903911d",
-  "translated_at": "2026-10-18T15:23:03.502190",
+  "hash": "cdbaec96299f681c8fa40219039c8cd4",
+  "file_hash": "cdbaec96299f681c8fa40219039c8cd4",
+  "translated_at": "2026-10-22T12:02:37.526150",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "d556deeda8e4194a937a18325a69993d",
-      "translation": "# ErisPulse-QvQChat 通用智能體\n\n[ErisPulse-QvQChat](https://pypi.org/project/ErisPulse-QvQChat/) 是一個 **通用智能體模組**，圍繞工具循環建構：收發訊息、呼叫生態模組服務、撰寫並執行程式碼、操作電腦、產生圖片語音、管理定時任務與長期記憶——全部透過同一套工具協定完成。\n\n> [!IMPORTANT]\n> QvQChat 需要單獨安裝：\n>\n> ```bash\n> epsdk install ErisPulse-QvQChat\n> ```\n>\n> 同時需要在「模型池」新增至少一個 OpenAI 兼容模型（Base URL、API Key、模型名）。"
+      "hash": "c27c5f8045fc05e9b2695288c2e753ae",
+      "translation": "# ErisPulse-QvQChat 通用智慧代理\n\n> [!TIP]\n> **什麼時候需要讀這篇**：當你想給機器人加 AI 智慧代理能力（工具循環、串流對話、MCP、長期記憶），或想把自己模組的服務暴露給智慧代理呼叫時讀這篇。不需要則跳過。\n\n[ErisPulse-QvQChat](https://pypi.org/project/ErisPulse-QvQChat/) 是一個 **通用智慧代理模組**，圍繞工具循環建構：收發訊息、呼叫生態模組服務、編寫並執行程式碼、操作電腦、生成圖片語音、管理排程任務與長期記憶——全部透過同一套工具協定完成。\n\n> [!IMPORTANT]\n> QvQChat 需要單獨安裝：\n>\n> ```bash\n> epsdk install ErisPulse-QvQChat\n> ```\n>\n> 同時需要在「模型池」新增至少一個 OpenAI 相容模型（Base URL、API Key、模型名稱）。"
     },
     {
       "hash": "140d00806656351ad40ae78b41d8c897",
-      "translation": "## 核心能力\n\n| 能力 | 說明 |\n|---|---|\n| 工具循環 | 模型輸出工具調用 → 並發執行 → 結果回填 → 繼續推理，直到給出最終回答 |\n| 流式對話 | SSE 逐字輸出，工具步驟實時可見；刷新 / 切走再回來，進度不丟 |\n| 上下文壓縮 | 超過 token 閾值自動把舊對話壓縮為摘要（預設 128000 估算，可自定義） |\n| 生態服務橋 | 自動發現模塊聲明的服務並轉為工具，裝卸模塊即增減能力 |\n| MCP 客戶端 | stdio 與 Streamable HTTP，MCP 工具並入同一工具集 |\n| 子智能體 | `spawn_agent` 派出獨立會話的子智能體探索任務，只回報結論 |\n| 進程內執行 | `run_python_sdk` 主進程內運行 Python，直接訪問運行時物件 |\n| 電腦操作 | 三級安全沙箱（strict / standard / permissive），危險操作確認，全程審計 |\n| 視覺理解 | 圖片自動注入模型（不支援圖片時自動剝離重試） |\n| 附件 | 任意檔案按 hash 去重落盤，路徑交給 AI 自行處理；Ctrl+V 粘貼截圖 |\n| 分享會話 | 臨時只讀連結（有效期 + token 預算），匯出 Markdown |\n| 定時任務 | cron / 一次性 / 間隔，持久化，權限隨創建者 |\n| 會話接管 | 管理員可讓智能體獨佔一個會話 |\n| 人格系統 | 系統提示詞 + 開場對話 + 工具白名單，可按會話綁定 |\n| 長期記憶 | 每會話記憶條目，按相似度檢索注入 |\n| AI 自動命名 | 會話首輪回覆後自动生成簡短標題 |"
+      "translation": "## 核心能力\n\n| 能力 | 說明 |\n|---|---|\n| 工具循環 | 模型輸出工具呼叫 → 並行執行 → 結果回填 → 繼續推理，直到給出最終回答 |\n| 串流對話 | SSE 逐字輸出，工具步驟即時可見；重新整理 / 切走再回來，進度不丟 |\n| 上下文壓縮 | 超過 token 閾值自動把舊對話壓縮為摘要（預設 128000 估算，可自訂） |\n| 生態服務橋 | 自動發現模組宣告的服務並轉為工具，裝卸模組即增減能力 |\n| MCP 用戶端 | stdio 與 Streamable HTTP，MCP 工具併入同一工具集 |\n| 子智慧代理 | `spawn_agent` 派出獨立會話的子智慧代理探索任務，只回報結論 |\n| 行程內執行 | `run_python_sdk` 主行程內執行 Python，直接存取執行時物件 |\n| 電腦操作 | 三級安全沙箱（strict / standard / permissive），危險操作確認，全程稽核 |\n| 視覺理解 | 圖片自動注入模型（不支援圖片時自動剝離重試） |\n| 附件 | 任意檔案依 hash 去重後寫入磁碟，路徑交給 AI 自行處理；Ctrl+V 貼上截圖 |\n| 分享會話 | 臨時唯讀連結（有效期 + token 預算），匯出 Markdown |\n| 排程任務 | cron / 一次性 / 間隔，持久化，權限隨建立者 |\n| 會話接管 | 管理員可讓智慧代理獨佔一個會話 |\n| 人格系統 | 系統提示詞 + 開場對話 + 工具白名單，可按會話綁定 |\n| 長期記憶 | 每會話記憶條目，按相似度檢索注入 |\n| AI 自動命名 | 會話首輪回覆後自動生成簡短標題 |"
     },
     {
       "hash": "96ff3b3a9b7505f6b5bef1461d22fbbc",
-      "translation": "## 模組擴展\n\n任何 ErisPulse 模組宣告 `services` 即自動成為 QvQChat 的工具，無需專門介面：\n\n```python\nfrom ErisPulse.Core.Bases import BaseModule, ModuleMeta\n\nclass Main(BaseModule):\n    @staticmethod\n    def get_meta() -> ModuleMeta:\n        return ModuleMeta(name=\"Draw\", services=[\n            {\"name\": \"draw\", \"description\": \"根據描述生成圖片，返回圖片 URL\"},\n        ])\n\n    async def draw(self, prompt: str, size: str = \"1024x1024\"):\n        return {\"image_url\": \"https://...\"}\n```\n\n服務的方法簽名自動映射為工具的 JSON Schema 參數定義，docstring 首行作為參數說明。\n\n### 深度集成（可選）\n\n模組可以額外實現以下任意服務，每個服務**獨立可選**——一個模組可以只做人格擴展，也可以只注入提示詞：\n\n#### `qvq_prompts()` → 注入系統提示詞\n\n傳回 `list[str]` 或 `list[{\"text\": str, \"priority\": int}]`，按 `priority` 升序拼接。\n\n```python\nasync def qvq_prompts(self):\n    return [\n        {\"text\": \"畫圖後用 send_message 把圖片發給使用者。\", \"priority\": 10},\n        {\"text\": \"支援的風格：動漫、寫實、水彩、像素。\", \"priority\": 20},\n    ]\n```\n\n#### `qvq_personas()` → 註冊人格預設\n\n傳回人格列表，id 自動加 `ext.<模組名>.` 前綴，模組卸載自動清理。適合專門提供人格擴展的模組（如情感陪伴、翻譯專員、程式碼審查員等）。\n\n```python\nasync def qvq_personas(self):\n    return [\n        {\"id\": \"companion\", \"name\": \"暖男\", \"system\": \"你是一個溫暖體貼的聊天夥伴...\"},\n        {\"id\": \"coder\", \"name\": \"程式碼導師\", \"system\": \"...\", \"tools\": [\"read_file\", \"run_python\"]},\n    ]\n```\n\n`tools` 可選限定該人格可用的工具子集。\n\n#### `qvq_schemas()` → 显式參數 schema\n\n傳回 `dict[服務名, JSON Schema]`，覆蓋方法簽名推斷。參數複雜或需要嚴格校驗時使用。\n\n```python\nasync def qvq_schemas(self):\n    return {\n        \"draw\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"prompt\": {\"type\": \"string\", \"description\": \"畫面描述\"},\n                \"size\": {\"type\": \"string\", \"enum\": [\"512x512\", \"1024x1024\"]},\n            },\n            \"required\": [\"prompt\"],\n        },\n    }\n```\n\n### 刷新時機\n\n深度集成服務的刷新時機：啟動、模組裝卸、Dashboard「工具」頁手動刷新。"
+      "translation": "## 模組擴展\n\n任何 ErisPulse 模組宣告 `services` 即自動成為 QvQChat 的工具，無需專門介面：\n\n```python\nfrom ErisPulse.Core.Bases import BaseModule, ModuleMeta\n\nclass Main(BaseModule):\n    @staticmethod\n    def get_meta() -> ModuleMeta:\n        return ModuleMeta(name=\"Draw\", services=[\n            {\"name\": \"draw\", \"description\": \"根據描述生成圖片，回傳圖片 URL\"},\n        ])\n\n    async def draw(self, prompt: str, size: str = \"1024x1024\"):\n        return {\"image_url\": \"https://...\"}\n```\n\n服務的方法簽名自動對映為工具的 JSON Schema 參數定義，docstring 首行作為參數說明。\n\n### 深度整合（可選）\n\n模組可以額外實作以下任意服務，每個服務**獨立可選**——一個模組可以只做人格擴展，也可以只注入提示詞：\n\n#### `qvq_prompts()` → 注入系統提示詞\n\n回傳 `list[str]` 或 `list[{\"text\": str, \"priority\": int}]`，依 `priority` 升冪拼接。\n\n```python\nasync def qvq_prompts(self):\n    return [\n        {\"text\": \"畫圖後用 send_message 把圖片發給使用者。\", \"priority\": 10},\n        {\"text\": \"支援的風格：動漫、寫實、水彩、像素。\", \"priority\": 20},\n    ]\n```\n\n#### `qvq_personas()` → 註冊人格預設\n\n回傳人格清單，id 自動加 `ext.<模組名>.` 前綴，模組卸載自動清理。適合專門提供人格擴展的模組（如情感陪伴、翻譯專員、程式碼審查員等）。\n\n```python\nasync def qvq_personas(self):\n    return [\n        {\"id\": \"companion\", \"name\": \"暖男\", \"system\": \"你是一個溫暖體貼的聊天夥伴...\"},\n        {\"id\": \"coder\", \"name\": \"程式碼導師\", \"system\": \"...\", \"tools\": [\"read_file\", \"run_python\"]},\n    ]\n```\n\n`tools` 可選限定該人格可用的工具子集。\n\n#### `qvq_schemas()` → 顯式參數 schema\n\n回傳 `dict[服務名, JSON Schema]`，覆寫方法簽名推斷。參數複雜或需要嚴格驗證時使用。\n\n```python\nasync def qvq_schemas(self):\n    return {\n        \"draw\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"prompt\": {\"type\": \"string\", \"description\": \"畫面描述\"},\n                \"size\": {\"type\": \"string\", \"enum\": [\"512x512\", \"1024x1024\"]},\n            },\n            \"required\": [\"prompt\"],\n        },\n    }\n```\n\n### 重新整理時機\n\n深度整合服務的重新整理時機：啟動、模組裝卸、Dashboard「工具」頁手動重新整理。"
     },
     {
       "hash": "8f892b13c194a3350d0ba55debf4acd1",
-      "translation": "## 事件訂閱\n\nQvQChat 廣播兩個生命週期事件：\n\n| 事件 | 時機 | 載荷 |\n|---|---|---|\n| `qvq.message` | 收到使用者訊息 | `chat_key` `platform` `sender_id` `sender_name` `text` `is_group` |\n| `qvq.replied` | 回覆發出後 | `chat_key` `reply` `tools` |\n\n```python\nasync def setup(self):\n    sdk.lifecycle.on(\"qvq.message\", self.on_message)\n```"
+      "translation": "## 事件訂閱\n\nQvQChat 廣播兩個生命週期事件：\n\n| 事件 | 時機 | 負載 |\n|---|---|---|\n| `qvq.message` | 收到使用者訊息 | `chat_key` `platform` `sender_id` `sender_name` `text` `is_group` |\n| `qvq.replied` | 回覆發出後 | `chat_key` `reply` `tools` |\n\n```python\nasync def setup(self):\n    sdk.lifecycle.on(\"qvq.message\", self.on_message)\n```"
     },
     {
       "hash": "07d291e509c56612d4e4b902151f7247",
-      "translation": "## 作為服務被調用\n\n| 服務 | 簽名 | 說明 |\n|---|---|---|\n| `chat` | `(session_id, prompt, persona=\"\")` | 與智能體對話，返回文本 |\n| `run_prompt` | `(chat_key, prompt, ...)` | 運行提示詞，結果可發送到目標會話 |\n| `get_status` | `()` | 運行狀態摘要 |"
+      "translation": "## 作為服務被呼叫\n\n| 服務 | 簽名 | 說明 |\n|---|---|---|\n| `chat` | `(session_id, prompt, persona=\"\")` | 與智慧代理對話，回傳文字 |\n| `run_prompt` | `(chat_key, prompt, ...)` | 執行提示詞，結果可傳送到目標會話 |\n| `get_status` | `()` | 執行狀態摘要 |"
     },
     {
-      "hash": "4d951a46e7efd72567ef41c447a80316",
-      "translation": "## 界面\n\n可透過 `/QvQChat/view` 獨立存取，或嵌入 Dashboard 頁面側邊欄。\n\n![概覽](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/overview.png)\n\n![對話](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/chat.png)"
+      "hash": "15f97e1080e165ff47b97b09320ff78e",
+      "translation": "## 介面\n\n透過 `/QvQChat/view` 獨立存取，或嵌入 Dashboard 側邊欄。\n\n![概覽](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/overview.png)\n\n![對話](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/chat.png)\n\n---"
+    },
+    {
+      "hash": "18543118ab6853e339cc06ff3d69f1d5",
+      "translation": "## 下一步\n\n- **把自己的模組變成智慧代理工具**：在 `get_meta()` 宣告 `services` 即可，欄位語意詳見 [核心模組 API - 服務契約](../api-reference/core-modules.md)\n- **訂閱智慧代理訊息做連動**：用[生命週期事件](../advanced/lifecycle.md)監聽 `qvq.message` / `qvq.replied`\n- **不用智慧代理、只要多輪問答表單**：內建的 [Conversation 多輪對話](../advanced/conversation.md)是更輕量的選擇\n- **網頁端管理**：搭配 [ErisPulse-Dashboard](dashboard.md) 側邊欄使用"
     }
   ]
 }

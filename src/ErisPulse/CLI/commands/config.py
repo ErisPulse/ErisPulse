@@ -5,7 +5,7 @@ Config 命令实现
 """
 
 import json
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 from rich.box import SIMPLE
 from rich.prompt import Prompt
@@ -36,7 +36,7 @@ class ConfigCommand(Command):
     aliases = ["cfg", "conf"]
     category = "config"
 
-    def add_arguments(self, parser: ArgumentParser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "name",
             nargs="?",
@@ -54,7 +54,7 @@ class ConfigCommand(Command):
             help=i18n.t("cli.config.json_help"),
         )
 
-    def execute(self, args):
+    def execute(self, args: Namespace) -> None:
         from ErisPulse import config
 
         targets = config_wizard.load_config_targets()

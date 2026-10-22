@@ -4,7 +4,7 @@
 > **什么时候需要读这篇**：适配器开发路径内必读（发送 DSL）。不需要则跳过，不影响其它功能的使用。
 
 
-SendDSL 是 ErisPulse 适配器提供的链式调用风格的消息发送接口。
+SendDSL 让消息发送串成一条链完成：指定目标、@ / 回复、重试 / 超时 / 延迟、批量发送，一行链式调用搞定。本篇覆盖发送方法、修饰方法、发送规则与发送链路的内部机制。
 
 ## 基本调用方式
 
@@ -728,7 +728,12 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消�
 
 ## 相关文档
 
+### 继续适配器开发路径
+
 - [适配器开发入门](getting-started.md) - 创建适配器
 - [适配器核心概念](core-concepts.md) - 了解适配器架构
 - [适配器最佳实践](best-practices.md) - 开发高质量适配器
-- [发送方法规范](../../standards/send-method-spec.md) - 发送方法完整规范
+
+### 遵循正式规范
+
+- [发送方法规范](../../standards/send-method-spec.md) - 发送方法完整规范（`Raw_ob12` 实现与 `MessageBuilder`）

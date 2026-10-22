@@ -1026,8 +1026,8 @@ class ScopeManager:
         platform: str,
         bot_id: str | None = None,
         session_id: str | None = None,
-        default=None,
-    ):
+        default: Any = None,
+    ) -> Any:
         """
         读取该层级原始模块绑定（不含 merge 跨级合并的最终生效结果，
         需判定生效性请用 :meth:`is_allowed`）
@@ -1105,8 +1105,8 @@ class ScopeManager:
         bot_id: str | None = None,
         session_id: str | None = None,
         user_id: str | None = None,
-        default=None,
-    ):
+        default: Any = None,
+    ) -> Any:
         """
         读取该来源的身份绑定（原始配置形态，含 glob 键不展开；
         需判定生效性请用 :meth:`is_identity_allowed`）
@@ -1192,7 +1192,7 @@ class ScopeManager:
         if rule:
             self.set(path, rule, persist=persist)
 
-    def get_action(self, module: str, action: str, default=None):
+    def get_action(self, module: str, action: str, default: Any = None) -> Any:
         """
         读取模块某类出站动作的原始规则（bool 原样存储，判定层归一化）
 
@@ -1232,7 +1232,7 @@ class ScopeManager:
             node = node.get(part)
         return node
 
-    def get(self, path: str, default=None):
+    def get(self, path: str, default: Any = None) -> Any:
         """
         读取作用域配置树中任意节（深拷贝）
 
@@ -1249,7 +1249,7 @@ class ScopeManager:
         node = self._node_at(path)
         return copy.deepcopy(node) if node is not None else default
 
-    def set(self, path: str, value, persist: bool = True) -> None:
+    def set(self, path: str, value: Any, persist: bool = True) -> None:
         """
         写入作用域配置树中任意节（dict 深合并，标量直接覆盖）
 

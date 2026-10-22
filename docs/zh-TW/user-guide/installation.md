@@ -1,13 +1,13 @@
 # 安裝參考
 
-> 本文是安裝方式的**完整參考**（pip / uv / Docker / 故障排除）。
-> 如果你只想快速上手，[5 分鐘快速入門](../quick-start.md) 已經涵蓋了最簡流程。
+> [!TIP]
+> **何時需要閱讀本文**：需要選擇一種安裝方式（pip / uv / Docker / ErisPulse-App 客戶端），或遇到安裝失敗需要排查時閱讀。只想快速運行，[5 分鐘快速入門](../quick-start.md) 已涵蓋最簡流程，不需要則跳過。
 
 ## 系統要求
 
-- Python 3.10 或更高版本
+- Python 3.10 – 3.14（3.14t 自由線程 / 無 GIL 構建為實驗性支持，框架以實驗性 CI 冒煙持續監測，不作正式承諾）
 - pip 或 uv（推薦）
-- 足夠的磁碟空間（至少 100MB）
+- 足夠的磁盤空間（至少 100MB）
 
 ## 安裝方式
 
@@ -38,7 +38,7 @@ uv --version
 #### 建立虛擬環境
 
 ```bash
-# 建立專案目錄
+# 建立項目目錄
 mkdir my_bot && cd my_bot
 
 # 安裝 Python 3.12
@@ -67,8 +67,8 @@ uv pip install ErisPulse --upgrade
 
 ### 方式三：使用 uv tool 安裝（全域 CLI，推薦）
 
-如果只想把 `epsdk` 當全域命令列工具使用，`uv tool install` 是最乾淨的方式——
-epsdk 運行在獨立的工具環境中，不會污染任何專案環境：
+只想把 `epsdk` 當全域命令列工具使用時，`uv tool install` 是最乾淨的方式——
+epsdk 運行在獨立的工具環境中，不污染任何專案環境：
 
 ```bash
 # 安裝（epsdk 立即可用，無需激活任何虛擬環境）
@@ -79,20 +79,20 @@ uv tool upgrade ErisPulse
 ```
 
 > [!NOTE]
-> 工具環境中的 epsdk 在專案目錄內運行時會自動感知專案 `.venv`：
-> `epsdk install` 會將元件安裝進專案環境、`epsdk run` 使用專案環境運行機器人，
+> 工具環境裡的 epsdk 在專案目錄內運行時會自動感知專案 `.venv`：
+> `epsdk install` 將組件安裝進專案環境、`epsdk run` 使用專案環境運行機器人，
 > 框架本體仍由工具環境提供，兩邊互不干擾。
 >
 > 一鍵安裝腳本（`get.erisdev.com/install.sh` / `install.ps1`）的選單中
 > 同樣提供「全域 CLI 安裝（uv tool）」方式，會自動安裝 uv 並引導完成。
 
-## 項目初始化與模組安裝
+## 專案初始化與模組安裝
 
-安裝完成後，項目初始化、模組安裝、運行的完整流程見 [5 分鐘快速開始](../quick-start.md)。
+安裝完成後，專案初始化、模組安裝、運行的完整流程見 [5 分鐘快速入門](../quick-start.md)。
 
 ### 方式四：使用 ErisPulse-App 客戶端（免終端）
 
-不想安裝 Python 環境？[ErisPulse-App](../ecosystem/app-tw.md) 是官方全平台客戶端
+不想裝 Python 環境？[ErisPulse-App](../ecosystem/app-tw.md) 是官方全平台客戶端
 （Android / Windows / Linux / macOS），**手機直接運行**，桌面版支援最小化到
 系統托盤後台常駐；內建 Python 運行時與 ErisPulse SDK，無需終端與手動配置：
 
@@ -111,19 +111,19 @@ uv tool upgrade ErisPulse
 epsdk --version
 ```
 
-### 執行測試
+### 運行測試
 
 ```bash
-# 執行項目
+# 運行專案
 epsdk run main.py
 ```
 
-如果看到類似的輸出，表示安裝成功：
+如果看到類似的輸出說明安裝成功：
 
 ```
 [INFO] 正在初始化 ErisPulse...
-[INFO] 適配器已載入: Yunhu
-[INFO] 模組已載入: MyModule
+[INFO] 適配器已加載: Yunhu
+[INFO] 模組已加載: MyModule
 [INFO] ErisPulse 初始化完成
 ```
 
@@ -131,11 +131,11 @@ epsdk run main.py
 
 ### 安裝失敗
 
-1. 檢查 Python 版本是否 >= 3.10（推薦 3.10 - 3.14；3.14t free-threaded 無 GIL 建構暫未列入正式支援，框架以實驗性 CI 冒煙持續監測）
+1. 檢查 Python 版本是否在支援範圍內（支援 3.10 – 3.14；3.14t 自由線程 / 無 GIL 構建為實驗性支持，不作正式承諾）
 2. 嘗試使用 `uv pip install ErisPulse` 替代 `pip install`
 3. 如果提示權限錯誤，嘗試 `pip install --user ErisPulse` 或使用虛擬環境
 4. 如果在企業代理環境下遇到 SSL 證書錯誤，嘗試 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
-5. 確保網路連接正常，pip 源可訪問
+5. 確保網路連接正常，pip 源可存取
 
 ### 配置錯誤
 
@@ -149,11 +149,11 @@ epsdk run main.py
 1. 確認模組名稱拼寫正確（大小寫敏感）
 2. 檢查網路連接
 3. 使用 `epsdk list-remote` 查看可用模組列表
-4. 確認模組與你目前 SDK 版本相容
+4. 確認模組與你當前 SDK 版本相容
 
 ### Windows PowerShell 執行策略
 
-如果 PowerShell 提示「無法載入檔案...因為在此系統上禁止執行腳本」：
+如果 PowerShell 提示「無法載入檔案...在此系統上禁止執行腳本」：
 
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
@@ -173,5 +173,6 @@ sudo apt install python3-venv
 
 ## 下一步
 
-- [CLI 命令參考](cli-reference.md) - 瞭解所有命令列指令
-- [配置檔說明](configuration.md) - 詳細了解配置選項
+- **裝好後初始化專案、安裝適配器**：跟著 [5 分鐘快速入門](../quick-start.md) 走完剩餘步驟
+- **日常用命令列管理組件**：查 [CLI 命令參考](cli-reference-tw.md)
+- **要填令牌、調端口**：看 [配置檔案說明](configuration-tw.md)

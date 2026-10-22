@@ -6,7 +6,7 @@ DiscordAdapter 是基於 Discord Gateway (WebSocket) 和 REST API v10 協議建�
 
 ## 文件資訊
 
-- 對應模組版本: 4.2.0
+- 對應模組版本: 4.3.0
 - 維護者: ErisPulse
 - Discord API 版本: v10
 
@@ -105,9 +105,9 @@ await discord.Send.To("channel", channel_id).Keyboard(rows).Text("請選擇")
 
 ---
 
-## 支援的消息發送類型
+## 支援的消息傳送類型
 
-所有發送方法均透過串接語法實作，例如：
+所有發送方法均透過鏈式語法實現，例如：
 ```python
 from ErisPulse.Core import adapter
 discord = adapter.get("discord")
@@ -117,22 +117,23 @@ await discord.Send.To("group", channel_id).Text("Hello World!")
 
 支援的發送類型包括：
 - `.Text(text: str)`：發送純文字訊息。
-- `.Embed(embed: dict | list)`：發送嵌入訊息（Embed），支援單個或多個嵌入。
-- `.Image(file: bytes | str, filename: str = "image.png")`：發送圖片，支援二進位資料或 URL。
-- `.File(file: bytes | str, filename: str = None)`：發送檔案，支援二進位資料或 URL。
+- `.Embed(embed: dict | list)`：發送 Embed 嵌入訊息，支援單個或多個 Embed。
+- `.MergeForward(nodes, title="合併聊天記錄")`：發送合併轉發訊息（Embed：標題 + 每條訊息一個 field，≤25 fields，value ≤1024）。
+- `.Image(file: bytes | str, filename: str = "image.png")`：發送圖片，支援二進位數據或 URL。
+- `.File(file: bytes | str, filename: str = None)`：發送檔案，支援二進位數據或 URL。
 - `.Reply(content: str, message_id: str)`：回覆指定訊息（便捷終端方法）。
 - `.Raw_ob12(message: List[Dict], **kwargs)`：發送 OneBot12 格式訊息。
 - `.Raw_json(json_str: str)`：發送任意 Discord API 請求 JSON。
 
-### 串接修飾方法（可組合使用）
+### 鏈式修飾方法（可組合使用）
 
-串接修飾方法回傳 `self`，支援串接呼叫，必須在最終發送方法前呼叫：
+鏈式修飾方法返回 `self`，支援鏈式呼叫，必須在最終發送方法前呼叫：
 
 - `.Reply(message_id: str)`：回覆（引用）指定訊息，設定 `message_reference`。
-- `.At(user_id: str)`：@指定使用者，轉換為 `<@user_id>`，可多次呼叫。
+- `.At(user_id: str)`：@指定用戶，轉換為 `<@user_id>`，可多次呼叫。
 - `.AtAll()`：@所有人，轉換為 `@everyone`。
 
-### 串接呼叫範例
+### 鏈式呼叫示例
 
 ```python
 # 基礎發送
@@ -144,11 +145,11 @@ await discord.Send.To("group", channel_id).Reply(msg_id).Text("回覆訊息")
 # 便捷回覆（一步到位）
 await discord.Send.To("group", channel_id).Reply("回覆內容", msg_id)
 
-# @使用者
+# @用戶
 await discord.Send.To("group", channel_id).At("user_id").Text("你好")
 
-# @多個使用者
-await discord.Send.To("group", channel_id).At("user1").At("user2").Text("多使用者@")
+# @多個用戶
+await discord.Send.To("group", channel_id).At("user1").At("user2").Text("多用戶@")
 
 # @全體
 await discord.Send.To("group", channel_id).AtAll().Text("公告")
@@ -156,12 +157,12 @@ await discord.Send.To("group", channel_id).AtAll().Text("公告")
 # 組合使用
 await discord.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("複合訊息")
 
-# 嵌入訊息
+# Embed 嵌入訊息
 embed = {
     "title": "通知",
     "description": "這是一條嵌入訊息",
     "color": 5814783,
-    "fields": [{"name": "欄位", "value": "值", "inline": True}],
+    "fields": [{"name": "字段", "value": "值", "inline": True}],
 }
 await discord.Send.To("group", channel_id).Embed(embed)
 

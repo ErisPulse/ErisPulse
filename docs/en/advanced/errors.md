@@ -186,6 +186,15 @@ except ErisPulseError as e:
 - All exceptions are aggregated and exported from `ErisPulse.Core` (including `SessionOccupiedError` / `InteractionCancelled` / `StrictModeError`), also available from `ErisPulse.Core.Bases.errors`
 - Full definitions are in `src/ErisPulse/Core/Bases/errors.py`
 
-## Shutdown Noise Folding
+## Noise Folding on Shutdown
 
-Long-running processes often generate a batch of unactionable `Task was destroyed but it is pending!`-like interpreter noise when shutting down (or background loops are canceled). The framework includes **noise folding for similar messages**: within a 2-second window, identical messages are downgraded to TRACE and merged with a count, outputting only once, followed by a suffix indicating "another N similar messages were folded." This is deliberate noise reduction — seeing the folding suffix does not mean the framework swallowed real exceptions; business exceptions (all types above) are still fully output.
+When long-running processes shut down (or background loops are cancelled), the event loop often emits a batch of `Task was destroyed but it is pending!`-like noise from the interpreter, which lacks actionable value. The framework includes built-in **noise folding for similar events**: within a 2-second window, similar messages are downgraded to TRACE level and merged with a count, outputting only once and appending a suffix such as 「(N additional similar messages have been folded)」. This intentional noise reduction does not mean the framework is suppressing real exceptions; business exceptions (all types listed above) are still fully output as usual. The folding mechanism targets only interpreter exit noise, leaving business exceptions unaffected. What level of exception is worth retaining, and what can be downgraded or folded, follows the [Engineering Robustness Rules · Exception Logging Levels](../styleguide/engineering.md#1-异常留痕分级).
+
+## Related Documentation
+
+Choose according to troubleshooting intent:
+
+- **Storage operations return `False` / `None`, want to understand connection status** → [Storage Backends · Connection Failure Behavior](storage-backends.md#connection-failure-behavior), or subscribe to [storage.unreachable / storage.recovered events](lifecycle.md#storage-connection-status)
+- **`wait_reply` returns `None`, want to know what canceled it** → [Interactive Session System](interaction.md) (cancellation reason reference table)
+- **`module.call` throws module call exception** → [Inter-Module Communication](module-communication.md)
+- **Connection / WebSocket errors** → [Network Client](http-client.md) (ClientError hierarchy) and [Connection Pool and Broadcasting](connections.md) (connection registry exceptions)

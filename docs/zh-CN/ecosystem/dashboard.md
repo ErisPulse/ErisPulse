@@ -1,5 +1,8 @@
 # ErisPulse-Dashboard
 
+> [!TIP]
+> **什么时候需要读这篇**：当你想用网页可视化管理机器人（启停模块、编辑配置、看日志、监控事件流），或想为自己的模块注册一个 Dashboard 管理页面时读这篇。不需要则跳过。
+
 [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) 是ErisDev直接维护的 **Web 管理面板模块**，为 ErisPulse 提供可视化的运行时管理界面：模块启停、配置编辑、日志查看、事件流监控等。
 
 > [!IMPORTANT]
@@ -332,3 +335,11 @@ async def on_unload(self, event):
 5. **SVG 图标** — `icon_svg` 应为完整的 `<svg>` 标签，建议尺寸使用 `viewBox="0 0 24 24"`，使用 `stroke="currentColor"` 继承 Dashboard 主题色
 6. **JS 函数命名** — `js_content` 中的函数名应具有唯一性（如 `loadWeatherView`），避免与其他模块冲突
 7. **动态更新** — 模块注册/注销视窗后，Dashboard 前端会通过 WebSocket 实时更新侧边栏，无需刷新页面
+
+---
+
+## 下一步
+
+- **不想开电脑，手机上管理机器人**：[ErisPulse-App](app.md)（官方多端客户端，与 Dashboard 共用同一套 API，模块视窗同样可用）
+- **为视窗提供后端数据 API**：[路由管理器](../advanced/router.md)注册 HTTP 路由，方法速查见 [核心模块 API - Router](../api-reference/core-modules.md)
+- **视窗里看实时日志 / 事件流**：[日志订阅（推模式）](../api-reference/core-modules.md)与[生命周期管理](../advanced/lifecycle.md)

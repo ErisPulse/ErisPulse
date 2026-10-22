@@ -100,11 +100,12 @@ class LifecycleManager:
     # 预定义的标准事件列表
     STANDARD_EVENTS = {
         "core": ["init.start", EVENT_CORE_INIT_STAGE, "init.complete", "uninit.complete"],
-        "module": ["load", "init", "unload", "register", EVENT_MODULE_RELOAD],
+        "module": ["load", "before_unload", "init", "sleep", "unload", "register", EVENT_MODULE_RELOAD],
         "adapter": [
             "load",
             "start",
             "status.change",
+            "reload",
             "stop",
             "stopped",
             "event.receive",
@@ -179,7 +180,7 @@ class LifecycleManager:
 
         return decorator
 
-    def register(self, event: str, handler: Callable, *, priority: int = 0):
+    def register(self, event: str, handler: Callable, *, priority: int = 0) -> None:
         """
         注册事件处理器（函数调用模式）
 
@@ -264,7 +265,7 @@ class LifecycleManager:
                 return True
         return False
 
-    def unregister(self, event: str, handler: Callable | None = None):
+    def unregister(self, event: str, handler: Callable | None = None) -> None:
         """
         取消注册事件处理器
 
@@ -709,7 +710,7 @@ class LifecycleManager:
 
     # ==================== 工具方法 ====================
 
-    def clear(self):
+    def clear(self) -> None:
         """
         清除所有已注册的处理器和计时器
 

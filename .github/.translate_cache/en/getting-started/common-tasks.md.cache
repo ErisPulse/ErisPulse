@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "de6b3d933a0151d4a3f34778aaaf5510",
-  "file_hash": "de6b3d933a0151d4a3f34778aaaf5510",
-  "translated_at": "2026-09-07T11:31:38.630197",
+  "hash": "41b34cd5ca094d2daefa3e09b14cd145",
+  "file_hash": "41b34cd5ca094d2daefa3e09b14cd145",
+  "translated_at": "2026-10-22T11:04:31.258629",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "38581f42199cb42fa00e9ce2463e5ecb",
-      "translation": "# Common Task Examples\n\nThis guide provides implementation examples for common features to help you quickly implement frequently used features."
+      "hash": "122a5022b5b3342faf08065b141a313a",
+      "translation": "# Common Task Examples\n\n> [!TIP]\n> **When to read this**: When you want to add a specific feature to your bot, refer to each section—persistence, scheduled tasks, message filtering, permission control, batch sending. Each section is a complete example you can copy directly. If you want to learn event handling patterns systematically, start with [Introduction to Event Handling](event-handling.md); otherwise, skip it."
     },
     {
       "hash": "553678e3be3e2896f8e997f48db2ac0e",
@@ -50,8 +50,8 @@
       "translation": "## Image Processing\n\n### Image Download and Storage\n\n```python\nfrom ErisPulse.Core import client\n\n@message.on_message()\nasync def image_handler(event):\n    \"\"\"Handle image messages\"\"\"\n    message_segments = event.get_message()\n    \n    for segment in message_segments:\n        if segment.get(\"type\") == \"image\":\n            file_url = segment.get(\"data\", {}).get(\"file\")\n            \n            if file_url:\n                # Recommended to use the SDK built-in client to download images\n                resp = await client.get(file_url)\n                if resp.status == 200:\n                    image_data = await resp.read()\n                    \n                    # Save to file\n                    filename = f\"images/{event.get_time()}.jpg\"\n                    with open(filename, \"wb\") as f:\n                        f.write(image_data)\n                    \n                    sdk.logger.info(f\"Image saved: {filename}\")\n                    await event.reply(\"Image saved\")\n```\n\n### Image Recognition Example\n\n> **Note**: The following example uses a placeholder API address. Please replace it with your own image recognition service when using it.\n\n```python\nfrom ErisPulse.Core import client\n\n@command(\"identify\", help=\"Identify image\")\nasync def identify_handler(event):\n    \"\"\"Identify images in the message\"\"\"\n    message_segments = event.get_message()\n    \n    for segment in message_segments:\n        if segment.get(\"type\") == \"image\":\n            file_url = segment.get(\"data\", {}).get(\"file\")\n            \n            # Call the image recognition API\n            result = await _identify_image(file_url)\n            \n            await event.reply(f\"Recognition result: {result}\")\n            return\n    \n    await event.reply(\"No image found\")\n\nasync def _identify_image(url):\n    \"\"\"Call the image recognition API (example) - Use the SDK built-in client\"\"\"\n    resp = await client.post(\n        \"https://api.example.com/identify\",\n        json={\"url\": url}\n    )\n    data = await resp.json()\n    return data.get(\"description\", \"Recognition failed\")\n```"
     },
     {
-      "hash": "a9705b1326fdada037a6cdf95120a9e6",
-      "translation": "## Next Steps\n\n- [User Guide](../user-guide/) - Learn about configuration and module management\n- [Developer Guide](../developer-guide/) - Learn how to develop modules and adapters\n- [Advanced Topics](../advanced/) - Dive deeper into framework features"
+      "hash": "0b214cec7d98be59db7916082dba9988",
+      "translation": "## What's Next\n\n- **Function is ready, want to run it long-term**: See [Deployment Guide](../user-guide/deployment.md), Docker / systemd daemon and backup & upgrade\n- **Want to distribute your own function to others**: Start from [Module Development Introduction](../developer-guide/modules/getting-started.md), upgrade your script to an installable module\n- **Need to adjust configuration or troubleshoot \"module not responding\"**: Check [Configuration File Description](../user-guide/configuration.md) and [Scope](../advanced/scope.md)"
     }
   ]
 }

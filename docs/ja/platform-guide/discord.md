@@ -6,7 +6,7 @@ DiscordAdapterは、Discord Gateway (WebSocket) およびREST API v10プロト�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.2.0
+- 対応モジュールバージョン: 4.3.0
 - メンテナー: ErisPulse
 - Discord API バージョン: v10
 
@@ -116,49 +116,49 @@ discord = adapter.get("discord")
 await discord.Send.To("group", channel_id).Text("Hello World!")
 ```
 
-サポートされている送信タイプは以下の通りです：
-
-- `.Text(text: str)`：純粋なテキストメッセージを送信します。
-- `.Embed(embed: dict | list)`：Embed（埋め込み）メッセージを送信します。1つまたは複数のEmbedをサポートしています。
-- `.Image(file: bytes | str, filename: str = "image.png")`：画像を送信します。バイナリデータまたはURLをサポートしています。
-- `.File(file: bytes | str, filename: str = None)`：ファイルを送信します。バイナリデータまたはURLをサポートしています。
-- `.Reply(content: str, message_id: str)`：指定されたメッセージに返信します（便利な終端メソッド）。
+サポートされる送信タイプは以下の通りです：
+- `.Text(text: str)`：プレーンテキストメッセージを送信します。
+- `.Embed(embed: dict | list)`：Embed埋め込みメッセージを送信します。単一または複数のEmbedをサポートします。
+- `.MergeForward(nodes, title="メルジチャットレコード")`：メルジ転送メッセージを送信します（Embed：タイトル + 各メッセージごとに1つのfield、25field以内、valueは1024文字以内）。
+- `.Image(file: bytes | str, filename: str = "image.png")`：画像を送信します。バイナリデータまたはURLをサポートします。
+- `.File(file: bytes | str, filename: str = None)`：ファイルを送信します。バイナリデータまたはURLをサポートします。
+- `.Reply(content: str, message_id: str)`：指定したメッセージに返信します（便利な終端メソッド）。
 - `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します。
 - `.Raw_json(json_str: str)`：任意のDiscord APIリクエストJSONを送信します。
 
-### チェーン修飾メソッド（組み合わせて使用可能）
+### チェーン式修飾メソッド（組み合わせて使用可能）
 
-チェーン修飾メソッドは `self` を返し、チェーン呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
+チェーン式修飾メソッドは`self`を返し、チェーン呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
 
-- `.Reply(message_id: str)`：指定されたメッセージに返信（引用）します。`message_reference` を設定します。
-- `.At(user_id: str)`：指定されたユーザーを@します。`<@user_id>` に変換され、複数回呼び出すことができます。
-- `.AtAll()`：全員に@します。`@everyone` に変換されます。
+- `.Reply(message_id: str)`：指定したメッセージに返信（引用）します。`message_reference`を設定します。
+- `.At(user_id: str)`：指定したユーザーを@します。`<@user_id>`に変換します。複数回呼び出すことができます。
+- `.AtAll()`：全員を@します。`@everyone`に変換します。
 
-### チェーン呼び出しの例
+### チェーン式呼び出しの例
 
 ```python
 # 基本的な送信
 await discord.Send.To("group", channel_id).Text("Hello")
 
-# メッセージへの返信
+# メッセージに返信
 await discord.Send.To("group", channel_id).Reply(msg_id).Text("返信メッセージ")
 
-# 便利な返信（一括処理）
+# 便利な返信（一歩で完了）
 await discord.Send.To("group", channel_id).Reply("返信内容", msg_id)
 
-# ユーザーへの@
+# ユーザーを@する
 await discord.Send.To("group", channel_id).At("user_id").Text("こんにちは")
 
-# 複数ユーザーへの@
+# 複数のユーザーを@する
 await discord.Send.To("group", channel_id).At("user1").At("user2").Text("複数ユーザー@")
 
-# 全員への@
+# 全員を@する
 await discord.Send.To("group", channel_id).AtAll().Text("お知らせ")
 
-# 組み合わせ
+# 組み合わせて使用
 await discord.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("複合メッセージ")
 
-# Embed（埋め込み）メッセージ
+# Embed埋め込みメッセージ
 embed = {
     "title": "通知",
     "description": "これは埋め込みメッセージです",
@@ -167,24 +167,24 @@ embed = {
 }
 await discord.Send.To("group", channel_id).Embed(embed)
 
-# 画像の送信
+# 画像を送信
 await discord.Send.To("group", channel_id).Image("https://example.com/image.png")
 ```
 
-### プライベートメッセージの送信
+### プライベートメッセージ送信
 
-プライベートメッセージを送信する際、アダプターは自動的にDMチャンネルを作成します：
+プライベートメッセージ送信時、アダプターは自動的にDMチャンネルを作成します：
 
 ```python
-# プライベートメッセージの送信
-await discord.Send.To("user", user_id).Text("プライベートメッセージの内容")
+# プライベートメッセージを送信
+await discord.Send.To("user", user_id).Text("プライベートメッセージ内容")
 await discord.Send.To("user", user_id).Embed(embed)
 ```
 
 ### メッセージ操作
 
 ```python
-# メッセージの撤回
+# メッセージを削除
 await discord.Send.To("group", channel_id).Recall(msg_id)
 
 # OneBot12形式

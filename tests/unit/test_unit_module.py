@@ -632,6 +632,67 @@ class TestModuleLifecycleIntegration:
             call_args = mock_lifecycle.submit_event.call_args
             assert call_args[0][0] == "module.unload"
 
+    @pytest.mark.asyncio
+    async def test_module_disable_fires_unload_event(self):
+        """禁用与卸载对等：disable 成功后同样发 module.unload（on_dependency_lost 契约含"禁用"）"""
+        with patch.object(module_module, "lifecycle") as mock_lifecycle:
+            mock_lifecycle.fire = Mock()
+            mock_lifecycle.submit_event = AsyncMock()
+
+            from ErisPulse.Core.module import module
+
+            module._modules.clear()
+            module._loaded_modules.clear()
+            module._module_classes.clear()
+
+            class TestModule(BaseModule):
+                async def on_load(self, event):
+                    return True
+
+                async def on_unload(self, event):
+                    return True
+
+            module.register("test_module", TestModule)
+            await module.load("test_module")
+
+            assert module.disable("test_module") is True
+            fired = [
+                c.args[0]
+                for c in mock_lifecycle.fire.call_args_list
+                if c.args and c.args[0] == "module.unload"
+            ]
+            assert fired == ["module.unload"]
+
+    @pytest.mark.asyncio
+    async def test_module_disable_lazy_module_fires_unload_event(self):
+        """未实例化的模块被禁用时（_cleanup_lazy 分支）同样发 module.unload"""
+        with patch.object(module_module, "lifecycle") as mock_lifecycle:
+            mock_lifecycle.fire = Mock()
+            mock_lifecycle.submit_event = AsyncMock()
+
+            from ErisPulse.Core.module import module
+
+            module._modules.clear()
+            module._loaded_modules.clear()
+            module._module_classes.clear()
+
+            class TestModule(BaseModule):
+                async def on_load(self, event):
+                    return True
+
+                async def on_unload(self, event):
+                    return True
+
+            module.register("test_module", TestModule)
+            # 不 load，直接 disable（走未实例化分支）
+            assert module.disable("test_module") is True
+            fired = [
+                c.args[0]
+                for c in mock_lifecycle.fire.call_args_list
+                if c.args and c.args[0] == "module.unload"
+            ]
+            assert fired == ["module.unload"]
+
 
 # ==================== 模块依赖管理测试 ====================
 
@@ -1593,9 +1654,9 @@ class TestCascadeUnload:
 
         original_unload = manager._unload_single_module
 
-        async def _record(name):
+        async def _record(name, **kwargs):
             order.append(name)
-            return await original_unload(name)
+            return await original_unload(name, **kwargs)
 
         manager._unload_single_module = _record
         manager.register("A", base_cls, {"meta": {"name": "A"}})
@@ -1959,7 +2020,7 @@ class TestUnloadTimeout:
 
         config.setConfig("ErisPulse.framework", {"uninit_timeout": 12.5}, immediate=True)
         try:
-            assert manager._unload_timeout() == 12.5
+            assert manager._shutdown_timeout() == 12.5
         finally:
             config.setConfig("ErisPulse.framework", {"uninit_timeout": 30}, immediate=True)
 
@@ -1969,7 +2030,7 @@ class TestUnloadTimeout:
         from ErisPulse.Core.constants import DEFAULT_UNINIT_TIMEOUT_SECS
 
         config.setConfig("ErisPulse.framework", {}, immediate=True)
-        assert manager._unload_timeout() == float(DEFAULT_UNINIT_TIMEOUT_SECS)
+        assert manager._shutdown_timeout() == float(DEFAULT_UNINIT_TIMEOUT_SECS)
 
 
 class TestModuleActivateOnFailureRecovery:

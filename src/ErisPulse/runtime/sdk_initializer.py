@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from ..Core.constants import (
     DEFAULT_UNINIT_TIMEOUT_SECS,
@@ -45,21 +45,31 @@ class Initializer:
     {!--< /tips >!--}
     """
 
-    def __init__(self, sdk_instance: SDK) -> None:
+    def __init__(
+        self,
+        sdk_instance: SDK,
+        adapter_loader: AdapterLoader | None = None,
+        module_loader: ModuleLoader | None = None,
+        strict_manager: Any | None = None,
+    ) -> None:
         """
         初始化协调器
 
         :param sdk_instance: SDK 实例
+        :param adapter_loader: 适配器加载器（可由 Kernel 注入；缺省自行构造）
+        :param module_loader: 模块加载器（可由 Kernel 注入；缺省自行构造）
+        :param strict_manager: 严格模式管理器（可由 Kernel 注入；缺省自行构造）
         """
         self._sdk = sdk_instance
-        self._adapter_loader = AdapterLoader()
-        self._module_loader = ModuleLoader()
-        # 将加载器引用注入 SDK：热重载（sdk.reload_module / 热重载监控）
-        # 经由 SDK 访问，若仅持有在 Initializer 内部则 SDK 侧永远读不到
+        self._adapter_loader = adapter_loader or AdapterLoader()
+        self._module_loader = module_loader or ModuleLoader()
+        # 将加载器引用注入 SDK：热重载（sdk.reload_module / sdk.reload_adapter /
+        # 热重载监控）经由 SDK 访问，若仅持有在 Initializer 内部则 SDK 侧永远读不到
         sdk_instance._module_loader = self._module_loader
-        # 创建共享的严格模式管理器并注入到两个加载器，
+        sdk_instance._adapter_loader = self._adapter_loader
+        # 共享的严格模式管理器注入到两个加载器，
         # 确保跨加载器统一收集违规、在检查点统一报告
-        self._strict_manager = StrictModeManager.from_config()
+        self._strict_manager = strict_manager or StrictModeManager.from_config()
         self._adapter_loader.set_strict_manager(self._strict_manager)
         self._module_loader.set_strict_manager(self._strict_manager)
 
@@ -647,6 +657,7 @@ class Uninitializer:
             self._sdk._initialized = False
             self._sdk._initializer = None
             self._sdk._module_loader = None  # 加载器随 Initializer 生命周期一并失效
+            self._sdk._adapter_loader = None
             # 停止主动 GC 后台任务
             self._sdk._stop_proactive_gc()
             duration_str = (

@@ -1,5 +1,8 @@
 # ErisPulse 會話類型標準
 
+> [!TIP]
+> **何時需要閱讀本文**：當你在適配器中將平台原生會話映射到標準類型（private/group/channel/guild/thread），或在模組中不確定 `Send.To()` 應傳入什麼目標類型、想釐清 `event.reply()` 的自動轉換時對照本文。不需要則跳過。
+
 本文檔定義了 ErisPulse 支援的會話類型標準，包括接收事件類型和發送目標類型。
 
 ## 1. 核心概念
@@ -11,7 +14,7 @@ ErisPulse 區分兩種會話類型：
 - **接收類型（Receive Type）**：用於接收的事件的 `detail_type` 欄位
 - **發送類型（Send Type）**：用於發送訊息時 `Send.To()` 方法的目標類型
 
-### 1.2 類型映射關係
+### 1.2 類型對應關係
 
 ```
 接收類型 (detail_type)     發送類型 (Send.To)
@@ -25,9 +28,10 @@ user                    →        user
 ```
 
 **關鍵點**：
-- `private` 是接收時的類型，發送時必須使用 `user`
+- `private` 是接收時的類型，發送時的標準類型是 `user`
 - `group`、`channel`、`guild`、`thread` 在接收和發送時類型相同
-- 系統會自動進行類型轉換，無需手動處理（代表著你可以直接使用獲得的接收類型進行發送），但實際上，你無需考慮這些，Event 的包裝類的存在，你可以直接使用 event.reply() 方法，而無需考慮類型轉換
+- **推薦路徑**：直接使用 `event.reply()`——自動完成類型轉換與目標推斷，無需手動處理（`private` → `user` 的自動轉換即在此發生）
+- **手動發送時**：請直接傳發送類型（如 `Send.To("user", ...)`）；手動 `Send.To("private", ...)` 傳接收類型雖也能被自動轉換，但不推薦（見 §6.1）
 
 ## 2. 標準會話類型
 
@@ -212,9 +216,10 @@ await adapter.myplatform.Send.To("user", "123").Text("Hello")
 # 發送給群組
 await adapter.myplatform.Send.To("group", "456").Text("Hello")
 
-# 自動轉換 private → user（不推薦，可能會有相容性問題）
+# 自動轉換 private → user：手動傳遞接收類型屬不推薦寫法（可能有相容性問題）
 await adapter.myplatform.Send.To("private", "789").Text("Hello")
-# 內部自動轉換為: Send.To("user", "789") # 直接使用user作為會話類型是更優的選擇
+# 內部自動轉換為: Send.To("user", "789")
+# 推薦做法：手動發送時直接用發送類型 user，或用 event.reply() 自動完成轉換（見 6.2）
 ```
 
 ### 6.2 事件回覆
@@ -222,9 +227,9 @@ await adapter.myplatform.Send.To("private", "789").Text("Hello")
 ```python
 from ErisPulse.Core.Event import Event
 
-# Event.reply() 自動處理類型轉換
+# Event.reply() 自動處理類型轉換（推薦路徑）
 await event.reply("回覆內容")
-# 內部自動使用正確的發送類型
+# 內部自動使用正確的發送類型（private → user 等轉換在此自動完成）
 ```
 
 ### 6.3 命令處理
@@ -359,6 +364,10 @@ A: 對於不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 
 ## 11. 相關文件
 
+**適配器側（映射與轉換）**：
 - [事件轉換標準](event-conversion.md) - 完整的事件轉換規範
 - [發送方法規範](send-method-spec.md) - Send 類的方法命名和參數規範
 - [適配器開發指南](../developer-guide/adapters/) - 適配器開發完整指南
+
+**模組側（不想手動處理類型轉換）**：
+- 使用 `event.reply()` 即可自動完成類型轉換與目標推斷，詳見 [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md)
