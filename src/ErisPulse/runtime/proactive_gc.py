@@ -66,6 +66,7 @@ def start_proactive_gc(sdk: SDK) -> None:
 
         round_count = 0
         memory_baseline: float | None = None
+        loop_error_reported = False
         while True:
             try:
                 # 每轮重新读取配置，支持热更新；常规变更已由配置钩子即时重启任务
@@ -131,15 +132,21 @@ def start_proactive_gc(sdk: SDK) -> None:
                     log_snapshot("gc")
                 except Exception:
                     pass
+                loop_error_reported = False
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                # GC 异常不应中断循环，但持续异常需留痕（空转无痕难排查）
+                # GC 异常不应中断循环；首次 warning 留痕，恢复前降为 debug 防
+                # 刷屏（空转无痕难排查，持续刷屏同样难排查）
                 try:
                     from ..Core.i18n import i18n as _i18n
                     from ..Core.logger import logger
 
-                    logger.debug(_i18n.t("runtime.gc.loop_error", error=e))
+                    if loop_error_reported:
+                        logger.debug(_i18n.t("runtime.gc.loop_error", error=e))
+                    else:
+                        logger.warning(_i18n.t("runtime.gc.loop_error", error=e))
+                    loop_error_reported = True
                 except Exception:
                     pass
                 continue

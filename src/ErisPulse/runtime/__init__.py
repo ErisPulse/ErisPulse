@@ -63,6 +63,7 @@ from .hints import (
 from .memory import get_rss_mb, get_traced_mb, log_snapshot, snapshot
 from .owner_cleanup import off_cleanup, on_cleanup, run_owner_cleanups
 from .plugin_reload import PluginReloadWatcher
+from .kernel import Kernel
 from .tasks import (
     cancel_all_background_tasks,
     cancel_owner_tasks,
@@ -139,6 +140,7 @@ __all__ = [
     "setup_exception_handling",
     "snapshot",
     "spawn_background",
+    "Kernel",
     "spawn_later",
     "spawn_thread",
     "suggest_for_attribute_error",

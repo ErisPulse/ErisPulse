@@ -36,6 +36,7 @@ from .Core.i18n import i18n
 from .loaders.module import LazyModule
 from .runtime import proactive_gc as _pgc
 from .runtime import sdk_initializer as _sdk_initializer
+from .runtime.kernel import Kernel
 
 if TYPE_CHECKING:
 
@@ -206,6 +207,7 @@ class SDK:
         不缓存任何核心模块引用。核心属性通过 __getattr__ 动态解析，
         确保软重启后始终指向最新的模块级单例。
         """
+        self._kernel = Kernel(self)  # 统一编排内核（组合根：加载器与协调器的唯一组装点）
         self._initializer: SDK.Initializer | None = None
         self._module_loader: Any = None  # 模块加载器（Initializer 创建后注入，热重载使用）
         self._adapter_loader: Any = None  # 适配器加载器（Initializer 创建后注入，适配器热重载使用）
@@ -444,9 +446,12 @@ class SDK:
 
         try:
             router_mgr = self.router
-            state["router"]["running"] = getattr(router_mgr, "_server_started", False)
-            state["router"]["http_routes"] = len(getattr(router_mgr, "_http_routes", []))
-            state["router"]["ws_routes"] = len(getattr(router_mgr, "_ws_routes", []))
+            state["router"]["running"] = getattr(router_mgr, "_uvicorn_server", None) is not None
+            # _http_routes/_websocket_routes 均为 namespace → 路径表 的两级结构，按路径数累计
+            http_routes = getattr(router_mgr, "_http_routes", {}) or {}
+            state["router"]["http_routes"] = sum(len(paths) for paths in http_routes.values())
+            ws_routes = getattr(router_mgr, "_websocket_routes", {}) or {}
+            state["router"]["ws_routes"] = sum(len(paths) for paths in ws_routes.values())
         except Exception:
             state["router"]["error"] = "failed to get router state"
 
@@ -482,11 +487,17 @@ class SDK:
         >>> await sdk.init(before_init=setup, after_init=ready)
         """
         if self._initialized:
-            # 已初始化时仅警告并直接返回成功，避免重复初始化破坏内部状态
+            # 已初始化时仅警告并直接返回成功，避免重复初始化破坏内部状态。
+            # 告警通道不可用（i18n/logger 未就绪）时降级 stderr，不允许静默。
             try:
                 self.logger.warning(i18n.t("core.sdk.init.already_initialized"))
             except Exception:
-                pass
+                import sys
+
+                print(
+                    "[ErisPulse] sdk.init() called but already initialized",
+                    file=sys.stderr,
+                )
             return True
 
         # before_init 回调：在环境准备之前执行
@@ -502,7 +513,7 @@ class SDK:
             return False
 
         # 创建初始化协调器
-        self._initializer = self.Initializer(self)
+        self._initializer = self._kernel.get_initializer()
 
         # 执行初始化
         self._initialized = await self._initializer.init()
@@ -622,7 +633,7 @@ class SDK:
             if not await self._prepare_environment():
                 return False
 
-            self._initializer = self.Initializer(self)
+            self._initializer = self._kernel.get_initializer()
             self._initialized = await self._initializer.init()
 
             if self._initialized and after_init is not None:
@@ -1181,7 +1192,7 @@ class SDK:
         >>> await sdk.uninit()
         """
         # 创建反初始化协调器
-        uninitializer = self.Uninitializer(self)
+        uninitializer = self._kernel.get_uninitializer()
 
         # 执行反初始化
         return await uninitializer.uninit()
