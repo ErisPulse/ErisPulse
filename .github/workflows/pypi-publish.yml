@@ -2,6 +2,12 @@ name: 🎀 Eris PyPI Publish
 
 on:
   workflow_dispatch: {}
+  push:
+    # tag 触发发布：auto-tag-release 以 GitHub App Token 推送 v* tag（App Token
+    # 产生的事件可触发后续 workflow，与 GITHUB_TOKEN 不同），维护者手动推 v* tag
+    # 同样触发；与 docker-publish.yml 的 tag 触发模式保持一致
+    tags:
+      - "v*"
 
 permissions:
   contents: read
@@ -16,11 +22,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 发布前置一致性校验：pyproject version == CHANGELOG 最新条目
-      # （旧 Version check 步骤读取 refs/tags/，但本 workflow 仅 workflow_dispatch
-      # 触发、该变量永不含 tag，属死代码，已删除）
+      # 发布前置一致性校验：pyproject version == CHANGELOG 最新条目；
+      # tag 触发时额外校验 tag 名与版本一致（workflow_dispatch 场景 ref 不是
+      # tag，无法校验，仅跑基础一致性检查）
       - name: Release consistency check
-        run: python scripts/tools/release_check.py
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            python scripts/tools/release_check.py --tag "${GITHUB_REF#refs/tags/}"
+          else
+            python scripts/tools/release_check.py
+          fi
 
       - name: Setup environment
         uses: actions/setup-python@v7

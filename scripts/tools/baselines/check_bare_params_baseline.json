@@ -1,0 +1,42 @@
+{
+ "total": 17,
+ "by_file": {
+  "CLI/commands/create.py": [
+   "583: timeout=30,"
+  ],
+  "CLI/commands/run.py": [
+   "517: reload_state[\"reload_event\"].wait(timeout=0.2)",
+   "542: while not reload_state[\"reload_event\"].wait(timeout=0.3):"
+  ],
+  "CLI/utils/runtime_state.py": [
+   "188: time.sleep(0.15)"
+  ],
+  "Core/Bases/errors.py": [
+   "83: ...     resp = await sdk.client.get(\"https://slow.example.com\", timeout=5)"
+  ],
+  "Core/Bases/module.py": [
+   "264: ...         await asyncio.sleep(5)"
+  ],
+  "Core/Bases/router.py": [
+   "544: ...         await asyncio.sleep(1)"
+  ],
+  "Core/Event/wrapper.py": [
+   "1716: ...     timeout=120,",
+   "1767: >>> conv = event.conversation(timeout=30)",
+   "1952: ...     timeout=60,",
+   "1982: ...     timeout=60,"
+  ],
+  "Core/router.py": [
+   "1679: ...         await asyncio.sleep(1)",
+   "2115: ...         await asyncio.sleep(1)",
+   "3169: await asyncio.sleep(0.05)",
+   "3277: probe.settimeout(0.5)"
+  ],
+  "runtime/example_config.py": [
+   "126: f\"uninit_timeout = 30            # {st.t('cfg.framework.uninit_timeout')}\","
+  ],
+  "runtime/tasks.py": [
+   "298: >>> run_main_loop(connections.broadcast({\"type\": \"ping\"}, group=\"room:1\"), timeo"
+  ]
+ }
+}

@@ -57,6 +57,21 @@ jobs:
           # 正式门禁：发现问题即失败（评论仍会发出，见下一步）
           exit $exit_code
 
+      - name: Check import layers
+        run: |
+          echo "Checking import layer discipline..."
+          uv run python scripts/tools/check_import_layers.py
+
+      - name: Check bare numeric params (ratchet)
+        run: |
+          echo "Checking bare behavior params..."
+          uv run python scripts/tools/check_bare_params.py
+
+      - name: Check silent except ratchet
+        run: |
+          echo "Checking silent except ratchet..."
+          uv run python scripts/tools/check_silent_except.py
+
       - name: Post Ruff check results to PR
         if: always() && steps.ruff-check.outputs.has_ruff_issues == 'true' && github.event_name == 'pull_request'
         uses: actions/github-script@v6

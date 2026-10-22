@@ -52,6 +52,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Determine release channel
+        id: channel
+        run: |
+          REF="${{ github.ref }}"
+          # 与 auto-tag-release 的预发布判定同口径；非正式发布一律只推 dev 标签
+          if [[ "$REF" == refs/tags/v* ]] && ! grep -qE '(dev|alpha|beta|rc|pre)' <<< "$REF"; then
+            echo "stable=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "stable=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -60,12 +71,12 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
             ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/erispulse
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            # latest 仅 stable tag 触发（预发布分支 push 不得覆写 latest）
-            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, 'dev') && !contains(github.ref, 'alpha') && !contains(github.ref, 'beta') && !contains(github.ref, 'rc') }}
-            # 预发布 tag / 预发布分支 push 推 dev 标签
-            type=raw,value=dev,enable=${{ !startsWith(github.ref, 'refs/tags/v') || contains(github.ref, 'dev') || contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+            # 正式版：latest + 完整版本号 + 主次版本号
+            type=semver,pattern={{version}},enable=${{ steps.channel.outputs.stable == 'true' }}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ steps.channel.outputs.stable == 'true' }}
+            type=raw,value=latest,enable=${{ steps.channel.outputs.stable == 'true' }}
+            # 非正式发布（预发布 tag / 分支 push）只推 dev 标签
+            type=raw,value=dev,enable=${{ steps.channel.outputs.stable != 'true' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v7

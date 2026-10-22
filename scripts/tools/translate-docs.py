@@ -22,7 +22,7 @@ ErisPulse 文档翻译器
     python scripts/tools/translate-docs.py --lang en ja
     python scripts/tools/translate-docs.py --force
     python scripts/tools/translate-docs.py --no-check
-    python scripts/tools/translate-docs.py --time-budget 40
+    python scripts/tools/translate-docs.py --time-budget 270
 """
 
 import argparse
@@ -828,6 +828,61 @@ class DocsTranslator:
 
         return content
 
+    def _get_target_path(self, file_path: Path, target_lang: str) -> Path:
+        """计算译文落盘路径（根 README 落在仓库根，其余落在 docs/<lang>/ 对应相对路径）。
+
+        :param file_path: 源文件路径（相对 source_dir）
+        :param target_lang: 目标语言代码
+        :return: 译文目标文件路径
+        """
+        if self._is_root_readme(file_path):
+            if target_lang == "en":
+                return Path("README.md")
+            return Path(f"README.{target_lang}.md")
+        rel_path = self._get_rel_path(file_path)
+        return Path("docs") / target_lang / Path(rel_path).parent / Path(rel_path).name
+
+    def _materialize_cached_translation(self, file_path: Path, target_lang: str) -> bool:
+        """文件级缓存命中时，用缓存分块译文重建并写回目标文件。
+
+        翻译产物不落仓库、仅以 workflow artifact 上传：若缓存命中的文件不在本轮
+        重写，后续轮次的工作区对该文件只是仓库历史快照，其 artifact 会退化为旧版，
+        "已译完的内容"随轮次丢失、永远无法完整发布。此处按位置对齐重建
+        （分块哈希须全部命中，含提示词残留的块已在加载时丢弃，不完整则放弃重建），
+        仅在内容有差异时写盘。
+
+        :param file_path: 源文件路径
+        :param target_lang: 目标语言代码
+        :return: 是否完成重建写盘
+        """
+        cached_chunks = self._load_cached_chunks(file_path, target_lang)
+        if not cached_chunks:
+            return False
+        with open(file_path, encoding="utf-8") as f:
+            content = f.read()
+        source_chunks = self._split_into_chunks(content)
+        if not source_chunks:
+            return False
+        chunk_hashes = [self._chunk_hash(c) for c in source_chunks]
+        if any(h not in cached_chunks for h in chunk_hashes):
+            return False
+        translated_content = "\n\n".join(cached_chunks[h] for h in chunk_hashes)
+        translated_content = self._localize_links(
+            translated_content, target_lang, file_name=self._get_rel_path(file_path)
+        )
+        target_file = self._get_target_path(file_path, target_lang)
+        if target_file.exists():
+            with open(target_file, encoding="utf-8") as f:
+                if f.read() == translated_content:
+                    return False
+        target_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(target_file, "w", encoding="utf-8") as f:
+            f.write(translated_content)
+        Logger.progress(
+            self._get_rel_path(file_path), target_lang, "done", "由缓存重建译文"
+        )
+        return True
+
     async def translate_file(
         self,
         file_path: Path,
@@ -848,6 +903,9 @@ class DocsTranslator:
                 content = f.read()
 
             if not force and not self.is_file_changed(file_path, target_lang):
+                # 文件级缓存命中：无需调用 AI，但仍从缓存重建译文落盘，
+                # 保证后续轮次的 artifact 对该语言是完整快照（见 _materialize_cached_translation）
+                self._materialize_cached_translation(file_path, target_lang)
                 self.stats["skipped_files"] += 1
                 Logger.progress(rel_path, target_lang, "skip")
                 return True
@@ -1147,15 +1205,8 @@ class DocsTranslator:
             if buf:
                 buf.flush()
 
-            if self._is_root_readme(file_path):
-                if target_lang == "en":
-                    target_file = Path("README.md")
-                else:
-                    target_file = Path(f"README.{target_lang}.md")
-            else:
-                target_dir = Path("docs") / target_lang / Path(rel_path).parent
-                target_dir.mkdir(parents=True, exist_ok=True)
-                target_file = target_dir / Path(rel_path).name
+            target_file = self._get_target_path(file_path, target_lang)
+            target_file.parent.mkdir(parents=True, exist_ok=True)
 
             with open(target_file, "w", encoding="utf-8") as f:
                 f.write(translated_content)

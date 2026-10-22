@@ -77,7 +77,11 @@ jobs:
               changelog=$(echo "$changelog_section" | tail -n +2)
 
               # Determine if this is a dev version
-              if [[ $version =~ dev|alpha|beta|pre|a|b ]]; then
+              # 预发布判定：dev/alpha/beta/rc/pre；旧正则 dev|alpha|beta|pre|a|b
+              # 中的裸 a|b 会把任何含字母 a/b 的版本误判，且漏掉 rc
+              # （rc.1 不含 a/b 字母 → 被当成正式版打 --latest），与
+              # docker-publish.yml 及 release_check.py 的 rc 处理不一致
+              if echo "$version" | grep -qE '(dev|alpha|beta|rc|pre)'; then
                 is_dev="true"
                 latest_flag=""
               else

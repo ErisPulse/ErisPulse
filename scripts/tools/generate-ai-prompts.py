@@ -333,13 +333,6 @@ SECTION_PLATFORM_FULL = Section(
     ],
 )
 
-SECTION_STYLEGUIDE = Section(
-    title="代码规范",
-    entries=[
-        DocEntry("文档字符串规范", "styleguide/docstring.md"),
-    ],
-)
-
 # ---------------------------------------------------------------------------
 # 三种 Prompt 类型的完整定义
 # ---------------------------------------------------------------------------
@@ -427,7 +420,6 @@ PROMPT_SPECS: list[PromptSpec] = [
             SECTION_STANDARDS_ADAPTER,
             SECTION_ECOSYSTEM,
             SECTION_PLATFORM_FULL,
-            SECTION_STYLEGUIDE,
         ],
     ),
     # ---- 全栈开发 ----
@@ -533,7 +525,6 @@ PROMPT_SPECS: list[PromptSpec] = [
             SECTION_ADVANCED_FULL,
             SECTION_ECOSYSTEM,
             SECTION_PLATFORM_FULL,
-            SECTION_STYLEGUIDE,
         ],
     ),
 ]
