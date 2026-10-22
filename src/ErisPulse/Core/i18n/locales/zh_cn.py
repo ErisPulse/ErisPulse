@@ -150,6 +150,8 @@ TRANSLATIONS = {
     "core.adapter.stop_adapter_failed": "停止适配器 {platform} 失败: {error}",
     "core.adapter.shutdown_timeout": "适配器 {platform} 的 shutdown 执行超时（>{timeout}s），强制进入清理",
     "core.adapter.routes_cleaned": "已清理平台 {platform} 的路由: HTTP={http}, WebSocket={ws}, SSE={sse}",
+    "core.adapter.ownership_reclaimed": "已由归属权门面统一回收平台 {platform} 的注册类资源: {detail}",
+    "core.adapter.ownership_reclaim_failed": "平台 {platform} 的注册类资源统一回收失败: {error}",
     "core.adapter.routes_clean_failed": "清理平台 {platform} 路由失败: {error}",
     "core.adapter.handlers_cleaned": "已清理平台 {platform} 的 {count} 个事件处理器/命令",
     "core.adapter.handlers_clean_failed": "清理平台 {platform} 事件处理器失败: {error}",
@@ -407,6 +409,7 @@ TRANSLATIONS = {
     # ==================== 配置管理 ====================
     "core.config.migrate_failed": "配置文件迁移失败: {error}",
     "core.config.emit_failed": "config.updated 事件广播失败（订阅方将感知不到本次变更）: {error}",
+    "core.config.exit_flush_failed": "进程退出前最后一次配置刷盘失败（改动可能未写入磁盘）: {error}",
     "core.config.load_failed": "加载配置文件 {path} 失败: {error}",
     "core.config.write_failed": "写入配置文件 {path} 失败: {error}",
     "core.config.delete_failed": "删除配置项 {key} 失败: {error}",
@@ -429,6 +432,7 @@ TRANSLATIONS = {
     "core.diag.similar_hint": "  → 提示: 你是不是想用 '{suggestion}'?",
     # ==================== HTTP 客户端 ====================
     "core.client.timeout_retry": "[Client] {method} {url} 超时 (尝试 {attempt}/{total})",
+    "core.client.old_session_close_failed": "[Client] 关闭旧会话失败: {error}",
     "core.client.timeout_final": "[Client] {method} {url} 最终超时 ({elapsed}s)",
     "core.client.conn_broken_retry": "[Client] {method} {url} 连接中断，重建 session 后重试 (尝试 {attempt}/{total})",
     "core.client.conn_final_failed": "[Client] {method} {url} 最终连接失败 ({elapsed}s)",

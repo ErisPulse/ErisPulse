@@ -32,7 +32,7 @@ class NoticeHandler:
     def __init__(self):
         self.handler = BaseEventHandler(EVENT_TYPE_NOTICE, "notice")
 
-    def on_notice(self, priority: int = 0):
+    def on_notice(self, priority: int = 0) -> Callable:
         """
         通用通知事件装饰器
 
@@ -64,7 +64,7 @@ class NoticeHandler:
         """
         return self.handler.unregister(handler)
 
-    def on_friend_add(self, priority: int = 0):
+    def on_friend_add(self, priority: int = 0) -> Callable:
         """
         好友添加通知事件装饰器
 
@@ -90,7 +90,7 @@ class NoticeHandler:
         """
         return self.handler.unregister(handler)
 
-    def on_friend_remove(self, priority: int = 0):
+    def on_friend_remove(self, priority: int = 0) -> Callable:
         """
         好友删除通知事件装饰器
 
@@ -116,7 +116,7 @@ class NoticeHandler:
         """
         return self.handler.unregister(handler)
 
-    def on_group_increase(self, priority: int = 0):
+    def on_group_increase(self, priority: int = 0) -> Callable:
         """
         群成员增加通知事件装饰器
 
@@ -142,7 +142,7 @@ class NoticeHandler:
         """
         return self.handler.unregister(handler)
 
-    def on_group_decrease(self, priority: int = 0):
+    def on_group_decrease(self, priority: int = 0) -> Callable:
         """
         群成员减少通知事件装饰器
 

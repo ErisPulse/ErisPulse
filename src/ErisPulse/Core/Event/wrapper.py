@@ -1449,7 +1449,7 @@ class Event(dict):
 
     # ==================== 发送链获取 ====================
 
-    def send_chain(self):
+    def send_chain(self) -> Any:
         """
         获取已配置好目标和发送账号的发送链
 
@@ -2113,7 +2113,7 @@ class Event(dict):
         """
         return self.get("_processed", False)
 
-    def mark_processed(self, claim: bool = True, stop: bool = True):
+    def mark_processed(self, claim: bool = True, stop: bool = True) -> None:
         """
         标记事件为已处理
 
@@ -2144,7 +2144,7 @@ class Event(dict):
         if stop:
             self["_propagation_stopped"] = True
 
-    def done(self, claim: bool = True, stop: bool = True):
+    def done(self, claim: bool = True, stop: bool = True) -> None:
         """
         标记事件完成（:meth:`mark_processed` 的别名）
 

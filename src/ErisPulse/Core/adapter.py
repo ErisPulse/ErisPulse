@@ -74,9 +74,6 @@ class AdapterManager(ManagerBase):
     {!--< /tips >!--}
     """
 
-    # 已记录过的弃用警告（owner, old_kwarg），每个组合只警告一次，避免热路径日志刷屏
-    _DEPRECATED_KWARG_WARNED: set[tuple[str, str]] = set()
-
     # 事件类型 -> 日志器 映射
     _event_loggers = {
         "message": _msg_logger,
@@ -104,46 +101,6 @@ class AdapterManager(ManagerBase):
                 if txt:
                     parts.append(txt)
         return " ".join(parts)
-
-    @staticmethod
-    def _warn_deprecated_kwarg(owner: str, old: str, new: str) -> None:
-        """
-        {!--< internal-use >!--}
-        当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
-
-        :param owner: 所属方法名（如 "AdapterManager.get"）
-        :param old: 已弃用的旧参数名
-        :param new: 推荐使用的新参数名
-        """
-        key = (owner, old)
-        if key in AdapterManager._DEPRECATED_KWARG_WARNED:
-            return
-        AdapterManager._DEPRECATED_KWARG_WARNED.add(key)
-        logger.warning(
-            i18n.t(
-                "core.deprecated.kwarg",
-                owner=owner,
-                old=old,
-                new=new,
-            )
-        )
-
-    @staticmethod
-    def _is_subclass(klass: type, base_cls: type) -> bool:
-        try:
-            if issubclass(klass, base_cls):
-                return True
-        except TypeError:
-            pass
-        if base_cls.__name__ == klass.__name__:
-            return False
-        for parent in klass.__mro__:
-            if (
-                parent.__name__ == base_cls.__name__
-                and parent.__module__ == base_cls.__module__
-            ):
-                return True
-        return False
 
     def __init__(self):
         # 适配器存储
@@ -194,28 +151,6 @@ class AdapterManager(ManagerBase):
             lifecycle.register("config.set", self._on_framework_config_changed)
         except Exception as e:
             logger.trace(i18n.t("core.adapter.config_hook_register_failed", error=e))
-
-    @staticmethod
-    def _shutdown_timeout() -> float:
-        """
-        {!--< internal-use >!--}
-        读取适配器 shutdown 优雅收尾的超时（秒）
-
-        复用 ``ErisPulse.framework.uninit_timeout`` 配置（反初始化流程的统一超时预算）；
-        未配置或非法时回退常量默认值。
-
-        :return: 超时秒数（>0）
-        """
-        from ..runtime import get_framework_config
-        from .constants import DEFAULT_UNINIT_TIMEOUT_SECS
-
-        try:
-            value = get_framework_config().get("uninit_timeout")
-            if isinstance(value, (int, float)) and value > 0:
-                return float(value)
-        except Exception:
-            pass
-        return float(DEFAULT_UNINIT_TIMEOUT_SECS)
 
     # ==================== 配置变更路由 ====================
 
@@ -1044,10 +979,21 @@ class AdapterManager(ManagerBase):
     async def _cleanup_adapter_resources(self, platform: str) -> None:
         """
         {!--< internal-use >!--}
-        适配器资源兜底清理（与模块卸载对齐颗粒度）。
+        适配器资源兜底清理（与模块卸载对齐颗粒度，复用 ownership 统一回收门面）。
 
-        清理该平台在运行期间注册的所有路由、命令与事件处理器，并兜底取消
-        该平台名下的后台任务。同时覆盖两种注册方式：
+        两段式：
+        1) 运行时资源——取消该平台名下后台任务、关闭该平台全部连接、触发外部
+           归属清理钩子（on_cleanup）；任务/连接类运行时资源不属于注册表回收
+           范畴，须先行处理。
+        2) 注册类资源统一交 ownership 门面回收（路由/命令/四类事件处理器/
+           自有事件处理器与中间件/自定义会话类型/事件覆写/作用域覆写/主人
+           身份源/生命周期钩子/日志订阅/对话恢复工厂/owner 同名 i18n 域，
+           单步失败不阻断）——与模块卸载路径同一条管线。
+
+        平台特有补清：平台维度交互会话取消、平台事件方法注入（以平台名为键）、
+        i18n 翻译域（domain 为适配器配置键，可能与平台名不同）。
+
+        同时覆盖两种路由注册方式：
         - 直接以平台名为命名空间注册的路由（unregister_all_by_namespace）
         - 适配器以平台名为 owner、用细颗粒度命名空间（如 onebot11_default）注册的路由
           （unregister_all_by_owner，依赖 start() 期间注入的 current_owner）
@@ -1055,6 +1001,7 @@ class AdapterManager(ManagerBase):
         :param platform: 平台名称
         {!--< /internal-use >!--}
         """
+        # ---- 1) 运行时资源（任务 → 连接 → 外部清理钩子）----
         # 兜底取消该平台名下的后台任务（任务可能持有适配器实例引用）
         try:
             from ..runtime.tasks import cancel_owner_tasks
@@ -1110,76 +1057,26 @@ class AdapterManager(ManagerBase):
                 i18n.t("core.adapter.cleanup_hooks_failed", platform=platform, error=e)
             )
 
+        # ---- 2) 注册类资源：统一交 ownership 门面回收（与模块卸载同一条管线）----
         try:
-            from .router import router
+            from .ownership import ownership
 
-            result_ns = router.unregister_all_by_namespace(platform)
-            result_owner = router.unregister_all_by_owner(platform)
-            http_c = result_ns["http_count"] + result_owner["http_count"]
-            ws_c = result_ns["websocket_count"] + result_owner["websocket_count"]
-            sse_c = result_ns["sse_count"] + result_owner["sse_count"]
-            if http_c or ws_c or sse_c:
+            reclaimed = ownership.reclaim_sync(platform)
+            if reclaimed:
                 logger.trace(
                     i18n.t(
-                        "core.adapter.routes_cleaned",
+                        "core.adapter.ownership_reclaimed",
                         platform=platform,
-                        http=http_c,
-                        ws=ws_c,
-                        sse=sse_c,
+                        detail=reclaimed,
                     )
                 )
         except Exception as e:
             logger.trace(
-                i18n.t("core.adapter.routes_clean_failed", platform=platform, error=e)
+                i18n.t("core.adapter.ownership_reclaim_failed", platform=platform, error=e)
             )
 
-        try:
-            from .Event import command, message, meta, notice, request
-
-            cleaned = command.unregister_by_owner(platform)
-            for event_handler in (message, notice, request, meta):
-                cleaned += event_handler.handler.unregister_by_owner(platform)
-            if cleaned > 0:
-                logger.trace(
-                    i18n.t(
-                        "core.adapter.handlers_cleaned",
-                        platform=platform,
-                        count=cleaned,
-                    )
-                )
-        except Exception as e:
-            logger.trace(
-                i18n.t("core.adapter.handlers_clean_failed", platform=platform, error=e)
-            )
-
-        # 取消该平台挂起的交互会话（等待方立即收到取消而非干等超时）
-        try:
-            from .Event.interaction import interaction
-
-            interaction.cancel_by_platform(platform)
-        except Exception as e:
-            logger.trace(
-                i18n.t("core.adapter.interaction_clean_failed", platform=platform, error=e)
-            )
-
-        # 清理该适配器注册的生命周期钩子
-        try:
-            lifecycle_removed = lifecycle.unregister_by_owner(platform)
-            if lifecycle_removed > 0:
-                logger.trace(
-                    i18n.t(
-                        "core.adapter.lifecycle_hooks_cleaned",
-                        platform=platform,
-                        count=lifecycle_removed,
-                    )
-                )
-        except Exception as e:
-            logger.trace(
-                i18n.t("core.adapter.lifecycle_cleanup_failed", platform=platform, error=e)
-            )
-
-        # 清理该适配器（以平台名为 owner）自有的事件处理器与中间件，
-        # 避免重启后旧闭包持有上一代适配器实例引用继续被分发
+        # 自有事件处理器与中间件是管理器实例状态，必须自清——门面内部经单例
+        # 回引（from .adapter import adapter），覆盖不了独立实例（如测试/多实例）
         try:
             handler_removed = self.unregister_handlers_by_owner(platform)
             if handler_removed > 0:
@@ -1195,19 +1092,28 @@ class AdapterManager(ManagerBase):
                 i18n.t("core.adapter.handlers_clean_failed", platform=platform, error=e)
             )
 
-        # 清理该适配器注册的自定义会话类型与平台事件方法扩展
+        # ---- 3) 平台特有补清 ----
+        # 平台维度的交互会话（等待方立即收到取消而非干等超时；owner 维度已由门面回收）
         try:
-            from .Event import unregister_custom_types_by_owner
+            from .Event.interaction import interaction
+
+            interaction.cancel_by_platform(platform)
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.adapter.interaction_clean_failed", platform=platform, error=e)
+            )
+
+        # 平台事件方法注入以平台名为键（与门面的 owner 维度回收互补）
+        try:
             from .Event.wrapper import unregister_platform_event_methods
 
-            types_removed = unregister_custom_types_by_owner(platform)
             methods_removed = unregister_platform_event_methods(platform)
-            if types_removed > 0 or methods_removed > 0:
+            if methods_removed > 0:
                 logger.trace(
                     i18n.t(
                         "core.adapter.session_ext_cleaned",
                         platform=platform,
-                        types=types_removed,
+                        types=0,
                         methods=methods_removed,
                     )
                 )
@@ -1216,7 +1122,7 @@ class AdapterManager(ManagerBase):
                 i18n.t("core.adapter.session_ext_clean_failed", platform=platform, error=e)
             )
 
-        # 清理该适配器注册的 i18n 翻译域（domain 为适配器配置键）
+        # i18n 翻译域（domain 为适配器配置键，可能与平台名不同；owner 同名域已由门面回收）
         try:
             adapter_instance = self._adapters.get(platform)
             if adapter_instance is not None and hasattr(adapter_instance, "_get_config_key"):
@@ -1945,8 +1851,10 @@ class AdapterManager(ManagerBase):
                         data, "user", _alt, event_id=trace_id,
                         sender=str(data.get("user_id") or ""),
                     )
-            except Exception:
-                pass
+            except Exception as e:
+                # 数据写入失败按 warning 起步：级别过低会让 shadow_diff /
+                # get_by_trace 排查时静默缺数据
+                logger.warning(i18n.t("core.transcript.append_failed", error=e))
 
         # 处理 meta 事件：适配器通过 meta 事件提交 Bot 上下线信息
         # 同时也处理普通事件中的 self 字段（自动发现Bot）

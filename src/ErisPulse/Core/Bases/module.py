@@ -244,7 +244,7 @@ class BaseModule(ABC):
 
     # ==================== 后台任务 ====================
 
-    def spawn(self, coro):
+    def spawn(self, coro: Any) -> Any:
         """
         调度一个归属于本模块的后台任务（推荐的任务创建方式）
 
@@ -341,7 +341,7 @@ class BaseModule(ABC):
             pass
 
     @property
-    def cfg(self):
+    def cfg(self) -> Any:
         """
         类型安全的配置对象（实时读取）
 
@@ -373,7 +373,7 @@ class BaseModule(ABC):
         return dict_to_dataclass(self.ConfigClass, data)
 
     @cfg.setter
-    def cfg(self, value):
+    def cfg(self, value: Any) -> None:
         """设置配置实例，同时同步写入配置存储（保证实时性）"""
         if value is not None:
             from dataclasses import asdict
@@ -384,7 +384,7 @@ class BaseModule(ABC):
             except Exception:
                 pass
 
-    def on_config_update(self, old_config, new_config):  # noqa: B027
+    def on_config_update(self, old_config: Any, new_config: Any) -> None:  # noqa: B027
         """
         配置变更回调（可选实现）
 

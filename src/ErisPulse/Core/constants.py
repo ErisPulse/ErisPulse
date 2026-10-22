@@ -1203,6 +1203,12 @@ ENV_SUPERVISED: Final[str] = "ERISPULSE_SUPERVISED"
 # 使用位置: sdk.py / ErisPulse/__init__.py / Core/router.py 的版本探测兜底。
 UNKNOWN_VERSION: Final[str] = "UnknownVersion"
 
+# AsyncBridge 桥接线程停止时的 join 等待上限（秒）。
+# 使用位置: Core/Bases/storage.py 的 AsyncBridge 停止路径（stop 信号发出后等
+# 线程退出）；超时未退不阻塞调用方，线程随进程收尾。
+# 修改影响: 调小会放大"桥接线程未及退出"窗口，调大会拖慢存储关闭。
+STORAGE_BRIDGE_JOIN_TIMEOUT_SECS: Final[float] = 5.0
+
 # 日志中消息内容截断阈值（字符数）。
 # 使用位置: Core/adapter.py（接收日志）与 Core/Bases/adapter.py（发送日志）。
 # 修改影响: 改一处不改另一处会使收发日志截断长度不一致。
@@ -1464,6 +1470,7 @@ __all__ = [
     "UNINIT_SETTLE_DELAY_SECS",
     "UNKNOWN_PLATFORM",
     "UNKNOWN_VERSION",
+    "STORAGE_BRIDGE_JOIN_TIMEOUT_SECS",
     "UVICORN_COMPAT_RANGE",
     "WILDCARD_IPV4",
     "WILDCARD_IPV6",

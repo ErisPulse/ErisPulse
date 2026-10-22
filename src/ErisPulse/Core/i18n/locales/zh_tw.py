@@ -150,6 +150,8 @@ TRANSLATIONS = {
     "core.adapter.stop_adapter_failed": "停止適配器 {platform} 失敗: {error}",
     "core.adapter.shutdown_timeout": "適配器 {platform} 的 shutdown 執行逾時（>{timeout}s），強制進入清理",
     "core.adapter.routes_cleaned": "已清理平台 {platform} 的路由: HTTP={http}, WebSocket={ws}, SSE={sse}",
+    "core.adapter.ownership_reclaimed": "已由歸屬權門面統一回收平台 {platform} 的註冊類資源: {detail}",
+    "core.adapter.ownership_reclaim_failed": "平台 {platform} 的註冊類資源統一回收失敗: {error}",
     "core.adapter.routes_clean_failed": "清理平台 {platform} 路由失敗: {error}",
     "core.adapter.handlers_cleaned": "已清理平台 {platform} 的 {count} 個事件處理器/命令",
     "core.adapter.handlers_clean_failed": "清理平台 {platform} 事件處理器失敗: {error}",
@@ -407,6 +409,7 @@ TRANSLATIONS = {
     # ==================== 設定管理 ====================
     "core.config.migrate_failed": "設定檔遷移失敗: {error}",
     "core.config.emit_failed": "config.updated 事件廣播失敗（訂閱方將感知不到本次變更）: {error}",
+    "core.config.exit_flush_failed": "進程退出前最後一次配置刷盤失敗（改動可能未寫入磁碟）: {error}",
     "core.config.load_failed": "載入設定檔 {path} 失敗: {error}",
     "core.config.write_failed": "寫入設定檔 {path} 失敗: {error}",
     "core.config.delete_failed": "刪除配置項 {key} 失敗: {error}",
@@ -429,6 +432,7 @@ TRANSLATIONS = {
     "core.diag.similar_hint": "  → 提示: 你是不是想用 '{suggestion}'?",
     # ==================== HTTP 客戶端 ====================
     "core.client.timeout_retry": "[Client] {method} {url} 逾時 (嘗試 {attempt}/{total})",
+    "core.client.old_session_close_failed": "[Client] 關閉舊會話失敗: {error}",
     "core.client.timeout_final": "[Client] {method} {url} 最終逾時 ({elapsed}s)",
     "core.client.conn_broken_retry": "[Client] {method} {url} 連線中斷，重建 session 後重試 (嘗試 {attempt}/{total})",
     "core.client.conn_final_failed": "[Client] {method} {url} 最終連線失敗 ({elapsed}s)",

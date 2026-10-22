@@ -150,6 +150,8 @@ TRANSLATIONS = {
     "core.adapter.stop_adapter_failed": "Ошибка остановки адаптера {platform}: {error}",
     "core.adapter.shutdown_timeout": "Метод shutdown адаптера {platform} превысил {timeout} с, принудительная очистка",
     "core.adapter.routes_cleaned": "Очищены маршруты для платформы {platform}: HTTP={http}, WebSocket={ws}, SSE={sse}",
+    "core.adapter.ownership_reclaimed": "Ресурсы реестра платформы {platform} возвращены через фасад владения: {detail}",
+    "core.adapter.ownership_reclaim_failed": "Не удалось вернуть ресурсы реестра платформы {platform}: {error}",
     "core.adapter.routes_clean_failed": "Ошибка очистки маршрутов для платформы {platform}: {error}",
     "core.adapter.handlers_cleaned": "Очищено {count} обработчиков событий/команд для платформы {platform}",
     "core.adapter.handlers_clean_failed": "Ошибка очистки обработчиков событий для платформы {platform}: {error}",
@@ -407,6 +409,7 @@ TRANSLATIONS = {
     # ==================== Управление конфигурацией ====================
     "core.config.migrate_failed": "Ошибка миграции файла конфигурации: {error}",
     "core.config.emit_failed": "Не удалось отправить событие config.updated (подписчики не увидят это изменение): {error}",
+    "core.config.exit_flush_failed": "Финальный сброс конфигурации перед выходом процесса не удался (изменения могут не быть сохранены): {error}",
     "core.config.load_failed": "Ошибка загрузки файла конфигурации {path}: {error}",
     "core.config.write_failed": "Ошибка записи файла конфигурации {path}: {error}",
     "core.config.delete_failed": "Не удалось удалить элемент конфигурации {key}: {error}",
@@ -429,6 +432,7 @@ TRANSLATIONS = {
     "core.diag.similar_hint": "  → Подсказка: вы имели в виду '{suggestion}'?",
     # ==================== HTTP клиент ====================
     "core.client.timeout_retry": "[Client] {method} {url} превышено время ожидания (попытка {attempt}/{total})",
+    "core.client.old_session_close_failed": "[Client] Не удалось закрыть старую сессию: {error}",
     "core.client.timeout_final": "[Client] {method} {url} окончательное превышение времени ожидания ({elapsed}s)",
     "core.client.conn_broken_retry": "[Client] {method} {url} соединение разорвано, пересоздание сессии и повторная попытка (попытка {attempt}/{total})",
     "core.client.conn_final_failed": "[Client] {method} {url} окончательный сбой соединения ({elapsed}s)",

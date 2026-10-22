@@ -150,6 +150,8 @@ TRANSLATIONS = {
     "core.adapter.stop_adapter_failed": "Failed to stop adapter {platform}: {error}",
     "core.adapter.shutdown_timeout": "Adapter {platform} shutdown exceeded {timeout}s, forcing cleanup",
     "core.adapter.routes_cleaned": "Cleaned routes for platform {platform}: HTTP={http}, WebSocket={ws}, SSE={sse}",
+    "core.adapter.ownership_reclaimed": "Registry resources for platform {platform} reclaimed via ownership facade: {detail}",
+    "core.adapter.ownership_reclaim_failed": "Failed to reclaim registry resources for platform {platform}: {error}",
     "core.adapter.routes_clean_failed": "Failed to clean routes for platform {platform}: {error}",
     "core.adapter.handlers_cleaned": "Cleaned {count} event handlers/commands for platform {platform}",
     "core.adapter.handlers_clean_failed": "Failed to clean event handlers for platform {platform}: {error}",
@@ -407,6 +409,7 @@ TRANSLATIONS = {
     # ==================== Configuration Management ====================
     "core.config.migrate_failed": "Configuration file migration failed: {error}",
     "core.config.emit_failed": "Failed to emit config.updated event (subscribers will miss this change): {error}",
+    "core.config.exit_flush_failed": "Final config flush before process exit failed (changes may not be persisted): {error}",
     "core.config.load_failed": "Failed to load configuration file {path}: {error}",
     "core.config.write_failed": "Failed to write configuration file {path}: {error}",
     "core.config.delete_failed": "Failed to delete configuration item {key}: {error}",
@@ -429,6 +432,7 @@ TRANSLATIONS = {
     "core.diag.similar_hint": "  → Hint: did you mean '{suggestion}'?",
     # ==================== HTTP Client ====================
     "core.client.timeout_retry": "[Client] {method} {url} timed out (attempt {attempt}/{total})",
+    "core.client.old_session_close_failed": "[Client] Failed to close old session: {error}",
     "core.client.timeout_final": "[Client] {method} {url} final timeout ({elapsed}s)",
     "core.client.conn_broken_retry": "[Client] {method} {url} connection broken, rebuilding session and retrying (attempt {attempt}/{total})",
     "core.client.conn_final_failed": "[Client] {method} {url} final connection failure ({elapsed}s)",

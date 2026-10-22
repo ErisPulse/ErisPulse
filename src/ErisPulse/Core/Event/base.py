@@ -252,7 +252,7 @@ class BaseEventHandler:
         priority: int = DEFAULT_HANDLER_PRIORITY,
         condition: Callable | None = None,
         scope_exempt: bool = False,
-    ):
+    ) -> None:
         """
         注册事件处理器
 

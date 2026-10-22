@@ -15,7 +15,7 @@ import inspect
 import json as _json
 import logging
 from collections import deque
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 from pathlib import Path
 from typing import Any
@@ -203,7 +203,7 @@ class Logger:
 
     # ==================== 日志订阅 ====================
 
-    def handler(self, handler_id: str = "", *, min_level: str = "TRACE", owner: str | None = None):
+    def handler(self, handler_id: str = "", *, min_level: str = "TRACE", owner: str | None = None) -> Callable:
         """
         日志订阅装饰器
 
@@ -502,7 +502,7 @@ class Logger:
                 handler.close()
             self._file_handlers.clear()
 
-    def set_output_file(self, path) -> bool:
+    def set_output_file(self, path: str | Path) -> bool:
         """
         设置日志输出
 
@@ -715,7 +715,7 @@ class Logger:
         """
         return self.set_format("json" if enabled else "rich")
 
-    def save_logs(self, path) -> bool:
+    def save_logs(self, path: str | Path) -> bool:
         """
         保存所有在内存中记录的日志
 
@@ -762,7 +762,7 @@ class Logger:
             return {k: self._format_for_output(v) for k, v in self._logs.items()}
         return {module_name: self._format_for_output(self._logs.get(module_name, []))}
 
-    def iter_logs(self, module_name: str | None = None):
+    def iter_logs(self, module_name: str | None = None) -> "Iterator[dict[str, Any]]":
         """
         流式迭代日志（生成器）
 
@@ -960,7 +960,7 @@ class Logger:
         except Exception:
             return "Unknown"
 
-    def get_child(self, child_name: str = "UnknownChild", *, relative: bool = True):
+    def get_child(self, child_name: str = "UnknownChild", *, relative: bool = True) -> "LoggerChild":
         """
         获取子日志记录器
 
@@ -993,31 +993,31 @@ class Logger:
             full_module_name = caller_module
         return LoggerChild(self, full_module_name)
 
-    def trace(self, msg, *args, **kwargs):
+    def trace(self, msg: str, *args, **kwargs) -> None:
         """记录 TRACE 级别日志（比 DEBUG 更细粒度）"""
         self._log("trace", TRACE, msg, *args, **kwargs)
 
-    def event(self, msg, *args, **kwargs):
+    def event(self, msg: str, *args, **kwargs) -> None:
         """记录 EVENT 级别日志（事件收发专用，级别等同 INFO）"""
         self._log("event", EVENT, msg, *args, **kwargs)
 
-    def debug(self, msg, *args, **kwargs):
+    def debug(self, msg: str, *args, **kwargs) -> None:
         """记录 DEBUG 级别日志"""
         self._log("debug", logging.DEBUG, msg, *args, **kwargs)
 
-    def info(self, msg, *args, **kwargs):
+    def info(self, msg: str, *args, **kwargs) -> None:
         """记录 INFO 级别日志"""
         self._log("info", logging.INFO, msg, *args, **kwargs)
 
-    def warning(self, msg, *args, **kwargs):
+    def warning(self, msg: str, *args, **kwargs) -> None:
         """记录 WARNING 级别日志"""
         self._log("warning", logging.WARNING, msg, *args, **kwargs)
 
-    def error(self, msg, *args, **kwargs):
+    def error(self, msg: str, *args, **kwargs) -> None:
         """记录 ERROR 级别日志"""
         self._log("error", logging.ERROR, msg, *args, **kwargs)
 
-    def critical(self, msg, *args, **kwargs):
+    def critical(self, msg: str, *args, **kwargs) -> None:
         """
         记录 CRITICAL 级别日志
         这是最高级别的日志，表示严重的系统错误
@@ -1071,7 +1071,7 @@ class Logger:
                 except Exception:
                     pass
 
-    def print_section_header(self, title: str):
+    def print_section_header(self, title: str) -> None:
         """
         打印日志分组标题
 
@@ -1084,7 +1084,7 @@ class Logger:
         self._console.print(line)
         self._store_ui_line(f"── {title}")
 
-    def print_section_footer(self):
+    def print_section_footer(self) -> None:
         """
         打印分组结束标记
         """
@@ -1097,7 +1097,7 @@ class Logger:
         is_last: bool = False,
         tag: str = "",
         tag_style: str = "dim",
-    ):
+    ) -> None:
         """
         打印树状结构项目
 
@@ -1118,7 +1118,7 @@ class Logger:
         self._console.print(line)
         self._store_ui_line(f"{indent}{connector}{text}" + (f"  {tag}" if tag else ""))
 
-    def print_info(self, text: str, level: int = 1):
+    def print_info(self, text: str, level: int = 1) -> None:
         """
         打印信息
 
@@ -1133,7 +1133,7 @@ class Logger:
         self._console.print(line)
         self._store_ui_line(f"{indent}· {text}")
 
-    def print_section_separator(self):
+    def print_section_separator(self) -> None:
         """
         打印简单的分隔线
         """
@@ -1231,31 +1231,31 @@ class LoggerChild:
             formatted = _to_single_line(_format_message(msg, args))
             parent._notify_handlers(level_name, level_const, display_name, formatted)
 
-    def trace(self, msg, *args, **kwargs):
+    def trace(self, msg: str, *args, **kwargs) -> None:
         """记录 TRACE 级别日志（比 DEBUG 更细粒度）"""
         self._log("trace", TRACE, msg, *args, **kwargs)
 
-    def event(self, msg, *args, **kwargs):
+    def event(self, msg: str, *args, **kwargs) -> None:
         """记录 EVENT 级别日志（事件收发专用，级别等同 INFO）"""
         self._log("event", EVENT, msg, *args, **kwargs)
 
-    def debug(self, msg, *args, **kwargs):
+    def debug(self, msg: str, *args, **kwargs) -> None:
         """记录 DEBUG 级别日志"""
         self._log("debug", logging.DEBUG, msg, *args, **kwargs)
 
-    def info(self, msg, *args, **kwargs):
+    def info(self, msg: str, *args, **kwargs) -> None:
         """记录 INFO 级别日志"""
         self._log("info", logging.INFO, msg, *args, **kwargs)
 
-    def warning(self, msg, *args, **kwargs):
+    def warning(self, msg: str, *args, **kwargs) -> None:
         """记录 WARNING 级别日志"""
         self._log("warning", logging.WARNING, msg, *args, **kwargs)
 
-    def error(self, msg, *args, **kwargs):
+    def error(self, msg: str, *args, **kwargs) -> None:
         """记录 ERROR 级别日志"""
         self._log("error", logging.ERROR, msg, *args, **kwargs)
 
-    def critical(self, msg, *args, **kwargs):
+    def critical(self, msg: str, *args, **kwargs) -> None:
         """
         记录 CRITICAL 级别日志
         这是最高级别的日志，表示严重的系统错误
@@ -1263,7 +1263,7 @@ class LoggerChild:
         """
         self._log("critical", logging.CRITICAL, msg, *args, **kwargs)
 
-    def get_child(self, child_name: str):
+    def get_child(self, child_name: str) -> "LoggerChild":
         """
         获取子日志记录器的子记录器
 

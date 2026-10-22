@@ -100,3 +100,20 @@ class TestSoftRestart:
                 break
             await asyncio.sleep(0.01)
         assert started.is_set()
+
+
+@pytest.mark.unit
+class TestDumpStateRouterFields:
+    """dump_state 的 router 段字段须与 RouterManager 实际属性对齐（防字段漂移回归）"""
+
+    def test_router_section_reflects_real_attributes(self, sdk):
+        state = sdk.dump_state()
+        router_state = state["router"]
+        # 未启动服务：running 为 False 而非字段不存在导致的恒 False 误报
+        assert router_state.get("running") is False
+        # 路由计数为非负整数（按路径累计），而非命名空间数或恒 0
+        assert isinstance(router_state.get("http_routes"), int)
+        assert router_state["http_routes"] >= 0
+        assert isinstance(router_state.get("ws_routes"), int)
+        assert router_state["ws_routes"] >= 0
+        assert "error" not in router_state

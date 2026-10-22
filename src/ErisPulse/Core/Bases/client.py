@@ -15,6 +15,7 @@ ErisPulse HTTP 客户端抽象基类
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from typing import Any
 
 from .errors import WebSocketDisconnect
@@ -56,7 +57,7 @@ class BaseHttpResponse:
         raise NotImplementedError
 
     @property
-    def headers(self):
+    def headers(self) -> Any:
         """
         响应头
 
@@ -74,7 +75,7 @@ class BaseHttpResponse:
         raise NotImplementedError
 
     @property
-    def url(self):
+    def url(self) -> Any:
         """
         响应 URL (可能因重定向而与请求 URL 不同)
 
@@ -83,7 +84,7 @@ class BaseHttpResponse:
         raise NotImplementedError
 
     @property
-    def raw(self):
+    def raw(self) -> Any:
         """
         底层框架原生 Response 对象
 
@@ -181,7 +182,7 @@ class BaseClientWebSocket(WebSocketConnectionBase):
         """
         raise NotImplementedError
 
-    async def iter_messages(self):
+    async def iter_messages(self) -> AsyncIterator[WSMessage]:
         """
         迭代原始消息直到断开
 

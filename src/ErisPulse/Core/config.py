@@ -833,8 +833,18 @@ class ConfigManager:
             if self._write_timer:
                 self._write_timer.cancel()
             self._flush_config()
-        except Exception:
-            pass
+        except Exception as e:
+            # 退出前最后一次刷盘失败必须留痕：静默丢失 = 用户配置改动无痕迹丢失。
+            # 解释器退出阶段 logger/i18n 可能已不可用，降级到 stderr 也要留痕
+            # （懒导入：config↔logger 顶层互指，logger 三角环未收口前维持既有模式）
+            try:
+                from .logger import logger
+
+                logger.warning(i18n.t("core.config.exit_flush_failed", error=e))
+            except Exception:
+                import sys
+
+                print(f"[ErisPulse] 配置退出刷盘失败: {e}", file=sys.stderr)
         # 清理哨兵文件（无论 flush 成功与否）
         try:
             sentinel = self._malformed_sentinel_path
@@ -933,13 +943,10 @@ class ConfigManager:
                 },
             )
         except Exception as e:
-            # 广播失败留痕：订阅方的 config.updated 感知不到会静默失效
-            try:
-                from .logger import logger
+            # 广播失败必须 warning：订阅方感知不到 config.updated 会静默失效
+            from .logger import logger
 
-                logger.debug(i18n.t("core.config.emit_failed", error=e))
-            except (ImportError, AttributeError):
-                pass
+            logger.warning(i18n.t("core.config.emit_failed", error=e))
 
     # ==================== 配置读写 ====================
 

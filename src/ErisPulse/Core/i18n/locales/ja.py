@@ -150,6 +150,8 @@ TRANSLATIONS = {
     "core.adapter.stop_adapter_failed": "アダプター {platform} の停止に失敗しました: {error}",
     "core.adapter.shutdown_timeout": "アダプター {platform} の shutdown がタイムアウトしました（>{timeout}s）、強制クリーンアップします",
     "core.adapter.routes_cleaned": "プラットフォーム {platform} のルートをクリーンアップしました: HTTP={http}, WebSocket={ws}, SSE={sse}",
+    "core.adapter.ownership_reclaimed": "所有権ファサード経由でプラットフォーム {platform} の登録リソースを一括回収しました: {detail}",
+    "core.adapter.ownership_reclaim_failed": "プラットフォーム {platform} の登録リソースの一括回収に失敗しました: {error}",
     "core.adapter.routes_clean_failed": "プラットフォーム {platform} のルートのクリーンアップに失敗しました: {error}",
     "core.adapter.handlers_cleaned": "プラットフォーム {platform} の {count} 個のイベントハンドラー/コマンドをクリーンアップしました",
     "core.adapter.handlers_clean_failed": "プラットフォーム {platform} のイベントハンドラーのクリーンアップに失敗しました: {error}",
@@ -407,6 +409,7 @@ TRANSLATIONS = {
     # ==================== 設定管理 ====================
     "core.config.migrate_failed": "設定ファイルの移行に失敗しました: {error}",
     "core.config.emit_failed": "config.updated イベントの発行に失敗しました（購読者はこの変更を検知できません）: {error}",
+    "core.config.exit_flush_failed": "プロセス終了前の最終設定フラッシュに失敗しました（変更がディスクに書き込まれていない可能性があります）: {error}",
     "core.config.load_failed": "設定ファイル {path} の読み込みに失敗しました: {error}",
     "core.config.write_failed": "設定ファイル {path} の書き込みに失敗しました: {error}",
     "core.config.delete_failed": "設定項目 {key} の削除に失敗しました: {error}",
@@ -429,6 +432,7 @@ TRANSLATIONS = {
     "core.diag.similar_hint": "  → ヒント: '{suggestion}' のことですか？",
     # ==================== HTTP クライアント ====================
     "core.client.timeout_retry": "[Client] {method} {url} がタイムアウトしました (試行 {attempt}/{total})",
+    "core.client.old_session_close_failed": "[Client] 旧セッションの切断に失敗しました: {error}",
     "core.client.timeout_final": "[Client] {method} {url} が最終的にタイムアウトしました ({elapsed}s)",
     "core.client.conn_broken_retry": "[Client] {method} {url} の接続が切断されました、セッションを再構築してリトライします (試行 {attempt}/{total})",
     "core.client.conn_final_failed": "[Client] {method} {url} の最終的な接続失敗 ({elapsed}s)",

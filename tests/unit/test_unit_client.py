@@ -854,3 +854,29 @@ class TestHttpClientFiles:
             files=files,
             headers=None,
         )
+
+
+class TestDrainSessionsRobustness:
+    """旧会话关闭失败不得静默吞掉或抛出（留 debug 痕迹）"""
+
+    @pytest.mark.asyncio
+    async def test_close_failure_logged_not_raised(self, monkeypatch):
+        from ErisPulse.Core.client import HttpClient
+
+        c = HttpClient()
+
+        class _BoomSession:
+            closed = False
+
+            async def close(self):
+                raise RuntimeError("boom-close")
+
+        c._session = _BoomSession()
+        c._ws_session = None
+        messages = []
+        from ErisPulse.Core.logger import logger
+
+        monkeypatch.setattr(logger, "debug", lambda msg: messages.append(str(msg)))
+        await c._drain_sessions()
+        assert c._session is None
+        assert any("旧会话" in m for m in messages)

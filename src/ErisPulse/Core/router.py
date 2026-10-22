@@ -264,7 +264,7 @@ class RouteGroup:
         assert self._router is not None
         return self._router._normalize_path(self._module_name, "/" + "/".join(parts))
 
-    def http(self, path: str, methods: list[str] | None = None, **kwargs):
+    def http(self, path: str, methods: list[str] | None = None, **kwargs) -> Callable:
         """
         HTTP 路由装饰器
 
@@ -281,7 +281,7 @@ class RouteGroup:
         assert self._router is not None
         return self._router._http_decorate(resolved, self._module_name, methods, **kw)
 
-    def get(self, path: str, **kwargs):
+    def get(self, path: str, **kwargs) -> Callable:
         """
         GET 路由装饰器
 
@@ -290,7 +290,7 @@ class RouteGroup:
         """
         return self.http(path, methods=["GET"], **kwargs)
 
-    def post(self, path: str, **kwargs):
+    def post(self, path: str, **kwargs) -> Callable:
         """
         POST 路由装饰器
 
@@ -299,7 +299,7 @@ class RouteGroup:
         """
         return self.http(path, methods=["POST"], **kwargs)
 
-    def put(self, path: str, **kwargs):
+    def put(self, path: str, **kwargs) -> Callable:
         """
         PUT 路由装饰器
 
@@ -308,7 +308,7 @@ class RouteGroup:
         """
         return self.http(path, methods=["PUT"], **kwargs)
 
-    def delete(self, path: str, **kwargs):
+    def delete(self, path: str, **kwargs) -> Callable:
         """
         DELETE 路由装饰器
 
@@ -317,7 +317,7 @@ class RouteGroup:
         """
         return self.http(path, methods=["DELETE"], **kwargs)
 
-    def ws(self, path: str, **kwargs):
+    def ws(self, path: str, **kwargs) -> Callable:
         """
         WebSocket 路由装饰器
 
@@ -329,7 +329,7 @@ class RouteGroup:
         assert self._router is not None
         return self._router._ws_decorate(resolved, self._module_name, **kwargs)
 
-    def sse(self, path: str, **kwargs):
+    def sse(self, path: str, **kwargs) -> Callable:
         """
         SSE (Server-Sent Events) 路由装饰器
 
@@ -1245,7 +1245,7 @@ class RouterManager:
         except RuntimeError:
             logger.trace(i18n.t("core.router.middleware_skip"))
 
-    def middleware(self, *paths: str):
+    def middleware(self, *paths: str) -> Callable:
         """
         路由中间件装饰器
 
@@ -1292,7 +1292,7 @@ class RouterManager:
 
     def add_middleware(
         self, before: Callable | None = None, after: Callable | None = None, *paths: str
-    ):
+    ) -> None:
         """
         添加中间件函数
 
@@ -1539,7 +1539,7 @@ class RouterManager:
         path: str | None = None,
         methods: list[str] | None = None,
         **kwargs,
-    ):
+    ) -> Callable:
         """
         HTTP 路由装饰器
 
@@ -1573,7 +1573,7 @@ class RouterManager:
         full_path = self._normalize_path(namespace, resolved_path)
         return self._http_decorate(full_path, namespace, methods, **kwargs)
 
-    def get(self, module_name_or_path: str, path: str | None = None, **kwargs):
+    def get(self, module_name_or_path: str, path: str | None = None, **kwargs) -> Callable:
         """
         GET 路由装饰器
 
@@ -1587,7 +1587,7 @@ class RouterManager:
         namespace, resolved_path = self._resolve_namespace(module_name_or_path, path)
         return self.http(namespace, resolved_path, methods=["GET"], **kwargs)
 
-    def post(self, module_name_or_path: str, path: str | None = None, **kwargs):
+    def post(self, module_name_or_path: str, path: str | None = None, **kwargs) -> Callable:
         """
         POST 路由装饰器（单参/双参形态见 :meth:`get`）
 
@@ -1598,7 +1598,7 @@ class RouterManager:
         namespace, resolved_path = self._resolve_namespace(module_name_or_path, path)
         return self.http(namespace, resolved_path, methods=["POST"], **kwargs)
 
-    def put(self, module_name_or_path: str, path: str | None = None, **kwargs):
+    def put(self, module_name_or_path: str, path: str | None = None, **kwargs) -> Callable:
         """
         PUT 路由装饰器（单参/双参形态见 :meth:`get`）
 
@@ -1609,7 +1609,7 @@ class RouterManager:
         namespace, resolved_path = self._resolve_namespace(module_name_or_path, path)
         return self.http(namespace, resolved_path, methods=["PUT"], **kwargs)
 
-    def delete(self, module_name_or_path: str, path: str | None = None, **kwargs):
+    def delete(self, module_name_or_path: str, path: str | None = None, **kwargs) -> Callable:
         """
         DELETE 路由装饰器（单参/双参形态见 :meth:`get`）
 
@@ -1620,7 +1620,7 @@ class RouterManager:
         namespace, resolved_path = self._resolve_namespace(module_name_or_path, path)
         return self.http(namespace, resolved_path, methods=["DELETE"], **kwargs)
 
-    def ws(self, module_name_or_path: str, path: str | None = None, **kwargs):
+    def ws(self, module_name_or_path: str, path: str | None = None, **kwargs) -> Callable:
         """
         WebSocket 路由装饰器
 
@@ -1655,7 +1655,7 @@ class RouterManager:
         full_path = self._normalize_path(namespace, resolved_path)
         return self._ws_decorate(full_path, namespace, **kwargs)
 
-    def sse(self, module_name_or_path: str, path: str | None = None, **kwargs):
+    def sse(self, module_name_or_path: str, path: str | None = None, **kwargs) -> Callable:
         """
         SSE (Server-Sent Events) 路由装饰器
 
@@ -2678,7 +2678,7 @@ class RouterManager:
         allow_credentials: bool = False,
         max_age: int = DEFAULT_CORS_MAX_AGE_SECS,
         expose_headers: list[str] | None = None,
-    ):
+    ) -> None:
         """
         配置 CORS
 
@@ -2709,7 +2709,7 @@ class RouterManager:
         logger.info(i18n.t("core.router.cors_configured"))
 
     @_web_stack_required
-    def setup_security_headers(self, headers: dict[str, str] | None = None):
+    def setup_security_headers(self, headers: dict[str, str] | None = None) -> None:
         """
         配置安全响应头
 
@@ -2732,7 +2732,7 @@ class RouterManager:
 
         logger.info(i18n.t("core.router.security_headers_configured"))
 
-    def disable_docs(self):
+    def disable_docs(self) -> None:
         """
         关闭 API 文档端点（生产环境推荐）
 
@@ -2743,7 +2743,7 @@ class RouterManager:
         self.app.redoc_url = None
         self.app.openapi_url = None
 
-    def set_docs_info(self, title: str | None = None, description: str | None = None):
+    def set_docs_info(self, title: str | None = None, description: str | None = None) -> None:
         """
         更新 API 文档信息
 
@@ -2779,7 +2779,7 @@ class RouterManager:
             if security and security.get("enabled"):
                 self.setup_security_headers(security.get("headers"))
         except Exception as e:
-            logger.trace(i18n.t("core.router.apply_config_failed", error=e))
+            logger.warning(i18n.t("core.router.apply_config_failed", error=e))
 
     def _on_router_config_changed(self, _data: dict) -> None:
         """router 中间件配置变更回调：CORS/安全头需重启进程才能生效"""
@@ -2789,7 +2789,7 @@ class RouterManager:
             cors = config.getConfig(CONFIG_KEY_ROUTER_CORS) or {}
             security = config.getConfig(CONFIG_KEY_ROUTER_SECURITY) or {}
         except Exception as e:
-            logger.trace(i18n.t("core.router.apply_config_failed", error=e))
+            logger.warning(i18n.t("core.router.apply_config_failed", error=e))
             return
         new_snapshot = {"cors": cors, "security": security}
         if (
@@ -3293,6 +3293,13 @@ class RouterManager:
         """
         self._stop_rate_limit_cleanup()
 
+        # 无运行中事件循环（同步上下文/测试）时静默跳过：先判定再建协程，
+        # 避免 coroutine 对象被创建后无法调度而产生 never-awaited 警告
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return
+
         cleanup_interval = DEFAULT_RATE_LIMIT_CLEANUP_INTERVAL_SECS
 
         async def _cleanup_loop():
@@ -3308,10 +3315,7 @@ class RouterManager:
                     )
                     continue
 
-        try:
-            self._rate_limit_cleanup_task = asyncio.create_task(_cleanup_loop())
-        except RuntimeError:
-            pass
+        self._rate_limit_cleanup_task = asyncio.create_task(_cleanup_loop())
 
     def _stop_rate_limit_cleanup(self) -> None:
         """

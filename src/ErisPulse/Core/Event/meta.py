@@ -26,7 +26,7 @@ class MetaHandler:
     def __init__(self):
         self.handler = BaseEventHandler(EVENT_TYPE_META, "meta")
 
-    def on_meta(self, priority: int = 0):
+    def on_meta(self, priority: int = 0) -> Callable:
         """
         通用元事件装饰器
 
@@ -58,7 +58,7 @@ class MetaHandler:
         """
         return self.handler.unregister(handler)
 
-    def on_connect(self, priority: int = 0):
+    def on_connect(self, priority: int = 0) -> Callable:
         """
         连接事件装饰器
 
@@ -84,7 +84,7 @@ class MetaHandler:
         """
         return self.handler.unregister(handler)
 
-    def on_disconnect(self, priority: int = 0):
+    def on_disconnect(self, priority: int = 0) -> Callable:
         """
         断开连接事件装饰器
 
@@ -110,7 +110,7 @@ class MetaHandler:
         """
         return self.handler.unregister(handler)
 
-    def on_heartbeat(self, priority: int = 0):
+    def on_heartbeat(self, priority: int = 0) -> Callable:
         """
         心跳事件装饰器
 

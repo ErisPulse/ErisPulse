@@ -52,68 +52,6 @@ class ModuleManager(ManagerBase):
     {!--< /tips >!--}
     """
 
-    # 已记录过的弃用警告（owner, old_kwarg），每个组合只警告一次，避免热路径日志刷屏
-    _DEPRECATED_KWARG_WARNED: set[tuple[str, str]] = set()
-
-    @staticmethod
-    def _warn_deprecated_kwarg(owner: str, old: str, new: str) -> None:
-        """
-        {!--< internal-use >!--}
-        当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
-
-        :param owner: 所属方法名（如 "ModuleManager.get"）
-        :param old: 已弃用的旧参数名
-        :param new: 推荐使用的新参数名
-        """
-        key = (owner, old)
-        if key in ModuleManager._DEPRECATED_KWARG_WARNED:
-            return
-        ModuleManager._DEPRECATED_KWARG_WARNED.add(key)
-        logger.warning(
-            i18n.t(
-                "core.deprecated.kwarg",
-                owner=owner,
-                old=old,
-                new=new,
-            )
-        )
-
-    @staticmethod
-    def _is_subclass(klass: type, base_cls: type) -> bool:
-        try:
-            if issubclass(klass, base_cls):
-                return True
-        except TypeError:
-            pass
-        if base_cls.__name__ == klass.__name__:
-            return False
-        for parent in klass.__mro__:
-            if parent.__name__ == base_cls.__name__ and parent.__module__ == base_cls.__module__:
-                return True
-        return False
-
-    @staticmethod
-    def _unload_timeout() -> float:
-        """
-        {!--< internal-use >!--}
-        读取模块 on_unload 优雅收尾的超时（秒）
-
-        复用 ``ErisPulse.framework.uninit_timeout`` 配置（反初始化流程的统一超时预算，
-        整体仍有 uninit 的 wait_for 兜底）；未配置或非法时回退常量默认值。
-
-        :return: 超时秒数（>0）
-        """
-        from ..runtime import get_framework_config
-        from .constants import DEFAULT_UNINIT_TIMEOUT_SECS
-
-        try:
-            value = get_framework_config().get("uninit_timeout")
-            if isinstance(value, (int, float)) and value > 0:
-                return float(value)
-        except Exception:
-            pass
-        return float(DEFAULT_UNINIT_TIMEOUT_SECS)
-
     def __init__(self):
         # 模块存储
         self._modules: dict[str, Any] = {}  # 已加载的模块实例
@@ -969,7 +907,7 @@ class ModuleManager(ManagerBase):
         try:
             import asyncio
 
-            unload_timeout = self._unload_timeout()
+            unload_timeout = self._shutdown_timeout()
             instance = self._modules.get(module_name)
 
             # 卸载前钩子：流水线第一步（先于 on_unload 与任务取消 / 连接关闭）——
@@ -1173,14 +1111,14 @@ class ModuleManager(ManagerBase):
             try:
                 await asyncio.wait_for(
                     call_with_depends(instance.on_unload, {"module_name": module_name}),
-                    timeout=self._unload_timeout(),
+                    timeout=self._shutdown_timeout(),
                 )
             except asyncio.TimeoutError:
                 logger.warning(
                     i18n.t(
                         "core.module.on_unload_timeout",
                         name=module_name,
-                        timeout=self._unload_timeout(),
+                        timeout=self._shutdown_timeout(),
                     )
                 )
             except Exception as e:
@@ -1662,6 +1600,11 @@ class ModuleManager(ManagerBase):
         if module_name not in self._loaded_modules:
             # 即使模块尚未实例化（懒加载代理），也要清理代理与 SDK 属性
             self._cleanup_lazy(module_name)
+            # 与 unload 对等：禁用同样通知依赖方（on_dependency_lost 契约含"禁用"）
+            lifecycle.fire(
+                "module.unload",
+                data={"module_name": module_name, "success": True},
+            )
             return True
 
         instance = self._modules.get(module_name)
@@ -1671,7 +1614,7 @@ class ModuleManager(ManagerBase):
             from ..runtime.tasks import spawn_background
 
             spawn_background(
-                self._run_before_unload(module_name, instance, "disable", self._unload_timeout())
+                self._run_before_unload(module_name, instance, "disable", self._shutdown_timeout())
             )
         if instance and hasattr(instance, "on_unload"):
             from ..runtime.owner_cleanup import run_owner_cleanups
@@ -1704,7 +1647,7 @@ class ModuleManager(ManagerBase):
                     """异步 on_unload：完成后兜底取消（与 unload 时序一致）"""
                     import asyncio
 
-                    unload_timeout = self._unload_timeout()
+                    unload_timeout = self._shutdown_timeout()
                     try:
                         await asyncio.wait_for(
                             call_with_depends(instance.on_unload, {"module_name": module_name}),
@@ -1757,6 +1700,11 @@ class ModuleManager(ManagerBase):
         self._loaded_modules.discard(module_name)
         # 同步移除懒加载代理，保持与 SDK 属性被删除的状态一致
         self.unregister_lazy(module_name)
+        # 与 unload 对等：禁用同样通知依赖方（on_dependency_lost 契约含"禁用"）
+        lifecycle.fire(
+            "module.unload",
+            data={"module_name": module_name, "success": True},
+        )
         return True
 
     def unregister(self, name: str | None = None, *, module_name: str | None = None) -> bool:
@@ -2320,7 +2268,7 @@ class ModuleManager(ManagerBase):
 
             records = _transcript.recent(seconds)
         except Exception as e:
-            logger.trace(i18n.t("loader.module.replay_failed", name=module_name, error=e))
+            logger.warning(i18n.t("loader.module.replay_failed", name=module_name, error=e))
             return
         if not records:
             return
@@ -2333,7 +2281,7 @@ class ModuleManager(ManagerBase):
             try:
                 delivered += await _message.handler.dispatch_to_owner(module_name, synth)
             except Exception as e:
-                logger.trace(i18n.t("loader.module.replay_failed", name=module_name, error=e))
+                logger.warning(i18n.t("loader.module.replay_failed", name=module_name, error=e))
                 break
         if delivered:
             logger.info(

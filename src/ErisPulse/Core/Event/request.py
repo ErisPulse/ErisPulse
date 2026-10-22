@@ -27,7 +27,7 @@ class RequestHandler:
     def __init__(self):
         self.handler = BaseEventHandler(EVENT_TYPE_REQUEST, "request")
 
-    def on_request(self, priority: int = 0):
+    def on_request(self, priority: int = 0) -> Callable:
         """
         通用请求事件装饰器
 
@@ -59,7 +59,7 @@ class RequestHandler:
         """
         return self.handler.unregister(handler)
 
-    def on_friend_request(self, priority: int = 0):
+    def on_friend_request(self, priority: int = 0) -> Callable:
         """
         好友请求事件装饰器
 
@@ -85,7 +85,7 @@ class RequestHandler:
         """
         return self.handler.unregister(handler)
 
-    def on_group_request(self, priority: int = 0):
+    def on_group_request(self, priority: int = 0) -> Callable:
         """
         群邀请请求事件装饰器
 

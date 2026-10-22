@@ -21,6 +21,7 @@ from contextlib import asynccontextmanager
 from contextvars import ContextVar
 from typing import Any
 
+from ..constants import STORAGE_BRIDGE_JOIN_TIMEOUT_SECS
 from ..i18n import i18n
 
 # 哨兵值，用于区分"键不存在"和"值为 None"
@@ -152,7 +153,7 @@ class AsyncBridge:
             return
         thread = self._thread
         if thread is not None and thread is not threading.current_thread():
-            thread.join(timeout=5)
+            thread.join(timeout=STORAGE_BRIDGE_JOIN_TIMEOUT_SECS)
 
 
 class _AsyncTransaction:

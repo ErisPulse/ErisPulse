@@ -352,7 +352,7 @@ class TestRouterManager:
         # 服务器正常启动
         assert router_manager._server_task is not None
         # 清理
-        router_manager.stop()
+        await router_manager.stop()
 
     @pytest.mark.asyncio
     async def test_server_start_already_running(self, router_manager):
