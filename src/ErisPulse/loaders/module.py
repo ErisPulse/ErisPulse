@@ -32,6 +32,13 @@ from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
 from ..Core.logger import logger
 from ..finders import ModuleFinder
+from ._reload_utils import (
+    check_reload_identity,
+    clear_source_caches,
+    expand_source_files,
+    module_objects_by_names,
+    precheck_source_files,
+)
 from .bases.loader import BaseLoader, resolve_min_sdk_version
 
 if TYPE_CHECKING:
@@ -445,24 +452,21 @@ class ModuleLoader(BaseLoader):
         if not snapshot.was_loaded and module_name in loaded_now:
             logger.info(i18n.t("loader.module.reload_lazy_forced", name=module_name))
 
-        # 重载明细回填（reload 事件载荷消费）：新旧类身份是否变化 / 版本迁移；
-        # 身份未变化说明进程内可能仍运行旧代码（如 C 扩展等清不掉的缓存）
+        # 重载明细回填（reload 事件载荷消费）：新旧类身份是否变化 / 版本迁移
         try:
+
             new_class = (getattr(manager_instance, "_module_classes", {}) or {}).get(module_name)
             new_meta = ((getattr(manager_instance, "_module_info", {}) or {}).get(module_name) or {}).get("meta") or {}
             self._last_reload_details = {
-                "identity_changed": bool(
-                    new_class is not None
-                    and snapshot.module_class is not None
-                    and new_class is not snapshot.module_class
+                "identity_changed": check_reload_identity(
+                    new_class=new_class,
+                    old_class=snapshot.module_class,
+                    label=module_name,
+                    i18n_key="loader.module.reload_identity_unchanged",
                 ),
                 "version_old": meta.get("version"),
                 "version_new": new_meta.get("version") or meta.get("version"),
             }
-            if new_class is not None and new_class is snapshot.module_class:
-                logger.warning(
-                    i18n.t("loader.module.reload_identity_unchanged", name=module_name)
-                )
         except Exception:
             self._last_reload_details = {}
 
@@ -914,34 +918,13 @@ class ModuleLoader(BaseLoader):
         {!--< internal-use >!--}
         清除顶层模块源文件的字节码缓存（``__pycache__``/*.pyc）
 
-        同秒内且字节数不变的源码改写不会使 pyc 失效（mtime 秒级粒度 +
-        size 校验），purge ``sys.modules`` 后重导入仍会命中旧字节码——
-        重载路径必须显式清除，保证「改完代码再 reload 必定读到新代码」。
         必须在 ``_purge_installed_modules`` **之前**调用（依赖 sys.modules
         中尚存的旧条目定位源文件）。
 
         :param top_level: 顶层模块名列表
         """
-        import importlib.util
-        from pathlib import Path
 
-        for name in top_level:
-            mod = sys.modules.get(name)
-            file_attr = getattr(mod, "__file__", None) if mod else None
-            if not file_attr:
-                continue
-            path = Path(file_attr)
-            if path.name == "__init__.py":
-                candidates = sorted(path.parent.rglob("*.py"))
-            else:
-                candidates = [path]
-            for py in candidates:
-                try:
-                    cache = importlib.util.cache_from_source(str(py))
-                    if cache:
-                        Path(cache).unlink(missing_ok=True)
-                except Exception:
-                    pass
+        clear_source_caches(module_objects_by_names(top_level))
 
     async def _reload_runtime_module(
         self, module_name: str, manager_instance: Any, sdk_instance: Any
@@ -1039,8 +1022,7 @@ class ModuleLoader(BaseLoader):
 
         预检失败（语法错误）即拒绝重载——旧实例未卸载、继续服务，语法
         错误永远不会把模块推进"半死状态"。源码树无法定位（C 扩展 / 内存
-        模块）或超过文件数上限（``MODULE_RELOAD_PRECHECK_MAX_FILES``）时
-        跳过预检并记 debug，交由快照回滚兜底。
+        模块）时跳过预检并记 debug，交由快照回滚兜底。
 
         :param module_name: 模块名（日志用）
         :param old_obj: 重载前的快照条目（模块对象）
@@ -1048,51 +1030,29 @@ class ModuleLoader(BaseLoader):
         :param top_level: 顶层模块名列表
         :return: 是否通过（True = 允许继续重载流程）
         """
-        import ast
-
-        from ..Core.constants import MODULE_RELOAD_PRECHECK_MAX_FILES
 
         try:
             candidate_files = [getattr(old_obj, "__file__", None)]
-            root_files: list[Any] = []
             if is_plugin:
-                root_files.extend(candidate_files)
+                root_files: list[Any] = list(candidate_files)
             else:
-                for name in top_level:
-                    mod = sys.modules.get(name)
-                    root_files.append(getattr(mod, "__file__", None) if mod else None)
+                root_files = [
+                    getattr(mod, "__file__", None)
+                    for mod in (
+                        sys.modules.get(name) for name in top_level
+                    )
+                ]
                 if not any(root_files):
                     root_files.extend(candidate_files)
-            from pathlib import Path
-
-            source_files: list[Path] = []
-            for file_attr in root_files:
-                if not file_attr:
-                    continue
-                path = Path(file_attr)
-                if path.name == "__init__.py":
-                    source_files.extend(sorted(path.parent.rglob("*.py")))
-                elif path.suffix == ".py":
-                    source_files.append(path)
-            if not source_files:
-                return True
-            for checked, py in enumerate(source_files, start=1):
-                if checked > MODULE_RELOAD_PRECHECK_MAX_FILES:
-                    logger.debug(
-                        f"reload precheck skipped after {checked - 1} files for '{module_name}'"
-                    )
-                    return True
-                try:
-                    ast.parse(py.read_text(encoding="utf-8", errors="replace"), filename=str(py))
-                except (SyntaxError, ValueError, UnicodeDecodeError) as e:
-                    logger.error(
-                        i18n.t("loader.module.reload_precheck_failed", name=module_name, error=e)
-                    )
-                    return False
-            return True
+            source_files = expand_source_files(root_files)
         except Exception as e:
             logger.debug(f"reload precheck unavailable for '{module_name}': {e}")
             return True
+        return precheck_source_files(
+            module_name,
+            source_files,
+            i18n_key="loader.module.reload_precheck_failed",
+        )
 
     def _purge_installed_modules(self, top_level: list[str]) -> None:
         """
@@ -1227,54 +1187,24 @@ class ModuleLoader(BaseLoader):
         :raises ImportError: 当模块加载失败时抛出
         """
         meta_name = entry_point.name
-        is_new = False
 
-        # 检查模块是否已经注册，如果未注册则进行注册（默认启用）
-        if not manager_instance.exists(meta_name):
-            manager_instance._config_register(meta_name)
-            is_new = True
-
-        # 获取模块当前状态
-        if not manager_instance.is_enabled(meta_name):
+        proceed, is_new = self._ep_gate(meta_name, manager_instance)
+        if not proceed:
             disabled_list.append(meta_name)
             return objs, enabled_list, disabled_list, is_new
 
-        try:
+        def _load_and_register() -> bool:
             loaded_obj = entry_point.load()
             module_info = self._build_module_info(entry_point, loaded_obj, meta_name)
             if module_info is None:
-                return objs, enabled_list, disabled_list, is_new
+                return False
 
             module_obj = sys.modules[loaded_obj.__module__]
             objs[meta_name] = module_obj
             enabled_list.append(meta_name)
+            return True
 
-        except SystemExit as e:
-            self._strict().record_failure(
-                meta_name, "module", "systemexit", detail=f"SystemExit({e.code})"
-            )
-            logger.error(
-                i18n.t(
-                    "loader.module.systemexit_single",
-                    name=meta_name,
-                    code=e.code,
-                )
-            )
-        except Exception as e:
-            self._strict().record_failure(
-                meta_name, "module", "load_failed", detail=str(e)
-            )
-            logger.error(
-                i18n.t("loader.module.load_single_failed", name=meta_name, error=e)
-            )
-            from ..runtime.diagnostics import log_diagnostic
-
-            log_diagnostic(
-                e,
-                hint_key="loader.module.diag_hint",
-                hint_params={"name": meta_name},
-            )
-
+        self._guarded_ep_load("module", meta_name, _load_and_register)
         return objs, enabled_list, disabled_list, is_new
 
     def _extract_strategy_value(self, strategy: Any, key: str, default: Any) -> Any:

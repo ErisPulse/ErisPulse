@@ -20,12 +20,17 @@ from typing import Any, cast
 from ..Core.constants import (
     ADAPTER_ENTRY_POINT_GROUP,
     ADAPTER_SOURCE_PLUGIN_FOLDER,
-    MODULE_RELOAD_PRECHECK_MAX_FILES,
 )
 from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
 from ..Core.logger import logger
 from ..finders import AdapterFinder
+from ._reload_utils import (
+    check_reload_identity,
+    clear_source_caches,
+    expand_source_files,
+    precheck_source_files,
+)
 from .bases.loader import BaseLoader, resolve_min_sdk_version
 
 
@@ -187,21 +192,13 @@ class AdapterLoader(BaseLoader):
         :raises ImportError: 当适配器加载失败时抛出
         """
         meta_name = entry_point.name
-        is_new = False
 
-        # 检查适配器是否已经注册，如果未注册则进行注册（默认启用）
-        if not manager_instance.exists(meta_name):
-            manager_instance._config_register(meta_name)
-            is_new = True
-
-        # 获取适配器当前状态
-        adapter_status = manager_instance.is_enabled(meta_name)
-
-        if not adapter_status:
+        proceed, is_new = self._ep_gate(meta_name, manager_instance)
+        if not proceed:
             disabled_list.append(meta_name)
             return objs, enabled_list, disabled_list, is_new
 
-        try:
+        def _load_and_register() -> bool:
             loaded_class = entry_point.load()
             adapter_obj = sys.modules[loaded_class.__module__]
             import importlib.metadata
@@ -222,11 +219,11 @@ class AdapterLoader(BaseLoader):
             if not is_base_adapter:
                 # 严格模式：按级别决定容忍加载或拒绝（跳过）
                 if self._strict().decide(meta_name, "adapter", "not_base_class"):
-                    return objs, enabled_list, disabled_list, is_new
+                    return False
 
             # 运行时最低 SDK 版本检查：不满足时明确报错并跳过（声明缺失则放行）
             if not self._check_sdk_version(meta_name, "adapter", loaded_class):
-                return objs, enabled_list, disabled_list, is_new
+                return False
 
             # 依赖声明与可选模块由 _build_adapter_info 从类属性读取
             adapter_info = self._build_adapter_info(
@@ -240,29 +237,9 @@ class AdapterLoader(BaseLoader):
 
             objs[meta_name] = adapter_obj
             enabled_list.append(meta_name)
+            return True
 
-        except SystemExit as e:
-            self._strict().record_failure(
-                meta_name, "adapter", "systemexit", detail=f"SystemExit({e.code})"
-            )
-            logger.error(
-                i18n.t("loader.adapter.systemexit_single", name=meta_name, code=e.code)
-            )
-        except Exception as e:
-            self._strict().record_failure(
-                meta_name, "adapter", "load_failed", detail=str(e)
-            )
-            logger.error(
-                i18n.t("loader.adapter.load_single_failed", name=meta_name, error=e)
-            )
-            from ..runtime.diagnostics import log_diagnostic
-
-            log_diagnostic(
-                e,
-                hint_key="loader.adapter.diag_hint",
-                hint_params={"name": meta_name},
-            )
-
+        self._guarded_ep_load("adapter", meta_name, _load_and_register)
         return objs, enabled_list, disabled_list, is_new
 
     # ==================== 本地适配器插件 ====================
@@ -398,31 +375,13 @@ class AdapterLoader(BaseLoader):
         {!--< internal-use >!--}
         按捕获的 ``sys.modules`` 条目清除源文件字节码缓存（``__pycache__``）
 
-        同秒内且字节数不变的源码改写不会使 pyc 失效（mtime 秒级粒度 + size
-        校验），重载路径必须显式清除。须在 purge ``sys.modules`` **之前**用
-        快照条目调用（快照条目持有 ``__file__``）。
+        须在 purge ``sys.modules`` **之前**用快照条目调用（快照条目持有
+        ``__file__``）。
 
         :param entries: 将被清除的 sys.modules 条目快照
         """
-        import importlib.util
-        from pathlib import Path
 
-        for mod in entries.values():
-            file_attr = getattr(mod, "__file__", None)
-            if not file_attr:
-                continue
-            path = Path(file_attr)
-            if path.name == "__init__.py":
-                candidates: list[Path] = sorted(path.parent.rglob("*.py"))
-            else:
-                candidates = [path]
-            for py in candidates:
-                try:
-                    cache = importlib.util.cache_from_source(str(py))
-                    if cache:
-                        Path(cache).unlink(missing_ok=True)
-                except Exception:
-                    pass
+        clear_source_caches(entries.values())
 
     def _precheck_adapter_sources(
         self, adapter_name: str, old_obj: Any, old_info: "dict | None", purge_names: "list[str]"
@@ -432,7 +391,7 @@ class AdapterLoader(BaseLoader):
         重载卸载前的语法预检：对目标源码树逐文件 ``ast.parse``
 
         失败（语法错误）即拒绝重载——旧适配器未卸载、继续服务。源码无法
-        定位或超过 ``MODULE_RELOAD_PRECHECK_MAX_FILES`` 时跳过预检并记 debug。
+        定位时跳过预检并记 debug。
 
         :param adapter_name: 适配器名（日志用）
         :param old_obj: 重载前的快照条目（适配器模块对象）
@@ -440,7 +399,6 @@ class AdapterLoader(BaseLoader):
         :param purge_names: 清理名单
         :return: 是否通过（True = 允许继续重载流程）
         """
-        import ast
 
         candidates: list[Any] = []
         # 本地插件：以插件加载器记录的路径为准（比模块对象 __file__ 更可靠）
@@ -457,43 +415,12 @@ class AdapterLoader(BaseLoader):
             if mod is not None:
                 candidates.append(getattr(mod, "__file__", None))
 
-        from pathlib import Path
-
-        source_files: list[Path] = []
-        for file_attr in candidates:
-            if not file_attr:
-                continue
-            path = Path(file_attr)
-            if path.name == "__init__.py":
-                source_files.extend(sorted(path.parent.rglob("*.py")))
-            elif path.suffix == ".py":
-                source_files.append(path)
-        if not source_files:
-            return True
-
-        try:
-            for checked, py in enumerate(source_files, start=1):
-                if checked > MODULE_RELOAD_PRECHECK_MAX_FILES:
-                    logger.debug(
-                        f"adapter reload precheck skipped after {checked - 1} files "
-                        f"for '{adapter_name}'"
-                    )
-                    return True
-                try:
-                    ast.parse(py.read_text(encoding="utf-8", errors="replace"), filename=str(py))
-                except (SyntaxError, ValueError, UnicodeDecodeError) as e:
-                    logger.error(
-                        i18n.t(
-                            "loader.adapter.reload_precheck_failed",
-                            name=adapter_name,
-                            error=e,
-                        )
-                    )
-                    return False
-            return True
-        except Exception as e:
-            logger.debug(f"adapter reload precheck unavailable for '{adapter_name}': {e}")
-            return True
+        source_files = expand_source_files(candidates)
+        return precheck_source_files(
+            adapter_name,
+            source_files,
+            i18n_key="loader.adapter.reload_precheck_failed",
+        )
 
     def _capture_adapter_state(
         self, adapter_name: str, manager_instance: Any, purge_names: "list[str]"
@@ -771,16 +698,16 @@ class AdapterLoader(BaseLoader):
                 )
 
         # 6. 身份核对 + 明细回填（事件载荷消费）
+
         new_class = (
             (getattr(manager_instance, "_adapter_info", {}) or {}).get(adapter_name) or {}
         ).get("adapter_class")
-        identity_changed = bool(
-            new_class is not None and new_class is not snapshot.adapter_class
+        identity_changed = check_reload_identity(
+            new_class=new_class,
+            old_class=snapshot.adapter_class,
+            label=adapter_name,
+            i18n_key="loader.adapter.reload_identity_unchanged",
         )
-        if not identity_changed:
-            logger.warning(
-                i18n.t("loader.adapter.reload_identity_unchanged", name=adapter_name)
-            )
         self._last_adapter_reload_details = {
             "identity_changed": identity_changed,
             "version_old": meta.get("version"),
