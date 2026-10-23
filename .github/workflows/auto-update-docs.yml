@@ -271,7 +271,7 @@ jobs:
 
       - name: Upload translated docs as artifact
         if: steps.translate-docs.outputs.docs_updated == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: translated-docs
           path: |
@@ -283,7 +283,7 @@ jobs:
 
       - name: Upload generated docs as artifact
         if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: generated-docs
           path: docs/
