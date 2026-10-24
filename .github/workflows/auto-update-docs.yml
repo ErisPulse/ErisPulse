@@ -70,14 +70,15 @@ jobs:
           exit 0
 
       # 检测上一轮产物中的截断/乱码并删除其缓存，使本轮自动重译
-      # （否则坏译文会因源 hash 未变被一直复用）
+      # （auto-translate 每轮的步骤 1 也会做；此处是循环外的首轮预清理）
       - name: Pre-clean broken translation caches
         continue-on-error: true
         run: python -m scripts.tools check translation --fix
 
       # ----------------------------------------------------------------------
-      # 翻译：时间预算内多轮调度（失败文件自动续译），尽力而为语义——
-      # 部分文件失败不判步骤失败（产出照常入库，剩余文件下一轮续译）
+      # 翻译：auto-translate 单命令（检测→清缓存→翻译→验证 循环，Python 内调度）
+      # 尽力而为语义——退出码恒 0，失败/剩余经 TRANSLATE_FAILED / REMAINING_FILES
+      # 标记传递（产出照常入库，问题文件下一轮自动重译）
       # ----------------------------------------------------------------------
       - name: Translate docs
         id: translate-docs
@@ -89,52 +90,25 @@ jobs:
         run: |
           echo "Starting translation..."
 
-          FORCE_FLAG=""
+          EXTRA_FLAGS=""
           if [ "${{ github.event.inputs.force_translate }}" == "true" ]; then
-            FORCE_FLAG="--force"
+            EXTRA_FLAGS="--force-first"
           fi
 
-          TOTAL_BUDGET_MINUTES=270
-          MAX_ROUNDS=3
-          ROUND=0
-          FINAL_REMAINING=0
-          SAW_FAILURE=0
-          START_TIME=$SECONDS
+          OUTPUT_FILE=$(mktemp)
+          set +e
+          python -m scripts.tools auto-translate --max-rounds 3 --time-budget 270 $EXTRA_FLAGS 2>&1 | tee "$OUTPUT_FILE"
+          set -e
 
-          while [ $ROUND -lt $MAX_ROUNDS ]; do
-            ROUND=$((ROUND + 1))
-            ELAPSED_MIN=$(( (SECONDS - START_TIME) / 60 ))
-            LEFT_MIN=$(( TOTAL_BUDGET_MINUTES - ELAPSED_MIN ))
-
-            if [ $ROUND -gt 1 ] && [ $LEFT_MIN -lt 5 ]; then
-              break
-            fi
-
-            echo "Round ${ROUND}/${MAX_ROUNDS} (budget: ${LEFT_MIN} min)"
-            OUTPUT_FILE=$(mktemp)
-            set +e
-            python -m scripts.tools translate $FORCE_FLAG --time-budget $LEFT_MIN 2>&1 | tee "$OUTPUT_FILE"
-            TRANSLATE_EXIT_CODE=${PIPESTATUS[0]}
-            set -e
-
-            if [ $TRANSLATE_EXIT_CODE -ne 0 ]; then
-              echo "Warning: translator exited with ${TRANSLATE_EXIT_CODE} (partial failures are tolerated)"
-              SAW_FAILURE=1
-            fi
-
-            FINAL_REMAINING=$(grep -oE 'REMAINING_FILES=[0-9]+' "$OUTPUT_FILE" | tail -1 | cut -d= -f2)
-            if [ -z "$FINAL_REMAINING" ]; then
-              FINAL_REMAINING=0
-            fi
-            rm -f "$OUTPUT_FILE"
-
-            FORCE_FLAG=""
-            echo "Round ${ROUND} finished, remaining: ${FINAL_REMAINING}"
-
-            if [ "$FINAL_REMAINING" -eq 0 ]; then
-              break
-            fi
-          done
+          SAW_FAILURE=$(grep -oE 'TRANSLATE_FAILED=[01]' "$OUTPUT_FILE" | tail -1 | cut -d= -f2)
+          if [ -z "$SAW_FAILURE" ]; then
+            SAW_FAILURE=0
+          fi
+          FINAL_REMAINING=$(grep -oE 'REMAINING_FILES=[0-9]+' "$OUTPUT_FILE" | tail -1 | cut -d= -f2)
+          if [ -z "$FINAL_REMAINING" ]; then
+            FINAL_REMAINING=0
+          fi
+          rm -f "$OUTPUT_FILE"
 
           if git diff --quiet -- docs/ README.md README.*.md 2>/dev/null; then
             echo "docs_updated=false" >> $GITHUB_OUTPUT
@@ -144,7 +118,7 @@ jobs:
           fi
 
           echo "remaining=$FINAL_REMAINING" >> $GITHUB_OUTPUT
-          if [ $SAW_FAILURE -ne 0 ]; then
+          if [ "$SAW_FAILURE" = "1" ]; then
             echo "translate_failed=true" >> $GITHUB_OUTPUT
           else
             echo "translate_failed=false" >> $GITHUB_OUTPUT
@@ -153,11 +127,6 @@ jobs:
             echo "::warning::Remaining translations (time budget): ${FINAL_REMAINING}"
           fi
           exit 0
-
-      - name: Check translation quality
-        id: check-translation
-        continue-on-error: true
-        run: python -m scripts.tools check translation --fix
 
       # ----------------------------------------------------------------------
       # 生成器：api-docs / ai-prompts / skills / docs-index 统一产出
