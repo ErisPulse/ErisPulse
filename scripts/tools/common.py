@@ -9,13 +9,20 @@ scripts/tools 公共设施
 - LEAK_PATTERN：翻译提示词泄露特征（此前 translate-docs 与 check-translation
   双份维护且已漂移——检查侧超集为准，"翻译放行、检查报错"的假阳性即源于此）
 
-注意：本目录脚本以 `python scripts/tools/xxx.py` 直接运行，脚本目录自动进入
-sys.path，因此用 `from _common import ...` 平铺导入。
+注意：本目录已包化，统一经 `python -m scripts.tools <组> <名> [参数]` 运行；
+模块内一律相对导入（`from .common import ...` / `from ..common import ...`）。
 """
 
 import re
 import sys
 import threading
+from pathlib import Path
+
+# ==============================================================================
+# 仓库根路径（全部工具的路径基准；原各脚本 __file__ 逐级 parent 推导的统一）
+# ==============================================================================
+
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
 # ==============================================================================
 # 文档扫描排除目录（生成产物不参与翻译/质检）

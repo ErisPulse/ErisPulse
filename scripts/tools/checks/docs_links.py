@@ -63,10 +63,10 @@ def check_file(path: Path) -> list[str]:
     return problems
 
 
-def main() -> int:
+def main(argv: "list[str] | None" = None) -> int:
     parser = argparse.ArgumentParser(description="docs 内部相对链接检查")
     parser.add_argument("--root", default="docs/zh-CN", help="扫描根目录（默认 docs/zh-CN）")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     root = Path(args.root)
     if not root.is_dir():

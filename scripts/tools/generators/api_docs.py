@@ -29,7 +29,10 @@ import textwrap
 from pathlib import Path
 from typing import Any
 
-from _common import Logger  # scripts/tools 公共日志器
+from ..common import (
+    REPO_ROOT,
+    Logger,  # scripts/tools 公共日志器
+)
 
 # 首词形似类型标识：ASCII 标识符 / 点路径 / 下标泛型 / 管道联合（如 ``dict[str, Any]``、``str | None``）
 _TYPE_TOKEN_RE = re.compile(
@@ -411,7 +414,7 @@ def _format_signature(node: ast.FunctionDef | ast.AsyncFunctionDef, is_method: b
     elif arguments.kwonlyargs:
         parts.append("*")
 
-    for arg, default in zip(arguments.kwonlyargs, arguments.kw_defaults):
+    for arg, default in zip(arguments.kwonlyargs, arguments.kw_defaults, strict=False):
         parts.append(render(arg, default))
 
     if arguments.kwarg is not None:
@@ -708,11 +711,11 @@ def generate_index_markdown(modules_info: dict[str, dict[str, Any]]) -> str:
 
 > **重要说明**
 > 本目录下的所有文档均为**自动生成**的 API 参考文档。
-> 
+>
 > **请不要手动编辑此目录下的任何文件**，所有更改将在下次自动生成时被覆盖。
-> 
+>
 > 如需修改 API 文档，请在源代码中更新对应模块、类和函数的 docstring。
-> 
+>
 > 自动生成脚本位置：`scripts/tools/generate-api-docs.py`
 
 ---
@@ -846,7 +849,7 @@ def get_available_languages(docs_dir: Path) -> list[str]:
     langs = []
     for item in docs_dir.iterdir():
         # 排除 _meta
-        if item.is_dir() and item.name not in ['_meta']:
+        if item.is_dir() and item.name != '_meta':
             langs.append(item.name)
     return sorted(langs)
 
@@ -865,7 +868,9 @@ def copy_directory(src: Path, dst: Path) -> None:
     shutil.copytree(src, dst)
 
 
-if __name__ == "__main__":
+def main(argv: "list[str] | None" = None):
+    """CLI 入口（统一入口经 python -m scripts.tools gen api-docs 调用）"""
+    _ = argv  # 当前无位置参数需求；签名与包内约定保持一致
     parser = argparse.ArgumentParser(
         description="ErisPulse API 文档生成器",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -886,13 +891,9 @@ if __name__ == "__main__":
     parser.add_argument("--docs", default="docs", help="文档根目录 (默认: docs)")
     parser.add_argument("--lang", help="指定语言代码（如: zh-CN, en, zh-TW），不指定则为所有语言生成")
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
-    # 获取脚本所在目录
-    script_dir = Path(__file__).parent
-
-    # docs 目录
-    docs_dir = script_dir.parent.parent / args.docs
+    docs_dir = REPO_ROOT / args.docs
 
     Logger.log("=" * 60)
     Logger.log("ErisPulse API 文档生成器")
@@ -998,3 +999,4 @@ if __name__ == "__main__":
             Logger.log(f"函数: {total_functions}")
             Logger.log(f"已复制到: {len(langs)} 个语言")
             Logger.log("=" * 60)
+    return 0

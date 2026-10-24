@@ -269,7 +269,7 @@ class TypeStubGenerator:
                     class_def = self._generate_class_def(node)
                     lines.append(class_def)
                     lines.append('')
-            elif isinstance(node, ast.FunctionDef) or isinstance(node, ast.AsyncFunctionDef):
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 if not self._should_ignore(node):
                     func_def = self._generate_function_def(node)
                     lines.append(func_def)
@@ -526,7 +526,7 @@ class TypeStubGenerator:
         # 收集所有成员
         members = []
         for item in node.body:
-            if isinstance(item, ast.FunctionDef) or isinstance(item, ast.AsyncFunctionDef):
+            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 if not self._should_ignore(item):
                     members.append(self._generate_method_def(item))
             elif isinstance(item, ast.AnnAssign):
@@ -554,7 +554,7 @@ class TypeStubGenerator:
 
     def _get_decorators(self, node: ast.AST, indent: str = "") -> list[str]:
         """提取需要保留的装饰器（staticmethod/classmethod/property 等）
-        
+
         :param node: AST 节点
         :param indent: 缩进字符串
         :return: 装饰器行列表
@@ -799,7 +799,7 @@ class TypeStubGenerator:
         if isinstance(annotation, ast.Dict):
             keys = [self._get_annotation(k) for k in annotation.keys if k is not None]
             values = [self._get_annotation(v) for v in annotation.values]
-            kv_pairs = [f"{k}: {v}" for k, v in zip(keys, values)]
+            kv_pairs = [f"{k}: {v}" for k, v in zip(keys, values, strict=False)]
             return f"{{{', '.join(kv_pairs)}}}"
         if isinstance(annotation, ast.Call):
             # 处理 Annotated[int, ...] 等调用形式的注解
@@ -847,11 +847,7 @@ class TypeStubGenerator:
             return False
 
         # 检查是否包含忽略标签
-        for tag in self.IGNORE_TAGS:
-            if f"{{!--< {tag} >!--}}" in docstring:
-                return True
-
-        return False
+        return any(f"{{!--< {tag} >!--}}" in docstring for tag in self.IGNORE_TAGS)
 
     def _calculate_hash(self, file_path: Path) -> str:
         """
@@ -864,7 +860,7 @@ class TypeStubGenerator:
             return hashlib.md5(f.read()).hexdigest()
 
 
-def main():
+def main(argv: "list[str] | None" = None):
     """命令行入口：解析参数并运行类型存根生成器"""
     parser = argparse.ArgumentParser(
         description="ErisPulse 类型存根生成器",
@@ -898,7 +894,7 @@ def main():
         help="只清理所有现有的 .pyi 文件，不生成新的文件"
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     Logger.log("=" * 60)
     Logger.log("ErisPulse 类型存根生成器")

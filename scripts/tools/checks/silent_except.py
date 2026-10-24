@@ -23,8 +23,10 @@ import json
 import sys
 from pathlib import Path
 
-BASELINE_FILE = Path(__file__).parent / "baselines" / "check_silent_except_baseline.json"
-SRC_ROOT = Path(__file__).parent.parent.parent / "src" / "ErisPulse"
+from ..common import REPO_ROOT
+
+BASELINE_FILE = REPO_ROOT / "scripts" / "tools" / "baselines" / "check_silent_except_baseline.json"
+SRC_ROOT = REPO_ROOT / "src" / "ErisPulse"
 
 
 def count_in_file(path: Path) -> int:
@@ -41,10 +43,10 @@ def count_in_file(path: Path) -> int:
     return n
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--update-baseline", action="store_true")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     by_file: dict[str, int] = {}
     for py in sorted(SRC_ROOT.rglob("*.py")):
