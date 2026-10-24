@@ -11,6 +11,9 @@ concurrency:
 
 on:
   pull_request:
+  push:
+    branches: [Develop/v2, main]
+    # 直推分支同样跑质量门禁（PR 评论类步骤有 event_name 守卫，push 下自动跳过）
   workflow_dispatch:
 
 jobs:
