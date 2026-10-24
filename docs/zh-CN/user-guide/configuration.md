@@ -395,7 +395,8 @@ log_rotation = "size"         # 分段方式: "size" / "date" / "none"
 log_max_size_mb = 10          # size 模式单文件上限（MB）
 log_backup_count = 5          # 保留的历史日志文件数
 log_rotation_when = "midnight"  # date 模式轮转周期: S/M/H/D/midnight
-memory_limit = 1000
+memory_limit = 1000             # 单模块内存日志条数上限（0 = 关闭内存日志副本）
+total_memory_limit = 5000       # 全部模块内存日志总条数上限（0 = 不限）
 exclude_levels = ["EVENT"]
 ```
 
@@ -409,7 +410,8 @@ exclude_levels = ["EVENT"]
 | log_max_size_mb | float | 10 | size 模式单文件大小上限（MB），超过后轮转为 `.1`/`.2` 备份 |
 | log_backup_count | integer | 5 | 保留的历史日志文件数，超出的最旧备份自动删除 |
 | log_rotation_when | string | midnight | date 模式轮转周期：`S`/`M`/`H`/`D`/`midnight`（默认每天零点） |
-| memory_limit | integer | 1000 | 内存中保存的日志条数 |
+| memory_limit | integer | 1000 | 单模块内存中保存的日志条数；`0` 表示关闭内存日志副本（不再写入内存，已有记录保留） |
+| total_memory_limit | integer | 5000 | 全部模块内存日志总条数上限；`0` 表示不限。超限时按轮转策略淘汰最旧记录（优先削减条数最多的模块队列），与单模块 `memory_limit` 独立生效 |
 | exclude_levels | array | 空 | 屏蔽指定日志等级。被屏蔽等级的日志**完全丢弃**（不写内存、不推送给 Dashboard 等订阅器、不打印、不写文件）。支持热更新 |
 
 也可在代码中动态切换：
@@ -451,7 +453,11 @@ adapters = []
 | uninit_timeout | integer | 30 | 优雅关闭的总超时时间（秒），超过后强制终止。0 表示不设超时 |
 | strict_mode | integer | 0 | 严格模式级别，见下方「严格模式」说明 |
 | handler_max_concurrency | integer | 64 | 事件处理器最大并发 Task 数，设大提高吞吐但增加内存占用 |
+| handler_queue_max_pending | integer | 4096 | 事件洪峰入队背压：单平台待处理 handler Task 数上限，超限时新事件的处理器 Task 直接丢弃并记 WARNING（丢弃计数可在 troubleshoot 排查中查看）；`0` 表示不限 |
 | offline_bot_expiry | integer | 3600 | 离线 Bot 记录自动过期时间（秒），0 表示不过期 |
+| plugins_dir | string / list | "plugins" | 本地插件文件夹（相对项目根目录）；新增/删除/修改插件文件会被热重载 watcher 自动发现 |
+| watch_ignore_dirs | list | 内置清单 | 热重载文件监控忽略的目录名（`.venv`/`.git`/`__pycache__` 等）；非空列表**整体替换**内置清单，`[]` 表示不忽略任何目录 |
+| watch_include_plugin_dirs | boolean | true | `epsdk run --reload` 是否把插件目录交给插件热重载 watcher 精确处理（单模块重载），并从全量监控中排除 |
 
 ### 主动 GC 配置
 
@@ -578,6 +584,25 @@ ignore_self = true
 | 配置项 | 类型 | 默认值 | 说明 |
 |---------|------|---------|------|
 | ignore_self | boolean | true | 是否忽略机器人自己的消息 |
+
+## 会话收件箱配置（transcript）
+
+```toml
+[ErisPulse.transcript]
+enabled = true
+max_per_session = 50
+ttl_hours = 168.0
+self_echo = "bot"
+```
+
+| 配置项 | 类型 | 默认值 | 说明 |
+|---------|------|---------|------|
+| enabled | boolean | true | 是否自动记录入站/出站消息（关闭后停止写入，历史仍可查询） |
+| max_per_session | int | 50 | 单会话保留条数（0 = 关闭该会话裁剪） |
+| ttl_hours | float | 168.0 | 全局保留时长（小时，0 = 永不清理） |
+| self_echo | string | bot | 入站 bot 回声（`self.user_id == user_id`，如 OneBot `report-self-message`）处理：`bot` = 记为 bot 并标记 `meta.self_echo`；`skip` = 不记录；`user` = 记为 user（旧行为） |
+
+> 保留策略的风险与审计见 [会话收件箱](../advanced/transcript.md)；归因字段（`sender` / `meta`）与出站归属（`meta.module`）同见该文档。
 
 ## 国际化配置
 

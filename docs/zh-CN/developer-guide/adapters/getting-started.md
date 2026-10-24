@@ -59,6 +59,18 @@ epsdk create adapter -n MyAdapter
 epsdk create adapter -n MyAdapter --local
 ```
 
+脚手架默认生成 WebSocket 服务端骨架；平台连接方式不同时可经 `--template`
+选择通信模式模板（生成即用对应的半成品基类，`start`/`shutdown` 都不需要自己写）：
+
+```bash
+epsdk create adapter -n MyAdapter --template polling   # HTTP 轮询型（getUpdates 拉取）
+epsdk create adapter -n MyAdapter --template webhook   # HTTP 回调型（平台推送）
+```
+
+> 三种连接模式的差异与半成品基类的最小实现面见
+> [适配器核心概念 - 连接模式半成品基类](core-concepts.md#连接模式半成品基类)。
+> 完整可运行示例参考仓库 `examples/example-adapter-polling/` 与 `examples/example-adapter-webhook/`。
+
 也可以手动创建：
 
 ```bash

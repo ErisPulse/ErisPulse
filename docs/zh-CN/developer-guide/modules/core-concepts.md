@@ -425,4 +425,3 @@ self.logger.critical("致命错误") # 致命错误
 
 - [模块最佳实践](best-practices.md) - 开发高质量模块
 - [模块开发入门](getting-started.md) - 回看第一个模块的搭建步骤
-- [模块排查指南](../module-troubleshooting.md) - 模块行为不符合预期时对症排查

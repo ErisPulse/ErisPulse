@@ -65,6 +65,12 @@ sdk.client     # HTTP 客户端
 sdk.lifecycle  # 生命周期系统
 ```
 
+> [!WARNING]
+> **统一从根导入**：`from ErisPulse.Core import adapter` / `import ErisPulse.Core.adapter`
+> 这类写法绑定到的是**管理器实例**（`AdapterManager` 单例）而非子模块——`ErisPulse.Core`
+> 包的 re-export 会遮蔽同名子模块。写测试、patch 或需要模块对象本身时，请一律使用
+> `from ErisPulse import sdk` 根导入（`sdk.adapter` 即管理器实例）。
+
 ### 2. Event 对象
 
 Event 对象封装了事件数据，提供了便捷的访问方法。

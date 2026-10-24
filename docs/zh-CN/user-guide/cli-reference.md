@@ -30,6 +30,13 @@
 
 **别名：** `i`, `add`
 
+> **uv 项目联动**（2.11.1+）：在 uv 管理的项目内（存在 `uv.lock` 或 `[tool.uv]`），
+> `install` / `upgrade` / `uninstall` 自动改走 `uv add` / `uv remove`——依赖同步写入
+> `pyproject.toml` 与 `uv.lock`，`uv sync` 不再清掉 epsdk 装的组件；失败自动回退
+> uv pip / pip 通道。`--user` 等 uv 不支持的参数直接走 pip。目标环境解析顺序：
+> `ERISPULSE_PYTHON` → `UV_PROJECT_ENVIRONMENT` → 项目 `.venv` → `UV_PYTHON` →
+> `VIRTUAL_ENV` → 当前解释器（`epsdk doctor` 可查看完整决策链）。
+
 **参数：**
 
 | 参数 | 短参数 | 说明 |
@@ -308,7 +315,7 @@ epsdk config MyModule
 | 参数 | 说明 |
 |------|------|
 | `[script]` | 要运行的脚本文件，不指定则运行 SDK |
-| `--reload` | 启用热重载模式，监控文件变化自动触发组件级代码热重载（联动热重载系统，无需整进程重启） |
+| `--reload` | 启用热重载模式：监控文件变化自动触发组件级代码热重载（无需整进程重启）；默认忽略 `.venv`/`.git` 等目录（可经 `ErisPulse.framework.watch_ignore_dirs` 配置），插件目录交给插件热重载 watcher 精确处理 |
 | `--strict` / `--no-strict` | 临时开启 / 关闭严格模式（仅本次生效，不写入配置）；缺省跟随 `ErisPulse.framework.strict_mode` |
 
 **示例：**
@@ -334,6 +341,8 @@ epsdk run main.py --no-strict
 ```
 
 **启动前自检：** `run` 启动前会快速检查 `config/config.toml` 可解析性与已安装组件的必填配置完整性，严格性默认跟随 `ErisPulse.framework.strict_mode`（非 0 时检查失败即退出，0 时仅警告继续）。配置文件缺失视为正常首次启动，仅提示不判失败。`--strict` 临时开启：预检失败即退出，同时框架严格级别本次提升为至少 1（跳过不合规组件，经 `ERISPULSE_FRAMEWORK_STRICT_MODE` 环境变量传导到运行进程，不写入配置文件）；`--no-strict` 反之临时压到宽松。自检自身异常时自动跳过，不含网络探测，不会阻塞启动。
+
+> **`--reload` 的监督结构**（2.11.1 起）：`epsdk run --reload` 以「监督进程 + 重载 worker 子进程」运行。保存 `.py` 文件触发的热重载全部在 worker 内完成（互斥串行、风暴合并）；模块侧语法错误会被整体预检拒绝，旧实例继续服务。`sdk.hard_restart()` 时 worker 以退出码 42 退出，监督进程展示原因后自动重拉全新 worker——升级框架本体后新代码即刻生效。
 
 ### stop
 
@@ -609,12 +618,14 @@ epsdk types --force
 - **目标解释器**：包实际安装到的目标 Python 环境
 - **配置文件**：`config/config.toml` 是否存在
 - **组件配置**：已安装组件的声明式配置完整性（"装好了跑不起来"多因必填项缺失）
+- **配置污染**（2.11.1+）：扫描历史升级遗留的残留键（旧版运行时绑定的影子状态键、游离配置节），检出即提示
 - **PyPI 连通性**：能否访问 PyPI（并显示发现的组件数）
 - **系统代理**：是否检测到代理
 
 **自动修复（`--fix`）**：
 - `config.toml` 缺失 → 按当前语言生成初始配置文件（与 `init` 建项同源）
 - 组件配置"待完善" → 逐个拉起交互式配置向导补全必填项（非交互环境提示改用 `epsdk config <名称>`）
+- 配置污染残留键 → 列明来源并经确认后删除（tomlclass 无损路径，注释与顺序保真）
 - Python 版本过低、PyPI 无法访问等需人工介入的问题 → 仅输出行动建议
 
 ```bash

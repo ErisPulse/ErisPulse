@@ -160,7 +160,6 @@ trace.assert_no_match()         # 断言未命中命令
 
 ### 测试暴露了"命令没触发"类问题
 
-- [模块排查指南](module-troubleshooting.md) — 从测试复现走向生产排查，症状对号入座
 
 ### 测试通过、准备分发
 

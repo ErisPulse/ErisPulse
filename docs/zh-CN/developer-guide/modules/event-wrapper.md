@@ -494,4 +494,3 @@ async def ai_chat(self, prompt: str):
 ### 深入交互能力
 
 - [Conversation 多轮对话](../../advanced/conversation.md) - `wait_reply` 之上的完整会话引擎（收集、校验、分支跳转）
-- [模块排查指南](../module-troubleshooting.md) - 事件没响应时对症排查
