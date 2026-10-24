@@ -3244,3 +3244,69 @@ class TestHandlerMatchPrecompile:
 
         h = {"func": lambda: None, "platform": None}
         assert AdapterManager._is_handler_match(h, {}, "anything") is True
+
+
+@pytest.mark.unit
+class TestHandlerQueueBackpressure:
+    """事件洪峰入队背压（_dispatch_handler_task 的待处理 Task 上限）"""
+
+    @pytest.mark.asyncio
+    async def test_overflow_drops_and_counts(self):
+        """待处理数达到上限时丢弃调度、计数递增、返回 None"""
+        mgr = AdapterManager()
+        mgr._handler_queue_max_pending = 2  # 直接钉小上限（懒读缓存）
+
+        async def slow(data):
+            await asyncio.sleep(10)
+
+        mgr._pending_handler_tasks = set()
+        # 预填两个"在途"任务占满队列
+        t1 = asyncio.ensure_future(slow({}))
+        t2 = asyncio.ensure_future(slow({}))
+        mgr._pending_handler_tasks.update({t1, t2})
+        try:
+            data = {"type": "message", "detail_type": "private", "platform": "p1"}
+            result = mgr._dispatch_handler_task(slow, data, event_type="message", platform="p1")
+            assert result is None
+            assert mgr._handler_queue_overflow_count == 1
+            # 队列腾空后恢复调度
+            mgr._pending_handler_tasks.clear()
+            result2 = mgr._dispatch_handler_task(slow, data, event_type="message", platform="p1")
+            assert isinstance(result2, asyncio.Task)
+            result2.cancel()
+        finally:
+            t1.cancel()
+            t2.cancel()
+
+    def test_queue_limit_zero_means_unlimited(self):
+        """上限 0 = 不限（懒读返回钳制后的非负值）"""
+        mgr = AdapterManager()
+        mgr._handler_queue_max_pending = 0
+        assert mgr._get_handler_queue_limit() == 0
+
+
+@pytest.mark.unit
+class TestSendWrapCache:
+    """SendDSL 发送方法包装缓存（分配热点优化，行为不变）"""
+
+    def test_same_name_returns_cached_callable(self):
+        """同一实例重复访问同名 send 方法返回同一 wrapped callable"""
+        from ErisPulse.Core.Bases.adapter import _wrap_send_method  # noqa: F401
+
+        dsl = SendDSL(Mock())
+        first = dsl.Text
+        second = dsl.Text
+        assert first is second
+
+    def test_cache_cleared_on_rule_change(self):
+        """规则变更（Hook 注册）后缓存失效重建"""
+        calls: list = []
+
+        def hook(*args, **kwargs):
+            calls.append(1)
+
+        dsl = SendDSL(Mock())
+        first = dsl.Text
+        dsl.Hook(hook)
+        second = dsl.Text
+        assert first is not second
