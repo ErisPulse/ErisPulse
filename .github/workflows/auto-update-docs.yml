@@ -1,5 +1,14 @@
 name: "📚 Eris Docs Update"
 
+# 文档产物管线：翻译（zh-CN → 各语言）+ 四类生成器产物
+#  → workflow artifact（400 天查验副本）+ docs-generated orphan 分支（持久层，单提交强推）
+#
+# 设计要点：
+# - 产物不提交进开发分支（规则 17），本 workflow 自身不产生 push，无递归风险
+# - 翻译缓存经 artifact 续传：时间预算耗尽/部分失败的文件下一轮自动续译
+# - bash 安全纪律：任何步骤脚本不得以可能短路的 `cmd && cmd` 语句结尾
+#   （短路退出码会成为整个步骤的退出码——本轮修复的历史事故根因）
+
 permissions:
   contents: write
 
@@ -10,8 +19,6 @@ concurrency:
 on:
   push:
     branches: [Develop/v2]
-    # 注：翻译产物已 artifact 化（不再提交进仓库），workflow 自身不会产生
-    # docs 提交，因此无需 paths-ignore 防递归——纯文档推送也会触发翻译
   workflow_dispatch:
     inputs:
       force_translate:
@@ -22,34 +29,15 @@ on:
 jobs:
   update-and-generate-docs:
     runs-on: ubuntu-latest
-    # 硬上限：5h（GitHub 允许的 job 上限内），为翻译预算外的生成/检查/收尾留 30 分钟
+    # 硬上限 5h：翻译预算 270min + 生成/检查/收尾余量
     timeout-minutes: 300
     steps:
-      - name: Generate App Token
-        id: app-token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.ERISBOT_APP_ID }}
-          private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
-
-      - name: Get bot user ID
-        id: bot-info
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
-        run: |
-          BOT_USER_ID=$(gh api "users/${APP_SLUG}%5Bbot%5D" --jq '.id')
-          echo "bot-user-id=$BOT_USER_ID" >> $GITHUB_OUTPUT
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # 不让 checkout 缓存初始 token 到 .git/config（http.extraheader）。
-          # 原因：GitHub App installation token 有效期硬编码为 1h，长任务（>1h）
-          # 中缓存的初始 token 会先过期，且 extraheader 优先级高于 URL 中嵌入的
-          # 认证，导致后续 refresh 的 token 无法生效。所有写操作统一由后续步骤
-          # 通过 git remote set-url 注入最新 token（每次提交前各 refresh 一次）。
+          # 不缓存凭据到 .git/config：长任务中初始 token 会先过期，
+          # 写操作由推送步骤经 remote set-url 显式注入
           persist-credentials: false
 
       - name: Setup environment
@@ -62,6 +50,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests openai
 
+      # 恢复上一轮的产物树与翻译缓存（含 .github/.translate_cache/），
+      # 失败（首跑/artifact 过期）不阻塞——等价全量重译
       - name: Restore docs from artifact
         id: restore-cache
         uses: actions/download-artifact@v4
@@ -70,21 +60,25 @@ jobs:
           path: .
         continue-on-error: true
 
-      - name: Check cache status
+      - name: Cache status
         run: |
-          echo "Cache directory status:"
-          test -d .github/.translate_cache && echo "Cache exists" || echo "No cache"
           if [ -d ".github/.translate_cache" ]; then
-            echo "Cache file count: $(find .github/.translate_cache -name '*.cache' 2>/dev/null | wc -l)"
+            echo "Translate cache: $(find .github/.translate_cache -name '*.cache' 2>/dev/null | wc -l) files"
+          else
+            echo "Translate cache: none (cold start)"
           fi
+          exit 0
 
+      # 检测上一轮产物中的截断/乱码并删除其缓存，使本轮自动重译
+      # （否则坏译文会因源 hash 未变被一直复用）
       - name: Pre-clean broken translation caches
         continue-on-error: true
-        run: |
-          # 检测上一轮产物中的截断/乱码等错误并删除其缓存，
-          # 使本轮翻译自动重译这些文件（否则坏译文会因源 hash 未变被一直复用）
-          python -m scripts.tools check translation --fix || true
+        run: python -m scripts.tools check translation --fix
 
+      # ----------------------------------------------------------------------
+      # 翻译：时间预算内多轮调度（失败文件自动续译），尽力而为语义——
+      # 部分文件失败不判步骤失败（产出照常入库，剩余文件下一轮续译）
+      # ----------------------------------------------------------------------
       - name: Translate docs
         id: translate-docs
         env:
@@ -96,16 +90,15 @@ jobs:
           echo "Starting translation..."
 
           FORCE_FLAG=""
-          [ "${{ github.event.inputs.force_translate }}" == "true" ] && FORCE_FLAG="--force"
-
-          [ ! -f "scripts/tools/translate.py" ] && { echo "Script not found"; echo "docs_updated=false" >> $GITHUB_OUTPUT; echo "translate_failed=false" >> $GITHUB_OUTPUT; echo "remaining=0" >> $GITHUB_OUTPUT; exit 0; }
-          [ -z "$OPENAI_API_KEY" ] && { echo "API key missing"; echo "docs_updated=false" >> $GITHUB_OUTPUT; echo "translate_failed=false" >> $GITHUB_OUTPUT; echo "remaining=0" >> $GITHUB_OUTPUT; exit 0; }
+          if [ "${{ github.event.inputs.force_translate }}" == "true" ]; then
+            FORCE_FLAG="--force"
+          fi
 
           TOTAL_BUDGET_MINUTES=270
           MAX_ROUNDS=3
           ROUND=0
           FINAL_REMAINING=0
-          TRANSLATE_EXIT_CODE=0
+          SAW_FAILURE=0
           START_TIME=$SECONDS
 
           while [ $ROUND -lt $MAX_ROUNDS ]; do
@@ -113,7 +106,9 @@ jobs:
             ELAPSED_MIN=$(( (SECONDS - START_TIME) / 60 ))
             LEFT_MIN=$(( TOTAL_BUDGET_MINUTES - ELAPSED_MIN ))
 
-            [ $ROUND -gt 1 ] && [ $LEFT_MIN -lt 5 ] && break
+            if [ $ROUND -gt 1 ] && [ $LEFT_MIN -lt 5 ]; then
+              break
+            fi
 
             echo "Round ${ROUND}/${MAX_ROUNDS} (budget: ${LEFT_MIN} min)"
             OUTPUT_FILE=$(mktemp)
@@ -122,53 +117,92 @@ jobs:
             TRANSLATE_EXIT_CODE=${PIPESTATUS[0]}
             set -e
 
+            if [ $TRANSLATE_EXIT_CODE -ne 0 ]; then
+              echo "Warning: translator exited with ${TRANSLATE_EXIT_CODE} (partial failures are tolerated)"
+              SAW_FAILURE=1
+            fi
+
             FINAL_REMAINING=$(grep -oE 'REMAINING_FILES=[0-9]+' "$OUTPUT_FILE" | tail -1 | cut -d= -f2)
-            [ -z "$FINAL_REMAINING" ] && FINAL_REMAINING=0
+            if [ -z "$FINAL_REMAINING" ]; then
+              FINAL_REMAINING=0
+            fi
             rm -f "$OUTPUT_FILE"
 
             FORCE_FLAG=""
             echo "Round ${ROUND} finished, remaining: ${FINAL_REMAINING}"
 
-            [ $TRANSLATE_EXIT_CODE -ne 0 ] && echo "Warning: Exit code ${TRANSLATE_EXIT_CODE}"
-            [ "$FINAL_REMAINING" -eq 0 ] && break
+            if [ "$FINAL_REMAINING" -eq 0 ]; then
+              break
+            fi
           done
 
-          git diff --quiet -- docs/ README.md README.*.md 2>/dev/null && { echo "No changes"; echo "docs_updated=false" >> $GITHUB_OUTPUT; } || { echo "Changes detected"; echo "docs_updated=true" >> $GITHUB_OUTPUT; }
+          if git diff --quiet -- docs/ README.md README.*.md 2>/dev/null; then
+            echo "docs_updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected in translations"
+            echo "docs_updated=true" >> $GITHUB_OUTPUT
+          fi
 
           echo "remaining=$FINAL_REMAINING" >> $GITHUB_OUTPUT
-
-          [ $TRANSLATE_EXIT_CODE -ne 0 ] && echo "translate_failed=true" >> $GITHUB_OUTPUT || echo "translate_failed=false" >> $GITHUB_OUTPUT
-          [ "$FINAL_REMAINING" -gt 0 ] && echo "::warning::Remaining: ${FINAL_REMAINING}"
+          if [ $SAW_FAILURE -ne 0 ]; then
+            echo "translate_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "translate_failed=false" >> $GITHUB_OUTPUT
+          fi
+          if [ "$FINAL_REMAINING" -gt 0 ]; then
+            echo "::warning::Remaining translations (time budget): ${FINAL_REMAINING}"
+          fi
+          exit 0
 
       - name: Check translation quality
         id: check-translation
         continue-on-error: true
-        run: |
-          python -m scripts.tools check translation --fix
+        run: python -m scripts.tools check translation --fix
 
-      - name: Update API docs
-        id: update-api
+      # ----------------------------------------------------------------------
+      # 生成器：api-docs / ai-prompts / skills / docs-index 统一产出
+      # ----------------------------------------------------------------------
+      - name: Generate docs artifacts
+        id: generate-docs
         run: |
-          echo "Updating API docs..."
-          [ -f "scripts/tools/generators/spec.py" ] && python -m scripts.tools gen api-docs
-          git diff --quiet docs/*/api-reference/ && echo "api_updated=false" >> $GITHUB_OUTPUT || echo "api_updated=true" >> $GITHUB_OUTPUT
+          updated_any=false
 
-      - name: Generate AI Prompt docs
-        id: generate-ai-prompts
-        run: |
-          echo "Generating AI Prompt docs..."
-          [ -f "scripts/tools/generators/spec.py" ] && python -m scripts.tools gen ai-prompts
-          git diff --quiet docs/*/ai-support/prompts/ && echo "ai_prompts_updated=false" >> $GITHUB_OUTPUT || echo "ai_prompts_updated=true" >> $GITHUB_OUTPUT
+          check_updated() {
+            local label="$1"
+            shift
+            if git diff --quiet "$@"; then
+              echo "${label}=false" >> $GITHUB_OUTPUT
+            else
+              echo "${label}=true" >> $GITHUB_OUTPUT
+              updated_any=true
+              echo "Updated: ${label}"
+            fi
+          }
 
-      - name: Generate docs index
-        id: generate-docs-index
-        run: |
-          echo "Generating docs index..."
-          [ -f "scripts/tools/generators/spec.py" ] && python -m scripts.tools gen docs-index
-          git diff --quiet docs/_meta/ && echo "docs_index_updated=false" >> $GITHUB_OUTPUT || echo "docs_index_updated=true" >> $GITHUB_OUTPUT
+          python -m scripts.tools gen api-docs
+          check_updated api_updated -- docs/*/api-reference/
 
+          python -m scripts.tools gen ai-prompts
+          check_updated ai_prompts_updated -- docs/*/ai-support/prompts/
+
+          python -m scripts.tools gen skills
+          check_updated skills_updated -- docs/*/ai-support/skills/
+
+          python -m scripts.tools gen docs-index
+          check_updated docs_index_updated -- docs/_meta/
+
+          if [ "$updated_any" = true ]; then
+            echo "any_updated=true" >> $GITHUB_OUTPUT
+          else
+            echo "any_updated=false" >> $GITHUB_OUTPUT
+          fi
+          exit 0
+
+      # ----------------------------------------------------------------------
+      # 产物发布：artifact（400 天查验副本）+ docs-generated orphan 分支（持久层）
+      # ----------------------------------------------------------------------
       - name: Upload all docs as artifact
-        if: steps.translate-docs.outputs.docs_updated == 'true' || steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
+        if: steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-docs.outputs.any_updated == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: docs-build
@@ -181,7 +215,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Publish docs tree to docs-generated branch (durable)
-        if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
+        if: steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-docs.outputs.any_updated == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -198,49 +232,15 @@ jobs:
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push --force origin docs-generated:docs-generated
 
-      - name: Summarize updates
+      - name: Summary
         if: always()
         run: |
-          echo "Summarizing document updates..."
-          echo "Generated docs produced in this run (uploaded as artifacts, not committed):"
-          echo "  - API reference docs: ${{ steps.update-api.outputs.api_updated }}"
-          echo "  - AI Prompt docs: ${{ steps.generate-ai-prompts.outputs.ai_prompts_updated }}"
-          echo "  - Docs index: ${{ steps.generate-docs-index.outputs.docs_index_updated }}"
-          echo "  - Translated docs produced: ${{ steps.translate-docs.outputs.docs_updated }}"
-          echo "  - Remaining translations (time budget): ${{ steps.translate-docs.outputs.remaining }}"
-          echo "  - Translation script failure: ${{ steps.translate-docs.outputs.translate_failed }}"
-
-      - name: Docs update complete
-        if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
-        run: |
-          echo "Document update complete"
-          echo "All documents have been updated and uploaded as build artifacts (not committed to the repository)"
-          echo "Includes:"
-          if [ "${{ steps.update-api.outputs.api_updated }}" == "true" ]; then
-            echo "  - API reference docs (multilingual)"
-          fi
-          if [ "${{ steps.generate-ai-prompts.outputs.ai_prompts_updated }}" == "true" ]; then
-            echo "  - AI Prompt docs (multilingual)"
-          fi
-          if [ "${{ steps.generate-docs-index.outputs.docs_index_updated }}" == "true" ]; then
-            echo "  - Docs index (multilingual)"
-          fi
-          if [ "${{ steps.translate-docs.outputs.docs_updated }}" == "true" ]; then
-            echo "  - Translated docs"
-            echo "  - Translation cache"
-          fi
-          if [ "${{ steps.translate-docs.outputs.translate_failed }}" == "true" ]; then
-            echo "  ⚠️ Note: Some files failed to translate, you can retry later"
-          fi
-          if [ -n "${{ steps.translate-docs.outputs.remaining }}" ] && [ "${{ steps.translate-docs.outputs.remaining }}" != "0" ]; then
-            echo "  ⏳ Note: ${{ steps.translate-docs.outputs.remaining }} translations deferred (time budget), next docs push will resume them"
-          fi
-          echo "Document work complete"
-
-      - name: No updates notice
-        if: steps.update-api.outputs.api_updated != 'true' && steps.translate-docs.outputs.docs_updated != 'true' && steps.generate-ai-prompts.outputs.ai_prompts_updated != 'true' && steps.generate-docs-index.outputs.docs_index_updated != 'true'
-        run: |
-          echo "No document updates found today"
-          echo "All documents are up to date"
-          echo "Will continue monitoring the document repository"
-          echo "See you next update"
+          echo "=== Docs pipeline summary ==="
+          echo "Translations updated : ${{ steps.translate-docs.outputs.docs_updated }}"
+          echo "  - remaining (budget): ${{ steps.translate-docs.outputs.remaining }}"
+          echo "  - script failures  : ${{ steps.translate-docs.outputs.translate_failed }}"
+          echo "API reference        : ${{ steps.generate-docs.outputs.api_updated }}"
+          echo "AI prompts           : ${{ steps.generate-docs.outputs.ai_prompts_updated }}"
+          echo "Skills               : ${{ steps.generate-docs.outputs.skills_updated }}"
+          echo "Docs index           : ${{ steps.generate-docs.outputs.docs_index_updated }}"
+          exit 0
