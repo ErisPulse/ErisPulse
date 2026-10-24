@@ -99,6 +99,7 @@
   - `epsdk doctor` 历史配置污染体检 + `--fix` 一键清理（影子状态残留 / 游离配置节，tomlclass 无损路径）
   - `ErisPulse.framework.watch_ignore_dirs` / `watch_include_plugin_dirs` 框架配置键（文件监控忽略清单可配置）
   - CLI 子进程超时兜底：pip 探测 / ensurepip / venv 创建全部带超时，超时输出代理/镜像诊断提示
+  - epsdk ↔ uv 联动：uv 项目内安装/升级/卸载写入 pyproject + uv.lock（免疫 uv sync 清理）；解释器解析感知 `UV_PROJECT_ENVIRONMENT` / `UV_PYTHON`；doctor 输出环境决策链与 uv 项目面板；`--user` 等 uv 不支持的参数直接走 pip
   - `epsdk install` / `upgrade` 完成后按运行实例状态三态提示生效方式（运行中热重载模式 / 运行中普通模式 / 未运行）
   - 事件洪峰入队背压：待处理处理器任务数上限（`ErisPulse.framework.handler_queue_max_pending`，默认 4096，0 = 不限），超限丢弃并告警——常驻进程内存兜底
   - `BaseAdapter.emit_event()` 事件上报便捷方法（与 `emit_meta` 对称，自动补 platform 字段）

@@ -1115,3 +1115,29 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **严重性**: 🟡 中等
 **类型**: 加载系统
+
+### [BUG-048] 会话收件箱查询 API 丢失消息归因（sender 与事件元数据）
+
+**问题**: 收件箱所有查询接口（`get()` / `get_by_trace()` / `event.history()`）返回的记录只有 `role/text/ts/event_id`——存储层已存在的 `sender` 列被查询层丢弃，群聊回放时不同成员的消息在 API 层不可区分（AI 把成员 B 误认为上一轮对话者 A）；入站记录同时不归档事件时刻的昵称等元数据，事后反查拿到的是"现在的昵称"而非"当时的昵称"。
+**原因**: 2.8.0 加 `sender` 列时的注释即写明用于"回放时还原消息来源"，但 Select 与返回构造均未携带（实现疏漏）；元数据归档则从未设计——`append()` 无 meta 通道，表结构无对应列。
+**影响版本**: 2.8.0 - 2.11.0（sender 列随 2.8.0 引入）
+**修复版本**: 2.11.1-dev.0
+**修复内容**: 新增 `meta` 列（白名单契约：入站 nickname/self_id/sub_type/message_id，出站发送上下文与 module；旧表自动迁移，后端不支持 ALTER 时静默回退 `{}`）；`append()` 增加 `meta` 参数贯穿内存缓冲与批量落盘；`get` / `recent` / `get_by_trace` / `event.history` 统一返回 `sender` + `meta`（JSON 损坏回退 `{}`）。
+**关联**: #467（同批 #468 / #469 / #470）
+**回归测试**: tests/unit/test_unit_transcript_attribution.py::TestSenderMetaReadback / TestMetaMigration
+
+**严重性**: 🟡 中等
+**类型**: 会话收件箱 / 存储系统
+
+### [BUG-049] 入站 bot 自发消息回声被记为 user，污染收件箱归因
+
+**问题**: 开启消息回显的平台/协议端（OneBot v11 `report-self-message`、Telegram outgoing 等）把 bot 自己发的消息以 message 事件上报时，收件箱一律记 `role="user"`——机器人自发言与真实用户输入不可区分，下游模块把 bot 自发言当成用户输入处理（AI 据此回应"用户"说过的话），role 统计失真。
+**原因**: 入站自动记录点（`Core/adapter.py`）对所有 `event_type == "message"` 无条件记 `role="user"`，未消费 `self` 字段做 bot 回声判定——而紧随其后的 bot 自动发现逻辑已在消费同一字段（记录时刻可用，记录逻辑漏用）。
+**影响版本**: 2.8.0 - 2.11.0（收件箱自动记录随 2.8.0 引入）
+**修复版本**: 2.11.1-dev.0
+**修复内容**: 记录前按 `self.user_id == user_id` 识别回声，按新配置 `ErisPulse.transcript.self_echo` 三模式处理：`"bot"`（默认）记 `role="bot"` + `sender=self_id` + `meta.self_echo=true`；`"skip"` 不记录；`"user"` 保持旧行为。非回显平台（self 缺失或不相等）逐字段回归不变。
+**关联**: #470（依赖 #467 的 meta 列承载 self_echo 标记）
+**回归测试**: tests/unit/test_unit_transcript_attribution.py::TestSelfEcho
+
+**严重性**: 🟡 中等
+**类型**: 适配器 / 会话收件箱

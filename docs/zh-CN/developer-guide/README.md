@@ -18,7 +18,7 @@
 ### 适配器开发
 
 1. [适配器开发入门](adapters/getting-started.md) - 创建第一个适配器
-2. [适配器核心概念](adapters/core-concepts.md) - 适配器的核心概念
+2. [适配器核心概念](adapters/core-concepts.md) - 适配器的核心概念（含 start() 两种写法与 PollingAdapter / WebhookAdapter 连接模式基类）
 3. [SendDSL 详解](adapters/send-dsl.md) - Send 消息发送 DSL 的完整说明
 4. [事件转换器](adapters/converter.md) - 实现事件转换器
 5. [适配器最佳实践](adapters/best-practices.md) - 开发高质量适配器的建议
@@ -26,7 +26,6 @@
 ### 测试与排查
 
 1. [模块测试（ErisPulse-Testing）](testing.md) - TestBot、事件工厂与断言面
-2. [模块排查指南](module-troubleshooting.md) - 模块没加载 / 事件没响应 / 命令没触发的定位方法
 
 ### 发布指南
 
