@@ -88,6 +88,21 @@ _EN_FALLBACK: dict[str, str] = {
     "adapter.log.bot_disconnected": "Bot disconnected",
     "adapter.log.shutdown": "Adapter shut down",
     "adapter.log.api_call_failed": "API call failed: {error}",
+    # ---- 适配器通信模式模板（--template polling / webhook）----
+    "adapter.polling.doc": "{name} adapter (HTTP polling mode)\n\nInherits from PollingAdapter: "
+    "the base class manages the polling loop (start/shutdown, exponential backoff on fetch "
+    "failure); you only implement fetch_events / convert_one and call_api.",
+    "adapter.polling.fetch_doc": "Fetch a batch of platform-native events (one API call,\n"
+    "e.g. getUpdates; return [] when nothing new; exceptions are handled by the base class backoff)",
+    "adapter.polling.convert_one_doc": "Convert one raw event to the OneBot12 standard format\n"
+    "(return None to skip events you do not care about)",
+    "adapter.webhook.doc": "{name} adapter (HTTP webhook mode)\n\nInherits from WebhookAdapter: "
+    "the base class registers the receive route on the framework router (POST /<platform>/webhook, "
+    "auto-cleaned on unload); you only implement convert (and optionally verify_request) and call_api.",
+    "adapter.webhook.convert_doc": "Convert one webhook payload to the OneBot12 standard format\n"
+    "(return None to skip payloads you do not care about)",
+    "adapter.webhook.verify_doc": "Callback verification hook (return False to reject with 403;\n"
+    "defaults to accept-all — override for signature / token verification)",
     # ---- init 生成物文案（config.toml / main.py / .gitignore / README 等）----
     "init.ssl_placeholder": "# Paste your certificate/key PEM content into this file, "
     "or fill ssl_cert/ssl_key inline in the config",
@@ -110,6 +125,7 @@ _EN_FALLBACK: dict[str, str] = {
     "cfg.section.storage": "# ==================== Storage ====================",
     "cfg.section.event": "# ==================== Events ====================",
     "cfg.section.framework": "# ==================== Framework ====================",
+    "cfg.section.transcript": "# ==================== Transcript (session inbox) ====================",
     "cfg.section.router": "# ==================== Router ====================",
     "cfg.section.adapter_status": "# ==================== Adapter Status ====================",
     "cfg.section.module_status": "# ==================== Module Status ====================",
@@ -129,7 +145,8 @@ _EN_FALLBACK: dict[str, str] = {
     "cfg.logger.log_max_size_mb": "size mode: max file size (MB)",
     "cfg.logger.log_backup_count": "Number of rotated log files to keep",
     "cfg.logger.log_rotation_when": "date mode: rotation period S/M/H/D/midnight",
-    "cfg.logger.memory_limit": "In-memory log entries limit",
+    "cfg.logger.memory_limit": "In-memory log entries limit per module (0 = disable in-memory logs)",
+    "cfg.logger.total_memory_limit": "Global in-memory log entries limit across all modules (0 = unlimited)",
     "cfg.storage.use_global_db": "Use global database",
     "cfg.storage.backend": "Storage backend: \"sqlite\" / \"mysql\" / \"postgres\"",
     "cfg.storage.mysql": "MySQL connection params (effective when backend = \"mysql\"), requires: pip install ErisPulse[mysql]",
@@ -147,6 +164,7 @@ _EN_FALLBACK: dict[str, str] = {
     "cfg.framework.strict_mode": "Strict mode (reject loading modules/adapters not whitelisted)",
     "cfg.framework.strict_mode_exceptions": "Modules/adapters exempted in strict mode",
     "cfg.framework.handler_max_concurrency": "Max concurrent event handlers",
+    "cfg.framework.handler_queue_max_pending": "Max pending handler tasks before dropping (event burst backpressure, 0 = unlimited)",
     "cfg.framework.proactive_gc_interval": "Proactive GC interval (secs, 0 disables)",
     "cfg.framework.proactive_gc_generation": "Regular collection generation (0/1/2)",
     "cfg.framework.proactive_gc_full_every": "Full collection every N rounds (0 disables)",
@@ -154,6 +172,15 @@ _EN_FALLBACK: dict[str, str] = {
     "cfg.framework.proactive_gc_idle_only": "Skip Python GC during event bursts",
     "cfg.framework.proactive_gc_gen0_min": "gen0 garbage minimum, skip if below",
     "cfg.framework.offline_bot_expiry": "Offline bot expiry cleanup (secs)",
+    "cfg.framework.watch_ignore_dirs": "Hot-reload file-watch ignored dirs (commented out = built-in list)",
+    "cfg.framework.watch_ignore_dirs_line1": "#   Non-empty list replaces the built-in list entirely; [] disables ignoring",
+    "cfg.framework.watch_ignore_dirs_line2": "uncomment to override the built-in ignore list",
+    "cfg.framework.watch_include_plugin_dirs": "CLI --reload delegates plugin dirs to the plugin hot-reload watcher",
+    "cfg.transcript.enabled": "Auto record inbound/outbound messages per session (history stays queryable when disabled)",
+    "cfg.transcript.max_per_session": "Max records kept per session",
+    "cfg.transcript.ttl_hours": "Global expiry (hours), lazily cleaned",
+    "cfg.transcript.self_echo": "Inbound bot self-echo (self.user_id == user_id, e.g. OneBot report-self-message) handling: "
+    "\"bot\" = record as bot with meta.self_echo / \"skip\" = don't record / \"user\" = record as user (legacy)",
 }
 
 # 多语言文案表（缺失语言时回退 _EN_FALLBACK）
@@ -210,6 +237,14 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "adapter.log.bot_disconnected": "Bot 已断开",
         "adapter.log.shutdown": "适配器已关闭",
         "adapter.log.api_call_failed": "API 调用失败: {error}",
+        "adapter.polling.doc": "{name} 适配器（HTTP 轮询模式）\n\n继承 PollingAdapter：轮询循环"
+        "（start/shutdown、拉取失败指数退避）由基类管理，只需实现 fetch_events / convert_one 与 call_api。",
+        "adapter.polling.fetch_doc": "拉取一批平台原生事件（一次 API 调用，如 getUpdates；\n无新事件返回空列表；抛出的异常由基类统一退避处理）",
+        "adapter.polling.convert_one_doc": "单条原生事件转 OneBot12 标准格式\n（不关心的事件返回 None 跳过）",
+        "adapter.webhook.doc": "{name} 适配器（HTTP 回调模式）\n\n继承 WebhookAdapter：接收路由"
+        "（POST /<平台名>/webhook，卸载自动清理）由基类注册，只需实现 convert（可选覆写 verify_request）与 call_api。",
+        "adapter.webhook.convert_doc": "单条回调载荷转 OneBot12 标准格式\n（不关心的载荷返回 None 跳过）",
+        "adapter.webhook.verify_doc": "回调校验钩子（返回 False 时以 403 回绝；默认放行——\n需要签名 / Token 校验时覆写）",
         "init.ssl_placeholder": "# 将你的证书/密钥 PEM 内容粘贴到本文件，或在配置中改用 ssl_cert/ssl_key 内联填写",
         "init.config_toml_header": "# ErisPulse 配置文件\n# 完整配置示例请参考 config.full.example",
         "init.main_docstring": '"""\n{display_name} 主程序\n\n这是 ErisPulse 自动生成的主程序文件\n"""',
@@ -226,6 +261,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
     "cfg.section.storage": "# ==================== 存储 ====================",
     "cfg.section.event": "# ==================== 事件系统 ====================",
     "cfg.section.framework": "# ==================== 框架 ====================",
+    "cfg.section.transcript": "# ==================== 会话收件箱（transcript） ====================",
     "cfg.section.router": "# ==================== 路由增强 ====================",
     "cfg.section.adapter_status": "# ==================== 适配器状态 ====================",
     "cfg.section.module_status": "# ==================== 模块状态 ====================",
@@ -244,7 +280,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
     "cfg.logger.log_max_size_mb": "size 模式单文件上限（MB）",
     "cfg.logger.log_backup_count": "保留的历史日志文件数",
     "cfg.logger.log_rotation_when": "date 模式轮转周期: S/M/H/D/midnight",
-    "cfg.logger.memory_limit": "内存日志条数上限",
+    "cfg.logger.memory_limit": "单模块内存日志条数上限（0 = 关闭内存日志副本）",
+    "cfg.logger.total_memory_limit": "全部模块内存日志总条数上限（0 = 不限，超限淘汰最旧记录）",
     "cfg.storage.use_global_db": "是否使用全局数据库",
     "cfg.storage.backend": "存储后端: \"sqlite\" / \"mysql\" / \"postgres\"",
     "cfg.storage.mysql": "MySQL 连接参数（backend = \"mysql\" 时生效），需安装: pip install ErisPulse[mysql]",
@@ -262,6 +299,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
     "cfg.framework.strict_mode": "严格模式（模块/适配器白名单外的拒绝加载）",
     "cfg.framework.strict_mode_exceptions": "严格模式下豁免的模块/适配器",
     "cfg.framework.handler_max_concurrency": "事件处理器同时并发数上限",
+    "cfg.framework.handler_queue_max_pending": "待处理处理器任务数上限（洪峰背压，超限丢弃并告警，0 = 不限）",
     "cfg.framework.proactive_gc_interval": "主动 GC 间隔（秒，0 禁用）",
     "cfg.framework.proactive_gc_generation": "常规回收分代 (0/1/2)",
     "cfg.framework.proactive_gc_full_every": "每 N 轮一次全量回收（0 禁用）",
@@ -269,6 +307,15 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
     "cfg.framework.proactive_gc_idle_only": "事件洪峰时跳过 Python GC",
     "cfg.framework.proactive_gc_gen0_min": "gen0 垃圾量下限，低于则跳过回收",
     "cfg.framework.offline_bot_expiry": "离线 Bot 过期清理（秒）",
+    "cfg.framework.watch_ignore_dirs": "热重载文件监控忽略目录（注释掉 = 使用内置默认清单）",
+    "cfg.framework.watch_ignore_dirs_line1": "#   非空列表 = 整体替换内置清单；[] = 不忽略任何目录",
+    "cfg.framework.watch_ignore_dirs_line2": "取消注释以覆盖内置忽略清单",
+    "cfg.framework.watch_include_plugin_dirs": "CLI --reload 将插件目录交给插件热重载监控处理",
+    "cfg.transcript.enabled": "自动记录每会话入站/出站消息（关闭后停止写入，历史仍可查询）",
+    "cfg.transcript.max_per_session": "每会话保留的最大条数",
+    "cfg.transcript.ttl_hours": "全局过期时间（小时），过期记录惰性清理",
+    "cfg.transcript.self_echo": "入站 bot 回声处理（self.user_id == user_id，如 OneBot report-self-message）："
+    "\"bot\" = 记为 bot 并标记 meta.self_echo / \"skip\" = 不记录 / \"user\" = 记为 user（旧行为）",
     },
     "zh-TW": {
         "module.doc": "{name}模組\n\n繼承自 BaseModule 基類，實現標準化的模組生命週期管理和事件處理。"
@@ -322,6 +369,14 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "adapter.log.bot_disconnected": "Bot 已斷開",
         "adapter.log.shutdown": "適配器已關閉",
         "adapter.log.api_call_failed": "API 呼叫失敗: {error}",
+        "adapter.polling.doc": "{name} 適配器（HTTP 輪詢模式）\n\n繼承 PollingAdapter：輪詢循環"
+        "（start/shutdown、拉取失敗指數退避）由基類管理，只需實作 fetch_events / convert_one 與 call_api。",
+        "adapter.polling.fetch_doc": "拉取一批平台原生事件（一次 API 呼叫，如 getUpdates；\n無新事件回傳空列表；拋出的例外由基類統一退避處理）",
+        "adapter.polling.convert_one_doc": "單條原生事件轉 OneBot12 標準格式\n（不關心的事件回傳 None 跳過）",
+        "adapter.webhook.doc": "{name} 適配器（HTTP 回呼模式）\n\n繼承 WebhookAdapter：接收路由"
+        "（POST /<平台名>/webhook，卸載自動清理）由基類註冊，只需實作 convert（可選覆寫 verify_request）與 call_api。",
+        "adapter.webhook.convert_doc": "單條回呼承載轉 OneBot12 標準格式\n（不關心的承載回傳 None 跳過）",
+        "adapter.webhook.verify_doc": "回呼校驗鉤子（回傳 False 時以 403 回絕；預設放行——\n需要簽名 / Token 校驗時覆寫）",
         "init.ssl_placeholder": "# 將你的憑證/金鑰 PEM 內容貼入本檔案，或在設定中改用 ssl_cert/ssl_key 內聯填寫",
         "init.config_toml_header": "# ErisPulse 設定檔\n# 完整設定範例請參考 config.full.example",
         "init.main_docstring": '"""\n{display_name} 主程式\n\n這是 ErisPulse 自動產生的主程式檔案\n"""',
@@ -381,6 +436,16 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "adapter.log.bot_disconnected": "Bot が切断されました",
         "adapter.log.shutdown": "アダプターを停止しました",
         "adapter.log.api_call_failed": "API 呼び出しに失敗: {error}",
+        "adapter.polling.doc": "{name} アダプター（HTTP ポーリングモード）\n\nPollingAdapter を継承："
+        "ポーリングループ（start/shutdown、取得失敗時の指数バックオフ）は基底クラスが管理し、"
+        "fetch_events / convert_one と call_api のみ実装します。",
+        "adapter.polling.fetch_doc": "プラットフォームのネイティブイベントを一批取得（getUpdates 等の API 呼び出し；\n新規なし時は空リスト；例外は基底クラスのバックオフで処理）",
+        "adapter.polling.convert_one_doc": "ネイティブイベント 1 件を OneBot12 標準形式へ変換\n（不要なイベントは None を返してスキップ）",
+        "adapter.webhook.doc": "{name} アダプター（HTTP Webhook モード）\n\nWebhookAdapter を継承："
+        "受信ルート（POST /<プラットフォーム名>/webhook、アンロード時自動削除）は基底クラスが登録し、"
+        "convert（必要なら verify_request をオーバーライド）と call_api のみ実装します。",
+        "adapter.webhook.convert_doc": "Webhook ペイロード 1 件を OneBot12 標準形式へ変換\n（不要なペイロードは None を返してスキップ）",
+        "adapter.webhook.verify_doc": "コールバック検証フック（False を返すと 403 で拒否；デフォルトは全許可——\n署名 / トークン検証が必要な場合にオーバーライド）",
         "init.ssl_placeholder": "# 証明書/鍵の PEM 内容をこのファイルに貼り付けるか、設定で ssl_cert/ssl_key をインライン指定してください",
         "init.config_toml_header": "# ErisPulse 設定ファイル\n# 完全な設定例は config.full.example を参照してください",
         "init.main_docstring": '"""\n{display_name} メインプログラム\n\nこのメインプログラムファイルは ErisPulse が自動生成しました\n"""',
@@ -442,6 +507,20 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "adapter.log.bot_disconnected": "Бот отключён",
         "adapter.log.shutdown": "Адаптер остановлен",
         "adapter.log.api_call_failed": "Ошибка вызова API: {error}",
+        "adapter.polling.doc": "Адаптер {name} (режим HTTP-опроса)\n\nНаследует PollingAdapter: цикл опроса "
+        "(start/shutdown, экспоненциальная задержка при ошибках) управляется базовым классом — "
+        "реализуйте только fetch_events / convert_one и call_api.",
+        "adapter.polling.fetch_doc": "Получить пакет нативных событий платформы (один вызов API,\n"
+        "например getUpdates; пустой список при отсутствии нового; исключения обрабатывает базовый класс)",
+        "adapter.polling.convert_one_doc": "Преобразовать одно нативное событие в формат OneBot12\n"
+        "(верните None, чтобы пропустить событие)",
+        "adapter.webhook.doc": "Адаптер {name} (режим HTTP-webhook)\n\nНаследует WebhookAdapter: маршрут приёма "
+        "(POST /<платформа>/webhook, автоочистка при выгрузке) регистрируется базовым классом — "
+        "реализуйте только convert (и при необходимости verify_request) и call_api.",
+        "adapter.webhook.convert_doc": "Преобразовать одну полезную нагрузку webhook в формат OneBot12\n"
+        "(верните None, чтобы пропустить)",
+        "adapter.webhook.verify_doc": "Хук проверки колбэка (верните False для отказа с 403; по умолчанию "
+        "все разрешены — переопределите для проверки подписи / токена)",
         "init.ssl_placeholder": "# Вставьте содержимое сертификата/ключа PEM в этот файл или укажите ssl_cert/ssl_key инлайн в конфигурации",
         "init.config_toml_header": "# Файл конфигурации ErisPulse\n# Полный пример конфигурации см. в config.full.example",
         "init.main_docstring": '"""\nГлавная программа {display_name}\n\nЭтот файл главной программы сгенерирован автоматически ErisPulse\n"""',

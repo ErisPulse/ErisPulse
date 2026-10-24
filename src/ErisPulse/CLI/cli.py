@@ -264,6 +264,24 @@ class CLI:
             )
         )
 
+    @staticmethod
+    def _ensure_utf8_stdio() -> None:
+        """
+        将标准流重配置为 UTF-8（Windows GBK 代码页兜底）
+
+        中文 Windows 控制台默认 GBK 编码，非 Rich 的裸 print 与子进程管道
+        输出遇到非 GBK 字符会 ``UnicodeEncodeError``——CLI 入口统一兜底，
+        一次性消灭该类偶发乱码/崩溃（历史点状爆发：翻译脚本、PowerShell BOM）。
+        仅在流支持 reconfigure 时生效（Python 3.7+ 的 io.TextIOWrapper）。
+        """
+        for stream_name in ("stdout", "stderr", "stdin"):
+            try:
+                stream = getattr(sys, stream_name, None)
+                if stream is not None and hasattr(stream, "reconfigure"):
+                    stream.reconfigure(encoding="utf-8")
+            except Exception:
+                pass
+
     def _check_command_typo(self) -> None:
         """
         在 argparse 解析之前检查命令拼写
@@ -360,6 +378,9 @@ class CLI:
         """
         # 在 argparse 之前检查命令拼写（argparse 的 choices 验证会直接报错退出）
         self._check_command_typo()
+
+        # Windows GBK 代码页兜底：标准流统一 UTF-8（入口级一次性修复）
+        self._ensure_utf8_stdio()
 
         args, unknown = self.parser.parse_known_args()
         args._unknown_args = unknown

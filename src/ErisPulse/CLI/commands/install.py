@@ -14,7 +14,7 @@ from rich.text import Text
 from ..base import Command
 from ..console import console
 from ..i18n import i18n
-from ..utils import PackageManager, config_wizard
+from ..utils import PackageManager, config_wizard, runtime_state
 from ..utils.display import interactive_select_table
 from ..utils.interactive import confirm
 from ..utils.package_manager import (
@@ -253,7 +253,11 @@ class InstallCommand(Command):
             if success:
                 # 非交互路径不进入向导，仅提示后续配置入口
                 console.print(f"[dim]  {i18n.t('cli.install.configure_hint')}[/]")
-                console.print(f"[hint]  {i18n.t('cli.install.done_hint')}[/]")
+                key, params = runtime_state.effect_hint()
+                if key:
+                    console.print(f"[hint]  {i18n.t(key, **params)}[/]")
+                else:
+                    console.print(f"[hint]  {i18n.t('cli.install.done_hint')}[/]")
 
             if not success:
                 sys.exit(1)
@@ -537,7 +541,11 @@ class InstallCommand(Command):
         """
         if not config_wizard.is_interactive():
             console.print(f"[dim]  {i18n.t('cli.install.configure_hint')}[/]")
-            console.print(f"[hint]  {i18n.t('cli.install.done_hint')}[/]")
+            key, params = runtime_state.effect_hint()
+            if key:
+                console.print(f"[hint]  {i18n.t(key, **params)}[/]")
+            else:
+                console.print(f"[hint]  {i18n.t('cli.install.done_hint')}[/]")
             return
 
         resolved = []
@@ -549,4 +557,8 @@ class InstallCommand(Command):
             config_wizard.post_install_configure(resolved)
         except Exception as e:
             console.print(f"[warning]  {i18n.t('cli.config.post_install_failed', error=e)}[/]")
-        console.print(f"[hint]  {i18n.t('cli.install.done_hint')}[/]")
+        key, params = runtime_state.effect_hint()
+        if key:
+            console.print(f"[hint]  {i18n.t(key, **params)}[/]")
+        else:
+            console.print(f"[hint]  {i18n.t('cli.install.done_hint')}[/]")

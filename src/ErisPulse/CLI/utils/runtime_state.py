@@ -113,6 +113,52 @@ def clear() -> None:
         pass
 
 
+def effect_hint() -> "tuple[str, dict]":
+    """
+    安装/升级后的「生效方式」三态提示
+
+    读运行状态文件 + 判活 + argv（含 ``--reload`` 判定）：
+    - 实例运行中且热重载模式 → (effect_running_reload 键, {"pid": pid})
+    - 实例运行中（普通模式）→ (effect_running 键, {"pid": pid})
+    - 未运行 → ("", {})（调用方走既有静态文案）
+
+    :return: (i18n 键, 格式化参数)；无实例时空键
+    """
+    state = read()
+    if not state:
+        return "", {}
+    pid = state.get("pid")
+    if not isinstance(pid, int) or not pid_alive(pid):
+        return "", {}
+    argv = state.get("argv") or []
+    if "--reload" in argv:
+        return "cli.package.effect_running_reload", {"pid": pid}
+    return "cli.package.effect_running", {"pid": pid}
+
+
+def clear_mark() -> None:
+    """
+    清除硬重启观测标记（``hard_restart_*`` 字段，只应消费一次）
+
+    与 SDK 侧 ``ErisPulse.runtime.process_state.clear_mark`` 为同一 JSON
+    契约的独立实现（CLI 不加载主库）；路径/字段名由契约测试钉死。
+    """
+    data = read()
+    if data is None:
+        return
+    changed = False
+    for key in ("hard_restart_reason", "hard_restart_at", "hard_restart_pid"):
+        if key in data:
+            data.pop(key)
+            changed = True
+    if not changed:
+        return
+    try:
+        state_path().write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    except Exception:
+        pass
+
+
 def pid_alive(pid: int) -> bool:
     """
     判断进程是否存活
