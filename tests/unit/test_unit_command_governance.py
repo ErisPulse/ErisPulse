@@ -518,7 +518,7 @@ class TestUsageLimit:
         gate.clear_all()
 
     def test_usage_period_sweep_removes_stale_periods(self, monkeypatch):
-        """配额表超容量时清除已过自然周期的条目（含锁表与边沿回复表）"""
+        """配额表超容量时清除已过自然周期的条目（锁表经两轮复核删除）"""
         from ErisPulse.Core.Event import governance as governance_module
 
         monkeypatch.setattr(governance_module, "GOVERNANCE_STATE_MAX_ENTRIES", 1)
@@ -534,5 +534,64 @@ class TestUsageLimit:
         gate._sweep_usage_period(cur, "\x00")
         assert set(gate._usage_counts) == {f"a\x00u1\x00{cur}"}
         assert set(gate._usage_replied) == {f"a\x00u1\x00{cur}"}
+        # 两轮复核第一轮：未锁定的过期键仅落候选，锁暂不删除
+        assert "b\x00u1\x002020-01-01" in gate._usage_locks
+        assert "b\x00u1\x002020-01-01" in gate._usage_lock_sweep_pending
+
+        # 第二轮：复核仍未锁定 → 删除
+        gate._sweep_usage_period(cur, "\x00")
         assert "b\x00u1\x002020-01-01" not in gate._usage_locks
+        gate.clear_all()
+
+    async def test_usage_lock_sweep_holds_locked_candidate(self, monkeypatch):
+        """两轮复核窗口内被锁定的候选顺延：仍锁定不删除，释放后复核删除"""
+        from ErisPulse.Core.Event import governance as governance_module
+
+        monkeypatch.setattr(governance_module, "GOVERNANCE_STATE_MAX_ENTRIES", 1)
+        gate = command_handler._gate
+        gate.clear_all()
+        cur = command_handler.usage_period_key("day")
+        gate._usage_counts[f"a\x00u1\x00{cur}"] = 1
+        gate._usage_counts["b\x00u1\x002020-01-01"] = 1
+        held = asyncio.Lock()
+        gate._usage_locks["b\x00u1\x002020-01-01"] = held
+
+        async with held:
+            # 收集轮：锁持有期内入候选但不删除；复核轮仍锁定 → 顺延
+            gate._sweep_usage_period(cur, "\x00")
+            assert "b\x00u1\x002020-01-01" in gate._usage_lock_sweep_pending
+            assert "b\x00u1\x002020-01-01" in gate._usage_locks
+            gate._sweep_usage_period(cur, "\x00")
+            assert "b\x00u1\x002020-01-01" in gate._usage_locks
+
+        # 锁释放后的首次复核：同一锁对象仍未锁定 → 删除
+        gate._sweep_usage_period(cur, "\x00")
+        assert "b\x00u1\x002020-01-01" not in gate._usage_locks
+        assert not gate._usage_lock_sweep_pending
+        gate.clear_all()
+
+    def test_usage_lock_sweep_recreated_lock_invalidates_candidate(self, monkeypatch):
+        """候选以锁对象记账：窗口内键被重建（新锁对象）时候选自动作废"""
+        from ErisPulse.Core.Event import governance as governance_module
+
+        monkeypatch.setattr(governance_module, "GOVERNANCE_STATE_MAX_ENTRIES", 1)
+        gate = command_handler._gate
+        gate.clear_all()
+        cur = command_handler.usage_period_key("day")
+        gate._usage_counts[f"a\x00u1\x00{cur}"] = 1
+        gate._usage_counts["b\x00u1\x002020-01-01"] = 1
+        stale = asyncio.Lock()
+        gate._usage_locks["b\x00u1\x002020-01-01"] = stale
+
+        # 过容量清扫：计数清理 + 旧锁入候选
+        gate._sweep_usage_period(cur, "\x00")
+        assert "b\x00u1\x002020-01-01" in gate._usage_lock_sweep_pending
+
+        # 键被重建为新锁对象（模拟命令重载）
+        gate._usage_locks["b\x00u1\x002020-01-01"] = asyncio.Lock()
+
+        # 复核轮：候选锁对象与表中不一致 → 候选作废，新锁不删
+        gate._sweep_usage_period(cur, "\x00")
+        assert "b\x00u1\x002020-01-01" in gate._usage_locks
+        assert not gate._usage_lock_sweep_pending
         gate.clear_all()

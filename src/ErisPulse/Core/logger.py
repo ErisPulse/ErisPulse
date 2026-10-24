@@ -32,6 +32,7 @@ from .constants import (
     DEFAULT_LOG_MEMORY_LIMIT,
     DEFAULT_LOG_ROTATION,
     DEFAULT_LOG_ROTATION_WHEN,
+    DEFAULT_LOG_TOTAL_MEMORY_LIMIT,
     LOG_FILE_DATEFMT,
     LOG_FILE_FORMAT,
     LOG_RICH_THEME,
@@ -122,6 +123,78 @@ def _to_single_line(msg: str) -> str:
     return msg.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "\\n")
 
 
+class _MemoryLogRecord:
+    """
+    内存日志记录（``__slots__`` 紧凑存储）
+
+    替代旧实现的每条 5 键 dict（约 728B/条）：``__slots__`` 记录类去掉
+    实例字典与键哈希表，显著降低常驻内存日志副本的占用。字段与旧 dict
+    键一致（timestamp / level / level_num / module / message）。
+
+    对外消费点（``get_logs`` / ``iter_logs`` / 订阅器补发）经 :meth:`as_dict`
+    转回 dict 形态，外部 API 形状不变；保留 ``__getitem__`` 下标访问以兼容
+    存量内部消费点（如测试）的 dict 风格读取。
+
+    {!--< internal-use >!--}
+    {!--< /internal-use >!--}
+    """
+
+    __slots__ = ("level", "level_num", "message", "module", "timestamp")
+
+    def __init__(
+        self,
+        timestamp: str,
+        level: str,
+        level_num: int,
+        module: str,
+        message: str,
+    ):
+        """
+        :param timestamp: ISO 格式时间戳
+        :param level: 日志级别名称（如 "INFO"）
+        :param level_num: 日志级别数值
+        :param module: 归属模块名
+        :param message: 单行化后的日志文本
+        """
+        self.timestamp = timestamp
+        self.level = level
+        self.level_num = level_num
+        self.module = module
+        self.message = message
+
+    def as_dict(self) -> dict[str, Any]:
+        """
+        转为向后兼容的 dict 形态（供订阅器 / 保存路径消费）
+
+        :return: 含 timestamp / level / level_num / module / message 五键的字典
+        """
+        return {
+            "timestamp": self.timestamp,
+            "level": self.level,
+            "level_num": self.level_num,
+            "module": self.module,
+            "message": self.message,
+        }
+
+    def __getitem__(self, key: str) -> Any:
+        """
+        下标访问兼容（dict 风格读取存量内部消费点）
+
+        :param key: 字段名
+        :return: 字段值
+        :raises KeyError: 字段不存在时
+        """
+        try:
+            return getattr(self, key)
+        except AttributeError:
+            raise KeyError(key) from None
+
+    def __repr__(self) -> str:
+        return (
+            f"_MemoryLogRecord({self.level}, {self.module}, {self.message!r})"
+        )
+
+
 class _JsonFormatter(logging.Formatter):
     """
     JSON 日志格式化器
@@ -168,6 +241,8 @@ class Logger:
 
     def __init__(self):
         self._max_logs = DEFAULT_LOG_MEMORY_LIMIT
+        self._total_max_logs = DEFAULT_LOG_TOTAL_MEMORY_LIMIT
+        self._total_log_count = 0
         self._logs = {}
         self._module_levels = {}
         self._excluded_levels: set[int] = set()
@@ -255,12 +330,12 @@ class Logger:
 
             owner = current_owner.get()
         self._log_handlers[handler_id] = (callback, level_value, owner)
-        # 补发内存中已有的历史日志（按 level 筛选）
+        # 补发内存中已有的历史日志（按 level 筛选；记录类在此处转 dict 形态）
         for logs in self._logs.values():
-            for log_data in logs:
-                if log_data.get("level_num", 0) >= level_value:
+            for record in logs:
+                if record.level_num >= level_value:
                     try:
-                        callback(log_data)
+                        callback(record.as_dict())
                     except Exception:
                         pass
 
@@ -275,11 +350,13 @@ class Logger:
 
     def unregister_by_owner(self, owner: str) -> int:
         """
-        注销指定归属者的全部日志订阅器
+        注销指定归属者的全部日志订阅器，并回收其内存日志与模块级别
 
         模块卸载 / 适配器关闭链经归属权门面（``ownership.reclaim_sync``）
         自动调用；订阅回调通常持有模块实例，不注销会导致已卸载模块
-        无法被 GC 且持续接收全量日志。
+        无法被 GC 且持续接收全量日志。同时清理该归属者的内存日志队列
+        （``_logs[模块名]`` 及 ``模块名.*`` 子级）与模块级别覆盖
+        （``_module_levels``），防止已卸载模块的日志残留长期驻留内存。
 
         :param owner: 归属者（模块名 / 平台名）
         :return: int 注销的订阅器数量
@@ -287,6 +364,22 @@ class Logger:
         stale = [hid for hid, (_, _, h_owner) in self._log_handlers.items() if h_owner == owner]
         for hid in stale:
             del self._log_handlers[hid]
+        # 回收归属者的内存日志队列与模块级别覆盖（模块名自身 + 点分子级）
+        prefix = owner + "."
+        stale_modules = [
+            name
+            for name in self._logs
+            if name == owner or name.startswith(prefix)
+        ]
+        for name in stale_modules:
+            self._total_log_count -= len(self._logs.pop(name))
+        for name in [
+            name
+            for name in self._module_levels
+            if name == owner or name.startswith(prefix)
+        ]:
+            del self._module_levels[name]
+        self._total_log_count = max(self._total_log_count, 0)
         return len(stale)
 
     def _notify_handlers(
@@ -331,21 +424,78 @@ class Logger:
 
     def set_memory_limit(self, limit: int) -> bool:
         """
-        设置日志内存存储上限
+        设置单模块日志内存存储上限
 
-        :param limit: 日志存储上限
+        :param limit: 单模块日志存储上限；``0`` 表示关闭内存日志副本
+            （不再写入任何内存日志，已有记录保留但不再增长），负数无效
         :return: bool 设置是否成功
         """
-        if limit > 0:
+        if limit >= 0:
             self._max_logs = limit
+            if limit == 0:
+                # 关闭内存副本：不再重建队列，既有记录保留（恢复上限后继续复用）
+                return True
             # 用新上限重建各模块的 deque，超出部分自动丢弃
             for module_name in self._logs:
                 self._logs[module_name] = deque(
                     self._logs[module_name], maxlen=self._max_logs
                 )
+            self._recount_total_logs()
             return True
         self._logger.warning(i18n.t("core.logger.memory_limit_invalid"))
         return False
+
+    def set_total_memory_limit(self, limit: int) -> bool:
+        """
+        设置全部模块内存日志的总条数上限
+
+        超限时按轮转策略淘汰最旧记录：从当前条数最多的模块队列头部
+        ``popleft``。与单模块 :meth:`set_memory_limit` 独立生效——两者
+        任一触发都会淘汰记录。
+
+        :param limit: 全局总条数上限；``0`` 表示不限，负数无效
+        :return: bool 设置是否成功
+
+        :example:
+        >>> logger.set_total_memory_limit(5000)  # 全局最多保留 5000 条
+        >>> logger.set_total_memory_limit(0)     # 不限制总数
+        """
+        if limit >= 0:
+            self._total_max_logs = limit
+            self._evict_over_total()
+            return True
+        self._logger.warning(i18n.t("core.logger.memory_limit_invalid"))
+        return False
+
+    def _recount_total_logs(self) -> None:
+        """
+        重新统计全局内存日志总条数
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        self._total_log_count = sum(len(q) for q in self._logs.values())
+
+    def _evict_over_total(self) -> None:
+        """
+        全局总条数超限时轮转淘汰最旧记录
+
+        从当前条数最多的模块队列头部淘汰（多模块洪峰时优先削减占用大头），
+        直至总数回到上限内。上限为 0（不限）时直接返回。
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        if self._total_max_logs <= 0:
+            return
+        while self._total_log_count > self._total_max_logs and self._logs:
+            busiest = max(self._logs.values(), key=len)
+            if not busiest:
+                # 全部队列已空但仍计数超标：重算修正后退出
+                self._recount_total_logs()
+                return
+            busiest.popleft()
+            self._total_log_count -= 1
 
     def _resolve_level(self, level: str) -> int | None:
         """
@@ -735,12 +885,15 @@ class Logger:
                 with Path(p).open("w", encoding="utf-8") as file:
                     for module, logs in self._logs.items():
                         if self._json_mode:
-                            file.writelines(_json.dumps(log, ensure_ascii=False) + "\n" for log in logs)
+                            file.writelines(
+                                _json.dumps(record.as_dict(), ensure_ascii=False) + "\n"
+                                for record in logs
+                            )
                         else:
                             file.write(f"Module: {module}\n")
                             file.writelines(
-                                f"  {log['timestamp'][:19]} [{log.get('level', '')}] {log.get('message', '')}\n"
-                                for log in logs
+                                f"  {record.timestamp[:19]} [{record.level}] {record.message}\n"
+                                for record in logs
                             )
                 self._logger.info(i18n.t("core.logger.saved", path=p))
                 success = True
@@ -783,39 +936,57 @@ class Logger:
 
     def _format_for_output(self, entries: list) -> list:
         """
+        将内部记录转换为向后兼容的输出格式
+
+        JSON 模式返回结构化 dict（timestamp / module / message 三键），
+        Rich 模式返回 ``时间 - 消息`` 单行文本；内部存储为 ``_MemoryLogRecord``
+        记录类，对外形态保持不变。
+
         {!--< internal-use >!--}
-        将内部 dict 转换为向后兼容的输出格式
+        {!--< /internal-use >!--}
         """
         if self._json_mode:
             return [
                 {
-                    "timestamp": e["timestamp"],
-                    "module": e["module"],
-                    "message": e["message"],
+                    "timestamp": e.timestamp,
+                    "module": e.module,
+                    "message": e.message,
                 }
                 for e in entries
             ]
-        return [f"{e['timestamp'][:19]} - {e['message']}" for e in entries]
+        return [f"{e.timestamp[:19]} - {e.message}" for e in entries]
 
     def _save_in_memory(
         self, module_name: str, level_name: str, level_const: int, msg: str
     ) -> None:
         """
-        {!--< internal-use >!--}
         将日志保存到内存
+
+        单模块上限（``_max_logs``）为 0 时跳过（关闭内存日志副本）；
+        全局总条数（``_total_max_logs``）超限时按轮转策略淘汰最旧记录。
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
         """
+        if self._max_logs <= 0:
+            return
         if module_name not in self._logs:
             self._logs[module_name] = deque(maxlen=self._max_logs)
 
-        self._logs[module_name].append(
-            {
-                "timestamp": datetime.datetime.now().isoformat(),
-                "level": level_name,
-                "level_num": level_const,
-                "module": module_name,
-                "message": str(msg),
-            }
+        queue = self._logs[module_name]
+        before = len(queue)
+        queue.append(
+            _MemoryLogRecord(
+                datetime.datetime.now().isoformat(),
+                level_name,
+                level_const,
+                module_name,
+                str(msg),
+            )
         )
+        # 队列达 maxlen 时 append 会静默丢弃队首旧记录，按前后长度差精确计数
+        self._total_log_count += len(queue) - before
+        self._evict_over_total()
 
     def _setup_config(self):
         from ..runtime import get_logger_config
@@ -842,6 +1013,8 @@ class Logger:
             )
         if "memory_limit" in logger_config:
             self.set_memory_limit(logger_config["memory_limit"])
+        if "total_memory_limit" in logger_config:
+            self.set_total_memory_limit(logger_config["total_memory_limit"])
         # 应用输出格式（rich / plain / json），未配置时保持默认 rich
         fmt = logger_config.get("format")
         if fmt:
@@ -928,29 +1101,39 @@ class Logger:
             self._notify_handlers(level_name, level_const, caller_module, formatted)
 
     def _get_caller(self):
+        """
+        归因调用者模块名（日志热路径）
+
+        经 ``frame.f_globals["__name__"]`` 取模块名（O(1) 字典访问），
+        不再走 ``inspect.getmodule`` 的模块注册表反查；跳过 logger 模块
+        自身的栈帧后，取第一个外部帧的模块名并做归一化
+        （``__main__`` → ``Main``、``*.Core`` 后缀剥离）。
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
         try:
             frame = inspect.currentframe()
             if frame is None:
                 return "Unknown"
 
-            logger_module = inspect.getmodule(frame)
+            logger_module_name = frame.f_globals.get("__name__")
 
             while frame is not None:
                 frame = frame.f_back
                 if frame is None:
                     return "Unknown"
-                module = inspect.getmodule(frame)
-                if module is not None and module is not logger_module:
+                module_name = frame.f_globals.get("__name__")
+                if module_name is not None and module_name != logger_module_name:
                     break
 
             if frame is None:
                 return "Unknown"
 
-            module = inspect.getmodule(frame)
-            if module is None:
+            module_name = frame.f_globals.get("__name__")
+            if module_name is None:
                 return "Unknown"
 
-            module_name = module.__name__
             if module_name == "__main__":
                 module_name = "Main"
             elif module_name.endswith(".Core"):

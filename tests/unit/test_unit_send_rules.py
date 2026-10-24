@@ -237,6 +237,53 @@ class TestRulePropagation:
 # ==================== Hook 回调测试 ====================
 
 
+class TestSendMethodWrapCache:
+    """SendDSL 发送方法包装缓存（同名 send 方法重复访问返回同一 callable）"""
+
+    def test_repeated_access_returns_same_callable(self):
+        """同名 send 方法重复访问返回同一缓存 callable（identity 断言）"""
+        adapter, _ = make_adapter()
+        send = adapter.Send
+
+        text1 = send.Text
+        text2 = send.Text
+        assert callable(text1)
+        assert text1 is text2
+
+        # 不同方法名各自缓存，互不影响
+        assert send.Image is send.Image
+        assert send.Image is not send.Text
+
+    def test_case_insensitive_access_shares_cache(self):
+        """大小写不敏感路径（__getattr__）与正常路径共享同一缓存"""
+        adapter, _ = make_adapter()
+        send = adapter.Send
+
+        assert send.text is send.Text
+        assert send.TEXT is send.Text
+
+    def test_rule_decorator_clears_cache(self):
+        """规则装饰器变更后清缓存：再次访问重新构建（仍可用且可再次命中）"""
+        adapter, _ = make_adapter()
+        send = adapter.Send
+
+        before = send.Text
+        send.Hook(lambda r: None)
+        after = send.Text
+        assert after is not before
+        assert send.Text is after
+
+    async def test_cached_method_still_sends(self):
+        """缓存的包装方法保持发送语义（行为不变）"""
+        adapter, state = make_adapter()
+        send = adapter.Send.To("user", "42")
+
+        cached = send.Text
+        result = await cached("hi")
+        assert result["status"] == "ok"
+        assert state["calls"] == 1
+
+
 class TestHook:
     """Hook（发送成功回调）测试"""
 
