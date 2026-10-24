@@ -22,7 +22,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-from _common import Logger  # scripts/tools 公共日志器
+from ..common import Logger  # scripts/tools 公共日志器
 
 
 class DocsIndexGenerator:
@@ -607,7 +607,7 @@ class DocsIndexGenerator:
         langs = []
         for item in docs_dir.iterdir():
             # 排除 _meta 和 README.md
-            if item.is_dir() and item.name not in ["_meta"]:
+            if item.is_dir() and item.name != "_meta":
                 langs.append(item.name)
         return sorted(langs)
 
@@ -637,7 +637,7 @@ class DocsIndexGenerator:
         if len(rel_path.parts) == 1:
             # 从优先级配置中获取第一个分类键（即"快速开始"的本地化名称）
             if self.CATEGORY_PRIORITY:
-                return list(self.CATEGORY_PRIORITY.keys())[0]
+                return next(iter(self.CATEGORY_PRIORITY.keys()))
             return "Quick Start"
 
         # 根据目录名称分类
@@ -1230,7 +1230,7 @@ class DocsIndexGenerator:
         Logger.log("")
 
 
-def main():
+def main(argv: "list[str] | None" = None):
     """命令行入口：解析参数并运行文档索引生成器"""
     parser = argparse.ArgumentParser(
         description="ErisPulse 文档索引生成器",
@@ -1256,7 +1256,7 @@ def main():
         "--lang", help="指定语言代码（如: zh-CN, en, zh-TW），不指定则为所有语言生成"
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     docs_dir = Path(args.docs).resolve()
 

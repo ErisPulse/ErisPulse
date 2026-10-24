@@ -18,9 +18,9 @@ CHANGELOG 格式漂移出过事故（-de. → -dev. 补丁）。本脚本是单�
 import argparse
 import re
 import sys
-from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+from ..common import REPO_ROOT
+
 PYPROJECT = REPO_ROOT / "pyproject.toml"
 CHANGELOG = REPO_ROOT / "CHANGELOG.md"
 
@@ -44,10 +44,10 @@ def changelog_latest_version() -> str:
     raise RuntimeError(f"{CHANGELOG} 中未找到任何版本条目标题（## [x.y.z]）")
 
 
-def main() -> int:
+def main(argv: "list[str] | None" = None) -> int:
     parser = argparse.ArgumentParser(description="发布版本一致性校验")
     parser.add_argument("--tag", default=None, help="tag 触发场景传入 tag 名（如 v2.9.0）")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     errors: list[str] = []
 

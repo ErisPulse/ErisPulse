@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ErisPulse"
-version = "2.11.0"
+version = "2.11.1-dev.0"
 description = "Event-driven modular async bot framework — write once, deploy to any platform | 事件驱动的模块化异步机器人框架，一次编写，多平台部署"
 readme = "README.pypi.md"
 requires-python = ">=3.10"
@@ -223,13 +223,14 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401", "PLC0415", "I001"]  # 导出式 __init__ 经常按需导入
-# 旧版生成/翻译脚本：存量风格债渐进收编（新脚本 check_i18n_locales/check_docs_links/
-# release_check/_common 已全净）。TODO: 逐步修复后移除本段。
-"scripts/tools/translate-docs.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "UP008", "A001", "SIM"]
-"scripts/tools/check-translation.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "SIM"]
-"scripts/tools/generate-api-docs.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "A001", "SIM", "W29", "E501"]
-"scripts/tools/generate-docs-index.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "RUF015", "SIM"]
-"scripts/tools/generate-type-stubs.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "ANN", "A001", "PLW0603", "SIM", "W29"]
+# 旧版生成/翻译脚本：存量风格债渐进收编。TODO: 逐步修复后移除本段；
+# 2026-10 scripts/tools 包化重组，路径由平铺文件名改为包内模块。
+"scripts/tools/translate.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "UP008", "A001", "SIM"]
+"scripts/tools/checks/translation.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "SIM"]
+"scripts/tools/generators/api_docs.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "A001", "SIM", "W29", "E501"]
+"scripts/tools/generators/docs_index.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "RUF015", "SIM"]
+"scripts/tools/generators/type_stubs.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "ANN", "A001", "PLW0603", "SIM", "W29"]
+"scripts/tools/generators/skills.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "SIM", "E501"]
 "tests/**/*.py" = [
     # 断言/夹具相关（测试代码天然模式）
     "S101", "PLR2004", "SLF001", "ARG", "ANN", "PTH",

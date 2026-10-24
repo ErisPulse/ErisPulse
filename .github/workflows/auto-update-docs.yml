@@ -84,7 +84,7 @@ jobs:
         run: |
           # 检测上一轮产物中的截断/乱码等错误并删除其缓存，
           # 使本轮翻译自动重译这些文件（否则坏译文会因源 hash 未变被一直复用）
-          python scripts/tools/check-translation.py --fix || true
+          python -m scripts.tools check translation --fix || true
 
       - name: Auto-translate docs (time-budgeted rounds)
         id: translate-docs
@@ -103,7 +103,7 @@ jobs:
             echo "Force re-translation mode enabled"
           fi
 
-          if [ ! -f "scripts/tools/translate-docs.py" ]; then
+          if [ ! -f "scripts/tools/translate.py" ]; then
             echo "Translation script not found, skipping this step"
             echo "docs_updated=false" >> $GITHUB_OUTPUT
             echo "translate_failed=false" >> $GITHUB_OUTPUT
@@ -143,7 +143,7 @@ jobs:
             echo "=== Translation round ${ROUND}/${MAX_ROUNDS} (budget: ${LEFT_MIN} min) ==="
             OUTPUT_FILE=$(mktemp)
             set +e
-            python scripts/tools/translate-docs.py $FORCE_FLAG --time-budget $LEFT_MIN 2>&1 | tee "$OUTPUT_FILE"
+            python -m scripts.tools translate $FORCE_FLAG --time-budget $LEFT_MIN 2>&1 | tee "$OUTPUT_FILE"
             TRANSLATE_EXIT_CODE=${PIPESTATUS[0]}
             set -e
 
@@ -196,7 +196,7 @@ jobs:
         id: check-translation
         continue-on-error: true
         run: |
-          python scripts/tools/check-translation.py --fix
+          python -m scripts.tools check translation --fix
 
       # ==================== 生成类文档（API / AI Prompt / 索引，基于本轮最新翻译） ====================
       # ai-prompts / docs-index 扫描各语言 docs 内容生成，必须在翻译之后运行；
@@ -209,8 +209,8 @@ jobs:
           echo "Starting API docs update..."
 
           # Run API docs update script (auto-generates for all languages)
-          if [ -f "scripts/tools/generate-api-docs.py" ]; then
-            python scripts/tools/generate-api-docs.py
+          if [ -f "scripts/tools/generators/spec.py" ]; then
+            python -m scripts.tools gen api-docs
             echo "API docs update complete"
           else
             echo "API docs update script not found, skipping this step"
@@ -231,8 +231,8 @@ jobs:
           echo "Starting AI Prompt document generation..."
 
           # Run AI prompt generation script (auto-generates for all languages)
-          if [ -f "scripts/tools/generate-ai-prompts.py" ]; then
-            python scripts/tools/generate-ai-prompts.py
+          if [ -f "scripts/tools/generators/spec.py" ]; then
+            python -m scripts.tools gen ai-prompts
             echo "AI Prompt document generation complete"
           else
             echo "AI Prompt generation script not found, skipping this step"
@@ -253,8 +253,8 @@ jobs:
           echo "Starting docs index generation..."
 
           # Run docs index generation script (auto-generates for all languages)
-          if [ -f "scripts/tools/generate-docs-index.py" ]; then
-            python scripts/tools/generate-docs-index.py
+          if [ -f "scripts/tools/generators/spec.py" ]; then
+            python -m scripts.tools gen docs-index
             echo "Docs index generation complete"
           else
             echo "Docs index generation script not found, skipping this step"

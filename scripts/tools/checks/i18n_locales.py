@@ -18,7 +18,9 @@ import ast
 import sys
 from pathlib import Path
 
-SRC_ROOT = Path(__file__).resolve().parent.parent.parent / "src" / "ErisPulse"
+from ..common import REPO_ROOT
+
+SRC_ROOT = REPO_ROOT / "src" / "ErisPulse"
 LANGS = ["zh_cn", "zh_tw", "en", "ja", "ru"]
 
 
@@ -62,13 +64,13 @@ def check_dir(locales_dir: Path, base: str, fix_report: bool) -> "tuple[int, lis
     return len(base_keys), problems
 
 
-def main() -> int:
+def main(argv: "list[str] | None" = None) -> int:
     parser = argparse.ArgumentParser(description="i18n 五语言键一致性检查（自动发现全部 locales 目录）")
     parser.add_argument("--base", default="zh_cn", choices=LANGS, help="基准语言（默认 zh_cn）")
     parser.add_argument(
         "--fix-report", action="store_true", help="输出各语言缺失键的原文行（便于粘贴补齐）"
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     dirs = discover_locales_dirs()
     if not dirs:

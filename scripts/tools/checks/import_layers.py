@@ -31,10 +31,11 @@ import argparse
 import ast
 import json
 import sys
-from pathlib import Path
 
-BASELINE_FILE = Path(__file__).parent / "baselines" / "import_layers_baseline.json"
-SRC_ROOT = Path(__file__).parent.parent.parent / "src" / "ErisPulse"
+from ..common import REPO_ROOT
+
+BASELINE_FILE = REPO_ROOT / "scripts" / "tools" / "baselines" / "import_layers_baseline.json"
+SRC_ROOT = REPO_ROOT / "src" / "ErisPulse"
 
 # 硬性禁区：(区域, 禁止的顶层导入目标判定函数说明)
 FORBIDDEN_TOP_LEVEL = [
@@ -126,14 +127,14 @@ def _count_in_function(func: ast.FunctionDef | ast.AsyncFunctionDef) -> int:
     return total
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--update-baseline",
         action="store_true",
         help="将当前懒导入总数写回基线文件（仅在数量减少时使用）",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if not SRC_ROOT.exists():
         print(f"[import-layers] 源码目录不存在: {SRC_ROOT}")

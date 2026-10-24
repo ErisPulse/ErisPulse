@@ -36,8 +36,12 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from _common import LEAK_PATTERN, Logger, count_fences  # scripts/tools 公共设施
-from openai import AsyncOpenAI
+from .common import LEAK_PATTERN, Logger, count_fences  # scripts/tools 公共设施
+
+try:  # 可选依赖：仅翻译器实际调用 LLM 时需要；缺失延迟到初始化客户端时报错
+    from openai import AsyncOpenAI
+except ImportError:  # pragma: no cover - CI 翻译环境必装
+    AsyncOpenAI = None
 
 # 流式输出含 emoji 等字符，非 UTF-8 控制台（如 Windows GBK）会触发
 # UnicodeEncodeError 导致翻译被误判失败，统一将 stdout 切换为 UTF-8
@@ -110,6 +114,10 @@ class DocsTranslator:
         self.notes_dir.mkdir(parents=True, exist_ok=True)
 
         self.providers: list[dict] = []
+        if AsyncOpenAI is None:
+            raise SystemExit(
+                "翻译器依赖 openai 包（pip install openai）；当前环境未安装，无法初始化 LLM 客户端"
+            )
         self.clients: list[AsyncOpenAI] = []
         # 请求级超时：防止流式响应挂起拖垮整轮翻译
         # （max_retries=0：重试由脚本自管，含 429 指数退避，避免 SDK 内部长阻塞）
@@ -150,6 +158,8 @@ class DocsTranslator:
                     )
                     continue
                 base_url = pc.get("base_url", "https://api.openai.com/v1").rstrip("/")
+                from openai import AsyncOpenAI
+
                 client = AsyncOpenAI(
                     api_key=api_key,
                     base_url=base_url,
@@ -243,6 +253,81 @@ class DocsTranslator:
         if self._is_root_readme(file_path):
             return "README.md"
         return str(file_path.relative_to(self.source_dir)).replace("\\", "/")
+
+    def prune_stale_outputs(self, target_lang: str, expected_files: "set[Path]") -> int:
+        """清理目标语言下「源树已不存在」的翻译产物及其缓存（stale 同步）。
+
+        翻译器只做正向增量（源 → 译文），源文档被删除 / 移动 / 重命名后，
+        目标语言的旧产物会残留且缓存永不失效——此前依赖人工按 AGENTS 规则
+        16 手工清理，本方法将其自动化。遵守「宁可保留，不可误删」：
+
+        - 只删除 ``docs/{target_lang}/`` 下的 ``.md`` 文件与根
+          ``README.{target_lang}.md``（en 的根产物为 ``README.md``），
+          且不在本轮源扫描的期望产物集合内
+        - ``ai-support`` / ``api-reference`` 为生成器的产物（非翻译产物），
+          一律跳过
+        - 非源语言（zh-CN）文件不受影响
+
+        :param target_lang: 目标语言代码
+        :param expected_files: 本轮源扫描对应的期望产物路径集合
+            （:meth:`_get_target_path` 的输出）
+        :return: 删除的产物文件数
+        """
+        if target_lang == self.config.get("source_lang", "zh-CN"):
+            return 0
+        if not expected_files:
+            # 护栏：空期望集合 = 上游源扫描异常（配置错误 / 路径异常）——
+            # 此时全部既有产物都会被误判为 stale，直接跳过（宁可保留，不可误删）
+            Logger.progress("-", target_lang, "skip", "期望产物集合为空，跳过 stale 清理（防误删护栏）")
+            return 0
+
+        stale: list[Path] = []
+
+        # 1. 目标语言文档树：收集全部 .md，排除生成器产物目录
+        lang_docs_dir = Path("docs") / target_lang
+        if lang_docs_dir.exists():
+            for root, dirs, filenames in os.walk(lang_docs_dir):
+                dirs[:] = [
+                    d
+                    for d in dirs
+                    if not any(
+                        (Path(root) / d).as_posix().endswith(ignored)
+                        for ignored in self.IGNORE_DIRS
+                    )
+                    and d not in ("prompts", "skills", "auto_api")
+                ]
+                for filename in filenames:
+                    if not filename.endswith(".md"):
+                        continue
+                    path = Path(root) / filename
+                    if path not in expected_files:
+                        stale.append(path)
+
+        # 2. 根 README 产物（en → README.md，其它 → README.{lang}.md）
+        root_readme = (
+            Path("README.md") if target_lang == "en" else Path(f"README.{target_lang}.md")
+        )
+        if root_readme.exists() and root_readme not in expected_files:
+            stale.append(root_readme)
+
+        removed = 0
+        for path in stale:
+            try:
+                path.unlink()
+                removed += 1
+                # 连带清理缓存：按产物路径反推 rel 路径（根 README 有独立缓存键）
+                if path == root_readme:
+                    cache = self.get_cache_key(
+                        Path(self.ROOT_README_SOURCE), target_lang
+                    )
+                else:
+                    rel = path.relative_to(lang_docs_dir).as_posix()
+                    cache = self.cache_dir / target_lang / f"{rel}.cache"
+                cache.unlink(missing_ok=True)
+                Logger.progress(path.as_posix(), target_lang, "prune", "源文档已删除，同步清理译文与缓存")
+            except OSError as e:
+                Logger.progress(path.as_posix(), target_lang, "fail", f"清理失败: {e}")
+        return removed
 
     ROOT_README_SOURCE = "README.zh-CN.md"
 
@@ -452,7 +537,7 @@ class DocsTranslator:
         self,
         target_lang: str,
         file_name: str = "",
-        review_notes: list[str] = None,
+        review_notes: list[str] | None = None,
     ) -> str:
         """构建翻译请求的系统消息（承载全部翻译规则）。
 
@@ -494,7 +579,7 @@ class DocsTranslator:
         content: str,
         target_lang: str,
         file_name: str = "",
-        review_notes: list[str] = None,
+        review_notes: list[str] | None = None,
     ) -> str:
         """构建翻译请求的用户消息（仅含待翻译内容，用标记包裹）。
 
@@ -581,7 +666,7 @@ class DocsTranslator:
         content: str,
         target_lang: str,
         file_name: str,
-        review_notes: list[str] = None,
+        review_notes: list[str] | None = None,
         buffer: FileBuffer | None = None,
         provider_index: int = 0,
     ) -> str | None:
@@ -1215,7 +1300,7 @@ class DocsTranslator:
             # 构建分块缓存（包含所有块——复用的和新翻译的）
             chunk_cache = [
                 {"hash": self._chunk_hash(src), "translation": tr}
-                for src, tr in zip(source_chunks, translated_chunks_list)
+                for src, tr in zip(source_chunks, translated_chunks_list, strict=False)
             ]
             self.save_cache(
                 file_path, target_lang, file_hash, chunk_translations=chunk_cache
@@ -1297,6 +1382,24 @@ class DocsTranslator:
         self.stats["total_files"] = len(files)
         Logger.log(f"发现 {len(files)} 个文件")
         Logger.log("")
+
+        # stale 同步：源树已删除的文档，清理各目标语言的残留产物与缓存
+        # （在翻译调度前执行，先于缓存物化，避免已删文件被旧缓存复活）
+        # 护栏：源扫描结果为空（源目录配置错误 / 路径异常）时**跳过 prune**——
+        # 空期望集合会把全部既有译文误判为 stale（宁可保留，不可误删）
+        if files:
+            expected_by_lang: dict[str, set[Path]] = {
+                lang: {self._get_target_path(f, lang) for f in files}
+                for lang in target_langs
+            }
+            pruned_total = 0
+            for lang in target_langs:
+                pruned_total += self.prune_stale_outputs(lang, expected_by_lang[lang])
+            if pruned_total:
+                Logger.log(f"已清理 {pruned_total} 个源树中已删除的残留译文")
+                Logger.log("")
+        else:
+            Logger.log("警告: 源文档扫描结果为空，跳过 stale 清理（防误删护栏）")
 
         concurrent = self.config.get("concurrent", 1)
 
@@ -1384,7 +1487,7 @@ class DocsTranslator:
         Logger.log(f"REMAINING_FILES={self.stats['budget_remaining']}")
 
 
-async def main():
+async def main(argv: "list[str] | None" = None):
     import signal
 
     def handle_sigint(sig, frame):
@@ -1413,7 +1516,7 @@ async def main():
             "--version", action="version", version="ErisPulse 文档翻译器"
         )
 
-        args = parser.parse_args()
+        args = parser.parse_args(argv)
         translator = DocsTranslator(args.config)
         await translator.translate(
             target_langs=args.lang,

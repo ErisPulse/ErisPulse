@@ -27,8 +27,10 @@ import re
 import sys
 from pathlib import Path
 
-BASELINE_FILE = Path(__file__).parent / "baselines" / "check_bare_params_baseline.json"
-SRC_ROOT = Path(__file__).parent.parent.parent / "src" / "ErisPulse"
+from ..common import REPO_ROOT
+
+BASELINE_FILE = REPO_ROOT / "scripts" / "tools" / "baselines" / "check_bare_params_baseline.json"
+SRC_ROOT = REPO_ROOT / "src" / "ErisPulse"
 EXEMPT_FILES = {"Core/constants.py", "CLI/constants.py"}
 
 # 裸数字行为参数的模式（按行匹配，排除常量定义行与注释）
@@ -52,10 +54,10 @@ def count_in_file(path: Path) -> list[tuple[int, str]]:
     return hits
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--update-baseline", action="store_true")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     by_file: dict[str, list[str]] = {}
     for py in sorted(SRC_ROOT.rglob("*.py")):

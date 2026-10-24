@@ -18,7 +18,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from _common import IGNORE_DIRS, LEAK_PATTERN, Logger, count_fences  # scripts/tools 公共设施
+from ..common import IGNORE_DIRS, LEAK_PATTERN, Logger, count_fences  # scripts/tools 公共设施
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     try:
@@ -495,7 +495,7 @@ class TranslationChecker:
         return report
 
 
-def main():
+def main(argv: "list[str] | None" = None):
     """命令行入口：解析参数并运行检查器"""
     parser = argparse.ArgumentParser(description="ErisPulse 翻译质量检查器")
     parser.add_argument("--docs", default="docs")
@@ -505,7 +505,7 @@ def main():
     parser.add_argument("--json", action="store_true", help="输出JSON报告")
     parser.add_argument("--output", help="JSON报告路径")
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     checker = TranslationChecker(docs_dir=args.docs, cache_dir=args.cache)
     report = checker.run(langs=args.lang, fix=args.fix)
 
