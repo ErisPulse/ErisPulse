@@ -1,0 +1,725 @@
+# ErisPulse API 文档
+
+---
+
+## 概述
+
+本文档包含 ErisPulse SDK 的所有 API 参考文档。
+
+> **重要说明**
+> 本目录下的所有文档均为**自动生成**的 API 参考文档。
+>
+> **请不要手动编辑此目录下的任何文件**，所有更改将在下次自动生成时被覆盖。
+>
+> 如需修改 API 文档，请在源代码中更新对应模块、类和函数的 docstring。
+>
+> 自动生成脚本位置：`scripts/tools/generate-api-docs.py`
+
+---
+
+## 统计信息
+
+- **模块总数**: 139
+- **类总数**: 194（包括 5 个嵌套类）
+- **函数总数**: 375
+- **方法总数**: 1747
+
+---
+
+## 模块列表
+
+
+### [ErisPulse.CLI.__init__](ErisPulse/CLI/__init__.md)
+
+模块文档
+
+
+### [ErisPulse.CLI.base](ErisPulse/CLI/base.md)
+
+1 个类 | 3 个方法
+
+
+### [ErisPulse.CLI.cli](ErisPulse/CLI/cli.md)
+
+1 个类 | 11 个方法
+
+
+### [ErisPulse.CLI.commands.__init__](ErisPulse/CLI/commands/__init__.md)
+
+模块文档
+
+
+### [ErisPulse.CLI.commands.config](ErisPulse/CLI/commands/config.md)
+
+1 个类 | 5 个方法
+
+
+### [ErisPulse.CLI.commands.create](ErisPulse/CLI/commands/create.md)
+
+1 个类 | 7 个方法 | 5 个函数
+
+
+### [ErisPulse.CLI.commands.doctor](ErisPulse/CLI/commands/doctor.md)
+
+1 个类 | 9 个方法
+
+
+### [ErisPulse.CLI.commands.init](ErisPulse/CLI/commands/init.md)
+
+1 个类 | 9 个方法 | 2 个函数
+
+
+### [ErisPulse.CLI.commands.install](ErisPulse/CLI/commands/install.md)
+
+1 个类 | 8 个方法
+
+
+### [ErisPulse.CLI.commands.language](ErisPulse/CLI/commands/language.md)
+
+1 个类 | 3 个方法
+
+
+### [ErisPulse.CLI.commands.list](ErisPulse/CLI/commands/list.md)
+
+1 个类 | 4 个方法
+
+
+### [ErisPulse.CLI.commands.list_remote](ErisPulse/CLI/commands/list_remote.md)
+
+1 个类 | 2 个方法
+
+
+### [ErisPulse.CLI.commands.run](ErisPulse/CLI/commands/run.md)
+
+3 个类 | 18 个方法 | 1 个函数
+
+
+### [ErisPulse.CLI.commands.runtime](ErisPulse/CLI/commands/runtime.md)
+
+2 个类 | 2 个函数
+
+
+### [ErisPulse.CLI.commands.self_update](ErisPulse/CLI/commands/self_update.md)
+
+1 个类 | 4 个方法
+
+
+### [ErisPulse.CLI.commands.types](ErisPulse/CLI/commands/types.md)
+
+1 个类 | 5 个方法 | 6 个函数
+
+
+### [ErisPulse.CLI.commands.uninstall](ErisPulse/CLI/commands/uninstall.md)
+
+1 个类 | 2 个方法
+
+
+### [ErisPulse.CLI.commands.upgrade](ErisPulse/CLI/commands/upgrade.md)
+
+1 个类 | 1 个方法
+
+
+### [ErisPulse.CLI.commands.version](ErisPulse/CLI/commands/version.md)
+
+1 个类 | 2 个方法
+
+
+### [ErisPulse.CLI.console](ErisPulse/CLI/console.md)
+
+1 个类 | 3 个函数
+
+
+### [ErisPulse.CLI.constants](ErisPulse/CLI/constants.md)
+
+模块文档
+
+
+### [ErisPulse.CLI.hints](ErisPulse/CLI/hints.md)
+
+4 个函数
+
+
+### [ErisPulse.CLI.i18n.__init__](ErisPulse/CLI/i18n/__init__.md)
+
+1 个类 | 12 个方法 | 4 个函数
+
+
+### [ErisPulse.CLI.i18n.locales.__init__](ErisPulse/CLI/i18n/locales/__init__.md)
+
+模块文档
+
+
+### [ErisPulse.CLI.i18n.locales.en](ErisPulse/CLI/i18n/locales/en.md)
+
+模块文档
+
+
+### [ErisPulse.CLI.i18n.locales.ja](ErisPulse/CLI/i18n/locales/ja.md)
+
+模块文档
+
+
+### [ErisPulse.CLI.i18n.locales.ru](ErisPulse/CLI/i18n/locales/ru.md)
+
+模块文档
+
+
+### [ErisPulse.CLI.i18n.locales.zh_cn](ErisPulse/CLI/i18n/locales/zh_cn.md)
+
+模块文档
+
+
+### [ErisPulse.CLI.i18n.locales.zh_tw](ErisPulse/CLI/i18n/locales/zh_tw.md)
+
+模块文档
+
+
+### [ErisPulse.CLI.registry](ErisPulse/CLI/registry.md)
+
+1 个类 | 9 个方法
+
+
+### [ErisPulse.CLI.utils.__init__](ErisPulse/CLI/utils/__init__.md)
+
+模块文档
+
+
+### [ErisPulse.CLI.utils.config_wizard](ErisPulse/CLI/utils/config_wizard.md)
+
+1 个类 | 3 个方法 | 24 个函数
+
+
+### [ErisPulse.CLI.utils.display](ErisPulse/CLI/utils/display.md)
+
+10 个函数
+
+
+### [ErisPulse.CLI.utils.interactive](ErisPulse/CLI/utils/interactive.md)
+
+1 个类 | 6 个函数
+
+
+### [ErisPulse.CLI.utils.package_manager](ErisPulse/CLI/utils/package_manager.md)
+
+2 个类 | 46 个方法 | 11 个函数
+
+
+### [ErisPulse.CLI.utils.runtime_state](ErisPulse/CLI/utils/runtime_state.md)
+
+11 个函数
+
+
+### [ErisPulse.CLI.utils.scaffold_text](ErisPulse/CLI/utils/scaffold_text.md)
+
+1 个类 | 5 个方法
+
+
+### [ErisPulse.Core.Bases.__init__](ErisPulse/Core/Bases/__init__.md)
+
+模块文档
+
+
+### [ErisPulse.Core.Bases.adapter](ErisPulse/Core/Bases/adapter.md)
+
+3 个类 | 67 个方法 | 7 个函数
+
+
+### [ErisPulse.Core.Bases.adapter_patterns](ErisPulse/Core/Bases/adapter_patterns.md)
+
+2 个类 | 11 个方法
+
+
+### [ErisPulse.Core.Bases.api_dsl](ErisPulse/Core/Bases/api_dsl.md)
+
+1 个类 | 39 个方法
+
+
+### [ErisPulse.Core.Bases.client](ErisPulse/Core/Bases/client.md)
+
+3 个类 | 23 个方法
+
+
+### [ErisPulse.Core.Bases.config_schema](ErisPulse/Core/Bases/config_schema.md)
+
+3 个类 | 30 个函数
+
+
+### [ErisPulse.Core.Bases.converter](ErisPulse/Core/Bases/converter.md)
+
+1 个类 | 5 个方法
+
+
+### [ErisPulse.Core.Bases.errors](ErisPulse/Core/Bases/errors.md)
+
+25 个类
+
+
+### [ErisPulse.Core.Bases.i18n_schema](ErisPulse/Core/Bases/i18n_schema.md)
+
+2 个类 | 3 个方法
+
+
+### [ErisPulse.Core.Bases.kv_builder](ErisPulse/Core/Bases/kv_builder.md)
+
+1 个类 | 10 个方法
+
+
+### [ErisPulse.Core.Bases.manager](ErisPulse/Core/Bases/manager.md)
+
+1 个类 | 14 个方法
+
+
+### [ErisPulse.Core.Bases.model](ErisPulse/Core/Bases/model.md)
+
+8 个类 | 43 个方法 | 5 个函数
+
+
+### [ErisPulse.Core.Bases.module](ErisPulse/Core/Bases/module.md)
+
+3 个类 | 13 个方法
+
+
+### [ErisPulse.Core.Bases.router](ErisPulse/Core/Bases/router.md)
+
+3 个类 | 48 个方法 | 1 个函数
+
+
+### [ErisPulse.Core.Bases.send_builder](ErisPulse/Core/Bases/send_builder.md)
+
+2 个类 | 19 个方法
+
+
+### [ErisPulse.Core.Bases.send_rules](ErisPulse/Core/Bases/send_rules.md)
+
+2 个类 | 7 个方法 | 3 个函数
+
+
+### [ErisPulse.Core.Bases.sql_base](ErisPulse/Core/Bases/sql_base.md)
+
+5 个类 | 73 个方法 | 3 个函数
+
+
+### [ErisPulse.Core.Bases.storage](ErisPulse/Core/Bases/storage.md)
+
+7 个类 | 68 个方法 | 1 个函数
+
+
+### [ErisPulse.Core.Bases.websocket](ErisPulse/Core/Bases/websocket.md)
+
+3 个类 | 29 个方法
+
+
+### [ErisPulse.Core.Event.__init__](ErisPulse/Core/Event/__init__.md)
+
+1 个函数
+
+
+### [ErisPulse.Core.Event.base](ErisPulse/Core/Event/base.md)
+
+1 个类 | 10 个方法 | 1 个函数
+
+
+### [ErisPulse.Core.Event.command](ErisPulse/Core/Event/command.md)
+
+1 个类 | 38 个方法
+
+
+### [ErisPulse.Core.Event.command_args](ErisPulse/Core/Event/command_args.md)
+
+3 个类 | 13 个函数
+
+
+### [ErisPulse.Core.Event.command_flow](ErisPulse/Core/Event/command_flow.md)
+
+2 个类 | 7 个方法
+
+
+### [ErisPulse.Core.Event.conversation](ErisPulse/Core/Event/conversation.md)
+
+2 个类 | 26 个方法 | 5 个函数
+
+
+### [ErisPulse.Core.Event.governance](ErisPulse/Core/Event/governance.md)
+
+1 个类 | 9 个方法 | 4 个函数
+
+
+### [ErisPulse.Core.Event.interaction](ErisPulse/Core/Event/interaction.md)
+
+5 个类 | 32 个方法
+
+
+### [ErisPulse.Core.Event.message](ErisPulse/Core/Event/message.md)
+
+1 个类 | 11 个方法
+
+
+### [ErisPulse.Core.Event.message_builder](ErisPulse/Core/Event/message_builder.md)
+
+2 个类 | 6 个方法
+
+
+### [ErisPulse.Core.Event.meta](ErisPulse/Core/Event/meta.md)
+
+1 个类 | 10 个方法
+
+
+### [ErisPulse.Core.Event.notice](ErisPulse/Core/Event/notice.md)
+
+1 个类 | 12 个方法
+
+
+### [ErisPulse.Core.Event.overrides](ErisPulse/Core/Event/overrides.md)
+
+3 个类 | 14 个方法 | 15 个函数
+
+
+### [ErisPulse.Core.Event.request](ErisPulse/Core/Event/request.md)
+
+1 个类 | 8 个方法
+
+
+### [ErisPulse.Core.Event.session_type](ErisPulse/Core/Event/session_type.md)
+
+1 个类 | 15 个函数
+
+
+### [ErisPulse.Core.Event.throttle](ErisPulse/Core/Event/throttle.md)
+
+3 个函数
+
+
+### [ErisPulse.Core.Event.trace](ErisPulse/Core/Event/trace.md)
+
+5 个函数
+
+
+### [ErisPulse.Core.Event.wrapper](ErisPulse/Core/Event/wrapper.md)
+
+3 个类 | 79 个方法 | 15 个函数
+
+
+### [ErisPulse.Core.__init__](ErisPulse/Core/__init__.md)
+
+模块文档
+
+
+### [ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)
+
+1 个类 | 67 个方法
+
+
+### [ErisPulse.Core.assets.__init__](ErisPulse/Core/assets/__init__.md)
+
+1 个类 | 4 个函数
+
+
+### [ErisPulse.Core.client](ErisPulse/Core/client.md)
+
+3 个类 | 33 个方法
+
+
+### [ErisPulse.Core.config](ErisPulse/Core/config.md)
+
+3 个类 | 47 个方法 | 2 个函数
+
+
+### [ErisPulse.Core.connections](ErisPulse/Core/connections.md)
+
+2 个类 | 13 个方法
+
+
+### [ErisPulse.Core.constants](ErisPulse/Core/constants.md)
+
+模块文档
+
+
+### [ErisPulse.Core.di](ErisPulse/Core/di.md)
+
+1 个类 | 1 个方法 | 5 个函数
+
+
+### [ErisPulse.Core.i18n.__init__](ErisPulse/Core/i18n/__init__.md)
+
+1 个类 | 24 个方法
+
+
+### [ErisPulse.Core.i18n.constants](ErisPulse/Core/i18n/constants.md)
+
+模块文档
+
+
+### [ErisPulse.Core.i18n.locales.__init__](ErisPulse/Core/i18n/locales/__init__.md)
+
+1 个函数
+
+
+### [ErisPulse.Core.i18n.locales.en](ErisPulse/Core/i18n/locales/en.md)
+
+模块文档
+
+
+### [ErisPulse.Core.i18n.locales.ja](ErisPulse/Core/i18n/locales/ja.md)
+
+模块文档
+
+
+### [ErisPulse.Core.i18n.locales.ru](ErisPulse/Core/i18n/locales/ru.md)
+
+模块文档
+
+
+### [ErisPulse.Core.i18n.locales.zh_cn](ErisPulse/Core/i18n/locales/zh_cn.md)
+
+模块文档
+
+
+### [ErisPulse.Core.i18n.locales.zh_tw](ErisPulse/Core/i18n/locales/zh_tw.md)
+
+模块文档
+
+
+### [ErisPulse.Core.lifecycle](ErisPulse/Core/lifecycle.md)
+
+1 个类 | 21 个方法
+
+
+### [ErisPulse.Core.logger](ErisPulse/Core/logger.md)
+
+5 个类 | 62 个方法 | 3 个函数
+
+
+### [ErisPulse.Core.master](ErisPulse/Core/master.md)
+
+1 个类 | 10 个方法
+
+
+### [ErisPulse.Core.module](ErisPulse/Core/module.md)
+
+1 个类 | 72 个方法
+
+
+### [ErisPulse.Core.ownership](ErisPulse/Core/ownership.md)
+
+1 个类 | 10 个方法 | 1 个函数
+
+
+### [ErisPulse.Core.router](ErisPulse/Core/router.md)
+
+3 个类 | 84 个方法 | 3 个函数
+
+
+### [ErisPulse.Core.scope](ErisPulse/Core/scope.md)
+
+1 个类 | 55 个方法
+
+
+### [ErisPulse.Core.shadow](ErisPulse/Core/shadow.md)
+
+3 个类 | 16 个方法 | 1 个函数
+
+
+### [ErisPulse.Core.storage.__init__](ErisPulse/Core/storage/__init__.md)
+
+1 个函数
+
+
+### [ErisPulse.Core.storage.mysql](ErisPulse/Core/storage/mysql.md)
+
+2 个类 | 23 个方法
+
+
+### [ErisPulse.Core.storage.postgres](ErisPulse/Core/storage/postgres.md)
+
+2 个类 | 21 个方法
+
+
+### [ErisPulse.Core.storage.sqlite](ErisPulse/Core/storage/sqlite.md)
+
+2 个类 | 17 个方法
+
+
+### [ErisPulse.Core.text_match](ErisPulse/Core/text_match.md)
+
+7 个函数
+
+
+### [ErisPulse.Core.transcript](ErisPulse/Core/transcript.md)
+
+1 个类 | 36 个方法
+
+
+### [ErisPulse.__init__](ErisPulse/__init__.md)
+
+1 个函数
+
+
+### [ErisPulse.__main__](ErisPulse/__main__.md)
+
+1 个函数
+
+
+### [ErisPulse.finders.__init__](ErisPulse/finders/__init__.md)
+
+模块文档
+
+
+### [ErisPulse.finders.adapter](ErisPulse/finders/adapter.md)
+
+1 个类 | 6 个方法
+
+
+### [ErisPulse.finders.bases.finder](ErisPulse/finders/bases/finder.md)
+
+3 个类 | 20 个方法
+
+
+### [ErisPulse.finders.module](ErisPulse/finders/module.md)
+
+1 个类 | 6 个方法
+
+
+### [ErisPulse.loaders.__init__](ErisPulse/loaders/__init__.md)
+
+模块文档
+
+
+### [ErisPulse.loaders._reload_utils](ErisPulse/loaders/_reload_utils.md)
+
+9 个函数
+
+
+### [ErisPulse.loaders.adapter](ErisPulse/loaders/adapter.md)
+
+2 个类 | 14 个方法
+
+
+### [ErisPulse.loaders.bases.loader](ErisPulse/loaders/bases/loader.md)
+
+1 个类 | 8 个方法 | 2 个函数
+
+
+### [ErisPulse.loaders.module](ErisPulse/loaders/module.md)
+
+4 个类 | 60 个方法 | 5 个函数
+
+
+### [ErisPulse.loaders.plugin_folder](ErisPulse/loaders/plugin_folder.md)
+
+1 个类 | 13 个方法
+
+
+### [ErisPulse.loaders.strategy](ErisPulse/loaders/strategy.md)
+
+1 个类 | 6 个方法
+
+
+### [ErisPulse.loaders.strict](ErisPulse/loaders/strict.md)
+
+3 个类 | 10 个方法
+
+
+### [ErisPulse.runtime.__init__](ErisPulse/runtime/__init__.md)
+
+1 个函数
+
+
+### [ErisPulse.runtime.config_schema](ErisPulse/runtime/config_schema.md)
+
+1 个函数
+
+
+### [ErisPulse.runtime.context](ErisPulse/runtime/context.md)
+
+6 个函数
+
+
+### [ErisPulse.runtime.diagnostics](ErisPulse/runtime/diagnostics.md)
+
+12 个函数
+
+
+### [ErisPulse.runtime.example_config](ErisPulse/runtime/example_config.md)
+
+4 个函数
+
+
+### [ErisPulse.runtime.exceptions](ErisPulse/runtime/exceptions.md)
+
+1 个类 | 4 个方法 | 7 个函数
+
+
+### [ErisPulse.runtime.file_watcher](ErisPulse/runtime/file_watcher.md)
+
+3 个类 | 15 个方法
+
+
+### [ErisPulse.runtime.frame_config](ErisPulse/runtime/frame_config.md)
+
+16 个函数
+
+
+### [ErisPulse.runtime.hints](ErisPulse/runtime/hints.md)
+
+19 个函数
+
+
+### [ErisPulse.runtime.kernel](ErisPulse/runtime/kernel.md)
+
+1 个类 | 4 个方法
+
+
+### [ErisPulse.runtime.memory](ErisPulse/runtime/memory.md)
+
+4 个函数
+
+
+### [ErisPulse.runtime.owner_cleanup](ErisPulse/runtime/owner_cleanup.md)
+
+4 个函数
+
+
+### [ErisPulse.runtime.plugin_reload](ErisPulse/runtime/plugin_reload.md)
+
+2 个类 | 16 个方法 | 1 个函数
+
+
+### [ErisPulse.runtime.proactive_gc](ErisPulse/runtime/proactive_gc.md)
+
+6 个函数
+
+
+### [ErisPulse.runtime.process_state](ErisPulse/runtime/process_state.md)
+
+5 个函数
+
+
+### [ErisPulse.runtime.reload_ops](ErisPulse/runtime/reload_ops.md)
+
+1 个类 | 6 个方法 | 2 个函数
+
+
+### [ErisPulse.runtime.sdk_initializer](ErisPulse/runtime/sdk_initializer.md)
+
+2 个类 | 6 个方法
+
+
+### [ErisPulse.runtime.tasks](ErisPulse/runtime/tasks.md)
+
+15 个函数
+
+
+### [ErisPulse.runtime.troubleshoot](ErisPulse/runtime/troubleshoot.md)
+
+4 个函数
+
+
+### [ErisPulse.runtime.version](ErisPulse/runtime/version.md)
+
+5 个函数
+
+
+### [ErisPulse.sdk](ErisPulse/sdk.md)
+
+1 个类 | 33 个方法 | 1 个函数
+

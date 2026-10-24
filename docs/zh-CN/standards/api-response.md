@@ -1,0 +1,197 @@
+# ErisPulse 适配器标准化返回规范
+
+> [!TIP]
+> **什么时候需要读这篇**：当你在适配器中实现 `call_api` / Send / Request 的返回值，需要确认响应结构与返回码是否符合 ErisPulse 标准，或排查某个 `retcode` 的含义时对照本文。不需要则跳过。
+
+## 1. 说明
+为什么会有这个规范？
+
+为了确保各平台发送接口返回统一性与OneBot12兼容性，ErisPulse适配器在API响应格式上采用了OneBot12定义的消息发送返回结构标准。
+
+但ErisPulse的协议有一些特殊性定义:
+- 1. 基础字段中，message_id是必须的，但OneBot12标准中无此字段
+- 2. 返回内容中需要添加 {platform_name}_raw 字段，用于存放原始响应数据
+
+## 2. 基础返回结构
+所有动作响应必须包含以下基础字段：
+
+| 字段名 | 数据类型 | 必选 | 说明 |
+|-------|---------|------|------|
+| status | string | 是 | 执行状态，必须是"ok"或"failed" |
+| retcode | int64 | 是 | 返回码，遵循OneBot12返回码规则 |
+| data | any | 是 | 响应数据，成功时包含请求结果，失败时为null |
+| message_id | string | 是 | 消息ID，用于标识消息, 没有则为空字符串 |
+| message | string | 是 | 错误信息，成功时为空字符串 |
+| {platform_name}_raw | any | 否 | 原始响应数据 |
+
+可选字段：
+| 字段名 | 数据类型 | 必选 | 说明 |
+|-------|---------|------|------|
+| echo | string | 否 | 当请求中包含echo字段时，原样返回 |
+
+## 3. 完整字段规范
+
+### 3.1 通用字段
+
+#### 成功响应示例
+```json
+{
+    "status": "ok",
+    "retcode": 0,
+    "data": {
+        "message_id": "1234",
+        "time": 1632847927.599013
+    },
+    "message_id": "1234",
+    "message": "",
+    "echo": "1234",
+    "telegram_raw": {...}
+}
+```
+
+#### 失败响应示例
+```json
+{
+    "status": "failed",
+    "retcode": 10003,
+    "data": null,
+    "message_id": "",
+    "message": "缺少必要参数: user_id",
+    "echo": "1234",
+    "telegram_raw": {...}
+}
+```
+
+### 3.2 返回码规范
+
+#### 0 成功（OK）
+- 0: 成功（OK）
+
+#### 1xxxx 动作请求错误（Request Error）
+| 错误码 | 错误名 | 说明 |
+|-------|-------|------|
+| 10001 | Bad Request | 无效的动作请求 |
+| 10002 | Unsupported Action | 不支持的动作请求 |
+| 10003 | Bad Param | 无效的动作请求参数 |
+| 10004 | Unsupported Param | 不支持的动作请求参数 |
+| 10005 | Unsupported Segment | 不支持的消息段类型 |
+| 10006 | Bad Segment Data | 无效的消息段参数 |
+| 10007 | Unsupported Segment Data | 不支持的消息段参数 |
+| 10101 | Who Am I | 未指定机器人账号 |
+| 10102 | Unknown Self | 未知的机器人账号 |
+
+#### 2xxxx 动作处理器错误（Handler Error）
+| 错误码 | 错误名 | 说明 |
+|-------|-------|------|
+| 20001 | Bad Handler | 动作处理器实现错误 |
+| 20002 | Internal Handler Error | 动作处理器运行时抛出异常 |
+
+#### 3xxxx 动作执行错误（Execution Error）
+| 错误码范围 | 错误类型 | 说明 |
+|-----------|---------|------|
+| 31xxx | Database Error | 数据库错误 |
+| 32xxx | Filesystem Error | 文件系统错误 |
+| 33xxx | Network Error | 网络错误 |
+| 34xxx | Platform Error | 机器人平台错误 |
+| 35xxx | Logic Error | 动作逻辑错误 |
+| 36xxx | I Am Tired | 实现决定罢工 |
+
+#### 保留错误段
+- 4xxxx、5xxxx: 保留段，不应使用
+- 6xxxx～9xxxx: 其他错误段，供实现自定义使用
+
+## 4. 实现要求
+1. 所有响应必须包含status、retcode、data和message字段
+2. 当请求中包含非空echo字段时，响应必须包含相同值的echo字段
+3. 返回码必须严格遵循OneBot12规范
+4. 错误信息(message)应当是人类可读的描述
+
+## 5. 扩展规范
+
+ErisPulse 在 OneBot12 标准返回结构之上做了以下扩展：
+
+### 5.1 `message_id` 必选字段
+
+OneBot12 标准中 `message_id` 位于 `data` 对象内部且非强制。ErisPulse 将其提升为顶层**必选**字段：
+
+- 无法获取 `message_id` 时应设为空字符串 `""`
+- 确保 `message_id` 始终存在，模块无需做 null 检查
+
+### 5.2 `{platform}_raw` 原始响应字段
+
+返回值中应包含 `{platform}_raw` 字段，存放平台原始响应数据的完整副本：
+
+```json
+{
+    "status": "ok",
+    "retcode": 0,
+    "data": {"message_id": "1234", "time": 1632847927},
+    "message_id": "1234",
+    "message": "",
+    "telegram_raw": {
+        "ok": true,
+        "result": {"message_id": 1234, "date": 1632847927, ...}
+    }
+}
+```
+
+**要求**：
+- `{platform}_raw` 必须是原始响应的深拷贝，而非引用
+- `platform` 必须与适配器注册时的平台名完全一致（大小写敏感）
+- 原始响应中的错误信息也应保留，便于调试
+
+### 5.3 框架扩展返回码（34xxx 平台错误段的低三位自定义）
+
+OneBot12 规范允许实现自定义 `3xxxx` 的低三位。`34xxx` 语义为 **Platform Error**
+（机器人平台错误，如平台限制导致失败）。`34xxx` 内部按职责分层使用：
+
+| 低三位段 | 归属 | 用途 |
+|---------|------|------|
+| `340xx` | 适配器实现 | 请求操作族（Request Not Found / Already Handled / Not Supported / Permission Denied，见 request-action-spec §7） |
+| `341xx`～`345xx` | 适配器实现 | 平台侧权限 / 风控 / 账号限制等错误（实现自定低三位，原始错误放 `{platform}_raw`） |
+| `346xx` | **ErisPulse 框架（保留）** | 框架自身拦截与通用失败，适配器/模块请勿占用 |
+| `347xx`～`349xx` | 适配器实现 | 其它平台执行错误 |
+
+ErisPulse 框架当前使用的 `346xx` 码：
+
+| 错误码 | 错误名 | 说明 |
+|-------|-------|------|
+| 34600 | SDK Failure | 框架通用失败（`make_error()` 默认返回码） |
+| 34601 | Action Denied | 出站动作被作用域禁用（`scope.actions`），调用未发起，直接返回该响应 |
+
+> 职责区分：`34601` 是**框架在调用前拦截**（模块根本没资格发起动作）；
+> `34004` / `34xxx` 平台码是**动作已发出但平台拒绝**（如 Bot 无权限、被风控）。
+> 模块判断权限问题时同时检查这两种：先看 `34601`（自己模块被 scope 禁），
+> 再看 `34xxx`（平台侧限制）。
+
+返回结构为 §2 标准失败响应：
+
+```json
+{
+    "status": "failed",
+    "retcode": 34601,
+    "data": null,
+    "message_id": "",
+    "message": "action 'send' denied by scope.actions"
+}
+```
+
+### 5.4 适配器实现检查清单
+
+- [ ] 包含 `status`, `retcode`, `data`, `message_id`, `message` 字段
+- [ ] 返回码遵循 OneBot12 规范（详见 §3.2）
+- [ ] `message_id` 始终存在（无法获取时为空字符串）
+- [ ] `{platform}_raw` 包含平台原始响应数据
+
+## 6. 注意事项
+- 对于3xxxx错误码，低三位可由实现自行定义
+- 避免使用保留错误段(4xxxx、5xxxx)
+- **`34600` / `34601` 为 ErisPulse 框架保留码**（见 §5.3），适配器/模块避免使用
+- 错误信息应当简洁明了，便于调试
+
+---
+
+## 下一步
+
+- **实现各 DSL 返回值时配套对照**：[API 动作标准](api-action-spec.md)（标准动作的 data 字段）、[请求操作规范](request-action-spec.md)（请求操作的 34001-34004 扩展）、[发送方法规范](send-method-spec.md)（发送失败的降级语义）
+- **排查权限类失败**：先看 `34601`（模块被 scope 禁用，框架在调用前拦截，见 §5.3），再看 `34xxx`（动作已发出但平台侧拒绝）

@@ -1,0 +1,1234 @@
+# 适配器核心概念
+
+> [!TIP]
+> **什么时候需要读这篇**：适配器开发路径内必读（BaseAdapter / SendDSL / 生命周期等核心机制的完整说明）。只想起步可先读 [适配器开发入门](getting-started.md)，遇到"为什么"层面的疑问再回到本篇查阅。
+
+这篇解释适配器的运行机制：AdapterManager 如何注册与分发事件、`BaseAdapter` 在初始化时替你做了什么、配置与多账户怎么声明——写适配器时遇到"为什么要这样写"的疑问，来这里查。
+
+## 适配器架构
+
+### 组件关系
+
+```
+正向转换（接收方向）                           反向转换（发送方向）
+─────────────────                           ─────────────────
+                                             
+┌──────────────────┐                        ┌──────────────────┐
+│ 平台原生事件     │                        │ 模块构建消息     │
+└────────┬─────────┘                        └────────┬─────────┘
+         │                                           │
+         ↓                                           ↓
+┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
+│                  │   │ 适配器 (MyAdapter) │   │                  │
+│  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
+│  (事件转换器)    │──→│ │              │ │   │ (反向转换入口)   │
+│                  │   │ │              │ │   │                  │
+└──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
+                       └──────────────────┘            │
+                                │                      ↓
+                                ↓              ┌──────────────────┐
+                       ┌──────────────────┐    │ 平台 API 调用    │
+                       │ OneBot12 标准事件 │    └────────┬─────────┘
+                       └────────┬─────────┘             │
+                                │                      ↓
+                                ↓              ┌──────────────────┐
+                       ┌──────────────────┐    │ 标准响应格式     │
+                       │ 事件系统         │    └──────────────────┘
+                       └────────┬─────────┘
+                                │
+                                ↓
+                       ┌──────────────────┐
+                       │ 模块 (处理事件)  │
+                       └──────────────────┘
+```
+
+**核心对称性**：
+- **正向转换**（Converter）：平台原生事件 → OneBot12 标准事件，原始数据保留在 `{platform}_raw`
+- **反向转换**（Raw_ob12）：OneBot12 消息段 → 平台 API 调用，返回标准响应格式
+
+## AdapterManager 适配器管理器
+
+`AdapterManager` 是 ErisPulse 适配器系统的核心组件，负责管理所有平台适配器的注册、启动、关闭和事件分发。
+
+### 核心功能
+
+- **适配器注册**：注册和管理多个平台适配器
+- **生命周期管理**：控制适配器的启动和关闭
+- **事件分发**：分发 OneBot12 标准事件和平台原生事件
+- **配置管理**：管理适配器的启用/禁用状态
+- **中间件支持**：支持 OneBot12 事件中间件
+
+### 基本使用
+
+```python
+from ErisPulse import sdk
+
+# 注册适配器（通常由 Loader 自动完成）
+sdk.adapter.register("myplatform", MyPlatformAdapter)
+
+# 启动所有适配器
+await sdk.adapter.startup()
+
+# 启动指定适配器
+await sdk.adapter.startup(["myplatform"])
+# 启动全部适配器
+await sdk.adapter.startup()
+
+# 获取适配器实例
+my_adapter = sdk.adapter.get("myplatform")
+# 或通过属性访问
+my_adapter = sdk.adapter.myplatform
+
+# 关闭所有适配器
+await sdk.adapter.shutdown()
+```
+
+### 启动和关闭
+
+#### 启动适配器
+
+```python
+# 启动所有已注册的适配器
+await sdk.adapter.startup()
+
+# 启动指定平台
+await sdk.adapter.startup(["platform1", "platform2"])
+```
+
+**启动流程：**
+
+1. 提交 `adapter.start` 生命周期事件
+2. 提交 `adapter.status.change` 事件（starting）
+3. 并行启动各个适配器
+4. 如果启动失败，自动重试（指数退避策略）
+5. 启动成功后提交 `adapter.status.change` 事件（started）
+
+**重试机制：**
+
+- 前 4 次重试：60秒、10分钟、30分钟、60分钟
+- 第 5 次及以后：3 小时固定间隔
+
+#### 关闭适配器
+
+```python
+# 关闭所有适配器
+await sdk.adapter.shutdown()
+```
+
+**关闭流程：**
+
+1. 提交 `adapter.stop` 生命周期事件
+2. 调用所有适配器的 `shutdown()` 方法
+3. 关闭路由服务器
+4. 清空事件处理器
+5. 提交 `adapter.stopped` 生命周期事件
+
+### 配置管理
+
+#### 检查平台状态
+
+```python
+# 检查平台是否已注册
+exists = sdk.adapter.exists("myplatform")
+
+# 检查平台是否启用
+enabled = sdk.adapter.is_enabled("myplatform")
+
+# 使用 in 操作符
+if "myplatform" in sdk.adapter:
+    print("平台存在且已启用")
+```
+
+#### 列出平台
+
+```python
+# 列出所有已注册的平台
+platforms = sdk.adapter.list_registered()
+
+# 列出所有平台及其状态
+status_dict = sdk.adapter.list_items()
+# 返回: {"platform1": true, "platform2": false, ...}
+
+# 获取已启用的平台列表
+enabled_platforms = [p for p, enabled in status_dict.items() if enabled]
+```
+
+### 事件监听
+
+#### OneBot12 标准事件
+
+```python
+from ErisPulse import sdk
+
+# 监听所有平台的标准消息事件
+@sdk.adapter.on("message")
+async def handle_message(data):
+    print(f"收到OneBot12消息: {data}")
+
+# 监听特定平台的标准消息事件
+@sdk.adapter.on("message", platform="myplatform")
+async def handle_platform_message(data):
+    print(f"收到 myplatform 消息: {data}")
+
+# 监听所有事件
+@sdk.adapter.on("*")
+async def handle_any_event(data):
+    print(f"收到事件: {data.get('type')}")
+```
+
+#### 平台原生事件
+
+```python
+# 监听特定平台的原生事件
+@sdk.adapter.on("raw_event_type", raw=True, platform="myplatform")
+async def handle_raw_event(data):
+    print(f"收到原生事件: {data}")
+
+# 监听所有平台的原生事件（通配符）
+@sdk.adapter.on("*", raw=True)
+async def handle_all_raw_events(data):
+    print(f"收到原生事件: {data}")
+```
+
+#### 事件分发机制
+
+当调用 `adapter.emit(event_data)` 时：
+
+1. **中间件处理**：先执行所有 OneBot12 中间件
+2. **标准事件分发**：分发到匹配的 OneBot12 事件处理器
+3. **原生事件分发**：如果存在原始数据，分发到原生事件处理器
+
+**匹配规则：**
+
+- 精确匹配：`@sdk.adapter.on("message")` 只匹配 `message` 事件
+- 通配符：`@sdk.adapter.on("*")` 匹配所有事件
+- 平台过滤：`platform="myplatform"` 只分发指定平台的事件
+
+### 中间件
+
+#### 添加中间件
+
+```python
+@sdk.adapter.middleware
+async def logging_middleware(data):
+    """日志记录中间件"""
+    print(f"处理事件: {data.get('type')}")
+    return data  # 必须返回数据
+
+@sdk.adapter.middleware
+async def filter_middleware(data):
+    """事件过滤中间件"""
+    # 过滤不需要的事件
+    if data.get("type") == "notice":
+        return None  # 返回 None 时中间件链会忽略该返回值，保留原数据继续传递
+    return data  # 必须返回数据以继续传递
+```
+
+#### 中间件返回契约
+
+| 返回值 | 行为 |
+|--------|------|
+| `dict` | 改写事件载荷（后续处理器收到改写后的事件） |
+| `None` | 放行，载荷不变（输出 WARNING 提示——建议显式 `return data`） |
+| `False` | **否决**：事件被丢弃，不进入任何处理器、无任何出站副作用 |
+
+否决适用于防火墙、限流、黑名单等"在事件层面直接丢弃"的场景（此前只能用高优先级事件处理器绕行实现）。否决时框架输出 TRACE 日志并触发 `adapter.event.blocked` 生命周期钩子（携带 `middleware` 中间件名、完整 `event`、`platform` / `event_type` / `detail_type`），便于排查"事件为什么没响应"：
+
+```python
+@sdk.adapter.middleware
+async def rate_limit_middleware(data):
+    """限流中间件"""
+    if _is_rate_limited(data):
+        return False  # 否决：事件被丢弃
+    data["rate_marked"] = True
+    return data
+
+@sdk.lifecycle.on("adapter.event.blocked")
+async def on_event_blocked(data):
+    print(f"事件被 {data['middleware']} 否决: {data['event_type']}")
+```
+
+#### 中间件执行顺序
+
+中间件按照注册顺序执行，后注册的中间件先执行。
+
+> **注意**：如果中间件返回 `None`（例如忘记 `return data`），框架会忽略该返回值并保留原数据继续传递，同时输出 warning 级别日志。这确保了单个中间件的失误不会导致整个事件链中断。
+
+```python
+# 注册顺序
+sdk.adapter.middleware(middleware1)  # 最后执行
+sdk.adapter.middleware(middleware2)  # 中间执行
+sdk.adapter.middleware(middleware3)  # 最先执行
+
+# 执行顺序：middleware3 -> middleware2 -> middleware1
+```
+
+### 获取适配器实例
+
+#### get() 方法
+
+```python
+adapter = sdk.adapter.get("myplatform")
+if adapter:
+    await adapter.Send.To("user", "123").Text("Hello")
+```
+
+#### 属性访问
+
+```python
+# 通过属性名访问（不区分大小写）
+adapter = sdk.adapter.myplatform
+await adapter.Send.To("user", "123").Text("Hello")
+```
+
+## BaseAdapter 基类
+
+### 基本结构
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.Core import BaseAdapter
+from ErisPulse.Core.Bases import BaseConfig, BotAccountConfig
+
+@dataclass
+class MyConfig(BaseConfig):
+    """适配器配置（声明后框架自动管理）"""
+    token: str = field(
+        default="",
+        metadata={
+            "description": {"i18n": "my_adapter.token", "default": "Bot Token"},
+            "required": True,
+            "secret": True,
+            "ui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
+
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyConfig  # 声明配置类
+    
+    # 无需覆写 __init__，框架自动处理：
+    # - self.sdk, self.logger
+    # - self.cfg（类型安全的配置实例，实时读取）
+    # - self.Send, self.Request
+    
+    async def start(self):
+        """启动适配器（必须实现）"""
+        cfg = self.cfg  # 自动加载的类型安全配置
+        pass
+    
+    async def shutdown(self):
+        """关闭适配器（必须实现）"""
+        pass
+    
+    async def call_api(self, endpoint: str, **params):
+        """调用平台 API（必须实现）"""
+        pass
+```
+
+### 配置管理
+
+框架提供了声明式配置管理，通过 dataclass 定义配置结构，框架自动处理加载、校验和模板生成。
+
+#### 单账户配置
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BaseConfig
+
+@dataclass
+class TelegramConfig(BaseConfig):
+    token: str = field(default="", metadata={
+        "description": {"i18n": "telegram.token", "default": "Bot Token"},
+        "required": True,
+        "secret": True,
+        "ui": {"widget": "password", "group": "basic", "order": 1},
+    })
+    proxy: str = field(default="", metadata={
+        "description": {"i18n": "telegram.proxy", "default": "代理地址"},
+        "ui": {"widget": "text", "group": "advanced", "order": 10},
+    })
+
+class TelegramAdapter(BaseAdapter):
+    ConfigClass = TelegramConfig
+    
+    async def start(self):
+        cfg = self.cfg  # 类型安全，实时读取
+        if not cfg.token:
+            raise ValueError("未配置 Token")
+        await self._connect(cfg.token, proxy=cfg.proxy)
+```
+
+#### 多账户配置
+
+`BotAccountConfig` 基类提供 `enabled` 和 `name` 字段。绝大多数适配器能从平台协议或登录响应中自动获取 bot_id，在事件转换时注入到账户配置中。：
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BotAccountConfig
+
+# 大多数适配器：bot_id 运行时自动获取，无需配置
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    token: str = field(default="", metadata={
+        "description": {"i18n": "my_adapter.bot_token", "default": "Token"},
+        "required": True,
+    })
+
+# 如果登录时无法获取 bot_id，可以让用户在配置中填写
+@dataclass
+class YunhuBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={
+        "description": {"i18n": "yunhu.bot_id", "default": "机器人ID"},
+        "required": True,
+    })
+    token: str = field(default="", metadata={
+        "description": {"i18n": "yunhu.token", "default": "Token"},
+        "required": True,
+    })
+
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            user_id = await self._login(name, account)
+            await self.emit_meta("connect", user_id)
+```
+
+#### metadata 约定
+
+字段 metadata 同时服务于 TOML 注释生成和 WebUI 表单渲染：
+
+```python
+metadata = {
+    "description": str | dict,  # 字段描述（支持 i18n）
+    "required": bool,         # 是否必填（校验 + WebUI 必填标记）
+    "secret": bool,           # 是否敏感（WebUI 显示为 ***，日志中脱敏）
+    "example": bool,          # 不落盘标志：不写入 config.toml（默认值/模板均排除），
+                              # 仅渲染进 config.full.example；schema 带 "example": true 标记，
+                              # CLI 配置向导默认跳过；用户手动设置后正常持久化
+    "min": number, "max": number,  # 数值范围校验
+    "ui": {                   # WebUI 控件配置（旧名 "webui" 仍兼容）
+        "widget": str,        # 控件类型: "text" | "switch" | "select" | "number" | "password"
+        "group": str,         # 分组: "basic" | "advanced" | "connection" 等
+        "order": int,         # 排序权重（越小越靠前）
+        "options": list,      # select 控件的可选项 [{label, value}]，label 支持 i18n
+        "placeholder": str | dict,  # 输入框占位符（支持 i18n）
+    },
+    "extra": dict,            # 额外扩展字段（透传到 schema）
+}
+```
+
+所有用户可见的文本字段均支持 i18n，统一采用 `{"i18n": "key", "default": "文本"}` 格式，
+纯字符串则原样透传（向后兼容）。支持的 i18n 字段：
+
+| 字段 | 位置 | 说明 |
+|------|------|------|
+| `description` | field metadata | 字段描述 |
+| `options[].label` | `ui.options` | select 控件选项标签 |
+| `placeholder` | `ui.placeholder` | 输入框占位符 |
+| `group_labels` | `_schema_meta` | 分组显示名（Dashboard 分区标题） |
+
+使用 i18n 时，需提前将翻译键注册到 i18n 系统（详见 [i18n 文档](../../advanced/i18n.md#配置字段多语言)）。
+
+**description / placeholder / options label** 示例：
+
+```python
+token: str = field(
+    default="",
+    metadata={
+        "description": {"i18n": "my_adapter.token", "default": "Bot Token"},
+        "ui": {
+            "widget": "text",
+            "placeholder": {"i18n": "my_adapter.token.ph", "default": "请输入 Token"},
+        },
+    },
+)
+mode: str = field(
+    default="a",
+    metadata={
+        "description": {"i18n": "my_adapter.mode", "default": "模式"},
+        "ui": {
+            "widget": "select",
+            "options": [
+                {"label": {"i18n": "my_adapter.mode.a", "default": "选项A"}, "value": "a"},
+                {"label": "纯字符串标签", "value": "b"},  # 纯字符串原样透传
+            ],
+        },
+    },
+)
+```
+
+**group_labels** 示例（在配置类定义后声明）：
+
+```python
+MyConfig._schema_meta = {
+    "group_labels": {
+        "basic": {"i18n": "my_adapter.group.basic", "default": "基本设置"},
+        "advanced": {"i18n": "my_adapter.group.advanced", "default": "高级设置"},
+    }
+}
+```
+
+框架的 `resolve_config_schema()` 会根据当前语言自动解析上述所有字段的 i18n 键；
+`get_config_schema()` 则原样透传 i18n 字典，由前端自行解析。
+
+#### docstring 自动生成字段描述（v2.8.0+）
+
+未在 metadata 中声明 `description` 的字段，框架会自动从配置类 docstring 中
+提取字段说明作为兜底，支持两种常见风格（可混用）：
+
+```python
+@dataclass
+class MyConfig(BaseConfig):
+    """
+    MyAdapter 配置
+
+    :ivar endpoint: 平台 API 地址        # reST 风格
+    :ivar timeout: 请求超时秒数
+    """
+
+    endpoint: str = "https://api.example.com"   # 无 metadata description → 注释/描述取 docstring
+    timeout: int = 30
+
+    # Google 风格同样支持（Attributes: 段）：
+    # Attributes:
+    #     endpoint: 平台 API 地址
+```
+
+优先级：**metadata description > docstring 字段说明 > 空**。
+i18n 字典形式的 description 不受影响（始终优先）。
+
+#### 嵌套配置（v2.8.0+）
+
+字段类型为嵌套 dataclass 时，框架递归处理：schema 以 `"type": "table"` +
+`"fields"` 子树承载（WebUI 渲染为可折叠嵌套分组），TOML 模板渲染为 `[子表]` 节，
+默认值 / 填充 / 校验 / i18n 解析均递归生效。
+
+```python
+@dataclass
+class RetryConfig(BaseConfig):
+    """重试策略
+
+    :ivar max_retries: 最大重试次数
+    """
+    max_retries: int = 3
+    backoff: float = 0.5
+
+@dataclass
+class MyConfig(BaseConfig):
+    """MyAdapter 配置"""
+    endpoint: str = "https://api.example.com"
+    retry: RetryConfig = field(default_factory=RetryConfig)   # 嵌套配置段
+```
+
+生成的 TOML 模板：
+
+```toml
+endpoint = "https://api.example.com"
+
+[retry]
+# 最大重试次数
+max_retries = 3
+backoff = 0.5
+```
+
+> 嵌套类型建议使用直接类型注解；字符串注解（如延迟求值场景）需保证
+> 类型可从配置类所在模块全局、`__qualname__` 外层类命名空间或类属性中按名解析。
+
+#### 不落盘的 example 字段（v2.8.0+）
+
+```python
+gc_interval: int = field(default=300, metadata={"example": True})
+```
+
+带 `example: True` 的字段：
+
+- 不写入 config.toml（适配器/模块配置模板与默认值均排除，运行时走代码默认值）
+- 仅渲染进项目内 `config.full.example`（供用户参考，按需手动复制到 config.toml）
+- schema 中带 `"example": true` 标记（面板可自行决定展示策略），CLI 配置向导默认跳过
+- 用户手动设置该键后正常持久化、正常热更新（用户显式意图优先）
+
+适合"冗杂又很少触碰"的高级配置项，保持用户的 config.toml 最小化。
+
+> ⚠️ `_schema_meta` 是类级元数据（非配置字段）。若在 dataclass 类体内部声明，
+> 必须加 `ClassVar` 注解（`_schema_meta: ClassVar[dict] = {...}`），否则会被
+> dataclass 视为普通字段。框架对下划线前缀字段已做防御性排除（不进入任何
+> schema / 模板 / 默认值 / 校验输出），但仍建议规范声明。
+
+### 声明式翻译键（v2.7.0+）
+
+适配器可以像声明 `ConfigClass` 一样，通过嵌套类 `I18nClass` 集中声明翻译键。
+框架会在 `__init__` 阶段（配置模板生成之前）自动注册所有声明的翻译键，
+确保配置描述中引用的 i18n 键在生成模板时已可用。
+
+```python
+from ErisPulse.Core.Bases import BaseAdapter, BaseI18n, I18nKey
+
+class MyAdapter(BaseAdapter):
+    class I18nClass(BaseI18n):
+        endpoint: I18nKey = I18nKey(
+            default="API Endpoint",
+            zh_CN="API 地址",
+            zh_TW="API 位址",
+            en="API Endpoint",
+            ja="APIアドレス",
+            ru="API адрес",
+        )
+        token: I18nKey = I18nKey(
+            default="Platform Token",
+            zh_CN="平台 Token",
+            zh_TW="平台權杖",
+            en="Platform Token",
+            ja="プラットフォームトークン",
+            ru="Токен платформы",
+        )
+```
+
+> ``I18nKey.default`` 是**语言无关的兜底文本**，不会注册到任何语言。
+> 要让翻译生效，必须显式传入至少一个语言参数。
+
+详细用法（键路径规则、显式 key 参数等）见 [i18n 文档](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270)。
+
+### 声明式事件扩展方法（v2.7.0+）
+
+适配器可以通过 `EventMixin` 集中声明平台特有的事件扩展方法，框架自动注册到当前平台。
+
+```python
+from ErisPulse.Core import BaseAdapter
+
+class MyAdapter(BaseAdapter):
+    class EventMixin:
+        def get_chat_name(self):
+            """获取聊天名称"""
+            return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
+
+        def is_official_message(self):
+            """判断是否为官方消息"""
+            raw = self.get("myplatform_raw", {})
+            return raw.get("sender", {}).get("is_official", False)
+```
+
+注册后，事件对象直接调用这些方法：
+
+```python
+@message.on_group_message()
+async def handler(event):
+    if event.is_official_message():
+        chat_name = event.get_chat_name()
+        await event.reply(f"[{chat_name}] 官方消息已收到")
+```
+
+> 适配器的事件扩展方法注册到自身平台（``self._platform``）。
+> 模块如需跨平台事件扩展，请使用原有的 ``register_event_mixin()`` API。
+
+#### 账户解析
+
+多账户适配器可使用 `_resolve_account()` 自动解析目标账户：
+
+```python
+async def call_api(self, endpoint: str, **params):
+    account_id = params.pop("account_id", None)
+    name, account = self._resolve_account(account_id)
+    # name: 账户名, account: 配置实例
+```
+
+解析策略：账户名匹配 → `bot_id` 字段匹配 → 其他 str 字段匹配 → 第一个启用账户。
+
+#### 配置热更新
+
+子类可覆写 `on_config_update()` 响应配置变更：
+
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyConfig
+    
+    def on_config_update(self, old_config, new_config):
+        if old_config.token != new_config.token:
+            self.logger.info("Token 已更新，将重新连接")
+```
+
+### 初始化过程
+
+框架在 `BaseAdapter.__init__(self, sdk=None)` 中自动完成以下工作：
+
+1. **SDK 引用**：设置 `self.sdk`、`self.logger`
+2. **Send/Request 工厂**：创建 `self.Send` 和 `self.Request`
+3. **配置模板**：如果声明了 `ConfigClass`，自动生成默认配置模板（首次）
+4. **账户模板**：如果声明了 `AccountConfigClass`，自动生成默认账户模板（首次）
+5. **EventMixin 注册**：如果声明了 `EventMixin`，在 `AdapterManager` 注入平台名后自动注册
+
+配置通过 `self.cfg` / `self.accounts` 实时读取（每次访问都从配置存储读取最新值）。`self.config` 作为 `self.cfg` 的兼容别名仍可使用。
+
+大多数适配器无需覆写 `__init__`。如需自定义初始化：
+
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyConfig
+    
+    def __init__(self, sdk=None):
+        super().__init__(sdk)  # 传入 sdk
+        self.converter = self._setup_converter()
+        self.convert = self.converter.convert
+```
+
+## Send 消息发送 DSL
+
+### 继承关系
+
+```python
+class MyAdapter(BaseAdapter):
+    class Send(BaseAdapter.Send):
+        """Send 嵌套类，继承自 BaseAdapter.Send"""
+        pass
+```
+
+### 可用属性
+
+`Send` 类在调用时会自动设置以下属性：
+
+| 属性 | 说明 | 设置方式 |
+|-----|------|---------|
+| `_target_id` | 目标ID | `To(id)` 或 `To(type, id)` |
+| `_target_type` | 目标类型 | `To(type, id)` |
+| `_target_to` | 简化目标ID | `To(id)` |
+| `_account_id` | 发送账号ID | `Using(account_id)` |
+| `_adapter` | 适配器实例 | 自动设置 |
+| `_at_user_ids` | @用户列表 | `At(user_id)` |
+| `_reply_message_id` | 回复的消息ID | `Reply(message_id)` |
+| `_at_all` | 是否@全体 | `AtAll()` |
+
+> **推荐**：使用 `self.send_context` 属性一次性获取 `target_type`、`target_id`、`account_id`，比直接访问实例变量更清晰。
+
+### 框架辅助方法
+
+| 方法/属性 | 说明 |
+|-----------|------|
+| `self._apply_modifiers(message)` | 将 At/AtAll/Reply 修饰器状态合并到消息段列表 |
+| `self.send_context` | 返回 `{target_type, target_id, account_id}` 字典 |
+
+### 基本方法
+
+适配器只需实现 `Raw_ob12`，标准方法（Text/Image/Voice/Video/File）已从 `SendDSL` 基类继承并默认委托给它：
+
+```python
+class Send(BaseAdapter.Send):
+    def Raw_ob12(self, message, **kwargs):
+        """必须实现：OneBot12 消息段 → 平台 API"""
+        async def _do_send():
+            segments = self._apply_modifiers(message)
+            return await self._adapter.call_api(
+                endpoint="/send_message",
+                message=segments,
+                **self.send_context,
+                **kwargs
+            )
+        return asyncio.create_task(_do_send())
+
+    # Text/Image/Voice/Video/File 已从基类继承，自动委托 Raw_ob12，无需重复实现
+    # 如需平台特定逻辑，可覆盖单个方法：
+    # def Text(self, text: str):
+    #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
+```
+
+### 链式修饰方法
+
+```python
+class Send(BaseAdapter.Send):
+
+    def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
+        super().__init__(adapter, target_type, target_id, account_id)
+        self.buttons = []
+
+    def Button(self, content: list) -> 'Send':
+        self.buttons.append(content)
+        return self
+```
+
+## 事件转换器
+
+### 转换流程
+
+```
+平台原始事件
+    ↓
+Converter.convert()
+    ↓
+OneBot12 标准事件
+```
+
+### 必需字段
+
+所有转换后的事件必须包含：
+
+```python
+{
+    "id": "事件唯一标识",
+    "time": 1234567890,           # 10位 Unix 时间戳
+    "type": "message/notice/request/meta",
+    "detail_type": "事件详细类型",
+    "platform": "平台名称",
+    "self": {
+        "platform": "平台名称",
+        "user_id": "机器人ID"     # 必须与 bot_id 一致
+    },
+    "{platform}_raw": {...},       # 原始数据（必须）
+    "{platform}_raw_type": "..."    # 原始类型（必须）
+}
+```
+
+### 转换器示例
+
+```python
+class MyPlatformConverter:
+    def convert(self, raw_event):
+        """将平台原生事件转换为 OneBot12 标准格式"""
+        if not isinstance(raw_event, dict):
+            return None
+        
+        # 生成事件 ID
+        event_id = raw_event.get("event_id") or str(uuid.uuid4())
+        
+        # 转换时间戳
+        timestamp = raw_event.get("timestamp")
+        if timestamp and timestamp > 10**12:
+            timestamp = int(timestamp / 1000)
+        else:
+            timestamp = int(timestamp) if timestamp else int(time.time())
+        
+        # 转换事件类型
+        event_type = self._convert_type(raw_event.get("type"))
+        detail_type = self._convert_detail_type(raw_event)
+        
+        # 构建标准事件
+        onebot_event = {
+            "id": str(event_id),
+            "time": timestamp,
+            "type": event_type,
+            "detail_type": detail_type,
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": str(raw_event.get("bot_id", ""))
+            },
+            "myplatform_raw": raw_event,
+            "myplatform_raw_type": raw_event.get("type", "")
+        }
+        
+        return onebot_event
+```
+
+## 连接管理
+
+### start() 的两种正确写法
+
+客户端模式的适配器（WebSocket 客户端、HTTP 轮询等）需要在 `start()` 里拉起一个
+常驻连接循环。框架支持两种写法，**都正确，但只能二选一**：
+
+**写法一：spawn-返回式（推荐）**——经 `spawn_client_loop()` 把循环调度为归属本平台
+的后台任务，`start()` 立即返回：
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        # 循环任务归属 self._platform：shutdown 时框架自动取消
+        self.spawn_client_loop(self._connect_loop())
+        # start 到这里就结束——"启动即成功"，连接失败由循环内重试
+
+    async def _connect_loop(self):
+        while True:
+            try:
+                await self._connect_and_receive()   # 断开抛异常 → 下方退避
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                await asyncio.sleep(5)              # 循环内自行退避重连
+```
+
+**写法二：常驻式**——`start()` 直接 `await` 连接循环，永不返回：
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        await self._connect_loop()   # 常驻不返回；循环抛异常 = start 失败
+```
+
+两种写法的差异与共同点：
+
+| | spawn-返回式 | 常驻式 |
+|---|---|---|
+| `start()` 返回时机 | 拉起循环后立即返回 | 连接循环退出/失败时（框架按退避策略重试） |
+| 连接失败处理 | 循环内自行捕获退避 | 异常上抛，交给框架的重试链 |
+| 适用场景 | 需要快速返回启动确认（多连接、注册路由后还要拉起其它任务） | "连接即启动"语义的简单实现 |
+
+`spawn_client_loop(coro, *, name="client_loop")` 是写法一的调度入口：任务按
+`self._platform` 归属登记，适配器 `shutdown()` 时框架按归属自动取消，无需自己
+管理任务句柄；循环内未捕获的异常会自动留痕（预期的断连重连请在循环内自行捕获）。
+
+> **唯一错误写法是混用**：spawn 之后又 `await` 同一个循环——这会让 `start()`
+> 失去立即返回语义，任务取消路径也会变得不可预测。
+
+### 连接模式半成品基类
+
+上一节的两种写法之外，最常见的两类连接模式框架直接提供了「半成品」基类
+（`ErisPulse.Core.Bases.adapter_patterns`，根包可直接导入）：`start` / `shutdown`
+的生命周期编排全部由基类完成，子类只实现业务钩子。
+
+#### PollingAdapter（HTTP 轮询型）
+
+适用于「客户端定时拉取事件」的平台（Telegram getUpdates 型）。基类以
+spawn-返回式拉起常驻轮询循环，拉取失败自动留痕并指数退避（基数 1 秒、上限
+60 秒，成功后归零；常量 `POLLING_ADAPTER_BACKOFF_BASE_SECS` /
+`POLLING_ADAPTER_BACKOFF_MAX_SECS` 可在 `Core/constants.py` 调整）：
+
+```python
+from ErisPulse import PollingAdapter
+
+class MyAdapter(PollingAdapter):
+    # 轮询间隔默认 5 秒；ConfigClass 声明 poll_interval 字段后以配置值为准（热更新生效）
+    poll_interval = 5.0
+
+    async def fetch_events(self):
+        """拉一批平台原生事件（异常由基类统一退避，无需 try/except）"""
+        resp = await self.sdk.client.get(f"{self.cfg.endpoint}/getUpdates")
+        data = await resp.json()
+        return data.get("result", [])
+
+    def convert_one(self, raw):
+        """单条原生事件转 OneBot12；返回 None 跳过"""
+        return self.converter.convert(raw)
+
+    async def call_api(self, endpoint: str, **params):
+        ...  # 与普通适配器相同
+```
+
+最小实现面：`fetch_events` / `convert_one` / `call_api`。`start()` 拉起循环后立即
+返回；`shutdown()` 无需子类处理（轮询循环按 owner 归属自动取消）。
+
+#### WebhookAdapter（HTTP 回调型）
+
+适用于「平台主动推送回调」的平台。基类的 `start()` 在框架 router 上注册接收路由
+（最终路径 `/{平台名}/webhook`，POST 方法），注册包在 `owner_scope` 中——适配器
+卸载时按 owner 自动清理，无需手动注销：
+
+```python
+from ErisPulse import WebhookAdapter
+
+class MyAdapter(WebhookAdapter):
+    def verify_request(self, request) -> bool:
+        """可选钩子：回调校验（默认放行；返回 False 时基类以 403 回绝）"""
+        cfg = self.cfg
+        if not cfg.token:
+            return True
+        auth = request.headers.get("authorization", "")
+        return auth == f"Bearer {cfg.token}"
+
+    def convert(self, payload):
+        """回调载荷转 OneBot12；返回 None 跳过"""
+        return self.converter.convert(payload)
+
+    async def call_api(self, endpoint: str, **params):
+        ...  # 与普通适配器相同
+```
+
+最小实现面：`convert` / `call_api`（`verify_request` 可选）。回调地址经
+`sdk.adapter.get_connection_info(platform)` 查询后填到平台后台；校验失败的请求
+返回 403、载荷解析失败返回 400、正常返回 `{"status": "ok"}`。
+
+#### 三种模式怎么选
+
+| 平台协议 | 继承 | 脚手架 |
+|---|---|---|
+| 平台连过来（WebSocket 服务端） | `BaseAdapter` | `epsdk create adapter`（默认 ws-server） |
+| 我们去拉（HTTP 轮询） | `PollingAdapter` | `epsdk create adapter --template polling` |
+| 平台推过来（HTTP 回调） | `WebhookAdapter` | `epsdk create adapter --template webhook` |
+
+完整可运行示例见仓库 `examples/example-adapter/`（ws-server）、
+`examples/example-adapter-polling/`、`examples/example-adapter-webhook/`。
+
+### WebSocket 连接
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        """注册 WebSocket 路由"""
+        router.register_websocket(
+            module_name="myplatform",
+            path="/ws",
+            handler=self._ws_handler,
+            auth_handler=self._auth_handler
+        )
+    
+    async def _ws_handler(self, websocket):
+        """WebSocket 连接处理器"""
+        self.connection = websocket
+        
+        try:
+            while True:
+                data = await websocket.receive_text()
+                onebot_event = self.convert(data)
+                if onebot_event:
+                    await self.adapter.emit(onebot_event)
+        except WebSocketDisconnect:
+            self.logger.info("连接已断开")
+        finally:
+            self.connection = None
+    
+    async def _auth_handler(self, websocket) -> bool:
+        """WebSocket 认证"""
+        token = websocket.query_params.get("token")
+        return token == "valid_token"
+```
+
+### WebHook 连接
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        """注册 WebHook 路由"""
+        router.register_http_route(
+            module_name="myplatform",
+            path="/webhook",
+            handler=self._webhook_handler,
+            methods=["POST"]
+        )
+    
+    async def _webhook_handler(self, request):
+        """WebHook 请求处理器"""
+        data = await request.json()
+        onebot_event = self.convert(data)
+        if onebot_event:
+            await self.adapter.emit(onebot_event)
+        return {"status": "ok"}
+```
+
+> 纯回调型平台不必手写上面这套注册/校验/清理编排——直接继承
+> [`WebhookAdapter` 半成品基类](#连接模式半成品基类)，只实现 `convert`
+> （可选覆写 `verify_request`）即可。
+
+> **路由信息查询**：适配器注册的路由（HTTP、WebSocket、SSE）可以通过 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查询完整连接地址（包含 `base_url` + 路径）。详见 [适配器开发入门 - 连接信息与路由发现](getting-started.md#9-连接信息与路由发现) 和 [SSE 支持](getting-started.md#10-sse-server-sent-events-支持)。
+
+## API 响应标准
+
+框架提供 `make_response()` 和 `make_error()` 方法构造标准化响应，无需手动构建响应字典。
+
+### 成功响应
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        raw_response = await self._platform_api_call(endpoint, **params)
+        
+        return self.make_response(
+            data=raw_response.get("data"),
+            message_id=raw_response.get("data", {}).get("message_id", ""),
+            raw=raw_response,
+        )
+    except Exception as e:
+        return self.make_error(message=str(e), raw=None)
+```
+
+### 手动构造响应（旧版方式仍然兼容）
+
+```python
+async def call_api(self, endpoint: str, **params):
+    return {
+        "status": "ok",
+        "retcode": 0,
+        "data": {...},
+        "message_id": "msg_id",
+        "message": "",
+        "myplatform_raw": raw_response
+    }
+```
+
+## 多账户支持
+
+### 声明式配置（推荐）
+
+使用 `AccountConfigClass` 声明配置类后，框架自动管理多账户加载、校验和模板生成：
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BotAccountConfig
+
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={"description": "Bot ID", "required": True})
+    token: str = field(default="", metadata={"description": "Token", "required": True, "secret": True})
+
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            self.logger.info(f"启动账户 {name}: {account.bot_id}")
+            await self._connect(name, account)
+    
+    async def call_api(self, endpoint: str, **params):
+        account_id = params.pop("account_id", None)
+        name, account = self._resolve_account(account_id)
+        # 使用 account.token, account.bot_id 等字段
+```
+
+### 账户配置文件
+
+```toml
+[MyAdapter.accounts.account1]
+bot_id = "bot_001"
+token = "token1"
+enabled = true
+
+[MyAdapter.accounts.account2]
+bot_id = "bot_002"
+token = "token2"
+enabled = true
+```
+
+### 指定账户发送
+
+```python
+# 使用 Using 方法指定账户
+my_adapter = adapter.get("myplatform")
+
+# 通过事件中的 self.user_id（推荐，最通用）
+await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
+
+# 通过账户名
+await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
+```
+
+### self.user_id 与 Using 的关系
+
+框架的事件回复机制会自动从事件的 `self` 字段中提取 `account_id`（优先）或 `user_id`，作为 `Using` 参数传入。适配器开发者需要确保 Converter 中 `self.user_id` 的值与 `_resolve_account()` 能够正确匹配。
+
+**框架内部行为**：
+
+```python
+# 框架提取 bot_id 的逻辑
+bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
+
+# 仅在 bot_id 非空时调用 Using
+if bot_id:
+    send_chain = send_chain.Using(bot_id)
+```
+
+> **关键点**：即使适配器只使用一个 Bot 配置，只要 Converter 正确设置了 `self.user_id`，框架就会将其作为 `Using` 参数传入。适配器需确保 `self.user_id` 与 `AccountConfigClass` 中的标识字段（如 `bot_id`）一致，使 `_resolve_account()` 能匹配到正确账户。如果 `self.user_id` 为空，框架不会调用 `Using`，此时 `call_api` 收到的 `account_id` 为 `None`，`_resolve_account(None)` 返回第一个启用的账户。
+
+## 错误处理
+
+### 连接重试
+
+```python
+import asyncio
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        retry_count = 0
+        max_retries = 5
+        
+        while retry_count < max_retries:
+            try:
+                await self._connect_to_platform()
+                break
+            except Exception as e:
+                retry_count += 1
+                if retry_count < max_retries:
+                    wait_time = min(60 * (2 ** retry_count), 600)
+                    self.logger.warning(f"连接失败，{wait_time}秒后重试")
+                    await asyncio.sleep(wait_time)
+                else:
+                    raise
+```
+
+### API 错误处理
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        # 推荐使用 SDK 内置客户端
+        from ErisPulse.Core import client
+        from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
+        resp = await client.post(
+            f"https://api.platform.com/{endpoint}",
+            json=params,
+            max_retries=2,
+        )
+        response = await resp.json()
+        return self._standardize_response(response)
+    except ClientTimeoutError:
+        self.logger.error(f"请求超时: {endpoint}")
+        return self._error_response("请求超时", 32000)
+    except ClientError as e:
+        self.logger.error(f"网络错误: {e}")
+        return self._error_response("网络请求失败", 33000)
+    except Exception as e:
+        self.logger.error(f"未知错误: {e}")
+        return self._error_response(str(e), 34000)
+```
+
+> **向后兼容**：直接使用 `aiohttp.ClientSession` 的旧适配器代码不受影响，仍然可以捕获 `aiohttp.ClientError`。两种方式可以共存。推荐新代码使用 `sdk.client` + ErisPulse 异常体系。
+
+## Bot 状态管理
+
+AdapterManager 内置了 Bot 状态追踪系统，自动维护所有已注册 Bot 的在线状态、活跃时间和元信息。
+
+### 自动发现机制
+
+当适配器通过 `adapter.emit()` 发送事件时，框架会自动检查事件中的 `self` 字段：
+
+- **meta 事件**：根据 `detail_type` 执行对应操作（connect 注册/断开标记离线/heartbeat 更新活跃时间）
+- **普通事件**（message/notice/request）：自动发现 Bot 并更新活跃时间
+
+```python
+# 所有包含 self 字段的事件都会触发自动发现
+await self.adapter.emit({
+    "type": "message",
+    "platform": "myplatform",
+    "self": {"platform": "myplatform", "user_id": "bot123"},
+    # ...
+})
+# Bot "bot123" 已自动注册（如果首次出现）并更新活跃时间
+```
+
+### Meta 事件类型
+
+| `detail_type` | 说明 | 框架行为 |
+|---|---|---|
+| `connect` | Bot 连接 | 注册 Bot 并触发 `adapter.bot.online` 生命周期事件 |
+| `disconnect` | Bot 断开 | 标记 Bot 离线并触发 `adapter.bot.offline` 生命周期事件 |
+| `heartbeat` | Bot 心跳 | 更新 Bot 活跃时间和元信息 |
+
+### 适配器发送 Meta 事件
+
+发送方式（`emit_meta()` 一行发送、心跳事件与手动构造格式）见 [适配器最佳实践 - Bot 状态管理与 Meta 事件](best-practices.md#bot-状态管理与-meta-事件)。
+
+### `self` 字段扩展信息
+
+`self` 字段除必需的 `platform` 和 `user_id` 外，还支持以下可选字段：
+
+| 字段 | 说明 |
+|---|---|
+| `user_name` | Bot 用户名 |
+| `nickname` | Bot 昵称 |
+| `avatar` | Bot 头像 URL |
+| `account_id` | 多账户标识 |
+
+### Bot 状态查询
+
+查询 API（`get_bot_info()` / `list_bots()` / `is_bot_online()` / `get_status_summary()`）见 [适配器系统 API - Bot 状态管理](../../api-reference/adapter-system.md#bot-状态管理)。
+
+### 监听 Bot 生命周期
+
+`adapter.bot.online` / `adapter.bot.offline` 生命周期事件表与监听示例见 [适配器系统 API - Bot 状态管理](../../api-reference/adapter-system.md#bot-状态管理)。
+
+## 相关文档
+
+### 实现层面深入
+
+- [SendDSL 详解](send-dsl.md) - 学习消息发送
+- [适配器最佳实践](best-practices.md) - 开发高质量适配器
+
+### 回看起步步骤
+
+- [适配器开发入门](getting-started.md) - 创建第一个适配器

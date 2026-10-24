@@ -1,0 +1,1343 @@
+---
+name: erispulse-errors-troubleshooting
+description: "适用于：遇到异常/组件不工作时的诊断路径：异常总览、排障指南、bug 追踪。覆盖场景：All custom exceptions in ErisPulse inherit from `ErisPulseError`. Underlying library exceptions (such as aiohttp, aiomysql, etc.) are captured internally by the framework and converted into corresponding ErisPulse exceptions — business code **does not need to depend on any underlying library exception types**.。This document records known bugs of the ErisPulse SDK and their repair status, arranged in chronological order by the time of repair version.。"
+---
+
+# ErisPulse 异常体系与排障
+
+This skill is auto-built from the ErisPulse documentation.
+Repository: https://github.com/ErisPulse/ErisPulse
+Source paths are annotated per section; see docs/ in the repository for the latest content.
+
+## 异常捕获总览
+
+> 来源: `docs/en/advanced/errors.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/advanced/errors.md）
+
+# Exception System and Handling Guide
+
+> [!NOTE]
+> **L1 Core Reading** — One of the five core documents in the "Reading Path" on the homepage, essential for module development.
+
+All custom exceptions in ErisPulse inherit from `ErisPulseError`. Underlying library exceptions (such as aiohttp, aiomysql, etc.) are captured internally by the framework and converted into corresponding ErisPulse exceptions — business code **does not need to depend on any underlying library exception types**.
+
+{!--< tips >!--}
+1. To catch broadly as a fallback: catch `ErisPulseError` (the base class for all framework exceptions)
+2. To handle precisely: catch by module (e.g., `ModuleCallTimeoutError`, `StorageUnreachableError`)
+3. Storage operations do not throw by default: log failures and return `False / None / default`; subscribe to `storage.unreachable` / `storage.recovered` events for connection state changes
+{!--< /tips >!--}
+
+## Exception Overview
+
+```text
+ErisPulseError                      # Base class for all framework exceptions
+├── ClientError                     # Base class for HTTP/WS client request exceptions (Core/client)
+│   ├── ClientConnectionError       # Connection layer error: DNS resolution failed, connection refused, network unreachable
+│   ├── ClientTimeoutError          # Request timeout
+│   └── HTTPStatusError             # HTTP status code error (e.g., 4xx/5xx with raise_for_status)
+├── WebSocketError                  # Base class for WebSocket exceptions (WS connection in Core/client)
+│   └── WebSocketDisconnect         # WebSocket disconnected (common for both server and client)
+├── ConnectionRegistryError         # Base class for connection registry exceptions (Core/connections, 2.10+)
+│   ├── ConnectionNotFoundError     # Connection does not exist / has been disconnected/unregistered (connections.get/close)
+│   └── ConnectionPermissionError   # Closing another's connection without owner permission (closing rights belong to creator)
+├── StorageError                    # Base class for storage exceptions (Core/storage)
+│   └── StorageUnreachableError     # Storage backend unreachable (retry exhausted: database unreachable/credentials error)
+├── InteractionError                # Base class for interaction session exceptions (Core/Event/interaction)
+│   ├── InteractionCancelled        # Pending wait/lease canceled (wait_reply upper layer returns None)
+│   └── SessionOccupiedError        # Session mutual exclusion lease occupied (hold() acquisition failed)
+├── ModuleError                     # Base class for module system exceptions (Core/module)
+│   └── ModuleCallError             # Base class for module inter-call exceptions
+│       ├── ModuleNotAvailableError # Target module not registered/unavailable/initialization failed (including lazy loading access)
+│       ├── ServiceNotProvidedError # Target module did not declare this service (outside meta.services whitelist)
+│       └── ModuleCallTimeoutError  # Called method execution timeout (default 30s)
+├── ShadowError                     # Base class for shadow module exceptions (Core/shadow)
+│   ├── ShadowStateError            # State mismatch: target not loaded/active shadow already exists/not bound shadow (start/dismiss)
+│   ├── ShadowSourceError           # Shadow source unavailable: path does not exist/loader missing/loading failed (start)
+│   └── ShadowPromoteError          # Promotion failed: shadow not registered/not loaded/loader has no snapshot/reload failed (promote)
+└── StrictModeError                 # Strict mode fatal violation (aborts startup process, loaders/strict)
+```
+
+## Structured Attributes
+
+After capturing an exception, you can read structured attributes (without parsing the message text):
+
+| Exception | Attributes |
+|---|---|
+| `ClientError` (with subclasses) | `.url` Request URL, `.method` Request method, `.attempts` Number of attempts (when retries are exhausted) |
+| `HTTPStatusError` | `.status` Status code, `.message` Response message |
+| `WebSocketDisconnect` | `.code` Close code, `.reason` Close reason |
+| `ConnectionNotFoundError` | `.connection_id` Connection ID searched for |
+| `ConnectionPermissionError` | `.connection_id` Target connection ID, `.owner` Owner of the connection |
+| `StorageUnreachableError` | `.backend` Backend name (sqlite/mysql/postgres), `.cooldown` Cool-down seconds |
+| `ModuleCallError` (with subclasses) | `.module` Target module name, `.method` Target method name |
+| `ModuleCallTimeoutError` | Inherits `.module/.method`, also has `.timeout` Timeout limit (seconds) |
+| `InteractionCancelled` | `.reason` Cancellation reason, `.wait_key` Session key |
+| `SessionOccupiedError` | `.wait_key` Session key, `.owner` Occupier |
+| `StrictModeError` | `.violations` List of violation records |
+
+```python
+from ErisPulse.Core.Bases.errors import ClientError
+
+try:
+    resp = await sdk.client.post(url, json=payload)
+except ClientError as e:
+    print(f"Request failed {e.method} {e.url}, attempted {e.attempts} times: {e}")
+```
+
+## Exception Descriptions and Occurrence Locations
+
+### Client Series — `Core/client.py` / `Core/Bases/client.py`
+
+`sdk.client` / HTTP client and WebSocket client raise exceptions when initiating requests:
+
+| Exception | Occurrence Location | Typical Scenario |
+|-----------|---------------------|------------------|
+| `ClientError` | Request wrapper layer | Other client errors (lower-level aiohttp exceptions have been converted) |
+| `ClientConnectionError` | Connection establishment phase | Target service unreachable, DNS failure, connection refused |
+| `ClientTimeoutError` | Request execution phase | Request timeout exceeded |
+| `HTTPStatusError` | `raise_for_status()` | Response status code is 4xx/5xx |
+
+```python
+from ErisPulse.Core.Bases.errors import ClientTimeoutError
+
+try:
+    resp = await sdk.client.get("https://api.example.com", timeout=5)
+except ClientTimeoutError:
+    ...
+```
+
+### WebSocket Series — `Core/client.py` (`send` / `receive`)
+
+| Exception | Occurrence Location | Typical Scenario |
+|-----------|---------------------|------------------|
+| `WebSocketError` | WS send/receive methods | Connection closed, received unexpected message type, low-level WS exception |
+| `WebSocketDisconnect` | WS send/receive methods | Peer disconnected normally (framework will automatically reconnect) |
+
+### Connection Registry Series — `Core/connections.py` (2.10+)
+
+| Exception | Occurrence Location | Typical Scenario |
+|-----------|---------------------|------------------|
+| `ConnectionNotFoundError` | `connections.get` / `assign` / `dismiss` / `close` | Connection ID does not exist or has been disconnected and unregistered |
+| `ConnectionPermissionError` | Non-owner calls `conn.close()` | Closing someone else's connection across modules (sending and grouping are not restricted) |
+
+### Storage Series — `Core/storage` / `Core/Bases/sql_base.py`
+
+| Exception | Occurrence Location | Typical Scenario |
+|-----------|---------------------|------------------|
+| `StorageError` | Storage layer | Base class for storage-related exceptions |
+| `StorageUnreachableError` | Pool creation phase | Database unreachable / credential error / network isolation, retry exhausted |
+
+> **Failure semantics of storage operations**: KV and query operations **do not throw exceptions by default**—failures are logged as ERROR and return `False` / `None` / `default` (to avoid blocking the framework due to connection issues). Therefore, business code typically **does not** catch `StorageUnreachableError` (it is mainly used for direct storage layer operations or custom backends). To perceive connection status at runtime, subscribe to lifecycle events `storage.unreachable` / `storage.recovered` (see [Lifecycle Events](lifecycle.md#storage-connection-status)).
+
+See [Storage Backend → Connection Failure Behavior](storage-backends.md#connection-failure-behavior) for details on handling connection failures.
+
+### Interaction — `Core/Event/interaction.py`
+
+`wait_reply` / session lease / reminder timer related:
+
+| Exception | Occurrence Location | Typical Scenario |
+|-----------|---------------------|------------------|
+| `InteractionError` | Interaction session layer | Base class for interaction session exceptions |
+| `InteractionCancelled` | When pending wait is cancelled | Set on the waiting future (the waiting part can catch and get `.reason`) |
+| `SessionOccupiedError` | `hold()` lease acquisition failed | Session is already occupied by another owner (`.owner` can check the occupier) |
+
+When waiting is cancelled (module unloading / platform shutdown / new wait replaces the same session), `wait_reply` **returns `None`** instead of throwing an exception (`InteractionCancelled` is internally converted); only directly catch it when distinguishing the reason for cancellation.
+
+### Module Series — `Core/module.py` (`sdk.module.call`)
+
+| Exception | Occurrence Location | Typical Scenario |
+|-----------|---------------------|------------------|
+| `ModuleError` | Module system | Base class for module system exceptions |
+| `ModuleCallError` | `module.call()` | Base class for module call exceptions |
+| `ModuleNotAvailableError` | `module.call()` / lazy-loaded attribute access | Target not registered / not enabled / initialization failed |
+| `ServiceNotProvidedError` | `module.call()` | Target `meta.services` whitelist does not declare this method |
+| `ModuleCallTimeoutError` | `module.call()` | Called coroutine exceeds timeout (default 30s) |
+
+"Target module unavailable" exception types under different access paths:
+
+| Access Path | Exception |
+|-------------|-----------|
+| `await sdk.module.call("X", "method")` | `ModuleNotAvailableError` (typed) |
+| `sdk.module.X.attr` (lazy-loaded attribute access, after initialization failure) | `ModuleNotAvailableError` |
+| `sdk.module.X` (module attribute access when module is not enabled) | `AttributeError` (Python attribute convention, `hasattr` relies on this semantics) |
+
+```python
+from ErisPulse.Core.Bases.errors import ModuleNotAvailableError, ServiceNotProvidedError
+
+try:
+    history = await sdk.module.call("Chat", "get_history", session_id, n=20)
+except ModuleNotAvailableError:
+    ...  # Target module does not exist / is not enabled
+except ServiceNotProvidedError:
+    ...  # Target module does not provide this service
+```
+
+### Shadow Series — `Core/shadow.py` (Shadow Modules)
+
+| Exception | Occurrence Location | Typical Scenario |
+|-----------|---------------------|------------------|
+| `ShadowError` | Shadow module mechanism | Base class for shadow exceptions (catch all shadow errors) |
+| `ShadowStateError` | `shadow_start()` / `dismiss_shadow()` | Target not loaded / active shadow exists / shadow not bound |
+| `ShadowSourceError` | `shadow_start()` | Source path does not exist / plugin loader missing / source has no loadable class / loading failed |
+| `ShadowPromoteError` | `promote_shadow()` | Shadow not registered / not loaded / loader does not support snapshot / promotion reload failed |
+
+### Framework Internal Parameter Validation (ValueError)
+
+Parameter validation for storage query builder (empty column types, `Insert` not dict, unsafe column types, etc.) throws standard `ValueError`—these are **development-time coding errors**, and normal business code should not catch them, but instead fix the calls.
+
+Adaptor standard action failures **do not throw exceptions**: return a response dictionary with `retcode` (protocol semantics, e.g., `retcode=10002` means the action is not implemented)—this is a parallel error channel to client layer "failures throw `ClientError`", and adaptor development must handle both.
+
+## Handling Recommendations
+
+```python
+from ErisPulse.Core import ErisPulseError  # Base class is aggregated and exported from Core
+
+try:
+    ...
+except ErisPulseError as e:
+    ...  # Unified fallback: all framework custom exceptions
+```
+
+- For module development: catch as needed (see table above), use `ErisPulseError` as a fallback at the outermost layer
+- All exceptions are aggregated and exported from `ErisPulse.Core` (including `SessionOccupiedError` / `InteractionCancelled` / `StrictModeError`), also available from `ErisPulse.Core.Bases.errors`
+- Full definitions are in `src/ErisPulse/Core/Bases/errors.py`
+
+## Noise Folding on Shutdown
+
+When long-running processes shut down (or background loops are cancelled), the event loop often emits a batch of `Task was destroyed but it is pending!`-like noise from the interpreter, which lacks actionable value. The framework includes built-in **noise folding for similar events**: within a 2-second window, similar messages are downgraded to TRACE level and merged with a count, outputting only once and appending a suffix such as 「(N additional similar messages have been folded)」. This intentional noise reduction does not mean the framework is suppressing real exceptions; business exceptions (all types listed above) are still fully output as usual. The folding mechanism targets only interpreter exit noise, leaving business exceptions unaffected. What level of exception is worth retaining, and what can be downgraded or folded, follows the [Engineering Robustness Rules · Exception Logging Levels](../styleguide/engineering.md#1-异常留痕分级).
+
+## 已知问题追踪
+
+> 来源: `docs/en/bug-tracker.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/bug-tracker.md）
+
+# Bug Tracker
+
+This document records known bugs of the ErisPulse SDK and their repair status, arranged in chronological order by the time of repair version.
+
+> **For Readers**
+> No software is perfect, and even the most careful developers leave small errors. This tracker includes only issues that have a practical impact on operation—those too minor to even reach the "minor" level are not included here. Although the number of "critical" items may seem high, the intention behind publicly recording these bugs is to make troubleshooting and backtracking smoother, not to create anxiety: problems that are visible, recorded, and fixed are proof that the project is constantly improving. Seeing this list should not cause anxiety; it is a troubleshooting tool, not a source of fear.
+
+> **How to Read & Maintenance Conventions**
+> - Each bug record includes structured fields such as problem description, root cause analysis, affected version range, repair solution, etc. It is recommended to check the "affected version" before upgrading to see if it covers the version currently in use.
+> - If you need to add a new bug entry, supplement content at the corresponding location, following the field specifications and severity/type classifications below.
+
+---
+
+## Field Descriptions
+
+### Mandatory Fields
+
+| Field | Description |
+|------|------|
+| **Problem** | The external manifestation of the bug, the abnormal phenomenon observable by the user. Try to provide error messages or typical scenarios |
+| **Cause** | Root cause analysis, pointing to specific code defects (including "root cause chain" diagrams for complex scenarios) |
+| **Affected Version** | Affected version range, format `introduced version - fixed version` (including both dev versions) |
+| **Fixed Version** | The specific version number that fixes the bug |
+| **Fixed Content** | Brief description of the repair solution, including key code changes |
+| **Fixed Date** | The release date corresponding to the fixed version, using the `YYYY/MM/DD` format |
+| **Severity** | Marked according to the "Severity Classification" below |
+| **Type** | Marked according to the "Type Classification" below, can be combined (e.g., `Adapter / Router`) |
+
+### Optional Fields
+
+| Field | Description | Applicable Scenarios |
+|------|------|---------|
+| **Reproduction Steps** | The minimum reproducible path to trigger the bug | Complex bugs, occasional bugs are recommended to supplement |
+| **Associated** | Links to related Issue / PR / Commit | Supplement when there is external discussion record |
+| **Regression Test** | Test case location to verify repair and prevent regression | Supplement when corresponding pytest cases are written |
+
+---
+
+## Severity Classification
+
+| Icon | Level | Judgment Criteria | Typical Manifestation |
+|------|------|---------|---------|
+| 🔴 | Critical | Causes process crash, data loss/damage, core functionality completely unavailable, security vulnerabilities | OOM Kill, message cannot be sent, module cannot be loaded, hot reload failure |
+| 🟡 | Medium | Function abnormal but with workaround, non-core functionality fails, occasional problems | State judgment error, repeated triggering, cache expiration, inaccurate error message |
+| 🟢 | Minor | Does not affect core functionality, only code quality or experience issues, potential risks not triggered | Deprecated API, dead code, missing warning logs |
+
+---
+
+## Type Classification
+
+| Type | Coverage Range |
+|------|---------|
+| Configuration System | `ConfigManager`, configuration read/write, configuration Schema, hot update |
+| Event System | `Event` module (command/message/notice/request/meta), event distribution, processor registration |
+| Adapter | `AdapterManager`, `BaseAdapter`, account parsing, Bot status, middleware |
+| Router | `RouterManager`, HTTP/WebSocket/SSE routing, rate limiting, CORS |
+| Client | `HttpClient`, `ClientWebSocket`, aiohttp wrapper |
+| Storage | `StorageManager`, SQLite, SQL builder, nested keys |
+| Loader System | `Loader`, `LazyModule`, `ModuleInitializer`, strict mode, module discovery |
+| CLI | `epsdk` command, `init`/`run`/`install`, parameter parsing, signal handling |
+| Runtime | `sdk.run`/`restart`/`uninit`, lifecycle, signal, subprocess |
+
+---
+
+## Item Template
+
+When adding a new bug item, follow the following format:
+
+```markdown
+### [BUG-XXX] Title
+
+**Problem**: Problem description (error message or typical phenomenon)
+**Cause**: Root cause analysis
+**Affected Version**: Introduced version - Fixed version
+**Fixed Version**: x.x.x
+**Fixed Content**: Repair solution
+**Fixed Date**: YYYY/MM/DD
+
+<!-- Optional fields -->
+**Reproduction Steps**: (Recommended for complex bugs)
+**Associated**: (Issue/PR link)
+**Regression Test**: (Test case path)
+
+**Severity**: 🔴 Critical | 🟡 Medium | 🟢 Minor
+**Type**: Configuration System / Event System / Adapter / Router / Client / Storage / Loader System / CLI / Runtime
+```
+
+---
+
+## Statistical Overview
+
+| Severity | Quantity |
+|--------|------|
+| 🔴 Critical | 16 |
+| 🟡 Medium | 26 |
+| 🟢 Minor | 3 |
+| **Total** | **45** |
+
+| Type | Quantity |
+|------|------|
+| Event System | 12 |
+| Configuration System | 12 |
+| Adapter | 7 |
+| CLI | 3 |
+| Storage | 3 |
+| Loader System | 4 |
+| Router | 2 |
+| Client | 1 |
+| Runtime | 1 |
+
+> Note: A single bug can belong to multiple types; the table above is counted based on the main type.
+> Note: BUG-028 / BUG-031 numbering is vacant (abandoned during registration, numbering remains stable and is not recycled).
+
+---
+
+## Fixed Bugs
+
+### [BUG-001] Event handler registration duplication causing multiple event triggers
+
+**Problem**: When using multiple `@message` / `@notice` decorators to register handlers, the same event is triggered multiple times, causing commands to be executed multiple times and logs to be output repeatedly.
+
+**Cause**: `BaseEventHandler` lacks deduplication logic when registering handlers with the adapter event bus. Each decorator mounts once to the bus, causing the event to be called multiple times during distribution.
+
+**Affected Version**: 2.2.0-dev.0 - 2.2.1-dev.0
+
+**Fixed Version**: 2.2.1-dev.0
+
+**Fixed Content**: Optimize `BaseEventHandler` to ensure each event type is registered only once with the adapter bus, avoiding repeated triggers.
+
+**Fixed Date**: 2025/08/18
+
+**Severity**: 🔴 Critical
+
+**Type**: Event System
+
+---
+
+### [BUG-002] Adapter configuration path type error in init command
+
+**Problem**: When using the `ep init` command for interactive initialization, selecting the configuration adapter results in a type error:
+
+```
+Interactive initialization failed: unsupported operand type(s) for /: 'str' and 'str'
+```
+
+**Cause**: In version 2.3.7, when adjusting the configuration file path, the method parameter type is inconsistent. `_configure_adapters_interactive_sync` receives a `str` type parameter, but internally uses the `Path` `/` operator to concatenate paths.
+
+**Affected Version**: 2.3.7 - 2.3.9-dev.1
+
+**Fixed Version**: 2.3.9-dev.1
+
+**Fixed Content**: Change the parameter type of `_configure_adapters_interactive_sync` from `str` to `Path`, and pass a `Path` object directly when calling.
+
+**Fixed Date**: 2026/03/23
+
+**Severity**: 🟡 Medium
+
+**Type**: CLI
+
+---
+
+### [BUG-003] Commands fail after restart
+
+**Problem**: After calling `sdk.restart()`, commands registered with `@command` are not triggered, resulting in the robot not responding when the command is sent.
+
+**Cause**: `adapter.shutdown()` clears the event bus, but the `_linked_to_adapter_bus` status of `BaseEventHandler` is not reset to `False`, causing the `_process_event` method to think it has been mounted to the adapter bus and skip re-mounting.
+
+**Affected Version**: 2.2.x - 2.4.0-dev.2
+
+**Fixed Version**: 2.4.0-dev.3
+
+**Fixed Content**: Introduce `_linked_to_adapter_bus` status tracking. After `_clear_handlers()` disconnects the bus, it automatically re-mounts on the next `register()`, adapting to shutdown/restart scenarios.
+
+**Fixed Date**: 2026/04/09
+
+**Severity**: 🔴 Critical
+
+**Type**: Event System
+
+---
+
+### [BUG-004] Lifecycle event handler not cleared
+
+**Problem**: After `sdk.restart()`, old lifecycle event handlers still exist and are triggered repeatedly, causing the same event to be processed multiple times.
+
+**Cause**: The `lifecycle._handlers` dictionary was never cleared in `uninit()`, so old handlers and new handlers coexist after restart.
+
+**Affected Version**: 2.3.0 - 2.4.0-dev.2
+
+**Fixed Version**: 2.4.0-dev.3
+
+**Fixed Content**: Clear `lifecycle._handlers` at the end of the `Uninitializer` cleanup process (after all events are submitted), adapting to shutdown/restart scenarios.
+
+**Fixed Date**: 2026/04/09
+
+**Severity**: 🟡 Medium
+
+**Type**: Runtime
+
+---
+
+### [BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard
+
+**Problem**: `Event.is_friend_add()` checks `detail_type == "friend_add"`, `Event.is_friend_delete()` checks `detail_type == "friend_delete"`, but the OneBot12 standard defines `detail_type` values as `"friend_increase"` and `"friend_decrease"`. This inconsistency with the `on_friend_add`/`on_friend_remove` decorators in `notice.py` causes the corresponding `is_friend_add()`/`is_friend_delete()` judgment methods to return `False` when the handler registered by the decorator is triggered.
+
+**Cause**: `wrapper.py` uses non-standard naming, while `notice.py` uses the correct OB12 standard naming.
+
+**Affected Version**: Since implementation
+
+**Fixed Version**: 2.4.2-dev.1
+
+**Fixed Content**: Change the matching value of `is_friend_add()` from `"friend_add"` to `"friend_increase"`, and `is_friend_delete()` from `"friend_delete"` to `"friend_decrease"`.
+
+**Fixed Date**: 2026/04/13
+
+**Severity**: 🟡 Medium
+
+**Type**: Event System
+
+---
+
+### [BUG-006] adapter.clear() does not clear _started_instances, causing incorrect status after restart
+
+**Problem**: The `AdapterManager.clear()` method clears `_adapters`, `_adapter_info`, handlers, and `_bots`, but omits clearing the `_started_instances` set. If the adapter is running when `clear()` is called, `_started_instances` retains dangling references, causing incorrect status judgment after restart.
+
+**Cause**: When `_started_instances` was introduced in 2.4.0-dev.1, it was not synchronized for clearing in `clear()`.
+
+**Affected Version**: 2.4.0-dev.1 - 2.4.2-dev.0
+
+**Fixed Version**: 2.4.2-dev.1
+
+**Fixed Content**: Add `self._started_instances.clear()` in the `clear()` method.
+
+**Fixed Date**: 2026/04/13
+
+**Severity**: 🟡 Medium
+
+**Type**: Adapter
+
+---
+
+### [BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()
+
+**Problem**: The `CommandHandler.wait_reply()` method uses `asyncio.get_event_loop()` to create futures and get timestamps, which has been deprecated in Python 3.10+ and should use `asyncio.get_running_loop()` in asynchronous contexts. This is inconsistent with the `get_running_loop()` used in the `wait_for()` method in `wrapper.py`.
+
+**Cause**: The old API was used during development, and the newly added `wait_for()` method used the correct API but did not retrospectively fix the old code.
+
+**Affected Version**: 2.3.0-dev.0
+
+**Fixed Version**: 2.4.2-dev.1
+
+**Fixed Content**: Replace `asyncio.get_event_loop()` in `command.py` with `asyncio.get_running_loop()` in two places.
+
+**Fixed Date**: 2026/04/13
+
+**Severity**: 🟢 Minor
+
+**Type**: Event System
+
+---
+
+### [BUG-008] Bot offline event is repeatedly submitted during shutdown
+
+**Problem**: When calling `adapter.shutdown()` to shut down all adapters, `_update_bot_status()` repeatedly submits Bot offline events during the shutdown process, causing the same batch of Bots to be marked offline multiple times and triggering the `adapter.bot.offline` lifecycle event multiple times.
+
+**Cause**: The Bot status tracking system introduced in 2.4.0-dev.1 did not set a "shutting down" flag during `shutdown()`, so `_update_bot_status()` could not distinguish between normal offline and cascading offline during the shutdown process.
+
+**Affected Version**: 2.4.0-dev.1 - 2.4.2-dev.1
+
+**Fixed Version**: 2.4.2-dev.1
+
+**Fixed Content**: Add `_is_being_shutdown` flag in `AdapterManager`, set to True at the start of `shutdown()` and cleared at the end; `_update_bot_status()` skips repeated submissions during shutdown by checking the flag.
+
+**Fixed Date**: 2026/04/21
+
+**Severity**: 🟡 Medium
+
+**Type**: Adapter
+
+---
+
+### [BUG-009] LazyModule synchronously accessing BaseModule causes incomplete initialization
+
+**Problem**: When users synchronously access attributes of a lazily loaded BaseModule, the module uses `loop.create_task()` for asynchronous initialization but does not wait, causing attributes to be accessed before initialization is complete, leading to race conditions.
+
+**Cause**: `_ensure_initialized()` uses `loop.create_task(self._initialize())` and immediately returns, without ensuring initialization is complete.
+
+**Affected Version**: 2.4.0-dev.0 - 2.4.2-dev.1
+
+**Fixed Version**: 2.4.2-dev.2
+
+**Fixed Content**: In synchronous contexts, BaseModule initialization is changed to use `asyncio.run(self._initialize())`, ensuring initialization is complete before returning. The transparent proxy feature is maintained, and users do not need to perceive the difference between synchronous and asynchronous contexts.
+
+**Fixed Date**: 2026/04/21
+
+**Severity**: 🟡 Medium
+
+**Type**: Loader System
+
+---
+
+### [BUG-010] Multi-threaded configuration write causes data loss
+
+**Problem**: In a multi-threaded environment, when multiple threads call `config.setConfig()` simultaneously, the `read-modify-write` operation of `_flush_config()` is not atomic, potentially causing some writes to be lost.
+
+**Cause**: Although `_flush_config()` uses `RLock`, there is no file lock protection for file read and write operations, and the `Timer` of `_schedule_write` may be triggered multiple times, causing overwrite.
+
+**Affected Version**: 2.3.0 - 2.4.2-dev.1
+
+**Fixed Version**: 2.4.2-dev.2
+
+**Fixed Content**:
+1. Add file lock mechanism (`_file_lock`) to ensure atomic file operations
+2. Use temporary file for writing and then atomically rename (`os.replace`/`os.rename`)
+3. Improve `_schedule_write` timer cancellation and re-scheduling logic
+
+**Fixed Date**: 2026/04/21
+
+**Severity**: 🔴 Critical
+
+**Type**: Configuration System
+
+---
+
+### [BUG-011] Windows Ctrl+C cannot stop the program
+
+**Problem**: When running `python main.py` directly on Windows, pressing Ctrl+C does not terminate the program. The program starts normally and outputs the routing server information, but Ctrl+C has no response, and the process can only be forcibly terminated via the task manager. However, it can be stopped normally when started via `epsdk run`, but `epsdk run` uses a subprocess model.
+
+**Cause**: The Hypercorn ASGI server's `serve()` function internally registers its own `SIGINT` handler, overriding Python's default `KeyboardInterrupt` handling mechanism. When starting Hypercorn as a background task via `asyncio.create_task()`, the internal shutdown process of Hypercorn cannot be triggered (because it expects the `worker_serve` mode), causing the Ctrl+C signal to be swallowed by Hypercorn without triggering any cleanup actions.
+
+**Affected Version**: 2.3.6 - 2.4.2
+
+**Fixed Version**: 2.4.3-dev.0
+
+**Fixed Content**:
+1. Switch the ASGI server from Hypercorn to Uvicorn (`pyproject.toml` dependency change)
+2. Start the server directly using `uvicorn.Server._serve()` and **bypass** the `capture_signals` signal handling context manager
+3. Implement graceful shutdown using `server.should_exit = True`, and cancel the background task if timeout occurs
+4. Synchronize the removal of the subprocess running model and `runtime/cleanup.py` cleanup module (no longer needed for subprocess cleanup mechanism)
+
+**Fixed Date**: 2026/04/28
+
+**Severity**: 🔴 Critical
+
+**Type**: CLI / Runtime
+
+---
+
+### [BUG-012] After hot restart, the updated module's Python code does not take effect
+
+**Problem**: After executing `sdk.restart()` for a soft restart, the new code (such as new API routes) of modules/adapters upgraded via `epsdk install` does not take effect and still runs the old logic. A complete process restart is required to load the latest code.
+
+**Cause**: `_do_restart()` calls `entry_point.load()` during re-initialization, but this function returns the cached old module object from `sys.modules` instead of reloading from disk.
+
+**Affected Version**: Early versions - 2.4.3-dev.1
+
+**Fixed Version**: 2.4.3-dev.1
+
+**Fixed Content**: Clear the cache of loaded modules/adapters from `sys.modules` before `init()` and after `uninit()`, so that `entry_point.load()` reloads the latest code from disk. Added `_collect_top_level_modules()` and `_invalidate_module_cache()` helper methods, deriving top-level module names through `top_level.txt` or entry-point value.
+
+**Fixed Date**: 2026/05/03
+
+**Severity**: 🔴 Critical
+
+**Type**: Loader System / Runtime
+
+---
+
+### [BUG-013] Module loading strategy sorting logic error
+
+**Problem**: `ModuleLoadStrategy` provides a `priority` field to declare the initialization priority of modules, but the implementation of the loading strategy has an error, causing modules not to be initialized in the expected priority order, but rather in the default order of `entry_points()`. When modules have initialization dependencies, the correct initialization order cannot be ensured through `priority`.
+
+**Cause**: The sorting logic in the implementation of the loading strategy is incorrect; `initialize_modules()` does not sort the module list by `priority`.
+
+**Affected Version**: 2.3.4 - 2.4.5-dev.2
+
+**Fixed Version**: 2.4.5-dev.3
+
+**Fixed Content**: Before traversing `initialize_modules()`, sort the module list by `priority` in descending order. Modules with the same priority maintain their original relative order (stable sort).
+
+**Fixed Date**: 2026/05/15
+
+**Severity**: 🟡 Medium
+
+**Type**: Loader System
+
+---
+
+### [BUG-014] Adapter middleware returning None causes event data loss
+
+**Problem**: When executing OneBot12 middleware chains in `adapter.emit()`, if a middleware returns `None` (e.g., forgetting to `return data`), subsequent middleware and all event handlers receive `processed_data` as `None`, causing event processing to fail completely.
+
+**Cause**: The implementation of the middleware chain `processed_data = await middleware(processed_data)` does not check if the return value is `None`, directly overwriting the result from the previous step.
+
+**Affected Version**: unknown - 2.4.5-dev.3
+
+**Fixed Version**: 2.4.5-dev.4
+
+**Fixed Content**: When middleware returns `None`, ignore the return value, retain the original data, and output a warning-level log.
+
+**Fixed Date**: 2026/05/15
+
+**Severity**: 🔴 Critical
+
+**Type**: Adapter / Event System
+
+---
+
+### [BUG-015] Configuration file path depends on working directory
+
+**Problem**: The configuration file path of `ConfigManager` defaults to the relative path `"config/config.toml"`, which depends on `os.getcwd()` at runtime. If the working directory changes during runtime (e.g., via `os.chdir()`), configuration file read/write operations point to the wrong location, causing configuration loss or reading old data.
+
+**Cause**: In `__init__`, the relative path is directly stored without being resolved to an absolute path at initialization.
+
+**Affected Version**: 2.3.7 - 2.4.5-dev.3
+
+**Fixed Version**: 2.4.5-dev.4
+
+**Fixed Content**: In `ConfigManager.__init__()`, if the passed path is a relative path, automatically resolve it to an absolute path using `os.path.abspath()`.
+
+**Fixed Date**: 2026/05/15
+
+**Severity**: 🟡 Medium
+
+**Type**: Configuration System
+
+---
+
+### [BUG-016] BaseStorage confuses storing None value with non-existent key
+
+**Problem**: `BaseStorage.get_multi()` / `__getattr__()` cannot distinguish between "key does not exist" and "key's value is None", so users explicitly storing `None` and then reading it are treated as if the key does not exist.
+
+**Cause**: The retrieval logic directly uses `value is None` to determine if the key exists, lacking an independent "missing" marker.
+
+**Affected Version**: Early versions - 2.4.6-dev.6
+
+**Fixed Version**: 2.4.6-dev.6
+
+**Fixed Content**: Introduce `_SENTINEL` sentinel value to distinguish between "key does not exist" and "value is None", so they are no longer confused.
+
+**Fixed Date**: 2026/06/07
+
+**Severity**: 🟡 Medium
+
+**Type**: Storage
+
+---
+
+### [BUG-017] WebSocket route auto_accept flag lost after service restart
+
+**Problem**: After a service restart (such as `sdk.restart()`), the `auto_accept` configuration for all WebSocket routes becomes `False`, and connections that were expected to be automatically accepted remain in a pending state, causing the client to not receive a response for a long time, resulting in the WebSocket connection being stuck.
+
+**Cause**: In `_restore_routes_from_records()`, when restoring routes from persistent records, `auto_accept` is hard-coded as `False` instead of reading the true value from the record; also, when the route storage tuple was extended from a binary tuple to a ternary tuple, the restoration logic was not synchronized.
+
+**Affected Version**: 2.3.8-dev.0 - 2.4.6-dev.6
+
+**Fixed Version**: 2.4.6-dev.6
+
+**Fixed Content**: The route storage tuple is extended to `(handler, auth_handler, auto_accept)`, and `_restore_routes_from_records()` reads the true `auto_accept` value from the record instead of hard-coding `False`.
+
+**Fixed Date**: 2026/06/07
+
+**Severity**: 🔴 Critical
+
+**Type**: Route
+
+---
+
+### [BUG-018] Concurrent calls to HTTP/WS client lead to crashes and connection leaks
+
+**Problem**: The HTTP and WebSocket clients in `Core/client.py` have multiple stability defects in concurrent scenarios, leading to connection leaks or process crashes:
+- Concurrent calls to `ClientWebSocket.receive()` result in aiohttp throwing `Concurrent call to receive() is not allowed`
+- Concurrent calls to `_get_http_session()` / `_get_ws_session()` may create multiple sessions, and `_drain_sessions()` does not close old connections, causing connection leaks
+- The exception handling order in `request()` is incorrect: `except ClientConnectionError` (ErisPulse exception) never triggers, aiohttp connection errors are caught by the general `except Exception`, causing the "retry connection + session rebuild" logic (dead code) to never execute
+- `send_json()` ignores the `mode="binary"` parameter; `get_ws_session()` does not pass default request headers
+
+**Cause**: The initial implementation of the client (2.4.6-dev.5) lacks concurrent protection and improper handling of aiohttp exception hierarchy and ErisPulse custom exception inheritance.
+
+**Affected Version**: 2.4.6-dev.5 - 2.4.8
+
+**Fixed Version**: 2.4.8
+
+**Fixed Content**:
+1. Add `_recv_lock` to serialize all `receive()` / `receive_text()` / `receive_bytes()` calls
+2. Add `_session_lock` to protect session creation; `_drain_sessions()` is changed to an asynchronous method and truly closes old sessions
+3. Refactor `request()` exception handling order: `asyncio.TimeoutError` → `aiohttp.ClientConnectionError` (triggers session rebuild) → `aiohttp.ClientError` → `ClientError` (transparent pass) → `Exception`
+4. Fix `send_json()` mode handling, `get_ws_session()` default request headers, `close()` concurrent race, `HttpResponse.__aexit__` duplicate `release()`
+
+**Fixed Date**: 2026/06/12
+
+**Severity**: 🔴 Critical
+
+**Type**: Client
+
+---
+
+### [BUG-019] Adapter hot reload causes route conflicts and reload failure
+
+**Problem**: When third-party modules (such as Dashboard) trigger adapter hot reload, or adapter startup fails and retries, due to the uncleaned old routes (such as `onebot11_default`) from the previous registration, the error `WebSocket path ... already registered` occurs, causing the reload to fail. A complete process restart is required to recover.
+
+**Cause**: `AdapterManager.shutdown()` only clears routes via `unregister_all_by_namespace(platform)`, but adapters (such as OneBot11) register WebSocket routes with the `onebot11_{account_name}` namespace, which is not granular enough, resulting in cleanup being a no-op; route cleanup is also not performed for failed startup retries.
+
+**Affected Version**: Early versions - 2.4.9
+
+**Fixed Version**: 2.4.9
+
+**Fixed Content**:
+1. Route registration automatically tracks `owner → namespace` relationships via `current_owner` ContextVar
+2. Add `unregister_all_by_owner(owner)`, cleaning up when stopping/restarting, covering fine-grained namespaces
+3. Add `_stop_adapter(platform)` primitive (stop equals cleanup), binding stopping adapters and reclaiming their registered resources in one call; `restart()` and failed startup retries both go through this entry
+4. Add framework-level `adapter.restart(platform)` API, third-party modules should call this method instead of directly operating adapter instances
+
+**Fixed Date**: 2026/06/12
+
+**Severity**: 🔴 Critical
+
+**Type**: Adapter / Route
+
+---
+
+### [BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in the script's directory
+
+**Problem**: When running a script with `ep r .\main.py` in non-hot-reload mode, if the script has relative imports (such as `from qg import ...`), it reports `No module named 'qg'`. The `--reload` mode works normally.
+
+**Cause**: Non-hot-reload mode directly calls `runpy.run_path()` to execute the script, which does not automatically add the script's directory to `sys.path`. The `--reload` mode runs via `subprocess.Popen` subprocess, which automatically inherits the current working directory, making `sys.path[0]` the script's directory, so it works.
+
+**Affected Version**: 2.5.0 - 2.5.2-dev.0
+
+**Fixed Version**: 2.5.2-dev.0
+
+**Fixed Content**: Before calling `runpy.run_path()`, manually insert the script's directory into `sys.path[0]`.
+
+**Fixed Date**: 2026/06/27
+
+**Severity**: 🟡 Medium
+
+**Type**: CLI
+
+---
+
+### [BUG-021] SQL query builder rejects valid wildcard and list expressions
+
+**Problem**: `SQLiteQueryBuilder`'s `_build_select_sql()` calls `_validate_identifier()` for all SELECT columns, which uses a strict whitelist regular expression `^[a-zA-Z_][a-zA-Z0-9_]*$`, causing legitimate SQL syntax to be incorrectly judged as unsafe column names:
+
+- `SELECT *` — `*` is a standard SQL wildcard
+- `SELECT COUNT(*)` — aggregate function
+- `SELECT users.name` — qualified column name
+- `SELECT col AS alias` — column alias
+
+Among them, `Select("*")` is used by modules like Cron, causing module `on_load` execution to fail and the module to fail to load.
+
+**Cause**: In 2.4.6, SQL injection protection was enhanced, introducing the `_validate_identifier()` whitelist validation. This validation is applied to all column names, but does not distinguish between read端 (SELECT/ORDER BY) and write端 (INSERT/UPDATE). SELECT columns allow complex SQL expressions and should not be restricted by simple identifier whitelists.
+
+**Affected Version**: 2.4.6 - 2.5.2-dev.1
+
+**Fixed Version**: 2.5.2-dev.2
+
+**Fixed Content**: Change the SELECT/ORDER BY column validation from whitelist mode to blacklist mode:
+1. Add `_validate_select_column()` function, only blocking SQL injection dangerous characters (`;` `'` `"` `--` `/*` `*/` `\x00` newline)
+2. Allow any valid SQL column expression (`*`, `table.*`, `table.column`, `COUNT(*)`, `col AS alias`, etc.)
+3. INSERT/UPDATE column names still maintain strict whitelist validation (only allow simple identifiers)
+
+**Fixed Date**: 2026/06/29
+
+**Severity**: 🔴 Critical
+
+**Type**: Storage
+
+---
+
+### [BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)
+
+**Problem**: After the 2.5.2 configuration system refactoring, multi-account adapters that declare `AccountConfigClass` report an error `ValueError("AccountConfigClass not declared, unable to resolve account")` when calling methods that require sending messages, such as `wait_reply` or `reply`, even if the adapter is correctly configured with multi-account information. Account resolution still fails.
+
+**Cause**: In 2.5.2-dev.5, `_load_accounts()` (responsible for reading configuration + validation + filling `_accounts_data`) was refactored into `_ensure_accounts_exist()` (only generates configuration template), but `_resolve_account()` still checks `self._accounts_data is None`. Since `_ensure_accounts_exist()` no longer fills `_accounts_data`, this attribute remains `None`, causing `_resolve_account()` to return `(None, None)` early, and downstream calls to `_resolve_account` (such as call_api) receive `None`, triggering an error.
+
+**Root Cause Chain**:
+```
+_load_accounts() is deleted
+  → __init__ no longer fills _accounts_data
+    → _accounts_data remains None
+      → _resolve_account() checks _accounts_data is None → return (None, None)
+        → downstream calls to _resolve_account (e.g. call_api) receive None
+          → triggers error
+```
+
+**Affected Version**: 2.5.2-dev.5 - 2.5.2
+
+**Fixed Version**: 2.5.3
+
+**Fixed Content**: In `BaseAdapter.__init__`, after `self._ensure_accounts_exist()`, restore the filling of `_accounts_data`:
+```python
+if self.AccountConfigClass is not None:
+    self._ensure_accounts_exist()
+    self._accounts_data = self.accounts  # restore filling, data source is real-time read accounts attribute
+```
+The logic of `_resolve_account()` remains unchanged, fully backward compatible:
+- Adapters that do not declare `AccountConfigClass`: `_accounts_data` remains `None` → return `(None, None)`
+- Adapters that declare `AccountConfigClass`: `_accounts_data` is filled → normal resolution
+- Adapters that overwrite `_load_accounts` or manually set `_accounts_data`: overwrite in `super().__init__()` later, highest priority
+
+**Fixed Date**: 2026/07/07
+
+**Severity**: 🔴 Critical
+
+**Type**: Adapter / Configuration System
+
+---
+
+### [BUG-023] After modifying account configuration, adapter cache is not refreshed, causing account resolution failure
+
+**Problem**: After users modify the account configuration of a multi-account adapter (such as filling in a token) through the Dashboard, the adapter still uses the old cache, and calling methods related to sending messages reports `No available account (account_id=default)`. The process must be restarted for the new configuration to take effect.
+
+**Cause**: `_accounts_data` is only read from the configuration storage once in `BaseAdapter.__init__`, and is never refreshed afterwards. `AdapterManager._run_adapter()` and `restart()` do not re-read the account configuration before calling `adapter.start()`, causing the cache and actual configuration to be out of sync.
+
+**Affected Version**: 2.4.6 - 2.5.4
+
+**Fixed Version**: 2.5.4
+
+**Fixed Content**: In `AdapterManager._run_adapter()` and `restart()`, before calling `adapter.start()`, refresh `adapter._accounts_data = adapter.accounts` to ensure the latest configuration is used each time the adapter starts.
+
+**Fixed Date**: 2026/07/09
+
+**Severity**: 🔴 Critical
+
+**Type**: Adapter / Configuration System
+
+---
+
+### [BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill
+
+**Problem**: When calling `storage.set()` to write a nested key path containing a large numeric field (such as QQ group number `871684833`), the process is killed by the container OOM (exit code -9), and the service crashes and cannot recover.
+
+**Cause**: In the recursive implementation of `_set_nested_value`, the numeric field in the nested key path is mistakenly judged as a list index by `isdigit()`, triggering `current.extend([None] * (index - len(current) + 1))`, attempting to allocate a list with hundreds of millions of elements, instantly exhausting memory.
+
+**Root Cause Chain**:
+```
+Key path contains a pure numeric field (such as group number 871684833)
+  → isdigit() mistakenly judges as an array index
+    → extend([None] * (871684833 - len(current) + 1))
+      → attempts to allocate hundreds of millions of elements
+        → memory exhausted → container OOM Kill (exit code -9)
+```
+
+**Affected Version**: 2.5.1 - 2.5.5
+
+**Fixed Version**: 2.5.5
+
+**Fixed Content**:
+1. Always use a dictionary when pre-creating intermediate layers, never guess the container type based on whether the next segment is a number
+2. When setting the final value, only process the index if the container itself is a list and the index is less than `STORAGE_MAX_LIST_INDEX` (10000), otherwise safely skip the large index
+3. Change the recursive implementation to an iterative one, eliminating the potential for infinite recursion in the original code
+4. Add `STORAGE_MAX_LIST_INDEX` constant to `Core/constants.py`, centrally managing the index safety limit
+
+**Fixed Date**: 2026/07/10
+
+**Reproduction Steps**:
+```python
+# Writing a nested key path containing a large number field (such as a QQ group number) will trigger OOM
+await sdk.storage.aset("groups.871684833.name", "Some group")
+# → Process memory surges instantly, killed by OOM
+```
+
+**Regression Test**: `tests/unit/test_unit_storage.py` adds 4 new regression test cases
+- `test_nested_key_numeric_segment_as_dict_key` — precisely reproduces the OOM scenario
+- `test_nested_key_numeric_segment_multiple` — multiple consecutive numeric fields are all treated as dictionary keys
+- `test_nested_key_existing_list_index_set_within_limit` — set a value within the index limit of an existing list
+- `test_nested_key_list_index_safety_limit` — safety limit check for large indices
+
+**Severity**: 🔴 Critical
+
+**Type**: Storage
+
+---
+
+### [BUG-025] on_config_update callback not triggered by core routes
+
+**Problem**: The `on_config_update(old, new)` callback is defined in the base class (`BaseModule` / `BaseAdapter`), but the core framework does not associate it with configuration change events. As a result, when the configuration is modified through the configuration management panel, it can be triggered, but when manually editing `config.toml` or calling `setConfig()` programmatically, the `on_config_update` callback is not triggered.
+
+**Cause**: `ConfigManager` emits `config.set` / `config.updated` lifecycle events when the configuration changes, but lacks the subscription logic to forward these events to each component's `on_config_update` method.
+
+**Root Cause Chain**:
+```
+Core does not subscribe to config.set / config.updated
+  → Configuration change events are not forwarded
+    → on_config_update is not called
+      → Manual editing of files / code setConfig does not trigger hot update callback
+```
+
+**Affected Version**: All versions
+
+**Fixed Version**: 2.6.2
+
+**Fixed Content**: `ModuleManager` / `AdapterManager` register `config.set` (covering the code `setConfig()` path) and `config.updated` (covering the manual file editing path) event subscriptions, matching by configuration key prefix and calling the corresponding component's `on_config_update`, passing type-safe configuration objects. Also fix `_flush_config()` not synchronizing `_config_mtime` after writing the file, avoiding the framework itself writing being mistakenly judged as an external modification and repeatedly triggering `config.updated`.
+
+**Compatibility Note**: Hot configuration updates are now uniformly maintained by the core framework. Previously, the configuration management panel was responsible for triggering, which has been removed, so after upgrading the framework, the configuration management panel must also be upgraded, otherwise repeated triggers (core + panel each call) will occur. The signature and semantics of `on_config_update` remain unchanged, subclasses do not need to modify.
+
+**Fixed Date**: 2026/07/23
+
+**Severity**: 🟡 Medium
+
+**Type**: Configuration System
+
+---
+
+### [BUG-026] notice/request event reply target inference error
+
+**Problem**: In group notification events (such as member joining a group `group_member_increase`), calling `event.reply()` sends the message to the user's private chat who triggered the event, not to the group where the event occurred. The same applies to friend notification events, where the reply target may be incorrect.
+
+**Cause**: `infer_receive_type()` directly returns the `detail_type` as the session type. For message events, this is correct (the `detail_type` values `private`/`group` are the session types), but for notice/request events, the `detail_type` is a semantic subtype (such as `group_member_increase`, `friend_increase`), not the session type. The subsequent `convert_to_send_type()` and `get_id_field()` look-up tables do not find this value, reverting to the default `"user"` / `"user_id"`, causing the reply target to be incorrect.
+
+**Root Cause Chain**:
+```
+notice event detail_type="group_member_increase"
+  → infer_receive_type() directly returns "group_member_increase"
+    → convert_to_send_type("group_member_increase") not in mapping table → reverts to "user"
+    → get_id_field("group_member_increase") not in mapping table → reverts to "user_id"
+      → target_id = event["user_id"]  ← new member's private chat (not the group)
+```
+
+**Affected Version**: All versions
+
+**Fixed Version**: 2.7.0-dev.3
+
+**Fixed Content**: `infer_receive_type()` adds a check—only returns `detail_type` directly if it is a known session type (standard or custom type); otherwise, infers the correct session type based on the ID field (`group_id` / `channel_id` / `user_id`, etc.).
+
+**Regression Test**: `tests/unit/test_unit_session_type.py` → `TestNoticeRequestTypeInference` (10 test cases)
+
+**Fixed Date**: 2026/07/29
+
+**Severity**: 🟢 Minor
+
+**Type**: Event System
+
+---
+
+### [BUG-027] Route rate limiting cleanup task uses fixed window, causing long window rate limiting rules to fail
+
+**Problem**: When routing rate limiting is configured as a long window rule (such as `100/hour`, `{"requests": 100, "window": 3600}`), the rate limiting is ineffective—practically behaving like `100/minute` (approximately 6000 requests per hour), completely failing to provide the expected hourly protection.
+
+**Cause**: `_apply_rate_limit` parses the actual `window` (up to 3600 seconds) for each route, and per-request checks indeed use this window; however, the background cleanup task `_cleanup_expired_rate_limits` uses a fixed constant `DEFAULT_RATE_LIMIT_WINDOW_SECS` (60 seconds) as the unified cleanup threshold for all routes. Thus, `100/hour` routes have their timestamps earlier than 60 seconds cleared by the cleanup task, so the hour window never accumulates close to 100 records, severely weakening the rate limiting.
+
+**Root Cause Chain**:
+```
+_apply_rate_limit parses window=3600 (100/hour)
+  → per-request check uses 3600s to retain timestamps (correct)
+  → but _cleanup_expired_rate_limits uses fixed max_window=60s to clean up
+    → timestamps earlier than 60s are cleared
+      → the hour window only retains records from the last 1 minute
+        → 100/hour effectively degrades to ~100/minute (weakened by about 60x)
+```
+
+**Affected Version**: 2.6.0-dev.0 - 2.7.0-dev.4
+
+**Fixed Version**: 2.7.0-dev.5
+
+**Fixed Content**: Add `_rate_limit_windows: dict[str, int]` to record the actual window for each route; write the window when creating the entry in `_apply_rate_limit`; modify `_cleanup_expired_rate_limits` to clean up based on each key's own window (fallback to default if missing); maintain both dictionaries during cleanup and `stop()`.
+
+**Fixed Date**: 2026/07/31
+
+**Regression Test**: `tests/unit/test_unit_router.py` → `TestRateLimit::test_cleanup_respects_per_route_window`
+
+**Severity**: 🔴 Critical
+
+**Type**: Route
+
+---
+
+### [BUG-029] Configuration watcher broadcasts incomplete TOML and silently swallows exceptions
+
+**Problem**: When the user manually edits `config.toml` and saves it halfway (producing a temporary syntax error), the configuration monitoring background thread detects the mtime change, reloads the configuration, but fails to load, yet still broadcasts an empty configuration `{}` as `config.updated`, causing adapters/modules' `on_config_update` to receive an empty configuration, mistakenly assuming all configuration items have been cleared and reverting to default values. Additionally, the watcher loop silently swallows all exceptions with `except Exception: pass`, making it impossible to troubleshoot if the watcher fails.
+
+**Cause**: Two defects overlap:
+1. `_load_config` erases `self._cache` as `{}` when TOML syntax errors/permission errors occur, but both `_watch_loop` and the cache timeout path `_check_cache_validity` unconditionally execute `_emit_config_updated()` after calling `_load_config()`, broadcasting the "empty cache produced by failed load" as a real change.
+2. `_watch_loop` uses `except Exception: pass` without logging any errors.
+
+**Root Cause Chain**:
+```
+User saves halfway → TOML syntax error
+  → _load_config() erases _cache = {}
+    → _watch_loop unconditionally _emit_config_updated(new_config={})
+      → Adapters/modules on_config_update receive empty configuration
+        → Mistakenly assume all configurations have been cleared, revert to default values
+```
+
+**Affected Version**: 2.6.2-dev.1 - 2.7.0-dev.4
+
+**Fixed Version**: 2.7.0-dev.5
+
+**Fixed Content**:
+1. `_load_config` returns a `bool`; on TOML syntax error/permission error/other errors, retain the last valid cache (no longer erase to `{}`), only record diagnostic logs and return `False`
+2. `_watch_loop` and `_check_cache_validity` only emit `config.updated` if `_load_config()` returns `True`
+3. Change `except Exception` in `_watch_loop` to log at warning level (add i18n key `core.config.watcher_error`, synchronized for five languages)
+
+**Fixed Date**: 2026/07/31
+
+**Regression Test**: `tests/unit/test_unit_config.py` → `test_malformed_toml_preserves_last_valid_cache`, `test_permission_denied_logs_clear_message` (updated to verify cache retention and return False)
+
+**Severity**: 🟡 Medium
+
+**Type**: Configuration System
+
+---
+
+### [BUG-030] Configuration watcher race condition causes delayed write of setConfig to silently drop data
+
+**Problem**: Multiple users report that after using `config.setConfig(key, value)` (default `immediate=False`), their module configuration is not written to `config.toml`, while other modules' configuration is normal. Setting `immediate=True` (force flush) can avoid this. The result is that configuration written during runtime is lost after the next restart, while configuration generated during startup is retained.
+
+**Cause**: Two overlapping defects:
+1. **Logical defect**: `_watch_loop` unconditionally `_dirty_keys.clear()` when `_check_file_change()` returns `True`, discarding all pending write keys. However, `_check_file_change()` only compares mtime with `!=`, and the framework's own `_flush_config` write also changes mtime—although `_flush_config` updates `_config_mtime` after writing, the watcher thread may still observe the mtime difference (between file write and mtime assignment) and other coarse-grained file systems, mistakenly judging it as "external modification" and clearing all pending write keys.
+2. **Thread defect**: `_watch_loop` operates on `_write_timer`/`_dirty_keys` without holding `_lock`, creating data races with `setConfig` (holding lock to write `_dirty_keys`), `_schedule_write` (holding lock to write `_write_timer`).
+
+**Root Cause Chain**:
+```
+Module A setConfig(immediate=True) → flush write, mtime changes
+  → User module setConfig(immediate=False) → enters _dirty_keys, flushes after 5s
+    → Watcher polls, _check_file_change observes mtime difference from previous self-write
+      → _dirty_keys.clear() → User module's pending write keys are silently discarded
+        → Configuration missing after restart
+```
+
+**Affected Version**: 2.6.0 - 2.7.0
+
+**Fixed Version**: 2.7.1
+
+**Fixed Content**:
+1. Add `_last_self_write_mtime` field, `_flush_config` records it after writing; `_check_file_change` compares this value first when mtime changes, matching indicates self-write returns `False`
+2. Entire `_watch_loop` holds `_lock`; truly external modification retains `_dirty_keys` (merge semantics), next flush merges with external content (dirty keys take precedence), no longer `clear()`
+3. `getConfig`/`_check_cache_validity` paths are unaffected (their reload does not clear dirty keys)
+
+**Fixed Date**: 2026/08/06
+
+**Regression Test**: `tests/unit/test_unit_config.py` → `test_self_write_not_detected_as_external`, `test_external_change_preserves_dirty_keys`, `test_flush_merges_dirty_with_external`
+
+**Severity**: 🔴 Critical
+
+**Type**: Configuration System
+
+---
+
+### [BUG-032] Reading after writing with delay returns old value
+
+**Problem**: `config.setConfig()` (default `immediate=False` delay of about 5 seconds) writes a dot-separated key, immediately reads its **parent/ancestor node** (e.g., `set_erispulse_section("scope.actions.MyModule", {...})` followed by `get_erispulse_config()`) returns the old value, the written sub-key "disappears" until the flush, affecting scenarios like "write-read-write" in scope configuration hot updates (exposed by 2.8.0 test plugin `/t_section` use case).
+
+**Cause**: `setConfig` stores dot-separated keys in a **flat** form in the pending write queue `_dirty_keys`, and only `getConfig` with **exact key queries** hits the pending queue; tree-path queries (e.g., `getConfig("ErisPulse.scope")`) only walk the cache tree, not overlay pending values—during the delay flush (`_flush_config` merges dirty keys into cache and clears the queue), a read-you-write-break layer forms.
+
+**Affected Version**: 2.6.0 - 2.8.0-dev.1
+
+**Fixed Version**: 2.8.0-dev.1
+
+**Fixed Content**: `getConfig` introduces pending overlay semantics—① exact hit in pending key returns directly (original behavior unchanged); ② pending key is an ancestor of the query key → take the longest pending ancestor and parse the remaining path in its value subtree; ③ pending key is a descendant of the query key → build an overlay subtree (`_dirty_overlay`) and deep merge with the cache subtree (`_deep_merge`, override priority, no modification of original cache object). No pending key → walk the original fast path, zero additional overhead.
+
+**Fixed Date**: 2026/09/04
+
+**Regression Test**: `tests/unit/test_unit_config.py` → `test_get_config_overlays_dirty_descendant`, `test_get_config_overlay_merges_with_cache_siblings`, `test_get_config_overlay_new_branch`, `test_get_config_dirty_ancestor_query`, `test_get_config_dirty_exact_key_still_wins`
+
+**Severity**: 🟡 Medium
+
+**Type**: Configuration System
+
+---
+
+### [BUG-033] wait_reply hangs replies are starved by high-priority processors
+
+**Problem**: When a module calls `wait_reply()` to wait for a user reply, if that reply message is claimed by a higher-priority event processor (`mark_processed()`), the command dispatcher, seeing the `_processed` flag at the entry, returns directly, and the reply matching logic at the end of the dispatcher is never executed—the waiting party receives no reply and times out, returning `None`. Typical trigger scenario: robots using high-priority message processors (recording/auditing/blocking types) have random failures in all conversational interactions.
+
+**Cause**: The reply matching `_check_pending_reply` is placed at the end of `_handle_message` (only executed if the command is not matched), while the `_processed` check is before it—order of claim checking and reply matching is reversed. Interactive waiting is a framework-level session continuation mechanism, not a competition between processors, and should not be affected by other processors' claim.
+
+**Affected Version**: 2.2.0-dev.0 - 2.8.0-dev.1
+
+**Fixed Version**: 2.8.0-dev.2
+
+**Fixed Content**: Move reply matching to the entry of `_handle_message` (before `_processed` check, only for message events): first try to complete the pending conversation, if matched, the event is marked as processed, and the following checks naturally short-circuit; if not matched, continue the original command matching process. Also delegate the judgment chain to a new interaction session manager (`Core/Event/interaction.py`), gaining the ability to cancel and review permissions by affiliation.
+
+**Fixed Date**: 2026/09/08
+
+**Regression Test**: `tests/unit/test_unit_interaction.py` (TestRegisterResolve matched/unmatched/claim mark), `tests/unit/test_unit_event.py` (wait_reply full chain)
+
+**Severity**: 🟡 Medium
+
+**Type**: Event System / Command System
+
+---
+
+### [BUG-034] persist=False runtime bindings are silently overwritten by subsequent persistent writes
+
+**Problem**: Runtime bindings set with `scope.set(path, value, persist=False)` are written to memory `self._data` as documentation promises not to persist and to be invalidated after process restart or module unloading, but any subsequent persistent write (default, such as a module `set_module` or WebUI saving configuration) triggers the scope to rebuild the configuration tree from the configuration file, causing all previous runtime bindings to be silently lost (reverted to default放行), with no log prompts. Scenarios dependent on runtime bindings (Dashboard "runtime-only" switches, module runtime dynamic disabling) revert after unrelated module writes.
+
+**Cause**: Root cause chain: `ScopeManager.set()` writes the value directly into the memory configuration tree `_data` (runtime bindings are also written directly into `_data`); persistent branches make a deep copy snapshot of the entire `_data` tree and submit it to `update_erispulse_config` for differential writing, with the snapshot mixing in the runtime binding values. `delete(persist=True)` same source: the live reference (`parent` node) is handed over to the delayed write dirty queue, and during the delayed flush period, the live reference remains in the dirty queue, causing cross-write contamination window.
+
+**Affected Version**: 2.8.0-dev.2 - 2.9.0-dev.0
+**Fixed Version**: 2.9.0-dev.2
+**Fixed Content**: Introduce a persistent baseline `_persisted_tree` (the configuration tree is refreshed from the disk-loaded, validated tree as the mirror of disk truth): `set(persist=True)` only applies this change to the baseline and submits the difference for persistence, so runtime bindings never enter the persistent content; "read after write" is restored from the memory final state snapshot directly, no longer via `_apply_tree` reconstruction to avoid contaminating the baseline. `delete(persist=True)` same口径: apply deletion to the baseline and hand over the deep copy of the baseline subtree to the persistent layer; `set_action` replaces the entire rule by first deleting according to the same口径 then writing, old rule keys do not remain in the persistent content.
+
+**Fixed Date**: 2026/09/27
+
+**Reproduction Steps**: ① `scope.set("bots.p.debug_mode", {"blocked": ["X"]}, persist=False)`; ② trigger any persistent write (such as another module calling `set_module`); ③ open `config/config.toml`, see `debug_mode` has been written (before fix); ④ unload the module (runtime binding is unregistered) then trigger configuration reload, `scope.get("bots.p.debug_mode")` still returns the bound value.
+
+**Regression Test**: `tests/unit/test_unit_scope.py::TestPersistBaseline` (runtime bindings not written to disk with unrelated persistent writes / unloading and configuration reload do not revive / delete submits baseline subtree without runtime siblings / set_action replacement leaves no residual key / cache_size configuration takes effect)
+
+**Severity**: 🔴 Critical
+
+**Type**: Configuration System
+
+---
+
+### [BUG-035] Configuration panel select options and dict fields rendered as [object Object]
+
+**Problem**: In the WebUI configuration panel, select field options are displayed as `[object Object]` (such as dynamically generated color style options); undeclared control type dict fields (such as `stalker_mode`, `knowledge_base`, etc.) are displayed as `[object Object]` in text boxes, making them impossible to view and edit.
+
+**Cause**: Two independent defects: ① The framework i18n parser `_resolve_i18n_text` only restores dictionaries with an `i18n` key, and options with only a `default` key (dynamic text without an `i18n` key) are passed through as is, and the frontend `esc(label)` string coercion results in `[object Object]`; ② The Dashboard rendering branch only handles JSON textarea for array types, dict values fall into the plain text input branch and are coerced to `String()`. In addition, if a module declares `_schema_meta` as a regular dataclass field (missing `ClassVar` annotation), it will be treated as a configuration field and enter the schema, exacerbating the confusion.
+
+**Affected Version**: 2.7.0 - 2.8.0-dev.2
+**Fixed Version**: 2.8.0-dev.2
+**Fixed Content**: ① `_resolve_i18n_text` supports restoring text from dictionaries with only a `default` key; ② Framework schema/template/default value/population/validation five places exclude fields with leading underscores (harmless if misdeclared); ③ Dashboard select option label object fallback parsing (prioritize `default`), dict/table fields rendered as JSON textarea (save path as `tp=object` JSON.parse backwrite, complete round-trip).
+
+**Fixed Date**: 2026/09/09
+
+**Regression Test**: `tests/unit/test_unit_config.py::TestResolveI18nDefaultOnlyDict`, `TestSchemaUnderscoreFieldExclusion`
+
+**Severity**: 🟡 Medium
+**Type**: Configuration System
+
+---
+
+### [BUG-036] Multi-instance shared configuration directory causes occasional configuration write failures (ENOENT)
+
+**Problem**: In Docker deployment scenarios (multiple containers mounting the same host configuration directory), the log occasionally shows two consecutive lines of `Failed to write configuration file ... [Errno 2] No such file or directory: '...config.toml.tmp' -> '...config.toml'`. This configuration write is discarded (the old configuration is fully preserved, no configuration loss is observed), functionality is unaffected, but the alert repeats, interfering with troubleshooting, and pending configuration items must wait for the next write to be written to disk.
+
+**Cause**: Root cause chain: `_flush_config` / `setConfigTemplate` uses a **fixed-name** temporary file `config.toml.tmp` to carry new content, `write()` does not `fsync` before `rename()` directly. Two ErisPulse instances sharing the same configuration directory may have B instance `open("w")` **truncate** A instance's currently writing temporary file → A `rename()` when the target has been taken or content truncated by B, reporting ENOENT (i.e., the user's log of two consecutive errors). In reported cases, only the write failure alert is observed (the old configuration is preserved); if the timing of the cross-over is more extreme, `rename` may output an empty/half-written `config.toml` (a potential risk, not yet exploded in real environments). Single instance scenarios also have the "rename metadata before data block is written to disk" crash window (SIGKILL / power failure). `_file_lock` is a process-level `threading.RLock`, with no constraints on cross-process/cross-container writes.
+
+**Affected Version**: 2.2.0-dev.0 - 2.8.0
+
+**Fixed Version**: 2.8.1
+
+**Fixed Content**: Configuration writes are unified to `_atomic_write_text()`: generate a unique temporary file per process in the same directory (eliminating fixed-name contention, multiple instances degrade to last-writer-wins, no ENOENT); write to disk and `flush + fsync` to force data to disk (eliminating the "rename has taken effect, data not yet written" window); `os.replace` atomically replaces the target (atomic on both POSIX/Windows, at any moment on disk either the complete old content or the complete new content); additionally `fsync` the configuration directory on POSIX. All three write points (`_flush_config`, `setConfigTemplate`, root directory configuration migration) switch; exception path cleanup logic is refactored with the unique temporary file name. Add **multi-instance detection**: at startup, an advisory lock (`flock` on POSIX / `msvcrt.locking` on Windows) is held exclusively on the configuration directory lock file `.erispulse_config.lock`, if occupied, an i18n alert is output (does not block startup), and the lock is automatically released by the OS when the process exits, with no ghost lock.
+
+**Fixed Date**: 2026/09/13
+
+**Reproduction Steps**: ① Two containers mount the same host `config/` directory and run ErisPulse simultaneously; ② Trigger a configuration write in any instance (such as module registration default configuration); ③ Observe the log showing ENOENT write failure alerts, this write is discarded (the old configuration is preserved).
+
+**Associated**: User report (1Panel container ×2)
+
+**Regression Test**: `tests/unit/test_unit_config_atomic_write.py` (content fully written / no temporary file residue / write failure preserves original file / concurrent writing of two instances always results in a legal file / lock file creation / multi-instance alert / atomic write during migration)
+
+**Severity**: 🟢 Minor
+
+**Type**: Configuration System
+
+---
+
+### [BUG-037] Space-separated command name registration never triggers
+
+**Problem**: After registering a subcommand with a space-separated command name (such as `@command("admin add")`), the command can be registered normally and appears in the help list, but when the user sends `/admin add`, the robot never responds—the input is matched as the parent token `admin` plus parameters `["add"]`; if the parent token is also unregistered, there is no response at all. Only when using dot-separated naming (such as `admin.reload`, treated as a single token) can the issue be avoided.
+
+**Cause**: Root cause chain: `CommandHandler.__call__` stores any command name (including space-separated) as a key in the flattened `self.commands` dictionary → the distribution phase `_try_execute_command` only matches the first token of the message (`cmd_name = parts[0]`) → multi-token command names as dictionary keys are never found. The registration and matching phases have inconsistent assumptions about the command name space, and there is no registration-time warning (silent failure).
+
+**Affected Version**: From the introduction of the command system to 2.8.0
+
+**Fixed Version**: 2.8.1
+
+**Fixed Content**: The matching layer changes to **longest prefix matching**: starting from the longest candidate (`" ".join(parts[:n])`, with `n` upper limit being the maximum token count of registered command names/aliases, cached in `_max_name_tokens`), try matching step by step, and if matched, execute with the remaining tokens as parameters. Downstream effects (scope/ACL/override/master/permission chain) naturally take effect on the full command name. Accompanying semantics: when parent and child coexist, if the child command is not registered, it falls back to the parent command (unchanged historical behavior); if the child command does not declare `permission`, it inherits the most recently declared ancestor command's permission (protecting the parent command protects all its child commands); only registering single-token commands results in a hit in the first round, and the distribution overhead is consistent with the original.
+
+**Fixed Date**: 2026/09/13
+
+**Reproduction Steps**: ① Register in the module `@command("admin add")`; ② Send `/admin add x`; ③ Before the fix, there is no response (or is caught by `/admin` as a parameter), after the fix, `admin add` is triggered and `get_command_args()` is `["x"]`.
+
+**Regression Test**: `tests/unit/test_unit_command_subcommand.py` (longest prefix match / only child command triggers / three-level nesting / case sensitivity two modes / single and multi-token alias / event payload full name / lifecycle hook full name / permission inheritance six examples / ACL glob full name / master / unregistration fallback and cache recalculation)
+
+**Severity**: 🟡 Medium
+
+**Type**: Event System
+
+---
+
+### [BUG-038] persist=False runtime bindings are persisted with persistent writes, "resurrecting" from disk after module unloading
+
+**Problem**: Runtime bindings set with `scope.set(path, value, persist=False)` (documentation promises not to persist, and to be invalid after process restart, and to be cleared when the module is unloaded) will be included in any unrelated persistent write (default value, such as module `set_module` / WebUI save configuration) and be written to the user's `config.toml` along with the write. After the module is unloaded and the runtime binding is cleared, the binding is "resurrected" from disk during the next configuration reload and continues to be effective after process restart — contrary to the "runtime binding does not persist" semantic contract, and extremely difficult to trace.
+
+**Cause**: Root cause chain: `ScopeManager.set()` first writes the value into the memory configuration tree `_data` (runtime bindings are also directly written into `_data`), and the persistent branch makes a deep copy snapshot of the entire `_data` tree and submits it to `update_erispulse_config` for differential writing, mixing the runtime binding value into the snapshot. `delete(persist=True)` same source: the live reference (`parent` node) is handed over to the delayed write dirty queue, and during the delayed flush period, the live reference remains in the dirty queue, causing a cross-write contamination window.
+
+**Affected Version**: 2.8.0-dev.2 - 2.9.0-dev.0
+
+**Fixed Version**: 2.9.0-dev.2
+
+**Fixed Content**: Introduce a persistent baseline `_persisted_tree` (the configuration tree is refreshed from the disk-loaded, validated tree as the mirror of disk truth): `set(persist=True)` only applies this change to the baseline and submits the difference for persistence, so runtime bindings never enter the persistent content; "read after write" is restored from the memory final state snapshot directly, no longer via `_apply_tree` reconstruction to avoid contaminating the baseline. `delete(persist=True)` same口径: in the baseline, apply the deletion and hand over the deep copy of the baseline subtree to the persistent layer; `set_action` replaces the entire rule by first deleting according to the same口径 then writing, old rule keys do not remain in the persistent content.
+
+**Fixed Date**: 2026/09/27
+
+**Reproduction Steps**: ① The module executes `scope.set("bots.p.debug_mode", {"blocked": ["X"]}, persist=False"); ② Trigger any persistent write (such as another module calling `set_module`); ③ Open `config/config.toml`, see `debug_mode` has been written (before fix); ④ Unload the module (runtime binding is unregistered) then trigger configuration reload, `scope.get("bots.p.debug_mode")` still returns the bound value.
+
+**Regression Test**: `tests/unit/test_unit_scope.py::TestPersistBaseline` (runtime binding does not get written to disk with unrelated persistent writes / unloading and configuration reload does not revive / delete submits baseline subtree without runtime siblings / set_action replacement leaves no residual key / cache_size configuration takes effect)
+
+**Severity**: 🔴 Critical
+
+**Type**: Configuration System
+
+---
+
+### [BUG-039] Inconsistent read/write when section write and dotted write coexist (dotted overwrite lost)
+
+**Problem**: During the delay flush window, when both section write (`setConfig("Mod", {...})`, such as `BaseModule.cfg` writing back) and dotted write (`setConfig("Mod.key", v)`, such as configuration hot update / test tool overwrite) coexist, there are two variants: Variant A (read path) — `getConfig("Mod")` whole section read returns the old section pending write snapshot, does not see the later dotted overwrite (dotted read path normal); Variant B (write path, more serious) — dotted write before, section write after (common test tool injection overwrite → module `self.cfg = ...` writing back sequence) — flush applies dirty keys in insertion order, section write completely replaces the section, **dotted overwrite is permanently lost on disk**. Production environment "configuration hot update + module runtime write back" combination can trigger this, unrelated to test environment (ErisPulse-DailyCard test feedback exposed).
+
+**Cause**: `getConfig` first (exact match in `_dirty_keys`) returns `self._dirty_keys[key]` directly, completely bypassing the fourth section `_dirty_overlay` descendant overlay; `_flush_config` applies dirty keys in insertion order, section write happens after dotted write, so dotted value is overwritten. Also: `getConfig` returning (exact match in dirty keys) still overlays `_dirty_overlay` descendants (non-dict values return overlay subtree, same口径 as ③+④ scalar edges); ③ involves dirty values `getConfig` returning (exact match / ancestor subtree / overlay merge) is changed to `copy.deepcopy` isolated copy, no longer leaks dirty queue internal reference; no dirty key fast path and pure cache read behavior unchanged.
+
+**Affected Version**: 2.6.0 - 2.9.0-dev.2
+
+**Fixed Version**: 2.9.0-dev.2
+
+**Fixed Content**: Dirty window unified to **specificity priority** semantics — dotted (more specific) pending value takes precedence over section (wider) pending value, read path and flush path same口径: ① `getConfig` after exact match in dirty key still overlays `_dirty_overlay` descendants (non-dict value returns overlay subtree, same口径 as ③+④ scalar edges); ② `_flush_config` applies dirty keys in path depth order (section/ancestor first, dotted/descendant later, stable sort keeps same depth write order). Cost: Same dirty window (about 5 seconds) section write back cannot cover still pending dotted write — read path fixed after read-modify-write naturally carries dotted value, actual impact surface is extremely small. ③ Involving dirty values `getConfig` returning (exact match / ancestor subtree / overlay merge) is changed to `copy.deepcopy` isolated copy, no longer leaks dirty queue internal reference; no dirty key fast path and pure cache read behavior unchanged.
+
+**Fixed Date**: 2026/09/28
+
+**Reproduction Steps**: ① `setConfig("FB.y", 1)`; ② `setConfig("FB", {"z": 2})`; ③ `force_save()` — before fix, disk only has `[FB] z = 2` (y lost), after fix `{"y": 1, "z": 2}`; Variant A: after steps ①② without flush directly `getConfig("FB")` — before fix does not contain `y`, after fix visible.
+
+**Regression Test**: `tests/unit/test_unit_config.py::TestSectionAndDottedDirtyConsistency` (variant A two insertion orders / variant B flush and order irrelevant / three-level mixed survival / isolated copy / ancestor subtree isolated)
+
+**Severity**: 🟡 Medium
+
+**Type**: Configuration System
+
+---
+
+### [BUG-040] Command tail parameters in platform-split messages are silently lost
+
+**Problem**: When the platform splits a message into multiple text segments (such as `/kick` with a mention segment in between, or input method segmentation), the command distribution only takes the first text segment for matching — `/艾特 @xxx 123` is parsed as an empty command `艾特`, and a command declared with `args=` reports "missing parameters", with no trace left.
+**Cause**: The text extraction loop in `command.py` takes the first `type=="text"` segment and `break`s, discarding all other segments (including all non-text segments).
+**Affected Version**: 2.6.0 (command distribution introduced) - 2.10.0
+**Fixed Version**: 2.10.1-dev.0
+**Fixed Content**: Command text is changed to collect all text segments in order and concatenate them with spaces; mention/image layers no longer cause the entire command to fail to parse; also complete malformed segment tolerance (message is None/string/non-dict segment no longer crashes the distributor).
+**Regression Test**: tests/unit/test_unit_command_multiseg.py
+
+**Severity**: 🟡 Medium
+**Type**: Event System
+
+---
+
+### [BUG-041] Rejected commands via alt_message chain rerun: duplicate replies and permission function side effects triggered twice
+
+**Problem**: When the adapter's `alt_message` and message segment text are inconsistent (such as alt containing @text prefix), after a command is rejected by scope/ACL/master/permission, the distributor uses alt_message to rerun the entire chain — the user receives two "permission denied" replies, and custom permission functions (often with database query/count side effects) are called twice.
+**Cause**: The rejection path `return False` and "no command matched" share the same return value, so the distributor considers it possible to try alt fallback; however, the event was already claimed before rejection, and the rerun only executes the reply and permission judgment again.
+**Affected Version**: 2.9.0 (governance/permission chain formed) - 2.10.0
+**Fixed Version**: 2.10.1-dev.0
+**Fixed Content**: Text processing is changed to a three-state contract (unmatched/consumed/rejected) — after matching a registered command (regardless of rejection), alt fallback is no longer used; only when no command is matched does alt fallback remain.
+**Regression Test**: tests/unit/test_unit_command_multiseg.py::test_denied_command_not_rerun_via_alt
+
+**Severity**: 🟡 Medium
+**Type**: Event System
+
+---
+
+### [BUG-042] wait_reply registered within command handler is immediately consumed by the same trigger message
+
+**Problem**: When `wait_reply` / registering interaction wait is called within a command handler, the wait is immediately consumed by the same command message — the first interaction prompt is skipped, and the "user reply" is actually the command text itself (wrong answer/data pollution).
+**Cause**: `_handle_message` calls `interaction.resolve` once at the beginning and once at the end — the command execution after the end call will match the newly registered wait; cmdpass closing with alt missing scenario judgment is empty string directly allowed, exacerbating the problem.
+**Affected Version**: 2.8.0 (interaction session system introduced) - 2.10.0
+**Fixed Version**: 2.10.1-dev.0
+**Fixed Content**: The distribution chain is converged to a single `interaction.resolve` (at the beginning), delete the end call; waits are unified to be consumed by the next message.
+**Regression Test**: tests/unit/test_unit_command_multiseg.py::test_wait_reply_not_consumed_by_command_trigger
+
+**Severity**: 🟡 Medium
+**Type**: Event System
+
+---
+
+### [BUG-043] select() with same key multiple waits silently cancels the latter with the former
+
+**Problem**: `event.select()` with multiple expectations derived from the same session key (same user different pattern, multiple session expectations, etc.) causes the latter registration to cancel the former with "conflict", and select directly throws `InteractionCancelled` instead of the documentation-pledged timeout returning `(None, None)`.
+**Cause**: Each path independently calls `interaction.register`, and its mutual exclusion semantics for the same key sends `REASON_CONFLICT` to cancel; the comment claims "multiple paths for the same user are independent and do not conflict" is incorrect — replicas only change `user_id`, the same user multiple paths have exactly the same key.
+**Affected Version**: 2.9.0 (select introduced) - 2.10.0
+**Fixed Version**: 2.10.1-dev.0
+**Fixed Content**: Select is changed to aggregate waits — all expectations are merged into a single entry with a custom matcher (key collection registration, sharing the same future), any path match returns the corresponding index; multiple paths with the same key naturally coexist.
+**Regression Test**: tests/unit/test_unit_command_multiseg.py::test_select_same_user_multi_branch
+
+**Severity**: 🟡 Medium
+**Type**: Event System
+
+---
+
+### [BUG-044] BaseConverter.at() produces OB11 legacy "at" segment, all framework mention detection does not recognize
+
+**Problem**: When the adapter uses `BaseConverter.at()` to assemble an inbound event, `must_at_bot` / `has_mention()` / `on_at_message` all become blind — the @bot command silently fails in the group.
+**Cause**: `at()` produces `{"type": "at"}` (OB11 form), while all framework mention detection and construction sides (MessageBuilder/sending modifiers) are for OB12's `"mention"`, with two rails and no warning.
+**Affected Version**: No earlier than 2.5.0 - 2.10.0
+**Fixed Version**: 2.10.1-dev.0
+**Fixed Content**: `at()` changed to produce `{"type": "mention", "data": {"user_id": ...}}` (method name retained as alias, new `mention` alias added).
+**Regression Test**: tests/unit/test_unit_command_multiseg.py::test_converter_at_produces_mention
+
+**Severity**: 🟡 Medium
+**Type**: Adapter
+
+---
+
+### [BUG-045] Interaction primitives permanently timeout and command penetration fail when no alt_message is provided by the adapter
+
+**Problem**: When the adapter only fills the message segment and does not fill `alt_message`, `confirm` / `choose` / `collect` all reply to the user's plain text (such as "yes") permanently waiting; during the waiting period, the registered command can never penetrate execution; `Event.get_text()` returns an empty string causing scaffolding examples to silently fail.
+**Cause**: All of the above paths directly take `alt_message` string, with no message segment fallback — the framework's "alt_message is an optional field for adapters" contract, with only segment filling being a legal form.
+**Affected Version**: All interaction primitive introduction versions - 2.10.0
+**Fixed Version**: 2.10.1-dev.0
+**Fixed Content**: Uniformly use `alt_message` priority + text segment fallback `extract_text`口径 (five places of value/examination points for interaction primitives, cmdpass judgment, `Event.get_text()/get_message_text()`).
+**Regression Test**: tests/unit/test_unit_command_multiseg.py
+
+**Severity**: 🟡 Medium
+**Type**: Event System
+
+---
+
+### [BUG-046] Declarative configuration template's nested sub-headers drift to top-level header
+
+**Problem**: When nested dataclass declares configuration (ConfigClass with nested dataclass fields), the nested sub-header `[Nested]` falls into the top level of the file instead of the component section when the configuration template is first generated — the adapter cannot read `cfg.嵌套字段` value; `config.full.example` is also misplaced.
+**Cause**: The template generator renders the relative table header (e.g., `[Nested]`) for the nested dataclass, while TOML table header semantics are absolute paths from the root; `setConfigTemplate` old implementation moves the parsed table object into the component section, and `full.example` directly text concatenates, neither path anchors the relative table header to the component path.
+**Affected Version**: 2.10.0 - 2.10.1 (nested dataclass template rendering introduced with this version)
+**Fixed Version**: 2.10.2
+**Fixed Content**: `setConfigTemplate` precisely re-anchors the table header (e.g., `[Nested]` → `[组件名.Nested]`) based on the template's parsed sub-table path; `config.full.example` generation side changes to pass `_prefix` to directly produce absolute table headers.
+**Regression Test**: tests/unit/test_unit_config.py::TestTomlclassEngineMigration::test_template_write_idempotent_and_nested_anchored
+
+**Severity**: 🟡 Medium
+**Type**: Configuration System / Adapter
+
+---
+
+### [BUG-047] Service directory full enumeration misses lazy-loaded modules
+
+**Problem**: `sdk.module.services()` full enumeration skips un-instantiated (lazy-loaded) modules — modules that declare `meta.services` do not appear in the directory, making it impossible for discovery-based consumers (AI agents, help modules, etc.) to find their services; single-module precise query `services("Name")` and topology `get_topology()` are unaffected.
+**Cause**: In the `ModuleManager.services()` full enumeration branch, modules without a contract cache are skipped after on-the-spot parsing of the contract, with an unconditional `continue` — the original intention was to skip modules that do not declare services, but in fact, all un-loaded modules are skipped; loaded modules are unaffected because they write the contract cache on loading.
+**Affected Version**: 2.9.0 - 2.10.1 (module RPC and service directory introduced with 2.9.0)
+**Fixed Version**: 2.10.2
+**Fixed Content**: Remove the unconditional skip, unify by "skipping only if the parsing result is empty" to determine; un-loaded modules are parsed on-the-spot for `get_meta().services` (same口径 as `module.call()` white list), modules that declare services are included in the directory.
+**Regression Test**: tests/unit/test_unit_module_rpc.py::TestServicesDirectory::test_lazy_declared_module_in_full_directory
+
+**Severity**: 🟡 Medium
+**Type**: Loading System

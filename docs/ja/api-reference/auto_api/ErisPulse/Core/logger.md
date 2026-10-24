@@ -1,0 +1,946 @@
+# `ErisPulse.Core.logger` 模块
+
+---
+
+## 模块概述
+
+
+ErisPulse 日志系统
+
+提供模块化日志记录功能，支持多级日志、模块过滤和内存存储。
+
+> **提示**
+> 1. 支持按模块设置不同日志级别
+> 2. 日志可存储在内存中供后续分析
+> 3. 自动识别调用模块名称
+
+---
+
+## 函数列表
+
+
+### `_make_file_formatter() -> logging.Formatter`
+
+构建非 JSON 模式下的日志文件格式化器
+
+**内部方法**
+
+**返回值**: 带日期时间、级别且单行化的 Formatter
+
+---
+
+
+### `_format_message(msg: object, args: tuple) -> str`
+
+将日志消息与位置参数按 ``%`` 风格格式化
+
+有 args 时应用 ``str(msg) % args``，无 args 时保持原文不变（``%s`` 字面量保留），
+格式化失败时回退到原始字符串。控制台路径仍由 Python logging 自行格式化，
+此处仅为内存副本 / 订阅器提供与之一致的文本。
+
+**内部方法**
+
+- **msg**: 原始日志消息
+- **args**: 位置参数元组
+
+**返回值**: 格式化后的日志文本
+
+---
+
+
+### `_to_single_line(msg: str) -> str`
+
+将日志消息规范化为单行
+
+统一 CRLF / CR 为 LF 后，把真实换行转义为字面 ``\n``。多行消息
+（异常堆栈文本、多行 f-string 等）若原样进入内存 / 订阅器 /
+plain 日志文件，会破坏"一行一记录"的日志纪律，并导致按行渲染的
+消费端（Dashboard 表格、日志采集管道）出现空消息与错位。
+
+**内部方法**
+
+- **msg**: 原始日志文本
+
+**返回值**: 不含真实换行符的单行文本
+
+---
+
+
+## 类列表
+
+
+### `class _SingleLineFormatter(logging.Formatter)`
+
+单行化文件格式化器
+
+在标准格式化结果上把真实换行转义为字面 ``\n``，保证日志文件
+一行一记录。控制台（Rich/Stream）不受影响——多行消息在终端中
+保持原始布局（如路由服务器的地址树）。
+
+**内部方法**
+
+
+### `class _MemoryLogRecord`
+
+内存日志记录（``__slots__`` 紧凑存储）
+
+替代旧实现的每条 5 键 dict（约 728B/条）：``__slots__`` 记录类去掉
+实例字典与键哈希表，显著降低常驻内存日志副本的占用。字段与旧 dict
+键一致（timestamp / level / level_num / module / message）。
+
+对外消费点（``get_logs`` / ``iter_logs`` / 订阅器补发）经 :meth:`as_dict`
+转回 dict 形态，外部 API 形状不变；保留 ``__getitem__`` 下标访问以兼容
+存量内部消费点（如测试）的 dict 风格读取。
+
+**内部方法**
+
+
+#### 方法列表
+
+
+##### `__init__(timestamp: str, level: str, level_num: int, module: str, message: str)`
+
+- **timestamp** (`ISO`): 格式时间戳
+- **level**: 日志级别名称（如 "INFO"）
+- **level_num**: 日志级别数值
+- **module**: 归属模块名
+- **message**: 单行化后的日志文本
+
+---
+
+
+##### `as_dict() -> dict[str, Any]`
+
+转为向后兼容的 dict 形态（供订阅器 / 保存路径消费）
+
+**返回值**: 含 timestamp / level / level_num / module / message 五键的字典
+
+---
+
+
+##### `__getitem__(key: str) -> Any`
+
+下标访问兼容（dict 风格读取存量内部消费点）
+
+- **key**: 字段名
+
+**返回值**: 字段值
+
+**异常**: `KeyError` - 字段不存在时
+
+---
+
+
+### `class _JsonFormatter(logging.Formatter)`
+
+JSON 日志格式化器
+
+文件用途时 message 字段单行化（保持 JSONL 一行一记录）。
+
+**内部方法**
+
+
+#### 方法列表
+
+
+##### `__init__(*, single_line: bool = False)`
+
+- **single_line**: 文件模式为 True（转义换行），控制台保持 False
+
+---
+
+
+### `class Logger`
+
+日志管理器
+
+提供模块化日志记录和存储功能
+
+> **提示**
+> 1. 使用set_module_level设置模块日志级别
+> 2. 使用get_logs获取历史日志
+> 3. 支持标准日志级别(DEBUG, INFO等)
+
+
+#### 方法列表
+
+
+##### `handler(handler_id: str = '', *, min_level: str = 'TRACE', owner: str | None = None) -> Callable`
+
+日志订阅装饰器
+
+订阅器的 ``min_level`` 可低于全局日志级别，从而显式订阅 DEBUG / TRACE
+等低级别日志。此时低级别日志仅推送给匹配的订阅器，不会输出到控制台，
+也不会写入内存（历史补发仍受全局 ``memory_limit`` 限制）。
+
+订阅在注册时归属到当前 owner（模块名/平台名），模块卸载时由框架
+统一注销；也可用 ``owner`` 参数显式指定。
+
+```python
+@sdk.logger.handler("dashboard", min_level="INFO")
+def on_log(log_data: dict): ...
+```
+
+```python
+# 显式订阅低于全局级别的日志（如全局为 INFO，仍可收到 DEBUG）
+@sdk.logger.handler("debug-tracer", min_level="DEBUG")
+def on_debug(log_data: dict): ...
+```
+
+```python
+sdk.logger.handler("dashboard", min_level="INFO")(on_log)
+```
+
+- **handler_id**: 订阅器唯一标识，为空时使用函数名
+- **min_level**: 最低日志级别
+- **owner**: 显式指定归属者；缺省时从当前 owner 上下文捕获
+
+---
+
+
+##### `_register_handler(handler_id: str, callback: Callable[[dict], None], min_level: str, *, owner: str | None = None) -> None`
+
+**内部方法**
+内部注册逻辑
+
+---
+
+
+##### `remove_handler(handler_id: str) -> bool`
+
+移除日志订阅器
+
+- **handler_id**: 注册时使用的标识
+
+**返回值** (`bool`): 是否成功移除
+
+---
+
+
+##### `unregister_by_owner(owner: str) -> int`
+
+注销指定归属者的全部日志订阅器，并回收其内存日志与模块级别
+
+模块卸载 / 适配器关闭链经归属权门面（``ownership.reclaim_sync``）
+自动调用；订阅回调通常持有模块实例，不注销会导致已卸载模块
+无法被 GC 且持续接收全量日志。同时清理该归属者的内存日志队列
+（``_logs[模块名]`` 及 ``模块名.*`` 子级）与模块级别覆盖
+（``_module_levels``），防止已卸载模块的日志残留长期驻留内存。
+
+- **owner**: 归属者（模块名 / 平台名）
+
+**返回值** (`int`): 注销的订阅器数量
+
+---
+
+
+##### `_notify_handlers(level_name: str, level_const: int, module: str, msg: str) -> None`
+
+**内部方法**
+向所有符合条件的订阅器推送结构化日志
+
+---
+
+
+##### `_has_handler_for(level_const: int) -> bool`
+
+判断是否存在订阅器愿意接收给定级别的日志
+
+订阅器的 ``min_level`` 可低于全局日志级别，从而显式订阅 DEBUG / TRACE
+等低级别日志。命中时仅推送给订阅器，不输出控制台、不写入内存。
+
+**内部方法**
+
+- **level_const**: 日志级别数值
+
+**返回值**: 存在 ``min_level <= level_const`` 的订阅器时返回 True
+
+---
+
+
+##### `set_memory_limit(limit: int) -> bool`
+
+设置单模块日志内存存储上限
+
+- **limit**: 单模块日志存储上限；``0`` 表示关闭内存日志副本
+
+    （不再写入任何内存日志，已有记录保留但不再增长），负数无效
+**返回值** (`bool`): 设置是否成功
+
+---
+
+
+##### `set_total_memory_limit(limit: int) -> bool`
+
+设置全部模块内存日志的总条数上限
+
+超限时按轮转策略淘汰最旧记录：从当前条数最多的模块队列头部
+``popleft``。与单模块 :meth:`set_memory_limit` 独立生效——两者
+任一触发都会淘汰记录。
+
+- **limit**: 全局总条数上限；``0`` 表示不限，负数无效
+
+**返回值** (`bool`): 设置是否成功
+
+**示例**:
+
+```python
+logger.set_total_memory_limit(5000)  # 全局最多保留 5000 条
+logger.set_total_memory_limit(0)     # 不限制总数
+```
+
+---
+
+
+##### `_recount_total_logs() -> None`
+
+重新统计全局内存日志总条数
+
+**内部方法**
+
+---
+
+
+##### `_evict_over_total() -> None`
+
+全局总条数超限时轮转淘汰最旧记录
+
+从当前条数最多的模块队列头部淘汰（多模块洪峰时优先削减占用大头），
+直至总数回到上限内。上限为 0（不限）时直接返回。
+
+**内部方法**
+
+---
+
+
+##### `_resolve_level(level: str) -> int | None`
+
+将字符串级别名解析为对应的数值常量
+
+- **level**: 日志级别名称
+
+**返回值**: 对应的 logging 级别数值，无效时返回 None
+
+**内部方法**
+
+---
+
+
+##### `set_level(level: str) -> bool`
+
+设置全局日志级别
+
+支持标准级别 (DEBUG/INFO/WARNING/ERROR/CRITICAL)
+及自定义级别 (TRACE/EVENT)
+
+- **level**: 日志级别名称
+
+**返回值** (`bool`): 设置是否成功
+
+---
+
+
+##### `set_module_level(module_name: str, level: str) -> bool`
+
+设置指定模块日志级别
+
+支持标准级别 (DEBUG/INFO/WARNING/ERROR/CRITICAL)
+及自定义级别 (TRACE/EVENT)
+
+- **module_name**: 模块名称
+- **level**: 日志级别名称
+
+**返回值** (`bool`): 设置是否成功
+
+---
+
+
+##### `set_excluded_levels(levels: list[str]) -> bool`
+
+设置被屏蔽的日志等级列表
+
+被屏蔽等级的日志将被完全丢弃：不写入内存、不推送给订阅器、
+不输出控制台、不写入日志文件。常用于隐私保护场景，
+例如 ``exclude_levels = ["EVENT"]`` 可隐藏消息收发内容
+（消息收发日志使用 EVENT 等级记录）。
+
+- **levels**: 日志等级名称列表（如 ["EVENT", "DEBUG"]），空列表表示不屏蔽
+
+**返回值** (`bool`): 设置是否成功（含非法等级时返回 False 且不生效）
+
+**示例**:
+
+```python
+# 屏蔽 EVENT 等级（隐藏消息收发内容）
+logger.set_excluded_levels(["EVENT"])
+# 恢复所有等级
+logger.set_excluded_levels([])
+```
+
+---
+
+
+##### `exclude_level(level: str) -> bool`
+
+屏蔽单个日志等级
+
+被屏蔽等级的日志将被完全丢弃（内存 / 订阅器 / 控制台 / 文件）。
+
+- **level**: 日志等级名称（如 "EVENT"）
+
+**返回值** (`bool`): 是否设置成功
+
+---
+
+
+##### `allow_level(level: str) -> bool`
+
+取消屏蔽单个日志等级
+
+- **level**: 日志等级名称（如 "EVENT"）
+
+**返回值** (`bool`): 是否成功（等级原本未被屏蔽时返回 False）
+
+---
+
+
+##### `list_excluded_levels() -> list[str]`
+
+列出当前被屏蔽的日志等级名称
+
+**返回值** (`list[str]`): 被屏蔽的等级名称列表
+
+---
+
+
+##### `_clear_file_handlers() -> None`
+
+移除并关闭所有已存在的文件日志处理器
+
+**内部方法**
+
+---
+
+
+##### `set_output_file(path: str | Path) -> bool`
+
+设置日志输出
+
+- **path**: 日志文件路径 Str/List
+
+**返回值** (`bool`): 设置是否成功
+
+---
+
+
+##### `set_output_dir(directory: str, *, filename: str = 'erispulse.log', rotation: str = DEFAULT_LOG_ROTATION, max_size_mb: float = DEFAULT_LOG_MAX_SIZE_MB, backup_count: int = DEFAULT_LOG_BACKUP_COUNT, when: str = DEFAULT_LOG_ROTATION_WHEN) -> bool`
+
+设置日志输出目录（支持自动分段/轮转）
+
+目录不存在时自动创建。与 ``set_output_file`` 互斥，调用后
+会替换已有的文件日志输出。
+
+- **directory**: 日志目录路径（自动创建）
+- **filename**: 目录内的日志文件名（默认 "erispulse.log"）
+- **rotation**: 分段方式：``"size"``（按大小，默认）/ ``"date"``（按时间）/ ``"none"``（不分段）
+- **max_size_mb** (`size`): 模式下单文件大小上限（MB，默认 10）
+- **backup_count**: 保留的历史日志文件数（默认 5，超出的最旧备份自动删除）
+- **when** (`date`): 模式轮转周期（``"S"``/``"M"``/``"H"``/``"D"``/``"midnight"``，默认每天零点）
+
+**返回值** (`bool`): 设置是否成功
+
+**示例**:
+
+```python
+# 在 config.toml 中配置（推荐）
+[ErisPulse.logger]
+log_dir = "logs"
+log_rotation = "size"        # 按大小分段
+log_max_size_mb = 10
+log_backup_count = 5
+
+# 或代码中动态设置：每天零点轮转，保留 7 份
+logger.set_output_dir("logs", rotation="date", backup_count=7)
+```
+
+---
+
+
+##### `set_format(fmt: str = 'rich') -> bool`
+
+设置日志输出格式
+
+支持三种格式：
+- ``rich``（默认）：彩色带时间的 Rich 输出
+- ``plain``：纯文本无颜色（适合日志采集 / 管道重定向）
+- ``json``：JSON 结构化输出（适合 ELK / Grafana Loki / Datadog 等）
+
+- **fmt**: 日志格式名称：``rich`` / ``plain`` / ``json`` (默认: "rich")
+
+**返回值** (`bool`): 设置是否成功
+
+**示例**:
+
+```python
+# 在 config.toml 中配置
+[ErisPulse.logger]
+format = "plain"
+
+# 或代码中动态切换
+logger.set_format("plain")
+```
+
+---
+
+
+##### `set_json_format(enabled: bool = True) -> bool`
+
+启用或禁用 JSON 结构化日志输出
+
+启用后，所有日志（控制台和文件）将以 JSON 格式输出，
+适合 ELK / Grafana Loki / Datadog 等日志聚合系统。
+
+- **enabled**: 是否启用 JSON 格式（默认 True）
+
+**返回值** (`bool`): 设置是否成功
+
+**示例**:
+
+```python
+# 在 config.toml 中配置
+[ErisPulse.logger]
+format = "json"
+
+# 或代码中动态切换
+logger.set_json_format(True)
+```
+
+---
+
+
+##### `save_logs(path: str | Path) -> bool`
+
+保存所有在内存中记录的日志
+
+- **path**: 日志文件路径 Str/List
+
+**返回值** (`bool`): 设置是否成功
+
+---
+
+
+##### `get_logs(module_name: str | None = None) -> dict`
+
+获取日志内容
+
+JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表。
+
+- **module_name**: 模块名称（可选），None 表示获取所有日志
+
+**返回值** (`dict`): 日志内容
+
+---
+
+
+##### `iter_logs(module_name: str | None = None) -> 'Iterator[dict[str, Any]]'`
+
+流式迭代日志（生成器）
+
+适合处理大量日志或推送到 SSE / WebSocket。
+
+- **module_name** (`str`): 模块名称，None 表示所有模块
+
+**返回值** (`Iterator[dict | str`): ] JSON 模式下为 dict，Rich 模式下为 str
+
+**示例**:
+
+```python
+for log in logger.iter_logs():
+    print(log)
+```
+
+---
+
+
+##### `_format_for_output(entries: list) -> list`
+
+将内部记录转换为向后兼容的输出格式
+
+JSON 模式返回结构化 dict（timestamp / module / message 三键），
+Rich 模式返回 ``时间 - 消息`` 单行文本；内部存储为 ``_MemoryLogRecord``
+记录类，对外形态保持不变。
+
+**内部方法**
+
+---
+
+
+##### `_save_in_memory(module_name: str, level_name: str, level_const: int, msg: str) -> None`
+
+将日志保存到内存
+
+单模块上限（``_max_logs``）为 0 时跳过（关闭内存日志副本）；
+全局总条数（``_total_max_logs``）超限时按轮转策略淘汰最旧记录。
+
+**内部方法**
+
+---
+
+
+##### `_on_config_updated(_data: dict) -> None`
+
+配置变更回调：仅在 logger 段实际变化时重新应用配置
+
+---
+
+
+##### `should_log(level_const: int) -> bool`
+
+快速判断指定级别当前是否会产生任何输出
+
+与 :meth:`_log` 的判定保持同一语义（屏蔽集合 / 全局级别 / 模块覆盖 /
+订阅器）。供热路径在构造日志文本前作守卫：返回 False 时调用方应跳过
+字符串格式化与 i18n 翻译等昂贵前置工作，直接不记录。
+
+- **level_const**: 日志级别常量（如 ``TRACE`` / ``EVENT``）
+
+**返回值**: True 表示可能输出（调用方正常记录）；False 表示必然静默
+
+**示例**:
+
+```python
+if logger.should_log(EVENT):
+    logger.event(f"recv {event}")  # 仅在会输出时才格式化
+```
+
+---
+
+
+##### `_log(level_name: str, level_const: int, msg, *args, **kwargs)`
+
+内部日志方法，统一处理日志记录流程
+
+- **level_name**: 日志级别名称（对应logging模块的方法名）
+- **level_const**: 日志级别常量
+- **msg**: 日志消息
+- **args**: 额外的格式化参数
+- **kwargs**: 额外的关键字参数
+
+---
+
+
+##### `_get_caller()`
+
+归因调用者模块名（日志热路径）
+
+经 ``frame.f_globals["__name__"]`` 取模块名（O(1) 字典访问），
+不再走 ``inspect.getmodule`` 的模块注册表反查；跳过 logger 模块
+自身的栈帧后，取第一个外部帧的模块名并做归一化
+（``__main__`` → ``Main``、``*.Core`` 后缀剥离）。
+
+**内部方法**
+
+---
+
+
+##### `get_child(child_name: str = 'UnknownChild', *, relative: bool = True) -> 'LoggerChild'`
+
+获取子日志记录器
+
+- **child_name**: 子模块名称(可选)
+- **relative**: 是否相对于调用者模块（默认True）
+
+    - True: 使用"调用模块.子模块"作为完整名称
+    - False: 直接使用child_name作为完整名称
+**返回值** (`LoggerChild`): 子日志记录器实例
+
+**示例**:
+
+```python
+# 相对模式（默认）：自动添加调用模块前缀
+child_logger = logger.get_child("database")
+# 假设调用者是"mymodule"，完整名称将是"mymodule.database"
+
+# 绝对模式：直接使用指定名称
+child_logger = logger.get_child("custom.module.name", relative=False)
+# 完整名称将是"custom.module.name"
+
+# 获取当前模块的日志记录器
+my_logger = logger.get_child()
+```
+
+---
+
+
+##### `trace(msg: str, *args, **kwargs) -> None`
+
+记录 TRACE 级别日志（比 DEBUG 更细粒度）
+
+---
+
+
+##### `event(msg: str, *args, **kwargs) -> None`
+
+记录 EVENT 级别日志（事件收发专用，级别等同 INFO）
+
+---
+
+
+##### `debug(msg: str, *args, **kwargs) -> None`
+
+记录 DEBUG 级别日志
+
+---
+
+
+##### `info(msg: str, *args, **kwargs) -> None`
+
+记录 INFO 级别日志
+
+---
+
+
+##### `warning(msg: str, *args, **kwargs) -> None`
+
+记录 WARNING 级别日志
+
+---
+
+
+##### `error(msg: str, *args, **kwargs) -> None`
+
+记录 ERROR 级别日志
+
+---
+
+
+##### `critical(msg: str, *args, **kwargs) -> None`
+
+记录 CRITICAL 级别日志
+这是最高级别的日志，表示严重的系统错误
+注意：此方法不会触发程序崩溃，仅记录日志
+
+> **提示**
+> 1. 不会触发程序崩溃，如需终止程序请显式调用 sys.exit()
+> 2. 会在日志文件中添加 CRITICAL 标记便于后续分析
+
+---
+
+
+##### `_store_ui_line(text: str) -> None`
+
+将 UI 输出行写入内存、订阅器与日志文件
+
+视觉输出方法（``print_*``）原本直接打印到控制台、绕过日志管道，
+导致 Dashboard 等日志订阅器收不到启动阶段的阶段标题/数量/组件树，
+也无法在订阅器注册时补发历史。此方法将文本按 INFO 级别写入内存
+（``_save_in_memory``）、推送给订阅器（``_notify_handlers``）并写入
+日志文件，同时不重复输出控制台。
+
+**内部方法**
+仅由 ``print_section_header`` / ``print_info`` / ``print_tree_item`` 调用。
+
+- **text** (`str`): 需要写入日志管道的 UI 文本
+
+---
+
+
+##### `print_section_header(title: str) -> None`
+
+打印日志分组标题
+
+- **title**: 分组标题
+
+---
+
+
+##### `print_section_footer() -> None`
+
+打印分组结束标记
+
+---
+
+
+##### `print_tree_item(text: str, level: int = 0, is_last: bool = False, tag: str = '', tag_style: str = 'dim') -> None`
+
+打印树状结构项目
+
+- **text**: 文本内容
+- **level**: 缩进层级
+- **is_last**: 是否是最后一项
+- **tag**: 可选的样式化后缀标签（如 "[懒加载]"）
+- **tag_style**: 标签的 rich 样式（默认 dim）
+
+---
+
+
+##### `print_info(text: str, level: int = 1) -> None`
+
+打印信息
+
+- **text**: 文本内容
+- **level**: 缩进层级
+
+---
+
+
+##### `print_section_separator() -> None`
+
+打印简单的分隔线
+
+---
+
+
+##### `__getattr__(name: str) -> 'LoggerChild'`
+
+通过属性访问自动创建子logger
+
+- **name**: 子logger名称
+
+**返回值** (`LoggerChild`): 子logger实例
+
+**异常**: `AttributeError` - 当访问无效属性时抛出
+
+**示例**:
+
+```python
+# 自动创建子logger并记录日志
+logger.mymodule.info("message")
+
+# 支持嵌套访问
+logger.mymodule.database.info("db message")
+
+# 相当于 logger.get_child("mymodule").info("message")
+```
+
+---
+
+
+### `class LoggerChild`
+
+子日志记录器
+
+用于创建具有特定名称的子日志记录器，仅改变模块名称，其他功能全部委托给父日志记录器
+
+
+#### 方法列表
+
+
+##### `__init__(parent_logger: Logger, name: str)`
+
+初始化子日志记录器
+
+- **parent_logger**: 父日志记录器实例
+- **name**: 子日志记录器名称
+
+---
+
+
+##### `should_log(level_const: int) -> bool`
+
+快速判断该子记录器指定级别当前是否会产生任何输出
+
+语义与 :meth:`Logger.should_log` 一致（屏蔽集合 / 订阅器 / 模块有效级别），
+供热路径在构造日志文本前作守卫。
+
+- **level_const**: 日志级别常量（如 ``TRACE`` / ``EVENT``）
+
+**返回值**: True 表示可能输出（调用方正常记录）；False 表示必然静默
+
+---
+
+
+##### `_log(level_name: str, level_const: int, msg, *args, **kwargs)`
+
+内部日志方法
+
+- **level_name**: 日志级别名称
+- **level_const**: 日志级别常量
+- **msg**: 日志消息
+
+---
+
+
+##### `trace(msg: str, *args, **kwargs) -> None`
+
+记录 TRACE 级别日志（比 DEBUG 更细粒度）
+
+---
+
+
+##### `event(msg: str, *args, **kwargs) -> None`
+
+记录 EVENT 级别日志（事件收发专用，级别等同 INFO）
+
+---
+
+
+##### `debug(msg: str, *args, **kwargs) -> None`
+
+记录 DEBUG 级别日志
+
+---
+
+
+##### `info(msg: str, *args, **kwargs) -> None`
+
+记录 INFO 级别日志
+
+---
+
+
+##### `warning(msg: str, *args, **kwargs) -> None`
+
+记录 WARNING 级别日志
+
+---
+
+
+##### `error(msg: str, *args, **kwargs) -> None`
+
+记录 ERROR 级别日志
+
+---
+
+
+##### `critical(msg: str, *args, **kwargs) -> None`
+
+记录 CRITICAL 级别日志
+这是最高级别的日志，表示严重的系统错误
+注意：此方法不会触发程序崩溃，仅记录日志
+
+---
+
+
+##### `get_child(child_name: str) -> 'LoggerChild'`
+
+获取子日志记录器的子记录器
+
+- **child_name**: 子模块名称
+
+**返回值** (`LoggerChild`): 子日志记录器实例
+
+---
+
+
+##### `__getattr__(name: str) -> 'LoggerChild'`
+
+通过属性访问自动创建子logger
+
+- **name**: 子logger名称
+
+**返回值** (`LoggerChild`): 子logger实例
+
+**异常**: `AttributeError` - 当访问无效属性时抛出
+
+**示例**:
+
+```python
+# 嵌套创建子logger
+child = logger.mymodule
+nested_child = child.database  # 相当于 logger.mymodule.database
+nested_child.info("db message")
+```
+
+---
+

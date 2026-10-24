@@ -1,0 +1,89 @@
+# 開發者指南
+
+> [!TIP]
+> **什麼時候需要讀這篇**：準備為 ErisPulse 開發擴充——給機器人加功能（模組）或接入新平台（配接器）——時。只想使用機器人則跳過，直接看[快速開始](../quick-start.md)。
+
+從這裡找到你的開發路徑：**模組開發**讓你用命令、訊息處理器擴充機器人功能；**配接器開發**讓機器人連上新的訊息平台。兩條路徑都涵蓋從建立專案到測試、發布的完整流程。
+
+## 內容列表
+
+### 模塊開發
+
+1. [模塊開發入門](modules/getting-started.md) - 創建第一個模塊  
+2. [模塊核心概念](modules/core-concepts.md) - 模塊的核心概念和架構  
+3. [Event 包裝類詳解](modules/event-wrapper.md) - Event 對象的完整說明  
+4. [模塊最佳實踐](modules/best-practices.md) - 開發高品質模塊的建議  
+5. [數據模型層（ORM）](orm.md) - 模塊開發進階：宣告式模型、自動建表與增刪改查  
+
+### 適配器開發
+
+1. [適配器開發入門](adapters/getting-started.md) - 創建第一個適配器  
+2. [適配器核心概念](adapters/core-concepts.md) - 適配器的核心概念（包含 start() 的兩種寫法與 PollingAdapter / WebhookAdapter 連接模式基類）  
+3. [SendDSL 詳解](adapters/send-dsl.md) - Send 消息發送 DSL 的完整說明  
+4. [事件轉換器](adapters/converter.md) - 實現事件轉換器  
+5. [適配器最佳實踐](adapters/best-practices.md) - 開發高品質適配器的建議  
+
+### 測試與排查
+
+1. [模塊測試（ErisPulse-Testing）](testing.md) - TestBot、事件工廠與斷言介面  
+
+### 發布指南
+
+- [發布與模塊商店指南](publishing.md) - 將你的作品發布到 PyPI 和 ErisPulse 模塊商店
+
+## 開發準備
+
+在開始開發之前，請確保你：
+
+1. 閱讀了[基礎概念](../getting-started/basic-concepts.md)
+2. 熟悉了[事件處理](../getting-started/event-handling.md)
+3. 安裝了開發環境（Python >= 3.10）
+4. 安裝了 ErisPulse SDK
+
+## 開發類型選擇
+
+根據你的需求選擇合適的開發類型：
+
+| 開發類型 | 適用場景 | 入門指南 |
+|---------|---------|---------|
+| **模組開發** | 擴充機器人功能、實作業務邏輯、提供命令和訊息處理 | [模組開發入門](modules/getting-started.md) |
+| **配接器開發** | 連接新的訊息平台、實作跨平台通訊、提供平台特定功能 | [配接器開發入門](adapters/getting-started.md) |
+
+> 如果你想擴充機器人的功能（如新增命令、處理訊息），選擇**模組開發**。如果你需要讓機器人連接到一個新的平台，選擇**配接器開發**。
+
+## 開發工具
+
+### 專案範本
+
+ErisPulse 提供了範例專案作為參考：
+
+- [模組範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模組的完整專案結構
+- [配接器範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 配接器的完整專案結構
+
+### 開發模式
+
+使用熱重載模式進行開發，程式碼修改後自動重新載入：
+
+```bash
+epsdk run main.py --reload
+```
+
+### 偵錯技巧
+
+在 `config/config.toml` 中啟用 DEBUG 或 TRACE 級別日誌：
+
+```toml
+[ErisPulse.logger]
+# DEBUG: 輸出模組載入、路由註冊等開發偵錯資訊
+# TRACE: 最低級別，輸出事件分發、儲存寫入、懶載入等框架內部詳細流程
+level = "DEBUG"
+```
+
+## 發布你的模組
+
+完整的發布流程請參考 [發布與模組商店指南](publishing.md)，包括 PyPI 發布步驟、ErisPulse 模組商店提交流程等。
+
+## 相關文件
+
+- [標準規範](../standards/) - 確保相容性的技術標準
+- [平台特性指南](../platform-guide/) - 了解各平台配接器的特性

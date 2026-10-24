@@ -1,0 +1,676 @@
+{
+  "version": "1.2",
+  "total_categories": 10,
+  "categories": {
+    "Быстрый старт": {
+      "description": "Краткое руководство по ErisPulse",
+      "icon": "fa-rocket",
+      "count": 4,
+      "documents": [
+        {
+          "title": "Документация ErisPulse",
+          "path": "README.md",
+          "level": 1,
+          "icon": "fa-flag"
+        },
+        {
+          "title": "Быстрый старт",
+          "path": "quick-start.md",
+          "level": 1,
+          "icon": "fa-bolt"
+        },
+        {
+          "title": "Обзор архитектуры",
+          "path": "architecture.md",
+          "level": 1,
+          "icon": "fa-sitemap"
+        },
+        {
+          "title": "Bug Tracker",
+          "path": "bug-tracker.md",
+          "level": 1,
+          "icon": "fa-bug"
+        }
+      ],
+      "subgroups": {}
+    },
+    "Начало работы": {
+      "description": "Основные концепции и учебные материалы ErisPulse",
+      "icon": "fa-rocket",
+      "count": 6,
+      "documents": [
+        {
+          "title": "Создание первого бота",
+          "path": "getting-started/first-bot.md",
+          "level": 1,
+          "icon": "fa-robot"
+        },
+        {
+          "title": "Руководство для начинающих",
+          "path": "getting-started/README.md",
+          "level": 1,
+          "icon": "fa-door-open"
+        },
+        {
+          "title": "Основные концепции",
+          "path": "getting-started/basic-concepts.md",
+          "level": 1,
+          "icon": "fa-lightbulb"
+        },
+        {
+          "title": "Примеры типичных задач",
+          "path": "getting-started/common-tasks.md",
+          "level": 1,
+          "icon": "fa-list-check"
+        },
+        {
+          "title": "Введение в обработку событий",
+          "path": "getting-started/event-handling.md",
+          "level": 1,
+          "icon": "fa-bolt-lightning"
+        },
+        {
+          "title": "Генерация типовых заглушек (дополнение IDE)",
+          "path": "getting-started/ide-completion.md",
+          "level": 1,
+          "icon": "fa-keyboard"
+        }
+      ],
+      "subgroups": {}
+    },
+    "Руководство пользователя": {
+      "description": "Настройка и справочник команд ErisPulse",
+      "icon": "fa-book-open",
+      "count": 5,
+      "documents": [
+        {
+          "title": "Руководство пользователя",
+          "path": "user-guide/README.md",
+          "level": 1,
+          "icon": "fa-book-open"
+        },
+        {
+          "title": "Справочник по установке",
+          "path": "user-guide/installation.md",
+          "level": 1,
+          "icon": "fa-download"
+        },
+        {
+          "title": "Описание конфигурационного файла",
+          "path": "user-guide/configuration.md",
+          "level": 1,
+          "icon": "fa-sliders"
+        },
+        {
+          "title": "Справочник команд CLI",
+          "path": "user-guide/cli-reference.md",
+          "level": 1,
+          "icon": "fa-terminal"
+        },
+        {
+          "title": "Руководство по развёртыванию",
+          "path": "user-guide/deployment.md",
+          "level": 1,
+          "icon": "fa-cloud-arrow-up"
+        }
+      ],
+      "subgroups": {}
+    },
+    "Руководство разработчика": {
+      "description": "Руководство по разработке модулей и адаптеров",
+      "icon": "fa-code",
+      "count": 13,
+      "documents": [
+        {
+          "title": "Руководство для разработчиков",
+          "path": "developer-guide/README.md",
+          "level": 1,
+          "icon": "fa-code"
+        },
+        {
+          "title": "Руководство по публикации и магазину модулей",
+          "path": "developer-guide/publishing.md",
+          "level": 1,
+          "icon": "fa-upload"
+        },
+        {
+          "title": "Тестирование модулей (ErisPulse-Testing)",
+          "path": "developer-guide/testing.md",
+          "level": 1,
+          "icon": "fa-code"
+        },
+        {
+          "title": "Слой моделей данных (ORM)",
+          "path": "developer-guide/orm.md",
+          "level": 1,
+          "icon": "fa-code"
+        }
+      ],
+      "subgroups": {
+        "modules": {
+          "name": "Разработка модулей",
+          "icon": "fa-puzzle-piece",
+          "documents": [
+            {
+              "title": "Введение в разработку модулей",
+              "path": "developer-guide/modules/getting-started.md",
+              "level": 1,
+              "icon": "fa-puzzle-piece"
+            },
+            {
+              "title": "Основные концепты модуля",
+              "path": "developer-guide/modules/core-concepts.md",
+              "level": 1,
+              "icon": "fa-cubes-stacked"
+            },
+            {
+              "title": "Подробное объяснение обёртки события",
+              "path": "developer-guide/modules/event-wrapper.md",
+              "level": 1,
+              "icon": "fa-bolt-lightning"
+            },
+            {
+              "title": "Лучшие практики разработки модулей",
+              "path": "developer-guide/modules/best-practices.md",
+              "level": 1,
+              "icon": "fa-award"
+            }
+          ]
+        },
+        "adapters": {
+          "name": "Разработка адаптеров",
+          "icon": "fa-network-wired",
+          "documents": [
+            {
+              "title": "Введение в разработку адаптеров",
+              "path": "developer-guide/adapters/getting-started.md",
+              "level": 1,
+              "icon": "fa-network-wired"
+            },
+            {
+              "title": "Основные концепции адаптеров",
+              "path": "developer-guide/adapters/core-concepts.md",
+              "level": 1,
+              "icon": "fa-microchip"
+            },
+            {
+              "title": "Подробное руководство по SendDSL",
+              "path": "developer-guide/adapters/send-dsl.md",
+              "level": 1,
+              "icon": "fa-code-branch"
+            },
+            {
+              "title": "Лучшие практики разработки адаптеров",
+              "path": "developer-guide/adapters/best-practices.md",
+              "level": 1,
+              "icon": "fa-medal"
+            },
+            {
+              "title": "Руководство по реализации конвертера событий",
+              "path": "developer-guide/adapters/converter.md",
+              "level": 1,
+              "icon": "fa-exchange-alt"
+            }
+          ]
+        }
+      }
+    },
+    "Руководство по платформам": {
+      "description": "Возможности платформ и документация адаптеров",
+      "icon": "fa-plug",
+      "count": 18,
+      "documents": [
+        {
+          "title": "Документация по функциям платформы ErisPulse",
+          "path": "platform-guide/README.md",
+          "level": 1,
+          "icon": "fa-server"
+        },
+        {
+          "title": "Документация по функциям платформы OneBot11",
+          "path": "platform-guide/onebot11.md",
+          "level": 1,
+          "icon": "fa-comments"
+        },
+        {
+          "title": "Документация по функциям платформы OneBot12",
+          "path": "platform-guide/onebot12.md",
+          "level": 1,
+          "icon": "fa-comments"
+        },
+        {
+          "title": "Документация по функциям Telegram-платформы",
+          "path": "platform-guide/telegram.md",
+          "level": 1,
+          "icon": "fa-paper-plane"
+        },
+        {
+          "title": "Документация по функциональным возможностям почтовой платформы",
+          "path": "platform-guide/email.md",
+          "level": 1,
+          "icon": "fa-envelope"
+        },
+        {
+          "title": "Характеристики платформы Yunhu",
+          "path": "platform-guide/yunhu.md",
+          "level": 1,
+          "icon": "fa-cloud"
+        },
+        {
+          "title": "Документация по функциям платформы пользователей Yunhu",
+          "path": "platform-guide/yunhu_user.md",
+          "level": 1,
+          "icon": "fa-user"
+        },
+        {
+          "title": "Документация по функциям платформы QQBot",
+          "path": "platform-guide/qqbot.md",
+          "level": 1,
+          "icon": "fa-comment-dots"
+        },
+        {
+          "title": "Документация по функциям платформы Kook",
+          "path": "platform-guide/kook.md",
+          "level": 1,
+          "icon": "fa-headset"
+        },
+        {
+          "title": "Документация по функциональным возможностям платформы Matrix",
+          "path": "platform-guide/matrix.md",
+          "level": 1,
+          "icon": "fa-th-large"
+        },
+        {
+          "title": "Документация по функциям платформы Discord",
+          "path": "platform-guide/discord.md",
+          "level": 1,
+          "icon": "fa-gamepad"
+        },
+        {
+          "title": "Адаптер WeChatMp - Документация по функциональности платформы",
+          "path": "platform-guide/wechatmp.md",
+          "level": 1,
+          "icon": "fa-mobile-screen"
+        },
+        {
+          "title": "Описание функциональных возможностей платформы — универсальный адаптер-мост Webhook",
+          "path": "platform-guide/webhook.md",
+          "level": 1,
+          "icon": "fa-link"
+        },
+        {
+          "title": "Документация по функционалу платформы RockyChat",
+          "path": "platform-guide/ideaura.md",
+          "level": 1,
+          "icon": "fa-wand-magic-sparkles"
+        },
+        {
+          "title": "Инструкция по поддержке документации",
+          "path": "platform-guide/maintain-notes.md",
+          "level": 1,
+          "icon": "fa-wrench"
+        },
+        {
+          "title": "Документация по функциям платформы Sandbox",
+          "path": "platform-guide/sandbox.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Документация по функциям платформы SnowLuma",
+          "path": "platform-guide/snowluma.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Документация по функциям платформы Terminal",
+          "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
+        }
+      ],
+      "subgroups": {}
+    },
+    "Справочник API": {
+      "description": "Документация по основному API и интерфейсам",
+      "icon": "fa-book",
+      "count": 4,
+      "documents": [
+        {
+          "title": "Справочник API",
+          "path": "api-reference/README.md",
+          "level": 1,
+          "icon": "fa-book"
+        },
+        {
+          "title": "API системы адаптеров",
+          "path": "api-reference/adapter-system.md",
+          "level": 1,
+          "icon": "fa-network-wired"
+        },
+        {
+          "title": "API основных модулей",
+          "path": "api-reference/core-modules.md",
+          "level": 1,
+          "icon": "fa-cubes-stacked"
+        },
+        {
+          "title": "API системы событий",
+          "path": "api-reference/event-system.md",
+          "level": 1,
+          "icon": "fa-bolt-lightning"
+        }
+      ],
+      "subgroups": {}
+    },
+    "Продвинутые темы": {
+      "description": "Глубокое изучение продвинутых функций фреймворка",
+      "icon": "fa-fire",
+      "count": 19,
+      "documents": [
+        {
+          "title": "Продвинутые темы",
+          "path": "advanced/README.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "Управление жизненным циклом",
+          "path": "advanced/lifecycle.md",
+          "level": 1,
+          "icon": "fa-clock-rotate-left"
+        },
+        {
+          "title": "Система ленивой загрузки модулей",
+          "path": "advanced/lazy-loading.md",
+          "level": 1,
+          "icon": "fa-hourglass-half"
+        },
+        {
+          "title": "Маршрутизатор",
+          "path": "advanced/router.md",
+          "level": 1,
+          "icon": "fa-route"
+        },
+        {
+          "title": "MessageBuilder подробно",
+          "path": "advanced/message-builder.md",
+          "level": 1,
+          "icon": "fa-comment-dots"
+        },
+        {
+          "title": "Conversation: многоходовой диалог",
+          "path": "advanced/conversation.md",
+          "level": 1,
+          "icon": "fa-comments"
+        },
+        {
+          "title": "Сетевой клиент",
+          "path": "advanced/http-client.md",
+          "level": 1,
+          "icon": "fa-globe"
+        },
+        {
+          "title": "SQL 查询构建器",
+          "path": "advanced/sql-builder.md",
+          "level": 1,
+          "icon": "fa-database"
+        },
+        {
+          "title": "Система международной локализации (i18n)",
+          "path": "advanced/i18n.md",
+          "level": 1,
+          "icon": "fa-language"
+        },
+        {
+          "title": "Область действия (scope)",
+          "path": "advanced/scope.md",
+          "level": 1,
+          "icon": "fa-shield-halved"
+        },
+        {
+          "title": "Система принадлежности (owner)",
+          "path": "advanced/ownership.md",
+          "level": 1,
+          "icon": "fa-user-tag"
+        },
+        {
+          "title": "Система интерактивных сессий",
+          "path": "advanced/interaction.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "Теневые модули и постепенный переход",
+          "path": "advanced/shadow.md",
+          "level": 1,
+          "icon": "fa-eye"
+        },
+        {
+          "title": "Коммуникация между модулями",
+          "path": "advanced/module-communication.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "Хранилище данных",
+          "path": "advanced/storage-backends.md",
+          "level": 1,
+          "icon": "fa-server"
+        },
+        {
+          "title": "Система исключений и руководство по обработке",
+          "path": "advanced/errors.md",
+          "level": 1,
+          "icon": "fa-triangle-exclamation"
+        },
+        {
+          "title": "Пул соединений и трансляция",
+          "path": "advanced/connections.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "Процесс запуска и ручное управление",
+          "path": "advanced/startup.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "Транскрипт (Transcript)",
+          "path": "advanced/transcript.md",
+          "level": 1,
+          "icon": "fa-fire"
+        }
+      ],
+      "subgroups": {}
+    },
+    "Модули экосистемы": {
+      "description": "Сторонние модули, поддерживаемые сообществом",
+      "icon": "fa-cubes",
+      "count": 6,
+      "documents": [
+        {
+          "title": "Экологические модули",
+          "path": "ecosystem/README.md",
+          "level": 1,
+          "icon": "fa-cubes"
+        },
+        {
+          "title": "ErisPulse-App",
+          "path": "ecosystem/app.md",
+          "level": 1,
+          "icon": "fa-mobile-screen"
+        },
+        {
+          "title": "ErisPulse-Dashboard",
+          "path": "ecosystem/dashboard.md",
+          "level": 1,
+          "icon": "fa-table-columns"
+        },
+        {
+          "title": "ErisPulse-Cron",
+          "path": "ecosystem/cron.md",
+          "level": 1,
+          "icon": "fa-clock"
+        },
+        {
+          "title": "ErisPulse-Takumi",
+          "path": "ecosystem/takumi.md",
+          "level": 1,
+          "icon": "fa-image"
+        },
+        {
+          "title": "ErisPulse-QvQChat — Универсальный агент",
+          "path": "ecosystem/qvqchat.md",
+          "level": 1,
+          "icon": "fa-cubes"
+        }
+      ],
+      "subgroups": {}
+    },
+    "Разработка с ИИ": {
+      "description": "Использование ИИ для разработки ErisPulse",
+      "icon": "fa-robot",
+      "count": 12,
+      "documents": [
+        {
+          "title": "AI-помощь в разработке",
+          "path": "ai-support/README.md",
+          "level": 1,
+          "icon": "fa-robot"
+        }
+      ],
+      "subgroups": {
+        "skills": {
+          "name": "Skills",
+          "icon": "fa-folder",
+          "documents": [
+            {
+              "title": "ErisPulse 适配器开发",
+              "path": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 适配器技术标准",
+              "path": "ai-support/skills/erispulse-adapter-standards/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 通信与连接",
+              "path": "ai-support/skills/erispulse-communication/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 配置系统与 CLI 工具链",
+              "path": "ai-support/skills/erispulse-config-cli/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 生态与多平台",
+              "path": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 异常体系与排障",
+              "path": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 快速上手与核心概念",
+              "path": "ai-support/skills/erispulse-getting-started/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 热重载与懒加载休眠",
+              "path": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 模块开发",
+              "path": "ai-support/skills/erispulse-module-dev/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 权限作用域与归属权",
+              "path": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 影子灰度与消息追踪",
+              "path": "ai-support/skills/erispulse-shadow-transcript/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            }
+          ]
+        }
+      }
+    },
+    "Технические стандарты": {
+      "description": "Технические спецификации и стандарты фреймворка",
+      "icon": "fa-gavel",
+      "count": 8,
+      "documents": [
+        {
+          "title": "Технические стандарты",
+          "path": "standards/README.md",
+          "level": 1,
+          "icon": "fa-gavel"
+        },
+        {
+          "title": "Стандарт типов сессий ErisPulse",
+          "path": "standards/session-types.md",
+          "level": 1,
+          "icon": "fa-layer-group"
+        },
+        {
+          "title": "Стандарт спецификации возвращаемых значений адаптеров ErisPulse",
+          "path": "standards/api-response.md",
+          "level": 1,
+          "icon": "fa-arrow-right-arrow-left"
+        },
+        {
+          "title": "Стандартизированные правила преобразования адаптеров",
+          "path": "standards/event-conversion.md",
+          "level": 1,
+          "icon": "fa-shuffle"
+        },
+        {
+          "title": "Спецификация методов отправки ErisPulse",
+          "path": "standards/send-method-spec.md",
+          "level": 1,
+          "icon": "fa-paper-plane"
+        },
+        {
+          "title": "Стандарты операций запросов ErisPulse",
+          "path": "standards/request-action-spec.md",
+          "level": 1,
+          "icon": "fa-hand-paper"
+        },
+        {
+          "title": "Стандарт действий API ErisPulse",
+          "path": "standards/api-action-spec.md",
+          "level": 1,
+          "icon": "fa-bolt"
+        },
+        {
+          "title": "Руководство по стандартизации адаптеров (генеральное руководство)",
+          "path": "standards/standardization-guide.md",
+          "level": 1,
+          "icon": "fa-gavel"
+        }
+      ],
+      "subgroups": {}
+    }
+  }
+}

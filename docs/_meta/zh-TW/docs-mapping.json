@@ -1,0 +1,676 @@
+{
+  "version": "1.2",
+  "total_categories": 10,
+  "categories": {
+    "快速開始": {
+      "description": "ErisPulse 快速入門指南",
+      "icon": "fa-rocket",
+      "count": 4,
+      "documents": [
+        {
+          "title": "ErisPulse 文件",
+          "path": "README.md",
+          "level": 1,
+          "icon": "fa-flag"
+        },
+        {
+          "title": "快速入門",
+          "path": "quick-start.md",
+          "level": 1,
+          "icon": "fa-bolt"
+        },
+        {
+          "title": "架構概覽",
+          "path": "architecture.md",
+          "level": 1,
+          "icon": "fa-sitemap"
+        },
+        {
+          "title": "Bug 追蹤器",
+          "path": "bug-tracker.md",
+          "level": 1,
+          "icon": "fa-bug"
+        }
+      ],
+      "subgroups": {}
+    },
+    "入門指南": {
+      "description": "ErisPulse 基礎概念和使用教程",
+      "icon": "fa-rocket",
+      "count": 6,
+      "documents": [
+        {
+          "title": "建立第一個機器人",
+          "path": "getting-started/first-bot.md",
+          "level": 1,
+          "icon": "fa-robot"
+        },
+        {
+          "title": "入門指南",
+          "path": "getting-started/README.md",
+          "level": 1,
+          "icon": "fa-door-open"
+        },
+        {
+          "title": "基礎概念",
+          "path": "getting-started/basic-concepts.md",
+          "level": 1,
+          "icon": "fa-lightbulb"
+        },
+        {
+          "title": "常見任務範例",
+          "path": "getting-started/common-tasks.md",
+          "level": 1,
+          "icon": "fa-list-check"
+        },
+        {
+          "title": "事件處理入門",
+          "path": "getting-started/event-handling.md",
+          "level": 1,
+          "icon": "fa-bolt-lightning"
+        },
+        {
+          "title": "類型存根生成（IDE 補全）",
+          "path": "getting-started/ide-completion.md",
+          "level": 1,
+          "icon": "fa-keyboard"
+        }
+      ],
+      "subgroups": {}
+    },
+    "使用者指南": {
+      "description": "ErisPulse 配置和命令參考",
+      "icon": "fa-book-open",
+      "count": 5,
+      "documents": [
+        {
+          "title": "用戶使用指南",
+          "path": "user-guide/README.md",
+          "level": 1,
+          "icon": "fa-book-open"
+        },
+        {
+          "title": "安裝參考",
+          "path": "user-guide/installation.md",
+          "level": 1,
+          "icon": "fa-download"
+        },
+        {
+          "title": "配置文件說明",
+          "path": "user-guide/configuration.md",
+          "level": 1,
+          "icon": "fa-sliders"
+        },
+        {
+          "title": "CLI 指令參考",
+          "path": "user-guide/cli-reference.md",
+          "level": 1,
+          "icon": "fa-terminal"
+        },
+        {
+          "title": "部署指南",
+          "path": "user-guide/deployment.md",
+          "level": 1,
+          "icon": "fa-cloud-arrow-up"
+        }
+      ],
+      "subgroups": {}
+    },
+    "開發者指南": {
+      "description": "模組和適配器開發指南",
+      "icon": "fa-code",
+      "count": 13,
+      "documents": [
+        {
+          "title": "開發者指南",
+          "path": "developer-guide/README.md",
+          "level": 1,
+          "icon": "fa-code"
+        },
+        {
+          "title": "發布與模組商店指南",
+          "path": "developer-guide/publishing.md",
+          "level": 1,
+          "icon": "fa-upload"
+        },
+        {
+          "title": "模組測試（ErisPulse-Testing）",
+          "path": "developer-guide/testing.md",
+          "level": 1,
+          "icon": "fa-code"
+        },
+        {
+          "title": "數據模型層（ORM）",
+          "path": "developer-guide/orm.md",
+          "level": 1,
+          "icon": "fa-code"
+        }
+      ],
+      "subgroups": {
+        "modules": {
+          "name": "模組開發",
+          "icon": "fa-puzzle-piece",
+          "documents": [
+            {
+              "title": "模組開發入門",
+              "path": "developer-guide/modules/getting-started.md",
+              "level": 1,
+              "icon": "fa-puzzle-piece"
+            },
+            {
+              "title": "模塊核心概念",
+              "path": "developer-guide/modules/core-concepts.md",
+              "level": 1,
+              "icon": "fa-cubes-stacked"
+            },
+            {
+              "title": "Event 包裝類詳解",
+              "path": "developer-guide/modules/event-wrapper.md",
+              "level": 1,
+              "icon": "fa-bolt-lightning"
+            },
+            {
+              "title": "模組開發最佳實踐",
+              "path": "developer-guide/modules/best-practices.md",
+              "level": 1,
+              "icon": "fa-award"
+            }
+          ]
+        },
+        "adapters": {
+          "name": "適配器開發",
+          "icon": "fa-network-wired",
+          "documents": [
+            {
+              "title": "適配器開發入門",
+              "path": "developer-guide/adapters/getting-started.md",
+              "level": 1,
+              "icon": "fa-network-wired"
+            },
+            {
+              "title": "適配器核心概念",
+              "path": "developer-guide/adapters/core-concepts.md",
+              "level": 1,
+              "icon": "fa-microchip"
+            },
+            {
+              "title": "SendDSL 詳解",
+              "path": "developer-guide/adapters/send-dsl.md",
+              "level": 1,
+              "icon": "fa-code-branch"
+            },
+            {
+              "title": "配接器開發最佳實踐",
+              "path": "developer-guide/adapters/best-practices.md",
+              "level": 1,
+              "icon": "fa-medal"
+            },
+            {
+              "title": "事件轉換器實現指南",
+              "path": "developer-guide/adapters/converter.md",
+              "level": 1,
+              "icon": "fa-exchange-alt"
+            }
+          ]
+        }
+      }
+    },
+    "平台特性指南": {
+      "description": "各平台特性和適配器說明",
+      "icon": "fa-plug",
+      "count": 18,
+      "documents": [
+        {
+          "title": "ErisPulse PlatformFeatures 文件",
+          "path": "platform-guide/README.md",
+          "level": 1,
+          "icon": "fa-server"
+        },
+        {
+          "title": "OneBot11 平台特性文件",
+          "path": "platform-guide/onebot11.md",
+          "level": 1,
+          "icon": "fa-comments"
+        },
+        {
+          "title": "OneBot12 平台特性文件",
+          "path": "platform-guide/onebot12.md",
+          "level": 1,
+          "icon": "fa-comments"
+        },
+        {
+          "title": "Telegram 平台特性文件",
+          "path": "platform-guide/telegram.md",
+          "level": 1,
+          "icon": "fa-paper-plane"
+        },
+        {
+          "title": "郵件平台特性文件",
+          "path": "platform-guide/email.md",
+          "level": 1,
+          "icon": "fa-envelope"
+        },
+        {
+          "title": "雲湖平台特性文件",
+          "path": "platform-guide/yunhu.md",
+          "level": 1,
+          "icon": "fa-cloud"
+        },
+        {
+          "title": "雲湖使用者平台特性文件",
+          "path": "platform-guide/yunhu_user.md",
+          "level": 1,
+          "icon": "fa-user"
+        },
+        {
+          "title": "QQBot 平台特性文件",
+          "path": "platform-guide/qqbot.md",
+          "level": 1,
+          "icon": "fa-comment-dots"
+        },
+        {
+          "title": "Kook 平台特性文件",
+          "path": "platform-guide/kook.md",
+          "level": 1,
+          "icon": "fa-headset"
+        },
+        {
+          "title": "Matrix平台特性文件",
+          "path": "platform-guide/matrix.md",
+          "level": 1,
+          "icon": "fa-th-large"
+        },
+        {
+          "title": "Discord 平台特性文件",
+          "path": "platform-guide/discord.md",
+          "level": 1,
+          "icon": "fa-gamepad"
+        },
+        {
+          "title": "微信公眾號（WechatMp）適配器 - 平台特性文件",
+          "path": "platform-guide/wechatmp.md",
+          "level": 1,
+          "icon": "fa-mobile-screen"
+        },
+        {
+          "title": "平台特性說明 — Webhook 通用橋接適配器",
+          "path": "platform-guide/webhook.md",
+          "level": 1,
+          "icon": "fa-link"
+        },
+        {
+          "title": "花楓咖啡館（RockyChat）平台特性文件",
+          "path": "platform-guide/ideaura.md",
+          "level": 1,
+          "icon": "fa-wand-magic-sparkles"
+        },
+        {
+          "title": "文件維護說明",
+          "path": "platform-guide/maintain-notes.md",
+          "level": 1,
+          "icon": "fa-wrench"
+        },
+        {
+          "title": "Sandbox 平台特性文件",
+          "path": "platform-guide/sandbox.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "SnowLuma 平台特性文件",
+          "path": "platform-guide/snowluma.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "終端平台特性文件",
+          "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
+        }
+      ],
+      "subgroups": {}
+    },
+    "API 參考": {
+      "description": "核心 API 和介面文檔",
+      "icon": "fa-book",
+      "count": 4,
+      "documents": [
+        {
+          "title": "API 參考",
+          "path": "api-reference/README.md",
+          "level": 1,
+          "icon": "fa-book"
+        },
+        {
+          "title": "適配器系統 API",
+          "path": "api-reference/adapter-system.md",
+          "level": 1,
+          "icon": "fa-network-wired"
+        },
+        {
+          "title": "核心模組 API",
+          "path": "api-reference/core-modules.md",
+          "level": 1,
+          "icon": "fa-cubes-stacked"
+        },
+        {
+          "title": "事件系統 API",
+          "path": "api-reference/event-system.md",
+          "level": 1,
+          "icon": "fa-bolt-lightning"
+        }
+      ],
+      "subgroups": {}
+    },
+    "進階主題": {
+      "description": "深入理解框架的進階特性",
+      "icon": "fa-fire",
+      "count": 19,
+      "documents": [
+        {
+          "title": "高級主題",
+          "path": "advanced/README.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "生命週期管理",
+          "path": "advanced/lifecycle.md",
+          "level": 1,
+          "icon": "fa-clock-rotate-left"
+        },
+        {
+          "title": "慢載模組系統",
+          "path": "advanced/lazy-loading.md",
+          "level": 1,
+          "icon": "fa-hourglass-half"
+        },
+        {
+          "title": "路由管理器",
+          "path": "advanced/router.md",
+          "level": 1,
+          "icon": "fa-route"
+        },
+        {
+          "title": "MessageBuilder 詳解",
+          "path": "advanced/message-builder.md",
+          "level": 1,
+          "icon": "fa-comment-dots"
+        },
+        {
+          "title": "Conversation 多輪對話",
+          "path": "advanced/conversation.md",
+          "level": 1,
+          "icon": "fa-comments"
+        },
+        {
+          "title": "網路用戶端",
+          "path": "advanced/http-client.md",
+          "level": 1,
+          "icon": "fa-globe"
+        },
+        {
+          "title": "SQL 查詢建構器",
+          "path": "advanced/sql-builder.md",
+          "level": 1,
+          "icon": "fa-database"
+        },
+        {
+          "title": "國際化 (i18n) 系統",
+          "path": "advanced/i18n.md",
+          "level": 1,
+          "icon": "fa-language"
+        },
+        {
+          "title": "作用域（scope）",
+          "path": "advanced/scope.md",
+          "level": 1,
+          "icon": "fa-shield-halved"
+        },
+        {
+          "title": "所屬權（owner）系統",
+          "path": "advanced/ownership.md",
+          "level": 1,
+          "icon": "fa-user-tag"
+        },
+        {
+          "title": "互動會話系統",
+          "path": "advanced/interaction.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "影子模組與灰度轉正",
+          "path": "advanced/shadow.md",
+          "level": 1,
+          "icon": "fa-eye"
+        },
+        {
+          "title": "模塊間通信",
+          "path": "advanced/module-communication.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "存儲後端",
+          "path": "advanced/storage-backends.md",
+          "level": 1,
+          "icon": "fa-server"
+        },
+        {
+          "title": "異常體系與捕獲指南",
+          "path": "advanced/errors.md",
+          "level": 1,
+          "icon": "fa-triangle-exclamation"
+        },
+        {
+          "title": "連接池與廣播",
+          "path": "advanced/connections.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "啟動流程與手動控制",
+          "path": "advanced/startup.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "會話收件箱（Transcript）",
+          "path": "advanced/transcript.md",
+          "level": 1,
+          "icon": "fa-fire"
+        }
+      ],
+      "subgroups": {}
+    },
+    "生態模組": {
+      "description": "社群維護的第三方擴展模組",
+      "icon": "fa-cubes",
+      "count": 6,
+      "documents": [
+        {
+          "title": "生態模組",
+          "path": "ecosystem/README.md",
+          "level": 1,
+          "icon": "fa-cubes"
+        },
+        {
+          "title": "ErisPulse-App",
+          "path": "ecosystem/app.md",
+          "level": 1,
+          "icon": "fa-mobile-screen"
+        },
+        {
+          "title": "ErisPulse-Dashboard",
+          "path": "ecosystem/dashboard.md",
+          "level": 1,
+          "icon": "fa-table-columns"
+        },
+        {
+          "title": "ErisPulse-Cron",
+          "path": "ecosystem/cron.md",
+          "level": 1,
+          "icon": "fa-clock"
+        },
+        {
+          "title": "ErisPulse-Takumi",
+          "path": "ecosystem/takumi.md",
+          "level": 1,
+          "icon": "fa-image"
+        },
+        {
+          "title": "ErisPulse-QvQChat 通用智慧代理",
+          "path": "ecosystem/qvqchat.md",
+          "level": 1,
+          "icon": "fa-cubes"
+        }
+      ],
+      "subgroups": {}
+    },
+    "AI 輔助開發": {
+      "description": "使用 AI 輔助開發 ErisPulse",
+      "icon": "fa-robot",
+      "count": 12,
+      "documents": [
+        {
+          "title": "AI 輔助開發",
+          "path": "ai-support/README.md",
+          "level": 1,
+          "icon": "fa-robot"
+        }
+      ],
+      "subgroups": {
+        "skills": {
+          "name": "Skills",
+          "icon": "fa-folder",
+          "documents": [
+            {
+              "title": "ErisPulse 适配器开发",
+              "path": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 适配器技术标准",
+              "path": "ai-support/skills/erispulse-adapter-standards/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 通信与连接",
+              "path": "ai-support/skills/erispulse-communication/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 配置系统与 CLI 工具链",
+              "path": "ai-support/skills/erispulse-config-cli/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 生态与多平台",
+              "path": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 异常体系与排障",
+              "path": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 快速上手与核心概念",
+              "path": "ai-support/skills/erispulse-getting-started/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 热重载与懒加载休眠",
+              "path": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 模块开发",
+              "path": "ai-support/skills/erispulse-module-dev/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 权限作用域与归属权",
+              "path": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 影子灰度与消息追踪",
+              "path": "ai-support/skills/erispulse-shadow-transcript/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            }
+          ]
+        }
+      }
+    },
+    "技術標準": {
+      "description": "框架的技術規範和標準",
+      "icon": "fa-gavel",
+      "count": 8,
+      "documents": [
+        {
+          "title": "技術標準",
+          "path": "standards/README.md",
+          "level": 1,
+          "icon": "fa-gavel"
+        },
+        {
+          "title": "ErisPulse 會話類型標準",
+          "path": "standards/session-types.md",
+          "level": 1,
+          "icon": "fa-layer-group"
+        },
+        {
+          "title": "ErisPulse 轉接器標準化回傳規範",
+          "path": "standards/api-response.md",
+          "level": 1,
+          "icon": "fa-arrow-right-arrow-left"
+        },
+        {
+          "title": "適配器標準化轉換規範",
+          "path": "standards/event-conversion.md",
+          "level": 1,
+          "icon": "fa-shuffle"
+        },
+        {
+          "title": "ErisPulse 發送方法規範",
+          "path": "standards/send-method-spec.md",
+          "level": 1,
+          "icon": "fa-paper-plane"
+        },
+        {
+          "title": "ErisPulse 請求操作規範",
+          "path": "standards/request-action-spec.md",
+          "level": 1,
+          "icon": "fa-hand-paper"
+        },
+        {
+          "title": "ErisPulse API 動作標準",
+          "path": "standards/api-action-spec.md",
+          "level": 1,
+          "icon": "fa-bolt"
+        },
+        {
+          "title": "適配器標準化指南（總綱）",
+          "path": "standards/standardization-guide.md",
+          "level": 1,
+          "icon": "fa-gavel"
+        }
+      ],
+      "subgroups": {}
+    }
+  }
+}

@@ -1,0 +1,540 @@
+# 核心模块 API
+
+> [!TIP]
+> **什么时候需要读这篇**：当你需要用存储、配置、日志、模块管理、路由、HTTP 客户端等核心能力，记不清具体方法签名时快速查阅本文。不需要则跳过。
+
+本文档提供 ErisPulse 核心模块的 API 快速参考，包含方法签名和简要说明。详细用法和示例请点击各模块的"完整文档"链接。
+
+## Storage 模块
+
+基于可配置后端（SQLite/MySQL/PostgreSQL）的键值存储系统，支持通用 SQL 链式查询，后端通过配置一键切换，详见 [存储后端](../advanced/storage-backends.md)。
+
+### 基本操作
+
+```python
+from ErisPulse import sdk
+
+sdk.storage.set("key", "value")
+value = sdk.storage.get("key", default_value)
+keys = sdk.storage.keys()
+sdk.storage.delete("key")
+```
+
+### 批量操作
+
+```python
+sdk.storage.set_multi({"key1": "val1", "key2": "val2"})
+values = sdk.storage.get_multi(["key1", "key2"])
+sdk.storage.delete_multi(["key1", "key2"])
+```
+
+### 事务操作
+
+```python
+with sdk.storage.transaction():
+    sdk.storage.set("key1", "value1")
+    sdk.storage.set("key2", "value2")
+```
+
+### 属性访问
+
+```python
+sdk.storage.my_key          # 等价于 sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # 等价于 sdk.storage.set("my_key", "val")
+```
+
+### SQL 链式查询
+
+Storage 模块提供链式调用风格的通用 SQL 查询构建器，支持自定义表的 CRUD 操作。
+
+```python
+sdk.storage.CreateTable("users", {
+    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "name": "TEXT NOT NULL",
+})
+
+sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
+rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
+```
+
+> 完整的链式查询 API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、事务等）请参考 [SQL 查询构建器](../advanced/sql-builder.md)。
+
+### 存储后端抽象
+
+`StorageManager` 继承自 `BaseStorage` 抽象基类，支持扩展其他存储介质（Redis、MySQL 等）。
+
+```python
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+```
+
+### 异步接口
+
+Storage 和 Config 模块均提供异步方法（前缀 `a`）：**异步为原生主接口，同步方法为兼容层**（内部桥接到后台事件循环执行）。现有同步代码无需修改；新代码在异步处理器中请优先使用异步方法。
+
+```python
+# 异步存储
+value = await sdk.storage.aget("key")
+await sdk.storage.aset("key", "value")
+await sdk.storage.adelete("key")
+keys = await sdk.storage.aget_all_keys()
+await sdk.storage.aclear()
+
+# 异步批量操作
+values = await sdk.storage.aget_multi(["k1", "k2"])
+await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
+await sdk.storage.adelete_multi(["k1", "k2"])
+
+# 异步配置
+value = await sdk.config.agetConfig("MyModule.key")
+await sdk.config.asetConfig("MyModule.key", "value")
+await sdk.config.aforce_save()
+await sdk.config.areload()
+```
+
+## Config 模块
+
+TOML 格式的配置文件管理，支持点号分隔的键路径。
+
+### API 概览
+
+| 方法 | 说明 |
+|------|------|
+| `getConfig(key, default)` | 读取配置，支持点号路径如 `"MyModule.subkey"` |
+| `getAllConfig()` | 全量配置快照（深拷贝，含未落盘的待写值视图） |
+| `setConfig(key, value, immediate=False)` | 写入配置。`immediate=True` 时立即保存到文件 |
+| `delConfig(key, immediate=False)` | 删除配置键（区别于置空），从文件中移除；触发 `config.set` 事件（`new_value=None`） |
+| `force_save()` | 强制将内存中的配置写入文件 |
+| `reload()` | 从文件重新加载配置 |
+| `agetConfig(key, default)` | 异步读取配置 |
+| `agetAllConfig()` | 异步获取全量配置快照 |
+| `asetConfig(key, value, immediate)` | 异步写入配置 |
+| `adelConfig(key, immediate)` | 异步删除配置键（行为同 `delConfig`） |
+| `aforce_save()` | 异步强制保存 |
+| `areload()` | 异步重新加载 |
+
+### 示例
+
+```python
+config = sdk.config.getConfig("MyModule", {})
+value = sdk.config.getConfig("MyModule.timeout", 30)
+
+snapshot = sdk.config.getAllConfig()          # 全量快照（深拷贝）
+sdk.config.delConfig("MyModule.deprecated")  # 删除键（延迟写入）
+
+sdk.config.setConfig("MyModule", {"key": "value"})
+sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
+
+# 异步接口（异步处理器中优先使用）
+snapshot = await sdk.config.agetAllConfig()
+await sdk.config.adelConfig("MyModule.deprecated")  # 异步删除键
+```
+
+> `setConfig` 默认采用延迟写入（每 5 秒批量保存），设置 `immediate=True` 可立即持久化到配置文件。配置变更会触发 `config.set` 生命周期事件。
+> `delete` 同样支持延迟写入与 `config.set` 事件（`new_value=None`），现有 `on_config_update` 监听方零改动即可感知删除。
+
+## Logger 模块
+
+模块化日志系统，基于 Rich 输出，支持子日志器和模块级别控制。
+
+### 基本用法
+
+```python
+sdk.logger.debug("调试信息")
+sdk.logger.info("运行信息")
+sdk.logger.warning("警告信息")
+sdk.logger.error("错误信息")
+sdk.logger.critical("致命错误")
+```
+
+### 子日志器
+
+```python
+child_logger = sdk.logger.get_child("MyModule")
+child_logger.info("子模块日志")
+
+child_logger.get_child("utils")  # 支持嵌套
+```
+
+### 日志级别控制
+
+```python
+sdk.logger.set_level("DEBUG")                          # 全局级别
+sdk.logger.set_module_level("MyModule", "DEBUG")       # 模块级别
+
+# 支持的级别（从低到高）：
+# TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
+# TRACE 为最低级别，输出框架内部详细调试信息（事件分发、路由注册等）
+sdk.logger.set_level("TRACE")                          # 开启全部日志
+```
+
+### 日志订阅（推模式）
+
+供 Dashboard 等模块实时接收结构化日志，支持等级筛选和历史补发。
+
+> **显式订阅低级别日志**：订阅器的 `min_level` 可低于全局日志级别。此时低级别日志**仅推送给匹配的订阅器**，不会输出到控制台，也不会写入内存，从而避免污染主日志流。
+>
+> ```python
+> # 全局为 INFO，仍可单独订阅 DEBUG 日志
+> @sdk.logger.handler("debug-tracer", min_level="DEBUG")
+> def on_debug(log_data: dict): ...
+> ```
+
+```python
+# 装饰器方式
+@sdk.logger.handler("my-handler", min_level="INFO")
+def on_log(log_data: dict):
+    # log_data = {
+    #     "timestamp": "2026-06-29T22:00:00.123456",
+    #     "level": "WARNING", "level_num": 30,
+    #     "module": "ErisPulse.Core.adapter",
+    #     "message": "严格模式：...",
+    # }
+    pass
+
+# 直接调用方式
+sdk.logger.handler("my-handler", min_level="INFO")(on_log)
+sdk.logger.remove_handler("my-handler")
+```
+
+| 方法 | 说明 |
+|------|------|
+| `handler(id, *, min_level)(func)` | 装饰器/直接调用两用。`id` 为空时取函数名。`min_level` 可低于全局级别（低级别日志仅推送订阅器，不进控制台/内存）。注册时自动补发历史日志 |
+| `remove_handler(id)` | 移除订阅器 |
+
+### 输出控制
+
+```python
+sdk.logger.set_output_file("app.log")
+sdk.logger.save_logs("log.txt")
+sdk.logger.get_logs("MyModule")
+sdk.logger.set_memory_limit(1000)
+```
+
+## Adapter 模块
+
+适配器管理器，管理多平台适配器的注册、启动和关闭。
+
+### API 概览
+
+| 方法 | 说明 |
+|------|------|
+| `get(platform)` | 获取适配器实例 |
+| `exists(platform)` | 检查适配器是否已注册 |
+| `enable(platform)` / `disable(platform)` | 启用/禁用适配器 |
+| `is_enabled(platform)` | 检查是否启用 |
+| `startup(platforms)` / `shutdown(platforms)` | 启动/关闭适配器 |
+| `is_running(platform)` | 检查适配器是否正在运行 |
+| `list_running()` | 列出所有正在运行的适配器 |
+| `platforms` | 获取所有平台名称列表 |
+| `get_info(platform)` | 适配器注册信息（json-safe：meta + 类名） |
+| `get_meta(platform, resolve_i18n=True)` | 适配器介绍元信息（对齐 `module.get_meta`，支持 i18n 解析） |
+
+### 适配器事件
+
+```python
+@sdk.adapter.on("message")
+async def handle_message(event):
+    pass
+
+@sdk.adapter.on("message", platform="yunhu")
+async def handle_yunhu_message(event):
+    pass
+```
+
+### Bot 状态查询
+
+```python
+sdk.adapter.get_bot_info("telegram", "123456")
+sdk.adapter.list_bots("telegram")
+sdk.adapter.is_bot_online("telegram", "123456")
+sdk.adapter.get_status_summary()
+```
+
+> 完整的适配器管理 API 请参考 [适配器系统 API](adapter-system.md)。
+
+## Module 模块
+
+模块管理器，管理插件的注册、加载和卸载。
+
+### API 概览
+
+| 方法 | 说明 |
+|------|------|
+| `get(name)` | 获取模块实例或懒加载代理（已注册但未加载时返回代理） |
+| `exists(name)` | 检查是否已注册 |
+| `is_loaded(name)` | 检查是否已加载 |
+| `is_enabled(name)` | 检查是否启用 |
+| `enable(name)` / `disable(name)` | 启用/禁用模块 |
+| `load(name)` / `unload(name)` | 加载/卸载模块 |
+| `call(module, method, *args, timeout=None, **kwargs)` | 跨模块调用目标模块的服务方法（协议化 RPC） |
+| `list_registered()` | 列出已注册模块 |
+| `list_loaded()` | 列出已加载模块 |
+| `get_info(name)` | 获取模块信息 |
+| `get_status_summary()` | 获取模块状态摘要 |
+
+### 属性访问
+
+```python
+module = sdk.module.get("ModuleName")
+module = sdk.module.ModuleName
+module = sdk.ModuleName  # 等价快捷方式
+```
+
+### 模块间调用（RPC）
+
+```python
+# 协议化调用：类型化错误 / 懒模块自动唤醒 / owner 归因 / 超时语义
+result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+```
+
+与服务方裸属性访问 `sdk.module.Chat.get_history(...)` 的差异：
+
+| | `module.call()` | 裸属性访问 |
+|---|---|---|
+| 目标未注册/未启用 | 抛 `ModuleNotAvailableError` | 抛 `AttributeError` |
+| 懒加载模块 | 自动唤醒 | 异步初始化模块抛 RuntimeError |
+| `current_owner` | 归因到目标模块 | 保持调用方 |
+| 超时 | 默认 30s，可覆盖 | 无 |
+| scope 审计 | `actions.<调用方>.call` | 无 |
+
+### 服务契约（meta.services）
+
+服务方在 `get_meta()` 的 `services` 字段声明对外白名单（与 `commands` 对称），声明后调用面收紧：
+
+```python
+class ChatModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(services=["get_history", "translate"])
+
+    async def get_history(self, session_id, n=20): ...
+```
+
+- **缺省 = 开发者无感**：未声明 `services` 时任意**公开**方法可被调用（向后兼容），下划线私有方法始终禁止；限制的主控制权在用户侧 scope 配置
+- 声明后：仅白名单内方法可调，越界抛 `ServiceNotProvidedError`
+- 调用方限制：`scope.set_action("CallerModule", "call", deny="Chat.get_history")`
+
+**服务介绍（description）**：`services` 支持 dict 形态为每个服务声明介绍
+（支持纯字符串或 i18n 字典），供服务目录 / AI 调用点描述消费：
+
+```python
+return ModuleMeta(
+    services=[
+        "get_history",                              # 简单形态：介绍自动取方法 docstring 首行
+        {"name": "translate", "description": "把文本翻译成指定语言"},
+        {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "摘要对话"}},
+    ],
+)
+```
+
+介绍解析优先级：**显式 description（i18n 解析为当前语言）> 方法 docstring 首行 > 空串**。
+
+### 服务目录（services）
+
+```python
+sdk.module.services()
+# {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
+#            'description': '获取会话历史'}]}
+
+sdk.module.services("Chat")  # 仅查询指定模块
+```
+
+仅列出**显式声明** `meta.services` 的模块；每个服务附方法签名字符串
+与介绍文本，为 MCP 化（调用点暴露给 AI）提供数据基础。
+
+> 定向事件投递属于生命周期层：`lifecycle.emit(event, data, to="ModuleName")`，
+> 详见 [模块间通信](../advanced/module-communication.md)。
+
+## Lifecycle 模块
+
+事件驱动的生命周期管理器，提供事件提交和监听功能。
+
+### API 概览
+
+| 方法 | 说明 |
+|------|------|
+| `on(event, priority=0)` | 装饰器注册事件处理器，支持点号匹配和通配符 `*` |
+| `register(event, handler, priority=0)` | 函数式注册处理器 |
+| `unregister(event, handler=None)` | 移除处理器 |
+| `emit(event, data, to=None)` | 异步触发事件；`to` 指定 owner 时定向投递 |
+| `emit_sync(event, data, to=None)` | 同步触发事件（异步处理器以 create_task 调度） |
+| `submit_event(event_type, msg, data, source, to=None)` | 提交标准格式事件（兼容旧版） |
+| `start_timer(id)` / `stop_timer(id)` | 性能计时器 |
+
+### 示例
+
+```python
+@sdk.lifecycle.on("module.init")
+async def handle_module_init(event_data):
+    print(f"模块初始化: {event_data}")
+
+@sdk.lifecycle.on("module")
+async def handle_any_module_event(event_data):
+    print(f"模块事件: {event_data}")
+
+await sdk.lifecycle.emit("custom.event", {"key": "value"})
+
+# 定向投递：仅分发给 Chat 模块注册的钩子
+await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
+```
+
+> 完整的标准事件列表和详细用法请参考 [生命周期管理](../advanced/lifecycle.md)。
+
+## Router 模块
+
+HTTP/WebSocket 路由管理器，基于 FastAPI + Uvicorn，支持装饰器路由、中间件、分组、限流、CORS。
+
+> 完整的路由 API 文档（装饰器路由、WebSocket、中间件、速率限制、CORS、安全头等）请参考 [路由管理器](../advanced/router.md)。
+
+### 快速参考
+
+```python
+# HTTP 路由
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    return {"status": "ok"}
+
+# WebSocket 路由
+@sdk.router.ws("MyModule", "/ws")
+async def ws_handler(ws: WebSocketConnection):
+    async for text in ws.iter_text():
+        await ws.send_text(f"Echo: {text}")
+
+# 路由分组
+group = sdk.router.group("MyModule", prefix="/v1")
+@group.get("/users")
+async def list_users(request: HttpRequest):
+    return {"users": []}
+```
+
+## HTTP Client 模块
+
+统一网络客户端，聚合 HTTP 请求、WebSocket 连接、连接池管理、自动重试、请求统计和生命周期事件集成。
+
+> 完整的网络客户端文档（请求方法、响应对象、WebSocket 客户端、异常体系等）请参考 [网络客户端](../advanced/http-client.md)。
+
+### 快速参考
+
+```python
+from ErisPulse.Core import client
+
+# HTTP 请求
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# WebSocket
+ws = await client.ws_connect("wss://example.com/ws")
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
+```
+
+## SDK 调试
+
+### dump_state()
+
+导出框架当前运行状态的快照，用于调试和诊断。
+
+```python
+import json
+state = sdk.dump_state()
+print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
+```
+
+返回结构包含以下子系统的状态：
+
+| 字段 | 说明 |
+|------|------|
+| `sdk` | SDK 初始化状态、Python 版本、运行平台、时间戳 |
+| `adapters` | 已注册/已启动的适配器列表、各平台 Bot 在线状态 |
+| `modules` | 已注册/已启用/已禁用/懒加载的模块列表 |
+| `events` | 各类事件处理器数量（message/notice/request/meta/commands） |
+| `router` | 服务器运行状态、HTTP/WebSocket 路由数量 |
+
+> [!NOTE]
+> 新增于 ErisPulse **2.5.2+**
+
+## Interaction 交互会话
+
+管理 wait_reply 挂起等待与会话互斥租约（`sdk.interaction`）。
+
+### 常用方法
+
+```python
+# 会话定时提醒：5 分钟无回复则提醒，用户回复自动取消
+reminder = event.remind(300, "还在吗？")
+reminder.cancel()  # 手动取消
+
+# 超时升级：到点必达（不被回复取消）
+event.escalate(1800, lambda e: notify_master("30 分钟未处理"))
+
+# 多路等待：先到先得
+which, reply = await event.select(
+    event.expect(pattern="同意*", user="A"),
+    event.expect(pattern="拒绝*", user="B"),
+    timeout=60,
+)
+
+# 会话级等待：同群任何人的回复均可命中
+reply = await event.wait_reply(session=True, prompt="谁能帮忙答一下？")
+
+# 查询会话当前归属（谁正在与该用户交互）
+owner = sdk.interaction.get_owner_of(event)
+
+# 声明会话互斥租约（被占用返回 None）
+lease = sdk.interaction.acquire(event)
+if lease:
+    try:
+        ...  # 独占交互
+    finally:
+        lease.release()
+
+# 上下文管理器形式（被占用抛 SessionOccupiedError）
+with sdk.interaction.hold(event) as lease:
+    ...
+
+# 挂起会话统计
+sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'timers': 3, 'owners': {'Chat': 3}}
+```
+
+模块卸载 / 适配器关闭时其挂起的等待与定时器自动取消（等待方立即返回 `None`），
+回复命中时自动复查 scope 权限（用户被拉黑 / 模块被解绑则终止等待）。
+
+> [!NOTE]
+> 本节能力新增于 ErisPulse **2.8.0+**
+
+## Transcript 会话收件箱
+
+每会话近期消息流的自动记录与查询（`sdk.transcript`），作为 AI 对话、
+防复读等上下文记忆类模块的公共底座。
+
+### 常用方法
+
+```python
+# 便捷查询（推荐）：当前会话最近 20 条（含用户与机器人，时间升序）
+messages = await event.history(20)
+for m in messages:
+    print(m["role"], ":", m["text"])
+
+# 管理器 API
+sdk.transcript.append(event, "user", "文本")
+sdk.transcript.get(event, n=20)
+sdk.transcript.clear(event)
+```
+
+配置（`ErisPulse.transcript`）：`enabled`（默认开启）、`max_per_session`（每会话上限，默认 50）、
+`ttl_hours`（全局过期时间，默认 168 小时）。数据存独立 SQLite 表，超限/过期惰性清理。
+
+> [!NOTE]
+> 本节能力新增于 ErisPulse **2.8.0+**
+
+## 相关文档
+
+**继续查 API**：
+- [事件系统 API](event-system.md) - Event 模块 API
+- [适配器系统 API](adapter-system.md) - Adapter 管理 API
+
+**深入某个子系统的完整文档**：
+- [SQL 查询构建器](../advanced/sql-builder.md) - SQL 链式查询完整文档
+- [路由管理器](../advanced/router.md) - 路由管理器完整文档
+- [网络客户端](../advanced/http-client.md) - 网络客户端完整文档
+- [生命周期管理](../advanced/lifecycle.md) - 生命周期完整文档

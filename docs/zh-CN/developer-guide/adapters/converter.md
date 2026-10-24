@@ -1,0 +1,389 @@
+# 事件转换器实现指南
+
+> [!TIP]
+> **什么时候需要读这篇**：适配器开发路径内必读（事件转换器）。不需要则跳过，不影响其它功能的使用。
+
+
+适配器收到平台原生事件后，由事件转换器 (Converter) 把它转换为 ErisPulse 统一的 OneBot12 标准格式——平台事件怎么进框架，就由这一个类决定。
+
+## Converter 职责
+
+```
+平台原生事件 ──→ Converter.convert() ──→ OneBot12 标准事件
+```
+
+Converter 只负责**正向转换**（接收方向），即将平台的原生事件数据转换为 OneBot12 标准格式。反向转换（发送方向）由 `Send.Raw_ob12()` 方法处理。
+
+### 核心原则
+
+1. **无损转换**：原始数据必须完整保留在 `{platform}_raw` 字段中
+2. **标准兼容**：转换后的事件必须符合 OneBot12 标准格式
+3. **平台扩展**：平台特有数据使用 `{platform}_` 前缀字段存储
+
+## BaseConverter 基类（推荐）
+
+从 2.7.0 起，框架提供 `BaseConverter` 基类（`ErisPulse.Core.Bases`），封装 OneBot12 事件的**公共字段构建**与**常用消息段辅助**，让转换器只需聚焦类型映射：
+
+```python
+from ErisPulse.Core.Bases import BaseConverter
+
+
+class MyConverter(BaseConverter):
+    def __init__(self):
+        super().__init__(platform="myplatform")
+
+    def convert(self, raw_event: dict) -> dict | None:
+        if not isinstance(raw_event, dict):
+            return None
+        event_type = raw_event.get("type", "")
+        base = self.build_base_event(raw_event, event_type)  # id/time/platform/self/raw
+        if event_type == "message":
+            base["type"] = "message"
+            base["detail_type"] = "group" if raw_event.get("group_id") else "private"
+            base["user_id"] = str(raw_event.get("sender_id", ""))
+            base["message"] = [self.text(raw_event.get("content", ""))]
+            base["alt_message"] = raw_event.get("content", "")
+            return base
+        return None
+```
+
+`build_base_event()` 已填充的公共字段：
+
+| 字段 | 来源 |
+|------|------|
+| `id` | `raw_event["event_id"]`，缺省自动生成 UUID |
+| `time` | `raw_event["timestamp"]`，缺省当前时间 |
+| `platform` | 构造时传入的 `platform` |
+| `self` | `{"platform": ..., "user_id": raw_event["bot_id"]}` |
+| `{platform}_raw` | 原始事件（满足"无损转换"原则） |
+| `{platform}_raw_type` | 原始事件类型 |
+
+常用消息段辅助方法（均为静态方法，直接复用）：
+
+```python
+converter.text("hi")          # {"type": "text", "data": {"text": "hi"}}
+converter.at("123456")        # {"type": "at", "data": {"user_id": "123456"}}
+converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
+```
+
+> 手动实现时 `build_base_event` 的公共字段构造是必须重复写的样板代码，使用 `BaseConverter` 可省去这部分，且天然满足"无损转换"（原始事件始终进 `{platform}_raw`）。
+
+## convert() 方法
+
+### 方法签名
+
+```python
+def convert(self, raw_event: dict) -> dict:
+    """
+    将平台原生事件转换为 OneBot12 标准格式
+
+    :param raw_event: 平台原生事件数据
+    :return: OneBot12 标准格式事件字典
+    """
+    pass
+```
+
+### 返回值结构
+
+转换后的事件字典应包含以下标准字段：
+
+```python
+{
+    "id": "事件唯一ID",
+    "time": 1234567890,           # Unix 时间戳（秒）
+    "type": "message",             # 事件类型
+    "detail_type": "private",      # 详细类型
+    "platform": "myplatform",      # 平台名称
+    "self": {
+        "platform": "myplatform",
+        "user_id": "bot_user_id"
+    },
+
+    # 消息事件字段
+    "user_id": "sender_id",
+    "message": [...],              # OneBot12 消息段列表
+    "alt_message": "纯文本内容",
+
+    # 必须保留原始数据
+    "myplatform_raw": { ... },     # 平台原生事件完整数据
+    "myplatform_raw_type": "原生事件类型名",
+}
+```
+
+## 必填字段映射
+
+### 通用字段（所有事件类型）
+
+| OB12 字段 | 类型 | 说明 |
+|-----------|------|------|
+| `id` | str | 事件唯一标识符 |
+| `time` | int | Unix 时间戳（秒） |
+| `type` | str | 事件类型：`message` / `notice` / `request` / `meta` |
+| `detail_type` | str | 详细类型：`private` / `group` / `friend` 等 |
+| `platform` | str | 平台名称，与适配器注册名一致 |
+| `self` | dict | 机器人信息：`{"platform": "...", "user_id": "..."}` |
+
+### 消息事件额外字段
+
+| OB12 字段 | 类型 | 说明 |
+|-----------|------|------|
+| `user_id` | str | 发送者 ID |
+| `message` | list[dict] | OneBot12 消息段列表 |
+| `alt_message` | str | 纯文本备用内容 |
+
+### 通知事件额外字段
+
+| OB12 字段 | 类型 | 说明 |
+|-----------|------|------|
+| `user_id` | str | 相关用户 ID |
+| `operator_id` | str | 操作者 ID（如群成员变动） |
+
+## 消息段转换
+
+OneBot12 标准定义了以下消息段类型：
+
+```python
+# 文本
+{"type": "text", "data": {"text": "Hello"}}
+
+# 图片
+{"type": "image", "data": {"file": "https://example.com/img.jpg"}}
+
+# 音频
+{"type": "audio", "data": {"file": "https://example.com/audio.mp3"}}
+
+# 视频
+{"type": "video", "data": {"file": "https://example.com/video.mp4"}}
+
+# 文件
+{"type": "file", "data": {"file": "https://example.com/doc.pdf"}}
+
+# @提及
+{"type": "mention", "data": {"user_id": "123"}}
+
+# @全体
+{"type": "mention_all", "data": {}}
+
+# 回复
+{"type": "reply", "data": {"message_id": "msg_123"}}
+```
+
+如果平台有不支持的消息段类型，可以省略该段或转换为最接近的标准类型。
+
+## 平台扩展字段
+
+平台特有的数据应使用 `{platform}_` 前缀存储，避免与标准字段冲突：
+
+```python
+{
+    # 标准字段
+    "type": "message",
+    "detail_type": "group",
+    # ...
+
+    # 平台扩展字段
+    "myplatform_raw": { ... },          # 原始事件数据（必须）
+    "myplatform_raw_type": "chat",      # 原始事件类型（必须）
+
+    # 其他平台特有字段
+    "myplatform_group_name": "群名称",
+    "myplatform_sender_role": "admin",
+}
+```
+
+> **重要**：`{platform}_raw` 字段是必须的，ErisPulse 的事件系统和模块可能依赖它来访问平台原始数据。
+
+## 完整示例
+
+以下是一个完整的 Converter 实现：
+
+```python
+class MyConverter:
+    def __init__(self, platform: str):
+        self.platform = platform
+
+    def convert(self, raw_event: dict) -> dict:
+        event_type = raw_event.get("type", "")
+
+        base_event = {
+            "id": raw_event.get("id", ""),
+            "time": raw_event.get("timestamp", 0),
+            "platform": self.platform,
+            "self": {
+                "platform": self.platform,
+                "user_id": raw_event.get("self_id", ""),
+            },
+            "myplatform_raw": raw_event,
+            "myplatform_raw_type": event_type,
+        }
+
+        if event_type == "chat":
+            return self._convert_message(raw_event, base_event)
+        elif event_type == "notification":
+            return self._convert_notice(raw_event, base_event)
+        elif event_type == "request":
+            return self._convert_request(raw_event, base_event)
+
+        return base_event
+
+    def _convert_message(self, raw: dict, base: dict) -> dict:
+        base["type"] = "message"
+        base["detail_type"] = "group" if raw.get("group_id") else "private"
+        base["user_id"] = raw.get("sender_id", "")
+        base["message"] = self._convert_message_segments(raw.get("content", ""))
+        base["alt_message"] = raw.get("content", "")
+
+        if raw.get("group_id"):
+            base["group_id"] = raw["group_id"]
+
+        return base
+
+    def _convert_message_segments(self, content: str) -> list:
+        segments = []
+        if content:
+            segments.append({"type": "text", "data": {"text": content}})
+        return segments
+
+    def _convert_notice(self, raw: dict, base: dict) -> dict:
+        base["type"] = "notice"
+        notification_type = raw.get("notification_type", "")
+
+        if notification_type == "member_join":
+            base["detail_type"] = "group_member_increase"
+            base["user_id"] = raw.get("user_id", "")
+            base["group_id"] = raw.get("group_id", "")
+            base["operator_id"] = raw.get("operator_id", "")
+        elif notification_type == "friend_add":
+            base["detail_type"] = "friend_increase"
+            base["user_id"] = raw.get("user_id", "")
+
+        return base
+
+    def _convert_request(self, raw: dict, base: dict) -> dict:
+        base["type"] = "request"
+        request_type = raw.get("request_type", "")
+
+        if request_type == "friend":
+            base["detail_type"] = "friend"
+            base["user_id"] = raw.get("user_id", "")
+            base["comment"] = raw.get("message", "")
+        elif request_type == "group_invite":
+            base["detail_type"] = "group"
+            base["group_id"] = raw.get("group_id", "")
+            base["user_id"] = raw.get("inviter_id", "")
+
+        return base
+```
+
+## 富媒体消息转换示例
+
+实际平台的消息通常包含图片、@提及、回复等富媒体内容。以下是 `_convert_message_segments` 处理多种消息类型的示例：
+
+```python
+def _convert_message_segments(self, raw_content: list) -> list:
+    """将平台原生消息段列表转换为 OneBot12 标准消息段"""
+    segments = []
+
+    for item in raw_content:
+        item_type = item.get("type", "")
+
+        if item_type == "text":
+            segments.append({
+                "type": "text",
+                "data": {"text": item.get("content", "")}
+            })
+
+        elif item_type == "image":
+            file_url = item.get("url") or item.get("file_id", "")
+            segments.append({
+                "type": "image",
+                "data": {"file": file_url}
+            })
+
+        elif item_type == "at":
+            segments.append({
+                "type": "mention",
+                "data": {"user_id": item.get("target_id", "")}
+            })
+
+        elif item_type == "reply":
+            segments.append({
+                "type": "reply",
+                "data": {"message_id": item.get("reply_to_id", "")}
+            })
+
+        elif item_type == "at_all":
+            segments.append({"type": "mention_all", "data": {}})
+
+        else:
+            segments.append({
+                "type": "text",
+                "data": {"text": f"[不支持的消息类型: {item_type}]"}
+            })
+
+    return segments
+```
+
+## 常见陷阱
+
+### 1. 缺少 `{platform}_raw` 字段
+
+这是最常见的错误。缺少原始数据字段会导致模块无法访问平台特有的信息。
+
+```python
+base_event["myplatform_raw"] = raw_event        # 必须！
+base_event["myplatform_raw_type"] = event_type   # 必须！
+```
+
+### 2. 时间戳格式错误
+
+OneBot12 标准要求 `time` 字段为 Unix 秒级时间戳（整数）。如果你的平台返回毫秒时间戳或 ISO 格式字符串，需要转换：
+
+```python
+import time
+
+# 毫秒 → 秒
+"time": raw_event.get("timestamp", 0) // 1000
+
+# ISO 字符串 → 秒
+"time": int(time.mktime(time.strptime(raw_event["created_at"], "%Y-%m-%dT%H:%M:%S")))
+```
+
+### 3. 缺少 `self` 字段
+
+`self` 字段包含机器人自身信息，`user_id` 为机器人的账号 ID。多 Bot 场景下此字段至关重要：
+
+```python
+"self": {
+    "platform": self.platform,
+    "user_id": raw_event.get("bot_id", ""),   # 机器人自身的 ID
+}
+```
+
+### 4. detail_type 使用了非标准值
+
+`detail_type` 必须使用 OneBot12 标准定义的值，如 `private`、`group`、`friend_increase`、`group_member_increase` 等。不要使用平台特有的命名。
+
+### 5. 往返一致性
+
+确保 Converter 生成的消息段类型与 Send 端支持的方法对应。例如，如果 Converter 将平台的图片消息转换为 `{"type": "image", ...}`，那么 Send 端的 `Image()` 方法必须能处理图片发送。
+
+## 最佳实践
+
+1. **总是保留原始数据**：`{platform}_raw` 字段不能省略
+2. **使用标准消息段**：尽量将平台消息转换为 OneBot12 标准消息段
+3. **合理设置 detail_type**：使用标准类型（`private`/`group`/`channel` 等），不要自定义
+4. **处理边界情况**：原始事件可能缺少某些字段，使用 `.get()` 并提供合理默认值
+5. **性能考虑**：`convert()` 在每个事件上调用，避免在其中执行耗时操作
+
+## 相关文档
+
+### 继续适配器开发路径
+
+- [适配器核心概念](core-concepts.md) - 适配器整体架构
+- [SendDSL 详解](send-dsl.md) - 反向转换（发送方向）
+
+### 遵循正式规范
+
+- [事件转换标准](../../standards/event-conversion.md) - 正式的事件转换规范
+- [会话类型系统](../../standards/session-types.md) - 会话类型映射规则
