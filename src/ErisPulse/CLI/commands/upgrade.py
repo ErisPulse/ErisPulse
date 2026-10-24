@@ -10,7 +10,7 @@ from argparse import ArgumentParser, Namespace
 from ..base import Command
 from ..console import console
 from ..i18n import i18n
-from ..utils import PackageManager
+from ..utils import PackageManager, runtime_state
 from ..utils.interactive import confirm
 from ..utils.package_manager import resolve_target_python, warn_if_uv_isolated
 
@@ -68,4 +68,8 @@ class UpgradeCommand(Command):
             upgraded = True
         if upgraded:
             # 生效方式提示：升级只更新磁盘代码，运行中的进程需重启或热重载
-            console.print(f"[hint]{i18n.t('cli.upgrade.done_hint')}[/]")
+            key, params = runtime_state.effect_hint()
+            if key:
+                console.print(f"[hint]{i18n.t(key, **params)}[/]")
+            else:
+                console.print(f"[hint]{i18n.t('cli.upgrade.done_hint')}[/]")

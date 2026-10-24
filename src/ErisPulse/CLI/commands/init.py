@@ -267,10 +267,11 @@ class InitCommand(Command):
                     f.write('version = "0.1.0"\n')
                     f.write('description = "ErisPulse project"\n')
                     f.write('requires-python = ">=3.10"\n')
+                    # 适配器依赖不在此处写入：骨架阶段尚无别名→真包名解析
+                    # （短名会让后续 uv 解析直接失败），依赖由适配器安装
+                    # 成功后经 append_pyproject_dependencies / uv add 补写
                     f.write("dependencies = [\n")
                     f.write(f'    "{INIT_ERISPULSE_DEPENDENCY}",\n')
-                    for adapter in adapter_list or []:
-                        f.write(f'    "{adapter}",\n')
                     f.write("]\n")
                 console.print(f"[success]  {i18n.t('cli.init.pyproject_created')}[/]")
 
@@ -683,6 +684,7 @@ class InitCommand(Command):
         from ..utils import config_wizard
 
         project_python = getattr(self, "_project_python", None)
+        project_path = getattr(self, "_project_path", None)
         pkg_manager = PackageManager(python_executable=project_python)
         pkg_manager.no_uv = getattr(self, "no_uv", False)
         for adapter_name in adapter_names:
@@ -708,9 +710,18 @@ class InitCommand(Command):
 
             if not success:
                 console.print(f"[error]  {i18n.t('cli.init.adapter_install_failed', name=adapter_name)}[/]")
-            elif config_wizard.is_interactive():
-                # 安装成功后衔接配置向导，写入已重定向到新项目的 config.toml
+            else:
+                # 骨架 pyproject 不含适配器短名（别名→真包名在此处才解析），
+                # pip 通道安装成功后把真包名补写进 dependencies（uv 通道由
+                # uv add 自动写入，无需此处处理）
                 try:
-                    config_wizard.post_install_configure([package_name], config)
+                    if project_path is not None:
+                        append_pyproject_dependencies(project_path, [package_name])
                 except Exception as e:
-                    console.print(f"[warning]  {i18n.t('cli.config.post_install_failed', error=e)}[/]")
+                    console.print(f"[warning]  {i18n.t('cli.init.pyproject_writeback_failed', error=e)}[/]")
+                if config_wizard.is_interactive():
+                    # 安装成功后衔接配置向导，写入已重定向到新项目的 config.toml
+                    try:
+                        config_wizard.post_install_configure([package_name], config)
+                    except Exception as e:
+                        console.print(f"[warning]  {i18n.t('cli.config.post_install_failed', error=e)}[/]")
