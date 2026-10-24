@@ -52,6 +52,29 @@ class TestI18nManager:
         # 重置后应该是检测到的语言
         assert i18n_manager._current_lang is None
 
+    def test_builtin_translations_lazy_loading(self, i18n_manager):
+        """内置翻译懒加载：启动仅装当前语言 + en 兜底，切换语言时按需加载"""
+        current = i18n_manager.get_language()
+
+        # 启动即装：当前语言 + en 兜底（current 为 en 时仅 en 一项）
+        assert current in i18n_manager._builtin_loaded
+        assert "en" in i18n_manager._builtin_loaded
+        # 未用到的语言未加载
+        unloaded = [lang for lang in i18n_manager.get_supported_languages() if lang not in (current, "en")]
+        for lang in unloaded:
+            assert lang not in i18n_manager._builtin_loaded
+
+        # 切换语言 → 立即按需加载，翻译可查
+        i18n_manager.set_language("ja", persist=False)
+        assert "ja" in i18n_manager._builtin_loaded
+        assert "ja" in i18n_manager._translations
+        assert any(k.startswith("core.") for k in i18n_manager._translations["ja"])
+
+        # 未加载语言的查询（has_translation）也会触发按需加载
+        i18n_manager.has_translation("core.sdk.init.starting", lang="ru")
+        assert "ru" in i18n_manager._builtin_loaded
+
+
     # ==================== 就近映射测试 ====================
 
     @pytest.mark.parametrize(

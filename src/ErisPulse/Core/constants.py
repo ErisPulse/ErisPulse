@@ -169,9 +169,16 @@ CONFIG_LOCK_FILE_NAME: Final[str] = "config.lock"
 # 修改影响: 日志过滤时的 logger 名。第三方日志处理器需对应修改。
 LOGGER_NAME: Final[str] = "ErisPulse"
 
-# 内存中保留的最大日志条数。
+# 内存中保留的最大日志条数（单模块队列上限）。0 = 关闭内存日志副本。
 # 修改影响: WebUI 日志查看器的历史深度。设大占用更多内存，设小丢失更多历史。
 DEFAULT_LOG_MEMORY_LIMIT: Final[int] = 1000
+
+# 内存日志的全局总条数上限（跨全部模块队列）。0 = 不限。
+# 超限时按"条数最多的模块队列 popleft"轮转淘汰最旧记录，防多模块场景下
+# 各队列独立上限叠加造成内存无上界。
+# 使用位置: Core/logger.py -> Logger（set_total_memory_limit / _save_in_memory）。
+# 修改影响: 内存日志总占用上界与 Dashboard 可回溯的历史深度。
+DEFAULT_LOG_TOTAL_MEMORY_LIMIT: Final[int] = 5000
 
 # 日志初始级别（启动时默认值）。
 # 运行时会被配置文件中的 ErisPulse.logger.level 覆盖。
@@ -311,6 +318,27 @@ EXCEPTION_NOISE_STATE_MAX_ENTRIES: Final[int] = 128
 # 使用位置: Core/Bases/send_rules.py -> SendRuleGate._threshold 类属性默认
 # 值（可被 rules["priority_threshold"] 配置覆写）。
 SEND_RULE_PRIORITY_THRESHOLD: Final[int] = 64
+
+# ==============================================================================
+# 适配器通信模式基类（PollingAdapter / WebhookAdapter）
+#
+# 控制半成品基类的轮询退避与回调路由路径。
+# 使用位置: Core/Bases/adapter_patterns.py
+# ==============================================================================
+
+# PollingAdapter 轮询循环拉取失败后的指数退避基数（秒）。
+# 每次失败等待 等待时长×2（1s → 2s → 4s...），成功后归零重计。
+# 修改影响: 平台 API 不可用时的轮询重试频率。
+POLLING_ADAPTER_BACKOFF_BASE_SECS: Final[float] = 1.0
+
+# PollingAdapter 轮询退避的等待上限（秒）。
+# 修改影响: 平台长时间不可用时的最大重试间隔。
+POLLING_ADAPTER_BACKOFF_MAX_SECS: Final[float] = 60.0
+
+# WebhookAdapter 在平台命名空间下注册回调路由的路径段（最终完整路径为
+# ``/{平台名}/webhook``，与 WS 模板的 ``/{平台名}/ws`` 同一约定）。
+# 修改影响: 平台侧配置回调地址时需要同步变更。
+WEBHOOK_ADAPTER_PATH_PREFIX: Final[str] = "/webhook"
 
 # ==============================================================================
 # 路由限流
@@ -636,6 +664,12 @@ DEFAULT_TRANSCRIPT_MAX_PER_SESSION: Final[int] = 50
 # 使用位置: Core/transcript.py -> retention
 # 修改影响: 超过时长的消息记录在惰性清理时删除。可通过 ErisPulse.transcript.ttl_hours 覆盖。
 DEFAULT_TRANSCRIPT_TTL_HOURS: Final[float] = 168.0
+
+# 入站 bot 回声消息（self.user_id == user_id）的记录模式。
+# 使用位置: Core/transcript.py -> self_echo（Core/adapter.py 入站记录点消费）
+# 修改影响: "bot"=记 role="bot"+meta.self_echo（默认）；"skip"=不记录；"user"=记 role="user"（旧行为）。
+#           可通过 ErisPulse.transcript.self_echo 覆盖。
+DEFAULT_TRANSCRIPT_SELF_ECHO: Final[str] = "bot"
 
 # 会话收件箱批量落盘的单批最大行数：缓冲达到该条数时 flusher 立即提交一个事务。
 # 使用位置: Core/transcript.py -> _take_batch / _flush_loop
@@ -1086,6 +1120,19 @@ STORAGE_MAX_LIST_INDEX: Final[int] = 10000
 # 修改影响: 设大提高并发吞吐但增加内存占用，设小限制资源消耗但可能降低事件处理速度。
 DEFAULT_HANDLER_MAX_CONCURRENCY: Final[int] = 64
 
+# 事件洪峰入队背压：单平台待处理 handler Task 数上限（在途已创建未完成的 Task）。
+# 运行时行为。超过上限时新事件的 handler Task 直接丢弃（不创建），记折叠 WARNING
+# 并累计丢弃计数（troubleshoot 可见）。可经 ErisPulse.framework.handler_queue_max_pending
+# 配置覆盖，0 = 不限。
+# 使用位置: Core/adapter.py -> AdapterManager._dispatch_handler_task()。
+# 修改影响: 设大→洪峰期可积压更多 Task（内存峰值更高）；设小→更早丢弃洪峰事件。
+HANDLER_QUEUE_MAX_PENDING: Final[int] = 4096
+
+# 入队背压丢弃 WARNING 的折叠窗口（秒）：窗口内的连续丢弃只记一次告警（计数仍累计）。
+# 使用位置: Core/adapter.py -> AdapterManager._record_handler_queue_drop()。
+# 修改影响: 设小→洪峰期告警更密集；设大→告警更稀疏（可能掩盖持续过载）。
+HANDLER_QUEUE_OVERFLOW_WARN_INTERVAL_SECS: Final[float] = 5.0
+
 # 路由限流存储的自动清理间隔（秒）。
 # 运行时行为。后台定期扫描 _rate_limit_store，清除过期的 IP 记录。
 # 修改影响: 设大减少 CPU 开销但内存占用更久，设小更积极回收内存。
@@ -1182,6 +1229,59 @@ MODULE_RELOAD_PRECHECK_MAX_FILES: Final[int] = 500
 # （实际归眠时点 = 阈值 + 最多一个扫描间隔）。
 MODULE_DORMANCY_SWEEP_INTERVAL_SECS: Final[float] = 60.0
 
+# 休眠归眠（module.sleep）等待热重载互斥锁的超时（秒）。
+# 使用位置: Core/module.py -> ModuleManager.sleep()（归眠与重载互斥）。
+# 修改影响: 只限锁等待（不限 on_unload 执行时长）；超时本轮跳过、下个
+# 清扫周期重试——防止清扫器卡死在长时间的重载/restart 之后。
+MODULE_DORMANCY_SLEEP_LOCK_TIMEOUT_SECS: Final[float] = 30.0
+
+# ==============================================================================
+# 文件监控 / 热重载触发
+#
+# 控制文件监控（PollingObserver）与热重载去抖的默认行为。
+# 使用位置: runtime/file_watcher.py、runtime/plugin_reload.py、CLI/commands/run.py
+# ==============================================================================
+
+# 文件监控默认忽略的目录名集合（按目录名匹配，任意层级生效）。
+# 防止 .venv/.git/__pycache__ 等目录被纳入轮询（每秒全树 stat 开销）以及
+# 运行中 uv sync / pip install 改写依赖文件触发误重载。
+# 使用位置: runtime/file_watcher.py -> PollingObserver（默认忽略清单）；
+#           CLI/commands/run.py 与 runtime/plugin_reload.py 经配置解析后传入。
+# 修改影响: 这些目录下的 .py 变更不再触发任何文件事件；用户可经
+#           ErisPulse.framework.watch_ignore_dirs 配置整体替换（[] = 不忽略）。
+FILE_WATCHER_IGNORED_DIRS: Final[frozenset] = frozenset(
+    {
+        ".venv",
+        "venv",
+        ".git",
+        "__pycache__",
+        "node_modules",
+        ".erispulse",
+        ".idea",
+        ".vscode",
+        ".tox",
+        ".eggs",
+    }
+)
+
+# 文件监控轮询间隔（秒）。
+# 使用位置: runtime/file_watcher.py（PollingObserver 默认值）、
+#           runtime/plugin_reload.py（PluginReloadWatcher 默认值）。
+# 修改影响: 文件变更的感知延迟与轮询开销。
+FILE_WATCH_POLL_INTERVAL_SECS: Final[float] = 1.0
+
+# 文件变更触发重载的去抖窗口（秒）：首个事件立即触发，窗口内的后续变更
+# 合并入队、窗口静默后统一补发一次（不丢弃）。
+# 使用位置: runtime/plugin_reload.py（_PluginChangeHandler）、CLI/commands/run.py。
+# 修改影响: 连续保存时的重载频率——窗口内的批量保存合并为一次补发。
+FILE_RELOAD_DEBOUNCE_SECS: Final[float] = 1.0
+
+# 插件热重载失败后的单次重试等待（秒）：等待编辑器完成原子保存（temp+rename）
+# 的半写窗口后复查 mtime，未变化则放弃。
+# 使用位置: runtime/plugin_reload.py（_PluginChangeHandler._drain）。
+# 修改影响: 半写文件触发预检拒绝后的自愈速度。
+PLUGIN_RELOAD_RETRY_DELAY_SECS: Final[float] = 0.5
+
 # ==============================================================================
 # 进程 / 版本 / 日志展示常量
 #
@@ -1236,6 +1336,7 @@ WS_CLOSE_NORMAL: Final[int] = 1000
 PYPI_PACKAGE_JSON_URL_TEMPLATE: Final[str] = "https://pypi.org/pypi/{package}/json"
 
 # 常用 HTTP 状态码（router 错误页与限流响应统一引用，避免字面量散落）。
+HTTP_STATUS_BAD_REQUEST: Final[int] = 400
 HTTP_STATUS_FORBIDDEN: Final[int] = 403
 HTTP_STATUS_NOT_FOUND: Final[int] = 404
 HTTP_STATUS_TOO_MANY_REQUESTS: Final[int] = 429
@@ -1283,6 +1384,7 @@ __all__ = [
     "DEFAULT_SSE_HEADERS",
     "DEFAULT_SSE_MEDIA_TYPE",
     "HTTP_STATUS_BAD_GATEWAY",
+    "HTTP_STATUS_BAD_REQUEST",
     "HTTP_STATUS_FORBIDDEN",
     "HTTP_STATUS_INTERNAL_ERROR",
     "HTTP_STATUS_NOT_FOUND",
@@ -1345,6 +1447,8 @@ __all__ = [
     "DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS",
     "DEFAULT_HANDLER_MAX_CONCURRENCY",
     "DEFAULT_HANDLER_PRIORITY",
+    "HANDLER_QUEUE_MAX_PENDING",
+    "HANDLER_QUEUE_OVERFLOW_WARN_INTERVAL_SECS",
     "DEFAULT_BROADCAST_CONCURRENCY",
     "DEFAULT_BROADCAST_TIMEOUT_SECS",
     "CONNECTION_ID_HEX_CHARS",
@@ -1362,6 +1466,7 @@ __all__ = [
     "DEFAULT_LOG_LEVEL",
     "DEFAULT_LOG_MAX_SIZE_MB",
     "DEFAULT_LOG_MEMORY_LIMIT",
+    "DEFAULT_LOG_TOTAL_MEMORY_LIMIT",
     "DEFAULT_LOG_ROTATION",
     "DEFAULT_LOG_ROTATION_WHEN",
     "DEFAULT_MAX_RETRIES",
@@ -1413,6 +1518,7 @@ __all__ = [
     "DEFAULT_TRANSCRIPT_ENABLED",
     "DEFAULT_TRANSCRIPT_MAX_PER_SESSION",
     "DEFAULT_TRANSCRIPT_TTL_HOURS",
+    "DEFAULT_TRANSCRIPT_SELF_ECHO",
     "TRANSCRIPT_FLUSH_MAX_BATCH",
     "TRANSCRIPT_FLUSH_INTERVAL_SECS",
     "TRANSCRIPT_BUFFER_MAX_ROWS",
@@ -1452,9 +1558,17 @@ __all__ = [
     "LOG_RICH_THEME",
     "LOG_TIME_FORMAT",
     "MODULE_DORMANCY_SWEEP_INTERVAL_SECS",
+    "MODULE_DORMANCY_SLEEP_LOCK_TIMEOUT_SECS",
     "MODULE_RELOAD_PRECHECK_MAX_FILES",
     "MODULE_SOURCE_PLUGIN_FOLDER",
     "MODULE_SOURCE_RUNTIME",
+    "FILE_WATCHER_IGNORED_DIRS",
+    "FILE_WATCH_POLL_INTERVAL_SECS",
+    "FILE_RELOAD_DEBOUNCE_SECS",
+    "PLUGIN_RELOAD_RETRY_DELAY_SECS",
+    "POLLING_ADAPTER_BACKOFF_BASE_SECS",
+    "POLLING_ADAPTER_BACKOFF_MAX_SECS",
+    "WEBHOOK_ADAPTER_PATH_PREFIX",
     "RETCODE_NOT_IMPLEMENTED",
     "RETCODE_OK",
     "RETCODE_PERMISSION_DENIED",

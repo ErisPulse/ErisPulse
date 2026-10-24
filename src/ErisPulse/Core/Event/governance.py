@@ -178,6 +178,12 @@ class GovernanceGate:
         self._usage_replied: dict[str, str] = {}
         # 配额判定的每键互斥锁：串行化 storage 读改写，防并发事件丢失更新
         self._usage_locks: dict[str, asyncio.Lock] = {}
+        # 锁清扫两轮复核的待删候选（键 → 本轮判定的锁对象）：复核轮确认
+        # 同一锁对象仍未锁定才真正删除（两轮之间隔着 await 边界，单轮判定
+        # 存在误删在途锁的理论窗口——删后新判定会另建新锁，旧锁持有者的
+        # 读改写与新锁并发，配额计数可能互相覆盖）；以锁对象记账使窗口内
+        # 被重建的键（命令重载/新周期）候选自动作废
+        self._usage_lock_sweep_pending: dict[str, asyncio.Lock] = {}
         # 持久化失败已告警的命令主名（每命令只告警一次，恢复成功后解除）
         self._usage_persist_warned: set[str] = set()
 
@@ -201,16 +207,64 @@ class GovernanceGate:
             for key in [k for k, dq in self._rate_limits.items() if not dq]:
                 self._rate_limits.pop(key, None)
 
+    def _sweep_usage_locks(
+        self, removable: "set[str] | list[str]", *, collect: bool = True
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        锁清扫两轮复核：收集轮记录可删键的锁对象，复核轮确认同一锁对象
+        仍未锁定才真正删除
+
+        复核窗口（两轮清扫之间隔着 await 边界）内被再次锁定的候选顺延到
+        后续复核，防止误删在途锁导致同一键出现两把锁并发读改写配额计数；
+        候选以锁对象记账，键在窗口内被重建（命令重载/新周期）时候选自动作废。
+
+        :param removable: 本轮判定可删除的锁键（过期周期 / 已卸载命令前缀）
+        :param collect: 是否执行收集轮（复核轮始终执行；表容量回落后的
+            常规调用只复核不收集，避免每次配额判定全量扫描锁表）
+        """
+        removable_keys = set(removable)
+        # 复核轮：同一锁对象、仍可删、仍未锁定 → 删除
+        for key, recorded in list(self._usage_lock_sweep_pending.items()):
+            if key not in removable_keys:
+                # 不再满足删除条件（周期翻转 / 命令重载重建）：候选作废
+                self._usage_lock_sweep_pending.pop(key, None)
+                continue
+            lock = self._usage_locks.get(key)
+            if lock is None or lock is not recorded:
+                # 键已删除或已重建为不同锁对象：候选作废
+                self._usage_lock_sweep_pending.pop(key, None)
+            elif not lock.locked():
+                self._usage_locks.pop(key, None)
+                self._usage_lock_sweep_pending.pop(key, None)
+            # 仍锁定：候选顺延到后续复核
+        if collect:
+            # 收集轮：仍存在于锁表的可删键全部入候选（锁定与否），待下轮
+            # 复核——锁定的键在释放后的首次复核中删除
+            for key in removable_keys:
+                lock = self._usage_locks.get(key)
+                if lock is not None:
+                    self._usage_lock_sweep_pending[key] = lock
+
     def _sweep_usage_period(self, u_period: str, sep: str) -> None:
         """{!--< internal-use >!--} 配额表超容量时清除已过自然周期的条目（周期切换即失效）"""
+        suffix = sep + u_period
+        # 上轮锁候选的复核不受容量门控（候选集非空时才发生，成本 O(候选)）：
+        # 否则首轮过容量清理后表回落到上限内，待复核锁将滞留到下次过容量
+        if self._usage_lock_sweep_pending:
+            self._sweep_usage_locks(
+                [k for k in self._usage_locks if not k.endswith(suffix)],
+                collect=False,
+            )
         if len(self._usage_counts) <= GOVERNANCE_STATE_MAX_ENTRIES and len(self._usage_replied) <= GOVERNANCE_STATE_MAX_ENTRIES:
             return
-        suffix = sep + u_period
         for key in [k for k in self._usage_counts if not k.endswith(suffix)]:
             self._usage_counts.pop(key, None)
-            lock = self._usage_locks.get(key)
-            if lock is not None and not lock.locked():
-                self._usage_locks.pop(key, None)
+        # 锁表候选从锁表自身派生（而非已弹出的计数表），保证两轮复核之间
+        # 待删键集合稳定：计数条目首轮已删，锁候选下轮仍可被复核确认
+        self._sweep_usage_locks(
+            [k for k in self._usage_locks if not k.endswith(suffix)]
+        )
         for key in [k for k in self._usage_replied if not k.endswith(suffix)]:
             self._usage_replied.pop(key, None)
 
@@ -232,10 +286,11 @@ class GovernanceGate:
             key for key in self._rate_limit_replied if key.startswith(prefix)
         ]:
             self._rate_limit_replied.discard(key)
-        for key in [key for key in self._usage_locks if key.startswith(prefix)]:
-            lock = self._usage_locks.get(key)
-            if lock is not None and not lock.locked():
-                self._usage_locks.pop(key, None)
+        # 命令已卸载：其名下锁键走两轮复核删除（在途锁本轮只落候选，
+        # 下轮清扫复核仍未锁定才删；命令重载重建的锁不在待删范围自动落选）
+        self._sweep_usage_locks(
+            [key for key in self._usage_locks if key.startswith(prefix)]
+        )
         self._usage_persist_warned.discard(main_name)
 
     def clear_all(self) -> None:
@@ -247,6 +302,7 @@ class GovernanceGate:
         self._rate_limit_replied.clear()
         self._usage_replied.clear()
         self._usage_locks.clear()
+        self._usage_lock_sweep_pending.clear()
         self._usage_persist_warned.clear()
 
     async def check_cooldown(

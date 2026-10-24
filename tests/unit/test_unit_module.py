@@ -2124,3 +2124,41 @@ class TestModuleActivateOnFailureRecovery:
         finally:
             act._deregister_stubs()
             manager._modules.clear()
+
+
+@pytest.mark.unit
+class TestModuleState:
+    """BaseModule.state 持久化状态视图（2.11.1 新增）"""
+
+    def test_state_prefix_namespacing(self):
+        """键自动带 module.state.<模块名>. 前缀"""
+        from ErisPulse.Core.Bases.module import BaseModule
+
+        view = BaseModule.ModuleState("MyModule")
+        assert view._prefix == "module.state.MyModule."
+
+    def test_state_get_set_roundtrip(self, monkeypatch):
+        """get/set 委托 storage 并带前缀"""
+        import sys as _sys
+
+        from ErisPulse.Core.Bases.module import BaseModule
+
+        calls: list = []
+
+        class _FakeStorage:
+            def get(self, key, default=None):
+                calls.append(("get", key, default))
+                return 41
+
+            def set(self, key, value):
+                calls.append(("set", key, value))
+                return True
+
+        fake = _FakeStorage()
+        # 注意 patch 的是包模块内的名字（ErisPulse.Core 属性是管理器实例——遮蔽坑）
+        monkeypatch.setitem(_sys.modules, "ErisPulse.Core.storage", type("M", (), {"storage": fake}))
+        view = BaseModule.ModuleState("M")
+        assert view.get("runs", 0) == 41
+        assert view.set("runs", 42) is True
+        assert calls[0] == ("get", "module.state.M.runs", 0)
+        assert calls[1] == ("set", "module.state.M.runs", 42)

@@ -290,13 +290,19 @@ class TestLogger:
         assert temp_logger._max_logs == 500
 
     def test_set_memory_limit_invalid(self, temp_logger):
-        """测试设置无效内存限制"""
-        # 执行
-        result = temp_logger.set_memory_limit(0)
+        """测试设置内存限制的边界：负数拒绝；0 = 关闭内存日志副本"""
+        # 负数仍然拒绝
+        assert temp_logger.set_memory_limit(-1) is False
 
-        # 验证
-        assert result is False
-        assert temp_logger._max_logs > 0
+        # 0 = 关闭内存日志副本（2.11.1 起新语义：不再拒绝）
+        assert temp_logger.set_memory_limit(0) is True
+        temp_logger._save_in_memory("TestModule", "INFO", logging.INFO, "skipped")
+        assert not temp_logger._logs.get("TestModule")
+
+        # 恢复后重新生效
+        assert temp_logger.set_memory_limit(10) is True
+        temp_logger._save_in_memory("TestModule", "INFO", logging.INFO, "kept")
+        assert temp_logger._logs.get("TestModule")
 
     def test_save_in_memory(self, temp_logger):
         """测试内存存储日志"""
@@ -322,6 +328,63 @@ class TestLogger:
         # 验证（应该只保留最后5条）
         assert len(temp_logger._logs["TestModule"]) == 5
         assert "Message 9" in temp_logger._logs["TestModule"][-1]["message"]
+
+    def test_set_total_memory_limit_invalid(self, temp_logger):
+        """测试全局总上限的边界：负数拒绝；0 = 不限"""
+        assert temp_logger.set_total_memory_limit(-1) is False
+
+        assert temp_logger.set_total_memory_limit(0) is True
+        assert temp_logger._total_max_logs == 0
+
+    def test_total_memory_limit_global_eviction(self, temp_logger):
+        """测试全局总上限淘汰：多模块洪峰时总数受控"""
+        temp_logger.set_memory_limit(100)
+        assert temp_logger.set_total_memory_limit(10) is True
+
+        # 两个模块交替记录（总计 12 > 10）
+        for i in range(6):
+            temp_logger._save_in_memory("ModA", "INFO", logging.INFO, f"a{i}")
+            temp_logger._save_in_memory("ModB", "INFO", logging.INFO, f"b{i}")
+
+        total = sum(len(q) for q in temp_logger._logs.values())
+        assert total == 10
+        assert temp_logger._total_log_count == 10
+
+    def test_total_memory_limit_zero_means_unlimited(self, temp_logger):
+        """测试全局总上限 0 = 不限：不触发淘汰"""
+        temp_logger.set_memory_limit(50)
+        temp_logger.set_total_memory_limit(0)
+
+        for i in range(30):
+            temp_logger._save_in_memory("ModA", "INFO", logging.INFO, f"a{i}")
+
+        assert len(temp_logger._logs["ModA"]) == 30
+
+    def test_unregister_by_owner_reclaims_logs_and_levels(self, temp_logger):
+        """模块卸载链清理：unregister_by_owner 回收内存日志与模块级别覆盖"""
+        temp_logger.set_memory_limit(50)
+        temp_logger.set_module_level("GhostModule", "DEBUG")
+        temp_logger._save_in_memory("GhostModule", "INFO", logging.INFO, "m")
+        temp_logger._save_in_memory("GhostModule.sub", "INFO", logging.INFO, "s")
+        temp_logger._save_in_memory("OtherModule", "INFO", logging.INFO, "kept")
+        temp_logger._register_handler(
+            "ghost_cb", lambda d: None, "INFO", owner="GhostModule"
+        )
+        temp_logger._register_handler(
+            "other_cb", lambda d: None, "INFO", owner="OtherModule"
+        )
+
+        removed = temp_logger.unregister_by_owner("GhostModule")
+
+        assert removed == 1
+        assert "GhostModule" not in temp_logger._logs
+        assert "GhostModule.sub" not in temp_logger._logs
+        assert "GhostModule" not in temp_logger._module_levels
+        assert "ghost_cb" not in temp_logger._log_handlers
+        # 其它归属不受影响
+        assert "OtherModule" in temp_logger._logs
+        assert "other_cb" in temp_logger._log_handlers
+        assert temp_logger._total_log_count == 1
 
     # ==================== 文件输出测试 ====================
 
@@ -587,6 +650,20 @@ class TestCallerModuleDetection:
         # 验证
         assert caller is not None
         assert isinstance(caller, str)
+
+    def test_get_caller_attributes_to_test_module(self, temp_logger):
+        """归因到真实调用模块（f_globals __name__ O(1) 路径）"""
+        assert temp_logger._get_caller() == __name__
+
+    def test_log_records_caller_module(self, temp_logger):
+        """_log 路径的调用者归因：内存副本落在测试模块名下"""
+        temp_logger.set_memory_limit(50)
+        temp_logger.set_level("INFO")
+        temp_logger.info("attribution probe")
+
+        records = temp_logger._logs.get(__name__)
+        assert records
+        assert records[-1].module == __name__
 
 
 # ==================== 全局日志实例测试 ====================
