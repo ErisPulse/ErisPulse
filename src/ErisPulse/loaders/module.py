@@ -35,9 +35,11 @@ from ..finders import ModuleFinder
 from ._reload_utils import (
     check_reload_identity,
     clear_source_caches,
+    clear_source_caches_for_files,
     expand_source_files,
     module_objects_by_names,
     precheck_source_files,
+    precheck_source_trees,
 )
 from .bases.loader import BaseLoader, resolve_min_sdk_version
 
@@ -174,6 +176,9 @@ class ModuleLoader(BaseLoader):
         self._last_module_objs: dict[str, Any] = {}
         # 最近一次重载的明细（身份是否变化 / 版本迁移），reload 事件载荷消费
         self._last_reload_details: dict[str, Any] = {}
+        # 最近一次 reload_all 是否被整体语法预检拒绝（管理器据此修正
+        # module.reload 事件载荷——空结果不再被误判为成功）
+        self._last_reload_all_rejected: bool = False
 
     def _get_entry_point_group(self) -> str:
         """
@@ -431,28 +436,31 @@ class ModuleLoader(BaseLoader):
 
         # 2. 重载自身（按来源选择发现路径）；失败恢复快照，旧实例继续服务
         if is_plugin:
-            if not await self._reload_single_plugin(module_name, manager_instance, sdk_instance):
+            if not await self._reload_single_plugin(
+                module_name, manager_instance, sdk_instance, was_loaded=snapshot.was_loaded
+            ):
                 self._restore_reload_snapshot(snapshot, module_name, manager_instance, sdk_instance)
                 self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
                 return False
         elif is_runtime:
-            if not await self._reload_runtime_module(module_name, manager_instance, sdk_instance):
+            if not await self._reload_runtime_module(
+                module_name, manager_instance, sdk_instance, was_loaded=snapshot.was_loaded
+            ):
                 self._restore_reload_snapshot(snapshot, module_name, manager_instance, sdk_instance)
                 self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
                 return False
         elif not await self._reload_single_module(
-            module_name, manager_instance, sdk_instance, top_level if not full else purge_names
+            module_name,
+            manager_instance,
+            sdk_instance,
+            top_level if not full else purge_names,
+            was_loaded=snapshot.was_loaded,
         ):
             self._restore_reload_snapshot(snapshot, module_name, manager_instance, sdk_instance)
             self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
             return False
 
-        # 懒加载模块被重载强制激活：状态变化显式留痕（原为懒加载态，重载后保持已加载）
-        loaded_now = getattr(manager_instance, "_loaded_modules", None) or set()
-        if not snapshot.was_loaded and module_name in loaded_now:
-            logger.info(i18n.t("loader.module.reload_lazy_forced", name=module_name))
-
-        # 重载明细回填（reload 事件载荷消费）：新旧类身份是否变化 / 版本迁移
+        # 重载明细回填（reload 事件载荷消费）：新旧类身份是否变化 / 版本迁移 / 活性保持
         try:
 
             new_class = (getattr(manager_instance, "_module_classes", {}) or {}).get(module_name)
@@ -466,24 +474,36 @@ class ModuleLoader(BaseLoader):
                 ),
                 "version_old": meta.get("version"),
                 "version_new": new_meta.get("version") or meta.get("version"),
+                "was_loaded": snapshot.was_loaded,
+                "still_loaded": module_name
+                in (getattr(manager_instance, "_loaded_modules", None) or set()),
             }
         except Exception:
             self._last_reload_details = {}
 
         # 3. 级联重载依赖者（近 → 远，依赖者在其依赖就绪后重载）
         for dep in dependents:
+            dep_was_loaded = dependent_snapshots[dep].was_loaded
             if dependent_sources.get(dep) == MODULE_SOURCE_PLUGIN_FOLDER:
-                await self._reload_single_plugin(dep, manager_instance, sdk_instance)
+                await self._reload_single_plugin(
+                    dep, manager_instance, sdk_instance, was_loaded=dep_was_loaded
+                )
             elif (
                 dependent_sources.get(dep) == MODULE_SOURCE_RUNTIME
                 and dep in self._last_module_objs
             ):
                 # 运行时注册依赖者：同样按定义模块重导
-                await self._reload_runtime_module(dep, manager_instance, sdk_instance)
+                await self._reload_runtime_module(
+                    dep, manager_instance, sdk_instance, was_loaded=dep_was_loaded
+                )
             elif full and dep in dependent_purges:
                 # 全量模式：PyPI 依赖者同样完整重导（重新导入代码并重建注册）
                 await self._reload_single_module(
-                    dep, manager_instance, sdk_instance, dependent_purges[dep]
+                    dep,
+                    manager_instance,
+                    sdk_instance,
+                    dependent_purges[dep],
+                    was_loaded=dep_was_loaded,
                 )
             elif dep in getattr(manager_instance, "_module_classes", {}):
                 # PyPI 依赖者：类注册仍在，直接重新实例化加载
@@ -503,24 +523,57 @@ class ModuleLoader(BaseLoader):
         """
         全量热重载所有已注册模块（尽力而为语义）
 
-        执行 记录已加载态 → 卸载全部模块 → 清理全部已安装包与本地插件的
+        执行 整体语法预检（任一失败整轮拒绝、旧实例继续服务）→ 记录已加载态
+        → 预清理字节码缓存 → 卸载全部模块 → 清理全部已安装包与本地插件的
         ``sys.modules`` 子树 → 重新发现/注册 → 按依赖拓扑序加载 →
         此前处于已加载态的懒加载模块重新激活 流程，一次刷新全部模块代码
         （pip 批量升级后调用即可全部生效）。
 
         单模块失败仅记录诊断并跳过（发现 / 注册 / 初始化阶段的逐模块容错
-        由加载管线内建），不影响其余模块；不提供整体回滚——on_unload
-        副作用不可撤销，与单模块热重载的尽力而为语义一致。
+        由加载管线内建），不影响其余模块；预检拒绝（语法错误）时返回空
+        字典且 ``_last_reload_all_rejected`` 置 True，不提供整体回滚——
+        on_unload 副作用不可撤销，与单模块热重载的尽力而为语义一致。
 
         :param manager_instance: 模块管理器实例
         :param sdk_instance: SDK 实例
-        :return: 模块注册名 → 是否重载成功（发现阶段即失败的模块不在结果中）
+        :return: 模块注册名 → 是否重载成功（预检拒绝或发现阶段即失败时为空字典）
         """
         was_loaded = set(getattr(manager_instance, "_loaded_modules", None) or [])
         objs_before = dict(self._last_module_objs)
         logger.info(
             i18n.t("loader.module.reload_all_start", count=len(objs_before))
         )
+        self._last_reload_all_rejected = False
+
+        # 0. 整体语法预检（卸载任何模块之前）：任一模块源码有语法错误
+        # 即拒绝整轮重载——全部旧实例继续服务，错误文件与行号一次性
+        # 汇总报出（restart / --reload 路径此前完全没有预检，语法错误
+        # 会让所有模块进入半死状态直到下次成功保存）
+        source_trees: list[tuple[str, list[Any]]] = []
+        for name, obj in objs_before.items():
+            meta = (getattr(obj, "moduleInfo", {}) or {}).get("meta", {}) or {}
+            tree_is_plugin = meta.get("source") == MODULE_SOURCE_PLUGIN_FOLDER
+            tree_top = list(meta.get("top_level") or [])
+            if not tree_is_plugin and not tree_top and meta.get("package"):
+                try:
+                    tree_top = self._finder.get_top_level_modules(meta["package"])
+                except Exception:
+                    tree_top = []
+            tree_files = self._collect_precheck_files(name, obj, tree_is_plugin, tree_top)
+            if tree_files:
+                source_trees.append((name, tree_files))
+        if precheck_source_trees(
+            "reload_all",
+            source_trees,
+            i18n_key="loader.module.reload_all_precheck_failed",
+        ):
+            self._last_reload_all_rejected = True
+            return {}
+
+        # 0.5 预清理全部源文件的字节码缓存（在 purge sys.modules 之前、
+        # 按路径直接清除）：同秒同字节数的改写不再命中旧 pyc 假重载
+        for _tree_name, tree_files in source_trees:
+            clear_source_caches_for_files(tree_files)
 
         # 1. 卸载全部模块（触发 on_unload 与资源回收；purge 一并清理
         # 注册存根与插件来源的 sys.modules，保证后续重新注册干净）
@@ -771,14 +824,17 @@ class ModuleLoader(BaseLoader):
             if dep_snapshot.was_loaded and (loaded is None or dep not in loaded):
                 self._restore_reload_snapshot(dep_snapshot, dep, manager_instance, sdk_instance)
 
-    async def _reload_single_plugin(self, plugin_name: str, manager_instance: Any, sdk_instance: Any) -> bool:
+    async def _reload_single_plugin(
+        self, plugin_name: str, manager_instance: Any, sdk_instance: Any, *, was_loaded: bool = False
+    ) -> bool:
         """
         {!--< internal-use >!--}
-        重载单个本地插件：清理注册 → 清模块缓存 → 重新发现 → 注册并加载
+        重载单个本地插件：清理注册 → 清模块缓存 → 重新发现 → 注册并挂载
 
         :param plugin_name: 插件名
         :param manager_instance: 模块管理器实例
         :param sdk_instance: SDK 实例
+        :param was_loaded: 重载前是否处于已加载态（保持活性语义）
         :return: 是否重载成功
         """
         # 清理注册（类 / info / 懒加载代理）
@@ -794,7 +850,14 @@ class ModuleLoader(BaseLoader):
             except Exception:
                 pass
 
-        # 清理已导入的插件模块，强制重新导入
+        # 清理已导入的插件模块，强制重新导入（先清字节码缓存：同秒同
+        # 字节数的改写不再命中旧 pyc 假重载，对齐 PyPI/适配器路径）
+        plugin_mods = [
+            mod
+            for mod_name, mod in list(sys.modules.items())
+            if mod_name == plugin_name or mod_name.startswith(f"{plugin_name}.")
+        ]
+        clear_source_caches(plugin_mods)
         self._purge_plugin_modules(plugin_name)
 
         # 重新发现并加载该插件
@@ -811,7 +874,7 @@ class ModuleLoader(BaseLoader):
             logger.info(i18n.t("loader.module.reload_removed", name=plugin_name))
             return True
 
-        # 重新注册并加载
+        # 重新注册并按「保持重载前活性」语义挂载（懒加载模块重载后不再强制激活）
         new_meta_name = new_module.moduleInfo["meta"]["name"]
         try:
             manager_instance.register(new_meta_name, new_module.moduleInfo["module_class"], new_module.moduleInfo)
@@ -819,12 +882,16 @@ class ModuleLoader(BaseLoader):
             logger.error(i18n.t("loader.module.reload_register_failed", name=plugin_name, error=e))
             return False
 
-        loaded = await manager_instance.load(new_meta_name)
-        if not loaded:
-            logger.error(i18n.t("loader.module.reload_load_failed", name=plugin_name, error="load returned False"))
+        if not await self._reload_finalize_mount(
+            plugin_name,
+            new_meta_name,
+            new_module,
+            manager_instance,
+            sdk_instance,
+            was_loaded=was_loaded,
+        ):
             return False
 
-        setattr(sdk_instance, new_meta_name, manager_instance.get(new_meta_name))
         self._last_module_objs[plugin_name] = new_module
         logger.info(i18n.t("loader.module.reload_ok", name=plugin_name))
         return True
@@ -835,15 +902,18 @@ class ModuleLoader(BaseLoader):
         manager_instance: Any,
         sdk_instance: Any,
         top_level: list[str],
+        *,
+        was_loaded: bool = False,
     ) -> bool:
         """
         {!--< internal-use >!--}
-        重载单个 PyPI 安装包模块：清理注册 → 清模块缓存 → 重新发现导入 → 注册并加载
+        重载单个 PyPI 安装包模块：清理注册 → 清模块缓存 → 重新发现导入 → 注册并挂载
 
         :param module_name: 模块名（entry-point 名称）
         :param manager_instance: 模块管理器实例
         :param sdk_instance: SDK 实例
         :param top_level: 顶层 Python 模块名列表（重导入前清理 sys.modules）
+        :param was_loaded: 重载前是否处于已加载态（保持活性语义）
         :return: 是否重载成功
         """
         # 清理注册（类 / info / 懒加载代理）
@@ -894,20 +964,23 @@ class ModuleLoader(BaseLoader):
             )
             return False
 
-        # 重新注册并加载
+        # 重新注册并按「保持重载前活性」语义挂载
         try:
             manager_instance.register(module_name, module_info["module_class"], module_info)
         except Exception as e:
             logger.error(i18n.t("loader.module.reload_register_failed", name=module_name, error=e))
             return False
 
-        if not await manager_instance.load(module_name):
-            logger.error(
-                i18n.t("loader.module.reload_load_failed", name=module_name, error="load returned False")
-            )
+        if not await self._reload_finalize_mount(
+            module_name,
+            module_name,
+            module_obj,
+            manager_instance,
+            sdk_instance,
+            was_loaded=was_loaded,
+        ):
             return False
 
-        setattr(sdk_instance, module_name, manager_instance.get(module_name))
         self._last_module_objs[module_name] = module_obj
         logger.info(i18n.t("loader.module.reload_ok", name=module_name))
         return True
@@ -927,11 +1000,11 @@ class ModuleLoader(BaseLoader):
         clear_source_caches(module_objects_by_names(top_level))
 
     async def _reload_runtime_module(
-        self, module_name: str, manager_instance: Any, sdk_instance: Any
+        self, module_name: str, manager_instance: Any, sdk_instance: Any, *, was_loaded: bool = False
     ) -> bool:
         """
         {!--< internal-use >!--}
-        重载单个运行时注册模块：按定义模块重导 → 按类名重取 → 注册并加载
+        重载单个运行时注册模块：按定义模块重导 → 按类名重取 → 注册并挂载
 
         调用前须通过 reload_module 的安全守卫（定义模块非 ``__main__``
         且源文件存在）。无 entry-point 参与：定义模块 ``import_module``
@@ -940,6 +1013,7 @@ class ModuleLoader(BaseLoader):
         :param module_name: 模块注册名
         :param manager_instance: 模块管理器实例
         :param sdk_instance: SDK 实例
+        :param was_loaded: 重载前是否处于已加载态（保持活性语义）
         :return: 是否重载成功
         """
         info = (getattr(manager_instance, "_module_info", {}) or {}).get(module_name) or {}
@@ -995,23 +1069,62 @@ class ModuleLoader(BaseLoader):
             logger.error(i18n.t("loader.module.reload_register_failed", name=module_name, error=e))
             return False
 
-        if not await manager_instance.load(module_name):
-            logger.error(
-                i18n.t("loader.module.reload_load_failed", name=module_name, error="load returned False")
-            )
-            return False
-
-        setattr(sdk_instance, module_name, manager_instance.get(module_name))
-        # 更新重载快照条目：定义模块对象已随 purge 重导而更换
+        # 重载快照条目与挂载载体：定义模块对象已随 purge 重导而更换，
+        # moduleInfo 须在挂载收尾前就位（finalize 读取 strategy/惰性声明）
         new_defining = sys.modules.get(defining)
         if new_defining is not None and not hasattr(new_defining, "moduleInfo"):
             try:
                 new_defining.moduleInfo = new_info  # type: ignore[attr-defined]
-                self._last_module_objs[module_name] = new_defining
             except Exception:
-                pass
+                new_defining = None
+        if new_defining is None:
+            # 定义模块对象缺失（极端场景）：以 new_info 构造轻量载体
+            mount_obj = cast("Any", type("_RuntimeReloadInfo", (), {"moduleInfo": new_info}))()
+        else:
+            mount_obj = new_defining
+        if not await self._reload_finalize_mount(
+            module_name,
+            module_name,
+            mount_obj,
+            manager_instance,
+            sdk_instance,
+            was_loaded=was_loaded,
+        ):
+            return False
+        self._last_module_objs[module_name] = mount_obj
         logger.info(i18n.t("loader.module.reload_ok", name=module_name))
         return True
+
+    def _collect_precheck_files(
+        self, module_name: str, old_obj: Any, is_plugin: bool, top_level: "list[str]"
+    ) -> "list[Any]":
+        """
+        {!--< internal-use >!--}
+        收集重载预检的源文件列表（单模块路径与整体重载共用）
+
+        :param module_name: 模块名（日志用）
+        :param old_obj: 重载前的快照条目（模块对象）
+        :param is_plugin: 是否插件文件夹来源
+        :param top_level: 顶层模块名列表
+        :return: 源文件路径列表（无法定位时为空列表并记 debug）
+        """
+        try:
+            candidate_files = [getattr(old_obj, "__file__", None)]
+            if is_plugin:
+                root_files: list[Any] = list(candidate_files)
+            else:
+                root_files = [
+                    getattr(mod, "__file__", None)
+                    for mod in (
+                        sys.modules.get(name) for name in top_level
+                    )
+                ]
+                if not any(root_files):
+                    root_files.extend(candidate_files)
+            return expand_source_files(root_files)
+        except Exception as e:
+            logger.debug(f"reload precheck unavailable for '{module_name}': {e}")
+            return []
 
     async def _precheck_sources(
         self, module_name: str, old_obj: Any, is_plugin: bool, top_level: "list[str]"
@@ -1030,24 +1143,7 @@ class ModuleLoader(BaseLoader):
         :param top_level: 顶层模块名列表
         :return: 是否通过（True = 允许继续重载流程）
         """
-
-        try:
-            candidate_files = [getattr(old_obj, "__file__", None)]
-            if is_plugin:
-                root_files: list[Any] = list(candidate_files)
-            else:
-                root_files = [
-                    getattr(mod, "__file__", None)
-                    for mod in (
-                        sys.modules.get(name) for name in top_level
-                    )
-                ]
-                if not any(root_files):
-                    root_files.extend(candidate_files)
-            source_files = expand_source_files(root_files)
-        except Exception as e:
-            logger.debug(f"reload precheck unavailable for '{module_name}': {e}")
-            return True
+        source_files = self._collect_precheck_files(module_name, old_obj, is_plugin, top_level)
         return precheck_source_files(
             module_name,
             source_files,
@@ -1500,6 +1596,189 @@ class ModuleLoader(BaseLoader):
 
         return sorted_list
 
+    def _mount_lazy_proxy(
+        self,
+        meta_name: str,
+        module_obj: Any,
+        manager_instance: Any,
+        sdk_instance: Any,
+        *,
+        arm_stubs: bool = True,
+    ) -> Any:
+        """
+        {!--< internal-use >!--}
+        为模块挂载懒加载代理（LazyModule / ModuleActivator）并注册到管理器
+
+        initialize_modules（首次加载）与单模块热重载（重挂代理）共用。
+
+        :param meta_name: 模块注册名
+        :param module_obj: 模块对象（moduleInfo 已挂载）
+        :param manager_instance: 模块管理器实例
+        :param sdk_instance: SDK 实例
+        :param arm_stubs: 是否武装 activate_on 触发器（False = 已加载模块
+            重挂代理——模块已激活无需触发器，归眠时会重新武装）
+        :return: 挂载的代理对象
+        """
+        strategy = module_obj.moduleInfo.get("strategy")
+        activate_on = self._extract_strategy_value(strategy, "activate_on", None)
+        if activate_on:
+            lazy_module: Any = ModuleActivator(
+                meta_name,
+                module_obj.moduleInfo["module_class"],
+                sdk_instance,
+                module_obj.moduleInfo,
+                manager_instance,
+                activate_on=activate_on,
+                arm_stubs=arm_stubs,
+            )
+            logger.trace(
+                i18n.t(
+                    "loader.module.mount_activator",
+                    name=meta_name,
+                )
+            )
+        else:
+            lazy_module = LazyModule(
+                meta_name,
+                module_obj.moduleInfo["module_class"],
+                sdk_instance,
+                module_obj.moduleInfo,
+                manager_instance,
+            )
+            logger.trace(i18n.t("loader.module.mount_lazy", name=meta_name))
+        setattr(sdk_instance, meta_name, lazy_module)
+        # 同步注册懒加载代理到管理器，使 module.get() 对未加载模块返回代理（透明懒加载）
+        manager_instance.register_lazy(meta_name, lazy_module)
+        return lazy_module
+
+    def _apply_dormant_after(self, meta_name: str, module_obj: Any, manager_instance: Any) -> None:
+        """
+        {!--< internal-use >!--}
+        解析 dormant_after 休眠声明（时长语法与 cooldown 同口径）；未声明 = 永不休眠
+
+        :param meta_name: 模块注册名
+        :param module_obj: 模块对象
+        :param manager_instance: 模块管理器实例
+        """
+        dormant_after_raw = self._extract_strategy_value(
+            module_obj.moduleInfo.get("strategy"), "dormant_after", None
+        )
+        if not dormant_after_raw:
+            return
+        try:
+            from ..Core.Event.command_args import parse_duration
+
+            manager_instance._dormant_after[meta_name] = parse_duration(
+                str(dormant_after_raw)
+            )
+        except Exception:
+            logger.debug(
+                f"invalid dormant_after for '{meta_name}': {dormant_after_raw!r}"
+            )
+
+    async def _reload_finalize_mount(
+        self,
+        label: str,
+        meta_name: str,
+        new_module: Any,
+        manager_instance: Any,
+        sdk_instance: Any,
+        *,
+        was_loaded: bool,
+    ) -> bool:
+        """
+        {!--< internal-use >!--}
+        单模块重载/热装载成功后的挂载收尾（保持重载前活性）
+
+        - eager 模块或重载前已加载：重新 load 实例
+        - 懒加载/休眠声明模块：重挂代理（was_loaded 时绑定已加载实例；
+          否则保持休眠，activate_on 触发器随新代码重建）
+        - 无懒加载声明的已加载模块：直接挂真实实例（旧行为）
+
+        :param label: 日志用组件名
+        :param meta_name: 模块注册名
+        :param new_module: 新模块对象
+        :param manager_instance: 模块管理器实例
+        :param sdk_instance: SDK 实例
+        :param was_loaded: 重载前是否处于已加载态
+        :return: 是否成功
+        """
+        meta = new_module.moduleInfo.get("meta", {}) or {}
+        lazy_load = meta.get("lazy_load", True)
+        dormant_declared = meta_name in getattr(manager_instance, "_dormant_after", {})
+        if was_loaded or not lazy_load:
+            if not await manager_instance.load(meta_name):
+                logger.error(
+                    i18n.t(
+                        "loader.module.reload_load_failed",
+                        name=label,
+                        error="load returned False",
+                    )
+                )
+                return False
+            if not (lazy_load or dormant_declared):
+                # 非懒模块：直接挂真实实例（旧行为）
+                setattr(sdk_instance, meta_name, manager_instance.get(meta_name))
+                return True
+        # 懒加载/休眠声明模块：重挂代理保持「归眠 → 透明唤醒」闭环
+        # （单模块重载后不再强制激活懒加载模块）
+        self._apply_dormant_after(meta_name, new_module, manager_instance)
+        try:
+            proxy = self._mount_lazy_proxy(
+                meta_name, new_module, manager_instance, sdk_instance, arm_stubs=was_loaded
+            )
+            if was_loaded:
+                proxy.bind_loaded_instance(manager_instance.get(meta_name))
+        except TypeError:
+            # sdk 对象不可 weakref（测试替身等极端场景）：退化为直接挂实例
+            setattr(sdk_instance, meta_name, manager_instance.get(meta_name))
+        return True
+
+    async def load_new_plugin(
+        self, plugin_name: str, manager_instance: Any, sdk_instance: Any
+    ) -> "bool | None":
+        """
+        热装载新出现的本地插件（插件目录热发现：``on_created`` 消费）
+
+        与单模块重载的差异：无旧实例可卸载，直接走 发现 → 注册 → 按加载
+        策略挂载（懒加载挂代理、eager 即时加载）。
+
+        :param plugin_name: 插件名
+        :param manager_instance: 模块管理器实例
+        :param sdk_instance: SDK 实例
+        :return: True 装载成功 / False 装载失败 / None 该名字不是模块插件
+        """
+        try:
+            plugin_objs = self._plugin_loader.discover()
+        except Exception as e:
+            logger.error(i18n.t("loader.plugin.discovery_failed", error=e))
+            return False
+        new_module = plugin_objs.get(plugin_name)
+        if new_module is None:
+            return None
+        new_meta_name = new_module.moduleInfo["meta"]["name"]
+        try:
+            manager_instance.register(
+                new_meta_name, new_module.moduleInfo["module_class"], new_module.moduleInfo
+            )
+        except Exception as e:
+            logger.error(
+                i18n.t("loader.module.reload_register_failed", name=plugin_name, error=e)
+            )
+            return False
+        if not await self._reload_finalize_mount(
+            plugin_name,
+            new_meta_name,
+            new_module,
+            manager_instance,
+            sdk_instance,
+            was_loaded=False,
+        ):
+            return False
+        self._last_module_objs[plugin_name] = new_module
+        logger.info(i18n.t("loader.module.hot_loaded", name=plugin_name))
+        return True
+
     async def initialize_modules(
         self,
         modules: list[str],
@@ -1562,52 +1841,11 @@ class ModuleLoader(BaseLoader):
                 lazy_load = meta.get("lazy_load", True)
 
                 if lazy_load:
-                    strategy = module_obj.moduleInfo.get("strategy")
-                    activate_on = self._extract_strategy_value(
-                        strategy, "activate_on", None
+                    self._mount_lazy_proxy(
+                        meta_name, module_obj, manager_instance, sdk_instance
                     )
-                    if activate_on:
-                        lazy_module = ModuleActivator(
-                            meta_name,
-                            module_obj.moduleInfo["module_class"],
-                            sdk_instance,
-                            module_obj.moduleInfo,
-                            manager_instance,
-                            activate_on=activate_on,
-                        )
-                        logger.trace(
-                            i18n.t(
-                                "loader.module.mount_activator",
-                                name=meta_name,
-                            )
-                        )
-                    else:
-                        lazy_module = LazyModule(
-                            meta_name,
-                            module_obj.moduleInfo["module_class"],
-                            sdk_instance,
-                            module_obj.moduleInfo,
-                            manager_instance,
-                        )
-                        logger.trace(i18n.t("loader.module.mount_lazy", name=meta_name))
-                    setattr(sdk_instance, meta_name, lazy_module)
-                    # 同步注册懒加载代理到管理器，使 module.get() 对未加载模块返回代理（透明懒加载）
-                    manager_instance.register_lazy(meta_name, lazy_module)
                     # 休眠声明解析（时长语法与 cooldown 同口径）；未声明 = 永不休眠
-                    dormant_after_raw = self._extract_strategy_value(
-                        module_obj.moduleInfo.get("strategy"), "dormant_after", None
-                    )
-                    if dormant_after_raw:
-                        try:
-                            from ..Core.Event.command_args import parse_duration
-
-                            manager_instance._dormant_after[meta_name] = parse_duration(
-                                str(dormant_after_raw)
-                            )
-                        except Exception:
-                            logger.debug(
-                                f"invalid dormant_after for '{meta_name}': {dormant_after_raw!r}"
-                            )
+                    self._apply_dormant_after(meta_name, module_obj, manager_instance)
                 else:
                     result = await manager_instance.load(meta_name)
                     if result:
@@ -1737,6 +1975,22 @@ class LazyModule:
             object.__setattr__(self, "_init_needs_sdk", "sdk" in init_params)
         except (ValueError, TypeError):
             object.__setattr__(self, "_init_needs_sdk", False)
+        object.__setattr__(self, "_needs_async_init", False)
+
+    def bind_loaded_instance(self, instance: Any) -> None:
+        """
+        将代理绑定到已加载的实例，直接进入「已激活」态（不触发懒初始化）
+
+        {!--< internal-use >!--}
+        单模块热重载路径使用：重载成功且实例已 load 后重挂代理并绑定，
+        保持重载前活性（后续归眠 → 透明唤醒的闭环不破坏）。
+
+        :param instance: 管理器中已加载的实例
+        """
+        object.__setattr__(self, "_instance", instance)
+        object.__setattr__(self, "_initialized", True)
+        object.__setattr__(self, "_init_failed", False)
+        object.__setattr__(self, "_init_failed_at", 0.0)
         object.__setattr__(self, "_needs_async_init", False)
 
     async def _initialize(self) -> None:
@@ -2466,6 +2720,7 @@ class ModuleActivator(LazyModule):
         manager_instance: Any,
         *,
         activate_on: Any,
+        arm_stubs: bool = True,
     ) -> None:
         """
         初始化事件驱动懒激活包装器
@@ -2476,6 +2731,9 @@ class ModuleActivator(LazyModule):
         :param module_info: dict[str, Any] 模块信息字典
         :param manager_instance: 模块管理器实例
         :param activate_on: 触发器声明（str / dict / list）
+        :param arm_stubs: 是否武装 activate_on 触发器 stub（True = 常规懒激活；
+            False = 已加载模块重载后重挂代理——模块已激活无需触发器，
+            归眠时 reset_for_sleep → _rearm_stubs 会重新武装）
         """
         super().__init__(module_name, module_class, sdk_ref, module_info, manager_instance)
         object.__setattr__(self, "_activation_lock", asyncio.Lock())
@@ -2490,7 +2748,10 @@ class ModuleActivator(LazyModule):
         object.__setattr__(self, "_command_triggers", command_triggers)
         object.__setattr__(self, "_command_meta", _extract_command_meta(activate_on))
 
-        self._register_stubs()
+        if arm_stubs:
+            self._register_stubs()
+        else:
+            object.__setattr__(self, "_activated", True)
 
     # ------------------------------------------------------------------
     # stub 注册

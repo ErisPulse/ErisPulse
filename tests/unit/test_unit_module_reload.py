@@ -22,6 +22,9 @@ class FakeManager:
         self.calls: list[tuple] = []
         self._module_info: dict = {}
         self._module_classes: dict = {}
+        # 快照 was_loaded 的取值来源；各用例按需加入"重载前已加载"的模块
+        self._loaded_modules: set = set()
+        self._modules: dict = {}
 
     def _collect_dependents(self, name):
         return []
@@ -127,6 +130,8 @@ class TestReloadPypiModule:
         loader._last_module_objs = {"Weather": old_mod}
 
         manager = FakeManager()
+        manager._loaded_modules = {"Weather"}  # 重载前处于已加载态（保持活性）
+        manager._modules = {"Weather": "old-instance"}
         sdk = types.SimpleNamespace()
         sdk.Weather = "old-instance"
 
@@ -187,6 +192,8 @@ class TestReloadPypiModule:
             return False
 
         manager.load = fail_load
+        manager._loaded_modules = {"Bad"}  # 重载前已加载：load 失败应判重载失败
+        manager._modules = {"Bad": "old-instance"}
 
         try:
             ok = asyncio.run(loader.reload_module("Bad", manager, types.SimpleNamespace()))

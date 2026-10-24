@@ -60,6 +60,11 @@ class Kernel:
         self._strict_manager = StrictModeManager.from_config()
         self._adapter_loader.set_strict_manager(self._strict_manager)
         self._module_loader.set_strict_manager(self._strict_manager)
+        # 版本闸门登记器同步传播到本地插件加载器（strict 错误面与安装来源解耦）
+        try:
+            self._module_loader._plugin_loader.set_strict_recorder(self._strict_manager)
+        except Exception:
+            pass
         self._sdk._module_loader = self._module_loader
         self._sdk._adapter_loader = self._adapter_loader
         return self._adapter_loader, self._module_loader
