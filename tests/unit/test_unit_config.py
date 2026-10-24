@@ -2378,3 +2378,45 @@ def config_module_logger():
     from ErisPulse.Core.logger import logger
 
     return logger
+
+
+class TestRuntimeStateGitignore:
+    """.erispulse 运行状态目录 .gitignore（2.11.1 新增）"""
+
+    @pytest.fixture
+    def temp_config_file(self):
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".toml", delete=False, encoding="utf-8"
+        ) as f:
+            f.write("[test]\nkey = \"value\"\n")
+            temp_path = f.name
+        yield temp_path
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+    @pytest.mark.unit
+    def test_runtime_state_gitignore_created(self, temp_config_file) -> None:
+        """.erispulse 运行状态目录自带 .gitignore（排除本目录）"""
+        from pathlib import Path
+
+        manager = ConfigManager(config_file=temp_config_file)
+        config_parent = Path(temp_config_file).parent
+        gitignore = config_parent.parent / ".erispulse" / ".gitignore"
+        try:
+            assert gitignore.exists(), "框架启动后 .erispulse/.gitignore 应存在"
+            content = gitignore.read_text(encoding="utf-8")
+            assert "*" in content.splitlines(), "排除规则应含 *（目录整体不入库）"
+
+            # 幂等：手工改动后再次初始化不覆盖
+            gitignore.write_text("# custom\n", encoding="utf-8")
+            manager2 = ConfigManager(config_file=temp_config_file)
+            assert gitignore.read_text(encoding="utf-8") == "# custom\n"
+        finally:
+            manager._write_timer and manager._write_timer.cancel()
+            manager._watcher_stop.set()
+            manager2 = locals().get("manager2")
+            if manager2:
+                manager2._write_timer and manager2._write_timer.cancel()
+                manager2._watcher_stop.set()
