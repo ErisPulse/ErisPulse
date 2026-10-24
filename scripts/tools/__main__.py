@@ -19,15 +19,17 @@ USAGE = """\
 用法: python -m scripts.tools <组> <名> [参数...]
 
 组:
-  check       工程棘轮检查（import-layers / bare-params / silent-except /
-              i18n-locales / docs-links / translation / release-check）
-  gen         文档生成器（api-docs / ai-prompts / docs-index / skills / type-stubs）
-  translate   文档翻译器（透传 translate.py 全部参数，--help 查看详情）
+  check         工程棘轮检查（import-layers / bare-params / silent-except /
+                i18n-locales / docs-links / translation / release-check）
+  gen           文档生成器（api-docs / ai-prompts / docs-index / skills / type-stubs）
+  translate     文档翻译器（透传 translate.py 全部参数，--help 查看详情）
+  auto-translate 自动循环翻译（检测→翻译→验证→循环直到完成）
 
 示例:
   python -m scripts.tools check import-layers
   python -m scripts.tools gen ai-prompts --lang zh-CN
   python -m scripts.tools translate --time-budget 30
+  python -m scripts.tools auto-translate --max-rounds 5
 """
 
 
@@ -56,6 +58,12 @@ def main(argv: list[str] | None = None) -> int:
         from .translate import main as translate_main
 
         return int(asyncio.run(translate_main(args)) or 0)
+    elif group == "auto-translate":
+        import asyncio
+
+        from .auto_translate import main as auto_translate_main
+
+        return int(asyncio.run(auto_translate_main(args)) or 0)
     else:
         print(f"未知组: {group}\n\n{USAGE}", file=sys.stderr)
         return 2

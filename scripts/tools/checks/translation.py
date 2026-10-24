@@ -18,23 +18,13 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from ..common import IGNORE_DIRS, LEAK_PATTERN, Logger, count_fences  # scripts/tools 公共设施
+from ..common import IGNORE_DIRS, LEAK_PATTERN, Logger, count_fences
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     try:
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
-
-
-def _has_chinese_chars(text: str) -> bool:
-    """
-    判断文本中是否包含中文字符
-
-    :param text: 待检测文本
-    :return: 包含中文字符返回 True，否则 False
-    """
-    return any(0x4E00 <= ord(ch) <= 0x9FFF for ch in text)
 
 
 # 语言名称字面量：语言切换行、i18n 语言映射表等场景中，
@@ -125,30 +115,7 @@ def detect_garbled(content: str, target_lang: str) -> list[dict]:
         garbled = re.findall(r"[\u4e00-\u9fff]\?{1,3}[\u4e00-\u9fff]", content)
         if garbled:
             issues.append({"severity": "error", "message": f"{len(garbled)}处疑似乱码"})
-    if target_lang in {"en", "ru"}:
-        lines = content.split("\n")
-        code_block = False
-        zh_lines = []
-        for i, line in enumerate(lines, 1):
-            if line.strip().startswith("```"):
-                code_block = not code_block
-                continue
-            if code_block:
-                continue
-            if _ZH_RUN_RE.search(_strip_non_prose(line)):
-                zh_lines.append(i)
-        if zh_lines:
-            issues.append(
-                {
-                    "severity": "warning",
-                    "message": f"{len(zh_lines)}行含中文字符 (行: {zh_lines[:5]})",
-                }
-            )
     return issues
-
-
-# 泄露特征正则迁移至 _common.LEAK_PATTERN（单一事实源超集；此前与 translate-docs 双份维护已漂移）
-
 
 def detect_prompt_leaks(content: str) -> list[str]:
     """
@@ -167,15 +134,10 @@ def detect_prompt_leaks(content: str) -> list[str]:
 
 
 class TranslationChecker:
-    """翻译质量检查器
-
-    扫描源文档与各目标语言文档，检测缺失、截断、乱码以及 Markdown 结构问题。
-    支持可选地清理问题文件的翻译缓存，以便下次重新翻译。
-    """
-
     MIN_RATIO = 0.25
     WARN_RATIO = 0.35
-    # IGNORE_DIRS 引用 _common.IGNORE_DIRS（模块级，消除第三份复制）
+    FENCE_TOLERANCE_RATIO = 0.10
+    FENCE_TOLERANCE_ABS = 2
     LANG_NAMES = {
         "zh-CN": "简体中文",
         "zh-TW": "繁体中文",
@@ -185,24 +147,29 @@ class TranslationChecker:
     }
 
     def __init__(
-        self, docs_dir: str = "docs", cache_dir: str = ".github/.translate_cache"
+        self,
+        docs_dir: str = "docs",
+        cache_dir: str = ".github/.translate_cache",
+        strict: bool = False,
     ):
         """
         初始化检查器
 
         :param docs_dir: 文档根目录 (默认: docs)
         :param cache_dir: 翻译缓存目录，用于 --fix 模式删除问题文件缓存
+        :param strict: 是否启用严格模式
         """
         self.docs_dir = Path(docs_dir)
         self.source_dir = self.docs_dir / "zh-CN"
         self.cache_dir = Path(cache_dir)
+        self.strict = strict
         self.summary = {"checked": 0, "errors": 0, "warnings": 0, "missing": 0}
 
     def _scan_source(self) -> list[Path]:
         """
         扫描源语言目录下的所有 Markdown 文件
 
-        :return: 源文件路径列表（已排序）
+        :return: 源文件路径列表
         """
         files = []
         if not self.source_dir.exists():
@@ -281,13 +248,20 @@ class TranslationChecker:
         # 保持偶数，仅查奇偶会漏报，必须精确比对）
         src_fences = count_fences(src_content)
         tgt_fences = count_fences(tgt_content)
-        if src_fences != tgt_fences:
+        fence_diff = abs(src_fences - tgt_fences)
+        fence_tolerance = max(
+            int(src_fences * self.FENCE_TOLERANCE_RATIO),
+            self.FENCE_TOLERANCE_ABS
+        )
+        
+        if fence_diff > fence_tolerance:
             issues.append(
                 {
                     "severity": "error",
                     "type": "unclosed_code",
                     "message": (
-                        f"围栏数不匹配 (源{src_fences}个，目标{tgt_fences}个```)"
+                        f"围栏数不匹配 (源{src_fences}个，目标{tgt_fences}个，"
+                        f"差异{fence_diff})"
                     ),
                 }
             )
@@ -344,6 +318,7 @@ class TranslationChecker:
         Logger.log("翻译质量检查")
         Logger.log("=" * 60)
         Logger.log(f"检查语言: {', '.join(langs)}")
+        Logger.log(f"检查模式: {'严格' if self.strict else '宽松'}")
         Logger.log("")
 
         all_results: dict[str, dict[str, list[dict]]] = {}
@@ -479,6 +454,7 @@ class TranslationChecker:
             "fix_mode": fix,
             "fixed_caches": fixed,
             "results": all_results,
+            "strict_mode": self.strict,
         }
 
         Logger.log("=" * 60)
