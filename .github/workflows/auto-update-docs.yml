@@ -3,7 +3,6 @@ name: "📚 Eris Docs Update"
 permissions:
   contents: write
 
-# Prevent push during translation from re-triggering the same workflow, cancel duplicate runs
 concurrency:
   group: docs-update
   cancel-in-progress: true
@@ -63,21 +62,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests openai
 
-      - name: Check cache directory status
+      - name: Restore docs from artifact
+        id: restore-cache
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-build
+          path: .
+        continue-on-error: true
+
+      - name: Check cache status
         run: |
-          echo "=== Checking cache directory ==="
-          echo "Current working directory: $(pwd)"
-          echo "Cache directory exists: $(test -d .github/.translate_cache && echo 'YES' || echo 'NO')"
+          echo "Cache directory status:"
+          test -d .github/.translate_cache && echo "Cache exists" || echo "No cache"
           if [ -d ".github/.translate_cache" ]; then
             echo "Cache file count: $(find .github/.translate_cache -name '*.cache' 2>/dev/null | wc -l)"
-            echo "Cache directory contents:"
-            ls -la .github/.translate_cache/ | head -10
-            echo ""
-            echo "Sample cache files:"
-            ls -la .github/.translate_cache/*.cache 2>/dev/null | head -3
           fi
-          echo "==================="
-
 
       - name: Pre-clean broken translation caches
         continue-on-error: true
@@ -86,7 +85,7 @@ jobs:
           # 使本轮翻译自动重译这些文件（否则坏译文会因源 hash 未变被一直复用）
           python -m scripts.tools check translation --fix || true
 
-      - name: Auto-translate docs (time-budgeted rounds)
+      - name: Translate docs
         id: translate-docs
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -94,35 +93,14 @@ jobs:
           SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
           DEBUG_TRANSLATE: "1"
         run: |
-          echo "Starting document translation..."
+          echo "Starting translation..."
 
-          # Check if force translation is needed
           FORCE_FLAG=""
-          if [ "${{ github.event.inputs.force_translate }}" == "true" ]; then
-            FORCE_FLAG="--force"
-            echo "Force re-translation mode enabled"
-          fi
+          [ "${{ github.event.inputs.force_translate }}" == "true" ] && FORCE_FLAG="--force"
 
-          if [ ! -f "scripts/tools/translate.py" ]; then
-            echo "Translation script not found, skipping this step"
-            echo "docs_updated=false" >> $GITHUB_OUTPUT
-            echo "translate_failed=false" >> $GITHUB_OUTPUT
-            echo "remaining=0" >> $GITHUB_OUTPUT
-            exit 0
-          fi
+          [ ! -f "scripts/tools/translate.py" ] && { echo "Script not found"; echo "docs_updated=false" >> $GITHUB_OUTPUT; echo "translate_failed=false" >> $GITHUB_OUTPUT; echo "remaining=0" >> $GITHUB_OUTPUT; exit 0; }
+          [ -z "$OPENAI_API_KEY" ] && { echo "API key missing"; echo "docs_updated=false" >> $GITHUB_OUTPUT; echo "translate_failed=false" >> $GITHUB_OUTPUT; echo "remaining=0" >> $GITHUB_OUTPUT; exit 0; }
 
-          if [ -z "$OPENAI_API_KEY" ]; then
-            echo "OPENAI_API_KEY not configured, skipping translation step"
-            echo "Translation requires OPENAI_API_KEY to be configured in repository Secrets"
-            echo "docs_updated=false" >> $GITHUB_OUTPUT
-            echo "translate_failed=false" >> $GITHUB_OUTPUT
-            echo "remaining=0" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          # 翻译总预算（分钟）：job 硬上限 300 分钟（5h），翻译占 270 分钟（4.5h），
-          # 为生成/检查/收尾留 30 分钟余量。脚本到点优雅退出（缓存落盘），
-          # 下一轮从缓存续译；轮次用于异常退出后的快速恢复。
           TOTAL_BUDGET_MINUTES=270
           MAX_ROUNDS=3
           ROUND=0
@@ -135,158 +113,70 @@ jobs:
             ELAPSED_MIN=$(( (SECONDS - START_TIME) / 60 ))
             LEFT_MIN=$(( TOTAL_BUDGET_MINUTES - ELAPSED_MIN ))
 
-            if [ $ROUND -gt 1 ] && [ $LEFT_MIN -lt 5 ]; then
-              echo "剩余时间不足 5 分钟，停止续译"
-              break
-            fi
+            [ $ROUND -gt 1 ] && [ $LEFT_MIN -lt 5 ] && break
 
-            echo "=== Translation round ${ROUND}/${MAX_ROUNDS} (budget: ${LEFT_MIN} min) ==="
+            echo "Round ${ROUND}/${MAX_ROUNDS} (budget: ${LEFT_MIN} min)"
             OUTPUT_FILE=$(mktemp)
             set +e
             python -m scripts.tools translate $FORCE_FLAG --time-budget $LEFT_MIN 2>&1 | tee "$OUTPUT_FILE"
             TRANSLATE_EXIT_CODE=${PIPESTATUS[0]}
             set -e
 
-            # 读取脚本输出的机器可读统计行（REMAINING_FILES=N）
             FINAL_REMAINING=$(grep -oE 'REMAINING_FILES=[0-9]+' "$OUTPUT_FILE" | tail -1 | cut -d= -f2)
             [ -z "$FINAL_REMAINING" ] && FINAL_REMAINING=0
             rm -f "$OUTPUT_FILE"
 
-            # 首轮之后不再强制重译（缓存续传）
             FORCE_FLAG=""
-            echo "Round ${ROUND} finished, remaining translations: ${FINAL_REMAINING}"
+            echo "Round ${ROUND} finished, remaining: ${FINAL_REMAINING}"
 
-            if [ $TRANSLATE_EXIT_CODE -ne 0 ]; then
-              echo "⚠️ Translation script exited with code ${TRANSLATE_EXIT_CODE}"
-            fi
-
-            if [ "$FINAL_REMAINING" -eq 0 ]; then
-              break
-            fi
+            [ $TRANSLATE_EXIT_CODE -ne 0 ] && echo "Warning: Exit code ${TRANSLATE_EXIT_CODE}"
+            [ "$FINAL_REMAINING" -eq 0 ] && break
           done
 
-          # Check if translated docs were updated (including root README.*.md files)
-          if git diff --quiet -- docs/ README.md README.*.md 2>/dev/null; then
-            echo "No changes in translated docs"
-            echo "docs_updated=false" >> $GITHUB_OUTPUT
-          else
-            echo "Translated docs changes detected"
-            echo "docs_updated=true" >> $GITHUB_OUTPUT
-          fi
+          git diff --quiet -- docs/ README.md README.*.md 2>/dev/null && { echo "No changes"; echo "docs_updated=false" >> $GITHUB_OUTPUT; } || { echo "Changes detected"; echo "docs_updated=true" >> $GITHUB_OUTPUT; }
 
           echo "remaining=$FINAL_REMAINING" >> $GITHUB_OUTPUT
 
-          # Record translation failure status (but don't interrupt the workflow)
-          if [ $TRANSLATE_EXIT_CODE -ne 0 ]; then
-            echo "⚠️ Some files failed to translate, but successfully translated files will be committed"
-            echo "translate_failed=true" >> $GITHUB_OUTPUT
-          else
-            echo "translate_failed=false" >> $GITHUB_OUTPUT
-          fi
+          [ $TRANSLATE_EXIT_CODE -ne 0 ] && echo "translate_failed=true" >> $GITHUB_OUTPUT || echo "translate_failed=false" >> $GITHUB_OUTPUT
+          [ "$FINAL_REMAINING" -gt 0 ] && echo "::warning::Remaining: ${FINAL_REMAINING}"
 
-          if [ "$FINAL_REMAINING" -gt 0 ]; then
-            echo "::warning::仍有 ${FINAL_REMAINING} 个翻译任务因时间预算耗尽未完成，下次文档更新触发时将自动续译"
-          fi
-
-      # ==================== 翻译质量防线 ====================
-      # 提交前确定性检查（提示词泄露/围栏损坏/截断/乱码）：
-      # --fix 会删除问题文件的翻译缓存，下次文档更新触发时自动重译自愈；
-      # 检出问题不阻塞工作流（正常文件照常提交），但留下错误标记供人工跟进
-      - name: Check translation quality (pre-commit gate)
+      - name: Check translation quality
         id: check-translation
         continue-on-error: true
         run: |
           python -m scripts.tools check translation --fix
 
-      # ==================== 生成类文档（API / AI Prompt / 索引，基于本轮最新翻译） ====================
-      # ai-prompts / docs-index 扫描各语言 docs 内容生成，必须在翻译之后运行；
-      # 否则产物基于上一轮旧翻译，且 docs/** 变更不会再触发本 workflow（滞后无法自愈）。
-      # api-docs 从源码 docstring 生成（与翻译无关），保持在 docs-index 之前（其 auto_api 索引依赖该产物）。
-
-      - name: Update API docs (multilingual)
+      - name: Update API docs
         id: update-api
         run: |
-          echo "Starting API docs update..."
+          echo "Updating API docs..."
+          [ -f "scripts/tools/generators/spec.py" ] && python -m scripts.tools gen api-docs
+          git diff --quiet docs/*/api-reference/ && echo "api_updated=false" >> $GITHUB_OUTPUT || echo "api_updated=true" >> $GITHUB_OUTPUT
 
-          # Run API docs update script (auto-generates for all languages)
-          if [ -f "scripts/tools/generators/spec.py" ]; then
-            python -m scripts.tools gen api-docs
-            echo "API docs update complete"
-          else
-            echo "API docs update script not found, skipping this step"
-          fi
-
-          # Check if API docs were updated
-          if git diff --quiet docs/*/api-reference/; then
-            echo "No changes in API docs"
-            echo "api_updated=false" >> $GITHUB_OUTPUT
-          else
-            echo "API docs changes detected"
-            echo "api_updated=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Generate AI Prompt docs (multilingual)
+      - name: Generate AI Prompt docs
         id: generate-ai-prompts
         run: |
-          echo "Starting AI Prompt document generation..."
+          echo "Generating AI Prompt docs..."
+          [ -f "scripts/tools/generators/spec.py" ] && python -m scripts.tools gen ai-prompts
+          git diff --quiet docs/*/ai-support/prompts/ && echo "ai_prompts_updated=false" >> $GITHUB_OUTPUT || echo "ai_prompts_updated=true" >> $GITHUB_OUTPUT
 
-          # Run AI prompt generation script (auto-generates for all languages)
-          if [ -f "scripts/tools/generators/spec.py" ]; then
-            python -m scripts.tools gen ai-prompts
-            echo "AI Prompt document generation complete"
-          else
-            echo "AI Prompt generation script not found, skipping this step"
-          fi
-
-          # Check if AI Prompt docs were updated
-          if git diff --quiet docs/*/ai-support/prompts/; then
-            echo "No changes in AI Prompt docs"
-            echo "ai_prompts_updated=false" >> $GITHUB_OUTPUT
-          else
-            echo "AI Prompt docs changes detected"
-            echo "ai_prompts_updated=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Generate docs index (multilingual)
+      - name: Generate docs index
         id: generate-docs-index
         run: |
-          echo "Starting docs index generation..."
+          echo "Generating docs index..."
+          [ -f "scripts/tools/generators/spec.py" ] && python -m scripts.tools gen docs-index
+          git diff --quiet docs/_meta/ && echo "docs_index_updated=false" >> $GITHUB_OUTPUT || echo "docs_index_updated=true" >> $GITHUB_OUTPUT
 
-          # Run docs index generation script (auto-generates for all languages)
-          if [ -f "scripts/tools/generators/spec.py" ]; then
-            python -m scripts.tools gen docs-index
-            echo "Docs index generation complete"
-          else
-            echo "Docs index generation script not found, skipping this step"
-          fi
-
-          # Check if docs index was updated
-          if git diff --quiet docs/_meta/; then
-            echo "No changes in docs index"
-            echo "docs_index_updated=false" >> $GITHUB_OUTPUT
-          else
-            echo "Docs index changes detected"
-            echo "docs_index_updated=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Upload translated docs as artifact
-        if: steps.translate-docs.outputs.docs_updated == 'true'
+      - name: Upload all docs as artifact
+        if: steps.translate-docs.outputs.docs_updated == 'true' || steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: translated-docs
+          name: docs-build
           path: |
             docs/
             README.md
             README.*.md
-          retention-days: 400
-          if-no-files-found: ignore
-
-      - name: Upload generated docs as artifact
-        if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-docs
-          path: docs/
+            .github/.translate_cache/
           retention-days: 400
           if-no-files-found: ignore
 
