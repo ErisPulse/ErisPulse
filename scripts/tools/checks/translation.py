@@ -253,7 +253,7 @@ class TranslationChecker:
             int(src_fences * self.FENCE_TOLERANCE_RATIO),
             self.FENCE_TOLERANCE_ABS
         )
-        
+
         if fence_diff > fence_tolerance:
             issues.append(
                 {
