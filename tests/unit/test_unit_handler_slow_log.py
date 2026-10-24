@@ -156,8 +156,11 @@ class TestHandlerStillRunningWatchdog:
         # 看门狗（执行中）：入口 + 当前停在业务帧
         assert any("fake_ai_call" in m for m in msgs), f"看门狗应报告当前等待点: {msgs}"
         assert any("slow_biz_handler" in m for m in msgs)
-        # 结束统计：总耗时
-        assert any("took" in m and "slow_biz_handler" in m for m in msgs)
+        # 结束统计：总耗时（语言无关——消息含处理器名与耗时数值即可）
+        assert any(
+            ("took" in m or "耗时" in m) and "slow_biz_handler" in m and "0." in m
+            for m in msgs
+        )
 
     @pytest.mark.asyncio
     async def test_watchdog_silent_when_handler_fast(self, clean_bus, caplog):

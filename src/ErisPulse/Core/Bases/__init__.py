@@ -5,6 +5,7 @@ ErisPulse 基础模块
 """
 
 from .adapter import ApiDSL, SendDSL, RequestDSL, BaseAdapter
+from .adapter_patterns import PollingAdapter, WebhookAdapter
 from .converter import BaseConverter
 from .send_rules import SendContext
 from .send_builder import SendBuilder, BatchContext
@@ -103,6 +104,7 @@ __all__ = [
     "ModuleError",
     "ModuleMeta",
     "ModuleNotAvailableError",
+    "PollingAdapter",
     "QuerySet",
     "relationship",
     "respond",
@@ -125,6 +127,7 @@ __all__ = [
     "WebSocketConnectionBase",
     "WebSocketDisconnect",
     "WebSocketError",
+    "WebhookAdapter",
     # SQL 存储基类（自定义 SQL 后端扩展用）
     "AlterTableBuilder",
     "SQLDialect",

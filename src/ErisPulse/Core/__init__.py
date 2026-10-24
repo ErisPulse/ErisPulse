@@ -10,6 +10,8 @@ from .Bases import (
     BaseAdapter,
     BaseModule,
     ModuleMeta,
+    PollingAdapter,
+    WebhookAdapter,
     ApiDSL,
     SendDSL,
     SendContext,
@@ -192,4 +194,6 @@ __all__ = [
     "scope",  # 作用域模块单例
     "storage",  # 存储模块单例
     "transcript",  # 会话收件箱模块单例
+    "PollingAdapter",  # 轮询型适配器半成品基类
+    "WebhookAdapter",  # 回调型适配器半成品基类
 ]

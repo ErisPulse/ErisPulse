@@ -81,10 +81,12 @@ from .Core import (
     BaseAdapter,
     BaseModule,
     ModuleMeta,
+    PollingAdapter,
     RequestDSL,
     SendBuilder,
     SendContext,
     SendDSL,
+    WebhookAdapter,
     BatchContext,
 )
 from .Core.Bases import (
@@ -322,10 +324,12 @@ __all__ = [
     "BaseModule",
     "BatchContext",
     "ModuleMeta",
+    "PollingAdapter",
     "RequestDSL",
     "SendBuilder",
     "SendContext",
     "SendDSL",
+    "WebhookAdapter",
     # 错误族
     "ClientConnectionError",
     "ClientError",

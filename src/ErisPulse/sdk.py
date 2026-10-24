@@ -882,8 +882,12 @@ class SDK:
         if getattr(self, "_module_loader", None) is None:
             self.logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return False
-        return await self._module_loader.reload_module(
-            module_name, self.module, self, full=full
+        from .runtime.reload_ops import run_reload_exclusive
+
+        return await run_reload_exclusive(
+            lambda: self._module_loader.reload_module(
+                module_name, self.module, self, full=full
+            )
         )
 
     async def reload_adapter(self, adapter_name: str, *, full: bool = True) -> bool:
@@ -906,8 +910,12 @@ class SDK:
         if getattr(self, "_adapter_loader", None) is None:
             self.logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return False
-        return await self._adapter_loader.reload_adapter(
-            adapter_name, self.adapter, self, full=full
+        from .runtime.reload_ops import run_reload_exclusive
+
+        return await run_reload_exclusive(
+            lambda: self._adapter_loader.reload_adapter(
+                adapter_name, self.adapter, self, full=full
+            )
         )
 
     async def reload_all_modules(self) -> dict[str, bool]:
@@ -929,17 +937,53 @@ class SDK:
         if getattr(self, "_module_loader", None) is None:
             self.logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return {}
-        return await self._module_loader.reload_all(self.module, self)
+        from .runtime.reload_ops import run_reload_exclusive
 
-    async def _reload_module(self, module_name: str) -> None:
+        return await run_reload_exclusive(
+            lambda: self._module_loader.reload_all(self.module, self)
+        )
+
+    async def _reload_module(self, module_name: str) -> bool:
         """
         {!--< internal-use >!--}
-        热重载回调（由 PluginReloadWatcher 调度），失败仅记录不抛异常
+        插件热发现回调（由 PluginReloadWatcher 调度）：按名字路由
+
+        已知模块 → 单模块热重载；已知适配器 → 适配器代码级热重载（适配器
+        插件文件的保存/删除此前完全无自动反应）；全新文件（on_created）→
+        先按模块插件热装载，不是模块插件再按适配器插件热装载。失败仅记录
+        不抛异常。
+
+        :param module_name: 插件名（由插件目录路径解析）
+        :return: 是否成功（路由失败/异常为 False）
         """
         try:
-            await self.reload_module(module_name)
+            module_loader = getattr(self, "_module_loader", None)
+            if (
+                module_loader is not None
+                and module_loader._last_module_objs.get(module_name) is not None
+            ):
+                return bool(await self.reload_module(module_name))
+            adapter_loader = getattr(self, "_adapter_loader", None)
+            if adapter_loader is not None and (
+                module_name in (getattr(self.adapter, "_adapter_info", {}) or {})
+                or module_name in adapter_loader._last_adapter_objs
+            ):
+                return bool(await self.reload_adapter(module_name))
+            if module_loader is not None:
+                result = await module_loader.load_new_plugin(
+                    module_name, self.module, self
+                )
+                if result is not None:
+                    return result
+            if adapter_loader is not None:
+                result = await adapter_loader.load_new_adapter_plugin(
+                    module_name, self.adapter, self
+                )
+                return bool(result)
+            return False
         except Exception as e:
             self.logger.error(i18n.t("core.sdk.hot_reload.failed", name=module_name, error=e))
+            return False
 
     def stop_plugin_hot_reload(self) -> None:
         """
@@ -986,32 +1030,72 @@ class SDK:
 
         软重启 = **组件层代码级热重载**（2.11 起不再整体 uninit/init）：
         1. 全部已加载模块走统一热重载管线（``reload_all_modules``：
-           语法预检 → 卸载 → 清 sys.modules / __pycache__ → 重发现重导 →
-           重新注册加载 → 懒激活；失败快照回滚，单模块失败不影响其余）
-        2. 全部适配器逐个走 ``reload_adapter``（卸载清理 → 清缓存重发现 →
-           重新注册 → 原运行态重新拉起）
+           整体语法预检 → 卸载 → 清 sys.modules / __pycache__ → 重发现重导 →
+           重新注册加载 → 懒激活；预检失败整轮拒绝，旧实例继续服务）
+        2. 适配器层先重发现 entry-point（运行中 pip 新装/卸载的适配器即刻
+           生效——装完即用），再逐个走 ``reload_adapter``（卸载清理 → 清缓存
+           重发现 → 重新注册 → 原运行态重新拉起）
 
-        配置热更新由配置监听器处理；框架自身更新 / entry-point 增删等
-        整进程场景请使用 ``hard_restart()``。
+        全程持热重载互斥锁（与单模块重载/归眠串行）；保存风暴下 restart
+        请求自动合并——进行中的请求置 dirty 标记，本轮完成后补跑至多一轮。
+
+        配置热更新由配置监听器处理；框架自身更新等整进程场景请使用
+        ``hard_restart()``。
 
         :return: bool 软重启是否全部成功（任一组件失败即为 False，
                  失败清单见日志）
         """
+        from .runtime.reload_ops import reload_ops
+
         try:
-            self.logger.info(i18n.t("core.sdk.reload.starting"))
+            async with reload_ops:
+                reload_ops.begin_restart_section()
+                while True:
+                    result = await self._execute_restart_once()
+                    if not reload_ops.consume_restart_dirty():
+                        return result
+        except Exception as e:
+            self.logger.error(i18n.t("core.sdk.reload.failed", error=e))
+            return False
 
-            # 1. 模块层：统一热重载管线（含预检 / 快照回滚 / 身份核对）
-            module_results = await self.reload_all_modules()
+    async def _execute_restart_once(self) -> bool:
+        """
+        {!--< internal-use >!--}
+        单轮软重启执行体（互斥与补跑循环由 ``_do_restart`` 负责）
+        """
+        self.logger.info(i18n.t("core.sdk.reload.starting"))
 
-            # 2. 适配器层：逐个代码级热重载
-            adapter_results: dict[str, bool] = {}
-            for adapter_name in list(
-                getattr(self.adapter, "_adapter_info", {}) or {}
-            ):
-                try:
-                    adapter_results[adapter_name] = await self.reload_adapter(
-                        adapter_name
+        # 1. 模块层：统一热重载管线（含整体预检 / 快照回滚 / 身份核对）
+        module_results = await self.reload_all_modules()
+
+        # 2. 适配器层：先重发现（新装/卸载即刻生效），再逐个代码级热重载
+        adapter_results: dict[str, bool] = {}
+        known_adapters = set(getattr(self.adapter, "_adapter_info", {}) or {})
+        new_adapters: list[str] = []
+        if getattr(self, "_adapter_loader", None) is not None:
+            try:
+                objs, _enabled, _disabled = await self._adapter_loader.load(
+                    self.adapter, quiet=True
+                )
+                if objs:
+                    await self._adapter_loader.register_to_manager(
+                        list(objs.keys()), objs, self.adapter
                     )
+                new_adapters = [n for n in objs if n not in known_adapters]
+            except Exception as e:
+                self.logger.error(
+                    i18n.t("core.sdk.reload.adapter_rediscover_failed", error=e)
+                )
+        for adapter_name in list(getattr(self.adapter, "_adapter_info", {}) or {}):
+            if adapter_name in new_adapters:
+                # 新适配器：按启用状态拉起（装完即用）；启动失败不判重启失败
+                try:
+                    if self.adapter.is_enabled(adapter_name):
+                        await self.adapter.startup(adapter_name)
+                        self.logger.info(
+                            i18n.t("core.sdk.reload.adapter_started", name=adapter_name)
+                        )
+                    adapter_results[adapter_name] = True
                 except Exception as e:
                     self.logger.error(
                         i18n.t(
@@ -1021,28 +1105,36 @@ class SDK:
                         )
                     )
                     adapter_results[adapter_name] = False
-
-            failed_modules = sorted(
-                n for n, ok in module_results.items() if not ok
-            )
-            failed_adapters = sorted(
-                n for n, ok in adapter_results.items() if not ok
-            )
-            if failed_modules or failed_adapters:
-                self.logger.warning(
+                continue
+            try:
+                adapter_results[adapter_name] = await self.reload_adapter(adapter_name)
+            except Exception as e:
+                self.logger.error(
                     i18n.t(
-                        "core.sdk.reload.partial_failed",
-                        modules=", ".join(failed_modules) or "-",
-                        adapters=", ".join(failed_adapters) or "-",
+                        "core.sdk.reload.adapter_failed",
+                        name=adapter_name,
+                        error=e,
                     )
                 )
+                adapter_results[adapter_name] = False
 
-            self.logger.info(i18n.t("core.sdk.reload.complete"))
-            self.logger.info(i18n.t("core.sdk.reload.done"))
-            return not failed_modules and not failed_adapters
-        except Exception as e:
-            self.logger.error(i18n.t("core.sdk.reload.failed", error=e))
-            return False
+        failed_modules = sorted(
+            n for n, ok in module_results.items() if not ok
+        )
+        failed_adapters = sorted(
+            n for n, ok in adapter_results.items() if not ok
+        )
+        if failed_modules or failed_adapters:
+            self.logger.warning(
+                i18n.t(
+                    "core.sdk.reload.partial_failed",
+                    modules=", ".join(failed_modules) or "-",
+                    adapters=", ".join(failed_adapters) or "-",
+                )
+            )
+
+        self.logger.info(i18n.t("core.sdk.reload.complete"))
+        return not failed_modules and not failed_adapters
 
     async def restart(self) -> bool:
         """
@@ -1061,11 +1153,15 @@ class SDK:
         （事件处理器内调用不会中断当前事件链路）；立即返回 ``True`` 表示
         "重启任务已成功调度"而非"重启已完成"。
 
+        重启请求自动合并：已有 restart 进行中时，本次调用只置合并标记
+        （进行中的一轮完成后补跑至多一轮），绝不并发交叉。
+
         **语义分界**（2.11 起）：
 
-        - ``restart()``：组件层代码热重载（模块 + 适配器；pip 升级组件后生效）
-        - ``hard_restart()``：整进程重启（框架自身更新 / entry-point 增删 /
-          结构性配置变更等场景）
+        - ``restart()``：组件层代码热重载（模块 + 适配器；pip 升级组件、
+          新装适配器 entry-point 均即刻生效）
+        - ``hard_restart()``：整进程重启（框架自身更新 / 结构性配置变更
+          等需要全新解释器的场景）
         {!--< /tips >!--}
 
         :return: bool 重启任务是否成功调度（并非重启是否完成）
@@ -1073,12 +1169,13 @@ class SDK:
         :example:
         >>> await sdk.restart()
         """
-        self.logger.info(i18n.t("core.sdk.reload.starting"))
+        from .runtime.reload_ops import reload_ops
 
         # 使用 spawn_background 将任务注册到事件循环调度器 - 不受上层协程取消影响
         from .runtime.tasks import spawn_background
 
-        spawn_background(self._do_restart())
+        if not reload_ops.mark_restart_pending():
+            spawn_background(self._do_restart())
 
         return True
 
@@ -1098,23 +1195,28 @@ class SDK:
 
         return bool(os.environ.get(ENV_SUPERVISED))
 
-    async def hard_restart(self) -> bool:
+    async def hard_restart(self, reason: str = "") -> bool:
         """
         硬重启：反初始化后退出进程，由外部监督者重新启动新实例
 
-        与 restart()（热重启）的区别：
-        - restart(): 在同一进程内反初始化再重新初始化
-        - hard_restart(): 反初始化后以退出码 42 退出进程，由外部监督者重新拉起全新进程
+        与 restart() 的区别：
 
-        确保资源完全释放
+        - restart(): 组件层代码热重载——模块与适配器统一走热重载管线
+          （含运行中新装适配器的重发现拉起），框架进程保持在线
+        - hard_restart(): 反初始化后以退出码 42 退出进程，由外部监督者
+          重新拉起全新进程——用于框架自身更新等只有新解释器才能清干净
+          状态的场景（升级后的框架代码、C 扩展、累积泄漏）
 
         硬重启依赖外部监督者（``epsdk run`` / systemd / Docker / PM2 / supervisord）
         在退出码 42 时重新拉起进程；未被监督时进程退出后不会自动恢复，会打警告提醒。
+        监督场景下退出前会把 ``reason`` 写入运行状态文件（``.erispulse/runtime.json``
+        的 ``hard_restart_reason`` 字段），监督者重拉时向用户展示。
 
+        :param reason: 硬重启原因（可选，供监督者展示与排障）
         :return: bool 硬重启任务是否成功调度
 
         :example:
-        >>> await sdk.hard_restart()
+        >>> await sdk.hard_restart("sdk self-update")
         """
 
         async def _do_hard_restart():
@@ -1133,7 +1235,16 @@ class SDK:
                 _config_manager.force_save()
             except Exception:
                 pass
-            if not self.is_supervised():
+            if self.is_supervised():
+                # 监督场景：退出前写入硬重启标记（原因/PID/时间），
+                # 监督者重拉时展示——os._exit 绕过 finally，状态文件由新进程重写
+                try:
+                    from .runtime import process_state
+
+                    process_state.mark_hard_restart(reason=reason, pid=os.getpid())
+                except Exception:
+                    pass
+            else:
                 self.logger.warning(
                     i18n.t(
                         "core.sdk.hardrestart.not_supervised",

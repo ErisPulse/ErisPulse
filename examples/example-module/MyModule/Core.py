@@ -340,6 +340,21 @@ class Main(BaseModule):
         async def get_user_name(event: Event):
             return event.get_user_name() or event.get_user_id()
 
+        # 模块持久化状态（2.11+ 推荐）：self.state 是自动带
+        # module.state.MyModule. 前缀的 KV 视图，模块卸载重载后仍在——
+        # 「计数器 / 开关 / 上次运行时间」这类小状态无需建表或裸写 storage 键
+        @command("counter", help="计数器示例（self.state 持久化）", usage="/counter [reset]")
+        async def counter_command(event: Event):
+            args = event.get_command_args()
+            if args and args[0] == "reset":
+                self.state.set("counter", 0)
+                await event.reply("计数器已重置为 0")
+                return
+
+            count = self.state.get("counter", 0) + 1
+            self.state.set("counter", count)
+            await event.reply(f"本模块已执行该命令 {count} 次（重启不丢失）")
+
         # 数据模型（ORM，可选）：继承 Model 声明字段即得自动建表与 CRUD，
         # 后端由 ErisPulse.storage.backend 配置决定（sqlite/mysql/postgres 透明切换）
         class NoteRecord(Model):

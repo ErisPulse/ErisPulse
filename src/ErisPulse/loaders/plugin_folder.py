@@ -57,6 +57,17 @@ class PluginFolderLoader:
     def __init__(self):
         self._loaded_paths: dict[str, Path] = {}
         self._loaded_adapter_paths: dict[str, Path] = {}
+        # 严格模式登记器（由宿主加载器注入）：本地插件的版本闸门违规同样
+        # 进入 strict_mode 错误面——安装来源（PyPI / plugins 目录）不影响
+        self._strict_recorder: Any = None
+
+    def set_strict_recorder(self, recorder: Any) -> None:
+        """
+        注入严格模式登记器（宿主加载器在 set_strict_manager 时同步传播）
+
+        :param recorder: StrictModeManager 实例（需提供 record_failure）
+        """
+        self._strict_recorder = recorder
 
     # ==================== 目录解析 ====================
 
@@ -188,8 +199,7 @@ class PluginFolderLoader:
                 depends = []
 
             from ..Core.Bases.module import BaseModule
-            from ..runtime.version import check_min_sdk_version
-            from .bases.loader import resolve_min_sdk_version
+            from .bases.loader import check_component_sdk_version, resolve_min_sdk_version
 
             is_base_module = inspect.isclass(module_class) and issubclass(
                 module_class, BaseModule
@@ -197,28 +207,15 @@ class PluginFolderLoader:
 
             # 运行时最低 SDK 版本检查：不满足时明确报错并跳过（声明缺失则放行）
             declared_sdk = resolve_min_sdk_version(module_class, name=name)
-            if declared_sdk:
-                satisfied, current, required, parseable = check_min_sdk_version(
-                    str(declared_sdk)
-                )
-                if not parseable:
-                    logger.warning(
-                        i18n.t(
-                            "loader.plugin.sdk_version_invalid",
-                            name=name,
-                            value=declared_sdk,
-                        )
-                    )
-                elif not satisfied:
-                    logger.error(
-                        i18n.t(
-                            "loader.plugin.sdk_version_unsupported",
-                            name=name,
-                            required=required,
-                            current=current,
-                        )
-                    )
-                    return None
+            if declared_sdk and not check_component_sdk_version(
+                name,
+                "module",
+                module_class,
+                strict_recorder=self._strict_recorder,
+                invalid_key="loader.plugin.sdk_version_invalid",
+                unsupported_key="loader.plugin.sdk_version_unsupported",
+            ):
+                return None
 
             module_info = {
                 "meta": {
@@ -422,33 +419,19 @@ class PluginFolderLoader:
             if adapter_class is None:
                 return None
 
-            from ..runtime.version import check_min_sdk_version
-            from .bases.loader import resolve_min_sdk_version
+            from .bases.loader import check_component_sdk_version, resolve_min_sdk_version
 
             # 运行时最低 SDK 版本检查：不满足时明确报错并跳过（声明缺失则放行）
             declared_sdk = resolve_min_sdk_version(adapter_class, name=name)
-            if declared_sdk:
-                satisfied, current, required, parseable = check_min_sdk_version(
-                    str(declared_sdk)
-                )
-                if not parseable:
-                    logger.warning(
-                        i18n.t(
-                            "loader.plugin.sdk_version_invalid",
-                            name=name,
-                            value=declared_sdk,
-                        )
-                    )
-                elif not satisfied:
-                    logger.error(
-                        i18n.t(
-                            "loader.adapter.sdk_version_unsupported",
-                            name=name,
-                            required=required,
-                            current=current,
-                        )
-                    )
-                    return None
+            if declared_sdk and not check_component_sdk_version(
+                name,
+                "adapter",
+                adapter_class,
+                strict_recorder=self._strict_recorder,
+                invalid_key="loader.plugin.sdk_version_invalid",
+                unsupported_key="loader.adapter.sdk_version_unsupported",
+            ):
+                return None
 
             self._loaded_adapter_paths[name] = path
             return {
