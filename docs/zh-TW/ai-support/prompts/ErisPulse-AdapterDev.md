@@ -775,9 +775,9 @@ async def hello_handler(event):
 # 基礎概念
 
 > [!NOTE]
-> **L1 核心必讀**——文件首頁「L1 核心五篇」中的第 2 篇（模組開發入門 → **基礎概念** → Event 包裝類別 → 設定檔說明 → 例外捕獲）。
+> **L1 核心必讀**——文件首頁「L1 核心五篇」中的第 2 篇（模組開發入門 → **基礎概念** → Event 包裝類別 → 設定檔說明 → 例外捕捉）。
 
-一條訊息從使用者發出到機器人回覆，中間經過了哪些元件？適配器和模組各自負責什麼？讀完這篇，寫處理器時遇到的設計問題你都能自己回答，而不是只能照抄範例。
+一條訊息從使用者發出到機器人回覆，中間經過了哪些元件？配接器和模組各自負責什麼？讀完這篇，撰寫處理器時遇到的設計問題你都能自己回答，而不是只能照抄範例。
 
 ## 事件驅動架構
 
@@ -786,13 +786,13 @@ ErisPulse 採用事件驅動架構，所有的互動都透過事件來傳遞和�
 ### 事件流程
 
 ```
-使用者發送訊息
+使用者傳送訊息
       │
       ▼
 平台接收
       │
       ▼
-適配器接收平台原生事件
+配接器接收平台原生事件
       │
       ▼
 轉換為 OneBot12 標準事件
@@ -807,7 +807,7 @@ ErisPulse 採用事件驅動架構，所有的互動都透過事件來傳遞和�
 模組處理事件
       │
       ▼
-透過適配器發送回應
+透過配接器傳送回應
       │
       ▼
 平台顯示給使用者
@@ -817,13 +817,13 @@ ErisPulse 採用事件驅動架構，所有的互動都透過事件來傳遞和�
 
 ErisPulse 使用 OneBot12 作為核心事件標準。OneBot12 是一個通用的聊天機器人應用程式介面標準，定義了統一的事件格式。
 
-所有適配器都會將平台特定的事件轉換為 OneBot12 格式，確保程式碼的一致性。
+所有配接器都會將平台特定的事件轉換為 OneBot12 格式，確保程式碼的一致性。
 
 ## 核心元件
 
 ### 1. SDK 物件
 
-SDK 是所有功能的統一入口點，提供對核心元件的存取。
+SDK 是所有功能的統一進入點，提供對核心元件的存取。
 
 ```python
 from ErisPulse import sdk
@@ -832,7 +832,7 @@ from ErisPulse import sdk
 sdk.storage    # 儲存系統
 sdk.config     # 設定系統
 sdk.logger     # 日誌系統
-sdk.adapter    # 適配器系統
+sdk.adapter    # 配接器系統
 sdk.module     # 模組系統
 sdk.router     # 路由系統
 sdk.client     # HTTP 用戶端
@@ -842,7 +842,7 @@ sdk.lifecycle  # 生命週期系統
 > [!WARNING]
 > **統一從根匯入**：`from ErisPulse.Core import adapter` / `import ErisPulse.Core.adapter`
 > 這類寫法綁定到的是**管理器實例**（`AdapterManager` 單例）而非子模組——`ErisPulse.Core`
-> 套件的 re-export 會遮蔽同名子模組。寫測試、patch 或需要模組物件本身時，請一律使用
+> 套件的 re-export 會遮蔽同名子模組。撰寫測試、patch 或需要模組物件本身時，請一律使用
 > `from ErisPulse import sdk` 根匯入（`sdk.adapter` 即管理器實例）。
 
 ### 2. Event 物件
@@ -858,44 +858,44 @@ async def info_handler(event):
     platform = event.get_platform()
     text = event.get_text()
     
-    # 發送回覆
+    # 傳送回覆
     await event.reply(f"使用者: {user_id}, 平台: {platform}")
 ```
 
-### 3. 適配器
+### 3. 配接器
 
-適配器是 ErisPulse 與外部平台之間的橋樑。
+配接器是 ErisPulse 與外部平台之間的橋樑。
 
 **職責：**
 - 接收平台原生事件
 - 轉換為 OneBot12 標準格式
-- 將標準格式事件發送到平台
+- 將標準格式事件傳送到平台
 
-**範例適配器：**
-- Yunhu 適配器：與雲湖平台通訊
-- Telegram 適配器：與 Telegram Bot API 通訊
-- OneBot11 適配器：與 OneBot11 相容的應用程式通訊
-- Email 適配器：處理郵件收發
+**範例配接器：**
+- Yunhu 配接器：與雲湖平台通訊
+- Telegram 配接器：與 Telegram Bot API 通訊
+- OneBot11 配接器：與 OneBot11 相容的應用程式通訊
+- Email 配接器：處理郵件收發
 
 ### 4. 模組
 
 模組是功能擴充的基本單位，可以：
 
 - 註冊事件處理器
-- 實現業務邏輯
-- 呼叫適配器發送訊息
+- 實作業務邏輯
+- 呼叫配接器傳送訊息
 - 使用核心模組提供的服務
 
 #### 模組發現機制
 
-ErisPulse 透過 Python 的 `importlib.metadata.entry_points` 發現已安裝的模組。模組在 `pyproject.toml` 中宣告入口點：
+ErisPulse 透過 Python 的 `importlib.metadata.entry_points` 發現已安裝的模組。模組在 `pyproject.toml` 中宣告進入點：
 
 ```toml
 [project.entry-points."erispulse.module"]
 MyModule = "my_package:Main"
 ```
 
-SDK 初始化時會掃描所有 `erispulse.module` 群組的入口點，將模組類別註冊到 `ModuleManager`，然後按依賴關係拓撲排序後依次初始化。
+SDK 初始化時會掃描所有 `erispulse.module` 群組的進入點，將模組類別註冊到 `ModuleManager`，然後按依賴關係進行拓撲排序後依序初始化。
 
 #### 最小可用模組
 
@@ -949,11 +949,11 @@ ErisPulse 支援 5 類事件：
 
 | 事件類型 | 裝飾器 | 說明 |
 |---------|--------|------|
-| 訊息事件 | `@message.on_message()` | 使用者發送的任何訊息（私聊、群聊） |
+| 訊息事件 | `@message.on_message()` | 使用者傳送的任何訊息（私聊、群聊） |
 | 命令事件 | `@command("name")` | 以命令前綴開頭的訊息（如 `/hello`） |
 | 通知事件 | `@notice.on_friend_add()` 等 | 系統通知（好友新增、群成員變化等） |
 | 請求事件 | `@request.on_friend_request()` 等 | 使用者請求（好友請求、群邀請） |
-| 元事件 | `@meta.on_connect()` 等 | 系統級事件（連線、斷開、心跳） |
+| 元事件 | `@meta.on_connect()` 等 | 系統級事件（連線、斷線、心跳） |
 
 > 各事件類型的詳細用法和程式碼範例請參考 [事件處理入門](event-handling.md)。
 
@@ -990,7 +990,7 @@ TOML 格式的設定檔管理。
 # 取得設定
 config = sdk.config.getConfig("MyModule", {})
 
-# 設定配置
+# 設定組態
 sdk.config.setConfig("MyModule", {"key": "value"})
 
 # 讀取巢狀設定
@@ -1014,10 +1014,10 @@ child_logger.info("子模組日誌")
 
 **屬性存取語法糖**
 
-除了使用 `get_child()` 方法外，你還可以透過**屬性存取**的方式建立子 logger，這是一種更簡潔的**語法糖**寫法：
+除了使用 `get_child()` 方法外，你還可以透過**屬性存取**的方式建立子logger，這是一種更簡潔的**語法糖**寫法：
 
 ```python
-# 透過屬性存取建立子 logger
+# 透過屬性存取建立子logger
 sdk.logger.mymodule.info("模組訊息")
 
 # 支援巢狀存取
@@ -1061,20 +1061,20 @@ async for text in ws.iter_text():
 
 > 完整的網路用戶端 API 請參考 [網路用戶端](../advanced/http-client.md)。
 
-## SendDSL 訊息發送
+## SendDSL 訊息傳送
 
-適配器提供鏈式呼叫的訊息發送介面。
+配接器提供鏈式呼叫的訊息傳送介面。
 
-### 基礎發送
+### 基礎傳送
 
 ```python
-# 取得適配器實例
+# 取得配接器實例
 yunhu = sdk.adapter.get("yunhu")
 
-# 發送訊息
+# 傳送訊息
 await yunhu.Send.To("user", "U1001").Text("Hello")
 
-# 指定發送帳號
+# 指定傳送帳號
 await yunhu.Send.Using("bot1").To("group", "G1001").Text("群訊息")
 ```
 
@@ -1101,10 +1101,10 @@ async def test_handler(event):
     # 簡單文字回覆
     await event.reply("回覆內容")
     
-    # 發送圖片
+    # 傳送圖片
     await event.reply("http://example.com/image.jpg", method="Image")
     
-    # 發送語音
+    # 傳送語音
     await event.reply("http://example.com/voice.mp3", method="Voice")
 ```
 
@@ -2425,7 +2425,7 @@ MyAdapter/
 
 ### 1. 建立專案
 
-建議直接使用鷹架產生完整骨架（含 pyproject、主類別、轉換器）：
+建議直接用鷹架生成完整骨架（含 pyproject、主類別、轉換器）：
 
 ```bash
 # 標準專案（打包發佈用）
@@ -2435,16 +2435,16 @@ epsdk create adapter -n MyAdapter
 epsdk create adapter -n MyAdapter --local
 ```
 
-鷹架預設產生 WebSocket 伺服器端骨架；當平台連接方式不同時，可透過 `--template`
-選擇通訊模式範本（產生後即使用對應的半成品基底類別，`start`/`shutdown` 都不需要自己寫）：
+鷹架預設生成 WebSocket 伺服器端骨架；平台連接方式不同時可經 `--template`
+選擇通訊模式模板（生成即用對應的半成品基類，`start`/`shutdown` 都不需要自己寫）：
 
 ```bash
 epsdk create adapter -n MyAdapter --template polling   # HTTP 輪詢型（getUpdates 拉取）
 epsdk create adapter -n MyAdapter --template webhook   # HTTP 回呼型（平台推送）
 ```
 
-> 三種連接模式的差異與半成品基底類別的最小實作面見
-> [適配器核心概念 - 連接模式半成品基底類別](core-concepts.md#連接模式半成品基底類別)。
+> 三種連接模式的差異與半成品基類的最小實作面見
+> [適配器核心概念 - 連接模式半成品基類](core-concepts.md#連接模式半成品基類)。
 > 完整可執行範例參考儲存庫 `examples/example-adapter-polling/` 與 `examples/example-adapter-webhook/`。
 
 也可以手動建立：
@@ -2478,7 +2478,7 @@ dependencies = [
 
 ### 3. 建立適配器主類別
 
-框架提供了 `ConfigClass` / `AccountConfigClass` 宣告式設定管理，適配器只需宣告設定類別即可自動載入、驗證並產生設定範本。
+框架提供了 `ConfigClass` / `AccountConfigClass` 宣告式設定管理，適配器只需宣告設定類別即可自動載入、驗證和產生設定模板。
 
 ```python
 # MyAdapter/Core.py
@@ -2520,9 +2520,9 @@ class MyAdapter(BaseAdapter):
         return MyPlatformConverter()
 ```
 
-> ⚠️ **關於 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 會自動處理 SDK 參照、日誌初始化和設定載入。大多數適配器**不再需要覆寫 `__init__`**。詳見 [__init__ 注意事項](#init-注意事項)。
+> ⚠️ **關於 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 會自動處理 SDK 引用、日誌初始化和設定載入。大多數適配器**不再需要覆寫 `__init__`**。詳見 [__init__ 注意事項](#init-注意事項)。
 
-> ⚠️ **關於 `super().__init__()`**：`BaseAdapter.__init__()` 負責建立 `Send` 和 `Request` 工廠實例。如果忘記呼叫，所有訊息傳送和請求操作都會拋出 `AttributeError`。詳見 [__init__ 注意事項](#init-注意事項)。
+> ⚠️ **關於 `super().__init__()`**：`BaseAdapter.__init__()` 負責建立 `Send` 和 `Request` 工廠實例。如果忘記呼叫，所有訊息傳送和請求操作都會報 `AttributeError`。詳見 [__init__ 注意事項](#init-注意事項)。
 
 ### 4. 實作必需方法
 
@@ -2554,9 +2554,9 @@ class MyAdapter(BaseAdapter):
         raise NotImplementedError("需要實作 call_api")
 ```
 
-#### 主動傳送 Meta 事件
+#### 主動發送 Meta 事件
 
-適配器應主動傳送 meta 事件，讓框架追蹤 Bot 的線上狀態。使用 `emit_meta()` 一行即可完成：
+適配器應主動發送 meta 事件，讓框架追蹤 Bot 的線上狀態。使用 `emit_meta()` 一行即可完成：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -2583,11 +2583,11 @@ class MyAdapter(BaseAdapter):
 
 ### 5. 實作 Send 類別
 
-`At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基底類別內建實作，適配器只需實作 `Raw_ob12` 和具體的傳送方法即可。
+`At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建實作，適配器只需實作 `Raw_ob12` 和具體的發送方法即可。
 
 框架提供兩個關鍵輔助方法：
 - `self._apply_modifiers(message)` — 自動合併 At/AtAll/Reply 修飾器到訊息段
-- `self.send_context` — 取得傳送上下文字典（`target_type`、`target_id`、`account_id`）
+- `self.send_context` — 取得發送上下文字典（`target_type`、`target_id`、`account_id`）
 
 ```python
 import asyncio
@@ -2599,10 +2599,10 @@ class MyAdapter(BaseAdapter):
 
         def Raw_ob12(self, message, **kwargs):
             """
-            傳送 OneBot12 格式訊息（必須實作）
+            發送 OneBot12 格式訊息（必須實作）
 
             使用 _apply_modifiers 自動合併修飾器狀態，
-            使用 send_context 取得傳送上下文。
+            使用 send_context 取得發送上下文。
             """
             async def _do_send():
                 segments = self._apply_modifiers(message)
@@ -2614,30 +2614,30 @@ class MyAdapter(BaseAdapter):
                 )
             return asyncio.create_task(_do_send())
 
-        # Text/Image/Voice/Video/File 已從 SendDSL 基底類別繼承，
+        # Text/Image/Voice/Video/File 已從 SendDSL 基類繼承，
         # 預設委託給 Raw_ob12，無需重複實作。
         # 如需平台特定邏輯，可覆寫單個方法：
         # def Text(self, text: str):
         #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-**媒體類傳送方法（Image/Video/File）實作要點：**
+**媒體類發送方法（Image/Video/File）實作要點：**
 
-- 基底類別的預設實作會將 `file` 參數封裝為 OneBot12 訊息段傳給 `Raw_ob12`，適配器需在 `Raw_ob12` 中處理下載/上傳
+- 基類的預設實作會將 `file` 參數封裝為 OneBot12 訊息段傳給 `Raw_ob12`，適配器需在 `Raw_ob12` 中處理下載/上傳
 - `file` 參數應同時支援 `bytes` 二進位資料和 `str` URL 兩種類型
 - 當傳入 URL 時，需先下載檔案再上傳到平台
-- 平台通常需要先呼叫上傳介面取得檔案識別碼，再呼叫傳送介面
+- 平台通常需要先呼叫上傳介面取得檔案識別碼，再呼叫發送介面
 
 **`__getattr__` 魔術方法：**
 
-- 實作方法名稱不分大小寫（`Text`、`text`、`TEXT` 都能呼叫）
+- 實作方法名稱大小寫不敏感（`Text`、`text`、`TEXT` 都能呼叫）
 - 未定義的方法應回傳提示訊息而非報錯
 
 **`Raw_ob12` 方法：**
 
-- 將 OneBot12 標準訊息格式轉換為平台格式傳送
+- 將 OneBot12 標準訊息格式轉換為平台格式發送
 - 使用 `self._apply_modifiers(message)` 自動處理 At/AtAll/Reply 修飾器
-- 使用 `**self.send_context` 傳遞傳送目標資訊和帳號資訊
+- 使用 `**self.send_context` 傳遞發送目標資訊和帳號資訊
 
 ### 6. 實作轉換器
 
@@ -2738,15 +2738,15 @@ from ErisPulse import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
-    # 透過 Event 便捷方法
+    # 透過 Event 便利方法
     await event.approve()
     # 或透過適配器直接操作
     await adapter.myplatform.Request("req_id").accept()
 ```
 
-> 如果平台不支援請求操作，可以不實作 `Request` 內部類別。基底類別預設回傳 `retcode=10002`（不支援的操作）。詳見 [請求操作規範](../../standards/request-action-spec.md)。
+> 如果平台不支援請求操作，可以不實作 `Request` 內部類別。基類預設回傳 `retcode=10002`（不支援的操作）。詳見 [請求操作規範](../../standards/request-action-spec.md)。
 
-### 8. 建立套件入口
+### 8. 建立套件進入點
 
 ```python
 # MyAdapter/__init__.py
@@ -3850,9 +3850,11 @@ class MyPlatformConverter:
 
 ### start() 的兩種正確寫法
 
-客戶端模式的適配器（WebSocket 客戶端、HTTP 輪詢等）需要在 `start()` 裡拉起一個常駐連線迴圈。框架支援兩種寫法，**都正確，但只能二選一**：
+客戶端模式的轉接器（WebSocket 客戶端、HTTP 輪詢等）需要在 `start()` 裡拉起一個
+常駐連線迴圈。框架支援兩種寫法，**都正確，但只能二選一**：
 
-**寫法一：spawn-傳回式（推薦）**——經 `spawn_client_loop()` 把迴圈調度為歸屬本平台的背景任務，`start()` 立即傳回：
+**寫法一：spawn-回傳式（推薦）**——經 `spawn_client_loop()` 把迴圈調度為歸屬本平台
+的背景任務，`start()` 立即回傳：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -3864,46 +3866,54 @@ class MyAdapter(BaseAdapter):
     async def _connect_loop(self):
         while True:
             try:
-                await self._connect_and_receive()   # 斷線拋例外 → 下方退避
+                await self._connect_and_receive()   # 斷線拋出例外 → 下方退避
             except asyncio.CancelledError:
                 raise
             except Exception:
                 await asyncio.sleep(5)              # 迴圈內自行退避重連
 ```
 
-**寫法二：常駐式**——`start()` 直接 `await` 連線迴圈，永不傳回：
+**寫法二：常駐式**——`start()` 直接 `await` 連線迴圈，永不回傳：
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        await self._connect_loop()   # 常駐不傳回；迴圈拋例外 = start 失敗
+        await self._connect_loop()   # 常駐不回傳；迴圈拋出例外 = start 失敗
 ```
 
 兩種寫法的差異與共同點：
 
-| | spawn-傳回式 | 常駐式 |
+| | spawn-回傳式 | 常駐式 |
 |---|---|---|
-| `start()` 傳回時機 | 拉起迴圈後立即傳回 | 連線迴圈退出/失敗時（框架按退避策略重試） |
-| 連線失敗處理 | 迴圈內自行攔截退避 | 例外向上拋出，交給框架的重試鏈 |
-| 適用情境 | 需要快速傳回啟動確認（多連線、註冊路由後還要拉起其它任務） | 「連線即啟動」語意的簡單實作 |
+| `start()` 回傳時機 | 拉起迴圈後立即回傳 | 連線迴圈退出/失敗時（框架按退避策略重試） |
+| 連線失敗處理 | 迴圈內自行捕捉退避 | 例外向上拋出，交給框架的重試鏈 |
+| 適用情境 | 需要快速回傳啟動確認（多連線、註冊路由後還要拉起其他任務） | 「連線即啟動」語義的簡單實作 |
 
-`spawn_client_loop(coro, *, name="client_loop")` 是寫法一的調度入口：任務按 `self._platform` 歸屬登記，適配器 `shutdown()` 時框架按歸屬自動取消，無需自行管理任務的 handle；迴圈內未攔截的例外會自動留痕（預期的斷線重連請在迴圈內自行攔截）。
+`spawn_client_loop(coro, *, name="client_loop")` 是寫法一的調度入口：任務按
+`self._platform` 歸屬登記，轉接器 `shutdown()` 時框架按歸屬自動取消，無需自己
+管理任務句柄；迴圈內未捕捉的例外會自動留痕（預期的斷線重連請在迴圈內自行捕捉）。
 
-> **唯一錯誤寫法是混用**：spawn 之後又 `await` 同一個迴圈——這會讓 `start()` 失去立即傳回語意，任務取消路徑也會變得不可預測。
+> **唯一錯誤寫法是混用**：spawn 之後又 `await` 同一個迴圈——這會讓 `start()`
+> 失去立即回傳語義，任務取消路徑也會變得不可預測。
 
 ### 連線模式半成品基底類別
 
-上一節的兩種寫法之外，最常見的兩類連線模式框架直接提供了「半成品」基底類別（`ErisPulse.Core.Bases.adapter_patterns`，根套件可直接匯入）：`start` / `shutdown` 的生命週期編排全部由基底類別完成，子類別只實作業務鉤子。
+上一節的兩種寫法之外，最常見的兩類連線模式框架直接提供了「半成品」基底類別
+（`ErisPulse.Core.Bases.adapter_patterns`，根套件可直接匯入）：`start` / `shutdown`
+的生命週期編排全部由基底類別完成，子類別只實作業務鉤子。
 
 #### PollingAdapter（HTTP 輪詢型）
 
-適用於「客戶端定時拉取事件」的平台（Telegram getUpdates 型）。基底類別以 spawn-傳回式拉起常駐輪詢迴圈，拉取失敗自動留痕並指數退避（基數 1 秒、上限 60 秒，成功後歸零；常數 `POLLING_ADAPTER_BACKOFF_BASE_SECS` / `POLLING_ADAPTER_BACKOFF_MAX_SECS` 可在 `Core/constants.py` 調整）：
+適用於「客戶端定時拉取事件」的平台（Telegram getUpdates 型）。基底類別以
+spawn-回傳式拉起常駐輪詢迴圈，拉取失敗自動留痕並指數退避（基數 1 秒、上限
+60 秒，成功後歸零；常數 `POLLING_ADAPTER_BACKOFF_BASE_SECS` /
+`POLLING_ADAPTER_BACKOFF_MAX_SECS` 可在 `Core/constants.py` 調整）：
 
 ```python
 from ErisPulse import PollingAdapter
 
 class MyAdapter(PollingAdapter):
-    # 輪詢間隔預設 5 秒；ConfigClass 宣告 poll_interval 欄位後以配置值為準（熱更新生效）
+    # 輪詢間隔預設 5 秒；ConfigClass 宣告 poll_interval 欄位後以設定值為準（熱更新生效）
     poll_interval = 5.0
 
     async def fetch_events(self):
@@ -3913,25 +3923,28 @@ class MyAdapter(PollingAdapter):
         return data.get("result", [])
 
     def convert_one(self, raw):
-        """單條原生事件轉 OneBot12；傳回 None 跳過"""
+        """單筆原生事件轉 OneBot12；回傳 None 則略過"""
         return self.converter.convert(raw)
 
     async def call_api(self, endpoint: str, **params):
-        ...  # 與普通適配器相同
+        ...  # 與普通轉接器相同
 ```
 
-最小實作面：`fetch_events` / `convert_one` / `call_api`。`start()` 拉起迴圈後立即傳回；`shutdown()` 無需子類別處理（輪詢迴圈按 owner 歸屬自動取消）。
+最小實作面：`fetch_events` / `convert_one` / `call_api`。`start()` 拉起迴圈後立即
+回傳；`shutdown()` 無需子類別處理（輪詢迴圈按 owner 歸屬自動取消）。
 
 #### WebhookAdapter（HTTP 回呼型）
 
-適用於「平台主動推送回呼」的平台。基底類別的 `start()` 在框架 router 上註冊接收路由（最終路徑 `/{平台名}/webhook`，POST 方法），註冊包在 `owner_scope` 中——適配器卸載時按 owner 自動清理，無需手動註銷：
+適用於「平台主動推送回呼」的平台。基底類別的 `start()` 在框架 router 上註冊接收路由
+（最終路徑 `/{平台名}/webhook`，POST 方法），註冊包在 `owner_scope` 中——轉接器
+卸載時按 owner 自動清理，無需手動註銷：
 
 ```python
 from ErisPulse import WebhookAdapter
 
 class MyAdapter(WebhookAdapter):
     def verify_request(self, request) -> bool:
-        """可選鉤子：回呼驗證（預設放行；傳回 False 時基底類別以 403 回絕）"""
+        """可選鉤子：回呼驗證（預設放行；回傳 False 時基底類別以 403 回絕）"""
         cfg = self.cfg
         if not cfg.token:
             return True
@@ -3939,14 +3952,16 @@ class MyAdapter(WebhookAdapter):
         return auth == f"Bearer {cfg.token}"
 
     def convert(self, payload):
-        """回呼載荷轉 OneBot12；傳回 None 跳過"""
+        """回呼酬載轉 OneBot12；回傳 None 則略過"""
         return self.converter.convert(payload)
 
     async def call_api(self, endpoint: str, **params):
-        ...  # 與普通適配器相同
+        ...  # 與普通轉接器相同
 ```
 
-最小實作面：`convert` / `call_api`（`verify_request` 可選）。回呼位址經 `sdk.adapter.get_connection_info(platform)` 查詢後填到平台後台；驗證失敗的請求傳回 403、載荷解析失敗傳回 400、正常傳回 `{"status": "ok"}`。
+最小實作面：`convert` / `call_api`（`verify_request` 可選）。回呼位址經
+`sdk.adapter.get_connection_info(platform)` 查詢後填到平台後台；驗證失敗的請求
+回傳 403、酬載解析失敗回傳 400、正常回傳 `{"status": "ok"}`。
 
 #### 三種模式怎麼選
 
@@ -3956,7 +3971,8 @@ class MyAdapter(WebhookAdapter):
 | 我們去拉（HTTP 輪詢） | `PollingAdapter` | `epsdk create adapter --template polling` |
 | 平台推過來（HTTP 回呼） | `WebhookAdapter` | `epsdk create adapter --template webhook` |
 
-完整可執行範例見儲存庫 `examples/example-adapter/`（ws-server）、`examples/example-adapter-polling/`、`examples/example-adapter-webhook/`。
+完整可執行範例見儲存庫 `examples/example-adapter/`（ws-server）、
+`examples/example-adapter-polling/`、`examples/example-adapter-webhook/`。
 
 ### WebSocket 連線
 
@@ -3982,12 +3998,12 @@ class MyAdapter(BaseAdapter):
                 if onebot_event:
                     await self.adapter.emit(onebot_event)
         except WebSocketDisconnect:
-            self.logger.info("連線已斷開")
+            self.logger.info("連線已中斷")
         finally:
             self.connection = None
     
     async def _auth_handler(self, websocket) -> bool:
-        """WebSocket 認證"""
+        """WebSocket 驗證"""
         token = websocket.query_params.get("token")
         return token == "valid_token"
 ```
@@ -4014,9 +4030,11 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
-> 純回呼型平台不必手寫上面這套註冊/驗證/清理編排——直接繼承 [`WebhookAdapter` 半成品基底類別](#連線模式半成品基底類別)，只實作 `convert`（可選覆寫 `verify_request`）即可。
+> 純回呼型平台不必手寫上面這套註冊/驗證/清理編排——直接繼承
+> [`WebhookAdapter` 半成品基底類別](#連線模式半成品基底類別)，只實作 `convert`
+> （可選覆寫 `verify_request`）即可。
 
-> **路由資訊查詢**：適配器註冊的路由（HTTP、WebSocket、SSE）可以透過 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查詢完整連線位址（包含 `base_url` + 路徑）。詳見 [適配器開發入門 - 連線資訊與路由發現](getting-started.md#9-連線資訊與路由發現) 和 [SSE 支援](getting-started.md#10-sse-server-sent-events-支援)。
+> **路由資訊查詢**：轉接器註冊的路由（HTTP、WebSocket、SSE）可以透過 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查詢完整連線位址（包含 `base_url` + 路徑）。詳見 [轉接器開發入門 - 連線資訊與路由探索](getting-started.md#9-連線資訊與路由探索) 和 [SSE 支援](getting-started.md#10-sse-server-sent-events-支援)。
 
 ## API 响应标准
 
@@ -6442,17 +6460,17 @@ services:
 # 模組測試（ErisPulse-Testing）
 
 > [!TIP]
-> **何時需要閱讀本文**：為自己的模組編寫自動化測試時。若不需要則可跳過，不會影響其他功能的使用。
+> **什麼時候需要讀這篇**：為自己的模組編寫自動化測試時。不需要則跳過，不影響其它功能的使用。
 
 
 [ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) 是官方測試工具包：
-提供 `TestBot`、測試事件工廠、出站訊息捕獲與斷言介面，讓模組測試像撰寫一般 pytest 一樣簡單。
+提供 `TestBot`、測試事件工廠、出站訊息捕獲與斷言面，讓模組測試像寫普通 pytest 一樣簡單。
 
 ```bash
 pip install ErisPulse-Testing
 ```
 
-> 單向依賴框架的開發期工具，運行時零介入。若需進行真正連接適配器平台的冒煙測試，請使用框架倉庫的 `tests/devs/test_adapter.py`。
+> 單向依賴框架的開發期工具，執行時零介入。真連適配器平台的冒煙測試請使用框架儲存庫的 `tests/devs/test_adapter.py`。
 
 ## 快速開始
 
@@ -6480,7 +6498,7 @@ async def test_daily(make_testbot):
 配套 pytest fixtures（安裝後自動可用）：
 
 - `testbot`：function 級標準 TestBot（platform=`test`、前綴 `/`）
-- `make_testbot(**kwargs)`：自定義參數工廠（`prefix` / `config` / `platform` / `bot_id` ...）
+- `make_testbot(**kwargs)`：自訂參數工廠（`prefix` / `config` / `platform` / `bot_id` ...）
 
 建議在測試專案配置 `asyncio_mode = "auto"`（`[tool.pytest.ini_options]`），
 或給用例加 `@pytest.mark.asyncio`。
@@ -6489,57 +6507,59 @@ async def test_daily(make_testbot):
 
 | 函數 | 說明 |
 |------|------|
-| `create_message_event(text, user_id=..., group_id=None, ...)` | 消息事件；`group_id` 為空即私聊 |
-| `create_command_event("roll 3", prefix="/")` | 命令消息（自動加前綴，已帶前綴不重複） |
+| `create_message_event(text, user_id=..., group_id=None, ...)` | 訊息事件；`group_id` 為空即私聊 |
+| `create_command_event("roll 3", prefix="/")` | 命令訊息（自動加前綴，已帶前綴不重複） |
 | `create_notice_event(type, ...)` | 通知事件（如 `friend_add`） |
 | `create_request_event(type, ...)` | 請求事件（如好友申請） |
 | `create_meta_event("connect", ...)` | meta 事件（connect 可讓 Bot 上線） |
 
 所有事件使用 uuid 唯一 `id`，天然避開框架的事件去重。
 
-注意：合成事件**不含平台原始報文**（`event.get_raw()` 返回空 dict）。判斷群聊 / 私聊等場景請用 `event.is_group_message()` / `event.get_detail_type()` / `event.get_group_id()` 等訪問器，不要讀 raw。
+注意：合成事件**不含平台原始報文**（`event.get_raw()` 回傳空 dict）。判斷群聊 /
+私聊等場景請用 `event.is_group_message()` / `event.get_detail_type()` /
+`event.get_group_id()` 等存取器，不要讀 raw。
 
 ## TestBot API
 
 ### 分發
 
 ```python
-trace = await bot.dispatch(event)          # 分發並等待處理器落地，返回決策鏈
-await bot.dispatch(event, drain=False)     # 互動首消息：不等待（wait_reply 處理器長駐）
-await bot.send_message("你好")             # 消息分發快捷方式
-await bot.reply_as("18", user_id="u1")     # 模擬 wait_reply 用戶回覆（自動等 waiter 就緒）
+trace = await bot.dispatch(event)          # 分發並等待處理器落地，回傳決策鏈
+await bot.dispatch(event, drain=False)     # 互動首訊息：不等待（wait_reply 處理器長駐）
+await bot.send_message("你好")             # 訊息分發快捷方式
+await bot.reply_as("18", user_id="u1")     # 模擬 wait_reply 使用者回覆（自動等 waiter 就緒）
 ```
 
-`dispatch()` 在 emit 後 gather 全部在途處理器 Task，返回即處理完成——**測試裡不需要 sleep**。
+`dispatch()` 在 emit 後 gather 全部在途處理器 Task，回傳即處理完成——**測試裡不需要 sleep**。
 
 ### 出站斷言
 
 ```python
-bot.replies                # 全部出站（SentMessage 列表）
-bot.last_reply.text        # 最近一條回覆的文本
-bot.replies_to("123")      # 按目標過濾
+bot.replies                # 全部出站（SentMessage 清單）
+bot.last_reply.text        # 最近一條回覆的文字
+bot.replies_to("123")      # 依目標篩選
 bot.clear_replies()        # 階段間隔離斷言
 bot.assert_replied()                       # 存在出站
 bot.assert_replied(contains="簽到", to="123")
 bot.assert_not_replied()                   # 無任何出站
-bot.assert_reply_contains("簽到成功")       # 存在包含指定文本的出站
-await bot.wait_for_reply(timeout=2)        # 等待異步回覆出現
+bot.assert_reply_contains("簽到成功")       # 存在包含指定文字的出站
+await bot.wait_for_reply(timeout=2)        # 等待非同步回覆出現
 ```
 
-`SentMessage` 字段：`text`（首個 text 段）、`segments`（完整消息段）、
+`SentMessage` 欄位：`text`（首個 text 段）、`segments`（完整訊息段）、
 `target_type` / `target_id` / `bot_id`（發送上下文）、`has_modifier("at")` 等。
 
-### 模組加載
+### 模組載入
 
 ```python
-await bot.load_module("MyModule")   # 已註冊的模組名（需框架 sdk.init() 完成 entry-point 發現）
-await bot.load_module(MyModule)     # 或 BaseModule 子類（自動 register + load，推薦）
+await bot.load_module("MyModule")   # 已註冊的模組名（需框架 sdk.init() 完成 entry-point 探索）
+await bot.load_module(MyModule)     # 或 BaseModule 子類別（自動 register + load，推薦）
 await bot.unload_module("MyModule")
 ```
 
-`on_load` 內註冊的命令 / 事件處理器隨模組歸屬，卸載時自動清理，可直接斷言"卸載後命令失效"。
-注意：字串形式**不做 entry-point 掃描**（TestBot 不初始化框架發現流程）；測試軟依賴
-模組請直接傳類物件（或自行 `module.register` 後傳名字）。
+`on_load` 內註冊的命令 / 事件處理器隨模組歸屬，卸載時自動清理，可直接斷言「卸載後命令失效」。
+注意：字串形式**不做 entry-point 掃描**（TestBot 不初始化框架探索流程）；測試軟依賴
+模組請直接傳類別物件（或自行 `module.register` 後傳名字）。
 
 ### 依賴替換（需 EP>=2.9.0-dev）
 
@@ -6549,7 +6569,7 @@ with bot.patch_dependency(get_session, fake_session) as mock:
     assert mock.called
 ```
 
-替換的是命令註冊表中 `Depends(get_session)` 声明引用的函數，with 退出自動還原。
+替換的是命令註冊表中 `Depends(get_session)` 聲明引用的函數，with 退出自動還原。
 
 ### 配置覆寫
 
@@ -6560,28 +6580,28 @@ bot = TestBot(prefix="//", config={
 })
 ```
 
-經配置內存層注入，命令前綴等隨熱更新立即生效。兩點注意：
+經配置記憶體層注入，命令前綴等隨熱更新立即生效。兩點注意：
 
 1. **落盤**：覆寫會隨框架的延遲寫盤策略（預設約 5 秒）落到 cwd 的
-   `config/config.toml`——被測項目倉庫請把 `config/` 加入 `.gitignore`；
-2. **與模組運行時寫回的衝突（已知限制）**：被測模組以整節寫回配置
-   （`self.cfg = ...`，如訂閱列表）與這裡的點分覆寫並存時，存在 ConfigManager
+   `config/config.toml`——被測專案儲存庫請把 `config/` 加入 `.gitignore`；
+2. **與模組執行時寫回的衝突（已知限制）**：被測模組以整節寫回配置
+   （`self.cfg = ...`，如訂閱清單）與這裡的點分覆寫並存時，存在 ConfigManager
    的讀寫一致性問題——模組整節讀取可能看不到覆寫值，覆寫也可能在落盤時被
    整節寫回覆蓋（已在 ErisPulse 2.9.0-dev.2 修復，2.8.x 仍受影響）。涉及
-   "運行時寫回配置"的用例，在 2.8.x 上建議在 fixture 裡以整節寫回方式重置
+   「執行時寫回配置」的用例，在 2.8.x 上建議在 fixture 裡以整節寫回方式重置
    相關配置節。
 
 ## 分發決策鏈（排查「命令為什麼沒觸發」；需 EP>=2.9.0-dev）
 
-`dispatch()` 返回 `DispatchTrace`——本次分發經過的每個判斷點的因果鏈：
+`dispatch()` 回傳 `DispatchTrace`——本次分發經過的每個判定點的因果鏈：
 
 ```python
 trace = await bot.dispatch(create_command_event("dailyx", user_id="123"))
 
 trace.verdict        # executed / rejected / dropped / failed / no_match / passed
-trace.explain()      # 逐行因果說明（當前語言）
+trace.explain()      # 逐行因果說明（目前語言）
 trace.command        # 命中的命令名（未命中為 None）
-trace.steps("cooldown")  # 按階段過濾判定記錄
+trace.steps("cooldown")  # 依階段篩選判定記錄
 
 trace.assert_executed("daily")  # 斷言執行（失敗時附完整因果鏈）
 trace.assert_rejected()         # 斷言被權限類判定拒絕
@@ -6589,11 +6609,11 @@ trace.assert_dropped()          # 斷言被靜默丟棄（冷卻等）
 trace.assert_no_match()         # 斷言未命中命令
 ```
 
-判定覆蓋：命令文本判定、命令命中（未命中附拼寫建議）、作用域、用戶 ACL、
-主人檢查、權限函數、冷卻靜默丟棄、參數解析、執行結果、中間件否決。
+判定覆蓋：命令文字判定、命令命中（未命中附拼字建議）、作用域、使用者 ACL、
+主人檢查、權限函數、冷卻靜默丟棄、參數解析、執行結果、中介軟體否決。
 
 生產環境同樣可用框架內建的 `ErisPulse.Core.Event.trace`（`start_dispatch_trace()` /
-`format_dispatch_trace()`）採集與渲染決策鏈。
+`format_dispatch_trace()`）擷取與渲染決策鏈。
 
 
 
@@ -6619,21 +6639,21 @@ trace.assert_no_match()         # 斷言未命中命令
 | `upgrade` | `up` | `[套件]... [--force/-f] [--pre] [--no-uv]` | 升級指定模組或全部 |
 | `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | 更新 SDK 本身 |
 
-## 臨診命令
+## 臨床命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `doctor` | `diag` | `[--verbose] [--fix]` | 臨診環境並輸出健康報告；`--fix` 嘗試自動修復 |
+| `doctor` | `diag` | `[--verbose] [--fix]` | 臨床環境並輸出健康報告；`--fix` 嘗試自動修復 |
 
 ### install
 
-安裝 ErisPulse 模組或適配器套件。若未指定套件名稱則進入互動式安裝介面。
+安裝 ErisPulse 模組或適配器包。若不指定包名則進入互動式安裝介面。
 
 **別名：** `i`, `add`
 
 > **uv 項目聯動**（2.11.1+）：在 uv 管理的項目內（存在 `uv.lock` 或 `[tool.uv]`），
 > `install` / `upgrade` / `uninstall` 自動改走 `uv add` / `uv remove`——依賴同步寫入
-> `pyproject.toml` 與 `uv.lock`，`uv sync` 不再清掉 epsdk 裝的元件；失敗自動回退
+> `pyproject.toml` 與 `uv.lock`，`uv sync` 不再清掉 epsdk 裝的組件；失敗自動回退
 > uv pip / pip 通道。`--user` 等 uv 不支援的參數直接走 pip。目標環境解析順序：
 > `ERISPULSE_PYTHON` → `UV_PROJECT_ENVIRONMENT` → 項目 `.venv` → `UV_PYTHON` →
 > `VIRTUAL_ENV` → 當前解釋器（`epsdk doctor` 可查看完整決策鏈）。
@@ -6642,32 +6662,32 @@ trace.assert_no_match()         # 斷言未命中命令
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `[package]...` | | 要安裝的套件名稱，可指定多個 |
+| `[package]...` | | 要安裝的包名稱，可指定多個 |
 | `--upgrade` | `-U` | 安裝時升級到最新版本 |
-| `--pre` | | 允許安裝預發布版本 |
+| `--pre` | | 允許安裝預發佈版本 |
 | `--editable` | `-e` | 以可編輯模式安裝（需指定路徑） |
-| `--user` | | 安裝到使用者 site-packages 目錄 |
+| `--user` | | 安裝到用戶 site-packages 目錄 |
 | `--no-deps` | | 不安裝依賴 |
 | `--target` | `-t` | 安裝到指定目錄 |
 | `--index-url` | | 指定 PyPI 鏡像源地址 |
-| `--extra-index-url` | | 額外 PyPI 鏡像源地址（可多次指定） |
+| `--extra-index-url` | | 頂外 PyPI 鏡像源地址（可多次指定） |
 | `--no-cache-dir` | | 禁用快取 |
 | `--requirement` | `-r` | 從 requirements 檔案安裝 |
 | `--constraint` | `-c` | 從約束檔案安裝 |
 | `--force-reinstall` | | 強制重新安裝 |
-| `--ignore-installed` | | 忽略已安裝的套件 |
+| `--ignore-installed` | | 忽略已安裝的包 |
 | `--compile` | | 安裝後編譯 .pyc 檔案 |
 | `--no-compile` | | 安裝後不編譯 .pyc 檔案 |
 | `--prefix` | | 安裝到指定前綴目錄 |
-| `--src` | | 可編輯安裝時使用的源碼目錄 |
-| `--config-settings` | | 傳遞給建構後端的設定（可多次指定） |
-| `--no-binary` | | 限制不使用二進制套件（格式如 `:all:`） |
-| `--only-binary` | | 限制僅使用二進制套件（格式如 `:all:`） |
-| `--prefer-binary` | | 优先選擇二進制套件 |
+| `--src` | | 可編輯安裝時使用的原始碼目錄 |
+| `--config-settings` | | 傳遞給建構後端的配置（可多次指定） |
+| `--no-binary` | | 限制不使用二進位包（格式如 `:all:`） |
+| `--only-binary` | | 限制僅使用二進位包（格式如 `:all:`） |
+| `--prefer-binary` | | 優先選擇二進位包 |
 | `--build-isolation` | | 啟用建構隔離 |
 | `--no-build-isolation` | | 禁用建構隔離 |
 | `--upgrade-strategy` | | 升級策略：`eager`、`only-if-needed`、`to-satisfy-only` |
-| `--break-system-packages` | | 允許修改系統套件管理器管理的 Python 套件 |
+| `--break-system-packages` | | 允許修改系統包管理器管理的 Python 包 |
 | `--no-uv` | | 使用 pip 代替 uv |
 
 **示例：**
@@ -6688,7 +6708,7 @@ epsdk install -e ./my-adapter
 
 ### uninstall
 
-卸載已安裝的 ErisPulse 模組或適配器套件。若未指定套件名稱則進入互動式卸載介面。
+卸載已安裝的 ErisPulse 模組或適配器包。若不指定包名則進入互動式卸載介面。
 
 **別名：** `rm`, `remove`
 
@@ -6696,7 +6716,7 @@ epsdk install -e ./my-adapter
 
 | 參數 | 說明 |
 |------|------|
-| `<package>...` | 要卸載的套件名稱，可指定多個 |
+| `<package>...` | 要卸載的包名稱，可指定多個 |
 | `--no-uv` | 使用 pip 代替 uv |
 
 **示例：**
@@ -6711,7 +6731,7 @@ epsdk uninstall Yunhu Weather
 
 ### upgrade
 
-升級已安裝的 ErisPulse 組件。未指定套件名稱則互動式升級全部。
+升級已安裝的 ErisPulse 組件。不指定包名則互動式升級全部。
 
 **別名：** `up`
 
@@ -6719,18 +6739,18 @@ epsdk uninstall Yunhu Weather
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `[package]...` | | 要升級的套件名稱，可指定多個 |
+| `[package]...` | | 要升級的包名稱，可指定多個 |
 | `--force` | `-f` | 強制升級，跳過確認 |
-| `--pre` | | 允許升級到預發布版本 |
+| `--pre` | | 允許升級到預發佈版本 |
 | `--no-uv` | | 使用 pip 代替 uv |
 
 **示例：**
 
 ```bash
-# 升級所有套件
+# 升級所有包
 epsdk upgrade
 
-# 升級指定套件
+# 升級指定包
 epsdk upgrade Weather
 
 # 強制升級（跳過確認）
@@ -6748,7 +6768,7 @@ epsdk upgrade -f
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
 | `[version]` | | 指定要更新的目標版本號 |
-| `--pre` | | 允許更新到預發布版本 |
+| `--pre` | | 允許更新到預發佈版本 |
 | `--force` | `-f` | 強制更新，跳過確認 |
 | `--no-uv` | | 使用 pip 代替 uv |
 
@@ -6761,7 +6781,7 @@ epsdk self-update
 # 更新到指定版本
 epsdk self-update 1.2.3
 
-# 允許預發布版本
+# 允許預發佈版本
 epsdk self-update --pre
 
 # 強制更新
@@ -6770,9 +6790,10 @@ epsdk self-update -f
 
 > [!NOTE]
 > 透過 `uv tool install ErisPulse` 安裝時，本命令自動改走 `uv tool upgrade ErisPulse`（指定版本時為 `uv tool install ErisPulse==<版本> --force`），直接 pip 升級工具環境會被 uv 的清單還原抹掉。
-> Windows 下更新在新控制台視窗中進行：目前 CLI 需先退出以解除工具環境檔案占用，視窗提示完成後重新打開終端即可。
+> Windows 下更新在新控制台視窗中進行：當前 CLI 需先退出以解除工具環境檔案占用，視窗提示完成後重新打開終端即可。
 
 ---
+[docs/zh-TW/quick-start.md](docs/zh-TW/quick-start.md)
 
 ## 資訊查詢命令
 
@@ -6895,19 +6916,19 @@ epsdk config MyModule
 ## 運行控制命令
 
 > [!TIP]
-> `epsdk run` 會自動偵測並使用專案目錄下的 `.venv` 虛擬環境來執行機器人
-> （也可透過 `ERISPULSE_PYTHON` 環境變數明確指定解釋器）。`epsdk install` /
-> `uninstall` / `upgrade` / `list` 同樣作用於專案虛擬環境。
+> `epsdk run` 會自動檢測並使用項目目錄下的 `.venv` 虛擬環境運行機器人
+> （也可透過 `ERISPULSE_PYTHON` 環境變數顯式指定解釋器）。`epsdk install` /
+> `uninstall` / `upgrade` / `list` 同樣作用於項目虛擬環境。
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | 執行指定腳本或 SDK |
+| `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | 運行指定腳本或 SDK |
 | `stop` | — | `[--force] [--pid PID]` | 停止正在運行的實例（由 `epsdk run` 啟動） |
-| `restart` | — | `[--force] [--pid PID]` | 重新啟動正在運行的實例（停止後按原參數重新啟動） |
+| `restart` | — | `[--force] [--pid PID]` | 重啟正在運行的實例（停止後按原參數重新啟動） |
 
 ### run
 
-執行 ErisPulse 專案腳本或直接啟動 SDK。支援熱重載模式。
+運行 ErisPulse 項目腳本或直接啟動 SDK。支援熱重載模式。
 
 **別名：** `r`
 
@@ -6915,20 +6936,20 @@ epsdk config MyModule
 
 | 參數 | 說明 |
 |------|------|
-| `[script]` | 要執行的腳本檔案，不指定則執行 SDK |
-| `--reload` | 啟用熱重載模式：監控檔案變更自動觸發組件級程式碼熱重載（無需整進程重啟）；預設忽略 `.venv`/`.git` 等目錄（可經 `ErisPulse.framework.watch_ignore_dirs` 配置），插件目錄交由插件熱重載 watcher 精確處理 |
-| `--strict` / `--no-strict` | 臨時開啟 / 關閉嚴格模式（僅本次生效，不寫入配置）；缺省遵循 `ErisPulse.framework.strict_mode` |
+| `[script]` | 要運行的腳本文件，不指定則運行 SDK |
+| `--reload` | 啟用熱重載模式：監控文件變化自動觸發組件級代碼熱重載（無需整進程重啟）；預設忽略 `.venv`/`.git` 等目錄（可經 `ErisPulse.framework.watch_ignore_dirs` 配置），插件目錄交給插件熱重載 watcher 精確處理 |
+| `--strict` / `--no-strict` | 臨時開啟 / 關閉嚴格模式（僅本次生效，不寫入配置）；缺省跟隨 `ErisPulse.framework.strict_mode` |
 
-**範例：**
+**示例：**
 
 ```bash
-# 直接執行 SDK
+# 直接運行 SDK
 epsdk run
 
-# 執行指定腳本檔案
+# 運行指定腳本文件
 epsdk run main.py
 
-# 熱重載模式執行（檔案變更自動觸發程式碼級熱重載）
+# 熱重載模式運行（文件變更自動觸發代碼級熱重載）
 epsdk run main.py --reload
 
 # SDK 熱重載模式
@@ -6941,13 +6962,13 @@ epsdk run main.py --strict
 epsdk run main.py --no-strict
 ```
 
-**啟動前自檢：** `run` 啟動前會快速檢查 `config/config.toml` 可解析性與已安裝組件的必填配置完整性，嚴格性預設遵循 `ErisPulse.framework.strict_mode`（非 0 時檢查失敗即退出，0 時僅警告繼續）。配置檔案遺失視為正常首次啟動，僅提示不判失敗。`--strict` 臨時開啟：預檢失敗即退出，同時框架嚴格級別本次提升為至少 1（跳過不合規組件，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到運行進程，不寫入配置檔案）；`--no-strict` 反之臨時壓到寬鬆。自檢自身異常時自動跳過，不含網路探測，不會阻塞啟動。
+**啟動前自檢：** `run` 啟動前會快速檢查 `config/config.toml` 可解析性與已安裝組件的必填配置完整性，嚴格性預設跟隨 `ErisPulse.framework.strict_mode`（非 0 時檢查失敗即退出，0 時僅警告繼續）。配置文件缺失視為正常首次啟動，僅提示不判失敗。`--strict` 臨時開啟：預檢失敗即退出，同時框架嚴格級別本次提升為至少 1（跳過不合規組件，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到運行進程，不寫入配置文件）；`--no-strict` 反之臨時壓到寬鬆。自檢自身異常時自動跳過，不含網路探測，不會阻塞啟動。
 
-> **`--reload` 的監督結構**（2.11.1 起）：`epsdk run --reload` 以「監督進程 + 重載 worker 子進程」運行。儲存 `.py` 檔案觸發的熱重載全部在 worker 內完成（互斥串行、風暴合併）；模組側語法錯誤會被整體預檢拒絕，舊實例繼續服務。`sdk.hard_restart()` 時 worker 以退出碼 42 退出，監督進程展示原因後自動重拉全新 worker——升級框架本體後新程式碼即刻生效。
+> **`--reload` 的監督結構**（2.11.1 起）：`epsdk run --reload` 以「監督進程 + 重載 worker 子進程」運行。保存 `.py` 文件觸發的熱重載全部在 worker 內完成（互斥串行、風暴合併）；模組側語法錯誤會被整體預檢拒絕，舊實例繼續服務。`sdk.hard_restart()` 時 worker 以退出碼 42 退出，監督進程展示原因後自動重拉全新 worker——升級框架本體後新代碼即刻生效。
 
 ### stop
 
-停止正在運行的 ErisPulse 實例（由 `epsdk run` 啟動、並在同一專案目錄下執行）。
+停止正在運行的 ErisPulse 實例（由 `epsdk run` 啟動、並在同一項目目錄下執行）。
 `run` 啟動時會把監督進程 PID、當前框架子進程 PID 與原始啟動命令寫入
 `.erispulse/runtime.json`，`stop` 據此定位實例。
 
@@ -6961,12 +6982,12 @@ finally 鏈自動終止框架子進程），超時逐級升級 SIGTERM / SIGKILL
 | 參數 | 說明 |
 |------|------|
 | `--force` | 跳過優雅停止，直接強制終止 |
-| `--pid PID` | 直接指定目標進程 PID（覆蓋運行狀態檔案，用於非標準啟動方式） |
+| `--pid PID` | 直接指定目標進程 PID（覆蓋運行狀態文件，用於非標啟動方式） |
 
-**範例：**
+**示例：**
 
 ```bash
-# 停止當前專案的運行實例
+# 停止當前項目的運行實例
 epsdk stop
 
 # 強制終止
@@ -6975,21 +6996,21 @@ epsdk stop --force
 
 ### restart
 
-重新啟動正在運行的 ErisPulse 實例：按 `stop` 的語義停止後，以狀態檔案中記錄的
-**原始啟動命令**重新啟動（前檯接管當前終端，新實例會寫入新的運行狀態檔案）。
+重啟正在運行的 ErisPulse 實例：按 `stop` 的語義停止後，以狀態文件中記錄的
+**原始啟動命令**重新啟動（前檯接管當前終端，新實例會寫入新的運行狀態文件）。
 
 **參數：** 同 `stop`（`--force` / `--pid PID`）。
 
-**範例：**
+**示例：**
 
 ```bash
-# 優雅重新啟動（pip 升級適配器/模組後讓程式碼生效；運行中模組也可用
-# sdk.reload_module / sdk.adapter.reload 程式碼級熱重載，無需重新啟動）
+# 優雅重啟（pip 升級適配器/模組後讓代碼生效；運行中模組也可用
+# sdk.reload_module / sdk.adapter.reload 代碼級熱重載，無需重啟）
 epsdk restart
 ```
 
 > [!NOTE]
-> `python main.py` 等繞過 `epsdk run` 的啟動方式不會寫運行狀態檔案——此類
+> `python main.py` 等繞過 `epsdk run` 的啟動方式不會寫運行狀態文件——此類
 > 進程請用系統工具管理，或用 `epsdk stop --pid <PID>` 指定 PID。
 
 ## 專案管理命令
@@ -7204,7 +7225,7 @@ epsdk types --force
 > [!NOTE]  
 > 此命令需要 ErisPulse **2.7.0+**。
 
-診斷當前 CLI 運行環境，並輸出健康報告。用於排查「為什麼裝不上 / 連不上」類問題。
+診斷當前 CLI 運行環境，輸出健康報告。用於排查「為什麼裝不上 / 連不上」類問題。
 
 | 參數 | 說明 |
 |------|------|
@@ -7223,8 +7244,8 @@ epsdk types --force
 
 **自動修復（`--fix`）**：
 - `config.toml` 缺失 → 按當前語言生成初始配置檔案（與 `init` 建項同源）
-- 組件配置「待完善」→ 逐個拉起互動式配置嚮導補全必填項（非互動環境提示改用 `epsdk config <名稱>`）
-- 配置污染殘留鍵 → 列明來源並經確認後刪除（tomlclass 無損路徑，註釋與順序保真）
+- 組件配置「待完善」→ 逐個拉起互動式配置向導補全必填項（非互動環境提示改用 `epsdk config <名稱>`）
+- 配置污染殘留鍵 → 列明來源並經確認後刪除（tomlclass 無損路徑，註解與順序保真）
 - Python 版本過低、PyPI 無法存取等需人工介入的問題 → 僅輸出行動建議
 
 ```bash
@@ -11794,39 +11815,39 @@ event_dedupe = true   # 預設開啟；測試環境固定 id 合成事件可關�
 # 啟動流程與手動控制
 
 > [!TIP]
-> **什麼時候需要讀這篇**：需要手動驅動啟動鏈路、自訂啟動順序或排查啟動失敗時。不需要則跳過，不影響其它功能的使用。
+> **什麼時候需要讀這篇**：需要手動驅動啟動鏈路、定製啟動順序或排查啟動失敗時。不需要則跳過，不影響其他功能的使用。
 
 
-ErisPulse 的 `await sdk.run()` / `await sdk.init()` 把一整條啟動鏈路封裝成了「一行程式碼」。但當你需要完全自訂啟動流程（例如部分載入、動態註冊、熱插拔、注入自訂載入策略）時，就需要了解這條鏈路內部到底發生了什麼、以及如何手動驅動每一步。
+ErisPulse 的 `await sdk.run()` / `await sdk.init()` 把一整條啟動鏈路封裝成了「一行程式碼」。但當你需要完全自訂啟動流程（例如部分載入、動態註冊、熱插拔、注入自訂載入策略）時，就需要瞭解這條鏈路內部到底發生了什麼、以及如何手動驅動每一步。
 
 本文把啟動鏈路拆解成獨立的環節，說明各自的職責、呼叫順序，並給出手動完整啟動的範例。
 
-> 本文假設你已經跑通過 [第一個機器人](../getting-started/first-bot.md)，了解 `sdk.run(keep_running=True/False)` 兩種模式。本文聚焦於 `init()` **內部**的鏈路拆解，以及 `init()`/`init_task()`/`init_sync()` 等更底層的入口。
+> 本文假設你已經跑通過[第一個機器人](../getting-started/first-bot.md)，瞭解 `sdk.run(keep_running=True/False)` 兩種模式。本文聚焦於 `init()` **內部**的鏈路拆解，以及 `init()`/`init_task()`/`init_sync()` 等更底層的進入點。
 
-## SDK 頂層入口一覽
+## SDK 頂層進入點一覽
 
-除了 `run()` 的兩種 `keep_running` 模式，SDK 還提供幾個更底層的初始化入口，區別在於**非同步性、回傳值、以及是否包裝例外**：
+除了 `run()` 的兩種 `keep_running` 模式，SDK 還提供幾個更底層的初始化進入點，區別在於**非同步性、回傳值、以及是否包裝例外**：
 
-| 入口 | 非同步性 | 回傳值 | 例外處理 | 適用情境 |
+| 進入點 | 非同步性 | 回傳值 | 例外處理 | 適用情境 |
 |------|--------|--------|----------|----------|
-| `await sdk.run(True)` | async，阻塞維持 | `None`（關閉時自動 `uninit`） | 模組/配接器錯誤被攔截，不拖垮處理程序 | 純 bot 應用 |
+| `await sdk.run(True)` | async，阻塞維持 | `None`（關閉時自動 `uninit`） | 模組/轉接器錯誤被攔截，不拖垮行程 | 純 bot 應用 |
 | `await sdk.run(False)` | async，不阻塞 | `None`（不自動卸載） | 同上 | 初始化後執行自訂邏輯 |
 | `await sdk.init()` | async，需 await | `bool` | 內部捕捉元件例外，失敗回傳 `False` | 手動控制生命週期（配 `uninit()`） |
 | `sdk.init_task()` | async，回傳 Task 不阻塞 | `asyncio.Task` | 同 `init()` | 並行執行其他初始化、或事件迴圈尚未執行 |
-| `sdk.init_sync()` | **同步**，阻塞當前執行緒 | `bool` | 同 `init()` | 命令列腳本、無事件迴圈的同步入口 |
+| `sdk.init_sync()` | **同步**，阻塞目前執行緒 | `bool` | 同 `init()` | 命令列腳本、無事件迴圈的同步進入點 |
 
 > **常見誤區**：`await sdk.init()` **並不等價於** `await sdk.run(keep_running=False)`。兩點不同：① `init()` 回傳 `bool`（失敗時回傳 `False`），`run()` 回傳 `None`；② `init()` 只做初始化、**不自動卸載**，`run()` 在事件迴圈結束時自動 `uninit()`。因此需要手動配對卸載或自訂生命週期時，用 `init()` + `uninit()`。
 
 ## 啟動鏈路總覽
 
-`sdk.init()`（確切說是其內部的 `Initializer.init()`）按以下順序拉起整個框架：
+`sdk.init()`（確切來說是其內部的 `Initializer.init()`）按以下順序拉起整個框架：
 
 ```mermaid
 flowchart TD
     A[0. 準備環境<br/>設定載入 / 例外處理] --> B
     B[1. 並行發現與載入<br/>AdapterLoader.load / ModuleLoader.load<br/>內部呼叫 Finder.find_all] --> C
-    C[2. 註冊配接器<br/>AdapterLoader.register_to_manager] --> D
-    D[3. 啟動配接器<br/>adapter.startup] --> E
+    C[2. 註冊轉接器<br/>AdapterLoader.register_to_manager] --> D
+    D[3. 啟動轉接器<br/>adapter.startup] --> E
     E[4. 註冊模組<br/>ModuleLoader.register_to_manager] --> F
     F[5. 初始化模組<br/>ModuleLoader.initialize_modules<br/>實例化並掛載到 sdk] --> G
     G[6. 啟動路由伺服器<br/>router.start]
@@ -11836,20 +11857,20 @@ flowchart TD
 
 | 層 | 元件 | 職責 |
 |----|------|------|
-| 發現 | `AdapterFinder` / `ModuleFinder` | 從已安裝套件的 entry-points 中**發現**配接器/模組 |
-| 載入 | `AdapterLoader` / `ModuleLoader` | 發現 + 匯入 + 讀取元資料 + 判斷啟用/停用，回傳物件清單 |
+| 發現 | `AdapterFinder` / `ModuleFinder` | 從已安裝套件的 entry-points 中**發現**轉接器/模組 |
+| 載入 | `AdapterLoader` / `ModuleLoader` | 發現 + 匯入 + 讀取中繼資料 + 判斷啟用/停用，回傳物件清單 |
 | 註冊 | `*Loader.register_to_manager` | 把物件登記到對應管理器 |
-| 管理 | `sdk.adapter` / `sdk.module` | 維護配接器/模組實例，提供啟停介面 |
-| 初始化 | `ModuleLoader.initialize_modules` | 建立模組實例並掛載到 `sdk`（處理依賴拓撲排序） |
+| 管理 | `sdk.adapter` / `sdk.module` | 維護轉接器/模組實例，提供啟停介面 |
+| 初始化 | `ModuleLoader.initialize_modules` | 建立模組實例並掛載到 `sdk`（處理相依性拓撲排序） |
 | 路由 | `sdk.router` | HTTP / WebSocket 伺服器 |
 
-> **重要**：`Finder` 和 `Loader` 是兩層。`Loader` 內部**已經持有**一個 `Finder`（`AdapterLoader` 自帶 `AdapterFinder`，`ModuleLoader` 自帶 `ModuleFinder`）。絕大多數場景你只需要用 `Loader`，只有需要「只列出不匯入」時才會單獨用 `Finder`。
+> **重要**：`Finder` 和 `Loader` 是兩層。`Loader` 內部**已經持有**一個 `Finder`（`AdapterLoader` 自帶 `AdapterFinder`，`ModuleLoader` 自帶 `ModuleFinder`）。絕大多數情境你只需要用 `Loader`，只有需要「只列出不匯入」時才會單獨用 `Finder`。
 
 ## 各環節詳解
 
 ### 1. 發現層：Finder
 
-Finder 只負責「找到有哪些套件提供了配接器/模組」，不匯入、不實例化。
+Finder 只負責「找到有哪些套件提供了轉接器/模組」，不匯入、不實例化。
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -11857,11 +11878,11 @@ from ErisPulse.finders import AdapterFinder, ModuleFinder
 adapter_finder = AdapterFinder()
 module_finder = ModuleFinder()
 
-# 尋找所有已安裝的配接器/模組 entry-points
+# 尋找所有已安裝的轉接器/模組 entry-points
 adapter_entries = adapter_finder.find_all()    # list[EntryPoint]
 module_entries = module_finder.find_all()      # list[EntryPoint]
 
-# 按名稱尋找單個
+# 依名稱尋找單個
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
@@ -11869,7 +11890,7 @@ entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 
 ### 2. 載入層：Loader
 
-Loader 在 Finder 之上做了「匯入 + 讀元資料 + 判斷啟用/停用」。
+Loader 在 Finder 之上做了「匯入 + 讀中繼資料 + 判斷啟用/停用」。
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -11878,7 +11899,7 @@ from ErisPulse import sdk
 adapter_loader = AdapterLoader()
 module_loader = ModuleLoader()
 
-# load() 內部：呼叫 finder.find_all() → 逐一處理 entry-point → 回傳三元組
+# load() 內部：呼叫 finder.find_all() → 逐個處理 entry-point → 回傳三元組
 adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sdk.adapter)
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
@@ -11887,23 +11908,23 @@ module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.mo
 
 | 回傳值 | 含義 |
 |--------|------|
-| `objs` (`dict`) | 名稱 → 物件（配接器類別 / 模組包裝物件） |
+| `objs` (`dict`) | 名稱 → 物件（轉接器類別 / 模組包裝物件） |
 | `enabled` (`list[str]`) | 被啟用的名稱（設定中未停用） |
 | `disabled` (`list[str]`) | 被停用的名稱 |
 
 #### 載入失敗時的診斷資訊
 
-當某個模組/配接器在載入或初始化階段拋出例外時，框架會跳過該元件並繼續載入其他元件，同時輸出**使用者程式碼幀摘要**，讓你在預設 INFO 級別下即可定位出錯位置，無需手動重開 DEBUG：
+當某個模組/轉接器在載入或初始化階段拋出例外時，框架會跳過該元件並繼續載入其他元件，同時輸出**使用者程式碼幀摘要**，讓你在預設 INFO 層級下即可定位出錯位置，無需手動重開 DEBUG：
 
 ```
 [ERROR] [ModuleLoader] 從 entry-point 載入模組 MyModule 失敗，已跳過: 'NoneType' object has no attribute 'platform'
   → MyModule/Core.py:42 in on_load
       adapter = sdk.platform
   → AttributeError: 'NoneType' object has no attribute 'platform'
-  → 提示: 將日誌級別提高到 DEBUG 可查看完整堆疊；檢查模組 MyModule 的實作程式碼
+  → 提示: 將日誌層級提高到 DEBUG 可查看完整堆疊；檢查模組 MyModule 的實作程式碼
 ```
 
-診斷資訊透過 `ErisPulse.runtime.diagnostics` 模組生成，會自動過濾掉框架內部幀，只保留你的程式碼幀。如需在自訂載入邏輯中復用：
+診斷資訊透過 `ErisPulse.runtime.diagnostics` 模組產生，會自動過濾掉框架內部幀，只保留你的程式碼幀。如需在自訂載入邏輯中重複使用：
 
 ```python
 from ErisPulse.runtime import log_diagnostic
@@ -11921,30 +11942,30 @@ except Exception as e:
 把 Loader 產出的物件登記到管理器，讓 `sdk.adapter` / `sdk.module` 能識別它們。
 
 ```python
-# 註冊配接器（回傳 bool，表示是否全部成功）
+# 註冊轉接器（回傳 bool，表示是否全部成功）
 await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.adapter)
 
 # 註冊模組
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
-註冊後，配接器已登記到配接器管理器、模組已登記到模組管理器，但**都還未啟動/實例化**。
+註冊後，轉接器已登記到轉接器管理器、模組已登記到模組管理器，但**都還未啟動/實例化**。
 
-### 4. 啟動配接器
+### 4. 啟動轉接器
 
 ```python
-# 啟動所有已註冊的配接器
+# 啟動所有已註冊的轉接器
 await sdk.adapter.startup()
 # 或指定平台
 await sdk.adapter.startup("yunhu")
 await sdk.adapter.startup(["yunhu", "telegram"])
 ```
 
-> 註冊 ≠ 啟動。`register_to_manager` 只是登記；`startup` 才會呼叫配接器的 `start()`，建立與平台的連線。
+> 註冊 ≠ 啟動。`register_to_manager` 只是登記；`startup` 才會呼叫轉接器的 `start()`，建立與平台的連線。
 
 ### 5. 初始化模組
 
-模組比配接器多一步——需要**實例化**並掛載到 `sdk` 上（這樣你才能 `sdk.MyModule.xxx` 呼叫）。這一步還處理模組間的依賴宣告與拓撲排序。
+模組比轉接器多一步——需要**實例化**並掛載到 `sdk` 上（這樣你才能 `sdk.MyModule.xxx` 呼叫）。這一步還處理模組間的相依性宣告與拓撲排序。
 
 ```python
 success = await module_loader.initialize_modules(
@@ -11965,11 +11986,11 @@ await sdk.router.start(
 )
 ```
 
-路由伺服器負責接收配接器的 Webhook / WebSocket 回呼。不啟動它，server 模式的配接器無法收訊息。
+路由伺服器負責接收轉接器的 Webhook / WebSocket 回呼。不啟動它，server 模式的轉接器無法收訊息。
 
 ## 完整手動啟動範例
 
-下面這段程式碼**等價於** `await sdk.init()` 的核心流程，但每一步都暴露在你手裡，可以在任意環節插入自訂邏輯：
+下面這段程式碼**等價於** `await sdk.init()` 的核心流程，但每一步都掌握在你手中，可以在任意環節插入自訂邏輯：
 
 ```python
 import asyncio
@@ -11979,7 +12000,7 @@ from ErisPulse.loaders import AdapterLoader, ModuleLoader
 async def manual_startup():
     # 0. 準備環境（載入設定、註冊全域例外處理）
     #    _prepare_environment 是 init() 內部的前置步驟；手動流程也需先呼叫，
-    #    否則 Loader 讀不到設定，會把所有配接器/模組誤判為停用。
+    #    否則 Loader 讀不到設定，會把所有轉接器/模組誤判為停用。
     if not await sdk._prepare_environment():
         print("環境準備失敗")
         return False
@@ -11995,12 +12016,12 @@ async def manual_startup():
         module_loader.load(sdk.module),
     )
 
-    # 3. 註冊配接器
+    # 3. 註冊轉接器
     await adapter_loader.register_to_manager(
         enabled_adapters, adapter_objs, sdk.adapter
     )
 
-    # 4. 啟動配接器
+    # 4. 啟動轉接器
     if enabled_adapters:
         await sdk.adapter.startup()
 
@@ -12035,36 +12056,36 @@ if __name__ == "__main__":
 
 絕大多數情況下**不需要**手動啟動，`await sdk.run()` 已經把上面這些都做好了。手動啟動僅在這些情境才有價值：
 
-- **部分載入**：只載入指定的配接器/模組，跳過其他
-- **動態註冊**：執行時根據條件註冊新的配接器/模組
-- **自訂順序**：需要打亂預設的載入順序（如先啟動某模組再啟動配接器）
+- **部分載入**：只載入指定的轉接器/模組，跳過其他
+- **動態註冊**：執行時根據條件註冊新的轉接器/模組
+- **自訂順序**：需要打亂預設的載入順序（如先啟動某模組再啟動轉接器）
 - **注入策略**：對 Loader 注入自訂的嚴格模式管理器、載入策略等
 - **除錯/診斷**：在某個環節失敗時，手動驅動以定位問題
 
-## 執行期細粒度控制
+## 執行時細粒度控制
 
-即使用了 `sdk.run()` 完成啟動，你仍然可以在執行期單獨控制各子系統，而不必重啟整個 SDK：
+即使使用了 `sdk.run()` 完成啟動，你仍然可以在執行時單獨控制各子系統，而不必重啟整個 SDK：
 
-### 配接器熱啟停
+### 轉接器熱啟停
 
 ```python
-# 熱重啟某個配接器（修復連線，不影響其他平台）
+# 熱重啟某個轉接器（修復連線，不影響其他平台）
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
 # 執行中拉起一個新平台
 await sdk.adapter.startup("telegram")
 
-# 臨時下線某平台
+# 暫時下線某平台
 await sdk.adapter.shutdown("telegram")
 ```
 
-> `adapter.startup()` 要求配接器**已被註冊**到管理器。註冊發生在 `init()`/`run()` 內部，所以這是啟動**之後**的細粒度控制。
+> `adapter.startup()` 要求轉接器**已被註冊**到管理器。註冊發生在 `init()`/`run()` 內部，所以這是啟動**之後**的細粒度控制。
 
 ### 路由伺服器
 
 ```python
-# 臨時下線 webhook 伺服器
+# 暫時下線 webhook 伺服器
 await sdk.router.stop()
 
 # 重新啟動（例如換了連接埠）
@@ -12080,10 +12101,10 @@ await sdk.load_module("MyModule")
 
 ## 優雅關閉
 
-從 2.7.0 起，`sdk.shutdown()` 提供**程式化的優雅關閉**：設定關閉事件，讓正在 `await sdk.run(keep_running=True)` 掛起的主迴圈返回，進而觸發 `uninit()` 完成資源清理。
+從 2.7.0 起，`sdk.shutdown()` 提供**程式化優雅關閉**：設定關閉事件，讓正在 `await sdk.run(keep_running=True)` 掛起的主迴圈回傳，進而觸發 `uninit()` 完成資源清理。
 
 ```python
-# 在任意協程中呼叫，觸發優雅退出（run() 掛起返回並自動 uninit）
+# 在任意協程中呼叫，觸發優雅退出（run() 掛起回傳並自動 uninit）
 sdk.shutdown()
 ```
 
@@ -12095,7 +12116,7 @@ async def shutdown_after_idle():
     sdk.shutdown()  # 閒置 1 小時後優雅退出
 ```
 
-**訊號處理**：`run()` 內部會註冊 `SIGTERM` / `SIGHUP` 處理器，將系統訊號轉為優雅關閉——容器編排（Docker `docker stop`）或 `systemd` 停止服務時，處理程序會走完 `uninit()` 清理而非被強殺。
+**訊號處理**：`run()` 內部會註冊 `SIGTERM` / `SIGHUP` 處理器，將系統訊號轉為優雅關閉——容器編排（Docker `docker stop`）或 `systemd` 停止服務時，行程會走完 `uninit()` 清理而非被強制終止。
 
 - Windows 不支援 `loop.add_signal_handler`，訊號處理器會自動跳過（仍可用 `sdk.shutdown()` 或 Ctrl+C 觸發關閉）
 - 反覆呼叫 `sdk.shutdown()` 是安全的（事件已設定後再次呼叫為無操作）
@@ -12104,12 +12125,12 @@ async def shutdown_after_idle():
 
 啟動的反向操作是 `await sdk.uninit()`，它按相反順序清理：
 
-1. 關閉所有配接器（`adapter.shutdown()`）
+1. 關閉所有轉接器（`adapter.shutdown()`）
 2. 卸載所有模組
 3. 清理所有事件處理器
 4. 清理管理器與 SDK 上的模組屬性
 
-手動啟動情境下，記得在結束前呼叫 `uninit()` 保證優雅關閉：
+手動啟動情境下，記得在退出前呼叫 `uninit()` 保證優雅關閉：
 
 ```python
 try:
@@ -12124,43 +12145,43 @@ SDK 提供兩種重啟方式，都不需要你自己先卸載——框架會自�
 
 | 方式 | 呼叫 | 行為 | 適用情境 |
 |------|------|------|----------|
-| 熱重啟 | `await sdk.restart()` | 同一處理程序內**元件層程式碼級熱重載**：全部模組走統一重載管線（整體語法預檢 / 快照回滾 / 身分核對），配接器先**重新發現 entry-point**（執行中新安裝/卸載的配接器即刻生效）再逐一程式碼級重載 | pip 升級或安裝元件後讓程式碼生效、熱更新模組 |
-| 硬重啟 | `await sdk.hard_restart()` | `uninit()` 後以**結束碼 42** 結束處理程序，由外部監督者拉起全新處理程序 | 框架自身升級（升級後的框架程式碼只有新處理程序生效）、C 擴充副作用、懷疑資源洩漏 |
+| 熱重啟 | `await sdk.restart()` | 同一行程內**元件層程式碼級熱重載**：全部模組走統一重載管線（整體語法預檢 / 快照回滾 / 身分核對），轉接器先**重新發現 entry-point**（執行中新安裝/解除安裝的轉接器即刻生效）再逐個程式碼級重載 | pip 升級或安裝元件後讓程式碼生效、熱更新模組 |
+| 硬重啟 | `await sdk.hard_restart()` | `uninit()` 後以**退出碼 42** 退出行程，由外部監督者拉起全新行程 | 框架自身升級（升級後的框架程式碼只有新行程生效）、C 擴充副作用、懷疑資源洩漏 |
 
 ```python
-# 熱重啟：元件層程式碼級熱重載（最常用；pip 新安裝的配接器也會被拉起）
+# 熱重啟：元件層程式碼級熱重載（最常用；pip 新裝的轉接器也會被拉起）
 await sdk.restart()
 
-# 硬重啟：結束處理程序，交由外部監督者重啟（見下方「監督者指南」）
-await sdk.hard_restart("sdk self-update")  # 可選 reason 供監督者展示
+# 硬重啟：退出行程，交由外部監督者重啟（見下方「監督者指南」）
+await sdk.hard_restart("sdk self-update")  # 可選 reason 供監督者顯示
 ```
 
 > **兩點注意**：
-> 1. 這兩個方法都用背景任務執行重啟，**立即回傳 `True` 表示「重啟任務已排程」**，而非「重啟已完成」。實際重啟在背景進行，避免中斷當前事件鏈路。
-> 2. `hard_restart()` 的原理是：卸載並將設定寫入磁碟後，以**結束碼 42**（`HARD_RESTART_EXIT_CODE`）結束處理程序——**它自身不拉起新處理程序**，必須由外部監督者偵測到結束碼 42 後重新啟動。若直接 `python main.py` 執行且無任何監督者，處理程序以碼 42 結束後便會終止，**不會自動重啟**（框架會發出警告提示）。
+> 1. 這兩個方法都用背景任務執行重啟，**立即回傳 `True` 表示「重啟任務已排程」**，而非「重啟已完成」。實際重啟在背景進行，避免中斷目前事件鏈路。
+> 2. `hard_restart()` 的原理是：卸載並將設定刷寫至磁碟後，以**退出碼 42**（`HARD_RESTART_EXIT_CODE`）退出行程——**它自身不拉起新行程**，必須由外部監督者偵測到退出碼 42 後重新啟動。若直接 `python main.py` 執行且無任何監督者，行程以碼 42 退出後就結束了，**不會自動重啟**（框架會打警告提示）。
 
-> **熱重啟的互斥與合併**（2.11.1 起）：所有熱重載操作（單模組重載 / 全量重載 / 配接器重載 / 歸眠）全程互斥——儲存風暴下連續觸發不會並行交叉，進行中的 restart 收到新請求時自動合併，完成後至多補跑一輪。儲存含語法錯誤的檔案時，整輪重載會在卸載前被**彙總式語法預檢**拒絕（一次性列出全部錯誤檔案與行號），所有舊實例繼續服務。
+> **熱重啟的互斥與合併**（2.11.1 起）：所有熱重載操作（單模組重載 / 全量重載 / 轉接器重載 / 歸眠）全程互斥——儲存風暴下連續觸發不會並行交叉，進行中的 restart 收到新請求時自動合併，完成後至多補跑一輪。儲存含語法錯誤的檔案時，整輪重載會在卸載前被**彙總式語法預檢**拒絕（一次性列出全部錯誤檔案與行號），所有舊實例繼續服務。
 
 ### 什麼時候該用硬重啟？
 
-熱重啟已經涵蓋了絕大多數情境（pip 升級/安裝元件、熱更新模組程式碼，**含執行中新安裝的配接器**）。以下情境才需要硬重啟：
+熱重啟已經涵蓋了絕大多數情境（pip 升級/安裝元件、熱更新模組程式碼，**含執行中新安裝的轉接器**）。以下情境才需要硬重啟：
 
-- **框架自身升級**：升級 ErisPulse 本體後，新的框架程式碼只有全新處理程序才會生效（Python 不會重新 import 已載入的框架程式碼）。
-- **二進位函式庫（C 擴充）副作用**：熱重啟在同一處理程序內進行，無法釋放 C 擴充、開啟的檔案描述符、執行緒等處理程序級資源；硬重啟換一個全新處理程序，這些副作用隨之徹底歸零。
+- **框架自身升級**：升級 ErisPulse 本體後，新的框架程式碼只有全新行程才會生效（Python 不會重新 import 已載入的框架程式碼）。
+- **二進位函式庫（C 擴充）副作用**：熱重啟在同一行程內進行，無法釋放 C 擴充、開啟的檔案描述符、執行緒等行程層級資源；硬重啟換一個全新行程，這些副作用隨之徹底歸零。
 - **資源洩漏排查**：懷疑存在記憶體或控制代碼洩漏時，硬重啟能拿到一個乾淨的環境。
 
 > Dashboard 管理面板裡的「框架重啟」功能，底層呼叫的就是 `hard_restart()`。
 
-### 結束碼 42 契約
+### 退出碼 42 契約
 
-硬重啟是跨處理程序協作：**SDK 負責結束（碼 42），監督者負責拉起**。
+硬重啟是跨行程協作：**SDK 負責退出（碼 42），監督者負責拉起**。
 
 | 角色 | 行為 |
 |------|------|
-| SDK（被硬重啟時） | `uninit()` → 將設定寫入磁碟 → 寫入硬重啟標記（原因 / PID，供監督者展示）→ `os._exit(42)` |
-| 監督者 | 偵測到子程序結束碼為 42 → 展示硬重啟原因 → 重新啟動同一命令 |
+| SDK（被硬重啟時） | `uninit()` → 刷寫設定至磁碟 → 寫入硬重啟標記（原因 / PID，供監督者顯示）→ `os._exit(42)` |
+| 監督者 | 偵測到子行程退出碼為 42 → 顯示硬重啟原因 → 重新啟動同一命令 |
 
-> `sdk.is_supervised()` 可查詢當前處理程序是否由監督者啟動（偵測環境變數 `ERISPULSE_SUPERVISED`）。CLI `run` 命令啟動子程序時會自動注入該標記；systemd / Docker 等外部監督者不會注入，`is_supervised()` 回傳 `False`，此時硬重啟後框架會發出「未偵測到監督者」警告。
+> `sdk.is_supervised()` 可查詢目前行程是否由監督者啟動（偵測環境變數 `ERISPULSE_SUPERVISED`）。CLI `run` 命令啟動子行程時會自動注入該標記；systemd / Docker 等外部監督者不會注入，`is_supervised()` 回傳 `False`，此時硬重啟後框架會打「未偵測到監督者」警告。
 
 ### 監督者指南
 
@@ -12168,17 +12189,17 @@ await sdk.hard_restart("sdk self-update")  # 可選 reason 供監督者展示
 
 #### 1. CLI run 命令（開發/簡單部署，推薦）
 
-`epsdk run main.py` 內建監督迴圈：偵測子程序結束碼，42 時立即重啟（並展示硬重啟原因）；其它異常結束碼按指數退避自動重試；`Ctrl+C` 會先優雅終止子程序（碼 0 視為正常結束，不再拉起）。
+`epsdk run main.py` 內建監督迴圈：偵測子行程退出碼，42 時立即重啟（並顯示硬重啟原因）；其他異常退出碼按指數退避自動重試；`Ctrl+C` 會先優雅終止子行程（碼 0 視為正常退出，不再拉起）。
 
 ```bash
 epsdk run main.py
 ```
 
-`epsdk run --reload`（開發熱重載模式，2.11.1 起）同樣走「監督處理程序 + 重載 worker 子程序」結構：worker 內儲存 `.py` 檔案即觸發**元件級熱重載**（不重啟整個框架）；硬重啟由監督處理程序重拉全新 worker，升級框架後新程式碼即刻生效。
+`epsdk run --reload`（開發熱重載模式，2.11.1 起）同樣走「監督行程 + 重載 worker 子行程」結構：worker 內儲存 `.py` 檔案即觸發**元件級熱重載**（不重啟整個框架）；硬重啟由監督行程重拉全新 worker，升級框架後新程式碼即刻生效。
 
 #### 2. systemd（Linux 伺服器）
 
-`RestartForceExitStatus=42` 讓結束碼 42 也觸發重啟（預設 `on-failure` 只對非零碼生效）：
+`RestartForceExitStatus=42` 讓退出碼 42 也觸發重啟（預設 `on-failure` 只對非零碼生效）：
 
 ```ini
 [Service]
@@ -12191,20 +12212,20 @@ User=mybot
 
 #### 3. Docker / docker-compose
 
-容器內 PID 1 是應用程式處理程序，結束碼 42 後容器即結束——用 `restart` 策略讓它自動重啟：
+容器內 PID 1 是應用行程，退出碼 42 後容器退出——用 `restart` 策略讓它自動重啟：
 
 ```yaml
 services:
   bot:
     build: .
-    restart: unless-stopped   # 任何結束（含 42）都重啟
+    restart: unless-stopped   # 任何退出（含 42）都重啟
 ```
 
 #### 4. PM2（Node 生態維運）
 
 ```bash
 pm2 start main.py --name mybot --interpreter python3
-# 42 被視為結束碼，PM2 預設重啟；設定 restart_delay 防抖
+# 42 被視為退出碼，PM2 預設重啟；設定 restart_delay 防抖
 pm2 set mybot.restart_delay 2000
 ```
 
@@ -12214,7 +12235,7 @@ pm2 set mybot.restart_delay 2000
 [program:mybot]
 command=python3 /opt/mybot/main.py
 autorestart=true
-exitcodes=0,2,42    # 42 也視為「正常結束需重啟」
+exitcodes=0,2,42    # 42 也視為「正常退出需重啟」
 ```
 
 #### 6. 純 Python 自訂監督者
@@ -12228,12 +12249,12 @@ while True:
     if code == 42:          # 硬重啟請求
         time.sleep(0.5)
         continue
-    if code == 0:           # 正常結束
+    if code == 0:           # 正常退出
         break
-    time.sleep(3)           # 異常結束，退避重試
+    time.sleep(3)           # 異常退出，退避重試
 ```
 
-> **無監督者時的行為**：直接 `python main.py` 執行，呼叫 `hard_restart()` 後處理程序以碼 42 結束、不會重啟。此時應接入上述任一監督者。
+> **無監督者時的行為**：直接 `python main.py` 執行，呼叫 `hard_restart()` 後行程以碼 42 退出、不會重啟。此時應接入上述任一監督者。
 
 ## 相關文件
 

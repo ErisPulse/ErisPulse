@@ -492,4 +492,4 @@ Method resolution priority (from high to low): platform-specific methods → wil
 
 ### Deepen Interaction Capabilities
 
-- [Conversation Multi-turn Dialogue](../../advanced/conversation.md) - Full conversation engine built on top of `wait_reply` (collection, validation, branching jumps)
+- [Conversation: Multi-turn Dialogue](../../advanced/conversation.md) - Complete conversation engine built on top of `wait_reply` (collection, validation, branching, and jump)

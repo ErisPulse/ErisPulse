@@ -422,7 +422,7 @@ logger.set_excluded_levels([])
 ---
 
 
-##### `set_output_file(path: str | Path) -> bool`
+##### `set_output_file(path: str | Path | list[str]) -> bool`
 
 设置日志输出
 

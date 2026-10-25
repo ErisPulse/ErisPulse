@@ -505,7 +505,7 @@ sdk.lifecycle  # Lifecycle system
 ### Continue Your Learning Path
 
 - [Module Core Concepts](core-concepts.md) - Deep dive into module architecture
-- [Event Wrapper Class Explained](event-wrapper.md) - Learn about Event objects
+- [Event Wrapper Class Explained](event-wrapper.md) - Learn about the Event object
 
 ### After Writing
 

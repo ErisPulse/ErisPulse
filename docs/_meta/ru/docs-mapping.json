@@ -26,7 +26,7 @@
           "icon": "fa-sitemap"
         },
         {
-          "title": "Bug Tracker",
+          "title": "Трекер ошибок",
           "path": "bug-tracker.md",
           "level": 1,
           "icon": "fa-bug"
@@ -102,7 +102,7 @@
           "icon": "fa-sliders"
         },
         {
-          "title": "Справочник команд CLI",
+          "title": "Справочник командной строки",
           "path": "user-guide/cli-reference.md",
           "level": 1,
           "icon": "fa-terminal"
@@ -158,13 +158,13 @@
               "icon": "fa-puzzle-piece"
             },
             {
-              "title": "Основные концепты модуля",
+              "title": "Основные концепции модуля",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1,
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Подробное объяснение обёртки события",
+              "title": "Подробное руководство по классу-обёртке Event",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -477,7 +477,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Транскрипт (Transcript)",
+          "title": "Транскрипт сессии (Transcript)",
           "path": "advanced/transcript.md",
           "level": 1,
           "icon": "fa-fire"

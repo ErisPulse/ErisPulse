@@ -52,7 +52,7 @@
           "icon": "fa-door-open"
         },
         {
-          "title": "基礎概念",
+          "title": "基本概念",
           "path": "getting-started/basic-concepts.md",
           "level": 1,
           "icon": "fa-lightbulb"
@@ -164,7 +164,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Event ラッパークラス詳解",
+              "title": "Event 包装类详解",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -182,13 +182,13 @@
           "icon": "fa-network-wired",
           "documents": [
             {
-              "title": "アダプター開発入門",
+              "title": "アダプタ開発入門",
               "path": "developer-guide/adapters/getting-started.md",
               "level": 1,
               "icon": "fa-network-wired"
             },
             {
-              "title": "アダプタのコア概念",
+              "title": "アダプタのコアコンセプト",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1,
               "icon": "fa-microchip"
@@ -471,7 +471,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "スタートアップフローと手動制御",
+          "title": "起動プロセスと手動制御",
           "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"

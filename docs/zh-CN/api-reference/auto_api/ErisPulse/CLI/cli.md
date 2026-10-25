@@ -85,6 +85,18 @@ ErisPulse 命令行接口主类
 ---
 
 
+##### `_ensure_utf8_stdio() -> None`（staticmethod）
+
+将标准流重配置为 UTF-8（Windows GBK 代码页兜底）
+
+中文 Windows 控制台默认 GBK 编码，非 Rich 的裸 print 与子进程管道
+输出遇到非 GBK 字符会 ``UnicodeEncodeError``——CLI 入口统一兜底，
+一次性消灭该类偶发乱码/崩溃（历史点状爆发：翻译脚本、PowerShell BOM）。
+仅在流支持 reconfigure 时生效（Python 3.7+ 的 io.TextIOWrapper）。
+
+---
+
+
 ##### `_check_command_typo() -> None`
 
 在 argparse 解析之前检查命令拼写

@@ -398,34 +398,34 @@ fn.unregister()
 `ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false`
 覆寫緊縮或放開（見[統一事件覆寫配置](#統一事件覆寫配置eventoverrides)，用戶顯式配置即生效）。
 
-## 日誌配置
+## 日誌設定
 
 ```toml
 [ErisPulse.logger]
 level = "INFO"
-log_files = []                # 明確日誌檔案列表（與 log_dir 互斥，優先級更高）
+log_files = []                # 顯式日誌檔案清單（與 log_dir 互斥，優先級更高）
 log_dir = ""                  # 日誌目錄（設定後自動分段輪替）
 log_rotation = "size"         # 分段方式: "size" / "date" / "none"
-log_max_size_mb = 10          # size 模式單一檔案上限（MB）
+log_max_size_mb = 10          # size 模式單檔案上限（MB）
 log_backup_count = 5          # 保留的歷史日誌檔案數
 log_rotation_when = "midnight"  # date 模式輪替週期: S/M/H/D/midnight
-memory_limit = 1000             # 單一模組記憶體日誌條數上限（0 = 關閉記憶體日誌副本）
-total_memory_limit = 5000       # 全部模組記憶體日誌總條數上限（0 = 不限）
+memory_limit = 1000             # 單模組記憶體日誌筆數上限（0 = 關閉記憶體日誌副本）
+total_memory_limit = 5000       # 全部模組記憶體日誌總筆數上限（0 = 不限）
 exclude_levels = ["EVENT"]
 ```
 
-| 配置項 | 類型 | 預設值 | 說明 |
+| 設定項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | level | string | INFO | 日誌級別：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低級別，輸出框架內部詳細除錯資訊） |
-| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文字無顏色，適合日誌蒐集/管道重定向）、`json`（JSON 結構化，適合 ELK 等） |
-| log_files | array | 空 | 日誌輸出檔案列表（明確路徑，不分段） |
+| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文字無顏色，適合日誌收集/管線重新導向）、`json`（JSON 結構化，適合 ELK 等） |
+| log_files | array | 空 | 日誌輸出檔案清單（顯式路徑，不分段） |
 | log_dir | string | 空 | 日誌輸出目錄（自動建立）。設定後寫入目錄內 `erispulse.log` 並按 `log_rotation` 自動分段；與 `log_files` 互斥，`log_files` 優先 |
 | log_rotation | string | size | 分段方式：`size`（按大小）/ `date`（按時間）/ `none`（不分段） |
-| log_max_size_mb | float | 10 | size 模式單一檔案大小上限（MB），超過後輪替為 `.1`/`.2` 備份 |
+| log_max_size_mb | float | 10 | size 模式單檔案大小上限（MB），超過後輪替為 `.1`/`.2` 備份 |
 | log_backup_count | integer | 5 | 保留的歷史日誌檔案數，超出的最舊備份自動刪除 |
 | log_rotation_when | string | midnight | date 模式輪替週期：`S`/`M`/`H`/`D`/`midnight`（預設每天零點） |
-| memory_limit | integer | 1000 | 單一模組記憶體中保存的日誌條數；`0` 表示關閉記憶體日誌副本（不再寫入記憶體，已有記錄保留） |
-| total_memory_limit | integer | 5000 | 全部模組記憶體日誌總條數上限；`0` 表示不限。超限時按輪替策略淘汰最舊記錄（優先削減條數最多的模組佇列），與單一模組 `memory_limit` 獨立生效 |
+| memory_limit | integer | 1000 | 單模組記憶體中保存的日誌筆數；`0` 表示關閉記憶體日誌副本（不再寫入記憶體，已有記錄保留） |
+| total_memory_limit | integer | 5000 | 全部模組記憶體日誌總筆數上限；`0` 表示不限。超限時按輪替策略淘汰最舊記錄（優先削減筆數最多的模組佇列），與單模組 `memory_limit` 獨立生效 |
 | exclude_levels | array | 空 | 屏蔽指定日誌等級。被屏蔽等級的日誌**完全丟棄**（不寫記憶體、不推送給 Dashboard 等訂閱器、不列印、不寫檔案）。支援熱更新 |
 
 也可在程式碼中動態切換：
@@ -433,7 +433,7 @@ exclude_levels = ["EVENT"]
 ```python
 from ErisPulse.Core import logger
 
-# 按大小分段：單一檔案 10MB，保留 5 份
+# 按大小分段：單檔案 10MB，保留 5 份
 logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
 
 # 按時間分段：每天零點輪替，保留 7 份
@@ -441,7 +441,7 @@ logger.set_output_dir("logs", rotation="date", backup_count=7)
 ```
 
 > [!NOTE]
-> `log_dir` 及分段相關配置需要 ErisPulse **2.8.0+**。
+> `log_dir` 及分段相關設定需要 ErisPulse **2.8.0+**。
 
 > **隱私保護**：訊息收發內容以 **EVENT 等級**（數值 21）記錄。設定 `exclude_levels = ["EVENT"]` 即可讓後台（如 Dashboard 日誌面板）無法看到各群/私聊的訊息內容，同時不影響其它等級日誌。
 
@@ -465,13 +465,13 @@ adapters = []
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | 是否啟用模組懶載入 |
 | uninit_timeout | integer | 30 | 優雅關閉的總逾時時間（秒），超過後強制終止。0 表示不設逾時 |
-| strict_mode | integer | 0 | 嚴格模式級別，見下方「嚴格模式」說明 |
-| handler_max_concurrency | integer | 64 | 事件處理器最大並行 Task 數，設大提高吞吐但增加記憶體佔用 |
-| handler_queue_max_pending | integer | 4096 | 事件洪峰入列背壓：單平台待處理 handler Task 數上限，超限時新事件的處理器 Task 直接丟棄並記 WARNING（丟棄計數可在 troubleshoot 排查中檢視）；`0` 表示不限 |
+| strict_mode | integer | 0 | 嚴格模式層級，見下方「嚴格模式」說明 |
+| handler_max_concurrency | integer | 64 | 事件處理器最大並發 Task 數，設大可提高吞吐但增加記憶體佔用 |
+| handler_queue_max_pending | integer | 4096 | 事件洪峰入列背壓：單平台待處理 handler Task 數上限，超限時新事件的處理器 Task 直接捨棄並記錄 WARNING（捨棄計數可在 troubleshoot 排查中查看）；`0` 表示不限制 |
 | offline_bot_expiry | integer | 3600 | 離線 Bot 記錄自動過期時間（秒），0 表示不過期 |
-| plugins_dir | string / list | "plugins" | 本地外掛資料夾（相對專案根目錄）；新增/刪除/修改外掛檔案會被熱重載 watcher 自動發現 |
-| watch_ignore_dirs | list | 內建清單 | 熱重載檔案監控忽略的目錄名（`.venv`/`.git`/`__pycache__` 等）；非空清單**整體替換**內建清單，`[]` 表示不忽略任何目錄 |
-| watch_include_plugin_dirs | boolean | true | `epsdk run --reload` 是否把外掛目錄交給外掛熱重載 watcher 精確處理（單模組重載），並從全量監控中排除 |
+| plugins_dir | string / list | "plugins" | 本機插件資料夾（相對專案根目錄）；新增/刪除/修改插件檔案會被熱重載 watcher 自動發現 |
+| watch_ignore_dirs | list | 內建清單 | 熱重載檔案監控忽略的目錄名稱（`.venv`/`.git`/`__pycache__` 等）；非空列表**整體取代**內建清單，`[]` 表示不忽略任何目錄 |
+| watch_include_plugin_dirs | boolean | true | `epsdk run --reload` 是否將插件目錄交給插件熱重載 watcher 精確處理（單模組重載），並從全量監控中排除 |
 
 ### 主動 GC 設定
 
@@ -480,27 +480,27 @@ SDK 初始化完成後啟動主動 GC 背景任務，週期性執行 Python GC �
 | 設定項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | proactive_gc_interval | number | 300 | 回收間隔（秒），支援小數。0 表示停用主動 GC |
-| proactive_gc_generation | integer | 0 | 常規輪次回收分代（0/1/2，鉗制到 0..2）。注意 `gc.collect(2)` 等價於全量回收，預設 0 保持輕量；深度回收由 `proactive_gc_full_every` 週期性觸發 |
+| proactive_gc_generation | integer | 0 | 常規輪次回收分代（0/1/2，鉗制到 0..2）。注意 `gc.collect(2)` 等同於全量回收，預設 0 保持輕量；深度回收由 `proactive_gc_full_every` 週期性觸發 |
 | proactive_gc_full_every | integer | 20 | 每 N 輪做一次全量回收，0 表示停用週期性全量。全量回收受 `proactive_gc_memory_growth_mb` 門檻約束 |
-| proactive_gc_memory_growth_mb | integer | 32 | 全量回收的記憶體增長門檻（MB）：對比上次全量後的記憶體基線（優先 tracemalloc，其次 RSS），僅當增長達到此值才執行全量回收。0 表示不設門檻 |
+| proactive_gc_memory_growth_mb | integer | 32 | 全量回收的記憶體成長門檻（MB）：對比上次全量後的記憶體基準線（優先 tracemalloc，其次 RSS），僅當成長達到此值才執行全量回收。0 表示不設門檻 |
 | proactive_gc_idle_only | boolean | false | 開啟後，事件洪峰（存在未完成的 pending handler）時本輪跳過 Python GC，避免停頓與訊息處理競爭；內部資源回收不受影響 |
 | proactive_gc_gen0_min | integer | 500 | 常規輪次觸發回收的 gen0 垃圾量下限：`gc.get_count()[0]` 低於此值直接跳過（空轉輪次近乎零開銷）。0 表示始終回收 |
 
-> **2.7.1 變更**：預設 `proactive_gc_generation` 由 `2` 調整為 `0`，預設 `proactive_gc_full_every` 由 `0` 調整為 `20`。此前 `generation=2` 意味著每輪都做最重的全量回收；新預設在保持回收覆蓋的同時顯著降低空轉開銷。顯式設定的舊值仍按字面語義生效。
+> **2.7.1 變更**：預設 `proactive_gc_generation` 由 `2` 調整為 `0`，預設 `proactive_gc_full_every` 由 `0` 調整為 `20`。此前 `generation=2` 意味著每輪都做最重的全量回收；新預設在保持回收覆蓋的同時顯著降低空轉開銷。明確設定的舊值仍按字面語意生效。
 
 ### 嚴格模式
 
 嚴格模式控制模組/轉接器在載入階段不合規或失敗時的處理策略。現代模組/轉接器都應繼承對應的基底類別（`BaseModule`/`BaseAdapter`），未繼承基底類別的元件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
 
-> **2.5.2 變更**：預設級別從 `1`（跳過）調整為 `0`（寬鬆），以減少新使用者初次使用時遇到的載入問題。未繼承基底類別的元件將以 WARNING 提示並嘗試載入，而非直接拒絕。如需恢復舊行為，請顯式設定 `strict_mode = 1`。
+> **2.5.2 變更**：預設層級從 `1`（跳過）調整為 `0`（寬鬆），以減少新使用者初次使用時遇到的載入問題。未繼承基底類別的元件將以 WARNING 提示並嘗試載入，而非直接拒絕。如需恢復舊行為，請明確設定 `strict_mode = 1`。
 
-| 級別 | 名稱 | 行為 |
+| 層級 | 名稱 | 行為 |
 |------|------|------|
 | 0 | 寬鬆（預設） | 違規僅警告，未繼承基底類別的元件仍會嘗試載入（相容舊元件） |
 | 1 | 嚴格-跳過 | 拒絕未繼承基底類別的元件並跳過，其餘正常啟動 |
 | 2 | 嚴格-致命 | 收集所有違規後統一報告並中止整個啟動 |
 
-各級別下，「載入/註冊/初始化階段報錯」這類元件自身崩潰始終會被跳過；區別在於：
+各層級下，「載入/註冊/初始化階段報錯」這類元件自身崩潰始終會被跳過；區別在於：
 
 - **0 → 1**：唯一行為變化是「未繼承基底類別」從「仍載入」變為「跳過」。
 - **1 → 2**：所有違規（未繼承基底類別、載入失敗、註冊失敗、初始化失敗等）升級為致命，會在啟動檢查點收集後一次性輸出違規清單並中止。
@@ -515,11 +515,11 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> 當某個元件被嚴格模式拒絕時，日誌會明確提示如何恢復載入（加入豁免清單或調低級別）。
+> 當某個元件被嚴格模式拒絕時，日誌會明確提示如何恢復載入（加入豁免清單或調低層級）。
 
 #### 與 CLI 的聯動
 
-`epsdk run` 的啟動前自檢（設定檔可解析性、元件必填設定完整性）預設跟隨本設定：非 0 時檢查失敗即拒絕啟動，0 時僅警告繼續。也可以不改設定臨時切換：`epsdk run --strict` 本次將自檢與嚴格級別同時開啟（級別只升不降，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到執行程序），`--no-strict` 本次臨時壓到寬鬆並僅警告。
+`epsdk run` 的啟動前自檢（設定檔可解析性、元件必填設定完整性）預設跟隨本設定：非 0 時檢查失敗即拒絕啟動，0 時僅警告繼續。也可以不改設定臨時切換：`epsdk run --strict` 本次將自檢與嚴格層級同時開啟（層級只升不降，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到執行程序），`--no-strict` 本次臨時壓到寬鬆並僅警告。
 
 ## 存儲配置
 
@@ -616,7 +616,7 @@ self_echo = "bot"
 | ttl_hours | float | 168.0 | 全域保留時長（小時，0 = 永不清理） |
 | self_echo | string | bot | 入站 bot 回聲（`self.user_id == user_id`，如 OneBot `report-self-message`）處理：`bot` = 記為 bot 並標記 `meta.self_echo`；`skip` = 不記錄；`user` = 記為 user（舊行為） |
 
-> 保留策略的風險與稽核見 [會話收件匣](../advanced/transcript.md)；歸因欄位（`sender` / `meta`）與出站歸屬（`meta.module`）同見該文件。
+> 保留策略的風險與稽核見 [會話收件匣](../advanced/transcript.md)；歸因欄位（`sender` / `meta`）與出站歸屬（`meta.module`）同見該文檔。
 
 ## 國際化配置
 
@@ -779,21 +779,21 @@ acl_default_allow = true
 | `upgrade` | `up` | `[套件]... [--force/-f] [--pre] [--no-uv]` | 升級指定模組或全部 |
 | `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | 更新 SDK 本身 |
 
-## 臨診命令
+## 臨床命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `doctor` | `diag` | `[--verbose] [--fix]` | 臨診環境並輸出健康報告；`--fix` 嘗試自動修復 |
+| `doctor` | `diag` | `[--verbose] [--fix]` | 臨床環境並輸出健康報告；`--fix` 嘗試自動修復 |
 
 ### install
 
-安裝 ErisPulse 模組或適配器套件。若未指定套件名稱則進入互動式安裝介面。
+安裝 ErisPulse 模組或適配器包。若不指定包名則進入互動式安裝介面。
 
 **別名：** `i`, `add`
 
 > **uv 項目聯動**（2.11.1+）：在 uv 管理的項目內（存在 `uv.lock` 或 `[tool.uv]`），
 > `install` / `upgrade` / `uninstall` 自動改走 `uv add` / `uv remove`——依賴同步寫入
-> `pyproject.toml` 與 `uv.lock`，`uv sync` 不再清掉 epsdk 裝的元件；失敗自動回退
+> `pyproject.toml` 與 `uv.lock`，`uv sync` 不再清掉 epsdk 裝的組件；失敗自動回退
 > uv pip / pip 通道。`--user` 等 uv 不支援的參數直接走 pip。目標環境解析順序：
 > `ERISPULSE_PYTHON` → `UV_PROJECT_ENVIRONMENT` → 項目 `.venv` → `UV_PYTHON` →
 > `VIRTUAL_ENV` → 當前解釋器（`epsdk doctor` 可查看完整決策鏈）。
@@ -802,32 +802,32 @@ acl_default_allow = true
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `[package]...` | | 要安裝的套件名稱，可指定多個 |
+| `[package]...` | | 要安裝的包名稱，可指定多個 |
 | `--upgrade` | `-U` | 安裝時升級到最新版本 |
-| `--pre` | | 允許安裝預發布版本 |
+| `--pre` | | 允許安裝預發佈版本 |
 | `--editable` | `-e` | 以可編輯模式安裝（需指定路徑） |
-| `--user` | | 安裝到使用者 site-packages 目錄 |
+| `--user` | | 安裝到用戶 site-packages 目錄 |
 | `--no-deps` | | 不安裝依賴 |
 | `--target` | `-t` | 安裝到指定目錄 |
 | `--index-url` | | 指定 PyPI 鏡像源地址 |
-| `--extra-index-url` | | 額外 PyPI 鏡像源地址（可多次指定） |
+| `--extra-index-url` | | 頂外 PyPI 鏡像源地址（可多次指定） |
 | `--no-cache-dir` | | 禁用快取 |
 | `--requirement` | `-r` | 從 requirements 檔案安裝 |
 | `--constraint` | `-c` | 從約束檔案安裝 |
 | `--force-reinstall` | | 強制重新安裝 |
-| `--ignore-installed` | | 忽略已安裝的套件 |
+| `--ignore-installed` | | 忽略已安裝的包 |
 | `--compile` | | 安裝後編譯 .pyc 檔案 |
 | `--no-compile` | | 安裝後不編譯 .pyc 檔案 |
 | `--prefix` | | 安裝到指定前綴目錄 |
-| `--src` | | 可編輯安裝時使用的源碼目錄 |
-| `--config-settings` | | 傳遞給建構後端的設定（可多次指定） |
-| `--no-binary` | | 限制不使用二進制套件（格式如 `:all:`） |
-| `--only-binary` | | 限制僅使用二進制套件（格式如 `:all:`） |
-| `--prefer-binary` | | 优先選擇二進制套件 |
+| `--src` | | 可編輯安裝時使用的原始碼目錄 |
+| `--config-settings` | | 傳遞給建構後端的配置（可多次指定） |
+| `--no-binary` | | 限制不使用二進位包（格式如 `:all:`） |
+| `--only-binary` | | 限制僅使用二進位包（格式如 `:all:`） |
+| `--prefer-binary` | | 優先選擇二進位包 |
 | `--build-isolation` | | 啟用建構隔離 |
 | `--no-build-isolation` | | 禁用建構隔離 |
 | `--upgrade-strategy` | | 升級策略：`eager`、`only-if-needed`、`to-satisfy-only` |
-| `--break-system-packages` | | 允許修改系統套件管理器管理的 Python 套件 |
+| `--break-system-packages` | | 允許修改系統包管理器管理的 Python 包 |
 | `--no-uv` | | 使用 pip 代替 uv |
 
 **示例：**
@@ -848,7 +848,7 @@ epsdk install -e ./my-adapter
 
 ### uninstall
 
-卸載已安裝的 ErisPulse 模組或適配器套件。若未指定套件名稱則進入互動式卸載介面。
+卸載已安裝的 ErisPulse 模組或適配器包。若不指定包名則進入互動式卸載介面。
 
 **別名：** `rm`, `remove`
 
@@ -856,7 +856,7 @@ epsdk install -e ./my-adapter
 
 | 參數 | 說明 |
 |------|------|
-| `<package>...` | 要卸載的套件名稱，可指定多個 |
+| `<package>...` | 要卸載的包名稱，可指定多個 |
 | `--no-uv` | 使用 pip 代替 uv |
 
 **示例：**
@@ -871,7 +871,7 @@ epsdk uninstall Yunhu Weather
 
 ### upgrade
 
-升級已安裝的 ErisPulse 組件。未指定套件名稱則互動式升級全部。
+升級已安裝的 ErisPulse 組件。不指定包名則互動式升級全部。
 
 **別名：** `up`
 
@@ -879,18 +879,18 @@ epsdk uninstall Yunhu Weather
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `[package]...` | | 要升級的套件名稱，可指定多個 |
+| `[package]...` | | 要升級的包名稱，可指定多個 |
 | `--force` | `-f` | 強制升級，跳過確認 |
-| `--pre` | | 允許升級到預發布版本 |
+| `--pre` | | 允許升級到預發佈版本 |
 | `--no-uv` | | 使用 pip 代替 uv |
 
 **示例：**
 
 ```bash
-# 升級所有套件
+# 升級所有包
 epsdk upgrade
 
-# 升級指定套件
+# 升級指定包
 epsdk upgrade Weather
 
 # 強制升級（跳過確認）
@@ -908,7 +908,7 @@ epsdk upgrade -f
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
 | `[version]` | | 指定要更新的目標版本號 |
-| `--pre` | | 允許更新到預發布版本 |
+| `--pre` | | 允許更新到預發佈版本 |
 | `--force` | `-f` | 強制更新，跳過確認 |
 | `--no-uv` | | 使用 pip 代替 uv |
 
@@ -921,7 +921,7 @@ epsdk self-update
 # 更新到指定版本
 epsdk self-update 1.2.3
 
-# 允許預發布版本
+# 允許預發佈版本
 epsdk self-update --pre
 
 # 強制更新
@@ -930,9 +930,10 @@ epsdk self-update -f
 
 > [!NOTE]
 > 透過 `uv tool install ErisPulse` 安裝時，本命令自動改走 `uv tool upgrade ErisPulse`（指定版本時為 `uv tool install ErisPulse==<版本> --force`），直接 pip 升級工具環境會被 uv 的清單還原抹掉。
-> Windows 下更新在新控制台視窗中進行：目前 CLI 需先退出以解除工具環境檔案占用，視窗提示完成後重新打開終端即可。
+> Windows 下更新在新控制台視窗中進行：當前 CLI 需先退出以解除工具環境檔案占用，視窗提示完成後重新打開終端即可。
 
 ---
+[docs/zh-TW/quick-start.md](docs/zh-TW/quick-start.md)
 
 ## 資訊查詢命令
 
@@ -1055,19 +1056,19 @@ epsdk config MyModule
 ## 運行控制命令
 
 > [!TIP]
-> `epsdk run` 會自動偵測並使用專案目錄下的 `.venv` 虛擬環境來執行機器人
-> （也可透過 `ERISPULSE_PYTHON` 環境變數明確指定解釋器）。`epsdk install` /
-> `uninstall` / `upgrade` / `list` 同樣作用於專案虛擬環境。
+> `epsdk run` 會自動檢測並使用項目目錄下的 `.venv` 虛擬環境運行機器人
+> （也可透過 `ERISPULSE_PYTHON` 環境變數顯式指定解釋器）。`epsdk install` /
+> `uninstall` / `upgrade` / `list` 同樣作用於項目虛擬環境。
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | 執行指定腳本或 SDK |
+| `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | 運行指定腳本或 SDK |
 | `stop` | — | `[--force] [--pid PID]` | 停止正在運行的實例（由 `epsdk run` 啟動） |
-| `restart` | — | `[--force] [--pid PID]` | 重新啟動正在運行的實例（停止後按原參數重新啟動） |
+| `restart` | — | `[--force] [--pid PID]` | 重啟正在運行的實例（停止後按原參數重新啟動） |
 
 ### run
 
-執行 ErisPulse 專案腳本或直接啟動 SDK。支援熱重載模式。
+運行 ErisPulse 項目腳本或直接啟動 SDK。支援熱重載模式。
 
 **別名：** `r`
 
@@ -1075,20 +1076,20 @@ epsdk config MyModule
 
 | 參數 | 說明 |
 |------|------|
-| `[script]` | 要執行的腳本檔案，不指定則執行 SDK |
-| `--reload` | 啟用熱重載模式：監控檔案變更自動觸發組件級程式碼熱重載（無需整進程重啟）；預設忽略 `.venv`/`.git` 等目錄（可經 `ErisPulse.framework.watch_ignore_dirs` 配置），插件目錄交由插件熱重載 watcher 精確處理 |
-| `--strict` / `--no-strict` | 臨時開啟 / 關閉嚴格模式（僅本次生效，不寫入配置）；缺省遵循 `ErisPulse.framework.strict_mode` |
+| `[script]` | 要運行的腳本文件，不指定則運行 SDK |
+| `--reload` | 啟用熱重載模式：監控文件變化自動觸發組件級代碼熱重載（無需整進程重啟）；預設忽略 `.venv`/`.git` 等目錄（可經 `ErisPulse.framework.watch_ignore_dirs` 配置），插件目錄交給插件熱重載 watcher 精確處理 |
+| `--strict` / `--no-strict` | 臨時開啟 / 關閉嚴格模式（僅本次生效，不寫入配置）；缺省跟隨 `ErisPulse.framework.strict_mode` |
 
-**範例：**
+**示例：**
 
 ```bash
-# 直接執行 SDK
+# 直接運行 SDK
 epsdk run
 
-# 執行指定腳本檔案
+# 運行指定腳本文件
 epsdk run main.py
 
-# 熱重載模式執行（檔案變更自動觸發程式碼級熱重載）
+# 熱重載模式運行（文件變更自動觸發代碼級熱重載）
 epsdk run main.py --reload
 
 # SDK 熱重載模式
@@ -1101,13 +1102,13 @@ epsdk run main.py --strict
 epsdk run main.py --no-strict
 ```
 
-**啟動前自檢：** `run` 啟動前會快速檢查 `config/config.toml` 可解析性與已安裝組件的必填配置完整性，嚴格性預設遵循 `ErisPulse.framework.strict_mode`（非 0 時檢查失敗即退出，0 時僅警告繼續）。配置檔案遺失視為正常首次啟動，僅提示不判失敗。`--strict` 臨時開啟：預檢失敗即退出，同時框架嚴格級別本次提升為至少 1（跳過不合規組件，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到運行進程，不寫入配置檔案）；`--no-strict` 反之臨時壓到寬鬆。自檢自身異常時自動跳過，不含網路探測，不會阻塞啟動。
+**啟動前自檢：** `run` 啟動前會快速檢查 `config/config.toml` 可解析性與已安裝組件的必填配置完整性，嚴格性預設跟隨 `ErisPulse.framework.strict_mode`（非 0 時檢查失敗即退出，0 時僅警告繼續）。配置文件缺失視為正常首次啟動，僅提示不判失敗。`--strict` 臨時開啟：預檢失敗即退出，同時框架嚴格級別本次提升為至少 1（跳過不合規組件，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到運行進程，不寫入配置文件）；`--no-strict` 反之臨時壓到寬鬆。自檢自身異常時自動跳過，不含網路探測，不會阻塞啟動。
 
-> **`--reload` 的監督結構**（2.11.1 起）：`epsdk run --reload` 以「監督進程 + 重載 worker 子進程」運行。儲存 `.py` 檔案觸發的熱重載全部在 worker 內完成（互斥串行、風暴合併）；模組側語法錯誤會被整體預檢拒絕，舊實例繼續服務。`sdk.hard_restart()` 時 worker 以退出碼 42 退出，監督進程展示原因後自動重拉全新 worker——升級框架本體後新程式碼即刻生效。
+> **`--reload` 的監督結構**（2.11.1 起）：`epsdk run --reload` 以「監督進程 + 重載 worker 子進程」運行。保存 `.py` 文件觸發的熱重載全部在 worker 內完成（互斥串行、風暴合併）；模組側語法錯誤會被整體預檢拒絕，舊實例繼續服務。`sdk.hard_restart()` 時 worker 以退出碼 42 退出，監督進程展示原因後自動重拉全新 worker——升級框架本體後新代碼即刻生效。
 
 ### stop
 
-停止正在運行的 ErisPulse 實例（由 `epsdk run` 啟動、並在同一專案目錄下執行）。
+停止正在運行的 ErisPulse 實例（由 `epsdk run` 啟動、並在同一項目目錄下執行）。
 `run` 啟動時會把監督進程 PID、當前框架子進程 PID 與原始啟動命令寫入
 `.erispulse/runtime.json`，`stop` 據此定位實例。
 
@@ -1121,12 +1122,12 @@ finally 鏈自動終止框架子進程），超時逐級升級 SIGTERM / SIGKILL
 | 參數 | 說明 |
 |------|------|
 | `--force` | 跳過優雅停止，直接強制終止 |
-| `--pid PID` | 直接指定目標進程 PID（覆蓋運行狀態檔案，用於非標準啟動方式） |
+| `--pid PID` | 直接指定目標進程 PID（覆蓋運行狀態文件，用於非標啟動方式） |
 
-**範例：**
+**示例：**
 
 ```bash
-# 停止當前專案的運行實例
+# 停止當前項目的運行實例
 epsdk stop
 
 # 強制終止
@@ -1135,21 +1136,21 @@ epsdk stop --force
 
 ### restart
 
-重新啟動正在運行的 ErisPulse 實例：按 `stop` 的語義停止後，以狀態檔案中記錄的
-**原始啟動命令**重新啟動（前檯接管當前終端，新實例會寫入新的運行狀態檔案）。
+重啟正在運行的 ErisPulse 實例：按 `stop` 的語義停止後，以狀態文件中記錄的
+**原始啟動命令**重新啟動（前檯接管當前終端，新實例會寫入新的運行狀態文件）。
 
 **參數：** 同 `stop`（`--force` / `--pid PID`）。
 
-**範例：**
+**示例：**
 
 ```bash
-# 優雅重新啟動（pip 升級適配器/模組後讓程式碼生效；運行中模組也可用
-# sdk.reload_module / sdk.adapter.reload 程式碼級熱重載，無需重新啟動）
+# 優雅重啟（pip 升級適配器/模組後讓代碼生效；運行中模組也可用
+# sdk.reload_module / sdk.adapter.reload 代碼級熱重載，無需重啟）
 epsdk restart
 ```
 
 > [!NOTE]
-> `python main.py` 等繞過 `epsdk run` 的啟動方式不會寫運行狀態檔案——此類
+> `python main.py` 等繞過 `epsdk run` 的啟動方式不會寫運行狀態文件——此類
 > 進程請用系統工具管理，或用 `epsdk stop --pid <PID>` 指定 PID。
 
 ## 專案管理命令
@@ -1364,7 +1365,7 @@ epsdk types --force
 > [!NOTE]  
 > 此命令需要 ErisPulse **2.7.0+**。
 
-診斷當前 CLI 運行環境，並輸出健康報告。用於排查「為什麼裝不上 / 連不上」類問題。
+診斷當前 CLI 運行環境，輸出健康報告。用於排查「為什麼裝不上 / 連不上」類問題。
 
 | 參數 | 說明 |
 |------|------|
@@ -1383,8 +1384,8 @@ epsdk types --force
 
 **自動修復（`--fix`）**：
 - `config.toml` 缺失 → 按當前語言生成初始配置檔案（與 `init` 建項同源）
-- 組件配置「待完善」→ 逐個拉起互動式配置嚮導補全必填項（非互動環境提示改用 `epsdk config <名稱>`）
-- 配置污染殘留鍵 → 列明來源並經確認後刪除（tomlclass 無損路徑，註釋與順序保真）
+- 組件配置「待完善」→ 逐個拉起互動式配置向導補全必填項（非互動環境提示改用 `epsdk config <名稱>`）
+- 配置污染殘留鍵 → 列明來源並經確認後刪除（tomlclass 無損路徑，註解與順序保真）
 - Python 版本過低、PyPI 無法存取等需人工介入的問題 → 僅輸出行動建議
 
 ```bash

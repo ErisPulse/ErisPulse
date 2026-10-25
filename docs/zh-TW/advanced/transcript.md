@@ -26,8 +26,8 @@
 
 | 旋鈕 | 預設值 | 保護什麼 | 關閉（=0）的後果 |
 |------|--------|----------|------------------|
-| 寫緩衝上限 | 4096 行（常量，不可配） | **記憶體**：儲存不可用期間的積壓不撐爆 RAM | 不可關閉——這是記憶體防線 |
-| 單條文字截斷 | 2000 字符（常量，不可配） | 單條訊息的記憶體/磁碟佔用 | 不可關閉 |
+| 寫緩衝上限 | 4096 行（常量，不可調） | **記憶體**：儲存不可用期間的積壓不撐爆 RAM | 不可關閉——這是記憶體防線 |
+| 單條文字截斷 | 2000 字符（常量，不可調） | 單條訊息的記憶體/磁碟佔用 | 不可關閉 |
 | `max_per_session` | 50 條/會話 | **磁碟增長**：單會話歷史無限堆積 | 該會話歷史無限增長 |
 | `ttl_hours` | 168（7 天） | **磁碟增長**：全部會話的長期堆積 | `transcript` 表無限增長 |
 
@@ -37,7 +37,7 @@
 > [!TIP]
 > **不需要會話記憶的應用可以整體關閉**：`ErisPulse.transcript.enabled = false`
 > 即停止入站/出站訊息的自動記錄——不寫記憶體緩衝也不寫儲存，省下常駐記憶體與持續的
-> 儲存層 IO。會話收件箱主要服務 AI 上下文注入與防重複訊息兩類需求，二者都不用的部署
+> 儲存層 IO。會話收件箱主要服務 AI 上下文注入與防重複發送兩類需求，二者都不用的部署
 > （如純命令型機器人）建議關閉。
 
 ## 配置
@@ -50,12 +50,12 @@ ttl_hours = 168.0       # 全局保留時長（小時，0 = 永不清理）
 self_echo = "bot"       # 入站 bot 回聲處理：bot / skip / user
 ```
 
-環境變數覆蓋同樣生效：`ERISPULSE_TRANSCRIPT_MAX_PER_SESSION`、`ERISPULSE_TRANSCRIPT_TTL_HOURS`、
+環境變量覆蓋同樣生效：`ERISPULSE_TRANSCRIPT_MAX_PER_SESSION`、`ERISPULSE_TRANSCRIPT_TTL_HOURS`、
 `ERISPULSE_TRANSCRIPT_SELF_ECHO`。配置變更熱生效（寫緩衝落盤節奏內，最多延遲 ~1 秒）。
 
 > [!TIP]
 > **不需要會話記憶就關閉它**：收件箱唯一的消費方是對話恢復 / 影子 diff / 冷啟動回放。
-> 如果你的機器人（或部署的模組）完全不用這些能力，設置 `enabled = false`
+> 如果你的機器人（或部署的模塊）完全不用這些能力，設置 `enabled = false`
 > 即可省下收件箱的記憶體緩衝與後台批量落盤 IO——訊息收發與命令處理完全不受影響。
 
 ## 消息歸因（sender 與 meta）
@@ -75,7 +75,7 @@ self_echo = "bot"       # 入站 bot 回聲處理：bot / skip / user
 - **出站**：發送上下文（`platform` / `method` / `detail_type` / `target_id` /
   `bot_id` / `trace_id` / `preview`）與 `module`（發送歸屬模組，見下）。
 
-舊版本記錄（無 meta 欄時期）的 `meta` 為 `{}`，呼叫方 `meta.get("nickname", "")`
+舊版本記錄（無 meta 列時期）的 `meta` 為 `{}`，呼叫方 `meta.get("nickname", "")`
 自然降級；儲存後端不支援 ALTER 時同樣靜默回退 `{}`。
 
 ### 出站歸屬（meta.module）
@@ -93,7 +93,7 @@ self_echo = "bot"       # 入站 bot 回聲處理：bot / skip / user
 
 ### 入站 bot 回聲（self_echo）
 
-部分平台/協定端會把 bot 自己發出的訊息以 message 事件回顯上報（如 OneBot v11 的
+部分平台/協議端會把 bot 自己發出的訊息以 message 事件回顯上報（如 OneBot v11 的
 `report-self-message`、Telegram outgoing message）。框架在入站記錄前按
 `self.user_id == user_id` 識別回聲，按 `self_echo` 配置處理：
 

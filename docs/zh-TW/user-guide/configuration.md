@@ -383,34 +383,34 @@ fn.unregister()
 `ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false`
 覆寫緊縮或放開（見[統一事件覆寫配置](#統一事件覆寫配置eventoverrides)，用戶顯式配置即生效）。
 
-## 日誌配置
+## 日誌設定
 
 ```toml
 [ErisPulse.logger]
 level = "INFO"
-log_files = []                # 明確日誌檔案列表（與 log_dir 互斥，優先級更高）
+log_files = []                # 顯式日誌檔案清單（與 log_dir 互斥，優先級更高）
 log_dir = ""                  # 日誌目錄（設定後自動分段輪替）
 log_rotation = "size"         # 分段方式: "size" / "date" / "none"
-log_max_size_mb = 10          # size 模式單一檔案上限（MB）
+log_max_size_mb = 10          # size 模式單檔案上限（MB）
 log_backup_count = 5          # 保留的歷史日誌檔案數
 log_rotation_when = "midnight"  # date 模式輪替週期: S/M/H/D/midnight
-memory_limit = 1000             # 單一模組記憶體日誌條數上限（0 = 關閉記憶體日誌副本）
-total_memory_limit = 5000       # 全部模組記憶體日誌總條數上限（0 = 不限）
+memory_limit = 1000             # 單模組記憶體日誌筆數上限（0 = 關閉記憶體日誌副本）
+total_memory_limit = 5000       # 全部模組記憶體日誌總筆數上限（0 = 不限）
 exclude_levels = ["EVENT"]
 ```
 
-| 配置項 | 類型 | 預設值 | 說明 |
+| 設定項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | level | string | INFO | 日誌級別：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低級別，輸出框架內部詳細除錯資訊） |
-| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文字無顏色，適合日誌蒐集/管道重定向）、`json`（JSON 結構化，適合 ELK 等） |
-| log_files | array | 空 | 日誌輸出檔案列表（明確路徑，不分段） |
+| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文字無顏色，適合日誌收集/管線重新導向）、`json`（JSON 結構化，適合 ELK 等） |
+| log_files | array | 空 | 日誌輸出檔案清單（顯式路徑，不分段） |
 | log_dir | string | 空 | 日誌輸出目錄（自動建立）。設定後寫入目錄內 `erispulse.log` 並按 `log_rotation` 自動分段；與 `log_files` 互斥，`log_files` 優先 |
 | log_rotation | string | size | 分段方式：`size`（按大小）/ `date`（按時間）/ `none`（不分段） |
-| log_max_size_mb | float | 10 | size 模式單一檔案大小上限（MB），超過後輪替為 `.1`/`.2` 備份 |
+| log_max_size_mb | float | 10 | size 模式單檔案大小上限（MB），超過後輪替為 `.1`/`.2` 備份 |
 | log_backup_count | integer | 5 | 保留的歷史日誌檔案數，超出的最舊備份自動刪除 |
 | log_rotation_when | string | midnight | date 模式輪替週期：`S`/`M`/`H`/`D`/`midnight`（預設每天零點） |
-| memory_limit | integer | 1000 | 單一模組記憶體中保存的日誌條數；`0` 表示關閉記憶體日誌副本（不再寫入記憶體，已有記錄保留） |
-| total_memory_limit | integer | 5000 | 全部模組記憶體日誌總條數上限；`0` 表示不限。超限時按輪替策略淘汰最舊記錄（優先削減條數最多的模組佇列），與單一模組 `memory_limit` 獨立生效 |
+| memory_limit | integer | 1000 | 單模組記憶體中保存的日誌筆數；`0` 表示關閉記憶體日誌副本（不再寫入記憶體，已有記錄保留） |
+| total_memory_limit | integer | 5000 | 全部模組記憶體日誌總筆數上限；`0` 表示不限。超限時按輪替策略淘汰最舊記錄（優先削減筆數最多的模組佇列），與單模組 `memory_limit` 獨立生效 |
 | exclude_levels | array | 空 | 屏蔽指定日誌等級。被屏蔽等級的日誌**完全丟棄**（不寫記憶體、不推送給 Dashboard 等訂閱器、不列印、不寫檔案）。支援熱更新 |
 
 也可在程式碼中動態切換：
@@ -418,7 +418,7 @@ exclude_levels = ["EVENT"]
 ```python
 from ErisPulse.Core import logger
 
-# 按大小分段：單一檔案 10MB，保留 5 份
+# 按大小分段：單檔案 10MB，保留 5 份
 logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
 
 # 按時間分段：每天零點輪替，保留 7 份
@@ -426,7 +426,7 @@ logger.set_output_dir("logs", rotation="date", backup_count=7)
 ```
 
 > [!NOTE]
-> `log_dir` 及分段相關配置需要 ErisPulse **2.8.0+**。
+> `log_dir` 及分段相關設定需要 ErisPulse **2.8.0+**。
 
 > **隱私保護**：訊息收發內容以 **EVENT 等級**（數值 21）記錄。設定 `exclude_levels = ["EVENT"]` 即可讓後台（如 Dashboard 日誌面板）無法看到各群/私聊的訊息內容，同時不影響其它等級日誌。
 
@@ -450,13 +450,13 @@ adapters = []
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | 是否啟用模組懶載入 |
 | uninit_timeout | integer | 30 | 優雅關閉的總逾時時間（秒），超過後強制終止。0 表示不設逾時 |
-| strict_mode | integer | 0 | 嚴格模式級別，見下方「嚴格模式」說明 |
-| handler_max_concurrency | integer | 64 | 事件處理器最大並行 Task 數，設大提高吞吐但增加記憶體佔用 |
-| handler_queue_max_pending | integer | 4096 | 事件洪峰入列背壓：單平台待處理 handler Task 數上限，超限時新事件的處理器 Task 直接丟棄並記 WARNING（丟棄計數可在 troubleshoot 排查中檢視）；`0` 表示不限 |
+| strict_mode | integer | 0 | 嚴格模式層級，見下方「嚴格模式」說明 |
+| handler_max_concurrency | integer | 64 | 事件處理器最大並發 Task 數，設大可提高吞吐但增加記憶體佔用 |
+| handler_queue_max_pending | integer | 4096 | 事件洪峰入列背壓：單平台待處理 handler Task 數上限，超限時新事件的處理器 Task 直接捨棄並記錄 WARNING（捨棄計數可在 troubleshoot 排查中查看）；`0` 表示不限制 |
 | offline_bot_expiry | integer | 3600 | 離線 Bot 記錄自動過期時間（秒），0 表示不過期 |
-| plugins_dir | string / list | "plugins" | 本地外掛資料夾（相對專案根目錄）；新增/刪除/修改外掛檔案會被熱重載 watcher 自動發現 |
-| watch_ignore_dirs | list | 內建清單 | 熱重載檔案監控忽略的目錄名（`.venv`/`.git`/`__pycache__` 等）；非空清單**整體替換**內建清單，`[]` 表示不忽略任何目錄 |
-| watch_include_plugin_dirs | boolean | true | `epsdk run --reload` 是否把外掛目錄交給外掛熱重載 watcher 精確處理（單模組重載），並從全量監控中排除 |
+| plugins_dir | string / list | "plugins" | 本機插件資料夾（相對專案根目錄）；新增/刪除/修改插件檔案會被熱重載 watcher 自動發現 |
+| watch_ignore_dirs | list | 內建清單 | 熱重載檔案監控忽略的目錄名稱（`.venv`/`.git`/`__pycache__` 等）；非空列表**整體取代**內建清單，`[]` 表示不忽略任何目錄 |
+| watch_include_plugin_dirs | boolean | true | `epsdk run --reload` 是否將插件目錄交給插件熱重載 watcher 精確處理（單模組重載），並從全量監控中排除 |
 
 ### 主動 GC 設定
 
@@ -465,27 +465,27 @@ SDK 初始化完成後啟動主動 GC 背景任務，週期性執行 Python GC �
 | 設定項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | proactive_gc_interval | number | 300 | 回收間隔（秒），支援小數。0 表示停用主動 GC |
-| proactive_gc_generation | integer | 0 | 常規輪次回收分代（0/1/2，鉗制到 0..2）。注意 `gc.collect(2)` 等價於全量回收，預設 0 保持輕量；深度回收由 `proactive_gc_full_every` 週期性觸發 |
+| proactive_gc_generation | integer | 0 | 常規輪次回收分代（0/1/2，鉗制到 0..2）。注意 `gc.collect(2)` 等同於全量回收，預設 0 保持輕量；深度回收由 `proactive_gc_full_every` 週期性觸發 |
 | proactive_gc_full_every | integer | 20 | 每 N 輪做一次全量回收，0 表示停用週期性全量。全量回收受 `proactive_gc_memory_growth_mb` 門檻約束 |
-| proactive_gc_memory_growth_mb | integer | 32 | 全量回收的記憶體增長門檻（MB）：對比上次全量後的記憶體基線（優先 tracemalloc，其次 RSS），僅當增長達到此值才執行全量回收。0 表示不設門檻 |
+| proactive_gc_memory_growth_mb | integer | 32 | 全量回收的記憶體成長門檻（MB）：對比上次全量後的記憶體基準線（優先 tracemalloc，其次 RSS），僅當成長達到此值才執行全量回收。0 表示不設門檻 |
 | proactive_gc_idle_only | boolean | false | 開啟後，事件洪峰（存在未完成的 pending handler）時本輪跳過 Python GC，避免停頓與訊息處理競爭；內部資源回收不受影響 |
 | proactive_gc_gen0_min | integer | 500 | 常規輪次觸發回收的 gen0 垃圾量下限：`gc.get_count()[0]` 低於此值直接跳過（空轉輪次近乎零開銷）。0 表示始終回收 |
 
-> **2.7.1 變更**：預設 `proactive_gc_generation` 由 `2` 調整為 `0`，預設 `proactive_gc_full_every` 由 `0` 調整為 `20`。此前 `generation=2` 意味著每輪都做最重的全量回收；新預設在保持回收覆蓋的同時顯著降低空轉開銷。顯式設定的舊值仍按字面語義生效。
+> **2.7.1 變更**：預設 `proactive_gc_generation` 由 `2` 調整為 `0`，預設 `proactive_gc_full_every` 由 `0` 調整為 `20`。此前 `generation=2` 意味著每輪都做最重的全量回收；新預設在保持回收覆蓋的同時顯著降低空轉開銷。明確設定的舊值仍按字面語意生效。
 
 ### 嚴格模式
 
 嚴格模式控制模組/轉接器在載入階段不合規或失敗時的處理策略。現代模組/轉接器都應繼承對應的基底類別（`BaseModule`/`BaseAdapter`），未繼承基底類別的元件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
 
-> **2.5.2 變更**：預設級別從 `1`（跳過）調整為 `0`（寬鬆），以減少新使用者初次使用時遇到的載入問題。未繼承基底類別的元件將以 WARNING 提示並嘗試載入，而非直接拒絕。如需恢復舊行為，請顯式設定 `strict_mode = 1`。
+> **2.5.2 變更**：預設層級從 `1`（跳過）調整為 `0`（寬鬆），以減少新使用者初次使用時遇到的載入問題。未繼承基底類別的元件將以 WARNING 提示並嘗試載入，而非直接拒絕。如需恢復舊行為，請明確設定 `strict_mode = 1`。
 
-| 級別 | 名稱 | 行為 |
+| 層級 | 名稱 | 行為 |
 |------|------|------|
 | 0 | 寬鬆（預設） | 違規僅警告，未繼承基底類別的元件仍會嘗試載入（相容舊元件） |
 | 1 | 嚴格-跳過 | 拒絕未繼承基底類別的元件並跳過，其餘正常啟動 |
 | 2 | 嚴格-致命 | 收集所有違規後統一報告並中止整個啟動 |
 
-各級別下，「載入/註冊/初始化階段報錯」這類元件自身崩潰始終會被跳過；區別在於：
+各層級下，「載入/註冊/初始化階段報錯」這類元件自身崩潰始終會被跳過；區別在於：
 
 - **0 → 1**：唯一行為變化是「未繼承基底類別」從「仍載入」變為「跳過」。
 - **1 → 2**：所有違規（未繼承基底類別、載入失敗、註冊失敗、初始化失敗等）升級為致命，會在啟動檢查點收集後一次性輸出違規清單並中止。
@@ -500,11 +500,11 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> 當某個元件被嚴格模式拒絕時，日誌會明確提示如何恢復載入（加入豁免清單或調低級別）。
+> 當某個元件被嚴格模式拒絕時，日誌會明確提示如何恢復載入（加入豁免清單或調低層級）。
 
 #### 與 CLI 的聯動
 
-`epsdk run` 的啟動前自檢（設定檔可解析性、元件必填設定完整性）預設跟隨本設定：非 0 時檢查失敗即拒絕啟動，0 時僅警告繼續。也可以不改設定臨時切換：`epsdk run --strict` 本次將自檢與嚴格級別同時開啟（級別只升不降，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到執行程序），`--no-strict` 本次臨時壓到寬鬆並僅警告。
+`epsdk run` 的啟動前自檢（設定檔可解析性、元件必填設定完整性）預設跟隨本設定：非 0 時檢查失敗即拒絕啟動，0 時僅警告繼續。也可以不改設定臨時切換：`epsdk run --strict` 本次將自檢與嚴格層級同時開啟（層級只升不降，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到執行程序），`--no-strict` 本次臨時壓到寬鬆並僅警告。
 
 ## 存儲配置
 
@@ -601,7 +601,7 @@ self_echo = "bot"
 | ttl_hours | float | 168.0 | 全域保留時長（小時，0 = 永不清理） |
 | self_echo | string | bot | 入站 bot 回聲（`self.user_id == user_id`，如 OneBot `report-self-message`）處理：`bot` = 記為 bot 並標記 `meta.self_echo`；`skip` = 不記錄；`user` = 記為 user（舊行為） |
 
-> 保留策略的風險與稽核見 [會話收件匣](../advanced/transcript.md)；歸因欄位（`sender` / `meta`）與出站歸屬（`meta.module`）同見該文件。
+> 保留策略的風險與稽核見 [會話收件匣](../advanced/transcript.md)；歸因欄位（`sender` / `meta`）與出站歸屬（`meta.module`）同見該文檔。
 
 ## 國際化配置
 

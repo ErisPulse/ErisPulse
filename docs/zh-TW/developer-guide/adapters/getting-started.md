@@ -49,7 +49,7 @@ MyAdapter/
 
 ### 1. 建立專案
 
-建議直接使用鷹架產生完整骨架（含 pyproject、主類別、轉換器）：
+建議直接用鷹架生成完整骨架（含 pyproject、主類別、轉換器）：
 
 ```bash
 # 標準專案（打包發佈用）
@@ -59,16 +59,16 @@ epsdk create adapter -n MyAdapter
 epsdk create adapter -n MyAdapter --local
 ```
 
-鷹架預設產生 WebSocket 伺服器端骨架；當平台連接方式不同時，可透過 `--template`
-選擇通訊模式範本（產生後即使用對應的半成品基底類別，`start`/`shutdown` 都不需要自己寫）：
+鷹架預設生成 WebSocket 伺服器端骨架；平台連接方式不同時可經 `--template`
+選擇通訊模式模板（生成即用對應的半成品基類，`start`/`shutdown` 都不需要自己寫）：
 
 ```bash
 epsdk create adapter -n MyAdapter --template polling   # HTTP 輪詢型（getUpdates 拉取）
 epsdk create adapter -n MyAdapter --template webhook   # HTTP 回呼型（平台推送）
 ```
 
-> 三種連接模式的差異與半成品基底類別的最小實作面見
-> [適配器核心概念 - 連接模式半成品基底類別](core-concepts.md#連接模式半成品基底類別)。
+> 三種連接模式的差異與半成品基類的最小實作面見
+> [適配器核心概念 - 連接模式半成品基類](core-concepts.md#連接模式半成品基類)。
 > 完整可執行範例參考儲存庫 `examples/example-adapter-polling/` 與 `examples/example-adapter-webhook/`。
 
 也可以手動建立：
@@ -102,7 +102,7 @@ dependencies = [
 
 ### 3. 建立適配器主類別
 
-框架提供了 `ConfigClass` / `AccountConfigClass` 宣告式設定管理，適配器只需宣告設定類別即可自動載入、驗證並產生設定範本。
+框架提供了 `ConfigClass` / `AccountConfigClass` 宣告式設定管理，適配器只需宣告設定類別即可自動載入、驗證和產生設定模板。
 
 ```python
 # MyAdapter/Core.py
@@ -144,9 +144,9 @@ class MyAdapter(BaseAdapter):
         return MyPlatformConverter()
 ```
 
-> ⚠️ **關於 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 會自動處理 SDK 參照、日誌初始化和設定載入。大多數適配器**不再需要覆寫 `__init__`**。詳見 [__init__ 注意事項](#init-注意事項)。
+> ⚠️ **關於 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 會自動處理 SDK 引用、日誌初始化和設定載入。大多數適配器**不再需要覆寫 `__init__`**。詳見 [__init__ 注意事項](#init-注意事項)。
 
-> ⚠️ **關於 `super().__init__()`**：`BaseAdapter.__init__()` 負責建立 `Send` 和 `Request` 工廠實例。如果忘記呼叫，所有訊息傳送和請求操作都會拋出 `AttributeError`。詳見 [__init__ 注意事項](#init-注意事項)。
+> ⚠️ **關於 `super().__init__()`**：`BaseAdapter.__init__()` 負責建立 `Send` 和 `Request` 工廠實例。如果忘記呼叫，所有訊息傳送和請求操作都會報 `AttributeError`。詳見 [__init__ 注意事項](#init-注意事項)。
 
 ### 4. 實作必需方法
 
@@ -178,9 +178,9 @@ class MyAdapter(BaseAdapter):
         raise NotImplementedError("需要實作 call_api")
 ```
 
-#### 主動傳送 Meta 事件
+#### 主動發送 Meta 事件
 
-適配器應主動傳送 meta 事件，讓框架追蹤 Bot 的線上狀態。使用 `emit_meta()` 一行即可完成：
+適配器應主動發送 meta 事件，讓框架追蹤 Bot 的線上狀態。使用 `emit_meta()` 一行即可完成：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -207,11 +207,11 @@ class MyAdapter(BaseAdapter):
 
 ### 5. 實作 Send 類別
 
-`At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基底類別內建實作，適配器只需實作 `Raw_ob12` 和具體的傳送方法即可。
+`At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建實作，適配器只需實作 `Raw_ob12` 和具體的發送方法即可。
 
 框架提供兩個關鍵輔助方法：
 - `self._apply_modifiers(message)` — 自動合併 At/AtAll/Reply 修飾器到訊息段
-- `self.send_context` — 取得傳送上下文字典（`target_type`、`target_id`、`account_id`）
+- `self.send_context` — 取得發送上下文字典（`target_type`、`target_id`、`account_id`）
 
 ```python
 import asyncio
@@ -223,10 +223,10 @@ class MyAdapter(BaseAdapter):
 
         def Raw_ob12(self, message, **kwargs):
             """
-            傳送 OneBot12 格式訊息（必須實作）
+            發送 OneBot12 格式訊息（必須實作）
 
             使用 _apply_modifiers 自動合併修飾器狀態，
-            使用 send_context 取得傳送上下文。
+            使用 send_context 取得發送上下文。
             """
             async def _do_send():
                 segments = self._apply_modifiers(message)
@@ -238,30 +238,30 @@ class MyAdapter(BaseAdapter):
                 )
             return asyncio.create_task(_do_send())
 
-        # Text/Image/Voice/Video/File 已從 SendDSL 基底類別繼承，
+        # Text/Image/Voice/Video/File 已從 SendDSL 基類繼承，
         # 預設委託給 Raw_ob12，無需重複實作。
         # 如需平台特定邏輯，可覆寫單個方法：
         # def Text(self, text: str):
         #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-**媒體類傳送方法（Image/Video/File）實作要點：**
+**媒體類發送方法（Image/Video/File）實作要點：**
 
-- 基底類別的預設實作會將 `file` 參數封裝為 OneBot12 訊息段傳給 `Raw_ob12`，適配器需在 `Raw_ob12` 中處理下載/上傳
+- 基類的預設實作會將 `file` 參數封裝為 OneBot12 訊息段傳給 `Raw_ob12`，適配器需在 `Raw_ob12` 中處理下載/上傳
 - `file` 參數應同時支援 `bytes` 二進位資料和 `str` URL 兩種類型
 - 當傳入 URL 時，需先下載檔案再上傳到平台
-- 平台通常需要先呼叫上傳介面取得檔案識別碼，再呼叫傳送介面
+- 平台通常需要先呼叫上傳介面取得檔案識別碼，再呼叫發送介面
 
 **`__getattr__` 魔術方法：**
 
-- 實作方法名稱不分大小寫（`Text`、`text`、`TEXT` 都能呼叫）
+- 實作方法名稱大小寫不敏感（`Text`、`text`、`TEXT` 都能呼叫）
 - 未定義的方法應回傳提示訊息而非報錯
 
 **`Raw_ob12` 方法：**
 
-- 將 OneBot12 標準訊息格式轉換為平台格式傳送
+- 將 OneBot12 標準訊息格式轉換為平台格式發送
 - 使用 `self._apply_modifiers(message)` 自動處理 At/AtAll/Reply 修飾器
-- 使用 `**self.send_context` 傳遞傳送目標資訊和帳號資訊
+- 使用 `**self.send_context` 傳遞發送目標資訊和帳號資訊
 
 ### 6. 實作轉換器
 
@@ -362,15 +362,15 @@ from ErisPulse import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
-    # 透過 Event 便捷方法
+    # 透過 Event 便利方法
     await event.approve()
     # 或透過適配器直接操作
     await adapter.myplatform.Request("req_id").accept()
 ```
 
-> 如果平台不支援請求操作，可以不實作 `Request` 內部類別。基底類別預設回傳 `retcode=10002`（不支援的操作）。詳見 [請求操作規範](../../standards/request-action-spec.md)。
+> 如果平台不支援請求操作，可以不實作 `Request` 內部類別。基類預設回傳 `retcode=10002`（不支援的操作）。詳見 [請求操作規範](../../standards/request-action-spec.md)。
 
-### 8. 建立套件入口
+### 8. 建立套件進入點
 
 ```python
 # MyAdapter/__init__.py

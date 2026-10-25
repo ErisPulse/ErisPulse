@@ -158,13 +158,13 @@
               "icon": "fa-puzzle-piece"
             },
             {
-              "title": "模塊核心概念",
+              "title": "模組核心概念",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1,
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Event 包裝類詳解",
+              "title": "Event 包裝類別詳解",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"

@@ -1,6 +1,6 @@
 ---
 name: erispulse-config-cli
-description: "适用于：配置声明式 schema、排查配置问题、使用 epsdk 命令行与部署。覆盖场景：- Connection parameters need to be restarted after changes; transient connection pool creation failures will automatically retry with exponential backoff。When you forget the parameters of a `epsdk` command, want to script component management, or need to control the behavior of `run` / `stop` / `restart`, consult this section. For daily use of just `init` / `install` / `run`, remember one thing: `epsdk <command> --help` always provides parameter descriptions, so you don't need to read this entire document.。Read this when you need to choose an installation method (pip / uv / Docker / ErisPulse-App client) or troubleshoot a failed installation. If you just want to get up and running as quickly as possible, the [5-Minute Quick Start](../quick-start.md) already covers the simplest process — skip this page if that's all you need.。When the bot needs to run long-term—Docker deployment, systemd / Supervisor process supervision, reverse proxy and SSL, backup and upgrade ..."
+description: "适用于：配置声明式 schema、排查配置问题、使用 epsdk 命令行与部署。覆盖场景：- Connection parameters need to be restarted after changes; transient connection pool creation failures will automatically retry with exponential backoff。Consult it when you forget the arguments of an `epsdk` command, want to script component management, or need to control run / stop / restart behavior. If your daily usage is limited to `init` / `install` / `run`, remembering one thing is enough: `epsdk <command> --help` shows argument descriptions anytime—no need to read this document end to end.。Read this when you need to choose an installation method (pip / uv / Docker / ErisPulse-App client) or troubleshoot a failed installation. If you just want to get up and running as quickly as possible, the [5-Minute Quick Start](../quick-start.md) already covers the simplest process — skip this page if that's all you need.。When the bot needs to run long-term—Docker deployment, systemd / Supervisor process supervision, reverse proxy and SSL, backup and upgrade are all c..."
 ---
 
 # ErisPulse 配置系统与 CLI 工具链
@@ -384,44 +384,44 @@ level = "INFO"
 log_files = []                # Explicit list of log files (mutually exclusive with log_dir, higher priority)
 log_dir = ""                  # Log directory (automatic segment rotation enabled)
 log_rotation = "size"         # Segmenting method: "size" / "date" / "none"
-log_max_size_mb = 10          # Maximum single file size limit in MB for size mode
+log_max_size_mb = 10          # Maximum single file size limit (MB) for size-based rotation
 log_backup_count = 5          # Number of historical log files to retain
-log_rotation_when = "midnight"  # Rotation period for date mode: S/M/H/D/midnight
-memory_limit = 1000             # Maximum number of log entries per module in memory (0 = disable memory log copy)
-total_memory_limit = 5000       # Total memory log entries limit for all modules (0 = unlimited)
+log_rotation_when = "midnight"  # Rotation period for date-based mode: S/M/H/D/midnight
+memory_limit = 1000           # Maximum number of log entries in memory per module (0 = disable memory log copy)
+total_memory_limit = 5000     # Total memory log entries limit for all modules (0 = unlimited)
 exclude_levels = ["EVENT"]
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------|------|---------|------|
-| level | string | INFO | Logging level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed internal debugging information) |
-| format | string | rich | Logging output format: `rich` (colored, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (JSON structured, suitable for ELK, etc.) |
-| log_files | array | empty | List of log output files (explicit paths, no segmentation) |
-| log_dir | string | empty | Log output directory (automatically created). When set, logs are written into `erispulse.log` inside the directory and automatically segmented based on `log_rotation`; mutually exclusive with `log_files`, `log_files` has higher priority |
-| log_rotation | string | size | Segmenting method: `size` (by size) / `date` (by date) / `none` (no segmentation) |
-| log_max_size_mb | float | 10 | Maximum file size limit in MB for size mode; files are rotated to `.1`/`.2` backups when exceeded |
+|---------------------|------|---------------|-------------|
+| level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed internal framework debugging information) |
+| format | string | rich | Log output format: `rich` (colored, default), `plain` (plain text without colors, suitable for log collection/pipeline redirection), `json` (JSON structured, suitable for ELK, etc.) |
+| log_files | array | empty | List of explicit log file paths (unsegmented) |
+| log_dir | string | empty | Log output directory (automatically created). When set, logs are written to `erispulse.log` within the directory and automatically segmented according to `log_rotation`; mutually exclusive with `log_files`, `log_files` takes precedence |
+| log_rotation | string | size | Segmenting method: `size` (by size) / `date` (by time) / `none` (no segmentation) |
+| log_max_size_mb | float | 10 | Maximum single file size limit (MB) for size-based rotation; when exceeded, logs are rotated into `.1`/`.2` backups |
 | log_backup_count | integer | 5 | Number of historical log files to retain; oldest backups beyond this limit are automatically deleted |
-| log_rotation_when | string | midnight | Rotation period for date mode: `S`/`M`/`H`/`D`/`midnight` (default is midnight each day) |
-| memory_limit | integer | 1000 | Number of log entries saved in memory per module; `0` means disable memory log copies (no longer write to memory, existing records are retained) |
-| total_memory_limit | integer | 5000 | Total memory log entries limit for all modules; `0` means unlimited. When exceeded, oldest records are discarded according to the rotation strategy (prioritizing modules with the most entries), independent of the single module `memory_limit` |
-| exclude_levels | array | empty | Excluded log levels. Logs of excluded levels are **completely discarded** (not written to memory, not pushed to Dashboard or other subscribers, not printed, not written to file). Supports hot updates |
+| log_rotation_when | string | midnight | Rotation period for date-based mode: `S`/`M`/`H`/`D`/`midnight` (default: midnight each day) |
+| memory_limit | integer | 1000 | Number of log entries saved in memory per module; `0` means disable memory log copy (no new entries written to memory, existing records retained) |
+| total_memory_limit | integer | 5000 | Total number of log entries limit in memory for all modules; `0` means unlimited. When exceeded, oldest records are discarded according to the rotation strategy (prioritizing modules with the largest queues), independent of the per-module `memory_limit` |
+| exclude_levels | array | empty | Levels to exclude. Logs of excluded levels are **completely discarded** (not written to memory, not pushed to Dashboard or other subscribers, not printed, not written to files). Supports hot update |
 
 You can also dynamically switch in code:
 
 ```python
 from ErisPulse.Core import logger
 
-# Segment by size: 10MB per file, retain 5 copies
+# Segment by size: single file 10MB, retain 5 copies
 logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
 
-# Segment by date: rotate at midnight daily, retain 7 copies
+# Segment by time: rotate at midnight daily, retain 7 copies
 logger.set_output_dir("logs", rotation="date", backup_count=7)
 ```
 
 > [!NOTE]
 > `log_dir` and related segmentation configurations require ErisPulse **2.8.0+**.
 
-> **Privacy Protection**: Message sending and receiving content is logged at the **EVENT level** (value 21). Setting `exclude_levels = ["EVENT"]` prevents the backend (such as the Dashboard log panel) from seeing message content in groups/private chats, while not affecting logs of other levels.
+> **Privacy Protection**: Message sending/receiving content is recorded at the **EVENT level** (value 21). Setting `exclude_levels = ["EVENT"]` prevents the backend (e.g., Dashboard log panel) from viewing message content from groups/private chats, while not affecting logs of other levels.
 
 > [!NOTE]
 > The `exclude_levels` feature requires ErisPulse **2.8.0+**.
@@ -442,50 +442,50 @@ adapters = []
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | Whether to enable lazy loading of modules |
-| uninit_timeout | integer | 30 | Total timeout (seconds) for graceful shutdown; if exceeded, termination is forced. 0 means no timeout is set |
-| strict_mode | integer | 0 | Strict mode level; see the "Strict Mode" section below |
-| handler_max_concurrency | integer | 64 | Maximum concurrent Task count for event handlers; increasing this value improves throughput but increases memory usage |
-| handler_queue_max_pending | integer | 4096 | Backpressure for event burst: the maximum number of pending handler Tasks per platform. If exceeded, new event handler Tasks are discarded and a WARNING is logged (the discard count can be checked in troubleshoot). `0` means unlimited |
-| offline_bot_expiry | integer | 3600 | Automatic expiration time (seconds) for offline Bot records; 0 means no expiration |
-| plugins_dir | string / list | "plugins" | Local plugin folder (relative to project root); changes to plugin files (addition, deletion, modification) are automatically discovered by the hot-reload watcher |
-| watch_ignore_dirs | list | Built-in list | Directories to ignore in hot-reload file monitoring (e.g., `.venv`, `.git`, `__pycache__`); a non-empty list **replaces** the built-in list entirely; `[]` means no directories are ignored |
-| watch_include_plugin_dirs | boolean | true | Whether `epsdk run --reload` should hand over plugin directories to the plugin hot-reload watcher for precise handling (single-module reload) and exclude them from full monitoring |
+| uninit_timeout | integer | 30 | Total graceful shutdown timeout (seconds), after which it forcibly terminates. 0 means no timeout |
+| strict_mode | integer | 0 | Strict mode level, see "Strict Mode" section below |
+| handler_max_concurrency | integer | 64 | Maximum concurrent Task count for event handlers; increasing this improves throughput but increases memory usage |
+| handler_queue_max_pending | integer | 4096 | Event handler backpressure limit: maximum pending handler Task count per platform. When exceeded, new event handler Tasks are directly discarded and a WARNING is logged (discard count can be checked in troubleshoot); `0` means unlimited |
+| offline_bot_expiry | integer | 3600 | Automatic expiration time for offline bot records (seconds), 0 means never expire |
+| plugins_dir | string / list | "plugins" | Local plugin folder (relative to project root); new/removed/modified plugin files are automatically discovered by the hot-reload watcher |
+| watch_ignore_dirs | list | built-in list | Directories to ignore during hot-reload file monitoring (e.g., `.venv`, `.git`, `__pycache__`); non-empty list **replaces** the built-in list, `[]` means ignore no directories |
+| watch_include_plugin_dirs | boolean | true | Whether `epsdk run --reload` should hand plugin directories over to the plugin hot-reload watcher for precise handling (single module reload), and exclude them from full monitoring |
 
 ### Proactive GC Configuration
 
-After SDK initialization, a background task for proactive garbage collection (GC) is started, periodically executing Python GC and internal resource cleanup (such as offline Bot cleanup). All parameters support hot updates, and the task is restarted immediately when changes occur.
+After SDK initialization, a proactive GC background task is started, periodically executing Python GC and internal resource cleanup (e.g., offline bot cleanup). All parameters support hot updates, and the task is immediately restarted when changed.
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| proactive_gc_interval | number | 300 | Recycle interval (seconds), supports decimals. 0 means proactive GC is disabled |
-| proactive_gc_generation | integer | 0 | Regular round of generation recycling (0/1/2, clamped to 0..2). Note that `gc.collect(2)` is equivalent to full recycling; the default of 0 keeps it lightweight. Deep recycling is triggered periodically by `proactive_gc_full_every` |
-| proactive_gc_full_every | integer | 20 | Perform a full recycling every N rounds; 0 means periodic full recycling is disabled. Full recycling is constrained by the `proactive_gc_memory_growth_mb` threshold |
-| proactive_gc_memory_growth_mb | integer | 32 | Full recycling memory growth threshold (MB): compared to the memory baseline after the last full recycling (preferring tracemalloc, then RSS), full recycling is only performed if the growth reaches this value. 0 means no threshold is set |
-| proactive_gc_idle_only | boolean | false | When enabled, skip Python GC during event bursts (when there are unfinished pending handlers) to avoid pauses and message processing competition; internal resource recycling is unaffected |
-| proactive_gc_gen0_min | integer | 500 | Minimum garbage amount for triggering regular round recycling of gen0: if `gc.get_count()[0]` is below this value, the round is skipped directly (near-zero overhead for empty rounds). 0 means recycling is always performed |
+| proactive_gc_interval | number | 300 | Recycling interval (seconds), supports decimals. 0 means disable proactive GC |
+| proactive_gc_generation | integer | 0 | Regular round recycling generation (0/1/2, clamped to 0..2). Note that `gc.collect(2)` is equivalent to full recycling; default 0 keeps it lightweight; deep recycling is triggered periodically by `proactive_gc_full_every` |
+| proactive_gc_full_every | integer | 20 | Perform full recycling every N rounds, 0 means disable periodic full recycling. Full recycling is constrained by `proactive_gc_memory_growth_mb` threshold |
+| proactive_gc_memory_growth_mb | integer | 32 | Full recycling memory growth threshold (MB): compared against the memory baseline after the last full recycling (tracemalloc preferred, then RSS), full recycling is only performed when growth reaches this value. 0 means no threshold |
+| proactive_gc_idle_only | boolean | false | When enabled, skip Python GC during event peaks (when there are unfinished pending handlers), avoiding pauses and message processing contention; internal resource recycling is unaffected |
+| proactive_gc_gen0_min | integer | 500 | Minimum gen0 garbage threshold for regular round recycling: if `gc.get_count()[0]` is below this value, it is skipped directly (near-zero overhead empty rounds). 0 means always recycle |
 
-> **Change in 2.7.1**: The default `proactive_gc_generation` is adjusted from `2` to `0`, and the default `proactive_gc_full_every` is adjusted from `0` to `20`. Previously, `generation=2` meant that every round performed the heaviest full recycling; the new default maintains recycling coverage while significantly reducing idle round overhead. Explicitly configured old values still function as intended.
+> **Change in 2.7.1**: The default `proactive_gc_generation` has been adjusted from `2` to `0`, and `proactive_gc_full_every` from `0` to `20`. Previously, `generation=2` meant full recycling every round; the new default maintains coverage while significantly reducing idle round overhead. Explicitly configured old values still function as intended.
 
 ### Strict Mode
 
-Strict mode controls the handling strategy for modules/adapters that are non-compliant or fail during the loading phase. Modern modules/adapters should inherit corresponding base classes (`BaseModule`/`BaseAdapter`); components that do not inherit base classes affect the framework's context system and fallback cleanup, potentially leading to resource leaks.
+Strict mode controls the handling strategy for modules/adapters that are non-compliant or fail during the loading phase. Modern modules/adapters should inherit the corresponding base class (`BaseModule`/`BaseAdapter`). Components that do not inherit the base class affect the framework's context system and fallback cleanup, potentially causing resource leaks.
 
-> **Change in 2.5.2**: The default level is adjusted from `1` (skip) to `0` (lenient) to reduce loading issues for new users. Components that do not inherit base classes will be warned and still attempted to load, rather than directly rejected. To restore the old behavior, explicitly set `strict_mode = 1`.
+> **Change in 2.5.2**: The default level was adjusted from `1` (skip) to `0` (lenient) to reduce loading issues for new users. Components that do not inherit the base class will be warned and attempted to load, rather than being directly rejected. To restore the previous behavior, explicitly set `strict_mode = 1`.
 
 | Level | Name | Behavior |
 |------|------|------|
-| 0 | Lenient (default) | Violations only issue warnings; components that do not inherit base classes will still be attempted to load (compatible with old components) |
-| 1 | Strict-Skip | Reject components that do not inherit base classes and skip them; other components start normally |
-| 2 | Strict-Fatal | Collect all violations and report them together, then terminate the entire startup process |
+| 0 | Lenient (default) | Violations only warn, components that do not inherit the base class will still be attempted to load (compatible with old components) |
+| 1 | Strict-Skip | Reject components that do not inherit the base class and skip them, while others start normally |
+| 2 | Strict-Fatal | Collect all violations and report them together, then terminate the entire startup |
 
-In all levels, component crashes during the loading/registration/initialization phase are always skipped; the differences are as follows:
+In all levels, component self-crashes (such as errors during loading/registration/initialization) are always skipped. The differences are:
 
-- **0 → 1**: The only behavioral change is that components that do not inherit base classes change from "still loaded" to "skipped".
-- **1 → 2**: All violations (not inheriting base classes, loading failure, registration failure, initialization failure, etc.) are upgraded to fatal, and a violation list is output together at the startup checkpoint before terminating.
+- **0 → 1**: The only behavioral change is that components that do not inherit the base class change from "still loaded" to "skipped".
+- **1 → 2**: All violations (not inheriting base class, loading failure, registration failure, initialization failure, etc.) are upgraded to fatal, collected at the startup checkpoint, and a violation list is output before termination.
 
 #### Exception List
 
-If certain components cannot be migrated temporarily (e.g., old modules they depend on), they can be added to the exception list. Components listed here will be treated as if in lenient mode, even if they are non-compliant, and continue to be loaded:
+If certain components cannot be migrated temporarily (e.g., old modules they depend on), they can be added to the exception list. Components listed will be treated as lenient mode even if non-compliant, and continue to be loaded:
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -493,11 +493,11 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> When a component is rejected by strict mode, the log will clearly indicate how to restore loading (add to the exception list or lower the level).
+> When a component is rejected by strict mode, the log will clearly indicate how to resume loading (add to exception list or lower the level).
 
 #### Integration with CLI
 
-The pre-start self-check of `epsdk run` (configuration file parseability, completeness of required component configurations) follows this configuration by default: if not 0, startup is refused if the check fails; if 0, warnings are issued and startup continues. It can also be temporarily switched without changing the configuration: `epsdk run --strict` enables both self-check and strict level for this run (the level only increases, propagated to the running process via the `ERISPULSE_FRAMEWORK_STRICT_MODE` environment variable), and `--no-strict` temporarily lowers it to lenient and only issues warnings.
+The pre-start self-check of `epsdk run` (config file parseability, completeness of required component configurations) follows this configuration by default: if not 0, check failure will reject startup, while 0 will only warn and continue. You can also temporarily switch without changing the configuration: `epsdk run --strict` will enable both self-check and strict level for this run (level only increases, passed to the running process via `ERISPULSE_FRAMEWORK_STRICT_MODE` environment variable), `--no-strict` will temporarily lower it to lenient mode and only warn.
 
 ## Storage Configuration
 
@@ -589,12 +589,12 @@ self_echo = "bot"
 
 | Configuration | Type | Default | Description |
 |---------------|------|---------|-------------|
-| enabled | boolean | true | Whether to automatically record inbound/outbound messages (disabling stops writing, but historical data remains queryable) |
-| max_per_session | int | 50 | Number of entries to retain per session (0 = disable session trimming) |
+| enabled | boolean | true | Whether to automatically record inbound/outbound messages (disabling stops writing, but history remains queryable) |
+| max_per_session | int | 50 | Number of records to retain per session (0 = disable session trimming) |
 | ttl_hours | float | 168.0 | Global retention duration (in hours, 0 = never clean up) |
-| self_echo | string | "bot" | Inbound bot echo handling (when `self.user_id == user_id`, e.g., OneBot `report-self-message`):<br>`bot` = record as bot and mark `meta.self_echo`;<br>`skip` = do not record;<br>`user` = record as user (old behavior) |
+| self_echo | string | bot | Inbound bot echo handling (when `self.user_id == user_id`, e.g., OneBot `report-self-message`): `bot` = record as bot and mark `meta.self_echo`; `skip` = do not record; `user` = record as user (previous behavior) |
 
-> See [Transcript Inbox](../advanced/transcript.md) for risk and audit information about retention policies; attribution fields (`sender` / `meta`) and outbound attribution (`meta.module`) are also described in that document.
+> See [Transcript Inbox](../advanced/transcript.md) for risk and auditing information on retention policies; attribution fields (`sender` / `meta`) and outbound attribution (`meta.module`) are also described in that document.
 
 ## Internationalization Configuration
 
@@ -731,15 +731,17 @@ acl_default_allow = true
 # CLI Command Reference
 
 > [!TIP]
-> **When to read this**: When you forget the parameters of a `epsdk` command, want to script component management, or need to control the behavior of `run` / `stop` / `restart`, consult this section. For daily use of just `init` / `install` / `run`, remember one thing: `epsdk <command> --help` always provides parameter descriptions, so you don't need to read this entire document.
+> **When to read this**: Consult it when you forget the arguments of an `epsdk` command, want to script component management, or need to control run / stop / restart behavior. If your daily usage is limited to `init` / `install` / `run`, remembering one thing is enough: `epsdk <command> --help` shows argument descriptions anytime—no need to read this document end to end.
 
-`epsdk` is ErisPulse's command-line tool: it initializes projects, installs/upgrades modules and adapters, interactively configures components, runs and stops robots, and diagnoses environments, all within a single command.
+`epsdk` is the command-line tool for ErisPulse: initializing projects, installing / upgrading modules and adapters, interactively configuring components, running and stopping bots, and diagnosing the environment—all under this single command.
 
-> **Tip**: The main help for `epsdk` (without a command) is grouped by category: **Project** (`init` / `create` / `run`), **Component Management** (`install` / `uninstall` / `upgrade` / `list` / `list-remote` / `types`), **Configuration and Diagnosis** (`config` / `doctor` / `i18n`), and **Others** (`self-update` / `version`).
+> **Tip**: The main help of `epsdk` (without a command) is grouped by category: **Project** (init / create / run), **Component Management** (install / uninstall / upgrade / list / list-remote / types), **Configuration & Diagnostics** (config / doctor / i18n), **Other** (self-update / version).
+
+---
 
 ## Package Management Commands
 
-| Command | Alias | Parameters | Description |
+| Command | Alias | Arguments | Description |
 |------|------|------|------|
 | `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | Install modules/adapters |
 | `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | Uninstall modules/adapters |
@@ -748,46 +750,53 @@ acl_default_allow = true
 
 ## Diagnostic Commands
 
-| Command | Alias | Parameters | Description |
+| Command | Alias | Arguments | Description |
 |------|------|------|------|
-| `doctor` | `diag` | `[--verbose] [--fix]` | Diagnose environment and output health report; `--fix` attempts automatic repair |
+| `doctor` | `diag` | `[--verbose] [--fix]` | Diagnose the environment and output a health report; `--fix` attempts automatic repair |
 
 ### install
 
-Installs ErisPulse modules or adapter packages. If no package name is specified, enters interactive installation interface.
+Install ErisPulse module or adapter packages. If no package name is specified, an interactive installation interface is launched.
 
 **Aliases:** `i`, `add`
 
-**Parameters:**
+> **uv project integration** (2.11.1+): Inside a uv-managed project (where `uv.lock` or `[tool.uv]` exists),
+> `install` / `upgrade` / `uninstall` automatically switch to `uv add` / `uv remove`—dependencies are written to both
+> `pyproject.toml` and `uv.lock`, so `uv sync` no longer wipes out components installed by epsdk; on failure it automatically
+> falls back to the uv pip / pip channel. Arguments unsupported by uv, such as `--user`, go directly through pip. Target environment resolution order:
+> `ERISPULSE_PYTHON` → `UV_PROJECT_ENVIRONMENT` → project `.venv` → `UV_PYTHON` →
+> `VIRTUAL_ENV` → current interpreter (`epsdk doctor` shows the full decision chain).
 
-| Parameter | Short | Description |
+**Arguments:**
+
+| Argument | Short | Description |
 |------|--------|------|
-| `[package]...` | | Packages to install, can specify multiple |
+| `[package]...` | | Package names to install; multiple can be specified |
 | `--upgrade` | `-U` | Upgrade to the latest version during installation |
-| `--pre` | | Allow installation of pre-release versions |
-| `--editable` | `-e` | Install in editable mode (requires specifying path) |
-| `--user` | | Install to user site-packages directory |
+| `--pre` | | Allow installing pre-release versions |
+| `--editable` | `-e` | Install in editable mode (path required) |
+| `--user` | | Install to the user site-packages directory |
 | `--no-deps` | | Do not install dependencies |
-| `--target` | `-t` | Install to specified directory |
-| `--index-url` | | Specify PyPI mirror source address |
-| `--extra-index-url` | | Additional PyPI mirror source address (can be specified multiple times) |
-| `--no-cache-dir` | | Disable cache |
-| `--requirement` | `-r` | Install from requirements file |
-| `--constraint` | `-c` | Install from constraint file |
-| `--force-reinstall` | | Force reinstallation |
-| `--ignore-installed` | | Ignore already installed packages |
+| `--target` | `-t` | Install to the specified directory |
+| `--index-url` | | Specify the PyPI mirror URL |
+| `--extra-index-url` | | Additional PyPI mirror URLs (can be specified multiple times) |
+| `--no-cache-dir` | | Disable the cache |
+| `--requirement` | `-r` | Install from a requirements file |
+| `--constraint` | `-c` | Install from a constraints file |
+| `--force-reinstall` | | Force reinstall |
+| `--ignore-installed` | | Ignore installed packages |
 | `--compile` | | Compile .pyc files after installation |
 | `--no-compile` | | Do not compile .pyc files after installation |
-| `--prefix` | | Install to specified prefix directory |
-| `--src` | | Source code directory used for editable installation |
-| `--config-settings` | | Pass configuration to build backend (can be specified multiple times) |
-| `--no-binary` | | Restrict not to use binary packages (format like `:all:`) |
-| `--only-binary` | | Restrict to use only binary packages (format like `:all:`) |
+| `--prefix` | | Install to the specified prefix directory |
+| `--src` | | Source directory used for editable installs |
+| `--config-settings` | | Configuration passed to the build backend (can be specified multiple times) |
+| `--no-binary` | | Restrict use of binary packages (format such as `:all:`) |
+| `--only-binary` | | Restrict to binary packages only (format such as `:all:`) |
 | `--prefer-binary` | | Prefer binary packages |
 | `--build-isolation` | | Enable build isolation |
 | `--no-build-isolation` | | Disable build isolation |
 | `--upgrade-strategy` | | Upgrade strategy: `eager`, `only-if-needed`, `to-satisfy-only` |
-| `--break-system-packages` | | Allow modification of system package manager managed Python packages |
+| `--break-system-packages` | | Allow modifying Python packages managed by the system package manager |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
@@ -799,24 +808,24 @@ epsdk install Weather
 # Install multiple modules
 epsdk install Yunhu Weather
 
-# Install from mirror source and upgrade
+# Install and upgrade from a mirror
 epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
-# Editable mode installation (development mode)
+# Install in editable mode (development mode)
 epsdk install -e ./my-adapter
 ```
 
 ### uninstall
 
-Uninstalls installed ErisPulse modules or adapter packages. If no package name is specified, enters interactive uninstallation interface.
+Uninstall installed ErisPulse module or adapter packages. If no package name is specified, an interactive uninstall interface is launched.
 
 **Aliases:** `rm`, `remove`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Description |
+| Argument | Description |
 |------|------|
-| `<package>...` | Packages to uninstall, can specify multiple |
+| `<package>...` | Package names to uninstall; multiple can be specified |
 | `--no-uv` | Use pip instead of uv |
 
 **Examples:**
@@ -831,17 +840,17 @@ epsdk uninstall Yunhu Weather
 
 ### upgrade
 
-Upgrades installed ErisPulse components. If no package name is specified, upgrades all interactively.
+Upgrade installed ErisPulse components. If no package name is specified, upgrade all interactively.
 
 **Aliases:** `up`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
-| `[package]...` | | Packages to upgrade, can specify multiple |
+| `[package]...` | | Package names to upgrade; multiple can be specified |
 | `--force` | `-f` | Force upgrade, skip confirmation |
-| `--pre` | | Allow upgrade to pre-release versions |
+| `--pre` | | Allow upgrading to pre-release versions |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
@@ -850,7 +859,7 @@ Upgrades installed ErisPulse components. If no package name is specified, upgrad
 # Upgrade all packages
 epsdk upgrade
 
-# Upgrade specified package
+# Upgrade a specific package
 epsdk upgrade Weather
 
 # Force upgrade (skip confirmation)
@@ -859,16 +868,16 @@ epsdk upgrade -f
 
 ### self-update
 
-Updates the ErisPulse SDK to the latest version.
+Update the ErisPulse SDK itself to the latest version.
 
 **Aliases:** `su`, `update`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
-| `[version]` | | Target version number to update to |
-| `--pre` | | Allow update to pre-release version |
+| `[version]` | | Specify the target version to update to |
+| `--pre` | | Allow updating to pre-release versions |
 | `--force` | `-f` | Force update, skip confirmation |
 | `--no-uv` | | Use pip instead of uv |
 
@@ -878,10 +887,10 @@ Updates the ErisPulse SDK to the latest version.
 # Update to the latest stable version
 epsdk self-update
 
-# Update to a specified version
+# Update to a specific version
 epsdk self-update 1.2.3
 
-# Allow pre-release version
+# Allow pre-release versions
 epsdk self-update --pre
 
 # Force update
@@ -889,31 +898,31 @@ epsdk self-update -f
 ```
 
 > [!NOTE]
-> When installed via `uv tool install ErisPulse`, this command automatically switches to `uv tool upgrade ErisPulse` (if version is specified, it becomes `uv tool install ErisPulse==<version> --force`). Direct pip upgrades will have tool environment overwritten by uv’s manifest restore.
-> On Windows, updates occur in a new console window: the current CLI must exit first to release file locks on tool environment, and the terminal can be reopened after the prompt completes.
+> When installed via `uv tool install ErisPulse`, this command automatically switches to `uv tool upgrade ErisPulse` (or `uv tool install ErisPulse==<version> --force` when a version is specified), since a direct pip upgrade of the tool environment would be wiped out by uv's manifest restoration.
+> On Windows, the update runs in a new console window: the current CLI must exit first to release the tool environment files; after the window indicates completion, simply reopen the terminal.
 
 ---
 
 ## Information Query Commands
 
-| Command | Alias | Parameters | Description |
+| Command | Alias | Arguments | Description |
 |------|------|------|------|
 | `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | List installed components |
-| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | List remote available components |
-| `version` | `ver` | | Display SDK and Python version information (equivalent to `-V`) |
+| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | List remotely available components |
+| `version` | `ver` | | Show SDK and Python version information (equivalent to `-V`) |
 
 ### list
 
-Lists installed ErisPulse modules and adapters.
+List installed ErisPulse modules and adapters.
 
 **Aliases:** `l`, `ls`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
 | `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
-| `--outdated` | `-o` | Only show upgradable packages |
+| `--outdated` | `-o` | Show only upgradable packages |
 
 **Examples:**
 
@@ -921,39 +930,39 @@ Lists installed ErisPulse modules and adapters.
 # List all installed components
 epsdk list
 
-# Only list modules
+# List modules only
 epsdk list -t modules
 
-# Only list adapters
+# List adapters only
 epsdk list -t adapters
 
-# Only show upgradable packages
+# Show only upgradable packages
 epsdk list -o
 ```
 
 ### list-remote
 
-Lists ErisPulse modules and adapters available in the remote repository.
+List ErisPulse modules and adapters available in remote repositories.
 
 **Aliases:** `lsr`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
 | `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
-| `--refresh` | `-r` | Force refresh remote package list cache |
+| `--refresh` | `-r` | Force refresh of the remote package list cache |
 
 **Examples:**
 
 ```bash
-# List all remote available components
+# List all remotely available components
 epsdk list-remote
 
-# Only list remote modules
+# List remote modules only
 epsdk list-remote -t modules
 
-# Force refresh cache and list
+# Force refresh the cache before listing
 epsdk list-remote -r
 ```
 
@@ -961,123 +970,127 @@ epsdk list-remote -r
 
 ## Configuration Commands
 
-| Command | Alias | Parameters | Description |
+| Command | Alias | Arguments | Description |
 |------|------|------|------|
-| `config` | `cfg`, `conf` | `[name] [--list/-l] [--json]` | Interactive configuration of adapter/module declarative configuration items |
+| `config` | `cfg`, `conf` | `[name] [--list/-l] [--json]` | Interactively configure declarative config entries of adapters/modules |
 
 ### config
 
-Interactive filling of adapter/module declarative configuration items. The wizard is driven by the adapter/module declared configuration class (`ConfigClass` / `AccountConfigClass`), automatically generating forms and validating, without manually writing `config.toml`.
+Interactively fill in the declarative config entries of adapters/modules. The wizard is driven by the config classes declared by the adapter/module (`ConfigClass` / `AccountConfigClass`), automatically generating and validating forms—no need to hand-write config.toml.
 
-Adapters additionally support multi-account (bot account) management: add/edit/delete accounts, and enable/disable switches.
+Adapters additionally support multi-account (bot account) management: adding/editing/deleting accounts, and enable/disable switches.
 
 **Aliases:** `cfg`, `conf`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
-| `[name]` | | Target name (adapter platform name or module name), leave empty to enter interactive selection |
-| `--list` | `-l` | Only list configuration status of all targets, do not enter wizard |
-| `--json` | | Output configuration status of all targets in JSON format (for CI / script consumption), do not enter wizard |
+| `[name]` | | Target name (adapter platform name or module name); leave empty to enter interactive selection |
+| `--list` | `-l` | Only list the configuration status of all targets without entering the wizard |
+| `--json` | | Output all targets and their configuration status as JSON (for CI / script consumption) without entering the wizard |
 
 **Examples:**
 
 ```bash
-# View configuration status of all adapters/modules
+# View the configuration status of all adapters/modules
 epsdk config --list
 
-# Output configuration status in JSON format (for CI / script consumption)
+# Output configuration status as JSON (for CI / script consumption)
 epsdk config --json
 
-# Interactive selection of target for configuration
+# Interactively select a target to configure
 epsdk config
 
-# Directly configure specified adapter
+# Directly configure a specific adapter
 epsdk config yunhu
 
-# Directly configure specified module
+# Directly configure a specific module
 epsdk config MyModule
 ```
 
-**Explanation:**
+**Notes:**
 
-- Configuration status is divided into four levels: `Ready` (validation passed), `Incomplete` (missing or validation failed required fields), `Not Configured` (never generated), `No Configuration` (target did not declare configuration class)
-- Field values are marked with source information: existing configurations show `（Current: value）`, unconfigured fields show schema default value `（Default: value）`; pressing Enter retains the value
-- Secret-type fields (declared `secret`) do not echo input, pressing Enter retains the set value
-- In interactive selection mode, after completing a single wizard, it returns to the selection menu (status refreshed), allowing continuous configuration of multiple targets, leaving empty to exit
-- Global form validation fails and re-entry is abandoned, this wizard terminates and does not write any configuration (to avoid generating "enabled but incomplete configuration" semi-finished states)
-- After saving, immediately writes to `config/config.toml`, visible in Dashboard and running SDK; running adapters need to restart the process to apply new account configurations
-- `epsdk install` (interactive installation) and `epsdk init` after successful adapter installation, if configuration declaration is detected, automatically guides into this wizard; command-line direct package installation only prints configuration prompt
+- Configuration status has four levels: `Ready` (validation passed), `Incomplete` (required fields missing or validation failed), `Not Configured` (never generated), `No Configuration` (target declares no config class)
+- Field values carry a source annotation: existing configuration shows `(current: value)`, and when unconfigured the schema default is shown as `(default: value)`; pressing Enter directly keeps that value
+- Secret-type fields (declared with `secret`) are not echoed during input; pressing Enter keeps the already-set value
+- In interactive selection mode, after a single wizard finishes it returns to the selection menu (with refreshed status), allowing you to configure multiple targets consecutively; leave empty to exit
+- If global form validation fails and you abandon re-filling, the wizard aborts without writing any configuration (avoiding a half-finished state of "enabled but incomplete configuration")
+- After saving, it is immediately written to `config/config.toml`, visible to both the Dashboard and the running SDK; running adapters that need to apply new account configuration can pick it up by restarting the process
+- After `epsdk install` (interactive installation) and `epsdk init` successfully install an adapter, if a configuration declaration is detected, this wizard is automatically invoked; when installing by directly specifying package names on the command line, only a configuration hint is printed
 
 ---
 
-## Control Commands
+## Run Control Commands
 
 > [!TIP]
-> `epsdk run` will automatically detect and use the `.venv` virtual environment in the project directory to run the robot
-> (the interpreter can also be explicitly specified via the `ERISPULSE_PYTHON` environment variable). `epsdk install` /
-> `uninstall` / `upgrade` / `list` also act on the project's virtual environment.
+> `epsdk run` automatically detects and uses the `.venv` virtual environment in the project directory to run the bot
+> (you can also explicitly specify an interpreter via the `ERISPULSE_PYTHON` environment variable). `epsdk install` /
+> `uninstall` / `upgrade` / `list` likewise operate on the project virtual environment.
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
-| `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | Run a specified script or SDK |
-| `stop` | — | `[--force] [--pid PID]` | Stop a running instance (started by `epsdk run`) |
-| `restart` | — | `[--force] [--pid PID]` | Restart a running instance (stop and restart with original parameters) |
+| Command | Alias | Arguments | Description |
+|------|------|------|------|
+| `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | Run the specified script or the SDK |
+| `stop` | — | `[--force] [--pid PID]` | Stop the running instance (started by `epsdk run`) |
+| `restart` | — | `[--force] [--pid PID]` | Restart the running instance (stop, then relaunch with the original arguments) |
 
 ### run
 
-Run an ErisPulse project script or directly start the SDK. Hot-reload mode is supported.
+Run an ErisPulse project script or start the SDK directly. Hot reload mode is supported.
 
-**Alias:** `r`
+**Aliases:** `r`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Description |
-|-----------|-------------|
-| `[script]` | The script file to run; if unspecified, run the SDK |
-| `--reload` | Enable hot-reload mode, monitoring file changes to automatically trigger component-level code hot-reload (linked with the hot-reload system, no full process restart required) |
-| `--strict` / `--no-strict` | Temporarily enable/disable strict mode (effective only for this run, not written to configuration); defaults to follow `ErisPulse.framework.strict_mode` |
+| Argument | Description |
+|------|------|
+| `[script]` | Script file to run; if not specified, runs the SDK |
+| `--reload` | Enable hot reload mode: monitoring file changes automatically triggers component-level code hot reload (no full process restart needed); by default directories like `.venv`/`.git` are ignored (configurable via `ErisPulse.framework.watch_ignore_dirs`), and the plugins directory is handled precisely by the plugin hot-reload watcher |
+| `--strict` / `--no-strict` | Temporarily enable / disable strict mode (effective for this run only, not written to config); by default follows `ErisPulse.framework.strict_mode` |
 
 **Examples:**
 
 ```bash
-# Directly run the SDK
+# Run the SDK directly
 epsdk run
 
-# Run a specified script file
+# Run a specific script file
 epsdk run main.py
 
-# Run with hot-reload mode (automatic code-level hot-reload triggered on file changes)
+# Run in hot reload mode (file changes automatically trigger code-level hot reload)
 epsdk run main.py --reload
 
-# SDK hot-reload mode
+# SDK hot reload mode
 epsdk run --reload
 
-# Temporary strict mode: exit if pre-check fails before startup, framework strict level temporarily raised to at least 1 for this run
+# Temporary strict mode: exit if the pre-start self-check fails, framework strictness raised to at least 1 for this run
 epsdk run main.py --strict
 
-# Temporary relaxed mode (strict_mode is enabled in configuration but want to run this time)
+# Temporary relaxed mode (strict_mode is on in config but you just want to get running this time)
 epsdk run main.py --no-strict
 ```
 
-**Pre-start self-check:** Before `run` starts, the system quickly checks the parseability of `config/config.toml` and the completeness of required configurations for installed components. The strictness defaults to follow `ErisPulse.framework.strict_mode` (if non-zero, check failure results in exit; if zero, only a warning is issued and continues). Missing configuration files are considered normal for first-time startup, only a prompt is issued without failure evaluation. `--strict` temporarily enables: pre-check failure results in exit, and the framework strict level is temporarily raised to at least 1 (skipping non-compliant components, propagated via `ERISPULSE_FRAMEWORK_STRICT_MODE` environment variable to the running process, not written to configuration file); `--no-strict` temporarily relaxes. If self-check itself encounters an exception, it is automatically skipped, excluding network detection, and will not block startup.
+**Pre-start self-check:** Before starting, `run` quickly checks the parseability of `config/config.toml` and the completeness of required configuration for installed components; strictness defaults to `ErisPulse.framework.strict_mode` (when non-zero, a failed check exits immediately; when 0, it only warns and continues). A missing config file is treated as a normal first launch—only a hint is shown, not judged as a failure. `--strict` temporarily enables it: exit immediately if the pre-check fails, and raise the framework strictness level to at least 1 for this run (non-compliant components are skipped, propagated to the running process via the `ERISPULSE_FRAMEWORK_STRICT_MODE` environment variable, not written to the config file); `--no-strict` conversely temporarily relaxes it. The self-check skips itself automatically when it encounters its own errors, involves no network probing, and never blocks startup.
+
+> **Supervision structure of `--reload`** (since 2.11.1): `epsdk run --reload` runs as a "supervisor process + reload worker subprocess". Hot reloads triggered by saving `.py` files all happen inside the worker (mutually exclusive serialization, burst coalescing); syntax errors on the module side are rejected by an upfront pre-check, and the old instance keeps serving. When `sdk.hard_restart()` is called, the worker exits with code 42, and after the supervisor displays the reason it automatically pulls up a brand-new worker—after upgrading the framework itself, the new code takes effect immediately.
 
 ### stop
 
 Stop a running ErisPulse instance (started by `epsdk run` and executed in the same project directory).
-When `run` starts, it writes the supervisor process PID, current framework subprocess PID, and the original startup command to
-`.erispulse/runtime.json`. `stop` uses this to locate the instance.
+When `run` starts, it writes the supervisor process PID, the current framework subprocess PID, and the original launch command into
+`.erispulse/runtime.json`, which `stop` uses to locate the instance.
 
-**Stop sequence:** On POSIX systems, first send SIGINT to the supervisor process (same as Ctrl+C, an elegant shutdown path—
-the finally chain automatically terminates the framework subprocess), escalating to SIGTERM / SIGKILL if timeout occurs; on Windows, there is no process signal semantics, so first terminate the framework subprocess and then the supervisor process (to avoid the supervisor mistakenly interpreting forced termination as a crash and restarting).
+**Stop sequence:** On POSIX, SIGINT is first sent to the supervisor process (the same graceful shutdown path as Ctrl+C—the
+finally chain automatically terminates the framework subprocess), escalating step by step to SIGTERM / SIGKILL on timeout; Windows has no
+process signal semantics, so the framework subprocess is terminated first and then the supervisor process (to prevent the supervisor from misjudging the force kill as a crash
+and respawning).
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Description |
-|-----------|-------------|
-| `--force` | Skip graceful stop and directly force terminate |
-| `--pid PID` | Directly specify the target process PID (overrides the runtime status file, used for non-standard startup methods) |
+| Argument | Description |
+|------|------|
+| `--force` | Skip graceful stop, terminate forcibly |
+| `--pid PID` | Directly specify the target process PID (overrides the runtime state file, for non-standard launch methods) |
 
 **Examples:**
 
@@ -1091,44 +1104,47 @@ epsdk stop --force
 
 ### restart
 
-Restart a running ErisPulse instance: after stopping according to the semantics of `stop`, restart using the **original startup command** recorded in the status file (foreground takes over the current terminal, and the new instance writes a new runtime status file).
+Restart the running ErisPulse instance: after stopping with `stop` semantics, relaunch with the
+**original launch command** recorded in the state file (taking over the current terminal in the foreground; the new instance writes a new runtime state file).
 
-**Parameters:** Same as `stop` (`--force` / `--pid PID`).
+**Arguments:** Same as `stop` (`--force` / `--pid PID`).
 
-**Example:**
+**Examples:**
 
 ```bash
-# Graceful restart (useful after pip upgrade of adapter/module to make code changes effective; code-level hot reload via sdk.reload_module / sdk.adapter.reload is also possible during runtime, no restart required)
+# Graceful restart (make pip-upgraded adapters/modules take effect; running modules can also use
+# sdk.reload_module / sdk.adapter.reload code-level hot reload, no restart needed)
 epsdk restart
 ```
 
 > [!NOTE]
-> Startup methods such as `python main.py` that bypass `epsdk run` do not write runtime status files—processes started this way should be managed using system tools, or stopped by specifying the PID with `epsdk stop --pid <PID>`.
+> Launch methods such as `python main.py` that bypass `epsdk run` do not write the runtime state file—manage such
+> processes with system tools, or specify the PID with `epsdk stop --pid <PID>`.
 
 ---
 
 ## Project Management Commands
 
-| Command | Alias | Parameters | Description |
+| Command | Alias | Arguments | Description |
 |------|------|------|------|
 | `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--adapter/-a <name>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | Initialize an ErisPulse project |
-| `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | Create module/adapter scaffolding; `pack` converts local plugins into publishable projects |
+| `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | Create module/adapter scaffolding; `pack` converts a local plugin into a publishable project |
 
 ### init
 
-Initialize a new ErisPulse project. Supports interactive and quick mode, generates `pyproject.toml` (dependency list) since 2.8.4, optionally creates project `.venv` virtual environment and installs framework and adapters, and supports **specifying any directory**.
+Initialize a new ErisPulse project. Supports interactive and quick modes; since 2.8.4 it generates `pyproject.toml` (dependency manifest), optionally creates a project `.venv` virtual environment and installs the framework and adapters, and supports **specifying any directory**.
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
-| `[path]` | | Target path (can include parent directory, e.g. `../apps/mybot`; pure name equivalent to `--project-name`) |
+| `[path]` | | Target path (may include a parent directory, e.g. `../apps/mybot`; a bare name is equivalent to `--project-name`) |
 | `--project-name` | `-n` | Project name |
-| `--path` | | Project parent directory (combined with `-n` to specify creation location) |
-| `--adapter` | `-a` | Pre-selected adapters to install (can be passed multiple times or separated by commas), skips adapter inquiry and selection when passed |
-| `--quick` | `-q` | Quick mode, skips interactive wizard (default creates `.venv` and installs dependencies) |
-| `--force` | `-f` | Force overwrite existing configuration files |
-| `--here` | | Initialize in current directory, do not create subdirectory |
+| `--path` | | Project parent directory (combined with `-n` to specify the creation location) |
+| `--adapter` | `-a` | Preselect adapters to install (repeatable or comma-separated); when provided, skips adapter prompting and selection |
+| `--quick` | `-q` | Quick mode, skip the interactive wizard (creates `.venv` and installs dependencies by default) |
+| `--force` | `-f` | Force overwrite of existing config files |
+| `--here` | | Initialize in the current directory without creating a subdirectory |
 | `--no-uv` | | Use pip instead of uv |
 | `--no-venv` | | Skip virtual environment creation and dependency installation |
 
@@ -1138,10 +1154,10 @@ Initialize a new ErisPulse project. Supports interactive and quick mode, generat
 # Interactive initialization
 epsdk init
 
-# Quick initialization (creates my_bot/ in current directory, with pyproject.toml + .venv)
+# Quick initialization (creates my_bot/ in the current directory, with pyproject.toml + .venv)
 epsdk init -q -n my_bot
 
-# Quick initialization and pre-install adapters (skips interactive, for scripts / CI scenarios)
+# Quick initialization with pre-installed adapters (non-interactive, for scripts / CI)
 epsdk init -q -n my_bot --adapter yunhu,telegram
 
 # Initialize in any specified directory (../apps/mybot)
@@ -1153,28 +1169,28 @@ epsdk init -n my_bot --path ../apps
 # Force overwrite existing configuration
 epsdk init -f
 
-# Initialize in current directory
+# Initialize in the current directory
 epsdk init --here -n my_bot
 
-# Generate project structure only, skip virtual environment creation
+# Generate project structure only, without creating a virtual environment
 epsdk init --no-venv -n my_bot
 ```
 
-init output: `main.py`, `pyproject.toml` (dependency list), `config/config.toml` + `config.full.example`, `config/ssl/`, `logs/`, `.gitignore`, `README.md`; if virtual environment creation is selected, additionally generates `.venv` and installs `erispulse` and selected adapters in it.
+init artifacts: `main.py`, `pyproject.toml` (dependency manifest), `config/config.toml` + `config.full.example`, `config/ssl/`, `logs/`, `.gitignore`, `README.md`; when creating a virtual environment is chosen, a `.venv` is additionally generated with `erispulse` and the selected adapters installed into it.
 
 > [!NOTE]
-> `.gitignore` is a grouped template: Python bytecode and build artifacts, virtual environment and `.env`, tool cache, editor and system files, and **excludes `config/` and `logs/` runtime directories as a whole**—`config.toml` contains sensitive information such as adapter tokens, not recommended for repository; share configuration skeleton using `config.full.example`.
+> The `.gitignore` is a grouped template: Python bytecode and build artifacts, virtual environments and `.env`, tool caches, editor and system files, and it **excludes the `config/` and `logs/` runtime directories entirely**—`config.toml` contains sensitive information such as adapter tokens and is not recommended for version control; use `config.full.example` to share the configuration skeleton.
 
 > [!WARNING]
-> **Do not use `uv run epsdk run` to run the bot**. `uv run` creates a **one-time isolated environment** when executed in a directory without `pyproject.toml`—adapters installed via `epsdk install` in it will not persist. Please use `epsdk run` in the project directory (automatically uses project `.venv`), or activate the virtual environment first before running.
+> **Do not use `uv run epsdk run` to run the bot**. When executed in a directory without `pyproject.toml`, `uv run` creates a **disposable isolated environment**—adapters installed via `epsdk install` inside it will not persist. Use `epsdk run` inside the project directory (which automatically uses the project `.venv`), or activate the virtual environment first and then run.
 
 ### create
 
-Creates scaffolding for ErisPulse modules or adapters; the `pack` subcommand converts local plugins (`plugins/` directory) into publishable standard projects.
+Create scaffolding projects for ErisPulse modules or adapters; the `pack` subcommand converts local plugins (the `plugins/` directory) into publishable standard projects.
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
 | `{module,adapter,pack}` | | Type to create: `module` / `adapter` / `pack` (plugin to project) |
 | `--name` | `-n` | Project name (PascalCase) |
@@ -1182,32 +1198,32 @@ Creates scaffolding for ErisPulse modules or adapters; the `pack` subcommand con
 | `--author` | `-a` | Author name |
 | `--email` | `-e` | Author email |
 | `--homepage` | | Project homepage URL |
-| `--output` | `-o` | Output directory (default is current directory) |
-| `--force` | `-f` | Force overwrite existing directories |
-| `--local` | | Create local plugin (available for `module` / `adapter`): generates `plugins/<name>/` package structure,免打包安装 (no packaging installation) |
+| `--output` | `-o` | Output directory (defaults to current directory) |
+| `--force` | `-f` | Force overwrite of an existing directory |
+| `--local` | | Create a local plugin (available for `module` / `adapter`): generates a `plugins/<name>/` package structure, installable without packaging |
 
 **Examples:**
 
 ```bash
-# Interactive creation (guides selection of type and filling information)
+# Interactive creation (guided type selection and info filling)
 epsdk create
 
-# Directly create Module project
+# Create a Module project directly
 epsdk create module -n MyModule
 
-# Create local plugin (placed in project plugins/ directory, automatically discovered on startup)
+# Create a local plugin (placed in the project's plugins/ directory, auto-discovered at startup)
 epsdk create module -n MyModule --local
 
-# Create local adapter plugin (same as above, no packaging development)
+# Create a local adapter plugin (same as above, package-free development)
 epsdk create adapter -n MyAdapter --local
 
-# Directly create Adapter project
+# Create an Adapter project directly
 epsdk create adapter -n MyAdapter
 
-# Convert local plugin to publishable project (interactive selection of plugin → complete metadata → generate standard project)
+# Convert a local plugin into a publishable project (interactively select plugin → complete metadata → generate standard project)
 epsdk create pack
 
-# Complete parameters
+# Full arguments
 epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@example.com"
 
 # Specify output directory
@@ -1221,27 +1237,27 @@ epsdk create module -n MyModule -f
 
 ## Language Commands
 
-| Command | Alias | Parameters | Description |
+| Command | Alias | Arguments | Description |
 |------|------|------|------|
-| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | View or switch CLI display language |
+| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | View or switch the CLI display language |
 
 ### i18n
 
-View current CLI language, list supported languages, switch display language. If no parameter is specified, enter interactive selection interface.
+View the current CLI language, list supported languages, or switch the display language. If no argument is specified, an interactive selection interface is launched.
 
 **Aliases:** `language`, `lang`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
-| `[lang]` | | Language code to switch to (e.g., `zh-CN`, `en`, `ja`, `ru`) |
+| `[lang]` | | Language code to switch to (e.g. `zh-CN`, `en`, `ja`, `ru`) |
 | `--list` | `-l` | List all supported languages |
 
 **Examples:**
 
 ```bash
-# Interactive language selection
+# Interactively select a language
 epsdk i18n
 
 # Switch to English
@@ -1258,26 +1274,26 @@ epsdk i18n --list
 
 ## Type Stub Commands
 
-| Command | Alias | Parameters | Description |
+| Command | Alias | Arguments | Description |
 |------|------|------|------|
 | `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | Generate type stub files to enable IDE completion |
 
 ### types
 
-Scans installed ErisPulse modules and adapters, generates `.pyi` type stub files for them, enabling accurate code completion and type checking support in IDEs.
+Scan installed ErisPulse modules and adapters and generate `.pyi` type stub files for them, enabling accurate code completion and type checking support in your IDE.
 
 **Aliases:** `t`, `stub`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
-| `--output` | `-o` | Output path (default is `ep-stubs/` in current directory) |
-| `--force` | | Force overwrite existing stub files |
-| `--adapters-only` | | Generate type stubs only for adapters |
-| `--modules-only` | | Generate type stubs only for modules |
+| `--output` | `-o` | Output path (defaults to `ep-stubs/` in the current directory) |
+| `--force` | | Force overwrite of existing stub files |
+| `--adapters-only` | | Generate type stubs for adapters only |
+| `--modules-only` | | Generate type stubs for modules only |
 
-> **Note:** `--adapters-only` and `--modules-only` are mutually exclusive; if both are specified, the latter takes precedence.
+> **Note:** `--adapters-only` and `--modules-only` are mutually exclusive; when both are specified, the latter takes effect.
 
 **Examples:**
 
@@ -1285,10 +1301,10 @@ Scans installed ErisPulse modules and adapters, generates `.pyi` type stub files
 # Generate type stubs for all installed modules and adapters
 epsdk types
 
-# Generate type stubs only for adapters
+# Generate adapter stubs only
 epsdk types --adapters-only
 
-# Output to specified directory
+# Output to a specified directory
 epsdk types -o ./typings
 
 # Force overwrite existing files
@@ -1301,14 +1317,14 @@ epsdk types --force
 
 The following parameters apply to all commands:
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
-| `--help` | `-h` | Display help information |
-| `--version` | `-V` | Display version information |
-| `--verbose` | `-v` | Display detailed output (can be stacked with `-vv`/`-vvv`) |
+| `--help` | `-h` | Show help information |
+| `--version` | `-V` | Show version information |
+| `--verbose` | `-v` | Show verbose output (stackable `-vv`/`-vvv`) |
 | `--no-color` | | Disable colored output (suitable for CI / log collection) |
-| `--no-banner` | | Skip startup Banner (scripted calls / CI scenarios; non-interactive terminals and `ERISPULSE_NO_BANNER=1` automatically silent) |
-| `--yes` | `-y` | Automatically confirm all interactive prompts (non-interactive runs) |
+| `--no-banner` | | Skip the startup banner (for scripted calls / CI scenarios; automatically silent on non-interactive terminals and when `ERISPULSE_NO_BANNER=1`) |
+| `--yes` | `-y` | Automatically confirm all interactive prompts (non-interactive run) |
 
 ---
 
@@ -1319,32 +1335,34 @@ The following parameters apply to all commands:
 > [!NOTE]
 > This command requires ErisPulse **2.7.0+**.
 
-Diagnoses the current CLI runtime environment and outputs a health report. Used to troubleshoot issues like "why can't it be installed / connected".
+Diagnose the current CLI runtime environment and output a health report. Used to troubleshoot "why won't it install / connect" type issues.
 
-| Parameter | Description |
+| Argument | Description |
 |------|------|
-| `--verbose` | Display detailed diagnostic information |
-| `--fix` | Attempt to automatically fix repairable issues after diagnosis |
+| `--verbose` | Show detailed diagnostic information |
+| `--fix` | After diagnosis, attempt automatic repair of fixable issues |
 
 **Check items**:
-- **Python**: Interpreter version and path
-- **Installation backend**: Whether `uv` or `pip` is used
-- **Target interpreter**: The actual Python environment where packages are installed
-- **Configuration file**: Whether `config/config.toml` exists
-- **Component configuration**: Completeness of declarative configuration for installed components ("installed but can't run" often due to missing required fields)
-- **PyPI connectivity**: Whether PyPI can be accessed (and displays the number of discovered components)
-- **System proxy**: Whether a proxy is detected
+- **Python**: interpreter version and path
+- **Install backend**: whether `uv` or `pip` is used
+- **Target interpreter**: the target Python environment where packages are actually installed
+- **Config file**: whether `config/config.toml` exists
+- **Component configuration**: declarative configuration completeness of installed components ("installed but won't run" is often due to missing required fields)
+- **Configuration pollution** (2.11.1+): scans for residual keys left over from historical upgrades (shadow state keys bound by older runtime versions, orphaned config sections) and reports upon detection
+- **PyPI connectivity**: whether PyPI is reachable (and shows the number of components discovered)
+- **System proxy**: whether a proxy is detected
 
-**Automatic repair (with `--fix`)**:
-- `config.toml` missing → Generate initial configuration file according to current language (same source as `init` project creation)
-- Component configuration "incomplete" → Launch interactive configuration wizard one by one to complete required fields (non-interactive environments prompt to use `epsdk config <name>`)
-- Issues such as low Python version, PyPI access failure, requiring manual intervention → Only output action suggestions
+**Automatic repair (`--fix`)**:
+- Missing `config.toml` → generates an initial config file in the current language (same source as `init` project creation)
+- Component configuration "Incomplete" → launches the interactive configuration wizard one by one to complete required fields (in non-interactive environments, prompts to use `epsdk config <name>` instead)
+- Configuration pollution residual keys → lists their sources and deletes them after confirmation (tomlclass lossless path, comments and order preserved)
+- Issues requiring manual intervention such as a too-low Python version or unreachable PyPI → outputs action recommendations only
 
 ```bash
-# Environment diagnosis
+# Run environment diagnostics
 epsdk doctor
 
-# Using alias
+# Use the alias
 epsdk diag
 
 # Diagnose and attempt automatic repair
@@ -1355,7 +1373,7 @@ epsdk doctor --fix
 
 ## Interactive Installation
 
-Running `epsdk install` without specifying a package name enters interactive installation:
+Running `epsdk install` without a package name enters interactive installation:
 
 ```bash
 epsdk install
@@ -1368,7 +1386,7 @@ The interactive interface provides:
 
 ## Common Usage
 
-### Install Modules
+### Installing Modules
 
 ```bash
 # Install a single module
@@ -1377,27 +1395,27 @@ epsdk install Weather
 # Install multiple modules
 epsdk install Yunhu Weather
 
-# Upgrade module
+# Upgrade a module
 epsdk install Weather -U
 ```
 
-### List Components
+### Listing Components
 
 ```bash
 # List all components
 epsdk list
 
-# List only adapters
+# List adapters only
 epsdk list -t adapters
 
-# List only upgradable components
+# List upgradable components only
 epsdk list -o
 
-# View remote available components
+# View remotely available components
 epsdk list-remote
 ```
 
-### Uninstall Components
+### Uninstalling Components
 
 ```bash
 # Uninstall a single component
@@ -1407,66 +1425,66 @@ epsdk uninstall Weather
 epsdk uninstall Yunhu Weather
 ```
 
-### Configure Components
+### Configuring Components
 
 ```bash
 # View configuration status
 epsdk config --list
 
-# Interactive selection of target configuration
+# Interactively select a target to configure
 epsdk config
 
-# Configure specified adapter
+# Configure a specific adapter
 epsdk config yunhu
 ```
 
-### Upgrade Components
+### Upgrading Components
 
 ```bash
 # Upgrade all components
 epsdk upgrade
 
-# Upgrade specified component
+# Upgrade a specific component
 epsdk upgrade Weather
 
 # Force upgrade
 epsdk upgrade -f
 ```
 
-### Run Project
+### Running the Project
 
 ```bash
-# Run normally
+# Normal run
 epsdk run main.py
 
-# Hot-reload mode
+# Hot reload mode
 epsdk run main.py --reload
 ```
 
-### Switch Language
+### Switching Language
 
 ```bash
-# Interactive language selection
+# Interactively select a language
 epsdk i18n
 
-# Directly switch to English
+# Switch directly to English
 epsdk i18n en
 
 # List supported languages
 epsdk i18n --list
 ```
 
-### Generate Type Stubs
+### Generating Type Stubs
 
 ```bash
 # Generate all type stubs
 epsdk types
 
-# Generate only module type stubs
+# Generate module type stubs only
 epsdk types --modules-only
 ```
 
-### Initialize Project
+### Initializing a Project
 
 ```bash
 # Interactive initialization
@@ -1476,19 +1494,19 @@ epsdk init
 epsdk init -q -n my_bot
 ```
 
-### Create Scaffolding
+### Creating Scaffolding
 
 ```bash
-# Interactive creation (guides selection of type and filling information)
+# Interactive creation (guided type selection and info filling)
 epsdk create
 
-# Directly create Module project
+# Create a Module project directly
 epsdk create module -n MyModule
 
-# Directly create Adapter project
+# Create an Adapter project directly
 epsdk create adapter -n MyAdapter
 
-# Complete parameters
+# Full arguments
 epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@example.com"
 
 # Force overwrite existing directory

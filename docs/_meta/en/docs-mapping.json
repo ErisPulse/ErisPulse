@@ -188,7 +188,7 @@
               "icon": "fa-network-wired"
             },
             {
-              "title": "Core Concepts of Adapters",
+              "title": "Core Adapter Concepts",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1,
               "icon": "fa-microchip"
@@ -471,13 +471,13 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Startup Process and Manual Control",
+          "title": "Startup Flow and Manual Control",
           "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"
         },
         {
-          "title": "Transcript (Conversation Inbox)",
+          "title": "Session Inbox (Transcript)",
           "path": "advanced/transcript.md",
           "level": 1,
           "icon": "fa-fire"

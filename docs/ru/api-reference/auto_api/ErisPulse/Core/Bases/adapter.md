@@ -297,7 +297,7 @@ await self._api_call(
 ---
 
 
-##### `Raw_ob12(message: dict, **kwargs) -> Awaitable[Any]`
+##### `Raw_ob12(message: 'dict | list[dict]', **kwargs) -> Awaitable[Any]`
 
 发送 OneBot12 格式消息段（必须由适配器子类重写）
 
@@ -918,7 +918,7 @@ await adapter.Send.To("123").Example("Hello")
 ---
 
 
-####### `Raw_ob12(message: dict, **kwargs: Any) -> Awaitable[Any]`
+####### `Raw_ob12(message: 'dict | list[dict]', **kwargs: Any) -> Awaitable[Any]`
 
 发送 OneBot12 格式消息段（必须由适配器子类重写）
 

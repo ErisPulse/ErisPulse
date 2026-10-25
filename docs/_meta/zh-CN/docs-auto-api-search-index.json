@@ -2514,12 +2514,12 @@
         "title": "`PriorityThreshold(threshold: int) -> 'Self'`"
       }
     ],
-    "`Raw_ob12(message: dict, **kwargs) -> Awaitable[Any]`": [
+    "`Raw_ob12(message: 'dict | list[dict]', **kwargs) -> Awaitable[Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/adapter.md",
         "line": 300,
         "level": 5,
-        "title": "`Raw_ob12(message: dict, **kwargs) -> Awaitable[Any]`"
+        "title": "`Raw_ob12(message: 'dict | list[dict]', **kwargs) -> Awaitable[Any]`"
       }
     ],
     "`RenameTo(new_name: str) -> 'AlterTableBuilder'`": [
@@ -18992,12 +18992,12 @@
         "title": "`set_output_dir(directory: str, *, filename: str = 'erispulse.log', rotation: str = DEFAULT_LOG_ROTATION, max_size_mb: float = DEFAULT_LOG_MAX_SIZE_MB, backup_count: int = DEFAULT_LOG_BACKUP_COUNT, when: str = DEFAULT_LOG_ROTATION_WHEN) -> bool`"
       }
     ],
-    "`set_output_file(path: str | Path) -> bool`": [
+    "`set_output_file(path: str | Path | list[str]) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/logger.md",
         "line": 425,
         "level": 5,
-        "title": "`set_output_file(path: str | Path) -> bool`"
+        "title": "`set_output_file(path: str | Path | list[str]) -> bool`"
       }
     ],
     "`set_retention(*, max_per_session: int | None = None, ttl_hours: float | None = None) -> None`": [

@@ -784,13 +784,13 @@ async def hello_handler(event):
 # Core Concepts
 
 > [!NOTE]
-> **L1 Core Must-Read** — The 2nd article in the "L1 Core Five Articles" on the documentation homepage (Module Development Introduction → **Core Concepts** → Event Wrapper → Configuration File Explanation → Exception Handling).
+> **L1 Core Must-Read** — The second article in the "L1 Core Five Articles" on the documentation homepage (Module Development Introduction → **Core Concepts** → Event Wrapper → Configuration File Explanation → Exception Handling).
 
-What components does a message pass through from the user's sending to the bot's reply? What are the responsibilities of adapters and modules? After reading this, you can answer design questions when writing handlers yourself, rather than just copying examples.
+What components does a message pass through from the user's message to the bot's reply? What are the responsibilities of adapters and modules? After reading this, you will be able to answer design questions that arise when writing processors yourself, rather than just copying examples.
 
 ## Event-Driven Architecture
 
-ErisPulse adopts an event-driven architecture, where all interactions are passed and processed through events.
+ErisPulse adopts an event-driven architecture, where all interactions are passed and handled through events.
 
 ### Event Flow
 
@@ -824,9 +824,9 @@ Platform displays to user
 
 ### OneBot12 Standard
 
-ErisPulse uses OneBot12 as the core event standard. OneBot12 is a general-purpose chatbot application interface standard, defining a unified event format.
+ErisPulse uses OneBot12 as the core event standard. OneBot12 is a universal chatbot application interface standard that defines a unified event format.
 
-All adapters convert platform-specific events into OneBot12 format to ensure code consistency.
+All adapters convert platform-specific events into OneBot12 format, ensuring code consistency.
 
 ## Core Components
 
@@ -849,9 +849,9 @@ sdk.lifecycle  # Lifecycle system
 ```
 
 > [!WARNING]
-> **Import from root** : `from ErisPulse.Core import adapter` / `import ErisPulse.Core.adapter`
-> These write methods bind to the **manager instance** (`AdapterManager` singleton) rather than the submodule — `ErisPulse.Core`
-> package's re-export will mask the same-named submodule. When writing tests, patches, or needing the module object itself, always use
+> **Import from root** — `from ErisPulse.Core import adapter` / `import ErisPulse.Core.adapter`
+> This binds to the **manager instance** (`AdapterManager` singleton), not the sub-module — `ErisPulse.Core`
+> package re-exports will mask the same-named sub-modules. When writing tests, patches, or needing the module object itself, always use
 > `from ErisPulse import sdk` root import (where `sdk.adapter` is the manager instance).
 
 ### 2. Event Object
@@ -878,33 +878,33 @@ Adapters serve as bridges between ErisPulse and external platforms.
 **Responsibilities:**
 - Receive native platform events
 - Convert them into OneBot12 standard format
-- Send standard format events back to the platform
+- Send standard-format events back to the platform
 
 **Example Adapters:**
 - Yunhu Adapter: Communicates with the Yunhu platform
 - Telegram Adapter: Communicates with the Telegram Bot API
-- OneBot11 Adapter: Communicates with OneBot11 compatible applications
+- OneBot11 Adapter: Communicates with OneBot11-compatible applications
 - Email Adapter: Handles email sending and receiving
 
 ### 4. Modules
 
-Modules are the basic units of functional extension, capable of:
+Modules are the basic units of functional extension and can:
 
-- Registering event handlers
-- Implementing business logic
-- Calling adapters to send messages
-- Using services provided by core modules
+- Register event handlers
+- Implement business logic
+- Call adapters to send messages
+- Use services provided by core modules
 
 #### Module Discovery Mechanism
 
-ErisPulse discovers installed modules through Python's `importlib.metadata.entry_points`. Modules declare entry points in `pyproject.toml`:
+ErisPulse discovers installed modules via Python's `importlib.metadata.entry_points`. Modules declare entry points in `pyproject.toml`:
 
 ```toml
 [project.entry-points."erispulse.module"]
 MyModule = "my_package:Main"
 ```
 
-When the SDK initializes, it scans all entry points in the `erispulse.module` group, registers the module class to the `ModuleManager`, and then initializes them in topological order based on dependencies.
+When the SDK initializes, it scans all entry points in the `erispulse.module` group, registers the module class with `ModuleManager`, then initializes them in topological order based on dependencies.
 
 #### Minimal Viable Module
 
@@ -927,8 +927,8 @@ class Main(BaseModule):
 #### Module Lifecycle
 
 - **Registration**: The SDK discovers the module class and registers it with the manager
-- **Loading**: Creates a module instance, calls `on_load(event)` (`event = {"module_name": "MyModule"}`)
-- **Unloading**: Calls `on_unload(event)`, cleans up resources
+- **Loading**: The module instance is created, and `on_load(event)` is called (`event = {"module_name": "MyModule"}`)
+- **Unloading**: `on_unload(event)` is called, and resources are cleaned up
 
 #### Loading Strategy
 
@@ -941,16 +941,16 @@ class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(
-            lazy_load=True,   # Whether to lazy load (default True)
-            priority=0        # Load priority; higher values initialize earlier
+            lazy_load=True,   # Whether to load lazily (default True)
+            priority=0        # Loading priority, higher values initialize earlier
         )
 ```
 
 - **`lazy_load=True` (default)**: The module initializes only when first accessed via `sdk.MyModule`, reducing startup time
-- **`lazy_load=False`**: The module initializes immediately when the SDK starts, suitable for modules needing to listen to lifecycle events or perform scheduled tasks
+- **`lazy_load=False`**: The module initializes immediately when the SDK starts, suitable for modules that need to listen to lifecycle events or execute scheduled tasks
 - **`priority`**: Modules with the same priority load in registration order; higher values initialize earlier
 
-> For detailed explanations of the lazy loading mechanism, see [Lazy Loading System](../advanced/lazy-loading.md).
+> For detailed explanations of the lazy-loading mechanism, refer to [Lazy Loading System](../advanced/lazy-loading.md).
 
 ## Event Types
 
@@ -964,7 +964,7 @@ ErisPulse supports five types of events:
 | Request Event | `@request.on_friend_request()` etc. | User requests (friend requests, group invitations) |
 | Meta Event | `@meta.on_connect()` etc. | System-level events (connection, disconnection, heartbeat) |
 
-> For detailed usage and code examples of each event type, see [Event Handling Introduction](event-handling.md).
+> For detailed usage and code examples of each event type, refer to [Event Handling Introduction](event-handling.md).
 
 ## Core Module Descriptions
 
@@ -979,7 +979,7 @@ sdk.storage.set("key", "value")
 # Get value
 value = sdk.storage.get("key", "default_value")
 
-# Batch operations
+# Bulk operations
 sdk.storage.set_multi({
     "key1": "value1",
     "key2": "value2"
@@ -1023,10 +1023,10 @@ child_logger.info("Submodule log message")
 
 **Attribute Access Syntactic Sugar**
 
-In addition to using the `get_child()` method, you can also create a child logger using **attribute access**, which is a more concise **syntactic sugar** writing style:
+In addition to using the `get_child()` method, you can also create child loggers using **attribute access**, which is a more concise **syntactic sugar**:
 
 ```python
-# Create child logger via attribute access
+# Create child logger using attribute access
 sdk.logger.mymodule.info("Module message")
 
 # Supports nested access
@@ -1035,7 +1035,7 @@ sdk.logger.mymodule.database.info("Database message")
 
 ### Router (Routing)
 
-HTTP and WebSocket routing management, based on FastAPI + Uvicorn. Supports decorator routing, middleware, grouping, rate limiting, and CORS.
+HTTP and WebSocket routing management, based on FastAPI + Uvicorn. Supports decorator routing, middleware, grouping, rate limiting, CORS.
 
 ```python
 from ErisPulse.Core import HttpRequest
@@ -1046,11 +1046,11 @@ async def handler(request: HttpRequest):
     return {"status": "ok"}
 ```
 
-> For the complete routing API (WebSocket, middleware, rate limiting, CORS, etc.), see [Router Manager](../advanced/router.md).
+> For the complete routing API (WebSocket, middleware, rate limiting, CORS, etc.), refer to [Router Manager](../advanced/router.md).
 
 ### Client (Network Client)
 
-A unified network client, aggregating HTTP requests, WebSocket connections, connection pool management, automatic retries, timeout control, request statistics, and lifecycle event integration.
+A unified network client that aggregates HTTP requests, WebSocket connections, connection pooling, automatic retries, timeout control, request statistics, and lifecycle event integration.
 
 ```python
 from ErisPulse.Core import client
@@ -1068,11 +1068,11 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-> For the complete network client API, see [Network Client](../advanced/http-client.md).
+> For the complete network client API, refer to [Network Client](../advanced/http-client.md).
 
 ## SendDSL Message Sending
 
-Adapters provide a chain-call interface for message sending.
+Adapters provide a chainable message sending interface.
 
 ### Basic Sending
 
@@ -1087,16 +1087,16 @@ await yunhu.Send.To("user", "U1001").Text("Hello")
 await yunhu.Send.Using("bot1").To("group", "G1001").Text("Group message")
 ```
 
-### Chain Modifiers
+### Chainable Modifiers
 
 ```python
-# @ user
-await yunhu.Send.To("group", "G1001").At("U2001").Text("@ message")
+# @user
+await yunhu.Send.To("group", "G1001").At("U2001").Text("@message")
 
 # Reply to message
 await yunhu.Send.To("group", "G1001").Reply("msg123").Text("Reply")
 
-# @ all
+# @all
 await yunhu.Send.To("group", "G1001").AtAll().Text("Announcement")
 ```
 
@@ -1119,7 +1119,7 @@ async def test_handler(event):
 
 ## Lazy Loading System
 
-ErisPulse enables module lazy loading by default, where modules are initialized only when first accessed (e.g., `sdk.MyModule`), significantly improving startup speed.
+ErisPulse enables module lazy loading by default. Modules only initialize when first accessed (e.g., `sdk.MyModule`), significantly improving startup speed.
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -1129,16 +1129,16 @@ class Main(BaseModule):
     def get_load_strategy():
         return ModuleLoadStrategy(
             lazy_load=True,   # Enable lazy loading (default)
-            priority=0        # Load priority; higher values initialize earlier
+            priority=0        # Loading priority, higher values initialize earlier
         )
 ```
 
-**Scenarios requiring disabling lazy loading (`lazy_load=False`):**
-- Modules listening to lifecycle events (e.g., `core.init.complete`)
-- Modules starting scheduled tasks or background services
-- Modules needing to complete initialization before other modules load
+**Scenarios where lazy loading should be disabled (`lazy_load=False`):**
+- Modules that listen to lifecycle events (e.g., `core.init.complete`)
+- Modules that start scheduled tasks or background services
+- Modules that need to complete initialization before other modules are loaded
 
-> For detailed lazy loading mechanisms and precautions, see [Lazy Loading System](../advanced/lazy-loading.md).
+> For detailed explanations of the lazy loading mechanism and considerations, refer to [Lazy Loading System](../advanced/lazy-loading.md).
 
 
 
@@ -2331,20 +2331,20 @@ The `types` command is mainly used to complete **platform-specific methods** (su
 # Getting Started with Adapter Development
 
 > [!TIP]
-> **When to read this**: The entry point of the adapter development path (required reading). Learn how to write an adapter from scratch, understand its responsibilities and project structure here; after reading, proceed to [Event Converters](converter.md) and [SendDSL Detailed Guide](send-dsl.md) as needed.
+> **When to read this**: This is the entry-point article (required reading) of the adapter development path. Everything about writing an adapter from scratch and understanding the adapter's responsibility boundaries and project structure is covered here; after finishing, move on to the [Event Converter](converter.md) and [SendDSL in Detail](send-dsl.md) as needed.
 
-By following this guide, you will build a minimal, functional adapter (main class + converter + Send) that can receive events and send messages, with clear responsibilities for each component—the starting point for integrating with any new platform.
+By following this guide to the end, you will have a minimal working adapter capable of receiving events and sending messages (main class + converter + Send), with a clear understanding of each component's responsibilities — all the work of integrating a new platform starts from here.
 
-## Adapter Introduction
+## Adapter Overview
 
-### What is an Adapter
+### What Is an Adapter
 
 An adapter is the bridge between ErisPulse and various messaging platforms, responsible for:
 
-1. **Forward Conversion**: Receiving platform events and converting them into OneBot12 standard format (Converter)
-2. **Reverse Conversion**: Converting OneBot12 message segments into platform API calls (`Raw_ob12`)
-3. Managing connections to the platform (WebSocket/WebHook)
-4. Providing a unified SendDSL message sending interface
+1. **Forward conversion**: receiving platform events and converting them into the OneBot12 standard format (Converter)
+2. **Reverse conversion**: converting OneBot12 message segments into platform API calls (`Raw_ob12`)
+3. Managing the connection with the platform (WebSocket/WebHook)
+4. Providing a unified SendDSL message-sending interface
 
 ### Adapter Architecture
 
@@ -2379,28 +2379,28 @@ MyAdapter/
 
 ### 1. Create Project
 
-It is recommended to use the scaffolding tool to generate a complete skeleton (including pyproject, main class, and converter):
+It is recommended to use the scaffold to generate a complete skeleton (including pyproject, main class, and converter):
 
 ```bash
-# Standard project (for packaging and publishing)
+# Standard project (for packaging and release)
 epsdk create adapter -n MyAdapter
 
-# Local adapter plugin (no packaging required, just place in the plugins/ directory to be automatically loaded, see below "Local Development")
+# Local adapter plugin (no packaging required, placed in the plugins/ directory to be automatically loaded, see "Local Development" below)
 epsdk create adapter -n MyAdapter --local
 ```
 
-The scaffolding tool generates a default WebSocket server skeleton; for different platform connection methods, you can select a communication mode template via `--template` (generating a ready-to-use semi-finished base class, `start`/`shutdown` do not need to be written manually):
+The scaffold generates a WebSocket server skeleton by default. If the platform connection method differs, you can select a communication mode template via `--template` (generating a semi-finished base class corresponding to the mode, `start`/`shutdown` do not need to be written manually):
 
 ```bash
-epsdk create adapter -n MyAdapter --template polling   # HTTP polling type (getUpdates pull)
-epsdk create adapter -n MyAdapter --template webhook   # HTTP callback type (platform push)
+epsdk create adapter -n MyAdapter --template polling   # HTTP polling type (pull updates via getUpdates)
+epsdk create adapter -n MyAdapter --template webhook   # HTTP callback type (platform pushes)
 ```
 
-> The differences between the three connection modes and the minimal implementation of semi-finished base classes can be found at
-> [Adapter Core Concepts - Semi-Finished Base Classes for Connection Modes](core-concepts.md#Semi-Finished Base Classes for Connection Modes).
-> Complete runnable examples can be found in the repository `examples/example-adapter-polling/` and `examples/example-adapter-webhook/`.
+> The differences among the three connection modes and the minimum implementation of semi-finished base classes can be found at
+> [Adapter Core Concepts - Semi-finished Base Classes for Connection Modes](core-concepts.md#Semi-finished Base Classes for Connection Modes).
+> Complete runnable examples can be referenced in the repository `examples/example-adapter-polling/` and `examples/example-adapter-webhook/`.
 
-You can also create manually:
+Alternatively, you can create manually:
 
 ```bash
 mkdir MyAdapter && cd MyAdapter
@@ -2412,14 +2412,14 @@ mkdir MyAdapter && cd MyAdapter
 [project]
 name = "ErisPulse-MyAdapter"
 version = "1.0.0"
-description = "MyAdapter Platform Adapter"
+description = "MyAdapter platform adapter"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
 dependencies = [
-    "ErisPulse>=2.4.0"  # ErisPulse already includes aiohttp, usually no separate dependency needed
+    "ErisPulse>=2.4.0"  # ErisPulse already includes aiohttp, usually no separate dependency required
 ]
 
 [project.urls]
@@ -2431,12 +2431,12 @@ dependencies = [
 
 ### 3. Create Adapter Main Class
 
-The framework provides `ConfigClass` / `AccountConfigClass` for declarative configuration management; the adapter only needs to declare the configuration class to automatically load, validate, and generate the configuration template.
+The framework provides `ConfigClass` / `AccountConfigClass` for declarative configuration management. The adapter only needs to declare the configuration class to automatically load, validate, and generate the configuration template.
 
 ```python
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
-# Recommended root import (for Python 3.10+): commonly used symbols directly imported from the root package, deep paths remain compatible
+# Recommended root import (2.10+): commonly used symbols are directly imported from the root package, deep paths are still compatible
 from ErisPulse import BaseAdapter, BaseConfig
 
 @dataclass
@@ -2445,7 +2445,7 @@ class MyAdapterConfig(BaseConfig):
     api_endpoint: str = field(
         default="https://api.example.com",
         metadata={
-            "description": {"i18n": "my_adapter.api_endpoint", "default": "API Address"},
+            "description": {"i18n": "my_adapter.api_endpoint", "default": "API address"},
             "required": False,
             "ui": {"widget": "text", "group": "connection", "order": 1},
         },
@@ -2461,11 +2461,11 @@ class MyAdapterConfig(BaseConfig):
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyAdapterConfig  # Declare the configuration class, the framework automatically manages it
+    ConfigClass = MyAdapterConfig  # Declare the configuration class, framework automatically manages it
     
-    # No need to override __init__! The framework automatically handles:
+    # No need to override __init__! Framework automatically handles:
     # - self.sdk / self.logger are automatically set
-    # - self.cfg reads configuration in real time
+    # - self.cfg reads configuration in real-time
     # - self.Send / self.Request are automatically initialized
     
     def _setup_converter(self):
@@ -2473,9 +2473,9 @@ class MyAdapter(BaseAdapter):
         return MyPlatformConverter()
 ```
 
-> ⚠️ **About `__init__`**: In the new version, `BaseAdapter.__init__(self, sdk=None)` automatically handles SDK references, log initialization, and configuration loading. Most adapters **do not need to override `__init__`**. See [__init__ Notes](#init-注意事项).
+> ⚠️ **Regarding `__init__`**: In the new version, `BaseAdapter.__init__(self, sdk=None)` automatically handles SDK references, log initialization, and configuration loading. Most adapters **do not need to override `__init__`**. See [__init__ Notes](#init-注意事项).
 
-> ⚠️ **About `super().__init__()`**: `BaseAdapter.__init__()` is responsible for creating `Send` and `Request` factory instances. If you forget to call it, all message sending and request operations will report `AttributeError`. See [__init__ Notes](#init-注意事项).
+> ⚠️ **Regarding `super().__init__()`**: `BaseAdapter.__init__()` is responsible for creating `Send` and `Request` factory instances. If you forget to call it, all message sending and request operations will report `AttributeError`. See [__init__ Notes](#init-注意事项).
 
 ### 4. Implement Required Methods
 
@@ -2500,7 +2500,7 @@ class MyAdapter(BaseAdapter):
             path="/ws"
         )
         # Clean up connections and resources
-        self.logger.info("Adapter has shut down")
+        self.logger.info("Adapter has shutdown")
     
     async def call_api(self, endpoint: str, **params):
         """Call platform API (must implement)"""
@@ -2509,14 +2509,14 @@ class MyAdapter(BaseAdapter):
 
 #### Actively Send Meta Events
 
-The adapter should actively send meta events to let the framework track the Bot's online status. Use `emit_meta()` to complete it in one line:
+The adapter should actively send meta events to let the framework track the Bot's online status. Use `emit_meta()` to complete this in one line:
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
-        # Bot is online
+        # Bot online
         await self.emit_meta("connect", bot_id, user_name="MyBot")
 
         try:
@@ -2528,7 +2528,7 @@ class MyAdapter(BaseAdapter):
         except WebSocketDisconnect:
             pass
         finally:
-            # Bot is offline
+            # Bot offline
             await self.emit_meta("disconnect", bot_id)
 ```
 
@@ -2536,10 +2536,10 @@ class MyAdapter(BaseAdapter):
 
 ### 5. Implement Send Class
 
-The `At`/`AtAll`/`Reply` decorators are already implemented by the framework's SendDSL base class; the adapter only needs to implement `Raw_ob12` and specific send methods.
+The `At`/`AtAll`/`Reply` decorators are already implemented by the framework's SendDSL base class. The adapter only needs to implement `Raw_ob12` and specific send methods.
 
 The framework provides two key helper methods:
-- `self._apply_modifiers(message)` — Automatically combines At/AtAll/Reply decorators into message segments
+- `self._apply_modifiers(message)` — Automatically merges At/AtAll/Reply decorators into message segments
 - `self.send_context` — Gets the send context dictionary (`target_type`, `target_id`, `account_id`)
 
 ```python
@@ -2554,8 +2554,8 @@ class MyAdapter(BaseAdapter):
             """
             Send OneBot12 formatted message (must implement)
 
-            Use _apply_modifiers to automatically combine modifier states,
-            use send_context to get send context.
+            Use _apply_modifiers to automatically merge modifier states,
+            Use send_context to get send context.
             """
             async def _do_send():
                 segments = self._apply_modifiers(message)
@@ -2567,30 +2567,30 @@ class MyAdapter(BaseAdapter):
                 )
             return asyncio.create_task(_do_send())
 
-        # Text/Image/Voice/Video/File are inherited from the SendDSL base class,
-        # default delegation to Raw_ob12, no need to reimplement.
-        # If platform-specific logic is required, override individual methods:
+        # Text/Image/Voice/Video/File are inherited from SendDSL base class,
+        # defaulting to delegate to Raw_ob12, no need to re-implement.
+        # If platform-specific logic is needed, override individual methods:
         # def Text(self, text: str):
         #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-**Media send method implementation points (Image/Video/File):**
+**Media Send Method Implementation Points (Image/Video/File):**
 
-- The default implementation of the base class will encapsulate the `file` parameter as a OneBot12 message segment and pass it to `Raw_ob12`; the adapter needs to handle downloads/uploads in `Raw_ob12`
+- The default implementation of the base class will encapsulate the `file` parameter as a OneBot12 message segment and pass it to `Raw_ob12`. The adapter needs to handle downloading/uploading in `Raw_ob12`
 - The `file` parameter should support both `bytes` binary data and `str` URL types
-- When a URL is passed, the file must be downloaded first and then uploaded to the platform
-- The platform usually requires calling the upload interface first to get the file identifier, then calling the send interface
+- When a URL is passed, the file should be downloaded first and then uploaded to the platform
+- The platform usually requires first calling the upload interface to get the file identifier, then calling the send interface
 
-**`__getattr__` magic method:**
+**`__getattr__` Magic Method:**
 
-- Implements case-insensitive method names (`Text`, `text`, `TEXT` can all be called)
-- Undefined methods should return a prompt message instead of throwing an error
+- Implement case-insensitive method names (`Text`, `text`, `TEXT` all work)
+- Undefined methods should return a prompt message instead of raising an error
 
-**`Raw_ob12` method:**
+**`Raw_ob12` Method:**
 
-- Converts OneBot12 standard message format into platform format for sending
-- Uses `self._apply_modifiers(message)` to automatically handle At/AtAll/Reply modifiers
-- Uses `**self.send_context` to pass send target information and account information
+- Convert OneBot12 standard message format to platform format for sending
+- Use `self._apply_modifiers(message)` to automatically handle At/AtAll/Reply modifiers
+- Use `**self.send_context` to pass send target information and account information
 
 ### 6. Implement Converter
 
@@ -2684,20 +2684,20 @@ class MyAdapter(BaseAdapter):
             return self._create_task(_do())
 ```
 
-Module developers use it as follows:
+Module developer usage:
 
 ```python
 from ErisPulse import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
-    # Approve via Event method
+    # Through Event convenient method
     await event.approve()
-    # Or directly via adapter
+    # Or through adapter directly
     await adapter.myplatform.Request("req_id").accept()
 ```
 
-> If the platform does not support request operations, you can omit the `Request` inner class. The base class defaults to returning `retcode=10002` (unsupported operation). See [Request Action Specification](../../standards/request-action-spec.md).
+> If the platform does not support request operations, you can omit implementing the `Request` inner class. The base class defaults to returning `retcode=10002` (unsupported operation). See [Request Operation Specification](../../standards/request-action-spec.md).
 
 ### 8. Create Package Entry
 
@@ -2706,14 +2706,14 @@ async def handle_friend_request(event):
 from .Core import MyAdapter
 ```
 
-## Local Development (No Packaging)
+## Local Development (No Packaging Required)
 
-Like modules, adapters can also be placed in the project's local plugin directory (default `plugins/`, configurable via `ErisPulse.framework.plugins_dir`) for direct development, **without `pip install -e .`**:
+Like modules, adapters can also be developed directly in the project's local plugin directory (default `plugins/`, configurable via `ErisPulse.framework.plugins_dir`) — **no `pip install -e .` required**:
 
 ```bash
-# Generate local adapter plugin
+# Generate a local adapter plugin
 epsdk create adapter -n MyAdapter --local
-# Generate structure:
+# Generated structure:
 # plugins/
 # └── MyAdapter/
 #     ├── __init__.py
@@ -2721,53 +2721,54 @@ epsdk create adapter -n MyAdapter --local
 #     └── Converter.py
 ```
 
-When the framework starts, it automatically scans the plugin directory and loads modules and adapters within it (treated equally as entry-point installed packages: enabling status, configuration declaration, hot reloading, and unloading cleanup are all consistent):
+At startup, the framework automatically scans the plugin directory and loads the modules and adapters within it (treated identically to entry-point installed packages: enablement state, config declarations, hot updates, and uninstall cleanup are all the same):
 
-- **Identification rules**: Package directories (with `__init__.py`) or single `.py` files are both recognized; the `Main` named class is prioritized, otherwise the first `BaseAdapter` / `BaseModule` subclass in the plugin is used
-- **Name overwriting**: When local plugins and PyPI-installed adapters have the same name, local plugins take precedence (useful for overriding and debugging)
-- **Hot reload**: `sdk.enable_plugin_hot_reload()` enables plugin directory monitoring, which also covers adapters; adapter code-level hot reload is available since 2.11—`await sdk.adapter.reload("Platform Name")` or `await sdk.reload_adapter("Platform Name")` (syntax check → unload cleanup → clear cache and re-import → re-register and start, rollback on failure; see [Architecture Overview](../../architecture.md))
+- **Recognition rules**: both package directories (containing `__init__.py`) and single `.py` files are accepted; a class named `Main` is recognized first, otherwise the first `BaseAdapter` / `BaseModule` subclass in the plugin is used
+- **Name conflict override**: when a local plugin has the same name as an adapter installed from PyPI, the local plugin takes precedence (handy for overriding and debugging)
+- **Hot reload**: plugin directory monitoring enabled via `sdk.enable_plugin_hot_reload()` also covers adapters; adapter code-level hot reload is available since 2.11 — `await sdk.adapter.reload("<platform-name>")` or `await sdk.reload_adapter("<platform-name>")` (syntax pre-check → unload and clean up → clear cache and re-import → re-register and start, with automatic rollback on failure; see the [Architecture Overview](../../architecture.md) for details)
 
 ### From Local Plugin to Release
 
-After local validation, use the `pack` subcommand to convert the plugin into a release-ready standard project (interactive plugin selection, metadata completion, generating a pyproject with entry-point):
+After local verification, use the `pack` subcommand to convert the plugin into a publishable standard project in one step (interactively select the plugin, fill in the metadata, and generate a pyproject with an entry point):
 
 ```bash
 epsdk create pack
-# Select plugin directory → Enter project name/description/author → Generate MyAdapter/ project directory
+# Select the plugin from the plugin directory → enter project name/description/author → the MyAdapter/ project directory is generated
 cd MyAdapter
-pip install -e .   # Convert to standard installation; then follow the release process to upload to PyPI
+pip install -e .   # Switch to a standard installation; then follow the publishing process to upload to PyPI
 ```
 
-> **Note**: After conversion, it is recommended to remove the original from `plugins/` to avoid duplicate loading of local plugins and installed packages (both with the same name, local plugins take precedence, making you mistakenly think the installed package is active).
+> **Tip**: After conversion, it is recommended to remove the original from `plugins/` to avoid the local plugin and the installed package being loaded twice (when both share the same name, the local one takes precedence, which may mislead you into thinking the installed package is in effect).
 
 ## Dependency Declaration (Optional, 2.8.0+)
 
-Adapters can declare dependencies on other adapters or modules to enable adapter interconnection and optional features:
+
+Adapters can declare dependencies on other adapters or modules, enabling inter-adapter coordination and optional features:
 
 ```python
 from typing import ClassVar
 
 class MyAdapter(BaseAdapter):
-    # Hard dependency: Skipped on startup if missing (warning + status=skipped-dependency event)
+    # Hard dependencies: startup is skipped if missing (warning + status=skipped-dependency event)
     depends: ClassVar[dict] = {
-        "adapters": ["onebot11"],   # Dependencies (by platform name)
-        "modules": ["TranslateEngine"],  # Dependencies (by registration name)
+        "adapters": ["onebot11"],   # Adapters depended on (by platform name)
+        "modules": ["TranslateEngine"],  # Modules depended on (by registered name)
     }
-    # Soft dependency: Not affecting startup if missing; callbacks on module load/unload (optional feature mode)
+    # Soft dependencies: missing ones do not affect startup; callbacks are received when modules load/unload (optional feature mode)
     optional_modules: ClassVar[list] = ["TranslateEngine"]
 ```
 
-- **Startup order**: Adapters declaring module hard dependencies will **postpone startup until the module initialization is complete**
-- **Soft dependency notification**: `on_dependency_ready(module_name)` is called when `optional_modules` (or module hard dependencies) are loaded; `on_dependency_lost(module_name)` is called when unloaded (default empty implementation, can be overridden)—covering late loading and hot reload scenarios:
+- **Startup order**: adapters that declare hard dependencies on modules will **defer startup until the modules finish initializing**
+- **Soft dependency notifications**: when a module in `optional_modules` (or a hard module dependency) is loaded, `on_dependency_ready(module_name)` is called; when it is unloaded, `on_dependency_lost(module_name)` is called (default no-op implementations, overridable) — covering late loading and hot reload scenarios:
 
 ```python
 async def on_dependency_ready(self, module_name):
-    """Soft dependency module ready: Enable corresponding optional features"""
+    """Soft-dependency module ready: enable the corresponding optional feature"""
     if module_name == "TranslateEngine":
         self._translate = self.sdk.TranslateEngine
 
 async def on_dependency_lost(self, module_name):
-    """Soft dependency module lost: Downgrade features"""
+    """Soft-dependency module lost: degrade the feature"""
     if module_name == "TranslateEngine":
         self._translate = None
 ```
@@ -2777,28 +2778,28 @@ async def on_dependency_lost(self, module_name):
 
 ## `__init__` Notes
 
-Adapter development involves three layers where `__init__` may be overridden. Here are the correct practices for each layer.
+There are three levels in adapter development where `__init__` overriding may be involved. Below is the correct approach for each level.
 
-### 1. BaseAdapter Layer (Most cases do not need to override)
+### 1. The BaseAdapter Level (No Override Needed in Most Cases)
 
-`BaseAdapter.__init__(self, sdk=None)` is responsible for creating `Send` / `Request` factory instances and automatically handles the following:
+`BaseAdapter.__init__(self, sdk=None)` is responsible for creating the `Send` / `Request` factory instances and automatically does the following:
 
-- Accepts `sdk` parameter and sets `self.sdk`, `self.logger`
-- If `ConfigClass` is declared, `self.cfg` can read global configuration in real time
-- If `AccountConfigClass` is declared, `self.accounts` can read multi-account configuration in real time
+- Accepts the `sdk` parameter and sets `self.sdk`, `self.logger`
+- If `ConfigClass` is declared, the global configuration can be read in real time via `self.cfg`
+- If `AccountConfigClass` is declared, the multi-account configuration can be read in real time via `self.accounts`
 
-**Most cases do not need to override `__init__`**, just declare `ConfigClass`:
+**In most cases there is no need to override `__init__`**; simply declaring `ConfigClass` is enough:
 
 ```python
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyAdapterConfig  # Declare and the framework automatically manages configuration
+    ConfigClass = MyAdapterConfig  # Once declared, the framework manages the configuration automatically
     
     async def start(self):
-        cfg = self.cfg  # Type-safe, real-time reading
+        cfg = self.cfg  # Type-safe, read in real time
         ...
 ```
 
-If you do need custom initialization, call `super().__init__(sdk)`:
+If custom initialization is truly needed, just call `super().__init__(sdk)`:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -2810,22 +2811,22 @@ class MyAdapter(BaseAdapter):
         self.convert = self.converter.convert
 ```
 
-### 2. Send Inner Class (Most cases do not need to override)
+### 2. The Send Inner Class (No Override Needed in Most Cases)
 
-`SendDSL.__init__` is responsible for passing state through chained calls (target type, target ID, account, etc.). **Most cases, you only need to override methods** (`Raw_ob12`, `Text`, etc.), not `__init__`.
+`SendDSL.__init__` is responsible for passing state through chained calls (target type, target ID, account, etc.). **In most cases you only need to override methods** (`Raw_ob12`, `Text`, etc.), not `__init__`.
 
-If you do need to (for example, initializing platform-specific state), **you must pass through all parameters**:
+If it is truly needed (e.g., to initialize platform-specific state), **you must pass through all parameters**:
 
 ```python
 class MyAdapter(BaseAdapter):
     class Send(BaseAdapter.Send):
         # Parameters: adapter, target_type, target_id, account_id
         def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
-            super().__init__(adapter, target_type, target_id, account_id)  # ← Must pass through
-            self._my_state = None  # Platform-specific initialization
+            super().__init__(adapter, target_type, target_id, account_id)  # ← must pass through
+            self._my_state = None  # platform-specific initialization
 ```
 
-**Why must you pass through?** Each step of the chained call creates a new instance via `self.__class__(...)`:
+**Why must parameters be passed through?** Every step of the chained call creates a new instance via `self.__class__(...)`:
 
 ```python
 adapter.Send.To("user", "123")               # → Send(adapter, "user", "123", None)
@@ -2834,36 +2835,36 @@ adapter.Send.To("user", "123").Using("bot1")  # → Send(adapter, "user", "123",
 
 If the `__init__` signature does not match or `super()` is not called, the chained call will break.
 
-### 3. Request Inner Class (Most cases do not need to override)
+### 3. The Request Inner Class (No Override Needed in Most Cases)
 
-Same as Send. Parameters are `adapter`, `request_id`, `account_id`:
+Same idea as Send. The parameters are `adapter`, `request_id`, `account_id`:
 
 ```python
 class MyAdapter(BaseAdapter):
     class Request(RequestDSL):
         # Parameters: adapter, request_id, account_id
         def __init__(self, adapter, request_id=None, account_id=None):
-            super().__init__(adapter, request_id, account_id)  # ← Must pass through
-            self._my_state = None  # Platform-specific initialization
+            super().__init__(adapter, request_id, account_id)  # ← must pass through
+            self._my_state = None  # platform-specific initialization
 ```
 
 ### Summary
 
-| Layer | When to Override | What You Must Do |
-|------|------------|-----------|
+| Level | When to Override | What Must Be Done |
+|-------|------------------|-------------------|
 | **BaseAdapter** | When custom initialization logic is needed | `super().__init__(sdk)` (pass in the sdk parameter) |
-| **Send Inner Class** | When initializing send-related state is needed | `super().__init__(adapter, target_type, target_id, account_id)` |
-| **Request Inner Class** | When initializing request-related state is needed | `super().__init__(adapter, request_id, account_id)` |
-| All three layers | Most cases | **Declare ConfigClass and do not touch `__init__`** |
+| **Send inner class** | When send-related state needs initialization | `super().__init__(adapter, target_type, target_id, account_id)` |
+| **Request inner class** | When request-related state needs initialization | `super().__init__(adapter, request_id, account_id)` |
+| All three levels | Most cases | **Just declare ConfigClass; don't touch `__init__`** |
 
 ### 9. Connection Info and Route Discovery
 
-After registering routes, the framework records all route information. Users can use the following API to view the adapter's connection address:
+After the adapter registers its routes, the framework records all route information. Users can view the adapter's connection addresses through the following APIs:
 
 ```python
 from ErisPulse import sdk
 
-# Get complete adapter connection info
+# Get the adapter's full connection info
 info = sdk.adapter.get_connection_info("myplatform")
 # {
 #   "platform": "myplatform",
@@ -2881,25 +2882,25 @@ info = sdk.adapter.get_connection_info("myplatform")
 #   }
 # }
 
-# List routes of all namespaces (adapters/modules)
+# List routes for all namespaces (adapters/modules)
 namespaces = sdk.router.list_namespaces()
 # {"myplatform": {"http": ["/myplatform/webhook"], "websocket": ["/myplatform/ws"]}}
 
-# Get complete connection URL of namespace
+# Get the full connection URLs of a namespace
 urls = sdk.router.get_module_urls("myplatform")
 # {"base_url": "http://localhost:8080", "http": [...], "websocket": [...]}
 
-# Get detailed route info of namespace
+# Get detailed route information of a namespace
 routes = sdk.router.get_module_routes("myplatform")
 # {"http": [{"path": "/myplatform/webhook", "methods": ["POST"]}],
 #  "websocket": [{"path": "/myplatform/ws", "auth": false}]}
 ```
 
-> **Tip**: The information returned by `get_connection_info()` is suitable for displaying to users (such as in a WebUI), helping users configure the callback address or WebSocket connection address on the platform side. The `module_name` registered during route registration must exactly match the `platform` name registered by the adapter in ErisPulse, otherwise route discovery will not be correctly associated.
+> **Tip**: The information returned by `get_connection_info()` is suitable for displaying to users (e.g., in a WebUI), helping them configure the platform-side callback address or WebSocket connection address. The `module_name` used at route registration must exactly match the `platform` name under which the adapter is registered in ErisPulse; otherwise route discovery will not be able to associate them correctly.
 
 ### 10. SSE (Server-Sent Events) Support
 
-ErisPulse has built-in server-agnostic SSE support, and modules and adapters can register SSE endpoints using `@sdk.router.sse()`.
+ErisPulse has built-in server-agnostic SSE support; modules and adapters can register SSE endpoints via `@sdk.router.sse()`.
 
 #### Basic Usage
 
@@ -2909,7 +2910,7 @@ from ErisPulse import sdk
 
 @sdk.router.sse("MyModule", "/events")
 async def event_stream(sse):
-    """Send SSE events"""
+    """Push SSE events"""
     count = 0
     while not sse.closed:
         await sse.send({"count": count}, event="update")
@@ -2919,7 +2920,7 @@ async def event_stream(sse):
 
 #### Using Request Parameters
 
-The handler can declare a `request` parameter to access client request information:
+Handlers can declare a `request` parameter to access client request information:
 
 ```python
 @sdk.router.sse("MyModule", "/events")
@@ -2938,10 +2939,10 @@ async def event_stream(request, sse):
 #### SseEmitter API
 
 | Method | Description |
-|------|------|
-| `sse.send(data, event=None, id=None, retry=None)` | Send SSE event. Non-str data is automatically JSON serialized |
-| `sse.close()` | Gracefully close SSE connection (safe to call multiple times) |
-| `sse.closed` | Whether the connection is closed |
+|--------|-------------|
+| `sse.send(data, event=None, id=None, retry=None)` | Send an SSE event. Non-str data is automatically JSON-serialized |
+| `sse.close()` | Gracefully close the SSE connection (safe to call, multiple times) |
+| `sse.closed` | Whether the connection has been closed |
 | `sse.request` | The underlying request object (can be used to read query params, headers) |
 
 #### Using in RouteGroup
@@ -2956,10 +2957,10 @@ async def events(sse):
 
 #### Route Discovery
 
-SSE routes are automatically included in the route discovery API:
+SSE routes automatically appear in the route discovery APIs:
 
 ```python
-# list_namespaces will include "sse" key
+# list_namespaces will include the "sse" key
 sdk.router.list_namespaces()
 # {"MyModule": {"http": [...], "websocket": [...], "sse": ["/MyModule/events"]}}
 
@@ -2967,64 +2968,64 @@ sdk.router.list_namespaces()
 sdk.router.get_module_routes("MyModule")
 # {"http": [...], "websocket": [...], "sse": [{"path": "/MyModule/events", "streaming": true}]}
 
-# get_module_urls will generate full URL
+# get_module_urls will generate full URLs
 sdk.router.get_module_urls("MyModule")
 # {"sse": [{"path": "/MyModule/events", "url": "http://localhost:8080/MyModule/events"}]}
 ```
 
-> **Server-Agnostic Design**: `SseEmitter` decouples through callbacks from the underlying HTTP framework. The framework provides `register_sse()` and `@sse` decorator as unified registration entry points, allowing adapters to implement SSE endpoints without directly depending on any underlying HTTP framework.
+> **Server-agnostic design**: `SseEmitter` is decoupled from the underlying HTTP framework through callbacks. The framework provides `register_sse()` and the `@sse` decorator as a unified registration entry point, so adapters can implement SSE endpoints without directly depending on any underlying HTTP framework.
 
 
 
 ### 适配器核心概念
 
-# Core Concepts of Adapters
+# Core Adapter Concepts
 
 > [!TIP]
-> **When to read this**: Mandatory for adapter development path (complete explanation of core mechanisms such as BaseAdapter, SendDSL, and lifecycle). For a quick start, read [Getting Started with Adapter Development](getting-started.md) first, and return here only if you have questions about "why" certain aspects are implemented this way.
+> **When to read this**: Mandatory for adapter development path (complete explanation of BaseAdapter / SendDSL / lifecycle mechanisms). For quick start, read [Getting Started with Adapter Development](getting-started.md) first, and return here for "why" questions.
 
-This document explains the runtime mechanism of adapters: how `AdapterManager` registers and distributes events, what `BaseAdapter` does during initialization, how to declare configurations and multiple accounts—when you encounter questions like "why should I write this way," refer to this document.
+This document explains the adapter's runtime mechanism: how AdapterManager registers and distributes events, what `BaseAdapter` does during initialization, how configuration and multiple accounts are declared—when you encounter "why should I write this way" questions while writing adapters, refer here.
 
 ## Adapter Architecture
 
 ### Component Relationships
 
 ```
-Forward Conversion (Receiving Direction)                           Reverse Conversion (Sending Direction)
-─────────────────                           ─────────────────
-                                             
-┌──────────────────┐                        ┌──────────────────┐
-│ Platform Native Event     │                        │ Module Constructs Message     │
-└────────┬─────────┘                        └────────┬─────────┘
-         │                                           │
-         ↓                                           ↓
+Forward Conversion (Receiving Direction)                    Reverse Conversion (Sending Direction)
+─────────────────                                        ─────────────────
+                                                         
+┌──────────────────┐                                     ┌──────────────────┐
+│ Platform Native Events │                                     │ Module Constructed Message │
+└────────┬─────────┘                                     └────────┬─────────┘
+         │                                                          │
+         ↓                                                          ↓
 ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
-│                  │   │  Adapter (MyAdapter) │   │                  │
-│  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
-│  (Event Converter)    │──→│ │              │ │   │ (Reverse Conversion Entry)   │
+│                  │   │ Adapter (MyAdapter) │   │ Send.Raw_ob12()  │
+│  Converter       │──→│ ┌──────────────┐ │   │ (Reverse Conversion Entry) │
+│  (Event Converter) │   │ │              │ │   │                  │
 │                  │   │ │              │ │   │                  │
 └──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
                        └──────────────────┘            │
                                 │                      ↓
                                 ↓              ┌──────────────────┐
-                       ┌──────────────────┐    │ Platform API Call    │
+                       ┌──────────────────┐    │ Platform API Call │
                        │ OneBot12 Standard Event │    └────────┬─────────┘
                        └────────┬─────────┘             │
                                 │                      ↓
                                 ↓              ┌──────────────────┐
-                       ┌──────────────────┐    │ Standard Response Format     │
-                       │ Event System         │    └──────────────────┘
+                       ┌──────────────────┐    │ Standard Response Format │
+                       │ Event System     │    └──────────────────┘
                        └────────┬─────────┘
                                 │
                                 ↓
                        ┌──────────────────┐
-                       │ Module (Process Event)  │
+                       │ Module (Event Handling) │
                        └──────────────────┘
 ```
 
 **Core Symmetry**:
-- **Forward Conversion** (Converter): Platform native event → OneBot12 standard event, original data preserved in `{platform}_raw`
-- **Reverse Conversion** (Raw_ob12): OneBot12 message segment → Platform API call, returns standard response format
+- **Forward Conversion** (Converter): Platform native events → OneBot12 standard events, original data preserved in `{platform}_raw`
+- **Reverse Conversion** (Raw_ob12): OneBot12 message segments → Platform API call, returns standard response format
 
 ## AdapterManager Adapter Manager
 
@@ -3079,14 +3080,14 @@ await sdk.adapter.startup(["platform1", "platform2"])
 
 1. Submit `adapter.start` lifecycle event
 2. Submit `adapter.status.change` event (starting)
-3. Parallel startup of each adapter
+3. Parallel start each adapter
 4. If startup fails, automatically retry (exponential backoff strategy)
 5. After successful startup, submit `adapter.status.change` event (started)
 
 **Retry Mechanism**:
 
 - First 4 retries: 60 seconds, 10 minutes, 30 minutes, 60 minutes
-- Fifth and subsequent: Fixed interval of 3 hours
+- 5th and subsequent: Fixed interval of 3 hours
 
 #### Shutdown Adapter
 
@@ -3099,7 +3100,7 @@ await sdk.adapter.shutdown()
 
 1. Submit `adapter.stop` lifecycle event
 2. Call all adapters' `shutdown()` method
-3. Close router server
+3. Shutdown routing server
 4. Clear event handlers
 5. Submit `adapter.stopped` lifecycle event
 
@@ -3116,7 +3117,7 @@ enabled = sdk.adapter.is_enabled("myplatform")
 
 # Use in operator
 if "myplatform" in sdk.adapter:
-    print("Platform exists and is enabled")
+    print("Platform exists and enabled")
 ```
 
 #### List Platforms
@@ -3140,12 +3141,12 @@ enabled_platforms = [p for p, enabled in status_dict.items() if enabled]
 ```python
 from ErisPulse import sdk
 
-# Listen to standard message events across all platforms
+# Listen to all platforms' standard message events
 @sdk.adapter.on("message")
 async def handle_message(data):
     print(f"Received OneBot12 message: {data}")
 
-# Listen to standard message events for a specific platform
+# Listen to standard message events for specific platform
 @sdk.adapter.on("message", platform="myplatform")
 async def handle_platform_message(data):
     print(f"Received myplatform message: {data}")
@@ -3159,12 +3160,12 @@ async def handle_any_event(data):
 #### Platform Native Events
 
 ```python
-# Listen to native events for a specific platform
+# Listen to specific platform's native events
 @sdk.adapter.on("raw_event_type", raw=True, platform="myplatform")
 async def handle_raw_event(data):
     print(f"Received native event: {data}")
 
-# Listen to native events for all platforms (wildcard)
+# Listen to native events from all platforms (wildcard)
 @sdk.adapter.on("*", raw=True)
 async def handle_all_raw_events(data):
     print(f"Received native event: {data}")
@@ -3174,15 +3175,15 @@ async def handle_all_raw_events(data):
 
 When calling `adapter.emit(event_data)`:
 
-1. **Middleware Handling**: Execute all OneBot12 middlewares first
+1. **Middleware Processing**: Execute all OneBot12 middlewares first
 2. **Standard Event Distribution**: Distribute to matching OneBot12 event handlers
-3. **Native Event Distribution**: If original data exists, distribute to native event handlers
+3. **Native Event Distribution**: If raw data exists, distribute to native event handlers
 
 **Matching Rules**:
 
 - Exact match: `@sdk.adapter.on("message")` only matches `message` events
 - Wildcard: `@sdk.adapter.on("*")` matches all events
-- Platform filtering: `platform="myplatform"` only distributes events from the specified platform
+- Platform filtering: `platform="myplatform"` only distributes events for the specified platform
 
 ### Middleware
 
@@ -3200,26 +3201,26 @@ async def filter_middleware(data):
     """Event filtering middleware"""
     # Filter out unwanted events
     if data.get("type") == "notice":
-        return None  # Returning None means the middleware chain ignores this return value, retaining original data for further propagation
-    return data  # Must return data to continue propagation
+        return None  # Returning None ignores the return value, preserving original data for further processing
+    return data  # Must return data to continue passing
 ```
 
 #### Middleware Return Contract
 
 | Return Value | Behavior |
 |--------|------|
-| `dict` | Rewrite event payload (subsequent handlers receive the modified event) |
-| `None` | Allow passage, payload unchanged (outputs WARNING prompt—suggest explicit `return data`) |
-| `False` | **Reject**: Event is discarded, no handlers are invoked, no outbound side effects |
+| `dict` | Overwrite event payload (subsequent processors receive the modified event) |
+| `None` | Pass through, payload unchanged (outputs WARNING message—recommended to explicitly `return data`) |
+| `False` | **Reject**: Event is discarded, no processor is entered, no outbound side effects |
 
-Rejection is suitable for scenarios like firewalls, rate limiting, and blacklists that discard events at the event level (previously only possible using high-priority event handlers). When rejection occurs, the framework outputs a TRACE log and triggers the `adapter.event.blocked` lifecycle hook (carrying the `middleware` middleware name, complete `event`, `platform` / `event_type` / `detail_type`), facilitating troubleshooting of "why an event was not responded to":
+Reject is suitable for scenarios like firewall, rate limiting, blacklist, where events are discarded at the event level (previously could only be achieved using high-priority event handlers). When rejected, the framework outputs a TRACE log and triggers the `adapter.event.blocked` lifecycle hook (carrying `middleware` middleware name, full `event`, `platform` / `event_type` / `detail_type`), facilitating troubleshooting for why an event was not responded to:
 
 ```python
 @sdk.adapter.middleware
 async def rate_limit_middleware(data):
     """Rate limiting middleware"""
     if _is_rate_limited(data):
-        return False  # Reject: Event is discarded
+        return False  # Reject: event is discarded
     data["rate_marked"] = True
     return data
 
@@ -3232,13 +3233,13 @@ async def on_event_blocked(data):
 
 Middlewares execute in the order they are registered, with later registered middlewares executing first.
 
-> **Note**: If a middleware returns `None` (e.g., forgetting to `return data`), the framework will ignore this return value and retain the original data for further propagation, while outputting a warning-level log. This ensures that a single middleware mistake does not cause the entire event chain to be interrupted.
+> **Note**: If a middleware returns `None` (e.g., forgetting `return data`), the framework ignores the return value and preserves the original data for further processing, while outputting a warning-level log. This ensures that a single middleware's mistake does not interrupt the entire event chain.
 
 ```python
 # Registration order
-sdk.adapter.middleware(middleware1)  # Executes last
-sdk.adapter.middleware(middleware2)  # Executes in the middle
-sdk.adapter.middleware(middleware3)  # Executes first
+sdk.adapter.middleware(middleware1)  # Last to execute
+sdk.adapter.middleware(middleware2)  # Middle execution
+sdk.adapter.middleware(middleware3)  # First to execute
 
 # Execution order: middleware3 -> middleware2 -> middleware1
 ```
@@ -3286,9 +3287,9 @@ class MyConfig(BaseConfig):
 class MyAdapter(BaseAdapter):
     ConfigClass = MyConfig  # Declare configuration class
     
-    # No need to override __init__, the framework automatically handles:
+    # No need to override __init__, framework handles automatically:
     # - self.sdk, self.logger
-    # - self.cfg (type-safe configuration instance, read in real-time)
+    # - self.cfg (type-safe configuration instance, real-time reading)
     # - self.Send, self.Request
     
     async def start(self):
@@ -3307,7 +3308,7 @@ class MyAdapter(BaseAdapter):
 
 ### Configuration Management
 
-The framework provides declarative configuration management, defining configuration structures via dataclass, with the framework automatically handling loading, validation, and template generation.
+The framework provides declarative configuration management, defining the configuration structure through dataclass, and automatically handling loading, validation, and template generation.
 
 #### Single Account Configuration
 
@@ -3324,7 +3325,7 @@ class TelegramConfig(BaseConfig):
         "ui": {"widget": "password", "group": "basic", "order": 1},
     })
     proxy: str = field(default="", metadata={
-        "description": {"i18n": "telegram.proxy", "default": "Proxy address"},
+        "description": {"i18n": "telegram.proxy", "default": "Proxy Address"},
         "ui": {"widget": "text", "group": "advanced", "order": 10},
     })
 
@@ -3340,7 +3341,7 @@ class TelegramAdapter(BaseAdapter):
 
 #### Multi-Account Configuration
 
-The `BotAccountConfig` base class provides `enabled` and `name` fields. Most adapters can automatically obtain `bot_id` from the platform protocol or login response, injecting it into the account configuration during event conversion.:
+The `BotAccountConfig` base class provides `enabled` and `name` fields. Most adapters can automatically obtain `bot_id` from the platform protocol or login response, injecting it into the account configuration during event conversion:
 
 ```python
 from dataclasses import dataclass, field
@@ -3354,7 +3355,7 @@ class MyBotConfig(BotAccountConfig):
         "required": True,
     })
 
-# If bot_id cannot be obtained during login, allow the user to fill it in the configuration
+# If bot_id cannot be obtained during login, allow users to fill it in the configuration
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
     bot_id: str = field(default="", metadata={
@@ -3382,34 +3383,31 @@ Field metadata serves both TOML comment generation and WebUI form rendering:
 ```python
 metadata = {
     "description": str | dict,  # Field description (supports i18n)
-    "required": bool,         # Whether required (validation + WebUI required mark)
-    "secret": bool,           # Whether sensitive (WebUI displays as ***, masked in logs)
-    "example": bool,          # Not persisted flag: not written to config.toml (default value/template excluded),
-                              # only rendered into config.full.example; schema with "example": true marked,
-                              # CLI configuration wizard defaults skip; user manually sets then persists normally
+    "required": bool,         # Whether it is required (validation + WebUI required mark)
+    "secret": bool,           # Whether it is sensitive (WebUI displays as ***, de-sensitized in logs)
+    "example": bool,          # Non-persistent flag: not written to config.toml (default values/examples excluded), only rendered into config.full.example; schema with "example": true marked, CLI configuration wizard skips by default; user manually sets then persists normally
     "min": number, "max": number,  # Numerical range validation
     "ui": {                   # WebUI control configuration (old name "webui" still compatible)
         "widget": str,        # Control type: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # Group: "basic" | "advanced" | "connection" etc.
-        "order": int,         # Sorting weight (smaller is earlier)
-        "options": list,      # Select control options [{label, value}], label supports i18n
-        "placeholder": str | dict,  # Input box placeholder (supports i18n)
+        "order": int,         # Sorting weight (smaller values appear earlier)
+        "options": list,      # Options for select control [{label, value}], label supports i18n
+        "placeholder": str | dict,  # Input placeholder (supports i18n)
     },
-    "extra": dict,            # Additional extended field (passed through to schema)
+    "extra": dict,            # Additional extension fields (passed through to schema)
 }
 ```
 
-All user-visible text fields support i18n, uniformly using the `{"i18n": "key", "default": "text"}` format,
-pure strings are passed through as-is (backward compatibility). Supported i18n fields:
+All user-visible text fields support i18n, uniformly using the `{"i18n": "key", "default": "text"}` format; pure strings are passed through as-is (backward compatibility). Supported i18n fields:
 
 | Field | Location | Description |
 |------|------|------|
 | `description` | field metadata | Field description |
-| `options[].label` | `ui.options` | Select control option label |
-| `placeholder` | `ui.placeholder` | Input box placeholder |
+| `options[].label` | `ui.options` | Select control option labels |
+| `placeholder` | `ui.placeholder` | Input placeholder |
 | `group_labels` | `_schema_meta` | Group display name (Dashboard partition title) |
 
-When using i18n, you must register the translation key to the i18n system in advance (see [i18n documentation](../../advanced/i18n.md#configuration-field-multilingual) for details).
+When using i18n, you must register the translation keys in the i18n system beforehand (see [i18n documentation](../../advanced/i18n.md#configuration-field-multilingual) for details).
 
 **description / placeholder / options label** example:
 
@@ -3432,7 +3430,7 @@ mode: str = field(
             "widget": "select",
             "options": [
                 {"label": {"i18n": "my_adapter.mode.a", "default": "Option A"}, "value": "a"},
-                {"label": "Plain string label", "value": "b"},  # Plain string passed through as-is
+                {"label": "Pure string label", "value": "b"},  # Pure strings passed through as-is
             ],
         },
     },
@@ -3450,8 +3448,7 @@ MyConfig._schema_meta = {
 }
 ```
 
-The framework's `resolve_config_schema()` automatically resolves the above fields' i18n keys based on the current language;
-`get_config_schema()` passes through the i18n dictionary as-is, letting the frontend parse it.
+The framework's `resolve_config_schema()` automatically resolves all the above fields' i18n keys based on the current language; `get_config_schema()` passes through the i18n dictionary as-is, for the frontend to parse.
 
 #### docstring automatically generates field descriptions (v2.8.0+)
 
@@ -3467,29 +3464,26 @@ class MyConfig(BaseConfig):
     :ivar timeout: Request timeout in seconds
     """
 
-    endpoint: str = "https://api.example.com"   # No metadata description → comment/description from docstring
+    endpoint: str = "https://api.example.com"   # No metadata description → Description taken from docstring
     timeout: int = 30
 
-    # Google style also supported (Attributes: section):
+    # Google style is also supported (Attributes: section):
     # Attributes:
     #     endpoint: Platform API address
 ```
 
-Priority: **metadata description > docstring field description > empty**.
-i18n dictionary form of description is unaffected (always prioritized).
+Priority: **metadata description > docstring field description > empty**. i18n dictionary form of description is unaffected (always prioritized).
 
 #### Nested Configuration (v2.8.0+)
 
-When the field type is a nested dataclass, the framework recursively processes: schema uses `"type": "table"` +
-`"fields"` subtree carries (WebUI renders as collapsible nested group), TOML template renders as `[subtable]` section,
-default value / filling / validation / i18n resolution all recursively take effect.
+When the field type is a nested dataclass, the framework recursively processes it: the schema uses `"type": "table"` + `"fields"` subtree (WebUI renders as collapsible nested groups), TOML template renders as `[sub-table]` sections, default values / filling / validation / i18n parsing all recursively take effect.
 
 ```python
 @dataclass
 class RetryConfig(BaseConfig):
     """Retry Strategy
 
-    :ivar max_retries: Maximum retry count
+    :ivar max_retries: Maximum number of retries
     """
     max_retries: int = 3
     backoff: float = 0.5
@@ -3507,15 +3501,14 @@ Generated TOML template:
 endpoint = "https://api.example.com"
 
 [retry]
-# Maximum retry count
+# Maximum number of retries
 max_retries = 3
 backoff = 0.5
 ```
 
-> For nested types, it is recommended to use direct type annotations; string annotations (e.g., for delayed evaluation scenarios) must ensure
-> the type can be globally resolved from the configuration class module, `__qualname__` outer class namespace, or class attributes by name.
+> For nested types, it is recommended to use direct type annotations; string annotations (e.g., for delayed evaluation scenarios) must ensure the type is globally resolvable from the configuration class's module, `__qualname__` outer class namespace, or class attributes by name.
 
-#### Non-persisted example field (v2.8.0+)
+#### Non-persistent example fields (v2.8.0+)
 
 ```python
 gc_interval: int = field(default=300, metadata={"example": True})
@@ -3523,21 +3516,18 @@ gc_interval: int = field(default=300, metadata={"example": True})
 
 Fields with `example: True`:
 
-- Not written to config.toml (adapter/module configuration template and default values excluded, runtime uses code default value)
-- Only rendered into project's `config.full.example` (for user reference, copy to config.toml as needed)
-- Schema with `"example": true` marked (panel can decide display strategy), CLI configuration wizard defaults skip
+- Not written to config.toml (adapter/module configuration template and default values excluded, runtime uses code default values)
+- Only rendered into project's `config.full.example` (for user reference, manually copy to config.toml as needed)
+- Schema marked with `"example": true` (panel can decide display strategy), CLI configuration wizard skips by default
 - After user manually sets this key, it persists normally, updates normally (user's explicit intent takes precedence)
 
-Suitable for "complex but rarely touched" advanced configuration items, keeping the user's config.toml minimal.
+Suitable for "complex but infrequently touched" advanced configuration items, keeping the user's config.toml minimal.
 
-> ⚠️ `_schema_meta` is class-level metadata (not a configuration field). If declared inside the dataclass class body,
-> it must be annotated with `ClassVar` (`_schema_meta: ClassVar[dict] = {...}`), otherwise it will be treated
-> as a regular field by dataclass. The framework defensively excludes fields with leading underscores from any
-> schema / template / default value / validation output, but it is still recommended to declare them properly.
+> ⚠️ `_schema_meta` is class-level metadata (not a configuration field). If declared within the dataclass body, it must be annotated with `ClassVar` (`_schema_meta: ClassVar[dict] = {...}`), otherwise it will be treated as a regular field by dataclass. The framework defensively excludes fields with leading underscores from any schema/template/default value/validation output, but it is still recommended to declare them properly.
 
 ### Declarative Translation Keys (v2.7.0+)
 
-Adapters can declare translation keys in a nested class `I18nClass`, similar to declaring `ConfigClass`. The framework automatically registers all declared translation keys during `__init__` (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available when generating templates.
+Adapters can centrally declare translation keys by nesting the `I18nClass` class, similar to declaring `ConfigClass`. The framework automatically registers all declared translation keys during `__init__` (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available when generating the template.
 
 ```python
 from ErisPulse.Core.Bases import BaseAdapter, BaseI18n, I18nKey
@@ -3562,13 +3552,13 @@ class MyAdapter(BaseAdapter):
         )
 ```
 
-> ``I18nKey.default`` is a language-agnostic fallback text, not registered to any language.
-> To make the translation effective, at least one language parameter must be explicitly passed.
-> See [i18n documentation](../../advanced/i18n.md#recommended-usage-declaring-translation-keys-via-i18nclass-v270) for detailed usage (key path rules, explicit key parameter, etc.).
+> ``I18nKey.default`` is a language-agnostic fallback text and is not registered in any language. To make the translation effective, at least one language parameter must be explicitly passed.
+
+For detailed usage (key path rules, explicit key parameters, etc.), see [i18n documentation](../../advanced/i18n.md#recommended-usage-declaring-translation-keys-via-i18nclass-v270).
 
 ### Declarative Event Extension Methods (v2.7.0+)
 
-Adapters can declare platform-specific event extension methods via `EventMixin`, and the framework automatically registers them to the current platform.
+Adapters can centrally declare platform-specific event extension methods through `EventMixin`, which the framework automatically registers to the current platform.
 
 ```python
 from ErisPulse.Core import BaseAdapter
@@ -3595,8 +3585,7 @@ async def handler(event):
         await event.reply(f"[{chat_name}] Official message received")
 ```
 
-> Event extension methods of the adapter are registered to its own platform (``self._platform``).
-> Modules need to use the original ``register_event_mixin()`` API for cross-platform event extensions.
+> The adapter's event extension methods are registered to its own platform (``self._platform``). Modules that need cross-platform event extensions should use the original ``register_event_mixin()`` API.
 
 #### Account Resolution
 
@@ -3621,18 +3610,18 @@ class MyAdapter(BaseAdapter):
     
     def on_config_update(self, old_config, new_config):
         if old_config.token != new_config.token:
-            self.logger.info("Token has been updated, reconnecting")
+            self.logger.info("Token updated, reconnecting")
 ```
 
 ### Initialization Process
 
-The framework automatically completes the following tasks in `BaseAdapter.__init__(self, sdk=None)`:
+The framework automatically performs the following tasks in `BaseAdapter.__init__(self, sdk=None)`:
 
 1. **SDK Reference**: Set `self.sdk`, `self.logger`
 2. **Send/Request Factory**: Create `self.Send` and `self.Request`
-3. **Configuration Template**: If `ConfigClass` is declared, automatically generate the default configuration template (first time)
-4. **Account Template**: If `AccountConfigClass` is declared, automatically generate the default account template (first time)
-5. **EventMixin Registration**: If `EventMixin` is declared, automatically register it to `AdapterManager` after injecting the platform name
+3. **Configuration Template**: If `ConfigClass` is declared, automatically generate a default configuration template (first time)
+4. **Account Template**: If `AccountConfigClass` is declared, automatically generate a default account template (first time)
+5. **EventMixin Registration**: If `EventMixin` is declared, automatically register to `AdapterManager` after injecting platform name
 
 Configuration is read in real-time via `self.cfg` / `self.accounts` (each access reads the latest value from the configuration store). `self.config` as a compatibility alias for `self.cfg` is still available.
 
@@ -3659,11 +3648,11 @@ class MyAdapter(BaseAdapter):
         pass
 ```
 
-### Available Properties
+### Available Attributes
 
-The `Send` class automatically sets the following properties when called:
+The `Send` class automatically sets the following attributes when called:
 
-| Property | Description | Setting Method |
+| Attribute | Description | Setting Method |
 |-----|------|---------|
 | `_target_id` | Target ID | `To(id)` or `To(type, id)` |
 | `_target_type` | Target Type | `To(type, id)` |
@@ -3671,26 +3660,26 @@ The `Send` class automatically sets the following properties when called:
 | `_account_id` | Sending Account ID | `Using(account_id)` |
 | `_adapter` | Adapter Instance | Automatically set |
 | `_at_user_ids` | @ User List | `At(user_id)` |
-| `_reply_message_id` | ID of the replied message | `Reply(message_id)` |
-| `_at_all` | Whether to @ all | `AtAll()` |
+| `_reply_message_id` | Reply Message ID | `Reply(message_id)` |
+| `_at_all` | Whether to @ All | `AtAll()` |
 
 > **Recommendation**: Use the `self.send_context` property to get `target_type`, `target_id`, `account_id` in one go, which is clearer than directly accessing instance variables.
 
 ### Framework Helper Methods
 
-| Method/Property | Description |
+| Method/Attribute | Description |
 |-----------|------|
 | `self._apply_modifiers(message)` | Merge At/AtAll/Reply modifier states into the message segment list |
-| `self.send_context` | Return `{target_type, target_id, account_id}` dictionary |
+| `self.send_context` | Return a dictionary `{target_type, target_id, account_id}` |
 
 ### Basic Methods
 
-Adapters only need to implement `Raw_ob12`, standard methods (Text/Image/Voice/Video/File) are inherited from `SendDSL` base class and default delegate to it:
+Adapters only need to implement `Raw_ob12`, standard methods (Text/Image/Voice/Video/File) are inherited from the `SendDSL` base class and default to delegating to it:
 
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """Must implement: OneBot12 message segment → Platform API"""
+        """Must implement: OneBot12 message segments → Platform API"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -3701,7 +3690,7 @@ class Send(BaseAdapter.Send):
             )
         return asyncio.create_task(_do_send())
 
-    # Text/Image/Voice/Video/File are inherited from base class, automatically delegate Raw_ob12, no need to repeat implementation
+    # Text/Image/Voice/Video/File are inherited from base class, automatically delegate Raw_ob12, no need to implement repeatedly
     # If platform-specific logic is needed, override individual methods:
     # def Text(self, text: str):
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
@@ -3739,17 +3728,17 @@ All converted events must include:
 
 ```python
 {
-    "id": "Unique event identifier",
+    "id": "Unique Event Identifier",
     "time": 1234567890,           # 10-digit Unix timestamp
     "type": "message/notice/request/meta",
-    "detail_type": "Event detail type",
-    "platform": "Platform name",
+    "detail_type": "Detailed Event Type",
+    "platform": "Platform Name",
     "self": {
-        "platform": "Platform name",
+        "platform": "Platform Name",
         "user_id": "Bot ID"     # Must match bot_id
     },
-    "{platform}_raw": {...},       # Original data (must)
-    "{platform}_raw_type": "..."    # Original type (must)
+    "{platform}_raw": {...},       # Raw data (required)
+    "{platform}_raw_type": "..."    # Raw type (required)
 }
 ```
 
@@ -3798,16 +3787,16 @@ class MyPlatformConverter:
 
 ### Two Correct Ways to Write start()
 
-Adapters in client mode (WebSocket client, HTTP polling, etc.) need to start a persistent connection loop in `start()`. The framework supports two ways, **both correct, but only one can be chosen**:
+Adapters that are client-mode (WebSocket client, HTTP polling, etc.) need to initiate a constant connection loop in `start()`. The framework supports two ways, **both are correct, but only one should be chosen**:
 
-**Way 1: spawn-return style (Recommended)**—Use `spawn_client_loop()` to schedule the loop as a background task belonging to this platform, `start()` returns immediately:
+**Way 1: spawn-return style (recommended)**—use `spawn_client_loop()` to schedule the loop as a background task belonging to the current platform, `start()` returns immediately:
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        # The loop task belongs to self._platform: framework automatically cancels when shutdown
+        # The loop task belongs to self._platform: automatically canceled by the framework when shutdown
         self.spawn_client_loop(self._connect_loop())
-        # start ends here—“startup is successful”, connection failure handled within loop
+        # start ends here—“startup is successful”, connection failure handled within the loop
 
     async def _connect_loop(self):
         while True:
@@ -3816,46 +3805,46 @@ class MyAdapter(BaseAdapter):
             except asyncio.CancelledError:
                 raise
             except Exception:
-                await asyncio.sleep(5)              # Loop handles backoff and reconnects
+                await asyncio.sleep(5)              # Backoff and reconnect within the loop
 ```
 
-**Way 2: Persistent style**—`start()` directly `await` the connection loop, never returns:
+**Way 2: Persistent style**—`start()` directly awaits the connection loop, never returns:
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        await self._connect_loop()   # Persistent, never returns; loop throws exception = start fails
+        await self._connect_loop()   # Persistent and never returns; loop throws exception = start failure
 ```
 
 Differences and common points between the two writing styles:
 
 | | spawn-return style | Persistent style |
 |---|---|---|
-| `start()` return timing | Immediately returns after launching the loop | Returns when the connection loop exits/fails (framework retries according to backoff strategy) |
-| Connection failure handling | Exception caught within loop, handled internally | Exception thrown, handed over to the framework's retry chain |
-| Suitable scenarios | Need to return startup confirmation quickly (multiple connections, register routes and then launch other tasks) | "Connection is startup" semantics simple implementation |
+| `start()` return timing | Immediately returns after launching the loop | Returns when the connection loop exits/fails (framework retries according to the backoff strategy) |
+| Connection failure handling | Exception caught and backoff within the loop | Exception thrown up, handed over to the framework's retry chain |
+| Suitable scenarios | Need to quickly return startup confirmation (multiple connections, register routes and then launch other tasks) | "Connection is startup" semantic simple implementation |
 
-`spawn_client_loop(coro, *, name="client_loop")` is the scheduling entry for way one: the task is registered by `self._platform`, the framework automatically cancels it when the adapter `shutdown()` without needing to manage task handles yourself; uncaught exceptions within the loop are automatically logged (for expected disconnection and reconnection, please catch them within the loop).
+`spawn_client_loop(coro, *, name="client_loop")` is the entry point for way 1: the task is registered according to `self._platform`, when the adapter `shutdown()` the framework automatically cancels it, no need to manage task handles yourself; uncaught exceptions within the loop are automatically logged (for expected disconnects and reconnects, please catch them within the loop).
 
-> **The only incorrect way is mixing**: spawning and then `await`ing the same loop—this makes `start()` lose the immediate return semantics, and the task cancellation path becomes unpredictable.
+> **The only incorrect writing style is mixing**: spawning and then awaiting the same loop—this causes `start()` to lose its immediate return semantics, and the task cancellation path becomes unpredictable.
 
-### Connection Mode Semi-Complete Base Classes
+### Semi-finished Base Classes for Connection Patterns
 
-In addition to the two writing styles above, the most common connection modes have direct "semi-complete" base classes provided by the framework (`ErisPulse.Core.Bases.adapter_patterns`, importable directly from the root package): `start`/`shutdown` lifecycle orchestration is fully handled by the base class, and the subclass only implements business hooks.
+In addition to the two writing styles mentioned above, the most common two connection patterns are directly provided by the framework as "semi-finished" base classes (`ErisPulse.Core.Bases.adapter_patterns`, the root package can be directly imported): `start`/`shutdown` lifecycle orchestration is fully handled by the base class, and the subclass only implements business hooks.
 
 #### PollingAdapter (HTTP Polling Type)
 
-Suitable for platforms that "periodically pull events from the client" (Telegram getUpdates type). The base class starts a persistent polling loop using the spawn-return style, automatically logs failed pulls and applies exponential backoff (base 1 second, upper limit 60 seconds, success resets to zero; constants `POLLING_ADAPTER_BACKOFF_BASE_SECS`/`POLLING_ADAPTER_BACKOFF_MAX_SECS` can be adjusted in `Core/constants.py`):
+Applicable to platforms that "periodically pull events from the client" (like Telegram's getUpdates type). The base class uses the spawn-return style to launch a constant polling loop, automatically logs failures and backoffs exponentially (base 1 second, upper limit 60 seconds, resets to zero on success; constants `POLLING_ADAPTER_BACKOFF_BASE_SECS` / `POLLING_ADAPTER_BACKOFF_MAX_SECS` can be adjusted in `Core/constants.py`):
 
 ```python
 from ErisPulse import PollingAdapter
 
 class MyAdapter(PollingAdapter):
-    # Polling interval defaults to 5 seconds; ConfigClass declares poll_interval field, uses configuration value (hot update takes effect)
+    # Polling interval defaults to 5 seconds; if ConfigClass declares a poll_interval field, use the configured value (hot updates take effect)
     poll_interval = 5.0
 
     async def fetch_events(self):
-        """Pull a batch of platform native events (exceptions handled by base class backoff, no try/except needed)"""
+        """Pull a batch of platform native events (exceptions handled by the base class, no need for try/except)"""
         resp = await self.sdk.client.get(f"{self.cfg.endpoint}/getUpdates")
         data = await resp.json()
         return data.get("result", [])
@@ -3865,21 +3854,21 @@ class MyAdapter(PollingAdapter):
         return self.converter.convert(raw)
 
     async def call_api(self, endpoint: str, **params):
-        ...  # Same as regular adapter
+        ...  # Same as ordinary adapters
 ```
 
-Minimum implementation surface: `fetch_events`/`convert_one`/`call_api`. `start()` starts the loop and returns immediately; `shutdown()` does not need subclass handling (polling loop is automatically canceled by owner).
+Minimum implementation surface: `fetch_events` / `convert_one` / `call_api`. `start()` launches the loop and returns immediately; `shutdown()` does not require subclass handling (the polling loop is automatically canceled according to owner affiliation).
 
 #### WebhookAdapter (HTTP Callback Type)
 
-Suitable for platforms that "push callbacks from the platform." The base class's `start()` registers the receiving route on the framework router (final path `/{platform name}/webhook`, POST method), registered in `owner_scope`—the adapter unloads automatically clean up by owner, no need to manually deregister:
+Applicable to platforms that "push callbacks from the platform." The base class's `start()` registers the receiving route on the framework router (final path `/{platform name}/webhook`, POST method), registered in `owner_scope`—the adapter unloads automatically clean up according to owner, no need to manually deregister:
 
 ```python
 from ErisPulse import WebhookAdapter
 
 class MyAdapter(WebhookAdapter):
     def verify_request(self, request) -> bool:
-        """Optional hook: callback verification (default allows, return False to deny by base class with 403)"""
+        """Optional hook: callback verification (default allows; return False to reject by base class with 403)"""
         cfg = self.cfg
         if not cfg.token:
             return True
@@ -3891,12 +3880,12 @@ class MyAdapter(WebhookAdapter):
         return self.converter.convert(payload)
 
     async def call_api(self, endpoint: str, **params):
-        ...  # Same as regular adapter
+        ...  # Same as ordinary adapters
 ```
 
-Minimum implementation surface: `convert`/`call_api` (`verify_request` optional). The callback address is queried via `sdk.adapter.get_connection_info(platform)` and filled into the platform backend; requests with failed verification return 403, payload parsing failures return 400, normal returns `{"status": "ok"}`.
+Minimum implementation surface: `convert` / `call_api` (`verify_request` is optional). The callback address is queried via `sdk.adapter.get_connection_info(platform)` and filled into the platform backend; requests with failed verification return 403, payload parsing failures return 400, normal returns return `{"status": "ok"}`.
 
-#### How to Choose the Three Modes
+#### How to Choose Three Modes
 
 | Platform Protocol | Inherit | Scaffold |
 |---|---|---|
@@ -3962,9 +3951,9 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
-> Pure callback-type platforms do not need to manually write the above registration/verification/cleanup orchestration—simply inherit the [`WebhookAdapter` semi-complete base class](#connection-mode-semi-complete-base-classes) and implement `convert` (optionally override `verify_request`).
+> Pure callback-type platforms don't need to manually write this registration/verification/cleanup orchestration—simply inherit the [`WebhookAdapter` semi-finished base class](#connection-pattern-semi-finished-base-class) and only implement `convert` (optionally override `verify_request`).
 
-> **Route information query**: The routes registered by the adapter (HTTP, WebSocket, SSE) can be queried via `sdk.adapter.get_connection_info(platform)` and `sdk.router.get_module_urls(module_name)` to get the complete connection address (including `base_url` + path). See [Getting Started with Adapter Development - Connection Information and Route Discovery](getting-started.md#9-connection-information-and-route-discovery) and [SSE Support](getting-started.md#10-sse-server-sent-events-support).
+> **Route information query**: The routes registered by adapters (HTTP, WebSocket, SSE) can be queried via `sdk.adapter.get_connection_info(platform)` and `sdk.router.get_module_urls(module_name)`, including `base_url` + path. See [Getting Started with Adapter Development - Connection Information and Route Discovery](getting-started.md#9-connection-information-and-route-discovery) and [SSE Support](getting-started.md#10-sse-server-sent-events-support).
 
 ## API Response Standard
 
@@ -3986,7 +3975,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e), raw=None)
 ```
 
-### Manually Constructed Response (Old Method Still Compatible)
+### Manually Construct Response (Old Method Still Compatible)
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -4049,21 +4038,21 @@ enabled = true
 # Use Using method to specify account
 my_adapter = adapter.get("myplatform")
 
-# Through event's self.user_id (recommended, most universal)
+# Use self.user_id from event (recommended, most universal)
 await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
 
-# Through account name
+# Use account name
 await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 ```
 
-### Relationship Between self.user_id and Using
+### Relationship between self.user_id and Using
 
 The framework's event reply mechanism automatically extracts `account_id` (prioritized) or `user_id` from the event's `self` field as the `Using` parameter. Adapter developers need to ensure that the Converter correctly sets `self.user_id` to match `_resolve_account`.
 
 **Framework Internal Behavior**:
 
 ```python
-# Framework extraction of bot_id logic
+# Framework extraction logic for bot_id
 bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
 
 # Only call Using if bot_id is non-empty
@@ -4071,7 +4060,7 @@ if bot_id:
     send_chain = send_chain.Using(bot_id)
 ```
 
-> **Key Point**: Even if the adapter uses only one Bot configuration, as long as the Converter correctly sets `self.user_id`, the framework will use it as the `Using` parameter. The adapter needs to ensure that `self.user_id` matches the identifier field (such as `bot_id`) in `AccountConfigClass` so that `_resolve_account()` can match the correct account. If `self.user_id` is empty, the framework will not call `Using`, and `call_api` will receive `account_id` as `None`, and `_resolve_account(None)` returns the first enabled account.
+> **Key Point**: Even if the adapter only uses a single Bot configuration, as long as the Converter correctly sets `self.user_id`, the framework will pass it as the `Using` parameter. The adapter needs to ensure that `self.user_id` matches the identifier field (such as `bot_id`) in `AccountConfigClass`, so that `_resolve_account()` can match the correct account. If `self.user_id` is empty, the framework will not call `Using`, and `call_api` will receive `account_id` as `None`, with `_resolve_account(None)` returning the first enabled account.
 
 ## Error Handling
 
@@ -4125,21 +4114,21 @@ async def call_api(self, endpoint: str, **params):
         return self._error_response(str(e), 34000)
 ```
 
-> **Backward Compatibility**: Code for old adapters using `aiohttp.ClientSession` is unaffected and can still capture `aiohttp.ClientError`. Both methods can coexist. New code is recommended to use `sdk.client` + ErisPulse exception system.
+> **Backward Compatibility**: Code for old adapters using `aiohttp.ClientSession` is unaffected and can still catch `aiohttp.ClientError`. Both methods can coexist. New code is recommended to use `sdk.client` + ErisPulse exception system.
 
 ## Bot Status Management
 
-The `AdapterManager` has a built-in bot status tracking system that automatically maintains the online status, active time, and metadata of all registered bots.
+AdapterManager includes a built-in Bot status tracking system that automatically maintains the online status, active time, and metadata of all registered Bots.
 
 ### Automatic Discovery Mechanism
 
 When the adapter emits an event via `adapter.emit()`, the framework automatically checks the `self` field in the event:
 
-- **meta events**: Perform corresponding operations based on `detail_type` (register on connect, mark offline on disconnect, update active time on heartbeat)
-- **ordinary events** (message/notice/request): Automatically discover bot and update active time
+- **Meta Events**: Perform corresponding operations based on `detail_type` (register on connect, mark as offline on disconnect, update active time on heartbeat)
+- **Regular Events** (message/notice/request): Automatically discover Bot and update active time
 
 ```python
-# All events containing self field trigger automatic discovery
+# All events with self field trigger automatic discovery
 await self.adapter.emit({
     "type": "message",
     "platform": "myplatform",
@@ -4153,17 +4142,17 @@ await self.adapter.emit({
 
 | `detail_type` | Description | Framework Behavior |
 |---|---|---|
-| `connect` | Bot connects | Register bot and trigger `adapter.bot.online` lifecycle event |
-| `disconnect` | Bot disconnects | Mark bot as offline and trigger `adapter.bot.offline` lifecycle event |
-| `heartbeat` | Bot heartbeat | Update bot active time and metadata |
+| `connect` | Bot connects | Register Bot and trigger `adapter.bot.online` lifecycle event |
+| `disconnect` | Bot disconnects | Mark Bot as offline and trigger `adapter.bot.offline` lifecycle event |
+| `heartbeat` | Bot heartbeat | Update Bot active time and metadata |
 
 ### Adapter Sending Meta Events
 
-Sending methods (one-line `emit_meta`, heartbeat events and manual construction format) are detailed in [Adapter Best Practices - Bot Status Management and Meta Events](best-practices.md#bot-status-management-and-meta-events).
+Sending methods (one-line `emit_meta()`, heartbeat events, and manually constructed format) are detailed in [Adapter Best Practices - Bot Status Management and Meta Events](best-practices.md#bot-status-management-and-meta-events).
 
 ### `self` Field Extended Information
 
-Besides the required `platform` and `user_id`, the `self` field supports the following optional fields:
+In addition to the required `platform` and `user_id`, the `self` field supports the following optional fields:
 
 | Field | Description |
 |---|---|
@@ -6499,15 +6488,17 @@ In production environments, you can likewise use the framework's built-in `ErisP
 # CLI Command Reference
 
 > [!TIP]
-> **When to read this**: When you forget the parameters of a `epsdk` command, want to script component management, or need to control the behavior of `run` / `stop` / `restart`, consult this section. For daily use of just `init` / `install` / `run`, remember one thing: `epsdk <command> --help` always provides parameter descriptions, so you don't need to read this entire document.
+> **When to read this**: Consult it when you forget the arguments of an `epsdk` command, want to script component management, or need to control run / stop / restart behavior. If your daily usage is limited to `init` / `install` / `run`, remembering one thing is enough: `epsdk <command> --help` shows argument descriptions anytime—no need to read this document end to end.
 
-`epsdk` is ErisPulse's command-line tool: it initializes projects, installs/upgrades modules and adapters, interactively configures components, runs and stops robots, and diagnoses environments, all within a single command.
+`epsdk` is the command-line tool for ErisPulse: initializing projects, installing / upgrading modules and adapters, interactively configuring components, running and stopping bots, and diagnosing the environment—all under this single command.
 
-> **Tip**: The main help for `epsdk` (without a command) is grouped by category: **Project** (`init` / `create` / `run`), **Component Management** (`install` / `uninstall` / `upgrade` / `list` / `list-remote` / `types`), **Configuration and Diagnosis** (`config` / `doctor` / `i18n`), and **Others** (`self-update` / `version`).
+> **Tip**: The main help of `epsdk` (without a command) is grouped by category: **Project** (init / create / run), **Component Management** (install / uninstall / upgrade / list / list-remote / types), **Configuration & Diagnostics** (config / doctor / i18n), **Other** (self-update / version).
+
+---
 
 ## Package Management Commands
 
-| Command | Alias | Parameters | Description |
+| Command | Alias | Arguments | Description |
 |------|------|------|------|
 | `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | Install modules/adapters |
 | `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | Uninstall modules/adapters |
@@ -6516,46 +6507,53 @@ In production environments, you can likewise use the framework's built-in `ErisP
 
 ## Diagnostic Commands
 
-| Command | Alias | Parameters | Description |
+| Command | Alias | Arguments | Description |
 |------|------|------|------|
-| `doctor` | `diag` | `[--verbose] [--fix]` | Diagnose environment and output health report; `--fix` attempts automatic repair |
+| `doctor` | `diag` | `[--verbose] [--fix]` | Diagnose the environment and output a health report; `--fix` attempts automatic repair |
 
 ### install
 
-Installs ErisPulse modules or adapter packages. If no package name is specified, enters interactive installation interface.
+Install ErisPulse module or adapter packages. If no package name is specified, an interactive installation interface is launched.
 
 **Aliases:** `i`, `add`
 
-**Parameters:**
+> **uv project integration** (2.11.1+): Inside a uv-managed project (where `uv.lock` or `[tool.uv]` exists),
+> `install` / `upgrade` / `uninstall` automatically switch to `uv add` / `uv remove`—dependencies are written to both
+> `pyproject.toml` and `uv.lock`, so `uv sync` no longer wipes out components installed by epsdk; on failure it automatically
+> falls back to the uv pip / pip channel. Arguments unsupported by uv, such as `--user`, go directly through pip. Target environment resolution order:
+> `ERISPULSE_PYTHON` → `UV_PROJECT_ENVIRONMENT` → project `.venv` → `UV_PYTHON` →
+> `VIRTUAL_ENV` → current interpreter (`epsdk doctor` shows the full decision chain).
 
-| Parameter | Short | Description |
+**Arguments:**
+
+| Argument | Short | Description |
 |------|--------|------|
-| `[package]...` | | Packages to install, can specify multiple |
+| `[package]...` | | Package names to install; multiple can be specified |
 | `--upgrade` | `-U` | Upgrade to the latest version during installation |
-| `--pre` | | Allow installation of pre-release versions |
-| `--editable` | `-e` | Install in editable mode (requires specifying path) |
-| `--user` | | Install to user site-packages directory |
+| `--pre` | | Allow installing pre-release versions |
+| `--editable` | `-e` | Install in editable mode (path required) |
+| `--user` | | Install to the user site-packages directory |
 | `--no-deps` | | Do not install dependencies |
-| `--target` | `-t` | Install to specified directory |
-| `--index-url` | | Specify PyPI mirror source address |
-| `--extra-index-url` | | Additional PyPI mirror source address (can be specified multiple times) |
-| `--no-cache-dir` | | Disable cache |
-| `--requirement` | `-r` | Install from requirements file |
-| `--constraint` | `-c` | Install from constraint file |
-| `--force-reinstall` | | Force reinstallation |
-| `--ignore-installed` | | Ignore already installed packages |
+| `--target` | `-t` | Install to the specified directory |
+| `--index-url` | | Specify the PyPI mirror URL |
+| `--extra-index-url` | | Additional PyPI mirror URLs (can be specified multiple times) |
+| `--no-cache-dir` | | Disable the cache |
+| `--requirement` | `-r` | Install from a requirements file |
+| `--constraint` | `-c` | Install from a constraints file |
+| `--force-reinstall` | | Force reinstall |
+| `--ignore-installed` | | Ignore installed packages |
 | `--compile` | | Compile .pyc files after installation |
 | `--no-compile` | | Do not compile .pyc files after installation |
-| `--prefix` | | Install to specified prefix directory |
-| `--src` | | Source code directory used for editable installation |
-| `--config-settings` | | Pass configuration to build backend (can be specified multiple times) |
-| `--no-binary` | | Restrict not to use binary packages (format like `:all:`) |
-| `--only-binary` | | Restrict to use only binary packages (format like `:all:`) |
+| `--prefix` | | Install to the specified prefix directory |
+| `--src` | | Source directory used for editable installs |
+| `--config-settings` | | Configuration passed to the build backend (can be specified multiple times) |
+| `--no-binary` | | Restrict use of binary packages (format such as `:all:`) |
+| `--only-binary` | | Restrict to binary packages only (format such as `:all:`) |
 | `--prefer-binary` | | Prefer binary packages |
 | `--build-isolation` | | Enable build isolation |
 | `--no-build-isolation` | | Disable build isolation |
 | `--upgrade-strategy` | | Upgrade strategy: `eager`, `only-if-needed`, `to-satisfy-only` |
-| `--break-system-packages` | | Allow modification of system package manager managed Python packages |
+| `--break-system-packages` | | Allow modifying Python packages managed by the system package manager |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
@@ -6567,24 +6565,24 @@ epsdk install Weather
 # Install multiple modules
 epsdk install Yunhu Weather
 
-# Install from mirror source and upgrade
+# Install and upgrade from a mirror
 epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
-# Editable mode installation (development mode)
+# Install in editable mode (development mode)
 epsdk install -e ./my-adapter
 ```
 
 ### uninstall
 
-Uninstalls installed ErisPulse modules or adapter packages. If no package name is specified, enters interactive uninstallation interface.
+Uninstall installed ErisPulse module or adapter packages. If no package name is specified, an interactive uninstall interface is launched.
 
 **Aliases:** `rm`, `remove`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Description |
+| Argument | Description |
 |------|------|
-| `<package>...` | Packages to uninstall, can specify multiple |
+| `<package>...` | Package names to uninstall; multiple can be specified |
 | `--no-uv` | Use pip instead of uv |
 
 **Examples:**
@@ -6599,17 +6597,17 @@ epsdk uninstall Yunhu Weather
 
 ### upgrade
 
-Upgrades installed ErisPulse components. If no package name is specified, upgrades all interactively.
+Upgrade installed ErisPulse components. If no package name is specified, upgrade all interactively.
 
 **Aliases:** `up`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
-| `[package]...` | | Packages to upgrade, can specify multiple |
+| `[package]...` | | Package names to upgrade; multiple can be specified |
 | `--force` | `-f` | Force upgrade, skip confirmation |
-| `--pre` | | Allow upgrade to pre-release versions |
+| `--pre` | | Allow upgrading to pre-release versions |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
@@ -6618,7 +6616,7 @@ Upgrades installed ErisPulse components. If no package name is specified, upgrad
 # Upgrade all packages
 epsdk upgrade
 
-# Upgrade specified package
+# Upgrade a specific package
 epsdk upgrade Weather
 
 # Force upgrade (skip confirmation)
@@ -6627,16 +6625,16 @@ epsdk upgrade -f
 
 ### self-update
 
-Updates the ErisPulse SDK to the latest version.
+Update the ErisPulse SDK itself to the latest version.
 
 **Aliases:** `su`, `update`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
-| `[version]` | | Target version number to update to |
-| `--pre` | | Allow update to pre-release version |
+| `[version]` | | Specify the target version to update to |
+| `--pre` | | Allow updating to pre-release versions |
 | `--force` | `-f` | Force update, skip confirmation |
 | `--no-uv` | | Use pip instead of uv |
 
@@ -6646,10 +6644,10 @@ Updates the ErisPulse SDK to the latest version.
 # Update to the latest stable version
 epsdk self-update
 
-# Update to a specified version
+# Update to a specific version
 epsdk self-update 1.2.3
 
-# Allow pre-release version
+# Allow pre-release versions
 epsdk self-update --pre
 
 # Force update
@@ -6657,31 +6655,31 @@ epsdk self-update -f
 ```
 
 > [!NOTE]
-> When installed via `uv tool install ErisPulse`, this command automatically switches to `uv tool upgrade ErisPulse` (if version is specified, it becomes `uv tool install ErisPulse==<version> --force`). Direct pip upgrades will have tool environment overwritten by uv’s manifest restore.
-> On Windows, updates occur in a new console window: the current CLI must exit first to release file locks on tool environment, and the terminal can be reopened after the prompt completes.
+> When installed via `uv tool install ErisPulse`, this command automatically switches to `uv tool upgrade ErisPulse` (or `uv tool install ErisPulse==<version> --force` when a version is specified), since a direct pip upgrade of the tool environment would be wiped out by uv's manifest restoration.
+> On Windows, the update runs in a new console window: the current CLI must exit first to release the tool environment files; after the window indicates completion, simply reopen the terminal.
 
 ---
 
 ## Information Query Commands
 
-| Command | Alias | Parameters | Description |
+| Command | Alias | Arguments | Description |
 |------|------|------|------|
 | `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | List installed components |
-| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | List remote available components |
-| `version` | `ver` | | Display SDK and Python version information (equivalent to `-V`) |
+| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | List remotely available components |
+| `version` | `ver` | | Show SDK and Python version information (equivalent to `-V`) |
 
 ### list
 
-Lists installed ErisPulse modules and adapters.
+List installed ErisPulse modules and adapters.
 
 **Aliases:** `l`, `ls`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
 | `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
-| `--outdated` | `-o` | Only show upgradable packages |
+| `--outdated` | `-o` | Show only upgradable packages |
 
 **Examples:**
 
@@ -6689,39 +6687,39 @@ Lists installed ErisPulse modules and adapters.
 # List all installed components
 epsdk list
 
-# Only list modules
+# List modules only
 epsdk list -t modules
 
-# Only list adapters
+# List adapters only
 epsdk list -t adapters
 
-# Only show upgradable packages
+# Show only upgradable packages
 epsdk list -o
 ```
 
 ### list-remote
 
-Lists ErisPulse modules and adapters available in the remote repository.
+List ErisPulse modules and adapters available in remote repositories.
 
 **Aliases:** `lsr`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
 | `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
-| `--refresh` | `-r` | Force refresh remote package list cache |
+| `--refresh` | `-r` | Force refresh of the remote package list cache |
 
 **Examples:**
 
 ```bash
-# List all remote available components
+# List all remotely available components
 epsdk list-remote
 
-# Only list remote modules
+# List remote modules only
 epsdk list-remote -t modules
 
-# Force refresh cache and list
+# Force refresh the cache before listing
 epsdk list-remote -r
 ```
 
@@ -6729,123 +6727,127 @@ epsdk list-remote -r
 
 ## Configuration Commands
 
-| Command | Alias | Parameters | Description |
+| Command | Alias | Arguments | Description |
 |------|------|------|------|
-| `config` | `cfg`, `conf` | `[name] [--list/-l] [--json]` | Interactive configuration of adapter/module declarative configuration items |
+| `config` | `cfg`, `conf` | `[name] [--list/-l] [--json]` | Interactively configure declarative config entries of adapters/modules |
 
 ### config
 
-Interactive filling of adapter/module declarative configuration items. The wizard is driven by the adapter/module declared configuration class (`ConfigClass` / `AccountConfigClass`), automatically generating forms and validating, without manually writing `config.toml`.
+Interactively fill in the declarative config entries of adapters/modules. The wizard is driven by the config classes declared by the adapter/module (`ConfigClass` / `AccountConfigClass`), automatically generating and validating forms—no need to hand-write config.toml.
 
-Adapters additionally support multi-account (bot account) management: add/edit/delete accounts, and enable/disable switches.
+Adapters additionally support multi-account (bot account) management: adding/editing/deleting accounts, and enable/disable switches.
 
 **Aliases:** `cfg`, `conf`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
-| `[name]` | | Target name (adapter platform name or module name), leave empty to enter interactive selection |
-| `--list` | `-l` | Only list configuration status of all targets, do not enter wizard |
-| `--json` | | Output configuration status of all targets in JSON format (for CI / script consumption), do not enter wizard |
+| `[name]` | | Target name (adapter platform name or module name); leave empty to enter interactive selection |
+| `--list` | `-l` | Only list the configuration status of all targets without entering the wizard |
+| `--json` | | Output all targets and their configuration status as JSON (for CI / script consumption) without entering the wizard |
 
 **Examples:**
 
 ```bash
-# View configuration status of all adapters/modules
+# View the configuration status of all adapters/modules
 epsdk config --list
 
-# Output configuration status in JSON format (for CI / script consumption)
+# Output configuration status as JSON (for CI / script consumption)
 epsdk config --json
 
-# Interactive selection of target for configuration
+# Interactively select a target to configure
 epsdk config
 
-# Directly configure specified adapter
+# Directly configure a specific adapter
 epsdk config yunhu
 
-# Directly configure specified module
+# Directly configure a specific module
 epsdk config MyModule
 ```
 
-**Explanation:**
+**Notes:**
 
-- Configuration status is divided into four levels: `Ready` (validation passed), `Incomplete` (missing or validation failed required fields), `Not Configured` (never generated), `No Configuration` (target did not declare configuration class)
-- Field values are marked with source information: existing configurations show `（Current: value）`, unconfigured fields show schema default value `（Default: value）`; pressing Enter retains the value
-- Secret-type fields (declared `secret`) do not echo input, pressing Enter retains the set value
-- In interactive selection mode, after completing a single wizard, it returns to the selection menu (status refreshed), allowing continuous configuration of multiple targets, leaving empty to exit
-- Global form validation fails and re-entry is abandoned, this wizard terminates and does not write any configuration (to avoid generating "enabled but incomplete configuration" semi-finished states)
-- After saving, immediately writes to `config/config.toml`, visible in Dashboard and running SDK; running adapters need to restart the process to apply new account configurations
-- `epsdk install` (interactive installation) and `epsdk init` after successful adapter installation, if configuration declaration is detected, automatically guides into this wizard; command-line direct package installation only prints configuration prompt
+- Configuration status has four levels: `Ready` (validation passed), `Incomplete` (required fields missing or validation failed), `Not Configured` (never generated), `No Configuration` (target declares no config class)
+- Field values carry a source annotation: existing configuration shows `(current: value)`, and when unconfigured the schema default is shown as `(default: value)`; pressing Enter directly keeps that value
+- Secret-type fields (declared with `secret`) are not echoed during input; pressing Enter keeps the already-set value
+- In interactive selection mode, after a single wizard finishes it returns to the selection menu (with refreshed status), allowing you to configure multiple targets consecutively; leave empty to exit
+- If global form validation fails and you abandon re-filling, the wizard aborts without writing any configuration (avoiding a half-finished state of "enabled but incomplete configuration")
+- After saving, it is immediately written to `config/config.toml`, visible to both the Dashboard and the running SDK; running adapters that need to apply new account configuration can pick it up by restarting the process
+- After `epsdk install` (interactive installation) and `epsdk init` successfully install an adapter, if a configuration declaration is detected, this wizard is automatically invoked; when installing by directly specifying package names on the command line, only a configuration hint is printed
 
 ---
 
-## Control Commands
+## Run Control Commands
 
 > [!TIP]
-> `epsdk run` will automatically detect and use the `.venv` virtual environment in the project directory to run the robot
-> (the interpreter can also be explicitly specified via the `ERISPULSE_PYTHON` environment variable). `epsdk install` /
-> `uninstall` / `upgrade` / `list` also act on the project's virtual environment.
+> `epsdk run` automatically detects and uses the `.venv` virtual environment in the project directory to run the bot
+> (you can also explicitly specify an interpreter via the `ERISPULSE_PYTHON` environment variable). `epsdk install` /
+> `uninstall` / `upgrade` / `list` likewise operate on the project virtual environment.
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
-| `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | Run a specified script or SDK |
-| `stop` | — | `[--force] [--pid PID]` | Stop a running instance (started by `epsdk run`) |
-| `restart` | — | `[--force] [--pid PID]` | Restart a running instance (stop and restart with original parameters) |
+| Command | Alias | Arguments | Description |
+|------|------|------|------|
+| `run` | `r` | `[script] [--reload] [--strict/--no-strict]` | Run the specified script or the SDK |
+| `stop` | — | `[--force] [--pid PID]` | Stop the running instance (started by `epsdk run`) |
+| `restart` | — | `[--force] [--pid PID]` | Restart the running instance (stop, then relaunch with the original arguments) |
 
 ### run
 
-Run an ErisPulse project script or directly start the SDK. Hot-reload mode is supported.
+Run an ErisPulse project script or start the SDK directly. Hot reload mode is supported.
 
-**Alias:** `r`
+**Aliases:** `r`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Description |
-|-----------|-------------|
-| `[script]` | The script file to run; if unspecified, run the SDK |
-| `--reload` | Enable hot-reload mode, monitoring file changes to automatically trigger component-level code hot-reload (linked with the hot-reload system, no full process restart required) |
-| `--strict` / `--no-strict` | Temporarily enable/disable strict mode (effective only for this run, not written to configuration); defaults to follow `ErisPulse.framework.strict_mode` |
+| Argument | Description |
+|------|------|
+| `[script]` | Script file to run; if not specified, runs the SDK |
+| `--reload` | Enable hot reload mode: monitoring file changes automatically triggers component-level code hot reload (no full process restart needed); by default directories like `.venv`/`.git` are ignored (configurable via `ErisPulse.framework.watch_ignore_dirs`), and the plugins directory is handled precisely by the plugin hot-reload watcher |
+| `--strict` / `--no-strict` | Temporarily enable / disable strict mode (effective for this run only, not written to config); by default follows `ErisPulse.framework.strict_mode` |
 
 **Examples:**
 
 ```bash
-# Directly run the SDK
+# Run the SDK directly
 epsdk run
 
-# Run a specified script file
+# Run a specific script file
 epsdk run main.py
 
-# Run with hot-reload mode (automatic code-level hot-reload triggered on file changes)
+# Run in hot reload mode (file changes automatically trigger code-level hot reload)
 epsdk run main.py --reload
 
-# SDK hot-reload mode
+# SDK hot reload mode
 epsdk run --reload
 
-# Temporary strict mode: exit if pre-check fails before startup, framework strict level temporarily raised to at least 1 for this run
+# Temporary strict mode: exit if the pre-start self-check fails, framework strictness raised to at least 1 for this run
 epsdk run main.py --strict
 
-# Temporary relaxed mode (strict_mode is enabled in configuration but want to run this time)
+# Temporary relaxed mode (strict_mode is on in config but you just want to get running this time)
 epsdk run main.py --no-strict
 ```
 
-**Pre-start self-check:** Before `run` starts, the system quickly checks the parseability of `config/config.toml` and the completeness of required configurations for installed components. The strictness defaults to follow `ErisPulse.framework.strict_mode` (if non-zero, check failure results in exit; if zero, only a warning is issued and continues). Missing configuration files are considered normal for first-time startup, only a prompt is issued without failure evaluation. `--strict` temporarily enables: pre-check failure results in exit, and the framework strict level is temporarily raised to at least 1 (skipping non-compliant components, propagated via `ERISPULSE_FRAMEWORK_STRICT_MODE` environment variable to the running process, not written to configuration file); `--no-strict` temporarily relaxes. If self-check itself encounters an exception, it is automatically skipped, excluding network detection, and will not block startup.
+**Pre-start self-check:** Before starting, `run` quickly checks the parseability of `config/config.toml` and the completeness of required configuration for installed components; strictness defaults to `ErisPulse.framework.strict_mode` (when non-zero, a failed check exits immediately; when 0, it only warns and continues). A missing config file is treated as a normal first launch—only a hint is shown, not judged as a failure. `--strict` temporarily enables it: exit immediately if the pre-check fails, and raise the framework strictness level to at least 1 for this run (non-compliant components are skipped, propagated to the running process via the `ERISPULSE_FRAMEWORK_STRICT_MODE` environment variable, not written to the config file); `--no-strict` conversely temporarily relaxes it. The self-check skips itself automatically when it encounters its own errors, involves no network probing, and never blocks startup.
+
+> **Supervision structure of `--reload`** (since 2.11.1): `epsdk run --reload` runs as a "supervisor process + reload worker subprocess". Hot reloads triggered by saving `.py` files all happen inside the worker (mutually exclusive serialization, burst coalescing); syntax errors on the module side are rejected by an upfront pre-check, and the old instance keeps serving. When `sdk.hard_restart()` is called, the worker exits with code 42, and after the supervisor displays the reason it automatically pulls up a brand-new worker—after upgrading the framework itself, the new code takes effect immediately.
 
 ### stop
 
 Stop a running ErisPulse instance (started by `epsdk run` and executed in the same project directory).
-When `run` starts, it writes the supervisor process PID, current framework subprocess PID, and the original startup command to
-`.erispulse/runtime.json`. `stop` uses this to locate the instance.
+When `run` starts, it writes the supervisor process PID, the current framework subprocess PID, and the original launch command into
+`.erispulse/runtime.json`, which `stop` uses to locate the instance.
 
-**Stop sequence:** On POSIX systems, first send SIGINT to the supervisor process (same as Ctrl+C, an elegant shutdown path—
-the finally chain automatically terminates the framework subprocess), escalating to SIGTERM / SIGKILL if timeout occurs; on Windows, there is no process signal semantics, so first terminate the framework subprocess and then the supervisor process (to avoid the supervisor mistakenly interpreting forced termination as a crash and restarting).
+**Stop sequence:** On POSIX, SIGINT is first sent to the supervisor process (the same graceful shutdown path as Ctrl+C—the
+finally chain automatically terminates the framework subprocess), escalating step by step to SIGTERM / SIGKILL on timeout; Windows has no
+process signal semantics, so the framework subprocess is terminated first and then the supervisor process (to prevent the supervisor from misjudging the force kill as a crash
+and respawning).
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Description |
-|-----------|-------------|
-| `--force` | Skip graceful stop and directly force terminate |
-| `--pid PID` | Directly specify the target process PID (overrides the runtime status file, used for non-standard startup methods) |
+| Argument | Description |
+|------|------|
+| `--force` | Skip graceful stop, terminate forcibly |
+| `--pid PID` | Directly specify the target process PID (overrides the runtime state file, for non-standard launch methods) |
 
 **Examples:**
 
@@ -6859,44 +6861,47 @@ epsdk stop --force
 
 ### restart
 
-Restart a running ErisPulse instance: after stopping according to the semantics of `stop`, restart using the **original startup command** recorded in the status file (foreground takes over the current terminal, and the new instance writes a new runtime status file).
+Restart the running ErisPulse instance: after stopping with `stop` semantics, relaunch with the
+**original launch command** recorded in the state file (taking over the current terminal in the foreground; the new instance writes a new runtime state file).
 
-**Parameters:** Same as `stop` (`--force` / `--pid PID`).
+**Arguments:** Same as `stop` (`--force` / `--pid PID`).
 
-**Example:**
+**Examples:**
 
 ```bash
-# Graceful restart (useful after pip upgrade of adapter/module to make code changes effective; code-level hot reload via sdk.reload_module / sdk.adapter.reload is also possible during runtime, no restart required)
+# Graceful restart (make pip-upgraded adapters/modules take effect; running modules can also use
+# sdk.reload_module / sdk.adapter.reload code-level hot reload, no restart needed)
 epsdk restart
 ```
 
 > [!NOTE]
-> Startup methods such as `python main.py` that bypass `epsdk run` do not write runtime status files—processes started this way should be managed using system tools, or stopped by specifying the PID with `epsdk stop --pid <PID>`.
+> Launch methods such as `python main.py` that bypass `epsdk run` do not write the runtime state file—manage such
+> processes with system tools, or specify the PID with `epsdk stop --pid <PID>`.
 
 ---
 
 ## Project Management Commands
 
-| Command | Alias | Parameters | Description |
+| Command | Alias | Arguments | Description |
 |------|------|------|------|
 | `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--adapter/-a <name>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | Initialize an ErisPulse project |
-| `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | Create module/adapter scaffolding; `pack` converts local plugins into publishable projects |
+| `create` | — | `{module,adapter,pack} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f] [--local]` | Create module/adapter scaffolding; `pack` converts a local plugin into a publishable project |
 
 ### init
 
-Initialize a new ErisPulse project. Supports interactive and quick mode, generates `pyproject.toml` (dependency list) since 2.8.4, optionally creates project `.venv` virtual environment and installs framework and adapters, and supports **specifying any directory**.
+Initialize a new ErisPulse project. Supports interactive and quick modes; since 2.8.4 it generates `pyproject.toml` (dependency manifest), optionally creates a project `.venv` virtual environment and installs the framework and adapters, and supports **specifying any directory**.
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
-| `[path]` | | Target path (can include parent directory, e.g. `../apps/mybot`; pure name equivalent to `--project-name`) |
+| `[path]` | | Target path (may include a parent directory, e.g. `../apps/mybot`; a bare name is equivalent to `--project-name`) |
 | `--project-name` | `-n` | Project name |
-| `--path` | | Project parent directory (combined with `-n` to specify creation location) |
-| `--adapter` | `-a` | Pre-selected adapters to install (can be passed multiple times or separated by commas), skips adapter inquiry and selection when passed |
-| `--quick` | `-q` | Quick mode, skips interactive wizard (default creates `.venv` and installs dependencies) |
-| `--force` | `-f` | Force overwrite existing configuration files |
-| `--here` | | Initialize in current directory, do not create subdirectory |
+| `--path` | | Project parent directory (combined with `-n` to specify the creation location) |
+| `--adapter` | `-a` | Preselect adapters to install (repeatable or comma-separated); when provided, skips adapter prompting and selection |
+| `--quick` | `-q` | Quick mode, skip the interactive wizard (creates `.venv` and installs dependencies by default) |
+| `--force` | `-f` | Force overwrite of existing config files |
+| `--here` | | Initialize in the current directory without creating a subdirectory |
 | `--no-uv` | | Use pip instead of uv |
 | `--no-venv` | | Skip virtual environment creation and dependency installation |
 
@@ -6906,10 +6911,10 @@ Initialize a new ErisPulse project. Supports interactive and quick mode, generat
 # Interactive initialization
 epsdk init
 
-# Quick initialization (creates my_bot/ in current directory, with pyproject.toml + .venv)
+# Quick initialization (creates my_bot/ in the current directory, with pyproject.toml + .venv)
 epsdk init -q -n my_bot
 
-# Quick initialization and pre-install adapters (skips interactive, for scripts / CI scenarios)
+# Quick initialization with pre-installed adapters (non-interactive, for scripts / CI)
 epsdk init -q -n my_bot --adapter yunhu,telegram
 
 # Initialize in any specified directory (../apps/mybot)
@@ -6921,28 +6926,28 @@ epsdk init -n my_bot --path ../apps
 # Force overwrite existing configuration
 epsdk init -f
 
-# Initialize in current directory
+# Initialize in the current directory
 epsdk init --here -n my_bot
 
-# Generate project structure only, skip virtual environment creation
+# Generate project structure only, without creating a virtual environment
 epsdk init --no-venv -n my_bot
 ```
 
-init output: `main.py`, `pyproject.toml` (dependency list), `config/config.toml` + `config.full.example`, `config/ssl/`, `logs/`, `.gitignore`, `README.md`; if virtual environment creation is selected, additionally generates `.venv` and installs `erispulse` and selected adapters in it.
+init artifacts: `main.py`, `pyproject.toml` (dependency manifest), `config/config.toml` + `config.full.example`, `config/ssl/`, `logs/`, `.gitignore`, `README.md`; when creating a virtual environment is chosen, a `.venv` is additionally generated with `erispulse` and the selected adapters installed into it.
 
 > [!NOTE]
-> `.gitignore` is a grouped template: Python bytecode and build artifacts, virtual environment and `.env`, tool cache, editor and system files, and **excludes `config/` and `logs/` runtime directories as a whole**—`config.toml` contains sensitive information such as adapter tokens, not recommended for repository; share configuration skeleton using `config.full.example`.
+> The `.gitignore` is a grouped template: Python bytecode and build artifacts, virtual environments and `.env`, tool caches, editor and system files, and it **excludes the `config/` and `logs/` runtime directories entirely**—`config.toml` contains sensitive information such as adapter tokens and is not recommended for version control; use `config.full.example` to share the configuration skeleton.
 
 > [!WARNING]
-> **Do not use `uv run epsdk run` to run the bot**. `uv run` creates a **one-time isolated environment** when executed in a directory without `pyproject.toml`—adapters installed via `epsdk install` in it will not persist. Please use `epsdk run` in the project directory (automatically uses project `.venv`), or activate the virtual environment first before running.
+> **Do not use `uv run epsdk run` to run the bot**. When executed in a directory without `pyproject.toml`, `uv run` creates a **disposable isolated environment**—adapters installed via `epsdk install` inside it will not persist. Use `epsdk run` inside the project directory (which automatically uses the project `.venv`), or activate the virtual environment first and then run.
 
 ### create
 
-Creates scaffolding for ErisPulse modules or adapters; the `pack` subcommand converts local plugins (`plugins/` directory) into publishable standard projects.
+Create scaffolding projects for ErisPulse modules or adapters; the `pack` subcommand converts local plugins (the `plugins/` directory) into publishable standard projects.
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
 | `{module,adapter,pack}` | | Type to create: `module` / `adapter` / `pack` (plugin to project) |
 | `--name` | `-n` | Project name (PascalCase) |
@@ -6950,32 +6955,32 @@ Creates scaffolding for ErisPulse modules or adapters; the `pack` subcommand con
 | `--author` | `-a` | Author name |
 | `--email` | `-e` | Author email |
 | `--homepage` | | Project homepage URL |
-| `--output` | `-o` | Output directory (default is current directory) |
-| `--force` | `-f` | Force overwrite existing directories |
-| `--local` | | Create local plugin (available for `module` / `adapter`): generates `plugins/<name>/` package structure,免打包安装 (no packaging installation) |
+| `--output` | `-o` | Output directory (defaults to current directory) |
+| `--force` | `-f` | Force overwrite of an existing directory |
+| `--local` | | Create a local plugin (available for `module` / `adapter`): generates a `plugins/<name>/` package structure, installable without packaging |
 
 **Examples:**
 
 ```bash
-# Interactive creation (guides selection of type and filling information)
+# Interactive creation (guided type selection and info filling)
 epsdk create
 
-# Directly create Module project
+# Create a Module project directly
 epsdk create module -n MyModule
 
-# Create local plugin (placed in project plugins/ directory, automatically discovered on startup)
+# Create a local plugin (placed in the project's plugins/ directory, auto-discovered at startup)
 epsdk create module -n MyModule --local
 
-# Create local adapter plugin (same as above, no packaging development)
+# Create a local adapter plugin (same as above, package-free development)
 epsdk create adapter -n MyAdapter --local
 
-# Directly create Adapter project
+# Create an Adapter project directly
 epsdk create adapter -n MyAdapter
 
-# Convert local plugin to publishable project (interactive selection of plugin → complete metadata → generate standard project)
+# Convert a local plugin into a publishable project (interactively select plugin → complete metadata → generate standard project)
 epsdk create pack
 
-# Complete parameters
+# Full arguments
 epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@example.com"
 
 # Specify output directory
@@ -6989,27 +6994,27 @@ epsdk create module -n MyModule -f
 
 ## Language Commands
 
-| Command | Alias | Parameters | Description |
+| Command | Alias | Arguments | Description |
 |------|------|------|------|
-| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | View or switch CLI display language |
+| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | View or switch the CLI display language |
 
 ### i18n
 
-View current CLI language, list supported languages, switch display language. If no parameter is specified, enter interactive selection interface.
+View the current CLI language, list supported languages, or switch the display language. If no argument is specified, an interactive selection interface is launched.
 
 **Aliases:** `language`, `lang`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
-| `[lang]` | | Language code to switch to (e.g., `zh-CN`, `en`, `ja`, `ru`) |
+| `[lang]` | | Language code to switch to (e.g. `zh-CN`, `en`, `ja`, `ru`) |
 | `--list` | `-l` | List all supported languages |
 
 **Examples:**
 
 ```bash
-# Interactive language selection
+# Interactively select a language
 epsdk i18n
 
 # Switch to English
@@ -7026,26 +7031,26 @@ epsdk i18n --list
 
 ## Type Stub Commands
 
-| Command | Alias | Parameters | Description |
+| Command | Alias | Arguments | Description |
 |------|------|------|------|
 | `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | Generate type stub files to enable IDE completion |
 
 ### types
 
-Scans installed ErisPulse modules and adapters, generates `.pyi` type stub files for them, enabling accurate code completion and type checking support in IDEs.
+Scan installed ErisPulse modules and adapters and generate `.pyi` type stub files for them, enabling accurate code completion and type checking support in your IDE.
 
 **Aliases:** `t`, `stub`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
-| `--output` | `-o` | Output path (default is `ep-stubs/` in current directory) |
-| `--force` | | Force overwrite existing stub files |
-| `--adapters-only` | | Generate type stubs only for adapters |
-| `--modules-only` | | Generate type stubs only for modules |
+| `--output` | `-o` | Output path (defaults to `ep-stubs/` in the current directory) |
+| `--force` | | Force overwrite of existing stub files |
+| `--adapters-only` | | Generate type stubs for adapters only |
+| `--modules-only` | | Generate type stubs for modules only |
 
-> **Note:** `--adapters-only` and `--modules-only` are mutually exclusive; if both are specified, the latter takes precedence.
+> **Note:** `--adapters-only` and `--modules-only` are mutually exclusive; when both are specified, the latter takes effect.
 
 **Examples:**
 
@@ -7053,10 +7058,10 @@ Scans installed ErisPulse modules and adapters, generates `.pyi` type stub files
 # Generate type stubs for all installed modules and adapters
 epsdk types
 
-# Generate type stubs only for adapters
+# Generate adapter stubs only
 epsdk types --adapters-only
 
-# Output to specified directory
+# Output to a specified directory
 epsdk types -o ./typings
 
 # Force overwrite existing files
@@ -7069,14 +7074,14 @@ epsdk types --force
 
 The following parameters apply to all commands:
 
-| Parameter | Short | Description |
+| Argument | Short | Description |
 |------|--------|------|
-| `--help` | `-h` | Display help information |
-| `--version` | `-V` | Display version information |
-| `--verbose` | `-v` | Display detailed output (can be stacked with `-vv`/`-vvv`) |
+| `--help` | `-h` | Show help information |
+| `--version` | `-V` | Show version information |
+| `--verbose` | `-v` | Show verbose output (stackable `-vv`/`-vvv`) |
 | `--no-color` | | Disable colored output (suitable for CI / log collection) |
-| `--no-banner` | | Skip startup Banner (scripted calls / CI scenarios; non-interactive terminals and `ERISPULSE_NO_BANNER=1` automatically silent) |
-| `--yes` | `-y` | Automatically confirm all interactive prompts (non-interactive runs) |
+| `--no-banner` | | Skip the startup banner (for scripted calls / CI scenarios; automatically silent on non-interactive terminals and when `ERISPULSE_NO_BANNER=1`) |
+| `--yes` | `-y` | Automatically confirm all interactive prompts (non-interactive run) |
 
 ---
 
@@ -7087,32 +7092,34 @@ The following parameters apply to all commands:
 > [!NOTE]
 > This command requires ErisPulse **2.7.0+**.
 
-Diagnoses the current CLI runtime environment and outputs a health report. Used to troubleshoot issues like "why can't it be installed / connected".
+Diagnose the current CLI runtime environment and output a health report. Used to troubleshoot "why won't it install / connect" type issues.
 
-| Parameter | Description |
+| Argument | Description |
 |------|------|
-| `--verbose` | Display detailed diagnostic information |
-| `--fix` | Attempt to automatically fix repairable issues after diagnosis |
+| `--verbose` | Show detailed diagnostic information |
+| `--fix` | After diagnosis, attempt automatic repair of fixable issues |
 
 **Check items**:
-- **Python**: Interpreter version and path
-- **Installation backend**: Whether `uv` or `pip` is used
-- **Target interpreter**: The actual Python environment where packages are installed
-- **Configuration file**: Whether `config/config.toml` exists
-- **Component configuration**: Completeness of declarative configuration for installed components ("installed but can't run" often due to missing required fields)
-- **PyPI connectivity**: Whether PyPI can be accessed (and displays the number of discovered components)
-- **System proxy**: Whether a proxy is detected
+- **Python**: interpreter version and path
+- **Install backend**: whether `uv` or `pip` is used
+- **Target interpreter**: the target Python environment where packages are actually installed
+- **Config file**: whether `config/config.toml` exists
+- **Component configuration**: declarative configuration completeness of installed components ("installed but won't run" is often due to missing required fields)
+- **Configuration pollution** (2.11.1+): scans for residual keys left over from historical upgrades (shadow state keys bound by older runtime versions, orphaned config sections) and reports upon detection
+- **PyPI connectivity**: whether PyPI is reachable (and shows the number of components discovered)
+- **System proxy**: whether a proxy is detected
 
-**Automatic repair (with `--fix`)**:
-- `config.toml` missing → Generate initial configuration file according to current language (same source as `init` project creation)
-- Component configuration "incomplete" → Launch interactive configuration wizard one by one to complete required fields (non-interactive environments prompt to use `epsdk config <name>`)
-- Issues such as low Python version, PyPI access failure, requiring manual intervention → Only output action suggestions
+**Automatic repair (`--fix`)**:
+- Missing `config.toml` → generates an initial config file in the current language (same source as `init` project creation)
+- Component configuration "Incomplete" → launches the interactive configuration wizard one by one to complete required fields (in non-interactive environments, prompts to use `epsdk config <name>` instead)
+- Configuration pollution residual keys → lists their sources and deletes them after confirmation (tomlclass lossless path, comments and order preserved)
+- Issues requiring manual intervention such as a too-low Python version or unreachable PyPI → outputs action recommendations only
 
 ```bash
-# Environment diagnosis
+# Run environment diagnostics
 epsdk doctor
 
-# Using alias
+# Use the alias
 epsdk diag
 
 # Diagnose and attempt automatic repair
@@ -7123,7 +7130,7 @@ epsdk doctor --fix
 
 ## Interactive Installation
 
-Running `epsdk install` without specifying a package name enters interactive installation:
+Running `epsdk install` without a package name enters interactive installation:
 
 ```bash
 epsdk install
@@ -7136,7 +7143,7 @@ The interactive interface provides:
 
 ## Common Usage
 
-### Install Modules
+### Installing Modules
 
 ```bash
 # Install a single module
@@ -7145,27 +7152,27 @@ epsdk install Weather
 # Install multiple modules
 epsdk install Yunhu Weather
 
-# Upgrade module
+# Upgrade a module
 epsdk install Weather -U
 ```
 
-### List Components
+### Listing Components
 
 ```bash
 # List all components
 epsdk list
 
-# List only adapters
+# List adapters only
 epsdk list -t adapters
 
-# List only upgradable components
+# List upgradable components only
 epsdk list -o
 
-# View remote available components
+# View remotely available components
 epsdk list-remote
 ```
 
-### Uninstall Components
+### Uninstalling Components
 
 ```bash
 # Uninstall a single component
@@ -7175,66 +7182,66 @@ epsdk uninstall Weather
 epsdk uninstall Yunhu Weather
 ```
 
-### Configure Components
+### Configuring Components
 
 ```bash
 # View configuration status
 epsdk config --list
 
-# Interactive selection of target configuration
+# Interactively select a target to configure
 epsdk config
 
-# Configure specified adapter
+# Configure a specific adapter
 epsdk config yunhu
 ```
 
-### Upgrade Components
+### Upgrading Components
 
 ```bash
 # Upgrade all components
 epsdk upgrade
 
-# Upgrade specified component
+# Upgrade a specific component
 epsdk upgrade Weather
 
 # Force upgrade
 epsdk upgrade -f
 ```
 
-### Run Project
+### Running the Project
 
 ```bash
-# Run normally
+# Normal run
 epsdk run main.py
 
-# Hot-reload mode
+# Hot reload mode
 epsdk run main.py --reload
 ```
 
-### Switch Language
+### Switching Language
 
 ```bash
-# Interactive language selection
+# Interactively select a language
 epsdk i18n
 
-# Directly switch to English
+# Switch directly to English
 epsdk i18n en
 
 # List supported languages
 epsdk i18n --list
 ```
 
-### Generate Type Stubs
+### Generating Type Stubs
 
 ```bash
 # Generate all type stubs
 epsdk types
 
-# Generate only module type stubs
+# Generate module type stubs only
 epsdk types --modules-only
 ```
 
-### Initialize Project
+### Initializing a Project
 
 ```bash
 # Interactive initialization
@@ -7244,19 +7251,19 @@ epsdk init
 epsdk init -q -n my_bot
 ```
 
-### Create Scaffolding
+### Creating Scaffolding
 
 ```bash
-# Interactive creation (guides selection of type and filling information)
+# Interactive creation (guided type selection and info filling)
 epsdk create
 
-# Directly create Module project
+# Create a Module project directly
 epsdk create module -n MyModule
 
-# Directly create Adapter project
+# Create an Adapter project directly
 epsdk create adapter -n MyAdapter
 
-# Complete parameters
+# Full arguments
 epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@example.com"
 
 # Force overwrite existing directory
@@ -11462,64 +11469,64 @@ The deduplication cache is automatically reset when adapters **register** (start
 
 ### 启动流程与手动控制
 
-# Startup Process and Manual Control
+# Startup Flow and Manual Control
 
 > [!TIP]
-> **When to read this**: When you need to manually drive the startup chain, customize the startup sequence, or troubleshoot startup failures. Skip if not needed, as it does not affect the use of other features.
+> **When to read this** : When you need to manually drive the startup chain, customize the startup sequence, or troubleshoot startup failures. Skip if not needed; it won't affect the use of other features.
 
-ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup chain into a single line of code. However, when you need to fully customize the startup process (e.g., partial loading, dynamic registration, hot-plugging, injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
+ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup chain into a single line of code. However, when you need to fully customize the startup process (e.g., partial loading, dynamic registration, hot-plug, injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
 
-This document breaks down the startup chain into independent components, explains their respective responsibilities, invocation order, and provides an example of manually initiating the complete startup process.
+This article breaks down the startup chain into independent components, explains their respective responsibilities, call order, and provides an example of manual full startup.
 
-> This document assumes you have already run [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This document focuses on the internal breakdown of the `init()` chain and lower-level entry points such as `init()`/`init_task()`/`init_sync()`.
+> This article assumes you have run through [the first bot](../getting-started/first-bot.md) and understand the two `keep_running` modes of `sdk.run()`. This article focuses on the internal breakdown of the `init()` chain, as well as lower-level entry points such as `init()` / `init_task()` / `init_sync()`.
 
 ## Overview of SDK Top-Level Entry Points
 
-In addition to the two `keep_running` modes of `run()`, the SDK provides several lower-level initialization entry points, differing in **asynchronous behavior, return values, and exception handling**:
+In addition to the two `keep_running` modes of `run()`, the SDK also provides several lower-level initialization entry points, differing in **asynchronicity, return values, and exception handling**:
 
-| Entry Point | Asynchronous | Return Value | Exception Handling | Use Cases |
-|-------------|--------------|--------------|--------------------|-----------|
-| `await sdk.run(True)` | async, blocks to maintain | `None` (uninit automatically on shutdown) | Module/adapter errors are intercepted, not dragging down the process | Pure bot application |
-| `await sdk.run(False)` | async, non-blocking | `None` (no automatic uninit) | Same as above | Perform custom logic after initialization |
+| Entry | Asynchronicity | Return Value | Exception Handling | Use Case |
+|------|--------|--------|----------|----------|
+| `await sdk.run(True)` | async, blocking to maintain | `None` (automatically `uninit` on shutdown) | Module/adapter errors are intercepted, not crashing the process | Pure bot application |
+| `await sdk.run(False)` | async, non-blocking | `None` (no automatic unloading) | Same as above | Execute custom logic after initialization |
 | `await sdk.init()` | async, requires await | `bool` | Internal capture of component exceptions, returns `False` on failure | Manual lifecycle control (paired with `uninit()`) |
-| `sdk.init_task()` | async, returns Task without blocking | `asyncio.Task` | Same as `init()` | Concurrently execute other initializations or when event loop is not running |
-| `sdk.init_sync()` | **Synchronous**, blocks current thread | `bool` | Same as `init()` | Command-line scripts, synchronous entry without event loop |
+| `sdk.init_task()` | async, returns Task without blocking | `asyncio.Task` | Same as `init()` | Concurrent initialization or when event loop is not running |
+| `sdk.init_sync()` | **Synchronous**, blocking current thread | `bool` | Same as `init()` | Command-line scripts, synchronous entry without event loop |
 
-> **Common misconception**: `await sdk.init()` **is not equivalent to** `await sdk.run(keep_running=False)`. Two differences: ① `init()` returns `bool` (returns `False` on failure), `run()` returns `None`; ② `init()` only performs initialization, **does not automatically uninit**, while `run()` automatically calls `uninit()` when the event loop ends. Therefore, when needing to manually pair uninit or customize lifecycle, use `init()` + `uninit()`.
+> **Common Misconception**: `await sdk.init()` **is not equivalent to** `await sdk.run(keep_running=False)`. Two differences: ① `init()` returns `bool` (returns `False` on failure), `run()` returns `None`; ② `init()` only performs initialization, **does not automatically unload**, whereas `run()` automatically calls `uninit()` when the event loop ends. Therefore, when you need to manually pair unloading or customize the lifecycle, use `init()` + `uninit()`.
 
-## Overview of Startup Chain
+## Overview of the Startup Chain
 
-`sdk.init()` (specifically its internal `Initializer.init()`) initiates the entire framework in the following order:
+`sdk.init()` (specifically its internal `Initializer.init()`) starts the entire framework in the following order:
 
 ```mermaid
 flowchart TD
     A[0. Prepare Environment<br/>Configuration loading / Exception handling] --> B
-    B[1. Parallel Discovery and Loading<br/>AdapterLoader.load / ModuleLoader.load<br/>Internally calls Finder.find_all] --> C
+    B[1. Parallel Discovery and Loading<br/>AdapterLoader.load / ModuleLoader.load<br/>Internal call to Finder.find_all] --> C
     C[2. Register Adapters<br/>AdapterLoader.register_to_manager] --> D
     D[3. Start Adapters<br/>adapter.startup] --> E
     E[4. Register Modules<br/>ModuleLoader.register_to_manager] --> F
-    F[5. Initialize Modules<br/>ModuleLoader.initialize_modules<br/>Instantiates and mounts to sdk] --> G
+    F[5. Initialize Modules<br/>ModuleLoader.initialize_modules<br/>Instantiate and mount to sdk] --> G
     G[6. Start Router Server<br/>router.start]
 ```
 
 Corresponding core components:
 
 | Layer | Component | Responsibility |
-|-------|-----------|----------------|
+|----|------|------|
 | Discovery | `AdapterFinder` / `ModuleFinder` | **Discover** adapters/modules from entry-points of installed packages |
-| Loading | `AdapterLoader` / `ModuleLoader` | Discovery + Import + Read metadata + Determine enable/disable, return object list |
+| Loading | `AdapterLoader` / `ModuleLoader` | Discovery + import + metadata reading + enable/disable judgment, return object lists |
 | Registration | `*Loader.register_to_manager` | Register objects to corresponding managers |
 | Management | `sdk.adapter` / `sdk.module` | Maintain adapter/module instances, provide start/stop interfaces |
-| Initialization | `ModuleLoader.initialize_modules` | Create module instances and mount to `sdk` (handle dependency topological sort) |
+| Initialization | `ModuleLoader.initialize_modules` | Create module instances and mount to `sdk` (handle dependency topological sorting) |
 | Routing | `sdk.router` | HTTP / WebSocket server |
 
-> **Important**: `Finder` and `Loader` are two layers. `Loader` internally **already holds** a `Finder` (`AdapterLoader` has `AdapterFinder`, `ModuleLoader` has `ModuleFinder`). In most scenarios, you only need to use `Loader`, and only use `Finder` directly when you need "list only, no import".
+> **Important**: `Finder` and `Loader` are two layers. `Loader` internally **already holds** a `Finder` (e.g., `AdapterLoader` has its own `AdapterFinder`, `ModuleLoader` has its own `ModuleFinder`). In most scenarios, you only need to use `Loader`; only when you need "list without importing" will you use `Finder` alone.
 
 ## Detailed Explanation of Each Component
 
 ### 1. Discovery Layer: Finder
 
-Finder only finds "which packages provide adapters/modules", without importing or instantiating.
+Finder only finds out which packages provide adapters/modules, without importing or instantiating.
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -11531,15 +11538,15 @@ module_finder = ModuleFinder()
 adapter_entries = adapter_finder.find_all()    # list[EntryPoint]
 module_entries = module_finder.find_all()      # list[EntryPoint]
 
-# Find single by name
+# Find a single by name
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
-Each `EntryPoint` can be loaded via `.load()` to get the corresponding class, but usually you don't need to call it manually—Loader will do it.
+Each `EntryPoint` can be `.load()` to get the corresponding class, but usually you don't need to call it manually—`Loader` will do it.
 
 ### 2. Loading Layer: Loader
 
-Loader does "import + read metadata + determine enable/disable" on top of Finder.
+Loader performs "import + metadata reading + enable/disable judgment" on top of Finder.
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -11548,7 +11555,7 @@ from ErisPulse import sdk
 adapter_loader = AdapterLoader()
 module_loader = ModuleLoader()
 
-# load() internally: calls finder.find_all() → processes each entry-point → returns triple
+# load() internally: calls finder.find_all() → processes each entry-point → returns triplets
 adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sdk.adapter)
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
@@ -11556,24 +11563,24 @@ module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.mo
 The three-tuple returned by `load()`:
 
 | Return Value | Meaning |
-|--------------|---------|
+|--------|------|
 | `objs` (`dict`) | Name → Object (adapter class / module wrapper object) |
 | `enabled` (`list[str]`) | Enabled names (not disabled in configuration) |
 | `disabled` (`list[str]`) | Disabled names |
 
-#### Diagnostic Information on Loading Failure
+#### Diagnostic Information on Loading Failures
 
-When a module/adapter throws an exception during loading or initialization, the framework skips that component and continues loading others, while outputting a **summary of user code frames** so you can locate the error position at the default INFO level without manually turning on DEBUG:
+When a module/adapter throws an exception during loading or initialization, the framework skips that component and continues loading other components, while outputting a **summary of user code frames**, allowing you to locate the error position at the default INFO level without manually enabling DEBUG:
 
 ```
 [ERROR] [ModuleLoader] Failed to load module MyModule from entry-point, skipped: 'NoneType' object has no attribute 'platform'
   → MyModule/Core.py:42 in on_load
       adapter = sdk.platform
   → AttributeError: 'NoneType' object has no attribute 'platform'
-  → Note: Raise log level to DEBUG to view full stack trace; check implementation code of module MyModule
+  → Hint: Increase log level to DEBUG to view full stack trace; check the implementation code of module MyModule
 ```
 
-The diagnostic information is generated by the `ErisPulse.runtime.diagnostics` module, which automatically filters out internal framework frames and retains only your code frames. If you need to reuse this in custom loading logic:
+The diagnostic information is generated by the `ErisPulse.runtime.diagnostics` module and automatically filters out internal framework frames, keeping only your code frames. If you need to reuse it in custom loading logic:
 
 ```python
 from ErisPulse.runtime import log_diagnostic
@@ -11588,7 +11595,7 @@ This module also provides two low-level functions: `extract_user_frame()` (retur
 
 ### 3. Registration Layer: register_to_manager
 
-Registers the objects produced by Loader to the manager, allowing `sdk.adapter` / `sdk.module` to recognize them.
+Register the objects produced by Loader to the manager, so that `sdk.adapter` / `sdk.module` can recognize them.
 
 ```python
 # Register adapters (returns bool, indicating if all succeeded)
@@ -11598,7 +11605,7 @@ await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.ada
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
-After registration, adapters are registered to the adapter manager and modules are registered to the module manager, but **they are not started/initialized yet**.
+After registration, adapters are registered to the adapter manager and modules to the module manager, but they are **not yet started/initialized**.
 
 ### 4. Start Adapters
 
@@ -11614,7 +11621,7 @@ await sdk.adapter.startup(["yunhu", "telegram"])
 
 ### 5. Initialize Modules
 
-Modules have an extra step compared to adapters—they need to be **instantiated** and mounted to `sdk` (so you can call `sdk.MyModule.xxx`). This step also handles module dependencies and topological sorting.
+Modules require an extra step—**instantiation** and mounting to `sdk` (so you can call `sdk.MyModule.xxx`). This step also handles module dependencies and topological sorting.
 
 ```python
 success = await module_loader.initialize_modules(
@@ -11635,11 +11642,11 @@ await sdk.router.start(
 )
 ```
 
-The router server is responsible for receiving callbacks from adapters (Webhook / WebSocket). Without starting it, server-mode adapters cannot receive messages.
+The router server is responsible for receiving webhooks/websocket callbacks from adapters. Without starting it, server-mode adapters cannot receive messages.
 
 ## Complete Manual Startup Example
 
-The following code is **equivalent to** the core process of `await sdk.init()`, but each step is exposed to you, allowing you to insert custom logic at any step:
+The following code is **equivalent to** the core flow of `await sdk.init()`, but each step is exposed, allowing you to insert custom logic at any step:
 
 ```python
 import asyncio
@@ -11647,9 +11654,9 @@ from ErisPulse import sdk
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
 
 async def manual_startup():
-    # 0. Prepare Environment (load configuration, register global exception handling)
-    #    _prepare_environment is a pre-step in init(); the manual process also needs to call it first,
-    #    otherwise Loader cannot read the configuration and will misjudge all adapters/modules as disabled.
+    # 0. Prepare Environment (load configuration, register global exception handler)
+    #    _prepare_environment is a pre-step inside init(); manual flow must call it first,
+    #    otherwise Loader won't read configuration, and all adapters/modules will be misjudged as disabled.
     if not await sdk._prepare_environment():
         print("Environment preparation failed")
         return False
@@ -11658,7 +11665,7 @@ async def manual_startup():
     adapter_loader = AdapterLoader()
     module_loader = ModuleLoader()
 
-    # 2. Parallel Discovery and Loading (consistent with internal use of gather in init())
+    # 2. Parallel discovery and loading (consistent with internal use in init())
     (adapter_objs, enabled_adapters, disabled_adapters), \
     (module_objs, enabled_modules, disabled_modules) = await asyncio.gather(
         adapter_loader.load(sdk.adapter),
@@ -11688,13 +11695,13 @@ async def manual_startup():
     # 7. Start router server
     await sdk.router.start(host="0.0.0.0", port=8000)
 
-    print("Manual startup completed")
+    print("Manual startup complete")
     return True
 
 async def main():
     ok = await manual_startup()
     if ok:
-        # Block to maintain running (manual process does not automatically block)
+        # Block to maintain running (manual flow does not automatically block)
         await asyncio.Event().wait()
 
 if __name__ == "__main__":
@@ -11703,33 +11710,33 @@ if __name__ == "__main__":
 
 ### When to Use Manual Startup?
 
-In most cases, **manual startup is not necessary**, as `await sdk.run()` already handles all the above steps. Manual startup is only valuable in these scenarios:
+In most cases, **manual startup is not needed**; `await sdk.run()` already handles all of the above. Manual startup is only valuable in these scenarios:
 
-- **Partial Loading**: Only load specific adapters/modules, skipping others
+- **Partial Loading**: Load only specified adapters/modules, skipping others
 - **Dynamic Registration**: Register new adapters/modules at runtime based on conditions
-- **Custom Order**: Need to disrupt the default loading order (e.g., start a module before an adapter)
-- **Inject Strategies**: Inject custom strict mode managers or loading strategies into Loader
-- **Debugging/Diagnosis**: Manually drive at a certain step when a failure occurs to locate the issue
+- **Custom Order**: Need to reorder the default loading sequence (e.g., start a module before an adapter)
+- **Inject Strategies**: Inject custom strict mode managers, loading strategies, etc., into Loader
+- **Debugging/Diagnosis**: Manually drive at a certain step to locate issues when a failure occurs
 
-## Fine-Grained Runtime Control
+## Runtime Fine-Grained Control
 
-Even when using `sdk.run()` to complete the startup, you can still individually control subsystems at runtime without having to restart the entire SDK:
+Even when using `sdk.run()` to complete the startup, you can still control subsystems individually at runtime without restarting the entire SDK:
 
-### Hot Restart/Stop of Adapters
+### Hot Restart of Adapters
 
 ```python
-# Hot restart an adapter (fix connection, does not affect other platforms)
+# Hot restart an adapter (repair connection, does not affect other platforms)
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
-# Bring up a new platform at runtime
+# Bring up a new platform during runtime
 await sdk.adapter.startup("telegram")
 
 # Temporarily take down a platform
 await sdk.adapter.shutdown("telegram")
 ```
 
-> `adapter.startup()` requires the adapter to have been **registered** to the manager. Registration occurs within `init()`/`run()`, so this is fine-grained control **after** startup.
+> `adapter.startup()` requires the adapter to be **registered** to the manager. Registration happens inside `init()`/`run()`, so this is fine-grained control after startup.
 
 ### Router Server
 
@@ -11750,10 +11757,10 @@ await sdk.load_module("MyModule")
 
 ## Graceful Shutdown
 
-As of version 2.7.0, `sdk.shutdown()` provides **programmatic graceful shutdown**: set the shutdown event to allow the main loop, which is suspended by `await sdk.run(keep_running=True)`, to return, thus triggering `uninit()` to complete resource cleanup.
+Since version 2.7.0, `sdk.shutdown()` provides **programmatic graceful shutdown**: set a shutdown event to make the main loop hanging in `await sdk.run(keep_running=True)` return, triggering `uninit()` to complete resource cleanup.
 
 ```python
-# Call from any coroutine to trigger graceful exit (run() suspended returns and automatically uninit)
+# Call from any coroutine to trigger graceful exit (run() hangs and returns, then automatically uninit)
 sdk.shutdown()
 ```
 
@@ -11765,16 +11772,16 @@ async def shutdown_after_idle():
     sdk.shutdown()  # Gracefully exit after 1 hour of idle
 ```
 
-**Signal Handling**: `run()` internally registers `SIGTERM` / `SIGHUP` handlers, converting system signals into graceful shutdown—when container orchestration (Docker `docker stop`) or `systemd` stops the service, the process completes `uninit()` cleanup instead of being forcibly killed.
+**Signal Handling**: `run()` internally registers `SIGTERM` / `SIGHUP` handlers, converting system signals into graceful shutdown—when container orchestration (Docker `docker stop`) or `systemd` stops the service, the process will go through `uninit()` cleanup instead of being forcefully killed.
 
 - Windows does not support `loop.add_signal_handler`, so the signal handler is automatically skipped (still use `sdk.shutdown()` or Ctrl+C to trigger shutdown)
 - Repeatedly calling `sdk.shutdown()` is safe (no operation after the event is set)
 
-## Uninit Process
+## Unload Process
 
-The reverse operation of startup is `await sdk.uninit()`, which cleans up in the opposite order:
+The reverse operation of startup is `await sdk.uninit()`, which cleans up in the reverse order:
 
-1. Close all adapters (`adapter.shutdown()`)
+1. Shut down all adapters (`adapter.shutdown()`)
 2. Unload all modules
 3. Clean up all event handlers
 4. Clean up managers and module attributes on SDK
@@ -11790,65 +11797,65 @@ finally:
 
 ## Restart
 
-The SDK provides two restart methods, both of which do not require you to manually uninstall first—the framework handles it automatically:
+The SDK provides two restart methods, neither requiring you to manually unload first—the framework handles it:
 
 | Method | Call | Behavior | Use Case |
 |------|------|------|----------|
-| Hot Restart | `await sdk.restart()` | **Hot reload at the component layer code level** within the same process: All modules follow a unified reload pipeline (global syntax pre-check / snapshot rollback / identity verification), adapters first **re-discover entry-point** (newly installed/uninstalled adapters during runtime take effect immediately) before individually reloading code | Making code changes effective after pip upgrade or installing components, hot-updating module code |
-| Hard Restart | `await sdk.hard_restart()` | `uninit()` followed by **exit code 42** to exit the process, which is then restarted by an external supervisor | Framework itself upgrades (upgraded framework code only takes effect in new processes), C extension side effects, suspected resource leaks |
+| Hot Restart | `await sdk.restart()` | **Code-level hot reload at the component level** within the same process: all modules go through a unified reload pipeline (global syntax pre-check / snapshot rollback / identity verification), adapters first **re-discover entry-points** (newly installed/uninstalled adapters during runtime take effect immediately) then reload code-level one by one | Hot reload after pip upgrades or installing components, hot update module code |
+| Hard Restart | `await sdk.hard_restart()` | `uninit()` followed by **exit with code 42**, letting an external supervisor restart a new process | Framework self-upgrade (new framework code only takes effect in a new process), C extension side effects, suspected resource leaks |
 
 ```python
-# Hot restart: component layer code-level hot reload (most commonly used; newly installed adapters during runtime are also pulled in)
+# Hot Restart: Component-level code hot reload (most common; newly installed adapters during runtime are also pulled in)
 await sdk.restart()
 
-# Hard restart: exit the process, let external supervisor restart (see "Supervisor Guide" below)
+# Hard Restart: Exit process, let external supervisor restart (see below "Supervisor Guide")
 await sdk.hard_restart("sdk self-update")  # Optional reason for supervisor display
 ```
 
-> **Two points to note**:
-> 1. Both methods execute restart as a background task and **immediately return `True` to indicate "restart task has been scheduled"**, not "restart has completed". Actual restart proceeds in the background, avoiding interruption of the current event chain.
-> 2. The principle of `hard_restart()` is: after uninstalling and flushing the configuration, exit the process with **exit code 42** (`HARD_RESTART_EXIT_CODE`) — **it does not start a new process itself**. It must be restarted by an external supervisor detecting exit code 42. If you run `python main.py` directly without any supervisor, the process ends after exiting with code 42, **without automatic restart** (the framework will issue a warning).
+> **Two Notes**:
+> 1. These methods execute restart in the background and **immediately return `True` to indicate "restart task scheduled"**, not "restart completed". Actual restart happens in the background, avoiding interruption of the current event chain.
+> 2. The principle of `hard_restart()` is: after unloading and flushing configuration, exit the process with **exit code 42** (`HARD_RESTART_EXIT_CODE`)—**it does not start a new process itself**. It must be restarted by an external supervisor detecting exit code 42. If running directly with `python main.py` and no supervisor, the process exits with code 42 and **does not automatically restart** (the framework will warn).
 
-> **Hot Restart Mutual Exclusion and Merging** (since 2.11.1): All hot reload operations (single module reload / full reload / adapter reload / hibernation) are mutually exclusive throughout the process — continuous triggers during save storms will not run concurrently, and new requests received during an ongoing restart are automatically merged, completing at most one additional run. When files with syntax errors are saved, the entire reload round will be **rejected by a summary-style syntax pre-check** before uninstallation (listing all error files and line numbers at once), and all old instances continue serving.
+> **Hot Restart Mutual Exclusion and Merging** (since 2.11.1): All hot reload operations (single module reload, full reload, adapter reload, hibernation) are mutually exclusive throughout—during a save storm, consecutive triggers will not be concurrently interleaved, and if a new request is received during an ongoing restart, it will be automatically merged, with at most one round completed afterward. When saving a file with syntax errors, the entire reload will be **rejected by a pre-check** before unloading (listing all error files and line numbers at once), and all old instances continue serving.
 
 ### When to Use Hard Restart?
 
-Hot restart covers most scenarios (pip upgrade/installing components, hot-updating module code, **including newly installed adapters during runtime**). Hard restart is only needed for the following scenarios:
+Hot restart covers most scenarios (pip upgrades/installing components, hot updating module code, **including newly installed adapters during runtime**). The following scenarios require hard restart:
 
-- **Framework itself upgrades**: After upgrading ErisPulse itself, new framework code only takes effect in a brand-new process (Python does not re-import already loaded framework code).
-- **Binary library (C extension) side effects**: Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources; hard restart switches to a brand-new process, thoroughly clearing these side effects.
-- **Resource leak troubleshooting**: When suspected memory or handle leaks exist, hard restart provides a clean environment.
+- **Framework Self-Upgrades**: After upgrading ErisPulse itself, the new framework code only takes effect in a new process (Python does not re-import loaded framework code).
+- **Binary Library (C Extension) Side Effects**: Hot restart occurs within the same process, unable to release C extensions, open file descriptors, threads, and other process-level resources; hard restart switches to a new process, thoroughly clearing these side effects.
+- **Resource Leak Diagnosis**: When suspected memory or handle leaks exist, hard restart provides a clean environment.
 
-> The "Framework Restart" function in the Dashboard management panel internally calls `hard_restart()`.
+> The "Framework Restart" feature in the Dashboard management panel calls `hard_restart()` underneath.
 
 ### Exit Code 42 Contract
 
-Hard restart is cross-process collaboration: **SDK is responsible for exiting (code 42), supervisor is responsible for restarting**.
+Hard restart is cross-process collaboration: **SDK handles the exit (code 42), supervisor handles the restart**.
 
 | Role | Behavior |
 |------|------|
 | SDK (when hard restarted) | `uninit()` → flush configuration → write hard restart marker (reason / PID, for supervisor display) → `os._exit(42)` |
-| Supervisor | Detect child process exit code 42 → display hard restart reason → restart the same command |
+| Supervisor | Detect sub-process exit code 42 → display hard restart reason → restart the same command |
 
-> `sdk.is_supervised()` can query whether the current process is started by a supervisor (detects environment variable `ERISPULSE_SUPERVISED`). The CLI `run` command injects this marker when starting a subprocess; external supervisors like systemd / Docker do not inject it, so `is_supervised()` returns `False`, and the framework will issue a "supervisor not detected" warning after hard restart.
+> `sdk.is_supervised()` can query whether the current process was started by a supervisor (detects environment variable `ERISPULSE_SUPERVISED`). The CLI `run` command automatically injects this marker when starting a subprocess; external supervisors like systemd / Docker do not inject it, so `is_supervised()` returns `False`, and the framework will warn "no supervisor detected" after hard restart.
 
 ### Supervisor Guide
 
-Choose a supervisor suitable for you to make hard restart truly effective:
+Choose the supervisor that suits you to make hard restart truly effective:
 
 #### 1. CLI run command (development/simple deployment, recommended)
 
-`epsdk run main.py` includes a built-in supervision loop: it detects the child process exit code, immediately restarts (and displays the hard restart reason) if code 42; for other abnormal exit codes, it automatically retries with exponential backoff; `Ctrl+C` will first gracefully terminate the child process (code 0 is considered normal exit, no restart).
+`epsdk run main.py` includes an internal supervision loop: detects sub-process exit codes, restarts immediately if code 42 is detected (and displays the hard restart reason); other abnormal exit codes retry automatically with exponential backoff; `Ctrl+C` first gracefully terminates the sub-process (code 0 is considered normal exit, no restart).
 
 ```bash
 epsdk run main.py
 ```
 
-`epsdk run --reload` (development hot-reload mode, since 2.11.1) also follows the "supervisor process + reload worker subprocess" structure: saving `.py` files within the worker triggers **component-level hot reload** (not full framework restart); hard restart is handled by the supervisor process restarting a brand-new worker, making new code effective after framework upgrade.
+`epsdk run --reload` (development hot reload mode, since 2.11.1) also follows the "supervisor process + reload worker sub-process" structure: worker saves `.py` files to trigger **component-level hot reload** (no full framework restart); hard restart is performed by the supervisor process restarting a new worker, making the new code effective after framework upgrades.
 
 #### 2. systemd (Linux server)
 
-`RestartForceExitStatus=42` makes exit code 42 trigger restart (by default `on-failure` only applies to non-zero codes):
+`RestartForceExitStatus=42` makes exit code 42 trigger restart (default `on-failure` only works for non-zero codes):
 
 ```ini
 [Service]
@@ -11861,20 +11868,20 @@ User=mybot
 
 #### 3. Docker / docker-compose
 
-The PID 1 process inside the container is the application process; after exit code 42, the container exits — use `restart` policy to make it automatically restart:
+Inside the container, PID 1 is the application process; exit code 42 causes the container to exit—use `restart` policy to automatically restart it:
 
 ```yaml
 services:
   bot:
     build: .
-    restart: unless-stopped   # restart on any exit (including 42)
+    restart: unless-stopped   # Restart on any exit (including 42)
 ```
 
 #### 4. PM2 (Node ecosystem operations)
 
 ```bash
 pm2 start main.py --name mybot --interpreter python3
-# 42 is treated as an exit code, PM2 restarts by default; set restart_delay to debounce
+# 42 is treated as an exit code, PM2 defaults to restart; set restart_delay to debounce
 pm2 set mybot.restart_delay 2000
 ```
 
@@ -11884,10 +11891,10 @@ pm2 set mybot.restart_delay 2000
 [program:mybot]
 command=python3 /opt/mybot/main.py
 autorestart=true
-exitcodes=0,2,42    # 42 is also considered "normal exit requiring restart"
+exitcodes=0,2,42    # 42 also considered "normal exit requiring restart"
 ```
 
-#### 6. Pure Python custom supervisor
+#### 6. Pure Python Custom Supervisor
 
 ```python
 import subprocess, sys, time
@@ -11900,10 +11907,10 @@ while True:
         continue
     if code == 0:           # Normal exit
         break
-    time.sleep(3)           # Abnormal exit, backoff and retry
+    time.sleep(3)           # Abnormal exit, retry with backoff
 ```
 
-> **Behavior without supervisor**: Running directly with `python main.py`, calling `hard_restart()` exits the process with code 42 and does not restart. In this case, you should integrate with any of the above supervisors.
+> **Behavior without a supervisor**: Running directly with `python main.py`, calling `hard_restart()` exits the process with code 42 and does not restart. In this case, you should integrate one of the above supervisors.
 
 
 

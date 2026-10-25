@@ -1,4 +1,4 @@
-# 模塊核心概念
+# 模組核心概念
 
 > [!NOTE]
 > **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
@@ -18,7 +18,7 @@ class MyModule(BaseModule):
     def get_load_strategy():
         """返回模組加載策略"""
         return ModuleLoadStrategy(
-            lazy_load=True,   # 懶加載還是立即加載
+            lazy_load=True,   # 慢加載還是立即加載
             priority=0,       # 加載優先級（數值越大越先加載）
             depends=["OtherModule"]  # 可選：宣告依賴的其他模組
         )
@@ -33,7 +33,7 @@ class MyModule(BaseModule):
 
 ### on_load 方法
 
-模組加載時調用，用於初始化資源和註冊事件處理器：
+模組加載時呼叫，用於初始化資源和註冊事件處理器：
 
 ```python
 async def on_load(self, event):
@@ -48,7 +48,7 @@ async def on_load(self, event):
 
 ### on_unload 方法
 
-模組卸載時調用，用於清理資源：
+模組卸載時呼叫，用於清理資源：
 
 ```python
 async def on_unload(self, event):
@@ -67,8 +67,8 @@ async def on_unload(self, event):
 > 本鈎子需要 ErisPulse **2.11.0+**。
 
 卸載流程**第一步**（先於 `on_unload` 與資源回收）觸發的可選鈎子——此時模組的一切
-資源仍然完好，適合在卸載 / 歸眠 / 重載前把狀態保存到 `sdk.storage`，下次 `on_load`
-恢復（懶加載休眠的狀態接續即基於此）：
+資源仍然完好，適合在卸載 / 归眠 / 重載前把狀態保存到 `sdk.storage`，下次 `on_load`
+恢復（慢加載休眠的狀態接續即基於此）：
 
 ```python
 async def on_before_unload(self, event):
@@ -77,8 +77,8 @@ async def on_before_unload(self, event):
         await self.sdk.storage.aset(f"{self._module_name}:state", self.collect_state())
 ```
 
-鈎子失敗僅告警，不阻塞卸載流程；未宣告該鈎子的模組行為不變。歸眠 / 喚醒語義詳見
-[懶加載休眠](../../advanced/lazy-loading.md#懶加載休眠dormant_after)。
+鈎子失敗僅告警，不阻塞卸載流程；未宣告該鈎子的模組行為不變。归眠 / 喚醒語義詳見
+[慢加載休眠](../../advanced/lazy-loading.md#慢加載休眠dormant_after)。
 
 ### 卸載與徹底卸載（purge）
 
@@ -128,7 +128,7 @@ flowchart TD
         U2 --> U3["清理 i18n 翻譯鍵"]
         U3 --> U4["移除路由 / 命令 / 事件處理器（按 owner）"]
         U4 --> U5["清理 lifecycle 鈎子（按 owner）"]
-        U5 --> U6["移除 SDK 屬性 + 懶加載代理"]
+        U5 --> U6["移除 SDK 屬性 + 慢加載代理"]
         U6 --> U7["emit module.unload"]
     end
 
@@ -143,9 +143,9 @@ flowchart TD
 | 配置範本 | 宣告了 `ConfigClass` 的模組，框架自动生成/填充 `ErisPulse.<ModuleName>` 配置段 |
 | i18n 翻譯鍵 | 宣告了 `I18nClass` 的模組，翻譯鍵自動註冊（卸載時自動註銷） |
 | 依賴拓撲 | 按 `depends` 宣告排序，確保被依賴模組先加載；循環依賴以 `RuntimeError` 拒絕 |
-| SDK 掛載 | 實例化後掛到 `sdk.<ModuleName>`，你才能 `sdk.MyModule.xxx` 訪問 |
+| SDK 挂載 | 實例化後掛到 `sdk.<ModuleName>`，你才能 `sdk.MyModule.xxx` 訪問 |
 
-**卸載時框架幫你清理的**（對應上面的 U1→U7）：`on_unload` 跑完後再兜底清理——後台任務強制取消（`self.spawn` 建立的，優雅收尾請在 `on_unload` 自行做）、i18n 鍵、路由、命令/事件處理器、lifecycle 鈎子，最後移除 SDK 屬性。`purge=True` 預外刪除註冊存根 + 清理 `sys.modules`。
+**卸載時框架幫你清理的**（對應上面的 U1→U7）：`on_unload` 跑完後再兜底清理——後台任務強制取消（`self.spawn` 建立的，優雅收尾請在 `on_unload` 自行做）、i18n 鍵、路由、命令/事件處理器、lifecycle 鈎子，最後移除 SDK 屬性。`purge=True` 頂外刪除註冊存根 + 清理 `sys.modules`。
 
 > 這些自動清理就是「你只需寫 `on_load`/`on_unload`，不用手動 unregister」的底氣——框架用 owner 歸屬把「誰註冊的誰清理」做成了一鍵式。
 
@@ -170,7 +170,7 @@ other_module = sdk.OtherModule
 result = await other_module.some_method()
 ```
 
-## 適配器發送方法查詢
+## 适配器发送方法查询
 
 由於新的標準規範要求使用重寫 `__getattr__` 方法來實現兜底發送機制，導致無法使用 `hasattr` 方法來檢查方法是否存在。從 `2.3.5` 開始，新增了查詢發送方法的功能。
 
@@ -194,7 +194,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
 #     ],
 #     "return_type": "Awaitable[Any]",
-#     "docstring": "發送文本訊息..."
+#     "docstring": "發送文字訊息..."
 # }
 ```
 
@@ -202,7 +202,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 
 ### 宣告式配置（推薦）
 
-從 v2.5.2 起，模組可透過 `ConfigClass` 宣告配置類，與適配器使用同一套配置 Schema 系統。配置透過 `self.cfg` 實時讀取，修改後立即生效：
+從 v2.5.2 起，模組可透過 `ConfigClass` 宣告配置類，與适配器使用同一套配置 Schema 系統。配置透過 `self.cfg` 實時讀取，修改後立即生效：
 
 ```python
 from dataclasses import dataclass, field
@@ -247,14 +247,14 @@ class MyModule(BaseModule):
         timeout = cfg.timeout
 ```
 
-`BaseConfig` 是通用配置基類，適用於適配器、模組、外部專案等任何場景。配置欄位支援 i18n 多語言描述（詳見 [i18n 文件](../../advanced/i18n.md#配置欄位多語言)）。
+`BaseConfig` 是通用配置基類，適用於适配器、模組、外部項目等任何場景。配置欄位支援 i18n 多語言描述（詳見 [i18n 文件](../../advanced/i18n.md#配置欄位多語言)）。
 
 > [!NOTE]
-> 模組（含適配器）的加載、卸載、啟停等生命週期由框架統一管理（`module manager` / `scope` 提供查詢與控制 API）。`ConfigClass` 只應承載業務參數，模組無需在內部再次嵌套判斷"自己要不要啟動"的邏輯。
+> 模組（含适配器）的加載、卸載、啟停等生命週期由框架統一管理（`module manager` / `scope` 提供查詢與控制 API）。`ConfigClass` 只應承載業務參數，模組無需在內部再次嵌套判斷"自己要不要啟動"的邏輯。
 
-配置 Schema 系統還支援（v2.8.0+，詳見 [適配器 core-concepts](../adapters/core-concepts.md#metadata-約定)）：
+配置 Schema 系統還支援（v2.8.0+，詳見 [适配器 core-concepts](../adapters/core-concepts.md#metadata-約定)）：
 
-- **docstring 自動生成欄位描述**：未宣告 metadata `description` 時，自動從 docstring 的 `:ivar 欄位: 說明` 或 `Attributes:` 段提取兜底
+- **docstring 自动生成欄位描述**：未宣告 metadata `description` 時，自動從 docstring 的 `:ivar 欄位: 說明` 或 `Attributes:` 段提取兜底
 - **嵌套 dataclass 配置**：欄位類型為嵌套 dataclass 時，schema/範本/校驗遞迴處理，WebUI 渲染為嵌套分組
 - **`example` 不落盤欄位**：`metadata={"example": True}` 的欄位不寫入 config.toml，僅記錄在 `config.full.example`（適合冗雜又很少觸碰的高級配置項），使用者手動設定後正常持久化
 
@@ -270,7 +270,7 @@ class MyModule(BaseModule):
     @dataclass
     class ConfigClass(BaseConfig):
         welcome_msg: str = field(
-            default="歡迎",
+            default="Welcome",
             metadata={
                 "description": {"i18n": "mymodule.welcome_msg", "default": "歡迎訊息"},
             },
@@ -297,7 +297,7 @@ class MyModule(BaseModule):
         )
 ```
 
-詳情見 [i18n 推薦寫法](../../advanced/i18n.md#推薦寫法通過-i18nclass-宣告翻譯鍵-v270)。
+詳情見 [i18n 推薦寫法透過 -I18nClass- 宣告翻譯鍵-v270](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
 
 ### 手動讀取配置（已廢棄）
 
@@ -338,7 +338,7 @@ sdk.storage.delete("user:123")
 with sdk.storage.transaction():
     sdk.storage.set("key1", "value1")
     sdk.storage.set("key2", "value2")
-    # 如果任何操作失敗，所有更改都會回滾
+    # 如果任何操作失敗，所有更改都會回饋
 ```
 
 ## 事件處理
@@ -363,12 +363,12 @@ async def group_handler(event):
 
 框架會自動管理事件處理器的註冊和註銷，你只需要在 `on_load` 中註冊即可。
 
-## 懶加載機制
+## 慢加載機制
 
 ### 工作原理
 
 ```python
-# 模組首次被訪問時才會初始化
+# 模組首次被存取時才會初始化
 result = await sdk.my_module.some_method()
 # ↑ 這裡會觸發模組初始化
 ```
@@ -406,8 +406,8 @@ async def handle_event(self, event):
 ### 日誌記錄
 
 ```python
-# 使用不同的日誌級別
-self.logger.debug("調試資訊")    # 詳細調試資訊
+# 使用不同的日誌等級
+self.logger.debug("除錯資訊")    # 詳細除錯資訊
 self.logger.info("運行狀態")      # 正常運行資訊
 self.logger.warning("警告資訊")  # 警告資訊
 self.logger.error("錯誤資訊")    # 錯誤資訊

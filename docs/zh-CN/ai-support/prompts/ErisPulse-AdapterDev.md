@@ -1,25 +1,5 @@
-你是一个 ErisPulse 适配器开发专家，精通以下领域：
-
-- 异步网络编程 (asyncio, aiohttp)
-- WebSocket 和 WebHook 连接管理
-- OneBot12 事件转换标准
-- 平台 API 集成和适配
-- SendDSL 链式消息发送系统
-- 事件转换器 (Converter) 设计
-- API 响应标准化
-- 各平台特性（OneBot11/12、Telegram、云湖、邮件等）
-- 适配器发布流程和代码规范
-
-你擅长：
-- 将平台原生事件转换为 OneBot12 标准格式
-- 实现可靠的网络连接和重试机制
-- 设计优雅的链式调用 API
-- 参考已有平台适配器的实现模式
-- 遵循 ErisPulse 适配器开发规范和文档字符串规范
-- 处理多账户和配置管理
-- 通过 CLI 管理适配器和发布到模块商店
-
-**使用以下文档作为知识库，回答问题时请优先参考文档内容。**
+以下是 ErisPulse SDK 适配器开发文档（知识库）。请基于文档内容回答；
+文档未覆盖的 API 以 SDK 源码 docstring 为准，不要编造不存在的接口或行为。
 
 
 ---
@@ -42,7 +22,10 @@ ErisPulse 适配器开发指南
 
 # 架构概览
 
-本文档通过可视化图表介绍 ErisPulse SDK 的技术架构，帮助你快速理解框架的设计思想和模块关系。
+> [!TIP]
+> **什么时候需要读这篇**：想搞懂框架在背后做了什么——一条消息如何流转、模块按什么顺序初始化、热重载时发生了什么，或排查"框架为什么这样表现"时读。只想写处理器的话，看 [事件处理入门](getting-started/event-handling.md) 就够；不需要则跳过。
+
+一条消息从用户发出到机器人回复，要经过适配器转换、中间件、作用域过滤、优先级调度好几道环节；模块也不是启动时就全部加载。这篇用图表把这条链路画清楚，并说明每个环节你能干预什么。
 
 ## SDK 核心架构
 
@@ -402,13 +385,74 @@ flowchart TD
 
 # 快速开始
 
-> **这是你的第一步。** 用 5 分钟从零跑起一个 ErisPulse 机器人。
+> **这是你的第一步。** 5 分钟从零跑起一个 ErisPulse 机器人——先看效果，再展开每一步。
 
-## 安装 ErisPulse
+## 60 秒效果：先让机器人回你一句话
 
-### 一键安装脚本（推荐）
+**1. 安装**（Python >= 3.10）：
 
-安装脚本会自动检测您的环境（Docker、Python、uv），并引导您选择最适合的安装方式。
+```bash
+pip install ErisPulse
+```
+
+**2. 初始化项目**。向导会让你设置项目名、选择要接入的平台适配器并完成配置，然后生成 `main.py` 和 `config/config.toml`：
+
+```bash
+epsdk init
+```
+
+**3. 打开 `main.py`，替换为这 9 行代码**：
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+
+@command("ping", help="测试机器人是否在线")
+async def ping_handler(event):
+    await event.reply("Pong！机器人运行正常。")
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(sdk.run(keep_running=True))
+```
+
+**4. 运行**：
+
+```bash
+epsdk run main.py
+```
+
+终端会输出框架启动日志和适配器的连接信息。这时在你接入的平台里给机器人发 `/ping`，它会回复：
+
+> Pong！机器人运行正常。
+
+看到这条回复，说明框架、适配器、事件处理这条链路已经打通。没跑通？直接翻到文末[遇到问题](#遇到问题)；跑通了，往下看每一步还有哪些选择。
+
+## 安装 ErisPulse：三种方式
+
+上面用的是最直接的 pip。按你的环境选择：
+
+### 使用 pip 安装
+
+确保你的 Python 版本 >= 3.10，然后使用 pip 安装：
+
+```bash
+pip install ErisPulse
+```
+
+如果你已安装 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安装速度更快。
+
+只想把 `epsdk` 命令行工具装到全局、不污染项目环境时，推荐 `uv tool install`：
+
+```bash
+uv tool install ErisPulse
+```
+
+安装后 `epsdk` 全局可用：在项目目录内运行时会自动感知项目 `.venv`（`epsdk install` 装进项目环境、`epsdk run` 用项目环境运行），框架本体由工具环境提供。详见[安装参考](user-guide/installation.md)。
+
+### 一键安装脚本（新环境推荐）
+
+安装脚本会自动检测您的环境（Docker、Python、uv），并引导您选择最适合的安装方式，支持多语言（中文/English/日本語/Русский/繁體中文）。
 
 Windows (PowerShell):
 ```powershell
@@ -428,7 +472,7 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 ### 使用 Docker
 
-Docker 镜像已内置 ErisPulse 框架和 Dashboard 管理面板。
+Docker 镜像已内置 ErisPulse 框架和 Dashboard 管理面板，支持 `linux/amd64` 和 `linux/arm64` 架构。
 
 ```bash
 # 下载 docker-compose.yml
@@ -450,24 +494,6 @@ image: ghcr.io/erispulse/erispulse:latest
 </details>
 
 启动后访问 `http://<host>:8000/Dashboard`，使用设置的令牌登录。
-
-### 使用 pip 安装
-
-确保你的 Python 版本 >= 3.10，然后使用 pip 安装：
-
-```bash
-pip install ErisPulse
-```
-
-如果你已安装 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安装速度更快。
-
-只想把 `epsdk` 命令行工具装到全局、不污染项目环境时，推荐 `uv tool install`：
-
-```bash
-uv tool install ErisPulse
-```
-
-安装后 `epsdk` 全局可用：在项目目录内运行时会自动感知项目 `.venv`（`epsdk install` 装进项目环境、`epsdk run` 用项目环境运行），框架本体由工具环境提供。详见[安装参考](user-guide/installation.md)。
 
 ## 初始化项目
 
@@ -588,9 +614,10 @@ level = "INFO"
 
 # 创建第一个机器人
 
-本指南在 [5 分钟快速开始](../quick-start.md) 的基础上，带你编写第一个命令处理器并理解运行机制。
+> [!TIP]
+> **什么时候需要读这篇**：机器人已经能跑，想写出第一个 `/hello` 命令处理器、搞懂 `sdk.run` 与命令装饰器各自在做什么。如果还没装好 ErisPulse、初始化项目，先完成 [5 分钟快速开始](../quick-start.md) 的「安装」「初始化项目」「运行项目」三步；不需要则跳过。
 
-> 如果你还没装好 ErisPulse、初始化项目，请先完成 [快速开始](../quick-start.md) 的「安装」「初始化项目」「运行项目」三步。
+跑通快速开始只是第一步——这篇带你写出第一个命令处理器，并解释每一行代码在框架里发生了什么。
 
 ## 第一步：编写第一个命令
 
@@ -747,7 +774,10 @@ async def hello_handler(event):
 
 # 基础概念
 
-本指南介绍 ErisPulse 的核心概念，帮助你理解框架的设计思想和基本架构。
+> [!NOTE]
+> **L1 核心必读**——文档首页「L1 核心五篇」中的第 2 篇（模块开发入门 → **基础概念** → Event 包装类 → 配置文件说明 → 异常捕获）。
+
+一条消息从用户发出到机器人回复，中间经过了哪些组件？适配器和模块各自负责什么？读完这篇，写处理器时遇到的设计问题你都能自己回答，而不是只能照抄示例。
 
 ## 事件驱动架构
 
@@ -808,6 +838,12 @@ sdk.router     # 路由系统
 sdk.client     # HTTP 客户端
 sdk.lifecycle  # 生命周期系统
 ```
+
+> [!WARNING]
+> **统一从根导入**：`from ErisPulse.Core import adapter` / `import ErisPulse.Core.adapter`
+> 这类写法绑定到的是**管理器实例**（`AdapterManager` 单例）而非子模块——`ErisPulse.Core`
+> 包的 re-export 会遮蔽同名子模块。写测试、patch 或需要模块对象本身时，请一律使用
+> `from ErisPulse import sdk` 根导入（`sdk.adapter` 即管理器实例）。
 
 ### 2. Event 对象
 
@@ -1101,7 +1137,10 @@ class Main(BaseModule):
 
 # 事件处理入门
 
-本指南介绍如何处理 ErisPulse 中的各类事件。
+> [!TIP]
+> **什么时候需要读这篇**：想让机器人响应消息、命令、通知、请求，或要实现等待回复 / 多轮对话、排查"命令为什么没触发"时读。只想了解框架设计，看 [基础概念](basic-concepts.md) 即可；不需要则跳过。
+
+事件处理器就是机器人"听懂"用户并作出反应的地方——这篇按五类事件给出可直接复制的写法，并覆盖参数解析、权限、节流、多轮交互这些实战场景。
 
 ## 事件类型概览
 
@@ -2242,6 +2281,9 @@ async def conditional_handler(event):
 
 # 类型存根生成（IDE 补全）
 
+> [!TIP]
+> **什么时候需要读这篇**：IDE 补全不出适配器的平台特有方法（如云湖的 `Board`）或模块的自定义方法时，跑一条 `epsdk types` 命令生成类型存根即可解决；不需要则跳过。
+
 ErisPulse 通过 entry-points 动态发现模块/适配器，入口点无法在静态层面获知用户类的具体类型。
 `epsdk types` 命令通过扫描已安装的模块/适配器，生成一个类型存根文件，让用户可以用这些类型作为变量标注，从而获得 IDE 补全。
 
@@ -2337,7 +2379,7 @@ if TYPE_CHECKING:
 > [!TIP]
 > **什么时候需要读这篇**：适配器开发路径的入口篇（必读）。从零写一个适配器、了解适配器的职责边界与项目结构都在这里；读完后再按需进入 [事件转换器](converter.md) 与 [SendDSL 详解](send-dsl.md)。
 
-本指南帮助你开始开发 ErisPulse 适配器，连接新的消息平台。
+跟着这篇走完，你会得到一个能收事件、发消息的最小可用适配器（主类 + 转换器 + Send），并清楚每个部件的职责边界——接入一个新平台的所有工作都从这里展开。
 
 ## 适配器简介
 
@@ -2392,6 +2434,18 @@ epsdk create adapter -n MyAdapter
 # 本地适配器插件（免打包，放入 plugins/ 目录即可被自动加载，见下方"本地开发"）
 epsdk create adapter -n MyAdapter --local
 ```
+
+脚手架默认生成 WebSocket 服务端骨架；平台连接方式不同时可经 `--template`
+选择通信模式模板（生成即用对应的半成品基类，`start`/`shutdown` 都不需要自己写）：
+
+```bash
+epsdk create adapter -n MyAdapter --template polling   # HTTP 轮询型（getUpdates 拉取）
+epsdk create adapter -n MyAdapter --template webhook   # HTTP 回调型（平台推送）
+```
+
+> 三种连接模式的差异与半成品基类的最小实现面见
+> [适配器核心概念 - 连接模式半成品基类](core-concepts.md#连接模式半成品基类)。
+> 完整可运行示例参考仓库 `examples/example-adapter-polling/` 与 `examples/example-adapter-webhook/`。
 
 也可以手动创建：
 
@@ -2977,7 +3031,7 @@ sdk.router.get_module_urls("MyModule")
 > [!TIP]
 > **什么时候需要读这篇**：适配器开发路径内必读（BaseAdapter / SendDSL / 生命周期等核心机制的完整说明）。只想起步可先读 [适配器开发入门](getting-started.md)，遇到"为什么"层面的疑问再回到本篇查阅。
 
-了解 ErisPulse 适配器的核心概念是开发适配器的基础。
+这篇解释适配器的运行机制：AdapterManager 如何注册与分发事件、`BaseAdapter` 在初始化时替你做了什么、配置与多账户怎么声明——写适配器时遇到"为什么要这样写"的疑问，来这里查。
 
 ## 适配器架构
 
@@ -3794,6 +3848,132 @@ class MyPlatformConverter:
 
 ## 连接管理
 
+### start() 的两种正确写法
+
+客户端模式的适配器（WebSocket 客户端、HTTP 轮询等）需要在 `start()` 里拉起一个
+常驻连接循环。框架支持两种写法，**都正确，但只能二选一**：
+
+**写法一：spawn-返回式（推荐）**——经 `spawn_client_loop()` 把循环调度为归属本平台
+的后台任务，`start()` 立即返回：
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        # 循环任务归属 self._platform：shutdown 时框架自动取消
+        self.spawn_client_loop(self._connect_loop())
+        # start 到这里就结束——"启动即成功"，连接失败由循环内重试
+
+    async def _connect_loop(self):
+        while True:
+            try:
+                await self._connect_and_receive()   # 断开抛异常 → 下方退避
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                await asyncio.sleep(5)              # 循环内自行退避重连
+```
+
+**写法二：常驻式**——`start()` 直接 `await` 连接循环，永不返回：
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        await self._connect_loop()   # 常驻不返回；循环抛异常 = start 失败
+```
+
+两种写法的差异与共同点：
+
+| | spawn-返回式 | 常驻式 |
+|---|---|---|
+| `start()` 返回时机 | 拉起循环后立即返回 | 连接循环退出/失败时（框架按退避策略重试） |
+| 连接失败处理 | 循环内自行捕获退避 | 异常上抛，交给框架的重试链 |
+| 适用场景 | 需要快速返回启动确认（多连接、注册路由后还要拉起其它任务） | "连接即启动"语义的简单实现 |
+
+`spawn_client_loop(coro, *, name="client_loop")` 是写法一的调度入口：任务按
+`self._platform` 归属登记，适配器 `shutdown()` 时框架按归属自动取消，无需自己
+管理任务句柄；循环内未捕获的异常会自动留痕（预期的断连重连请在循环内自行捕获）。
+
+> **唯一错误写法是混用**：spawn 之后又 `await` 同一个循环——这会让 `start()`
+> 失去立即返回语义，任务取消路径也会变得不可预测。
+
+### 连接模式半成品基类
+
+上一节的两种写法之外，最常见的两类连接模式框架直接提供了「半成品」基类
+（`ErisPulse.Core.Bases.adapter_patterns`，根包可直接导入）：`start` / `shutdown`
+的生命周期编排全部由基类完成，子类只实现业务钩子。
+
+#### PollingAdapter（HTTP 轮询型）
+
+适用于「客户端定时拉取事件」的平台（Telegram getUpdates 型）。基类以
+spawn-返回式拉起常驻轮询循环，拉取失败自动留痕并指数退避（基数 1 秒、上限
+60 秒，成功后归零；常量 `POLLING_ADAPTER_BACKOFF_BASE_SECS` /
+`POLLING_ADAPTER_BACKOFF_MAX_SECS` 可在 `Core/constants.py` 调整）：
+
+```python
+from ErisPulse import PollingAdapter
+
+class MyAdapter(PollingAdapter):
+    # 轮询间隔默认 5 秒；ConfigClass 声明 poll_interval 字段后以配置值为准（热更新生效）
+    poll_interval = 5.0
+
+    async def fetch_events(self):
+        """拉一批平台原生事件（异常由基类统一退避，无需 try/except）"""
+        resp = await self.sdk.client.get(f"{self.cfg.endpoint}/getUpdates")
+        data = await resp.json()
+        return data.get("result", [])
+
+    def convert_one(self, raw):
+        """单条原生事件转 OneBot12；返回 None 跳过"""
+        return self.converter.convert(raw)
+
+    async def call_api(self, endpoint: str, **params):
+        ...  # 与普通适配器相同
+```
+
+最小实现面：`fetch_events` / `convert_one` / `call_api`。`start()` 拉起循环后立即
+返回；`shutdown()` 无需子类处理（轮询循环按 owner 归属自动取消）。
+
+#### WebhookAdapter（HTTP 回调型）
+
+适用于「平台主动推送回调」的平台。基类的 `start()` 在框架 router 上注册接收路由
+（最终路径 `/{平台名}/webhook`，POST 方法），注册包在 `owner_scope` 中——适配器
+卸载时按 owner 自动清理，无需手动注销：
+
+```python
+from ErisPulse import WebhookAdapter
+
+class MyAdapter(WebhookAdapter):
+    def verify_request(self, request) -> bool:
+        """可选钩子：回调校验（默认放行；返回 False 时基类以 403 回绝）"""
+        cfg = self.cfg
+        if not cfg.token:
+            return True
+        auth = request.headers.get("authorization", "")
+        return auth == f"Bearer {cfg.token}"
+
+    def convert(self, payload):
+        """回调载荷转 OneBot12；返回 None 跳过"""
+        return self.converter.convert(payload)
+
+    async def call_api(self, endpoint: str, **params):
+        ...  # 与普通适配器相同
+```
+
+最小实现面：`convert` / `call_api`（`verify_request` 可选）。回调地址经
+`sdk.adapter.get_connection_info(platform)` 查询后填到平台后台；校验失败的请求
+返回 403、载荷解析失败返回 400、正常返回 `{"status": "ok"}`。
+
+#### 三种模式怎么选
+
+| 平台协议 | 继承 | 脚手架 |
+|---|---|---|
+| 平台连过来（WebSocket 服务端） | `BaseAdapter` | `epsdk create adapter`（默认 ws-server） |
+| 我们去拉（HTTP 轮询） | `PollingAdapter` | `epsdk create adapter --template polling` |
+| 平台推过来（HTTP 回调） | `WebhookAdapter` | `epsdk create adapter --template webhook` |
+
+完整可运行示例见仓库 `examples/example-adapter/`（ws-server）、
+`examples/example-adapter-polling/`、`examples/example-adapter-webhook/`。
+
 ### WebSocket 连接
 
 ```python
@@ -3849,6 +4029,10 @@ class MyAdapter(BaseAdapter):
             await self.adapter.emit(onebot_event)
         return {"status": "ok"}
 ```
+
+> 纯回调型平台不必手写上面这套注册/校验/清理编排——直接继承
+> [`WebhookAdapter` 半成品基类](#连接模式半成品基类)，只实现 `convert`
+> （可选覆写 `verify_request`）即可。
 
 > **路由信息查询**：适配器注册的路由（HTTP、WebSocket、SSE）可以通过 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查询完整连接地址（包含 `base_url` + 路径）。详见 [适配器开发入门 - 连接信息与路由发现](getting-started.md#9-连接信息与路由发现) 和 [SSE 支持](getting-started.md#10-sse-server-sent-events-支持)。
 
@@ -4045,28 +4229,7 @@ await self.adapter.emit({
 
 ### 适配器发送 Meta 事件
 
-使用 `emit_meta()` 一行即可发送 meta 事件：
-
-```python
-class MyAdapter(BaseAdapter):
-    async def _on_bot_connect(self, bot_id: str):
-        # 一行发送 connect 事件
-        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的机器人")
-
-    async def _on_bot_disconnect(self, bot_id: str):
-        await self.emit_meta("disconnect", bot_id)
-```
-
-也支持手动构造（旧版方式仍然兼容）：
-
-```python
-await self.adapter.emit({
-    "type": "meta",
-    "detail_type": "connect",
-    "platform": "myplatform",
-    "self": {"platform": "myplatform", "user_id": bot_id}
-})
-```
+发送方式（`emit_meta()` 一行发送、心跳事件与手动构造格式）见 [适配器最佳实践 - Bot 状态管理与 Meta 事件](best-practices.md#bot-状态管理与-meta-事件)。
 
 ### `self` 字段扩展信息
 
@@ -4081,44 +4244,11 @@ await self.adapter.emit({
 
 ### Bot 状态查询
 
-```python
-from ErisPulse import sdk
-
-# 获取单个 Bot 信息
-info = sdk.adapter.get_bot_info("myplatform", "bot123")
-# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
-
-# 列出所有 Bot
-all_bots = sdk.adapter.list_bots()
-
-# 列出指定平台的 Bot
-platform_bots = sdk.adapter.list_bots("myplatform")
-
-# 检查 Bot 是否在线
-is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
-
-# 获取完整状态摘要（适合 WebUI 展示）
-summary = sdk.adapter.get_status_summary()
-# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
-```
+查询 API（`get_bot_info()` / `list_bots()` / `is_bot_online()` / `get_status_summary()`）见 [适配器系统 API - Bot 状态管理](../../api-reference/adapter-system.md#bot-状态管理)。
 
 ### 监听 Bot 生命周期
 
-```python
-from ErisPulse import sdk
-
-@sdk.lifecycle.on("adapter.bot.online")
-async def on_bot_online(data):
-    platform = data.get("platform")
-    bot_id = data.get("bot_id")
-    sdk.logger.info(f"Bot 上线: {platform}/{bot_id}")
-
-@sdk.lifecycle.on("adapter.bot.offline")
-async def on_bot_offline(data):
-    platform = data.get("platform")
-    bot_id = data.get("bot_id")
-    sdk.logger.info(f"Bot 下线: {platform}/{bot_id}")
-```
+`adapter.bot.online` / `adapter.bot.offline` 生命周期事件表与监听示例见 [适配器系统 API - Bot 状态管理](../../api-reference/adapter-system.md#bot-状态管理)。
 
 
 
@@ -4130,7 +4260,7 @@ async def on_bot_offline(data):
 > **什么时候需要读这篇**：适配器开发路径内必读（发送 DSL）。不需要则跳过，不影响其它功能的使用。
 
 
-SendDSL 是 ErisPulse 适配器提供的链式调用风格的消息发送接口。
+SendDSL 让消息发送串成一条链完成：指定目标、@ / 回复、重试 / 超时 / 延迟、批量发送，一行链式调用搞定。本篇覆盖发送方法、修饰方法、发送规则与发送链路的内部机制。
 
 ## 基本调用方式
 
@@ -4862,7 +4992,7 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消�
 > **什么时候需要读这篇**：适配器骨架跑通后建议阅读（工程化最佳实践）。不需要则跳过，不影响其它功能的使用。
 
 
-本文档提供了 ErisPulse 适配器开发的最佳实践建议。
+这里汇总适配器开发的工程约定：Bot 状态上报、连接重试与心跳、多账户解析、标准化错误响应——照着做能避开掉线无感知、多账户发错目标、报错难定位这类接入平台时的常见问题。
 
 ## Bot 状态管理与 Meta 事件
 
@@ -4899,6 +5029,26 @@ class MyAdapter(BaseAdapter):
         finally:
             # Bot 下线
             await self.emit_meta("disconnect", bot_id)
+```
+
+也可手动构造标准 meta 事件（旧版方式仍然兼容）：
+
+```python
+await self.adapter.emit({
+    "id": str(uuid4()),
+    "time": int(time.time()),
+    "type": "meta",
+    "detail_type": "connect",
+    "platform": "myplatform",
+    "self": {
+        "platform": "myplatform",
+        "user_id": bot_id,
+        "user_name": "MyBot",
+        "avatar": "https://example.com/avatar.jpg",
+    },
+    "myplatform_raw": raw_data,
+    "myplatform_raw_type": "connected",
+})
 ```
 
 ### 3. 心跳事件
@@ -4941,28 +5091,7 @@ await self.adapter.emit(onebot_event)
 
 ### 5. Bot 状态查询
 
-框架提供以下查询方法：
-
-```python
-from ErisPulse import sdk
-
-# 获取 Bot 详细信息
-info = sdk.adapter.get_bot_info("myplatform", "bot123")
-# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
-
-# 列出所有 Bot（按平台分组）
-all_bots = sdk.adapter.list_bots()
-
-# 列出指定平台的 Bot
-platform_bots = sdk.adapter.list_bots("myplatform")
-
-# 检查 Bot 是否在线
-is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
-
-# 获取完整状态摘要（适合 WebUI 展示）
-summary = sdk.adapter.get_status_summary()
-# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
-```
+查询 API（`get_bot_info()` / `list_bots()` / `is_bot_online()` / `get_status_summary()`）与 Bot 生命周期事件表见 [适配器系统 API - Bot 状态管理](../../api-reference/adapter-system.md#bot-状态管理)。
 
 ## 连接管理
 
@@ -5517,7 +5646,7 @@ version = "2.0.0"  # 更新版本号
 > **什么时候需要读这篇**：适配器开发路径内必读（事件转换器）。不需要则跳过，不影响其它功能的使用。
 
 
-事件转换器 (Converter) 是适配器的核心组件之一，负责将平台原生事件转换为 ErisPulse 统一的 OneBot12 标准事件格式。
+适配器收到平台原生事件后，由事件转换器 (Converter) 把它转换为 ErisPulse 统一的 OneBot12 标准格式——平台事件怎么进框架，就由这一个类决定。
 
 ## Converter 职责
 
@@ -6300,7 +6429,7 @@ services:
 > **什么时候需要读这篇**：为自己的模块编写自动化测试时。不需要则跳过，不影响其它功能的使用。
 
 
-[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) 是官方测试工具包（RFC EPRFC-2026-001 方向三）：
+[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) 是官方测试工具包：
 提供 `TestBot`、测试事件工厂、出站消息捕获与断言面，让模块测试像写普通 pytest 一样简单。
 
 ```bash
@@ -6458,9 +6587,12 @@ trace.assert_no_match()         # 断言未命中命令
 
 # CLI 命令参考
 
-ErisPulse 命令行工具（`epsdk`）提供项目管理和包管理功能。
+> [!TIP]
+> **什么时候需要读这篇**：忘记某个 `epsdk` 命令的参数、想把组件管理写进脚本，或要控制 run / stop / restart 行为时查阅。日常只用 `init` / `install` / `run` 的话，记住一条就够：`epsdk <命令> --help` 随时可查参数说明，不需要通读本文。
 
-> **提示**：所有命令均可通过 `epsdk <命令> --help` 查看详细的参数说明。`epsdk`（不带命令）的主帮助按类别分组展示：**项目**（init / create / run）、**组件管理**（install / uninstall / upgrade / list / list-remote / types）、**配置与诊断**（config / doctor / i18n）、**其他**（self-update / version）。
+`epsdk` 是 ErisPulse 的命令行工具：初始化项目、安装 / 升级模块与适配器、交互式配置组件、运行与停止机器人、诊断环境，都在这一条命令下。
+
+> **提示**：`epsdk`（不带命令）的主帮助按类别分组展示：**项目**（init / create / run）、**组件管理**（install / uninstall / upgrade / list / list-remote / types）、**配置与诊断**（config / doctor / i18n）、**其他**（self-update / version）。
 
 ---
 
@@ -6484,6 +6616,13 @@ ErisPulse 命令行工具（`epsdk`）提供项目管理和包管理功能。
 安装 ErisPulse 模块或适配器包。若不指定包名则进入交互式安装界面。
 
 **别名：** `i`, `add`
+
+> **uv 项目联动**（2.11.1+）：在 uv 管理的项目内（存在 `uv.lock` 或 `[tool.uv]`），
+> `install` / `upgrade` / `uninstall` 自动改走 `uv add` / `uv remove`——依赖同步写入
+> `pyproject.toml` 与 `uv.lock`，`uv sync` 不再清掉 epsdk 装的组件；失败自动回退
+> uv pip / pip 通道。`--user` 等 uv 不支持的参数直接走 pip。目标环境解析顺序：
+> `ERISPULSE_PYTHON` → `UV_PROJECT_ENVIRONMENT` → 项目 `.venv` → `UV_PYTHON` →
+> `VIRTUAL_ENV` → 当前解释器（`epsdk doctor` 可查看完整决策链）。
 
 **参数：**
 
@@ -6763,7 +6902,7 @@ epsdk config MyModule
 | 参数 | 说明 |
 |------|------|
 | `[script]` | 要运行的脚本文件，不指定则运行 SDK |
-| `--reload` | 启用热重载模式，监控文件变化自动触发组件级代码热重载（联动热重载系统，无需整进程重启） |
+| `--reload` | 启用热重载模式：监控文件变化自动触发组件级代码热重载（无需整进程重启）；默认忽略 `.venv`/`.git` 等目录（可经 `ErisPulse.framework.watch_ignore_dirs` 配置），插件目录交给插件热重载 watcher 精确处理 |
 | `--strict` / `--no-strict` | 临时开启 / 关闭严格模式（仅本次生效，不写入配置）；缺省跟随 `ErisPulse.framework.strict_mode` |
 
 **示例：**
@@ -6789,6 +6928,8 @@ epsdk run main.py --no-strict
 ```
 
 **启动前自检：** `run` 启动前会快速检查 `config/config.toml` 可解析性与已安装组件的必填配置完整性，严格性默认跟随 `ErisPulse.framework.strict_mode`（非 0 时检查失败即退出，0 时仅警告继续）。配置文件缺失视为正常首次启动，仅提示不判失败。`--strict` 临时开启：预检失败即退出，同时框架严格级别本次提升为至少 1（跳过不合规组件，经 `ERISPULSE_FRAMEWORK_STRICT_MODE` 环境变量传导到运行进程，不写入配置文件）；`--no-strict` 反之临时压到宽松。自检自身异常时自动跳过，不含网络探测，不会阻塞启动。
+
+> **`--reload` 的监督结构**（2.11.1 起）：`epsdk run --reload` 以「监督进程 + 重载 worker 子进程」运行。保存 `.py` 文件触发的热重载全部在 worker 内完成（互斥串行、风暴合并）；模块侧语法错误会被整体预检拒绝，旧实例继续服务。`sdk.hard_restart()` 时 worker 以退出码 42 退出，监督进程展示原因后自动重拉全新 worker——升级框架本体后新代码即刻生效。
 
 ### stop
 
@@ -7064,12 +7205,14 @@ epsdk types --force
 - **目标解释器**：包实际安装到的目标 Python 环境
 - **配置文件**：`config/config.toml` 是否存在
 - **组件配置**：已安装组件的声明式配置完整性（"装好了跑不起来"多因必填项缺失）
+- **配置污染**（2.11.1+）：扫描历史升级遗留的残留键（旧版运行时绑定的影子状态键、游离配置节），检出即提示
 - **PyPI 连通性**：能否访问 PyPI（并显示发现的组件数）
 - **系统代理**：是否检测到代理
 
 **自动修复（`--fix`）**：
 - `config.toml` 缺失 → 按当前语言生成初始配置文件（与 `init` 建项同源）
 - 组件配置"待完善" → 逐个拉起交互式配置向导补全必填项（非交互环境提示改用 `epsdk config <名称>`）
+- 配置污染残留键 → 列明来源并经确认后删除（tomlclass 无损路径，注释与顺序保真）
 - Python 版本过低、PyPI 无法访问等需人工介入的问题 → 仅输出行动建议
 
 ```bash
@@ -7237,6 +7380,9 @@ API 参考
 ### 适配器系统 API
 
 # 适配器系统 API
+
+> [!TIP]
+> **什么时候需要读这篇**：当你需要管理适配器（获取实例、启停、查 Bot 在线状态）、用 Send DSL 发消息、注册中间件，或为适配器接入 Bot 状态上报（meta 事件）时查阅本文。不需要则跳过。
 
 本文档详细介绍了 ErisPulse 适配器系统的 API。
 
@@ -7482,131 +7628,12 @@ class MyAdapter(BaseAdapter):
 
 适配器通过发送 OneBot12 标准的 **`meta` 事件**来告知框架 Bot 的连接状态。系统自动从中提取 Bot 信息进行状态追踪。
 
-### meta 事件类型
+### meta 事件上报
 
-适配器应发送以下三种 `meta` 事件：
+适配器通过 `meta` 事件上报 Bot 状态，三种 `detail_type`：`connect`（注册上线）、`heartbeat`（心跳保活）、`disconnect`（标记离线）。推荐用 `emit_meta()` 一行发送；即使不发 meta 事件，框架也会从普通事件（message/notice/request）的 `self` 字段自动发现 Bot。
 
-| `type` | `detail_type` | 说明 | 触发时机 |
-|--------|--------------|------|---------|
-| `meta` | `connect` | Bot 连接上线 | 适配器与平台建立连接成功后 |
-| `meta` | `heartbeat` | Bot 心跳 | 定期发送（建议 30-60 秒） |
-| `meta` | `disconnect` | Bot 断开连接 | 检测到连接断开时 |
-
-### self 字段扩展
-
-ErisPulse 在 OneBot12 标准的 `self` 字段上扩展了以下可选字段：
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `self.platform` | string | 平台名称（OB12 标准） |
-| `self.user_id` | string | Bot 用户 ID（OB12 标准） |
-| `self.user_name` | string | Bot 昵称（ErisPulse 扩展） |
-| `self.avatar` | string | Bot 头像 URL（ErisPulse 扩展） |
-| `self.account_id` | string | 多账户标识（ErisPulse 扩展） |
-
-### meta 事件格式
-
-#### connect — 连接上线
-
-```python
-await adapter.emit({
-    "id": "unique_id",
-    "time": 1712345678,
-    "type": "meta",
-    "detail_type": "connect",
-    "platform": "telegram",
-    "self": {
-        "platform": "telegram",
-        "user_id": "123456",
-        "user_name": "MyBot",
-        "avatar": "https://example.com/avatar.jpg"
-    },
-    "telegram_raw": {...},
-    "telegram_raw_type": "bot_connected"
-})
-```
-
-系统处理：注册 Bot，标记为 `online`，触发 `adapter.bot.online` 生命周期事件。
-
-#### heartbeat — 心跳
-
-```python
-await adapter.emit({
-    "id": "unique_id",
-    "time": 1712345708,
-    "type": "meta",
-    "detail_type": "heartbeat",
-    "platform": "telegram",
-    "self": {
-        "platform": "telegram",
-        "user_id": "123456"
-    }
-})
-```
-
-系统处理：更新 `last_active` 时间（心跳中也支持更新元信息）。
-
-#### disconnect — 断开连接
-
-```python
-await adapter.emit({
-    "id": "unique_id",
-    "time": 1712345738,
-    "type": "meta",
-    "detail_type": "disconnect",
-    "platform": "telegram",
-    "self": {
-        "platform": "telegram",
-        "user_id": "123456"
-    }
-})
-```
-
-系统处理：标记 Bot 为 `offline`，触发 `adapter.bot.offline` 生命周期事件。
-
-### 普通事件的自动发现
-
-除了 `meta` 事件外，普通事件（`message`/`notice`/`request`）中的 `self` 字段也会自动发现并注册 Bot、更新活跃时间。这意味着即使适配器不发送 `connect` 事件，框架也能从第一条普通事件中发现 Bot。
-
-### 适配器接入示例
-
-```python
-class MyAdapter(BaseAdapter):
-    async def start(self):
-        # 与平台建立连接...
-        connection = await self._connect()
-        
-        # 连接成功，发送 connect 事件
-        await adapter.emit({
-            "id": str(uuid4()),
-            "time": int(time.time()),
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": self.bot_id,
-                "user_name": self.bot_name,
-                "avatar": self.bot_avatar
-            },
-            "myplatform_raw": raw_data,
-            "myplatform_raw_type": "connected"
-        })
-    
-    async def on_disconnect(self):
-        # 断开连接，发送 disconnect 事件
-        await adapter.emit({
-            "id": str(uuid4()),
-            "time": int(time.time()),
-            "type": "meta",
-            "detail_type": "disconnect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": self.bot_id
-            }
-        })
-```
+- **meta 事件格式与发送方式**（何时发送、`emit_meta()` 用法、手动构造格式）见 [适配器最佳实践 - Bot 状态管理与 Meta 事件](../developer-guide/adapters/best-practices.md#bot-状态管理与-meta-事件)
+- **自动发现机制与框架行为**见 [适配器核心概念 - Bot 状态管理](../developer-guide/adapters/core-concepts.md#bot-状态管理)
 
 ### 查询 Bot 状态
 
@@ -7677,11 +7704,14 @@ def on_status_change(event):
 
 # 核心模块 API
 
+> [!TIP]
+> **什么时候需要读这篇**：当你需要用存储、配置、日志、模块管理、路由、HTTP 客户端等核心能力，记不清具体方法签名时快速查阅本文。不需要则跳过。
+
 本文档提供 ErisPulse 核心模块的 API 快速参考，包含方法签名和简要说明。详细用法和示例请点击各模块的"完整文档"链接。
 
 ## Storage 模块
 
-基于 SQLite 的键值存储系统，支持通用 SQL 链式查询。
+基于可配置后端（SQLite/MySQL/PostgreSQL）的键值存储系统，支持通用 SQL 链式查询，后端通过配置一键切换，详见 [存储后端](../advanced/storage-backends.md)。
 
 ### 基本操作
 
@@ -7743,7 +7773,7 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ### 异步接口
 
-Storage 和 Config 模块均提供异步方法（前缀 `a`），可在异步处理器中安全调用。同步方法继续保留，无需修改现有代码。
+Storage 和 Config 模块均提供异步方法（前缀 `a`）：**异步为原生主接口，同步方法为兼容层**（内部桥接到后台事件循环执行）。现有同步代码无需修改；新代码在异步处理器中请优先使用异步方法。
 
 ```python
 # 异步存储
@@ -7775,13 +7805,14 @@ TOML 格式的配置文件管理，支持点号分隔的键路径。
 |------|------|
 | `getConfig(key, default)` | 读取配置，支持点号路径如 `"MyModule.subkey"` |
 | `getAllConfig()` | 全量配置快照（深拷贝，含未落盘的待写值视图） |
-| `adelConfig(key, immediate)` | 异步删除配置键 |
-| `delConfig(key, immediate=False)` | 删除配置键（区别于置空），从文件中移除；触发 `config.set` 事件（`new_value=None`） |
 | `setConfig(key, value, immediate=False)` | 写入配置。`immediate=True` 时立即保存到文件 |
+| `delConfig(key, immediate=False)` | 删除配置键（区别于置空），从文件中移除；触发 `config.set` 事件（`new_value=None`） |
 | `force_save()` | 强制将内存中的配置写入文件 |
 | `reload()` | 从文件重新加载配置 |
 | `agetConfig(key, default)` | 异步读取配置 |
+| `agetAllConfig()` | 异步获取全量配置快照 |
 | `asetConfig(key, value, immediate)` | 异步写入配置 |
+| `adelConfig(key, immediate)` | 异步删除配置键（行为同 `delConfig`） |
 | `aforce_save()` | 异步强制保存 |
 | `areload()` | 异步重新加载 |
 
@@ -7796,6 +7827,10 @@ sdk.config.delConfig("MyModule.deprecated")  # 删除键（延迟写入）
 
 sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
+
+# 异步接口（异步处理器中优先使用）
+snapshot = await sdk.config.agetAllConfig()
+await sdk.config.adelConfig("MyModule.deprecated")  # 异步删除键
 ```
 
 > `setConfig` 默认采用延迟写入（每 5 秒批量保存），设置 `immediate=True` 可立即持久化到配置文件。配置变更会触发 `config.set` 生命周期事件。
@@ -9162,8 +9197,18 @@ class MyStorage(BaseStorage):
 > [!TIP]
 > **什么时候需要读这篇**：需要订阅框架生命周期事件（启动 / 加载 / 状态变化）时。不需要则跳过，不影响其它功能的使用。
 
+> **读完你会知道**：生命周期事件的注册 / 触发 / 定向传播机制，四套触发 API 的
+> 差异与选用，以及框架预埋的全部钩子断点（core / module / adapter / server / message
+> 等）各自的数据格式。
+>
+> **本篇不涉及**：模块自身要实现的生命周期方法（`on_load` / `on_unload`，见
+> [模块开发指南](../developer-guide/modules/getting-started.md)）；启动链路各阶段的
+> 来龙去脉（见[启动流程与手动控制](startup.md)）。
 
-ErisPulse 提供统一的钩子/生命周期系统，用于监控系统各组件的运行状态，以及实现审计、统计、自定义逻辑等扩展功能。
+
+想在模块加载失败、配置被修改、消息发出、命令执行这些节点上收到通知并执行自己的
+逻辑（审计、统计、告警、联动），订阅框架生命周期事件即可——框架在每个关键节点
+预埋了钩子断点，`@sdk.lifecycle.on("事件名")` 一行接入，本文末尾附全部断点一览。
 
 系统支持三种触发方式：
 - `await lifecycle.emit("event", data)` — 精简版，传递任意数据（`to="Owner"` 时定向投递）
@@ -9420,8 +9465,10 @@ def count_commands(data):
 
 | 钩子名称 | 触发时机 | 数据 |
 |---------|---------|------|
-| `server.request` | HTTP 请求接收 | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | HTTP 响应发送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.request` | HTTP 请求接收 | `{"method": str, "path": str, "client_ip": str, "request_id": str}` |
+| `server.response` | HTTP 响应发送 | `{"method": str, "path": str, "status_code": int, "client_ip": str, "request_id": str}` |
+
+> `request_id` 即 [X-Request-ID 请求关联 ID](router.md#请求关联-idx-request-id)：优先沿用客户端请求头，否则自动生成 UUID，可用它把请求与响应两条事件串联。
 
 **示例：请求日志**
 
@@ -9535,6 +9582,15 @@ STANDARD_EVENTS = {
 | `lifecycle.emit_sync(event, data=None, *, to=None)` | 同步触发，异步处理器以 create_task 调度 |
 | `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 兼容旧版，自动构建标准事件格式；`background=True` 时走 `fire` 后台发射 |
 
+**四套触发 API 对照**：
+
+| 方法 | 调用形态 | 是否等待处理器完成 | 典型场景 |
+|------|---------|------------------|---------|
+| `emit` | `await`（异步） | **等待**——处理器并行执行，返回时全部完成，返回值链式回放 | 常规触发；顺序敏感消费（`config.set`）与关停序列必须用它 |
+| `fire` | 直接调用（同步返回） | **不等待**——后台任务并行执行，无返回值；无监听者时零开销 | 高频热路径与纯观测事件（`server.request` / `storage.ready`） |
+| `emit_sync` | 直接调用（同步） | 同步处理器立即完成；异步处理器以 `create_task` 调度（返回值无法回传） | 非异步上下文（同步代码）中触发事件 |
+| `submit_event` | `await`（异步） | 等待（`background=True` 时同 `fire` 不等待） | 兼容旧版：自动构建标准事件格式（`source` / `msg` / `timestamp`） |
+
 ### 工具
 
 | 方法 | 说明 |
@@ -9623,7 +9679,7 @@ async def _poll(self):
 > **什么时候需要读这篇**：使用懒加载模块或 activate_on 事件驱动激活时。不需要则跳过，不影响其它功能的使用。
 
 
-ErisPulse SDK 提供了强大的懒加载模块系统，允许模块在实际需要时才进行初始化，从而显著提升应用启动速度和内存效率。
+ErisPulse SDK 的懒加载模块系统让模块推迟到**实际被访问时**才初始化——启动阶段只登记占位代理，未被用到的模块不占用启动时间与内存。
 
 ## 概述
 
@@ -10511,6 +10567,11 @@ CLI 拥有**独立**的国际化模块（`ErisPulse.CLI.i18n`），与框架核�
 > [!TIP]
 > **什么时候需要读这篇**：需要控制模块可用性、事件准入或出站动作限制时。不需要则跳过，不影响其它功能的使用。
 
+> **读完你会知道**：三个作用域维度（模块可用性 / 事件准入 / 出站动作）各自的配置路径、
+> 判定优先级与拒绝行为，运行时 API 的用法，以及拦截如何可观测（`scope.blocked` 事件）。
+>
+> **本篇不涉及**：资源的归属与卸载回收（见[归属权（owner）系统](ownership.md)）；
+> 命令 ACL 与事件覆写（见[事件处理入门](../getting-started/event-handling.md)）。
 
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
@@ -10611,6 +10672,8 @@ request = { deny = true }                                 # 禁止处理请求
 
 ## ① 模块维度
 
+**一句话**：按平台 / Bot / 会话三级绑定控制"这个上下文里哪些模块可用"，被过滤模块不触发、不回复（命中的命令仍被认领阻断）。
+
 回答"某个上下文里，哪些模块可用"。默认全部开放；配置绑定后才开始过滤，
 **模块与适配器无需任何改动**。
 
@@ -10656,6 +10719,8 @@ merge = true                    # 该 Bot 实际生效 = ["Chat", "Tool", "Music
 
 ## ② 身份维度（事件准入）
 
+**一句话**：按用户 / 会话 / Bot / 适配器四级策略在分发入口完全丢弃"不该收的事件"，deny 优先于 allow。
+
 回答"谁的事件收不收"。被拒绝的事件在**分发入口完全丢弃**——
 不进入中间件与任何处理器（含框架级），仅 TRACE 级日志可见（`core.scope.identity_denied`）。
 
@@ -10672,6 +10737,8 @@ allow = ["u_admin"]   # 即使适配器级拒绝，u_admin 的事件仍然放行
 ```
 
 ## ③ 出站维度（限制模块发起出站调用）
+
+**一句话**：以方法级白黑名单约束模块发起的消息 / API / 请求调用，被拒调用不发起任何网络请求、直接返回 `retcode=34601`。
 
 约束模块**发起的出站动作**：消息发送 / 标准 API 动作 / 请求操作。
 三类动作对应底层 DSL：`Event.reply` 与 `Send`（send）、`Api` / `call_api`（api）、
@@ -10951,6 +11018,12 @@ topology = sdk.get_topology()
 > [!TIP]
 > **什么时候需要读这篇**：排查资源泄漏、理解卸载清理链路或声明归属资源时。不需要则跳过，不影响其它功能的使用。
 
+> **读完你会知道**：owner 上下文如何自动归属资源、归属资源全景表、卸载/禁用时
+> 清理链的完整时序，以及哪些资源不随卸载清理（设计边界）。
+>
+> **本篇不涉及**：资源"何时生效"的权限判定（见[作用域（scope）](scope.md)）；
+> 后台任务的推荐写法与强制取消边界（见[生命周期管理 · 后台任务归属与自动取消](lifecycle.md#后台任务归属与自动取消)）。
+
 
 归属权是模块"即插即用"的基石：模块在加载期间注册的一切框架资源自动记名，
 卸载/禁用时按记名一键回收——模块作者只需声明资源，无需手写清理逻辑。
@@ -11115,6 +11188,8 @@ ownership.orphans()                      # [{"owner": "ghost", "total": 2, ...}]
 
 ## 内部实现：归属如何工作
 
+**一句话**：归因链（contextvar 传播）决定"记在谁头上"，取消链（任务登记表）决定"卸载时能否被取消"——两条链路独立运作，资源被正确清理需二者兼备。
+
 归属系统由**两条独立链路**构成，理解它们的分工是排查归属问题的前提：
 
 ### 归因链（contextvar 传播）
@@ -11276,6 +11351,12 @@ class CronModule(BaseModule):
 > [!TIP]
 > **什么时候需要读这篇**：需要灰度发布——新版本并行试运行、行为对比与转正回滚时。不需要则跳过，不影响其它功能的使用。
 
+> **读完你会知道**：影子模块的五道隔离闸、行为 diff 的对齐方式、
+> `promote` 转正与失败回滚流程，以及框架拦不住的诚实边界。
+>
+> **本篇不涉及**：普通模块的热重载与归属清理通用机制
+> （见[归属权（owner）系统](ownership.md)）。
+
 
 影子 = 同一模块的**新版本**，以独立 owner（如 `roll_shadow`）与线上旧版
 并存试运行：它收到真实事件的**副本**、其出站被**拦截记账**而非真正发出——
@@ -11364,6 +11445,12 @@ await sdk.module.dismiss_shadow("roll")   # 或：放弃影子
 > [!TIP]
 > **什么时候需要读这篇**：需要跨模块调用（RPC）、服务契约、定向事件或冷启动回放时。不需要则跳过，不影响其它功能的使用。
 
+> **读完你会知道**：三层通信模型（RPC / 定向事件 / 广播）的选型口诀、
+> `meta.services` 服务契约与服务目录、出站审计的配置方式、懒唤醒与冷启动回放。
+>
+> **本篇不涉及**：生命周期事件系统本身的注册 / 触发 / 优先级机制
+> （见[生命周期管理](lifecycle.md)）；懒加载的配置与 activate_on 声明
+> （见[懒加载系统](lazy-loading.md)）。
 
 > [!NOTE]
 > 本章内容需要 ErisPulse **2.8.0+**。
@@ -11947,28 +12034,30 @@ SDK 提供两种重启方式，都不需要你自己先卸载——框架会自�
 
 | 方式 | 调用 | 行为 | 适用场景 |
 |------|------|------|----------|
-| 热重启 | `await sdk.restart()` | 同一进程内**组件层代码级热重载**：全部模块与适配器走统一重载管线（语法预检 / 快照回滚 / 身份核对），不再整体 `uninit()` / `init()` | pip 升级组件后让代码生效、热更新模块 |
-| 硬重启 | `await sdk.hard_restart()` | `uninit()` 后以**退出码 42** 退出进程，由外部监督者拉起全新进程 | 怀疑有内存/资源泄漏、需要彻底干净重启 |
+| 热重启 | `await sdk.restart()` | 同一进程内**组件层代码级热重载**：全部模块走统一重载管线（整体语法预检 / 快照回滚 / 身份核对），适配器先**重发现 entry-point**（运行中新装/卸载的适配器即刻生效）再逐个代码级重载 | pip 升级或安装组件后让代码生效、热更新模块 |
+| 硬重启 | `await sdk.hard_restart()` | `uninit()` 后以**退出码 42** 退出进程，由外部监督者拉起全新进程 | 框架自身升级（升级后的框架代码只有新进程生效）、C 扩展副作用、怀疑资源泄漏 |
 
 ```python
-# 热重启：组件层代码级热重载（最常用）
+# 热重启：组件层代码级热重载（最常用；pip 新装的适配器也会被拉起）
 await sdk.restart()
 
 # 硬重启：退出进程，交由外部监督者重启（见下方「监督者指南」）
-await sdk.hard_restart()
+await sdk.hard_restart("sdk self-update")  # 可选 reason 供监督者展示
 ```
 
 > **两点注意**：
 > 1. 这两个方法都用后台任务执行重启，**立即返回 `True` 表示「重启任务已调度」**，而非「重启已完成」。实际重启在后台进行，避免中断当前事件链路。
 > 2. `hard_restart()` 的原理是：卸载并刷盘配置后，以**退出码 42**（`HARD_RESTART_EXIT_CODE`）退出进程——**它自身不拉起新进程**，必须由外部监督者检测到退出码 42 后重新启动。若直接 `python main.py` 运行且无任何监督者，进程以码 42 退出后就结束了，**不会自动重启**（框架会打警告提示）。
 
+> **热重启的互斥与合并**（2.11.1 起）：所有热重载操作（单模块重载 / 全量重载 / 适配器重载 / 归眠）全程互斥——保存风暴下连续触发不会并发交叉，进行中的 restart 收到新请求时自动合并，完成后至多补跑一轮。保存含语法错误的文件时，整轮重载会在卸载前被**汇总式语法预检**拒绝（一次性列出全部错误文件与行号），所有旧实例继续服务。
+
 ### 什么时候该用硬重启？
 
-硬重启不只是"更彻底的重启"，它在以下场景比热重启更合适、甚至更高效：
+热重启已经覆盖了绝大多数场景（pip 升级/安装组件、热更新模块代码，**含运行中新装的适配器**）。以下场景才需要硬重启：
 
+- **框架自身升级**：升级 ErisPulse 本体后，新的框架代码只有全新进程才会生效（Python 不会重新 import 已加载的框架代码）。
 - **二进制库（C 扩展）副作用**：热重启在同一进程内进行，无法释放 C 扩展、打开的文件描述符、线程等进程级资源；硬重启换一个全新进程，这些副作用随之彻底清零。
 - **资源泄漏排查**：怀疑存在内存或句柄泄漏时，硬重启能拿到一个干净的环境。
-- **对性能敏感的频繁重启**：硬重启省去了同进程内卸载→重新加载的开销，实际比热重启更高效。
 
 > Dashboard 管理面板里的「框架重启」功能，底层调用的就是 `hard_restart()`。
 
@@ -11978,8 +12067,8 @@ await sdk.hard_restart()
 
 | 角色 | 行为 |
 |------|------|
-| SDK（被硬重启时） | `uninit()` → 刷盘配置 → `os._exit(42)` |
-| 监督者 | 检测到子进程退出码为 42 → 重新启动同一命令 |
+| SDK（被硬重启时） | `uninit()` → 刷盘配置 → 写入硬重启标记（原因 / PID，供监督者展示）→ `os._exit(42)` |
+| 监督者 | 检测到子进程退出码为 42 → 展示硬重启原因 → 重新启动同一命令 |
 
 > `sdk.is_supervised()` 可查询当前进程是否由监督者启动（检测环境变量 `ERISPULSE_SUPERVISED`）。CLI `run` 命令启动子进程时会自动注入该标记；systemd / Docker 等外部监督者不会注入，`is_supervised()` 返回 `False`，此时硬重启后框架会打「未检测到监督者」警告。
 
@@ -11989,11 +12078,13 @@ await sdk.hard_restart()
 
 #### 1. CLI run 命令（开发/简单部署，推荐）
 
-`epsdk run main.py` 内置监督循环：检测子进程退出码，42 时立即重启；其它异常退出码按指数退避自动重试；`Ctrl+C` 会先优雅终止子进程（码 0 视为正常退出，不再拉起）。
+`epsdk run main.py` 内置监督循环：检测子进程退出码，42 时立即重启（并展示硬重启原因）；其它异常退出码按指数退避自动重试；`Ctrl+C` 会先优雅终止子进程（码 0 视为正常退出，不再拉起）。
 
 ```bash
 epsdk run main.py
 ```
+
+`epsdk run --reload`（开发热重载模式，2.11.1 起）同样走「监督进程 + 重载 worker 子进程」结构：worker 内保存 `.py` 文件即触发**组件级热重载**（不整框架重启）；硬重启由监督进程重拉全新 worker，升级框架后新代码即刻生效。
 
 #### 2. systemd（Linux 服务器）
 
@@ -12065,6 +12156,9 @@ while True:
 
 # ErisPulse 会话类型标准
 
+> [!TIP]
+> **什么时候需要读这篇**：当你在适配器中把平台原生会话映射到标准类型（private/group/channel/guild/thread），或在模块中不确定 `Send.To()` 该传什么目标类型、想搞清 `event.reply()` 的自动转换时对照本文。不需要则跳过。
+
 本文档定义了 ErisPulse 支持的会话类型标准，包括接收事件类型和发送目标类型。
 
 ## 1. 核心概念
@@ -12090,9 +12184,10 @@ user                    →        user
 ```
 
 **关键点**：
-- `private` 是接收时的类型，发送时必须使用 `user`
+- `private` 是接收时的类型，发送时的标准类型是 `user`
 - `group`、`channel`、`guild`、`thread` 在接收和发送时类型相同
-- 系统会自动进行类型转换，无需手动处理(代表着你可以直接使用获得的接收类型进行发送)，但实际上，你无需考虑这些，Event的包装类的存在，你可以直接使用event.reply()方法，而无需考虑类型转换
+- **推荐路径**：直接使用 `event.reply()`——自动完成类型转换与目标推断，无需手动处理（`private` → `user` 的自动转换即在此发生）
+- **手动发送时**：请直接传发送类型（如 `Send.To("user", ...)`）；手动 `Send.To("private", ...)` 传接收类型虽也能被自动转换，但不推荐（见 §6.1）
 
 ## 2. 标准会话类型
 
@@ -12277,9 +12372,10 @@ await adapter.myplatform.Send.To("user", "123").Text("Hello")
 # 发送给群组
 await adapter.myplatform.Send.To("group", "456").Text("Hello")
 
-# 自动转换 private → user（不推荐，可能会有兼容性问题）
+# 自动转换 private → user：手动传接收类型属不推荐写法（可能有兼容性问题）
 await adapter.myplatform.Send.To("private", "789").Text("Hello")
-# 内部自动转换为: Send.To("user", "789") # 直接使用user作为会话类型是更优的选择
+# 内部自动转换为: Send.To("user", "789")
+# 推荐做法：手动发送时直接用发送类型 user，或用 event.reply() 自动完成转换（见 6.2）
 ```
 
 ### 6.2 事件回复
@@ -12287,9 +12383,9 @@ await adapter.myplatform.Send.To("private", "789").Text("Hello")
 ```python
 from ErisPulse.Core.Event import Event
 
-# Event.reply() 自动处理类型转换
+# Event.reply() 自动处理类型转换（推荐路径）
 await event.reply("回复内容")
-# 内部自动使用正确的发送类型
+# 内部自动使用正确的发送类型（private → user 等转换在此自动完成）
 ```
 
 ### 6.3 命令处理
@@ -12424,15 +12520,22 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
 
 ## 11. 相关文档
 
+**适配器侧（映射与转换）**：
 - [事件转换标准](event-conversion.md) - 完整的事件转换规范
 - [发送方法规范](send-method-spec.md) - Send 类的方法命名和参数规范
 - [适配器开发指南](../developer-guide/adapters/) - 适配器开发完整指南
+
+**模块侧（不想手动处理类型转换）**：
+- 用 `event.reply()` 即可自动完成类型转换与目标推断，详见 [Event 包装类详解](../developer-guide/modules/event-wrapper.md)
 
 
 
 ### 事件转换标准
 
 # 适配器标准化转换规范
+
+> [!TIP]
+> **什么时候需要读这篇**：当你在适配器中把平台原生事件转换为 OneBot12 标准事件——确认必须字段、消息段结构、扩展字段命名（`{platform}_` 前缀）、会话类型推断时对照本文。不需要则跳过。
 
 ## 1. 核心原则
 1. 严格兼容：所有标准字段必须完全遵循OneBot12规范
@@ -13004,17 +13107,25 @@ async def handle_welcome(event):
 
 ## 10. 相关文档
 
-- [各平台特性文档](../platform-guide/README.md) - 你可以访问此文档来了解各个平台特性以及已知的扩展事件和消息段等。
+**实现转换器时配套对照**：
 - [会话类型标准](session-types.md) - 会话类型定义和映射关系
-- [发送方法规范](send-method-spec.md) - Send 类的方法命名、参数规范及反向转换要求
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
+
+**同一适配器的发送侧**：
+- [发送方法规范](send-method-spec.md) - Send 类的方法命名、参数规范及反向转换要求
 - [API 动作标准](api-action-spec.md) - OneBot12 标准 API 动作的统一接口
+
+**查各平台已知的扩展事件与消息段**：
+- [各平台特性文档](../platform-guide/README.md) - 你可以访问此文档来了解各个平台特性以及已知的扩展事件和消息段等。
 
 
 
 ### API 响应标准
 
 # ErisPulse 适配器标准化返回规范
+
+> [!TIP]
+> **什么时候需要读这篇**：当你在适配器中实现 `call_api` / Send / Request 的返回值，需要确认响应结构与返回码是否符合 ErisPulse 标准，或排查某个 `retcode` 的含义时对照本文。不需要则跳过。
 
 ## 1. 说明
 为什么会有这个规范？
@@ -13202,11 +13313,16 @@ ErisPulse 框架当前使用的 `346xx` 码：
 - **`34600` / `34601` 为 ErisPulse 框架保留码**（见 §5.3），适配器/模块避免使用
 - 错误信息应当简洁明了，便于调试
 
+---
+
 
 
 ### 发送方法规范
 
 # ErisPulse 发送方法规范
+
+> [!TIP]
+> **什么时候需要读这篇**：当你在适配器中实现 Send 类——方法命名、媒体参数（URL/路径/bytes）的形态支持、`Raw_ob12` 反向转换、合并转发能力时对照本文。不需要则跳过。
 
 本文档定义了 ErisPulse 适配器中 Send 类发送方法的命名规范、参数规范和反向转换要求。
 
@@ -13272,7 +13388,7 @@ ErisPulse 框架当前使用的 `346xx` 码：
 
 **注意**：这些方法**不是**基类提供的默认方法，也不强制要求实现。它们仅作为命名约定，适配器可根据需要自行定义。如果适配器不支持这些格式，则无需定义。
 
-**消息构建器（MessageBuilder）**：ErisPulse 提供了 `MessageBuilder` 工具类，用于方便地构建 OneBot12 消息段列表，配合 `Raw_ob12` 使用。详见 [消息构建器](#11-消息构建器-messagebuilder) 章节。
+**消息构建器（MessageBuilder）**：ErisPulse 提供了 `MessageBuilder` 工具类，用于方便地构建 OneBot12 消息段列表，配合 `Raw_ob12` 使用。详见 [MessageBuilder 详解](../advanced/message-builder.md)。
 
 ## 2. 参数规范详解
 
@@ -13764,99 +13880,27 @@ info = adapter.send_info("myplatform", "Form")
 
 ---
 
-## 11. 消息构建器（MessageBuilder）
+## 11. 消息构建器（MessageBuilder）——适配器侧须知
 
-`MessageBuilder` 是 ErisPulse 提供的消息段构建工具，配合 `Raw_ob12` 使用，简化 OneBot12 消息段的构建过程。
+`MessageBuilder` 是 ErisPulse 提供的 OneBot12 消息段构建工具，供**模块侧**构建消息：
+链式调用（或静态快速构建）最终产出标准消息段列表 `[{"type": ..., "data": ...}]`，
+由调用方直接传给 `Raw_ob12`。
 
-### 11.1 导入
+**适配器侧只需知道这一点**：`Raw_ob12` 接收到的就是这份产物——与手写的消息段列表
+完全同构，按 §6.2 的段分发逻辑处理即可，无需感知它来自 MessageBuilder 还是字面量。
 
-```python
-from ErisPulse.Core import MessageBuilder
-# 或
-from ErisPulse.Core.Event import MessageBuilder
-```
-
-### 11.2 链式调用构建
-
-```python
-# 构建包含文本、图片、@用户的消息
-segments = (
-    MessageBuilder()
-    .mention("123456")
-    .text("你好，看看这张图")
-    .image("https://example.com/img.jpg")
-    .reply("msg_789")
-    .build()
-)
-
-# 发送
-await adapter.Send.To("group", "456").Raw_ob12(segments)
-```
-
-### 11.3 快速构建单段
-
-```python
-# 快速构建单个消息段（返回 list[dict]，可直接传给 Raw_ob12）
-await adapter.Send.To("user", "123").Raw_ob12(MessageBuilder.text("Hello"))
-await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.image("https://..."))
-await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.mention("123"))
-await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.reply("msg_id"))
-await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.at_all())
-```
-
-### 11.4 配合 Event.reply_ob12 使用
-
-```python
-from ErisPulse.Core import MessageBuilder
-
-@message()
-async def handle(event: Event):
-    await event.reply_ob12(
-        MessageBuilder()
-        .mention(event.get_user_id())
-        .text("收到你的消息")
-        .build()
-    )
-```
-
-### 11.5 支持的消息段方法
-
-| 方法 | 说明 | data 字段 |
-|------|------|----------|
-| `text(text)` | 文本 | `text` |
-| `image(file)` | 图片 | `file` |
-| `audio(file)` | 音频 | `file` |
-| `video(file)` | 视频 | `file` |
-| `file(file, filename=None)` | 文件 | `file`, `filename`(可选) |
-| `mention(user_id, user_name=None)` | @用户 | `user_id`, `user_name`(可选) |
-| `at(user_id, user_name=None)` | @用户（`mention` 的别名） | 同 `mention` |
-| `reply(message_id)` | 回复 | `message_id` |
-| `at_all()` | @全体成员 | `{}` |
-| `custom(type, data)` | 自定义/平台扩展 | 自定义 |
-
-### 11.6 工具方法
-
-```python
-builder = MessageBuilder().text("基础内容")
-
-# 复制（深拷贝）
-msg1 = builder.copy().image("img1").build()
-msg2 = builder.copy().image("img2").build()
-
-# 清空
-builder.clear().text("新内容").build()
-
-# 判断是否为空
-if builder:
-    print(f"包含 {len(builder)} 个消息段")
-```
+> 完整用法（双模式机制、全部消息段方法、`copy()` / `clear()` 工具方法与示例）见
+> [MessageBuilder 详解](../advanced/message-builder.md)，本篇不再重复。
 
 ---
 
 ## 12. 相关文档
 
-- [事件转换标准](event-conversion.md) - 完整的事件转换规范、扩展命名和消息段标准
+**实现发送返回值时配套对照**：
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
+
+**同一适配器的其它侧**：
+- [事件转换标准](event-conversion.md) - 完整的事件转换规范、扩展命名和消息段标准
 - [会话类型标准](session-types.md) - 会话类型定义和映射关系
 - [请求操作规范](request-action-spec.md) - 请求事件字段要求、HandleRequest DSL 及适配器实现要求
 
@@ -13865,6 +13909,9 @@ if builder:
 ### 请求操作规范
 
 # ErisPulse 请求操作规范
+
+> [!TIP]
+> **什么时候需要读这篇**：当你的适配器需要处理好友请求/群邀请（转换请求事件、实现 `accept`/`reject`），或模块中要用 `event.approve()` / `event.reject()` 审批请求时对照本文。不需要则跳过。
 
 本文档定义了 ErisPulse 适配器中请求事件操作的标准化规范，包括请求事件的字段要求、Request DSL 的使用方式和适配器实现要求。
 
@@ -14237,8 +14284,11 @@ BaseAdapter
 
 ## 8. 相关文档
 
-- [事件转换标准](event-conversion.md) - 完整的事件转换规范
-- [API 响应标准](api-response.md) - 适配器 API 响应格式标准
+**实现请求操作时配套对照**：
+- [事件转换标准](event-conversion.md) - 完整的事件转换规范（含 `request_id` 字段要求）
+- [API 响应标准](api-response.md) - 适配器 API 响应格式标准（操作返回值与错误码）
+
+**同一适配器的其它 DSL**：
 - [发送方法规范](send-method-spec.md) - Send 类的方法命名和参数规范
 - [会话类型标准](session-types.md) - 会话类型定义和映射关系
 
@@ -14247,6 +14297,9 @@ BaseAdapter
 ### API 动作标准
 
 # ErisPulse API 动作标准
+
+> [!TIP]
+> **什么时候需要读这篇**：当你在适配器中实现 Api DSL 标准动作（get_user_info / delete_message 等），或在模块中跨平台调用这些标准动作、需要确认参数与 data 字段时对照本文。不需要则跳过。
 
 本文档定义 ErisPulse 适配器中 **OneBot12 标准 API 动作**的统一接口规范，使模块开发者可以面向标准接口编程，由适配器负责映射到平台原生 API。
 
@@ -14499,7 +14552,8 @@ class MyAdapter(BaseAdapter):
             # 映射到平台原生 API
             raw = await self._adapter._request("GET", f"/users/{user_id}")
             if raw.get("code") != 0:
-                return self._adapter.make_error(retcode=34600, message="用户不存在")
+                # 平台侧错误：用 341xx～345xx 段自定义低三位（346xx 为框架保留，勿占用）
+                return self._adapter.make_error(retcode=34400, message="用户不存在")
 
             user = raw["data"]
             return self._adapter.make_response(
@@ -14589,9 +14643,14 @@ if result["retcode"] == 10002:
 
 ## 9. 相关文档
 
+**实现 Api DSL 返回值时配套对照**：
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
+
+**同一适配器的其它 DSL**：
 - [发送方法规范](send-method-spec.md) - Send 类的方法命名和参数规范
 - [请求操作规范](request-action-spec.md) - Request DSL 的使用方式
+
+**事件侧配套**：
 - [事件转换标准](event-conversion.md) - 事件格式和消息段标准
 
 
@@ -14604,6 +14663,9 @@ if result["retcode"] == 10002:
 ### ErisPulse-App 安装与使用
 
 # ErisPulse-App
+
+> [!TIP]
+> **什么时候需要读这篇**：当你想在手机或电脑上用图形界面创建、运行、管理机器人实例——不碰终端、不单独装 Python 环境时读这篇。不需要则跳过。
 
 [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) 是 ErisDev 直接维护的 **官方多端客户端**（Android / Windows / Linux / macOS 均已发布），
 提供完全原生的图形化管理界面：在手机或电脑上创建、运行、管理多个机器人实例，
@@ -14707,6 +14769,9 @@ if result["retcode"] == 10002:
 ### Dashboard 使用与视窗注册
 
 # ErisPulse-Dashboard
+
+> [!TIP]
+> **什么时候需要读这篇**：当你想用网页可视化管理机器人（启停模块、编辑配置、看日志、监控事件流），或想为自己的模块注册一个 Dashboard 管理页面时读这篇。不需要则跳过。
 
 [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) 是ErisDev直接维护的 **Web 管理面板模块**，为 ErisPulse 提供可视化的运行时管理界面：模块启停、配置编辑、日志查看、事件流监控等。
 
@@ -15041,11 +15106,16 @@ async def on_unload(self, event):
 6. **JS 函数命名** — `js_content` 中的函数名应具有唯一性（如 `loadWeatherView`），避免与其他模块冲突
 7. **动态更新** — 模块注册/注销视窗后，Dashboard 前端会通过 WebSocket 实时更新侧边栏，无需刷新页面
 
+---
+
 
 
 ### Cron 定时任务
 
 # ErisPulse-Cron
+
+> [!TIP]
+> **什么时候需要读这篇**：当你的模块需要定时/延时触发逻辑（定时提醒、周期监控、Cron 表达式调度），且希望任务在框架重启后不丢失时读这篇。不需要则跳过。
 
 [ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) 是 ErisPulse 生态的**定时任务调度模块**，为其他模块提供统一的定时任务 API：支持一次性定时、间隔循环、Cron 表达式三种任务类型，回调传参，SQLite 持久化（重启不丢任务）。
 
@@ -15162,6 +15232,9 @@ Cron 的任务数据是**持久化资产**：任务创建方模块被卸载或�
 ### Takumi 图片渲染
 
 # ErisPulse-Takumi
+
+> [!TIP]
+> **什么时候需要读这篇**：当你需要把 HTML / 节点树 / Jinja 模板渲染成图片发到聊天平台（统计卡片、排行榜、图文长文）时读这篇。不需要则跳过。
 
 [ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) 是 ccd2s 维护的 **第三方图片渲染模块**，基于 [takumi-py](https://github.com/BalconyJH/takumi-py)，让 Bot 能够将 HTML、节点树、Jinja 模板、SVG、动画渲染为图片。模块 **内置中英文字体**（Noto Sans SC / Roboto / Source Code Pro），无需额外配置。
 

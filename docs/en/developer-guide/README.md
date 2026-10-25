@@ -9,7 +9,7 @@ Here you'll find your development path: **Module Development** allows you to ext
 
 ### Module Development
 
-1. [Module Development Getting Started](modules/getting-started.md) - Create your first module
+1. [Getting Started with Module Development](modules/getting-started.md) - Create your first module
 2. [Module Core Concepts](modules/core-concepts.md) - Core concepts and architecture of modules
 3. [Event Wrapper Class in Detail](modules/event-wrapper.md) - A complete description of the Event object
 4. [Module Best Practices](modules/best-practices.md) - Recommendations for developing high-quality modules
@@ -17,10 +17,10 @@ Here you'll find your development path: **Module Development** allows you to ext
 
 ### Adapter Development
 
-1. [Adapter Development Getting Started](adapters/getting-started.md) - Create your first adapter
-2. [Adapter Core Concepts](adapters/core-concepts.md) - Core concepts of adapters (including the two ways to write start() and the PollingAdapter / WebhookAdapter connection mode base classes)
-3. [SendDSL in Detail](adapters/send-dsl.md) - A complete description of the Send message-sending DSL
-4. [Event Converter](adapters/converter.md) - Implement event converters
+1. [Getting Started with Adapter Development](adapters/getting-started.md) - Create your first adapter
+2. [Adapter Core Concepts](adapters/core-concepts.md) - Core concepts of adapters (including two ways to write start() and the PollingAdapter / WebhookAdapter connection pattern base classes)
+3. [SendDSL in Detail](adapters/send-dsl.md) - A complete description of the Send message DSL
+4. [Event Converter](adapters/converter.md) - Implementing event converters
 5. [Adapter Best Practices](adapters/best-practices.md) - Recommendations for developing high-quality adapters
 
 ### Testing and Troubleshooting

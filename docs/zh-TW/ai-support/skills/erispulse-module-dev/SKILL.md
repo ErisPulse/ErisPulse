@@ -1,6 +1,6 @@
 ---
 name: erispulse-module-dev
-description: "适用于：要开发 ErisPulse 模块（业务逻辑载体）：命令、事件、多轮对话、ORM。覆盖场景：跟著這篇走完，你會得到一個能響應 `/hello` 命令的可執行模組，並了解模組的專案結構、註冊方式與載入 / 卸載鉤子——後續所有模組文件都建立在這套骨架上。這篇講清模組從載入到卸載的完整生命週期、宣告式配置與儲存的用法——哪些事框架自動替你做、你只需要寫什麼，看完就有數。處理器中的 `event` 參數之所以能直接使用 `.get_text()` / `.reply()` / `.wait_reply()`，靠的就是 Event 包裝類。本篇是它的完整方法清單——寫事件處理器時按需查閱，方法簽名與行為都以這裡為準。**何時需要閱讀本文**：寫完第一個模組後建議閱讀（工程化最佳實踐）。若不需要則可跳過，這不會影響其他功能的使用。**什麼時候需要閱讀這篇**：需要數據模型、自動建表或關係映射時。不需要則跳過，不會影響其他功能的使用。**何時需要閱讀本文**：當需要多輪對話狀態機與檢查點恢復時。若不需要則可跳過，這不會影響其他功能的使用。**何時需要閱讀本文**：需要使用 `wait_reply`、多輪對話、定時提醒、會話互斥或鏈路追蹤時。若不需要則可跳過，這不會影響其他功能的使用。"
+description: "适用于：要开发 ErisPulse 模块（业务逻辑载体）：命令、事件、多轮对话、ORM。覆盖场景：跟著這篇走完，你會得到一個能響應 `/hello` 命令的可執行模組，並了解模組的專案結構、註冊方式與載入 / 卸載鉤子——後續所有模組文件都建立在這套骨架上。這篇講清模組從載入到卸載的完整生命週期、宣告式配置與儲存的用法——哪些事框架自動替你做、你只需要寫什麼，看完就有數。處理器裡的 `event` 參數之所以能直接 `.get_text()` / `.reply()` / `.wait_reply()`，靠的就是 Event 包裝類別。本篇是它的完整方法清單——寫事件處理器時按需查閱，方法簽名與行為都以這裡為準。**何時需要閱讀本文**：寫完第一個模組後建議閱讀（工程化最佳實踐）。若不需要則可跳過，這不會影響其他功能的使用。**什麼時候需要閱讀這篇**：需要數據模型、自動建表或關係映射時。不需要則跳過，不會影響其他功能的使用。**何時需要閱讀本文**：當需要多輪對話狀態機與檢查點恢復時。若不需要則可跳過，這不會影響其他功能的使用。**何時需要閱讀本文**：需要使用 `wait_reply`、多輪對話、定時提醒、會話互斥或鏈路追蹤時。若不需要則可跳過，這不會影響其他功能的使用。"
 ---
 
 # ErisPulse 模块开发
@@ -229,7 +229,7 @@ sdk.lifecycle  # 生命週期系統
 
 > 来源: `docs/zh-TW/developer-guide/modules/core-concepts.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/zh-TW/developer-guide/modules/core-concepts.md）
 
-# 模塊核心概念
+# 模組核心概念
 
 > [!NOTE]
 > **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
@@ -249,7 +249,7 @@ class MyModule(BaseModule):
     def get_load_strategy():
         """返回模組加載策略"""
         return ModuleLoadStrategy(
-            lazy_load=True,   # 懶加載還是立即加載
+            lazy_load=True,   # 慢加載還是立即加載
             priority=0,       # 加載優先級（數值越大越先加載）
             depends=["OtherModule"]  # 可選：宣告依賴的其他模組
         )
@@ -264,7 +264,7 @@ class MyModule(BaseModule):
 
 ### on_load 方法
 
-模組加載時調用，用於初始化資源和註冊事件處理器：
+模組加載時呼叫，用於初始化資源和註冊事件處理器：
 
 ```python
 async def on_load(self, event):
@@ -279,7 +279,7 @@ async def on_load(self, event):
 
 ### on_unload 方法
 
-模組卸載時調用，用於清理資源：
+模組卸載時呼叫，用於清理資源：
 
 ```python
 async def on_unload(self, event):
@@ -298,8 +298,8 @@ async def on_unload(self, event):
 > 本鈎子需要 ErisPulse **2.11.0+**。
 
 卸載流程**第一步**（先於 `on_unload` 與資源回收）觸發的可選鈎子——此時模組的一切
-資源仍然完好，適合在卸載 / 歸眠 / 重載前把狀態保存到 `sdk.storage`，下次 `on_load`
-恢復（懶加載休眠的狀態接續即基於此）：
+資源仍然完好，適合在卸載 / 归眠 / 重載前把狀態保存到 `sdk.storage`，下次 `on_load`
+恢復（慢加載休眠的狀態接續即基於此）：
 
 ```python
 async def on_before_unload(self, event):
@@ -308,8 +308,8 @@ async def on_before_unload(self, event):
         await self.sdk.storage.aset(f"{self._module_name}:state", self.collect_state())
 ```
 
-鈎子失敗僅告警，不阻塞卸載流程；未宣告該鈎子的模組行為不變。歸眠 / 喚醒語義詳見
-[懶加載休眠](../../advanced/lazy-loading.md#懶加載休眠dormant_after)。
+鈎子失敗僅告警，不阻塞卸載流程；未宣告該鈎子的模組行為不變。归眠 / 喚醒語義詳見
+[慢加載休眠](../../advanced/lazy-loading.md#慢加載休眠dormant_after)。
 
 ### 卸載與徹底卸載（purge）
 
@@ -359,7 +359,7 @@ flowchart TD
         U2 --> U3["清理 i18n 翻譯鍵"]
         U3 --> U4["移除路由 / 命令 / 事件處理器（按 owner）"]
         U4 --> U5["清理 lifecycle 鈎子（按 owner）"]
-        U5 --> U6["移除 SDK 屬性 + 懶加載代理"]
+        U5 --> U6["移除 SDK 屬性 + 慢加載代理"]
         U6 --> U7["emit module.unload"]
     end
 
@@ -374,9 +374,9 @@ flowchart TD
 | 配置範本 | 宣告了 `ConfigClass` 的模組，框架自动生成/填充 `ErisPulse.<ModuleName>` 配置段 |
 | i18n 翻譯鍵 | 宣告了 `I18nClass` 的模組，翻譯鍵自動註冊（卸載時自動註銷） |
 | 依賴拓撲 | 按 `depends` 宣告排序，確保被依賴模組先加載；循環依賴以 `RuntimeError` 拒絕 |
-| SDK 掛載 | 實例化後掛到 `sdk.<ModuleName>`，你才能 `sdk.MyModule.xxx` 訪問 |
+| SDK 挂載 | 實例化後掛到 `sdk.<ModuleName>`，你才能 `sdk.MyModule.xxx` 訪問 |
 
-**卸載時框架幫你清理的**（對應上面的 U1→U7）：`on_unload` 跑完後再兜底清理——後台任務強制取消（`self.spawn` 建立的，優雅收尾請在 `on_unload` 自行做）、i18n 鍵、路由、命令/事件處理器、lifecycle 鈎子，最後移除 SDK 屬性。`purge=True` 預外刪除註冊存根 + 清理 `sys.modules`。
+**卸載時框架幫你清理的**（對應上面的 U1→U7）：`on_unload` 跑完後再兜底清理——後台任務強制取消（`self.spawn` 建立的，優雅收尾請在 `on_unload` 自行做）、i18n 鍵、路由、命令/事件處理器、lifecycle 鈎子，最後移除 SDK 屬性。`purge=True` 頂外刪除註冊存根 + 清理 `sys.modules`。
 
 > 這些自動清理就是「你只需寫 `on_load`/`on_unload`，不用手動 unregister」的底氣——框架用 owner 歸屬把「誰註冊的誰清理」做成了一鍵式。
 
@@ -401,7 +401,7 @@ other_module = sdk.OtherModule
 result = await other_module.some_method()
 ```
 
-## 適配器發送方法查詢
+## 适配器发送方法查询
 
 由於新的標準規範要求使用重寫 `__getattr__` 方法來實現兜底發送機制，導致無法使用 `hasattr` 方法來檢查方法是否存在。從 `2.3.5` 開始，新增了查詢發送方法的功能。
 
@@ -425,7 +425,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
 #     ],
 #     "return_type": "Awaitable[Any]",
-#     "docstring": "發送文本訊息..."
+#     "docstring": "發送文字訊息..."
 # }
 ```
 
@@ -433,7 +433,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 
 ### 宣告式配置（推薦）
 
-從 v2.5.2 起，模組可透過 `ConfigClass` 宣告配置類，與適配器使用同一套配置 Schema 系統。配置透過 `self.cfg` 實時讀取，修改後立即生效：
+從 v2.5.2 起，模組可透過 `ConfigClass` 宣告配置類，與适配器使用同一套配置 Schema 系統。配置透過 `self.cfg` 實時讀取，修改後立即生效：
 
 ```python
 from dataclasses import dataclass, field
@@ -478,14 +478,14 @@ class MyModule(BaseModule):
         timeout = cfg.timeout
 ```
 
-`BaseConfig` 是通用配置基類，適用於適配器、模組、外部專案等任何場景。配置欄位支援 i18n 多語言描述（詳見 [i18n 文件](../../advanced/i18n.md#配置欄位多語言)）。
+`BaseConfig` 是通用配置基類，適用於适配器、模組、外部項目等任何場景。配置欄位支援 i18n 多語言描述（詳見 [i18n 文件](../../advanced/i18n.md#配置欄位多語言)）。
 
 > [!NOTE]
-> 模組（含適配器）的加載、卸載、啟停等生命週期由框架統一管理（`module manager` / `scope` 提供查詢與控制 API）。`ConfigClass` 只應承載業務參數，模組無需在內部再次嵌套判斷"自己要不要啟動"的邏輯。
+> 模組（含适配器）的加載、卸載、啟停等生命週期由框架統一管理（`module manager` / `scope` 提供查詢與控制 API）。`ConfigClass` 只應承載業務參數，模組無需在內部再次嵌套判斷"自己要不要啟動"的邏輯。
 
-配置 Schema 系統還支援（v2.8.0+，詳見 [適配器 core-concepts](../adapters/core-concepts.md#metadata-約定)）：
+配置 Schema 系統還支援（v2.8.0+，詳見 [适配器 core-concepts](../adapters/core-concepts.md#metadata-約定)）：
 
-- **docstring 自動生成欄位描述**：未宣告 metadata `description` 時，自動從 docstring 的 `:ivar 欄位: 說明` 或 `Attributes:` 段提取兜底
+- **docstring 自动生成欄位描述**：未宣告 metadata `description` 時，自動從 docstring 的 `:ivar 欄位: 說明` 或 `Attributes:` 段提取兜底
 - **嵌套 dataclass 配置**：欄位類型為嵌套 dataclass 時，schema/範本/校驗遞迴處理，WebUI 渲染為嵌套分組
 - **`example` 不落盤欄位**：`metadata={"example": True}` 的欄位不寫入 config.toml，僅記錄在 `config.full.example`（適合冗雜又很少觸碰的高級配置項），使用者手動設定後正常持久化
 
@@ -501,7 +501,7 @@ class MyModule(BaseModule):
     @dataclass
     class ConfigClass(BaseConfig):
         welcome_msg: str = field(
-            default="歡迎",
+            default="Welcome",
             metadata={
                 "description": {"i18n": "mymodule.welcome_msg", "default": "歡迎訊息"},
             },
@@ -528,7 +528,7 @@ class MyModule(BaseModule):
         )
 ```
 
-詳情見 [i18n 推薦寫法](../../advanced/i18n.md#推薦寫法通過-i18nclass-宣告翻譯鍵-v270)。
+詳情見 [i18n 推薦寫法透過 -I18nClass- 宣告翻譯鍵-v270](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
 
 ### 手動讀取配置（已廢棄）
 
@@ -569,7 +569,7 @@ sdk.storage.delete("user:123")
 with sdk.storage.transaction():
     sdk.storage.set("key1", "value1")
     sdk.storage.set("key2", "value2")
-    # 如果任何操作失敗，所有更改都會回滾
+    # 如果任何操作失敗，所有更改都會回饋
 ```
 
 ## 事件處理
@@ -594,12 +594,12 @@ async def group_handler(event):
 
 框架會自動管理事件處理器的註冊和註銷，你只需要在 `on_load` 中註冊即可。
 
-## 懶加載機制
+## 慢加載機制
 
 ### 工作原理
 
 ```python
-# 模組首次被訪問時才會初始化
+# 模組首次被存取時才會初始化
 result = await sdk.my_module.some_method()
 # ↑ 這裡會觸發模組初始化
 ```
@@ -637,8 +637,8 @@ async def handle_event(self, event):
 ### 日誌記錄
 
 ```python
-# 使用不同的日誌級別
-self.logger.debug("調試資訊")    # 詳細調試資訊
+# 使用不同的日誌等級
+self.logger.debug("除錯資訊")    # 詳細除錯資訊
 self.logger.info("運行狀態")      # 正常運行資訊
 self.logger.warning("警告資訊")  # 警告資訊
 self.logger.error("錯誤資訊")    # 錯誤資訊
@@ -660,16 +660,17 @@ self.logger.critical("致命錯誤") # 致命錯誤
 
 > 来源: `docs/zh-TW/developer-guide/modules/event-wrapper.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/zh-TW/developer-guide/modules/event-wrapper.md）
 
-# Event 包裝類詳解
+# Event 包裝類別詳解
 
 > [!NOTE]
 > **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
 
-處理器中的 `event` 參數之所以能直接使用 `.get_text()` / `.reply()` / `.wait_reply()`，靠的就是 Event 包裝類。本篇是它的完整方法清單——寫事件處理器時按需查閱，方法簽名與行為都以這裡為準。
+
+處理器裡的 `event` 參數之所以能直接 `.get_text()` / `.reply()` / `.wait_reply()`，靠的就是 Event 包裝類別。本篇是它的完整方法清單——寫事件處理器時按需查閱，方法簽名與行為都以這裡為準。
 
 ## 為 event 參數添加類型註解
 
-事件處理器的 `event` 參數是 **Event 包裝類**（dict 子類）。強烈建議為它添加類型註解：
+事件處理器的 `event` 參數是 **Event 包裝類別**（dict 子類別）。強烈建議為它添加類型註解：
 
 ```python
 from ErisPulse.Core.Event import Event
@@ -680,9 +681,9 @@ async def handler(event: Event):
     await event.reply(text)   # 拼寫錯誤在靜態檢查時即可發現
 ```
 
-不加註解時 IDE 無法識別 Event 上的方法（`get_text()` / `reply()` / `wait_reply()` / 平台擴展方法均不提示），只能靠記憶拼寫。
+不加註解時 IDE 無法識別 Event 上的方法（`get_text()` / `reply()` / `wait_reply()` / 平台擴充方法均不提示），只能靠記憶拼寫。
 
-> **注意區分**：事件處理器回調的 `event` 是 **Event 包裝類**（註解為 `Event`）；模組生命週期方法 `on_load` / `on_unload` 的 `event` 是普通 **dict**（註解為 `dict`），二者不要混淆。
+> **注意區分**：事件處理器回呼的 `event` 是 **Event 包裝類別**（註解為 `Event`）；模組生命週期方法 `on_load` / `on_unload` 的 `event` 是普通 **dict**（註解為 `dict`），二者不要混淆。
 
 ## 核心特性
 
@@ -691,7 +692,7 @@ async def handler(event: Event):
 - **點式存取**：支援使用點號存取事件欄位
 - **向後相容**：所有方法都是可選的
 
-## 核心字段方法
+## 核心欄位方法
 
 ```python
 from ErisPulse.Core.Event import command
@@ -704,7 +705,7 @@ async def info_command(event: Event):
     print(f"ID: {event_id}, 平台: {platform}, 時間: {time}")
 ```
 
-## 消息事件方法
+## 訊息事件方法
 
 ```python
 from ErisPulse.Core.Event import message
@@ -717,7 +718,7 @@ async def private_handler(event: Event):
     await event.reply(f"你好，{nickname}！")
 ```
 
-## 消息類型判斷
+## 訊息類型判斷
 
 ```python
 from ErisPulse.Core.Event import message
@@ -746,48 +747,48 @@ async def ask_command(event: Event):
 @command("price")
 async def price_command(event: Event):
     await event.reply("請輸入金額（如：5元）:")
-    # 回覆必須符合正則，否則繼續等待直到超時
+    # 回覆必須匹配正規表示式，否則繼續等待直到逾時
     reply = await event.wait_reply(timeout=30, regex=r"\d+\s*元")
     if reply:
         await event.reply(f"收到金額：{reply.get_text()}")
 ```
 
-## 互動對話進階
+## 互動會話進階
 
 > [!NOTE]
-> 本節功能需要 ErisPulse **2.8.0+**。
+> 本節能力需要 ErisPulse **2.8.0+**。
 
 ```python
-# 會話定時提醒：5 分鐘無回覆則提醒，用戶回覆後自動取消
+# 會話定時提醒：5 分鐘無回覆則提醒，使用者回覆後自動取消
 reminder = event.remind(300, "還在嗎？不想聊了回覆「退出」")
 reminder.cancel()  # 也可手動取消
 
-# 超時升級：到點必達（不被回覆取消），如長時間未處理通知主人
-event.escalate(1800, lambda e: notify_master("工單超時"))
+# 逾時升級：到點必達（不被回覆取消），如長時間未處理通知主人
+event.escalate(1800, lambda e: notify_master("工單逾時"))
 
-# 多路等待：同時等"同意"與"拒絕"，先到先得
+# 多路等待：同時等「同意」與「拒絕」，先到先得
 which, reply = await event.select(
     event.expect(pattern="同意*", user="10001"),
     event.expect(pattern="拒絕*", user="10002"),
     timeout=60,
 )
 if which is None:
-    await event.reply("超時未收到審批")
+    await event.reply("逾時未收到審批")
 
 # 會話級等待：同群任何人的回覆均可命中（群協作）
-reply = await event.wait_reply(session=True, prompt="哪位大神幫忙答一下？")
+reply = await event.wait_reply(session=True, prompt="哪位大佬幫忙答一下？")
 
-# 會話收件箱：當前會話最近 20 條消息（含機器人，AI 上下文 / 防重複回覆底座）
+# 會話收件匣：當前會話最近 20 條訊息（含機器人，AI 上下文 / 防複讀底座）
 messages = await event.history(20)
 
-# 消息事務：異常時自動撤回事務內已發送的消息
+# 訊息事務：例外時自動撤回事務內已傳送的訊息
 async with event.message_tx():
     await event.reply("處理中，請稍候...")
     result = await do_something()
     await event.reply(f"完成：{result}")
 ```
 
-## 命令資訊獲取
+## 命令資訊取得
 
 ```python
 from ErisPulse.Core.Event import command
@@ -814,58 +815,58 @@ async def friend_add_handler(event: Event):
 ### 核心方法
 
 #### 事件基礎資訊
-- `get_id()` - 獲取事件ID
-- `get_time()` - 獲取事件時間戳（Unix秒級）
-- `get_type()` - 獲取事件類型（message/notice/request/meta）
-- `get_detail_type()` - 獲取事件詳細類型（private/group/friend等）
-- `get_platform()` - 獲取平台名稱
+- `get_id()` - 取得事件ID
+- `get_time()` - 取得事件時間戳記（Unix秒級）
+- `get_type()` - 取得事件類型（message/notice/request/meta）
+- `get_detail_type()` - 取得事件詳細類型（private/group/friend等）
+- `get_platform()` - 取得平台名稱
 
 #### 機器人資訊
-- `get_self_platform()` - 獲取機器人平台名稱
-- `get_self_user_id()` - 獲取機器人用戶ID
-- `get_self_account_id()` - 獲取機器人帳號ID（多Bot模式）
-- `get_self_info()` - 獲取機器人完整資訊字典
+- `get_self_platform()` - 取得機器人平台名稱
+- `get_self_user_id()` - 取得機器人使用者ID
+- `get_self_account_id()` - 取得機器人帳戶ID（多Bot模式）
+- `get_self_info()` - 取得機器人完整資訊字典
 
 #### 會話標識
-- `get_target_id()` - 獲取統一目標 ID（群聊返回 `group_id`，頻道返回 `channel_id`，私聊返回 `user_id`，按 group → channel → guild → thread → user 顺序取首个非空值）
-- `get_session_id()` - 獲取會話唯一標識，格式為 `{platform}:{detail_type}:{target_id}`
+- `get_target_id()` - 取得統一目標 ID（群聊返回 `group_id`，頻道返回 `channel_id`，私聊返回 `user_id`，按 group → channel → guild → thread → user 順序取首個非空值）
+- `get_session_id()` - 取得會話唯一標識，格式為 `{platform}:{detail_type}:{target_id}`
 
-### 消息事件方法
+### 訊息事件方法
 
-#### 消息內容
-- `get_message()` - 獲取消息段數組（OneBot12格式）
-- `get_alt_message()` - 獲取消息備用文本
-- `get_text()` - 獲取純文本內容（`get_alt_message()` 的別名）
-- `get_message_text()` - 獲取純文本內容（`get_alt_message()` 的別名）
+#### 訊息內容
+- `get_message()` - 取得訊息段陣列（OneBot12格式）
+- `get_alt_message()` - 取得訊息備用文字
+- `get_text()` - 取得純文字內容（`get_alt_message()` 的別名）
+- `get_message_text()` - 取得純文字內容（`get_alt_message()` 的別名）
 
-#### 發送者資訊
-- `get_user_id()` - 獲取發送者用戶ID
-- `get_user_nickname()` - 獲取發送者暱稱
-- `get_sender()` - 獲取發送者完整資訊字典
+#### 傳送者資訊
+- `get_user_id()` - 取得傳送者使用者ID
+- `get_user_nickname()` - 取得傳送者暱稱
+- `get_sender()` - 取得傳送者完整資訊字典
 
 #### 群組/頻道資訊
-- `get_group_id()` - 獲取群組ID（群聊消息）
-- `get_channel_id()` - 獲取頻道ID（頻道消息）
-- `get_guild_id()` - 獲取伺服器ID（伺服器消息）
-- `get_thread_id()` - 獲取話題/子頻道ID（話題消息）
+- `get_group_id()` - 取得群組ID（群聊訊息）
+- `get_channel_id()` - 取得頻道ID（頻道訊息）
+- `get_guild_id()` - 取得伺服器ID（伺服器訊息）
+- `get_thread_id()` - 取得話題/子頻道ID（話題訊息）
 
-#### @消息相關
+#### @訊息相關
 - `has_mention()` - 是否包含@機器人
-- `get_mentions()` - 獲取所有被@的用戶ID列表
+- `get_mentions()` - 取得所有被@的使用者ID清單
 
-### 消息類型判斷
+### 訊息類型判斷
 
 #### 基礎判斷
-- `is_message()` - 是否為消息事件
-- `is_private_message()` - 是否為私聊消息
-- `is_group_message()` - 是否為群聊消息
-- `is_at_message()` - 是否為@消息（`has_mention()` 的別名）
+- `is_message()` - 是否為訊息事件
+- `is_private_message()` - 是否為私聊訊息
+- `is_group_message()` - 是否為群聊訊息
+- `is_at_message()` - 是否為@訊息（`has_mention()` 的別名）
 
 ### 通知事件方法
 
 #### 通知操作者
-- `get_operator_id()` - 獲取操作者ID
-- `get_operator_nickname()` - 獲取操作者暱稱
+- `get_operator_id()` - 取得操作者ID
+- `get_operator_nickname()` - 取得操作者暱稱
 
 #### 通知類型判斷
 - `is_notice()` - 是否為通知事件
@@ -877,7 +878,7 @@ async def friend_add_handler(event: Event):
 ### 請求事件方法
 
 #### 請求資訊
-- `get_comment()` - 獲取請求附言
+- `get_comment()` - 取得請求附言
 
 #### 請求類型判斷
 - `is_request()` - 是否為請求事件
@@ -888,28 +889,28 @@ async def friend_add_handler(event: Event):
 
 #### 基礎回覆
 - `reply(content, method="Text", at_sender=False, quote=False, at_users=None, reply_to=None, at_all=False, via=None, **kwargs)` - 通用回覆方法
-  - `content`: 發送內容（文本、URL等）
-  - `method`: 發送方法，預設 "Text"，可選 "Image"/"Voice"/"Video"/"File" 等
-  - `at_sender`: 是否@發送者（自動提取 user_id）
-  - `quote`: 是否引用回覆當前消息（自動提取 message_id）
-  - `at_users`: @用戶列表，如 `["user1", "user2"]`
-  - `reply_to`: 手動指定回覆的消息 ID
+  - `content`: 傳送內容（文字、URL等）
+  - `method`: 傳送方法，預設 "Text"，可選 "Image"/"Voice"/"Video"/"File" 等
+  - `at_sender`: 是否@傳送者（自動提取 user_id）
+  - `quote`: 是否引用回覆當前訊息（自動提取 message_id）
+  - `at_users`: @使用者清單，如 `["user1", "user2"]`
+  - `reply_to`: 手動指定回覆的訊息 ID
   - `at_all`: 是否@全體成員
   - `**kwargs`: 額外參數（如 Mention 方法的 user_id）
 
-- `reply_ob12(message)` - 使用 OneBot12 消息段回覆
-  - `message`: OneBot12 消息段列表或字典，可配合 MessageBuilder 構建
+- `reply_ob12(message)` - 使用 OneBot12 訊息段回覆
+  - `message`: OneBot12 訊息段清單或字典，可配合 MessageBuilder 建構
 
 #### 平台能力查詢
-- `supports(method)` - 檢查當前平台是否支援某發送方法（如 `"Image"`、`"Voice"`），返回 `bool`
-- `available_methods()` - 列出當前平台所有可用發送方法，返回方法名列表
+- `supports(method)` - 檢查當前平台是否支援某傳送方法（如 `"Image"`、`"Voice"`），返回 `bool`
+- `available_methods()` - 列出當前平台所有可用傳送方法，返回方法名清單
 
 #### 轉發功能
 
-> **注意**：轉發功能需要透過適配器的 Send DSL 實現，Event 包裝類本身不提供直接的轉發方法。
+> **注意**：轉發功能需要透過轉接器的 Send DSL 實作，Event 包裝類別本身不提供直接的轉發方法。
 
 ```python
-# 轉發消息到群組
+# 轉發訊息到群組
 adapter = sdk.adapter.get(event.get_platform())
 target_id = event.get_group_id()  # 或指定其他群組ID
 await adapter.Send.To("group", target_id).Text(event.get_text())
@@ -917,65 +918,65 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ### 等待回覆功能
 
-- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text", pattern=None, regex=None)` - 等待用戶回覆
-  - `prompt`: 提示消息，如果提供會發送給用戶
-  - `timeout`: 等待超時時間（秒），預設60秒
-  - `callback`: 回調函數，當收到回覆時執行
-  - `validator`: 驗證函數，用於驗證回覆是否有效
-  - `method`: 發送提示消息的方法，預設 "Text"
-  - `pattern`: glob 通配符（`*` / `?` / `[seq]`），回覆文本必須匹配，不匹配則繼續等待
-  - `regex`: 正則表達式，回覆文本必須匹配（`pattern` 與 `regex` 二選一），不匹配則繼續等待
-  - 返回用戶回覆的 Event 對象，超時返回 None
+- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text", pattern=None, regex=None)` - 等待使用者回覆
+  - `prompt`: 提示訊息，如果提供會傳送給使用者
+  - `timeout`: 等待逾時時間（秒），預設60秒
+  - `callback`: 回呼函式，當收到回覆時執行
+  - `validator`: 驗證函式，用於驗證回覆是否有效
+  - `method`: 傳送提示訊息的方法，預設 "Text"
+  - `pattern`: glob 萬用字元（`*` / `?` / `[seq]`），回覆文字必須匹配，不匹配則繼續等待
+  - `regex`: 正規表示式，回覆文字必須匹配（`pattern` 與 `regex` 二選一），不匹配則繼續等待
+  - 返回使用者回覆的 Event 物件，逾時返回 None
 
 #### 互動方法
 
 - `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - 確認對話
-  - 返回 `True`（確認）/ `False`（否定）/ `None`（超時）
-  - 內建中英文確認詞自動識別，可自定義詞集
-  - `method`: 發送方法，預設 "Text"；支援 "Image"/"Markdown" 等非文本方式發送提示
-  - `hint`: 是否在提示末尾自動追加確認詞提示（如 "（是/否）"），預設 False
+  - 返回 `True`（確認）/ `False`（否定）/ `None`（逾時）
+  - 內建中英文確認詞自動識別，可自訂詞集
+  - `method`: 傳送方法，預設 "Text"；支援 "Image"/"Markdown" 等非文字方式傳送提示
+  - `hint`: 是否在提示末尾自動附加確認詞提示（如 "（是/否）"），預設 False
 
-- `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - 選擇菜單
-  - `options`: 選項文本列表
-  - 返回選項索引（0-based），超時返回 `None`
-  - `method`: 發送方法，預設 "Text"；文本類方法 (Text/Markdown/md/Html/h5) 預設合併選項到末尾
+- `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - 選擇選單
+  - `options`: 選項文字清單
+  - 返回選項索引（0-based），逾時返回 `None`
+  - `method`: 傳送方法，預設 "Text"；文字類方法 (Text/Markdown/md/Html/h5) 預設合併選項到末尾
   - `options_format`: 選項格式（預設: "auto"，根據 method 自動選擇內建樣式）
-    - `"auto"`：Markdown→無序列表（`- 1.選項`），Html→有序列表（`<ol>`），其他→純文本列表
+    - `"auto"`：Markdown→無序清單（`- 1.選項`），Html→有序清單（`<ol>`），其他→純文字清單
     - `"list"`：每行一個，如 ``1. 選項A\n2. 選項B``
     - `"inline"`：單行展示，如 ``1.A | 2.B``
-    - `"md"`：Markdown 無序列表
-    - `"html"`：Html 有序列表
-    - `callable`：自定義函數，接收 ``list[str]`` 返回 ``str``
-  - `merge_prompt`: 是否強制合併為一條消息發送，預設 False
-    - `False`（預設）：文本類方法自動合併；非文本方法先發 prompt 再發 Text 選項
-    - `True`：無論什麼 method 都合併為一條消息，用用戶指定的 method 發送
-  - `placeholder`: 選項插入占位符，預設 `{options}`；prompt 中出現該標記的位置替換為選項文本，設為空字串則始終追加到末尾
+    - `"md"`：Markdown 無序清單
+    - `"html"`：Html 有序清單
+    - `callable`：自訂函式，接收 ``list[str]`` 返回 ``str``
+  - `merge_prompt`: 是否強制合併為一條訊息傳送，預設 False
+    - `False`（預設）：文字類方法自動合併；非文字方法先發 prompt 再發 Text 選項
+    - `True`：無論什麼 method 都合併為一條訊息，用使用者指定的 method 傳送
+  - `placeholder`: 選項插入佔位符，預設 `{options}`；prompt 中出現該標記的位置替換為選項文字，設為空字串則始終附加到末尾
 
 - `collect(fields, timeout_per_field=60.0)` - 表單收集
-  - `fields`: 字段列表，每項包含 `key`、`prompt`、可選 `validator`、可選 `method`
-  - 返回 `{key: value}` 字典，任一字段超時返回 `None`
-  - 每個 field 支援 `method` 鍵指定發送方法，例如收集圖片時用 `{"key": "avatar", "prompt": "請發送頭像", "method": "Image"}`
-  - 每個 field 可選 `options` 鍵（列表），提供時該字段變為選擇題（自動調用 choose 逻辑）
-  - 每個 field 可選 `options_format`、`merge_prompt`、`placeholder` 鍵，控制選項格式、消息合併行為和占位符
+  - `fields`: 欄位清單，每項包含 `key`、`prompt`、可選 `validator`、可選 `method`
+  - 返回 `{key: value}` 字典，任一欄位逾時返回 `None`
+  - 每個 field 支援 `method` 鍵指定傳送方法，例如收集圖片時用 `{"key": "avatar", "prompt": "請發送頭像", "method": "Image"}`
+  - 每個 field 可選 `options` 鍵（清單），提供時該欄位變為選擇題（自動呼叫 choose 邏輯）
+  - 每個 field 可選 `options_format`、`merge_prompt`、`placeholder` 鍵，控制選項格式、訊息合併行為和佔位符
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - 等待任意事件
-  - `condition`: 過濾函數，返回 `True` 時匹配
-  - 返回匹配的 Event 對象，超時返回 `None`
+  - `condition`: 過濾函式，返回 `True` 時匹配
+  - 返回匹配的 Event 物件，逾時返回 `None`
 
-- `conversation(timeout=60.0)` - 創建多輪對話上下文
-  - 返回 `Conversation` 對象，支援 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
+- `conversation(timeout=60.0)` - 建立多輪對話上下文
+  - 返回 `Conversation` 物件，支援 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
   - `is_active` 屬性表示對話是否活躍
 
-#### 互動方法示例
+#### 互動方法範例
 
 **confirm() - 確認對話：**
 
 ```python
-@command("delete", help="刪除數據")
+@command("delete", help="刪除資料")
 async def delete_handler(event: Event):
-    if await event.confirm("確定要刪除所有數據嗎？"):
+    if await event.confirm("確定要刪除所有資料嗎？"):
         sdk.storage.delete("all_data")
-        await event.reply("數據已刪除")
+        await event.reply("資料已刪除")
     else:
         await event.reply("已取消")
 ```
@@ -983,13 +984,13 @@ async def delete_handler(event: Event):
 **confirm() - 帶提示詞：**
 
 ```python
-# hint=True 會在提示末尾追加 "（是/否）"
+# hint=True 會在提示末尾附加 "（是/否）"
 if await event.confirm("確定繼續？", hint=True):
     await event.reply("已繼續")
-# 用戶看到：確定繼續？（是/否）
+# 使用者看到：確定繼續？（是/否）
 ```
 
-**choose() - 選擇菜單：**
+**choose() - 選擇選單：**
 
 ```python
 @command("color", help="選擇顏色")
@@ -1000,46 +1001,46 @@ async def color_handler(event: Event):
         await event.reply(f"你選擇了：{colors[choice]}")
 ```
 
-**choose() - 選項格式化與消息合併：**
+**choose() - 選項格式化與訊息合併：**
 
 ```python
 # inline 格式：選項顯示在同一行
 choice = await event.choose("請選擇：", ["A", "B", "C"], options_format="inline")
 # 輸出：1.A | 2.B | 3.C
 
-# 自定義格式
+# 自訂格式
 choice = await event.choose("請選擇：", ["貓", "狗"],
     options_format=lambda opts: " / ".join(opts))
 # 輸出：貓 / 狗
 
 # options_format="auto"（預設）：根據 method 自動選擇內建樣式
-# Markdown → 無序列表
+# Markdown → 無序清單
 choice = await event.choose(
     "## 請選擇", ["貓", "狗"],
-    method="Markdown",  # auto 自動識別為 md 列表
+    method="Markdown",  # auto 自動識別為 md 清單
 )
 # 輸出：
 # ## 請選擇
 # - 1. 貓
 # - 2. 狗
 
-# Html → 有序列表
+# Html → 有序清單
 choice = await event.choose(
     "<h2>請選擇</h2>", ["貓", "狗"],
-    method="Html", merge_prompt=True,  # auto 自動識別為 html 列表
+    method="Html", merge_prompt=True,  # auto 自動識別為 html 清單
 )
 # 輸出：
 # <h2>請選擇</h2>
 # <ol><li>1. 貓</li><li>2. 狗</li></ol>
 
-# 合併模式 + 占位符
+# 合併模式 + 佔位符
 choice = await event.choose(
     "## 請選擇\n{options}\n請回覆編號",
     ["貓", "狗"],
     method="Markdown", merge_prompt=True,
 )
 
-# 自定義占位符
+# 自訂佔位符
 choice = await event.choose(
     "請選擇: [choices]",
     ["貓", "狗"],
@@ -1077,22 +1078,22 @@ await event.reply_ob12(segments)
 ### 命令資訊
 
 #### 命令基礎
-- `get_command_name()` - 獲取命令名稱
-- `get_command_args()` - 獲取命令參數列表
-- `get_command_raw()` - 獲取命令原始文本
-- `get_command_info()` - 獲取完整命令資訊字典
+- `get_command_name()` - 取得命令名稱
+- `get_command_args()` - 取得命令參數清單
+- `get_command_raw()` - 取得命令原始文字
+- `get_command_info()` - 取得完整命令資訊字典
 - `is_command()` - 是否為命令
 
-### 原始數據
+### 原始資料
 
-- `get_raw()` - 獲取平台原始事件數據
-- `get_raw_type()` - 獲取平台原始事件類型
+- `get_raw()` - 取得平台原始事件資料
+- `get_raw_type()` - 取得平台原始事件類型
 
-### 平台擴展方法
+### 平台擴充方法
 
-適配器可以為 Event 包裝類註冊平台專有方法。方法僅在對應平台的 Event 實例上可用，其他平台訪問時拋出 `AttributeError`。
+轉接器可以為 Event 包裝類別註冊平台專有方法。方法僅在對應平台的 Event 實例上可用，其他平台存取時拋出 `AttributeError`。
 
-平台方法透過 `Event.__getattribute__` 優先於內置方法生效，因此可以覆寫 `confirm`、`choose`、`collect`、`wait_reply` 等內置互動方法，提供平台特色實現（如按鈕、卡片等）。內置實現作為 `_builtin_*` 函數導出供覆寫方調用。
+平台方法透過 `Event.__getattribute__` 優先於內建方法生效，因此可以覆寫 `confirm`、`choose`、`collect`、`wait_reply` 等內建互動方法，提供平台特色實作（如按鈕、卡片等）。內建實作作為 `_builtin_*` 函式匯出供覆寫方呼叫。
 
 ```python
 # 郵件事件 - 只有郵件方法
@@ -1105,7 +1106,7 @@ event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "privat
 event.get_chat_type()    # ✅ 返回 "private"
 event.get_subject()      # ❌ AttributeError
 
-# 內置方法始終可用
+# 內建方法始終可用
 event.get_text()         # ✅ 任何平台
 event.reply("hi")        # ✅ 任何平台
 ```
@@ -1126,7 +1127,7 @@ hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
 "get_subject" in dir(event)     # 同上
 ```
 
-### 跨平台擴展（通配符）
+### 跨平台擴充（萬用字元）
 
 `register_event_method` 和 `register_event_mixin` 支援傳 `"*"` 作為平台名，註冊的方法在**所有平台**的 Event 實例上都可用。適合 AI 對話、上下文管理等需要跨平台複用的功能。
 
@@ -1135,15 +1136,15 @@ from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    # self 為 Event 實例，可訪問事件數據和內置方法
+    # self 為 Event 實例，可存取事件資料和內建方法
     await self.reply(f"AI: {prompt}")
 ```
 
-註冊後，任何平台的事件處理器都能調用 `event.ai_chat(...)`。
+註冊後，任何平台的事件處理器都能呼叫 `event.ai_chat(...)`。
 
-方法解析優先級（從高到低）：平台特定方法 → 通配符方法 → 內置方法 → 字典鍵訪問。
+方法解析優先順序（從高到低）：平台特定方法 → 萬用字元方法 → 內建方法 → 字典鍵存取。
 
-> 適配器開發者註冊擴展方法的方式請參閱 [事件系統 API - 跨平台擴展通配符](../../api-reference/event-system.md#跨平台擴展通配符)。
+> 轉接器開發者註冊擴充方法的方式請參閱 [事件系統 API - 跨平台擴充](../../api-reference/event-system.md#跨平台擴充萬用字元)。
 
 ## 相關文件
 
@@ -1155,7 +1156,6 @@ async def ai_chat(self, prompt: str):
 ### 深入互動能力
 
 - [Conversation 多輪對話](../../advanced/conversation.md) - `wait_reply` 之上的完整會話引擎（收集、驗證、分支跳轉）
-- [模組排查指南](../module-troubleshooting.md) - 當事件沒有回應時對症排查
 
 ## 模块最佳实践
 

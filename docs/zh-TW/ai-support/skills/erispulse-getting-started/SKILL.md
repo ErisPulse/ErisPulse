@@ -1,6 +1,6 @@
 ---
 name: erispulse-getting-started
-description: "适用于：第一次接触 ErisPulse，想从零跑起一个机器人并理解核心概念。覆盖场景：[模組開發入門](developer-guide/modules/getting-started.md)。**1. 安裝**（Python >= 3.10）：。機器人已經能跑，想寫出第一個 `/hello` 命令處理器、搞懂 `sdk.run` 與命令裝飾器各自在做什麼。如果還沒裝好 ErisPulse、初始化專案，先完成 [5 分鐘快速開始](../quick-start.md) 的「安裝」「初始化專案」「執行專案」三步；不需要則跳過。一條訊息從使用者發出到機器人回覆，中間經過了哪些元件？適配器和模組各自負責什麼？讀完這篇，寫處理器時遇到的設計問題你都能自己回答，而不是只能照抄範例。想讓機器人響應訊息、命令、通知、請求，或要實現等待回覆 / 多輪對話、排查「命令為什麼沒觸發」時讀。只想了解框架設計，看 [基礎概念](basic-concepts.md) 即可；不需要則跳過。想給機器人加某個具體功能時按節查閱——持久化、定時任務、訊息過濾、權限控制、批次傳送，每一節都是可直接複製的完整範例。想系統學事件處理寫法先看 [事件處理入門](event-handling.md)；不需要則跳過。**何時需要閱讀本文**：當 IDE 補全無法顯示適配器的平台特定方法（如雲湖的 `Board`）或模組的自訂方法時，只需執行一條 `epsdk types` 命令生成類型存根即可解決；若不需要則可跳過。"
+description: "适用于：第一次接触 ErisPulse，想从零跑起一个机器人并理解核心概念。覆盖场景：[模組開發入門](developer-guide/modules/getting-started.md)。**1. 安裝**（Python >= 3.10）：。機器人已經能跑，想寫出第一個 `/hello` 命令處理器、搞懂 `sdk.run` 與命令裝飾器各自在做什麼。如果還沒裝好 ErisPulse、初始化專案，先完成 [5 分鐘快速開始](../quick-start.md) 的「安裝」「初始化專案」「執行專案」三步；不需要則跳過。一條訊息從使用者發出到機器人回覆，中間經過了哪些元件？配接器和模組各自負責什麼？讀完這篇，撰寫處理器時遇到的設計問題你都能自己回答，而不是只能照抄範例。想讓機器人響應訊息、命令、通知、請求，或要實現等待回覆 / 多輪對話、排查「命令為什麼沒觸發」時讀。只想了解框架設計，看 [基礎概念](basic-concepts.md) 即可；不需要則跳過。想給機器人加某個具體功能時按節查閱——持久化、定時任務、訊息過濾、權限控制、批次傳送，每一節都是可直接複製的完整範例。想系統學事件處理寫法先看 [事件處理入門](event-handling.md)；不需要則跳過。**何時需要閱讀本文**：當 IDE 補全無法顯示適配器的平台特定方法（如雲湖的 `Board`）或模組的自訂方法時，只需執行一條 `epsdk types` 命令生成類型存根即可解決；若不需要則可跳過。"
 ---
 
 # ErisPulse 快速上手与核心概念
@@ -589,9 +589,9 @@ async def hello_handler(event):
 # 基礎概念
 
 > [!NOTE]
-> **L1 核心必讀**——文件首頁「L1 核心五篇」中的第 2 篇（模組開發入門 → **基礎概念** → Event 包裝類別 → 設定檔說明 → 例外捕獲）。
+> **L1 核心必讀**——文件首頁「L1 核心五篇」中的第 2 篇（模組開發入門 → **基礎概念** → Event 包裝類別 → 設定檔說明 → 例外捕捉）。
 
-一條訊息從使用者發出到機器人回覆，中間經過了哪些元件？適配器和模組各自負責什麼？讀完這篇，寫處理器時遇到的設計問題你都能自己回答，而不是只能照抄範例。
+一條訊息從使用者發出到機器人回覆，中間經過了哪些元件？配接器和模組各自負責什麼？讀完這篇，撰寫處理器時遇到的設計問題你都能自己回答，而不是只能照抄範例。
 
 ## 事件驅動架構
 
@@ -600,13 +600,13 @@ ErisPulse 採用事件驅動架構，所有的互動都透過事件來傳遞和�
 ### 事件流程
 
 ```
-使用者發送訊息
+使用者傳送訊息
       │
       ▼
 平台接收
       │
       ▼
-適配器接收平台原生事件
+配接器接收平台原生事件
       │
       ▼
 轉換為 OneBot12 標準事件
@@ -621,7 +621,7 @@ ErisPulse 採用事件驅動架構，所有的互動都透過事件來傳遞和�
 模組處理事件
       │
       ▼
-透過適配器發送回應
+透過配接器傳送回應
       │
       ▼
 平台顯示給使用者
@@ -631,13 +631,13 @@ ErisPulse 採用事件驅動架構，所有的互動都透過事件來傳遞和�
 
 ErisPulse 使用 OneBot12 作為核心事件標準。OneBot12 是一個通用的聊天機器人應用程式介面標準，定義了統一的事件格式。
 
-所有適配器都會將平台特定的事件轉換為 OneBot12 格式，確保程式碼的一致性。
+所有配接器都會將平台特定的事件轉換為 OneBot12 格式，確保程式碼的一致性。
 
 ## 核心元件
 
 ### 1. SDK 物件
 
-SDK 是所有功能的統一入口點，提供對核心元件的存取。
+SDK 是所有功能的統一進入點，提供對核心元件的存取。
 
 ```python
 from ErisPulse import sdk
@@ -646,7 +646,7 @@ from ErisPulse import sdk
 sdk.storage    # 儲存系統
 sdk.config     # 設定系統
 sdk.logger     # 日誌系統
-sdk.adapter    # 適配器系統
+sdk.adapter    # 配接器系統
 sdk.module     # 模組系統
 sdk.router     # 路由系統
 sdk.client     # HTTP 用戶端
@@ -656,7 +656,7 @@ sdk.lifecycle  # 生命週期系統
 > [!WARNING]
 > **統一從根匯入**：`from ErisPulse.Core import adapter` / `import ErisPulse.Core.adapter`
 > 這類寫法綁定到的是**管理器實例**（`AdapterManager` 單例）而非子模組——`ErisPulse.Core`
-> 套件的 re-export 會遮蔽同名子模組。寫測試、patch 或需要模組物件本身時，請一律使用
+> 套件的 re-export 會遮蔽同名子模組。撰寫測試、patch 或需要模組物件本身時，請一律使用
 > `from ErisPulse import sdk` 根匯入（`sdk.adapter` 即管理器實例）。
 
 ### 2. Event 物件
@@ -672,44 +672,44 @@ async def info_handler(event):
     platform = event.get_platform()
     text = event.get_text()
     
-    # 發送回覆
+    # 傳送回覆
     await event.reply(f"使用者: {user_id}, 平台: {platform}")
 ```
 
-### 3. 適配器
+### 3. 配接器
 
-適配器是 ErisPulse 與外部平台之間的橋樑。
+配接器是 ErisPulse 與外部平台之間的橋樑。
 
 **職責：**
 - 接收平台原生事件
 - 轉換為 OneBot12 標準格式
-- 將標準格式事件發送到平台
+- 將標準格式事件傳送到平台
 
-**範例適配器：**
-- Yunhu 適配器：與雲湖平台通訊
-- Telegram 適配器：與 Telegram Bot API 通訊
-- OneBot11 適配器：與 OneBot11 相容的應用程式通訊
-- Email 適配器：處理郵件收發
+**範例配接器：**
+- Yunhu 配接器：與雲湖平台通訊
+- Telegram 配接器：與 Telegram Bot API 通訊
+- OneBot11 配接器：與 OneBot11 相容的應用程式通訊
+- Email 配接器：處理郵件收發
 
 ### 4. 模組
 
 模組是功能擴充的基本單位，可以：
 
 - 註冊事件處理器
-- 實現業務邏輯
-- 呼叫適配器發送訊息
+- 實作業務邏輯
+- 呼叫配接器傳送訊息
 - 使用核心模組提供的服務
 
 #### 模組發現機制
 
-ErisPulse 透過 Python 的 `importlib.metadata.entry_points` 發現已安裝的模組。模組在 `pyproject.toml` 中宣告入口點：
+ErisPulse 透過 Python 的 `importlib.metadata.entry_points` 發現已安裝的模組。模組在 `pyproject.toml` 中宣告進入點：
 
 ```toml
 [project.entry-points."erispulse.module"]
 MyModule = "my_package:Main"
 ```
 
-SDK 初始化時會掃描所有 `erispulse.module` 群組的入口點，將模組類別註冊到 `ModuleManager`，然後按依賴關係拓撲排序後依次初始化。
+SDK 初始化時會掃描所有 `erispulse.module` 群組的進入點，將模組類別註冊到 `ModuleManager`，然後按依賴關係進行拓撲排序後依序初始化。
 
 #### 最小可用模組
 
@@ -763,11 +763,11 @@ ErisPulse 支援 5 類事件：
 
 | 事件類型 | 裝飾器 | 說明 |
 |---------|--------|------|
-| 訊息事件 | `@message.on_message()` | 使用者發送的任何訊息（私聊、群聊） |
+| 訊息事件 | `@message.on_message()` | 使用者傳送的任何訊息（私聊、群聊） |
 | 命令事件 | `@command("name")` | 以命令前綴開頭的訊息（如 `/hello`） |
 | 通知事件 | `@notice.on_friend_add()` 等 | 系統通知（好友新增、群成員變化等） |
 | 請求事件 | `@request.on_friend_request()` 等 | 使用者請求（好友請求、群邀請） |
-| 元事件 | `@meta.on_connect()` 等 | 系統級事件（連線、斷開、心跳） |
+| 元事件 | `@meta.on_connect()` 等 | 系統級事件（連線、斷線、心跳） |
 
 > 各事件類型的詳細用法和程式碼範例請參考 [事件處理入門](event-handling.md)。
 
@@ -804,7 +804,7 @@ TOML 格式的設定檔管理。
 # 取得設定
 config = sdk.config.getConfig("MyModule", {})
 
-# 設定配置
+# 設定組態
 sdk.config.setConfig("MyModule", {"key": "value"})
 
 # 讀取巢狀設定
@@ -828,10 +828,10 @@ child_logger.info("子模組日誌")
 
 **屬性存取語法糖**
 
-除了使用 `get_child()` 方法外，你還可以透過**屬性存取**的方式建立子 logger，這是一種更簡潔的**語法糖**寫法：
+除了使用 `get_child()` 方法外，你還可以透過**屬性存取**的方式建立子logger，這是一種更簡潔的**語法糖**寫法：
 
 ```python
-# 透過屬性存取建立子 logger
+# 透過屬性存取建立子logger
 sdk.logger.mymodule.info("模組訊息")
 
 # 支援巢狀存取
@@ -875,20 +875,20 @@ async for text in ws.iter_text():
 
 > 完整的網路用戶端 API 請參考 [網路用戶端](../advanced/http-client.md)。
 
-## SendDSL 訊息發送
+## SendDSL 訊息傳送
 
-適配器提供鏈式呼叫的訊息發送介面。
+配接器提供鏈式呼叫的訊息傳送介面。
 
-### 基礎發送
+### 基礎傳送
 
 ```python
-# 取得適配器實例
+# 取得配接器實例
 yunhu = sdk.adapter.get("yunhu")
 
-# 發送訊息
+# 傳送訊息
 await yunhu.Send.To("user", "U1001").Text("Hello")
 
-# 指定發送帳號
+# 指定傳送帳號
 await yunhu.Send.Using("bot1").To("group", "G1001").Text("群訊息")
 ```
 
@@ -915,10 +915,10 @@ async def test_handler(event):
     # 簡單文字回覆
     await event.reply("回覆內容")
     
-    # 發送圖片
+    # 傳送圖片
     await event.reply("http://example.com/image.jpg", method="Image")
     
-    # 發送語音
+    # 傳送語音
     await event.reply("http://example.com/voice.mp3", method="Voice")
 ```
 
