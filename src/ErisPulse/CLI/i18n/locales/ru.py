@@ -618,6 +618,7 @@ TRANSLATIONS = {
     "cli.doctor.fix_pollution_skipped": "очистка остатков пропущена",
     "cli.doctor.fix_pollution_removed": "из config.toml удалено остаточных ключей: {count}",
     "cli.doctor.fix_pollution_failed": "сбой очистки остатков: {error}",
+    "cli.doctor.fix_pollution_remove_failed": "не удалось удалить следующие остаточные ключи (остальное записано обратно в config.toml): {keys}",
     "cli.doctor.component_config_ok": "Все готово (незавершённых нет)",
     "cli.doctor.component_config_incomplete": "Требуют настройки: {names} (выполните epsdk config <имя>, чтобы заполнить обязательные поля)",
     "cli.doctor.component_config_skipped": "Не удалось обнаружить компоненты; проверка пропущена",

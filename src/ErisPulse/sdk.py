@@ -798,7 +798,7 @@ class SDK:
             raise
         except Exception as e:
             # 常规异常（模块/适配器错误等），记录但不向上传播
-            self.logger.error(e)
+            self.logger.error(i18n.t("core.sdk.run.unhandled_error", error=repr(e)))
         except BaseException as e:
             # 其他 BaseException（SystemExit 等），拦截并记录
             # 模块/适配器不应能终止进程

@@ -618,6 +618,7 @@ TRANSLATIONS = {
     "cli.doctor.fix_pollution_skipped": "已跳過殘留清理",
     "cli.doctor.fix_pollution_removed": "已從 config.toml 清理 {count} 處殘留鍵",
     "cli.doctor.fix_pollution_failed": "殘留清理失敗: {error}",
+    "cli.doctor.fix_pollution_remove_failed": "以下殘留鍵清理失敗（其餘已寫回 config.toml）: {keys}",
     "cli.doctor.component_config_ok": "全部就緒（無待完善項）",
     "cli.doctor.component_config_incomplete": "待完善: {names}（執行 epsdk config <名稱> 補全必填項）",
     "cli.doctor.component_config_skipped": "元件發現失敗，已跳過該項檢查",

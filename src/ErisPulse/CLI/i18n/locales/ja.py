@@ -618,6 +618,7 @@ TRANSLATIONS = {
     "cli.doctor.fix_pollution_skipped": "残留クリーンアップをスキップしました",
     "cli.doctor.fix_pollution_removed": "config.toml から {count} 件の残留キーを削除しました",
     "cli.doctor.fix_pollution_failed": "残留クリーンアップ失敗: {error}",
+    "cli.doctor.fix_pollution_remove_failed": "以下の残留キーの削除に失敗しました（残りは config.toml に書き戻しました）: {keys}",
     "cli.doctor.component_config_ok": "すべて準備完了（未完了項目なし）",
     "cli.doctor.component_config_incomplete": "要対応: {names}（epsdk config <名称> で必須項目を入力してください）",
     "cli.doctor.component_config_skipped": "コンポーネント検出に失敗したため、このチェックをスキップしました",

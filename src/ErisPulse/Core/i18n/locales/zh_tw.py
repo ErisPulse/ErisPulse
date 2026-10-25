@@ -71,6 +71,7 @@ TRANSLATIONS = {
     "core.sdk.hot_reload.failed": "熱重載模組 {name} 失敗: {error}",
     "core.sdk.run.shutdown_signal": "收到關閉訊號，正在清理...",
     "core.sdk.run.unexpected_error": "攔截到意外終止訊號: {error}，已阻止程序退出",
+    "core.sdk.run.unhandled_error": "執行過程中發生未處理異常，已攔截以保證框架繼續執行: {error}",
     # ==================== SDK 回呼 ====================
     "core.sdk.callback.before_init_failed": "before_init 回呼執行失敗: {error}",
     "core.sdk.callback.after_init_failed": "after_init 回呼執行失敗: {error}",
@@ -436,6 +437,7 @@ TRANSLATIONS = {
     "core.config.watcher_error": "設定檔監聽工作例外: {error}",
     "core.config.restart_required": "設定項 {key} 已變更，需重啟程序後生效",
     "core.config.multi_instance_detected": "偵測到設定檔 {path} 可能正被另一個 ErisPulse 實例同時使用（共享設定目錄）——並發寫入可能互相覆蓋，請為每個實例使用獨立的設定目錄",
+    "core.config.gitignore_write_failed": "自動寫入 .gitignore 失敗（{path}），該目錄可能未被 git 忽略: {error}",
     # ==================== 異常診斷 ====================
     "core.diag.frame": "  → {file}:{lineno} 位於 {func}()",
     "core.diag.source": "      {source}",

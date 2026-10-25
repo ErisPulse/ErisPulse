@@ -71,6 +71,7 @@ TRANSLATIONS = {
     "core.sdk.hot_reload.failed": "モジュール {name} のホットリロードに失敗しました: {error}",
     "core.sdk.run.shutdown_signal": "シャットダウンシグナルを受信しました、クリーンアップ中...",
     "core.sdk.run.unexpected_error": "予期しない終了シグナルを遮断しました: {error}、プロセスは維持されます",
+    "core.sdk.run.unhandled_error": "実行中に未処理の例外が発生しました。フレームワークの継続実行のため遮断しました: {error}",
     # ==================== SDK コールバック ====================
     "core.sdk.callback.before_init_failed": "before_init コールバックの実行に失敗しました: {error}",
     "core.sdk.callback.after_init_failed": "after_init コールバックの実行に失敗しました: {error}",
@@ -436,6 +437,7 @@ TRANSLATIONS = {
     "core.config.watcher_error": "設定ファイル監視タスク例外: {error}",
     "core.config.restart_required": "設定項目 {key} が変更されました。反映にはプロセスの再起動が必要です",
     "core.config.multi_instance_detected": "設定ファイル {path} は別の ErisPulse インスタンスと同時に使用されている可能性があります（設定ディレクトリの共有）——同時書き込みが互いに上書きする恐れがあります。インスタンスごとに独立した設定ディレクトリを使用してください。",
+    "core.config.gitignore_write_failed": ".gitignore の自動書き込みに失敗しました（{path}）。このディレクトリは git に無視されていない可能性があります: {error}",
     # ==================== 例外診断 ====================
     "core.diag.frame": "  → {file}:{lineno} 関数 {func}() 内",
     "core.diag.source": "      {source}",

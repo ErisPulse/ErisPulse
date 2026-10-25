@@ -401,6 +401,7 @@ class DoctorCommand(Command):
         config_path = Path("config") / "config.toml"
         doc = tomlclass.load_path(str(config_path))
         removed = 0
+        failed_keys: list[str] = []
         for key_path, _bug, _desc in pollution:
             parts = key_path.split(".")
             node = doc
@@ -409,8 +410,8 @@ class DoctorCommand(Command):
                     node = node[part]
                 del node[parts[-1]]
                 removed += 1
-            except Exception:
-                pass
+            except Exception as e:
+                failed_keys.append(f"{key_path} ({e})")
         # 原子写回（与 ConfigManager._atomic_write_text 同款：mkstemp + replace）
         text = doc.dumps()
         fd, tmp_name = tempfile.mkstemp(
@@ -428,6 +429,10 @@ class DoctorCommand(Command):
         console.print(
             f"[success]  {i18n.t('cli.doctor.fix_pollution_removed', count=removed)}"
         )
+        if failed_keys:
+            console.print(
+                f"[warning]  {i18n.t('cli.doctor.fix_pollution_remove_failed', keys='; '.join(failed_keys))}[/]"
+            )
 
     def _print_report(self, rows: list, failed: bool):
         """
@@ -641,7 +646,7 @@ class DoctorCommand(Command):
                 if probe.returncode == 0:
                     uv_version = probe.stdout.strip() or "-"
             except Exception:
-                pass
+                uv_version = "-"
         rows.append(
             (
                 self._status(True),

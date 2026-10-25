@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ..sdk import SDK
+    from .sdk_initializer import Initializer, Uninitializer
 
 
 class Kernel:
@@ -69,7 +70,7 @@ class Kernel:
         self._sdk._adapter_loader = self._adapter_loader
         return self._adapter_loader, self._module_loader
 
-    def get_initializer(self) -> Any:
+    def get_initializer(self) -> Initializer:
         """
         获取初始化协调器（每次调用新建一轮——init 生命周期一轮一个协调器）
 
@@ -93,7 +94,7 @@ class Kernel:
         )
         return self._initializer
 
-    def get_uninitializer(self) -> Any:
+    def get_uninitializer(self) -> Uninitializer:
         """
         获取反初始化协调器（每轮新建，与 get_initializer 同语义）
 

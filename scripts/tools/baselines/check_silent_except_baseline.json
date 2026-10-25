@@ -1,8 +1,7 @@
 {
- "total": 252,
+ "total": 250,
  "by_file": {
   "CLI/cli.py": 1,
-  "CLI/commands/doctor.py": 1,
   "CLI/commands/init.py": 1,
   "CLI/commands/run.py": 8,
   "CLI/i18n/__init__.py": 5,
@@ -21,7 +20,7 @@
   "Core/Bases/sql_base.py": 4,
   "Core/Bases/storage.py": 2,
   "Core/Bases/websocket.py": 3,
-  "Core/config.py": 24,
+  "Core/config.py": 23,
   "Core/Event/base.py": 2,
   "Core/Event/command.py": 1,
   "Core/Event/conversation.py": 2,

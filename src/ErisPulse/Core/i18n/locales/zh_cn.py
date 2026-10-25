@@ -71,6 +71,7 @@ TRANSLATIONS = {
     "core.sdk.hot_reload.failed": "热重载模块 {name} 失败: {error}",
     "core.sdk.run.shutdown_signal": "收到关闭信号，正在清理...",
     "core.sdk.run.unexpected_error": "拦截到意外终止信号: {error}，已阻止进程退出",
+    "core.sdk.run.unhandled_error": "运行过程中发生未处理异常，已拦截以保证框架继续运行: {error}",
     # ==================== SDK 回调 ====================
     "core.sdk.callback.before_init_failed": "before_init 回调执行失败: {error}",
     "core.sdk.callback.after_init_failed": "after_init 回调执行失败: {error}",
@@ -436,6 +437,7 @@ TRANSLATIONS = {
     "core.config.watcher_error": "配置文件监听任务异常: {error}",
     "core.config.restart_required": "配置项 {key} 已变更，需重启进程后生效",
     "core.config.multi_instance_detected": "检测到配置文件 {path} 可能正被另一个 ErisPulse 实例同时使用（共享配置目录）——并发写入可能互相覆盖，请为每个实例使用独立的配置目录",
+    "core.config.gitignore_write_failed": "自动写入 .gitignore 失败（{path}），该目录可能未被 git 忽略: {error}",
     # ==================== 异常诊断 ====================
     "core.diag.frame": "  → {file}:{lineno} 位于 {func}()",
     "core.diag.source": "      {source}",

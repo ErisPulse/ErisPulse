@@ -71,6 +71,7 @@ TRANSLATIONS = {
     "core.sdk.hot_reload.failed": "Hot reload of module {name} failed: {error}",
     "core.sdk.run.shutdown_signal": "Shutdown signal received, cleaning up...",
     "core.sdk.run.unexpected_error": "Unexpected termination signal intercepted: {error}, process kept alive",
+    "core.sdk.run.unhandled_error": "Unhandled exception during run; intercepted to keep the framework running: {error}",
     # ==================== SDK Callbacks ====================
     "core.sdk.callback.before_init_failed": "before_init callback execution failed: {error}",
     "core.sdk.callback.after_init_failed": "after_init callback execution failed: {error}",
@@ -436,6 +437,7 @@ TRANSLATIONS = {
     "core.config.watcher_error": "Config watcher task error: {error}",
     "core.config.restart_required": "Configuration '{key}' changed; a process restart is required to take effect",
     "core.config.multi_instance_detected": "Configuration file {path} appears to be in use by another ErisPulse instance (shared config directory) — concurrent writes may overwrite each other. Use a separate config directory per instance.",
+    "core.config.gitignore_write_failed": "Failed to write .gitignore automatically ({path}); the directory may not be git-ignored: {error}",
     # ==================== Exception Diagnostics ====================
     "core.diag.frame": "  → {file}:{lineno} in {func}",
     "core.diag.source": "      {source}",

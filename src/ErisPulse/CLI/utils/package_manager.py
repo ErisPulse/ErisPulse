@@ -1949,22 +1949,24 @@ def is_uv_project(project_dir: "Path | None" = None) -> bool:
     pyproject = project_dir / "pyproject.toml"
     if pyproject.exists():
         try:
-            if "[tool.uv]" in pyproject.read_text(encoding="utf-8", errors="replace"):
-                return True
+            text = pyproject.read_text(encoding="utf-8", errors="replace")
         except OSError:
-            pass
+            text = ""  # 读取失败按"无 [tool.uv] 段"处理，继续后续判定
+        if "[tool.uv]" in text:
+            return True
     pyvenv_cfg = project_dir / ".venv" / "pyvenv.cfg"
     if pyvenv_cfg.exists():
         try:
+            lines = pyvenv_cfg.read_text(
+                encoding="utf-8", errors="replace"
+            ).splitlines()
+        except OSError:
+            lines = []  # 读取失败按"无 uv 标记行"处理
+        else:
             if any(
-                line.strip().startswith(UV_PROJECT_MARKER)
-                for line in pyvenv_cfg.read_text(
-                    encoding="utf-8", errors="replace"
-                ).splitlines()
+                line.strip().startswith(UV_PROJECT_MARKER) for line in lines
             ):
                 return True
-        except OSError:
-            pass
     return False
 
 

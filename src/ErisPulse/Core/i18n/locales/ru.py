@@ -71,6 +71,7 @@ TRANSLATIONS = {
     "core.sdk.hot_reload.failed": "Не удалось перезагрузить модуль {name}: {error}",
     "core.sdk.run.shutdown_signal": "Получен сигнал завершения, выполняется очистка...",
     "core.sdk.run.unexpected_error": "Перехвачен неожиданный сигнал завершения: {error}, процесс продолжает работу",
+    "core.sdk.run.unhandled_error": "Во время работы возникло необработанное исключение; перехвачено, чтобы фреймворк продолжил работу: {error}",
     # ==================== Обратные вызовы SDK ====================
     "core.sdk.callback.before_init_failed": "Ошибка выполнения обратного вызова before_init: {error}",
     "core.sdk.callback.after_init_failed": "Ошибка выполнения обратного вызова after_init: {error}",
@@ -436,6 +437,7 @@ TRANSLATIONS = {
     "core.config.watcher_error": "Ошибка задачи наблюдения за конфигурацией: {error}",
     "core.config.restart_required": "Параметр конфигурации '{key}' изменён; для применения требуется перезапуск процесса",
     "core.config.multi_instance_detected": "Похоже, файл конфигурации {path} одновременно используется другим экземпляром ErisPulse (общий каталог конфигурации) — параллельная запись может перезаписывать изменения. Используйте отдельный каталог конфигурации для каждого экземпляра.",
+    "core.config.gitignore_write_failed": "Не удалось автоматически записать .gitignore ({path}); каталог может не игнорироваться git: {error}",
     # ==================== Диагностика исключений ====================
     "core.diag.frame": "  → {file}:{lineno} в {func}()",
     "core.diag.source": "      {source}",

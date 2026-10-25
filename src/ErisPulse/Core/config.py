@@ -525,8 +525,11 @@ class ConfigManager:
                 "*\n",
                 encoding="utf-8",
             )
-        except Exception:
-            pass
+        except Exception as e:
+            self._log_config_error(
+                i18n.t("core.config.gitignore_write_failed", path=self.CONFIG_FILE, error=e),
+                level="warning",
+            )
 
     def _ensure_runtime_state_gitignore(self) -> None:
         """
@@ -550,8 +553,11 @@ class ConfigManager:
                 "*\n",
                 encoding="utf-8",
             )
-        except Exception:
-            pass
+        except Exception as e:
+            self._log_config_error(
+                i18n.t("core.config.gitignore_write_failed", path=RUNTIME_STATE_DIR_NAME, error=e),
+                level="debug",
+            )
 
     def _atomic_write_text(self, text: str) -> None:
         """

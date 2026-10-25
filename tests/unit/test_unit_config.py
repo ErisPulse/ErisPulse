@@ -2434,3 +2434,38 @@ class TestRuntimeStateGitignore:
             if manager2:
                 manager2._write_timer and manager2._write_timer.cancel()
                 manager2._watcher_stop.set()
+
+    @pytest.mark.unit
+    def test_runtime_state_gitignore_write_failure_logged(self, temp_config_file, monkeypatch) -> None:
+        """.gitignore 写入失败以 debug 留痕且不阻塞框架启动（数据写入路径必须留痕）"""
+        from pathlib import Path
+
+        monkeypatch.chdir(Path(temp_config_file).parent)
+
+        calls: list[tuple[str, str]] = []
+        monkeypatch.setattr(
+            ConfigManager,
+            "_log_config_error",
+            staticmethod(lambda message, level="error": calls.append((message, level))),
+        )
+        real_mkdir = Path.mkdir
+
+        def failing_mkdir(self, *args, **kwargs):
+            # 仅让运行状态目录的创建失败，其余路径保持真实行为
+            if self.name == ".erispulse":
+                raise OSError("permission denied")
+            return real_mkdir(self, *args, **kwargs)
+
+        monkeypatch.setattr(Path, "mkdir", failing_mkdir)
+
+        # 初始化不应因 .gitignore 写入失败而中断
+        manager = ConfigManager(config_file=temp_config_file)
+        try:
+            gitignore = Path(temp_config_file).parent.parent / ".erispulse" / ".gitignore"
+            assert not gitignore.exists(), "写入失败时不应留下 .gitignore"
+        finally:
+            manager._write_timer and manager._write_timer.cancel()
+            manager._watcher_stop.set()
+        assert any(
+            level == "debug" and ".gitignore" in message for message, level in calls
+        ), "写入失败应以 debug 级别留痕"
