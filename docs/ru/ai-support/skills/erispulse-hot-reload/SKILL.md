@@ -9,6 +9,29 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 懒加载与休眠: 35-44 行
+- Обзор: 46-53 行
+- Принцип работы: 55-69 行
+- Событийная ленивая активация (activate_on): 71-141 行
+- Задержка активации (dormant_after): 143-189 行
+- Конфигурация ленивой загрузки: 191-218 行
+- Использование модулей с ленивой загрузкой: 220-274 行
+- Рекомендуемые практики: 276-304 行
+- Примечания: 306-311 行
+- Связанные документы: 313-319 行
+- 模块开发入门（加载策略）: 321-330 行
+- Структура проекта: 332-344 行
+- Конфигурация pyproject.toml: 346-364 行
+- __init__.py: 366-370 行
+- Core.py - Базовый модуль: 372-411 行
+- Тестирование модуля: 413-431 行
+- Основные концепции: 433-525 行
+- Далее: 527-537 行
+
 ## 懒加载与休眠
 
 > 来源: `docs/ru/advanced/lazy-loading.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/ru/advanced/lazy-loading.md）

@@ -9,6 +9,25 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 异常捕获总览: 31-46 行
+- エラーの概要: 48-76 行
+- 構造化属性: 78-103 行
+- 各エラーの説明と発生位置: 105-213 行
+- エラーのキャプチャに関する提案: 215-228 行
+- インタープリタの不要な警告の抑制: 230-234 行
+- 関連ドキュメント: 236-243 行
+- 已知问题追踪: 245-260 行
+- フィールドの説明: 262-285 行
+- 重大度の分類: 287-295 行
+- タイプの分類: 297-311 行
+- 条目テンプレート: 313-336 行
+- 統計概要: 338-360 行
+- 修正されたバグ: 362-1399 行
+
 ## 异常捕获总览
 
 > 来源: `docs/ja/advanced/errors.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/ja/advanced/errors.md）

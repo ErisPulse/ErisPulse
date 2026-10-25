@@ -9,6 +9,25 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 异常捕获总览: 31-47 行
+- 異常總覽: 49-77 行
+- 結構化屬性: 79-104 行
+- 各異常說明與發生位置: 106-215 行
+- 捕獲建議: 217-230 行
+- 關閉噪音折疊: 232-240 行
+- 相關文件: 242-249 行
+- 已知问题追踪: 251-266 行
+- 字段說明: 268-291 行
+- 严重性分级: 293-301 行
+- 类型分类: 303-317 行
+- 条目模板: 319-342 行
+- 統計概覽: 344-368 行
+- 已修復的錯誤: 370-1646 行
+
 ## 异常捕获总览
 
 > 来源: `docs/zh-TW/advanced/errors.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/zh-TW/advanced/errors.md）

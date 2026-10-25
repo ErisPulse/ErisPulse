@@ -9,6 +9,82 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 标准化总纲: 88-97 行
+- 1. Standardization Principles: 99-106 行
+- 2. Standard Maps: 108-118 行
+- 3. Standardized Workflow (How New Capabilities Enter the Standard): 120-157 行
+- 4. Differential Handling Modes (Adapter Layer): 159-170 行
+- 5. Standard for Interactive Components: 172-284 行
+- 6. Future Candidates (Roadmap): 286-299 行
+- 7. Standard Checklist for New Adapter Developers: 301-319 行
+- 8. Related Documentation: 321-324 行
+- 会话类型: 326-335 行
+- 1. Core Concepts: 337-363 行
+- 2. Standard Session Types: 365-411 行
+- 3. Platform Type Mapping: 413-452 行
+- 4. Custom Type Extension: 454-496 行
+- 5. Automatic Type Inference: 498-533 行
+- 6. API Usage Examples: 535-574 行
+- 7. Core API Reference: 576-624 行
+- 8. Utility Methods: 626-648 行
+- 9. Best Practices: 650-670 行
+- 10. FAQ: 672-692 行
+- 11. Related Documentation: 694-702 行
+- 事件转换: 704-711 行
+- 1. Core Principles: 713-719 行
+- 2. Standard Field Requirements: 721-771 行
+- 3. Event Format Examples: 773-851 行
+- 4. Message Segment Standard: 853-954 行
+- 5. Handling Unknown Events: 956-972 行
+- 6. Extension Naming Convention: 974-1067 行
+- 7. Session Type Extension: 1069-1103 行
+- 8. Module Developer Guide: 1105-1218 行
+- 9. Session Type Inference for notice / request Events: 1220-1285 行
+- 10. Related Documentation: 1287-1298 行
+- 发送方法规范: 1300-1309 行
+- 0. Keyword Definitions: 1311-1319 行
+- 1. Standard Method Naming: 1321-1373 行
+- 2. Parameter Specification Details: 1375-1544 行
+- 3. Platform-Specific Method Naming: 1546-1575 行
+- 4. Parameter Naming Convention: 1577-1587 行
+- 5. Return Value Convention: 1589-1594 行
+- 6. Reverse Conversion Convention (OneBot12 → Platform): 1596-1778 行
+- 7. Method Discovery: 1780-1801 行
+- 9. Adapter Development Notes: 1803-1809 行
+- 10. Adapter Implementation Checklist: 1811-1841 行
+- 11. MessageBuilder - Adapter-Side Notes: 1843-1854 行
+- 12. Related Documents: 1856-1864 行
+- API 动作规范: 1866-1882 行
+- 1. Design Background: 1884-1896 行
+- 2. Three Parallel DSL Classes: 1898-1913 行
+- 3. Standard Action List: 1915-2039 行
+- 4. Usage: 2041-2094 行
+- 5. Adapter Implementation: 2096-2169 行
+- 6. Response Format: 2171-2186 行
+- 7. Relationship with SendDSL / RequestDSL: 2188-2196 行
+- 8. Adapter Implementation Checklist: 2198-2211 行
+- 9. Related Documents: 2213-2223 行
+- API 响应规范: 2225-2232 行
+- 1. Description: 2234-2242 行
+- 2. Basic Return Structure: 2244-2260 行
+- 3. Full Field Specification: 2262-2331 行
+- 4. Implementation Requirements: 2333-2337 行
+- 5. Extension Specifications: 2339-2410 行
+- 6. Notes: 2412-2416 行
+- 请求动作规范: 2418-2427 行
+- 1. Overview: 2429-2462 行
+- 2. Request Event Field Requirements: 2464-2508 行
+- 3. Request DSL: 2510-2575 行
+- 4. Event Convenience Methods: 2577-2611 行
+- 5. Adapter Implementation Requirements: 2613-2758 行
+- 6. Adapter Implementation Checklist: 2760-2777 行
+- 7. Error Code Extensions: 2779-2794 行
+- 8. Related Documents: 2796-2805 行
+
 ## 标准化总纲
 
 > 来源: `docs/en/standards/standardization-guide.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/standards/standardization-guide.md）

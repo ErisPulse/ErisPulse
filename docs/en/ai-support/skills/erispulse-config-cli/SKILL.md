@@ -9,6 +9,59 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 配置系统: 65-76 行
+- Configuration File Location: 78-95 行
+- Configuration Loading Error Handling: 97-118 行
+- Comment Retention and Minimal Disk Write: 120-129 行
+- Environment Variable Override: 131-182 行
+- Configuration Hot Update: 184-252 行
+- Configuration Reading and Deletion API: 254-278 行
+- Complete Configuration Example: 280-332 行
+- Server Configuration: 334-362 行
+- Master System Configuration: 364-430 行
+- Logging Configuration: 432-480 行
+- Framework Configuration: 482-553 行
+- Storage Configuration: 555-602 行
+- Event Configuration: 604-631 行
+- Transcript Inbox Configuration: 633-650 行
+- Internationalization Configuration: 652-661 行
+- Module Configuration: 663-690 行
+- Scope Configuration (scope): 692-736 行
+- Unified Event Override Configuration (event.overrides): 738-778 行
+- CLI 参考: 780-793 行
+- Package Management Commands: 795-802 行
+- Diagnostic Commands: 804-957 行
+- Information Query Commands: 959-1022 行
+- Configuration Commands: 1024-1075 行
+- Run Control Commands: 1077-1177 行
+- Project Management Commands: 1179-1289 行
+- Language Commands: 1291-1326 行
+- Type Stub Commands: 1328-1367 行
+- Global Parameters: 1369-1382 行
+- Environment Diagnostics: 1384-1425 行
+- Interactive Installation: 1427-1438 行
+- Common Usage: 1440-1567 行
+- 安装: 1569-1576 行
+- System Requirements: 1578-1582 行
+- Installation Methods: 1584-1657 行
+- Project Initialization and Module Installation: 1659-1670 行
+- Verification of Installation: 1672-1695 行
+- FAQ: 1697-1739 行
+- 部署: 1741-1750 行
+- Docker Deployment (Recommended): 1752-1839 行
+- Dashboard Management Panel: 1841-1867 行
+- Process Supervision and Hard Restart: 1869-1878 行
+- Health Check: 1880-1900 行
+- Reverse Proxy: 1902-1932 行
+- Manual Deployment (pip): 1934-2025 行
+- Security Recommendations: 2027-2034 行
+- Multi-Instance Deployment: 2036-2042 行
+- Update and Maintenance: 2044-2097 行
+
 ## 配置系统
 
 > 来源: `docs/en/user-guide/configuration.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/user-guide/configuration.md）

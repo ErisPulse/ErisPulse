@@ -9,6 +9,43 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 生态总览: 49-66 行
+- 推薦模組: 68-108 行
+- 官方客戶端（獨立程式）: 110-118 行
+- 我也想把自己的模組列在這裡？: 120-128 行
+- Dashboard: 130-156 行
+- 工作原理: 158-169 行
+- 註冊 API: 171-209 行
+- 兩種注入模式: 211-244 行
+- 側邊欄分組: 246-272 行
+- 常用 CSS 類名: 274-309 行
+- 認證與 API 調用: 311-333 行
+- 完整模組示例: 335-445 行
+- 注銷視窗: 447-459 行
+- 注意事項: 461-471 行
+- 定时任务: 473-493 行
+- 功能速覽: 495-502 行
+- 快速開始: 504-522 行
+- API 概覽: 524-577 行
+- 模組卸載時的行為: 579-584 行
+- 相關連結: 586-591 行
+- AI 对话模块: 593-611 行
+- 核心能力: 613-632 行
+- 模組擴展: 634-704 行
+- 事件訂閱: 706-718 行
+- 作為服務被呼叫: 720-726 行
+- 介面: 728-736 行
+- 平台指南索引: 738-755 行
+- 平台特定功能: 757-780 行
+- 通用介面: 782-960 行
+- 標準格式: 962-1018 行
+- 參考連結: 1020-1030 行
+- 參與貢獻: 1032-1042 行
+
 ## 生态总览
 
 > 来源: `docs/zh-TW/ecosystem/README.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/zh-TW/ecosystem/README.md）

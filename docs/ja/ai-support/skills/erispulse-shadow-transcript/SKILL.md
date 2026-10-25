@@ -9,6 +9,25 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 影子模块: 31-61 行
+- クイックスタート: 63-89 行
+- 5つの分離ゲート: 91-101 行
+- 誠実な限界（防げないもの）: 103-112 行
+- 昇格とロールバック: 114-123 行
+- 関連ドキュメント: 125-129 行
+- 消息追踪: 131-145 行
+- 動作原理: 147-176 行
+- 設定: 178-195 行
+- メッセージ帰属（sender と meta）: 197-256 行
+- 実行時オーバーライド API: 258-278 行
+- リスクと監査：制限を緩和する前に必読: 280-309 行
+- 他のメカニズムとの境界: 311-316 行
+- 関連ドキュメント: 318-322 行
+
 ## 影子模块
 
 > 来源: `docs/ja/advanced/shadow.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/ja/advanced/shadow.md）

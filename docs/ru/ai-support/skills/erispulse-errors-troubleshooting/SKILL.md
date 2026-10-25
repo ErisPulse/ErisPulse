@@ -9,6 +9,25 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 异常捕获总览: 31-46 行
+- Обзор исключений: 48-76 行
+- Структурированные свойства: 78-103 行
+- Описание исключений и места их возникновения: 105-206 行
+- Рекомендации по перехвату: 208-221 行
+- Отключение шумного складывания: 223-225 行
+- Связанные документы: 227-234 行
+- 已知问题追踪: 236-251 行
+- Описание полей: 253-276 行
+- Шкала серьезности: 278-286 行
+- Классификация типов: 288-302 行
+- Шаблон записи: 304-327 行
+- Общая статистика: 329-353 行
+- Исправленные ошибки: 355-1382 行
+
 ## 异常捕获总览
 
 > 来源: `docs/ru/advanced/errors.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/ru/advanced/errors.md）

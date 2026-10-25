@@ -9,6 +9,76 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 适配器开发入门: 82-91 行
+- Adapter Overview: 93-116 行
+- Directory Structure: 118-131 行
+- Quick Start: 133-462 行
+- Local Development (No Packaging Required): 464-496 行
+- Dependency Declaration (Optional, 2.8.0+): 498-532 行
+- `__init__` Notes: 534-742 行
+- 适配器核心概念: 744-753 行
+- Adapter Architecture: 755-794 行
+- AdapterManager Adapter Manager: 796-1029 行
+- BaseAdapter Base Class: 1031-1404 行
+- Send Message Sending DSL: 1406-1477 行
+- Event Converter: 1479-1550 行
+- Connection Management: 1552-1722 行
+- API Response Standard: 1724-1756 行
+- Multi-Account Support: 1758-1829 行
+- Error Handling: 1831-1883 行
+- Bot Status Management: 1885-1945 行
+- 发送 DSL: 1947-1956 行
+- Basic Calling Methods: 1958-1982 行
+- Method Chaining: 1984-1992 行
+- Sending Methods: 1994-2042 行
+- Modifiers: 2044-2108 行
+- Using Modifier Methods in Event Wrapper Classes: 2110-2172 行
+- Account Management: 2174-2199 行
+- Asynchronous Processing: 2201-2224 行
+- Send Rule System: 2226-2349 行
+- Batch Build Mode (Build): 2351-2474 行
+- Naming Convention: 2476-2521 行
+- Internal Decomposition of the Send Chain: 2523-2581 行
+- Return Values: 2583-2638 行
+- Complete Examples: 2640-2686 行
+- 转换器: 2688-2697 行
+- Converter Responsibilities: 2699-2711 行
+- BaseConverter Base Class (Recommended): 2713-2759 行
+- The convert() Method: 2761-2801 行
+- Required Field Mapping: 2803-2829 行
+- Message Segment Conversion: 2831-2861 行
+- Platform Extension Fields: 2863-2884 行
+- Complete Example: 2886-2966 行
+- Rich Media Message Conversion Example: 2968-3015 行
+- Common Pitfalls: 3017-3059 行
+- Best Practices: 3061-3077 行
+- 适配器最佳实践: 3079-3088 行
+- Bot Status Management and Meta Events: 3090-3187 行
+- Connection Management: 3189-3304 行
+- Event Conversion: 3306-3358 行
+- SendDSL Implementation: 3360-3421 行
+- API Response: 3423-3472 行
+- Multi-Account Support: 3474-3534 行
+- Error Handling: 3536-3588 行
+- Testing: 3590-3634 行
+- Reverse Conversion and Message Building: 3636-3644 行
+- Platform Event Method Extension: 3646-3698 行
+- Documentation Maintenance: 3700-3707 行
+- Basic Information: 3709-3711 行
+- Supported Message Sending Types: 3713-3714 行
+- Specific Event Types: 3716-3717 行
+- Configuration Options: 3719-3740 行
+- 平台接入指南索引: 3742-3758 行
+- Platform-Specific Features: 3760-3782 行
+- General Interfaces: 3784-3964 行
+- Standard Formats: 3966-4022 行
+- References: 4024-4034 行
+- Contributing: 4036-4045 行
+
 ## 适配器开发入门
 
 > 来源: `docs/en/developer-guide/adapters/getting-started.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/developer-guide/adapters/getting-started.md）

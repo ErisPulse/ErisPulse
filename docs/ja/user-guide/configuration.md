@@ -184,7 +184,6 @@ flowchart TD
 | ストレージ | `config.updated` | `use_global_db` 変更は**警告のみ**（再起動が必要） |
 | ルーター | `config.updated` | `cors.*` / `security.*` 変更は**警告のみ**（再起動が必要） |
 
-
 ## 設定の読み取りと削除 API
 
 ### getAllConfig：全量設定スナップショット

@@ -9,6 +9,28 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 懒加载与休眠: 34-43 行
+- 概述: 45-52 行
+- 工作原理: 54-68 行
+- 事件驅動懶激活（activate_on）: 70-146 行
+- 懶加載休眠（dormant_after）: 148-194 行
+- 配置懶加載: 196-223 行
+- 使用懶加載模組: 225-280 行
+- 最佳實踐: 282-310 行
+- 注意事項: 312-317 行
+- 相關文件: 319-325 行
+- 模块开发入门（加载策略）: 327-336 行
+- 項目結構: 338-350 行
+- pyproject.toml 配置: 352-370 行
+- __init__.py: 372-376 行
+- Core.py - 基礎模組: 378-417 行
+- 測試模組: 419-437 行
+- 核心概念: 439-542 行
+
 ## 懒加载与休眠
 
 > 来源: `docs/zh-TW/advanced/lazy-loading.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/zh-TW/advanced/lazy-loading.md）

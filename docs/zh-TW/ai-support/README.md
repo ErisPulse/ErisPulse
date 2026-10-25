@@ -59,28 +59,28 @@ ErisPulse 提供兩種互補的 AI 輔助開發方式，讓 AI 能基於最新�
 
 ## Agent Skills
 
-Agent Skills 是面向 AI 編碼智慧體（ZCode / Claude Code 等）的技能包：每個技能是一個目錄（`SKILL.md` + frontmatter），智慧體按 `description` 自動發現、按需載入——只在任務相關時讀對應章節，不必全文灌入。
+Agent Skills 是面向 AI 編碼智能體（ZCode / Claude Code 等）的技能包：每個技能是一個目錄（`SKILL.md` + frontmatter），智能體根據 `description` 自動發現、按需加載——僅在任務相關時讀取對應章節，不必全文灌入。
 
-技能位於 `skills/` 目錄（與物料文件同步生成），每個 `SKILL.md` 開頭帶**行號大綱**：標註各章節的起止行號，AI 可唯讀需要的部分。
+技能位於 `skills/` 目錄（與物料文件同步生成），每個 `SKILL.md` 開頭帶**行號大綱**：標註各章節的起止行號，AI 可只讀取需要的部分。
 
 ### 部署方式
 
-1. 從 `skills/<語言>/` 目錄取得技能（或下載對應版本的 artifact）
-2. 將技能目錄拷入智慧體的技能目錄（依你的工具約定，如 `.zcode/skills/`、`.claude/skills/`）
-3. 之後智慧體遇到相關任務會自動觸發載入，無需手動引用
+1. 從 `skills/<語言>/` 目錄獲取技能（或下載對應版本的 artifact）
+2. 將技能目錄拷入智能體的技能目錄（按你的工具約定，如 `.zcode/skills/`、`.claude/skills/`）
+3. 之後智能體遇到相關任務會自動觸發加載，無需手動引用
 
 ### 大綱示例
 
 ```markdown
 ## 內容大綱
-AI 按需讀取：唯讀需要的章節即可，不必全文載入。
+AI 按需讀取：只讀取需要的章節即可，不必全文加載。
 
-- 懶載入與休眠: 18-29 行
+- 慣性加載與休眠: 18-29 行
 - 概述: 30-38 行
-- 事件驅動懶啟動（activate_on）: 55-132 行
+- 事件驅動慣性激活（activate_on）: 55-132 行
 ```
 
-> 技能由 CI 自動構建（`python -m scripts.tools gen skills`），不要手改。
+> 技能由 CI 自動建構（`python -m scripts.tools gen skills`），請勿手動修改。
 
 ## MCP 伺服器
 

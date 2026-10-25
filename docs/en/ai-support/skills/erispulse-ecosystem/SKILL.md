@@ -9,6 +9,42 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 生态总览: 48-67 行
+- Recommended Modules: 69-109 行
+- Official Client (Standalone Application): 111-121 行
+- Want to list your own module here?: 123-131 行
+- Dashboard: 133-160 行
+- How It Works: 162-173 行
+- Registration API: 175-213 行
+- Two Injection Modes: 215-248 行
+- Sidebar Groups: 250-276 行
+- Common CSS Class Names: 278-313 行
+- Authentication and API Calls: 315-337 行
+- Complete Module Example: 339-449 行
+- Unregistering a View: 451-463 行
+- Notes: 465-475 行
+- 定时任务: 477-497 行
+- Feature Overview: 499-506 行
+- Quick Start: 508-526 行
+- API Overview: 528-581 行
+- Behavior on Module Unload: 583-588 行
+- AI 对话模块: 590-608 行
+- Core Capabilities: 610-629 行
+- Module Extensions: 631-701 行
+- Event Subscription: 703-715 行
+- Invoked as a Service: 717-723 行
+- Interface: 725-733 行
+- 平台指南索引: 735-751 行
+- Platform-Specific Features: 753-775 行
+- General Interfaces: 777-957 行
+- Standard Formats: 959-1015 行
+- References: 1017-1027 行
+- Contributing: 1029-1038 行
+
 ## 生态总览
 
 > 来源: `docs/en/ecosystem/README.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/ecosystem/README.md）

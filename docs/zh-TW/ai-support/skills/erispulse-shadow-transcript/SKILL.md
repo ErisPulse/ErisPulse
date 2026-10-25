@@ -9,6 +9,25 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 影子模块: 31-60 行
+- 快速上手: 62-88 行
+- 五道隔離閘: 90-100 行
+- 誠實邊界（無法攔阻的）: 102-111 行
+- 轉正與回滾: 113-122 行
+- 相關文件: 124-128 行
+- 消息追踪: 130-143 行
+- 工作原理: 145-174 行
+- 配置: 176-192 行
+- 消息歸因（sender 與 meta）: 194-253 行
+- 運行時覆蓋 API: 255-275 行
+- 風險與審計：解除限制前必讀: 277-302 行
+- 與其它機制的邊界: 304-309 行
+- 相關文件: 311-315 行
+
 ## 影子模块
 
 > 来源: `docs/zh-TW/advanced/shadow.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/zh-TW/advanced/shadow.md）

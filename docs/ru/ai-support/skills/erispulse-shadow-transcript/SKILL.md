@@ -9,6 +9,25 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 影子模块: 31-51 行
+- Быстрый старт: 53-78 行
+- Пять изолирующих барьеров: 80-90 行
+- Честные границы (не остановить): 92-101 行
+- Промотирование и откат: 103-107 行
+- Связанные документы: 109-113 行
+- 消息追踪: 115-126 行
+- Принцип работы: 128-154 行
+- Конфигурация: 156-170 行
+- Атрибуция сообщений (отправитель и метаданные): 172-224 行
+- API-интерфейсы изменения настроек в процессе работы: 226-246 行
+- Риски и аудит: что нужно знать перед снятием ограничений: 248-272 行
+- Границы с другими механизмами: 274-278 行
+- Связанные документы: 280-284 行
+
 ## 影子模块
 
 > 来源: `docs/ru/advanced/shadow.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/ru/advanced/shadow.md）

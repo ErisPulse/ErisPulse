@@ -9,6 +9,78 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 模块开发入门: 84-93 行
+- Project Structure: 95-107 行
+- pyproject.toml Configuration: 109-127 行
+- __init__.py: 129-133 行
+- Core.py - Core Module: 135-174 行
+- Testing Module: 176-194 行
+- Core Concepts: 196-298 行
+- 模块核心概念: 300-309 行
+- Module Lifecycle: 311-450 行
+- The SDK Object: 452-471 行
+- Adapter Send Method Query: 473-499 行
+- Configuration Management: 501-617 行
+- Storage System: 619-642 行
+- Event Handling: 644-664 行
+- Lazy Loading Mechanism: 666-687 行
+- Error Handling: 689-724 行
+- Event 包装类: 726-735 行
+- Adding Type Annotations to the event Parameter: 737-752 行
+- Core Features: 754-759 行
+- Core Field Methods: 761-772 行
+- Message Event Methods: 774-785 行
+- Message Type Detection: 787-798 行
+- Reply Functionality: 800-820 行
+- Advanced Interactive Sessions: 822-855 行
+- Getting Command Information: 857-867 行
+- Notice Event Methods: 869-877 行
+- Method Quick Reference: 879-1222 行
+- 模块最佳实践: 1224-1234 行
+- Module Design: 1236-1324 行
+- Asynchronous Programming: 1326-1400 行
+- Event Handling: 1402-1469 行
+- Utility Module: When Hosting Other Things, You Must Catch "Unload Notification": 1471-1505 行
+- Error Handling: 1507-1546 行
+- Storage System: 1548-1579 行
+- Logging: 1581-1613 行
+- Performance Optimization: 1615-1650 行
+- Security: 1652-1696 行
+- Testing: 1698-1725 行
+- Deployment: 1727-1792 行
+- ORM 数据模型: 1794-1803 行
+- Declaring Models: 1805-1820 行
+- Field Parameters: 1822-1836 行
+- Table Creation and CRUD: 1838-1862 行
+- Transactions: 1864-1872 行
+- Relationship with Declarative Configuration Class: 1874-1888 行
+- Boundaries and Notes: 1890-1896 行
+- Automatic Migration (Phase Two): 1898-1916 行
+- Foreign Keys (Foundation for Relationship Mapping): 1918-1930 行
+- Relationship Mapping (relationship): 1932-1991 行
+- 多轮对话: 1993-2002 行
+- Creating a Conversation: 2004-2033 行
+- Core API: 2035-2175 行
+- Active State Management: 2177-2197 行
+- Branching and Jumping: 2199-2249 行
+- Context and Persistence: 2251-2288 行
+- Automatic Checkpoint and Restart Recovery: 2290-2356 行
+- Typical Workflow Patterns: 2358-2416 行
+- 交互会话: 2418-2438 行
+- Waiting for Reply: wait_reply: 2440-2507 行
+- Declarative Multi-turn: `.got()` Chain (2.11+): 2509-2544 行
+- Session Timers: remind / escalate: 2546-2580 行
+- Multi-Way Waiting: expect + select: 2582-2614 行
+- Session Mutual Exclusion: acquire / hold / get_owner_of: 2616-2645 行
+- Session Inbox: event.history: 2647-2663 行
+- Message Transaction: message_tx: 2665-2676 行
+- Trace ID: 2678-2687 行
+- Relationship with Other Systems: 2689-2694 行
+
 ## 模块开发入门
 
 > 来源: `docs/en/developer-guide/modules/getting-started.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/developer-guide/modules/getting-started.md）

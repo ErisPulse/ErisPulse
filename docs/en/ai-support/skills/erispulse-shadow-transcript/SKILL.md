@@ -9,6 +9,23 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 影子模块: 29-49 行
+- Quick Start: 51-76 行
+- Five Isolation Gates: 78-88 行
+- Honest Boundaries (Can't Be Blocked): 90-96 行
+- Promote and Rollback: 98-102 行
+- 消息追踪: 104-118 行
+- How It Works: 120-151 行
+- Configuration: 153-172 行
+- Message Attribution (sender and meta): 174-236 行
+- Runtime Override API: 238-258 行
+- Risks and Auditing: Must-Read Before Lifting Limits: 260-289 行
+- Boundaries with Other Mechanisms: 291-297 行
+
 ## 影子模块
 
 > 来源: `docs/en/advanced/shadow.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/advanced/shadow.md）

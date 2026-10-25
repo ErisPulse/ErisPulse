@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "20f0aa701f96ecf02a994004755afc9b",
-  "file_hash": "20f0aa701f96ecf02a994004755afc9b",
-  "translated_at": "2026-09-07T10:56:07.704115",
+  "hash": "dd1a16857f130f7c7f782767cd4e9a33",
+  "file_hash": "dd1a16857f130f7c7f782767cd4e9a33",
+  "translated_at": "2026-10-25T15:45:30.868917",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -12,6 +12,10 @@
     {
       "hash": "2ede588538483b01092dad6bf9566c03",
       "translation": "## 物料文件\n\n物料文件位於 `prompts/` 目錄下，依據開發場景分為三種：\n\n| 文件 | 場景 | 說明 |\n|------|------|------|\n| **ErisPulse-ModuleDev.md** | 模塊開發 | 覆蓋模塊開發全流程（事件處理、路由、生命週期等） |\n| **ErisPulse-AdapterDev.md** | 適配器開發 | 在模塊開發基礎上，外加適配器核心概念、SendDSL、平台適配指南 |\n| **ErisPulse-Full.md** | 全棧參考 | 上述全部內容 + 完整用戶指南與 API 參考合集 |\n\n獲取方式：從 `prompts/` 目錄直接獲取（與文件同步更新），或從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse/releases) 下載對應版本。\n\n### 使用方式\n\n1. 根據目標選擇文件（模塊 → `ModuleDev`，適配器 → `AdapterDev`，複雜需求 → `Full`）\n2. 將文件內容作為上下文提供給 AI：IDE 內放入工作區，對話類直接貼上，API 調用作為 system message 注入\n3. 用下方範本描述需求，越具體生成品質越高\n\n### 需求描述範本\n\n**模塊：**\n\n```\n請基於 ErisPulse 模塊開發規範，生成一個 [模塊名稱] 模塊的完整程式碼。\n\n功能描述：[核心功能]\n需要監聽的事件：[訊息 / 命令 / 通知 / 請求]，處理邏輯：[操作]\n需要的設定項：[鍵名]：[用途]（[必填/可選]，預設值：[值]）\n其他要求：[額外限制]\n```\n\n**適配器：**\n\n```\n請基於 ErisPulse 適配器開發規範，生成一個 [適配器名稱] 適配器的完整程式碼。\n\n平台資訊：[名稱]，通訊協定：[WebSocket / WebHook / HTTP 輪詢]，API 文件：[位址]\n事件轉換：平台事件 [類型] → OneBot12 映射 [關係]\n需要實作的傳送方法：[文字 / 圖片 / 聲音 ...]\n設定項：[鍵名]：[用途]（[必填/可選]）\n```"
+    },
+    {
+      "hash": "8ababf1dc34d446180e953774edf22f8",
+      "translation": "## Agent Skills\n\nAgent Skills 是面向 AI 編碼智能體（ZCode / Claude Code 等）的技能包：每個技能是一個目錄（`SKILL.md` + frontmatter），智能體根據 `description` 自動發現、按需加載——僅在任務相關時讀取對應章節，不必全文灌入。\n\n技能位於 `skills/` 目錄（與物料文件同步生成），每個 `SKILL.md` 開頭帶**行號大綱**：標註各章節的起止行號，AI 可只讀取需要的部分。\n\n### 部署方式\n\n1. 從 `skills/<語言>/` 目錄獲取技能（或下載對應版本的 artifact）\n2. 將技能目錄拷入智能體的技能目錄（按你的工具約定，如 `.zcode/skills/`、`.claude/skills/`）\n3. 之後智能體遇到相關任務會自動觸發加載，無需手動引用\n\n### 大綱示例\n\n```markdown\n## 內容大綱\nAI 按需讀取：只讀取需要的章節即可，不必全文加載。\n\n- 慣性加載與休眠: 18-29 行\n- 概述: 30-38 行\n- 事件驅動慣性激活（activate_on）: 55-132 行\n```\n\n> 技能由 CI 自動建構（`python -m scripts.tools gen skills`），請勿手動修改。"
     },
     {
       "hash": "d41ad0ca14af959fd3a8cf9f5a81c8b7",

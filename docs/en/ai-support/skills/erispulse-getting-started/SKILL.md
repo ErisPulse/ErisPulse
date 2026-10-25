@@ -9,6 +9,76 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 文档总入口与阅读路径: 82-92 行
+- Choose Your Path: 94-198 行
+- Advanced Features Version Quick Reference: 200-210 行
+- Development Approaches: 212-217 行
+- Other: 219-223 行
+- Get Help: 225-229 行
+- 快速开始: 231-237 行
+- 60-Second Demo: Let the Bot Reply to You First: 239-278 行
+- Install ErisPulse: Three Ways: 280-345 行
+- Initialize Project: 347-379 行
+- Installing Modules: 381-401 行
+- Running the Project: 403-411 行
+- Enable IDE Completion (Optional): 413-430 行
+- Project Structure: 432-442 行
+- Configuration File: 444-481 行
+- 第一个机器人: 483-492 行
+- Step 1: Write Your First Command: 494-541 行
+- Step 2: Run the Robot: 543-551 行
+- Step 3: Test the Bot: 553-561 行
+- Code Explanation: 563-595 行
+- Extensions: Adding More Features: 597-603 行
+- FAQ: 605-641 行
+- What's Next: 643-647 行
+- 基础概念: 649-658 行
+- Event-Driven Architecture: 660-698 行
+- Core Components: 700-822 行
+- Event Types: 824-836 行
+- Core Module Descriptions: 838-940 行
+- SendDSL Message Sending: 942-987 行
+- Lazy Loading System: 989-1010 行
+- 事件处理: 1012-1021 行
+- Overview of Event Types: 1023-1033 行
+- Message Event Handling: 1035-1106 行
+- Command Event Handling: 1108-1461 行
+- Middleware: Rewrite or Reject Before Distribution: 1463-1485 行
+- Command Dispatch Decision Chain: Why a Command Didn't Trigger: 1487-1493 行
+- Scope Filtering: Why My Module Didn't Receive the Message: 1495-1523 行
+- Event Overwriting: Overwrite Any Event Type Behavior Without Modifying Module Code: 1525-1583 行
+- Link Control: Claiming and Blocking: 1585-1634 行
+- Notice Event Handling: 1636-1668 行
+- Request Event Handling: 1670-1697 行
+- Meta Event Handling: 1699-1746 行
+- Interactive Handling: 1748-1969 行
+- Event Data Access: 1971-2046 行
+- Event Handling Best Practices: 2048-2099 行
+- 常见任务: 2101-2108 行
+- Content List: 2110-2120 行
+- Data Persistence: 2122-2179 行
+- Scheduled Tasks: 2181-2249 行
+- Message Filtering: 2251-2290 行
+- Multi-Platform Adaptation: 2292-2333 行
+- Advanced Message Sending (Retry/Timeout/Batch): 2335-2388 行
+- Permission Control: 2390-2440 行
+- Message Statistics: 2442-2486 行
+- Search Functionality: 2488-2542 行
+- Image Processing: 2544-2607 行
+- What's Next: 2609-2613 行
+- IDE 补全: 2615-2625 行
+- Core Design Principles: 2627-2633 行
+- Basic Usage: 2635-2643 行
+- Using in Code: 2645-2657 行
+- How It Works: 2659-2683 行
+- Command Options: 2685-2692 行
+- When to Regenerate: 2694-2698 行
+- Relationship with SendDSL Standard Methods: 2700-2704 行
+
 ## 文档总入口与阅读路径
 
 > 来源: `docs/en/README.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/README.md）

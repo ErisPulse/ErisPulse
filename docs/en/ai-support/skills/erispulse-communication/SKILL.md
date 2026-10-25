@@ -9,6 +9,62 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 模块间通信: 68-94 行
+- RPC: module.call: 96-123 行
+- Service Contract: meta.services: 125-193 行
+- Service Directory: services(): 195-213 行
+- Outbound Audit: Who Can Call Whom: 215-229 行
+- Directed Events: lifecycle.emit with to parameter: 231-257 行
+- Lazy Loading and Invocation: 259-269 行
+- Cold Start Replay: 271-299 行
+- Event Idempotency Deduplication: 301-310 行
+- 连接管理: 312-328 行
+- Overview: 330-356 行
+- Checking Connection Pool: 358-381 行
+- Broadcasting and Subscription: 383-444 行
+- Cross-Module Transfer / Reuse: 446-465 行
+- Outbound Connections (Client Side): 467-480 行
+- Cross-Thread Delivery: 482-496 行
+- Unload and Cleanup Semantics: 498-503 行
+- API Overview: 505-519 行
+- HTTP 客户端: 521-530 行
+- Overview: 532-543 行
+- Quick Start: 545-592 行
+- HttpResponse: 594-615 行
+- Request Methods: 617-700 行
+- Parameter Explanation: 702-723 行
+- Timeout and Retries: 725-743 行
+- Custom Default Headers: 745-755 行
+- Request Statistics: 757-768 行
+- Lifecycle Events: 770-794 行
+- Context Management: 796-803 行
+- WebSocket Client: 805-912 行
+- Exception System: 914-990 行
+- Using in Adapters: 992-1015 行
+- Best Practices: 1017-1025 行
+- 路由: 1027-1036 行
+- Overview: 1038-1053 行
+- Abstract Types: 1055-1066 行
+- Decorator Routes (Recommended): 1068-1184 行
+- Traditional Registration Methods: 1186-1251 行
+- WebSocket Lifecycle Hooks: 1253-1275 行
+- Route Grouping: 1277-1292 行
+- Route Middleware: 1294-1309 行
+- Request Correlation ID (X-Request-ID): 1311-1334 行
+- Rate Limiting: 1336-1350 行
+- CORS Configuration: 1352-1369 行
+- Security Headers: 1371-1384 行
+- Automatic Documentation: 1386-1400 行
+- Path Handling: 1402-1413 行
+- System Routes: 1415-1434 行
+- Home Entry: 1436-1473 行
+- Lifecycle Integration: 1475-1487 行
+- Best Practices: 1489-1498 行
+
 ## 模块间通信
 
 > 来源: `docs/en/advanced/module-communication.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/advanced/module-communication.md）

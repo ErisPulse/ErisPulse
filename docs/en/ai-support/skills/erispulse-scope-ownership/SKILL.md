@@ -9,6 +9,42 @@ This skill is auto-built from the ErisPulse documentation.
 Repository: https://github.com/ErisPulse/ErisPulse
 Source paths are annotated per section; see docs/ in the repository for the latest content.
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 作用域: 48-84 行
+- Matching Entry Syntax (Unified Across the System): 86-97 行
+- Global Fallback: `default_allow`: 99-113 行
+- Configuration File: 115-148 行
+- ① Module Dimension: 150-190 行
+- ② Identity Dimension (Event Admission): 192-209 行
+- ③ Outbound Dimension (Restricting Module Outbound Calls): 211-260 行
+- Runtime API: 262-358 行
+- Interception Observability: `scope.blocked` Event: 360-382 行
+- Cache and Hot Reload: 384-389 行
+- Configuration Format Validation: 391-393 行
+- Common Issues and Considerations: 395-431 行
+- Topology Tree API: 433-469 行
+- 归属权: 471-493 行
+- Owner Context Mechanism: 495-516 行
+- Resource Ownership Overview: 518-551 行
+- Unload/Disable Cleanup Sequence: 553-576 行
+- Ownership Facade (ownership): 578-602 行
+- Hot Reload Failure Rollback: 604-612 行
+- Design Boundaries: Resources Not Cleaned on Unload: 614-625 行
+- Internal Implementation: How Ownership Works: 627-669 行
+- Module Author Guide: 671-715 行
+- Tool Module Guide: Handling References to Other Modules: 717-755 行
+- 生命周期: 757-775 行
+- Event Handling Mechanism: 777-878 行
+- Overview of Hook Breakpoints: 880-1094 行
+- Standard Event Definitions: 1096-1120 行
+- Complete API Reference: 1122-1158 行
+- Example Usage in Module: 1160-1185 行
+- Background Task Ownership and Automatic Cancellation: 1187-1216 行
+- Notes: 1218-1227 行
+
 ## 作用域
 
 > 来源: `docs/en/advanced/scope.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/advanced/scope.md）
