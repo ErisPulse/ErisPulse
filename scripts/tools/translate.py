@@ -133,6 +133,16 @@ class DocsTranslator:
         self.max_tokens = self._setting("max_tokens", 8000)
         self.temperature = self._setting("temperature", 0.3)
 
+        # 分块字符预算：块译文 token 数与块字符数同量级（CJK 密排），按各
+        # provider 生效 max_tokens 的最小值留 40% 余量折算；超限块在翻译前
+        # 二次拆分，避免 finish_reason=length 截断（bug-tracker 巨表曾整块超限）
+        effective_max_tokens = [
+            self._setting("max_tokens", 8000, i) for i in range(len(self.providers))
+        ] or [self.max_tokens]
+        self.chunk_char_limit = int(
+            min(effective_max_tokens) * self._CHUNK_CHAR_TOKEN_RATIO
+        )
+
         self.stats = {
             "total_files": 0,
             "translated_files": 0,
@@ -418,6 +428,11 @@ class DocsTranslator:
     # ==================== 分块增量翻译 ====================
 
     _CHUNK_HEADING_RE = re.compile(r"^#{1,2}\s+")
+    # 二次拆分的更细边界：三级及更深标题
+    _CHUNK_SUB_HEADING_RE = re.compile(r"^#{3,}\s+")
+    # 块字符数 → 输出 token 数的折算比（CJK 密排按 1 字符 ≈ 1 token 估计，
+    # 留 40% 余量吸收表格内联代码、译文膨胀与 tokenizer 差异）
+    _CHUNK_CHAR_TOKEN_RATIO = 0.6
 
     @classmethod
     def _split_into_chunks(cls, content: str) -> list[str]:
@@ -459,6 +474,126 @@ class DocsTranslator:
             if text:
                 chunks.append(text)
 
+        return chunks
+
+    @staticmethod
+    def _split_lines_by(lines: list[str], is_boundary) -> list[list[str]]:
+        """
+        围栏感知的行分组：``is_boundary(去空白行)`` 命中且不在代码围栏内时起新组
+
+        :param lines: 行列表
+        :param is_boundary: 边界判定函数（入参为去空白后的行内容）
+        :return: 行组列表（每组为若干行的列表）
+        """
+        parts: list[list[str]] = []
+        current: list[str] = []
+        in_code = False
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                in_code = not in_code
+            if is_boundary(stripped) and not in_code and current:
+                parts.append(current)
+                current = [line]
+            else:
+                current.append(line)
+        if current:
+            parts.append(current)
+        return parts
+
+    def _refine_oversized_chunk(self, chunk: str) -> list[str]:
+        """
+        超出输出预算的块二次拆分
+
+        h1/h2 分块后单块仍可能过大（如无空行的巨型表格整表属同一 h2 节），
+        直译会触发 ``finish_reason=length`` 截断。依次尝试三级深标题 → 空行
+        等更细边界递归拆分；无任何结构边界时在围栏外按行硬切，直到每块
+        字符数都落在 :attr:`chunk_char_limit` 预算内。单个超大代码围栏无法
+        安全切分，保持原样（由截断检测兜底报失败）。
+
+        :param chunk: 源块文本
+        :return: 拆分后的块列表（块本身不超限时为 ``[chunk]``）
+        """
+        if len(chunk) <= self.chunk_char_limit:
+            return [chunk]
+        lines = chunk.split("\n")
+        for is_boundary in (
+            lambda s: bool(self._CHUNK_SUB_HEADING_RE.match(s)),
+            lambda s: not s,
+        ):
+            parts = self._split_lines_by(lines, is_boundary)
+            if len(parts) > 1:
+                texts = [text for part in parts if (text := "\n".join(part).strip())]
+                refined: list[str] = []
+                for text in texts:
+                    refined.extend(self._refine_oversized_chunk(text))
+                # 小块贪心合并回预算内，避免把一个大块碎成过多小请求
+                return self._merge_within_limit(refined)
+        # 无结构边界可依（巨型表格等）：围栏外按行累积硬切
+        parts: list[str] = []
+        current: list[str] = []
+        size = 0
+        in_code = False
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                in_code = not in_code
+            if current and not in_code and size + len(line) + 1 > self.chunk_char_limit:
+                parts.append("\n".join(current).strip())
+                current, size = [], 0
+            current.append(line)
+            size += len(line) + 1
+        if current:
+            text = "\n".join(current).strip()
+            if text:
+                parts.append(text)
+        return parts
+
+    def _merge_within_limit(self, chunks: list[str]) -> list[str]:
+        """
+        相邻小块贪心合并（以空行连接），直到再并入一块就会超出字符预算
+
+        单块本身超预算（如无法安全切分的超大代码围栏）时保持独立成块。
+
+        :param chunks: 待合并的块列表（各块应已尽量在预算内）
+        :return: 合并后的块列表
+        """
+        merged: list[str] = []
+        buf: list[str] = []
+        size = 0
+        for chunk in chunks:
+            extra = len(chunk) + (2 if buf else 0)
+            if buf and size + extra > self.chunk_char_limit:
+                merged.append("\n\n".join(buf))
+                buf, size = [], 0
+                extra = len(chunk)
+            buf.append(chunk)
+            size += extra
+        if buf:
+            merged.append("\n\n".join(buf))
+        return merged
+
+    def _split_chunks(self, content: str) -> list[str]:
+        """
+        主拆分（h1/h2 标题）+ 超限块二次拆分
+
+        翻译、缓存重建与评审回填共用同一结构，保证分块哈希按位置对齐。
+
+        :param content: Markdown 文本
+        :return: 分块文本列表
+        """
+        primary = self._split_into_chunks(content)
+        chunks = [
+            refined
+            for chunk in primary
+            for refined in self._refine_oversized_chunk(chunk)
+        ]
+        if len(chunks) != len(primary):
+            Logger.log(
+                f"  [分块] 检测到超出输出预算的大块，"
+                f"已拆分：{len(primary)} → {len(chunks)} 块"
+                f"（字符预算 {self.chunk_char_limit}）"
+            )
         return chunks
 
     @staticmethod
@@ -742,7 +877,7 @@ class DocsTranslator:
                     file_name,
                     target_lang,
                     "fail",
-                    f"max_tokens={self.max_tokens} 不够，翻译被截断",
+                    f"max_tokens={max_tokens} 不够，翻译被截断",
                 )
                 return None
 
@@ -945,7 +1080,7 @@ class DocsTranslator:
             return False
         with open(file_path, encoding="utf-8") as f:
             content = f.read()
-        source_chunks = self._split_into_chunks(content)
+        source_chunks = self._split_chunks(content)
         if not source_chunks:
             return False
         chunk_hashes = [self._chunk_hash(c) for c in source_chunks]
@@ -1002,7 +1137,7 @@ class DocsTranslator:
             # ---- 分块增量翻译 ----
             # 按 ## 标题将文档拆分为块，仅翻译哈希变化的块，未变化的复用缓存。
             # 对于小改动（如修正一个导入路径），通常只重译 1-2 块，大幅节省 token。
-            source_chunks = self._split_into_chunks(content)
+            source_chunks = self._split_chunks(content)
             cached_chunks = {} if force else self._load_cached_chunks(
                 file_path, target_lang
             )
@@ -1035,7 +1170,7 @@ class DocsTranslator:
                         chunk_result = await self.call_translation_api(
                             chunk,
                             target_lang,
-                            "",  # file_name="" → 跳过 README 语言切换行提示
+                            rel_path,  # 传真实路径：截断等失败日志可定位文件
                             review_notes=chunk_notes,
                             buffer=buf,
                             provider_index=pidx,
@@ -1233,7 +1368,7 @@ class DocsTranslator:
             # 文档与缓存不一致。按位置对齐回填（翻译保持标题结构，分块数应一致），
             # 分块数不一致时保留原缓存（结构变化无法安全对齐）
             if review_retranslated is not None:
-                retranslated_chunks = self._split_into_chunks(review_retranslated)
+                retranslated_chunks = self._split_chunks(review_retranslated)
                 if len(retranslated_chunks) == total_chunks:
                     translated_chunks_list = retranslated_chunks
                 else:

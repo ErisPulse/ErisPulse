@@ -59,11 +59,9 @@ def main(argv: list[str] | None = None) -> int:
 
         return int(asyncio.run(translate_main(args)) or 0)
     elif group == "auto-translate":
-        import asyncio
-
         from .auto_translate import main as auto_translate_main
 
-        return int(asyncio.run(auto_translate_main(args)) or 0)
+        return int(auto_translate_main(args) or 0)
     else:
         print(f"未知组: {group}\n\n{USAGE}", file=sys.stderr)
         return 2

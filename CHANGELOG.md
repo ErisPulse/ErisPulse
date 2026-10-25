@@ -149,7 +149,7 @@
   - Kernel 组合根收尾：`Initializer` 缺省构造委托 `Kernel.build_loaders()`，消除游离 StrictModeManager
   - 删除 `BaseLoader` 死接口（`load()` / `_register_config` / `_get_config_status`，零调用方）
   - `scripts/tools` 包化为统一 CLI（`python -m scripts.tools <check|gen|translate> ...`），CI 调用点同步；AI 提示词与技能库的文档清单集中到 `generators/spec.py` 单一规格源
-  - 翻译器自动清理源文档删除后的各语言残留译文与缓存；AI 提示词的人设清单精简为接地前导
+  - 翻译器自动清理源文档删除后的各语言残留译文与缓存；超出输出预算的大块自动二次拆分（大文档翻译不再截断失败），并修复 auto-translate 统一入口的收尾崩溃；AI 提示词的人设清单精简为接地前导
 
 ### 移除
 
