@@ -29,9 +29,9 @@
 - 15. 声明了 i18n key 的地方（如配置 `description`），必须确保对应翻译已注册；示例项目默认使用纯文本，不使用未注册的 i18n key
 
 ## 文档
-- 16. 只需要修改 `docs/zh-CN` 下的相关文档。**zh-CN 是唯一维护源**；其余语言由 CI 翻译流程生成，以 `docs-generated` 分支（单提交强推，永久持久层）+ workflow artifact（400 天，查验副本）形式发布，**不再提交进开发分支**——仓库内现存其它语言文档为历史快照，不会自动更新
-  - ⚠️ **删除/移动/重命名 `docs/zh-CN` 文档时**：CI 翻译器已内置 stale 同步（`python -m scripts.tools translate` 运行时自动清理各目标语言的残留译文与缓存），本地**仍需手动**清理仓库内其它语言的存量文件（`docs/en`、`docs/ja`、`docs/ru`、`docs/zh-TW`）并检查死链接
-- 17. 以下文档路径由 CI 生成，以 `docs-generated` 分支（持久层）+ workflow artifact（400 天查验副本）形式发布（不提交进开发分支），请勿读取/手改，也**不要在本地运行生成脚本**（源码 docstring 与 `docs/zh-CN` 是唯一内容来源）：
+- 16. 只需要修改 `docs/zh-CN` 下的相关文档。**zh-CN 是唯一维护源**；其余语言由 CI 翻译流程生成并**自动提交回开发分支**（克隆/pull 即得最新多语言文档；另有 `docs-generated` 分支 + workflow artifact 作查验副本）。源文档删除后各语言残留由翻译器 stale 同步自动清理（随 CI 提交生效），本地无需手动清理
+  - ⚠️ **删除/移动/重命名 `docs/zh-CN` 文档时**：CI 翻译器的 stale 同步会自动清理各目标语言的残留译文与缓存并随产物提交生效，本地无需手动清理；仅需检查 `docs/zh-CN` 内部的死链接
+- 17. 以下文档路径由 CI 生成、自动提交回开发分支（勿手改，改动会被下轮 CI 覆盖），也**不要在本地运行生成脚本**（源码 docstring 与 `docs/zh-CN` 是唯一内容来源）：
   - 不要读取或修改任何语言 `ai-support/prompts` 下的文档（自动生成的AI提示词；生成脚本 `scripts/tools/generators/ai_prompts.py`（统一入口 `python -m scripts.tools gen ai-prompts`））
   - 不要读取或修改任何语言 `api-reference/auto_api` 下的文档（自动生成的API文档；生成脚本 `scripts/tools/generators/api_docs.py`（统一入口 `python -m scripts.tools gen api-docs`））
 - 18. 用户可感知的变更必须更新 `CHANGELOG.md` **当前开发版本**条目，并遵循其头部「写作规范」：
