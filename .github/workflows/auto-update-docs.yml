@@ -34,13 +34,22 @@ jobs:
     # 硬上限 5h：翻译预算 270min + 生成/检查/收尾余量
     timeout-minutes: 300
     steps:
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.ERISBOT_APP_ID }}
+          private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.ref }}
-          # 不缓存凭据到 .git/config：长任务中初始 token 会先过期，
-          # 写操作由提交步骤经 remote set-url 显式注入当前 GITHUB_TOKEN
+          token: ${{ steps.app-token.outputs.token }}
+          # App Token 检出：提交作者是 erispulse[bot]（与 auto-tag-release 一致）；
+          # 不缓存凭据到 .git/config，写操作由提交步骤经 remote set-url
+          # 显式注入当前 App Token
           persist-credentials: false
 
       - name: Setup environment
@@ -169,10 +178,10 @@ jobs:
         id: commit-docs
         if: steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-docs.outputs.any_updated == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "erispulse[bot]"
+          git config user.email "${{ secrets.ERISBOT_USER_ID }}+erispulse[bot]@users.noreply.github.com"
 
           git add docs/ README.md README.*.md .github/.translate_cache/
           git commit -qm "docs: 自动更新文档产物 (${{ github.sha }})"

@@ -57,6 +57,31 @@ Send Methods to be Implemented: [Text / Image / Voice ...]
 Configuration Items: [Key Name]: [Purpose] ([Required/Optional])
 ```
 
+## Agent Skills
+
+Agent Skills are skill packages for AI coding agents (ZCode / Claude Code, etc.): each skill is a directory (`SKILL.md` + frontmatter). Agents discover them automatically by `description` and load on demand — only the sections relevant to the task, never the full text.
+
+Skills live in the `skills/` directory (generated alongside the material docs). Each `SKILL.md` starts with a **line-numbered outline** marking the start/end line of every section, so AI can read only what it needs.
+
+### Deployment
+
+1. Get the skills from `skills/<lang>/` (or download the artifact for your version)
+2. Copy the skill directories into your agent's skills directory (per your tool's convention, e.g. `.zcode/skills/`, `.claude/skills/`)
+3. The agent will auto-trigger relevant skills on matching tasks — no manual referencing needed
+
+### Outline example
+
+```markdown
+## Content Outline
+AI reads on demand: load only the sections you need.
+
+- Lazy-Loading & Dormancy: lines 18-29
+- Overview: lines 30-38
+- Event-driven Activation (activate_on): lines 55-132
+```
+
+> Skills are built automatically by CI (`python -m scripts.tools gen skills`); do not edit by hand.
+
 ## MCP Server
 
 ErisPulse provides a documentation retrieval MCP Server, allowing AI coding assistants (any that support MCP) to directly search and access the official ErisPulse documentation while you write code.

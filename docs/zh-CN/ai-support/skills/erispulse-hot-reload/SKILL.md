@@ -9,6 +9,27 @@ description: "适用于：改代码不重启（热重载）、闲置自动归眠
 仓库：https://github.com/ErisPulse/ErisPulse
 各节末尾标注了来源文档路径，需要最新内容请以仓库 docs/zh-CN/ 为准。
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 懒加载与休眠: 33-43 行
+- 概述: 45-52 行
+- 工作原理: 54-68 行
+- 事件驱动懒激活（activate_on）: 70-146 行
+- 懒加载休眠（dormant_after）: 148-194 行
+- 配置懒加载: 196-223 行
+- 使用懒加载模块: 225-280 行
+- 最佳实践: 282-310 行
+- 注意事项: 312-317 行
+- 模块开发入门（加载策略）: 319-329 行
+- 项目结构: 331-343 行
+- pyproject.toml 配置: 345-363 行
+- __init__.py: 365-369 行
+- Core.py - 基础模块: 371-410 行
+- 测试模块: 412-430 行
+- 核心概念: 432-535 行
+
 ## 懒加载与休眠
 
 > 来源: `docs/zh-CN/advanced/lazy-loading.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/zh-CN/advanced/lazy-loading.md）

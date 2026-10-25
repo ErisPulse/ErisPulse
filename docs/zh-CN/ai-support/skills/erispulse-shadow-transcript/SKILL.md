@@ -9,6 +9,23 @@ description: "适用于：新旧版本灰度对照（shadow）、消息收件箱
 仓库：https://github.com/ErisPulse/ErisPulse
 各节末尾标注了来源文档路径，需要最新内容请以仓库 docs/zh-CN/ 为准。
 
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 影子模块: 29-59 行
+- 快速上手: 61-87 行
+- 五道隔离闸: 89-99 行
+- 诚实边界（拦不住的）: 101-110 行
+- 转正与回滚: 112-121 行
+- 消息追踪: 123-137 行
+- 工作原理: 139-168 行
+- 配置: 170-187 行
+- 消息归因（sender 与 meta）: 189-248 行
+- 运行时覆盖 API: 250-270 行
+- 风险与审计：放开限制前必读: 272-301 行
+- 与其它机制的边界: 303-309 行
+
 ## 影子模块
 
 > 来源: `docs/zh-CN/advanced/shadow.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/zh-CN/advanced/shadow.md）

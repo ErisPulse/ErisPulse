@@ -142,14 +142,63 @@ def build_skill(spec: SkillSpec, docs_lang_dir: Path, out_dir: Path) -> tuple[bo
     skill_dir = out_dir / spec.name
     skill_dir.mkdir(parents=True, exist_ok=True)
     intro = _SKILL_INTRO.get(docs_lang_dir.name, _INTRO_FALLBACK)
-    content = (
+    header = (
         f"---\nname: {spec.name}\n"
         f"description: \"{description}\"\n"
         "---\n\n"
         f"# ErisPulse {spec.title}\n\n"
         f"{intro}\n"
-        + "\n".join(sections)
     )
+    body_text = "\n".join(sections)
+
+    # 行号大纲：AI 按需读取——只加载需要的章节。行号基于最终稿精确计算：
+    # 组稿后逐行扫描，每篇文档的顶层 "## <标题>"（sections 以它开头）为界，
+    # 一节延伸到下一篇顶层标题前
+    body_text = "\n".join(sections)
+    body_lines = body_text.split("\n")
+    outline_block = (
+        "## 内容大纲\n\n"
+        "AI 按需读取：只读需要的章节即可，不必全文加载。\n\n"
+    )
+    header = (
+        f"---\nname: {spec.name}\n"
+        f"description: \"{description}\"\n"
+        "---\n\n"
+        f"# ErisPulse {spec.title}\n\n"
+        f"{intro}\n"
+    )
+    header_line_count = header.count("\n") + 1
+
+    # 先按边界扫描收集 (标题, 起始行)；条目行数取决于条目总数，
+    # offset = header 行数 + 大纲骨架行数 + 条目行数，一次回推即精确
+    boundaries: list[tuple[str, int]] = []
+    section_start: int | None = None
+    section_title = ""
+    for i, line in enumerate(body_lines):
+        if line.startswith("## ") and not line.startswith("### "):
+            if section_start is not None:
+                boundaries.append((section_title, section_start))
+            section_start = i
+            section_title = line[3:].strip()
+    if section_start is not None:
+        boundaries.append((section_title, section_start))
+
+    offset = (
+        header_line_count
+        + outline_block.count("\n")        # 骨架行数（标题/说明/空行）
+        + len(boundaries)                  # 条目自身各占一行
+    )
+
+    outline_entries: list[str] = []
+    for idx, (title, start) in enumerate(boundaries):
+        end = (
+            boundaries[idx + 1][1] - 1
+            if idx + 1 < len(boundaries)
+            else len(body_lines)
+        )
+        outline_entries.append(f"- {title}: {offset + start + 1}-{offset + end} 行")
+    outline_block += "\n".join(outline_entries) + "\n\n"
+    content = header + outline_block + body_text
     (skill_dir / "SKILL.md").write_text(content, encoding="utf-8", newline="\n")
     return True, missing
 
