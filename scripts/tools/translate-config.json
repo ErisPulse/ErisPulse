@@ -1,9 +1,9 @@
 {
   "source_lang": "zh-CN",
   "target_langs": ["en", "zh-TW", "ja", "ru"],
-  "concurrent": 1,
+  "concurrent": 2,
   "time_budget_minutes": 40,
-  "ignore_dirs": ["ai-support/prompts", "api-reference/auto_api", "_meta"],
+  "ignore_dirs": ["ai-support/prompts", "ai-support/skills", "api-reference/auto_api", "_meta"],
   "cache_dir": ".github/.translate_cache",
   "default": {
     "request_delay": 2,

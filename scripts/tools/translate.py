@@ -1324,6 +1324,11 @@ class DocsTranslator:
         readme_path = Path(self.ROOT_README_SOURCE)
         if readme_path.exists():
             files.append(readme_path)
+        # 配置文件 translate-config.json 的 ignore_dirs 与内置清单合并生效
+        # （此前配置里的 ignore_dirs 从未被读取——用户配置的排除形同虚设）
+        configured_ignores = list(self.IGNORE_DIRS) + [
+            str(item) for item in (self.config.get("ignore_dirs") or [])
+        ]
         if self.source_dir.exists():
             for root, dirs, filenames in os.walk(self.source_dir):
                 dirs[:] = [
@@ -1331,8 +1336,11 @@ class DocsTranslator:
                     for d in dirs
                     if not any(
                         Path(root) / d == self.source_dir / ignored.replace("/", os.sep)
-                        for ignored in self.IGNORE_DIRS
+                        for ignored in configured_ignores
                     )
+                    # skills/ 与 prompts/ 同为生成器产物（skills 由
+                    # gen skills 从 zh-CN 文档构建，不再参与翻译链）
+                    and d not in ("prompts", "skills")
                 ]
                 for filename in filenames:
                     if filename.endswith(".md"):
