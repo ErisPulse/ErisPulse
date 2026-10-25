@@ -207,6 +207,9 @@ jobs:
             .github/.translate_cache/
           retention-days: 400
           if-no-files-found: ignore
+          # v4 默认剔除点开头路径——翻译缓存目录（.github/.translate_cache）
+          # 必须显式包含，否则跨轮缓存续传断裂（每轮全量重译）
+          include-hidden-files: true
 
       - name: Publish docs tree to docs-generated branch (durable)
         if: steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-docs.outputs.any_updated == 'true'
