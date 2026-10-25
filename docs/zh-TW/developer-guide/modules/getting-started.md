@@ -206,9 +206,8 @@ sdk.lifecycle  # 生命週期系統
 ### 繼續學習路徑
 
 - [模組核心概念](core-concepts.md) - 深入了解模組架構
-- [Event 包裝類別詳解](event-wrapper.md) - 學習 Event 物件
+- [Event 包裝類詳解](event-wrapper.md) - 學習 Event 物件
 
 ### 寫完之後
 
 - [模組最佳實踐](best-practices.md) - 開發高品質模組
-- [模組排查指南](../module-troubleshooting.md) - 模組沒載入 / 命令沒觸發時對症排查

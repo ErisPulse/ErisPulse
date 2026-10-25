@@ -818,14 +818,124 @@ class MyPlatformConverter:
         return onebot_event
 ```
 
-## 连接管理
+## 連線管理
 
-### WebSocket 连接
+### start() 的兩種正確寫法
+
+客戶端模式的適配器（WebSocket 客戶端、HTTP 輪詢等）需要在 `start()` 裡拉起一個常駐連線迴圈。框架支援兩種寫法，**都正確，但只能二選一**：
+
+**寫法一：spawn-傳回式（推薦）**——經 `spawn_client_loop()` 把迴圈調度為歸屬本平台的背景任務，`start()` 立即傳回：
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        """注册 WebSocket 路由"""
+        # 迴圈任務歸屬 self._platform：shutdown 時框架自動取消
+        self.spawn_client_loop(self._connect_loop())
+        # start 到這裡就結束——「啟動即成功」，連線失敗由迴圈內重試
+
+    async def _connect_loop(self):
+        while True:
+            try:
+                await self._connect_and_receive()   # 斷線拋例外 → 下方退避
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                await asyncio.sleep(5)              # 迴圈內自行退避重連
+```
+
+**寫法二：常駐式**——`start()` 直接 `await` 連線迴圈，永不傳回：
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        await self._connect_loop()   # 常駐不傳回；迴圈拋例外 = start 失敗
+```
+
+兩種寫法的差異與共同點：
+
+| | spawn-傳回式 | 常駐式 |
+|---|---|---|
+| `start()` 傳回時機 | 拉起迴圈後立即傳回 | 連線迴圈退出/失敗時（框架按退避策略重試） |
+| 連線失敗處理 | 迴圈內自行攔截退避 | 例外向上拋出，交給框架的重試鏈 |
+| 適用情境 | 需要快速傳回啟動確認（多連線、註冊路由後還要拉起其它任務） | 「連線即啟動」語意的簡單實作 |
+
+`spawn_client_loop(coro, *, name="client_loop")` 是寫法一的調度入口：任務按 `self._platform` 歸屬登記，適配器 `shutdown()` 時框架按歸屬自動取消，無需自行管理任務的 handle；迴圈內未攔截的例外會自動留痕（預期的斷線重連請在迴圈內自行攔截）。
+
+> **唯一錯誤寫法是混用**：spawn 之後又 `await` 同一個迴圈——這會讓 `start()` 失去立即傳回語意，任務取消路徑也會變得不可預測。
+
+### 連線模式半成品基底類別
+
+上一節的兩種寫法之外，最常見的兩類連線模式框架直接提供了「半成品」基底類別（`ErisPulse.Core.Bases.adapter_patterns`，根套件可直接匯入）：`start` / `shutdown` 的生命週期編排全部由基底類別完成，子類別只實作業務鉤子。
+
+#### PollingAdapter（HTTP 輪詢型）
+
+適用於「客戶端定時拉取事件」的平台（Telegram getUpdates 型）。基底類別以 spawn-傳回式拉起常駐輪詢迴圈，拉取失敗自動留痕並指數退避（基數 1 秒、上限 60 秒，成功後歸零；常數 `POLLING_ADAPTER_BACKOFF_BASE_SECS` / `POLLING_ADAPTER_BACKOFF_MAX_SECS` 可在 `Core/constants.py` 調整）：
+
+```python
+from ErisPulse import PollingAdapter
+
+class MyAdapter(PollingAdapter):
+    # 輪詢間隔預設 5 秒；ConfigClass 宣告 poll_interval 欄位後以配置值為準（熱更新生效）
+    poll_interval = 5.0
+
+    async def fetch_events(self):
+        """拉一批平台原生事件（例外由基底類別統一退避，無需 try/except）"""
+        resp = await self.sdk.client.get(f"{self.cfg.endpoint}/getUpdates")
+        data = await resp.json()
+        return data.get("result", [])
+
+    def convert_one(self, raw):
+        """單條原生事件轉 OneBot12；傳回 None 跳過"""
+        return self.converter.convert(raw)
+
+    async def call_api(self, endpoint: str, **params):
+        ...  # 與普通適配器相同
+```
+
+最小實作面：`fetch_events` / `convert_one` / `call_api`。`start()` 拉起迴圈後立即傳回；`shutdown()` 無需子類別處理（輪詢迴圈按 owner 歸屬自動取消）。
+
+#### WebhookAdapter（HTTP 回呼型）
+
+適用於「平台主動推送回呼」的平台。基底類別的 `start()` 在框架 router 上註冊接收路由（最終路徑 `/{平台名}/webhook`，POST 方法），註冊包在 `owner_scope` 中——適配器卸載時按 owner 自動清理，無需手動註銷：
+
+```python
+from ErisPulse import WebhookAdapter
+
+class MyAdapter(WebhookAdapter):
+    def verify_request(self, request) -> bool:
+        """可選鉤子：回呼驗證（預設放行；傳回 False 時基底類別以 403 回絕）"""
+        cfg = self.cfg
+        if not cfg.token:
+            return True
+        auth = request.headers.get("authorization", "")
+        return auth == f"Bearer {cfg.token}"
+
+    def convert(self, payload):
+        """回呼載荷轉 OneBot12；傳回 None 跳過"""
+        return self.converter.convert(payload)
+
+    async def call_api(self, endpoint: str, **params):
+        ...  # 與普通適配器相同
+```
+
+最小實作面：`convert` / `call_api`（`verify_request` 可選）。回呼位址經 `sdk.adapter.get_connection_info(platform)` 查詢後填到平台後台；驗證失敗的請求傳回 403、載荷解析失敗傳回 400、正常傳回 `{"status": "ok"}`。
+
+#### 三種模式怎麼選
+
+| 平台協定 | 繼承 | 腳手架 |
+|---|---|---|
+| 平台連過來（WebSocket 伺服器端） | `BaseAdapter` | `epsdk create adapter`（預設 ws-server） |
+| 我們去拉（HTTP 輪詢） | `PollingAdapter` | `epsdk create adapter --template polling` |
+| 平台推過來（HTTP 回呼） | `WebhookAdapter` | `epsdk create adapter --template webhook` |
+
+完整可執行範例見儲存庫 `examples/example-adapter/`（ws-server）、`examples/example-adapter-polling/`、`examples/example-adapter-webhook/`。
+
+### WebSocket 連線
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        """註冊 WebSocket 路由"""
         router.register_websocket(
             module_name="myplatform",
             path="/ws",
@@ -834,7 +944,7 @@ class MyAdapter(BaseAdapter):
         )
     
     async def _ws_handler(self, websocket):
-        """WebSocket 连接处理器"""
+        """WebSocket 連線處理器"""
         self.connection = websocket
         
         try:
@@ -844,22 +954,22 @@ class MyAdapter(BaseAdapter):
                 if onebot_event:
                     await self.adapter.emit(onebot_event)
         except WebSocketDisconnect:
-            self.logger.info("连接已断开")
+            self.logger.info("連線已斷開")
         finally:
             self.connection = None
     
     async def _auth_handler(self, websocket) -> bool:
-        """WebSocket 认证"""
+        """WebSocket 認證"""
         token = websocket.query_params.get("token")
         return token == "valid_token"
 ```
 
-### WebHook 连接
+### WebHook 連線
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        """注册 WebHook 路由"""
+        """註冊 WebHook 路由"""
         router.register_http_route(
             module_name="myplatform",
             path="/webhook",
@@ -868,7 +978,7 @@ class MyAdapter(BaseAdapter):
         )
     
     async def _webhook_handler(self, request):
-        """WebHook 请求处理器"""
+        """WebHook 請求處理器"""
         data = await request.json()
         onebot_event = self.convert(data)
         if onebot_event:
@@ -876,7 +986,9 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
-> **路由信息查询**：适配器注册的路由（HTTP、WebSocket、SSE）可以通过 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查询完整连接地址（包含 `base_url` + 路径）。详见 [适配器开发入门 - 连接信息与路由发现](getting-started.md#9-连接信息与路由发现) 和 [SSE 支持](getting-started.md#10-sse-server-sent-events-支持)。
+> 純回呼型平台不必手寫上面這套註冊/驗證/清理編排——直接繼承 [`WebhookAdapter` 半成品基底類別](#連線模式半成品基底類別)，只實作 `convert`（可選覆寫 `verify_request`）即可。
+
+> **路由資訊查詢**：適配器註冊的路由（HTTP、WebSocket、SSE）可以透過 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查詢完整連線位址（包含 `base_url` + 路徑）。詳見 [適配器開發入門 - 連線資訊與路由發現](getting-started.md#9-連線資訊與路由發現) 和 [SSE 支援](getting-started.md#10-sse-server-sent-events-支援)。
 
 ## API 响应标准
 

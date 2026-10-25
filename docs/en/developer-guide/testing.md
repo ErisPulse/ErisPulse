@@ -143,11 +143,9 @@ In production environments, you can likewise use the framework's built-in `ErisP
 
 ## Next Steps
 
-### Tests Reveal "Command Not Triggered" Issues
+### Test for "command not triggered" type issues
 
-- [Module Troubleshooting Guide](module-troubleshooting.md) — Move from test reproduction to production troubleshooting; match symptoms to their causes
+### Tests passed, ready for distribution
 
-### Tests Passed, Ready to Distribute
-
-- [Module Core Concepts](modules/core-concepts.md) — Fill in the details of module architecture and config declarations
-- [Publishing and Module Store Guide](publishing.md) — The complete process for publishing to PyPI and the module store
+- [Module core concepts](modules/core-concepts.md) — Fill in the details of module architecture and configuration declarations
+- [Publishing and module store guide](publishing.md) — Complete process for publishing to PyPI and the module store

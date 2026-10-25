@@ -42,6 +42,19 @@ size 校验），purge ``sys.modules`` 后重导入仍会命中旧字节码—�
 ---
 
 
+### `clear_source_caches_for_files(source_files: Iterable[Path]) -> None`
+
+按源文件路径直接清除字节码缓存（``__pycache__``/*.pyc）
+
+与 :func:`clear_source_caches` 的区别：不依赖 ``sys.modules`` 中
+仍存在对应模块对象——适合在卸载/purge **之前**、只有文件路径
+可用的场景（如整体重载的统一预清理）。
+
+- **source_files**: 源文件路径列表
+
+---
+
+
 ### `module_objects_by_names(names: 'list[str]') -> 'list[Any]'`
 
 按顶层模块名从 ``sys.modules`` 收集现存模块对象
@@ -70,6 +83,28 @@ size 校验），purge ``sys.modules`` 后重导入仍会命中旧字节码—�
 ---
 
 
+### `_is_encoding_error(e: BaseException) -> bool`
+
+判断预检异常是否为源码编码问题（如 GBK 文件被按 UTF-8 读取）
+
+**内部方法**
+
+---
+
+
+### `_parse_single_source(py: Path) -> str | None`
+
+对单个源文件做严格语法预检（bytes 直读，走 PEP 263 coding 声明解码）
+
+**内部方法**
+
+- **py**: 源文件路径
+
+**返回值**: 失败描述（"路径:行号: 错误"），None = 通过
+
+---
+
+
 ### `precheck_source_files(label: str, source_files: 'list[Path]', *, i18n_key: str) -> bool`
 
 卸载前语法预检：对源文件列表逐文件 ``ast.parse``
@@ -79,11 +114,34 @@ size 校验），purge ``sys.modules`` 后重导入仍会命中旧字节码—�
 （``MODULE_RELOAD_PRECHECK_MAX_FILES``）时跳过预检并记 debug，
 交由快照回滚兜底。
 
+源码按 bytes 严格解码（PEP 263 coding 声明优先、默认 UTF-8），
+非 UTF-8 的源文件在预检阶段即报错并附「另存为 UTF-8」指引，
+不再虚假通过。
+
 - **label**: 组件名（日志用）
 - **source_files**: 待检源文件列表（空列表直接通过）
 - **i18n_key**: 预检失败日志的文案键（调用方按组件类型提供）
 
 **返回值**: 是否通过（True = 允许继续重载流程）
+
+---
+
+
+### `precheck_source_trees(label: str, source_trees: 'list[tuple[str, list[Path]]]', *, i18n_key: str) -> 'list[str]'`
+
+汇总式卸载前语法预检：遍历全部源码树，收集所有失败（不首个即停）
+
+供整体重载（``reload_all`` / ``sdk.restart()``）在卸载**任何**模块前
+使用：任一失败即由调用方拒绝整轮重载，全部旧实例继续服务。每棵树
+独立受 ``MODULE_RELOAD_PRECHECK_MAX_FILES`` 约束。
+
+- **label**: 整体操作名（日志用，如 "restart"）
+- **source_trees**: (组件名, 该组件源文件列表) 列表
+- **i18n_key**: 汇总失败日志的文案键
+
+**返回值**: 失败描述列表（空列表 = 全部通过；基础设施异常时同样返回
+
+    空列表并记 debug，交由快照回滚兜底）
 
 ---
 

@@ -57,16 +57,40 @@ uv 会自动创建/使用项目 `.venv` 并生成 uv.lock——安装与依赖�
 ---
 
 
-### `resolve_target_python(project_dir: 'Path | None' = None) -> 'tuple[str, str]'`
+### `is_uv_project(project_dir: 'Path | None' = None) -> bool`
+
+判定目录是否为 uv 管理的项目（三重依据任一命中）
+
+``uv.lock`` 存在 / pyproject 含 ``[tool.uv]`` 段 / ``.venv/pyvenv.cfg``
+含 ``uv =`` 标记行（uv venv 创建时写入）。无 uv 时判定依旧成立——
+联动分支还会要求 uv 可用，两者解耦。
+
+- **project_dir**: 项目目录（默认当前目录）
+
+**返回值**: 是否 uv 项目
+
+---
+
+
+### `resolve_target_python(project_dir: 'Path | None' = None) -> 'tuple[str, PythonSource]'`
 
 解析目标 Python 解释器（CLI 各命令统一入口）
 
-优先级：`ERISPULSE_PYTHON` 环境变量 > 项目 `.venv` 内解释器 >
+优先级：`ERISPULSE_PYTHON` 环境变量 > `UV_PROJECT_ENVIRONMENT`（uv 项目
+自定义环境路径）> 项目 `.venv` 内解释器 > `UV_PYTHON`（仅路径形态）>
 `VIRTUAL_ENV` > 当前解释器。
 
-- **project_dir**: 项目目录（默认当前目录）；在该目录下探测 `.venv`
+> **提示**
+> uv 感知：``UV_PROJECT_ENVIRONMENT`` 把项目环境指到非 ``.venv`` 路径时，
+> 不感知会把组件装进错误环境（随后 ``uv tool upgrade`` 抹掉）；``UV_PYTHON``
+> 的版本说明符形态（如 "3.12"）不是路径，跳过。
 
-**返回值**: (解释器路径, 来源描述)——来源用于提示用户当前操作所作用的环境
+- **project_dir**: 项目目录（默认当前目录）；在该目录下探测 `.venv` 与
+
+    `UV_PROJECT_ENVIRONMENT` 的相对路径基准
+**返回值**: (解释器路径, 来源)——来源为 :class:`PythonSource`，用于提示用户
+
+    当前操作所作用的环境
 
 ---
 
@@ -472,6 +496,42 @@ ErisPulse包管理器
 ---
 
 
+##### `_run_uv_project_command(cmd: 'list[str]', description: str) -> bool`
+
+执行 uv 项目级命令（uv add / uv remove），写入 pyproject 并刷新 uv.lock
+
+与 ``uv pip`` 通道的差异：uv add/remove 操作**项目环境**（按 cwd 的
+pyproject/uv.lock），不支持 ``--python`` 目标模型；这也是它能把依赖
+写回 lock、免疫 ``uv sync`` exact 清理的原因。
+
+- **cmd** (`uv`): 子命令与参数（如 ["add", "pkg"] / ["remove", "pkg"]）
+- **description** (`str`): 展示给用户的操作描述
+
+**返回值** (`bool`): 执行成功返回 True（失败由调用方回退 uv pip/pip 通道）
+
+---
+
+
+##### `_is_plain_package_spec(spec: str) -> bool`（staticmethod）
+
+判定包描述是否为「纯包名形态」（可安全转为 uv add/remove）
+
+pip 形态（-e 本地路径、-r 需求文件、URL/VCS、含空格的 extra 语法）
+仍走 uv pip/pip 通道——uv add 只接受 PEP 508 名称形态。
+
+**内部方法**
+
+---
+
+
+##### `_uv_project_link_active() -> bool`
+
+**内部方法**
+uv 项目安装联动是否生效：uv 项目 + uv 可用 + 未禁用（--no-uv / 环境变量）
+
+---
+
+
 ##### `_ensure_pip_available(target_python: str) -> bool`
 
 确保目标 Python 环境可用 pip
@@ -676,4 +736,13 @@ Windows 下以分离进程执行 uv tool 自更新
 **返回值** (`bool`): 更新成功返回 True
 
 ---
+
+
+### `class PythonSource(str, Enum)`
+
+解释器解析来源（resolve_target_python 的返回标签）
+
+取代此前的中文魔法字符串（"项目 .venv" 等）——字符串比较曾是
+i18n 体系外的暗契约，任何一侧改字即静默失效；展示文案经
+``cli.python.source.*`` i18n 键渲染。
 

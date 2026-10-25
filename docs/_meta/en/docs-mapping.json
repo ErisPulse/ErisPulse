@@ -119,7 +119,7 @@
     "Developer Guide": {
       "description": "Module and adapter development guides",
       "icon": "fa-code",
-      "count": 14,
+      "count": 13,
       "documents": [
         {
           "title": "Developer Guide",
@@ -144,12 +144,6 @@
           "path": "developer-guide/orm.md",
           "level": 1,
           "icon": "fa-code"
-        },
-        {
-          "title": "Module Troubleshooting Guide",
-          "path": "developer-guide/module-troubleshooting.md",
-          "level": 1,
-          "icon": "fa-code"
         }
       ],
       "subgroups": {
@@ -164,19 +158,19 @@
               "icon": "fa-puzzle-piece"
             },
             {
-              "title": "Core Concepts of Modules",
+              "title": "Module Core Concepts",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1,
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Event Wrapper Class Guide",
+              "title": "Event Wrapper Class in Detail",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
             },
             {
-              "title": "Best Practices for Module Development",
+              "title": "Module Development Best Practices",
               "path": "developer-guide/modules/best-practices.md",
               "level": 1,
               "icon": "fa-award"
@@ -194,13 +188,13 @@
               "icon": "fa-network-wired"
             },
             {
-              "title": "Core Adapter Concepts",
+              "title": "Core Concepts of Adapters",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1,
               "icon": "fa-microchip"
             },
             {
-              "title": "SendDSL Explained",
+              "title": "SendDSL Detailed Explanation",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1,
               "icon": "fa-code-branch"
@@ -387,7 +381,7 @@
           "icon": "fa-clock-rotate-left"
         },
         {
-          "title": "Lazy-Loaded Module System",
+          "title": "Lazy-Loading Module System",
           "path": "advanced/lazy-loading.md",
           "level": 1,
           "icon": "fa-hourglass-half"
@@ -405,7 +399,7 @@
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Conversation Multi-turn Conversations",
+          "title": "Conversation Multi-turn Dialogue",
           "path": "advanced/conversation.md",
           "level": 1,
           "icon": "fa-comments"
@@ -435,13 +429,13 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "Ownership (Owner) System",
+          "title": "Ownership (owner) System",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
         },
         {
-          "title": "Interactive Session System",
+          "title": "Interactive Conversation System",
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"
@@ -538,7 +532,7 @@
     "AI-Assisted Development": {
       "description": "Using AI to assist ErisPulse development",
       "icon": "fa-robot",
-      "count": 1,
+      "count": 12,
       "documents": [
         {
           "title": "AI-Assisted Development",
@@ -547,7 +541,80 @@
           "icon": "fa-robot"
         }
       ],
-      "subgroups": {}
+      "subgroups": {
+        "skills": {
+          "name": "Skills",
+          "icon": "fa-folder",
+          "documents": [
+            {
+              "title": "ErisPulse 适配器开发",
+              "path": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 适配器技术标准",
+              "path": "ai-support/skills/erispulse-adapter-standards/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 通信与连接",
+              "path": "ai-support/skills/erispulse-communication/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 配置系统与 CLI 工具链",
+              "path": "ai-support/skills/erispulse-config-cli/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 生态与多平台",
+              "path": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 异常体系与排障",
+              "path": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 快速上手与核心概念",
+              "path": "ai-support/skills/erispulse-getting-started/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 热重载与懒加载休眠",
+              "path": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 模块开发",
+              "path": "ai-support/skills/erispulse-module-dev/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 权限作用域与归属权",
+              "path": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 影子灰度与消息追踪",
+              "path": "ai-support/skills/erispulse-shadow-transcript/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            }
+          ]
+        }
+      }
     },
     "Technical Standards": {
       "description": "Framework technical specifications and standards",
@@ -561,7 +628,7 @@
           "icon": "fa-gavel"
         },
         {
-          "title": "ErisPulse Session Type Standards",
+          "title": "ErisPulse Session Type Standard",
           "path": "standards/session-types.md",
           "level": 1,
           "icon": "fa-layer-group"
@@ -573,7 +640,7 @@
           "icon": "fa-arrow-right-arrow-left"
         },
         {
-          "title": "Adapter Standardization Specification",
+          "title": "Adapter Standardization Conversion Specification",
           "path": "standards/event-conversion.md",
           "level": 1,
           "icon": "fa-shuffle"

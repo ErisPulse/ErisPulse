@@ -80,6 +80,57 @@ plain 日志文件，会破坏"一行一记录"的日志纪律，并导致按行
 **内部方法**
 
 
+### `class _MemoryLogRecord`
+
+内存日志记录（``__slots__`` 紧凑存储）
+
+替代旧实现的每条 5 键 dict（约 728B/条）：``__slots__`` 记录类去掉
+实例字典与键哈希表，显著降低常驻内存日志副本的占用。字段与旧 dict
+键一致（timestamp / level / level_num / module / message）。
+
+对外消费点（``get_logs`` / ``iter_logs`` / 订阅器补发）经 :meth:`as_dict`
+转回 dict 形态，外部 API 形状不变；保留 ``__getitem__`` 下标访问以兼容
+存量内部消费点（如测试）的 dict 风格读取。
+
+**内部方法**
+
+
+#### 方法列表
+
+
+##### `__init__(timestamp: str, level: str, level_num: int, module: str, message: str)`
+
+- **timestamp** (`ISO`): 格式时间戳
+- **level**: 日志级别名称（如 "INFO"）
+- **level_num**: 日志级别数值
+- **module**: 归属模块名
+- **message**: 单行化后的日志文本
+
+---
+
+
+##### `as_dict() -> dict[str, Any]`
+
+转为向后兼容的 dict 形态（供订阅器 / 保存路径消费）
+
+**返回值**: 含 timestamp / level / level_num / module / message 五键的字典
+
+---
+
+
+##### `__getitem__(key: str) -> Any`
+
+下标访问兼容（dict 风格读取存量内部消费点）
+
+- **key**: 字段名
+
+**返回值**: 字段值
+
+**异常**: `KeyError` - 字段不存在时
+
+---
+
+
 ### `class _JsonFormatter(logging.Formatter)`
 
 JSON 日志格式化器
@@ -168,11 +219,13 @@ sdk.logger.handler("dashboard", min_level="INFO")(on_log)
 
 ##### `unregister_by_owner(owner: str) -> int`
 
-注销指定归属者的全部日志订阅器
+注销指定归属者的全部日志订阅器，并回收其内存日志与模块级别
 
 模块卸载 / 适配器关闭链经归属权门面（``ownership.reclaim_sync``）
 自动调用；订阅回调通常持有模块实例，不注销会导致已卸载模块
-无法被 GC 且持续接收全量日志。
+无法被 GC 且持续接收全量日志。同时清理该归属者的内存日志队列
+（``_logs[模块名]`` 及 ``模块名.*`` 子级）与模块级别覆盖
+（``_module_levels``），防止已卸载模块的日志残留长期驻留内存。
 
 - **owner**: 归属者（模块名 / 平台名）
 
@@ -207,11 +260,55 @@ sdk.logger.handler("dashboard", min_level="INFO")(on_log)
 
 ##### `set_memory_limit(limit: int) -> bool`
 
-设置日志内存存储上限
+设置单模块日志内存存储上限
 
-- **limit**: 日志存储上限
+- **limit**: 单模块日志存储上限；``0`` 表示关闭内存日志副本
+
+    （不再写入任何内存日志，已有记录保留但不再增长），负数无效
+**返回值** (`bool`): 设置是否成功
+
+---
+
+
+##### `set_total_memory_limit(limit: int) -> bool`
+
+设置全部模块内存日志的总条数上限
+
+超限时按轮转策略淘汰最旧记录：从当前条数最多的模块队列头部
+``popleft``。与单模块 :meth:`set_memory_limit` 独立生效——两者
+任一触发都会淘汰记录。
+
+- **limit**: 全局总条数上限；``0`` 表示不限，负数无效
 
 **返回值** (`bool`): 设置是否成功
+
+**示例**:
+
+```python
+logger.set_total_memory_limit(5000)  # 全局最多保留 5000 条
+logger.set_total_memory_limit(0)     # 不限制总数
+```
+
+---
+
+
+##### `_recount_total_logs() -> None`
+
+重新统计全局内存日志总条数
+
+**内部方法**
+
+---
+
+
+##### `_evict_over_total() -> None`
+
+全局总条数超限时轮转淘汰最旧记录
+
+从当前条数最多的模块队列头部淘汰（多模块洪峰时优先削减占用大头），
+直至总数回到上限内。上限为 0（不限）时直接返回。
+
+**内部方法**
 
 ---
 
@@ -467,16 +564,25 @@ for log in logger.iter_logs():
 
 ##### `_format_for_output(entries: list) -> list`
 
+将内部记录转换为向后兼容的输出格式
+
+JSON 模式返回结构化 dict（timestamp / module / message 三键），
+Rich 模式返回 ``时间 - 消息`` 单行文本；内部存储为 ``_MemoryLogRecord``
+记录类，对外形态保持不变。
+
 **内部方法**
-将内部 dict 转换为向后兼容的输出格式
 
 ---
 
 
 ##### `_save_in_memory(module_name: str, level_name: str, level_const: int, msg: str) -> None`
 
-**内部方法**
 将日志保存到内存
+
+单模块上限（``_max_logs``）为 0 时跳过（关闭内存日志副本）；
+全局总条数（``_total_max_logs``）超限时按轮转策略淘汰最旧记录。
+
+**内部方法**
 
 ---
 
@@ -519,6 +625,20 @@ if logger.should_log(EVENT):
 - **msg**: 日志消息
 - **args**: 额外的格式化参数
 - **kwargs**: 额外的关键字参数
+
+---
+
+
+##### `_get_caller()`
+
+归因调用者模块名（日志热路径）
+
+经 ``frame.f_globals["__name__"]`` 取模块名（O(1) 字典访问），
+不再走 ``inspect.getmodule`` 的模块注册表反查；跳过 logger 模块
+自身的栈帧后，取第一个外部帧的模块名并做归一化
+（``__main__`` → ``Main``、``*.Core`` 后缀剥离）。
+
+**内部方法**
 
 ---
 

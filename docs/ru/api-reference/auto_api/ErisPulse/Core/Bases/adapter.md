@@ -144,6 +144,38 @@ SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
 ---
 
 
+##### `_wrapped_send_method(name: str, attr: Callable) -> Callable`
+
+获取（或构建并缓存）发送方法的 hooked 包装
+
+缓存键为方法名，值记录 ``(原方法, 包装方法)`` 二元组。原方法比对用
+底层函数对象（``__func__``——bound method 每次访问都是新对象，直接
+``is`` 比较恒不相等）；不一致时（实例覆盖 / 热重载后类方法变化）
+自动重建，保持归因语义。
+
+**内部方法**
+
+- **name**: 发送方法名
+- **attr**: 本次属性访问解析到的原方法
+
+**返回值**: 包装后的发送方法（同一实例同一方法恒返回同一 callable）
+
+---
+
+
+##### `_clear_send_wrap_cache() -> None`
+
+清空发送方法包装缓存
+
+发送规则装饰器（Hook/Retry/Timeout 等）变更 ``_rules`` 后调用，
+确保后续访问基于最新规则状态重新构建（包装闭包虽在调用期动态读
+``_rules``，清缓存维持"注册变化即重建"的显式不变量）。
+
+**内部方法**
+
+---
+
+
 ##### `__getattr__(name: str)`
 
 动态属性访问处理，实现大小写不敏感调用
@@ -156,6 +188,15 @@ SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
 **返回值**: 匹配的方法或属性
 
 **异常**: `AttributeError` - 当属性不存在时抛出
+
+---
+
+
+##### `list_sends() -> list[str]`
+
+列出本平台可用的发送方法名（排查「方法不存在」的指路牌）
+
+**返回值**: 可用发送方法名列表（排除链式修饰方法）
 
 ---
 
@@ -1138,6 +1179,49 @@ def Raw_ob12(self, message: dict, **kwargs):
 **返回值**: (账户名, 账户配置实例) 元组
 
 **异常**: `ValueError` - 未找到可用账户时抛出
+
+---
+
+
+##### `spawn_client_loop(coro: Any, *, name: str = 'client_loop') -> Any`
+
+拉起客户端连接循环（归属本平台的后台任务）
+
+客户端模式适配器（WebSocket 客户端 / HTTP 长轮询等）的常驻连接
+循环经本方法调度：任务归属 ``self._platform``——适配器 ``shutdown``
+时框架按归属自动取消，无需自己管理任务句柄；循环异常自动留痕
+（连接断开重连等预期异常请在循环内自行捕获）。
+
+与 ``start()`` 的两种正确写法配合：
+
+- ``start()`` 内 ``self.spawn_client_loop(self._connect_loop())`` 后
+  **立即返回**（spawn-返回式：启动即成功，连接失败由循环内重试）
+- ``start()`` 内 ``await self._connect_loop()`` **常驻不返回**
+  （常驻式：连接断开抛异常触发框架的退避重试链）
+
+> **提示**
+> 两种写法都正确；混用（spawn 后又 await 同一循环）才是错误。
+> spawn-返回式适合需要快速返回启动确认的场景，常驻式适合
+> 「连接即启动语义」的简单实现。
+
+- **coro**: 连接循环协程（如 ``self._connect_loop()``）
+- **name**: 任务名（日志留痕用）
+
+**返回值**: 创建的 asyncio.Task（通常可忽略；临时事件循环场景为 None）
+
+---
+
+
+##### `async emit_event(event: dict[str, Any]) -> None`
+
+上报接收事件的便捷方法（与 :meth:`emit_meta` 对称）
+
+适配器收到平台原生事件并经 :meth:`convert` 转为 OneBot12 格式后，
+经本方法提交给框架分发（含幂等去重、trace-id 串联、处理器并发
+调度）。事件须携带 ``platform`` 字段（服务端模式通常为
+``self._platform`` 或按连接归属填写）。
+
+- **event**: 符合 OneBot12 标准的事件数据
 
 ---
 

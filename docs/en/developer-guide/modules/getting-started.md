@@ -203,12 +203,11 @@ sdk.lifecycle  # Lifecycle system
 
 ## Next Steps
 
-### Continue Learning Path
+### Continue Your Learning Path
 
-- [Core Concepts of Modules](core-concepts.md) - Learn more about the module architecture
-- [Event Wrapper Class Details](event-wrapper.md) - Learn about the Event object
+- [Module Core Concepts](core-concepts.md) - Deep dive into module architecture
+- [Event Wrapper Class Explained](event-wrapper.md) - Learn about Event objects
 
-### After Completion
+### After Writing
 
-- [Best Practices for Modules](best-practices.md) - Develop high-quality modules
-- [Module Troubleshooting Guide](../module-troubleshooting.md) - Diagnose and resolve issues when modules fail to load or commands don't trigger
+- [Module Best Practices](best-practices.md) - Develop high-quality modules

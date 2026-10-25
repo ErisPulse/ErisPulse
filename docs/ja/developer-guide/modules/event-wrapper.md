@@ -486,12 +486,11 @@ async def ai_chat(self, prompt: str):
 
 ## 関連ドキュメント
 
-### モジュール開発の学習を続ける
+### モジュール開発の続き
 
-- [モジュール開発入門](getting-started.md) - 最初のモジュールを作成する
+- [モジュール開発の入門](getting-started.md) - 最初のモジュールを作成する
 - [モジュールのベストプラクティス](best-practices.md) - 高品質なモジュールを開発する
 
-### 対話機能をさらに深く
+### インタラクション能力の詳細
 
-- [Conversation マルチターン対話](../../advanced/conversation.md) - `wait_reply` の上に構築された完全な会話エンジン（情報収集、バリデーション、分岐ジャンプ）
-- [モジュールトラブルシューティングガイド](../module-troubleshooting.md) - イベントが応答しないときの症状別調査
+- [Conversation 多段階対話](../../advanced/conversation.md) - `wait_reply` の上に構築された完全な会話エンジン（情報収集、検証、分岐・ジャンプ）

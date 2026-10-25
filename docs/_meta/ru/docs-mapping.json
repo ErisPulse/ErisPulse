@@ -26,7 +26,7 @@
           "icon": "fa-sitemap"
         },
         {
-          "title": "Трекер ошибок",
+          "title": "Bug Tracker",
           "path": "bug-tracker.md",
           "level": 1,
           "icon": "fa-bug"
@@ -46,19 +46,19 @@
           "icon": "fa-robot"
         },
         {
-          "title": "Введение",
+          "title": "Руководство для начинающих",
           "path": "getting-started/README.md",
           "level": 1,
           "icon": "fa-door-open"
         },
         {
-          "title": "Основные понятия",
+          "title": "Основные концепции",
           "path": "getting-started/basic-concepts.md",
           "level": 1,
           "icon": "fa-lightbulb"
         },
         {
-          "title": "Примеры распространенных задач",
+          "title": "Примеры типичных задач",
           "path": "getting-started/common-tasks.md",
           "level": 1,
           "icon": "fa-list-check"
@@ -70,7 +70,7 @@
           "icon": "fa-bolt-lightning"
         },
         {
-          "title": "Генерация типовых заглушек (автодополнение в IDE)",
+          "title": "Генерация типовых заглушек (дополнение IDE)",
           "path": "getting-started/ide-completion.md",
           "level": 1,
           "icon": "fa-keyboard"
@@ -96,7 +96,7 @@
           "icon": "fa-download"
         },
         {
-          "title": "Конфигурационный файл",
+          "title": "Описание конфигурационного файла",
           "path": "user-guide/configuration.md",
           "level": 1,
           "icon": "fa-sliders"
@@ -108,7 +108,7 @@
           "icon": "fa-terminal"
         },
         {
-          "title": "Руководство по развертыванию",
+          "title": "Руководство по развёртыванию",
           "path": "user-guide/deployment.md",
           "level": 1,
           "icon": "fa-cloud-arrow-up"
@@ -119,7 +119,7 @@
     "Руководство разработчика": {
       "description": "Руководство по разработке модулей и адаптеров",
       "icon": "fa-code",
-      "count": 14,
+      "count": 13,
       "documents": [
         {
           "title": "Руководство для разработчиков",
@@ -134,20 +134,14 @@
           "icon": "fa-upload"
         },
         {
-          "title": "Модульное тестирование (ErisPulse-Testing)",
+          "title": "Тестирование модулей (ErisPulse-Testing)",
           "path": "developer-guide/testing.md",
           "level": 1,
           "icon": "fa-code"
         },
         {
-          "title": "Уровень модели данных (ORM)",
+          "title": "Слой моделей данных (ORM)",
           "path": "developer-guide/orm.md",
-          "level": 1,
-          "icon": "fa-code"
-        },
-        {
-          "title": "Руководство по диагностике модулей",
-          "path": "developer-guide/module-troubleshooting.md",
           "level": 1,
           "icon": "fa-code"
         }
@@ -164,13 +158,13 @@
               "icon": "fa-puzzle-piece"
             },
             {
-              "title": "Основные концепции модуля",
+              "title": "Основные концепты модуля",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1,
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Детальный разбор класса-обертки Event",
+              "title": "Подробное объяснение обёртки события",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -194,19 +188,19 @@
               "icon": "fa-network-wired"
             },
             {
-              "title": "Основные понятия адаптера",
+              "title": "Основные концепции адаптеров",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1,
               "icon": "fa-microchip"
             },
             {
-              "title": "SendDSL подробно",
+              "title": "Подробное руководство по SendDSL",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1,
               "icon": "fa-code-branch"
             },
             {
-              "title": "Рекомендации по разработке адаптеров",
+              "title": "Лучшие практики разработки адаптеров",
               "path": "developer-guide/adapters/best-practices.md",
               "level": 1,
               "icon": "fa-medal"
@@ -375,7 +369,7 @@
       "count": 19,
       "documents": [
         {
-          "title": "Расширенные темы",
+          "title": "Продвинутые темы",
           "path": "advanced/README.md",
           "level": 1,
           "icon": "fa-fire"
@@ -387,7 +381,7 @@
           "icon": "fa-clock-rotate-left"
         },
         {
-          "title": "Ленивая система загрузки модулей",
+          "title": "Система ленивой загрузки модулей",
           "path": "advanced/lazy-loading.md",
           "level": 1,
           "icon": "fa-hourglass-half"
@@ -405,7 +399,7 @@
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Conversation Многоходовой диалог",
+          "title": "Conversation: многоходовой диалог",
           "path": "advanced/conversation.md",
           "level": 1,
           "icon": "fa-comments"
@@ -429,13 +423,13 @@
           "icon": "fa-language"
         },
         {
-          "title": "Scope",
+          "title": "Область действия (scope)",
           "path": "advanced/scope.md",
           "level": 1,
           "icon": "fa-shield-halved"
         },
         {
-          "title": "Система собственности (owner)",
+          "title": "Система принадлежности (owner)",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
@@ -471,7 +465,7 @@
           "icon": "fa-triangle-exclamation"
         },
         {
-          "title": "Пул подключений и трансляция",
+          "title": "Пул соединений и трансляция",
           "path": "advanced/connections.md",
           "level": 1,
           "icon": "fa-fire"
@@ -497,7 +491,7 @@
       "count": 6,
       "documents": [
         {
-          "title": "Экосистемные модули",
+          "title": "Экологические модули",
           "path": "ecosystem/README.md",
           "level": 1,
           "icon": "fa-cubes"
@@ -527,7 +521,7 @@
           "icon": "fa-image"
         },
         {
-          "title": "Общий агент ErisPulse-QvQChat",
+          "title": "ErisPulse-QvQChat — Универсальный агент",
           "path": "ecosystem/qvqchat.md",
           "level": 1,
           "icon": "fa-cubes"
@@ -538,7 +532,7 @@
     "Разработка с ИИ": {
       "description": "Использование ИИ для разработки ErisPulse",
       "icon": "fa-robot",
-      "count": 1,
+      "count": 12,
       "documents": [
         {
           "title": "AI-помощь в разработке",
@@ -547,7 +541,80 @@
           "icon": "fa-robot"
         }
       ],
-      "subgroups": {}
+      "subgroups": {
+        "skills": {
+          "name": "Skills",
+          "icon": "fa-folder",
+          "documents": [
+            {
+              "title": "ErisPulse 适配器开发",
+              "path": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 适配器技术标准",
+              "path": "ai-support/skills/erispulse-adapter-standards/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 通信与连接",
+              "path": "ai-support/skills/erispulse-communication/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 配置系统与 CLI 工具链",
+              "path": "ai-support/skills/erispulse-config-cli/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 生态与多平台",
+              "path": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 异常体系与排障",
+              "path": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 快速上手与核心概念",
+              "path": "ai-support/skills/erispulse-getting-started/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 热重载与懒加载休眠",
+              "path": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 模块开发",
+              "path": "ai-support/skills/erispulse-module-dev/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 权限作用域与归属权",
+              "path": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
+            {
+              "title": "ErisPulse 影子灰度与消息追踪",
+              "path": "ai-support/skills/erispulse-shadow-transcript/SKILL.md",
+              "level": 1,
+              "icon": "fa-robot"
+            }
+          ]
+        }
+      }
     },
     "Технические стандарты": {
       "description": "Технические спецификации и стандарты фреймворка",
@@ -567,7 +634,7 @@
           "icon": "fa-layer-group"
         },
         {
-          "title": "Стандартизированный протокол возврата адаптера ErisPulse",
+          "title": "Стандарт спецификации возвращаемых значений адаптеров ErisPulse",
           "path": "standards/api-response.md",
           "level": 1,
           "icon": "fa-arrow-right-arrow-left"
@@ -585,7 +652,7 @@
           "icon": "fa-paper-plane"
         },
         {
-          "title": "Стандартизированные операции запросов ErisPulse",
+          "title": "Стандарты операций запросов ErisPulse",
           "path": "standards/request-action-spec.md",
           "level": 1,
           "icon": "fa-hand-paper"
@@ -597,7 +664,7 @@
           "icon": "fa-bolt"
         },
         {
-          "title": "Руководство по стандартизации адаптеров (общие положения)",
+          "title": "Руководство по стандартизации адаптеров (генеральное руководство)",
           "path": "standards/standardization-guide.md",
           "level": 1,
           "icon": "fa-gavel"

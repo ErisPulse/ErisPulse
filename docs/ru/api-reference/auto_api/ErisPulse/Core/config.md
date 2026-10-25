@@ -238,6 +238,19 @@ ConfigManager 类提供相关功能。
 ---
 
 
+##### `_ensure_runtime_state_gitignore() -> None`
+
+确保运行状态目录（``.erispulse/``）自带 ``.gitignore``（幂等：已存在则不覆盖）
+
+目录内是实例锁、CLI 运行状态文件等机器本地运行时数据，不含任何需
+入库内容——目录整体对 git 不可见。与配置目录的 ``.gitignore`` 同款
+实现（规则只有一行 ``*``）。
+
+**内部方法**
+
+---
+
+
 ##### `_atomic_write_text(text: str) -> None`
 
 原子写入配置文件（唯一临时文件 + fsync + ``os.replace``）

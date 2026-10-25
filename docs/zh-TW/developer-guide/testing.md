@@ -156,11 +156,10 @@ trace.assert_no_match()         # 斷言未命中命令
 
 ## 下一步
 
-### 測試中發現「指令未觸發」類問題
+### 測試暴露了「命令沒觸發」類問題
 
-- [模組排查指南](module-troubleshooting.md) — 從測試復現走向生產環境排查，對照症狀逐一排查
 
 ### 測試通過、準備分發
 
-- [模組核心概念](modules/core-concepts.md) — 回顧模組架構與配置宣告的細節
+- [模組核心概念](modules/core-concepts.md) — 回補模組架構與配置宣告的細節
 - [發布與模組商店指南](publishing.md) — 發布到 PyPI 與模組商店的完整流程

@@ -45,6 +45,34 @@ doctor 命令
 ---
 
 
+##### `_scan_config_pollution(config_path: Path) -> 'list[tuple[str, str, str]]'`
+
+扫描历史升级遗留的配置污染（只读，不做任何修改）
+
+两类已知模式：
+1. **影子状态残留**（BUG-034 / #432 时代）：``ErisPulse.{modules,adapters}.status``
+   下以 ``_shadow`` 结尾的键——运行时绑定曾以影子键落盘，现行版本已改
+   用内存覆盖层，残留键只会误导排障
+2. **游离配置节**（BUG-046 时代）：``ErisPulse.<X>`` 顶层嵌套节既不是
+   框架自身节，也没有对应组件状态键——多由嵌套模板漂移把组件配置
+   写到了错误层级产生
+
+- **config_path** (`Path`): 配置文件路径
+
+**返回值** (`(键路径, 来源 bug 标识, 一句话说明)`): 列表；无污染 / 文件不存在为空
+
+---
+
+
+##### `_fix_config_pollution(pollution: 'list[tuple[str, str, str]]') -> None`
+
+清理历史配置污染（tomlclass 无损路径：注释/顺序/行尾逐字节保真）
+
+- **pollution** (`list`): ``_scan_config_pollution`` 的发现列表
+
+---
+
+
 ##### `_print_report(rows: list, failed: bool)`
 
 输出诊断报告表格与失败项摘要
@@ -65,6 +93,26 @@ doctor 命令
 全套诊断（避免重复网络探测）。
 
 - **fix_context** (`dict`): ``_collect_diagnosis`` 返回的修复上下文
+
+---
+
+
+##### `_resolve_python_chain() -> 'list[tuple[str, str]]'`
+
+**内部方法**
+解释器解析决策链展示（逐级命中/未设置）
+
+**返回值** (`(i18n 键, 详情)`): 列表
+
+---
+
+
+##### `_uv_project_rows() -> 'list[tuple[str, str, str]]'`
+
+**内部方法**
+uv 项目面板行：uv 版本 / UV_* 变量 / 项目判定依据
+
+**返回值** (`(状态, 标签, 详情)`): 行列表
 
 ---
 

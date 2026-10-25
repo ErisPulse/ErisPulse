@@ -483,14 +483,13 @@ Method resolution priority (from high to low): platform-specific methods → wil
 
 > For how adapter developers register extension methods, see [Event System API - Cross-Platform Extensions](../../api-reference/event-system.md#cross-platform-extensions-wildcard).
 
-## Related Documents
+## Related Documentation
 
-### Continue the Module Development Path
+### Continue Module Development Path
 
-- [Module Development Getting Started](getting-started.md) - Create your first module
+- [Getting Started with Module Development](getting-started.md) - Create your first module
 - [Module Best Practices](best-practices.md) - Develop high-quality modules
 
 ### Deepen Interaction Capabilities
 
-- [Conversation Multi-Turn Dialog](../../advanced/conversation.md) - A complete session engine built on top of `wait_reply` (collection, validation, branching)
-- [Module Troubleshooting Guide](../module-troubleshooting.md) - Targeted troubleshooting when events get no response
+- [Conversation Multi-turn Dialogue](../../advanced/conversation.md) - Full conversation engine built on top of `wait_reply` (collection, validation, branching jumps)

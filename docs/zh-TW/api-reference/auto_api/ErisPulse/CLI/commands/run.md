@@ -9,7 +9,37 @@ Run 命令实现
 
 直接运行主程序，支持热重载模式
 
+> **提示**
+> 1. `epsdk run` 以「监督进程 + 框架子进程」结构运行：子进程崩溃自动退避重试、
+> 硬重启（退出码 42）自动重拉，监督进程自身只有 Ctrl+C 能停止
+> 2. `epsdk run --reload` 同样走监督结构：worker 子进程内做文件监控与组件级
+> 热重载（保存 .py 即触发热重载，不再整框架重启）；硬重启由监督进程重拉
+> 全新 worker（框架新代码生效）
+> 3. `epsdk run main.py --reload` 以脚本子进程 + 重载信号方式运行（脚本退出码
+> 42 同样立即重拉）
+
 ---
+
+## 函数列表
+
+
+### `run_reload_worker(script: str | None) -> int`
+
+reload worker 进程入口（由监督进程经 ``-c`` 引导拉起，跨进程公共入口）
+
+SDK 模式（script=None）：dev 文件监控 + 自动启用插件热重载 + ``sdk.run``；
+保存 .py 触发组件级热重载。硬重启（``hard_restart``）以退出码 42 退出，
+由监督进程重拉全新 worker（框架新代码生效）。
+
+不写运行状态文件（runtime.json 归监督进程维护）；argv 由监督进程透传。
+
+- **script**: 保留参数位（脚本模式的 --reload 不走 worker，见
+
+    ``RunCommand._run_script``）
+**返回值**: 进程退出码
+
+---
+
 
 ## 类列表
 
@@ -18,12 +48,14 @@ Run 命令实现
 
 文件系统事件处理器
 
-监控 .py 文件变更并触发 sdk.restart() 热重载
+监控 .py 文件变更并触发 sdk.restart() 组件级热重载
 
 > **提示**
-> 1. 文件监控运行在独立线程
-> 2. 通过 run_coroutine_threadsafe 安全调度到事件循环
-> 3. 内置 1 秒防抖，避免短时间内多次重载
+> 1. 文件监控运行在独立线程，通过 run_coroutine_threadsafe 安全调度到事件循环
+> 2. 合并去抖：首个事件立即触发，窗口（FILE_RELOAD_DEBOUNCE_SECS）内的后续
+> 变更合并且窗口静默后统一补发一次（不丢弃）
+> 3. 新建 .py 文件（on_created）同样触发热重载；删除不触发（插件目录的删除
+> 清理由插件热重载 watcher 负责）
 
 
 #### 方法列表
@@ -47,11 +79,80 @@ Run 命令实现
 ---
 
 
-##### `_schedule_reload(event: FileChangeEvent)`
+##### `on_created(event: FileChangeEvent) -> None`
 
-在事件循环中调度 SDK 重启以执行热重载
+文件创建事件回调（新建 .py 文件同样触发热重载）
 
-- **event** (`FileChangeEvent`): 触发重载的文件系统事件
+- **event** (`FileChangeEvent`): 文件系统事件
+
+---
+
+
+##### `_on_event(src_path: str) -> None`
+
+**内部方法** 合并去抖入口
+
+---
+
+
+##### `_flush_pending() -> None`
+
+去抖窗口到期：补发窗口内合并的变更（可为空）
+
+---
+
+
+##### `close() -> None`
+
+停止补发定时器（监控停止时调用）
+
+---
+
+
+##### `_dispatch(paths: set[str]) -> None`
+
+**内部方法**
+先提示变更文件（在调度重载之前——用户应先看到触发原因），再调度热重载
+
+---
+
+
+### `class _DevWatchdog`
+
+**内部方法**
+dev 模式文件监控（reload worker 内运行）
+
+忽略 .venv/.git 等目录；插件目录默认移交插件热重载 watcher 处理
+（全量 restart 本就覆盖插件代码，避免双重触发）。
+
+
+#### 方法列表
+
+
+##### `_resolve_excludes() -> 'tuple[list[str] | None, list[str]]'`（staticmethod）
+
+解析 dev 监控的忽略目录与插件目录移交清单
+
+**返回值**: (PollingObserver ignore_dirs——None = 内置默认清单, 需移交
+
+    插件 watcher 并从自身监控排除的插件目录名列表)
+
+---
+
+
+##### `start(watch_dir: str, loop: asyncio.AbstractEventLoop) -> None`
+
+启动 dev 文件监控并打印模式面板
+
+- **watch_dir**: 监控目录
+- **loop**: 用于调度重载的事件循环
+
+---
+
+
+##### `stop() -> None`
+
+停止 dev 文件监控（幂等）
 
 ---
 
@@ -109,11 +210,36 @@ Run 命令
 ---
 
 
+##### `_print_hard_restart_reason() -> None`
+
+**内部方法**
+展示并消费硬重启观测标记（worker 退出前写入 runtime.json）
+
+---
+
+
+##### `_supervise(cmd: list[str], *, reload_worker: bool = False) -> None`
+
+**内部方法**
+监督循环：拉起并看护框架子进程
+
+- 退出码 42（硬重启）：展示原因后重拉全新子进程
+- 退出码 0：正常退出，停止监督
+- 其它退出码：按递增退避自动重试；连续同码崩溃达到阈值输出排查指引
+
+- **cmd**: 子进程命令行
+- **reload_worker**: 子进程是否为 reload worker（注入 ENV_RELOAD_WORKER）
+
+---
+
+
 ##### `_run_internal(reload_mode: bool)`
 
 直接运行 SDK（不指定脚本时）
 
-以子进程方式运行 SDK，支持硬重启。
+以「监督进程 + 框架子进程」结构运行：子进程崩溃自动重试，硬重启
+（退出码 42）重拉全新进程。reload 模式的子进程为 reload worker
+（dev 文件监控 + 组件级热重载），两种模式共享同一套监督语义。
 
 > **提示**
 > 重要设计原则：
@@ -140,19 +266,10 @@ Run 命令
 
 进程的所有终止与重启均在主线程完成；文件监控线程仅负责发出重载信号，
 避免双线程同时操作子进程导致的竞态。脚本进程因错误（如语法错误、异常）
-退出时不会终止重载循环，而是等待下一次文件变更后再尝试重启。
+退出时不会终止重载循环，而是等待下一次文件变更后再尝试重启；硬重启
+（退出码 42）例外——立即重拉全新脚本进程。
 
 - **script_path_abs** (`str`): 脚本的绝对路径
-
----
-
-
-##### `_setup_watchdog(watch_dir: str, loop: asyncio.AbstractEventLoop)`
-
-配置 watchdog 监控指定目录的文件变更以实现热重载
-
-- **watch_dir** (`str`): 要监控的目录路径
-- **loop** (`asyncio.AbstractEventLoop`): 用于调度重载的事件循环
 
 ---
 

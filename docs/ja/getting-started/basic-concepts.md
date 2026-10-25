@@ -1,15 +1,15 @@
-# 基本概念
+# 基礎概念
 
 > [!NOTE]
-> **L1 コア必読**——ドキュメントトップページの「L1 コア5編」のうちの第2編（モジュール開発入門 → **基本概念** → Event ラッパークラス → 設定ファイルの説明 → 例外キャッチ）。
+> **L1 核心必読**——ドキュメントのトップページ「L1 核心五篇」の第 2 篇（モジュール開発の入門 → **基礎概念** → Event 包装クラス → 設定ファイルの説明 → エラーのキャッチ）。
 
-ユーザーがメッセージを送ってからボットが返信するまでの間に、どのようなコンポーネントを経由するのでしょうか？アダプターとモジュールはそれぞれ何を担当しているのでしょうか？この記事を読み終えれば、ハンドラーを書く際に直面する設計上の問題を自力で答えられるようになり、例をただ写すだけではなくなります。
+ユーザーがメッセージを送信してからロボットが応答するまで、どのようなコンポーネントが関与しているのか？アダプターとモジュールはそれぞれ何を担当しているのか？このページを読めば、ハンドラを書く際に遭遇する設計上の問題を、サンプルをコピーするだけではなく自分で答えられるようになるでしょう。
 
 ## イベント駆動アーキテクチャ
 
-ErisPulse はイベント駆動アーキテクチャを採用しており、すべての対話はイベントを通じて伝達・処理されます。
+ErisPulse はイベント駆動アーキテクチャを採用しており、すべてのやり取りはイベントを通じて行われます。
 
-### イベントフロー
+### イベントの流れ
 
 ```
 ユーザーがメッセージを送信
@@ -24,16 +24,16 @@ ErisPulse はイベント駆動アーキテクチャを採用しており、す�
 OneBot12 標準イベントに変換
       │
       ▼
-イベントシステムへ送出
+イベントシステムに送信
       │
       ▼
-登録済みのハンドラーに配信
+登録されたハンドラに配信
       │
       ▼
 モジュールがイベントを処理
       │
       ▼
-アダプターを通じてレスポンスを送信
+アダプターを通じて応答を送信
       │
       ▼
 プラットフォームがユーザーに表示
@@ -41,15 +41,15 @@ OneBot12 標準イベントに変換
 
 ### OneBot12 標準
 
-ErisPulse は OneBot12 をコアイベント標準として使用しています。OneBot12 は汎用のチャットボットアプリケーションインターフェース標準であり、統一されたイベント形式を定義しています。
+ErisPulse は OneBot12 をコアのイベント標準として使用しています。OneBot12 は、統一されたイベント形式を定義する一般的なチャットボットアプリケーションのインターフェース標準です。
 
-すべてのアダプターはプラットフォーム固有のイベントを OneBot12 形式に変換し、コードの一貫性を保証します。
+すべてのアダプターは、プラットフォーム固有のイベントを OneBot12 形式に変換することで、コードの一貫性を保証します。
 
 ## コアコンポーネント
 
 ### 1. SDK オブジェクト
 
-SDK はすべての機能の統一エントリーポイントであり、コアコンポーネントへのアクセスを提供します。
+SDK はすべての機能の統一されたエントリーポイントであり、コアコンポーネントへのアクセスを提供します。
 
 ```python
 from ErisPulse import sdk
@@ -61,13 +61,19 @@ sdk.logger     # ログシステム
 sdk.adapter    # アダプターシステム
 sdk.module     # モジュールシステム
 sdk.router     # ルーティングシステム
-sdk.client     # HTTP クライアント
+sdk.client     # HTTPクライアント
 sdk.lifecycle  # ライフサイクルシステム
 ```
 
+> [!WARNING]
+> **ルートからのインポートを統一する**：`from ErisPulse.Core import adapter` / `import ErisPulse.Core.adapter`
+> これらの書き方は、**マネージャーインスタンス**（`AdapterManager` シングルトン）をバインドするものであり、サブモジュールではなく、`ErisPulse.Core`
+> パッケージの re-export は同名のサブモジュールを覆い隠します。テスト、patch、またはモジュールオブジェクト自体が必要な場合は、一律に
+> `from ErisPulse import sdk` ルートインポート（`sdk.adapter` はマネージャーインスタンス）を使用してください。
+
 ### 2. Event オブジェクト
 
-Event オブジェクトはイベントデータをカプセル化し、便利なアクセスメソッドを提供します。
+Event オブジェクトはイベントデータをラップし、便利なアクセスメソッドを提供します。
 
 ```python
 @command("info")
@@ -78,7 +84,7 @@ async def info_handler(event):
     platform = event.get_platform()
     text = event.get_text()
     
-    # 返信の送信
+    # 応答の送信
     await event.reply(f"ユーザー: {user_id}, プラットフォーム: {platform}")
 ```
 
@@ -86,38 +92,38 @@ async def info_handler(event):
 
 アダプターは ErisPulse と外部プラットフォームの間の橋渡し役です。
 
-**責務：**
+**役割：**
 - プラットフォームのネイティブイベントを受信
 - OneBot12 標準形式に変換
 - 標準形式のイベントをプラットフォームに送信
 
-**アダプターの例：**
-- Yunhu アダプター：Yunhu プラットフォームとの通信
+**例：**
+- Yunhu アダプター：雲湖プラットフォームとの通信
 - Telegram アダプター：Telegram Bot API との通信
-- OneBot11 アダプター：OneBot11 互換アプリケーションとの通信
+- OneBot11 アダプター：OneBot11 互換アプリとの通信
 - Email アダプター：メールの送受信処理
 
 ### 4. モジュール
 
-モジュールは機能拡張の基本単位であり、以下が可能です：
+モジュールは機能拡張の基本単位であり、以下を実現できます：
 
-- イベントハンドラーの登録
+- イベントハンドラの登録
 - ビジネスロジックの実装
-- アダプターを呼び出してメッセージ送信
-- コアモジュールが提供するサービスの利用
+- アダプターを呼び出してメッセージを送信
+- コアモジュールが提供するサービスを使用
 
-#### モジュール検出メカニズム
+#### モジュール発見メカニズム
 
-ErisPulse は Python の `importlib.metadata.entry_points` を通じてインストール済みのモジュールを検出します。モジュールは `pyproject.toml` でエントリーポイントを宣言します：
+ErisPulse は Python の `importlib.metadata.entry_points` を使用して、インストール済みのモジュールを発見します。モジュールは `pyproject.toml` でエントリーポイントを宣言します：
 
 ```toml
 [project.entry-points."erispulse.module"]
 MyModule = "my_package:Main"
 ```
 
-SDK の初期化時に、すべての `erispulse.module` グループのエントリーポイントをスキャンし、モジュールクラスを `ModuleManager` に登録します。その後、依存関係に従ってトポロジカルソートし、順番に初期化します。
+SDK の初期化時に、`erispulse.module` グループのすべてのエントリーポイントをスキャンし、モジュールクラスを `ModuleManager` に登録し、依存関係に基づいてトポロジカルソートした後に順次初期化します。
 
-#### 最小構成のモジュール
+#### 最小限のモジュール
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -137,9 +143,9 @@ class Main(BaseModule):
 
 #### モジュールのライフサイクル
 
-- **登録**：SDK がモジュールクラスを検出し、マネージャーに登録します
-- **ロード**：モジュールインスタンスを作成し、`on_load(event)` を呼び出します（`event = {"module_name": "MyModule"}`）
-- **アンロード**：`on_unload(event)` を呼び出し、リソースをクリーンアップします
+- **登録**：SDK がモジュールクラスを発見し、マネージャーに登録
+- **ロード**：モジュールインスタンスを作成し、`on_load(event)` を呼び出す（`event = {"module_name": "MyModule"}`）
+- **アンロード**：`on_unload(event)` を呼び出し、リソースのクリーンアップ
 
 #### ロード戦略
 
@@ -152,36 +158,36 @@ class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(
-            lazy_load=True,   # 遅延読み込みするかどうか（デフォルトは True）
-            priority=0        # ロード優先度、数値が大きいほど先に初期化されます
+            lazy_load=True,   # ラグジュアリーなロードかどうか（デフォルトは True）
+            priority=0        # ロードの優先度、数値が大きいほど先に初期化される
         )
 ```
 
-- **`lazy_load=True`（デフォルト）**：モジュールは `sdk.MyModule` として初めてアクセスされた時に初期化され、起動時間を短縮します
-- **`lazy_load=False`**：SDK の起動時に即座に初期化します。ライフサイクルイベントのリッスンや定期タスクの実行が必要なモジュールに適しています
-- **`priority`**：同じ優先度のモジュールは登録順にロードされます。数値が大きいほど先に初期化されます
+- **`lazy_load=True`（デフォルト）**：`sdk.MyModule` に初めてアクセスしたときにモジュールを初期化し、起動時間を短縮
+- **`lazy_load=False`**：SDK の起動時に即座に初期化、ライフサイクルイベントの監視やタイマー処理を行うモジュールに適している
+- **`priority`**：同じ優先度のモジュールは登録順にロード、数値が大きいほど先に初期化される
 
-> 遅延読み込みメカニズムの詳細については、[遅延読み込みシステム](../advanced/lazy-loading.md) を参照してください。
+> 詳細なラグジュアリーなロードの仕組みについては [ラグジュアリーなロードシステム](../advanced/lazy-loading.md) を参照してください。
 
-## イベントタイプ
+## イベントの種類
 
 ErisPulse は 5 種類のイベントをサポートしています：
 
-| イベントタイプ | デコレーター | 説明 |
+| イベントの種類 | デコレータ | 説明 |
 |---------|--------|------|
-| メッセージイベント | `@message.on_message()` | ユーザーが送信したすべてのメッセージ（個人チャット、グループチャット） |
+| メッセージイベント | `@message.on_message()` | ユーザーが送信したすべてのメッセージ（プライベートチャット、グループチャット） |
 | コマンドイベント | `@command("name")` | コマンドプレフィックスで始まるメッセージ（例：`/hello`） |
-| 通知イベント | `@notice.on_friend_add()` など | システム通知（フレンド追加、グループメンバーの変更など） |
-| リクエストイベント | `@request.on_friend_request()` など | ユーザーリクエスト（フレンドリクエスト、グループ招待） |
-| メタイベント | `@meta.on_connect()` など | システムレベルのイベント（接続、切断、ハートビート） |
+| 通知イベント | `@notice.on_friend_add()` など | システム通知（友達追加、グループメンバーの変更など） |
+| 要求イベント | `@request.on_friend_request()` など | ユーザーの要求（友達リクエスト、グループ招待） |
+| メタイベント | `@meta.on_connect()` など | システムイベント（接続、切断、ハートビート） |
 
-> 各イベントタイプの詳細な使い方とコード例については、[イベント処理入門](event-handling.md) を参照してください。
+> 各イベントの詳細な使い方とコード例については [イベント処理の入門](event-handling.md) を参照してください。
 
 ## コアモジュールの説明
 
 ### Storage（ストレージ）
 
-SQLite ベースのキーバリューストレージシステムで、データの永続化に使用します。
+SQLite をベースにしたキー/値形式のストレージシステムで、永続化データを管理します。
 
 ```python
 # 値の設定
@@ -190,7 +196,7 @@ sdk.storage.set("key", "value")
 # 値の取得
 value = sdk.storage.get("key", "default_value")
 
-# 一括操作
+# バッチ操作
 sdk.storage.set_multi({
     "key1": "value1",
     "key2": "value2"
@@ -204,49 +210,49 @@ with sdk.storage.transaction():
 
 ### Config（設定）
 
-TOML 形式の設定ファイル管理。
+TOML 形式の設定ファイルを管理します。
 
 ```python
 # 設定の取得
 config = sdk.config.getConfig("MyModule", {})
 
-# 設定の保存
+# 設定の設定
 sdk.config.setConfig("MyModule", {"key": "value"})
 
-# ネストされた設定の読み取り
+# 嵌套された設定の読み取り
 value = sdk.config.getConfig("MyModule.subkey", "default")
 ```
 
 ### Logger（ログ）
 
-モジュール化されたログシステム。
+モジュール化されたログシステムです。
 
 ```python
 # ログの記録
-sdk.logger.info("これは情報メッセージです")
-sdk.logger.warning("これは警告メッセージです")
-sdk.logger.error("これはエラーメッセージです")
+sdk.logger.info("これは情報です")
+sdk.logger.warning("これは警告です")
+sdk.logger.error("これはエラーです")
 
-# 子ロガーの取得
+# サブログレコーダーの取得
 child_logger = sdk.logger.get_child("submodule")
 child_logger.info("サブモジュールのログ")
 ```
 
-**属性アクセスのシンタックスシュガー**
+**属性アクセスの糖衣構文**
 
-`get_child()` メソッドを使用する以外に、**属性アクセス**の方法で子ロガーを作成することもできます。これはより簡潔な**シンタックスシュガー**の書き方です：
+`get_child()` メソッドの代わりに、**属性アクセス**を使ってサブloggerを作成することもできます。これはより簡潔な**糖衣構文**です：
 
 ```python
-# 属性アクセスで子ロガーを作成
+# 属性アクセスでサブloggerを作成
 sdk.logger.mymodule.info("モジュールメッセージ")
 
-# ネストされたアクセスもサポート
+# 嵌套アクセスもサポート
 sdk.logger.mymodule.database.info("データベースメッセージ")
 ```
 
 ### Router（ルーティング）
 
-FastAPI + Uvicorn ベースの HTTP および WebSocket ルーティング管理。デコレータールーティング、ミドルウェア、グループ化、レート制限、CORS をサポートします。
+HTTP および WebSocket のルーティング管理、FastAPI + Uvicorn をベースにしています。デコレータルーティング、ミドルウェア、グループ、リクエスト制限、CORS をサポートしています。
 
 ```python
 from ErisPulse.Core import HttpRequest
@@ -257,11 +263,11 @@ async def handler(request: HttpRequest):
     return {"status": "ok"}
 ```
 
-> ルーティング API の完全な情報（WebSocket、ミドルウェア、レート制限、CORS など）については、[ルートマネージャー](../advanced/router.md) を参照してください。
+> 完全なルーティング API（WebSocket、ミドルウェア、リクエスト制限、CORS など）については [ルーティングマネージャー](../advanced/router.md) を参照してください。
 
 ### Client（ネットワーククライアント）
 
-統合されたネットワーククライアントで、HTTP リクエスト、WebSocket 接続、コネクションプール管理、自動リトライ、タイムアウト制御、リクエスト統計、ライフサイクルイベント統合を集約しています。
+統一されたネットワーククライアントで、HTTP リクエスト、WebSocket 接続、接続プール管理、自動リトライ、タイムアウト制御、リクエスト統計、ライフサイクルイベントの統合を提供します。
 
 ```python
 from ErisPulse.Core import client
@@ -279,11 +285,11 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-> ネットワーククライアント API の完全な情報については、[ネットワーククライアント](../advanced/http-client.md) を参照してください。
+> 完全なネットワーククライアント API については [ネットワーククライアント](../advanced/http-client.md) を参照してください。
 
 ## SendDSL メッセージ送信
 
-アダプターはチェーン呼び出しのメッセージ送信インターフェースを提供します。
+アダプターはメソッドチェーンによるメッセージ送信インターフェースを提供します。
 
 ### 基本的な送信
 
@@ -308,17 +314,17 @@ await yunhu.Send.To("group", "G1001").At("U2001").Text("@メッセージ")
 await yunhu.Send.To("group", "G1001").Reply("msg123").Text("返信")
 
 # @全員
-await yunhu.Send.To("group", "G1001").AtAll().Text("お知らせ")
+await yunhu.Send.To("group", "G1001").AtAll().Text("公告")
 ```
 
-### Event 返信メソッド
+### Event の返信メソッド
 
-Event オブジェクトは便利な返信メソッドを提供しています：
+Event オブジェクトには便利な返信メソッドが提供されています：
 
 ```python
 @command("test")
 async def test_handler(event):
-    # シンプルなテキスト返信
+    # 簡単なテキスト返信
     await event.reply("返信内容")
     
     # 画像の送信
@@ -328,9 +334,9 @@ async def test_handler(event):
     await event.reply("http://example.com/voice.mp3", method="Voice")
 ```
 
-## 遅延読み込みシステム
+## ラグジュアリーなロードシステム
 
-ErisPulse はデフォルトでモジュールの遅延読み込みを有効にしており、モジュールは初めてアクセスされた時（例：`sdk.MyModule`）にのみ初期化されるため、起動速度が大幅に向上します。
+ErisPulse はデフォルトでモジュールのラグジュアリーなロードを有効にしており、`sdk.MyModule` に初めてアクセスしたときにモジュールが初期化され、起動速度が大幅に向上します。
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -339,19 +345,19 @@ class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(
-            lazy_load=True,   # 遅延読み込みを有効化（デフォルト）
-            priority=0        # ロード優先度、数値が大きいほど先に初期化されます
+            lazy_load=True,   # ラグジュアリーなロードを有効にする（デフォルト）
+            priority=0        # ロードの優先度、数値が大きいほど先に初期化される
         )
 ```
 
-**遅延読み込みを無効にする必要があるシナリオ（`lazy_load=False`）：**
-- ライフサイクルイベントをリッスンするモジュール（例：`core.init.complete`）
-- 定期タスクやバックグラウンドサービスを起動するモジュール
-- 他のモジュールがロードされる前に初期化を完了する必要があるモジュール
+**ラグジュアリーなロードを無効にする必要がある状況（`lazy_load=False`）：**
+- ライフサイクルイベントを監視するモジュール（例：`core.init.complete`）
+- 起動時のタイマー処理やバックグラウンドサービスを実行するモジュール
+- 他のモジュールのロード前に初期化を完了させる必要があるモジュール
 
-> 遅延読み込みメカニズムの詳細と注意事項については、[遅延読み込みシステム](../advanced/lazy-loading.md) を参照してください。
+> 詳細なラグジュアリーなロードの仕組みと注意事項については [ラグジュアリーなロードシステム](../advanced/lazy-loading.md) を参照してください。
 
-## 次のステップ
+## 次に進む
 
-- **L1 パスに沿って続行**：次は [Event ラッパークラス](../developer-guide/modules/event-wrapper.md) で、イベントオブジェクトのすべての読み書きメソッドを習得します
-- **書きながら学びたい**：[イベント処理入門](event-handling.md) ではイベントタイプ別にコピーしてすぐ使えるハンドラーの書き方を紹介しています。[よくあるタスクの例](common-tasks.md) では永続化、定期タスク、権限制御などのよく使う機能を網羅しています
+- **L1 パスに従って**：次は [Event 包装クラス](../developer-guide/modules/event-wrapper.md)、イベントオブジェクトのすべての読み書きメソッドを習得
+- **実践しながら学びたい**：[イベント処理の入門](event-handling.md) では、イベントの種類ごとに直接コピーできるハンドラの書き方を提供；[一般的なタスクの例](common-tasks.md) では、永続化、タイマー処理、権限制御などの一般的な機能をカバー

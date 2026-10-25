@@ -7,30 +7,29 @@
 
 ## 內容列表
 
-### 模組開發
+### 模塊開發
 
-1. [模組開發入門](modules/getting-started.md) - 建立第一個模組
-2. [模組核心概念](modules/core-concepts.md) - 模組的核心概念和架構
-3. [Event 包裝類別詳解](modules/event-wrapper.md) - Event 物件的完整說明
-4. [模組最佳實踐](modules/best-practices.md) - 開發高品質模組的建議
-5. [資料模型層（ORM）](orm.md) - 模組開發進階：宣告式模型、自動建表與增刪改查
+1. [模塊開發入門](modules/getting-started.md) - 創建第一個模塊  
+2. [模塊核心概念](modules/core-concepts.md) - 模塊的核心概念和架構  
+3. [Event 包裝類詳解](modules/event-wrapper.md) - Event 對象的完整說明  
+4. [模塊最佳實踐](modules/best-practices.md) - 開發高品質模塊的建議  
+5. [數據模型層（ORM）](orm.md) - 模塊開發進階：宣告式模型、自動建表與增刪改查  
 
-### 配接器開發
+### 適配器開發
 
-1. [配接器開發入門](adapters/getting-started.md) - 建立第一個配接器
-2. [配接器核心概念](adapters/core-concepts.md) - 配接器的核心概念
-3. [SendDSL 詳解](adapters/send-dsl.md) - Send 訊息傳送 DSL 的完整說明
-4. [事件轉換器](adapters/converter.md) - 實作事件轉換器
-5. [配接器最佳實踐](adapters/best-practices.md) - 開發高品質配接器的建議
+1. [適配器開發入門](adapters/getting-started.md) - 創建第一個適配器  
+2. [適配器核心概念](adapters/core-concepts.md) - 適配器的核心概念（包含 start() 的兩種寫法與 PollingAdapter / WebhookAdapter 連接模式基類）  
+3. [SendDSL 詳解](adapters/send-dsl.md) - Send 消息發送 DSL 的完整說明  
+4. [事件轉換器](adapters/converter.md) - 實現事件轉換器  
+5. [適配器最佳實踐](adapters/best-practices.md) - 開發高品質適配器的建議  
 
 ### 測試與排查
 
-1. [模組測試（ErisPulse-Testing）](testing.md) - TestBot、事件工廠與斷言面
-2. [模組排查指南](module-troubleshooting.md) - 模組沒載入 / 事件沒回應 / 命令沒觸發的定位方法
+1. [模塊測試（ErisPulse-Testing）](testing.md) - TestBot、事件工廠與斷言介面  
 
 ### 發布指南
 
-- [發布與模組商店指南](publishing.md) - 將你的作品發布到 PyPI 和 ErisPulse 模組商店
+- [發布與模塊商店指南](publishing.md) - 將你的作品發布到 PyPI 和 ErisPulse 模塊商店
 
 ## 開發準備
 

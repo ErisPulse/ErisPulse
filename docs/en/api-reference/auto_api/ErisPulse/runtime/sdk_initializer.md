@@ -34,11 +34,14 @@ Initializer（核心初始化编排）与 Uninitializer（优雅反初始化编�
 #### 方法列表
 
 
-##### `__init__(sdk_instance: SDK) -> None`
+##### `__init__(sdk_instance: SDK, adapter_loader: AdapterLoader | None = None, module_loader: ModuleLoader | None = None, strict_manager: Any | None = None) -> None`
 
 初始化协调器
 
 - **sdk_instance** (`SDK`): 实例
+- **adapter_loader**: 适配器加载器（可由 Kernel 注入；缺省自行构造）
+- **module_loader**: 模块加载器（可由 Kernel 注入；缺省自行构造）
+- **strict_manager**: 严格模式管理器（可由 Kernel 注入；缺省自行构造）
 
 ---
 

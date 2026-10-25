@@ -367,44 +367,46 @@ The `master=True` of a command is only the **developer's default**: The user can
 [ErisPulse.logger]
 level = "INFO"
 log_files = []                # Explicit list of log files (mutually exclusive with log_dir, higher priority)
-log_dir = ""                  # Log output directory (automatically creates). Setting it automatically segments and rotates logs into `erispulse.log` in the directory, with `log_rotation` auto-segmenting; mutually exclusive with `log_files`, `log_files` takes precedence
-log_rotation = "size"         # Segmentation method: "size" / "date" / "none"
-log_max_size_mb = 10          # Single file size limit in size mode (MB), rotates to .1/.2 backups when exceeded
-log_backup_count = 5          # Number of retained historical log files, oldest backups are automatically deleted when exceeded
-log_rotation_when = "midnight"  # Date mode rotation cycle: S/M/H/D/midnight
-memory_limit = 1000
+log_dir = ""                  # Log directory (automatic segment rotation enabled)
+log_rotation = "size"         # Segmenting method: "size" / "date" / "none"
+log_max_size_mb = 10          # Maximum single file size limit in MB for size mode
+log_backup_count = 5          # Number of historical log files to retain
+log_rotation_when = "midnight"  # Rotation period for date mode: S/M/H/D/midnight
+memory_limit = 1000             # Maximum number of log entries per module in memory (0 = disable memory log copy)
+total_memory_limit = 5000       # Total memory log entries limit for all modules (0 = unlimited)
 exclude_levels = ["EVENT"]
 ```
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed internal debugging information) |
-| format | string | rich | Log output format: `rich` (colorful, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (structured JSON, suitable for ELK, etc.) |
+| level | string | INFO | Logging level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed internal debugging information) |
+| format | string | rich | Logging output format: `rich` (colored, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (JSON structured, suitable for ELK, etc.) |
 | log_files | array | empty | List of log output files (explicit paths, no segmentation) |
-| log_dir | string | empty | Log output directory (automatically created). Setting it writes to `erispulse.log` in the directory and automatically segments according to `log_rotation`. Mutually exclusive with `log_files`, `log_files` takes precedence |
-| log_rotation | string | size | Segmentation method: `size` (by size) / `date` (by time) / `none` (no segmentation) |
-| log_max_size_mb | float | 10 | Single file size limit in size mode (MB), rotates to .1/.2 backups when exceeded |
-| log_backup_count | integer | 5 | Number of retained historical log files, oldest backups are automatically deleted when exceeded |
-| log_rotation_when | string | midnight | Date mode rotation cycle: S/M/H/D/midnight (default daily at midnight) |
-| memory_limit | integer | 1000 | Number of log entries kept in memory |
-| exclude_levels | array | empty | Levels to exclude. Logs of excluded levels are **completely discarded** (not written to memory, not pushed to Dashboard or other subscribers, not printed, not written to file). Supports hot updates |
+| log_dir | string | empty | Log output directory (automatically created). When set, logs are written into `erispulse.log` inside the directory and automatically segmented based on `log_rotation`; mutually exclusive with `log_files`, `log_files` has higher priority |
+| log_rotation | string | size | Segmenting method: `size` (by size) / `date` (by date) / `none` (no segmentation) |
+| log_max_size_mb | float | 10 | Maximum file size limit in MB for size mode; files are rotated to `.1`/`.2` backups when exceeded |
+| log_backup_count | integer | 5 | Number of historical log files to retain; oldest backups beyond this limit are automatically deleted |
+| log_rotation_when | string | midnight | Rotation period for date mode: `S`/`M`/`H`/`D`/`midnight` (default is midnight each day) |
+| memory_limit | integer | 1000 | Number of log entries saved in memory per module; `0` means disable memory log copies (no longer write to memory, existing records are retained) |
+| total_memory_limit | integer | 5000 | Total memory log entries limit for all modules; `0` means unlimited. When exceeded, oldest records are discarded according to the rotation strategy (prioritizing modules with the most entries), independent of the single module `memory_limit` |
+| exclude_levels | array | empty | Excluded log levels. Logs of excluded levels are **completely discarded** (not written to memory, not pushed to Dashboard or other subscribers, not printed, not written to file). Supports hot updates |
 
 You can also dynamically switch in code:
 
 ```python
 from ErisPulse.Core import logger
 
-# Segment by size: Single file 10MB, retain 5 copies
+# Segment by size: 10MB per file, retain 5 copies
 logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
 
-# Segment by time: Rotate daily at midnight, retain 7 copies
+# Segment by date: rotate at midnight daily, retain 7 copies
 logger.set_output_dir("logs", rotation="date", backup_count=7)
 ```
 
 > [!NOTE]
-> `log_dir` and segmentation-related configurations require ErisPulse **2.8.0+**.
+> `log_dir` and related segmentation configurations require ErisPulse **2.8.0+**.
 
-> **Privacy Protection**: Message sending and receiving content is logged at the **EVENT level** (value 21). Setting `exclude_levels = ["EVENT"]` allows the backend (such as the Dashboard log panel) to not see message content in groups or private chats, while not affecting logs of other levels.
+> **Privacy Protection**: Message sending and receiving content is logged at the **EVENT level** (value 21). Setting `exclude_levels = ["EVENT"]` prevents the backend (such as the Dashboard log panel) from seeing message content in groups/private chats, while not affecting logs of other levels.
 
 > [!NOTE]
 > The `exclude_levels` feature requires ErisPulse **2.8.0+**.
@@ -425,46 +427,50 @@ adapters = []
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | Whether to enable lazy loading of modules |
-| uninit_timeout | integer | 30 | Graceful shutdown timeout (seconds), forcibly terminates after exceeding. 0 means no timeout |
-| strict_mode | integer | 0 | Strict mode level, see below "Strict Mode" section |
-| handler_max_concurrency | integer | 64 | Maximum concurrent task count for event handlers, increasing improves throughput but increases memory usage |
-| offline_bot_expiry | integer | 3600 | Automatic expiration time (seconds) for offline Bot records, 0 means no expiration |
+| uninit_timeout | integer | 30 | Total timeout (seconds) for graceful shutdown; if exceeded, termination is forced. 0 means no timeout is set |
+| strict_mode | integer | 0 | Strict mode level; see the "Strict Mode" section below |
+| handler_max_concurrency | integer | 64 | Maximum concurrent Task count for event handlers; increasing this value improves throughput but increases memory usage |
+| handler_queue_max_pending | integer | 4096 | Backpressure for event burst: the maximum number of pending handler Tasks per platform. If exceeded, new event handler Tasks are discarded and a WARNING is logged (the discard count can be checked in troubleshoot). `0` means unlimited |
+| offline_bot_expiry | integer | 3600 | Automatic expiration time (seconds) for offline Bot records; 0 means no expiration |
+| plugins_dir | string / list | "plugins" | Local plugin folder (relative to project root); changes to plugin files (addition, deletion, modification) are automatically discovered by the hot-reload watcher |
+| watch_ignore_dirs | list | Built-in list | Directories to ignore in hot-reload file monitoring (e.g., `.venv`, `.git`, `__pycache__`); a non-empty list **replaces** the built-in list entirely; `[]` means no directories are ignored |
+| watch_include_plugin_dirs | boolean | true | Whether `epsdk run --reload` should hand over plugin directories to the plugin hot-reload watcher for precise handling (single-module reload) and exclude them from full monitoring |
 
-### Active GC Configuration
+### Proactive GC Configuration
 
-After SDK initialization, an active GC background task is started, periodically executing Python GC and internal resource recycling (cleaning offline Bots, etc.). All parameters support hot updates, and the task is restarted immediately when changes occur.
+After SDK initialization, a background task for proactive garbage collection (GC) is started, periodically executing Python GC and internal resource cleanup (such as offline Bot cleanup). All parameters support hot updates, and the task is restarted immediately when changes occur.
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| proactive_gc_interval | number | 300 | Recycling interval (seconds), supports decimals. 0 means disable active GC |
-| proactive_gc_generation | integer | 0 | Regular round recycling generation (0/1/2, clamped to 0..2). Note that `gc.collect(2)` is equivalent to full recycling, default 0 keeps it lightweight; deep recycling is triggered periodically by `proactive_gc_full_every` |
-| proactive_gc_full_every | integer | 20 | Full recycling every N rounds, 0 means disable periodic full recycling. Full recycling is constrained by the `proactive_gc_memory_growth_mb` threshold |
-| proactive_gc_memory_growth_mb | integer | 32 | Memory growth threshold (MB) for full recycling: Compared to the memory baseline after the last full recycling (prioritizing tracemalloc, then RSS), full recycling is only performed if the growth reaches this value. 0 means no threshold |
-| proactive_gc_idle_only | boolean | false | When enabled, Python GC is skipped in this round during event peaks (pending handlers exist), avoiding pauses and message processing competition; internal resource recycling is unaffected |
-| proactive_gc_gen0_min | integer | 500 | Lower bound for triggering regular round recycling of gen0 garbage: `gc.get_count()[0]` below this value directly skips (empty round has near-zero overhead). 0 means always recycle |
+| proactive_gc_interval | number | 300 | Recycle interval (seconds), supports decimals. 0 means proactive GC is disabled |
+| proactive_gc_generation | integer | 0 | Regular round of generation recycling (0/1/2, clamped to 0..2). Note that `gc.collect(2)` is equivalent to full recycling; the default of 0 keeps it lightweight. Deep recycling is triggered periodically by `proactive_gc_full_every` |
+| proactive_gc_full_every | integer | 20 | Perform a full recycling every N rounds; 0 means periodic full recycling is disabled. Full recycling is constrained by the `proactive_gc_memory_growth_mb` threshold |
+| proactive_gc_memory_growth_mb | integer | 32 | Full recycling memory growth threshold (MB): compared to the memory baseline after the last full recycling (preferring tracemalloc, then RSS), full recycling is only performed if the growth reaches this value. 0 means no threshold is set |
+| proactive_gc_idle_only | boolean | false | When enabled, skip Python GC during event bursts (when there are unfinished pending handlers) to avoid pauses and message processing competition; internal resource recycling is unaffected |
+| proactive_gc_gen0_min | integer | 500 | Minimum garbage amount for triggering regular round recycling of gen0: if `gc.get_count()[0]` is below this value, the round is skipped directly (near-zero overhead for empty rounds). 0 means recycling is always performed |
 
-> **2.7.1 Change**: The default `proactive_gc_generation` was adjusted from `2` to `0`, and `proactive_gc_full_every` was adjusted from `0` to `20`. Previously `generation=2` meant full recycling every round; the new default maintains recycling coverage while significantly reducing empty round overhead. Explicitly configured old values still follow literal semantics.
+> **Change in 2.7.1**: The default `proactive_gc_generation` is adjusted from `2` to `0`, and the default `proactive_gc_full_every` is adjusted from `0` to `20`. Previously, `generation=2` meant that every round performed the heaviest full recycling; the new default maintains recycling coverage while significantly reducing idle round overhead. Explicitly configured old values still function as intended.
 
 ### Strict Mode
 
-The strict mode controls the handling strategy for non-compliant or failed components during the loading phase. Modern modules/adapters should inherit the corresponding base classes (`BaseModule`/`BaseAdapter`); components not inheriting base classes affect the framework's context system and fallback cleanup, potentially causing resource leaks.
+Strict mode controls the handling strategy for modules/adapters that are non-compliant or fail during the loading phase. Modern modules/adapters should inherit corresponding base classes (`BaseModule`/`BaseAdapter`); components that do not inherit base classes affect the framework's context system and fallback cleanup, potentially leading to resource leaks.
 
-> **2.5.2 Change**: The default level was adjusted from `1` (skip) to `0` (lenient), to reduce loading issues for new users. Components not inheriting base classes will be warned and attempted to load, rather than directly rejected. To restore old behavior, explicitly set `strict_mode = 1`.
+> **Change in 2.5.2**: The default level is adjusted from `1` (skip) to `0` (lenient) to reduce loading issues for new users. Components that do not inherit base classes will be warned and still attempted to load, rather than directly rejected. To restore the old behavior, explicitly set `strict_mode = 1`.
 
 | Level | Name | Behavior |
 |------|------|------|
-| 0 | Lenient (Default) | Violations only warn, components not inheriting base classes are still attempted to load (compatible with old components) |
-| 1 | Strict-Skip | Reject components not inheriting base classes and skip them, other components start normally |
-| 2 | Strict-Fatal | Collect all violations and report them together, then terminate the entire startup |
+| 0 | Lenient (default) | Violations only issue warnings; components that do not inherit base classes will still be attempted to load (compatible with old components) |
+| 1 | Strict-Skip | Reject components that do not inherit base classes and skip them; other components start normally |
+| 2 | Strict-Fatal | Collect all violations and report them together, then terminate the entire startup process |
 
-In all levels, component self-crashes during the loading/registration/initialization phase are always skipped; the difference lies in:
+In all levels, component crashes during the loading/registration/initialization phase are always skipped; the differences are as follows:
 
-- **0 → 1**: The only behavioral change is that "not inheriting base class" changes from "still loading" to "skipping."
-- **1 → 2**: All violations (not inheriting base class, loading failure, registration failure, initialization failure, etc.) are upgraded to fatal, collected at the startup checkpoint and reported as a violation list, then terminated.
+- **0 → 1**: The only behavioral change is that components that do not inherit base classes change from "still loaded" to "skipped".
+- **1 → 2**: All violations (not inheriting base classes, loading failure, registration failure, initialization failure, etc.) are upgraded to fatal, and a violation list is output together at the startup checkpoint before terminating.
 
-#### Exemption List
+#### Exception List
 
-If certain components cannot migrate temporarily (for example, dependent old modules), they can be added to the exemption list. Components listed here will be treated as lenient mode even if non-compliant, and continue loading:
+If certain components cannot be migrated temporarily (e.g., old modules they depend on), they can be added to the exception list. Components listed here will be treated as if in lenient mode, even if they are non-compliant, and continue to be loaded:
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -472,11 +478,11 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> When a component is rejected by strict mode, the log will clearly prompt how to resume loading (add to the exemption list or lower the level).
+> When a component is rejected by strict mode, the log will clearly indicate how to restore loading (add to the exception list or lower the level).
 
 #### Integration with CLI
 
-The startup pre-check of `epsdk run` (parsing of configuration file, completeness of component required configuration) defaults to follow this configuration: If not 0, failure in the check will refuse startup, and if 0, only warnings continue. It can also be temporarily switched without changing the configuration: `epsdk run --strict` will enable both self-check and strict level this time (level only increases, not decreases, and is transmitted to the running process via the `ERISPULSE_FRAMEWORK_STRICT_MODE` environment variable), `--no-strict` temporarily lowers to lenient and only warns.
+The pre-start self-check of `epsdk run` (configuration file parseability, completeness of required component configurations) follows this configuration by default: if not 0, startup is refused if the check fails; if 0, warnings are issued and startup continues. It can also be temporarily switched without changing the configuration: `epsdk run --strict` enables both self-check and strict level for this run (the level only increases, propagated to the running process via the `ERISPULSE_FRAMEWORK_STRICT_MODE` environment variable), and `--no-strict` temporarily lowers it to lenient and only issues warnings.
 
 ## Storage Configuration
 
@@ -555,6 +561,25 @@ ignore_self = true
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
 | ignore_self | boolean | true | Whether to ignore the robot's own messages |
+
+## Transcript Inbox Configuration
+
+```toml
+[ErisPulse.transcript]
+enabled = true
+max_per_session = 50
+ttl_hours = 168.0
+self_echo = "bot"
+```
+
+| Configuration | Type | Default | Description |
+|---------------|------|---------|-------------|
+| enabled | boolean | true | Whether to automatically record inbound/outbound messages (disabling stops writing, but historical data remains queryable) |
+| max_per_session | int | 50 | Number of entries to retain per session (0 = disable session trimming) |
+| ttl_hours | float | 168.0 | Global retention duration (in hours, 0 = never clean up) |
+| self_echo | string | "bot" | Inbound bot echo handling (when `self.user_id == user_id`, e.g., OneBot `report-self-message`):<br>`bot` = record as bot and mark `meta.self_echo`;<br>`skip` = do not record;<br>`user` = record as user (old behavior) |
+
+> See [Transcript Inbox](../advanced/transcript.md) for risk and audit information about retention policies; attribution fields (`sender` / `meta`) and outbound attribution (`meta.module`) are also described in that document.
 
 ## Internationalization Configuration
 
