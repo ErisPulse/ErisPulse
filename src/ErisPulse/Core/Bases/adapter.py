@@ -680,7 +680,7 @@ class SendDSL:
             "account_id": self._account_id,
         }
 
-    def Raw_ob12(self, message: dict, **kwargs) -> Awaitable[Any]:
+    def Raw_ob12(self, message: "dict | list[dict]", **kwargs) -> Awaitable[Any]:
         """
         发送 OneBot12 格式消息段（必须由适配器子类重写）
 

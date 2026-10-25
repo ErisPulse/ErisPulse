@@ -1,5 +1,5 @@
 {
- "lazy_total": 978,
+ "lazy_total": 979,
  "by_file": {
   "__init__.py": 15,
   "__main__.py": 1,
@@ -7,7 +7,7 @@
   "CLI/cli.py": 13,
   "CLI/commands/config.py": 7,
   "CLI/commands/create.py": 6,
-  "CLI/commands/doctor.py": 11,
+  "CLI/commands/doctor.py": 12,
   "CLI/commands/init.py": 15,
   "CLI/commands/install.py": 8,
   "CLI/commands/language.py": 5,
