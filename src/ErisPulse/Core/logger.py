@@ -652,7 +652,7 @@ class Logger:
                 handler.close()
             self._file_handlers.clear()
 
-    def set_output_file(self, path: str | Path) -> bool:
+    def set_output_file(self, path: str | Path | list[str]) -> bool:
         """
         设置日志输出
 
@@ -661,11 +661,10 @@ class Logger:
         """
         self._clear_file_handlers()
 
-        if isinstance(path, str):
-            path = [path]
+        paths = path if isinstance(path, list) else [path]
 
         success = False
-        for p in path:
+        for p in paths:
             try:
                 handler = logging.FileHandler(p, encoding="utf-8")
                 if self._json_mode:
@@ -876,11 +875,10 @@ class Logger:
             self._logger.warning(i18n.t("core.logger.no_logs_to_save"))
             return False
 
-        if isinstance(path, str):
-            path = [path]
+        paths = path if isinstance(path, list) else [path]
 
         success = False
-        for p in path:
+        for p in paths:
             try:
                 with Path(p).open("w", encoding="utf-8") as file:
                     for module, logs in self._logs.items():
