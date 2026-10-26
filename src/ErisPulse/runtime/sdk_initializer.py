@@ -26,7 +26,6 @@ from ..loaders.adapter import AdapterLoader
 
 # 导入懒加载模块类
 from ..loaders.module import LazyModule, ModuleLoader
-from ..loaders.strict import StrictModeManager
 
 if TYPE_CHECKING:
     from ..sdk import SDK
@@ -61,17 +60,37 @@ class Initializer:
         :param strict_manager: 严格模式管理器（可由 Kernel 注入；缺省自行构造）
         """
         self._sdk = sdk_instance
-        self._adapter_loader = adapter_loader or AdapterLoader()
-        self._module_loader = module_loader or ModuleLoader()
+        if adapter_loader is None or module_loader is None:
+            # 缺省委托组合根构造：与 Kernel 正常启动共用同一套加载器与
+            # 共享严格模式管理器（含 SDK 引用注入）——组装顺序只存在于
+            # Kernel 一处，避免"不带 loaders 直接构造 Initializer"时产生
+            # 游离的 StrictModeManager（收集的 violations 永远无人消费）
+            from .kernel import Kernel
+
+            kernel = getattr(sdk_instance, "_kernel", None) or Kernel(sdk_instance)
+            built_adapter, built_module = kernel.build_loaders()
+            adapter_loader = adapter_loader or built_adapter
+            module_loader = module_loader or built_module
+            strict_manager = strict_manager or getattr(
+                kernel, "_strict_manager", None
+            )
+        assert adapter_loader is not None and module_loader is not None
+        self._adapter_loader: AdapterLoader = adapter_loader
+        self._module_loader: ModuleLoader = module_loader
         # 将加载器引用注入 SDK：热重载（sdk.reload_module / sdk.reload_adapter /
         # 热重载监控）经由 SDK 访问，若仅持有在 Initializer 内部则 SDK 侧永远读不到
         sdk_instance._module_loader = self._module_loader
         sdk_instance._adapter_loader = self._adapter_loader
         # 共享的严格模式管理器注入到两个加载器，
         # 确保跨加载器统一收集违规、在检查点统一报告
-        self._strict_manager = strict_manager or StrictModeManager.from_config()
+        self._strict_manager: Any = strict_manager
         self._adapter_loader.set_strict_manager(self._strict_manager)
         self._module_loader.set_strict_manager(self._strict_manager)
+        # 版本闸门登记器同步传播到本地插件加载器（strict 错误面与安装来源解耦）
+        try:
+            self._module_loader._plugin_loader.set_strict_recorder(self._strict_manager)
+        except Exception:
+            pass
 
     def __getattr__(self, name: str):
         """将未找到的属性委托给 SDK 实例（如 logger、adapter 等）"""

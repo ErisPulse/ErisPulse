@@ -57,7 +57,9 @@ class TestInitProjectPaths:
         assert 'name = "mybot"' in text
         assert 'requires-python = ">=3.10"' in text
         assert f'"{INIT_ERISPULSE_DEPENDENCY}"' in text  # 依赖下限跟随集中常量
-        assert '"onebot11-adapter"' in text  # 适配器进依赖清单
+        # 适配器短名不进骨架依赖（别名→真包名在安装阶段才解析，短名会让 uv 解析失败）；
+        # 真包名由安装成功后的 append_pyproject_dependencies / uv add 补写
+        assert '"onebot11-adapter"' not in text
 
     def test_gitignore_generated(self, init_cmd, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
@@ -90,7 +92,7 @@ class TestResolveTargetPython:
     """目标解释器解析优先级"""
 
     def test_project_venv_priority(self, tmp_path, monkeypatch):
-        from ErisPulse.CLI.utils.package_manager import resolve_target_python
+        from ErisPulse.CLI.utils.package_manager import PythonSource, resolve_target_python
 
         if sys.platform == "win32":
             py = tmp_path / ".venv" / "Scripts" / "python.exe"
@@ -102,10 +104,10 @@ class TestResolveTargetPython:
 
         resolved, source = resolve_target_python(tmp_path)
         assert resolved == str(py)
-        assert source == "ERISPULSE_PYTHON"
+        assert source == PythonSource.ENV_VAR
 
     def test_project_venv_detected(self, tmp_path, monkeypatch):
-        from ErisPulse.CLI.utils.package_manager import resolve_target_python
+        from ErisPulse.CLI.utils.package_manager import PythonSource, resolve_target_python
 
         monkeypatch.delenv("ERISPULSE_PYTHON", raising=False)
         monkeypatch.delenv("VIRTUAL_ENV", raising=False)
@@ -118,17 +120,55 @@ class TestResolveTargetPython:
 
         resolved, source = resolve_target_python(tmp_path)
         assert resolved == str(py)
-        assert source == "项目 .venv"
+        assert source == PythonSource.PROJECT_VENV
+
+    def test_uv_project_environment_priority(self, tmp_path, monkeypatch):
+        """UV_PROJECT_ENVIRONMENT 指向非 .venv 路径时被感知（防装错环境）"""
+        from ErisPulse.CLI.utils.package_manager import (
+            PythonSource,
+            resolve_target_python,
+        )
+
+        monkeypatch.delenv("ERISPULSE_PYTHON", raising=False)
+        monkeypatch.delenv("VIRTUAL_ENV", raising=False)
+        monkeypatch.delenv("UV_PYTHON", raising=False)
+        if sys.platform == "win32":
+            py = tmp_path / "custom-env" / "Scripts" / "python.exe"
+        else:
+            py = tmp_path / "custom-env" / "bin" / "python"
+        py.parent.mkdir(parents=True)
+        py.write_text("")
+        monkeypatch.setenv("UV_PROJECT_ENVIRONMENT", str(tmp_path / "custom-env"))
+
+        resolved, source = resolve_target_python(tmp_path)
+        assert resolved == str(py)
+        assert source == PythonSource.UV_PROJECT
+
+    def test_uv_python_version_specifier_ignored(self, tmp_path, monkeypatch):
+        """UV_PYTHON 版本说明符形态（非路径）被跳过，落回当前解释器"""
+        from ErisPulse.CLI.utils.package_manager import (
+            PythonSource,
+            resolve_target_python,
+        )
+
+        monkeypatch.delenv("ERISPULSE_PYTHON", raising=False)
+        monkeypatch.delenv("VIRTUAL_ENV", raising=False)
+        monkeypatch.delenv("UV_PROJECT_ENVIRONMENT", raising=False)
+        monkeypatch.setenv("UV_PYTHON", "3.12")
+
+        resolved, source = resolve_target_python(tmp_path)
+        assert resolved == sys.executable
+        assert source == PythonSource.CURRENT
 
     def test_fallback_current_interpreter(self, tmp_path, monkeypatch):
-        from ErisPulse.CLI.utils.package_manager import resolve_target_python
+        from ErisPulse.CLI.utils.package_manager import PythonSource, resolve_target_python
 
         monkeypatch.delenv("ERISPULSE_PYTHON", raising=False)
         monkeypatch.delenv("VIRTUAL_ENV", raising=False)
 
         resolved, source = resolve_target_python(tmp_path)
         assert resolved == sys.executable
-        assert source == "当前解释器"
+        assert source == PythonSource.CURRENT
 
 
 class TestUvIsolationWarning:

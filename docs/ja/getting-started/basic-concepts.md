@@ -49,7 +49,7 @@ ErisPulse は OneBot12 をコアイベント標準として使用しています
 
 ### 1. SDK オブジェクト
 
-SDK はすべての機能の統一エントリーポイントであり、コアコンポーネントへのアクセスを提供します。
+SDK はすべての機能の統一されたエントリーポイントであり、コアコンポーネントへのアクセスを提供します。
 
 ```python
 from ErisPulse import sdk
@@ -61,63 +61,68 @@ sdk.logger     # ログシステム
 sdk.adapter    # アダプターシステム
 sdk.module     # モジュールシステム
 sdk.router     # ルーティングシステム
-sdk.client     # HTTP クライアント
+sdk.client     # HTTPクライアント
 sdk.lifecycle  # ライフサイクルシステム
 ```
 
+> [!WARNING]
+> **ルートから一括インポート**：`from ErisPulse.Core import adapter` / `import ErisPulse.Core.adapter`
+> これらの書き方は**マネージャーインスタンス**（`AdapterManager` シングルトン）にバインドされます。`ErisPulse.Core`
+> パッケージの再エクスポートは同名のサブモジュールを覆い隠します。テスト、パッチ、またはモジュールオブジェクト自体が必要な場合は、
+> 一律 `from ErisPulse import sdk` ルートインポート（`sdk.adapter` はマネージャーインスタンス）を使用してください。
+
 ### 2. Event オブジェクト
 
-Event オブジェクトはイベントデータをカプセル化し、便利なアクセスメソッドを提供します。
+Event オブジェクトはイベントデータをラップし、便利なアクセスメソッドを提供します。
 
 ```python
 @command("info")
 async def info_handler(event):
-    # イベント情報の取得
+    # イベント情報を取得
     event_id = event.get_id()
     user_id = event.get_user_id()
     platform = event.get_platform()
     text = event.get_text()
     
-    # 返信の送信
+    # レスポンスを送信
     await event.reply(f"ユーザー: {user_id}, プラットフォーム: {platform}")
 ```
 
 ### 3. アダプター
 
-アダプターは ErisPulse と外部プラットフォームの間の橋渡し役です。
+アダプターは ErisPulse と外部プラットフォームの間のブリッジです。
 
-**責務：**
-- プラットフォームのネイティブイベントを受信
-- OneBot12 標準形式に変換
-- 標準形式のイベントをプラットフォームに送信
+**役割：**
+- プラットフォームのネイティブイベントを受け取る
+- OneBot12 標準形式に変換する
+- 標準形式のイベントをプラットフォームに送信する
 
-**アダプターの例：**
-- Yunhu アダプター：Yunhu プラットフォームとの通信
+**例のアダプター：**
+- Yunhu アダプター：雲湖プラットフォームとの通信
 - Telegram アダプター：Telegram Bot API との通信
-- OneBot11 アダプター：OneBot11 互換アプリケーションとの通信
+- OneBot11 アダプター：OneBot11 兼容アプリとの通信
 - Email アダプター：メールの送受信処理
 
 ### 4. モジュール
 
-モジュールは機能拡張の基本単位であり、以下が可能です：
-
-- イベントハンドラーの登録
+モジュールは機能拡張の基本単位であり、以下を実現できます：
+- イベントハンドラの登録
 - ビジネスロジックの実装
-- アダプターを呼び出してメッセージ送信
+- アダプターを呼び出してメッセージを送信
 - コアモジュールが提供するサービスの利用
 
-#### モジュール検出メカニズム
+#### モジュール発見メカニズム
 
-ErisPulse は Python の `importlib.metadata.entry_points` を通じてインストール済みのモジュールを検出します。モジュールは `pyproject.toml` でエントリーポイントを宣言します：
+ErisPulse は Python の `importlib.metadata.entry_points` を使用して、インストール済みのモジュールを発見します。モジュールは `pyproject.toml` でエントリーポイントを宣言します：
 
 ```toml
 [project.entry-points."erispulse.module"]
 MyModule = "my_package:Main"
 ```
 
-SDK の初期化時に、すべての `erispulse.module` グループのエントリーポイントをスキャンし、モジュールクラスを `ModuleManager` に登録します。その後、依存関係に従ってトポロジカルソートし、順番に初期化します。
+SDK の初期化時に、`erispulse.module` グループのすべてのエントリーポイントをスキャンし、モジュールクラスを `ModuleManager` に登録し、依存関係に基づいてトポロジカルソートした後、順次初期化します。
 
-#### 最小構成のモジュール
+#### 最小限のモジュール
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -137,13 +142,13 @@ class Main(BaseModule):
 
 #### モジュールのライフサイクル
 
-- **登録**：SDK がモジュールクラスを検出し、マネージャーに登録します
-- **ロード**：モジュールインスタンスを作成し、`on_load(event)` を呼び出します（`event = {"module_name": "MyModule"}`）
-- **アンロード**：`on_unload(event)` を呼び出し、リソースをクリーンアップします
+- **登録**：SDK がモジュールクラスを発見し、マネージャーに登録
+- **ロード**：モジュールインスタンスを作成し、`on_load(event)` を呼び出す（`event = {"module_name": "MyModule"}`）
+- **アンロード**：`on_unload(event)` を呼び出し、リソースをクリーンアップ
 
 #### ロード戦略
 
-`get_load_strategy()` でモジュールのロード動作を宣言します：
+`get_load_strategy()` を使用して、モジュールのロード動作を宣言します：
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -152,16 +157,16 @@ class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(
-            lazy_load=True,   # 遅延読み込みするかどうか（デフォルトは True）
-            priority=0        # ロード優先度、数値が大きいほど先に初期化されます
+            lazy_load=True,   # ラグジュアリーなロードかどうか（デフォルトは True）
+            priority=0        # ロード優先度、数値が大きいほど初期化が早くなる
         )
 ```
 
-- **`lazy_load=True`（デフォルト）**：モジュールは `sdk.MyModule` として初めてアクセスされた時に初期化され、起動時間を短縮します
-- **`lazy_load=False`**：SDK の起動時に即座に初期化します。ライフサイクルイベントのリッスンや定期タスクの実行が必要なモジュールに適しています
-- **`priority`**：同じ優先度のモジュールは登録順にロードされます。数値が大きいほど先に初期化されます
+- **`lazy_load=True`（デフォルト）**：`sdk.MyModule` に初めてアクセスしたときにモジュールを初期化し、起動時間を短縮
+- **`lazy_load=False`**：SDK の起動時に即座に初期化し、ライフサイクルイベントを監視するか、定時タスクを実行するモジュールに適しています
+- **`priority`**：同じ優先度のモジュールは登録順にロードされ、数値が大きいほど初期化が早くなります
 
-> 遅延読み込みメカニズムの詳細については、[遅延読み込みシステム](../advanced/lazy-loading.md) を参照してください。
+> 詳細なラグジュアリーなロードの仕組みについては、[ラグジュアリーなロードシステム](../advanced/lazy-loading.md)を参照してください。
 
 ## イベントタイプ
 

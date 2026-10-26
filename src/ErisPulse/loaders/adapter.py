@@ -97,12 +97,13 @@ class AdapterLoader(BaseLoader):
         return ADAPTER_ENTRY_POINT_GROUP
 
     async def load(
-        self, manager_instance: Any
+        self, manager_instance: Any, *, quiet: bool = False
     ) -> tuple[dict[str, Any], list[str], list[str]]:
         """
         从 entry-points 加载对象（使用 AdapterFinder）
 
         :param manager_instance: 管理器实例
+        :param quiet: 抑制发现横幅日志（restart 内部重发现时避免每次保存刷屏）
         :return:
             dict[str, Any]: 对象字典
             list[str]: 启用列表
@@ -120,20 +121,21 @@ class AdapterLoader(BaseLoader):
             # 使用 AdapterFinder 查找 entry-points
             entries = self._finder.find_all()
 
-            if entries:
-                logger.print_info(
-                    i18n.t("loader.adapter.discovered", count=len(entries)), level=1
-                )
-            elif self._finder.last_error:
-                logger.print_info(
-                    i18n.t(
-                        "loader.adapter.discovery_failed",
-                        error=self._finder.last_error,
-                    ),
-                    level=1,
-                )
-            else:
-                logger.print_info(i18n.t("loader.adapter.none"), level=1)
+            if not quiet:
+                if entries:
+                    logger.print_info(
+                        i18n.t("loader.adapter.discovered", count=len(entries)), level=1
+                    )
+                elif self._finder.last_error:
+                    logger.print_info(
+                        i18n.t(
+                            "loader.adapter.discovery_failed",
+                            error=self._finder.last_error,
+                        ),
+                        level=1,
+                    )
+                else:
+                    logger.print_info(i18n.t("loader.adapter.none"), level=1)
 
             # 处理每个 entry-point
             for entry_point in entries:
@@ -149,7 +151,8 @@ class AdapterLoader(BaseLoader):
             # 本地适配器插件：发现后并入结果，本地优先（同名覆盖 entry-point）
             self._merge_plugin_folder(objs, enabled_list, disabled_list, manager_instance)
 
-            logger.print_section_separator()
+            if not quiet:
+                logger.print_section_separator()
 
         except KeyboardInterrupt:
             raise  # 允许用户中断
@@ -310,6 +313,67 @@ class AdapterLoader(BaseLoader):
                 disabled_list.remove(plugin_name)
 
     # ==================== 适配器热重载 ====================
+
+    async def load_new_adapter_plugin(
+        self, adapter_name: str, manager_instance: Any, sdk_instance: Any
+    ) -> "bool | None":
+        """
+        {!--< internal-use >!--}
+        热装载新出现的本地适配器插件（插件目录热发现：``on_created`` 消费）
+
+        与单适配器重载的差异：无旧实例可卸载，直接走 发现 → 注册 →
+        按启用状态拉起。
+
+        :param adapter_name: 适配器名（平台名）
+        :param manager_instance: 适配器管理器实例
+        :param sdk_instance: SDK 实例
+        :return: True 装载成功 / False 装载失败 / None 该名字不是本地适配器插件
+        """
+        try:
+            found = self._plugin_loader.discover_adapters()
+        except Exception as e:
+            logger.error(i18n.t("loader.plugin.discovery_failed", error=e))
+            return False
+        item = found.get(adapter_name)
+        if item is None:
+            return None
+        self._local_adapters = found
+        if not manager_instance.exists(adapter_name):
+            manager_instance._config_register(adapter_name)
+        if not manager_instance.is_enabled(adapter_name):
+            self._last_adapter_objs[adapter_name] = item["module_obj"]
+            logger.info(i18n.t("loader.adapter.reload_ok", name=adapter_name))
+            return True
+        module_obj = item["module_obj"]
+        if not hasattr(module_obj, "adapterInfo") or not isinstance(
+            module_obj.adapterInfo, dict
+        ):
+            cast("Any", module_obj).adapterInfo = {}
+        module_obj.adapterInfo[adapter_name] = {
+            "meta": item["meta"],
+            "adapter_class": item["adapter_class"],
+        }
+        try:
+            manager_instance.register(
+                adapter_name,
+                item["adapter_class"],
+                module_obj.adapterInfo[adapter_name],
+            )
+        except Exception as e:
+            logger.error(
+                i18n.t("loader.adapter.reload_register_failed", name=adapter_name, error=e)
+            )
+            return False
+        self._last_adapter_objs[adapter_name] = module_obj
+        # 启动失败不判装载失败（与重载语义一致，异步重试链接管）
+        try:
+            await manager_instance.startup(adapter_name)
+        except Exception as e:
+            logger.error(
+                i18n.t("loader.adapter.reload_start_failed", name=adapter_name, error=e)
+            )
+        logger.info(i18n.t("loader.adapter.hot_loaded", name=adapter_name))
+        return True
 
     def _build_adapter_info(
         self,

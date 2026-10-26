@@ -25,6 +25,7 @@ from ..Core.constants import (
     DEFAULT_LOG_MEMORY_LIMIT,
     DEFAULT_LOG_ROTATION,
     DEFAULT_LOG_ROTATION_WHEN,
+    DEFAULT_LOG_TOTAL_MEMORY_LIMIT,
     DEFAULT_MESSAGE_IGNORE_SELF,
     DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
     DEFAULT_PROACTIVE_GC_FULL_EVERY,
@@ -55,11 +56,13 @@ from ..Core.constants import (
     DEFAULT_STRICT_MODE,
     DEFAULT_TRANSCRIPT_ENABLED,
     DEFAULT_TRANSCRIPT_MAX_PER_SESSION,
+    DEFAULT_TRANSCRIPT_SELF_ECHO,
     DEFAULT_TRANSCRIPT_TTL_HOURS,
     DEFAULT_UNINIT_TIMEOUT_SECS,
     DEFAULT_USE_GLOBAL_DB,
     DEFAULT_WAIT_REPLY_BLOCK,
     DEFAULT_WAIT_REPLY_CMDPASS,
+    HANDLER_QUEUE_MAX_PENDING,
 )
 
 # 默认配置
@@ -85,7 +88,10 @@ DEFAULT_ERISPULSE_CONFIG = {
         "log_max_size_mb": DEFAULT_LOG_MAX_SIZE_MB,    # size 模式单文件上限（MB）
         "log_backup_count": DEFAULT_LOG_BACKUP_COUNT,  # 保留的历史日志文件数
         "log_rotation_when": DEFAULT_LOG_ROTATION_WHEN,  # date 模式轮转周期
+        # 单模块内存日志条数上限；0 = 关闭内存日志副本（省内存，get_logs 恒为空）
         "memory_limit": DEFAULT_LOG_MEMORY_LIMIT,
+        # 全部模块内存日志的总条数上限（超限轮转淘汰最旧记录）；0 = 不限
+        "total_memory_limit": DEFAULT_LOG_TOTAL_MEMORY_LIMIT,
         # 屏蔽指定日志等级（如 ["EVENT"] 隐藏消息收发内容，用于隐私保护）
         "exclude_levels": [],
     },
@@ -173,6 +179,8 @@ DEFAULT_ERISPULSE_CONFIG = {
         },
         # 性能优化与主动 GC 配置
         "handler_max_concurrency": DEFAULT_HANDLER_MAX_CONCURRENCY,
+        # 事件洪峰入队背压：单平台待处理 handler Task 数上限（0 = 不限）
+        "handler_queue_max_pending": HANDLER_QUEUE_MAX_PENDING,
         "proactive_gc_interval": DEFAULT_PROACTIVE_GC_INTERVAL_SECS,
         "proactive_gc_generation": DEFAULT_PROACTIVE_GC_GENERATION,
         "proactive_gc_full_every": DEFAULT_PROACTIVE_GC_FULL_EVERY,
@@ -180,6 +188,13 @@ DEFAULT_ERISPULSE_CONFIG = {
         "proactive_gc_idle_only": DEFAULT_PROACTIVE_GC_IDLE_ONLY,
         "proactive_gc_gen0_min": DEFAULT_PROACTIVE_GC_GEN0_MIN,
         "offline_bot_expiry": DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
+        # 文件监控忽略目录（热重载轮询/watchdog 共用）：
+        # None = 使用内置默认清单（Core/constants.FILE_WATCHER_IGNORED_DIRS）；
+        # 非空列表 = 整体替换默认清单；[] = 不忽略任何目录
+        "watch_ignore_dirs": None,
+        # CLI `epsdk run --reload` 是否把插件目录交给插件热重载 watcher 处理
+        # 并从自身监控中排除（True 时插件文件变更走单模块重载而非全量 restart）
+        "watch_include_plugin_dirs": True,
     },
     "i18n": {
         "language": DEFAULT_I18N_LANGUAGE,
@@ -218,11 +233,15 @@ DEFAULT_ERISPULSE_CONFIG = {
     },
     # 会话收件箱（transcript）：每会话近期消息流的自动记录与查询。
     # enabled: 是否启用自动记录；max_per_session: 每会话保留条数上限；
-    # ttl_hours: 全局过期时间（小时），过期记录惰性清理。
+    # ttl_hours: 全局过期时间（小时），过期记录惰性清理；
+    # self_echo: 入站 bot 回声（self.user_id == user_id，如 OneBot
+    #   report-self-message）处理——"bot"=记 role="bot"+meta.self_echo，
+    #   "skip"=不记录，"user"=记 role="user"（旧行为）。
     "transcript": {
         "enabled": DEFAULT_TRANSCRIPT_ENABLED,
         "max_per_session": DEFAULT_TRANSCRIPT_MAX_PER_SESSION,
         "ttl_hours": DEFAULT_TRANSCRIPT_TTL_HOURS,
+        "self_echo": DEFAULT_TRANSCRIPT_SELF_ECHO,
     },
 }
 

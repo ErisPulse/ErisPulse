@@ -297,7 +297,7 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
         platform = getattr(send_dsl._adapter, "_platform", "") or ""
 
         # 链路追踪：出站发送携带当前事件的 trace-id（不在事件上下文内时为 None）
-        from ...runtime.context import current_trace_id, send_receipts
+        from ...runtime.context import current_caller, current_owner, current_trace_id, send_receipts
 
         _trace_id = current_trace_id.get()
         # 消息事务账本：仅在 message_tx 事务内记账（None = 事务外零开销）
@@ -319,6 +319,9 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
             "trace_id": _trace_id,
             # 消息文本预览（截断），供收件箱 / 审计类钩子使用
             "preview": _preview,
+            # 发送归属模块（owner > caller > ""）：module.call 执行期间 / 事件处理器
+            # 分发期间框架已注入 current_owner；无模块上下文（框架直发）时为空串
+            "module": (current_owner.get() or current_caller.get() or ""),
         }
 
         # 循环依赖：Core/adapter.py 顶层导入本模块（BaseAdapter）
@@ -473,6 +476,52 @@ class SendDSL:
         self._rules: dict = _copy_rules(rules) if rules else {}
         # 防止嵌套方法委托（如 Text → Raw_ob12）重复应用规则的标记
         self._in_rule_wrap: bool = False
+        # 发送方法包装缓存（实例级）：同名 send 方法重复访问返回同一 wrapped
+        # callable，避免每次属性访问重建闭包（事件洪峰下的分配热点）；
+        # 缓存条目记录包装时的原方法，原方法变化（实例覆盖/热重载）时自动重建
+        self._send_wrap_cache: dict = {}
+
+    def _wrapped_send_method(self, name: str, attr: Callable) -> Callable:
+        """
+        获取（或构建并缓存）发送方法的 hooked 包装
+
+        缓存键为方法名，值记录 ``(原方法, 包装方法)`` 二元组。原方法比对用
+        底层函数对象（``__func__``——bound method 每次访问都是新对象，直接
+        ``is`` 比较恒不相等）；不一致时（实例覆盖 / 热重载后类方法变化）
+        自动重建，保持归因语义。
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+
+        :param name: 发送方法名
+        :param attr: 本次属性访问解析到的原方法
+        :return: 包装后的发送方法（同一实例同一方法恒返回同一 callable）
+        """
+        origin = getattr(attr, "__func__", attr)
+        cache = self.__dict__.get("_send_wrap_cache")
+        if cache is not None:
+            entry = cache.get(name)
+            if entry is not None and entry[0] is origin:
+                return entry[1]
+        wrapped = _wrap_send_method(name, attr, self)
+        if cache is None:
+            cache = {}
+            self.__dict__["_send_wrap_cache"] = cache
+        cache[name] = (origin, wrapped)
+        return wrapped
+
+    def _clear_send_wrap_cache(self) -> None:
+        """
+        清空发送方法包装缓存
+
+        发送规则装饰器（Hook/Retry/Timeout 等）变更 ``_rules`` 后调用，
+        确保后续访问基于最新规则状态重新构建（包装闭包虽在调用期动态读
+        ``_rules``，清缓存维持"注册变化即重建"的显式不变量）。
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        self.__dict__.pop("_send_wrap_cache", None)
 
     def __getattribute__(self, name):
         attr = object.__getattribute__(self, name)
@@ -483,7 +532,7 @@ class SendDSL:
         if name in _CHAIN_MODIFIER_NAMES:
             return attr
 
-        return _wrap_send_method(name, attr, self)
+        return object.__getattribute__(self, "_wrapped_send_method")(name, attr)
 
     def __getattr__(self, name: str):
         """
@@ -505,7 +554,7 @@ class SendDSL:
                 if callable(attr):
                     resolved = attr.__get__(self, self.__class__)
                     if attr_name not in _CHAIN_MODIFIER_NAMES:
-                        return _wrap_send_method(attr_name, resolved, self)
+                        return self._wrapped_send_method(attr_name, resolved)
                     return resolved
                 return attr
 
@@ -514,10 +563,26 @@ class SendDSL:
                 "core.adapter.send_method_not_implemented",
                 platform=self._adapter.__class__.__name__,
                 name=name,
+                available=", ".join(self.list_sends()),
             )
         )
 
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+
+    def list_sends(self) -> list[str]:
+        """
+        列出本平台可用的发送方法名（排查「方法不存在」的指路牌）
+
+        :return: 可用发送方法名列表（排除链式修饰方法）
+        """
+        names: list[str] = []
+        for attr_name in dir(self.__class__):
+            if attr_name.startswith("_") or attr_name in _CHAIN_MODIFIER_NAMES:
+                continue
+            attr = getattr(self.__class__, attr_name, None)
+            if callable(attr):
+                names.append(attr_name)
+        return names
 
     def At(self, user_id: str) -> "Self":
         """
@@ -615,7 +680,7 @@ class SendDSL:
             "account_id": self._account_id,
         }
 
-    def Raw_ob12(self, message: dict, **kwargs) -> Awaitable[Any]:
+    def Raw_ob12(self, message: "dict | list[dict]", **kwargs) -> Awaitable[Any]:
         """
         发送 OneBot12 格式消息段（必须由适配器子类重写）
 
@@ -837,6 +902,7 @@ class SendDSL:
         >>> await adapter.Send.To("user", "123").Hook(on_success).Text("异步回调")
         """
         self._rules.setdefault("hooks", []).append(callback)
+        self._clear_send_wrap_cache()
         return self
 
     def Retry(self, times: int = 1) -> "Self":
@@ -856,6 +922,7 @@ class SendDSL:
         >>> await adapter.Send.To("user", "123").Retry(2).Text("带重试")
         """
         self._rules["retry"] = max(1, int(times) + 1)
+        self._clear_send_wrap_cache()
         return self
 
     def Timeout(self, seconds: float) -> "Self":
@@ -871,6 +938,7 @@ class SendDSL:
         >>> await adapter.Send.To("user", "123").Timeout(10).Text("带超时")
         """
         self._rules["timeout"] = max(0.0, float(seconds))
+        self._clear_send_wrap_cache()
         return self
 
     def Defer(self, seconds: float = 1.0) -> "Self":
@@ -888,6 +956,7 @@ class SendDSL:
         >>> await adapter.Send.To("user", "123").Defer(5).Text("迟到消息")
         """
         self._rules["defer"] = max(0.0, float(seconds))
+        self._clear_send_wrap_cache()
         return self
 
     def Priority(self, level: int = 0, *, drop_if_busy: bool = False) -> "Self":
@@ -912,6 +981,7 @@ class SendDSL:
         self._rules["priority"] = int(level)
         if drop_if_busy:
             self._rules["drop_if_busy"] = True
+        self._clear_send_wrap_cache()
         return self
 
     def PriorityThreshold(self, threshold: int) -> "Self":
@@ -926,6 +996,7 @@ class SendDSL:
         from .send_rules import _PriorityQueue
 
         _PriorityQueue.set_threshold(threshold)
+        self._clear_send_wrap_cache()
         return self
 
     def OnProgress(self, callback: Callable) -> "Self":
@@ -947,6 +1018,7 @@ class SendDSL:
         >>> task = adapter.Send.To("user", "123").Retry(3).Timeout(10).OnProgress(on_progress).Text("监控")
         """
         self._rules["on_progress"] = callback
+        self._clear_send_wrap_cache()
         return self
 
     def OnError(self, callback: Callable) -> "Self":
@@ -970,6 +1042,7 @@ class SendDSL:
         >>> await adapter.Send.To("user", "123").Retry(2).OnError(on_error).Text("带错误处理")
         """
         self._rules["on_error"] = callback
+        self._clear_send_wrap_cache()
         return self
 
     # ==================== 批量构建模式 ====================
@@ -1284,7 +1357,7 @@ class BaseAdapter(ABC):
 
             return asyncio.create_task(_send_example())
 
-        def Raw_ob12(self, message: dict, **kwargs: Any) -> Awaitable[Any]:
+        def Raw_ob12(self, message: "dict | list[dict]", **kwargs: Any) -> Awaitable[Any]:
             """
             发送 OneBot12 格式消息段（必须由适配器子类重写）
 
@@ -1732,6 +1805,69 @@ class BaseAdapter(ABC):
                 return name, cfg
 
         raise ValueError(i18n.t("core.adapter.account_not_found", account_id=account_id))
+
+    def spawn_client_loop(self, coro: Any, *, name: str = "client_loop") -> Any:
+        """
+        拉起客户端连接循环（归属本平台的后台任务）
+
+        客户端模式适配器（WebSocket 客户端 / HTTP 长轮询等）的常驻连接
+        循环经本方法调度：任务归属 ``self._platform``——适配器 ``shutdown``
+        时框架按归属自动取消，无需自己管理任务句柄；循环异常自动留痕
+        （连接断开重连等预期异常请在循环内自行捕获）。
+
+        与 ``start()`` 的两种正确写法配合：
+
+        - ``start()`` 内 ``self.spawn_client_loop(self._connect_loop())`` 后
+          **立即返回**（spawn-返回式：启动即成功，连接失败由循环内重试）
+        - ``start()`` 内 ``await self._connect_loop()`` **常驻不返回**
+          （常驻式：连接断开抛异常触发框架的退避重试链）
+
+        {!--< tips >!--}
+        两种写法都正确；混用（spawn 后又 await 同一循环）才是错误。
+        spawn-返回式适合需要快速返回启动确认的场景，常驻式适合
+        「连接即启动语义」的简单实现。
+        {!--< /tips >!--}
+
+        :param coro: 连接循环协程（如 ``self._connect_loop()``）
+        :param name: 任务名（日志留痕用）
+        :return: 创建的 asyncio.Task（通常可忽略；临时事件循环场景为 None）
+        """
+        from ...runtime.tasks import spawn_background
+        from ..logger import logger
+
+        async def _guarded_loop():
+            try:
+                await coro
+            except asyncio.CancelledError:
+                raise
+            except Exception as e:
+                logger.error(
+                    i18n.t(
+                        "core.adapter.client_loop_crashed",
+                        platform=self._platform or "unknown",
+                        name=name,
+                        error=e,
+                    )
+                )
+
+        return spawn_background(_guarded_loop(), owner=self._platform)
+
+    async def emit_event(self, event: dict[str, Any]) -> None:
+        """
+        上报接收事件的便捷方法（与 :meth:`emit_meta` 对称）
+
+        适配器收到平台原生事件并经 :meth:`convert` 转为 OneBot12 格式后，
+        经本方法提交给框架分发（含幂等去重、trace-id 串联、处理器并发
+        调度）。事件须携带 ``platform`` 字段（服务端模式通常为
+        ``self._platform`` 或按连接归属填写）。
+
+        :param event: 符合 OneBot12 标准的事件数据
+        """
+        # 循环依赖：Core/adapter.py 顶层导入本模块（BaseAdapter）
+        from ..adapter import adapter
+
+        event.setdefault("platform", self._platform or "unknown")
+        await adapter.emit(event)
 
     async def emit_meta(self, detail_type: str, bot_id: str, **extra_info) -> None:
         """

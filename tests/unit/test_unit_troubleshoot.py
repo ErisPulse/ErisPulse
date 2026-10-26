@@ -118,3 +118,38 @@ class TestExplainEvent:
 
         text = format_report(explain_module("nope_xyz"))
         assert "诊断" in text and "结论" in text
+
+    def test_explain_trace_empty_conclusion(self):
+        """空链路：无消息记录时给出空结论与原因"""
+        from ErisPulse.runtime import explain_trace
+
+        result = explain_trace("no-such-trace")
+        assert result["replied"] is False
+        assert result["messages"] == []
+        assert result["reasons"]
+
+    def test_explain_trace_with_messages(self, monkeypatch):
+        """有消息流：入站+出站 → replied=True、结论计数正确"""
+        import sys as _sys
+
+        from ErisPulse.runtime import explain_trace
+
+        records = [
+            {"role": "user", "text": "hi", "ts": 1.0, "session_key": "p:u1"},
+            {"role": "bot", "text": "hello", "ts": 1.1, "session_key": "p:u1"},
+        ]
+
+        class _Fake:
+            def get_by_trace(self, trace_id, limit=20):
+                return list(records)
+
+        # patch 包模块内的名字（ErisPulse.Core 属性是管理器实例——遮蔽坑）
+        monkeypatch.setitem(
+            _sys.modules, "ErisPulse.Core.transcript",
+            type("M", (), {"transcript": _Fake()}),
+        )
+        # explain_trace 经 `from ..Core.transcript import transcript` 局部导入——patch 模块属性即可生效
+        result = explain_trace("t-1")
+        assert result["replied"] is True
+        assert len(result["messages"]) == 2
+        assert result["conclusion"]

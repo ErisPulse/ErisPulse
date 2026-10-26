@@ -28,6 +28,12 @@ HARD_RESTART_EXIT_CODE: int = 42
 # 镜像于: ErisPulse.Core.constants.ENV_SUPERVISED
 ENV_SUPERVISED: str = "ERISPULSE_SUPERVISED"
 
+# reload worker 标记环境变量名（CLI 专有，无 Core 镜像）。
+# `epsdk run --reload` 的监督进程拉起 worker 子进程时注入；SDK 不读取。
+# 用途：worker 侧知道自己由 reload 监督者启动（将来扩展用），且不与
+# `uv run epsdk` 等场景混淆。使用位置: CLI/commands/run.py。
+ENV_RELOAD_WORKER: str = "ERISPULSE_RELOAD_WORKER"
+
 # 模块入口点组名（loader / finder / create / types 共用）。
 # 镜像于: ErisPulse.Core.constants.MODULE_ENTRY_POINT_GROUP
 MODULE_ENTRY_POINT_GROUP: str = "erispulse.module"
@@ -73,6 +79,37 @@ CLI_CHILD_TERMINATE_WAIT_SECS: float = 5.0
 # 修改影响: 调大会在无 uv 环境下拖慢首次安装探测，调小可能误判 uv 不可用。
 CLI_UV_PROBE_TIMEOUT_SECS: float = 5.0
 
+# pip 可用性探测（python -m pip --version）超时（秒）。
+# 使用位置: CLI/utils/package_manager.py -> _ensure_pip_available。
+# 修改影响: 网络半死/代理黑洞时探测不再无限挂起。
+CLI_PIP_PROBE_TIMEOUT_SECS: float = 10.0
+
+# ensurepip 自举超时（秒）。
+# 使用位置: CLI/utils/package_manager.py -> _ensure_pip_available。
+# 修改影响: 自举安装的耐心上限；超时按 pip 不可用处理并走失败路径。
+CLI_ENSURE_PIP_TIMEOUT_SECS: float = 120.0
+
+# venv 创建（python -m venv / uv venv）超时（秒）。
+# 使用位置: CLI/utils/package_manager.py -> create_project_venv。
+# 修改影响: 慢盘/杀软扫描下创建不再无限挂起。
+CLI_VENV_CREATE_TIMEOUT_SECS: float = 300.0
+
+# uv 项目联动超时（秒）：uv add / uv remove 在项目环境解析+写入 lock 的耐心上限。
+# 使用位置: CLI/utils/package_manager.py -> _run_uv_project_command。
+# 修改影响: 大型 lock 解析慢时调大；超时按失败处理并回退 uv pip/pip 通道。
+CLI_UV_PROJECT_TIMEOUT_SECS: float = 180.0
+
+# uv 不支持的 pip 风格参数清单：命中即跳过 uv 后端直接走 pip
+# （uv pip 会直接报错，随后现有链路整链重跑 pip——预检消灭这次双跑刷屏）。
+# 维护依据: uv 0.11 实测 --user / --upgrade-strategy 不支持；需随 uv 版本复核。
+# 使用位置: CLI/utils/package_manager.py -> _run_pip_command_with_output。
+CLI_UV_UNSUPPORTED_FLAGS: tuple = ("--user", "--upgrade-strategy")
+
+# uv 项目判定文件名（is_uv_project 的三重依据之一/之二）。
+# 使用位置: CLI/utils/package_manager.py -> is_uv_project。
+UV_PROJECT_LOCK_FILE: str = "uv.lock"
+UV_PROJECT_MARKER: str = "uv ="
+
 # 安装/卸载进度轮询间隔（秒）。
 # 使用位置: CLI/utils/package_manager.py 的子进程输出轮询循环。
 # 修改影响: 调小 CPU 占用略增、输出更即时；调大进度条变钝。
@@ -104,11 +141,16 @@ __all__ = [
     "RUN_RESTART_PAUSE_SECS",
     "RUN_PERSISTENT_CRASH_HINT_THRESHOLD",
     "ENV_SUPERVISED",
+    "ENV_RELOAD_WORKER",
     "HARD_RESTART_EXIT_CODE",
     "MODULE_ENTRY_POINT_GROUP",
     "PYPI_PACKAGE_JSON_URL_TEMPLATE",
     "CLI_CHILD_TERMINATE_WAIT_SECS",
     "CLI_UV_PROBE_TIMEOUT_SECS",
+    "CLI_UV_PROJECT_TIMEOUT_SECS",
+    "CLI_UV_UNSUPPORTED_FLAGS",
+    "UV_PROJECT_LOCK_FILE",
+    "UV_PROJECT_MARKER",
     "CLI_PACKAGE_POLL_INTERVAL_SECS",
     "CLI_FETCH_METADATA_TIMEOUT_SECS",
     "CLI_INTROSPECT_TIMEOUT_SECS",

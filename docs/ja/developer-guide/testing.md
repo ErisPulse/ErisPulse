@@ -1,19 +1,18 @@
 # モジュールテスト（ErisPulse-Testing）
 
-> [!TIP]
-> **このドキュメントを読むべきケース**：自分のモジュール向けに自動テストを書くとき。必要なければ読み飛ばしても、他の機能の利用には影響しません。
+> [!TIP]  
+> **この記事を読むタイミング**：独自のモジュールに自動テストを書く場合。必要なければスキップし、他の機能の使用に影響はありません。
 
-
-[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) は公式のテストツールキットです：
-`TestBot`、テストイベントファクトリ、送信メッセージのキャプチャとアサーション用インターフェースを提供し、モジュールテストを普通の pytest を書くのと同じくらい簡単にします。
+[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) は公式のテストツールキットです。  
+`TestBot`、テスト用イベントファクトリー、出力メッセージのキャプチャとアサーション機能を提供し、モジュールのテストを普通の pytest のように簡単にできます。
 
 ```bash
 pip install ErisPulse-Testing
 ```
 
-> フレームワークへの一方向依存のみの開発期ツールであり、実行時には一切介入しません。アダプタープラットフォームに実接続して行うスモークテストは、フレームワークリポジトリの `tests/devs/test_adapter.py` を使用してください。
+> フレームワークの開発期にのみ使用する依存関係、実行時には介入しません。実際のアダプタープラットフォームのスモークテストは、フレームワークリポジトリの `tests/devs/test_adapter.py` を使用してください。
 
-## 快速开始
+## 速習
 
 ```python
 import pytest
@@ -22,7 +21,7 @@ from ErisPulse_Testing import TestBot, create_command_event
 
 async def test_daily(make_testbot):
     async with make_testbot(prefix="/") as bot:
-        @command("daily", cooldown="1d", cooldown_reply="今天已签到")
+        @command("daily", cooldown="1d", cooldown_reply="今日已签到")
         async def daily(event):
             await event.reply("签到成功！")
 
@@ -33,72 +32,72 @@ async def test_daily(make_testbot):
         bot.assert_reply_contains("今天已签到")   # 第二次命中冷却
 ```
 
-`TestBot` は `async with` で使用することを推奨します。起動時に MockAdapter を登録し、出力メッセージをすべてキャプチャし、イベントの重複を抑制し、設定を上書きします。終了時にはフレームワークのグローバル状態を自動的にクリーンアップし、テストケース間の汚染を防ぎます。
+`TestBot` は `async with` で使用することを推奨します：起動時に MockAdapter を登録（すべての出力メッセージをキャプチャ）、イベントの重複除去を無効化、設定の上書きを適用します。終了時にはフレームワークのグローバル状態を自動的にクリーンアップし、テストケース間の汚染を防ぎます。
 
-pytest fixtures として自動的に利用可能：
+pytest fixtures として利用可能（インストール後自動的に利用可能）：
 
-- `testbot`：function 級の標準 TestBot（platform=`test`、前缀 `/`）
-- `make_testbot(**kwargs)`：カスタムパラメータの工場（`prefix` / `config` / `platform` / `bot_id` ...）
+- `testbot`：function レベルの標準 TestBot（platform=`test`、前缀 `/`）
+- `make_testbot(**kwargs)`：カスタムパラメータのファクトリー（`prefix` / `config` / `platform` / `bot_id` ...）
 
-テストプロジェクトの設定で `asyncio_mode = "auto"`（`[tool.pytest.ini_options]`）を推奨します。  
+テストプロジェクトの設定に `asyncio_mode = "auto"`（`[tool.pytest.ini_options]`）を追加することを推奨します。  
 または、テストケースに `@pytest.mark.asyncio` を付与してください。
 
-## 事件工場
+## イベントファクトリー
 
 | 関数 | 説明 |
 |------|------|
 | `create_message_event(text, user_id=..., group_id=None, ...)` | メッセージイベント；`group_id` が空の場合はプライベートチャット |
 | `create_command_event("roll 3", prefix="/")` | コマンドメッセージ（自動的に前缀を追加、既に前缀がある場合は重複しない） |
 | `create_notice_event(type, ...)` | 通知イベント（例：`friend_add`） |
-| `create_request_event(type, ...)` | 要求イベント（例：フレンド申請） |
-| `create_meta_event("connect", ...)` | meta イベント（`connect` で Bot がオンラインになる） |
+| `create_request_event(type, ...)` | 要求イベント（例：友達申請） |
+| `create_meta_event("connect", ...)` | meta イベント（`connect` で Bot をオンラインにできる） |
 
-すべてのイベントは uuid を使用して一意の `id` を持つため、フレームワークのイベント重複回避に天然に適合します。
+すべてのイベントは uuid を使用して一意の `id` を持つため、フレームワークのイベント重複除去を回避できます。
 
-注意：合成されたイベントには**プラットフォームの元の報文は含まれません**（`event.get_raw()` は空の dict を返します）。グループチャット / プライベートチャットなどの状況を判断するには、`event.is_group_message()` / `event.get_detail_type()` / `event.get_group_id()` などのアクセサを使用してください。raw を直接読み取らないでください。
+注意：合成されたイベントには**プラットフォームの元の報文は含まれません**（`event.get_raw()` は空の dict を返します）。グループチャット / プライベートチャットなどの状況を判断するには、`event.is_group_message()` / `event.get_detail_type()` / `event.get_group_id()` などのアクセサを使用してください。raw データを直接読み取らないでください。
 
 ## TestBot API
 
-### 分发
+### ディスパッチ
 
 ```python
-trace = await bot.dispatch(event)          # 分发并等待处理器落地，返回决策链
-await bot.dispatch(event, drain=False)     # 交互首消息：不等待（wait_reply 处理器长驻）
-await bot.send_message("你好")             # 消息分发快捷方式
-await bot.reply_as("18", user_id="u1")     # 模拟 wait_reply 用户回复（自动等 waiter 就绪）
+trace = await bot.dispatch(event)          # ディスパッチし、ハンドラが実行されるのを待機して、結果を返す
+await bot.dispatch(event, drain=False)     # 交互作用の最初のメッセージ：待機しない（wait_reply ハンドラは長く待機）
+await bot.send_message("你好")             # メッセージを送信するショートカット
+await bot.reply_as("18", user_id="u1")     # wait_reply ユーザーの返信をシミュレート（自動的に waiter の準備を待つ）
 ```
 
-`dispatch()` は emit 後にすべての処理タスクを gather し、返却時に処理が完了します。**テストでは sleep を必要としません**。
+`dispatch()` は emit 後にすべての処理中の Task を gather し、返却時に処理が完了します。**テストでは sleep を必要としません**。
 
-### 出站断言
+### 出力メッセージのアサーション
 
 ```python
-bot.replies                # 全部出站（SentMessage 列表）
-bot.last_reply.text        # 最近一条回复的文本
-bot.replies_to("123")      # 按目标过滤
-bot.clear_replies()        # 阶段间隔离断言
-bot.assert_replied()                       # 存在出站
+bot.replies                # 全ての出力メッセージ（SentMessage のリスト）
+bot.last_reply.text        # 最後の返信のテキスト
+bot.replies_to("123")      # 目標でフィルタリング
+bot.clear_replies()        # テスト間の隔離
+bot.assert_replied()                       # 出力メッセージが存在する
 bot.assert_replied(contains="签到", to="123")
-bot.assert_not_replied()                   # 无任何出站
-bot.assert_reply_contains("签到成功")       # 存在包含指定文本的出站
-await bot.wait_for_reply(timeout=2)        # 等待异步回复出现
+bot.assert_not_replied()                   # 出力メッセージが存在しない
+bot.assert_reply_contains("签到成功")       # 指定されたテキストを含む出力メッセージが存在する
+await bot.wait_for_reply(timeout=2)        # 異なる返信が現れるのを待つ
 ```
 
-`SentMessage` のフィールド：`text`（最初の text 段）、`segments`（完全なメッセージ段）、  
-`target_type` / `target_id` / `bot_id`（送信コンテキスト）、`has_modifier("at")` など。
+`SentMessage` のフィールド：`text`（テキストの最初の部分）、`segments`（完全なメッセージセグメント）、  
+`target_type` / `target_id` / `bot_id`（送信のコンテキスト）、`has_modifier("at")` など。
 
-### 模块加载
+### モジュールのロード
 
 ```python
-await bot.load_module("MyModule")   # 已注册的模块名（需框架 sdk.init() 完成 entry-point 发现）
-await bot.load_module(MyModule)     # 或 BaseModule 子类（自动 register + load，推荐）
+await bot.load_module("MyModule")   # 既に登録されたモジュール名（entry-point の発見が完了したフレームワーク sdk.init() が必要）
+await bot.load_module(MyModule)     # または BaseModule のサブクラス（自動的に register + load、推奨）
 await bot.unload_module("MyModule")
 ```
 
-`on_load` 内で登録されたコマンド / イベントハンドラはモジュールに属し、アンロード時に自動的にクリーンアップされます。これにより、「アンロード後にコマンドが無効になる」ことを直接アサーションできます。  
-注意：文字列形式では**entry-point のスキャンは行われません**（TestBot はフレームワークの発見プロセスを初期化しません）。ソフト依存モジュールをテストする場合は、直接クラスオブジェクトを渡すか、または `module.register` を呼び出して名前を渡す必要があります。
+`on_load` で登録されたコマンド / イベントハンドラはモジュールに属し、アンロード時に自動的にクリーンアップされます。これにより「アンロード後にコマンドが無効になる」ことを直接アサーションできます。  
+注意：文字列形式では**entry-point のスキャンは行われません**（TestBot はフレームワークの発見プロセスを初期化しません）。ソフト依存モジュールをテストする場合は、クラスオブジェクトを直接渡すか、`module.register` した後に名前を渡してください。
 
-### 依赖替换（需 EP>=2.9.0-dev）
+### 依存の置換（EP>=2.9.0-dev が必要）
 
 ```python
 with bot.patch_dependency(get_session, fake_session) as mock:
@@ -106,51 +105,49 @@ with bot.patch_dependency(get_session, fake_session) as mock:
     assert mock.called
 ```
 
-コマンド登録表中の `Depends(get_session)` で宣言された関数が置き換えられます。with スコープを抜けると自動的に元に戻ります。
+置換されるのは、コマンド登録表で `Depends(get_session)` で宣言された関数です。`with` の終了時に自動的に元に戻ります。
 
-### 配置覆写
+### 設定の上書き
 
 ```python
 bot = TestBot(prefix="//", config={
     "ErisPulse.event.command.case_sensitive": False,
-    "MyModule.api_key": "test-key",     # 模块配置（self.cfg 可读）
+    "MyModule.api_key": "test-key",     # モジュールの設定（self.cfg から読み取れる）
 })
 ```
 
-設定はメモリ層に注入され、コマンド前缀などは即座に更新されます。以下の点に注意してください：
+設定はメモリ層に注入され、コマンドの前缀などは即座に更新されます。2点注意：
 
-1. **落盘**：覆写はフレームワークの遅延書き込み戦略（デフォルトで約 5 秒）に従って cwd の `config/config.toml` に書き込まれます。被測プロジェクトのリポジトリでは `config/` を `.gitignore` に追加してください。
-2. **モジュール実行時の書き戻しとの競合（既知の制限）**：被測モジュールが整節で設定を書き戻す（`self.cfg = ...`、例：サブスクリプションリスト）場合、ここでの点分覆写と併存すると、ConfigManager の読み書きの一貫性の問題が発生します。モジュールが整節で読み取る場合、覆写値が見えない可能性があります。また、覆写値も落盤時に整節書き戻しによって上書きされる可能性があります（ErisPulse 2.9.0-dev.2 で修正済み、2.8.x では影響あり）。"実行時書き戻し設定"を含むテストケースでは、2.8.x では fixture で整節書き戻し方式で関連設定をリセットすることを推奨します。
+1. **永続化**：上書きはフレームワークの遅延書き込み戦略（デフォルトで約5秒）に従って cwd の `config/config.toml` に落とされます。テスト対象のプロジェクトリポジトリでは、`config/` を `.gitignore` に追加してください。
+2. **モジュール実行時の設定書き戻しとの競合（既知の制限）**：テスト対象のモジュールが `self.cfg = ...`（例：サブスクライブリスト）のように設定を一括で書き戻す場合、この点分の上書きと並存すると、ConfigManager の読み書きの一貫性の問題が発生します。モジュールが一括で読み取る場合、上書きされた値が見えない可能性があります。また、上書きされた値も書き戻し時に一括書き戻しによって上書きされる可能性があります（ErisPulse 2.9.0-dev.2 で修正済み、2.8.x では影響あり）。「実行時に設定を書き戻す」用例では、2.8.x では fixture で一括書き戻し方式で関連設定をリセットすることを推奨します。
 
-## 分发决策链（"命令为什么没触发"の調査；需 EP>=2.9.0-dev）
+## ディスパッチの判定チェーン（「コマンドがなぜ実行されなかったか」を調査する場合；EP>=2.9.0-dev が必要）
 
-`dispatch()` は `DispatchTrace` を返します。これは、今回の分発が経過した各判定ポイントの因果関係のチェーンです。
+`dispatch()` は `DispatchTrace` を返します。これは、今回のディスパッチで経過した各判定ポイントの因果チェーンです：
 
 ```python
 trace = await bot.dispatch(create_command_event("dailyx", user_id="123"))
 
 trace.verdict        # executed / rejected / dropped / failed / no_match / passed
-trace.explain()      # 逐行因果説明（当前语言）
-trace.command        # 命中のコマンド名（未命中は None）
-trace.steps("cooldown")  # 段階で判定記録をフィルタ
+trace.explain()      # 因果の1行ずつ説明（現在の言語）
+trace.command        # 命中のコマンド名（未命中の場合は None）
+trace.steps("cooldown")  # フェーズごとに判定記録をフィルタ
 
-trace.assert_executed("daily")  # 断言実行（失敗時は因果関係の詳細を添付）
-trace.assert_rejected()         # 断言権限系判定による拒否
-trace.assert_dropped()          # 断言クールダウン等による静かにドロップ
-trace.assert_no_match()         # 断言未命中
+trace.assert_executed("daily")  # 実行されたことをアサーション（失敗時は因果チェーンを含む）
+trace.assert_rejected()         # 権限系の判定で拒否されたことをアサーション
+trace.assert_dropped()          # クールダウンなどで静かにドロップされたことをアサーション
+trace.assert_no_match()         # コマンドが一致しなかったことをアサーション
 ```
 
-判定のカバレッジ：コマンドテキスト判定、コマンド命中（未命中時は類似語の提案）、作用域、ユーザー ACL、主人チェック、権限関数、クールダウンによる静かにドロップ、パラメータ解析、実行結果、ミドルウェアによる拒否。
+判定のカバー範囲：コマンドのテキスト判定、コマンドの一致判定（一致しなかった場合は類似語の提案）、作用域、ユーザー ACL、オーナーのチェック、権限関数、クールダウンによるドロップ、パラメータの解析、実行結果、ミドルウェアによる拒否。
 
-本番環境でも、フレームワークの `ErisPulse.Core.Event.trace`（`start_dispatch_trace()` / `format_dispatch_trace()`）を使用して、分発の判定チェーンを収集・レンダリングできます。
+本番環境でも、フレームワーク内に `ErisPulse.Core.Event.trace`（`start_dispatch_trace()` / `format_dispatch_trace()`）が用意されており、判定チェーンの収集とレンダリングが可能です。
 
 ## 次のステップ
 
-### テストで発覚した「コマンドがトリガーされない」系の問題
+### テストで「コマンドが実行されなかった」問題が発生した場合
 
-- [モジュールトラブルシューティングガイド](module-troubleshooting.md) — テストでの再現から本番環境の調査へ、症状別に対処方法を探す
+### テストが通って、配信の準備が整った場合
 
-### テスト合格、配布の準備
-
-- [モジュールのコア概念](modules/core-concepts.md) — モジュールアーキテクチャと設定宣言の詳細を補完
-- [公開とモジュールストアガイド](publishing.md) — PyPI とモジュールストアへの公開の完全なフロー
+- [モジュールの基本概念](modules/core-concepts.md) — モジュールのアーキテクチャと設定宣言の詳細を補完
+- [配布とモジュールストアのガイド](publishing.md) — PyPI とモジュールストアへの配布の完全なプロセス

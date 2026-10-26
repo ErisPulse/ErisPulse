@@ -2,6 +2,16 @@
 Run 命令实现
 
 直接运行主程序，支持热重载模式
+
+{!--< tips >!--}
+1. `epsdk run` 以「监督进程 + 框架子进程」结构运行：子进程崩溃自动退避重试、
+   硬重启（退出码 42）自动重拉，监督进程自身只有 Ctrl+C 能停止
+2. `epsdk run --reload` 同样走监督结构：worker 子进程内做文件监控与组件级
+   热重载（保存 .py 即触发热重载，不再整框架重启）；硬重启由监督进程重拉
+   全新 worker（框架新代码生效）
+3. `epsdk run main.py --reload` 以脚本子进程 + 重载信号方式运行（脚本退出码
+   42 同样立即重拉）
+{!--< /tips >!--}
 """
 
 import asyncio
@@ -25,6 +35,7 @@ from ..base import Command
 from ..console import console
 from ..constants import (
     CLI_CHILD_TERMINATE_WAIT_SECS,
+    ENV_RELOAD_WORKER,
     ENV_SUPERVISED,
     HARD_RESTART_EXIT_CODE,
     RUN_CRASH_BACKOFF_MAX_SECS,
@@ -35,9 +46,23 @@ from ..constants import (
 from ..i18n import i18n
 from ..utils import runtime_state
 from ..utils.package_manager import (
+    PythonSource,
     resolve_target_python,
     warn_if_uv_isolated,
     warn_if_uv_tool_env_without_project,
+)
+
+# reload worker 子进程的引导代码：经 `python -c` 拉起，argv 尾部携带可选脚本路径
+_RELOAD_WORKER_BOOTSTRAP = (
+    "import sys; "
+    "from ErisPulse.CLI.commands.run import run_reload_worker; "
+    "sys.exit(run_reload_worker(sys.argv[1] if len(sys.argv) > 1 else None))"
+)
+
+# SDK 直跑引导（非 reload 模式的框架子进程入口，与既有行为一致）
+_SDK_BOOTSTRAP = (
+    "import asyncio; from ErisPulse import sdk; "
+    "asyncio.run(sdk.run(keep_running=True))"
 )
 
 
@@ -45,12 +70,14 @@ class ReloadHandler(FileSystemEventHandler):
     """
     文件系统事件处理器
 
-    监控 .py 文件变更并触发 sdk.restart() 热重载
+    监控 .py 文件变更并触发 sdk.restart() 组件级热重载
 
     {!--< tips >!--}
-    1. 文件监控运行在独立线程
-    2. 通过 run_coroutine_threadsafe 安全调度到事件循环
-    3. 内置 1 秒防抖，避免短时间内多次重载
+    1. 文件监控运行在独立线程，通过 run_coroutine_threadsafe 安全调度到事件循环
+    2. 合并去抖：首个事件立即触发，窗口（FILE_RELOAD_DEBOUNCE_SECS）内的后续
+       变更合并且窗口静默后统一补发一次（不丢弃）
+    3. 新建 .py 文件（on_created）同样触发热重载；删除不触发（插件目录的删除
+       清理由插件热重载 watcher 负责）
     {!--< /tips >!--}
     """
 
@@ -61,8 +88,13 @@ class ReloadHandler(FileSystemEventHandler):
         :param loop: [asyncio.AbstractEventLoop] 用于调度重载协程的事件循环
         """
         super().__init__()
+        from ...Core.constants import FILE_RELOAD_DEBOUNCE_SECS
+
         self._loop = loop
-        self._last_reload = 0.0
+        self._debounce = FILE_RELOAD_DEBOUNCE_SECS
+        self._lock = threading.Lock()
+        self._pending: set[str] = set()
+        self._timer: threading.Timer | None = None
 
     def on_modified(self, event: FileChangeEvent) -> None:
         """
@@ -70,22 +102,60 @@ class ReloadHandler(FileSystemEventHandler):
 
         :param event: [FileChangeEvent] 文件系统事件
         """
-        now = time.time()
-        if now - self._last_reload < 1.0:
+        self._on_event(event.src_path)
+
+    def on_created(self, event: FileChangeEvent) -> None:
+        """
+        文件创建事件回调（新建 .py 文件同样触发热重载）
+
+        :param event: [FileChangeEvent] 文件系统事件
+        """
+        self._on_event(event.src_path)
+
+    def _on_event(self, src_path: str) -> None:
+        """{!--< internal-use >!--} 合并去抖入口"""
+        if not src_path.endswith(".py"):
             return
-        if event.src_path.endswith(".py"):
-            self._last_reload = now
-            self._schedule_reload(event)
+        with self._lock:
+            if self._timer is not None:
+                # 去抖窗口内：合并入队，窗口静默后由定时器统一补发
+                self._pending.add(src_path)
+                return
+            # 窗口外：立即触发（保持「保存即重载」的即时性），并武装补发定时器
+            paths = {src_path}
+            self._timer = threading.Timer(self._debounce, self._flush_pending)
+            self._timer.daemon = True
+        self._timer.start()
+        self._dispatch(paths)
 
-    def _schedule_reload(self, event: FileChangeEvent):
-        """
-        在事件循环中调度 SDK 重启以执行热重载
+    def _flush_pending(self) -> None:
+        """去抖窗口到期：补发窗口内合并的变更（可为空）"""
+        with self._lock:
+            self._timer = None
+            if not self._pending:
+                return
+            paths = set(self._pending)
+            self._pending.clear()
+        self._dispatch(paths)
 
-        :param event: [FileChangeEvent] 触发重载的文件系统事件
+    def close(self) -> None:
+        """停止补发定时器（监控停止时调用）"""
+        with self._lock:
+            if self._timer is not None:
+                self._timer.cancel()
+                self._timer = None
+            self._pending.clear()
+
+    def _dispatch(self, paths: set[str]) -> None:
         """
+        {!--< internal-use >!--}
+        先提示变更文件（在调度重载之前——用户应先看到触发原因），再调度热重载
+        """
+        for path in sorted(paths):
+            console.print(i18n.t("cli.run.file_changed", file=Path(path).name))
 
         async def _do_reload():
-            """执行 SDK 重启以完成热重载"""
+            """执行 SDK 组件级热重载"""
             try:
                 from ... import sdk
 
@@ -95,11 +165,139 @@ class ReloadHandler(FileSystemEventHandler):
                     f"[error]{i18n.t('cli.run.hot_reload_failed', error=e)}[/]"
                 )
 
-            console.print(
-                i18n.t("cli.run.file_changed", file=Path(event.src_path).name)
-            )
+        try:
+            asyncio.run_coroutine_threadsafe(_do_reload(), self._loop)
+        except RuntimeError:
+            pass
 
-        asyncio.run_coroutine_threadsafe(_do_reload(), self._loop)
+
+class _DevWatchdog:
+    """
+    {!--< internal-use >!--}
+    dev 模式文件监控（reload worker 内运行）
+
+    忽略 .venv/.git 等目录；插件目录默认移交插件热重载 watcher 处理
+    （全量 restart 本就覆盖插件代码，避免双重触发）。
+    """
+
+    def __init__(self) -> None:
+        self._observer: PollingObserver | None = None
+        self._handler: ReloadHandler | None = None
+
+    @staticmethod
+    def _resolve_excludes() -> "tuple[list[str] | None, list[str]]":
+        """
+        解析 dev 监控的忽略目录与插件目录移交清单
+
+        :return: (PollingObserver ignore_dirs——None = 内置默认清单, 需移交
+            插件 watcher 并从自身监控排除的插件目录名列表)
+        """
+        from ...runtime.frame_config import get_framework_config
+
+        try:
+            framework = get_framework_config()
+        except Exception:
+            framework = {}
+        raw = framework.get("watch_ignore_dirs")
+        ignore: list[str] | None = None
+        if isinstance(raw, (list, tuple)):
+            ignore = [str(d) for d in raw]
+        plugin_dirs: list[str] = []
+        if framework.get("watch_include_plugin_dirs", True):
+            raw_dirs = framework.get("plugins_dir", "plugins")
+            if isinstance(raw_dirs, str):
+                plugin_dirs = [raw_dirs]
+            elif isinstance(raw_dirs, (list, tuple)):
+                plugin_dirs = [str(d) for d in raw_dirs]
+        return ignore, plugin_dirs
+
+    def start(self, watch_dir: str, loop: asyncio.AbstractEventLoop) -> None:
+        """
+        启动 dev 文件监控并打印模式面板
+
+        :param watch_dir: 监控目录
+        :param loop: 用于调度重载的事件循环
+        """
+        from ...Core.constants import FILE_WATCHER_IGNORED_DIRS
+
+        if not Path(watch_dir).exists():
+            return
+
+        ignore, plugin_dirs = self._resolve_excludes()
+        merged_ignore = set(FILE_WATCHER_IGNORED_DIRS) if ignore is None else set(ignore)
+        merged_ignore.update(plugin_dirs)
+
+        self._observer = PollingObserver(ignore_dirs=sorted(merged_ignore))
+        self._handler = ReloadHandler(loop=loop)
+        self._observer.schedule(self._handler, watch_dir, recursive=True)
+        self._observer.start()
+
+        console.print(
+            Panel(
+                i18n.t(
+                    "cli.run.reload_mode_panel",
+                    watch_dir=watch_dir,
+                    ignored=", ".join(sorted(merged_ignore)),
+                ),
+                title=i18n.t("cli.run.reload_title"),
+                border_style="info",
+            )
+        )
+
+    def stop(self) -> None:
+        """停止 dev 文件监控（幂等）"""
+        if self._handler is not None:
+            self._handler.close()
+            self._handler = None
+        if self._observer is not None:
+            try:
+                self._observer.stop()
+                self._observer.join()
+            except Exception:
+                pass
+            self._observer = None
+
+
+def run_reload_worker(script: str | None) -> int:
+    """
+    reload worker 进程入口（由监督进程经 ``-c`` 引导拉起，跨进程公共入口）
+
+    SDK 模式（script=None）：dev 文件监控 + 自动启用插件热重载 + ``sdk.run``；
+    保存 .py 触发组件级热重载。硬重启（``hard_restart``）以退出码 42 退出，
+    由监督进程重拉全新 worker（框架新代码生效）。
+
+    不写运行状态文件（runtime.json 归监督进程维护）；argv 由监督进程透传。
+
+    :param script: 保留参数位（脚本模式的 --reload 不走 worker，见
+        ``RunCommand._run_script``）
+    :return: 进程退出码
+    """
+    watchdog = _DevWatchdog()
+    try:
+
+        async def _run():
+            """dev 监控 + 框架主循环"""
+            from ... import sdk
+
+            loop = asyncio.get_running_loop()
+            watchdog.start(".", loop)
+            # 插件目录已从全量监控排除：显式接管插件目录的精确监控
+            # （单模块热重载，而非每次保存都全量 restart）
+            try:
+                sdk.enable_plugin_hot_reload()
+            except Exception:
+                pass
+            await sdk.run(keep_running=True)
+
+        asyncio.run(_run())
+    except KeyboardInterrupt:
+        pass
+    finally:
+        watchdog.stop()
+    return 0
+
+
+__all__ = ["RunCommand", "run_reload_worker"]
 
 
 class RunCommand(Command):
@@ -141,7 +339,7 @@ class RunCommand(Command):
         warn_if_uv_tool_env_without_project()
         # 目标解释器解析：项目 .venv 优先（bot 依赖应装在项目环境而非全局）
         self.python_exe, self.python_source = resolve_target_python()
-        if self.python_source != "当前解释器":
+        if self.python_source != PythonSource.CURRENT:
             console.print(
                 f"[info]  {i18n.t('cli.run.venv_using', python=self.python_exe)}[/]"
             )
@@ -154,7 +352,7 @@ class RunCommand(Command):
         if strict_env is not None:
             # 经 ERISPULSE_FRAMEWORK_STRICT_MODE → ErisPulse.framework.strict_mode
             # 的环境变量覆盖通道临时改写本次运行的框架严格级别；子进程由
-            # Popen 继承环境自动生效，runpy 同进程 / reload 内联模式同样读取
+            # Popen 继承环境自动生效，runpy 同进程 / reload worker 同样读取
             os.environ["ERISPULSE_FRAMEWORK_STRICT_MODE"] = str(strict_env)
 
         # 启动前自检：配置可解析性 / 组件必填项（严格模式失败即退出）
@@ -293,61 +491,38 @@ class RunCommand(Command):
         for failure in failures:
             console.print(f"[warning]  {failure}[/]")
         if strict:
-            console.print(f"[error]  {i18n.t('cli.run.preflight_strict_exit')}[/]")
+            console.print(f"[error]{i18n.t('cli.run.preflight_strict_exit')}[/]")
             sys.exit(1)
-        console.print(f"[info]  {i18n.t('cli.run.preflight_warn_continue')}[/]")
+        console.print(f"[info]{i18n.t('cli.run.preflight_warn_continue')}[/]")
 
-    def _run_internal(self, reload_mode: bool):
+    def _print_hard_restart_reason(self) -> None:
         """
-        直接运行 SDK（不指定脚本时）
-
-        以子进程方式运行 SDK，支持硬重启。
-
-        {!--< tips >!--}
-        重要设计原则：
-        1. 只有硬重启（退出码 42）或 KeyboardInterrupt 才能停止主进程
-        2. 模块/适配器的任何错误都**不会**导致主进程退出
-        3. 子进程异常退出时自动重试，使用递增退避策略避免刷屏
-        {!--< /tips >!--}
+        {!--< internal-use >!--}
+        展示并消费硬重启观测标记（worker 退出前写入 runtime.json）
         """
-
-        if reload_mode:
-            # 运行状态登记（epsdk stop / restart 的定位依据）；内联模式监督者 = 当前进程
-            runtime_state.write(os.getpid(), argv=sys.argv)
-            try:
-
-                async def _run():
-                    """
-                    设置文件监控并运行 SDK
-
-                    :return: [None] 无返回值
-                    """
-                    from ... import sdk
-
-                    loop = asyncio.get_running_loop()
-                    self._setup_watchdog(".", loop)
-                    await sdk.run(keep_running=True)
-
-                try:
-                    asyncio.run(_run())
-                except KeyboardInterrupt:
-                    pass
-            finally:
-                if hasattr(self, "_observer"):
-                    self._observer.stop()
-                    self._observer.join()
-                runtime_state.clear()
+        data = runtime_state.read()
+        if not data:
             return
+        reason = data.get("hard_restart_reason")
+        if reason is None:
+            return
+        console.print(
+            f"[info]{i18n.t('cli.run.hard_restart_reason', reason=reason or '-')}[/]"
+        )
+        runtime_state.clear_mark()
 
-        runtime_state.write(os.getpid(), argv=sys.argv)
+    def _supervise(self, cmd: list[str], *, reload_worker: bool = False) -> None:
+        """
+        {!--< internal-use >!--}
+        监督循环：拉起并看护框架子进程
 
-        cmd = [
-            getattr(self, "python_exe", sys.executable),
-            "-c",
-            "import asyncio; from ErisPulse import sdk; "
-            "asyncio.run(sdk.run(keep_running=True))",
-        ]
+        - 退出码 42（硬重启）：展示原因后重拉全新子进程
+        - 退出码 0：正常退出，停止监督
+        - 其它退出码：按递增退避自动重试；连续同码崩溃达到阈值输出排查指引
 
+        :param cmd: 子进程命令行
+        :param reload_worker: 子进程是否为 reload worker（注入 ENV_RELOAD_WORKER）
+        """
         crash_count = 0
         # 连续同退出码崩溃计数：达到阈值输出一次排查指引（确定性故障
         # 退避重试无意义，与其反复失败不如引导留现场）
@@ -361,12 +536,16 @@ class RunCommand(Command):
                 # 从而 hard_restart() 走退出码契约而非 self-respawn。
                 child_env = dict(os.environ)
                 child_env[ENV_SUPERVISED] = "cli"
+                child_env.setdefault("PYTHONIOENCODING", "utf-8")
+                if reload_worker:
+                    child_env[ENV_RELOAD_WORKER] = "1"
                 process = subprocess.Popen(cmd, env=child_env)
                 # 每次拉起新子进程都更新状态文件（stop 先断子进程再停监督者）
                 runtime_state.update_child(process.pid)
                 process.wait()
 
                 if process.returncode == self._RESTART_EXIT_CODE:
+                    self._print_hard_restart_reason()
                     console.print(f"[info]{i18n.t('cli.run.restart_request')}[/]")
                     crash_count = 0
                     time.sleep(RUN_RESTART_PAUSE_SECS)
@@ -418,6 +597,33 @@ class RunCommand(Command):
                     process.wait()
             runtime_state.clear()
 
+    def _run_internal(self, reload_mode: bool):
+        """
+        直接运行 SDK（不指定脚本时）
+
+        以「监督进程 + 框架子进程」结构运行：子进程崩溃自动重试，硬重启
+        （退出码 42）重拉全新进程。reload 模式的子进程为 reload worker
+        （dev 文件监控 + 组件级热重载），两种模式共享同一套监督语义。
+
+        {!--< tips >!--}
+        重要设计原则：
+        1. 只有硬重启（退出码 42）或 KeyboardInterrupt 才能停止主进程
+        2. 模块/适配器的任何错误都**不会**导致主进程退出
+        3. 子进程异常退出时自动重试，使用递增退避策略避免刷屏
+        {!--< /tips >!--}
+        """
+        python_exe = getattr(self, "python_exe", sys.executable)
+        if reload_mode:
+            runtime_state.write(os.getpid(), argv=sys.argv)
+            self._supervise(
+                [python_exe, "-c", _RELOAD_WORKER_BOOTSTRAP],
+                reload_worker=True,
+            )
+            return
+
+        runtime_state.write(os.getpid(), argv=sys.argv)
+        self._supervise([python_exe, "-c", _SDK_BOOTSTRAP])
+
     def _run_script(self, script_path: str, reload_mode: bool):
         """
         运行指定的脚本文件，可选启用热重载
@@ -454,11 +660,15 @@ class RunCommand(Command):
 
         进程的所有终止与重启均在主线程完成；文件监控线程仅负责发出重载信号，
         避免双线程同时操作子进程导致的竞态。脚本进程因错误（如语法错误、异常）
-        退出时不会终止重载循环，而是等待下一次文件变更后再尝试重启。
+        退出时不会终止重载循环，而是等待下一次文件变更后再尝试重启；硬重启
+        （退出码 42）例外——立即重拉全新脚本进程。
 
         :param script_path_abs: [str] 脚本的绝对路径
         """
+        from ...Core.constants import FILE_RELOAD_DEBOUNCE_SECS
+
         watch_dir = str(Path(script_path_abs).parent)
+        python_exe = getattr(self, "python_exe", sys.executable)
 
         reload_state = {
             "process": None,
@@ -468,9 +678,12 @@ class RunCommand(Command):
         }
 
         def _spawn():
-            """启动脚本子进程并记录到 reload_state"""
+            """启动脚本子进程并记录到 reload_state（注入监督者标记）"""
+            child_env = dict(os.environ)
+            child_env[ENV_SUPERVISED] = "cli"
+            child_env.setdefault("PYTHONIOENCODING", "utf-8")
             reload_state["process"] = subprocess.Popen(
-                [getattr(self, "python_exe", sys.executable), script_path_abs]
+                [python_exe, script_path_abs], env=child_env
             )
             runtime_state.update_child(reload_state["process"].pid)
 
@@ -487,8 +700,19 @@ class RunCommand(Command):
 
                 :param event: [FileChangeEvent] 文件系统事件
                 """
+                self._on_event(event)
+
+            def on_created(self, event: FileChangeEvent) -> None:
+                """
+                文件创建事件回调（新建 .py 文件同样触发重启）
+
+                :param event: [FileChangeEvent] 文件系统事件
+                """
+                self._on_event(event)
+
+            def _on_event(self, event: FileChangeEvent) -> None:
                 now = time.time()
-                if now - reload_state["last_reload"] < 1.0:
+                if now - reload_state["last_reload"] < FILE_RELOAD_DEBOUNCE_SECS:
                     return
                 if not event.src_path.endswith(".py"):
                     return
@@ -502,7 +726,7 @@ class RunCommand(Command):
 
         console.print(
             Panel(
-                i18n.t("cli.run.reload_mode_panel", watch_dir=watch_dir),
+                i18n.t("cli.run.reload_mode_panel", watch_dir=watch_dir, ignored="-"),
                 title=i18n.t("cli.run.reload_title"),
                 border_style="info",
             )
@@ -528,6 +752,14 @@ class RunCommand(Command):
                     except subprocess.TimeoutExpired:
                         proc.kill()
                         proc.wait()
+                    _spawn()
+                    continue
+
+                if proc.returncode == self._RESTART_EXIT_CODE:
+                    # 硬重启请求：立即重拉全新脚本进程
+                    self._print_hard_restart_reason()
+                    console.print(f"[info]{i18n.t('cli.run.restart_request')}[/]")
+                    time.sleep(RUN_RESTART_PAUSE_SECS)
                     _spawn()
                     continue
 
@@ -561,26 +793,3 @@ class RunCommand(Command):
                     proc.wait()
             observer.stop()
             observer.join()
-
-    def _setup_watchdog(self, watch_dir: str, loop: asyncio.AbstractEventLoop):
-        """
-        配置 watchdog 监控指定目录的文件变更以实现热重载
-
-        :param watch_dir: [str] 要监控的目录路径
-        :param loop: [asyncio.AbstractEventLoop] 用于调度重载的事件循环
-        """
-        if not Path(watch_dir).exists():
-            return
-
-        self._observer = PollingObserver()
-        self._handler = ReloadHandler(loop=loop)
-        self._observer.schedule(self._handler, watch_dir, recursive=True)
-        self._observer.start()
-
-        console.print(
-            Panel(
-                i18n.t("cli.run.reload_mode_panel", watch_dir=watch_dir),
-                title=i18n.t("cli.run.reload_title"),
-                border_style="info",
-            )
-        )

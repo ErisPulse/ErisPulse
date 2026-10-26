@@ -7,6 +7,8 @@ AGENTS 规则 20-22 要求 CLI 脚手架模板与 examples 保持同步——本
 - example-module / example-adapter 可正常导入（引用的框架 API 全部存在）
 - example-adapter 的 Converter 继承 BaseConverter（模板同款写法，防止
   示例回退到手写转换的旧范式）
+- example-adapter-polling / example-adapter-webhook（通信模式示范目录）
+  可正常导入，且主类分别继承 PollingAdapter / WebhookAdapter 半成品基类
 """
 
 import sys
@@ -59,3 +61,26 @@ def test_example_adapter_converter_inherits_base_converter():
     assert event["message"][0]["type"] == "text"
     assert event["alt_message"] == "hello"
     assert event["myplatform_raw"] == raw  # 原始数据按扩展命名保留
+
+
+def test_example_polling_adapter_imports():
+    """轮询模式示例可导入，且主类继承 PollingAdapter 半成品基类"""
+    from ErisPulse.Core.Bases import PollingAdapter
+
+    mod = _import_from("example-adapter-polling", "ExamplePollingAdapter")
+    assert issubclass(mod.ExamplePollingAdapter, PollingAdapter)
+    assert hasattr(mod, "ExamplePollingConverter")
+    # ConfigClass 声明了 poll_interval 字段（运行时经配置热更新生效）
+    fields = {f.name for f in mod.ExamplePollingAdapter.ConfigClass.__dataclass_fields__.values()}
+    assert {"poll_interval", "token"} <= fields
+
+
+def test_example_webhook_adapter_imports():
+    """回调模式示例可导入，且主类继承 WebhookAdapter 半成品基类"""
+    from ErisPulse.Core.Bases import WebhookAdapter
+
+    mod = _import_from("example-adapter-webhook", "ExampleWebhookAdapter")
+    assert issubclass(mod.ExampleWebhookAdapter, WebhookAdapter)
+    assert hasattr(mod, "ExampleWebhookConverter")
+    # verify_request 覆写示范存在（Token 校验钩子）
+    assert mod.ExampleWebhookAdapter.verify_request is not WebhookAdapter.verify_request

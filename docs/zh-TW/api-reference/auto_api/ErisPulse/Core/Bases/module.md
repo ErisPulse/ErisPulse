@@ -76,6 +76,69 @@ on_load / on_unload 事件数据
 > 6. 对外服务在 get_meta() 的 services 字段声明（模块间调用契约，缺省全开放）
 
 
+#### 嵌套类
+
+
+##### `class ModuleState`
+
+**内部方法**
+模块状态 KV 视图（BaseModule.state 的返回类型）
+
+键统一加 ``module.state.<模块名>.`` 前缀，避免模块间冲突；
+值经 storage 序列化（JSON 兼容类型：str/int/float/bool/list/dict/None）。
+
+
+###### 方法列表
+
+
+####### `get(key: str, default: Any = None) -> Any`
+
+读取状态值（同步，任意上下文可调）
+
+- **key**: 状态键（自动加模块前缀）
+- **default**: 键不存在时的返回值
+
+**返回值**: 状态值
+
+---
+
+
+####### `set(key: str, value: Any) -> bool`
+
+写入状态值（同步持久化）
+
+- **key**: 状态键
+- **value** (`JSON`): 兼容值
+
+**返回值**: 是否成功
+
+---
+
+
+####### `async aget(key: str, default: Any = None) -> Any`
+
+读取状态值（异步原生）
+
+- **key**: 状态键
+- **default**: 键不存在时的返回值
+
+**返回值**: 状态值
+
+---
+
+
+####### `async aset(key: str, value: Any) -> bool`
+
+写入状态值（异步原生）
+
+- **key**: 状态键
+- **value** (`JSON`): 兼容值
+
+**返回值**: 是否成功
+
+---
+
+
 #### 方法列表
 
 
@@ -240,6 +303,27 @@ async def _poll(self):
 
 async def on_load(self, event):
     self.spawn(self._poll())
+```
+
+---
+
+
+##### `state -> 'BaseModule.ModuleState'`（property）
+
+模块级持久化状态（storage 的命名空间视图）
+
+「计数器 / 开关 / 上次运行时间」这类小状态不再需要建表或裸写
+storage 键——键自动带 ``module.state.<模块名>.`` 前缀，模块卸载
+重载后仍在；同步 ``get``/``set`` 可在任意上下文调用（内部经桥接
+循环），异步路径用 ``aget``/``aset``。
+
+**返回值** (`ModuleState`): 视图（每次访问返回新对象，无状态可放心用）
+
+**示例**:
+
+```python
+count = self.state.get("runs", 0) + 1
+self.state.set("runs", count)
 ```
 
 ---

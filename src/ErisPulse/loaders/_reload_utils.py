@@ -14,7 +14,13 @@ from ..Core.constants import MODULE_RELOAD_PRECHECK_MAX_FILES
 from ..Core.i18n import i18n
 from ..Core.logger import logger
 
-__all__ = ["clear_source_caches", "expand_source_files", "precheck_source_files"]
+__all__ = [
+    "clear_source_caches",
+    "clear_source_caches_for_files",
+    "expand_source_files",
+    "precheck_source_files",
+    "precheck_source_trees",
+]
 
 
 def expand_source_files(file_attrs: Iterable[Any]) -> "list[Path]":
@@ -77,6 +83,27 @@ def clear_source_caches(mods: Iterable[Any]) -> None:
                 pass
 
 
+def clear_source_caches_for_files(source_files: Iterable[Path]) -> None:
+    """
+    按源文件路径直接清除字节码缓存（``__pycache__``/*.pyc）
+
+    与 :func:`clear_source_caches` 的区别：不依赖 ``sys.modules`` 中
+    仍存在对应模块对象——适合在卸载/purge **之前**、只有文件路径
+    可用的场景（如整体重载的统一预清理）。
+
+    :param source_files: 源文件路径列表
+    """
+    import importlib.util
+
+    for py in source_files:
+        try:
+            cache = importlib.util.cache_from_source(str(py))
+            if cache:
+                Path(cache).unlink(missing_ok=True)
+        except Exception:
+            pass
+
+
 def module_objects_by_names(names: "list[str]") -> "list[Any]":
     """
     按顶层模块名从 ``sys.modules`` 收集现存模块对象
@@ -108,6 +135,38 @@ def check_reload_identity(*, new_class: Any, old_class: Any, label: str, i18n_ke
     return identity_changed
 
 
+def _is_encoding_error(e: BaseException) -> bool:
+    """
+    判断预检异常是否为源码编码问题（如 GBK 文件被按 UTF-8 读取）
+
+    {!--< internal-use >!--}
+    """
+    msg = str(getattr(e, "msg", "") or e)
+    return "Non-UTF-8" in msg or "encoding problem" in msg or "codec" in msg
+
+
+def _parse_single_source(py: Path) -> str | None:
+    """
+    对单个源文件做严格语法预检（bytes 直读，走 PEP 263 coding 声明解码）
+
+    {!--< internal-use >!--}
+
+    :param py: 源文件路径
+    :return: 失败描述（"路径:行号: 错误"），None = 通过
+    """
+    import ast
+
+    source = py.read_bytes()
+    try:
+        ast.parse(source, filename=str(py))
+    except (SyntaxError, ValueError, UnicodeDecodeError) as e:
+        text = f"{py}:{getattr(e, 'lineno', '?')}: {getattr(e, 'msg', None) or e}"
+        if _is_encoding_error(e):
+            text = f"{text} ({i18n.t('loader.module.precheck_bad_encoding')})"
+        return text
+    return None
+
+
 def precheck_source_files(label: str, source_files: "list[Path]", *, i18n_key: str) -> bool:
     """
     卸载前语法预检：对源文件列表逐文件 ``ast.parse``
@@ -117,13 +176,15 @@ def precheck_source_files(label: str, source_files: "list[Path]", *, i18n_key: s
     （``MODULE_RELOAD_PRECHECK_MAX_FILES``）时跳过预检并记 debug，
     交由快照回滚兜底。
 
+    源码按 bytes 严格解码（PEP 263 coding 声明优先、默认 UTF-8），
+    非 UTF-8 的源文件在预检阶段即报错并附「另存为 UTF-8」指引，
+    不再虚假通过。
+
     :param label: 组件名（日志用）
     :param source_files: 待检源文件列表（空列表直接通过）
     :param i18n_key: 预检失败日志的文案键（调用方按组件类型提供）
     :return: 是否通过（True = 允许继续重载流程）
     """
-    import ast
-
     if not source_files:
         return True
     try:
@@ -133,13 +194,56 @@ def precheck_source_files(label: str, source_files: "list[Path]", *, i18n_key: s
                     f"reload precheck skipped after {checked - 1} files for '{label}'"
                 )
                 return True
-            try:
-                ast.parse(py.read_text(encoding="utf-8", errors="replace"), filename=str(py))
-            except (SyntaxError, ValueError, UnicodeDecodeError) as e:
-                logger.error(i18n.t(i18n_key, name=label, error=e))
+            failure = _parse_single_source(py)
+            if failure is not None:
+                logger.error(i18n.t(i18n_key, name=label, error=failure))
                 return False
         return True
     except Exception as e:
         # 预检基础设施失败（文件不可读/路径异常等）不阻断重载——快照回滚兜底
         logger.debug(f"reload precheck unavailable for '{label}': {e}")
         return True
+
+
+def precheck_source_trees(
+    label: str,
+    source_trees: "list[tuple[str, list[Path]]]",
+    *,
+    i18n_key: str,
+) -> "list[str]":
+    """
+    汇总式卸载前语法预检：遍历全部源码树，收集所有失败（不首个即停）
+
+    供整体重载（``reload_all`` / ``sdk.restart()``）在卸载**任何**模块前
+    使用：任一失败即由调用方拒绝整轮重载，全部旧实例继续服务。每棵树
+    独立受 ``MODULE_RELOAD_PRECHECK_MAX_FILES`` 约束。
+
+    :param label: 整体操作名（日志用，如 "restart"）
+    :param source_trees: (组件名, 该组件源文件列表) 列表
+    :param i18n_key: 汇总失败日志的文案键
+    :return: 失败描述列表（空列表 = 全部通过；基础设施异常时同样返回
+        空列表并记 debug，交由快照回滚兜底）
+    """
+    failures: list[str] = []
+    try:
+        for tree_label, files in source_trees:
+            if not files:
+                continue
+            for checked, py in enumerate(files, start=1):
+                if checked > MODULE_RELOAD_PRECHECK_MAX_FILES:
+                    logger.debug(
+                        f"reload precheck skipped after {checked - 1} files for '{tree_label}'"
+                    )
+                    break
+                failure = _parse_single_source(py)
+                if failure is not None:
+                    failures.append(failure)
+        if failures:
+            logger.error(
+                i18n.t(i18n_key, name=label, count=len(failures), details="\n  ".join(failures))
+            )
+        return failures
+    except Exception as e:
+        # 预检基础设施失败不阻断重载——单模块快照回滚兜底
+        logger.debug(f"reload precheck unavailable for '{label}': {e}")
+        return []

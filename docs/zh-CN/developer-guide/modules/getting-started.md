@@ -212,4 +212,3 @@ sdk.lifecycle  # 生命周期系统
 ### 写完之后
 
 - [模块最佳实践](best-practices.md) - 开发高质量模块
-- [模块排查指南](../module-troubleshooting.md) - 模块没加载 / 命令没触发时对症排查

@@ -35,6 +35,12 @@
 关键认知：**写缓冲有硬上限，所以放开保留策略不会直接撑爆内存**；
 真正的风险在存储层与下游消费者（见下节）。
 
+> [!TIP]
+> **不需要会话记忆的应用可以整体关闭**：`ErisPulse.transcript.enabled = false`
+> 即停止入站/出站消息的自动记录——不写内存缓冲也不写存储，省下常驻内存与持续的
+> 存储层 IO。会话收件箱主要服务 AI 上下文注入与防复读两类需求，二者都不用的部署
+> （如纯命令型机器人）建议关闭。
+
 ## 配置
 
 ```toml
@@ -42,10 +48,78 @@
 enabled = true          # 是否自动记录
 max_per_session = 50    # 单会话保留条数（0 = 关闭该会话裁剪）
 ttl_hours = 168.0       # 全局保留时长（小时，0 = 永不清理）
+self_echo = "bot"       # 入站 bot 回声处理：bot / skip / user
 ```
 
-环境变量覆盖同样生效：`ERISPULSE_TRANSCRIPT_MAX_PER_SESSION`、`ERISPULSE_TRANSCRIPT_TTL_HOURS`。
+环境变量覆盖同样生效：`ERISPULSE_TRANSCRIPT_MAX_PER_SESSION`、`ERISPULSE_TRANSCRIPT_TTL_HOURS`、
+`ERISPULSE_TRANSCRIPT_SELF_ECHO`。
 配置变更热生效（写缓冲落盘节奏内，最多延迟 ~1 秒）。
+
+> [!TIP]
+> **不需要会话记忆就关闭它**：收件箱唯一的消费方是对话恢复 / 影子 diff / 冷启动回放。
+> 如果你的机器人（或部署的模块）完全不用这些能力，设置 `enabled = false`
+> 即可省下收件箱的内存缓冲与后台批量落盘 IO——消息收发与命令处理完全不受影响。
+
+## 消息归因（sender 与 meta）
+
+所有查询接口（`get` / `recent` / `get_by_trace` / `event.history`）的每条记录
+统一携带归因字段，用于区分"谁说的 / 哪个模块发的"：
+
+| 字段 | 含义 |
+|------|------|
+| `sender` | 发送者标识：入站为 `user_id`，出站为 bot 账号 / 回声时的 `self.user_id` |
+| `meta` | 记录时刻的元数据（白名单契约，非完整 raw event） |
+
+`meta` 白名单：
+
+- **入站**：`nickname`（事件时刻的昵称，事后反查拿到的是"现在的昵称"）、
+  `self_id`（bot 账号）、`sub_type`、`message_id`；回声消息额外带 `self_echo: true`；
+- **出站**：发送上下文（`platform` / `method` / `detail_type` / `target_id` /
+  `bot_id` / `trace_id` / `preview`）与 `module`（发送归属模块，见下）。
+
+旧版本记录（无 meta 列时期）的 `meta` 为 `{}`，调用方 `meta.get("nickname", "")`
+自然降级；存储后端不支持 ALTER 时同样静默回退 `{}`。
+
+### 出站归属（meta.module）
+
+同一实例上多个模块都会发消息（聊天、管理、定时提醒）。出站记录的 `meta.module`
+标识发送归属，取值优先级为 `current_owner > current_caller > ""`：
+
+| 发送场景 | module 值 |
+|----------|-----------|
+| 模块代码经 `module.call` 被调用期间 | 目标模块名 |
+| 模块的事件处理器内发送 | 注册该处理器的模块名（分发期自动注入） |
+| 框架自身 / 无模块上下文 | `""` |
+
+`message.sent` / `message.sending` 钩子载荷（send_ctx）同样携带 `module` 字段。
+
+### 入站 bot 回声（self_echo）
+
+部分平台/协议端会把 bot 自己发出的消息以 message 事件回显上报（如 OneBot v11 的
+`report-self-message`、Telegram outgoing message）。框架在入站记录前按
+`self.user_id == user_id` 识别回声，按 `self_echo` 配置处理：
+
+| 取值 | 行为 |
+|------|------|
+| `"bot"`（默认） | 仍记录，但 `role="bot"`、`sender=self_id`、`meta.self_echo=true` |
+| `"skip"` | 不记录（适配器同时会触发 `message.sent` 时天然有出站记录） |
+| `"user"` | 记 `role="user"`（旧行为，兼容逃生口） |
+
+不回显的平台（`self.user_id != user_id` 恒成立）行为与关闭本功能完全一致。
+
+### 按会话过滤的 recent
+
+```python
+from ErisPulse import transcript
+
+# 跨会话全局时间窗（冷启动回放语义，默认）
+transcript.recent(3600)
+
+# 限定单会话：服务端过滤，避免全局拉取后客户端逐条比对 session_key
+transcript.recent(3600, session_key="onebot11:group:123")
+```
+
+`session_key=None` 保持跨会话语义；空串 `""` 等价不过滤（容错）。
 
 ## 运行时覆盖 API
 

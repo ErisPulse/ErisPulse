@@ -31,7 +31,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Release consistency check
-        run: python scripts/tools/release_check.py
+        run: python -m scripts.tools check release-check
 
       - name: Setup Python
         uses: actions/setup-python@v7
@@ -148,8 +148,8 @@ jobs:
             fi
           done
 
-          if [ -f "scripts/tools/generate-ai-prompts.py" ]; then
-            python scripts/tools/generate-ai-prompts.py
+          if [ -f "scripts/tools/generators/spec.py" ]; then
+            python -m scripts.tools gen ai-prompts
             echo "AI material documents generated"
           else
             echo "AI Prompt generation script not found, skipping this step"

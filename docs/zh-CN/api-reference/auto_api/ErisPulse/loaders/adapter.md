@@ -68,11 +68,12 @@ ErisPulse 适配器加载器
 ---
 
 
-##### `async load(manager_instance: Any) -> tuple[dict[str, Any], list[str], list[str]]`
+##### `async load(manager_instance: Any, *, quiet: bool = False) -> tuple[dict[str, Any], list[str], list[str]]`
 
 从 entry-points 加载对象（使用 AdapterFinder）
 
 - **manager_instance**: 管理器实例
+- **quiet**: 抑制发现横幅日志（restart 内部重发现时避免每次保存刷屏）
 
 **返回值**:
 
@@ -119,6 +120,23 @@ ErisPulse 适配器加载器
 - **enabled_list**: 启用列表（原地修改）
 - **disabled_list**: 禁用列表（原地修改）
 - **manager_instance**: 适配器管理器实例
+
+---
+
+
+##### `async load_new_adapter_plugin(adapter_name: str, manager_instance: Any, sdk_instance: Any) -> 'bool | None'`
+
+**内部方法**
+热装载新出现的本地适配器插件（插件目录热发现：``on_created`` 消费）
+
+与单适配器重载的差异：无旧实例可卸载，直接走 发现 → 注册 →
+按启用状态拉起。
+
+- **adapter_name**: 适配器名（平台名）
+- **manager_instance**: 适配器管理器实例
+- **sdk_instance** (`SDK`): 实例
+
+**返回值**: True 装载成功 / False 装载失败 / None 该名字不是本地适配器插件
 
 ---
 

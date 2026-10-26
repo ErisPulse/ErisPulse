@@ -49,6 +49,15 @@ project/
 #### 方法列表
 
 
+##### `set_strict_recorder(recorder: Any) -> None`
+
+注入严格模式登记器（宿主加载器在 set_strict_manager 时同步传播）
+
+- **recorder** (`StrictModeManager`): 实例（需提供 record_failure）
+
+---
+
+
 ##### `get_plugins_dirs() -> list[Path]`
 
 获取插件目录列表（从配置读取，相对项目根目录解析）

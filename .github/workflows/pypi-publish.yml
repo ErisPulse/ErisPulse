@@ -29,9 +29,9 @@ jobs:
         shell: bash
         run: |
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            python scripts/tools/release_check.py --tag "${GITHUB_REF#refs/tags/}"
+            python -m scripts.tools check release-check --tag "${GITHUB_REF#refs/tags/}"
           else
-            python scripts/tools/release_check.py
+            python -m scripts.tools check release-check
           fi
 
       - name: Setup environment
@@ -41,7 +41,7 @@ jobs:
 
       # - name: Generate type stubs
       #   run: |
-      #     python scripts/tools/generate-type-stubs.py --src src --output src --clean --force
+      #     python -m scripts.tools gen type-stubs --src src --output src --clean --force
       #     echo "Type stubs generation complete"
       # 存根生成器存在一些缺陷，暂时停止使用
       # 详见 CONTRIBUTING.md -> 注解存根生成

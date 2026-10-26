@@ -1,13 +1,14 @@
 # モジュール開発入門
 
 > [!NOTE]
-> **L1 核心必読**——「読み進む」パスの中の5つのコアドキュメントの1つで、モジュール開発に必須です。
+> **L1 コア必読**――トップページの「学習パス」にある5つのコアドキュメントの1つで、モジュール開発に必須です。
 
-このドキュメントを完了すると、`/hello` コマンドに応答できる実行可能なモジュールが得られ、モジュールのプロジェクト構造、登録方法、およびロード/アンロードのフックについて理解できるようになります。以降のすべてのモジュール関連ドキュメントは、この基本構造に基づいています。
+
+このドキュメントに沿って進めると、`/hello` コマンドに応答できる実行可能なモジュールが完成し、モジュールのプロジェクト構造、登録方法、ロード/アンロードフックについても理解できます。今後のすべてのモジュールドキュメントは、この骨組みの上に成り立っています。
 
 ## プロジェクト構造
 
-標準的なモジュール構造は次のとおりです。
+標準的なモジュールの構造：
 
 ```
 MyModule/
@@ -19,13 +20,13 @@ MyModule/
     └── Core.py
 ```
 
-## pyproject.toml の設定
+## pyproject.toml 設定
 
 ```toml
 [project]
 name = "ErisPulse-MyModule"
 version = "1.0.0"
-description = "モジュールの機能説明"
+description = "モジュール機能の説明"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
@@ -45,11 +46,11 @@ dependencies = []
 from .Core import Main
 ```
 
-## Core.py - 基礎モジュール
+## Core.py - 基本モジュール
 
 ```python
 from ErisPulse import sdk
-# 推奨されるルートインポート（2.10+）：一般的なシンボルはルートパッケージから直接インポートでき、深いパスも互換性があります
+# ルートからのインポートを推奨（2.10+）：よく使うシンボルはルートパッケージから直接インポートでき、深いパスも引き続き互換
 from ErisPulse import BaseModule, command
 
 class Main(BaseModule):
@@ -60,45 +61,45 @@ class Main(BaseModule):
     
     @staticmethod
     def get_load_strategy():
-        """モジュールのロード戦略を返す"""
+        """モジュールのロード戦略を返します"""
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,
             priority=0,
-            depends=[],  # オプション：依存する他のモジュールのリスト
-            # オプション：イベント駆動の遅延活性化——トリガーを宣言し、最初の一致するイベント/コマンドが到着したときに自動的にロードされます
+            depends=[],  # 任意：依存する他のモジュールのリスト
+            # 任意：イベント駆動の遅延アクティベーション――トリガーを宣言すると、最初に一致するイベント/コマンドが到着した時点で自動的にロードされます
             # activate_on=[{"command": {"name": "hello", "help": "挨拶を送る"}}],
         )
     
     async def on_load(self, event):
-        """モジュールがロードされたときに呼び出されます"""
+        """モジュールのロード時に呼び出されます"""
         @command("hello", help="挨拶を送る")
         async def hello_command(event):
-            name = event.get_user_nickname() or "友達"
-            await event.reply(f"こんにちは、{name}！")
+            name = event.get_user_nickname() or "フレンド"
+            await event.reply(f"こんにちは、{name}さん！")
         
         self.logger.info("モジュールがロードされました")
     
     async def on_unload(self, event):
-        """モジュールがアンロードされたときに呼び出されます"""
+        """モジュールのアンロード時に呼び出されます"""
         self.logger.info("モジュールがアンロードされました")
 ```
 
-> **設定の読み込み**：上記の基本的な例では設定は使用していません。設定を読み込む必要がある場合は、`ConfigClass` をネストして宣言し、`self.cfg` を使ってリアルタイムで読み込むことを推奨します（[モジュールのコア概念](docs/ja/core-concepts.md#宣言的設定の推奨)を参照してください）。手動で `_load_config()` を呼び出す古い書き方は廃止されました。
+> **設定の読み取り**：上記の基本例では設定を使用していません。設定を読み取る必要がある場合は、ネストした `ConfigClass` を宣言し、`self.cfg` 経由でリアルタイムに読み取る方法が推奨されます（詳細は [モジュールのコア概念](core-concepts.md#宣言的設定推奨) を参照）。`_load_config()` を手動で呼び出す旧式の書き方は非推奨となりました。
 
-## テストモジュール
+## モジュールのテスト
 
 ### ローカルテスト
 
 ```bash
-# プロジェクトディレクトリにモジュールをインストール
+# プロジェクトディレクトリでモジュールをインストール
 epsdk install ./MyModule
 
 # プロジェクトを実行
 epsdk run main.py --reload
 ```
 
-### テストコマンド
+### コマンドのテスト
 
 コマンドを送信してテストします：
 
@@ -106,29 +107,29 @@ epsdk run main.py --reload
 /hello
 ```
 
-## 核心概念
+## コア概念
 
 ### BaseModule 基底クラス
 
-すべてのモジュールは `BaseModule` を継承し、以下のメソッドを提供する必要があります：
+すべてのモジュールは `BaseModule` を継承する必要があり、以下のメソッドを提供します：
 
 | メソッド | 説明 | 必須 |
 |------|------|------|
-| `__init__(self, sdk)` | コンストラクタ（フレームワークから `sdk` インスタンスが渡される） | いいえ |
-| `get_load_strategy()` | ロード戦略を返す | いいえ |
-| `get_meta()` | モジュールの説明メタ情報を返す（オプション） | いいえ |
-| `on_load(self, event)` | モジュールがロードされたときに呼び出される | はい |
-| `on_unload(self, event)` | モジュールがアンロードされたときに呼び出される | はい |
+| `__init__(self, sdk)` | コンストラクター（フレームワークが `sdk` インスタンスを渡します） | いいえ |
+| `get_load_strategy()` | ロード戦略を返します | いいえ |
+| `get_meta()` | モジュール紹介のメタ情報を返します（任意） | いいえ |
+| `on_load(self, event)` | モジュールのロード時に呼び出されます | はい |
+| `on_unload(self, event)` | モジュールのアンロード時に呼び出されます | はい |
 
-### モジュール紹介メタ情報
+### モジュール紹介 meta
 
 > [!NOTE]
-> この機能は ErisPulse **2.8.0+** が必要です。
+> この機能には ErisPulse **2.8.0+** が必要です。
 
-`get_meta()` を使ってモジュールの紹介メタ情報を宣言します（このモジュールが何をするものか、どのカテゴリに属するかなど）。  
-メタ情報はモジュールの**一般的な紹介データ**であり、help モジュール、Dashboard モジュールリスト、モジュールストアなど、さまざまなインターフェースやエコシステムモジュールが利用できます。
+`get_meta()` を通じて、モジュールの紹介メタ情報（このモジュールが何をするのか、どのカテゴリに属するのかなど）を宣言します。
+メタ情報はモジュールの**汎用紹介データ**であり、help モジュール、Dashboard のモジュールリスト、モジュールストアなど、さまざまなインターフェース/エコシステムモジュールから利用されます。
 
-`get_load_strategy()` が `ModuleLoadStrategy` を返すのと同様に、**推奨されるのは `ModuleMeta` 設定クラスのインスタンスを返すこと**（属性の型付け、IDE の補完機能）、dict で直接返すこともサポートされています：
+`get_load_strategy()` が `ModuleLoadStrategy` を返すのと同様に、**`ModuleMeta` 設定クラスのインスタンスを返すことが推奨されます**（属性の型付け、IDE 補完）。dict を直接返すことにも対応しています：
 
 ```python
 class MyModule(BaseModule):
@@ -139,12 +140,12 @@ class MyModule(BaseModule):
             description="都市の天気を照会",  # モジュールの概要
             version="1.0.0",
             author="ErisDev",
-            group="ツール",               # 機能分類
+            group="ツール",               # 機能グループ
             tags=["天気", "照会"],
         )
 ```
 
-互換性のある書き方（dict）：
+互換的な書き方（dict）：
 
 ```python
 class MyModule(BaseModule):
@@ -160,21 +161,21 @@ class MyModule(BaseModule):
         }
 ```
 
-- `module.get_meta("MyModule")` は、解析済みのメタ情報を読み取ります（クラス宣言 > 登録情報、自動的にこのモジュールのコマンド名が補完されます）。
-- `module.get_commands_overview()` は、「モジュールメタ情報 + 登録されたコマンド（エイリアス/グループ/ヘルプ）」を統合し、モジュールごとに整理されたコマンドの概要を提供します。
-- コマンドが属するモジュールは、`cmd_info["owner"]` で取得できます（登録時にコンテキストシステムが自動的に注入します）。
+- `module.get_meta("MyModule")` は解決済みのメタ情報を読み取ります（クラス宣言 > 登録 info の優先順位で、該当モジュールのコマンド名が自動補完されます）。
+- `module.get_commands_overview()` は「モジュールの meta + その登録コマンド（エイリアス/グループ/ヘルプ）」を集約した、モジュール別に整理されたコマンドの一覧です。
+- コマンドの所属モジュールは `cmd_info["owner"]` から取得できます（登録時にコンテキストシステムが自動的に注入します）。
 
-#### メタフィールドの i18n 支援
+#### meta フィールドの i18n サポート
 
-メタ情報のフィールド値は、単純な文字列または i18n ディクショナリ `{"i18n": "key.path", "default": "バックアップテキスト"}`（設定 `description` と同様の約束）で指定できます。  
-翻訳キーは `I18nClass` で宣言・登録され、`module.get_meta()` で読み取る際に、自動的に現在の言語に翻訳されます：
+メタ情報のフィールド値には、プレーンな文字列、または i18n 辞書 `{"i18n": "key.path", "default": "フォールバックテキスト"}`（設定の `description` と同じ規約）を使用できます。
+翻訳キーは `I18nClass` で宣言・登録し、`module.get_meta()` が読み取る際に現在の言語のテキストへ自動的に解決されます：
 
 ```python
 class MyModule(BaseModule):
     class I18nClass(BaseI18n):
         meta_description: I18nKey = I18nKey(
             default="Weather lookup",
-            zh_CN="都市の天気を照会",
+            zh_CN="查询城市天气",
             en="Weather lookup",
         )
 
@@ -188,7 +189,7 @@ class MyModule(BaseModule):
 
 ### SDK オブジェクト
 
-`sdk` オブジェクトを通じて、コア機能にアクセスします：
+`sdk` オブジェクトを通じてコア機能にアクセスします：
 
 ```python
 from ErisPulse import sdk
@@ -196,19 +197,18 @@ from ErisPulse import sdk
 sdk.storage    # ストレージシステム
 sdk.config     # 設定システム
 sdk.logger     # ログシステム
-sdk.adapter    # アダプタシステム
+sdk.adapter    # アダプターシステム
 sdk.router     # ルーティングシステム
 sdk.lifecycle  # ライフサイクルシステム
 ```
 
 ## 次のステップ
 
-### 学習の継続
+### 学習パスの続き
 
-- [モジュールの基本概念](core-concepts.md) - モジュールのアーキテクチャを深く理解する
-- [Event オブジェクトの詳細](event-wrapper.md) - Event オブジェクトの使い方を学ぶ
+- [モジュールのコア概念](core-concepts.md) - モジュールアーキテクチャを深く理解する
+- [Event ラッパークラス詳解](event-wrapper.md) - Event オブジェクトを学ぶ
 
-### 作業完了後
+### 作成後は
 
-- [モジュールのベストプラクティス](best-practices.md) - 高品質なモジュールの開発
-- [モジュールのトラブルシューティングガイド](../module-troubleshooting.md) - モジュールがロードされない / コマンドが実行されない場合の対処法
+- [モジュールのベストプラクティス](best-practices.md) - 高品質なモジュールを開発する

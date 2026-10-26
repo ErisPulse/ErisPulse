@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ..sdk import SDK
+    from .sdk_initializer import Initializer, Uninitializer
 
 
 class Kernel:
@@ -60,11 +61,16 @@ class Kernel:
         self._strict_manager = StrictModeManager.from_config()
         self._adapter_loader.set_strict_manager(self._strict_manager)
         self._module_loader.set_strict_manager(self._strict_manager)
+        # 版本闸门登记器同步传播到本地插件加载器（strict 错误面与安装来源解耦）
+        try:
+            self._module_loader._plugin_loader.set_strict_recorder(self._strict_manager)
+        except Exception:
+            pass
         self._sdk._module_loader = self._module_loader
         self._sdk._adapter_loader = self._adapter_loader
         return self._adapter_loader, self._module_loader
 
-    def get_initializer(self) -> Any:
+    def get_initializer(self) -> Initializer:
         """
         获取初始化协调器（每次调用新建一轮——init 生命周期一轮一个协调器）
 
@@ -88,7 +94,7 @@ class Kernel:
         )
         return self._initializer
 
-    def get_uninitializer(self) -> Any:
+    def get_uninitializer(self) -> Uninitializer:
         """
         获取反初始化协调器（每轮新建，与 get_initializer 同语义）
 

@@ -2378,3 +2378,94 @@ def config_module_logger():
     from ErisPulse.Core.logger import logger
 
     return logger
+
+
+class TestRuntimeStateGitignore:
+    """.erispulse 运行状态目录 .gitignore（2.11.1 新增）"""
+
+    @pytest.fixture
+    def temp_config_file(self):
+        import tempfile
+        from pathlib import Path
+
+        # 独立两级目录（项目根/config/test_config.toml 形态）：与真实用户
+        # 的 ~/.erispulse 隔离——用户可能手工定制过 .gitignore，幂等保护
+        # 不覆盖，测试会读到定制内容而误报
+        project_root = tempfile.mkdtemp(prefix="ep_cfg_test_")
+        config_dir = Path(project_root) / "config"
+        config_dir.mkdir(parents=True, exist_ok=True)
+        temp_path = str(config_dir / "test_config.toml")
+        with open(temp_path, "w", encoding="utf-8") as f:
+            f.write("[test]\nkey = \"value\"\n")
+        yield temp_path
+        import shutil
+
+        shutil.rmtree(project_root, ignore_errors=True)
+
+    @pytest.mark.unit
+    def test_runtime_state_gitignore_created(self, temp_config_file, monkeypatch) -> None:
+        """.erispulse 运行状态目录自带 .gitignore（排除本目录）"""
+        from pathlib import Path
+
+        # chdir 到配置文件所在目录：_ensure_runtime_state_gitignore 以
+        # CONFIG_FILE.parent.parent 推导项目根——配置文件处于深路径时
+        # parent.parent 不再是项目根，必须在目录内运行（CI 的 POSIX
+        # 临时路径只有一层，正好暴露该假设）。
+        # 独立子目录而非系统临时目录根部：避免撞上真实用户数据
+        # （~/.erispulse/.gitignore 可能被用户手工定制，幂等保护不覆盖）
+        monkeypatch.chdir(Path(temp_config_file).parent)
+
+        manager = ConfigManager(config_file=temp_config_file)
+        config_parent = Path(temp_config_file).parent
+        gitignore = config_parent.parent / ".erispulse" / ".gitignore"
+        try:
+            assert gitignore.exists(), "框架启动后 .erispulse/.gitignore 应存在"
+            content = gitignore.read_text(encoding="utf-8")
+            assert "*" in content.splitlines(), "排除规则应含 *（目录整体不入库）"
+
+            # 幂等：手工改动后再次初始化不覆盖
+            gitignore.write_text("# custom\n", encoding="utf-8")
+            manager2 = ConfigManager(config_file=temp_config_file)
+            assert gitignore.read_text(encoding="utf-8") == "# custom\n"
+        finally:
+            manager._write_timer and manager._write_timer.cancel()
+            manager._watcher_stop.set()
+            manager2 = locals().get("manager2")
+            if manager2:
+                manager2._write_timer and manager2._write_timer.cancel()
+                manager2._watcher_stop.set()
+
+    @pytest.mark.unit
+    def test_runtime_state_gitignore_write_failure_logged(self, temp_config_file, monkeypatch) -> None:
+        """.gitignore 写入失败以 debug 留痕且不阻塞框架启动（数据写入路径必须留痕）"""
+        from pathlib import Path
+
+        monkeypatch.chdir(Path(temp_config_file).parent)
+
+        calls: list[tuple[str, str]] = []
+        monkeypatch.setattr(
+            ConfigManager,
+            "_log_config_error",
+            staticmethod(lambda message, level="error": calls.append((message, level))),
+        )
+        real_mkdir = Path.mkdir
+
+        def failing_mkdir(self, *args, **kwargs):
+            # 仅让运行状态目录的创建失败，其余路径保持真实行为
+            if self.name == ".erispulse":
+                raise OSError("permission denied")
+            return real_mkdir(self, *args, **kwargs)
+
+        monkeypatch.setattr(Path, "mkdir", failing_mkdir)
+
+        # 初始化不应因 .gitignore 写入失败而中断
+        manager = ConfigManager(config_file=temp_config_file)
+        try:
+            gitignore = Path(temp_config_file).parent.parent / ".erispulse" / ".gitignore"
+            assert not gitignore.exists(), "写入失败时不应留下 .gitignore"
+        finally:
+            manager._write_timer and manager._write_timer.cancel()
+            manager._watcher_stop.set()
+        assert any(
+            level == "debug" and ".gitignore" in message for message, level in calls
+        ), "写入失败应以 debug 级别留痕"

@@ -20,7 +20,7 @@ from pathlib import Path
 FULL_EXAMPLE_FILENAME = "config.full.example"
 
 # 生成器版本：模板/静态段结构变化时递增，驱动带标记文件的一次性刷新
-_GEN = 2
+_GEN = 5
 
 # 首行标记前缀（语言无关，供自动刷新判定）
 _MARKER_PREFIX = "# ErisPulse full config reference (auto-maintained by framework, gen="
@@ -86,6 +86,7 @@ def render_full_example(adapter_list=None, st=None) -> str:
             f"log_backup_count = 5          # {st.t('cfg.logger.log_backup_count')}",
             f'log_rotation_when = "midnight"  # {st.t("cfg.logger.log_rotation_when")}',
             f"memory_limit = 1000           # {st.t('cfg.logger.memory_limit')}",
+            f"total_memory_limit = 5000     # {st.t('cfg.logger.total_memory_limit')}",
             "",
             st.t("cfg.section.storage"),
             "",
@@ -129,6 +130,7 @@ def render_full_example(adapter_list=None, st=None) -> str:
             f"strict_mode = false            # {st.t('cfg.framework.strict_mode')}",
             f"strict_mode_exceptions = {{ modules = [], adapters = [] }}  # {st.t('cfg.framework.strict_mode_exceptions')}",
             f"handler_max_concurrency = 64   # {st.t('cfg.framework.handler_max_concurrency')}",
+            f"handler_queue_max_pending = 4096  # {st.t('cfg.framework.handler_queue_max_pending')}",
             f"proactive_gc_interval = 300    # {st.t('cfg.framework.proactive_gc_interval')}",
             f"proactive_gc_generation = 2    # {st.t('cfg.framework.proactive_gc_generation')}",
             f"proactive_gc_full_every = 10   # {st.t('cfg.framework.proactive_gc_full_every')}",
@@ -136,6 +138,18 @@ def render_full_example(adapter_list=None, st=None) -> str:
             f"proactive_gc_idle_only = true  # {st.t('cfg.framework.proactive_gc_idle_only')}",
             f"proactive_gc_gen0_min = 100    # {st.t('cfg.framework.proactive_gc_gen0_min')}",
             f"offline_bot_expiry = 3600      # {st.t('cfg.framework.offline_bot_expiry')}",
+            f"# {st.t('cfg.framework.watch_ignore_dirs')}",
+            f"# {st.t('cfg.framework.watch_ignore_dirs_line1')}",
+            f"# watch_ignore_dirs = [\".venv\", \".git\", \"node_modules\"]  # {st.t('cfg.framework.watch_ignore_dirs_line2')}",
+            f"watch_include_plugin_dirs = true  # {st.t('cfg.framework.watch_include_plugin_dirs')}",
+            "",
+            st.t("cfg.section.transcript"),
+            "",
+            "[ErisPulse.transcript]",
+            f"enabled = true                 # {st.t('cfg.transcript.enabled')}",
+            f"max_per_session = 50           # {st.t('cfg.transcript.max_per_session')}",
+            f"ttl_hours = 168                # {st.t('cfg.transcript.ttl_hours')}",
+            f'self_echo = "bot"              # {st.t("cfg.transcript.self_echo")}',
             "",
             st.t("cfg.section.router"),
             "",

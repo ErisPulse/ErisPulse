@@ -223,19 +223,21 @@ entry-point 并重导入（pip 升级后重载即可生效）。
 
 全量热重载所有已注册模块（尽力而为语义）
 
-执行 记录已加载态 → 卸载全部模块 → 清理全部已安装包与本地插件的
+执行 整体语法预检（任一失败整轮拒绝、旧实例继续服务）→ 记录已加载态
+→ 预清理字节码缓存 → 卸载全部模块 → 清理全部已安装包与本地插件的
 ``sys.modules`` 子树 → 重新发现/注册 → 按依赖拓扑序加载 →
 此前处于已加载态的懒加载模块重新激活 流程，一次刷新全部模块代码
 （pip 批量升级后调用即可全部生效）。
 
 单模块失败仅记录诊断并跳过（发现 / 注册 / 初始化阶段的逐模块容错
-由加载管线内建），不影响其余模块；不提供整体回滚——on_unload
-副作用不可撤销，与单模块热重载的尽力而为语义一致。
+由加载管线内建），不影响其余模块；预检拒绝（语法错误）时返回空
+字典且 ``_last_reload_all_rejected`` 置 True，不提供整体回滚——
+on_unload 副作用不可撤销，与单模块热重载的尽力而为语义一致。
 
 - **manager_instance**: 模块管理器实例
 - **sdk_instance** (`SDK`): 实例
 
-**返回值**: 模块注册名 → 是否重载成功（发现阶段即失败的模块不在结果中）
+**返回值**: 模块注册名 → 是否重载成功（预检拒绝或发现阶段即失败时为空字典）
 
 ---
 
@@ -315,29 +317,31 @@ sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日�
 ---
 
 
-##### `async _reload_single_plugin(plugin_name: str, manager_instance: Any, sdk_instance: Any) -> bool`
+##### `async _reload_single_plugin(plugin_name: str, manager_instance: Any, sdk_instance: Any, *, was_loaded: bool = False) -> bool`
 
 **内部方法**
-重载单个本地插件：清理注册 → 清模块缓存 → 重新发现 → 注册并加载
+重载单个本地插件：清理注册 → 清模块缓存 → 重新发现 → 注册并挂载
 
 - **plugin_name**: 插件名
 - **manager_instance**: 模块管理器实例
 - **sdk_instance** (`SDK`): 实例
+- **was_loaded**: 重载前是否处于已加载态（保持活性语义）
 
 **返回值**: 是否重载成功
 
 ---
 
 
-##### `async _reload_single_module(module_name: str, manager_instance: Any, sdk_instance: Any, top_level: list[str]) -> bool`
+##### `async _reload_single_module(module_name: str, manager_instance: Any, sdk_instance: Any, top_level: list[str], *, was_loaded: bool = False) -> bool`
 
 **内部方法**
-重载单个 PyPI 安装包模块：清理注册 → 清模块缓存 → 重新发现导入 → 注册并加载
+重载单个 PyPI 安装包模块：清理注册 → 清模块缓存 → 重新发现导入 → 注册并挂载
 
 - **module_name**: 模块名（entry-point 名称）
 - **manager_instance**: 模块管理器实例
 - **sdk_instance** (`SDK`): 实例
 - **top_level**: 顶层 Python 模块名列表（重导入前清理 sys.modules）
+- **was_loaded**: 重载前是否处于已加载态（保持活性语义）
 
 **返回值**: 是否重载成功
 
@@ -357,10 +361,10 @@ sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日�
 ---
 
 
-##### `async _reload_runtime_module(module_name: str, manager_instance: Any, sdk_instance: Any) -> bool`
+##### `async _reload_runtime_module(module_name: str, manager_instance: Any, sdk_instance: Any, *, was_loaded: bool = False) -> bool`
 
 **内部方法**
-重载单个运行时注册模块：按定义模块重导 → 按类名重取 → 注册并加载
+重载单个运行时注册模块：按定义模块重导 → 按类名重取 → 注册并挂载
 
 调用前须通过 reload_module 的安全守卫（定义模块非 ``__main__``
 且源文件存在）。无 entry-point 参与：定义模块 ``import_module``
@@ -369,8 +373,24 @@ sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日�
 - **module_name**: 模块注册名
 - **manager_instance**: 模块管理器实例
 - **sdk_instance** (`SDK`): 实例
+- **was_loaded**: 重载前是否处于已加载态（保持活性语义）
 
 **返回值**: 是否重载成功
+
+---
+
+
+##### `_collect_precheck_files(module_name: str, old_obj: Any, is_plugin: bool, top_level: 'list[str]') -> 'list[Any]'`
+
+**内部方法**
+收集重载预检的源文件列表（单模块路径与整体重载共用）
+
+- **module_name**: 模块名（日志用）
+- **old_obj**: 重载前的快照条目（模块对象）
+- **is_plugin**: 是否插件文件夹来源
+- **top_level**: 顶层模块名列表
+
+**返回值**: 源文件路径列表（无法定位时为空列表并记 debug）
 
 ---
 
@@ -583,6 +603,75 @@ sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日�
 ---
 
 
+##### `_mount_lazy_proxy(meta_name: str, module_obj: Any, manager_instance: Any, sdk_instance: Any, *, arm_stubs: bool = True) -> Any`
+
+**内部方法**
+为模块挂载懒加载代理（LazyModule / ModuleActivator）并注册到管理器
+
+initialize_modules（首次加载）与单模块热重载（重挂代理）共用。
+
+- **meta_name**: 模块注册名
+- **module_obj**: 模块对象（moduleInfo 已挂载）
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+- **arm_stubs**: 是否武装 activate_on 触发器（False = 已加载模块
+
+    重挂代理——模块已激活无需触发器，归眠时会重新武装）
+**返回值**: 挂载的代理对象
+
+---
+
+
+##### `_apply_dormant_after(meta_name: str, module_obj: Any, manager_instance: Any) -> None`
+
+**内部方法**
+解析 dormant_after 休眠声明（时长语法与 cooldown 同口径）；未声明 = 永不休眠
+
+- **meta_name**: 模块注册名
+- **module_obj**: 模块对象
+- **manager_instance**: 模块管理器实例
+
+---
+
+
+##### `async _reload_finalize_mount(label: str, meta_name: str, new_module: Any, manager_instance: Any, sdk_instance: Any, *, was_loaded: bool) -> bool`
+
+**内部方法**
+单模块重载/热装载成功后的挂载收尾（保持重载前活性）
+
+- eager 模块或重载前已加载：重新 load 实例
+- 懒加载/休眠声明模块：重挂代理（was_loaded 时绑定已加载实例；
+  否则保持休眠，activate_on 触发器随新代码重建）
+- 无懒加载声明的已加载模块：直接挂真实实例（旧行为）
+
+- **label**: 日志用组件名
+- **meta_name**: 模块注册名
+- **new_module**: 新模块对象
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+- **was_loaded**: 重载前是否处于已加载态
+
+**返回值**: 是否成功
+
+---
+
+
+##### `async load_new_plugin(plugin_name: str, manager_instance: Any, sdk_instance: Any) -> 'bool | None'`
+
+热装载新出现的本地插件（插件目录热发现：``on_created`` 消费）
+
+与单模块重载的差异：无旧实例可卸载，直接走 发现 → 注册 → 按加载
+策略挂载（懒加载挂代理、eager 即时加载）。
+
+- **plugin_name**: 插件名
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+
+**返回值**: True 装载成功 / False 装载失败 / None 该名字不是模块插件
+
+---
+
+
 ##### `async initialize_modules(modules: list[str], module_objs: dict[str, Any], manager_instance: Any, sdk_instance: Any) -> bool`
 
 初始化模块（创建实例并挂载到 SDK）
@@ -625,6 +714,19 @@ sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日�
 - **sdk_ref**: Any SDK 引用
 - **module_info** (`dict[str, Any]`): 模块信息字典
 - **manager_instance**: 模块管理器实例
+
+---
+
+
+##### `bind_loaded_instance(instance: Any) -> None`
+
+将代理绑定到已加载的实例，直接进入「已激活」态（不触发懒初始化）
+
+**内部方法**
+单模块热重载路径使用：重载成功且实例已 load 后重挂代理并绑定，
+保持重载前活性（后续归眠 → 透明唤醒的闭环不破坏）。
+
+- **instance**: 管理器中已加载的实例
 
 ---
 
@@ -812,7 +914,7 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 #### 方法列表
 
 
-##### `__init__(module_name: str, module_class: type, sdk_ref: Any, module_info: dict[str, Any], manager_instance: Any, *, activate_on: Any) -> None`
+##### `__init__(module_name: str, module_class: type, sdk_ref: Any, module_info: dict[str, Any], manager_instance: Any, *, activate_on: Any, arm_stubs: bool = True) -> None`
 
 初始化事件驱动懒激活包装器
 
@@ -822,6 +924,10 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 - **module_info** (`dict[str, Any]`): 模块信息字典
 - **manager_instance**: 模块管理器实例
 - **activate_on**: 触发器声明（str / dict / list）
+- **arm_stubs**: 是否武装 activate_on 触发器 stub（True = 常规懒激活；
+
+    False = 已加载模块重载后重挂代理——模块已激活无需触发器，
+    归眠时 reset_for_sleep → _rearm_stubs 会重新武装）
 
 ---
 

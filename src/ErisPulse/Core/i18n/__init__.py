@@ -107,32 +107,59 @@ class I18nManager:
         self._eff_lang_state_mtime: float | None = None
         self._config_hook_registered = False
         self._translations: dict[str, dict[str, str]] = {}
+        # 已加载内置翻译的语言集合（懒加载水位）：启动只装当前语言 + en 兜底，
+        # 其余语言首次消费（t() 查询 / set_language 切换 / has_translation）时
+        # 经 locales 包按需导入并缓存，降低常驻内存与启动开销
+        self._builtin_loaded: set[str] = set()
         self._domains: dict[
             str, set[str]
         ] = {}  # domain -> set of keys (for unregister)
+        # 初始检测语言（先检测后加载：启动即装齐 检测语言 + en 兜底）
+        self._detected_lang = self._detect_language()
         # 加载内置翻译
         self._load_builtin_translations()
-        # 初始检测语言
-        self._detected_lang = self._detect_language()
 
     # ==================== 内置翻译加载 ====================
 
     def _load_builtin_translations(self) -> None:
         """
-        加载框架内置翻译数据
+        加载框架内置翻译数据（懒加载模式）
+
+        启动仅加载当前生效语言与回退语言（en）；其余支持语言首次被消费时
+        由 :meth:`_ensure_builtin_loaded` 按需导入并缓存。外部注册的翻译域
+        不受影响（与内置表合并在同一语言字典中）。
 
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
         """
+        for lang_code in {self._get_effective_language(), FALLBACK_LANGUAGE}:
+            self._ensure_builtin_loaded(lang_code)
+
+    def _ensure_builtin_loaded(self, lang: str) -> None:
+        """
+        确保指定语言的内置翻译已加载（首次用时导入并缓存）
+
+        已加载（含已确认为空）的语言直接返回；加载与登记在锁内完成，
+        并发触发时双重检查避免重复导入。
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+
+        :param lang: 语言代码（未知语言按空表缓存负结果）
+        """
+        if lang in self._builtin_loaded:
+            return
         from . import locales as _locales_pkg
 
-        for lang_code in SUPPORTED_LANGUAGES:
-            data = _locales_pkg.get_translations(lang_code)
+        data = _locales_pkg.get_translations(lang)
+        with self._lock:
+            if lang in self._builtin_loaded:
+                return
+            if lang not in self._translations:
+                self._translations[lang] = {}
             if data:
-                # 合并到 _translations，标记为内置域
-                if lang_code not in self._translations:
-                    self._translations[lang_code] = {}
-                self._translations[lang_code].update(data)
+                self._translations[lang].update(data)
+            self._builtin_loaded.add(lang)
 
     # ==================== 语言检测 ====================
 
@@ -499,6 +526,9 @@ class I18nManager:
         >>> i18n.set_language("en", persist=False)  # 仅本次进程
         """
         resolved = self._resolve_nearest(lang)
+        # 懒加载：切换到的语言若尚未加载内置翻译，立即按需导入
+        # （language.changed 事件监听者随后的 t() 查询即可直接命中）
+        self._ensure_builtin_loaded(resolved)
         with self._lock:
             previous = self._current_lang
             self._current_lang = resolved
@@ -632,11 +662,12 @@ class I18nManager:
 
     def _lookup(self, key: str, lang: str) -> str | None:
         """
-        在指定语言中查找翻译键
+        在指定语言中查找翻译键（未加载的内置语言按需导入）
 
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
         """
+        self._ensure_builtin_loaded(lang)
         lang_dict = self._translations.get(lang)
         if lang_dict is None:
             return None
@@ -706,6 +737,7 @@ class I18nManager:
         if lang is None:
             lang = self._get_effective_language()
         resolved = self._resolve_nearest(lang)
+        self._ensure_builtin_loaded(resolved)
         return key in self._translations.get(resolved, {})
 
     def reload(self) -> None:
@@ -715,8 +747,9 @@ class I18nManager:
         with self._lock:
             self._translations.clear()
             self._domains.clear()
-            self._load_builtin_translations()
+            self._builtin_loaded.clear()
             self._detected_lang = self._detect_language()
+            self._load_builtin_translations()
 
 
 # ==================== 模块级单例 ====================

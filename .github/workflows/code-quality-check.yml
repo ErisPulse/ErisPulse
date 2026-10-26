@@ -11,6 +11,9 @@ concurrency:
 
 on:
   pull_request:
+  push:
+    branches: [Develop/v2, main]
+    # 直推分支同样跑质量门禁（PR 评论类步骤有 event_name 守卫，push 下自动跳过）
   workflow_dispatch:
 
 jobs:
@@ -60,17 +63,17 @@ jobs:
       - name: Check import layers
         run: |
           echo "Checking import layer discipline..."
-          uv run python scripts/tools/check_import_layers.py
+          uv run python -m scripts.tools check import-layers
 
       - name: Check bare numeric params (ratchet)
         run: |
           echo "Checking bare behavior params..."
-          uv run python scripts/tools/check_bare_params.py
+          uv run python -m scripts.tools check bare-params
 
       - name: Check silent except ratchet
         run: |
           echo "Checking silent except ratchet..."
-          uv run python scripts/tools/check_silent_except.py
+          uv run python -m scripts.tools check silent-except
 
       - name: Post Ruff check results to PR
         if: always() && steps.ruff-check.outputs.has_ruff_issues == 'true' && github.event_name == 'pull_request'
@@ -383,7 +386,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check locale key parity
-        run: python scripts/tools/check_i18n_locales.py
+        run: python -m scripts.tools check i18n-locales
 
   docs-links:
     # 文档内部相对链接检查（AGENTS 规则 16：删除/移动 zh-CN 文档防死链）；
@@ -396,7 +399,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check docs internal links
-        run: python scripts/tools/check_docs_links.py
+        run: python -m scripts.tools check docs-links
 
   storage-backends:
     # MySQL / PostgreSQL 双后端真机验证（存储引擎 + ORM 方言路径）。

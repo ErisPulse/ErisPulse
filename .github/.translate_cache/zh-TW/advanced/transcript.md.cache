@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "f5d8d72a238fc739859005252d22731f",
-  "file_hash": "f5d8d72a238fc739859005252d22731f",
-  "translated_at": "2026-10-22T09:52:22.245581",
+  "hash": "fe3977892cdd7669e0315fb6feab28f1",
+  "file_hash": "fe3977892cdd7669e0315fb6feab28f1",
+  "translated_at": "2026-10-25T07:06:33.792782",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,12 +10,16 @@
       "translation": "# 會話收件箱（Transcript）\n\n> [!TIP]\n> **什麼時候需要閱讀本文**：需要消息歷史、對話恢復，或調整收件箱保留策略時。不需要則跳過，不會影響其他功能的使用。\n\n會話收件箱會自動記錄機器人收發的消息（按會話鍵 `platform:detail_type:target_id` 組織），  \n為對話恢復（`event.history`）、影子模組 diff、冷啟動回放等提供歷史數據。  \n本文檔說明它的**儲存模型、保留策略旋鈕各保護什麼**，以及運行時覆蓋 API 與放開限制的真實代價。\n\n> 改變限制前請先讀完「風險與審計」一節——每個旋鈕都有它存在的理由。"
     },
     {
-      "hash": "5d001412bcfdafe02d2eb82f8403e55a",
-      "translation": "## 工作原理\n\n```\n訊息 ──append()──▶ 寫緩衝（記憶體 deque，硬上限 4096 行）\n                        │  每 1 秒批量落盤（單批 ≤64 行，單事務）\n                        ▼\n              storage 後端的 transcript 表（預設 sqlite）\n                        │  每 ~32 條追加惰性觸發一次保留清理\n                        ▼\n              ┌─ 按會話 FIFO 裁剪（max_per_session，預設 50 條）\n              └─ 全局 TTL 刪除（ttl_hours，預設 168 = 7 天）\n```\n\n三個層級的保護，各自防的是不同的風險：\n\n| 旋鈕 | 預設值 | 保護什麼 | 關閉（=0）的後果 |\n|------|--------|----------|------------------|\n| 寫緩衝上限 | 4096 行（常量，不可調） | **記憶體**：儲存不可用期間的積壓不撐爆 RAM | 不可關閉——這是記憶體防線 |\n| 單條文字截斷 | 2000 字符（常量，不可調） | 單條訊息的記憶體/磁碟佔用 | 不可關閉 |\n| `max_per_session` | 50 條/會話 | **磁碟增長**：單會話歷史無限堆積 | 該會話歷史無限增長 |\n| `ttl_hours` | 168（7 天） | **磁碟增長**：全部會話的長期堆積 | `transcript` 表無限增長 |\n\n關鍵認知：**寫緩衝有硬上限，所以放開保留策略不會直接撐爆記憶體**；\n真正的風險在儲存層與下游消費者（見下節）。"
+      "hash": "fe1b6e8e523e9fcf7b46f920c4f8084a",
+      "translation": "## 工作原理\n\n```\n訊息 ──append()──▶ 寫緩衝（記憶體 deque，硬上限 4096 行）\n                        │  每 1 秒批量落盤（單批 ≤64 行，單事務）\n                        ▼\n              storage 後端的 transcript 表（預設 sqlite）\n                        │  每 ~32 條追加惰性觸發一次保留清理\n                        ▼\n              ┌─ 按會話 FIFO 裁剪（max_per_session，預設 50 條）\n              └─ 全局 TTL 刪除（ttl_hours，預設 168 = 7 天）\n```\n\n三個層級的保護，各自防的是不同的風險：\n\n| 旋鈕 | 預設值 | 保護什麼 | 關閉（=0）的後果 |\n|------|--------|----------|------------------|\n| 寫緩衝上限 | 4096 行（常量，不可調） | **記憶體**：儲存不可用期間的積壓不撐爆 RAM | 不可關閉——這是記憶體防線 |\n| 單條文字截斷 | 2000 字符（常量，不可調） | 單條訊息的記憶體/磁碟佔用 | 不可關閉 |\n| `max_per_session` | 50 條/會話 | **磁碟增長**：單會話歷史無限堆積 | 該會話歷史無限增長 |\n| `ttl_hours` | 168（7 天） | **磁碟增長**：全部會話的長期堆積 | `transcript` 表無限增長 |\n\n關鍵認知：**寫緩衝有硬上限，所以放開保留策略不會直接撐爆記憶體**；\n真正的風險在儲存層與下游消費者（見下節）。\n\n> [!TIP]\n> **不需要會話記憶的應用可以整體關閉**：`ErisPulse.transcript.enabled = false`\n> 即停止入站/出站訊息的自動記錄——不寫記憶體緩衝也不寫儲存，省下常駐記憶體與持續的\n> 儲存層 IO。會話收件箱主要服務 AI 上下文注入與防重複發送兩類需求，二者都不用的部署\n> （如純命令型機器人）建議關閉。"
     },
     {
-      "hash": "46c90a69b4cb95ffe501936495575f75",
-      "translation": "## 配置\n\n```toml\n[ErisPulse.transcript]\nenabled = true          # 是否自動記錄\nmax_per_session = 50    # 單會話保留條數（0 = 關閉該會話裁剪）\nttl_hours = 168.0       # 全局保留時長（小時，0 = 永不清理）\n```\n\n環境變數覆蓋同樣生效：`ERISPULSE_TRANSCRIPT_MAX_PER_SESSION`、`ERISPULSE_TRANSCRIPT_TTL_HOURS`。  \n配置變更熱生效（寫緩衝落盤節奏內，最多延遲 ~1 秒）。"
+      "hash": "61d01044632c63bb569a3beb15017878",
+      "translation": "## 配置\n\n```toml\n[ErisPulse.transcript]\nenabled = true          # 是否自動記錄\nmax_per_session = 50    # 單會話保留條數（0 = 關閉該會話裁剪）\nttl_hours = 168.0       # 全局保留時長（小時，0 = 永不清理）\nself_echo = \"bot\"       # 入站 bot 回聲處理：bot / skip / user\n```\n\n環境變量覆蓋同樣生效：`ERISPULSE_TRANSCRIPT_MAX_PER_SESSION`、`ERISPULSE_TRANSCRIPT_TTL_HOURS`、\n`ERISPULSE_TRANSCRIPT_SELF_ECHO`。配置變更熱生效（寫緩衝落盤節奏內，最多延遲 ~1 秒）。\n\n> [!TIP]\n> **不需要會話記憶就關閉它**：收件箱唯一的消費方是對話恢復 / 影子 diff / 冷啟動回放。\n> 如果你的機器人（或部署的模塊）完全不用這些能力，設置 `enabled = false`\n> 即可省下收件箱的記憶體緩衝與後台批量落盤 IO——訊息收發與命令處理完全不受影響。"
+    },
+    {
+      "hash": "5ce1f88f0ecaf9ba339f74c4f7a5857f",
+      "translation": "## 消息歸因（sender 與 meta）\n\n所有查詢介面（`get` / `recent` / `get_by_trace` / `event.history`）的每條記錄\n統一攜帶歸因欄位，用於區分「誰說的 / 哪個模組發的」：\n\n| 欄位 | 含義 |\n|------|------|\n| `sender` | 發送者標識：入站為 `user_id`，出站為 bot 賬號 / 回聲時的 `self.user_id` |\n| `meta` | 記錄時刻的元數據（白名單契約，非完整 raw event） |\n\n`meta` 白名單：\n\n- **入站**：`nickname`（事件時刻的暱稱，事後反查拿到的是「現在的暱稱」）、\n  `self_id`（bot 賬號）、`sub_type`、`message_id`；回聲訊息額外帶 `self_echo: true`；\n- **出站**：發送上下文（`platform` / `method` / `detail_type` / `target_id` /\n  `bot_id` / `trace_id` / `preview`）與 `module`（發送歸屬模組，見下）。\n\n舊版本記錄（無 meta 列時期）的 `meta` 為 `{}`，呼叫方 `meta.get(\"nickname\", \"\")`\n自然降級；儲存後端不支援 ALTER 時同樣靜默回退 `{}`。\n\n### 出站歸屬（meta.module）\n\n同一實例上多個模組都會發訊息（聊天、管理、定時提醒）。出站記錄的 `meta.module`\n標識發送歸屬，取值優先級為 `current_owner > current_caller > \"\"`：\n\n| 發送場景 | module 值 |\n|----------|-----------|\n| 模組程式碼經 `module.call` 被呼叫期間 | 目標模組名 |\n| 模組的事件處理器內發送 | 註冊該處理器的模組名（分發期自動注入） |\n| 框架自身 / 無模組上下文 | `\"\"` |\n\n`message.sent` / `message.sending` 鈎子載荷（send_ctx）同樣攜帶 `module` 欄位。\n\n### 入站 bot 回聲（self_echo）\n\n部分平台/協議端會把 bot 自己發出的訊息以 message 事件回顯上報（如 OneBot v11 的\n`report-self-message`、Telegram outgoing message）。框架在入站記錄前按\n`self.user_id == user_id` 識別回聲，按 `self_echo` 配置處理：\n\n| 取值 | 行為 |\n|------|------|\n| `\"bot\"`（預設） | 仍記錄，但 `role=\"bot\"`、`sender=self_id`、`meta.self_echo=true` |\n| `\"skip\"` | 不記錄（適配器同時會觸發 `message.sent` 時天然有出站記錄） |\n| `\"user\"` | 記 `role=\"user\"`（旧行為，相容逃生口） |\n\n不回顯的平台（`self.user_id != user_id` 恆成立）行為與關閉本功能完全一致。\n\n### 按會話過濾的 recent\n\n```python\nfrom ErisPulse import transcript\n\n# 跨會話全域時間窗（冷啟動回放語義，預設）\ntranscript.recent(3600)\n\n# 限定單會話：服務器端過濾，避免全域拉取後客戶端逐條比對 session_key\ntranscript.recent(3600, session_key=\"onebot11:group:123\")\n```\n\n`session_key=None` 保持跨會話語義；空字串 `\"\"` 等價不過濾（容錯）。"
     },
     {
       "hash": "9433acab9911e83195f2dc2a7ef4f755",

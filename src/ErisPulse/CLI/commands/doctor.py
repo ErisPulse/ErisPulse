@@ -5,7 +5,10 @@ Doctor 命令实现
 """
 
 import asyncio
+import os
 import platform
+import shutil
+import subprocess
 import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
@@ -14,9 +17,10 @@ from rich.table import Table
 
 from ..base import Command
 from ..console import console
+from ..constants import CLI_UV_PROBE_TIMEOUT_SECS
 from ..i18n import i18n
 from ..utils import PackageManager
-from ..utils.package_manager import resolve_target_python
+from ..utils.package_manager import PythonSource, is_uv_project, resolve_target_python
 
 
 class DoctorCommand(Command):
@@ -103,15 +107,29 @@ class DoctorCommand(Command):
                 )
             )
 
-        # 3. 目标解释器（安装目标环境）
+        # 3. 目标解释器（安装目标环境）+ 解析决策链
         target_python = pm._get_target_python()
         rows.append(
             (self._status(True), i18n.t("cli.doctor.target_python"), target_python)
         )
 
+        # 3.2 解释器解析决策链（逐级展示命中/未设置——「为什么是它」可观测）
+        chain = self._resolve_python_chain()
+        for label_key, detail in chain:
+            rows.append(
+                (self._status(True), "", f"{i18n.t(label_key)}: {detail}")
+            )
+
+        # 3.3 uv 项目面板：uv 版本 / UV_* 变量 / 项目判定依据
+        rows.extend(self._uv_project_rows())
+
         # 3.5 项目虚拟环境（.venv 存在性与 pip 可用性）
-        project_venv_py = resolve_target_python(Path.cwd())[0]
-        venv_detected = project_venv_py != sys.executable or Path(".venv").exists()
+        project_venv_py, project_venv_source = resolve_target_python(Path.cwd())
+        venv_detected = (
+            project_venv_source
+            in (PythonSource.PROJECT_VENV, PythonSource.UV_PROJECT, PythonSource.ACTIVE_VENV)
+            or Path(".venv").exists()
+        )
         if venv_detected:
             venv_pip = (
                 Path(".venv")
@@ -216,6 +234,43 @@ class DoctorCommand(Command):
                 )
             )
 
+        # 4.6 历史配置污染体检（升级遗留残留：影子状态键 / 游离配置节）
+        try:
+            pollution = self._scan_config_pollution(config_path)
+            fix_context["config_pollution"] = pollution
+            if pollution:
+                rows.append(
+                    (
+                        self._status(False),
+                        i18n.t("cli.doctor.pollution"),
+                        i18n.t(
+                            "cli.doctor.pollution_found",
+                            count=len(pollution),
+                            keys=", ".join(k for k, _bug, _d in pollution[:5]),
+                        ),
+                    )
+                )
+                for key, bug, desc in pollution[:5]:
+                    rows.append((self._status(False), "", f"{key} ({bug}): {desc}"))
+            else:
+                rows.append(
+                    (
+                        self._status(True),
+                        i18n.t("cli.doctor.pollution"),
+                        i18n.t("cli.doctor.pollution_ok"),
+                    )
+                )
+        except Exception:
+            # 体检失败不阻塞其余诊断项
+            fix_context["config_pollution"] = []
+            rows.append(
+                (
+                    self._status(True),
+                    i18n.t("cli.doctor.pollution"),
+                    i18n.t("cli.doctor.pollution_skipped"),
+                )
+            )
+
         # 5. PyPI 连通性
         try:
             remote = asyncio.run(pm.get_remote_packages())
@@ -261,6 +316,123 @@ class DoctorCommand(Command):
             )
 
         return rows, failed, fix_context
+
+    # 框架自身的配置节名（游离节检测的白名单；新增框架节时同步）
+    _FRAMEWORK_SECTIONS = frozenset(
+        {
+            "server",
+            "logger",
+            "storage",
+            "event",
+            "master",
+            "framework",
+            "i18n",
+            "scope",
+            "interaction",
+            "transcript",
+            "modules",
+            "adapters",
+            "router",
+        }
+    )
+
+    def _scan_config_pollution(self, config_path: Path) -> "list[tuple[str, str, str]]":
+        """
+        扫描历史升级遗留的配置污染（只读，不做任何修改）
+
+        两类已知模式：
+        1. **影子状态残留**（BUG-034 / #432 时代）：``ErisPulse.{modules,adapters}.status``
+           下以 ``_shadow`` 结尾的键——运行时绑定曾以影子键落盘，现行版本已改
+           用内存覆盖层，残留键只会误导排障
+        2. **游离配置节**（BUG-046 时代）：``ErisPulse.<X>`` 顶层嵌套节既不是
+           框架自身节，也没有对应组件状态键——多由嵌套模板漂移把组件配置
+           写到了错误层级产生
+
+        :param config_path: [Path] 配置文件路径
+        :return: [(键路径, 来源 bug 标识, 一句话说明)] 列表；无污染 / 文件不存在为空
+        """
+        if not config_path.exists():
+            return []
+        import tomlclass
+
+        data = tomlclass.load_path(str(config_path)).unwrap()
+        root = data.get("ErisPulse")
+        if not isinstance(root, dict):
+            return []
+
+        findings: list[tuple[str, str, str]] = []
+
+        # 1. 影子状态残留
+        for kind in ("modules", "adapters"):
+            status = root.get(kind, {}).get("status")
+            if isinstance(status, dict):
+                for key in status:
+                    if isinstance(key, str) and key.endswith("_shadow"):
+                        path = f"ErisPulse.{kind}.status.{key}"
+                        findings.append((path, "BUG-034", i18n.t("cli.doctor.pollution_shadow")))
+
+        # 2. 游离配置节：非框架节且无对应组件状态键
+        known_components = set()
+        for kind in ("modules", "adapters"):
+            status = root.get(kind, {}).get("status")
+            if isinstance(status, dict):
+                known_components.update(k for k in status if isinstance(k, str))
+        for section, value in root.items():
+            if (
+                section not in self._FRAMEWORK_SECTIONS
+                and section not in known_components
+                and isinstance(value, dict)
+            ):
+                path = f"ErisPulse.{section}"
+                findings.append((path, "BUG-046", i18n.t("cli.doctor.pollution_stray")))
+
+        return findings
+
+    def _fix_config_pollution(self, pollution: "list[tuple[str, str, str]]") -> None:
+        """
+        清理历史配置污染（tomlclass 无损路径：注释/顺序/行尾逐字节保真）
+
+        :param pollution: [list] ``_scan_config_pollution`` 的发现列表
+        """
+        import tempfile
+
+        import tomlclass
+
+        config_path = Path("config") / "config.toml"
+        doc = tomlclass.load_path(str(config_path))
+        removed = 0
+        failed_keys: list[str] = []
+        for key_path, _bug, _desc in pollution:
+            parts = key_path.split(".")
+            node = doc
+            try:
+                for part in parts[:-1]:
+                    node = node[part]
+                del node[parts[-1]]
+                removed += 1
+            except Exception as e:
+                failed_keys.append(f"{key_path} ({e})")
+        # 原子写回（与 ConfigManager._atomic_write_text 同款：mkstemp + replace）
+        text = doc.dumps()
+        fd, tmp_name = tempfile.mkstemp(
+            dir=str(config_path.parent), suffix=".toml.tmp"
+        )
+        os.close(fd)
+        tmp_path = Path(tmp_name)
+        try:
+            with tmp_path.open("w", encoding="utf-8", newline="") as fh:
+                fh.write(text)
+            tmp_path.replace(config_path)
+        except Exception:
+            tmp_path.unlink(missing_ok=True)
+            raise
+        console.print(
+            f"[success]  {i18n.t('cli.doctor.fix_pollution_removed', count=removed)}"
+        )
+        if failed_keys:
+            console.print(
+                f"[warning]  {i18n.t('cli.doctor.fix_pollution_remove_failed', keys='; '.join(failed_keys))}[/]"
+            )
 
     def _print_report(self, rows: list, failed: bool):
         """
@@ -334,7 +506,27 @@ class DoctorCommand(Command):
                         f"[error]  {i18n.t('cli.doctor.fix_config_create_failed', error=e)}[/]"
                     )
 
-        # 2. 待完善组件配置：逐个拉起向导补必填项
+        # 2.5 历史配置污染清理（体检发现项，需确认）
+        pollution = fix_context.get("config_pollution") or []
+        if pollution:
+            from ..utils.interactive import confirm
+
+            names = "\n".join(f"  - {key} ({bug})" for key, bug, _d in pollution)
+            console.print(f"[info]  {i18n.t('cli.doctor.fix_pollution_prompt')}[/]")
+            console.print(names)
+            try:
+                if confirm(i18n.t("cli.doctor.fix_pollution_confirm"), default=False):
+                    self._fix_config_pollution(pollution)
+                else:
+                    console.print(
+                        f"[dim]  {i18n.t('cli.doctor.fix_pollution_skipped')}[/]"
+                    )
+            except Exception as e:
+                console.print(
+                    f"[error]  {i18n.t('cli.doctor.fix_pollution_failed', error=e)}[/]"
+                )
+
+        # 3. 待完善组件配置：逐个拉起向导补必填项
         targets = fix_context["incomplete_targets"]
         if targets:
             if not is_interactive():
@@ -368,6 +560,148 @@ class DoctorCommand(Command):
             console.print(f"[dim]  {i18n.t('cli.doctor.fix_unrecoverable')}[/]")
             for hint in hints:
                 console.print(f"    [dim]-[/] {hint}")
+
+    def _resolve_python_chain(self) -> "list[tuple[str, str]]":
+        """
+        {!--< internal-use >!--}
+        解释器解析决策链展示（逐级命中/未设置）
+
+        :return: [(i18n 键, 详情)] 列表
+        """
+        chain: list[tuple[str, str]] = []
+
+        def _py_of(base: Path) -> "str | None":
+            cand = base / ("Scripts" if sys.platform == "win32" else "bin") / (
+                "python.exe" if sys.platform == "win32" else "python"
+            )
+            return str(cand) if cand.exists() else None
+
+        env_var = os.environ.get("ERISPULSE_PYTHON")
+        chain.append(
+            (
+                "cli.doctor.chain_env_var",
+                env_var if env_var and Path(env_var).exists() else i18n.t("cli.doctor.chain_unset"),
+            )
+        )
+
+        uv_env = os.environ.get("UV_PROJECT_ENVIRONMENT")
+        if uv_env:
+            base = Path(uv_env)
+            if not base.is_absolute():
+                base = Path.cwd() / base
+            found = _py_of(base)
+            chain.append(
+                (
+                    "cli.doctor.chain_uv_project",
+                    found or i18n.t("cli.doctor.chain_no_python", path=uv_env),
+                )
+            )
+        else:
+            chain.append(("cli.doctor.chain_uv_project", i18n.t("cli.doctor.chain_unset")))
+
+        project_venv = _py_of(Path.cwd() / ".venv")
+        chain.append(
+            (
+                "cli.doctor.chain_project_venv",
+                project_venv or i18n.t("cli.doctor.chain_unset"),
+            )
+        )
+
+        uv_python = os.environ.get("UV_PYTHON")
+        if uv_python and Path(uv_python).exists():
+            chain.append(("cli.doctor.chain_uv_python", uv_python))
+        else:
+            chain.append(("cli.doctor.chain_uv_python", i18n.t("cli.doctor.chain_unset")))
+
+        venv = os.environ.get("VIRTUAL_ENV")
+        chain.append(
+            (
+                "cli.doctor.chain_virtualenv",
+                (str(Path(venv))) if venv else i18n.t("cli.doctor.chain_unset"),
+            )
+        )
+        return chain
+
+    def _uv_project_rows(self) -> "list[tuple[str, str, str]]":
+        """
+        {!--< internal-use >!--}
+        uv 项目面板行：uv 版本 / UV_* 变量 / 项目判定依据
+
+        :return: [(状态, 标签, 详情)] 行列表
+        """
+
+        rows: list[tuple[str, str, str]] = []
+
+        uv_version = "-"
+        uv_cmd = shutil.which("uv")
+        if uv_cmd:
+            try:
+                probe = subprocess.run(
+                    [uv_cmd, "--version"],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    timeout=CLI_UV_PROBE_TIMEOUT_SECS,
+                )
+                if probe.returncode == 0:
+                    uv_version = probe.stdout.strip() or "-"
+            except Exception:
+                uv_version = "-"
+        rows.append(
+            (
+                self._status(True),
+                i18n.t("cli.doctor.uv_version"),
+                uv_version,
+            )
+        )
+
+        for env_name in ("UV_PROJECT_ENVIRONMENT", "UV_PYTHON", "UV_NO_SYNC"):
+            value = os.environ.get(env_name)
+            rows.append(
+                (
+                    self._status(True),
+                    i18n.t("cli.doctor.uv_env"),
+                    f"{env_name}={value}" if value else f"{env_name}: {i18n.t('cli.doctor.chain_unset')}",
+                )
+            )
+
+        if is_uv_project(Path.cwd()):
+            basis = []
+            if Path("uv.lock").exists():
+                basis.append("uv.lock")
+            pyproject = Path("pyproject.toml")
+            if pyproject.exists() and "[tool.uv]" in pyproject.read_text(
+                encoding="utf-8", errors="replace"
+            ):
+                basis.append("[tool.uv]")
+            pyvenv = Path(".venv") / "pyvenv.cfg"
+            if pyvenv.exists() and any(
+                ln.strip().startswith("uv =")
+                for ln in pyvenv.read_text(encoding="utf-8", errors="replace").splitlines()
+            ):
+                basis.append("pyvenv.cfg")
+            detail = i18n.t("cli.doctor.uv_project_yes", basis=", ".join(basis) or "-")
+            # uv 项目但目标环境不在 uv 管理范围内：提示装错环境风险
+            target_src = resolve_target_python(Path.cwd())[1]
+            if target_src not in (PythonSource.UV_PROJECT, PythonSource.PROJECT_VENV):
+                rows.append(
+                    (
+                        self._status(False),
+                        i18n.t("cli.doctor.uv_project"),
+                        i18n.t("cli.doctor.uv_project_mismatch", source=str(target_src)),
+                    )
+                )
+            else:
+                rows.append((self._status(True), i18n.t("cli.doctor.uv_project"), detail))
+        else:
+            rows.append(
+                (
+                    self._status(True),
+                    i18n.t("cli.doctor.uv_project"),
+                    i18n.t("cli.doctor.uv_project_no"),
+                )
+            )
+        return rows
 
     @staticmethod
     def _status(ok: bool) -> str:

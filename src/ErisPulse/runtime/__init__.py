@@ -32,6 +32,7 @@ from .diagnostics import (
 from .troubleshoot import (
     explain_event,
     explain_module,
+    explain_trace,
     format_report,
 )
 from .exceptions import (
@@ -151,6 +152,7 @@ __all__ = [
     "validate_config",
     "explain_event",
     "explain_module",
+    "explain_trace",
     "format_report",
 ]
 

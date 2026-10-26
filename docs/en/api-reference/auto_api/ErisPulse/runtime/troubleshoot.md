@@ -66,3 +66,36 @@
 
 ---
 
+
+### `explain_trace(trace_id: str, limit: int = 50) -> dict[str, Any]`
+
+诊断"这条消息为什么没回"：按链路 ID 聚合完整消息流
+
+以事件的 ``id``（trace-id）为线索，从会话收件箱（transcript）拉取
+这条链路的全部消息——入站（role="user"）与出站（role="bot"）按时间
+升序排列；配合 :func:`explain_event` 的判定结论，可以快速定位
+「收到了但没回」「回了但发失败」等场景。
+
+> **提示**
+> 1. 纯读诊断；transcript 未启用（``ErisPulse.transcript.enabled = false``）
+> 时 messages 为空并在 reasons 说明
+> 2. 只覆盖 message 类事件（transcript 仅记录消息流）
+> 3. 返回 dict（机器可读），配 :func:`format_report` 渲染
+
+- **trace_id**: 事件链路 ID（事件 ``id`` 字段）
+- **limit**: 最多返回的消息条数
+
+**返回值**: ``{"conclusion", "reasons", "trace_id", "messages", "replied"}``；
+
+    messages 各项含 role / text / ts / session_key；replied = 是否存在
+    出站回复
+
+**示例**:
+
+```python
+report = explain_trace("evt-abc123")
+print(format_report(report))
+```
+
+---
+

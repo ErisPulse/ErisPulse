@@ -62,6 +62,8 @@ class ModuleManager(ManagerBase):
         self._module_services: dict[str, list[dict[str, Any]] | None] = {}  # meta.services 契约缓存（load 时解析，规范化 dict 列表）
         self._last_errors: dict[str, dict] = {}  # load 失败现场（last_error / get_info.last_error 消费）
         self._module_activity: dict[str, float] = {}  # 模块活跃时间戳（休眠清扫判定用）
+        # 无代理模块归眠提示的去重集合（每模块只提示一次，module.load() 后清空）
+        self._sleep_hint_logged: set[str] = set()
         self._dormant_after: dict[str, float] = {}  # 休眠阈值（秒；initialize_modules 挂载时解析 dormant_after）
         self._dormancy_sweeper_started = False  # 休眠清扫器防重入标记
         # 注册配置变更路由：将 config.set / config.updated 事件转发到各模块的 on_config_update
@@ -496,6 +498,18 @@ class ModuleManager(ManagerBase):
             )
 
             logger.info(i18n.t("core.module.load_success", name=module_name))
+
+            # 手动归眠/无代理模块的显式唤醒路径：load() 成功即补挂缺失的
+            # sdk 属性（无代理模块归眠后由此恢复唤醒途径）
+            sdk_instance = self.sdk_ref()
+            if sdk_instance is not None and module_name not in getattr(
+                sdk_instance, "__dict__", {}
+            ):
+                try:
+                    setattr(sdk_instance, module_name, instance)
+                except Exception:
+                    pass
+            self._sleep_hint_logged.discard(module_name)
             return True
 
         except SystemExit as e:
@@ -690,9 +704,20 @@ class ModuleManager(ManagerBase):
             name = module_name
         if name is None or name not in self._loaded_modules:
             return True
-        success = await self._unload_single_module(name, reason="dormant", sleep=True)
+        from ..runtime.reload_ops import reload_ops
+        from .constants import MODULE_DORMANCY_SLEEP_LOCK_TIMEOUT_SECS
+
+        result = await reload_ops.run_or_skip(
+            lambda: self._unload_single_module(name, reason="dormant", sleep=True),
+            timeout=MODULE_DORMANCY_SLEEP_LOCK_TIMEOUT_SECS,
+            skip_log_key="core.module.dormancy_sweep_skipped",
+            log_params={"name": name},
+        )
+        if result is None:
+            # 锁等待超时（长时间重载/restart 进行中）：本轮跳过，下个清扫周期重试
+            return False
         self._module_activity.pop(name, None)
-        return success
+        return result
 
     def touch_activity(self, module_name: str) -> None:
         """
@@ -792,8 +817,12 @@ class ModuleManager(ManagerBase):
         if loader is None:
             logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return False
+        from ..runtime.reload_ops import run_reload_exclusive
+
         started = time.monotonic()
-        success = await loader.reload_module(name, self, self.sdk_ref(), full=full)
+        success = await run_reload_exclusive(
+            lambda: loader.reload_module(name, self, self.sdk_ref(), full=full)
+        )
         payload: dict[str, Any] = {
             "module_name": name,
             "success": success,
@@ -829,12 +858,18 @@ class ModuleManager(ManagerBase):
         if loader is None:
             logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return {}
-        results = await loader.reload_all(self, self.sdk_ref())
+        from ..runtime.reload_ops import run_reload_exclusive
+
+        results = await run_reload_exclusive(lambda: loader.reload_all(self, self.sdk_ref()))
+        # 预检拒绝（语法错误整轮拒绝）时空结果不能被误判为成功——
+        # Dashboard 等下游据 success 字段展示重载结果
+        precheck_rejected = bool(getattr(loader, "_last_reload_all_rejected", False))
         await lifecycle.emit(
             EVENT_MODULE_RELOAD,
             {
                 "module_name": "All",
-                "success": all(results.values()) if results else True,
+                "success": all(results.values()) if results else not precheck_rejected,
+                "precheck_failed": precheck_rejected,
                 "results": results,
             },
         )
@@ -1001,7 +1036,13 @@ class ModuleManager(ManagerBase):
                             except Exception:
                                 pass
                 elif self.sdk_ref() is not None:
-                    # 无代理（如运行时注册模块）：移除 sdk 属性，恢复未加载语义
+                    # 无代理（如运行时注册模块）：移除 sdk 属性，恢复未加载语义；
+                    # 留痕提示唤醒途径（module.load()），不再静默失联
+                    if module_name not in self._sleep_hint_logged:
+                        self._sleep_hint_logged.add(module_name)
+                        logger.info(
+                            i18n.t("core.module.sleep_no_proxy_hint", name=module_name)
+                        )
                     getattr(self.sdk_ref(), "__dict__", {}).pop(module_name, None)
                 await lifecycle.submit_event(
                     "module.sleep",
@@ -1071,6 +1112,8 @@ class ModuleManager(ManagerBase):
         """
         import sys
 
+        from ..loaders._reload_utils import clear_source_caches
+
         purge_names = {module_name}
         meta = (self._module_info.get(module_name) or {}).get("meta") or {}
         for n in meta.get("top_level") or []:
@@ -1079,6 +1122,12 @@ class ModuleManager(ManagerBase):
             if n == "__main__" or getattr(sys.modules.get(n), "__file__", None) is None:
                 continue
             purge_names.add(n)
+        doomed = [
+            mod
+            for mod_name, mod in list(sys.modules.items())
+            if any(mod_name == n or mod_name.startswith(f"{n}.") for n in purge_names)
+        ]
+        clear_source_caches(doomed)
         for mod_name in list(sys.modules):
             if any(mod_name == n or mod_name.startswith(f"{n}.") for n in purge_names):
                 sys.modules.pop(mod_name, None)
@@ -1306,13 +1355,24 @@ class ModuleManager(ManagerBase):
         {!--< internal-use >!--}
         从 sys.modules 移除插件自身模块与其子包（保守：不清理第三方/共享库）
 
+        移除前先清除对应源文件的字节码缓存：purge 卸载 → 改码 → 重新
+        load 的链路同样保证读到新代码（同秒同字节数改写不再命中旧 pyc）。
+
         :param module_name: 插件模块名
         :param top_level: 顶层包名列表（用于清理包内子模块）
         """
         import sys
 
+        from ..loaders._reload_utils import clear_source_caches
+
         purge_names = {module_name}
         purge_names.update(top_level or [])
+        doomed = [
+            mod
+            for mod_name, mod in list(sys.modules.items())
+            if any(mod_name == n or mod_name.startswith(f"{n}.") for n in purge_names)
+        ]
+        clear_source_caches(doomed)
         for mod_name in list(sys.modules):
             if any(mod_name == n or mod_name.startswith(f"{n}.") for n in purge_names):
                 sys.modules.pop(mod_name, None)

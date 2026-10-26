@@ -73,6 +73,30 @@
 ---
 
 
+### `effect_hint() -> 'tuple[str, dict]'`
+
+安装/升级后的「生效方式」三态提示
+
+读运行状态文件 + 判活 + argv（含 ``--reload`` 判定）：
+- 实例运行中且热重载模式 → (effect_running_reload 键, {"pid": pid})
+- 实例运行中（普通模式）→ (effect_running 键, {"pid": pid})
+- 未运行 → ("", {})（调用方走既有静态文案）
+
+**返回值**: (i18n 键, 格式化参数)；无实例时空键
+
+---
+
+
+### `clear_mark() -> None`
+
+清除硬重启观测标记（``hard_restart_*`` 字段，只应消费一次）
+
+与 SDK 侧 ``ErisPulse.runtime.process_state.clear_mark`` 为同一 JSON
+契约的独立实现（CLI 不加载主库）；路径/字段名由契约测试钉死。
+
+---
+
+
 ### `pid_alive(pid: int) -> bool`
 
 判断进程是否存活

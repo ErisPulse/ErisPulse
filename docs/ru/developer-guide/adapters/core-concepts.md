@@ -812,14 +812,124 @@ class MyPlatformConverter:
         return onebot_event
 ```
 
-## Управление подключениями
+## Управление соединениями
 
-### WebSocket подключение
+### Два корректных способа реализации start()
+
+Адаптерам клиентского режима (WebSocket-клиент, HTTP-опрос и т.д.) необходимо запускать в `start()` резидентный цикл соединения. Фреймворк поддерживает два способа написания — **оба корректны, но выбрать можно только один из них**:
+
+**Способ 1: spawn с немедленным возвратом (рекомендуется)** — через `spawn_client_loop()` цикл планируется как фоновая задача, принадлежащая данной платформе, при этом `start()` сразу возвращает управление:
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        """Регистрация WebSocket маршрута"""
+        # Задача цикла принадлежит self._platform: при shutdown фреймворк отменяет её автоматически
+        self.spawn_client_loop(self._connect_loop())
+        # Здесь start() завершается — «запуск = успех», сбои соединения обрабатываются повторами внутри цикла
+
+    async def _connect_loop(self):
+        while True:
+            try:
+                await self._connect_and_receive()   # при разрыве выбрасывается исключение → отсрочка ниже
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                await asyncio.sleep(5)              # самостоятельная отсрочка и переподключение внутри цикла
+```
+
+**Способ 2: резидентный** — `start()` напрямую выполняет `await` цикла соединения и никогда не возвращает управление:
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        await self._connect_loop()   # резидентный, не возвращает управление; исключение в цикле = сбой start()
+```
+
+Различия и общие черты двух способов:
+
+| | Способ 1: spawn с возвратом | Способ 2: резидентный |
+|---|---|---|
+| Момент возврата `start()` | сразу после запуска цикла | при выходе/сбое цикла соединения (фреймворк повторяет попытку согласно стратегии отсрочки) |
+| Обработка сбоя соединения | самостоятельный перехват и отсрочка внутри цикла | исключение передаётся выше, в цепочку повторных попыток фреймворка |
+| Применимые сценарии | требуется быстрый возврат подтверждения запуска (несколько соединений, после регистрации маршрутов нужно запустить другие задачи) | простая реализация с семантикой «соединение = запуск» |
+
+`spawn_client_loop(coro, *, name="client_loop")` — точка входа планирования для способа 1: задача регистрируется по принадлежности к `self._platform`, при `shutdown()` адаптера фреймворк автоматически отменяет её в соответствии с этой принадлежностью, поэтому управлять дескрипторами задач вручную не нужно; неперехваченные исключения внутри цикла автоматически фиксируются в логах (ожидаемые разрывы с последующим переподключением перехватывайте внутри цикла самостоятельно).
+
+> **Единственно ошибочный способ — их смешивание**: после spawn выполнить `await` того же цикла — это лишит `start()` семантики немедленного возврата, а путь отмены задачи станет непредсказуемым.
+
+### Полуготовые базовые классы режимов соединения
+
+Помимо двух способов из предыдущего раздела, для двух самых распространённых режимов соединения фреймворк предоставляет «полуготовые» базовые классы (`ErisPulse.Core.Bases.adapter_patterns`, импортируются напрямую из корневого пакета): вся оркестрация жизненного цикла `start` / `shutdown` выполняется базовым классом, а подкласс реализует только бизнес-хуки.
+
+#### PollingAdapter (HTTP-опрос)
+
+Подходит для платформ с «регулярной выборкой событий клиентом» (типа Telegram getUpdates). Базовый класс в стиле spawn с возвратом запускает резидентный цикл опроса; при сбое выборки сбой автоматически фиксируется в логах и применяется экспоненциальная отсрочка (база — 1 секунда, максимум — 60 секунд, после успеха сбрасывается в ноль; константы `POLLING_ADAPTER_BACKOFF_BASE_SECS` / `POLLING_ADAPTER_BACKOFF_MAX_SECS` можно настроить в `Core/constants.py`):
+
+```python
+from ErisPulse import PollingAdapter
+
+class MyAdapter(PollingAdapter):
+    # Интервал опроса по умолчанию 5 секунд; после объявления поля poll_interval в ConfigClass приоритет имеет значение из конфигурации (применяется при горячем обновлении)
+    poll_interval = 5.0
+
+    async def fetch_events(self):
+        """Выбирает пакет нативных событий платформы (исключения обрабатываются базовым классом через отсрочку, try/except не нужен)"""
+        resp = await self.sdk.client.get(f"{self.cfg.endpoint}/getUpdates")
+        data = await resp.json()
+        return data.get("result", [])
+
+    def convert_one(self, raw):
+        """Преобразует одно нативное событие в OneBot12; возвращает None для пропуска"""
+        return self.converter.convert(raw)
+
+    async def call_api(self, endpoint: str, **params):
+        ...  # как у обычного адаптера
+```
+
+Минимальный набор для реализации: `fetch_events` / `convert_one` / `call_api`. `start()` сразу возвращает управление после запуска цикла; `shutdown()` не требует реализации в подклассе (цикл опроса автоматически отменяется по принадлежности к owner).
+
+#### WebhookAdapter (HTTP-колбэк)
+
+Подходит для платформ с «активной отправкой колбэков со стороны платформы». `start()` базового класса регистрирует маршрут приёма на роутере фреймворка (итоговый путь `/{имя платформы}/webhook`, метод POST), а регистрация обёрнута в `owner_scope` — при выгрузке адаптера всё автоматически очищается по owner, отменять регистрацию вручную не нужно:
+
+```python
+from ErisPulse import WebhookAdapter
+
+class MyAdapter(WebhookAdapter):
+    def verify_request(self, request) -> bool:
+        """Необязательный хук: проверка колбэка (по умолчанию пропускает; при возврате False базовый класс отвечает 403)"""
+        cfg = self.cfg
+        if not cfg.token:
+            return True
+        auth = request.headers.get("authorization", "")
+        return auth == f"Bearer {cfg.token}"
+
+    def convert(self, payload):
+        """Преобразует полезную нагрузку колбэка в OneBot12; возвращает None для пропуска"""
+        return self.converter.convert(payload)
+
+    async def call_api(self, endpoint: str, **params):
+        ...  # как у обычного адаптера
+```
+
+Минимальный набор для реализации: `convert` / `call_api` (`verify_request` необязателен). Адрес колбэка получают через `sdk.adapter.get_connection_info(platform)` и указывают в панели управления платформы; при неудачной проверке запрос возвращает 403, при ошибке разбора полезной нагрузки — 400, при успехе возвращается `{"status": "ok"}`.
+
+#### Как выбрать между тремя режимами
+
+| Протокол платформы | Наследование | Скаффолд |
+|---|---|---|
+| Платформа подключается сама (WebSocket-сервер) | `BaseAdapter` | `epsdk create adapter` (по умолчанию ws-server) |
+| Мы сами опрашиваем (HTTP-опрос) | `PollingAdapter` | `epsdk create adapter --template polling` |
+| Платформа сама присылает данные (HTTP-колбэк) | `WebhookAdapter` | `epsdk create adapter --template webhook` |
+
+Полностью работоспособные примеры см. в репозитории: `examples/example-adapter/` (ws-server), `examples/example-adapter-polling/`, `examples/example-adapter-webhook/`.
+
+### WebSocket-соединение
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        """Регистрация WebSocket-маршрута"""
         router.register_websocket(
             module_name="myplatform",
             path="/ws",
@@ -828,7 +938,7 @@ class MyAdapter(BaseAdapter):
         )
     
     async def _ws_handler(self, websocket):
-        """Обработчик WebSocket подключения"""
+        """Обработчик WebSocket-соединения"""
         self.connection = websocket
         
         try:
@@ -838,22 +948,22 @@ class MyAdapter(BaseAdapter):
                 if onebot_event:
                     await self.adapter.emit(onebot_event)
         except WebSocketDisconnect:
-            self.logger.info("Подключение разорвано")
+            self.logger.info("Соединение разорвано")
         finally:
             self.connection = None
     
     async def _auth_handler(self, websocket) -> bool:
-        """Проверка подключения"""
+        """Аутентификация WebSocket"""
         token = websocket.query_params.get("token")
         return token == "valid_token"
 ```
 
-### WebHook подключение
+### WebHook-соединение
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        """Регистрация HTTP маршрута"""
+        """Регистрация WebHook-маршрута"""
         router.register_http_route(
             module_name="myplatform",
             path="/webhook",
@@ -862,7 +972,7 @@ class MyAdapter(BaseAdapter):
         )
     
     async def _webhook_handler(self, request):
-        """Обработчик WebHook запроса"""
+        """Обработчик WebHook-запросов"""
         data = await request.json()
         onebot_event = self.convert(data)
         if onebot_event:
@@ -870,7 +980,9 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
-> **Информация о маршрутах**: зарегистрированные адаптером маршруты (HTTP, WebSocket, SSE) можно получить через `sdk.adapter.get_connection_info(platform)` и `sdk.router.get_module_urls(module_name)`, включая `base_url` + путь. Подробнее см. [Введение в разработку адаптеров - Информация о подключениях и обнаружение маршрутов](getting-started.md#9-информация-о-подключениях-и-обнаружение-маршрутов) и [Поддержка SSE](getting-started.md#10-sse-server-sent-events-поддержка).
+> Платформам чисто колбэк-типа не нужно вручную описывать показанную выше оркестрацию регистрации/проверки/очистки — достаточно напрямую унаследоваться от [«полуготового» базового класса `WebhookAdapter`](#полуготовые-базовые-классы-режимов-соединения) и реализовать только `convert` (при желании переопределив `verify_request`).
+
+> **Запрос информации о маршрутах**: маршруты, зарегистрированные адаптером (HTTP, WebSocket, SSE), позволяют получить полный адрес соединения (включающий `base_url` + путь) через `sdk.adapter.get_connection_info(platform)` и `sdk.router.get_module_urls(module_name)`. Подробнее см. [Введение в разработку адаптеров - Информация о соединении и обнаружение маршрутов](getting-started.md#9-информация-о-соединении-и-обнаружение-маршрутов) и [Поддержка SSE](getting-started.md#10-поддержка-sse-server-sent-events).
 
 ## Стандартные ответы API
 

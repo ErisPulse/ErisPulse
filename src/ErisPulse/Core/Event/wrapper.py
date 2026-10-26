@@ -1913,15 +1913,18 @@ class Event(dict):
         查询当前会话的近期消息（会话收件箱）
 
         返回当前会话（platform:detail_type:target_id）最近的消息流，
-        含用户与机器人双方，按时间升序。收件箱未启用或无记录时返回空列表。
+        含用户与机器人双方，按时间升序。每条记录携带归因：``sender`` 为
+        发送者标识（user_id / bot self_id，可用于区分群内不同成员），
+        ``meta`` 为记录时刻的元数据（入站含 nickname / sub_type 等，出站
+        含发送归属 module）。收件箱未启用或无记录时返回空列表。
 
         :param n: 返回的最大条数（默认 20）
-        :return: 消息列表，每条含 role / text / ts / event_id
+        :return: 消息列表，每条含 role / text / ts / event_id / sender / meta
 
         :example:
         >>> messages = await event.history(10)
         >>> for m in messages:
-        ...     print(m["role"], ":", m["text"])
+        ...     print(m["role"], m.get("sender"), ":", m["text"])
         """
         from ..transcript import transcript
 

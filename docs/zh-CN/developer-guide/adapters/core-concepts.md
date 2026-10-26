@@ -820,6 +820,132 @@ class MyPlatformConverter:
 
 ## 连接管理
 
+### start() 的两种正确写法
+
+客户端模式的适配器（WebSocket 客户端、HTTP 轮询等）需要在 `start()` 里拉起一个
+常驻连接循环。框架支持两种写法，**都正确，但只能二选一**：
+
+**写法一：spawn-返回式（推荐）**——经 `spawn_client_loop()` 把循环调度为归属本平台
+的后台任务，`start()` 立即返回：
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        # 循环任务归属 self._platform：shutdown 时框架自动取消
+        self.spawn_client_loop(self._connect_loop())
+        # start 到这里就结束——"启动即成功"，连接失败由循环内重试
+
+    async def _connect_loop(self):
+        while True:
+            try:
+                await self._connect_and_receive()   # 断开抛异常 → 下方退避
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                await asyncio.sleep(5)              # 循环内自行退避重连
+```
+
+**写法二：常驻式**——`start()` 直接 `await` 连接循环，永不返回：
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        await self._connect_loop()   # 常驻不返回；循环抛异常 = start 失败
+```
+
+两种写法的差异与共同点：
+
+| | spawn-返回式 | 常驻式 |
+|---|---|---|
+| `start()` 返回时机 | 拉起循环后立即返回 | 连接循环退出/失败时（框架按退避策略重试） |
+| 连接失败处理 | 循环内自行捕获退避 | 异常上抛，交给框架的重试链 |
+| 适用场景 | 需要快速返回启动确认（多连接、注册路由后还要拉起其它任务） | "连接即启动"语义的简单实现 |
+
+`spawn_client_loop(coro, *, name="client_loop")` 是写法一的调度入口：任务按
+`self._platform` 归属登记，适配器 `shutdown()` 时框架按归属自动取消，无需自己
+管理任务句柄；循环内未捕获的异常会自动留痕（预期的断连重连请在循环内自行捕获）。
+
+> **唯一错误写法是混用**：spawn 之后又 `await` 同一个循环——这会让 `start()`
+> 失去立即返回语义，任务取消路径也会变得不可预测。
+
+### 连接模式半成品基类
+
+上一节的两种写法之外，最常见的两类连接模式框架直接提供了「半成品」基类
+（`ErisPulse.Core.Bases.adapter_patterns`，根包可直接导入）：`start` / `shutdown`
+的生命周期编排全部由基类完成，子类只实现业务钩子。
+
+#### PollingAdapter（HTTP 轮询型）
+
+适用于「客户端定时拉取事件」的平台（Telegram getUpdates 型）。基类以
+spawn-返回式拉起常驻轮询循环，拉取失败自动留痕并指数退避（基数 1 秒、上限
+60 秒，成功后归零；常量 `POLLING_ADAPTER_BACKOFF_BASE_SECS` /
+`POLLING_ADAPTER_BACKOFF_MAX_SECS` 可在 `Core/constants.py` 调整）：
+
+```python
+from ErisPulse import PollingAdapter
+
+class MyAdapter(PollingAdapter):
+    # 轮询间隔默认 5 秒；ConfigClass 声明 poll_interval 字段后以配置值为准（热更新生效）
+    poll_interval = 5.0
+
+    async def fetch_events(self):
+        """拉一批平台原生事件（异常由基类统一退避，无需 try/except）"""
+        resp = await self.sdk.client.get(f"{self.cfg.endpoint}/getUpdates")
+        data = await resp.json()
+        return data.get("result", [])
+
+    def convert_one(self, raw):
+        """单条原生事件转 OneBot12；返回 None 跳过"""
+        return self.converter.convert(raw)
+
+    async def call_api(self, endpoint: str, **params):
+        ...  # 与普通适配器相同
+```
+
+最小实现面：`fetch_events` / `convert_one` / `call_api`。`start()` 拉起循环后立即
+返回；`shutdown()` 无需子类处理（轮询循环按 owner 归属自动取消）。
+
+#### WebhookAdapter（HTTP 回调型）
+
+适用于「平台主动推送回调」的平台。基类的 `start()` 在框架 router 上注册接收路由
+（最终路径 `/{平台名}/webhook`，POST 方法），注册包在 `owner_scope` 中——适配器
+卸载时按 owner 自动清理，无需手动注销：
+
+```python
+from ErisPulse import WebhookAdapter
+
+class MyAdapter(WebhookAdapter):
+    def verify_request(self, request) -> bool:
+        """可选钩子：回调校验（默认放行；返回 False 时基类以 403 回绝）"""
+        cfg = self.cfg
+        if not cfg.token:
+            return True
+        auth = request.headers.get("authorization", "")
+        return auth == f"Bearer {cfg.token}"
+
+    def convert(self, payload):
+        """回调载荷转 OneBot12；返回 None 跳过"""
+        return self.converter.convert(payload)
+
+    async def call_api(self, endpoint: str, **params):
+        ...  # 与普通适配器相同
+```
+
+最小实现面：`convert` / `call_api`（`verify_request` 可选）。回调地址经
+`sdk.adapter.get_connection_info(platform)` 查询后填到平台后台；校验失败的请求
+返回 403、载荷解析失败返回 400、正常返回 `{"status": "ok"}`。
+
+#### 三种模式怎么选
+
+| 平台协议 | 继承 | 脚手架 |
+|---|---|---|
+| 平台连过来（WebSocket 服务端） | `BaseAdapter` | `epsdk create adapter`（默认 ws-server） |
+| 我们去拉（HTTP 轮询） | `PollingAdapter` | `epsdk create adapter --template polling` |
+| 平台推过来（HTTP 回调） | `WebhookAdapter` | `epsdk create adapter --template webhook` |
+
+完整可运行示例见仓库 `examples/example-adapter/`（ws-server）、
+`examples/example-adapter-polling/`、`examples/example-adapter-webhook/`。
+
 ### WebSocket 连接
 
 ```python
@@ -875,6 +1001,10 @@ class MyAdapter(BaseAdapter):
             await self.adapter.emit(onebot_event)
         return {"status": "ok"}
 ```
+
+> 纯回调型平台不必手写上面这套注册/校验/清理编排——直接继承
+> [`WebhookAdapter` 半成品基类](#连接模式半成品基类)，只实现 `convert`
+> （可选覆写 `verify_request`）即可。
 
 > **路由信息查询**：适配器注册的路由（HTTP、WebSocket、SSE）可以通过 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查询完整连接地址（包含 `base_url` + 路径）。详见 [适配器开发入门 - 连接信息与路由发现](getting-started.md#9-连接信息与路由发现) 和 [SSE 支持](getting-started.md#10-sse-server-sent-events-支持)。
 

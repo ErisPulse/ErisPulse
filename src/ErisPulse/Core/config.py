@@ -110,6 +110,7 @@ class ConfigManager:
         self._migrate_config()  # 迁移旧配置文件
         self._acquire_instance_lock()  # 尝试独占配置目录（多实例共享检测，仅告警不阻塞）
         self._ensure_config_gitignore()  # 配置目录自带 .gitignore（敏感配置不入库）
+        self._ensure_runtime_state_gitignore()  # 运行状态目录自带 .gitignore（机器本地数据不入库）
         self._load_config()  # 初始化时加载配置
         self._watch_config_file()  # 记录配置文件 mtime 以便后续监听
         self._start_config_watcher()  # 启动后台文件变化监听
@@ -524,8 +525,39 @@ class ConfigManager:
                 "*\n",
                 encoding="utf-8",
             )
-        except Exception:
-            pass
+        except Exception as e:
+            self._log_config_error(
+                i18n.t("core.config.gitignore_write_failed", path=self.CONFIG_FILE, error=e),
+                level="warning",
+            )
+
+    def _ensure_runtime_state_gitignore(self) -> None:
+        """
+        确保运行状态目录（``.erispulse/``）自带 ``.gitignore``（幂等：已存在则不覆盖）
+
+        目录内是实例锁、CLI 运行状态文件等机器本地运行时数据，不含任何需
+        入库内容——目录整体对 git 不可见。与配置目录的 ``.gitignore`` 同款
+        实现（规则只有一行 ``*``）。
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        try:
+            state_dir = Path(self.CONFIG_FILE).parent.parent / RUNTIME_STATE_DIR_NAME
+            gitignore_path = state_dir / ".gitignore"
+            if gitignore_path.exists():
+                return
+            gitignore_path.parent.mkdir(parents=True, exist_ok=True)
+            gitignore_path.write_text(
+                "# ErisPulse: machine-local runtime state — keep out of VCS / 运行状态数据，全部不入库\n"
+                "*\n",
+                encoding="utf-8",
+            )
+        except Exception as e:
+            self._log_config_error(
+                i18n.t("core.config.gitignore_write_failed", path=RUNTIME_STATE_DIR_NAME, error=e),
+                level="debug",
+            )
 
     def _atomic_write_text(self, text: str) -> None:
         """

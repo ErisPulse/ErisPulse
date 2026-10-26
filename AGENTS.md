@@ -29,11 +29,11 @@
 - 15. 声明了 i18n key 的地方（如配置 `description`），必须确保对应翻译已注册；示例项目默认使用纯文本，不使用未注册的 i18n key
 
 ## 文档
-- 16. 只需要修改 `docs/zh-CN` 下的相关文档。**zh-CN 是唯一维护源**；其余语言由 CI 翻译流程生成，以 `docs-generated` 分支（单提交强推，永久持久层）+ workflow artifact（400 天，查验副本）形式发布，**不再提交进开发分支**——仓库内现存其它语言文档为历史快照，不会自动更新
-  - ⚠️ **删除/移动/重命名 `docs/zh-CN` 文档时**，需手动清理仓库内其它语言的对应存量文件（`docs/en`、`docs/ja`、`docs/ru`、`docs/zh-TW`）与 `.github/.translate_cache/<lang>/` 缓存，并检查死链接
-- 17. 以下文档路径由 CI 生成，以 `docs-generated` 分支（持久层）+ workflow artifact（400 天查验副本）形式发布（不提交进开发分支），请勿读取/手改，也**不要在本地运行生成脚本**（源码 docstring 与 `docs/zh-CN` 是唯一内容来源）：
-  - 不要读取或修改任何语言 `ai-support/prompts` 下的文档（自动生成的AI提示词；生成脚本 `scripts/tools/generate-ai-prompts.py`）
-  - 不要读取或修改任何语言 `api-reference/auto_api` 下的文档（自动生成的API文档；生成脚本 `scripts/tools/generate-api-docs.py`）
+- 16. 只需要修改 `docs/zh-CN` 下的相关文档。**zh-CN 是唯一维护源**；其余语言由 CI 翻译流程生成并**自动提交回开发分支**（克隆/pull 即得最新多语言文档；另有 `docs-generated` 分支 + workflow artifact 作查验副本）。源文档删除后各语言残留由翻译器 stale 同步自动清理（随 CI 提交生效），本地无需手动清理
+  - ⚠️ **删除/移动/重命名 `docs/zh-CN` 文档时**：CI 翻译器的 stale 同步会自动清理各目标语言的残留译文与缓存并随产物提交生效，本地无需手动清理；仅需检查 `docs/zh-CN` 内部的死链接
+- 17. 以下文档路径由 CI 生成、自动提交回开发分支（勿手改，改动会被下轮 CI 覆盖），也**不要在本地运行生成脚本**（源码 docstring 与 `docs/zh-CN` 是唯一内容来源）：
+  - 不要读取或修改任何语言 `ai-support/prompts` 下的文档（自动生成的AI提示词；生成脚本 `scripts/tools/generators/ai_prompts.py`（统一入口 `python -m scripts.tools gen ai-prompts`））
+  - 不要读取或修改任何语言 `api-reference/auto_api` 下的文档（自动生成的API文档；生成脚本 `scripts/tools/generators/api_docs.py`（统一入口 `python -m scripts.tools gen api-docs`））
 - 18. 用户可感知的变更必须更新 `CHANGELOG.md` **当前开发版本**条目，并遵循其头部「写作规范」：
   - 同一主题的多次修改应**更新既有条目为最终形态**，而非追加新条目（禁止"后期迭代 / 修正 / 不再…"式过程记录）
   - 本版本内引入又在本版本内修复 / 回退的内容不单独记录（并入特性条目或不记）
@@ -42,7 +42,7 @@
   - **摘要从简**：`**版本摘要**` 控制在 2–3 句话，只说清"本版本主题 + 最重磅的 1–3 项变更"，不逐条罗列子功能、不粘贴 API / 配置 / 参数细节（细节归入下方变更分类）；`**升级建议**` / `**注意事项**` 只给结论与行动项，不复述正文
 - 19. 如果你有新增/重构文档，请务必进行以下两项任务：
   - 更新根文档README即相关总结性文档的内容，添加/修改新的文档的相关连接 
-  - 更新文档相关生成脚本：`scripts/tools/generate-ai-prompts.py`, `scripts/tools/generate-docs-index.py` 是否需要更新
+  - 更新文档相关生成脚本是否需要同步（清单集中在 `scripts/tools/generators/spec.py`，改清单只动它）：`python -m scripts.tools gen ai-prompts` / `gen docs-index` / `gen skills`
   - 行文与对外页面写作遵循 `docs/zh-CN/styleguide/docs-writing.md`（注意：`styleguide/` 不进入 AI 提示词生成包）
   
 ## 模板与示例同步
@@ -62,6 +62,12 @@
 - 24. 行为参数（重试次数、超时、冷却期、阈值等）**必须定义在 `Core/constants.py`** 并注明使用位置与修改影响，禁止散落在实现文件内部硬编码；实现文件以类属性/局部引用常量导入使用
 - 25. 存储后端行为约定：连接失败**不阻塞、不崩溃框架**——建池重试耗尽后进入冷却期，期间存储操作快速失败（操作层吞异常记日志返回 `False/None`），冷却结束自动重连试探；异常类型 `StorageUnreachableError`（已从 `ErisPulse.Core` 导出）；真机验证脚本 `tests/devs/test_storage_backend_verify.py`（sqlite/mysql/postgres 各 12 项，修改存储引擎后必须三后端跑通）
 - 26. 框架异常：新增异常必须挂在 `Core/Bases/errors.py` 的 `ErisPulseError` 层级下、从 `ErisPulse.Core` 聚合导出，并同步 `docs/zh-CN/advanced/errors.md`（异常总览树与发生位置表）
+- 28. 模块顶部不允许直接定义自由函数：仅在单个类内部使用的能力用私有方法/闭包收进类内；跨类复用的能力才提升为模块级函数（公共 API，需进 `__all__`）或独立工具类
+
+## 提交信息
+
+- 29. 提交信息只说「提交了什么」：一行主题（conventional commits + 中文概述），不写改动细节、动机、影响面——细节归 CHANGELOG；CHANGELOG 同样只记用户可感知的净差异、不记噪声；顺带的无关小修改不写
+- 30. 提交主题禁止用小括号做无必要的介绍性前缀/副标题（如主题前挂一串括号罗列要点：`（为了xxxx，实现xxxx，xxx入库选择）`）。主题应直接、干净：类型前缀 + 中文概述即可，要点展开留给正文或 CHANGELOG，不塞进括号内联
 
 ## 发布流程
 

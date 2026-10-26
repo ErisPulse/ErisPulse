@@ -65,7 +65,7 @@ _EXCLUDE_METHOD_NAMES = frozenset({
     # 基类标准发送方法（已在 SendDSL 声明）
     "Text", "Image", "Voice", "Video", "File", "Raw_ob12", "Example",
     # 非发送成员
-    "send_context", "Raw",
+    "send_context", "Raw", "list_sends",
 })
 
 

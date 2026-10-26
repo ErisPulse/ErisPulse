@@ -40,6 +40,7 @@ from .constants import (
     DEFAULT_HANDLER_MAX_CONCURRENCY,
     DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
     EVENT_ADAPTER_EVENT_BLOCKED,
+    HANDLER_QUEUE_MAX_PENDING,
     HANDLER_SLOW_THRESHOLD_SECS,
     LOG_MESSAGE_TRUNCATE_CHARS,
 )
@@ -125,6 +126,11 @@ class AdapterManager(ManagerBase):
         # 事件处理器并发控制信号量（运行时从配置加载，默认值由常量提供）
         self._handler_semaphore: asyncio.Semaphore | None = None
         self._handler_max_concurrency: int = 0  # 0 = 尚未初始化
+
+        # 事件洪峰入队背压：待处理 handler Task 数上限（None = 尚未从配置读取；
+        # 0 = 不限）与溢出丢弃计数（排障观测，经 troubleshoot / 日志定位）
+        self._handler_queue_max_pending: int | None = None
+        self._handler_queue_overflow_count: int = 0
 
         # Bot状态存储 - {platform: {bot_id: {"status": str, "last_active": float, "info": dict}}}
         self._bots: dict[str, dict[str, dict]] = {}
@@ -1220,8 +1226,12 @@ class AdapterManager(ManagerBase):
         if loader is None:
             logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return False
+        from ..runtime.reload_ops import run_reload_exclusive
+
         started = time.monotonic()
-        success = await loader.reload_adapter(name, self, self.sdk_ref(), full=full)
+        success = await run_reload_exclusive(
+            lambda: loader.reload_adapter(name, self, self.sdk_ref(), full=full)
+        )
         payload: dict[str, Any] = {
             "adapter_name": name,
             "success": success,
@@ -1840,17 +1850,51 @@ class AdapterManager(ManagerBase):
             },
         )
 
-        # 会话收件箱：入站消息自动记录（role="user"；未启用时内部直接跳过）
+        # 会话收件箱：入站消息自动记录（role="user"；未启用时内部直接跳过）。
+        # 归档白名单元数据（记录时刻的昵称 / bot self / 子类型 / 平台消息 id）：
+        # 回放时无需事后反查（反查拿到的是"现在的昵称"而非"当时的昵称"）
         if event_type == "message":
             try:
                 from .transcript import transcript as _transcript
 
                 _alt = data.get("alt_message", "") or self._extract_message_text(data)
                 if _alt:
-                    _transcript.append(
-                        data, "user", _alt, event_id=trace_id,
-                        sender=str(data.get("user_id") or ""),
+                    _self_info = data.get("self")
+                    _self_id = (
+                        str(_self_info.get("user_id") or "")
+                        if isinstance(_self_info, dict)
+                        else ""
                     )
+                    _user_id = str(data.get("user_id") or "")
+                    _meta: dict[str, Any] = {
+                        "nickname": str(data.get("user_name") or data.get("user_nickname") or ""),
+                        "self_id": _self_id,
+                        "sub_type": str(data.get("sub_type") or ""),
+                        "message_id": str(data.get("message_id") or ""),
+                    }
+                    # bot 回声识别（如 OneBot report-self-message / Telegram outgoing）：
+                    # self.user_id == user_id 说明是 bot 自己发出的消息被平台回显，
+                    # 按 transcript.self_echo 配置处理（bot / skip / user，默认 bot）
+                    if _self_id and _self_id == _user_id:
+                        _mode = _transcript.self_echo
+                        if _mode == "skip":
+                            pass
+                        elif _mode == "user":
+                            _transcript.append(
+                                data, "user", _alt, event_id=trace_id,
+                                sender=_user_id, meta=_meta,
+                            )
+                        else:
+                            _meta["self_echo"] = True
+                            _transcript.append(
+                                data, "bot", _alt, event_id=trace_id,
+                                sender=_self_id, meta=_meta,
+                            )
+                    else:
+                        _transcript.append(
+                            data, "user", _alt, event_id=trace_id,
+                            sender=_user_id, meta=_meta,
+                        )
             except Exception as e:
                 # 数据写入失败按 warning 起步：级别过低会让 shadow_diff /
                 # get_by_trace 排查时静默缺数据
@@ -1999,6 +2043,7 @@ class AdapterManager(ManagerBase):
                     processed_data,
                     event_type=event_type,
                     platform=platform,
+                    owner=handler_wrapper.get("owner"),
                 )
 
         # 只有当存在原生事件数据时才分发原生事件
@@ -2027,6 +2072,7 @@ class AdapterManager(ManagerBase):
                         platform_raw,
                         event_type=raw_event_type,
                         platform=platform,
+                        owner=handler_wrapper.get("owner"),
                     )
 
         # 钩子: 事件分发完成（后台发射，不阻塞分发）
@@ -2135,12 +2181,40 @@ class AdapterManager(ManagerBase):
             self._handler_semaphore = asyncio.Semaphore(max_concurrency)
         return self._handler_semaphore
 
+    def _get_handler_queue_limit(self) -> int:
+        """
+        {!--< internal-use >!--}
+        获取待处理 handler Task 数上限（入队背压）
+
+        懒初始化，首次调用时从框架配置读取 ``handler_queue_max_pending``
+        （默认 ``HANDLER_QUEUE_MAX_PENDING``）；``<= 0`` 视为不限。
+        配置变更经 ``_on_framework_config_changed`` 置 None 强制重读。
+
+        :return: 上限值（0 = 不限）
+        """
+        if self._handler_queue_max_pending is None:
+            limit = HANDLER_QUEUE_MAX_PENDING
+            try:
+                from ..runtime import get_framework_config
+
+                raw = get_framework_config().get(
+                    "handler_queue_max_pending", HANDLER_QUEUE_MAX_PENDING
+                )
+                if isinstance(raw, int):
+                    limit = raw
+            except Exception:
+                pass
+            self._handler_queue_max_pending = max(0, limit)
+        return self._handler_queue_max_pending
+
     def _on_framework_config_changed(self, _data: dict) -> None:
         """
         {!--< internal-use >!--}
         framework 配置变更回调：``handler_max_concurrency`` 变化时失效缓存的信号量，
-        下次 ``_get_handler_semaphore`` 将按新值重建。
+        下次 ``_get_handler_semaphore`` 将按新值重建；``handler_queue_max_pending``
+        变化时同样失效缓存待重读。
         """
+        self._handler_queue_max_pending = None
         try:
             from ..runtime import get_framework_config
 
@@ -2162,6 +2236,7 @@ class AdapterManager(ManagerBase):
         *,
         event_type: str = "unknown",
         platform: str = "unknown",
+        owner: str | None = None,
     ) -> asyncio.Task | None:
         """
         {!--< internal-use >!--}
@@ -2174,6 +2249,9 @@ class AdapterManager(ManagerBase):
         :param data: 事件数据
         :param event_type: 事件类型（用于日志）
         :param platform: 平台名称（用于日志）
+        :param owner: 注册期归属（模块名 / 适配器平台名）；非空时在处理器
+                      执行期间注入 current_owner（出站发送 / 日志归因到
+                      注册该处理器的模块），None 保持外层上下文
         :return: asyncio.Task
         """
         _func_name = getattr(func, "__qualname__", getattr(func, "__name__", str(func)))
@@ -2200,6 +2278,11 @@ class AdapterManager(ManagerBase):
             # 请求级依赖缓存作用域（Depends use_cache）：一次事件分发内
             # 所有处理器共享同一缓存 dict——如数据库会话在一次事件内只解析一次
             _di_token = _di_cache.set({})
+            # 分发期 owner 注入：处理器执行期间 current_owner = 注册期归属，
+            # 使处理器内发起的出站发送（send_ctx.module / 收件箱 meta.module）
+            # 与日志归因到注册该处理器的模块；ContextVar 随 Task 隔离，
+            # set/reset 在同一 Task 内完成（与 handler_waits 同理）
+            _owner_token = current_owner.set(owner) if owner else None
             t0 = time.monotonic()
             try:
                 # 并发背压控制：限制同时在途的 handler Task 数量
@@ -2223,6 +2306,8 @@ class AdapterManager(ManagerBase):
                 elapsed = time.monotonic() - t0
                 handler_waits.reset(_wait_token)
                 _di_cache.reset(_di_token)
+                if _owner_token is not None:
+                    current_owner.reset(_owner_token)
 
                 _wait_total = sum(w.get("duration", 0.0) for w in _task_waits)
                 _pure = max(0.0, elapsed - _wait_total)
@@ -2299,6 +2384,23 @@ class AdapterManager(ManagerBase):
                                 tag=_owner_tag,
                             )
                         )
+
+        # 入队背压：执行段并发由信号量限制，但 Task 创建此前无上限——
+        # 事件洪峰 + 慢消费者会把待处理集合推成无界增长。超过上限时丢弃
+        # 本次调度并留痕（常驻进程的内存兜底，正常负载永远不会触达）
+        queue_limit = self._get_handler_queue_limit()
+        if queue_limit > 0 and len(self._pending_handler_tasks) >= queue_limit:
+            self._handler_queue_overflow_count += 1
+            logger.warning(
+                i18n.t(
+                    "core.adapter.handler_queue_overflow",
+                    handler=_func_name,
+                    type=event_type,
+                    platform=platform,
+                    size=len(self._pending_handler_tasks),
+                )
+            )
+            return None
 
         try:
             task = asyncio.create_task(_safe_run())

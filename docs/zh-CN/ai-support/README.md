@@ -57,6 +57,31 @@ ErisPulse 提供两种互补的 AI 辅助开发方式，让 AI 能基于最新�
 配置项：[键名]：[用途]（[必填/可选]）
 ```
 
+## Agent Skills
+
+Agent Skills 是面向 AI 编码智能体（ZCode / Claude Code 等）的技能包：每个技能是一个目录（`SKILL.md` + frontmatter），智能体按 `description` 自动发现、按需加载——只在任务相关时读对应章节，不必全文灌入。
+
+技能位于 `skills/` 目录（与物料文档同步生成），每个 `SKILL.md` 开头带**行号大纲**：标注各章节的起止行号，AI 可只读需要的部分。
+
+### 部署方式
+
+1. 从 `skills/<语言>/` 目录获取技能（或下载对应版本的 artifact）
+2. 将技能目录拷入智能体的技能目录（按你的工具约定，如 `.zcode/skills/`、`.claude/skills/`）
+3. 之后智能体遇到相关任务会自动触发加载，无需手动引用
+
+### 大纲示例
+
+```markdown
+## 内容大纲
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 懒加载与休眠: 18-29 行
+- 概述: 30-38 行
+- 事件驱动懒激活（activate_on）: 55-132 行
+```
+
+> 技能由 CI 自动构建（`python -m scripts.tools gen skills`），不要手改。
+
 ## MCP 服务器
 
 ErisPulse 提供一个文档检索 MCP Server，让 AI 编码助手（支持 MCP 的均可）在你写代码时直接检索、查阅 ErisPulse 官方文档。

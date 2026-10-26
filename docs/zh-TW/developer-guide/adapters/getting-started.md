@@ -49,15 +49,27 @@ MyAdapter/
 
 ### 1. 建立專案
 
-推薦直接用腳手架生成完整骨架（含 pyproject、主類、轉換器）：
+建議直接用鷹架生成完整骨架（含 pyproject、主類別、轉換器）：
 
 ```bash
-# 標準專案（打包發布用）
+# 標準專案（打包發佈用）
 epsdk create adapter -n MyAdapter
 
-# 本地適配器插件（免打包，放入 plugins/ 目錄即可被自動加載，見下方"本地開發"）
+# 本地適配器外掛（免打包，放入 plugins/ 目錄即可被自動載入，見下方「本地開發」）
 epsdk create adapter -n MyAdapter --local
 ```
+
+鷹架預設生成 WebSocket 伺服器端骨架；平台連接方式不同時可經 `--template`
+選擇通訊模式模板（生成即用對應的半成品基類，`start`/`shutdown` 都不需要自己寫）：
+
+```bash
+epsdk create adapter -n MyAdapter --template polling   # HTTP 輪詢型（getUpdates 拉取）
+epsdk create adapter -n MyAdapter --template webhook   # HTTP 回呼型（平台推送）
+```
+
+> 三種連接模式的差異與半成品基類的最小實作面見
+> [適配器核心概念 - 連接模式半成品基類](core-concepts.md#連接模式半成品基類)。
+> 完整可執行範例參考儲存庫 `examples/example-adapter-polling/` 與 `examples/example-adapter-webhook/`。
 
 也可以手動建立：
 
@@ -88,23 +100,23 @@ dependencies = [
 "MyAdapter" = "MyAdapter:MyAdapter"
 ```
 
-### 3. 建立適配器主類
+### 3. 建立適配器主類別
 
-框架提供了 `ConfigClass` / `AccountConfigClass` 聲明式配置管理，適配器只需聲明配置類即可自動加載、校驗和生成配置範本。
+框架提供了 `ConfigClass` / `AccountConfigClass` 宣告式設定管理，適配器只需宣告設定類別即可自動載入、驗證和產生設定模板。
 
 ```python
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
-# 推薦根匯入（2.10+）：常用符號直接從根包匯入，深路徑仍相容
+# 建議根匯入（2.10+）：常用符號直接從根套件匯入，深路徑仍相容
 from ErisPulse import BaseAdapter, BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
-    """MyAdapter 配置"""
+    """MyAdapter 設定"""
     api_endpoint: str = field(
         default="https://api.example.com",
         metadata={
-            "description": {"i18n": "my_adapter.api_endpoint", "default": "API 地址"},
+            "description": {"i18n": "my_adapter.api_endpoint", "default": "API 位址"},
             "required": False,
             "ui": {"widget": "text", "group": "connection", "order": 1},
         },
@@ -120,11 +132,11 @@ class MyAdapterConfig(BaseConfig):
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyAdapterConfig  # 聲明配置類，框架自動管理
+    ConfigClass = MyAdapterConfig  # 宣告設定類別，框架自動管理
     
     # 不需要覆寫 __init__！框架自動處理：
     # - self.sdk / self.logger 自動設定
-    # - self.cfg 實時讀取配置
+    # - self.cfg 即時讀取設定
     # - self.Send / self.Request 自動初始化
     
     def _setup_converter(self):
@@ -132,18 +144,18 @@ class MyAdapter(BaseAdapter):
         return MyPlatformConverter()
 ```
 
-> ⚠️ **關於 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 會自動處理 SDK 引用、日誌初始化和配置加載。大多數適配器**不再需要覆寫 `__init__`**。詳見 [__init__ 注意事項](#init-注意事项)。
+> ⚠️ **關於 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 會自動處理 SDK 引用、日誌初始化和設定載入。大多數適配器**不再需要覆寫 `__init__`**。詳見 [__init__ 注意事項](#init-注意事項)。
 
-> ⚠️ **關於 `super().__init__()`**：`BaseAdapter.__init__()` 負責建立 `Send` 和 `Request` 工廠實例。如果忘記呼叫，所有訊息發送和請求操作都會報 `AttributeError`。詳見 [__init__ 注意事項](#init-注意事项)。
+> ⚠️ **關於 `super().__init__()`**：`BaseAdapter.__init__()` 負責建立 `Send` 和 `Request` 工廠實例。如果忘記呼叫，所有訊息傳送和請求操作都會報 `AttributeError`。詳見 [__init__ 注意事項](#init-注意事項)。
 
-### 4. 實現必需方法
+### 4. 實作必需方法
 
 ```python
 class MyAdapter(BaseAdapter):
-    # ... __init__ 代碼 ...
+    # ... __init__ 程式碼 ...
     
     async def start(self):
-        """啟動適配器（必須實現）"""
+        """啟動適配器（必須實作）"""
         # 註冊 WebSocket 或 WebHook 路由
         router.register_websocket(
             module_name="myplatform",
@@ -153,7 +165,7 @@ class MyAdapter(BaseAdapter):
         self.logger.info("適配器已啟動")
     
     async def shutdown(self):
-        """關閉適配器（必須實現）"""
+        """關閉適配器（必須實作）"""
         router.unregister_websocket(
             module_name="myplatform",
             path="/ws"
@@ -162,8 +174,8 @@ class MyAdapter(BaseAdapter):
         self.logger.info("適配器已關閉")
     
     async def call_api(self, endpoint: str, **params):
-        """呼叫平台 API（必須實現）"""
-        raise NotImplementedError("需要實現 call_api")
+        """呼叫平台 API（必須實作）"""
+        raise NotImplementedError("需要實作 call_api")
 ```
 
 #### 主動發送 Meta 事件
@@ -187,34 +199,34 @@ class MyAdapter(BaseAdapter):
         except WebSocketDisconnect:
             pass
         finally:
-            # Bot 下線
+            # Bot 離線
             await self.emit_meta("disconnect", bot_id)
 ```
 
-> 詳細的 Bot 狀態管理和 Meta 事件說明請參閱 [適配器最佳實踐 - Bot 狀態管理與-meta-事件](best-practices.md#bot-狀態管理與-meta-事件)。
+> 詳細的 Bot 狀態管理和 Meta 事件說明請參閱 [適配器最佳實踐 - Bot 狀態管理](best-practices.md#bot-狀態管理與-meta-事件)。
 
-### 5. 實現 Send 類
+### 5. 實作 Send 類別
 
-`At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建實現，適配器只需實現 `Raw_ob12` 和具體的發送方法即可。
+`At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建實作，適配器只需實作 `Raw_ob12` 和具體的發送方法即可。
 
 框架提供兩個關鍵輔助方法：
 - `self._apply_modifiers(message)` — 自動合併 At/AtAll/Reply 修飾器到訊息段
-- `self.send_context` — 獲取發送上下文字典（`target_type`、`target_id`、`account_id`）
+- `self.send_context` — 取得發送上下文字典（`target_type`、`target_id`、`account_id`）
 
 ```python
 import asyncio
 
 class MyAdapter(BaseAdapter):
-    # ... 其他代碼 ...
+    # ... 其他程式碼 ...
 
     class Send(BaseAdapter.Send):
 
         def Raw_ob12(self, message, **kwargs):
             """
-            發送 OneBot12 格式訊息（必須實現）
+            發送 OneBot12 格式訊息（必須實作）
 
             使用 _apply_modifiers 自動合併修飾器狀態，
-            使用 send_context 獲取發送上下文。
+            使用 send_context 取得發送上下文。
             """
             async def _do_send():
                 segments = self._apply_modifiers(message)
@@ -227,23 +239,23 @@ class MyAdapter(BaseAdapter):
             return asyncio.create_task(_do_send())
 
         # Text/Image/Voice/Video/File 已從 SendDSL 基類繼承，
-        # 預設委託給 Raw_ob12，無需重複實現。
-        # 如需平台特定邏輯，可覆蓋單個方法：
+        # 預設委託給 Raw_ob12，無需重複實作。
+        # 如需平台特定邏輯，可覆寫單個方法：
         # def Text(self, text: str):
         #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-**媒體類發送方法（Image/Video/File）實現要點：**
+**媒體類發送方法（Image/Video/File）實作要點：**
 
-- 基類的預設實現會將 `file` 參數封裝為 OneBot12 訊息段傳給 `Raw_ob12`，適配器需在 `Raw_ob12` 中處理下載/上傳
-- `file` 參數應同時支援 `bytes` 二進位元數據和 `str` URL 兩種類型
+- 基類的預設實作會將 `file` 參數封裝為 OneBot12 訊息段傳給 `Raw_ob12`，適配器需在 `Raw_ob12` 中處理下載/上傳
+- `file` 參數應同時支援 `bytes` 二進位資料和 `str` URL 兩種類型
 - 當傳入 URL 時，需先下載檔案再上傳到平台
-- 平台通常需要先呼叫上傳介面獲取檔案標識，再呼叫發送介面
+- 平台通常需要先呼叫上傳介面取得檔案識別碼，再呼叫發送介面
 
 **`__getattr__` 魔術方法：**
 
-- 實現方法名大小寫不敏感（`Text`、`text`、`TEXT` 都能呼叫）
-- 未定義的方法應返回提示資訊而非報錯
+- 實作方法名稱大小寫不敏感（`Text`、`text`、`TEXT` 都能呼叫）
+- 未定義的方法應回傳提示訊息而非報錯
 
 **`Raw_ob12` 方法：**
 
@@ -251,7 +263,7 @@ class MyAdapter(BaseAdapter):
 - 使用 `self._apply_modifiers(message)` 自動處理 At/AtAll/Reply 修飾器
 - 使用 `**self.send_context` 傳遞發送目標資訊和帳號資訊
 
-### 6. 實現轉換器
+### 6. 實作轉換器
 
 ```python
 # MyAdapter/Converter.py
@@ -290,21 +302,21 @@ class MyPlatformConverter:
     
     def _convert_detail_type(self, raw_event):
         """轉換詳細類型"""
-        return "private"  # 簡化示例
+        return "private"  # 簡化範例
 ```
 
-### 7. 實現 Request 類（請求操作）
+### 7. 實作 Request 類別（請求操作）
 
-如果你的平台支援好友請求、群邀請等需要 Bot 做出決策的請求，可以實現 `Request` 內部類：
+如果你的平台支援好友請求、群組邀請等需要 Bot 做出決策的請求，可以實作 `Request` 內部類別：
 
 ```python
 from ErisPulse import BaseAdapter, RequestDSL
 
 class MyAdapter(BaseAdapter):
-    # ... Send 和其他代碼 ...
+    # ... Send 和其他程式碼 ...
 
     class Request(RequestDSL):
-        """請求操作實現（好友請求、群邀請等）"""
+        """請求操作實作（好友請求、群組邀請等）"""
 
         def accept(self, **kwargs):
             """同意請求"""
@@ -350,15 +362,15 @@ from ErisPulse import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
-    # 透過 Event 便捷方法
+    # 透過 Event 便利方法
     await event.approve()
     # 或透過適配器直接操作
     await adapter.myplatform.Request("req_id").accept()
 ```
 
-> 如果平台不支援請求操作，可以不實現 `Request` 內部類。基類預設返回 `retcode=10002`（不支援的操作）。詳見 [請求操作規範](../../standards/request-action-spec.md)。
+> 如果平台不支援請求操作，可以不實作 `Request` 內部類別。基類預設回傳 `retcode=10002`（不支援的操作）。詳見 [請求操作規範](../../standards/request-action-spec.md)。
 
-### 8. 建立包入口
+### 8. 建立套件進入點
 
 ```python
 # MyAdapter/__init__.py

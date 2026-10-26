@@ -14,7 +14,6 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from typing import Any
 
-from ...Core.config import config
 from ...Core.i18n import i18n
 from ...Core.logger import logger
 from ...runtime.version import check_min_sdk_version
@@ -111,14 +110,10 @@ class BaseLoader(ABC):
             self._strict_manager = StrictModeManager.from_config()
         return self._strict_manager
 
+
     def _check_sdk_version(self, name: str, component_type: str, component_obj: Any) -> bool:
         """
-        运行时最低 SDK 版本检查（声明读取见 :func:`resolve_min_sdk_version`）
-
-        组件未声明或声明无法解析时放行（后者输出警告）；
-        版本不满足时输出明确错误、按严格模式登记拒绝并返回 False，
-        由调用方跳过该组件——SDK 过低的组件加载后几乎必然运行异常，
-        提前拦截可给出可操作的诊断（升级 SDK 或换用兼容版本组件）。
+        运行时最低 SDK 版本检查（委托共享实现 :func:`check_component_sdk_version`）
 
         :param name: 组件名称
         :param component_type: 组件类型（``module`` / ``adapter``，用于日志与严格模式登记）
@@ -129,38 +124,9 @@ class BaseLoader(ABC):
         供 ModuleLoader / AdapterLoader 在构建组件信息前调用
         {!--< /internal-use >!--}
         """
-        declared = resolve_min_sdk_version(component_obj, name=name)
-        if not declared:
-            return True
-
-        satisfied, current, required, parseable = check_min_sdk_version(str(declared))
-        if not parseable:
-            logger.warning(
-                i18n.t(
-                    f"loader.{component_type}.sdk_version_invalid",
-                    name=name,
-                    value=declared,
-                )
-            )
-            return True
-        if satisfied:
-            return True
-
-        logger.error(
-            i18n.t(
-                f"loader.{component_type}.sdk_version_unsupported",
-                name=name,
-                required=required,
-                current=current,
-            )
+        return check_component_sdk_version(
+            name, component_type, component_obj, strict_recorder=self._strict()
         )
-        self._strict().record_failure(
-            name,
-            component_type,
-            "sdk_version_mismatch",
-            detail=f"min_sdk_version={declared}, current={current}",
-        )
-        return False
 
     def _ep_gate(self, meta_name: str, manager_instance: Any) -> tuple[bool, bool]:
         """
@@ -259,100 +225,71 @@ class BaseLoader(ABC):
         """
         ...
 
-    async def load(
-        self, manager_instance: Any
-    ) -> tuple[dict[str, Any], list[str], list[str]]:
-        """
-        从 entry-points 加载对象
 
-        :param manager_instance: 管理器实例
-        :return:
-            dict[str, Any]: 对象字典
-            list[str]: 启用列表
-            list[str]: 禁用列表
 
-        :raises ImportError: 当加载失败时抛出
-        """
-        objs: dict[str, Any] = {}
-        enabled_list: list[str] = []
-        disabled_list: list[str] = []
+def check_component_sdk_version(
+    name: str,
+    component_type: str,
+    component_obj: Any,
+    *,
+    strict_recorder: Any = None,
+    invalid_key: "str | None" = None,
+    unsupported_key: "str | None" = None,
+) -> bool:
+    """
+    运行时最低 SDK 版本检查（声明读取见 :func:`resolve_min_sdk_version`）
 
-        group_name = self._get_entry_point_group()
-        logger.info(i18n.t("loader.base.load_start", group=group_name))
+    组件未声明或声明无法解析时放行（后者输出警告）；
+    版本不满足时输出明确错误、经 ``strict_recorder``（可选）按严格模式
+    登记拒绝并返回 False，由调用方跳过该组件——SDK 过低的组件加载后
+    几乎必然运行异常，提前拦截可给出可操作的诊断（升级 SDK 或换用
+    兼容版本组件）。
 
-        try:
-            # 加载 entry-points
-            import importlib.metadata
+    版本闸门的唯一实现：entry-point 加载（BaseLoader._check_sdk_version）
+    与本地插件加载（plugin_folder 两处）共用，保证 strict_mode 错误面
+    不因组件安装来源（PyPI / plugins 目录）而不同。
 
-            entry_points = importlib.metadata.entry_points()
-            if hasattr(entry_points, "select"):
-                entries = entry_points.select(group=group_name)
-            else:
-                entries = entry_points.get(group_name, [])  # type: ignore[attr-defined]
+    :param name: 组件名称
+    :param component_type: 组件类型（``module`` / ``adapter``，用于日志与严格模式登记）
+    :param component_obj: 组件类（经统一口径解析其 min_sdk_version 声明）
+    :param strict_recorder: 严格模式登记器（需提供 record_failure；None = 不登记）
+    :param invalid_key: 声明不可解析的告警文案键（默认 ``loader.{component_type}.sdk_version_invalid``）
+    :param unsupported_key: 版本不满足的错误文案键（默认 ``loader.{component_type}.sdk_version_unsupported``）
+    :return: bool 是否允许继续加载
+    """
+    declared = resolve_min_sdk_version(component_obj, name=name)
+    if not declared:
+        return True
 
-            # 处理每个 entry-point
-            for entry_point in entries:
-                objs, enabled_list, disabled_list, _ = await self._process_entry_point(
-                    entry_point, objs, enabled_list, disabled_list, manager_instance
-                )
-
-            logger.info(i18n.t("loader.base.load_done", group=group_name))
-
-        except Exception as e:
-            logger.error(i18n.t("loader.base.load_failed", group=group_name, error=e))
-            raise ImportError(i18n.t("loader.base.import_failed", group=group_name, error=e)) from e
-
-        return objs, enabled_list, disabled_list
-
-    def _register_config(self, name: str, enabled: bool = False) -> bool:
-        """
-        注册配置项
-
-        :param name: 名称
-        :param enabled: 是否启用
-        :return: 操作是否成功
-
-        {!--< internal-use >!--}
-        内部方法，用于注册新的配置项
-        {!--< /internal-use >!--}
-        """
-        config_key = f"{self._config_prefix}.status.{name}"
-        config.setConfig(config_key, enabled)
-        status = (
-            i18n.t("loader.base.status_enabled")
-            if enabled
-            else i18n.t("loader.base.status_disabled")
-        )
-        logger.info(
+    satisfied, current, required, parseable = check_min_sdk_version(str(declared))
+    if not parseable:
+        logger.warning(
             i18n.t(
-                "loader.base.registered",
-                prefix=self._config_prefix,
+                invalid_key or f"loader.{component_type}.sdk_version_invalid",
                 name=name,
-                status=status,
+                value=declared,
             )
         )
         return True
+    if satisfied:
+        return True
 
-    def _get_config_status(self, name: str) -> bool:
-        """
-        获取配置状态
+    logger.error(
+        i18n.t(
+            unsupported_key or f"loader.{component_type}.sdk_version_unsupported",
+            name=name,
+            required=required,
+            current=current,
+        )
+    )
+    if strict_recorder is not None:
+        strict_recorder.record_failure(
+            name,
+            component_type,
+            "sdk_version_mismatch",
+            detail=f"min_sdk_version={declared}, current={current}",
+        )
+    return False
 
-        :param name: 名称
-        :return: 是否启用
 
-        {!--< internal-use >!--}
-        内部方法，用于获取配置状态
-        默认情况下（无配置），返回 True（启用）并写入配置
-        {!--< /internal-use >!--}
-        """
-        config_key = f"{self._config_prefix}.status.{name}"
-        status = config.getConfig(config_key)
-
-        if status is None:
-            config.setConfig(config_key, True)
-            return True
-
-        if isinstance(status, str):
-            return status.lower() not in ("false", "0", "no", "off")
-
-        return bool(status)
+__all__ = ["BaseLoader", "check_component_sdk_version", "resolve_min_sdk_version"]

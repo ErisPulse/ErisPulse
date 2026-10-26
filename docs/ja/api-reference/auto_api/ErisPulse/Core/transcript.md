@@ -10,13 +10,17 @@ ErisPulse 会话收件箱（transcript）
 提供每会话近期消息流的统一记录与查询，作为上下文记忆类模块
 （AI 对话、防复读、行为分析等）的公共底座：
 
-- **入站**：消息事件进入分发管线时自动记录（role="user"）；
+- **入站**：消息事件进入分发管线时自动记录（role="user"；bot 回声按
+
+  ``self_echo`` 配置处理——默认记 role="bot" 并在 meta 标记 self_echo）；
 - **出站**：机器人发送的文本类消息经 ``message.sent`` 钩子自动记录（role="bot"）；
 - **存储**：独立 SQLite 表（经 storage），写入走内存缓冲 + 后台批量落盘
 
   （默认每 1 秒或满 64 条一事务提交），查询自动合并未落盘的缓冲行；
   每会话条数上限 + 全局 TTL 自动清理；
-- **查询**：``event.history(n)`` 或 ``sdk.transcript.get(event, n)``。
+- **查询**：``event.history(n)`` 或 ``sdk.transcript.get(event, n)``，
+
+  每条记录携带归因（``sender`` 发送者标识与 ``meta`` 记录时刻元数据）。
 
 > **提示**
 > 配置（``ErisPulse.transcript``）:
@@ -25,6 +29,7 @@ ErisPulse 会话收件箱（transcript）
 > enabled = true          # 是否启用（关闭后停止写入，历史仍可查询）
 > max_per_session = 50    # 每会话保留的最大条数
 > ttl_hours = 168         # 全局过期时间（小时），过期记录惰性清理
+> self_echo = "bot"       # 入站 bot 回声（self.user_id == user_id）处理：bot / skip / user
 > ```
 >
 > 持久性说明：追加先进内存缓冲，由后台任务批量落盘（延迟至多
@@ -99,6 +104,19 @@ ErisPulse 会话收件箱（transcript）
 ##### `enabled -> bool`（property）
 
 是否启用自动记录（ErisPulse.transcript.enabled）
+
+---
+
+
+##### `self_echo -> str`（property）
+
+入站 bot 回声消息的处理模式（ErisPulse.transcript.self_echo）
+
+- ``"bot"``：仍记录，但 role="bot"、sender=self_id、meta.self_echo=True（默认）
+- ``"skip"``：不记录
+- ``"user"``：记 role="user"（旧行为，兼容逃生口）
+
+非法取值按 ``"bot"`` 处理。
 
 ---
 
@@ -181,7 +199,7 @@ target 语义与交互会话等待键一致（复用 session_type 的目标推�
 
 ##### `_ensure_table() -> bool`
 
-**内部方法** 惰性建表（含旧表 sender 列迁移）
+**内部方法** 惰性建表（含旧表 sender / meta 列迁移）
 
 ---
 
@@ -203,6 +221,20 @@ target 语义与交互会话等待键一致（复用 session_type 的目标推�
 ##### `async _amigrate_add_sender() -> None`
 
 **内部方法** 异步路径的 sender 列迁移探测（列缺失时回退同步 ALTER）
+
+---
+
+
+##### `_migrate_add_meta() -> None`
+
+**内部方法** 旧表缺 meta 列时自动补列（2.11.1 新增）
+
+---
+
+
+##### `async _amigrate_add_meta() -> None`
+
+**内部方法** 异步路径的 meta 列迁移探测（列缺失时回退同步 ALTER）
 
 ---
 
@@ -281,7 +313,21 @@ transcript.flush()
 ---
 
 
-##### `append(session: Any, role: str, text: str, event_id: str = '', sender: str = '') -> bool`
+##### `_dump_meta(meta: dict[str, Any] | None) -> str`（staticmethod）
+
+**内部方法** 序列化 meta 为 JSON 文本（None / 非法输入回退 "{}"）
+
+---
+
+
+##### `_parse_meta(raw: Any) -> dict[str, Any]`（staticmethod）
+
+**内部方法** 解析 meta 列（JSON 文本）；损坏 / 旧数据回退空 dict
+
+---
+
+
+##### `append(session: Any, role: str, text: str, event_id: str = '', sender: str = '', meta: dict[str, Any] | None = None) -> bool`
 
 记录一条消息到会话收件箱
 
@@ -294,13 +340,17 @@ transcript.flush()
 - **text**: 消息文本（超长自动截断）
 - **event_id**: 关联的事件 ID（可选）
 - **sender**: 发送者标识（user_id，可选，回放时还原消息来源）
+- **meta**: 记录时刻的归因元数据（可选，白名单契约；如入站的
 
+             nickname/self_id/sub_type/message_id、出站的 module），
+             非法输入按空元数据处理
 **返回值**: 是否接受（未启用时返回 False；缓冲超限时淘汰最旧行）
 
 **示例**:
 
 ```python
 transcript.append(event, "user", "你好")
+transcript.append(event, "user", "你好", meta={"nickname": "小王"})
 ```
 
 ---
@@ -326,36 +376,44 @@ transcript.append(event, "user", "你好")
 - **session**: 事件数据或会话键字符串
 - **n**: 返回的最大条数
 
-**返回值**: 消息列表，每条含 role / text / ts / event_id；无记录时返回空列表
+**返回值**: 消息列表，每条含 role / text / ts / event_id / sender / meta；
+
+         无记录时返回空列表（旧表缺 sender/meta 列时对应回退 "" / {}）
 
 **示例**:
 
 ```python
 messages = transcript.get(event, 20)
 for m in messages:
-    print(m["role"], ":", m["text"])
+    print(m["role"], m.get("sender"), ":", m["text"])
 ```
 
 ---
 
 
-##### `recent(seconds: float, limit: int = 200) -> list[dict[str, Any]]`
+##### `recent(seconds: float, limit: int = 200, session_key: str | None = None) -> list[dict[str, Any]]`
 
-查询全部会话中最近一段时间内的消息（跨会话，按时间升序，含未落盘缓冲行）
+查询最近一段时间内的消息（按时间升序，含未落盘缓冲行）
 
-冷启动回放（``get_load_strategy(replay=...)``）的数据源；
+``session_key=None`` 时为跨会话全局时间窗查询（冷启动回放
+``get_load_strategy(replay=...)`` 的数据源）；给定 ``session_key``
+时仅返回该会话的行（服务端过滤，避免全局拉取后客户端逐条比对）。
 每条记录额外携带 ``session_key``，用于还原消息来源会话。
 窗口内记录超过 ``limit`` 时返回最新的 ``limit`` 条。
 
 - **seconds**: 回溯时长（秒）
 - **limit**: 最大返回条数（防止模块冷启动被打爆）
+- **session_key**: 会话键过滤（``platform:detail_type:target_id``，
 
-**返回值**: 消息列表（role / text / ts / sender / session_key）
+                    与 ``session_key_from_event()`` 产出一致）；
+                    None 不过滤（跨会话语义）；空串等价不过滤（容错）
+**返回值**: 消息列表（role / text / ts / sender / meta / session_key）
 
 **示例**:
 
 ```python
-transcript.recent(300)  # 最近 5 分钟
+transcript.recent(300)  # 最近 5 分钟（全部会话）
+transcript.recent(3600, session_key="onebot11:group:123")  # 单会话
 ```
 
 ---
@@ -403,7 +461,7 @@ transcript.clear(event)
 - **trace_id**: 事件链路 ID（事件 ``id``）
 - **limit**: 返回的最大条数
 
-**返回值**: 消息列表（role / text / ts / event_id），时间升序
+**返回值**: 消息列表（role / text / ts / event_id / sender / meta），时间升序
 
 **示例**:
 

@@ -270,6 +270,83 @@ class BaseModule(ABC):
 
         return spawn_background(coro, owner=self._get_config_key())
 
+    @property
+    def state(self) -> "BaseModule.ModuleState":
+        """
+        模块级持久化状态（storage 的命名空间视图）
+
+        「计数器 / 开关 / 上次运行时间」这类小状态不再需要建表或裸写
+        storage 键——键自动带 ``module.state.<模块名>.`` 前缀，模块卸载
+        重载后仍在；同步 ``get``/``set`` 可在任意上下文调用（内部经桥接
+        循环），异步路径用 ``aget``/``aset``。
+
+        :return: ModuleState 视图（每次访问返回新对象，无状态可放心用）
+
+        :example:
+        >>> count = self.state.get("runs", 0) + 1
+        >>> self.state.set("runs", count)
+        """
+        return self.ModuleState(self._get_config_key())
+
+    class ModuleState:
+        """
+        {!--< internal-use >!--}
+        模块状态 KV 视图（BaseModule.state 的返回类型）
+
+        键统一加 ``module.state.<模块名>.`` 前缀，避免模块间冲突；
+        值经 storage 序列化（JSON 兼容类型：str/int/float/bool/list/dict/None）。
+        """
+
+        __slots__ = ("_prefix",)
+
+        def __init__(self, module_name: str) -> None:
+            object.__setattr__(self, "_prefix", f"module.state.{module_name}.")
+
+        def _storage(self) -> Any:
+            from ..storage import storage
+
+            return storage
+
+        def get(self, key: str, default: Any = None) -> Any:
+            """
+            读取状态值（同步，任意上下文可调）
+
+            :param key: 状态键（自动加模块前缀）
+            :param default: 键不存在时的返回值
+            :return: 状态值
+            """
+            return self._storage().get(self._prefix + key, default)
+
+        def set(self, key: str, value: Any) -> bool:
+            """
+            写入状态值（同步持久化）
+
+            :param key: 状态键
+            :param value: JSON 兼容值
+            :return: 是否成功
+            """
+            return self._storage().set(self._prefix + key, value)
+
+        async def aget(self, key: str, default: Any = None) -> Any:
+            """
+            读取状态值（异步原生）
+
+            :param key: 状态键
+            :param default: 键不存在时的返回值
+            :return: 状态值
+            """
+            return await self._storage().aget(self._prefix + key, default)
+
+        async def aset(self, key: str, value: Any) -> bool:
+            """
+            写入状态值（异步原生）
+
+            :param key: 状态键
+            :param value: JSON 兼容值
+            :return: 是否成功
+            """
+            return await self._storage().aset(self._prefix + key, value)
+
     # ==================== 配置管理 ====================
 
     def _get_config_key(self) -> str:

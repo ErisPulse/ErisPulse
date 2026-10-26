@@ -22,7 +22,7 @@ from typing import Any
 from ..Core.i18n import i18n
 from .version import check_min_sdk_version
 
-__all__ = ["explain_module", "explain_event", "format_report"]
+__all__ = ["explain_module", "explain_event", "explain_trace", "format_report"]
 
 
 def explain_module(name: str) -> dict[str, Any]:
@@ -239,3 +239,73 @@ def format_report(result: dict[str, Any]) -> str:
     ]
     lines.extend(f"  - {reason}" for reason in result.get("reasons", []))
     return "\n".join(lines)
+
+
+def explain_trace(trace_id: str, limit: int = 50) -> dict[str, Any]:
+    """
+    诊断"这条消息为什么没回"：按链路 ID 聚合完整消息流
+
+    以事件的 ``id``（trace-id）为线索，从会话收件箱（transcript）拉取
+    这条链路的全部消息——入站（role="user"）与出站（role="bot"）按时间
+    升序排列；配合 :func:`explain_event` 的判定结论，可以快速定位
+    「收到了但没回」「回了但发失败」等场景。
+
+    {!--< tips >!--}
+    1. 纯读诊断；transcript 未启用（``ErisPulse.transcript.enabled = false``）
+       时 messages 为空并在 reasons 说明
+    2. 只覆盖 message 类事件（transcript 仅记录消息流）
+    3. 返回 dict（机器可读），配 :func:`format_report` 渲染
+    {!--< /tips >!--}
+
+    :param trace_id: 事件链路 ID（事件 ``id`` 字段）
+    :param limit: 最多返回的消息条数
+    :return: ``{"conclusion", "reasons", "trace_id", "messages", "replied"}``；
+        messages 各项含 role / text / ts / session_key；replied = 是否存在
+        出站回复
+
+    :example:
+    >>> report = explain_trace("evt-abc123")
+    >>> print(format_report(report))
+    """
+    reasons: list[str] = []
+    messages: list[dict[str, Any]] = []
+    try:
+        from ..Core.transcript import transcript as _transcript
+
+        raw = _transcript.get_by_trace(trace_id, limit=limit)
+        messages = [
+            {
+                "role": r.get("role"),
+                "text": r.get("text"),
+                "ts": r.get("ts"),
+                "session_key": r.get("session_key"),
+            }
+            for r in raw
+        ]
+    except Exception as e:
+        reasons.append(i18n.t("runtime.troubleshoot.trace_query_failed", error=e))
+
+    if not messages:
+        reasons.append(i18n.t("runtime.troubleshoot.trace_no_messages", trace_id=trace_id))
+        conclusion = i18n.t("runtime.troubleshoot.trace_conclusion_empty")
+    else:
+        inbound = sum(1 for m in messages if m.get("role") == "user")
+        outbound = sum(1 for m in messages if m.get("role") != "user")
+        if outbound == 0:
+            conclusion = i18n.t(
+                "runtime.troubleshoot.trace_conclusion_no_reply", count=inbound
+            )
+        else:
+            conclusion = i18n.t(
+                "runtime.troubleshoot.trace_conclusion_replied",
+                inbound=inbound,
+                outbound=outbound,
+            )
+
+    return {
+        "conclusion": conclusion,
+        "reasons": reasons,
+        "trace_id": trace_id,
+        "messages": messages,
+        "replied": any(m.get("role") != "user" for m in messages),
+    }

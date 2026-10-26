@@ -15,6 +15,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -24,11 +25,18 @@ from ...finders import AdapterFinder, ModuleFinder
 from ..console import console
 from ..constants import (
     CLI_CHILD_TERMINATE_WAIT_SECS,
+    CLI_ENSURE_PIP_TIMEOUT_SECS,
     CLI_PACKAGE_POLL_INTERVAL_SECS,
+    CLI_PIP_PROBE_TIMEOUT_SECS,
     CLI_SELFUPDATE_BOOT_DELAY_SECS,
     CLI_SELFUPDATE_RUN_TIMEOUT_SECS,
     CLI_UV_PROBE_TIMEOUT_SECS,
+    CLI_UV_PROJECT_TIMEOUT_SECS,
+    CLI_UV_UNSUPPORTED_FLAGS,
+    CLI_VENV_CREATE_TIMEOUT_SECS,
     PYPI_PACKAGE_JSON_URL_TEMPLATE,
+    UV_PROJECT_LOCK_FILE,
+    UV_PROJECT_MARKER,
 )
 from ..i18n import i18n
 from .interactive import confirm
@@ -214,6 +222,8 @@ class PackageManager:
         :return: [Dict[str, str]] 包含代理配置的环境变量字典
         """
         env = os.environ.copy()
+        # 子进程 IO 统一 UTF-8（Windows GBK 代码页下 pip/uv 输出中文不乱码）
+        env.setdefault("PYTHONIOENCODING", "utf-8")
         proxies = self._get_system_proxy()
         if proxies:
             if "http" in proxies and not env.get("HTTP_PROXY"):
@@ -736,6 +746,14 @@ class PackageManager:
         target_python = self._get_target_python()
         uv_cmd = self._get_uv_command()
 
+        # flags 预检：uv pip 不支持的参数（--user / --upgrade-strategy 等）
+        # 直接选 pip 后端——uv 先报错再整链回退 pip 的双跑刷屏就此消灭
+        if any(
+            arg in CLI_UV_UNSUPPORTED_FLAGS or arg.startswith("--upgrade-strategy=")
+            for arg in args
+        ):
+            uv_cmd = None
+
         is_install = bool(args) and args[0] == "install"
         # 非 install 路径不会读取这两个值；先初始化以收窄作用域分析
         install_cmd: list[str] = []
@@ -797,6 +815,71 @@ class PackageManager:
         pip_cmd = [target_python, "-m", "pip"]
         return self._execute_backend(pip_cmd, args, description, "pip")
 
+    def _run_uv_project_command(self, cmd: "list[str]", description: str) -> bool:
+        """
+        执行 uv 项目级命令（uv add / uv remove），写入 pyproject 并刷新 uv.lock
+
+        与 ``uv pip`` 通道的差异：uv add/remove 操作**项目环境**（按 cwd 的
+        pyproject/uv.lock），不支持 ``--python`` 目标模型；这也是它能把依赖
+        写回 lock、免疫 ``uv sync`` exact 清理的原因。
+
+        :param cmd: uv 子命令与参数（如 ["add", "pkg"] / ["remove", "pkg"]）
+        :param description: [str] 展示给用户的操作描述
+        :return: [bool] 执行成功返回 True（失败由调用方回退 uv pip/pip 通道）
+        """
+        uv_cmd = self._get_uv_command()
+        if not uv_cmd:
+            return False
+        console.print(
+            f"\n[bold blue][*] {description}[/] [dim](uv project)[/]"
+        )
+        try:
+            result = subprocess.run(
+                [*uv_cmd, *cmd],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=CLI_UV_PROJECT_TIMEOUT_SECS,
+            )
+        except FileNotFoundError as e:
+            console.print(f"[error]{i18n.t('cli.package.backend_not_found', backend='uv', error=e)}[/]")
+            return False
+        except subprocess.TimeoutExpired:
+            console.print(f"[error]{i18n.t('cli.package.probe_timeout')}[/]")
+            return False
+        if result.returncode != 0:
+            console.print(
+                f"[warning]{i18n.t('cli.package.uv_project_failed', error=(result.stderr or result.stdout or '').strip()[:200])}[/]"
+            )
+            return False
+        console.print(f"[success]{i18n.t('cli.package.uv_project_linked')}[/]")
+        return True
+
+    @staticmethod
+    def _is_plain_package_spec(spec: str) -> bool:
+        """
+        判定包描述是否为「纯包名形态」（可安全转为 uv add/remove）
+
+        pip 形态（-e 本地路径、-r 需求文件、URL/VCS、含空格的 extra 语法）
+        仍走 uv pip/pip 通道——uv add 只接受 PEP 508 名称形态。
+
+        {!--< internal-use >!--}
+        """
+        if not spec or spec.startswith("-"):
+            return False
+        return bool(re.match(r"^[A-Za-z0-9][A-Za-z0-9._\-]*(\[[^\]]*\])?([=<>!~].*)?$", spec))
+
+    def _uv_project_link_active(self) -> bool:
+        """
+        {!--< internal-use >!--}
+        uv 项目安装联动是否生效：uv 项目 + uv 可用 + 未禁用（--no-uv / 环境变量）
+        """
+        return (
+            is_uv_project(Path.cwd())
+            and not self._is_uv_disabled()
+            and self._get_uv_command() is not None
+        )
+
     def _ensure_pip_available(self, target_python: str) -> bool:
         """
         确保目标 Python 环境可用 pip
@@ -813,6 +896,7 @@ class PackageManager:
             [target_python, "-m", "pip", "--version"],
             capture_output=True,
             check=False,
+            timeout=CLI_PIP_PROBE_TIMEOUT_SECS,
         )
         if check.returncode == 0:
             return True
@@ -821,11 +905,18 @@ class PackageManager:
         console.print(
             f"[dim]{i18n.t('cli.package.bootstrapping_pip')}[/]"
         )
-        result = subprocess.run(
-            [target_python, "-m", "ensurepip", "--upgrade"],
-            capture_output=True,
-            check=False,
-        )
+        try:
+            result = subprocess.run(
+                [target_python, "-m", "ensurepip", "--upgrade"],
+                capture_output=True,
+                check=False,
+                timeout=CLI_ENSURE_PIP_TIMEOUT_SECS,
+            )
+        except subprocess.TimeoutExpired:
+            console.print(
+                f"[error]{i18n.t('cli.package.probe_timeout')}[/]"
+            )
+            return False
         return result.returncode == 0
 
     def _version_key(self, version: str) -> tuple:
@@ -1008,6 +1099,30 @@ class PackageManager:
                 cmd.extend(extra_pip_args)
             cmd.append(current_package_name)
 
+            # uv 项目联动：普通包名改走 uv add（写入 pyproject + 刷新 uv.lock，
+            # 免疫 uv sync 的 exact 清理）；失败或非纯包名形态回退下方既有通道
+            if (
+                self._uv_project_link_active()
+                and self._is_plain_package_spec(current_package_name)
+                and not extra_pip_args
+            ):
+                uv_cmd = ["add"]
+                if upgrade:
+                    uv_cmd.append("--upgrade")
+                if pre:
+                    uv_cmd.append("--prerelease=allow")
+                uv_cmd.append(current_package_name)
+                if self._run_uv_project_command(
+                    uv_cmd, i18n.t("cli.package.installing", package=current_package_name)
+                ):
+                    console.print(
+                        f"[success]{i18n.t('cli.package.uv_project_linked')}[/]"
+                    )
+                    continue
+                console.print(
+                    f"[warning]{i18n.t('cli.package.uv_project_fallback')}[/]"
+                )
+
             success = self._run_pip_command_with_output(
                 cmd, i18n.t("cli.package.installing", package=current_package_name)
             )
@@ -1096,6 +1211,40 @@ class PackageManager:
                 return False
 
         for package_name in packages_to_uninstall:
+            # uv 项目联动：包在 pyproject dependencies 中时走 uv remove（同步
+            # 清理 lock）；否则（仅环境内安装、非项目依赖）走既有卸载通道
+            if self._uv_project_link_active() and self._is_plain_package_spec(
+                package_name
+            ):
+                in_pyproject = False
+                try:
+                    import tomlclass
+
+                    doc = tomlclass.parse(
+                        (Path.cwd() / "pyproject.toml").read_text(encoding="utf-8")
+                    )
+                    deps = (doc.get("project") or {}).get("dependencies", []) or []
+                    base = package_name.split("[")[0].split("==")[0].split(">=")[0].strip().lower()
+                    in_pyproject = any(
+                        str(d).split("[")[0].split("==")[0].split(">=")[0].split(";")[0].strip().lower()
+                        == base
+                        for d in deps
+                    )
+                except Exception:
+                    in_pyproject = False
+                if in_pyproject and self._run_uv_project_command(
+                    ["remove", package_name],
+                    i18n.t("cli.package.uninstalling", package=package_name),
+                ):
+                    console.print(
+                        f"[success]{i18n.t('cli.package.uninstall_success', package=package_name)}[/]"
+                    )
+                    continue
+                if in_pyproject:
+                    console.print(
+                        f"[warning]{i18n.t('cli.package.uv_project_fallback')}[/]"
+                    )
+
             success = self._run_pip_command_with_output(
                 ["uninstall", "-y", package_name],
                 i18n.t("cli.package.uninstalling", package=package_name),
@@ -1256,6 +1405,25 @@ class PackageManager:
             if pre:
                 cmd.append("--pre")
             cmd.append(current_package_name)
+
+            # uv 项目联动：同 install（uv add --upgrade 刷新 lock 到最新）
+            if self._uv_project_link_active() and self._is_plain_package_spec(
+                current_package_name
+            ):
+                uv_cmd = ["add", "--upgrade"]
+                if pre:
+                    uv_cmd.append("--prerelease=allow")
+                uv_cmd.append(current_package_name)
+                if self._run_uv_project_command(
+                    uv_cmd, i18n.t("cli.package.installing", package=current_package_name)
+                ):
+                    console.print(
+                        f"[success]{i18n.t('cli.package.uv_project_linked')}[/]"
+                    )
+                    continue
+                console.print(
+                    f"[warning]{i18n.t('cli.package.uv_project_fallback')}[/]"
+                )
 
             success = self._run_pip_command_with_output(
                 cmd, i18n.t("cli.package.upgrading", package=current_package_name)
@@ -1656,26 +1824,36 @@ def create_project_venv(project_dir: Path) -> "str | None":
     pm = PackageManager()
     uv_cmd = None if pm.no_uv else pm._get_uv_command()
     if uv_cmd:
-        result = subprocess.run(
-            [*uv_cmd, "venv", str(venv_dir)],
-            cwd=str(project_dir),
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if result.returncode != 0:
+        try:
+            result = subprocess.run(
+                [*uv_cmd, "venv", str(venv_dir)],
+                cwd=str(project_dir),
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=CLI_VENV_CREATE_TIMEOUT_SECS,
+            )
+        except subprocess.TimeoutExpired:
+            result = None
+            console.print(f"[warning]  {i18n.t('cli.package.probe_timeout')}[/]")
+        if result is not None and result.returncode != 0:
             console.print(
                 f"[warning]  {i18n.t('cli.package.uv_venv_failed', error=result.stderr.strip()[:200])}[/]"
             )
     else:
-        result = subprocess.run(
-            [sys.executable, "-m", "venv", str(venv_dir)],
-            cwd=str(project_dir),
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if result.returncode != 0:
+        try:
+            result = subprocess.run(
+                [sys.executable, "-m", "venv", str(venv_dir)],
+                cwd=str(project_dir),
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=CLI_VENV_CREATE_TIMEOUT_SECS,
+            )
+        except subprocess.TimeoutExpired:
+            result = None
+            console.print(f"[warning]  {i18n.t('cli.package.probe_timeout')}[/]")
+        if result is not None and result.returncode != 0:
             console.print(
                 f"[warning]  {i18n.t('cli.package.python_venv_failed', error=result.stderr.strip()[:200])}[/]"
             )
@@ -1754,26 +1932,105 @@ def append_pyproject_dependencies(project_dir: Path, packages: "list[str]") -> b
 
 
 
-def resolve_target_python(project_dir: "Path | None" = None) -> "tuple[str, str]":
+def is_uv_project(project_dir: "Path | None" = None) -> bool:
+    """
+    判定目录是否为 uv 管理的项目（三重依据任一命中）
+
+    ``uv.lock`` 存在 / pyproject 含 ``[tool.uv]`` 段 / ``.venv/pyvenv.cfg``
+    含 ``uv =`` 标记行（uv venv 创建时写入）。无 uv 时判定依旧成立——
+    联动分支还会要求 uv 可用，两者解耦。
+
+    :param project_dir: 项目目录（默认当前目录）
+    :return: 是否 uv 项目
+    """
+    project_dir = Path(project_dir) if project_dir else Path.cwd()
+    if (project_dir / UV_PROJECT_LOCK_FILE).exists():
+        return True
+    pyproject = project_dir / "pyproject.toml"
+    if pyproject.exists():
+        try:
+            text = pyproject.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            text = ""  # 读取失败按"无 [tool.uv] 段"处理，继续后续判定
+        if "[tool.uv]" in text:
+            return True
+    pyvenv_cfg = project_dir / ".venv" / "pyvenv.cfg"
+    if pyvenv_cfg.exists():
+        try:
+            lines = pyvenv_cfg.read_text(
+                encoding="utf-8", errors="replace"
+            ).splitlines()
+        except OSError:
+            lines = []  # 读取失败按"无 uv 标记行"处理
+        else:
+            if any(
+                line.strip().startswith(UV_PROJECT_MARKER) for line in lines
+            ):
+                return True
+    return False
+
+
+class PythonSource(str, Enum):
+    """
+    解释器解析来源（resolve_target_python 的返回标签）
+
+    取代此前的中文魔法字符串（"项目 .venv" 等）——字符串比较曾是
+    i18n 体系外的暗契约，任何一侧改字即静默失效；展示文案经
+    ``cli.python.source.*`` i18n 键渲染。
+    """
+
+    ENV_VAR = "env_var"  # ERISPULSE_PYTHON 显式指定
+    UV_PROJECT = "uv_project"  # UV_PROJECT_ENVIRONMENT（uv 项目自定义环境）
+    PROJECT_VENV = "project_venv"  # 项目 .venv
+    UV_PYTHON = "uv_python"  # UV_PYTHON（路径形态）
+    ACTIVE_VENV = "active_venv"  # VIRTUAL_ENV 激活环境
+    CURRENT = "current"  # 当前解释器兜底
+
+
+def resolve_target_python(project_dir: "Path | None" = None) -> "tuple[str, PythonSource]":
     """
     解析目标 Python 解释器（CLI 各命令统一入口）
 
-    优先级：`ERISPULSE_PYTHON` 环境变量 > 项目 `.venv` 内解释器 >
+    优先级：`ERISPULSE_PYTHON` 环境变量 > `UV_PROJECT_ENVIRONMENT`（uv 项目
+    自定义环境路径）> 项目 `.venv` 内解释器 > `UV_PYTHON`（仅路径形态）>
     `VIRTUAL_ENV` > 当前解释器。
 
-    :param project_dir: 项目目录（默认当前目录）；在该目录下探测 `.venv`
-    :return: (解释器路径, 来源描述)——来源用于提示用户当前操作所作用的环境
+    {!--< tips >!--}
+    uv 感知：``UV_PROJECT_ENVIRONMENT`` 把项目环境指到非 ``.venv`` 路径时，
+    不感知会把组件装进错误环境（随后 ``uv tool upgrade`` 抹掉）；``UV_PYTHON``
+    的版本说明符形态（如 "3.12"）不是路径，跳过。
+    {!--< /tips >!--}
+
+    :param project_dir: 项目目录（默认当前目录）；在该目录下探测 `.venv` 与
+        `UV_PROJECT_ENVIRONMENT` 的相对路径基准
+    :return: (解释器路径, 来源)——来源为 :class:`PythonSource`，用于提示用户
+        当前操作所作用的环境
     """
     project_dir = Path(project_dir) if project_dir else Path.cwd()
     env_var = os.environ.get("ERISPULSE_PYTHON")
     if env_var and Path(env_var).exists():
-        return env_var, "ERISPULSE_PYTHON"
+        return env_var, PythonSource.ENV_VAR
+    uv_project_env = os.environ.get("UV_PROJECT_ENVIRONMENT")
+    if uv_project_env:
+        base = Path(uv_project_env)
+        if not base.is_absolute():
+            base = project_dir / base
+        if sys.platform == "win32":
+            uv_py = base / "Scripts" / "python.exe"
+        else:
+            uv_py = base / "bin" / "python"
+        if uv_py.exists():
+            return str(uv_py), PythonSource.UV_PROJECT
     if sys.platform == "win32":
         candidate = project_dir / ".venv" / "Scripts" / "python.exe"
     else:
         candidate = project_dir / ".venv" / "bin" / "python"
     if candidate.exists():
-        return str(candidate), "项目 .venv"
+        return str(candidate), PythonSource.PROJECT_VENV
+    uv_python = os.environ.get("UV_PYTHON")
+    if uv_python and Path(uv_python).exists():
+        # 仅认路径形态；版本说明符（"3.12"）交给 uv 自己解析，CLI 不消费
+        return uv_python, PythonSource.UV_PYTHON
     venv = os.environ.get("VIRTUAL_ENV")
     if venv:
         if sys.platform == "win32":
@@ -1781,8 +2038,8 @@ def resolve_target_python(project_dir: "Path | None" = None) -> "tuple[str, str]
         else:
             venv_py = Path(venv) / "bin" / "python"
         if venv_py.exists():
-            return str(venv_py), "VIRTUAL_ENV"
-    return sys.executable, "当前解释器"
+            return str(venv_py), PythonSource.ACTIVE_VENV
+    return sys.executable, PythonSource.CURRENT
 
 
 def build_uv_tool_update_command(

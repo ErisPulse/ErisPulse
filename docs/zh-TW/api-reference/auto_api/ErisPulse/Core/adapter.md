@@ -711,16 +711,31 @@ await sdk.adapter.emit({
 ---
 
 
-##### `_on_framework_config_changed(_data: dict) -> None`
+##### `_get_handler_queue_limit() -> int`
 
 **内部方法**
-framework 配置变更回调：``handler_max_concurrency`` 变化时失效缓存的信号量，
-下次 ``_get_handler_semaphore`` 将按新值重建。
+获取待处理 handler Task 数上限（入队背压）
+
+懒初始化，首次调用时从框架配置读取 ``handler_queue_max_pending``
+（默认 ``HANDLER_QUEUE_MAX_PENDING``）；``<= 0`` 视为不限。
+配置变更经 ``_on_framework_config_changed`` 置 None 强制重读。
+
+**返回值**: 上限值（0 = 不限）
 
 ---
 
 
-##### `_dispatch_handler_task(func: Callable, data: Any, *, event_type: str = 'unknown', platform: str = 'unknown') -> asyncio.Task | None`
+##### `_on_framework_config_changed(_data: dict) -> None`
+
+**内部方法**
+framework 配置变更回调：``handler_max_concurrency`` 变化时失效缓存的信号量，
+下次 ``_get_handler_semaphore`` 将按新值重建；``handler_queue_max_pending``
+变化时同样失效缓存待重读。
+
+---
+
+
+##### `_dispatch_handler_task(func: Callable, data: Any, *, event_type: str = 'unknown', platform: str = 'unknown', owner: str | None = None) -> asyncio.Task | None`
 
 **内部方法**
 将事件处理器包装为独立 asyncio.Task 并调度执行
@@ -732,7 +747,10 @@ framework 配置变更回调：``handler_max_concurrency`` 变化时失效缓存
 - **data**: 事件数据
 - **event_type**: 事件类型（用于日志）
 - **platform**: 平台名称（用于日志）
+- **owner**: 注册期归属（模块名 / 适配器平台名）；非空时在处理器
 
+              执行期间注入 current_owner（出站发送 / 日志归因到
+              注册该处理器的模块），None 保持外层上下文
 **返回值**: asyncio.Task
 
 ---

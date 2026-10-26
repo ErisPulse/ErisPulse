@@ -555,7 +555,7 @@ class {name}(BaseAdapter):
                 raw = json.loads(data)
                 event = self.convert(raw)
                 if event:
-                    await self.adapter.emit(event)
+                    await self.emit_event(event)
         except Exception as e:
             self.logger.warning("{text[adapter.log.connection_lost]}")
         finally:
@@ -593,6 +593,351 @@ class {name}(BaseAdapter):
             self.logger.error(("{text[adapter.log.api_call_failed]}").format(error=e))
             return self.make_error(message=str(e))
 """
+
+
+_ADAPTER_CORE_POLLING = """import asyncio
+from dataclasses import dataclass, field
+from typing import ClassVar
+from ErisPulse import PollingAdapter, BaseConfig, BaseI18n, I18nKey, client
+
+
+class {name}(PollingAdapter):
+    \"\"\"
+    {text[adapter.polling.doc]}
+    \"\"\"
+
+    # 依赖声明（可选，ErisPulse 2.9.0+）：
+    # depends = {{"adapters": [], "modules": []}}   # 硬依赖：缺失时跳过启动
+    # optional_modules = []                          # 软依赖：就绪/丢失时收到
+    #                                               # on_dependency_ready/lost 回调
+    depends: ClassVar[dict] = {{}}
+    optional_modules: ClassVar[list] = []
+
+    # 声明所需最低 SDK 版本：不满足时框架在加载期明确报错并跳过本适配器（可选）
+    min_sdk_version = "{min_sdk}"
+
+    # 轮询间隔（秒）：声明了下方 ConfigClass.poll_interval 字段后以配置值为准
+    poll_interval = 5.0
+
+    # {text[adapter.config_hint]}
+    @dataclass
+    class ConfigClass(BaseConfig):
+        \"\"\"
+        {text[adapter.config_doc]}
+
+        :ivar poll_interval: 轮询间隔秒数（热更新生效）
+        \"\"\"
+
+        endpoint: str = field(
+            default="https://api.example.com",
+            metadata={{
+                "description": {{"i18n": "adapter.{name}.endpoint", "default": "Platform API Endpoint"}},
+                "required": False,
+                "ui": {{"widget": "text", "group": "connection", "order": 1}},
+            }},
+        )
+        token: str = field(
+            default="",
+            metadata={{
+                "description": {{"i18n": "adapter.{name}.token", "default": "Platform Token"}},
+                "required": True,
+                "secret": True,
+                "ui": {{"widget": "password", "group": "basic", "order": 2}},
+            }},
+        )
+        poll_interval: float = field(
+            default=5.0,
+            metadata={{
+                "description": {{"i18n": "adapter.{name}.poll_interval", "default": "Polling interval (seconds)"}},
+                "required": False,
+                "min": 0.1,
+                "ui": {{"widget": "number", "group": "connection", "order": 3}},
+            }},
+        )
+
+    # {text[adapter.i18n_hint]}
+    class I18nClass(BaseI18n):
+        \"\"\"{name} translation keys\"\"\"
+
+        endpoint: I18nKey = I18nKey(
+            key="adapter.{name}.endpoint",
+            default="Platform API Endpoint",
+            zh_CN="平台 API 地址",
+            en="Platform API Endpoint",
+            ja="APIアドレス",
+            ru="API адрес",
+            zh_TW="API 位址",
+        )
+        token: I18nKey = I18nKey(
+            key="adapter.{name}.token",
+            default="Platform Token",
+            zh_CN="平台 Token",
+            en="Platform Token",
+            ja="トークン",
+            ru="Токен",
+            zh_TW="權杖",
+        )
+        poll_interval: I18nKey = I18nKey(
+            key="adapter.{name}.poll_interval",
+            default="Polling interval (seconds)",
+            zh_CN="轮询间隔（秒）",
+            en="Polling interval (seconds)",
+            ja="ポーリング間隔（秒）",
+            ru="Интервал опроса (сек)",
+            zh_TW="輪詢間隔（秒）",
+        )
+
+    def __init__(self, sdk=None):
+        super().__init__(sdk=sdk)
+        self.logger = self._get_logger()
+        self.converter = self._setup_converter()
+
+    def on_config_update(self, old_config, new_config):
+        \"\"\"Called when adapter config hot-reloads\"\"\"
+        self.logger.info("{text[adapter.log.config_updated]}")
+
+    def _setup_converter(self):
+        from .Converter import {converter_name}
+        return {converter_name}()
+
+    # start() / shutdown() 由 PollingAdapter 基类管理：
+    # start 拉起带指数退避的轮询循环后立即返回；shutdown 时框架按 owner 自动取消
+
+    async def fetch_events(self):
+        \"\"\"
+        {text[adapter.polling.fetch_doc]}
+        \"\"\"
+        cfg = self.cfg
+        # TODO: 替换为平台的增量拉取接口（如 Telegram getUpdates，配合 offset 去重）
+        resp = await client.get(
+            f"{{cfg.endpoint}}/getUpdates",
+            headers={{"Authorization": "Bearer " + cfg.token}},
+        )
+        data = await resp.json()
+        return data.get("events", [])
+
+    def convert_one(self, raw):
+        \"\"\"
+        {text[adapter.polling.convert_one_doc]}
+        \"\"\"
+        # TODO: 按平台事件结构调整（Converter 模板已给出 message 型骨架）
+        return self.converter.convert(raw)
+
+    class Send(PollingAdapter.Send):
+        \"\"\"
+        {text[adapter.dsl.send_doc]}
+        \"\"\"
+
+        def Raw_ob12(self, message, **kwargs):
+            async def _do_send():
+                segments = self._apply_modifiers(message)
+                return await self._adapter.call_api(
+                    endpoint="/send_message",
+                    message=segments,
+                    **self.send_context,
+                    **kwargs,
+                )
+            return asyncio.create_task(_do_send())
+
+        # {text[adapter.dsl.send_std_methods_hint]}
+        # {text[adapter.dsl.send_override_hint]}
+        # def Text(self, text: str):
+        #     return self.Raw_ob12([{{"type": "text", "data": {{"text": text}}}}])
+
+        # {text[adapter.dsl.send_extra_methods_hint]}
+        # def Sticker(self, sticker_id: str):
+        #     return self.Raw_ob12([{{"type": "sticker", "data": {{"id": sticker_id}}}}])
+
+    # Request / Api 内部类继承基类默认实现即可；如需平台特定逻辑可按需覆盖
+
+    async def call_api(self, endpoint: str, **params):
+        \"\"\"Call platform API\"\"\"
+        cfg = self.cfg
+        headers = {{"Authorization": "Bearer " + cfg.token}}
+        url = cfg.endpoint + endpoint
+
+        try:
+            resp = await client.post(
+                url,
+                json=params,
+                headers=headers,
+                timeout=30,
+                max_retries=2,
+            )
+            result = await resp.json()
+            return self.make_response(
+                data=result.get("data"),
+                message_id=result.get("data", {{}}).get("message_id", ""),
+                raw=result,
+            )
+        except Exception as e:
+            self.logger.error(("{text[adapter.log.api_call_failed]}").format(error=e))
+            return self.make_error(message=str(e))
+"""
+
+
+_ADAPTER_CORE_WEBHOOK = """import asyncio
+from dataclasses import dataclass, field
+from typing import ClassVar
+from ErisPulse import WebhookAdapter, BaseConfig, BaseI18n, I18nKey, client
+
+
+class {name}(WebhookAdapter):
+    \"\"\"
+    {text[adapter.webhook.doc]}
+    \"\"\"
+
+    # 依赖声明（可选，ErisPulse 2.9.0+）：
+    # depends = {{"adapters": [], "modules": []}}   # 硬依赖：缺失时跳过启动
+    # optional_modules = []                          # 软依赖：就绪/丢失时收到
+    #                                               # on_dependency_ready/lost 回调
+    depends: ClassVar[dict] = {{}}
+    optional_modules: ClassVar[list] = []
+
+    # 声明所需最低 SDK 版本：不满足时框架在加载期明确报错并跳过本适配器（可选）
+    min_sdk_version = "{min_sdk}"
+
+    # {text[adapter.config_hint]}
+    @dataclass
+    class ConfigClass(BaseConfig):
+        \"\"\"
+        {text[adapter.config_doc]}
+        \"\"\"
+
+        endpoint: str = field(
+            default="https://api.example.com",
+            metadata={{
+                "description": {{"i18n": "adapter.{name}.endpoint", "default": "Platform API Endpoint"}},
+                "required": False,
+                "ui": {{"widget": "text", "group": "connection", "order": 1}},
+            }},
+        )
+        token: str = field(
+            default="",
+            metadata={{
+                "description": {{"i18n": "adapter.{name}.token", "default": "Verify Token (empty = accept all)"}},
+                "required": False,
+                "secret": True,
+                "ui": {{"widget": "password", "group": "basic", "order": 2}},
+            }},
+        )
+
+    # {text[adapter.i18n_hint]}
+    class I18nClass(BaseI18n):
+        \"\"\"{name} translation keys\"\"\"
+
+        endpoint: I18nKey = I18nKey(
+            key="adapter.{name}.endpoint",
+            default="Platform API Endpoint",
+            zh_CN="平台 API 地址",
+            en="Platform API Endpoint",
+            ja="APIアドレス",
+            ru="API адрес",
+            zh_TW="API 位址",
+        )
+        token: I18nKey = I18nKey(
+            key="adapter.{name}.token",
+            default="Verify Token (empty = accept all)",
+            zh_CN="校验 Token（留空放行全部请求）",
+            en="Verify Token (empty = accept all)",
+            ja="検証トークン（空なら全許可）",
+            ru="Токен проверки (пусто = разрешить все)",
+            zh_TW="校驗權杖（留空放行全部請求）",
+        )
+
+    def __init__(self, sdk=None):
+        super().__init__(sdk=sdk)
+        self.logger = self._get_logger()
+        self.converter = self._setup_converter()
+
+    def on_config_update(self, old_config, new_config):
+        \"\"\"Called when adapter config hot-reloads\"\"\"
+        self.logger.info("{text[adapter.log.config_updated]}")
+
+    def _setup_converter(self):
+        from .Converter import {converter_name}
+        return {converter_name}()
+
+    # start() / shutdown() 由 WebhookAdapter 基类管理：
+    # start 在框架 router 上注册 POST /{entry_key}/webhook 接收路由（owner 归属，
+    # 卸载自动清理）；回调地址经 sdk.adapter.get_connection_info("{entry_key}") 查询
+
+    def verify_request(self, request) -> bool:
+        \"\"\"
+        {text[adapter.webhook.verify_doc]}
+        \"\"\"
+        cfg = self.cfg
+        if not cfg.token:
+            return True
+        # TODO: 按平台校验方式调整（签名头 / query token / 时间戳防重放等）
+        auth = request.headers.get("authorization", "")
+        return auth == f"Bearer {{cfg.token}}"
+
+    def convert(self, payload):
+        \"\"\"
+        {text[adapter.webhook.convert_doc]}
+        \"\"\"
+        # TODO: 按平台回调载荷结构调整（Converter 模板已给出 message 型骨架）
+        return self.converter.convert(payload)
+
+    class Send(WebhookAdapter.Send):
+        \"\"\"
+        {text[adapter.dsl.send_doc]}
+        \"\"\"
+
+        def Raw_ob12(self, message, **kwargs):
+            async def _do_send():
+                segments = self._apply_modifiers(message)
+                return await self._adapter.call_api(
+                    endpoint="/send_message",
+                    message=segments,
+                    **self.send_context,
+                    **kwargs,
+                )
+            return asyncio.create_task(_do_send())
+
+        # {text[adapter.dsl.send_std_methods_hint]}
+        # {text[adapter.dsl.send_override_hint]}
+        # def Text(self, text: str):
+        #     return self.Raw_ob12([{{"type": "text", "data": {{"text": text}}}}])
+
+        # {text[adapter.dsl.send_extra_methods_hint]}
+        # def Sticker(self, sticker_id: str):
+        #     return self.Raw_ob12([{{"type": "sticker", "data": {{"id": sticker_id}}}}])
+
+    # Request / Api 内部类继承基类默认实现即可；如需平台特定逻辑可按需覆盖
+
+    async def call_api(self, endpoint: str, **params):
+        \"\"\"Call platform API\"\"\"
+        cfg = self.cfg
+        headers = {{"Authorization": "Bearer " + cfg.token}}
+        url = cfg.endpoint + endpoint
+
+        try:
+            resp = await client.post(
+                url,
+                json=params,
+                headers=headers,
+                timeout=30,
+                max_retries=2,
+            )
+            result = await resp.json()
+            return self.make_response(
+                data=result.get("data"),
+                message_id=result.get("data", {{}}).get("message_id", ""),
+                raw=result,
+            )
+        except Exception as e:
+            self.logger.error(("{text[adapter.log.api_call_failed]}").format(error=e))
+            return self.make_error(message=str(e))
+"""
+
+# 适配器 --template 选项 → 核心模板映射（ws-server 保持既有默认行为）
+_ADAPTER_CORE_TEMPLATES = {
+    "ws-server": _ADAPTER_CORE,
+    "polling": _ADAPTER_CORE_POLLING,
+    "webhook": _ADAPTER_CORE_WEBHOOK,
+}
 
 
 _ADAPTER_CONVERTER = """\"\"\"
@@ -827,6 +1172,12 @@ class CreateCommand(Command):
             action="store_true",
             default=False,
             help=i18n.t("cli.create.local_help"),
+        )
+        parser.add_argument(
+            "--template",
+            choices=list(_ADAPTER_CORE_TEMPLATES),
+            default="ws-server",
+            help=i18n.t("cli.create.adapter_template_help"),
         )
 
     def execute(self, args: Namespace) -> None:
@@ -1243,13 +1594,15 @@ class CreateCommand(Command):
 
             converter_name = _to_converter_name(name)
             entry_key = _camel_to_snake(name)
+            template = getattr(args, "template", None) or "ws-server"
+            core_template = _ADAPTER_CORE_TEMPLATES[template]
 
             (plugin_dir / "__init__.py").write_text(
                 _ADAPTER_INIT.format(name=name, converter_name=converter_name),
                 encoding="utf-8",
             )
             (plugin_dir / "Core.py").write_text(
-                _ADAPTER_CORE.format(
+                core_template.format(
                     name=name,
                     converter_name=converter_name,
                     entry_key=entry_key,
@@ -1271,6 +1624,9 @@ class CreateCommand(Command):
             console.print()
             console.print(
                 f"[success]  {i18n.t('cli.create.adapter_created', name=name)}[/]"
+            )
+            console.print(
+                f"[dim]    {i18n.t('cli.create.template_used', template=i18n.t('cli.create.template_' + template.replace('-', '_')))}[/]"
             )
             console.print()
             console.print(Text(i18n.t("cli.create.local_structure"), style="bold"))
@@ -1328,6 +1684,8 @@ class CreateCommand(Command):
 
         converter_name = _to_converter_name(name)
         entry_key = _camel_to_snake(name)
+        template = getattr(args, "template", None) or "ws-server"
+        core_template = _ADAPTER_CORE_TEMPLATES[template]
         output = Path(args.output)
         project_dir = output / name
 
@@ -1347,7 +1705,7 @@ class CreateCommand(Command):
                 encoding="utf-8",
             )
             (pkg_dir / "Core.py").write_text(
-                _ADAPTER_CORE.format(
+                core_template.format(
                     name=name,
                     converter_name=converter_name,
                     entry_key=entry_key,
@@ -1392,6 +1750,9 @@ class CreateCommand(Command):
             console.print()
             console.print(
                 f"[success]  {i18n.t('cli.create.adapter_created', name=name)}[/]"
+            )
+            console.print(
+                f"[dim]    {i18n.t('cli.create.template_used', template=i18n.t('cli.create.template_' + template.replace('-', '_')))}[/]"
             )
             console.print()
             console.print(Text(i18n.t("cli.create.project_structure"), style="bold"))

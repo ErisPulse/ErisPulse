@@ -1,0 +1,498 @@
+"""
+ErisPulse 翻译质量检查器
+
+检查翻译文件质量：缺失、截断、乱码、Markdown结构损坏
+
+使用方法:
+    python scripts/tools/check-translation.py
+    python scripts/tools/check-translation.py --lang en ja
+    python scripts/tools/check-translation.py --fix
+    python scripts/tools/check-translation.py --json
+"""
+
+import argparse
+import json
+import os
+import re
+import sys
+from datetime import datetime
+from pathlib import Path
+
+from ..common import IGNORE_DIRS, LEAK_PATTERN, Logger, count_fences
+
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
+
+# 语言名称字面量：语言切换行、i18n 语言映射表等场景中，
+# 中文语言标签是文档内容本身（如 `[简体中文](README.zh-CN.md)`、`| 日本語 | ja |`），
+# 不属于未翻译残留
+_LANG_LABEL_RE = re.compile(
+    r"简体中文|繁體中文|繁体中文|日本語|Русский|English"
+)
+
+# 行内代码片段（`` `...` ``）：示例词表、示例配置等常按源文档保留中文原文，
+# 不视为未翻译残留（围栏代码块已在扫描时整块跳过）
+_INLINE_CODE_RE = re.compile(r"`[^`]*`")
+
+# Markdown 链接 URL（``[text](url)``）：锚点常含中文标题片段（如 ``#init-注意事项``），
+# 是否本地化取决于目标文档标题语言，不作为未翻译残留判定依据
+_LINK_URL_RE = re.compile(r"\]\([^)]*\)")
+
+# 连续中文片段（>=2 字）：单字中文常见于示例值（如确认词示例 "是/否"），
+# 两个以上连续中文更可能是未翻译的正文残留
+_ZH_RUN_RE = re.compile(r"[\u4e00-\u9fff]{2,}")
+
+
+def _strip_non_prose(line: str) -> str:
+    """
+    剔除一行中不属于"待翻译正文"的部分，供乱码/残留检测降噪
+
+    依次剔除：shields.io 徽章行（徽章标签含中文为源文档设计）、
+    行内代码片段、Markdown 链接 URL、已知语言名称标签。
+
+    :param line: 原始行文本
+    :return: 剔除后的文本
+    """
+    if "img.shields.io" in line:
+        return ""
+    cleaned = _INLINE_CODE_RE.sub("", line)
+    cleaned = _LINK_URL_RE.sub("]", cleaned)
+    cleaned = _LANG_LABEL_RE.sub("", cleaned)
+    return cleaned
+
+
+def extract_headings(content: str) -> list[dict]:
+    """
+    从 Markdown 内容中提取标题结构
+
+    自动跳过代码块内的伪标题，仅识别行首 ``#`` 至 ``######`` 的标题。
+
+    :param content: Markdown 文本
+    :return: 标题信息列表，每项包含 ``level`` 与 ``text``
+    """
+    headings = []
+    in_code_block = False
+    for line in content.split("\n"):
+        if line.strip().startswith("```"):
+            in_code_block = not in_code_block
+            continue
+        if in_code_block:
+            continue
+        m = re.match(r"^(#{1,6})\s+(.+)$", line)
+        if m:
+            headings.append({"level": len(m.group(1)), "text": m.group(2).strip()})
+    return headings
+
+
+def detect_garbled(content: str, target_lang: str) -> list[dict]:
+    """
+    检测翻译文件中的乱码与未翻译残留
+
+    针对不同目标语言采用不同策略与严重级别：
+    - 所有语言：检测 Unicode 替换字符 U+FFFD（编码损坏，``error``）
+    - 中文：检测形似 "字?字" 的乱码片段（``error``）
+    - 英文/俄文：检测正文（排除代码块）中残留的连续中文（``warning``）——
+      文档中存在大量合理保留的中文（锚点、示例值、平台译名、语言名等），
+      启发式无法可靠区分，仅作提示不阻塞；真正编码损坏由 U+FFFD 检查兜底
+
+    :param content: 翻译后的文本
+    :param target_lang: 目标语言代码
+    :return: 问题列表，每项包含 ``severity`` 与 ``message``
+    """
+    issues = []
+    if "\ufffd" in content:
+        issues.append(
+            {
+                "severity": "error",
+                "message": f"含{content.count(chr(0xFFFD))}个替换字符(U+FFFD)",
+            }
+        )
+    if target_lang in {"zh-CN", "zh-TW"}:
+        garbled = re.findall(r"[\u4e00-\u9fff]\?{1,3}[\u4e00-\u9fff]", content)
+        if garbled:
+            issues.append({"severity": "error", "message": f"{len(garbled)}处疑似乱码"})
+    return issues
+
+def detect_prompt_leaks(content: str) -> list[str]:
+    """
+    检测译文中残留的翻译提示词（模型回显的规则）。
+
+    提示词泄露通常以独立段落出现，行不区别语言（译文可能被翻译为各语言）。
+    仅统计命中次数，用于在翻译质量检查中标记译文污染。
+
+    :param content: 译文文本
+    :return: 问题描述列表
+    """
+    hits = LEAK_PATTERN.findall(content)
+    if hits:
+        return [f"{len(hits)} 处翻译提示词残留"]
+    return []
+
+
+class TranslationChecker:
+    MIN_RATIO = 0.25
+    WARN_RATIO = 0.35
+    FENCE_TOLERANCE_RATIO = 0.10
+    FENCE_TOLERANCE_ABS = 2
+    LANG_NAMES = {
+        "zh-CN": "简体中文",
+        "zh-TW": "繁体中文",
+        "en": "English",
+        "ja": "日本語",
+        "ru": "Русский",
+    }
+
+    def __init__(
+        self,
+        docs_dir: str = "docs",
+        cache_dir: str = ".github/.translate_cache",
+        strict: bool = False,
+    ):
+        """
+        初始化检查器
+
+        :param docs_dir: 文档根目录 (默认: docs)
+        :param cache_dir: 翻译缓存目录，用于 --fix 模式删除问题文件缓存
+        :param strict: 是否启用严格模式
+        """
+        self.docs_dir = Path(docs_dir)
+        self.source_dir = self.docs_dir / "zh-CN"
+        self.cache_dir = Path(cache_dir)
+        self.strict = strict
+        self.summary = {"checked": 0, "errors": 0, "warnings": 0, "missing": 0}
+
+    def _scan_source(self) -> list[Path]:
+        """
+        扫描源语言目录下的所有 Markdown 文件
+
+        :return: 源文件路径列表
+        """
+        files = []
+        if not self.source_dir.exists():
+            return files
+        for root, dirs, fns in os.walk(self.source_dir):
+            dirs[:] = [
+                d
+                for d in dirs
+                if not any(
+                    Path(root) / d == self.source_dir / ig.replace("/", os.sep)
+                    for ig in IGNORE_DIRS
+                )
+            ]
+            for fn in fns:
+                if fn.endswith(".md"):
+                    files.append(Path(root) / fn)
+        return sorted(files)
+
+    def check_file(self, src: Path, tgt: Path, lang: str, rel: str) -> list[dict]:
+        """
+        检查单个源文件与其对应目标文件的差异
+
+        检查项包括：文件缺失、读取异常、长度比、H1 标题数量、代码块闭合与乱码。
+
+        :param src: 源文件路径
+        :param tgt: 目标文件路径
+        :param lang: 目标语言代码
+        :param rel: 相对于源语言目录的相对路径（用于日志输出）
+        :return: 问题列表，每项包含 ``severity``、``type``、``message``
+        """
+        issues = []
+        if not tgt.exists():
+            self.summary["missing"] += 1
+            return [
+                {"severity": "error", "type": "missing", "message": "目标文件不存在"}
+            ]
+
+        try:
+            src_content = src.read_text(encoding="utf-8")
+            tgt_content = tgt.read_text(encoding="utf-8")
+        except Exception:
+            return [{"severity": "error", "type": "read_error", "message": "读取失败"}]
+
+        sl, tl = len(src_content), len(tgt_content)
+        if sl > 200 and tl < sl * self.MIN_RATIO:
+            issues.append(
+                {
+                    "severity": "error",
+                    "type": "truncated",
+                    "message": f"截断 ({tl}/{sl}, {tl / sl:.0%})",
+                }
+            )
+        elif sl > 200 and tl < sl * self.WARN_RATIO:
+            issues.append(
+                {
+                    "severity": "warning",
+                    "type": "short",
+                    "message": f"偏短 ({tl}/{sl}, {tl / sl:.0%})",
+                }
+            )
+
+        src_h1 = [h for h in extract_headings(src_content) if h["level"] == 1]
+        tgt_h1 = [h for h in extract_headings(tgt_content) if h["level"] == 1]
+        if src_h1 and len(tgt_h1) < len(src_h1):
+            issues.append(
+                {
+                    "severity": "warning",
+                    "type": "heading",
+                    "message": f"标题不匹配 (源{len(src_h1)}/目标{len(tgt_h1)})",
+                }
+            )
+
+        # 围栏完整性：译文围栏行数必须与源文件一致。
+        # 翻译不应增删代码块；数量不一致说明存在丢围栏/多围栏的损坏
+        # （如闭合围栏被误删导致后续内容被吞进代码块——此类损坏恰好
+        # 保持偶数，仅查奇偶会漏报，必须精确比对）
+        src_fences = count_fences(src_content)
+        tgt_fences = count_fences(tgt_content)
+        fence_diff = abs(src_fences - tgt_fences)
+        fence_tolerance = max(
+            int(src_fences * self.FENCE_TOLERANCE_RATIO),
+            self.FENCE_TOLERANCE_ABS
+        )
+
+        if fence_diff > fence_tolerance:
+            issues.append(
+                {
+                    "severity": "error",
+                    "type": "unclosed_code",
+                    "message": (
+                        f"围栏数不匹配 (源{src_fences}个，目标{tgt_fences}个，"
+                        f"差异{fence_diff})"
+                    ),
+                }
+            )
+
+        for g in detect_garbled(tgt_content, lang):
+            issues.append(
+                {"severity": g["severity"], "type": "garbled", "message": g["message"]}
+            )
+
+        for li in detect_prompt_leaks(tgt_content):
+            issues.append({"severity": "error", "type": "prompt_leak", "message": li})
+
+        return issues
+
+    def _delete_cache(self, rel: str, lang: str):
+        """
+        删除指定文件与语言的翻译缓存
+
+        同时兼容两种缓存命名：嵌套缓存 ``{cache_dir}/{lang}/{rel}.cache``
+        与扁平缓存 ``{cache_dir}/{rel}.cache``。
+
+        :param rel: 文件相对路径
+        :param lang: 目标语言代码
+        :return: 成功删除返回 True，未找到缓存返回 False
+        """
+        for candidate in [
+            self.cache_dir / lang / f"{rel}.cache",
+            self.cache_dir / f"{rel}.cache",
+        ]:
+            if candidate.exists():
+                candidate.unlink()
+                return True
+        return False
+
+    def run(self, langs: list[str] | None = None, fix: bool = False) -> dict:
+        """
+        执行翻译质量检查
+
+        依次扫描每个目标语言下与源文档一一对应的 Markdown 文件，
+        以及根目录的 README 翻译文件，生成检查报告。
+
+        :param langs: 待检查的目标语言列表，None 表示自动发现
+        :param fix: 是否在检查过程中删除错误文件的翻译缓存
+        :return: 检查报告字典，包含 ``summary``、``results``、``fix_mode``、``fixed_caches``
+        """
+        if langs is None:
+            langs = sorted(
+                d.name
+                for d in self.docs_dir.iterdir()
+                if d.is_dir() and d.name not in ["_meta", "zh-CN"]
+            )
+
+        Logger.log("=" * 60)
+        Logger.log("翻译质量检查")
+        Logger.log("=" * 60)
+        Logger.log(f"检查语言: {', '.join(langs)}")
+        Logger.log(f"检查模式: {'严格' if self.strict else '宽松'}")
+        Logger.log("")
+
+        all_results: dict[str, dict[str, list[dict]]] = {}
+        fixed = 0
+
+        for lang in langs:
+            Logger.log(f"--- {self.LANG_NAMES.get(lang, lang)} ({lang}) ---")
+            lang_results: dict[str, list[dict]] = {}
+            sources = self._scan_source()
+
+            for src in sources:
+                rel = str(src.relative_to(self.source_dir)).replace("\\", "/")
+                tgt = self.docs_dir / lang / rel
+                issues = self.check_file(src, tgt, lang, rel)
+                self.summary["checked"] += 1
+
+                if issues:
+                    lang_results[rel] = issues
+                    for issue in issues:
+                        if issue["severity"] == "error":
+                            self.summary["errors"] += 1
+                        else:
+                            self.summary["warnings"] += 1
+                        tag = "[ERROR]" if issue["severity"] == "error" else "[WARN]"
+                        Logger.log(
+                            f"  {tag} [{issue['type']}] {rel}: {issue['message']}"
+                        )
+                        if fix and issue["severity"] == "error":
+                            if self._delete_cache(rel, lang):
+                                fixed += 1
+                                Logger.log("    -> 已删除缓存")
+
+            # root README：与 translate-docs.py 一致，源为 README.zh-CN.md；
+            # 英文版即主 README（README.md），其余语言为 README.{lang}.md
+            root_src = Path("README.zh-CN.md")
+            if not root_src.exists():
+                root_src = Path("README.md")
+            if root_src.exists():
+                tgt_rm = Path("README.md") if lang == "en" else Path(f"README.{lang}.md")
+                rm_issues = []
+                if not tgt_rm.exists():
+                    rm_issues.append(
+                        {
+                            "severity": "error",
+                            "type": "missing",
+                            "message": f"README.{lang}.md 不存在",
+                        }
+                    )
+                    self.summary["missing"] += 1
+                    self.summary["errors"] += 1
+                else:
+                    try:
+                        sc = root_src.read_text(encoding="utf-8")
+                        tc = tgt_rm.read_text(encoding="utf-8")
+                        sl, tl = len(sc), len(tc)
+                        if sl > 200 and tl < sl * self.WARN_RATIO:
+                            severity = (
+                                "error" if tl < sl * self.MIN_RATIO else "warning"
+                            )
+                            rm_issues.append(
+                                {
+                                    "severity": severity,
+                                    "type": "truncated",
+                                    "message": f"README截断 ({tl}/{sl}, {tl / sl:.0%})",
+                                }
+                            )
+                            self.summary[
+                                "errors" if severity == "error" else "warnings"
+                            ] += 1
+                        tgt_fences = len(re.findall(r"^```", tc, re.MULTILINE))
+                        if tgt_fences % 2 != 0:
+                            rm_issues.append(
+                                {
+                                    "severity": "error",
+                                    "type": "unclosed_code",
+                                    "message": f"README代码块未关闭 ({tgt_fences}个```)",
+                                }
+                            )
+                            self.summary["errors"] += 1
+                        for g in detect_garbled(tc, lang):
+                            rm_issues.append(
+                                {
+                                    "severity": g["severity"],
+                                    "type": "garbled",
+                                    "message": g["message"],
+                                }
+                            )
+                            self.summary[
+                                "errors" if g["severity"] == "error" else "warnings"
+                            ] += 1
+                        for li in detect_prompt_leaks(tc):
+                            rm_issues.append(
+                                {
+                                    "severity": "error",
+                                    "type": "prompt_leak",
+                                    "message": li,
+                                }
+                            )
+                            self.summary["errors"] += 1
+                    except Exception:
+                        pass
+                if rm_issues:
+                    lang_results[f"README.{lang}.md"] = rm_issues
+                    for issue in rm_issues:
+                        tag = "[ERROR]" if issue["severity"] == "error" else "[WARN]"
+                        Logger.log(
+                            f"  {tag} [{issue['type']}] README.{lang}.md: {issue['message']}"
+                        )
+                    if fix:
+                        for issue in rm_issues:
+                            if issue["severity"] == "error":
+                                cache_candidates = [
+                                    self.cache_dir / f"README.{lang}.md.cache",
+                                    self.cache_dir / "README.md.cache"
+                                    if lang == "en"
+                                    else None,
+                                ]
+                                for cand in cache_candidates:
+                                    if cand and cand.exists():
+                                        cand.unlink()
+                                        fixed += 1
+                                        Logger.log("    -> 已删除缓存")
+
+            if not lang_results:
+                Logger.log("  [OK] 无问题")
+            all_results[lang] = lang_results
+            Logger.log("")
+
+        report = {
+            "version": "1.0",
+            "timestamp": datetime.now().isoformat(),
+            "summary": self.summary,
+            "fix_mode": fix,
+            "fixed_caches": fixed,
+            "results": all_results,
+            "strict_mode": self.strict,
+        }
+
+        Logger.log("=" * 60)
+        Logger.log(
+            f"检查: {self.summary['checked']} | "
+            f"错误: {self.summary['errors']} | "
+            f"警告: {self.summary['warnings']} | "
+            f"缺失: {self.summary['missing']}"
+        )
+        if fix:
+            Logger.log(f"已删除缓存: {fixed}")
+        Logger.log("=" * 60)
+
+        return report
+
+
+def main(argv: "list[str] | None" = None):
+    """命令行入口：解析参数并运行检查器"""
+    parser = argparse.ArgumentParser(description="ErisPulse 翻译质量检查器")
+    parser.add_argument("--docs", default="docs")
+    parser.add_argument("--cache", default=".github/.translate_cache")
+    parser.add_argument("--lang", nargs="+")
+    parser.add_argument("--fix", action="store_true", help="删除问题文件缓存")
+    parser.add_argument("--json", action="store_true", help="输出JSON报告")
+    parser.add_argument("--output", help="JSON报告路径")
+
+    args = parser.parse_args(argv)
+    checker = TranslationChecker(docs_dir=args.docs, cache_dir=args.cache)
+    report = checker.run(langs=args.lang, fix=args.fix)
+
+    if args.json or args.output:
+        path = args.output or "translation-check-report.json"
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(report, f, ensure_ascii=False, indent=2)
+        Logger.log(f"报告已保存: {path}")
+
+    sys.exit(1 if report["summary"]["errors"] > 0 else 0)
+
+
+if __name__ == "__main__":
+    main()
