@@ -215,12 +215,19 @@ target 语义与交互会话等待键一致（复用 session_type 的目标推�
 
 **内部方法** 旧表缺 sender 列时自动补列（2.8.0 新增）
 
+探测失败不区分「列缺失」与「存储瞬时不可用」：一律尝试 ALTER，
+ALTER 失败直接上抛（交由 ``_ensure_table`` 记 warning 返回 False，
+下轮刷盘重试）——否则会误置 ready，此后含 sender 列的 INSERT
+持续静默失败。
+
 ---
 
 
 ##### `async _amigrate_add_sender() -> None`
 
 **内部方法** 异步路径的 sender 列迁移探测（列缺失时回退同步 ALTER）
+
+与同步版同语义：探测失败同样尝试 ALTER，失败上抛待下轮重试。
 
 ---
 
@@ -229,12 +236,16 @@ target 语义与交互会话等待键一致（复用 session_type 的目标推�
 
 **内部方法** 旧表缺 meta 列时自动补列（2.11.1 新增）
 
+ALTER 失败上抛（同步版语义见 ``_migrate_add_sender``）。
+
 ---
 
 
 ##### `async _amigrate_add_meta() -> None`
 
 **内部方法** 异步路径的 meta 列迁移探测（列缺失时回退同步 ALTER）
+
+与同步版同语义：探测失败同样尝试 ALTER，失败上抛待下轮重试。
 
 ---
 

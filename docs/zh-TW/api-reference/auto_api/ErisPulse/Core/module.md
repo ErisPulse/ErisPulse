@@ -212,6 +212,11 @@ await module.load("MyModule")
   可被 GC 回收（解决 NoneBot 式卸载后插件与依赖内存不释放的问题）；
   级联卸载的依赖者同样被 purge。卸载后重新加载需重新 `register()`
 
+卸载与热重载共用全局互斥：与进行中的 reload / restart / 归眠串行
+（消除外部卸载与重载交叉导致的双重 ``on_unload``）；等待上限
+``UNLOAD_LOCK_WAIT_TIMEOUT_SECS`` 秒，超时降级直接执行并留痕
+（持锁重载卡死的极端场景不阻塞调用方）。
+
 - **name**: 模块名称，None表示卸载所有模块（默认None）
 - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
 - **purge**: 是否一并删除注册存根并清理 sys.modules（默认 False）
@@ -228,6 +233,20 @@ await module.unload("MyModule")  # 卸载单个模块（依赖者级联卸载）
 await module.unload("MyModule", purge=True)  # 彻底卸载（释放类引用）
 await module.unload()  # 卸载所有模块
 ```
+
+---
+
+
+##### `async _unload_locked(name: str | None, *, purge: bool = False, reason: str = 'unload') -> bool`
+
+**内部方法**
+unload 的实现体（调用方已持有热重载互斥锁，或已限时降级）
+
+- **name**: 模块名称，None 表示卸载所有模块
+- **purge**: 是否一并删除注册存根并清理 sys.modules
+- **reason**: 卸载来意标注
+
+**返回值**: 是否卸载成功
 
 ---
 

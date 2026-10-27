@@ -109,8 +109,10 @@ class MyHandler(FileSystemEventHandler):
 > 1. 接口与 watchdog.observers.Observer 一致 (schedule/start/stop/join)
 > 2. 轮询运行在后台守护线程，不会阻止进程退出
 > 3. 仅监控 .py 文件的变更，避免不必要的开销
-> 4. 忽略目录按目录名在任意层级剪枝；键统一 normcase 规范化，
-> Windows 大小写不同的路径写法不会产生虚假删除/创建事件
+> 4. 忽略目录按目录名在任意层级剪枝；键统一「绝对化 + normcase」规范化
+> ——Windows 大小写不同的路径写法、以及以相对路径调度的监控目录
+> （如默认的 ``plugins`` 或 ``.``）都不会产生虚假删除/创建事件，
+> 删除检测的前缀匹配在任意调度路径写法下均成立
 > 5. 单个 handler 回调抛异常只记 warning，不会杀死轮询线程
 
 - **interval** (`float`): 轮询间隔（秒） (默认: FILE_WATCH_POLL_INTERVAL_SECS)
@@ -177,9 +179,14 @@ observer.start()
 ---
 
 
-##### `join() -> None`
+##### `join(timeout: float | None = None) -> None`
 
 等待轮询线程结束
+
+- **timeout**: 最长等待秒数；None = 一直等到线程退出。轮询线程
+
+    为守护线程，超时返回后线程仍会随 ``stop()`` 自行退出，不会
+    阻塞调用方（事件循环线程内停止监控时传入有限超时）
 
 ---
 
@@ -194,6 +201,19 @@ observer.start()
 - **recursive** (`bool`): 是否递归子目录
 
 **返回值** (`Generator`): .py 文件路径生成器
+
+---
+
+
+##### `_key(path: str) -> str`（staticmethod）
+
+路径归一键：绝对化 + normcase
+
+**内部方法**
+监控目录允许以相对路径调度（默认 ``plugins`` / CLI 的 ``.``），
+键必须与删除检测的前缀（同为绝对化归一）在同一坐标系比较，
+否则相对调度路径下删除事件永不触发；绝对化同时保证重叠 watch
+（"." 与 "plugins"）的跨 watch 去重键一致。
 
 ---
 

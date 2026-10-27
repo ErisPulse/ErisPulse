@@ -21,8 +21,8 @@
 
 - **模块总数**: 139
 - **类总数**: 194（包括 5 个嵌套类）
-- **函数总数**: 375
-- **方法总数**: 1747
+- **函数总数**: 376
+- **方法总数**: 1752
 
 ---
 
@@ -406,7 +406,7 @@
 
 ### [ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)
 
-1 个类 | 67 个方法
+1 个类 | 69 个方法
 
 
 ### [ErisPulse.Core.assets.__init__](ErisPulse/Core/assets/__init__.md)
@@ -496,7 +496,7 @@
 
 ### [ErisPulse.Core.module](ErisPulse/Core/module.md)
 
-1 个类 | 72 个方法
+1 个类 | 73 个方法
 
 
 ### [ErisPulse.Core.ownership](ErisPulse/Core/ownership.md)
@@ -651,7 +651,7 @@
 
 ### [ErisPulse.runtime.file_watcher](ErisPulse/runtime/file_watcher.md)
 
-3 个类 | 15 个方法
+3 个类 | 16 个方法
 
 
 ### [ErisPulse.runtime.frame_config](ErisPulse/runtime/frame_config.md)
@@ -696,7 +696,7 @@
 
 ### [ErisPulse.runtime.reload_ops](ErisPulse/runtime/reload_ops.md)
 
-1 个类 | 6 个方法 | 2 个函数
+1 个类 | 7 个方法 | 3 个函数
 
 
 ### [ErisPulse.runtime.sdk_initializer](ErisPulse/runtime/sdk_initializer.md)
