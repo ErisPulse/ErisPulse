@@ -117,3 +117,74 @@ class TestDumpStateRouterFields:
         assert isinstance(router_state.get("ws_routes"), int)
         assert router_state["ws_routes"] >= 0
         assert "error" not in router_state
+
+
+@pytest.mark.unit
+class TestRestartPrecheckRejection:
+    """模块整体预检拒绝：整轮闭环（适配器层跳过 + 判定失败）"""
+
+    async def test_precheck_rejected_skips_adapters_and_fails(self, sdk, monkeypatch):
+        """预检拒绝：适配器不重载（避免无谓断连）、restart 返回 False"""
+        calls: dict = {}
+
+        async def fake_reload_all():
+            calls["modules"] = True
+            return {}
+
+        async def fake_reload_adapter(name, **kwargs):
+            calls.setdefault("adapters", []).append(name)
+            return True
+
+        async def fake_adapter_load(manager, quiet=True):
+            calls["adapter_rediscover"] = True
+            return {}, {}, []
+
+        monkeypatch.setattr(sdk, "reload_all_modules", fake_reload_all)
+        monkeypatch.setattr(sdk, "reload_adapter", fake_reload_adapter)
+        monkeypatch.setattr(sdk, "_adapter_loader", types_stub_loader(fake_adapter_load))
+        monkeypatch.setattr(
+            sdk.adapter, "_adapter_info", {"aiocqhttp": {"meta": {}}}
+        )
+        # 预检拒绝标记（reload_all 管线置位）
+        monkeypatch.setattr(
+            sdk._module_loader, "_last_reload_all_rejected", True, raising=False
+        )
+
+        assert await sdk._do_restart() is False
+        # 模块层执行过、适配器层完全未被触碰
+        assert calls.get("modules") is True
+        assert "adapters" not in calls
+        assert "adapter_rediscover" not in calls
+
+
+def types_stub_loader(load_fn):
+    """最小适配器加载器桩（只需 load 方法）"""
+    import types as _types
+
+    stub = _types.SimpleNamespace()
+    stub.load = load_fn
+    return stub
+
+
+@pytest.mark.unit
+class TestHotLoadMutex:
+    """全新插件热装载（on_created）进入热重载互斥"""
+
+    async def test_hot_load_runs_inside_exclusive_lock(self, sdk, monkeypatch):
+        """load_new_plugin 执行时互斥锁被持有（与 restart/reload 串行）"""
+        from ErisPulse.runtime.reload_ops import reload_ops
+
+        lock_held: list[bool] = []
+
+        async def fake_load_new_plugin(name, manager, sdk_inst):
+            lock_held.append(reload_ops.is_locked())
+            return True
+
+        assert "brand_new_hotplug" not in (
+            getattr(sdk._module_loader, "_last_module_objs", {}) or {}
+        )
+        monkeypatch.setattr(sdk._module_loader, "load_new_plugin", fake_load_new_plugin)
+
+        ok = await sdk._reload_module("brand_new_hotplug")
+        assert ok is True
+        assert lock_held == [True], "热装载未在热重载互斥区内执行"

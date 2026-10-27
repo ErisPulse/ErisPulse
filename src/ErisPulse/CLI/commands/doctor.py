@@ -412,6 +412,18 @@ class DoctorCommand(Command):
                 removed += 1
             except Exception as e:
                 failed_keys.append(f"{key_path} ({e})")
+        # 删除性修改前落一份备份：--yes / 误判场景下用户可对照恢复
+        if removed:
+            import shutil
+
+            backup_path = config_path.with_suffix(".toml.bak")
+            try:
+                shutil.copy2(config_path, backup_path)
+                console.print(
+                    f"[info]  {i18n.t('cli.doctor.fix_pollution_backup', path=backup_path)}[/]"
+                )
+            except Exception as e:
+                failed_keys.append(f"backup ({e})")
         # 原子写回（与 ConfigManager._atomic_write_text 同款：mkstemp + replace）
         text = doc.dumps()
         fd, tmp_name = tempfile.mkstemp(

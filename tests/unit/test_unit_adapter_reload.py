@@ -358,3 +358,79 @@ class TestAdapterManagerReload:
         manager = AdapterManager()
         manager._sdk = (types.SimpleNamespace(_adapter_loader=None))
         assert asyncio.run(manager.reload("Plat")) is False
+
+
+@pytest.mark.unit
+class TestPluginImportFailureNotRemoved:
+    """适配器插件导入失败 ≠ 已删除：回滚旧注册，不误报成功"""
+
+    def test_import_failure_rolls_back_not_removed(self, tmp_path):
+        """源文件仍在但重发现为空（导入期异常）：返回 False 并恢复快照"""
+        source = tmp_path / "plat_plugin.py"
+        source.write_text("x = 1\n", encoding="utf-8")
+        old_mod, old_cls = _make_adapter_module("fake_adp_plugin_broken")
+
+        class FakePluginLoader:
+            def __init__(self):
+                self._loaded_adapter_paths = {"Plat": source}
+
+            def get_loaded_adapter_path(self, name):
+                return self._loaded_adapter_paths.get(name)
+
+            def discover_adapters(self):
+                return {}
+
+        plugin = FakePluginLoader()
+        manager = FakeAdapterManager()
+        manager._adapter_info["Plat"] = {
+            "meta": {"name": "Plat", "source": "adapter_plugin_folder"},
+            "adapter_class": old_cls,
+        }
+        old_instance = object()
+        manager._adapters["Plat"] = old_instance
+
+        loader = _make_loader(FakeEntryPoint(old_cls), plugin_loader=plugin)
+        loader._last_adapter_objs["Plat"] = old_mod
+
+        try:
+            ok = asyncio.run(loader.reload_adapter("Plat", manager, types.SimpleNamespace()))
+            # 失败返回（不是「已删除」的成功）
+            assert ok is False
+            # 回滚：注册表恢复旧 info（adapter_class 保留），实例槽恢复
+            assert manager._adapter_info["Plat"].get("adapter_class") is old_cls
+            assert manager._adapters.get("Plat") is old_instance
+            assert loader._last_adapter_objs.get("Plat") is old_mod
+        finally:
+            sys.modules.pop("fake_adp_plugin_broken", None)
+
+    def test_discovery_crash_rolls_back(self):
+        """discover_adapters 整体抛异常：回滚并返回失败（不落入删除分支）"""
+        old_mod, old_cls = _make_adapter_module("fake_adp_plugin_crash")
+
+        class FakePluginLoader:
+            def __init__(self):
+                self._loaded_adapter_paths = {}
+
+            def get_loaded_adapter_path(self, name):
+                return self._loaded_adapter_paths.get(name)
+
+            def discover_adapters(self):
+                raise RuntimeError("discovery boom")
+
+        plugin = FakePluginLoader()
+        manager = FakeAdapterManager()
+        manager._adapter_info["Plat"] = {
+            "meta": {"name": "Plat", "source": "adapter_plugin_folder"},
+            "adapter_class": old_cls,
+        }
+        manager._adapters["Plat"] = object()
+
+        loader = _make_loader(FakeEntryPoint(old_cls), plugin_loader=plugin)
+        loader._last_adapter_objs["Plat"] = old_mod
+
+        try:
+            ok = asyncio.run(loader.reload_adapter("Plat", manager, types.SimpleNamespace()))
+            assert ok is False
+            assert manager._adapter_info["Plat"].get("adapter_class") is old_cls
+        finally:
+            sys.modules.pop("fake_adp_plugin_crash", None)

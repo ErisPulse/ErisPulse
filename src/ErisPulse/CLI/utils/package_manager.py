@@ -1710,11 +1710,26 @@ package_spec = {package_spec!r}
 T = {messages!r}
 
 def ensure_pip():
-    r = subprocess.run([target_python, "-m", "pip", "--version"], capture_output=True)
+    try:
+        r = subprocess.run(
+            [target_python, "-m", "pip", "--version"],
+            capture_output=True,
+            timeout={CLI_PIP_PROBE_TIMEOUT_SECS},
+        )
+    except subprocess.TimeoutExpired:
+        return False
     if r.returncode == 0:
         return True
     print(T["bootstrap_pip"])
-    r = subprocess.run([target_python, "-m", "ensurepip", "--upgrade"], capture_output=True, text=True)
+    try:
+        r = subprocess.run(
+            [target_python, "-m", "ensurepip", "--upgrade"],
+            capture_output=True,
+            text=True,
+            timeout={CLI_ENSURE_PIP_TIMEOUT_SECS},
+        )
+    except subprocess.TimeoutExpired:
+        return False
     return r.returncode == 0
 
 def run(cmd):
@@ -1882,13 +1897,20 @@ def uv_add(project_dir: Path, packages: "list[str]") -> bool:
     uv_cmd = pm._get_uv_command()
     if not uv_cmd:
         return False
-    result = subprocess.run(
-        [*uv_cmd, "add", *packages],
-        cwd=str(project_dir),
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    try:
+        result = subprocess.run(
+            [*uv_cmd, "add", *packages],
+            cwd=str(project_dir),
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=CLI_UV_PROJECT_TIMEOUT_SECS,
+        )
+    except subprocess.TimeoutExpired:
+        # 网络操作（依赖解析 + 下载）无超时会挂住 init 主流程，与
+        # _run_uv_project_command 的超时标准对齐
+        console.print(f"[error]{i18n.t('cli.package.probe_timeout')}[/]")
+        return False
     return result.returncode == 0
 
 

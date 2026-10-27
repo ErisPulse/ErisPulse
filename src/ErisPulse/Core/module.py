@@ -28,6 +28,7 @@ from .constants import (
     EVENT_MODULE_RELOAD,
     MODULE_SOURCE_PLUGIN_FOLDER,
     MODULE_SOURCE_RUNTIME,
+    UNLOAD_LOCK_WAIT_TIMEOUT_SECS,
 )
 from .di import call_with_depends, call_with_depends_sync
 from .i18n import i18n
@@ -604,6 +605,11 @@ class ModuleManager(ManagerBase):
           可被 GC 回收（解决 NoneBot 式卸载后插件与依赖内存不释放的问题）；
           级联卸载的依赖者同样被 purge。卸载后重新加载需重新 `register()`
 
+        卸载与热重载共用全局互斥：与进行中的 reload / restart / 归眠串行
+        （消除外部卸载与重载交叉导致的双重 ``on_unload``）；等待上限
+        ``UNLOAD_LOCK_WAIT_TIMEOUT_SECS`` 秒，超时降级直接执行并留痕
+        （持锁重载卡死的极端场景不阻塞调用方）。
+
         :param name: 模块名称，None表示卸载所有模块（默认None）
         :param module_name: [已弃用] 兼容旧关键字参数，等同 name
         :param purge: 是否一并删除注册存根并清理 sys.modules（默认 False）
@@ -621,6 +627,29 @@ class ModuleManager(ManagerBase):
         if module_name is not None:
             self._warn_deprecated_kwarg("ModuleManager.unload", "module_name", "name")
             name = module_name
+        # 纳入热重载互斥（重载管线内部同任务调用经重入直通零开销）；
+        # 不可跳过的入口——限时等待，超时降级直接执行
+        from ..runtime.reload_ops import run_reload_exclusive_bounded
+
+        return await run_reload_exclusive_bounded(
+            lambda: self._unload_locked(name, purge=purge, reason=reason),
+            timeout=UNLOAD_LOCK_WAIT_TIMEOUT_SECS,
+            warn_log_key="core.module.unload_lock_timeout",
+            log_params={"name": name or "All", "timeout": UNLOAD_LOCK_WAIT_TIMEOUT_SECS},
+        )
+
+    async def _unload_locked(
+        self, name: str | None, *, purge: bool = False, reason: str = "unload"
+    ) -> bool:
+        """
+        {!--< internal-use >!--}
+        unload 的实现体（调用方已持有热重载互斥锁，或已限时降级）
+
+        :param name: 模块名称，None 表示卸载所有模块
+        :param purge: 是否一并删除注册存根并清理 sys.modules
+        :param reason: 卸载来意标注
+        :return: 是否卸载成功
+        """
         module_name = name
         # purge 模式下收集被卸载模块的弱引用，卸载完成后诊断是否可回收
         purge_refs: list[tuple[str, Any, Any]] = []

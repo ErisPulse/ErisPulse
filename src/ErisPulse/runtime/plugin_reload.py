@@ -90,11 +90,14 @@ class _PluginChangeHandler(FileSystemEventHandler):
                 # 去抖窗口内：合并入队，窗口静默后由定时器统一补发
                 self._pending.add(src_path)
                 return
-            # 窗口外：立即触发（保持「保存即重载」的即时性），并武装补发定时器
+            # 窗口外：立即触发（保持「保存即重载」的即时性），并武装补发定时器。
+            # 定时器先存字段再在锁外 start：并发 close() 可能把字段置 None，
+            # 锁外必须用局部引用，否则 watcher 线程内 AttributeError
             paths = {src_path}
-            self._timer = threading.Timer(self._debounce, self._flush_pending)
-            self._timer.daemon = True
-        self._timer.start()
+            timer = threading.Timer(self._debounce, self._flush_pending)
+            timer.daemon = True
+            self._timer = timer
+        timer.start()
         self._dispatch(paths)
 
     def _flush_pending(self) -> None:
@@ -333,9 +336,11 @@ class PluginReloadWatcher:
         if self._observer is not None:
             try:
                 self._observer.stop()
-                self._observer.join()
-            except Exception:
-                pass
+                # 有限等待：事件循环线程内调用 close()/stop() 时不被一个
+                # 轮询周期卡住；线程为守护线程，超时后自行退出
+                self._observer.join(timeout=self._interval * 2)
+            except Exception as e:
+                logger.debug(i18n.t("runtime.watcher.stop_failed", error=e))
             self._observer = None
 
     async def _handle_change(self, src_path: str) -> Any:

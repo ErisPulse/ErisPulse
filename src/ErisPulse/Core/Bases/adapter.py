@@ -1850,7 +1850,10 @@ class BaseAdapter(ABC):
                     )
                 )
 
-        return spawn_background(_guarded_loop(), owner=self._platform)
+        # owner=None 让 spawn_background 回退到当前 owner 上下文兜底：
+        # 空 platform（未经管理器注册的误用场景）不再产生无人回收的空
+        # owner 任务（与 WebhookAdapter.start 的 _platform 兜底口径一致）
+        return spawn_background(_guarded_loop(), owner=self._platform or None)
 
     async def emit_event(self, event: dict[str, Any]) -> None:
         """

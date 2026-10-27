@@ -41,8 +41,10 @@ from .constants import (
     DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
     EVENT_ADAPTER_EVENT_BLOCKED,
     HANDLER_QUEUE_MAX_PENDING,
+    HANDLER_QUEUE_OVERFLOW_WARN_INTERVAL_SECS,
     HANDLER_SLOW_THRESHOLD_SECS,
     LOG_MESSAGE_TRUNCATE_CHARS,
+    UNLOAD_LOCK_WAIT_TIMEOUT_SECS,
 )
 from .di import _di_cache
 from .i18n import i18n
@@ -128,9 +130,13 @@ class AdapterManager(ManagerBase):
         self._handler_max_concurrency: int = 0  # 0 = 尚未初始化
 
         # 事件洪峰入队背压：待处理 handler Task 数上限（None = 尚未从配置读取；
-        # 0 = 不限）与溢出丢弃计数（排障观测，经 troubleshoot / 日志定位）
+        # 0 = 不限）与溢出丢弃计数（排障观测，经 troubleshoot / 日志定位）；
+        # 告警按 HANDLER_QUEUE_OVERFLOW_WARN_INTERVAL_SECS 窗口折叠——洪峰
+        # 饱和期每秒可丢弃成百上千次，逐次告警恰在过载时加重日志 I/O
         self._handler_queue_max_pending: int | None = None
         self._handler_queue_overflow_count: int = 0
+        self._handler_queue_overflow_warn_at: float = 0.0
+        self._handler_queue_overflow_suppressed: int = 0
 
         # Bot状态存储 - {platform: {bot_id: {"status": str, "last_active": float, "info": dict}}}
         self._bots: dict[str, dict[str, dict]] = {}
@@ -1261,11 +1267,34 @@ class AdapterManager(ManagerBase):
         额外从管理器注销该平台（释放适配器实例与类引用），用于动态移除适配器
         并回收其内存占用。若同一实例还注册了其它平台，实例会保留（仅注销该平台）。
 
+        卸载与热重载共用全局互斥：与进行中的 ``reload_adapter`` / restart
+        串行（消除外部卸载与适配器重载交叉导致的双重 shutdown）；等待上限
+        ``UNLOAD_LOCK_WAIT_TIMEOUT_SECS`` 秒，超时降级直接执行并留痕。
+
         :param platform: 平台名称
         :return: 是否卸载成功
 
         :example:
         >>> await adapter.unload("MyPlatform")
+        """
+        # 纳入热重载互斥（重载管线内部同任务调用经重入直通零开销）；
+        # 不可跳过的入口——限时等待，超时降级直接执行
+        from ..runtime.reload_ops import run_reload_exclusive_bounded
+
+        return await run_reload_exclusive_bounded(
+            lambda: self._unload_locked(platform),
+            timeout=UNLOAD_LOCK_WAIT_TIMEOUT_SECS,
+            warn_log_key="core.adapter.unload_lock_timeout",
+            log_params={"name": platform, "timeout": UNLOAD_LOCK_WAIT_TIMEOUT_SECS},
+        )
+
+    async def _unload_locked(self, platform: str) -> bool:
+        """
+        {!--< internal-use >!--}
+        unload 的实现体（调用方已持有热重载互斥锁，或已限时降级）
+
+        :param platform: 平台名称
+        :return: 是否卸载成功
         """
         if platform not in self._adapters:
             logger.warning(i18n.t("core.adapter.not_registered", platform=platform))
@@ -2207,6 +2236,38 @@ class AdapterManager(ManagerBase):
             self._handler_queue_max_pending = max(0, limit)
         return self._handler_queue_max_pending
 
+    def _record_handler_queue_drop(
+        self, handler: str, event_type: str, platform: str, size: int
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        背压丢弃留痕（窗口折叠）：窗口内仅首条丢弃记 WARNING，后续折叠
+        只累计计数；下个窗口的首条丢弃附带上一窗口折叠条数。丢弃总数
+        始终累计到 ``_handler_queue_overflow_count``（troubleshoot 可见）。
+
+        :param handler: 被丢弃的处理器名（日志定位用）
+        :param event_type: 事件类型
+        :param platform: 平台名
+        :param size: 触发丢弃时的待处理集合大小
+        """
+        self._handler_queue_overflow_count += 1
+        now = time.monotonic()
+        if now - self._handler_queue_overflow_warn_at >= HANDLER_QUEUE_OVERFLOW_WARN_INTERVAL_SECS:
+            logger.warning(
+                i18n.t(
+                    "core.adapter.handler_queue_overflow",
+                    handler=handler,
+                    type=event_type,
+                    platform=platform,
+                    size=size,
+                    suppressed=self._handler_queue_overflow_suppressed,
+                )
+            )
+            self._handler_queue_overflow_warn_at = now
+            self._handler_queue_overflow_suppressed = 0
+        else:
+            self._handler_queue_overflow_suppressed += 1
+
     def _on_framework_config_changed(self, _data: dict) -> None:
         """
         {!--< internal-use >!--}
@@ -2390,16 +2451,7 @@ class AdapterManager(ManagerBase):
         # 本次调度并留痕（常驻进程的内存兜底，正常负载永远不会触达）
         queue_limit = self._get_handler_queue_limit()
         if queue_limit > 0 and len(self._pending_handler_tasks) >= queue_limit:
-            self._handler_queue_overflow_count += 1
-            logger.warning(
-                i18n.t(
-                    "core.adapter.handler_queue_overflow",
-                    handler=_func_name,
-                    type=event_type,
-                    platform=platform,
-                    size=len(self._pending_handler_tasks),
-                )
-            )
+            self._record_handler_queue_drop(_func_name, event_type, platform, len(self._pending_handler_tasks))
             return None
 
         try:

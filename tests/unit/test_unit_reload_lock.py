@@ -151,3 +151,155 @@ class TestReloadOpsCoordinator:
         """模块级单例与类实例语义一致"""
         assert isinstance(reload_ops, ReloadOpsCoordinator)
         assert reload_ops.is_locked() is False
+
+
+@pytest.mark.unit
+class TestRestartDeferredMerge:
+    """restart 请求落在普通 reload 持锁期间：deferred 登记 + 后续并入"""
+
+    @pytest.mark.asyncio
+    async def test_deferred_registered_then_merged(self):
+        """非 restart 持锁：首个请求登记 deferred，后续请求并入（至多一轮）"""
+        coord = ReloadOpsCoordinator()
+        release = asyncio.Event()
+
+        async def holder():
+            async with coord:
+                await release.wait()
+
+        task = asyncio.ensure_future(holder())
+        await asyncio.sleep(0.01)
+        try:
+            # 首个 restart：登记 deferred，调用方自行调度（排队等锁）
+            assert coord.mark_restart_pending() is False
+            assert coord._restart_deferred is True
+            # 后续 restart：并入已排队的请求，不再额外调度
+            assert coord.mark_restart_pending() is True
+            assert coord.mark_restart_pending() is True
+        finally:
+            release.set()
+            await task
+
+        # 排队请求获得锁（或执行体退出）后登记清零，放行后续 restart
+        coord._restart_deferred = True
+        coord.clear_restart_deferred()
+        # 锁空闲：新请求正常返回 False（需自行调度）
+        assert coord.mark_restart_pending() is False
+
+    @pytest.mark.asyncio
+    async def test_dirty_merge_during_restart_holder_unchanged(self):
+        """restart 持锁期间：请求仍走 dirty 合并（原语义不回归）"""
+        coord = ReloadOpsCoordinator()
+        release = asyncio.Event()
+
+        async def restart_holder():
+            async with coord:
+                coord.begin_restart_section()
+                await release.wait()
+
+        task = asyncio.ensure_future(restart_holder())
+        await asyncio.sleep(0.01)
+        try:
+            assert coord.mark_restart_pending() is True
+            assert coord.consume_restart_dirty() is True
+        finally:
+            release.set()
+            await task
+
+
+@pytest.mark.unit
+class TestUnloadPublicEntryMutex:
+    """module/adapter unload() 公共入口纳入热重载互斥（限时等待 + 超时降级）"""
+
+    @pytest.mark.asyncio
+    async def test_unload_waits_until_lock_released(self):
+        """重载持锁期间外部 unload 排队等待，锁释放后执行（不交叉）"""
+        from ErisPulse.Core.module import ModuleManager
+
+        release = asyncio.Event()
+
+        async def reload_holder():
+            async with reload_ops:
+                await release.wait()
+
+        holder = asyncio.ensure_future(reload_holder())
+        await asyncio.sleep(0.01)
+        manager = ModuleManager()
+        try:
+            task = asyncio.ensure_future(manager.unload("nothing_loaded"))
+            await asyncio.sleep(0.05)
+            # 持锁期间 unload 未完成（在等锁，不与重载交叉）
+            assert not task.done()
+            release.set()
+            await holder
+            assert await asyncio.wait_for(task, timeout=2.0) is True
+        finally:
+            release.set()
+            await holder
+
+    @pytest.mark.asyncio
+    async def test_unload_reentrant_inside_reload_pipeline(self):
+        """重载管线内部（同任务已持锁）调用 unload：重入直通不死锁"""
+        from ErisPulse.Core.module import ModuleManager
+
+        manager = ModuleManager()
+
+        async def pipeline():
+            async with reload_ops:
+                return await manager.unload("nothing_loaded")
+
+        assert await asyncio.wait_for(pipeline(), timeout=2.0) is True
+
+    @pytest.mark.asyncio
+    async def test_unload_degrades_after_timeout(self, monkeypatch, caplog):
+        """持锁重载长时间卡死：限时等待超时后降级直接执行并留痕"""
+        import importlib
+
+        from ErisPulse.Core.module import ModuleManager
+
+        # ErisPulse.Core 聚合导出把 module 名字绑定为管理器实例，
+        # import ... as 拿到的是实例——经 sys.modules 取真身模块
+        core_module_mod = importlib.import_module("ErisPulse.Core.module")
+        monkeypatch.setattr(core_module_mod, "UNLOAD_LOCK_WAIT_TIMEOUT_SECS", 0.05)
+        release = asyncio.Event()
+
+        async def stuck_reload():
+            async with reload_ops:
+                await release.wait()
+
+        holder = asyncio.ensure_future(stuck_reload())
+        await asyncio.sleep(0.01)
+        try:
+            with caplog.at_level("WARNING"):
+                manager = ModuleManager()
+                assert await asyncio.wait_for(manager.unload("nothing_loaded"), timeout=2.0) is True
+            assert any("unload_lock_timeout" in r.getMessage() or "降级" in r.getMessage() for r in caplog.records)
+        finally:
+            release.set()
+            await holder
+
+    @pytest.mark.asyncio
+    async def test_adapter_unload_waits_for_lock(self):
+        """adapter.unload 同样进入互斥：持锁期间排队"""
+        from ErisPulse.Core.adapter import AdapterManager
+
+        release = asyncio.Event()
+
+        async def reload_holder():
+            async with reload_ops:
+                await release.wait()
+
+        holder = asyncio.ensure_future(reload_holder())
+        await asyncio.sleep(0.01)
+        manager = AdapterManager()
+        try:
+            task = asyncio.ensure_future(manager.unload("ghost_platform"))
+            await asyncio.sleep(0.05)
+            assert not task.done()
+            release.set()
+            await holder
+            # 未注册平台：等锁完成后正常走「未注册」分支返回 False
+            assert await asyncio.wait_for(task, timeout=2.0) is False
+        finally:
+            release.set()
+            await holder

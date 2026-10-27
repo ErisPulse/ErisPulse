@@ -106,7 +106,20 @@ class PollingAdapter(BaseAdapter):
                     event = self.convert_one(raw)
                     if event is None:
                         continue
-                    await self.emit_event(event)
+                    # 逐条隔离 emit：单条上报异常不丢弃余批（offset 已在
+                    # fetch 推进的适配器会真丢事件），记 warning 继续本批
+                    try:
+                        await self.emit_event(event)
+                    except asyncio.CancelledError:
+                        raise
+                    except Exception as e:
+                        logger.warning(
+                            i18n.t(
+                                "core.adapter.polling_emit_failed",
+                                platform=self._platform or self.__class__.__name__,
+                                error=e,
+                            )
+                        )
                 backoff = POLLING_ADAPTER_BACKOFF_BASE_SECS
                 await asyncio.sleep(self._resolve_poll_interval())
             except asyncio.CancelledError:

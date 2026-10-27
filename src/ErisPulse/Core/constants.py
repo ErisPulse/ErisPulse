@@ -692,6 +692,28 @@ TRANSCRIPT_BUFFER_MAX_ROWS: Final[int] = 4096
 #           调大 → 退出兜底更执着但极端场景退出延迟变长。
 TRANSCRIPT_EXIT_FLUSH_TIMEOUT_SECS: Final[float] = 5.0
 
+# 出站消息（message.sent）归档 meta 的字段白名单：仅这些 send_ctx 键入库，
+# 未来 send_ctx 新增字段不会无感写入收件箱（保持表结构与归因语义稳定）。
+# 使用位置: Core/transcript.py -> _on_message_sent()
+# 修改影响: 增删键直接决定出站记录的 meta 内容；module 键标识发送归属模块。
+TRANSCRIPT_OUTBOUND_META_KEYS: Final[tuple[str, ...]] = (
+    "platform",
+    "method",
+    "detail_type",
+    "target_id",
+    "bot_id",
+    "trace_id",
+    "preview",
+    "module",
+)
+
+# 公共卸载入口（module/adapter 的 unload()）限时等待热重载互斥锁的上限（秒）。
+# 使用位置: Core/module.py -> ModuleManager.unload()；Core/adapter.py ->
+# AdapterManager.unload()（经 runtime/reload_ops.run_reload_exclusive_bounded）。
+# 修改影响: 调大 → 外部卸载更倾向与进行中的重载完全串行，但重载长时间卡死时
+#           调用方等待更久；调小 → 极端场景更早降级为直接执行（回到无锁行为）。
+UNLOAD_LOCK_WAIT_TIMEOUT_SECS: Final[float] = 30.0
+
 
 # 模块间调用（module.call）的默认超时（秒）。
 # 使用位置: Core/module.py -> ModuleManager.call()
@@ -1523,6 +1545,8 @@ __all__ = [
     "TRANSCRIPT_FLUSH_INTERVAL_SECS",
     "TRANSCRIPT_BUFFER_MAX_ROWS",
     "TRANSCRIPT_EXIT_FLUSH_TIMEOUT_SECS",
+    "TRANSCRIPT_OUTBOUND_META_KEYS",
+    "UNLOAD_LOCK_WAIT_TIMEOUT_SECS",
     "DEFAULT_MODULE_CALL_TIMEOUT_SECS",
     "DEFAULT_EVENT_DEDUPE_CAPACITY",
     "DEFAULT_MAX_SESSION_REMINDERS",

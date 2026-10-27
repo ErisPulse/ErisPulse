@@ -969,18 +969,29 @@ class SDK:
                 or module_name in adapter_loader._last_adapter_objs
             ):
                 return bool(await self.reload_adapter(module_name))
-            if module_loader is not None:
-                result = await module_loader.load_new_plugin(
-                    module_name, self.module, self
-                )
-                if result is not None:
-                    return result
-            if adapter_loader is not None:
-                result = await adapter_loader.load_new_adapter_plugin(
-                    module_name, self.adapter, self
-                )
-                return bool(result)
-            return False
+
+            # 全新文件热装载（on_created）：同样进入热重载互斥——装载会写
+            # 共享注册表单槽（_last_module_objs / register / manager.load），
+            # 与进行中的 restart / reload 交叉会互相抹掉对方的注册结果。
+            # 重入直通：已持锁任务内触发时直接执行（run_reload_exclusive 保证）
+            from .runtime.reload_ops import run_reload_exclusive
+
+            async def _hot_load() -> bool:
+                if module_loader is not None:
+                    result = await module_loader.load_new_plugin(
+                        module_name, self.module, self
+                    )
+                    if result is not None:
+                        return result
+                if adapter_loader is not None:
+                    return bool(
+                        await adapter_loader.load_new_adapter_plugin(
+                            module_name, self.adapter, self
+                        )
+                    )
+                return False
+
+            return bool(await run_reload_exclusive(_hot_load))
         except Exception as e:
             self.logger.error(i18n.t("core.sdk.hot_reload.failed", name=module_name, error=e))
             return False
@@ -1050,6 +1061,7 @@ class SDK:
         try:
             async with reload_ops:
                 reload_ops.begin_restart_section()
+                reload_ops.clear_restart_deferred()
                 while True:
                     result = await self._execute_restart_once()
                     if not reload_ops.consume_restart_dirty():
@@ -1057,6 +1069,9 @@ class SDK:
         except Exception as e:
             self.logger.error(i18n.t("core.sdk.reload.failed", error=e))
             return False
+        finally:
+            # 执行体退出（含异常 / 取消）：作废排队登记，放行后续 restart
+            reload_ops.clear_restart_deferred()
 
     async def _execute_restart_once(self) -> bool:
         """
@@ -1067,6 +1082,13 @@ class SDK:
 
         # 1. 模块层：统一热重载管线（含整体预检 / 快照回滚 / 身份核对）
         module_results = await self.reload_all_modules()
+
+        # 预检整轮拒绝（任一模块语法错误）：模块层已整体保持旧实例继续
+        # 服务；适配器层跳过本轮重载（避免无谓的断连抖动），整轮判失败。
+        # 修复语法错误后再次 restart 即可
+        if getattr(self._module_loader, "_last_reload_all_rejected", False):
+            self.logger.warning(i18n.t("core.sdk.reload.precheck_rejected"))
+            return False
 
         # 2. 适配器层：先重发现（新装/卸载即刻生效），再逐个代码级热重载
         adapter_results: dict[str, bool] = {}

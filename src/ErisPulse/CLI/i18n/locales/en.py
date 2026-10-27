@@ -617,6 +617,7 @@ TRANSLATIONS = {
     "cli.doctor.fix_pollution_confirm": "Remove these residue keys (comments and ordering are preserved)?",
     "cli.doctor.fix_pollution_skipped": "residue cleanup skipped",
     "cli.doctor.fix_pollution_removed": "removed {count} residue key(s) from config.toml",
+    "cli.doctor.fix_pollution_backup": "backup written before cleanup: {path}",
     "cli.doctor.fix_pollution_failed": "residue cleanup failed: {error}",
     "cli.doctor.fix_pollution_remove_failed": "failed to remove the following residue key(s) (the rest were written back to config.toml): {keys}",
     "cli.doctor.component_config_ok": "All ready (nothing pending)",

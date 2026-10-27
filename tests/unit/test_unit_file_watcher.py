@@ -63,3 +63,31 @@ def test_non_py_files_ignored(tmp_path):
     finally:
         observer.stop()
         observer.join()
+
+
+@pytest.mark.asyncio
+async def test_relative_schedule_path_deletion_fires(tmp_path, monkeypatch):
+    """相对路径调度的监控目录：删除事件必须触发
+
+    键与删除前缀必须同坐标系（绝对化归一）——此前删除前缀为 resolve()
+    绝对路径而 mtime 键保留调度原始路径，相对调度（默认 plugins / CLI 的
+    "."）下 startswith 永不匹配，删除/改名插件静默失效。
+    """
+    monkeypatch.chdir(tmp_path)
+    plugins = tmp_path / "plugins"
+    plugins.mkdir()
+    (plugins / "dice.py").write_text("x = 1\n", encoding="utf-8")
+
+    rec = _Recorder()
+    observer = PollingObserver(interval=0.05)
+    observer.schedule(rec, "plugins", recursive=True)  # 相对路径调度
+    observer.start()
+    try:
+        (plugins / "dice.py").unlink()
+        await asyncio.sleep(0.25)
+        assert any(p.endswith("dice.py") for p in rec.deleted), (
+            "相对路径调度下删除事件未触发"
+        )
+    finally:
+        observer.stop()
+        observer.join()

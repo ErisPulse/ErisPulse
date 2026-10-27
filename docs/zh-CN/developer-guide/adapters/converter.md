@@ -170,6 +170,28 @@ OneBot12 标准定义了以下消息段类型：
 
 如果平台有不支持的消息段类型，可以省略该段或转换为最接近的标准类型。
 
+## alt_message 渲染约定
+
+`alt_message` 是消息事件的纯文本备用内容，供日志归档、`extract_text` 文本匹配与命令分发兜底使用。各适配器生成 `alt_message` 时应遵循以下约定（尤其注意 mention 段）：
+
+- **mention 段**优先渲染为 `@昵称`；平台未提供昵称时回退为 `@{user_id}`；`user_id` 为 `all`（@全体成员）时渲染为 `@全体成员`
+- 昵称与 `user_id` **两者皆缺时省略该段**，不得输出空的 `"@"`——如 `"@ 帮助"` 会污染文本匹配与命令解析口径
+- 注意 `data.get("user_name", fallback)` 陷阱：若构造消息段时 `user_name` 默认存了空字符串，键存在会导致 fallback 永不生效；应使用 `data.get("user_name") or data.get("user_id")` 的写法
+- 其余消息段的渲染风格（如 `[图片]`、`[语音]`）与各段之间的拼接方式（`""` 或 `" "`）保持适配器自身既有口径，不做强制统一
+
+```python
+# mention 段渲染示例
+data = seg.get("data") or {}
+user_id = str(data.get("user_id") or "").strip()
+user_name = str(data.get("user_name") or "").strip()
+if user_id == "all":
+    parts.append("@全体成员")
+elif user_name:
+    parts.append(f"@{user_name}")
+elif user_id:
+    parts.append(f"@{user_id}")
+```
+
 ## 平台扩展字段
 
 平台特有的数据应使用 `{platform}_` 前缀存储，避免与标准字段冲突：

@@ -1,7 +1,7 @@
 {
   "repo_notes": [
     {
-      "content": "检索与回答规则：\n\n1. 以下目录在 AI 检索文档时应被忽略，不纳入检索范围：\n   - `api-reference/auto_api/` — 自动生成的 API 文档，内容与手写文档重复且结构机械，检索它会导致冗余和不准确的结果。所有语言版本（en / ja / ru / zh-CN / zh-TW）均应忽略此目录。\n   - `ai-support/prompts/` — AI 提示词目录，这是供 AI 开发使用的物料文档（prompts），不是供最终用户查阅的文档。所有语言版本均应忽略此目录。\n\n2. 语言优先级：所有语言版本的文档内容是一致的（同一份文档翻译为 5 种语言）。在检索和回答时，优先阅读简体中文（zh-CN）版本的文档进行回答，因为中文文档的表达更精确、与源码注释一致。只有在中文文档缺失或需要核对原文时才回退到其他语言版本。\n\n3. 检索时请只使用以下手写的文档目录：\n   - 根目录：`README.md`、`quick-start.md`、`architecture.md`、`terminology.md`、`bug-tracker.md`\n   - `getting-started/` — 入门指南\n   - `user-guide/` — 用户使用指南（安装、配置、CLI、部署）\n   - `developer-guide/` — 开发者指南（模块开发、适配器开发、发布）\n   - `platform-guide/` — 平台特性指南\n   - `api-reference/` — API 参考（排除 auto_api 子目录）\n   - `advanced/` — 高级主题\n   - `standards/` — 技术标准\n   - `styleguide/` — 风格指南"
+      "content": "检索与回答规则：\n\n1. 以下目录在 AI 检索文档时应被忽略，不纳入检索范围：\n   - `api-reference/auto_api/` — 自动生成的 API 文档，内容与手写文档重复且结构机械，检索它会导致冗余和不准确的结果。所有语言版本（en / ja / ru / zh-CN / zh-TW）均应忽略此目录。\n   - `ai-support/prompts/` — AI 提示词目录，这是供 AI 开发使用的物料文档（prompts），不是供最终用户查阅的文档。所有语言版本均应忽略此目录。\n   - `ai-support/skills/` — AI 技能目录，同样是供 AI 开发使用的物料文档（skills），不是供最终用户查阅的文档。所有语言版本均应忽略此目录。\n\n2. 语言优先级：所有语言版本的文档内容是一致的（同一份文档翻译为 5 种语言）。在检索和回答时，优先阅读简体中文（zh-CN）版本的文档进行回答，因为中文文档的表达更精确、与源码注释一致。只有在中文文档缺失或需要核对原文时才回退到其他语言版本。\n\n3. 检索时请只使用以下手写的文档目录：\n   - 根目录：`README.md`、`quick-start.md`、`architecture.md`、`terminology.md`、`bug-tracker.md`\n   - `getting-started/` — 入门指南\n   - `user-guide/` — 用户使用指南（安装、配置、CLI、部署）\n   - `developer-guide/` — 开发者指南（模块开发、适配器开发、发布）\n   - `platform-guide/` — 平台特性指南\n   - `api-reference/` — API 参考（排除 auto_api 子目录）\n   - `advanced/` — 高级主题\n   - `standards/` — 技术标准\n   - `styleguide/` — 风格指南"
     }
   ],
   "pages": [

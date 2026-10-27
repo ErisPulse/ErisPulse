@@ -175,3 +175,39 @@ def test_discover_package_import_follows_current_cwd(tmp_path, monkeypatch):
         absolute_entry = str((site_b / "plugins").resolve())
         if absolute_entry in sys.path:
             sys.path.remove(absolute_entry)
+
+
+@pytest.mark.unit
+class TestSingleFileImportCache:
+    """单文件插件导入缓存：未变更插件不重执行模块级代码"""
+
+    def test_unchanged_plugin_reused_across_discover(self, plugin_dir):
+        """mtime 未变：discover 复用 sys.modules 中的模块对象（无重复 exec）"""
+        loader = PluginFolderLoader()
+        first = loader.discover()
+        assert "dice" in first
+        exec_marker = getattr(first["dice"], "_exec_count", None)
+        # 插件源码不携带计数器：用模块对象身份代替验证
+        first_obj = first["dice"]
+
+        second = loader.discover()
+        assert second["dice"] is first_obj, "未变更插件在两次 discover 间被重新执行"
+
+    def test_changed_plugin_reexecuted(self, plugin_dir):
+        """mtime 变化：discover 重新导入（拿到新模块对象）"""
+        loader = PluginFolderLoader()
+        first = loader.discover()
+        first_obj = first["dice"]
+
+        dice_file = plugin_dir / "dice.py"
+        content = dice_file.read_text(encoding="utf-8")
+        # 显式改写内容并保证 mtime 前进（同秒写入陷阱）
+        import os
+
+        st = dice_file.stat()
+        dice_file.write_text(content + "\n# touch\n", encoding="utf-8")
+        os.utime(dice_file, (st.st_atime + 10, st.st_mtime + 10))
+        assert dice_file.stat().st_mtime != st.st_mtime
+
+        second = loader.discover()
+        assert second["dice"] is not first_obj, "变更后插件未被重新导入"

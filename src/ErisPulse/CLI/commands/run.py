@@ -121,11 +121,14 @@ class ReloadHandler(FileSystemEventHandler):
                 # 去抖窗口内：合并入队，窗口静默后由定时器统一补发
                 self._pending.add(src_path)
                 return
-            # 窗口外：立即触发（保持「保存即重载」的即时性），并武装补发定时器
+            # 窗口外：立即触发（保持「保存即重载」的即时性），并武装补发定时器。
+            # 定时器先存字段再在锁外 start：并发 close() 可能把字段置 None，
+            # 锁外必须用局部引用，否则 watcher 线程内 AttributeError
             paths = {src_path}
-            self._timer = threading.Timer(self._debounce, self._flush_pending)
-            self._timer.daemon = True
-        self._timer.start()
+            timer = threading.Timer(self._debounce, self._flush_pending)
+            timer.daemon = True
+            self._timer = timer
+        timer.start()
         self._dispatch(paths)
 
     def _flush_pending(self) -> None:
@@ -250,11 +253,15 @@ class _DevWatchdog:
             self._handler.close()
             self._handler = None
         if self._observer is not None:
+            from ...Core.constants import FILE_WATCH_POLL_INTERVAL_SECS
+            from ...Core.logger import logger
+
             try:
                 self._observer.stop()
-                self._observer.join()
-            except Exception:
-                pass
+                # 有限等待：轮询线程为守护线程，超时后自行退出
+                self._observer.join(timeout=FILE_WATCH_POLL_INTERVAL_SECS * 2)
+            except Exception as e:
+                logger.debug(f"dev watcher stop failed: {e!r}")
             self._observer = None
 
 

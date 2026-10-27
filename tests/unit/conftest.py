@@ -162,3 +162,24 @@ def _isolated_framework_singletons():
         interaction.clear()
     except Exception:
         pass
+
+
+@pytest.fixture(autouse=True)
+def _reset_reload_ops_lock():
+    """热重载互斥单例按测试重置锁与状态
+
+    asyncio.Lock 绑定首个 await 它的事件循环，pytest-asyncio 每个测试
+    使用新循环——跨测试复用同一把锁会撞「bound to a different event
+    loop」。Lock 对象换新、单例身份不变（业务代码经模块级单例访问）。
+    """
+    import asyncio as _asyncio
+
+    from ErisPulse.runtime import reload_ops as _reload_ops_mod
+
+    coordinator = _reload_ops_mod.reload_ops
+    coordinator._lock = _asyncio.Lock()
+    coordinator._holder = None
+    coordinator._holder_is_restart = False
+    coordinator._restart_dirty = False
+    coordinator._restart_deferred = False
+    yield
