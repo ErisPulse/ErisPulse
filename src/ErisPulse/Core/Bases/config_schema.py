@@ -1056,17 +1056,31 @@ def _schema_fields(config_class: type) -> dict:
 
 
 def _apply_ui_meta(field_schema: dict, ui_meta: dict) -> None:
-    """{!--< internal-use >!--} 将 UI 元数据合并进字段 schema"""
-    if "widget" in ui_meta:
-        field_schema["widget"] = ui_meta["widget"]
-    if "group" in ui_meta:
-        field_schema["group"] = ui_meta["group"]
-    if "order" in ui_meta:
-        field_schema["order"] = ui_meta["order"]
-    if "options" in ui_meta:
-        field_schema["options"] = ui_meta["options"]
-    if "placeholder" in ui_meta:
-        field_schema["placeholder"] = ui_meta["placeholder"]
+    """{!--< internal-use >!--} 将 UI 元数据合并进字段 schema
+
+    扩展键（min/max/step/rows/show_if/disabled_if/value_type/item）由 Dashboard
+    满血组件系统消费（见 Dashboard docs/config-widgets.md）；旧版面板未识别时
+    自动忽略，不影响渲染。
+    """
+    _UI_META_PASSTHROUGH_KEYS = (
+        "widget",
+        "group",
+        "order",
+        "options",
+        "placeholder",
+        # 满血组件系统扩展键
+        "min",
+        "max",
+        "step",
+        "rows",
+        "show_if",
+        "disabled_if",
+        "value_type",
+        "item",
+    )
+    for key in _UI_META_PASSTHROUGH_KEYS:
+        if key in ui_meta:
+            field_schema[key] = ui_meta[key]
 
 
 def get_config_schema(config_class: type) -> dict:

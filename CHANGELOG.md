@@ -110,6 +110,7 @@
   - `PollingAdapter` 批内单条上报失败隔离（单条异常不再丢弃余批）
   - `spawn_client_loop` 空 platform 时回退 owner 上下文兜底（空 owner 任务不再无人回收）
   - 文件监控停止 join 改有限超时（不再阻塞事件循环一个轮询周期）；预检与监控日志全面 i18n 化（五语言）
+  - 配置 schema 透传满血组件扩展元数据（`min/max/step/rows/show_if/disabled_if/value_type/item`，供 Dashboard 2.4.0+ 组件系统消费；旧面板自动忽略）
 
 ### 变更
 
