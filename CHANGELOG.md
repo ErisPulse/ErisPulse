@@ -100,6 +100,7 @@
   - restart 请求落在普通重载持锁期间同样合并排队（至多补跑一轮完整 restart）
   - 去抖定时器 start 竞态：并发停止监控时 watcher 线程不再偶发 AttributeError
   - `module.unload()` / `adapter.unload()` 公共入口纳入热重载互斥（限时等待，超时降级直接执行并留痕）：外部卸载不再与进行中的重载交叉导致双重 `on_unload` / 双重 shutdown
+  - 文档流水线：根 README 翻译加固——语言切换行只允许原位整行替换并落盘去重（修复译文中部被复制出第二条语言条）；图片 src 与 shields.io 徽章标签逐块校验（修复 en/ja/ru 徽章残留「文档-erisdev.com」式源语言文字，历史污染缓存块自动弃用重译自愈）
 
 ### 优化
 
