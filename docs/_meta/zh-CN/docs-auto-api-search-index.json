@@ -7365,7 +7365,7 @@
     "`_resolve_fields_i18n(fields_dict: dict) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/config_schema.md",
-        "line": 507,
+        "line": 511,
         "level": 3,
         "title": "`_resolve_fields_i18n(fields_dict: dict) -> None`"
       }
@@ -7373,7 +7373,7 @@
     "`_resolve_i18n_text(value, i18n_mgr)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/config_schema.md",
-        "line": 490,
+        "line": 494,
         "level": 3,
         "title": "`_resolve_i18n_text(value, i18n_mgr)`"
       }
@@ -12245,7 +12245,7 @@
     "`class BaseConfig`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/config_schema.md",
-        "line": 565,
+        "line": 569,
         "level": 3,
         "title": "`class BaseConfig`"
       }
@@ -12333,7 +12333,7 @@
     "`class BotAccountConfig`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/config_schema.md",
-        "line": 588,
+        "line": 592,
         "level": 3,
         "title": "`class BotAccountConfig`"
       }
@@ -12669,7 +12669,7 @@
     "`class I18nConfig`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/config_schema.md",
-        "line": 610,
+        "line": 614,
         "level": 3,
         "title": "`class I18nConfig`"
       }
@@ -15269,7 +15269,7 @@
     "`get_config_schema(config_class: type) -> dict`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/config_schema.md",
-        "line": 435,
+        "line": 439,
         "level": 3,
         "title": "`get_config_schema(config_class: type) -> dict`"
       }
@@ -18067,7 +18067,7 @@
     "`redact_secret(value: Any) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/config_schema.md",
-        "line": 539,
+        "line": 543,
         "level": 3,
         "title": "`redact_secret(value: Any) -> Any`"
       }
@@ -18155,7 +18155,7 @@
     "`register_config_i18n(config_class: type, lang: str, translations: dict[str, str] | None = None, domain: str = 'config') -> int`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/config_schema.md",
-        "line": 453,
+        "line": 457,
         "level": 3,
         "title": "`register_config_i18n(config_class: type, lang: str, translations: dict[str, str] | None = None, domain: str = 'config') -> int`"
       }
@@ -18607,7 +18607,7 @@
     "`resolve_config_schema(config_class: type, resolve_i18n: bool = True) -> dict`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/config_schema.md",
-        "line": 514,
+        "line": 518,
         "level": 3,
         "title": "`resolve_config_schema(config_class: type, resolve_i18n: bool = True) -> dict`"
       }
@@ -22561,7 +22561,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/config_schema.md",
-        "line": 562,
+        "line": 566,
         "level": 2,
         "title": "类列表"
       },
