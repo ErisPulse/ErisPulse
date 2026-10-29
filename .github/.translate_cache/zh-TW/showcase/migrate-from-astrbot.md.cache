@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "hash": "929f71aaab35a4ba8a7de9f3646e2d68",
+  "file_hash": "929f71aaab35a4ba8a7de9f3646e2d68",
+  "translated_at": "2026-10-29T09:01:57.965819",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "c3ad6e6da88060356f1203f1fede9032",
+      "translation": "# 遷移指南：從 AstrBot 到 ErisPulse\n\n> [!TIP]\n> **什麼時候需要讀這篇**：當你已有一個 AstrBot 機器人，想把它遷到 ErisPulse 時讀這篇。全新搭建請直接看[快速開始](../quick-start.md)。\n\n先說結論：**平台接入、模型、人格、知識庫都能搬；AstrBot 外掛不能搬**——兩邊外掛 API 完全不同，外掛需要按 ErisPulse 模組規範重寫。資料不會自動遷移。"
+    },
+    {
+      "hash": "df98db3e7a7b42b574c20f087cda6a2a",
+      "translation": "## 概念對照\n\n| AstrBot 裡的 | ErisPulse 裡的 | 說明 |\n|---|---|---|\n| 平台適配器（QQ/微信/Telegram…） | [平台適配器](../platform-guide/README.md) | 概念一致，裝 ErisPulse 對應適配器即可 |\n| LLM Provider（API Key、模型） | [QvQChat](../ecosystem/qvqchat.md) 模型池 | 都是 OpenAI 相容接入；QvQChat 支援模型池自癒與難度路由 |\n| 人格 Persona | QvQChat 人格系統 | 系統提示詞 + 開場白 + 工具白名單，手工搬運 |\n| 知識庫 | QvQChat 知識庫 | 世界書式關鍵詞觸發 + 向量檢索，需重新匯入 |\n| WebUI | [Dashboard](../ecosystem/dashboard.md) | 模組啟停、配置、日誌、事件監控；QvQChat 另有獨立控制台 |\n| 插件 | 模組 | API 不同，需重寫（見下） |\n| 管理員/白名單 | 三維[作用域](../advanced/scope.md) + 模組自身權限（如 QvQChat `admins`） | 權限模型更細，逐模組配置 |"
+    },
+    {
+      "hash": "cb9d5f35c71b76ef7ffa10aaa3ee638c",
+      "translation": "## 遷移步驟\n\n1. **搭框架**：按[快速開始](../quick-start.md)初始化專案（Docker 或 pip 均可），裝上 Dashboard\n2. **接平台**：`epsdk install` 你原來使用的平台適配器（QQ 生態裝 OneBot 適配器，Telegram 裝 Telegram 適配器……），登入方式與協定實作的選擇和 AstrBot 時期相同\n3. **裝智慧型代理**：`epsdk install ErisPulse-QvQChat`，在模型池裡填入原來的 Base URL / API Key / 模型名稱\n4. **搬遷人格與知識庫**：人格到 QvQChat 人格頁逐條新建；知識庫文件重新匯入\n5. **重寫外掛**：按下一節對照，把原外掛的「命令 → 處理邏輯」翻譯成 ErisPulse 模組"
+    },
+    {
+      "hash": "d21dfbfda63ba06d128f72c27fe313eb",
+      "translation": "## 外掛重寫對照\n\n同一個「收到 `/ping` 回 pong」的外掛，兩邊的寫法：\n\n**AstrBot 外掛**（示意，以 AstrBot 文件為準）：\n\n```python\nfrom astrbot.api.event import filter, AstrMessageEvent\n\n@filter.command(\"ping\")\nasync def ping(self, event: AstrMessageEvent):\n    yield event.plain_result(\"pong\")\n```\n\n**ErisPulse 模組**（完整可執行，見[模組開發入門](../developer-guide/modules/getting-started.md)）：\n\n```python\nfrom ErisPulse.Core.Event import command\n\n@command(\"ping\", help=\"測試機器人是否在線\")\nasync def ping_handler(event):\n    await event.reply(\"pong\")\n```\n\n差異要點：\n\n- **事件模型**：AstrBot 每個平台各自的事件物件；ErisPulse 是 OneBot12 統一事件，`event.reply` / SendDSL 在所有平台行為一致\n- **套件結構**：ErisPulse 模組是標準 Python 套件，用 `epsdk create module` 腳手架產生，發佈到 PyPI + 模組市場\n- **定時任務 / 儲存**：安裝 [Cron](../ecosystem/cron.md) 模組或直接用框架內建儲存 API，不引入第三方依賴"
+    },
+    {
+      "hash": "5424343d2d16afe6612df0fec73f4d97",
+      "translation": "## 建議的遷移策略\n\n**並行雙跑**：ErisPulse 機器人先接一個測試群跑通全部功能，確認無缺失後再切主群。兩邊平台帳號體系獨立（各自的協議實現/Token），互不干擾，回退成本低。\n\n> [!NOTE]\n> AstrBot 的插件 API 與功能清單持續演進，本頁對照以通用概念為主；具體某個插件能否找到 ErisPulse 等價物，先到[模組市場](https://www.erisdev.com/#market)搜一下，沒有就照上節重寫——多數業務插件在 ErisPulse 裡的實現反而更短。\n\n---"
+    },
+    {
+      "hash": "c3b8529113d1e581293531a3a19fea18",
+      "translation": "## 下一步\n\n- **系統學習模組開發**：[模組開發入門](../developer-guide/modules/getting-started.md) → [核心概念](../developer-guide/modules/core-concepts.md)\n- **AI 部分想配置得更細**：[QvQChat 通用智慧代理](../ecosystem/qvqchat.md)\n- **還在猶豫要不要遷**：[對比：AstrBot 與 LangBot](comparison-agent-platforms.md)"
+    }
+  ]
+}

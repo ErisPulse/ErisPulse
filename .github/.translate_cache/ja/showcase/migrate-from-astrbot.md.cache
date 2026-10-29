@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "hash": "929f71aaab35a4ba8a7de9f3646e2d68",
+  "file_hash": "929f71aaab35a4ba8a7de9f3646e2d68",
+  "translated_at": "2026-10-29T09:08:18.113680",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "c3ad6e6da88060356f1203f1fede9032",
+      "translation": "# AstrBot から ErisPulse への移行ガイド\n\n> [!TIP]\n> **このドキュメントを読むタイミング**：既に AstrBot ロボットをお持ちで、それを ErisPulse に移行したい場合に読んでください。新規構築の場合は、[クイックスタート](../quick-start.md)をご覧ください。\n\n結論から言うと：**プラットフォームの接続、モデル、人格、知識ベースはそのまま移行できます**。ただし、**AstrBot のプラグインは移行できません**——両方のプラグイン API は完全に異なっており、ErisPulse のモジュール規格に従って再作成する必要があります。データは自動的に移行されません。"
+    },
+    {
+      "hash": "df98db3e7a7b42b574c20f087cda6a2a",
+      "translation": "## 概念対照\n\n| AstrBot における | ErisPulse における | 説明 |\n|---|---|---|\n| プラットフォームアダプター（QQ/微信/Telegram…） | [プラットフォームアダプター](../platform-guide/README.md) | 概念は同一。ErisPulse では該当するアダプターをインストールするだけ |\n| LLM Provider（API Key、モデル） | [QvQChat](../ecosystem/qvqchat.md) モデルプール | いずれも OpenAI 兼容の接続をサポート。QvQChat はモデルプールの自己修復と難易度ルーティングをサポート |\n| 人格 Persona | QvQChat 人格システム | システムプロンプト + 会話開始文 + ツールホワイトリスト。手動で移行する必要がある |\n| 知識ベース | QvQChat 知識ベース | 世界書式のキーワードトリガー + ベクトル検索。再インポートが必要 |\n| WebUI | [Dashboard](../ecosystem/dashboard.md) | モジュールの起動・停止、設定、ログ、イベント監視。QvQChat には別途コントロールパネルがある |\n| プラグイン | モジュール | API が異なるため、再実装が必要（以下参照） |\n| 管理者/ホワイトリスト | 3次元[作用域](../advanced/scope.md) + モジュール固有の権限（例: QvQChat の `admins`） | 権限モデルがより細かく、各モジュールごとに設定可能 |"
+    },
+    {
+      "hash": "cb9d5f35c71b76ef7ffa10aaa3ee638c",
+      "translation": "## マイグレーション手順\n\n1. **フレームワークの構築**：[クイックスタート](../quick-start.md)に従ってプロジェクトを初期化します（Docker または pip のどちらでも構いません）。Dashboard をインストールします。\n2. **プラットフォームの接続**：`epsdk install` コマンドで、以前使用していたプラットフォームアダプタをインストールします（QQエコシステムの場合は OneBot アダプタを、Telegram の場合は Telegram アダプタをインストールします……）。ログイン方法とプロトコル実装の選択は、AstrBot 時期と同じです。\n3. **エージェントのインストール**：`epsdk install ErisPulse-QvQChat` を実行し、モデルプールに以前の Base URL / API Key / モデル名を入力します。\n4. **人格と知識ベースの移行**：人格は QvQChat の人格ページで1つずつ新規作成します。知識ベースのドキュメントは再インポートします。\n5. **プラグインの再作成**：次の節の対照表に従い、元のプラグインの「コマンド → 処理ロジック」を ErisPulse モジュールに翻訳します。"
+    },
+    {
+      "hash": "d21dfbfda63ba06d128f72c27fe313eb",
+      "translation": "## プラグインの書き換え対照\n\n同じ「`/ping` を受信して pong を返す」プラグインを、それぞれのフレームワークで書いた例：\n\n**AstrBot プラグイン**（AstrBot のドキュメントを基準とした例）：\n\n```python\nfrom astrbot.api.event import filter, AstrMessageEvent\n\n@filter.command(\"ping\")\nasync def ping(self, event: AstrMessageEvent):\n    yield event.plain_result(\"pong\")\n```\n\n**ErisPulse モジュール**（実行可能な完全な例、[モジュール開発入門](../developer-guide/modules/getting-started.md)を参照）：\n\n```python\nfrom ErisPulse.Core.Event import command\n\n@command(\"ping\", help=\"テスト：ロボットがオンラインか確認\")\nasync def ping_handler(event):\n    await event.reply(\"pong\")\n```\n\n主な違い：\n\n- **イベントモデル**：AstrBot は各プラットフォームごとに独自のイベントオブジェクトを使用；ErisPulse は OneBot12 の統一イベントを使用し、`event.reply` / SendDSL はすべてのプラットフォームで一貫した動作を行う\n- **パッケージ構造**：ErisPulse モジュールは標準的な Python パッケージであり、`epsdk create module` で作成されたテンプレートを使用し、PyPI およびモジュール市場に公開される\n- **スケジュールタスク / ストレージ**：[Cron](../ecosystem/cron.md) モジュールをインストールするか、フレームワークの内蔵ストレージ API を直接使用する。外部依存ライブラリを追加する必要はない"
+    },
+    {
+      "hash": "5424343d2d16afe6612df0fec73f4d97",
+      "translation": "## 建議される移行戦略\n\n**並行双走り**：ErisPulse ロボットをまずテスト用のグループに接続し、すべての機能が正常に動作することを確認してから、本番グループに切り替えます。両方のプラットフォームのアカウント体系は独立しており（それぞれのプロトコル実装/Token）、互いに影響を与えず、ロールバックコストも低くなります。\n\n> [!NOTE]\n> AstrBot のプラグイン API と機能リストは継続的に進化しています。本ページの対照は一般的な概念を主に扱っています。具体的に特定のプラグインが ErisPulse に同等のものがあるかどうかは、まず[モジュール市場](https://www.erisdev.com/#market)で検索してみてください。見つからない場合は、前節に従って再実装してください。多くの業務用プラグインは、ErisPulse では実装がさらに短くなる傾向があります。"
+    },
+    {
+      "hash": "c3b8529113d1e581293531a3a19fea18",
+      "translation": "## 次に進む\n\n- **モジュール開発を体系的に学ぶ**：[モジュール開発の入門](../developer-guide/modules/getting-started.md) → [基本概念](../developer-guide/modules/core-concepts.md)\n- **AI 部分をより細かく設定したい**：[QvQChat 一般的なエージェント](../ecosystem/qvqchat.md)\n- **まだ移行するかどうか迷っている**：[対比：AstrBot と LangBot](comparison-agent-platforms.md)"
+    }
+  ]
+}

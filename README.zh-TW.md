@@ -6,7 +6,7 @@
 
 **一次編寫，部署到 QQ / Telegram / Kook / 雲湖 / 微信公眾號 / OneBot12 / ... 多個平台。**
 
-基於 OneBot12 標準介面，事件驅動的模組化異步機器人框架。業務程式碼只寫一次，適配器負責屏蔽各平台差異；插件系統、熱重載與完整開發者工具鏈開箱即用。
+基於 OneBot12 標準介面，事件驅動的模組化非同步機器人框架。業務程式碼只寫一遍，介面卡負責遮蔽各平台差異；外掛系統、熱重載與完整開發者工具鏈開箱即用。
 
 <p>
   <a href="https://pypi.org/project/ErisPulse/"><img src="https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -16,6 +16,7 @@
   <a href="https://hub.docker.com/r/erispulse/erispulse"><img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"></a>
   <a href="https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
   <a href="https://pepy.tech/project/ErisPulse"><img src="https://img.shields.io/pepy/dt/ErisPulse?style=for-the-badge&color=blue" alt="Downloads"></a>
+  <a href="https://github.com/ErisPulse/ErisPulse/stargazers"><img src="https://img.shields.io/github/stars/ErisPulse/ErisPulse?style=for-the-badge&logo=github&color=yellow" alt="Stars"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&style=for-the-badge" alt="Ruff"></a>
   <a href="https://socket.dev/pypi/package/erispulse"><img src="https://img.shields.io/badge/Socket-Secure-2ea043?style=for-the-badge&logo=socket&logoColor=white" alt="Socket"></a>
   <a href="https://www.erisdev.com"><img src="https://img.shields.io/badge/文件-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="文件"></a>
@@ -43,7 +44,7 @@
 
 ### 事件驅動架構
 
-基於 OneBot12 的統一事件模型，一份 handler 適配所有適配器
+基於 OneBot12 的統一事件模型，一份 handler 適配所有介面卡
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -53,7 +54,7 @@
 
 ### 跨平台相容
 
-QQ / Telegram / Kook / 雲湖 等 15+ 平台，業務程式碼零更改
+QQ / Telegram / Kook / 雲湖 等 15+ 平台，業務程式碼零改動
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -63,7 +64,7 @@ QQ / Telegram / Kook / 雲湖 等 15+ 平台，業務程式碼零更改
 
 ### 模組化設計
 
-插件熱插拔無需重啟，作用域按平台 / Bot / 會話管控
+外掛熱插拔無需重啟，作用域按平台 / Bot / 對話管控
 
 </td>
 </tr>
@@ -85,7 +86,7 @@ QQ / Telegram / Kook / 雲湖 等 15+ 平台，業務程式碼零更改
 
 ### AI 輔助
 
-自然語言描述需求，直接產生可用模組
+自然語言描述需求，直接生成可用模組
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -95,7 +96,7 @@ QQ / Telegram / Kook / 雲湖 等 15+ 平台，業務程式碼零更改
 
 ### 簡潔優雅
 
-鏈式 API：@ 使用者、回覆、重試、批量發送一行完成
+鏈式 API：@ 使用者、回覆、重試、批次發送一行完成
 
 </td>
 </tr>
@@ -570,7 +571,7 @@ ErisPulse 不僅是框架。裝上就能開始，不需要從零造輪子。
 
 ---
 
-## 社區
+## 社群
 
 與我們交流：
 
@@ -578,20 +579,30 @@ ErisPulse 不僅是框架。裝上就能開始，不需要從零造輪子。
 - QQ 群：<https://qm.qq.com/q/TOwnCmypcy>
 - 雲湖群：<https://yhfx.jwznb.com/share?key=VWJL4fTWXepa&ts=1781889199>
 
+覺得專案有用？歡迎在[愛發電](https://ifdian.net/a/YingXinche)支持我們持續開發！
+
+---
+
+## Star History
+
+如果 ErisPulse 幫到了你，歡迎點個 Star ⭐——這是讓更多開發者看到專案的最直接方式。
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ErisPulse/ErisPulse&type=Date)](https://star-history.com/#ErisPulse/ErisPulse&Date)
+
 ---
 
 ### 貢獻指南
 
-ErisPulse 項目的健全性還需要您的一份力！我們歡迎各種形式的貢獻：
+ErisPulse 專案的健全性還需要您的一份力！我們歡迎各種形式的貢獻：
 
-1. **報告問題** — 在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交 bug 報告
-2. **功能請求** — 通過 [社區討論](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
+1. **回報問題** — 在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交 bug 回報
+2. **功能請求** — 透過 [社群討論](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
 3. **程式碼貢獻** — 提交 PR 前請閱讀 [程式碼風格](docs/zh-TW/styleguide/) 及 [貢獻指南](CONTRIBUTING.md)
 4. **文件改進** — 幫助完善文件和範例程式碼
 
 **第一次貢獻？** 從這裡開始 👉 [首次貢獻實戰](docs/zh-TW/contributing/first-contribution.md)
 
-[加入社區討論](https://github.com/ErisPulse/ErisPulse/discussions)
+[加入社群討論](https://github.com/ErisPulse/ErisPulse/discussions)
 
 ---
 
@@ -601,10 +612,10 @@ ErisPulse 項目的健全性還需要您的一份力！我們歡迎各種形式�
 
 <img src=".github/assets/thanks.png" width="200" alt="感謝" />
 
-本項目部分程式碼基於 [sdkFrame](https://github.com/runoneall/sdkFrame)，核心適配器標準化層參考並受益於 [OneBot12 規範](https://12.onebot.dev/)。
+本專案部分程式碼基於 [sdkFrame](https://github.com/runoneall/sdkFrame)，核心轉接器標準化層參考並受益於 [OneBot12 規範](https://12.onebot.dev/)。
 
-ErisPulse 的早期探索與成長離不開雲湖開發者社區的支持，許多想法、適配器和實踐經驗都誕生於此。
+ErisPulse 的早期探索與成長離不開雲湖開發者社群的支持，許多想法、轉接器和實踐經驗都誕生於此。
 
-同時感謝所有為 ErisPulse、OneBot 生態以及開源社區做出貢獻的開發者與項目作者。
+同時感謝所有為 ErisPulse、OneBot 生態系以及開源社群做出貢獻的開發者與專案作者。
 
 </div>

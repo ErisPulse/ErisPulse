@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "cdbaec96299f681c8fa40219039c8cd4",
-  "file_hash": "cdbaec96299f681c8fa40219039c8cd4",
-  "translated_at": "2026-10-22T10:59:22.372412",
+  "hash": "c4d69898c19e05dae474e031fd606217",
+  "file_hash": "c4d69898c19e05dae474e031fd606217",
+  "translated_at": "2026-10-29T09:00:18.479973",
   "target_lang": "en",
   "chunks": [
     {
@@ -24,6 +24,10 @@
     {
       "hash": "07d291e509c56612d4e4b902151f7247",
       "translation": "## Invoked as a Service\n\n| Service | Signature | Description |\n|---|---|---|\n| `chat` | `(session_id, prompt, persona=\"\")` | Interact with the agent, return text |\n| `run_prompt` | `(chat_key, prompt, ...)` | Execute a prompt, the result can be sent to the target session |\n| `get_status` | `()` | Status summary of execution |"
+    },
+    {
+      "hash": "f7882f16cec88e0b054f2e93d38aa1b5",
+      "translation": "## Companion Plugins\n\nThree independent modules extend QvQChat and also demonstrate what extension points can do—install QvQChat first and add plugins as needed:\n\n| Plugin | What it does |\n|---|---|\n|"
     },
     {
       "hash": "15f97e1080e165ff47b97b09320ff78e",

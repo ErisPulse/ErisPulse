@@ -129,6 +129,18 @@ async def setup(self):
 | `run_prompt` | `(chat_key, prompt, ...)` | 執行提示詞，結果可傳送到目標會話 |
 | `get_status` | `()` | 執行狀態摘要 |
 
+## 配套外掛
+
+三個獨立模組擴充了 QvQChat，也順便示範了擴充點能做什麼——安裝 QvQChat 後依需求加裝：
+
+| 外掛 | 用途 |
+|---|---|
+| [ErisPulse-QvQStalker](https://github.com/wsu2059q/ErisPulse-QvQStalker) | 旁聽群聊自動插話：熱度追蹤、五層判定和衝動值共同決定智慧型代理何時開口，15 項行為參數可在設定頁直接調整 |
+| [ErisPulse-QvQMemes](https://github.com/wsu2059q/ErisPulse-QvQMemes) | 給智慧型代理一個表情包習慣：`send_sticker` 工具讓模型自己挑選該發哪張，群組圖片自動收錄並由視覺模型加上標籤 |
+| [ErisPulse-QvQCompanion](https://github.com/wsu2059q/ErisPulse-QvQCompanion) | 擬人化陪伴：語氣人設注入、衝動值主動開口、靜默時段與每日上限 |
+
+三個外掛都透過上文「模組擴充」的約定服務接入，本身也是擴充寫法的參考實作。
+
 ## 介面
 
 透過 `/QvQChat/view` 獨立存取，或嵌入 Dashboard 側邊欄。

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "cdbaec96299f681c8fa40219039c8cd4",
-  "file_hash": "cdbaec96299f681c8fa40219039c8cd4",
-  "translated_at": "2026-10-22T12:03:51.314379",
+  "hash": "c4d69898c19e05dae474e031fd606217",
+  "file_hash": "c4d69898c19e05dae474e031fd606217",
+  "translated_at": "2026-10-29T09:06:33.750207",
   "target_lang": "ja",
   "chunks": [
     {
@@ -24,6 +24,10 @@
     {
       "hash": "07d291e509c56612d4e4b902151f7247",
       "translation": "## サービスとして呼び出される\n\n| サービス | シグネチャ | 説明 |\n|---|---|---|\n| `chat` | `(session_id, prompt, persona=\"\")` | スマートエージェントと対話し、テキストを返す |\n| `run_prompt` | `(chat_key, prompt, ...)` | プロンプトを実行し、結果をターゲットセッションに送信できる |\n| `get_status` | `()` | 実行状態の概要 |"
+    },
+    {
+      "hash": "f7882f16cec88e0b054f2e93d38aa1b5",
+      "translation": "## 拡張プラグイン\n\nQvQChat を拡張する 3 つの独立したモジュールが、拡張ポイントが何ができるかを示しています。QvQChat をインストールした後、必要に応じてプラグインを追加してください。\n\n| プラグイン | 機能 |\n|---|---|\n| [ErisPulse-QvQStalker](https://github.com/wsu2059q/ErisPulse-QvQStalker) | チャットをリスニングして自動で発言：話題の注目度、5 段階の判定と衝動値が、AI が発言するタイミングを決定し、15 項目の行動パラメータは設定ページで直接調整可能 |\n| [ErisPulse-QvQMemes](https://github.com/wsu2059q/ErisPulse-QvQMemes) | AI に絵文字習慣を付与：`send_sticker` ツールにより、モデルがどの絵文字を送信すべきかを自動選択し、グループ画像は自動収集され、視覚モデルによってラベル付けされる |\n| [ErisPulse-QvQCompanion](https://github.com/wsu2059q/ErisPulse-QvQCompanion) | 擬人化された伴侶としての機能：口調やキャラクター設定の注入、衝動値に基づく自発的な発言、静止時間帯と毎日の上限設定 |\n\n3 つのプラグインはすべて、上記の「モジュール拡張」の契約に従ってサービスに接続されており、拡張の実装方法の参考例でもあります。"
     },
     {
       "hash": "15f97e1080e165ff47b97b09320ff78e",

@@ -1,6 +1,6 @@
 ---
 name: erispulse-ecosystem
-description: "适用于：了解生态组件（Dashboard/Cron/AI 模块等）与各平台适配器的接入差异。覆盖场景：ErisPulse 框架本身只提供核心能力（事件系统、模块系统、配置、路由、日志等），**不内置** GUI、图片渲染、可视化等"重型"功能。这些能力由社区维护的 **第三方模块** 提供，按需安装即可。当你想用网页可视化管理机器人（启停模块、编辑配置、看日志、监控事件流），或想为自己的模块注册一个 Dashboard 管理页面时读这篇。当你的模块需要定时/延时触发逻辑（定时提醒、周期监控、Cron 表达式调度），且希望任务在框架重启后不丢失时读这篇。当你想给机器人加 AI 智能体能力（工具循环、流式对话、MCP、长期记忆），或想把自己模块的服务暴露给智能体调用时读这篇。此部分由各适配器开发者维护，用于说明该适配器与 OneBot12 标准的差异和扩展功能。请参考以下各平台的详细文档：。"
+description: "适用于：了解生态组件（Dashboard/Cron/AI 模块等）与各平台适配器的接入差异。覆盖场景：ErisPulse 框架本身只提供核心能力（事件系统、模块系统、配置、路由、日志等），**不内置** GUI、图片渲染、可视化等"重型"功能。这些能力由社区维护的 **第三方模块** 提供，按需安装即可。当你想用网页可视化管理机器人（启停模块、编辑配置、看日志、监控事件流），或想为自己的模块注册一个 Dashboard 管理页面时读这篇。当你的模块需要定时/延时触发逻辑（定时提醒、周期监控、Cron 表达式调度），且希望任务在框架重启后不丢失时读这篇。当你想给机器人加 AI 智能体能力（工具循环、流式对话、MCP、长期记忆），或想把自己模块的服务暴露给智能体调用时读这篇。当你想让 Claude Desktop 等支持 MCP 的 AI 客户端直接操控你的机器人——发消息、看消息、调模块、管适配器、观测事件流——时读这篇。此部分由各适配器开发者维护，用于说明该适配器与 OneBot12 标准的差异和扩展功能。请参考以下各平台的详细文档：。"
 ---
 
 # ErisPulse 生态与多平台
@@ -13,38 +13,44 @@ description: "适用于：了解生态组件（Dashboard/Cron/AI 模块等）与
 
 AI 按需读取：只读需要的章节即可，不必全文加载。
 
-- 生态总览: 49-68 行
-- 推荐模块: 70-110 行
-- 官方客户端（独立程序）: 112-122 行
-- 我也想把自己的模块列在这里？: 124-132 行
-- Dashboard: 134-161 行
-- 工作原理: 163-174 行
-- 注册 API: 176-214 行
-- 两种注入模式: 216-249 行
-- 侧边栏分组: 251-277 行
-- 常用 CSS 类名: 279-314 行
-- 认证与 API 调用: 316-338 行
-- 完整模块示例: 340-450 行
-- 注销视窗: 452-464 行
-- 注意事项: 466-476 行
-- 定时任务: 478-498 行
-- 功能速览: 500-509 行
-- 快速开始: 511-529 行
-- API 概览: 531-586 行
-- 模块卸载时的行为: 588-595 行
-- 相关链接: 597-602 行
-- AI 对话模块: 604-622 行
-- 核心能力: 624-643 行
-- 模块扩展: 645-715 行
-- 事件订阅: 717-729 行
-- 作为服务被调用: 731-737 行
-- 界面: 739-747 行
-- 平台指南索引: 749-766 行
-- 平台特定功能: 768-791 行
-- 通用接口: 793-973 行
-- 标准格式: 975-1031 行
-- 参考链接: 1033-1043 行
-- 参与贡献: 1045-1054 行
+- 生态总览: 55-74 行
+- 推荐模块: 76-126 行
+- 官方客户端（独立程序）: 128-138 行
+- 我也想把自己的模块列在这里？: 140-148 行
+- Dashboard: 150-177 行
+- 工作原理: 179-190 行
+- 注册 API: 192-230 行
+- 两种注入模式: 232-265 行
+- 侧边栏分组: 267-293 行
+- 常用 CSS 类名: 295-330 行
+- 认证与 API 调用: 332-354 行
+- 完整模块示例: 356-466 行
+- 注销视窗: 468-480 行
+- 注意事项: 482-492 行
+- 定时任务: 494-514 行
+- 功能速览: 516-525 行
+- 快速开始: 527-545 行
+- API 概览: 547-602 行
+- 模块卸载时的行为: 604-611 行
+- 相关链接: 613-618 行
+- AI 对话模块: 620-638 行
+- 核心能力: 640-659 行
+- 模块扩展: 661-731 行
+- 事件订阅: 733-745 行
+- 作为服务被调用: 747-753 行
+- 配套插件: 755-765 行
+- 界面: 767-775 行
+- MCP 桥: 777-795 行
+- 工作原理: 797-808 行
+- Claude Desktop 接入: 810-828 行
+- 14 个工具一览: 830-840 行
+- 安全要点: 842-851 行
+- 平台指南索引: 853-870 行
+- 平台特定功能: 872-895 行
+- 通用接口: 897-1077 行
+- 标准格式: 1079-1135 行
+- 参考链接: 1137-1147 行
+- 参与贡献: 1149-1158 行
 
 ## 生态总览
 
@@ -91,13 +97,23 @@ epsdk install Cron
 
 ### ErisPulse-QvQChat：通用智能体
 
-想让群里有一个会干活的 AI 助手，而不是只会关键词回复？QvQChat 是通用智能体：工具循环覆盖收发消息 / 代码执行 / 电脑操作 / 生图 / 语音 / MCP / 子智能体，支持流式对话与串行工具回放，内置 Dashboard 视窗。
+想让群里有一个会干活的 AI 助手，而不是只会关键词回复？QvQChat 是通用智能体：工具循环覆盖收发消息 / 代码执行 / 电脑操作 / 生图 / 语音 / MCP / 子智能体，支持流式对话与串行工具回放，内置 Dashboard 视窗。还有 QvQStalker（旁听插话）、QvQMemes（表情包）、QvQCompanion（拟人陪伴）三个配套插件。
 
 ```bash
 epsdk install ErisPulse-QvQChat
 ```
 
 文档：[QvQChat 智能体](qvqchat.md) ｜ 项目主页：[GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)
+
+### ErisPulse-ApiMCP：让 AI 客户端操控机器人
+
+在用 Claude Desktop、Claude Code 这类支持 MCP 的 AI 客户端？ApiMCP 把机器人运行时反向开放成 14 个 MCP 工具：AI 可以直接替你收发消息、调用已装模块、查看平台状态、订阅群聊事件——机器人变成 AI 的"手和眼"。
+
+```bash
+epsdk install ErisPulse-ApiMCP
+```
+
+文档：[ApiMCP 使用指南](apimcp.md) ｜ 项目主页：[GitHub](https://github.com/wsu2059q/ErisPulse-ApiMCP)
 
 ### ErisPulse-Takumi：图片渲染
 
@@ -736,6 +752,18 @@ async def setup(self):
 | `run_prompt` | `(chat_key, prompt, ...)` | 运行提示词，结果可发送到目标会话 |
 | `get_status` | `()` | 运行状态摘要 |
 
+## 配套插件
+
+三个独立模块扩展了 QvQChat，也顺带演示了扩展点能做什么——装上 QvQChat 后按需加装：
+
+| 插件 | 干什么 |
+|---|---|
+| [ErisPulse-QvQStalker](https://github.com/wsu2059q/ErisPulse-QvQStalker) | 旁听群聊自动插话：热度跟踪、五层判定和冲动值共同决定智能体何时开口，15 项行为参数在设置页直接调 |
+| [ErisPulse-QvQMemes](https://github.com/wsu2059q/ErisPulse-QvQMemes) | 给智能体一个表情包习惯：`send_sticker` 工具让模型自己挑该发哪张，群图片自动收录并由视觉模型打标签 |
+| [ErisPulse-QvQCompanion](https://github.com/wsu2059q/ErisPulse-QvQCompanion) | 拟人化陪伴：语气人设注入、冲动值主动开口、静默时段与每日上限 |
+
+三个插件都通过上文「模块扩展」的约定服务接入，本身也是扩展写法的参考实现。
+
 ## 界面
 
 通过 `/QvQChat/view` 独立访问，或嵌入 Dashboard 侧边栏。
@@ -743,6 +771,82 @@ async def setup(self):
 ![概览](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/overview.png)
 
 ![对话](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/chat.png)
+
+---
+
+## MCP 桥
+
+> 来源: `docs/zh-CN/ecosystem/apimcp.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/zh-CN/ecosystem/apimcp.md）
+
+# ErisPulse-ApiMCP 用 AI 客户端操控机器人
+
+> [!TIP]
+> **什么时候需要读这篇**：当你想让 Claude Desktop 等支持 MCP 的 AI 客户端直接操控你的机器人——发消息、看消息、调模块、管适配器、观测事件流——时读这篇。不需要则跳过。
+
+[ErisPulse-ApiMCP](https://github.com/wsu2059q/ErisPulse-ApiMCP) 把机器人运行时能力经 **MCP（Model Context Protocol）** 开放给 AI 客户端：装上之后，Claude Desktop 里就多出 14 个工具，AI 可以替你收发消息、排查模块问题、订阅群聊事件——机器人从"你管理的程序"变成"AI 的手和眼"。
+
+> [!IMPORTANT]
+> ApiMCP 需要单独安装，且**必须显式配置 token** 后桥才启用：
+>
+> ```bash
+> epsdk install ErisPulse-ApiMCP
+> ```
+>
+> 在 `config.toml` 的 `[ApiMCP]` 节设置 `token = "长随机串"`（或环境变量 `ERISPULSE_APIMCP_TOKEN`）。未配置时除探活外所有端点返回 503，避免令牌静默泄漏。
+
+## 工作原理
+
+两层结构，机器人本体不引入任何 AI 依赖：
+
+- **机器人进程内**：ApiMCP 模块在框架内置 HTTP server 上挂一个 REST 桥（`/apimcp/*`，token 鉴权，默认限流 30 请求/分钟）
+- **独立进程**：`erispulse-apimcp` 命令用官方 `mcp` SDK 起 stdio server，把 MCP 工具调用转发到机器人 HTTP 桥
+
+```
+Claude Desktop ──MCP(stdio)──► erispulse-apimcp ──HTTP──► 机器人进程 REST 桥 ──► sdk.*
+```
+
+机器人不在线或桥未配置时，工具返回可读错误与排查指引，不抛栈。
+
+## Claude Desktop 接入
+
+编辑 `claude_desktop_config.json`（Windows: `%APPDATA%\Claude\`；macOS: `~/Library/Application Support/Claude/`）：
+
+```json
+{
+  "mcpServers": {
+    "erispulse": {
+      "command": "erispulse-apimcp",
+      "env": {
+        "ERISPULSE_APIMCP_URL": "http://127.0.0.1:8000",
+        "ERISPULSE_APIMCP_TOKEN": "你的token"
+      }
+    }
+  }
+}
+```
+
+保存后完全重启 Claude Desktop，工具列表出现 `erispulse` 服务器即接入成功。任何支持 MCP stdio server 的客户端（Claude Code、Cursor 等）都能用同样方式接入。
+
+## 14 个工具一览
+
+| 类别 | 工具 | 说明 |
+|---|---|---|
+| 模块 | `list_modules` / `get_module_info` / `call_module` / `reload_module` | 查看与调用已装模块的公开服务，触发热重载 |
+| 适配器 | `list_adapters` / `get_adapter_status` / `reload_adapter` | 平台在线状态；适配器重载默认禁用 |
+| 消息 | `send_message` / `recent_messages` | 向任意平台发文本/图/音/视/文件；经 [transcript](../advanced/transcript.md) 回看最近消息 |
+| 事件 | `subscribe_events` / `unsubscribe` / `poll_events` | 订阅消息/通知等事件，环形缓冲（默认 1000 条），增量轮询 |
+| 运行时 | `get_topology` / `sdk_health` | 运行时拓扑（已脱敏）与健康摘要 |
+
+一个典型用法：AI 先 `subscribe_events(["message"])`，然后周期性 `poll_events` 观察群里在聊什么，决定要不要 `send_message` 插话或 `call_module` 触发某个模块的能力。
+
+## 安全要点
+
+- **token 即完全控制权**：能读消息、发消息、调白名单内模块方法。切勿提交仓库或贴到公开频道；多租户场景请拆多个机器人实例
+- **最小授权**：`module_call_whitelist` 收窄可调用模块（支持 `模块.方法` 精确放行），`send_target_whitelist` 收窄发送目标（如只允许发某个群），`allow_adapter_reload` 保持默认关闭
+- **只监听本机**：仅本机使用时把框架 HTTP server 设为 `server.host = "127.0.0.1"`；跨机器必须内网 + 反向代理加 TLS
+- 输出经过键名级净化（密钥/路径类键整键丢弃）；深度净化是模块自身责任，敏感会话勿开放订阅
+
+完整配置项（缓冲容量、回溯窗口、事件类型白名单等）与 REST 端点明细见[项目 README](https://github.com/wsu2059q/ErisPulse-ApiMCP)。
 
 ---
 

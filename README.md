@@ -4,9 +4,9 @@
 
 # ErisPulse
 
-**Write once, deploy to QQ / Telegram / Kook / Yunhu / WeChat Official Accounts / OneBot12 / ... multiple platforms.**
+**Write once, deploy to QQ / Telegram / Kook / Yunhu / WeChat Official Account / OneBot12 / ... multiple platforms.**
 
-An asynchronous, event-driven modular robot framework based on the OneBot12 standard interface. Business code is written once, and adapters handle the differences between platforms; the plugin system, hot reload, and a complete developer toolchain are ready to use out of the box.
+An asynchronous, event-driven, modular robot framework based on the OneBot12 standard interface. Business code is written once, and adapters handle platform-specific differences; the plugin system, hot reload, and complete developer toolchain are ready to use out of the box.
 
 <p>
   <a href="https://pypi.org/project/ErisPulse/"><img src="https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -19,9 +19,9 @@ An asynchronous, event-driven modular robot framework based on the OneBot12 stan
   <a href="https://github.com/ErisPulse/ErisPulse/stargazers"><img src="https://img.shields.io/github/stars/ErisPulse/ErisPulse?style=for-the-badge&logo=github&color=yellow" alt="Stars"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&style=for-the-badge" alt="Ruff"></a>
   <a href="https://socket.dev/pypi/package/erispulse"><img src="https://img.shields.io/badge/Socket-Secure-2ea043?style=for-the-badge&logo=socket&logoColor=white" alt="Socket"></a>
-  <a href="https://www.erisdev.com"><img src="https://img.shields.io/badge/Documentation-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="Documentation"></a>
+  <a href="https://www.erisdev.com"><img src="https://img.shields.io/badge/文档-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="Documentation"></a>
   <a href="https://deepwiki.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/DeepWiki-ErisPulse-8A2BE2?style=for-the-badge&logo=readthedocs&logoColor=white" alt="DeepWiki"></a>
-  <a href="https://www.erisdev.com/#market"><img src="https://img.shields.io/badge/Module%20Market-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white" alt="Module%20Market"></a>
+  <a href="https://www.erisdev.com/#market"><img src="https://img.shields.io/badge/模块市场-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white" alt="Module Market"></a>
   <a href="https://github.com/ErisPulse/ErisPulse/discussions"><img src="https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github" alt="Discussions"></a>
 </p>
 
@@ -40,21 +40,21 @@ An asynchronous, event-driven modular robot framework based on the OneBot12 stan
 <td width="33%" align="center" valign="top">
 <br/>
 
-<img src=".github/assets/icon/icon_event_driven.png.png" width="50" alt="Event-driven Architecture" />
+<img src=".github/assets/icon/icon_event_driven.png.png" width="50" alt="Event-Driven Architecture" />
 
-### Event-driven Architecture
+### Event-Driven Architecture
 
-Based on the unified event model of OneBot12, a single handler adapts to all adapters
+A unified event model based on OneBot12, a single handler adapts to all adapters
 
 </td>
 <td width="33%" align="center" valign="top">
 <br/>
 
-<img src=".github/assets/icon/icon_cross_platform.png.png" width="50" alt="Cross-platform Compatibility" />
+<img src=".github/assets/icon/icon_cross_platform.png.png" width="50" alt="Cross-Platform Compatibility" />
 
-### Cross-platform Compatibility
+### Cross-Platform Compatibility
 
-15+ platforms including QQ / Telegram / Kook / Yunhu, business code remains unchanged
+Support for 15+ platforms including QQ / Telegram / Kook / Yunhu, business code requires zero changes
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -64,7 +64,7 @@ Based on the unified event model of OneBot12, a single handler adapts to all ada
 
 ### Modular Design
 
-Hot-plug plugins without restarting, scope controlled by platform / Bot / session
+Hot-pluggable plugins without restart, scopes controlled by platform / Bot / session
 
 </td>
 </tr>
@@ -76,7 +76,7 @@ Hot-plug plugins without restarting, scope controlled by platform / Bot / sessio
 
 ### Hot Reload
 
-Save and apply instantly, hot reload is lightweight and seamless
+Save and apply changes instantly, hot reload is lightweight and seamless
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -86,17 +86,17 @@ Save and apply instantly, hot reload is lightweight and seamless
 
 ### AI Assistance
 
-Natural language descriptions of requirements, directly generate usable modules
+Describe requirements in natural language, directly generate usable modules
 
 </td>
 <td width="33%" align="center" valign="top">
 <br/>
 
-<img src=".github/assets/icon/icon_lightweight.png" width="50" alt="Simple and Elegant" />
+<img src=".github/assets/icon/icon_lightweight.png" width="50" alt="Clean and Elegant" />
 
-### Simple and Elegant
+### Clean and Elegant
 
-Chained API: @ user, reply, retry, batch send all done in one line
+Chained API: @ user, reply, retry, batch send, all in one line
 
 </td>
 </tr>
@@ -541,52 +541,6 @@ Multi-architecture support
 
 </td>
 </tr>
-<tr>
-<td align="center" width="25%">
-
-**QvQChat**
-
-AI agent in group chats
-
-Tool loop · Long-term memory · MCP
-
-[GitHub →](https://github.com/wsu2059q/ErisPulse-QvQChat)
-
-</td>
-<td align="center" width="25%">
-
-**ApiMCP**
-
-Control bots via AI clients
-
-Claude integration · 14 MCP tools
-
-[GitHub →](https://github.com/wsu2059q/ErisPulse-ApiMCP)
-
-</td>
-<td align="center" width="25%">
-
-**Cron**
-
-Scheduled tasks
-
-One-shot / interval / cron expressions
-
-[GitHub →](https://github.com/wsu2059q/ErisPulse-Cron)
-
-</td>
-<td align="center" width="25%">
-
-**Takumi**
-
-Image rendering
-
-HTML / SVG / animation
-
-[GitHub →](https://github.com/ccd2s/ErispulseTakumi)
-
-</td>
-</tr>
 </table>
 
 ---
@@ -625,13 +579,14 @@ Connect with us:
 - QQ Group: <https://qm.qq.com/q/TOwnCmypcy>
 - Yunhu Group: <https://yhfx.jwznb.com/share?key=VWJL4fTWXepa&ts=1781889199>
 
-Find ErisPulse useful? Support its development on [afdian](https://ifdian.net/a/YingXinche) — the code and docs will always be free and open source.
+Found the project useful? Consider supporting us for continued development on [Ifdian](https://ifdian.net/a/YingXinche)!
 
 ---
+**English** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
 ## Star History
 
-If ErisPulse helps you, please consider giving it a star ⭐ — it's the most direct way to help more developers discover the project.
+If ErisPulse helped you, feel free to give it a star ⭐—it’s the most direct way to help more developers discover the project.
 
 [![Star History Chart](https://api.star-history.com/svg?repos=ErisPulse/ErisPulse&type=Date)](https://star-history.com/#ErisPulse/ErisPulse&Date)
 
@@ -639,28 +594,28 @@ If ErisPulse helps you, please consider giving it a star ⭐ — it's the most d
 
 ### Contribution Guide
 
-The health of the ErisPulse project still needs your support! We welcome contributions in various forms:
+The health and growth of the ErisPulse project still need your help! We welcome contributions in all forms:
 
 1. **Report Issues** — Submit bug reports on [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues)
-2. **Feature Requests** — Suggest new ideas through [Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
-3. **Code Contributions** — Please read the [Code Style Guide](docs/en/styleguide/) and [Contribution Guide](CONTRIBUTING.md) before submitting PRs
+2. **Feature Requests** — Share new ideas via [Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
+3. **Code Contributions** — Before submitting a PR, please read the [Code Style Guide](docs/en/styleguide/) and [Contribution Guide](CONTRIBUTING.md)
 4. **Documentation Improvements** — Help improve documentation and example code
 
 **First-time contributor?** Start here 👉 [First Contribution Guide](docs/en/contributing/first-contribution.md)
 
-[Join Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
+[Join the community discussion](https://github.com/ErisPulse/ErisPulse/discussions)
 
 ---
 
 <div align="center">
 
-### Acknowledgements
+### Acknowledgments
 
 <img src=".github/assets/thanks.png" width="200" alt="Thanks" />
 
-Some code in this project is based on [sdkFrame](https://github.com/runoneall/sdkFrame), and the core adapter standardization layer references and benefits from the [OneBot12 specification](https://12.onebot.dev/).
+Some code in this project is based on [sdkFrame](https://github.com/runoneall/sdkFrame), and the core adapter standardization layer draws reference and benefits from the [OneBot12 specification](https://12.onebot.dev/).
 
-The early exploration and growth of ErisPulse would not have been possible without the support of the Yunhu developer community. Many ideas, adapters, and practical experiences originated here.
+The early exploration and growth of ErisPulse would not have been possible without the support of the Yunhu developer community, where many ideas, adapters, and practical experiences originated.
 
 We also thank all developers and project authors who have contributed to ErisPulse, the OneBot ecosystem, and the open-source community.
 

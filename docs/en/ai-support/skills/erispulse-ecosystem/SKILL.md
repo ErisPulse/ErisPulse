@@ -13,37 +13,43 @@ Source paths are annotated per section; see docs/ in the repository for the late
 
 AI 按需读取：只读需要的章节即可，不必全文加载。
 
-- 生态总览: 48-67 行
-- Recommended Modules: 69-109 行
-- Official Client (Standalone Application): 111-121 行
-- Want to list your own module here?: 123-131 行
-- Dashboard: 133-160 行
-- How It Works: 162-173 行
-- Registration API: 175-213 行
-- Two Injection Modes: 215-248 行
-- Sidebar Groups: 250-276 行
-- Common CSS Class Names: 278-313 行
-- Authentication and API Calls: 315-337 行
-- Complete Module Example: 339-449 行
-- Unregistering a View: 451-463 行
-- Notes: 465-475 行
-- 定时任务: 477-497 行
-- Feature Overview: 499-506 行
-- Quick Start: 508-526 行
-- API Overview: 528-581 行
-- Behavior on Module Unload: 583-588 行
-- AI 对话模块: 590-608 行
-- Core Capabilities: 610-629 行
-- Module Extensions: 631-701 行
-- Event Subscription: 703-715 行
-- Invoked as a Service: 717-723 行
-- Interface: 725-733 行
-- 平台指南索引: 735-751 行
-- Platform-Specific Features: 753-775 行
-- General Interfaces: 777-957 行
-- Standard Formats: 959-1015 行
-- References: 1017-1027 行
-- Contributing: 1029-1038 行
+- 生态总览: 54-73 行
+- Recommended Modules: 75-125 行
+- Official Client (Standalone Application): 127-137 行
+- Want to list your own module here?: 139-147 行
+- Dashboard: 149-176 行
+- How It Works: 178-189 行
+- Registration API: 191-229 行
+- Two Injection Modes: 231-264 行
+- Sidebar Groups: 266-292 行
+- Common CSS Class Names: 294-329 行
+- Authentication and API Calls: 331-353 行
+- Complete Module Example: 355-465 行
+- Unregistering a View: 467-479 行
+- Notes: 481-491 行
+- 定时任务: 493-513 行
+- Feature Overview: 515-522 行
+- Quick Start: 524-542 行
+- API Overview: 544-597 行
+- Behavior on Module Unload: 599-604 行
+- AI 对话模块: 606-624 行
+- Core Capabilities: 626-645 行
+- Module Extensions: 647-717 行
+- Event Subscription: 719-731 行
+- Invoked as a Service: 733-739 行
+- Companion Plugins: 741-747 行
+- Interface: 749-757 行
+- MCP 桥: 759-777 行
+- How It Works: 779-790 行
+- Claude Desktop Integration: 792-810 行
+- The 14 Tools at a Glance: 812-822 行
+- Security Essentials: 824-833 行
+- 平台指南索引: 835-851 行
+- Platform-Specific Features: 853-875 行
+- General Interfaces: 877-1057 行
+- Standard Formats: 1059-1115 行
+- References: 1117-1127 行
+- Contributing: 1129-1138 行
 
 ## 生态总览
 
@@ -68,45 +74,55 @@ The ErisPulse framework itself only provides core capabilities (event system, mo
 
 ## Recommended Modules
 
-### ErisPulse-Dashboard: An Admin Panel in Your Browser
+### ErisPulse-Dashboard: A management dashboard in your browser
 
-Your bot runs on a server, and you still need to log into a terminal to start/stop modules, tweak configurations, or check logs? Dashboard brings all of this into the browser: module start/stop, configuration editing, log viewing, and event monitoring; other modules can also register custom windows in the sidebar, keeping all management pages in one place.
+Running your bot on a server, but still need to log into the terminal to start/stop modules, modify configurations, or view logs? Dashboard brings these functions into the browser: module start/stop, configuration editing, log viewing, and event monitoring. Other modules can also register custom panels to the sidebar, centralizing the management interface in one place.
 
 ```bash
 epsdk install Dashboard
 ```
 
-Docs: [Dashboard Usage and Window Registration](dashboard.md) | Project homepage: [PyPI](https://pypi.org/project/ErisPulse-Dashboard/)
+Docs: [Dashboard Usage & Panel Registration](dashboard.md) ｜ Project Homepage: [PyPI](https://pypi.org/project/ErisPulse-Dashboard/)
 
 ### ErisPulse-Cron: Scheduled Tasks
 
-Need to send daily check-in reminders on schedule, run periodic tasks with Cron expressions, or poll data every few minutes? Cron offers three task types—one-time / interval / Cron expression—with callback parameters and SQLite persistence (tasks survive restarts).
+Need daily reminders, periodic tasks based on Cron expressions, or data polling every few minutes? Cron provides three types of tasks: one-time, interval-based, and Cron expression-based, with callback parameters and SQLite persistence (tasks are not lost after restart).
 
 ```bash
 epsdk install Cron
 ```
 
-Docs: [Cron Scheduled Tasks](cron.md) | Project homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-Cron)
+Docs: [Cron Scheduled Tasks](cron.md) ｜ Project Homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-Cron)
 
-### ErisPulse-QvQChat: General-Purpose Agent
+### ErisPulse-QvQChat: General-purpose Agent
 
-Want an AI assistant in your group that actually gets things done, instead of one that only replies with keyword matching? QvQChat is a general-purpose agent: its tool loop covers message sending/receiving / code execution / computer operations / image generation / voice / MCP / sub-agents, supports streaming conversations and serialized tool replay, and comes with a built-in Dashboard window.
+Want an AI assistant in your group that can perform tasks, rather than just reply with keywords? QvQChat is a general-purpose agent: tools cycle through message sending/receiving, code execution, computer operations, image generation, voice, MCP, and sub-agents. It supports streaming conversations and sequential tool replay, and comes with a built-in Dashboard panel. Also included are three companion plugins: QvQStalker (eavesdropping and interjecting), QvQMemes (meme generation), and QvQCompanion (human-like companionship).
 
 ```bash
 epsdk install ErisPulse-QvQChat
 ```
 
-Docs: [QvQChat Agent](qvqchat.md) | Project homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)
+Docs: [QvQChat Agent](qvqchat.md) ｜ Project Homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)
+
+### ErisPulse-ApiMCP: Let AI Clients Control Your Bot
+
+Using AI clients like Claude Desktop or Claude Code that support MCP? ApiMCP exposes 14 MCP tools from the bot runtime, allowing AI to directly send/receive messages, call installed modules, check platform status, and subscribe to group chat events—effectively turning the bot into the AI’s "hands and eyes."
+
+```bash
+epsdk install ErisPulse-ApiMCP
+```
+
+Docs: [ApiMCP User Guide](apimcp.md) ｜ Project Homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-ApiMCP)
 
 ### ErisPulse-Takumi: Image Rendering
 
-For scenarios that require "sending images"—like leaderboards, battle reports, or schedule cards—just write a template, render it into an image, and send it to your group: it supports HTML / node trees / Jinja / SVG / animation (based on [takumi-py](https://github.com/BalconyJH/takumi-py)), comes with built-in Chinese and English fonts, and works right out of the box.
+For scenarios requiring image generation—such as leaderboards, match reports, or schedules—simply create a template and render it as an image to send into the group: supports HTML / node trees / Jinja / SVG / animations (based on [takumi-py](https://github.com/BalconyJH/takumi-py)), with built-in Chinese and English fonts, ready to use out of the box.
 
 ```bash
 epsdk install Takumi
 ```
 
-Docs: [Takumi Image Rendering](takumi.md) | Project homepage: [GitHub](https://github.com/ccd2s/ErispulseTakumi) (Author: [@ccd2s](https://github.com/ccd2s))
+Docs: [Takumi Image Rendering](takumi.md) ｜ Project Homepage: [GitHub](https://github.com/ccd2s/ErispulseTakumi) (by [@ccd2s](https://github.com/ccd2s))
 
 ## Official Client (Standalone Application)
 
@@ -722,6 +738,14 @@ async def setup(self):
 | `run_prompt` | `(chat_key, prompt, ...)` | Execute a prompt, the result can be sent to the target session |
 | `get_status` | `()` | Status summary of execution |
 
+## Companion Plugins
+
+Three independent modules extend QvQChat and also demonstrate what extension points can do—install QvQChat first and add plugins as needed:
+
+| Plugin | What it does |
+|---|---|
+|
+
 ## Interface
 
 Access independently via `/QvQChat/view`, or embed in the Dashboard sidebar.
@@ -729,6 +753,82 @@ Access independently via `/QvQChat/view`, or embed in the Dashboard sidebar.
 ![Overview](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/overview.png)
 
 ![Conversation](https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/chat.png)
+
+---
+
+## MCP 桥
+
+> 来源: `docs/en/ecosystem/apimcp.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/ecosystem/apimcp.md）
+
+# ErisPulse-ApiMCP: Control Your Bot with AI Clients
+
+> [!TIP]
+> **When to read this**: Read this when you want MCP-capable AI clients such as Claude Desktop to directly operate your bot—sending messages, viewing messages, invoking modules, managing adapters, and observing event streams. Skip it otherwise.
+
+[ErisPulse-ApiMCP](https://github.com/wsu2059q/ErisPulse-ApiMCP) exposes the bot's runtime capabilities to AI clients via **MCP (Model Context Protocol)**: once installed, 14 new tools appear in Claude Desktop, allowing the AI to send and receive messages on your behalf, troubleshoot module issues, and subscribe to group chat events—turning the bot from "a program you manage" into "the AI's hands and eyes".
+
+> [!IMPORTANT]
+> ApiMCP must be installed separately, and the bridge only becomes active after a **token is explicitly configured**:
+>
+> ```bash
+> epsdk install ErisPulse-ApiMCP
+> ```
+>
+> Set `token = "long-random-string"` in the `[ApiMCP]` section of `config.toml` (or use the environment variable `ERISPULSE_APIMCP_TOKEN`). When not configured, all endpoints return 503 except the health check, preventing silent token leakage.
+
+## How It Works
+
+A two-layer architecture, with no AI dependencies introduced into the bot itself:
+
+- **Inside the bot process**: The ApiMCP module mounts a REST bridge on the framework's built-in HTTP server (`/apimcp/*`, token authentication, default rate limit of 30 requests/minute)
+- **Independent process**: The `erispulse-apimcp` command starts a stdio server using the official `mcp` SDK, forwarding MCP tool calls to the bot's HTTP bridge
+
+```
+Claude Desktop ──MCP(stdio)──► erispulse-apimcp ──HTTP──► Bot Process REST Bridge ──► sdk.*
+```
+
+When the bot is offline or the bridge is not configured, tools return readable errors with troubleshooting guidance instead of throwing stack traces.
+
+## Claude Desktop Integration
+
+Edit `claude_desktop_config.json` (Windows: `%APPDATA%\Claude\`; macOS: `~/Library/Application Support/Claude/`):
+
+```json
+{
+  "mcpServers": {
+    "erispulse": {
+      "command": "erispulse-apimcp",
+      "env": {
+        "ERISPULSE_APIMCP_URL": "http://127.0.0.1:8000",
+        "ERISPULSE_APIMCP_TOKEN": "your-token"
+      }
+    }
+  }
+}
+```
+
+After saving, fully restart Claude Desktop. The integration is successful once the `erispulse` server appears in the tool list. Any client that supports MCP stdio servers (Claude Code, Cursor, etc.) can connect in the same way.
+
+## The 14 Tools at a Glance
+
+| Category | Tools | Description |
+|---|---|---|
+| Module | `list_modules` / `get_module_info` / `call_module` / `reload_module` | View and invoke public services of installed modules, and trigger hot reload |
+| Adapter | `list_adapters` / `get_adapter_status` / `reload_adapter` | Platform online status; adapter reload is disabled by default |
+| Message | `send_message` / `recent_messages` | Send text/images/audio/video/files to any platform; review recent messages via [transcript](../advanced/transcript.md) |
+| Event | `subscribe_events` / `unsubscribe` / `poll_events` | Subscribe to events such as messages/notifications, with a ring buffer (1000 entries by default) and incremental polling |
+| Runtime | `get_topology` / `sdk_health` | Runtime topology (sanitized) and health summary |
+
+A typical usage: the AI first calls `subscribe_events(["message"])`, then periodically runs `poll_events` to observe what's being discussed in the group, and decides whether to chime in via `send_message` or use `call_module` to trigger a module's capability.
+
+## Security Essentials
+
+- **The token grants full control**: it can read messages, send messages, and call whitelisted module methods. Never commit it to the repository or post it in public channels; in multi-tenant scenarios, split into multiple bot instances
+- **Least privilege**: use `module_call_whitelist` to narrow the callable modules (supports precise `module.method` format for exact allowlisting), `send_target_whitelist` to narrow send targets (e.g., only allowing a specific group), and keep `allow_adapter_reload` disabled by default
+- **Listen on localhost only**: when used only on the local machine, set the framework HTTP server to `server.host = "127.0.0.1"`; cross-machine access must use an intranet + reverse proxy with TLS
+- Output is sanitized at the key-name level (key/path-type keys are dropped entirely); deep sanitization is the module's own responsibility—do not enable subscriptions for sensitive sessions
+
+For the complete configuration options (buffer capacity, backtrack window, event type whitelist, etc.) and detailed REST endpoints, see the [project README](https://github.com/wsu2059q/ErisPulse-ApiMCP).
 
 ---
 

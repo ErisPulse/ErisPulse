@@ -16403,7 +16403,7 @@
     "`install_owner_task_factory(loop: asyncio.AbstractEventLoop) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/tasks.md",
-        "line": 270,
+        "line": 274,
         "level": 3,
         "title": "`install_owner_task_factory(loop: asyncio.AbstractEventLoop) -> bool`"
       }
