@@ -129,6 +129,18 @@ async def setup(self):
 | `run_prompt` | `(chat_key, prompt, ...)` | 运行提示词，结果可发送到目标会话 |
 | `get_status` | `()` | 运行状态摘要 |
 
+## 配套插件
+
+三个独立模块扩展了 QvQChat，也顺带演示了扩展点能做什么——装上 QvQChat 后按需加装：
+
+| 插件 | 干什么 |
+|---|---|
+| [ErisPulse-QvQStalker](https://github.com/wsu2059q/ErisPulse-QvQStalker) | 旁听群聊自动插话：热度跟踪、五层判定和冲动值共同决定智能体何时开口，15 项行为参数在设置页直接调 |
+| [ErisPulse-QvQMemes](https://github.com/wsu2059q/ErisPulse-QvQMemes) | 给智能体一个表情包习惯：`send_sticker` 工具让模型自己挑该发哪张，群图片自动收录并由视觉模型打标签 |
+| [ErisPulse-QvQCompanion](https://github.com/wsu2059q/ErisPulse-QvQCompanion) | 拟人化陪伴：语气人设注入、冲动值主动开口、静默时段与每日上限 |
+
+三个插件都通过上文「模块扩展」的约定服务接入，本身也是扩展写法的参考实现。
+
 ## 界面
 
 通过 `/QvQChat/view` 独立访问，或嵌入 Dashboard 侧边栏。

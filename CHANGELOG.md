@@ -77,15 +77,21 @@
 > 开发版
 
 **版本摘要**
-本版本为 2.11.1 正式发布前的加固批次：修复热重载体系四项契约缺陷（相对路径下插件删除事件失效、导入失败误判为删除、restart 预检拒绝未闭环、新插件热装载绕过互斥），并完成背压告警折叠、收件箱迁移重试、回滚留痕等全线健壮性收口。
+本版本为 2.11.1 正式发布前的加固批次：修复热重载体系四项契约缺陷（相对路径下插件删除事件失效、导入失败误判为删除、restart 预检拒绝未闭环、新插件热装载绕过互斥），完成背压告警折叠、收件箱迁移重试、回滚留痕等全线健壮性收口
 
 **升级建议**
 - **是否建议升级**：建议升级
 - 相对 dev.0 为纯修复与加固，无 API 破坏性变更
 
+### 新增
+
+- @YingXinche
+  - 文档：生态模块新增 ApiMCP MCP 桥专页与 QvQChat 配套插件（Stalker/Memes/Companion）区块；新增「选型指南」目录（vs NoneBot2、vs AstrBot/LangBot 对比与 AstrBot 迁移指南）；README 增补 QvQChat/ApiMCP/Cron/Takumi 生态位、Star 引导与爱发电赞助入口（FUNDING）
+
 ### 修复
 
 - @YingXinche
+  - 任务工厂 `_owner_aware_task_factory` 显式回传 `loop`：修复 Python 3.14 下 `Task(loop=None, eager_start=True)` 触发 `'NoneType' object has no attribute 'is_running'`，导致 `sdk.run()` 启动后所有经 `sdk.client` 的 HTTP/WS 请求失败（aiohttp 3.14.x 请求路径必经此工厂）(#472)
   - 文件监控删除检测的键与前缀统一绝对化归一：相对路径调度（默认 `plugins` / `epsdk run --reload` 的 `.`）下删除/改名插件事件恢复触发
   - 插件导入期失败不再误判为「已删除」（模块/适配器两侧）：按重载失败回滚旧实例并返回失败，不再静默移除后误报成功
   - `restart()` 预检整轮拒绝闭环：适配器层跳过本轮重载（消除无谓断连抖动）、整轮判定失败并留痕，修复后再次 restart 即可

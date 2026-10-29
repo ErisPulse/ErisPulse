@@ -16,6 +16,7 @@ An asynchronous, event-driven modular robot framework based on the OneBot12 stan
   <a href="https://hub.docker.com/r/erispulse/erispulse"><img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"></a>
   <a href="https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
   <a href="https://pepy.tech/project/ErisPulse"><img src="https://img.shields.io/pepy/dt/ErisPulse?style=for-the-badge&color=blue" alt="Downloads"></a>
+  <a href="https://github.com/ErisPulse/ErisPulse/stargazers"><img src="https://img.shields.io/github/stars/ErisPulse/ErisPulse?style=for-the-badge&logo=github&color=yellow" alt="Stars"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&style=for-the-badge" alt="Ruff"></a>
   <a href="https://socket.dev/pypi/package/erispulse"><img src="https://img.shields.io/badge/Socket-Secure-2ea043?style=for-the-badge&logo=socket&logoColor=white" alt="Socket"></a>
   <a href="https://www.erisdev.com"><img src="https://img.shields.io/badge/Documentation-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="Documentation"></a>
@@ -540,6 +541,52 @@ Multi-architecture support
 
 </td>
 </tr>
+<tr>
+<td align="center" width="25%">
+
+**QvQChat**
+
+AI agent in group chats
+
+Tool loop · Long-term memory · MCP
+
+[GitHub →](https://github.com/wsu2059q/ErisPulse-QvQChat)
+
+</td>
+<td align="center" width="25%">
+
+**ApiMCP**
+
+Control bots via AI clients
+
+Claude integration · 14 MCP tools
+
+[GitHub →](https://github.com/wsu2059q/ErisPulse-ApiMCP)
+
+</td>
+<td align="center" width="25%">
+
+**Cron**
+
+Scheduled tasks
+
+One-shot / interval / cron expressions
+
+[GitHub →](https://github.com/wsu2059q/ErisPulse-Cron)
+
+</td>
+<td align="center" width="25%">
+
+**Takumi**
+
+Image rendering
+
+HTML / SVG / animation
+
+[GitHub →](https://github.com/ccd2s/ErispulseTakumi)
+
+</td>
+</tr>
 </table>
 
 ---
@@ -577,6 +624,16 @@ Connect with us:
 - Telegram: <https://t.me/ErisPulse>
 - QQ Group: <https://qm.qq.com/q/TOwnCmypcy>
 - Yunhu Group: <https://yhfx.jwznb.com/share?key=VWJL4fTWXepa&ts=1781889199>
+
+Find ErisPulse useful? Support its development on [afdian](https://ifdian.net/a/YingXinche) — the code and docs will always be free and open source.
+
+---
+
+## Star History
+
+If ErisPulse helps you, please consider giving it a star ⭐ — it's the most direct way to help more developers discover the project.
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ErisPulse/ErisPulse&type=Date)](https://star-history.com/#ErisPulse/ErisPulse&Date)
 
 ---
 
