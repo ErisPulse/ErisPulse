@@ -509,8 +509,12 @@ def _owner_aware_task_factory(loop: asyncio.AbstractEventLoop, coro: Any, **kwar
 
     ``**kwargs`` 必须保留并向 :class:`asyncio.Task` 透传：Python 3.13 起
     事件循环以 ``factory(loop, coro, **kwargs)`` 调用任务工厂（携带 context）。
+
+    ``loop`` 必须显式回传给 Task：Python 3.14.6 之前的 3.14 系列版本``Task(loop=None)`` 不再可靠
+    解析当前循环，配合 ``eager_start=True``（aiohttp 等库的请求路径会传）会以
+    ``AttributeError: 'NoneType' object has no attribute 'is_running'`` 失败。
     """
-    task = asyncio.Task(coro, **kwargs)
+    task = asyncio.Task(coro, loop=loop, **kwargs)
     owner = current_owner.get()
     if owner is not None:
         _track_owner_task(owner, task)
