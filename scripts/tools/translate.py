@@ -798,6 +798,45 @@ class DocsTranslator:
         return html.unescape(text)
 
     @classmethod
+    def _badge_urls(cls, text: str) -> set[str]:
+        """
+        提取文本中的 shields.io 徽章 URL（归一化后）
+
+        徽章 URL 可能含字面空格（模型把标签译成多词短语时未做编码），
+        ``_SHIELDS_URL_RE`` 遇空白即截断——故一并从 ``src="..."`` 属性取值，
+        并把空格按 URL 规范编码为 ``%20``、还原 HTML 实体，保证比对与
+        后续归一化用同一份数据。
+
+        :param text: Markdown 文本
+        :return: 归一化后的徽章 URL 集合
+        """
+        candidates = set(cls._IMG_SRC_RE.findall(text)) | set(
+            cls._SHIELDS_URL_RE.findall(text)
+        )
+        return {
+            cls._html_unescape(u).replace(" ", "%20")
+            for u in candidates
+            if cls._is_badge_url(u)
+        }
+
+    @classmethod
+    def _normalize_badge_spaces(cls, text: str) -> str:
+        """
+        把徽章 URL 中的字面空格编码为 ``%20``（URL 内不允许裸空格）
+
+        :param text: Markdown 文本
+        :return: 归一化后的文本
+        """
+
+        def encode(match: re.Match) -> str:
+            url = match.group(1)
+            if cls._is_badge_url(url) and " " in url:
+                return f'src="{url.replace(" ", "%20")}"'
+            return match.group(0)
+
+        return cls._IMG_SRC_RE.sub(encode, text)
+
+    @classmethod
     def _img_src_drift(cls, source: str, translated: str) -> list[str]:
         """
         比对源文本与译文的**非徽章**图片 ``src`` 资源路径，返回被改动/丢失的部分
@@ -855,6 +894,33 @@ class DocsTranslator:
 
         return cls._IMG_SRC_RE.sub(replace, translated)
 
+    def _deterministic_reject_reason(
+        self, source_chunks: list[str], translated_chunks: list[str]
+    ) -> str:
+        """
+        逐块确定性校验（围栏 / 提示词残留 / 资源 URL），返回首个失败原因
+
+        供"评审触发的整文档重译"结果复检：该结果的落盘路径不经过逐块翻译
+        循环，必须用同一套确定性标准把关，否则丢图片、漏译徽章等损坏会
+        绕过校验直接落盘。
+
+        :param source_chunks: 源分块列表
+        :param translated_chunks: 译分块列表（须与源等长）
+        :return: 首个失败原因；全部通过时返回空字符串
+        """
+        for index, (source, translated) in enumerate(
+            zip(source_chunks, translated_chunks, strict=False), 1
+        ):
+            if self.count_fences(source) != self.count_fences(translated):
+                return f"块{index} 围栏数不匹配"
+            if self.detect_prompt_leaks(translated):
+                return f"块{index} 提示词残留"
+            if self._img_src_drift(source, translated):
+                return f"块{index} 图片 src 被改动"
+            if self._untranslated_badges(source, translated):
+                return f"块{index} 徽章标签未翻译"
+        return ""
+
     @classmethod
     def _untranslated_badges(cls, source: str, translated: str) -> list[str]:
         """
@@ -867,13 +933,7 @@ class DocsTranslator:
         :param translated: 译文块文本
         :return: 未翻译的徽章 URL 列表（排序去重）
         """
-
-        def badges(text: str) -> set[str]:
-            return {
-                cls._html_unescape(u) for u in cls._SHIELDS_URL_RE.findall(text)
-            }
-
-        kept = badges(source) & badges(translated)
+        kept = cls._badge_urls(source) & cls._badge_urls(translated)
         return sorted(u for u in kept if cls._CJK_RE.search(u))
 
     @classmethod
@@ -1151,6 +1211,10 @@ class DocsTranslator:
         """
         source_lang = self.config["source_lang"]
 
+        # 0. 徽章 URL 内的字面空格按 URL 规范编码（模型译成多词标签时常见），
+        #    否则徽章渲染与后续比对都不可靠
+        content = self._normalize_badge_spaces(content)
+
         # 1. 替换 docs/{source_lang}/ 为 docs/{target_lang}/
         #    涵盖 Markdown 链接 [text](path)、图片链接 ![alt](path) 以及裸 URL
         source_path = f"docs/{source_lang}/"
@@ -1240,7 +1304,7 @@ class DocsTranslator:
                 if f.read() == translated_content:
                     return False
         target_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(target_file, "w", encoding="utf-8") as f:
+        with open(target_file, "w", encoding="utf-8", newline="\n") as f:
             f.write(translated_content)
         Logger.progress(
             self._get_rel_path(file_path), target_lang, "done", "由缓存重建译文"
@@ -1566,27 +1630,56 @@ class DocsTranslator:
             # 评审重译结果回填分块缓存：评审触发的整文件重译此前只落盘不入缓存，
             # 缓存仍是改进前的分块版本，下次源文档变更续译时会丢失评审改进并造成
             # 文档与缓存不一致。按位置对齐回填（翻译保持标题结构，分块数应一致），
-            # 分块数不一致时保留原缓存（结构变化无法安全对齐）
+            # 分块数不一致时保留原缓存（结构变化无法安全对齐）。
+            # 重译结果必须通过逐块确定性校验——整文档重译比逐块更易丢图片/漏译
+            # （曾把 6 张图标译丢、徽章标签未译的版本直接落盘），未通过则丢弃，
+            # 保留已校验的逐块译文
             if review_retranslated is not None:
                 retranslated_chunks = self._split_chunks(review_retranslated)
-                if len(retranslated_chunks) == total_chunks:
-                    translated_chunks_list = retranslated_chunks
+                reject_reason = ""
+                if len(retranslated_chunks) != total_chunks:
+                    reject_reason = (
+                        f"分块数与源不一致"
+                        f"（{len(retranslated_chunks)}/{total_chunks}）"
+                    )
                 else:
+                    reject_reason = self._deterministic_reject_reason(
+                        source_chunks, retranslated_chunks
+                    )
+                if reject_reason:
+                    translated_content = "\n\n".join(translated_chunks_list)
                     Logger.progress(
                         rel_path,
                         target_lang,
                         "retry",
-                        (
-                            "评审重译分块数与源不一致"
-                            f"（{len(retranslated_chunks)}/{total_chunks}），"
-                            "缓存保留原分块"
-                        ),
+                        f"评审重译未通过确定性校验（{reject_reason}），"
+                        f"保留逐块译文",
                     )
+                else:
+                    translated_chunks_list = retranslated_chunks
+                    translated_content = "\n\n".join(translated_chunks_list)
 
             # 后处理：确保链接、语言切换行指向正确的语言版本
             translated_content = self._localize_links(
                 translated_content, target_lang, file_name=rel_path
             )
+
+            # 整文档资源 URL 校验（落盘前最后一道防线）：图片 src 被改动/丢失
+            # 说明译文发生了内容丢失，宁可判失败也不落盘损坏文档（此处不再
+            # 重译——逐块循环内已有带原因重译与还原兜底，走到这里属结构性损坏）
+            doc_src_drift = self._img_src_drift(content, translated_content)
+            if doc_src_drift:
+                Logger.progress(
+                    rel_path,
+                    target_lang,
+                    "fail",
+                    (
+                        f"图片 src 与源不一致（{doc_src_drift[0][:60]}），"
+                        f"放弃保存；请清除该文件缓存后重试"
+                    ),
+                )
+                self.stats["failed_files"] += 1
+                return False
 
             # 整文档围栏完整性校验：源/译文围栏行数必须一致。
             # 不一致说明存在丢围栏的坏块（含复用了旧缓存的损坏块），
@@ -1628,7 +1721,7 @@ class DocsTranslator:
             target_file = self._get_target_path(file_path, target_lang)
             target_file.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(target_file, "w", encoding="utf-8") as f:
+            with open(target_file, "w", encoding="utf-8", newline="\n") as f:
                 f.write(translated_content)
 
             file_hash = self.calculate_file_hash(file_path)
