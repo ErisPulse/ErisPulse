@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "2b5d04cec2f0af6e5cc8a238a8ffc1c0",
-  "file_hash": "2b5d04cec2f0af6e5cc8a238a8ffc1c0",
-  "translated_at": "2026-10-19T09:25:58.828629",
+  "hash": "6c9d7a78463d68d546ceac1e402f68bd",
+  "file_hash": "6c9d7a78463d68d546ceac1e402f68bd",
+  "translated_at": "2026-10-30T14:49:33.175118",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# ErisPulse PlatformFeatures ドキュメント\n\n> 基準プロトコル: [OneBot12](https://12.onebot.dev/)  \n> 本文書は**プラットフォーム固有の機能ガイド**であり、以下を含む：\n> - 各アダプタがサポートするSendメソッドの連鎖呼び出し例\n> - プラットフォーム固有のイベント/メッセージフォーマットの説明\n> \n> 一般的な使用方法は以下のドキュメントを参照してください：\n> - [基本概念](../getting-started/basic-concepts.md)\n> - [イベント変換基準](../standards/event-conversion.md)  \n> - [APIレスポンス規格](../standards/api-response.md)\n\n---"
     },
     {
-      "hash": "b4f1c4ee74fb2404f705461b9832afa5",
-      "translation": "## プラットフォーム固有の機能\n\nこのセクションは、各アダプタの開発者が維持・更新するものであり、OneBot12標準との差異や拡張機能を説明するためのものです。以下の各プラットフォームの詳細ドキュメントを参照してください：\n\n- [維持説明](maintain-notes.md)\n\n- [雲湖プラットフォームの特徴](yunhu.md)\n- [雲湖ユーザープラットフォームの特徴](yunhu_user.md)\n- [Telegramプラットフォームの特徴](telegram.md)\n- [OneBot11プラットフォームの特徴](onebot11.md)\n- [OneBot12プラットフォームの特徴](onebot12.md)\n- [SnowLumaプラットフォームの特徴](snowluma.md)\n- [メールプラットフォームの特徴](email.md)\n- [Kook(開黒啦)プラットフォームの特徴](kook.md)\n- [Matrixプラットフォームの特徴](matrix.md)\n- [QQ公式ロボットプラットフォームの特徴](qqbot.md)\n- [花楓コーヒーハウス](ideaura.md)\n- [Discord](discord.md)\n- [Webhookプロトコルブリッジ](webhook.md)\n- [WeChat公式アカウント](wechatmp.md)\n\n> また、`sandbox`アダプタもありますが、このアダプタにはプラットフォーム固有のドキュメントを維持する必要はありません。\n\n---"
+      "hash": "fe36f73147d3e5c4caae82abca893811",
+      "translation": "## プラットフォーム固有機能\n\nこのセクションは各アダプター開発者によって管理されており、そのアダプターと OneBot12 標準との差異および拡張機能について説明します。各プラットフォームの詳細なドキュメントは以下をご参照ください：\n\n- [メンテナンスガイド](maintain-notes.md)\n\n- [雲湖プラットフォーム特性](yunhu.md)\n- [雲湖ユーザープラットフォーム特性](yunhu_user.md)\n- [Telegramプラットフォーム特性](telegram.md)\n- [OneBot11プラットフォーム特性](onebot11.md)\n- [OneBot12プラットフォーム特性](onebot12.md)\n- [SnowLumaプラットフォーム特性](snowluma.md)\n- [メールプラットフォーム特性](email.md)\n- [Kook(开黑啦)プラットフォーム特性](kook.md)\n- [Matrixプラットフォーム特性](matrix.md)\n- [企業微信（WeCom）プラットフォーム特性](wecom.md)\n- [QQ公式ボットプラットフォーム特性](qqbot.md)\n- [花楓カフェ](ideaura.md)\n- [Discord](discord.md)\n- [Webhookプロトコルブリッジ](webhook.md)\n- [WeChat公式アカウント](wechatmp.md)\n\n> また、`sandbox` アダプターもありますが、このアダプターについてはプラットフォーム特性ドキュメントの管理は不要です\n\n---"
     },
     {
       "hash": "98f6593d1e3961cc8fc3ee0945986047",

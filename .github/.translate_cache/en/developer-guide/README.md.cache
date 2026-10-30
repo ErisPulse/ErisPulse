@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "e9525bc1fb9e525a5b9dca06291b60dd",
-  "file_hash": "e9525bc1fb9e525a5b9dca06291b60dd",
-  "translated_at": "2026-10-25T07:09:00.343552",
+  "hash": "8916c18a07dcac34b05189f0e6153895",
+  "file_hash": "8916c18a07dcac34b05189f0e6153895",
+  "translated_at": "2026-10-30T14:49:51.807304",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Developer Guide\n\n> [!TIP]\n> **When to read this**: When you're ready to develop extensions for ErisPulse—adding features (modules) to the bot or integrating with new platforms (adapters). If you just want to use the bot, skip this and go directly to the [Quick Start](../quick-start.md).\n\nHere you'll find your development path: **Module Development** allows you to extend the bot's functionality using commands and message processors; **Adapter Development** enables the bot to connect to new messaging platforms. Both paths cover the full workflow from project creation to testing and deployment."
     },
     {
-      "hash": "9efc2560f1106c94077ddca8ee909486",
-      "translation": "## Table of Contents\n\n### Module Development\n\n1. [Getting Started with Module Development](modules/getting-started.md) - Create your first module\n2. [Module Core Concepts](modules/core-concepts.md) - Core concepts and architecture of modules\n3. [Event Wrapper Class in Detail](modules/event-wrapper.md) - A complete description of the Event object\n4. [Module Best Practices](modules/best-practices.md) - Recommendations for developing high-quality modules\n5. [Data Model Layer (ORM)](orm.md) - Advanced module development: declarative models, automatic table creation, and CRUD operations\n\n### Adapter Development\n\n1. [Getting Started with Adapter Development](adapters/getting-started.md) - Create your first adapter\n2. [Adapter Core Concepts](adapters/core-concepts.md) - Core concepts of adapters (including two ways to write start() and the PollingAdapter / WebhookAdapter connection pattern base classes)\n3. [SendDSL in Detail](adapters/send-dsl.md) - A complete description of the Send message DSL\n4. [Event Converter](adapters/converter.md) - Implementing event converters\n5. [Adapter Best Practices](adapters/best-practices.md) - Recommendations for developing high-quality adapters\n\n### Testing and Troubleshooting\n\n1. [Module Testing (ErisPulse-Testing)](testing.md) - TestBot, event factories, and the assertion interface\n\n### Publishing Guide\n\n- [Publishing and Module Store Guide](publishing.md) - Publish your work to PyPI and the ErisPulse module store"
+      "hash": "860797686803cd935ffe55c811ac3e29",
+      "translation": "## Table of Contents\n\n### Module Development\n\n1. [Getting Started with Module Development](modules/getting-started.md) - Create your first module\n2. [Core Concepts of Modules](modules/core-concepts.md) - Core concepts and architecture of modules\n3. [Event Wrapper Class Explained](modules/event-wrapper.md) - Complete documentation of the Event object\n4. [Module Best Practices](modules/best-practices.md) - Recommendations for developing high-quality modules\n5. [Data Model Layer (ORM)](orm.md) - Advanced module development: declarative models, automatic table creation, and CRUD operations\n\n### Adapter Development\n\n1. [Getting Started with Adapter Development](adapters/getting-started.md) - Create your first adapter\n2. [Core Concepts of Adapters](adapters/core-concepts.md) - Core concepts of adapters (including two writing styles for start(), and base classes for PollingAdapter / WebhookAdapter connection modes)\n3. [SendDSL Explained](adapters/send-dsl.md) - Complete documentation of the Send message sending DSL\n4. [Event Converters](adapters/converter.md) - Implementing event converters\n5. [Adapter Best Practices](adapters/best-practices.md) - Recommendations for developing high-quality adapters\n\n### Testing & Troubleshooting\n\n1. [Module Testing (ErisPulse-Testing)](testing.md) - TestBot, event factories, and assertion surfaces\n\n### General Standards\n\n1. [Configuration & UI Metadata](configuration.md) - Declarative configuration: widget / conditional visibility / value shape / compatibility contract (applicable to both adapters and modules)\n\n### Publishing Guide\n\n- [Publishing & Module Store Guide](publishing.md) - Publish your work to PyPI and the ErisPulse Module Store"
     },
     {
       "hash": "a69f12905cab94d5d7c997a0184db083",

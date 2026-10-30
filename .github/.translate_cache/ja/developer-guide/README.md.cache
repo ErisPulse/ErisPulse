@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "e9525bc1fb9e525a5b9dca06291b60dd",
-  "file_hash": "e9525bc1fb9e525a5b9dca06291b60dd",
-  "translated_at": "2026-10-25T07:15:58.092021",
+  "hash": "8916c18a07dcac34b05189f0e6153895",
+  "file_hash": "8916c18a07dcac34b05189f0e6153895",
+  "translated_at": "2026-10-30T14:49:47.188756",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 開発者ガイド\n\n> [!TIP]\n> **このドキュメントを読むべきタイミング**：ErisPulse 向けの拡張機能——ボットに機能を追加する（モジュール）や、新しいプラットフォームに接続する（アダプター）——を開発しようとしているとき。ボットを使いたいだけの場合はスキップして、[クイックスタート](../quick-start.md) を直接ご覧ください。\n\nここから自分の開発パスを見つけましょう：**モジュール開発**では、コマンドやメッセージハンドラーでボットの機能を拡張できます。**アダプター開発**では、ボットを新しいメッセージプラットフォームに接続できます。どちらのパスも、プロジェクトの作成からテスト、公開までの完全なフローをカバーしています。"
     },
     {
-      "hash": "9efc2560f1106c94077ddca8ee909486",
-      "translation": "## 目次\n\n### モジュール開発\n\n1. [モジュール開発入門](modules/getting-started.md) - 最初のモジュールを作成する\n2. [モジュールのコアコンセプト](modules/core-concepts.md) - モジュールの核心的な概念とアーキテクチャ\n3. [Event ラッパークラス詳解](modules/event-wrapper.md) - Event オブジェクトの完全な説明\n4. [モジュールのベストプラクティス](modules/best-practices.md) - 高品質なモジュールを開発するための提案\n5. [データモデル層（ORM）](orm.md) - モジュール開発の上級編：宣言的モデル、自動テーブル作成と CRUD 操作\n\n### アダプター開発\n\n1. [アダプター開発入門](adapters/getting-started.md) - 最初のアダプターを作成する\n2. [アダプターのコアコンセプト](adapters/core-concepts.md) - アダプターの核心的な概念（start() の2つの書き方と、PollingAdapter / WebhookAdapter の接続モード基底クラスを含む）\n3. [SendDSL 詳解](adapters/send-dsl.md) - Send メッセージ送信 DSL の完全な説明\n4. [イベントコンバーター](adapters/converter.md) - イベントコンバーターの実装\n5. [アダプターのベストプラクティス](adapters/best-practices.md) - 高品質なアダプターを開発するための提案\n\n### テストとトラブルシューティング\n\n1. [モジュールテスト（ErisPulse-Testing）](testing.md) - TestBot、イベントファクトリーとアサーションインターフェース\n\n### 公開ガイド\n\n- [公開とモジュールストアガイド](publishing.md) - あなたの作品を PyPI と ErisPulse モジュールストアに公開する"
+      "hash": "860797686803cd935ffe55c811ac3e29",
+      "translation": "## 内容リスト\n\n### モジュール開発\n\n1. [モジュール開発入門](modules/getting-started.md) - 初めてのモジュールを作成する\n2. [モジュールのコアコンセプト](modules/core-concepts.md) - モジュールのコアコンセプトとアーキテクチャ\n3. [Event パッケージの詳細](modules/event-wrapper.md) - Event オブジェクトの完全な説明\n4. [モジュールのベストプラクティス](modules/best-practices.md) - 高品質なモジュールを開発するための提案\n5. [データモデル層（ORM）](orm.md) - モジュール開発の進階：宣言的モデル、自動テーブル作成、CRUD 操作\n\n### アダプタ開発\n\n1. [アダプタ開発入門](adapters/getting-started.md) - 初めてのアダプタを作成する\n2. [アダプタのコアコンセプト](adapters/core-concepts.md) - アダプタのコアコンセプト（start() の2つの書き方と、PollingAdapter / WebhookAdapter による接続モードの基底クラスを含む）\n3. [SendDSL 詳解](adapters/send-dsl.md) - Send メッセージ送信 DSL の完全な説明\n4. [イベントコンバーター](adapters/converter.md) - イベントコンバーターの実装\n5. [アダプタのベストプラクティス](adapters/best-practices.md) - 高品質なアダプタを開発するための提案\n\n### テストとトラブルシューティング\n\n1. [モジュールテスト（ErisPulse-Testing）](testing.md) - TestBot、イベントファクトリー、アサーションの概要\n\n### 一般的な規格\n\n1. [設定と UI メタデータ](configuration.md) - 宣言的設定：widget / 条件付き表示 / 値の形態 / 兼容性契約（アダプタとモジュール共通）\n\n### リリースガイド\n\n- [リリースとモジュールストアガイド](publishing.md) - あなたの作品を PyPI と ErisPulse モジュールストアに公開する方法"
     },
     {
       "hash": "a69f12905cab94d5d7c997a0184db083",

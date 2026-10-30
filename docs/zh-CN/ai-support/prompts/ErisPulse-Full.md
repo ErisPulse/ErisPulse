@@ -5046,6 +5046,10 @@ tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
 1. [模块测试（ErisPulse-Testing）](testing.md) - TestBot、事件工厂与断言面
 
+### 通用规范
+
+1. [配置与 UI 元数据](configuration.md) - 声明式配置：widget / 条件显隐 / 值形态 / 兼容性契约（适配器与模块通用）
+
 ### 发布指南
 
 - [发布与模块商店指南](publishing.md) - 将你的作品发布到 PyPI 和 ErisPulse 模块商店
@@ -21286,6 +21290,7 @@ enabled = true
 - [邮件平台特性](email.md)
 - [Kook(开黑啦)平台特性](kook.md)
 - [Matrix平台特性](matrix.md)
+- [企业微信平台特性](wecom.md)
 - [QQ官方机器人平台特性](qqbot.md)
 - [花枫咖啡馆](ideaura.md)
 - [Discord](discord.md)

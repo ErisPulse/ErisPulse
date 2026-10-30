@@ -429,9 +429,11 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 
 **内部方法** 将 UI 元数据合并进字段 schema
 
-扩展键（min/max/step/rows/show_if/disabled_if/value_type/item）由 Dashboard
-满血组件系统消费（见 Dashboard docs/config-widgets.md）；旧版面板未识别时
-自动忽略，不影响渲染。
+键集合以框架规范《配置与 UI 元数据》为准
+（docs/zh-CN/developer-guide/configuration.md）：widget / group / order /
+options / placeholder / min / max / step / rows / show_if / disabled_if /
+value_type / item。框架原样透传，语义（控件行为、值形态、条件算子、
+兼容性契约）由规范定义，消费方（Dashboard 等）实现。
 
 ---
 

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1820,
+  "total_keywords": 1834,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -5938,6 +5938,14 @@
         "title": "Sandbox 平台特性文档"
       }
     ],
+    "Schema 输出": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 164,
+        "level": 2,
+        "title": "Schema 输出"
+      }
+    ],
     "Send 修饰器（各适配器 Send 类实现）": [
       {
         "document": "ai-support/skills/erispulse-adapter-standards/SKILL.md",
@@ -5993,19 +6001,19 @@
     "Send 链式调用": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3849,
+        "line": 3850,
         "level": 3,
         "title": "Send 链式调用"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 899,
+        "line": 900,
         "level": 3,
         "title": "Send 链式调用"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 43,
+        "line": 44,
         "level": 3,
         "title": "Send 链式调用"
       }
@@ -6204,6 +6212,14 @@
         "line": 505,
         "level": 2,
         "title": "Transcript 会话收件箱"
+      }
+    ],
+    "UI 元数据（`metadata[\"ui\"]` 子表）": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 44,
+        "level": 2,
+        "title": "UI 元数据（`metadata[\"ui\"]` 子表）"
       }
     ],
     "Using 方法": [
@@ -8176,6 +8192,14 @@
         "title": "wait(prompt=None, timeout=None)"
       }
     ],
+    "widget 名录": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 88,
+        "level": 2,
+        "title": "widget 名录"
+      }
+    ],
     "ws_connect 参数": [
       {
         "document": "advanced/http-client.md",
@@ -9251,13 +9275,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3977,
+        "line": 3978,
         "level": 3,
         "title": "事件监听"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1027,
+        "line": 1028,
         "level": 3,
         "title": "事件监听"
       },
@@ -9269,7 +9293,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 171,
+        "line": 172,
         "level": 3,
         "title": "事件监听"
       }
@@ -9384,6 +9408,14 @@
         "line": 110,
         "level": 2,
         "title": "事件订阅"
+      }
+    ],
+    "事件说明": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 110,
+        "level": 2,
+        "title": "事件说明"
       }
     ],
     "事件转换": [
@@ -9804,6 +9836,14 @@
         "line": 131,
         "level": 3,
         "title": "代码质量"
+      }
+    ],
+    "企业微信（WeCom）平台特性文档": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 1,
+        "level": 1,
+        "title": "企业微信（WeCom）平台特性文档"
       }
     ],
     "优先级": [
@@ -10370,6 +10410,14 @@
         "title": "修饰方法"
       }
     ],
+    "值形态（`value_type`，用于 `multiselect`）": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 78,
+        "level": 3,
+        "title": "值形态（`value_type`，用于 `multiselect`）"
+      }
+    ],
     "健康检查": [
       {
         "document": "advanced/router.md",
@@ -10640,6 +10688,14 @@
         "line": 139,
         "level": 3,
         "title": "兼容性"
+      }
+    ],
+    "兼容性契约（消费方必须遵守）": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 107,
+        "level": 2,
+        "title": "兼容性契约（消费方必须遵守）"
       }
     ],
     "内容列表": [
@@ -11545,19 +11601,19 @@
     "参与贡献": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4099,
+        "line": 4100,
         "level": 2,
         "title": "参与贡献"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1149,
+        "line": 1150,
         "level": 2,
         "title": "参与贡献"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 293,
+        "line": 294,
         "level": 2,
         "title": "参与贡献"
       }
@@ -11619,19 +11675,19 @@
     "参考链接": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4087,
+        "line": 4088,
         "level": 2,
         "title": "参考链接"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1137,
+        "line": 1138,
         "level": 2,
         "title": "参考链接"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 281,
+        "line": 282,
         "level": 2,
         "title": "参考链接"
       }
@@ -11705,7 +11761,7 @@
     "发布你的模块": [
       {
         "document": "developer-guide/README.md",
-        "line": 82,
+        "line": 86,
         "level": 2,
         "title": "发布你的模块"
       }
@@ -11737,7 +11793,7 @@
     "发布指南": [
       {
         "document": "developer-guide/README.md",
-        "line": 30,
+        "line": 34,
         "level": 3,
         "title": "发布指南"
       }
@@ -12019,19 +12075,19 @@
     "发送规则装饰器": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3909,
+        "line": 3910,
         "level": 4,
         "title": "发送规则装饰器"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 959,
+        "line": 960,
         "level": 4,
         "title": "发送规则装饰器"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 103,
+        "line": 104,
         "level": 4,
         "title": "发送规则装饰器"
       }
@@ -13054,6 +13110,12 @@
         "title": "基本信息"
       },
       {
+        "document": "platform-guide/wecom.md",
+        "line": 12,
+        "level": 2,
+        "title": "基本信息"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 12,
         "level": 2,
@@ -13202,6 +13264,14 @@
         "line": 9,
         "level": 2,
         "title": "基本调用方式"
+      }
+    ],
+    "基础元数据（metadata 顶层键）": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 36,
+        "level": 2,
+        "title": "基础元数据（metadata 顶层键）"
       }
     ],
     "基础判断": [
@@ -13462,6 +13532,14 @@
         "line": 9,
         "level": 2,
         "title": "声明模型"
+      }
+    ],
+    "声明结构": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 7,
+        "level": 2,
+        "title": "声明结构"
       }
     ],
     "处理交互事件": [
@@ -14414,6 +14492,12 @@
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 691,
+        "level": 2,
+        "title": "完整示例"
+      },
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 114,
         "level": 2,
         "title": "完整示例"
       },
@@ -15411,7 +15495,7 @@
     "开发准备": [
       {
         "document": "developer-guide/README.md",
-        "line": 34,
+        "line": 38,
         "level": 2,
         "title": "开发准备"
       }
@@ -15419,7 +15503,7 @@
     "开发工具": [
       {
         "document": "developer-guide/README.md",
-        "line": 54,
+        "line": 58,
         "level": 2,
         "title": "开发工具"
       }
@@ -15449,7 +15533,7 @@
     "开发模式": [
       {
         "document": "developer-guide/README.md",
-        "line": 63,
+        "line": 67,
         "level": 3,
         "title": "开发模式"
       }
@@ -15465,7 +15549,7 @@
     "开发类型选择": [
       {
         "document": "developer-guide/README.md",
-        "line": 43,
+        "line": 47,
         "level": 2,
         "title": "开发类型选择"
       }
@@ -15611,19 +15695,19 @@
     "异步发送与结果处理": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3894,
+        "line": 3895,
         "level": 4,
         "title": "异步发送与结果处理"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 944,
+        "line": 945,
         "level": 4,
         "title": "异步发送与结果处理"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 88,
+        "line": 89,
         "level": 4,
         "title": "异步发送与结果处理"
       }
@@ -16459,13 +16543,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3944,
+        "line": 3945,
         "level": 4,
         "title": "批量构建模式（Build）"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 994,
+        "line": 995,
         "level": 4,
         "title": "批量构建模式（Build）"
       },
@@ -16477,7 +16561,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 138,
+        "line": 139,
         "level": 4,
         "title": "批量构建模式（Build）"
       }
@@ -17085,6 +17169,12 @@
       },
       {
         "document": "platform-guide/terminal.md",
+        "line": 7,
+        "level": 2,
+        "title": "文档信息"
+      },
+      {
+        "document": "platform-guide/wecom.md",
         "line": 7,
         "level": 2,
         "title": "文档信息"
@@ -17714,6 +17804,14 @@
         "title": "权限控制"
       }
     ],
+    "条件显隐/禁用（字段联动）": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 60,
+        "level": 3,
+        "title": "条件显隐/禁用（字段联动）"
+      }
+    ],
     "条件监听": [
       {
         "document": "api-reference/event-system.md",
@@ -17848,6 +17946,14 @@
         "title": "查询方法"
       }
     ],
+    "标准 API 动作": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 88,
+        "level": 2,
+        "title": "标准 API 动作"
+      }
+    ],
     "标准 API 动作（ApiDSL）": [
       {
         "document": "platform-guide/yunhu.md",
@@ -17941,19 +18047,19 @@
     "标准事件格式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4034,
+        "line": 4035,
         "level": 3,
         "title": "标准事件格式"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1084,
+        "line": 1085,
         "level": 3,
         "title": "标准事件格式"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 228,
+        "line": 229,
         "level": 3,
         "title": "标准事件格式"
       }
@@ -18005,19 +18111,19 @@
     "标准响应格式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4055,
+        "line": 4056,
         "level": 3,
         "title": "标准响应格式"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1105,
+        "line": 1106,
         "level": 3,
         "title": "标准响应格式"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 249,
+        "line": 250,
         "level": 3,
         "title": "标准响应格式"
       }
@@ -18033,19 +18139,19 @@
     "标准格式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4029,
+        "line": 4030,
         "level": 2,
         "title": "标准格式"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1079,
+        "line": 1080,
         "level": 2,
         "title": "标准格式"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 223,
+        "line": 224,
         "level": 2,
         "title": "标准格式"
       }
@@ -19080,6 +19186,12 @@
         "line": 227,
         "level": 2,
         "title": "注意事项"
+      },
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 116,
+        "level": 2,
+        "title": "注意事项"
       }
     ],
     "注释保留与最小化落盘": [
@@ -19370,24 +19482,30 @@
         "line": 59,
         "level": 2,
         "title": "消息发送"
+      },
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 51,
+        "level": 2,
+        "title": "消息发送"
       }
     ],
     "消息发送失败": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4072,
+        "line": 4073,
         "level": 4,
         "title": "消息发送失败"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1122,
+        "line": 1123,
         "level": 4,
         "title": "消息发送失败"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 266,
+        "line": 267,
         "level": 4,
         "title": "消息发送失败"
       }
@@ -19395,19 +19513,19 @@
     "消息发送成功": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4056,
+        "line": 4057,
         "level": 4,
         "title": "消息发送成功"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1106,
+        "line": 1107,
         "level": 4,
         "title": "消息发送成功"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 250,
+        "line": 251,
         "level": 4,
         "title": "消息发送成功"
       }
@@ -20509,7 +20627,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 86,
+        "line": 90,
         "level": 2,
         "title": "相关文档"
       },
@@ -22061,7 +22179,7 @@
     "调试技巧": [
       {
         "document": "developer-guide/README.md",
-        "line": 71,
+        "line": 75,
         "level": 3,
         "title": "调试技巧"
       }
@@ -23231,21 +23349,37 @@
     "通用接口": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3847,
+        "line": 3848,
         "level": 2,
         "title": "通用接口"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 897,
+        "line": 898,
         "level": 2,
         "title": "通用接口"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 41,
+        "line": 42,
         "level": 2,
         "title": "通用接口"
+      }
+    ],
+    "通用规范": [
+      {
+        "document": "developer-guide/README.md",
+        "line": 30,
+        "level": 3,
+        "title": "通用规范"
+      }
+    ],
+    "通用键": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 48,
+        "level": 3,
+        "title": "通用键"
       }
     ],
     "通知事件": [
@@ -23610,6 +23744,14 @@
         "title": "配置"
       }
     ],
+    "配置与 UI 元数据": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 1,
+        "level": 1,
+        "title": "配置与 UI 元数据"
+      }
+    ],
     "配置加载错误处理": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
@@ -23910,6 +24052,12 @@
       {
         "document": "platform-guide/terminal.md",
         "line": 20,
+        "level": 2,
+        "title": "配置说明"
+      },
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 23,
         "level": 2,
         "title": "配置说明"
       },
@@ -24433,7 +24581,7 @@
     "项目模板": [
       {
         "document": "developer-guide/README.md",
-        "line": 56,
+        "line": 60,
         "level": 3,
         "title": "项目模板"
       }

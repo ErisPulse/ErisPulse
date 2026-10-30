@@ -1,0 +1,41 @@
+{
+  "version": 2,
+  "hash": "6119508b2fc40ba721b70b2169dc5ffe",
+  "file_hash": "6119508b2fc40ba721b70b2169dc5ffe",
+  "translated_at": "2026-10-30T14:49:49.332709",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "8725387ceeb4d02c9141d32498ab3ca9",
+      "translation": "# 企業微信（WeCom）プラットフォームの特徴ドキュメント\n\nWeComAdapter は、企業微信の自建アプリ API を基に構築されたアダプターです。コールバックを介してメッセージを受信し、アプリメッセージインターフェースを用いて送信を行い、連絡先およびメッセージカード機能を提供します。\n\n---"
+    },
+    {
+      "hash": "60e1b88c6dac705e8df300523e98c7c7",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 0.1.0\n- 維持管理者: ErisPulse"
+    },
+    {
+      "hash": "e8e9cdebccbc1448aa877b778a3ea5cf",
+      "translation": "## 基本情報\n\n- プラットフォーム紹介：企業向けWeChatの自作アプリケーション・ロボット。社内通知、インテリジェントな質問応答、オフィス自動化などの場面に適しています。\n- アダプター名：WeComAdapter\n- 複数アカウント対応：複数の企業を同時に設定可能（各アカウントは1つのcorpid + アプリに対応）\n- 接続方法：HTTPコールバックによる受信（企業向けWeChatのバックエンドでメッセージ受信URLを設定）+ 主動APIによる送信\n- 認証方式：corpid + secretからaccess_tokenを取得（自動的に更新）\n- コールバックの暗号化/復号化：Token + EncodingAESKey（企業向けWeChat公式の暗号化プロトコル）\n- チェーン修飾子サポート：`.Reply()`などのチェーン修飾子メソッドをサポート\n- OneBot12互換性：OneBot12標準メッセージセグメントの送信をサポート"
+    },
+    {
+      "hash": "7655e67898b32db65619bf10f8eb57c6",
+      "translation": "## 設定の説明\n\n```toml\n# config.toml\n[WeComAdapter.accounts.default]\ncorpid = \"YOUR_CORP_ID\"        # 企業 ID（必須、企業微信管理画面-私の企業）\nsecret = \"YOUR_APP_SECRET\"     # アプリの Secret（必須、自作アプリの詳細ページ）\nagentid = 1000002              # アプリ AgentId（必須、自作アプリの詳細ページ）\ncallback_enabled = true        # コールバック受信の有効化（デフォルト true；無効化後は送信のみ可能）\ntoken = \"YOUR_CALLBACK_TOKEN\"  # コールバック検証用トークン（企業微信管理画面-メッセージ受信設定）\nencoding_aes_key = \"YOUR_AES_KEY_43CHARS\"  # コールバックの暗号化/復号化キー（43 文字）\ncallback_path = \"/wecom/{account}\"         # コールバックパス、{account} プレースホルダに対応\nenabled = true\n```\n\n**各アカウントの設定項目の説明：**\n\n- `corpid` / `secret` / `agentid`：[企業微信管理画面](https://work.weixin.qq.com)の自作アプリページから取得（最初の2つは必須）\n- `callback_enabled`：コールバック受信のスイッチ（デフォルトで有効）。**無効化するとアダプタはコールバックルートの登録をスキップし、送信のみの機能に制限される**；管理画面のコールバック関連のフィールドも非表示になる\n- `token` / `encoding_aes_key`：コールバックメッセージの検証と暗号化/復号化、企業微信管理画面の「メッセージ受信」設定と一致させる\n- `callback_path`：コールバック受信パス（デフォルト `/wecom/{アカウント名}`）、企業微信管理画面では完全な URL を設定する必要がある：`http(s)://あなたのアドレス:ポート/wecom/<アカウント名>`\n\n**メッセージ受信の前提条件**：企業微信管理画面 → 自作アプリ → 「メッセージ受信」の API 受信設定、URL には上記の完全なコールバックアドレスを記入し、Token と EncodingAESKey は設定と一致させる。**注意**：企業微信ではコールバック URL が外部ネットワークからアクセス可能である必要がある（リバースプロキシの併用が推奨）。\n\n**API 環境**：\n- API 基本アドレス：`https://qyapi.weixin.qq.com/cgi-bin`\n- access_token は自動的に取得・キャッシュされ、手動での管理は不要"
+    },
+    {
+      "hash": "73fd27428b3e97cfb6767088e1effced",
+      "translation": "## メッセージ送信\n\n```python\nfrom ErisPulse import sdk\nwecom = sdk.adapter.get(\"wecom\")\n\n# 基本メッセージ（target_type: \"user\"=ユーザー \"group\"=アプリグループチャット）\nawait wecom.Send.To(\"user\", \"zhangsan\").Text(\"こんにちは\")\nawait wecom.Send.To(\"group\", \"group_chat_id\").Markdown(\"**太字**通知\")\n\n# メディア（ローカルパス / bytes / URL；自動で一時素材をアップロードして送信）\nawait wecom.Send.To(\"user\", \"zhangsan\").Image(\"banner.png\")\nawait wecom.Send.To(\"user\", \"zhangsan\").Voice(\"voice.amr\")\nawait wecom.Send.To(\"user\", \"zhangsan\").Video(\"demo.mp4\")\nawait wecom.Send.To(\"user\", \"zhangsan\").File(\"report.pdf\")\n\n# ニュースとカード\nawait wecom.Send.To(\"user\", \"zhangsan\").News([\n    {\"title\": \"タイトル\", \"description\": \"要約\", \"url\": \"https://...\", \"picurl\": \"https://.../img.png\"},\n])  # 最大 8 件まで\n\nawait wecom.Send.To(\"user\", \"zhangsan\").TextCard(\n    title=\"承認リマインダー\",\n    description=\"承認待ちの書類があります\",\n    url=\"https://oa.example.com/approval/1\",\n    btntxt=\"処理する\",\n)\n\nawait wecom.Send.To(\"user\", \"zhangsan\").TemplateCard(\n    card_type=\"text_notice\",  # 企業微信カードの種類、その他のパラメータは公式カードの JSON をそのまま渡す\n    source={\"icon_url\": \"...\", \"desc\": \"OA\"},\n    main_title={\"title\": \"会議リマインダー\"},\n)\n\n# パッシブな返信：メッセージを受け取った event.reply() で直接元のユーザーに返信\n```"
+    },
+    {
+      "hash": "809d0395609dacbc61cb979d0afc44b0",
+      "translation": "## 標準 API アクション\n\n```python\ninfo = await wecom.Api.get_self_info()          # アプリ情報（corpid/agentid）\nstatus = await wecom.Api.get_status()           # 実行状態\nver = await wecom.Api.get_version()             # アダプタバージョン\n\n# 連絡先（2.1.0 追加、自動的に access_token が注入されます）\nuser = await wecom.Api.get_user_info(\"zhangsan\")            # メンバーの詳細情報（名前/部門/役職/アイコン）\ndepts = await wecom.Api.get_department_list(0)              # 部門リスト（0=ルート部門）\nmembers = await wecom.Api.get_department_users(2)           # 部門のメンバー一覧\nuid = await wecom.Api.get_user_by_mobile(\"13800000000\")     # 電話番号から userid を検索\nopenid = await wecom.Api.userid_to_openid(\"zhangsan\")       # userid → openid（赤包/外部支払い）\nuserid = await wecom.Api.openid_to_userid(\"oXXXX\")          # openid → userid\n\n# 複数アカウント\nresult = await wecom.Api.Using(\"corp2\").get_user_info(\"lisi\")\n\n# 任意の企業微信 API 直接呼び出し（endpoint は cgi-bin からの相対パス、自動的に access_token が付与されます）\nresult = await wecom.Api.call(\"message/send\", touser=\"zhangsan\", msgtype=\"text\", agentid=1000002, text={\"content\": \"hi\"})\n```"
+    },
+    {
+      "hash": "d5d5f9008a539e6861ed8f33d2194173",
+      "translation": "## 事件の説明\n\n- メッセージイベント：`detail_type` が `private`（メンバーがメッセージを送信）/ `group`（アプリのグループチャットメッセージ）；`user_id` はメンバーの userid\n- イベントオブジェクトは `get_raw_xml()`（元のコールバック XML）などの拡張読み取りメソッドを提供\n- イベントの報告（サブスクリプション/メニュークリックなど）は `request` / `notice` クラスのイベントに変換される"
+    },
+    {
+      "hash": "f1e6eba39376bd295d9a2726807be1e8",
+      "translation": "## 注意事項\n\n1. **コールバック URL はインターネットからアクセス可能でなければなりません**：ローカル開発では内向的トンネルを使用できます。本番環境では Nginx を使って ErisPulse router のポートにリバースプロキシすることを推奨します。\n2. **アクティブな送信頻度**：企業微信アプリのメッセージインターフェース制限（各アプリの毎日の送信量は企業の規模に関連）により、一斉送信の場合は `TaskCard`/`TemplateCard` とタグを組み合わせてください。\n3. **access_token の有効性**：アダプターが自動的に更新します。同一の corpid+secret を複数のインスタンスでデプロイする場合は、公式のトークンの相互排除制限に注意してください（中央で1つのインスタンスが送受信を行うのが望ましいです）。\n4. **メディアファイル**：Voice は AMR 形式でなければなりません（企業微信の制限による）；大容量のファイルは一時素材インターフェースを使用してください（アダプターが自動的に処理します）。"
+    }
+  ]
+}

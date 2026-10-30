@@ -15659,6 +15659,7 @@ enabled = true
 - [邮件平台特性](email.md)
 - [Kook(开黑啦)平台特性](kook.md)
 - [Matrix平台特性](matrix.md)
+- [企业微信平台特性](wecom.md)
 - [QQ官方机器人平台特性](qqbot.md)
 - [花枫咖啡馆](ideaura.md)
 - [Discord](discord.md)

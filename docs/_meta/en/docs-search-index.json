@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1869,
+  "total_keywords": 1882,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -4860,6 +4860,26 @@
         "title": "Article Message Segment (yunhu_user_post)"
       }
     ],
+    "Async Sending and Result Handling": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3857,
+        "level": 4,
+        "title": "Async Sending and Result Handling"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 927,
+        "level": 4,
+        "title": "Async Sending and Result Handling"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 89,
+        "level": 4,
+        "title": "Async Sending and Result Handling"
+      }
+    ],
     "Asynchronous Initialization": [
       {
         "document": "advanced/lazy-loading.md",
@@ -4938,26 +4958,6 @@
         "line": 99,
         "level": 2,
         "title": "Asynchronous Programming"
-      }
-    ],
-    "Asynchronous Sending and Result Handling": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3854,
-        "level": 4,
-        "title": "Asynchronous Sending and Result Handling"
-      },
-      {
-        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 924,
-        "level": 4,
-        "title": "Asynchronous Sending and Result Handling"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 86,
-        "level": 4,
-        "title": "Asynchronous Sending and Result Handling"
       }
     ],
     "At Method": [
@@ -5462,6 +5462,12 @@
         "title": "Basic Information"
       },
       {
+        "document": "platform-guide/wecom.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 12,
         "level": 2,
@@ -5480,6 +5486,14 @@
         "line": 129,
         "level": 3,
         "title": "Basic Message Types"
+      }
+    ],
+    "Basic Metadata (metadata top-level keys)": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 36,
+        "level": 2,
+        "title": "Basic Metadata (metadata top-level keys)"
       }
     ],
     "Basic Methods": [
@@ -5725,13 +5739,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3904,
+        "line": 3907,
         "level": 4,
         "title": "Batch Build Mode (Build)"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 974,
+        "line": 977,
         "level": 4,
         "title": "Batch Build Mode (Build)"
       },
@@ -5743,7 +5757,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 136,
+        "line": 139,
         "level": 4,
         "title": "Batch Build Mode (Build)"
       }
@@ -6418,26 +6432,6 @@
         "title": "Chainable Queries"
       }
     ],
-    "Chainable Send Calls": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3809,
-        "level": 3,
-        "title": "Chainable Send Calls"
-      },
-      {
-        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 879,
-        "level": 3,
-        "title": "Chainable Send Calls"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 41,
-        "level": 3,
-        "title": "Chainable Send Calls"
-      }
-    ],
     "Chained Call Example": [
       {
         "document": "platform-guide/yunhu.md",
@@ -6520,6 +6514,26 @@
         "line": 158,
         "level": 3,
         "title": "Chained Modifiers"
+      }
+    ],
+    "Chained Send Calls": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3812,
+        "level": 3,
+        "title": "Chained Send Calls"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 882,
+        "level": 3,
+        "title": "Chained Send Calls"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 44,
+        "level": 3,
+        "title": "Chained Send Calls"
       }
     ],
     "Chaining Mode (Instance)": [
@@ -7048,6 +7062,26 @@
         "title": "Common Fields (All Event Types)"
       }
     ],
+    "Common Interfaces": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3810,
+        "level": 2,
+        "title": "Common Interfaces"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 880,
+        "level": 2,
+        "title": "Common Interfaces"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 42,
+        "level": 2,
+        "title": "Common Interfaces"
+      }
+    ],
     "Common Issues and Considerations": [
       {
         "document": "advanced/scope.md",
@@ -7060,6 +7094,14 @@
         "line": 395,
         "level": 2,
         "title": "Common Issues and Considerations"
+      }
+    ],
+    "Common Keys": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 48,
+        "level": 3,
+        "title": "Common Keys"
       }
     ],
     "Common Methods": [
@@ -7186,6 +7228,14 @@
         "title": "Compatibility"
       }
     ],
+    "Compatibility Contract (Consumers Must Comply)": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 107,
+        "level": 2,
+        "title": "Compatibility Contract (Consumers Must Comply)"
+      }
+    ],
     "Complete API Reference": [
       {
         "document": "advanced/lifecycle.md",
@@ -7232,6 +7282,12 @@
       {
         "document": "developer-guide/adapters/converter.md",
         "line": 217,
+        "level": 2,
+        "title": "Complete Example"
+      },
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 114,
         "level": 2,
         "title": "Complete Example"
       },
@@ -7342,6 +7398,14 @@
         "title": "Conditional Listening"
       }
     ],
+    "Conditional Show/Hide and Disable (Field Linkage)": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 60,
+        "level": 3,
+        "title": "Conditional Show/Hide and Disable (Field Linkage)"
+      }
+    ],
     "Config (Configuration)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
@@ -7399,6 +7463,12 @@
       },
       {
         "document": "platform-guide/discord.md",
+        "line": 23,
+        "level": 2,
+        "title": "Configuration"
+      },
+      {
+        "document": "platform-guide/wecom.md",
         "line": 23,
         "level": 2,
         "title": "Configuration"
@@ -7736,6 +7806,14 @@
         "title": "Configuration Reading and Deletion API"
       }
     ],
+    "Configuration and UI Metadata": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 1,
+        "level": 1,
+        "title": "Configuration and UI Metadata"
+      }
+    ],
     "Configuring Components": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
@@ -8047,19 +8125,19 @@
     "Contributing": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4059,
+        "line": 4062,
         "level": 2,
         "title": "Contributing"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1129,
+        "line": 1132,
         "level": 2,
         "title": "Contributing"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 291,
+        "line": 294,
         "level": 2,
         "title": "Contributing"
       }
@@ -8723,7 +8801,7 @@
     "Debugging Tips": [
       {
         "document": "developer-guide/README.md",
-        "line": 71,
+        "line": 75,
         "level": 3,
         "title": "Debugging Tips"
       }
@@ -8768,6 +8846,14 @@
         "line": 158,
         "level": 3,
         "title": "Declaration"
+      }
+    ],
+    "Declaration Structure": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 7,
+        "level": 2,
+        "title": "Declaration Structure"
       }
     ],
     "Declarative Configuration (Recommended)": [
@@ -9153,7 +9239,7 @@
     "Development Mode": [
       {
         "document": "developer-guide/README.md",
-        "line": 63,
+        "line": 67,
         "level": 3,
         "title": "Development Mode"
       }
@@ -9169,7 +9255,7 @@
     "Development Preparation": [
       {
         "document": "developer-guide/README.md",
-        "line": 34,
+        "line": 38,
         "level": 2,
         "title": "Development Preparation"
       }
@@ -9177,7 +9263,7 @@
     "Development Tools": [
       {
         "document": "developer-guide/README.md",
-        "line": 54,
+        "line": 58,
         "level": 2,
         "title": "Development Tools"
       }
@@ -9185,7 +9271,7 @@
     "Development Type Selection": [
       {
         "document": "developer-guide/README.md",
-        "line": 43,
+        "line": 47,
         "level": 2,
         "title": "Development Type Selection"
       }
@@ -9451,6 +9537,12 @@
       },
       {
         "document": "platform-guide/terminal.md",
+        "line": 7,
+        "level": 2,
+        "title": "Documentation Information"
+      },
+      {
+        "document": "platform-guide/wecom.md",
         "line": 7,
         "level": 2,
         "title": "Documentation Information"
@@ -10230,6 +10322,14 @@
         "title": "Event Data Access"
       }
     ],
+    "Event Description": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 110,
+        "level": 2,
+        "title": "Event Description"
+      }
+    ],
     "Event Distribution Mechanism": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -10443,13 +10543,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3937,
+        "line": 3940,
         "level": 3,
         "title": "Event Listening"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1007,
+        "line": 1010,
         "level": 3,
         "title": "Event Listening"
       },
@@ -10461,7 +10561,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 169,
+        "line": 172,
         "level": 3,
         "title": "Event Listening"
       }
@@ -11504,24 +11604,12 @@
         "title": "General"
       }
     ],
-    "General Interfaces": [
+    "General Standards": [
       {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3807,
-        "level": 2,
-        "title": "General Interfaces"
-      },
-      {
-        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 877,
-        "level": 2,
-        "title": "General Interfaces"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 39,
-        "level": 2,
-        "title": "General Interfaces"
+        "document": "developer-guide/README.md",
+        "line": 30,
+        "level": 3,
+        "title": "General Standards"
       }
     ],
     "Generating Type Stubs": [
@@ -14360,6 +14448,26 @@
         "title": "Message Segment Types"
       }
     ],
+    "Message Send Failed": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 4035,
+        "level": 4,
+        "title": "Message Send Failed"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 1105,
+        "level": 4,
+        "title": "Message Send Failed"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 267,
+        "level": 4,
+        "title": "Message Send Failed"
+      }
+    ],
     "Message Sending": [
       {
         "document": "advanced/lifecycle.md",
@@ -14378,26 +14486,12 @@
         "line": 59,
         "level": 2,
         "title": "Message Sending"
-      }
-    ],
-    "Message Sending Failure": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4032,
-        "level": 4,
-        "title": "Message Sending Failure"
       },
       {
-        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1102,
-        "level": 4,
-        "title": "Message Sending Failure"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 264,
-        "level": 4,
-        "title": "Message Sending Failure"
+        "document": "platform-guide/wecom.md",
+        "line": 51,
+        "level": 2,
+        "title": "Message Sending"
       }
     ],
     "Message Sending Methods": [
@@ -14408,24 +14502,24 @@
         "title": "Message Sending Methods"
       }
     ],
-    "Message Sending Success": [
+    "Message Sent Successfully": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4016,
+        "line": 4019,
         "level": 4,
-        "title": "Message Sending Success"
+        "title": "Message Sent Successfully"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1086,
+        "line": 1089,
         "level": 4,
-        "title": "Message Sending Success"
+        "title": "Message Sent Successfully"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 248,
+        "line": 251,
         "level": 4,
-        "title": "Message Sending Success"
+        "title": "Message Sent Successfully"
       }
     ],
     "Message Sequence Number Mechanism": [
@@ -15802,6 +15896,12 @@
         "line": 222,
         "level": 2,
         "title": "Notes"
+      },
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 116,
+        "level": 2,
+        "title": "Notes"
       }
     ],
     "Notice Event Handling": [
@@ -16837,19 +16937,19 @@
     "Platform-Specific Features": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3783,
+        "line": 3784,
         "level": 2,
         "title": "Platform-Specific Features"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 853,
+        "line": 854,
         "level": 2,
         "title": "Platform-Specific Features"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 15,
+        "line": 16,
         "level": 2,
         "title": "Platform-Specific Features"
       }
@@ -17157,7 +17257,7 @@
     "Project Templates": [
       {
         "document": "developer-guide/README.md",
-        "line": 56,
+        "line": 60,
         "level": 3,
         "title": "Project Templates"
       }
@@ -17201,7 +17301,7 @@
     "Publish Your Module": [
       {
         "document": "developer-guide/README.md",
-        "line": 82,
+        "line": 86,
         "level": 2,
         "title": "Publish Your Module"
       }
@@ -17217,7 +17317,7 @@
     "Publishing Guide": [
       {
         "document": "developer-guide/README.md",
-        "line": 30,
+        "line": 34,
         "level": 3,
         "title": "Publishing Guide"
       }
@@ -17707,19 +17807,19 @@
     "References": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4047,
+        "line": 4050,
         "level": 2,
         "title": "References"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1117,
+        "line": 1120,
         "level": 2,
         "title": "References"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 279,
+        "line": 282,
         "level": 2,
         "title": "References"
       }
@@ -17999,7 +18099,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 86,
+        "line": 90,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -19148,6 +19248,14 @@
         "title": "Scheduled Tasks"
       }
     ],
+    "Schema Output": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 164,
+        "level": 2,
+        "title": "Schema Output"
+      }
+    ],
     "Scope": [
       {
         "document": "advanced/scope.md",
@@ -19452,6 +19560,26 @@
         "title": "Send Methods"
       }
     ],
+    "Send Rule Decorators": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3872,
+        "level": 4,
+        "title": "Send Rule Decorators"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 942,
+        "level": 4,
+        "title": "Send Rule Decorators"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 104,
+        "level": 4,
+        "title": "Send Rule Decorators"
+      }
+    ],
     "Send Rule Engine (Retry/Timeout/Delay)": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -19626,26 +19754,6 @@
         "line": 323,
         "level": 2,
         "title": "Sending Rendered Results"
-      }
-    ],
-    "Sending Rule Decorators": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3869,
-        "level": 4,
-        "title": "Sending Rule Decorators"
-      },
-      {
-        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 939,
-        "level": 4,
-        "title": "Sending Rule Decorators"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 101,
-        "level": 4,
-        "title": "Sending Rule Decorators"
       }
     ],
     "Sending a Reply": [
@@ -20072,6 +20180,12 @@
         "line": 64,
         "level": 3,
         "title": "Standard API Actions"
+      },
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 88,
+        "level": 2,
+        "title": "Standard API Actions"
       }
     ],
     "Standard API Actions (API DSL)": [
@@ -20165,19 +20279,19 @@
     "Standard Event Format": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3994,
+        "line": 3997,
         "level": 3,
         "title": "Standard Event Format"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1064,
+        "line": 1067,
         "level": 3,
         "title": "Standard Event Format"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 226,
+        "line": 229,
         "level": 3,
         "title": "Standard Event Format"
       }
@@ -20185,19 +20299,19 @@
     "Standard Formats": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3989,
+        "line": 3992,
         "level": 2,
         "title": "Standard Formats"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1059,
+        "line": 1062,
         "level": 2,
         "title": "Standard Formats"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 221,
+        "line": 224,
         "level": 2,
         "title": "Standard Formats"
       }
@@ -20235,19 +20349,19 @@
     "Standard Response Format": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4015,
+        "line": 4018,
         "level": 3,
         "title": "Standard Response Format"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1085,
+        "line": 1088,
         "level": 3,
         "title": "Standard Response Format"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 247,
+        "line": 250,
         "level": 3,
         "title": "Standard Response Format"
       }
@@ -20984,6 +21098,14 @@
         "title": "Testing"
       }
     ],
+    "Testing & Troubleshooting": [
+      {
+        "document": "developer-guide/README.md",
+        "line": 26,
+        "level": 3,
+        "title": "Testing & Troubleshooting"
+      }
+    ],
     "Testing Module": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
@@ -21002,14 +21124,6 @@
         "line": 89,
         "level": 2,
         "title": "Testing Module"
-      }
-    ],
-    "Testing and Troubleshooting": [
-      {
-        "document": "developer-guide/README.md",
-        "line": 26,
-        "level": 3,
-        "title": "Testing and Troubleshooting"
       }
     ],
     "Testing for \"Command Not Triggered\" Type Issues": [
@@ -21402,6 +21516,14 @@
         "line": 2358,
         "level": 2,
         "title": "Typical Workflow Patterns"
+      }
+    ],
+    "UI Metadata (the `metadata[\"ui\"]` Subtable)": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 44,
+        "level": 2,
+        "title": "UI Metadata (the `metadata[\"ui\"]` Subtable)"
       }
     ],
     "Unified Event Override Configuration (event.overrides)": [
@@ -22038,6 +22160,14 @@
         "title": "Utility Module: When Hosting Other Things, You Must Catch \"Unload Notification\""
       }
     ],
+    "Value Form (`value_type`, used for `multiselect`)": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 78,
+        "level": 3,
+        "title": "Value Form (`value_type`, used for `multiselect`)"
+      }
+    ],
     "Verification of Installation": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
@@ -22270,6 +22400,14 @@
         "line": 1,
         "level": 1,
         "title": "WeChat MP Adapter - Platform Features Documentation"
+      }
+    ],
+    "WeCom Platform Features Documentation": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 1,
+        "level": 1,
+        "title": "WeCom Platform Features Documentation"
       }
     ],
     "WebHook Connection": [
@@ -22588,6 +22726,14 @@
         "line": 31,
         "level": 2,
         "title": "Why is a Standard Needed?"
+      }
+    ],
+    "Widget Catalog": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 88,
+        "level": 2,
+        "title": "Widget Catalog"
       }
     ],
     "Wildcard and Regex Listening": [

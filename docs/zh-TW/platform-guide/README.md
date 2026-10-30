@@ -28,10 +28,11 @@
 - [郵件平台特性](email.md)
 - [Kook(開黑啦)平台特性](kook.md)
 - [Matrix平台特性](matrix.md)
+- [企業微信平台特性](wecom.md)
 - [QQ官方機器人平台特性](qqbot.md)
 - [花楓咖啡館](ideaura.md)
 - [Discord](discord.md)
-- [Webhook協議橋](webhook.md)
+- [Webhook協定橋](webhook.md)
 - [微信公眾號](wechatmp.md)
 
 > 此外還有 `sandbox` 適配器，但此適配器無需維護平台特性文件

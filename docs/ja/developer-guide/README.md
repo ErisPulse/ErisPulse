@@ -5,31 +5,35 @@
 
 ここから自分の開発パスを見つけましょう：**モジュール開発**では、コマンドやメッセージハンドラーでボットの機能を拡張できます。**アダプター開発**では、ボットを新しいメッセージプラットフォームに接続できます。どちらのパスも、プロジェクトの作成からテスト、公開までの完全なフローをカバーしています。
 
-## 目次
+## 内容リスト
 
 ### モジュール開発
 
-1. [モジュール開発入門](modules/getting-started.md) - 最初のモジュールを作成する
-2. [モジュールのコアコンセプト](modules/core-concepts.md) - モジュールの核心的な概念とアーキテクチャ
-3. [Event ラッパークラス詳解](modules/event-wrapper.md) - Event オブジェクトの完全な説明
+1. [モジュール開発入門](modules/getting-started.md) - 初めてのモジュールを作成する
+2. [モジュールのコアコンセプト](modules/core-concepts.md) - モジュールのコアコンセプトとアーキテクチャ
+3. [Event パッケージの詳細](modules/event-wrapper.md) - Event オブジェクトの完全な説明
 4. [モジュールのベストプラクティス](modules/best-practices.md) - 高品質なモジュールを開発するための提案
-5. [データモデル層（ORM）](orm.md) - モジュール開発の上級編：宣言的モデル、自動テーブル作成と CRUD 操作
+5. [データモデル層（ORM）](orm.md) - モジュール開発の進階：宣言的モデル、自動テーブル作成、CRUD 操作
 
-### アダプター開発
+### アダプタ開発
 
-1. [アダプター開発入門](adapters/getting-started.md) - 最初のアダプターを作成する
-2. [アダプターのコアコンセプト](adapters/core-concepts.md) - アダプターの核心的な概念（start() の2つの書き方と、PollingAdapter / WebhookAdapter の接続モード基底クラスを含む）
+1. [アダプタ開発入門](adapters/getting-started.md) - 初めてのアダプタを作成する
+2. [アダプタのコアコンセプト](adapters/core-concepts.md) - アダプタのコアコンセプト（start() の2つの書き方と、PollingAdapter / WebhookAdapter による接続モードの基底クラスを含む）
 3. [SendDSL 詳解](adapters/send-dsl.md) - Send メッセージ送信 DSL の完全な説明
 4. [イベントコンバーター](adapters/converter.md) - イベントコンバーターの実装
-5. [アダプターのベストプラクティス](adapters/best-practices.md) - 高品質なアダプターを開発するための提案
+5. [アダプタのベストプラクティス](adapters/best-practices.md) - 高品質なアダプタを開発するための提案
 
 ### テストとトラブルシューティング
 
-1. [モジュールテスト（ErisPulse-Testing）](testing.md) - TestBot、イベントファクトリーとアサーションインターフェース
+1. [モジュールテスト（ErisPulse-Testing）](testing.md) - TestBot、イベントファクトリー、アサーションの概要
 
-### 公開ガイド
+### 一般的な規格
 
-- [公開とモジュールストアガイド](publishing.md) - あなたの作品を PyPI と ErisPulse モジュールストアに公開する
+1. [設定と UI メタデータ](configuration.md) - 宣言的設定：widget / 条件付き表示 / 値の形態 / 兼容性契約（アダプタとモジュール共通）
+
+### リリースガイド
+
+- [リリースとモジュールストアガイド](publishing.md) - あなたの作品を PyPI と ErisPulse モジュールストアに公開する方法
 
 ## 開発の準備
 
