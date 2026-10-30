@@ -358,13 +358,14 @@ class TranslationChecker:
                 root_src = Path("README.md")
             if root_src.exists():
                 tgt_rm = Path("README.md") if lang == "en" else Path(f"README.{lang}.md")
+                rm_label = tgt_rm.name  # 日志/报告用实际产物名（en 为 README.md）
                 rm_issues = []
                 if not tgt_rm.exists():
                     rm_issues.append(
                         {
                             "severity": "error",
                             "type": "missing",
-                            "message": f"README.{lang}.md 不存在",
+                            "message": f"{rm_label} 不存在",
                         }
                     )
                     self.summary["missing"] += 1
@@ -421,11 +422,11 @@ class TranslationChecker:
                     except Exception:
                         pass
                 if rm_issues:
-                    lang_results[f"README.{lang}.md"] = rm_issues
+                    lang_results[rm_label] = rm_issues
                     for issue in rm_issues:
                         tag = "[ERROR]" if issue["severity"] == "error" else "[WARN]"
                         Logger.log(
-                            f"  {tag} [{issue['type']}] README.{lang}.md: {issue['message']}"
+                            f"  {tag} [{issue['type']}] {rm_label}: {issue['message']}"
                         )
                     if fix:
                         for issue in rm_issues:

@@ -29,6 +29,7 @@ ErisPulse 文档翻译器
 import argparse
 import asyncio
 import hashlib
+import html
 import json
 import os
 import re
@@ -763,15 +764,20 @@ class DocsTranslator:
         """
         return sorted({m.group(0) for m in LEAK_PATTERN.finditer(text)})
 
-    # 资源 URL 特征：``<img src="...">`` 属性与 shields.io 徽章链接。
-    # 图片 src 在任何语言版本中都必须逐字相同（曾随缓存复用损坏）；
-    # shields.io 徽章 URL 的标签段是徽章可见文字、应当翻译——源语言文字
-    # 原样保留在译文中即"未翻译残留"（曾出现 badge/文档-erisdev.com 式
-    # 简体中文残留进 en/ja/ru 产物），须检出重译。
+    # 资源 URL 校验分两类，职责互斥（此前两类都管 shields.io，导致
+    # 「徽章标签该翻译」与「src 不可改」互相打架——模型译也报错、不译也报错，
+    # 块陷入无限重译、README 永远写不出来）：
+    # - 非徽章图片 src：任何语言版本都必须逐字相同（曾随缓存复用损坏）
+    # - shields.io 徽章：标签段是徽章可见文字、应当翻译；源语言文字原样
+    #   保留即"未翻译残留"（曾出现 badge/文档-erisdev.com 式残留进 en/ja/ru）
     # 文档链接（``[text](docs/xx/...)``）不在其列——按提示词规则须本地化
     _IMG_SRC_RE = re.compile(r'src="([^"]+)"')
     _SHIELDS_URL_RE = re.compile(r"https?://img\.shields\.io/[^\s\")]+")
     _CJK_RE = re.compile(r"[\u4e00-\u9fff]")
+
+    # 资源校验可触发的重译次数上限：超过后按源确定性还原图片 src 并放行译文，
+    # 保证任何情况下都不会因该校验导致文件写不出来（校验不得成为死循环）
+    _ASSET_URL_MAX_RETRIES = 2
 
     # 资源 URL 校验命中时注入重译的原因（新译校验与历史缓存弃用共用）
     _ASSET_URL_NOTE = (
@@ -781,13 +787,24 @@ class DocsTranslator:
         "原样保留"
     )
 
+    @staticmethod
+    def _is_badge_url(url: str) -> bool:
+        """判断 URL 是否为 shields.io 徽章（其标签段允许且必须翻译）"""
+        return "img.shields.io/" in url
+
+    @staticmethod
+    def _html_unescape(text: str) -> str:
+        """还原 HTML 实体（``&amp;`` 等）：模型偶尔改写实体形式，不应判为漂移"""
+        return html.unescape(text)
+
     @classmethod
     def _img_src_drift(cls, source: str, translated: str) -> list[str]:
         """
-        比对源文本与译文的图片 ``src`` 资源路径，返回被改动/丢失的部分
+        比对源文本与译文的**非徽章**图片 ``src`` 资源路径，返回被改动/丢失的部分
 
-        ``docs/<语言>/`` 前缀按本地化等价处理（链接本地化规则会改写该段，
-        不视为漂移），其余差异均检出。
+        徽章 src 交由 :meth:`_untranslated_badges` 判断（其标签段须翻译，
+        src 变化是预期行为，不能算漂移）。``docs/<语言>/`` 前缀按本地化等价
+        处理（链接本地化规则会改写该段），HTML 实体形式差异归一后比较。
 
         :param source: 源块文本
         :param translated: 译文块文本
@@ -796,11 +813,47 @@ class DocsTranslator:
 
         def normalized(text: str) -> list[str]:
             return sorted(
-                re.sub(r"^(docs/)[^/]+/", r"\1*", u)
+                re.sub(r"^(docs/)[^/]+/", r"\1*", cls._html_unescape(u))
                 for u in cls._IMG_SRC_RE.findall(text)
+                if not cls._is_badge_url(u)
             )
 
         return sorted(set(normalized(source)) ^ set(normalized(translated)))
+
+    @classmethod
+    def _restore_img_src(cls, source: str, translated: str) -> str:
+        """
+        按位置把译文中的非徽章图片 ``src`` 还原为源值（资源校验超限后的兜底）
+
+        仅在两侧非徽章 ``src`` 数量一致时生效——数量不一致说明结构已变，
+        无法安全对齐，原样返回（宁可保留，不可误改）。
+
+        :param source: 源块文本
+        :param translated: 译文块文本
+        :return: 还原后的译文
+        """
+        src_values = [
+            u
+            for u in cls._IMG_SRC_RE.findall(source)
+            if not cls._is_badge_url(u)
+        ]
+        dst_values = [
+            u
+            for u in cls._IMG_SRC_RE.findall(translated)
+            if not cls._is_badge_url(u)
+        ]
+        if not src_values or len(src_values) != len(dst_values):
+            return translated
+        position = {"i": 0}
+
+        def replace(match: re.Match) -> str:
+            if cls._is_badge_url(match.group(1)):
+                return match.group(0)
+            index = position["i"]
+            position["i"] += 1
+            return f'src="{src_values[index]}"'
+
+        return cls._IMG_SRC_RE.sub(replace, translated)
 
     @classmethod
     def _untranslated_badges(cls, source: str, translated: str) -> list[str]:
@@ -814,9 +867,13 @@ class DocsTranslator:
         :param translated: 译文块文本
         :return: 未翻译的徽章 URL 列表（排序去重）
         """
-        kept = set(cls._SHIELDS_URL_RE.findall(source)) & set(
-            cls._SHIELDS_URL_RE.findall(translated)
-        )
+
+        def badges(text: str) -> set[str]:
+            return {
+                cls._html_unescape(u) for u in cls._SHIELDS_URL_RE.findall(text)
+            }
+
+        kept = badges(source) & badges(translated)
         return sorted(u for u in kept if cls._CJK_RE.search(u))
 
     @classmethod
@@ -1268,6 +1325,8 @@ class DocsTranslator:
                 chunk_notes = list(review_notes)
                 if cached_drop_note:
                     chunk_notes.append(cached_drop_note)
+                # 资源 URL 校验触发重译的累计次数（跨 attempt 计数，用于封顶）
+                asset_retries = 0
                 for attempt in range(1, self.max_retries + 1):
                     try:
                         chunk_result = await self.call_translation_api(
@@ -1348,26 +1407,43 @@ class DocsTranslator:
                                 chunk_notes.append(leak_note)
                             chunk_result = None
 
-                    # 资源 URL 保真校验（确定性检查）：图片 src 被改动或徽章
-                    # 标签残留源语言文字，均视为该块翻译失败，并把具体差异
-                    # 注入下一轮重译
+                    # 资源 URL 保真校验（确定性检查）：非徽章图片 src 被改动，
+                    # 或徽章标签残留源语言文字，视为该块翻译失败并把具体差异
+                    # 注入下一轮重译。超过 _ASSET_URL_MAX_RETRIES 次后改为
+                    # 确定性还原图片 src + 放行译文——该校验绝不能导致文件
+                    # 写不出来（曾因与"徽章标签须翻译"规则互斥陷入无限重译）
                     if chunk_result is not None:
                         src_drift = self._img_src_drift(chunk, chunk_result)
                         stale_badges = self._untranslated_badges(chunk, chunk_result)
                         if src_drift or stale_badges:
+                            asset_retries += 1
                             culprit = (src_drift or stale_badges)[0]
-                            Logger.progress(
-                                rel_path,
-                                target_lang,
-                                "retry",
-                                (
-                                    f"块{ci + 1} 资源 URL 异常"
-                                    f"（{culprit[:60]}），重译"
-                                ),
-                            )
-                            if self._ASSET_URL_NOTE not in chunk_notes:
-                                chunk_notes.append(self._ASSET_URL_NOTE)
-                            chunk_result = None
+                            if asset_retries > self._ASSET_URL_MAX_RETRIES:
+                                chunk_result = self._restore_img_src(
+                                    chunk, chunk_result
+                                )
+                                Logger.progress(
+                                    rel_path,
+                                    target_lang,
+                                    "retry",
+                                    (
+                                        f"块{ci + 1} 资源 URL 异常重试超限"
+                                        f"（{culprit[:40]}），按源还原图片 src 后放行"
+                                    ),
+                                )
+                            else:
+                                Logger.progress(
+                                    rel_path,
+                                    target_lang,
+                                    "retry",
+                                    (
+                                        f"块{ci + 1} 资源 URL 异常"
+                                        f"（{culprit[:60]}），重译"
+                                    ),
+                                )
+                                if self._ASSET_URL_NOTE not in chunk_notes:
+                                    chunk_notes.append(self._ASSET_URL_NOTE)
+                                chunk_result = None
 
                     if chunk_result:
                         break
