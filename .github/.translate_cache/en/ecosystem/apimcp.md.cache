@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "hash": "d18557c1d6f93dace1064cf473662ce5",
+  "file_hash": "d18557c1d6f93dace1064cf473662ce5",
+  "translated_at": "2026-10-29T09:02:33.910720",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "0768de8ba81662fe5982eacc2bf44b35",
+      "translation": "# ErisPulse-ApiMCP: Control Your Bot with AI Clients\n\n> [!TIP]\n> **When to read this**: Read this when you want MCP-capable AI clients such as Claude Desktop to directly operate your bot—sending messages, viewing messages, invoking modules, managing adapters, and observing event streams. Skip it otherwise.\n\n[ErisPulse-ApiMCP](https://github.com/wsu2059q/ErisPulse-ApiMCP) exposes the bot's runtime capabilities to AI clients via **MCP (Model Context Protocol)**: once installed, 14 new tools appear in Claude Desktop, allowing the AI to send and receive messages on your behalf, troubleshoot module issues, and subscribe to group chat events—turning the bot from \"a program you manage\" into \"the AI's hands and eyes\".\n\n> [!IMPORTANT]\n> ApiMCP must be installed separately, and the bridge only becomes active after a **token is explicitly configured**:\n>\n> ```bash\n> epsdk install ErisPulse-ApiMCP\n> ```\n>\n> Set `token = \"long-random-string\"` in the `[ApiMCP]` section of `config.toml` (or use the environment variable `ERISPULSE_APIMCP_TOKEN`). When not configured, all endpoints return 503 except the health check, preventing silent token leakage."
+    },
+    {
+      "hash": "22444f4c685b125e1a0f2fdbb7d928ac",
+      "translation": "## How It Works\n\nA two-layer architecture, with no AI dependencies introduced into the bot itself:\n\n- **Inside the bot process**: The ApiMCP module mounts a REST bridge on the framework's built-in HTTP server (`/apimcp/*`, token authentication, default rate limit of 30 requests/minute)\n- **Independent process**: The `erispulse-apimcp` command starts a stdio server using the official `mcp` SDK, forwarding MCP tool calls to the bot's HTTP bridge\n\n```\nClaude Desktop ──MCP(stdio)──► erispulse-apimcp ──HTTP──► Bot Process REST Bridge ──► sdk.*\n```\n\nWhen the bot is offline or the bridge is not configured, tools return readable errors with troubleshooting guidance instead of throwing stack traces."
+    },
+    {
+      "hash": "a4e17c5f49d61a889731bff6553c9250",
+      "translation": "## Claude Desktop Integration\n\nEdit `claude_desktop_config.json` (Windows: `%APPDATA%\\Claude\\`; macOS: `~/Library/Application Support/Claude/`):\n\n```json\n{\n  \"mcpServers\": {\n    \"erispulse\": {\n      \"command\": \"erispulse-apimcp\",\n      \"env\": {\n        \"ERISPULSE_APIMCP_URL\": \"http://127.0.0.1:8000\",\n        \"ERISPULSE_APIMCP_TOKEN\": \"your-token\"\n      }\n    }\n  }\n}\n```\n\nAfter saving, fully restart Claude Desktop. The integration is successful once the `erispulse` server appears in the tool list. Any client that supports MCP stdio servers (Claude Code, Cursor, etc.) can connect in the same way."
+    },
+    {
+      "hash": "06706b8b69967f2103fc9ca5839f82a5",
+      "translation": "## The 14 Tools at a Glance\n\n| Category | Tools | Description |\n|---|---|---|\n| Module | `list_modules` / `get_module_info` / `call_module` / `reload_module` | View and invoke public services of installed modules, and trigger hot reload |\n| Adapter | `list_adapters` / `get_adapter_status` / `reload_adapter` | Platform online status; adapter reload is disabled by default |\n| Message | `send_message` / `recent_messages` | Send text/images/audio/video/files to any platform; review recent messages via [transcript](../advanced/transcript.md) |\n| Event | `subscribe_events` / `unsubscribe` / `poll_events` | Subscribe to events such as messages/notifications, with a ring buffer (1000 entries by default) and incremental polling |\n| Runtime | `get_topology` / `sdk_health` | Runtime topology (sanitized) and health summary |\n\nA typical usage: the AI first calls `subscribe_events([\"message\"])`, then periodically runs `poll_events` to observe what's being discussed in the group, and decides whether to chime in via `send_message` or use `call_module` to trigger a module's capability."
+    },
+    {
+      "hash": "8ab9ac069e6e61f36adadfb26b781a8b",
+      "translation": "## Security Essentials\n\n- **The token grants full control**: it can read messages, send messages, and call whitelisted module methods. Never commit it to the repository or post it in public channels; in multi-tenant scenarios, split into multiple bot instances\n- **Least privilege**: use `module_call_whitelist` to narrow the callable modules (supports precise `module.method` format for exact allowlisting), `send_target_whitelist` to narrow send targets (e.g., only allowing a specific group), and keep `allow_adapter_reload` disabled by default\n- **Listen on localhost only**: when used only on the local machine, set the framework HTTP server to `server.host = \"127.0.0.1\"`; cross-machine access must use an intranet + reverse proxy with TLS\n- Output is sanitized at the key-name level (key/path-type keys are dropped entirely); deep sanitization is the module's own responsibility—do not enable subscriptions for sensitive sessions\n\nFor the complete configuration options (buffer capacity, backtrack window, event type whitelist, etc.) and detailed REST endpoints, see the [project README](https://github.com/wsu2059q/ErisPulse-ApiMCP).\n\n---"
+    },
+    {
+      "hash": "c0051453ffad6bc13f30788ecab7ced3",
+      "translation": "## Next Steps\n\n- **Want the AI to come \"alive\" in group chats rather than just being remotely controlled**: QvQChat is the forward direction—the agent proactively chats and gets work done, see [QvQChat General Agent](qvqchat.md); ApiMCP is the reverse direction—external AI controlling the bot. Both can be installed together\n- **Want to know where the recent message data comes from**: [Conversation Inbox transcript](../advanced/transcript.md)\n- **Want to learn about the bot's HTTP server**: [Routing System](../advanced/router.md)"
+    }
+  ]
+}

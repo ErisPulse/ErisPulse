@@ -236,6 +236,9 @@ class TestReloadPluginSource:
         class FakePluginLoader:
             _loaded_paths: dict = {}
 
+            def get_loaded_path(self, name):
+                return self._loaded_paths.get(name)
+
             def discover(self):
                 discover_calls.append(1)
                 return {}
@@ -503,6 +506,9 @@ class TestReloadAll:
         class FakePluginLoader:
             _loaded_paths: dict = {}
 
+            def get_loaded_path(self, name):
+                return self._loaded_paths.get(name)
+
             def discover(self):
                 return {}
 
@@ -592,6 +598,9 @@ class TestReloadAll:
 
         class FakePluginLoader:
             _loaded_paths: dict = {}
+
+            def get_loaded_path(self, name):
+                return self._loaded_paths.get(name)
 
             def discover(self):
                 return {}
@@ -762,3 +771,86 @@ class TestLoadFailureObservability:
         info = manager.get_info("S")
         assert info["stale"] is True
         assert manager.get_status_summary()["modules"]["S"]["stale"] is True
+
+
+@pytest.mark.unit
+class TestPluginImportFailureNotRemoved:
+    """插件导入失败 ≠ 插件已删除：按失败回滚，旧实例继续服务"""
+
+    def test_import_failure_rolls_back_not_removed(self, tmp_path):
+        """源文件仍在但重发现失败（导入期异常）：返回 False 并回滚快照"""
+        source = tmp_path / "broken.py"
+        source.write_text("raise ImportError('boom')\n", encoding="utf-8")
+
+        old_mod = types.ModuleType("broken")
+
+        class BrokenModule(BaseModule):
+            pass
+
+        old_mod.BrokenModule = BrokenModule
+        old_mod.moduleInfo = {
+            "meta": {"name": "broken", "source": "plugin_folder", "top_level": []}
+        }
+
+        loader = _make_loader(FakeFinder(None))
+
+        class FakePluginLoader:
+            """discover 对导入期异常返回空结果（与 PluginFolderLoader 同语义）"""
+
+            def __init__(self):
+                self._loaded_paths = {"broken": source}
+
+            def get_loaded_path(self, name):
+                return self._loaded_paths.get(name)
+
+            def discover(self):
+                return {}
+
+        loader._plugin_loader = FakePluginLoader()
+        loader._last_module_objs = {"broken": old_mod}
+
+        manager = FakeManager()
+        # 预填注册表（快照采集来源），回滚时按快照恢复注册
+        manager._module_classes["broken"] = BrokenModule
+        manager._module_info["broken"] = old_mod.moduleInfo
+        ok = asyncio.run(loader.reload_module("broken", manager, types.SimpleNamespace()))
+
+        # 失败返回（不是「已删除」的成功）
+        assert ok is False
+        # 快照回滚：旧模块对象保留在快照槽，未被当作删除移除
+        assert loader._last_module_objs.get("broken") is old_mod
+        # 恢复路径执行（register 重新登记旧类）
+        assert ("register", "broken") in manager.calls
+
+    def test_deleted_plugin_still_treated_as_removed(self, tmp_path):
+        """源文件确实不存在：维持「已删除移除 + 成功」语义"""
+        source = tmp_path / "gone.py"  # 从未写入磁盘
+
+        old_mod = types.ModuleType("gone")
+
+        class GoneModule(BaseModule):
+            pass
+
+        old_mod.GoneModule = GoneModule
+        old_mod.moduleInfo = {
+            "meta": {"name": "gone", "source": "plugin_folder", "top_level": []}
+        }
+
+        loader = _make_loader(FakeFinder(None))
+
+        class FakePluginLoader:
+            def __init__(self):
+                self._loaded_paths = {"gone": source}
+
+            def get_loaded_path(self, name):
+                return self._loaded_paths.get(name)
+
+            def discover(self):
+                return {}
+
+        loader._plugin_loader = FakePluginLoader()
+        loader._last_module_objs = {"gone": old_mod}
+
+        ok = asyncio.run(loader.reload_module("gone", FakeManager(), types.SimpleNamespace()))
+        assert ok is True
+        assert "gone" not in loader._last_module_objs

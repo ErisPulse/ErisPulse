@@ -12,6 +12,7 @@ ErisPulse 文档翻译器
 - 提示词泄露防线：缓存块加载校验、译文块校验（命中注入原因重译）、
   落盘前整文档校验（命中拒写）、AI 评审专项检查，
   防止模型把翻译规则回显进译文并随缓存复用"复活"
+- 资源 URL 保真校验：图片/徽章链接逐块与源比对，被改动即注入原因重译
 - 429 限速自动指数退避重试
 - 可配置是否启用推理/思考模式
 - 目标语言级并行翻译（语言内部仍受 concurrent 信号量约束）
@@ -374,7 +375,9 @@ class DocsTranslator:
             f"   `{expected_line}`\n"
             f"   - 规则：当前语言（{target_lang}）只加粗体不加链接（如 ``**{current_label}**``）；"
             f"其他语言只加链接不加粗体（如 ``[{other_label}]({other_file})``）。\n"
-            f"   - 严禁写成 ``[{other_label}]({other_file})`` 这类既加粗又加链接的错误格式"
+            f"   - 严禁写成 ``[{other_label}]({other_file})`` 这类既加粗又加链接的错误格式\n"
+            f"   - 只允许在文档原有语言切换行的位置整行替换，"
+            f"严禁在文档其他位置新增或复制语言切换行"
         )
 
     def get_cache_key(self, file_path: Path, target_lang: str) -> Path:
@@ -699,7 +702,10 @@ class DocsTranslator:
             f"5. 代码块中的代码逻辑不要翻译，但代码中的中文注释、中文字符串必须翻译为 {lang_name}。\n"
             f"6. 保持原文档的结构和语气。\n"
             f"7. 翻译后文档中不得残留任何 {source_lang} 文字（除专有名词外），包括代码块中的注释和字符串。\n"
-            f"8. 直接输出翻译结果，不要用 ```markdown 等代码块包裹。\n\n"
+            f"8. 直接输出翻译结果，不要用 ```markdown 等代码块包裹。\n"
+            f"9. 图片 src、下载地址等资源 URL 一律与原文逐字相同，严禁改写；"
+            f"唯一例外：shields.io 徽章 URL 中 badge/ 后的标签文字段（徽章上的可见文字）"
+            f"须翻译为 {lang_name}，URL 其余部分（域名、样式参数等）原样保留。\n\n"
         )
         rules += self._build_path_replacement_hint(target_lang) + "\n"
         if file_name == "README.md":
@@ -756,6 +762,62 @@ class DocsTranslator:
         :return: 命中的泄露特征片段列表（去重后）
         """
         return sorted({m.group(0) for m in LEAK_PATTERN.finditer(text)})
+
+    # 资源 URL 特征：``<img src="...">`` 属性与 shields.io 徽章链接。
+    # 图片 src 在任何语言版本中都必须逐字相同（曾随缓存复用损坏）；
+    # shields.io 徽章 URL 的标签段是徽章可见文字、应当翻译——源语言文字
+    # 原样保留在译文中即"未翻译残留"（曾出现 badge/文档-erisdev.com 式
+    # 简体中文残留进 en/ja/ru 产物），须检出重译。
+    # 文档链接（``[text](docs/xx/...)``）不在其列——按提示词规则须本地化
+    _IMG_SRC_RE = re.compile(r'src="([^"]+)"')
+    _SHIELDS_URL_RE = re.compile(r"https?://img\.shields\.io/[^\s\")]+")
+    _CJK_RE = re.compile(r"[\u4e00-\u9fff]")
+
+    # 资源 URL 校验命中时注入重译的原因（新译校验与历史缓存弃用共用）
+    _ASSET_URL_NOTE = (
+        "上一版译文的资源 URL 异常：图片 src 必须与原文逐字相同、严禁改写；"
+        "shields.io 徽章 URL 中 badge/ 后的标签文字（徽章可见文字）须翻译为"
+        "目标语言，不得残留源语言文字，URL 其余部分（域名、样式参数等）"
+        "原样保留"
+    )
+
+    @classmethod
+    def _img_src_drift(cls, source: str, translated: str) -> list[str]:
+        """
+        比对源文本与译文的图片 ``src`` 资源路径，返回被改动/丢失的部分
+
+        ``docs/<语言>/`` 前缀按本地化等价处理（链接本地化规则会改写该段，
+        不视为漂移），其余差异均检出。
+
+        :param source: 源块文本
+        :param translated: 译文块文本
+        :return: 两侧 ``src`` 集合的差异 URL（排序去重）
+        """
+
+        def normalized(text: str) -> list[str]:
+            return sorted(
+                re.sub(r"^(docs/)[^/]+/", r"\1*", u)
+                for u in cls._IMG_SRC_RE.findall(text)
+            )
+
+        return sorted(set(normalized(source)) ^ set(normalized(translated)))
+
+    @classmethod
+    def _untranslated_badges(cls, source: str, translated: str) -> list[str]:
+        """
+        检出译文中原样保留的含源语言文字的 shields.io 徽章 URL
+
+        徽章标签是可见文字、应当翻译；含 CJK 文字的源徽章 URL 原样出现在
+        译文中即视为未翻译残留。
+
+        :param source: 源块文本
+        :param translated: 译文块文本
+        :return: 未翻译的徽章 URL 列表（排序去重）
+        """
+        kept = set(cls._SHIELDS_URL_RE.findall(source)) & set(
+            cls._SHIELDS_URL_RE.findall(translated)
+        )
+        return sorted(u for u in kept if cls._CJK_RE.search(u))
 
     @classmethod
     def _strip_response_wrapper(cls, content: str) -> str:
@@ -1045,6 +1107,18 @@ class DocsTranslator:
             # 匹配以 [English](README.md) 开头的语言切换行
             pattern = r"^\[English\]\(README\.md\)[^\n]*$"
             content = re.sub(pattern, expected_line, content, flags=re.MULTILINE)
+            # 去重：模型偶发把系统提示中的语言切换行模板复制进文档中部
+            # （已见诸产物），归一后仅保留首个（源顶部的正版）
+            lines = content.split("\n")
+            seen_switcher = False
+            deduped: list[str] = []
+            for line in lines:
+                if line.strip() == expected_line:
+                    if seen_switcher:
+                        continue
+                    seen_switcher = True
+                deduped.append(line)
+            content = "\n".join(deduped)
 
         return content
 
@@ -1090,6 +1164,19 @@ class DocsTranslator:
         translated_content = self._localize_links(
             translated_content, target_lang, file_name=self._get_rel_path(file_path)
         )
+        # 历史污染缓存自愈：重建结果命中资源 URL 校验（如徽章残留源语言
+        # 文字）时删除该文件缓存——本轮跳过，下一轮按缓存未命中全量重译
+        if self._img_src_drift(content, translated_content) or self._untranslated_badges(
+            content, translated_content
+        ):
+            self.get_cache_key(file_path, target_lang).unlink(missing_ok=True)
+            Logger.progress(
+                self._get_rel_path(file_path),
+                target_lang,
+                "retry",
+                "缓存重建命中资源 URL 校验，弃用缓存待重译",
+            )
+            return False
         target_file = self._get_target_path(file_path, target_lang)
         if target_file.exists():
             with open(target_file, encoding="utf-8") as f:
@@ -1148,10 +1235,24 @@ class DocsTranslator:
             for ci, chunk in enumerate(source_chunks):
                 c_hash = self._chunk_hash(chunk)
 
-                # 块未变化 → 复用缓存翻译
+                # 块未变化 → 复用缓存翻译（历史缓存块同样过资源 URL 校验：
+                # 异常块——如徽章残留源语言文字——弃用并带原因重译，本轮自愈）
+                cached_drop_note = ""
                 if c_hash in cached_chunks:
-                    translated_chunks_list.append(cached_chunks[c_hash])
-                    continue
+                    cached_translation = cached_chunks[c_hash]
+                    if self._img_src_drift(
+                        chunk, cached_translation
+                    ) or self._untranslated_badges(chunk, cached_translation):
+                        Logger.progress(
+                            rel_path,
+                            target_lang,
+                            "retry",
+                            f"块{ci + 1} 缓存块资源 URL 异常，弃用重译",
+                        )
+                        cached_drop_note = self._ASSET_URL_NOTE
+                    else:
+                        translated_chunks_list.append(cached_translation)
+                        continue
 
                 # 块已变化 → 调用 AI 翻译
                 changed_count += 1
@@ -1165,6 +1266,8 @@ class DocsTranslator:
 
                 chunk_result = None
                 chunk_notes = list(review_notes)
+                if cached_drop_note:
+                    chunk_notes.append(cached_drop_note)
                 for attempt in range(1, self.max_retries + 1):
                     try:
                         chunk_result = await self.call_translation_api(
@@ -1243,6 +1346,27 @@ class DocsTranslator:
                             )
                             if leak_note not in chunk_notes:
                                 chunk_notes.append(leak_note)
+                            chunk_result = None
+
+                    # 资源 URL 保真校验（确定性检查）：图片 src 被改动或徽章
+                    # 标签残留源语言文字，均视为该块翻译失败，并把具体差异
+                    # 注入下一轮重译
+                    if chunk_result is not None:
+                        src_drift = self._img_src_drift(chunk, chunk_result)
+                        stale_badges = self._untranslated_badges(chunk, chunk_result)
+                        if src_drift or stale_badges:
+                            culprit = (src_drift or stale_badges)[0]
+                            Logger.progress(
+                                rel_path,
+                                target_lang,
+                                "retry",
+                                (
+                                    f"块{ci + 1} 资源 URL 异常"
+                                    f"（{culprit[:60]}），重译"
+                                ),
+                            )
+                            if self._ASSET_URL_NOTE not in chunk_notes:
+                                chunk_notes.append(self._ASSET_URL_NOTE)
                             chunk_result = None
 
                     if chunk_result:

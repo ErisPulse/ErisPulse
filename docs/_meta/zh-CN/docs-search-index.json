@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1799,
+  "total_keywords": 1820,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -33,7 +33,7 @@
     "1. BaseAdapter 层（大多数情况不需要重写）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 539,
+        "line": 540,
         "level": 3,
         "title": "1. BaseAdapter 层（大多数情况不需要重写）"
       },
@@ -55,7 +55,7 @@
     "1. SDK 对象": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 709,
+        "line": 712,
         "level": 3,
         "title": "1. SDK 对象"
       },
@@ -69,7 +69,7 @@
     "1. 严格遵循 OneBot12 标准": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3346,
+        "line": 3369,
         "level": 3,
         "title": "1. 严格遵循 OneBot12 标准"
       },
@@ -83,7 +83,7 @@
     "1. 何时发送 Meta 事件": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3132,
+        "line": 3155,
         "level": 3,
         "title": "1. 何时发送 Meta 事件"
       },
@@ -111,7 +111,7 @@
     "1. 使用 Mixin 类批量注册（推荐）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3688,
+        "line": 3711,
         "level": 3,
         "title": "1. 使用 Mixin 类批量注册（推荐）"
       },
@@ -175,7 +175,7 @@
     "1. 分类异常处理": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3576,
+        "line": 3599,
         "level": 3,
         "title": "1. 分类异常处理"
       },
@@ -209,7 +209,7 @@
     "1. 创建项目": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 135,
+        "line": 136,
         "level": 3,
         "title": "1. 创建项目"
       },
@@ -237,7 +237,7 @@
     "1. 单元测试": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3630,
+        "line": 3653,
         "level": 3,
         "title": "1. 单元测试"
       },
@@ -301,7 +301,7 @@
     "1. 声明式配置（推荐）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3514,
+        "line": 3537,
         "level": 3,
         "title": "1. 声明式配置（推荐）"
       },
@@ -315,7 +315,7 @@
     "1. 实现连接重试": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3229,
+        "line": 3252,
         "level": 3,
         "title": "1. 实现连接重试"
       },
@@ -329,7 +329,7 @@
     "1. 异常处理": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2112,
+        "line": 2115,
         "level": 3,
         "title": "1. 异常处理"
       },
@@ -343,7 +343,7 @@
     "1. 必须返回 Task 对象": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3402,
+        "line": 3425,
         "level": 3,
         "title": "1. 必须返回 Task 对象"
       },
@@ -357,7 +357,7 @@
     "1. 指定类型和ID": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1996,
+        "line": 1997,
         "level": 3,
         "title": "1. 指定类型和ID"
       },
@@ -399,7 +399,7 @@
     "1. 标准化响应格式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3463,
+        "line": 3486,
         "level": 3,
         "title": "1. 标准化响应格式"
       },
@@ -491,7 +491,7 @@
     "1. 维护平台特性文档": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3740,
+        "line": 3763,
         "level": 3,
         "title": "1. 维护平台特性文档"
       },
@@ -505,13 +505,13 @@
     "1. 缺少 `{platform}_raw` 字段": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3056,
+        "line": 3079,
         "level": 3,
         "title": "1. 缺少 `{platform}_raw` 字段"
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 329,
+        "line": 351,
         "level": 3,
         "title": "1. 缺少 `{platform}_raw` 字段"
       }
@@ -653,7 +653,7 @@
     "10. SSE (Server-Sent Events) 支持": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 657,
+        "line": 658,
         "level": 3,
         "title": "10. SSE (Server-Sent Events) 支持"
       },
@@ -748,6 +748,20 @@
         "title": "12. 相关文档"
       }
     ],
+    "14 个工具一览": [
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 830,
+        "level": 2,
+        "title": "14 个工具一览"
+      },
+      {
+        "document": "ecosystem/apimcp.md",
+        "line": 50,
+        "level": 2,
+        "title": "14 个工具一览"
+      }
+    ],
     "1xxxx 动作请求错误（Request Error）": [
       {
         "document": "ai-support/skills/erispulse-adapter-standards/SKILL.md",
@@ -765,7 +779,7 @@
     "2. Event 对象": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 733,
+        "line": 736,
         "level": 3,
         "title": "2. Event 对象"
       },
@@ -793,7 +807,7 @@
     "2. Send 内部类（大多数情况不需要重写）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 570,
+        "line": 571,
         "level": 3,
         "title": "2. Send 内部类（大多数情况不需要重写）"
       },
@@ -829,7 +843,7 @@
     "2. 仅指定ID": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2002,
+        "line": 2003,
         "level": 3,
         "title": "2. 仅指定ID"
       },
@@ -843,7 +857,7 @@
     "2. 使用装饰器注册单个方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3714,
+        "line": 3737,
         "level": 3,
         "title": "2. 使用装饰器注册单个方法"
       },
@@ -865,7 +879,7 @@
     "2. 创建 pyproject.toml": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 165,
+        "line": 166,
         "level": 3,
         "title": "2. 创建 pyproject.toml"
       },
@@ -909,7 +923,7 @@
     "2. 发送 Meta 事件": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3140,
+        "line": 3163,
         "level": 3,
         "title": "2. 发送 Meta 事件"
       },
@@ -989,13 +1003,13 @@
     "2. 日志记录": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3609,
+        "line": 3632,
         "level": 3,
         "title": "2. 日志记录"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2130,
+        "line": 2133,
         "level": 3,
         "title": "2. 日志记录"
       },
@@ -1015,7 +1029,7 @@
     "2. 时间戳标准化": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3368,
+        "line": 3391,
         "level": 3,
         "title": "2. 时间戳标准化"
       },
@@ -1029,13 +1043,13 @@
     "2. 时间戳格式错误": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3065,
+        "line": 3088,
         "level": 3,
         "title": "2. 时间戳格式错误"
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 338,
+        "line": 360,
         "level": 3,
         "title": "2. 时间戳格式错误"
       }
@@ -1043,7 +1057,7 @@
     "2. 更新版本信息": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3761,
+        "line": 3784,
         "level": 3,
         "title": "2. 更新版本信息"
       },
@@ -1177,7 +1191,7 @@
     "2. 账户选择机制": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3554,
+        "line": 3577,
         "level": 3,
         "title": "2. 账户选择机制"
       },
@@ -1219,7 +1233,7 @@
     "2. 连接状态管理": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3258,
+        "line": 3281,
         "level": 3,
         "title": "2. 连接状态管理"
       },
@@ -1247,7 +1261,7 @@
     "2. 链式修饰方法返回 self": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3422,
+        "line": 3445,
         "level": 3,
         "title": "2. 链式修饰方法返回 self"
       },
@@ -1261,7 +1275,7 @@
     "2. 错误码规范": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3490,
+        "line": 3513,
         "level": 3,
         "title": "2. 错误码规范"
       },
@@ -1275,7 +1289,7 @@
     "2. 集成测试": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3654,
+        "line": 3677,
         "level": 3,
         "title": "2. 集成测试"
       },
@@ -1589,7 +1603,7 @@
     "3. Request 内部类（大多数情况不需要重写）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 594,
+        "line": 595,
         "level": 3,
         "title": "3. Request 内部类（大多数情况不需要重写）"
       },
@@ -1603,7 +1617,7 @@
     "3. 事件 ID 生成": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3384,
+        "line": 3407,
         "level": 3,
         "title": "3. 事件 ID 生成"
       },
@@ -1659,7 +1673,7 @@
     "3. 创建适配器主类": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 188,
+        "line": 189,
         "level": 3,
         "title": "3. 创建适配器主类"
       },
@@ -1723,7 +1737,7 @@
     "3. 心跳事件": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3185,
+        "line": 3208,
         "level": 3,
         "title": "3. 心跳事件"
       },
@@ -1737,7 +1751,7 @@
     "3. 心跳保活与 Meta 心跳": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3282,
+        "line": 3305,
         "level": 3,
         "title": "3. 心跳保活与 Meta 心跳"
       },
@@ -1751,7 +1765,7 @@
     "3. 指定发送账号": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2008,
+        "line": 2009,
         "level": 3,
         "title": "3. 指定发送账号"
       },
@@ -1781,7 +1795,7 @@
     "3. 支持平台特有方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3436,
+        "line": 3459,
         "level": 3,
         "title": "3. 支持平台特有方法"
       },
@@ -1795,7 +1809,7 @@
     "3. 条件处理": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2146,
+        "line": 2149,
         "level": 3,
         "title": "3. 条件处理"
       },
@@ -1867,13 +1881,13 @@
     "3. 缺少 `self` 字段": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3079,
+        "line": 3102,
         "level": 3,
         "title": "3. 缺少 `self` 字段"
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 352,
+        "line": 374,
         "level": 3,
         "title": "3. 缺少 `self` 字段"
       }
@@ -1903,7 +1917,7 @@
     "3. 适配器": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 750,
+        "line": 753,
         "level": 3,
         "title": "3. 适配器"
       },
@@ -1917,7 +1931,7 @@
     "3. 适配器关闭时清理": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3724,
+        "line": 3747,
         "level": 3,
         "title": "3. 适配器关闭时清理"
       },
@@ -2247,7 +2261,7 @@
     "4. `self` 字段自动发现": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3198,
+        "line": 3221,
         "level": 3,
         "title": "4. `self` 字段自动发现"
       },
@@ -2261,13 +2275,13 @@
     "4. detail_type 使用了非标准值": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3090,
+        "line": 3113,
         "level": 3,
         "title": "4. detail_type 使用了非标准值"
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 363,
+        "line": 385,
         "level": 3,
         "title": "4. detail_type 使用了非标准值"
       }
@@ -2325,7 +2339,7 @@
     "4. 实现必需方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 236,
+        "line": 237,
         "level": 3,
         "title": "4. 实现必需方法"
       },
@@ -2375,7 +2389,7 @@
     "4. 模块": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 765,
+        "line": 768,
         "level": 3,
         "title": "4. 模块"
       },
@@ -2411,7 +2425,7 @@
     "4. 组合使用": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2014,
+        "line": 2015,
         "level": 3,
         "title": "4. 组合使用"
       },
@@ -2447,7 +2461,7 @@
     "4. 连接信息暴露": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3307,
+        "line": 3330,
         "level": 3,
         "title": "4. 连接信息暴露"
       },
@@ -2615,7 +2629,7 @@
     "5. Bot 状态查询": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3223,
+        "line": 3246,
         "level": 3,
         "title": "5. Bot 状态查询"
       },
@@ -2659,7 +2673,7 @@
     "5. 实现 Send 类": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 293,
+        "line": 294,
         "level": 3,
         "title": "5. 实现 Send 类"
       },
@@ -2673,13 +2687,13 @@
     "5. 往返一致性": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3094,
+        "line": 3117,
         "level": 3,
         "title": "5. 往返一致性"
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 367,
+        "line": 389,
         "level": 3,
         "title": "5. 往返一致性"
       }
@@ -3103,7 +3117,7 @@
     "6. 实现转换器": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 351,
+        "line": 352,
         "level": 3,
         "title": "6. 实现转换器"
       },
@@ -3419,7 +3433,7 @@
     "60 秒效果：先让机器人回你一句话": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 252,
+        "line": 255,
         "level": 2,
         "title": "60 秒效果：先让机器人回你一句话"
       },
@@ -3461,7 +3475,7 @@
     "7. 实现 Request 类（请求操作）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 393,
+        "line": 394,
         "level": 3,
         "title": "7. 实现 Request 类（请求操作）"
       },
@@ -3629,7 +3643,7 @@
     "8. 创建包入口": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 458,
+        "line": 459,
         "level": 3,
         "title": "8. 创建包入口"
       },
@@ -3809,7 +3823,7 @@
     "9. 连接信息与路由发现": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 616,
+        "line": 617,
         "level": 3,
         "title": "9. 连接信息与路由发现"
       },
@@ -3937,7 +3951,7 @@
     "AI 对话模块": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 604,
+        "line": 620,
         "level": 2,
         "title": "AI 对话模块"
       }
@@ -3989,7 +4003,7 @@
     "API 响应": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3461,
+        "line": 3484,
         "level": 2,
         "title": "API 响应"
       },
@@ -4015,7 +4029,7 @@
     "API 响应标准": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1759,
+        "line": 1760,
         "level": 2,
         "title": "API 响应标准"
       },
@@ -4037,7 +4051,7 @@
     "API 概览": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 531,
+        "line": 547,
         "level": 2,
         "title": "API 概览"
       },
@@ -4089,7 +4103,7 @@
     "API 错误处理": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1892,
+        "line": 1893,
         "level": 3,
         "title": "API 错误处理"
       },
@@ -4119,7 +4133,7 @@
     "Account 方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2229,
+        "line": 2230,
         "level": 3,
         "title": "Account 方法"
       },
@@ -4149,7 +4163,7 @@
     "AdapterManager 适配器管理器": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 797,
+        "line": 798,
         "level": 2,
         "title": "AdapterManager 适配器管理器"
       },
@@ -4179,7 +4193,7 @@
     "At 方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2084,
+        "line": 2085,
         "level": 3,
         "title": "At 方法"
       },
@@ -4193,7 +4207,7 @@
     "AtAll 方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2094,
+        "line": 2095,
         "level": 3,
         "title": "AtAll 方法"
       },
@@ -4207,7 +4221,7 @@
     "BaseAdapter 基类": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1032,
+        "line": 1033,
         "level": 2,
         "title": "BaseAdapter 基类"
       },
@@ -4229,7 +4243,7 @@
     "BaseConverter 基类（推荐）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2750,
+        "line": 2751,
         "level": 2,
         "title": "BaseConverter 基类（推荐）"
       },
@@ -4287,13 +4301,13 @@
     "Bot 状态查询": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1965,
+        "line": 1966,
         "level": 3,
         "title": "Bot 状态查询"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1781,
+        "line": 1784,
         "level": 3,
         "title": "Bot 状态查询"
       },
@@ -4325,7 +4339,7 @@
     "Bot 状态管理": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1920,
+        "line": 1921,
         "level": 2,
         "title": "Bot 状态管理"
       },
@@ -4345,7 +4359,7 @@
     "Bot 状态管理与 Meta 事件": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3128,
+        "line": 3151,
         "level": 2,
         "title": "Bot 状态管理与 Meta 事件"
       },
@@ -4406,6 +4420,20 @@
         "title": "CORS 配置"
       }
     ],
+    "Claude Desktop 接入": [
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 810,
+        "level": 2,
+        "title": "Claude Desktop 接入"
+      },
+      {
+        "document": "ecosystem/apimcp.md",
+        "line": 30,
+        "level": 2,
+        "title": "Claude Desktop 接入"
+      }
+    ],
     "Client 系列 — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
@@ -4437,7 +4465,7 @@
     "Client（网络客户端）": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 927,
+        "line": 930,
         "level": 3,
         "title": "Client（网络客户端）"
       },
@@ -4467,7 +4495,7 @@
     "Config（配置）": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 870,
+        "line": 873,
         "level": 3,
         "title": "Config（配置）"
       },
@@ -4495,7 +4523,7 @@
     "Converter 职责": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2736,
+        "line": 2737,
         "level": 2,
         "title": "Converter 职责"
       },
@@ -4529,7 +4557,7 @@
     "Dashboard": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 134,
+        "line": 150,
         "level": 2,
         "title": "Dashboard"
       }
@@ -4651,13 +4679,13 @@
     "ErisPulse PlatformFeatures 文档": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3784,
+        "line": 3807,
         "level": 1,
         "title": "ErisPulse PlatformFeatures 文档"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 753,
+        "line": 857,
         "level": 1,
         "title": "ErisPulse PlatformFeatures 文档"
       },
@@ -4826,6 +4854,34 @@
         "title": "ErisPulse 配置系统与 CLI 工具链"
       }
     ],
+    "ErisPulse-ApiMCP 用 AI 客户端操控机器人": [
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 781,
+        "level": 1,
+        "title": "ErisPulse-ApiMCP 用 AI 客户端操控机器人"
+      },
+      {
+        "document": "ecosystem/apimcp.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-ApiMCP 用 AI 客户端操控机器人"
+      }
+    ],
+    "ErisPulse-ApiMCP：让 AI 客户端操控机器人": [
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 108,
+        "level": 3,
+        "title": "ErisPulse-ApiMCP：让 AI 客户端操控机器人"
+      },
+      {
+        "document": "ecosystem/README.md",
+        "line": 50,
+        "level": 3,
+        "title": "ErisPulse-ApiMCP：让 AI 客户端操控机器人"
+      }
+    ],
     "ErisPulse-App": [
       {
         "document": "ecosystem/app.md",
@@ -4837,13 +4893,13 @@
     "ErisPulse-App：手机上直接跑机器人": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 114,
+        "line": 130,
         "level": 3,
         "title": "ErisPulse-App：手机上直接跑机器人"
       },
       {
         "document": "ecosystem/README.md",
-        "line": 62,
+        "line": 72,
         "level": 3,
         "title": "ErisPulse-App：手机上直接跑机器人"
       }
@@ -4851,7 +4907,7 @@
     "ErisPulse-Cron": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 482,
+        "line": 498,
         "level": 1,
         "title": "ErisPulse-Cron"
       },
@@ -4865,7 +4921,7 @@
     "ErisPulse-Cron：定时任务": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 82,
+        "line": 88,
         "level": 3,
         "title": "ErisPulse-Cron：定时任务"
       },
@@ -4879,7 +4935,7 @@
     "ErisPulse-Dashboard": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 138,
+        "line": 154,
         "level": 1,
         "title": "ErisPulse-Dashboard"
       },
@@ -4893,7 +4949,7 @@
     "ErisPulse-Dashboard：浏览器里的管理面板": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 72,
+        "line": 78,
         "level": 3,
         "title": "ErisPulse-Dashboard：浏览器里的管理面板"
       },
@@ -4907,7 +4963,7 @@
     "ErisPulse-QvQChat 通用智能体": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 608,
+        "line": 624,
         "level": 1,
         "title": "ErisPulse-QvQChat 通用智能体"
       },
@@ -4921,7 +4977,7 @@
     "ErisPulse-QvQChat：通用智能体": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 92,
+        "line": 98,
         "level": 3,
         "title": "ErisPulse-QvQChat：通用智能体"
       },
@@ -4943,13 +4999,13 @@
     "ErisPulse-Takumi：图片渲染": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 102,
+        "line": 118,
         "level": 3,
         "title": "ErisPulse-Takumi：图片渲染"
       },
       {
         "document": "ecosystem/README.md",
-        "line": 50,
+        "line": 60,
         "level": 3,
         "title": "ErisPulse-Takumi：图片渲染"
       }
@@ -5021,7 +5077,7 @@
     "Event 回复方法": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 979,
+        "line": 982,
         "level": 3,
         "title": "Event 回复方法"
       },
@@ -5035,7 +5091,7 @@
     "Event 对象常用方法": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2035,
+        "line": 2038,
         "level": 3,
         "title": "Event 对象常用方法"
       },
@@ -5229,7 +5285,7 @@
     "IDE 补全": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2671,
+        "line": 2674,
         "level": 2,
         "title": "IDE 补全"
       }
@@ -5313,7 +5369,7 @@
     "Logger（日志）": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 885,
+        "line": 888,
         "level": 3,
         "title": "Logger（日志）"
       },
@@ -5330,6 +5386,14 @@
         "line": 85,
         "level": 2,
         "title": "MCP 服务器"
+      }
+    ],
+    "MCP 桥": [
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 777,
+        "level": 2,
+        "title": "MCP 桥"
       }
     ],
     "Matrix平台特性文档": [
@@ -5367,7 +5431,7 @@
     "Meta 事件类型": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1942,
+        "line": 1943,
         "level": 3,
         "title": "Meta 事件类型"
       },
@@ -5481,7 +5545,7 @@
     "OneBot12 标准": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 701,
+        "line": 704,
         "level": 3,
         "title": "OneBot12 标准"
       },
@@ -5503,7 +5567,7 @@
     "OneBot12 标准事件": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 906,
+        "line": 907,
         "level": 4,
         "title": "OneBot12 标准事件"
       },
@@ -5609,7 +5673,7 @@
     "PascalCase 命名": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2514,
+        "line": 2515,
         "level": 3,
         "title": "PascalCase 命名"
       },
@@ -5623,7 +5687,7 @@
     "PollingAdapter（HTTP 轮询型）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1625,
+        "line": 1626,
         "level": 4,
         "title": "PollingAdapter（HTTP 轮询型）"
       },
@@ -5745,7 +5809,7 @@
     "Reply 方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2101,
+        "line": 2102,
         "level": 3,
         "title": "Reply 方法"
       },
@@ -5775,7 +5839,7 @@
     "Router（路由）": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 912,
+        "line": 915,
         "level": 3,
         "title": "Router（路由）"
       },
@@ -5915,7 +5979,7 @@
     "Send 消息发送 DSL": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1423,
+        "line": 1424,
         "level": 2,
         "title": "Send 消息发送 DSL"
       },
@@ -5929,13 +5993,13 @@
     "Send 链式调用": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3826,
+        "line": 3849,
         "level": 3,
         "title": "Send 链式调用"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 795,
+        "line": 899,
         "level": 3,
         "title": "Send 链式调用"
       },
@@ -5949,7 +6013,7 @@
     "SendDSL 实现": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3398,
+        "line": 3421,
         "level": 2,
         "title": "SendDSL 实现"
       },
@@ -5963,7 +6027,7 @@
     "SendDSL 消息发送": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 949,
+        "line": 952,
         "level": 2,
         "title": "SendDSL 消息发送"
       },
@@ -5977,7 +6041,7 @@
     "SendDSL 详解": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1986,
+        "line": 1987,
         "level": 1,
         "title": "SendDSL 详解"
       },
@@ -6013,7 +6077,7 @@
     "SseEmitter API": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 695,
+        "line": 696,
         "level": 4,
         "title": "SseEmitter API"
       },
@@ -6049,7 +6113,7 @@
     "Storage（存储）": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 847,
+        "line": 850,
         "level": 3,
         "title": "Storage（存储）"
       },
@@ -6085,7 +6149,7 @@
     "Task 对象": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2621,
+        "line": 2622,
         "level": 3,
         "title": "Task 对象"
       },
@@ -6145,7 +6209,7 @@
     "Using 方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2212,
+        "line": 2213,
         "level": 3,
         "title": "Using 方法"
       },
@@ -6173,7 +6237,7 @@
     "WebHook 连接": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1731,
+        "line": 1732,
         "level": 3,
         "title": "WebHook 连接"
       },
@@ -6293,7 +6357,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1697,
+        "line": 1698,
         "level": 3,
         "title": "WebSocket 连接"
       },
@@ -6351,7 +6415,7 @@
     "WebhookAdapter（HTTP 回调型）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1656,
+        "line": 1657,
         "level": 4,
         "title": "WebhookAdapter（HTTP 回调型）"
       },
@@ -7065,7 +7129,7 @@
     "`__init__` 注意事项": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 535,
+        "line": 536,
         "level": 2,
         "title": "`__init__` 注意事项"
       },
@@ -7101,7 +7165,7 @@
     "`keep_running` 参数": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 538,
+        "line": 541,
         "level": 3,
         "title": "`keep_running` 参数"
       },
@@ -7115,7 +7179,7 @@
     "`qvq_personas()` → 注册人格预设": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 681,
+        "line": 697,
         "level": 4,
         "title": "`qvq_personas()` → 注册人格预设"
       },
@@ -7129,7 +7193,7 @@
     "`qvq_prompts()` → 注入系统提示词": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 669,
+        "line": 685,
         "level": 4,
         "title": "`qvq_prompts()` → 注入系统提示词"
       },
@@ -7143,7 +7207,7 @@
     "`qvq_schemas()` → 显式参数 schema": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 695,
+        "line": 711,
         "level": 4,
         "title": "`qvq_schemas()` → 显式参数 schema"
       },
@@ -7157,7 +7221,7 @@
     "`self` 字段扩展信息": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1954,
+        "line": 1955,
         "level": 3,
         "title": "`self` 字段扩展信息"
       },
@@ -7174,6 +7238,20 @@
         "line": 447,
         "level": 4,
         "title": "`t()` 方法详解"
+      }
+    ],
+    "alt_message 渲染约定": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 2901,
+        "level": 2,
+        "title": "alt_message 渲染约定"
+      },
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 173,
+        "level": 2,
+        "title": "alt_message 渲染约定"
       }
     ],
     "call_api 方法": [
@@ -7293,7 +7371,7 @@
     "convert() 方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2798,
+        "line": 2799,
         "level": 2,
         "title": "convert() 方法"
       },
@@ -7373,7 +7451,7 @@
     "docstring 自动生成字段描述（v2.8.0+）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1224,
+        "line": 1225,
         "level": 4,
         "title": "docstring 自动生成字段描述（v2.8.0+）"
       },
@@ -7423,7 +7501,7 @@
     "get() 方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1016,
+        "line": 1017,
         "level": 4,
         "title": "get() 方法"
       },
@@ -7607,7 +7685,7 @@
     "metadata 约定": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1146,
+        "line": 1147,
         "level": 4,
         "title": "metadata 约定"
       },
@@ -7817,7 +7895,7 @@
     "self.user_id 与 Using 的关系": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1849,
+        "line": 1850,
         "level": 3,
         "title": "self.user_id 与 Using 的关系"
       },
@@ -7845,7 +7923,7 @@
     "start() 的两种正确写法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1571,
+        "line": 1572,
         "level": 3,
         "title": "start() 的两种正确写法"
       },
@@ -8233,7 +8311,7 @@
     "一键安装脚本（新环境推荐）": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 315,
+        "line": 318,
         "level": 3,
         "title": "一键安装脚本（新环境推荐）"
       },
@@ -8247,13 +8325,13 @@
     "三、我要深入理解原理": [
       {
         "document": "README.md",
-        "line": 54,
+        "line": 55,
         "level": 3,
         "title": "三、我要深入理解原理"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 138,
+        "line": 139,
         "level": 3,
         "title": "三、我要深入理解原理"
       }
@@ -8261,7 +8339,7 @@
     "三种模式怎么选": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1686,
+        "line": 1687,
         "level": 4,
         "title": "三种模式怎么选"
       },
@@ -8344,6 +8422,12 @@
         "title": "下一步"
       },
       {
+        "document": "ecosystem/apimcp.md",
+        "line": 73,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
         "document": "ecosystem/app.md",
         "line": 111,
         "level": 2,
@@ -8363,7 +8447,7 @@
       },
       {
         "document": "ecosystem/qvqchat.md",
-        "line": 142,
+        "line": 154,
         "level": 2,
         "title": "下一步"
       },
@@ -8412,6 +8496,24 @@
       {
         "document": "quick-start.md",
         "line": 226,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
+        "document": "showcase/comparison-agent-platforms.md",
+        "line": 39,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
+        "document": "showcase/comparison-nonebot.md",
+        "line": 37,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
+        "document": "showcase/migrate-from-astrbot.md",
+        "line": 67,
         "level": 2,
         "title": "下一步"
       },
@@ -8479,7 +8581,7 @@
     "不等待结果": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2239,
+        "line": 2240,
         "level": 3,
         "title": "不等待结果"
       },
@@ -8493,7 +8595,7 @@
     "不落盘的 example 字段（v2.8.0+）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1287,
+        "line": 1288,
         "level": 4,
         "title": "不落盘的 example 字段（v2.8.0+）"
       },
@@ -8559,7 +8661,7 @@
     "与 SendDSL 标准方法的关系": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2756,
+        "line": 2759,
         "level": 2,
         "title": "与 SendDSL 标准方法的关系"
       },
@@ -8629,7 +8731,7 @@
     "两种注入模式": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 216,
+        "line": 232,
         "level": 2,
         "title": "两种注入模式"
       },
@@ -8671,7 +8773,7 @@
     "中间件": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 955,
+        "line": 956,
         "level": 3,
         "title": "中间件"
       },
@@ -8699,7 +8801,7 @@
     "中间件执行顺序": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 999,
+        "line": 1000,
         "level": 4,
         "title": "中间件执行顺序"
       },
@@ -8713,7 +8815,7 @@
     "中间件返回契约": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 975,
+        "line": 976,
         "level": 4,
         "title": "中间件返回契约"
       },
@@ -8727,7 +8829,7 @@
     "中间件：分发前改写与否决": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1508,
+        "line": 1511,
         "level": 2,
         "title": "中间件：分发前改写与否决"
       },
@@ -8799,7 +8901,7 @@
     "主动发送 Meta 事件": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 266,
+        "line": 267,
         "level": 4,
         "title": "主动发送 Meta 事件"
       },
@@ -8849,7 +8951,7 @@
     "事件分发机制": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 941,
+        "line": 942,
         "level": 4,
         "title": "事件分发机制"
       },
@@ -8863,7 +8965,7 @@
     "事件参数": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 587,
+        "line": 590,
         "level": 3,
         "title": "事件参数"
       },
@@ -8891,7 +8993,7 @@
     "事件处理": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1019,
+        "line": 1022,
         "level": 2,
         "title": "事件处理"
       },
@@ -8923,7 +9025,7 @@
     "事件处理入门": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1023,
+        "line": 1026,
         "level": 1,
         "title": "事件处理入门"
       },
@@ -8979,7 +9081,7 @@
     "事件处理最佳实践": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2110,
+        "line": 2113,
         "level": 2,
         "title": "事件处理最佳实践"
       },
@@ -9115,7 +9217,7 @@
     "事件数据访问": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2033,
+        "line": 2036,
         "level": 2,
         "title": "事件数据访问"
       },
@@ -9129,7 +9231,7 @@
     "事件流程": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 671,
+        "line": 674,
         "level": 3,
         "title": "事件流程"
       },
@@ -9143,19 +9245,19 @@
     "事件监听": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 904,
+        "line": 905,
         "level": 3,
         "title": "事件监听"
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3954,
+        "line": 3977,
         "level": 3,
         "title": "事件监听"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 923,
+        "line": 1027,
         "level": 3,
         "title": "事件监听"
       },
@@ -9189,7 +9291,7 @@
     "事件类型": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 831,
+        "line": 834,
         "level": 2,
         "title": "事件类型"
       },
@@ -9229,7 +9331,7 @@
     "事件类型概览": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1030,
+        "line": 1033,
         "level": 2,
         "title": "事件类型概览"
       },
@@ -9259,7 +9361,7 @@
     "事件覆写：不改模块代码，覆写任意事件类型的行为": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1575,
+        "line": 1578,
         "level": 2,
         "title": "事件覆写：不改模块代码，覆写任意事件类型的行为"
       },
@@ -9273,7 +9375,7 @@
     "事件订阅": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 717,
+        "line": 733,
         "level": 2,
         "title": "事件订阅"
       },
@@ -9287,7 +9389,7 @@
     "事件转换": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3344,
+        "line": 3367,
         "level": 2,
         "title": "事件转换"
       },
@@ -9313,7 +9415,7 @@
     "事件转换器": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1496,
+        "line": 1497,
         "level": 2,
         "title": "事件转换器"
       },
@@ -9327,7 +9429,7 @@
     "事件转换器实现指南": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2728,
+        "line": 2729,
         "level": 1,
         "title": "事件转换器实现指南"
       },
@@ -9377,7 +9479,7 @@
     "事件驱动架构": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 667,
+        "line": 670,
         "level": 2,
         "title": "事件驱动架构"
       },
@@ -9435,13 +9537,13 @@
     "二、我要开发模块 / 适配器": [
       {
         "document": "README.md",
-        "line": 42,
+        "line": 43,
         "level": 3,
         "title": "二、我要开发模块 / 适配器"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 126,
+        "line": 127,
         "level": 3,
         "title": "二、我要开发模块 / 适配器"
       }
@@ -9465,13 +9567,13 @@
     "五、我要为 ErisPulse 贡献": [
       {
         "document": "README.md",
-        "line": 112,
+        "line": 115,
         "level": 3,
         "title": "五、我要为 ErisPulse 贡献"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 196,
+        "line": 199,
         "level": 3,
         "title": "五、我要为 ErisPulse 贡献"
       }
@@ -9529,7 +9631,7 @@
     "交互式初始化（推荐）": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 362,
+        "line": 365,
         "level": 3,
         "title": "交互式初始化（推荐）"
       },
@@ -9543,7 +9645,7 @@
     "交互式处理": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1803,
+        "line": 1806,
         "level": 2,
         "title": "交互式处理"
       },
@@ -9563,7 +9665,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 408,
+        "line": 411,
         "level": 3,
         "title": "交互式安装"
       },
@@ -9616,10 +9718,24 @@
         "title": "什么时候该用硬重启？"
       }
     ],
+    "什么时候选谁": [
+      {
+        "document": "showcase/comparison-agent-platforms.md",
+        "line": 28,
+        "level": 2,
+        "title": "什么时候选谁"
+      },
+      {
+        "document": "showcase/comparison-nonebot.md",
+        "line": 26,
+        "level": 2,
+        "title": "什么时候选谁"
+      }
+    ],
     "什么是适配器": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 95,
+        "line": 96,
         "level": 3,
         "title": "什么是适配器"
       },
@@ -9641,7 +9757,7 @@
     "从本地插件到发布": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 486,
+        "line": 487,
         "level": 3,
         "title": "从本地插件到发布"
       },
@@ -9671,7 +9787,7 @@
     "代码说明": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 576,
+        "line": 579,
         "level": 2,
         "title": "代码说明"
       },
@@ -9707,7 +9823,7 @@
     "优先级与积压丢弃（Priority）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2347,
+        "line": 2348,
         "level": 3,
         "title": "优先级与积压丢弃（Priority）"
       },
@@ -9865,7 +9981,7 @@
     "何时重新生成": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2750,
+        "line": 2753,
         "level": 2,
         "title": "何时重新生成"
       },
@@ -9879,7 +9995,7 @@
     "作为服务被调用": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 731,
+        "line": 747,
         "level": 2,
         "title": "作为服务被调用"
       },
@@ -9901,7 +10017,7 @@
     "作用域过滤：为什么我的模块没收到消息": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1540,
+        "line": 1543,
         "level": 2,
         "title": "作用域过滤：为什么我的模块没收到消息"
       },
@@ -9951,7 +10067,7 @@
     "使用 Docker": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 335,
+        "line": 338,
         "level": 3,
         "title": "使用 Docker"
       },
@@ -9973,7 +10089,7 @@
     "使用 pip 安装": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 297,
+        "line": 300,
         "level": 3,
         "title": "使用 pip 安装"
       },
@@ -9987,7 +10103,7 @@
     "使用 reply 方法发送回复": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1805,
+        "line": 1808,
         "level": 3,
         "title": "使用 reply 方法发送回复"
       },
@@ -10039,7 +10155,7 @@
     "使用生命周期事件": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2296,
+        "line": 2299,
         "level": 3,
         "title": "使用生命周期事件"
       },
@@ -10113,7 +10229,7 @@
     "使用请求参数": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 677,
+        "line": 678,
         "level": 4,
         "title": "使用请求参数"
       },
@@ -10135,7 +10251,7 @@
     "依赖声明（可选，2.8.0+）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 499,
+        "line": 500,
         "level": 2,
         "title": "依赖声明（可选，2.8.0+）"
       },
@@ -10157,7 +10273,7 @@
     "依赖注入（Depends）": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1288,
+        "line": 1291,
         "level": 3,
         "title": "依赖注入（Depends）"
       },
@@ -10171,7 +10287,7 @@
     "侧边栏分组": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 251,
+        "line": 267,
         "level": 2,
         "title": "侧边栏分组"
       },
@@ -10229,7 +10345,7 @@
     "修饰器与规则的继承": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2473,
+        "line": 2474,
         "level": 3,
         "title": "修饰器与规则的继承"
       },
@@ -10243,7 +10359,7 @@
     "修饰方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2080,
+        "line": 2081,
         "level": 2,
         "title": "修饰方法"
       },
@@ -10299,7 +10415,7 @@
     "元事件处理": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1754,
+        "line": 1757,
         "level": 2,
         "title": "元事件处理"
       },
@@ -10443,7 +10559,7 @@
     "关键词过滤": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2315,
+        "line": 2318,
         "level": 3,
         "title": "关键词过滤"
       },
@@ -10471,7 +10587,7 @@
     "关闭适配器": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 859,
+        "line": 860,
         "level": 4,
         "title": "关闭适配器"
       },
@@ -10485,13 +10601,13 @@
     "其他": [
       {
         "document": "README.md",
-        "line": 142,
+        "line": 145,
         "level": 2,
         "title": "其他"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 226,
+        "line": 229,
         "level": 2,
         "title": "其他"
       }
@@ -10529,7 +10645,7 @@
     "内容列表": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2172,
+        "line": 2175,
         "level": 2,
         "title": "内容列表"
       },
@@ -10639,7 +10755,7 @@
     "内置确认词": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2026,
+        "line": 2029,
         "level": 3,
         "title": "内置确认词"
       },
@@ -10847,7 +10963,7 @@
     "列出平台": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 890,
+        "line": 891,
         "level": 4,
         "title": "列出平台"
       },
@@ -10889,7 +11005,7 @@
     "创建任务": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 533,
+        "line": 549,
         "level": 3,
         "title": "创建任务"
       },
@@ -10917,7 +11033,7 @@
     "创建第一个机器人": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 500,
+        "line": 503,
         "level": 1,
         "title": "创建第一个机器人"
       },
@@ -10981,7 +11097,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1399,
+        "line": 1400,
         "level": 3,
         "title": "初始化过程"
       },
@@ -11015,7 +11131,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 360,
+        "line": 363,
         "level": 2,
         "title": "初始化项目"
       },
@@ -11093,7 +11209,7 @@
     "刷新时机": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 713,
+        "line": 729,
         "level": 3,
         "title": "刷新时机"
       },
@@ -11129,7 +11245,7 @@
     "功能速览": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 500,
+        "line": 516,
         "level": 2,
         "title": "功能速览"
       },
@@ -11165,7 +11281,7 @@
     "加载策略": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 809,
+        "line": 812,
         "level": 4,
         "title": "加载策略"
       },
@@ -11257,7 +11373,7 @@
     "协议方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2059,
+        "line": 2060,
         "level": 3,
         "title": "协议方法"
       },
@@ -11279,7 +11395,7 @@
     "单账户配置": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1080,
+        "line": 1081,
         "level": 4,
         "title": "单账户配置"
       },
@@ -11393,7 +11509,7 @@
     "原始消息与消息构建": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2706,
+        "line": 2707,
         "level": 3,
         "title": "原始消息与消息构建"
       },
@@ -11429,13 +11545,13 @@
     "参与贡献": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4076,
+        "line": 4099,
         "level": 2,
         "title": "参与贡献"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1045,
+        "line": 1149,
         "level": 2,
         "title": "参与贡献"
       },
@@ -11475,7 +11591,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 195,
+        "line": 211,
         "level": 3,
         "title": "参数说明"
       },
@@ -11503,13 +11619,13 @@
     "参考链接": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4064,
+        "line": 4087,
         "level": 2,
         "title": "参考链接"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1033,
+        "line": 1137,
         "level": 2,
         "title": "参考链接"
       },
@@ -11559,7 +11675,7 @@
     "反向转换与消息构建": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3674,
+        "line": 3697,
         "level": 2,
         "title": "反向转换与消息构建"
       },
@@ -11629,7 +11745,7 @@
     "发送 DSL": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1982,
+        "line": 1983,
         "level": 2,
         "title": "发送 DSL"
       }
@@ -11669,7 +11785,7 @@
     "发送回复": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 602,
+        "line": 605,
         "level": 3,
         "title": "发送回复"
       },
@@ -11713,7 +11829,7 @@
     "发送成功后执行逻辑": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2403,
+        "line": 2406,
         "level": 3,
         "title": "发送成功后执行逻辑"
       },
@@ -11727,7 +11843,7 @@
     "发送成功后执行逻辑（Hook）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2280,
+        "line": 2281,
         "level": 3,
         "title": "发送成功后执行逻辑（Hook）"
       },
@@ -11741,7 +11857,7 @@
     "发送方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2030,
+        "line": 2031,
         "level": 2,
         "title": "发送方法"
       },
@@ -11875,7 +11991,7 @@
     "发送规则引擎（重试/超时/延迟）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2602,
+        "line": 2603,
         "level": 3,
         "title": "发送规则引擎（重试/超时/延迟）"
       },
@@ -11889,7 +12005,7 @@
     "发送规则系统": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2262,
+        "line": 2263,
         "level": 2,
         "title": "发送规则系统"
       },
@@ -11903,13 +12019,13 @@
     "发送规则装饰器": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3886,
+        "line": 3909,
         "level": 4,
         "title": "发送规则装饰器"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 855,
+        "line": 959,
         "level": 4,
         "title": "发送规则装饰器"
       },
@@ -11923,7 +12039,7 @@
     "发送链路内部拆解": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2559,
+        "line": 2560,
         "level": 2,
         "title": "发送链路内部拆解"
       },
@@ -11965,7 +12081,7 @@
     "可用属性": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1434,
+        "line": 1435,
         "level": 3,
         "title": "可用属性"
       },
@@ -12109,7 +12225,7 @@
     "后台执行": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2497,
+        "line": 2498,
         "level": 3,
         "title": "后台执行"
       },
@@ -12131,7 +12247,7 @@
     "启动和关闭": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 834,
+        "line": 835,
         "level": 3,
         "title": "启动和关闭"
       },
@@ -12153,7 +12269,7 @@
     "启动适配器": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 836,
+        "line": 837,
         "level": 4,
         "title": "启动适配器"
       },
@@ -12175,7 +12291,7 @@
     "启用 IDE 补全（可选）": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 426,
+        "line": 429,
         "level": 2,
         "title": "启用 IDE 补全（可选）"
       },
@@ -12203,7 +12319,7 @@
     "命令与回复的 block 配置": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1675,
+        "line": 1678,
         "level": 3,
         "title": "命令与回复的 block 配置"
       },
@@ -12217,7 +12333,7 @@
     "命令事件处理": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1116,
+        "line": 1119,
         "level": 2,
         "title": "命令事件处理"
       },
@@ -12231,7 +12347,7 @@
     "命令优先级": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1452,
+        "line": 1455,
         "level": 3,
         "title": "命令优先级"
       },
@@ -12279,7 +12395,7 @@
     "命令分发决策链：为什么命令没触发": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1532,
+        "line": 1535,
         "level": 2,
         "title": "命令分发决策链：为什么命令没触发"
       },
@@ -12293,7 +12409,7 @@
     "命令别名": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1134,
+        "line": 1137,
         "level": 3,
         "title": "命令别名"
       },
@@ -12307,7 +12423,7 @@
     "命令参数": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1147,
+        "line": 1150,
         "level": 3,
         "title": "命令参数"
       },
@@ -12335,7 +12451,7 @@
     "命令权限与访问控制": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1397,
+        "line": 1400,
         "level": 3,
         "title": "命令权限与访问控制"
       },
@@ -12349,7 +12465,7 @@
     "命令没有响应？": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 620,
+        "line": 623,
         "level": 3,
         "title": "命令没有响应？"
       },
@@ -12363,7 +12479,7 @@
     "命令治理（cooldown= / rate_limit= / usage_limit= / deprecated=）": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1205,
+        "line": 1208,
         "level": 3,
         "title": "命令治理（cooldown= / rate_limit= / usage_limit= / deprecated=）"
       },
@@ -12391,7 +12507,7 @@
     "命令组": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1333,
+        "line": 1336,
         "level": 3,
         "title": "命令组"
       },
@@ -12405,7 +12521,7 @@
     "命令装饰器": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 578,
+        "line": 581,
         "level": 3,
         "title": "命令装饰器"
       },
@@ -12419,7 +12535,7 @@
     "命令选项": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2741,
+        "line": 2744,
         "level": 2,
         "title": "命令选项"
       },
@@ -12447,7 +12563,7 @@
     "命名规范": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2512,
+        "line": 2513,
         "level": 2,
         "title": "命名规范"
       },
@@ -12483,13 +12599,13 @@
     "四、生态与官方客户端": [
       {
         "document": "README.md",
-        "line": 100,
+        "line": 101,
         "level": 3,
         "title": "四、生态与官方客户端"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 184,
+        "line": 185,
         "level": 3,
         "title": "四、生态与官方客户端"
       }
@@ -12559,7 +12675,7 @@
     "回看前置知识": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3770,
+        "line": 3793,
         "level": 3,
         "title": "回看前置知识"
       },
@@ -12573,7 +12689,7 @@
     "回看起步步骤": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1978,
+        "line": 1979,
         "level": 3,
         "title": "回看起步步骤"
       },
@@ -12587,7 +12703,7 @@
     "回调": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 551,
+        "line": 567,
         "level": 3,
         "title": "回调"
       },
@@ -12675,7 +12791,7 @@
     "图片下载和存储": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2608,
+        "line": 2611,
         "level": 3,
         "title": "图片下载和存储"
       },
@@ -12689,7 +12805,7 @@
     "图片处理": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2606,
+        "line": 2609,
         "level": 2,
         "title": "图片处理"
       },
@@ -12703,7 +12819,7 @@
     "图片识别示例": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2637,
+        "line": 2640,
         "level": 3,
         "title": "图片识别示例"
       },
@@ -12717,7 +12833,7 @@
     "在 Event 包装类中使用修饰方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2146,
+        "line": 2147,
         "level": 2,
         "title": "在 Event 包装类中使用修饰方法"
       },
@@ -12731,7 +12847,7 @@
     "在 RouteGroup 中使用": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 704,
+        "line": 705,
         "level": 4,
         "title": "在 RouteGroup 中使用"
       },
@@ -12745,7 +12861,7 @@
     "在代码中使用": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2701,
+        "line": 2704,
         "level": 2,
         "title": "在代码中使用"
       },
@@ -12788,6 +12904,14 @@
         "title": "在适配器中使用"
       }
     ],
+    "场景速查": [
+      {
+        "document": "showcase/README.md",
+        "line": 14,
+        "level": 2,
+        "title": "场景速查"
+      }
+    ],
     "基本使用": [
       {
         "document": "advanced/lazy-loading.md",
@@ -12797,19 +12921,19 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 661,
+        "line": 662,
         "level": 4,
         "title": "基本使用"
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 809,
+        "line": 810,
         "level": 3,
         "title": "基本使用"
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2678,
+        "line": 2679,
         "level": 3,
         "title": "基本使用"
       },
@@ -12961,7 +13085,7 @@
     "基本命令": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1118,
+        "line": 1121,
         "level": 3,
         "title": "基本命令"
       },
@@ -12983,7 +13107,7 @@
     "基本方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1458,
+        "line": 1459,
         "level": 3,
         "title": "基本方法"
       },
@@ -12997,7 +13121,7 @@
     "基本方法（基类内置）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2034,
+        "line": 2035,
         "level": 3,
         "title": "基本方法（基类内置）"
       },
@@ -13023,7 +13147,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2691,
+        "line": 2694,
         "level": 2,
         "title": "基本用法"
       },
@@ -13055,7 +13179,7 @@
     "基本结构": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1034,
+        "line": 1035,
         "level": 3,
         "title": "基本结构"
       },
@@ -13069,7 +13193,7 @@
     "基本调用方式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1994,
+        "line": 1995,
         "level": 2,
         "title": "基本调用方式"
       },
@@ -13097,7 +13221,7 @@
     "基础发送": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 953,
+        "line": 956,
         "level": 3,
         "title": "基础发送"
       },
@@ -13151,13 +13275,13 @@
     "基础概念": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 656,
+        "line": 659,
         "level": 2,
         "title": "基础概念"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 660,
+        "line": 663,
         "level": 1,
         "title": "基础概念"
       },
@@ -13209,7 +13333,7 @@
     "声明式事件扩展方法（v2.7.0+）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1341,
+        "line": 1342,
         "level": 3,
         "title": "声明式事件扩展方法（v2.7.0+）"
       },
@@ -13223,7 +13347,7 @@
     "声明式参数与选项（args= / options=）": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1164,
+        "line": 1167,
         "level": 3,
         "title": "声明式参数与选项（args= / options=）"
       },
@@ -13251,7 +13375,7 @@
     "声明式翻译键（v2.7.0+）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1307,
+        "line": 1308,
         "level": 3,
         "title": "声明式翻译键（v2.7.0+）"
       },
@@ -13289,7 +13413,7 @@
     "声明式配置（推荐）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1795,
+        "line": 1796,
         "level": 3,
         "title": "声明式配置（推荐）"
       },
@@ -13357,7 +13481,7 @@
     "处理器节流（throttle=）与防抖（debounce=）": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1259,
+        "line": 1262,
         "level": 3,
         "title": "处理器节流（throttle=）与防抖（debounce=）"
       },
@@ -13529,7 +13653,7 @@
     "多平台适配": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2354,
+        "line": 2357,
         "level": 2,
         "title": "多平台适配"
       },
@@ -13579,13 +13703,13 @@
     "多账户支持": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1793,
+        "line": 1794,
         "level": 2,
         "title": "多账户支持"
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3512,
+        "line": 3535,
         "level": 2,
         "title": "多账户支持"
       },
@@ -13613,7 +13737,7 @@
     "多账户配置": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1109,
+        "line": 1110,
         "level": 4,
         "title": "多账户配置"
       },
@@ -13667,7 +13791,7 @@
     "多轮对话 (conversation)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1999,
+        "line": 2002,
         "level": 3,
         "title": "多轮对话 (conversation)"
       },
@@ -13711,7 +13835,7 @@
     "失败继续与重试": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2427,
+        "line": 2428,
         "level": 3,
         "title": "失败继续与重试"
       },
@@ -13725,7 +13849,7 @@
     "失败自动重试（Retry）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2297,
+        "line": 2298,
         "level": 3,
         "title": "失败自动重试（Retry）"
       },
@@ -13739,7 +13863,7 @@
     "失败重试 + 超时取消": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2416,
+        "line": 2419,
         "level": 3,
         "title": "失败重试 + 超时取消"
       },
@@ -13777,7 +13901,7 @@
     "好友添加": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1693,
+        "line": 1696,
         "level": 3,
         "title": "好友添加"
       },
@@ -13799,7 +13923,7 @@
     "好友请求": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1727,
+        "line": 1730,
         "level": 3,
         "title": "好友请求"
       },
@@ -13821,7 +13945,7 @@
     "如何修改命令前缀？": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 627,
+        "line": 630,
         "level": 3,
         "title": "如何修改命令前缀？"
       },
@@ -13835,7 +13959,7 @@
     "如何支持多平台？": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 637,
+        "line": 640,
         "level": 3,
         "title": "如何支持多平台？"
       },
@@ -13895,7 +14019,7 @@
     "子命令": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1348,
+        "line": 1351,
         "level": 3,
         "title": "子命令"
       },
@@ -14070,6 +14194,20 @@
         "title": "安全性"
       }
     ],
+    "安全要点": [
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 842,
+        "level": 2,
+        "title": "安全要点"
+      },
+      {
+        "document": "ecosystem/apimcp.md",
+        "line": 62,
+        "level": 2,
+        "title": "安全要点"
+      }
+    ],
     "安装": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
@@ -14095,7 +14233,7 @@
     "安装 ErisPulse：三种方式": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 293,
+        "line": 296,
         "level": 2,
         "title": "安装 ErisPulse：三种方式"
       },
@@ -14195,7 +14333,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 394,
+        "line": 397,
         "level": 2,
         "title": "安装模块"
       },
@@ -14237,7 +14375,7 @@
     "完整模块示例": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 340,
+        "line": 356,
         "level": 2,
         "title": "完整模块示例"
       },
@@ -14257,19 +14395,19 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2676,
+        "line": 2677,
         "level": 2,
         "title": "完整示例"
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2923,
+        "line": 2946,
         "level": 2,
         "title": "完整示例"
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 196,
+        "line": 218,
         "level": 2,
         "title": "完整示例"
       },
@@ -14311,13 +14449,13 @@
     "官方客户端（独立程序）": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 112,
+        "line": 128,
         "level": 2,
         "title": "官方客户端（独立程序）"
       },
       {
         "document": "ecosystem/README.md",
-        "line": 60,
+        "line": 70,
         "level": 2,
         "title": "官方客户端（独立程序）"
       }
@@ -14353,13 +14491,13 @@
     "定时任务": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 478,
+        "line": 494,
         "level": 2,
         "title": "定时任务"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2243,
+        "line": 2246,
         "level": 2,
         "title": "定时任务"
       },
@@ -14373,7 +14511,7 @@
     "实现层面深入": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1973,
+        "line": 1974,
         "level": 3,
         "title": "实现层面深入"
       },
@@ -14395,13 +14533,13 @@
     "富媒体消息转换示例": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3005,
+        "line": 3028,
         "level": 2,
         "title": "富媒体消息转换示例"
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 278,
+        "line": 300,
         "level": 2,
         "title": "富媒体消息转换示例"
       }
@@ -14420,6 +14558,30 @@
         "line": 71,
         "level": 3,
         "title": "对模块开发者"
+      }
+    ],
+    "对比：ErisPulse 与 AstrBot / LangBot": [
+      {
+        "document": "showcase/comparison-agent-platforms.md",
+        "line": 1,
+        "level": 1,
+        "title": "对比：ErisPulse 与 AstrBot / LangBot"
+      }
+    ],
+    "对比：ErisPulse 与 NoneBot2": [
+      {
+        "document": "showcase/comparison-nonebot.md",
+        "line": 1,
+        "level": 1,
+        "title": "对比：ErisPulse 与 NoneBot2"
+      }
+    ],
+    "对照": [
+      {
+        "document": "showcase/comparison-agent-platforms.md",
+        "line": 13,
+        "level": 2,
+        "title": "对照"
       }
     ],
     "对适配器开发者": [
@@ -14473,7 +14635,7 @@
     "属性访问": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1024,
+        "line": 1025,
         "level": 4,
         "title": "属性访问"
       },
@@ -14499,7 +14661,7 @@
     "嵌套配置（v2.8.0+）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1250,
+        "line": 1251,
         "level": 4,
         "title": "嵌套配置（v2.8.0+）"
       },
@@ -14525,13 +14687,19 @@
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 163,
+        "line": 179,
+        "level": 2,
+        "title": "工作原理"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 797,
         "level": 2,
         "title": "工作原理"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2715,
+        "line": 2718,
         "level": 2,
         "title": "工作原理"
       },
@@ -14557,6 +14725,12 @@
         "document": "developer-guide/modules/core-concepts.md",
         "line": 369,
         "level": 3,
+        "title": "工作原理"
+      },
+      {
+        "document": "ecosystem/apimcp.md",
+        "line": 17,
+        "level": 2,
         "title": "工作原理"
       },
       {
@@ -14701,7 +14875,7 @@
     "带回调的等待回复": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1884,
+        "line": 1887,
         "level": 3,
         "title": "带回调的等待回复"
       },
@@ -14723,7 +14897,7 @@
     "带验证的等待回复": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1857,
+        "line": 1860,
         "level": 3,
         "title": "带验证的等待回复"
       },
@@ -14737,7 +14911,7 @@
     "常用 CSS 类名": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 279,
+        "line": 295,
         "level": 2,
         "title": "常用 CSS 类名"
       },
@@ -14773,7 +14947,7 @@
     "常见任务": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2163,
+        "line": 2166,
         "level": 2,
         "title": "常见任务"
       }
@@ -14781,7 +14955,7 @@
     "常见任务示例": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2167,
+        "line": 2170,
         "level": 1,
         "title": "常见任务示例"
       },
@@ -14829,7 +15003,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 618,
+        "line": 621,
         "level": 2,
         "title": "常见问题"
       },
@@ -14869,13 +15043,13 @@
     "常见陷阱": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3054,
+        "line": 3077,
         "level": 2,
         "title": "常见陷阱"
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 327,
+        "line": 349,
         "level": 2,
         "title": "常见陷阱"
       }
@@ -14883,7 +15057,7 @@
     "平台专有修饰方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2114,
+        "line": 2115,
         "level": 3,
         "title": "平台专有修饰方法"
       },
@@ -14897,7 +15071,7 @@
     "平台事件方法扩展": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3684,
+        "line": 3707,
         "level": 2,
         "title": "平台事件方法扩展"
       },
@@ -14919,7 +15093,7 @@
     "平台原生事件": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 927,
+        "line": 928,
         "level": 4,
         "title": "平台原生事件"
       },
@@ -14949,13 +15123,13 @@
     "平台扩展字段": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2900,
+        "line": 2923,
         "level": 2,
         "title": "平台扩展字段"
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 173,
+        "line": 195,
         "level": 2,
         "title": "平台扩展字段"
       },
@@ -14969,7 +15143,7 @@
     "平台扩展方法": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2081,
+        "line": 2084,
         "level": 3,
         "title": "平台扩展方法"
       },
@@ -15009,7 +15183,7 @@
     "平台指南索引": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 749,
+        "line": 853,
         "level": 2,
         "title": "平台指南索引"
       }
@@ -15017,7 +15191,7 @@
     "平台接入指南索引": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3780,
+        "line": 3803,
         "level": 2,
         "title": "平台接入指南索引"
       }
@@ -15033,13 +15207,13 @@
     "平台特定功能": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3799,
+        "line": 3822,
         "level": 2,
         "title": "平台特定功能"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 768,
+        "line": 872,
         "level": 2,
         "title": "平台特定功能"
       },
@@ -15053,7 +15227,7 @@
     "平台特定响应": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2356,
+        "line": 2359,
         "level": 3,
         "title": "平台特定响应"
       },
@@ -15067,7 +15241,7 @@
     "平台特性检测": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2373,
+        "line": 2376,
         "level": 3,
         "title": "平台特性检测"
       },
@@ -15105,13 +15279,13 @@
     "平台特有方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2067,
+        "line": 2068,
         "level": 3,
         "title": "平台特有方法"
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2534,
+        "line": 2535,
         "level": 3,
         "title": "平台特有方法"
       },
@@ -15145,7 +15319,7 @@
     "并行与串行": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2407,
+        "line": 2408,
         "level": 3,
         "title": "并行与串行"
       },
@@ -15159,7 +15333,7 @@
     "并行事件处理": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1465,
+        "line": 1468,
         "level": 3,
         "title": "并行事件处理"
       },
@@ -15201,7 +15375,7 @@
     "延迟发送（Defer）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2338,
+        "line": 2339,
         "level": 3,
         "title": "延迟发送（Defer）"
       },
@@ -15226,6 +15400,14 @@
         "title": "建表与 CRUD"
       }
     ],
+    "建议的迁移策略": [
+      {
+        "document": "showcase/migrate-from-astrbot.md",
+        "line": 58,
+        "level": 2,
+        "title": "建议的迁移策略"
+      }
+    ],
     "开发准备": [
       {
         "document": "developer-guide/README.md",
@@ -15245,13 +15427,13 @@
     "开发方式": [
       {
         "document": "README.md",
-        "line": 135,
+        "line": 138,
         "level": 2,
         "title": "开发方式"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 219,
+        "line": 222,
         "level": 2,
         "title": "开发方式"
       }
@@ -15429,13 +15611,13 @@
     "异步发送与结果处理": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3871,
+        "line": 3894,
         "level": 4,
         "title": "异步发送与结果处理"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 840,
+        "line": 944,
         "level": 4,
         "title": "异步发送与结果处理"
       },
@@ -15449,7 +15631,7 @@
     "异步处理": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2237,
+        "line": 2238,
         "level": 2,
         "title": "异步处理"
       },
@@ -15621,7 +15803,7 @@
     "心跳事件": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1772,
+        "line": 1775,
         "level": 3,
         "title": "心跳事件"
       },
@@ -15663,7 +15845,7 @@
     "必填字段映射": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2840,
+        "line": 2841,
         "level": 2,
         "title": "必填字段映射"
       },
@@ -15677,7 +15859,7 @@
     "必需字段": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1508,
+        "line": 1509,
         "level": 3,
         "title": "必需字段"
       },
@@ -15719,7 +15901,7 @@
     "快速初始化": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 375,
+        "line": 378,
         "level": 3,
         "title": "快速初始化"
       },
@@ -15781,7 +15963,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 133,
+        "line": 134,
         "level": 2,
         "title": "快速开始"
       },
@@ -15793,19 +15975,19 @@
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 511,
+        "line": 527,
         "level": 2,
         "title": "快速开始"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 244,
+        "line": 247,
         "level": 2,
         "title": "快速开始"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 248,
+        "line": 251,
         "level": 1,
         "title": "快速开始"
       },
@@ -15859,7 +16041,7 @@
     "总结": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 607,
+        "line": 608,
         "level": 3,
         "title": "总结"
       },
@@ -15895,7 +16077,7 @@
     "想做群机器人（处理消息、群管、通知）": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 473,
+        "line": 476,
         "level": 3,
         "title": "想做群机器人（处理消息、群管、通知）"
       },
@@ -15909,7 +16091,7 @@
     "想写自己的模块 / 适配器": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 478,
+        "line": 481,
         "level": 3,
         "title": "想写自己的模块 / 适配器"
       },
@@ -15923,7 +16105,7 @@
     "想把机器人长期跑起来": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 485,
+        "line": 488,
         "level": 3,
         "title": "想把机器人长期跑起来"
       },
@@ -16001,7 +16183,7 @@
     "懒加载系统": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 996,
+        "line": 999,
         "level": 2,
         "title": "懒加载系统"
       },
@@ -16015,7 +16197,7 @@
     "成功响应": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1763,
+        "line": 1764,
         "level": 3,
         "title": "成功响应"
       },
@@ -16043,13 +16225,13 @@
     "我也想把自己的模块列在这里？": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 124,
+        "line": 140,
         "level": 2,
         "title": "我也想把自己的模块列在这里？"
       },
       {
         "document": "ecosystem/README.md",
-        "line": 72,
+        "line": 82,
         "level": 2,
         "title": "我也想把自己的模块列在这里？"
       }
@@ -16065,7 +16247,7 @@
     "手动创建项目": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 385,
+        "line": 388,
         "level": 3,
         "title": "手动创建项目"
       },
@@ -16093,7 +16275,7 @@
     "手动构造响应（旧版方式仍然兼容）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1779,
+        "line": 1780,
         "level": 3,
         "title": "手动构造响应（旧版方式仍然兼容）"
       },
@@ -16235,7 +16417,7 @@
     "扩展：添加更多功能": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 610,
+        "line": 613,
         "level": 2,
         "title": "扩展：添加更多功能"
       },
@@ -16249,7 +16431,7 @@
     "批量发送多条消息": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2431,
+        "line": 2434,
         "level": 3,
         "title": "批量发送多条消息"
       },
@@ -16271,19 +16453,19 @@
     "批量构建模式（Build）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2387,
+        "line": 2388,
         "level": 2,
         "title": "批量构建模式（Build）"
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3921,
+        "line": 3944,
         "level": 4,
         "title": "批量构建模式（Build）"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 890,
+        "line": 994,
         "level": 4,
         "title": "批量构建模式（Build）"
       },
@@ -16377,7 +16559,7 @@
     "指定账户发送": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1836,
+        "line": 1837,
         "level": 3,
         "title": "指定账户发送"
       },
@@ -16551,7 +16733,7 @@
     "推荐模块": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 70,
+        "line": 76,
         "level": 2,
         "title": "推荐模块"
       },
@@ -16576,6 +16758,14 @@
         "title": "推荐禁用懒加载的场景（lazy_load=False）"
       }
     ],
+    "插件重写对照": [
+      {
+        "document": "showcase/migrate-from-astrbot.md",
+        "line": 28,
+        "level": 2,
+        "title": "插件重写对照"
+      }
+    ],
     "插入数据": [
       {
         "document": "advanced/sql-builder.md",
@@ -16587,7 +16777,7 @@
     "搜索功能": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2550,
+        "line": 2553,
         "level": 2,
         "title": "搜索功能"
       },
@@ -16731,7 +16921,7 @@
     "收集表单 (collect)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1958,
+        "line": 1961,
         "level": 3,
         "title": "收集表单 (collect)"
       },
@@ -16765,7 +16955,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2184,
+        "line": 2187,
         "level": 2,
         "title": "数据持久化"
       },
@@ -16799,7 +16989,7 @@
     "整批规则与回调": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2439,
+        "line": 2440,
         "level": 3,
         "title": "整批规则与回调"
       },
@@ -16947,7 +17137,7 @@
     "文档维护": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3738,
+        "line": 3761,
         "level": 2,
         "title": "文档维护"
       },
@@ -17009,7 +17199,7 @@
     "方式一：reply() 的 via 参数": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2153,
+        "line": 2154,
         "level": 3,
         "title": "方式一：reply() 的 via 参数"
       },
@@ -17059,7 +17249,7 @@
     "方式二：event.send_chain()": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2170,
+        "line": 2171,
         "level": 3,
         "title": "方式二：event.send_chain()"
       },
@@ -17125,7 +17315,7 @@
     "方法签名": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2800,
+        "line": 2801,
         "level": 3,
         "title": "方法签名"
       },
@@ -17161,7 +17351,7 @@
     "方法链": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2020,
+        "line": 2021,
         "level": 2,
         "title": "方法链"
       },
@@ -17339,7 +17529,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3098,
+        "line": 3121,
         "level": 2,
         "title": "最佳实践"
       },
@@ -17363,7 +17553,7 @@
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 371,
+        "line": 393,
         "level": 2,
         "title": "最佳实践"
       },
@@ -17377,7 +17567,7 @@
     "最小可用模块": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 785,
+        "line": 788,
         "level": 4,
         "title": "最小可用模块"
       },
@@ -17449,7 +17639,7 @@
     "本地开发（免打包）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 465,
+        "line": 466,
         "level": 2,
         "title": "本地开发（免打包）"
       },
@@ -17513,7 +17703,7 @@
     "权限控制": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2452,
+        "line": 2455,
         "level": 2,
         "title": "权限控制"
       },
@@ -17579,7 +17769,7 @@
     "查看可用模块": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 402,
+        "line": 405,
         "level": 3,
         "title": "查看可用模块"
       },
@@ -17751,13 +17941,13 @@
     "标准事件格式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4011,
+        "line": 4034,
         "level": 3,
         "title": "标准事件格式"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 980,
+        "line": 1084,
         "level": 3,
         "title": "标准事件格式"
       },
@@ -17793,7 +17983,7 @@
     "标准化响应": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2645,
+        "line": 2646,
         "level": 3,
         "title": "标准化响应"
       },
@@ -17815,13 +18005,13 @@
     "标准响应格式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4032,
+        "line": 4055,
         "level": 3,
         "title": "标准响应格式"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1001,
+        "line": 1105,
         "level": 3,
         "title": "标准响应格式"
       },
@@ -17843,13 +18033,13 @@
     "标准格式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4006,
+        "line": 4029,
         "level": 2,
         "title": "标准格式"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 975,
+        "line": 1079,
         "level": 2,
         "title": "标准格式"
       },
@@ -17915,7 +18105,7 @@
     "核心功能": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 801,
+        "line": 802,
         "level": 3,
         "title": "核心功能"
       },
@@ -17929,7 +18119,7 @@
     "核心原则": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2744,
+        "line": 2745,
         "level": 3,
         "title": "核心原则"
       },
@@ -18063,7 +18253,7 @@
     "核心模块说明": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 845,
+        "line": 848,
         "level": 2,
         "title": "核心模块说明"
       },
@@ -18097,7 +18287,7 @@
     "核心组件": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 707,
+        "line": 710,
         "level": 2,
         "title": "核心组件"
       },
@@ -18111,7 +18301,7 @@
     "核心能力": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 624,
+        "line": 640,
         "level": 2,
         "title": "核心能力"
       },
@@ -18125,7 +18315,7 @@
     "核心设计原则": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2683,
+        "line": 2686,
         "level": 2,
         "title": "核心设计原则"
       },
@@ -18167,7 +18357,7 @@
     "框架辅助方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1451,
+        "line": 1452,
         "level": 3,
         "title": "框架辅助方法"
       },
@@ -18209,7 +18399,7 @@
     "检查平台状态": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 876,
+        "line": 877,
         "level": 4,
         "title": "检查平台状态"
       },
@@ -18240,6 +18430,14 @@
         "line": 49,
         "level": 3,
         "title": "检查表是否存在"
+      }
+    ],
+    "概念对照": [
+      {
+        "document": "showcase/migrate-from-astrbot.md",
+        "line": 8,
+        "level": 2,
+        "title": "概念对照"
       }
     ],
     "概述": [
@@ -18367,7 +18565,7 @@
     "模块卸载时的行为": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 588,
+        "line": 604,
         "level": 2,
         "title": "模块卸载时的行为"
       },
@@ -18381,7 +18579,7 @@
     "模块发现机制": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 774,
+        "line": 777,
         "level": 4,
         "title": "模块发现机制"
       },
@@ -18473,7 +18671,7 @@
     "模块扩展": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 645,
+        "line": 661,
         "level": 2,
         "title": "模块扩展"
       },
@@ -18553,7 +18751,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 803,
+        "line": 806,
         "level": 4,
         "title": "模块生命周期"
       },
@@ -18681,7 +18879,7 @@
     "模式一：HTML/JS 注入（推荐）": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 218,
+        "line": 234,
         "level": 3,
         "title": "模式一：HTML/JS 注入（推荐）"
       },
@@ -18695,7 +18893,7 @@
     "模式二：iframe 嵌入": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 234,
+        "line": 250,
         "level": 3,
         "title": "模式二：iframe 嵌入"
       },
@@ -18709,7 +18907,7 @@
     "注册 API": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 176,
+        "line": 192,
         "level": 2,
         "title": "注册 API"
       },
@@ -18843,7 +19041,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 466,
+        "line": 482,
         "level": 2,
         "title": "注意事项"
       },
@@ -18909,7 +19107,7 @@
     "注销视窗": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 452,
+        "line": 468,
         "level": 2,
         "title": "注销视窗"
       },
@@ -18937,7 +19135,7 @@
     "测试": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3628,
+        "line": 3651,
         "level": 2,
         "title": "测试"
       },
@@ -19067,7 +19265,7 @@
     "消息事件处理": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1042,
+        "line": 1045,
         "level": 2,
         "title": "消息事件处理"
       },
@@ -19115,7 +19313,7 @@
     "消息事件额外字段": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2853,
+        "line": 2854,
         "level": 3,
         "title": "消息事件额外字段"
       },
@@ -19177,13 +19375,13 @@
     "消息发送失败": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4049,
+        "line": 4072,
         "level": 4,
         "title": "消息发送失败"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1018,
+        "line": 1122,
         "level": 4,
         "title": "消息发送失败"
       },
@@ -19197,13 +19395,13 @@
     "消息发送成功": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4033,
+        "line": 4056,
         "level": 4,
         "title": "消息发送成功"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1002,
+        "line": 1106,
         "level": 4,
         "title": "消息发送成功"
       },
@@ -19225,7 +19423,7 @@
     "消息发送进阶（重试/超时/批量）": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2397,
+        "line": 2400,
         "level": 2,
         "title": "消息发送进阶（重试/超时/批量）"
       },
@@ -19357,7 +19555,7 @@
     "消息段转换": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2868,
+        "line": 2869,
         "level": 2,
         "title": "消息段转换"
       },
@@ -19413,7 +19611,7 @@
     "消息统计": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2504,
+        "line": 2507,
         "level": 2,
         "title": "消息统计"
       },
@@ -19451,7 +19649,7 @@
     "消息计数": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2506,
+        "line": 2509,
         "level": 3,
         "title": "消息计数"
       },
@@ -19473,7 +19671,7 @@
     "消息过滤": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2313,
+        "line": 2316,
         "level": 2,
         "title": "消息过滤"
       },
@@ -19537,7 +19735,7 @@
     "深度集成（可选）": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 665,
+        "line": 681,
         "level": 3,
         "title": "深度集成（可选）"
       },
@@ -19551,7 +19749,7 @@
     "添加中间件": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 957,
+        "line": 958,
         "level": 4,
         "title": "添加中间件"
       },
@@ -19947,7 +20145,7 @@
     "生态总览": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 49,
+        "line": 55,
         "level": 2,
         "title": "生态总览"
       }
@@ -19955,7 +20153,7 @@
     "生态模块": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 53,
+        "line": 59,
         "level": 1,
         "title": "生态模块"
       },
@@ -20013,7 +20211,7 @@
     "用户数据存储": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2204,
+        "line": 2207,
         "level": 3,
         "title": "用户数据存储"
       },
@@ -20043,13 +20241,13 @@
     "界面": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 739,
+        "line": 767,
         "level": 2,
         "title": "界面"
       },
       {
         "document": "ecosystem/qvqchat.md",
-        "line": 132,
+        "line": 144,
         "level": 2,
         "title": "界面"
       }
@@ -20057,7 +20255,7 @@
     "监听 Bot 生命周期": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1969,
+        "line": 1970,
         "level": 3,
         "title": "监听 Bot 生命周期"
       },
@@ -20071,7 +20269,7 @@
     "监听@消息": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1081,
+        "line": 1084,
         "level": 3,
         "title": "监听@消息"
       },
@@ -20093,7 +20291,7 @@
     "监听所有消息": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1050,
+        "line": 1053,
         "level": 3,
         "title": "监听所有消息"
       },
@@ -20115,7 +20313,7 @@
     "监听私聊消息": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1062,
+        "line": 1065,
         "level": 3,
         "title": "监听私聊消息"
       },
@@ -20129,7 +20327,7 @@
     "监听群聊消息": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1071,
+        "line": 1074,
         "level": 3,
         "title": "监听群聊消息"
       },
@@ -20165,7 +20363,7 @@
     "目录结构": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 118,
+        "line": 119,
         "level": 2,
         "title": "目录结构"
       },
@@ -20323,7 +20521,7 @@
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 379,
+        "line": 401,
         "level": 2,
         "title": "相关文档"
       },
@@ -20367,19 +20565,19 @@
     "相关链接": [
       {
         "document": "README.md",
-        "line": 154,
+        "line": 157,
         "level": 2,
         "title": "相关链接"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 597,
+        "line": 613,
         "level": 2,
         "title": "相关链接"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 238,
+        "line": 241,
         "level": 2,
         "title": "相关链接"
       },
@@ -20405,7 +20603,7 @@
     "确认对话 (confirm)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1905,
+        "line": 1908,
         "level": 3,
         "title": "确认对话 (confirm)"
       },
@@ -20463,7 +20661,7 @@
     "第一个机器人": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 496,
+        "line": 499,
         "level": 2,
         "title": "第一个机器人"
       }
@@ -20471,7 +20669,7 @@
     "第一步：编写第一个命令": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 507,
+        "line": 510,
         "level": 2,
         "title": "第一步：编写第一个命令"
       },
@@ -20485,7 +20683,7 @@
     "第三步：测试机器人": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 566,
+        "line": 569,
         "level": 2,
         "title": "第三步：测试机器人"
       },
@@ -20499,7 +20697,7 @@
     "第二步：运行机器人": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 556,
+        "line": 559,
         "level": 2,
         "title": "第二步：运行机器人"
       },
@@ -20527,7 +20725,7 @@
     "等待任意事件 (wait_for)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1978,
+        "line": 1981,
         "level": 3,
         "title": "等待任意事件 (wait_for)"
       },
@@ -20591,7 +20789,7 @@
     "等待用户回复": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1833,
+        "line": 1836,
         "level": 3,
         "title": "等待用户回复"
       },
@@ -20605,7 +20803,7 @@
     "等待结果": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2249,
+        "line": 2250,
         "level": 3,
         "title": "等待结果"
       },
@@ -20619,7 +20817,7 @@
     "简单定时器": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2245,
+        "line": 2248,
         "level": 3,
         "title": "简单定时器"
       },
@@ -20633,7 +20831,7 @@
     "简单搜索": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2552,
+        "line": 2555,
         "level": 3,
         "title": "简单搜索"
       },
@@ -20647,7 +20845,7 @@
     "简单计数器": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2186,
+        "line": 2189,
         "level": 3,
         "title": "简单计数器"
       },
@@ -20661,7 +20859,7 @@
     "管理任务": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 563,
+        "line": 579,
         "level": 3,
         "title": "管理任务"
       },
@@ -20683,7 +20881,7 @@
     "管理员检查": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2454,
+        "line": 2457,
         "level": 3,
         "title": "管理员检查"
       },
@@ -20751,7 +20949,7 @@
     "类型存根生成（IDE 补全）": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2675,
+        "line": 2678,
         "level": 1,
         "title": "类型存根生成（IDE 补全）"
       },
@@ -20793,7 +20991,7 @@
     "组件关系": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 758,
+        "line": 759,
         "level": 3,
         "title": "组件关系"
       },
@@ -20807,7 +21005,7 @@
     "组合修饰": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2108,
+        "line": 2109,
         "level": 3,
         "title": "组合修饰"
       },
@@ -20905,7 +21103,7 @@
     "继承关系": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1425,
+        "line": 1426,
         "level": 3,
         "title": "继承关系"
       },
@@ -20965,19 +21163,19 @@
     "继续适配器开发路径": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2714,
+        "line": 2715,
         "level": 3,
         "title": "继续适配器开发路径"
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3106,
+        "line": 3129,
         "level": 3,
         "title": "继续适配器开发路径"
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 381,
+        "line": 403,
         "level": 3,
         "title": "继续适配器开发路径"
       },
@@ -21019,7 +21217,7 @@
     "群成员减少": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1715,
+        "line": 1718,
         "level": 3,
         "title": "群成员减少"
       },
@@ -21033,7 +21231,7 @@
     "群成员增加": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1705,
+        "line": 1708,
         "level": 3,
         "title": "群成员增加"
       },
@@ -21083,7 +21281,7 @@
     "群组权限": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2489,
+        "line": 2492,
         "level": 3,
         "title": "群组权限"
       },
@@ -21121,7 +21319,7 @@
     "群邀请请求": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1743,
+        "line": 1746,
         "level": 3,
         "title": "群邀请请求"
       },
@@ -21151,7 +21349,7 @@
     "自动发现机制": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1924,
+        "line": 1925,
         "level": 3,
         "title": "自动发现机制"
       },
@@ -21313,13 +21511,13 @@
     "获取帮助": [
       {
         "document": "README.md",
-        "line": 148,
+        "line": 151,
         "level": 2,
         "title": "获取帮助"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 232,
+        "line": 235,
         "level": 2,
         "title": "获取帮助"
       }
@@ -21349,7 +21547,7 @@
     "获取适配器实例": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1014,
+        "line": 1015,
         "level": 3,
         "title": "获取适配器实例"
       },
@@ -21363,7 +21561,7 @@
     "补齐适配器的三大件": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 734,
+        "line": 735,
         "level": 3,
         "title": "补齐适配器的三大件"
       },
@@ -21423,7 +21621,7 @@
     "规则传播": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2374,
+        "line": 2375,
         "level": 3,
         "title": "规则传播"
       },
@@ -21451,7 +21649,7 @@
     "规则方法一览": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2268,
+        "line": 2269,
         "level": 3,
         "title": "规则方法一览"
       },
@@ -21465,7 +21663,7 @@
     "规则组合与后台执行": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2359,
+        "line": 2360,
         "level": 3,
         "title": "规则组合与后台执行"
       },
@@ -21523,7 +21721,7 @@
     "认证与 API 调用": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 316,
+        "line": 332,
         "level": 2,
         "title": "认证与 API 调用"
       },
@@ -21540,6 +21738,14 @@
         "line": 146,
         "level": 3,
         "title": "认证服务号与被动回复（verified）"
+      }
+    ],
+    "设计差异对照": [
+      {
+        "document": "showcase/comparison-nonebot.md",
+        "line": 13,
+        "level": 2,
+        "title": "设计差异对照"
       }
     ],
     "设计边界：哪些资源不随卸载清理": [
@@ -21679,7 +21885,7 @@
     "请求事件处理": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1725,
+        "line": 1728,
         "level": 2,
         "title": "请求事件处理"
       },
@@ -21885,7 +22091,7 @@
     "账户管理": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2210,
+        "line": 2211,
         "level": 2,
         "title": "账户管理"
       },
@@ -21899,7 +22105,7 @@
     "账户解析": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1373,
+        "line": 1374,
         "level": 4,
         "title": "账户解析"
       },
@@ -21921,7 +22127,7 @@
     "账户解析回退链": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2589,
+        "line": 2590,
         "level": 3,
         "title": "账户解析回退链"
       },
@@ -21957,7 +22163,7 @@
     "账户配置文件": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1822,
+        "line": 1823,
         "level": 3,
         "title": "账户配置文件"
       },
@@ -22009,7 +22215,7 @@
     "超时自动取消（Timeout）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2306,
+        "line": 2307,
         "level": 3,
         "title": "超时自动取消（Timeout）"
       },
@@ -22129,7 +22335,7 @@
     "路由发现": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 714,
+        "line": 715,
         "level": 4,
         "title": "路由发现"
       },
@@ -22187,7 +22393,7 @@
     "转换器": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2724,
+        "line": 2725,
         "level": 2,
         "title": "转换器"
       }
@@ -22195,7 +22401,7 @@
     "转换器示例": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1528,
+        "line": 1529,
         "level": 3,
         "title": "转换器示例"
       },
@@ -22209,7 +22415,7 @@
     "转换流程": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1498,
+        "line": 1499,
         "level": 3,
         "title": "转换流程"
       },
@@ -22262,6 +22468,22 @@
         "line": 94,
         "level": 2,
         "title": "边界与注意事项"
+      }
+    ],
+    "迁移指南：从 AstrBot 到 ErisPulse": [
+      {
+        "document": "showcase/migrate-from-astrbot.md",
+        "line": 1,
+        "level": 1,
+        "title": "迁移指南：从 AstrBot 到 ErisPulse"
+      }
+    ],
+    "迁移步骤": [
+      {
+        "document": "showcase/migrate-from-astrbot.md",
+        "line": 20,
+        "level": 2,
+        "title": "迁移步骤"
       }
     ],
     "运行控制命令": [
@@ -22367,7 +22589,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 416,
+        "line": 419,
         "level": 2,
         "title": "运行项目"
       },
@@ -22387,7 +22609,7 @@
     "返回值": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2619,
+        "line": 2620,
         "level": 2,
         "title": "返回值"
       },
@@ -22409,7 +22631,7 @@
     "返回值结构": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2813,
+        "line": 2814,
         "level": 3,
         "title": "返回值结构"
       },
@@ -22439,7 +22661,7 @@
     "进入构建模式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2391,
+        "line": 2392,
         "level": 3,
         "title": "进入构建模式"
       },
@@ -22453,7 +22675,7 @@
     "进度监控（OnProgress / OnError）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2316,
+        "line": 2317,
         "level": 3,
         "title": "进度监控（OnProgress / OnError）"
       },
@@ -22481,7 +22703,7 @@
     "连接事件": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1756,
+        "line": 1759,
         "level": 3,
         "title": "连接事件"
       },
@@ -22511,7 +22733,7 @@
     "连接模式半成品基类": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1619,
+        "line": 1620,
         "level": 3,
         "title": "连接模式半成品基类"
       },
@@ -22567,13 +22789,13 @@
     "连接管理": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1569,
+        "line": 1570,
         "level": 2,
         "title": "连接管理"
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3227,
+        "line": 3250,
         "level": 2,
         "title": "连接管理"
       },
@@ -22613,7 +22835,7 @@
     "连接重试": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1868,
+        "line": 1869,
         "level": 3,
         "title": "连接重试"
       },
@@ -22681,7 +22903,7 @@
     "适配器发送 Meta 事件": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1950,
+        "line": 1951,
         "level": 3,
         "title": "适配器发送 Meta 事件"
       },
@@ -22717,7 +22939,7 @@
     "适配器完善之后": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3776,
+        "line": 3799,
         "level": 3,
         "title": "适配器完善之后"
       },
@@ -22739,13 +22961,13 @@
     "适配器开发入门": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 82,
+        "line": 83,
         "level": 2,
         "title": "适配器开发入门"
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 86,
+        "line": 87,
         "level": 1,
         "title": "适配器开发入门"
       },
@@ -22759,7 +22981,7 @@
     "适配器开发最佳实践": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3120,
+        "line": 3143,
         "level": 1,
         "title": "适配器开发最佳实践"
       },
@@ -22773,7 +22995,7 @@
     "适配器最佳实践": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3116,
+        "line": 3139,
         "level": 2,
         "title": "适配器最佳实践"
       }
@@ -22781,13 +23003,13 @@
     "适配器架构": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 104,
+        "line": 105,
         "level": 3,
         "title": "适配器架构"
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 756,
+        "line": 757,
         "level": 2,
         "title": "适配器架构"
       },
@@ -22835,13 +23057,13 @@
     "适配器核心概念": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 745,
+        "line": 746,
         "level": 2,
         "title": "适配器核心概念"
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 749,
+        "line": 750,
         "level": 1,
         "title": "适配器核心概念"
       },
@@ -22885,7 +23107,7 @@
     "适配器简介": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 93,
+        "line": 94,
         "level": 2,
         "title": "适配器简介"
       },
@@ -22920,6 +23142,14 @@
         "title": "适配器：注册平台扩展方法"
       }
     ],
+    "选型指南": [
+      {
+        "document": "showcase/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "选型指南"
+      }
+    ],
     "选择你的路径": [
       {
         "document": "README.md",
@@ -22937,7 +23167,7 @@
     "选择菜单 (choose)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1922,
+        "line": 1925,
         "level": 3,
         "title": "选择菜单 (choose)"
       },
@@ -22987,7 +23217,7 @@
     "通用字段（所有事件类型）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2842,
+        "line": 2843,
         "level": 3,
         "title": "通用字段（所有事件类型）"
       },
@@ -23001,13 +23231,13 @@
     "通用接口": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3824,
+        "line": 3847,
         "level": 2,
         "title": "通用接口"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 793,
+        "line": 897,
         "level": 2,
         "title": "通用接口"
       },
@@ -23045,7 +23275,7 @@
     "通知事件处理": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1691,
+        "line": 1694,
         "level": 2,
         "title": "通知事件处理"
       },
@@ -23085,7 +23315,7 @@
     "通知事件额外字段": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2861,
+        "line": 2862,
         "level": 3,
         "title": "通知事件额外字段"
       },
@@ -23127,7 +23357,7 @@
     "通过 CLI 安装": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 396,
+        "line": 399,
         "level": 3,
         "title": "通过 CLI 安装"
       },
@@ -23201,7 +23431,7 @@
     "通配符与正则监听": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1091,
+        "line": 1094,
         "level": 3,
         "title": "通配符与正则监听"
       },
@@ -23229,7 +23459,7 @@
     "遇到问题": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 490,
+        "line": 493,
         "level": 3,
         "title": "遇到问题"
       },
@@ -23251,19 +23481,19 @@
     "遵循正式规范": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2720,
+        "line": 2721,
         "level": 3,
         "title": "遵循正式规范"
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3111,
+        "line": 3134,
         "level": 3,
         "title": "遵循正式规范"
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 386,
+        "line": 408,
         "level": 3,
         "title": "遵循正式规范"
       },
@@ -23338,6 +23568,20 @@
         "line": 66,
         "level": 2,
         "title": "配合 Send 使用"
+      }
+    ],
+    "配套插件": [
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 755,
+        "level": 2,
+        "title": "配套插件"
+      },
+      {
+        "document": "ecosystem/qvqchat.md",
+        "line": 132,
+        "level": 2,
+        "title": "配套插件"
       }
     ],
     "配置": [
@@ -23447,7 +23691,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 457,
+        "line": 460,
         "level": 2,
         "title": "配置文件"
       },
@@ -23509,7 +23753,7 @@
     "配置热更新": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1386,
+        "line": 1387,
         "level": 4,
         "title": "配置热更新"
       },
@@ -23561,13 +23805,13 @@
     "配置管理": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 874,
+        "line": 875,
         "level": 3,
         "title": "配置管理"
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1076,
+        "line": 1077,
         "level": 3,
         "title": "配置管理"
       },
@@ -23805,7 +24049,7 @@
     "链式修饰": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 966,
+        "line": 969,
         "level": 3,
         "title": "链式修饰"
       },
@@ -23825,7 +24069,7 @@
     "链式修饰方法": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1482,
+        "line": 1483,
         "level": 3,
         "title": "链式修饰方法"
       },
@@ -23925,7 +24169,7 @@
     "链式调用": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 2696,
+        "line": 2697,
         "level": 3,
         "title": "链式调用"
       },
@@ -23999,7 +24243,7 @@
     "链路控制：认领与阻断": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1640,
+        "line": 1643,
         "level": 2,
         "title": "链路控制：认领与阻断"
       },
@@ -24027,13 +24271,13 @@
     "错误处理": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 1866,
+        "line": 1867,
         "level": 2,
         "title": "错误处理"
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3574,
+        "line": 3597,
         "level": 2,
         "title": "错误处理"
       },
@@ -24123,7 +24367,7 @@
     "错过策略（missed_policy）": [
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 576,
+        "line": 592,
         "level": 3,
         "title": "错过策略（missed_policy）"
       },
@@ -24132,6 +24376,14 @@
         "line": 95,
         "level": 3,
         "title": "错过策略（missed_policy）"
+      }
+    ],
+    "阅读纪律": [
+      {
+        "document": "showcase/README.md",
+        "line": 21,
+        "level": 2,
+        "title": "阅读纪律"
       }
     ],
     "需求描述模板": [
@@ -24203,7 +24455,7 @@
     "项目结构": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 445,
+        "line": 448,
         "level": 2,
         "title": "项目结构"
       },
@@ -24271,7 +24523,7 @@
     "骨架跑通之后": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 740,
+        "line": 741,
         "level": 3,
         "title": "骨架跑通之后"
       },
@@ -24307,13 +24559,13 @@
     "高级特性版本速查表": [
       {
         "document": "README.md",
-        "line": 123,
+        "line": 126,
         "level": 2,
         "title": "高级特性版本速查表"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 207,
+        "line": 210,
         "level": 2,
         "title": "高级特性版本速查表"
       }
@@ -24335,7 +24587,7 @@
     "黑名单过滤": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2336,
+        "line": 2339,
         "level": 3,
         "title": "黑名单过滤"
       },

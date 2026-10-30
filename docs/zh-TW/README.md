@@ -32,12 +32,13 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 | 進度 | 文件 | 說明 |
 |------|------|------|
 | **① 上手** | [5 分鐘快速開始](quick-start.md) | 安裝、初始化、運行 —— 唯一的起步入口 |
-| App 直裝 | [ErisPulse-App 客戶端](ecosystem/app.md) | 官方全平台客戶端：手機 / 電腦圖形介面直接運行與管理，免終端 |
+| App 直裝 | [ErisPulse-App 客戶端](ecosystem/app.md) | 官方全平台客戶端：手機 / 電腦圖形界面直接運行與管理，免終端 |
 | ② 深入 | [建立第一個機器人](getting-started/first-bot.md) | 編寫第一個命令處理器 |
 | ③ 概念 | [基礎概念](getting-started/basic-concepts.md) | 理解適配器/模組/事件的設計 |
-| ④ 實戰 | [常見任務範例](getting-started/common-tasks.md) | 存儲、定時任務、權限控制 |
+| ④ 實戰 | [常見任務示例](getting-started/common-tasks.md) | 存儲、定時任務、權限控制 |
 | 參考 | [配置文件說明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md) | 按需查閱 |
 | 參考 | [平台特性指南](platform-guide/README.md) | 各平台（雲湖/QQ/Telegram…）的差異 |
+| 選型 | [選型指南](showcase/README.md) | 和 NoneBot2 / AstrBot / LangBot 的對比與遷移 |
 
 ### 二、我要開發模組 / 適配器
 
@@ -71,7 +72,7 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 | [作用域（scope）](advanced/scope.md) | 三維作用域控制：模組可用性 / 事件准入 / 出站動作限制（含方法級細粒度規則、綁定繼承 merge） |
 | [歸屬權（owner）系統](advanced/ownership.md) | 資源歸屬與自動回收：owner 上下文、歸屬資源全景、卸載清理序列、設計邊界與模組作者指南 |
 | [生命週期管理](advanced/lifecycle.md) | 生命週期事件系統：模組 / 適配器加載、卸載、重載、禁用時各自該做什麼 |
-| [互動會話系統](advanced/interaction.md) | wait_reply 全解、會話定時器（remind/escalate）、多路等待（select）、會話互斥租約、收件箱、消息事務、鏈路追踪 |
+| [互動會話系統](advanced/interaction.md) | wait_reply 全解、會話計時器（remind/escalate）、多路等待（select）、會話互斥租約、收件箱、消息事務、鏈路追蹤 |
 
 **按場景分組（按需查閱）**
 
@@ -92,21 +93,23 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 | [通信](advanced/module-communication.md)（module-communication） | 模組之間怎麼互相調用、怎麼定向發事件？ | 跨模組走 `module.call`；對方聲明了 `meta.services` 就只能調白名單內的方法 |
 | [權限](advanced/scope.md)（scope） | 誰能用這個模組、誰能觸發事件、能執行哪些動作？ | 三道閘——模組綁定、身份准入、出站限制，全部由用戶配置說了算 |
 | [歸屬](advanced/ownership.md)（ownership） | 模組卸載後，它開的連接、定時器、訂閱去哪了？ | 誰註冊誰歸屬，卸載即回收，不留懸掛資源 |
-| [懶加載與休眠](advanced/lazy-loading.md)（lazy-loading） | 模組什麼時候才真正加載、閒置後去哪？ | `activate_on` 用到才醒，`dormant_after` 閑置歸眠 |
+| [懶加載與休眠](advanced/lazy-loading.md)（lazy-loading） | 模組什麼時候才真正加載、閒置後去哪？ | `activate_on` 用到才醒，`dormant_after` 閒置歸眠 |
 | [互動](advanced/interaction.md)（interaction） | 怎麼等用戶下一條回覆、多輪收集怎麼寫？ | `wait_reply` 等一條、`.got()` 鏈收多輪，租約保證不打架 |
 | [影子灰度](advanced/shadow.md)（shadow） | 新版模組怎麼在不影響線上的情況下試運行？ | 影子收副本、出站只記賬，`promote` 由人確認才轉正 |
 | [存儲](advanced/storage-backends.md)（storage-backends） | 數據存哪、後端怎麼換？ | 同一套存儲 API，sqlite / mysql / postgres 配置切換 |
 
 ### 四、生態與官方客戶端
 
-官方客戶端 + 按需安裝、即裝即用的生態模組（都不是框架內置功能）。
+官方客戶端 + 按需安裝、即裝即用的生態模組（都不是框架內建功能）。
 
 | 文件 | 說明 |
-|------|------|
-| [生態總覽](ecosystem/README.md) | 如何安裝生態模組、為什麼這些不是內置功能 |
-| [ErisPulse-App](ecosystem/app.md) | 官方全平台客戶端（Android / Windows / Linux / macOS）：原生介面管理多個實例，**手機直接運行**，桌面托盤常駐 |
+|------|------|------|
+| [生態總覽](ecosystem/README.md) | 如何安裝生態模組、為什麼這些不是內建功能 |
+| [ErisPulse-QvQChat](ecosystem/qvqchat.md) | 通用智能體模組：工具循環 / MCP / 長期記憶 / 知識庫，聲明服務的模組自動成為 AI 工具 |
+| [ErisPulse-ApiMCP](ecosystem/apimcp.md) | 把機器人反向開放為 MCP 工具，讓 Claude 等 AI 客戶端直接操控 |
+| [ErisPulse-App](ecosystem/app.md) | 官方全平台客戶端（Android / Windows / Linux / macOS）：原生界面管理多個實例，**手機直接運行**，桌面托盤常駐 |
 | [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web 管理面板 + 視窗註冊 API（模組可向側邊欄註冊自定義頁面） |
-| [ErisPulse-Cron](ecosystem/cron.md) | 定時任務調度模組：一次性 / 间隔 / Cron 表達式，回調傳參，SQLite 持久化，其他模組可托管定時回調 |
+| [ErisPulse-Cron](ecosystem/cron.md) | 定時任務調度模組：一次性 / 間隔 / Cron 表達式，回調傳參，SQLite 持久化，其他模組可托管定時回調 |
 | [ErisPulse-Takumi](ecosystem/takumi.md) | 圖片渲染（HTML / 節點樹 / SVG / 動畫，內置中英文字體） |
 
 ### 五、我要為 ErisPulse 貢獻
@@ -114,9 +117,12 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 讓框架更好
 
 | 文件 | 說明 |
-|------|------|
+|------|------|------|
 | [為 ErisPulse 貢獻](contributing/README.md) | 貢獻方式總覽：文件 / i18n / Bug / 模組 / 適配器 |
 | [首次貢獻](contributing/first-contribution.md) | 從 fork 到提交 PR |
+
+---
+[English](README.md) | [简体中文](README.zh-CN.md) | **繁體中文** | [日本語](README.ja.md) | [Русский](README.ru.md)
 
 ## 高級特性版本速查表
 

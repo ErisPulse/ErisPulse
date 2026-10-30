@@ -129,6 +129,18 @@ async def setup(self):
 | `run_prompt` | `(chat_key, prompt, ...)` | プロンプトを実行し、結果をターゲットセッションに送信できる |
 | `get_status` | `()` | 実行状態の概要 |
 
+## 拡張プラグイン
+
+QvQChat を拡張する 3 つの独立したモジュールが、拡張ポイントが何ができるかを示しています。QvQChat をインストールした後、必要に応じてプラグインを追加してください。
+
+| プラグイン | 機能 |
+|---|---|
+| [ErisPulse-QvQStalker](https://github.com/wsu2059q/ErisPulse-QvQStalker) | チャットをリスニングして自動で発言：話題の注目度、5 段階の判定と衝動値が、AI が発言するタイミングを決定し、15 項目の行動パラメータは設定ページで直接調整可能 |
+| [ErisPulse-QvQMemes](https://github.com/wsu2059q/ErisPulse-QvQMemes) | AI に絵文字習慣を付与：`send_sticker` ツールにより、モデルがどの絵文字を送信すべきかを自動選択し、グループ画像は自動収集され、視覚モデルによってラベル付けされる |
+| [ErisPulse-QvQCompanion](https://github.com/wsu2059q/ErisPulse-QvQCompanion) | 擬人化された伴侶としての機能：口調やキャラクター設定の注入、衝動値に基づく自発的な発言、静止時間帯と毎日の上限設定 |
+
+3 つのプラグインはすべて、上記の「モジュール拡張」の契約に従ってサービスに接続されており、拡張の実装方法の参考例でもあります。
+
 ## インターフェース
 
 `/QvQChat/view` に独立してアクセスするか、ダッシュボードのサイドバーに埋め込むことができます。

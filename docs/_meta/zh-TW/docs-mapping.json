@@ -1,6 +1,6 @@
 {
   "version": "1.2",
-  "total_categories": 10,
+  "total_categories": 11,
   "categories": {
     "快速開始": {
       "description": "ErisPulse 快速入門指南",
@@ -74,6 +74,38 @@
           "path": "getting-started/ide-completion.md",
           "level": 1,
           "icon": "fa-keyboard"
+        }
+      ],
+      "subgroups": {}
+    },
+    "選型指南": {
+      "description": "框架選型對比與遷移指南",
+      "icon": "fa-folder",
+      "count": 4,
+      "documents": [
+        {
+          "title": "選型指南",
+          "path": "showcase/README.md",
+          "level": 1,
+          "icon": "fa-file-alt"
+        },
+        {
+          "title": "對比：ErisPulse 與 NoneBot2",
+          "path": "showcase/comparison-nonebot.md",
+          "level": 1,
+          "icon": "fa-file-alt"
+        },
+        {
+          "title": "對比：ErisPulse 與 AstrBot / LangBot",
+          "path": "showcase/comparison-agent-platforms.md",
+          "level": 1,
+          "icon": "fa-file-alt"
+        },
+        {
+          "title": "遷移指南：從 AstrBot 到 ErisPulse",
+          "path": "showcase/migrate-from-astrbot.md",
+          "level": 1,
+          "icon": "fa-file-alt"
         }
       ],
       "subgroups": {}
@@ -488,7 +520,7 @@
     "生態模組": {
       "description": "社群維護的第三方擴展模組",
       "icon": "fa-cubes",
-      "count": 6,
+      "count": 7,
       "documents": [
         {
           "title": "生態模組",
@@ -519,6 +551,12 @@
           "path": "ecosystem/takumi.md",
           "level": 1,
           "icon": "fa-image"
+        },
+        {
+          "title": "ErisPulse-ApiMCP 使用 AI 客戶端控制機器人",
+          "path": "ecosystem/apimcp.md",
+          "level": 1,
+          "icon": "fa-cubes"
         },
         {
           "title": "ErisPulse-QvQChat 通用智慧代理",

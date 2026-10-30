@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "hash": "dd65688cf366cc5fd783463e2efda0b0",
+  "file_hash": "dd65688cf366cc5fd783463e2efda0b0",
+  "translated_at": "2026-10-29T09:07:32.537647",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "0e5866fdddf0b47b48e809fce902d84b",
+      "translation": "# Comparison: ErisPulse vs. AstrBot / LangBot\n\n> [!TIP]\n> **When to read this**: When you're looking for an \"AI assistant in a group chat\" and are choosing between integrated platforms like AstrBot / LangBot and ErisPulse, read this. For writing non-AI business code, see [Comparison: NoneBot2](comparison-nonebot.md).\n\nA one-sentence summary of the differences:\n\n- **AstrBot / LangBot**: An integrated AI chatbot platform—install, configure your Key, start chatting, with LLM conversations at the core of the product.\n- **ErisPulse**: A bot framework/SDK—AI is just one of the pluggable modules ([QvQChat](../ecosystem/qvqchat.md)), and the framework itself can also handle non-AI business logic.\n\nAll three can ultimately deliver an \"AI that works in a group chat,\" but their paths and ceilings differ."
+    },
+    {
+      "hash": "faae70d81fe47af7a1640d4db224a617",
+      "translation": "## Comparison\n\n| Dimension | ErisPulse + QvQChat | AstrBot / LangBot |\n|---|---|---|\n| Getting Started Experience | Initialize project + install adapter + install QvQChat + configure model pool, about 10 minutes | Install + configure Key and ready to use, faster |\n| Platform Coverage | 16 platform adapters (including Yunhu, email, terminal, Webhook bridge) | Mainstream IM platforms |\n| LLM Support | OpenAI-compatible model pool (self-healing, failover, difficulty routing), MCP client | Built-in access to multiple providers |\n| AI Depth | Tool loops + sub-agents + long-term memory/user profiles + knowledge base + computer operation sandbox + scheduled \"plan-execute-review\" | Conversations, personality, knowledge base, plugin tools |\n| Ecosystem Integration | Any ErisPulse module declaring a service automatically becomes an AI tool; adding/removing modules increases/decreases AI capabilities | Install corresponding plugins to extend AI capabilities |\n| Reverse Openness | [ApiMCP](../ecosystem/apimcp.md) exposes the bot as an MCP tool, allowing AI clients like Claude to directly control it | — |\n| Hot Reload | Module/adapter level, changes take effect on save | Plugin updates usually require a restart |\n| Non-AI Business | Framework-native: command system, multi-turn conversations, ORM, scheduled tasks, message statistics, each module is independent | Platform is AI conversation-centric; non-AI capabilities depend on plugins |\n| Management Panel | Dashboard (modules/config/logs/events + third-party window registration), mobile App, AI Builder | Built-in WebUI |\n| Community Size | Relatively young, ecosystem growing | Larger user base, more third-party plugins |"
+    },
+    {
+      "hash": "729358afc0f984b72baf890e999a3f81",
+      "translation": "## When to Choose Which\n\n**Choose AstrBot / LangBot**: You just want to quickly use AI chat, don't plan to write business code, and don't need integration with niche platforms (such as Yunhu). They are mature, all-in-one solutions.\n\n**Choose ErisPulse**: The bot needs to do more than just AI (such as scheduled push, group management, message statistics, bridging...), and you want AI to be just one of the modular components; or you care about the hot-reload development rhythm, the module market distribution method, and the ecosystem synergy of \"installing an AI module adds one more capability\"; or you need ApiMCP, a reverse channel that allows external AI to control the bot.\n\n> [!NOTE]\n> This comparison is based on the public documentation of both parties; it is an objective fact that AstrBot / LangBot has a larger user base and more plugins. For decisions, please refer to the [official documentation of AstrBot](https://astrbot.app/) / ([LangBot](https://docs.langbot.app/))."
+    },
+    {
+      "hash": "52daa363bb7bb6872b31bbb8fd806d55",
+      "translation": "## Next Steps\n\n- **Coming from AstrBot**: [Migration Guide: From AstrBot to ErisPulse](migrate-from-astrbot.md)\n- **Want to see what AI looks like on ErisPulse directly**: [QvQChat General-Purpose Agent](../ecosystem/qvqchat.md)\n- **Want to get it running quickly**: [5-Minute Quick Start](../quick-start.md)"
+    }
+  ]
+}

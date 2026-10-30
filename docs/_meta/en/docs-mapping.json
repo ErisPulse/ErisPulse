@@ -1,6 +1,6 @@
 {
   "version": "1.2",
-  "total_categories": 10,
+  "total_categories": 11,
   "categories": {
     "Quick Start": {
       "description": "ErisPulse Quick Start Guide",
@@ -74,6 +74,38 @@
           "path": "getting-started/ide-completion.md",
           "level": 1,
           "icon": "fa-keyboard"
+        }
+      ],
+      "subgroups": {}
+    },
+    "Selection Guide": {
+      "description": "Framework comparison and migration guides",
+      "icon": "fa-folder",
+      "count": 4,
+      "documents": [
+        {
+          "title": "Selection Guide",
+          "path": "showcase/README.md",
+          "level": 1,
+          "icon": "fa-file-alt"
+        },
+        {
+          "title": "Comparison: ErisPulse vs NoneBot2",
+          "path": "showcase/comparison-nonebot.md",
+          "level": 1,
+          "icon": "fa-file-alt"
+        },
+        {
+          "title": "Comparison: ErisPulse vs. AstrBot / LangBot",
+          "path": "showcase/comparison-agent-platforms.md",
+          "level": 1,
+          "icon": "fa-file-alt"
+        },
+        {
+          "title": "Migration Guide: From AstrBot to ErisPulse",
+          "path": "showcase/migrate-from-astrbot.md",
+          "level": 1,
+          "icon": "fa-file-alt"
         }
       ],
       "subgroups": {}
@@ -488,7 +520,7 @@
     "Ecosystem Modules": {
       "description": "Community-maintained third-party modules",
       "icon": "fa-cubes",
-      "count": 6,
+      "count": 7,
       "documents": [
         {
           "title": "Ecosystem Modules",
@@ -519,6 +551,12 @@
           "path": "ecosystem/takumi.md",
           "level": 1,
           "icon": "fa-image"
+        },
+        {
+          "title": "ErisPulse-ApiMCP: Control Your Bot with AI Clients",
+          "path": "ecosystem/apimcp.md",
+          "level": 1,
+          "icon": "fa-cubes"
         },
         {
           "title": "ErisPulse-QvQChat General Agent",

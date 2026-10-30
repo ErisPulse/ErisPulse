@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "hash": "3c1e44bd5b203c1eba2b1325c058578f",
+  "file_hash": "3c1e44bd5b203c1eba2b1325c058578f",
+  "translated_at": "2026-10-29T08:58:40.276465",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "b3083fff03ef3a29ca2f74406a95ca10",
+      "translation": "# 選定ガイド\n\n> [!TIP]\n> **このドキュメントを読むべきタイミング**：いくつかのボットフレームワーク / AIボットプラットフォームの中から選択を行っており、ErisPulse が誰に向いているのか、誰に向いていないのかを知りたいときにお読みください。すでに ErisPulse を使用している場合は読み飛ばしてください。\n\n私たちは「最高のフレームワーク」が存在するとは考えていません。存在するのは「シナリオにマッチしたフレームワーク」だけです。この目次では、比較表を用いて ErisPulse と一般的な選択肢との設計上の違いを明確にし、あなたの意思決定をサポートします——私たちを**選ばない**べき場合についても含めて。\n\n| 何を比較しているか | 読むべきドキュメント | 対象 |\n|---|---|---|\n| ErisPulse vs NoneBot2 | [比較：NoneBot2](comparison-nonebot.md) | 開発者 |\n| ErisPulse（+QvQChat）vs AstrBot / LangBot | [比較：AstrBot と LangBot](comparison-agent-platforms.md) | 「グループチャット内の AI アシスタント」を求めるユーザー |\n| AstrBot から ErisPulse への移行 | [移行ガイド：AstrBot から ErisPulse へ](migrate-from-astrbot.md) | AstrBot の既存ユーザー |"
+    },
+    {
+      "hash": "deb364858ff1438414595362f49a6c8d",
+      "translation": "## シナリオ早見表\n\n- **インストールしてすぐ使える AI チャットボットが欲しい、コードを書きたくない**：AstrBot / LangBot の方が初期体験は速いです。ホットリロード、モジュールマーケット、16 プラットフォーム対応を重視する場合は、ErisPulse + [QvQChat](../ecosystem/qvqchat.md) + [Dashboard](../ecosystem/dashboard.md) でも同じゴールに到達できますが、初期化に約 30 分余分にかかります\n- **ビジネスコードを書き、クロスプラットフォームで再利用したい**：ErisPulse の OneBot12 統一イベントモデルにより、1 つの handler がそのままクロスプラットフォームで動作し、プラットフォーム差異に対応する分岐処理を書く必要がありません\n- **自分のモジュール/AI のエコシステムを作りたい**：ErisPulse のモジュールはサービスを宣言するだけで AI ツールになります（[QvQChat](../ecosystem/qvqchat.md) が自動検出）。エコシステムとエージェントがネイティブに連携します\n- **既に大量の NoneBot プラグインに依存している**：NoneBot2 の 10 年以上にわたるプラグインエコシステムは客観的な強みであり、移行コストは各自で判断する必要があります"
+    },
+    {
+      "hash": "d7ec7380dab4d082e28c5c52c61dc4ae",
+      "translation": "## 閲読上の注意\n\n本比較内容は各関係者の公開ドキュメントに基づいて整理したものであり、バージョンの進展に伴い古くなる可能性があります。**意思決定に関わる前に、必ず相手側の公式ドキュメントを優先してご確認ください**。誤りや古くなった記述を発見された場合は、Issue や PR による修正を歓迎します。妥当な批判を削除することはありません。"
+    }
+  ]
+}

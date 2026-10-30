@@ -39,13 +39,23 @@ epsdk install Cron
 
 ### ErisPulse-QvQChat：通用智能体
 
-想让群里有一个会干活的 AI 助手，而不是只会关键词回复？QvQChat 是通用智能体：工具循环覆盖收发消息 / 代码执行 / 电脑操作 / 生图 / 语音 / MCP / 子智能体，支持流式对话与串行工具回放，内置 Dashboard 视窗。
+想让群里有一个会干活的 AI 助手，而不是只会关键词回复？QvQChat 是通用智能体：工具循环覆盖收发消息 / 代码执行 / 电脑操作 / 生图 / 语音 / MCP / 子智能体，支持流式对话与串行工具回放，内置 Dashboard 视窗。还有 QvQStalker（旁听插话）、QvQMemes（表情包）、QvQCompanion（拟人陪伴）三个配套插件。
 
 ```bash
 epsdk install ErisPulse-QvQChat
 ```
 
 文档：[QvQChat 智能体](qvqchat.md) ｜ 项目主页：[GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)
+
+### ErisPulse-ApiMCP：让 AI 客户端操控机器人
+
+在用 Claude Desktop、Claude Code 这类支持 MCP 的 AI 客户端？ApiMCP 把机器人运行时反向开放成 14 个 MCP 工具：AI 可以直接替你收发消息、调用已装模块、查看平台状态、订阅群聊事件——机器人变成 AI 的"手和眼"。
+
+```bash
+epsdk install ErisPulse-ApiMCP
+```
+
+文档：[ApiMCP 使用指南](apimcp.md) ｜ 项目主页：[GitHub](https://github.com/wsu2059q/ErisPulse-ApiMCP)
 
 ### ErisPulse-Takumi：图片渲染
 

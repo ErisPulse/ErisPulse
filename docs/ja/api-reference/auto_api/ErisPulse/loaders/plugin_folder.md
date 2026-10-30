@@ -106,9 +106,11 @@ project/
 **内部方法**
 导入插件模块
 
-- 单文件：``spec_from_file_location`` 显式路径导入
+- 单文件：``spec_from_file_location`` 显式路径导入；源文件 mtime
+  与上次导入一致且 ``sys.modules`` 中仍是本路径导入的模块时直接
+  复用（discover 全量扫描不重执行无关插件的模块级代码）
 - 包目录：将插件目录加入 sys.path 首位后 import_module
-  （路径优先级保证本地包覆盖同名安装包）
+  （路径优先级保证本地包覆盖同名安装包；import 机制天然带缓存）
 
 ---
 

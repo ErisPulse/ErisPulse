@@ -287,7 +287,10 @@ class GovernanceGate:
         ]:
             self._rate_limit_replied.discard(key)
         # 命令已卸载：其名下锁键走两轮复核删除（在途锁本轮只落候选，
-        # 下轮清扫复核仍未锁定才删；命令重载重建的锁不在待删范围自动落选）
+        # 下轮清扫复核仍未锁定才删）。作废与暂缓的两种情形：命令重载重建
+        # 的锁不在下轮待删范围、候选自动落选；仍在当前周期内的键同样不在
+        # 下轮（按周期后缀推导的）待删范围，候选作废后待周期翻转重新收集
+        # ——删除有界推迟（≤ 一个周期 + 一轮清扫），不泄漏
         self._sweep_usage_locks(
             [key for key in self._usage_locks if key.startswith(prefix)]
         )

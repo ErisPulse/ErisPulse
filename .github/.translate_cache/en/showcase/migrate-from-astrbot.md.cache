@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "hash": "929f71aaab35a4ba8a7de9f3646e2d68",
+  "file_hash": "929f71aaab35a4ba8a7de9f3646e2d68",
+  "translated_at": "2026-10-29T09:08:04.978860",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "c3ad6e6da88060356f1203f1fede9032",
+      "translation": "# Migration Guide: From AstrBot to ErisPulse\n\n> [!TIP]\n> **When to read this**: Read this when you already have an AstrBot robot and want to migrate it to ErisPulse. For new setups, see [Quick Start](../quick-start.md) directly.\n\nFirst, the conclusion: **Platform integration, models, personality, and knowledge bases can be transferred; AstrBot plugins cannot be transferred**—the plugin APIs are completely different between the two platforms, and plugins need to be rewritten according to the ErisPulse module specifications. Data will not be automatically migrated."
+    },
+    {
+      "hash": "df98db3e7a7b42b574c20f087cda6a2a",
+      "translation": "## Concept Comparison\n\n| In AstrBot | In ErisPulse | Explanation |\n|---|---|---|\n| Platform Adapters (QQ/WeChat/Telegram…) | [Platform Adapters](../platform-guide/README.md) | The concept is consistent; install the corresponding adapter for ErisPulse. |\n| LLM Provider (API Key, Model) | [QvQChat](../ecosystem/qvqchat.md) Model Pool | Both support OpenAI-compatible integration; QvQChat supports model pool self-healing and difficulty routing. |\n| Persona | QvQChat Persona System | System prompt + opening remarks + tool whitelists, manually migrated. |\n| Knowledge Base | QvQChat Knowledge Base | Worldbook-style keyword triggers + vector retrieval, requires re-importing. |\n| WebUI | [Dashboard](../ecosystem/dashboard.md) | Module start/stop, configuration, logs, event monitoring; QvQChat also has a separate control panel. |\n| Plugin | Module | Different APIs, requires rewriting (see below). |\n| Admin/Whitelist | Three-dimensional [Scope](../advanced/scope.md) + module-specific permissions (e.g., QvQChat `admins`) | More granular permission model, configured per module. |"
+    },
+    {
+      "hash": "cb9d5f35c71b76ef7ffa10aaa3ee638c",
+      "translation": "## Migration Steps\n\n1. **Set up the framework**: Initialize the project according to [Quick Start](../quick-start.md) (either Docker or pip is fine), and install the Dashboard.\n2. **Connect to the platform**: `epsdk install` the platform adapter you previously used (install the OneBot adapter for QQ ecosystem, the Telegram adapter for Telegram...), and the login method and protocol implementation selection are the same as in the AstrBot era.\n3. **Install the agent**: `epsdk install ErisPulse-QvQChat`, and fill in the original Base URL / API Key / model name in the model pool.\n4. **Migrate personality and knowledge base**: Create new personality entries one by one on the QvQChat personality page; re-import the knowledge base documents.\n5. **Rewrite plugins**: Follow the comparison in the next section to translate the original plugin's \"command → processing logic\" into an ErisPulse module."
+    },
+    {
+      "hash": "d21dfbfda63ba06d128f72c27fe313eb",
+      "translation": "## Plugin Rewrite Comparison\n\nThe same plugin that responds \"pong\" to a received `/ping` command, with code written on both sides:\n\n**AstrBot Plugin** (example, refer to the official AstrBot documentation):\n\n```python\nfrom astrbot.api.event import filter, AstrMessageEvent\n\n@filter.command(\"ping\")\nasync def ping(self, event: AstrMessageEvent):\n    yield event.plain_result(\"pong\")\n```\n\n**ErisPulse Module** (complete and runnable, see [Module Development Introduction](../developer-guide/modules/getting-started.md)):\n\n```python\nfrom ErisPulse.Core.Event import command\n\n@command(\"ping\", help=\"Test if the bot is online\")\nasync def ping_handler(event):\n    await event.reply(\"pong\")\n```\n\nKey differences:\n\n- **Event Model**: AstrBot uses platform-specific event objects; ErisPulse uses the unified OneBot12 event model, where `event.reply` / SendDSL behave consistently across all platforms.\n- **Package Structure**: ErisPulse modules are standard Python packages, generated using the `epsdk create module` scaffolding tool, and published to PyPI and the module marketplace.\n- **Scheduled Tasks / Storage**: Use the [Cron](../ecosystem/cron.md) module or directly use the framework's built-in storage API, without introducing third-party dependencies."
+    },
+    {
+      "hash": "5424343d2d16afe6612df0fec73f4d97",
+      "translation": "## Recommended Migration Strategy\n\n**Parallel Dual Operation**: The ErisPulse bot first runs in a test group to verify all functionalities. Once confirmed to be complete, it switches to the main group. The account systems of both platforms are independent (each with its own protocol implementation/Token), so they do not interfere with each other, and the rollback cost is low.\n\n> [!NOTE]\n> The plugin API and feature list of AstrBot are continuously evolving. This page focuses on general concepts; to determine if a specific plugin has an equivalent in ErisPulse, first search the [Module Market](https://www.erisdev.com/#market). If not found, refer to the previous section for rewriting—most business plugins are actually shorter to implement in ErisPulse."
+    },
+    {
+      "hash": "c3b8529113d1e581293531a3a19fea18",
+      "translation": "## Next Steps\n\n- **Learn module development systematically**: [Getting Started with Module Development](../developer-guide/modules/getting-started.md) → [Core Concepts](../developer-guide/modules/core-concepts.md)\n- **Want more detailed configuration for the AI part**: [QvQChat General Agent](../ecosystem/qvqchat.md)\n- **Still hesitant about migrating**: [Comparison: AstrBot vs. LangBot](comparison-agent-platforms.md)"
+    }
+  ]
+}

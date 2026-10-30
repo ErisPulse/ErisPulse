@@ -1,6 +1,6 @@
 {
   "version": "1.2",
-  "total_categories": 10,
+  "total_categories": 11,
   "categories": {
     "Быстрый старт": {
       "description": "Краткое руководство по ErisPulse",
@@ -74,6 +74,38 @@
           "path": "getting-started/ide-completion.md",
           "level": 1,
           "icon": "fa-keyboard"
+        }
+      ],
+      "subgroups": {}
+    },
+    "Руководство по выбору": {
+      "description": "Сравнение фреймворков и руководства по миграции",
+      "icon": "fa-folder",
+      "count": 4,
+      "documents": [
+        {
+          "title": "Руководство по выбору",
+          "path": "showcase/README.md",
+          "level": 1,
+          "icon": "fa-file-alt"
+        },
+        {
+          "title": "Сравнение: ErisPulse и NoneBot2",
+          "path": "showcase/comparison-nonebot.md",
+          "level": 1,
+          "icon": "fa-file-alt"
+        },
+        {
+          "title": "Сравнение: ErisPulse и AstrBot / LangBot",
+          "path": "showcase/comparison-agent-platforms.md",
+          "level": 1,
+          "icon": "fa-file-alt"
+        },
+        {
+          "title": "Руководство по миграции: с AstrBot на ErisPulse",
+          "path": "showcase/migrate-from-astrbot.md",
+          "level": 1,
+          "icon": "fa-file-alt"
         }
       ],
       "subgroups": {}
@@ -488,7 +520,7 @@
     "Модули экосистемы": {
       "description": "Сторонние модули, поддерживаемые сообществом",
       "icon": "fa-cubes",
-      "count": 6,
+      "count": 7,
       "documents": [
         {
           "title": "Экологические модули",
@@ -521,7 +553,13 @@
           "icon": "fa-image"
         },
         {
-          "title": "ErisPulse-QvQChat — Универсальный агент",
+          "title": "ErisPulse-ApiMCP 控制机器人的人工智能客户端",
+          "path": "ecosystem/apimcp.md",
+          "level": 1,
+          "icon": "fa-cubes"
+        },
+        {
+          "title": "ErisPulse-QvQChat — универсальный агент",
           "path": "ecosystem/qvqchat.md",
           "level": 1,
           "icon": "fa-cubes"

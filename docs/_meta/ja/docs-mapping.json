@@ -1,6 +1,6 @@
 {
   "version": "1.2",
-  "total_categories": 10,
+  "total_categories": 11,
   "categories": {
     "クイックスタート": {
       "description": "ErisPulse クイックスタートガイド",
@@ -74,6 +74,38 @@
           "path": "getting-started/ide-completion.md",
           "level": 1,
           "icon": "fa-keyboard"
+        }
+      ],
+      "subgroups": {}
+    },
+    "選定ガイド": {
+      "description": "フレームワーク比較と移行ガイド",
+      "icon": "fa-folder",
+      "count": 4,
+      "documents": [
+        {
+          "title": "選定ガイド",
+          "path": "showcase/README.md",
+          "level": 1,
+          "icon": "fa-file-alt"
+        },
+        {
+          "title": "比較：ErisPulse と NoneBot2",
+          "path": "showcase/comparison-nonebot.md",
+          "level": 1,
+          "icon": "fa-file-alt"
+        },
+        {
+          "title": "ErisPulse と AstrBot / LangBot の比較",
+          "path": "showcase/comparison-agent-platforms.md",
+          "level": 1,
+          "icon": "fa-file-alt"
+        },
+        {
+          "title": "AstrBot から ErisPulse への移行ガイド",
+          "path": "showcase/migrate-from-astrbot.md",
+          "level": 1,
+          "icon": "fa-file-alt"
         }
       ],
       "subgroups": {}
@@ -471,7 +503,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "起動プロセスと手動制御",
+          "title": "起動フローと手動制御",
           "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"
@@ -488,7 +520,7 @@
     "エコシステムモジュール": {
       "description": "コミュニティが保守するサードパーティモジュール",
       "icon": "fa-cubes",
-      "count": 6,
+      "count": 7,
       "documents": [
         {
           "title": "エコシステムモジュール",
@@ -519,6 +551,12 @@
           "path": "ecosystem/takumi.md",
           "level": 1,
           "icon": "fa-image"
+        },
+        {
+          "title": "ErisPulse-ApiMCP で AI クライアントからボットを操作する",
+          "path": "ecosystem/apimcp.md",
+          "level": 1,
+          "icon": "fa-cubes"
         },
         {
           "title": "ErisPulse-QvQChat 通用インテリジェントエージェント",

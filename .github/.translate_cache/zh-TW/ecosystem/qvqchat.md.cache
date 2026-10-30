@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "cdbaec96299f681c8fa40219039c8cd4",
-  "file_hash": "cdbaec96299f681c8fa40219039c8cd4",
-  "translated_at": "2026-10-22T12:02:37.526150",
+  "hash": "c4d69898c19e05dae474e031fd606217",
+  "file_hash": "c4d69898c19e05dae474e031fd606217",
+  "translated_at": "2026-10-29T09:03:10.039792",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -24,6 +24,10 @@
     {
       "hash": "07d291e509c56612d4e4b902151f7247",
       "translation": "## 作為服務被呼叫\n\n| 服務 | 簽名 | 說明 |\n|---|---|---|\n| `chat` | `(session_id, prompt, persona=\"\")` | 與智慧代理對話，回傳文字 |\n| `run_prompt` | `(chat_key, prompt, ...)` | 執行提示詞，結果可傳送到目標會話 |\n| `get_status` | `()` | 執行狀態摘要 |"
+    },
+    {
+      "hash": "f7882f16cec88e0b054f2e93d38aa1b5",
+      "translation": "## 配套外掛\n\n三個獨立模組擴充了 QvQChat，也順便示範了擴充點能做什麼——安裝 QvQChat 後依需求加裝：\n\n| 外掛 | 用途 |\n|---|---|\n| [ErisPulse-QvQStalker](https://github.com/wsu2059q/ErisPulse-QvQStalker) | 旁聽群聊自動插話：熱度追蹤、五層判定和衝動值共同決定智慧型代理何時開口，15 項行為參數可在設定頁直接調整 |\n| [ErisPulse-QvQMemes](https://github.com/wsu2059q/ErisPulse-QvQMemes) | 給智慧型代理一個表情包習慣：`send_sticker` 工具讓模型自己挑選該發哪張，群組圖片自動收錄並由視覺模型加上標籤 |\n| [ErisPulse-QvQCompanion](https://github.com/wsu2059q/ErisPulse-QvQCompanion) | 擬人化陪伴：語氣人設注入、衝動值主動開口、靜默時段與每日上限 |\n\n三個外掛都透過上文「模組擴充」的約定服務接入，本身也是擴充寫法的參考實作。"
     },
     {
       "hash": "15f97e1080e165ff47b97b09320ff78e",

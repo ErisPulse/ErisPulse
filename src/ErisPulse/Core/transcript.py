@@ -55,6 +55,7 @@ from .constants import (
     TRANSCRIPT_EXIT_FLUSH_TIMEOUT_SECS,
     TRANSCRIPT_FLUSH_INTERVAL_SECS,
     TRANSCRIPT_FLUSH_MAX_BATCH,
+    TRANSCRIPT_OUTBOUND_META_KEYS,
     TRANSCRIPT_TABLE,
 )
 from .i18n import i18n
@@ -329,7 +330,9 @@ class TranscriptManager:
             self._table_ready = True
             return True
         except Exception as e:
-            logger.trace(i18n.t("core.transcript.table_failed", error=e))
+            # warning 起步：建表/迁移失败意味着后续写入持续失败（缓冲回插
+            # 挤占内存），必须可见；刷盘间隔天然限频
+            logger.warning(i18n.t("core.transcript.table_failed", error=e))
             return False
 
     async def _aensure_table(self) -> bool:
@@ -357,60 +360,69 @@ class TranscriptManager:
             self._table_ready = True
             return True
         except Exception as e:
-            logger.trace(i18n.t("core.transcript.table_failed", error=e))
+            # warning 起步：建表/迁移失败意味着后续写入持续失败（缓冲回插
+            # 挤占内存），必须可见；刷盘间隔天然限频
+            logger.warning(i18n.t("core.transcript.table_failed", error=e))
             return False
 
     def _migrate_add_sender(self) -> None:
-        """{!--< internal-use >!--} 旧表缺 sender 列时自动补列（2.8.0 新增）"""
+        """
+        {!--< internal-use >!--} 旧表缺 sender 列时自动补列（2.8.0 新增）
+
+        探测失败不区分「列缺失」与「存储瞬时不可用」：一律尝试 ALTER，
+        ALTER 失败直接上抛（交由 ``_ensure_table`` 记 warning 返回 False，
+        下轮刷盘重试）——否则会误置 ready，此后含 sender 列的 INSERT
+        持续静默失败。
+        """
         try:
             # 探测：sender 列可查询即无需迁移（避免 duplicate column 告警）
             storage.Table(TRANSCRIPT_TABLE).Select("sender").Limit(1).Execute()
             return
         except Exception:
             pass
-        try:
-            storage.AlterTable(TRANSCRIPT_TABLE).AddColumn("sender", "TEXT DEFAULT ''").Execute()
-        except Exception:
-            pass  # 后端不支持 ALTER——静默降级（sender 仅回放增强用）
+        storage.AlterTable(TRANSCRIPT_TABLE).AddColumn("sender", "TEXT DEFAULT ''").Execute()
 
     async def _amigrate_add_sender(self) -> None:
-        """{!--< internal-use >!--} 异步路径的 sender 列迁移探测（列缺失时回退同步 ALTER）"""
+        """
+        {!--< internal-use >!--} 异步路径的 sender 列迁移探测（列缺失时回退同步 ALTER）
+
+        与同步版同语义：探测失败同样尝试 ALTER，失败上抛待下轮重试。
+        """
         try:
             columns = await storage.aGetTableColumns(TRANSCRIPT_TABLE)
             if "sender" in columns:
                 return
         except Exception:
-            return  # 列探测不可用时保持原表结构，静默降级
-        try:
-            storage.AlterTable(TRANSCRIPT_TABLE).AddColumn("sender", "TEXT DEFAULT ''").Execute()
-        except Exception:
-            pass  # 后端不支持 ALTER——静默降级（sender 仅回放增强用）
+            pass  # 列探测不可用：继续尝试 ALTER（失败上抛）
+        storage.AlterTable(TRANSCRIPT_TABLE).AddColumn("sender", "TEXT DEFAULT ''").Execute()
 
     def _migrate_add_meta(self) -> None:
-        """{!--< internal-use >!--} 旧表缺 meta 列时自动补列（2.11.1 新增）"""
+        """
+        {!--< internal-use >!--} 旧表缺 meta 列时自动补列（2.11.1 新增）
+
+        ALTER 失败上抛（同步版语义见 ``_migrate_add_sender``）。
+        """
         try:
             # 探测：meta 列可查询即无需迁移（避免 duplicate column 告警）
             storage.Table(TRANSCRIPT_TABLE).Select("meta").Limit(1).Execute()
             return
         except Exception:
             pass
-        try:
-            storage.AlterTable(TRANSCRIPT_TABLE).AddColumn("meta", "TEXT DEFAULT '{}'").Execute()
-        except Exception:
-            pass  # 后端不支持 ALTER——静默降级（meta 仅归因增强用，恒回退 {}）
+        storage.AlterTable(TRANSCRIPT_TABLE).AddColumn("meta", "TEXT DEFAULT '{}'").Execute()
 
     async def _amigrate_add_meta(self) -> None:
-        """{!--< internal-use >!--} 异步路径的 meta 列迁移探测（列缺失时回退同步 ALTER）"""
+        """
+        {!--< internal-use >!--} 异步路径的 meta 列迁移探测（列缺失时回退同步 ALTER）
+
+        与同步版同语义：探测失败同样尝试 ALTER，失败上抛待下轮重试。
+        """
         try:
             columns = await storage.aGetTableColumns(TRANSCRIPT_TABLE)
             if "meta" in columns:
                 return
         except Exception:
-            return  # 列探测不可用时保持原表结构，静默降级
-        try:
-            storage.AlterTable(TRANSCRIPT_TABLE).AddColumn("meta", "TEXT DEFAULT '{}'").Execute()
-        except Exception:
-            pass  # 后端不支持 ALTER——静默降级（meta 仅归因增强用，恒回退 {}）
+            pass  # 列探测不可用：继续尝试 ALTER（失败上抛）
+        storage.AlterTable(TRANSCRIPT_TABLE).AddColumn("meta", "TEXT DEFAULT '{}'").Execute()
 
     def _retention(self, session_key: str, max_per_session: int, ttl_hours: float) -> None:
         """{!--< internal-use >!--} 保留策略：每会话条数上限 + 全局 TTL（惰性触发，覆盖库与内存缓冲）"""
@@ -474,8 +486,10 @@ class TranscriptManager:
                         break  # 本轮失败（如存储冷却期），下个周期重试
             except asyncio.CancelledError:
                 raise
-            except Exception:
-                pass
+            except Exception as e:
+                # 刷盘循环自身的意外异常（非存储失败——那类已由 _flush_async
+                # 返回 False 吸收）：留痕防静默停摆可见性缺失，下轮继续
+                logger.warning(i18n.t("core.transcript.flush_loop_error", error=e))
 
     def _take_batch(self) -> list[dict[str, Any]]:
         """{!--< internal-use >!--} 从缓冲头部取一批待落盘行"""
@@ -503,7 +517,8 @@ class TranscriptManager:
             raise
         except Exception as e:
             self._requeue(rows)
-            logger.trace(i18n.t("core.transcript.append_failed", error=e))
+            # warning 起步：数据写入失败必须可见（刷盘间隔天然限频）
+            logger.warning(i18n.t("core.transcript.append_failed", error=e))
             return False
 
         self._append_count += len(rows)
@@ -568,7 +583,8 @@ class TranscriptManager:
                         storage.Table(TRANSCRIPT_TABLE).InsertMulti(rows).Execute()
                 except Exception as e:
                     self._requeue(rows)
-                    logger.trace(i18n.t("core.transcript.append_failed", error=e))
+                    # warning 起步：数据写入失败必须可见
+                    logger.warning(i18n.t("core.transcript.append_failed", error=e))
                     break
                 count += len(rows)
             return count
@@ -859,10 +875,10 @@ class TranscriptManager:
         target_id = data.get("target_id") or ""
         if not target_id:
             return
-        # 出站归档 send_ctx 元数据（白名单契约：platform/method/detail_type/
-        # target_id/bot_id/trace_id/preview/module），module 标识发送归属模块
-        # （区分"我发的"与"本实例其它模块代发的"），缺失时兜底空串
-        meta = dict(data)
+        # 出站归档 send_ctx 元数据：白名单键显式拷贝（TRANSCRIPT_OUTBOUND_
+        # META_KEYS），未来 send_ctx 新增字段不无感入库；module 标识发送
+        # 归属模块（区分"我发的"与"本实例其它模块代发的"），缺失时兜底空串
+        meta = {k: data.get(k) for k in TRANSCRIPT_OUTBOUND_META_KEYS}
         meta["module"] = str(data.get("module") or "")
         # event_id 落 trace_id：影子 diff（方向十一）按链路 ID 对齐
         # 影子意向发送与真实发送时间线

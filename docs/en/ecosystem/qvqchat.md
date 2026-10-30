@@ -129,6 +129,14 @@ async def setup(self):
 | `run_prompt` | `(chat_key, prompt, ...)` | Execute a prompt, the result can be sent to the target session |
 | `get_status` | `()` | Status summary of execution |
 
+## Companion Plugins
+
+Three independent modules extend QvQChat and also demonstrate what extension points can do—install QvQChat first and add plugins as needed:
+
+| Plugin | What it does |
+|---|---|
+|
+
 ## Interface
 
 Access independently via `/QvQChat/view`, or embed in the Dashboard sidebar.

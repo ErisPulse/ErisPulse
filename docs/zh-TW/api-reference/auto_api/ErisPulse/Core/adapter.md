@@ -358,6 +358,10 @@ await sdk.adapter.reload("aiocqhttp")
 额外从管理器注销该平台（释放适配器实例与类引用），用于动态移除适配器
 并回收其内存占用。若同一实例还注册了其它平台，实例会保留（仅注销该平台）。
 
+卸载与热重载共用全局互斥：与进行中的 ``reload_adapter`` / restart
+串行（消除外部卸载与适配器重载交叉导致的双重 shutdown）；等待上限
+``UNLOAD_LOCK_WAIT_TIMEOUT_SECS`` 秒，超时降级直接执行并留痕。
+
 - **platform**: 平台名称
 
 **返回值**: 是否卸载成功
@@ -367,6 +371,18 @@ await sdk.adapter.reload("aiocqhttp")
 ```python
 await adapter.unload("MyPlatform")
 ```
+
+---
+
+
+##### `async _unload_locked(platform: str) -> bool`
+
+**内部方法**
+unload 的实现体（调用方已持有热重载互斥锁，或已限时降级）
+
+- **platform**: 平台名称
+
+**返回值**: 是否卸载成功
 
 ---
 
@@ -721,6 +737,21 @@ await sdk.adapter.emit({
 配置变更经 ``_on_framework_config_changed`` 置 None 强制重读。
 
 **返回值**: 上限值（0 = 不限）
+
+---
+
+
+##### `_record_handler_queue_drop(handler: str, event_type: str, platform: str, size: int) -> None`
+
+**内部方法**
+背压丢弃留痕（窗口折叠）：窗口内仅首条丢弃记 WARNING，后续折叠
+只累计计数；下个窗口的首条丢弃附带上一窗口折叠条数。丢弃总数
+始终累计到 ``_handler_queue_overflow_count``（troubleshoot 可见）。
+
+- **handler**: 被丢弃的处理器名（日志定位用）
+- **event_type**: 事件类型
+- **platform**: 平台名
+- **size**: 触发丢弃时的待处理集合大小
 
 ---
 

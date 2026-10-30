@@ -98,8 +98,10 @@ class PollingObserver:
     1. 接口与 watchdog.observers.Observer 一致 (schedule/start/stop/join)
     2. 轮询运行在后台守护线程，不会阻止进程退出
     3. 仅监控 .py 文件的变更，避免不必要的开销
-    4. 忽略目录按目录名在任意层级剪枝；键统一 normcase 规范化，
-       Windows 大小写不同的路径写法不会产生虚假删除/创建事件
+    4. 忽略目录按目录名在任意层级剪枝；键统一「绝对化 + normcase」规范化
+       ——Windows 大小写不同的路径写法、以及以相对路径调度的监控目录
+       （如默认的 ``plugins`` 或 ``.``）都不会产生虚假删除/创建事件，
+       删除检测的前缀匹配在任意调度路径写法下均成立
     5. 单个 handler 回调抛异常只记 warning，不会杀死轮询线程
     {!--< /tips >!--}
 
@@ -172,10 +174,16 @@ class PollingObserver:
         """请求停止轮询线程"""
         self._stop_event.set()
 
-    def join(self) -> None:
-        """等待轮询线程结束"""
+    def join(self, timeout: float | None = None) -> None:
+        """
+        等待轮询线程结束
+
+        :param timeout: 最长等待秒数；None = 一直等到线程退出。轮询线程
+            为守护线程，超时返回后线程仍会随 ``stop()`` 自行退出，不会
+            阻塞调用方（事件循环线程内停止监控时传入有限超时）
+        """
         if self._thread is not None:
-            self._thread.join()
+            self._thread.join(timeout)
 
     def _walk_py(self, path: str, recursive: bool):
         """
@@ -197,6 +205,19 @@ class PollingObserver:
                 break
 
     @staticmethod
+    def _key(path: str) -> str:
+        """
+        路径归一键：绝对化 + normcase
+
+        {!--< internal-use >!--}
+        监控目录允许以相对路径调度（默认 ``plugins`` / CLI 的 ``.``），
+        键必须与删除检测的前缀（同为绝对化归一）在同一坐标系比较，
+        否则相对调度路径下删除事件永不触发；绝对化同时保证重叠 watch
+        （"." 与 "plugins"）的跨 watch 去重键一致。
+        """
+        return os.path.normcase(str(Path(path).resolve()))
+
+    @staticmethod
     def _dispatch(
         handler: FileSystemEventHandler,
         method: str,
@@ -211,7 +232,11 @@ class PollingObserver:
         try:
             getattr(handler, method)(FileChangeEvent(src_path, event_type))
         except Exception as e:
-            logger.warning(f"file watcher handler {method} failed: {e!r}")
+            from ..Core.i18n import i18n
+
+            logger.warning(
+                i18n.t("runtime.watcher.callback_failed", method=method, error=e)
+            )
 
     def _snapshot(self) -> None:
         """
@@ -221,7 +246,7 @@ class PollingObserver:
         """
         for _handler, path, recursive in self._watches:
             for file_path in self._walk_py(path, recursive):
-                key = os.path.normcase(file_path)
+                key = self._key(file_path)
                 try:
                     self._mtimes[key] = Path(file_path).stat().st_mtime
                 except OSError:
@@ -246,7 +271,7 @@ class PollingObserver:
             for handler, path, recursive in self._watches:
                 seen: set[str] = set()
                 for file_path in self._walk_py(path, recursive):
-                    key = os.path.normcase(file_path)
+                    key = self._key(file_path)
                     seen.add(key)
                     if key in reported:
                         continue
@@ -271,8 +296,9 @@ class PollingObserver:
                         reported.add(key)
                         self._dispatch(handler, "on_modified", "modified", file_path)
                 # 差集检测删除：被删除的文件不会出现在本轮 os.walk 结果里。
-                # 前缀比较带路径分隔符后缀，避免 "plugins" 误匹配 "plugins2"
-                known_prefix = os.path.normcase(str(Path(path).resolve()))
+                # 前缀比较带路径分隔符后缀，避免 "plugins" 误匹配 "plugins2"；
+                # 键与前缀同为绝对化归一（见 _key），相对调度路径下同样成立
+                known_prefix = self._key(path)
                 gone = [
                     known
                     for known in self._mtimes

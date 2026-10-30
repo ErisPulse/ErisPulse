@@ -434,28 +434,39 @@ class ModuleLoader(BaseLoader):
         except Exception as e:
             logger.error(i18n.t("loader.module.reload_unload_failed", name=module_name, error=e))
 
-        # 2. 重载自身（按来源选择发现路径）；失败恢复快照，旧实例继续服务
-        if is_plugin:
-            if not await self._reload_single_plugin(
-                module_name, manager_instance, sdk_instance, was_loaded=snapshot.was_loaded
-            ):
-                self._restore_reload_snapshot(snapshot, module_name, manager_instance, sdk_instance)
-                self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
-                return False
-        elif is_runtime:
-            if not await self._reload_runtime_module(
-                module_name, manager_instance, sdk_instance, was_loaded=snapshot.was_loaded
-            ):
-                self._restore_reload_snapshot(snapshot, module_name, manager_instance, sdk_instance)
-                self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
-                return False
-        elif not await self._reload_single_module(
-            module_name,
-            manager_instance,
-            sdk_instance,
-            top_level if not full else purge_names,
-            was_loaded=snapshot.was_loaded,
-        ):
+        # 2. 重载自身（按来源选择发现路径）；失败恢复快照，旧实例继续服务。
+        # 返回 False 与抛出意外异常（如挂载代理 / manager.load 崩溃）同样
+        # 触发恢复——否则模块停留在已注销未回滚态
+        reload_ok = False
+        reload_error: Exception | None = None
+        try:
+            if is_plugin:
+                reload_ok = await self._reload_single_plugin(
+                    module_name, manager_instance, sdk_instance, was_loaded=snapshot.was_loaded
+                )
+            elif is_runtime:
+                reload_ok = await self._reload_runtime_module(
+                    module_name, manager_instance, sdk_instance, was_loaded=snapshot.was_loaded
+                )
+            else:
+                reload_ok = await self._reload_single_module(
+                    module_name,
+                    manager_instance,
+                    sdk_instance,
+                    top_level if not full else purge_names,
+                    was_loaded=snapshot.was_loaded,
+                )
+        except Exception as e:
+            reload_error = e
+        if not reload_ok:
+            if reload_error is not None:
+                logger.error(
+                    i18n.t(
+                        "loader.module.reload_unexpected_failed",
+                        name=module_name,
+                        error=reload_error,
+                    )
+                )
             self._restore_reload_snapshot(snapshot, module_name, manager_instance, sdk_instance)
             self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
             return False
@@ -778,30 +789,55 @@ class ModuleLoader(BaseLoader):
                 ]
                 for name in stale:
                     sys.modules.pop(name, None)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(
+                i18n.t(
+                    "loader.module.reload_restore_failed",
+                    name=module_name, step="sys.modules cleanup", error=e,
+                )
+            )
         if snapshot.module_class is not None or snapshot.module_info is not None:
             try:
                 manager_instance.register(module_name, snapshot.module_class, snapshot.module_info)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(
+                    i18n.t(
+                        "loader.module.reload_restore_failed",
+                        name=module_name, step="register", error=e,
+                    )
+                )
         if snapshot.lazy_proxy is not None:
             try:
                 manager_instance.register_lazy(module_name, snapshot.lazy_proxy)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(
+                    i18n.t(
+                        "loader.module.reload_restore_failed",
+                        name=module_name, step="register_lazy", error=e,
+                    )
+                )
         if snapshot.was_loaded and snapshot.instance is not None:
             try:
                 manager_instance._modules[module_name] = snapshot.instance
                 manager_instance._loaded_modules.add(module_name)
                 manager_instance._module_services[module_name] = snapshot.module_services
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(
+                    i18n.t(
+                        "loader.module.reload_restore_failed",
+                        name=module_name, step="loaded state", error=e,
+                    )
+                )
             if snapshot.had_sdk_attr:
                 try:
                     setattr(sdk_instance, module_name, snapshot.instance)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning(
+                        i18n.t(
+                            "loader.module.reload_restore_failed",
+                            name=module_name, step="sdk attr", error=e,
+                        )
+                    )
         self._last_module_objs[module_name] = snapshot.module_obj
 
     def _restore_failed_dependents(
@@ -837,6 +873,10 @@ class ModuleLoader(BaseLoader):
         :param was_loaded: 重载前是否处于已加载态（保持活性语义）
         :return: 是否重载成功
         """
+        # 插件源路径先行捕获：下方 _purge_plugin_modules 会从插件加载器
+        # 注销该路径记录，而重发现失败时需要它区分「插件已删除」与「导入失败」
+        source_path = self._plugin_loader.get_loaded_path(plugin_name)
+
         # 清理注册（类 / info / 懒加载代理）
         try:
             manager_instance.unregister(plugin_name)
@@ -869,6 +909,15 @@ class ModuleLoader(BaseLoader):
 
         new_module = plugin_objs.get(plugin_name)
         if new_module is None:
+            # 区分「插件已删除」与「重发现失败」：discover() 对导入期异常
+            # （依赖缺失 / ImportError 等，语法预检拦不住）同样返回 None。
+            # 源文件仍在磁盘上说明不是删除——按重载失败处理，交由上层恢复
+            # 快照（旧实例继续服务），不能误报「已移除 + 成功」
+            if source_path is not None and source_path.exists():
+                logger.error(
+                    i18n.t("loader.module.reload_plugin_rediscover_failed", name=plugin_name)
+                )
+                return False
             # 插件被删除：确认从快照与配置中移除
             self._last_module_objs.pop(plugin_name, None)
             logger.info(i18n.t("loader.module.reload_removed", name=plugin_name))

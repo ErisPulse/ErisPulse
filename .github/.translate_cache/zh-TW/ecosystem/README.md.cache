@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "f42f291e386c47a3705dd73afb1f374a",
-  "file_hash": "f42f291e386c47a3705dd73afb1f374a",
-  "translated_at": "2026-10-22T12:02:59.153294",
+  "hash": "b4d1fc27f5e0bd09c7107467c21f7066",
+  "file_hash": "b4d1fc27f5e0bd09c7107467c21f7066",
+  "translated_at": "2026-10-29T09:06:13.341578",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 生態模組\n\nErisPulse 框架本身僅提供核心能力（事件系統、模組系統、配置、路由、日誌等），**不內建** GUI、圖片渲染、可視化等「重型」功能。這些能力由社區維護的 **第三方模組** 提供，按需安裝即可。\n\n> [!IMPORTANT]\n> 本目錄下的文件分為兩類，安裝方式不同：\n>\n> - **模組**（如 Dashboard / Takumi）使用 `epsdk install` 安裝：\n>\n>   ```bash\n>   epsdk install <模組名>\n>   ```\n>\n> - **獨立程式**（如 ErisPulse-App 客戶端）直接從對應 GitHub Releases 下載安裝，無需 `epsdk`。"
     },
     {
-      "hash": "564cc002ef4056ad9c9cffd91b0687f0",
-      "translation": "## 推薦模組\n\n### ErisPulse-Dashboard：瀏覽器中的管理面板\n\n機器人掛在伺服器上，啟停模組、改設定、看日誌還得登終端？Dashboard 把這些功能搬到瀏覽器中：模組啟停、設定編輯、日誌查看、事件監控；其他模組還能向側邊欄註冊自訂視窗，管理頁面集中在同一處。\n\n```bash\nepsdk install Dashboard\n```\n\n文件：[Dashboard 使用與視窗註冊](dashboard.md) ｜ 項目首頁：[PyPI](https://pypi.org/project/ErisPulse-Dashboard/)\n\n### ErisPulse-Cron：定時任務\n\n要每天定時發簽到提醒、按 Cron 表達式執行週期任務、每隔幾分鐘輪詢一次資料？Cron 提供一次性 / 间隔 / Cron 表達式三種任務類型，回調傳參，SQLite 持久化（重啟不丟任務）。\n\n```bash\nepsdk install Cron\n```\n\n文件：[Cron 定時任務](cron.md) ｜ 項目首頁：[GitHub](https://github.com/wsu2059q/ErisPulse-Cron)\n\n### ErisPulse-QvQChat：通用智能體\n\n想讓群裡有一個會工作的 AI 助手，而不是只會關鍵字回覆？QvQChat 是通用智能體：工具循環覆蓋收發訊息 / 程式碼執行 / 電腦操作 / 生成圖片 / 語音 / MCP / 子智能體，支援流式對話與串行工具回放，內建 Dashboard 視窗。\n\n```bash\nepsdk install ErisPulse-QvQChat\n```\n\n文件：[QvQChat 智能體](qvqchat.md) ｜ 項目首頁：[GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)\n\n### ErisPulse-Takumi：圖片渲染\n\n排行榜、戰報、日程卡這類需要「發圖」的場景，寫個模板渲染成圖片發進群裡即可：支援 HTML / 節點樹 / Jinja / SVG / 動畫（基於 [takumi-py](https://github.com/BalconyJH/takumi-py)），內建中英文字型，開箱即用。\n\n```bash\nepsdk install Takumi\n```\n\n文件：[Takumi 圖片渲染](takumi.md) ｜ 項目首頁：[GitHub](https://github.com/ccd2s/ErispulseTakumi)（作者 [@ccd2s](https://github.com/ccd2s)）"
+      "hash": "659f57e025354bb2ace43ab20bd4e3fa",
+      "translation": "## 推薦模組\n\n### ErisPulse-Dashboard：瀏覽器裡的管理面板\n\n機器人掛在伺服器上，啟停模組、改設定、看日誌還得登終端機？Dashboard 把這些搬進瀏覽器：模組啟停、設定編輯、日誌查看、事件監控；其他模組還能向側邊欄註冊自訂視窗，管理頁面集中在同一處。\n\n```bash\nepsdk install Dashboard\n```\n\n文件：[Dashboard 使用與視窗註冊](dashboard.md) ｜ 專案主頁：[PyPI](https://pypi.org/project/ErisPulse-Dashboard/)\n\n### ErisPulse-Cron：排程任務\n\n要每天定時發簽到提醒、按 Cron 表達式跑週期任務、每隔幾分鐘輪詢一次資料？Cron 提供一次性 / 間隔 / Cron 表達式三種任務類型，回呼傳參數，SQLite 持久化（重新啟動不丟任務）。\n\n```bash\nepsdk install Cron\n```\n\n文件：[Cron 排程任務](cron.md) ｜ 專案主頁：[GitHub](https://github.com/wsu2059q/ErisPulse-Cron)\n\n### ErisPulse-QvQChat：通用智慧代理\n\n想讓群組裡有一個會做事的 AI 助手，而不是只會關鍵字回覆？QvQChat 是通用智慧代理：工具循環涵蓋收發訊息 / 程式碼執行 / 電腦操作 / 生圖 / 語音 / MCP / 子代理，支援串流對話與序列工具回放，內建 Dashboard 視窗。還有 QvQStalker（旁聽插話）、QvQMemes（表情包）、QvQCompanion（擬人陪伴）三個配套外掛。\n\n```bash\nepsdk install ErisPulse-QvQChat\n```\n\n文件：[QvQChat 智慧代理](qvqchat.md) ｜ 專案主頁：[GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)\n\n### ErisPulse-ApiMCP：讓 AI 用戶端操控機器人\n\n在用 Claude Desktop、Claude Code 這類支援 MCP 的 AI 用戶端？ApiMCP 把機器人執行環境反向開放成 14 個 MCP 工具：AI 可以直接替你收發訊息、呼叫已裝模組、查看平台狀態、訂閱群聊事件——機器人變成 AI 的「手和眼」。\n\n```bash\nepsdk install ErisPulse-ApiMCP\n```\n\n文件：[ApiMCP 使用指南](apimcp.md) ｜ 專案主頁：[GitHub](https://github.com/wsu2059q/ErisPulse-ApiMCP)\n\n### ErisPulse-Takumi：圖片渲染\n\n排行榜、戰報、日程卡這類要「發圖」的場景，寫個範本渲染成圖片發進群組即可：支援 HTML / 節點樹 / Jinja / SVG / 動畫（基於 [takumi-py](https://github.com/BalconyJH/takumi-py)），內建中英文字型，開箱即用。\n\n```bash\nepsdk install Takumi\n```\n\n文件：[Takumi 圖片渲染](takumi.md) ｜ 專案主頁：[GitHub](https://github.com/ccd2s/ErispulseTakumi)（作者 [@ccd2s](https://github.com/ccd2s)）"
     },
     {
       "hash": "d2a7502dc7794e8136711ace59a57362",

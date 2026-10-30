@@ -191,7 +191,7 @@ def precheck_source_files(label: str, source_files: "list[Path]", *, i18n_key: s
         for checked, py in enumerate(source_files, start=1):
             if checked > MODULE_RELOAD_PRECHECK_MAX_FILES:
                 logger.debug(
-                    f"reload precheck skipped after {checked - 1} files for '{label}'"
+                    i18n.t("loader.precheck.skipped_max_files", label=label, count=checked - 1)
                 )
                 return True
             failure = _parse_single_source(py)
@@ -201,7 +201,7 @@ def precheck_source_files(label: str, source_files: "list[Path]", *, i18n_key: s
         return True
     except Exception as e:
         # 预检基础设施失败（文件不可读/路径异常等）不阻断重载——快照回滚兜底
-        logger.debug(f"reload precheck unavailable for '{label}': {e}")
+        logger.debug(i18n.t("loader.precheck.unavailable", label=label, error=e))
         return True
 
 
@@ -232,7 +232,10 @@ def precheck_source_trees(
             for checked, py in enumerate(files, start=1):
                 if checked > MODULE_RELOAD_PRECHECK_MAX_FILES:
                     logger.debug(
-                        f"reload precheck skipped after {checked - 1} files for '{tree_label}'"
+                        i18n.t(
+                            "loader.precheck.skipped_max_files",
+                            label=tree_label, count=checked - 1,
+                        )
                     )
                     break
                 failure = _parse_single_source(py)
@@ -245,5 +248,5 @@ def precheck_source_trees(
         return failures
     except Exception as e:
         # 预检基础设施失败不阻断重载——单模块快照回滚兜底
-        logger.debug(f"reload precheck unavailable for '{label}': {e}")
+        logger.debug(i18n.t("loader.precheck.unavailable", label=label, error=e))
         return []

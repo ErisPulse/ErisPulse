@@ -17,45 +17,55 @@ The ErisPulse framework itself only provides core capabilities (event system, mo
 
 ## Recommended Modules
 
-### ErisPulse-Dashboard: An Admin Panel in Your Browser
+### ErisPulse-Dashboard: A management dashboard in your browser
 
-Your bot runs on a server, and you still need to log into a terminal to start/stop modules, tweak configurations, or check logs? Dashboard brings all of this into the browser: module start/stop, configuration editing, log viewing, and event monitoring; other modules can also register custom windows in the sidebar, keeping all management pages in one place.
+Running your bot on a server, but still need to log into the terminal to start/stop modules, modify configurations, or view logs? Dashboard brings these functions into the browser: module start/stop, configuration editing, log viewing, and event monitoring. Other modules can also register custom panels to the sidebar, centralizing the management interface in one place.
 
 ```bash
 epsdk install Dashboard
 ```
 
-Docs: [Dashboard Usage and Window Registration](dashboard.md) | Project homepage: [PyPI](https://pypi.org/project/ErisPulse-Dashboard/)
+Docs: [Dashboard Usage & Panel Registration](dashboard.md) ｜ Project Homepage: [PyPI](https://pypi.org/project/ErisPulse-Dashboard/)
 
 ### ErisPulse-Cron: Scheduled Tasks
 
-Need to send daily check-in reminders on schedule, run periodic tasks with Cron expressions, or poll data every few minutes? Cron offers three task types—one-time / interval / Cron expression—with callback parameters and SQLite persistence (tasks survive restarts).
+Need daily reminders, periodic tasks based on Cron expressions, or data polling every few minutes? Cron provides three types of tasks: one-time, interval-based, and Cron expression-based, with callback parameters and SQLite persistence (tasks are not lost after restart).
 
 ```bash
 epsdk install Cron
 ```
 
-Docs: [Cron Scheduled Tasks](cron.md) | Project homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-Cron)
+Docs: [Cron Scheduled Tasks](cron.md) ｜ Project Homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-Cron)
 
-### ErisPulse-QvQChat: General-Purpose Agent
+### ErisPulse-QvQChat: General-purpose Agent
 
-Want an AI assistant in your group that actually gets things done, instead of one that only replies with keyword matching? QvQChat is a general-purpose agent: its tool loop covers message sending/receiving / code execution / computer operations / image generation / voice / MCP / sub-agents, supports streaming conversations and serialized tool replay, and comes with a built-in Dashboard window.
+Want an AI assistant in your group that can perform tasks, rather than just reply with keywords? QvQChat is a general-purpose agent: tools cycle through message sending/receiving, code execution, computer operations, image generation, voice, MCP, and sub-agents. It supports streaming conversations and sequential tool replay, and comes with a built-in Dashboard panel. Also included are three companion plugins: QvQStalker (eavesdropping and interjecting), QvQMemes (meme generation), and QvQCompanion (human-like companionship).
 
 ```bash
 epsdk install ErisPulse-QvQChat
 ```
 
-Docs: [QvQChat Agent](qvqchat.md) | Project homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)
+Docs: [QvQChat Agent](qvqchat.md) ｜ Project Homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)
+
+### ErisPulse-ApiMCP: Let AI Clients Control Your Bot
+
+Using AI clients like Claude Desktop or Claude Code that support MCP? ApiMCP exposes 14 MCP tools from the bot runtime, allowing AI to directly send/receive messages, call installed modules, check platform status, and subscribe to group chat events—effectively turning the bot into the AI’s "hands and eyes."
+
+```bash
+epsdk install ErisPulse-ApiMCP
+```
+
+Docs: [ApiMCP User Guide](apimcp.md) ｜ Project Homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-ApiMCP)
 
 ### ErisPulse-Takumi: Image Rendering
 
-For scenarios that require "sending images"—like leaderboards, battle reports, or schedule cards—just write a template, render it into an image, and send it to your group: it supports HTML / node trees / Jinja / SVG / animation (based on [takumi-py](https://github.com/BalconyJH/takumi-py)), comes with built-in Chinese and English fonts, and works right out of the box.
+For scenarios requiring image generation—such as leaderboards, match reports, or schedules—simply create a template and render it as an image to send into the group: supports HTML / node trees / Jinja / SVG / animations (based on [takumi-py](https://github.com/BalconyJH/takumi-py)), with built-in Chinese and English fonts, ready to use out of the box.
 
 ```bash
 epsdk install Takumi
 ```
 
-Docs: [Takumi Image Rendering](takumi.md) | Project homepage: [GitHub](https://github.com/ccd2s/ErispulseTakumi) (Author: [@ccd2s](https://github.com/ccd2s))
+Docs: [Takumi Image Rendering](takumi.md) ｜ Project Homepage: [GitHub](https://github.com/ccd2s/ErispulseTakumi) (by [@ccd2s](https://github.com/ccd2s))
 
 ## Official Client (Standalone Application)
 

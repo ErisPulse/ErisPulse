@@ -52,7 +52,7 @@
 ---
 
 
-##### `get_initializer() -> Any`
+##### `get_initializer() -> Initializer`
 
 获取初始化协调器（每次调用新建一轮——init 生命周期一轮一个协调器）
 
@@ -64,7 +64,7 @@
 ---
 
 
-##### `get_uninitializer() -> Any`
+##### `get_uninitializer() -> Uninitializer`
 
 获取反初始化协调器（每轮新建，与 get_initializer 同语义）
 

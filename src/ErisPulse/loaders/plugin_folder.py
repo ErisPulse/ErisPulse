@@ -57,6 +57,11 @@ class PluginFolderLoader:
     def __init__(self):
         self._loaded_paths: dict[str, Path] = {}
         self._loaded_adapter_paths: dict[str, Path] = {}
+        # 单文件插件导入缓存键：插件名 → 上次成功导入时的源文件 mtime。
+        # discover() 每次全量扫描（任一插件变更触发的重发现都会调用），
+        # 未变更的插件经 mtime + 模块来源比对直接复用 sys.modules 中的
+        # 模块对象，避免模块级代码被无关变更反复重执行
+        self._import_mtimes: dict[str, float] = {}
         # 严格模式登记器（由宿主加载器注入）：本地插件的版本闸门违规同样
         # 进入 strict_mode 错误面——安装来源（PyPI / plugins 目录）不影响
         self._strict_recorder: Any = None
@@ -259,17 +264,35 @@ class PluginFolderLoader:
         {!--< internal-use >!--}
         导入插件模块
 
-        - 单文件：``spec_from_file_location`` 显式路径导入
+        - 单文件：``spec_from_file_location`` 显式路径导入；源文件 mtime
+          与上次导入一致且 ``sys.modules`` 中仍是本路径导入的模块时直接
+          复用（discover 全量扫描不重执行无关插件的模块级代码）
         - 包目录：将插件目录加入 sys.path 首位后 import_module
-          （路径优先级保证本地包覆盖同名安装包）
+          （路径优先级保证本地包覆盖同名安装包；import 机制天然带缓存）
         """
         if path.is_file():
+            cached = sys.modules.get(name)
+            try:
+                mtime = path.stat().st_mtime
+            except OSError:
+                mtime = None
+            cached_file = str(getattr(cached, "__file__", "") or "")
+            if (
+                cached is not None
+                and cached_file
+                and mtime is not None
+                and self._import_mtimes.get(name) == mtime
+                and Path(cached_file).resolve() == path.resolve()
+            ):
+                return cached
             spec = importlib.util.spec_from_file_location(name, path)
             if spec is None or spec.loader is None:
                 raise ImportError(i18n.t("loader.plugin.file_unloadable", path=path))
             module_obj = importlib.util.module_from_spec(spec)
             sys.modules[name] = module_obj
             spec.loader.exec_module(module_obj)
+            if mtime is not None:
+                self._import_mtimes[name] = mtime
             return module_obj
 
         # 必须插入绝对路径：sys.path_importer_cache 以条目字面字符串为键，

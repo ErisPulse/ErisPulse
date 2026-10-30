@@ -3278,6 +3278,45 @@ class TestHandlerQueueBackpressure:
             t1.cancel()
             t2.cancel()
 
+    def test_record_drop_window_folding(self):
+        """窗口折叠：窗口内首条记 WARNING，后续只累计折叠计数"""
+        mgr = AdapterManager()
+        mgr._handler_queue_overflow_warn_at = 0.0  # 窗口起点（单调钟零点）
+        mgr._record_handler_queue_drop("h", "message", "p1", 10)
+        assert mgr._handler_queue_overflow_count == 1
+        assert mgr._handler_queue_overflow_suppressed == 0
+        # 同一窗口内的后续丢弃：只累计，不再告警
+        mgr._record_handler_queue_drop("h", "message", "p1", 10)
+        mgr._record_handler_queue_drop("h", "message", "p1", 10)
+        assert mgr._handler_queue_overflow_count == 3
+        assert mgr._handler_queue_overflow_suppressed == 2
+
+    @pytest.mark.asyncio
+    async def test_overflow_emits_single_warning_per_window(self, caplog):
+        """洪峰连续丢弃：一个窗口只产生一条 WARNING 记录"""
+        mgr = AdapterManager()
+        mgr._handler_queue_max_pending = 1
+
+        async def slow(data):
+            await asyncio.sleep(10)
+
+        mgr._pending_handler_tasks = set()
+        t1 = asyncio.ensure_future(slow({}))
+        mgr._pending_handler_tasks.add(t1)
+        try:
+            data = {"type": "message", "detail_type": "private", "platform": "p1"}
+            with caplog.at_level("WARNING"):
+                for _ in range(5):
+                    assert mgr._dispatch_handler_task(
+                        slow, data, event_type="message", platform="p1"
+                    ) is None
+            assert mgr._handler_queue_overflow_count == 5
+            assert mgr._handler_queue_overflow_suppressed == 4
+            # 5 次丢弃仅 1 条告警（窗口首条；丢弃路径无其他 WARNING 来源）
+            assert len([r for r in caplog.records if r.levelname == "WARNING"]) == 1
+        finally:
+            t1.cancel()
+
     def test_queue_limit_zero_means_unlimited(self):
         """上限 0 = 不限（懒读返回钳制后的非负值）"""
         mgr = AdapterManager()

@@ -595,6 +595,7 @@ SKILL_SPECS: list[SkillSpec] = [
             SkillDoc("Dashboard", "ecosystem/dashboard.md"),
             SkillDoc("定时任务", "ecosystem/cron.md"),
             SkillDoc("AI 对话模块", "ecosystem/qvqchat.md"),
+            SkillDoc("MCP 桥", "ecosystem/apimcp.md"),
             SkillDoc("平台指南索引", "platform-guide/README.md"),
         ],
     ),

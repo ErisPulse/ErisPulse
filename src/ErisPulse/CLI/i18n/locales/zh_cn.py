@@ -617,6 +617,7 @@ TRANSLATIONS = {
     "cli.doctor.fix_pollution_confirm": "删除这些残留键（注释与顺序保真）？",
     "cli.doctor.fix_pollution_skipped": "已跳过残留清理",
     "cli.doctor.fix_pollution_removed": "已从 config.toml 清理 {count} 处残留键",
+    "cli.doctor.fix_pollution_backup": "清理前已备份原配置: {path}",
     "cli.doctor.fix_pollution_failed": "残留清理失败: {error}",
     "cli.doctor.fix_pollution_remove_failed": "以下残留键清理失败（其余已写回 config.toml）: {keys}",
     "cli.doctor.component_config_ok": "全部就绪（无待完善项）",

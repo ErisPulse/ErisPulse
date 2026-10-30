@@ -111,145 +111,147 @@
 > 注：1つのバグは複数のタイプに属する可能性があり、上表は主なタイプごとに集計しています。  
 > 注：BUG-028 / BUG-031 の番号は空欄です（登録時に廃棄され、既存の番号体系を維持するため再利用されません）。
 
-## 修正されたバグ
+## 修正済みのバグ
 
-### [BUG-001] 重複登録されたイベントハンドラがイベントを複数回処理する
+### [BUG-001] イベントハンドラーの重複登録によりイベントが複数回処理される
 
-**問題**: 複数の `@message` / `@notice` などのデコレータを使ってハンドラを登録すると、同じイベントが複数回トリガーされ、コマンドが複数回実行されたり、ログが重複出力されたりする。
+**問題**: 複数の `@message` / `@notice` などのデコレーターでハンドラーを登録する際、同一イベントが複数回重複して発火し、コマンドが複数回実行されたり、ログが重複出力されたりする。
 
-**原因**: `BaseEventHandler` がアダプタのイベントバスにハンドラを登録する際、重複除去ロジックがなく、各デコレータがバスに1回ずつハンドラをマウントする。イベント配信時に複数回呼び出される。
+**原因**: `BaseEventHandler` がアダプターのイベントバスにハンドラーを登録する際に重複排除ロジックが欠けており、各デコレーターがバスに一度ずつマウントされるため、イベント配信時に複数回呼び出される。
 
 **影響バージョン**: 2.2.0-dev.0 - 2.2.1-dev.0
 
 **修正バージョン**: 2.2.1-dev.0
 
-**修正内容**: `BaseEventHandler` を最適化し、各イベントタイプがアダプタに1回だけハンドラを登録されるようにし、重複トリガーを回避する。
+**修正内容**: `BaseEventHandler` を最適化し、各イベントタイプごとにアダプターへ一度だけハンドラーを登録するようにし、重複発火を回避。
 
 **修正日**: 2025/08/18
 
-**重大度**: 🔴 重大
+**深刻度**: 🔴 深刻
 
 **タイプ**: イベントシステム
 
 ---
 
-### [BUG-002] Init コマンドアダプタの設定パスの型エラー
+### [BUG-002] Init コマンドのアダプター設定パス型エラー
 
-**問題**: `ep init` コマンドを使って対話的に初期化を行うと、アダプタの設定を選択すると次のような型エラーが発生する:
+**問題**: `ep init` コマンドで対話式初期化を行う際、アダプター設定を選択すると型エラーが発生する：
 
 ```
-対話的初期化失敗: 'str' と 'str' の間に 'unsupported operand type(s) for /' が存在します
+対話式初期化に失敗: unsupported operand type(s) for /: 'str' and 'str'
 ```
 
-**原因**: 2.3.7 バージョンで設定ファイルパスを調整した際、メソッドのパラメータ型が一貫していなかった。`_configure_adapters_interactive_sync` は `str` 型のパラメータを受け取り、内部で `Path` の `/` 演算子を使ってパスを結合している。
+**原因**: 2.3.7 バージョンで設定ファイルのパスを調整した際、メソッドのパラメーター型に不整合があった。`_configure_adapters_interactive_sync` は `str` 型のパラメーターを受け取るが、内部では `Path` の `/` 演算子を使用してパスを連結している。
 
 **影響バージョン**: 2.3.7 - 2.3.9-dev.1
 
 **修正バージョン**: 2.3.9-dev.1
 
-**修正内容**: `_configure_adapters_interactive_sync` メソッドのパラメータ型を `str` から `Path` に変更し、呼び出し時に `Path` オブジェクトを直接渡す。
+**修正内容**: `_configure_adapters_interactive_sync` メソッドのパラメーター型を `str` から `Path` に変更し、呼び出し時に直接 `Path` オブジェクトを渡すようにした。
 
 **修正日**: 2026/03/23
 
-**重大度**: 🟡 中等
+**深刻度**: 🟡 中程度
 
 **タイプ**: CLI
 
 ---
 
-### [BUG-003] 再起動後にコマンドイベントが無効になる
+### [BUG-003] 再起動後にコマンドイベントが機能しなくなる
 
-**問題**: `sdk.restart()` を呼び出すと、`@command` で登録されたコマンドがトリガーされなくなり、送信されたコマンドに対してロボットが応答しなくなる。
+**問題**: `sdk.restart()` を呼び出した後、`@command` で登録されたコマンドがトリガーされなくなり、コマンド送信後にボットが応答しない。
 
-**原因**: `adapter.shutdown()` がイベントバスをクリアした後、`BaseEventHandler` の `_linked_to_adapter_bus` 状態が `False` にリセットされておらず、`_process_event` メソッドがバスにマウントされていると判断して再マウント処理をスキップする。
+**原因**: `adapter.shutdown()` がイベントバスをクリアした後も、`BaseEventHandler` の `_linked_to_adapter_bus` 状態が `False` にリセットされず、`_process_event` メソッドが既にアダプターバスにマウント済みと判断し、再マウント処理をスキップするため。
 
 **影響バージョン**: 2.2.x - 2.4.0-dev.2
 
 **修正バージョン**: 2.4.0-dev.3
 
-**修正内容**: `_linked_to_adapter_bus` 状態を追跡する `_clear_handlers()` を導入し、`shutdown`/`restart` シナリオに対応する。`uninit()` でバス接続を切断した後、次回の `register()` で自動的に再マウントされる。
+**修正内容**: `_linked_to_adapter_bus` 状態追跡を導入し、`_clear_handlers()` でバス接続を切断した後、次回の `register()` で自動的に再マウントされるようにし、shutdown/restart シナリオに対応。
 
 **修正日**: 2026/04/09
 
-**重大度**: 🔴 重大
+**深刻度**: 🔴 深刻
 
 **タイプ**: イベントシステム
 
 ---
 
-### [BUG-004] ライフサイクルイベントハンドラがクリアされない
+### [BUG-004] ライフサイクルイベントハンドラーがクリーンアップされない
 
-**問題**: `sdk.restart()` 後、古いライフサイクルイベントハンドラが存在し、同じイベントが複数回処理される。`lifecycle._handlers` ディクショナリが `uninit()` 時にクリアされていないため、`restart` 後も古いハンドラと新しいハンドラが共存する。
+**問題**: `sdk.restart()` の後、古いライフサイクルイベントハンドラーが残存して重複発火し、同一イベントが複数回処理される。
+
+**原因**: `lifecycle._handlers` 辞書が `uninit()` 時に一切クリーンアップされず、restart 後に古いハンドラーと新しいハンドラーが同時に存在する。
 
 **影響バージョン**: 2.3.0 - 2.4.0-dev.2
 
 **修正バージョン**: 2.4.0-dev.3
 
-**修正内容**: `Uninitializer` のクリーンアップフローの末尾（すべてのイベントが送信された後）、`lifecycle._handlers` をクリアする。
+**修正内容**: `Uninitializer` のクリーンアップフローの最後（すべてのイベント送信後）に、`lifecycle._handlers` をクリアする。
 
 **修正日**: 2026/04/09
 
-**重大度**: 🟡 中等
+**深刻度**: 🟡 中程度
 
-**タイプ**: 実行時
+**タイプ**: ランタイム
 
 ---
 
 ### [BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない
 
-**問題**: `Event.is_friend_add()` は `detail_type == "friend_add"` をチェックし、`Event.is_friend_delete()` は `detail_type == "friend_delete"` をチェックするが、OneBot12 標準では `detail_type` の値は `"friend_increase"` と `"friend_decrease"` である。`notice.py` の `on_friend_add`/`on_friend_remove` デコレータが使用する値と不一致のため、デコレータで登録されたハンドラがトリガーされた際に、対応する `is_friend_add()`/`is_friend_delete()` 判定メソッドは `False` を返す。
+**問題**: `Event.is_friend_add()` は `detail_type == "friend_add"` をチェックし、`Event.is_friend_delete()` は `detail_type == "friend_delete"` をチェックしているが、OneBot12 標準で定義されている `detail_type` の値は `"friend_increase"` と `"friend_decrease"` である。`notice.py` の `on_friend_add`/`on_friend_remove` デコレーターが使用する値と一致せず、デコレーターで登録されたハンドラーが発火した際に、対応する `is_friend_add()`/`is_friend_delete()` 判定メソッドが `False` を返してしまう。
 
-**原因**: `wrapper.py` で非標準の命名が使用されているが、`notice.py` では正しい OB12 標準の命名が使用されている。
+**原因**: `wrapper.py` では非標準の命名が使用されており、一方 `notice.py` では正しい OB12 標準の命名が使用されている。
 
-**影響バージョン**: 実装以来
+**影響バージョン**: 実装当初から現在まで
 
 **修正バージョン**: 2.4.2-dev.1
 
-**修正内容**: `is_friend_add()` のマッチング値を `"friend_add"` から `"friend_increase"` に、`is_friend_delete()` を `"friend_delete"` から `"friend_decrease"` に変更する。
+**修正内容**: `is_friend_add()` のマッチング値を `"friend_add"` から `"friend_increase"` に、`is_friend_delete()` を `"friend_delete"` から `"friend_decrease"` に変更。
 
 **修正日**: 2026/04/13
 
-**重大度**: 🟡 中等
+**深刻度**: 🟡 中程度
 
 **タイプ**: イベントシステム
 
 ---
 
-### [BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が正しくない
+### [BUG-006] adapter.clear() が _started_instances をクリーンアップせず、再起動後に状態が不正になる
 
-**問題**: `AdapterManager.clear()` メソッドは `_adapters`、`_adapter_info`、ハンドラ、`_bots` をクリアするが、`_started_instances` 集合をクリアしない。アダプタが実行中に `clear()` を呼び出すと、`_started_instances` は空参照を保持し、再起動後に状態判定が誤る。
+**問題**: `AdapterManager.clear()` メソッドは `_adapters`、`_adapter_info`、ハンドラー、`_bots` をクリアするが、`_started_instances` 集合が見落とされている。アダプターが実行中に `clear()` を呼び出すと、`_started_instances` にダングリング参照が残り、再起動後の状態判定が誤る。
 
-**原因**: 2.4.0-dev.1 で `_started_instances` を導入した際、`clear()` で同期してクリアしなかった。
+**原因**: 2.4.0-dev.1 で `_started_instances` を導入した際に、`clear()` 内での同時クリーンアップが行われなかった。
 
 **影響バージョン**: 2.4.0-dev.1 - 2.4.2-dev.0
 
 **修正バージョン**: 2.4.2-dev.1
 
-**修正内容**: `clear()` メソッドに `self._started_instances.clear()` を追加する。
+**修正内容**: `clear()` メソッドに `self._started_instances.clear()` を追加。
 
 **修正日**: 2026/04/13
 
-**重大度**: 🟡 中等
+**深刻度**: 🟡 中程度
 
-**タイプ**: アダプタ
+**タイプ**: アダプター
 
 ---
 
-### [BUG-007] command.wait_reply() が廃止された asyncio.get_event_loop() を使用している
+### [BUG-007] command.wait_reply() が非推奨の asyncio.get_event_loop() を使用している
 
-**問題**: `CommandHandler.wait_reply()` メソッドは `asyncio.get_event_loop()` を使って future を作成し、タイムスタンプを取得しているが、Python 3.10+ で廃止されている。非同期コンテキストでは `asyncio.get_running_loop()` を使用するべきである。`wrapper.py` の `wait_for()` メソッドで使用されている `get_running_loop()` と不一致である。
+**問題**: `CommandHandler.wait_reply()` メソッドが `asyncio.get_event_loop()` を使用して future を作成し、タイムスタンプを取得している。このメソッドは Python 3.10+ で非推奨であり、非同期コンテキストでは `asyncio.get_running_loop()` を使用すべきである。同一ファイルの `wrapper.py` の `wait_for()` メソッドが使用している `get_running_loop()` と一貫していない。
 
-**原因**: 開発時に古い API を使用しており、後から追加された `wait_for()` は正しい API を使用しているが、古いコードを修正していない。
+**原因**: 開発時に旧 API が使用され、その後追加された `wait_for()` では正しい API が使用されたが、旧コードへの遡及修正が行われなかった。
 
 **影響バージョン**: 2.3.0-dev.0
 
 **修正バージョン**: 2.4.2-dev.1
 
-**修正内容**: `command.py` の `asyncio.get_event_loop()` を2か所 `asyncio.get_running_loop()` に置き換える。
+**修正内容**: `command.py` 内の 2 か所の `asyncio.get_event_loop()` を `asyncio.get_running_loop()` に置き換えた。
 
 **修正日**: 2026/04/13
 
-**重大度**: 🟢 軽微
+**深刻度**: 🟢 軽微
 
 **タイプ**: イベントシステム
 
@@ -257,62 +259,62 @@
 
 ### [BUG-008] Bot オフラインイベントが shutdown プロセス中に重複送信される
 
-**問題**: `adapter.shutdown()` を使ってすべてのアダプタを閉じる際、`_update_bot_status()` が閉じるプロセス中に Bot オフラインイベントを繰り返し送信し、同一批の Bot が複数回オフラインとしてマークされ、`adapter.bot.offline` ライフサイクルイベントが複数回トリガーされる。
+**問題**: `adapter.shutdown()` を呼び出してすべてのアダプターをシャットダウンする際、`_update_bot_status()` がシャットダウンフロー中に繰り返し Bot オフラインイベントを送信し、同一の Bot が複数回オフラインとしてマークされ、`adapter.bot.offline` ライフサイクルイベントが複数回発火する。
 
-**原因**: 2.4.0-dev.1 で導入された Bot 状態追跡システムが「閉じる中」のフラグを `shutdown()` 期間中に設定しておらず、`_update_bot_status()` が通常のオフラインと閉じる中の連鎖オフラインを区別できない。
+**原因**: 2.4.0-dev.1 で導入された Bot 状態追跡システムが `shutdown()` 中に「シャットダウン中」フラグを設定しておらず、`_update_bot_status()` が通常のオフラインとシャットダウンフロー中の連鎖的オフラインを区別できない。
 
 **影響バージョン**: 2.4.0-dev.1 - 2.4.2-dev.1
 
 **修正バージョン**: 2.4.2-dev.1
 
-**修正内容**: `AdapterManager` に `_is_being_shutdown` フラグを追加し、`shutdown()` 開始時に `True` に設定し、終了時にクリアする。`_update_bot_status()` はこのフラグをチェックして、閉じる中の重複送信をスキップする。
+**修正内容**: `AdapterManager` に `_is_being_shutdown` フラグを新設し、`shutdown()` 開始時に True に設定、終了時にクリアする。`_update_bot_status()` はこのフラグをチェックした後、シャットダウンプロセス中の重複送信をスキップする。
 
 **修正日**: 2026/04/21
 
-**重大度**: 🟡 中等
+**深刻度**: 🟡 中程度
 
-**タイプ**: アダプタ
+**タイプ**: アダプター
 
 ---
 
-### [BUG-009] LazyModule 同期アクセスで BaseModule が初期化完了していない
+### [BUG-009] LazyModule による BaseModule への同期アクセスで初期化が未完了のままになる
 
-**問題**: 同期コンテキストで LazyModule の属性にアクセスすると、モジュールは `loop.create_task()` で非同期に初期化するが待機せず、初期化が完了していない状態で属性にアクセスされ、競合条件が発生する。
+**問題**: ユーザーが同期コンテキストで遅延ロードされた BaseModule の属性にアクセスする際、モジュールは `loop.create_task()` で非同期初期化を行うが待機しないため、属性アクセス時に初期化が未完了の可能性があり、競合状態が発生する。
 
-**原因**: `_ensure_initialized()` は `loop.create_task(self._initialize())` を使用して初期化を開始した後、すぐに返却しており、初期化が完了するまで待機していない。
+**原因**: `_ensure_initialized()` が BaseModule に対して `loop.create_task(self._initialize())` を使用した後すぐに戻り、初期化完了を保証していなかった。
 
 **影響バージョン**: 2.4.0-dev.0 - 2.4.2-dev.1
 
 **修正バージョン**: 2.4.2-dev.2
 
-**修正内容**: 同期コンテキストでは、BaseModule の初期化を `asyncio.run(self._initialize())` に変更し、初期化が完了してから返すようにする。透明プロキシの特性を維持し、ユーザーは同期/非同期の違いを意識する必要がない。
+**修正内容**: 同期コンテキストでは、BaseModule の初期化を `asyncio.run(self._initialize())` を使用するように変更し、初期化完了後に戻るようにした。透過プロキシ特性を維持し、ユーザーは同期/非同期の差異を意識する必要がない。
 
 **修正日**: 2026/04/21
 
-**重大度**: 🟡 中等
+**深刻度**: 🟡 中程度
 
 **タイプ**: ロードシステム
 
 ---
 
-### [BUG-010] 設定システムのマルチスレッド書き込みでデータが失われる
+### [BUG-010] 設定システムのマルチスレッド書き込みによるデータ消失
 
-**問題**: マルチスレッド環境で複数のスレッドが `config.setConfig()` を呼び出すと、`_flush_config()` の読み取り-変更-書き込み操作はアトミックではなく、一部の書き込みが失われる可能性がある。
+**問題**: マルチスレッド環境で、複数のスレッドが同時に `config.setConfig()` を呼び出す際、`_flush_config()` の読み取り-修正-書き込み操作がアトミックではなく、一部の書き込みが失われる可能性がある。
 
-**原因**: `_flush_config()` は `RLock` を使用しているが、ファイルの読み取りと書き込みの間にファイルロック保護がなく、`_schedule_write` のタイマーが複数回トリガーされて上書きされる可能性がある。
+**原因**: `_flush_config()` は `RLock` を使用しているものの、ファイルの読み取りと書き込みの間にファイルロックによる保護がなく、`_schedule_write` の Timer が複数回発火して上書きされる可能性があった。
 
 **影響バージョン**: 2.3.0 - 2.4.2-dev.1
 
 **修正バージョン**: 2.4.2-dev.2
 
 **修正内容**:
-1. ファイルロックメカニズム（`_file_lock`）を追加してファイル操作をアトミックにする。
-2. 一時ファイルに書き込んだ後、`os.replace`/`os.rename` でアトミックにリネームする。
-3. `_schedule_write` のタイマーのキャンセルと再スケジューリングのロジックを改善する。
+1. ファイルロック機構（`_file_lock`）を追加し、ファイル操作のアトミック性を確保
+2. 一時ファイルへの書き込み後、アトミックにリネーム（`os.replace`/`os.rename`）
+3. `_schedule_write` の Timer キャンセルおよび再スケジュールロジックを改善
 
 **修正日**: 2026/04/21
 
-**重大度**: 🔴 重大
+**深刻度**: 🔴 深刻
 
 **タイプ**: 設定システム
 
@@ -320,321 +322,322 @@
 
 ### [BUG-011] Windows で CTRL+C でプログラムを停止できない
 
-**問題**: Windows で `python main.py` を直接実行すると、CTRL+C を押してもプログラムを停止できない。プログラムは正常に起動しルートサーバーの情報を出力した後、CTRL+C は全く反応せず、プロセスを強制的に終了するためタスクマネージャーを使用する必要がある。一方、`epsdk run` で起動した場合は正常に停止できるが、`epsdk run` はサブプロセスモデルで実行される。
+**問題**: Windows 上で直接 `python main.py` を実行すると、CTRL+C を押してもプログラムを終了できない。プログラムは正常に起動し、ルーティングサーバー情報を出力した後、CTRL+C にまったく反応せず、タスクマネージャーでプロセスを強制終了するしかない。一方、`epsdk run` で起動した場合は正常に停止できる——ただし `epsdk run` は子プロセスモデルで実行されている。
 
-**原因**: Hypercorn ASGI サーバーの `serve()` 関数内部で `signal.signal(SIGINT, handler)` を使って自身の SIGINT ハンドラを登録しており、Python のデフォルトの `KeyboardInterrupt` ハンドラのメカニズムを上書きしている。`asyncio.create_task()` で Hypercorn をバックグラウンドタスクとして起動した場合、Hypercorn の内部のシャットダウンフローが正常にトリガーされない（`worker_serve` モードを想定しているため）、CTRL+C シグナルは Hypercorn に飲み込まれるが、クリーンアップ動作は発生しない。
+**原因**: Hypercorn ASGI サーバーの `serve()` 関数が内部で `signal.signal(SIGINT, handler)` により独自の SIGINT ハンドラーを登録し、Python のデフォルトの `KeyboardInterrupt` 処理機構を上書きしている。`asyncio.create_task()` で Hypercorn をバックグラウンドタスクとして起動した場合、Hypercorn の内部 shutdown フローが正常にトリガーされず（`worker_serve` モードを想定しているため）、CTRL+C シグナルが Hypercorn に飲み込まれ、いかなるクリーンアップ処理も実行されない。
 
 **影響バージョン**: 2.3.6 - 2.4.2
 
 **修正バージョン**: 2.4.3-dev.0
 
 **修正内容**:
-1. ASGI サーバーを Hypercorn から Uvicorn に切り替える（`pyproject.toml` 依存関係の変更）。
-2. `uvicorn.Server._serve()` を直接使って起動し、`capture_signals()` シグナル処理コンテキストマネージャーを**回避**する。
-3. `server.should_exit = True` を使って優雅な停止を実現し、タイムアウトしたらバックグラウンドタスクをキャンセルする。
-4. 同期的にサブプロセス実行モデルと `runtime/cleanup.py` クリーンアップモジュールを削除する（サブプロセスのクリーンアップメカニズムは不要になる）。
+1. ASGI サーバーを Hypercorn から Uvicorn に切り替え（`pyproject.toml` の依存関係変更）
+2. `uvicorn.Server._serve()` を使用してサーバーを直接起動し、`capture_signals()` シグナル処理コンテキストマネージャーを**バイパス**
+3. `server.should_exit = True` によるグレースフルシャットダウンを実装し、タイムアウト時はバックグラウンドタスクをキャンセル
+4. 子プロセス実行モデルと `runtime/cleanup.py` クリーンアップモジュールを同時に削除（子プロセスクリーンアップ機構が不要になったため）
 
 **修正日**: 2026/04/28
 
-**重大度**: 🔴 重大
+**深刻度**: 🔴 深刻
 
-**タイプ**: CLI / 実行時
+**タイプ**: CLI / ランタイム
 
 ---
 
-### [BUG-012] ホットリスタート後に更新されたモジュールの Python コードが有効にならない
+### [BUG-012] ホットリスタート後に更新済みモジュールの Python コードが反映されない
 
-**問題**: `sdk.restart()` でソフトリスタートした後、`epsdk install` でアップグレードされたモジュール/アダプターの新しいコード（追加の API ルートなど）が有効にならず、古いバージョンのロジックが実行される。プロセスを完全に再起動するまで最新のコードをロードできない。
+**問題**: `sdk.restart()` によるソフト再起動の実行後、`epsdk install` でアップグレード済みのモジュール/アダプターの新コード（新規 API ルートなど）が反映されず、旧バージョンのロジックが実行され続ける。最新コードをロードするにはプロセスの完全な再起動が必要。
 
-**原因**: `_do_restart()` で再初期化時に `entry_point.load()` を呼び出すが、この関数は `sys.modules` からキャッシュされた古いモジュールオブジェクトを返すだけで、ディスクから再読み込みしない。
+**原因**: `_do_restart()` が再初期化時に `entry_point.load()` を呼び出すが、この関数は `sys.modules` からキャッシュされた旧バージョンのモジュールオブジェクトを返し、ディスクから再ロードしないため。
 
-**影響バージョン**: 早期バージョン - 2.4.3-dev.1
+**影響バージョン**: 初期バージョン - 2.4.3-dev.1
 
 **修正バージョン**: 2.4.3-dev.1
 
-**修正内容**: `uninit()` 後、`init()` 前に `sys.modules` にロードされたモジュール/アダプターのパッケージのキャッシュをクリアし、`entry_point.load()` が最新のコードをロードするようにする。`_collect_top_level_modules()` と `_invalidate_module_cache()` 補助メソッドを追加し、`top_level.txt` または entry-point value からトップレベルモジュール名を推定する。
+**修正内容**: `uninit()` の後、`init()` の前に、`sys.modules` 内のロード済みモジュール/アダプターパッケージのキャッシュをクリーンアップし、`entry_point.load()` がディスクから最新コードをロードするようにした。`_collect_top_level_modules()` と `_invalidate_module_cache()` のヘルパーメソッドを新設し、`top_level.txt` または entry-point value からトップレベルモジュール名を導出する。
 
 **修正日**: 2026/05/03
 
-**重大度**: 🔴 重大
+**深刻度**: 🔴 深刻
 
-**タイプ**: ロードシステム / 実行時
+**タイプ**: ロードシステム / ランタイム
 
 ---
 
-### [BUG-013] モジュールロード戦略のソートロジックが間違っている
+### [BUG-013] モジュールロード戦略のソートロジックエラー
 
-**問題**: `ModuleLoadStrategy` は `priority` フィールドを提供してモジュールの初期化順序を宣言するが、ロード戦略の実装にミスがあり、モジュールは予期した順序で初期化されず、`entry_points()` のデフォルト順序でロードされる。モジュール間に依存関係がある場合、`priority` を使って正しい初期化順序を保証できない。
+**問題**: `ModuleLoadStrategy` はモジュールの初期化優先度を宣言するための `priority` フィールドを提供しているが、ロード戦略の実装にミスがあり、モジュールが期待される優先度順に初期化されず、実際には `entry_points()` のデフォルト順でロードされていた。モジュール間にロード依存関係がある場合、`priority` によって正しい初期化順序を保証できない。
 
-**原因**: ロード戦略の実装でソートロジックにミスがあり、`initialize_modules()` で `priority` を使ってモジュールリストをソートしていない。
+**原因**: ロード戦略の実装においてソートロジックに誤りがあり、`initialize_modules()` が `priority` を使用してモジュールリストをソートしていなかった。
 
 **影響バージョン**: 2.3.4 - 2.4.5-dev.2
 
 **修正バージョン**: 2.4.5-dev.3
 
-**修正内容**: `initialize_modules()` でループする前に、`priority` で降順にモジュールリストをソートする。同じ priority のモジュールは元の相対順序を保持する（安定ソート）。
+**修正内容**: `initialize_modules()` の走査前に、`priority` の降順でモジュールリストをソートする。同一 priority のモジュールは元の相対順序を維持する（安定ソート）。
 
 **修正日**: 2026/05/15
 
-**重大度**: 🟡 中等
+**深刻度**: 🟡 中程度
 
 **タイプ**: ロードシステム
 
 ---
 
-### [BUG-014] アダプタミドルウェアが None を返すとイベントデータが失われる
+### [BUG-014] アダプターのミドルウェアが None を返すことでイベントデータが失われる
 
-**問題**: `adapter.emit()` が OneBot12 ミドルウェアチェーンを実行する際、あるミドルウェアが `None`（`return data` を忘れている）を返すと、後続のミドルウェアとすべてのイベントハンドラが `processed_data` が `None` になるため、イベント処理が完全に無効になる。
+**問題**: `adapter.emit()` が OneBot12 ミドルウェアチェーンを実行する際、いずれかのミドルウェアが `None` を返した場合（例：`return data` を忘れた場合）、後続のミドルウェアとすべてのイベントハンドラーが受け取る `processed_data` が `None` となり、イベント処理が完全に機能しなくなる。
 
-**原因**: ミドルウェアチェーンの実装 `processed_data = await middleware(processed_data)` で戻り値が `None` かどうかをチェックせず、前の処理結果を上書きしている。
+**原因**: ミドルウェアチェーンの実装 `processed_data = await middleware(processed_data)` が戻り値が `None` かどうかをチェックせず、前段の処理結果を直接上書きしていた。
 
 **影響バージョン**: unknown - 2.4.5-dev.3
 
 **修正バージョン**: 2.4.5-dev.4
 
-**修正内容**: ミドルウェアが `None` を返した場合はその返り値を無視し、元のデータを保持して伝播させ、warning レベルのログを出力する。
+**修正内容**: ミドルウェアが `None` を返した場合はその戻り値を無視し、元のデータを保持して伝搬を継続し、warning レベルのログを出力する。
 
 **修正日**: 2026/05/15
 
-**重大度**: 🔴 重大
+**深刻度**: 🔴 深刻
 
-**タイプ**: アダプタ / イベントシステム
+**タイプ**: アダプター / イベントシステム
 
 ---
 
-### [BUG-015] 設定ファイルのパスが作業ディレクトリに依存する
+### [BUG-015] 設定ファイルパスが作業ディレクトリに依存する
 
-**問題**: `ConfigManager` の設定ファイルのパスはデフォルトで相対パス `"config/config.toml"` であり、実行時に `os.getcwd()` で解析される。作業ディレクトリが実行中に変更された場合（例: `os.chdir()` を使用した場合）、設定ファイルの読み書き操作は誤った場所を指し、設定が失われるか、古いデータが読み込まれる。
+**問題**: `ConfigManager` の設定ファイルパスはデフォルトで相対パス `"config/config.toml"` であり、実行時に `os.getcwd()` に依存して解決される。作業ディレクトリが実行中に変更された場合（例：`os.chdir()` による）、設定ファイルの読み書き操作が誤った場所を指すようになり、設定の消失や旧データの読み込みが発生する。
 
-**原因**: `__init__` で相対パスを直接保持しており、初期化時に絶対パスに解析していない。
+**原因**: `__init__` 内で相対パスをそのまま保存し、初期化時に絶対パスへ解決していなかった。
 
 **影響バージョン**: 2.3.7 - 2.4.5-dev.3
 
 **修正バージョン**: 2.4.5-dev.4
 
-**修正内容**: `ConfigManager.__init__()` で、渡されたパスが相対パスの場合、自動的に `os.path.abspath()` で絶対パスに解析する。
+**修正内容**: `ConfigManager.__init__()` において、渡されたパスが相対パスの場合、`os.path.abspath()` により自動的に絶対パスへ解決する。
 
 **修正日**: 2026/05/15
 
-**重大度**: 🟡 中等
+**深刻度**: 🟡 中程度
 
 **タイプ**: 設定システム
 
 ---
 
-### [BUG-016] BaseStorage がストレージ値の None とキーの存在しないことを混同する
+### [BUG-016] BaseStorage が格納値 None とキー不存在を混同する
 
-**問題**: `BaseStorage.get_multi()` / `__getattr__()` は「キーが存在しない」ことと「キーの値が `None` である」ことを区別できず、ユーザーが明示的に `None` を保存した後に読み取ると、キーが存在しないとみなされる。
+**問題**: `BaseStorage.get_multi()` / `__getattr__()` は「キーが存在しない」と「キーの値が `None` である」という 2 つの場合を区別できず、ユーザーが明示的に `None` を格納した後に読み取ると、キーが存在しないものとして扱われる。
 
-**原因**: 取得ロジックが `value is None` でキーの存在を判断しており、独立した「欠損」マーカーがない。
+**原因**: 値の取得ロジックが `value is None` で直接キーの存在を判定しており、独立した「欠落」マーカーが欠けていた。
 
-**影響バージョン**: 早期バージョン - 2.4.6-dev.6
+**影響バージョン**: 初期バージョン - 2.4.6-dev.6
 
 **修正バージョン**: 2.4.6-dev.6
 
-**修正内容**: `_SENTINEL` センティネル値を導入して「キーが存在しない」ことと「値が None」を区別し、混同しないようにする。
+**修正内容**: `_SENTINEL` センチネル値を導入して「キーが存在しない」と「値が None である」を区別し、両者が混同されないようにした。
 
 **修正日**: 2026/06/07
 
-**重大度**: 🟡 中等
+**深刻度**: 🟡 中程度
 
 **タイプ**: ストレージ
 
 ---
 
-### [BUG-017] WebSocketルートの auto_accept フラグがサービス再起動後に失われる
+### [BUG-017] WebSocket ルートの auto_accept フラグがサービス再起動後に失われる
 
-**問題**: サービスを再起動（例: `sdk.restart()`）した後、すべての WebSocket ルートの `auto_accept` 設定が `False` に戻り、元々自動的に accept するはずの接続は保留状態になり、クライアントは長時間応答を受け取れず、WebSocket 接続がフリーズする。
+**問題**: サービス再起動（例：`sdk.restart()`）後、すべての WebSocket ルートの `auto_accept` 設定が `False` に戻り、自動 accept を期待していた接続が保留状態となり、クライアントが長時間応答を受け取れず、WS 接続がハングアップする。
 
-**原因**: `_restore_routes_from_records()` が永続化記録からルートを復元する際に `auto_accept` を硬coding で `False` にしている。また、ルートストレージのタプルが二元タプルから三元タプルに拡張された際に、復元ロジックも同期して更新されていない。
+**原因**: `_restore_routes_from_records()` が永続化レコードからルートを復元する際に `auto_accept` を `False` にハードコードし、元のレコード内の値を読み取っていなかった。また、ルート保存タプルが 2 要素から 3 要素に拡張された際に、復元ロジックが同時に更新されなかった。
 
 **影響バージョン**: 2.3.8-dev.0 - 2.4.6-dev.6
 
 **修正バージョン**: 2.4.6-dev.6
 
-**修正内容**: ルートストレージのタプルを `(handler, auth_handler, auto_accept)` に拡張し、`_restore_routes_from_records()` は記録から本当の `auto_accept` 値を読み取るようになり、硬coding の `False` にしない。
+**修正内容**: ルート保存タプルを `(handler, auth_handler, auto_accept)` に拡張し、`_restore_routes_from_records()` がレコードから実際の `auto_accept` 値を読み取るようにし、ハードコードされた `False` ではなくした。
 
 **修正日**: 2026/06/07
 
-**重大度**: 🔴 重大
+**深刻度**: 🔴 深刻
 
 **タイプ**: ルーティング
 
 ---
 
-### [BUG-018] HTTP/WSクライアントの並行呼び出しによるクラッシュと接続リーク
+### [BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続リーク
 
-**問題**: `Core/client.py` の HTTP と WebSocket クライアントは並行シナリオで複数の安定性の問題があり、接続リークやプロセスクラッシュを引き起こす可能性がある:
-- 複数のコルーチンが `ClientWebSocket.receive()` を並行して呼び出すと aiohttp が `Concurrent call to receive() is not allowed` を投げる
-- `_get_http_session()` / `_get_ws_session()` の並行呼び出しは複数のセッションを作成し、`_drain_sessions()` が古い接続を閉じていないため、接続リークが発生する
-- `request()` の例外捕獲順序が間違っている: `except ClientConnectionError`（ErisPulse 例外）は決して発生せず、aiohttp の接続エラーは一般的な `except Exception` に捕らえられ、"接続リトライ + セッション再構築"のロジック（死コード）は決して実行されない
-- `send_json()` は `mode="binary"` パラメータを無視し、`_get_ws_session()` にはデフォルトのリクエストヘッダーを渡していない
+**問題**: `Core/client.py` の HTTP および WebSocket クライアントには、並行シナリオにおいて複数の安定性の欠陥があり、接続リークやプロセスクラッシュを引き起こす：
+- 複数コルーチンが `ClientWebSocket.receive()` を並行呼び出しした際に aiohttp が `Concurrent call to receive() is not allowed` を送出する
+- `_get_http_session()` / `_get_ws_session()` の並行呼び出しにより複数の session が作成される可能性があり、`_drain_sessions()` が旧接続を閉じないため、接続リークが発生する
+- `request()` の例外キャッチ順序が誤っている：`except ClientConnectionError`（ErisPulse 例外）が決して発火せず、aiohttp の接続エラーが汎用の `except Exception` で捕捉され、「接続リトライ + session 再構築」ロジック（デッドコード）が一度も実行されない
+- `send_json()` が `mode="binary"` パラメーターを無視する。`_get_ws_session()` がデフォルトリクエストヘッダーを渡していない
 
-**原因**: クライアントの初回実装（2.4.6-dev.5）で並行保護と例外分類が不足しており、aiohttp 例外体系と ErisPulse の独自例外の継承関係が適切に処理されていない。
+**原因**: クライアントの初回実装（2.4.6-dev.5）において並行保護と例外分類が欠けており、aiohttp の例外階層と ErisPulse カスタム例外の継承関係の扱いが不適切だった。
 
 **影響バージョン**: 2.4.6-dev.5 - 2.4.8
 
 **修正バージョン**: 2.4.8
 
 **修正内容**:
-1. `_recv_lock` を追加して `receive()` / `receive_text()` / `receive_bytes()` の呼び出しをシリアライズする
-2. `_session_lock` を追加してセッションの作成を保護し、`_drain_sessions()` を非同期メソッドに変更して古いセッションを実際に閉じる
-3. `request()` の例外捕獲順序を再構成: `asyncio.TimeoutError` → `aiohttp.ClientConnectionError`（セッションの再構築をトリガー）→ `aiohttp.ClientError` → `ClientError`（透過）→ `Exception`
-4. `send_json()` の mode 処理、`_get_ws_session()` のデフォルトリクエストヘッダーの透過、`close()` の並行競合、`HttpResponse.__aexit__` の重複 `release()`
+1. `_recv_lock` を新設し、すべての `receive()` / `receive_text()` / `receive_bytes()` 呼び出しを直列化
+2. `_session_lock` を新設して session 作成を保護。`_drain_sessions()` を非同期メソッドに変更し、実際に旧 session をクローズ
+3. `request()` の例外キャッチ順序を再構築：`asyncio.TimeoutError` → `aiohttp.ClientConnectionError`（session 再構築をトリガー）→ `aiohttp.ClientError` → `ClientError`（透過）→ `Exception`
+4. `send_json()` の mode 処理、`_get_ws_session()` のデフォルトリクエストヘッダー透過、`close()` の並行競合、`HttpResponse.__aexit__` の重複 `release()` を修正
 
 **修正日**: 2026/06/12
 
-**重大度**: 🔴 重大
+**深刻度**: 🔴 深刻
 
 **タイプ**: クライアント
 
 ---
 
-### [BUG-019] アダプタのホットリロード時にルートの競合によりリロードが失敗する
+### [BUG-019] アダプターのホットリロード時にルート競合によりリロードが失敗する
 
-**問題**: 第三者モジュール（例: Dashboard）がアダプタのホットリロードをトリガーするか、アダプタの起動が失敗して再試行する際に、以前登録された古いルート（例: `onebot11_default`）がクリアされていないため、`WebSocketパス ... は既に登録されています`の競合が発生し、リロードが失敗する。完全にプロセスを再起動するまで回復できない。
+**問題**: サードパーティモジュール（Dashboard など）がアダプターのホットリロードをトリガーした際、またはアダプターの起動失敗リトライ時に、前回登録された旧ルート（`onebot11_default` など）がクリーンアップされておらず、`WebSocketパス ... は既に登録されています` の競合が送出され、リロードが失敗する。回復にはプロセスの完全な再起動が必要。
 
-**原因**: `AdapterManager.shutdown()` は `unregister_all_by_namespace(platform)` でルートをクリアするだけだが、アダプタ（例: OneBot11）は `onebot11_{account_name}` を命名空間として WebSocket ルートを登録するため、粒度が合わずクリアが無効になる。起動失敗時の再試行も前回の残りのルートをクリアしていない。
+**原因**: `AdapterManager.shutdown()` が `unregister_all_by_namespace(platform)` だけでルートをクリーンアップしているが、アダプター（OneBot11 など）は `onebot11_{account_name}` を名前空間として WS ルートを登録しており、粒度が一致しないためクリーンアップが空操作となる。起動失敗リトライのパスでも前回の残存ルートがクリーンアップされていなかった。
 
-**影響バージョン**: 早期バージョン - 2.4.9
+**影響バージョン**: 初期バージョン - 2.4.9
 
 **修正バージョン**: 2.4.9
 
 **修正内容**:
-1. ルート登録時に `current_owner` ContextVar を使って `owner → namespace` の帰属関係を自動的に追跡する
-2. `unregister_all_by_owner(owner)` を追加し、停止/再起動時に `owner` ごとにクリアする。細粒度の命名空間をカバーする
-3. 新たに `_stop_adapter(platform)` 原語を追加（「停止即クリア」）、アダプタの停止とその登録されたリソースの回収を1つの呼び出しに束ねる。`restart()` と起動失敗時の再試行はすべてこのエントリーポイントを経由する
-4. フレームワークレベルの `adapter.restart(platform)` API を追加し、第三者モジュールはこのメソッドを呼び出すべきである
+1. ルート登録時に `current_owner` ContextVar により `owner → namespace` の帰属関係を自動追跡
+2. `unregister_all_by_owner(owner)` を新設し、停止/再起動時に owner ごとにもクリーンアップし、細粒度の名前空間をカバー
+3. `_stop_adapter(platform)` プリミティブを新設（「停止＝クリーンアップ」）。アダプターの停止とその登録リソースの回収を 1 回の呼び出しに結び付け、`restart()` と起動失敗リトライの両方がこのエントリーを経由する
+4. フレームワークレベルの `adapter.restart(platform)` API を新設。サードパーティモジュールはアダプターインスタンスを直接操作するのではなく、このメソッドを呼び出すべき
 
 **修正日**: 2026/06/12
 
-**重大度**: 🔴 重大
+**深刻度**: 🔴 深刻
 
-**タイプ**: アダプタ / ルーティング
+**タイプ**: アダプター / ルーティング
 
 ---
 
-### [BUG-020] 子プロセスモード `ep run <script>` でスクリプトのサブディレクトリが見つからない
+### [BUG-020] 子プロセスモード `ep run <script>` がスクリプト所在ディレクトリのサブパッケージを見つけられない
 
-**問題**: `ep r .\main.py` を使って非ホットリロードモードでスクリプトを実行する場合、スクリプトに相対インポート（例: `from qg import ...`）があると `No module named 'qg'` エラーが発生する。一方、`--reload` モードでは正常に実行できる。
+**問題**: `ep r .\main.py` の非ホットリロードモードでスクリプトを実行する際、スクリプトに相対インポート（例：`from qg import ...`）があると、`No module named 'qg'` エラーが発生する。一方 `--reload` モードでは正常に動作する。
 
-**原因**: 非ホットリロードモードでは `runpy.run_path()` を直接呼び出してスクリプトを実行するが、この関数はスクリプトの所在ディレクトリを `sys.path` に自動的に追加しない。一方、`--reload` モードでは `subprocess.Popen` でサブプロセスを実行し、サブプロセスは現在の作業ディレクトリを自動的に継承し、`sys.path[0]` がスクリプトの所在ディレクトリになるため、正常に動作する。
+**原因**: 非ホットリロードモードは `runpy.run_path()` を直接呼び出してスクリプトを実行するが、この関数はスクリプトの所在ディレクトリを自動的に `sys.path` に追加しない。一方 `--reload` モードは `subprocess.Popen` の子プロセスで実行され、子プロセスは現在の作業ディレクトリを自動的に継承し、`sys.path[0]` がスクリプトの所在ディレクトリとなるため正常に動作する。
 
 **影響バージョン**: 2.5.0 - 2.5.2-dev.0
 
 **修正バージョン**: 2.5.2-dev.0
 
-**修正内容**: `runpy.run_path()` を呼び出す前に、スクリプトの所在ディレクトリを `sys.path[0]` に手動で挿入する。
+**修正内容**: `runpy.run_path()` 呼び出しの前に、スクリプトの所在ディレクトリを手動で `sys.path[0]` に挿入する。
 
 **修正日**: 2026/06/27
 
-**重大度**: 🟡 中等
+**深刻度**: 🟡 中程度
 
 **タイプ**: CLI
 
 ---
 
-### [BUG-021] SQLクエリビルダーが合法なワイルドカードとリスト式を拒否する
+### [BUG-021] SQL クエリビルダーが正当なワイルドカードと列式を拒否する
 
-**問題**: `SQLiteQueryBuilder` の `_build_select_sql()` はすべての SELECT 列に対して `_validate_identifier()` を呼び出すが、この関数は厳密なホワイトリスト正規表現 `^[a-zA-Z_][a-zA-Z0-9_]*$` を使用しており、合法な SQL 構文が不安全な列名として誤って判別される:
+**問題**: `SQLiteQueryBuilder` の `_build_select_sql()` がすべての SELECT 列に対して `_validate_identifier()` を呼び出しており、この関数は厳格なホワイトリスト正規表現 `^[a-zA-Z_][a-zA-Z0-9_]*$` を使用するため、正当な SQL 構文が安全でない列名と誤判定される：
+
 - `SELECT *` — `*` は SQL 標準のワイルドカード
 - `SELECT COUNT(*)` — 集計関数
-- `SELECT users.name` — 限定列名
-- `SELECT col AS alias` — 列のエイリアス
+- `SELECT users.name` — 修飾列名
+- `SELECT col AS alias` — 列エイリアス
 
-`Select("*")` は Cron などのモジュールで使用され、モジュール `on_load` の実行が失敗し、モジュールがロードできない。
+このうち `Select("*")` は Cron などのモジュールで使用されており、モジュールの `on_load` 実行が失敗し、モジュールをロードできなくなる。
 
-**原因**: 2.4.6 バージョンで SQL 挿入攻撃の保護を強化し、`_validate_identifier()` のホワイトリスト検証を導入した。この検証はすべての列名に適用されるが、読み取り端（SELECT/ORDER BY）と書き込み端（INSERT/UPDATE）を区別していない。SELECT 列には複雑な SQL 式が許容され、単純な識別子のホワイトリスト制限は適用されるべきではない。
+**原因**: 2.4.6 バージョンで SQL インジェクション対策が強化され、`_validate_identifier()` ホワイトリスト検証が導入された。この検証はすべての列名に適用されたが、読み取り側（SELECT/ORDER BY）と書き込み側（INSERT/UPDATE）が区別されていなかった。SELECT 列は複雑な SQL 式を許容するものであり、単純な識別子ホワイトリストの制約を受けるべきではない。
 
 **影響バージョン**: 2.4.6 - 2.5.2-dev.1
 
 **修正バージョン**: 2.5.2-dev.2
 
-**修正内容**: SELECT/ORDER BY の列の検証をホワイトリストからブラックリストに変更する:
-1. 新たに `_validate_select_column()` 関数を追加し、SQL 挿入攻撃の危険な文字（`;` `'` `"` `--` `/*` `*/` `\x00` 改行）をブロックする
-2. 任意の合法な SQL 列式（`*`、`table.*`、`table.column`、`COUNT(*)`、`col AS alias` など）を許容する
-3. INSERT/UPDATE 列名は依然として厳密なホワイトリスト検証（単純な識別子のみ）を保持する
+**修正内容**: SELECT/ORDER BY の列検証をホワイトリスト方式からブラックリスト方式に変更：
+1. `_validate_select_column()` 関数を新設し、SQL インジェクションの危険文字（`;` `'` `"` `--` `/*` `*/` `\x00` 改行文字）のみを遮断
+2. 任意の正当な SQL 列式（`*`、`table.*`、`table.column`、`COUNT(*)`、`col AS alias` など）を許可
+3. INSERT/UPDATE 列名は引き続き厳格なホワイトリスト検証を維持（単純な識別子のみ許可）
 
 **修正日**: 2026/06/29
 
-**重大度**: 🔴 重大
+**深刻度**: 🔴 深刻
 
 **タイプ**: ストレージ
 
 ---
 
-### [BUG-022] _resolve_account() のアカウント解決のバグ（_accounts_data が未埋め）
+### [BUG-022] _resolve_account() のアカウント解決リグレッション（_accounts_data 未設定）
 
-**問題**: 2.5.2 の設定システムの再構築後、`AccountConfigClass` を宣言したマルチアカウントアダプタが `wait_reply`、`reply` などのメッセージ送信メソッドを呼び出す際に `ValueError("未宣言 AccountConfigClass、アカウント解決できない")` エラーが発生する。アダプタが正しくマルチアカウント情報を設定しても、アカウント解決は失敗する。
+**問題**: 2.5.2 の設定システムリファクタリング後、`AccountConfigClass` を宣言しているマルチアカウントアダプターが、`wait_reply`、`reply` などメッセージ送信を必要とするメソッドを呼び出す際、`ValueError("AccountConfigClass が宣言されていないため、アカウントを解決できません")` エラーが発生する。アダプターがマルチアカウント情報を正しく設定していても、アカウント解決が失敗する。
 
-**原因**: 2.5.2-dev.5 で `_load_accounts()`（設定の読み込み + 検証 + `_accounts_data` の埋め込み）が `_ensure_accounts_exist()`（設定テンプレートの生成）に再構築されたが、`_resolve_account()` は `_accounts_data is None` をチェックしている。`_ensure_accounts_exist()` は `_accounts_data` を埋め込みしないため、この属性は常に `None` となり、`_resolve_account()` は `(None, None)` を返し、アカウント解決は完全に失敗する。
+**原因**: 2.5.2-dev.5 で `_load_accounts()`（設定の読み取り + 検証 + `_accounts_data` の設定を担当）が `_ensure_accounts_exist()`（設定テンプレートの生成のみ）にリファクタリングされたが、`_resolve_account()` は依然として `self._accounts_data is None` をチェックしている。`_ensure_accounts_exist()` が `_accounts_data` を設定しなくなったため、この属性は常に `None` となり、`_resolve_account()` が早期に `(None, None)` を返し、アカウント解決が完全に機能しなくなる。
 
 **根本原因の連鎖**:
 ```
 _load_accounts() が削除された
-  → __init__ で _accounts_data を埋め込みしない
-    → _accounts_data は常に None
-      → _resolve_account() が _accounts_data is None をチェック → (None, None) を返す
-        → _resolve_account() を呼び出す下流の場所（例: call_api）が None を受け取る
-          → エラーが発生する
+  → __init__ が _accounts_data を設定しなくなる
+    → _accounts_data が常に None になる
+      → _resolve_account() が _accounts_data is None をチェック → return (None, None)
+        → _resolve_account を呼び出す下流箇所（call_api など）が None を受け取る
+          → エラーが発生
 ```
 
 **影響バージョン**: 2.5.2-dev.5 - 2.5.2
 
 **修正バージョン**: 2.5.3
 
-**修正内容**: `BaseAdapter.__init__` で、`_ensure_accounts_exist()` の後に `_accounts_data` の埋め込みを復元する:
+**修正内容**: `BaseAdapter.__init__` において、`_ensure_accounts_exist()` の後に `_accounts_data` の設定を復元：
 ```python
 if self.AccountConfigClass is not None:
     self._ensure_accounts_exist()
-    self._accounts_data = self.accounts  # データソースは実時読み取りの accounts 属性
+    self._accounts_data = self.accounts  # 設定を復元。データソースはリアルタイムで読み取られる accounts 属性
 ```
-`_resolve_account()` のロジックは変更なしで、完全に後方互換性を保つ:
-- `AccountConfigClass` を宣言していないアダプタ: `_accounts_data` は `None` のまま → `(None, None)` を返す
-- `AccountConfigClass` を宣言したアダプタ: `_accounts_data` が埋め込まれる → 正常に解決
-- `load_accounts` をオーバーライドまたは `_accounts_data` を手動で設定したアダプタ: `super().__init__()` の後に上書きし、優先度が最も高い
+`_resolve_account()` のロジックは変更されず、完全に後方互換：
+- `AccountConfigClass` を宣言しないアダプター：`_accounts_data` は `None` のまま → `(None, None)` を返す
+- `AccountConfigClass` を宣言しているアダプター：`_accounts_data` が設定される → 正常に解決
+- `_load_accounts` をオーバーライドまたは `_accounts_data` を手動設定するアダプター：`super().__init__()` の後に上書きされ、最優先
 
 **修正日**: 2026/07/07
 
-**重大度**: 🔴 重大
+**深刻度**: 🔴 深刻
 
-**タイプ**: アダプタ / 設定システム
+**タイプ**: アダプター / 設定システム
 
 ---
 
-### [BUG-023] アカウント設定を変更した後、アダプタのキャッシュが更新されずアカウント解決に失敗する
+### [BUG-023] アカウント設定変更後にアダプターのキャッシュが更新されず、アカウント解決が失敗する
 
-**問題**: ダッシュボードでマルチアカウントアダプタのアカウント設定（例: token の入力）を変更した後、アダプタは古いキャッシュを使用し、メッセージ送信関連のメソッドを呼び出すと `未見つかる利用可能なアカウント (account_id=default)` エラーが発生する。プロセスを再起動するまで新しい設定が有効になる。
+**問題**: ユーザーが Dashboard でマルチアカウントアダプターのアカウント設定（token の入力など）を変更した後、アダプターは依然として旧キャッシュを使用し、メッセージ送信関連メソッドの呼び出し時に `利用可能なアカウントが見つかりません (account_id=default)` エラーが発生する。新設定を有効にするにはプロセスの再起動が必要。
 
-**原因**: `_accounts_data` は `BaseAdapter.__init__` 時に設定ストアから1度だけ読み込まれ、以降は更新されない。`AdapterManager._run_adapter()` と `restart()` で `adapter.start()` を呼び出す前に、アカウント設定を再読み込みせず、キャッシュと実際の設定がずれる。
+**原因**: `_accounts_data` は `BaseAdapter.__init__` 時に設定ストアから一度読み取られるだけで、その後更新されない。`AdapterManager._run_adapter()` と `restart()` が `adapter.start()` 呼び出し前にアカウント設定を再読み取りしないため、キャッシュと実際の設定が乖離する。
 
 **影響バージョン**: 2.4.6 - 2.5.4
 
 **修正バージョン**: 2.5.4
 
-**修正内容**: `AdapterManager._run_adapter()` と `restart()` で、`adapter.start()` を呼び出す前に `adapter._accounts_data = adapter.accounts` を更新し、毎回起動時に最新の設定を使用するようにする。
+**修正内容**: `AdapterManager._run_adapter()` と `restart()` において、`adapter.start()` 呼び出し前に `adapter._accounts_data = adapter.accounts` を更新し、起動のたびに最新の設定が使用されるようにした。
 
 **修正日**: 2026/07/09
 
-**重大度**: 🔴 重大
+**深刻度**: 🔴 深刻
 
-**タイプ**: アダプタ / 設定システム
+**タイプ**: アダプター / 設定システム
 
 ---
 
-### [BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill が発生する
+### [BUG-024] storage.set() で大きな数値 ID キーを書き込む際に OOM Kill が発生する
 
-**問題**: `storage.set()` で大数のフィールド（例: QQ グループ番号 `871684833`）を含むネストされたキーを書き込むと、プロセスがコンテナ OOM Kill（終了コード -9）され、サービスはクラッシュして復旧できない。
+**問題**: `storage.set()` を呼び出して大きな純数値セグメント（QQ グループ番号 `871684833` など）を含むネストされたキーパスを書き込む際、プロセスがコンテナにより OOM Kill され（終了コード -9）、サービスが直接クラッシュして回復できなくなる。
 
-**原因**: `_set_nested_value` の再帰実装で、ネストされたキーの数値フィールドが `isdigit()` によってリストインデックスと誤認され、`current.extend([None] * (index - len(current) + 1))` が実行され、数億要素のリストを割り当てようとして、瞬間的にメモリを消費し、メモリが枯渇する。
+**原因**: `_set_nested_value` の再帰実装において、ネストされたキーパス内の純数値セグメントが `isdigit()` によりリストインデックスと誤判定され、`current.extend([None] * (index - len(current) + 1))` がトリガーされて数億要素のリストを割り当てようとし、瞬時にメモリを使い果たす。
 
 **根本原因の連鎖**:
 ```
-キーのパスに純数フィールド（例: グループ番号 871684833）が含まれる
-  → isdigit() がリストインデックスと誤認する
+キーパスに純数値セグメントが含まれる（グループ番号 871684833 など）
+  → isdigit() が配列インデックスと誤判定
     → extend([None] * (871684833 - len(current) + 1))
-      → 数億要素のリストを割り当てようとする
-        → メモリが枯渇 → コンテナ OOM Kill（終了コード -9）
+      → 数億要素の割り当てを試みる
+        → メモリ枯渇 → コンテナによる OOM Kill（終了コード -9）
 ```
 
 **影響バージョン**: 2.5.1 - 2.5.5
@@ -642,140 +645,140 @@ if self.AccountConfigClass is not None:
 **修正バージョン**: 2.5.5
 
 **修正内容**:
-1. 中間層の作成時に常に辞書を使用し、次の段階が数字かどうかに応じてコンテナの型を推測しない
-2. 最終値を設定する際、コンテナ自体がリストでかつインデックスが `STORAGE_MAX_LIST_INDEX`（10000）未満の場合にのみインデックス処理を行い、超大インデックスは安全にスキップする
-3. 再帰実装を反復実装に変更し、元のコードの潜在的な無限再帰リスクを排除する
-4. `STORAGE_MAX_LIST_INDEX` 定数を `Core/constants.py` に追加し、インデックスの安全上限を集中管理する
+1. 中間層の事前作成時には常に辞書を使用し、次のセグメントが数値かどうかでコンテナタイプを推測しない
+2. 最終値の設定時には、コンテナ自体が既にリストであり、かつインデックスが `STORAGE_MAX_LIST_INDEX`（10000）未満の場合にのみインデックスとして処理し、過大なインデックスは安全にスキップ
+3. 再帰実装を反復実装に変更し、元のコードに潜在していた無限再帰のリスクを解消
+4. `STORAGE_MAX_LIST_INDEX` 定数を `Core/constants.py` に新設し、インデックスの安全上限を一元管理
 
 **修正日**: 2026/07/10
 
 **再現手順**:
 ```python
-# 大数フィールド（例: QQ グループ番号）を含むネストされたキーを書き込むと OOM を引き起こす
-await sdk.storage.aset("groups.871684833.name", "某群")
-# → プロセスのメモリが急激に増加し、OOM Kill される
+# 大きな数値セグメント（QQ グループ番号など）を含むネストされたキーパスを書き込むとトリガーされる
+await sdk.storage.aset("groups.871684833.name", "あるグループ")
+# → プロセスのメモリが瞬時に急上昇し、OOM Kill される
 ```
 
-**回帰テスト**: `tests/unit/test_unit_storage.py` に4つの回帰テストを追加
-- `test_nested_key_numeric_segment_as_dict_key` — OOM の状況を正確に再現
-- `test_nested_key_numeric_segment_multiple` — 複数の連続した数値フィールドがすべて辞書のキーとして扱われる
-- `test_nested_key_existing_list_index_set_within_limit` — 既存のリストのインデックスに安全に値を設定
-- `test_nested_key_list_index_safety_limit` — 超大インデックスの安全制限を検証
+**回帰テスト**: `tests/unit/test_unit_storage.py` に回帰テストケースを 4 件追加
+- `test_nested_key_numeric_segment_as_dict_key` — OOM シナリオを正確に再現
+- `test_nested_key_numeric_segment_multiple` — 複数の連続する数値セグメントがすべて辞書キーとして扱われる
+- `test_nested_key_existing_list_index_set_within_limit` — 既存リストへの妥当なインデックス書き込み
+- `test_nested_key_list_index_safety_limit` — 過大インデックスの安全制限の検証
 
-**重大度**: 🔴 重大
+**深刻度**: 🔴 深刻
 
 **タイプ**: ストレージ
 
 ---
 
-### [BUG-025] on_config_update コールバックがコアルートに登録されない
+### [BUG-025] on_config_update コールバックがコアによってルーティングされない
 
-**問題**: `on_config_update(old, new)` コールバックは基底クラス（`BaseModule` / `BaseAdapter`）で定義されているが、フレームワークコアはこのイベントを監視して各コンポーネントに `on_config_update` を通知していない。実際には、設定管理パネルで設定を変更したときはトリガーされるが、`config.toml` を手動で編集したり `setConfig()` を呼び出したりしたときは `on_config_update` をトリガーしない。
+**問題**: `on_config_update(old, new)` コールバックは基底クラス（`BaseModule` / `BaseAdapter`）で定義済みだが、フレームワークコアがこれを設定変更イベントと関連付けていない。実際の挙動：設定管理パネルから設定を変更した場合はトリガーされるが、`config.toml` を手動編集したりコードから `setConfig()` を呼び出したりした場合は `on_config_update` がトリガーされない。
 
-**原因**: `ConfigManager` が設定変更時に `config.set` / `config.updated` ライフサイクルイベントを発射するが、これらのイベントを各コンポーネントの `on_config_update` に転送するサブスクライブロジックが存在しない。
+**原因**: `ConfigManager` は設定変更時に `config.set` / `config.updated` ライフサイクルイベントを送出するが、これらのイベントを各コンポーネントの `on_config_update` メソッドへ転送するサブスクリプションロジックが欠けていた。
 
 **根本原因の連鎖**:
 ```
-コアが config.set / config.updated をサブスクライブしていない
+コアが config.set / config.updated を購読していない
   → 設定変更イベントが転送されない
     → on_config_update が呼び出されない
-      → 手動編集ファイル / コード setConfig が外部の変更イベントとしてトリガーされない
+      → 手動ファイル編集 / コードからの setConfig でホットアップデートコールバックが発火しない
 ```
 
 **影響バージョン**: 全バージョン
 
 **修正バージョン**: 2.6.2
 
-**修正内容**: `ModuleManager` / `AdapterManager` が `config.set`（コード `setConfig()` パス）と `config.updated`（手動編集ファイルパス）イベントのサブスクライブを登録し、設定キーのプレフィックスで一致するコンポーネントの `on_config_update` を呼び出す。また、`_flush_config()` がファイルを書き込んだ後、`_config_mtime` を同期して更新しない問題を修正し、フレームワーク自身の書き込みが外部の変更として誤って `config.updated` を再びトリガーするのを防ぐ。
+**修正内容**: `ModuleManager` / `AdapterManager` が `config.set`（コードからの `setConfig()` パスをカバー）と `config.updated`（手動ファイル編集パスをカバー）のイベント購読を登録し、設定キーのプレフィックスでマッチングした後、対応するコンポーネントの `on_config_update` を呼び出し、型安全な設定オブジェクトを渡す。同時に、`_flush_config()` がファイル書き込み後に `_config_mtime` を同期していなかった問題を修正し、フレームワーク自身の書き込みがファイル監視タスクに外部変更と誤判定されて `config.updated` が重複発火することを回避。
 
-**互換性の説明**: 設定のホットアップデートはフレームワークコアによって統一的に管理される。以前は設定管理パネルが代行してトリガーしていたが、削除された。フレームワークをアップグレードした後は、設定管理パネルもアップグレードする必要がある。そうでなければ、コアとパネルの両方でトリガーされる（重複）。
+**互換性に関する注意**: 設定のホットアップデートは現在フレームワークコアにより一元的に管理されている。以前設定管理パネルが代行してトリガーしていたロジックは削除されたため、フレームワークをアップグレードした後は設定管理パネルも併せてアップグレードする必要がある。さもないと重複トリガーが発生する（コアとパネルがそれぞれ 1 回ずつ呼び出す）。`on_config_update` メソッドのシグネチャとセマンティクスは変更されず、サブクラスの変更は不要。
 
 **修正日**: 2026/07/23
 
-**重大度**: 🟡 中等
+**深刻度**: 🟡 中程度
 
 **タイプ**: 設定システム
 
 ---
 
-### [BUG-026] notice/request イベント reply のターゲット推定が間違っている
+### [BUG-026] notice/request イベントの reply 宛先推論エラー
 
-**問題**: 群通知イベント（例: メンバーのグループ参加 `group_member_increase`）で `event.reply()` を呼び出すと、メッセージはイベントをトリガーしたユーザーのプライベートチャットに送信され、イベントが発生したグループには送信されない。友達通知イベントでも同様で、返信ターゲットが間違っている可能性がある。
+**問題**: グループ通知イベント（メンバーのグループ参加 `group_member_increase` など）で `event.reply()` を呼び出すと、メッセージがイベントの発生元ユーザーとのプライベートチャットに送信され、イベントが発生したグループには送信されない。フレンド通知イベントも同様で、返信先が誤る可能性がある。
 
-**原因**: `infer_receive_type()` はイベントの `detail_type` を会話タイプとして直接返している。`message` イベントでは `detail_type` の値 `private`/`group` が会話タイプであるが、`notice/request` イベントの `detail_type` は意味のサブタイプ（例: `group_member_increase`、`friend_increase`）であり、会話タイプではない。その後の `convert_to_send_type()` と `get_id_field()` はマッピング表にその値が見つからないため、デフォルトの `"user"` / `"user_id"` に回帰し、返信ターゲットが間違っている。
+**原因**: `infer_receive_type()` がイベントの `detail_type` を直接セッションタイプとして返している。message イベントについてはこれは正しい（`detail_type` の値 `private`/`group` がそのままセッションタイプ）が、notice/request イベントの `detail_type` はセマンティックサブタイプ（`group_member_increase`、`friend_increase` など）であり、セッションタイプではない。後続の `convert_to_send_type()` と `get_id_field()` がマッピングテーブルでその値を見つけられず、デフォルトの `"user"` / `"user_id"` にフォールバックし、返信先が誤る。
 
 **根本原因の連鎖**:
 ```
 notice イベント detail_type="group_member_increase"
-  → infer_receive_type() は "group_member_increase" を直接返す
-    → convert_to_send_type("group_member_increase") はマッピング表にない → デフォルト "user" に回帰
-    → get_id_field("group_member_increase") はマッピング表にない → デフォルト "user_id" に回帰
-      → target_id = event["user_id"]  ← 新メンバーのプライベートチャット（グループではなく）
+  → infer_receive_type() が直接 "group_member_increase" を返す
+    → convert_to_send_type("group_member_increase") がマッピングテーブルにない → "user" にフォールバック
+    → get_id_field("group_member_increase") がマッピングテーブルにない → "user_id" にフォールバック
+      → target_id = event["user_id"]  ← 新メンバーとのプライベートチャット（グループではない）
 ```
 
 **影響バージョン**: 全バージョン
 
 **修正バージョン**: 2.7.0-dev.3
 
-**修正内容**: `infer_receive_type()` は、`detail_type` が既知の会話タイプ（標準タイプまたはカスタムタイプ）である場合にのみ、その値を直接返すようにする。それ以外の場合は、ID フィールド（`group_id` / `channel_id` / `user_id` など）に基づいて正しい会話タイプを推定する。
+**修正内容**: `infer_receive_type()` に判定を追加——`detail_type` は既知のセッションタイプ（標準タイプまたはカスタムタイプ）である場合にのみ直接返す。それ以外の場合は ID フィールド（`group_id` / `channel_id` / `user_id` など）から正しいセッションタイプを推論する。
 
 **回帰テスト**: `tests/unit/test_unit_session_type.py` → `TestNoticeRequestTypeInference`（10 テストケース）
 
 **修正日**: 2026/07/29
 
-**重大度**: 🟢 軽微
+**深刻度**: 🟢 軽微
 
 **タイプ**: イベントシステム
 
 ---
 
-### [BUG-027] ルートリミットクリーンアップタスクが固定ウィンドウを使用して長時間のリミットルールが無効になる
+### [BUG-027] ルートレートリミットのクリーンアップタスクが固定ウィンドウを使用し、長期ウィンドウのレートリミットルールが機能しない
 
-**問題**: ルートリミットを長時間ルール（例: `100/hour`、`{"requests": 100, "window": 3600}`）に設定すると、リミットは効果がなく、実際には `100/minute`（1 時間で約 6000 回のリクエスト）のように動作し、意図した時間単位の保護がまったく機能しない。
+**問題**: ルートのレートリミットを長期ウィンドウルール（`100/hour`、`{"requests": 100, "window": 3600}` など）に設定すると、レートリミットがほぼ無意味になる——実際の挙動は `100/minute` に近く（1 時間あたり最大約 6000 リクエストまで通過）、期待された時間単位の保護機能がまったく果たせない。
 
-**原因**: `_apply_rate_limit` は実際の `window`（最高 3600 秒）を解析するが、per-request 検査ではそのウィンドウを使用する。しかし、バックグラウンドクリーンアップタスク `_cleanup_expired_rate_limits` は、すべてのルートの統一クリーンアップ閾値として固定定数 `DEFAULT_RATE_LIMIT_WINDOW_SECS`（60 秒）を使用する。したがって、`100/hour` ルートでは 60 秒前のタイムスタンプがすべてクリーンアップされ、1 時間ウィンドウ内では 100 件に達するまで記録が蓄積されず、リミットが大幅に緩和される。
+**原因**: `_apply_rate_limit` はルートごとの実際の `window`（最大 3600 秒）を解析して取得し、per-request チェックも実際にそのウィンドウを使用している。しかし、バックグラウンドのクリーンアップタスク `_cleanup_expired_rate_limits` は固定定数 `DEFAULT_RATE_LIMIT_WINDOW_SECS`（60 秒）を**すべての**ルートの統一クリーンアップ閾値として使用していた。その結果、`100/hour` ルートで 60 秒より前のタイムスタンプがクリーンアップタスクにより早期に削除され、1 時間ウィンドウ内に 100 件近いレコードが決して蓄積されず、レートリミットが著しく弱体化する。
 
 **根本原因の連鎖**:
 ```
-_apply_rate_limit は window=3600（100/hour）を解析する
-  → per-request 検査は 3600s でタイムスタンプを保持する（正しい）
-  → しかし _cleanup_expired_rate_limits は固定 max_window=60s でクリーンアップする
-    → 60s 前のタイムスタンプがすべて削除される
-      → 1 時間ウィンドウ内は常に最近 1 分間の記録しか残らない
-        → 100/hour は実際には ~100/minute に退化する（緩和約 60 倍）
+_apply_rate_limit が window=3600（100/hour）を解析
+  → per-request チェックは 3600 秒間タイムスタンプを保持（正しい）
+  → しかし _cleanup_expired_rate_limits が固定 max_window=60 秒でクリーンアップ
+    → 60 秒前のタイムスタンプがすべて削除される
+      → 1 時間ウィンドウには常に直近 1 分間のレコードしか残らない
+        → 100/hour が実際には ~100/minute に退化（約 60 倍に緩和）
 ```
 
 **影響バージョン**: 2.6.0-dev.0 - 2.7.0-dev.4
 
 **修正バージョン**: 2.7.0-dev.5
 
-**修正内容**: `_rate_limit_windows: dict[str, int]` を追加して各 store key の実際のウィンドウを記録する。`_apply_rate_limit` は最初にエントリを作成する際にウィンドウを書き込む。`_cleanup_expired_rate_limits` は各 key の独自のウィンドウでクリーンアップする（存在しない場合はデフォルト値に回帰）。クリーンアップと `stop()` 時の削除は 2 つの辞書を同期して維持する。
+**修正内容**: `_rate_limit_windows: dict[str, int]` を新設し、store key ごとに各ルートの実際のウィンドウを記録。`_apply_rate_limit` は初回エントリー作成時にウィンドウを書き込む。`_cleanup_expired_rate_limits` は各 key 自身のウィンドウに従ってクリーンアップするように変更（欠落時はデフォルト値にフォールバック）。クリーンアップによるエントリー削除時と `stop()` 時に両方の辞書を同期して管理。
 
 **修正日**: 2026/07/31
 
 **回帰テスト**: `tests/unit/test_unit_router.py` → `TestRateLimit::test_cleanup_respects_per_route_window`
 
-**重大度**: 🔴 重大
+**深刻度**: 🔴 深刻
 
 **タイプ**: ルーティング
 
 ---
 
-### [BUG-029] 設定監視タスクが半完成の TOML をブロードキャストし、例外を静かに飲み込む
+### [BUG-029] 設定監視タスクが未完成の TOML をブロードキャストし、例外を静かに握りつぶす
 
-**問題**: ユーザーが `config.toml` を途中まで保存すると、トランスフォーマーの構文エラーが発生し、設定監視バックグラウンドスレッドが mtime の変化を検出し、再読み込みに失敗しても空の設定 `{}` で `config.updated` イベントをブロードキャストし、アダプタ/モジュールの `on_config_update` が空の設定を受け取り、すべての設定項目がリセットされたと誤解してデフォルト値に戻る。さらに、監視ループの `except Exception: pass` はすべての例外を静かに飲み込み、ウォッチャーの障害を調査できない。
+**問題**: ユーザーが `config.toml` を手動編集して保存途中（一時的な構文エラーが発生）の際、設定監視バックグラウンドスレッドが mtime 変化を検出して設定を再ロードするが、ロード失敗後も空の設定 `{}` で `config.updated` イベントを送出し、アダプター/モジュールの `on_config_update` が空の設定を受け取り、すべての設定項目がクリアされたと誤認してデフォルト値にフォールバックしてしまう。さらに監視ループは `except Exception: pass` ですべての例外を静かに握りつぶしており、watcher の障害を調査する手掛かりがない。
 
-**原因**: 2 つの欠陥が重なっている:
-1. `_load_config` は TOML 構文エラー/権限エラーの際に `self._cache` を `{}` に上書きするが、バックグラウンド監視ループ `_watch_loop` とキャッシュのタイムアウト経路 `_check_cache_validity` は `_load_config()` の呼び出し後に無条件で `_emit_config_updated()` を実行し、"読み込み失敗で生じた空のキャッシュ"を真の変更としてブロードキャストする。
-2. `_watch_loop` の `except Exception` は警告レベルで記録するように変更された（新しい i18n キー `core.config.watcher_error` が 5 言語で同期）。
+**原因**: 2 つの欠陥の重複：
+1. `_load_config` が TOML 構文エラー/権限エラー時に `self._cache` を `{}` で上書きするが、バックグラウンド監視スレッド `_watch_loop` とキャッシュタイムアウトパス `_check_cache_validity` の両方が `_load_config()` 呼び出し後に**無条件に** `_emit_config_updated()` を実行し、「ロード失敗によって生じた空のキャッシュ」を実際の変更としてブロードキャストする。
+2. `_watch_loop` の `except Exception: pass` が一切のログを記録しない。
 
 **根本原因の連鎖**:
 ```
-ユーザーが保存中に TOML 構文エラーが発生
-  → _load_config() は _cache = {}
-    → _watch_loop は _emit_config_updated(new_config={}) を無条件に実行
-      → アダプタ/モジュール on_config_update は空の設定を受け取る
-        → 設定がリセットされたと誤解し、デフォルト値に戻る
+ユーザーが保存途中 → TOML 構文エラー
+  → _load_config() が _cache = {} で上書き
+    → _watch_loop が無条件に _emit_config_updated(new_config={}) を実行
+      → アダプター/モジュールの on_config_update が空の設定を受け取る
+        → 設定がクリアされたと誤判定し、デフォルト値にフォールバック
 ```
 
 **影響バージョン**: 2.6.2-dev.1 - 2.7.0-dev.4
@@ -783,35 +786,35 @@ _apply_rate_limit は window=3600（100/hour）を解析する
 **修正バージョン**: 2.7.0-dev.5
 
 **修正内容**:
-1. `_load_config` は戻り値を `bool` に変更する。TOML 構文エラー/権限/その他のエラーの場合は `False` を返し、`self._cache` を上書きしない（構文エラー/権限エラーの場合は `_load_config()` が `False` を返す）
-2. `_watch_loop` と `_check_cache_validity` は `_load_config()` が `True` を返した場合にのみ `config.updated` をブロードキャストする
-3. `_watch_loop` の `except Exception` を警告レベルで記録するように変更する（`core.config.watcher_error` という i18n キーを 5 言語で同期）
+1. `_load_config` を `bool` を返すように変更。TOML 構文エラー/権限/その他のエラー時には**前回の有効なキャッシュを保持**し（`{}` で上書きしない）、診断ログの記録と `False` の返却のみ行う
+2. `_watch_loop` と `_check_cache_validity` は `_load_config()` が `True` を返した場合にのみ `config.updated` を送出
+3. `_watch_loop` の `except Exception` を warning レベルでの記録に変更（i18n キー `core.config.watcher_error` を新設、5 言語同期）
 
 **修正日**: 2026/07/31
 
-**回帰テスト**: `tests/unit/test_unit_config.py` → `test_malformed_toml_preserves_last_valid_cache`、`test_permission_denied_logs_clear_message`（更新して `_dirty_keys` が保持され、`False` を返すことを検証する）
+**回帰テスト**: `tests/unit/test_unit_config.py` → `test_malformed_toml_preserves_last_valid_cache`、`test_permission_denied_logs_clear_message`（キャッシュ保持 + False 返却の検証に更新）
 
-**重大度**: 🟡 中等
+**深刻度**: 🟡 中程度
 
 **タイプ**: 設定システム
 
 ---
 
-### [BUG-030] 設定 watcher の競合により setConfig の遅延書き込みが静かにデータを失う
+### [BUG-030] 設定 watcher の競合により setConfig の遅延書き込みがデータを静かに失う
 
-**問題**: 複数のユーザーが `config.setConfig(key, value)`（デフォルト `immediate=False`）を呼び出すと、自分のモジュールの設定が書き込まれず、他のモジュールの設定は正常に書き込まれる。`immediate=True`（強制的にディスクに書き込む）を設定すると回避できる。実行時に書き込まれた設定は、次回の再起動後に失われる（起動時にテンプレート生成された設定は保持される）。
+**問題**: 複数のユーザーから、`config.setConfig(key, value)`（デフォルト `immediate=False`）を使用した後、自分のモジュールの設定が `config.toml` に書き込まれず、他のモジュールの設定は正常であるという報告がある。`immediate=True`（強制フラッシュ）を設定すれば回避できる。挙動としては：実行時に書き込まれた設定が次回の再起動後に失われ、起動時にテンプレートから生成された設定は保持される。
 
-**原因**: 2 つの重なる欠陥:
-1. **論理的な欠陥**: `_watch_loop` が `_check_file_change()` が `True` を返すと `_dirty_keys.clear()` で全ての待機キーを破棄する。しかし、`_check_file_change()` は `!=` で mtime を比較するだけで、フレームワーク自身の `_flush_config` がディスクに書き込むと mtime が更新されるが、`_flush_config` が `_config_mtime` を更新する前に、ファイルシステムの粗い粒度で mtime が変化すると、`_watch_loop` は自身の書き込みを外部の変更と誤って認識し、待機キーを破棄する。
-2. **スレッドの欠陥**: `_watch_loop` は `_write_timer`/`_dirty_keys` を操作する際に `_lock` を取得していないため、`setConfig`（`_dirty_keys` を取得する）や `_schedule_write`（`_write_timer` を取得する）との間にデータ競合がある。
+**原因**: 2 つの重複する欠陥：
+1. **ロジック欠陥**：`_watch_loop` が `_check_file_change()` が `True` を返した際に無条件に `_dirty_keys.clear()` ですべての書き込み待ちキーを破棄する。しかし `_check_file_change()` は mtime を `!=` で比較しているだけで、フレームワーク自身の `_flush_config` のディスク書き込みも mtime を変更する——`_flush_config` は書き込み後に `_config_mtime` を更新するものの、watcher スレッドはファイル書き込みと mtime 代入の間に（また粒度の粗いファイルシステム上でも）mtime の差分を観測する可能性があり、「外部変更」と誤判定してすべての書き込み待ちキーをクリアしてしまう。
+2. **スレッド欠陥**：`_watch_loop` が `_write_timer`/`_dirty_keys` を操作する際に `_lock` を保持しておらず、`setConfig`（ロックを保持して `_dirty_keys` に書き込む）、`_schedule_write`（ロックを保持して `_write_timer` に書き込む）との間でデータ競合が存在する。
 
 **根本原因の連鎖**:
 ```
-モジュールAが setConfig(immediate=True) → ファイルに書き込み、mtime が変化
-  → ユーザーモジュールが setConfig(immediate=False) → _dirty_keys に追加し、5秒後に書き込み
-    → watcher がループし、_check_file_change が自身の書き込みの mtime 差分を観測
-      → _dirty_keys.clear() → ユーザーモジュールの待機キーが静かに破棄される
-        → 再起動後に設定が失われる
+モジュールA setConfig(immediate=True) → フラッシュでディスク書き込み、mtime 変化
+  → ユーザーモジュール setConfig(immediate=False) → _dirty_keys に入り、5 秒後にフラッシュ
+    → watcher がポーリングし、_check_file_change が先前の自身の書き込みによる mtime 差分を観測
+      → _dirty_keys.clear() → ユーザーモジュールの書き込み待ちキーが静かに破棄される
+        → 再起動後に設定が欠落
 ```
 
 **影響バージョン**: 2.6.0 - 2.7.0
@@ -819,332 +822,319 @@ _apply_rate_limit は window=3600（100/hour）を解析する
 **修正バージョン**: 2.7.1
 
 **修正内容**:
-1. `_last_self_write_mtime` フィールドを追加し、`_flush_config` がディスクに書き込む際に更新する。`_check_file_change` は mtime が変化した場合、この値と比較して自身の書き込みと一致すれば `False` を返す。
-2. `_watch_loop` の全体を `_lock` で囲む。実際の外部変更の場合、`_dirty_keys` を保持する（マージの意味）、次の flush で外部内容とマージする（汚染キーが優先される）、`clear()` は行わない。
-3. `getConfig`/`_check_cache_validity` のパスは影響を受けない（`reload` は元のキーを破棄しない）。
+1. `_last_self_write_mtime` フィールドを新設し、`_flush_config` のディスク書き込み後に同時記録。`_check_file_change` は mtime 変化時にまずこの値と比較し、一致すれば自身の書き込みと判定して `False` を返す
+2. `_watch_loop` は全体を `_lock` で保護。実際の外部変更時には `_dirty_keys` を保持し（merge セマンティクス）、次回 flush 時に外部内容とマージする（ダーティキー優先）。`clear()` は行わない
+3. `getConfig`/`_check_cache_validity` パスは影響を受けない（その reload はもともとダーティキーをクリアしない）
 
 **修正日**: 2026/08/06
 
 **回帰テスト**: `tests/unit/test_unit_config.py` → `test_self_write_not_detected_as_external`、`test_external_change_preserves_dirty_keys`、`test_flush_merges_dirty_with_external`
 
-**重大度**: 🔴 重大
+**深刻度**: 🔴 深刻
 
 **タイプ**: 設定システム
 
 ---
 
-### [BUG-032] 遅延書き込み中「書き込み直後に読み取り」で古い値が読み取られる
+### [BUG-032] 設定の遅延フラッシュ中の「書き込み後即時読み取り」で旧値が読まれる
 
-**問題**: `config.setConfig()`（デフォルト `immediate=False` で約 5 秒遅延）でピリオド付きキーを書き込んだ後、その**親/祖先ノード**（例: `set_erispulse_section("scope.actions.MyModule", {...})` の後で `get_erispulse_config()` を呼び出す）を読み取ると、古い値が返される。書き込んだ子キーは「消えている」ように見え、書き込みが完了するまで表示されない。作用域設定の熱更新など「書き込み-読み取り-書き込み」のシナリオに影響する（2.8.0 テストプラグイン `/t_section` のケースで暴露された）。
+**問題**: `config.setConfig()`（デフォルト `immediate=False` で約 5 秒遅延フラッシュ）でドット区切りキーを書き込んだ後、直ちにその**親/祖先ノード**を読み取ると（例：`set_erispulse_section("scope.actions.MyModule", {...})` の後に `get_erispulse_config()` を呼び出す）、旧値が返され、書き込んだ子キーが「消失」し、フラッシュ後まで可視にならない。スコープ設定のホットアップデートなどの「書き込み-読み取り-書き込み」シナリオが影響を受ける（2.8.0 テストプラグイン `/t_section` のケースで発覚）。
 
-**原因**: `setConfig` はピリオド付きキーを**フラット形式**で待機キュー `_dirty_keys` に格納する。`getConfig` の**正確なキー照合**は待機キューにヒットするが、ツリー形式のパス照合（`getConfig("ErisPulse.scope")`）はキャッシュツリーを走るだけで、待機値を加算しない。遅延書き込み（`_flush_config` が汚染値をキャッシュにマージしてキューをクリアする）の間、読み-あなた-書き込みの断層が発生する。
+**原因**: `setConfig` がドット区切りキーを**フラット形式**で書き込み待ちキュー `_dirty_keys` に保存し、`getConfig` の**完全一致キー検索**のみが書き込み待ちキューにヒットする。ツリーパス検索（`getConfig("ErisPulse.scope")`）はキャッシュツリーのみを参照し、書き込み待ち値をオーバーレイしない——遅延フラッシュ期間中（`_flush_config` がダーティキーをキャッシュにマージしてキューをクリアするまで）、「リード・ユア・ライト（自身の書き込みの可視性）」の断絶が生じる。
 
 **影響バージョン**: 2.6.0 - 2.8.0-dev.1
 
 **修正バージョン**: 2.8.0-dev.1
 
-**修正内容**: `getConfig` に待機値の加算ロジックを導入する:
-1. 精確にヒットする待機キーはそのまま返す（既存の挙動は変更しない）。
-2. 待機キーが照合キーの祖先である場合、最も長い待機祖先を取得し、残りのパスをその値のサブツリーで解析する。
-3. 待機キーが照合キーの子孫である場合、`_dirty_overlay` で深くマージされたサブツリー（`_deep_merge`、上書き優先、元のキャッシュオブジェクトを変更しない）を構築する。
-4. 待機キーがない場合は元の高速パスを走る。追加のオーバーヘッドはゼロ。
+**修正内容**: `getConfig` に書き込み待ちオーバーレイセマンティクスを導入——① 書き込み待ちキーに完全一致した場合は直接返す（既存の挙動は変更なし）；② 書き込み待ちキーが検索キーの祖先である場合 → 最長の書き込み待ち祖先を取り、その値のサブツリー内で残りのパスを解決；③ 書き込み待ちキーが検索キーの子孫である場合 → オーバーレイサブツリー（`_dirty_overlay`）を構築し、キャッシュサブツリーと深くマージ（`_deep_merge`、override 優先、元のキャッシュオブジェクトは変更しない）。書き込み待ちキーがない場合は元の高速パスを通り、追加オーバーヘッドゼロ。
 
 **修正日**: 2026/09/04
 
 **回帰テスト**: `tests/unit/test_unit_config.py` → `test_get_config_overlays_dirty_descendant`、`test_get_config_overlay_merges_with_cache_siblings`、`test_get_config_overlay_new_branch`、`test_get_config_dirty_ancestor_query`、`test_get_config_dirty_exact_key_still_wins`
 
-**重大度**: 🟡 中等
+**深刻度**: 🟡 中程度
 
 **タイプ**: 設定システム
 
 ---
 
-### [BUG-033] wait_reply が保留された返信を高優先度のハンドラに食べられる
+### [BUG-033] wait_reply の保留中の返信が高優先度ハンドラーによりスターベーション（飢餓）状態に陥る
 
-**問題**: モジュールが `wait_reply()` を使ってユーザーの返信を待っている間に、その返信メッセージが高優先度のイベントハンドラに `mark_processed()` で認領された場合、コマンドディスパッチャーは `_processed` フラグを見て即座に返り、`_check_pending_reply` がメッセージの末尾に配置されているため、返信マッチのロジックが実行されない。待っている側は返信を受け取らず、タイムアウトまで `None` を返す。典型的なトリガー状況: 高優先度のメッセージハンドラ（記録/監査/ブロック系）を使用するロボットでは、すべての対話型インタラクションがランダムに失敗する。
+**問題**: モジュールが `wait_reply()` でユーザーの返信を待っている間に、その返信メッセージがより高い優先度のイベントハンドラーにクレームされ（`mark_processed()`）、コマンドディスパッチャーがエントリーで `_processed` マークを見て即座に戻るため、ディスパッチャーの末尾に配置された返信マッチングロジックが永遠に実行されない——待機側は返信を受け取れず、タイムアウトまで `None` が返るのをただ待つしかない。典型的なトリガーシナリオ：高優先度メッセージハンドラー（ロギング/監査/インターセプト系）を使用しているボットで、すべての会話型インタラクションがランダムに機能しなくなる。
 
-**原因**: 返信マッチ `_check_pending_reply` が `_handle_message` の末尾に配置されているが、`_processed` チェックがその前にある。認領チェックと返信マッチ判定の順序が逆転している。インタラクション待ちはフレームワークレベルのセッション継続メカニズムであり、他のハンドラの認領に影響されるべきではない。
+**原因**: 返信マッチング `_check_pending_reply` が `_handle_message` の末尾に配置されており（コマンドがマッチしなかった場合にのみ実行）、`_processed` チェックがその前にある——クレームチェックと返信ヒット判定の順序が逆転している。インタラクション待機はフレームワークレベルのセッション継続機構であり、競合するハンドラーではないため、他のハンドラーによるクレームの影響を受けるべきではない。
 
 **影響バージョン**: 2.2.0-dev.0 - 2.8.0-dev.1
 
 **修正バージョン**: 2.8.0-dev.2
 
-**修正内容**: 返信マッチ判定を `_handle_message` の入口に移動する（`_processed` チェックの前、`message` イベントのみ）。まず対話の完了を試み、マッチした場合はイベントが `processed` としてマークされ、下のチェックは短絡される。マッチしない場合は元のコマンドマッチングのプロセスを続ける。判定チェーンは新しいインタラクションセッションマネージャー（`Core/Event/interaction.py`）に委譲され、対応するキャンセルと権限の再検査機能も得られる。
+**修正内容**: 返信ヒット判定を `_handle_message` のエントリー（`_processed` チェックの前、message イベントのみ）に前倒し：まず保留中の会話の完了を試み、ヒットした場合はイベントが処理済みとしてマークされ、下方のチェックは自然に短絡する。ヒットしなかった場合は元のコマンドマッチングフローを継続する。同時に判定チェーンを新しいインタラクションセッションマネージャー（`Core/Event/interaction.py`）に委譲し、帰属ごとのキャンセルと権限再チェックの機能も併せて獲得。
 
 **修正日**: 2026/09/08
 
-**回帰テスト**: `tests/unit/test_unit_interaction.py`（`TestRegisterResolve` マッチ/未マッチ/認領フラグ）、`tests/unit/test_unit_event.py`（wait_reply 全チェーン）
+**回帰テスト**: `tests/unit/test_unit_interaction.py`（`TestRegisterResolve` のヒット/非ヒット/クレームマーク）、`tests/unit/test_unit_event.py`（wait_reply フルフロー）
 
-**重大度**: 🟡 中等
+**深刻度**: 🟡 中程度
 
 **タイプ**: イベントシステム / コマンドシステム
 
+
 ---
 
-### [BUG-034] persist=False の実行時バインディングが任意の後続設定書き込みによって破棄される
+### [BUG-034] スコープの persist=False ランタイムバインディングが任意の後続の設定書き込みによってサイレントに消去される
 
-**問題**: `scope.set_module(..., persist=False)` などの実行時バインディングは、メモリ `self._data` にだけ書き込まれる。しかし、scope は `config.set` / `config.updated` イベントをサブスクライブしており、任意のコードが設定を書き込む（例: 他のモジュールが自分のデフォルト設定を書く）と、scope は設定ファイルから全体の設定ツリーを再構築し、事前にすべての実行時バインディングが破棄され、判定はデフォルトの許可に戻り、ログの通知も一切行われない。実行時バインディングに依存するシナリオ（ダッシュボードの「実行時のみ」スイッチ、モジュールの実行時ダイナミック無効化）は、他のモジュールが設定を書き込んだ後に動作が戻る。
+**問題**: `scope.set_module(..., persist=False)` などのランタイム書き込みはメモリ上の `self._data` のみを変更します。しかし scope は `config.set` / `config.updated` イベントを購読しているため、コードのどこかで設定が書き込まれる（例：あるモジュールのロード時に自身のデフォルト設定を書き込む）と、scope が設定ファイルから設定ツリー全体を再構築し、それまでのすべてのランタイムバインディングがサイレントに失われ（判定はデフォルトの許可にフォールバック）、ログの通知も一切ありません。ランタイムバインディングに依存するシナリオ（Dashboard の「ランタイムのみ」スイッチ、モジュール実行時の動的無効化）は、無関係なモジュールが設定を書き込むと動作が後退します。
 
-**原因**: 根本原因の連鎖: `scope.set/delete(persist=False)` はメモリ（`Core/scope.py`）にだけ書き込む。`setConfig` が `config.set` イベントをトリガーすると、`_on_config_updated` は `self._data = {...}` で `_apply_tree()` を実行して `_data` を全体的に置き換える。`persist=False` の実行時バインディングは破棄される。
+**原因**: 根本原因の連鎖：`scope.set/delete(persist=False)` はメモリにのみ書き込み（`Core/scope.py`）→ 任意の `setConfig` が `config.set` イベントをトリガー → `_on_config_updated` が無条件に `_load_config()` を実行 → `_apply_tree()` が `self._data = {...}` で全体を置換 → 設定ファイルに存在しないランタイムバインディングが破棄される。
 
 **影響バージョン**: 2.8.0-dev.1 - 2.8.0-dev.2
 **修正バージョン**: 2.8.0-dev.2
-**修正内容**: 実行時オーバーライド層 `_runtime_overrides`（削除のセントリーナル）を導入する。`persist=False` で書き込み/削除した内容をオーバーライド層に記録し、`_apply_tree()` で永続層を再構築した後に、オーバーライド層を再適用する。`persist=True` で書き込み/削除した内容は、オーバーライド層から対応する記録を削除する（ユーザーの永続化の意図が優先される）。`config.set` はイベントの key で正確にフィルタリングし、`config.updated` は新しいと古い scope ノードを比較して、scope が実際に変化した場合にのみ再構築する。不要な書き込みが判定 LRU キャッシュを破棄しないようにする。`unregister_by_owner()` はモジュールのアンロード時に、呼び出し元と一緒にクリーンアップする。
-
+**修正内容**: ランタイムオーバーレイ層 `_runtime_overrides`（削除センチネルを含む）を導入：`persist=False` の書き込み/削除はオーバーレイ層に記録され、`_apply_tree()` が永続層を再構築した後に書き込み順にリプレイされ、ランタイムルールは任意の設定書き込み後も有効性を維持します；`persist=True` の書き込み/削除は対応するオーバーレイ記録をクリアします（ユーザーの永続化セマンティクスを優先）；`config.set` はイベント key で精密にフィルタリングし、`config.updated` は新旧の scope セクションを比較し、scope が実際に変化した場合のみ再構築します（あわせて無関係な書き込みによる判定 LRU キャッシュのフラッシュを回避）；`unregister_by_owner()` を新設し、モジュールのアンロード時に呼び出し元と併せてフォールバッククリーンアップできるようにしました。`Core.Event.overrides` の persist=False ランタイム上書きにも同種の問題があり、こちらもオーバーレイ層アーキテクチャであわせて修正しました。
 **修正日**: 2026/09/09
 
-**再現手順**: ① `scope.set_module("testplat", blocked=["TestB"], persist=False)` → 判定が False。② 任意のモジュールが `config.setConfig("HelpModule", {...})` を実行 → scope 再構築。③ `scope.is_allowed("testplat", None, "TestB")` は True を返す（期待値は False である）。
-
+**再現手順**: ① `scope.set_module("testplat", blocked=["TestB"], persist=False)` → 判定 False；② 任意のモジュールが `config.setConfig("HelpModule", {...})` を実行 → scope の再構築をトリガー；③ `scope.is_allowed("testplat", None, "TestB")` が True を返す（期待値は False のまま）。
 **関連**: Issue #432
-**回帰テスト**: `tests/unit/test_unit_scope.py::TestRuntimeOverrideSurvival`（無関係な書き込みが生き残る/再構築後の再適用/削除のセントリーナル/永続化でクリア/正確な無効化/owner クリーンアップ）
+**回帰テスト**: `tests/unit/test_unit_scope.py::TestRuntimeOverrideSurvival`（無関係な書き込みでの存続/ツリー再構築リプレイ/削除センチネル/永続化によるクリア/精密な無効化/owner クリーンアップ）
 
-**重大度**: 🟡 中等
-**タイプ**: 設定システム / 実行時
+**重要度**: 🟡 中程度
+**種別**: 設定システム / ランタイム
 
 ---
 
-### [BUG-035] 設定パネルの select 選択肢と dict フィールドが [object Object] にレンダリングされる
+### [BUG-035] 設定パネルの select オプションと辞書フィールドが [object Object] とレンダリングされる
 
-**問題**: WebUI 設定パネルで、select フィールドのオプションは `[object Object]`（例: 動的に生成された配色スタイルのオプション）に表示される。`stalker_mode`、`knowledge_base` などのネストされた設定セクションの dict フィールドは、テキストボックスに `[object Object]` として表示され、正しく表示・編集できない。
+**問題**: WebUI 設定パネルで、select フィールドのオプションのドロップダウンに `[object Object]` と表示される（例：動的生成されたカラースタイルオプション）；コントロールタイプが宣言されていない dict フィールド（`stalker_mode`、`knowledge_base` などのネストされた設定セクション）がテキストボックスに `[object Object]` と表示され、正常に閲覧・編集できない。
 
-**原因**: 2 つの独立した欠陥: ① フレームワークの i18n 解析器 `_resolve_i18n_text` は `i18n` キーを持つ辞書を還元するだけで、`default` だけを持つ動的テキストのラベルはそのまま渡され、`esc(label)` で文字列に強制変換され、`[object Object]` になる。② Dashboard のレンダリング分岐は配列型に対して JSON textarea を使用するだけで、dict 値はテキスト入力フィールドに渡され、`String()` で強制変換される。さらに、モジュールが `_schema_meta` を普通の dataclass フィールドとして誤って宣言した場合（`ClassVar` 注釈が欠けている）、設定フィールドとしてスキーマに含まれ、混乱を悪化させる。
+**原因**: 2 つの独立した欠陥：① フレームワークの i18n パーサー `_resolve_i18n_text` は `i18n` キーを持つ辞書のみを復元するため、`default` のみを含む辞書（i18n キーのない動的テキスト）のオプションラベルはそのまま透過され、フロントエンドの `esc(label)` による文字列強制変換で `[object Object]` となる；② Dashboard のレンダリング分岐は array 型のみ JSON textarea を行い、dict 値はプレーンテキスト入力分岐に落ちて `String()` で強制変換される。さらに、モジュールが `_schema_meta` を誤って通常の dataclass フィールドとして宣言した場合（`ClassVar` アノテーション不足）、設定フィールドとして schema に入り込み混乱を悪化させる。
 
 **影響バージョン**: 2.7.0 - 2.8.0-dev.2
 **修正バージョン**: 2.8.0-dev.2
-**修正内容**: ① `_resolve_i18n_text` は `default` だけを持つ辞書をテキストに還元するようにする。② フレームワークのスキーマ/テンプレート/デフォルト値/検証/埋め込みの 5 か所でアンダースコアで始まるフィールドを除外する（誤った宣言は無害）。③ Dashboard select オプションのラベルはオブジェクトをデフォルトで解析する（`default` が優先される）、dict/table フィールドは JSON textarea としてレンダリングする（保存経路は `tp=object` で JSON.parse して再帰する、完全な往復）。
-
+**修正内容**: ① `_resolve_i18n_text` が `default` のみを含む辞書をテキストに復元できるようにした；② フレームワークの schema/テンプレート/デフォルト値/充填/検証の 5 か所で、アンダースコア接頭辞フィールドを一律に除外（誤宣言の無害化）；③ Dashboard の select オプション label オブジェクトのフォールバック解析（`default` を優先）、dict/table フィールドを JSON textarea としてレンダリング（保存パスは `tp=object` で JSON.parse により書き戻し、完全なラウンドトリップ）。
 **修正日**: 2026/09/09
 
 **回帰テスト**: `tests/unit/test_unit_config.py::TestResolveI18nDefaultOnlyDict`、`TestSchemaUnderscoreFieldExclusion`
 
-**重大度**: 🟡 中等
-**タイプ**: 設定システム
+**重要度**: 🟡 中程度
+**種別**: 設定システム
 
 ---
 
-### [BUG-036] 複数インスタンスが共有する設定ディレクトリで設定の書き込みが偶発的に失敗する (ENOENT)
+### [BUG-036] マルチインスタンスが設定ディレクトリを共有する際の設定書き込みの散発的な失敗（ENOENT）
 
-**問題**: Docker 部署環境（複数のコンテナが同一のホスト設定ディレクトリをマウント）では、ログに連続して2行の「設定ファイルの書き込みに失敗しました ... [Errno 2] そのようなファイルやディレクトリはありません: '...config.toml.tmp' -> '...config.toml'」が表示される。この設定の書き込みは破棄され（古い設定は完全に保持され、設定の消失は観察されない）、機能に影響はないが、アラートが繰り返し表示され、問題の調査を妨げ、待機中の設定項目は次の書き込みまでディスクに反映されない。
+**問題**: Docker デプロイシナリオ（複数コンテナが同一ホストの設定ディレクトリをマウント）で、ログに `Failed to write configuration file ... [Errno 2] No such file or directory: '...config.toml.tmp' -> '...config.toml'` という 2 件の連続エラーが散発的に出力される。該当の設定書き込みは破棄されるが（旧設定は完全に保持され、設定損失は観測されていない）、機能への影響はない。ただし、警告が繰り返し発生して調査の妨げとなり、書き込み待ちの設定項目は次回の書き込みまでディスクに反映されない。
 
-**原因**: 根本原因の連鎖: `_flush_config` / `setConfigTemplate` は**固定名**の一時ファイル `config.toml.tmp` を使って新しい内容を保持し、`write()` 後に `fsync` を実行せずに `rename()` を直接実行する。2 つの ErisPulse インスタンスが同一の設定ディレクトリを共有している場合、B インスタンスの `open("w")` が A インスタンスが書き込んでいる一時ファイルを `truncate` する可能性がある → A の `rename` 時に、ターゲットは B によって取られたり、内容が切り取られたりして、ENOENT（ユーザーのログに表示される 2 つのエラー）が発生する。報告されたケースでは、エラーが発生した後に書き込みが破棄され、古い設定が保持されるだけである。さらに極端なタイミングの競合が発生した場合、`rename` は空または半分の `config.toml` を出力する可能性がある（実際の環境ではまだ爆発していない）。単一インスタンスの ext4 遅延割り当てでも、「`rename` のメタデータがデータブロックに落盤する前に破綻する」クラッシュの窓がある（SIGKILL / 電源切断）。`_file_lock` はプロセス内 `threading.RLock` であり、プロセス間/コンテナ間の書き込みには制約がない。
+**原因**: 根本原因の連鎖：`_flush_config` / `setConfigTemplate` が**固定名**の一時ファイル `config.toml.tmp` で新コンテンツを保持し、`write()` 後に `fsync` せず直接 `rename()` する。2 つの ErisPulse インスタンスが同一設定ディレクトリを共有する場合、B インスタンスの `open("w")` が A インスタンスが書き込み中の一時ファイルを **truncate** する可能性がある → A の rename 時点でターゲットは既に B に取得されているか内容が切り詰められ、ENOENT が報告される（ユーザーログに現れた連続 2 件のエラーがこれに相当）。報告済みのケースでは書き込み失敗の警告としてのみ現れた（旧設定は保持）；処理の交錯タイミングがより極端な場合、rename が空/途切れた `config.toml` を出力する可能性がある（潜在的リスクであり、実環境での発現は未確認）。単一インスタンスのシナリオでも、ext4 の遅延割り当てにより「rename のメタデータがデータブロックに先行してディスクに書き込まれる」クラッシュウィンドウ（SIGKILL / 電源断）が同様に存在する。`_file_lock` はプロセス内の `threading.RLock` であり、プロセス間/コンテナ間の書き込みに対する制約はない。
 
 **影響バージョン**: 2.2.0-dev.0 - 2.8.0
 
 **修正バージョン**: 2.8.1
 
-**修正内容**: 設定の書き込みはすべて `_atomic_write_text()` に収束する: 同ディレクトリで `mkstemp` を使ってプロセス固有の一時ファイルを生成（固定名の競合を排除し、マルチインスタンスでは最後の書き込み勝者になるが、ENOENT は発生しない）→ 書き込んだ後 `flush + fsync` でデータを落盤（「`rename` が有効化され、データが落盤しない」窓を排除）→ `os.replace` で原子的にターゲットを置換（POSIX/Windows で原子的、どの時点でディスク上には完全な旧内容か、または完全な新内容がある）；POSIX では設定ディレクトリも `fsync` する。`_flush_config`、`setConfigTemplate`、ルートディレクトリの移行の 3 つの書き込みポイントをすべて切り替える。エラーパスのクリーンアップロジックは一時ファイル名の再構築に伴って再構成される。**マルチインスタンス検出**: スタート時にアドバイザリロック（POSIX `flock` / Windows `msvcrt.locking`）を使って設定ディレクトリのロックファイル `.erispulse_config.lock` を排他的に保持する。占有されている場合は i18n メッセージを出力（起動をブロックしない）、ロックは OS がプロセス終了時に自動的に解放するので、幽霊ロックはない。
+**修正内容**: 設定書き込みを `_atomic_write_text()` に統一：同一ディレクトリでの `mkstemp` によりプロセス固有の一時ファイルを生成（固定名の競合を解消、マルチインスタンスでは last-writer-wins に退化し、ENOENT は発生しない）→ 書き込み完了後に `flush + fsync` でデータのディスク書き込みを強制（「rename は反映済みだがデータが未書き込み」ウィンドウを解消）→ `os.replace` でターゲットをアトミックに置換（POSIX/Windows ともにアトミックで、任意の時点でディスク上には完全な旧コンテンツか完全な新コンテンツのいずれかが存在する）；POSIX では追加で設定ディレクトリを fsync。`_flush_config`、`setConfigTemplate`、ルートディレクトリ設定移行の 3 つの書き込みポイントをすべて切り替え；例外パスのクリーンアップロジックを一意な一時ファイル名に合わせて再構築。**マルチインスタンス検出**を新設：起動時に advisory lock（POSIX `flock` / Windows `msvcrt.locking`）で設定ディレクトリのロックファイル `.erispulse_config.lock` を排他的に保持し、占有されている場合は i18n 警告を出力（起動はブロックしない）、ロックは OS によりプロセス終了時に自動解放され、ゴーストロックは発生しない。
 
 **修正日**: 2026/09/13
 
-**再現手順**: ① 2 つのコンテナが同一のホスト `config/` ディレクトリをマウントして同時に ErisPulse を実行する。② いずれかのインスタンスが設定の書き込み（例: モジュールのデフォルト設定の登録）をトリガーする。③ ログに ENOENT の書き込み失敗エラーが表示され、今回の書き込みは破棄される（古い設定は保持される）。
+**再現手順**: ① 2 つのコンテナが同一ホストの `config/` ディレクトリをマウントし、同時に ErisPulse を実行；② いずれかのインスタンスが設定書き込みをトリガー（例：モジュールがデフォルト設定を登録）；③ ログに ENOENT 書き込み失敗の警告が出現し、今回の書き込みが破棄されることを確認（旧設定は保持）。
 
-**関連**: ユーザー報告（1Panel コンテナ ×2）
+**関連**: ユーザーレポート（1Panel コンテナ ×2）
 
-**回帰テスト**: `tests/unit/test_unit_config_atomic_write.py`（内容が完全に書き込まれる/一時ファイルが残らない/書き込み失敗時に元のファイルを保持/2 インスタンスの並行書き込みは常に合法/ロックファイルの作成/マルチインスタンスの警告/移行時の原子的な書き込み）
+**回帰テスト**: `tests/unit/test_unit_config_atomic_write.py`（コンテンツの完全な書き込み/一時ファイルの残留なし/書き込み失敗時に元ファイルを保持/2 インスタンス同時書き込みでファイルが常に正当/ロックファイル作成/マルチインスタンス警告/移行のアトミック書き込み）
 
-**重大度**: 🟢 軽微
+**重要度**: 🟢 軽微
 
-**タイプ**: 設定システム
+**種別**: 設定システム
 
 ---
 
-### [BUG-037] 空白区切りのコマンド名で登録されたサブコマンドは決してトリガーされない
+### [BUG-037] スペース区切りサブコマンド名を登録しても永遠にトリガーされない
 
-**問題**: 空白区切りの複数トークンのコマンド名でサブコマンドを登録した場合（例: `@command("admin add")`）、コマンドは正常に登録されヘルプリストに表示されるが、ユーザーが `/admin add` を送信するとロボットは応答しない。メッセージは親トークンコマンドにマッチして `admin` + 引数 `["add"]` として処理される。親トークンも登録されていない場合は完全に応答しない。ピリオド区切りの名前（`admin.reload`、全体が単一トークン）を使用する場合のみ回避できる。
+**問題**: スペース区切りのマルチ token コマンド名でサブコマンドを登録した場合（例：`@command("admin add")`）、コマンドは正常に登録されヘルプ一覧にも表示されるが、ユーザーが `/admin add` を送信してもボットは永遠に応答しない——入力は親 token コマンドによって `admin` + 引数 `["add"]` としてマッチされる；親 token も未登録の場合は完全に無応答となる。ドット記法の命名（`admin.reload`、全体で単一 token）を使用した場合のみ回避可能。
 
-**原因**: 根本原因の連鎖: `CommandHandler.__call__` は任意のコマンド名（空白付き）をそのまま平たく `self.commands` 辞書に格納する → 分発段階の `_try_execute_command` はメッセージの最初のトークン（`cmd_name = parts[0]`）のみでマッチする → 複数トークンのコマンド名は辞書のキーとして決して見つからない。登録と分発の2段階でコマンド名のスペースの仮定が一致しておらず、登録時に警告が発生しない（静かに無効化される）。
+**原因**: 根本原因の連鎖：`CommandHandler.__call__` が任意のコマンド名（スペース形式を含む）をそのままフラットな `self.commands` 辞書に格納 → ディスパッチ段階の `_try_execute_command` はメッセージの先頭 token のみでマッチ（`cmd_name = parts[0]`）→ マルチ token コマンド名は辞書キーとして永遠に見つからない。登録とマッチングの 2 段階でコマンド名に対する空間の仮定が一致しておらず、登録時の警告も一切ない（サイレントに無効化）。
 
-**影響バージョン**: コマンドシステム導入以降 - 2.8.0
+**影響バージョン**: コマンドシステム導入時 - 2.8.0
 
 **修正バージョン**: 2.8.1
 
-**修正内容**: 分発層を**最長一致マッチ**に変更する: 最長候補（`" ".join(parts[:n])`、n の上限は登録されたコマンド名/エイリアスの最大トークン数キャッシュ `_max_name_tokens`）から順に降格して試行し、一致すれば残りのトークンを引数として実行し、下流の作用域/ACL/オーバーライド/マスター/権限チェーンはコマンド全体名で自然に有効になる。対応する意味: 親子が共存する場合、未登録のサブコマンド入力は親コマンドに降りる（歴史的な動作は変更しない）; サブコマンドが `permission` を宣言していない場合、親コマンドの直近の祖先コマンドの権限を継承する（親コマンドを保護する=その下のすべてのサブコマンドを保護する）; 単一トークンのコマンドのみ登録された場合、最初の試行ですぐに一致し、分発のオーバーヘッドは以前と同じ。`unregister` / `unregister_by_owner` / 全量クリアもトークン数キャッシュを維持する。
+**修正内容**: マッチング層を**最長前方一致（longest prefix match）**に変更：最長候補（`" ".join(parts[:n])`、n の上限は登録済みコマンド名/エイリアスの最大 token 数のキャッシュ `_max_name_tokens`）から段階的にダウングレードして試行し、ヒットした時点で残りの token を引数として実行、下流のスコープ/ACL/オーバーライド/master/権限チェーンはコマンドの完全名に対して自然に機能する。付随するセマンティクス：親子が共存する場合、未登録のサブコマンド入力は親コマンドにフォールバック（過去の動作は不変）；サブコマンドが `permission` を宣言していない場合、親チェーンに沿って最も近い権限宣言を持つ祖先コマンドを継承（親コマンドを保護すればその配下のすべてのサブコマンドも保護）；単一 token コマンドのみ登録されている場合は最初のラウンドでヒットし、ディスパッチのオーバーヘッドは従来どおり。`unregister` / `unregister_by_owner` / 全量クリーンアップも token 数キャッシュを同期メンテナンス。
 
 **修正日**: 2026/09/13
 
-**再現手順**: ① モジュール内で `@command("admin add")` を登録する。② `/admin add x` を送信する。③ 修正前は応答がない（または `/admin` が引数として受け取る）、修正後は `admin add` がトリガーされ、`get_command_args()` は `["x"]` となる。
+**再現手順**: ① モジュール内で `@command("admin add")` を登録；② `/admin add x` を送信；③ 修正前は無応答（または同時に登録された `/admin` が引数形式で受け取る）、修正後は `admin add` がトリガーされ `get_command_args()` が `["x"]` を返す。
 
-**回帰テスト**: `tests/unit/test_unit_command_subcommand.py`（最長一致マッチ/単一サブコマンドがトリガーされる/3段階のネスト/大文字小文字の2モード/単一と複数トークンのエイリアス/イベントペイロードの全名/ライフサイクルフックの全名/権限の継承6例/ACL glob 全名/マスター/アンロード後の降りる/キャッシュの再計算）
+**回帰テスト**: `tests/unit/test_unit_command_subcommand.py`（最長前方一致/サブコマンドのみのトリガー/3 レベルネスト/大文字小文字区別の 2 モード/単一・マルチ token エイリアス/イベントペイロードの完全名/ライフサイクルフックの完全名/権限継承の 6 例/ACL glob 完全名/master/登録解除時のフォールバックとキャッシュ再計算）
 
-**重大度**: 🟡 中等
+**重要度**: 🟡 中程度
 
-**タイプ**: イベントシステム
+**種別**: イベントシステム
 
 ---
 
-### [BUG-038] persist=False の実行時バインディングが永続化書き込みに一緒にディスクに落とされ、モジュールのアンロード後に「復活」する
+### [BUG-038] persist=False ランタイムバインディングが永続化書き込みに伴ってディスクに書き込まれ、モジュールのアンロード後にディスクから「復活」する
 
-**問題**: `scope.set(path, value, persist=False)` で書かれた実行時バインディング（ドキュメントの約束通り、ディスクに落とさず、プロセスの再起動後に無効になり、モジュールのアンロード時にクリーンアップされる）は、任意の無関係な `persist=True` の書き込み（デフォルト値、例: モジュール `set_module` / WebUI で設定を保存）によって差分でディスクに書き込まれる。その後、モジュールがアンロードされて実行時バインディングがクリーンアップされた後、設定を再ロードすると、そのバインディングは再びディスクから「復活」して有効になり、プロセスの再起動後も依然として存在する——「実行時バインディングはディスクに落とさない」という文約と矛盾し、検出が非常に難しい。
+**問題**: `scope.set(path, value, persist=False)` で書き込まれたランタイムバインディング（ドキュメントではディスクに書き込まず、プロセス再起動で無効化され、モジュールのアンロード時にクリーンアップされると約束されている）は、無関係な `persist=True` 書き込み（デフォルト値、例：モジュールの `set_module` / WebUI による設定保存）に伴い、差分としてユーザーの `config.toml` に書き込まれる；その後、モジュールのアンロードでランタイムバインディングが登録解除されても、次回の設定リロード時にそのバインディングはディスクから「復活」して引き続き有効となり、プロセス再起動後も存在し続ける——「ランタイムバインディングはディスクに書き込まれない」というセマンティクス契約に反しており、調査が極めて困難。
 
-**原因**: 根本原因の連鎖: `ScopeManager.set()` は値をメモリの設定ツリー `_data` に直接書き込む（実行時バインディングも同様）。永続化分岐は**全体の `_data`** を深コピーして `update_erispulse_config` に差分で書き込む → フラグ付きの永続化内容に混入する。`delete(persist=True)` 同様: `_data` の有効な参照（`parent` ノード）を遅延書き込みのキューに渡し、遅延書き込み中にそのノードの兄弟キーの実行時変更が一緒にディスクに書き込まれ、有効な参照がキューに滞在する期間中に跨写漏れの窓がある。
+**原因**: 根本原因の連鎖：`ScopeManager.set()` がまず値をメモリ上の設定ツリー `_data` に書き込み（ランタイムバインディングも同様に `_data` に直接書き込まれる）→ 永続化分岐が **`_data` ツリー全体**のディープコピースナップショットを作成し、`update_erispulse_config` に差分ディスク書き込みとして引き渡す → スナップショットに `persist=False` バインディングの値が混入する。`delete(persist=True)` も同根：`_data` の生きた参照（`parent` ノード）を遅延書き込みダーティキューに渡すため、遅延フラッシュ期間中にそのノード配下の兄弟キーへのランタイム変更がまとめてディスクに書き込まれ、生きた参照がダーティキューに滞留している期間は書き込みをまたぐ汚染ウィンドウが存在する。
 
 **影響バージョン**: 2.8.0-dev.2 - 2.9.0-dev.0
 
 **修正バージョン**: 2.9.0-dev.2
 
-**修正内容**: 永続化ベースライン `_persisted_tree`（設定ファイルから読み込み、検証後のツリーで更新）を導入してディスクの真実の鏡像とする: `set(persist=True)` はベースラインに今回の変更を適用して差分をコミットし、実行時バインディングは永続化内容に含まれない。"書き込み直後に読み取り"はメモリの最終状態のコピーを直接復元し、ベースラインを再構築せずにベースラインを汚染しない。`delete(persist=True)` 同口径: ベースラインに適用された削除を子ツリーの深コピーとして永続化層に渡す; `set_action` 全体の置換は同口径の削除を実行して書き込み、旧ルールのキーは永続化内容に残らない。
+**修正内容**: 永続化ベースライン `_persisted_tree`（設定ツリー再構築時にディスクからロード・検証済みのツリーでリフレッシュ）をディスク上の真実のミラーとして導入：`set(persist=True)` はベースライン上に今回の変更のみを適用してから差分を提出し、ランタイムバインディングは永続化コンテンツに決して入らない；「書き込み後の即時読み取り」はメモリ上の最終状態スナップショットで直接復元する方式に変更され、ベースラインを汚染しないよう `_apply_tree` 経由の再構築は行わない。`delete(persist=True)` も同一基準：ベースライン上に削除を適用し、ベースラインサブツリーのディープコピーを永続化層に引き渡す；`set_action` の全体置換セマンティクスは、同一基準で削除してから書き込み、旧ルールのキーは永続化コンテンツに残留しない。
 
 **修正日**: 2026/09/27
 
-**再現手順**: ① モジュール内で `scope.set("bots.p.debug_mode", {"blocked": ["X"]}, persist=False)` を実行する。② 任意の永続化書き込み（例: 他のモジュールが `set_module` を呼び出す）をトリガーする。③ `config/config.toml` を開き、`debug_mode` が書き込まれている（修正前）。④ モジュールをアンロードする（実行時バインディングはクリーンアップされる）後、設定を再ロードすると `scope.get("bots.p.debug_mode")` はまだバインディング値を返す。
+**再現手順**: ① モジュール内で `scope.set("bots.p.debug_mode", {"blocked": ["X"]}, persist=False)` を実行；② 任意の永続化書き込みをトリガー（例：別のモジュールが `set_module` を呼び出し）；③ `config/config.toml` を開くと `debug_mode` が書き込まれているのが確認できる（修正前）；④ そのモジュールをアンロード（ランタイムバインディングが登録解除）した後、設定リロードをトリガーしても `scope.get("bots.p.debug_mode")` はバインド値を返し続ける。
 
-**回帰テスト**: `tests/unit/test_unit_scope.py::TestPersistBaseline`（実行時バインディングは無関係な永続化書き込みに落とされない / アンロード後の設定再ロードで復活しない / delete はベースラインの子ツリーを含まず兄弟キーを落とさない / set_action 置換で残留キーが残らない / cache_size 設定が有効）
+**回帰テスト**: `tests/unit/test_unit_scope.py::TestPersistBaseline`（ランタイムバインディングが無関係な永続化書き込みでディスクに書き込まれない / アンロード・登録解除後の設定リロードで復活しない / delete が提出するベースラインサブツリーにランタイムの兄弟キーを含まない / set_action の置換で残留キーを残さない / cache_size 設定の有効化）
 
-**重大度**: 🔴 重大
+**重要度**: 🔴 重大
 
-**タイプ**: 設定システム
+**種別**: 設定システム
 
 ---
 
-### [BUG-039] 節全体の書き込みとピリオド書き込みが混在するときの読み書きの不一致（ピリオド書き込みの値が失われる）
+### [BUG-039] セクション全体書き込みとドット記法書き込みの共存時における読み書きの不整合（ドット記法の上書きが失われる）
 
-**問題**: 遅延書き込みの窓内に、同じ節に全体の書き込み（`setConfig("Mod", {...})`、例: `BaseModule.cfg` が書き戻される）とピリオド書き込み（`setConfig("Mod.key", v)`、例: 設定のホット更新 / テストツールが上書き）が存在する場合、2つの変体がある: 変体 A（読み取りパス）——`getConfig("Mod")` 全体の読み取りは古い全体の待機中のスナップショットを返し、後続のピリオド書き込みが見えない（ピリオド読み取りパスは正常）。変体 B（書き込みパス、より重大）——ピリオド書き込みが先、全体の書き込みが後（テストツールが注入した上書き → モジュールが `self.cfg = ...` を書き戻す典型的な時系列）のとき、flush は挿入順に待機キーを適用し、全体の書き込みが後ろに来ると、ピリオドの書き込みが磁盤上に永遠に失われる。プロダクション環境では「設定のホット更新 + モジュールの実行時書き戻し」の組み合わせが発生し、テスト環境とは無関係（ErisPulse-DailyCard テストフィードバックで暴露）。
+**問題**: 遅延フラッシュウィンドウ内で、同一セクションにセクション全体書き込み（`setConfig("Mod", {...})`、例：`BaseModule.cfg` による書き戻し）とドット記法書き込み（`setConfig("Mod.key", v)`、例：設定のホットリロード / テストツールによる上書き）が共存する場合に 2 つのバリアントがある：バリアント A（読み取りパス）——`getConfig("Mod")` によるセクション全体の読み取りが古いセクション全体の待機書き込みスナップショットを返し、より後のドット記法の上書きが見えない（ドット記法の読み取りパスは正常）；バリアント B（書き込みパス、より深刻）——ドット記法書き込みが先、セクション全体書き込みが後（テストツールが上書きを注入 → モジュールが `self.cfg = ...` で書き戻す、という一般的な順序）の場合、flush は挿入順にダーティキーを適用するため、セクション全体書き込みがセクション全体を置換し、**ドット記法の上書きがディスク上で永久に失われる**。本番環境では「設定のホットリロード + モジュールのランタイム書き戻し」の組み合わせだけでトリガー可能であり、テスト環境とは無関係（ErisPulse-DailyCard のテストフィードバックで発覚）。
 
-**原因**: `getConfig` 第①段（正確に待機キーにヒット）は直後に `return self._dirty_keys[key]` を返し、第④段 `_dirty_overlay` の子供の追加を完全に回避する。`_flush_config` は待機キーを挿入順に適用し、全体の書き込みがピリオドの書き込みの後に来ると、ピリオドの書き込みが磁盤上に永久に失われる。また、第①段で待機値を返した後、`getConfig` は（正確なヒット / 祖先のサブツリー / 重ね合わせのマージ）を返し、第③+④のスカラーのエッジケースと同口径。③ 涉及する待機値の `getConfig` は（正確なヒット / 祖先のサブツリー / 重ね合わせのマージ）を `copy.deepcopy` で隔離コピーして返す。待機キーがない高速パスと純粋なキャッシュの読み取り動作は変更されない。
+**原因**: `getConfig` の第①段階（`_dirty_keys` への精密なヒット）が先行して `return self._dirty_keys[key]` し、第④段階の `_dirty_overlay` による子孫のオーバーレイを完全にバイパスする；`_flush_config` は `_dirty_keys` の挿入順にダーティキーを適用するため、セクション全体書き込みがドット記法書き込みの後に続いた場合、ドット記法の値が全体置換される。さらに：第①段階はダーティキューの**元オブジェクトへの参照**を返すため、呼び出し元が返された dict をインプレースで変更すると、ディスク書き込み待ちの状態が直接変更されてしまう。
 
 **影響バージョン**: 2.6.0 - 2.9.0-dev.2
 
 **修正バージョン**: 2.9.0-dev.2
 
-**修正内容**: 待機窓内では**特異性優先**のロジックにする——ピリオド（より具体的）の待機値は全体（より広い）の待機値より優先される。読み取りパスと書き込みパスで同じロジック: ① `getConfig` は正確に待機キーにヒットした後も `_dirty_overlay` の子供の待機値を追加する（dict 値の場合はサブツリーをマージし、③+④のスカラーのエッジケースと同口径）。② `_flush_config` は待機キーをパスの深さ順に適用する（全体/祖先は先、ピリオド/子供は後、安定ソートで同じ深さの待機キーの順序は保持される）。代償: 同一待機窓内（約 5 秒）では、全体の書き戻しはまだ保留中のピリオドの書き込みを上書きできない——読み取りパスが修正された後、読み-変更-書き込みはピリオドの値を含み、実際の影響範囲は非常に小さい。③ 涉及する待機値の `getConfig` は（正確なヒット / 祖先のサブツリー / 重ね合わせのマージ）を `copy.deepcopy` で隔離コピーして返す。待機キーがない高速パスと純粋なキャッシュの読み取り動作は変更されない。
+**修正内容**: ダーティウィンドウ内を**特異性優先**のセマンティクスに統一——ドット記法（より具体的）の待機書き込み値をセクション全体（より広範囲）の待機書き込み値より優先させ、読み取りパスとディスク書き込みパスで同一基準とする：① `getConfig` が待機書き込みキーに精密にヒットした後も `_dirty_overlay` の子孫の待機書き込み値をオーバーレイ（非 dict 値の場合はオーバーレイ適用後のサブツリーを返し、③+④のスカラー系エッジケースと同一基準）；② `_flush_config` のダーティキーをパス深度順にソートして適用（セクション全体/祖先を先に、ドット記法/子孫を後に、安定ソートにより同一深度の書き込み順序を保持）。トレードオフ：同一ダーティウィンドウ内（約 5 秒）ではセクション全体の書き戻しが未解決のドット記法書き込みを上書きできない——読み取りパスの修正後は読み取り-変更-書き込みが自然にドット記法の値を引き継ぐため、実際の影響範囲は極めて小さい。③ 待機書き込み値に関わる `getConfig` の戻り値（精密ヒット / 祖先サブツリー / オーバーレイマージ）を `copy.deepcopy` による分離コピーに変更し、ダーティキューの内部参照をリークしない；ダーティキーが存在しない場合の高速パスと純粋なキャッシュ読み取りの動作は不変。
 
 **修正日**: 2026/09/28
 
-**再現手順**: ① `setConfig("FB.y", 1)`; ② `setConfig("FB", {"z": 2})`; ③ `force_save()`——修正前は磁盤に `{"z": 2}` しか残らず `y` は失われる。修正後は `{"y": 1, "z": 2}`; 変体 A: ①②の後、待機なしで `getConfig("FB")` を実行する——修正前は `y` が含まれず、修正後は表示される。
+**再現手順**: ① `setConfig("FB.y", 1)`；② `setConfig("FB", {"z": 2})`；③ `force_save()`——修正前はディスクに `[FB] z = 2` しか残らない（y が失われる）、修正後は `{"y": 1, "z": 2}`；バリアント A：手順①②の後、ディスクに書き込まずに直接 `getConfig("FB")`——修正前は `y` を含まない、修正後は確認可能。
 
-**回帰テスト**: `tests/unit/test_unit_config.py::TestSectionAndDottedDirtyConsistency`（変体 A 2つの挿入順 / 変体 B フラグなしで順序に関係なく落盤 / 3段階の混合が生き残る / 隔離コピー / 祖先のサブツリーの隔離）
+**回帰テスト**: `tests/unit/test_unit_config.py::TestSectionAndDottedDirtyConsistency`（バリアント A の 2 つの挿入順序 / バリアント B のディスク書き込みと順序の非依存 / 3 層混合の存続 / 分離コピー / 祖先サブツリーの分離）
 
-**重大度**: 🟡 中等
+**重要度**: 🟡 中程度
 
-**タイプ**: 設定システム
+**種別**: 設定システム
 
----
+### [BUG-040] プラットフォームがセグメント分割したメッセージのコマンド末尾引数がサイレントに失われる
 
-### [BUG-040] 平台分割メッセージのコマンド末尾引数が静かに失われる
-
-**問題**: プラットフォームがメッセージを複数のテキストセグメント（例: `/kick` と引数の間にメンションセグメントが挟まっている、または入力法の分割）に分割する場合、コマンド分発は最初のテキストセグメントのみをマッチさせるため、`/艾特 @xxx 123` は引数のない `艾特` として解析され、`args=` を宣言したコマンドは「引数不足」としてエラーとなり、何も残されない。
-
-**原因**: `command.py` のテキスト抽出ループは最初の `type=="text"` セグメントを取得して `break` し、残りのセグメント（非テキストセグメントを含む）は破棄される。
-
-**影響バージョン**: 2.6.0（コマンド分発導入）- 2.10.0
-
+**問題**: プラットフォームが 1 つのメッセージを複数の text セグメントに分割した場合（例：`/kick` と引数の間に mention セグメントが挟まる、または IME による分割）、コマンドディスパッチは最初の text セグメントのみでマッチングを行う——`/アット @xxx 123` が引数なしの `アット` として解析され、`args=` を宣言したコマンドは直接「引数不足」エラーとなり、痕跡も一切残らない。
+**原因**: `command.py` のテキスト抽出ループが最初の `type=="text"` セグメントを取得した後に `break` し、残りのセグメント（すべての非テキストセグメントを含む）が破棄される。
+**影響バージョン**: 2.6.0（コマンドディスパッチ導入時）- 2.10.0
 **修正バージョン**: 2.10.1-dev.0
-
-**修正内容**: コマンドテキストはセグメントの順序に従ってすべての text セグメントを空白で連結するように変更する。メンション/画像の挟層はコマンド全体の解析が中断されない。また、不完全なセグメントの容錯を補う（`message` が None/文字列/非 dict セグメントの場合は分発器がクラッシュしない）。
-
+**修正内容**: コマンドテキストを、セグメント順にすべての text セグメントを収集してスペースで連結する方式に変更；mention/画像が間に挟まってもコマンド全体の解析が失敗しなくなる；不正セグメントへのフォールトトレランスも併せて補完（`message` が None/文字列/非 dict セグメントの場合でもディスパッチャーを破綻させない）。
 **回帰テスト**: tests/unit/test_unit_command_multiseg.py
 
-**重大度**: 🟡 中等
-**タイプ**: イベントシステム
+**重要度**: 🟡 中程度
+**種別**: イベントシステム
 
----
+### [BUG-041] 拒否されたコマンドが alt_message でチェーン全体を再実行：返信の重複と権限関数の副作用の二重トリガー
 
-### [BUG-041] 拒否されたコマンドが alt_message で全チェーンを再実行: 重複した返信と権限関数の副作用が2回実行される
-
-**問題**: アダプタの `alt_message` とメッセージセグメントのテキストが一致しない場合（例: alt に @テキストプレフィックスが含まれている）、`scope`/`ACL`/`master`/`permission` で拒否された後に、分発器は alt_message を使って整条チェーンを再実行する——ユーザーは2つの「権限不足」の返信を受け取り、カスタム権限関数（通常はデータベース検索/カウントの副作用を伴う）が2回実行される。
-
-**原因**: 拒否経路 `return False` と「コマンドが一致しない」は同じ戻り値を使用しているため、分発器は alt フォールバックを試みる。しかし、イベントは拒否前に `claim` されており、再実行は後続の返信を消費するだけで、コマンドの実行後に `claim` されたイベントが再実行される。
-
-**影響バージョン**: 2.9.0（権限チェーンの整備）- 2.10.0
+**問題**: アダプターの `alt_message` がメッセージセグメントのテキストと一致しない場合（例：alt に @テキスト接頭辞が含まれる）、ヒットしたコマンドが scope/ACL/master/permission によって拒否された後、ディスパッチャーが alt_message でチェーン全体を再実行する——ユーザーは 2 件の「権限不足」返信を受け取り、カスタム権限関数（データベース照会/カウントなどの副作用を伴うことが多い）が 2 回呼び出される。
+**原因**: 拒否パスの `return False` が「コマンド未ヒット」と同じ戻り値を共有しており、ディスパッチャーはこれに基づいて alt フォールバックを試行可能と判断する；しかしイベントは拒否前に既に要求（クレーム）されており、再実行では返信と権限判定だけが余分に実行される。
+**影響バージョン**: 2.9.0（ガバナンス/権限チェーンの整備時）- 2.10.0
 **修正バージョン**: 2.10.1-dev.0
-**修正内容**: テキスト処理を3状態契約（unmatched/consumed/rejected）に変更する——登録されたコマンドにマッチした後（拒否の有無にかかわらず）alt フォールバックは行わず、コマンドが一致しない場合にのみ alt フォールバックを保持する。
+**修正内容**: テキスト処理を 3 状態契約（unmatched/consumed/rejected）に変更——登録済みコマンドにヒットした後は（拒否の有無にかかわらず）alt へのフォールバックを行わない；いずれのコマンドにもヒットしなかった場合のみ alt フォールバックを維持。
 **回帰テスト**: tests/unit/test_unit_command_multiseg.py::test_denied_command_not_rerun_via_alt
 
-**重大度**: 🟡 中等
-**タイプ**: イベントシステム
+**重要度**: 🟡 中程度
+**種別**: イベントシステム
 
----
+### [BUG-042] コマンドハンドラー内で登録された wait_reply が同一トリガーメッセージによって即座に消費される
 
-### [BUG-042] コマンドハンドラ内で登録された wait_reply が同じトリガーイベントで即座に消費される
-
-**問題**: コマンド実行体内で `wait_reply` / 交互待機を登録すると、待機は同じコマンドメッセージで即座に消費される——交互流の最初の質問はスキップされ、"ユーザーの返信"はコマンドテキストそのもの（回答が間違っている/データが汚染される）になる。
-
-**原因**: `_handle_message` はメソッドの先頭と末尾で `interaction.resolve` を1回ずつ呼び出す。コマンド実行後の末尾の2回目の `resolve` は実行中に新しく登録された待機を消費する。`cmdpass` が閉じられたとき、`alt` が欠落した状況では空文字列が即座に許可され、この問題を悪化させる。
-
-**影響バージョン**: 2.8.0（交互会話システム導入）- 2.10.0
+**問題**: コマンド実行本体の中で `wait_reply` を呼び出す / インタラクション待機を登録した場合、待機が同じコマンドメッセージによって即座にヒットされる——インタラクションフローの最初の質問がスキップされ、「ユーザーの返信」は実際にはコマンドテキストそのものである（質問への回答になっていない / データ汚染）。
+**原因**: `_handle_message` がメソッドの先頭と末尾でそれぞれ 1 回ずつ `interaction.resolve` を呼び出しており、コマンド実行後の末尾の 2 回目の resolve が実行期間中に新規登録された待機をヒットさせる；cmdpass が無効の場合、alt が欠落しているシナリオで空文字列と判定されそのまま通過するため、問題が悪化していた。
+**影響バージョン**: 2.8.0（インタラクションセッションシステム導入時）- 2.10.0
 **修正バージョン**: 2.10.1-dev.0
-**修正内容**: 分発チェーンを1回の `interaction.resolve`（メソッドの先頭）に収束し、末尾の2回目の呼び出しを削除する。待機はすべて次のメッセージで消費される。
+**修正内容**: ディスパッチチェーンを単一の `interaction.resolve`（メソッド先頭）に集約し、末尾の 2 回目の呼び出しを削除；待機は統一して次のメッセージで消費される。
 **回帰テスト**: tests/unit/test_unit_command_multiseg.py::test_wait_reply_not_consumed_by_command_trigger
 
-**重大度**: 🟡 中等
-**タイプ**: イベントシステム
+**重要度**: 🟡 中程度
+**種別**: イベントシステム
 
----
+### [BUG-043] select() の同一キーでの複数パス待機において、後のパスが前者をサイレントにキャンセルする
 
-### [BUG-043] select() 同キーの複数ルートが後者によって前者を静かにキャンセルする
-
-**問題**: `event.select()` の複数の希望が同一の会話キー（同じ user で異なる pattern、複数の session 希望など）を持つ場合、後で登録されたルートが先に登録されたルートを「競合」としてキャンセルし、`select` は `InteractionCancelled` を即座にスローするのではなく、ドキュメントで約束されているタイムアウトの `(None, None)` を返す。
-
-**原因**: 各ルートは `interaction.register` を個別に呼び出し、競合の意味で同一キーの以前の待機に `REASON_CONFLICT` を送信してキャンセルする。注釈は「同じ user の複数ルートはイベントのコピーで独立して互いに競合しない」と述べているが、コピーは user_id を変更するだけで、同じ user の複数ルートのキーは完全に同じである。
-
-**影響バージョン**: 2.9.0（select の導入）- 2.10.0
+**問題**: `event.select()` の複数の期待条件が同一のセッションキーに導出される場合（同一 user で異なる pattern、複数の session 期待条件など）、後から登録されたパスが先に登録されたパスを「競合」としてキャンセルし、select はドキュメントが約束するタイムアウト時の `(None, None)` を返す代わりに `InteractionCancelled` を直接スローする。
+**原因**: 各パスが独立して `interaction.register` を呼び出しており、その相互排他セマンティクスが同一キーの古い待機に対して `REASON_CONFLICT` でキャンセルを送る；「同一 user の複数パスはイベントコピーにより独立して互いに競合しない」というコメントの主張は成立しない——コピーは user_id を変更するだけであり、同一 user の複数パスのキーは完全に同一である。
+**影響バージョン**: 2.9.0（select 導入時）- 2.10.0
 **修正バージョン**: 2.10.1-dev.0
-**修正内容**: select を集約された待機に変更する——すべての希望をカスタム matcher の単一のエントリに統合する（キーのセットを登録し、共通の future を共有）、いずれかのルートが一致すると対応するインデックスを返す。同じキーの複数ルートは自然に共存する。
+**修正内容**: select を集約待機方式に変更——すべての期待条件をカスタム matcher の単一エントリーに統合（キーセットとして登録、同一 future を共有）、いずれかのパスがヒットした時点で対応するインデックスを返す；同一キーの複数パスが自然に共存可能。
 **回帰テスト**: tests/unit/test_unit_command_multiseg.py::test_select_same_user_multi_branch
 
-**重大度**: 🟡 中等
-**タイプ**: イベントシステム
+**重要度**: 🟡 中程度
+**種別**: イベントシステム
 
----
+### [BUG-044] BaseConverter.at() が OB11 のレガシーな "at" セグメントを生成し、フレームワーク全体の mention 判定で認識されない
 
-### [BUG-044] BaseConverter.at() が OB11 の遺留 "at" セグメントを生成し、全フレームワークのメンション判定が認識しない
-
-**問題**: アダプタが `BaseConverter.at()` を使ってインバウンドイベントを組み立てるとき、`must_at_bot` / `has_mention()` / `on_at_message` 全てが無視される——@ロボットコマンドはグループ内で静かに無効になる。
-
-**原因**: `at()` は `{"type": "at"}`（OB11 形式）を生成するが、フレームワークのメンション判定と構築側（MessageBuilder/送信修飾子）はすべて OB12 の `"mention"` であるため、2軌道が存在し、警告も一切ない。
-
-**影響バージョン**: 2.5.0 以降 - 2.10.0
+**問題**: アダプターが `BaseConverter.at()` で着信イベントを組み立てる際、`must_at_bot` / `has_mention()` / `on_at_message` がすべて検出できなくなる——@ボットコマンドがグループ内でサイレントに無効化される。
+**原因**: `at()` は `{"type": "at"}`（OB11 形式）を生成するが、フレームワークのすべての mention 判定および構築側（MessageBuilder/送信デコレーター）は OB12 の `"mention"` であり、2 つの形式が並存し警告は一切ない。
+**影響バージョン**: 導入バージョンは 2.5.0 以降 - 2.10.0
 **修正バージョン**: 2.10.1-dev.0
-**修正内容**: `at()` は `{"type": "mention", "data": {"user_id": ...}}`（メソッド名は保持し、エイリアスとして `mention` を追加）を生成する。
+**修正内容**: `at()` は `{"type": "mention", "data": {"user_id": ...}}` を生成するように変更（メソッド名はエイリアスとして維持、新たに `mention` エイリアスを追加）。
 **回帰テスト**: tests/unit/test_unit_command_multiseg.py::test_converter_at_produces_mention
 
-**重大度**: 🟡 中等
-**タイプ**: アダプタ
+**重要度**: 🟡 中程度
+**種別**: アダプター
 
----
+### [BUG-045] alt_message を持たないアダプターでインタラクションプリミティブが永久にタイムアウトし、コマンドのパススルーが機能しない
 
-### [BUG-045] alt_message がないアダプタでは、交互原語が永久にタイムアウトし、コマンドの透過が無効になる
-
-**問題**: アダプタが `message` セグメントを記入するだけで `alt_message` を記入しない場合、`confirm` / `choose` / `collect` はユーザーの明文の返信（例: "はい"）を永久に待機し、待機中の登録されたコマンドは決して実行されず、`Event.get_text()` は空文字列を返し、スクリプトの例は静かに無効になる。
-
-**原因**: 上記のすべてのパスは `alt_message` を直接取得し、`text` セグメントをバックアップする——フレームワークの「`alt_message` はアダプタのオプションフィールドである」という契約の下、`message` セグメントのみが有効なフォームである。
-
-**影響バージョン**: 各交互原語の導入以降 - 2.10.0
+**問題**: アダプターが message セグメントのみを設定し `alt_message` を設定しない場合：`confirm` / `choose` / `collect` がユーザーの平文返信（例：「はい」）に対して永久に待機する；待機期間中の登録済みコマンドが永遠にパススルー実行できない；`Event.get_text()` が空文字列を返し、スキャフォールドのサンプルがサイレントに無効化される。
+**原因**: 上記のパスがすべて `alt_message` 文字列を直接取得し、メッセージセグメントへのフォールバックがない——フレームワークの「alt_message はアダプターのオプションフィールド」という契約の下では、セグメントのみの設定は正当な形式である。
+**影響バージョン**: 各インタラクションプリミティブの導入バージョン - 2.10.0
 **修正バージョン**: 2.10.1-dev.0
-**修正内容**: 全ての取得/検証ポイントと `cmdpass` 判定、`Event.get_text()/get_message_text()` で、`alt_message` を優先し、`text` セグメントをバックアップする `extract_text` ポイントを統一する。
+**修正内容**: `alt_message` 優先 + text セグメントフォールバックの `extract_text` 基準に統一（インタラクションプリミティブの 5 か所の値取得/検証ポイント、cmdpass 判定、`Event.get_text()/get_message_text()`）。
 **回帰テスト**: tests/unit/test_unit_command_multiseg.py
 
-**重大度**: 🟡 中等
-**タイプ**: イベントシステム
+**重要度**: 🟡 中程度
+**種別**: イベントシステム
 
----
+### [BUG-046] 宣言的設定テンプレートのネストされたサブテーブルヘッダーがトップレベルテーブルにドリフトする
 
-### [BUG-046] 宣言的設定テンプレートのネストされたサブヘッダーがトップレベルに漂移する
-
-**問題**: 嵌套された dataclass を宣言した設定（`ConfigClass` 内に dataclass フィールド）が初めて設定テンプレートを生成するとき、サブヘッダー `[Nested]` はコンポーネントセクション内ではなく、ファイルのトップレベルに配置される——アダプタは `cfg.嵌套フィールド` を取得できない。`config.full.example` でも同様に誤って配置される。
-
-**原因**: テンプレート生成器は相対的なテーブルヘッダー（`[Nested]`）をレンダリングするが、TOML のテーブルヘッダーの意味はルートからの絶対パスに基づいている。`setConfigTemplate` の古い実装は、解析されたテーブルオブジェクトをコンポーネントセクションに移動し、`full.example` はテキストを直接連結するため、2つのパスとも相対的なテーブルヘッダーをコンポーネントパスに再マウントしていない。
-
-**影響バージョン**: 2.10.0 - 2.10.1（ネストされた dataclass テンプレートレンダリングがこのバージョンで導入された）
+**問題**: ネスト dataclass で宣言された設定（ConfigClass 内のネスト dataclass フィールド）の初回設定テンプレート生成時に、サブテーブルヘッダー `[Nested]` がコンポーネントセクション内ではなくファイルのトップレベルに配置される——アダプターが `cfg.ネストフィールド` を読み取っても値が取得できない；`config.full.example` でも同様に位置ずれが発生する。
+**原因**: テンプレートジェネレーターがネスト dataclass に対して相対テーブルヘッダー（`[Nested]`）をレンダリングするが、TOML のテーブルヘッダーのセマンティクスはルートから算出する絶対パスである；`setConfigTemplate` の旧実装は解析済みのテーブルオブジェクトをコンポーネントセクションに移動し、`full.example` はテキストを直接連結しており、どちらのパスも相対テーブルヘッダーをコンポーネントパスの下に再アンカーしていなかった。
+**影響バージョン**: 2.10.0 - 2.10.1（ネスト dataclass テンプレートレンダリングはこのバージョンで導入）
 **修正バージョン**: 2.10.2
-**修正内容**: `setConfigTemplate` はテンプレート解析されたサブテーブルパス集合を正確に再マウントする（`[Nested]` → `[コンポーネント名.Nested]`）; `config.full.example` 生成側は `_prefix` を直接渡して絶対テーブルヘッダーを生成する。
+**修正内容**: `setConfigTemplate` はテンプレートから解析されたサブテーブルパスの集合に基づいてヘッダーを精密に再アンカー（`[Nested]` → `[コンポーネント名.Nested]`）；`config.full.example` の生成側は `_prefix` を渡すように変更し、絶対テーブルヘッダーを直接生成。
 **回帰テスト**: tests/unit/test_unit_config.py::TestTomlclassEngineMigration::test_template_write_idempotent_and_nested_anchored
 
-**重大度**: 🟡 中等
-**タイプ**: 設定システム / アダプタ
+**重要度**: 🟡 中程度
+**種別**: 設定システム / アダプター
 
 ---
 
-### [BUG-047] サービスディレクトリの全量列挙は遅延ロードモジュールを飛ばす
+### [BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを見落とす
 
-**問題**: `sdk.module.services()` 全量ディレクトリは、未インスタンス化（遅延ロード）のモジュールをすべて飛ばす——モジュールが `meta.services` を宣言してもサービスディレクトリには表示されない。単一モジュールの明確なクエリ `services("Name")` とトポロジー `get_topology()` は影響を受けない。
-
-**原因**: `ModuleManager.services()` 全量列挙の分枝は、契約キャッシュがない未ロードのモジュールを**現地で契約を解析した後**も無条件に `continue` する——意図は、サービスを宣言していないモジュールを飛ばすことだが、未ロードのモジュールを全体的に飛ばしてしまった。ロード済みのモジュールはロード時に契約キャッシュを書くため影響を受けない。
-
-**影響バージョン**: 2.9.0 - 2.10.1（モジュール RPC とサービスディレクトリが 2.9.0 で導入された）
+**問題**: `sdk.module.services()` の全量ディレクトリが未インスタンス化（遅延ロード）モジュールを一律にスキップする——モジュールが `meta.services` を宣言していてもディレクトリに表示されず、ディレクトリを発見エントリーポイントとする利用側（AI エージェント、help モジュールなど）がそのサービスを発見できない；単一モジュールの精密クエリ `services("Name")` とトポロジー `get_topology()` は影響を受けない。
+**原因**: `ModuleManager.services()` の全量列挙分岐が、契約キャッシュを持たない（未ロードの）モジュールに対して**その場で契約を解析した後**も無条件に `continue` する——本来の意図は「サービスを宣言していないモジュール」をスキップすることだったが、実際には未ロードモジュール全体をスキップしていた；ロード済みモジュールはロード時に契約キャッシュに書き込まれるため影響を受けない。
+**影響バージョン**: 2.9.0 - 2.10.1（モジュール RPC とサービスディレクトリは 2.9.0 で導入）
 **修正バージョン**: 2.10.2
-**修正内容**: 無条件で飛ばすのを削除し、**解析結果が空のときだけ飛ばす**ようにする。未ロードのモジュールは現地で契約 `get_meta().services` を解析する（`module.call()` のホワイトリストと同口径）、サービスを宣言したものはサービスディレクトリに照常表示される。
+**修正内容**: 無条件スキップを削除し、「解析結果が空の場合のみスキップする」で統一的に判定；未ロードモジュールはその場で `get_meta().services` を解析（`module.call()` のホワイトリストと同一基準）、サービスを宣言しているモジュールは従来どおりディレクトリに含まれる。
 **回帰テスト**: tests/unit/test_unit_module_rpc.py::TestServicesDirectory::test_lazy_declared_module_in_full_directory
 
-**重大度**: 🟡 中等
-**タイプ**: ロードシステム
+**重要度**: 🟡 中程度
+**種別**: ロードシステム
+
+### [BUG-048] 会話受信トレイクエリ API がメッセージのアトリビューションを喪失する（sender とイベントメタデータ）
+
+**問題**: 受信トレイの全クエリインターフェース（`get()` / `get_by_trace()` / `event.history()`）が返すレコードには `role/text/ts/event_id` のみが含まれる——ストレージ層に既に存在する `sender` 列がクエリ層で破棄されており、グループチャットの再生時に異なるメンバーのメッセージが API 層で区別できない（AI がメンバー B を前のターンの会話相手 A と誤認）；着信レコードは同時に、イベント時点のニックネームなどのメタデータもアーカイブしておらず、後からの照会で得られるのは「現在のニックネーム」であり「当時のニックネーム」ではない。
+**原因**: 2.8.0 で `sender` 列を追加した際のコメントには「再生時にメッセージの出所を復元するため」と明記されていたが、Select と戻り値の構築のいずれもそれを運んでいなかった（実装の漏れ）；メタデータのアーカイブは設計すらされていなかった——`append()` に meta チャネルがなく、テーブル構造に対応する列も存在しない。
+**影響バージョン**: 2.8.0 - 2.11.0（sender 列は 2.8.0 で導入）
+**修正バージョン**: 2.11.1-dev.0
+**修正内容**: `meta` 列を新設（ホワイトリスト契約：着信は nickname/self_id/sub_type/message_id、発信は送信コンテキストと module；旧テーブルは自動マイグレーション、バックエンドが ALTER をサポートしない場合はサイレントに `{}` へフォールバック）；`append()` に `meta` パラメータを追加し、メモリバッファから一括ディスク書き込みまで全体を貫通；`get` / `recent` / `get_by_trace` / `event.history` は統一して `sender` + `meta` を返す（JSON 損壊時は `{}` へフォールバック）。
+**関連**: #467（同バッチ #468 / #469 / #470）
+**回帰テスト**: tests/unit/test_unit_transcript_attribution.py::TestSenderMetaReadback / TestMetaMigration
+
+**重要度**: 🟡 中程度
+**種別**: 会話受信トレイ / ストレージシステム
+
+### [BUG-049] 着信 bot 自身送信メッセージのエコーが user として記録され、受信トレイのアトリビューションを汚染する
+
+**問題**: メッセージエコーを有効化しているプラットフォーム/プロトコル側（OneBot v11 の `report-self-message`、Telegram の outgoing など）が bot 自身の送信メッセージを message イベントとして報告してくる際、受信トレイは一律に `role="user"` と記録する——ボットの自発言と実際のユーザー入力が区別できず、下流モジュールが bot の自発言をユーザー入力として処理する（AI がそれに基づいて「ユーザー」の発言に応答してしまう）、role の統計が歪む。
+**原因**: 着信自動記録ポイント（`Core/adapter.py`）がすべての `event_type == "message"` に対して無条件に `role="user"` と記録しており、`self` フィールドを消費して bot エコー判定を行っていない——しかし直後の bot 自動検出ロジックは既に同一フィールドを消費している（記録時点で利用可能だったが、記録ロジックで使うのを漏らしていた）。
+**影響バージョン**: 2.8.0 - 2.11.0（受信トレイ自動記録は 2.8.0 で導入）
+**修正バージョン**: 2.11.1-dev.0
+**修正内容**: 記録前に `self.user_id == user_id` でエコーを識別し、新設定 `ErisPulse.transcript.self_echo` に従い 3 モードで処理：`"bot"`（デフォルト）は `role="bot"` + `sender=self_id` + `meta.self_echo=true` と記録；`"skip"` は記録しない；`"user"` は旧動作を維持。非エコープラットフォーム（self が欠落または不一致）ではフィールド単位で動作は不変。
+**関連**: #470（#467 の meta 列による self_echo マーカーの保持に依存）
+**回帰テスト**: tests/unit/test_unit_transcript_attribution.py::TestSelfEcho
+
+**重要度**: 🟡 中程度
+**種別**: アダプター / 会話受信トレイ

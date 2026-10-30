@@ -547,8 +547,13 @@ class AdapterLoader(BaseLoader):
                     registry[adapter_name] = info or {}
                 else:
                     manager_instance.register(adapter_name, cls, info)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(
+                    i18n.t(
+                        "loader.adapter.reload_restore_failed",
+                        name=adapter_name, step="registry", error=e,
+                    )
+                )
         if snapshot.instance is not None:
             try:
                 manager_instance._adapters[adapter_name] = snapshot.instance
@@ -560,8 +565,13 @@ class AdapterLoader(BaseLoader):
                     manager_instance._adapter_tasks[adapter_name] = snapshot.task
                 else:
                     manager_instance._adapter_tasks.pop(adapter_name, None)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(
+                    i18n.t(
+                        "loader.adapter.reload_restore_failed",
+                        name=adapter_name, step="instance", error=e,
+                    )
+                )
         if snapshot.module_obj is not None:
             self._last_adapter_objs[adapter_name] = snapshot.module_obj
 
@@ -634,6 +644,12 @@ class AdapterLoader(BaseLoader):
 
         snapshot = self._capture_adapter_state(adapter_name, manager_instance, purge_names)
 
+        # 插件源路径先行捕获：下面第 2 步会从插件加载器注销该路径记录，
+        # 而重发现失败时需要它区分「插件已删除」与「导入期失败」
+        plugin_source = (
+            self._plugin_loader.get_loaded_adapter_path(adapter_name) if is_plugin else None
+        )
+
         # 1. 卸载（shutdown 即清理：路由/事件/任务/bot offline + 注销注册表）
         try:
             await manager_instance.unload(adapter_name)
@@ -665,10 +681,24 @@ class AdapterLoader(BaseLoader):
             try:
                 found = self._plugin_loader.discover_adapters()
             except Exception as e:
+                # 重发现整体失败（非删除）：恢复快照返回失败，不能落入
+                # found = {} → item None → 误判「已删除」的路径
                 logger.error(i18n.t("loader.plugin.discovery_failed", error=e))
-                found = {}
+                self._restore_adapter_snapshot(snapshot, adapter_name, manager_instance)
+                return False
             item = found.get(adapter_name)
             if item is None:
+                # 区分「插件已删除」与「导入期失败」（discover_adapters 对
+                # 导入期异常同样返回空缺）：源文件仍在磁盘上说明不是删除
+                if plugin_source is not None and plugin_source.exists():
+                    logger.error(
+                        i18n.t(
+                            "loader.adapter.reload_plugin_rediscover_failed",
+                            name=adapter_name,
+                        )
+                    )
+                    self._restore_adapter_snapshot(snapshot, adapter_name, manager_instance)
+                    return False
                 removed = True
             else:
                 module_obj = item["module_obj"]

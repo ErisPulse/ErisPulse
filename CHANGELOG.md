@@ -73,6 +73,53 @@
 
 ---
 
+## [2.11.1-dev.1] - 2026/10/27
+> 开发版
+
+**版本摘要**
+本版本为 2.11.1 正式发布前的加固批次：修复热重载体系四项契约缺陷（相对路径下插件删除事件失效、导入失败误判为删除、restart 预检拒绝未闭环、新插件热装载绕过互斥），完成背压告警折叠、收件箱迁移重试、回滚留痕等全线健壮性收口
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 相对 dev.0 为纯修复与加固，无 API 破坏性变更
+
+### 新增
+
+- @YingXinche
+  - 文档：生态模块新增 ApiMCP MCP 桥专页与 QvQChat 配套插件（Stalker/Memes/Companion）区块；新增「选型指南」目录（vs NoneBot2、vs AstrBot/LangBot 对比与 AstrBot 迁移指南）；README 增补 QvQChat/ApiMCP/Cron/Takumi 生态位、Star 引导与爱发电赞助入口（FUNDING）
+
+### 修复
+
+- @YingXinche
+  - 任务工厂 `_owner_aware_task_factory` 显式回传 `loop`：修复 Python 3.14 下 `Task(loop=None, eager_start=True)` 触发 `'NoneType' object has no attribute 'is_running'`，导致 `sdk.run()` 启动后所有经 `sdk.client` 的 HTTP/WS 请求失败（aiohttp 3.14.x 请求路径必经此工厂）(#472)
+  - 文件监控删除检测的键与前缀统一绝对化归一：相对路径调度（默认 `plugins` / `epsdk run --reload` 的 `.`）下删除/改名插件事件恢复触发
+  - 插件导入期失败不再误判为「已删除」（模块/适配器两侧）：按重载失败回滚旧实例并返回失败，不再静默移除后误报成功
+  - `restart()` 预检整轮拒绝闭环：适配器层跳过本轮重载（消除无谓断连抖动）、整轮判定失败并留痕，修复后再次 restart 即可
+  - 新插件热装载（on_created）进入热重载互斥：消除与进行中 restart/reload 的注册表交叉
+  - 单模块重载的意外异常同样触发快照回滚；重载回滚各步骤失败分级留痕（原静默吞异常）
+  - restart 请求落在普通重载持锁期间同样合并排队（至多补跑一轮完整 restart）
+  - 去抖定时器 start 竞态：并发停止监控时 watcher 线程不再偶发 AttributeError
+  - `module.unload()` / `adapter.unload()` 公共入口纳入热重载互斥（限时等待，超时降级直接执行并留痕）：外部卸载不再与进行中的重载交叉导致双重 `on_unload` / 双重 shutdown
+  - 文档流水线：根 README 翻译加固——语言切换行只允许原位整行替换并落盘去重（修复译文中部被复制出第二条语言条）；图片 src 与 shields.io 徽章标签逐块校验（修复 en/ja/ru 徽章残留「文档-erisdev.com」式源语言文字，历史污染缓存块自动弃用重译自愈）
+
+### 优化
+
+- @YingXinche
+  - 事件背压丢弃告警按窗口折叠（默认 5 秒一条、计数照常累计，兑现 `HANDLER_QUEUE_OVERFLOW_WARN_INTERVAL_SECS` 语义）
+  - 单文件插件 mtime 导入缓存：任一插件变更触发的重发现不再重复执行全部无关插件的模块级代码
+  - 会话收件箱：列迁移失败自动重试（不再误置就绪后写入静默失败）、建表/落盘失败告警升级 warning、出站 meta 改显式白名单键入库
+  - `PollingAdapter` 批内单条上报失败隔离（单条异常不再丢弃余批）
+  - `spawn_client_loop` 空 platform 时回退 owner 上下文兜底（空 owner 任务不再无人回收）
+  - 文件监控停止 join 改有限超时（不再阻塞事件循环一个轮询周期）；预检与监控日志全面 i18n 化（五语言）
+  - 配置 schema 透传满血组件扩展元数据（`min/max/step/rows/show_if/disabled_if/value_type/item`，供 Dashboard 2.4.0+ 组件系统消费；旧面板自动忽略）
+
+### 变更
+
+- @YingXinche
+  - CLI：`uv add` 与自更新脚本引导探测补子进程超时兜底（对齐既有标准）；`epsdk doctor --fix` 清理配置前自动备份 `config/config.toml.bak`
+
+---
+
 ## [2.11.1-dev.0] - 2026/10/23
 > 开发版
 
