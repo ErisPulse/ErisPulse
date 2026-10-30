@@ -122,7 +122,7 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 | [首次貢獻](contributing/first-contribution.md) | 從 fork 到提交 PR |
 
 ---
-[English](README.md) | [简体中文](README.zh-CN.md) | **繁體中文** | [日本語](README.ja.md) | [Русский](README.ru.md)
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
 ## 高級特性版本速查表
 

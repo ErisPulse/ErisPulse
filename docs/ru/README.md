@@ -154,4 +154,4 @@ ErisPulse поддерживает два способа разработки:
 - [Официальная документация Yunhu](https://www.yhchat.com/document/)
 - [Telegram Bot API](https://core.telegram.org/bots/api)
 
-[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | **Русский**
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)

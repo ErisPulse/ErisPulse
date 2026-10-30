@@ -1,12 +1,12 @@
 <img src=".github/assets/mascot-hero.png" align="right" width="300" alt="ErisPulse" style="margin-left: 24px; margin-bottom: 16px; border-radius: 12px;" />
 
-[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | **Русский**
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
 # ErisPulse
 
-**Пишите код один раз — развертывайте на QQ / Telegram / Kook / Yunhu / WeChat Official Account / OneBot12 / ... и множестве других платформ.**
+**Пишите один раз — развертывайте на множестве платформ: QQ / Telegram / Kook / Yunhu / WeChat Official Account / OneBot12 / ...**
 
-Событийно-ориентированный модульный асинхронный фреймворк для ботов на основе стандартного интерфейса OneBot12. Бизнес-код пишется один раз, а адаптеры берут на себя скрытие различий между платформами; система плагинов, горячая перезагрузка и полный набор инструментов разработчика доступны «из коробки».
+Событийно-ориентированный модульный асинхронный фреймворк для ботов на основе стандартного интерфейса OneBot12. Бизнес-код пишется один раз, а адаптеры скрывают различия между платформами; система плагинов, горячая перезагрузка и полный набор инструментов разработчика — всё «из коробки».
 
 <p>
   <a href="https://pypi.org/project/ErisPulse/"><img src="https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -21,7 +21,7 @@
   <a href="https://socket.dev/pypi/package/erispulse"><img src="https://img.shields.io/badge/Socket-Secure-2ea043?style=for-the-badge&logo=socket&logoColor=white" alt="Socket"></a>
   <a href="https://www.erisdev.com"><img src="https://img.shields.io/badge/Документация-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="Документация"></a>
   <a href="https://deepwiki.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/DeepWiki-ErisPulse-8A2BE2?style=for-the-badge&logo=readthedocs&logoColor=white" alt="DeepWiki"></a>
-  <a href="https://www.erisdev.com/#market"><img src="https://img.shields.io/badge/Маркет-модулей-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white" alt="Маркет модулей"></a>
+  <a href="https://www.erisdev.com/#market"><img src="https://img.shields.io/badge/Маркет--модулей-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white" alt="Маркет модулей"></a>
   <a href="https://github.com/ErisPulse/ErisPulse/discussions"><img src="https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github" alt="Обсуждения"></a>
 </p>
 
@@ -31,7 +31,7 @@
 
 <div align="center">
 
-### Ключевые возможности
+### Ключевые особенности
 
 </div>
 
@@ -44,7 +44,7 @@
 
 ### Событийно-ориентированная архитектура
 
-Единая событийная модель на основе OneBot12: один обработчик работает со всеми адаптерами
+На основе единой модели событий OneBot12: один handler работает со всеми адаптерами
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -54,17 +54,17 @@
 
 ### Кроссплатформенность
 
-Более 15 платформ: QQ / Telegram / Kook / Yunhu и другие — без единого изменения в бизнес-коде
+15+ платформ, включая QQ / Telegram / Kook / Yunhu, — без единого изменения в бизнес-коде
 
 </td>
 <td width="33%" align="center" valign="top">
 <br/>
 
-<img src=".github/assets/icon/icon_modular.png" width="50" alt="Модульная архитектура" />
+<img src=".github/assets/icon/icon_modular.png" width="50" alt="Модульный дизайн" />
 
-### Модульная архитектура
+### Модульный дизайн
 
-Подключение и отключение плагинов «на лету» без перезапуска; области действия (scope) управляются по платформе / боту / сессии
+Плагины подключаются и отключаются на ходу без перезапуска; scope управляется по платформе / боту / сессии
 
 </td>
 </tr>
@@ -76,17 +76,17 @@
 
 ### Горячая перезагрузка
 
-Изменения применяются сразу после сохранения — быстро и незаметно
+Сохранили — и уже работает: горячая перезагрузка лёгкая и незаметная
 
 </td>
 <td width="33%" align="center" valign="top">
 <br/>
 
-<img src=".github/assets/icon/icon_ai_assist.png" width="50" alt="AI-ассистент" />
+<img src=".github/assets/icon/icon_ai_assist.png" width="50" alt="ИИ-ассистент" />
 
-### AI-ассистент
+### ИИ-ассистент
 
-Опишите требования на естественном языке и сразу получите готовый модуль
+Опишите требования на естественном языке — и сразу получите готовый к использованию модуль
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -96,7 +96,7 @@
 
 ### Простота и элегантность
 
-Цепочечный API: упоминание пользователя, ответ, повтор, массовая отправка — всё в одной строке
+Цепочечный API: упоминание пользователя, ответ, повторы, массовая отправка — всё одной строкой
 
 </td>
 </tr>
@@ -106,23 +106,23 @@
 
 ## Как это работает
 
-ErisPulse скрывает различия платформ на уровне адаптеров, позволяя бизнес-коду работать только с событиями:
+ErisPulse скрывает различия платформ на уровне адаптеров, позволяя бизнес-коду заниматься только событиями:
 
 ```mermaid
 graph LR
-    P["15+ платформ<br/>QQ · Telegram · Kook · Yunhu · WeChat Official Account · Почта · Webhook ..."]
+    P["15+ платформ<br/>QQ · Telegram · Kook · Yunhu · WeChat Official Account · Email · Webhook ..."]
     A["Слой адаптеров<br/>нативные протоколы → стандартные события OneBot12"]
-    Event["Шина событий Event<br/>middleware → распределение command/message/notice/request/meta"]
+    Event["Шина событий Event<br/>middleware → dispatch command/message/notice/request/meta"]
     M["Бизнес-модули<br/>обработчики @command / @message · ваши модули"]
     P --> A --> Event --> M
     M -.->|"event.reply() / SendDSL"| Event
 ```
 
-- **Слой адаптеров** преобразует нативные протоколы платформ в стандартные события OneBot12, так что бизнес-модули не замечают различий между платформами
-- **Шина Event** сначала выполняет цепочку middleware, а затем распределяет события по типам между пятью категориями обработчиков
-- **Ваш код** подписывается на события через декораторы и отвечает с помощью `event.reply()` или SendDSL — ответное сообщение проходит тот же путь в обратном направлении к платформе
+- **Слой адаптеров** преобразует нативные протоколы платформ в стандартные события OneBot12 — бизнес-модули не видят различий между платформами
+- **Шина Event** сначала выполняет цепочку middleware, затем распределяет события по типам между пятью категориями обработчиков
+- **Ваш код** подписывается на события через декораторы и отвечает с помощью `event.reply()` или SendDSL — ответное сообщение идёт обратно к платформе по тому же пути
 
-Полные сведения о дизайне — составе модулей, процессе инициализации, событиях жизненного цикла и т. д. — см. в [обзоре архитектуры](docs/ru/architecture.md).
+Подробности дизайна — состав модулей, процесс инициализации, события жизненного цикла и т. д. — смотрите в [обзоре архитектуры](docs/ru/architecture.md).
 
 ---
 
@@ -130,7 +130,7 @@ graph LR
 
 ### Скрипт установки в один клик (рекомендуется)
 
-Скрипт установки автоматически определит вашу среду (Docker, Python, uv), поможет выбрать наиболее подходящий способ установки и поддерживает несколько языков (中文/English/日本語/Русский/繁體中文).
+Скрипт установки автоматически определит ваше окружение (Docker, Python, uv), поможет выбрать наиболее подходящий способ установки и поддерживает несколько языков (китайский / английский / японский / русский / традиционный китайский).
 
 Windows (PowerShell):
 ```powershell
@@ -161,7 +161,7 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 </tr>
 </table>
 
-### Установка через Docker (рекомендуется)
+### Использование Docker (рекомендуется)
 
 ```bash
 docker pull erispulse/erispulse:latest
@@ -176,7 +176,7 @@ docker pull erispulse/erispulse:latest
 docker pull ghcr.io/erispulse/erispulse:latest
 ```
 
-При использовании образа из ghcr.io нужно изменить поле image в `docker-compose.yml`:
+При использовании образа из ghcr.io необходимо изменить image в `docker-compose.yml`:
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
 ```
@@ -196,9 +196,9 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
 После запуска откройте `http://<host>:8000/Dashboard` и войдите в панель управления Dashboard с помощью заданного токена.
 
-> В образ входят фреймворк ErisPulse и панель управления Dashboard; поддерживаются архитектуры `linux/amd64` и `linux/arm64`.
+> Образ включает фреймворк ErisPulse и панель управления Dashboard, поддерживает архитектуры `linux/amd64` и `linux/arm64`.
 >
-> **Персистентность**: файлы конфигурации и установленные модули/адаптеры сохраняются на хост-машине через подключённые тома и не теряются при перезапуске контейнера. Обновление самого фреймворка выполняется через горячее обновление в Dashboard.
+> **Персистентность**: файлы конфигурации и установленные модули/адаптеры сохраняются на хост-машину через монтирование томов и не теряются при перезапуске контейнера. Обновление самого фреймворка выполняется через горячее обновление в Dashboard.
 
 </details>
 
@@ -207,25 +207,25 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
 | Переменная | По умолчанию | Описание |
 |------|--------|------|
-| `ERISPULSE_DASHBOARD_TOKEN` | пусто | Токен входа в Dashboard (после установки автоматически записывается в конфигурацию) |
+| `ERISPULSE_DASHBOARD_TOKEN` | пусто | Токен входа в Dashboard (после установки автоматически записывается в конфигурацию)|
 | `ERISPULSE_PORT` | `8000` | Проброс порта Dashboard |
-| `ERISPULSE_TAG` | `latest` | Тег образа; можно установить `dev` для использования пре-релизного образа |
+| `ERISPULSE_TAG` | `latest` | Тег образа; можно задать `dev` для использования предрелизного образа |
 | `CONTAINER_NAME` | `erispulse` | Имя контейнера |
 | `TZ` | `Asia/Shanghai` | Часовой пояс контейнера |
-| `LANG` | `en_US.UTF-8` | Язык системы; язык интерфейса запуска определяется автоматически |
-| `ERISPULSE_LANG` | пусто | Принудительно задать язык интерфейса запуска: `zh` / `zh_TW` / `en` / `ja` / `ru` (переопределяет `LANG`) |
+| `LANG` | `en_US.UTF-8` | Язык системы; язык стартового интерфейса определяется автоматически |
+| `ERISPULSE_LANG` | пусто | Принудительно задаёт язык стартового интерфейса: `zh` / `zh_TW` / `en` / `ja` / `ru` (переопределяет `LANG`)|
 
 </details>
 
 ### Магазин приложений 1Panel
 
-Установите ErisPulse в один клик через магазин приложений [1Panel](https://1panel.cn), подробнее см. [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel).
+Установка ErisPulse в один клик через магазин приложений [1Panel](https://1panel.cn); подробности в [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel).
 
 ```bash
 bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 ```
 
-ErisPulse также доступен в стороннем магазине приложений 1Panel; установить можно из стороннего репозитория [okxlin/appstore](https://github.com/okxlin/appstore).
+ErisPulse также добавлен в сторонний магазин приложений 1Panel — установить можно из стороннего репозитория [okxlin/appstore](https://github.com/okxlin/appstore).
 
 ### Установка через pip
 
@@ -233,13 +233,13 @@ ErisPulse также доступен в стороннем магазине п�
 pip install ErisPulse
 ```
 
-Если вы хотите использовать `epsdk` как глобальный инструмент командной строки, не создавая виртуальное окружение, рекомендуется `uv tool install`:
+Если хотите использовать `epsdk` как глобальный инструмент командной строки без виртуального окружения, рекомендуется `uv tool install`:
 
 ```bash
 uv tool install ErisPulse
 ```
 
-> Также можно воспользоваться приведённым выше скриптом установки в один клик — он автоматически определит окружение и проведёт вас по настройке (в меню скрипта также доступен вариант «Глобальная установка CLI (uv tool)»).
+> Также можно воспользоваться скриптом установки в один клик выше — он автоматически определит окружение и проведёт вас по настройке (в меню скрипта доступен и вариант «Глобальная установка CLI (uv tool)»).
 
 ### Инициализация проекта
 
@@ -265,14 +265,14 @@ epsdk init -q -n my_bot
 from ErisPulse import sdk
 from ErisPulse.Core.Event import command
 
-@command("hello", help="Отправить приветственное сообщение")
+@command("hello", help="Отправляет приветственное сообщение")
 async def hello_handler(event):
     user_name = event.get_user_nickname() or "друг"
     await event.reply(f"Привет, {user_name}!")
 
-@command("ping", help="Проверить, на связи ли бот")
+@command("ping", help="Проверяет, в сети ли бот")
 async def ping_handler(event):
-    await event.reply("Pong! Бот работает исправно.")
+    await event.reply("Pong! Бот работает нормально.")
 
 if __name__ == "__main__":
     import asyncio
@@ -282,25 +282,25 @@ if __name__ == "__main__":
 </td>
 <td width="50%" valign="top">
 
-**Ожидаемый результат**
+**Результат**
 
 Отправьте `/hello`
 
-Бот отвечает: `Привет, {имя_пользователя}!`
+Бот отвечает: `Привет, {имя пользователя}!`
 
 ---
 
 Отправьте `/ping`
 
-Бот отвечает: `Pong! Бот работает исправно.`
+Бот отвечает: `Pong! Бот работает нормально.`
 
 ---
 
-**Способ запуска**
+**Запуск**
 
 ```bash
 epsdk run main.py
-# или в режиме разработки
+# или режим разработки
 epsdk run main.py --reload
 ```
 
@@ -316,7 +316,7 @@ epsdk run main.py --reload
 
 ## Один и тот же код. Множество платформ.
 
-*Абсолютно одинаковые обработчики команд. Разные платформы. Без изменения бизнес-логики.*
+*Абсолютно одинаковые обработчики команд. Разные платформы. Без изменения какой-либо бизнес-логики.*
 
 <table>
 <tr>
@@ -346,30 +346,30 @@ epsdk run main.py --reload
 
 ---
 
-## Цепочечная отправка DSL
+## Цепочечный DSL отправки
 
-Упоминания, ответы, повторы, таймауты, колбэки успеха — вся сложная логика отправки умещается в одну цепочку:
+Упоминание пользователя, ответ, повторы, таймаут, колбэк успешной отправки — сложная логика отправки записывается одной цепочкой:
 
 ```python
 yunhu = sdk.adapter.get("yunhu")
 
-# Одиночная отправка: упоминание + ответ + повтор + колбэк успеха
+# Одиночная отправка: @пользователь + ответ + повторы + колбэк успеха
 await (yunhu.Send.To("group", "123").At("456").Reply("msg_789")
        .Retry(3).Timeout(10)
-       .Hook(lambda r: print("Отправка выполнена!")).Text("Привет"))
+       .Hook(lambda r: print("Отправлено успешно!")).Text("Привет"))
 
 # Массовая отправка: несколько сообщений одной цепочкой
 results = await (yunhu.Send.To("user", "123").Build()
                  .Text("Уведомление 1").Image("pic.jpg").Retry(2).send_all())
 ```
 
-> Все цепочечные методы — Hook / Retry / Timeout / OnProgress / Defer / Build и др. — описаны в [документации SendDSL](docs/ru/developer-guide/adapters/send-dsl.md).
+> Все цепочечные методы — Hook / Retry / Timeout / OnProgress / Defer / Build и другие — описаны в [документации SendDSL](docs/ru/developer-guide/adapters/send-dsl.md).
 
 ---
 
 ## Пример многошагового диалога
 
-Сбор информации, проверка ввода, подтверждение отправки — без ручного управления состоянием диалога:
+Сбор информации, валидация ввода, подтверждение отправки — без ручного управления состоянием диалога:
 
 ```python
 from ErisPulse.Core.Event import command
@@ -377,94 +377,94 @@ from ErisPulse.Core.Event import command
 @command("register")
 async def register_handler(event):
     conv = event.conversation(timeout=60)
-    await conv.say("Добро пожаловать! Начнём регистрацию.")
+    await conv.say("Добро пожаловать! Начинаем регистрацию.")
     data = await conv.collect([
-        {"key": "name", "prompt": "Введите ваше имя"},
-        {"key": "age", "prompt": "Введите ваш возраст",
+        {"key": "name", "prompt": "Введите имя"},
+        {"key": "age", "prompt": "Введите возраст",
          "validator": lambda e: e.get_text().strip().isdigit(),
-         "retry_prompt": "Возраст должен быть числом, введите снова"},
+         "retry_prompt": "Возраст должен быть числом, введите ещё раз"},
     ])
     if data and await conv.confirm(f"Подтвердить регистрацию? Имя: {data['name']}, возраст: {data['age']}"):
-        await event.reply(f"Регистрация прошла успешно! Добро пожаловать, {data['name']}")
+        await event.reply(f"Регистрация успешна! Добро пожаловать, {data['name']}")
 ```
 
-> Полные возможности — вопросы с вариантами (choose), ветвление и переходы (branch / goto), персистентность и др. — описаны в разделе [Conversation: многошаговый диалог](docs/ru/advanced/conversation.md).
+> Полные возможности — вопросы с вариантами (choose), ветвления и переходы (branch / goto), персистентность и др. — в [документации Conversation (многошаговые диалоги)](docs/ru/advanced/conversation.md).
 
 ---
 
 ## Основные модули
 
-Единая точка входа `sdk` объединяет все ключевые возможности:
+Единая точка входа `sdk` связывает воедино все ключевые возможности:
 
 ```mermaid
 graph LR
-    SDK["Единая точка входа sdk"] --> Event & Adapter & Module & Router & Storage
+    SDK["sdk — единая точка входа"] --> Event & Adapter & Module & Router & Storage
     SDK --> Config & Lifecycle & Logger & HttpClient
 ```
 
 | Модуль | Описание |
 |------|------|
-| **Event** | Система событий: пять типов событий command / message / notice / request / meta + многошаговый диалог Conversation |
-| **Adapter** | Управление адаптерами: базовый класс BaseAdapter унифицирует преобразование событий и отправку через SendDSL, поддерживает 15+ платформ — QQ / Telegram / Kook / Yunhu / WeChat Official Account и др. |
-| **Module** | Управление модулями: базовый класс BaseModule + объявление зависимостей и загрузка в топологическом порядке |
-| **SendDSL** | Цепочечная отправка: упоминание / ответ / повтор / таймаут / массовая отправка — сложная логика в одной строке |
-| **Router** | Система маршрутизации HTTP/WebSocket (FastAPI + Uvicorn) |
-| **Storage** | Хранилище «ключ-значение» на основе SQLite + универсальные цепочечные SQL-запросы |
+| **Event** | Система событий: пять типов событий command / message / notice / request / meta + Conversation для многошаговых диалогов |
+| **Adapter** | Управление адаптерами: базовый класс BaseAdapter унифицирует преобразование событий и отправку через SendDSL; поддержка 15+ платформ, включая QQ / Telegram / Kook / Yunhu / WeChat Official Account |
+| **Module** | Управление модулями: базовый класс BaseModule + декларация зависимостей и загрузка в топологическом порядке |
+| **SendDSL** | Цепочечная отправка: упоминание / ответ / повторы / таймаут / массовая отправка и другая сложная логика — одной строкой |
+| **Router** | Система маршрутизации HTTP/WebSocket (FastAPI + Uvicorn)|
+| **Storage** | Хранилище «ключ–значение» на базе SQLite + универсальные цепочечные SQL-запросы |
 | **Config** | Управление конфигурацией TOML |
-| **Lifecycle** | Хуки событий жизненного цикла (core.init / adapter.* / module.*) |
+| **Lifecycle** | Хуки событий жизненного цикла (core.init / adapter.* / module.*)|
 | **Logger** | Модульная система логирования с поддержкой дочерних логгеров |
-| **HttpClient** | Унифицированный HTTP/WS-клиент (на основе aiohttp) со встроенными повторами и системой исключений ErisPulse |
+| **HttpClient** | Унифицированный HTTP/WS-клиент (на базе aiohttp) со встроенными повторами и системой исключений ErisPulse |
 
 Подробнее о дизайне (процесс инициализации, события жизненного цикла, стратегия загрузки модулей) — см. [обзор архитектуры](docs/ru/architecture.md).
 
 ---
 
-## Области действия (Scope) — трёхмерное управление правами
+## Scope (области действия) — трёхмерная плоскость контроля доступа
 
-Не меняя ни строчки кода модулей, единообразно объявляйте в конфигурации, «в каком объёме что действует»:
+Не меняя ни строчки кода модулей, декларируйте в конфигурации, «что действует и в каких пределах»:
 
 ```toml
 [ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Tool*"]           # ① Измерение модулей: на этой платформе открыты только эти модули (glob / регулярные выражения)
+modules = ["Chat", "Tool*"]           # ① Измерение модулей: на данной платформе открыты только эти модули (glob / regex)
 
 [ErisPulse.scope.identity.users.onebot11]
 deny = ["u_bad", "spam_*"]            # ② Измерение идентичности: события пользователей из чёрного списка отбрасываются сразу
 
 [ErisPulse.scope.actions.MyModule]
-send = { allow = ["Text"] }           # ③ Измерение исходящих действий: этот модуль может отправлять только текст
-api = { deny = ["set_*", "leave_*"] } #    и административные API ему запрещены
+send = { allow = ["Text"] }           # ③ Измерение исходящих действий: этому модулю разрешена только отправка текста
+api = { deny = ["set_*", "leave_*"] } #    и запрещены административные API
 ```
 
 ```python
-# Можно изменять и во время выполнения — вступает в силу сразу (словарный доступ с точечной нотацией)
+# Можно настраивать и во время выполнения — изменения применяются сразу (словарный доступ с точечными путями)
 sdk.scope.set_action("MyModule", "api", deny=["set_*"])
 ```
 
-> Подробнее: [Область действия (scope)](docs/ru/advanced/scope.md)
+> Подробнее в [Scope (области действия)](docs/ru/advanced/scope.md)
 
 ---
 
-## Переопределение событий — меняйте поведение событий любого типа, не трогая код модулей
+## Переопределение событий — меняйте поведение любого типа событий, не трогая код модулей
 
-Смените триггерное слово или добавьте команде ограничение «только для администраторов» — без правки исходников модуля, всё решается конфигурацией:
+Смените триггерную фразу или добавьте команде ограничение для администраторов — исходный код модуля остаётся нетронутым, достаточно конфигурации:
 
 ```toml
-# Переопределение условий срабатывания обработчиков сообщений (логическое AND с условиями в коде; поддерживаются все типы meta/message/notice/request/command)
+# Переопределение условий срабатывания обработчиков сообщений (объединяется с условиями в коде через AND; поддерживаются все типы: meta/message/notice/request/command)
 [ErisPulse.event.overrides.message.ChatModule]
 pattern = "болталка*"
 
-# Переопределение параметров команды (master / hidden / aliases / prefix и др.; конфигурация имеет приоритет)
+# Переопределение параметров команд (master / hidden / aliases / prefix и др.; значения пользователя имеют приоритет)
 [ErisPulse.event.overrides.command.MyModule.restart]
 master = true
 ```
 
-> Подробнее: [Переопределение событий](docs/ru/getting-started/event-handling.md)
+> Подробнее в [Переопределении событий](docs/ru/getting-started/event-handling.md)
 
 ---
 
 ## Экосистема
 
-ErisPulse — это больше, чем фреймворк. Установили — и сразу начали: ничего не нужно изобретать с нуля.
+ErisPulse — это не просто фреймворк. Установили — и уже можно начинать, изобретать велосипеды с нуля не нужно.
 
 <table>
 <tr>
@@ -472,7 +472,7 @@ ErisPulse — это больше, чем фреймворк. Установил
 
 **Фреймворк**
 
-Основная среда выполнения
+Базовый runtime
 
 Единые модели событий и сообщений
 
@@ -483,7 +483,7 @@ ErisPulse — это больше, чем фреймворк. Установил
 
 Визуальное управление
 
-Плагины · логи · конфигурация
+Плагины · Логи · Конфигурация
 
 [Онлайн-демо →](https://dashdemo.erisdev.com/)
 
@@ -512,7 +512,7 @@ ErisPulse — это больше, чем фреймворк. Установил
 
 **Адаптеры**
 
-Подключение 15+ платформ
+Поддержка 15+ платформ
 
 </td>
 <td align="center" width="25%">
@@ -521,7 +521,7 @@ ErisPulse — это больше, чем фреймворк. Установил
 
 Официальный мультиплатформенный клиент
 
-Работает прямо на телефоне · живёт в трее на ПК
+Работа прямо на телефоне · постоянное присутствие в трее на десктопе
 
 [Скачать и установить →](https://github.com/ErisPulse/ErisPulse-App/releases)
 
@@ -530,14 +530,14 @@ ErisPulse — это больше, чем фреймворк. Установил
 
 **Docker**
 
-Поддержка нескольких архитектур
+Мультиархитектурная поддержка
 
 `erispulse/erispulse`
 
 </td>
 <td align="center" width="25%">
 
-**Документация & CLI**
+**Документация и CLI**
 
 [erisdev.com](https://www.erisdev.com)
 
@@ -551,60 +551,60 @@ ErisPulse — это больше, чем фреймворк. Установил
 
 ## Поддерживаемые платформы
 
-Будем рады вашему вкладу в адаптеры! Не знаете, с чего начать? Взгляните на [руководство по внесению вклада](docs/ru/contributing/README.md).
+Будем рады вашему вкладу в адаптеры! Не знаете, с чего начать? Читайте [руководство по контрибуции](docs/ru/contributing/README.md).
 
 | Адаптер | Описание |
 |--------|------|
-| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Платформа мгновенного обмена сообщениями Kook (KaiHeiLa) |
-| <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Децентрализованный коммуникационный протокол Matrix |
+| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Мессенджер Kook (KaiHeiLa) |
+| <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Децентрализованный протокол связи Matrix |
 | <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | Универсальный протокол ботов OneBot v11 |
 | <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | Стандартный протокол OneBot v12 |
-| <img src=".github/assets/adapter_logo/qqbot.svg" height="20" alt="QQ" /> [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | Официальная бот-платформа QQ |
-| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Песочница" /> [Песочница](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | Отладка в веб-интерфейсе без подключения к реальной платформе |
-| <img src=".github/assets/adapter_logo/terminal.svg" height="20" alt="Терминал" /> [Терминал](https://github.com/ErisPulse/ErisPulse-TerminalAdapter) | Чат прямо в командной строке — разработка и отладка с нулевой настройкой |
-| <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | Глобальная платформа мгновенного обмена сообщениями |
-| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Почта" /> [Почта](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | Адаптер приёма и отправки электронной почты |
-| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [Yunhu](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | Корпоративная платформа мгновенного обмена сообщениями (подключение ботов) |
-| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [Пользователь Yunhu](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | Адаптер подключения на основе пользовательского протокола Yunhu |
+| <img src=".github/assets/adapter_logo/qqbot.svg" height="20" alt="QQ" /> [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | Официальная платформа ботов QQ |
+| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [Песочница](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | Отладка в браузере без подключения к реальной платформе |
+| <img src=".github/assets/adapter_logo/terminal.svg" height="20" alt="Terminal" /> [Терминал](https://github.com/ErisPulse/ErisPulse-TerminalAdapter) | Командная строка как чат — разработка и отладка без настройки |
+| <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | Глобальная платформа мгновенных сообщений |
+| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [Email](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | Адаптер приёма и отправки электронной почты |
+| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [Yunhu](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | Корпоративная платформа мгновенных сообщений (подключение ботов) |
+| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [Yunhu (пользовательский)](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | Адаптер подключения на основе пользовательского протокола Yunhu |
 | [花枫咖啡馆](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
-| <img src=".github/assets/adapter_logo/discord.svg" height="20" alt="Discord" /> [Discord](https://github.com/ErisPulse/ErisPulse-DiscordAdapter) | Глобальная платформа для сообществ: серверы, каналы, личные сообщения |
-| <img src=".github/assets/adapter_logo/webhook.svg" height="20" alt="Webhook" /> [Webhook](https://github.com/ErisPulse/ErisPulse-WebhookAdapter) | Универсальный HTTP-мост для интеграции с любыми системами |
+| <img src=".github/assets/adapter_logo/discord.svg" height="20" alt="Discord" /> [Discord](https://github.com/ErisPulse/ErisPulse-DiscordAdapter) | Глобальная платформа для сообществ с поддержкой серверов, каналов и личных сообщений |
+| <img src=".github/assets/adapter_logo/webhook.svg" height="20" alt="Webhook" /> [Webhook](https://github.com/ErisPulse/ErisPulse-WebhookAdapter) | Универсальный HTTP-адаптер-мост для интеграции с любыми системами |
 | <img src=".github/assets/adapter_logo/wechatmp.svg" height="20" alt="WechatMp" /> [WeChat Official Account](https://github.com/ErisPulse/ErisPulse-WechatMpAdapter) | Официальная платформа публичных аккаунтов WeChat |
 
-Подробное описание адаптеров: [см. здесь](docs/ru/platform-guide/README.md)
+Смотрите [подробное описание адаптеров](docs/ru/platform-guide/README.md)
 
 ---
 
 ## Сообщество
 
-Наши каналы общения:
+Свяжитесь с нами:
 
 - Telegram: <https://t.me/ErisPulse>
 - QQ-группа: <https://qm.qq.com/q/TOwnCmypcy>
 - Группа Yunhu: <https://yhfx.jwznb.com/share?key=VWJL4fTWXepa&ts=1781889199>
 
-Считаете проект полезным? Поддержите нашу дальнейшую разработку через [Afdian](https://ifdian.net/a/YingXinche)!
+Проект оказался полезным? Поддержите нашу дальнейшую разработку на [Afdian](https://ifdian.net/a/YingXinche)!
 
 ---
 
 ## Star History
 
-Если ErisPulse оказался вам полезен, поставьте Star ⭐ — это самый прямой способ помочь большему числу разработчиков узнать о проекте.
+Если ErisPulse был вам полезен, поставьте Star ⭐ — это самый прямой способ помочь проекту увидеть большее число разработчиков.
 
 [![Star History Chart](https://api.star-history.com/svg?repos=ErisPulse/ErisPulse&type=Date)](https://star-history.com/#ErisPulse/ErisPulse&Date)
 
 ---
 
-### Руководство по внесению вклада
+### Руководство по контрибуции
 
-Проекту ErisPulse нужен и ваш вклад! Мы приветствуем любые формы участия:
+Здоровье проекта ErisPulse зависит и от вас! Мы приветствуем любые формы вклада:
 
-1. **Сообщения об ошибках** — отправляйте отчёты об ошибках в [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues)
-2. **Запросы функций** — предлагайте новые идеи в [обсуждениях сообщества](https://github.com/ErisPulse/ErisPulse/discussions)
-3. **Вклад в код** — перед отправкой PR прочитайте [руководство по стилю кода](docs/ru/styleguide/) и [руководство по внесению вклада](CONTRIBUTING.md)
-4. **Улучшение документации** — помогайте улучшать документацию и примеры кода
+1. **Сообщения об ошибках** — создавайте отчёты о багах в [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues)
+2. **Запросы функций** — предлагайте новые идеи через [обсуждения сообщества](https://github.com/ErisPulse/ErisPulse/discussions)
+3. **Вклад в код** — перед отправкой PR прочитайте [стиль кода](docs/ru/styleguide/) и [руководство по контрибуции](CONTRIBUTING.md)
+4. **Улучшение документации** — помогайте развивать документацию и примеры кода
 
-**Первый вклад?** Начните здесь 👉 [Ваш первый вклад на практике](docs/ru/contributing/first-contribution.md)
+**Первый вклад?** Начните отсюда 👉 [Первый вклад на практике](docs/ru/contributing/first-contribution.md)
 
 [Присоединяйтесь к обсуждениям сообщества](https://github.com/ErisPulse/ErisPulse/discussions)
 
@@ -614,12 +614,12 @@ ErisPulse — это больше, чем фреймворк. Установил
 
 ### Благодарности
 
-<img src=".github/assets/thanks.png" width="200" alt="Благодарность" />
+<img src=".github/assets/thanks.png" width="200" alt="Благодарности" />
 
-Часть кода этого проекта основана на [sdkFrame](https://github.com/runoneall/sdkFrame), а слой стандартизации ключевых адаптеров создавался с опорой на [спецификацию OneBot12](https://12.onebot.dev/) и выиграл от неё.
+Часть кода этого проекта основана на [sdkFrame](https://github.com/runoneall/sdkFrame); слой стандартизации ключевых адаптеров опирается на [спецификацию OneBot12](https://12.onebot.dev/) и обязан ей многим.
 
-Ранние исследования и рост ErisPulse были бы невозможны без поддержки сообщества разработчиков Yunhu — многие идеи, адаптеры и практический наработки родились именно там.
+Раннее развитие и рост ErisPulse были бы невозможны без поддержки сообщества разработчиков Yunhu — многие идеи, адаптеры и практические наработки родились именно там.
 
-Также благодарим всех разработчиков и авторов проектов, которые внесли вклад в ErisPulse, экосистему OneBot и open source-сообщество.
+Также благодарим всех разработчиков и авторов проектов, внёсших вклад в ErisPulse, экосистему OneBot и open source-сообщество.
 
 </div>

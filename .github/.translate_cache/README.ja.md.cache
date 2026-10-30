@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "249d2b30d1c95a32caa85fc001ce4243",
-  "file_hash": "249d2b30d1c95a32caa85fc001ce4243",
-  "translated_at": "2026-10-30T08:03:43.993921",
+  "hash": "071e7029493601d97d9ce8f3cf671998",
+  "file_hash": "071e7029493601d97d9ce8f3cf671998",
+  "translated_at": "2026-10-30T09:57:02.386950",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "4b19b85cdcb753ad4047ec69660cc341",
-      "translation": "<img src=\".github/assets/mascot-hero.png\" align=\"right\" width=\"300\" alt=\"ErisPulse\" style=\"margin-left: 24px; margin-bottom: 16px; border-radius: 12px;\" />\n\n[English](README.md) | **日本語** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [Русский](README.ru.md)"
+      "hash": "b1d89d9186048e694e6525a67fe57cb0",
+      "translation": "<img src=\".github/assets/mascot-hero.png\" align=\"right\" width=\"300\" alt=\"ErisPulse\" style=\"margin-left: 24px; margin-bottom: 16px; border-radius: 12px;\" />\n\n[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)"
     },
     {
       "hash": "7977a154cf00c6af8a371266a6365af9",
