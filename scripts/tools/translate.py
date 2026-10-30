@@ -87,13 +87,23 @@ class DocsTranslator:
         "ru": {"name": "Русский", "direction": "target"},
     }
 
-    LANG_SWITCHER_ITEMS = [
-        {"lang": "en", "label": "English", "file": "README.md"},
-        {"lang": "zh-CN", "label": "简体中文", "file": "README.zh-CN.md"},
-        {"lang": "zh-TW", "label": "繁體中文", "file": "README.zh-TW.md"},
-        {"lang": "ja", "label": "日本語", "file": "README.ja.md"},
-        {"lang": "ru", "label": "Русский", "file": "README.ru.md"},
-    ]
+    # 语言切换行：**所有语言版本完全相同**（全部为链接，不标记当前语言）。
+    # 此前按目标语言加粗当前项，模型常产出混合格式（如 ``[**English**](...)``
+    # 又粗又链、当前项丢失链接导致无法切换语言），统一后翻译器无需按
+    # 语言区分，也彻底消除该行的本地化分歧
+    LANG_SWITCHER_LINE = (
+        "[English](README.md) | [简体中文](README.zh-CN.md) | "
+        "[繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)"
+    )
+
+    # 语言切换行的宽松识别：行首为 English 标签的任意已知形态
+    # （``[English](...)`` / ``**English**`` / ``[**English**](...)``），
+    # 后接 ``|`` 分隔。用于把任意历史/混合变体整行归一为 LANG_SWITCHER_LINE。
+    # 行首锚定避免误伤正文中的多语言罗列（如安装脚本的"支持多语言"行）
+    LANG_SWITCHER_LINE_RE = re.compile(
+        r"^\[?\*{0,2}English\*{0,2}\]?(?:\(README(?:\.md)?\))?(?=\s*\|)[^\n]*$",
+        re.MULTILINE,
+    )
 
     IGNORE_DIRS = ["ai-support/prompts", "api-reference/auto_api", "_meta"]
     REPLACEMENT_CHAR = "\ufffd"
@@ -346,37 +356,14 @@ class DocsTranslator:
     def _is_root_readme(self, file_path: Path) -> bool:
         return file_path.name == self.ROOT_README_SOURCE and file_path.parent == Path()
 
-    def _build_lang_switcher_line(self, target_lang: str) -> str:
-        """构建语言切换行：当前目标语言使用粗体，其他语言为链接。"""
-        parts = []
-        for item in self.LANG_SWITCHER_ITEMS:
-            if item["lang"] == target_lang:
-                parts.append(f"**{item['label']}**")
-            else:
-                parts.append(f"[{item['label']}]({item['file']})")
-        return " | ".join(parts)
-
-    def _build_lang_switcher_hint(self, target_lang: str) -> str:
-        expected_line = self._build_lang_switcher_line(target_lang)
-        current_label = next(
-            (i["label"] for i in self.LANG_SWITCHER_ITEMS if i["lang"] == target_lang),
-            target_lang,
-        )
-        other_label = next(
-            (i["label"] for i in self.LANG_SWITCHER_ITEMS if i["lang"] != target_lang),
-            "xx",
-        )
-        other_file = next(
-            (i["file"] for i in self.LANG_SWITCHER_ITEMS if i["lang"] != target_lang),
-            "README.xx.md",
-        )
+    @classmethod
+    def _build_lang_switcher_hint(cls) -> str:
+        """构建语言切换行的翻译提示（行内容与目标语言无关）"""
         return (
-            f"【语言切换行本地化】若文档包含语言切换行（各语言名称用 `` | `` 分隔的行），"
-            f"必须整行替换为：\n"
-            f"   `{expected_line}`\n"
-            f"   - 规则：当前语言（{target_lang}）只加粗体不加链接（如 ``**{current_label}**``）；"
-            f"其他语言只加链接不加粗体（如 ``[{other_label}]({other_file})``）。\n"
-            f"   - 严禁写成 ``[{other_label}]({other_file})`` 这类既加粗又加链接的错误格式\n"
+            f"【语言切换行】文档若包含语言切换行（English 开头、各语言名称用 "
+            f"`` | `` 分隔的行），必须整行替换为：\n"
+            f"   `{cls.LANG_SWITCHER_LINE}`\n"
+            f"   - 该行在所有语言版本中完全相同（语言名称保持原文，不翻译）\n"
             f"   - 只允许在文档原有语言切换行的位置整行替换，"
             f"严禁在文档其他位置新增或复制语言切换行"
         )
@@ -710,7 +697,7 @@ class DocsTranslator:
         )
         rules += self._build_path_replacement_hint(target_lang) + "\n"
         if file_name == "README.md":
-            rules += self._build_lang_switcher_hint(target_lang) + "\n"
+            rules += self._build_lang_switcher_hint() + "\n"
         if review_notes:
             notes_text = "\n".join(f"  - {note}" for note in review_notes)
             rules += f"\n【人工审查备注（必须严格遵守）】\n{notes_text}\n"
@@ -1222,19 +1209,18 @@ class DocsTranslator:
         if source_path in content:
             content = content.replace(source_path, target_path)
 
-        # 2. 对于根 README 文件，强制修正语言切换行
+        # 2. 对于根 README 文件，强制归一语言切换行（任意历史/混合变体 →
+        #    统一的全链接格式），并去重（模型偶发把模板复制进文档中部，
+        #    归一后仅保留首个，即源顶部的正版）
         if file_name == "README.md":
-            expected_line = self._build_lang_switcher_line(target_lang)
-            # 匹配以 [English](README.md) 开头的语言切换行
-            pattern = r"^\[English\]\(README\.md\)[^\n]*$"
-            content = re.sub(pattern, expected_line, content, flags=re.MULTILINE)
-            # 去重：模型偶发把系统提示中的语言切换行模板复制进文档中部
-            # （已见诸产物），归一后仅保留首个（源顶部的正版）
+            content = self.LANG_SWITCHER_LINE_RE.sub(
+                self.LANG_SWITCHER_LINE, content
+            )
             lines = content.split("\n")
             seen_switcher = False
             deduped: list[str] = []
             for line in lines:
-                if line.strip() == expected_line:
+                if line.strip() == self.LANG_SWITCHER_LINE:
                     if seen_switcher:
                         continue
                     seen_switcher = True
