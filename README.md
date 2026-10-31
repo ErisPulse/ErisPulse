@@ -2,7 +2,7 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
-> ✦ **Hi, I'm Eris (小eris)!** — ErisPulse's mascot and your guide through these docs. If something breaks in a demo, it's probably me testing it for you.
+> ✦ **Hello everyone, I'm Xiaoeris!** The mascot and guide in ErisPulse documentation. Don't panic if there's an error in the demo, I'm probably just trying the error for you～
 
 # ErisPulse
 

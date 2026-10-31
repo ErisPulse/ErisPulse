@@ -2,7 +2,7 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
-> ✦ **大家好，我是小eris！** ErisPulse 的看板娘，也是文件裡的嚮導。演示裡出報錯別慌，多半是我在替你試錯～
+> ✦ **大家好，我是小eris！** ErisPulse 的看板娘，也是文件裡的嚮導。示範中出現報錯別慌，多半是我在替你試錯～
 
 # ErisPulse
 

@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "071e7029493601d97d9ce8f3cf671998",
-  "file_hash": "071e7029493601d97d9ce8f3cf671998",
-  "translated_at": "2026-10-30T10:02:03.264192",
+  "hash": "2d109fdc3a7475f00fa2f02da3df1069",
+  "file_hash": "2d109fdc3a7475f00fa2f02da3df1069",
+  "translated_at": "2026-10-31T09:59:46.464800",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "b1d89d9186048e694e6525a67fe57cb0",
-      "translation": "<img src=\".github/assets/mascot-hero.png\" align=\"right\" width=\"300\" alt=\"ErisPulse\" style=\"margin-left: 24px; margin-bottom: 16px; border-radius: 12px;\" />\n\n[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)"
+      "hash": "7d2d2543f7199e725388a7c1ad368d19",
+      "translation": "<img src=\".github/assets/mascot-hero.png\" align=\"right\" width=\"300\" alt=\"ErisPulse\" style=\"margin-left: 24px; margin-bottom: 16px; border-radius: 12px;\" />\n\n[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)\n\n> ✦ **大家好，我是小eris！** ErisPulse 的看板娘，也是文件裡的嚮導。示範中出現報錯別慌，多半是我在替你試錯～"
     },
     {
       "hash": "7977a154cf00c6af8a371266a6365af9",
