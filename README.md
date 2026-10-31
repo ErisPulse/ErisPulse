@@ -2,6 +2,8 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
+> ✦ **Hi, I'm Eris (小eris)!** — ErisPulse's mascot and your guide through these docs. If something breaks in a demo, it's probably me testing it for you.
+
 # ErisPulse
 
 **Write once, deploy to QQ / Telegram / Kook / Yunhu / WeChat Official Account / OneBot12 / ... multiple platforms.**

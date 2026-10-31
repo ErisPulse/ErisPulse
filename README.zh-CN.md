@@ -2,6 +2,8 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
+> ✦ **大家好，我是小eris！** ErisPulse 的看板娘，也是文档里的向导。演示里出报错别慌，多半是我在替你试错～
+
 # ErisPulse
 
 **一次编写，部署到 QQ / Telegram / Kook / 云湖 / 微信公众号 / OneBot12 / ... 多个平台。**

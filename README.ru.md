@@ -2,6 +2,8 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
+> ✦ **Привет, я Эрис (小eris)!** — талисман ErisPulse и ваш проводник по документации. Если в демо что-то сломалось — скорее всего, я тестировала это для вас.
+
 # ErisPulse
 
 **Пишите один раз — развертывайте на множестве платформ: QQ / Telegram / Kook / Yunhu / WeChat Official Account / OneBot12 / ...**
