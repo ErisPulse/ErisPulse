@@ -1,0 +1,1035 @@
+# `ErisPulse.loaders.module` 模块
+
+---
+
+## 模块概述
+
+
+ErisPulse 模块加载器
+
+专门用于从 PyPI 包加载和初始化普通模块
+
+> **提示**
+> 1. 模块必须通过 entry-points 机制注册到 erispulse.module 组
+> 2. 模块类名应与 entry-point 名称一致
+> 3. 模块支持懒加载机制
+
+---
+
+## 函数列表
+
+
+### `_validate_sdk_attr_name(name: str) -> bool`
+
+**内部方法**
+验证模块名称是否可以安全地作为 SDK 属性挂载
+
+- **name**: 模块名称（entry-point name）
+
+**返回值**: True 如果名称安全，False 如果应拒绝
+
+---
+
+
+### `parse_activate_on(activate_on: Any) -> tuple[list[tuple[str, str | None]], list[str]]`
+
+解析 activate_on 触发器声明
+
+支持 str / list / dict 三种形式的自由混合：
+
+- ``str``：事件类型级触发，如 ``"message"``、``"notice"``
+- ``dict``：单键映射，键为事件类型或 ``command``
+  - ``{"message": "private"}``：事件类型 + detail_type（消息的 detail_type 即会话类型）
+  - ``{"notice": "group_member_increase"}``：事件类型 + detail_type
+  - ``{"command": "roll"}``：命令名触发，值为命令名 / 命令名列表
+  - ``{"command": {"name": "dice", "help": "掷一个骰子"}}``：命令名 + 元数据声明
+- ``list``：以上各项的混合列表
+
+- **activate_on** (`activate_on`): 声明值（str / dict / list）
+
+**返回值**: ``(event_triggers, command_triggers)``
+
+    - event_triggers: ``[(event_type, detail_type | None), ...]``
+    - command_triggers: ``[命令名, ...]``（已去重，保持声明顺序）
+
+**示例**:
+
+```python
+event_triggers, command_triggers = parse_activate_on(
+    ["message", {"notice": "group_member_increase"}, {"command": "roll"}]
+)
+event_triggers
+[('message', None), ('notice', 'group_member_increase')]
+command_triggers
+['roll']
+```
+
+---
+
+
+### `_collect_command_names(value: Any, command_triggers: list[str], seen: set[str]) -> None`
+
+收集命令触发器名称（支持 str / list / dict 三种形式）
+
+- ``str``：命令名
+- ``list``：命令名列表（元素为 str 或 dict）
+- ``dict``：命令声明（含 ``name`` 字段，缺省时告警并忽略）
+
+- **value**: ``command`` 键的值
+- **command_triggers**: 命令名列表（就地追加）
+- **seen**: 已收集命令名集合（去重，保持声明顺序）
+
+---
+
+
+### `_extract_command_meta(activate_on: Any) -> dict[str, dict[str, Any]]`
+
+提取命令触发器的元数据声明（dict 形式）
+
+仅 ``{"command": {...}}`` 的 dict 声明携带元数据（help / usage / group /
+aliases / hidden）；简写与列表形式不携带，其帮助文本由 ``_command_stub_help``
+的回退链兜底。同名命令同时以简写与 dict 声明时，dict 声明优先（此处仅收集
+dict 声明，简写不产生元数据条目，天然被 dict 覆盖）。
+
+- **activate_on** (`activate_on`): 声明值
+
+**返回值**: ``{命令名: {"help": ..., "usage": ..., "group": ..., "aliases": [...], "hidden": ...}}``
+
+---
+
+
+### `_extract_command_meta_value(value: Any, meta: dict[str, dict[str, Any]]) -> None`
+
+递归收集 dict 形式的命令元数据声明
+
+- **value**: ``command`` 键的值
+- **meta**: 命令元数据字典（就地追加）
+
+---
+
+
+## 类列表
+
+
+### `class _ReloadSnapshot`
+
+**内部方法**
+热重载回滚快照（引用级别，无深拷贝）
+
+记录重载开始前与目标模块相关的全部注册状态：注册表条目、实例、
+懒加载代理、sdk 属性与将被 purge 的 sys.modules 条目对象。任一重载
+步骤失败时按原序恢复，旧实例继续服务。
+
+尽力而为语义：``on_unload`` 已执行的副作用（断开的连接、取消的任务）
+不可撤销——恢复后旧实例处于"已收尾"状态；第三方在运行期持有的旧实例
+引用不在恢复范围。
+
+
+### `class ModuleLoader(BaseLoader)`
+
+模块加载器
+
+负责从 PyPI entry-points 加载模块，支持懒加载
+
+> **提示**
+> 使用方式：
+> ```python
+> loader = ModuleLoader()
+> module_objs, enabled, disabled = await loader.load(module_manager)
+> ```
+>
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化模块加载器
+
+---
+
+
+##### `_get_entry_point_group() -> str`
+
+获取 entry-point 组名
+
+**返回值**: 入口点组名字符串
+
+---
+
+
+##### `async load(manager_instance: Any) -> tuple[dict[str, Any], list[str], list[str]]`
+
+从 entry-points 加载对象（使用 ModuleFinder）
+
+- **manager_instance**: 管理器实例
+
+**返回值**:
+
+    dict[str, Any]: 对象字典
+    list[str]: 启用列表
+    list[str]: 禁用列表
+
+**异常**: `ImportError` - 当加载失败时抛出
+
+---
+
+
+##### `_merge_plugin_folder(objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any) -> None`
+
+**内部方法**
+发现本地插件文件夹并并入加载结果
+
+本地插件优先：与 entry-point 模块同名时，本地插件覆盖安装包条目
+（便于本地覆盖调试）。启用状态沿用 ``ErisPulse.modules.status``。
+
+- **objs**: 模块对象字典（原地修改）
+- **enabled_list**: 启用列表（原地修改）
+- **disabled_list**: 禁用列表（原地修改）
+- **manager_instance**: 模块管理器实例
+
+---
+
+
+##### `async reload_module(module_name: str, manager_instance: Any, sdk_instance: Any, *, full: bool = True) -> bool`
+
+热重载单个模块（支持任意来源：本地插件 / 运行时注册 / PyPI 安装包）
+
+完整执行 语法预检 → 卸载旧实例 → 清理注册与模块缓存（默认全量：
+按顶层包名清理 ``sys.modules`` + ``invalidate_caches``）→
+重新发现/导入 → 重新注册并加载 流程。本地插件（moduleInfo meta 的
+source 为 ``plugin_folder``）重扫描插件目录；运行时注册（source 为
+``runtime``）按定义模块重导并按类名重取；PyPI 安装包模块重新查询
+entry-point 并重导入（pip 升级后重载即可生效）。
+
+依赖该模块的模块会**级联重载**：默认（全量）模式下依赖者同样完整
+重导代码；``full=False`` 轻量模式下 PyPI 依赖者卸载后直接重新实例化。
+
+``full=False`` 切换为**轻量重载**：``sys.modules`` 清理名单仅按
+元数据，仅供超大依赖树的性能敏感场景。
+
+- **module_name**: 模块名（entry-point 名称、插件名或运行时注册名）
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+- **full**: 是否全量重载（默认 True；False 为轻量逃生门）
+
+**返回值**: 是否重载成功
+
+---
+
+
+##### `async reload_all(manager_instance: Any, sdk_instance: Any) -> 'dict[str, bool]'`
+
+全量热重载所有已注册模块（尽力而为语义）
+
+执行 整体语法预检（任一失败整轮拒绝、旧实例继续服务）→ 记录已加载态
+→ 预清理字节码缓存 → 卸载全部模块 → 清理全部已安装包与本地插件的
+``sys.modules`` 子树 → 重新发现/注册 → 按依赖拓扑序加载 →
+此前处于已加载态的懒加载模块重新激活 流程，一次刷新全部模块代码
+（pip 批量升级后调用即可全部生效）。
+
+单模块失败仅记录诊断并跳过（发现 / 注册 / 初始化阶段的逐模块容错
+由加载管线内建），不影响其余模块；预检拒绝（语法错误）时返回空
+字典且 ``_last_reload_all_rejected`` 置 True，不提供整体回滚——
+on_unload 副作用不可撤销，与单模块热重载的尽力而为语义一致。
+
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+
+**返回值**: 模块注册名 → 是否重载成功（预检拒绝或发现阶段即失败时为空字典）
+
+---
+
+
+##### `_enhance_purge_names(names: 'list[str]', old_obj: Any) -> 'list[str]'`（staticmethod）
+
+**内部方法**
+全量重载的 ``sys.modules`` 清理名单增强：叠加旧模块对象的顶层包名
+
+部分打包产物缺失 ``top_level`` 元数据，仅按元数据清理会漏掉
+import 缓存（假重载）；旧模块对象 ``__name__`` 的顶层段是可推导
+的最后兜底。
+
+- **names**: 依据元数据得出的顶层模块名列表
+- **old_obj**: 重载前的模块对象（可为 None）
+
+**返回值**: 增强后的顶层模块名列表
+
+---
+
+
+##### `_dependent_purge_names(dep: str, manager_instance: Any) -> 'list[str]'`（staticmethod）
+
+**内部方法**
+推断依赖者的 sys.modules 清理名单（快照采集用）
+
+- **dep**: 依赖者模块名
+- **manager_instance**: 模块管理器实例
+
+**返回值**: 顶层模块名列表
+
+---
+
+
+##### `_capture_reload_state(module_name: str, manager_instance: Any, sdk_instance: Any, purge_names: 'list[str]') -> _ReloadSnapshot`
+
+**内部方法**
+采集单模块的重载回滚快照（引用级别，无深拷贝）
+
+- **module_name**: 模块名
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+- **purge_names**: 重载流程将要从 sys.modules 移除的顶层模块名
+
+**返回值**: 回滚快照
+
+---
+
+
+##### `_restore_reload_snapshot(snapshot: _ReloadSnapshot, module_name: str, manager_instance: Any, sdk_instance: Any) -> None`
+
+**内部方法**
+恢复重载快照（任一重载步骤失败时调用）
+
+恢复顺序：sys.modules 条目 → 注册存根 → 懒加载态 / 已加载态 →
+sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日志，不阻断
+其余恢复）。
+
+- **snapshot**: 重载前采集的快照
+- **module_name**: 模块名
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+
+---
+
+
+##### `_restore_failed_dependents(dependent_snapshots: 'dict[str, _ReloadSnapshot]', manager_instance: Any, sdk_instance: Any) -> None`
+
+**内部方法**
+恢复重载失败的依赖者：快照时已加载而重载后仍未回到加载态的依赖者，
+恢复其旧注册状态（否则级联卸载后依赖者处于裸奔态）
+
+- **dependent_snapshots**: 依赖者快照（模块名 → 快照）
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+
+---
+
+
+##### `async _reload_single_plugin(plugin_name: str, manager_instance: Any, sdk_instance: Any, *, was_loaded: bool = False) -> bool`
+
+**内部方法**
+重载单个本地插件：清理注册 → 清模块缓存 → 重新发现 → 注册并挂载
+
+- **plugin_name**: 插件名
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+- **was_loaded**: 重载前是否处于已加载态（保持活性语义）
+
+**返回值**: 是否重载成功
+
+---
+
+
+##### `async _reload_single_module(module_name: str, manager_instance: Any, sdk_instance: Any, top_level: list[str], *, was_loaded: bool = False) -> bool`
+
+**内部方法**
+重载单个 PyPI 安装包模块：清理注册 → 清模块缓存 → 重新发现导入 → 注册并挂载
+
+- **module_name**: 模块名（entry-point 名称）
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+- **top_level**: 顶层 Python 模块名列表（重导入前清理 sys.modules）
+- **was_loaded**: 重载前是否处于已加载态（保持活性语义）
+
+**返回值**: 是否重载成功
+
+---
+
+
+##### `_invalidate_source_caches(top_level: 'list[str]') -> None`（staticmethod）
+
+**内部方法**
+清除顶层模块源文件的字节码缓存（``__pycache__``/*.pyc）
+
+必须在 ``_purge_installed_modules`` **之前**调用（依赖 sys.modules
+中尚存的旧条目定位源文件）。
+
+- **top_level**: 顶层模块名列表
+
+---
+
+
+##### `async _reload_runtime_module(module_name: str, manager_instance: Any, sdk_instance: Any, *, was_loaded: bool = False) -> bool`
+
+**内部方法**
+重载单个运行时注册模块：按定义模块重导 → 按类名重取 → 注册并挂载
+
+调用前须通过 reload_module 的安全守卫（定义模块非 ``__main__``
+且源文件存在）。无 entry-point 参与：定义模块 ``import_module``
+重导后按原类名 ``getattr`` 重取类。
+
+- **module_name**: 模块注册名
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+- **was_loaded**: 重载前是否处于已加载态（保持活性语义）
+
+**返回值**: 是否重载成功
+
+---
+
+
+##### `_collect_precheck_files(module_name: str, old_obj: Any, is_plugin: bool, top_level: 'list[str]') -> 'list[Any]'`
+
+**内部方法**
+收集重载预检的源文件列表（单模块路径与整体重载共用）
+
+- **module_name**: 模块名（日志用）
+- **old_obj**: 重载前的快照条目（模块对象）
+- **is_plugin**: 是否插件文件夹来源
+- **top_level**: 顶层模块名列表
+
+**返回值**: 源文件路径列表（无法定位时为空列表并记 debug）
+
+---
+
+
+##### `async _precheck_sources(module_name: str, old_obj: Any, is_plugin: bool, top_level: 'list[str]') -> bool`
+
+**内部方法**
+重载卸载前的语法预检：对目标源码树逐文件 ``ast.parse``
+
+预检失败（语法错误）即拒绝重载——旧实例未卸载、继续服务，语法
+错误永远不会把模块推进"半死状态"。源码树无法定位（C 扩展 / 内存
+模块）时跳过预检并记 debug，交由快照回滚兜底。
+
+- **module_name**: 模块名（日志用）
+- **old_obj**: 重载前的快照条目（模块对象）
+- **is_plugin**: 是否插件文件夹来源
+- **top_level**: 顶层模块名列表
+
+**返回值**: 是否通过（True = 允许继续重载流程）
+
+---
+
+
+##### `_purge_installed_modules(top_level: list[str]) -> None`
+
+**内部方法**
+从 sys.modules 移除安装包模块相关子树，强制下次导入重新执行
+
+- **top_level**: 顶层 Python 模块名列表
+
+---
+
+
+##### `_purge_plugin_modules(plugin_name: str) -> None`
+
+**内部方法**
+从 sys.modules 移除插件相关模块，强制下次导入重新执行
+
+- **plugin_name**: 插件名
+
+---
+
+
+##### `_build_module_info(entry_point: Any, loaded_obj: Any, meta_name: str) -> dict[str, Any] | None`
+
+构造模块 moduleInfo（首次加载与热重载共用）
+
+校验模块类为 BaseModule 子类（严格模式下不合规时跳过并返回 None），
+读取加载策略并组装与 entry-point 一致的元信息，
+同时挂载到模块对象供管理器读取。
+
+- **entry_point**: entry-point 对象
+- **loaded_obj**: entry-point 加载出的模块类
+- **meta_name**: 模块名
+
+**返回值** (`moduleInfo`): 字典；严格模式跳过时返回 None
+
+**内部方法**
+内部方法，供 _process_entry_point 与热重载复用
+
+---
+
+
+##### `async _process_entry_point(entry_point: Any, objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any) -> tuple[dict[str, Any], list[str], list[str], bool]`
+
+处理单个模块 entry-point
+
+- **entry_point**: entry-point 对象
+- **objs**: 模块对象字典
+- **enabled_list**: 启用的模块列表
+- **disabled_list**: 停用的模块列表
+- **manager_instance**: 模块管理器实例
+
+**返回值**:
+
+    dict[str, Any]: 更新后的模块对象字典
+    list[str]: 更新后的启用模块列表
+    list[str]: 更新后的禁用模块列表
+    bool: 是否为新模块
+
+**异常**: `ImportError` - 当模块加载失败时抛出
+
+---
+
+
+##### `_extract_strategy_value(strategy: Any, key: str, default: Any) -> Any`
+
+从策略对象或字典中提取值
+
+- **strategy**: 策略对象（dict 或 ModuleLoadStrategy）
+- **key**: 键名
+- **default**: 默认值
+
+**返回值**: 提取到的值或默认值
+
+**内部方法**
+内部方法，统一处理 dict 和 ModuleLoadStrategy 两种策略类型
+
+---
+
+
+##### `_get_global_lazy_loading() -> bool`
+
+获取全局懒加载配置
+
+**返回值**: 是否启用懒加载（默认 True）
+
+**内部方法**
+内部方法，用于获取全局懒加载配置
+
+---
+
+
+##### `_resolve_strategy(module_class: type) -> Any`
+
+按优先级从模块类解析加载策略
+
+优先级：should_eager_load()（旧版兼容） → get_load_strategy()
+
+- **module_class**: 模块类
+
+**返回值**: 策略对象或 None
+
+**内部方法**
+内部方法，用于解析模块的加载策略
+
+---
+
+
+##### `_apply_global_lazy_loading(strategy: Any, lazy_load: bool) -> Any`
+
+应用全局懒加载配置到策略
+
+- **strategy**: 原始策略
+- **lazy_load**: 懒加载值
+
+**返回值**: 修改后的策略
+
+**内部方法**
+内部方法，用于应用全局配置覆盖
+
+---
+
+
+##### `_get_load_strategy(module_class: type) -> Any`
+
+获取模块加载策略
+
+优先级：
+1. 模块的 should_eager_load() 方法（旧版兼容）
+2. 模块的 get_load_strategy() 方法
+3. 全局配置
+4. 默认策略
+
+全局配置会覆盖模块策略中的 lazy_load 设置
+
+- **module_class** (`Type`): 模块类
+
+**返回值**: 加载策略对象或字典
+
+**内部方法**
+内部方法，用于获取模块的加载策略
+
+---
+
+
+##### `async register_to_manager(modules: list[str], module_objs: dict[str, Any], manager_instance: Any) -> bool`
+
+将模块类注册到管理器
+
+- **modules**: 模块名称列表
+- **module_objs**: 模块对象字典
+- **manager_instance**: 模块管理器实例
+
+**返回值**: 模块注册是否成功
+
+> **提示**
+> 此方法由初始化协调器调用，仅注册模块类，不进行实例化
+
+---
+
+
+##### `_validate_dependencies(modules: list, module_objs: dict) -> dict`
+
+验证所有模块的依赖是否满足
+
+- **modules** (`list`): 模块名称列表
+- **module_objs** (`dict`): 模块对象字典
+
+**返回值** (`dict`): 缺少依赖的模块映射 {模块名: [缺少的依赖列表]}
+
+**内部方法**
+
+---
+
+
+##### `_topological_sort(modules: list, module_objs: dict) -> list`
+
+基于依赖关系和优先级的拓扑排序
+
+- **modules** (`list`): 模块名称列表
+- **module_objs** (`dict`): 模块对象字典
+
+**返回值** (`list`): 排序后的模块 meta_name 列表
+
+**异常**: `RuntimeError` - 当检测到循环依赖时
+
+**内部方法**
+
+---
+
+
+##### `_mount_lazy_proxy(meta_name: str, module_obj: Any, manager_instance: Any, sdk_instance: Any, *, arm_stubs: bool = True) -> Any`
+
+**内部方法**
+为模块挂载懒加载代理（LazyModule / ModuleActivator）并注册到管理器
+
+initialize_modules（首次加载）与单模块热重载（重挂代理）共用。
+
+- **meta_name**: 模块注册名
+- **module_obj**: 模块对象（moduleInfo 已挂载）
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+- **arm_stubs**: 是否武装 activate_on 触发器（False = 已加载模块
+
+    重挂代理——模块已激活无需触发器，归眠时会重新武装）
+**返回值**: 挂载的代理对象
+
+---
+
+
+##### `_apply_dormant_after(meta_name: str, module_obj: Any, manager_instance: Any) -> None`
+
+**内部方法**
+解析 dormant_after 休眠声明（时长语法与 cooldown 同口径）；未声明 = 永不休眠
+
+- **meta_name**: 模块注册名
+- **module_obj**: 模块对象
+- **manager_instance**: 模块管理器实例
+
+---
+
+
+##### `async _reload_finalize_mount(label: str, meta_name: str, new_module: Any, manager_instance: Any, sdk_instance: Any, *, was_loaded: bool) -> bool`
+
+**内部方法**
+单模块重载/热装载成功后的挂载收尾（保持重载前活性）
+
+- eager 模块或重载前已加载：重新 load 实例
+- 懒加载/休眠声明模块：重挂代理（was_loaded 时绑定已加载实例；
+  否则保持休眠，activate_on 触发器随新代码重建）
+- 无懒加载声明的已加载模块：直接挂真实实例（旧行为）
+
+- **label**: 日志用组件名
+- **meta_name**: 模块注册名
+- **new_module**: 新模块对象
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+- **was_loaded**: 重载前是否处于已加载态
+
+**返回值**: 是否成功
+
+---
+
+
+##### `async load_new_plugin(plugin_name: str, manager_instance: Any, sdk_instance: Any) -> 'bool | None'`
+
+热装载新出现的本地插件（插件目录热发现：``on_created`` 消费）
+
+与单模块重载的差异：无旧实例可卸载，直接走 发现 → 注册 → 按加载
+策略挂载（懒加载挂代理、eager 即时加载）。
+
+- **plugin_name**: 插件名
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+
+**返回值**: True 装载成功 / False 装载失败 / None 该名字不是模块插件
+
+---
+
+
+##### `async initialize_modules(modules: list[str], module_objs: dict[str, Any], manager_instance: Any, sdk_instance: Any) -> bool`
+
+初始化模块（创建实例并挂载到 SDK）
+
+- **modules**: 模块名称列表
+- **module_objs**: 模块对象字典
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+
+**返回值**: 模块初始化是否成功
+
+> **提示**
+> 此方法处理模块的实际初始化和挂载
+> 支持模块间依赖声明和拓扑排序加载
+
+---
+
+
+### `class LazyModule`
+
+懒加载模块包装器
+
+当模块第一次被访问时才进行实例化
+
+> **提示**
+> 1. 模块的实际实例化会在第一次属性访问时进行
+> 2. 依赖模块会在被使用时自动初始化
+> 3. 对于继承自 BaseModule 的模块，会自动调用生命周期方法
+
+
+#### 方法列表
+
+
+##### `__init__(module_name: str, module_class: type, sdk_ref: Any, module_info: dict[str, Any], manager_instance: Any) -> None`
+
+初始化懒加载包装器
+
+- **module_name** (`str`): 模块名称
+- **module_class** (`Type`): 模块类
+- **sdk_ref**: Any SDK 引用
+- **module_info** (`dict[str, Any]`): 模块信息字典
+- **manager_instance**: 模块管理器实例
+
+---
+
+
+##### `bind_loaded_instance(instance: Any) -> None`
+
+将代理绑定到已加载的实例，直接进入「已激活」态（不触发懒初始化）
+
+**内部方法**
+单模块热重载路径使用：重载成功且实例已 load 后重挂代理并绑定，
+保持重载前活性（后续归眠 → 透明唤醒的闭环不破坏）。
+
+- **instance**: 管理器中已加载的实例
+
+---
+
+
+##### `async _initialize() -> None`
+
+实际初始化模块
+
+**异常**: `Exception` - 当模块初始化失败时抛出
+
+**内部方法**
+内部方法，执行实际的模块初始化
+
+---
+
+
+##### `_maybe_reset_init_failed() -> None`
+
+**内部方法**
+初始化失败冷却：超过 ``ACTIVATE_RETRY_COOLDOWN_SECS`` 后清除失败标志
+
+旧语义为失败后代理永久死亡（``_init_failed`` 永久短路）；现改为与
+ModuleActivator 对齐的冷却重试——冷却窗口内保持短路（避免每次属性
+访问都重试的开销），冷却结束自动允许重试。休眠唤醒失败因此具备
+自恢复路径。
+
+---
+
+
+##### `reset_for_sleep() -> None`
+
+**内部方法**
+归眠：清空实例态，使代理回到"未激活"状态
+
+代理对象本身保留（sdk 属性与管理器懒注册不动），下次访问照常走
+懒初始化路径透明复活。ModuleActivator 覆写本方法以同时重置激活态
+并重新武装触发器 stub。
+
+---
+
+
+##### `_ensure_initialized() -> None`
+
+确保模块已初始化
+
+**内部方法**
+内部方法，检查并确保模块已初始化
+**内部方法**
+
+设计说明：
+- 支持同步/异步透明的懒加载机制，用户无需感知差异
+- BaseModule 在异步上下文中通过辅助线程完成初始化
+- BaseModule 在同步上下文中使用 asyncio.run() 确保初始化完成
+- 非 BaseModule 保持原有逻辑，支持同步初始化
+**内部方法**
+
+---
+
+
+##### `_init_in_background_thread() -> None`
+
+在辅助线程中运行异步初始化，当前线程同步等待完成
+
+**内部方法**
+当 _ensure_initialized 在已有事件循环中被调用时，无法使用
+run_until_complete (会死锁)。通过在新线程中创建独立的事件循环
+来运行异步初始化，同时当前线程通过 threading.Event 同步等待。
+**内部方法**
+
+---
+
+
+##### `_initialize_sync() -> None`
+
+同步初始化模块
+
+**内部方法**
+内部方法，在同步上下文中初始化模块
+
+---
+
+
+##### `async _complete_async_init() -> None`
+
+完成异步初始化部分
+
+**内部方法**
+内部方法，处理模块的异步初始化部分
+
+---
+
+
+##### `__getattr__(name: str) -> Any`
+
+属性访问时触发初始化（仅在 __getattribute__ 未命中时调用）
+
+- **name** (`str`): 属性名
+
+**返回值** (`Any`): 属性值
+
+---
+
+
+##### `__setattr__(name: str, value: Any) -> None`
+
+属性设置
+
+- **name** (`str`): 属性名
+- **value** (`Any`): 属性值
+
+---
+
+
+##### `__delattr__(name: str) -> None`
+
+属性删除
+
+- **name** (`str`): 属性名
+
+---
+
+
+##### `__getattribute__(name: str) -> Any`
+
+属性访问，初始化后直接委托给实际实例
+
+- **name** (`str`): 属性名
+
+**返回值** (`Any`): 属性值
+
+**内部方法**
+这是极热路径（Python 内部、hasattr、repr 等都会走这里），
+因此必须保持轻量：不做日志、不做多余的属性查找。
+
+---
+
+
+##### `__dir__() -> list[str]`
+
+返回模块属性列表
+
+**返回值** (`list[str]`): 属性列表
+
+---
+
+
+##### `__repr__() -> str`
+
+返回模块表示字符串
+
+**返回值** (`str`): 表示字符串
+
+---
+
+
+##### `__call__(*args, **kwargs)`
+
+代理函数调用
+
+- **args**: 位置参数
+- **kwargs**: 关键字参数
+
+**返回值**: 调用结果
+
+---
+
+
+### `class ModuleActivator(LazyModule)`
+
+事件驱动懒激活模块包装器
+
+在 LazyModule 基础上，通过 ``get_load_strategy()`` 中声明的 ``activate_on``
+触发器，在首个匹配事件/命令到达时自动加载模块，而非等待属性访问。
+
+事件触发器 stub 以 owner 身份注册到对应事件管理器（message/notice/request/meta），
+参与模块作用域过滤；命令触发器 stub 以同名占位命令注册到命令管理器。
+
+> **提示**
+> 1. stub 以 owner 走作用域过滤：模块未对该 Bot / 会话 / 平台启用时不触发
+> 2. 激活成功后自动注销所有 stub，模块按普通模块继续运行
+> 3. 激活失败保留 stub：冷却期（ACTIVATE_RETRY_COOLDOWN_SECS）内短路避免
+> 重复尝试，冷却后再次触发可自动重试
+
+
+#### 方法列表
+
+
+##### `__init__(module_name: str, module_class: type, sdk_ref: Any, module_info: dict[str, Any], manager_instance: Any, *, activate_on: Any, arm_stubs: bool = True) -> None`
+
+初始化事件驱动懒激活包装器
+
+- **module_name** (`str`): 模块名称
+- **module_class** (`Type`): 模块类
+- **sdk_ref**: Any SDK 引用
+- **module_info** (`dict[str, Any]`): 模块信息字典
+- **manager_instance**: 模块管理器实例
+- **activate_on**: 触发器声明（str / dict / list）
+- **arm_stubs**: 是否武装 activate_on 触发器 stub（True = 常规懒激活；
+
+    False = 已加载模块重载后重挂代理——模块已激活无需触发器，
+    归眠时 reset_for_sleep → _rearm_stubs 会重新武装）
+
+---
+
+
+##### `_register_stubs() -> None`
+
+注册事件与命令触发器 stub
+
+---
+
+
+##### `_command_stub_help(cmd_name: str) -> str`
+
+生成命令触发占位命令的帮助文本（模块未加载时展示）
+
+回退链（逐层取值，取到即止）：
+
+1. ``activate_on`` dict 声明的命令级 ``help``（最精确）
+2. 模块 ``get_meta()`` 的 ``description``（静态方法，无需实例化）
+3. 模块 ``__description__``（moduleInfo.meta.description）
+4. 包元数据的 ``Summary``（PyPI 包简介；本地插件无包信息时跳过）
+5. 通用提示（说明该命令首次使用会自动加载对应模块）
+
+- **cmd_name**: 命令名
+
+**返回值**: 帮助文本
+
+---
+
+
+##### `async _activate() -> bool`
+
+激活模块
+
+激活失败后保留触发器 stub：冷却期（ACTIVATE_RETRY_COOLDOWN_SECS）内
+短路返回（避免每次事件都重复尝试），冷却结束后再次触发可自动重试——
+修复此前"失败即彻底失联（stub 一并注销）无恢复路径"的问题。
+
+**返回值** (`bool`): 是否激活成功
+
+---
+
+
+##### `_deregister_stubs() -> None`
+
+注销所有触发器 stub
+
+---
+
+
+##### `_rearm_stubs() -> None`
+
+重新武装触发器 stub（激活失败路径调用）
+
+加载失败的半卸载（模块重载完备性）会按 owner 回收事件处理器与
+占位命令——此处先清残留再重建，保证冷却结束后用户再次触发仍可
+自动重试（stub 丢失 = 模块失联无恢复路径）。
+
+---
+
+
+##### `reset_for_sleep() -> None`
+
+**内部方法**
+归眠：重置激活态并重新武装触发器 stub
+
+归眠的注册资源清理会按 owner 回收激活 stub（与激活失败路径同一
+问题），须 ``_rearm_stubs()`` 保证事件再次触发时模块被重新唤醒。
+
+---
+
+
+##### `async _activate_and_forward(event_handler: Any, event: Any) -> None`
+
+激活模块并把首个匹配事件转发给该模块的真实处理器
+
+- **event_handler**: 事件管理器（BaseEventHandler）
+- **event**: 触发事件
+
+---
+
+
+##### `async _forward_event(event_handler: Any, event: Any) -> None`
+
+定向转发事件给本模块在事件管理器中注册的真实处理器
+
+按优先级降序逐个调用（stub 本身已注销，不会重复触发）
+
+- **event_handler**: 事件管理器（BaseEventHandler）
+- **event**: 事件数据
+
+---
+
+
+##### `async _activate_and_forward_command(cmd_name: str, event: Any) -> None`
+
+激活模块并重跑命令匹配，使真实命令（已注册）接管本次触发
+
+命令 stub 已被占位匹配并认领事件，需清空认领标记后重新进入命令分发
+
+- **cmd_name**: 命令名
+- **event**: 消息事件
+
+---
+

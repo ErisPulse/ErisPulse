@@ -1,0 +1,1388 @@
+---
+name: erispulse-errors-troubleshooting
+description: "适用于：遇到异常/组件不工作时的诊断路径：异常总览、排障指南、bug 追踪。覆盖场景：ErisPulseのすべてのカスタムエラーは `ErisPulseError` を継承しており、aiohttp、aiomysqlなどのライブラリのエラーは、フレームワーク内でキャッチされ、対応するErisPulseのエラーに変換されます。業務コードでは**下位ライブラリのエラー型に依存する必要はありません**。このドキュメントは、ErisPulse SDK の既知のバグとその修正状況を記録したものです。修正されたバージョンの日付順に並べられています。"
+---
+
+# ErisPulse 异常体系与排障
+
+This skill is auto-built from the ErisPulse documentation.
+Repository: https://github.com/ErisPulse/ErisPulse
+Source paths are annotated per section; see docs/ in the repository for the latest content.
+
+## 内容大纲
+
+AI 按需读取：只读需要的章节即可，不必全文加载。
+
+- 异常捕获总览: 31-46 行
+- エラーの概要: 48-76 行
+- 構造化属性: 78-103 行
+- 各エラーの説明と発生位置: 105-213 行
+- エラーのキャプチャに関する提案: 215-228 行
+- インタープリタの不要な警告の抑制: 230-234 行
+- 関連ドキュメント: 236-243 行
+- 已知问题追踪: 245-260 行
+- フィールドの説明: 262-285 行
+- 重大度の分類: 287-295 行
+- タイプの分類: 297-311 行
+- 条目テンプレート: 313-336 行
+- 統計概要: 338-360 行
+- 修正済みのバグ: 362-1389 行
+
+## 异常捕获总览
+
+> 来源: `docs/ja/advanced/errors.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/ja/advanced/errors.md）
+
+# エラー体系とキャッチのガイド
+
+> [!NOTE]
+> **L1の必須項目** —— ホームページの「読むべき順」にある5つのコアドキュメントの1つで、モジュール開発に不可欠です。
+
+ErisPulseのすべてのカスタムエラーは `ErisPulseError` を継承しており、aiohttp、aiomysqlなどのライブラリのエラーは、フレームワーク内でキャッチされ、対応するErisPulseのエラーに変換されます。業務コードでは**下位ライブラリのエラー型に依存する必要はありません**。
+
+{!--< tips >!--}
+1. 一般的なエラーを網羅的に処理したい場合：`ErisPulseError` をキャッチする（フレームワークのすべてのエラーの基底クラス）
+2. 精度を高めて処理したい場合：モジュールごとにキャッチする（例：`ModuleCallTimeoutError`、`StorageUnreachableError`）
+3. ストレージ操作はデフォルトでエラーをスローしない：失敗時はログを記録し、`False / None / default` を返す。接続状態の変化は `storage.unreachable` / `storage.recovered` イベントをサブスクライブする。
+{!--< /tips >!--}
+
+## エラーの概要
+
+```text
+ErisPulseError                      # フレームワーク全体のエラーの基底クラス
+├── ClientError                     # HTTP/WS クライアントリクエストエラーの基底クラス（Core/client）
+│   ├── ClientConnectionError       # 接続層エラー：DNS 解析失敗、接続拒否、ネットワーク到達不能
+│   ├── ClientTimeoutError          # リクエストタイムアウト
+│   └── HTTPStatusError             # HTTP ステータスコードエラー（4xx/5xx で raise_for_status が発動した場合）
+├── WebSocketError                  # WebSocket エラーの基底クラス（Core/client の WS 接続）
+│   └── WebSocketDisconnect         # WebSocket 接続切断（サーバー/クライアント共通）
+├── ConnectionRegistryError         # 接続レジストリエラーの基底クラス（Core/connections、2.10+）
+│   ├── ConnectionNotFoundError     # 接続が存在しない/既に切断・登録解除（connections.get/close）
+│   └── ConnectionPermissionError   # 作成者以外が他人の接続を閉じようとした（閉じる権限は作成者に所属）
+├── StorageError                    # ストレージエラーの基底クラス（Core/storage）
+│   └── StorageUnreachableError     # ストレージバックエンドが到達不能（プール作成のリトライが尽きた：データベース到達不能/認証情報エラー）
+├── InteractionError                # 交互会話エラーの基底クラス（Core/Event/interaction）
+│   ├── InteractionCancelled        # 待機中のリクエスト/リースがキャンセルされた（wait_reply が上層で None を返すように転換）
+│   └── SessionOccupiedError        # 会話の排他リースが占有されている（hold() で取得に失敗）
+├── ModuleError                     # モジュールシステムエラーの基底クラス（Core/module）
+│   └── ModuleCallError             # モジュール間呼び出しエラーの基底クラス
+│       ├── ModuleNotAvailableError # 対象モジュールが登録されていない/有効化されていない/初期化失敗（遅延読み込みアクセスも含む）
+│       ├── ServiceNotProvidedError # 対象モジュールがそのサービスを宣言していない（meta.services のホワイトリスト外）
+│       └── ModuleCallTimeoutError  # 呼び出されたメソッドの実行がタイムアウト（デフォルト 30s）
+├── ShadowError                     # シャドウモジュールエラーの基底クラス（Core/shadow）
+│   ├── ShadowStateError            # 状態が満たされない：対象がロードされていない/既にアクティブなシャドウがある/シャドウがバインドされていない（start/dismiss）
+│   ├── ShadowSourceError           # シャドウソースが利用できない：パスが存在しない/ローダーが欠落している/ロードに失敗（start）
+│   └── ShadowPromoteError          # 転正に失敗：シャドウが登録されていない/ロードされていない/ローダーにスナップショットがない/再ロードに失敗（promote）
+└── StrictModeError                 # 严格モードの致命的な違反（起動プロセスを中止、loaders/strict）
+```
+
+## 構造化属性
+
+例外が捕捉された後、メッセージテキストを解析することなく構造化属性を読み取ることができます：
+
+| 例外 | 属性 |
+|------|------|
+| `ClientError`（およびその子クラス） | `.url` リクエストのURL、`.method` リクエストメソッド、`.attempts` 既に試行した回数（リトライが尽きた場合） |
+| `HTTPStatusError` | `.status` ステータスコード、`.message` レスポンスメッセージ |
+| `WebSocketDisconnect` | `.code` 閉じられたコード、`.reason` 閉じられた理由 |
+| `ConnectionNotFoundError` | `.connection_id` 検索された接続ID |
+| `ConnectionPermissionError` | `.connection_id` 対象の接続ID、`.owner` 接続の所有者 |
+| `StorageUnreachableError` | `.backend` バックエンド名（sqlite/mysql/postgres）、`.cooldown` コoldown秒数 |
+| `ModuleCallError`（およびその子クラス） | `.module` 対象のモジュール名、`.method` 対象のメソッド名 |
+| `ModuleCallTimeoutError` | `.module/.method` を継承、さらに `.timeout` タイムアウトの制限時間（秒） |
+| `InteractionCancelled` | `.reason` キャンセルの理由、`.wait_key` セッションキー |
+| `SessionOccupiedError` | `.wait_key` セッションキー、`.owner` 占有者 |
+| `StrictModeError` | `.violations` 違反記録のリスト |
+
+```python
+from ErisPulse.Core.Bases.errors import ClientError
+
+try:
+    resp = await sdk.client.post(url, json=payload)
+except ClientError as e:
+    print(f"リクエスト失敗 {e.method} {e.url}、合計 {e.attempts} 回試行: {e}")
+```
+
+## 各エラーの説明と発生位置
+
+### Client 系列 — `Core/client.py` / `Core/Bases/client.py`
+
+`sdk.client` / HTTP クライアントと WebSocket クライアントがリクエストを発行する際に送出される：
+
+| エラー | 発生位置 | 代表的なシナリオ |
+|------|----------|----------|
+| `ClientError` | リクエストラッパー層 | 他のクライアントエラー（aiohttp の低層エラーは変換済み） |
+| `ClientConnectionError` | 接続確立段階 | 目標サービスに到達できない、DNS 失敗、接続拒否 |
+| `ClientTimeoutError` | リクエスト実行段階 | リクエストのタイムアウト時間超過 |
+| `HTTPStatusError` | `raise_for_status()` | レスポンスステータスコードが 4xx/5xx |
+
+```python
+from ErisPulse.Core.Bases.errors import ClientTimeoutError
+
+try:
+    resp = await sdk.client.get("https://api.example.com", timeout=5)
+except ClientTimeoutError:
+    ...
+```
+
+### WebSocket 系列 — `Core/client.py`（`send` / `receive`）
+
+| エラー | 発生位置 | 代表的なシナリオ |
+|------|----------|----------|
+| `WebSocketError` | WS 受信/送信メソッド | 接続が閉じられている、想定外のメッセージタイプを受け取った、低層 WS エラー |
+| `WebSocketDisconnect` | WS 受信/送信メソッド | 対向側が正常に接続を切断した（フレームワークが自動的に再接続する） |
+
+### 接続登録表系列 — `Core/connections.py`（2.10+）
+
+| エラー | 発生位置 | 代表的なシナリオ |
+|------|----------|----------|
+| `ConnectionNotFoundError` | `connections.get` / `assign` / `dismiss` / `close` | 接続 ID が存在しない、または既に切断・解除済み |
+| `ConnectionPermissionError` | `conn.close()` をオーナー以外が呼び出す | モジュール間で他人の接続を閉じる（送信とグループ分けは制限されない） |
+
+### Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`
+
+| エラー | 発生位置 | 代表的なシナリオ |
+|------|----------|----------|
+| `StorageError` | ストレージ層 | ストレージ関連エラーの基底クラス |
+| `StorageUnreachableError` | プール作成段階 | データベースに到達できない、認証情報の誤り、ネットワーク隔離、再試行が尽きた |
+
+> **ストレージ操作の失敗の意味**：KV とクエリ操作は**デフォルトでは送出しない**——失敗時は ERROR ログを記録し、
+> `False` / `None` / `default` を返す（フレームワークの実行を接続問題で妨げないため）。したがって、業務コードは通常
+> **`StorageUnreachableError` をキャッチしない**（ストレージの低層操作やカスタムバックエンドで使用される）。 
+> 実行時における接続状態の感知は、ライフサイクルイベント `storage.unreachable` / `storage.recovered`
+> （[ライフサイクルイベント](lifecycle.md#ストレージ接続状態)を参照）をサブスクライブすること。
+> 
+> 接続失敗の挙動は[ストレージバックエンド → 接続失敗の挙動](storage-backends.md#接続失敗の挙動)を参照。
+
+### Interaction — `Core/Event/interaction.py`
+
+`wait_reply` / セッションのリース / アラートタイマー関連：
+
+| エラー | 発生位置 | 代表的なシナリオ |
+|------|----------|----------|
+| `InteractionError` | インタラクションセッション層 | インタラクションセッションのエラーの基底クラス |
+| `InteractionCancelled` | 待機がキャンセルされたとき | 待機中の future に設定され、待機側がキャッチして `.reason` を取得可能 |
+| `SessionOccupiedError` | `hold()` のリース取得が失敗したとき | セッションが他のオーナーによって占有されている（`.owner` で占有者を確認可能） |
+
+キャンセルされた待機（モジュールのアンロード / プラットフォームの終了 / 同一セッションの新しい待機が置き換え）の際、`wait_reply` は **`None` を返す** ことで例外を送出しない（`InteractionCancelled` は内部で変換される）；キャンセルの原因を区別したい場合は、直接キャッチする。
+
+### Module 系列 — `Core/module.py`（`sdk.module.call`）
+
+| エラー | 発生位置 | 代表的なシナリオ |
+|------|----------|----------|
+| `ModuleError` | モジュールシステム | モジュールシステムのエラーの基底クラス |
+| `ModuleCallError` | `module.call()` | モジュール間呼び出しのエラーの基底クラス |
+| `ModuleNotAvailableError` | `module.call()` / ラグジュアリー属性アクセス | 目標が登録されていない / 有効化されていない / 初期化に失敗した |
+| `ServiceNotProvidedError` | `module.call()` | 目標の `meta.services` ホワイトリストに該当メソッドが宣言されていない |
+| `ModuleCallTimeoutError` | `module.call()` | 呼び出されたコルーチンがタイムアウト時間（デフォルト 30s）を超えた |
+
+「目標モジュールが利用できない」は、異なるアクセス経路での例外の種類：
+
+| アクセス経路 | エラー |
+|----------|------|
+| `await sdk.module.call("X", "method")` | `ModuleNotAvailableError`（型付き） |
+| `sdk.module.X.attr`（ラグジュアリー属性アクセス、初期化失敗後） | `ModuleNotAvailableError` |
+| `sdk.module.X`（モジュールが有効化されていないときの属性アクセス） | `AttributeError`（Python の属性の慣例、`hasattr` はこの意味に依存） |
+
+```python
+from ErisPulse.Core.Bases.errors import ModuleNotAvailableError, ServiceNotProvidedError
+
+try:
+    history = await sdk.module.call("Chat", "get_history", session_id, n=20)
+except ModuleNotAvailableError:
+    ...  # 目標モジュールが存在しない / 有効化されていない
+except ServiceNotProvidedError:
+    ...  # 目標モジュールが該当サービスを提供していない
+```
+
+### Shadow 系列 — `Core/shadow.py`（影子モジュール）
+
+| エラー | 発生位置 | 代表的なシナリオ |
+|------|----------|----------|
+| `ShadowError` | 影子モジュールメカニズム | 影子エラーの基底クラス（すべての影エラーを一括でキャッチ） |
+| `ShadowStateError` | `shadow_start()` / `dismiss_shadow()` | 目標がロードされていない / 既にアクティブな影がある / 影がバインドされていない |
+| `ShadowSourceError` | `shadow_start()` | ソースパスが存在しない / プラグインローダーが不足 / ソースにロード可能なクラスがない / 装載に失敗 |
+| `ShadowPromoteError` | `promote_shadow()` | 影が登録されていない / 未ロード / ローダーがスナップショットをサポートしていない / 転正後の再ロードに失敗 |
+
+### フレームワーク内部のパラメータ検証（ValueError）
+
+ストレージクエリビルダーのパラメータ検証（空の列タイプ、`Insert` が dict でない、安全でない列タイプなど）は標準の
+`ValueError` を送出する——これは**開発時のコーディングエラー**であり、通常の業務コードではキャッチせず、呼び出しを修正すべきである。
+
+アダプターの標準アクションが失敗しても**エラーは送出しない**：`retcode` を持つレスポンス辞書を返す（プロトコルの意味、例えば
+`retcode=10002` はアクションが実装されていないことを示す）——これは client 層の「失敗時は `ClientError` を送出する」
+とは並行するエラーチャネルであり、アダプター開発時には両方を処理する必要がある。
+
+## エラーのキャプチャに関する提案
+
+```python
+from ErisPulse.Core import ErisPulseError  # 基底クラスは Core から集約的にエクスポートされています
+
+try:
+    ...
+except ErisPulseError as e:
+    ...  # 一括処理：フレームワークが定義したすべての独自例外
+```
+
+- モジュール開発：必要に応じて正確にキャッチ（上記表参照）。最外層では `ErisPulseError` を使用して一括処理が可能です。
+- すべての例外は `ErisPulse.Core` から集約的にエクスポートされています（`SessionOccupiedError` / `InteractionCancelled` / `StrictModeError` 含む）。また、`ErisPulse.Core.Bases.errors` から個別にインポートすることも可能です。
+- 完全な定義は `src/ErisPulse/Core/Bases/errors.py` を参照してください。
+
+## インタープリタの不要な警告の抑制
+
+長期間実行されるプロセスが終了（またはバックグラウンドのループがキャンセル）する際、イベントループは多くの無意味な
+`Task was destroyed but it is pending!` といったインタープリタの警告を出力することがあります。フレームワークには**同種の警告の抑制**が内蔵されています：
+2秒の時間枠内に同種のメッセージはTRACEレベルに昇格され、1回だけ出力され、末尾には「（さらに N 件の同種のメッセージが抑制されました）」というサフィックスが付きます。これは意図的な警告の抑制です。このサフィックスが表示されたからといって、フレームワークが実際のエラーを無視しているわけではありません。上記の表に示す業務上のエラーは、通常通り完全に出力されます。この抑制はインタープリタの終了時の警告にのみ適用され、業務上のエラーには影響しません。どのレベルのエラーを記録すべきか、どのエラーを低レベル化または抑制するかは、[エンジニアリングの堅牢性ルール · エラーの記録レベル](../styleguide/engineering.md#1-エラーの記録レベル)に従います。
+
+## 関連ドキュメント
+
+問題の原因に応じて、以下のドキュメントを参照してください。
+
+- **ストレージ操作が `False` / `None` を返し、接続状態を確認したい** → [ストレージバックエンド · 接続失敗時の動作](storage-backends.md#接続失敗時の動作)，または [storage.unreachable / storage.recovered イベント](lifecycle.md#ストレージ接続状態) をサブスクライブ
+- **`wait_reply` が `None` を返し、キャンセルされた原因を知りたい** → [インタラクティブセッションシステム](interaction.md)（キャンセル原因の対照表）
+- **`module.call` がモジュール呼び出し例外をスロー** → [モジュール間通信](module-communication.md)
+- **接続 / WebSocket に関するエラー** → [ネットワーククライアント](http-client.md)（ClientError 体系）および [接続プールとブロードキャスト](connections.md)（接続レジストリの例外）
+
+## 已知问题追踪
+
+> 来源: `docs/ja/bug-tracker.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/ja/bug-tracker.md）
+
+# バグトラッカー
+
+このドキュメントは、ErisPulse SDK の既知のバグとその修正状況を記録したものです。修正されたバージョンの日付順に並べられています。
+
+> **読者の皆様へ**
+> どんなソフトウェアにも完璧さは存在せず、どんなに注意深く開発しても小さな間違いが残ります。本トラッカーに記録されているのは、実行に実際に影響を与える問題のみです。あまりにも些細で「軽度」のレベルにも達しないような欠陥は、ここには含まれません。リストに「重大」の項目が多めに見えるかもしれませんが、公開されている目的は、トラブルシューティングと再現をスムーズにすることであり、不安を煽ることではありません。目にする、記録する、修正する問題こそが、プロジェクトが常に良くなっている証拠です。このリストを見て不安になる必要はありません。これはトラブルシューティングのためのツールであり、恐怖の原因ではありません。
+
+> **読み方とメンテナンスの規約**
+> - 各バグの記録には、問題の説明、根本原因分析、影響を受けたバージョンの範囲、修正方法などの構造化されたフィールドが含まれています。アップグレードする前に、「影響バージョン」が現在使用しているバージョンをカバーしているか確認することを推奨します。
+> - 新しいバグの条目を追加する場合は、対応する位置に内容を追加し、以下のフィールド規格と重大度/タイプの分類に従ってください。
+
+---
+
+## フィールドの説明
+
+### 必須フィールド
+
+| フィールド | 説明 |
+|------|------|
+| **問題** | バグの外的な現象、ユーザーが観察できる異常現象。エラーメッセージや典型的なシナリオをできるだけ記述してください |
+| **原因** | 具体的なコードの欠陥を指す根本原因分析（複雑な場合に「根本原因の経路」図示） |
+| **影響バージョン** | 影響を受けたバージョンの範囲、形式 `導入バージョン - 修正バージョン`（両端の dev バージョンを含む） |
+| **修正バージョン** | このバグを修正した具体的なバージョン番号 |
+| **修正内容** | 修正方法の簡潔な説明、重要なコード変更点を含む |
+| **修正日** | 対応する修正バージョンのリリース日、`YYYY/MM/DD` 形式 |
+| **重大度** | 下記「重大度の分類」に従って記載 |
+| **タイプ** | 下記「タイプの分類」に従って記載、複数選択可能（例: `アダプタ / ルーティング`） |
+
+### 任意フィールド
+
+| フィールド | 説明 | 適用場面 |
+|------|------|---------|
+| **再現手順** | このバグを引き起こす最小限の再現手順 | 複雑なバグ、偶発性バグには推奨 |
+| **関連** | 関連する Issue / PR / Commit リンク | 外部の議論記録がある場合に追加 |
+| **リグレッションテスト** | 修正を検証し、再発を防ぐためのテストケースの位置 | pytest 用のテストケースが書かれている場合に追加 |
+
+---
+
+## 重大度の分類
+
+| 記号 | 級別 | 判定基準 | 典型的な表現 |
+|------|------|---------|---------|
+| 🔴 | 重大 | プロセスのクラッシュ、データの損失/破損、コア機能の完全不可用、セキュリティの脆弱性 | OOM Kill、メッセージの送信不可、モジュールのロード不可、ホットリロードの失敗 |
+| 🟡 | 中等 | 機能の異常だが回避方法がある、コア機能以外の機能が失敗、偶発的な問題 | 状態の判断の誤り、重複実行、キャッシュの期限切れ、エラーメッセージの不正確 |
+| 🟢 | 軽度 | コア機能に影響しない、コード品質や体験の問題、潜在的なリスクが未発生 | 非推奨のAPI、死んだコード、警告ログの欠如 |
+
+---
+
+## タイプの分類
+
+| タイプ | 覆う範囲 |
+|------|---------|
+| 設定システム | `ConfigManager`、設定の読み書き、設定のSchema、ホット更新 |
+| イベントシステム | `Event` モジュール（command/message/notice/request/meta）、イベントの配信、ハンドラの登録 |
+| アダプタ | `AdapterManager`、`BaseAdapter`、アカウントの解析、Botの状態、ミドルウェア |
+| ルーティング | `RouterManager`、HTTP/WebSocket/SSEルーティング、リクエスト制限、CORS |
+| クライアント | `HttpClient`、`ClientWebSocket`、aiohttpのラッパー |
+| ストレージ | `StorageManager`、SQLite、SQLビルダー、ネストされたキー |
+| 加載システム | `Loader`、`LazyModule`、`ModuleInitializer`、厳密モード、モジュールの発見 |
+| CLI | `epsdk` コマンド、`init`/`run`/`install`、パラメータの解析、シグナルの処理 |
+| 実行時 | `sdk.run`/`restart`/`uninit`、ライフサイクル、シグナル、サブプロセス |
+
+---
+
+## 条目テンプレート
+
+新しいバグの条目は以下のフォーマットに従ってください：
+
+```markdown
+### [BUG-XXX] タイトル
+
+**問題**: 問題の説明（エラーメッセージや典型的な現象）
+**原因**: 根本原因分析
+**影響バージョン**: 導入バージョン - 修正バージョン
+**修正バージョン**: x.x.x
+**修正内容**: 修正方法
+**修正日**: YYYY/MM/DD
+
+<!-- 任意フィールド -->
+**再現手順**: （複雑なバグには推奨）
+**関連**: （Issue/PR リンク）
+**リグレッションテスト**: （検証用のテストケースのパス）
+
+**重大度**: 🔴 重大 | 🟡 中等 | 🟢 軽度
+**タイプ**: 設定システム / イベントシステム / アダプタ / ルーティング / クライアント / ストレージ / 加載システム / CLI / 実行時
+```
+
+---
+
+## 統計概要
+
+| 重大度 | 数量 |
+|--------|------|
+| 🔴 重大 | 16 |
+| 🟡 中等 | 26 |
+| 🟢 軽微 | 3 |
+| **合計** | **45** |
+
+| タイプ | 数量 |
+|------|------|
+| イベントシステム | 12 |
+| 設定システム | 12 |
+| アダプター | 7 |
+| CLI | 3 |
+| ストレージ | 3 |
+| ローディングシステム | 4 |
+| ルーティング | 2 |
+| クライアント | 1 |
+| 実行時 | 1 |
+
+> 注：1つのバグは複数のタイプに属する可能性があり、上表は主なタイプごとに集計しています。  
+> 注：BUG-028 / BUG-031 の番号は空欄です（登録時に廃棄され、既存の番号体系を維持するため再利用されません）。
+
+## 修正済みのバグ
+
+### [BUG-001] イベントハンドラーの重複登録によりイベントが複数回処理される
+
+**問題**: 複数の `@message` / `@notice` などのデコレーターでハンドラーを登録する際、同一イベントが複数回重複して発火し、コマンドが複数回実行されたり、ログが重複出力されたりする。
+
+**原因**: `BaseEventHandler` がアダプターのイベントバスにハンドラーを登録する際に重複排除ロジックが欠けており、各デコレーターがバスに一度ずつマウントされるため、イベント配信時に複数回呼び出される。
+
+**影響バージョン**: 2.2.0-dev.0 - 2.2.1-dev.0
+
+**修正バージョン**: 2.2.1-dev.0
+
+**修正内容**: `BaseEventHandler` を最適化し、各イベントタイプごとにアダプターへ一度だけハンドラーを登録するようにし、重複発火を回避。
+
+**修正日**: 2025/08/18
+
+**深刻度**: 🔴 深刻
+
+**タイプ**: イベントシステム
+
+---
+
+### [BUG-002] Init コマンドのアダプター設定パス型エラー
+
+**問題**: `ep init` コマンドで対話式初期化を行う際、アダプター設定を選択すると型エラーが発生する：
+
+```
+対話式初期化に失敗: unsupported operand type(s) for /: 'str' and 'str'
+```
+
+**原因**: 2.3.7 バージョンで設定ファイルのパスを調整した際、メソッドのパラメーター型に不整合があった。`_configure_adapters_interactive_sync` は `str` 型のパラメーターを受け取るが、内部では `Path` の `/` 演算子を使用してパスを連結している。
+
+**影響バージョン**: 2.3.7 - 2.3.9-dev.1
+
+**修正バージョン**: 2.3.9-dev.1
+
+**修正内容**: `_configure_adapters_interactive_sync` メソッドのパラメーター型を `str` から `Path` に変更し、呼び出し時に直接 `Path` オブジェクトを渡すようにした。
+
+**修正日**: 2026/03/23
+
+**深刻度**: 🟡 中程度
+
+**タイプ**: CLI
+
+---
+
+### [BUG-003] 再起動後にコマンドイベントが機能しなくなる
+
+**問題**: `sdk.restart()` を呼び出した後、`@command` で登録されたコマンドがトリガーされなくなり、コマンド送信後にボットが応答しない。
+
+**原因**: `adapter.shutdown()` がイベントバスをクリアした後も、`BaseEventHandler` の `_linked_to_adapter_bus` 状態が `False` にリセットされず、`_process_event` メソッドが既にアダプターバスにマウント済みと判断し、再マウント処理をスキップするため。
+
+**影響バージョン**: 2.2.x - 2.4.0-dev.2
+
+**修正バージョン**: 2.4.0-dev.3
+
+**修正内容**: `_linked_to_adapter_bus` 状態追跡を導入し、`_clear_handlers()` でバス接続を切断した後、次回の `register()` で自動的に再マウントされるようにし、shutdown/restart シナリオに対応。
+
+**修正日**: 2026/04/09
+
+**深刻度**: 🔴 深刻
+
+**タイプ**: イベントシステム
+
+---
+
+### [BUG-004] ライフサイクルイベントハンドラーがクリーンアップされない
+
+**問題**: `sdk.restart()` の後、古いライフサイクルイベントハンドラーが残存して重複発火し、同一イベントが複数回処理される。
+
+**原因**: `lifecycle._handlers` 辞書が `uninit()` 時に一切クリーンアップされず、restart 後に古いハンドラーと新しいハンドラーが同時に存在する。
+
+**影響バージョン**: 2.3.0 - 2.4.0-dev.2
+
+**修正バージョン**: 2.4.0-dev.3
+
+**修正内容**: `Uninitializer` のクリーンアップフローの最後（すべてのイベント送信後）に、`lifecycle._handlers` をクリアする。
+
+**修正日**: 2026/04/09
+
+**深刻度**: 🟡 中程度
+
+**タイプ**: ランタイム
+
+---
+
+### [BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない
+
+**問題**: `Event.is_friend_add()` は `detail_type == "friend_add"` をチェックし、`Event.is_friend_delete()` は `detail_type == "friend_delete"` をチェックしているが、OneBot12 標準で定義されている `detail_type` の値は `"friend_increase"` と `"friend_decrease"` である。`notice.py` の `on_friend_add`/`on_friend_remove` デコレーターが使用する値と一致せず、デコレーターで登録されたハンドラーが発火した際に、対応する `is_friend_add()`/`is_friend_delete()` 判定メソッドが `False` を返してしまう。
+
+**原因**: `wrapper.py` では非標準の命名が使用されており、一方 `notice.py` では正しい OB12 標準の命名が使用されている。
+
+**影響バージョン**: 実装当初から現在まで
+
+**修正バージョン**: 2.4.2-dev.1
+
+**修正内容**: `is_friend_add()` のマッチング値を `"friend_add"` から `"friend_increase"` に、`is_friend_delete()` を `"friend_delete"` から `"friend_decrease"` に変更。
+
+**修正日**: 2026/04/13
+
+**深刻度**: 🟡 中程度
+
+**タイプ**: イベントシステム
+
+---
+
+### [BUG-006] adapter.clear() が _started_instances をクリーンアップせず、再起動後に状態が不正になる
+
+**問題**: `AdapterManager.clear()` メソッドは `_adapters`、`_adapter_info`、ハンドラー、`_bots` をクリアするが、`_started_instances` 集合が見落とされている。アダプターが実行中に `clear()` を呼び出すと、`_started_instances` にダングリング参照が残り、再起動後の状態判定が誤る。
+
+**原因**: 2.4.0-dev.1 で `_started_instances` を導入した際に、`clear()` 内での同時クリーンアップが行われなかった。
+
+**影響バージョン**: 2.4.0-dev.1 - 2.4.2-dev.0
+
+**修正バージョン**: 2.4.2-dev.1
+
+**修正内容**: `clear()` メソッドに `self._started_instances.clear()` を追加。
+
+**修正日**: 2026/04/13
+
+**深刻度**: 🟡 中程度
+
+**タイプ**: アダプター
+
+---
+
+### [BUG-007] command.wait_reply() が非推奨の asyncio.get_event_loop() を使用している
+
+**問題**: `CommandHandler.wait_reply()` メソッドが `asyncio.get_event_loop()` を使用して future を作成し、タイムスタンプを取得している。このメソッドは Python 3.10+ で非推奨であり、非同期コンテキストでは `asyncio.get_running_loop()` を使用すべきである。同一ファイルの `wrapper.py` の `wait_for()` メソッドが使用している `get_running_loop()` と一貫していない。
+
+**原因**: 開発時に旧 API が使用され、その後追加された `wait_for()` では正しい API が使用されたが、旧コードへの遡及修正が行われなかった。
+
+**影響バージョン**: 2.3.0-dev.0
+
+**修正バージョン**: 2.4.2-dev.1
+
+**修正内容**: `command.py` 内の 2 か所の `asyncio.get_event_loop()` を `asyncio.get_running_loop()` に置き換えた。
+
+**修正日**: 2026/04/13
+
+**深刻度**: 🟢 軽微
+
+**タイプ**: イベントシステム
+
+---
+
+### [BUG-008] Bot オフラインイベントが shutdown プロセス中に重複送信される
+
+**問題**: `adapter.shutdown()` を呼び出してすべてのアダプターをシャットダウンする際、`_update_bot_status()` がシャットダウンフロー中に繰り返し Bot オフラインイベントを送信し、同一の Bot が複数回オフラインとしてマークされ、`adapter.bot.offline` ライフサイクルイベントが複数回発火する。
+
+**原因**: 2.4.0-dev.1 で導入された Bot 状態追跡システムが `shutdown()` 中に「シャットダウン中」フラグを設定しておらず、`_update_bot_status()` が通常のオフラインとシャットダウンフロー中の連鎖的オフラインを区別できない。
+
+**影響バージョン**: 2.4.0-dev.1 - 2.4.2-dev.1
+
+**修正バージョン**: 2.4.2-dev.1
+
+**修正内容**: `AdapterManager` に `_is_being_shutdown` フラグを新設し、`shutdown()` 開始時に True に設定、終了時にクリアする。`_update_bot_status()` はこのフラグをチェックした後、シャットダウンプロセス中の重複送信をスキップする。
+
+**修正日**: 2026/04/21
+
+**深刻度**: 🟡 中程度
+
+**タイプ**: アダプター
+
+---
+
+### [BUG-009] LazyModule による BaseModule への同期アクセスで初期化が未完了のままになる
+
+**問題**: ユーザーが同期コンテキストで遅延ロードされた BaseModule の属性にアクセスする際、モジュールは `loop.create_task()` で非同期初期化を行うが待機しないため、属性アクセス時に初期化が未完了の可能性があり、競合状態が発生する。
+
+**原因**: `_ensure_initialized()` が BaseModule に対して `loop.create_task(self._initialize())` を使用した後すぐに戻り、初期化完了を保証していなかった。
+
+**影響バージョン**: 2.4.0-dev.0 - 2.4.2-dev.1
+
+**修正バージョン**: 2.4.2-dev.2
+
+**修正内容**: 同期コンテキストでは、BaseModule の初期化を `asyncio.run(self._initialize())` を使用するように変更し、初期化完了後に戻るようにした。透過プロキシ特性を維持し、ユーザーは同期/非同期の差異を意識する必要がない。
+
+**修正日**: 2026/04/21
+
+**深刻度**: 🟡 中程度
+
+**タイプ**: ロードシステム
+
+---
+
+### [BUG-010] 設定システムのマルチスレッド書き込みによるデータ消失
+
+**問題**: マルチスレッド環境で、複数のスレッドが同時に `config.setConfig()` を呼び出す際、`_flush_config()` の読み取り-修正-書き込み操作がアトミックではなく、一部の書き込みが失われる可能性がある。
+
+**原因**: `_flush_config()` は `RLock` を使用しているものの、ファイルの読み取りと書き込みの間にファイルロックによる保護がなく、`_schedule_write` の Timer が複数回発火して上書きされる可能性があった。
+
+**影響バージョン**: 2.3.0 - 2.4.2-dev.1
+
+**修正バージョン**: 2.4.2-dev.2
+
+**修正内容**:
+1. ファイルロック機構（`_file_lock`）を追加し、ファイル操作のアトミック性を確保
+2. 一時ファイルへの書き込み後、アトミックにリネーム（`os.replace`/`os.rename`）
+3. `_schedule_write` の Timer キャンセルおよび再スケジュールロジックを改善
+
+**修正日**: 2026/04/21
+
+**深刻度**: 🔴 深刻
+
+**タイプ**: 設定システム
+
+---
+
+### [BUG-011] Windows で CTRL+C でプログラムを停止できない
+
+**問題**: Windows 上で直接 `python main.py` を実行すると、CTRL+C を押してもプログラムを終了できない。プログラムは正常に起動し、ルーティングサーバー情報を出力した後、CTRL+C にまったく反応せず、タスクマネージャーでプロセスを強制終了するしかない。一方、`epsdk run` で起動した場合は正常に停止できる——ただし `epsdk run` は子プロセスモデルで実行されている。
+
+**原因**: Hypercorn ASGI サーバーの `serve()` 関数が内部で `signal.signal(SIGINT, handler)` により独自の SIGINT ハンドラーを登録し、Python のデフォルトの `KeyboardInterrupt` 処理機構を上書きしている。`asyncio.create_task()` で Hypercorn をバックグラウンドタスクとして起動した場合、Hypercorn の内部 shutdown フローが正常にトリガーされず（`worker_serve` モードを想定しているため）、CTRL+C シグナルが Hypercorn に飲み込まれ、いかなるクリーンアップ処理も実行されない。
+
+**影響バージョン**: 2.3.6 - 2.4.2
+
+**修正バージョン**: 2.4.3-dev.0
+
+**修正内容**:
+1. ASGI サーバーを Hypercorn から Uvicorn に切り替え（`pyproject.toml` の依存関係変更）
+2. `uvicorn.Server._serve()` を使用してサーバーを直接起動し、`capture_signals()` シグナル処理コンテキストマネージャーを**バイパス**
+3. `server.should_exit = True` によるグレースフルシャットダウンを実装し、タイムアウト時はバックグラウンドタスクをキャンセル
+4. 子プロセス実行モデルと `runtime/cleanup.py` クリーンアップモジュールを同時に削除（子プロセスクリーンアップ機構が不要になったため）
+
+**修正日**: 2026/04/28
+
+**深刻度**: 🔴 深刻
+
+**タイプ**: CLI / ランタイム
+
+---
+
+### [BUG-012] ホットリスタート後に更新済みモジュールの Python コードが反映されない
+
+**問題**: `sdk.restart()` によるソフト再起動の実行後、`epsdk install` でアップグレード済みのモジュール/アダプターの新コード（新規 API ルートなど）が反映されず、旧バージョンのロジックが実行され続ける。最新コードをロードするにはプロセスの完全な再起動が必要。
+
+**原因**: `_do_restart()` が再初期化時に `entry_point.load()` を呼び出すが、この関数は `sys.modules` からキャッシュされた旧バージョンのモジュールオブジェクトを返し、ディスクから再ロードしないため。
+
+**影響バージョン**: 初期バージョン - 2.4.3-dev.1
+
+**修正バージョン**: 2.4.3-dev.1
+
+**修正内容**: `uninit()` の後、`init()` の前に、`sys.modules` 内のロード済みモジュール/アダプターパッケージのキャッシュをクリーンアップし、`entry_point.load()` がディスクから最新コードをロードするようにした。`_collect_top_level_modules()` と `_invalidate_module_cache()` のヘルパーメソッドを新設し、`top_level.txt` または entry-point value からトップレベルモジュール名を導出する。
+
+**修正日**: 2026/05/03
+
+**深刻度**: 🔴 深刻
+
+**タイプ**: ロードシステム / ランタイム
+
+---
+
+### [BUG-013] モジュールロード戦略のソートロジックエラー
+
+**問題**: `ModuleLoadStrategy` はモジュールの初期化優先度を宣言するための `priority` フィールドを提供しているが、ロード戦略の実装にミスがあり、モジュールが期待される優先度順に初期化されず、実際には `entry_points()` のデフォルト順でロードされていた。モジュール間にロード依存関係がある場合、`priority` によって正しい初期化順序を保証できない。
+
+**原因**: ロード戦略の実装においてソートロジックに誤りがあり、`initialize_modules()` が `priority` を使用してモジュールリストをソートしていなかった。
+
+**影響バージョン**: 2.3.4 - 2.4.5-dev.2
+
+**修正バージョン**: 2.4.5-dev.3
+
+**修正内容**: `initialize_modules()` の走査前に、`priority` の降順でモジュールリストをソートする。同一 priority のモジュールは元の相対順序を維持する（安定ソート）。
+
+**修正日**: 2026/05/15
+
+**深刻度**: 🟡 中程度
+
+**タイプ**: ロードシステム
+
+---
+
+### [BUG-014] アダプターのミドルウェアが None を返すことでイベントデータが失われる
+
+**問題**: `adapter.emit()` が OneBot12 ミドルウェアチェーンを実行する際、いずれかのミドルウェアが `None` を返した場合（例：`return data` を忘れた場合）、後続のミドルウェアとすべてのイベントハンドラーが受け取る `processed_data` が `None` となり、イベント処理が完全に機能しなくなる。
+
+**原因**: ミドルウェアチェーンの実装 `processed_data = await middleware(processed_data)` が戻り値が `None` かどうかをチェックせず、前段の処理結果を直接上書きしていた。
+
+**影響バージョン**: unknown - 2.4.5-dev.3
+
+**修正バージョン**: 2.4.5-dev.4
+
+**修正内容**: ミドルウェアが `None` を返した場合はその戻り値を無視し、元のデータを保持して伝搬を継続し、warning レベルのログを出力する。
+
+**修正日**: 2026/05/15
+
+**深刻度**: 🔴 深刻
+
+**タイプ**: アダプター / イベントシステム
+
+---
+
+### [BUG-015] 設定ファイルパスが作業ディレクトリに依存する
+
+**問題**: `ConfigManager` の設定ファイルパスはデフォルトで相対パス `"config/config.toml"` であり、実行時に `os.getcwd()` に依存して解決される。作業ディレクトリが実行中に変更された場合（例：`os.chdir()` による）、設定ファイルの読み書き操作が誤った場所を指すようになり、設定の消失や旧データの読み込みが発生する。
+
+**原因**: `__init__` 内で相対パスをそのまま保存し、初期化時に絶対パスへ解決していなかった。
+
+**影響バージョン**: 2.3.7 - 2.4.5-dev.3
+
+**修正バージョン**: 2.4.5-dev.4
+
+**修正内容**: `ConfigManager.__init__()` において、渡されたパスが相対パスの場合、`os.path.abspath()` により自動的に絶対パスへ解決する。
+
+**修正日**: 2026/05/15
+
+**深刻度**: 🟡 中程度
+
+**タイプ**: 設定システム
+
+---
+
+### [BUG-016] BaseStorage が格納値 None とキー不存在を混同する
+
+**問題**: `BaseStorage.get_multi()` / `__getattr__()` は「キーが存在しない」と「キーの値が `None` である」という 2 つの場合を区別できず、ユーザーが明示的に `None` を格納した後に読み取ると、キーが存在しないものとして扱われる。
+
+**原因**: 値の取得ロジックが `value is None` で直接キーの存在を判定しており、独立した「欠落」マーカーが欠けていた。
+
+**影響バージョン**: 初期バージョン - 2.4.6-dev.6
+
+**修正バージョン**: 2.4.6-dev.6
+
+**修正内容**: `_SENTINEL` センチネル値を導入して「キーが存在しない」と「値が None である」を区別し、両者が混同されないようにした。
+
+**修正日**: 2026/06/07
+
+**深刻度**: 🟡 中程度
+
+**タイプ**: ストレージ
+
+---
+
+### [BUG-017] WebSocket ルートの auto_accept フラグがサービス再起動後に失われる
+
+**問題**: サービス再起動（例：`sdk.restart()`）後、すべての WebSocket ルートの `auto_accept` 設定が `False` に戻り、自動 accept を期待していた接続が保留状態となり、クライアントが長時間応答を受け取れず、WS 接続がハングアップする。
+
+**原因**: `_restore_routes_from_records()` が永続化レコードからルートを復元する際に `auto_accept` を `False` にハードコードし、元のレコード内の値を読み取っていなかった。また、ルート保存タプルが 2 要素から 3 要素に拡張された際に、復元ロジックが同時に更新されなかった。
+
+**影響バージョン**: 2.3.8-dev.0 - 2.4.6-dev.6
+
+**修正バージョン**: 2.4.6-dev.6
+
+**修正内容**: ルート保存タプルを `(handler, auth_handler, auto_accept)` に拡張し、`_restore_routes_from_records()` がレコードから実際の `auto_accept` 値を読み取るようにし、ハードコードされた `False` ではなくした。
+
+**修正日**: 2026/06/07
+
+**深刻度**: 🔴 深刻
+
+**タイプ**: ルーティング
+
+---
+
+### [BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続リーク
+
+**問題**: `Core/client.py` の HTTP および WebSocket クライアントには、並行シナリオにおいて複数の安定性の欠陥があり、接続リークやプロセスクラッシュを引き起こす：
+- 複数コルーチンが `ClientWebSocket.receive()` を並行呼び出しした際に aiohttp が `Concurrent call to receive() is not allowed` を送出する
+- `_get_http_session()` / `_get_ws_session()` の並行呼び出しにより複数の session が作成される可能性があり、`_drain_sessions()` が旧接続を閉じないため、接続リークが発生する
+- `request()` の例外キャッチ順序が誤っている：`except ClientConnectionError`（ErisPulse 例外）が決して発火せず、aiohttp の接続エラーが汎用の `except Exception` で捕捉され、「接続リトライ + session 再構築」ロジック（デッドコード）が一度も実行されない
+- `send_json()` が `mode="binary"` パラメーターを無視する。`_get_ws_session()` がデフォルトリクエストヘッダーを渡していない
+
+**原因**: クライアントの初回実装（2.4.6-dev.5）において並行保護と例外分類が欠けており、aiohttp の例外階層と ErisPulse カスタム例外の継承関係の扱いが不適切だった。
+
+**影響バージョン**: 2.4.6-dev.5 - 2.4.8
+
+**修正バージョン**: 2.4.8
+
+**修正内容**:
+1. `_recv_lock` を新設し、すべての `receive()` / `receive_text()` / `receive_bytes()` 呼び出しを直列化
+2. `_session_lock` を新設して session 作成を保護。`_drain_sessions()` を非同期メソッドに変更し、実際に旧 session をクローズ
+3. `request()` の例外キャッチ順序を再構築：`asyncio.TimeoutError` → `aiohttp.ClientConnectionError`（session 再構築をトリガー）→ `aiohttp.ClientError` → `ClientError`（透過）→ `Exception`
+4. `send_json()` の mode 処理、`_get_ws_session()` のデフォルトリクエストヘッダー透過、`close()` の並行競合、`HttpResponse.__aexit__` の重複 `release()` を修正
+
+**修正日**: 2026/06/12
+
+**深刻度**: 🔴 深刻
+
+**タイプ**: クライアント
+
+---
+
+### [BUG-019] アダプターのホットリロード時にルート競合によりリロードが失敗する
+
+**問題**: サードパーティモジュール（Dashboard など）がアダプターのホットリロードをトリガーした際、またはアダプターの起動失敗リトライ時に、前回登録された旧ルート（`onebot11_default` など）がクリーンアップされておらず、`WebSocketパス ... は既に登録されています` の競合が送出され、リロードが失敗する。回復にはプロセスの完全な再起動が必要。
+
+**原因**: `AdapterManager.shutdown()` が `unregister_all_by_namespace(platform)` だけでルートをクリーンアップしているが、アダプター（OneBot11 など）は `onebot11_{account_name}` を名前空間として WS ルートを登録しており、粒度が一致しないためクリーンアップが空操作となる。起動失敗リトライのパスでも前回の残存ルートがクリーンアップされていなかった。
+
+**影響バージョン**: 初期バージョン - 2.4.9
+
+**修正バージョン**: 2.4.9
+
+**修正内容**:
+1. ルート登録時に `current_owner` ContextVar により `owner → namespace` の帰属関係を自動追跡
+2. `unregister_all_by_owner(owner)` を新設し、停止/再起動時に owner ごとにもクリーンアップし、細粒度の名前空間をカバー
+3. `_stop_adapter(platform)` プリミティブを新設（「停止＝クリーンアップ」）。アダプターの停止とその登録リソースの回収を 1 回の呼び出しに結び付け、`restart()` と起動失敗リトライの両方がこのエントリーを経由する
+4. フレームワークレベルの `adapter.restart(platform)` API を新設。サードパーティモジュールはアダプターインスタンスを直接操作するのではなく、このメソッドを呼び出すべき
+
+**修正日**: 2026/06/12
+
+**深刻度**: 🔴 深刻
+
+**タイプ**: アダプター / ルーティング
+
+---
+
+### [BUG-020] 子プロセスモード `ep run <script>` がスクリプト所在ディレクトリのサブパッケージを見つけられない
+
+**問題**: `ep r .\main.py` の非ホットリロードモードでスクリプトを実行する際、スクリプトに相対インポート（例：`from qg import ...`）があると、`No module named 'qg'` エラーが発生する。一方 `--reload` モードでは正常に動作する。
+
+**原因**: 非ホットリロードモードは `runpy.run_path()` を直接呼び出してスクリプトを実行するが、この関数はスクリプトの所在ディレクトリを自動的に `sys.path` に追加しない。一方 `--reload` モードは `subprocess.Popen` の子プロセスで実行され、子プロセスは現在の作業ディレクトリを自動的に継承し、`sys.path[0]` がスクリプトの所在ディレクトリとなるため正常に動作する。
+
+**影響バージョン**: 2.5.0 - 2.5.2-dev.0
+
+**修正バージョン**: 2.5.2-dev.0
+
+**修正内容**: `runpy.run_path()` 呼び出しの前に、スクリプトの所在ディレクトリを手動で `sys.path[0]` に挿入する。
+
+**修正日**: 2026/06/27
+
+**深刻度**: 🟡 中程度
+
+**タイプ**: CLI
+
+---
+
+### [BUG-021] SQL クエリビルダーが正当なワイルドカードと列式を拒否する
+
+**問題**: `SQLiteQueryBuilder` の `_build_select_sql()` がすべての SELECT 列に対して `_validate_identifier()` を呼び出しており、この関数は厳格なホワイトリスト正規表現 `^[a-zA-Z_][a-zA-Z0-9_]*$` を使用するため、正当な SQL 構文が安全でない列名と誤判定される：
+
+- `SELECT *` — `*` は SQL 標準のワイルドカード
+- `SELECT COUNT(*)` — 集計関数
+- `SELECT users.name` — 修飾列名
+- `SELECT col AS alias` — 列エイリアス
+
+このうち `Select("*")` は Cron などのモジュールで使用されており、モジュールの `on_load` 実行が失敗し、モジュールをロードできなくなる。
+
+**原因**: 2.4.6 バージョンで SQL インジェクション対策が強化され、`_validate_identifier()` ホワイトリスト検証が導入された。この検証はすべての列名に適用されたが、読み取り側（SELECT/ORDER BY）と書き込み側（INSERT/UPDATE）が区別されていなかった。SELECT 列は複雑な SQL 式を許容するものであり、単純な識別子ホワイトリストの制約を受けるべきではない。
+
+**影響バージョン**: 2.4.6 - 2.5.2-dev.1
+
+**修正バージョン**: 2.5.2-dev.2
+
+**修正内容**: SELECT/ORDER BY の列検証をホワイトリスト方式からブラックリスト方式に変更：
+1. `_validate_select_column()` 関数を新設し、SQL インジェクションの危険文字（`;` `'` `"` `--` `/*` `*/` `\x00` 改行文字）のみを遮断
+2. 任意の正当な SQL 列式（`*`、`table.*`、`table.column`、`COUNT(*)`、`col AS alias` など）を許可
+3. INSERT/UPDATE 列名は引き続き厳格なホワイトリスト検証を維持（単純な識別子のみ許可）
+
+**修正日**: 2026/06/29
+
+**深刻度**: 🔴 深刻
+
+**タイプ**: ストレージ
+
+---
+
+### [BUG-022] _resolve_account() のアカウント解決リグレッション（_accounts_data 未設定）
+
+**問題**: 2.5.2 の設定システムリファクタリング後、`AccountConfigClass` を宣言しているマルチアカウントアダプターが、`wait_reply`、`reply` などメッセージ送信を必要とするメソッドを呼び出す際、`ValueError("AccountConfigClass が宣言されていないため、アカウントを解決できません")` エラーが発生する。アダプターがマルチアカウント情報を正しく設定していても、アカウント解決が失敗する。
+
+**原因**: 2.5.2-dev.5 で `_load_accounts()`（設定の読み取り + 検証 + `_accounts_data` の設定を担当）が `_ensure_accounts_exist()`（設定テンプレートの生成のみ）にリファクタリングされたが、`_resolve_account()` は依然として `self._accounts_data is None` をチェックしている。`_ensure_accounts_exist()` が `_accounts_data` を設定しなくなったため、この属性は常に `None` となり、`_resolve_account()` が早期に `(None, None)` を返し、アカウント解決が完全に機能しなくなる。
+
+**根本原因の連鎖**:
+```
+_load_accounts() が削除された
+  → __init__ が _accounts_data を設定しなくなる
+    → _accounts_data が常に None になる
+      → _resolve_account() が _accounts_data is None をチェック → return (None, None)
+        → _resolve_account を呼び出す下流箇所（call_api など）が None を受け取る
+          → エラーが発生
+```
+
+**影響バージョン**: 2.5.2-dev.5 - 2.5.2
+
+**修正バージョン**: 2.5.3
+
+**修正内容**: `BaseAdapter.__init__` において、`_ensure_accounts_exist()` の後に `_accounts_data` の設定を復元：
+```python
+if self.AccountConfigClass is not None:
+    self._ensure_accounts_exist()
+    self._accounts_data = self.accounts  # 設定を復元。データソースはリアルタイムで読み取られる accounts 属性
+```
+`_resolve_account()` のロジックは変更されず、完全に後方互換：
+- `AccountConfigClass` を宣言しないアダプター：`_accounts_data` は `None` のまま → `(None, None)` を返す
+- `AccountConfigClass` を宣言しているアダプター：`_accounts_data` が設定される → 正常に解決
+- `_load_accounts` をオーバーライドまたは `_accounts_data` を手動設定するアダプター：`super().__init__()` の後に上書きされ、最優先
+
+**修正日**: 2026/07/07
+
+**深刻度**: 🔴 深刻
+
+**タイプ**: アダプター / 設定システム
+
+---
+
+### [BUG-023] アカウント設定変更後にアダプターのキャッシュが更新されず、アカウント解決が失敗する
+
+**問題**: ユーザーが Dashboard でマルチアカウントアダプターのアカウント設定（token の入力など）を変更した後、アダプターは依然として旧キャッシュを使用し、メッセージ送信関連メソッドの呼び出し時に `利用可能なアカウントが見つかりません (account_id=default)` エラーが発生する。新設定を有効にするにはプロセスの再起動が必要。
+
+**原因**: `_accounts_data` は `BaseAdapter.__init__` 時に設定ストアから一度読み取られるだけで、その後更新されない。`AdapterManager._run_adapter()` と `restart()` が `adapter.start()` 呼び出し前にアカウント設定を再読み取りしないため、キャッシュと実際の設定が乖離する。
+
+**影響バージョン**: 2.4.6 - 2.5.4
+
+**修正バージョン**: 2.5.4
+
+**修正内容**: `AdapterManager._run_adapter()` と `restart()` において、`adapter.start()` 呼び出し前に `adapter._accounts_data = adapter.accounts` を更新し、起動のたびに最新の設定が使用されるようにした。
+
+**修正日**: 2026/07/09
+
+**深刻度**: 🔴 深刻
+
+**タイプ**: アダプター / 設定システム
+
+---
+
+### [BUG-024] storage.set() で大きな数値 ID キーを書き込む際に OOM Kill が発生する
+
+**問題**: `storage.set()` を呼び出して大きな純数値セグメント（QQ グループ番号 `871684833` など）を含むネストされたキーパスを書き込む際、プロセスがコンテナにより OOM Kill され（終了コード -9）、サービスが直接クラッシュして回復できなくなる。
+
+**原因**: `_set_nested_value` の再帰実装において、ネストされたキーパス内の純数値セグメントが `isdigit()` によりリストインデックスと誤判定され、`current.extend([None] * (index - len(current) + 1))` がトリガーされて数億要素のリストを割り当てようとし、瞬時にメモリを使い果たす。
+
+**根本原因の連鎖**:
+```
+キーパスに純数値セグメントが含まれる（グループ番号 871684833 など）
+  → isdigit() が配列インデックスと誤判定
+    → extend([None] * (871684833 - len(current) + 1))
+      → 数億要素の割り当てを試みる
+        → メモリ枯渇 → コンテナによる OOM Kill（終了コード -9）
+```
+
+**影響バージョン**: 2.5.1 - 2.5.5
+
+**修正バージョン**: 2.5.5
+
+**修正内容**:
+1. 中間層の事前作成時には常に辞書を使用し、次のセグメントが数値かどうかでコンテナタイプを推測しない
+2. 最終値の設定時には、コンテナ自体が既にリストであり、かつインデックスが `STORAGE_MAX_LIST_INDEX`（10000）未満の場合にのみインデックスとして処理し、過大なインデックスは安全にスキップ
+3. 再帰実装を反復実装に変更し、元のコードに潜在していた無限再帰のリスクを解消
+4. `STORAGE_MAX_LIST_INDEX` 定数を `Core/constants.py` に新設し、インデックスの安全上限を一元管理
+
+**修正日**: 2026/07/10
+
+**再現手順**:
+```python
+# 大きな数値セグメント（QQ グループ番号など）を含むネストされたキーパスを書き込むとトリガーされる
+await sdk.storage.aset("groups.871684833.name", "あるグループ")
+# → プロセスのメモリが瞬時に急上昇し、OOM Kill される
+```
+
+**回帰テスト**: `tests/unit/test_unit_storage.py` に回帰テストケースを 4 件追加
+- `test_nested_key_numeric_segment_as_dict_key` — OOM シナリオを正確に再現
+- `test_nested_key_numeric_segment_multiple` — 複数の連続する数値セグメントがすべて辞書キーとして扱われる
+- `test_nested_key_existing_list_index_set_within_limit` — 既存リストへの妥当なインデックス書き込み
+- `test_nested_key_list_index_safety_limit` — 過大インデックスの安全制限の検証
+
+**深刻度**: 🔴 深刻
+
+**タイプ**: ストレージ
+
+---
+
+### [BUG-025] on_config_update コールバックがコアによってルーティングされない
+
+**問題**: `on_config_update(old, new)` コールバックは基底クラス（`BaseModule` / `BaseAdapter`）で定義済みだが、フレームワークコアがこれを設定変更イベントと関連付けていない。実際の挙動：設定管理パネルから設定を変更した場合はトリガーされるが、`config.toml` を手動編集したりコードから `setConfig()` を呼び出したりした場合は `on_config_update` がトリガーされない。
+
+**原因**: `ConfigManager` は設定変更時に `config.set` / `config.updated` ライフサイクルイベントを送出するが、これらのイベントを各コンポーネントの `on_config_update` メソッドへ転送するサブスクリプションロジックが欠けていた。
+
+**根本原因の連鎖**:
+```
+コアが config.set / config.updated を購読していない
+  → 設定変更イベントが転送されない
+    → on_config_update が呼び出されない
+      → 手動ファイル編集 / コードからの setConfig でホットアップデートコールバックが発火しない
+```
+
+**影響バージョン**: 全バージョン
+
+**修正バージョン**: 2.6.2
+
+**修正内容**: `ModuleManager` / `AdapterManager` が `config.set`（コードからの `setConfig()` パスをカバー）と `config.updated`（手動ファイル編集パスをカバー）のイベント購読を登録し、設定キーのプレフィックスでマッチングした後、対応するコンポーネントの `on_config_update` を呼び出し、型安全な設定オブジェクトを渡す。同時に、`_flush_config()` がファイル書き込み後に `_config_mtime` を同期していなかった問題を修正し、フレームワーク自身の書き込みがファイル監視タスクに外部変更と誤判定されて `config.updated` が重複発火することを回避。
+
+**互換性に関する注意**: 設定のホットアップデートは現在フレームワークコアにより一元的に管理されている。以前設定管理パネルが代行してトリガーしていたロジックは削除されたため、フレームワークをアップグレードした後は設定管理パネルも併せてアップグレードする必要がある。さもないと重複トリガーが発生する（コアとパネルがそれぞれ 1 回ずつ呼び出す）。`on_config_update` メソッドのシグネチャとセマンティクスは変更されず、サブクラスの変更は不要。
+
+**修正日**: 2026/07/23
+
+**深刻度**: 🟡 中程度
+
+**タイプ**: 設定システム
+
+---
+
+### [BUG-026] notice/request イベントの reply 宛先推論エラー
+
+**問題**: グループ通知イベント（メンバーのグループ参加 `group_member_increase` など）で `event.reply()` を呼び出すと、メッセージがイベントの発生元ユーザーとのプライベートチャットに送信され、イベントが発生したグループには送信されない。フレンド通知イベントも同様で、返信先が誤る可能性がある。
+
+**原因**: `infer_receive_type()` がイベントの `detail_type` を直接セッションタイプとして返している。message イベントについてはこれは正しい（`detail_type` の値 `private`/`group` がそのままセッションタイプ）が、notice/request イベントの `detail_type` はセマンティックサブタイプ（`group_member_increase`、`friend_increase` など）であり、セッションタイプではない。後続の `convert_to_send_type()` と `get_id_field()` がマッピングテーブルでその値を見つけられず、デフォルトの `"user"` / `"user_id"` にフォールバックし、返信先が誤る。
+
+**根本原因の連鎖**:
+```
+notice イベント detail_type="group_member_increase"
+  → infer_receive_type() が直接 "group_member_increase" を返す
+    → convert_to_send_type("group_member_increase") がマッピングテーブルにない → "user" にフォールバック
+    → get_id_field("group_member_increase") がマッピングテーブルにない → "user_id" にフォールバック
+      → target_id = event["user_id"]  ← 新メンバーとのプライベートチャット（グループではない）
+```
+
+**影響バージョン**: 全バージョン
+
+**修正バージョン**: 2.7.0-dev.3
+
+**修正内容**: `infer_receive_type()` に判定を追加——`detail_type` は既知のセッションタイプ（標準タイプまたはカスタムタイプ）である場合にのみ直接返す。それ以外の場合は ID フィールド（`group_id` / `channel_id` / `user_id` など）から正しいセッションタイプを推論する。
+
+**回帰テスト**: `tests/unit/test_unit_session_type.py` → `TestNoticeRequestTypeInference`（10 テストケース）
+
+**修正日**: 2026/07/29
+
+**深刻度**: 🟢 軽微
+
+**タイプ**: イベントシステム
+
+---
+
+### [BUG-027] ルートレートリミットのクリーンアップタスクが固定ウィンドウを使用し、長期ウィンドウのレートリミットルールが機能しない
+
+**問題**: ルートのレートリミットを長期ウィンドウルール（`100/hour`、`{"requests": 100, "window": 3600}` など）に設定すると、レートリミットがほぼ無意味になる——実際の挙動は `100/minute` に近く（1 時間あたり最大約 6000 リクエストまで通過）、期待された時間単位の保護機能がまったく果たせない。
+
+**原因**: `_apply_rate_limit` はルートごとの実際の `window`（最大 3600 秒）を解析して取得し、per-request チェックも実際にそのウィンドウを使用している。しかし、バックグラウンドのクリーンアップタスク `_cleanup_expired_rate_limits` は固定定数 `DEFAULT_RATE_LIMIT_WINDOW_SECS`（60 秒）を**すべての**ルートの統一クリーンアップ閾値として使用していた。その結果、`100/hour` ルートで 60 秒より前のタイムスタンプがクリーンアップタスクにより早期に削除され、1 時間ウィンドウ内に 100 件近いレコードが決して蓄積されず、レートリミットが著しく弱体化する。
+
+**根本原因の連鎖**:
+```
+_apply_rate_limit が window=3600（100/hour）を解析
+  → per-request チェックは 3600 秒間タイムスタンプを保持（正しい）
+  → しかし _cleanup_expired_rate_limits が固定 max_window=60 秒でクリーンアップ
+    → 60 秒前のタイムスタンプがすべて削除される
+      → 1 時間ウィンドウには常に直近 1 分間のレコードしか残らない
+        → 100/hour が実際には ~100/minute に退化（約 60 倍に緩和）
+```
+
+**影響バージョン**: 2.6.0-dev.0 - 2.7.0-dev.4
+
+**修正バージョン**: 2.7.0-dev.5
+
+**修正内容**: `_rate_limit_windows: dict[str, int]` を新設し、store key ごとに各ルートの実際のウィンドウを記録。`_apply_rate_limit` は初回エントリー作成時にウィンドウを書き込む。`_cleanup_expired_rate_limits` は各 key 自身のウィンドウに従ってクリーンアップするように変更（欠落時はデフォルト値にフォールバック）。クリーンアップによるエントリー削除時と `stop()` 時に両方の辞書を同期して管理。
+
+**修正日**: 2026/07/31
+
+**回帰テスト**: `tests/unit/test_unit_router.py` → `TestRateLimit::test_cleanup_respects_per_route_window`
+
+**深刻度**: 🔴 深刻
+
+**タイプ**: ルーティング
+
+---
+
+### [BUG-029] 設定監視タスクが未完成の TOML をブロードキャストし、例外を静かに握りつぶす
+
+**問題**: ユーザーが `config.toml` を手動編集して保存途中（一時的な構文エラーが発生）の際、設定監視バックグラウンドスレッドが mtime 変化を検出して設定を再ロードするが、ロード失敗後も空の設定 `{}` で `config.updated` イベントを送出し、アダプター/モジュールの `on_config_update` が空の設定を受け取り、すべての設定項目がクリアされたと誤認してデフォルト値にフォールバックしてしまう。さらに監視ループは `except Exception: pass` ですべての例外を静かに握りつぶしており、watcher の障害を調査する手掛かりがない。
+
+**原因**: 2 つの欠陥の重複：
+1. `_load_config` が TOML 構文エラー/権限エラー時に `self._cache` を `{}` で上書きするが、バックグラウンド監視スレッド `_watch_loop` とキャッシュタイムアウトパス `_check_cache_validity` の両方が `_load_config()` 呼び出し後に**無条件に** `_emit_config_updated()` を実行し、「ロード失敗によって生じた空のキャッシュ」を実際の変更としてブロードキャストする。
+2. `_watch_loop` の `except Exception: pass` が一切のログを記録しない。
+
+**根本原因の連鎖**:
+```
+ユーザーが保存途中 → TOML 構文エラー
+  → _load_config() が _cache = {} で上書き
+    → _watch_loop が無条件に _emit_config_updated(new_config={}) を実行
+      → アダプター/モジュールの on_config_update が空の設定を受け取る
+        → 設定がクリアされたと誤判定し、デフォルト値にフォールバック
+```
+
+**影響バージョン**: 2.6.2-dev.1 - 2.7.0-dev.4
+
+**修正バージョン**: 2.7.0-dev.5
+
+**修正内容**:
+1. `_load_config` を `bool` を返すように変更。TOML 構文エラー/権限/その他のエラー時には**前回の有効なキャッシュを保持**し（`{}` で上書きしない）、診断ログの記録と `False` の返却のみ行う
+2. `_watch_loop` と `_check_cache_validity` は `_load_config()` が `True` を返した場合にのみ `config.updated` を送出
+3. `_watch_loop` の `except Exception` を warning レベルでの記録に変更（i18n キー `core.config.watcher_error` を新設、5 言語同期）
+
+**修正日**: 2026/07/31
+
+**回帰テスト**: `tests/unit/test_unit_config.py` → `test_malformed_toml_preserves_last_valid_cache`、`test_permission_denied_logs_clear_message`（キャッシュ保持 + False 返却の検証に更新）
+
+**深刻度**: 🟡 中程度
+
+**タイプ**: 設定システム
+
+---
+
+### [BUG-030] 設定 watcher の競合により setConfig の遅延書き込みがデータを静かに失う
+
+**問題**: 複数のユーザーから、`config.setConfig(key, value)`（デフォルト `immediate=False`）を使用した後、自分のモジュールの設定が `config.toml` に書き込まれず、他のモジュールの設定は正常であるという報告がある。`immediate=True`（強制フラッシュ）を設定すれば回避できる。挙動としては：実行時に書き込まれた設定が次回の再起動後に失われ、起動時にテンプレートから生成された設定は保持される。
+
+**原因**: 2 つの重複する欠陥：
+1. **ロジック欠陥**：`_watch_loop` が `_check_file_change()` が `True` を返した際に無条件に `_dirty_keys.clear()` ですべての書き込み待ちキーを破棄する。しかし `_check_file_change()` は mtime を `!=` で比較しているだけで、フレームワーク自身の `_flush_config` のディスク書き込みも mtime を変更する——`_flush_config` は書き込み後に `_config_mtime` を更新するものの、watcher スレッドはファイル書き込みと mtime 代入の間に（また粒度の粗いファイルシステム上でも）mtime の差分を観測する可能性があり、「外部変更」と誤判定してすべての書き込み待ちキーをクリアしてしまう。
+2. **スレッド欠陥**：`_watch_loop` が `_write_timer`/`_dirty_keys` を操作する際に `_lock` を保持しておらず、`setConfig`（ロックを保持して `_dirty_keys` に書き込む）、`_schedule_write`（ロックを保持して `_write_timer` に書き込む）との間でデータ競合が存在する。
+
+**根本原因の連鎖**:
+```
+モジュールA setConfig(immediate=True) → フラッシュでディスク書き込み、mtime 変化
+  → ユーザーモジュール setConfig(immediate=False) → _dirty_keys に入り、5 秒後にフラッシュ
+    → watcher がポーリングし、_check_file_change が先前の自身の書き込みによる mtime 差分を観測
+      → _dirty_keys.clear() → ユーザーモジュールの書き込み待ちキーが静かに破棄される
+        → 再起動後に設定が欠落
+```
+
+**影響バージョン**: 2.6.0 - 2.7.0
+
+**修正バージョン**: 2.7.1
+
+**修正内容**:
+1. `_last_self_write_mtime` フィールドを新設し、`_flush_config` のディスク書き込み後に同時記録。`_check_file_change` は mtime 変化時にまずこの値と比較し、一致すれば自身の書き込みと判定して `False` を返す
+2. `_watch_loop` は全体を `_lock` で保護。実際の外部変更時には `_dirty_keys` を保持し（merge セマンティクス）、次回 flush 時に外部内容とマージする（ダーティキー優先）。`clear()` は行わない
+3. `getConfig`/`_check_cache_validity` パスは影響を受けない（その reload はもともとダーティキーをクリアしない）
+
+**修正日**: 2026/08/06
+
+**回帰テスト**: `tests/unit/test_unit_config.py` → `test_self_write_not_detected_as_external`、`test_external_change_preserves_dirty_keys`、`test_flush_merges_dirty_with_external`
+
+**深刻度**: 🔴 深刻
+
+**タイプ**: 設定システム
+
+---
+
+### [BUG-032] 設定の遅延フラッシュ中の「書き込み後即時読み取り」で旧値が読まれる
+
+**問題**: `config.setConfig()`（デフォルト `immediate=False` で約 5 秒遅延フラッシュ）でドット区切りキーを書き込んだ後、直ちにその**親/祖先ノード**を読み取ると（例：`set_erispulse_section("scope.actions.MyModule", {...})` の後に `get_erispulse_config()` を呼び出す）、旧値が返され、書き込んだ子キーが「消失」し、フラッシュ後まで可視にならない。スコープ設定のホットアップデートなどの「書き込み-読み取り-書き込み」シナリオが影響を受ける（2.8.0 テストプラグイン `/t_section` のケースで発覚）。
+
+**原因**: `setConfig` がドット区切りキーを**フラット形式**で書き込み待ちキュー `_dirty_keys` に保存し、`getConfig` の**完全一致キー検索**のみが書き込み待ちキューにヒットする。ツリーパス検索（`getConfig("ErisPulse.scope")`）はキャッシュツリーのみを参照し、書き込み待ち値をオーバーレイしない——遅延フラッシュ期間中（`_flush_config` がダーティキーをキャッシュにマージしてキューをクリアするまで）、「リード・ユア・ライト（自身の書き込みの可視性）」の断絶が生じる。
+
+**影響バージョン**: 2.6.0 - 2.8.0-dev.1
+
+**修正バージョン**: 2.8.0-dev.1
+
+**修正内容**: `getConfig` に書き込み待ちオーバーレイセマンティクスを導入——① 書き込み待ちキーに完全一致した場合は直接返す（既存の挙動は変更なし）；② 書き込み待ちキーが検索キーの祖先である場合 → 最長の書き込み待ち祖先を取り、その値のサブツリー内で残りのパスを解決；③ 書き込み待ちキーが検索キーの子孫である場合 → オーバーレイサブツリー（`_dirty_overlay`）を構築し、キャッシュサブツリーと深くマージ（`_deep_merge`、override 優先、元のキャッシュオブジェクトは変更しない）。書き込み待ちキーがない場合は元の高速パスを通り、追加オーバーヘッドゼロ。
+
+**修正日**: 2026/09/04
+
+**回帰テスト**: `tests/unit/test_unit_config.py` → `test_get_config_overlays_dirty_descendant`、`test_get_config_overlay_merges_with_cache_siblings`、`test_get_config_overlay_new_branch`、`test_get_config_dirty_ancestor_query`、`test_get_config_dirty_exact_key_still_wins`
+
+**深刻度**: 🟡 中程度
+
+**タイプ**: 設定システム
+
+---
+
+### [BUG-033] wait_reply の保留中の返信が高優先度ハンドラーによりスターベーション（飢餓）状態に陥る
+
+**問題**: モジュールが `wait_reply()` でユーザーの返信を待っている間に、その返信メッセージがより高い優先度のイベントハンドラーにクレームされ（`mark_processed()`）、コマンドディスパッチャーがエントリーで `_processed` マークを見て即座に戻るため、ディスパッチャーの末尾に配置された返信マッチングロジックが永遠に実行されない——待機側は返信を受け取れず、タイムアウトまで `None` が返るのをただ待つしかない。典型的なトリガーシナリオ：高優先度メッセージハンドラー（ロギング/監査/インターセプト系）を使用しているボットで、すべての会話型インタラクションがランダムに機能しなくなる。
+
+**原因**: 返信マッチング `_check_pending_reply` が `_handle_message` の末尾に配置されており（コマンドがマッチしなかった場合にのみ実行）、`_processed` チェックがその前にある——クレームチェックと返信ヒット判定の順序が逆転している。インタラクション待機はフレームワークレベルのセッション継続機構であり、競合するハンドラーではないため、他のハンドラーによるクレームの影響を受けるべきではない。
+
+**影響バージョン**: 2.2.0-dev.0 - 2.8.0-dev.1
+
+**修正バージョン**: 2.8.0-dev.2
+
+**修正内容**: 返信ヒット判定を `_handle_message` のエントリー（`_processed` チェックの前、message イベントのみ）に前倒し：まず保留中の会話の完了を試み、ヒットした場合はイベントが処理済みとしてマークされ、下方のチェックは自然に短絡する。ヒットしなかった場合は元のコマンドマッチングフローを継続する。同時に判定チェーンを新しいインタラクションセッションマネージャー（`Core/Event/interaction.py`）に委譲し、帰属ごとのキャンセルと権限再チェックの機能も併せて獲得。
+
+**修正日**: 2026/09/08
+
+**回帰テスト**: `tests/unit/test_unit_interaction.py`（`TestRegisterResolve` のヒット/非ヒット/クレームマーク）、`tests/unit/test_unit_event.py`（wait_reply フルフロー）
+
+**深刻度**: 🟡 中程度
+
+**タイプ**: イベントシステム / コマンドシステム
+
+
+---
+
+### [BUG-034] スコープの persist=False ランタイムバインディングが任意の後続の設定書き込みによってサイレントに消去される
+
+**問題**: `scope.set_module(..., persist=False)` などのランタイム書き込みはメモリ上の `self._data` のみを変更します。しかし scope は `config.set` / `config.updated` イベントを購読しているため、コードのどこかで設定が書き込まれる（例：あるモジュールのロード時に自身のデフォルト設定を書き込む）と、scope が設定ファイルから設定ツリー全体を再構築し、それまでのすべてのランタイムバインディングがサイレントに失われ（判定はデフォルトの許可にフォールバック）、ログの通知も一切ありません。ランタイムバインディングに依存するシナリオ（Dashboard の「ランタイムのみ」スイッチ、モジュール実行時の動的無効化）は、無関係なモジュールが設定を書き込むと動作が後退します。
+
+**原因**: 根本原因の連鎖：`scope.set/delete(persist=False)` はメモリにのみ書き込み（`Core/scope.py`）→ 任意の `setConfig` が `config.set` イベントをトリガー → `_on_config_updated` が無条件に `_load_config()` を実行 → `_apply_tree()` が `self._data = {...}` で全体を置換 → 設定ファイルに存在しないランタイムバインディングが破棄される。
+
+**影響バージョン**: 2.8.0-dev.1 - 2.8.0-dev.2
+**修正バージョン**: 2.8.0-dev.2
+**修正内容**: ランタイムオーバーレイ層 `_runtime_overrides`（削除センチネルを含む）を導入：`persist=False` の書き込み/削除はオーバーレイ層に記録され、`_apply_tree()` が永続層を再構築した後に書き込み順にリプレイされ、ランタイムルールは任意の設定書き込み後も有効性を維持します；`persist=True` の書き込み/削除は対応するオーバーレイ記録をクリアします（ユーザーの永続化セマンティクスを優先）；`config.set` はイベント key で精密にフィルタリングし、`config.updated` は新旧の scope セクションを比較し、scope が実際に変化した場合のみ再構築します（あわせて無関係な書き込みによる判定 LRU キャッシュのフラッシュを回避）；`unregister_by_owner()` を新設し、モジュールのアンロード時に呼び出し元と併せてフォールバッククリーンアップできるようにしました。`Core.Event.overrides` の persist=False ランタイム上書きにも同種の問題があり、こちらもオーバーレイ層アーキテクチャであわせて修正しました。
+**修正日**: 2026/09/09
+
+**再現手順**: ① `scope.set_module("testplat", blocked=["TestB"], persist=False)` → 判定 False；② 任意のモジュールが `config.setConfig("HelpModule", {...})` を実行 → scope の再構築をトリガー；③ `scope.is_allowed("testplat", None, "TestB")` が True を返す（期待値は False のまま）。
+**関連**: Issue #432
+**回帰テスト**: `tests/unit/test_unit_scope.py::TestRuntimeOverrideSurvival`（無関係な書き込みでの存続/ツリー再構築リプレイ/削除センチネル/永続化によるクリア/精密な無効化/owner クリーンアップ）
+
+**重要度**: 🟡 中程度
+**種別**: 設定システム / ランタイム
+
+---
+
+### [BUG-035] 設定パネルの select オプションと辞書フィールドが [object Object] とレンダリングされる
+
+**問題**: WebUI 設定パネルで、select フィールドのオプションのドロップダウンに `[object Object]` と表示される（例：動的生成されたカラースタイルオプション）；コントロールタイプが宣言されていない dict フィールド（`stalker_mode`、`knowledge_base` などのネストされた設定セクション）がテキストボックスに `[object Object]` と表示され、正常に閲覧・編集できない。
+
+**原因**: 2 つの独立した欠陥：① フレームワークの i18n パーサー `_resolve_i18n_text` は `i18n` キーを持つ辞書のみを復元するため、`default` のみを含む辞書（i18n キーのない動的テキスト）のオプションラベルはそのまま透過され、フロントエンドの `esc(label)` による文字列強制変換で `[object Object]` となる；② Dashboard のレンダリング分岐は array 型のみ JSON textarea を行い、dict 値はプレーンテキスト入力分岐に落ちて `String()` で強制変換される。さらに、モジュールが `_schema_meta` を誤って通常の dataclass フィールドとして宣言した場合（`ClassVar` アノテーション不足）、設定フィールドとして schema に入り込み混乱を悪化させる。
+
+**影響バージョン**: 2.7.0 - 2.8.0-dev.2
+**修正バージョン**: 2.8.0-dev.2
+**修正内容**: ① `_resolve_i18n_text` が `default` のみを含む辞書をテキストに復元できるようにした；② フレームワークの schema/テンプレート/デフォルト値/充填/検証の 5 か所で、アンダースコア接頭辞フィールドを一律に除外（誤宣言の無害化）；③ Dashboard の select オプション label オブジェクトのフォールバック解析（`default` を優先）、dict/table フィールドを JSON textarea としてレンダリング（保存パスは `tp=object` で JSON.parse により書き戻し、完全なラウンドトリップ）。
+**修正日**: 2026/09/09
+
+**回帰テスト**: `tests/unit/test_unit_config.py::TestResolveI18nDefaultOnlyDict`、`TestSchemaUnderscoreFieldExclusion`
+
+**重要度**: 🟡 中程度
+**種別**: 設定システム
+
+---
+
+### [BUG-036] マルチインスタンスが設定ディレクトリを共有する際の設定書き込みの散発的な失敗（ENOENT）
+
+**問題**: Docker デプロイシナリオ（複数コンテナが同一ホストの設定ディレクトリをマウント）で、ログに `Failed to write configuration file ... [Errno 2] No such file or directory: '...config.toml.tmp' -> '...config.toml'` という 2 件の連続エラーが散発的に出力される。該当の設定書き込みは破棄されるが（旧設定は完全に保持され、設定損失は観測されていない）、機能への影響はない。ただし、警告が繰り返し発生して調査の妨げとなり、書き込み待ちの設定項目は次回の書き込みまでディスクに反映されない。
+
+**原因**: 根本原因の連鎖：`_flush_config` / `setConfigTemplate` が**固定名**の一時ファイル `config.toml.tmp` で新コンテンツを保持し、`write()` 後に `fsync` せず直接 `rename()` する。2 つの ErisPulse インスタンスが同一設定ディレクトリを共有する場合、B インスタンスの `open("w")` が A インスタンスが書き込み中の一時ファイルを **truncate** する可能性がある → A の rename 時点でターゲットは既に B に取得されているか内容が切り詰められ、ENOENT が報告される（ユーザーログに現れた連続 2 件のエラーがこれに相当）。報告済みのケースでは書き込み失敗の警告としてのみ現れた（旧設定は保持）；処理の交錯タイミングがより極端な場合、rename が空/途切れた `config.toml` を出力する可能性がある（潜在的リスクであり、実環境での発現は未確認）。単一インスタンスのシナリオでも、ext4 の遅延割り当てにより「rename のメタデータがデータブロックに先行してディスクに書き込まれる」クラッシュウィンドウ（SIGKILL / 電源断）が同様に存在する。`_file_lock` はプロセス内の `threading.RLock` であり、プロセス間/コンテナ間の書き込みに対する制約はない。
+
+**影響バージョン**: 2.2.0-dev.0 - 2.8.0
+
+**修正バージョン**: 2.8.1
+
+**修正内容**: 設定書き込みを `_atomic_write_text()` に統一：同一ディレクトリでの `mkstemp` によりプロセス固有の一時ファイルを生成（固定名の競合を解消、マルチインスタンスでは last-writer-wins に退化し、ENOENT は発生しない）→ 書き込み完了後に `flush + fsync` でデータのディスク書き込みを強制（「rename は反映済みだがデータが未書き込み」ウィンドウを解消）→ `os.replace` でターゲットをアトミックに置換（POSIX/Windows ともにアトミックで、任意の時点でディスク上には完全な旧コンテンツか完全な新コンテンツのいずれかが存在する）；POSIX では追加で設定ディレクトリを fsync。`_flush_config`、`setConfigTemplate`、ルートディレクトリ設定移行の 3 つの書き込みポイントをすべて切り替え；例外パスのクリーンアップロジックを一意な一時ファイル名に合わせて再構築。**マルチインスタンス検出**を新設：起動時に advisory lock（POSIX `flock` / Windows `msvcrt.locking`）で設定ディレクトリのロックファイル `.erispulse_config.lock` を排他的に保持し、占有されている場合は i18n 警告を出力（起動はブロックしない）、ロックは OS によりプロセス終了時に自動解放され、ゴーストロックは発生しない。
+
+**修正日**: 2026/09/13
+
+**再現手順**: ① 2 つのコンテナが同一ホストの `config/` ディレクトリをマウントし、同時に ErisPulse を実行；② いずれかのインスタンスが設定書き込みをトリガー（例：モジュールがデフォルト設定を登録）；③ ログに ENOENT 書き込み失敗の警告が出現し、今回の書き込みが破棄されることを確認（旧設定は保持）。
+
+**関連**: ユーザーレポート（1Panel コンテナ ×2）
+
+**回帰テスト**: `tests/unit/test_unit_config_atomic_write.py`（コンテンツの完全な書き込み/一時ファイルの残留なし/書き込み失敗時に元ファイルを保持/2 インスタンス同時書き込みでファイルが常に正当/ロックファイル作成/マルチインスタンス警告/移行のアトミック書き込み）
+
+**重要度**: 🟢 軽微
+
+**種別**: 設定システム
+
+---
+
+### [BUG-037] スペース区切りサブコマンド名を登録しても永遠にトリガーされない
+
+**問題**: スペース区切りのマルチ token コマンド名でサブコマンドを登録した場合（例：`@command("admin add")`）、コマンドは正常に登録されヘルプ一覧にも表示されるが、ユーザーが `/admin add` を送信してもボットは永遠に応答しない——入力は親 token コマンドによって `admin` + 引数 `["add"]` としてマッチされる；親 token も未登録の場合は完全に無応答となる。ドット記法の命名（`admin.reload`、全体で単一 token）を使用した場合のみ回避可能。
+
+**原因**: 根本原因の連鎖：`CommandHandler.__call__` が任意のコマンド名（スペース形式を含む）をそのままフラットな `self.commands` 辞書に格納 → ディスパッチ段階の `_try_execute_command` はメッセージの先頭 token のみでマッチ（`cmd_name = parts[0]`）→ マルチ token コマンド名は辞書キーとして永遠に見つからない。登録とマッチングの 2 段階でコマンド名に対する空間の仮定が一致しておらず、登録時の警告も一切ない（サイレントに無効化）。
+
+**影響バージョン**: コマンドシステム導入時 - 2.8.0
+
+**修正バージョン**: 2.8.1
+
+**修正内容**: マッチング層を**最長前方一致（longest prefix match）**に変更：最長候補（`" ".join(parts[:n])`、n の上限は登録済みコマンド名/エイリアスの最大 token 数のキャッシュ `_max_name_tokens`）から段階的にダウングレードして試行し、ヒットした時点で残りの token を引数として実行、下流のスコープ/ACL/オーバーライド/master/権限チェーンはコマンドの完全名に対して自然に機能する。付随するセマンティクス：親子が共存する場合、未登録のサブコマンド入力は親コマンドにフォールバック（過去の動作は不変）；サブコマンドが `permission` を宣言していない場合、親チェーンに沿って最も近い権限宣言を持つ祖先コマンドを継承（親コマンドを保護すればその配下のすべてのサブコマンドも保護）；単一 token コマンドのみ登録されている場合は最初のラウンドでヒットし、ディスパッチのオーバーヘッドは従来どおり。`unregister` / `unregister_by_owner` / 全量クリーンアップも token 数キャッシュを同期メンテナンス。
+
+**修正日**: 2026/09/13
+
+**再現手順**: ① モジュール内で `@command("admin add")` を登録；② `/admin add x` を送信；③ 修正前は無応答（または同時に登録された `/admin` が引数形式で受け取る）、修正後は `admin add` がトリガーされ `get_command_args()` が `["x"]` を返す。
+
+**回帰テスト**: `tests/unit/test_unit_command_subcommand.py`（最長前方一致/サブコマンドのみのトリガー/3 レベルネスト/大文字小文字区別の 2 モード/単一・マルチ token エイリアス/イベントペイロードの完全名/ライフサイクルフックの完全名/権限継承の 6 例/ACL glob 完全名/master/登録解除時のフォールバックとキャッシュ再計算）
+
+**重要度**: 🟡 中程度
+
+**種別**: イベントシステム
+
+---
+
+### [BUG-038] persist=False ランタイムバインディングが永続化書き込みに伴ってディスクに書き込まれ、モジュールのアンロード後にディスクから「復活」する
+
+**問題**: `scope.set(path, value, persist=False)` で書き込まれたランタイムバインディング（ドキュメントではディスクに書き込まず、プロセス再起動で無効化され、モジュールのアンロード時にクリーンアップされると約束されている）は、無関係な `persist=True` 書き込み（デフォルト値、例：モジュールの `set_module` / WebUI による設定保存）に伴い、差分としてユーザーの `config.toml` に書き込まれる；その後、モジュールのアンロードでランタイムバインディングが登録解除されても、次回の設定リロード時にそのバインディングはディスクから「復活」して引き続き有効となり、プロセス再起動後も存在し続ける——「ランタイムバインディングはディスクに書き込まれない」というセマンティクス契約に反しており、調査が極めて困難。
+
+**原因**: 根本原因の連鎖：`ScopeManager.set()` がまず値をメモリ上の設定ツリー `_data` に書き込み（ランタイムバインディングも同様に `_data` に直接書き込まれる）→ 永続化分岐が **`_data` ツリー全体**のディープコピースナップショットを作成し、`update_erispulse_config` に差分ディスク書き込みとして引き渡す → スナップショットに `persist=False` バインディングの値が混入する。`delete(persist=True)` も同根：`_data` の生きた参照（`parent` ノード）を遅延書き込みダーティキューに渡すため、遅延フラッシュ期間中にそのノード配下の兄弟キーへのランタイム変更がまとめてディスクに書き込まれ、生きた参照がダーティキューに滞留している期間は書き込みをまたぐ汚染ウィンドウが存在する。
+
+**影響バージョン**: 2.8.0-dev.2 - 2.9.0-dev.0
+
+**修正バージョン**: 2.9.0-dev.2
+
+**修正内容**: 永続化ベースライン `_persisted_tree`（設定ツリー再構築時にディスクからロード・検証済みのツリーでリフレッシュ）をディスク上の真実のミラーとして導入：`set(persist=True)` はベースライン上に今回の変更のみを適用してから差分を提出し、ランタイムバインディングは永続化コンテンツに決して入らない；「書き込み後の即時読み取り」はメモリ上の最終状態スナップショットで直接復元する方式に変更され、ベースラインを汚染しないよう `_apply_tree` 経由の再構築は行わない。`delete(persist=True)` も同一基準：ベースライン上に削除を適用し、ベースラインサブツリーのディープコピーを永続化層に引き渡す；`set_action` の全体置換セマンティクスは、同一基準で削除してから書き込み、旧ルールのキーは永続化コンテンツに残留しない。
+
+**修正日**: 2026/09/27
+
+**再現手順**: ① モジュール内で `scope.set("bots.p.debug_mode", {"blocked": ["X"]}, persist=False)` を実行；② 任意の永続化書き込みをトリガー（例：別のモジュールが `set_module` を呼び出し）；③ `config/config.toml` を開くと `debug_mode` が書き込まれているのが確認できる（修正前）；④ そのモジュールをアンロード（ランタイムバインディングが登録解除）した後、設定リロードをトリガーしても `scope.get("bots.p.debug_mode")` はバインド値を返し続ける。
+
+**回帰テスト**: `tests/unit/test_unit_scope.py::TestPersistBaseline`（ランタイムバインディングが無関係な永続化書き込みでディスクに書き込まれない / アンロード・登録解除後の設定リロードで復活しない / delete が提出するベースラインサブツリーにランタイムの兄弟キーを含まない / set_action の置換で残留キーを残さない / cache_size 設定の有効化）
+
+**重要度**: 🔴 重大
+
+**種別**: 設定システム
+
+---
+
+### [BUG-039] セクション全体書き込みとドット記法書き込みの共存時における読み書きの不整合（ドット記法の上書きが失われる）
+
+**問題**: 遅延フラッシュウィンドウ内で、同一セクションにセクション全体書き込み（`setConfig("Mod", {...})`、例：`BaseModule.cfg` による書き戻し）とドット記法書き込み（`setConfig("Mod.key", v)`、例：設定のホットリロード / テストツールによる上書き）が共存する場合に 2 つのバリアントがある：バリアント A（読み取りパス）——`getConfig("Mod")` によるセクション全体の読み取りが古いセクション全体の待機書き込みスナップショットを返し、より後のドット記法の上書きが見えない（ドット記法の読み取りパスは正常）；バリアント B（書き込みパス、より深刻）——ドット記法書き込みが先、セクション全体書き込みが後（テストツールが上書きを注入 → モジュールが `self.cfg = ...` で書き戻す、という一般的な順序）の場合、flush は挿入順にダーティキーを適用するため、セクション全体書き込みがセクション全体を置換し、**ドット記法の上書きがディスク上で永久に失われる**。本番環境では「設定のホットリロード + モジュールのランタイム書き戻し」の組み合わせだけでトリガー可能であり、テスト環境とは無関係（ErisPulse-DailyCard のテストフィードバックで発覚）。
+
+**原因**: `getConfig` の第①段階（`_dirty_keys` への精密なヒット）が先行して `return self._dirty_keys[key]` し、第④段階の `_dirty_overlay` による子孫のオーバーレイを完全にバイパスする；`_flush_config` は `_dirty_keys` の挿入順にダーティキーを適用するため、セクション全体書き込みがドット記法書き込みの後に続いた場合、ドット記法の値が全体置換される。さらに：第①段階はダーティキューの**元オブジェクトへの参照**を返すため、呼び出し元が返された dict をインプレースで変更すると、ディスク書き込み待ちの状態が直接変更されてしまう。
+
+**影響バージョン**: 2.6.0 - 2.9.0-dev.2
+
+**修正バージョン**: 2.9.0-dev.2
+
+**修正内容**: ダーティウィンドウ内を**特異性優先**のセマンティクスに統一——ドット記法（より具体的）の待機書き込み値をセクション全体（より広範囲）の待機書き込み値より優先させ、読み取りパスとディスク書き込みパスで同一基準とする：① `getConfig` が待機書き込みキーに精密にヒットした後も `_dirty_overlay` の子孫の待機書き込み値をオーバーレイ（非 dict 値の場合はオーバーレイ適用後のサブツリーを返し、③+④のスカラー系エッジケースと同一基準）；② `_flush_config` のダーティキーをパス深度順にソートして適用（セクション全体/祖先を先に、ドット記法/子孫を後に、安定ソートにより同一深度の書き込み順序を保持）。トレードオフ：同一ダーティウィンドウ内（約 5 秒）ではセクション全体の書き戻しが未解決のドット記法書き込みを上書きできない——読み取りパスの修正後は読み取り-変更-書き込みが自然にドット記法の値を引き継ぐため、実際の影響範囲は極めて小さい。③ 待機書き込み値に関わる `getConfig` の戻り値（精密ヒット / 祖先サブツリー / オーバーレイマージ）を `copy.deepcopy` による分離コピーに変更し、ダーティキューの内部参照をリークしない；ダーティキーが存在しない場合の高速パスと純粋なキャッシュ読み取りの動作は不変。
+
+**修正日**: 2026/09/28
+
+**再現手順**: ① `setConfig("FB.y", 1)`；② `setConfig("FB", {"z": 2})`；③ `force_save()`——修正前はディスクに `[FB] z = 2` しか残らない（y が失われる）、修正後は `{"y": 1, "z": 2}`；バリアント A：手順①②の後、ディスクに書き込まずに直接 `getConfig("FB")`——修正前は `y` を含まない、修正後は確認可能。
+
+**回帰テスト**: `tests/unit/test_unit_config.py::TestSectionAndDottedDirtyConsistency`（バリアント A の 2 つの挿入順序 / バリアント B のディスク書き込みと順序の非依存 / 3 層混合の存続 / 分離コピー / 祖先サブツリーの分離）
+
+**重要度**: 🟡 中程度
+
+**種別**: 設定システム
+
+### [BUG-040] プラットフォームがセグメント分割したメッセージのコマンド末尾引数がサイレントに失われる
+
+**問題**: プラットフォームが 1 つのメッセージを複数の text セグメントに分割した場合（例：`/kick` と引数の間に mention セグメントが挟まる、または IME による分割）、コマンドディスパッチは最初の text セグメントのみでマッチングを行う——`/アット @xxx 123` が引数なしの `アット` として解析され、`args=` を宣言したコマンドは直接「引数不足」エラーとなり、痕跡も一切残らない。
+**原因**: `command.py` のテキスト抽出ループが最初の `type=="text"` セグメントを取得した後に `break` し、残りのセグメント（すべての非テキストセグメントを含む）が破棄される。
+**影響バージョン**: 2.6.0（コマンドディスパッチ導入時）- 2.10.0
+**修正バージョン**: 2.10.1-dev.0
+**修正内容**: コマンドテキストを、セグメント順にすべての text セグメントを収集してスペースで連結する方式に変更；mention/画像が間に挟まってもコマンド全体の解析が失敗しなくなる；不正セグメントへのフォールトトレランスも併せて補完（`message` が None/文字列/非 dict セグメントの場合でもディスパッチャーを破綻させない）。
+**回帰テスト**: tests/unit/test_unit_command_multiseg.py
+
+**重要度**: 🟡 中程度
+**種別**: イベントシステム
+
+### [BUG-041] 拒否されたコマンドが alt_message でチェーン全体を再実行：返信の重複と権限関数の副作用の二重トリガー
+
+**問題**: アダプターの `alt_message` がメッセージセグメントのテキストと一致しない場合（例：alt に @テキスト接頭辞が含まれる）、ヒットしたコマンドが scope/ACL/master/permission によって拒否された後、ディスパッチャーが alt_message でチェーン全体を再実行する——ユーザーは 2 件の「権限不足」返信を受け取り、カスタム権限関数（データベース照会/カウントなどの副作用を伴うことが多い）が 2 回呼び出される。
+**原因**: 拒否パスの `return False` が「コマンド未ヒット」と同じ戻り値を共有しており、ディスパッチャーはこれに基づいて alt フォールバックを試行可能と判断する；しかしイベントは拒否前に既に要求（クレーム）されており、再実行では返信と権限判定だけが余分に実行される。
+**影響バージョン**: 2.9.0（ガバナンス/権限チェーンの整備時）- 2.10.0
+**修正バージョン**: 2.10.1-dev.0
+**修正内容**: テキスト処理を 3 状態契約（unmatched/consumed/rejected）に変更——登録済みコマンドにヒットした後は（拒否の有無にかかわらず）alt へのフォールバックを行わない；いずれのコマンドにもヒットしなかった場合のみ alt フォールバックを維持。
+**回帰テスト**: tests/unit/test_unit_command_multiseg.py::test_denied_command_not_rerun_via_alt
+
+**重要度**: 🟡 中程度
+**種別**: イベントシステム
+
+### [BUG-042] コマンドハンドラー内で登録された wait_reply が同一トリガーメッセージによって即座に消費される
+
+**問題**: コマンド実行本体の中で `wait_reply` を呼び出す / インタラクション待機を登録した場合、待機が同じコマンドメッセージによって即座にヒットされる——インタラクションフローの最初の質問がスキップされ、「ユーザーの返信」は実際にはコマンドテキストそのものである（質問への回答になっていない / データ汚染）。
+**原因**: `_handle_message` がメソッドの先頭と末尾でそれぞれ 1 回ずつ `interaction.resolve` を呼び出しており、コマンド実行後の末尾の 2 回目の resolve が実行期間中に新規登録された待機をヒットさせる；cmdpass が無効の場合、alt が欠落しているシナリオで空文字列と判定されそのまま通過するため、問題が悪化していた。
+**影響バージョン**: 2.8.0（インタラクションセッションシステム導入時）- 2.10.0
+**修正バージョン**: 2.10.1-dev.0
+**修正内容**: ディスパッチチェーンを単一の `interaction.resolve`（メソッド先頭）に集約し、末尾の 2 回目の呼び出しを削除；待機は統一して次のメッセージで消費される。
+**回帰テスト**: tests/unit/test_unit_command_multiseg.py::test_wait_reply_not_consumed_by_command_trigger
+
+**重要度**: 🟡 中程度
+**種別**: イベントシステム
+
+### [BUG-043] select() の同一キーでの複数パス待機において、後のパスが前者をサイレントにキャンセルする
+
+**問題**: `event.select()` の複数の期待条件が同一のセッションキーに導出される場合（同一 user で異なる pattern、複数の session 期待条件など）、後から登録されたパスが先に登録されたパスを「競合」としてキャンセルし、select はドキュメントが約束するタイムアウト時の `(None, None)` を返す代わりに `InteractionCancelled` を直接スローする。
+**原因**: 各パスが独立して `interaction.register` を呼び出しており、その相互排他セマンティクスが同一キーの古い待機に対して `REASON_CONFLICT` でキャンセルを送る；「同一 user の複数パスはイベントコピーにより独立して互いに競合しない」というコメントの主張は成立しない——コピーは user_id を変更するだけであり、同一 user の複数パスのキーは完全に同一である。
+**影響バージョン**: 2.9.0（select 導入時）- 2.10.0
+**修正バージョン**: 2.10.1-dev.0
+**修正内容**: select を集約待機方式に変更——すべての期待条件をカスタム matcher の単一エントリーに統合（キーセットとして登録、同一 future を共有）、いずれかのパスがヒットした時点で対応するインデックスを返す；同一キーの複数パスが自然に共存可能。
+**回帰テスト**: tests/unit/test_unit_command_multiseg.py::test_select_same_user_multi_branch
+
+**重要度**: 🟡 中程度
+**種別**: イベントシステム
+
+### [BUG-044] BaseConverter.at() が OB11 のレガシーな "at" セグメントを生成し、フレームワーク全体の mention 判定で認識されない
+
+**問題**: アダプターが `BaseConverter.at()` で着信イベントを組み立てる際、`must_at_bot` / `has_mention()` / `on_at_message` がすべて検出できなくなる——@ボットコマンドがグループ内でサイレントに無効化される。
+**原因**: `at()` は `{"type": "at"}`（OB11 形式）を生成するが、フレームワークのすべての mention 判定および構築側（MessageBuilder/送信デコレーター）は OB12 の `"mention"` であり、2 つの形式が並存し警告は一切ない。
+**影響バージョン**: 導入バージョンは 2.5.0 以降 - 2.10.0
+**修正バージョン**: 2.10.1-dev.0
+**修正内容**: `at()` は `{"type": "mention", "data": {"user_id": ...}}` を生成するように変更（メソッド名はエイリアスとして維持、新たに `mention` エイリアスを追加）。
+**回帰テスト**: tests/unit/test_unit_command_multiseg.py::test_converter_at_produces_mention
+
+**重要度**: 🟡 中程度
+**種別**: アダプター
+
+### [BUG-045] alt_message を持たないアダプターでインタラクションプリミティブが永久にタイムアウトし、コマンドのパススルーが機能しない
+
+**問題**: アダプターが message セグメントのみを設定し `alt_message` を設定しない場合：`confirm` / `choose` / `collect` がユーザーの平文返信（例：「はい」）に対して永久に待機する；待機期間中の登録済みコマンドが永遠にパススルー実行できない；`Event.get_text()` が空文字列を返し、スキャフォールドのサンプルがサイレントに無効化される。
+**原因**: 上記のパスがすべて `alt_message` 文字列を直接取得し、メッセージセグメントへのフォールバックがない——フレームワークの「alt_message はアダプターのオプションフィールド」という契約の下では、セグメントのみの設定は正当な形式である。
+**影響バージョン**: 各インタラクションプリミティブの導入バージョン - 2.10.0
+**修正バージョン**: 2.10.1-dev.0
+**修正内容**: `alt_message` 優先 + text セグメントフォールバックの `extract_text` 基準に統一（インタラクションプリミティブの 5 か所の値取得/検証ポイント、cmdpass 判定、`Event.get_text()/get_message_text()`）。
+**回帰テスト**: tests/unit/test_unit_command_multiseg.py
+
+**重要度**: 🟡 中程度
+**種別**: イベントシステム
+
+### [BUG-046] 宣言的設定テンプレートのネストされたサブテーブルヘッダーがトップレベルテーブルにドリフトする
+
+**問題**: ネスト dataclass で宣言された設定（ConfigClass 内のネスト dataclass フィールド）の初回設定テンプレート生成時に、サブテーブルヘッダー `[Nested]` がコンポーネントセクション内ではなくファイルのトップレベルに配置される——アダプターが `cfg.ネストフィールド` を読み取っても値が取得できない；`config.full.example` でも同様に位置ずれが発生する。
+**原因**: テンプレートジェネレーターがネスト dataclass に対して相対テーブルヘッダー（`[Nested]`）をレンダリングするが、TOML のテーブルヘッダーのセマンティクスはルートから算出する絶対パスである；`setConfigTemplate` の旧実装は解析済みのテーブルオブジェクトをコンポーネントセクションに移動し、`full.example` はテキストを直接連結しており、どちらのパスも相対テーブルヘッダーをコンポーネントパスの下に再アンカーしていなかった。
+**影響バージョン**: 2.10.0 - 2.10.1（ネスト dataclass テンプレートレンダリングはこのバージョンで導入）
+**修正バージョン**: 2.10.2
+**修正内容**: `setConfigTemplate` はテンプレートから解析されたサブテーブルパスの集合に基づいてヘッダーを精密に再アンカー（`[Nested]` → `[コンポーネント名.Nested]`）；`config.full.example` の生成側は `_prefix` を渡すように変更し、絶対テーブルヘッダーを直接生成。
+**回帰テスト**: tests/unit/test_unit_config.py::TestTomlclassEngineMigration::test_template_write_idempotent_and_nested_anchored
+
+**重要度**: 🟡 中程度
+**種別**: 設定システム / アダプター
+
+---
+
+### [BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを見落とす
+
+**問題**: `sdk.module.services()` の全量ディレクトリが未インスタンス化（遅延ロード）モジュールを一律にスキップする——モジュールが `meta.services` を宣言していてもディレクトリに表示されず、ディレクトリを発見エントリーポイントとする利用側（AI エージェント、help モジュールなど）がそのサービスを発見できない；単一モジュールの精密クエリ `services("Name")` とトポロジー `get_topology()` は影響を受けない。
+**原因**: `ModuleManager.services()` の全量列挙分岐が、契約キャッシュを持たない（未ロードの）モジュールに対して**その場で契約を解析した後**も無条件に `continue` する——本来の意図は「サービスを宣言していないモジュール」をスキップすることだったが、実際には未ロードモジュール全体をスキップしていた；ロード済みモジュールはロード時に契約キャッシュに書き込まれるため影響を受けない。
+**影響バージョン**: 2.9.0 - 2.10.1（モジュール RPC とサービスディレクトリは 2.9.0 で導入）
+**修正バージョン**: 2.10.2
+**修正内容**: 無条件スキップを削除し、「解析結果が空の場合のみスキップする」で統一的に判定；未ロードモジュールはその場で `get_meta().services` を解析（`module.call()` のホワイトリストと同一基準）、サービスを宣言しているモジュールは従来どおりディレクトリに含まれる。
+**回帰テスト**: tests/unit/test_unit_module_rpc.py::TestServicesDirectory::test_lazy_declared_module_in_full_directory
+
+**重要度**: 🟡 中程度
+**種別**: ロードシステム
+
+### [BUG-048] 会話受信トレイクエリ API がメッセージのアトリビューションを喪失する（sender とイベントメタデータ）
+
+**問題**: 受信トレイの全クエリインターフェース（`get()` / `get_by_trace()` / `event.history()`）が返すレコードには `role/text/ts/event_id` のみが含まれる——ストレージ層に既に存在する `sender` 列がクエリ層で破棄されており、グループチャットの再生時に異なるメンバーのメッセージが API 層で区別できない（AI がメンバー B を前のターンの会話相手 A と誤認）；着信レコードは同時に、イベント時点のニックネームなどのメタデータもアーカイブしておらず、後からの照会で得られるのは「現在のニックネーム」であり「当時のニックネーム」ではない。
+**原因**: 2.8.0 で `sender` 列を追加した際のコメントには「再生時にメッセージの出所を復元するため」と明記されていたが、Select と戻り値の構築のいずれもそれを運んでいなかった（実装の漏れ）；メタデータのアーカイブは設計すらされていなかった——`append()` に meta チャネルがなく、テーブル構造に対応する列も存在しない。
+**影響バージョン**: 2.8.0 - 2.11.0（sender 列は 2.8.0 で導入）
+**修正バージョン**: 2.11.1-dev.0
+**修正内容**: `meta` 列を新設（ホワイトリスト契約：着信は nickname/self_id/sub_type/message_id、発信は送信コンテキストと module；旧テーブルは自動マイグレーション、バックエンドが ALTER をサポートしない場合はサイレントに `{}` へフォールバック）；`append()` に `meta` パラメータを追加し、メモリバッファから一括ディスク書き込みまで全体を貫通；`get` / `recent` / `get_by_trace` / `event.history` は統一して `sender` + `meta` を返す（JSON 損壊時は `{}` へフォールバック）。
+**関連**: #467（同バッチ #468 / #469 / #470）
+**回帰テスト**: tests/unit/test_unit_transcript_attribution.py::TestSenderMetaReadback / TestMetaMigration
+
+**重要度**: 🟡 中程度
+**種別**: 会話受信トレイ / ストレージシステム
+
+### [BUG-049] 着信 bot 自身送信メッセージのエコーが user として記録され、受信トレイのアトリビューションを汚染する
+
+**問題**: メッセージエコーを有効化しているプラットフォーム/プロトコル側（OneBot v11 の `report-self-message`、Telegram の outgoing など）が bot 自身の送信メッセージを message イベントとして報告してくる際、受信トレイは一律に `role="user"` と記録する——ボットの自発言と実際のユーザー入力が区別できず、下流モジュールが bot の自発言をユーザー入力として処理する（AI がそれに基づいて「ユーザー」の発言に応答してしまう）、role の統計が歪む。
+**原因**: 着信自動記録ポイント（`Core/adapter.py`）がすべての `event_type == "message"` に対して無条件に `role="user"` と記録しており、`self` フィールドを消費して bot エコー判定を行っていない——しかし直後の bot 自動検出ロジックは既に同一フィールドを消費している（記録時点で利用可能だったが、記録ロジックで使うのを漏らしていた）。
+**影響バージョン**: 2.8.0 - 2.11.0（受信トレイ自動記録は 2.8.0 で導入）
+**修正バージョン**: 2.11.1-dev.0
+**修正内容**: 記録前に `self.user_id == user_id` でエコーを識別し、新設定 `ErisPulse.transcript.self_echo` に従い 3 モードで処理：`"bot"`（デフォルト）は `role="bot"` + `sender=self_id` + `meta.self_echo=true` と記録；`"skip"` は記録しない；`"user"` は旧動作を維持。非エコープラットフォーム（self が欠落または不一致）ではフィールド単位で動作は不変。
+**関連**: #470（#467 の meta 列による self_echo マーカーの保持に依存）
+**回帰テスト**: tests/unit/test_unit_transcript_attribution.py::TestSelfEcho
+
+**重要度**: 🟡 中程度
+**種別**: アダプター / 会話受信トレイ

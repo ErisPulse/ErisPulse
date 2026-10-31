@@ -1,0 +1,362 @@
+# 部署指南
+
+> [!TIP]
+> **什么时候需要读这篇**：机器人要长期挂着跑时——Docker 部署、systemd / Supervisor 进程守护、反向代理与 SSL、备份与升级都在这里。本地开发调试阶段不需要则跳过。
+
+机器人开发完只是开始。这篇覆盖把它稳定挂在服务器上所需的三种部署方式（Docker / systemd / Supervisor），以及反向代理、安全加固与备份。
+
+## Docker 部署（推荐）
+
+ErisPulse 提供官方 Docker 镜像，内置 ErisPulse 框架和 Dashboard 管理面板，支持 `linux/amd64` 和 `linux/arm64` 架构。
+
+### 快速启动
+
+```bash
+# 拉取镜像
+docker pull erispulse/erispulse:latest
+
+# 下载 docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
+
+# 设置 Dashboard 登录令牌并启动
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
+
+启动后访问 `http://localhost:8000/Dashboard`，使用设置的令牌作为密码登录。
+
+### 国内镜像加速
+
+如果 Docker Hub 无法访问，可以使用 GitHub Container Registry 拉取镜像：
+
+```bash
+docker pull ghcr.io/erispulse/erispulse:latest
+```
+
+使用 ghcr.io 镜像时，需要修改 `docker-compose.yml` 中的 image：
+
+```yaml
+services:
+  erispulse:
+    image: ghcr.io/erispulse/erispulse:latest
+```
+
+### docker-compose.yml
+
+```yaml
+services:
+  erispulse:
+    image: erispulse/erispulse:${ERISPULSE_TAG:-latest}
+    container_name: ${CONTAINER_NAME:-erispulse}
+    ports:
+      - "${ERISPULSE_PORT:-8000}:8000"
+    volumes:
+      - ./config:/app/config
+      # 持久化 Python 包目录
+      - ./config/.packages:/usr/local/lib/python3.13/site-packages
+    environment:
+      - TZ=${TZ:-Asia/Shanghai}
+      - LANG=${LANG:-en_US.UTF-8}
+      - ERISPULSE_LANG=${ERISPULSE_LANG:-}
+      - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
+    init: true
+    # 优雅停机由框架内信号处理完成（SIGTERM），此处仅控制宽限时长
+    stop_grace_period: 30s
+    restart: on-failure:5
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ping')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+```
+
+> 以上与仓库根 [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml) 保持一致（仓库版本头部另有镜像加速与环境变量说明注释），推荐直接下载使用。
+
+### 环境变量
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |
+| `ERISPULSE_TAG` | `latest` | 镜像 tag（如需锁定版本可设为具体版本号） |
+| `CONTAINER_NAME` | `erispulse` | 容器名（多实例部署时区分实例） |
+| `ERISPULSE_DASHBOARD_TOKEN` | 自动生成 | Dashboard 登录令牌（强烈建议设置） |
+| `TZ` | `Asia/Shanghai` | 时区 |
+| `LANG` | `en_US.UTF-8` | 系统语言，自动检测启动界面语言 |
+| `ERISPULSE_LANG` | 空 | 强制启动界面语言：`zh` / `zh_TW` / `en` / `ja` / `ru`（覆盖 `LANG`） |
+
+### 数据持久化
+
+`./config` 目录挂载了配置文件和数据库，包含：
+
+- `config/config.toml` — 配置文件
+- `config/config.db` — SQLite 存储数据库
+- `config/.packages` — Python site-packages 持久化卷，保存框架、适配器和已安装模块（首次启动时由入口点从镜像内置备份自动初始化，之后的模块安装与框架热更新均写入此目录）
+
+> **框架升级（含 pre/rc）与镜像自愈**：入口点会在每次容器启动时做核心包完整性自检，
+> 损坏时按"用户已安装版本优先"原则修复——持久卷内显式安装/升级的版本
+> （如 Dashboard 安装的 pre 版本）会从 PyPI **重装同版本**，绝不静默回退到
+> 镜像内置版本。因此 Dashboard 升级框架后，任意次容器重启都应保持目标版本。
+
+## Dashboard 管理面板
+
+ErisPulse Docker 镜像内置 Dashboard 模块，提供 Web 可视化管理界面。
+
+### 功能概览
+
+| 功能 | 说明 |
+|------|------|
+| 仪表盘 | 系统概览、CPU/内存监控、运行时长、事件统计 |
+| 机器人管理 | 查看各平台机器人在线状态和信息 |
+| 事件查看 | 实时事件流，支持按类型和平台过滤 |
+| 日志查看 | 按模块和级别过滤的日志查看器 |
+| 模块管理 | 查看、加载、卸载已安装的模块和适配器 |
+| 模块商店 | 浏览远程可用包并一键安装 |
+| 配置编辑 | 在线编辑 `config.toml` |
+| 存储管理 | 浏览和编辑 Key-Value 存储数据 |
+| 备份 | 导出/导入配置和存储数据 |
+| 审计日志 | 记录所有管理操作 |
+
+### 通过 Dashboard 安装模块
+
+Dashboard 集成了模块商店功能，你可以：
+
+1. **从商店安装**：浏览远程模块列表，选择需要的模块一键安装
+2. **上传本地包**：直接上传 `.whl` 或 `.zip` 文件进行安装，方便测试个人开发的模块
+
+> **模块开发者的快速测试流程**：使用 Docker 部署后，在 Dashboard 中通过「上传本地包」功能直接上传你构建的 `.whl` 文件进行测试，无需手动操作容器。
+
+## 进程监督与硬重启
+
+ErisPulse 的硬重启（`sdk.hard_restart()`）依赖**外部监督者**在进程退出码为 42 时重新拉起进程——SDK 自己不拉起新进程。生产环境务必配置监督者，否则硬重启后进程不会自动恢复：
+
+- Docker：官方 compose 使用 `restart: on-failure:5`——非零退出码即重启（覆盖硬重启的退出码 42），连续 5 次上限防死循环；需要不限次数可自行改为 `unless-stopped`
+- systemd：`Restart=on-failure` + `RestartForceExitStatus=42`
+- PM2 / supervisord：将 42 加入可重启退出码
+- 纯 Python 自定义监督者：循环 `Popen` + 检测 `returncode == 42`
+
+各监督者的完整配置示例与退出码 42 契约说明见 [启动流程 → 监督者指南](../advanced/startup.md#监督者指南)。
+
+## 健康检查
+
+SDK 内置健康检查端点：
+
+```bash
+# 健康检查
+curl http://localhost:8000/health
+```
+
+官方 docker-compose.yml 已内置以下健康检查；自写 compose 文件时可参考：
+
+```yaml
+services:
+  erispulse:
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ping')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+```
+
+## 反向代理
+
+如果需要通过 Nginx 等反向代理暴露 Dashboard：
+
+```nginx
+server {
+    listen 80;
+    server_name bot.example.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # WebSocket 支持（Dashboard 实时事件流需要）
+    location /Dashboard/ws {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+
+SSL 可使用 Let's Encrypt：
+
+```bash
+sudo certbot --nginx -d bot.example.com
+```
+
+## 手动部署（pip）
+
+如果不使用 Docker，也可以手动部署。
+
+### 生产环境配置
+
+```toml
+# config/config.toml
+
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+log_files = ["app.log"]
+memory_limit = 5000
+
+[ErisPulse.framework]
+enable_lazy_loading = true
+```
+
+### systemd (Linux)
+
+创建 `/etc/systemd/system/erispulse-bot.service`：
+
+```ini
+[Unit]
+Description=ErisPulse Bot
+After=network.target
+
+[Service]
+Type=simple
+User=bot
+WorkingDirectory=/opt/erispulse-bot
+ExecStart=/opt/erispulse-bot/venv/bin/epsdk run main.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+管理：
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl start erispulse-bot
+sudo systemctl enable erispulse-bot
+sudo journalctl -u erispulse-bot -f
+```
+
+### Supervisor
+
+创建 `/etc/supervisor/conf.d/erispulse-bot.conf`：
+
+```ini
+[program:erispulse-bot]
+command=/opt/erispulse-bot/venv/bin/python -m ErisPulse run main.py
+directory=/opt/erispulse-bot
+user=bot
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/erispulse-bot/err.log
+stdout_logfile=/var/log/erispulse-bot/out.log
+```
+
+### uv tool 分离部署（CLI 与项目环境隔离）
+
+`uv tool install` 将 `epsdk` 安装为**独立的工具环境**，CLI 自身与项目依赖彻底隔离：升级 CLI 不会触碰项目 `.venv`，项目依赖变动也不会影响 CLI。
+
+```bash
+# 1. 全局安装 CLI（自动暴露 epsdk / ep 命令）
+uv tool install ErisPulse
+
+# 2. 项目内只放机器人依赖（.venv 由 uv 管理）
+cd /opt/erispulse-bot
+uv add erispulse ErisPulse-Adapter-Yunhu   # 按需追加适配器
+
+# 3. 用 CLI 运行（自动探测并使用项目 .venv 中的解释器）
+epsdk run main.py
+```
+
+行为要点：
+
+- `epsdk run` 的目标解释器解析顺序：`ERISPULSE_PYTHON` 环境变量 → 项目 `.venv` → 当前解释器；工具环境本身只承载 CLI，组件（适配器/模块）应装进项目 `.venv`
+- `epsdk install` / `uninstall` / `upgrade` / `list` 同样作用于项目 `.venv`，不会污染工具环境
+- 升级 CLI：`uv tool upgrade ErisPulse`（或直接 `epsdk self-update`，uv tool 环境下自动改走 `uv tool upgrade`）；升级项目依赖：在项目目录执行 `uv sync` / `uv add`，两者互不影响
+- 服务器场景下工具环境由 uv 统一管理（`uv tool list` 查看、`uv tool upgrade --all` 批量升级），无需手工维护全局 pip 包
+- 若在无项目的目录用 `uv run epsdk ...` 执行，会落入**一次性隔离环境**（安装的组件不持久化）；服务器上请始终用 `epsdk` 直接调用，或先 `cd` 进项目目录
+
+## 安全建议
+
+1. **设置 Dashboard 令牌**：使用强随机令牌，不要使用默认值
+2. **不要暴露端口到公网**：除非使用反向代理 + SSL，否则将 Dashboard 端口限制在内网
+3. **保护数据目录**：`config/` 目录包含配置和数据库，设置适当的文件权限
+4. **定期更新**：使用 `epsdk self-update` 或拉取最新 Docker 镜像
+5. **不要以 root 运行**：手动部署时创建专用用户
+6. **使用 Docker 重启策略**：官方 compose 的 `restart: on-failure:5` 已确保异常退出（含硬重启退出码 42）后自动重启
+
+## 多实例部署
+
+运行多个机器人实例时：
+
+1. 每个实例使用独立的项目目录和 `docker-compose.yml`
+2. 使用不同的端口号：`ERISPULSE_PORT=8001`
+3. 使用不同的容器名：`container_name: erispulse-bot2`
+
+## 更新与维护
+
+### Docker 方式
+
+```bash
+# 拉取最新镜像
+docker compose pull
+
+# 重启使用新镜像
+docker compose up -d
+```
+
+### pip 方式
+
+```bash
+epsdk self-update
+epsdk upgrade
+```
+
+### uv tool 方式
+
+```bash
+# 升级 CLI 工具环境
+uv tool upgrade ErisPulse
+
+# 升级项目依赖（项目目录内执行）
+uv sync
+```
+
+### 运行时热重载服务器配置
+
+修改监听地址 / 端口 / SSL 证书后无需重启进程，在任意协程中调用 `router.reload()`：
+
+```python
+await sdk.router.reload(port=9000)                                # 换端口
+await sdk.router.reload(ssl_cert=new_pem, ssl_key=new_key)        # 热更换证书（证书续期场景）
+await sdk.router.reload(host="0.0.0.0", port=9000)                # 缺省参数沿用当前配置
+```
+
+- 复用同一 FastAPI 应用，模块注册的 HTTP / WebSocket / SSE 路由全部保留
+- 先验证新配置（证书可构建、端口可用）再切换；失败时以旧配置恢复服务并返回 `False`，
+  保证返回 `False` = 旧服务保持可用
+- 服务器未运行时返回 `False`（首次启动请使用 `sdk.router.start()`）
+
+### 备份
+
+定期备份 `config/` 目录：
+
+```bash
+# Docker 部署
+tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
+
+# 或在 Dashboard 中使用「备份」功能导出
+```
+
+## 下一步
+
+- **部署完想可视化管理**：装 [ErisPulse-Dashboard](../ecosystem/dashboard.md)，浏览器里管模块、看日志、改配置
+- **怀疑环境有问题**：先跑 `epsdk doctor` 输出健康报告，见 [CLI 命令参考 · doctor](cli-reference.md#doctor)
+- **要调框架与组件配置**：查 [配置文件说明](configuration.md)，环境变量覆盖尤其适合容器部署

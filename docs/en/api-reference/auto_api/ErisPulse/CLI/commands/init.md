@@ -1,0 +1,152 @@
+# `ErisPulse.CLI.commands.init` 模块
+
+---
+
+## 模块概述
+
+
+Init 命令实现
+
+交互式初始化 ErisPulse 项目
+
+---
+
+## 函数列表
+
+
+### `_validate_project_name(name: str) -> bool`
+
+项目名称校验：仅允许字母、数字、下划线、连字符和点号
+
+---
+
+
+### `_validate_project_path(value: str) -> bool`
+
+项目路径校验：末段（项目名）须为合法名称，父目录部分不限制
+
+---
+
+
+## 类列表
+
+
+### `class InitCommand(Command)`
+
+init 命令
+
+交互式初始化 ErisPulse 项目
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化 InitCommand 实例，创建包管理器
+
+---
+
+
+##### `_init_project(project_name: str, adapter_list: list | None = None, target_dir: Path | None = None, create_venv: bool = True, git_init: bool = False, in_current_dir: bool = False) -> bool`
+
+创建项目目录结构并生成配置文件、依赖清单与虚拟环境
+
+- **project_name** (`str`): 项目名称
+- **adapter_list** (`list`): 适配器名称列表 (默认: None)
+- **target_dir** (`Path | None`): 项目父目录 (默认: None，即当前目录)
+- **create_venv** (`bool`): 是否创建虚拟环境并安装依赖 (默认: True)
+- **git_init** (`bool`): 是否初始化 git 仓库 (默认: False)
+- **in_current_dir** (`bool`): 是否在当前目录初始化 (默认: False)
+
+**返回值** (`bool`): 初始化成功返回 True，失败返回 False
+
+---
+
+
+##### `_get_full_example_config(adapter_list = None)`（staticmethod）
+
+生成完整的配置示例文本
+
+生成逻辑收归 ``ErisPulse.runtime.example_config``（框架运行与 CLI 共用：
+含自维护首行标记、静态框架段与已安装组件声明式段）。此处仅保留调用入口。
+
+- **adapter_list** (`list`): 适配器名称列表 (默认: None)
+
+**返回值** (`str`): 完整配置示例字符串
+
+---
+
+
+##### `async _fetch_available_adapters()`
+
+获取可用的适配器列表
+
+**返回值** (`dict`): 适配器名称到描述的映射，获取失败时返回内置默认列表
+
+---
+
+
+##### `_parse_adapter_preset(raw) -> list`（staticmethod）
+
+解析 ``--adapter`` 参数为去重的适配器名列表
+
+支持重复传参与逗号分隔两种写法（``-a yunhu -a telegram`` 等价于
+``-a yunhu,telegram``）；空片段与重复名自动剔除，保持首现顺序。
+
+- **raw** (`list|None`): argparse append 收集到的原始值列表
+
+**返回值** (`list`): 去重后的适配器名称列表（无传参时为空列表）
+
+---
+
+
+##### `_apply_adapter_preset(project_path: Path, adapter_names: list)`
+
+应用 ``--adapter`` 预选：启用状态开关并安装到项目环境
+
+显式传参视为同意安装，不再询问；安装后的配置向导仅在可交互
+环境衔接（``_install_adapters`` 内部已守卫）。
+
+- **project_path** (`Path`): 项目路径（配置文件重定向目标）
+- **adapter_names** (`list`): 适配器名称列表（去重、非空）
+
+---
+
+
+##### `_interactive_init(project_name: str | None = None, force: bool = False, here: bool = False, target_dir: Path | None = None, create_venv: bool = True, adapter_preset: list | None = None) -> bool`
+
+交互式初始化项目，引导用户配置项目位置及基本参数
+
+- **project_name** (`str`): 项目名称 (默认: None)
+- **force** (`bool`): 是否强制覆盖已存在目录 (默认: False)
+- **here** (`bool`): 是否在当前目录初始化 (默认: False)
+- **target_dir** (`Path | None`): 项目父目录 (默认: None)
+- **create_venv** (`bool`): 是否创建虚拟环境并安装依赖 (默认: True)
+- **adapter_preset** (`list`): ``--adapter`` 预选的适配器列表，传入时
+
+    跳过适配器问询与选择 (默认: None)
+**返回值** (`bool`): 初始化成功返回 True，失败返回 False
+
+---
+
+
+##### `_configure_adapters(project_path: Path)`
+
+交互式配置适配器
+
+- **project_path** (`Path`): 项目路径
+
+---
+
+
+##### `_install_adapters(adapter_names: list[str])`
+
+安装选中的适配器
+
+安装成功后衔接交互式配置向导（写入新项目的 config.toml）
+
+- **adapter_names** (`list`): 适配器简称列表
+
+---
+

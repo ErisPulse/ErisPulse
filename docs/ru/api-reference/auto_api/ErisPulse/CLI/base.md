@@ -1,0 +1,59 @@
+# `ErisPulse.CLI.base` 模块
+
+---
+
+## 模块概述
+
+
+CLI 命令基类
+
+定义所有命令的统一接口
+
+---
+
+## 类列表
+
+
+### `class Command(ABC)`
+
+命令基类
+
+所有 CLI 命令都应继承此类并实现抽象方法
+
+> **提示**
+> 1. 每个命令类必须实现 add_arguments 和 execute 方法
+> 2. name 和 description 为类属性，必须在子类中定义
+> 3. aliases 为可选类属性，用于定义命令的简化形式
+> 4. category 为可选类属性，决定主帮助分组表中的归类
+> 5. execute 方法接收解析后的 args 对象
+
+
+#### 方法列表
+
+
+##### `add_arguments(parser: ArgumentParser) -> None`
+
+添加命令参数
+
+- **parser** (`ArgumentParser`): 实例
+
+---
+
+
+##### `execute(args: Namespace) -> None`
+
+执行命令
+
+- **args**: 解析后的参数对象
+
+---
+
+
+##### `help -> str`（property）
+
+获取帮助信息
+
+**返回值**: 命令描述
+
+---
+

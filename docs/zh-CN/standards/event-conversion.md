@@ -1,0 +1,585 @@
+# 适配器标准化转换规范
+
+> [!TIP]
+> **什么时候需要读这篇**：当你在适配器中把平台原生事件转换为 OneBot12 标准事件——确认必须字段、消息段结构、扩展字段命名（`{platform}_` 前缀）、会话类型推断时对照本文。不需要则跳过。
+
+## 1. 核心原则
+1. 严格兼容：所有标准字段必须完全遵循OneBot12规范
+2. 明确扩展：平台特有功能必须添加 {platform}_ 前缀（如 yunhu_form）
+3. 数据完整：原始事件数据必须保留在 {platform}_raw 字段中，原始事件类型必须保留在 {platform}_raw_type 字段中
+4. 时间统一：所有时间戳必须转换为10位Unix时间戳（秒级）
+5. 平台统一：platform项命名必须与你在ErisPulse中注册的名称/别称一致
+
+## 2. 标准字段要求
+
+### 2.1 必须字段
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | string | 事件唯一标识符 |
+| time | integer | Unix时间戳（秒级） |
+| type | string | 事件类型 |
+| detail_type | string | 事件详细类型（详见[会话类型标准](session-types.md)） |
+| platform | string | 平台名称 |
+| self | object | 机器人自身信息 |
+| self.platform | string | 平台名称 |
+| self.user_id | string | 机器人用户ID |
+
+**detail_type 规范**：
+- 必须使用 ErisPulse 标准会话类型（详见 [会话类型标准](session-types.md)）
+- 支持的类型：`private`, `group`, `user`, `channel`, `guild`, `thread`
+- 适配器负责将平台原生类型映射到标准类型
+
+### 2.2 消息事件字段
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| message | array | 消息段数组 |
+| alt_message | string | 消息段备用文本 |
+| user_id | string | 用户ID |
+| user_nickname | string | 用户昵称（可选） |
+
+### 2.3 通知事件字段
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| user_id | string | 用户ID |
+| user_nickname | string | 用户昵称（可选） |
+| operator_id | string | 操作者ID（可选） |
+
+### 2.4 请求事件字段
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| user_id | string | 用户ID |
+| user_nickname | string | 用户昵称（可选） |
+| comment | string | 请求附言（可选） |
+| request_id | string | 请求标识符（**强烈推荐**，用于同意/拒绝请求操作） |
+
+**`request_id` 字段说明**：
+- `request_id` 是请求事件的唯一操作标识符，用于通过 `HandleRequest` DSL 执行同意/拒绝操作
+- 适配器在转换请求事件时，应将平台原生的请求标识映射到此字段
+- 如果平台本身没有请求ID，适配器应生成一个唯一标识（如基于时间戳+用户ID的哈希）
+- 当 `request_id` 缺失时，`event.approve()` / `event.reject()` 将抛出 `ValueError`
+
+## 3. 事件格式示例
+
+### 3.1 消息事件 (message)
+```json
+{
+  "id": "1234567890",
+  "time": 1752241223,
+  "type": "message",
+  "detail_type": "group",
+  "platform": "yunhu",
+  "self": {
+    "platform": "yunhu",
+    "user_id": "bot_123"
+  },
+  "message": [
+    {
+      "type": "text",
+      "data": {
+        "text": "抽奖 超级大奖"
+      }
+    }
+  ],
+  "alt_message": "抽奖 超级大奖",
+  "user_id": "user_456",
+  "user_nickname": "YingXinche",
+  "group_id": "group_789",
+  "yunhu_raw": {...},
+  "yunhu_raw_type": "message.receive.normal",
+  "yunhu_command": {
+    "name": "抽奖",
+    "args": "超级大奖"
+  }
+}
+```
+
+### 3.2 通知事件 (notice)
+```json
+{
+  "id": "1234567891",
+  "time": 1752241224,
+  "type": "notice",
+  "detail_type": "group_member_increase",
+  "platform": "yunhu",
+  "self": {
+    "platform": "yunhu",
+    "user_id": "bot_123"
+  },
+  "user_id": "user_456",
+  "user_nickname": "YingXinche",
+  "group_id": "group_789",
+  "operator_id": "",
+  "yunhu_raw": {...},
+  "yunhu_raw_type": "bot.followed"
+}
+```
+
+### 3.3 请求事件 (request)
+```json
+{
+  "id": "1234567892",
+  "time": 1752241225,
+  "type": "request",
+  "detail_type": "friend",
+  "platform": "onebot11",
+  "self": {
+    "platform": "onebot11",
+    "user_id": "bot_123"
+  },
+  "user_id": "user_456",
+  "user_nickname": "YingXinche",
+  "comment": "请加好友",
+  "request_id": "req_abc123",
+  "onebot11_raw": {...},
+  "onebot11_raw_type": "request"
+}
+```
+
+## 4. 消息段标准
+
+### 4.1 标准消息段
+
+标准消息段**不需要**平台前缀。
+
+| 类型 | 说明 | data 字段 |
+|------|------|----------|
+| `text` | 纯文本 | `text: str` |
+| `image` | 图片 | `file`, `url: str` |
+| `audio` | 音频 | `file`, `url: str` |
+| `video` | 视频 | `file`, `url: str` |
+| `file` | 文件 | `file`, `url: str`, `filename: str` |
+| `mention` | @用户 | `user_id: str`, `user_name: str` |
+| `reply` | 回复 | `message_id: str` |
+| `face` | 表情 | `id: str` |
+| `location` | 位置 | `latitude: float`, `longitude: float` |
+| `keyboard` | 按钮/内联键盘 | `rows: list[list[button]]`（见 4.1.1） |
+
+**媒体段 `file` 字段格式**（发送方向，`image` / `audio` / `video` / `file` 通用）：
+
+| 形态 | 示例 | 适配器要求 |
+|------|------|-----------|
+| HTTP(S) URL | `https://example.com/a.png` | **必须**接受 |
+| 本地文件路径 | `/tmp/a.png`、`C:\tmp\a.png` | **必须**接受 |
+| 二进制数据 | `bytes` | **必须**接受 |
+| `file://` URI / Base64 / Data URI | `file:///tmp/a.png`、`data:image/png;base64,...` | **应当**接受 |
+
+> 完整的媒体发送协议（形态判定顺序、文件名推导、能力降级阶梯）见
+> [发送方法规范 §2.1](send-method-spec.md#21-媒体消息发送协议image--voice--video--file)。
+
+**字段方向语义**：
+
+- `file`：**发送方向**的内容来源（上述形态）；**接收方向**由适配器填平台可取回的形态
+  （通常为可下载 URL，或 `get_file` 类动作可用的资源标识）
+- `url`：接收方向的平台回链（适配器转换平台事件时尽可能填入，供模块直接取用）；发送方向可不填
+- `filename`：`file` 段的文件名（发送方向可选，缺省时适配器按
+  [发送方法规范 §2.1.3](send-method-spec.md) 的推导顺序生成；接收方向**应当**填平台原始文件名）
+
+```json
+{
+  "type": "text",
+  "data": {
+    "text": "Hello World"
+  }
+}
+```
+
+### 4.1.1 keyboard 按钮/内联键盘段（跨平台通用）
+
+按钮/内联键盘在多个平台（Telegram / 云湖 / QQBot / Kook / Discord 等）均有对应能力，
+属于**跨平台通用概念**，因此作为标准消息段（无平台前缀）。适配器应将标准段转换为
+平台原生结构；平台原生扩展段（如 `telegram_inline_keyboard`）继续保留透传。
+
+```json
+{
+  "type": "keyboard",
+  "data": {
+    "rows": [
+      [
+        {"label": "选项A", "type": "callback", "data": "vote:A"},
+        {"label": "官网",   "type": "link",     "data": "https://example.com"}
+      ]
+    ]
+  }
+}
+```
+
+**字段说明：**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `rows` | 二维数组 | 是 | 每个子数组为一行按钮 |
+| `rows[][].label` | str | 是 | 按钮显示文本 |
+| `rows[][].type` | str | 是 | `callback`（点击回传数据）/ `link`（跳转URL） |
+| `rows[][].data` | str | 是 | 回调数据（type=callback）或跳转地址（type=link） |
+| `rows[][].*` | Any | 否 | 平台特有可选字段（如 `web_app`、`menus`），适配器按能力映射或忽略 |
+
+**适配器转换参考**（完整映射与交互回调事件标准见 [跨平台交互组件标准](standardization-guide.md)）：
+
+| 平台 | 标准段 → 平台原生 |
+|------|------------------|
+| Telegram | `inline_keyboard`：`[{text, callback_data \| url}]` |
+| 云湖 | `buttons`：`[{label, action_type: 2=回调 \| 1=跳转, ...}]` |
+| QQBot | `keyboard.content.rows`：`[{label, type: 2=回调 \| 0=跳转, data}]`（需 markdown 类型消息） |
+| Kook | 卡片 action-group 模块 |
+| Discord | components：`action_row` + `buttons`（custom_id/url） |
+
+### 4.2 平台扩展消息段
+
+平台特有的消息段需要添加平台前缀：
+
+```json
+// 云湖 - 表单
+{"type": "yunhu_form", "data": {"form_id": "123456", "form_name": "报名表"}}
+
+// Telegram - 贴纸
+{"type": "telegram_sticker", "data": {"file_id": "CAACAgIAAxkBAA...", "emoji": "😂"}}
+```
+
+**扩展消息段要求**：
+1. **data 内部字段不加前缀**：`{"type": "yunhu_form", "data": {"form_id": "..."}}` 而非 `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
+2. **提供降级方案**：模块可能不识别扩展消息段，适配器应在 `alt_message` 中提供文本替代
+3. **文档完备**：每个扩展消息段必须在适配器文档中说明 `type`、`data` 结构和使用场景
+
+## 5. 未知事件处理
+
+对于无法识别的事件类型，应生成警告事件：
+```json
+{
+  "id": "1234567893",
+  "time": 1752241223,
+  "type": "unknown",
+  "platform": "yunhu",
+  "yunhu_raw": {...},
+  "yunhu_raw_type": "unknown",
+  "warning": "Unsupported event type: special_event",
+  "alt_message": "This event type is not supported by this system."
+}
+```
+
+---
+
+## 6. 扩展命名规范
+
+### 6.1 字段命名
+
+**规则**：`{platform}_{field_name}`
+
+```
+平台前缀    字段名            完整字段名
+────────    ───────          ──────────
+yunhu       command           yunhu_command
+telegram    sticker_file_id   telegram_sticker_file_id
+onebot11    anonymous         onebot11_anonymous
+email       subject           email_subject
+```
+
+**要求**：
+- `platform` 必须与适配器注册时的平台名完全一致（大小写敏感）
+- `field_name` 使用 `snake_case` 命名
+- 禁止使用双下划线 `__` 开头（Python 保留）
+- 禁止与标准字段同名（如 `type`、`time`、`message` 等）
+
+### 6.2 消息段类型命名
+
+**规则**：`{platform}_{segment_type}`
+
+标准消息段类型（`text`、`image`、`audio`、`video`、`mention`、`reply` 等）**不得**添加平台前缀。只有平台特有的消息段类型才需要添加前缀。
+
+### 6.3 原始数据字段命名
+
+以下字段名是**保留字段**，所有适配器必须遵循：
+
+| 保留字段 | 类型 | 说明 |
+|---------|------|------|
+| `{platform}_raw` | `any` | 平台原始事件数据的完整副本 |
+| `{platform}_raw_type` | `string` | 平台原始事件类型标识 |
+
+**要求**：
+- `{platform}_raw` 必须是原始数据的深拷贝，而非引用
+- `{platform}_raw_type` 必须是字符串，即使平台使用数字类型也要转换为字符串
+- 这两个字段在所有事件中**必须存在**（无法获取时为 `null` 和空字符串 `""`）
+
+### 6.4 平台特有字段示例
+
+```json
+{
+  "yunhu_command": {
+    "name": "抽奖",
+    "args": "超级大奖"
+  },
+  "yunhu_form": {
+    "form_id": "123456"
+  },
+  "telegram_sticker": {
+    "file_id": "CAACAgIAAxkBAA..."
+  }
+}
+```
+
+### 6.5 嵌套扩展字段
+
+扩展字段可以是简单值，也可以是嵌套对象：
+
+```json
+{
+  "telegram_chat": {
+    "id": 123456,
+    "type": "supergroup",
+    "title": "My Group"
+  },
+  "telegram_forward_from": {
+    "user_id": "789",
+    "user_name": "ForwardUser"
+  }
+}
+```
+
+**嵌套字段要求**：
+- 顶层键必须带平台前缀
+- 嵌套内部字段**不添加**平台前缀
+- 嵌套深度建议不超过 3 层
+
+### 6.6 `self` 字段扩展
+
+`self` 对象的标准必选字段（`platform`、`user_id`）见 §2.1，以下是 ErisPulse 扩展的可选字段：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `self.user_name` | `string` | 机器人昵称 |
+| `self.avatar` | `string` | 机器人头像 URL |
+| `self.account_id` | `string` | 多账户模式下的账户标识 |
+
+> **Bot 状态追踪**：适配器通过发送 `type: "meta"` 事件告知框架 Bot 的连接状态。支持的 `detail_type`：`connect`（上线）、`heartbeat`（心跳）、`disconnect`（离线）。系统自动从中提取 `self` 字段的 Bot 元信息进行状态追踪。此外，普通事件中的 `self` 字段也会自动发现 Bot。详见 [适配器系统 API - Bot 状态管理](../api-reference/adapter-system.md)。
+
+---
+
+## 7. 会话类型扩展
+
+ErisPulse 在 OneBot12 标准的 `private`、`group` 基础上扩展了以下会话类型：
+
+| 类型 | OneBot12 标准 | ErisPulse 扩展 | 说明 |
+|------|:-----------:|:------------:|------|
+| `private` | ✅ | — | 一对一私聊 |
+| `group` | ✅ | — | 群聊 |
+| `user` | — | ✅ | 用户类型（Telegram 等） |
+| `channel` | — | ✅ | 频道（广播式） |
+| `guild` | — | ✅ | 服务器/社区 |
+| `thread` | — | ✅ | 话题/子频道 |
+
+**适配器自定义类型扩展**：
+
+```python
+from ErisPulse.Core.Event.session_type import register_custom_type
+
+# 在适配器启动时注册
+register_custom_type(
+    receive_type="email",      # 接收事件中的 detail_type
+    send_type="email",         # 发送时的目标类型
+    id_field="email_id",       # 对应的 ID 字段名
+    platform="email"           # 平台标识
+)
+```
+
+**自定义类型要求**：
+- 必须在适配器 `start()` 时注册，在 `shutdown()` 时注销
+- `receive_type` 不应与标准类型重名
+- `id_field` 应遵循 `{目标}_id` 的命名模式
+
+> 完整的会话类型定义和映射关系参见 [会话类型标准](session-types.md)。
+
+---
+
+## 8. 模块开发者指南
+
+### 8.1 访问扩展字段
+
+```python
+from ErisPulse.Core.Event import message
+
+@message()
+async def handle_message(event):
+    # 访问标准字段
+    text = event.get_text()
+    user_id = event.get_user_id()
+
+    # 访问平台扩展字段 - 方式1：直接 get
+    yunhu_command = event.get("yunhu_command")
+
+    # 访问平台扩展字段 - 方式2：点式访问（Event 包装类）
+    # event.yunhu_command
+
+    # 访问原始数据
+    raw_data = event.get("yunhu_raw")
+    raw_type = event.get_raw_type()
+
+    # 判断平台
+    platform = event.get_platform()
+    if platform == "yunhu":
+        pass
+    elif platform == "telegram":
+        pass
+```
+
+### 8.2 处理扩展消息段
+
+```python
+@message()
+async def handle_message(event):
+    message_segments = event.get("message", [])
+
+    for segment in message_segments:
+        seg_type = segment.get("type")
+        seg_data = segment.get("data", {})
+
+        if seg_type == "text":
+            text = seg_data["text"]
+        elif seg_type.startswith("yunhu_"):
+            if seg_type == "yunhu_form":
+                form_id = seg_data["form_id"]
+        elif seg_type.startswith("telegram_"):
+            if seg_type == "telegram_sticker":
+                file_id = seg_data["file_id"]
+```
+
+### 8.3 最佳实践
+
+1. **优先使用标准字段**：不要假设扩展字段一定存在
+2. **平台判断**：通过 `event.get_platform()` 判断平台，而非通过扩展字段是否存在来推断
+3. **优雅降级**：无法处理扩展消息段时，使用 `alt_message` 作为兜底
+4. **不要硬编码前缀**：使用 `platform` 变量动态拼接
+
+```python
+# ✅ 推荐
+platform = event.get_platform()
+raw_data = event.get(f"{platform}_raw")
+
+# ❌ 不推荐
+raw_data = event.get("yunhu_raw")
+```
+
+### 8.4 请求事件处理
+
+模块开发者可以通过 `event.approve()` 和 `event.reject()` 对请求事件进行操作：
+
+```python
+from ErisPulse.Core.Event import request
+
+# 好友请求：自动同意
+@request.on_friend_request()
+async def handle_friend_request(event):
+    user_name = event.get_user_nickname() or event.get_user_id()
+    comment = event.get_comment()
+    
+    # 同意请求
+    result = await event.approve()
+    if result.get("status") == "ok":
+        print(f"已同意 {user_name} 的好友请求")
+    else:
+        print(f"同意好友请求失败: {result.get('message')}")
+
+# 群邀请：根据条件决定
+@request.on_group_request()
+async def handle_group_request(event):
+    comment = event.get_comment()
+    
+    # 拒绝请求
+    result = await event.reject(comment="暂不加入新群")
+```
+
+**通过适配器直接操作**（适用于非事件处理器场景）：
+
+```python
+from ErisPulse import adapter
+
+# 通过 request_id 直接操作
+await adapter.myplatform.Request("req_abc123").accept()
+await adapter.myplatform.Request("req_abc123").reject()
+
+# 指定 Bot 账号操作
+await adapter.myplatform.Request("req_abc123").Using("bot1").accept()
+
+# 附带备注
+await adapter.myplatform.Request("req_abc123").accept(comment="欢迎")
+```
+
+---
+
+## 9. notice / request 事件的会话类型推断
+
+### 9.1 问题背景
+
+notice 事件和 request 事件的 `detail_type` 是**语义子类型**（如 `group_member_increase`、`friend_increase`），不是会话类型（如 `group`、`private`）。
+
+```
+type        detail_type                  含义            会话类型
+────        ───────────                  ────            ────────
+message     group                        群聊消息         group（detail_type 即会话类型）
+message     private                      私聊消息         private（detail_type 即会话类型）
+notice      group_member_increase        群成员增加       group（需从 group_id 推断）
+notice      friend_increase              好友增加         private（需从 user_id 推断）
+request     friend                       好友请求         private（需从 user_id 推断）
+request     group                        群请求           group（detail_type 即会话类型）
+```
+
+### 9.2 推断规则
+
+`infer_receive_type()` 的推断顺序：
+
+1. 如果 `detail_type` 是已知会话类型（`private`/`group`/`channel`/`guild`/`thread`/`user`），直接使用
+2. 如果 `detail_type` 是自定义会话类型，直接使用
+3. 否则（notice/request 的语义子类型），根据 ID 字段推断：
+   - 有 `group_id` → `"group"`
+   - 有 `channel_id` → `"channel"`
+   - 有 `guild_id` → `"guild"`
+   - 有 `thread_id` → `"thread"`
+   - 有 `user_id` → `"private"`
+
+### 9.3 `event.reply()` 目标推断
+
+notice/request 事件中 `event.reply()` 的发送目标由会话类型推断决定：
+
+- 群通知事件（含 `group_id`）→ 回复到**群**
+- 好友通知事件（仅含 `user_id`）→ 回复到**用户私聊**
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_group_increase()
+async def handle_welcome(event):
+    group_id = event.get("group_id")    # "group_789"
+    user_id = event.get("user_id")      # "user_456"
+
+    # event.reply() 发送到群（group/group_789）
+    await event.reply("欢迎入群！")
+
+    # 如需通知管理员（私聊），显式指定目标：
+    await adapter.Send.To("user", "admin_id").Text(f"新成员 {user_id} 加入了 {group_id}")
+```
+
+### 9.4 适配器开发建议
+
+确保 notice/request 事件中包含正确的 ID 字段：
+
+| detail_type | 必须包含的 ID 字段 | 推断的会话类型 |
+|-------------|-------------------|---------------|
+| `group_member_increase` | `group_id` + `user_id` | `group` |
+| `group_member_decrease` | `group_id` + `user_id` | `group` |
+| `friend_increase` | `user_id` | `private` |
+| `friend_decrease` | `user_id` | `private` |
+| `friend`（请求） | `user_id` | `private` |
+| `group`（请求） | `group_id` | `group` |
+
+---
+
+## 10. 相关文档
+
+**实现转换器时配套对照**：
+- [会话类型标准](session-types.md) - 会话类型定义和映射关系
+- [API 响应标准](api-response.md) - 适配器 API 响应格式标准
+
+**同一适配器的发送侧**：
+- [发送方法规范](send-method-spec.md) - Send 类的方法命名、参数规范及反向转换要求
+- [API 动作标准](api-action-spec.md) - OneBot12 标准 API 动作的统一接口
+
+**查各平台已知的扩展事件与消息段**：
+- [各平台特性文档](../platform-guide/README.md) - 你可以访问此文档来了解各个平台特性以及已知的扩展事件和消息段等。

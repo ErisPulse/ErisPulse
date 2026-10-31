@@ -1,0 +1,621 @@
+# `ErisPulse.Core.Bases.config_schema` 模块
+
+---
+
+## 模块概述
+
+
+ErisPulse 通用配置 Schema 模块
+
+提供基于 dataclass 的配置定义，支持 TOML 注释生成和多语言 WebUI 表单元数据。
+
+适用于适配器、模块、外部项目等任何需要声明式配置的场景。
+
+> **提示**
+> 1. 使用 BaseConfig 作为单账户/全局配置基类（AdapterConfig 为其别名，保持兼容）
+> 2. 使用 BotAccountConfig 作为多账户配置基类
+> 3. 通过 field(metadata=...) 声明字段描述、控件类型等信息
+> 4. description 支持 i18n 多语言：{"i18n": "key.path", "default": "默认文本"}
+> 5. 未声明 description 时自动从类 docstring 提取字段说明兜底（:ivar: 或 Attributes: 风格）
+> 6. 通过 field(metadata={"example": True}) 声明仅进 config.full.example 的示例字段（不自动落盘）
+> 7. 通过 field(metadata={"env": "MYMODULE_API_KEY"}) 声明环境变量绑定：
+> 优先级 环境变量 > config.toml > 声明默认值（Docker / CI 场景免改配置文件）
+> 8. 使用 dataclass_to_toml_with_comments() 生成带注释的配置模板
+> 9. 使用 dict_to_dataclass() 从 TOML 字典填充 dataclass（含环境变量覆盖）
+> 10. 使用 validate_config() 校验配置实例
+> 11. 使用 get_config_schema() 生成 WebUI JSON Schema（含 i18n 支持）
+
+---
+
+## 函数列表
+
+
+### `get_field_docstrings(config_class: type) -> dict[str, str]`
+
+从配置类 docstring 提取字段描述（description 兜底来源）
+
+支持两种常见风格（可混用，Google 段优先覆盖）：
+
+- reST:
+```
+'''适配器配置
+
+:ivar token: API 访问令牌
+:ivar mode: 运行模式
+'''
+```
+
+- Google:
+```
+'''适配器配置
+
+Attributes:
+    token: API 访问令牌
+    mode: 运行模式
+'''
+```
+
+- **config_class**: 配置 dataclass 类
+
+**返回值**: dict {字段名: 描述文本}
+
+---
+
+
+### `_resolve_description_text(meta: Mapping | None, fallback: str = '') -> str`
+
+从 metadata 提取人类可读的描述文本
+
+用于 TOML 注释生成、校验错误信息等不需要多语言的场景。
+description 可以是:
+  - 普通字符串: "账户备注名称"
+  - i18n 字典:   {"i18n": "module.field.desc", "default": "账户备注名称"}
+
+未声明（或为空）时回退到 docstring 提取的字段说明。
+
+- **meta** (`field.metadata`): 字典
+- **fallback** (`description`): 缺失/为空时的兜底文本（docstring 描述）
+
+**返回值**: 人类可读的描述字符串
+
+---
+
+
+### `_resolve_description_schema(meta: Mapping | None, fallback: str = '') -> str | dict`
+
+从 metadata 提取 schema 可用的描述信息
+
+- 普通字符串原样返回（WebUI 直接展示）
+- i18n 字典原样返回（WebUI 根据 language 查找翻译）
+
+未声明（或为空）时回退到 docstring 提取的字段说明。
+
+- **meta** (`field.metadata`): 字典
+- **fallback** (`description`): 缺失/为空时的兜底文本（docstring 描述）
+
+**返回值**: 字符串或 i18n 描述字典
+
+---
+
+
+### `_get_ui_meta(meta: Mapping | None) -> dict`
+
+从 metadata 获取 UI 配置（兼容新旧键名）
+
+优先级: "ui"（新） > "webui"（旧，保留兼容）
+
+- **meta** (`field.metadata`): 字典
+
+**返回值** (`UI`): 元数据字典
+
+---
+
+
+### `_resolve_nested_dataclass(config_class: type, f) -> type | None`
+
+解析字段类型，若为嵌套 dataclass 则返回该类型，否则返回 None
+
+支持直接类型注解与字符串注解（延迟求值 / ``from __future__ import
+annotations``）；字符串注解从类所在模块全局与类属性（含嵌套类声明）按名解析。
+
+- **config_class**: 外层配置 dataclass 类（或其实例的类）
+- **f**: dataclass Field 对象
+
+**返回值**: 嵌套 dataclass 类型，非嵌套字段返回 None
+
+**内部方法**
+
+---
+
+
+### `_type_default(type_hint) -> object`
+
+根据类型注解返回合理的默认值
+
+**内部方法**
+
+- **type_hint** (`Python`): 类型注解
+
+**返回值**: 对应类型的默认值（int→0, float→0.0, bool→False, list→[], dict→{}, str→""）
+
+---
+
+
+### `python_type_category(type_hint: Any) -> str`
+
+识别 Python 类型注解的类别（声明式字段层的类型映射同源注册表）
+
+配置层（TOML 类型映射 :func:`_python_type_to_toml_type`）与 ORM 层
+（SQL 方言列类型映射，见 ``Core/Bases/model.py``）从同一类别派生各自的
+目标类型——一份识别逻辑，两侧消费。
+
+结构化判定（``typing.get_origin`` / ``issubclass``）：参数化泛型
+（``list[int]`` / ``dict[str, int]``）按容器类别识别；``Optional[X]`` 与
+``X | None`` 取首个非 ``None`` 参数递归；PEP 563 字符串注解（``from
+__future__ import annotations`` 下的 ``__annotations__`` 形态）在受限
+命名空间内求值后同样处理；无法识别的注解回落 ``"str"``。
+
+- **type_hint** (`Python`): 类型注解（类型对象、typing 形态或字符串注解）
+
+**返回值**: 类别名（"int" / "float" / "bool" / "list" / "dict" / "str"）
+
+> **提示**
+> 1. 新增受支持的注解类别时，本函数与两个下游映射需同步扩展
+
+---
+
+
+### `_python_type_to_toml_type(type_hint) -> str`
+
+将 Python 类型注解转为 TOML 类型字符串
+
+**内部方法**
+
+- **type_hint** (`Python`): 类型注解
+
+**返回值** (`TOML`): 类型名（integer/float/boolean/array/table/string）
+
+---
+
+
+### `_format_toml_value(value) -> str`
+
+将 Python 值格式化为 TOML 值字符串
+
+**内部方法**
+
+- **value** (`Python`): 值（str/int/float/bool/list/dict 等）
+
+**返回值** (`TOML`): 格式的字符串
+
+---
+
+
+### `_get_field_default(f)`
+
+获取 dataclass 字段的默认值
+
+**内部方法**
+
+- **f**: dataclass Field 对象
+
+**返回值**: 字段的默认值（优先 default，其次 default_factory，最后根据类型推断）
+
+---
+
+
+### `_is_empty(value) -> bool`
+
+判断值是否为空（None / 空字符串 / 空列表 / 空字典）
+
+**内部方法**
+
+- **value**: 任意值
+
+**返回值**: 是否为空
+
+---
+
+
+### `_coerce_value(value, type_hint)`
+
+将值强制转换为目标类型（如 str→int、str→bool）
+
+**内部方法**
+
+- **value**: 原始值
+- **type_hint**: 目标类型注解
+
+**返回值**: 转换后的值（转换失败时返回原值）
+
+---
+
+
+### `dataclass_to_defaults_dict(config_class: type) -> dict`
+
+从 dataclass 类生成默认值字典
+
+``example`` 字段不落盘，故默认值字典同样排除；
+嵌套 dataclass 字段递归展开为普通字典。
+
+- **config_class** (`dataclass`): 类
+
+**返回值**: 默认值字典
+
+---
+
+
+### `dataclass_to_toml_with_comments(config_class: type, existing_values: dict | None = None, include_example: bool = False, _prefix: str = '') -> str`
+
+将 dataclass class 转为带注释的 TOML 文本
+
+用于首次写入配置文件时生成可读的配置模板。
+description 若为 i18n 字典，则使用其 default/fallback 文本；
+未声明 description 时自动回退到类 docstring 中的字段说明。
+嵌套 dataclass 字段渲染为 ``[子表]`` 节（递归，注释同样保留）。
+
+- **config_class** (`dataclass`): 类
+- **existing_values**: 已有的配置值（覆盖默认值）
+- **include_example**: 是否包含 ``example`` 字段（默认排除，
+
+    example 字段仅进 config.full.example，不写入 config.toml）
+- **_prefix**: 递归用：当前嵌套路径前缀（如 ``"stalker_mode."``）
+
+**返回值** (`TOML`): 文本字符串
+
+---
+
+
+### `_env_override_value(f)`
+
+读取字段声明的环境变量覆盖值（``metadata: {"env": "NAME"}``）
+
+**内部方法**
+优先级：环境变量 > config.toml > 声明默认值。环境变量值为字符串，
+按字段注解转换——``int`` / ``float`` / ``bool`` 复用 :func:`_coerce_value`，
+``list`` / ``dict`` 走 JSON 解析，``str`` 原样。转换失败（如整型字段
+收到非数字）时输出警告并回退（视为未覆盖）。
+
+- **f**: dataclass Field 对象
+
+**返回值**: 覆盖值；未声明 env / 环境变量不存在 / 转换失败时返回 MISSING
+
+---
+
+
+### `_get_config_logger()`
+
+**内部方法** 延迟获取日志器（避免循环依赖）
+
+---
+
+
+### `dict_to_dataclass(config_class: type, data: dict)`
+
+从 TOML dict 填充 dataclass 实例
+
+- 处理类型转换（str → int 等）
+- 忽略 dataclass 中不存在的字段
+- 使用 default/default_factory 填充缺失字段
+- 嵌套 dataclass 字段递归填充（dict → 嵌套实例）
+- 环境变量覆盖（``metadata: {"env": "NAME"}``）：优先级 环境变量 > data > default
+
+- **config_class** (`dataclass`): 类
+- **data**: 字典数据（通常来自 TOML 解析）
+
+**返回值** (`dataclass`): 实例
+
+---
+
+
+### `_notify_instance_config_update(instance: Any, old_dict: dict | None, new_dict: dict | None, *, i18n_key: str, log_params: dict) -> None`
+
+调用实例的 ``on_config_update`` 回调，传入类型安全的配置对象
+
+若实例声明了 ``ConfigClass``，则将字典通过 :func:`dict_to_dataclass`
+转换为 dataclass 实例；否则原样传入字典。回调中抛出的异常会被捕获
+并按指定的 i18n 键记录日志，不会向上传播。
+
+供 ``ModuleManager`` 与 ``AdapterManager`` 的配置热更新路由共用，
+避免在两处重复实现字典→dataclass 转换 + 异常兜底逻辑。
+
+**内部方法**
+
+- **instance**: 模块/适配器实例（需实现 ``on_config_update``）
+- **old_dict**: 变更前的配置字典（可能为 None）
+- **new_dict**: 变更后的配置字典（可能为 None）
+- **i18n_key**: 回调异常日志的 i18n 键（如 ``core.module.config_update_failed``）
+- **log_params**: 异常日志的额外格式化参数（如 ``{"name": "MyModule"}``）
+
+---
+
+
+### `validate_field_constraints(label: str, value: Any, *, required: bool = False, choices: 'list | tuple | None' = None, min_value: 'int | float | None' = None, max_value: 'int | float | None' = None, max_length: 'int | None' = None) -> 'list[str]'`
+
+字段约束校验共享引擎（声明式字段层的校验器同源实现）
+
+配置写入校验（:func:`validate_config` 的约束步骤）与 ORM 插入/更新
+校验（``Core/Bases/model.py``）共用同一判定语义：required 非空、
+枚举、数值范围、字符串长度。参数由各消费方从自己的声明形态解析
+（config 从 metadata/ui 元数据，ORM 从 Field 参数）。
+
+- **label**: 字段标签（错误信息定位用，如字段名）
+- **value**: 待校验的值
+- **required**: 是否必填（非空）
+- **choices**: 枚举选项（None 不校验）
+- **min_value**: 数值下界（None 不校验）
+- **max_value**: 数值上界（None 不校验）
+- **max_length**: 字符串最大长度（None 不校验）
+
+**返回值**: 本地化错误列表（空列表 = 通过）
+
+> **提示**
+> 1. 空值（None/空串/空容器）跳过除 required 外的全部检查——与
+> validate_config 的既有语义一致
+
+---
+
+
+### `_file_comment_suffix(section_key: 'str | None', field_path: str) -> str`
+
+取配置文件中字段行尾注释并格式化为错误消息后缀（"文件即文档"回读）
+
+声明式字段的 description 以注释落盘后，配置文件本身就是用户眼前的
+文档；校验失败时引用文件里的原文比 schema 元数据更贴近用户所见。
+按需无损解析配置文件，任何失败静默返回空串（注释是增强信息，
+不允许拖垮校验主流程）。
+
+- **section_key** (`str`): 配置节键（点分路径）；None 表示调用方未提供
+
+    节上下文，跳过回读
+- **field_path** (`str`): 节内字段路径（点分，嵌套字段含祖先路径）
+
+**返回值** (`str`): 形如 ``" （配置文件注释：…）"`` 的后缀；无注释返回空串
+
+**内部方法**
+
+---
+
+
+### `validate_config(instance, section_key: 'str | None' = None) -> list[str]`
+
+校验 dataclass 实例
+
+- 检查 ``required`` 字段是否非空
+- 检查字段值类型是否与声明一致（int/float/str/bool）
+- 检查 ``options`` 枚举约束（值是否在允许选项内）
+- 检查 ``min``/``max`` 数值范围约束
+
+返回错误信息列表（空列表表示通过）。description 若为 i18n 字典，
+错误信息使用其 fallback/default 文本。传入 ``section_key`` 时，
+配置文件中该字段的行尾注释（如有）会附在对应错误消息之后。
+
+- **instance** (`dataclass`): 实例
+- **section_key** (`str`): 实例对应的配置节键（点分路径，如
+
+    ``"MyAdapter"``）；传入后启用文件注释回读（默认 None 不回读）
+**返回值**: 错误信息列表
+
+---
+
+
+### `_validate_config(instance, section_key: 'str | None', prefix: str) -> list[str]`
+
+:meth:`validate_config` 的递归实现
+
+- **instance** (`dataclass`): 实例
+- **section_key** (`str`): 配置节键（透传，用于文件注释回读）
+- **prefix** (`str`): 嵌套字段的路径前缀（如 ``"Nested."``）
+
+**内部方法**
+
+---
+
+
+### `_schema_fields(config_class: type) -> dict`
+
+递归生成配置类的字段 schema（嵌套 dataclass 字段以 ``fields`` 子树承载）
+
+- **config_class** (`dataclass`): 类
+
+**返回值**: {字段名: 字段 schema} 字典
+
+**内部方法**
+
+---
+
+
+### `_apply_ui_meta(field_schema: dict, ui_meta: dict) -> None`
+
+**内部方法** 将 UI 元数据合并进字段 schema
+
+键集合以框架规范《配置与 UI 元数据》为准
+（docs/zh-CN/developer-guide/configuration.md）：widget / group / order /
+options / placeholder / min / max / step / rows / show_if / disabled_if /
+value_type / item。框架原样透传，语义（控件行为、值形态、条件算子、
+兼容性契约）由规范定义，消费方（Dashboard 等）实现。
+
+---
+
+
+### `get_config_schema(config_class: type) -> dict`
+
+从 dataclass 生成 WebUI 可用的 JSON Schema
+
+包含字段名、类型、描述（支持 i18n）、控件类型、分组、排序等。
+description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻译；
+未声明 description 时自动回退到类 docstring 中的字段说明。
+``example`` 字段在 schema 中带 ``"example": true`` 标记（供面板自行决定展示策略）。
+嵌套 dataclass 字段以 ``"type": "table"`` + ``"fields"`` 子树承载，
+面板可渲染为嵌套分组而非整棵平铺。
+
+- **config_class** (`dataclass`): 类
+
+**返回值** (`schema`): 字典
+
+---
+
+
+### `register_config_i18n(config_class: type, lang: str, translations: dict[str, str] | None = None, domain: str = 'config') -> int`
+
+将配置类的字段描述注册到 i18n 系统
+
+遍历 config_class 的所有字段，提取 description 中的 i18n 键，
+调用 i18n.register() 注册翻译。
+
+两种用法：
+1. 自动模式（translations=None）：将字段 description.default 注册到指定 lang
+   （description.default 是语言无关的兜底文本，调用者自行决定注册到哪种语言）
+2. 手动模式：提供 translations 字典（{i18n_key: translated_text}）
+
+使用示例:
+```
+# 将默认文本注册为中文翻译
+register_config_i18n(MyAdapterConfig, "zh-CN")
+
+# 将默认文本注册为英文翻译
+register_config_i18n(MyAdapterConfig, "en")
+
+# 手动提供英文翻译（覆盖默认文本）
+register_config_i18n(MyAdapterConfig, "en", {
+    "my_adapter.endpoint": "API Endpoint",
+    "my_adapter.token": "Platform Token",
+})
+```
+
+- **config_class** (`dataclass`): 配置类
+- **lang**: 语言代码（如 "zh-CN", "en"）
+- **translations**: 手动提供的翻译字典，None 则自动提取
+- **domain** (`i18n`): 域标识，默认 "config"
+
+**返回值**: 注册的翻译条目数
+
+---
+
+
+### `_resolve_i18n_text(value, i18n_mgr)`
+
+解析单个值的 i18n 文本
+
+- 纯字符串原样返回
+- i18n 字典 ``{"i18n": "key", "default": "文本"}`` 解析为当前语言文本
+- 仅含 ``default`` 的字典 ``{"default": "文本"}``（语言无关文本，
+  如动态生成的选项标签）解析为 default 文本
+
+- **value**: 原始值（str 或 i18n 字典 / default 兜底字典）
+- **i18n_mgr** (`I18nManager`): 实例
+
+**返回值**: 解析后的字符串
+
+---
+
+
+### `_resolve_fields_i18n(fields_dict: dict) -> None`
+
+**内部方法** 递归解析字段树中的 i18n 文本（含嵌套 dataclass 子树）
+
+---
+
+
+### `resolve_config_schema(config_class: type, resolve_i18n: bool = True) -> dict`
+
+获取配置 Schema，可选地将所有 i18n 文本字段解析为当前语言的文本
+
+与 get_config_schema() 的区别：
+- 当 resolve_i18n=True 时，所有用户可见文本字段（description、options label、
+  placeholder、group_labels）为解析后的字符串（适合直接展示）
+- 当 resolve_i18n=False 时，等同于 get_config_schema()（透传 i18n 字典）
+
+支持的 i18n 字段（均采用 ``{"i18n": "key", "default": "文本"}`` 格式）：
+- ``description``: 字段描述
+- ``options[].label``: select 控件选项标签
+- ``placeholder``: 输入框占位符
+- ``group_labels``: 分组显示名（通过 ``_schema_meta["group_labels"]`` 声明）
+
+嵌套 dataclass 字段子树同步解析。纯字符串值会被原样透传（向后兼容）。
+
+- **config_class** (`dataclass`): 配置类
+- **resolve_i18n**: 是否将 i18n 文本解析为当前语言
+
+**返回值** (`schema`): 字典
+
+---
+
+
+### `redact_secret(value: Any) -> Any`
+
+脱敏标记为 ``secret`` 的配置值
+
+非空值统一替换为固定掩码 ``***``；空值（空串 / None / 空集合）原样返回，
+便于日志、模板生成等场景避免泄露敏感信息。
+
+- **value**: 原始值
+
+**返回值**: 脱敏后的值
+
+**示例**:
+
+```python
+redact_secret("sk-xxxxxxxx")
+'***'
+redact_secret("")
+''
+```
+
+---
+
+
+## 类列表
+
+
+### `class BaseConfig`
+
+通用配置基类
+
+适用于任何模块/项目的单账户或全局配置场景。
+继承此类即可获得 TOML 序列化、校验、WebUI Schema 等能力。
+
+使用示例:
+```
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_key: str = field(
+        default="",
+        metadata={
+            "description": {"i18n": "my_module.api_key", "default": "API 密钥"},
+            "required": True,
+            "secret": True,
+            "ui": {"widget": "password", "group": "connection", "order": 1},
+        },
+    )
+```
+
+
+### `class BotAccountConfig`
+
+多账户配置基类
+
+适用于需要管理多个账户的场景（如多 Bot）。
+继承此类自动获得 enabled/name 基础字段。
+
+使用示例:
+```
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    bot_id: str = field(
+        default="",
+        metadata={
+            "description": {"i18n": "my_adapter.bot_id", "default": "Bot ID"},
+            "required": True,
+            "ui": {"widget": "text", "group": "basic", "order": 1},
+        },
+    )
+```
+
+
+### `class I18nConfig`
+
+国际化配置
+
+控制框架的显示语言和翻译行为
+

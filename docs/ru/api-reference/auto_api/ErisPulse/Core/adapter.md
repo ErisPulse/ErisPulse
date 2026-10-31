@@ -1,0 +1,1227 @@
+# `ErisPulse.Core.adapter` 模块
+
+---
+
+## 模块概述
+
+
+ErisPulse 适配器系统
+
+提供平台适配器管理功能。支持多平台消息处理、事件驱动和生命周期管理。
+
+---
+
+## 类列表
+
+
+### `class AdapterManager(ManagerBase)`
+
+适配器管理器
+
+管理多个平台适配器的注册、启动和关闭，提供与模块管理器一致的接口
+
+> **提示**
+> 1. 通过register方法注册适配器
+> 2. 通过startup方法启动适配器
+> 3. 通过shutdown方法关闭所有适配器
+> 4. 通过on装饰器注册OneBot12协议事件处理器
+
+
+#### 方法列表
+
+
+##### `_extract_message_text(data: Any) -> str`（staticmethod）
+
+**内部方法**
+从事件 message 段提取纯文本（仅 text 段拼接），无文本时返回空串
+
+- **data**: 事件数据
+
+**返回值**: 纯文本内容
+
+---
+
+
+##### `_register_config_change_routing() -> None`
+
+**内部方法**
+注册 config.set / config.updated 事件订阅，将配置变更路由到各适配器的 on_config_update
+
+---
+
+
+##### `_register_dependency_routing() -> None`
+
+**内部方法**
+注册 module.load / module.unload 事件订阅，将模块就绪/丢失路由到
+声明了依赖的适配器的 on_dependency_ready / on_dependency_lost 钩子
+
+---
+
+
+##### `_dependency_watchers(module_name: str) -> list[tuple[str, 'BaseAdapter']]`
+
+**内部方法**
+找出关注指定模块的已注册适配器（软依赖或硬依赖均可收到通知）
+
+- **module_name**: 模块名
+
+**返回值** (`(platform, adapter_instance), ...`):
+
+---
+
+
+##### `async _dispatch_dependency_event(module_name: str, hook_name: str) -> None`
+
+**内部方法**
+向关注指定模块的适配器分发依赖事件钩子
+
+- **module_name**: 模块名
+- **hook_name**: 钩子方法名（on_dependency_ready / on_dependency_lost）
+
+---
+
+
+##### `async _on_module_load_notify(data: dict) -> None`
+
+**内部方法**
+处理 module.load 事件：通知依赖该模块的适配器（on_dependency_ready）
+
+---
+
+
+##### `async _on_module_unload_notify(data: dict) -> None`
+
+**内部方法**
+处理 module.unload 事件：通知依赖该模块的适配器（on_dependency_lost）
+
+---
+
+
+##### `_extract_module_name(data: dict) -> 'str | None'`（staticmethod）
+
+**内部方法**
+从生命周期事件数据中提取模块名
+
+兼容两种事件形状：直接 emit 的扁平 dict（``{"module_name": ...}``）
+与 submit_event 包装的标准事件（``{"data": {"module_name": ...}}``）。
+
+- **data**: 生命周期事件数据
+
+**返回值**: 模块名，无法提取时返回 None
+
+---
+
+
+##### `_check_missing_dependencies(adapter: 'BaseAdapter', platform: str) -> list[str]`
+
+**内部方法**
+检查适配器硬依赖是否就绪（适配器 + 模块均已注册）
+
+- **adapter**: 适配器实例
+- **platform**: 平台名称（用于日志）
+
+**返回值**: 缺失的依赖描述列表（空列表表示全部就绪）
+
+---
+
+
+##### `_on_config_set(data: dict) -> None`
+
+**内部方法**
+处理 config.set 事件：找出受影响的适配器并触发 on_config_update
+
+---
+
+
+##### `_on_config_updated(data: dict) -> None`
+
+**内部方法**
+处理 config.updated 事件：对比新旧配置树，找出配置变化的适配器并触发 on_config_update
+
+---
+
+
+##### `_resolve_config_key(instance: Any) -> str`（staticmethod）
+
+**内部方法**
+解析适配器的配置键名（优先用 _get_config_key，回退类名）
+
+---
+
+
+##### `_notify_config_update(instance: Any, platform: str | None, old_dict: dict | None, new_dict: dict | None) -> None`
+
+**内部方法**
+调用适配器的 on_config_update 回调，传入类型安全的配置对象
+
+---
+
+
+##### `register(name: str | None = None, class_type: type[BaseAdapter] | None = None, info: dict | None = None, *, platform: str | None = None, adapter_class: type[BaseAdapter] | None = None, adapter_info: dict | None = None) -> bool`
+
+注册新的适配器类（标准化注册方法）
+
+- **name**: 平台名称
+- **class_type**: 适配器类
+- **info**: 适配器信息
+- **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+- **adapter_class** (`已弃用`): 兼容旧关键字参数，等同 class_type
+- **adapter_info** (`已弃用`): 兼容旧关键字参数，等同 info
+
+**返回值**: 注册是否成功
+
+**异常**: `TypeError` - 当适配器类无效时抛出
+
+**示例**:
+
+```python
+adapter.register("MyPlatform", MyPlatformAdapter)
+```
+
+---
+
+
+##### `async startup(platforms: str | list[str] | None = None) -> None`
+
+启动指定的适配器
+
+- **platforms**: 要启动的平台，可以是单个平台名、平台名列表或None（表示所有平台）
+
+**异常**: `ValueError` - 当平台未注册时抛出
+
+**示例**:
+
+```python
+# 启动所有适配器
+await adapter.startup()
+# 启动单个适配器
+await adapter.startup("Platform1")
+# 启动多个适配器
+await adapter.startup(["Platform1", "Platform2"])
+```
+
+---
+
+
+##### `_refresh_accounts_cache(adapter: BaseAdapter, platform: str | None = None) -> None`
+
+**内部方法**
+刷新适配器账户缓存，确保配置变更后 _accounts_data 不过期
+
+- **adapter**: 适配器实例
+- **platform**: 平台名称（用于日志上下文）
+
+---
+
+
+##### `async _run_adapter(adapter: BaseAdapter, platform: str) -> None`
+
+**内部方法**
+运行适配器实例
+
+- **adapter**: 适配器实例
+- **platform**: 平台名称
+
+---
+
+
+##### `async shutdown(platforms: str | list[str] | None = None) -> None`
+
+关闭指定的适配器
+
+- **platforms**: 要关闭的平台，可以是单个平台名、平台名列表或None（表示所有平台）
+
+**异常**: `ValueError` - 当平台未注册时抛出
+
+**示例**:
+
+```python
+# 关闭所有适配器
+await adapter.shutdown()
+# 关闭单个适配器
+await adapter.shutdown("Platform1")
+# 关闭多个适配器
+await adapter.shutdown(["Platform1", "Platform2"])
+```
+
+---
+
+
+##### `async _stop_adapter(platform: str) -> None`
+
+**内部方法**
+停止单个平台适配器——shutdown 即清理。
+
+将"停止适配器"与"回收其注册的资源"绑定在一次调用里：调用适配器自身的
+``shutdown()`` 后立即清理该平台的路由/事件/命令。restart、启动失败重试等
+场景均经此入口，保证适配器一旦停止、归属资源必被回收，无需调用方再补清理。
+
+对未注册的平台直接返回；``shutdown()`` 与清理均幂等，半途失败的重试场景
+也能正确回收 start() 期间已注册的资源。``shutdown()`` 带优雅收尾超时
+（``unload_timeout``），卡死时强制进入清理，避免阻塞重启/关闭链路。
+
+- **platform**: 平台名称
+
+---
+
+
+##### `async _drain_pending_handler_tasks(timeout: float = DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS) -> None`
+
+**内部方法**
+等待或取消所有在途的事件处理器 Task
+
+- **timeout**: 等待 Task 退出的最长时间（秒）
+
+---
+
+
+##### `async _cleanup_adapter_resources(platform: str) -> None`
+
+**内部方法**
+适配器资源兜底清理（与模块卸载对齐颗粒度，复用 ownership 统一回收门面）。
+
+两段式：
+1) 运行时资源——取消该平台名下后台任务、关闭该平台全部连接、触发外部
+   归属清理钩子（on_cleanup）；任务/连接类运行时资源不属于注册表回收
+   范畴，须先行处理。
+2) 注册类资源统一交 ownership 门面回收（路由/命令/四类事件处理器/
+   自有事件处理器与中间件/自定义会话类型/事件覆写/作用域覆写/主人
+   身份源/生命周期钩子/日志订阅/对话恢复工厂/owner 同名 i18n 域，
+   单步失败不阻断）——与模块卸载路径同一条管线。
+
+平台特有补清：平台维度交互会话取消、平台事件方法注入（以平台名为键）、
+i18n 翻译域（domain 为适配器配置键，可能与平台名不同）。
+
+同时覆盖两种路由注册方式：
+- 直接以平台名为命名空间注册的路由（unregister_all_by_namespace）
+- 适配器以平台名为 owner、用细颗粒度命名空间（如 onebot11_default）注册的路由
+  （unregister_all_by_owner，依赖 start() 期间注入的 current_owner）
+
+- **platform**: 平台名称
+
+---
+
+
+##### `async restart(platform: str) -> bool`
+
+重启指定平台适配器（shutdown + 资源兜底清理 + start）
+
+框架自动处理该平台在运行期间注册的路由/事件/命令清理（与模块卸载对齐颗粒度），
+并在重启时注入 owner，使新注册的资源可被后续按 owner 清理。
+第三方模块（如 Dashboard）的热重载应调用本方法，而非直接操作适配器实例。
+
+- **platform**: 平台名称
+
+**返回值**: 是否实际执行了重启（平台存在且原本在运行时为 True）
+
+**示例**:
+
+```python
+await sdk.adapter.restart("OneBot11")
+```
+
+---
+
+
+##### `async reload(name: str, *, full: bool = True) -> bool`
+
+热重载指定平台适配器（代码级：卸载 → 清缓存重导 → 重新注册并拉起）
+
+经适配器加载器完整执行 语法预检 → 卸载（shutdown 即清理 + 注销）→
+清理 ``sys.modules`` 子树与 ``__pycache__`` 字节码 → 重新发现/导入 →
+重新注册 → 原运行态则重新拉起 流程；任一步失败自动回滚旧注册状态
+（尽力而为语义：断连 / bot offline 等 unload 副作用不可撤销，日志会
+明确提示旧实例处于已收尾状态）。依赖本适配器的其它适配器不会被
+级联重载（仅告警）。代码已换新而启动暂时失败时不算重载失败——
+异步重试链接管（状态经 ``adapter.status.change`` 播报）。
+
+- **name**: 平台名称
+- **full**: 保留参数位（当前两种来源均执行全量清理，与模块语义对齐）
+
+**返回值**: 是否重载成功（适配器被移除视为成功）
+
+**示例**:
+
+```python
+await sdk.adapter.reload("aiocqhttp")
+```
+
+---
+
+
+##### `async unload(platform: str) -> bool`
+
+卸载并注销单个平台适配器
+
+与 ``shutdown()``（仅停止）不同，``unload()`` 在停止并清理资源后，
+额外从管理器注销该平台（释放适配器实例与类引用），用于动态移除适配器
+并回收其内存占用。若同一实例还注册了其它平台，实例会保留（仅注销该平台）。
+
+卸载与热重载共用全局互斥：与进行中的 ``reload_adapter`` / restart
+串行（消除外部卸载与适配器重载交叉导致的双重 shutdown）；等待上限
+``UNLOAD_LOCK_WAIT_TIMEOUT_SECS`` 秒，超时降级直接执行并留痕。
+
+- **platform**: 平台名称
+
+**返回值**: 是否卸载成功
+
+**示例**:
+
+```python
+await adapter.unload("MyPlatform")
+```
+
+---
+
+
+##### `async _unload_locked(platform: str) -> bool`
+
+**内部方法**
+unload 的实现体（调用方已持有热重载互斥锁，或已限时降级）
+
+- **platform**: 平台名称
+
+**返回值**: 是否卸载成功
+
+---
+
+
+##### `clear() -> None`
+
+清除所有适配器实例和信息
+
+**内部方法**
+此方法用于反初始化时完全重置适配器管理器状态
+
+---
+
+
+##### `_config_register(platform: str, enabled: bool = DEFAULT_ADAPTER_ENABLED) -> bool`
+
+注册新平台适配器（仅当平台不存在时注册）
+
+- **platform**: 平台名称
+- **enabled** (`bool`): 是否启用适配器 (默认: DEFAULT_ADAPTER_ENABLED)
+
+**返回值** (`bool`): 操作是否成功
+
+---
+
+
+##### `exists(name: str | None = None, *, platform: str | None = None) -> bool`
+
+检查平台是否已注册
+
+- **name**: 平台名称
+- **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值**: 平台是否已注册（即 adapter.register() 已被调用）
+
+---
+
+
+##### `is_enabled(name: str | None = None, *, platform: str | None = None) -> bool`
+
+检查平台适配器是否启用
+
+- **name**: 平台名称
+- **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值**: 平台适配器是否启用
+
+> **提示**
+> 适配器启用条件：
+> 1. 适配器在配置文件中（ErisPulse.adapters.status.{platform} 存在）
+> 2. 配置值为启用状态
+> 如果适配器未在配置中，默认启用并自动写入配置
+
+---
+
+
+##### `enable(name: str | None = None, *, platform: str | None = None) -> bool`
+
+启用平台适配器
+
+- **name**: 平台名称
+- **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值** (`bool`): 操作是否成功
+
+---
+
+
+##### `disable(name: str | None = None, *, platform: str | None = None) -> bool`
+
+禁用平台适配器
+
+- **name**: 平台名称
+- **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值** (`bool`): 操作是否成功
+
+---
+
+
+##### `unregister(name: str | None = None, *, platform: str | None = None) -> bool`
+
+取消注册适配器
+
+- **name**: 平台名称
+- **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值**: 是否取消成功
+
+**内部方法**
+注意: 此方法仅取消注册, 不关闭已启动的适配器
+
+---
+
+
+##### `list_registered() -> list[str]`
+
+列出所有已注册的平台
+
+**返回值**: 平台名称列表
+
+---
+
+
+##### `list_items() -> dict[str, bool]`
+
+列出所有平台适配器状态
+
+合并配置项与已注册适配器，确保禁用适配器也可见。
+
+**返回值**: {平台名: 是否启用} 字典
+
+---
+
+
+##### `list_adapters() -> dict[str, bool]`
+
+兼容性方法 - 保持向后兼容
+
+**返回值**: {平台名: 是否启用} 字典
+
+**已弃用** 此方法已弃用，请使用 list_items() 代替
+
+---
+
+
+##### `on(event_type: str = '*', *, raw: bool = False, platform: str | None = None, scope_exempt: bool = False, detail_type: str | None = None, pattern: str | None = None, regex: str | None = None) -> Callable[[Callable], Callable]`
+
+OneBot12协议事件监听装饰器
+
+- **event_type** (`OneBot12`): 事件类型
+- **raw**: 是否监听原生事件
+- **platform**: 指定平台，None表示监听所有平台
+- **scope_exempt**: 是否豁免模块作用域过滤（框架级总线处理器专用）。
+
+                     为 True 时不参与作用域判断，始终分发。
+- **detail_type**: 指定事件细分类型（如 ``"group"`` / ``"private"``），
+
+                    None 表示不限制；支持 glob / ``re:`` 模式
+- **pattern**: 消息文本 glob 通配符（仅对消息类事件生效），
+
+                不匹配的消息不触发；None 表示不限制
+- **regex**: 消息文本正则源码（仅对消息类事件生效，与 pattern 同时给定时
+
+              须都命中）；None 表示不限制
+**返回值**: 装饰器函数
+
+**示例**:
+
+```python
+# 监听OneBot12标准事件（所有平台）
+@sdk.adapter.on("message")
+async def handle_message(data):
+    print(f"收到OneBot12消息: {data}")
+
+# 监听特定平台的OneBot12标准事件
+@sdk.adapter.on("message", platform="onebot11")
+async def handle_onebot11_message(data):
+    print(f"收到OneBot11标准消息: {data}")
+
+# 监听平台原生事件
+@sdk.adapter.on("message", raw=True, platform="onebot11")
+async def handle_raw_message(data):
+    print(f"收到OneBot11原生事件: {data}")
+
+# 只监听群消息
+@sdk.adapter.on("message", detail_type="group")
+async def handle_group_message(data):
+    print(f"收到群消息: {data}")
+
+# 只监听以 "签到" 开头的消息（文本匹配）
+@sdk.adapter.on("message", pattern="签到*")
+async def handle_signin(data):
+    print(f"收到签到消息: {data}")
+```
+
+---
+
+
+##### `middleware(func: Callable) -> Callable`
+
+添加OneBot12中间件处理器
+
+注册期间若处于模块加载上下文（current_owner 已设置），自动记录归属，
+模块卸载时随处理器一并移除。
+
+中间件在事件分发前顺序执行，返回契约：
+
+- 返回 ``dict``：改写事件载荷（后续处理器收到改写后的事件）
+- 返回 ``None``：放行，载荷不变（输出 WARNING 提示——建议显式 ``return data``）
+- 返回 ``False``：**显式否决**——事件被丢弃，不进入任何处理器、
+  无任何出站副作用；否决时输出 TRACE 日志并触发
+  ``adapter.event.blocked`` 生命周期钩子（携带中间件名与完整事件）
+
+- **func**: 中间件函数
+
+**返回值**: 中间件函数
+
+**示例**:
+
+```python
+@sdk.adapter.middleware
+async def onebot_middleware(data):
+    if _is_banned(data):
+        return False  # 否决：事件被丢弃（防火墙 / 限流场景）
+    data["rate_marked"] = True
+    return data
+```
+
+---
+
+
+##### `unregister_handlers_by_owner(owner: str) -> int`
+
+移除指定归属者注册的全部事件处理器与中间件
+
+覆盖三类资源（均在注册期间记录了 owner）：
+- ``adapter.on()`` 注册的 OneBot12 / 原生事件处理器
+- ``adapter.middleware`` 注册的中间件
+- 适配器在 start() 期间以平台名为 owner 注册的处理器
+
+供模块卸载时移除该模块的处理器（避免卸载后仍被分发触发），
+以及适配器关闭 / 重启时清理旧实例自有的处理器。
+
+- **owner**: 归属者（模块名或适配器平台名）
+
+**返回值** (`int`): 移除的处理器与中间件总数
+
+---
+
+
+##### `async emit(data: Any) -> None`
+
+提交OneBot12协议事件到指定平台
+
+每个事件处理器（handler）都在独立的 asyncio.Task 中执行，
+单个处理器阻塞不会影响框架的事件分发和其他处理器运行。
+
+- **data**: 符合OneBot12标准的事件数据
+
+**示例**:
+
+```python
+await sdk.adapter.emit({
+    "id": "123",
+    "time": 1620000000,
+    "type": "message",
+    "detail_type": "private",
+    "message": [{"type": "text", "data": {"text": "Hello"}}],
+    "platform": "myplatform",
+    "myplatform_raw": {...平台原生事件数据...},
+    "myplatform_raw_type": "text_message"
+})
+```
+
+---
+
+
+##### `_dedupe_enabled() -> bool`
+
+**内部方法**
+读取事件去重开关（``ErisPulse.framework.event_dedupe``，默认开启）
+
+测试环境普遍使用固定 id 的合成事件且同一用例内连续多次 emit，
+可通过配置或直接置 ``adapter._event_dedupe_enabled = False`` 关闭。
+
+**返回值**: 是否启用幂等去重
+
+---
+
+
+##### `_is_duplicate_event(event_id: str) -> bool`
+
+**内部方法**
+事件幂等去重判定（LRU 记录已分发的事件 id）
+
+平台 websocket 重连后重推同一事件（相同 ``event["id"]``）时只分发一次；
+容量上限 ``DEFAULT_EVENT_DEDUPE_CAPACITY``，超出后淘汰最早记录。
+
+- **event_id**: 事件 id
+
+**返回值**: 是否为重复事件（True 时调用方应丢弃）
+
+---
+
+
+##### `async _emit_dispatch(data: Any, platform: str, event_type: str, detail_type: str, platform_raw: Any, raw_event_type: Any, trace_id: str) -> None`
+
+**内部方法** emit 的事件分发主体（trace-id 上下文内执行）
+
+---
+
+
+##### `_is_handler_scope_allowed(handler_wrapper: dict, data: dict) -> bool`
+
+**内部方法**
+判断 OneBot12 / 原生事件处理器是否通过模块作用域检查
+
+框架级总线处理器（``scope_exempt`` 或 owner 为空）始终放行；
+模块级处理器按 owner 与当前事件所属平台/Bot 判定。
+
+- **handler_wrapper**: 处理器包装器（含 func/platform/owner/scope_exempt）
+- **data**: 原始事件数据
+
+**返回值**: 是否允许分发
+
+---
+
+
+##### `_is_handler_match(handler_wrapper: dict, data: dict, detail_type: str, raw: bool = False) -> bool`（staticmethod）
+
+**内部方法**
+判断处理器是否匹配事件的 detail_type / 文本条件
+
+未设置条件（None）即视为命中；``pattern`` 与 ``regex`` 只对消息类事件
+生效（原生事件无 ``message`` 段，文本条件自动跳过）。
+
+优先消费 ``on()`` 注册时预编译的 ``_detail_matcher`` / ``_text_cond``
+（热路径上避免每事件每处理器重复编译闭包）；缺失时回退现场编译，
+兼容非 ``on()`` 路径构造的最小包装器。
+
+- **handler_wrapper**: 处理器包装器（含 detail_type/pattern/regex）
+- **data**: 原始事件数据
+- **detail_type**: 事件细分类型
+- **raw**: 是否原生事件
+
+**返回值**: 是否命中
+
+---
+
+
+##### `_get_handler_semaphore() -> asyncio.Semaphore`
+
+**内部方法**
+获取事件处理器并发控制信号量
+
+懒初始化，首次调用时从框架配置读取 handler_max_concurrency。
+配置变更后可通过设置 _handler_max_concurrency = 0 来强制重建。
+
+**返回值** (`asyncio.Semaphore`): 并发控制信号量
+
+---
+
+
+##### `_get_handler_queue_limit() -> int`
+
+**内部方法**
+获取待处理 handler Task 数上限（入队背压）
+
+懒初始化，首次调用时从框架配置读取 ``handler_queue_max_pending``
+（默认 ``HANDLER_QUEUE_MAX_PENDING``）；``<= 0`` 视为不限。
+配置变更经 ``_on_framework_config_changed`` 置 None 强制重读。
+
+**返回值**: 上限值（0 = 不限）
+
+---
+
+
+##### `_record_handler_queue_drop(handler: str, event_type: str, platform: str, size: int) -> None`
+
+**内部方法**
+背压丢弃留痕（窗口折叠）：窗口内仅首条丢弃记 WARNING，后续折叠
+只累计计数；下个窗口的首条丢弃附带上一窗口折叠条数。丢弃总数
+始终累计到 ``_handler_queue_overflow_count``（troubleshoot 可见）。
+
+- **handler**: 被丢弃的处理器名（日志定位用）
+- **event_type**: 事件类型
+- **platform**: 平台名
+- **size**: 触发丢弃时的待处理集合大小
+
+---
+
+
+##### `_on_framework_config_changed(_data: dict) -> None`
+
+**内部方法**
+framework 配置变更回调：``handler_max_concurrency`` 变化时失效缓存的信号量，
+下次 ``_get_handler_semaphore`` 将按新值重建；``handler_queue_max_pending``
+变化时同样失效缓存待重读。
+
+---
+
+
+##### `_dispatch_handler_task(func: Callable, data: Any, *, event_type: str = 'unknown', platform: str = 'unknown', owner: str | None = None) -> asyncio.Task | None`
+
+**内部方法**
+将事件处理器包装为独立 asyncio.Task 并调度执行
+
+处理器在独立 Task 中运行，不会阻塞 adapter.emit() 的后续流程。
+自动捕获处理器异常并记录日志，同时监控处理器执行耗时。
+
+- **func**: 事件处理器函数
+- **data**: 事件数据
+- **event_type**: 事件类型（用于日志）
+- **platform**: 平台名称（用于日志）
+- **owner**: 注册期归属（模块名 / 适配器平台名）；非空时在处理器
+
+              执行期间注入 current_owner（出站发送 / 日志归因到
+              注册该处理器的模块），None 保持外层上下文
+**返回值**: asyncio.Task
+
+---
+
+
+##### `_auto_register_bot(platform: str, self_info: dict) -> bool`
+
+**内部方法**
+自动注册Bot（从OB12事件self字段提取），提取所有扩展字段作为Bot元信息
+
+self字段标准扩展：
+- self.user_id (必须) - Bot用户ID
+- self.user_name (可选) - Bot昵称
+- self.avatar (可选) - Bot头像URL
+- self.account_id (可选) - 多账户标识
+
+- **platform**: 平台名称
+- **self_info**: 事件中的self字段内容
+
+**返回值**: 是否为新注册的Bot
+
+---
+
+
+##### `_update_bot_status(platform: str, bot_id: str, status: str) -> None`
+
+**内部方法**
+更新Bot状态
+
+- **platform**: 平台名称
+- **bot_id** (`Bot`): 用户ID
+- **status**: 状态值（online/offline）
+
+---
+
+
+##### `_update_bot_heartbeat(platform: str, self_info: dict) -> None`
+
+**内部方法**
+更新Bot心跳（更新活跃时间和元信息）
+
+- **platform**: 平台名称
+- **self_info**: 事件中的self字段内容
+
+---
+
+
+##### `_evict_offline_bots(expiry_secs: int | None = None) -> int`
+
+**内部方法**
+清除过期的离线 Bot 记录
+
+遍历 _bots，将状态为 offline 且 last_active 距今超过 expiry_secs 的条目移除。
+
+- **expiry_secs**: 过期时间（秒），None 时从框架配置读取
+
+**返回值** (`int`): 被清除的 Bot 记录数
+
+---
+
+
+##### `get_bot_info(platform: str, bot_id: str) -> dict | None`
+
+获取Bot详细信息
+
+- **platform**: 平台名称
+- **bot_id** (`Bot`): 用户ID
+
+**返回值** (`Bot`): 信息字典，包含status/last_active/info，不存在则返回None
+
+**示例**:
+
+```python
+info = adapter.get_bot_info("telegram", "123456")
+# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+```
+
+---
+
+
+##### `list_bots(platform: str | None = None) -> dict[str, dict[str, dict]]`
+
+列出Bot信息
+
+- **platform**: 平台名称，None表示列出所有平台的Bot
+
+**返回值** (`Bot`): 信息字典 {platform: {bot_id: {status, last_active, info}}}
+
+**示例**:
+
+```python
+# 列出所有Bot
+all_bots = adapter.list_bots()
+# 列出指定平台的Bot
+tg_bots = adapter.list_bots("telegram")
+```
+
+---
+
+
+##### `is_bot_online(platform: str, bot_id: str) -> bool`
+
+检查Bot是否在线
+
+- **platform**: 平台名称
+- **bot_id** (`Bot`): 用户ID
+
+**返回值** (`Bot`): 是否在线
+
+**示例**:
+
+```python
+if adapter.is_bot_online("telegram", "123456"):
+    print("Bot在线")
+```
+
+---
+
+
+##### `get_status_summary() -> dict[str, Any]`
+
+获取适配器与Bot的完整状态摘要
+
+返回所有适配器的运行状态及各适配器下的Bot状态，便于WebUI展示。
+包含已禁用适配器以便于管理。
+
+**返回值**: 状态摘要字典
+
+**示例**:
+
+```python
+summary = adapter.get_status_summary()
+# {
+#     "adapters": {
+#         "telegram": {
+#             "status": "started",
+#             "bots": {
+#                 "123456": {
+#                     "status": "online",
+#                     "last_active": 1712345678.0,
+#                     "info": {"nickname": "MyBot"}
+#                 }
+#             }
+#         },
+#         "disabled_platform": {
+#             "status": "disabled",
+#             "enabled": False,
+#             "bots": {}
+#         }
+#     }
+# }
+```
+
+---
+
+
+##### `get_topology(*, json_safe: bool = True) -> dict[str, Any]`
+
+获取适配器与 Bot 的拓扑树数据（便于 WebUI 展示）
+
+聚合每个适配器的运行状态、下属 Bot 状态，以及平台级 / Bot 级
+模块作用域绑定，展示"适配器 → Bot → 作用域"的归属关系。
+
+- **json_safe**: 是否输出可直接 JSON 序列化的安全结构（默认 True），
+
+                  对适配器作者可能塞入 Bot ``info`` 的任意对象做净化。
+
+**返回值**: 拓扑树字典
+
+    {"adapters": {platform: {
+        "status": str, "enabled": bool,
+        "bots": {bot_id: {"status", "last_active", "info", "scope"}},
+        "scope": {"modules": [...], "blocked": [...]},
+    }}}
+
+**示例**:
+
+```python
+topology = adapter.get_topology()
+print(topology["adapters"]["onebot11"]["bots"])
+{"123456": {...}}
+```
+
+---
+
+
+##### `get_info(platform: str) -> dict[str, Any] | None`
+
+获取适配器的注册信息（json-safe）
+
+与 :meth:`get_meta` 的区别：本方法返回注册时的完整信息字典
+（``meta`` + 来源描述），供 Dashboard 适配器详情、依赖诊断等
+消费；meta 结构与 loader 注册时收集的一致（name / version /
+description / author / license / package / min_sdk_version /
+depends / optional_modules / top_level）。
+
+**json-safe**：``adapter_class`` 以类名字符串返回（不暴露类对象），
+其余值经 ``json_safe`` 净化，可直接 JSON 序列化。
+
+- **platform**: 平台名
+
+**返回值**: 注册信息字典；适配器未注册时返回 None
+
+**示例**:
+
+```python
+info = adapter.get_info("onebot11")
+info["meta"]["version"]
+```
+
+---
+
+
+##### `get_meta(platform: str, *, resolve_i18n: bool = True) -> dict[str, Any] | None`
+
+获取适配器的介绍元信息（对齐 :meth:`ModuleManager.get_meta` 语义）
+
+元信息是适配器的**通用介绍数据**，供 help、Dashboard 适配器列表、
+适配器商店等各类界面 / 生态模块消费。来源为注册时传入的
+``info["meta"]``，缺失字段自动补全 ``name``。
+
+**i18n 支持**：字段值可为纯字符串，或 i18n 字典
+``{"i18n": "key.path", "default": "兜底文本"}``（与配置 description
+约定一致）。``resolve_i18n=True``（默认）时解析为当前语言文本；
+``False`` 时透传原始字典。
+
+- **platform**: 平台名
+- **resolve_i18n**: 是否解析 i18n 字典为当前语言文本（默认 True）
+
+**返回值**: 元信息字典；适配器未注册时返回 None
+
+**示例**:
+
+```python
+meta = adapter.get_meta("onebot11")
+meta["description"]  # 当前语言下的适配器简介
+```
+
+---
+
+
+##### `get(name: str | None = None, *, platform: str | None = None) -> BaseAdapter | None`
+
+获取指定平台的适配器实例
+
+- **name**: 平台名称
+- **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值**: 适配器实例或None
+
+> **提示**
+> 返回类型为泛型 ``_TAdapter``（默认为 BaseAdapter）。
+> 由于框架通过 entry_points 动态发现适配器，入口点无法静态获知
+> 具体平台类型；但返回的实例始终是具体适配器子类的实例，
+> 其 ``Send`` 属性提供标准发送方法（Text/Image/Voice/Video/File）的补全。
+> 若调用方与适配器同项目且能导入适配器类，可添加类型注解获得更精确补全：
+> ```python
+> adapter: MyAdapter = sdk.adapter.get("MyPlatform")
+> ```
+>
+> 跨项目调用时，直接使用返回值的基类接口即可获得标准方法补全：
+> ```python
+> adapter = sdk.adapter.get("MyPlatform")
+> await adapter.Send.To("user", "123").Text("Hello")  # 基类已声明 Text
+> ```
+>
+
+**示例**:
+
+```python
+adapter = adapter.get("MyPlatform")
+```
+
+---
+
+
+##### `is_running(name: str | None = None, *, platform: str | None = None) -> bool`
+
+检查适配器是否正在运行（已启动）
+
+- **name**: 平台名称
+- **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值**: 适配器是否正在运行
+
+**示例**:
+
+```python
+if adapter.is_running("onebot11"):
+    print("onebot11 适配器正在运行")
+```
+
+---
+
+
+##### `list_running() -> list[str]`
+
+列出所有正在运行的适配器（已启动）
+
+**返回值**: 平台名称列表
+
+**示例**:
+
+```python
+running = adapter.list_running()
+print("正在运行的适配器:", running)
+```
+
+---
+
+
+##### `get_connection_info(platform: str) -> dict[str, Any] | None`
+
+获取适配器的连接信息（路由URL、状态等）
+
+结合路由管理器的路由数据，返回指定平台适配器的完整连接信息，
+包括 base_url、HTTP 路由、WebSocket 路由和 SSE 路由的完整 URL。
+
+路由注册时的 ``module_name`` 必须与适配器的 ``platform`` 名称完全一致，
+否则路由信息将无法被正确关联。
+
+- **platform**: 平台名称
+
+**返回值**: 连接信息字典，平台不存在时返回 None
+
+**示例**:
+
+```python
+info = sdk.adapter.get_connection_info("onebot11")
+# {
+#     "platform": "onebot11",
+#     "status": "started",
+#     "connection": {
+#         "base_url": "http://localhost:8080",
+#         "http_routes": [
+#             {"path": "/onebot11/webhook", "method": "POST",
+#              "url": "http://localhost:8080/onebot11/webhook"}
+#         ],
+#         "websocket_routes": [
+#             {"path": "/onebot11/ws",
+#              "url": "ws://localhost:8080/onebot11/ws"}
+#         ],
+#         "sse_routes": [
+#             {"path": "/onebot11/events",
+#              "url": "http://localhost:8080/onebot11/events"}
+#         ]
+#     }
+# }
+```
+
+---
+
+
+##### `list_sends(platform: str) -> list[str]`
+
+列出指定平台支持的发送方法
+
+包含标准发送方法（Text/Image/Voice/Video/File/Raw_ob12）和平台特有方法，
+排除链式修饰方法（At/To/Hook/Retry 等）和属性。
+
+- **platform**: 平台名称
+
+**返回值**: 发送方法名列表
+
+**异常**: `ValueError` - 当平台不存在时抛出
+
+**示例**:
+
+```python
+methods = adapter.list_sends("onebot11")
+print(methods)  # ["File", "Image", "Raw_ob12", "Text", "Video", "Voice", ...]
+```
+
+---
+
+
+##### `send_info(platform: str, method_name: str) -> dict[str, Any]`
+
+获取指定发送方法的详细信息
+
+- **platform**: 平台名称
+- **method_name**: 发送方法名
+
+**返回值**: 方法信息字典，包含name, parameters, return_type, docstring
+
+**异常**: `ValueError` - 当平台或方法不存在时抛出
+
+**示例**:
+
+```python
+info = adapter.send_info("onebot11", "Text")
+print(info)
+# {
+#     "name": "Text",
+#     "parameters": [
+#         {"name": "text", "type": "str", "default": null, "annotation": "str"}
+#     ],
+#     "return_type": "Awaitable[Any]",
+#     "docstring": "发送文本消息..."
+# }
+```
+
+---
+
+
+##### `platforms -> list[str]`（property）
+
+获取所有已注册的平台列表
+
+**返回值**: 平台名称列表
+
+**示例**:
+
+```python
+print("已注册平台:", adapter.platforms)
+```
+
+---
+
+
+##### `__getattr__(platform: str) -> BaseAdapter`
+
+通过属性访问获取适配器实例
+
+- **platform**: 平台名称
+
+**返回值**: 适配器实例
+
+**异常**: `AttributeError` - 当平台不存在或未启用时
+
+---
+
+
+##### `__contains__(platform: str) -> bool`
+
+检查平台是否存在且处于启用状态
+
+- **platform**: 平台名称
+
+**返回值** (`bool`): 平台是否存在且启用
+
+---
+
