@@ -29,6 +29,8 @@
 - [Kook(开黑啦)平台特性](kook.md)
 - [Matrix平台特性](matrix.md)
 - [企业微信平台特性](wecom.md)
+- [Bilibili 平台特性](bilibili.md)
+- [Minecraft 平台特性](minecraft.md)
 - [QQ官方机器人平台特性](qqbot.md)
 - [花枫咖啡馆](ideaura.md)
 - [Discord](discord.md)

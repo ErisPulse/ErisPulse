@@ -130,6 +130,8 @@
   - `PollingAdapter` 批内单条上报失败隔离（单条异常不再丢弃余批）
   - `spawn_client_loop` 空 platform 时回退 owner 上下文兜底（空 owner 任务不再无人回收）
   - 文件监控停止 join 改有限超时（不再阻塞事件循环一个轮询周期）；预检与监控日志全面 i18n 化（五语言）
+  - 新增 Bilibili 私信适配器（Cookie/扫码双登录、事件驱动私信收发、图片消息、多账户，基于 bilibili-api-python）
+  - 新增 Minecraft RCON 适配器（全量命令执行、tellraw/say 发送、可选日志事件监听、多服务器，RCON 协议自实现零三方依赖）
   - 配置体系确立框架级《配置与 UI 元数据》规范（docs/zh-CN/developer-guide/configuration.md）：widget 名录、`show_if/disabled_if` 条件算子、`value_type` 值形态与消费方兼容性契约；`config_schema` 透传全部规范键（`min/max/step/rows/show_if/disabled_if/value_type/item`），供 Dashboard 2.4+ 等任意面板消费，旧消费方自动忽略
 
 ### 变更
