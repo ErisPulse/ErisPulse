@@ -21146,205 +21146,206 @@ enabled = true
 
 # ErisPulse PlatformFeatures ドキュメント
 
-> 基準プロトコル: [OneBot12](https://12.onebot.dev/)  
-> 本文書は**プラットフォーム固有の機能ガイド**であり、以下を含む：
-> - 各アダプタがサポートするSendメソッドの連鎖呼び出し例
-> - プラットフォーム固有のイベント/メッセージフォーマットの説明
+> 基準プロトコル：[OneBot12](https://12.onebot.dev/) 
 > 
-> 一般的な使用方法は以下のドキュメントを参照してください：
+> 本ドキュメントは**プラットフォーム固有機能ガイド**であり、以下の内容を含みます：
+> - 各アダプターが対応するSendメソッドの連鎖呼び出し（チェーン呼び出し）例
+> - プラットフォーム固有のイベント/メッセージ形式の説明
+> 
+> 一般的な使用方法については以下を参照してください：
 > - [基本概念](../getting-started/basic-concepts.md)
-> - [イベント変換基準](../standards/event-conversion.md)  
-> - [APIレスポンス規格](../standards/api-response.md)
+> - [イベント変換標準](../standards/event-conversion.md)  
+> - [APIレスポンス仕様](../standards/api-response.md)
 
 ---
 
 ## プラットフォーム固有機能
 
-このセクションは各アダプター開発者によって管理されており、そのアダプターと OneBot12 標準との差異および拡張機能について説明します。各プラットフォームの詳細なドキュメントは以下をご参照ください：
+このセクションは各アダプター開発者によって保守されており、そのアダプターとOneBot12標準との差分および拡張機能について説明するものです。以下の各プラットフォームの詳細ドキュメントを参照してください：
 
 - [メンテナンスガイド](maintain-notes.md)
 
-- [雲湖プラットフォーム特性](yunhu.md)
-- [雲湖ユーザープラットフォーム特性](yunhu_user.md)
+- [Yunhuプラットフォーム特性](yunhu.md)
+- [Yunhuユーザープラットフォーム特性](yunhu_user.md)
 - [Telegramプラットフォーム特性](telegram.md)
 - [OneBot11プラットフォーム特性](onebot11.md)
 - [OneBot12プラットフォーム特性](onebot12.md)
 - [SnowLumaプラットフォーム特性](snowluma.md)
 - [メールプラットフォーム特性](email.md)
-- [Kook(开黑啦)プラットフォーム特性](kook.md)
+- [Kookプラットフォーム特性](kook.md)
 - [Matrixプラットフォーム特性](matrix.md)
-- [企業微信（WeCom）プラットフォーム特性](wecom.md)
+- [WeCom（企業向けWeChat）プラットフォーム特性](wecom.md)
+- [Bilibili プラットフォーム特性](bilibili.md)
+- [Minecraft プラットフォーム特性](minecraft.md)
 - [QQ公式ボットプラットフォーム特性](qqbot.md)
-- [花楓カフェ](ideaura.md)
+- [花楓珈琲館](ideaura.md)
 - [Discord](discord.md)
 - [Webhookプロトコルブリッジ](webhook.md)
 - [WeChat公式アカウント](wechatmp.md)
 
-> また、`sandbox` アダプターもありますが、このアダプターについてはプラットフォーム特性ドキュメントの管理は不要です
+> また `sandbox` アダプターもありますが、このアダプターにはプラットフォーム特性ドキュメントの保守は不要です
 
 ---
 
-## 一般的なインターフェース
+## 共通インターフェース
 
-### Send 鏈式呼び出し
+### Send 連鎖呼び出し
+すべてのアダプターが以下の標準的な呼び出し方法に対応しています：
 
-すべてのアダプタは以下の標準的な呼び出し方法をサポートしています：
+> **注意：** ドキュメント内の `{AdapterName}` は実際のアダプター名（例： `yunhu`、`telegram`、`onebot11`、`email` など）に置き換えてください。
 
-> **注意:** ドキュメント内の `{AdapterName}` は実際のアダプタ名（例: `yunhu`、`telegram`、`onebot11`、`email` など）に置き換える必要があります。
-
-1. タイプとIDを指定: `To(type,id).Func()`
+1. タイプとIDを指定： `To(type,id).Func()`
    ```python
-   # アダプタインスタンスを取得
+   # アダプターインスタンスの取得
    my_adapter = adapter.get("{AdapterName}")
    
-   # メッセージを送信
+   # メッセージの送信
    await my_adapter.Send.To("user", "U1001").Text("Hello")
    
-   # 例:
+   # 例：
    yunhu = adapter.get("yunhu")
    await yunhu.Send.To("user", "U1001").Text("Hello")
    ```
-2. IDのみを指定: `To(id).Func()`
+2. IDのみ指定： `To(id).Func()`
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.To("U1001").Text("Hello")
    
-   # 例:
+   # 例：
    telegram = adapter.get("telegram")
    await telegram.Send.To("U1001").Text("Hello")
    ```
-3. 送信アカウントを指定: `Using(account_id)`
+3. 送信アカウントを指定： `Using(account_id)`
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.Using("bot1").To("U1001").Text("Hello")
    
-   # 例:
+   # 例：
    onebot11 = adapter.get("onebot11")
    await onebot11.Send.Using("bot1").To("U1001").Text("Hello")
    ```
-4. 直接呼び出し: `Func()`
+4. 直接呼び出し： `Func()`
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.Text("Broadcast message")
    
-   # 例:
+   # 例：
    email = adapter.get("email")
    await email.Send.Text("Broadcast message")
    ```
 
 #### 非同期送信と結果処理
 
-Send DSLのメソッドは`asyncio.Task`オブジェクトを返すため、結果を即座に待つか、後で待つかを選択できます：
+Send DSLのメソッドは `asyncio.Task` オブジェクトを返します。つまり、結果をすぐに待つかどうかを選択できます：
 
 ```python
-# アダプタインスタンスを取得
+# アダプターインスタンスの取得
 my_adapter = adapter.get("{AdapterName}")
 
-# 結果を待たずにバックグラウンドでメッセージを送信
+# 結果を待たずに、メッセージをバックグラウンドで送信
 task = my_adapter.Send.To("user", "123").Text("Hello")
 
-# 送信結果が必要な場合は、後で待つ
+# 送信結果を取得する必要がある場合は、後から待機できます
 result = await task
 ```
 
-#### 送信ルールデコレータ
+#### 送信ルールデコレーター
 
-実際の開発では、送信が成功した後に後続の処理を実行したい、失敗時に自動でリトライしたい、タイムアウトでキャンセルしたい、送信の進行状況を監視したいなどの要望があります。Send DSLには、これらの要望に応えるための送信ルールデコレータが組み込まれており、送信メソッドの前にチェーンでルールを追加できます：
+実際の開発では、送信成功後に後続のロジックを実行する、失敗時に自動リトライ、タイムアウト取消、送信進捗の監視などが必要になることがよくあります。Send DSLには送信ルールデコレーターが組み込まれており、連鎖メソッドを通じてルールを追加できます：
 
 | メソッド | 説明 |
 |--------|------|
-| `.Hook(callback)` | 送信が成功した後に実行されるコールバック（複数回呼び出せる） |
-| `.Retry(times=1)` | 失敗時にリトライをN回（初回含む、合計N+1回） |
-| `.Timeout(seconds)` | 単回送信のタイムアウト、タイムアウトでキャンセル（Retryと組み合わせ可） |
-| `.Defer(seconds)` | 送信を遅延（プロセス内での単純な遅延、永続化はしない） |
-| `.OnProgress(callback)` | 各段階の進行状況をコールバック、SendContextを渡す |
-| `.OnError(callback)` | 最終的に失敗した際のエラーコールバック（1回のみ発動） |
+| `.Hook(callback)` | 送信成功後に実行されるコールバック（複数回呼び出し可能） |
+| `.Retry(times=1)` | 失敗時に自動でN回リトライ（初回を含め計N+1回） |
+| `.Timeout(seconds)` | 単回送信のタイムアウト、超過で取消（Retryと併用可） |
+| `.Defer(seconds)` | 送信を遅延（プロセス内タイマー、永続化なし） |
+| `.OnProgress(callback)` | 各段階の進捗コールバック、SendContextを渡す |
+| `.OnError(callback)` | 最終失敗時のエラーコールバック（一度のみ発火） |
 
 ```python
 yunhu = adapter.get("yunhu")
 
-# 送信成功後にポイントを減らす
+# 送信成功後にポイントを減算
 await (yunhu.Send.To("user", "123")
        .Hook(lambda r: deduct_points("123"))
-       .Text("消費成功"))
+       .Text("消費が完了しました"))
 
-# 失敗リトライ + タイムアウトキャンセル + 進行状況の監視
+# 失敗時リトライ + タイムアウト取消 + 進捗監視
 def on_progress(ctx):
     print(f"段階: {ctx.stage}, 試行: {ctx.attempt + 1}/{ctx.max_attempts}")
 
 task = (yunhu.Send.To("user", "123")
         .Retry(3)              # 最大3回リトライ
-        .Timeout(10)           # 10秒でタイムアウト
+        .Timeout(10)           # 毎回10秒でタイムアウト
         .OnProgress(on_progress)
         .OnError(lambda ctx: notify_admin(ctx.error))
-        .Text("重要通知"))
+        .Text("重要なお知らせ"))
 ```
 
-ルールメソッドは`self`を返すため、送信メソッド（Text/Imageなど）の前に呼び出す必要があります。`SendContext`には`stage`（pending/sending/retrying/success/failed/timeout）、`attempt`、`elapsed`、`error`、`result`などのフィールドが含まれ、モニタリングに便利です。
+ルールメソッドは `self` を返すため、送信メソッド（Text/Imageなど）の前に呼び出す必要があります。`SendContext` には `stage`（pending/sending/retrying/success/failed/timeout）、`attempt`、`elapsed`、`error`、`result` などのフィールドが含まれ、監視に便利です。
 
-#### バッチ構築モード（Build）
+#### 一括構築モード（Build）
 
-1つのチェーンで複数の送信メソッドを構築し、最後にまとめて実行します。これは「一気に複数のメッセージを送信する」ような場面に適しています：
+1つのチェーン内で複数の送信メソッドを構築し、最後に一括実行します。「一度に複数のメッセージを送る」シナリオに適しています：
 
 ```python
 yunhu = adapter.get("yunhu")
 
-# 複数のメッセージを構築し、まとめて送信
+# 複数のメッセージを構築し、一括送信
 results = await (yunhu.Send.To("user", "123")
-                .Build()                     # 構築モードに入る
-                .Text("通知一")
+                .Build()                     # ビルドモードに入る
+                .Text("通知1")
                 .Image("pic.jpg")
-                .Text("通知二")
-                .send_all())                 # まとめて実行
-# results = [Textの結果, Imageの結果, Textの結果]
+                .Text("通知2")
+                .send_all())                 # 一括実行
+# results = [Text結果, Image結果, Text結果]
 ```
 
-`.send_all()`はデフォルトで**並列**実行（並行送信、効率的）です。順序を保証したい場合は`.Sequential()`で**直列**実行します：
+`.send_all()` はデフォルトで**並列**実行されます（同時送信で効率が高い）。メッセージの到着順序を保証する必要がある場合は、`.Sequential()` を呼び出して逐次実行します：
 
 ```python
-# 直列実行（順序を保証）+ 失敗リトライ
+# 逐次実行（順序保証）+ 失敗時リトライ
 await (yunhu.Send.To("group", "456")
        .Build()
-       .Sequential()                # 送信順序を保証
+       .Sequential()                # 順番に送信
        .Retry(2)                     # 失敗した項目はそれぞれリトライ
-       .Text("第一条").Text("第二条")
+       .Text("1つ目のメッセージ").Text("2つ目のメッセージ")
        .send_all())
 ```
 
-バッチ実行では**失敗継続**戦略を採用しています：1つのメッセージが失敗しても他のメッセージは中断されず、失敗したメッセージは自動でリトライされます。バッチ実行では、全メッセージが成功した後に発動する`Hook`、失敗した場合に発動する`OnError`、進行状況を監視する`OnProgress`もサポートしています。
+一括実行は**失敗継続**ポリシーを採用しています：ある項目が失敗しても他の項目は中断されず、失敗した項目は自動的にリトライされます。一括実行でもバッチ全体の `Hook`（全成功後に発火）、`OnError`（失敗があると発火）、`OnProgress`（進捗コールバック）に対応しています。
 
-> さらに詳細なルールとバッチ構築の説明は [SendDSL 詳解](../developer-guide/adapters/send-dsl.md) を参照してください。
+> より詳細なルールと一括構築の説明については、[SendDSL 詳解](../developer-guide/adapters/send-dsl.md) を参照してください。
 
-### イベント監視
+### イベントリスニング
+イベントのリスニング方法は3種類あります：
 
-3種類のイベント監視方法があります：
-
-1. プラットフォーム固有のイベント監視：
+1. プラットフォームネイティブイベントのリスニング：
    ```python
    from ErisPulse.Core import adapter, logger
    
    @adapter.on("event_type", raw=True, platform="{AdapterName}")
    async def handler(data):
-       logger.info(f"受信した{AdapterName}プラットフォームのイベント: {data}")
+       logger.info(f"{AdapterName}のネイティブイベントを受信: {data}")
    ```
 
-2. OneBot12標準イベント監視：
+2. OneBot12標準イベントのリスニング：
    ```python
    from ErisPulse.Core import adapter, logger
 
-   # OneBot12標準イベントを監視
+   # OneBot12標準イベントをリッスン
    @adapter.on("event_type")
    async def handler(data):
-       logger.info(f"受信した標準イベント: {data}")
+       logger.info(f"標準イベントを受信: {data}")
 
-   # 特定プラットフォームの標準イベントを監視
+   # 特定プラットフォームの標準イベントをリッスン
    @adapter.on("event_type", platform="{AdapterName}")
    async def handler(data):
-       logger.info(f"受信した{AdapterName}プラットフォームの標準イベント: {data}")
+       logger.info(f"{AdapterName}の標準イベントを受信: {data}")
    ```
 
-3. Eventモジュールによるイベント監視：
-    `Event`のイベントは`adapter.on()`関数に基づいているため、`Event`が提供するイベントフォーマットはOneBot12標準イベントです。
+3. Eventモジュールによるリスニング：
+    `Event`のイベントは `adapter.on()` 関数をベースとしているため、`Event`が提供するイベント形式はOneBot12標準イベントです
 
     ```python
     from ErisPulse.Core.Event import message, notice, request, command
@@ -21355,26 +21356,26 @@ await (yunhu.Send.To("group", "456")
     command("hello", help="挨拶メッセージを送信", usage="hello")(command_handler)
 
     async def message_handler(event):
-        logger.info(f"受信したメッセージ: {event}")
+        logger.info(f"メッセージを受信: {event}")
     async def notice_handler(event):
-        logger.info(f"受信した通知: {event})
+        logger.info(f"通知を受信: {event}")
     async def request_handler(event):
-        logger.info(f"受信したリクエスト: {event})
+        logger.info(f"リクエストを受信: {event}")
     async def command_handler(event):
-        logger.info(f"受信したコマンド: {event})
+        logger.info(f"コマンドを受信: {event}")
     ```
 
-この中で、最も推奨されるのは`Event`モジュールによるイベント処理です。`Event`モジュールは豊富なイベントタイプとイベント処理メソッドを提供しているためです。
+中でも最も推奨されるのは `Event` モジュールを使用したイベント処理です。`Event` モジュールは豊富なイベントタイプと豊富なイベント処理メソッドを提供しているためです。
 
 ---
 
-## 標準フォーマット
-参考のため、ここにイベントフォーマットの簡単な例を示します。詳細情報が必要な場合は、上記のリンクを参照してください。
+## 標準形式
+参考用として、ここでは簡単なイベント形式を示します。詳細情報が必要な場合は、上記のリンクを参照してください。
 
-> **注意:** 以下のフォーマットは基本的なOneBot12標準フォーマットであり、各アダプタはこの上に拡張フィールドを追加する可能性があります。具体的な内容は、各アダプタの特定機能の説明を参照してください。
+> **注意：** 以下の形式は基本的なOneBot12標準形式であり、各アダプターはこのベースに拡張フィールドを追加している場合があります。詳細は各アダプターの固有機能説明を参照してください。
 
-### 標準イベントフォーマット
-すべてのアダプタが実装するイベント変換フォーマット：
+### 標準イベント形式
+すべてのアダプターが実装しなければならないイベント変換形式：
 ```json
 {
   "id": "event_123",
@@ -21385,16 +21386,16 @@ await (yunhu.Send.To("group", "456")
   "self": {"platform": "example_platform", "user_id": "bot_123"},
   "message_id": "msg_abc",
   "message": [
-    {"type": "text", "data": {"text": "你好"}}
+    {"type": "text", "data": {"text": "こんにちは"}}
   ],
-  "alt_message": "你好",
+  "alt_message": "こんにちは",
   "user_id": "user_456",
   "user_nickname": "ExampleUser",
   "group_id": "group_789"
 }
 ```
 
-### 標準レスポンスフォーマット
+### 標準レスポンス形式
 #### メッセージ送信成功
 ```json
 {
@@ -21426,13 +21427,13 @@ await (yunhu.Send.To("group", "456")
 
 ---
 
-## 貢献の参加
+## コントリビューション
 
-開発者の方々からのさらなる貢献を歓迎します！以下の手順に従って、貢献を提出してください：
-1. [ErisPulse](https://github.com/ErisPulse/ErisPulse) リポジトリをForkします。
-2. `docs/platform-features/` ディレクトリにMarkdownファイルを作成し、`<プラットフォーム名>.md`という形式で命名します。
-3. 本`README.md`ファイルに、ご自身が貢献したアダプタへのリンクと、関連する公式ドキュメントを追加します。
-4. Pull Requestを提出します。
+より多くの開発者にアダプタードキュメントの執筆と保守への参加をご案内しています！以下の手順に従ってコントリビューションを提出してください：
+1. [ErisPuls](https://github.com/ErisPulse/ErisPulse) リポジトリをForkします。
+2. `docs/platform-features/` ディレクトリにMarkdownファイルを作成し、`<プラットフォーム名>.md` の形式で命名します。
+3. この `README.md` ファイルに、ご自身が貢献したアダプターへのリンクおよび関連公式ドキュメントを追加します。
+4. Pull Request を提出します。
 
 ご支援ありがとうございます！
 

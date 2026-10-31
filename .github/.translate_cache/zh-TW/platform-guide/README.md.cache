@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "6c9d7a78463d68d546ceac1e402f68bd",
-  "file_hash": "6c9d7a78463d68d546ceac1e402f68bd",
-  "translated_at": "2026-10-30T14:49:10.469008",
+  "hash": "18dbccef421517f647e639c8e00457e9",
+  "file_hash": "18dbccef421517f647e639c8e00457e9",
+  "translated_at": "2026-10-31T17:04:38.656376",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# ErisPulse PlatformFeatures 文件\n\n> 基線協議：[OneBot12](https://12.onebot.dev/)  \n> \n> 本文檔為**平台特定功能指南**，包含：\n> - 各適配器支援的Send方法鏈式呼叫範例\n> - 平台特有的事件/訊息格式說明\n> \n> 通用使用方法請參考：\n> - [基礎概念](../getting-started/basic-concepts.md)\n> - [事件轉換標準](../standards/event-conversion.md)  \n> - [API回應規範](../standards/api-response.md)\n\n---"
     },
     {
-      "hash": "fe36f73147d3e5c4caae82abca893811",
-      "translation": "## 平台特定功能\n\n此部分由各适配器開發者維護，用於說明該適配器與 OneBot12 標準的差異和擴展功能。請參考以下各平台的詳細文件：\n\n- [維護說明](maintain-notes.md)\n\n- [雲湖平台特性](yunhu.md)\n- [雲湖使用者平台特性](yunhu_user.md)\n- [Telegram平台特性](telegram.md)\n- [OneBot11平台特性](onebot11.md)\n- [OneBot12平台特性](onebot12.md)\n- [SnowLuma平台特性](snowluma.md)\n- [郵件平台特性](email.md)\n- [Kook(開黑啦)平台特性](kook.md)\n- [Matrix平台特性](matrix.md)\n- [企業微信平台特性](wecom.md)\n- [QQ官方機器人平台特性](qqbot.md)\n- [花楓咖啡館](ideaura.md)\n- [Discord](discord.md)\n- [Webhook協定橋](webhook.md)\n- [微信公眾號](wechatmp.md)\n\n> 此外還有 `sandbox` 適配器，但此適配器無需維護平台特性文件\n\n---"
+      "hash": "ff61b7e9066fc8e8b112a71c142cbcd6",
+      "translation": "## 平台特定功能\n\n此部分由各适配器開發者維護，用於說明該適配器與 OneBot12 標準的差異和擴展功能。請參考以下各平台的詳細文件：\n\n- [維護說明](maintain-notes.md)\n\n- [雲湖平台特性](yunhu.md)\n- [雲湖用戶平台特性](yunhu_user.md)\n- [Telegram 平台特性](telegram.md)\n- [OneBot11 平台特性](onebot11.md)\n- [OneBot12 平台特性](onebot12.md)\n- [SnowLuma 平台特性](snowluma.md)\n- [郵件平台特性](email.md)\n- [Kook(開黑啦) 平台特性](kook.md)\n- [Matrix 平台特性](matrix.md)\n- [企業微信平台特性](wecom.md)\n- [Bilibili 平台特性](bilibili.md)\n- [Minecraft 平台特性](minecraft.md)\n- [QQ官方機器人平台特性](qqbot.md)\n- [花楓咖啡館](ideaura.md)\n- [Discord](discord.md)\n- [Webhook協議橋](webhook.md)\n- [微信公眾號](wechatmp.md)\n\n> 此外還有 `sandbox` 適配器，但此適配器無需維護平台特性文件\n\n---"
     },
     {
       "hash": "98f6593d1e3961cc8fc3ee0945986047",

@@ -46,11 +46,11 @@ AI 按需读取：只读需要的章节即可，不必全文加载。
 - 14 個工具概覽: 819-829 行
 - 安全要點: 831-838 行
 - 平台指南索引: 840-857 行
-- 平台特定功能: 859-883 行
-- 通用介面: 885-1063 行
-- 標準格式: 1065-1121 行
-- 參考連結: 1123-1133 行
-- 參與貢獻: 1135-1145 行
+- 平台特定功能: 859-885 行
+- 通用介面: 887-1065 行
+- 標準格式: 1067-1123 行
+- 參考連結: 1125-1135 行
+- 參與貢獻: 1137-1147 行
 
 ## 生态总览
 
@@ -863,19 +863,21 @@ Claude Desktop ──MCP(stdio)──► erispulse-apimcp ──HTTP──► �
 - [維護說明](maintain-notes.md)
 
 - [雲湖平台特性](yunhu.md)
-- [雲湖使用者平台特性](yunhu_user.md)
-- [Telegram平台特性](telegram.md)
-- [OneBot11平台特性](onebot11.md)
-- [OneBot12平台特性](onebot12.md)
-- [SnowLuma平台特性](snowluma.md)
+- [雲湖用戶平台特性](yunhu_user.md)
+- [Telegram 平台特性](telegram.md)
+- [OneBot11 平台特性](onebot11.md)
+- [OneBot12 平台特性](onebot12.md)
+- [SnowLuma 平台特性](snowluma.md)
 - [郵件平台特性](email.md)
-- [Kook(開黑啦)平台特性](kook.md)
-- [Matrix平台特性](matrix.md)
+- [Kook(開黑啦) 平台特性](kook.md)
+- [Matrix 平台特性](matrix.md)
 - [企業微信平台特性](wecom.md)
+- [Bilibili 平台特性](bilibili.md)
+- [Minecraft 平台特性](minecraft.md)
 - [QQ官方機器人平台特性](qqbot.md)
 - [花楓咖啡館](ideaura.md)
 - [Discord](discord.md)
-- [Webhook協定橋](webhook.md)
+- [Webhook協議橋](webhook.md)
 - [微信公眾號](wechatmp.md)
 
 > 此外還有 `sandbox` 適配器，但此適配器無需維護平台特性文件

@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "hash": "2e5f08e5c95e85cbf69896230f8ed464",
+  "file_hash": "2e5f08e5c95e85cbf69896230f8ed464",
+  "translated_at": "2026-10-31T17:07:57.602247",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "cd699312a673e3b564f19bc5f28b77ab",
+      "translation": "# Minecraft プラットフォーム機能ドキュメント\n\nMinecraftAdapter は、RCON プロトコルに基づく Minecraft Java 版サーバー向けアダプターで、コマンドの実行、メッセージの送信、ログイベントのリスニングをサポートします。\n\n---"
+    },
+    {
+      "hash": "60e1b88c6dac705e8df300523e98c7c7",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 0.1.0\n- メンテナー: ErisPulse"
+    },
+    {
+      "hash": "2e9059888476f5e99218491b3e1b846c",
+      "translation": "## 基本情報\n\n- プラットフォーム概要：Minecraft Java版サーバーボット（RCON リモートコンソール経由）\n- アダプター名：MinecraftAdapter\n- 複数サーバー対応：対応（アカウントごとに 1 サーバー、切断時に自動再接続）\n- 接続方式：RCON TCP 常時接続（キープアライブ + 指数バックオフによる再接続）\n- 認証方式：RCON パスワード（server.properties の rcon.password）\n- イベント監視：ログ tail（オプション、チャット/参加/退出）\n- メソッドチェーン対応：対応（`.At()` などのチェーン修飾メソッド）\n- OneBot12 互換：text セグメントのみ（RCON ではメディア送信不可）"
+    },
+    {
+      "hash": "67dc472813cf2231db607d0f2d0817ae",
+      "translation": "## サーバーの事前設定\n\n`server.properties`：\n\n```properties\nenable-rcon=true\nrcon.port=25575\nrcon.password=your_rcon_password\n```"
+    },
+    {
+      "hash": "a40f38d45044f1ecf26b0c1ed8261191",
+      "translation": "## 設定の説明\n\n```toml\n[MinecraftAdapter.accounts.default]\nhost = \"127.0.0.1\"             # RCON サーバーアドレス\nport = 25575                   # RCON ポート\npassword = \"your_rcon_password\"\nbot_id = \"\"                    # 空欄の場合はアカウント名がデフォルト\nenable_log_tail = false        # ログ監視の有効化（チャット/参加/退出イベント）\nlog_path = \"logs/latest.log\"   # ログファイルのパス\npoll_interval = 1.0            # ログスキャン間隔（秒）\nenabled = true\n```\n\n**設定項目の説明（各アカウント）：**\n\n- `host` / `port` / `password`：RCON エンドポイント（必須）\n- `bot_id`：イベントにおけるボットの識別子（デフォルトはアカウント名）、全サーバーブロードキャストの `group_id` としても使用されます\n- `enable_log_tail`：ログイベントのスイッチ（デフォルトはオフ）。オフの場合、アダプターは純粋なコマンドモードになります（送信のみ、イベントは発生しない）\n- `log_path`：ログファイルのパス。アダプターとサーバーが**同一マシン上で実行**されているか、ログディレクトリがマウントされている必要があります。ログローテーションに対応（latest.log のローテーション後、読み取り位置を自動的にリセット）\n- `poll_interval`：ログスキャン間隔（秒、最小 0.2）"
+    },
+    {
+      "hash": "4ec5336232dd77d3a1509711f7091c97",
+      "translation": "## メッセージ送信\n\nすべての送信メソッドは Task を返し、await 後に標準レスポンスが得られます（「戻り値フォーマット」を参照）。\n\n### 基本送信\n\n```python\nfrom ErisPulse import sdk\nmc = sdk.adapter.get(\"minecraft\")\n\n# 単一ユーザーへのメッセージ（tellraw プレーンテキスト）\nawait mc.Send.To(\"user\", \"Steve\").Text(\"Hello Steve\")\n\n# 全サーバーへのブロードキャスト（say）\nawait mc.Send.To(\"server\", \"myserver\").Text(\"サーバー全体へのブロードキャスト\")\n```\n\n### チェーン修飾メソッド\n\n```python\n# @プレイヤー（tellraw 内でインライン表示としてプレイヤー名をレンダリング）\nawait mc.Send.To(\"server\", \"myserver\").At(\"Steve\").Text(\" これを見て\")\n```\n\n### 複数サーバーへの送信\n\n```python\nawait mc.Send.Using(\"server2\").To(\"server\", \"s2\").Text(\"2台目のサーバーから\")\n```\n\n### サポート対象と非対応のメッセージセグメント\n\n| セグメント | 対応状況 | 説明 |\n|----|------|------|\n| `text` | 対応 | 連結後、ターゲットタイプに応じて tellraw / say に変換 |\n| `mention` | 対応 | プレイヤー名としてインライン表示 |\n| `reply` | 部分対応 | 受け付けるが Minecraft には引用表示なし |\n| `image` / `audio` / `video` / `file` | 非対応 | `retcode=10002` を返し、セグメントタイプを列挙 |\n\n### ターゲットタイプ\n\n| target_type | 動作 |\n|-------------|------|\n| `user` | `tellraw <プレイヤー名> {\"text\":\"...\"}` 該当プレイヤーのみに表示 |\n| `server` / `group` | `say <内容>` 全サーバーへのブロードキャスト（group_id は bot_id） |"
+    },
+    {
+      "hash": "35e38104137c6f17bb9c7ca18835fc7e",
+      "translation": "## 標準 API アクション（Api）\n\n```python\nfrom ErisPulse import sdk\nmc = sdk.adapter.get(\"minecraft\")\n\n# オンラインプレイヤーリスト（list コマンドの出力を解析）\nresult = await mc.Api.get_player_list()       # {\"players\": [\"Steve\", \"Alex\"], \"raw\": \"...\"}\n\n# 接続状態\nresult = await mc.Api.get_status()            # {\"status\": \"ok\", \"connected\": true}\n\n# サーバー識別情報\nresult = await mc.Api.get_self_info()         # {user_id, user_name, host}\n\n# バージョン\nresult = await mc.Api.get_version()\n\n# 複数サーバー\nresult = await mc.Api.Using(\"server2\").get_player_list()\n```\n\n### サポートされている標準アクション\n\n| メソッド | 説明 | データソース |\n|------|------|---------|\n| `get_status()` | RCON 接続状態 | ローカル |\n| `get_self_info()` | サーバー識別情報（bot_id/アカウント名/host:port） | ローカル |\n| `get_player_list()` | オンラインプレイヤーリスト（`list` コマンドの出力を解析） | RCON |\n| `get_version()` | アダプターバージョン | ローカル |\n\n### プラットフォーム拡張アクション\n\n`Api.exec(cmd)` により任意の RCON コマンドを実行できます（`call_api(\"exec\", command=...)` と同等）：\n\n```python\n# ホワイトリスト管理\nawait mc.Api.exec(\"whitelist add Alex\")\nawait mc.Api.exec(\"whitelist remove Alex\")\n\n# サーバー管理\nawait mc.Api.exec(\"time set day\")\nawait mc.Api.exec(\"weather clear\")\nawait mc.Api.exec(\"op Alex\")\nawait mc.Api.exec(\"kick Steve\")\n\n# データとスコアボード\nawait mc.Api.exec(\"scoreboard objectives add kills deathCount\")\n```\n\n> **セキュリティに関する注意**：`Api.exec` はサーバーコンソールの完全な権限（stop/deop などを含む）を持っています。認証されていないエントリポイントを信頼できない呼び出し元に公開しないでください。\n\n### サポートされていない標準アクション\n\n以下の標準アクションには RCON に対応する機能がなく、呼び出すと `retcode=10002` または `33001`（未接続）が返されます：\n\n- `delete_message`（Minecraft にはメッセージの取り消し機能がありません）\n- `get_friend_list` / `get_group_list`（`get_player_list` で代用してください）\n\n### 汎用アクションエントリポイント\n\n```python\n# send_message：Send チェーンと同等\nresult = await mc.call_api(\n    \"send_message\",\n    _account_id=\"default\",\n    target_type=\"user\", target_id=\"Steve\",\n    message=[{\"type\": \"text\", \"data\": {\"text\": \"hi\"}}],\n)\n```"
+    },
+    {
+      "hash": "c9698f9426cbed951e173a97aeabdfc2",
+      "translation": "## 送信メソッドの戻り値\n\n```python\n{\n    \"status\": \"ok\",                  # ok / failed\n    \"retcode\": 0,                    # 0 成功；33001 未接続/実行失敗；10002 非対応\n    \"data\": {\"command_output\": \"...\"},  # RCON コマンドの応答出力\n    \"self\": {\"platform\": \"minecraft\", \"user_id\": \"mc1\"},\n    \"message_id\": \"uuid\",            # 生成されたメッセージ識別子（tellraw/say には実際のメッセージ ID なし）\n    \"message\": \"\",\n    \"minecraft_raw\": {\"output\": \"...\"}\n}\n```"
+    },
+    {
+      "hash": "96827ce76c62f208955bd3ba1dda8277",
+      "translation": "## イベントタイプ（enable_log_tail = true）\n\n本プラットフォームの機能を使用するには、`platform == \"minecraft\"` の判定が必要です。**RCON プロトコルではチャットイベントを受信できません**（純粋なリクエスト・レスポンスプロトコルのため）、イベント機能はログ監視に依存します。\n\n### イベントマッピング\n\n| サーバーログ行 | Adapter イベント | 説明 |\n|--------------|--------------|------|\n| `[12:34:56] [...]: <Steve> こんにちは` | message（`detail_type: server`） | プレイヤーのチャット |\n| `[12:35:00] [...]: Alex joined the game` | notice（`detail_type: server_joined`） | プレイヤーの参加 |\n| `[12:36:00] [...]: Alex left the game` | notice（`detail_type: server_left`） | プレイヤーの退出 |\n\n### イベントフィールドの例\n\n```python\n# チャット\n{\n  \"id\": \"uuid\",\n  \"time\": 1793277000,\n  \"type\": \"message\",\n  \"detail_type\": \"server\",\n  \"platform\": \"minecraft\",\n  \"self\": {\"platform\": \"minecraft\", \"user_id\": \"mc1\", \"user_name\": \"mc1\", \"account_id\": \"default\"},\n  \"user_id\": \"Steve\",                      # プレイヤー名\n  \"message\": [{\"type\": \"text\", \"data\": {\"text\": \"こんにちは世界\"}}],\n  \"alt_message\": \"こんにちは世界\",\n  \"group_id\": \"mc1\",                       # bot_id\n  \"minecraft_raw\": {\"line\": \"[12:34:56] [Server thread/INFO]: <Steve> こんにちは世界\"},\n  \"minecraft_raw_type\": \"log_line\"\n}\n\n# 参加（notice）\n{\n  \"type\": \"notice\",\n  \"detail_type\": \"server_joined\",          # または server_left\n  \"user_id\": \"Alex\",\n  \"operator_id\": \"Alex\",\n  \"group_id\": \"mc1\",\n  \"minecraft_raw\": {\"line\": \"...\"},\n  \"minecraft_raw_type\": \"log_line\"\n}\n```\n\n### ループバックの重複排除\n\n`say` / `tellraw` コマンドのエコーも同様にログへ書き込まれます。アダプターは送信時に内容のフィンガープリントを記録し（30 秒のウィンドウ）、ログに同じ内容が現れた場合は送信をスキップすることで、bot が送信したメッセージが受信イベントとしてループバックされるのを防ぎます。"
+    },
+    {
+      "hash": "33e033d0ae6e80d8bd6e40a874adc14b",
+      "translation": "## 注意事項\n\n1. **RCON ではチャットイベントを受信できない**：プロトコル自体の制限（純粋なリクエスト・レスポンス型）のため、イベント機能にはログ監視の有効化が必須\n2. **ログパスの到達可能性**：アダプターはサーバーと同一マシンで実行するか、ログディレクトリがマウントされている必要がある（コンテナ環境では `logs/` をマウント）\n3. **ログフォーマット**：vanilla / 主要サーバー（Paper、Fabric など）のデフォルトフォーマットに依存；ログフォーマットを変更したプラグイン（カスタム chat プラグインなど）は解析できない場合がある\n4. **RCON の同時実行制限**：Minecraft RCON は単一接続での逐次処理；アダプターにはロックとキープアライブ（30秒ごとの空コマンド）が組み込まれている\n5. **ループバック重複排除ウィンドウ**：30秒以内の同一内容は 1 回のみ発火\n6. **セキュリティ**：`Api.exec` はコンソールレベルの権限を持つため、信頼できない呼び出し元に公開しないこと"
+    }
+  ]
+}

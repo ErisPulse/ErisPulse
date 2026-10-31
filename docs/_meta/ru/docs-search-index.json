@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1921,
+  "total_keywords": 1941,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -6709,19 +6709,19 @@
     "Асинхронная отправка и обработка результатов": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3886,
+        "line": 3888,
         "level": 4,
         "title": "Асинхронная отправка и обработка результатов"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 970,
+        "line": 972,
         "level": 4,
         "title": "Асинхронная отправка и обработка результатов"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 89,
+        "line": 91,
         "level": 4,
         "title": "Асинхронная отправка и обработка результатов"
       }
@@ -6836,6 +6836,18 @@
       {
         "document": "getting-started/basic-concepts.md",
         "line": 295,
+        "level": 3,
+        "title": "Базовая отправка"
+      },
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 51,
+        "level": 3,
+        "title": "Базовая отправка"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 59,
         "level": 3,
         "title": "Базовая отправка"
       },
@@ -8565,19 +8577,19 @@
     "Декораторы правил отправки": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3901,
+        "line": 3903,
         "level": 4,
         "title": "Декораторы правил отправки"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 985,
+        "line": 987,
         "level": 4,
         "title": "Декораторы правил отправки"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 104,
+        "line": 106,
         "level": 4,
         "title": "Декораторы правил отправки"
       }
@@ -8732,12 +8744,28 @@
         "title": "Документация по функционалу платформы RockyChat"
       }
     ],
+    "Документация по функциональности платформы Bilibili": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 1,
+        "level": 1,
+        "title": "Документация по функциональности платформы Bilibili"
+      }
+    ],
     "Документация по функциональным возможностям платформы Matrix": [
       {
         "document": "platform-guide/matrix.md",
         "line": 1,
         "level": 1,
         "title": "Документация по функциональным возможностям платформы Matrix"
+      }
+    ],
+    "Документация по функциональным возможностям платформы Minecraft": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 1,
+        "level": 1,
+        "title": "Документация по функциональным возможностям платформы Minecraft"
       }
     ],
     "Документация по функциональным возможностям почтовой платформы": [
@@ -8762,6 +8790,26 @@
         "line": 1,
         "level": 1,
         "title": "Документация по функциям платформы Discord"
+      }
+    ],
+    "Документация по функциям платформы ErisPulse": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3798,
+        "level": 1,
+        "title": "Документация по функциям платформы ErisPulse"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 882,
+        "level": 1,
+        "title": "Документация по функциям платформы ErisPulse"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Документация по функциям платформы ErisPulse"
       }
     ],
     "Документация по функциям платформы Kook": [
@@ -8826,26 +8874,6 @@
         "line": 1,
         "level": 1,
         "title": "Документация по функциям платформы пользователей Yunhu"
-      }
-    ],
-    "Документация функций платформы ErisPulse": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3798,
-        "level": 1,
-        "title": "Документация функций платформы ErisPulse"
-      },
-      {
-        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 882,
-        "level": 1,
-        "title": "Документация функций платформы ErisPulse"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "Документация функций платформы ErisPulse"
       }
     ],
     "Дополните три ключевых компонента адаптера": [
@@ -9908,6 +9936,12 @@
     ],
     "Информация о документации": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 7,
+        "level": 2,
+        "title": "Информация о документации"
+      },
+      {
         "document": "platform-guide/discord.md",
         "line": 7,
         "level": 2,
@@ -9933,6 +9967,12 @@
       },
       {
         "document": "platform-guide/matrix.md",
+        "line": 7,
+        "level": 2,
+        "title": "Информация о документации"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
         "line": 7,
         "level": 2,
         "title": "Информация о документации"
@@ -12052,6 +12092,14 @@
         "title": "Методы управления сообщениями"
       }
     ],
+    "Методы цепочек модификаторов": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 65,
+        "level": 3,
+        "title": "Методы цепочек модификаторов"
+      }
+    ],
     "Методы цепочечного вызова (возвращают self для поддержки цепочечного вызова)": [
       {
         "document": "platform-guide/onebot12.md",
@@ -12072,6 +12120,14 @@
         "line": 125,
         "level": 3,
         "title": "Методы цепочечного изменения"
+      }
+    ],
+    "Методы цепочечного модификатора": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 72,
+        "level": 3,
+        "title": "Методы цепочечного модификатора"
       }
     ],
     "Методы цепочечного модификатора (можно комбинировать)": [
@@ -12704,6 +12760,18 @@
     ],
     "Неподдерживаемые стандартные действия": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 130,
+        "level": 3,
+        "title": "Неподдерживаемые стандартные действия"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 153,
+        "level": 3,
+        "title": "Неподдерживаемые стандартные действия"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 310,
         "level": 3,
@@ -12721,19 +12789,19 @@
     "Неудачная отправка сообщения": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4064,
+        "line": 4066,
         "level": 4,
         "title": "Неудачная отправка сообщения"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1148,
+        "line": 1150,
         "level": 4,
         "title": "Неудачная отправка сообщения"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 267,
+        "line": 269,
         "level": 4,
         "title": "Неудачная отправка сообщения"
       }
@@ -13645,19 +13713,19 @@
     "Общие интерфейсы": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3839,
+        "line": 3841,
         "level": 2,
         "title": "Общие интерфейсы"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 923,
+        "line": 925,
         "level": 2,
         "title": "Общие интерфейсы"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 42,
+        "line": 44,
         "level": 2,
         "title": "Общие интерфейсы"
       }
@@ -13740,6 +13808,22 @@
         "line": 727,
         "level": 3,
         "title": "Общий request"
+      }
+    ],
+    "Общий вход для действий": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 138,
+        "level": 3,
+        "title": "Общий вход для действий"
+      }
+    ],
+    "Общий входной интерфейс действий": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 160,
+        "level": 3,
+        "title": "Общий входной интерфейс действий"
       }
     ],
     "Объединённая пересылка": [
@@ -14142,6 +14226,12 @@
     ],
     "Описание дополнительных полей": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 197,
+        "level": 3,
+        "title": "Описание дополнительных полей"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 465,
         "level": 2,
@@ -14204,6 +14294,12 @@
     ],
     "Описание конфигурации": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 22,
+        "level": 2,
+        "title": "Описание конфигурации"
+      },
+      {
         "document": "platform-guide/discord.md",
         "line": 23,
         "level": 2,
@@ -14218,6 +14314,12 @@
       {
         "document": "platform-guide/kook.md",
         "line": 22,
+        "level": 2,
+        "title": "Описание конфигурации"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 33,
         "level": 2,
         "title": "Описание конфигурации"
       },
@@ -14534,6 +14636,12 @@
     ],
     "Основная информация": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 12,
+        "level": 2,
+        "title": "Основная информация"
+      },
+      {
         "document": "platform-guide/discord.md",
         "line": 13,
         "level": 2,
@@ -14559,6 +14667,12 @@
       },
       {
         "document": "platform-guide/matrix.md",
+        "line": 12,
+        "level": 2,
+        "title": "Основная информация"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
         "line": 12,
         "level": 2,
         "title": "Основная информация"
@@ -15322,6 +15436,14 @@
         "title": "Отправка медиа-сообщений"
       }
     ],
+    "Отправка на несколько серверов": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 79,
+        "level": 3,
+        "title": "Отправка на несколько серверов"
+      }
+    ],
     "Отправка оригинальных сообщений": [
       {
         "document": "platform-guide/telegram.md",
@@ -15352,6 +15474,14 @@
         "title": "Отправка результата рендеринга"
       }
     ],
+    "Отправка с использованием нескольких аккаунтов": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 82,
+        "level": 3,
+        "title": "Отправка с использованием нескольких аккаунтов"
+      }
+    ],
     "Отправка события `meta`": [
       {
         "document": "api-reference/adapter-system.md",
@@ -15371,6 +15501,18 @@
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
         "line": 1037,
         "level": 3,
+        "title": "Отправка сообщений"
+      },
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 47,
+        "level": 2,
+        "title": "Отправка сообщений"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 55,
+        "level": 2,
         "title": "Отправка сообщений"
       },
       {
@@ -15460,6 +15602,14 @@
         "line": 1064,
         "level": 3,
         "title": "Отправка сообщения с указанием аккаунта"
+      }
+    ],
+    "Отправка стандартных сегментов OneBot12": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 72,
+        "level": 3,
+        "title": "Отправка стандартных сегментов OneBot12"
       }
     ],
     "Отслеживание всех сообщений": [
@@ -16036,26 +16186,6 @@
         "title": "Платформенно-специфичные модифицирующие методы"
       }
     ],
-    "Платформенно-специфичные функции": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3813,
-        "level": 2,
-        "title": "Платформенно-специфичные функции"
-      },
-      {
-        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 897,
-        "level": 2,
-        "title": "Платформенно-специфичные функции"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 16,
-        "level": 2,
-        "title": "Платформенно-специфичные функции"
-      }
-    ],
     "Платформенные расширения": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -16074,6 +16204,26 @@
         "line": 194,
         "level": 2,
         "title": "Платформенные расширения"
+      }
+    ],
+    "Платформенные функции": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3813,
+        "level": 2,
+        "title": "Платформенные функции"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 897,
+        "level": 2,
+        "title": "Платформенные функции"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 16,
+        "level": 2,
+        "title": "Платформенные функции"
       }
     ],
     "Платформо-специфические события и расширенные сегменты": [
@@ -16194,6 +16344,20 @@
         "title": "Поддерживаемые возможности платформы"
       }
     ],
+    "Поддерживаемые и неподдерживаемые сегменты сообщений": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 88,
+        "level": 3,
+        "title": "Поддерживаемые и неподдерживаемые сегменты сообщений"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 85,
+        "level": 3,
+        "title": "Поддерживаемые и неподдерживаемые сегменты сообщений"
+      }
+    ],
     "Поддерживаемые исходные типы событий": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -16211,6 +16375,18 @@
       }
     ],
     "Поддерживаемые стандартные действия": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 120,
+        "level": 3,
+        "title": "Поддерживаемые стандартные действия"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 123,
+        "level": 3,
+        "title": "Поддерживаемые стандартные действия"
+      },
       {
         "document": "platform-guide/yunhu.md",
         "line": 297,
@@ -17254,6 +17430,14 @@
         "title": "Правила чтения"
       }
     ],
+    "Предварительная настройка сервера": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 23,
+        "level": 2,
+        "title": "Предварительная настройка сервера"
+      }
+    ],
     "Предварительные знания": [
       {
         "document": "advanced/README.md",
@@ -17510,6 +17694,14 @@
         "title": "Пример ответа с ошибкой"
       }
     ],
+    "Пример полей события": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 178,
+        "level": 3,
+        "title": "Пример полей события"
+      }
+    ],
     "Пример преобразования сообщений с мультимедиа": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -17660,6 +17852,14 @@
         "line": 136,
         "level": 3,
         "title": "Примеры отправки"
+      }
+    ],
+    "Примеры полей событий": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 198,
+        "level": 3,
+        "title": "Примеры полей событий"
       }
     ],
     "Примеры событий": [
@@ -17842,8 +18042,20 @@
         "title": "Примечания"
       },
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 203,
+        "level": 2,
+        "title": "Примечания"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 498,
+        "level": 2,
+        "title": "Примечания"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 233,
         "level": 2,
         "title": "Примечания"
       },
@@ -19000,6 +19212,12 @@
     ],
     "Расширенные действия платформы": [
       {
+        "document": "platform-guide/minecraft.md",
+        "line": 132,
+        "level": 3,
+        "title": "Расширенные действия платформы"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 317,
         "level": 3,
@@ -19281,19 +19499,19 @@
     "Режим построения пакетов (Build)": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3936,
+        "line": 3938,
         "level": 4,
         "title": "Режим построения пакетов (Build)"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1020,
+        "line": 1022,
         "level": 4,
         "title": "Режим построения пакетов (Build)"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 139,
+        "line": 141,
         "level": 4,
         "title": "Режим построения пакетов (Build)"
       }
@@ -20851,13 +21069,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3969,
+        "line": 3971,
         "level": 3,
         "title": "Слушатели событий"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1053,
+        "line": 1055,
         "level": 3,
         "title": "Слушатели событий"
       },
@@ -20869,7 +21087,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 172,
+        "line": 174,
         "level": 3,
         "title": "Слушатели событий"
       }
@@ -21504,6 +21722,20 @@
         "title": "Сопоставление методов Api DSL (YunhuHTTPClient → конечная точка v1 API пользователя)"
       }
     ],
+    "Сопоставление событий": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 170,
+        "level": 3,
+        "title": "Сопоставление событий"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 190,
+        "level": 3,
+        "title": "Сопоставление событий"
+      }
+    ],
     "Сопоставление типов событий": [
       {
         "document": "platform-guide/onebot11.md",
@@ -22009,19 +22241,19 @@
     "Ссылки": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4079,
+        "line": 4081,
         "level": 2,
         "title": "Ссылки"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1163,
+        "line": 1165,
         "level": 2,
         "title": "Ссылки"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 282,
+        "line": 284,
         "level": 2,
         "title": "Ссылки"
       }
@@ -22156,6 +22388,20 @@
         "title": "Стандартные API-действия"
       }
     ],
+    "Стандартные API-действия (Api)": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 97,
+        "level": 2,
+        "title": "Стандартные API-действия (Api)"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 101,
+        "level": 2,
+        "title": "Стандартные API-действия (Api)"
+      }
+    ],
     "Стандартные API-действия (DSL)": [
       {
         "document": "platform-guide/snowluma.md",
@@ -22265,19 +22511,19 @@
     "Стандартные форматы": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4021,
+        "line": 4023,
         "level": 2,
         "title": "Стандартные форматы"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1105,
+        "line": 1107,
         "level": 2,
         "title": "Стандартные форматы"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 224,
+        "line": 226,
         "level": 2,
         "title": "Стандартные форматы"
       }
@@ -22285,19 +22531,19 @@
     "Стандартный формат ответа": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4047,
+        "line": 4049,
         "level": 3,
         "title": "Стандартный формат ответа"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1131,
+        "line": 1133,
         "level": 3,
         "title": "Стандартный формат ответа"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 250,
+        "line": 252,
         "level": 3,
         "title": "Стандартный формат ответа"
       }
@@ -22305,19 +22551,19 @@
     "Стандартный формат событий": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4026,
+        "line": 4028,
         "level": 3,
         "title": "Стандартный формат событий"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1110,
+        "line": 1112,
         "level": 3,
         "title": "Стандартный формат событий"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 229,
+        "line": 231,
         "level": 3,
         "title": "Стандартный формат событий"
       }
@@ -22914,10 +23160,24 @@
         "title": "Типы событий"
       },
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 166,
+        "level": 2,
+        "title": "Типы событий"
+      },
+      {
         "document": "platform-guide/wechatmp.md",
         "line": 51,
         "level": 2,
         "title": "Типы событий"
+      }
+    ],
+    "Типы событий (при enable_log_tail = true)": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 186,
+        "level": 2,
+        "title": "Типы событий (при enable_log_tail = true)"
       }
     ],
     "Типы событий, специфичные для платформы": [
@@ -22948,6 +23208,14 @@
         "line": 280,
         "level": 3,
         "title": "Типы сообщений"
+      }
+    ],
+    "Типы целей": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 94,
+        "level": 3,
+        "title": "Типы целей"
       }
     ],
     "Тонкое управление во время выполнения": [
@@ -23126,6 +23394,14 @@
         "line": 220,
         "level": 3,
         "title": "Удаление данных"
+      }
+    ],
+    "Удаление дубликатов": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 229,
+        "level": 3,
+        "title": "Удаление дубликатов"
       }
     ],
     "Удаление компонентов": [
@@ -23529,19 +23805,19 @@
     "Успешная отправка сообщения": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4048,
+        "line": 4050,
         "level": 4,
         "title": "Успешная отправка сообщения"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1132,
+        "line": 1134,
         "level": 4,
         "title": "Успешная отправка сообщения"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 251,
+        "line": 253,
         "level": 4,
         "title": "Успешная отправка сообщения"
       }
@@ -23725,19 +24001,19 @@
     "Участие в разработке": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4091,
+        "line": 4094,
         "level": 2,
         "title": "Участие в разработке"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1175,
+        "line": 1178,
         "level": 2,
         "title": "Участие в разработке"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 294,
+        "line": 297,
         "level": 2,
         "title": "Участие в разработке"
       }
@@ -23892,12 +24168,28 @@
         "title": "Форма правил (инлайн-таблицы)"
       }
     ],
+    "Формат возвращаемых значений методов отправки": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 172,
+        "level": 2,
+        "title": "Формат возвращаемых значений методов отправки"
+      }
+    ],
     "Формат значения (`value_type`, используется для `multiselect`)": [
       {
         "document": "developer-guide/configuration.md",
         "line": 78,
         "level": 3,
         "title": "Формат значения (`value_type`, используется для `multiselect`)"
+      }
+    ],
+    "Формат ответа": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 150,
+        "level": 2,
+        "title": "Формат ответа"
       }
     ],
     "Форматы вывода": [
@@ -24169,19 +24461,19 @@
     "Цепочка вызовов Send": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3841,
+        "line": 3843,
         "level": 3,
         "title": "Цепочка вызовов Send"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 925,
+        "line": 927,
         "level": 3,
         "title": "Цепочка вызовов Send"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 44,
+        "line": 46,
         "level": 3,
         "title": "Цепочка вызовов Send"
       }

@@ -256,10 +256,10 @@
     "Руководство по платформам": {
       "description": "Возможности платформ и документация адаптеров",
       "icon": "fa-plug",
-      "count": 19,
+      "count": 21,
       "documents": [
         {
-          "title": "Документация функций платформы ErisPulse",
+          "title": "Документация по функциям платформы ErisPulse",
           "path": "platform-guide/README.md",
           "level": 1,
           "icon": "fa-server"
@@ -347,6 +347,18 @@
           "path": "platform-guide/maintain-notes.md",
           "level": 1,
           "icon": "fa-wrench"
+        },
+        {
+          "title": "Документация по функциональности платформы Bilibili",
+          "path": "platform-guide/bilibili.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Документация по функциональным возможностям платформы Minecraft",
+          "path": "platform-guide/minecraft.md",
+          "level": 1,
+          "icon": "fa-plug"
         },
         {
           "title": "Документация по функциям платформы Sandbox",

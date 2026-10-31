@@ -256,7 +256,7 @@
     "プラットフォームガイド": {
       "description": "各プラットフォームの機能とアダプターの説明",
       "icon": "fa-plug",
-      "count": 19,
+      "count": 21,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures ドキュメント",
@@ -347,6 +347,18 @@
           "path": "platform-guide/maintain-notes.md",
           "level": 1,
           "icon": "fa-wrench"
+        },
+        {
+          "title": "Bilibili プラットフォーム特性ドキュメント",
+          "path": "platform-guide/bilibili.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Minecraft プラットフォーム機能ドキュメント",
+          "path": "platform-guide/minecraft.md",
+          "level": 1,
+          "icon": "fa-plug"
         },
         {
           "title": "Sandboxプラットフォームの特徴ドキュメント",

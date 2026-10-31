@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1906,
+  "total_keywords": 1921,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -4282,6 +4282,14 @@
         "title": "BaseModule 基類"
       }
     ],
+    "Bilibili 平台特性文件": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 1,
+        "level": 1,
+        "title": "Bilibili 平台特性文件"
+      }
+    ],
     "Bot 指令消息段 (ideaura_command)": [
       {
         "document": "platform-guide/ideaura.md",
@@ -5448,6 +5456,14 @@
         "title": "Meta 元事件模組"
       }
     ],
+    "Minecraft 平台特性文件": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 1,
+        "level": 1,
+        "title": "Minecraft 平台特性文件"
+      }
+    ],
     "Module 模組": [
       {
         "document": "api-reference/core-modules.md",
@@ -5588,6 +5604,14 @@
         "line": 155,
         "level": 2,
         "title": "OneBot12 標準事件"
+      }
+    ],
+    "OneBot12 標準段發送": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 72,
+        "level": 3,
+        "title": "OneBot12 標準段發送"
       }
     ],
     "OneBot12 標準特性": [
@@ -5999,19 +6023,19 @@
     "Send 鏈式呼叫": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3861,
+        "line": 3863,
         "level": 3,
         "title": "Send 鏈式呼叫"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 887,
+        "line": 889,
         "level": 3,
         "title": "Send 鏈式呼叫"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 44,
+        "line": 46,
         "level": 3,
         "title": "Send 鏈式呼叫"
       }
@@ -8732,6 +8756,18 @@
     ],
     "不支援的標準動作": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 130,
+        "level": 3,
+        "title": "不支援的標準動作"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 153,
+        "level": 3,
+        "title": "不支援的標準動作"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 310,
         "level": 3,
@@ -9124,6 +9160,34 @@
         "title": "事件擴展方法（WebhookEventMixin）"
       }
     ],
+    "事件映射": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 170,
+        "level": 3,
+        "title": "事件映射"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 190,
+        "level": 3,
+        "title": "事件映射"
+      }
+    ],
+    "事件欄位示例": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 178,
+        "level": 3,
+        "title": "事件欄位示例"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 198,
+        "level": 3,
+        "title": "事件欄位示例"
+      }
+    ],
     "事件流程": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
@@ -9147,13 +9211,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3989,
+        "line": 3991,
         "level": 3,
         "title": "事件監聽"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1015,
+        "line": 1017,
         "level": 3,
         "title": "事件監聽"
       },
@@ -9165,7 +9229,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 172,
+        "line": 174,
         "level": 3,
         "title": "事件監聽"
       }
@@ -9482,6 +9546,12 @@
         "title": "事件類型"
       },
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 166,
+        "level": 2,
+        "title": "事件類型"
+      },
+      {
         "document": "platform-guide/wechatmp.md",
         "line": 51,
         "level": 2,
@@ -9520,6 +9590,14 @@
         "line": 8,
         "level": 2,
         "title": "事件類型概覽"
+      }
+    ],
+    "事件類型（enable_log_tail = true）": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 186,
+        "level": 2,
+        "title": "事件類型（enable_log_tail = true）"
       }
     ],
     "事件驅動懶激活（`activate_on`）觸發架構": [
@@ -9858,6 +9936,14 @@
         "line": 352,
         "level": 2,
         "title": "会话类型"
+      }
+    ],
+    "伺服器前置設定": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 23,
+        "level": 2,
+        "title": "伺服器前置設定"
       }
     ],
     "伺服器配置": [
@@ -11511,19 +11597,19 @@
     "參考連結": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4097,
+        "line": 4099,
         "level": 2,
         "title": "參考連結"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1123,
+        "line": 1125,
         "level": 2,
         "title": "參考連結"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 280,
+        "line": 282,
         "level": 2,
         "title": "參考連結"
       }
@@ -11531,19 +11617,19 @@
     "參與貢獻": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4109,
+        "line": 4111,
         "level": 2,
         "title": "參與貢獻"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1135,
+        "line": 1137,
         "level": 2,
         "title": "參與貢獻"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 292,
+        "line": 294,
         "level": 2,
         "title": "參與貢獻"
       }
@@ -12220,6 +12306,14 @@
         "title": "回應返回約定（2.10+）"
       }
     ],
+    "回環去重": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 229,
+        "level": 3,
+        "title": "回環去重"
+      }
+    ],
     "回看起步步驟": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -12716,6 +12810,12 @@
     ],
     "基本資訊": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 12,
+        "level": 2,
+        "title": "基本資訊"
+      },
+      {
         "document": "platform-guide/discord.md",
         "line": 13,
         "level": 2,
@@ -12741,6 +12841,12 @@
       },
       {
         "document": "platform-guide/matrix.md",
+        "line": 12,
+        "level": 2,
+        "title": "基本資訊"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
         "line": 12,
         "level": 2,
         "title": "基本資訊"
@@ -12886,6 +12992,18 @@
     ],
     "基礎發送": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 51,
+        "level": 3,
+        "title": "基礎發送"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 59,
+        "level": 3,
+        "title": "基礎發送"
+      },
+      {
         "document": "platform-guide/qqbot.md",
         "line": 61,
         "level": 3,
@@ -13014,6 +13132,14 @@
         "title": "多Bot配置"
       }
     ],
+    "多伺服器發送": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 79,
+        "level": 3,
+        "title": "多伺服器發送"
+      }
+    ],
     "多元素訊息": [
       {
         "document": "advanced/message-builder.md",
@@ -13110,6 +13236,14 @@
         "line": 215,
         "level": 3,
         "title": "多帳號啟動"
+      }
+    ],
+    "多帳號發送": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 82,
+        "level": 3,
+        "title": "多帳號發送"
       }
     ],
     "多帳號發送語法": [
@@ -14674,6 +14808,12 @@
     ],
     "平台擴展動作": [
       {
+        "document": "platform-guide/minecraft.md",
+        "line": 132,
+        "level": 3,
+        "title": "平台擴展動作"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 317,
         "level": 3,
@@ -15637,13 +15777,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3956,
+        "line": 3958,
         "level": 4,
         "title": "批量建構模式（Build）"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 982,
+        "line": 984,
         "level": 4,
         "title": "批量建構模式（Build）"
       },
@@ -15655,7 +15795,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 139,
+        "line": 141,
         "level": 4,
         "title": "批量建構模式（Build）"
       }
@@ -16016,6 +16156,12 @@
     ],
     "擴展欄位說明": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 197,
+        "level": 3,
+        "title": "擴展欄位說明"
+      },
+      {
         "document": "platform-guide/email.md",
         "line": 209,
         "level": 2,
@@ -16108,6 +16254,18 @@
     ],
     "支援的標準動作": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 120,
+        "level": 3,
+        "title": "支援的標準動作"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 123,
+        "level": 3,
+        "title": "支援的標準動作"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 297,
         "level": 3,
@@ -16198,6 +16356,20 @@
         "line": 9,
         "level": 2,
         "title": "支援的語言"
+      }
+    ],
+    "支援與不支援的消息段": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 88,
+        "level": 3,
+        "title": "支援與不支援的消息段"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 85,
+        "level": 3,
+        "title": "支援與不支援的消息段"
       }
     ],
     "收集表單 (collect)": [
@@ -16334,6 +16506,12 @@
     ],
     "文件資訊": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件資訊"
+      },
+      {
         "document": "platform-guide/discord.md",
         "line": 7,
         "level": 2,
@@ -16359,6 +16537,12 @@
       },
       {
         "document": "platform-guide/matrix.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件資訊"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
         "line": 7,
         "level": 2,
         "title": "文件資訊"
@@ -17548,6 +17732,20 @@
         "title": "標準 API 動作（ApiDSL）"
       }
     ],
+    "標準 API 動作（Api）": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 97,
+        "level": 2,
+        "title": "標準 API 動作（Api）"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 101,
+        "level": 2,
+        "title": "標準 API 動作（Api）"
+      }
+    ],
     "標準 Api 動作": [
       {
         "document": "platform-guide/discord.md",
@@ -17627,19 +17825,19 @@
     "標準事件格式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4044,
+        "line": 4046,
         "level": 3,
         "title": "標準事件格式"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1070,
+        "line": 1072,
         "level": 3,
         "title": "標準事件格式"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 227,
+        "line": 229,
         "level": 3,
         "title": "標準事件格式"
       }
@@ -17683,19 +17881,19 @@
     "標準回應格式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4065,
+        "line": 4067,
         "level": 3,
         "title": "標準回應格式"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1091,
+        "line": 1093,
         "level": 3,
         "title": "標準回應格式"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 248,
+        "line": 250,
         "level": 3,
         "title": "標準回應格式"
       }
@@ -17711,19 +17909,19 @@
     "標準格式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4039,
+        "line": 4041,
         "level": 2,
         "title": "標準格式"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1065,
+        "line": 1067,
         "level": 2,
         "title": "標準格式"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 222,
+        "line": 224,
         "level": 2,
         "title": "標準格式"
       }
@@ -18374,8 +18572,20 @@
         "title": "注意事項"
       },
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 203,
+        "level": 2,
+        "title": "注意事項"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 499,
+        "level": 2,
+        "title": "注意事項"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 233,
         "level": 2,
         "title": "注意事項"
       },
@@ -18548,6 +18758,18 @@
     ],
     "消息發送": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 47,
+        "level": 2,
+        "title": "消息發送"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 55,
+        "level": 2,
+        "title": "消息發送"
+      },
+      {
         "document": "platform-guide/qqbot.md",
         "line": 59,
         "level": 2,
@@ -18557,19 +18779,19 @@
     "消息發送失敗": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4082,
+        "line": 4084,
         "level": 4,
         "title": "消息發送失敗"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1108,
+        "line": 1110,
         "level": 4,
         "title": "消息發送失敗"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 265,
+        "line": 267,
         "level": 4,
         "title": "消息發送失敗"
       }
@@ -18577,19 +18799,19 @@
     "消息發送成功": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4066,
+        "line": 4068,
         "level": 4,
         "title": "消息發送成功"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1092,
+        "line": 1094,
         "level": 4,
         "title": "消息發送成功"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 249,
+        "line": 251,
         "level": 4,
         "title": "消息發送成功"
       }
@@ -19499,19 +19721,19 @@
     "異步發送與結果處理": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3906,
+        "line": 3908,
         "level": 4,
         "title": "異步發送與結果處理"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 932,
+        "line": 934,
         "level": 4,
         "title": "異步發送與結果處理"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 89,
+        "line": 91,
         "level": 4,
         "title": "異步發送與結果處理"
       }
@@ -19790,6 +20012,12 @@
         "title": "發送方法返回值"
       },
       {
+        "document": "platform-guide/minecraft.md",
+        "line": 172,
+        "level": 2,
+        "title": "發送方法返回值"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 469,
         "level": 2,
@@ -19847,19 +20075,19 @@
     "發送規則裝飾器": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3921,
+        "line": 3923,
         "level": 4,
         "title": "發送規則裝飾器"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 947,
+        "line": 949,
         "level": 4,
         "title": "發送規則裝飾器"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 104,
+        "line": 106,
         "level": 4,
         "title": "發送規則裝飾器"
       }
@@ -19984,6 +20212,14 @@
         "line": 966,
         "level": 3,
         "title": "監聽者查詢（has_handlers）"
+      }
+    ],
+    "目標類型": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 94,
+        "level": 3,
+        "title": "目標類型"
       }
     ],
     "目錄結構": [
@@ -22908,6 +23144,14 @@
         "title": "返回值"
       }
     ],
+    "返回值格式": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 150,
+        "level": 2,
+        "title": "返回值格式"
+      }
+    ],
     "返回值結構": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -23059,21 +23303,35 @@
     "通用介面": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3859,
+        "line": 3861,
         "level": 2,
         "title": "通用介面"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 885,
+        "line": 887,
         "level": 2,
         "title": "通用介面"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 42,
+        "line": 44,
         "level": 2,
         "title": "通用介面"
+      }
+    ],
+    "通用動作入口": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 138,
+        "level": 3,
+        "title": "通用動作入口"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 160,
+        "level": 3,
+        "title": "通用動作入口"
       }
     ],
     "通用參數": [
@@ -24240,6 +24498,12 @@
     ],
     "配置說明": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 22,
+        "level": 2,
+        "title": "配置說明"
+      },
+      {
         "document": "platform-guide/discord.md",
         "line": 23,
         "level": 2,
@@ -24266,6 +24530,12 @@
       {
         "document": "platform-guide/matrix.md",
         "line": 22,
+        "level": 2,
+        "title": "配置說明"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 33,
         "level": 2,
         "title": "配置說明"
       },
@@ -24567,6 +24837,18 @@
       }
     ],
     "鏈式修飾方法": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 65,
+        "level": 3,
+        "title": "鏈式修飾方法"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 72,
+        "level": 3,
+        "title": "鏈式修飾方法"
+      },
       {
         "document": "platform-guide/onebot12.md",
         "line": 360,

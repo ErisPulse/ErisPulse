@@ -256,7 +256,7 @@
     "平台特性指南": {
       "description": "各平台特性和适配器说明",
       "icon": "fa-plug",
-      "count": 19,
+      "count": 21,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures 文档",
@@ -347,6 +347,18 @@
           "path": "platform-guide/maintain-notes.md",
           "level": 1,
           "icon": "fa-wrench"
+        },
+        {
+          "title": "Bilibili 平台特性文档",
+          "path": "platform-guide/bilibili.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Minecraft 平台特性文档",
+          "path": "platform-guide/minecraft.md",
+          "level": 1,
+          "icon": "fa-plug"
         },
         {
           "title": "Sandbox 平台特性文档",

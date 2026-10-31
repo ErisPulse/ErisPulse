@@ -256,7 +256,7 @@
     "Platform Guide": {
       "description": "Platform features and adapter documentation",
       "icon": "fa-plug",
-      "count": 19,
+      "count": 21,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures Documentation",
@@ -347,6 +347,18 @@
           "path": "platform-guide/maintain-notes.md",
           "level": 1,
           "icon": "fa-wrench"
+        },
+        {
+          "title": "Bilibili Platform Feature Documentation",
+          "path": "platform-guide/bilibili.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Minecraft Platform Features Documentation",
+          "path": "platform-guide/minecraft.md",
+          "level": 1,
+          "icon": "fa-plug"
         },
         {
           "title": "Sandbox Platform Feature Documentation",

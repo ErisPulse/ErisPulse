@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1882,
+  "total_keywords": 1899,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -4860,24 +4860,24 @@
         "title": "Article Message Segment (yunhu_user_post)"
       }
     ],
-    "Async Sending and Result Handling": [
+    "Async Send and Result Handling": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3857,
+        "line": 3859,
         "level": 4,
-        "title": "Async Sending and Result Handling"
+        "title": "Async Send and Result Handling"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 927,
+        "line": 929,
         "level": 4,
-        "title": "Async Sending and Result Handling"
+        "title": "Async Send and Result Handling"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 89,
+        "line": 91,
         "level": 4,
-        "title": "Async Sending and Result Handling"
+        "title": "Async Send and Result Handling"
       }
     ],
     "Asynchronous Initialization": [
@@ -5384,6 +5384,12 @@
     ],
     "Basic Information": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      },
+      {
         "document": "platform-guide/discord.md",
         "line": 13,
         "level": 2,
@@ -5409,6 +5415,12 @@
       },
       {
         "document": "platform-guide/matrix.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
         "line": 12,
         "level": 2,
         "title": "Basic Information"
@@ -5580,6 +5592,18 @@
         "title": "Basic Sending"
       },
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 51,
+        "level": 3,
+        "title": "Basic Sending"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 58,
+        "level": 3,
+        "title": "Basic Sending"
+      },
+      {
         "document": "platform-guide/qqbot.md",
         "line": 61,
         "level": 3,
@@ -5739,13 +5763,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3907,
+        "line": 3909,
         "level": 4,
         "title": "Batch Build Mode (Build)"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 977,
+        "line": 979,
         "level": 4,
         "title": "Batch Build Mode (Build)"
       },
@@ -5757,7 +5781,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 139,
+        "line": 141,
         "level": 4,
         "title": "Batch Build Mode (Build)"
       }
@@ -5888,6 +5912,14 @@
         "line": 507,
         "level": 2,
         "title": "Best Practices"
+      }
+    ],
+    "Bilibili Platform Feature Documentation": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 1,
+        "level": 1,
+        "title": "Bilibili Platform Feature Documentation"
       }
     ],
     "Binding Inheritance (merge)": [
@@ -6360,6 +6392,18 @@
     ],
     "Chain Modifier Methods": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 65,
+        "level": 3,
+        "title": "Chain Modifier Methods"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 71,
+        "level": 3,
+        "title": "Chain Modifier Methods"
+      },
+      {
         "document": "platform-guide/onebot12.md",
         "line": 364,
         "level": 3,
@@ -6514,26 +6558,6 @@
         "line": 158,
         "level": 3,
         "title": "Chained Modifiers"
-      }
-    ],
-    "Chained Send Calls": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3812,
-        "level": 3,
-        "title": "Chained Send Calls"
-      },
-      {
-        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 882,
-        "level": 3,
-        "title": "Chained Send Calls"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 44,
-        "level": 3,
-        "title": "Chained Send Calls"
       }
     ],
     "Chaining Mode (Instance)": [
@@ -7065,19 +7089,19 @@
     "Common Interfaces": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3810,
+        "line": 3812,
         "level": 2,
         "title": "Common Interfaces"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 880,
+        "line": 882,
         "level": 2,
         "title": "Common Interfaces"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 42,
+        "line": 44,
         "level": 2,
         "title": "Common Interfaces"
       }
@@ -7462,8 +7486,20 @@
         "title": "Configuration"
       },
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 22,
+        "level": 2,
+        "title": "Configuration"
+      },
+      {
         "document": "platform-guide/discord.md",
         "line": 23,
+        "level": 2,
+        "title": "Configuration"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 32,
         "level": 2,
         "title": "Configuration"
       },
@@ -8125,19 +8161,19 @@
     "Contributing": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4062,
+        "line": 4064,
         "level": 2,
         "title": "Contributing"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1132,
+        "line": 1134,
         "level": 2,
         "title": "Contributing"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 294,
+        "line": 296,
         "level": 2,
         "title": "Contributing"
       }
@@ -9440,6 +9476,12 @@
     ],
     "Document Information": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 7,
+        "level": 2,
+        "title": "Document Information"
+      },
+      {
         "document": "platform-guide/discord.md",
         "line": 7,
         "level": 2,
@@ -9520,6 +9562,14 @@
         "line": 99,
         "level": 3,
         "title": "Documentation Format Guidelines"
+      }
+    ],
+    "Documentation Info": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 7,
+        "level": 2,
+        "title": "Documentation Info"
       }
     ],
     "Documentation Information": [
@@ -9650,6 +9700,14 @@
         "line": 568,
         "level": 3,
         "title": "Dynamic Content"
+      }
+    ],
+    "Echo Deduplication": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 228,
+        "level": 3,
+        "title": "Echo Deduplication"
       }
     ],
     "Ecosystem Modules": [
@@ -10394,6 +10452,20 @@
         "title": "Event Factories"
       }
     ],
+    "Event Field Example": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 178,
+        "level": 3,
+        "title": "Event Field Example"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 197,
+        "level": 3,
+        "title": "Event Field Example"
+      }
+    ],
     "Event Flow": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
@@ -10543,13 +10615,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3940,
+        "line": 3942,
         "level": 3,
         "title": "Event Listening"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1010,
+        "line": 1012,
         "level": 3,
         "title": "Event Listening"
       },
@@ -10561,9 +10633,23 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 172,
+        "line": 174,
         "level": 3,
         "title": "Event Listening"
+      }
+    ],
+    "Event Mapping": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 170,
+        "level": 3,
+        "title": "Event Mapping"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 189,
+        "level": 3,
+        "title": "Event Mapping"
       }
     ],
     "Event Mixin Extension Methods": [
@@ -10738,10 +10824,24 @@
         "title": "Event Types"
       },
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 166,
+        "level": 2,
+        "title": "Event Types"
+      },
+      {
         "document": "platform-guide/wechatmp.md",
         "line": 53,
         "level": 2,
         "title": "Event Types"
+      }
+    ],
+    "Event Types (enable_log_tail = true)": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 185,
+        "level": 2,
+        "title": "Event Types (enable_log_tail = true)"
       }
     ],
     "Event Wrapper Class": [
@@ -10993,6 +11093,12 @@
       }
     ],
     "Extended Field Description": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 197,
+        "level": 3,
+        "title": "Extended Field Description"
+      },
       {
         "document": "platform-guide/yunhu_user.md",
         "line": 429,
@@ -11624,6 +11730,20 @@
         "line": 747,
         "level": 3,
         "title": "Generating Type Stubs"
+      }
+    ],
+    "Generic Action Entry": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 138,
+        "level": 3,
+        "title": "Generic Action Entry"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 159,
+        "level": 3,
+        "title": "Generic Action Entry"
       }
     ],
     "Generic request": [
@@ -12620,6 +12740,14 @@
         "line": 8,
         "level": 2,
         "title": "Import Methods"
+      }
+    ],
+    "Important Notes": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 203,
+        "level": 2,
+        "title": "Important Notes"
       }
     ],
     "Important Restrictions": [
@@ -14448,24 +14576,44 @@
         "title": "Message Segment Types"
       }
     ],
-    "Message Send Failed": [
+    "Message Send Failure": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4035,
+        "line": 4037,
         "level": 4,
-        "title": "Message Send Failed"
+        "title": "Message Send Failure"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1105,
+        "line": 1107,
         "level": 4,
-        "title": "Message Send Failed"
+        "title": "Message Send Failure"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 267,
+        "line": 269,
         "level": 4,
-        "title": "Message Send Failed"
+        "title": "Message Send Failure"
+      }
+    ],
+    "Message Send Success": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 4021,
+        "level": 4,
+        "title": "Message Send Success"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 1091,
+        "level": 4,
+        "title": "Message Send Success"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 253,
+        "level": 4,
+        "title": "Message Send Success"
       }
     ],
     "Message Sending": [
@@ -14479,6 +14627,18 @@
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
         "line": 990,
         "level": 3,
+        "title": "Message Sending"
+      },
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 47,
+        "level": 2,
+        "title": "Message Sending"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 54,
+        "level": 2,
         "title": "Message Sending"
       },
       {
@@ -14500,26 +14660,6 @@
         "line": 357,
         "level": 3,
         "title": "Message Sending Methods"
-      }
-    ],
-    "Message Sent Successfully": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4019,
-        "level": 4,
-        "title": "Message Sent Successfully"
-      },
-      {
-        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1089,
-        "level": 4,
-        "title": "Message Sent Successfully"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 251,
-        "level": 4,
-        "title": "Message Sent Successfully"
       }
     ],
     "Message Sequence Number Mechanism": [
@@ -14926,6 +15066,14 @@
         "line": 426,
         "level": 3,
         "title": "Migration from Old Configuration"
+      }
+    ],
+    "Minecraft Platform Features Documentation": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 1,
+        "level": 1,
+        "title": "Minecraft Platform Features Documentation"
       }
     ],
     "Minimal Viable Module": [
@@ -15338,6 +15486,14 @@
         "title": "Multi-Account Model"
       }
     ],
+    "Multi-Account Sending": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 82,
+        "level": 3,
+        "title": "Multi-Account Sending"
+      }
+    ],
     "Multi-Account Sending Syntax": [
       {
         "document": "platform-guide/onebot11.md",
@@ -15434,6 +15590,14 @@
         "line": 188,
         "level": 2,
         "title": "Multi-Platform Adaptation"
+      }
+    ],
+    "Multi-Server Sending": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 78,
+        "level": 3,
+        "title": "Multi-Server Sending"
       }
     ],
     "Multi-Way Waiting: expect + select": [
@@ -15892,6 +16056,12 @@
         "title": "Notes"
       },
       {
+        "document": "platform-guide/minecraft.md",
+        "line": 232,
+        "level": 2,
+        "title": "Notes"
+      },
+      {
         "document": "platform-guide/webhook.md",
         "line": 222,
         "level": 2,
@@ -16202,6 +16372,14 @@
         "line": 475,
         "level": 2,
         "title": "OneBot12 Standard Features"
+      }
+    ],
+    "OneBot12 Standard Segment Sending": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 72,
+        "level": 3,
+        "title": "OneBot12 Standard Segment Sending"
       }
     ],
     "OneBot12 Supported detail_type": [
@@ -16749,6 +16927,12 @@
       }
     ],
     "Platform Extension Actions": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 131,
+        "level": 3,
+        "title": "Platform Extension Actions"
+      },
       {
         "document": "platform-guide/yunhu.md",
         "line": 317,
@@ -17804,24 +17988,24 @@
         "title": "Reference Documents"
       }
     ],
-    "References": [
+    "Reference Links": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4050,
+        "line": 4052,
         "level": 2,
-        "title": "References"
+        "title": "Reference Links"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1120,
+        "line": 1122,
         "level": 2,
-        "title": "References"
+        "title": "Reference Links"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 282,
+        "line": 284,
         "level": 2,
-        "title": "References"
+        "title": "Reference Links"
       }
     ],
     "Refresh Timing": [
@@ -18726,6 +18910,14 @@
         "title": "Return Value Description"
       }
     ],
+    "Return Value Format": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 150,
+        "level": 2,
+        "title": "Return Value Format"
+      }
+    ],
     "Return Value Structure": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -19446,6 +19638,26 @@
         "title": "Send A2UI message"
       }
     ],
+    "Send Chained Calls": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3814,
+        "level": 3,
+        "title": "Send Chained Calls"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 884,
+        "level": 3,
+        "title": "Send Chained Calls"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 46,
+        "level": 3,
+        "title": "Send Chained Calls"
+      }
+    ],
     "Send Decorators (Implemented by Each Adapter's Send Class)": [
       {
         "document": "ai-support/skills/erispulse-adapter-standards/SKILL.md",
@@ -19516,6 +19728,12 @@
         "title": "Send Method Return Values"
       },
       {
+        "document": "platform-guide/minecraft.md",
+        "line": 171,
+        "level": 2,
+        "title": "Send Method Return Values"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 470,
         "level": 2,
@@ -19563,19 +19781,19 @@
     "Send Rule Decorators": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3872,
+        "line": 3874,
         "level": 4,
         "title": "Send Rule Decorators"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 942,
+        "line": 944,
         "level": 4,
         "title": "Send Rule Decorators"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 104,
+        "line": 106,
         "level": 4,
         "title": "Send Rule Decorators"
       }
@@ -19804,6 +20022,14 @@
         "line": 266,
         "level": 2,
         "title": "Server Configuration"
+      }
+    ],
+    "Server Prerequisite Configuration": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 22,
+        "level": 2,
+        "title": "Server Prerequisite Configuration"
       }
     ],
     "Service Contract (`meta.services`)": [
@@ -20216,6 +20442,20 @@
         "title": "Standard API Actions (Api DSL)"
       }
     ],
+    "Standard API Actions (Api)": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 97,
+        "level": 2,
+        "title": "Standard API Actions (Api)"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 100,
+        "level": 2,
+        "title": "Standard API Actions (Api)"
+      }
+    ],
     "Standard API Actions (ApiDSL)": [
       {
         "document": "platform-guide/yunhu.md",
@@ -20279,19 +20519,19 @@
     "Standard Event Format": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3997,
+        "line": 3999,
         "level": 3,
         "title": "Standard Event Format"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1067,
+        "line": 1069,
         "level": 3,
         "title": "Standard Event Format"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 229,
+        "line": 231,
         "level": 3,
         "title": "Standard Event Format"
       }
@@ -20299,19 +20539,19 @@
     "Standard Formats": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3992,
+        "line": 3994,
         "level": 2,
         "title": "Standard Formats"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1062,
+        "line": 1064,
         "level": 2,
         "title": "Standard Formats"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 224,
+        "line": 226,
         "level": 2,
         "title": "Standard Formats"
       }
@@ -20349,19 +20589,19 @@
     "Standard Response Format": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4018,
+        "line": 4020,
         "level": 3,
         "title": "Standard Response Format"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1088,
+        "line": 1090,
         "level": 3,
         "title": "Standard Response Format"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 250,
+        "line": 252,
         "level": 3,
         "title": "Standard Response Format"
       }
@@ -20844,6 +21084,18 @@
     ],
     "Supported Standard Actions": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 120,
+        "level": 3,
+        "title": "Supported Standard Actions"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 122,
+        "level": 3,
+        "title": "Supported Standard Actions"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 297,
         "level": 3,
@@ -20856,6 +21108,20 @@
         "line": 30,
         "level": 3,
         "title": "Supported Submission Types"
+      }
+    ],
+    "Supported and Unsupported Message Segments": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 88,
+        "level": 3,
+        "title": "Supported and Unsupported Message Segments"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 84,
+        "level": 3,
+        "title": "Supported and Unsupported Message Segments"
       }
     ],
     "Supported i18n Fields": [
@@ -20990,6 +21256,14 @@
         "line": 8,
         "level": 2,
         "title": "Table of Contents"
+      }
+    ],
+    "Target Types": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 93,
+        "level": 3,
+        "title": "Target Types"
       }
     ],
     "Task Object": [
@@ -21697,6 +21971,18 @@
       }
     ],
     "Unsupported Standard Actions": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 130,
+        "level": 3,
+        "title": "Unsupported Standard Actions"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 152,
+        "level": 3,
+        "title": "Unsupported Standard Actions"
+      },
       {
         "document": "platform-guide/yunhu.md",
         "line": 310,
