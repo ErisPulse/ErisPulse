@@ -493,6 +493,30 @@ async def test_command_handling():
     await module.handle_command(event)
 ```
 
+## HTTP 路由生命周期
+
+模块通过 `router` 注册的 HTTP/WebSocket 路由，其生命周期由框架按**归属原则**自动管理：
+
+- 注册时的命名空间即归属标识；**reload / unload 时框架会自动清理该归属下的全部路由与连接资源**，无需手动注销
+- 因此 **`on_load` 中必须无条件重新注册路由**。不要用实例级布尔标志做"只注册一次"的优化：配置热重载会触发 stop/start 并**复用同一实例**，标志残留会导致路由被清理后**永久丢失**，表现为接口 404 且重启进程才恢复
+
+```python
+class MyModule(BaseModule):
+    async def on_load(self):
+        # 每次加载无条件重注册
+        router.register_http_route("MyModule", "/api/panel", self._panel, methods=["GET"])
+```
+
+需要提前手动卸载路由（如动态下线某个入口）时，可主动注销：
+
+```python
+from ErisPulse.Core import router
+
+router.unregister_http_route("MyModule", "/api/panel")
+```
+
+- 前端/调用方在热重载窗口可能收到路由 404，属瞬时现象；面向浏览器的交互页建议对 404 做有限次自动重试
+
 ## 部署
 
 ### 1. 版本管理
