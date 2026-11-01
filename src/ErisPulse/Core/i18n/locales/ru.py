@@ -631,6 +631,7 @@ TRANSLATIONS = {
     "core.event.slow_handler": "[EventHandler] Медленный обработчик {handler}: занял {elapsed}s{owner}{cmd}",
     "core.event.handler_still_running": "[EventHandler] Обработчик {handler} выполняется дольше {threshold}s, текущая позиция: {loc}{owner}",
     "core.event.handler_registered": "[Event] Зарегистрирован обработчик: {event_type}, вызвал: {module}, владелец: {owner}",
+    "core.event.bus_link_restored": "[Event] Шина событий очищена без сброса флага связи; диспетчер {event_type} переподключён (самовосстановление)",
     "core.event.handlers_cleaned": "[Event] Очищено обработчиков: {count} у {owner} для {event_type}",
     "core.event.trace_chain": "[Event-trace] {event_type} | platform={platform} type={detail_type} | цепочка: {chain} | всего: {total}ms",
     "core.event.confirm_hint": "{prompt} ({yes}/{no})",

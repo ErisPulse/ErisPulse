@@ -631,6 +631,7 @@ TRANSLATIONS = {
     "core.event.slow_handler": "[EventHandler] 處理器 {handler} 執行緩慢，耗時 {elapsed}s{owner}{cmd}",
     "core.event.handler_still_running": "[EventHandler] 處理器 {handler} 已執行超過 {threshold}s 仍在執行，當前位於 {loc}{owner}",
     "core.event.handler_registered": "[Event] 已註冊處理器: {event_type}，呼叫方: {module}，歸屬: {owner}",
+    "core.event.bus_link_restored": "[Event] 偵測到事件匯流排被清空但標記未重置，已重新掛載 {event_type} 分發器（自癒）",
     "core.event.handlers_cleaned": "[Event] 已清理 {owner} 在 {event_type} 的 {count} 個處理器",
     "core.event.trace_chain": "[Event-trace] {event_type} | platform={platform} type={detail_type} | 決策鏈: {chain} | 總耗時: {total}ms",
     "core.event.confirm_hint": "{prompt}（{yes}/{no}）",

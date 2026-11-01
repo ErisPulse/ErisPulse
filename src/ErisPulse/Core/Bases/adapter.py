@@ -1448,7 +1448,8 @@ class BaseAdapter(ABC):
             if custom_cfg is not None:
                 self._config_instance = custom_cfg
         if self.AccountConfigClass is not None:
-            self._ensure_accounts_exist()
+            # 不自动生成 "default" 账户：未添加账户时 accounts 为空字典，
+            # 由用户在 Dashboard 账户向导中自行创建（避免默认连接静默建立）
             # 向后兼容：子类可覆写 _load_accounts() 实现自定义加载
             custom = self._load_accounts()
             if custom is not None:
@@ -1585,11 +1586,9 @@ class BaseAdapter(ABC):
         from .config_schema import dict_to_dataclass, validate_config
 
         key = f"{self._get_config_key()}.accounts"
-        data = config_mgr.getConfig(key)
-        if data is None:
-            # 配置不存在时生成默认账户模板后重试
-            self._ensure_accounts_exist()
-            data = config_mgr.getConfig(key) or {}
+        # 未创建任何账户时返回空字典：账户由用户在 Dashboard 向导中自行添加，
+        # 不再自动生成 "default" 账户模板（避免默认配置静默建立连接）
+        data = config_mgr.getConfig(key) or {}
 
         accounts = {}
         for name, account_data in data.items():
@@ -1740,26 +1739,6 @@ class BaseAdapter(ABC):
                 i18n.t("core.adapter.eventmixin_register_failed", adapter=self.__class__.__name__),
                 exc_info=True,
             )
-
-    def _ensure_accounts_exist(self):
-        """
-        确保多账户配置模板存在，不存在则生成默认账户配置
-
-        {!--< internal-use >!--}
-        {!--< /internal-use >!--}
-        """
-        if self.AccountConfigClass is None:
-            return
-        from .config_schema import dataclass_to_defaults_dict
-
-        key = f"{self._get_config_key()}.accounts"
-        data = config_mgr.getConfig(key)
-
-        if data is None:
-            default_account = dataclass_to_defaults_dict(self.AccountConfigClass)
-            data = {"default": default_account}
-            config_mgr.setConfig(key, data, immediate=True)
-            self._get_logger().info(i18n.t("core.adapter.account_config_generated", key=key))
 
     def _resolve_account(self, account_id: str | None = None) -> tuple:
         """

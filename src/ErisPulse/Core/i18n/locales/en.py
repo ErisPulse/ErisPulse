@@ -631,6 +631,7 @@ TRANSLATIONS = {
     "core.event.slow_handler": "[EventHandler] Slow handler {handler} took {elapsed}s{owner}{cmd}",
     "core.event.handler_still_running": "[EventHandler] Handler {handler} has been running over {threshold}s, currently at {loc}{owner}",
     "core.event.handler_registered": "[Event] Registered handler: {event_type}, Called by: {module}, Owner: {owner}",
+    "core.event.bus_link_restored": "[Event] Event bus was cleared without resetting the link flag; re-attached the {event_type} dispatcher (self-healed)",
     "core.event.handlers_cleaned": "[Event] Cleaned {count} handlers of {owner} for {event_type}",
     "core.event.trace_chain": "[Event-trace] {event_type} | platform={platform} type={detail_type} | chain: {chain} | total={total}ms",
     "core.event.confirm_hint": "{prompt} ({yes}/{no})",

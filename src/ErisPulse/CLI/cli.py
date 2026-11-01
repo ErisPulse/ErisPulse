@@ -139,8 +139,13 @@ class CLI:
                     )
 
         except ImportError as e:
+            # commands 包导入失败意味着所有命令都不可用——显著报错并给诊断线索，
+            # 而不是静默降级成"无命令可用的 CLI"（此前用户只会看到莫名空 help）
             console.print(
-                f"[warning]{i18n.t('cli.discover.import_failed', error=e)}[/]"
+                f"[error]{i18n.t('cli.discover.import_failed', error=e)}[/]"
+            )
+            console.print(
+                f"[hint]{i18n.t('cli.discover.import_failed_hint')}[/]"
             )
 
     def _register_builtin_commands(self):
@@ -296,12 +301,25 @@ class CLI:
         # 仅规范命令名作为建议候选（不含短别名/缩写，避免扰民）
         canonical_names = self.registry.list_all()
 
-        # 从 sys.argv 中找到第一个非选项参数（即命令名）
+        # 从 sys.argv 中找到第一个非选项参数（即命令名）；
+        # 跳过带值的选项（如 --lang zh），避免把选项值误判成命令
+        options_with_value = {"--lang", "--language"}
         cmd = None
-        for arg in sys.argv[1:]:
-            if not arg.startswith("-"):
-                cmd = arg
-                break
+        argv = sys.argv[1:]
+        i = 0
+        while i < len(argv):
+            arg = argv[i]
+            if arg in options_with_value:
+                i += 2
+                continue
+            if arg.startswith("-"):
+                # -h/-help/--help 是帮助请求，交给 argparse，不当作命令做拼写检查
+                if arg in ("-h", "-help", "--help"):
+                    return
+                i += 1
+                continue
+            cmd = arg
+            break
 
         if not cmd or cmd in all_valid:
             return

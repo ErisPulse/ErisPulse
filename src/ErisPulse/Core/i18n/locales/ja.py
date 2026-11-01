@@ -631,6 +631,7 @@ TRANSLATIONS = {
     "core.event.slow_handler": "[EventHandler] 遅いハンドラー {handler}: {elapsed}s かかりました{owner}{cmd}",
     "core.event.handler_still_running": "[EventHandler] ハンドラー {handler} が {threshold}s を超えて実行中です。現在の位置: {loc}{owner}",
     "core.event.handler_registered": "[Event] ハンドラーを登録しました: {event_type}、呼び出し元: {module}、オーナー: {owner}",
+    "core.event.bus_link_restored": "[Event] イベントバスがクリアされリンクフラグが未リセットのため、{event_type} ディスパッチャを再接続しました（自己修復）",
     "core.event.handlers_cleaned": "[Event] {event_type} の {owner} のハンドラー {count} 件をクリーンアップしました",
     "core.event.trace_chain": "[Event-trace] {event_type} | platform={platform} type={detail_type} | チェーン: {chain} | 合計: {total}ms",
     "core.event.confirm_hint": "{prompt}（{yes}/{no}）",

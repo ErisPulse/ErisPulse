@@ -39,6 +39,7 @@ TRANSLATIONS = {
     "cli.discover.instantiate_failed": "Failed to instantiate command {name}: {error}",
     "cli.discover.load_failed": "Failed to load command module {name}: {error}",
     "cli.discover.import_failed": "Cannot import commands package: {error}",
+    "cli.discover.import_failed_hint": "Check your Python environment and ErisPulse installation (pip install -U ErisPulse), or run epsdk doctor",
     # ==================== create command ====================
     "cli.create.description": "Create Module / Adapter project scaffold",
     "cli.create.type_help": "Creation type: module / adapter / pack (plugin to project)",
@@ -511,7 +512,7 @@ TRANSLATIONS = {
     "cli.package.alias_mapping": "  Alias mapping: {alias} → {package}",
     "cli.package.installed_package_found": "  Found installed package: {package}",
     "cli.package.uninstall_alias_not_found": "  No alias found, attempting direct uninstall: {package}",
-    "cli.package.confirm_uninstall": "Confirm uninstall the following packages?\n{packages}",
+    "cli.package.confirm_uninstall": "Uninstall the following packages? (press Enter = cancel)\n{packages}",
     "cli.package.operation_cancelled": "  Operation cancelled",
     "cli.package.uninstalling": "Uninstalling {package}",
     "cli.package.uninstall_success": "[OK] Package {package} uninstalled successfully",

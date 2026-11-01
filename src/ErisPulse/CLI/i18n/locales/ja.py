@@ -39,6 +39,7 @@ TRANSLATIONS = {
     "cli.discover.instantiate_failed": "コマンド {name} のインスタンス化に失敗: {error}",
     "cli.discover.load_failed": "コマンドモジュール {name} の読み込みに失敗: {error}",
     "cli.discover.import_failed": "commands パッケージをインポートできません: {error}",
+    "cli.discover.import_failed_hint": "Python 環境と ErisPulse のインストールを確認してください（pip install -U ErisPulse）。epsdk doctor で診断もできます",
     # ==================== create コマンド ====================
     "cli.create.description": "Module / Adapter プロジェクトのスキャフォールドを作成",
     "cli.create.type_help": "作成タイプ: module / adapter / pack（プラグインをプロジェクトへ）",
@@ -511,7 +512,7 @@ TRANSLATIONS = {
     "cli.package.alias_mapping": "  エイリアスマッピング: {alias} → {package}",
     "cli.package.installed_package_found": "  インストール済みパッケージが見つかりました: {package}",
     "cli.package.uninstall_alias_not_found": "  エイリアスが見つかりません。直接アンインストールを試みます: {package}",
-    "cli.package.confirm_uninstall": "以下のパッケージをアンインストールしますか？\n{packages}",
+    "cli.package.confirm_uninstall": "以下のパッケージをアンインストールしますか？（Enter でキャンセル）\n{packages}",
     "cli.package.operation_cancelled": "  操作がキャンセルされました",
     "cli.package.uninstalling": "アンインストール中 {package}",
     "cli.package.uninstall_success": "[OK] パッケージ {package} のアンインストールに成功しました",
