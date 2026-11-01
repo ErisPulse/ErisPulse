@@ -5187,7 +5187,7 @@ class MyAdapter(BaseAdapter):
 
 ### 4. 連接資訊暴露
 
-適配器註冊的路由應對使用者可見，便於使用者配置平台側的回調位址。推薦在 `start()` 中主動輸出連接資訊：
+適配器註冊的路由應對使用者可見，便於使用者配置平台側的回呼位址。推薦在 `start()` 中主動輸出連接資訊：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -5201,7 +5201,7 @@ class MyAdapter(BaseAdapter):
         if self.sdk:
             info = self.sdk.adapter.get_connection_info(self.platform)
             if info:
-                self.logger.info(f"WebSocket 位址: "
+                self.logger.info(f"WebSocket 地址: "
                     f"{info.get('connection', {}).get('base_url', '')}"
                     f"{info.get('connection', {}).get('websocket_routes', [])}")
 ```
@@ -5221,6 +5221,39 @@ sdk.router.get_module_urls("myplatform")    # 完整連接 URL
 ```
 
 > **注意**：路由註冊時的 `module_name` 必須與適配器在 ErisPulse 中註冊的 `platform` 名稱完全一致，否則 `get_connection_info()` 將無法關聯路由。多帳戶適配器應為每個帳戶註冊子路徑（如 `/account1/webhook`、`/account2/webhook`），而非使用不同的 `module_name`。
+
+### 5. HTTP 路由生命週期
+
+適配器/模組透過 `router` 註冊的 HTTP/WebSocket 路由，其生命週期由框架按**歸屬原則**自動管理：
+
+- 註冊時的 `module_name`（命名空間）即歸屬標識；**reload / stop / unload 時框架會自動清理該歸屬下的全部路由與連接資源**，無需手動註銷
+- 因此 **`start()`（模組為 `on_load`）中必須無條件重新註冊路由**。不要用實例級布林標誌做"只註冊一次"的優化：配置熱重載（如帳戶欄位變更即時儲存）會觸發 stop/start 且**重用同一實例**，標誌殘留會導致路由被清理後**永久丟失**，表現為介面 404 且重啟程序才恢復
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        # 每次啟動無條件重註冊（reload 後路由已隨上次 stop 自動清理）
+        router.register_http_route(self.platform, "/qr/start", self._qr_start, methods=["POST"])
+        router.register_http_route(self.platform, "/qr/poll", self._qr_poll, methods=["POST"])
+```
+
+模組側同理（`on_load` 中註冊）：
+
+```python
+class MyModule(BaseModule):
+    async def on_load(self):
+        router.register_http_route("MyModule", "/api/panel", self._panel, methods=["GET"])
+```
+
+需要**提前手動卸載**路由（如動態下線某個入口）時，可主動註銷：
+
+```python
+from ErisPulse.Core import router
+
+router.unregister_http_route(self.platform, "/qr/start")
+```
+
+- 前端/呼叫方在熱重載視窗可能會收到路由 404，屬瞬時現象；面向瀏覽器的互動頁建議對 404 做有限次自動重試
 
 ## 事件轉換
 

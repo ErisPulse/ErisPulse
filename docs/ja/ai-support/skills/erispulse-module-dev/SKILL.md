@@ -1,6 +1,6 @@
 ---
 name: erispulse-module-dev
-description: "适用于：要开发 ErisPulse 模块（业务逻辑载体）：命令、事件、多轮对话、ORM。覆盖场景：このドキュメントに沿って進めると、`/hello` コマンドに応答できる実行可能なモジュールが完成し、モジュールのプロジェクト構造、登録方法、ロード/アンロードフックについても理解できます。今後のすべてのモジュールドキュメントは、この骨組みの上に成り立っています。この文書では、モジュールのロードからアンロードまでの完全なライフサイクル、宣言的設定とストレージの使い方を解説します——フレームワークが自動で行うこと、あなたが書くべきことを、読み終える頃には把握できる内容です。プロセッサの `event` パラメータが直接 `.get_text()` / `.reply()` / `.wait_reply()` を呼べるのは、Event 包装クラスのおかげです。本記事では、Event 包装クラスの全メソッド一覧を紹介します。イベントハンドラを書く際には、このリストを参照してください。メソッドの署名と動作は、ここを基準とします。最初のモジュールを書き終えた後に読むことを推奨（エンジニアリングのベストプラクティス）。必要なければスキップしても、他の機能の利用には影響しません。**この記事を読むタイミング**：データモデル、自動テーブル作成、関連マッピングが必要な場合。不要であれば飛ばしても、他の機能の使用に影響はありません。**このドキュメントを読む必要があるのはいつですか**：多輪対話のステートマシンとチェックポイントの復元が必要な場合です。必要ない場合はスキップしても、他の機能の使用には影響しません。**この記事を読むのはいつか**：wait_reply、多輪対話、定時リマインダー、セッション排他、およびトレースIDが必要な場合。不要な場合は飛ばしても、他の機能の使用には影響しません。"
+description: "适用于：要开发 ErisPulse 模块（业务逻辑载体）：命令、事件、多轮对话、ORM。覆盖场景：このドキュメントに沿って進めると、`/hello` コマンドに応答できる実行可能なモジュールが完成し、モジュールのプロジェクト構造、登録方法、ロード/アンロードフックについても理解できます。今後のすべてのモジュールドキュメントは、この骨組みの上に成り立っています。この文書では、モジュールのロードからアンロードまでの完全なライフサイクル、宣言的設定とストレージの使い方を解説します——フレームワークが自動で行うこと、あなたが書くべきことを、読み終える頃には把握できる内容です。プロセッサの `event` パラメータが直接 `.get_text()` / `.reply()` / `.wait_reply()` を呼べるのは、Event 包装クラスのおかげです。本記事では、Event 包装クラスの全メソッド一覧を紹介します。イベントハンドラを書く際には、このリストを参照してください。メソッドの署名と動作は、ここを基準とします。**このドキュメントを読むべきタイミング**：最初のモジュールを書き終えた後に読むことを推奨します（エンジニアリングのベストプラクティス）。必要なければスキップしても、他の機能の利用には影響しません。**この記事を読むタイミング**：データモデル、自動テーブル作成、関連マッピングが必要な場合。不要であれば飛ばしても、他の機能の使用に影響はありません。**このドキュメントを読む必要があるのはいつですか**：多輪対話のステートマシンとチェックポイントの復元が必要な場合です。必要ない場合はスキップしても、他の機能の使用には影響しません。**この記事を読むのはいつか**：wait_reply、多輪対話、定時リマインダー、セッション排他、およびトレースIDが必要な場合。不要な場合は飛ばしても、他の機能の使用には影響しません。"
 ---
 
 # ErisPulse 模块开发
@@ -13,80 +13,81 @@ Source paths are annotated per section; see docs/ in the repository for the late
 
 AI 按需读取：只读需要的章节即可，不必全文加载。
 
-- 模块开发入门: 91-101 行
-- プロジェクト構造: 103-115 行
-- pyproject.toml 設定: 117-135 行
-- __init__.py: 137-141 行
-- Core.py - 基本モジュール: 143-182 行
-- モジュールのテスト: 184-202 行
-- コア概念: 204-297 行
-- 次のステップ: 299-308 行
-- 模块核心概念: 310-320 行
-- モジュールのライフサイクル: 322-462 行
-- SDK オブジェクト: 464-483 行
-- アダプター送信メソッドの照会: 485-511 行
-- 設定管理: 513-629 行
-- ストレージシステム: 631-654 行
-- イベント処理: 656-676 行
-- 遅延ロード機構: 678-699 行
-- エラー処理: 701-727 行
-- 関連ドキュメント: 729-738 行
-- Event 包装类: 740-749 行
-- event パラメータに型注釈を追加する: 751-766 行
-- 核心特性: 768-773 行
-- 核心フィールドメソッド: 775-786 行
-- メッセージイベントメソッド: 788-799 行
-- メッセージタイプの判断: 801-812 行
-- 回答機能: 814-834 行
-- 会話の高度な機能: 836-869 行
-- コマンド情報の取得: 871-881 行
-- 通知イベントメソッド: 883-891 行
-- メソッドの速見表: 893-1227 行
-- 関連ドキュメント: 1229-1238 行
-- 模块最佳实践: 1240-1250 行
-- モジュール設計: 1252-1340 行
-- 非同期プログラミング: 1342-1413 行
-- イベント処理: 1415-1482 行
-- ユーティリティモジュール：他のモジュールのものを預かる時は「アンロード通知」を受け止める: 1484-1518 行
-- エラー処理: 1520-1559 行
-- ストレージシステム: 1561-1592 行
-- ロギング: 1594-1626 行
-- パフォーマンス最適化: 1628-1663 行
-- セキュリティ: 1665-1709 行
-- テスト: 1711-1738 行
-- デプロイ: 1740-1795 行
-- 関連ドキュメント: 1797-1807 行
-- ORM 数据模型: 1809-1818 行
-- モデルの宣言: 1820-1835 行
-- フィールドパラメータ: 1837-1851 行
-- 建表と CRUD: 1853-1877 行
-- トランザクション: 1879-1887 行
-- 宣言式構成クラスとの関係: 1889-1903 行
-- 辺界と注意事項: 1905-1911 行
-- 自動マイグレーション（フェーズ2）: 1913-1931 行
-- 外部キー（リレーションマッピングの基礎）: 1933-1945 行
-- 関係マッピング（relationship）: 1947-1998 行
-- 次のステップ: 2000-2008 行
-- 多轮对话: 2010-2019 行
-- 対話の作成: 2021-2050 行
-- コア API: 2052-2192 行
-- アクティブ状態の管理: 2194-2214 行
-- 分岐とジャンプ: 2216-2266 行
-- コンテキストと永続化: 2268-2305 行
-- 自動チェックポイントと再起動時の復元: 2307-2373 行
-- 代表的なフロー・パターン: 2375-2433 行
-- 関連ドキュメント: 2435-2438 行
-- 交互会话: 2440-2463 行
-- レプライ待ち：wait_reply: 2465-2539 行
-- 宣言的多輪対話：`.got()`チェーン（2.11+）: 2541-2581 行
-- セッションタイマー：remind / escalate: 2583-2622 行
-- 多路待ち：expect + select: 2624-2664 行
-- セッション排他：acquire / hold / get_owner_of: 2666-2696 行
-- セッション受信箱：event.history: 2698-2715 行
-- メッセージトランザクション：message_tx: 2717-2728 行
-- トレースID：trace-id: 2730-2739 行
-- 他のシステムとの関係: 2741-2746 行
-- 関連文書: 2748-2754 行
+- 模块开发入门: 92-102 行
+- プロジェクト構造: 104-116 行
+- pyproject.toml 設定: 118-136 行
+- __init__.py: 138-142 行
+- Core.py - 基本モジュール: 144-183 行
+- モジュールのテスト: 185-203 行
+- コア概念: 205-298 行
+- 次のステップ: 300-309 行
+- 模块核心概念: 311-321 行
+- モジュールのライフサイクル: 323-463 行
+- SDK オブジェクト: 465-484 行
+- アダプター送信メソッドの照会: 486-512 行
+- 設定管理: 514-630 行
+- ストレージシステム: 632-655 行
+- イベント処理: 657-677 行
+- 遅延ロード機構: 679-700 行
+- エラー処理: 702-728 行
+- 関連ドキュメント: 730-739 行
+- Event 包装类: 741-750 行
+- event パラメータに型注釈を追加する: 752-767 行
+- 核心特性: 769-774 行
+- 核心フィールドメソッド: 776-787 行
+- メッセージイベントメソッド: 789-800 行
+- メッセージタイプの判断: 802-813 行
+- 回答機能: 815-835 行
+- 会話の高度な機能: 837-870 行
+- コマンド情報の取得: 872-882 行
+- 通知イベントメソッド: 884-892 行
+- メソッドの速見表: 894-1228 行
+- 関連ドキュメント: 1230-1239 行
+- 模块最佳实践: 1241-1251 行
+- モジュール設計: 1253-1341 行
+- 非同期プログラミング: 1343-1414 行
+- イベント処理: 1416-1483 行
+- ユーティリティモジュール：他モジュールのものを預かるときは「アンロード通知」を受け止める: 1485-1519 行
+- エラー処理: 1521-1560 行
+- ストレージシステム: 1562-1593 行
+- ロギング: 1595-1627 行
+- パフォーマンス最適化: 1629-1664 行
+- セキュリティ: 1666-1710 行
+- テスト: 1712-1739 行
+- HTTP ルートのライフサイクル: 1741-1763 行
+- デプロイ: 1765-1820 行
+- 関連ドキュメント: 1822-1832 行
+- ORM 数据模型: 1834-1843 行
+- モデルの宣言: 1845-1860 行
+- フィールドパラメータ: 1862-1876 行
+- 建表と CRUD: 1878-1902 行
+- トランザクション: 1904-1912 行
+- 宣言式構成クラスとの関係: 1914-1928 行
+- 辺界と注意事項: 1930-1936 行
+- 自動マイグレーション（フェーズ2）: 1938-1956 行
+- 外部キー（リレーションマッピングの基礎）: 1958-1970 行
+- 関係マッピング（relationship）: 1972-2023 行
+- 次のステップ: 2025-2033 行
+- 多轮对话: 2035-2044 行
+- 対話の作成: 2046-2075 行
+- コア API: 2077-2217 行
+- アクティブ状態の管理: 2219-2239 行
+- 分岐とジャンプ: 2241-2291 行
+- コンテキストと永続化: 2293-2330 行
+- 自動チェックポイントと再起動時の復元: 2332-2398 行
+- 代表的なフロー・パターン: 2400-2458 行
+- 関連ドキュメント: 2460-2463 行
+- 交互会话: 2465-2488 行
+- レプライ待ち：wait_reply: 2490-2564 行
+- 宣言的多輪対話：`.got()`チェーン（2.11+）: 2566-2606 行
+- セッションタイマー：remind / escalate: 2608-2647 行
+- 多路待ち：expect + select: 2649-2689 行
+- セッション排他：acquire / hold / get_owner_of: 2691-2721 行
+- セッション受信箱：event.history: 2723-2740 行
+- メッセージトランザクション：message_tx: 2742-2753 行
+- トレースID：trace-id: 2755-2764 行
+- 他のシステムとの関係: 2766-2771 行
+- 関連文書: 2773-2779 行
 
 ## 模块开发入门
 
@@ -1244,10 +1245,10 @@ async def ai_chat(self, prompt: str):
 # モジュール開発ベストプラクティス
 
 > [!TIP]
-> **いつこのドキュメントを読むべきか**：最初のモジュールを書き終えた後に読むことを推奨（エンジニアリングのベストプラクティス）。必要なければスキップしても、他の機能の利用には影響しません。
+> **このドキュメントを読むべきタイミング**：最初のモジュールを書き終えた後に読むことを推奨します（エンジニアリングのベストプラクティス）。必要なければスキップしても、他の機能の利用には影響しません。
 
 
-ここでは、モジュール開発におけるエンジニアリング上の作法をまとめています：非同期操作はイベントループをブロックしない、設定は宣言的に、他のモジュールのリソースを管理する場合はアンロード時に解放する——これに従って書けば、メモリリーク、バックグラウンドタスクの残存、ホットリロードの失効といったモジュール開発で最もよくある落とし穴を回避できます。
+ここでは、モジュール開発における実装規約をまとめています：非同期操作でイベントループをブロックしない、設定は宣言的に行う、他のモジュールのリソースを預かる場合はアンロード時に解放する——これに従って書けば、メモリリーク、バックグラウンドタスクの残留、ホットリロードの失効といったモジュール開発で最もよくある落とし穴を避けられます。
 
 ## モジュール設計
 
@@ -1271,7 +1272,7 @@ class UtilityModule(BaseModule):
     pass
 ```
 
-### 2. モジュール命名規則
+### 2. モジュールの命名規則
 
 ```toml
 [project]
@@ -1280,7 +1281,7 @@ name = "ErisPulse-ModuleName"  # ErisPulse- プレフィックスを使用
 
 ### 3. 明確な設定管理
 
-宣言的設定（`ConfigClass` + `BaseConfig`）の使用を推奨します。型安全性、自動テンプレート生成、WebUI フォーム対応などの機能が得られます：
+宣言的設定（`ConfigClass` + `BaseConfig`）の使用を推奨します。型安全性、テンプレート自動生成、WebUI フォームサポートなどの機能が得られます：
 
 ```python
 from dataclasses import dataclass, field
@@ -1295,7 +1296,7 @@ class MyModuleConfig(BaseConfig):
         "description": {"i18n": "my_module.timeout", "default": "タイムアウト時間（秒）"},
     })
     cache_ttl: int = field(default=3600, metadata={
-        "description": {"i18n": "my_module.cache_ttl", "default": "キャッシュ生存時間（秒）"},
+        "description": {"i18n": "my_module.cache_ttl", "default": "キャッシュ有効期間（秒）"},
     })
 
 class MyModule(BaseModule):
@@ -1306,11 +1307,11 @@ class MyModule(BaseModule):
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-手動方式で設定ストレージの読み書きを行うことも引き続き可能です（[モジュールのコア概念](core-concepts.md#設定管理)を参照）。
+従来どおり手動方式で設定ストレージを読み書きすることも可能です（[モジュールのコア概念](core-concepts.md#設定管理)を参照）。
 
-### 宣言的翻訳キー（v2.7.0+）
+### 宣言的な翻訳キー（v2.7.0+）
 
-モジュールは `I18nClass` を通じて翻訳キーを一元的に宣言でき、フレームワークが自動的に i18n システムへ登録するため、手動で `i18n.register()` を呼び出す必要はありません。
+モジュールは `I18nClass` を通じて翻訳キーを一元宣言でき、フレームワークが自動的に i18n システムへ登録するため、手動で `i18n.register()` を呼び出す必要はありません。
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, I18nKey
@@ -1337,14 +1338,14 @@ class MyModule(BaseModule):
         )
 ```
 
-詳細な使い方は [i18n ドキュメント](../../advanced/i18n.md#推奨される書き方i18nclass-による翻訳キーの宣言v270) を参照してください。
+詳細な使い方は [i18n ドキュメント](../../advanced/i18n.md#推奨される書き方i18nclass-で翻訳キーを宣言するv270)を参照してください。
 
 ## 非同期プログラミング
 
-### 1. 非同期ライブラリの使用
+### 1. 非同期ライブラリを使用する
 
 ```python
-# SDK 組み込み HTTP クライアントの使用を推奨（非同期、ログと統計を自動取得）
+# SDK 組み込み HTTP クライアントの使用を推奨（非同期、ログと統計が自動）
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -1352,7 +1353,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# sdk.client 経由でも使用可能（効果は同じ）
+# sdk.client 経由でも使用可能（同じ効果）
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -1369,7 +1370,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# requests は使用しない（同期のためイベントループをブロックする）
+# requests を使用しない（同期処理のためイベントループをブロックする）
 import requests
 
 class MyModule(BaseModule):
@@ -1377,44 +1378,44 @@ class MyModule(BaseModule):
         return requests.get(url).json()  # イベントループをブロックする
 ```
 
-### 2. 正しい非同期操作
+### 2. 正しい非同期処理
 
 ```python
-from ErisPulse.Core.Event import Event  # event: Event アノテーションで IDE 補完が得られる
+from ErisPulse.Core.Event import Event  # event: Event のアノテーションで IDE 補完が効く
 
 async def handle_command(self, event: Event):
-    # 結果を待つ必要のある時間のかかる操作：直接 await（ライフサイクルが明確）
+    # 結果を待つ必要がある時間のかかる操作：直接 await（ライフサイクルが明確）
     result = await self._long_operation()
 
 async def on_load(self, event: dict):
     # バックグラウンドタスク（ポーリング/タイマー/fire-and-forget）：self.spawn() を使用。
-    # モジュールのアンロード時、フレームワークが on_unload の後にフォールバックでキャンセルするため、
-    # self を保持することによるリークを回避できる
+    # モジュールのアンロード時、フレームワークが on_unload の後に最終的にキャンセルするため、
+    # self を保持し続けることによるリークを防げる
     self.spawn(self._poll())
 ```
 
 > [!NOTE]
-> バックグラウンドタスクには `self.spawn()` を推奨します（ErisPulse **2.8.0+**）。**2.8.3 以降**は、素の `asyncio.create_task`
-> も自動的にモジュールへ暗黙的に帰属します（Task Factory が自動登録し、アンロード時にフォールバックでキャンセル、`self` 参照はリークしなくなります）。
-> `self.spawn()` が引き続き推奨の書き方です——非メインループのスレッドからメインループへのスケジューリングや、明示的な `owner=` 指定をサポートします。
-> **2.8.3 より前**のバージョンでは、素のタスクは帰属せず `self` 参照を保持し続けるためモジュールインスタンスが回収できなくなり
-> （ホットリロード時のリーク）、`self.spawn()` を使う必要があります。詳細は [ライフサイクル管理](../../advanced/lifecycle.md#バックグラウンドタスクの帰属と自動キャンセル) を参照。
+> バックグラウンドタスクには `self.spawn()` を推奨します（ErisPulse **2.8.0+**）。**2.8.3 以降**は裸の `asyncio.create_task`
+> も自動的にモジュールへ暗黙帰属します（Task Factory が自動登録し、アンロード時に最終的にキャンセルするため、`self` 参照はリークしません）。
+> `self.spawn()` が依然として推奨される書き方です——メインループ以外のスレッドからメインループへのスケジューリングや、明示的な `owner=` 指定をサポートします。
+> **2.8.3 未満**のバージョンでは、裸のタスクは帰属せず `self` 参照を保持し続けるため、モジュールインスタンスが回収されなくなります
+> （ホットリロード時のリーク）。必ず `self.spawn()` を使用してください。詳細は[ライフサイクル管理](../../advanced/lifecycle.md#バックグラウンドタスクの帰属と自動キャンセル)を参照してください。
 
 ### 3. リソース管理
 
 ```python
 async def on_load(self, event):
-    # SDK クライアントは接続プールを自動管理するため、手動で session を作成する必要なし
+    # SDK クライアントは接続プールを自動管理するため、session を手動で作成する必要はない
     pass
     
 async def on_unload(self, event):
-    # カスタムクライアントが必要な場合は、リソースのクリーンアップを忘れずに
+    # カスタムクライアントを使用する場合は、リソースのクリーンアップを忘れずに
     pass
 ```
 
 ## イベント処理
 
-### 1. Event ラッパークラスの使用
+### 1. Event ラッパークラスを使用する
 
 ```python
 # Event ラッパークラスの便利メソッドを使用
@@ -1427,13 +1428,13 @@ async def info_command(event: Event):
 # 辞書へ直接アクセスするのではなく
 @command("info")
 async def info_command(event: Event):
-    user_id = event["user_id"]  # わかりにくく、間違いやすい
+    user_id = event["user_id"]  # わかりにくく、ミスしやすい
 ```
 
-### 2. 遅延ロードの適切な使用
+### 2. 遅延ロードの適切な活用
 
 ```python
-# 低頻度コマンドモジュール：activate_on トリガーを宣言し、最初に一致するコマンドが到着した時点で自動アクティブ化（遅延ロードを維持）
+# 低頻度コマンドモジュール：activate_on トリガーを宣言し、最初に一致するコマンドが到着した時点で自動アクティベート（遅延ロードを維持）
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -1441,7 +1442,7 @@ class CommandModule(BaseModule):
             {"command": {"name": "dice", "help": "サイコロを1つ振る", "aliases": ["d"]}},
         ])
 
-# 低頻度リスナーモジュール：イベントトリガーを宣言し、イベント到着時に自動アクティブ化
+# 低頻度リスナーモジュール：イベントトリガーを宣言し、イベント到着時に自動アクティベート
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -1449,21 +1450,21 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# 高頻度トリガー（すべてのメッセージを処理する必要がある）や起動時に即時準備が必要なモジュール：即時ロード
+# 高頻度トリガー（すべてのメッセージの処理が必要）や起動時に即時準備が必要なモジュール：即時ロード
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# ユーティリティモジュールは遅延ロードが適している
+# ユーティリティモジュールは遅延ロードに適している
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> `activate_on` の完全な構文（イベントの3形式 / コマンド略記と dict 宣言 / help フォールバックチェーン）については
-> [遅延ロードモジュールシステム](../../advanced/lazy-loading.md#イベント駆動の遅延アクティベーションactivate_on) を参照してください。
+> `activate_on` の完全な構文（イベントの3形式 / コマンド省略記法と dict 宣言 / help フォールバックチェーン）については、
+> [遅延ロードモジュールシステム](../../advanced/lazy-loading.md#イベント駆動の遅延アクティベーションactivate_on)を参照してください。
 
 ### 3. イベントハンドラーの登録
 
@@ -1481,9 +1482,9 @@ async def on_load(self, event):
     # 手動で登録解除する必要はなく、フレームワークが自動的に処理する
 ```
 
-## ユーティリティモジュール：他のモジュールのものを預かる時は「アンロード通知」を受け止める
+## ユーティリティモジュール：他モジュールのものを預かるときは「アンロード通知」を受け止める
 
-**いつ必要か**：あなたのモジュールが他のモジュールの代わりにものを管理している場合（タイマーコールバック、サブスクライバー、接続、キャッシュエントリなど）。これらの参照を、相手モジュールのアンロード後も捨てずに保持し続けると、相手のインスタンスは永遠に回収されません——これがユーティリティモジュールで最もよくあるメモリリークの原因です。
+**いつ必要か**：あなたのモジュールが他のモジュールの代わりに何かを保持している場合（タイマーコールバック、サブスクライバー、接続、キャッシュエントリなど）。これらの参照は、相手のモジュールがアンロードされた後も破棄しないままだと、相手のインスタンスは永遠に回収されません——これがユーティリティモジュールで最もよくあるメモリリークの発生源です。
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -1491,31 +1492,31 @@ from ErisPulse.runtime import off_cleanup, on_cleanup
 
 class MyToolModule(BaseModule):
     def __init__(self):
-        self._entries = {}  # {モジュール名: 管理しているもの}
+        self._entries = {}  # {モジュール名: 預かっているもの}
 
     def register(self, entry):
         owner = on_cleanup(self._drop)   # ① 登録時にクリーンアップチェーンへ登録し、呼び出し元を自動識別
         self._entries.setdefault(owner, []).append(entry)
 
     def _drop(self, owner: str):
-        self._entries.pop(owner, None)   # ② 相手のアンロード時にフレームワークが自動呼び出し：相手のものを破棄
+        self._entries.pop(owner, None)   # ② 相手のアンロード時にフレームワークが自動呼び出し：その持ち物を破棄
 
     async def on_unload(self, event):
         off_cleanup(self._drop)          # ③ 自身のアンロード前にフックを解除
 ```
 
-たったこれだけで、フレームワークが保証します：
+以上だけです。フレームワークは次を保証します：
 
-- 相手モジュールが**アンロード / 無効化**される（またはアダプターが終了する）とき、`_drop("相手モジュール名")` が必ず呼び出される
-- **呼び出し元の識別は全自動**：相手が `on_load` 内で直接 `sdk.MyToolModule.register(...)` を呼び出しても、`sdk.module.call("MyToolModule", "register", ...)` 経由で呼び出しても、誰が呼び出したのかを正しく識別できる
-- タイミングを気にする必要なし——フックはフレームワークのクリーンアップチェーン内でトリガーされ、リーク診断より前に実行されるため、誤検出されない
+- 相手モジュールが**アンロード / 無効化**されたとき（またはアダプターがシャットダウンされたとき）に、`_drop("相手モジュール名")` が必ず呼び出される
+- **呼び出し元の識別は完全自動**：相手が `on_load` 内で直接 `sdk.MyToolModule.register(...)` を呼び出しても、`sdk.module.call("MyToolModule", "register", ...)` 経由で呼び出しても、誰による呼び出しかを正しく識別できる
+- タイミングを気にする必要はない——フックはフレームワークのクリーンアップチェーン内でトリガーされ、リーク診断より先に実行されるため、誤検出はない
 
-組み込まない場合の結果：相手が `purge` で完全アンロードされるときにインスタンスを回収できず（リーク診断が「回収不可」と報告）、相手自身も `on_unload` 内であなたへの登録解除を行わなければ、リークは恒久的なものになります。
+対応しなかった場合の結果：相手が `purge` で完全アンロードされるときにインスタンスを回収できなくなります（リーク診断が「回収不可」と報告）。さらに相手自身も `on_unload` 内であなたへの登録解除を行わない場合、リークは永続的になります。
 
-**通常のモジュール（他のモジュールのものを管理しない）はこれを気にする必要ありません**——フレームワークリソース（コマンド / ハンドラー / ルート / バックグラウンドタスクなど）のアンロード時のクリーンアップは全自動です。
+**通常のモジュール（他のモジュールのものを預からない）はこれを気にする必要がありません**——フレームワークリソース（コマンド / ハンドラー / ルート / バックグラウンドタスクなど）のアンロード時のクリーンアップは完全自動です。
 
-> トリガータイミング、呼び出し元識別ルール、タイムアウトとフォールトトレランスなどの詳細は
-> [所有権システム · ユーティリティモジュールガイド](../../advanced/ownership.md#ユーティリティモジュールガイド他のモジュールのハンドルを管理する) を参照してください。
+> トリガータイミング、呼び出し元識別ルール、タイムアウトとフォールトトレランスなどの詳細は、
+> [所有権システム · ユーティリティモジュールガイド](../../advanced/ownership.md#ユーティリティモジュールガイド他のモジュールのハンドル)を参照してください。
 
 ## エラー処理
 
@@ -1528,7 +1529,7 @@ async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # 予期されるビジネスエラー
+        # 予期されたビジネスエラー
         self.logger.warning(f"ビジネス警告: {e}")
         await event.reply(f"パラメータエラー: {e}")
     except ClientError as e:
@@ -1554,13 +1555,13 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"リクエストタイムアウト: {url}")
+        self.logger.warning(f"リクエストがタイムアウトしました: {url}")
         raise
 ```
 
 ## ストレージシステム
 
-### 1. トランザクションの使用
+### 1. トランザクションを使用する
 
 ```python
 # トランザクションを使用してデータの一貫性を確保
@@ -1569,23 +1570,23 @@ async def update_user(self, user_id, data):
         self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
         self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 
-# ❌ トランザクションを使わないとデータ不整合が起こる可能性
+# ❌ トランザクションを使用しないとデータの不整合が発生する可能性がある
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # ここでエラーが発生すると、上の設定はロールバックできない
+    # ここでエラーが発生すると、上記の設定はロールバックできない
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
 ### 2. バッチ操作
 
 ```python
-# バッチ操作でパフォーマンスを向上
+# バッチ操作を使用してパフォーマンスを向上
 def cache_multiple_items(self, items):
     self.sdk.storage.set_multi({
         f"item:{k}": v for k, v in items.items()
     })
 
-# ❌ 何度も呼び出すと効率が悪い
+# ❌ 複数回の呼び出しは効率が低い
 def cache_multiple_items(self, items):
     for k, v in items.items():
         self.sdk.storage.set(f"item:{k}", v)
@@ -1599,19 +1600,19 @@ def cache_multiple_items(self, items):
 # DEBUG: 詳細なデバッグ情報（開発時のみ）
 self.logger.debug(f"入力パラメータ: {params}")
 
-# INFO: 正常動作の情報
+# INFO: 通常の実行情報
 self.logger.info("モジュールがロードされました")
-self.logger.info(f"リクエストを処理中: {request_id}")
+self.logger.info(f"リクエストを処理: {request_id}")
 
 # WARNING: 警告情報、主要機能には影響しない
-self.logger.warning(f"設定項目 {key} が未設定のため、デフォルト値を使用します")
+self.logger.warning(f"設定項目 {key} が設定されていないため、デフォルト値を使用します")
 self.logger.warning("API の応答が遅く、最適化が必要な可能性があります")
 
 # ERROR: エラー情報
-self.logger.error(f"API リクエスト失敗: {e}")
-self.logger.error(f"イベント処理失敗: {e}", exc_info=True)
+self.logger.error(f"API リクエストに失敗: {e}")
+self.logger.error(f"イベントの処理に失敗: {e}", exc_info=True)
 
-# CRITICAL: 致命的エラー、即時対応が必要
+# CRITICAL: 致命的なエラー、即時の対応が必要
 self.logger.critical("データベース接続に失敗し、ボットが正常に動作できません")
 ```
 
@@ -1619,10 +1620,10 @@ self.logger.critical("データベース接続に失敗し、ボットが正常�
 
 ```python
 # 構造化ログを使用すると解析しやすい
-self.logger.info(f"リクエスト処理: request_id={request_id}, user_id={user_id}, duration={duration}ms")
+self.logger.info(f"リクエストを処理: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
-# ❌ 非構造化ログを使用
-self.logger.info(f"ユーザー {user_id} からのリクエストを処理しました。所要時間 {duration} ミリ秒")
+# ❌ 非構造化ログの使用
+self.logger.info(f"リクエストを処理しました。ユーザー {user_id} から、所要時間 {duration} ミリ秒")
 ```
 
 ## パフォーマンス最適化
@@ -1648,7 +1649,7 @@ class MyModule(BaseModule):
             return data
 ```
 
-### 2. ブロッキング操作の回避
+### 2. ブロッキング操作を避ける
 
 ```python
 # 非同期操作を使用
@@ -1658,7 +1659,7 @@ async def process_message(self, event: Event):
 
 # ❌ ブロッキング操作
 async def process_message(self, event: Event):
-    # 同期操作、イベントループをブロックする
+    # 同期操作のためイベントループをブロックする
     result = self._sync_process(event)
 ```
 
@@ -1687,22 +1688,22 @@ class MyModule(BaseModule):
 
 # ❌ 機密データのハードコード
 class MyModule(BaseModule):
-    API_KEY = "sk-1234567890"  # こんなことをしてはいけない！
+    API_KEY = "sk-1234567890"  # このようにしないでください！
 ```
 
-### 2. 入力検証
+### 2. 入力バリデーション
 
 ```python
-# ユーザー入力を検証
+# ユーザー入力の検証
 async def process_command(self, event: Event):
     user_input = event.get_text()
     
-    # 入力長を検証
+    # 入力長の検証
     if len(user_input) > 1000:
-        await event.reply("入力が長すぎます。入力し直してください")
+        await event.reply("入力が長すぎます。再度入力してください")
         return
     
-    # 入力形式を検証
+    # 入力形式の検証
     if not re.match(r'^[a-zA-Z0-9]+$', user_input):
         await event.reply("入力形式が正しくありません")
         return
@@ -1723,7 +1724,7 @@ class TestMyModule:
         assert config.timeout == 30
 ```
 
-### 2. 結合テスト
+### 2. 統合テスト
 
 ```python
 @pytest.mark.asyncio
@@ -1737,6 +1738,30 @@ async def test_command_handling():
     await module.handle_command(event)
 ```
 
+## HTTP ルートのライフサイクル
+
+モジュールが `router` 経由で登録した HTTP/WebSocket ルートのライフサイクルは、フレームワークが**帰属原則**に基づいて自動管理します：
+
+- 登録時の名前空間がそのまま帰属識別子になります。**reload / unload 時にフレームワークがその帰属下のすべてのルートと接続リソースを自動クリーンアップする**ため、手動での登録解除は不要です
+- したがって、**`on_load` 内では無条件にルートを再登録しなければなりません**。インスタンスレベルのブールフラグによる「1 回だけ登録する」最適化はしないでください：設定のホットリロードは stop/start をトリガーして**同一インスタンスを再利用**するため、フラグが残留すると、ルートがクリーンアップされた後に**永久に失われ**、エンドポイントが 404 を返し、プロセスを再起動するまで回復しなくなります
+
+```python
+class MyModule(BaseModule):
+    async def on_load(self):
+        # ロードのたびに無条件で再登録
+        router.register_http_route("MyModule", "/api/panel", self._panel, methods=["GET"])
+```
+
+ルートを事前に手動でアンロードする必要がある場合（特定のエントリを動的にオフラインにするなど）は、能動的に登録解除できます：
+
+```python
+from ErisPulse.Core import router
+
+router.unregister_http_route("MyModule", "/api/panel")
+```
+
+- フロントエンド/呼び出し側は、ホットリロードのウィンドウ期間中にルートの 404 を受信する可能性がありますが、これは一時的な現象です。ブラウザ向けのインタラクティブページでは、404 に対して有限回の自動リトライを行うことを推奨します
+
 ## デプロイ
 
 ### 1. バージョン管理
@@ -1747,15 +1772,15 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-セマンティックバージョニングに従う：
+セマンティックバージョニングに従います：
 - MAJOR.MINOR.PATCH
 - メジャーバージョン：互換性のない API 変更
-- マイナーバージョン：後方互換のある機能追加
-- パッチバージョン：後方互換のある問題修正
+- マイナーバージョン：後方互換性のある機能追加
+- パッチバージョン：後方互換性のある問題修正
 
 ### 2. README ヘッダー
 
-`epsdk create` が生成する README には ErisPulse ヘッダー識別（ロゴ + バッジ行）が組み込まれています。推奨される2つのパターン：
+`epsdk create` で生成される README には、ErisPulse のヘッダー識別（ロゴ + バッジ行）が組み込まれています。推奨される2つのパターン：
 
 **パターン A — ErisPulse ロゴのみ（デフォルト）：**
 
@@ -1771,7 +1796,7 @@ version = "1.0.0"
 <p>
   <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
   <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=blue" alt="Python"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/ライセンス-MIT-blue?style=for-the-badge" alt="License"></a>
   <a href="https://github.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/Powered_by-ErisPulse-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="ErisPulse"></a>
 </p>
 
@@ -1788,11 +1813,11 @@ version = "1.0.0"
 <img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
 
 # MyModule
-（バッジ行は上に同じ）
+（バッジ行は上記と同じ）
 </div>
 ```
 
-必要に応じて GitHub Stars、Downloads などのバッジを追加できます。ロゴをプロジェクトのローカル（`.github/assets/ErisPulseLogo.png`）にダウンロードして、相対パス参照に変更することもできます。
+必要に応じて GitHub Stars、Downloads などのバッジを追加できます。ロゴはプロジェクトのローカルにダウンロードし（`.github/assets/ErisPulseLogo.png`）、相対パスで参照するように変更することもできます。
 
 ## 関連ドキュメント
 
@@ -1801,10 +1826,10 @@ version = "1.0.0"
 - [モジュール開発入門](getting-started.md) - 最初のモジュールを作成する
 - [モジュールのコア概念](core-concepts.md) - モジュールアーキテクチャを理解する
 
-### シナリオ別に詳しく
+### シナリオ別に深掘り
 
 - [Event ラッパークラス](event-wrapper.md) - イベント処理の詳細
-- [公開とモジュールストアガイド](../publishing.md) - モジュールを書いた後に PyPI とモジュールストアへ公開する
+- [公開とモジュールストアガイド](../publishing.md) - モジュールを書き終えたら PyPI とモジュールストアへ公開する
 
 ## ORM 数据模型
 

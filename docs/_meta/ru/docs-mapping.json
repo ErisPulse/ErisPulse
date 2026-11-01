@@ -238,7 +238,7 @@
               "icon": "fa-code-branch"
             },
             {
-              "title": "Лучшие практики разработки адаптеров",
+              "title": "Рекомендуемые практики разработки адаптеров",
               "path": "developer-guide/adapters/best-practices.md",
               "level": 1,
               "icon": "fa-medal"

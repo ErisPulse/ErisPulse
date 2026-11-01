@@ -62,27 +62,27 @@ AI 按需读取：只读需要的章节即可，不必全文加载。
 - 相關文件: 3136-3146 行
 - 适配器最佳实践: 3148-3158 行
 - Bot 狀態管理與 Meta 事件: 3160-3257 行
-- 連接管理: 3259-3374 行
-- 事件轉換: 3376-3428 行
-- SendDSL 實現: 3430-3491 行
-- API 回應: 3493-3542 行
-- 多帳戶支援: 3544-3604 行
-- 錯誤處理: 3606-3658 行
-- 測試: 3660-3704 行
-- 反向轉換與訊息建構: 3706-3714 行
-- 平台事件方法擴展: 3716-3768 行
-- 文件維護: 3770-3777 行
-- 基本資訊: 3779-3781 行
-- 支援的消息傳送類型: 3783-3784 行
-- 特有事件類型: 3786-3787 行
-- 配置選項: 3789-3800 行
-- 相關文件: 3802-3812 行
-- 平台接入指南索引: 3814-3831 行
-- 平台特定功能: 3833-3859 行
-- 通用介面: 3861-4039 行
-- 標準格式: 4041-4097 行
-- 參考連結: 4099-4109 行
-- 參與貢獻: 4111-4121 行
+- 連接管理: 3259-3407 行
+- 事件轉換: 3409-3461 行
+- SendDSL 實現: 3463-3524 行
+- API 回應: 3526-3575 行
+- 多帳戶支援: 3577-3637 行
+- 錯誤處理: 3639-3691 行
+- 測試: 3693-3737 行
+- 反向轉換與訊息建構: 3739-3747 行
+- 平台事件方法擴展: 3749-3801 行
+- 文件維護: 3803-3810 行
+- 基本資訊: 3812-3814 行
+- 支援的消息傳送類型: 3816-3817 行
+- 特有事件類型: 3819-3820 行
+- 配置選項: 3822-3833 行
+- 相關文件: 3835-3845 行
+- 平台接入指南索引: 3847-3864 行
+- 平台特定功能: 3866-3892 行
+- 通用介面: 3894-4072 行
+- 標準格式: 4074-4130 行
+- 參考連結: 4132-4142 行
+- 參與貢獻: 4144-4154 行
 
 ## 适配器开发入门
 
@@ -3338,7 +3338,7 @@ class MyAdapter(BaseAdapter):
 
 ### 4. 連接資訊暴露
 
-適配器註冊的路由應對使用者可見，便於使用者配置平台側的回調位址。推薦在 `start()` 中主動輸出連接資訊：
+適配器註冊的路由應對使用者可見，便於使用者配置平台側的回呼位址。推薦在 `start()` 中主動輸出連接資訊：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -3352,7 +3352,7 @@ class MyAdapter(BaseAdapter):
         if self.sdk:
             info = self.sdk.adapter.get_connection_info(self.platform)
             if info:
-                self.logger.info(f"WebSocket 位址: "
+                self.logger.info(f"WebSocket 地址: "
                     f"{info.get('connection', {}).get('base_url', '')}"
                     f"{info.get('connection', {}).get('websocket_routes', [])}")
 ```
@@ -3372,6 +3372,39 @@ sdk.router.get_module_urls("myplatform")    # 完整連接 URL
 ```
 
 > **注意**：路由註冊時的 `module_name` 必須與適配器在 ErisPulse 中註冊的 `platform` 名稱完全一致，否則 `get_connection_info()` 將無法關聯路由。多帳戶適配器應為每個帳戶註冊子路徑（如 `/account1/webhook`、`/account2/webhook`），而非使用不同的 `module_name`。
+
+### 5. HTTP 路由生命週期
+
+適配器/模組透過 `router` 註冊的 HTTP/WebSocket 路由，其生命週期由框架按**歸屬原則**自動管理：
+
+- 註冊時的 `module_name`（命名空間）即歸屬標識；**reload / stop / unload 時框架會自動清理該歸屬下的全部路由與連接資源**，無需手動註銷
+- 因此 **`start()`（模組為 `on_load`）中必須無條件重新註冊路由**。不要用實例級布林標誌做"只註冊一次"的優化：配置熱重載（如帳戶欄位變更即時儲存）會觸發 stop/start 且**重用同一實例**，標誌殘留會導致路由被清理後**永久丟失**，表現為介面 404 且重啟程序才恢復
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        # 每次啟動無條件重註冊（reload 後路由已隨上次 stop 自動清理）
+        router.register_http_route(self.platform, "/qr/start", self._qr_start, methods=["POST"])
+        router.register_http_route(self.platform, "/qr/poll", self._qr_poll, methods=["POST"])
+```
+
+模組側同理（`on_load` 中註冊）：
+
+```python
+class MyModule(BaseModule):
+    async def on_load(self):
+        router.register_http_route("MyModule", "/api/panel", self._panel, methods=["GET"])
+```
+
+需要**提前手動卸載**路由（如動態下線某個入口）時，可主動註銷：
+
+```python
+from ErisPulse.Core import router
+
+router.unregister_http_route(self.platform, "/qr/start")
+```
+
+- 前端/呼叫方在熱重載視窗可能會收到路由 404，屬瞬時現象；面向瀏覽器的互動頁建議對 404 做有限次自動重試
 
 ## 事件轉換
 

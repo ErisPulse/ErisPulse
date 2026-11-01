@@ -82,46 +82,46 @@
         "title": "1. Dockerfile の作成"
       }
     ],
-    "1. Event ラッパークラスの使用": [
+    "1. Event ラッパークラスを使用する": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1417,
+        "line": 1418,
         "level": 3,
-        "title": "1. Event ラッパークラスの使用"
+        "title": "1. Event ラッパークラスを使用する"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 174,
         "level": 3,
-        "title": "1. Event ラッパークラスの使用"
+        "title": "1. Event ラッパークラスを使用する"
       }
     ],
-    "1. Mixinクラスを使用した一括登録（推奨）": [
+    "1. Mixin クラスを使った一括登録（推奨）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3684,
+        "line": 3718,
         "level": 3,
-        "title": "1. Mixinクラスを使用した一括登録（推奨）"
+        "title": "1. Mixin クラスを使った一括登録（推奨）"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 568,
+        "line": 602,
         "level": 3,
-        "title": "1. Mixinクラスを使用した一括登録（推奨）"
+        "title": "1. Mixin クラスを使った一括登録（推奨）"
       }
     ],
-    "1. OneBot12標準に厳密に従う": [
+    "1. OneBot12 標準への厳密な準拠": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3342,
+        "line": 3376,
         "level": 3,
-        "title": "1. OneBot12標準に厳密に従う"
+        "title": "1. OneBot12 標準への厳密な準拠"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 226,
+        "line": 260,
         "level": 3,
-        "title": "1. OneBot12標準に厳密に従う"
+        "title": "1. OneBot12 標準への厳密な準拠"
       }
     ],
     "1. SDK オブジェクト": [
@@ -136,6 +136,20 @@
         "line": 50,
         "level": 3,
         "title": "1. SDK オブジェクト"
+      }
+    ],
+    "1. Task オブジェクトを必ず返す": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3432,
+        "level": 3,
+        "title": "1. Task オブジェクトを必ず返す"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 316,
+        "level": 3,
+        "title": "1. Task オブジェクトを必ず返す"
       }
     ],
     "1. `{platform}_raw` フィールドの欠落": [
@@ -160,32 +174,18 @@
         "title": "1. pyproject.toml の設定"
       }
     ],
-    "1. いつMetaイベントを送信するか": [
+    "1. いつ Meta イベントを送信するか": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3128,
+        "line": 3129,
         "level": 3,
-        "title": "1. いつMetaイベントを送信するか"
+        "title": "1. いつ Meta イベントを送信するか"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 12,
+        "line": 13,
         "level": 3,
-        "title": "1. いつMetaイベントを送信するか"
-      }
-    ],
-    "1. エラーの分類処理": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3572,
-        "level": 3,
-        "title": "1. エラーの分類処理"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 456,
-        "level": 3,
-        "title": "1. エラーの分類処理"
+        "title": "1. いつ Meta イベントを送信するか"
       }
     ],
     "1. エラーハンドリング": [
@@ -205,7 +205,7 @@
     "1. キャッシュの使用": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1630,
+        "line": 1631,
         "level": 3,
         "title": "1. キャッシュの使用"
       },
@@ -238,30 +238,30 @@
         "title": "1. コア原則"
       }
     ],
-    "1. トランザクションの使用": [
+    "1. トランザクションを使用する": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1563,
+        "line": 1564,
         "level": 3,
-        "title": "1. トランザクションの使用"
+        "title": "1. トランザクションを使用する"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 320,
         "level": 3,
-        "title": "1. トランザクションの使用"
+        "title": "1. トランザクションを使用する"
       }
     ],
     "1. バージョン管理": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1742,
+        "line": 1767,
         "level": 3,
         "title": "1. バージョン管理"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 499,
+        "line": 523,
         "level": 3,
         "title": "1. バージョン管理"
       }
@@ -269,13 +269,13 @@
     "1. プラットフォーム特性ドキュメントの維持": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3736,
+        "line": 3770,
         "level": 3,
         "title": "1. プラットフォーム特性ドキュメントの維持"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 620,
+        "line": 654,
         "level": 3,
         "title": "1. プラットフォーム特性ドキュメントの維持"
       }
@@ -312,8 +312,20 @@
     ],
     "1. ユニットテスト": [
       {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3660,
+        "level": 3,
+        "title": "1. ユニットテスト"
+      },
+      {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1713,
+        "line": 1714,
+        "level": 3,
+        "title": "1. ユニットテスト"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 544,
         "level": 3,
         "title": "1. ユニットテスト"
       },
@@ -327,7 +339,7 @@
     "1. ログレベルの適切な使用": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1596,
+        "line": 1597,
         "level": 3,
         "title": "1. ログレベルの適切な使用"
       },
@@ -340,8 +352,20 @@
     ],
     "1. 例外の分類処理": [
       {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3606,
+        "level": 3,
+        "title": "1. 例外の分類処理"
+      },
+      {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1522,
+        "line": 1523,
+        "level": 3,
+        "title": "1. 例外の分類処理"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 490,
         "level": 3,
         "title": "1. 例外の分類処理"
       },
@@ -355,7 +379,7 @@
     "1. 単一責任の原則": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1254,
+        "line": 1255,
         "level": 3,
         "title": "1. 単一責任の原則"
       },
@@ -364,20 +388,6 @@
         "line": 11,
         "level": 3,
         "title": "1. 単一責任の原則"
-      }
-    ],
-    "1. 単体テスト": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3626,
-        "level": 3,
-        "title": "1. 単体テスト"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 510,
-        "level": 3,
-        "title": "1. 単体テスト"
       }
     ],
     "1. 型とIDを指定する": [
@@ -419,43 +429,29 @@
     "1. 宣言的設定（推奨）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3510,
+        "line": 3544,
         "level": 3,
         "title": "1. 宣言的設定（推奨）"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 394,
+        "line": 428,
         "level": 3,
         "title": "1. 宣言的設定（推奨）"
       }
     ],
-    "1. 必ずTaskオブジェクトを返す": [
+    "1. 接続リトライの実装": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3398,
+        "line": 3226,
         "level": 3,
-        "title": "1. 必ずTaskオブジェクトを返す"
+        "title": "1. 接続リトライの実装"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 282,
+        "line": 110,
         "level": 3,
-        "title": "1. 必ずTaskオブジェクトを返す"
-      }
-    ],
-    "1. 接続の再試行の実装": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3225,
-        "level": 3,
-        "title": "1. 接続の再試行の実装"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 109,
-        "level": 3,
-        "title": "1. 接続の再試行の実装"
+        "title": "1. 接続リトライの実装"
       }
     ],
     "1. 概要": [
@@ -486,18 +482,18 @@
         "title": "1. 標準メソッド命名"
       }
     ],
-    "1. 標準化された応答フォーマット": [
+    "1. 標準化されたレスポンス形式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3459,
+        "line": 3493,
         "level": 3,
-        "title": "1. 標準化された応答フォーマット"
+        "title": "1. 標準化されたレスポンス形式"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 343,
+        "line": 377,
         "level": 3,
-        "title": "1. 標準化された応答フォーマット"
+        "title": "1. 標準化されたレスポンス形式"
       }
     ],
     "1. 標準化原則": [
@@ -517,7 +513,7 @@
     "1. 機密データの保護": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1667,
+        "line": 1668,
         "level": 3,
         "title": "1. 機密データの保護"
       },
@@ -578,18 +574,18 @@
         "title": "1. 説明"
       }
     ],
-    "1. 非同期ライブラリの使用": [
+    "1. 非同期ライブラリを使用する": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1344,
+        "line": 1345,
         "level": 3,
-        "title": "1. 非同期ライブラリの使用"
+        "title": "1. 非同期ライブラリを使用する"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 101,
         "level": 3,
-        "title": "1. 非同期ライブラリの使用"
+        "title": "1. 非同期ライブラリを使用する"
       }
     ],
     "1.1 受信タイプ && 送信タイプ": [
@@ -846,18 +842,18 @@
         "title": "2. IDのみを指定する"
       }
     ],
-    "2. Metaイベントの送信": [
+    "2. Meta イベントの送信": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3136,
+        "line": 3137,
         "level": 3,
-        "title": "2. Metaイベントの送信"
+        "title": "2. Meta イベントの送信"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 20,
+        "line": 21,
         "level": 3,
-        "title": "2. Metaイベントの送信"
+        "title": "2. Meta イベントの送信"
       }
     ],
     "2. PyPI へのリリース": [
@@ -871,13 +867,13 @@
     "2. README ヘッダー": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1756,
+        "line": 1781,
         "level": 3,
         "title": "2. README ヘッダー"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 513,
+        "line": 537,
         "level": 3,
         "title": "2. README ヘッダー"
       }
@@ -918,18 +914,18 @@
         "title": "2. systemd（Linux サーバー）"
       }
     ],
-    "2. アカウント選択メカニズム": [
+    "2. アカウント選択の仕組み": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3550,
+        "line": 3584,
         "level": 3,
-        "title": "2. アカウント選択メカニズム"
+        "title": "2. アカウント選択の仕組み"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 434,
+        "line": 468,
         "level": 3,
-        "title": "2. アカウント選択メカニズム"
+        "title": "2. アカウント選択の仕組み"
       }
     ],
     "2. イベントの受信（POST）": [
@@ -940,24 +936,24 @@
         "title": "2. イベントの受信（POST）"
       }
     ],
-    "2. エラーコードの規範": [
+    "2. エラーコード規約": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3486,
+        "line": 3520,
         "level": 3,
-        "title": "2. エラーコードの規範"
+        "title": "2. エラーコード規約"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 370,
+        "line": 404,
         "level": 3,
-        "title": "2. エラーコードの規範"
+        "title": "2. エラーコード規約"
       }
     ],
     "2. タイムアウト処理": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1545,
+        "line": 1546,
         "level": 3,
         "title": "2. タイムアウト処理"
       },
@@ -966,6 +962,20 @@
         "line": 302,
         "level": 3,
         "title": "2. タイムアウト処理"
+      }
+    ],
+    "2. タイムスタンプの標準化": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3398,
+        "level": 3,
+        "title": "2. タイムスタンプの標準化"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 282,
+        "level": 3,
+        "title": "2. タイムスタンプの標準化"
       }
     ],
     "2. タイムスタンプ形式の誤り": [
@@ -982,24 +992,38 @@
         "title": "2. タイムスタンプ形式の誤り"
       }
     ],
-    "2. デコレーターを使用した単一メソッドの登録": [
+    "2. チェーン可能な修飾メソッドは self を返す": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3710,
+        "line": 3452,
         "level": 3,
-        "title": "2. デコレーターを使用した単一メソッドの登録"
+        "title": "2. チェーン可能な修飾メソッドは self を返す"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 594,
+        "line": 336,
         "level": 3,
-        "title": "2. デコレーターを使用した単一メソッドの登録"
+        "title": "2. チェーン可能な修飾メソッドは self を返す"
+      }
+    ],
+    "2. デコレーターを使った単一メソッドの登録": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3744,
+        "level": 3,
+        "title": "2. デコレーターを使った単一メソッドの登録"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 628,
+        "level": 3,
+        "title": "2. デコレーターを使った単一メソッドの登録"
       }
     ],
     "2. バッチ操作": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1579,
+        "line": 1580,
         "level": 3,
         "title": "2. バッチ操作"
       },
@@ -1013,13 +1037,13 @@
     "2. バージョン情報の更新": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3757,
+        "line": 3791,
         "level": 3,
         "title": "2. バージョン情報の更新"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 641,
+        "line": 675,
         "level": 3,
         "title": "2. バージョン情報の更新"
       }
@@ -1038,18 +1062,18 @@
         "title": "2. パラメータ規格の詳細"
       }
     ],
-    "2. ブロッキング操作の回避": [
+    "2. ブロッキング操作を避ける": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1651,
+        "line": 1652,
         "level": 3,
-        "title": "2. ブロッキング操作の回避"
+        "title": "2. ブロッキング操作を避ける"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 408,
         "level": 3,
-        "title": "2. ブロッキング操作の回避"
+        "title": "2. ブロッキング操作を避ける"
       }
     ],
     "2. モジュール/コマンドが反応しない": [
@@ -1066,18 +1090,18 @@
         "title": "2. モジュール/コマンドが反応しない"
       }
     ],
-    "2. モジュール命名規則": [
+    "2. モジュールの命名規則": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1274,
+        "line": 1275,
         "level": 3,
-        "title": "2. モジュール命名規則"
+        "title": "2. モジュールの命名規則"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 31,
         "level": 3,
-        "title": "2. モジュール命名規則"
+        "title": "2. モジュールの命名規則"
       }
     ],
     "2. リクエストイベントのフィールド要件": [
@@ -1094,22 +1118,24 @@
         "title": "2. リクエストイベントのフィールド要件"
       }
     ],
-    "2. ログ記録": [
+    "2. ログ出力": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3605,
+        "line": 3639,
         "level": 3,
-        "title": "2. ログ記録"
-      },
-      {
-        "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2128,
-        "level": 3,
-        "title": "2. ログ記録"
+        "title": "2. ログ出力"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 489,
+        "line": 523,
+        "level": 3,
+        "title": "2. ログ出力"
+      }
+    ],
+    "2. ログ記録": [
+      {
+        "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
+        "line": 2128,
         "level": 3,
         "title": "2. ログ記録"
       },
@@ -1142,18 +1168,18 @@
         "title": "2. 三層 DSL 並列構造"
       }
     ],
-    "2. 入力検証": [
+    "2. 入力バリデーション": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1693,
+        "line": 1694,
         "level": 3,
-        "title": "2. 入力検証"
+        "title": "2. 入力バリデーション"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 450,
         "level": 3,
-        "title": "2. 入力検証"
+        "title": "2. 入力バリデーション"
       }
     ],
     "2. 基礎レスポンス構造": [
@@ -1181,13 +1207,13 @@
     "2. 接続状態の管理": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3254,
+        "line": 3255,
         "level": 3,
         "title": "2. 接続状態の管理"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 138,
+        "line": 139,
         "level": 3,
         "title": "2. 接続状態の管理"
       }
@@ -1200,24 +1226,10 @@
         "title": "2. 支持するメッセージ送信タイプ"
       }
     ],
-    "2. 時間スタンプの標準化": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3364,
-        "level": 3,
-        "title": "2. 時間スタンプの標準化"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 248,
-        "level": 3,
-        "title": "2. 時間スタンプの標準化"
-      }
-    ],
     "2. 構造化ログ": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1618,
+        "line": 1619,
         "level": 3,
         "title": "2. 構造化ログ"
       },
@@ -1270,74 +1282,58 @@
         "title": "2. 標準マップ"
       }
     ],
-    "2. 正しい非同期操作": [
+    "2. 正しい非同期処理": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1380,
+        "line": 1381,
         "level": 3,
-        "title": "2. 正しい非同期操作"
+        "title": "2. 正しい非同期処理"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 137,
         "level": 3,
-        "title": "2. 正しい非同期操作"
+        "title": "2. 正しい非同期処理"
       }
     ],
-    "2. 結合テスト": [
+    "2. 統合テスト": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3684,
+        "level": 3,
+        "title": "2. 統合テスト"
+      },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1726,
+        "line": 1727,
         "level": 3,
-        "title": "2. 結合テスト"
+        "title": "2. 統合テスト"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 568,
+        "level": 3,
+        "title": "2. 統合テスト"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 483,
         "level": 3,
-        "title": "2. 結合テスト"
+        "title": "2. 統合テスト"
       }
     ],
-    "2. 遅延ロードの適切な使用": [
+    "2. 遅延ロードの適切な活用": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1433,
+        "line": 1434,
         "level": 3,
-        "title": "2. 遅延ロードの適切な使用"
+        "title": "2. 遅延ロードの適切な活用"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 190,
         "level": 3,
-        "title": "2. 遅延ロードの適切な使用"
-      }
-    ],
-    "2. 鏈式修飾メソッドはselfを返す": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3418,
-        "level": 3,
-        "title": "2. 鏈式修飾メソッドはselfを返す"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 302,
-        "level": 3,
-        "title": "2. 鏈式修飾メソッドはselfを返す"
-      }
-    ],
-    "2. 集成テスト": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3650,
-        "level": 3,
-        "title": "2. 集成テスト"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 534,
-        "level": 3,
-        "title": "2. 集成テスト"
+        "title": "2. 遅延ロードの適切な活用"
       }
     ],
     "2.1 OneBot12 標準タイプ": [
@@ -1670,20 +1666,6 @@
         "title": "3. `self` フィールドの欠落"
       }
     ],
-    "3. アダプタの終了時のクリーンアップ": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3720,
-        "level": 3,
-        "title": "3. アダプタの終了時のクリーンアップ"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 604,
-        "level": 3,
-        "title": "3. アダプタの終了時のクリーンアップ"
-      }
-    ],
     "3. アダプター": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
@@ -1696,6 +1678,20 @@
         "line": 91,
         "level": 3,
         "title": "3. アダプター"
+      }
+    ],
+    "3. アダプター終了時のクリーンアップ": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3754,
+        "level": 3,
+        "title": "3. アダプター終了時のクリーンアップ"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 638,
+        "level": 3,
+        "title": "3. アダプター終了時のクリーンアップ"
       }
     ],
     "3. アダプタ主クラスの作成": [
@@ -1712,24 +1708,24 @@
         "title": "3. アダプタ主クラスの作成"
       }
     ],
-    "3. イベントIDの生成": [
+    "3. イベント ID の生成": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3380,
+        "line": 3414,
         "level": 3,
-        "title": "3. イベントIDの生成"
+        "title": "3. イベント ID の生成"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 264,
+        "line": 298,
         "level": 3,
-        "title": "3. イベントIDの生成"
+        "title": "3. イベント ID の生成"
       }
     ],
     "3. イベントハンドラーの登録": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1468,
+        "line": 1469,
         "level": 3,
         "title": "3. イベントハンドラーの登録"
       },
@@ -1762,32 +1758,32 @@
         "title": "3. コード品質の向上"
       }
     ],
+    "3. ハートビートによるキープアライブと Meta ハートビート": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3279,
+        "level": 3,
+        "title": "3. ハートビートによるキープアライブと Meta ハートビート"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 163,
+        "level": 3,
+        "title": "3. ハートビートによるキープアライブと Meta ハートビート"
+      }
+    ],
     "3. ハートビートイベント": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3181,
+        "line": 3182,
         "level": 3,
         "title": "3. ハートビートイベント"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 65,
+        "line": 66,
         "level": 3,
         "title": "3. ハートビートイベント"
-      }
-    ],
-    "3. ハートビート保活とMetaハートビート": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3278,
-        "level": 3,
-        "title": "3. ハートビート保活とMetaハートビート"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 162,
-        "level": 3,
-        "title": "3. ハートビート保活とMetaハートビート"
       }
     ],
     "3. ビルドのトリガー": [
@@ -1820,18 +1816,18 @@
         "title": "3. プラットフォームタイプマッピング"
       }
     ],
-    "3. プラットフォーム固有のメソッドをサポート": [
+    "3. プラットフォーム固有メソッドのサポート": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3432,
+        "line": 3466,
         "level": 3,
-        "title": "3. プラットフォーム固有のメソッドをサポート"
+        "title": "3. プラットフォーム固有メソッドのサポート"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 316,
+        "line": 350,
         "level": 3,
-        "title": "3. プラットフォーム固有のメソッドをサポート"
+        "title": "3. プラットフォーム固有メソッドのサポート"
       }
     ],
     "3. プラットフォーム固有メソッド命名": [
@@ -1859,7 +1855,7 @@
     "3. リソース管理": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1403,
+        "line": 1404,
         "level": 3,
         "title": "3. リソース管理"
       },
@@ -1901,7 +1897,7 @@
     "3. 明確な設定管理": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1281,
+        "line": 1282,
         "level": 3,
         "title": "3. 明確な設定管理"
       },
@@ -2314,18 +2310,18 @@
         "title": "4. PM2（Node 生態系の運用）"
       }
     ],
-    "4. `self`フィールドの自動検出": [
+    "4. `self` フィールドの自動検出": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3194,
+        "line": 3195,
         "level": 3,
-        "title": "4. `self`フィールドの自動検出"
+        "title": "4. `self` フィールドの自動検出"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 78,
+        "line": 79,
         "level": 3,
-        "title": "4. `self`フィールドの自動検出"
+        "title": "4. `self` フィールドの自動検出"
       }
     ],
     "4. detail_type に非標準の値を使用している": [
@@ -2503,13 +2499,13 @@
     "4. 接続情報の公開": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3303,
+        "line": 3304,
         "level": 3,
         "title": "4. 接続情報の公開"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 187,
+        "line": 188,
         "level": 3,
         "title": "4. 接続情報の公開"
       }
@@ -2682,18 +2678,32 @@
         "title": "4.4 イベントハンドラでの使用"
       }
     ],
-    "5. Botの状態の照会": [
+    "5. Bot ステータスの照会": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3219,
+        "line": 3220,
         "level": 3,
-        "title": "5. Botの状態の照会"
+        "title": "5. Bot ステータスの照会"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 103,
+        "line": 104,
         "level": 3,
-        "title": "5. Botの状態の照会"
+        "title": "5. Bot ステータスの照会"
+      }
+    ],
+    "5. HTTP ルートのライフサイクル": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3341,
+        "level": 3,
+        "title": "5. HTTP ルートのライフサイクル"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 225,
+        "level": 3,
+        "title": "5. HTTP ルートのライフサイクル"
       }
     ],
     "5. Send クラスの実装": [
@@ -3983,7 +3993,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2218,
+        "line": 2243,
         "level": 3,
         "title": "@conv.branch(name) デコレータ"
       }
@@ -4005,7 +4015,7 @@
     "@メッセージ関連": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 933,
+        "line": 934,
         "level": 4,
         "title": "@メッセージ関連"
       },
@@ -4093,6 +4103,18 @@
       }
     ],
     "API レスポンス": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3491,
+        "level": 2,
+        "title": "API レスポンス"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 375,
+        "level": 2,
+        "title": "API レスポンス"
+      },
       {
         "document": "platform-guide/wechatmp.md",
         "line": 174,
@@ -4210,20 +4232,6 @@
         "line": 366,
         "level": 2,
         "title": "APIレスポンス標準"
-      }
-    ],
-    "API応答": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3457,
-        "level": 2,
-        "title": "API応答"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 341,
-        "level": 2,
-        "title": "API応答"
       }
     ],
     "API標準": [
@@ -4383,7 +4391,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 206,
+        "line": 207,
         "level": 3,
         "title": "BaseModule 基底クラス"
       },
@@ -4432,6 +4440,20 @@
         "line": 246,
         "level": 2,
         "title": "Bot ステータス管理"
+      }
+    ],
+    "Bot ステータス管理と Meta イベント": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3125,
+        "level": 2,
+        "title": "Bot ステータス管理と Meta イベント"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 9,
+        "level": 2,
+        "title": "Bot ステータス管理と Meta イベント"
       }
     ],
     "Bot ライフサイクルの監視": [
@@ -4492,20 +4514,6 @@
         "line": 1138,
         "level": 2,
         "title": "Bot 状態管理"
-      }
-    ],
-    "Botの状態管理とMetaイベント": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3124,
-        "level": 2,
-        "title": "Botの状態管理とMetaイベント"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 8,
-        "level": 2,
-        "title": "Botの状態管理とMetaイベント"
       }
     ],
     "Botコマンドメッセージセグメント (ideaura_command)": [
@@ -4683,7 +4691,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2014,
+        "line": 2039,
         "level": 1,
         "title": "Conversation 多輪対話"
       }
@@ -4711,7 +4719,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 143,
+        "line": 144,
         "level": 2,
         "title": "Core.py - 基本モジュール"
       },
@@ -4893,7 +4901,7 @@
     "ErisPulse PlatformFeatures ドキュメント": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3782,
+        "line": 3816,
         "level": 1,
         "title": "ErisPulse PlatformFeatures ドキュメント"
       },
@@ -5351,7 +5359,7 @@
     "Event 包装类": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 740,
+        "line": 741,
         "level": 2,
         "title": "Event 包装类"
       }
@@ -5359,7 +5367,7 @@
     "Event 包装类详解": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 744,
+        "line": 745,
         "level": 1,
         "title": "Event 包装类详解"
       },
@@ -5434,6 +5442,20 @@
         "line": 1122,
         "level": 3,
         "title": "HTTP デコレータ"
+      }
+    ],
+    "HTTP ルートのライフサイクル": [
+      {
+        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
+        "line": 1741,
+        "level": 2,
+        "title": "HTTP ルートのライフサイクル"
+      },
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 497,
+        "level": 2,
+        "title": "HTTP ルートのライフサイクル"
       }
     ],
     "HTTP 客户端": [
@@ -5813,7 +5835,7 @@
     "ORM 数据模型": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1809,
+        "line": 1834,
         "level": 2,
         "title": "ORM 数据模型"
       }
@@ -6211,13 +6233,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 284,
+        "line": 285,
         "level": 3,
         "title": "SDK オブジェクト"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 464,
+        "line": 465,
         "level": 2,
         "title": "SDK オブジェクト"
       },
@@ -6377,7 +6399,7 @@
     "Send 連鎖呼び出し": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3827,
+        "line": 3861,
         "level": 3,
         "title": "Send 連鎖呼び出し"
       },
@@ -6392,6 +6414,20 @@
         "line": 46,
         "level": 3,
         "title": "Send 連鎖呼び出し"
+      }
+    ],
+    "SendDSL の実装": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3428,
+        "level": 2,
+        "title": "SendDSL の実装"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 312,
+        "level": 2,
+        "title": "SendDSL の実装"
       }
     ],
     "SendDSL の詳細解説": [
@@ -6434,20 +6470,6 @@
         "line": 82,
         "level": 2,
         "title": "SendDSL 標準メソッドとの関係"
-      }
-    ],
-    "SendDSLの実装": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3394,
-        "level": 2,
-        "title": "SendDSLの実装"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 278,
-        "level": 2,
-        "title": "SendDSLの実装"
       }
     ],
     "Shadow 系列 — `Core/shadow.py`（影子モジュール）": [
@@ -7521,7 +7543,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 137,
+        "line": 138,
         "level": 2,
         "title": "__init__.py"
       },
@@ -7557,7 +7579,7 @@
     "`hasattr` と `dir` のサポート": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1203,
+        "line": 1204,
         "level": 3,
         "title": "`hasattr` と `dir` のサポート"
       },
@@ -7699,7 +7721,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2103,
+        "line": 2128,
         "level": 3,
         "title": "choose(prompt, options, **kwargs)"
       }
@@ -7721,7 +7743,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2137,
+        "line": 2162,
         "level": 3,
         "title": "collect(fields, **kwargs)"
       }
@@ -7749,7 +7771,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2085,
+        "line": 2110,
         "level": 3,
         "title": "confirm(prompt=None, **kwargs)"
       }
@@ -7763,7 +7785,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2270,
+        "line": 2295,
         "level": 3,
         "title": "conv.context"
       }
@@ -7777,7 +7799,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2259,
+        "line": 2284,
         "level": 3,
         "title": "conv.start(name=None)"
       }
@@ -7907,7 +7929,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2608,
+        "line": 2633,
         "level": 3,
         "title": "escalate：期限に必ず届くアップグレード"
       }
@@ -7915,7 +7937,7 @@
     "event パラメータに型注釈を追加する": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 751,
+        "line": 752,
         "level": 2,
         "title": "event パラメータに型注釈を追加する"
       },
@@ -8049,7 +8071,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2185,
+        "line": 2210,
         "level": 3,
         "title": "is_active"
       }
@@ -8115,7 +8137,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 262,
+        "line": 263,
         "level": 4,
         "title": "meta フィールドの i18n サポート"
       },
@@ -8143,7 +8165,7 @@
     "on_before_unload メソッド": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 378,
+        "line": 379,
         "level": 3,
         "title": "on_before_unload メソッド"
       },
@@ -8157,7 +8179,7 @@
     "on_load メソッド": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 348,
+        "line": 349,
         "level": 3,
         "title": "on_load メソッド"
       },
@@ -8171,7 +8193,7 @@
     "on_unload メソッド": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 363,
+        "line": 364,
         "level": 3,
         "title": "on_unload メソッド"
       },
@@ -8247,7 +8269,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 117,
+        "line": 118,
         "level": 2,
         "title": "pyproject.toml 設定"
       },
@@ -8267,7 +8289,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2588,
+        "line": 2613,
         "level": 3,
         "title": "remind：返信がなければリマインダー"
       }
@@ -8323,7 +8345,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2286,
+        "line": 2311,
         "level": 3,
         "title": "save() / resume() / clear_saved()"
       }
@@ -8337,7 +8359,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2054,
+        "line": 2079,
         "level": 3,
         "title": "say(content, **kwargs)"
       }
@@ -8431,7 +8453,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2177,
+        "line": 2202,
         "level": 3,
         "title": "stop()"
       }
@@ -8673,7 +8695,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2068,
+        "line": 2093,
         "level": 3,
         "title": "wait(prompt=None, timeout=None)"
       }
@@ -8821,7 +8843,7 @@
     "どちらの宣言を使うべきか": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1893,
+        "line": 1918,
         "level": 3,
         "title": "どちらの宣言を使うべきか"
       },
@@ -9089,7 +9111,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2194,
+        "line": 2219,
         "level": 2,
         "title": "アクティブ状態の管理"
       }
@@ -9184,20 +9206,6 @@
         "line": 111,
         "level": 4,
         "title": "アダプタの停止"
-      }
-    ],
-    "アダプタの完成後": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3774,
-        "level": 3,
-        "title": "アダプタの完成後"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 658,
-        "level": 3,
-        "title": "アダプタの完成後"
       }
     ],
     "アダプタの概要": [
@@ -9354,6 +9362,20 @@
         "title": "アダプター基底クラス"
       }
     ],
+    "アダプター完成後": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3808,
+        "level": 3,
+        "title": "アダプター完成後"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 692,
+        "level": 3,
+        "title": "アダプター完成後"
+      }
+    ],
     "アダプター標準化ガイド（概要）": [
       {
         "document": "ai-support/skills/erispulse-adapter-standards/SKILL.md",
@@ -9385,7 +9407,7 @@
     "アダプター送信メソッドの照会": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 485,
+        "line": 486,
         "level": 2,
         "title": "アダプター送信メソッドの照会"
       },
@@ -9410,6 +9432,20 @@
         "title": "アダプター開発パスを続ける"
       }
     ],
+    "アダプター開発ベストプラクティス": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3117,
+        "level": 1,
+        "title": "アダプター開発ベストプラクティス"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 1,
+        "level": 1,
+        "title": "アダプター開発ベストプラクティス"
+      }
+    ],
     "アダプター開発者にとって": [
       {
         "document": "standards/README.md",
@@ -9432,20 +9468,6 @@
         "line": 18,
         "level": 3,
         "title": "アダプタ開発"
-      }
-    ],
-    "アダプタ開発のベストプラクティス": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3117,
-        "level": 1,
-        "title": "アダプタ開発のベストプラクティス"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 1,
-        "level": 1,
-        "title": "アダプタ開発のベストプラクティス"
       }
     ],
     "アダプタ開発の続き": [
@@ -9529,7 +9551,7 @@
     "アンロードと完全アンロード（purge）": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 395,
+        "line": 396,
         "level": 3,
         "title": "アンロードと完全アンロード（purge）"
       },
@@ -9621,7 +9643,7 @@
     "イベントの基本情報": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 897,
+        "line": 898,
         "level": 4,
         "title": "イベントの基本情報"
       },
@@ -9652,20 +9674,6 @@
         "line": 51,
         "level": 2,
         "title": "イベントの種類"
-      }
-    ],
-    "イベントの転換": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3340,
-        "level": 2,
-        "title": "イベントの転換"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 224,
-        "level": 2,
-        "title": "イベントの転換"
       }
     ],
     "イベントオーバーライド：モジュールのコードを変更せずに、任意のイベントタイプの動作をオーバーライド": [
@@ -9791,7 +9799,7 @@
     "イベントハンドラのライフサイクル": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 674,
+        "line": 675,
         "level": 3,
         "title": "イベントハンドラのライフサイクル"
       },
@@ -9805,7 +9813,7 @@
     "イベントハンドラの登録": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 658,
+        "line": 659,
         "level": 3,
         "title": "イベントハンドラの登録"
       },
@@ -9883,7 +9891,7 @@
     "イベントリスニング": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3955,
+        "line": 3989,
         "level": 3,
         "title": "イベントリスニング"
       },
@@ -9925,13 +9933,13 @@
     "イベント処理": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 656,
+        "line": 657,
         "level": 2,
         "title": "イベント処理"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1415,
+        "line": 1416,
         "level": 2,
         "title": "イベント処理"
       },
@@ -10063,6 +10071,18 @@
       }
     ],
     "イベント変換": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3374,
+        "level": 2,
+        "title": "イベント変換"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 258,
+        "level": 2,
+        "title": "イベント変換"
+      },
       {
         "document": "standards/README.md",
         "line": 76,
@@ -10279,7 +10299,7 @@
     "インタラクティブ機能の深掘り": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1236,
+        "line": 1237,
         "level": 3,
         "title": "インタラクティブ機能の深掘り"
       },
@@ -10438,6 +10458,20 @@
         "title": "エラーコード規格"
       }
     ],
+    "エラーハンドリング": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3604,
+        "level": 2,
+        "title": "エラーハンドリング"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 488,
+        "level": 2,
+        "title": "エラーハンドリング"
+      }
+    ],
     "エラー体系": [
       {
         "document": "advanced/module-communication.md",
@@ -10474,26 +10508,14 @@
         "title": "エラー処理"
       },
       {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3570,
+        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
+        "line": 702,
         "level": 2,
         "title": "エラー処理"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 701,
-        "level": 2,
-        "title": "エラー処理"
-      },
-      {
-        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1520,
-        "level": 2,
-        "title": "エラー処理"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 454,
+        "line": 1521,
         "level": 2,
         "title": "エラー処理"
       },
@@ -10575,7 +10597,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2377,
+        "line": 2402,
         "level": 3,
         "title": "ガイド付き登録"
       }
@@ -10699,7 +10721,7 @@
     "グループ/チャンネル情報": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 927,
+        "line": 928,
         "level": 4,
         "title": "グループ/チャンネル情報"
       },
@@ -10937,7 +10959,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2052,
+        "line": 2077,
         "level": 2,
         "title": "コア API"
       }
@@ -10995,7 +11017,7 @@
     "コアモジュールへのアクセス": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 466,
+        "line": 467,
         "level": 3,
         "title": "コアモジュールへのアクセス"
       },
@@ -11037,7 +11059,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 204,
+        "line": 205,
         "level": 2,
         "title": "コア概念"
       },
@@ -11113,7 +11135,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 196,
+        "line": 197,
         "level": 3,
         "title": "コマンドのテスト"
       },
@@ -11155,7 +11177,7 @@
     "コマンドの基本": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1160,
+        "line": 1161,
         "level": 4,
         "title": "コマンドの基本"
       },
@@ -11289,7 +11311,7 @@
     "コマンド情報": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1158,
+        "line": 1159,
         "level": 3,
         "title": "コマンド情報"
       },
@@ -11309,7 +11331,7 @@
     "コマンド情報の取得": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 871,
+        "line": 872,
         "level": 2,
         "title": "コマンド情報の取得"
       },
@@ -11385,7 +11407,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2268,
+        "line": 2293,
         "level": 2,
         "title": "コンテキストと永続化"
       }
@@ -11407,7 +11429,7 @@
     "コントリビューション": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4077,
+        "line": 4111,
         "level": 2,
         "title": "コントリビューション"
       },
@@ -11661,7 +11683,7 @@
     "サポートされている送信メソッドの一覧": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 489,
+        "line": 490,
         "level": 3,
         "title": "サポートされている送信メソッドの一覧"
       },
@@ -11820,18 +11842,18 @@
         "title": "シナリオ別にグループ化"
       }
     ],
-    "シナリオ別に詳しく": [
+    "シナリオ別に深掘り": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1804,
+        "line": 1829,
         "level": 3,
-        "title": "シナリオ別に詳しく"
+        "title": "シナリオ別に深掘り"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 561,
+        "line": 585,
         "level": 3,
-        "title": "シナリオ別に詳しく"
+        "title": "シナリオ別に深掘り"
       }
     ],
     "シナリオ早見表": [
@@ -11939,13 +11961,13 @@
     "ストレージシステム": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 631,
+        "line": 632,
         "level": 2,
         "title": "ストレージシステム"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1561,
+        "line": 1562,
         "level": 2,
         "title": "ストレージシステム"
       },
@@ -12031,7 +12053,7 @@
     "セキュリティ": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1665,
+        "line": 1666,
         "level": 2,
         "title": "セキュリティ"
       },
@@ -12093,7 +12115,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2583,
+        "line": 2608,
         "level": 2,
         "title": "セッションタイマー：remind / escalate"
       }
@@ -12135,7 +12157,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2698,
+        "line": 2723,
         "level": 2,
         "title": "セッション受信箱：event.history"
       }
@@ -12149,7 +12171,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2666,
+        "line": 2691,
         "level": 2,
         "title": "セッション排他：acquire / hold / get_owner_of"
       }
@@ -12271,7 +12293,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2318,
+        "line": 2343,
         "level": 3,
         "title": "チェックポイント TTL"
       }
@@ -12519,19 +12541,19 @@
     "テスト": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3624,
+        "line": 3658,
         "level": 2,
         "title": "テスト"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1711,
+        "line": 1712,
         "level": 2,
         "title": "テスト"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 508,
+        "line": 542,
         "level": 2,
         "title": "テスト"
       },
@@ -12615,7 +12637,7 @@
     "テーブル構造は不要で、いくつかのキーと値だけを保存したい場合": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2006,
+        "line": 2031,
         "level": 3,
         "title": "テーブル構造は不要で、いくつかのキーと値だけを保存したい場合"
       },
@@ -12731,13 +12753,13 @@
     "デプロイ": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1740,
+        "line": 1765,
         "level": 2,
         "title": "デプロイ"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 497,
+        "line": 521,
         "level": 2,
         "title": "デプロイ"
       }
@@ -12811,7 +12833,7 @@
     "データベースの変更やクラウドデータベースへのデプロイが必要な場合": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2002,
+        "line": 2027,
         "level": 3,
         "title": "データベースの変更やクラウドデータベースへのデプロイが必要な場合"
       },
@@ -12825,7 +12847,7 @@
     "データモデル層（ORM）": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1813,
+        "line": 1838,
         "level": 1,
         "title": "データモデル層（ORM）"
       },
@@ -12853,7 +12875,7 @@
     "トランザクション": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1879,
+        "line": 1904,
         "level": 2,
         "title": "トランザクション"
       },
@@ -12875,7 +12897,7 @@
     "トランザクションの使用": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 646,
+        "line": 647,
         "level": 3,
         "title": "トランザクションの使用"
       },
@@ -12917,7 +12939,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2730,
+        "line": 2755,
         "level": 2,
         "title": "トレースID：trace-id"
       }
@@ -12930,26 +12952,26 @@
         "title": "ドキュメント"
       }
     ],
+    "ドキュメントのメンテナンス": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3768,
+        "level": 2,
+        "title": "ドキュメントのメンテナンス"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 652,
+        "level": 2,
+        "title": "ドキュメントのメンテナンス"
+      }
+    ],
     "ドキュメントの保守に関する説明": [
       {
         "document": "platform-guide/maintain-notes.md",
         "line": 1,
         "level": 1,
         "title": "ドキュメントの保守に関する説明"
-      }
-    ],
-    "ドキュメントの維持": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3734,
-        "level": 2,
-        "title": "ドキュメントの維持"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 618,
-        "level": 2,
-        "title": "ドキュメントの維持"
       }
     ],
     "ドキュメントリスト": [
@@ -13335,7 +13357,7 @@
     "パフォーマンス最適化": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1628,
+        "line": 1629,
         "level": 2,
         "title": "パフォーマンス最適化"
       },
@@ -13383,7 +13405,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2559,
+        "line": 2584,
         "level": 3,
         "title": "パラメータ説明"
       },
@@ -13463,7 +13485,7 @@
     "フィールドパラメータ": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1837,
+        "line": 1862,
         "level": 2,
         "title": "フィールドパラメータ"
       },
@@ -13715,13 +13737,13 @@
     "プラットフォームイベントメソッドの拡張": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3680,
+        "line": 3714,
         "level": 2,
         "title": "プラットフォームイベントメソッドの拡張"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 564,
+        "line": 598,
         "level": 2,
         "title": "プラットフォームイベントメソッドの拡張"
       }
@@ -13817,7 +13839,7 @@
     "プラットフォーム固有機能": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3797,
+        "line": 3831,
         "level": 2,
         "title": "プラットフォーム固有機能"
       },
@@ -13885,7 +13907,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1172,
+        "line": 1173,
         "level": 3,
         "title": "プラットフォーム拡張メソッド"
       },
@@ -13919,7 +13941,7 @@
     "プラットフォーム機能の確認": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 984,
+        "line": 985,
         "level": 4,
         "title": "プラットフォーム機能の確認"
       },
@@ -14041,7 +14063,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 103,
+        "line": 104,
         "level": 2,
         "title": "プロジェクト構造"
       },
@@ -14342,6 +14364,20 @@
         "title": "マルチアカウントの設定"
       }
     ],
+    "マルチアカウントサポート": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3542,
+        "level": 2,
+        "title": "マルチアカウントサポート"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 426,
+        "level": 2,
+        "title": "マルチアカウントサポート"
+      }
+    ],
     "マルチアカウント送信": [
       {
         "document": "platform-guide/bilibili.md",
@@ -14453,7 +14489,7 @@
     "メソッドの詳細情報の取得": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 497,
+        "line": 498,
         "level": 3,
         "title": "メソッドの詳細情報の取得"
       },
@@ -14467,7 +14503,7 @@
     "メソッドの速見表": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 893,
+        "line": 894,
         "level": 2,
         "title": "メソッドの速見表"
       },
@@ -14687,13 +14723,13 @@
     "メッセージイベントメソッド": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 788,
+        "line": 789,
         "level": 2,
         "title": "メッセージイベントメソッド"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 914,
+        "line": 915,
         "level": 3,
         "title": "メッセージイベントメソッド"
       },
@@ -14771,13 +14807,13 @@
     "メッセージタイプの判断": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 801,
+        "line": 802,
         "level": 2,
         "title": "メッセージタイプの判断"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 937,
+        "line": 938,
         "level": 3,
         "title": "メッセージタイプの判断"
       },
@@ -14803,7 +14839,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2717,
+        "line": 2742,
         "level": 2,
         "title": "メッセージトランザクション：message_tx"
       }
@@ -14825,7 +14861,7 @@
     "メッセージ内容": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 916,
+        "line": 917,
         "level": 4,
         "title": "メッセージ内容"
       },
@@ -15017,7 +15053,7 @@
     "メッセージ送信失敗": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4050,
+        "line": 4084,
         "level": 4,
         "title": "メッセージ送信失敗"
       },
@@ -15037,7 +15073,7 @@
     "メッセージ送信成功": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4034,
+        "line": 4068,
         "level": 4,
         "title": "メッセージ送信成功"
       },
@@ -15241,7 +15277,7 @@
     "モジュールのコア概念": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 314,
+        "line": 315,
         "level": 1,
         "title": "モジュールのコア概念"
       },
@@ -15261,7 +15297,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 184,
+        "line": 185,
         "level": 2,
         "title": "モジュールのテスト"
       },
@@ -15295,7 +15331,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 322,
+        "line": 323,
         "level": 2,
         "title": "モジュールのライフサイクル"
       },
@@ -15453,7 +15489,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 218,
+        "line": 219,
         "level": 3,
         "title": "モジュール紹介 meta"
       },
@@ -15495,7 +15531,7 @@
     "モジュール設計": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1252,
+        "line": 1253,
         "level": 2,
         "title": "モジュール設計"
       },
@@ -15517,7 +15553,7 @@
     "モジュール開発の継続": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1231,
+        "line": 1232,
         "level": 3,
         "title": "モジュール開発の継続"
       },
@@ -15531,7 +15567,7 @@
     "モジュール開発ベストプラクティス": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1244,
+        "line": 1245,
         "level": 1,
         "title": "モジュール開発ベストプラクティス"
       },
@@ -15551,7 +15587,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 95,
+        "line": 96,
         "level": 1,
         "title": "モジュール開発入門"
       },
@@ -15607,7 +15643,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 477,
+        "line": 478,
         "level": 3,
         "title": "モジュール間通信"
       },
@@ -15621,7 +15657,7 @@
     "モデルの宣言": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1820,
+        "line": 1845,
         "level": 2,
         "title": "モデルの宣言"
       },
@@ -15770,24 +15806,24 @@
         "title": "ユーティリティモジュールガイド：他モジュールのハンドル管理"
       }
     ],
-    "ユーティリティモジュール：他のモジュールのものを預かる時は「アンロード通知」を受け止める": [
+    "ユーティリティモジュール：他モジュールのものを預かるときは「アンロード通知」を受け止める": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1484,
+        "line": 1485,
         "level": 2,
-        "title": "ユーティリティモジュール：他のモジュールのものを預かる時は「アンロード通知」を受け止める"
+        "title": "ユーティリティモジュール：他モジュールのものを預かるときは「アンロード通知」を受け止める"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 241,
         "level": 2,
-        "title": "ユーティリティモジュール：他のモジュールのものを預かる時は「アンロード通知」を受け止める"
+        "title": "ユーティリティモジュール：他モジュールのものを預かるときは「アンロード通知」を受け止める"
       }
     ],
     "ライフサイクルの全体像": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 422,
+        "line": 423,
         "level": 3,
         "title": "ライフサイクルの全体像"
       },
@@ -15967,7 +16003,7 @@
     "リクエストイベントメソッド": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 958,
+        "line": 959,
         "level": 3,
         "title": "リクエストイベントメソッド"
       },
@@ -15981,7 +16017,7 @@
     "リクエストタイプの判断": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 963,
+        "line": 964,
         "level": 4,
         "title": "リクエストタイプの判断"
       },
@@ -16037,7 +16073,7 @@
     "リクエスト情報": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 960,
+        "line": 961,
         "level": 4,
         "title": "リクエスト情報"
       },
@@ -16333,7 +16369,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2408,
+        "line": 2433,
         "level": 3,
         "title": "ループ対話"
       }
@@ -16433,7 +16469,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2528,
+        "line": 2553,
         "level": 3,
         "title": "レプライが一致する完全な判定チェーン"
       }
@@ -16447,7 +16483,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2465,
+        "line": 2490,
         "level": 2,
         "title": "レプライ待ち：wait_reply"
       }
@@ -16493,7 +16529,7 @@
     "ロギング": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1594,
+        "line": 1595,
         "level": 2,
         "title": "ロギング"
       },
@@ -16545,7 +16581,7 @@
     "ログ記録": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 718,
+        "line": 719,
         "level": 3,
         "title": "ログ記録"
       },
@@ -16603,7 +16639,7 @@
     "ロボット情報": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 904,
+        "line": 905,
         "level": 4,
         "title": "ロボット情報"
       },
@@ -16623,7 +16659,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 186,
+        "line": 187,
         "level": 3,
         "title": "ローカルテスト"
       },
@@ -16679,7 +16715,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 324,
+        "line": 325,
         "level": 3,
         "title": "ロード戦略"
       },
@@ -16769,7 +16805,7 @@
     "一括構築モード（Build）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3922,
+        "line": 3956,
         "level": 4,
         "title": "一括構築モード（Build）"
       },
@@ -17037,7 +17073,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2444,
+        "line": 2469,
         "level": 1,
         "title": "交互会話システム"
       }
@@ -17045,7 +17081,7 @@
     "交互会话": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2440,
+        "line": 2465,
         "level": 2,
         "title": "交互会话"
       }
@@ -17059,7 +17095,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 680,
+        "line": 681,
         "level": 3,
         "title": "仕組み"
       },
@@ -17085,7 +17121,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2741,
+        "line": 2766,
         "level": 2,
         "title": "他のシステムとの関係"
       }
@@ -17113,7 +17149,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2375,
+        "line": 2400,
         "level": 2,
         "title": "代表的なフロー・パターン"
       }
@@ -17199,7 +17235,7 @@
     "会話の高度な機能": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 836,
+        "line": 837,
         "level": 2,
         "title": "会話の高度な機能"
       },
@@ -17213,7 +17249,7 @@
     "会話機能": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1011,
+        "line": 1012,
         "level": 4,
         "title": "会話機能"
       },
@@ -17227,7 +17263,7 @@
     "会話機能の例": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1050,
+        "line": 1051,
         "level": 4,
         "title": "会話機能の例"
       },
@@ -17241,7 +17277,7 @@
     "会話識別子": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 910,
+        "line": 911,
         "level": 4,
         "title": "会話識別子"
       },
@@ -17297,7 +17333,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 306,
+        "line": 307,
         "level": 3,
         "title": "作成後は"
       },
@@ -17417,7 +17453,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 703,
+        "line": 704,
         "level": 3,
         "title": "例外のキャッチ"
       },
@@ -17595,7 +17631,7 @@
     "元のデータ": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1167,
+        "line": 1168,
         "level": 3,
         "title": "元のデータ"
       },
@@ -17667,7 +17703,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2483,
+        "line": 2508,
         "level": 3,
         "title": "全パラメータ一覧"
       }
@@ -17703,7 +17739,7 @@
     "共通インターフェース": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3825,
+        "line": 3859,
         "level": 2,
         "title": "共通インターフェース"
       },
@@ -17897,7 +17933,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2330,
+        "line": 2355,
         "level": 3,
         "title": "再起動時の自動復元"
       }
@@ -17985,7 +18021,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2216,
+        "line": 2241,
         "level": 2,
         "title": "分岐とジャンプ"
       }
@@ -18110,18 +18146,18 @@
         "title": "前提知識"
       }
     ],
-    "前提知識の振り返り": [
+    "前置知識のおさらい": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3768,
+        "line": 3802,
         "level": 3,
-        "title": "前提知識の振り返り"
+        "title": "前置知識のおさらい"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 652,
+        "line": 686,
         "level": 3,
-        "title": "前提知識の振り返り"
+        "title": "前置知識のおさらい"
       }
     ],
     "動作原理": [
@@ -18235,7 +18271,7 @@
     "即時ロード": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 688,
+        "line": 689,
         "level": 3,
         "title": "即時ロード"
       },
@@ -18285,7 +18321,7 @@
     "参考リンク": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4065,
+        "line": 4099,
         "level": 2,
         "title": "参考リンク"
       },
@@ -18533,13 +18569,13 @@
     "回答機能": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 814,
+        "line": 815,
         "level": 2,
         "title": "回答機能"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 968,
+        "line": 969,
         "level": 3,
         "title": "回答機能"
       },
@@ -18723,7 +18759,7 @@
     "基本判断": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 939,
+        "line": 940,
         "level": 4,
         "title": "基本判断"
       },
@@ -18751,7 +18787,7 @@
     "基本回答": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 970,
+        "line": 971,
         "level": 4,
         "title": "基本回答"
       },
@@ -18949,7 +18985,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 633,
+        "line": 634,
         "level": 3,
         "title": "基本的な使い方"
       },
@@ -19145,7 +19181,7 @@
     "外部キー（リレーションマッピングの基礎）": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1933,
+        "line": 1958,
         "level": 2,
         "title": "外部キー（リレーションマッピングの基礎）"
       },
@@ -19201,7 +19237,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2624,
+        "line": 2649,
         "level": 2,
         "title": "多路待ち：expect + select"
       }
@@ -19209,7 +19245,7 @@
     "多轮对话": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2010,
+        "line": 2035,
         "level": 2,
         "title": "多轮对话"
       }
@@ -19289,13 +19325,13 @@
     "学習パスに戻る": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1799,
+        "line": 1824,
         "level": 3,
         "title": "学習パスに戻る"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 556,
+        "line": 580,
         "level": 3,
         "title": "学習パスに戻る"
       }
@@ -19309,13 +19345,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 301,
+        "line": 302,
         "level": 3,
         "title": "学習パスの続き"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 731,
+        "line": 732,
         "level": 3,
         "title": "学習パスの続き"
       },
@@ -19579,7 +19615,7 @@
     "宣言式構成クラスとの関係": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1889,
+        "line": 1914,
         "level": 2,
         "title": "宣言式構成クラスとの関係"
       },
@@ -19612,6 +19648,20 @@
         "title": "宣言構造"
       }
     ],
+    "宣言的な翻訳キー（v2.7.0+）": [
+      {
+        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
+        "line": 1312,
+        "level": 3,
+        "title": "宣言的な翻訳キー（v2.7.0+）"
+      },
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 68,
+        "level": 3,
+        "title": "宣言的な翻訳キー（v2.7.0+）"
+      }
+    ],
     "宣言的イベント拡張メソッド（v2.7.0+）": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -19635,7 +19685,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2541,
+        "line": 2566,
         "level": 2,
         "title": "宣言的多輪対話：`.got()`チェーン（2.11+）"
       }
@@ -19663,25 +19713,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 573,
-        "level": 3,
-        "title": "宣言的翻訳キー（v2.7.0+）"
-      },
-      {
-        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1311,
+        "line": 574,
         "level": 3,
         "title": "宣言的翻訳キー（v2.7.0+）"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 547,
-        "level": 3,
-        "title": "宣言的翻訳キー（v2.7.0+）"
-      },
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 68,
         "level": 3,
         "title": "宣言的翻訳キー（v2.7.0+）"
       },
@@ -19701,7 +19739,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 515,
+        "line": 516,
         "level": 3,
         "title": "宣言的設定（推奨）"
       },
@@ -19833,7 +19871,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2021,
+        "line": 2046,
         "level": 2,
         "title": "対話の作成"
       }
@@ -19979,7 +20017,7 @@
     "平台接入指南索引": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3778,
+        "line": 3812,
         "level": 2,
         "title": "平台接入指南索引"
       }
@@ -19987,7 +20025,7 @@
     "建表と CRUD": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1853,
+        "line": 1878,
         "level": 2,
         "title": "建表と CRUD"
       },
@@ -20039,7 +20077,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2511,
+        "line": 2536,
         "level": 3,
         "title": "待ちがいつキャンセルされるか"
       }
@@ -20053,7 +20091,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2504,
+        "line": 2529,
         "level": 3,
         "title": "待ちとコマンドの境界（コマンド透過）"
       }
@@ -20067,7 +20105,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2351,
+        "line": 2376,
         "level": 3,
         "title": "復元は即座に引き継ぎ"
       }
@@ -20193,7 +20231,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2571,
+        "line": 2596,
         "level": 3,
         "title": "意味と境界"
       }
@@ -20403,7 +20441,7 @@
     "手動での設定読み取り（非推奨）": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 614,
+        "line": 615,
         "level": 3,
         "title": "手動での設定読み取り（非推奨）"
       },
@@ -20453,7 +20491,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2364,
+        "line": 2389,
         "level": 3,
         "title": "手動復元（自動メカニズムを使用しない場合）"
       }
@@ -20821,13 +20859,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3223,
+        "line": 3224,
         "level": 2,
         "title": "接続管理"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 107,
+        "line": 108,
         "level": 2,
         "title": "接続管理"
       },
@@ -21405,7 +21443,7 @@
     "核心フィールドメソッド": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 775,
+        "line": 776,
         "level": 2,
         "title": "核心フィールドメソッド"
       },
@@ -21425,7 +21463,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 895,
+        "line": 896,
         "level": 3,
         "title": "核心メソッド"
       },
@@ -21439,7 +21477,7 @@
     "核心特性": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 768,
+        "line": 769,
         "level": 2,
         "title": "核心特性"
       },
@@ -21801,7 +21839,7 @@
     "標準イベント形式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4012,
+        "line": 4046,
         "level": 3,
         "title": "標準イベント形式"
       },
@@ -21837,7 +21875,7 @@
     "標準レスポンス形式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4033,
+        "line": 4067,
         "level": 3,
         "title": "標準レスポンス形式"
       },
@@ -21857,7 +21895,7 @@
     "標準形式": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4007,
+        "line": 4041,
         "level": 2,
         "title": "標準形式"
       },
@@ -21893,7 +21931,7 @@
     "模块开发入门": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 91,
+        "line": 92,
         "level": 2,
         "title": "模块开发入门"
       }
@@ -21909,7 +21947,7 @@
     "模块最佳实践": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1240,
+        "line": 1241,
         "level": 2,
         "title": "模块最佳实践"
       }
@@ -21917,7 +21955,7 @@
     "模块核心概念": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 310,
+        "line": 311,
         "level": 2,
         "title": "模块核心概念"
       }
@@ -22145,13 +22183,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 299,
+        "line": 300,
         "level": 2,
         "title": "次のステップ"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2000,
+        "line": 2025,
         "level": 2,
         "title": "次のステップ"
       },
@@ -22427,7 +22465,7 @@
     "深掘りとトラブルシューティング": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 735,
+        "line": 736,
         "level": 3,
         "title": "深掘りとトラブルシューティング"
       },
@@ -22715,7 +22753,7 @@
     "登録されたメソッドの確認": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1194,
+        "line": 1195,
         "level": 3,
         "title": "登録されたメソッドの確認"
       },
@@ -23129,7 +23167,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2309,
+        "line": 2334,
         "level": 3,
         "title": "自動アーカイブ"
       }
@@ -23143,7 +23181,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2307,
+        "line": 2332,
         "level": 2,
         "title": "自動チェックポイントと再起動時の復元"
       }
@@ -23165,7 +23203,7 @@
     "自動マイグレーション（フェーズ2）": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1913,
+        "line": 1938,
         "level": 2,
         "title": "自動マイグレーション（フェーズ2）"
       },
@@ -23308,20 +23346,6 @@
         "line": 406,
         "level": 3,
         "title": "複数アカウントによる送信構文"
-      }
-    ],
-    "複数アカウントのサポート": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3508,
-        "level": 2,
-        "title": "複数アカウントのサポート"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 392,
-        "level": 2,
-        "title": "複数アカウントのサポート"
       }
     ],
     "複数アカウントの設定": [
@@ -23901,7 +23925,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 513,
+        "line": 514,
         "level": 2,
         "title": "設定管理"
       },
@@ -24107,7 +24131,7 @@
     "跨プラットフォーム拡張（ワイルドカード）": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1210,
+        "line": 1211,
         "level": 3,
         "title": "跨プラットフォーム拡張（ワイルドカード）"
       },
@@ -24137,7 +24161,7 @@
     "転送機能": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 988,
+        "line": 989,
         "level": 4,
         "title": "転送機能"
       },
@@ -24159,7 +24183,7 @@
     "辺界と注意事項": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1905,
+        "line": 1930,
         "level": 2,
         "title": "辺界と注意事項"
       },
@@ -24189,7 +24213,7 @@
     "返信を待つ機能": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 999,
+        "line": 1000,
         "level": 3,
         "title": "返信を待つ機能"
       },
@@ -24359,7 +24383,7 @@
     "送信ルールデコレーター": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3887,
+        "line": 3921,
         "level": 4,
         "title": "送信ルールデコレーター"
       },
@@ -24429,7 +24453,7 @@
     "送信者情報": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 922,
+        "line": 923,
         "level": 4,
         "title": "送信者情報"
       },
@@ -24478,18 +24502,18 @@
         "title": "逆変換"
       }
     ],
-    "逆転換とメッセージ構築": [
+    "逆変換とメッセージ構築": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3670,
+        "line": 3704,
         "level": 2,
-        "title": "逆転換とメッセージ構築"
+        "title": "逆変換とメッセージ構築"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 554,
+        "line": 588,
         "level": 2,
-        "title": "逆転換とメッセージ構築"
+        "title": "逆変換とメッセージ構築"
       }
     ],
     "通知イベント": [
@@ -24555,13 +24579,13 @@
     "通知イベントメソッド": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 883,
+        "line": 884,
         "level": 2,
         "title": "通知イベントメソッド"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 945,
+        "line": 946,
         "level": 3,
         "title": "通知イベントメソッド"
       },
@@ -24581,7 +24605,7 @@
     "通知タイプの判断": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 951,
+        "line": 952,
         "level": 4,
         "title": "通知タイプの判断"
       },
@@ -24595,7 +24619,7 @@
     "通知操作者": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 947,
+        "line": 948,
         "level": 4,
         "title": "通知操作者"
       },
@@ -24729,7 +24753,7 @@
     "遅延ロード機構": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 678,
+        "line": 679,
         "level": 2,
         "title": "遅延ロード機構"
       },
@@ -24923,7 +24947,7 @@
     "関係マッピング（relationship）": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1947,
+        "line": 1972,
         "level": 2,
         "title": "関係マッピング（relationship）"
       },
@@ -25057,7 +25081,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3766,
+        "line": 3800,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -25099,25 +25123,25 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 729,
+        "line": 730,
         "level": 2,
         "title": "関連ドキュメント"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1229,
+        "line": 1230,
         "level": 2,
         "title": "関連ドキュメント"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1797,
+        "line": 1822,
         "level": 2,
         "title": "関連ドキュメント"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2435,
+        "line": 2460,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -25183,7 +25207,7 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 650,
+        "line": 684,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -25207,7 +25231,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 554,
+        "line": 578,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -25277,7 +25301,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2748,
+        "line": 2773,
         "level": 2,
         "title": "関連文書"
       }
@@ -25357,7 +25381,7 @@
     "非同期プログラミング": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1342,
+        "line": 1343,
         "level": 2,
         "title": "非同期プログラミング"
       },
@@ -25413,7 +25437,7 @@
     "非同期送信と結果処理": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3872,
+        "line": 3906,
         "level": 4,
         "title": "非同期送信と結果処理"
       },

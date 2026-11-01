@@ -238,7 +238,7 @@
               "icon": "fa-code-branch"
             },
             {
-              "title": "アダプタ開発のベストプラクティス",
+              "title": "アダプター開発ベストプラクティス",
               "path": "developer-guide/adapters/best-practices.md",
               "level": 1,
               "icon": "fa-medal"

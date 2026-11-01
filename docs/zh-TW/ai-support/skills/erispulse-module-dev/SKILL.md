@@ -1,6 +1,6 @@
 ---
 name: erispulse-module-dev
-description: "适用于：要开发 ErisPulse 模块（业务逻辑载体）：命令、事件、多轮对话、ORM。覆盖场景：跟著這篇走完，你會得到一個能響應 `/hello` 命令的可執行模組，並了解模組的專案結構、註冊方式與載入 / 卸載鉤子——後續所有模組文件都建立在這套骨架上。這篇講清模組從載入到卸載的完整生命週期、宣告式配置與儲存的用法——哪些事框架自動替你做、你只需要寫什麼，看完就有數。處理器裡的 `event` 參數之所以能直接 `.get_text()` / `.reply()` / `.wait_reply()`，靠的就是 Event 包裝類別。本篇是它的完整方法清單——寫事件處理器時按需查閱，方法簽名與行為都以這裡為準。**何時需要閱讀本文**：寫完第一個模組後建議閱讀（工程化最佳實踐）。若不需要則可跳過，這不會影響其他功能的使用。**什麼時候需要閱讀這篇**：需要數據模型、自動建表或關係映射時。不需要則跳過，不會影響其他功能的使用。**何時需要閱讀本文**：當需要多輪對話狀態機與檢查點恢復時。若不需要則可跳過，這不會影響其他功能的使用。**何時需要閱讀本文**：需要使用 `wait_reply`、多輪對話、定時提醒、會話互斥或鏈路追蹤時。若不需要則可跳過，這不會影響其他功能的使用。"
+description: "适用于：要开发 ErisPulse 模块（业务逻辑载体）：命令、事件、多轮对话、ORM。覆盖场景：跟著這篇走完，你會得到一個能響應 `/hello` 命令的可執行模組，並了解模組的專案結構、註冊方式與載入 / 卸載鉤子——後續所有模組文件都建立在這套骨架上。這篇講清模組從載入到卸載的完整生命週期、宣告式配置與儲存的用法——哪些事框架自動替你做、你只需要寫什麼，看完就有數。處理器裡的 `event` 參數之所以能直接 `.get_text()` / `.reply()` / `.wait_reply()`，靠的就是 Event 包裝類別。本篇是它的完整方法清單——寫事件處理器時按需查閱，方法簽名與行為都以這裡為準。**何時需要閱讀這篇**：寫完第一個模組後建議閱讀（工程化最佳實踐）。不需要則跳過，不會影響其他功能的使用。**什麼時候需要閱讀這篇**：需要數據模型、自動建表或關係映射時。不需要則跳過，不會影響其他功能的使用。**何時需要閱讀本文**：當需要多輪對話狀態機與檢查點恢復時。若不需要則可跳過，這不會影響其他功能的使用。**何時需要閱讀本文**：需要使用 `wait_reply`、多輪對話、定時提醒、會話互斥或鏈路追蹤時。若不需要則可跳過，這不會影響其他功能的使用。"
 ---
 
 # ErisPulse 模块开发
@@ -13,78 +13,79 @@ Source paths are annotated per section; see docs/ in the repository for the late
 
 AI 按需读取：只读需要的章节即可，不必全文加载。
 
-- 模块开发入门: 89-98 行
-- 項目結構: 100-112 行
-- pyproject.toml 配置: 114-132 行
-- __init__.py: 134-138 行
-- Core.py - 基礎模組: 140-179 行
-- 測試模組: 181-199 行
-- 核心概念: 201-303 行
-- 模块核心概念: 305-314 行
-- 模組生命週期: 316-458 行
-- SDK 物件: 460-479 行
-- 适配器发送方法查询: 481-507 行
-- 配置管理: 509-625 行
-- 儲存系統: 627-650 行
-- 事件處理: 652-672 行
-- 慢加載機制: 674-695 行
-- 錯誤處理: 697-723 行
-- 相關文件: 725-734 行
-- Event 包装类: 736-746 行
-- 為 event 參數添加類型註解: 748-763 行
-- 核心特性: 765-770 行
-- 核心欄位方法: 772-783 行
-- 訊息事件方法: 785-796 行
-- 訊息類型判斷: 798-809 行
-- 回覆功能: 811-831 行
-- 互動會話進階: 833-866 行
-- 命令資訊取得: 868-878 行
-- 通知事件方法: 880-888 行
-- 方法速查表: 890-1224 行
-- 相關文件: 1226-1235 行
-- 模块最佳实践: 1237-1246 行
-- 模組設計: 1248-1336 行
-- 異步編程: 1338-1408 行
-- 事件處理: 1410-1477 行
-- 工具模組：托管別人東西時要接住"卸載通知": 1479-1513 行
-- 錯誤處理: 1515-1554 行
-- 儲存系統: 1556-1587 行
-- 日誌記錄: 1589-1621 行
-- 性能優化: 1623-1658 行
-- 安全性: 1660-1704 行
-- 測試: 1706-1733 行
-- 部署: 1735-1790 行
-- 相關文件: 1792-1802 行
-- ORM 数据模型: 1804-1813 行
-- 聲明模型: 1815-1830 行
-- 字段參數: 1832-1846 行
-- 建表與 CRUD: 1848-1872 行
-- 事務: 1874-1882 行
-- 與宣告式配置類的關係: 1884-1898 行
-- 邊界與注意事項: 1900-1906 行
-- 自動遷移（階段二）: 1908-1929 行
-- 外鍵（關係映射基礎）: 1931-1943 行
-- 關係映射（relationship）: 1945-2005 行
-- 多轮对话: 2007-2016 行
-- 創建對話: 2018-2047 行
-- 核心 API: 2049-2189 行
-- 活躍狀態管理: 2191-2211 行
-- 分支與跳轉: 2213-2263 行
-- 上下文與持久化: 2265-2302 行
-- 自動檢查點與重啟恢復: 2304-2370 行
-- 典型流程模式: 2372-2430 行
-- 相關文件: 2432-2435 行
-- 交互会话: 2437-2463 行
-- 等待回覆：wait_reply: 2465-2539 行
-- 聲明式多輪：`.got()` 鏈（2.11+）: 2541-2584 行
-- 會話定時器：remind / escalate: 2586-2625 行
-- 多路等待：expect + select: 2627-2667 行
-- 會話互斥：acquire / hold / get_owner_of: 2669-2700 行
-- 會話收件箱：event.history: 2702-2719 行
-- 訊息事務：message_tx: 2721-2733 行
-- 鏈路追蹤：trace-id: 2735-2744 行
-- 與其他系統的關係: 2746-2751 行
-- 相關文件: 2753-2759 行
+- 模块开发入门: 90-99 行
+- 項目結構: 101-113 行
+- pyproject.toml 配置: 115-133 行
+- __init__.py: 135-139 行
+- Core.py - 基礎模組: 141-180 行
+- 測試模組: 182-200 行
+- 核心概念: 202-304 行
+- 模块核心概念: 306-315 行
+- 模組生命週期: 317-459 行
+- SDK 物件: 461-480 行
+- 适配器发送方法查询: 482-508 行
+- 配置管理: 510-626 行
+- 儲存系統: 628-651 行
+- 事件處理: 653-673 行
+- 慢加載機制: 675-696 行
+- 錯誤處理: 698-724 行
+- 相關文件: 726-735 行
+- Event 包装类: 737-747 行
+- 為 event 參數添加類型註解: 749-764 行
+- 核心特性: 766-771 行
+- 核心欄位方法: 773-784 行
+- 訊息事件方法: 786-797 行
+- 訊息類型判斷: 799-810 行
+- 回覆功能: 812-832 行
+- 互動會話進階: 834-867 行
+- 命令資訊取得: 869-879 行
+- 通知事件方法: 881-889 行
+- 方法速查表: 891-1225 行
+- 相關文件: 1227-1236 行
+- 模块最佳实践: 1238-1247 行
+- 模組設計: 1249-1337 行
+- 異步編程: 1339-1409 行
+- 事件處理: 1411-1478 行
+- 工具模組：托管別人東西時要接住"卸載通知": 1480-1514 行
+- 錯誤處理: 1516-1555 行
+- 儲存系統: 1557-1588 行
+- 日誌記錄: 1590-1622 行
+- 性能優化: 1624-1659 行
+- 安全性: 1661-1705 行
+- 測試: 1707-1734 行
+- HTTP 路由生命週期: 1736-1758 行
+- 部署: 1760-1815 行
+- 相關文件: 1817-1827 行
+- ORM 数据模型: 1829-1838 行
+- 聲明模型: 1840-1855 行
+- 字段參數: 1857-1871 行
+- 建表與 CRUD: 1873-1897 行
+- 事務: 1899-1907 行
+- 與宣告式配置類的關係: 1909-1923 行
+- 邊界與注意事項: 1925-1931 行
+- 自動遷移（階段二）: 1933-1954 行
+- 外鍵（關係映射基礎）: 1956-1968 行
+- 關係映射（relationship）: 1970-2030 行
+- 多轮对话: 2032-2041 行
+- 創建對話: 2043-2072 行
+- 核心 API: 2074-2214 行
+- 活躍狀態管理: 2216-2236 行
+- 分支與跳轉: 2238-2288 行
+- 上下文與持久化: 2290-2327 行
+- 自動檢查點與重啟恢復: 2329-2395 行
+- 典型流程模式: 2397-2455 行
+- 相關文件: 2457-2460 行
+- 交互会话: 2462-2488 行
+- 等待回覆：wait_reply: 2490-2564 行
+- 聲明式多輪：`.got()` 鏈（2.11+）: 2566-2609 行
+- 會話定時器：remind / escalate: 2611-2650 行
+- 多路等待：expect + select: 2652-2692 行
+- 會話互斥：acquire / hold / get_owner_of: 2694-2725 行
+- 會話收件箱：event.history: 2727-2744 行
+- 訊息事務：message_tx: 2746-2758 行
+- 鏈路追蹤：trace-id: 2760-2769 行
+- 與其他系統的關係: 2771-2776 行
+- 相關文件: 2778-2784 行
 
 ## 模块开发入门
 
@@ -1241,9 +1242,9 @@ async def ai_chat(self, prompt: str):
 # 模組開發最佳實踐
 
 > [!TIP]
-> **何時需要閱讀本文**：寫完第一個模組後建議閱讀（工程化最佳實踐）。若不需要則可跳過，這不會影響其他功能的使用。
+> **何時需要閱讀這篇**：寫完第一個模組後建議閱讀（工程化最佳實踐）。不需要則跳過，不會影響其他功能的使用。
 
-這裡匯總了模組開發的工程寫法約定：異步操作不阻塞事件循環、配置使用宣告式、托管別人的資源要隨著卸載釋放——照著寫能避開記憶體洩漏、後台任務殘留、熱重載失效這些模組開發中最常見的坑。
+這裡匯總模組開發的工程寫法約定：異步操作不阻塞事件循環、配置用宣告式、托管別人的資源要隨卸載釋放——照著寫能避開記憶體泄漏、後台任務殘留、熱重載失效這些模組開發最常見的坑。
 
 ## 模組設計
 
@@ -1285,13 +1286,13 @@ from ErisPulse.Core.Bases import BaseConfig
 @dataclass
 class MyModuleConfig(BaseConfig):
     api_url: str = field(default="https://api.example.com", metadata={
-        "description": {"i18n": "my_module.api_url", "default": "API 位址"},
+        "description": {"i18n": "my_module.api_url", "default": "API 地址"},
     })
     timeout: int = field(default=30, metadata={
         "description": {"i18n": "my_module.timeout", "default": "超時時間（秒）"},
     })
     cache_ttl: int = field(default=3600, metadata={
-        "description": {"i18n": "my_module.cache_ttl", "default": "快取存活時間（秒）"},
+        "description": {"i18n": "my_module.cache_ttl", "default": "緩存存活時間（秒）"},
     })
 
 class MyModule(BaseModule):
@@ -1302,7 +1303,7 @@ class MyModule(BaseModule):
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-也可以繼續使用手動方式讀取和寫入配置儲存（見[模組核心概念](core-concepts.md#配置管理)）。
+也可以繼續使用手動方式讀取寫入配置儲存（見[模組核心概念](core-concepts.md#配置管理)）。
 
 ### 宣告式翻譯鍵（v2.7.0+）
 
@@ -1325,7 +1326,7 @@ class MyModule(BaseModule):
         # 配置欄位描述的翻譯
         api_url: I18nKey = I18nKey(
             default="API URL",
-            zh_CN="API 位址",
+            zh_CN="API 地址",
             zh_TW="API 位址",
             en="API URL",
             ja="API URL",
@@ -1356,7 +1357,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# 不要使用 aiohttp 直接導入（不便於框架統一管理）
+# 不要使用 aiohttp 直接匯入（不便於框架統一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -1392,7 +1393,7 @@ async def on_load(self, event: dict):
 > 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**）。**2.8.3 起**裸 `asyncio.create_task`
 > 也會自動隱式歸屬模組（Task Factory 自動登記，卸載時兜底取消，不再泄漏 `self` 引用）；
 > `self.spawn()` 仍是推薦寫法——支援非主迴圈執行緒調度回主迴圈、顯式 `owner=` 指定。
-> **2.8.3 之前**的版本裸任務不歸屬、會持有 `self` 引用導致模組實例無法被回收
+> **2.8.3 之前的版本**裸任務不歸屬、會持有 `self` 引用導致模組實例無法被回收
 > （熱重載泄漏），必須用 `self.spawn()`。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
 
 ### 3. 資源管理
@@ -1419,7 +1420,7 @@ async def info_command(event: Event):
     nickname = event.get_user_nickname()
     await event.reply(f"你好，{nickname}！")
 
-# 而非直接訪問字典
+# 而非直接存取字典
 @command("info")
 async def info_command(event: Event):
     user_id = event["user_id"]  # 不夠清晰，容易出錯
@@ -1444,7 +1445,7 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# 高頻觸發（每條訊息都要處理）或啟動時必須就緒的模組：立即加載
+# 高頻觸發（每則訊息都要處理）或啟動時就必須就緒的模組：立即加載
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -1457,7 +1458,7 @@ class UtilityModule(BaseModule):
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> `activate_on` 的完整語法（事件三形式 / 命令簡寫與 dict 聲明 / help 回退鏈）見  
+> `activate_on` 的完整語法（事件三形式 / 命令簡寫與 dict 聲明 / help 回退鏈）見
 > [懶加載模組系統](../../advanced/lazy-loading.md#事件驅動懶激活activate_on)。
 
 ### 3. 事件處理器註冊
@@ -1478,7 +1479,7 @@ async def on_load(self, event):
 
 ## 工具模組：托管別人東西時要接住"卸載通知"
 
-**何時需要**：你的模組替其他模組保管東西（定時回調、訂閱者、連接、快取條目……）。這些引用在對方模組卸載後如果一直不丟棄，對方實例就永遠無法被回收——這是工具模組最常見的記憶體洩漏來源。
+**何時需要**：你的模組替其他模組保管東西（定時回調、訂閱者、連接、緩存條目……）。這些引用在對方模組卸載後如果一直不丟棄，對方實例就永遠無法被回收——這是工具模組最常見的記憶體泄漏來源。
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -1493,7 +1494,7 @@ class MyToolModule(BaseModule):
         self._entries.setdefault(owner, []).append(entry)
 
     def _drop(self, owner: str):
-        self._entries.pop(owner, None)   # ② 對方卸載時框架自動呼叫：丟棄它的东西
+        self._entries.pop(owner, None)   # ② 對方卸載時框架自動呼叫：丟棄它的東西
 
     async def on_unload(self, event):
         off_cleanup(self._drop)          # ③ 自己卸載前註銷鉤子
@@ -1502,14 +1503,14 @@ class MyToolModule(BaseModule):
 就這麼多，框架保證：
 
 - 對方模組被**卸載 / 禁用**（或適配器關閉）時，`_drop("對方模組名")` 一定會被呼叫
-- **呼叫方識別全自動**：對方在 `on_load` 裡直接調 `sdk.MyToolModule.register(...)`，或經 `sdk.module.call("MyToolModule", "register", ...)` 調用，都能正確識別是誰
-- 不用操心時機——鉤子在框架清理鏈內觸發，早於洩漏診斷，不會誤報
+- **呼叫方識別全自動**：對方在 `on_load` 裡直接呼叫 `sdk.MyToolModule.register(...)`，或經 `sdk.module.call("MyToolModule", "register", ...)` 呼叫，都能正確識別是誰
+- 不用操心時機——鉤子在框架清理鏈內觸發，早於泄漏診斷，不會誤報
 
-不接入的後果：對方 `purge` 彻底卸載時實例無法回收（洩漏診斷報"不可回收"）；若對方自己也不在 `on_unload` 裡向你註銷，洩漏就是永久性的。
+不接入的後果：對方 `purge` 彻底卸載時實例無法回收（泄漏診斷報"不可回收"）；若對方自己也不在 `on_unload` 裡向你註銷，泄漏就是永久性的。
 
 **普通模組（不托管別人東西）不需要關心這個**——框架資源（命令 / 處理器 / 路由 / 後台任務……）的卸載清理是全自動的。
 
-> 觸發時機、呼叫方識別規則、超時與容錯等細節見  
+> 觸發時機、呼叫方識別規則、超時與容錯等細節見
 > [歸屬權系統 · 工具模組指南](../../advanced/ownership.md#工具模組指南托管其它模組的句柄)。
 
 ## 錯誤處理
@@ -1607,22 +1608,22 @@ self.logger.error(f"API 請求失敗: {e}")
 self.logger.error(f"處理事件失敗: {e}", exc_info=True)
 
 # CRITICAL: 致命錯誤，需要立即處理
-self.logger.critical("資料庫連線失敗，機器人無法正常運行")
+self.logger.critical("資料庫連接失敗，機器人無法正常運行")
 ```
 
-### 2. 條件化日誌
+### 2. 結構化日誌
 
 ```python
-# 使用條件化日誌，便於解析
+# 使用結構化日誌，便於解析
 self.logger.info(f"處理請求: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
-# ❌ 使用非條件化日誌
-self.logger.info(f"處理請求了，來自用戶 {user_id}，用時 {duration} 毫秒")
+# ❌ 使用非結構化日誌
+self.logger.info(f"處理請求了，來自使用者 {user_id}，用時 {duration} 毫秒")
 ```
 
 ## 性能優化
 
-### 1. 使用快取
+### 1. 使用緩存
 
 ```python
 class MyModule(BaseModule):
@@ -1638,7 +1639,7 @@ class MyModule(BaseModule):
             # 從資料庫獲取
             data = await self._fetch_from_db(key)
             
-            # 快取資料
+            # 緩存資料
             self._cache[key] = data
             return data
 ```
@@ -1678,7 +1679,7 @@ class MyModule(BaseModule):
 
     def check_api_key(self):
         if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("請在 config.toml 中配置有效的 API 密鑰")
+            raise ValueError("請在 config.toml 中設定有效的 API 密鑰")
 
 # ❌ 敏感資料硬編碼
 class MyModule(BaseModule):
@@ -1732,6 +1733,30 @@ async def test_command_handling():
     await module.handle_command(event)
 ```
 
+## HTTP 路由生命週期
+
+模組透過 `router` 註冊的 HTTP/WebSocket 路由，其生命週期由框架按**歸屬原則**自動管理：
+
+- 註冊時的命名空間即歸屬標識；**reload / unload 時框架會自動清理該歸屬下的全部路由與連接資源**，無需手動註銷
+- 因此 **`on_load` 中必須無條件重新註冊路由**。不要用實例級布林標誌做"只註冊一次"的優化：配置熱重載會觸發 stop/start 並**複用同一實例**，標誌殘留會導致路由被清理後**永久丟失**，表現為接口 404 且重啟進程才恢復
+
+```python
+class MyModule(BaseModule):
+    async def on_load(self):
+        # 每次加載無條件重註冊
+        router.register_http_route("MyModule", "/api/panel", self._panel, methods=["GET"])
+```
+
+需要提前手動卸載路由（如動態下線某個入口）時，可主動註銷：
+
+```python
+from ErisPulse.Core import router
+
+router.unregister_http_route("MyModule", "/api/panel")
+```
+
+- 前端/呼叫方在熱重載窗口可能收到路由 404，屬瞬時現象；面向瀏覽器的互動頁建議對 404 做有限次自動重試
+
 ## 部署
 
 ### 1. 版本管理
@@ -1742,15 +1767,15 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-遵循語意化版本：  
-- MAJOR.MINOR.PATCH  
-- 主版本：不相容的 API 變更  
-- 次版本：向下兼容的功能新增  
-- 修訂號：向下兼容的問題修正  
+遵循語意化版本：
+- MAJOR.MINOR.PATCH
+- 主版本：不相容的 API 變更
+- 次版本：向下相容的功能新增
+- 修訂號：向下相容的問題修正
 
 ### 2. README 頭部
 
-`epsdk create` 產生的 README 已內建 ErisPulse 頭部標識（Logo + 徽章行）。兩種推薦模式：
+`epsdk create` 生成的 README 已內建 ErisPulse 頭部標識（Logo + 徽章行）。兩種推薦模式：
 
 **模式 A — 僅 ErisPulse Logo（預設）：**
 
@@ -1793,7 +1818,7 @@ version = "1.0.0"
 
 ### 回到學習路徑
 
-- [模組開發入門](getting-started.md) - 建立第一個模組
+- [模組開發入門](getting-started.md) - 創建第一個模組
 - [模組核心概念](core-concepts.md) - 理解模組架構
 
 ### 按場景深入

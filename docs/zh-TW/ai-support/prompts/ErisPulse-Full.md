@@ -6264,9 +6264,9 @@ async def ai_chat(self, prompt: str):
 # 模組開發最佳實踐
 
 > [!TIP]
-> **何時需要閱讀本文**：寫完第一個模組後建議閱讀（工程化最佳實踐）。若不需要則可跳過，這不會影響其他功能的使用。
+> **何時需要閱讀這篇**：寫完第一個模組後建議閱讀（工程化最佳實踐）。不需要則跳過，不會影響其他功能的使用。
 
-這裡匯總了模組開發的工程寫法約定：異步操作不阻塞事件循環、配置使用宣告式、托管別人的資源要隨著卸載釋放——照著寫能避開記憶體洩漏、後台任務殘留、熱重載失效這些模組開發中最常見的坑。
+這裡匯總模組開發的工程寫法約定：異步操作不阻塞事件循環、配置用宣告式、托管別人的資源要隨卸載釋放——照著寫能避開記憶體泄漏、後台任務殘留、熱重載失效這些模組開發最常見的坑。
 
 ## 模組設計
 
@@ -6308,13 +6308,13 @@ from ErisPulse.Core.Bases import BaseConfig
 @dataclass
 class MyModuleConfig(BaseConfig):
     api_url: str = field(default="https://api.example.com", metadata={
-        "description": {"i18n": "my_module.api_url", "default": "API 位址"},
+        "description": {"i18n": "my_module.api_url", "default": "API 地址"},
     })
     timeout: int = field(default=30, metadata={
         "description": {"i18n": "my_module.timeout", "default": "超時時間（秒）"},
     })
     cache_ttl: int = field(default=3600, metadata={
-        "description": {"i18n": "my_module.cache_ttl", "default": "快取存活時間（秒）"},
+        "description": {"i18n": "my_module.cache_ttl", "default": "緩存存活時間（秒）"},
     })
 
 class MyModule(BaseModule):
@@ -6325,7 +6325,7 @@ class MyModule(BaseModule):
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-也可以繼續使用手動方式讀取和寫入配置儲存（見[模組核心概念](core-concepts.md#配置管理)）。
+也可以繼續使用手動方式讀取寫入配置儲存（見[模組核心概念](core-concepts.md#配置管理)）。
 
 ### 宣告式翻譯鍵（v2.7.0+）
 
@@ -6348,7 +6348,7 @@ class MyModule(BaseModule):
         # 配置欄位描述的翻譯
         api_url: I18nKey = I18nKey(
             default="API URL",
-            zh_CN="API 位址",
+            zh_CN="API 地址",
             zh_TW="API 位址",
             en="API URL",
             ja="API URL",
@@ -6379,7 +6379,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# 不要使用 aiohttp 直接導入（不便於框架統一管理）
+# 不要使用 aiohttp 直接匯入（不便於框架統一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -6415,7 +6415,7 @@ async def on_load(self, event: dict):
 > 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**）。**2.8.3 起**裸 `asyncio.create_task`
 > 也會自動隱式歸屬模組（Task Factory 自動登記，卸載時兜底取消，不再泄漏 `self` 引用）；
 > `self.spawn()` 仍是推薦寫法——支援非主迴圈執行緒調度回主迴圈、顯式 `owner=` 指定。
-> **2.8.3 之前**的版本裸任務不歸屬、會持有 `self` 引用導致模組實例無法被回收
+> **2.8.3 之前的版本**裸任務不歸屬、會持有 `self` 引用導致模組實例無法被回收
 > （熱重載泄漏），必須用 `self.spawn()`。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
 
 ### 3. 資源管理
@@ -6442,7 +6442,7 @@ async def info_command(event: Event):
     nickname = event.get_user_nickname()
     await event.reply(f"你好，{nickname}！")
 
-# 而非直接訪問字典
+# 而非直接存取字典
 @command("info")
 async def info_command(event: Event):
     user_id = event["user_id"]  # 不夠清晰，容易出錯
@@ -6467,7 +6467,7 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# 高頻觸發（每條訊息都要處理）或啟動時必須就緒的模組：立即加載
+# 高頻觸發（每則訊息都要處理）或啟動時就必須就緒的模組：立即加載
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -6480,7 +6480,7 @@ class UtilityModule(BaseModule):
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> `activate_on` 的完整語法（事件三形式 / 命令簡寫與 dict 聲明 / help 回退鏈）見  
+> `activate_on` 的完整語法（事件三形式 / 命令簡寫與 dict 聲明 / help 回退鏈）見
 > [懶加載模組系統](../../advanced/lazy-loading.md#事件驅動懶激活activate_on)。
 
 ### 3. 事件處理器註冊
@@ -6501,7 +6501,7 @@ async def on_load(self, event):
 
 ## 工具模組：托管別人東西時要接住"卸載通知"
 
-**何時需要**：你的模組替其他模組保管東西（定時回調、訂閱者、連接、快取條目……）。這些引用在對方模組卸載後如果一直不丟棄，對方實例就永遠無法被回收——這是工具模組最常見的記憶體洩漏來源。
+**何時需要**：你的模組替其他模組保管東西（定時回調、訂閱者、連接、緩存條目……）。這些引用在對方模組卸載後如果一直不丟棄，對方實例就永遠無法被回收——這是工具模組最常見的記憶體泄漏來源。
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -6516,7 +6516,7 @@ class MyToolModule(BaseModule):
         self._entries.setdefault(owner, []).append(entry)
 
     def _drop(self, owner: str):
-        self._entries.pop(owner, None)   # ② 對方卸載時框架自動呼叫：丟棄它的东西
+        self._entries.pop(owner, None)   # ② 對方卸載時框架自動呼叫：丟棄它的東西
 
     async def on_unload(self, event):
         off_cleanup(self._drop)          # ③ 自己卸載前註銷鉤子
@@ -6525,14 +6525,14 @@ class MyToolModule(BaseModule):
 就這麼多，框架保證：
 
 - 對方模組被**卸載 / 禁用**（或適配器關閉）時，`_drop("對方模組名")` 一定會被呼叫
-- **呼叫方識別全自動**：對方在 `on_load` 裡直接調 `sdk.MyToolModule.register(...)`，或經 `sdk.module.call("MyToolModule", "register", ...)` 調用，都能正確識別是誰
-- 不用操心時機——鉤子在框架清理鏈內觸發，早於洩漏診斷，不會誤報
+- **呼叫方識別全自動**：對方在 `on_load` 裡直接呼叫 `sdk.MyToolModule.register(...)`，或經 `sdk.module.call("MyToolModule", "register", ...)` 呼叫，都能正確識別是誰
+- 不用操心時機——鉤子在框架清理鏈內觸發，早於泄漏診斷，不會誤報
 
-不接入的後果：對方 `purge` 彻底卸載時實例無法回收（洩漏診斷報"不可回收"）；若對方自己也不在 `on_unload` 裡向你註銷，洩漏就是永久性的。
+不接入的後果：對方 `purge` 彻底卸載時實例無法回收（泄漏診斷報"不可回收"）；若對方自己也不在 `on_unload` 裡向你註銷，泄漏就是永久性的。
 
 **普通模組（不托管別人東西）不需要關心這個**——框架資源（命令 / 處理器 / 路由 / 後台任務……）的卸載清理是全自動的。
 
-> 觸發時機、呼叫方識別規則、超時與容錯等細節見  
+> 觸發時機、呼叫方識別規則、超時與容錯等細節見
 > [歸屬權系統 · 工具模組指南](../../advanced/ownership.md#工具模組指南托管其它模組的句柄)。
 
 ## 錯誤處理
@@ -6630,22 +6630,22 @@ self.logger.error(f"API 請求失敗: {e}")
 self.logger.error(f"處理事件失敗: {e}", exc_info=True)
 
 # CRITICAL: 致命錯誤，需要立即處理
-self.logger.critical("資料庫連線失敗，機器人無法正常運行")
+self.logger.critical("資料庫連接失敗，機器人無法正常運行")
 ```
 
-### 2. 條件化日誌
+### 2. 結構化日誌
 
 ```python
-# 使用條件化日誌，便於解析
+# 使用結構化日誌，便於解析
 self.logger.info(f"處理請求: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
-# ❌ 使用非條件化日誌
-self.logger.info(f"處理請求了，來自用戶 {user_id}，用時 {duration} 毫秒")
+# ❌ 使用非結構化日誌
+self.logger.info(f"處理請求了，來自使用者 {user_id}，用時 {duration} 毫秒")
 ```
 
 ## 性能優化
 
-### 1. 使用快取
+### 1. 使用緩存
 
 ```python
 class MyModule(BaseModule):
@@ -6661,7 +6661,7 @@ class MyModule(BaseModule):
             # 從資料庫獲取
             data = await self._fetch_from_db(key)
             
-            # 快取資料
+            # 緩存資料
             self._cache[key] = data
             return data
 ```
@@ -6701,7 +6701,7 @@ class MyModule(BaseModule):
 
     def check_api_key(self):
         if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("請在 config.toml 中配置有效的 API 密鑰")
+            raise ValueError("請在 config.toml 中設定有效的 API 密鑰")
 
 # ❌ 敏感資料硬編碼
 class MyModule(BaseModule):
@@ -6755,6 +6755,30 @@ async def test_command_handling():
     await module.handle_command(event)
 ```
 
+## HTTP 路由生命週期
+
+模組透過 `router` 註冊的 HTTP/WebSocket 路由，其生命週期由框架按**歸屬原則**自動管理：
+
+- 註冊時的命名空間即歸屬標識；**reload / unload 時框架會自動清理該歸屬下的全部路由與連接資源**，無需手動註銷
+- 因此 **`on_load` 中必須無條件重新註冊路由**。不要用實例級布林標誌做"只註冊一次"的優化：配置熱重載會觸發 stop/start 並**複用同一實例**，標誌殘留會導致路由被清理後**永久丟失**，表現為接口 404 且重啟進程才恢復
+
+```python
+class MyModule(BaseModule):
+    async def on_load(self):
+        # 每次加載無條件重註冊
+        router.register_http_route("MyModule", "/api/panel", self._panel, methods=["GET"])
+```
+
+需要提前手動卸載路由（如動態下線某個入口）時，可主動註銷：
+
+```python
+from ErisPulse.Core import router
+
+router.unregister_http_route("MyModule", "/api/panel")
+```
+
+- 前端/呼叫方在熱重載窗口可能收到路由 404，屬瞬時現象；面向瀏覽器的互動頁建議對 404 做有限次自動重試
+
 ## 部署
 
 ### 1. 版本管理
@@ -6765,15 +6789,15 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-遵循語意化版本：  
-- MAJOR.MINOR.PATCH  
-- 主版本：不相容的 API 變更  
-- 次版本：向下兼容的功能新增  
-- 修訂號：向下兼容的問題修正  
+遵循語意化版本：
+- MAJOR.MINOR.PATCH
+- 主版本：不相容的 API 變更
+- 次版本：向下相容的功能新增
+- 修訂號：向下相容的問題修正
 
 ### 2. README 頭部
 
-`epsdk create` 產生的 README 已內建 ErisPulse 頭部標識（Logo + 徽章行）。兩種推薦模式：
+`epsdk create` 生成的 README 已內建 ErisPulse 頭部標識（Logo + 徽章行）。兩種推薦模式：
 
 **模式 A — 僅 ErisPulse Logo（預設）：**
 
@@ -6816,7 +6840,7 @@ version = "1.0.0"
 
 ### 回到學習路徑
 
-- [模組開發入門](getting-started.md) - 建立第一個模組
+- [模組開發入門](getting-started.md) - 創建第一個模組
 - [模組核心概念](core-concepts.md) - 理解模組架構
 
 ### 按場景深入
@@ -9845,7 +9869,7 @@ class MyAdapter(BaseAdapter):
 
 ### 4. 連接資訊暴露
 
-適配器註冊的路由應對使用者可見，便於使用者配置平台側的回調位址。推薦在 `start()` 中主動輸出連接資訊：
+適配器註冊的路由應對使用者可見，便於使用者配置平台側的回呼位址。推薦在 `start()` 中主動輸出連接資訊：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -9859,7 +9883,7 @@ class MyAdapter(BaseAdapter):
         if self.sdk:
             info = self.sdk.adapter.get_connection_info(self.platform)
             if info:
-                self.logger.info(f"WebSocket 位址: "
+                self.logger.info(f"WebSocket 地址: "
                     f"{info.get('connection', {}).get('base_url', '')}"
                     f"{info.get('connection', {}).get('websocket_routes', [])}")
 ```
@@ -9879,6 +9903,39 @@ sdk.router.get_module_urls("myplatform")    # 完整連接 URL
 ```
 
 > **注意**：路由註冊時的 `module_name` 必須與適配器在 ErisPulse 中註冊的 `platform` 名稱完全一致，否則 `get_connection_info()` 將無法關聯路由。多帳戶適配器應為每個帳戶註冊子路徑（如 `/account1/webhook`、`/account2/webhook`），而非使用不同的 `module_name`。
+
+### 5. HTTP 路由生命週期
+
+適配器/模組透過 `router` 註冊的 HTTP/WebSocket 路由，其生命週期由框架按**歸屬原則**自動管理：
+
+- 註冊時的 `module_name`（命名空間）即歸屬標識；**reload / stop / unload 時框架會自動清理該歸屬下的全部路由與連接資源**，無需手動註銷
+- 因此 **`start()`（模組為 `on_load`）中必須無條件重新註冊路由**。不要用實例級布林標誌做"只註冊一次"的優化：配置熱重載（如帳戶欄位變更即時儲存）會觸發 stop/start 且**重用同一實例**，標誌殘留會導致路由被清理後**永久丟失**，表現為介面 404 且重啟程序才恢復
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        # 每次啟動無條件重註冊（reload 後路由已隨上次 stop 自動清理）
+        router.register_http_route(self.platform, "/qr/start", self._qr_start, methods=["POST"])
+        router.register_http_route(self.platform, "/qr/poll", self._qr_poll, methods=["POST"])
+```
+
+模組側同理（`on_load` 中註冊）：
+
+```python
+class MyModule(BaseModule):
+    async def on_load(self):
+        router.register_http_route("MyModule", "/api/panel", self._panel, methods=["GET"])
+```
+
+需要**提前手動卸載**路由（如動態下線某個入口）時，可主動註銷：
+
+```python
+from ErisPulse.Core import router
+
+router.unregister_http_route(self.platform, "/qr/start")
+```
+
+- 前端/呼叫方在熱重載視窗可能會收到路由 404，屬瞬時現象；面向瀏覽器的互動頁建議對 404 做有限次自動重試
 
 ## 事件轉換
 
