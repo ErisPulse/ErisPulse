@@ -154,7 +154,7 @@ result = await bili.call_api(
 ```python
 {
     "status": "ok",              # ok / failed
-    "retcode": 0,                # 0 成功；10002 不支持；10003 参数/目标错误；33100 B 站接口错误
+    "retcode": 0,                # 0 成功；10002 不支持；10003 参数/目标错误；34000 B 站接口错误
     "data": {...},               # 响应数据（send_msg 原始返回）
     "self": {"platform": "bilibili", "user_id": "..."},
     "message_id": "123456",      # B 站 msg_key
