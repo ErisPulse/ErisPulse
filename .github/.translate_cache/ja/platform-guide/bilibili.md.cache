@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "3e4abbb45e2f4bbbcba6e5208befd92c",
-  "file_hash": "3e4abbb45e2f4bbbcba6e5208befd92c",
-  "translated_at": "2026-10-31T17:15:01.223250",
+  "hash": "1bf79dd14377cf8d597a9c96c59eb8d8",
+  "file_hash": "1bf79dd14377cf8d597a9c96c59eb8d8",
+  "translated_at": "2026-11-02T07:09:26.876162",
   "target_lang": "ja",
   "chunks": [
     {
@@ -30,8 +30,8 @@
       "translation": "## 標準 API アクション（Api）\n\n```python\nfrom ErisPulse import sdk\nbili = sdk.adapter.get(\"bilibili\")\n\n# 自身の情報（ニックネーム/アバター/UID）\nresult = await bili.Api.get_self_info()\n\n# ユーザーの公開情報（任意のユーザー、ニックネーム/アバター）\nresult = await bili.Api.get_user_info(\"123456789\")\n\n# 指定セッションの履歴メッセージを取得（begin_seqno はページ送りに使用）\nresult = await bili.Api.get_session_msgs(\"123456789\", begin_seqno=0)\n\n# ステータスとバージョン\nresult = await bili.Api.get_status()\nresult = await bili.Api.get_version()\n\n# マルチアカウント\nresult = await bili.Api.Using(\"account2\").get_self_info()\n```\n\n### 対応している標準アクション\n\n| メソッド | 説明 | データソース |\n|------|------|---------|\n| `get_self_info()` | 自身の情報（mid/name/face） | Web API（スペース情報） |\n| `get_user_info(user_id)` | ユーザーの公開情報（ニックネーム/アバター） | Web API（ユーザー情報カード） |\n| `get_session_msgs(talker_id, begin_seqno)` | セッションの履歴メッセージ | Web DM インターフェース（session_msgs） |\n| `get_status()` | アダプターの実行状態 | ローカル |\n| `get_version()` | アダプターのバージョン | ローカル |\n\n### 非対応の標準アクション\n\n以下の標準アクションは Bilibili DM に対応する機能がなく、呼び出すと `retcode=10002` が返されます：\n\n- `get_friend_list` / `get_group_list` / `get_group_member_info`\n- `delete_message`（Bilibili DM では相手側のみが自分のメッセージを取り消せます）\n- `set_group_name` / `leave_group` などのグループ管理系\n\n### 汎用アクションエントリ\n\n```python\n# send_message：テキストと画像セグメントの組み合わせ送信（Send チェーンと同等）\nresult = await bili.call_api(\n    \"send_message\",\n    _account_id=\"default\",\n    target_id=\"123456789\",\n    message=[{\"type\": \"text\", \"data\": {\"text\": \"hi\"}}],\n)\n```"
     },
     {
-      "hash": "a4009eb9b01dd88cafd972d1f23b82b5",
-      "translation": "## 戻り値フォーマット\n\nすべての送信および API メソッドは ErisPulse アダプターの標準化戻り値規範に従います：\n\n```python\n{\n    \"status\": \"ok\",              # ok / failed\n    \"retcode\": 0,                # 0 成功；10002 非対応；10003 パラメータ/ターゲットエラー；33100 Bilibili インターフェースエラー\n    \"data\": {...},               # レスポンスデータ（send_msg の生の戻り値）\n    \"self\": {\"platform\": \"bilibili\", \"user_id\": \"...\"},\n    \"message_id\": \"123456\",      # Bilibili の msg_key\n    \"message\": \"\",               # エラーメッセージ\n    \"bilibili_raw\": {...}        # 生のレスポンス\n}\n```"
+      "hash": "ac5c9ca629f970c72ecddb1c62b3225a",
+      "translation": "## 戻り値の形式\n\nすべての送信および API メソッドは、ErisPulse アダプターの標準化された戻り値仕様に従います：\n\n```python\n{\n    \"status\": \"ok\",              # ok / failed\n    \"retcode\": 0,                # 0 成功；10002 非対応；10003 パラメータ/ターゲットエラー；34000 Bilibili APIエラー\n    \"data\": {...},               # レスポンスデータ（send_msg の生の戻り値）\n    \"self\": {\"platform\": \"bilibili\", \"user_id\": \"...\"},\n    \"message_id\": \"123456\",      # Bilibili msg_key\n    \"message\": \"\",               # エラーメッセージ\n    \"bilibili_raw\": {...}        # 生のレスポンス\n}\n```"
     },
     {
       "hash": "8a908093150a57d73e870a15f1da9e13",

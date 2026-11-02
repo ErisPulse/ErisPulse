@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1902,
+  "total_keywords": 1901,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -5930,12 +5930,12 @@
         "title": "Best Practices"
       }
     ],
-    "Bilibili Platform Feature Documentation": [
+    "Bilibili Platform Features Documentation": [
       {
         "document": "platform-guide/bilibili.md",
         "line": 1,
         "level": 1,
-        "title": "Bilibili Platform Feature Documentation"
+        "title": "Bilibili Platform Features Documentation"
       }
     ],
     "Binding Inheritance (merge)": [
@@ -12772,14 +12772,6 @@
         "title": "Import Methods"
       }
     ],
-    "Important Notes": [
-      {
-        "document": "platform-guide/bilibili.md",
-        "line": 203,
-        "level": 2,
-        "title": "Important Notes"
-      }
-    ],
     "Important Restrictions": [
       {
         "document": "platform-guide/wechatmp.md",
@@ -15516,14 +15508,6 @@
         "title": "Multi-Account Model"
       }
     ],
-    "Multi-Account Sending": [
-      {
-        "document": "platform-guide/bilibili.md",
-        "line": 82,
-        "level": 3,
-        "title": "Multi-Account Sending"
-      }
-    ],
     "Multi-Account Sending Syntax": [
       {
         "document": "platform-guide/onebot11.md",
@@ -15650,6 +15634,14 @@
         "line": 289,
         "level": 3,
         "title": "Multi-account Send Syntax"
+      }
+    ],
+    "Multi-account Sending": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 82,
+        "level": 3,
+        "title": "Multi-account Sending"
       }
     ],
     "Multi-element Message": [
@@ -16076,6 +16068,12 @@
       {
         "document": "ecosystem/dashboard.md",
         "line": 329,
+        "level": 2,
+        "title": "Notes"
+      },
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 203,
         "level": 2,
         "title": "Notes"
       },

@@ -20350,6 +20350,14 @@
         "title": "戻り値の処理例"
       }
     ],
+    "戻り値の形式": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 150,
+        "level": 2,
+        "title": "戻り値の形式"
+      }
+    ],
     "戻り値の構造": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -20378,14 +20386,6 @@
         "line": 323,
         "level": 2,
         "title": "戻り値の説明"
-      }
-    ],
-    "戻り値フォーマット": [
-      {
-        "document": "platform-guide/bilibili.md",
-        "line": 150,
-        "level": 2,
-        "title": "戻り値フォーマット"
       }
     ],
     "所有権統一ファサード（ownership）": [

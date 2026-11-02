@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "3e4abbb45e2f4bbbcba6e5208befd92c",
-  "file_hash": "3e4abbb45e2f4bbbcba6e5208befd92c",
-  "translated_at": "2026-10-31T17:05:33.628238",
+  "hash": "1bf79dd14377cf8d597a9c96c59eb8d8",
+  "file_hash": "1bf79dd14377cf8d597a9c96c59eb8d8",
+  "translated_at": "2026-11-02T07:08:33.835270",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -30,8 +30,8 @@
       "translation": "## 標準 API 動作（Api）\n\n```python\nfrom ErisPulse import sdk\nbili = sdk.adapter.get(\"bilibili\")\n\n# 自身資訊（暱稱/頭像/UID）\nresult = await bili.Api.get_self_info()\n\n# 用戶公開資訊（任意用戶，暱稱/頭像）\nresult = await bili.Api.get_user_info(\"123456789\")\n\n# 拉取指定會話的歷史訊息（begin_seqno 用於翻頁）\nresult = await bili.Api.get_session_msgs(\"123456789\", begin_seqno=0)\n\n# 狀態與版本\nresult = await bili.Api.get_status()\nresult = await bili.Api.get_version()\n\n# 多帳號\nresult = await bili.Api.Using(\"account2\").get_self_info()\n```\n\n### 支援的標準動作\n\n| 方法 | 說明 | 資料來源 |\n|------|------|---------|\n| `get_self_info()` | 自身資訊（mid/name/face） | Web API（空間資訊） |\n| `get_user_info(user_id)` | 用戶公開資訊（暱稱/頭像） | Web API（用戶資訊卡） |\n| `get_session_msgs(talker_id, begin_seqno)` | 會話歷史訊息 | Web 私信接口（session_msgs） |\n| `get_status()` | 適配器運行狀態 | 本地 |\n| `get_version()` | 適配器版本 | 本地 |\n\n### 不支援的標準動作\n\n以下標準動作 B 站私信無對應能力，呼叫返回 `retcode=10002`：\n\n- `get_friend_list` / `get_group_list` / `get_group_member_info`\n- `delete_message`（B 站私信僅對方可撤回自己的訊息）\n- `set_group_name` / `leave_group` 等群管理類\n\n### 通用動作入口\n\n```python\n# send_message：文字與圖片段組合發送（等價於 Send 鏈）\nresult = await bili.call_api(\n    \"send_message\",\n    _account_id=\"default\",\n    target_id=\"123456789\",\n    message=[{\"type\": \"text\", \"data\": {\"text\": \"hi\"}}],\n)\n```"
     },
     {
-      "hash": "a4009eb9b01dd88cafd972d1f23b82b5",
-      "translation": "## 返回值格式\n\n所有發送與 API 方法遵循 ErisPulse 适配器标准化返回规范：\n\n```python\n{\n    \"status\": \"ok\",              # ok / failed\n    \"retcode\": 0,                # 0 成功；10002 不支援；10003 參數/目標錯誤；33100 B 站接口錯誤\n    \"data\": {...},               # 响应数据（send_msg 原始返回）\n    \"self\": {\"platform\": \"bilibili\", \"user_id\": \"...\"},\n    \"message_id\": \"123456\",      # B 站 msg_key\n    \"message\": \"\",               # 錯誤信息\n    \"bilibili_raw\": {...}        # 原始响应\n}\n```"
+      "hash": "ac5c9ca629f970c72ecddb1c62b3225a",
+      "translation": "## 返回值格式\n\n所有發送與 API 方法遵循 ErisPulse 适配器标准化返回规范：\n\n```python\n{\n    \"status\": \"ok\",              # ok / failed\n    \"retcode\": 0,                # 0 成功；10002 不支援；10003 參數/目標錯誤；34000 B 站接口錯誤\n    \"data\": {...},               # 响应数据（send_msg 原始返回）\n    \"self\": {\"platform\": \"bilibili\", \"user_id\": \"...\"},\n    \"message_id\": \"123456\",      # B 站 msg_key\n    \"message\": \"\",               # 錯誤信息\n    \"bilibili_raw\": {...}        # 原始响应\n}\n```"
     },
     {
       "hash": "8a908093150a57d73e870a15f1da9e13",

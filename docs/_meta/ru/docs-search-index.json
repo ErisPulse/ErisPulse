@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1941,
+  "total_keywords": 1943,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -6850,12 +6850,6 @@
         "title": "Базовая отправка"
       },
       {
-        "document": "platform-guide/bilibili.md",
-        "line": 51,
-        "level": 3,
-        "title": "Базовая отправка"
-      },
-      {
         "document": "platform-guide/minecraft.md",
         "line": 59,
         "level": 3,
@@ -8768,14 +8762,6 @@
         "title": "Документация по функционалу платформы RockyChat"
       }
     ],
-    "Документация по функциональности платформы Bilibili": [
-      {
-        "document": "platform-guide/bilibili.md",
-        "line": 1,
-        "level": 1,
-        "title": "Документация по функциональности платформы Bilibili"
-      }
-    ],
     "Документация по функциональным возможностям платформы Matrix": [
       {
         "document": "platform-guide/matrix.md",
@@ -8806,6 +8792,14 @@
         "line": 1,
         "level": 1,
         "title": "Документация по функциям Telegram-платформы"
+      }
+    ],
+    "Документация по функциям платформы Bilibili": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 1,
+        "level": 1,
+        "title": "Документация по функциям платформы Bilibili"
       }
     ],
     "Документация по функциям платформы Discord": [
@@ -9791,6 +9785,12 @@
       }
     ],
     "Инструкция по настройке": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 22,
+        "level": 2,
+        "title": "Инструкция по настройке"
+      },
       {
         "document": "platform-guide/matrix.md",
         "line": 22,
@@ -12116,14 +12116,6 @@
         "title": "Методы управления сообщениями"
       }
     ],
-    "Методы цепочек модификаторов": [
-      {
-        "document": "platform-guide/bilibili.md",
-        "line": 65,
-        "level": 3,
-        "title": "Методы цепочек модификаторов"
-      }
-    ],
     "Методы цепочечного вызова (возвращают self для поддержки цепочечного вызова)": [
       {
         "document": "platform-guide/onebot12.md",
@@ -12724,6 +12716,14 @@
         "title": "Не нужна структура таблиц, нужно лишь хранить несколько пар ключ–значение"
       }
     ],
+    "Не поддерживаемые стандартные действия": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 130,
+        "level": 3,
+        "title": "Не поддерживаемые стандартные действия"
+      }
+    ],
     "Не реализованные функции (конечные точки известны, сообщения в full.proto полны, можно расширять по требованию)": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -12783,12 +12783,6 @@
       }
     ],
     "Неподдерживаемые стандартные действия": [
-      {
-        "document": "platform-guide/bilibili.md",
-        "line": 130,
-        "level": 3,
-        "title": "Неподдерживаемые стандартные действия"
-      },
       {
         "document": "platform-guide/minecraft.md",
         "line": 153,
@@ -13848,12 +13842,12 @@
         "title": "Общий request"
       }
     ],
-    "Общий вход для действий": [
+    "Общий вход в действия": [
       {
         "document": "platform-guide/bilibili.md",
         "line": 138,
         "level": 3,
-        "title": "Общий вход для действий"
+        "title": "Общий вход в действия"
       }
     ],
     "Общий входной интерфейс действий": [
@@ -14332,12 +14326,6 @@
     ],
     "Описание конфигурации": [
       {
-        "document": "platform-guide/bilibili.md",
-        "line": 22,
-        "level": 2,
-        "title": "Описание конфигурации"
-      },
-      {
         "document": "platform-guide/discord.md",
         "line": 23,
         "level": 2,
@@ -14780,6 +14768,14 @@
         "line": 12,
         "level": 2,
         "title": "Основная информация"
+      }
+    ],
+    "Основная отправка": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 51,
+        "level": 3,
+        "title": "Основная отправка"
       }
     ],
     "Основная структура": [
@@ -16396,13 +16392,15 @@
         "title": "Поддерживаемые возможности платформы"
       }
     ],
-    "Поддерживаемые и неподдерживаемые сегменты сообщений": [
+    "Поддерживаемые и не поддерживаемые сегменты сообщений": [
       {
         "document": "platform-guide/bilibili.md",
         "line": 88,
         "level": 3,
-        "title": "Поддерживаемые и неподдерживаемые сегменты сообщений"
-      },
+        "title": "Поддерживаемые и не поддерживаемые сегменты сообщений"
+      }
+    ],
+    "Поддерживаемые и неподдерживаемые сегменты сообщений": [
       {
         "document": "platform-guide/minecraft.md",
         "line": 85,
@@ -24532,6 +24530,12 @@
       {
         "document": "getting-started/basic-concepts.md",
         "line": 308,
+        "level": 3,
+        "title": "Цепочка модификаторов"
+      },
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 65,
         "level": 3,
         "title": "Цепочка модификаторов"
       }

@@ -349,7 +349,7 @@
           "icon": "fa-wrench"
         },
         {
-          "title": "Bilibili Platform Feature Documentation",
+          "title": "Bilibili Platform Features Documentation",
           "path": "platform-guide/bilibili.md",
           "level": 1,
           "icon": "fa-plug"

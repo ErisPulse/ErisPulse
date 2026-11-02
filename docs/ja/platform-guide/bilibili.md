@@ -147,17 +147,17 @@ result = await bili.call_api(
 )
 ```
 
-## 戻り値フォーマット
+## 戻り値の形式
 
-すべての送信および API メソッドは ErisPulse アダプターの標準化戻り値規範に従います：
+すべての送信および API メソッドは、ErisPulse アダプターの標準化された戻り値仕様に従います：
 
 ```python
 {
     "status": "ok",              # ok / failed
-    "retcode": 0,                # 0 成功；10002 非対応；10003 パラメータ/ターゲットエラー；33100 Bilibili インターフェースエラー
+    "retcode": 0,                # 0 成功；10002 非対応；10003 パラメータ/ターゲットエラー；34000 Bilibili APIエラー
     "data": {...},               # レスポンスデータ（send_msg の生の戻り値）
     "self": {"platform": "bilibili", "user_id": "..."},
-    "message_id": "123456",      # Bilibili の msg_key
+    "message_id": "123456",      # Bilibili msg_key
     "message": "",               # エラーメッセージ
     "bilibili_raw": {...}        # 生のレスポンス
 }
