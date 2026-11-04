@@ -1059,7 +1059,7 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-> 完整的网络客户端 API 请参考 [网络客户端](../advanced/http-client.md)。
+> 完整的网络客户端 API 请参考 [网络客户端](../advanced/client.md)。
 
 ## SendDSL 消息发送
 
@@ -6039,7 +6039,7 @@ async def list_users(request: HttpRequest):
 
 统一网络客户端，聚合 HTTP 请求、WebSocket 连接、连接池管理、自动重试、请求统计和生命周期事件集成。
 
-> 完整的网络客户端文档（请求方法、响应对象、WebSocket 客户端、异常体系等）请参考 [网络客户端](../advanced/http-client.md)。
+> 完整的网络客户端文档（请求方法、响应对象、WebSocket 客户端、异常体系等）请参考 [网络客户端](../advanced/client.md)。
 
 ### 快速参考
 
@@ -7908,7 +7908,7 @@ complex_msg = (
 
 
 
-### HTTP 客户端
+### 网络客户端
 
 # 网络客户端
 
@@ -9535,7 +9535,8 @@ def audit_config(data):
 | `module.init` | 模块初始化完毕（含懒加载） | `{"module_name": str, "success": bool}` |
 | `module.before_unload` | 卸载流水线第一步（先于 `on_unload` 与资源回收；模块实例钩子 `on_before_unload` 同步触发） | `{"module_name": str, "reason": str}`；`reason` 取值：`unload` / `reload` / `disable` / `cascade` / `dormant` |
 | `module.sleep` | 模块归眠完成（懒加载休眠：资源已释放，访问时自动唤醒） | `{"module_name": str, "success": bool}` |
-| `module.unload` | 模块卸载或禁用（`disable` 与 `unload` 对等通知依赖方，`on_dependency_lost` 契约含"禁用"） | `{"module_name": str, "success": bool}` |
+| `module.unload` | 模块卸载或禁用（`disable` 与 `unload` 对等通知依赖方，`on_dependency_lost` 契约含"禁用"） | `{"module_name": str, "success": bool, "reason": str}`；`reason` 取值：`unload` / `reload` / `disable` / `cascade` / `dormant` |
+| `module.rollback` | 热重载失败回滚完成（快照恢复 + 重放旧实例 `on_load` 之后） | `{"module_name": str, "success": bool}`；`success` 表示重放 `on_load` 是否成功（False 时旧实例停留在已收尾态） |
 | `module.reload` | 模块热重载完成（含级联重载依赖者） | `{"module_name": str, "success": bool, "full": bool, "duration_ms": int}`；单模块额外携带 `"identity_changed": bool`（False = 进程内可能仍运行旧代码，如 C 扩展缓存）与 `"version_old": str, "version_new": str`；全量重载（`reload_all`）时 `module_name` 为 `"All"`，payload 额外携带 `"results": dict[str, bool]` |
 
 > **模块实例钩子 `on_before_unload`**：与 `module.before_unload` 事件对应的可选生命周期方法——`event["reason"]` 标注来意，适合在资源释放前把状态保存到 `sdk.storage`，唤醒 / 重载后在 `on_load` 中恢复（懒加载休眠的状态接续即基于此）。钩子失败仅告警，不阻塞卸载流程。
@@ -11307,16 +11308,95 @@ ownership.orphans()                      # [{"owner": "ghost", "total": 2, ...}]
 
 ## 热重载失败回滚
 
-热重载改为"**卸载前快照 → 失败自动恢复**"：新版本语法错误、依赖缺失、
-加载失败时，旧实例与注册状态（注册表条目、sdk 属性、sys.modules 条目）
-自动还原，服务不中断，日志提示"已回滚到旧实例继续服务"。
+热重载为"**卸载前快照 → 失败自动恢复 → 重放 on_load**"：新版本语法错误、
+依赖缺失、加载失败时，旧实例与注册状态（注册表条目、sdk 属性、sys.modules
+条目）自动还原，随后在归属上下文内**重放旧实例的 `on_load`**（`reason`
+为 `"rollback"`），让卸载阶段断开的外部资源重新建立；结束后发射
+`module.rollback` 事件（载荷 `{module_name, success}`）。
 
-尽力而为语义（文档化的边界）：
+边界说明：
 
-- `on_unload` 已执行的副作用（断开的连接、取消的任务）不可撤销——
-  恢复后旧实例处于"已收尾"状态，需再次触发加载才能完全可用
+- 重放失败或超时**只告警**，不回滚回滚——旧实例停留在"已收尾"状态
+  （与 2.11.2 及更早行为一致），日志会明确提示
 - 第三方在运行期手动缓存的对旧实例的引用不在恢复范围
 - 目标包已被卸载（entry-point 消失）视作卸载成功，不做回滚
+- `on_unload` 载荷携带 `reason`（`unload` / `reload` / `disable` /
+  `cascade` / `dormant` / `load-failed`），模块可在 `reload` 时推迟关闭
+  需要跨重载存活的资源
+
+热重载的完整能力边界、跨循环语义与模块侧守则见下节。
+
+## 热重载边界
+
+热重载能替换代码、重建注册、回滚失败的重载——但它**不是进程重启**。
+回收的是**归属权系统登记在册的运行时资源**；不属任何 owner 的资源、用户
+配置语义的数据、第三方库内部缓存的引用，都不会随重载消失。
+
+### 能力边界
+
+| 对象 | 重载后行为 | 说明 |
+|------|-----------|------|
+| 模块代码 / 类定义 | 支持，重新导入 | 旧 `sys.modules` 条目被清理 |
+| `on_unload` / `on_load` | 支持，按序触发 | 失败回滚时重放 `on_load`（见上节） |
+| 命令 / 处理器 / 路由 / 生命周期钩子 | 支持，自动注销再注册 | 经归属回收链清理 |
+| `spawn_background` / `spawn_later` / `spawn_thread` | 支持，按 owner 取消 | 线程只登记观测、无法强杀 |
+| 主循环上任何 `asyncio.create_task` | 支持，自动归属取消 | 任务工厂拦截（含第三方库内部创建） |
+| 存储桥接循环上派生的任务 | 支持，自动归属取消 | 桥接循环同样装了任务工厂 |
+| `ownership.track()` 登记的资源 | 支持，调用 `release()` | 任务工厂够不着的 Loop-bound 资源 |
+| `on_cleanup` 钩子 | 支持，触发 | 工具模块借此抛弃托管的句柄 |
+| 持久化覆写（`persist=True`）/ 配置文件 | 不处理，保留 | 用户资产 |
+| 第三方库内部缓存的对象引用 | 不处理 | 框架看不到，需模块自行解引用 |
+| 模块自己 `new` 的事件循环 / 裸线程 | 不回收 | 见下方守则 |
+| 适配器回滚后的资源 | 未对齐 | 适配器侧暂不重放 `start()` |
+
+### 三层资源治理
+
+1. **无感拦截层**——事件循环级任务工厂。owner 上下文内任何任务创建自动归属，
+   覆盖主循环与存储桥接循环。
+2. **归属化调度层**——`spawn_background` / `spawn_later` / `spawn_thread`。
+3. **合作式登记层**——`ownership.track()` / `on_cleanup()`，用于结构性
+   够不着的资源（Loop-bound 连接池、第三方 client）。
+
+### 事件循环边界
+
+| 循环 | 谁创建 | 装任务工厂 | 用途 |
+|------|--------|-----------|------|
+| 主循环 | `sdk.run()` / `sdk.init()` | 已安装 | 全部业务代码 |
+| 存储桥接循环 | `AsyncBridge`（首次同步存储调用） | 已安装 | 同步存储 API 的后台执行 |
+| 临时循环 | `spawn_background` 兜底 | 未安装，用完即关 | 主循环未就绪时的最后手段 |
+
+**临时循环是最后手段**：它会同步阻塞调用线程，且循环关闭后协程内部再派生的
+子任务会丢失（日志有 `temp_loop_fallback` 警告）。看到该警告说明模块在错误
+的时机调度了后台任务。
+
+**跨循环取消是尽力而为**：`cancel_owner_tasks` 发现任务在其它仍在运行的循环
+上时，用 `call_soon_threadsafe` 投递取消并打 `cross_loop_task_residual`
+警告，但**不等待**其结束（跨循环等待不安全）。看到该警告应检查是否自建了
+事件循环。
+
+### 模块侧守则
+
+```python
+# 推荐
+spawn_background(self._poll())            # 归属化后台任务
+spawn_later(30, lambda: self._cleanup())  # 归属化延迟任务
+spawn_thread("poller", self._loop_body)   # 归属化线程（入口自动带 owner）
+ownership.track(pool)                     # 显式登记 Loop-bound 资源
+await sdk.storage.aget(key)               # 异步上下文直接用异步 API
+
+# 避免
+asyncio.create_task(self._poll())         # 裸调用：无引用易被 GC
+asyncio.new_event_loop()                  # 自建循环：归属体系完全够不着
+threading.Thread(target=self._loop_body)  # 裸线程：入口无 owner 上下文
+self._storage.get(key)                    # 异步上下文里同步调存储：阻塞主循环
+```
+
+### 排查清单
+
+1. 日志有 `cross_loop_task_residual`？→ 有资源落在自建循环上
+2. 日志有 `temp_loop_fallback`？→ 后台任务在主循环就绪前被调度
+3. 报 `attached to a different loop`？→ 检查是否自建循环或跨循环复用连接对象
+4. `ownership.orphans()` 有输出？→ 有 owner 名下资源在卸载后仍存活
 
 ## 设计边界：哪些资源不随卸载清理
 

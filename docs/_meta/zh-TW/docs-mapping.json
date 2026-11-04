@@ -422,7 +422,7 @@
     "進階主題": {
       "description": "深入理解框架的進階特性",
       "icon": "fa-fire",
-      "count": 19,
+      "count": 18,
       "documents": [
         {
           "title": "高級主題",
@@ -459,12 +459,6 @@
           "path": "advanced/conversation.md",
           "level": 1,
           "icon": "fa-comments"
-        },
-        {
-          "title": "網路用戶端",
-          "path": "advanced/http-client.md",
-          "level": 1,
-          "icon": "fa-globe"
         },
         {
           "title": "SQL 查詢建構器",
@@ -594,7 +588,7 @@
     "AI 輔助開發": {
       "description": "使用 AI 輔助開發 ErisPulse",
       "icon": "fa-robot",
-      "count": 12,
+      "count": 13,
       "documents": [
         {
           "title": "AI 輔助開發",
@@ -608,6 +602,12 @@
           "name": "Skills",
           "icon": "fa-folder",
           "documents": [
+            {
+              "title": "技能清单",
+              "path": "ai-support/skills/README.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
             {
               "title": "ErisPulse 适配器开发",
               "path": "ai-support/skills/erispulse-adapter-dev/SKILL.md",

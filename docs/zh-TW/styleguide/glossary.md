@@ -15,15 +15,15 @@
 
 ## 1. Client 與 HttpClient
 
-| 項目 | 內容 |
+| 項 | 內容 |
 |------|------|
-| 正式名稱 | `Client`（基底類別 `BaseClient`） |
-| 中英對照 | Client（統一 HTTP/WS 用戶端） |
-| 歷史別名 | `HttpClient`（2.8.0 前類別名稱，保留相容別名）；`BaseHttpClient`（2.8.0 前基底類別名稱，保留相容別名） |
+| 正式名 | `Client`（基類 `BaseClient`） |
+| 中英對照 | Client（統一 HTTP/WS 客戶端） |
+| 歷史別名 | `HttpClient`（2.8.0 前類名，保留相容別名）；`BaseHttpClient`（2.8.0 前基類名，保留相容別名） |
 
-**唯一定義**：統一 HTTP/WS 用戶端，透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 用戶端與 ErisPulse 例外體系。2.8.0 起類別名稱由 `HttpClient` 更名為 `Client`，**`sdk.client` 屬性名稱不變**。
+**唯一定義**：統一 HTTP/WS 客戶端，透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 客戶端與 ErisPulse 異常體系。2.8.0 起類名由 `HttpClient` 更名為 `Client`，**`sdk.client` 屬性名不變**。
 
-**文件寫法**：一律寫 `Client`；僅在「舊程式碼遷移 / 相容」語境提及 `HttpClient`，並括注「相容別名」。定義出處見 [http-client](../advanced/http-client.md) 與 [架構總覽](../architecture.md)。
+**文件寫法**：一律寫 `Client`；僅在「舊代碼遷移 / 相容」語境提及 `HttpClient`，並括注「相容別名」。定義出處見 [http-client](../advanced/client.md) 與 [架構總覽](../architecture.md)。
 
 ## 2. storage、env 與 StorageManager
 

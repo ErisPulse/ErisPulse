@@ -52,7 +52,7 @@
           "icon": "fa-door-open"
         },
         {
-          "title": "Core Concepts",
+          "title": "Basic Concepts",
           "path": "getting-started/basic-concepts.md",
           "level": 1,
           "icon": "fa-lightbulb"
@@ -405,7 +405,7 @@
           "icon": "fa-network-wired"
         },
         {
-          "title": "Core Module API",
+          "title": "Core Modules API",
           "path": "api-reference/core-modules.md",
           "level": 1,
           "icon": "fa-cubes-stacked"
@@ -462,7 +462,7 @@
         },
         {
           "title": "Network Client",
-          "path": "advanced/http-client.md",
+          "path": "advanced/client.md",
           "level": 1,
           "icon": "fa-globe"
         },
@@ -515,13 +515,13 @@
           "icon": "fa-server"
         },
         {
-          "title": "Exception System and Handling Guide",
+          "title": "Exception System and Catching Guide",
           "path": "advanced/errors.md",
           "level": 1,
           "icon": "fa-triangle-exclamation"
         },
         {
-          "title": "Connection Pool and Broadcasting",
+          "title": "Connection Pools and Broadcasting",
           "path": "advanced/connections.md",
           "level": 1,
           "icon": "fa-fire"
@@ -594,7 +594,7 @@
     "AI-Assisted Development": {
       "description": "Using AI to assist ErisPulse development",
       "icon": "fa-robot",
-      "count": 12,
+      "count": 13,
       "documents": [
         {
           "title": "AI-Assisted Development",
@@ -608,6 +608,12 @@
           "name": "Skills",
           "icon": "fa-folder",
           "documents": [
+            {
+              "title": "Skill Manifest",
+              "path": "ai-support/skills/README.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
             {
               "title": "ErisPulse 适配器开发",
               "path": "ai-support/skills/erispulse-adapter-dev/SKILL.md",

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1923,
+  "total_keywords": 1901,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -561,7 +561,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 426,
+        "line": 427,
         "level": 3,
         "title": "1. 配置層級與覆蓋"
       }
@@ -1103,7 +1103,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 433,
+        "line": 434,
         "level": 3,
         "title": "2. 模組/命令沒反應"
       }
@@ -1665,7 +1665,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 448,
+        "line": 449,
         "level": 3,
         "title": "3. 出站動作被拒時排查"
       }
@@ -2381,7 +2381,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 459,
+        "line": 460,
         "level": 3,
         "title": "4. 會話標識跨平台隔離"
       }
@@ -3987,7 +3987,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 551,
+        "line": 535,
         "level": 2,
         "title": "API 一覽"
       }
@@ -4279,7 +4279,7 @@
     "BaseModule 基類": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 441,
+        "line": 866,
         "level": 3,
         "title": "BaseModule 基類"
       },
@@ -4409,7 +4409,7 @@
     "CLI 参考": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 811,
+        "line": 818,
         "level": 2,
         "title": "CLI 参考"
       }
@@ -4417,7 +4417,7 @@
     "CLI 指令參考": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 815,
+        "line": 822,
         "level": 1,
         "title": "CLI 指令參考"
       },
@@ -4437,7 +4437,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1415,
+        "line": 887,
         "level": 2,
         "title": "CORS 配置"
       }
@@ -4468,20 +4468,6 @@
         "line": 108,
         "level": 3,
         "title": "Client 系列 — `Core/client.py` / `Core/Bases/client.py`"
-      }
-    ],
-    "ClientWebSocket 屬性": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 357,
-        "level": 3,
-        "title": "ClientWebSocket 屬性"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 934,
-        "level": 3,
-        "title": "ClientWebSocket 屬性"
       }
     ],
     "Client（網路用戶端）": [
@@ -4559,7 +4545,7 @@
     "Core.py - 基礎模組": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 378,
+        "line": 803,
         "level": 2,
         "title": "Core.py - 基礎模組"
       },
@@ -4587,7 +4573,7 @@
     "Dashboard 管理面板": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1879,
+        "line": 1886,
         "level": 2,
         "title": "Dashboard 管理面板"
       },
@@ -4607,7 +4593,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1534,
+        "line": 1006,
         "level": 3,
         "title": "Dashboard 自動註冊"
       }
@@ -4615,7 +4601,7 @@
     "Debian/Ubuntu 虛擬環境建立失敗": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1764,
+        "line": 1771,
         "level": 3,
         "title": "Debian/Ubuntu 虛擬環境建立失敗"
       },
@@ -4651,7 +4637,7 @@
     "Docker 方式": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 2084,
+        "line": 2091,
         "level": 3,
         "title": "Docker 方式"
       },
@@ -4665,7 +4651,7 @@
     "Docker 部署（推薦）": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1787,
+        "line": 1794,
         "level": 2,
         "title": "Docker 部署（推薦）"
       },
@@ -5136,20 +5122,6 @@
         "title": "Event 物件常用方法"
       }
     ],
-    "GET": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 95,
-        "level": 3,
-        "title": "GET"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 672,
-        "level": 3,
-        "title": "GET"
-      }
-    ],
     "Gateway Intents": [
       {
         "document": "platform-guide/discord.md",
@@ -5158,20 +5130,12 @@
         "title": "Gateway Intents"
       }
     ],
-    "HTTP Client 模組": [
+    "HTTP Client 模塊": [
       {
         "document": "api-reference/core-modules.md",
         "line": 410,
         "level": 2,
-        "title": "HTTP Client 模組"
-      }
-    ],
-    "HTTP 客户端": [
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 574,
-        "level": 2,
-        "title": "HTTP 客户端"
+        "title": "HTTP Client 模塊"
       }
     ],
     "HTTP 用戶端": [
@@ -5183,7 +5147,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1178,
+        "line": 1258,
         "level": 3,
         "title": "HTTP 用戶端"
       }
@@ -5197,51 +5161,9 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1157,
+        "line": 629,
         "level": 3,
         "title": "HTTP 裝飾器"
-      }
-    ],
-    "HTTP 請求": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 23,
-        "level": 3,
-        "title": "HTTP 請求"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 600,
-        "level": 3,
-        "title": "HTTP 請求"
-      }
-    ],
-    "HTTP 請求事件": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 248,
-        "level": 3,
-        "title": "HTTP 請求事件"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 825,
-        "level": 3,
-        "title": "HTTP 請求事件"
-      }
-    ],
-    "HTTP 請求參數": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 180,
-        "level": 3,
-        "title": "HTTP 請求參數"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 757,
-        "level": 3,
-        "title": "HTTP 請求參數"
       }
     ],
     "HTTP 路由": [
@@ -5253,7 +5175,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1118,
+        "line": 1198,
         "level": 3,
         "title": "HTTP 路由"
       }
@@ -5270,34 +5192,6 @@
         "line": 495,
         "level": 2,
         "title": "HTTP 路由生命週期"
-      }
-    ],
-    "HTTPStatusError": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 456,
-        "level": 3,
-        "title": "HTTPStatusError"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1033,
-        "level": 3,
-        "title": "HTTPStatusError"
-      }
-    ],
-    "HttpResponse": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 70,
-        "level": 2,
-        "title": "HttpResponse"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 647,
-        "level": 2,
-        "title": "HttpResponse"
       }
     ],
     "I18nClass 的鍵路徑規則": [
@@ -5379,7 +5273,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 56,
+        "line": 68,
         "level": 3,
         "title": "LazyModule 類"
       }
@@ -5692,34 +5586,6 @@
         "title": "Opcode 說明"
       }
     ],
-    "POST": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 107,
-        "level": 3,
-        "title": "POST"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 684,
-        "level": 3,
-        "title": "POST"
-      }
-    ],
-    "PUT / DELETE / PATCH": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 156,
-        "level": 3,
-        "title": "PUT / DELETE / PATCH"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 733,
-        "level": 3,
-        "title": "PUT / DELETE / PATCH"
-      }
-    ],
     "PascalCase 命名": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -5851,7 +5717,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 103,
+        "line": 87,
         "level": 2,
         "title": "RPC：module.call"
       }
@@ -5919,7 +5785,7 @@
     "SDK 物件": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 519,
+        "line": 944,
         "level": 3,
         "title": "SDK 物件"
       },
@@ -6185,7 +6051,7 @@
     "Supervisor": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 2026,
+        "line": 2033,
         "level": 3,
         "title": "Supervisor"
       },
@@ -6278,20 +6144,6 @@
         "title": "Using 方法"
       }
     ],
-    "WSMessage": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 348,
-        "level": 3,
-        "title": "WSMessage"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 925,
-        "level": 3,
-        "title": "WSMessage"
-      }
-    ],
     "WebHook 連線": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -6315,7 +6167,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1135,
+        "line": 1215,
         "level": 3,
         "title": "WebSocket"
       }
@@ -6326,20 +6178,6 @@
         "line": 153,
         "level": 2,
         "title": "WebSocket / Webhook 連線"
-      }
-    ],
-    "WebSocket 客戶端": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 281,
-        "level": 2,
-        "title": "WebSocket 客戶端"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 858,
-        "level": 2,
-        "title": "WebSocket 客戶端"
       }
     ],
     "WebSocket 流程": [
@@ -6359,7 +6197,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1316,
+        "line": 788,
         "level": 2,
         "title": "WebSocket 生命週期鉤子"
       }
@@ -6387,7 +6225,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1203,
+        "line": 675,
         "level": 3,
         "title": "WebSocket 裝飾器"
       }
@@ -6401,43 +6239,17 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1275,
+        "line": 747,
         "level": 3,
         "title": "WebSocket 註冊"
       }
     ],
     "WebSocket 連接": [
       {
-        "document": "advanced/http-client.md",
-        "line": 41,
-        "level": 3,
-        "title": "WebSocket 連接"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 618,
-        "level": 3,
-        "title": "WebSocket 連接"
-      },
-      {
         "document": "platform-guide/kook.md",
         "line": 360,
         "level": 2,
         "title": "WebSocket 連接"
-      }
-    ],
-    "WebSocket 連接事件": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 260,
-        "level": 3,
-        "title": "WebSocket 連接事件"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 837,
-        "level": 3,
-        "title": "WebSocket 連接事件"
       }
     ],
     "WebSocket 連線": [
@@ -6495,7 +6307,7 @@
     "Windows PowerShell 執行策略": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1756,
+        "line": 1763,
         "level": 3,
         "title": "Windows PowerShell 執行策略"
       },
@@ -7321,7 +7133,7 @@
     "__init__.py": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 372,
+        "line": 797,
         "level": 2,
         "title": "__init__.py"
       },
@@ -7527,7 +7339,7 @@
     "config": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1062,
+        "line": 1069,
         "level": 3,
         "title": "config"
       },
@@ -7605,7 +7417,7 @@
     "create": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1270,
+        "line": 1277,
         "level": 3,
         "title": "create"
       },
@@ -7649,7 +7461,7 @@
     "docker-compose.yml": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1822,
+        "line": 1829,
         "level": 3,
         "title": "docker-compose.yml"
       },
@@ -7677,7 +7489,7 @@
     "doctor": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1416,
+        "line": 1423,
         "level": 3,
         "title": "doctor"
       },
@@ -7769,7 +7581,7 @@
     "i18n": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1327,
+        "line": 1334,
         "level": 3,
         "title": "i18n"
       },
@@ -7783,7 +7595,7 @@
     "init": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1216,
+        "line": 1223,
         "level": 3,
         "title": "init"
       },
@@ -7797,7 +7609,7 @@
     "install": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 841,
+        "line": 848,
         "level": 3,
         "title": "install"
       },
@@ -7833,7 +7645,7 @@
     "list": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 999,
+        "line": 1006,
         "level": 3,
         "title": "list"
       },
@@ -7847,7 +7659,7 @@
     "list-remote": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1028,
+        "line": 1035,
         "level": 3,
         "title": "list-remote"
       },
@@ -7877,7 +7689,7 @@
     "meta 字段的 i18n 支援": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 497,
+        "line": 922,
         "level": 4,
         "title": "meta 字段的 i18n 支援"
       },
@@ -7958,8 +7770,14 @@
         "title": "owner 上下文機制"
       },
       {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 363,
+        "level": 2,
+        "title": "owner 上下文機制"
+      },
+      {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 535,
+        "line": 536,
         "level": 2,
         "title": "owner 上下文機制"
       }
@@ -7967,7 +7785,7 @@
     "pip 方式": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 2094,
+        "line": 2101,
         "level": 3,
         "title": "pip 方式"
       },
@@ -7995,7 +7813,7 @@
     "pyproject.toml 配置": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 352,
+        "line": 777,
         "level": 2,
         "title": "pyproject.toml 配置"
       },
@@ -8029,7 +7847,7 @@
     "restart": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1190,
+        "line": 1197,
         "level": 3,
         "title": "restart"
       },
@@ -8043,7 +7861,7 @@
     "run": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1122,
+        "line": 1129,
         "level": 3,
         "title": "run"
       },
@@ -8093,7 +7911,7 @@
     "self-update": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 953,
+        "line": 960,
         "level": 3,
         "title": "self-update"
       },
@@ -8149,7 +7967,7 @@
     "stop": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1162,
+        "line": 1169,
         "level": 3,
         "title": "stop"
       },
@@ -8177,7 +7995,7 @@
     "systemd (Linux)": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1994,
+        "line": 2001,
         "level": 3,
         "title": "systemd (Linux)"
       },
@@ -8205,7 +8023,7 @@
     "types": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1364,
+        "line": 1371,
         "level": 3,
         "title": "types"
       },
@@ -8219,7 +8037,7 @@
     "uninstall": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 902,
+        "line": 909,
         "level": 3,
         "title": "uninstall"
       },
@@ -8233,7 +8051,7 @@
     "upgrade": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 925,
+        "line": 932,
         "level": 3,
         "title": "upgrade"
       },
@@ -8261,7 +8079,7 @@
     "uv tool 分離部署（CLI 與專案環境隔離）": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 2041,
+        "line": 2048,
         "level": 3,
         "title": "uv tool 分離部署（CLI 與專案環境隔離）"
       },
@@ -8275,7 +8093,7 @@
     "uv tool 方式": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 2101,
+        "line": 2108,
         "level": 3,
         "title": "uv tool 方式"
       },
@@ -8396,20 +8214,6 @@
         "title": "widget 名錄"
       }
     ],
-    "ws_connect 參數": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 193,
-        "level": 3,
-        "title": "ws_connect 參數"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 770,
-        "level": 3,
-        "title": "ws_connect 參數"
-      }
-    ],
     "① 模組維度": [
       {
         "document": "advanced/scope.md",
@@ -8425,13 +8229,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 163,
+        "line": 164,
         "level": 2,
         "title": "① 模組維度"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 305,
+        "line": 306,
         "level": 3,
         "title": "① 模組維度"
       }
@@ -8445,7 +8249,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 329,
+        "line": 330,
         "level": 3,
         "title": "② 身份維度"
       }
@@ -8459,7 +8263,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 210,
+        "line": 211,
         "level": 2,
         "title": "② 身份維度（事件准入）"
       }
@@ -8473,7 +8277,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 342,
+        "line": 343,
         "level": 3,
         "title": "③ 出站維度"
       }
@@ -8487,7 +8291,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 229,
+        "line": 230,
         "level": 2,
         "title": "③ 出站維度（限制模組發起出站呼叫）"
       }
@@ -8523,7 +8327,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 952,
+        "line": 1032,
         "level": 3,
         "title": "一次性註冊（once）"
       }
@@ -8542,18 +8346,38 @@
         "title": "一鍵安裝腳本（新環境推薦）"
       }
     ],
-    "三、我要深入理解原理": [
+    "三、我要深入了解原理": [
       {
         "document": "README.md",
         "line": 55,
         "level": 3,
-        "title": "三、我要深入理解原理"
+        "title": "三、我要深入了解原理"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
         "line": 139,
         "level": 3,
-        "title": "三、我要深入理解原理"
+        "title": "三、我要深入了解原理"
+      }
+    ],
+    "三層資源治理": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 181,
+        "level": 3,
+        "title": "三層資源治理"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 523,
+        "level": 3,
+        "title": "三層資源治理"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 696,
+        "level": 3,
+        "title": "三層資源治理"
       }
     ],
     "三種模式怎麼選": [
@@ -8568,20 +8392,6 @@
         "line": 938,
         "level": 4,
         "title": "三種模式怎麼選"
-      }
-    ],
-    "上下文管理": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 272,
-        "level": 2,
-        "title": "上下文管理"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 849,
-        "level": 2,
-        "title": "上下文管理"
       }
     ],
     "上下文與持久化": [
@@ -8757,7 +8567,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 743,
+        "line": 750,
         "level": 2,
         "title": "下一步"
       },
@@ -8988,30 +8798,30 @@
         "title": "串接呼叫示例"
       }
     ],
-    "主人系統配置": [
+    "主人系統設定": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
         "line": 380,
         "level": 2,
-        "title": "主人系統配置"
+        "title": "主人系統設定"
       },
       {
         "document": "user-guide/configuration.md",
         "line": 312,
         "level": 2,
-        "title": "主人系統配置"
+        "title": "主人系統設定"
       }
     ],
     "主動 GC 設定": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 529,
+        "line": 536,
         "level": 3,
         "title": "主動 GC 設定"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 461,
+        "line": 468,
         "level": 3,
         "title": "主動 GC 設定"
       }
@@ -9039,7 +8849,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1499,
+        "line": 971,
         "level": 2,
         "title": "主頁入口"
       }
@@ -9075,7 +8885,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 321,
+        "line": 305,
         "level": 2,
         "title": "事件冪等去重"
       }
@@ -9147,7 +8957,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1063,
+        "line": 1143,
         "level": 3,
         "title": "事件接收與處理"
       }
@@ -9397,7 +9207,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 872,
+        "line": 952,
         "level": 2,
         "title": "事件處理機制"
       }
@@ -9546,16 +9356,36 @@
         "title": "事件转换器"
       }
     ],
+    "事件迴圈邊界": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 189,
+        "level": 3,
+        "title": "事件迴圈邊界"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 531,
+        "level": 3,
+        "title": "事件迴圈邊界"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 704,
+        "level": 3,
+        "title": "事件迴圈邊界"
+      }
+    ],
     "事件配置": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 626,
+        "line": 633,
         "level": 2,
         "title": "事件配置"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 558,
+        "line": 565,
         "level": 2,
         "title": "事件配置"
       }
@@ -9645,7 +9475,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 70,
+        "line": 82,
         "level": 2,
         "title": "事件驅動懶激活（activate_on）"
       }
@@ -9717,7 +9547,7 @@
     "互動式安裝": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1457,
+        "line": 1464,
         "level": 2,
         "title": "互動式安裝"
       },
@@ -9988,20 +9818,6 @@
         "title": "伺服器配置"
       }
     ],
-    "低階方法": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 325,
-        "level": 4,
-        "title": "低階方法"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 902,
-        "level": 4,
-        "title": "低階方法"
-      }
-    ],
     "何時該手動啟動？": [
       {
         "document": "advanced/startup.md",
@@ -10041,7 +9857,7 @@
     "作用域": [
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 51,
+        "line": 52,
         "level": 2,
         "title": "作用域"
       }
@@ -10063,13 +9879,13 @@
     "作用域配置（scope）": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 714,
+        "line": 721,
         "level": 2,
         "title": "作用域配置（scope）"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 646,
+        "line": 653,
         "level": 2,
         "title": "作用域配置（scope）"
       }
@@ -10083,7 +9899,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 55,
+        "line": 56,
         "level": 1,
         "title": "作用域（scope）"
       }
@@ -10179,7 +9995,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 225,
+        "line": 237,
         "level": 2,
         "title": "使用懶加載模組"
       }
@@ -10260,6 +10076,20 @@
         "line": 82,
         "level": 3,
         "title": "使用者API範例"
+      }
+    ],
+    "使用者優先：主人生效範圍由使用者最終決定": [
+      {
+        "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
+        "line": 455,
+        "level": 3,
+        "title": "使用者優先：主人生效範圍由使用者最終決定"
+      },
+      {
+        "document": "user-guide/configuration.md",
+        "line": 387,
+        "level": 3,
+        "title": "使用者優先：主人生效範圍由使用者最終決定"
       }
     ],
     "使用者：使用平台擴展方法": [
@@ -10409,13 +10239,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1482,
+        "line": 954,
         "level": 3,
         "title": "健康檢查"
       },
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1918,
+        "line": 1925,
         "level": 2,
         "title": "健康檢查"
       },
@@ -10451,7 +10281,7 @@
     "備份": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 2126,
+        "line": 2133,
         "level": 3,
         "title": "備份"
       },
@@ -10471,7 +10301,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1249,
+        "line": 721,
         "level": 2,
         "title": "傳統註冊方式"
       }
@@ -10515,7 +10345,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 895,
+        "line": 975,
         "level": 3,
         "title": "優先級"
       }
@@ -10593,7 +10423,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1156,
+        "line": 1236,
         "level": 3,
         "title": "儲存連線狀態"
       }
@@ -10735,13 +10565,19 @@
     "內部實現：歸屬如何運作": [
       {
         "document": "advanced/ownership.md",
-        "line": 166,
+        "line": 245,
+        "level": 2,
+        "title": "內部實現：歸屬如何運作"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 587,
         "level": 2,
         "title": "內部實現：歸屬如何運作"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 680,
+        "line": 760,
         "level": 2,
         "title": "內部實現：歸屬如何運作"
       }
@@ -10763,7 +10599,7 @@
     "全域參數": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1399,
+        "line": 1406,
         "level": 2,
         "title": "全域參數"
       },
@@ -10783,7 +10619,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 112,
+        "line": 113,
         "level": 2,
         "title": "全局兜底：`default_allow`"
       }
@@ -10797,7 +10633,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 198,
+        "line": 210,
         "level": 3,
         "title": "全局配置"
       }
@@ -10967,7 +10803,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 288,
+        "line": 272,
         "level": 2,
         "title": "冷啟動回放"
       }
@@ -10989,7 +10825,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 226,
+        "line": 210,
         "level": 2,
         "title": "出站審計：誰能呼叫誰"
       }
@@ -11016,20 +10852,6 @@
         "title": "出站歸屬（meta.module）"
       }
     ],
-    "出站連接自動入池（2.10+）": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 52,
-        "level": 4,
-        "title": "出站連接自動入池（2.10+）"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 629,
-        "level": 4,
-        "title": "出站連接自動入池（2.10+）"
-      }
-    ],
     "出站連接（Client 側）": [
       {
         "document": "advanced/connections.md",
@@ -11039,7 +10861,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 508,
+        "line": 492,
         "level": 2,
         "title": "出站連接（Client 側）"
       }
@@ -11083,7 +10905,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 418,
+        "line": 402,
         "level": 3,
         "title": "分組（訂閱模型）"
       }
@@ -11091,7 +10913,7 @@
     "切換語言": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1547,
+        "line": 1554,
         "level": 3,
         "title": "切換語言"
       },
@@ -11133,7 +10955,7 @@
     "列出組件": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1485,
+        "line": 1492,
         "level": 3,
         "title": "列出組件"
       },
@@ -11147,7 +10969,7 @@
     "初始化專案": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1570,
+        "line": 1577,
         "level": 3,
         "title": "初始化專案"
       },
@@ -11189,7 +11011,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 60,
+        "line": 72,
         "level": 3,
         "title": "初始化過程"
       }
@@ -11225,23 +11047,23 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 257,
+        "line": 258,
         "level": 3,
         "title": "判定語義"
       }
     ],
-    "判定鏈與運行時增刪": [
+    "判定鏈與執行時增刪": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 406,
+        "line": 413,
         "level": 3,
-        "title": "判定鏈與運行時增刪"
+        "title": "判定鏈與執行時增刪"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 338,
+        "line": 345,
         "level": 3,
-        "title": "判定鏈與運行時增刪"
+        "title": "判定鏈與執行時增刪"
       }
     ],
     "判定（三問）": [
@@ -11253,7 +11075,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 292,
+        "line": 293,
         "level": 3,
         "title": "判定（三問）"
       }
@@ -11313,7 +11135,7 @@
     "功能概覽": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1883,
+        "line": 1890,
         "level": 3,
         "title": "功能概覽"
       },
@@ -11399,7 +11221,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 97,
+        "line": 98,
         "level": 2,
         "title": "匹配條目語法（全系統統一）"
       }
@@ -11407,7 +11229,7 @@
     "升級組件": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1524,
+        "line": 1531,
         "level": 3,
         "title": "升級組件"
       },
@@ -11441,7 +11263,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 124,
+        "line": 136,
         "level": 3,
         "title": "占位命令 help 回退鏈"
       }
@@ -11454,8 +11276,14 @@
         "title": "卸載 / 禁用清理序列"
       },
       {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 424,
+        "level": 2,
+        "title": "卸載 / 禁用清理序列"
+      },
+      {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 596,
+        "line": 597,
         "level": 2,
         "title": "卸載 / 禁用清理序列"
       }
@@ -11471,7 +11299,7 @@
     "卸載組件": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1501,
+        "line": 1508,
         "level": 3,
         "title": "卸載組件"
       },
@@ -11513,7 +11341,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 541,
+        "line": 525,
         "level": 2,
         "title": "卸載與清理語意"
       }
@@ -11578,21 +11406,9 @@
     ],
     "參數說明": [
       {
-        "document": "advanced/http-client.md",
-        "line": 178,
-        "level": 2,
-        "title": "參數說明"
-      },
-      {
         "document": "advanced/interaction.md",
         "line": 122,
         "level": 3,
-        "title": "參數說明"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 755,
-        "level": 2,
         "title": "參數說明"
       },
       {
@@ -11665,7 +11481,7 @@
     "反向代理": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1940,
+        "line": 1947,
         "level": 2,
         "title": "反向代理"
       },
@@ -11723,13 +11539,19 @@
     "取消時序（模組卸載）": [
       {
         "document": "advanced/ownership.md",
-        "line": 201,
+        "line": 280,
+        "level": 3,
+        "title": "取消時序（模組卸載）"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 622,
         "level": 3,
         "title": "取消時序（模組卸載）"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 715,
+        "line": 795,
         "level": 3,
         "title": "取消時序（模組卸載）"
       }
@@ -11737,13 +11559,19 @@
     "取消鏈（任務登記表）": [
       {
         "document": "advanced/ownership.md",
-        "line": 188,
+        "line": 267,
+        "level": 3,
+        "title": "取消鏈（任務登記表）"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 609,
         "level": 3,
         "title": "取消鏈（任務登記表）"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 702,
+        "line": 782,
         "level": 3,
         "title": "取消鏈（任務登記表）"
       }
@@ -11865,7 +11693,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 273,
+        "line": 285,
         "level": 3,
         "title": "同步初始化"
       }
@@ -11887,7 +11715,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 108,
+        "line": 120,
         "level": 3,
         "title": "命令 dict 聲明參數"
       }
@@ -12027,7 +11855,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1103,
+        "line": 1183,
         "level": 3,
         "title": "命令系統"
       }
@@ -12125,13 +11953,13 @@
     "命令配置": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 628,
+        "line": 635,
         "level": 3,
         "title": "命令配置"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 560,
+        "line": 567,
         "level": 3,
         "title": "命令配置"
       }
@@ -12233,13 +12061,13 @@
     "嚴格模式": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 544,
+        "line": 551,
         "level": 3,
         "title": "嚴格模式"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 476,
+        "line": 483,
         "level": 3,
         "title": "嚴格模式"
       }
@@ -12329,7 +12157,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1179,
+        "line": 651,
         "level": 4,
         "title": "回應返回約定（2.10+）"
       }
@@ -12443,7 +12271,7 @@
     "國內映像加速": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1806,
+        "line": 1813,
         "level": 3,
         "title": "國內映像加速"
       },
@@ -12463,7 +12291,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1188,
+        "line": 1268,
         "level": 3,
         "title": "國際化"
       }
@@ -12479,13 +12307,13 @@
     "國際化配置": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 674,
+        "line": 681,
         "level": 2,
         "title": "國際化配置"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 606,
+        "line": 613,
         "level": 2,
         "title": "國際化配置"
       }
@@ -12609,7 +12437,7 @@
     "執行時熱重載伺服器設定": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 2111,
+        "line": 2118,
         "level": 3,
         "title": "執行時熱重載伺服器設定"
       },
@@ -12663,7 +12491,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 227,
+        "line": 239,
         "level": 3,
         "title": "基本使用"
       },
@@ -12763,18 +12591,6 @@
       }
     ],
     "基本用法": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 285,
-        "level": 3,
-        "title": "基本用法"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 862,
-        "level": 3,
-        "title": "基本用法"
-      },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
         "line": 2695,
@@ -13193,7 +13009,7 @@
     "多實例部署": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 2074,
+        "line": 2081,
         "level": 2,
         "title": "多實例部署"
       },
@@ -13445,7 +13261,7 @@
     "套件管理命令": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 826,
+        "line": 833,
         "level": 2,
         "title": "套件管理命令"
       },
@@ -13667,13 +13483,13 @@
     "存儲配置": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 577,
+        "line": 584,
         "level": 2,
         "title": "存儲配置"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 509,
+        "line": 516,
         "level": 2,
         "title": "存儲配置"
       }
@@ -13689,7 +13505,7 @@
     "安全建議": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 2065,
+        "line": 2072,
         "level": 2,
         "title": "安全建議"
       },
@@ -13723,7 +13539,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1434,
+        "line": 906,
         "level": 2,
         "title": "安全標頭"
       }
@@ -13744,8 +13560,14 @@
     ],
     "安装": [
       {
+        "document": "ai-support/skills/README.md",
+        "line": 19,
+        "level": 2,
+        "title": "安装"
+      },
+      {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1599,
+        "line": 1606,
         "level": 2,
         "title": "安装"
       }
@@ -13753,7 +13575,7 @@
     "安裝 ErisPulse": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1663,
+        "line": 1670,
         "level": 4,
         "title": "安裝 ErisPulse"
       },
@@ -13781,7 +13603,7 @@
     "安裝 uv": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1630,
+        "line": 1637,
         "level": 4,
         "title": "安裝 uv"
       },
@@ -13795,7 +13617,7 @@
     "安裝參考": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1603,
+        "line": 1610,
         "level": 1,
         "title": "安裝參考"
       },
@@ -13809,7 +13631,7 @@
     "安裝失敗": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1734,
+        "line": 1741,
         "level": 3,
         "title": "安裝失敗"
       },
@@ -13823,7 +13645,7 @@
     "安裝方式": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1614,
+        "line": 1621,
         "level": 2,
         "title": "安裝方式"
       },
@@ -13867,7 +13689,7 @@
     "安裝模組": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1472,
+        "line": 1479,
         "level": 3,
         "title": "安裝模組"
       },
@@ -13895,7 +13717,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1220,
+        "line": 1300,
         "level": 2,
         "title": "完整 API 參考"
       }
@@ -14013,7 +13835,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 242,
+        "line": 226,
         "level": 2,
         "title": "定向事件：lifecycle.emit 的 to 參數"
       }
@@ -14027,7 +13849,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 925,
+        "line": 1005,
         "level": 3,
         "title": "定向傳播（emit to=）"
       }
@@ -14133,7 +13955,7 @@
     "寫完之後": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 539,
+        "line": 964,
         "level": 3,
         "title": "寫完之後"
       },
@@ -14161,7 +13983,7 @@
     "專案初始化與模組安裝": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1691,
+        "line": 1698,
         "level": 2,
         "title": "專案初始化與模組安裝"
       },
@@ -14175,7 +13997,7 @@
     "專案管理命令": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1209,
+        "line": 1216,
         "level": 2,
         "title": "專案管理命令"
       },
@@ -14347,7 +14169,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 54,
+        "line": 66,
         "level": 2,
         "title": "工作原理"
       },
@@ -14403,7 +14225,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1248,
+        "line": 1328,
         "level": 3,
         "title": "工具"
       }
@@ -14419,13 +14241,19 @@
     "工具模組指南：託管其他模組的句柄": [
       {
         "document": "advanced/ownership.md",
-        "line": 273,
+        "line": 352,
+        "level": 2,
+        "title": "工具模組指南：託管其他模組的句柄"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 694,
         "level": 2,
         "title": "工具模組指南：託管其他模組的句柄"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 787,
+        "line": 867,
         "level": 2,
         "title": "工具模組指南：託管其他模組的句柄"
       }
@@ -14667,7 +14495,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1732,
+        "line": 1739,
         "level": 2,
         "title": "常見問題"
       },
@@ -14705,7 +14533,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 424,
+        "line": 425,
         "level": 2,
         "title": "常見問題與注意事項"
       }
@@ -14713,7 +14541,7 @@
     "常見用法": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1470,
+        "line": 1477,
         "level": 2,
         "title": "常見用法"
       },
@@ -15033,7 +14861,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 439,
+        "line": 423,
         "level": 3,
         "title": "廣播"
       }
@@ -15047,7 +14875,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 416,
+        "line": 400,
         "level": 2,
         "title": "廣播與訂閱"
       }
@@ -15083,7 +14911,7 @@
     "建立腳手架": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1580,
+        "line": 1587,
         "level": 3,
         "title": "建立腳手架"
       },
@@ -15097,7 +14925,7 @@
     "建立虛擬環境": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1640,
+        "line": 1647,
         "level": 4,
         "title": "建立虛擬環境"
       },
@@ -15163,9 +14991,17 @@
     "归属权": [
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 511,
+        "line": 512,
         "level": 2,
         "title": "归属权"
+      }
+    ],
+    "归属权与热重载边界": [
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 339,
+        "level": 2,
+        "title": "归属权与热重载边界"
       }
     ],
     "影子模块": [
@@ -15397,7 +15233,7 @@
     "快速啟動": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1791,
+        "line": 1798,
         "level": 3,
         "title": "快速啟動"
       },
@@ -15434,20 +15270,8 @@
     ],
     "快速開始": [
       {
-        "document": "advanced/http-client.md",
-        "line": 21,
-        "level": 2,
-        "title": "快速開始"
-      },
-      {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
         "line": 138,
-        "level": 2,
-        "title": "快速開始"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 598,
         "level": 2,
         "title": "快速開始"
       },
@@ -15577,7 +15401,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 38,
+        "line": 50,
         "level": 1,
         "title": "慢載模組系統"
       }
@@ -15591,7 +15415,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 275,
+        "line": 259,
         "level": 2,
         "title": "慢載與呼叫"
       }
@@ -15599,7 +15423,7 @@
     "懒加载与休眠": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 34,
+        "line": 46,
         "level": 2,
         "title": "懒加载与休眠"
       }
@@ -15613,7 +15437,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 148,
+        "line": 160,
         "level": 2,
         "title": "懶加載休眠（dormant_after）"
       }
@@ -15690,8 +15514,14 @@
         "title": "所屬權（owner）系統"
       },
       {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 343,
+        "level": 1,
+        "title": "所屬權（owner）系統"
+      },
+      {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 515,
+        "line": 516,
         "level": 1,
         "title": "所屬權（owner）系統"
       }
@@ -15777,7 +15607,7 @@
     "手動部署（pip）": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1972,
+        "line": 1979,
         "level": 2,
         "title": "手動部署（pip）"
       },
@@ -15850,6 +15680,14 @@
         "title": "批量註冊（Mixin 類）"
       }
     ],
+    "技能清单": [
+      {
+        "document": "ai-support/skills/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "技能清单"
+      }
+    ],
     "技術標準": [
       {
         "document": "standards/README.md",
@@ -15867,7 +15705,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1114,
+        "line": 586,
         "level": 2,
         "title": "抽象類型"
       }
@@ -15889,7 +15727,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 464,
+        "line": 465,
         "level": 2,
         "title": "拓撲樹 API"
       }
@@ -15903,7 +15741,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 385,
+        "line": 386,
         "level": 2,
         "title": "拦截可觀測：`scope.blocked` 事件"
       }
@@ -16029,29 +15867,41 @@
     "排查思路": [
       {
         "document": "advanced/ownership.md",
-        "line": 212,
+        "line": 291,
+        "level": 3,
+        "title": "排查思路"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 633,
         "level": 3,
         "title": "排查思路"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 726,
+        "line": 806,
         "level": 3,
         "title": "排查思路"
       }
     ],
-    "接收訊息": [
+    "排查清單": [
       {
-        "document": "advanced/http-client.md",
-        "line": 297,
+        "document": "advanced/ownership.md",
+        "line": 223,
         "level": 3,
-        "title": "接收訊息"
+        "title": "排查清單"
       },
       {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 874,
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 565,
         "level": 3,
-        "title": "接收訊息"
+        "title": "排查清單"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 738,
+        "level": 3,
+        "title": "排查清單"
       }
     ],
     "推薦使用懶載入的場景（lazy_load=True）": [
@@ -16063,7 +15913,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 298,
+        "line": 310,
         "level": 3,
         "title": "推薦使用懶載入的場景（lazy_load=True）"
       }
@@ -16071,13 +15921,19 @@
     "推薦寫法": [
       {
         "document": "advanced/ownership.md",
-        "line": 221,
+        "line": 300,
+        "level": 3,
+        "title": "推薦寫法"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 642,
         "level": 3,
         "title": "推薦寫法"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 735,
+        "line": 815,
         "level": 3,
         "title": "推薦寫法"
       }
@@ -16113,7 +15969,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 303,
+        "line": 315,
         "level": 3,
         "title": "推薦禁用懶載入的場景（lazy_load=False）"
       }
@@ -16701,7 +16557,7 @@
     "方式一：使用 pip 安裝": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1616,
+        "line": 1623,
         "level": 3,
         "title": "方式一：使用 pip 安裝"
       },
@@ -16723,7 +16579,7 @@
     "方式三：使用 uv tool 安裝（全域 CLI，推薦）": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1670,
+        "line": 1677,
         "level": 3,
         "title": "方式三：使用 uv tool 安裝（全域 CLI，推薦）"
       },
@@ -16751,7 +16607,7 @@
     "方式二：使用 uv 安裝（推薦）": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1626,
+        "line": 1633,
         "level": 3,
         "title": "方式二：使用 uv 安裝（推薦）"
       },
@@ -16773,7 +16629,7 @@
     "方式四：使用 ErisPulse-App 客戶端（免終端）": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1695,
+        "line": 1702,
         "level": 3,
         "title": "方式四：使用 ErisPulse-App 客戶端（免終端）"
       },
@@ -16911,13 +16767,13 @@
     "日誌設定": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 454,
+        "line": 461,
         "level": 2,
         "title": "日誌設定"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 386,
+        "line": 393,
         "level": 2,
         "title": "日誌設定"
       }
@@ -16947,7 +16803,7 @@
     "更新與維護": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 2082,
+        "line": 2089,
         "level": 2,
         "title": "更新與維護"
       },
@@ -16976,12 +16832,6 @@
     ],
     "最佳實踐": [
       {
-        "document": "advanced/http-client.md",
-        "line": 493,
-        "level": 2,
-        "title": "最佳實踐"
-      },
-      {
         "document": "advanced/i18n.md",
         "line": 553,
         "level": 2,
@@ -17007,19 +16857,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1070,
-        "level": 2,
-        "title": "最佳實踐"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1552,
+        "line": 1024,
         "level": 2,
         "title": "最佳實踐"
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 282,
+        "line": 294,
         "level": 2,
         "title": "最佳實踐"
       },
@@ -17081,13 +16925,13 @@
     "會話收件匣配置（transcript）": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 655,
+        "line": 662,
         "level": 2,
         "title": "會話收件匣配置（transcript）"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 587,
+        "line": 594,
         "level": 2,
         "title": "會話收件匣配置（transcript）"
       }
@@ -17151,7 +16995,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 132,
+        "line": 116,
         "level": 2,
         "title": "服務契約：meta.services"
       }
@@ -17173,7 +17017,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 202,
+        "line": 186,
         "level": 2,
         "title": "服務目錄：services()"
       }
@@ -17189,7 +17033,7 @@
     "本地測試": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 421,
+        "line": 846,
         "level": 3,
         "title": "本地測試"
       },
@@ -17279,7 +17123,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 390,
+        "line": 374,
         "level": 2,
         "title": "查看連接池"
       }
@@ -17383,7 +17227,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1004,
+        "line": 1084,
         "level": 3,
         "title": "核心初始化"
       }
@@ -17489,7 +17333,7 @@
     "核心概念": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 439,
+        "line": 864,
         "level": 2,
         "title": "核心概念"
       },
@@ -17607,7 +17451,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1490,
+        "line": 962,
         "level": 3,
         "title": "根頁面"
       }
@@ -17629,13 +17473,13 @@
     "框架設定": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 504,
+        "line": 511,
         "level": 2,
         "title": "框架設定"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 436,
+        "line": 443,
         "level": 2,
         "title": "框架設定"
       }
@@ -17694,12 +17538,6 @@
         "title": "概述"
       },
       {
-        "document": "advanced/http-client.md",
-        "line": 8,
-        "level": 2,
-        "title": "概述"
-      },
-      {
         "document": "advanced/lazy-loading.md",
         "line": 8,
         "level": 2,
@@ -17713,25 +17551,19 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 362,
+        "line": 346,
         "level": 2,
         "title": "概述"
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 585,
-        "level": 2,
-        "title": "概述"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1097,
+        "line": 569,
         "level": 2,
         "title": "概述"
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 45,
+        "line": 57,
         "level": 2,
         "title": "概述"
       }
@@ -17845,7 +17677,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1194,
+        "line": 1274,
         "level": 2,
         "title": "標準事件定義"
       }
@@ -17989,7 +17821,7 @@
     "模块开发入门（加载策略）": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 327,
+        "line": 752,
         "level": 2,
         "title": "模块开发入门（加载策略）"
       }
@@ -18013,7 +17845,7 @@
     "模块间通信": [
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 72,
+        "line": 56,
         "level": 2,
         "title": "模块间通信"
       }
@@ -18027,7 +17859,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 76,
+        "line": 60,
         "level": 1,
         "title": "模塊間通信"
       }
@@ -18077,7 +17909,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1258,
+        "line": 1338,
         "level": 2,
         "title": "模組中使用示例"
       }
@@ -18085,7 +17917,7 @@
     "模組介紹 meta": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 453,
+        "line": 878,
         "level": 3,
         "title": "模組介紹 meta"
       },
@@ -18105,15 +17937,41 @@
     "模組作者指南": [
       {
         "document": "advanced/ownership.md",
-        "line": 219,
+        "line": 298,
+        "level": 2,
+        "title": "模組作者指南"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 640,
         "level": 2,
         "title": "模組作者指南"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 733,
+        "line": 813,
         "level": 2,
         "title": "模組作者指南"
+      }
+    ],
+    "模組側守則": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 206,
+        "level": 3,
+        "title": "模組側守則"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 548,
+        "level": 3,
+        "title": "模組側守則"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 721,
+        "level": 3,
+        "title": "模組側守則"
       }
     ],
     "模組加載策略": [
@@ -18149,7 +18007,7 @@
     "模組安裝失敗": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1749,
+        "line": 1756,
         "level": 3,
         "title": "模組安裝失敗"
       },
@@ -18169,7 +18027,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 207,
+        "line": 219,
         "level": 3,
         "title": "模組層級控制"
       }
@@ -18255,7 +18113,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1036,
+        "line": 1116,
         "level": 3,
         "title": "模組生命週期"
       },
@@ -18311,13 +18169,13 @@
     "模組配置": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 685,
+        "line": 692,
         "level": 2,
         "title": "模組配置"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 617,
+        "line": 624,
         "level": 2,
         "title": "模組配置"
       }
@@ -18347,7 +18205,7 @@
     "模組開發入門": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 331,
+        "line": 756,
         "level": 1,
         "title": "模組開發入門"
       },
@@ -18425,7 +18283,7 @@
     "檢查安裝": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1709,
+        "line": 1716,
         "level": 3,
         "title": "檢查安裝"
       },
@@ -18497,7 +18355,7 @@
     "正式環境設定": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1976,
+        "line": 1983,
         "level": 3,
         "title": "正式環境設定"
       },
@@ -18511,13 +18369,19 @@
     "歸因鏈（contextvar 传播）": [
       {
         "document": "advanced/ownership.md",
-        "line": 172,
+        "line": 251,
+        "level": 3,
+        "title": "歸因鏈（contextvar 传播）"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 593,
         "level": 3,
         "title": "歸因鏈（contextvar 传播）"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 686,
+        "line": 766,
         "level": 3,
         "title": "歸因鏈（contextvar 传播）"
       }
@@ -18530,8 +18394,14 @@
         "title": "歸屬權統一門面（ownership）"
       },
       {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 451,
+        "level": 2,
+        "title": "歸屬權統一門面（ownership）"
+      },
+      {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 623,
+        "line": 624,
         "level": 2,
         "title": "歸屬權統一門面（ownership）"
       }
@@ -18544,8 +18414,14 @@
         "title": "歸屬資源全景"
       },
       {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 388,
+        "level": 2,
+        "title": "歸屬資源全景"
+      },
+      {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 560,
+        "line": 561,
         "level": 2,
         "title": "歸屬資源全景"
       }
@@ -18565,7 +18441,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 243,
+        "line": 322,
         "level": 3,
         "title": "注意事項"
       },
@@ -18577,19 +18453,25 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 312,
+        "line": 324,
         "level": 2,
         "title": "注意事項"
       },
       {
-        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 757,
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 664,
         "level": 3,
         "title": "注意事項"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1316,
+        "line": 837,
+        "level": 3,
+        "title": "注意事項"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 1396,
         "level": 2,
         "title": "注意事項"
       },
@@ -18935,13 +18817,13 @@
     "消息配置": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 644,
+        "line": 651,
         "level": 3,
         "title": "消息配置"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 576,
+        "line": 583,
         "level": 3,
         "title": "消息配置"
       }
@@ -19031,7 +18913,7 @@
     "測試命令": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 431,
+        "line": 856,
         "level": 3,
         "title": "測試命令"
       },
@@ -19059,7 +18941,7 @@
     "測試模組": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 419,
+        "line": 844,
         "level": 2,
         "title": "測試模組"
       },
@@ -19127,7 +19009,7 @@
     "激活虛擬環境": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1653,
+        "line": 1660,
         "level": 4,
         "title": "激活虛擬環境"
       },
@@ -19198,10 +19080,36 @@
         "title": "熱重載失敗回滾"
       },
       {
-        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 652,
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 480,
         "level": 2,
         "title": "熱重載失敗回滾"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 653,
+        "level": 2,
+        "title": "熱重載失敗回滾"
+      }
+    ],
+    "熱重載邊界": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 158,
+        "level": 2,
+        "title": "熱重載邊界"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 500,
+        "level": 2,
+        "title": "熱重載邊界"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 673,
+        "level": 2,
+        "title": "熱重載邊界"
       }
     ],
     "版本更新說明": [
@@ -19329,7 +19237,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 173,
+        "line": 185,
         "level": 3,
         "title": "狀態接續"
       }
@@ -19403,7 +19311,7 @@
     "環境診斷": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1414,
+        "line": 1421,
         "level": 2,
         "title": "環境診斷"
       },
@@ -19417,7 +19325,7 @@
     "環境變數": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1854,
+        "line": 1861,
         "level": 3,
         "title": "環境變數"
       },
@@ -19445,7 +19353,7 @@
     "生命周期": [
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 845,
+        "line": 925,
         "level": 2,
         "title": "生命周期"
       }
@@ -19458,21 +19366,9 @@
         "title": "生命週期事件"
       },
       {
-        "document": "advanced/http-client.md",
-        "line": 246,
-        "level": 2,
-        "title": "生命週期事件"
-      },
-      {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 464,
+        "line": 448,
         "level": 3,
-        "title": "生命週期事件"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 823,
-        "level": 2,
         "title": "生命週期事件"
       },
       {
@@ -19511,23 +19407,9 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 849,
+        "line": 929,
         "level": 1,
         "title": "生命週期管理"
-      }
-    ],
-    "生命週期鉤子": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 366,
-        "level": 3,
-        "title": "生命週期鉤子"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 943,
-        "level": 3,
-        "title": "生命週期鉤子"
       }
     ],
     "生命週期集成": [
@@ -19539,7 +19421,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1538,
+        "line": 1010,
         "level": 2,
         "title": "生命週期集成"
       }
@@ -19569,7 +19451,7 @@
     "生成類型存根": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1560,
+        "line": 1567,
         "level": 3,
         "title": "生成類型存根"
       },
@@ -19586,20 +19468,6 @@
         "line": 1,
         "level": 1,
         "title": "用戶使用指南"
-      }
-    ],
-    "用戶優先：主人生效範圍由用戶最終決定": [
-      {
-        "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 448,
-        "level": 3,
-        "title": "用戶優先：主人生效範圍由用戶最終決定"
-      },
-      {
-        "document": "user-guide/configuration.md",
-        "line": 380,
-        "level": 3,
-        "title": "用戶優先：主人生效範圍由用戶最終決定"
       }
     ],
     "用戶數據存儲": [
@@ -19624,33 +19492,7 @@
         "title": "用戶狀態變更事件"
       }
     ],
-    "異常層級": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 396,
-        "level": 3,
-        "title": "異常層級"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 973,
-        "level": 3,
-        "title": "異常層級"
-      }
-    ],
     "異常捕獲": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 408,
-        "level": 3,
-        "title": "異常捕獲"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 985,
-        "level": 3,
-        "title": "異常捕獲"
-      },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
         "line": 700,
@@ -19680,12 +19522,6 @@
     ],
     "異常體系": [
       {
-        "document": "advanced/http-client.md",
-        "line": 390,
-        "level": 2,
-        "title": "異常體系"
-      },
-      {
         "document": "advanced/module-communication.md",
         "line": 45,
         "level": 3,
@@ -19693,14 +19529,8 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 120,
+        "line": 104,
         "level": 3,
-        "title": "異常體系"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 967,
-        "level": 2,
         "title": "異常體系"
       }
     ],
@@ -19727,7 +19557,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 261,
+        "line": 273,
         "level": 3,
         "title": "異步初始化"
       }
@@ -20237,7 +20067,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 966,
+        "line": 1046,
         "level": 3,
         "title": "監聽者查詢（has_handlers）"
       }
@@ -20284,12 +20114,6 @@
         "title": "相關文件"
       },
       {
-        "document": "advanced/http-client.md",
-        "line": 503,
-        "level": 2,
-        "title": "相關文件"
-      },
-      {
         "document": "advanced/i18n.md",
         "line": 600,
         "level": 2,
@@ -20327,7 +20151,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 322,
+        "line": 401,
         "level": 2,
         "title": "相關文件"
       },
@@ -20393,25 +20217,19 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 332,
+        "line": 316,
         "level": 2,
         "title": "相關文件"
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 567,
+        "line": 551,
         "level": 2,
         "title": "相關文件"
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1080,
-        "level": 2,
-        "title": "相關文件"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1562,
+        "line": 1034,
         "level": 2,
         "title": "相關文件"
       },
@@ -20423,7 +20241,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 319,
+        "line": 331,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 743,
         "level": 2,
         "title": "相關文件"
       },
@@ -20459,19 +20283,19 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 502,
+        "line": 503,
         "level": 2,
         "title": "相關文件"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 836,
+        "line": 916,
         "level": 2,
         "title": "相關文件"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1326,
+        "line": 1406,
         "level": 2,
         "title": "相關文件"
       },
@@ -20637,7 +20461,7 @@
     "程序監督與硬重啟": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1907,
+        "line": 1914,
         "level": 2,
         "title": "程序監督與硬重啟"
       },
@@ -20977,7 +20801,7 @@
     "系統要求": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1608,
+        "line": 1615,
         "level": 2,
         "title": "系統要求"
       },
@@ -20997,7 +20821,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1478,
+        "line": 950,
         "level": 2,
         "title": "系統路由"
       }
@@ -21063,29 +20887,15 @@
     "統一事件覆寫配置（event.overrides）": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 764,
+        "line": 771,
         "level": 2,
         "title": "統一事件覆寫配置（event.overrides）"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 696,
+        "line": 703,
         "level": 2,
         "title": "統一事件覆寫配置（event.overrides）"
-      }
-    ],
-    "統一捕獲": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 443,
-        "level": 3,
-        "title": "統一捕獲"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1020,
-        "level": 3,
-        "title": "統一捕獲"
       }
     ],
     "統一的模組獲取入口": [
@@ -21097,7 +20907,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 239,
+        "line": 251,
         "level": 3,
         "title": "統一的模組獲取入口"
       }
@@ -21125,23 +20935,9 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 194,
+        "line": 195,
         "level": 3,
         "title": "綁定繼承（merge）"
-      }
-    ],
-    "網路用戶端": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 1,
-        "level": 1,
-        "title": "網路用戶端"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 578,
-        "level": 1,
-        "title": "網路用戶端"
       }
     ],
     "網關連接": [
@@ -21161,7 +20957,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 410,
+        "line": 411,
         "level": 2,
         "title": "緩存與熱更新"
       }
@@ -21191,7 +20987,7 @@
     "繼續學習路徑": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 534,
+        "line": 959,
         "level": 3,
         "title": "繼續學習路徑"
       },
@@ -21445,7 +21241,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 158,
+        "line": 170,
         "level": 3,
         "title": "聲明方式"
       }
@@ -21481,7 +21277,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1285,
+        "line": 1365,
         "level": 2,
         "title": "背景任務歸屬與自動取消"
       }
@@ -21494,10 +21290,30 @@
         "title": "能力速覽"
       }
     ],
+    "能力邊界": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 164,
+        "level": 3,
+        "title": "能力邊界"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 506,
+        "level": 3,
+        "title": "能力邊界"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 679,
+        "level": 3,
+        "title": "能力邊界"
+      }
+    ],
     "臨床命令": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 835,
+        "line": 842,
         "level": 2,
         "title": "臨床命令"
       },
@@ -21531,7 +21347,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1449,
+        "line": 921,
         "level": 2,
         "title": "自動文檔"
       }
@@ -21618,32 +21434,18 @@
         "title": "自訂消息段"
       }
     ],
-    "自訂身份源（provider）": [
+    "自訂身分來源（provider）": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 420,
+        "line": 427,
         "level": 3,
-        "title": "自訂身份源（provider）"
+        "title": "自訂身分來源（provider）"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 352,
+        "line": 359,
         "level": 3,
-        "title": "自訂身份源（provider）"
-      }
-    ],
-    "自訂預設標頭": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 221,
-        "level": 2,
-        "title": "自訂預設標頭"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 798,
-        "level": 2,
-        "title": "自訂預設標頭"
+        "title": "自訂身分來源（provider）"
       }
     ],
     "與 CLI i18n 的關係": [
@@ -21657,13 +21459,13 @@
     "與 CLI 的聯動": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 573,
+        "line": 580,
         "level": 4,
         "title": "與 CLI 的聯動"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 505,
+        "line": 512,
         "level": 4,
         "title": "與 CLI 的聯動"
       }
@@ -21941,7 +21743,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1128,
+        "line": 600,
         "level": 2,
         "title": "裝飾器路由（推薦）"
       }
@@ -21985,7 +21787,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 238,
+        "line": 239,
         "level": 3,
         "title": "規則形態（內聯表）"
       }
@@ -22035,7 +21837,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1230,
+        "line": 1310,
         "level": 3,
         "title": "觸發"
       }
@@ -22049,7 +21851,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 134,
+        "line": 146,
         "level": 3,
         "title": "觸發語義"
       }
@@ -22231,7 +22033,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1088,
+        "line": 1168,
         "level": 3,
         "title": "訊息發送"
       },
@@ -22331,7 +22133,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1021,
+        "line": 1101,
         "level": 3,
         "title": "設定變更"
       }
@@ -22347,13 +22149,19 @@
     "設計邊界：哪些資源不隨卸載清理": [
       {
         "document": "advanced/ownership.md",
-        "line": 151,
+        "line": 230,
+        "level": 2,
+        "title": "設計邊界：哪些資源不隨卸載清理"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 572,
         "level": 2,
         "title": "設計邊界：哪些資源不隨卸載清理"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 665,
+        "line": 745,
         "level": 2,
         "title": "設計邊界：哪些資源不隨卸載清理"
       }
@@ -22389,7 +22197,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1503,
+        "line": 975,
         "level": 3,
         "title": "註冊入口"
       }
@@ -22411,7 +22219,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1130,
+        "line": 602,
         "level": 3,
         "title": "註冊形態：單參（推薦）與雙參"
       }
@@ -22419,13 +22227,19 @@
     "註冊時機 → 所有權結果對照表": [
       {
         "document": "advanced/ownership.md",
-        "line": 257,
+        "line": 336,
+        "level": 3,
+        "title": "註冊時機 → 所有權結果對照表"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 678,
         "level": 3,
         "title": "註冊時機 → 所有權結果對照表"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 771,
+        "line": 851,
         "level": 3,
         "title": "註冊時機 → 所有權結果對照表"
       }
@@ -22439,7 +22253,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1222,
+        "line": 1302,
         "level": 3,
         "title": "註冊與取消"
       }
@@ -22453,7 +22267,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 874,
+        "line": 954,
         "level": 3,
         "title": "註冊處理器"
       }
@@ -22505,7 +22319,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 187,
+        "line": 199,
         "level": 3,
         "title": "語意與限制"
       }
@@ -22527,7 +22341,7 @@
     "語言命令": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1321,
+        "line": 1328,
         "level": 2,
         "title": "語言命令"
       },
@@ -22688,34 +22502,6 @@
         "title": "請求操作（入群申請審批）"
       }
     ],
-    "請求方法": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 93,
-        "level": 2,
-        "title": "請求方法"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 670,
-        "level": 2,
-        "title": "請求方法"
-      }
-    ],
-    "請求統計": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 233,
-        "level": 2,
-        "title": "請求統計"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 810,
-        "level": 2,
-        "title": "請求統計"
-      }
-    ],
     "請求資訊": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
@@ -22739,7 +22525,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1374,
+        "line": 846,
         "level": 2,
         "title": "請求關聯 ID（X-Request-ID）"
       }
@@ -22769,13 +22555,13 @@
     "豁免清單": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 561,
+        "line": 568,
         "level": 4,
         "title": "豁免清單"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 493,
+        "line": 500,
         "level": 4,
         "title": "豁免清單"
       }
@@ -22799,7 +22585,7 @@
     "資料持久化": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1866,
+        "line": 1873,
         "level": 3,
         "title": "資料持久化"
       },
@@ -22813,7 +22599,7 @@
     "資訊查詢命令": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 991,
+        "line": 998,
         "level": 2,
         "title": "資訊查詢命令"
       },
@@ -22882,20 +22668,6 @@
         "title": "超時自動取消（Timeout）"
       }
     ],
-    "超時與重試": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 201,
-        "level": 2,
-        "title": "超時與重試"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 778,
-        "level": 2,
-        "title": "超時與重試"
-      }
-    ],
     "超級檔案分享事件範例": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -22913,7 +22685,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 524,
+        "line": 508,
         "level": 2,
         "title": "跨執行緒投遞"
       }
@@ -22949,7 +22721,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 481,
+        "line": 465,
         "level": 2,
         "title": "跨模組傳遞 / 復用"
       }
@@ -22963,7 +22735,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1465,
+        "line": 937,
         "level": 2,
         "title": "路徑處理"
       }
@@ -22971,7 +22743,7 @@
     "路由": [
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1086,
+        "line": 558,
         "level": 2,
         "title": "路由"
       }
@@ -22985,7 +22757,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1357,
+        "line": 829,
         "level": 2,
         "title": "路由中間件"
       }
@@ -23007,7 +22779,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1340,
+        "line": 812,
         "level": 2,
         "title": "路由分組"
       }
@@ -23035,7 +22807,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1090,
+        "line": 562,
         "level": 1,
         "title": "路由管理器"
       }
@@ -23197,7 +22969,7 @@
     "连接管理": [
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 340,
+        "line": 324,
         "level": 2,
         "title": "连接管理"
       }
@@ -23257,7 +23029,7 @@
     "透過 Dashboard 安裝模組": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1898,
+        "line": 1905,
         "level": 3,
         "title": "透過 Dashboard 安裝模組"
       },
@@ -23309,23 +23081,9 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 356,
+        "line": 357,
         "level": 3,
         "title": "通用"
-      }
-    ],
-    "通用 request": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 166,
-        "level": 3,
-        "title": "通用 request"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 743,
-        "level": 3,
-        "title": "通用 request"
       }
     ],
     "通用介面": [
@@ -23529,7 +23287,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 915,
+        "line": 995,
         "level": 3,
         "title": "通配符"
       }
@@ -23557,7 +23315,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1399,
+        "line": 871,
         "level": 2,
         "title": "速率限制"
       }
@@ -23601,7 +23359,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 344,
+        "line": 328,
         "level": 1,
         "title": "連接池與廣播"
       }
@@ -23643,7 +23401,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1242,
+        "line": 714,
         "level": 3,
         "title": "連接自動登記（連接池，2.10+）"
       }
@@ -23735,7 +23493,7 @@
     "運行專案": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1537,
+        "line": 1544,
         "level": 3,
         "title": "運行專案"
       },
@@ -23749,7 +23507,7 @@
     "運行控制命令": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1109,
+        "line": 1116,
         "level": 2,
         "title": "運行控制命令"
       },
@@ -23769,7 +23527,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 281,
+        "line": 282,
         "level": 2,
         "title": "運行時 API"
       }
@@ -23807,7 +23565,7 @@
     "運行測試": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1716,
+        "line": 1723,
         "level": 3,
         "title": "運行測試"
       },
@@ -23854,20 +23612,6 @@
         "line": 63,
         "level": 4,
         "title": "適配器"
-      }
-    ],
-    "適配器中使用": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 468,
-        "level": 2,
-        "title": "適配器中使用"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1045,
-        "level": 2,
-        "title": "適配器中使用"
       }
     ],
     "適配器事件": [
@@ -23999,7 +23743,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1050,
+        "line": 1130,
         "level": 3,
         "title": "適配器生命週期"
       }
@@ -24159,7 +23903,7 @@
     "部署": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1776,
+        "line": 1783,
         "level": 2,
         "title": "部署"
       },
@@ -24179,7 +23923,7 @@
     "部署指南": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1780,
+        "line": 1787,
         "level": 1,
         "title": "部署指南"
       },
@@ -24281,7 +24025,7 @@
     "配置命令": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1056,
+        "line": 1063,
         "level": 2,
         "title": "配置命令"
       },
@@ -24309,7 +24053,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 196,
+        "line": 208,
         "level": 2,
         "title": "配置懶加載"
       }
@@ -24365,7 +24109,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 418,
+        "line": 419,
         "level": 2,
         "title": "配置格式校驗"
       }
@@ -24379,7 +24123,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 128,
+        "line": 129,
         "level": 2,
         "title": "配置檔案"
       }
@@ -24497,7 +24241,7 @@
     "配置組件": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1511,
+        "line": 1518,
         "level": 3,
         "title": "配置組件"
       },
@@ -24661,7 +24405,7 @@
     "配置錯誤": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1742,
+        "line": 1749,
         "level": 3,
         "title": "配置錯誤"
       },
@@ -24741,7 +24485,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 978,
+        "line": 1058,
         "level": 2,
         "title": "鉤子斷點一覽"
       }
@@ -25204,20 +24948,6 @@
         "title": "關閉噪音折疊"
       }
     ],
-    "關閉連接": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 384,
-        "level": 3,
-        "title": "關閉連接"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 961,
-        "level": 3,
-        "title": "關閉連接"
-      }
-    ],
     "關閉適配器": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -25303,7 +25033,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 338,
+        "line": 763,
         "level": 2,
         "title": "項目結構"
       },
@@ -25351,7 +25081,7 @@
     "類型存根命令": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1358,
+        "line": 1365,
         "level": 2,
         "title": "類型存根命令"
       },
@@ -25393,7 +25123,7 @@
     "驗證安裝": [
       {
         "document": "ai-support/skills/erispulse-config-cli/SKILL.md",
-        "line": 1707,
+        "line": 1714,
         "level": 2,
         "title": "驗證安裝"
       },
@@ -25449,23 +25179,9 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 368,
+        "line": 369,
         "level": 3,
         "title": "高級：字典式點分路徑兜底"
-      }
-    ],
-    "高階方法（推薦）": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 299,
-        "level": 4,
-        "title": "高階方法（推薦）"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 876,
-        "level": 4,
-        "title": "高階方法（推薦）"
       }
     ],
     "黑名單過濾": [
@@ -25491,7 +25207,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 909,
+        "line": 989,
         "level": 3,
         "title": "點式結構事件"
       }

@@ -137,16 +137,95 @@ ownership.orphans()                      # [{"owner": "ghost", "total": 2, ...}]
 
 ## 熱重載失敗回滾
 
-熱重載改為 "**卸載前快照 → 失敗自動恢復**"：當新版本出現語法錯誤、依賴缺失、
-加載失敗時，舊實例與註冊狀態（註冊表條目、sdk 屬性、sys.modules 條目）
-會自動還原，服務不中斷，並在日誌中提示「已回滾到舊實例繼續服務」。
+熱重載為 "**卸載前快照 → 失敗自動恢復 → 重放 on_load**"：當新版本發生語法錯誤、
+依賴缺失、載入失敗時，舊實例與註冊狀態（註冊表條目、sdk 屬性、sys.modules
+條目）會自動還原，隨後在歸屬上下文內**重放舊實例的 `on_load`**（`reason`
+為 `"rollback"`），讓卸載階段斷開的外部資源重新建立；結束後發射
+`module.rollback` 事件（載荷 `{module_name, success}`）。
 
-盡力而為語義（文件化的邊界）：
+邊界說明：
 
-- `on_unload` 已執行的副作用（斷開的連接、取消的任務）不可撤銷——
-  恢復後舊實例處於「已收尾」狀態，需再次觸發加載才能完全可用
-- 第三方在執行期手動緩存的對舊實例的引用不在恢復範圍內
-- 目標包已被卸載（entry-point 消失）視作卸載成功，不做回滾
+- 重放失敗或超時**只告警**，不回滾回滾——舊實例停留在"已收尾"狀態
+  （與 2.11.2 及更早行為一致），日誌會明確提示
+- 第三方在執行期手動緩存的對舊實例的引用不在恢復範圍
+- 目標套件已被卸載（entry-point 消失）視作卸載成功，不做回滾
+- `on_unload` 載荷攜帶 `reason`（`unload` / `reload` / `disable` /
+  `cascade` / `dormant` / `load-failed`），模組可在 `reload` 時推遲關閉
+  需要跨重載存活的資源
+
+熱重載的完整能力邊界、跨循環語義與模組側守則見下節。
+
+## 熱重載邊界
+
+熱重載能替換代碼、重建註冊、回滾失敗的重載——但它**不是進程重啟**。  
+回收的是**歸屬權系統登記在冊的運行時資源**；不屬任何 owner 的資源、用戶  
+配置語義的數據、第三方庫內部緩存的引用，都不會隨重載消失。
+
+### 能力邊界
+
+| 對象 | 重載後行為 | 說明 |
+|------|-----------|------|
+| 模塊代碼 / 類定義 | 支持，重新導入 | 舊 `sys.modules` 條目被清理 |
+| `on_unload` / `on_load` | 支持，按序觸發 | 失敗回滾時重放 `on_load`（見上節） |
+| 命令 / 處理器 / 路由 / 生命週期鉤子 | 支持，自動註銷再註冊 | 經歸屬回收鏈清理 |
+| `spawn_background` / `spawn_later` / `spawn_thread` | 支持，按 owner 取消 | 線程只登記觀測、無法強殺 |
+| 主迴圈上任何 `asyncio.create_task` | 支持，自動歸屬取消 | 任務工廠拦截（含第三方庫內部創建） |
+| 存儲橋接迴圈上派生的任務 | 支持，自動歸屬取消 | 橋接迴圈同樣裝了任務工廠 |
+| `ownership.track()` 登記的資源 | 支持，調用 `release()` | 任務工廠夠不著的 Loop-bound 資源 |
+| `on_cleanup` 鉤子 | 支持，觸發 | 工具模組藉此拋棄托管的句柄 |
+| 持久化覆寫（`persist=True`）/ 配置文件 | 不處理，保留 | 用戶資產 |
+| 第三方庫內部緩存的物件引用 | 不處理 | 框架看不到，需模組自行解引用 |
+| 模組自己 `new` 的事件迴圈 / 裸線程 | 不回收 | 見下方守則 |
+| 適配器回滾後的資源 | 未對齊 | 適配器側暫不重放 `start()` |
+
+### 三層資源治理
+
+1. **無感拦截層**——事件迴圈級任務工廠。owner 上下文內任何任務創建自動歸屬，  
+   覆蓋主迴圈與存儲橋接迴圈。
+2. **歸屬化調度層**——`spawn_background` / `spawn_later` / `spawn_thread`。
+3. **合作式登記層**——`ownership.track()` / `on_cleanup()`，用於結構性  
+   夠不著的資源（Loop-bound 連接池、第三方 client）。
+
+### 事件迴圈邊界
+
+| 迴圈 | 誰創建 | 裝任務工廠 | 用途 |
+|------|--------|-----------|------|
+| 主迴圈 | `sdk.run()` / `sdk.init()` | 已安裝 | 全部業務代碼 |
+| 存儲橋接迴圈 | `AsyncBridge`（首次同步存儲調用） | 已安裝 | 同步存儲 API 的後台執行 |
+| 臨時迴圈 | `spawn_background` 兜底 | 未安裝，用完即關 | 主迴圈未就緒時的最後手段 |
+
+**臨時迴圈是最後手段**：它會同步阻塞調用線程，且迴圈關閉後協程內部再派生的  
+子任務會丟失（日誌有 `temp_loop_fallback` 警告）。看到該警告說明模組在錯誤  
+的時機調度了後台任務。
+
+**跨迴圈取消是盡力而為**：`cancel_owner_tasks` 發現任務在其它仍在運行的迴圈  
+上時，用 `call_soon_threadsafe` 投遞取消並打 `cross_loop_task_residual`  
+警告，但**不等待**其結束（跨迴圈等待不安全）。看到該警告應檢查是否自建了  
+事件迴圈。
+
+### 模組側守則
+
+```python
+# 推薦
+spawn_background(self._poll())            # 歸屬化後台任務
+spawn_later(30, lambda: self._cleanup())  # 歸屬化延遲任務
+spawn_thread("poller", self._loop_body)   # 歸屬化線程（入口自動帶 owner）
+ownership.track(pool)                     # 显式登記 Loop-bound 資源
+await sdk.storage.aget(key)               # 異步上下文直接用異步 API
+
+# 避免
+asyncio.create_task(self._poll())         # 裸調用：無引用易被 GC
+asyncio.new_event_loop()                  # 自建迴圈：歸屬體系完全夠不著
+threading.Thread(target=self._loop_body)  # 裸線程：入口無 owner 上下文
+self._storage.get(key)                    # 異步上下文裡同步調存儲：阻塞主迴圈
+```
+
+### 排查清單
+
+1. 日誌有 `cross_loop_task_residual`？→ 有資源落在自建迴圈上  
+2. 日誌有 `temp_loop_fallback`？→ 後台任務在主迴圈就緒前被調度  
+3. 報 `attached to a different loop`？→ 檢查是否自建迴圈或跨迴圈複用連接物件  
+4. `ownership.orphans()` 有輸出？→ 有 owner 名下資源在卸載後仍存活
 
 ## 設計邊界：哪些資源不隨卸載清理
 

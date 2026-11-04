@@ -1,124 +1,136 @@
 # AI-Assisted Development
 
-ErisPulse provides two complementary AI-assisted development approaches, enabling AI to generate code based on the latest framework specifications:
+ErisPulse provides two complementary ways for AI-assisted development, enabling AI to generate code based on the latest framework specifications:
 
-- **Material Documents**: A single large Markdown file loaded into the context all at once, suitable for whole-project development
-- **MCP Server**: Lets the AI retrieve the official documentation on demand, suitable for daily code completion and API lookups
+- **Material Documentation**: A large Markdown file, loaded as context in one go, suitable for full project development.
+- **MCP Server**: Allows AI to retrieve official documentation on-demand, suitable for daily code completion and API lookup.
 
-| | Material Documents | MCP Server |
+| | Material Documentation | MCP Server |
 |---|---|---|
-| Form | A single large Markdown file, **loaded all at once** | AI **retrieves on demand** |
-| Context cost | High (consumes tokens) | Low (only fetches relevant snippets) |
-| Freshness | Updated with version releases | Real-time (GitHub fetch + caching) |
-| Best for | Large context windows, whole-project development | Daily code completion, API lookups |
-| Clients | Any AI tool | MCP-capable clients only |
+| Format | A large Markdown file, **loaded in one go** | AI **retrieves on-demand** |
+| Context Cost | High (consumes tokens) | Low (only fetches relevant snippets) |
+| Timeliness | Updated with version releases | Real-time (GitHub pull + cache) |
+| Suitable For | Large context window, full project development | Daily code completion, API lookup |
+| Client | Any AI tool | Only clients supporting MCP |
 
-The two are not mutually exclusive: you can use both when developing large projects—material documents as the foundation, with the MCP server as a fallback to fill the gaps.
+The two approaches are not mutually exclusive: for large projects, both can be used together—material documentation for the base, and MCP as a safety net for missing information.
 
-## Material Documents
+## Material Documentation
 
-Material documents are located in the `prompts/` directory, divided into three types by development scenario:
+Material documentation is located in the `prompts/` directory, divided into three scenarios:
 
 | Document | Scenario | Description |
-|------|------|------|
-| **ErisPulse-ModuleDev.md** | Module development | Covers the full module development workflow (event handling, routing, lifecycle, etc.) |
-| **ErisPulse-AdapterDev.md** | Adapter development | Builds on module development, plus core adapter concepts, SendDSL, and platform adaptation guides |
-| **ErisPulse-Full.md** | Full-stack reference | All of the above + a combined collection of the complete user guide and API reference |
+|----------|----------|-------------|
+| **ErisPulse-ModuleDev.md** | Module Development | Covers the entire module development process (event handling, routing, lifecycle, etc.) |
+| **ErisPulse-AdapterDev.md** | Adapter Development | Builds on module development, plus adapter core concepts, SendDSL, and platform adaptation guidelines |
+| **ErisPulse-Full.md** | Full-stack Reference | All above content + complete user guide and API reference collection |
 
-How to obtain: get them directly from the `prompts/` directory (kept in sync with the documentation), or download the corresponding version from [GitHub Releases](https://github.com/ErisPulse/ErisPulse/releases).
+Acquisition: Directly from the `prompts/` directory (synchronized with documentation updates), or from [GitHub Releases](https://github.com/ErisPulse/ErisPulse/releases).
 
 ### Usage
 
-1. Choose a document based on your goal (modules → `ModuleDev`, adapters → `AdapterDev`, complex requirements → `Full`)
-2. Provide the document content as context to the AI: place it in the workspace for IDEs, paste it directly for chat-based tools, or inject it as a system message for API calls
-3. Describe your requirements using the templates below—the more specific, the higher the generation quality
+1. Choose the document based on your target (module → `ModuleDev`, adapter → `AdapterDev`, complex needs → `Full`)
+2. Provide the document content as context to the AI: place it in the IDE workspace, paste directly for chat-based tools, or inject as a system message for API calls
+3. Use the template below to describe your requirements; the more specific, the higher the quality of generated code
 
-### Requirement Description Templates
+### Requirement Description Template
 
 **Module:**
 
 ```
-Based on the ErisPulse module development specifications, generate the complete code for a [module name] module.
+Please generate a complete code for a [Module Name] module based on the ErisPulse module development specification.
 
-Feature description: [core features]
-Events to listen for: [messages / commands / notifications / requests], handling logic: [actions]
-Required configuration items: [key name]: [purpose] ([required/optional], default: [value])
-Other requirements: [additional constraints]
+Function Description: [Core Function]
+Events to Listen To: [Message / Command / Notification / Request], Handling Logic: [Operation]
+Configuration Items Needed: [Key Name]: [Purpose] ([Required/Optional], Default Value: [Value])
+Other Requirements: [Additional Constraints]
 ```
 
 **Adapter:**
 
 ```
-Based on the ErisPulse adapter development specifications, generate the complete code for an [adapter name] adapter.
+Please generate a complete code for an [Adapter Name] adapter based on the ErisPulse adapter development specification.
 
-Platform information: [name], communication protocol: [WebSocket / WebHook / HTTP polling], API documentation: [URL]
-Event conversion: platform event [type] → OneBot12 mapping [relations]
-Send methods to implement: [Text / Image / Voice ...]
-Configuration items: [key name]: [purpose] ([required/optional])
+Platform Information: [Name], Communication Protocol: [WebSocket / WebHook / HTTP Polling], API Documentation: [Address]
+Event Mapping: Platform Event [Type] → OneBot12 Mapping [Relationship]
+Required Send Methods to Implement: [Text / Image / Voice ...]
+Configuration Items: [Key Name]: [Purpose] ([Required/Optional])
 ```
 
 ## Agent Skills
 
-Agent Skills are skill packages for AI coding agents (ZCode / Claude Code, etc.): each skill is a directory (`SKILL.md` + frontmatter), and agents automatically discover and load them on demand based on `description`—reading only the relevant sections when a task requires it, without loading the full text.
+Agent Skills is a skill package for AI coding agents (e.g., ZCode / Claude Code): each skill is a directory (`SKILL.md` + frontmatter). The agent automatically discovers and loads skills based on `description`—reading only the relevant chapters when needed, rather than loading the entire document.
 
-Skills are located in the `skills/` directory (generated in sync with the material documents), and each `SKILL.md` begins with a **line-numbered outline**: it marks the start and end line numbers of each section so the AI can read only the parts it needs.
+Skills are located in the `skills/` directory (synchronized with material documentation). Each `SKILL.md` starts with a **line-number outline** indicating the start and end line numbers of each section, allowing the AI to read only the required parts.
 
-### Deployment
+### Difference Between Skill Package and Material Documentation
 
-1. Get the skills from the `skills/<language>/` directory (or download the corresponding version's artifact)
-2. Copy the skill directories into the agent's skills directory (following your tool's convention, e.g. `.zcode/skills/`, `.claude/skills/`)
-3. Afterwards, the agent will automatically trigger loading when it encounters relevant tasks—no manual referencing needed
+| | Material Documentation | Skill Package |
+|---|---|---|
+| Form | Single `.md` file | Multiple skill directories, packaged as a `.zip` |
+| Usage | Entire document loaded as context | Placed in the agent's skill directory, triggered automatically based on tasks |
+| Suitable For | Sufficient context window, full project development | Daily completion, on-demand loading, token-saving |
+
+Both are generated from the same batch of documentation and updated synchronously: material documentation is "fully loaded at once," while skills are "loaded on-demand." Use either or both as needed.
+
+### Acquisition and Deployment
+
+1. Download the skill package `.zip` from the "AI-Assisted Development" page on the website (language-specific), or directly from the repository branch `docs/<language>/ai-support/skills/` to get the latest content
+2. Unzip and copy the skill directory into the agent's skill directory (according to your tool's conventions, such as `.zcode/skills/` or `.claude/skills/`)
+3. The agent will automatically trigger loading for relevant tasks, without manual reference
+
+Each skill directory covers a specific topic (quick start, module development, adapter development, hot reload, ownership, error troubleshooting, etc.). The directory list and their applicable ranges are detailed on the download page—install only the topics you need.
 
 ### Outline Example
 
 ```markdown
 ## Content Outline
-The AI reads on demand: just read the sections you need; no need to load the full text.
+AI reads only the required sections, not the entire document.
 
-- Lazy loading and hibernation: lines 18-29
-- Overview: lines 30-38
-- Event-driven lazy activation (activate_on): lines 55-132
+- Lazy Loading and Sleep: Lines 18-29
+- Overview: Lines 30-38
+- Event-Driven Lazy Activation (activate_on): Lines 55-132
 ```
 
-> Skills are built automatically by CI (`python -m scripts.tools gen skills`); do not modify them by hand.
+> Skills are automatically built by CI (`python -m scripts.tools gen skills`); do not modify manually.
 
 ## MCP Server
 
-ErisPulse provides a documentation retrieval MCP Server, allowing AI coding assistants (any that support MCP) to search and consult the official ErisPulse documentation directly while you write code.
+ErisPulse provides a documentation retrieval MCP Server, allowing AI coding assistants (any that support MCP) to directly search and access ErisPulse's official documentation while writing code.
 
-There are two ways to connect: **local process (recommended)** or **official online endpoint**. The tool set is identical:
+There are two ways to connect: **local process (recommended)** or **official online endpoint**. The toolset is identical:
 
 | Tool | Parameters | Description |
-|------|------|------|
-| **`search_docs`** | `query` (required), `top_k?=5`, `lang?=zh-CN` | BM25 keyword search; multiple keywords can be passed in one call |
-| **`read_document`** | `doc_path` (required), `lang?=zh-CN` | Read the full Markdown of a single document |
-| **`list_documents`** | `lang?=zh-CN` | List the titles, paths, and categories of all documents in the current language |
-| **`list_languages`** | — | List all languages supported by the documentation and their document counts |
+|------|------------|-------------|
+| **`search_docs`** | `query` (required), `top_k?=5`, `lang?=zh-CN` | BM25 keyword search, multiple keywords can be passed at once |
+| **`read_document`** | `doc_path` (required), `lang?=zh-CN` | Reads the full Markdown of a single document |
+| **`list_documents`** | `lang?=zh-CN` | Lists all document titles, paths, and categories in the current language |
+| **`list_languages`** | — | Lists all languages supported by the documentation and their document counts |
 
-Supported languages: `zh-CN` / `en` / `zh-TW` / `ja` / `ru`. Search tip: use **multiple keywords** instead of full sentences—for example, `command registration event listening` works better than `how do I register a command`.
+Supported languages: `zh-CN` / `en` / `zh-TW` / `ja` / `ru`. Search tips: use **multiple keywords** rather than full sentences, for example, `command registration event listening` is better than `how to register a command`.
 
 ### Method 1: Local Process (Recommended)
 
-Once installed, start it locally directly:
+Install and start locally:
 
 ```bash
-npm i -g @erisdev/mcp-server   # Global install → the epsdk-mcp command becomes available
-epsdk-mcp --server               # Starts the MCP service; the first run automatically pulls the docs to ~/.cache/erispulse-mcp/docs
+npm i -g @erisdev/mcp-server   # Global installation → `epsdk-mcp` command appears
+epsdk-mcp --server               # Start the MCP service; first run automatically pulls documentation to ~/.cache/erispulse-mcp/docs
 ```
 
-You can also run it directly via `npx` without a global install (no installation required):
+Alternatively, run without global installation using `npx`:
 
 ```bash
 npx @erisdev/mcp-server --server
 ```
 
-If you have a local documentation directory, specify it (offline):
+Specify a local documentation directory (offline mode):
 
 ```bash
 ERISPULSE_DOCS_DIR=/path/to/erispulse/docs epsdk-mcp --server
 ```
 
-Configure it in your MCP client using **stdio transport**, in the standard key-value format (`command` + `args` pointing to one of the startup methods above; see each client's own MCP integration documentation for the specific configuration location and format):
+Configure in the MCP client using **stdio transmission** with standard key-value pairs (`command` + `args` pointing to the above startup method; specific configuration locations and formats are detailed in each client's MCP integration documentation):
 
 ```json
 {
@@ -127,7 +139,7 @@ Configure it in your MCP client using **stdio transport**, in the standard key-v
 }
 ```
 
-Or:
+or
 
 ```json
 {
@@ -138,7 +150,7 @@ Or:
 
 ### Method 2: Official Online Endpoint
 
-If you don't want to run a local process, connect to the officially hosted [`mcp.erisdev.com`](https://mcp.erisdev.com/). Configure your MCP client with **HTTP transport**:
+If you don't want to start a local process, connect to the official hosted [`mcp.erisdev.com`](https://mcp.erisdev.com/). Configure the MCP client using **HTTP transmission**:
 
 ```json
 {
@@ -146,19 +158,19 @@ If you don't want to run a local process, connect to the officially hosted [`mcp
 }
 ```
 
-The service is public by default and requires no token, with IP rate limiting (60 requests per IP per minute). The official endpoint may be discontinued at any time; **for production workflows, Method 1 (local process) or self-hosting is recommended**.
+The service is publicly accessible by default, without a token, with IP rate limiting (60 requests per minute per IP). The official endpoint can be disabled at any time; **for production workflows, it is recommended to use Method 1 (local process) or self-hosting**.
 
-## FAQ
+## Frequently Asked Questions
 
-**Generated code doesn't meet expectations?**
-Check whether the complete documentation was provided; add more details to your requirements (input/output examples, edge cases); have the AI generate step by step (skeleton first, then fill in features); refer to the examples in the [examples/](../../examples/) directory as supplementary context.
+**The generated code does not meet expectations?**
+Check if the full documentation is provided; add more details in the requirements (input/output examples, boundary conditions); have the AI generate step-by-step (first skeleton, then features); refer to the [examples/](../../examples/) directory for example contexts.
 
-**The AI doesn't call `search_docs` after MCP integration?**
-Confirm that the client has loaded the server (**the tools will take effect after restarting the client**); some clients require explicitly prompting in the prompt to "use ErisPulse documentation tools to verify APIs".
+**After MCP integration, the AI did not call `search_docs`?**
+Confirm that the client has loaded the server (the tools will be effective after **restarting the client**); some clients require explicit prompts in the prompt, such as "use the ErisPulse documentation tool to verify the API."
 
 ## Next Steps
 
-- [Getting Started with Module Development](../developer-guide/modules/getting-started.md) -- Complete tutorial for manually developing modules
-- [Getting Started with Adapter Development](../developer-guide/adapters/getting-started.md) -- Complete tutorial for manually developing adapters
+- [Module Development Guide](../developer-guide/modules/getting-started.md) -- Complete tutorial for manual module development
+- [Adapter Development Guide](../developer-guide/adapters/getting-started.md) -- Complete tutorial for manual adapter development
 - [Example Code](../../examples/) -- Reference existing module and adapter implementations
-- [Module Builder](https://www.erisdev.com/builder.html) -- A visual AI module generator in the browser
+- [Module Builder](https://www.erisdev.com/builder.html) -- A browser-based visual AI module generator

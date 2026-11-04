@@ -164,7 +164,7 @@ ErisPulse 是事件驱动的模块化异步机器人框架——业务代码只�
 |------|------|------|
 | 运行启动 | [启动流程与手动控制](advanced/startup.md) · [懒加载](advanced/lazy-loading.md) | 不懂启动链路（Finder / Loader / Manager / Router），模块加载失败时只能对着日志干瞪眼 |
 | 通信连接 | [模块间通信](advanced/module-communication.md) · [连接池与广播](advanced/connections.md) · [路由系统](advanced/router.md) | 不懂服务契约（`meta.services`）白名单，跨模块 `module.call` 会被 `ServiceNotProvidedError` 拒绝且不知原因 |
-| 数据存储 | [存储后端](advanced/storage-backends.md) · [SQL 构建](advanced/sql-builder.md) · [HTTP 客户端](advanced/http-client.md) | 不懂连接失败冷却期语义，数据库抖动时会误判"框架挂了"（实际是存储操作快速失败、冷却后自动重连） |
+| 数据存储 | [存储后端](advanced/storage-backends.md) · [SQL 构建](advanced/sql-builder.md) · [网络客户端](advanced/client.md) | 不懂连接失败冷却期语义，数据库抖动时会误判"框架挂了"（实际是存储操作快速失败、冷却后自动重连） |
 | 消息对话 | [Conversation 多轮对话](advanced/conversation.md) · [会话收件箱](advanced/transcript.md) · [MessageBuilder](advanced/message-builder.md) · [国际化](advanced/i18n.md) | 不懂会话互斥租约，两个模块同时等同一用户的回复会互相踢掉 |
 | 灰度影子 | [影子模块与灰度转正](advanced/shadow.md) | 不懂五道隔离闸就提前转正，影子的出站消息会外溢到真实用户 |
 
@@ -947,7 +947,7 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-> 完整的网络客户端 API 请参考 [网络客户端](../advanced/http-client.md)。
+> 完整的网络客户端 API 请参考 [网络客户端](../advanced/client.md)。
 
 ## SendDSL 消息发送
 

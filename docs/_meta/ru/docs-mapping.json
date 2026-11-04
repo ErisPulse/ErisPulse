@@ -422,7 +422,7 @@
     "Продвинутые темы": {
       "description": "Глубокое изучение продвинутых функций фреймворка",
       "icon": "fa-fire",
-      "count": 19,
+      "count": 18,
       "documents": [
         {
           "title": "Продвинутые темы",
@@ -459,12 +459,6 @@
           "path": "advanced/conversation.md",
           "level": 1,
           "icon": "fa-comments"
-        },
-        {
-          "title": "Сетевой клиент",
-          "path": "advanced/http-client.md",
-          "level": 1,
-          "icon": "fa-globe"
         },
         {
           "title": "SQL 查询构建器",
@@ -594,7 +588,7 @@
     "Разработка с ИИ": {
       "description": "Использование ИИ для разработки ErisPulse",
       "icon": "fa-robot",
-      "count": 12,
+      "count": 13,
       "documents": [
         {
           "title": "AI-помощь в разработке",
@@ -608,6 +602,12 @@
           "name": "Skills",
           "icon": "fa-folder",
           "documents": [
+            {
+              "title": "Skill Manifest",
+              "path": "ai-support/skills/README.md",
+              "level": 1,
+              "icon": "fa-robot"
+            },
             {
               "title": "ErisPulse 适配器开发",
               "path": "ai-support/skills/erispulse-adapter-dev/SKILL.md",

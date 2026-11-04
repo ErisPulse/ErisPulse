@@ -53,6 +53,37 @@ with owner_scope("MyModule"):
 ---
 
 
+### `bind_owner(fn: Callable[_P, _T]) -> Callable[_P, _T]`
+
+将函数绑定到**创建时**的 owner 上下文（"谁创建谁运行"）
+
+装饰/包装瞬间捕获 ``current_owner``，此后无论谁、从哪个线程或事件循环
+调用返回的包装函数，都以原 owner 身份执行（进入时 set、退出时 reset）。
+
+用于回调与线程入口：新线程默认空上下文，Timer 线程 / watcher 线程等
+无上下文的触发路径 ``current_owner`` 为 None，其内创建的任务不进
+归属表、模块卸载时不取消（跨 loop 残留的来源之一）——经本函数包装后
+归属随身携带，不再流失。``owner_scope`` 作用于代码块，本函数把上下文
+"缝进"函数本身。
+
+``async`` 函数保持 ``async``，且 owner 跨全部 ``await`` 生效；普通函数
+仅在调用同步执行期间生效（返回 awaitable 但非 coroutine function 的
+函数，其 awaitable 执行阶段不携带 owner）。
+
+- **fn**: 待绑定的同步/异步函数
+
+**返回值**: 同签名包装函数（调用期间 current_owner = 包装时捕获值）
+
+**示例**:
+
+```python
+# 回调交给无线程上下文的调度器 / 线程池前，先把归属缝进函数：
+scheduler.submit(bind_owner(self._poll))
+```
+
+---
+
+
 ### `get_current_owner() -> str | None`
 
 获取当前资源归属者（模块名或适配器平台名）

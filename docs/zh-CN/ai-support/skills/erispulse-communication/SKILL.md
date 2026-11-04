@@ -31,7 +31,7 @@ AI 按需读取：只读需要的章节即可，不必全文加载。
 - 跨线程投递: 514-529 行
 - 卸载与清理语义: 531-539 行
 - API 一览: 541-555 行
-- HTTP 客户端: 557-567 行
+- 网络客户端: 557-567 行
 - 概述: 569-580 行
 - 快速开始: 582-629 行
 - HttpResponse: 631-652 行
@@ -339,7 +339,7 @@ event_dedupe = true   # 默认开启；测试环境固定 id 合成事件可关�
 > 跨模块复用与关闭权归属，以及模块卸载时连接的清理语义。
 >
 > **本篇不涉及**：WebSocket / SSE 路由的注册写法与连接生命周期钩子
-> （见[路由管理器](router.md)）；客户端 HTTP 请求（见[网络客户端](http-client.md)）。
+> （见[路由管理器](router.md)）；客户端 HTTP 请求（见[网络客户端](client.md)）。
 
 
 连接（服务端 WebSocket / SSE / 客户端出站 WebSocket）在 ErisPulse 中是**框架级一等资源**：
@@ -554,9 +554,9 @@ spawn_later(30, push_tick, owner="MyModule")
 | `conn.meta` | 业务元数据字典 |
 | `conn.close(force=False)` | 关闭（非 owner 抛 `ConnectionPermissionError`） |
 
-## HTTP 客户端
+## 网络客户端
 
-> 来源: `docs/zh-CN/advanced/http-client.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/zh-CN/advanced/http-client.md）
+> 来源: `docs/zh-CN/advanced/client.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/zh-CN/advanced/client.md）
 
 # 网络客户端
 

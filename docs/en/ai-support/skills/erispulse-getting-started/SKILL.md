@@ -1,6 +1,6 @@
 ---
 name: erispulse-getting-started
-description: "适用于：第一次接触 ErisPulse，想从零跑起一个机器人并理解核心概念。覆盖场景：ErisPulse is an event-driven, modular asynchronous bot framework — write your business logic once and deploy it via adapters to multiple platforms including QQ, Telegram, Kook, and Yunhu, with a plugin system, hot reload, and a complete developer toolchain that work out of the box.。**1. Install** (Python >= 3.10):。Your bot is already running, and you want to write your first `/hello` command handler and understand what `sdk.run` and command decorators do. If you haven't installed ErisPulse, initialized a project, or run the project yet, complete the "Install", "Initialize Project", and "Run Project" steps in [5-Minute Quick Start](../quick-start.md) first; otherwise, skip this section.。What components does a message pass through from the user's message to the bot's reply? What are the responsibilities of adapters and modules? After reading this, you will be able to answer design questions that arise when writing processors yourself, rather than just copying exampl..."
+description: "适用于：第一次接触 ErisPulse，想从零跑起一个机器人并理解核心概念。覆盖场景：ErisPulse is an event-driven, modular asynchronous bot framework — write your business code once, then deploy to QQ, Telegram, Kook, Yunhu, and many other platforms via adapters. The plugin system, hot reloading, and a complete developer toolchain work out of the box.。**1. Install** (Python >= 3.10):。Your bot is already running, and you want to write your first `/hello` command handler and understand what `sdk.run` and command decorators do. If you haven't installed ErisPulse, initialized a project, or run the project yet, complete the "Install", "Initialize Project", and "Run Project" steps in [5-Minute Quick Start](../quick-start.md) first; otherwise, skip this section.。What components does a message pass through from the moment a user sends it to the moment the bot replies? What are adapters and modules each responsible for? After reading this article, you will be able to answer on your own the design questions you encounter when writing handlers, instead of me..."
 ---
 
 # ErisPulse 快速上手与核心概念
@@ -14,70 +14,70 @@ Source paths are annotated per section; see docs/ in the repository for the late
 AI 按需读取：只读需要的章节即可，不必全文加载。
 
 - 文档总入口与阅读路径: 82-92 行
-- Choose Your Path: 94-209 行
-- Advanced Features Version Quick Reference: 211-221 行
-- Development Approaches: 223-228 行
-- Other: 230-234 行
-- Getting Help: 236-240 行
-- 快速开始: 242-248 行
-- 60-Second Demo: Let the Bot Reply to You First: 250-289 行
-- Install ErisPulse: Three Ways: 291-356 行
-- Initialize Project: 358-390 行
-- Installing Modules: 392-412 行
-- Running the Project: 414-422 行
-- Enable IDE Completion (Optional): 424-441 行
-- Project Structure: 443-453 行
-- Configuration File: 455-492 行
-- 第一个机器人: 494-503 行
-- Step 1: Write Your First Command: 505-552 行
-- Step 2: Run the Robot: 554-562 行
-- Step 3: Test the Bot: 564-572 行
-- Code Explanation: 574-606 行
-- Extensions: Adding More Features: 608-614 行
-- FAQ: 616-652 行
-- What's Next: 654-658 行
-- 基础概念: 660-669 行
-- Event-Driven Architecture: 671-709 行
-- Core Components: 711-833 行
-- Event Types: 835-847 行
-- Core Module Descriptions: 849-951 行
-- SendDSL Message Sending: 953-998 行
-- Lazy Loading System: 1000-1021 行
-- 事件处理: 1023-1032 行
-- Overview of Event Types: 1034-1044 行
-- Message Event Handling: 1046-1117 行
-- Command Event Handling: 1119-1472 行
-- Middleware: Rewrite or Reject Before Distribution: 1474-1496 行
-- Command Dispatch Decision Chain: Why a Command Didn't Trigger: 1498-1504 行
-- Scope Filtering: Why My Module Didn't Receive the Message: 1506-1534 行
-- Event Overwriting: Overwrite Any Event Type Behavior Without Modifying Module Code: 1536-1594 行
-- Link Control: Claiming and Blocking: 1596-1645 行
-- Notice Event Handling: 1647-1679 行
-- Request Event Handling: 1681-1708 行
-- Meta Event Handling: 1710-1757 行
-- Interactive Handling: 1759-1980 行
-- Event Data Access: 1982-2057 行
-- Event Handling Best Practices: 2059-2110 行
-- 常见任务: 2112-2119 行
-- Content List: 2121-2131 行
-- Data Persistence: 2133-2190 行
-- Scheduled Tasks: 2192-2260 行
-- Message Filtering: 2262-2301 行
-- Multi-Platform Adaptation: 2303-2344 行
-- Advanced Message Sending (Retry/Timeout/Batch): 2346-2399 行
-- Permission Control: 2401-2451 行
-- Message Statistics: 2453-2497 行
-- Search Functionality: 2499-2553 行
-- Image Processing: 2555-2618 行
-- What's Next: 2620-2624 行
-- IDE 补全: 2626-2636 行
-- Core Design Principles: 2638-2644 行
-- Basic Usage: 2646-2654 行
-- Using in Code: 2656-2668 行
-- How It Works: 2670-2694 行
-- Command Options: 2696-2703 行
-- When to Regenerate: 2705-2709 行
-- Relationship with SendDSL Standard Methods: 2711-2715 行
+- Choose Your Path: 94-210 行
+- Advanced Features Version Quick Reference: 212-222 行
+- Development Approaches: 224-229 行
+- Other: 231-235 行
+- Getting Help: 237-241 行
+- 快速开始: 243-249 行
+- 60-Second Demo: Let the Bot Reply to You First: 251-290 行
+- Install ErisPulse: Three Ways: 292-357 行
+- Initialize Project: 359-391 行
+- Installing Modules: 393-413 行
+- Running the Project: 415-423 行
+- Enable IDE Completion (Optional): 425-442 行
+- Project Structure: 444-454 行
+- Configuration File: 456-493 行
+- 第一个机器人: 495-504 行
+- Step 1: Write Your First Command: 506-553 行
+- Step 2: Run the Robot: 555-563 行
+- Step 3: Test the Bot: 565-573 行
+- Code Explanation: 575-607 行
+- Extensions: Adding More Features: 609-615 行
+- FAQ: 617-653 行
+- What's Next: 655-659 行
+- 基础概念: 661-670 行
+- Event-Driven Architecture: 672-710 行
+- Core Components: 712-835 行
+- Event Types: 837-849 行
+- Core Module Descriptions: 851-953 行
+- SendDSL Message Sending: 955-1000 行
+- Lazy Loading System: 1002-1023 行
+- 事件处理: 1025-1034 行
+- Overview of Event Types: 1036-1046 行
+- Message Event Handling: 1048-1119 行
+- Command Event Handling: 1121-1474 行
+- Middleware: Rewrite or Reject Before Distribution: 1476-1498 行
+- Command Dispatch Decision Chain: Why a Command Didn't Trigger: 1500-1506 行
+- Scope Filtering: Why My Module Didn't Receive the Message: 1508-1536 行
+- Event Overwriting: Overwrite Any Event Type Behavior Without Modifying Module Code: 1538-1596 行
+- Link Control: Claiming and Blocking: 1598-1647 行
+- Notice Event Handling: 1649-1681 行
+- Request Event Handling: 1683-1710 行
+- Meta Event Handling: 1712-1759 行
+- Interactive Handling: 1761-1982 行
+- Event Data Access: 1984-2059 行
+- Event Handling Best Practices: 2061-2112 行
+- 常见任务: 2114-2121 行
+- Content List: 2123-2133 行
+- Data Persistence: 2135-2192 行
+- Scheduled Tasks: 2194-2262 行
+- Message Filtering: 2264-2303 行
+- Multi-Platform Adaptation: 2305-2346 行
+- Advanced Message Sending (Retry/Timeout/Batch): 2348-2401 行
+- Permission Control: 2403-2453 行
+- Message Statistics: 2455-2499 行
+- Search Functionality: 2501-2555 行
+- Image Processing: 2557-2620 行
+- What's Next: 2622-2626 行
+- IDE 补全: 2628-2638 行
+- Core Design Principles: 2640-2646 行
+- Basic Usage: 2648-2656 行
+- Using in Code: 2658-2670 行
+- How It Works: 2672-2696 行
+- Command Options: 2698-2705 行
+- When to Regenerate: 2707-2711 行
+- Relationship with SendDSL Standard Methods: 2713-2717 行
 
 ## 文档总入口与阅读路径
 
@@ -85,7 +85,7 @@ AI 按需读取：只读需要的章节即可，不必全文加载。
 
 # ErisPulse Documentation
 
-ErisPulse is an event-driven, modular asynchronous bot framework — write your business logic once and deploy it via adapters to multiple platforms including QQ, Telegram, Kook, and Yunhu, with a plugin system, hot reload, and a complete developer toolchain that work out of the box.
+ErisPulse is an event-driven, modular asynchronous bot framework — write your business code once, then deploy to QQ, Telegram, Kook, Yunhu, and many other platforms via adapters. The plugin system, hot reloading, and a complete developer toolchain work out of the box.
 
 > **First time here?** Head straight to the [5-Minute Quick Start](quick-start.md) — from installation to running your first bot, all in one go.
 
@@ -93,20 +93,21 @@ ErisPulse is an event-driven, modular asynchronous bot framework — write your 
 
 ## Choose Your Path
 
-Based on your goal, pick the corresponding learning path. Within each path, content is ordered from beginner to advanced.
+Choose the learning path that matches your goal. Within each path, content is ordered from basic to advanced.
 
 > [!IMPORTANT]
-> **You don't need to read all the docs.** The vast majority of developers can independently build 90% of their features just by reading the **L1 Core Five** in order
-> (about 1–2 hours); all remaining docs are on-demand references for specific scenarios —
-> consult them when the need arises. Each one opens with a note on "when you need to read this".
+> **You don't need to read all the docs.** The vast majority of developers only need to read the **five L1 core docs**
+> in order (about 1–2 hours) to independently develop 90% of features; all remaining docs are on-demand
+> reference material for specific scenarios — consult them only when the corresponding need arises. Each doc states
+> at the beginning "when you need to read this one".
 >
-> **The L1 Core Five**: [Getting Started with Module Development](developer-guide/modules/getting-started.md)
+> **The five L1 core docs**: [Module Development Getting Started](developer-guide/modules/getting-started.md)
 > → [Basic Concepts](getting-started/basic-concepts.md)
 > → [Event Wrapper](developer-guide/modules/event-wrapper.md)
 > → [Configuration File Guide](user-guide/configuration.md)
 > → [Exception Handling](advanced/errors.md)
 >
-> Adapter authors also need: [Getting Started with Adapter Development](developer-guide/adapters/getting-started.md)
+> Adapter authors additionally need: [Adapter Development Getting Started](developer-guide/adapters/getting-started.md)
 > → [Event Converter](developer-guide/adapters/converter.md)
 > → [SendDSL in Depth](developer-guide/adapters/send-dsl.md)
 
@@ -114,16 +115,16 @@ Based on your goal, pick the corresponding learning path. Within each path, cont
 
 Get the bot running, install modules, and configure it.
 
-| Progress | Document | Description |
+| Stage | Document | Description |
 |------|------|------|
 | **① Get Started** | [5-Minute Quick Start](quick-start.md) | Install, initialize, run — the single starting point |
-| Direct App Install | [ErisPulse-App Client](ecosystem/app.md) | Official all-platform client: run and manage via a graphical interface on phone / desktop, no terminal required |
+| Direct App Install | [ErisPulse-App Client](ecosystem/app.md) | Official all-platform client: run and manage via phone / desktop GUI, no terminal needed |
 | ② Go Deeper | [Create Your First Bot](getting-started/first-bot.md) | Write your first command handler |
-| ③ Concepts | [Basic Concepts](getting-started/basic-concepts.md) | Understand the design of adapters/modules/events |
+| ③ Concepts | [Basic Concepts](getting-started/basic-concepts.md) | Understand the design of adapters / modules / events |
 | ④ Hands-On | [Common Task Examples](getting-started/common-tasks.md) | Storage, scheduled tasks, permission control |
 | Reference | [Configuration File Guide](user-guide/configuration.md) · [CLI Commands](user-guide/cli-reference.md) · [Deployment Guide](user-guide/deployment.md) | Consult as needed |
 | Reference | [Platform Features Guide](platform-guide/README.md) | Differences across platforms (Yunhu/QQ/Telegram…) |
-| Selection | [Selection Guide](showcase/README.md) | Comparison with and migration from NoneBot2 / AstrBot / LangBot |
+| Selection | [Selection Guide](showcase/README.md) | Comparison with NoneBot2 / AstrBot / LangBot and migration |
 
 ### 2. I Want to Develop Modules / Adapters
 
@@ -131,71 +132,71 @@ Write distributable extensions for ErisPulse.
 
 | Type | Getting Started | Advanced |
 |------|------|------|
-| **Module Development** (recommended) | [Getting Started with Module Development](developer-guide/modules/getting-started.md) | [Core Concepts](developer-guide/modules/core-concepts.md) · [Event Wrapper](developer-guide/modules/event-wrapper.md) · [Best Practices](developer-guide/modules/best-practices.md) |
-| **Adapter Development** | [Getting Started with Adapter Development](developer-guide/adapters/getting-started.md) | [Core Concepts](developer-guide/adapters/core-concepts.md) · [SendDSL in Depth](developer-guide/adapters/send-dsl.md) · [Event Converter](developer-guide/adapters/converter.md) · [Best Practices](developer-guide/adapters/best-practices.md) |
-| **Technical Standards** | [Standards Overview](standards/README.md) | Specifications that adapter development must follow: [Session Types](standards/session-types.md) · [Event Conversion](standards/event-conversion.md) · [Send Methods](standards/send-method-spec.md) · [API Responses](standards/api-response.md) · [Request Actions](standards/request-action-spec.md) |
-| **Testing & Troubleshooting** | [Module Testing (ErisPulse-Testing)](developer-guide/testing.md) | Trace the dispatch decision chain to troubleshoot "why didn't my command trigger" |
-| **Publishing** | [Publishing & the Module Store](developer-guide/publishing.md) | Publish your work to PyPI and the Module Store |
+| **Module Development** (recommended) | [Module Development Getting Started](developer-guide/modules/getting-started.md) | [Core Concepts](developer-guide/modules/core-concepts.md) · [Event Wrapper](developer-guide/modules/event-wrapper.md) · [Best Practices](developer-guide/modules/best-practices.md) |
+| **Adapter Development** | [Adapter Development Getting Started](developer-guide/adapters/getting-started.md) | [Core Concepts](developer-guide/adapters/core-concepts.md) · [SendDSL in Depth](developer-guide/adapters/send-dsl.md) · [Event Converter](developer-guide/adapters/converter.md) · [Best Practices](developer-guide/adapters/best-practices.md) |
+| **Technical Standards** | [Standards Overview](standards/README.md) | The [Session Types](standards/session-types.md) · [Event Conversion](standards/event-conversion.md) · [Send Methods](standards/send-method-spec.md) · [API Response](standards/api-response.md) · [Request Actions](standards/request-action-spec.md) standards that adapter development must follow |
+| **Testing & Troubleshooting** | [Module Testing (ErisPulse-Testing)](developer-guide/testing.md) | Use the dispatch decision chain to troubleshoot "why didn't the command trigger" |
+| **Publishing** | [Publishing & Module Store](developer-guide/publishing.md) | Publish your work to PyPI and the module store |
 
-### 3. I Want to Deeply Understand the Internals
+### 3. I Want to Understand the Internals
 
-Learn how the framework works under the hood. Start with the architecture and API references, then use the lookup table below to dive into specific topics.
+Learn how the framework works under the hood. Start with the architecture and API references, then use the comparison table below to dive into specific topics.
 
-**Architecture & API References**
-
-| Document | Description |
-|------|------|
-| [Architecture Overview](architecture.md) | Visual diagrams: core architecture, initialization flow, event handling, lifecycle, module loading strategies (including `activate_on` event-driven lazy activation), local plugin folders, and the module hot-reload architecture (supports all module sources) |
-| [Event System](api-reference/event-system.md) | Complete APIs for the five major event categories |
-| [Adapter System](api-reference/adapter-system.md) | Adapter registration, start/stop, API invocation |
-| [Core Modules](api-reference/core-modules.md) | Fundamental capabilities such as Storage / Config / Logger / Router |
-
-**L2 Must-Read (Unavoidable for Production-Grade Modules)**
+**Architecture & API Reference**
 
 | Document | Description |
 |------|------|
-| [Scope](advanced/scope.md) | Three-dimensional scope control: module availability / event admission / outbound action restrictions (including method-level fine-grained rules and binding inheritance merge) |
-| [Ownership (owner) System](advanced/ownership.md) | Resource ownership and automatic reclamation: the owner context, a panoramic view of owned resources, unload cleanup sequences, design boundaries, and a guide for module authors |
-| [Lifecycle Management](advanced/lifecycle.md) | The lifecycle event system: what modules / adapters should do when loaded, unloaded, reloaded, or disabled |
-| [Interaction Session System](advanced/interaction.md) | A complete guide to wait_reply, session timers (remind/escalate), multi-path waiting (select), session mutex leases, inbox, message transactions, and tracing |
+| [Architecture Overview](architecture.md) | Visual diagrams: core architecture, initialization flow, event handling, lifecycle, module loading strategy (including `activate_on` event-driven lazy activation), local plugin folders, and module hot-reload architecture (supporting all module sources) |
+| [Event System](api-reference/event-system.md) | Complete API for the five major event categories |
+| [Adapter System](api-reference/adapter-system.md) | Adapter registration, start/stop, API calls |
+| [Core Modules](api-reference/core-modules.md) | Storage / Config / Logger / Router and other foundational capabilities |
 
-**Grouped by Scenario (Consult as Needed)**
+**L2 Required Reading (Unavoidable for Production-Grade Modules)**
 
-| Group | Documents | Pitfalls If You Skip the First Doc |
+| Document | Description |
+|------|------|
+| [Scope](advanced/scope.md) | Three-dimensional scope control: module availability / event admission / outbound action restriction (including method-level fine-grained rules and binding inheritance merge) |
+| [Ownership (Owner) System](advanced/ownership.md) | Resource ownership and automatic reclamation: owner context, panoramic view of owned resources, unload cleanup sequence, design boundaries, and guidance for module authors |
+| [Lifecycle Management](advanced/lifecycle.md) | Lifecycle event system: what modules / adapters should do when loaded, unloaded, reloaded, or disabled |
+| [Interaction Session System](advanced/interaction.md) | Complete guide to wait_reply, session timers (remind/escalate), multi-way waiting (select), session mutex leases, inbox, message transactions, and chain tracing |
+
+**Grouped by Scenario (On-Demand Reference)**
+
+| Group | Documents | Pitfall if You Skip the First Doc |
 |------|------|------|
-| Startup | [Startup Flow & Manual Control](advanced/startup.md) · [Lazy Loading](advanced/lazy-loading.md) | Without understanding the startup chain (Finder / Loader / Manager / Router), you'll be left staring helplessly at logs when module loading fails |
-| Communication & Connections | [Inter-Module Communication](advanced/module-communication.md) · [Connection Pool & Broadcast](advanced/connections.md) · [Router System](advanced/router.md) | Without understanding the service contract (`meta.services`) whitelist, a cross-module `module.call` will be rejected with `ServiceNotProvidedError` and you won't know why |
-| Data Storage | [Storage Backends](advanced/storage-backends.md) · [SQL Builder](advanced/sql-builder.md) · [HTTP Client](advanced/http-client.md) | Without understanding the connection-failure cooldown semantics, database flakiness will make you think "the framework crashed" (in reality, storage operations fail fast and automatically reconnect after the cooldown) |
-| Messaging & Conversations | [Conversation Multi-Turn Dialogs](advanced/conversation.md) · [Session Inbox](advanced/transcript.md) · [MessageBuilder](advanced/message-builder.md) · [Internationalization](advanced/i18n.md) | Without understanding session mutex leases, two modules waiting for the same user's reply will kick each other out |
-| Shadow & Canary | [Shadow Modules & Canary Promotion](advanced/shadow.md) | Promote prematurely without understanding the five isolation gates, and the shadow's outbound messages will leak to real users |
+| Startup | [Startup Flow & Manual Control](advanced/startup.md) · [Lazy Loading](advanced/lazy-loading.md) | Without understanding the startup chain (Finder / Loader / Manager / Router), you'll be left staring helplessly at the logs when module loading fails |
+| Communication & Connections | [Inter-Module Communication](advanced/module-communication.md) · [Connection Pool & Broadcasting](advanced/connections.md) · [Routing System](advanced/router.md) | Without understanding the service contract (`meta.services`) whitelist, cross-module `module.call` will be rejected with `ServiceNotProvidedError` and you won't know why |
+| Data Storage | [Storage Backends](advanced/storage-backends.md) · [SQL Builder](advanced/sql-builder.md) · [Network Client](advanced/client.md) | Without understanding the cooldown semantics after connection failures, you may misjudge "the framework is broken" during database flapping (in fact, storage operations fail fast and automatically reconnect after the cooldown) |
+| Messaging & Conversation | [Conversation Multi-Turn Dialogue](advanced/conversation.md) · [Session Transcript](advanced/transcript.md) · [MessageBuilder](advanced/message-builder.md) · [Internationalization](advanced/i18n.md) | Without understanding session mutex leases, two modules waiting for the same user's reply will kick each other off |
+| Shadow & Canary | [Shadow Modules & Canary Promotion](advanced/shadow.md) | Promoting early without understanding the five isolation gates will let the shadow's outbound messages leak to real users |
 
-**Concept Relationship Summary Table**
+**Concept Relationship Master Table**
 
-When you can't tell which subsystem handles what, use this table to find the right entry:
+When you can't tell which subsystem handles what, use this table to find the right match:
 
 | Subsystem | What Question It Answers | One-Line Rule of Thumb |
 |--------|------------|-----------|
 | [Communication](advanced/module-communication.md) (module-communication) | How do modules call each other and send targeted events? | Cross-module calls go through `module.call`; if the target declares `meta.services`, only whitelisted methods can be called |
-| [Permissions](advanced/scope.md) (scope) | Who can use this module, who can trigger events, and which actions can be performed? | Three gates — module binding, identity admission, outbound restrictions — all dictated by user configuration |
-| [Ownership](advanced/ownership.md) (ownership) | After a module is unloaded, what happens to the connections, timers, and subscriptions it opened? | Whoever registers owns it; unloading reclaims everything, leaving no dangling resources |
-| [Lazy Loading & Dormancy](advanced/lazy-loading.md) (lazy-loading) | When does a module actually load, and where does it go when idle? | `activate_on` wakes it only when needed; `dormant_after` puts it to sleep when idle |
-| [Interaction](advanced/interaction.md) (interaction) | How to wait for the user's next reply, and how to collect multiple turns? | `wait_reply` waits for one, `.got()` chains collect multiple turns, and leases guarantee no conflicts |
-| [Shadow Canary](advanced/shadow.md) (shadow) | How can a new module version be trialed without affecting production? | Shadows receive copies and outbound actions are merely recorded; `promote` only goes live after human confirmation |
-| [Storage](advanced/storage-backends.md) (storage-backends) | Where is data stored, and how do I switch backends? | One storage API, switch between sqlite / mysql / postgres via configuration |
+| [Permissions](advanced/scope.md) (scope) | Who can use this module, who can trigger events, and which actions can be performed? | Three gates — module binding, identity admission, outbound restriction — all decided by user configuration |
+| [Ownership](advanced/ownership.md) (ownership) | After a module is unloaded, where do its connections, timers, and subscriptions go? | Whoever registers it owns it; unloading reclaims everything, leaving no dangling resources |
+| [Lazy Loading & Dormancy](advanced/lazy-loading.md) (lazy-loading) | When does a module actually load, and where does it go when idle? | `activate_on` wakes it only when needed; `dormant_after` puts it back to sleep when idle |
+| [Interaction](advanced/interaction.md) (interaction) | How to wait for the user's next reply, and how to write multi-turn collection? | `wait_reply` waits for one message, `.got()` chains collect multiple turns, and leases guarantee no conflicts |
+| [Shadow & Canary](advanced/shadow.md) (shadow) | How to trial-run a new module version without affecting production? | The shadow receives copies and outbound traffic is only recorded; `promote` requires human confirmation before going live |
+| [Storage](advanced/storage-backends.md) (storage-backends) | Where is data stored, and how do you swap backends? | One storage API; switch between sqlite / mysql / postgres via configuration |
 
 ### 4. Ecosystem & Official Clients
 
-Official clients plus ecosystem modules you install on demand and use right away (none of these are built into the framework).
+Official clients plus ecosystem modules that are installed on demand and ready to use out of the box (none of them are built into the framework).
 
 | Document | Description |
 |------|------|
-| [Ecosystem Overview](ecosystem/README.md) | How to install ecosystem modules and why these aren't built-in features |
+| [Ecosystem Overview](ecosystem/README.md) | How to install ecosystem modules, and why these are not built-in features |
 | [ErisPulse-QvQChat](ecosystem/qvqchat.md) | General-purpose agent module: tool loop / MCP / long-term memory / knowledge base; modules that declare services automatically become AI tools |
-| [ErisPulse-ApiMCP](ecosystem/apimcp.md) | Exposes your bot in reverse as an MCP tool, letting AI clients like Claude control it directly |
-| [ErisPulse-App](ecosystem/app.md) | Official all-platform client (Android / Windows / Linux / macOS): manage multiple instances via a native UI, **run directly on your phone**, tray-resident on desktop |
-| [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web management panel + pane registration API (modules can register custom pages in the sidebar) |
-| [ErisPulse-Cron](ecosystem/cron.md) | Scheduled task module: one-shot / interval / cron expressions, callback arguments, SQLite persistence; other modules can delegate scheduled callbacks to it |
-| [ErisPulse-Takumi](ecosystem/takumi.md) | Image rendering (HTML / node trees / SVG / animations, with built-in Chinese and English fonts) |
+| [ErisPulse-ApiMCP](ecosystem/apimcp.md) | Exposes the bot in reverse as an MCP tool, letting AI clients like Claude control it directly |
+| [ErisPulse-App](ecosystem/app.md) | Official all-platform client (Android / Windows / Linux / macOS): manage multiple instances with a native interface, **runs directly on your phone**, and resides in the desktop tray |
+| [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web management panel + window registration API (modules can register custom pages in the sidebar) |
+| [ErisPulse-Cron](ecosystem/cron.md) | Scheduled task module: one-shot / interval / Cron expressions, callback parameters, SQLite persistence; other modules can delegate scheduled callbacks to it |
+| [ErisPulse-Takumi](ecosystem/takumi.md) | Image rendering (HTML / node trees / SVG / animation, with built-in Chinese and English fonts) |
 
 ### 5. I Want to Contribute to ErisPulse
 
@@ -203,41 +204,41 @@ Make the framework better
 
 | Document | Description |
 |------|------|
-| [Contributing to ErisPulse](contributing/README.md) | Overview of ways to contribute: docs / i18n / bugs / modules / adapters |
+| [Contributing to ErisPulse](contributing/README.md) | Overview of contribution channels: docs / i18n / bugs / modules / adapters |
 | [First Contribution](contributing/first-contribution.md) | From fork to submitting a PR |
 
 ---
 
 ## Advanced Features Version Quick Reference
 
-When making version-compatibility decisions, or taking over an older project and wondering "which version introduced this capability," look it up in this table (the per-version entries in the repository root [CHANGELOG.md](https://github.com/ErisPulse/ErisPulse/blob/main/CHANGELOG.md) are authoritative).
+When making version compatibility checks, or when taking over an old project and wondering "which version introduced this capability", look it up in this table (for authoritative details, see the version entries in the repository root [CHANGELOG.md](https://github.com/ErisPulse/ErisPulse/blob/main/CHANGELOG.md)).
 
 | Version | Capabilities Introduced |
 |------|-----------|
-| **2.7** | Production-ready foundation: OneBot12 standardized base classes (`ApiDSL` / `BaseConverter`), systematized config hot-reload, graceful shutdown with SIGTERM/SIGHUP signal handling, environment-variable config overrides, lifecycle callback hooks, lazy loading of the web stack; 2.7.1 added config-write reliability and generational GC tuning |
-| **2.8** | Permission and communication skeleton: the three-dimensional scope system (scope), interaction session infrastructure (leases / checkpoints / message transactions / session inbox transcript), protocol-based inter-module RPC (`module.call` / `meta.services` service contracts / targeted events via emit(to=)), multi-backend async storage (sqlite / mysql / postgres; connection failures don't block the framework), ownership cleanup, config comment preservation; later 2.8.x releases polished the CLI scaffolding, subcommands, and more |
-| **2.9** | The "Module Development Experience" mainline (EPRFC-2026-001): declarative command parameters (`args=` / `options=`) and command governance (`cooldown=` / `rate_limit=`), unified dependency injection (`Depends`), middleware event veto, built-in ORM (auto migrations + relationship mapping), shadow module canary promotion, dispatch decision chain tracing and troubleshooting diagnostics, and official Python 3.14 support |
-| **2.10** | Connections as first-class resources (the `connections` registry: broadcast / business grouping / cross-module transfer & reuse / automatic reclamation on unload), the root import contract (all commonly used APIs importable via `from ErisPulse import`), completion of the ownership system, runtime overrides for inbox retention policies; 2.10.2 added adapter-local plugin directories (`plugins/`) + `epsdk create pack` + lossless config writes via tomlclass |
-| **2.11** (dev) | The "edit code → see results" development loop: hot reload with full semantics by default (syntax pre-check + code identity verification + cascaded re-export for dependents), lazy-loading dormancy (`dormant_after`), code-level adapter hot reload (`sdk.adapter.reload`), `.got()` command-flow syntactic sugar, `epsdk stop` / `restart` runtime control |
+| **2.7** | Production-grade foundation: OneBot12 standardized base classes (`ApiDSL` / `BaseConverter`), systematic config hot-reloading, graceful shutdown and SIGTERM/SIGHUP signal handling, environment variable config overrides, lifecycle callback hooks, and lazy loading of the web stack; 2.7.1 added config write reliability and generational GC governance |
+| **2.8** | Permission and communication skeleton: the three-dimensional scope system, interaction session infrastructure (leases / checkpoints / message transactions / session transcript inbox), protocol-based inter-module RPC (`module.call` / `meta.services` service contracts / targeted events via emit(to=)), multi-backend async storage (sqlite / mysql / postgres; connection failures don't block the framework), ownership cleanup, and config comment preservation; subsequent 2.8.x releases polished the CLI scaffolding, subcommands, and more |
+| **2.9** | The "module development experience" mainline (EPRFC-2026-001): declarative command parameters (`args=` / `options=`) and command governance (`cooldown=` / `rate_limit=`), unified dependency injection (`Depends`), middleware event veto, built-in ORM (automatic migration + relational mapping), shadow module canary promotion, dispatch decision-chain tracing and troubleshooting diagnostics, and official support for Python 3.14 |
+| **2.10** | Connections as first-class resources (`connections` registry: broadcasting / business grouping / cross-module passing and reuse / automatic reclamation on unload), root import contract (all common APIs importable via `from ErisPulse import`), completion of the ownership system, and runtime override of inbox retention policies; 2.10.2 added adapter local plugin directories (`plugins/`) + `epsdk create pack` + lossless config writing via tomlclass |
+| **2.11** (dev) | The "edit code → see the effect" development loop: hot reload with full semantics by default (syntax pre-check + code identity verification + cascaded re-export for dependents), lazy-load dormancy (`dormant_after`), adapter code-level hot reload (`sdk.adapter.reload`), `.got()` command-flow syntax sugar, and `epsdk stop` / `restart` runtime control |
 
 ## Development Approaches
 
 ErisPulse supports two development approaches:
 
-- **Module development (recommended)**: create a standalone module package installed via a package manager, making it easy to distribute and manage.
-- **Embedded development**: write handlers directly in your project, ideal for rapid prototyping. See [Quick Start](quick-start.md) for details.
+- **Module development (recommended)**: create standalone module packages installed via a package manager, making distribution and management easy.
+- **Embedded development**: write handlers directly in your project, suitable for rapid prototyping. See the [Quick Start](quick-start.md) for details.
 
 ## Other
 
-- [Documentation Style Guide](styleguide/docstring.md) — writing conventions for contributing docs
+- [Documentation Style Guide](styleguide/docstring.md) — writing conventions for contributing documentation
 - [Contributing to ErisPulse](contributing/README.md) — the entry point for getting involved in the project
-- [AI-Assisted Development](ai-support/README.md) — get project prompts for use with AI coding assistants
+- [AI-Assisted Development](ai-support/README.md) — project prompts for use with AI coding assistants
 
 ## Getting Help
 
 - GitHub repository: [https://github.com/ErisPulse/ErisPulse](https://github.com/ErisPulse/ErisPulse)
-- Issue reports: submit an Issue
-- Technical discussions: check out Discussions
+- Bug reports: submit an Issue
+- Technical discussions: check Discussions
 
 ## 快速开始
 
@@ -661,58 +662,58 @@ async def hello_handler(event):
 
 > 来源: `docs/en/getting-started/basic-concepts.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/getting-started/basic-concepts.md）
 
-# Core Concepts
+# Basic Concepts
 
 > [!NOTE]
-> **L1 Core Must-Read** — The second article in the "L1 Core Five Articles" on the documentation homepage (Module Development Introduction → **Core Concepts** → Event Wrapper → Configuration File Explanation → Exception Handling).
+> **Required reading for the L1 core** — the 2nd of the "Five L1 Core Articles" listed on the documentation homepage (Module Development Introduction → **Basic Concepts** → Event Wrapper Class → Configuration File Guide → Exception Handling).
 
-What components does a message pass through from the user's message to the bot's reply? What are the responsibilities of adapters and modules? After reading this, you will be able to answer design questions that arise when writing processors yourself, rather than just copying examples.
+What components does a message pass through from the moment a user sends it to the moment the bot replies? What are adapters and modules each responsible for? After reading this article, you will be able to answer on your own the design questions you encounter when writing handlers, instead of merely copying examples.
 
 ## Event-Driven Architecture
 
-ErisPulse adopts an event-driven architecture, where all interactions are passed and handled through events.
+ErisPulse adopts an event-driven architecture; all interactions are passed and processed through events.
 
 ### Event Flow
 
 ```
-User sends message
+User sends a message
       │
       ▼
-Platform receives
+Platform receives it
       │
       ▼
-Adapter receives native platform event
+Adapter receives the platform's native event
       │
       ▼
-Converts to OneBot12 standard event
+Converted to a OneBot12 standard event
       │
       ▼
-Submits to event system
+Submitted to the event system
       │
       ▼
-Distributes to registered handlers
+Dispatched to registered handlers
       │
       ▼
-Module processes event
+Module processes the event
       │
       ▼
-Sends response via adapter
+Response sent through the adapter
       │
       ▼
-Platform displays to user
+Platform displays it to the user
 ```
 
 ### OneBot12 Standard
 
-ErisPulse uses OneBot12 as the core event standard. OneBot12 is a universal chatbot application interface standard that defines a unified event format.
+ErisPulse uses OneBot12 as its core event standard. OneBot12 is a universal chatbot application interface standard that defines a unified event format.
 
-All adapters convert platform-specific events into OneBot12 format, ensuring code consistency.
+All adapters convert platform-specific events to the OneBot12 format, ensuring code consistency.
 
 ## Core Components
 
 ### 1. SDK Object
 
-The SDK is the unified entry point for all features, providing access to core components.
+The SDK is the unified entry point for all functionality, providing access to core components.
 
 ```python
 from ErisPulse import sdk
@@ -729,10 +730,11 @@ sdk.lifecycle  # Lifecycle system
 ```
 
 > [!WARNING]
-> **Import from root** — `from ErisPulse.Core import adapter` / `import ErisPulse.Core.adapter`
-> This binds to the **manager instance** (`AdapterManager` singleton), not the sub-module — `ErisPulse.Core`
-> package re-exports will mask the same-named sub-modules. When writing tests, patches, or needing the module object itself, always use
-> `from ErisPulse import sdk` root import (where `sdk.adapter` is the manager instance).
+> **Always import from the root**: `from ErisPulse.Core import adapter` / `import ErisPulse.Core.adapter`
+> binds to the **manager instance** (the `AdapterManager` singleton) rather than the submodule — the
+> re-export in the `ErisPulse.Core` package shadows the submodule of the same name. When writing
+> tests, patching, or needing the module object itself, always use the `from ErisPulse import sdk`
+> root import (`sdk.adapter` is the manager instance).
 
 ### 2. Event Object
 
@@ -747,28 +749,28 @@ async def info_handler(event):
     platform = event.get_platform()
     text = event.get_text()
     
-    # Send reply
+    # Send a reply
     await event.reply(f"User: {user_id}, Platform: {platform}")
 ```
 
-### 3. Adapters
+### 3. Adapter
 
-Adapters serve as bridges between ErisPulse and external platforms.
+Adapters are the bridge between ErisPulse and external platforms.
 
 **Responsibilities:**
-- Receive native platform events
-- Convert them into OneBot12 standard format
-- Send standard-format events back to the platform
+- Receiving platform-native events
+- Converting them to the OneBot12 standard format
+- Sending standard-format events to the platform
 
-**Example Adapters:**
-- Yunhu Adapter: Communicates with the Yunhu platform
-- Telegram Adapter: Communicates with the Telegram Bot API
-- OneBot11 Adapter: Communicates with OneBot11-compatible applications
-- Email Adapter: Handles email sending and receiving
+**Example adapters:**
+- Yunhu adapter: communicates with the Yunhu platform
+- Telegram adapter: communicates with the Telegram Bot API
+- OneBot11 adapter: communicates with OneBot11-compatible applications
+- Email adapter: handles email sending and receiving
 
-### 4. Modules
+### 4. Module
 
-Modules are the basic units of functional extension and can:
+Modules are the basic unit of functionality extension; they can:
 
 - Register event handlers
 - Implement business logic
@@ -777,14 +779,14 @@ Modules are the basic units of functional extension and can:
 
 #### Module Discovery Mechanism
 
-ErisPulse discovers installed modules via Python's `importlib.metadata.entry_points`. Modules declare entry points in `pyproject.toml`:
+ErisPulse discovers installed modules through Python's `importlib.metadata.entry_points`. Modules declare entry points in `pyproject.toml`:
 
 ```toml
 [project.entry-points."erispulse.module"]
 MyModule = "my_package:Main"
 ```
 
-When the SDK initializes, it scans all entry points in the `erispulse.module` group, registers the module class with `ModuleManager`, then initializes them in topological order based on dependencies.
+During SDK initialization, all entry points in the `erispulse.module` group are scanned, module classes are registered with the `ModuleManager`, and then they are initialized one by one after a topological sort by dependencies.
 
 #### Minimal Viable Module
 
@@ -807,12 +809,12 @@ class Main(BaseModule):
 #### Module Lifecycle
 
 - **Registration**: The SDK discovers the module class and registers it with the manager
-- **Loading**: The module instance is created, and `on_load(event)` is called (`event = {"module_name": "MyModule"}`)
-- **Unloading**: `on_unload(event)` is called, and resources are cleaned up
+- **Loading**: A module instance is created and `on_load(event)` is called (`event = {"module_name": "MyModule"}`)
+- **Unloading**: `on_unload(event)` is called to clean up resources
 
-#### Loading Strategy
+#### Load Strategy
 
-Declare the module's loading behavior via `get_load_strategy()`:
+Declare a module's loading behavior via `get_load_strategy()`:
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -821,45 +823,45 @@ class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(
-            lazy_load=True,   # Whether to load lazily (default True)
-            priority=0        # Loading priority, higher values initialize earlier
+            lazy_load=True,   # Whether to lazy load (default True)
+            priority=0        # Load priority; higher values are initialized first
         )
 ```
 
-- **`lazy_load=True` (default)**: The module initializes only when first accessed via `sdk.MyModule`, reducing startup time
-- **`lazy_load=False`**: The module initializes immediately when the SDK starts, suitable for modules that need to listen to lifecycle events or execute scheduled tasks
-- **`priority`**: Modules with the same priority load in registration order; higher values initialize earlier
+- **`lazy_load=True` (default)**: The module is initialized only when first accessed via `sdk.MyModule`, reducing startup time
+- **`lazy_load=False`**: The module is initialized immediately at SDK startup, suitable for modules that need to listen for lifecycle events or run scheduled tasks
+- **`priority`**: Modules with the same priority are loaded in registration order; higher values are initialized first
 
-> For detailed explanations of the lazy-loading mechanism, refer to [Lazy Loading System](../advanced/lazy-loading.md).
+> For a detailed explanation of the lazy loading mechanism, see [Lazy Loading System](../advanced/lazy-loading.md).
 
 ## Event Types
 
-ErisPulse supports five types of events:
+ErisPulse supports 5 types of events:
 
 | Event Type | Decorator | Description |
 |---------|--------|------|
-| Message Event | `@message.on_message()` | Any message sent by the user (private chat, group chat) |
-| Command Event | `@command("name")` | Messages starting with a command prefix (e.g., `/hello`) |
-| Notice Event | `@notice.on_friend_add()` etc. | System notifications (friend added, group member changes, etc.) |
-| Request Event | `@request.on_friend_request()` etc. | User requests (friend requests, group invitations) |
-| Meta Event | `@meta.on_connect()` etc. | System-level events (connection, disconnection, heartbeat) |
+| Message events | `@message.on_message()` | Any message sent by users (private chats, group chats) |
+| Command events | `@command("name")` | Messages starting with the command prefix (e.g., `/hello`) |
+| Notice events | `@notice.on_friend_add()` etc. | System notices (friend additions, group member changes, etc.) |
+| Request events | `@request.on_friend_request()` etc. | User requests (friend requests, group invitations) |
+| Meta events | `@meta.on_connect()` etc. | System-level events (connect, disconnect, heartbeat) |
 
-> For detailed usage and code examples of each event type, refer to [Event Handling Introduction](event-handling.md).
+> For detailed usage and code examples of each event type, see [Event Handling Introduction](event-handling.md).
 
 ## Core Module Descriptions
 
-### Storage (Storage)
+### Storage
 
-A key-value storage system based on SQLite, used for persistent data.
+A SQLite-based key-value storage system for persisting data.
 
 ```python
-# Set value
+# Set a value
 sdk.storage.set("key", "value")
 
-# Get value
+# Get a value
 value = sdk.storage.get("key", "default_value")
 
-# Bulk operations
+# Batch operations
 sdk.storage.set_multi({
     "key1": "value1",
     "key2": "value2"
@@ -871,9 +873,9 @@ with sdk.storage.transaction():
     sdk.storage.set("key2", "value2")
 ```
 
-### Config (Configuration)
+### Config
 
-TOML-based configuration file management.
+TOML-format configuration file management.
 
 ```python
 # Get configuration
@@ -886,36 +888,36 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 value = sdk.config.getConfig("MyModule.subkey", "default")
 ```
 
-### Logger (Logging)
+### Logger
 
 A modular logging system.
 
 ```python
 # Log messages
 sdk.logger.info("This is an info message")
-sdk.logger.warning("This is a warning message")
-sdk.logger.error("This is an error message")
+sdk.logger.warning("This is a warning")
+sdk.logger.error("This is an error")
 
-# Get child logger
+# Get a child logger
 child_logger = sdk.logger.get_child("submodule")
-child_logger.info("Submodule log message")
+child_logger.info("Submodule log")
 ```
 
 **Attribute Access Syntactic Sugar**
 
-In addition to using the `get_child()` method, you can also create child loggers using **attribute access**, which is a more concise **syntactic sugar**:
+Besides the `get_child()` method, you can also create child loggers via **attribute access**, which is a more concise **syntactic sugar** style:
 
 ```python
-# Create child logger using attribute access
+# Create a child logger via attribute access
 sdk.logger.mymodule.info("Module message")
 
 # Supports nested access
 sdk.logger.mymodule.database.info("Database message")
 ```
 
-### Router (Routing)
+### Router
 
-HTTP and WebSocket routing management, based on FastAPI + Uvicorn. Supports decorator routing, middleware, grouping, rate limiting, CORS.
+HTTP and WebSocket route management, based on FastAPI + Uvicorn. Supports decorator routes, middleware, grouping, rate limiting, and CORS.
 
 ```python
 from ErisPulse.Core import HttpRequest
@@ -926,11 +928,11 @@ async def handler(request: HttpRequest):
     return {"status": "ok"}
 ```
 
-> For the complete routing API (WebSocket, middleware, rate limiting, CORS, etc.), refer to [Router Manager](../advanced/router.md).
+> For the full router API (WebSocket, middleware, rate limiting, CORS, etc.), see [Router Manager](../advanced/router.md).
 
 ### Client (Network Client)
 
-A unified network client that aggregates HTTP requests, WebSocket connections, connection pooling, automatic retries, timeout control, request statistics, and lifecycle event integration.
+A unified network client that consolidates HTTP requests, WebSocket connections, connection pool management, automatic retries, timeout control, request statistics, and lifecycle event integration.
 
 ```python
 from ErisPulse.Core import client
@@ -939,7 +941,7 @@ from ErisPulse.Core import client
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
-# Request with retries and timeout
+# With retries and timeout
 resp = await client.get(url, timeout=30, max_retries=3)
 
 # WebSocket connection
@@ -948,35 +950,35 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-> For the complete network client API, refer to [Network Client](../advanced/http-client.md).
+> For the full network client API, see [Network Client](../advanced/client.md).
 
 ## SendDSL Message Sending
 
-Adapters provide a chainable message sending interface.
+Adapters provide a chained-call message sending interface.
 
 ### Basic Sending
 
 ```python
-# Get adapter instance
+# Get an adapter instance
 yunhu = sdk.adapter.get("yunhu")
 
-# Send message
+# Send a message
 await yunhu.Send.To("user", "U1001").Text("Hello")
 
-# Specify sender account
+# Specify the sending account
 await yunhu.Send.Using("bot1").To("group", "G1001").Text("Group message")
 ```
 
-### Chainable Modifiers
+### Chained Modifiers
 
 ```python
-# @user
+# Mention a user
 await yunhu.Send.To("group", "G1001").At("U2001").Text("@message")
 
-# Reply to message
+# Reply to a message
 await yunhu.Send.To("group", "G1001").Reply("msg123").Text("Reply")
 
-# @all
+# Mention everyone
 await yunhu.Send.To("group", "G1001").AtAll().Text("Announcement")
 ```
 
@@ -990,7 +992,7 @@ async def test_handler(event):
     # Simple text reply
     await event.reply("Reply content")
     
-    # Send image
+    # Send an image
     await event.reply("http://example.com/image.jpg", method="Image")
     
     # Send voice
@@ -999,7 +1001,7 @@ async def test_handler(event):
 
 ## Lazy Loading System
 
-ErisPulse enables module lazy loading by default. Modules only initialize when first accessed (e.g., `sdk.MyModule`), significantly improving startup speed.
+ErisPulse enables module lazy loading by default; modules are initialized only when first accessed (e.g., `sdk.MyModule`), which significantly improves startup speed.
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -1009,16 +1011,16 @@ class Main(BaseModule):
     def get_load_strategy():
         return ModuleLoadStrategy(
             lazy_load=True,   # Enable lazy loading (default)
-            priority=0        # Loading priority, higher values initialize earlier
+            priority=0        # Load priority; higher values are initialized first
         )
 ```
 
-**Scenarios where lazy loading should be disabled (`lazy_load=False`):**
-- Modules that listen to lifecycle events (e.g., `core.init.complete`)
+**Scenarios requiring lazy loading to be disabled (`lazy_load=False`):**
+- Modules that listen for lifecycle events (e.g., `core.init.complete`)
 - Modules that start scheduled tasks or background services
 - Modules that need to complete initialization before other modules are loaded
 
-> For detailed explanations of the lazy loading mechanism and considerations, refer to [Lazy Loading System](../advanced/lazy-loading.md).
+> For detailed lazy loading mechanisms and caveats, see [Lazy Loading System](../advanced/lazy-loading.md).
 
 ## 事件处理
 

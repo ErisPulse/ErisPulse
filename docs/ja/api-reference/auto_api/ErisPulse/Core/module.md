@@ -398,7 +398,10 @@ await sdk.module.reload_all()
 卸载单个模块（``sleep=True`` 时为归眠：释放资源但保留懒加载代理）
 
 - **module_name**: 模块名称
-- **reason**: 卸载来意（透传给 on_before_unload 钩子与 before_unload 事件）
+- **reason**: 卸载来意（透传给 on_before_unload / on_unload 钩子与
+
+    before_unload 事件；``"reload"`` 时模块可推迟关闭外部资源，
+    回滚重放 on_load 后仍可继续服务）
 - **sleep**: 归眠模式——保留懒加载代理与注册存根，模块回到"已注册未加载"状态
 
 **返回值**: 是否卸载成功

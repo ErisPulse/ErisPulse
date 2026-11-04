@@ -1,6 +1,6 @@
 ---
 name: erispulse-communication
-description: "适用于：模块间通信（RPC/定向/广播）、HTTP/WS 客户端、连接管理。覆盖场景：When you need cross-module calls (RPC), service contracts, directed events, or cold-start replay. Skip if not needed, as it won't affect the usage of other features.。When you need WebSocket/SSE connection pools, broadcast groups, cross-module pushing, or to check connections. Skip if not needed, as it does not affect the use of other features.。When you need to make outbound HTTP / WebSocket requests. Skip if not needed, it doesn't affect the use of other features.。When you need HTTP/WebSocket/SSE routes (including connection pool broadcasting). Skip if not needed, as it does not affect the use of other features.。"
+description: "适用于：模块间通信（RPC/定向/广播）、HTTP/WS 客户端、连接管理。覆盖场景：When you need cross-module calls (RPC), service contracts, directed events, or cold-start replay. Skip if not needed, as it won't affect the usage of other features.。When you need WebSocket/SSE connection pools, group subscriptions, cross-module push, or need to inspect connections. Skip otherwise, as it does not affect other features.。When you need outbound HTTP / WebSocket requests. Skip if not needed, as it does not affect other features.。When you need HTTP / WebSocket / SSE routing (including connection pool broadcasting). Skip if not needed, as it does not affect other features.。"
 ---
 
 # ErisPulse 通信与连接
@@ -24,46 +24,46 @@ AI 按需读取：只读需要的章节即可，不必全文加载。
 - Event Idempotency Deduplication: 301-310 行
 - 连接管理: 312-328 行
 - Overview: 330-356 行
-- Checking Connection Pool: 358-381 行
-- Broadcasting and Subscription: 383-444 行
+- Inspecting the Connection Pool: 358-381 行
+- Broadcasting and Subscriptions: 383-444 行
 - Cross-Module Transfer / Reuse: 446-465 行
 - Outbound Connections (Client Side): 467-480 行
 - Cross-Thread Delivery: 482-496 行
 - Unload and Cleanup Semantics: 498-503 行
 - API Overview: 505-519 行
-- HTTP 客户端: 521-530 行
+- 网络客户端: 521-530 行
 - Overview: 532-543 行
 - Quick Start: 545-592 行
 - HttpResponse: 594-615 行
 - Request Methods: 617-700 行
-- Parameter Explanation: 702-723 行
-- Timeout and Retries: 725-743 行
+- Parameter Descriptions: 702-723 行
+- Timeout and Retry: 725-743 行
 - Custom Default Headers: 745-755 行
 - Request Statistics: 757-768 行
 - Lifecycle Events: 770-794 行
 - Context Management: 796-803 行
 - WebSocket Client: 805-912 行
-- Exception System: 914-990 行
+- Exception Hierarchy: 914-990 行
 - Using in Adapters: 992-1015 行
 - Best Practices: 1017-1025 行
 - 路由: 1027-1036 行
 - Overview: 1038-1053 行
-- Abstract Types: 1055-1066 行
-- Decorator Routes (Recommended): 1068-1184 行
-- Traditional Registration Methods: 1186-1251 行
-- WebSocket Lifecycle Hooks: 1253-1275 行
-- Route Grouping: 1277-1292 行
-- Route Middleware: 1294-1309 行
-- Request Correlation ID (X-Request-ID): 1311-1334 行
-- Rate Limiting: 1336-1350 行
-- CORS Configuration: 1352-1369 行
-- Security Headers: 1371-1384 行
-- Automatic Documentation: 1386-1400 行
-- Path Handling: 1402-1413 行
-- System Routes: 1415-1434 行
-- Home Entry: 1436-1473 行
-- Lifecycle Integration: 1475-1487 行
-- Best Practices: 1489-1498 行
+- Abstract Types: 1055-1067 行
+- Decorator-based Routing (Recommended): 1069-1187 行
+- Traditional Registration Method: 1189-1254 行
+- WebSocket Lifecycle Hooks: 1256-1278 行
+- Route Grouping: 1280-1295 行
+- Route Middleware: 1297-1312 行
+- Request Correlation ID (X-Request-ID): 1314-1337 行
+- Rate Limiting: 1339-1353 行
+- CORS Configuration: 1355-1372 行
+- Security Headers: 1374-1387 行
+- Automatic Documentation: 1389-1403 行
+- Path Handling: 1405-1416 行
+- System Routes: 1418-1437 行
+- Home Page Entry: 1439-1476 行
+- Lifecycle Integration: 1478-1490 行
+- Best Practices: 1492-1501 行
 
 ## 模块间通信
 
@@ -313,18 +313,18 @@ The deduplication cache is automatically reset when adapters **register** (start
 
 > 来源: `docs/en/advanced/connections.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/advanced/connections.md）
 
-# Connection Pool and Broadcasting
+# Connection Pools and Broadcasting
 
 > [!TIP]
-> **When to read this**: When you need WebSocket/SSE connection pools, broadcast groups, cross-module pushing, or to check connections. Skip if not needed, as it does not affect the use of other features.
+> **When to read this**: When you need WebSocket/SSE connection pools, group subscriptions, cross-module push, or need to inspect connections. Skip otherwise, as it does not affect other features.
 
-> **What you will learn**: How three types of connections are automatically registered into the registry, group subscription and broadcast APIs, cross-module reuse and ownership, and the cleanup semantics of connections when modules are unloaded.
+> **What you will learn**: How the three types of connections are automatically registered into the registry, group subscription and broadcast APIs, cross-module reuse and ownership, and the cleanup semantics for connections when modules are unloaded.
 >
-> **This section does not cover**: WebSocket/SSE route registration and connection lifecycle hooks (see [Router Manager](router.md)); client-side HTTP requests (see [Network Client](http-client.md)).
+> **What this section does not cover**: WebSocket/SSE route registration and connection lifecycle hooks (see [Router Manager](router.md)); client-side HTTP requests (see [Network Client](client.md)).
 
-Connections (server-side WebSocket/SSE / client-side outbound WebSocket) in ErisPulse are **first-class resources at the framework level**: they are automatically registered into a unified registry upon establishment, supporting broadcasting, business group subscription, and cross-module transfer/reuse. When a module is unloaded, the framework automatically closes and recycles them—no need for business code to manually build `_ws_clients` collections, nor worry about leaks due to forgotten cleanup.
+Connections (server-side WebSocket/SSE / client-side outbound WebSocket) in ErisPulse are **first-class framework-level resources**: they are automatically registered into a unified registry upon establishment, support broadcasting, business group subscriptions, and cross-module reuse. When modules are unloaded, the framework automatically closes and recycles them—business logic no longer needs to maintain `_ws_clients` collections, and there is no risk of memory leaks due to forgotten cleanup.
 
-> All examples in this document use **root import** syntax (recommended in 2.10+):  
+> All examples in this document use **root import** syntax (recommended since 2.10):  
 > `from ErisPulse import connections, router, client, WebSocketConnection`
 
 ## Overview
@@ -332,44 +332,44 @@ Connections (server-side WebSocket/SSE / client-side outbound WebSocket) in Eris
 ```python
 from ErisPulse import connections, router, WebSocketConnection
 
-# Server-side: connections are automatically registered; join business groups in handler
+# Server-side: connections are automatically registered, join business groups in handler
 @router.ws("MyModule", "/ws")
 async def handle(ws: WebSocketConnection):
     ws.join_group("room:1")            # Group naming is entirely business-defined
     async for msg in ws.iter_text():
         ...                             # Framework automatically unregisters and cleans up on disconnect
 
-# Anywhere: broadcast to a group (returns success/failure details)
+# Anywhere: broadcast to a group (returns detailed success/failure status)
 result = await connections.broadcast({"type": "notify"}, group="room:1")
 if not result.ok:
     ...                                 # result.failed: {connection id: exception}
 ```
 
-Three types of connections are unified into the registry:
+All three connection types are registered into a unified registry:
 
-| kind | Source | Owner | Description |
+| kind | source | owner | description |
 |------|--------|-------|-------------|
-| `server` | `@router.ws(...)` / `register_websocket(...)` | Module name that registered the route | Automatically unregisters on disconnect |
-| `sse` | `@router.sse(...)` / `register_sse(...)` | Module name that registered the route | Broadcasting uses `sse.send()` |
-| `client` | `await client.ws_connect(url)` | Current module (or explicit `owner=`) | Automatically unregisters on close/remote disconnect; framework closes all on adapter stop |
+| `server` | `@router.ws(...)` / `register_websocket(...)` | module name registering the route | automatically unregisters on disconnect |
+| `sse` | `@router.sse(...)` / `register_sse(...)` | module name registering the route | broadcasting uses `sse.send()` |
+| `client` | `await client.ws_connect(url)` | current module (or explicitly specified `owner=`) | automatically unregisters on close or remote disconnect; framework closes all connections when the adapter stops |
 
-To avoid automatic registration: pass `track=False` to routes or outbound connections; old code behavior remains unchanged.
+To disable automatic registration: pass `track=False` to the route, or pass `track=False` to outbound connections. This preserves behavior for legacy code.
 
-## Checking Connection Pool
+## Inspecting the Connection Pool
 
 ```python
 from ErisPulse import connections
 
-# Check connection pool of a module ("how many active connections does a module have now?")
+# View the connection pool for a specific module ("how many active connections does this module have?")
 conns = connections.list(namespace="Dashboard")
 for conn in conns:
     print(conn.id, conn.kind, conn.groups, conn.meta)
 
-# Filter by other dimensions (all conditions AND)
+# Filter by other dimensions (all conditions AND together)
 connections.list(owner="MyAdapter", kind="client")
 connections.list(group="tenant:acme")
 
-# Global statistics (counts by each dimension)
+# Global statistics (counts across all dimensions)
 stats = connections.stats()
 # {'total': 5, 'by_kind': {...}, 'by_namespace': {...}, 'by_owner': {...}, 'groups': {...}}
 
@@ -378,15 +378,15 @@ from ErisPulse import ownership
 ownership.counts("Dashboard")   # {'connections': 3, ...}
 ```
 
-Each connection has readable identity information: `conn.id` (e.g., `Dashboard:1a2b3c4d`), `conn.namespace`, `conn.owner`, `conn.kind`, `conn.groups`, `conn.meta` (business-defined dictionary).
+Each connection provides readable identity information: `conn.id` (e.g., `Dashboard:1a2b3c4d`), `conn.namespace`, `conn.owner`, `conn.kind`, `conn.groups`, and `conn.meta` (a business-defined dictionary).
 
-## Broadcasting and Subscription
+## Broadcasting and Subscriptions
 
 ### Groups (Subscription Model)
 
-Groups are **flat strings**, with naming entirely defined by business logic (rooms / tenants / topics...). Nested levels are expressed through naming conventions (e.g., `tenant:acme/room:1`); the framework does not constrain the format.
+Groups are **flat strings**; naming is entirely business-defined (rooms / tenants / topics...), with nested levels expressed through naming conventions (e.g., `tenant:acme/room:1`). The framework does not constrain the format.
 
-Both directions can be operated:
+Both directions are supported:
 
 ```python
 # Direction 1: Connection-side active join/leave (inside handler)
@@ -395,18 +395,18 @@ async def handle(ws: WebSocketConnection):
     ws.join_group("room:1")        # Equivalent to connections.assign(ws.id, "room:1")
     ws.leave_group("room:1")
 
-# Direction 2: Management-side passive assignment (route-side / other modules)
+# Direction 2: Management-side passive assignment (from route side / other modules)
 connections.assign(conn_id, "tenant:acme")
-connections.dismiss(conn_id, "tenant:acme")   # No group name = leave all groups
+connections.dismiss(conn_id, "tenant:acme")   # Omit group name to leave all groups
 ```
 
-When a connection disconnects, it automatically leaves all groups; no business cleanup is needed.
+Connections automatically leave all groups on disconnect, with no business cleanup required.
 
 ### Broadcasting
 
 ```python
 result = await connections.broadcast(
-    data,                       # WS uses send_json; SSE uses send (automatic JSON serialization)
+    data,                       # For WS: uses send_json; for SSE: uses send (auto-serialized to JSON)
     namespace="Dashboard",      # Filter by namespace
     group="room:1",             # Filter by group
     kind="sse",                 # Filter by connection type
@@ -414,21 +414,21 @@ result = await connections.broadcast(
     ids={conn_id, ...},         # Explicitly specify candidate set (filter conditions still apply)
     exclude={conn_id},          # Exclude certain connections
     timeout=10.0,               # Timeout per connection (not total duration)
-    concurrency=64,             # Maximum concurrent send limit
-    raise_on_error=False,       # If True, throws the first exception if there are failed items
+    concurrency=64,             # Maximum concurrent sends
+    raise_on_error=False,       # If True, raises the first exception if any failures occur
 )
-result.total      # Total number of target connections (excluding before)
+result.total      # Total number of target connections (before exclusions)
 result.sent       # List of successfully sent connection IDs
-result.failed     # {Connection ID: Exception object} (timeout/disconnected/sending failed)
-result.excluded   # Excluded connection IDs
-result.ok         # Whether all were delivered
+result.failed     # {connection id: exception object} (timeout/disconnected/send failure)
+result.excluded   # Connection IDs that were excluded
+result.ok         # Whether all messages were delivered
 ```
 
-Filter conditions are **AND**; a single failure does not affect other connections; connections in `ids` that no longer exist are counted in `failed` (letting business know the full picture).
+Filter conditions are combined with **AND**; failure of one does not affect others; connections in `ids` that no longer exist are counted in `failed` (to inform business logic of the full picture).
 
 ### Lifecycle Events
 
-Lifecycle events are emitted when connections are registered/unregistered/group changes occur; Dashboard and others can subscribe for real-time presentation:
+Events are emitted for registration/unregistration and group changes, allowing modules like Dashboard to subscribe for real-time updates:
 
 ```python
 from ErisPulse import lifecycle
@@ -445,24 +445,24 @@ async def on_left(data): ...
 
 ## Cross-Module Transfer / Reuse
 
-Connections are framework-registered resources; any module can retrieve and **reuse** them via connection ID—no need to recreate or know who created the connection:
+Connections are framework-registered resources, and any module can retrieve and **reuse** them by connection ID—no need to recreate a new connection, and no need to know who created it:
 
 ```python
 from ErisPulse import connections
 
-conn = connections.get("Dashboard:1a2b3c4d")   # Throws ConnectionNotFoundError if not exists/already disconnected
+conn = connections.get("Dashboard:1a2b3c4d")   # Throws ConnectionNotFoundError if not found or disconnected
 await conn.send_json({"ping": 1})              # Any module can send
 conn.join_group("someone-elses-room")          # Can also participate in groups
 ```
 
-**Ownership and Close Authority**:
+**Ownership and Close Rights**:
 
-- The `owner` (module that created the connection) has exclusive close authority. Non-owner calls to `close()` throw `ConnectionPermissionError` (`from ErisPulse import ConnectionPermissionError`);
+- The `owner` (module that created the connection) has exclusive close rights. Calling `close()` from a non-owner throws `ConnectionPermissionError` (import `ConnectionPermissionError` from ErisPulse);
 - Sending and group operations are open to all modules, no authorization required;
-- When the owner module unloads or the adapter stops, the framework **closes and unregisters** all its connections (server-side + outbound). References still held by the module will fail on sending, and listening to the `connection.unregistered` event can detect this;
-- The internal framework recycling path uses `close(force=True)` to bypass checks.
+- When the owner module unloads or the adapter stops, the framework **closes and unregisters** all connections owned by it (server-side and outbound), and any remaining references will result in failed sends; listening to the `connection.unregistered` event can detect this;
+- Internal framework cleanup paths use `close(force=True)` to bypass checks.
 
-> Attribution Note: Close authority checks depend on runtime owner context (`owner_scope` / event dispatch / `spawn_background` etc. automatically carry it). Calls without context attribution (old code without attribution) are allowed, ensuring zero breakage; new code called within owner context is protected.
+> Attribution Note: Close permission checks rely on runtime owner context (`owner_scope` / event dispatch / `spawn_background` automatically carry context). Calls without context attribution (legacy code without attribution) are allowed, ensuring zero breaking changes; new code called within an owner context is protected.
 
 ## Outbound Connections (Client Side)
 
@@ -470,26 +470,26 @@ conn.join_group("someone-elses-room")          # Can also participate in groups
 from ErisPulse import client
 
 ws = await client.ws_connect("wss://example.com/ws")
-ws.id          # Already registered, can be queried/broadcasted via connections
-ws.owner       # Current module (suggest explicit owner if owner context is unavailable)
+ws.id          # Already registered, can be queried and broadcasted via connections
+ws.owner       # Current module (explicitly specify `owner=` if owner context is unavailable)
 
-# Explicitly specify owner when owner context is unavailable (e.g., utility thread callback), so unloading can automatically reclaim:
+# Explicitly specify owner if owner context is unavailable (e.g., in tool thread callbacks), so it can be automatically recycled on unload:
 ws = await client.ws_connect("wss://example.com/ws", owner="MyAdapter")
 ```
 
-Remote active disconnects or local `close()` will automatically unregister the connection; when a module unloads, the framework closes all its outbound connections. The era of old code creating connections manually and managing them, leading to leaks due to forgotten cleanup, is over.
+Remote disconnects or local `close()` will automatically unregister the connection; when modules are unloaded, the framework closes all their outbound connections. The era of old code managing connections manually and leaking them due to forgotten cleanup is over.
 
 ## Cross-Thread Delivery
 
-When reaching connections (broadcasting / pushing / closing) from a sub-thread, use the framework's standard tools to deliver back to the main loop; **do not manually write `run_coroutine_threadsafe`**:
+To reach connections (broadcast / push / close) from a sub-thread, use the framework's standard tools to deliver back to the main loop—**do not manually use `run_coroutine_threadsafe`**:
 
 ```python
 from ErisPulse import run_main_loop, spawn_later, spawn_thread
 
-# Blocking result retrieval from sub-thread:
+# Blockingly retrieve results from a sub-thread:
 run_main_loop(connections.broadcast({"tick": 1}, group="room:1"), timeout=5)
 
-# Background thread + delayed task (owner attribution, automatically canceled on unload):
+# Background thread + delayed task (with owner attribution, automatically cancelled on unload):
 def push_tick():
     return connections.broadcast({"tick": 1}, group="room:1")
 spawn_later(30, push_tick, owner="MyModule")
@@ -497,50 +497,50 @@ spawn_later(30, push_tick, owner="MyModule")
 
 ## Unload and Cleanup Semantics
 
-The ownership recovery chain on module unload / adapter stop will sequentially: cancel background tasks and timers belonging to the owner → **close and unregister owner connections** → trigger the `on_cleanup` hook → unregister route/processor and other registered resources. See [Ownership (Owner) System](ownership.md).
+The ownership recycling chain during module unload or adapter stop proceeds as follows: cancel associated background tasks and timers → **close and unregister owned connections** → trigger the `on_cleanup` hook → unregister routes and handlers. See [Ownership (owner) System](ownership.md).
 
 > [!WARNING]
-> Starting from 2.10, module unload will close its registered WS/SSE/outbound connections. Downstream components relying on "connections remaining alive after unload" (such as old Dashboard push) should be aware—this is the expected behavior to prevent connection leaks.
+> Since 2.10, module unload will close all registered WS/SSE/outbound connections under its name. Downstream components relying on "connections remaining alive after unload" (e.g., old Dashboard push) should be aware—this is the expected behavior to eliminate connection leaks.
 
 ## API Overview
 
 | API | Description |
 |-----|-------------|
-| `connections.get(id)` | Get connection (cross-module entry), throws `ConnectionNotFoundError` if not exists |
-| `connections.list(namespace=, owner=, group=, kind=)` | Filter query connection list |
-| `connections.stats(namespace=, owner=)` | Count statistics by each dimension |
-| `connections.assign(id, *groups)` / `dismiss(id, *groups)` | Management-side join/leave group |
+| `connections.get(id)` | Retrieve a connection (cross-module entry point), throws `ConnectionNotFoundError` if not found |
+| `connections.list(namespace=, owner=, group=, kind=)` | Filter and query connection lists |
+| `connections.stats(namespace=, owner=)` | Count statistics across various dimensions |
+| `connections.assign(id, *groups)` / `dismiss(id, *groups)` | Management-side join/leave groups |
 | `await connections.broadcast(data, ...)` | Broadcast, returns `BroadcastResult` |
 | `await connections.close(id, force=False)` | Close and unregister (with permission check) |
-| `await connections.close_owner(owner)` | Close and unregister all connections under a specific owner (called by framework unload chain) |
-| `conn.join_group(*groups)` / `conn.leave_group(*groups)` | Connection-side group |
-| `conn.send_json / send_text / iter_text / ...` | Send/receive (consistent interface for server/client) |
+| `await connections.close_owner(owner)` | Close and unregister all connections owned by a specific owner (called by framework unload chain) |
+| `conn.join_group(*groups)` / `conn.leave_group(*groups)` | Connection-side group operations |
+| `conn.send_json / send_text / iter_text / ...` | Send/receive (server/client interface is consistent) |
 | `conn.meta` | Business metadata dictionary |
-| `conn.close(force=False)` | Close (throws `ConnectionPermissionError` if not owner) |
+| `conn.close(force=False)` | Close (throws `ConnectionPermissionError` for non-owner) |
 
-## HTTP 客户端
+## 网络客户端
 
-> 来源: `docs/en/advanced/http-client.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/advanced/http-client.md）
+> 来源: `docs/en/advanced/client.md`（https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/advanced/client.md）
 
 # Network Client
 
 > [!TIP]
-> **When to read this**: When you need to make outbound HTTP / WebSocket requests. Skip if not needed, it doesn't affect the use of other features.
+> **When to read this**: When you need outbound HTTP / WebSocket requests. Skip if not needed, as it does not affect other features.
 
-ErisPulse provides a unified network client that aggregates HTTP requests, WebSocket connections, and connection pool management. Modules and adapters **must** use this client instead of directly importing third-party libraries such as `aiohttp`, `httpx`, or `requests`.
+ErisPulse provides a unified network client that aggregates HTTP requests, WebSocket connections, and connection pool management. Modules and adapters **must** use this client instead of directly importing third-party libraries such as `aiohttp` / `httpx` / `requests`.
 
 ## Overview
 
-The main functions of the network client are:
+The main features of the network client are:
 
 - **Unified interface**: Provides `get` / `post` / `put` / `delete` / `patch` / `request` methods
-- **WebSocket client**: Establishes a client-side WebSocket connection via `ws_connect`
-- **Automatic logging**: All requests are automatically logged and their statistics recorded
-- **Lifecycle integration**: Each request triggers the `client.request` lifecycle event, and WS connections trigger the `client.ws.connect` event
-- **Retry support**: Configurable automatic retry counts and intervals
-- **Timeout control**: Independent connection and request timeouts
+- **WebSocket client**: Establishes client WebSocket connections via `ws_connect`
+- **Automatic logging**: All requests are automatically logged and statistics are recorded
+- **Lifecycle integration**: Each request triggers the `client.request` lifecycle event; WebSocket connections trigger the `client.ws.connect` event
+- **Retry support**: Configurable automatic retry count and interval
+- **Timeout control**: Independent connection timeout and request timeout
 - **Connection pool reuse**: Connection pool management based on `aiohttp.ClientSession`
-- **Exception system**: aiohttp exceptions are automatically converted to ErisPulse exceptions (ClientError system)
+- **Exception system**: `aiohttp` exceptions are automatically converted to ErisPulse exceptions (ClientError hierarchy)
 
 ## Quick Start
 
@@ -565,7 +565,7 @@ data = await resp.json()
 ### WebSocket Connection
 
 ```python
-from ErisPulse import client   # 2.10+ root import (ErisPulse.Core.client deep path is still compatible)
+from ErisPulse import client   # Root import from 2.10+ (ErisPulse.Core.client deep path still compatible)
 
 ws = await client.ws_connect("wss://example.com/ws")
 
@@ -573,11 +573,11 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-#### Outbound connections automatically join the pool (2.10+)
+#### Outbound Connections Auto-Registered in Pool (2.10+)
 
-Connections established via `ws_connect` are **automatically registered** into the framework's connection pool (set `track=False` to disable):
-They can be viewed via `connections.list(owner=...)` and broadcasted to; connections are automatically unregistered when closed or disconnected remotely;
-**When modules are unloaded or adapters are stopped, the framework closes all outbound connections under their names**, preventing leaks.
+Connections established via `ws_connect` are **automatically registered** into the framework connection pool (set `track=False` to disable):
+They can be viewed via `connections.list(owner=...)` and messages can be broadcast to them; connections are automatically unregistered upon closure or remote disconnection;
+**All outbound connections under a module or adapter are uniformly closed by the framework when the module is unloaded or the adapter stops**, eliminating leaks.
 
 ```python
 from ErisPulse import client, connections
@@ -585,11 +585,11 @@ from ErisPulse import client, connections
 ws = await client.ws_connect("wss://example.com/ws")
 print(ws.id, ws.owner)   # Already registered: connection id and owner
 
-# When the owner context is unavailable (e.g., tool thread callback), explicitly specify the owner so it can be automatically recycled on unload:
+# When owner context is unavailable (e.g., tool thread callback), explicitly specify the owner for automatic cleanup upon unload:
 ws2 = await client.ws_connect("wss://example.com/ws2", owner="MyAdapter")
 ```
 
-See [Connection Pool and Broadcasting](connections.md).
+See [Connection Pool and Broadcasting](connections.md) for more details.
 
 ## HttpResponse
 
@@ -605,7 +605,7 @@ resp.reason       # str | None - status description (e.g., "OK")
 resp.headers      # response headers (case-insensitive)
 resp.content_type # str | None - Content-Type
 resp.url          # final URL (may change due to redirects)
-resp.raw          # underlying native response object (currently aiohttp.ClientResponse)
+resp.raw          # raw underlying response object (currently aiohttp.ClientResponse)
 
 # Read response body
 body = await resp.read()       # bytes
@@ -656,7 +656,7 @@ resp = await client.post(
 # Format: {field name: file object/bytes/(filename, file)/(filename, file, content_type)}
 resp = await client.post(
     "https://api.example.com/upload",
-    data={"description": "avatar"},            # Optional: can carry regular form fields
+    data={"description": "Avatar"},            # Optional: also carry regular form fields
     files={
         "file": ("photo.png", open("photo.png", "rb"), "image/png"),
     },
@@ -699,7 +699,7 @@ resp = await client.request(
 )
 ```
 
-## Parameter Explanation
+## Parameter Descriptions
 
 ### HTTP Request Parameters
 
@@ -710,9 +710,9 @@ resp = await client.request(
 | `headers` | `dict[str, str]` | Additional request headers (optional) |
 | `data` | `Any` | Request body (form or raw data) (optional) |
 | `json` | `Any` | JSON request body (optional) |
-| `files` | `dict[str, Any]` | File upload fields (optional, automatically builds multipart/form-data) |
-| `timeout` | `float` | Timeout for this request (seconds) (optional, overrides default value) |
-| `max_retries` | `int` | Maximum retry attempts for this request (optional, overrides default value) |
+| `files` | `dict[str, Any]` | File upload fields (optional, automatically constructs multipart/form-data) |
+| `timeout` | `float` | Request timeout (seconds) (optional, overrides default value) |
+| `max_retries` | `int` | Maximum retry count for this request (optional, overrides default value) |
 
 ### ws_connect Parameters
 
@@ -722,16 +722,16 @@ resp = await client.request(
 | `headers` | `dict[str, str]` | Additional request headers (optional) |
 | `heartbeat` | `float` | Heartbeat interval in seconds (optional) |
 
-## Timeout and Retries
+## Timeout and Retry
 
 ```python
 from ErisPulse.Core import Client
 
-# Create a client with custom timeouts
+# Create a client with custom timeout settings
 client = Client(
     timeout=60,           # Total request timeout 60s
     connect_timeout=5,    # Connection timeout 5s
-    max_retries=3,        # Failures automatically retry 3 times
+    max_retries=3,        # Retry failed requests 3 times
     retry_delay=2,        # Retry interval 2s
 )
 
@@ -740,7 +740,7 @@ resp = await client.get("https://slow-api.example.com/data", timeout=120)
 ```
 
 > [!NOTE]
-> The client class was renamed to `Client` starting from version 2.8.0 (`sdk.client` property name remains unchanged); the old name `HttpClient` is retained as a compatibility alias, so old code does not need modification.
+> The client class was renamed to `Client` starting from version 2.8.0 (`sdk.client` property name remains unchanged); the old name `HttpClient` is retained as a compatibility alias, and old code does not need modification.
 
 ## Custom Default Headers
 
@@ -771,7 +771,7 @@ client.reset_stats()
 
 ### HTTP Request Events
 
-The `client.request` event is triggered after each request completes, which can be used for monitoring:
+The `client.request` event is triggered after each request completes, useful for monitoring:
 
 ```python
 from ErisPulse.Core import lifecycle
@@ -796,7 +796,7 @@ async def on_ws_connect(event_data):
 ## Context Management
 
 ```python
-# As a context manager, automatically close the session
+# As a context manager, automatically closes the session
 async with Client(timeout=30) as client:
     resp = await client.get("https://httpbin.org/get")
     data = await resp.json()
@@ -804,7 +804,7 @@ async with Client(timeout=30) as client:
 
 ## WebSocket Client
 
-Establish a WebSocket client connection via `client.ws_connect()`, returning a `ClientWebSocket` object. The client and server-side WebSocket share the same `WebSocketConnectionBase` base class, with identical send/receive/iter interfaces.
+WebSocket client connections are established via `client.ws_connect()`, returning a `ClientWebSocket` object. The client and server WebSocket share the same `WebSocketConnectionBase` base class, with identical send/receive/iter interfaces.
 
 ### Basic Usage
 
@@ -820,9 +820,9 @@ await ws.send_json({"type": "ping"})
 
 ### Receiving Messages
 
-#### Advanced Methods (Recommended)
+#### High-Level Methods (Recommended)
 
-Automatically filter message types, and throw `WebSocketDisconnect` on disconnection:
+Automatically filter message types, and raise `WebSocketDisconnect` on disconnection:
 
 ```python
 from ErisPulse.Core import client
@@ -835,7 +835,7 @@ text = await ws.receive_text()    # str
 data = await ws.receive_bytes()   # bytes
 obj = await ws.receive_json()     # dict / list
 
-# Iterate receive (automatically stops on disconnection)
+# Iterate messages (automatically stops on disconnection)
 async for text in ws.iter_text():
     print(text)
 
@@ -848,7 +848,7 @@ async for obj in ws.iter_json():
 
 #### Low-Level Methods
 
-Use `receive()` and `iter_messages()` to handle raw message types, which allows distinguishing TEXT / BINARY / CLOSE / ERROR:
+Use `receive()` and `iter_messages()` to handle raw message types, distinguishing between TEXT / BINARY / CLOSE / ERROR:
 
 ```python
 from ErisPulse.Core import client
@@ -856,7 +856,7 @@ from ErisPulse.Core.Bases.websocket import WSMessage
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# Single message receive raw message
+# Single raw message receive
 msg = await ws.receive()
 # msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
 # msg.data  -> str | bytes | None
@@ -885,7 +885,7 @@ async for msg in ws.iter_messages():
 | `url` | `URL` | Connection URL |
 | `headers` | `Headers` | Response headers |
 | `closed` | `bool` | Whether the connection is closed |
-| `raw` | `object` | Underlying native object (aiohttp.ClientWebSocketResponse) |
+| `raw` | `object` | Underlying raw object (aiohttp.ClientWebSocketResponse) |
 
 ### Lifecycle Hooks
 
@@ -898,24 +898,24 @@ ws = await client.ws_connect("wss://example.com/ws")
 
 @ws.on_disconnect
 async def handle_disconnect(ws, reason="unknown"):
-    print(f"Connection disconnected: {reason}")
+    print(f"Connection closed: {reason}")
 
 @ws.on_error
 async def handle_error(ws, error=""):
     print(f"Connection error: {error}")
 ```
 
-### Closing Connection
+### Closing the Connection
 
 ```python
 await ws.close(code=1000, reason="Normal closure")
 ```
 
-## Exception System
+## Exception Hierarchy
 
-ErisPulse defines a unified exception hierarchy. Requests initiated via `sdk.client` will automatically convert underlying aiohttp exceptions into ErisPulse exceptions.
+ErisPulse defines a unified exception hierarchy. Requests initiated via `sdk.client` automatically convert underlying `aiohttp` exceptions into ErisPulse exceptions.
 
-> **Backward Compatibility**: Old modules/adapters that directly use `aiohttp.ClientSession` are completely unaffected. Exception conversion only occurs when requests are initiated via `sdk.client`. Code that directly uses aiohttp still catches `aiohttp.ClientError` and other native exceptions. Both approaches can coexist.
+> **Backward Compatibility**: Old modules/adapters that directly use `aiohttp.ClientSession` are unaffected. Exception conversion only occurs when requests are made via `sdk.client`. Code using `aiohttp` directly still catches `aiohttp.ClientError` and other native exceptions. Both approaches can coexist.
 
 ### Exception Hierarchy
 
@@ -924,9 +924,9 @@ ErisPulseError
 ├── ClientError                  # Base class for all HTTP/WS client request exceptions
 │   ├── ClientConnectionError    # Connection failed (DNS resolution failed, connection refused, network unreachable)
 │   ├── ClientTimeoutError       # Connection timeout or request timeout
-│   └── HTTPStatusError          # HTTP 4xx/5xx status code error
+│   └── HTTPStatusError          # HTTP 4xx/5xx status code errors
 └── WebSocketError               # WebSocket exception base class
-    └── WebSocketDisconnect      # WebSocket connection disconnected (common for both client and server)
+    └── WebSocketDisconnect      # WebSocket connection closed (common for client and server)
 ```
 
 ### Exception Handling
@@ -949,7 +949,7 @@ try:
 except ClientConnectionError:
     print("Unable to connect to the server")
 except ClientTimeoutError:
-    print("Request timeout")
+    print("Request timed out")
 except ClientError as e:
     print(f"Request failed: {e}")
 
@@ -959,7 +959,7 @@ try:
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 except WebSocketDisconnect as e:
-    print(f"Connection disconnected: code={e.code}, reason={e.reason}")
+    print(f"Connection closed: code={e.code}, reason={e.reason}")
 except WebSocketError as e:
     print(f"WebSocket error: {e}")
 ```
@@ -979,7 +979,7 @@ except ClientError as e:
 
 ### HTTPStatusError
 
-When you need to check the status code after a request and throw an exception, you can manually use:
+When you need to check the status code after a request and raise an exception, you can manually use:
 
 ```python
 from ErisPulse.Core.Bases.errors import HTTPStatusError
@@ -1016,13 +1016,13 @@ class MyAdapter(BaseAdapter):
 
 ## Best Practices
 
-1. **Prefer the global client**: Use `from ErisPulse.Core import client` to get the global singleton for easier framework management and monitoring
-2. **Avoid directly importing aiohttp**: Use `client` instead of `aiohttp.ClientSession` to allow future changes to the underlying implementation without code modification. Old code directly using aiohttp still works normally, and both approaches can coexist
-3. **Use the ErisPulse exception system**: When using `sdk.client` for requests, catch `ClientError` instead of `aiohttp.ClientError` to ensure code independence from specific HTTP libraries. Old code using aiohttp directly is unaffected
-4. **Set timeouts reasonably**: Set appropriate timeout values based on API response speed to avoid long blocking
-5. **Use retry mechanisms**: Enable retries for unstable APIs to improve reliability
-6. **Monitor request statistics**: Use `sdk.client.stats` or the `client.request` lifecycle event to monitor request situations
-7. **Use advanced WebSocket methods**: Prefer advanced methods like `iter_text` / `iter_json`, and only use `iter_messages` when distinguishing message types is needed
+1. **Prefer the global client**: Use `from ErisPulse.Core import client` to obtain the global singleton, facilitating unified management and monitoring by the framework.
+2. **Avoid directly importing aiohttp**: Use `client` instead of `aiohttp.ClientSession`, so future changes to the underlying implementation require no code changes. Old code using `aiohttp` directly still works normally, and both approaches can coexist.
+3. **Use the ErisPulse exception hierarchy**: When using `sdk.client` for requests, catch `ClientError` instead of `aiohttp.ClientError` to ensure code independence from specific HTTP libraries. Old code using `aiohttp` directly remains unaffected.
+4. **Set timeouts appropriately**: Set reasonable timeout values based on API response speed to avoid long blocking.
+5. **Use retry mechanisms**: Enable retries for unstable APIs to improve reliability.
+6. **Monitor request statistics**: Use `sdk.client.stats` or the `client.request` lifecycle event to monitor request status.
+7. **Use high-level WebSocket methods**: Prefer high-level methods such as `iter_text` / `iter_json`, and only use `iter_messages` when distinguishing message types is necessary.
 
 ## 路由
 
@@ -1031,74 +1031,76 @@ class MyAdapter(BaseAdapter):
 # Router Manager
 
 > [!TIP]
-> **When to read this**: When you need HTTP/WebSocket/SSE routes (including connection pool broadcasting). Skip if not needed, as it does not affect the use of other features.
+> **When to read this**: When you need HTTP / WebSocket / SSE routing (including connection pool broadcasting). Skip if not needed, as it does not affect other features.
 
-The ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. Underlyingly, it encapsulates an abstraction layer (currently FastAPI + Uvicorn).
+The ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. Underlyingly, it is encapsulated through an abstraction layer (currently FastAPI + Uvicorn).
 
 ## Overview
 
 The main functions of the Router Manager are:
 
-- **Decorator Routes**: Supports `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` decorators for quick registration.
-- **Automatic Injection**: Route handlers do not need to import FastAPI types; the framework automatically injects the abstract object.
-- **Route Grouping**: Supports `RouteGroup` with prefix and version number.
-- **Route Middleware**: Supports request interception with glob pattern matching.
-- **Rate Limiting**: Built-in sliding window rate limiting.
-- **CORS Support**: One-click enable cross-origin resource sharing.
-- **Security Headers**: Automatically adds security response headers.
-- **Automatic Documentation**: Interactive documentation based on OpenAPI.
-- **WebSocket Support**: Complete WebSocket connection management, custom authentication, and lifecycle hooks.
-- **Lifecycle Integration**: Deeply integrated with the ErisPulse lifecycle system.
-- **SSL/TLS Support**: Supports HTTPS and WSS secure connections.
-- **Home Entry**: Supports modules registering quick entry buttons at the root route `/`, with internationalization support.
+- **Decorator-based Routing**: Supports `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` decorators for quick registration
+- **Automatic Injection**: Route handlers do not need to import FastAPI types; the framework automatically injects abstract objects
+- **Route Grouping**: Supports `RouteGroup` with prefix and version number
+- **Route Middleware**: Supports request interception with glob pattern matching
+- **Rate Limiting**: Built-in sliding window rate limiting
+- **CORS Support**: One-click enable Cross-Origin Resource Sharing
+- **Security Headers**: Automatically adds security response headers
+- **Automatic Documentation**: Interactive documentation based on OpenAPI
+- **WebSocket Support**: Full WebSocket connection management, custom authentication, and lifecycle hooks
+- **Lifecycle Integration**: Deeply integrated with ErisPulse lifecycle system
+- **SSL/TLS Support**: Supports HTTPS and WSS secure connections
+- **Home Page Entry**: Supports module registration of quick entry buttons on root route `/`, supports internationalization
 
 ## Abstract Types
 
-ErisPulse provides server-side abstraction types to allow modules to avoid direct dependencies on FastAPI:
+ErisPulse provides server-side abstract types, allowing modules to avoid direct dependency on FastAPI:
 
-| Abstract Type | FastAPI Correspondence | Description |
-|---------------|------------------------|-------------|
+| Abstract Type | FastAPI Equivalent | Description |
+|---------------|--------------------|-------------|
 | `HttpRequest` | `fastapi.Request` | HTTP request encapsulation, fully compatible interface |
-| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket connection encapsulation, additional lifecycle hooks provided |
-| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket disconnection exception |
+| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket connection encapsulation, additional lifecycle hooks |
+| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket disconnect exception |
 
-> `WebSocketConnection` inherits from `WebSocketConnectionBase`, sharing the same send/receive/iter/close interface with the client-side WebSocket (`ClientWebSocket`). The same business logic code can be used on both client and server.  
-> The `.raw` attribute allows access to the underlying native FastAPI object. Code directly using FastAPI types is fully compatible.
+> `WebSocketConnection` inherits from `WebSocketConnectionBase`, sharing the same send/receive/iter/close interface with client-side WebSocket (`ClientWebSocket`). Both client and server-side WebSocket can use the same business logic code.
+>
+> The underlying FastAPI native object is accessible via the `.raw` property. Code directly using FastAPI types is fully compatible.
 
-## Decorator Routes (Recommended)
+## Decorator-based Routing (Recommended)
 
-### Registration Forms: Single-Parameter (Recommended) and Dual-Parameter
+### Registration Forms: Single Parameter (Recommended) vs. Double Parameter
 
-Decorator routes support two forms, **single-parameter is recommended**—it aligns with command/event triggers, and the namespace is automatically assigned to the current module:
+Decorator-based routing supports two forms, **single parameter is recommended**—consistent with command/event triggers, namespace automatically belongs to the current module:
 
 ```python
 from ErisPulse import router
 
-# Single-parameter (Recommended): auto-assigns module_name/hello → actual path /my_module/hello
+# Single parameter (recommended): automatically belongs to module_name/hello → actual path /my_module/hello
 @router.get("/hello")
 async def hello():
     return {"ok": True}
 
-# Single-parameter WebSocket: @ws("chat") → /my_module/chat
+# Single parameter WebSocket: @ws("chat") → /my_module/chat
 @router.ws("chat")
 async def chat(ws):
     ...
 
-# Dual-parameter: explicitly specify module name (same rules, used when registering across modules/tool code)
+# Double parameter: explicitly specify module name (use when registering across modules/tool code)
 @router.get("other_module", "/info")
 async def get_info(request):
     return {"method": request.method, "path": str(request.url)}
 ```
 
 > [!NOTE]
-> The single-parameter form requires registration within the module/adapter **loading context** (the framework has injected the assignment during loading); calling it outside the context will raise a `ValueError` and prompt for explicit module name.
+> Single parameter form requires registration within the module/adapter **loading context** (framework has injected the namespace during loading);
+> Calling outside of the context will raise `ValueError` and prompt explicit passing of the module name.
 
 ### HTTP Decorators
 
 ```python
 from ErisPulse import router, HttpRequest
 
-# You can also explicitly annotate with abstract types
+# Also can explicitly annotate abstract types
 @router.post("/data")
 async def post_data(request: HttpRequest):
     data = await request.json()
@@ -1117,7 +1119,7 @@ async def delete_data(request):
 
 #### Response Return Convention (2.10+)
 
-Handler return values support a **tuple convention** (recommended syntax, clearly controlling status code), while dict/str/Response remain unchanged:
+Handler return values support **tuple convention** (recommended syntax, clearly controls status code), dict/str/Response as usual:
 
 ```python
 @router.post("/login")
@@ -1128,7 +1130,7 @@ async def login(request):
     # (body, status_code, headers) can also include response headers
     return {"user_id": 1}, 200, {"X-Request-Cost": "12ms"}
 
-# Or use the respond() helper function (message automatically merged into response body)
+# Or use respond() helper function (message automatically merged into response body)
 from ErisPulse import respond
 
 @router.get("/me")
@@ -1136,14 +1138,14 @@ async def me():
     return respond({"user_id": 1}, status_code=200, message="ok")
 ```
 
-Path/query parameters can be directly annotated using FastAPI native annotations (`item_id: int`, `page: int = 1`), and middleware is described in the [Route Middleware](#route-middleware) section.
+Path/query parameters can be directly annotated using FastAPI native annotations (`item_id: int`, `page: int = 1`), see [Route Middleware](#route-middleware) section for middleware.
 
 ### WebSocket Decorators
 
 ```python
 from ErisPulse import WebSocketConnection, WebSocketDisconnect
 
-# Basic WebSocket (single-parameter form)
+# Basic WebSocket (single parameter form)
 @router.ws("ws")
 async def websocket_handler(ws):
     async for msg in ws.iter_text():
@@ -1175,15 +1177,16 @@ async def secure_ws_handler(ws):
         await ws.send_text(f"Echo: {data}")
 ```
 
-> **Note**: WebSocket handlers and authentication handlers also support automatic injection. You can obtain `WebSocketConnection` without parameter annotations. Passing in the native object with `fastapi.WebSocket` is also possible, but abstract types are recommended.
+> **Note**: WebSocket handlers and authentication handlers also support automatic injection. `WebSocketConnection` is available without parameter annotation. Passing the native `fastapi.WebSocket` is also possible, but abstract types are recommended.
 
 ### Automatic Connection Registration (Connection Pool, 2.10+)
 
-Connections established via `@ws` / `@sse` are **automatically registered** into the framework connection pool by default (`track=False` to disable):  
-Within the handler, `ws.id` / `ws.join_group(...)` are available, and any module can use `connections.list(namespace=...)` to view connections of the current module and broadcast to groups.  
+Connections established via `@ws` / `@sse` are **automatically registered** into the framework connection pool (set `track=False` to disable):
+Within the handler, `ws.id` / `ws.join_group(...)` are available, and any module can
+`connections.list(namespace=...)` view connections of the module and broadcast to groups.
 See [Connection Pool and Broadcasting](connections.md).
 
-## Traditional Registration Methods
+## Traditional Registration Method
 
 ```python
 async def hello_handler(request):
@@ -1225,7 +1228,7 @@ router.register_websocket(
     handler=websocket_handler,
 )
 
-# Registration with authentication (recommended)
+# With authentication (recommended)
 async def auth_handler(ws: WebSocketConnection) -> bool:
     token = ws.query_params.get("token")
     return token == "secret"
@@ -1238,14 +1241,14 @@ router.register_websocket(
 )
 ```
 
-**Parameter Description:**
+**Parameter Explanation:**
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `module_name` | Module name (required) | - |
 | `path` | WebSocket path | - |
 | `handler` | Handler function | - |
-| `auth_handler` | Authentication function, returns `False` to automatically close connection | `None` |
+| `auth_handler` | Authentication function, returning `False` will automatically close the connection | `None` |
 | `auto_accept` | Whether to automatically `accept()` | `True` |
 
 > **Recommendation**: Use `auth_handler` for connection confirmation, rather than setting `auto_accept=False`. Only set `auto_accept=False` when you need complete control over the connection flow.
@@ -1259,12 +1262,12 @@ from ErisPulse.Core import WebSocketConnection
 
 @router.ws("my_module", "/ws")
 async def my_ws(ws: WebSocketConnection):
-    # Decorator way to register
+    # Decorator-based registration
     @ws.on_disconnect
     async def on_close(ws, reason="unknown"):
         print(f"Disconnect reason: {reason}")
 
-    # Can also be called directly
+    # Can also call directly
     async def on_err(ws, error=""):
         print(f"Error: {error}")
     ws.on_error(on_err)
@@ -1310,14 +1313,14 @@ async def admin_middleware(request, call_next):
 
 ## Request Correlation ID (X-Request-ID)
 
-Starting from 2.7.0, each HTTP request carries an `X-Request-ID` correlation ID for logging / trace linking:
+Starting from 2.7.0, each HTTP request carries an `X-Request-ID` correlation ID for logging / distributed tracing:
 
-- **Generation Rule**: Prioritizes using the `X-Request-ID` header from the client (for distributed tracing scenarios); otherwise, generates a UUID automatically
-- **Response Header**: The response writes back the `X-Request-ID`, making it easy for the client to correlate requests with logs
-- **Lifecycle Events**: The `server.request` and `server.response` event data include a new `request_id` field
+- **Generation Rule**: Prioritizes using the `X-Request-ID` request header from the client (for distributed tracing scenarios); otherwise, generates a UUID
+- **Response Header**: The response writes back `X-Request-ID`, allowing the client to correlate requests with logs
+- **Lifecycle Events**: `server.request` and `server.response` event data include a new `request_id` field
 
 ```python
-# Listen for request events in the module, linking requests-responses by request_id
+# Listen for request events in the module, chain requests-responses by request_id
 @sdk.lifecycle.on("server.request")
 async def on_request(data):
     print(f"[{data['request_id']}] {data['method']} {data['path']}")
@@ -1335,7 +1338,7 @@ curl -H "X-Request-ID: my-trace-id" http://localhost:8080/my_module/health
 
 ## Rate Limiting
 
-Rate limiting is applied to routes using the sliding window algorithm:
+Rate limiting is applied to routes using a sliding window algorithm:
 
 ```python
 @router.get("my_module", "/limited", rate_limit="10/minute")
@@ -1347,7 +1350,7 @@ async def submit_data(request):
     return {"submitted": True}
 ```
 
-Rate limiting format: `{count}/{time window}`, such as `10/minute`, `100/hour`.
+Rate limiting format: `{count}/{time window}`, e.g., `10/minute`, `100/hour`.
 
 ## CORS Configuration
 
@@ -1359,7 +1362,7 @@ router.setup_cors(
 )
 ```
 
-It can also be configured via `config.toml`:
+Alternatively, configure via `config.toml`:
 
 ```toml
 [router.cors]
@@ -1376,7 +1379,7 @@ router.setup_security_headers()
 
 Automatically adds security headers such as `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`.
 
-It can also be configured via `config.toml`:
+Alternatively, configure via `config.toml`:
 
 ```toml
 [router.security]
@@ -1385,7 +1388,7 @@ enabled = true
 
 ## Automatic Documentation
 
-The router enables OpenAPI interactive documentation by default:
+Router enables OpenAPI interactive documentation by default:
 
 ```python
 # Disable documentation
@@ -1394,7 +1397,7 @@ router.disable_docs()
 # Customize documentation information
 router.set_docs_info(
     title="My API",
-    description="API documentation",
+    description="API Documentation",
     version="1.0.0"
 )
 ```
@@ -1410,11 +1413,11 @@ router.register_http_route("my_module", "/api", handler)
 ```
 
 > [!WARNING]
-> Route paths (including module name prefix) are **case-sensitive**. The module name's case in registration determines the actual path: if the module name is `Test`, registering `/api` results in the actual path being `/Test/api`; accessing `/test/api` will return 404.
+> Route paths (including module name prefix) are **case-sensitive**. The actual path matches the case of the registered module name: if the module name is `Test`, registering `/api` results in the actual path `/Test/api`, and accessing `/test/api` will return 404.
 
 ## System Routes
 
-The router manager automatically provides the following system routes:
+The Router Manager automatically provides the following system routes:
 
 ### Health Check
 
@@ -1431,11 +1434,11 @@ GET /
 # Returns ErisPulse brand page
 ```
 
-The root route `/` displays the ErisPulse brand page, automatically detects Dashboard availability, and adds an entry button.
+The root route `/` displays the ErisPulse brand page, automatically detects Dashboard availability, and adds entry buttons.
 
-## Home Entry
+## Home Page Entry
 
-The router manager allows external modules to register quick entry buttons on the root route `/`, making it easy for users to quickly access each module's management page.
+The Router Manager allows external modules to register quick entry buttons on the root route `/`, making it easy for users to access management pages of various modules.
 
 ### Register Entry
 
@@ -1460,17 +1463,17 @@ router.register_home_entry(
 )
 ```
 
-**Parameter Description:**
+**Parameter Explanation:**
 
 | Parameter | Type | Description | Required |
 |-----------|------|-------------|----------|
-| `name` | `str` / `dict` | Button display text; if a dictionary `{"i18n": "key", "default": "text"}` is provided, internationalization is used | Yes |
+| `name` | `str` / `dict` | Button display text; use internationalization when passing `{"i18n": "key", "default": "text"}` dictionary | Yes |
 | `url` | `str` | Button link address | Yes |
 | `icon_svg` | `str` | Optional SVG icon markup | No |
 
-### Dashboard Auto-Registration
+### Dashboard Automatic Registration
 
-When `sdk.Dashboard` is detected as available, the router manager automatically adds a Dashboard button at the first position in the entry list, without requiring manual registration.
+When `sdk.Dashboard` is detected as available, the Router Manager automatically adds a Dashboard button at the beginning of the entry list, without manual registration.
 
 ## Lifecycle Integration
 
@@ -1488,10 +1491,10 @@ async def on_server_stop(event):
 
 ## Best Practices
 
-1. **Prefer abstract types**: Use `HttpRequest` / `WebSocketConnection` instead of `fastapi.Request` / `fastapi.WebSocket` to avoid hard dependencies
-2. **Leverage automatic injection**: Name the first parameter of a handler `request` or `req` to obtain `HttpRequest` without any type annotation
-3. **Prefer the single-parameter form**: In module loading contexts, prefer the single-parameter form (automatically assigned to the namespace); when registering in cross-module/utility code, explicitly pass the module name
-4. **Use route grouping**: Use `group()` to organize multiple routes within the same module
-5. **Security considerations**: Implement authentication mechanisms and security headers for sensitive operations
-6. **Apply rate limiting appropriately**: Set rate limits for high-frequency endpoints
-7. **Use lifecycle hooks**: Handle WebSocket exceptions via `@ws.on_disconnect` / `@ws.on_error` instead of manual try/catch
+1. **Prefer Abstract Types**: Use `HttpRequest` / `WebSocketConnection` instead of `fastapi.Request` / `fastapi.WebSocket` to avoid hard dependencies
+2. **Use Automatic Injection**: Name the first parameter of the handler `request` or `req` to automatically obtain `HttpRequest` without any type annotation
+3. **Prefer Single Parameter Form**: In the module loading context, prefer the single parameter form (automatic namespace assignment); use explicit module name when registering across modules/tool code
+4. **Use Route Grouping**: Use `group()` to organize multiple routes of the same module
+5. **Security Consideration**: Implement authentication mechanisms and security headers for sensitive operations
+6. **Reasonable Rate Limiting**: Set rate limiting for high-frequency interfaces
+7. **Use Lifecycle Hooks**: Handle WebSocket exceptions through `@ws.on_disconnect` / `@ws.on_error` to avoid manual try/catch

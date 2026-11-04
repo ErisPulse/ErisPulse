@@ -287,14 +287,18 @@ import 缓存（假重载）；旧模块对象 ``__name__`` 的顶层段是可�
 ---
 
 
-##### `_restore_reload_snapshot(snapshot: _ReloadSnapshot, module_name: str, manager_instance: Any, sdk_instance: Any) -> None`
+##### `async _restore_reload_snapshot(snapshot: _ReloadSnapshot, module_name: str, manager_instance: Any, sdk_instance: Any) -> None`
 
 **内部方法**
 恢复重载快照（任一重载步骤失败时调用）
 
 恢复顺序：sys.modules 条目 → 注册存根 → 懒加载态 / 已加载态 →
-sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日志，不阻断
-其余恢复）。
+sdk 属性 → 重载快照对象 → 重放 ``on_load``。每步独立容错（单步失败
+仅记日志，不阻断其余恢复）。
+
+重放 ``on_load`` 是回滚闭环的关键：旧实例在卸载阶段已执行过
+``on_unload``，断开的外部资源不会随注册态还原而恢复；重放让模块
+重建这些资源（失败仅告警，保持"尽力而为"回滚语义）。
 
 - **snapshot**: 重载前采集的快照
 - **module_name**: 模块名
@@ -304,7 +308,26 @@ sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日�
 ---
 
 
-##### `_restore_failed_dependents(dependent_snapshots: 'dict[str, _ReloadSnapshot]', manager_instance: Any, sdk_instance: Any) -> None`
+##### `async _replay_on_load(module_name: str, instance: Any, manager_instance: Any) -> None`
+
+**内部方法**
+回滚后重放 ``on_load``（恢复旧实例的服务能力）
+
+与首次加载同归因上下文（``owner_scope``）执行，模块借此重建
+``on_unload`` 中释放的外部资源；失败 / 超时仅告警，保持"尽力而为"
+回滚语义（不阻断回滚完成，旧实例仍可处理无外部依赖的调用）。
+
+结束后发射 :data:`EVENT_MODULE_ROLLBACK` 事件（载荷含 success），
+供外部观测本次回滚的重放结果。
+
+- **module_name**: 模块名
+- **instance**: 快照中的旧实例
+- **manager_instance**: 模块管理器实例
+
+---
+
+
+##### `async _restore_failed_dependents(dependent_snapshots: 'dict[str, _ReloadSnapshot]', manager_instance: Any, sdk_instance: Any) -> None`
 
 **内部方法**
 恢复重载失败的依赖者：快照时已加载而重载后仍未回到加载态的依赖者，

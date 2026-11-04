@@ -295,54 +295,59 @@ ssl_keyfile = "/path/to/key.pem"
 
 ## Master System Configuration
 
-The master system is used to identify the "master account" of the framework (such as the Bot administrator). `master.users` supports two writing methods:
+The master system is used to identify the "framework master" account (e.g., Bot administrator). `master.users` supports three writing styles:
 
 ```toml
 [ErisPulse.master]
-# Writing method one: Global master (生效 on all platforms)
+# Style 1: Global master (effective across all platforms, including newly added platforms)
 users = ["123456", "789012"]
 
-# Writing method two: Specify master by platform (dict)
+# Style 2: Specify master per platform (dict)
 # users = { yunhu = ["123456"], telegram = ["789012"] }
+
+# Style 3: Coexistence of global and platform-specific masters — dict's global key is the global master bucket
+# users = { global = ["123456"], yunhu = ["789012"] }
 ```
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| users | array / object | empty | List of master account IDs. `list` form is global master (生效 on all platforms); `dict` form specifies by platform (key is platform name, value is a list of master account IDs for that platform) |
+| users | array / object | empty | List of master account IDs. `list` form is global master (effective across all platforms); `dict` form specifies per platform (key is platform name, `global` key is the global master bucket), value is the list of master account IDs for that platform |
 
-In code, check using `master.is_master(event)` or `master.is_master(platform, user_id)`, each call reads the configuration in real time (supports hot updates, no restart needed):
+> **Regarding new platforms**: `list` form and `global` bucket in `dict` are both "define once, effective across all platforms". After adding new platforms, no configuration change is needed; platform-specific entries only take effect for platforms with matching names (including prefix/wildcard tolerant matching). `master.add(None, uid)` writes to the `global` bucket during persistence; existing platform entries are unaffected.
+
+Code checks via `master.is_master(event)` or `master.is_master(platform, user_id)`. Each call reads the configuration in real time (supports hot reload, no restart required):
 
 ```python
 from ErisPulse.Core import master
 
 if master.is_master(event):
-    await event.reply("Hello, master")
+    await event.reply("Hello master")
 ```
 
-### Master Determination Chain and Runtime Add/Delete
+### Determination Chain and Runtime Add/Delete
 
-The master determination chain is **configuration master → runtime record → provider chain**:
+The master determination chain is **configured master → runtime record → provider chain**:
 
 ```python
 from ErisPulse.Core import master
 
 master.is_master(event)                      # Determine from event
 master.is_master("yunhu", "123")             # Explicit determination
-master.add("yunhu", "123")                   # Runtime addition (default persistent; persist=False only in memory)
-master.remove("yunhu", "123")                # Removal (default persistent)
-master.list()                                # Aggregation: {"global": [...], "<platform>": [...]}
+master.add("yunhu", "123")                   # Add at runtime (default persistence; persist=False only in-memory)
+master.remove("yunhu", "123")                # Remove (default persistence)
+master.list()                                # Aggregate: {"global": [...], "<platform>": [...]}
 ```
 
-### Custom Identity Source (provider)
+### Custom Identity Source (Provider)
 
-In addition to configuration, you can register a custom identity source: `fn(platform, user_id) -> bool`, and if the built-in identity sources (configuration + runtime record) do not match, they are tried in sequence, and if any provider allows it, it is recognized as a master. Suitable for connecting to adapter administrator interfaces, database roles, and other external identity systems.
+In addition to configuration, custom identity sources can be registered: `fn(platform, user_id) -> bool`. When built-in identity sources (configuration + runtime records) do not match, they are tried in sequence, and the master is recognized if any provider permits access. Suitable for integrating adapter administrator interfaces, database roles, and other external identity systems.
 
-The registration entry `master.provider` supports both decorator and function-style writing, and unregistration is done through the unregistered function: `fn.unregister()`:
+The registration entry `master.provider` supports both decorator and functional writing styles. Unregistration is handled via `fn.unregister()` on the registered function:
 
 ```python
 from ErisPulse.Core import master
 
-# Writing method one: Decorator (persistent identity source, recommended)
+# Style 1: Decorator (persistent identity source, recommended)
 @master.provider
 def admin_provider(platform, user_id):
     return user_id in {"999"}     # Custom determination logic
@@ -350,16 +355,16 @@ def admin_provider(platform, user_id):
 master.is_master("yunhu", "999")   # True
 admin_provider.unregister()        # Unregister when no longer needed
 
-# Writing method two: Function-style (register during module load / unregister during unload)
+# Style 2: Functional (register during module loading / unregister during module unloading)
 fn = master.provider(admin_provider)
 fn.unregister()
 ```
 
-> Provider exceptions are caught and skipped, not blocking the identity determination chain. Binding instance methods cannot attach `unregister`, and for scenarios requiring registration/unregistration pairing, use a **module-level function**.
+> Provider exceptions are caught and skipped, without interrupting the identity determination chain. Binding instance methods cannot mount `unregister`, for scenarios requiring paired registration/unregistration, use **module-level functions**.
 
-### User Priority: Master Scope Controlled by User
+### User Priority: Master Scope is Ultimately Decided by the User
 
-The `master=True` of a command is only the **developer's default**: The user can override and tighten or loosen it in `ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false` (see [Unified Event Override Configuration](#unified-event-override-configurationeventoverrides), where the user's explicit configuration takes effect).
+The `master=True` of a command is merely a **developer default**: the user can override it by setting `ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false` (see [Unified Event Override Configuration](#unified-event-override-configurationeventoverrides)). Explicit user configuration takes effect.
 
 ## Logging Configuration
 

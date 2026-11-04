@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1943,
+  "total_keywords": 1920,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -217,7 +217,7 @@
     "1. Обработка исключений": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2082,
+        "line": 2078,
         "level": 3,
         "title": "1. Обработка исключений"
       },
@@ -245,7 +245,7 @@
     "1. Объект SDK": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 724,
+        "line": 720,
         "level": 3,
         "title": "1. Объект SDK"
       },
@@ -535,7 +535,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 417,
+        "line": 418,
         "level": 3,
         "title": "1. Уровни конфигурации и переопределение"
       }
@@ -569,13 +569,13 @@
     "1. Я хочу использовать робота": [
       {
         "document": "README.md",
-        "line": 22,
+        "line": 20,
         "level": 3,
         "title": "1. Я хочу использовать робота"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 112,
+        "line": 110,
         "level": 3,
         "title": "1. Я хочу использовать робота"
       }
@@ -889,7 +889,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2100,
+        "line": 2096,
         "level": 3,
         "title": "2. Логирование"
       },
@@ -957,7 +957,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 424,
+        "line": 425,
         "level": 3,
         "title": "2. Модуль/команда не реагирует"
       }
@@ -1035,7 +1035,7 @@
     "2. Объект Event": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 749,
+        "line": 745,
         "level": 3,
         "title": "2. Объект Event"
       },
@@ -1312,18 +1312,18 @@
         "title": "2. Уровень загрузки: Loader"
       }
     ],
-    "2. Я хочу разработать модуль / адаптер": [
+    "2. Я хочу разрабатывать модули / адаптеры": [
       {
         "document": "README.md",
-        "line": 37,
+        "line": 35,
         "level": 3,
-        "title": "2. Я хочу разработать модуль / адаптер"
+        "title": "2. Я хочу разрабатывать модули / адаптеры"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 127,
+        "line": 125,
         "level": 3,
-        "title": "2. Я хочу разработать модуль / адаптер"
+        "title": "2. Я хочу разрабатывать модули / адаптеры"
       }
     ],
     "2.1 Обязательные поля": [
@@ -1617,7 +1617,7 @@
     "3. Адаптеры": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 766,
+        "line": 762,
         "level": 3,
         "title": "3. Адаптеры"
       },
@@ -1665,7 +1665,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 439,
+        "line": 440,
         "level": 3,
         "title": "3. Диагностика при отклонении исходящих действий"
       }
@@ -1931,7 +1931,7 @@
     "3. Условная обработка": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2116,
+        "line": 2112,
         "level": 3,
         "title": "3. Условная обработка"
       },
@@ -1959,13 +1959,13 @@
     "3. Я хочу глубже понять принципы работы": [
       {
         "document": "README.md",
-        "line": 49,
+        "line": 47,
         "level": 3,
         "title": "3. Я хочу глубже понять принципы работы"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 139,
+        "line": 137,
         "level": 3,
         "title": "3. Я хочу глубже понять принципы работы"
       }
@@ -2303,7 +2303,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 450,
+        "line": 451,
         "level": 3,
         "title": "4. Изоляция идентификаторов сессий между платформами"
       }
@@ -2339,7 +2339,7 @@
     "4. Модули": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 781,
+        "line": 777,
         "level": 3,
         "title": "4. Модули"
       },
@@ -2503,13 +2503,13 @@
     "4. Экосистема и официальный клиент": [
       {
         "document": "README.md",
-        "line": 95,
+        "line": 93,
         "level": 3,
         "title": "4. Экосистема и официальный клиент"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 185,
+        "line": 183,
         "level": 3,
         "title": "4. Экосистема и официальный клиент"
       }
@@ -2857,13 +2857,13 @@
     "5. Я хочу внести вклад в ErisPulse": [
       {
         "document": "README.md",
-        "line": 109,
+        "line": 107,
         "level": 3,
         "title": "5. Я хочу внести вклад в ErisPulse"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 199,
+        "line": 197,
         "level": 3,
         "title": "5. Я хочу внести вклад в ErisPulse"
       }
@@ -3993,7 +3993,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 275,
+        "line": 276,
         "level": 2,
         "title": "API времени выполнения"
       }
@@ -4007,7 +4007,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 455,
+        "line": 456,
         "level": 2,
         "title": "API дерева топологии"
       }
@@ -4173,7 +4173,7 @@
     "Client (Сетевой клиент)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 943,
+        "line": 939,
         "level": 3,
         "title": "Client (Сетевой клиент)"
       },
@@ -4187,7 +4187,7 @@
     "Config (Конфигурация)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 886,
+        "line": 882,
         "level": 3,
         "title": "Config (Конфигурация)"
       },
@@ -4215,7 +4215,7 @@
     "Core.py - Базовый модуль": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 372,
+        "line": 745,
         "level": 2,
         "title": "Core.py - Базовый модуль"
       },
@@ -4528,34 +4528,12 @@
         "title": "Event 包装类"
       }
     ],
-    "GET": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 95,
-        "level": 3,
-        "title": "GET"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 656,
-        "level": 3,
-        "title": "GET"
-      }
-    ],
     "Gateway Intents": [
       {
         "document": "platform-guide/discord.md",
         "line": 50,
         "level": 3,
         "title": "Gateway Intents"
-      }
-    ],
-    "HTTP 客户端": [
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 558,
-        "level": 2,
-        "title": "HTTP 客户端"
       }
     ],
     "HTTP-декораторы": [
@@ -4567,23 +4545,9 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1141,
+        "line": 613,
         "level": 3,
         "title": "HTTP-декораторы"
-      }
-    ],
-    "HTTP-запросы": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 23,
-        "level": 3,
-        "title": "HTTP-запросы"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 584,
-        "level": 3,
-        "title": "HTTP-запросы"
       }
     ],
     "HTTP-клиент": [
@@ -4595,7 +4559,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1127,
+        "line": 1194,
         "level": 3,
         "title": "HTTP-клиент"
       }
@@ -4609,37 +4573,9 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1067,
+        "line": 1134,
         "level": 3,
         "title": "HTTP-маршрутизация"
-      }
-    ],
-    "HTTPStatusError": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 456,
-        "level": 3,
-        "title": "HTTPStatusError"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1017,
-        "level": 3,
-        "title": "HTTPStatusError"
-      }
-    ],
-    "HttpResponse": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 70,
-        "level": 2,
-        "title": "HttpResponse"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 631,
-        "level": 2,
-        "title": "HttpResponse"
       }
     ],
     "I18nManager": [
@@ -4653,31 +4589,31 @@
     "IDE 补全": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2653,
+        "line": 2649,
         "level": 2,
         "title": "IDE 补全"
       }
     ],
-    "Interaction: интерактивные сессии": [
+    "Install": [
       {
-        "document": "api-reference/core-modules.md",
-        "line": 454,
+        "document": "ai-support/skills/README.md",
+        "line": 19,
         "level": 2,
-        "title": "Interaction: интерактивные сессии"
+        "title": "Install"
       }
     ],
-    "Logger (Логирование)": [
+    "Logger (Журналирование)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 901,
+        "line": 897,
         "level": 3,
-        "title": "Logger (Логирование)"
+        "title": "Logger (Журналирование)"
       },
       {
         "document": "getting-started/basic-concepts.md",
         "line": 227,
         "level": 3,
-        "title": "Logger (Логирование)"
+        "title": "Logger (Журналирование)"
       }
     ],
     "MCP сервер": [
@@ -4742,34 +4678,6 @@
         "title": "OneBot12 стандартный API-действия"
       }
     ],
-    "POST": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 107,
-        "level": 3,
-        "title": "POST"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 668,
-        "level": 3,
-        "title": "POST"
-      }
-    ],
-    "PUT / DELETE / PATCH": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 156,
-        "level": 3,
-        "title": "PUT / DELETE / PATCH"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 717,
-        "level": 3,
-        "title": "PUT / DELETE / PATCH"
-      }
-    ],
     "PollingAdapter (HTTP-опрос)": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -4809,7 +4717,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 100,
+        "line": 84,
         "level": 2,
         "title": "RPC: module.call"
       }
@@ -4817,7 +4725,7 @@
     "Router (Маршрутизация)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 928,
+        "line": 924,
         "level": 3,
         "title": "Router (Маршрутизация)"
       },
@@ -4828,12 +4736,28 @@
         "title": "Router (Маршрутизация)"
       }
     ],
+    "SDK отладка": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 428,
+        "level": 2,
+        "title": "SDK отладка"
+      }
+    ],
     "SQL 查询构建器": [
       {
         "document": "advanced/sql-builder.md",
         "line": 1,
         "level": 1,
         "title": "SQL 查询构建器"
+      }
+    ],
+    "SQL-цепные запросы": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 46,
+        "level": 3,
+        "title": "SQL-цепные запросы"
       }
     ],
     "Send-декораторы (реализуются классом Send каждого адаптера)": [
@@ -4848,6 +4772,14 @@
         "line": 131,
         "level": 4,
         "title": "Send-декораторы (реализуются классом Send каждого адаптера)"
+      }
+    ],
+    "Skill Manifest": [
+      {
+        "document": "ai-support/skills/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Skill Manifest"
       }
     ],
     "SseEmitter API": [
@@ -4867,7 +4799,7 @@
     "Storage (Хранилище)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 863,
+        "line": 859,
         "level": 3,
         "title": "Storage (Хранилище)"
       },
@@ -4928,34 +4860,12 @@
         "title": "TestBot API"
       }
     ],
-    "Transcript: почтовый ящик сессии": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 503,
-        "level": 2,
-        "title": "Transcript: почтовый ящик сессии"
-      }
-    ],
     "UI-метаданные (подтаблица `metadata[\"ui\"]`)": [
       {
         "document": "developer-guide/configuration.md",
         "line": 44,
         "level": 2,
         "title": "UI-метаданные (подтаблица `metadata[\"ui\"]`)"
-      }
-    ],
-    "WSMessage": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 348,
-        "level": 3,
-        "title": "WSMessage"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 909,
-        "level": 3,
-        "title": "WSMessage"
       }
     ],
     "WebHook-соединение": [
@@ -4981,7 +4891,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1084,
+        "line": 1151,
         "level": 3,
         "title": "WebSocket"
       }
@@ -4994,20 +4904,6 @@
         "title": "WebSocket / Webhook подключение"
       }
     ],
-    "WebSocket клиент": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 281,
-        "level": 2,
-        "title": "WebSocket клиент"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 842,
-        "level": 2,
-        "title": "WebSocket клиент"
-      }
-    ],
     "WebSocket-декораторы": [
       {
         "document": "advanced/router.md",
@@ -5017,27 +4913,15 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1186,
+        "line": 658,
         "level": 3,
         "title": "WebSocket-декораторы"
       }
     ],
     "WebSocket-соединение": [
       {
-        "document": "advanced/http-client.md",
-        "line": 41,
-        "level": 3,
-        "title": "WebSocket-соединение"
-      },
-      {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
         "line": 1684,
-        "level": 3,
-        "title": "WebSocket-соединение"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 602,
         "level": 3,
         "title": "WebSocket-соединение"
       },
@@ -5729,7 +5613,7 @@
     "__init__.py": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 366,
+        "line": 739,
         "level": 2,
         "title": "__init__.py"
       },
@@ -5961,7 +5845,7 @@
     "dump_state()": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 431,
+        "line": 430,
         "level": 3,
         "title": "dump_state()"
       }
@@ -6347,17 +6231,17 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1098,
+        "line": 570,
         "level": 2,
         "title": "Абстрактные типы"
       }
     ],
-    "Абстракция бэкендов хранилища": [
+    "Абстракция хранилища бэкендов": [
       {
         "document": "api-reference/core-modules.md",
         "line": 62,
         "level": 3,
-        "title": "Абстракция бэкендов хранилища"
+        "title": "Абстракция хранилища бэкендов"
       }
     ],
     "Автоматическая документация": [
@@ -6369,7 +6253,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1432,
+        "line": 904,
         "level": 2,
         "title": "Автоматическая документация"
       }
@@ -6411,23 +6295,9 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1517,
+        "line": 989,
         "level": 3,
         "title": "Автоматическая регистрация Dashboard"
-      }
-    ],
-    "Автоматическая регистрация исходящих соединений в пуле (с версии 2.10)": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 52,
-        "level": 4,
-        "title": "Автоматическая регистрация исходящих соединений в пуле (с версии 2.10)"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 613,
-        "level": 4,
-        "title": "Автоматическая регистрация исходящих соединений в пуле (с версии 2.10)"
       }
     ],
     "Автоматическая регистрация соединений (пул соединений, 2.10+)": [
@@ -6439,7 +6309,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1225,
+        "line": 697,
         "level": 3,
         "title": "Автоматическая регистрация соединений (пул соединений, 2.10+)"
       }
@@ -6541,7 +6411,7 @@
     "Адаптация к разным платформам": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2330,
+        "line": 2326,
         "level": 2,
         "title": "Адаптация к разным платформам"
       },
@@ -6577,7 +6447,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 876,
+        "line": 943,
         "level": 3,
         "title": "Адресная доставка (emit to=)"
       }
@@ -6599,7 +6469,7 @@
     "Аргументы команд": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1166,
+        "line": 1162,
         "level": 3,
         "title": "Аргументы команд"
       },
@@ -6685,7 +6555,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 255,
+        "line": 267,
         "level": 3,
         "title": "Асинхронная инициализация"
       }
@@ -6797,7 +6667,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 223,
+        "line": 207,
         "level": 2,
         "title": "Аудит исходящих вызовов: кто может вызывать кого"
       }
@@ -6833,7 +6703,7 @@
     "Базовая отправка": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 969,
+        "line": 965,
         "level": 3,
         "title": "Базовая отправка"
       },
@@ -6876,12 +6746,6 @@
         "title": "Базовое использование"
       },
       {
-        "document": "api-reference/core-modules.md",
-        "line": 139,
-        "level": 3,
-        "title": "Базовое использование"
-      },
-      {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 577,
         "level": 4,
@@ -6920,14 +6784,6 @@
         "line": 49,
         "level": 3,
         "title": "Базовые методы (встроены в базовый класс)"
-      }
-    ],
-    "Базовые операции": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 12,
-        "level": 3,
-        "title": "Базовые операции"
       }
     ],
     "Базовые проверки": [
@@ -6975,7 +6831,7 @@
     "Базовый класс BaseModule": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 435,
+        "line": 808,
         "level": 3,
         "title": "Базовый класс BaseModule"
       },
@@ -7051,7 +6907,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1417,
+        "line": 889,
         "level": 2,
         "title": "Безопасные заголовки"
       }
@@ -7059,7 +6915,7 @@
     "Быстрая инициализация": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 380,
+        "line": 376,
         "level": 3,
         "title": "Быстрая инициализация"
       },
@@ -7096,12 +6952,6 @@
     ],
     "Быстрый старт": [
       {
-        "document": "advanced/http-client.md",
-        "line": 21,
-        "level": 2,
-        "title": "Быстрый старт"
-      },
-      {
         "document": "advanced/shadow.md",
         "line": 19,
         "level": 2,
@@ -7110,12 +6960,6 @@
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
         "line": 139,
-        "level": 2,
-        "title": "Быстрый старт"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 582,
         "level": 2,
         "title": "Быстрый старт"
       },
@@ -7133,7 +6977,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 253,
+        "line": 249,
         "level": 1,
         "title": "Быстрый старт"
       },
@@ -7267,7 +7111,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1265,
+        "line": 1332,
         "level": 2,
         "title": "Важные замечания"
       },
@@ -7295,7 +7139,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 409,
+        "line": 410,
         "level": 2,
         "title": "Валидация формата конфигурации"
       }
@@ -7317,7 +7161,7 @@
     "Введение в обработку событий": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1044,
+        "line": 1040,
         "level": 1,
         "title": "Введение в обработку событий"
       },
@@ -7345,7 +7189,7 @@
     "Введение в разработку модулей": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 325,
+        "line": 698,
         "level": 1,
         "title": "Введение в разработку модулей"
       },
@@ -7374,6 +7218,14 @@
         "line": 2234,
         "level": 2,
         "title": "Ветвления и переходы"
+      }
+    ],
+    "Взаимодействие (Interaction)": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 453,
+        "level": 2,
+        "title": "Взаимодействие (Interaction)"
       }
     ],
     "Взаимодействие с CLI": [
@@ -7421,7 +7273,7 @@
     "Включение автодополнения в IDE (по желанию)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 431,
+        "line": 427,
         "level": 2,
         "title": "Включение автодополнения в IDE (по желанию)"
       },
@@ -7457,7 +7309,7 @@
     "Внедрение зависимостей (Depends)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1291,
+        "line": 1287,
         "level": 3,
         "title": "Внедрение зависимостей (Depends)"
       },
@@ -7510,30 +7362,22 @@
         "title": "Внутреннее устройство цепочки отправки"
       }
     ],
-    "Внутренняя проверка параметров фреймворка (ValueError)": [
-      {
-        "document": "advanced/errors.md",
-        "line": 168,
-        "level": 3,
-        "title": "Внутренняя проверка параметров фреймворка (ValueError)"
-      },
-      {
-        "document": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
-        "line": 202,
-        "level": 3,
-        "title": "Внутренняя проверка параметров фреймворка (ValueError)"
-      }
-    ],
     "Внутренняя реализация: как работает принадлежность": [
       {
         "document": "advanced/ownership.md",
-        "line": 153,
+        "line": 219,
+        "level": 2,
+        "title": "Внутренняя реализация: как работает принадлежность"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 555,
         "level": 2,
         "title": "Внутренняя реализация: как работает принадлежность"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 658,
+        "line": 725,
         "level": 2,
         "title": "Внутренняя реализация: как работает принадлежность"
       }
@@ -7651,7 +7495,7 @@
     "Возникли проблемы": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 499,
+        "line": 495,
         "level": 3,
         "title": "Возникли проблемы"
       },
@@ -7671,7 +7515,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 285,
+        "line": 269,
         "level": 2,
         "title": "Воспроизведение при холодном запуске"
       }
@@ -7745,7 +7589,7 @@
     "Встроенные слова подтверждения": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1996,
+        "line": 1992,
         "level": 3,
         "title": "Встроенные слова подтверждения"
       },
@@ -7803,7 +7647,7 @@
     "Выбор меню (choose)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1892,
+        "line": 1888,
         "level": 3,
         "title": "Выбор меню (choose)"
       },
@@ -7894,6 +7738,14 @@
         "title": "Вызов в качестве службы"
       }
     ],
+    "Вызов между модулями (RPC)": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 283,
+        "level": 3,
+        "title": "Вызов между модулями (RPC)"
+      }
+    ],
     "Вызов несуществующих методов": [
       {
         "document": "platform-guide/onebot12.md",
@@ -7905,7 +7757,7 @@
     "Выполнение логики после успешной отправки": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2379,
+        "line": 2375,
         "level": 3,
         "title": "Выполнение логики после успешной отправки"
       },
@@ -7914,20 +7766,6 @@
         "line": 237,
         "level": 3,
         "title": "Выполнение логики после успешной отправки"
-      }
-    ],
-    "Высокоуровневые методы (рекомендуется)": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 299,
-        "level": 4,
-        "title": "Высокоуровневые методы (рекомендуется)"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 860,
-        "level": 4,
-        "title": "Высокоуровневые методы (рекомендуется)"
       }
     ],
     "Генерация типовых аннотаций": [
@@ -7947,7 +7785,7 @@
     "Генерация типовых заглушек (дополнение IDE)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2657,
+        "line": 2653,
         "level": 1,
         "title": "Генерация типовых заглушек (дополнение IDE)"
       },
@@ -7967,7 +7805,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1482,
+        "line": 954,
         "level": 2,
         "title": "Главная кнопка"
       }
@@ -7981,7 +7819,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1473,
+        "line": 945,
         "level": 3,
         "title": "Главная страница"
       }
@@ -7995,7 +7833,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 193,
+        "line": 205,
         "level": 3,
         "title": "Глобальная конфигурация"
       }
@@ -8017,7 +7855,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 108,
+        "line": 109,
         "level": 2,
         "title": "Глобальное резервное значение: `default_allow`"
       }
@@ -8177,7 +8015,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1323,
+        "line": 795,
         "level": 2,
         "title": "Группировка маршрутов"
       }
@@ -8199,7 +8037,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 413,
+        "line": 397,
         "level": 3,
         "title": "Группы (модель подписки)"
       }
@@ -8207,7 +8045,7 @@
     "Группы команд": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1327,
+        "line": 1323,
         "level": 3,
         "title": "Группы команд"
       },
@@ -8251,25 +8089,25 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 478,
+        "line": 474,
         "level": 2,
         "title": "Далее"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2133,
+        "line": 2129,
         "level": 2,
         "title": "Далее"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2743,
+        "line": 2739,
         "level": 2,
         "title": "Далее"
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 527,
+        "line": 900,
         "level": 2,
         "title": "Далее"
       },
@@ -8361,7 +8199,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2647,
+        "line": 2643,
         "level": 2,
         "title": "Дальнейшие шаги"
       },
@@ -8449,7 +8287,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 318,
+        "line": 302,
         "level": 2,
         "title": "Дедупликация событий"
       }
@@ -8471,7 +8309,7 @@
     "Декларативные аргументы и опции (args= / options=)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1182,
+        "line": 1178,
         "level": 3,
         "title": "Декларативные аргументы и опции (args= / options=)"
       },
@@ -8553,7 +8391,7 @@
     "Декоратор команды": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 587,
+        "line": 583,
         "level": 3,
         "title": "Декоратор команды"
       },
@@ -8573,7 +8411,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1112,
+        "line": 584,
         "level": 2,
         "title": "Декораторы маршрутизации (рекомендуется)"
       }
@@ -8691,7 +8529,7 @@
     "Добавление в друзья": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1667,
+        "line": 1663,
         "level": 3,
         "title": "Добавление в друзья"
       },
@@ -8908,20 +8746,6 @@
         "title": "Дополните три ключевых компонента адаптера"
       }
     ],
-    "Дополнительно": [
-      {
-        "document": "README.md",
-        "line": 139,
-        "level": 2,
-        "title": "Дополнительно"
-      },
-      {
-        "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 229,
-        "level": 2,
-        "title": "Дополнительно"
-      }
-    ],
     "Дополнительные методы операций": [
       {
         "document": "platform-guide/kook.md",
@@ -8975,7 +8799,7 @@
     "Доступ к данным события": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2003,
+        "line": 1999,
         "level": 2,
         "title": "Доступ к данным события"
       },
@@ -9000,18 +8824,18 @@
         "title": "Доступ к основным модулям"
       }
     ],
-    "Доступ через атрибуты": [
+    "Доступ по свойствам": [
       {
         "document": "api-reference/core-modules.md",
         "line": 39,
         "level": 3,
-        "title": "Доступ через атрибуты"
+        "title": "Доступ по свойствам"
       },
       {
         "document": "api-reference/core-modules.md",
         "line": 275,
         "level": 3,
-        "title": "Доступ через атрибуты"
+        "title": "Доступ по свойствам"
       }
     ],
     "Доступ через свойства": [
@@ -9050,20 +8874,32 @@
         "title": "Доступные свойства"
       }
     ],
-    "Дочерние логгеры": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 149,
-        "level": 3,
-        "title": "Дочерние логгеры"
-      }
-    ],
     "Другие типы сообщений": [
       {
         "document": "platform-guide/onebot12.md",
         "line": 143,
         "level": 3,
         "title": "Другие типы сообщений"
+      }
+    ],
+    "Единая воронка принадлежности (ownership)": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 104,
+        "level": 2,
+        "title": "Единая воронка принадлежности (ownership)"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 440,
+        "level": 2,
+        "title": "Единая воронка принадлежности (ownership)"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 610,
+        "level": 2,
+        "title": "Единая воронка принадлежности (ownership)"
       }
     ],
     "Единая конфигурация перезаписи событий (event.overrides)": [
@@ -9089,23 +8925,9 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 234,
+        "line": 246,
         "level": 3,
         "title": "Единый вход для получения модуля"
-      }
-    ],
-    "Единый интерфейс принадлежности (ownership)": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 104,
-        "level": 2,
-        "title": "Единый интерфейс принадлежности (ownership)"
-      },
-      {
-        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 609,
-        "level": 2,
-        "title": "Единый интерфейс принадлежности (ownership)"
       }
     ],
     "Жизненные циклы событий": [
@@ -9114,20 +8936,6 @@
         "line": 298,
         "level": 3,
         "title": "Жизненные циклы событий"
-      }
-    ],
-    "Жизненный цикл": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 366,
-        "level": 3,
-        "title": "Жизненный цикл"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 927,
-        "level": 3,
-        "title": "Жизненный цикл"
       }
     ],
     "Жизненный цикл HTTP-маршрутизации": [
@@ -9153,7 +8961,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 999,
+        "line": 1066,
         "level": 3,
         "title": "Жизненный цикл адаптеров"
       }
@@ -9181,7 +8989,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 985,
+        "line": 1052,
         "level": 3,
         "title": "Жизненный цикл модулей"
       }
@@ -9189,7 +8997,7 @@
     "Жизненный цикл модуля": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 819,
+        "line": 815,
         "level": 4,
         "title": "Жизненный цикл модуля"
       },
@@ -9226,20 +9034,6 @@
         "title": "Жизненный цикл обработчиков событий"
       }
     ],
-    "Жизненный цикл событий": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 246,
-        "level": 2,
-        "title": "Жизненный цикл событий"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 807,
-        "level": 2,
-        "title": "Жизненный цикл событий"
-      }
-    ],
     "Журналы сообщений": [
       {
         "document": "advanced/i18n.md",
@@ -9267,7 +9061,7 @@
     "Задачи по расписанию": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2219,
+        "line": 2215,
         "level": 2,
         "title": "Задачи по расписанию"
       },
@@ -9287,23 +9081,9 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 143,
+        "line": 155,
         "level": 2,
         "title": "Задержка активации (dormant_after)"
-      }
-    ],
-    "Закрытие соединения": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 384,
-        "level": 3,
-        "title": "Закрытие соединения"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 945,
-        "level": 3,
-        "title": "Закрытие соединения"
       }
     ],
     "Замечания по `__init__`": [
@@ -9381,7 +9161,7 @@
     "Запрос на группу": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1717,
+        "line": 1713,
         "level": 3,
         "title": "Запрос на группу"
       },
@@ -9395,7 +9175,7 @@
     "Запрос на добавление в друзья": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1701,
+        "line": 1697,
         "level": 3,
         "title": "Запрос на добавление в друзья"
       },
@@ -9409,7 +9189,7 @@
     "Запрос состояния бота": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1755,
+        "line": 1751,
         "level": 3,
         "title": "Запрос состояния бота"
       },
@@ -9434,16 +9214,18 @@
         "title": "Запрос состояния ботов"
       },
       {
-        "document": "api-reference/core-modules.md",
-        "line": 244,
-        "level": 3,
-        "title": "Запрос состояния ботов"
-      },
-      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 1193,
         "level": 3,
         "title": "Запрос состояния ботов"
+      }
+    ],
+    "Запрос статуса бота": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 244,
+        "level": 3,
+        "title": "Запрос статуса бота"
       }
     ],
     "Запуск адаптера": [
@@ -9491,7 +9273,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 421,
+        "line": 417,
         "level": 2,
         "title": "Запуск проекта"
       },
@@ -9517,7 +9299,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1179,
+        "line": 1246,
         "level": 3,
         "title": "Запуск событий"
       }
@@ -9599,7 +9381,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1357,
+        "line": 829,
         "level": 2,
         "title": "Идентификатор запроса (X-Request-ID)"
       }
@@ -9616,20 +9398,6 @@
         "line": 167,
         "level": 4,
         "title": "Идентификатор сессии"
-      }
-    ],
-    "Иерархия исключений": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 396,
-        "level": 3,
-        "title": "Иерархия исключений"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 957,
-        "level": 3,
-        "title": "Иерархия исключений"
       }
     ],
     "Извлечение данных сообщений": [
@@ -9649,7 +9417,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 970,
+        "line": 1037,
         "level": 3,
         "title": "Изменение конфигурации"
       }
@@ -9731,7 +9499,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 365,
+        "line": 361,
         "level": 2,
         "title": "Инициализация проекта"
       },
@@ -9771,7 +9539,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 953,
+        "line": 1020,
         "level": 3,
         "title": "Инициализация ядра"
       }
@@ -9829,7 +9597,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1521,
+        "line": 993,
         "level": 2,
         "title": "Интеграция жизненного цикла"
       }
@@ -9837,7 +9605,7 @@
     "Интерактивная инициализация (рекомендуется)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 367,
+        "line": 363,
         "level": 3,
         "title": "Интерактивная инициализация (рекомендуется)"
       },
@@ -9851,7 +9619,7 @@
     "Интерактивная обработка": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1777,
+        "line": 1773,
         "level": 2,
         "title": "Интерактивная обработка"
       },
@@ -9871,7 +9639,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 413,
+        "line": 409,
         "level": 3,
         "title": "Интерактивная установка"
       },
@@ -9911,7 +9679,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1137,
+        "line": 1204,
         "level": 3,
         "title": "Интернационализация"
       }
@@ -10175,7 +9943,7 @@
     "Использование Docker": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 340,
+        "line": 336,
         "level": 3,
         "title": "Использование Docker"
       },
@@ -10240,20 +10008,6 @@
         "title": "Использование в адаптерах"
       }
     ],
-    "Использование в адаптере": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 468,
-        "level": 2,
-        "title": "Использование в адаптере"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1029,
-        "level": 2,
-        "title": "Использование в адаптере"
-      }
-    ],
     "Использование в классе модуля": [
       {
         "document": "advanced/i18n.md",
@@ -10265,7 +10019,7 @@
     "Использование в коде": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2683,
+        "line": 2679,
         "level": 2,
         "title": "Использование в коде"
       },
@@ -10287,7 +10041,7 @@
     "Использование метода reply для отправки ответа": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1779,
+        "line": 1775,
         "level": 3,
         "title": "Использование метода reply для отправки ответа"
       },
@@ -10321,7 +10075,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 220,
+        "line": 232,
         "level": 2,
         "title": "Использование модулей с ленивой загрузкой"
       }
@@ -10391,7 +10145,7 @@
     "Использование событий жизненного цикла": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2272,
+        "line": 2268,
         "level": 3,
         "title": "Использование событий жизненного цикла"
       },
@@ -10447,7 +10201,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 497,
+        "line": 481,
         "level": 2,
         "title": "Исходящие соединения (клиентская сторона)"
       }
@@ -10499,7 +10253,7 @@
     "Как изменить префикс команды?": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 636,
+        "line": 632,
         "level": 3,
         "title": "Как изменить префикс команды?"
       },
@@ -10513,7 +10267,7 @@
     "Как поддерживать несколько платформ?": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 646,
+        "line": 642,
         "level": 3,
         "title": "Как поддерживать несколько платформ?"
       },
@@ -10549,7 +10303,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 57,
+        "line": 69,
         "level": 3,
         "title": "Класс LazyModule"
       }
@@ -10651,7 +10405,7 @@
     "Когда перегенерировать": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2732,
+        "line": 2728,
         "level": 2,
         "title": "Когда перегенерировать"
       },
@@ -10703,7 +10457,7 @@
     "Команда не отвечает?": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 629,
+        "line": 625,
         "level": 3,
         "title": "Команда не отвечает?"
       },
@@ -10863,7 +10617,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 76,
+        "line": 60,
         "level": 1,
         "title": "Коммуникация между модулями"
       },
@@ -10925,7 +10679,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 129,
+        "line": 113,
         "level": 2,
         "title": "Контракт сервиса: meta.services"
       }
@@ -10938,18 +10692,10 @@
         "title": "Контракт совместимости (должен соблюдаться потребителями)"
       }
     ],
-    "Контракты сервисов (meta.services)": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 300,
-        "level": 3,
-        "title": "Контракты сервисов (meta.services)"
-      }
-    ],
     "Контроль прав доступа": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2428,
+        "line": 2424,
         "level": 2,
         "title": "Контроль прав доступа"
       },
@@ -10971,7 +10717,7 @@
     "Конфигурационный файл": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 462,
+        "line": 458,
         "level": 2,
         "title": "Конфигурационный файл"
       },
@@ -11017,7 +10763,7 @@
     "Конфигурация pyproject.toml": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 346,
+        "line": 719,
         "level": 2,
         "title": "Конфигурация pyproject.toml"
       },
@@ -11145,7 +10891,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 191,
+        "line": 203,
         "level": 2,
         "title": "Конфигурация ленивой загрузки"
       }
@@ -11395,13 +11141,13 @@
     "Краткий справочник": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 387,
+        "line": 386,
         "level": 3,
         "title": "Краткий справочник"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 414,
+        "line": 413,
         "level": 3,
         "title": "Краткий справочник"
       }
@@ -11443,7 +11189,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 401,
+        "line": 402,
         "level": 2,
         "title": "Кэш и горячее обновление"
       }
@@ -11457,7 +11203,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 272,
+        "line": 256,
         "level": 2,
         "title": "Ленивая загрузка и вызов"
       }
@@ -11521,7 +11267,7 @@
     "Локальное тестирование": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 415,
+        "line": 788,
         "level": 3,
         "title": "Локальное тестирование"
       },
@@ -11559,7 +11305,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1535,
+        "line": 1007,
         "level": 2,
         "title": "Лучшие практики"
       },
@@ -11573,7 +11319,7 @@
     "Лучшие практики обработки событий": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2080,
+        "line": 2076,
         "level": 2,
         "title": "Лучшие практики обработки событий"
       },
@@ -11635,7 +11381,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1074,
+        "line": 546,
         "level": 1,
         "title": "Маршрутизатор"
       }
@@ -11656,14 +11402,6 @@
         "title": "Матрица функциональных возможностей"
       }
     ],
-    "Межмодульные вызовы (RPC)": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 283,
-        "level": 3,
-        "title": "Межмодульные вызовы (RPC)"
-      }
-    ],
     "Менеджер адаптеров": [
       {
         "document": "api-reference/adapter-system.md",
@@ -11675,7 +11413,7 @@
     "Метаинформация модуля": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 447,
+        "line": 820,
         "level": 3,
         "title": "Метаинформация модуля"
       },
@@ -11880,20 +11618,6 @@
         "title": "Методы для работы с друзьями"
       }
     ],
-    "Методы запроса": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 93,
-        "level": 2,
-        "title": "Методы запроса"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 654,
-        "level": 2,
-        "title": "Методы запроса"
-      }
-    ],
     "Методы запроса сообщений": [
       {
         "document": "platform-guide/yunhu.md",
@@ -11927,7 +11651,7 @@
     "Методы ответа Event": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 995,
+        "line": 991,
         "level": 3,
         "title": "Методы ответа Event"
       },
@@ -12206,8 +11930,14 @@
         "title": "Механизм контекста owner"
       },
       {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 357,
+        "level": 2,
+        "title": "Механизм контекста owner"
+      },
+      {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 526,
+        "line": 527,
         "level": 2,
         "title": "Механизм контекста owner"
       }
@@ -12237,7 +11967,7 @@
     "Механизм обнаружения модулей": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 790,
+        "line": 786,
         "level": 4,
         "title": "Механизм обнаружения модулей"
       },
@@ -12257,7 +11987,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 823,
+        "line": 890,
         "level": 2,
         "title": "Механизм обработки событий"
       }
@@ -12303,7 +12033,7 @@
     "Мидлвары: изменение или отклонение до распределения": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1491,
+        "line": 1487,
         "level": 2,
         "title": "Мидлвары: изменение или отклонение до распределения"
       },
@@ -12317,7 +12047,7 @@
     "Минимальный рабочий модуль": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 801,
+        "line": 797,
         "level": 4,
         "title": "Минимальный рабочий модуль"
       },
@@ -12353,7 +12083,7 @@
     "Многошаговый диалог (conversation)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1969,
+        "line": 1965,
         "level": 3,
         "title": "Многошаговый диалог (conversation)"
       },
@@ -12461,7 +12191,7 @@
     "Модуль HTTP Client": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 408,
+        "line": 407,
         "level": 2,
         "title": "Модуль HTTP Client"
       }
@@ -12469,7 +12199,7 @@
     "Модуль Lifecycle": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 346,
+        "line": 345,
         "level": 2,
         "title": "Модуль Lifecycle"
       }
@@ -12525,7 +12255,7 @@
     "Модуль Router": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 381,
+        "line": 380,
         "level": 2,
         "title": "Модуль Router"
       }
@@ -12597,7 +12327,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 377,
+        "line": 378,
         "level": 2,
         "title": "Наблюдаемость перехвата: событие `scope.blocked`"
       }
@@ -12619,7 +12349,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 239,
+        "line": 223,
         "level": 2,
         "title": "Направленные события: параметр to в lifecycle.emit"
       }
@@ -12661,7 +12391,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 188,
+        "line": 189,
         "level": 3,
         "title": "Наследование привязок (merge)"
       }
@@ -12675,7 +12405,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1398,
+        "line": 870,
         "level": 2,
         "title": "Настройка CORS"
       }
@@ -12683,7 +12413,7 @@
     "Настройка блокировки для команд и ответов": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1649,
+        "line": 1645,
         "level": 3,
         "title": "Настройка блокировки для команд и ответов"
       },
@@ -12824,20 +12554,6 @@
         "title": "Неудачная отправка сообщения"
       }
     ],
-    "Низкоуровневые методы": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 325,
-        "level": 4,
-        "title": "Низкоуровневые методы"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 886,
-        "level": 4,
-        "title": "Низкоуровневые методы"
-      }
-    ],
     "Нововведение: Поле типа исходного события": [
       {
         "document": "platform-guide/onebot12.md",
@@ -12876,12 +12592,6 @@
         "title": "Обзор"
       },
       {
-        "document": "advanced/http-client.md",
-        "line": 8,
-        "level": 2,
-        "title": "Обзор"
-      },
-      {
         "document": "advanced/lazy-loading.md",
         "line": 8,
         "level": 2,
@@ -12895,25 +12605,19 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 358,
+        "line": 342,
         "level": 2,
         "title": "Обзор"
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 569,
-        "level": 2,
-        "title": "Обзор"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1081,
+        "line": 553,
         "level": 2,
         "title": "Обзор"
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 46,
+        "line": 58,
         "level": 2,
         "title": "Обзор"
       },
@@ -12965,7 +12669,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 350,
+        "line": 349,
         "level": 3,
         "title": "Обзор API"
       },
@@ -13053,7 +12757,7 @@
     "Обзор типов событий": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1051,
+        "line": 1047,
         "level": 2,
         "title": "Обзор типов событий"
       },
@@ -13073,7 +12777,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 927,
+        "line": 994,
         "level": 2,
         "title": "Обзор точек перехвата"
       }
@@ -13109,7 +12813,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 55,
+        "line": 56,
         "level": 1,
         "title": "Область действия (scope)"
       }
@@ -13309,7 +13013,7 @@
     "Обработка изображений": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2582,
+        "line": 2578,
         "level": 2,
         "title": "Обработка изображений"
       },
@@ -13318,20 +13022,6 @@
         "line": 440,
         "level": 2,
         "title": "Обработка изображений"
-      }
-    ],
-    "Обработка исключений": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 408,
-        "level": 3,
-        "title": "Обработка исключений"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 969,
-        "level": 3,
-        "title": "Обработка исключений"
       }
     ],
     "Обработка личных сообщений": [
@@ -13359,7 +13049,7 @@
     "Обработка мета-событий": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1728,
+        "line": 1724,
         "level": 2,
         "title": "Обработка мета-событий"
       },
@@ -13477,7 +13167,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1448,
+        "line": 920,
         "level": 2,
         "title": "Обработка путей"
       }
@@ -13501,7 +13191,7 @@
     "Обработка с помощью подстановочных знаков и регулярных выражений": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1112,
+        "line": 1108,
         "level": 3,
         "title": "Обработка с помощью подстановочных знаков и регулярных выражений"
       },
@@ -13549,7 +13239,7 @@
     "Обработка событий запросов": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1699,
+        "line": 1695,
         "level": 2,
         "title": "Обработка событий запросов"
       },
@@ -13563,7 +13253,7 @@
     "Обработка событий команд": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1135,
+        "line": 1131,
         "level": 2,
         "title": "Обработка событий команд"
       },
@@ -13577,7 +13267,7 @@
     "Обработка событий сообщений": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1063,
+        "line": 1059,
         "level": 2,
         "title": "Обработка событий сообщений"
       },
@@ -13591,7 +13281,7 @@
     "Обработка событий уведомлений": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1665,
+        "line": 1661,
         "level": 2,
         "title": "Обработка событий уведомлений"
       },
@@ -13728,20 +13418,6 @@
         "title": "Общая статистика"
       }
     ],
-    "Общее перехватывание": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 443,
-        "level": 3,
-        "title": "Общее перехватывание"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1004,
-        "level": 3,
-        "title": "Общее перехватывание"
-      }
-    ],
     "Общие интерфейсы": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -13779,7 +13455,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 348,
+        "line": 349,
         "level": 3,
         "title": "Общие методы"
       }
@@ -13828,20 +13504,6 @@
         "title": "Общие стандарты"
       }
     ],
-    "Общий request": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 166,
-        "level": 3,
-        "title": "Общий request"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 727,
-        "level": 3,
-        "title": "Общий request"
-      }
-    ],
     "Общий вход в действия": [
       {
         "document": "platform-guide/bilibili.md",
@@ -13883,7 +13545,7 @@
     "Объект SDK": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 512,
+        "line": 885,
         "level": 3,
         "title": "Объект SDK"
       },
@@ -14053,7 +13715,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1382,
+        "line": 854,
         "level": 2,
         "title": "Ограничение скорости"
       }
@@ -14061,7 +13723,7 @@
     "Ограничение скорости обработчиков (throttle=) и дебаунсинг (debounce=)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1269,
+        "line": 1265,
         "level": 3,
         "title": "Ограничение скорости обработчиков (throttle=) и дебаунсинг (debounce=)"
       },
@@ -14070,6 +13732,26 @@
         "line": 226,
         "level": 3,
         "title": "Ограничение скорости обработчиков (throttle=) и дебаунсинг (debounce=)"
+      }
+    ],
+    "Ограничения горячей перезагрузки": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 143,
+        "level": 2,
+        "title": "Ограничения горячей перезагрузки"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 479,
+        "level": 2,
+        "title": "Ограничения горячей перезагрузки"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 649,
+        "level": 2,
+        "title": "Ограничения горячей перезагрузки"
       }
     ],
     "Ограничения и важные замечания": [
@@ -14086,6 +13768,46 @@
         "title": "Ограничения и важные замечания"
       }
     ],
+    "Ограничения по возможностям": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 147,
+        "level": 3,
+        "title": "Ограничения по возможностям"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 483,
+        "level": 3,
+        "title": "Ограничения по возможностям"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 653,
+        "level": 3,
+        "title": "Ограничения по возможностям"
+      }
+    ],
+    "Ограничения цикла событий": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 170,
+        "level": 3,
+        "title": "Ограничения цикла событий"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 506,
+        "level": 3,
+        "title": "Ограничения цикла событий"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 676,
+        "level": 3,
+        "title": "Ограничения цикла событий"
+      }
+    ],
     "Одноразовая регистрация (once)": [
       {
         "document": "advanced/lifecycle.md",
@@ -14095,7 +13817,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 901,
+        "line": 968,
         "level": 3,
         "title": "Одноразовая регистрация (once)"
       }
@@ -14111,7 +13833,7 @@
     "Ожидание ответа пользователя": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1807,
+        "line": 1803,
         "level": 3,
         "title": "Ожидание ответа пользователя"
       },
@@ -14139,7 +13861,7 @@
     "Ожидание произвольного события (wait_for)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1948,
+        "line": 1944,
         "level": 3,
         "title": "Ожидание произвольного события (wait_for)"
       },
@@ -14153,7 +13875,7 @@
     "Ожидание с обратным вызовом": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1854,
+        "line": 1850,
         "level": 3,
         "title": "Ожидание с обратным вызовом"
       },
@@ -14167,7 +13889,7 @@
     "Ожидание с проверкой": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1827,
+        "line": 1823,
         "level": 3,
         "title": "Ожидание с проверкой"
       },
@@ -14287,7 +14009,7 @@
     "Описание кода": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 585,
+        "line": 581,
         "level": 2,
         "title": "Описание кода"
       },
@@ -14400,21 +14122,9 @@
     ],
     "Описание основных модулей": [
       {
-        "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 861,
-        "level": 2,
-        "title": "Описание основных модулей"
-      },
-      {
         "document": "architecture.md",
         "line": 44,
         "level": 3,
-        "title": "Описание основных модулей"
-      },
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 187,
-        "level": 2,
         "title": "Описание основных модулей"
       }
     ],
@@ -14545,7 +14255,7 @@
     "Определение возможностей платформы": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2349,
+        "line": 2345,
         "level": 3,
         "title": "Определение возможностей платформы"
       },
@@ -14565,7 +14275,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1143,
+        "line": 1210,
         "level": 2,
         "title": "Определение стандартных событий"
       }
@@ -14794,12 +14504,6 @@
     ],
     "Основное использование": [
       {
-        "document": "advanced/http-client.md",
-        "line": 285,
-        "level": 3,
-        "title": "Основное использование"
-      },
-      {
         "document": "advanced/lazy-loading.md",
         "line": 184,
         "level": 3,
@@ -14812,26 +14516,26 @@
         "title": "Основное использование"
       },
       {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 846,
-        "level": 3,
-        "title": "Основное использование"
-      },
-      {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2673,
+        "line": 2669,
         "level": 2,
         "title": "Основное использование"
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 222,
+        "line": 234,
         "level": 3,
         "title": "Основное использование"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
         "line": 630,
+        "level": 3,
+        "title": "Основное использование"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 139,
         "level": 3,
         "title": "Основное использование"
       },
@@ -14891,7 +14595,7 @@
     "Основные команды": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1137,
+        "line": 1133,
         "level": 3,
         "title": "Основные команды"
       },
@@ -14905,7 +14609,7 @@
     "Основные компоненты": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 722,
+        "line": 718,
         "level": 2,
         "title": "Основные компоненты"
       },
@@ -14919,13 +14623,13 @@
     "Основные концепции": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 675,
+        "line": 671,
         "level": 1,
         "title": "Основные концепции"
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 433,
+        "line": 806,
         "level": 2,
         "title": "Основные концепции"
       },
@@ -15005,13 +14709,13 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 458,
+        "line": 457,
         "level": 3,
         "title": "Основные методы"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 507,
+        "line": 505,
         "level": 3,
         "title": "Основные методы"
       },
@@ -15056,10 +14760,30 @@
     ],
     "Основные модули": [
       {
+        "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
+        "line": 857,
+        "level": 2,
+        "title": "Основные модули"
+      },
+      {
         "document": "api-reference/README.md",
         "line": 21,
         "level": 3,
         "title": "Основные модули"
+      },
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 187,
+        "level": 2,
+        "title": "Основные модули"
+      }
+    ],
+    "Основные операции": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 12,
+        "level": 3,
+        "title": "Основные операции"
       }
     ],
     "Основные отличия": [
@@ -15105,7 +14829,7 @@
     "Основные принципы проектирования": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2665,
+        "line": 2661,
         "level": 2,
         "title": "Основные принципы проектирования"
       },
@@ -15273,7 +14997,7 @@
     "Ответы для конкретных платформ": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2332,
+        "line": 2328,
         "level": 3,
         "title": "Ответы для конкретных платформ"
       },
@@ -15284,40 +15008,24 @@
         "title": "Ответы для конкретных платформ"
       }
     ],
-    "Откат при неудачной горячей перезагрузке": [
+    "Откат при горячей перезагрузке": [
       {
         "document": "advanced/ownership.md",
         "line": 130,
         "level": 2,
-        "title": "Откат при неудачной горячей перезагрузке"
+        "title": "Откат при горячей перезагрузке"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 466,
+        "level": 2,
+        "title": "Откат при горячей перезагрузке"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 635,
+        "line": 636,
         "level": 2,
-        "title": "Откат при неудачной горячей перезагрузке"
-      }
-    ],
-    "Отключение шумного складывания": [
-      {
-        "document": "advanced/errors.md",
-        "line": 189,
-        "level": 2,
-        "title": "Отключение шумного складывания"
-      },
-      {
-        "document": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
-        "line": 223,
-        "level": 2,
-        "title": "Отключение шумного складывания"
-      }
-    ],
-    "Отладка SDK": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 429,
-        "level": 2,
-        "title": "Отладка SDK"
+        "title": "Откат при горячей перезагрузке"
       }
     ],
     "Отложенная отправка (Defer)": [
@@ -15369,7 +15077,7 @@
     "Отношение к стандартным методам SendDSL": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2738,
+        "line": 2734,
         "level": 2,
         "title": "Отношение к стандартным методам SendDSL"
       },
@@ -15489,7 +15197,7 @@
     "Отправка ответа": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 611,
+        "line": 607,
         "level": 3,
         "title": "Отправка ответа"
       },
@@ -15533,7 +15241,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1037,
+        "line": 1104,
         "level": 3,
         "title": "Отправка сообщений"
       },
@@ -15581,7 +15289,7 @@
     "Отправка сообщений SendDSL": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 965,
+        "line": 961,
         "level": 2,
         "title": "Отправка сообщений SendDSL"
       },
@@ -15649,7 +15357,7 @@
     "Отслеживание всех сообщений": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1071,
+        "line": 1067,
         "level": 3,
         "title": "Отслеживание всех сообщений"
       },
@@ -15663,7 +15371,7 @@
     "Отслеживание групповых сообщений": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1092,
+        "line": 1088,
         "level": 3,
         "title": "Отслеживание групповых сообщений"
       },
@@ -15685,7 +15393,7 @@
     "Отслеживание личных сообщений": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1083,
+        "line": 1079,
         "level": 3,
         "title": "Отслеживание личных сообщений"
       },
@@ -15699,7 +15407,7 @@
     "Отслеживание сообщений с упоминанием": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1102,
+        "line": 1098,
         "level": 3,
         "title": "Отслеживание сообщений с упоминанием"
       },
@@ -15783,7 +15491,7 @@
     "Пакетная отправка нескольких сообщений": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2407,
+        "line": 2403,
         "level": 3,
         "title": "Пакетная отправка нескольких сообщений"
       },
@@ -15819,7 +15527,7 @@
     "Параллельная обработка событий": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1448,
+        "line": 1444,
         "level": 3,
         "title": "Параллельная обработка событий"
       },
@@ -15847,7 +15555,7 @@
     "Параметр `keep_running`": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 547,
+        "line": 543,
         "level": 3,
         "title": "Параметр `keep_running`"
       },
@@ -15866,52 +15574,10 @@
         "title": "Параметризованный запрос"
       }
     ],
-    "Параметры": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 178,
-        "level": 2,
-        "title": "Параметры"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 739,
-        "level": 2,
-        "title": "Параметры"
-      }
-    ],
-    "Параметры HTTP-запроса": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 180,
-        "level": 3,
-        "title": "Параметры HTTP-запроса"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 741,
-        "level": 3,
-        "title": "Параметры HTTP-запроса"
-      }
-    ],
-    "Параметры ws_connect": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 193,
-        "level": 3,
-        "title": "Параметры ws_connect"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 754,
-        "level": 3,
-        "title": "Параметры ws_connect"
-      }
-    ],
     "Параметры командной строки": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2723,
+        "line": 2719,
         "level": 2,
         "title": "Параметры командной строки"
       },
@@ -15931,7 +15597,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 107,
+        "line": 119,
         "level": 3,
         "title": "Параметры команды в формате dict"
       }
@@ -15993,7 +15659,7 @@
     "Параметры события": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 596,
+        "line": 592,
         "level": 3,
         "title": "Параметры события"
       },
@@ -16013,7 +15679,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 475,
+        "line": 459,
         "level": 2,
         "title": "Передача / повторное использование между модулями"
       }
@@ -16027,7 +15693,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 512,
+        "line": 496,
         "level": 2,
         "title": "Передача между потоками"
       }
@@ -16035,7 +15701,7 @@
     "Перезапись событий: без изменения кода модуля, перезаписать поведение любого типа событий": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1553,
+        "line": 1549,
         "level": 2,
         "title": "Перезапись событий: без изменения кода модуля, перезаписать поведение любого типа событий"
       },
@@ -16147,7 +15813,7 @@
     "Персистентность данных": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2160,
+        "line": 2156,
         "level": 2,
         "title": "Персистентность данных"
       },
@@ -16166,10 +15832,30 @@
         "title": "Письмо с вложением"
       }
     ],
+    "План отладки": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 258,
+        "level": 3,
+        "title": "План отладки"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 594,
+        "level": 3,
+        "title": "План отладки"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 764,
+        "level": 3,
+        "title": "План отладки"
+      }
+    ],
     "Платформенно-специфические методы": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2051,
+        "line": 2047,
         "level": 3,
         "title": "Платформенно-специфические методы"
       },
@@ -16301,7 +15987,7 @@
     "Повтор при неудаче + отмена по таймауту": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2392,
+        "line": 2388,
         "level": 3,
         "title": "Повтор при неудаче + отмена по таймауту"
       },
@@ -16338,6 +16024,14 @@
         "line": 1096,
         "level": 3,
         "title": "Повторное подключение"
+      }
+    ],
+    "Под-логгеры": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 149,
+        "level": 3,
+        "title": "Под-логгеры"
       }
     ],
     "Подготовка к разработке": [
@@ -16589,7 +16283,7 @@
     "Поддержка i18n для полей метаинформации": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 490,
+        "line": 863,
         "level": 4,
         "title": "Поддержка i18n для полей метаинформации"
       },
@@ -16665,7 +16359,7 @@
     "Подкоманды": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1341,
+        "line": 1337,
         "level": 3,
         "title": "Подкоманды"
       },
@@ -16684,12 +16378,12 @@
         "title": "Подмена зависимостей (требуется EP>=2.9.0-dev)"
       }
     ],
-    "Подписка на логи (push-режим)": [
+    "Подписка на логи (режим push)": [
       {
         "document": "api-reference/core-modules.md",
         "line": 170,
         "level": 3,
-        "title": "Подписка на логи (push-режим)"
+        "title": "Подписка на логи (режим push)"
       }
     ],
     "Подписка на события": [
@@ -16803,7 +16497,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 866,
+        "line": 933,
         "level": 3,
         "title": "Подстановочный знак"
       }
@@ -16819,7 +16513,7 @@
     "Подсчёт сообщений": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2482,
+        "line": 2478,
         "level": 3,
         "title": "Подсчёт сообщений"
       },
@@ -16833,7 +16527,7 @@
     "Подтверждение диалога (confirm)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1875,
+        "line": 1871,
         "level": 3,
         "title": "Подтверждение диалога (confirm)"
       },
@@ -16894,8 +16588,14 @@
         "title": "Полная картина принадлежащих ресурсов"
       },
       {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 380,
+        "level": 2,
+        "title": "Полная картина принадлежащих ресурсов"
+      },
+      {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 549,
+        "line": 550,
         "level": 2,
         "title": "Полная картина принадлежащих ресурсов"
       }
@@ -17013,7 +16713,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1169,
+        "line": 1236,
         "level": 2,
         "title": "Полный справочник API"
       }
@@ -17084,20 +16784,6 @@
         "title": "Получение событий (WebSocket, кодировка protobuf)"
       }
     ],
-    "Получение сообщений": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 297,
-        "level": 3,
-        "title": "Получение сообщений"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 858,
-        "level": 3,
-        "title": "Получение сообщений"
-      }
-    ],
     "Получение экземпляра адаптера": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -17115,13 +16801,13 @@
     "Получить помощь": [
       {
         "document": "README.md",
-        "line": 145,
+        "line": 143,
         "level": 2,
         "title": "Получить помощь"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 235,
+        "line": 233,
         "level": 2,
         "title": "Получить помощь"
       }
@@ -17132,20 +16818,6 @@
         "line": 126,
         "level": 2,
         "title": "Пользовательские SQL-хранилища"
-      }
-    ],
-    "Пользовательские заголовки по умолчанию": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 221,
-        "level": 2,
-        "title": "Пользовательские заголовки по умолчанию"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 782,
-        "level": 2,
-        "title": "Пользовательские заголовки по умолчанию"
       }
     ],
     "Пользовательские источники идентификации (провайдеры)": [
@@ -17217,7 +16889,7 @@
     "После написания": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 534,
+        "line": 907,
         "level": 3,
         "title": "После написания"
       },
@@ -17265,29 +16937,41 @@
     "Последовательность отмены (отключение модуля)": [
       {
         "document": "advanced/ownership.md",
-        "line": 181,
+        "line": 247,
+        "level": 3,
+        "title": "Последовательность отмены (отключение модуля)"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 583,
         "level": 3,
         "title": "Последовательность отмены (отключение модуля)"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 686,
+        "line": 753,
         "level": 3,
         "title": "Последовательность отмены (отключение модуля)"
       }
     ],
-    "Последовательность очистки при отключении/отключении": [
+    "Последовательность очистки при отключении/деактивации": [
       {
         "document": "advanced/ownership.md",
         "line": 79,
         "level": 2,
-        "title": "Последовательность очистки при отключении/отключении"
+        "title": "Последовательность очистки при отключении/деактивации"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 415,
+        "level": 2,
+        "title": "Последовательность очистки при отключении/деактивации"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 584,
+        "line": 585,
         "level": 2,
-        "title": "Последовательность очистки при отключении/отключении"
+        "title": "Последовательность очистки при отключении/деактивации"
       }
     ],
     "Поток WebSocket": [
@@ -17301,7 +16985,7 @@
     "Поток событий": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 686,
+        "line": 682,
         "level": 3,
         "title": "Поток событий"
       },
@@ -17367,7 +17051,7 @@
     "Права в группах": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2465,
+        "line": 2461,
         "level": 3,
         "title": "Права в группах"
       },
@@ -17381,7 +17065,7 @@
     "Права доступа и управление доступом команд": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1387,
+        "line": 1383,
         "level": 3,
         "title": "Права доступа и управление доступом команд"
       },
@@ -17412,6 +17096,26 @@
         "line": 454,
         "level": 3,
         "title": "Правила для всей партии и колбэки"
+      }
+    ],
+    "Правила для модулей": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 182,
+        "level": 3,
+        "title": "Правила для модулей"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 518,
+        "level": 3,
+        "title": "Правила для модулей"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 688,
+        "level": 3,
+        "title": "Правила для модулей"
       }
     ],
     "Правила именования": [
@@ -17482,18 +17186,24 @@
         "title": "Предварительные знания"
       }
     ],
-    "Пределы проектирования: какие ресурсы не удаляются при отключении": [
+    "Пределы дизайна: какие ресурсы не очищаются при отключении": [
       {
         "document": "advanced/ownership.md",
-        "line": 140,
+        "line": 206,
         "level": 2,
-        "title": "Пределы проектирования: какие ресурсы не удаляются при отключении"
+        "title": "Пределы дизайна: какие ресурсы не очищаются при отключении"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 542,
+        "level": 2,
+        "title": "Пределы дизайна: какие ресурсы не очищаются при отключении"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 645,
+        "line": 712,
         "level": 2,
-        "title": "Пределы проектирования: какие ресурсы не удаляются при отключении"
+        "title": "Пределы дизайна: какие ресурсы не очищаются при отключении"
       }
     ],
     "Предупреждение о нескольких экземплярах и файле блокировки": [
@@ -17631,7 +17341,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1207,
+        "line": 1274,
         "level": 2,
         "title": "Пример использования в модуле"
       }
@@ -17743,7 +17453,7 @@
     "Пример распознавания изображений": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2613,
+        "line": 2609,
         "level": 3,
         "title": "Пример распознавания изображений"
       },
@@ -17801,7 +17511,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 362,
+        "line": 361,
         "level": 3,
         "title": "Примеры"
       }
@@ -17961,7 +17671,7 @@
     "Примеры типичных задач": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2143,
+        "line": 2139,
         "level": 1,
         "title": "Примеры типичных задач"
       },
@@ -18037,7 +17747,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 221,
+        "line": 287,
         "level": 3,
         "title": "Примечания"
       },
@@ -18049,13 +17759,19 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 306,
+        "line": 318,
         "level": 2,
         "title": "Примечания"
       },
       {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 623,
+        "level": 3,
+        "title": "Примечания"
+      },
+      {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 726,
+        "line": 793,
         "level": 3,
         "title": "Примечания"
       },
@@ -18099,7 +17815,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1234,
+        "line": 1301,
         "level": 2,
         "title": "Принадлежность фоновых задач и автоматическая отмена"
       }
@@ -18139,7 +17855,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 55,
+        "line": 67,
         "level": 2,
         "title": "Принцип работы"
       },
@@ -18189,7 +17905,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 846,
+        "line": 913,
         "level": 3,
         "title": "Приоритет"
       }
@@ -18211,7 +17927,7 @@
     "Приоритет команд": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1435,
+        "line": 1431,
         "level": 3,
         "title": "Приоритет команд"
       },
@@ -18261,7 +17977,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1012,
+        "line": 1079,
         "level": 3,
         "title": "Приём и обработка событий"
       }
@@ -18283,7 +17999,7 @@
     "Проверка администратора": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2430,
+        "line": 2426,
         "level": 3,
         "title": "Проверка администратора"
       },
@@ -18292,6 +18008,20 @@
         "line": 288,
         "level": 3,
         "title": "Проверка администратора"
+      }
+    ],
+    "Проверка параметров внутри фреймворка (ValueError)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 168,
+        "level": 3,
+        "title": "Проверка параметров внутри фреймворка (ValueError)"
+      },
+      {
+        "document": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
+        "line": 202,
+        "level": 3,
+        "title": "Проверка параметров внутри фреймворка (ValueError)"
       }
     ],
     "Проверка поддерживаемых методов отправки": [
@@ -18311,7 +18041,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 915,
+        "line": 982,
         "level": 3,
         "title": "Проверка слушателей (has_handlers)"
       }
@@ -18325,7 +18055,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1465,
+        "line": 937,
         "level": 3,
         "title": "Проверка состояния"
       },
@@ -18415,7 +18145,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 285,
+        "line": 286,
         "level": 3,
         "title": "Проверки (три вопроса)"
       }
@@ -18431,7 +18161,7 @@
     "Продвинутая отправка сообщений (повторы/таймауты/пакетная отправка)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2373,
+        "line": 2369,
         "level": 2,
         "title": "Продвинутая отправка сообщений (повторы/таймауты/пакетная отправка)"
       },
@@ -18451,7 +18181,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 360,
+        "line": 361,
         "level": 3,
         "title": "Продвинутое: словарный запасной вариант с путями через точку"
       }
@@ -18495,7 +18225,7 @@
     "Продолжение пути обучения": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 529,
+        "line": 902,
         "level": 3,
         "title": "Продолжение пути обучения"
       },
@@ -18575,7 +18305,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 168,
+        "line": 180,
         "level": 3,
         "title": "Продолжение состояния"
       }
@@ -18611,7 +18341,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1340,
+        "line": 812,
         "level": 2,
         "title": "Промежуточные обработчики маршрутов"
       }
@@ -18647,7 +18377,7 @@
     "Просмотр доступных модулей": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 407,
+        "line": 403,
         "level": 3,
         "title": "Просмотр доступных модулей"
       },
@@ -18675,7 +18405,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 386,
+        "line": 370,
         "level": 2,
         "title": "Просмотр пула соединений"
       }
@@ -18683,7 +18413,7 @@
     "Простой поиск": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2528,
+        "line": 2524,
         "level": 3,
         "title": "Простой поиск"
       },
@@ -18697,7 +18427,7 @@
     "Простой счётчик": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2162,
+        "line": 2158,
         "level": 3,
         "title": "Простой счётчик"
       },
@@ -18711,7 +18441,7 @@
     "Простой таймер": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2221,
+        "line": 2217,
         "level": 3,
         "title": "Простой таймер"
       },
@@ -18789,7 +18519,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 61,
+        "line": 73,
         "level": 3,
         "title": "Процесс инициализации"
       },
@@ -18850,10 +18580,24 @@
         "title": "Процесс синхронизации"
       }
     ],
+    "Прочее": [
+      {
+        "document": "README.md",
+        "line": 137,
+        "level": 2,
+        "title": "Прочее"
+      },
+      {
+        "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
+        "line": 227,
+        "level": 2,
+        "title": "Прочее"
+      }
+    ],
     "Псевдонимы команд": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1153,
+        "line": 1149,
         "level": 3,
         "title": "Псевдонимы команд"
       },
@@ -18905,7 +18649,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 342,
+        "line": 326,
         "level": 1,
         "title": "Пул соединений и трансляция"
       }
@@ -18949,7 +18693,7 @@
     "Работа": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2697,
+        "line": 2693,
         "level": 2,
         "title": "Работа"
       },
@@ -19145,7 +18889,7 @@
     "Расширение: добавление дополнительных функций": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 619,
+        "line": 615,
         "level": 2,
         "title": "Расширение: добавление дополнительных функций"
       },
@@ -19317,7 +19061,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1258,
+        "line": 730,
         "level": 3,
         "title": "Регистрация WebSocket"
       }
@@ -19331,7 +19075,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1171,
+        "line": 1238,
         "level": 3,
         "title": "Регистрация и отмена регистрации"
       }
@@ -19345,7 +19089,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1486,
+        "line": 958,
         "level": 3,
         "title": "Регистрация кнопки"
       }
@@ -19375,7 +19119,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 825,
+        "line": 892,
         "level": 3,
         "title": "Регистрация обработчиков"
       }
@@ -19435,7 +19179,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1114,
+        "line": 586,
         "level": 3,
         "title": "Регистрация: одинарный параметр (рекомендуется) и двойной параметр"
       }
@@ -19578,20 +19322,6 @@
         "title": "Рекомендации по безопасности"
       }
     ],
-    "Рекомендации по лучшим практикам": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 493,
-        "level": 2,
-        "title": "Рекомендации по лучшим практикам"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1054,
-        "level": 2,
-        "title": "Рекомендации по лучшим практикам"
-      }
-    ],
     "Рекомендации по перехвату": [
       {
         "document": "advanced/errors.md",
@@ -19615,7 +19345,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 292,
+        "line": 304,
         "level": 3,
         "title": "Рекомендованные сценарии использования ленивой загрузки (lazy_load=True)"
       }
@@ -19629,9 +19359,29 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 297,
+        "line": 309,
         "level": 3,
         "title": "Рекомендованные сценарии отключения ленивой загрузки (lazy_load=False)"
+      }
+    ],
+    "Рекомендуемая запись": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 265,
+        "level": 3,
+        "title": "Рекомендуемая запись"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 601,
+        "level": 3,
+        "title": "Рекомендуемая запись"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 771,
+        "level": 3,
+        "title": "Рекомендуемая запись"
       }
     ],
     "Рекомендуемая стратегия миграции": [
@@ -19665,7 +19415,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 276,
+        "line": 288,
         "level": 2,
         "title": "Рекомендуемые практики"
       },
@@ -19696,20 +19446,6 @@
         "line": 84,
         "level": 3,
         "title": "Рекомендуемый способ: объявление ключей перевода через I18nClass (v2.7.0+)"
-      }
-    ],
-    "Рекомендуемый стиль": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 199,
-        "level": 3,
-        "title": "Рекомендуемый стиль"
-      },
-      {
-        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 704,
-        "level": 3,
-        "title": "Рекомендуемый стиль"
       }
     ],
     "Рендеринг HTML": [
@@ -19745,13 +19481,19 @@
     "Руководство для авторов модулей": [
       {
         "document": "advanced/ownership.md",
-        "line": 197,
+        "line": 263,
+        "level": 2,
+        "title": "Руководство для авторов модулей"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 599,
         "level": 2,
         "title": "Руководство для авторов модулей"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 702,
+        "line": 769,
         "level": 2,
         "title": "Руководство для авторов модулей"
       }
@@ -19783,13 +19525,19 @@
     "Руководство по инструментальным модулям: управление дескрипторами других модулей": [
       {
         "document": "advanced/ownership.md",
-        "line": 243,
+        "line": 309,
+        "level": 2,
+        "title": "Руководство по инструментальным модулям: управление дескрипторами других модулей"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 645,
         "level": 2,
         "title": "Руководство по инструментальным модулям: управление дескрипторами других модулей"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 748,
+        "line": 815,
         "level": 2,
         "title": "Руководство по инструментальным модулям: управление дескрипторами других модулей"
       }
@@ -19973,7 +19721,7 @@
     "Сбор анкеты (collect)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1928,
+        "line": 1924,
         "level": 3,
         "title": "Сбор анкеты (collect)"
       },
@@ -19992,18 +19740,32 @@
         "title": "Сброс построителя"
       }
     ],
-    "Свойства ClientWebSocket": [
+    "Сводная таблица продвинутых функций по версиям": [
       {
-        "document": "advanced/http-client.md",
-        "line": 357,
-        "level": 3,
-        "title": "Свойства ClientWebSocket"
+        "document": "README.md",
+        "line": 118,
+        "level": 2,
+        "title": "Сводная таблица продвинутых функций по версиям"
       },
       {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 918,
-        "level": 3,
-        "title": "Свойства ClientWebSocket"
+        "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
+        "line": 208,
+        "level": 2,
+        "title": "Сводная таблица продвинутых функций по версиям"
+      }
+    ],
+    "Сворачивание шума при остановке": [
+      {
+        "document": "advanced/errors.md",
+        "line": 189,
+        "level": 2,
+        "title": "Сворачивание шума при остановке"
+      },
+      {
+        "document": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
+        "line": 223,
+        "level": 2,
+        "title": "Сворачивание шума при остановке"
       }
     ],
     "Связанная документация": [
@@ -20051,7 +19813,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1275,
+        "line": 1342,
         "level": 2,
         "title": "Связанная документация"
       },
@@ -20114,12 +19876,6 @@
         "title": "Связанные документы"
       },
       {
-        "document": "advanced/http-client.md",
-        "line": 503,
-        "level": 2,
-        "title": "Связанные документы"
-      },
-      {
         "document": "advanced/i18n.md",
         "line": 598,
         "level": 2,
@@ -20145,7 +19901,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 283,
+        "line": 349,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -20193,25 +19949,19 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 330,
+        "line": 314,
         "level": 2,
         "title": "Связанные документы"
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 551,
+        "line": 535,
         "level": 2,
         "title": "Связанные документы"
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1064,
-        "level": 2,
-        "title": "Связанные документы"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1545,
+        "line": 1017,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -20223,7 +19973,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 313,
+        "line": 325,
+        "level": 2,
+        "title": "Связанные документы"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 685,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -20253,13 +20009,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 493,
+        "line": 494,
         "level": 2,
         "title": "Связанные документы"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 788,
+        "line": 855,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -20283,7 +20039,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 527,
+        "line": 524,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -20349,13 +20105,13 @@
     "Связанные ссылки": [
       {
         "document": "README.md",
-        "line": 151,
+        "line": 149,
         "level": 2,
         "title": "Связанные ссылки"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 241,
+        "line": 239,
         "level": 2,
         "title": "Связанные ссылки"
       },
@@ -20378,20 +20134,6 @@
         "line": 89,
         "level": 3,
         "title": "Связывание переменных окружения с конфигурацией модуля (с версии 2.9.0+)"
-      }
-    ],
-    "Связь времени регистрации → результата принадлежности": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 228,
-        "level": 3,
-        "title": "Связь времени регистрации → результата принадлежности"
-      },
-      {
-        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 733,
-        "level": 3,
-        "title": "Связь времени регистрации → результата принадлежности"
       }
     ],
     "Связь с декларативными конфигурационными классами": [
@@ -20471,7 +20213,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 528,
+        "line": 512,
         "level": 2,
         "title": "Семантика выгрузки и очистки"
       }
@@ -20491,7 +20233,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 182,
+        "line": 194,
         "level": 3,
         "title": "Семантика и границы"
       },
@@ -20511,7 +20253,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 251,
+        "line": 252,
         "level": 3,
         "title": "Семантика определения"
       }
@@ -20525,7 +20267,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 132,
+        "line": 144,
         "level": 3,
         "title": "Семантика триггеров"
       }
@@ -20546,102 +20288,96 @@
         "title": "Сервер маршрутизации"
       }
     ],
-    "Серия исключений Client — `Core/client.py` / `Core/Bases/client.py`": [
+    "Сервисный контракт (meta.services)": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 300,
+        "level": 3,
+        "title": "Сервисный контракт (meta.services)"
+      }
+    ],
+    "Серия Client — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
         "line": 73,
         "level": 3,
-        "title": "Серия исключений Client — `Core/client.py` / `Core/Bases/client.py`"
+        "title": "Серия Client — `Core/client.py` / `Core/Bases/client.py`"
       },
       {
         "document": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
         "line": 107,
         "level": 3,
-        "title": "Серия исключений Client — `Core/client.py` / `Core/Bases/client.py`"
+        "title": "Серия Client — `Core/client.py` / `Core/Bases/client.py`"
       }
     ],
-    "Серия исключений Module — `Core/module.py` (`sdk.module.call`)": [
+    "Серия Module — `Core/module.py` (`sdk.module.call`)": [
       {
         "document": "advanced/errors.md",
         "line": 130,
         "level": 3,
-        "title": "Серия исключений Module — `Core/module.py` (`sdk.module.call`)"
+        "title": "Серия Module — `Core/module.py` (`sdk.module.call`)"
       },
       {
         "document": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
         "line": 164,
         "level": 3,
-        "title": "Серия исключений Module — `Core/module.py` (`sdk.module.call`)"
+        "title": "Серия Module — `Core/module.py` (`sdk.module.call`)"
       }
     ],
-    "Серия исключений Shadow — `Core/shadow.py` (тенированные модули)": [
+    "Серия Shadow — `Core/shadow.py` (теневые модули)": [
       {
         "document": "advanced/errors.md",
         "line": 159,
         "level": 3,
-        "title": "Серия исключений Shadow — `Core/shadow.py` (тенированные модули)"
+        "title": "Серия Shadow — `Core/shadow.py` (теневые модули)"
       },
       {
         "document": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
         "line": 193,
         "level": 3,
-        "title": "Серия исключений Shadow — `Core/shadow.py` (тенированные модули)"
+        "title": "Серия Shadow — `Core/shadow.py` (теневые модули)"
       }
     ],
-    "Серия исключений Storage — `Core/storage` / `Core/Bases/sql_base.py`": [
+    "Серия Storage — `Core/storage` / `Core/Bases/sql_base.py`": [
       {
         "document": "advanced/errors.md",
         "line": 107,
         "level": 3,
-        "title": "Серия исключений Storage — `Core/storage` / `Core/Bases/sql_base.py`"
+        "title": "Серия Storage — `Core/storage` / `Core/Bases/sql_base.py`"
       },
       {
         "document": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
         "line": 141,
         "level": 3,
-        "title": "Серия исключений Storage — `Core/storage` / `Core/Bases/sql_base.py`"
+        "title": "Серия Storage — `Core/storage` / `Core/Bases/sql_base.py`"
       }
     ],
-    "Серия исключений WebSocket — `Core/client.py` (`send` / `receive`)": [
+    "Серия WebSocket — `Core/client.py` (методы `send` / `receive`)": [
       {
         "document": "advanced/errors.md",
         "line": 93,
         "level": 3,
-        "title": "Серия исключений WebSocket — `Core/client.py` (`send` / `receive`)"
+        "title": "Серия WebSocket — `Core/client.py` (методы `send` / `receive`)"
       },
       {
         "document": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
         "line": 127,
         "level": 3,
-        "title": "Серия исключений WebSocket — `Core/client.py` (`send` / `receive`)"
+        "title": "Серия WebSocket — `Core/client.py` (методы `send` / `receive`)"
       }
     ],
-    "Серия исключений регистрации соединений — `Core/connections.py` (2.10+)": [
+    "Серия реестра подключений — `Core/connections.py` (начиная с 2.10)": [
       {
         "document": "advanced/errors.md",
         "line": 100,
         "level": 3,
-        "title": "Серия исключений регистрации соединений — `Core/connections.py` (2.10+)"
+        "title": "Серия реестра подключений — `Core/connections.py` (начиная с 2.10)"
       },
       {
         "document": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
         "line": 134,
         "level": 3,
-        "title": "Серия исключений регистрации соединений — `Core/connections.py` (2.10+)"
-      }
-    ],
-    "Сетевой клиент": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 1,
-        "level": 1,
-        "title": "Сетевой клиент"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 562,
-        "level": 1,
-        "title": "Сетевой клиент"
+        "title": "Серия реестра подключений — `Core/connections.py` (начиная с 2.10)"
       }
     ],
     "Синтаксис записей сопоставления (единый для всей системы)": [
@@ -20653,7 +20389,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 93,
+        "line": 94,
         "level": 2,
         "title": "Синтаксис записей сопоставления (единый для всей системы)"
       }
@@ -20695,7 +20431,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 267,
+        "line": 279,
         "level": 3,
         "title": "Синхронная инициализация"
       }
@@ -20716,12 +20452,6 @@
     ],
     "Система исключений": [
       {
-        "document": "advanced/http-client.md",
-        "line": 390,
-        "level": 2,
-        "title": "Система исключений"
-      },
-      {
         "document": "advanced/module-communication.md",
         "line": 42,
         "level": 3,
@@ -20729,14 +20459,8 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 117,
+        "line": 101,
         "level": 3,
-        "title": "Система исключений"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 951,
-        "level": 2,
         "title": "Система исключений"
       }
     ],
@@ -20763,7 +20487,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1052,
+        "line": 1119,
         "level": 3,
         "title": "Система команд"
       }
@@ -20771,7 +20495,7 @@
     "Система ленивой загрузки": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1012,
+        "line": 1008,
         "level": 2,
         "title": "Система ленивой загрузки"
       },
@@ -20791,7 +20515,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 39,
+        "line": 51,
         "level": 1,
         "title": "Система ленивой загрузки модулей"
       }
@@ -20826,8 +20550,14 @@
         "title": "Система принадлежности (owner)"
       },
       {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 337,
+        "level": 1,
+        "title": "Система принадлежности (owner)"
+      },
+      {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 506,
+        "line": 507,
         "level": 1,
         "title": "Система принадлежности (owner)"
       }
@@ -20883,7 +20613,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1461,
+        "line": 933,
         "level": 2,
         "title": "Системные маршруты"
       }
@@ -20905,7 +20635,7 @@
     "Скачивание и сохранение изображений": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2584,
+        "line": 2580,
         "level": 3,
         "title": "Скачивание и сохранение изображений"
       },
@@ -20995,13 +20725,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 665,
+        "line": 661,
         "level": 2,
         "title": "Следующие шаги"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1035,
+        "line": 1031,
         "level": 2,
         "title": "Следующие шаги"
       },
@@ -21077,7 +20807,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 199,
+        "line": 183,
         "level": 2,
         "title": "Служба каталога: services()"
       }
@@ -21219,7 +20949,7 @@
     "Событие подключения": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1730,
+        "line": 1726,
         "level": 3,
         "title": "Событие подключения"
       },
@@ -21249,7 +20979,7 @@
     "Событие сердцебиения": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1746,
+        "line": 1742,
         "level": 3,
         "title": "Событие сердцебиения"
       },
@@ -21269,7 +20999,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 71,
+        "line": 83,
         "level": 2,
         "title": "Событийная ленивая активация (activate_on)"
       }
@@ -21277,7 +21007,7 @@
     "Событийно-ориентированная архитектура": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 682,
+        "line": 678,
         "level": 2,
         "title": "Событийно-ориентированная архитектура"
       },
@@ -21286,34 +21016,6 @@
         "line": 8,
         "level": 2,
         "title": "Событийно-ориентированная архитектура"
-      }
-    ],
-    "События HTTP-запросов": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 248,
-        "level": 3,
-        "title": "События HTTP-запросов"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 809,
-        "level": 3,
-        "title": "События HTTP-запросов"
-      }
-    ],
-    "События WebSocket-соединений": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 260,
-        "level": 3,
-        "title": "События WebSocket-соединений"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 821,
-        "level": 3,
-        "title": "События WebSocket-соединений"
       }
     ],
     "События адаптера": [
@@ -21333,7 +21035,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 458,
+        "line": 442,
         "level": 3,
         "title": "События жизненного цикла"
       },
@@ -21377,7 +21079,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 860,
+        "line": 927,
         "level": 3,
         "title": "События с точечной структурой"
       }
@@ -21477,7 +21179,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1163,
+        "line": 635,
         "level": 4,
         "title": "Соглашение о возвращаемых значениях (2.10+)"
       }
@@ -21499,7 +21201,7 @@
     "Содержание": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2148,
+        "line": 2144,
         "level": 2,
         "title": "Содержание"
       },
@@ -21581,7 +21283,7 @@
     "Создание первого бота": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 509,
+        "line": 505,
         "level": 1,
         "title": "Создание первого бота"
       },
@@ -21595,7 +21297,7 @@
     "Создание проекта вручную": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 390,
+        "line": 386,
         "level": 3,
         "title": "Создание проекта вручную"
       },
@@ -21758,6 +21460,26 @@
         "title": "Сопоставление событий"
       }
     ],
+    "Сопоставление сценария регистрации → результат присвоения": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 294,
+        "level": 3,
+        "title": "Сопоставление сценария регистрации → результат присвоения"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 630,
+        "level": 3,
+        "title": "Сопоставление сценария регистрации → результат присвоения"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 800,
+        "level": 3,
+        "title": "Сопоставление сценария регистрации → результат присвоения"
+      }
+    ],
     "Сопоставление типов событий": [
       {
         "document": "platform-guide/onebot11.md",
@@ -21803,7 +21525,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1105,
+        "line": 1172,
         "level": 3,
         "title": "Состояние подключения хранилища"
       }
@@ -21946,6 +21668,26 @@
         "title": "Список поддерживаемых методов отправки"
       }
     ],
+    "Список проверки": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 199,
+        "level": 3,
+        "title": "Список проверки"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 535,
+        "level": 3,
+        "title": "Список проверки"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 705,
+        "level": 3,
+        "title": "Список проверки"
+      }
+    ],
     "Список стандартных документов": [
       {
         "document": "standards/README.md",
@@ -22063,7 +21805,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 153,
+        "line": 165,
         "level": 3,
         "title": "Способ объявления"
       }
@@ -22095,13 +21837,13 @@
     "Способы разработки": [
       {
         "document": "README.md",
-        "line": 132,
+        "line": 130,
         "level": 2,
         "title": "Способы разработки"
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 222,
+        "line": 220,
         "level": 2,
         "title": "Способы разработки"
       }
@@ -22159,7 +21901,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 535,
+        "line": 519,
         "level": 2,
         "title": "Справочник API"
       },
@@ -22190,20 +21932,6 @@
         "line": 1,
         "level": 1,
         "title": "Справочник командной строки"
-      }
-    ],
-    "Справочник по продвинутым функциям по версиям": [
-      {
-        "document": "README.md",
-        "line": 120,
-        "level": 2,
-        "title": "Справочник по продвинутым функциям по версиям"
-      },
-      {
-        "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 210,
-        "level": 2,
-        "title": "Справочник по продвинутым функциям по версиям"
       }
     ],
     "Справочник по установке": [
@@ -22283,7 +22011,7 @@
     "Стандарт OneBot12": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 716,
+        "line": 712,
         "level": 3,
         "title": "Стандарт OneBot12"
       },
@@ -22636,24 +22364,10 @@
         "title": "Стандарты формата документации"
       }
     ],
-    "Статистика запросов": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 233,
-        "level": 2,
-        "title": "Статистика запросов"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 794,
-        "level": 2,
-        "title": "Статистика запросов"
-      }
-    ],
     "Статистика сообщений": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2480,
+        "line": 2476,
         "level": 2,
         "title": "Статистика сообщений"
       },
@@ -22697,7 +22411,7 @@
     "Стратегия загрузки": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 825,
+        "line": 821,
         "level": 4,
         "title": "Стратегия загрузки"
       },
@@ -22718,20 +22432,6 @@
         "line": 151,
         "level": 4,
         "title": "Стратегия загрузки"
-      }
-    ],
-    "Стратегия отладки": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 192,
-        "level": 3,
-        "title": "Стратегия отладки"
-      },
-      {
-        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 697,
-        "level": 3,
-        "title": "Стратегия отладки"
       }
     ],
     "Строгий режим": [
@@ -22795,13 +22495,13 @@
     "Структура проекта": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 450,
+        "line": 446,
         "level": 2,
         "title": "Структура проекта"
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 332,
+        "line": 705,
         "level": 2,
         "title": "Структура проекта"
       },
@@ -22893,7 +22593,7 @@
     "Сценарий установки за один клик (рекомендуется для новых сред)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 320,
+        "line": 316,
         "level": 3,
         "title": "Сценарий установки за один клик (рекомендуется для новых сред)"
       },
@@ -22930,20 +22630,6 @@
         "line": 121,
         "level": 4,
         "title": "Таблица маппинга по платформам"
-      }
-    ],
-    "Тайм-ауты и повторные попытки": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 201,
-        "level": 2,
-        "title": "Тайм-ауты и повторные попытки"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 762,
-        "level": 2,
-        "title": "Тайм-ауты и повторные попытки"
       }
     ],
     "Таймеры сессии: remind / escalate": [
@@ -23041,7 +22727,7 @@
     "Тестирование модуля": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 413,
+        "line": 786,
         "level": 2,
         "title": "Тестирование модуля"
       },
@@ -23061,7 +22747,7 @@
     "Тестовая команда": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 425,
+        "line": 798,
         "level": 3,
         "title": "Тестовая команда"
       },
@@ -23171,7 +22857,7 @@
     "Типы событий": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 847,
+        "line": 843,
         "level": 2,
         "title": "Типы событий"
       },
@@ -23257,7 +22943,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1232,
+        "line": 704,
         "level": 2,
         "title": "Традиционный способ регистрации"
       }
@@ -23267,12 +22953,6 @@
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
         "line": 1893,
         "level": 2,
-        "title": "Транзакции"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 31,
-        "level": 3,
         "title": "Транзакции"
       },
       {
@@ -23294,6 +22974,22 @@
         "line": 2749,
         "level": 2,
         "title": "Транзакции сообщений: message_tx"
+      }
+    ],
+    "Транзакционные операции": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 31,
+        "level": 3,
+        "title": "Транзакционные операции"
+      }
+    ],
+    "Транскрипт (Transcript)": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 501,
+        "level": 2,
+        "title": "Транскрипт (Transcript)"
       }
     ],
     "Транскрипт сессии (Transcript)": [
@@ -23319,7 +23015,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 434,
+        "line": 418,
         "level": 3,
         "title": "Трансляция"
       }
@@ -23333,7 +23029,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 411,
+        "line": 395,
         "level": 2,
         "title": "Трансляция и подписка"
       }
@@ -23360,6 +23056,26 @@
         "title": "Трекер ошибок"
       }
     ],
+    "Трёхуровневое управление ресурсами": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 164,
+        "level": 3,
+        "title": "Трёхуровневое управление ресурсами"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 500,
+        "level": 3,
+        "title": "Трёхуровневое управление ресурсами"
+      },
+      {
+        "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
+        "line": 670,
+        "level": 3,
+        "title": "Трёхуровневое управление ресурсами"
+      }
+    ],
     "Убедитесь в качестве перед публикацией": [
       {
         "document": "developer-guide/publishing.md",
@@ -23371,7 +23087,7 @@
     "Увеличение участников группы": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1679,
+        "line": 1675,
         "level": 3,
         "title": "Увеличение участников группы"
       },
@@ -23481,7 +23197,7 @@
     "Уменьшение участников группы": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1689,
+        "line": 1685,
         "level": 3,
         "title": "Уменьшение участников группы"
       },
@@ -23571,7 +23287,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 801,
+        "line": 868,
         "level": 1,
         "title": "Управление жизненным циклом"
       }
@@ -23607,7 +23323,7 @@
     "Управление командами (cooldown= / rate_limit= / usage_limit= / deprecated=)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1218,
+        "line": 1214,
         "level": 3,
         "title": "Управление командами (cooldown= / rate_limit= / usage_limit= / deprecated=)"
       },
@@ -23616,20 +23332,6 @@
         "line": 175,
         "level": 3,
         "title": "Управление командами (cooldown= / rate_limit= / usage_limit= / deprecated=)"
-      }
-    ],
-    "Управление контекстом": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 272,
-        "level": 2,
-        "title": "Управление контекстом"
-      },
-      {
-        "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 833,
-        "level": 2,
-        "title": "Управление контекстом"
       }
     ],
     "Управление конфигурацией": [
@@ -23679,7 +23381,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 202,
+        "line": 214,
         "level": 3,
         "title": "Управление на уровне модуля"
       }
@@ -23775,7 +23477,7 @@
     "Управление цепочкой: присвоение и блокировка": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1614,
+        "line": 1610,
         "level": 2,
         "title": "Управление цепочкой: присвоение и блокировка"
       },
@@ -23875,7 +23577,7 @@
     "Установка ErisPulse: три способа": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 298,
+        "line": 294,
         "level": 2,
         "title": "Установка ErisPulse: три способа"
       },
@@ -23931,7 +23633,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 399,
+        "line": 395,
         "level": 2,
         "title": "Установка модуля"
       },
@@ -23951,7 +23653,7 @@
     "Установка с помощью pip": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 302,
+        "line": 298,
         "level": 3,
         "title": "Установка с помощью pip"
       },
@@ -23965,7 +23667,7 @@
     "Установка через CLI": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 401,
+        "line": 397,
         "level": 3,
         "title": "Установка через CLI"
       },
@@ -24015,7 +23717,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 1197,
+        "line": 1264,
         "level": 3,
         "title": "Утилиты"
       }
@@ -24065,7 +23767,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 124,
+        "line": 125,
         "level": 2,
         "title": "Файл конфигурации"
       }
@@ -24095,7 +23797,7 @@
     "Фильтрация области: почему мой модуль не получил сообщение": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1523,
+        "line": 1519,
         "level": 2,
         "title": "Фильтрация области: почему мой модуль не получил сообщение"
       },
@@ -24109,7 +23811,7 @@
     "Фильтрация по ключевым словам": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2291,
+        "line": 2287,
         "level": 3,
         "title": "Фильтрация по ключевым словам"
       },
@@ -24137,7 +23839,7 @@
     "Фильтрация по чёрному списку": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2312,
+        "line": 2308,
         "level": 3,
         "title": "Фильтрация по чёрному списку"
       },
@@ -24151,7 +23853,7 @@
     "Фильтрация сообщений": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2289,
+        "line": 2285,
         "level": 2,
         "title": "Фильтрация сообщений"
       },
@@ -24185,7 +23887,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 232,
+        "line": 233,
         "level": 3,
         "title": "Форма правил (инлайн-таблицы)"
       }
@@ -24295,7 +23997,7 @@
     "Функция поиска": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2526,
+        "line": 2522,
         "level": 2,
         "title": "Функция поиска"
       },
@@ -24317,7 +24019,7 @@
     "Хотите запустить бота на постоянной основе": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 494,
+        "line": 490,
         "level": 3,
         "title": "Хотите запустить бота на постоянной основе"
       },
@@ -24331,7 +24033,7 @@
     "Хотите написать свой модуль / адаптер": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 487,
+        "line": 483,
         "level": 3,
         "title": "Хотите написать свой модуль / адаптер"
       },
@@ -24345,7 +24047,7 @@
     "Хотите создать групповой бот (обработка сообщений, управление группой, уведомления)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 482,
+        "line": 478,
         "level": 3,
         "title": "Хотите создать групповой бот (обработка сообщений, управление группой, уведомления)"
       },
@@ -24359,7 +24061,7 @@
     "Хранение данных пользователя": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2180,
+        "line": 2176,
         "level": 3,
         "title": "Хранение данных пользователя"
       },
@@ -24387,7 +24089,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1299,
+        "line": 771,
         "level": 2,
         "title": "Хуки жизненного цикла WebSocket"
       }
@@ -24412,14 +24114,6 @@
         "line": 711,
         "level": 3,
         "title": "Цепные вызовы"
-      }
-    ],
-    "Цепочечные SQL-запросы": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 46,
-        "level": 3,
-        "title": "Цепочечные SQL-запросы"
       }
     ],
     "Цепочечные методы-модификаторы (возвращают self, могут комбинироваться)": [
@@ -24475,7 +24169,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 122,
+        "line": 134,
         "level": 3,
         "title": "Цепочка возврата для Help заглушки команды"
       }
@@ -24517,7 +24211,7 @@
     "Цепочка модификаторов": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 982,
+        "line": 978,
         "level": 3,
         "title": "Цепочка модификаторов"
       },
@@ -24554,24 +24248,30 @@
         "title": "Цепочка отката при разрешении аккаунта"
       }
     ],
-    "Цепочка отмены (таблица задач)": [
+    "Цепочка отмены (таблица регистрации задач)": [
       {
         "document": "advanced/ownership.md",
-        "line": 172,
+        "line": 238,
         "level": 3,
-        "title": "Цепочка отмены (таблица задач)"
+        "title": "Цепочка отмены (таблица регистрации задач)"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 574,
+        "level": 3,
+        "title": "Цепочка отмены (таблица регистрации задач)"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 677,
+        "line": 744,
         "level": 3,
-        "title": "Цепочка отмены (таблица задач)"
+        "title": "Цепочка отмены (таблица регистрации задач)"
       }
     ],
     "Цепочка принятия решений при распределении команд: почему команда не сработала": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1515,
+        "line": 1511,
         "level": 2,
         "title": "Цепочка принятия решений при распределении команд: почему команда не сработала"
       },
@@ -24582,18 +24282,24 @@
         "title": "Цепочка принятия решений при распределении команд: почему команда не сработала"
       }
     ],
-    "Цепочка присвоения (contextvar)": [
+    "Цепочка присвоения (contextvar передача)": [
       {
         "document": "advanced/ownership.md",
-        "line": 159,
+        "line": 225,
         "level": 3,
-        "title": "Цепочка присвоения (contextvar)"
+        "title": "Цепочка присвоения (contextvar передача)"
+      },
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 561,
+        "level": 3,
+        "title": "Цепочка присвоения (contextvar передача)"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 664,
+        "line": 731,
         "level": 3,
-        "title": "Цепочка присвоения (contextvar)"
+        "title": "Цепочка присвоения (contextvar передача)"
       }
     ],
     "Цепочка проверки и изменение во время выполнения": [
@@ -24655,7 +24361,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 627,
+        "line": 623,
         "level": 2,
         "title": "Часто задаваемые вопросы"
       },
@@ -24689,7 +24395,7 @@
     "Часто используемые методы объекта Event": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2005,
+        "line": 2001,
         "level": 3,
         "title": "Часто используемые методы объекта Event"
       },
@@ -24709,7 +24415,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 415,
+        "line": 416,
         "level": 2,
         "title": "Частые вопросы и важные замечания"
       }
@@ -24915,7 +24621,7 @@
     "Шаг 3: Тестирование бота": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 575,
+        "line": 571,
         "level": 2,
         "title": "Шаг 3: Тестирование бота"
       },
@@ -24929,7 +24635,7 @@
     "Шаг второй: Запуск робота": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 565,
+        "line": 561,
         "level": 2,
         "title": "Шаг второй: Запуск робота"
       },
@@ -24943,7 +24649,7 @@
     "Шаг первый: написание первой команды": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 516,
+        "line": 512,
         "level": 2,
         "title": "Шаг первый: написание первой команды"
       },
@@ -25009,7 +24715,7 @@
     "Эффект за 60 секунд: заставьте бота сначала ответить вам": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 257,
+        "line": 253,
         "level": 2,
         "title": "Эффект за 60 секунд: заставьте бота сначала ответить вам"
       },
@@ -25063,13 +24769,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 159,
+        "line": 160,
         "level": 2,
         "title": "① Измерение модулей"
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 298,
+        "line": 299,
         "level": 3,
         "title": "① Измерение модулей"
       }
@@ -25083,7 +24789,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 321,
+        "line": 322,
         "level": 3,
         "title": "② Измерение идентичности"
       }
@@ -25097,7 +24803,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 204,
+        "line": 205,
         "level": 2,
         "title": "② Измерение идентичности (допуск событий)"
       }
@@ -25111,7 +24817,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 334,
+        "line": 335,
         "level": 3,
         "title": "③ Измерение исходящих"
       }
@@ -25125,7 +24831,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 223,
+        "line": 224,
         "level": 2,
         "title": "③ Измерение исходящих (ограничение исходящих вызовов, инициируемых модулями)"
       }
@@ -25133,7 +24839,7 @@
     "事件处理": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 1040,
+        "line": 1036,
         "level": 2,
         "title": "事件处理"
       }
@@ -25165,7 +24871,7 @@
     "作用域": [
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 51,
+        "line": 52,
         "level": 2,
         "title": "作用域"
       }
@@ -25257,7 +24963,7 @@
     "基础概念": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 671,
+        "line": 667,
         "level": 2,
         "title": "基础概念"
       }
@@ -25297,7 +25003,7 @@
     "常见任务": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 2139,
+        "line": 2135,
         "level": 2,
         "title": "常见任务"
       }
@@ -25329,9 +25035,17 @@
     "归属权": [
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 502,
+        "line": 503,
         "level": 2,
         "title": "归属权"
+      }
+    ],
+    "归属权与热重载边界": [
+      {
+        "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
+        "line": 333,
+        "level": 2,
+        "title": "归属权与热重载边界"
       }
     ],
     "影子模块": [
@@ -25345,7 +25059,7 @@
     "快速开始": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 249,
+        "line": 245,
         "level": 2,
         "title": "快速开始"
       }
@@ -25353,7 +25067,7 @@
     "懒加载与休眠": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 35,
+        "line": 47,
         "level": 2,
         "title": "懒加载与休眠"
       }
@@ -25385,7 +25099,7 @@
     "模块开发入门（加载策略）": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-        "line": 321,
+        "line": 694,
         "level": 2,
         "title": "模块开发入门（加载策略）"
       }
@@ -25409,7 +25123,7 @@
     "模块间通信": [
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 72,
+        "line": 56,
         "level": 2,
         "title": "模块间通信"
       }
@@ -25425,7 +25139,7 @@
     "生命周期": [
       {
         "document": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-        "line": 797,
+        "line": 864,
         "level": 2,
         "title": "生命周期"
       }
@@ -25441,7 +25155,7 @@
     "第一个机器人": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
-        "line": 505,
+        "line": 501,
         "level": 2,
         "title": "第一个机器人"
       }
@@ -25457,7 +25171,7 @@
     "路由": [
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 1070,
+        "line": 542,
         "level": 2,
         "title": "路由"
       }
@@ -25473,7 +25187,7 @@
     "连接管理": [
       {
         "document": "ai-support/skills/erispulse-communication/SKILL.md",
-        "line": 338,
+        "line": 322,
         "level": 2,
         "title": "连接管理"
       }

@@ -1,15 +1,15 @@
 # Glossary (Single Source of Truth)
 
 > [!TIP]
-> **When to read this**: When writing or editing documentation and unsure what to call a concept, or when you find two documents using inconsistent terms for the same concept. Skip if unnecessary.
+> **When to read this**: when writing or revising documentation and you are unsure what to call a concept, or when you find two documents describing the same concept inconsistently. Skip it otherwise.
 
-This document converges core concepts that have been inconsistently named across ErisPulse documentation. Each term is given a single **official name**, a set of **Chinese-English equivalents**, and a brief **historical alias explanation**; if the main text or other documents contradict this, use this table as the authoritative reference and please update conflicting documents accordingly.
+This table consolidates the core concepts whose names were previously inconsistent across multiple places in the ErisPulse documentation. Each term is given exactly one **official name**, one set of **English equivalents**, and a note on **historical aliases**. When any other document conflicts with this table, this table prevails — please fix the conflicting documents as you go.
 
 Inclusion criteria:
 
-- Only include terms that have historically had shifting names or ambiguous Chinese-English usage; purely code identifiers (e.g., `BaseModule`) are not included
-- Each definition has been verified by grepping the entire `docs/zh-CN` directory and source code to ensure alignment with mainstream usage
-- In documents, use the full term (Chinese + English in parentheses) on first appearance, then use the abbreviated form thereafter
+- Only concepts whose naming has historically drifted, or that are prone to ambiguity from mixed Chinese/English usage, are included; pure code identifiers (such as `BaseModule`) are not included
+- Every definition was first verified by grepping actual usage across the entire `docs/en` corpus and the source code; each definition matches mainstream usage
+- Give the full term at its first occurrence in a document (with a parenthetical gloss), then use the short form
 
 ---
 
@@ -17,85 +17,85 @@ Inclusion criteria:
 
 | Item | Content |
 |------|------|
-| Official Name | `Client` (base class `BaseClient`) |
-| Chinese-English Equivalents | Client (unified HTTP/WS client) |
-| Historical Aliases | `HttpClient` (class name before 2.8.0, kept as a backward-compatible alias); `BaseHttpClient` (base class name before 2.8.0, kept as a backward-compatible alias) |
+| Official name | `Client` (base class `BaseClient`) |
+| English equivalent | Client (unified HTTP/WS client) |
+| Historical aliases | `HttpClient` (class name before 2.8.0, retained as a compatibility alias); `BaseHttpClient` (base class name before 2.8.0, retained as a compatibility alias) |
 
-**Single Definition**: A unified HTTP/WS client that abstracts the underlying request library (currently aiohttp), providing request statistics, retry mechanisms, logging, WebSocket client functionality, and ErisPulse's exception system. As of version 2.8.0, the class name was changed from `HttpClient` to `Client`, but the `sdk.client` attribute name remains unchanged.
+**Sole definition**: the unified HTTP/WS client. It wraps the underlying request library (currently aiohttp) behind an abstraction layer and provides request statistics, retries, logging, a WebSocket client, and the ErisPulse exception system. As of 2.8.0 the class name was renamed from `HttpClient` to `Client`; **the `sdk.client` attribute name is unchanged**.
 
-**Documentation Style**: Always write `Client`; mention `HttpClient` only in contexts related to legacy code migration or compatibility, and note it as a "backward-compatible alias." See [http-client](../advanced/http-client.md) and [Architecture Overview](../architecture.md) for definition references.
+**Documentation style**: always write `Client`; mention `HttpClient` only in "legacy code migration / compatibility" contexts, annotated as a "compatibility alias". For the canonical definitions, see [http-client](../advanced/client.md) and [Architecture Overview](../architecture.md).
 
 ## 2. storage, env, and StorageManager
 
 | Item | Content |
 |------|------|
-| Official Name | Instance: `storage` (type `BaseStorage`); Base class: `BaseStorage` |
-| Chinese-English Equivalents | storage (storage); StorageManager (storage manager, old class name) |
-| Historical Aliases | `env` (v1 legacy alias, = same instance); `StorageManager` (original class name before multi-backend refactoring for SQLite implementation, now a backward-compatible alias for `SQLiteStorage`) |
+| Official name | Instance: `storage` (type `BaseStorage`); base class: `BaseStorage` |
+| English equivalent | storage (storage); StorageManager (storage manager, legacy class name) |
+| Historical aliases | `env` (legacy v1 alias; the same instance); `StorageManager` (original class name of the SQLite implementation before the multi-backend refactor, now a compatibility alias for `SQLiteStorage`) |
 
-**Single Definition**: Runtime storage is accessed via the `storage` instance (`sdk.storage` or `from ErisPulse import storage`), and the specific backend is configured through `ErisPulse.storage.backend` (default sqlite, can switch to mysql / postgres), with consistent APIs across all three backends.
+**Sole definition**: runtime storage is accessed through the `storage` instance (`sdk.storage` or `from ErisPulse import storage`); the concrete backend is dispatched according to the `ErisPulse.storage.backend` configuration (default: sqlite; switchable to mysql / postgres), and all three backends expose the same API.
 
-**Documentation Style**: When describing the "storage system" or "storage capability," use 「storage (storage)」; when referring to types, use `BaseStorage`; for specific backends, use `SQLiteStorage` / `MySQLStorage` / `PostgresStorage`. `StorageManager` is **only a legacy class name for the SQLite implementation**, not representative of the storage system as a whole, and should not be used in new documentation; `env` is a v1 legacy alias (same instance), used only for legacy code compatibility. Use `sdk.storage` in documentation and examples. See [Storage Backends](../advanced/storage-backends.md) and [SQL Builder](../advanced/sql-builder.md) for definition references.
+**Documentation style**: when describing "the storage system / storage capability" in prose, use "storage"; use `BaseStorage` to refer to the type; use `SQLiteStorage` / `MySQLStorage` / `PostgresStorage` to refer to concrete backends. `StorageManager` is **only a legacy compatibility name of the SQLite implementation class** — it does not represent the storage system as a whole and must not be used in new documents. `env` is a legacy v1 alias (the same instance) kept only for existing legacy code; documents and examples must always use `sdk.storage`. For the canonical definitions, see [Storage Backends](../advanced/storage-backends.md) and [SQL Builder](../advanced/sql-builder.md).
 
-## 3. BaseConfig and AdapterConfig (including ui / webui metadata keys)
-
-| Item | Content |
-|------|------|
-| Official Name | Base class: `BaseConfig`; Field control configuration key: `"ui"` |
-| Chinese-English Equivalents | BaseConfig (declarative configuration base class); AdapterConfig (old name, backward-compatible alias) |
-| Historical Aliases | `AdapterConfig` (= `BaseConfig` backward-compatible alias); `"webui"` field metadata key (old name, still compatible) |
-
-**Single Definition**: `BaseConfig` is a generic declarative configuration base class applicable to adapters, modules, external projects, and any scenario (configuration classes are declared as nested `ConfigClass` and attached to modules/adapters). The official name for the WebUI control configuration key in the field `metadata` is `"ui"`; the priority order is `"ui"` > `"webui"`, with `"webui"` only retained for legacy code compatibility.
-
-**Documentation Style**: Always use `BaseConfig` and `"ui"`. Note: In example code, names like `MyAdapterConfig` are **developer-defined sub-class naming conventions** and are unrelated to the `AdapterConfig` alias. See [Adapter Core Concepts](../developer-guide/adapters/core-concepts.md) and [Module Core Concepts](../developer-guide/modules/core-concepts.md) for definition references.
-
-## 4. Scope (three-dimensional)
+## 3. BaseConfig and AdapterConfig (including the ui / webui metadata keys)
 
 | Item | Content |
 |------|------|
-| Official Name | Overall: scope; Three dimensions: **module dimension / identity dimension / outbound dimension** |
-| Chinese-English Equivalents | module dimension (module dimension), identity dimension (identity dimension), outbound dimension (outbound dimension) |
-| Historical Aliases | No old names, but historically there have been inaccurate generic terms like "permission system" or "whitelist/blacklist system" |
+| Official name | Config base class: `BaseConfig`; field widget config key: `"ui"` |
+| English equivalent | BaseConfig (declarative config base class); AdapterConfig (legacy name, compatibility alias) |
+| Historical aliases | `AdapterConfig` (backward-compatibility alias for `BaseConfig`); the `"webui"` field metadata key (legacy name, still compatible) |
 
-**Single Definition** (corresponding to the three decision points in the source code `Core/scope.py`):
+**Sole definition**: `BaseConfig` is the general-purpose declarative configuration base class, applicable to adapters, modules, external projects, and any other scenario (the config class is attached to a module / adapter by declaring the nested class `ConfigClass`). Within field `metadata`, the official name of the WebUI widget config key is `"ui"`; read precedence is `"ui"` > `"webui"`, and `"webui"` exists only for compatibility with legacy code.
 
-- **Module Dimension**: Which modules are available in a given context — `scope.is_allowed`, bound to three levels: platform / Bot / session (priority: session > Bot > platform)
-- **Identity Dimension**: Whether an event is accepted (event admission) — `scope.is_identity_allowed`, with four strategies: user / session / Bot / adapter (take the most specific one)
-- **Outbound Dimension**: What actions a module can perform outwardly (outbound action restrictions) — `scope.is_action_allowed`, default allows all, only explicitly restricts, supports fine-grained method-level restrictions
+**Documentation style**: always write `BaseConfig` and `"ui"`. Note the distinction: names such as `MyAdapterConfig` in example code are **a naming habit for developers' own config subclasses** and have nothing to do with the `AdapterConfig` alias. For the canonical definitions, see [Adapter Core Concepts](../developer-guide/adapters/core-concepts.md) and [Module Core Concepts](../developer-guide/modules/core-concepts.md).
 
-**Documentation Style**: Use the fixed three dimension names "module dimension / identity dimension / outbound dimension"; do not use variants like "module filtering / identity validation / action restriction" as official names; the numbered markers ①②③ in the document are only for text flow and do not belong to the name. Whitelist/blacklist is only one form of module dimension configuration, and should not be used to refer to the entire scope system. See [Scope (scope)](../advanced/scope.md) for definition references.
-
-## 5. owner / ownership / owner context
+## 4. The Three Dimensions of Scope
 
 | Item | Content |
 |------|------|
-| Official Name | System name: **ownership (owner) system**; Mechanism name: **owner context** |
-| Chinese-English Equivalents | ownership (ownership), owner context (owner context), `current_owner` (current owner) |
-| Historical Aliases | Mixed Chinese-English usage: the term "ownership" and "owner" have alternated in documentation to refer to the same system |
+| Official name | Overall: scope; three dimensions: **module dimension / identity dimension / outbound dimension** |
+| English equivalent | module dimension; identity dimension; outbound dimension |
+| Historical aliases | No legacy name, but inaccurate generic labels such as "permission system / blacklist-whitelist system" have appeared historically |
 
-**Single Definition**: Ownership is the cornerstone of a module's "plug-and-play" capability — all framework resources (tasks, connections, timers, translation domains, etc.) registered by a module within an owner context are automatically named, and are collectively reclaimed when the module is unloaded. **Owner context** refers to the current owner (the `current_owner` context variable) recorded by the framework during module code execution; resources created within this context belong to the current module; when the context is unavailable (e.g., in a utility thread callback), the `owner` parameter should be explicitly passed. The unified reclaim interface is `ErisPulse.Core.ownership`.
+**Sole definition** (corresponding to the three decision entry points in `Core/scope.py`):
 
-**Documentation Style**: Use 「ownership」 in Chinese text, and write the full system name 「ownership (owner) system」 on first appearance; retain English for code identifiers and mechanism names (owner context, `current_owner`, `owner_scope`). Do not use translations like "ownership rights" or "owner." See [Ownership (owner) System](../advanced/ownership.md) for definition references.
+- **Module dimension**: which modules are available in a given context — `scope.is_allowed`; three binding levels: platform / Bot / session (precedence: session > Bot > platform)
+- **Identity dimension**: whose events are accepted (event admission) — `scope.is_identity_allowed`; four policy levels: user / session / Bot / adapter (the most specific one takes precedence)
+- **Outbound dimension**: what a module can do outward (outbound action restrictions) — `scope.is_action_allowed`; everything is allowed by default and only explicit tightening forbids, with method-level granularity
 
-## 6. Three-word boundary of module.call: service contract / service directory / service whitelist
+**Documentation style**: the three dimension names are fixed as "module dimension / identity dimension / outbound dimension"; variants such as "module filtering / identity validation / action restriction" must not be used as official names. The ①②③ numbering used in documents is only a prose marker and not part of the name. Blacklist/whitelist is merely one form of module-dimension configuration and must not be used to refer to the scope system as a whole. For the canonical definitions, see [Scope](../advanced/scope.md).
+
+## 5. owner / Ownership / owner context
 
 | Item | Content |
 |------|------|
-| Mechanism Name | **Service Contract** (`meta.services` declaration end) |
-| Interface Name | **Service Directory** (`sdk.module.services()` query end) |
-| Descriptive Term | **Service Whitelist** (only used to describe the semantic tightening after declaration, not as a mechanism title) |
+| Official name | System name: **ownership (owner) system**; mechanism name: **owner context** |
+| English equivalent | ownership; owner context; `current_owner` (the current owner) |
+| Historical aliases | Mixed Chinese/English usage: "ownership" and "owner" were previously used interchangeably in the docs for the same system |
 
-**Single Definition**:
+**Sole definition**: ownership is the cornerstone of module "plug-and-play" — every framework resource a module registers within an owner context (tasks, connections, timers, translation domains, etc.) is automatically attributed by name and reclaimed together when the module is unloaded. The **owner context** is the current owner recorded by the framework while module code executes (the `current_owner` context variable); resources created within this context belong to the current module. When the context is unavailable (e.g., callbacks on tool threads), the `owner` parameter should be passed explicitly. The unified reclamation facade is `ErisPulse.Core.ownership`.
 
-- **Service Contract (`meta.services`)**: The module author declares externally callable methods in the `services` field of `get_meta()` — the **declaration end** of the contract. If not declared, any public method can be called (for backward compatibility); after declaration, the callable surface is narrowed, and calling outside the contract throws `ServiceNotProvidedError`.
-- **Service Directory (`services()`)**: The runtime query interface `sdk.module.services()`, listing modules and their method signatures and descriptions that have explicitly declared contracts — the **consumption end** view of the contract, providing data for MCPization (exposing call points to AI).
-- **Service Whitelist**: Only used as a **descriptive term** to refer to the semantic tightening of "only methods in the whitelist are callable after declaration," not as a mechanism or interface name in titles.
+**Documentation style**: use "ownership" in prose; on first occurrence, write the system name in full as "ownership (owner) system". Keep the code identifier and the context mechanism name in English (owner context, `current_owner`, `owner_scope`). Do not use alternative renderings such as "possession" or "proprietor". For the canonical definitions, see [The Ownership (Owner) System](../advanced/ownership.md).
 
-One-sentence boundary: **The author declares a contract, the runtime queries the directory, and "whitelist" only describes the tightening semantic.** See [Module Communication](../advanced/module-communication.md) and [Core Module API](../api-reference/core-modules.md) for definition references.
+## 6. The Three-Term Boundary of module.call: Service Contract / Service Catalog / Service Whitelist
+
+| Item | Content |
+|------|------|
+| Mechanism name | **Service Contract** (the declaration side of `meta.services`) |
+| Interface name | **Service Catalog** (the query side of `sdk.module.services()`) |
+| Descriptive term | **Service Whitelist** (only describes the tightening semantics after declaration; not used as a mechanism title) |
+
+**Sole definition**:
+
+- **Service Contract (`meta.services`)**: module authors declare externally callable methods in the `services` field of `get_meta()` — the **declaration side** of the contract. When nothing is declared, any public method is callable (backward compatibility); once declared, the callable surface is tightened, and calls outside the contract raise `ServiceNotProvidedError`
+- **Service Catalog (`services()`)**: the `sdk.module.services()` runtime query interface, listing the modules that have explicitly declared a contract along with their method signatures and descriptions — the **consumer-side** view of the contract, providing the data foundation for MCP-ification (exposing call points to AI)
+- **Service Whitelist**: a prose term used only to **describe** the semantics that "after declaration, only whitelisted methods are callable"; it must not appear in titles as the name of a mechanism or interface
+
+The boundary in one sentence: **the author's declaration is the contract, the runtime query is the catalog, and "whitelist" only describes the tightened semantics**. For the canonical definitions, see [Inter-Module Communication](../advanced/module-communication.md) and [Core Modules API](../api-reference/core-modules.md).
 
 ---
 
 ## Related Pages
 
-- [Comment Style Guidelines](docstring.md) - Writing and parsing conventions for special tags within docstrings
-- [Documentation and External Writing Rules](docs-writing.md) - Writing and structural guidelines beyond terminology
+- [Docstring Style Conventions](docstring.md) - how the special tags inside docstrings are written and their parsing contract
+- [Documentation and Public-Facing Writing Rules](docs-writing.md) - prose and structure conventions beyond terminology

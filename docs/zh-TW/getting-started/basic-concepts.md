@@ -202,7 +202,7 @@ sdk.storage.set_multi({
     "key2": "value2"
 })
 
-# 交易
+# 事務
 with sdk.storage.transaction():
     sdk.storage.set("key1", "value1")
     sdk.storage.set("key2", "value2")
@@ -216,16 +216,16 @@ TOML 格式的設定檔管理。
 # 取得設定
 config = sdk.config.getConfig("MyModule", {})
 
-# 設定組態
+# 設定設定
 sdk.config.setConfig("MyModule", {"key": "value"})
 
-# 讀取巢狀設定
+# 讀取嵌套設定
 value = sdk.config.getConfig("MyModule.subkey", "default")
 ```
 
 ### Logger（日誌）
 
-模組化日誌系統。
+模組化的日誌系統。
 
 ```python
 # 記錄日誌
@@ -240,19 +240,19 @@ child_logger.info("子模組日誌")
 
 **屬性存取語法糖**
 
-除了使用 `get_child()` 方法外，你還可以透過**屬性存取**的方式建立子logger，這是一種更簡潔的**語法糖**寫法：
+除了使用 `get_child()` 方法外，你還可以透過**屬性存取**的方式建立子 logger，這是一種更簡潔的**語法糖**寫法：
 
 ```python
 # 透過屬性存取建立子logger
 sdk.logger.mymodule.info("模組訊息")
 
-# 支援巢狀存取
+# 支援嵌套存取
 sdk.logger.mymodule.database.info("資料庫訊息")
 ```
 
 ### Router（路由）
 
-HTTP 和 WebSocket 路由管理，基於 FastAPI + Uvicorn。支援裝飾器路由、中介軟體、分組、限流、CORS。
+HTTP 和 WebSocket 路由管理，基於 FastAPI + Uvicorn。支援裝飾器路由、中間件、分組、限流、CORS。
 
 ```python
 from ErisPulse.Core import HttpRequest
@@ -263,11 +263,11 @@ async def handler(request: HttpRequest):
     return {"status": "ok"}
 ```
 
-> 完整的路由 API（WebSocket、中介軟體、速率限制、CORS 等）請參考 [路由管理器](../advanced/router.md)。
+> 完整的路由 API（WebSocket、中間件、速率限制、CORS 等）請參考 [路由管理器](../advanced/router.md)。
 
 ### Client（網路用戶端）
 
-統一的網路用戶端，聚合了 HTTP 請求、WebSocket 連線、連線池管理、自動重試、逾時控制、請求統計和生命週期事件整合。
+統一的網路用戶端，聚合了 HTTP 請求、WebSocket 連線、連線池管理、自動重試、超時控制、請求統計和生命週期事件整合。
 
 ```python
 from ErisPulse.Core import client
@@ -276,7 +276,7 @@ from ErisPulse.Core import client
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
-# 帶重試和逾時
+# 帶重試和超時
 resp = await client.get(url, timeout=30, max_retries=3)
 
 # WebSocket 連線
@@ -285,7 +285,7 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-> 完整的網路用戶端 API 請參考 [網路用戶端](../advanced/http-client.md)。
+> 完整的網路用戶端 API 請參考 [網路用戶端](../advanced/client.md)。
 
 ## SendDSL 訊息傳送
 

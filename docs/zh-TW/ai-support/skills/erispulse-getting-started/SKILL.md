@@ -111,7 +111,7 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 
 ### 一、我要使用機器人
 
-讓機器人跑起來、裝模組、做配置。
+讓機器人跑起來、安裝模組、做配置。
 
 | 進度 | 文件 | 說明 |
 |------|------|------|
@@ -136,7 +136,7 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 | **測試與排查** | [模組測試（ErisPulse-Testing）](developer-guide/testing.md) | 分發決策鏈排查"命令為什麼沒觸發" |
 | **發布** | [發布與模組商店](developer-guide/publishing.md) | 將作品發布到 PyPI 和模組商店 |
 
-### 三、我要深入理解原理
+### 三、我要深入了解原理
 
 了解框架內部如何運作。先看架構與 API 參考，再按下面對照表進入專題。
 
@@ -156,7 +156,7 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 | [作用域（scope）](advanced/scope.md) | 三維作用域控制：模組可用性 / 事件准入 / 出站動作限制（含方法級細粒度規則、綁定繼承 merge） |
 | [歸屬權（owner）系統](advanced/ownership.md) | 資源歸屬與自動回收：owner 上下文、歸屬資源全景、卸載清理序列、設計邊界與模組作者指南 |
 | [生命週期管理](advanced/lifecycle.md) | 生命週期事件系統：模組 / 適配器加載、卸載、重載、禁用時各自該做什麼 |
-| [互動會話系統](advanced/interaction.md) | wait_reply 全解、會話計時器（remind/escalate）、多路等待（select）、會話互斥租約、收件箱、消息事務、鏈路追蹤 |
+| [交互會話系統](advanced/interaction.md) | wait_reply 全解、會話定時器（remind/escalate）、多路等待（select）、會話互斥租約、收件箱、消息事務、鏈路追蹤 |
 
 **按場景分組（按需查閱）**
 
@@ -164,7 +164,7 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 |------|------|------|
 | 運行啟動 | [啟動流程與手動控制](advanced/startup.md) · [懶加載](advanced/lazy-loading.md) | 不懂啟動鏈路（Finder / Loader / Manager / Router），模組加載失敗時只能對著日誌干瞪眼 |
 | 通信連接 | [模組間通信](advanced/module-communication.md) · [連接池與廣播](advanced/connections.md) · [路由系統](advanced/router.md) | 不懂服務契約（`meta.services`）白名單，跨模組 `module.call` 會被 `ServiceNotProvidedError` 拒絕且不知原因 |
-| 數據存儲 | [存儲後端](advanced/storage-backends.md) · [SQL 構建](advanced/sql-builder.md) · [HTTP 客戶端](advanced/http-client.md) | 不懂連接失敗冷卻期語義，數據庫抖動時會誤判"框架掛了"（實際是存儲操作快速失敗、冷卻後自動重連） |
+| 數據存儲 | [存儲後端](advanced/storage-backends.md) · [SQL 構建](advanced/sql-builder.md) · [網路客戶端](advanced/client.md) | 不懂連接失敗冷卻期語義，數據庫抖動時會誤判"框架掛了"（實際是存儲操作快速失敗、冷卻後自動重連） |
 | 消息對話 | [Conversation 多輪對話](advanced/conversation.md) · [會話收件箱](advanced/transcript.md) · [MessageBuilder](advanced/message-builder.md) · [國際化](advanced/i18n.md) | 不懂會話互斥租約，兩個模組同時等同一用戶的回覆會互相踢掉 |
 | 灰度影子 | [影子模組與灰度轉正](advanced/shadow.md) | 不懂五道隔離閘就提前轉正，影子的出站消息會外溢到真實用戶 |
 
@@ -178,7 +178,7 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 | [權限](advanced/scope.md)（scope） | 誰能用這個模組、誰能觸發事件、能執行哪些動作？ | 三道閘——模組綁定、身份准入、出站限制，全部由用戶配置說了算 |
 | [歸屬](advanced/ownership.md)（ownership） | 模組卸載後，它開的連接、定時器、訂閱去哪了？ | 誰註冊誰歸屬，卸載即回收，不留懸掛資源 |
 | [懶加載與休眠](advanced/lazy-loading.md)（lazy-loading） | 模組什麼時候才真正加載、閒置後去哪？ | `activate_on` 用到才醒，`dormant_after` 閒置歸眠 |
-| [互動](advanced/interaction.md)（interaction） | 怎麼等用戶下一條回覆、多輪收集怎麼寫？ | `wait_reply` 等一條、`.got()` 鏈收多輪，租約保證不打架 |
+| [交互](advanced/interaction.md)（interaction） | 怎麼等用戶下一條回覆、多輪收集怎麼寫？ | `wait_reply` 等一條、`.got()` 鏈收多輪，租約保證不打架 |
 | [影子灰度](advanced/shadow.md)（shadow） | 新版模組怎麼在不影響線上的情況下試運行？ | 影子收副本、出站只記賬，`promote` 由人確認才轉正 |
 | [存儲](advanced/storage-backends.md)（storage-backends） | 數據存哪、後端怎麼換？ | 同一套存儲 API，sqlite / mysql / postgres 配置切換 |
 
@@ -187,7 +187,7 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 官方客戶端 + 按需安裝、即裝即用的生態模組（都不是框架內建功能）。
 
 | 文件 | 說明 |
-|------|------|------|
+|------|------|
 | [生態總覽](ecosystem/README.md) | 如何安裝生態模組、為什麼這些不是內建功能 |
 | [ErisPulse-QvQChat](ecosystem/qvqchat.md) | 通用智能體模組：工具循環 / MCP / 長期記憶 / 知識庫，聲明服務的模組自動成為 AI 工具 |
 | [ErisPulse-ApiMCP](ecosystem/apimcp.md) | 把機器人反向開放為 MCP 工具，讓 Claude 等 AI 客戶端直接操控 |
@@ -201,7 +201,7 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 讓框架更好
 
 | 文件 | 說明 |
-|------|------|------|
+|------|------|
 | [為 ErisPulse 貢獻](contributing/README.md) | 貢獻方式總覽：文件 / i18n / Bug / 模組 / 適配器 |
 | [首次貢獻](contributing/first-contribution.md) | 從 fork 到提交 PR |
 
@@ -865,7 +865,7 @@ sdk.storage.set_multi({
     "key2": "value2"
 })
 
-# 交易
+# 事務
 with sdk.storage.transaction():
     sdk.storage.set("key1", "value1")
     sdk.storage.set("key2", "value2")
@@ -879,16 +879,16 @@ TOML 格式的設定檔管理。
 # 取得設定
 config = sdk.config.getConfig("MyModule", {})
 
-# 設定組態
+# 設定設定
 sdk.config.setConfig("MyModule", {"key": "value"})
 
-# 讀取巢狀設定
+# 讀取嵌套設定
 value = sdk.config.getConfig("MyModule.subkey", "default")
 ```
 
 ### Logger（日誌）
 
-模組化日誌系統。
+模組化的日誌系統。
 
 ```python
 # 記錄日誌
@@ -903,19 +903,19 @@ child_logger.info("子模組日誌")
 
 **屬性存取語法糖**
 
-除了使用 `get_child()` 方法外，你還可以透過**屬性存取**的方式建立子logger，這是一種更簡潔的**語法糖**寫法：
+除了使用 `get_child()` 方法外，你還可以透過**屬性存取**的方式建立子 logger，這是一種更簡潔的**語法糖**寫法：
 
 ```python
 # 透過屬性存取建立子logger
 sdk.logger.mymodule.info("模組訊息")
 
-# 支援巢狀存取
+# 支援嵌套存取
 sdk.logger.mymodule.database.info("資料庫訊息")
 ```
 
 ### Router（路由）
 
-HTTP 和 WebSocket 路由管理，基於 FastAPI + Uvicorn。支援裝飾器路由、中介軟體、分組、限流、CORS。
+HTTP 和 WebSocket 路由管理，基於 FastAPI + Uvicorn。支援裝飾器路由、中間件、分組、限流、CORS。
 
 ```python
 from ErisPulse.Core import HttpRequest
@@ -926,11 +926,11 @@ async def handler(request: HttpRequest):
     return {"status": "ok"}
 ```
 
-> 完整的路由 API（WebSocket、中介軟體、速率限制、CORS 等）請參考 [路由管理器](../advanced/router.md)。
+> 完整的路由 API（WebSocket、中間件、速率限制、CORS 等）請參考 [路由管理器](../advanced/router.md)。
 
 ### Client（網路用戶端）
 
-統一的網路用戶端，聚合了 HTTP 請求、WebSocket 連線、連線池管理、自動重試、逾時控制、請求統計和生命週期事件整合。
+統一的網路用戶端，聚合了 HTTP 請求、WebSocket 連線、連線池管理、自動重試、超時控制、請求統計和生命週期事件整合。
 
 ```python
 from ErisPulse.Core import client
@@ -939,7 +939,7 @@ from ErisPulse.Core import client
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
-# 帶重試和逾時
+# 帶重試和超時
 resp = await client.get(url, timeout=30, max_retries=3)
 
 # WebSocket 連線
@@ -948,7 +948,7 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-> 完整的網路用戶端 API 請參考 [網路用戶端](../advanced/http-client.md)。
+> 完整的網路用戶端 API 請參考 [網路用戶端](../advanced/client.md)。
 
 ## SendDSL 訊息傳送
 

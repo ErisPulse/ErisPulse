@@ -117,9 +117,9 @@ if sdk.lifecycle.has_handlers("message.sending"):
 - Covers **exact event name**, **wildcard `*`**, and **parent event** matching
 - Returns `False` if there are no listeners, allowing safe skipping of `emit`
 
-## Overview of Hook Breakpoints
+## Hook Breakpoints Overview
 
-A typical lifecycle event sequence diagram of a message from platform entry to framework processing completion:
+A typical sequence of lifecycle events as a message enters the framework from the platform until processing is complete:
 
 ```mermaid
 sequenceDiagram
@@ -141,16 +141,16 @@ sequenceDiagram
     F->>F: adapter.event.dispatched (after dispatching)
 ```
 
-The framework provides the following built-in hook breakpoints, and users can listen to any breakpoint to implement custom logic via `@sdk.lifecycle.on()`.
+The framework provides the following built-in hook breakpoints, and users can listen to any breakpoint to implement custom logic using `@sdk.lifecycle.on()`.
 
 ### Core Initialization
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `core.init.start` | SDK initialization starts | `{}` |
-| `core.init.stage` | Each initialization stage begins (emitted in background) | `{"stage": str}`; values: `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
-| `core.init.complete` | SDK initialization completes | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str (only on failure)}` |
-| `core.uninit.complete` | SDK de-initialization completes | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (only on failure)}` |
+| `core.init.stage` | Each initialization stage starts (emitted in the background) | `{"stage": str}`, values: `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.complete` | SDK initialization completes | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str (only if failed)}` |
+| `core.uninit.complete` | SDK deinitialization completes | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (only if failed)}` |
 
 **Example: Displaying Startup Progress**
 
@@ -165,7 +165,7 @@ def show_stage(data):
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `config.set` | A configuration item is modified | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | Entire configuration tree is detected changed after editing config.toml externally | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.updated` | After external editing of config.toml, a full tree change is detected | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **Example: Configuration Audit**
 
@@ -179,37 +179,38 @@ def audit_config(data):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `module.register` | A module class is registered to the manager | `{"module_name": str, "success": bool}` |
-| `module.load` | Module loading completes (instance successfully created); on failure, payload additionally carries `"error": str, "traceback": str` (failure context can also be queried via `module.last_error(name)`) | `{"module_name": str, "success": bool}` |
+| `module.register` | A module class is registered with the manager | `{"module_name": str, "success": bool}` |
+| `module.load` | Module loading completes (instance created successfully); if failed, payload additionally carries `"error": str, "traceback": str` (failure context can also be queried via `module.last_error(name)`) | `{"module_name": str, "success": bool}` |
 | `module.init` | Module initialization completes (including lazy loading) | `{"module_name": str, "success": bool}` |
-| `module.before_unload` | First step in the unload pipeline (before `on_unload` and resource release; module instance hook `on_before_unload` is triggered synchronously) | `{"module_name": str, "reason": str}`; `reason` values: `unload` / `reload` / `disable` / `cascade` / `dormant` |
-| `module.sleep` | Module hibernation completes (lazy loading sleep: resources are released, automatically awakened on access) | `{"module_name": str, "success": bool}` |
-| `module.unload` | Module is unloaded or disabled (`disable` and `unload` provide equivalent notifications to dependents; `on_dependency_lost` contract includes "disabled") | `{"module_name": str, "success": bool}` |
-| `module.reload` | Module hot reload completes (including cascading reload of dependencies) | `{"module_name": str, "success": bool, "full": bool, "duration_ms": int}`; single module additionally carries `"identity_changed": bool` (False = old code may still be running in the process, e.g., C extension cache) and `"version_old": str, "version_new": str`; during full reload (`reload_all`), `module_name` is `"All"`, payload additionally carries `"results": dict[str, bool]` |
+| `module.before_unload` | First step of the unload pipeline (before `on_unload` and resource cleanup; module instance hook `on_before_unload` is triggered synchronously) | `{"module_name": str, "reason": str}`; `reason` values: `unload` / `reload` / `disable` / `cascade` / `dormant` |
+| `module.sleep` | Module sleep completes (lazy loading sleep: resources are released, automatically awakened on access) | `{"module_name": str, "success": bool}` |
+| `module.unload` | Module unload or disable (`disable` and `unload` are equivalent notifications to dependents; `on_dependency_lost` contract includes "disable") | `{"module_name": str, "success": bool, "reason": str}`; `reason` values: `unload` / `reload` / `disable` / `cascade` / `dormant` |
+| `module.rollback` | Hot reload rollback completes (snapshot restore + replay of old instance after `on_load`) | `{"module_name": str, "success": bool}`; `success` indicates whether replaying `on_load` was successful (if False, the old instance remains in a finalized state) |
+| `module.reload` | Module hot reload completes (including cascading reload of dependents) | `{"module_name": str, "success": bool, "full": bool, "duration_ms": int}`; single module additionally carries `"identity_changed": bool` (False = old code may still run in the process, e.g., C extension cache) and `"version_old": str, "version_new": str`; during full reload (`reload_all`), `module_name` is `"All"`, and payload additionally carries `"results": dict[str, bool]` |
 
-> **Module instance hook `on_before_unload`**: The optional lifecycle method corresponding to the `module.before_unload` event—`event["reason"]` indicates the reason, suitable for saving state to `sdk.storage` before resource release, and restoring it in `on_load` after awakening/reload (lazy loading hibernation state continuation is based on this). Hook failure only alerts, does not block the unload process.
+> **Module Instance Hook `on_before_unload`**: The optional lifecycle method corresponding to the `module.before_unload` event—`event["reason"]` indicates the reason, suitable for saving state to `sdk.storage` before resource release, and restoring it in `on_load` upon wake-up/reload (lazy loading state continuation is based on this). Hook failure only issues a warning, does not block the unload process.
 
 ### Adapter Lifecycle
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `adapter.load` | Adapter registration completes | `{"platform": str, "success": bool}` |
-| `adapter.reload` | Adapter code-level hot reload completes | `{"adapter_name": str, "success": bool, "full": bool, "duration_ms": int, "identity_changed": bool, "version_old": str, "version_new": str, "was_started": bool, "source": str}`; `identity_changed=False` = old code may still be running in the process |
+| `adapter.reload` | Adapter code-level hot reload completes | `{"adapter_name": str, "success": bool, "full": bool, "duration_ms": int, "identity_changed": bool, "version_old": str, "version_new": str, "was_started": bool, "source": str}`; `identity_changed=False` = old code may still run in the process |
 | `adapter.start` | Adapter starts | `{"platforms": [str]}` |
-| `adapter.status.change` | Adapter status changes | `{"platform": str, "status": str, "retry_count": int, "error": str (only on failure)}`; complete status values: `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
+| `adapter.status.change` | Adapter status changes | `{"platform": str, "status": str, "retry_count": int, "error": str (only if failed)}`; full status values: `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
 | `adapter.stop` | Adapter stops | `{"platforms": [str]}` |
 | `adapter.stopped` | Adapter stop completes | `{"platforms": [str]}` |
-| `adapter.bot.online` | Bot goes online | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
+| `adapter.bot.online` | Bot comes online | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
 | `adapter.bot.offline` | Bot goes offline | `{"platform": str, "bot_id": str, "status": str}` |
 
 ### Event Reception and Processing
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `adapter.event.receive` | External platform event is received (earliest) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.blocked` | Middleware blocks the event (returns `False`, event is discarded and does not enter any processor) | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
+| `adapter.event.receive` | External platform event received (earliest) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.blocked` | Middleware rejects the event (returns `False`, event is discarded and does not enter any processor) | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
 | `adapter.event.dispatched` | Event dispatch completes | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | Event processor begins execution | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `event.pre_process` | Event processor starts executing | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **Example: Event Counting**
 
@@ -247,7 +248,7 @@ def log_sending(data):
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `command.matched` | Command is matched and about to execute | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | Command execution completes | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (only on failure)}` |
+| `command.executed` | Command execution completes | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (only if failed)}` |
 
 **Example: Command Counting**
 
@@ -261,12 +262,12 @@ def count_commands(data):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `server.request` | HTTP request is received | `{"method": str, "path": str, "client_ip": str, "request_id": str}` |
-| `server.response` | HTTP response is sent | `{"method": str, "path": str, "status_code": int, "client_ip": str, "request_id": str}` |
+| `server.request` | HTTP request received | `{"method": str, "path": str, "client_ip": str, "request_id": str}` |
+| `server.response` | HTTP response sent | `{"method": str, "path": str, "status_code": int, "client_ip": str, "request_id": str}` |
 
-> `request_id` is the [X-Request-ID request correlation ID](router.md#request-correlation-idx-request-id): it is prioritized from the client request header, otherwise a UUID is generated automatically. It can be used to link the request and response events.
+> `request_id` is the [X-Request-ID Request Correlation ID](router.md#request-correlation-idx-request-id): it is either reused from the client request header or generated as a UUID if not present, and can be used to link the request and response events.
 
-**Example: Request Logging**
+**Example: HTTP Request Logging**
 
 ```python
 @sdk.lifecycle.on("server.response")
@@ -278,60 +279,60 @@ def log_http(data):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `server.start` | Router server starts | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str (only on failure)}` |
+| `server.start` | Router server starts | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str (only if failed)}` |
 | `server.stop` | Router server stops | `{}` |
-| `server.websocket.connect` | WebSocket connection is established | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | WebSocket connection is disconnected | `{"path": str, "module_name": str, "reason": str, "error": str (only on abnormal disconnection)}` |
+| `server.websocket.connect` | WebSocket connection established | `{"path": str, "module_name": str, "client_ip": str}` |
+| `server.websocket.disconnect` | WebSocket connection disconnected | `{"path": str, "module_name": str, "reason": str, "error": str (only if abnormal)}` |
 
 **Example: WebSocket Connection Monitoring**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
 def on_ws_connect(data):
-    print(f"[WS] Connection: {data['path']} from {data['client_ip']}")
+    print(f"[WS] Connected: {data['path']} from {data['client_ip']}")
 
 @sdk.lifecycle.on("server.websocket.disconnect")
 def on_ws_disconnect(data):
-    print(f"[WS] Disconnection: {data['path']} ({data['reason']})")
+    print(f"[WS] Disconnected: {data['path']} ({data['reason']})")
 ```
 
-### Storage Connection Status
+### Storage Connection State
 
-Establishment, failure, and recovery of the storage backend connection pool (all emitted in background, do not block storage operations):
+Establishment, failure, and recovery of the storage backend connection pool (all emitted in the background, not blocking storage operations):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `storage.ready` | Storage backend connection pool is ready (first successful pool creation per event loop) | `{"backend": str}` |
-| `storage.unreachable` | Connection retry exhaustion enters cooldown period (during which operations fail quickly) | `{"backend": str, "error": str, "cooldown": float}` |
-| `storage.recovered` | Cooldown ends, reconnection succeeds, storage is restored | `{"backend": str}` |
+| `storage.unreachable` | Connection retries exhausted, entering cooldown period (during which operations fail quickly) | `{"backend": str, "error": str, "cooldown": float}` |
+| `storage.recovered` | Cooldown ends, reconnection succeeds, storage becomes available again | `{"backend": str}` |
 
 **Example: Storage Failure Alert**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
 def alert_storage_down(data):
-    print(f"[Alert] Storage backend {data['backend']} is unreachable: {data['error']}, automatic reconnection in {data['cooldown']}s")
+    print(f"[Alert] Storage backend {data['backend']} unreachable: {data['error']}, automatic reconnection in {data['cooldown']}s")
 
 @sdk.lifecycle.on("storage.recovered")
 def notify_storage_back(data):
-    print(f"[Recovery] Storage backend {data['backend']} is restored and available")
+    print(f"[Recovery] Storage backend {data['backend']} is available again")
 ```
 
 ### HTTP Client
 
-Request and connection events of `sdk.client` (all emitted in background):
+Request and connection events of `sdk.client` (all emitted in the background):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `client.request.success` | HTTP request succeeds | `{"method": str, "url": str, "status": int, "elapsed": float}` |
-| `client.request.failed` | HTTP request finally fails after exhausting retries | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
-| `client.ws.connect` | WebSocket connection is established | `{"url": str}` |
+| `client.request.failed` | HTTP request fails after exhausting retries | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
+| `client.ws.connect` | WebSocket connection established | `{"url": str}` |
 
 ### Internationalization
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `i18n.language.changed` | Framework language switch (`i18n.set_language`) | `{"language": str, "previous": str}` |
+| `i18n.language.changed` | Framework language switch (via `i18n.set_language`) | `{"language": str, "previous": str}` |
 
 ## Standard Event Definitions
 

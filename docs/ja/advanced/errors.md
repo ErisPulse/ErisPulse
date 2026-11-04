@@ -1,61 +1,62 @@
-# エラー体系とキャッチのガイド
+# 例外体系と捕捉ガイド
 
 > [!NOTE]
-> **L1の必須項目** —— ホームページの「読むべき順」にある5つのコアドキュメントの1つで、モジュール開発に不可欠です。
+> **L1 コア必読**——トップページの「リーディングパス」に含まれる5つのコアドキュメントの1つ。モジュール開発に必須です。
 
-ErisPulseのすべてのカスタムエラーは `ErisPulseError` を継承しており、aiohttp、aiomysqlなどのライブラリのエラーは、フレームワーク内でキャッチされ、対応するErisPulseのエラーに変換されます。業務コードでは**下位ライブラリのエラー型に依存する必要はありません**。
+
+ErisPulse のすべてのカスタム例外は `ErisPulseError` を継承しており、低レベルライブラリの例外（aiohttp、aiomysql など）はフレームワーク内部で捕捉され、対応する ErisPulse 例外に変換されます。ビジネスコードは**いかなる低レベルライブラリの例外型にも依存する必要はありません**。
 
 {!--< tips >!--}
-1. 一般的なエラーを網羅的に処理したい場合：`ErisPulseError` をキャッチする（フレームワークのすべてのエラーの基底クラス）
-2. 精度を高めて処理したい場合：モジュールごとにキャッチする（例：`ModuleCallTimeoutError`、`StorageUnreachableError`）
-3. ストレージ操作はデフォルトでエラーをスローしない：失敗時はログを記録し、`False / None / default` を返す。接続状態の変化は `storage.unreachable` / `storage.recovered` イベントをサブスクライブする。
+1. 広くフォールバックしたい場合：`ErisPulseError` を捕捉する（すべてのフレームワーク例外の基底クラス）
+2. 厳密に処理したい場合：モジュールごとに捕捉する（例：`ModuleCallTimeoutError`、`StorageUnreachableError`）
+3. ストレージ操作はデフォルトで例外をスローしない：失敗時はログを記録し `False / None / default` を返す。接続状態の変化は `storage.unreachable` / `storage.recovered` イベントを購読
 {!--< /tips >!--}
 
-## エラーの概要
+## 例外一覧
 
 ```text
-ErisPulseError                      # フレームワーク全体のエラーの基底クラス
-├── ClientError                     # HTTP/WS クライアントリクエストエラーの基底クラス（Core/client）
-│   ├── ClientConnectionError       # 接続層エラー：DNS 解析失敗、接続拒否、ネットワーク到達不能
+ErisPulseError                      # すべてのフレームワーク例外の基底クラス
+├── ClientError                     # HTTP/WS クライアントリクエスト例外の基底クラス（Core/client）
+│   ├── ClientConnectionError       # 接続層エラー：DNS 解決失敗、接続拒否、ネットワーク到達不能
 │   ├── ClientTimeoutError          # リクエストタイムアウト
-│   └── HTTPStatusError             # HTTP ステータスコードエラー（4xx/5xx で raise_for_status が発動した場合）
-├── WebSocketError                  # WebSocket エラーの基底クラス（Core/client の WS 接続）
-│   └── WebSocketDisconnect         # WebSocket 接続切断（サーバー/クライアント共通）
-├── ConnectionRegistryError         # 接続レジストリエラーの基底クラス（Core/connections、2.10+）
-│   ├── ConnectionNotFoundError     # 接続が存在しない/既に切断・登録解除（connections.get/close）
-│   └── ConnectionPermissionError   # 作成者以外が他人の接続を閉じようとした（閉じる権限は作成者に所属）
-├── StorageError                    # ストレージエラーの基底クラス（Core/storage）
-│   └── StorageUnreachableError     # ストレージバックエンドが到達不能（プール作成のリトライが尽きた：データベース到達不能/認証情報エラー）
-├── InteractionError                # 交互会話エラーの基底クラス（Core/Event/interaction）
-│   ├── InteractionCancelled        # 待機中のリクエスト/リースがキャンセルされた（wait_reply が上層で None を返すように転換）
-│   └── SessionOccupiedError        # 会話の排他リースが占有されている（hold() で取得に失敗）
-├── ModuleError                     # モジュールシステムエラーの基底クラス（Core/module）
-│   └── ModuleCallError             # モジュール間呼び出しエラーの基底クラス
-│       ├── ModuleNotAvailableError # 対象モジュールが登録されていない/有効化されていない/初期化失敗（遅延読み込みアクセスも含む）
-│       ├── ServiceNotProvidedError # 対象モジュールがそのサービスを宣言していない（meta.services のホワイトリスト外）
-│       └── ModuleCallTimeoutError  # 呼び出されたメソッドの実行がタイムアウト（デフォルト 30s）
-├── ShadowError                     # シャドウモジュールエラーの基底クラス（Core/shadow）
-│   ├── ShadowStateError            # 状態が満たされない：対象がロードされていない/既にアクティブなシャドウがある/シャドウがバインドされていない（start/dismiss）
-│   ├── ShadowSourceError           # シャドウソースが利用できない：パスが存在しない/ローダーが欠落している/ロードに失敗（start）
-│   └── ShadowPromoteError          # 転正に失敗：シャドウが登録されていない/ロードされていない/ローダーにスナップショットがない/再ロードに失敗（promote）
-└── StrictModeError                 # 严格モードの致命的な違反（起動プロセスを中止、loaders/strict）
+│   └── HTTPStatusError             # HTTP ステータスコードエラー（例：4xx/5xx かつ raise_for_status）
+├── WebSocketError                  # WebSocket 例外の基底クラス（Core/client の WS 接続）
+│   └── WebSocketDisconnect         # WebSocket 切断（サーバー/クライアント共通）
+├── ConnectionRegistryError         # 接続レジストリ例外の基底クラス（Core/connections、2.10+）
+│   ├── ConnectionNotFoundError     # 接続が存在しない／切断・登録解除済み（connections.get/close）
+│   └── ConnectionPermissionError   # owner 以外が他者の接続をクローズ（クローズ権は作成者に帰属）
+├── StorageError                    # ストレージ例外の基底クラス（Core/storage）
+│   └── StorageUnreachableError     # ストレージバックエンド到達不能（プール作成のリトライ使い果たし：DB 到達不能／認証情報エラー）
+├── InteractionError                # インタラクション例外の基底クラス（Core/Event/interaction）
+│   ├── InteractionCancelled        # 保留中の待機/リースがキャンセルされた（wait_reply では上位層で None 返却に変換）
+│   └── SessionOccupiedError        # セッションの排他リースが占有済み（hold() の取得失敗）
+├── ModuleError                     # モジュールシステム例外の基底クラス（Core/module）
+│   └── ModuleCallError             # モジュール間呼び出し例外の基底クラス
+│       ├── ModuleNotAvailableError # 対象モジュールが未登録／無効／初期化失敗（遅延読み込みアクセスを含む）
+│       ├── ServiceNotProvidedError # 対象モジュールが当該サービスを宣言していない（meta.services ホワイトリスト外）
+│       └── ModuleCallTimeoutError  # 呼び出されたメソッドの実行タイムアウト（デフォルト 30 秒）
+├── ShadowError                     # シャドウモジュール例外の基底クラス（Core/shadow）
+│   ├── ShadowStateError            # 状態不充足：対象未ロード／アクティブなシャドウが既に存在／シャドウ未バインド（start/dismiss）
+│   ├── ShadowSourceError           # シャドウソース利用不可：パス不存在／ローダー欠如／ロード失敗（start）
+│   └── ShadowPromoteError          # 正式化失敗：シャドウ未登録／未ロード／ローダーにスナップショットなし／リロード失敗（promote）
+└── StrictModeError                 # 厳格モードにおける致命的な違反（起動フローを中止、loaders/strict）
 ```
 
 ## 構造化属性
 
-例外が捕捉された後、メッセージテキストを解析することなく構造化属性を読み取ることができます：
+例外を捕捉した後、構造化属性を読み取れます（メッセージテキストを解析する必要はありません）：
 
 | 例外 | 属性 |
 |------|------|
-| `ClientError`（およびその子クラス） | `.url` リクエストのURL、`.method` リクエストメソッド、`.attempts` 既に試行した回数（リトライが尽きた場合） |
+| `ClientError`（サブクラスを含む） | `.url` リクエスト URL、`.method` リクエストメソッド、`.attempts` 試行回数（リトライ使い果たし時） |
 | `HTTPStatusError` | `.status` ステータスコード、`.message` レスポンスメッセージ |
-| `WebSocketDisconnect` | `.code` 閉じられたコード、`.reason` 閉じられた理由 |
-| `ConnectionNotFoundError` | `.connection_id` 検索された接続ID |
-| `ConnectionPermissionError` | `.connection_id` 対象の接続ID、`.owner` 接続の所有者 |
-| `StorageUnreachableError` | `.backend` バックエンド名（sqlite/mysql/postgres）、`.cooldown` コoldown秒数 |
-| `ModuleCallError`（およびその子クラス） | `.module` 対象のモジュール名、`.method` 対象のメソッド名 |
-| `ModuleCallTimeoutError` | `.module/.method` を継承、さらに `.timeout` タイムアウトの制限時間（秒） |
-| `InteractionCancelled` | `.reason` キャンセルの理由、`.wait_key` セッションキー |
+| `WebSocketDisconnect` | `.code` クローズコード、`.reason` クローズ理由 |
+| `ConnectionNotFoundError` | `.connection_id` 検索対象の接続 id |
+| `ConnectionPermissionError` | `.connection_id` 対象接続 id、`.owner` 接続の所有者 owner |
+| `StorageUnreachableError` | `.backend` バックエンド名（sqlite/mysql/postgres）、`.cooldown` クールダウン秒数 |
+| `ModuleCallError`（サブクラスを含む） | `.module` 対象モジュール名、`.method` 対象メソッド名 |
+| `ModuleCallTimeoutError` | `.module/.method` を継承、加えて `.timeout` タイムアウト上限（秒） |
+| `InteractionCancelled` | `.reason` キャンセル理由、`.wait_key` セッションキー |
 | `SessionOccupiedError` | `.wait_key` セッションキー、`.owner` 占有者 |
 | `StrictModeError` | `.violations` 違反記録のリスト |
 
@@ -68,17 +69,17 @@ except ClientError as e:
     print(f"リクエスト失敗 {e.method} {e.url}、合計 {e.attempts} 回試行: {e}")
 ```
 
-## 各エラーの説明と発生位置
+## 各例外の説明と発生箇所
 
 ### Client 系列 — `Core/client.py` / `Core/Bases/client.py`
 
-`sdk.client` / HTTP クライアントと WebSocket クライアントがリクエストを発行する際に送出される：
+`sdk.client` / HTTP クライアントおよび WebSocket クライアントがリクエストを発行する際にスローされます：
 
-| エラー | 発生位置 | 代表的なシナリオ |
+| 例外 | 発生箇所 | 典型的なシナリオ |
 |------|----------|----------|
-| `ClientError` | リクエストラッパー層 | 他のクライアントエラー（aiohttp の低層エラーは変換済み） |
-| `ClientConnectionError` | 接続確立段階 | 目標サービスに到達できない、DNS 失敗、接続拒否 |
-| `ClientTimeoutError` | リクエスト実行段階 | リクエストのタイムアウト時間超過 |
+| `ClientError` | リクエストラッパー層 | その他のクライアントエラー（低レベル aiohttp 例外は変換済み） |
+| `ClientConnectionError` | 接続確立フェーズ | 対象サービス到達不能、DNS 失敗、接続拒否 |
+| `ClientTimeoutError` | リクエスト実行フェーズ | リクエストタイムアウト時間を超過 |
 | `HTTPStatusError` | `raise_for_status()` | レスポンスステータスコードが 4xx/5xx |
 
 ```python
@@ -92,62 +93,62 @@ except ClientTimeoutError:
 
 ### WebSocket 系列 — `Core/client.py`（`send` / `receive`）
 
-| エラー | 発生位置 | 代表的なシナリオ |
+| 例外 | 発生箇所 | 典型的なシナリオ |
 |------|----------|----------|
-| `WebSocketError` | WS 受信/送信メソッド | 接続が閉じられている、想定外のメッセージタイプを受け取った、低層 WS エラー |
-| `WebSocketDisconnect` | WS 受信/送信メソッド | 対向側が正常に接続を切断した（フレームワークが自動的に再接続する） |
+| `WebSocketError` | WS 送受信メソッド | 接続が既に閉じている、予期しないメッセージ型を受信、低レベル WS 例外 |
+| `WebSocketDisconnect` | WS 送受信メソッド | ピアによる正常な切断（フレームワークが自動再接続） |
 
-### 接続登録表系列 — `Core/connections.py`（2.10+）
+### 接続レジストリ系列 — `Core/connections.py`（2.10+）
 
-| エラー | 発生位置 | 代表的なシナリオ |
+| 例外 | 発生箇所 | 典型的なシナリオ |
 |------|----------|----------|
-| `ConnectionNotFoundError` | `connections.get` / `assign` / `dismiss` / `close` | 接続 ID が存在しない、または既に切断・解除済み |
-| `ConnectionPermissionError` | `conn.close()` をオーナー以外が呼び出す | モジュール間で他人の接続を閉じる（送信とグループ分けは制限されない） |
+| `ConnectionNotFoundError` | `connections.get` / `assign` / `dismiss` / `close` | 接続 id が存在しない、または切断・登録解除済み |
+| `ConnectionPermissionError` | owner 以外が `conn.close()` を呼び出し | モジュールをまたいで他者の接続をクローズ（送信とグループ化は制限されない） |
 
 ### Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`
 
-| エラー | 発生位置 | 代表的なシナリオ |
+| 例外 | 発生箇所 | 典型的なシナリオ |
 |------|----------|----------|
-| `StorageError` | ストレージ層 | ストレージ関連エラーの基底クラス |
-| `StorageUnreachableError` | プール作成段階 | データベースに到達できない、認証情報の誤り、ネットワーク隔離、再試行が尽きた |
+| `StorageError` | ストレージ層 | ストレージ関連例外の基底クラス |
+| `StorageUnreachableError` | プール作成フェーズ | DB 到達不能／認証情報エラー／ネットワーク分離、リトライ使い果たし |
 
-> **ストレージ操作の失敗の意味**：KV とクエリ操作は**デフォルトでは送出しない**——失敗時は ERROR ログを記録し、
-> `False` / `None` / `default` を返す（フレームワークの実行を接続問題で妨げないため）。したがって、業務コードは通常
-> **`StorageUnreachableError` をキャッチしない**（ストレージの低層操作やカスタムバックエンドで使用される）。 
-> 実行時における接続状態の感知は、ライフサイクルイベント `storage.unreachable` / `storage.recovered`
-> （[ライフサイクルイベント](lifecycle.md#ストレージ接続状態)を参照）をサブスクライブすること。
-> 
-> 接続失敗の挙動は[ストレージバックエンド → 接続失敗の挙動](storage-backends.md#接続失敗の挙動)を参照。
+> **ストレージ操作の失敗セマンティクス**：KV およびクエリ操作は**デフォルトで例外をスローしません**——失敗時には ERROR ログを記録し、
+> `False` / `None` / `default` を返します（接続問題がフレームワークの実行をブロックするのを避けるため）。そのため、ビジネスコードが通常
+> `StorageUnreachableError` を捕捉することは**ありません**（主にストレージの低レベルを直接操作する場合やカスタムバックエンド向けのものです）。
+> 実行時に接続状態を感知するには、ライフサイクルイベント `storage.unreachable` / `storage.recovered` を購読してください
+> （詳細は[ライフサイクルイベント](lifecycle.md#ストレージ接続状態)を参照）。
+
+接続失敗時の動作の詳細は[ストレージバックエンド → 接続失敗時の動作](storage-backends.md#接続失敗時の動作)を参照してください。
 
 ### Interaction — `Core/Event/interaction.py`
 
-`wait_reply` / セッションのリース / アラートタイマー関連：
+`wait_reply` / セッションリース / リマインダータイマー関連：
 
-| エラー | 発生位置 | 代表的なシナリオ |
+| 例外 | 発生箇所 | 典型的なシナリオ |
 |------|----------|----------|
-| `InteractionError` | インタラクションセッション層 | インタラクションセッションのエラーの基底クラス |
-| `InteractionCancelled` | 待機がキャンセルされたとき | 待機中の future に設定され、待機側がキャッチして `.reason` を取得可能 |
-| `SessionOccupiedError` | `hold()` のリース取得が失敗したとき | セッションが他のオーナーによって占有されている（`.owner` で占有者を確認可能） |
+| `InteractionError` | インタラクション層 | インタラクション例外の基底クラス |
+| `InteractionCancelled` | 保留中の待機がキャンセルされた際 | 待機用 future に設定される（待機側は捕捉して `.reason` を取得可能） |
+| `SessionOccupiedError` | `hold()` のリース取得失敗 | セッションが既に他の owner に占有されている（`.owner` で占有者を確認可能） |
 
-キャンセルされた待機（モジュールのアンロード / プラットフォームの終了 / 同一セッションの新しい待機が置き換え）の際、`wait_reply` は **`None` を返す** ことで例外を送出しない（`InteractionCancelled` は内部で変換される）；キャンセルの原因を区別したい場合は、直接キャッチする。
+待機がキャンセルされた場合（モジュールのアンインストール／プラットフォームのシャットダウン／同一セッションの新しい待機への置き換え）、`wait_reply` は例外をスローせずに **`None` を返します**（`InteractionCancelled` は内部で変換されます）。キャンセル理由を区別する必要がある場合にのみ、直接捕捉してください。
 
 ### Module 系列 — `Core/module.py`（`sdk.module.call`）
 
-| エラー | 発生位置 | 代表的なシナリオ |
+| 例外 | 発生箇所 | 典型的なシナリオ |
 |------|----------|----------|
-| `ModuleError` | モジュールシステム | モジュールシステムのエラーの基底クラス |
-| `ModuleCallError` | `module.call()` | モジュール間呼び出しのエラーの基底クラス |
-| `ModuleNotAvailableError` | `module.call()` / ラグジュアリー属性アクセス | 目標が登録されていない / 有効化されていない / 初期化に失敗した |
-| `ServiceNotProvidedError` | `module.call()` | 目標の `meta.services` ホワイトリストに該当メソッドが宣言されていない |
-| `ModuleCallTimeoutError` | `module.call()` | 呼び出されたコルーチンがタイムアウト時間（デフォルト 30s）を超えた |
+| `ModuleError` | モジュールシステム | モジュールシステム例外の基底クラス |
+| `ModuleCallError` | `module.call()` | モジュール間呼び出し例外の基底クラス |
+| `ModuleNotAvailableError` | `module.call()` / 遅延読み込み属性アクセス | 対象が未登録／無効／初期化失敗 |
+| `ServiceNotProvidedError` | `module.call()` | 対象の `meta.services` ホワイトリストにそのメソッドが宣言されていない |
+| `ModuleCallTimeoutError` | `module.call()` | 呼び出されたコルーチンがタイムアウト時間を超過（デフォルト 30 秒） |
 
-「目標モジュールが利用できない」は、異なるアクセス経路での例外の種類：
+「対象モジュールが利用不可」の場合の、アクセスパスごとの例外タイプ：
 
-| アクセス経路 | エラー |
+| アクセスパス | 例外 |
 |----------|------|
 | `await sdk.module.call("X", "method")` | `ModuleNotAvailableError`（型付き） |
-| `sdk.module.X.attr`（ラグジュアリー属性アクセス、初期化失敗後） | `ModuleNotAvailableError` |
-| `sdk.module.X`（モジュールが有効化されていないときの属性アクセス） | `AttributeError`（Python の属性の慣例、`hasattr` はこの意味に依存） |
+| `sdk.module.X.attr`（遅延読み込み属性アクセス、初期化失敗後） | `ModuleNotAvailableError` |
+| `sdk.module.X`（モジュールが無効な場合の属性アクセス） | `AttributeError`（Python の属性の慣習、`hasattr` はこのセマンティクスに依存） |
 
 ```python
 from ErisPulse.Core.Bases.errors import ModuleNotAvailableError, ServiceNotProvidedError
@@ -155,55 +156,60 @@ from ErisPulse.Core.Bases.errors import ModuleNotAvailableError, ServiceNotProvi
 try:
     history = await sdk.module.call("Chat", "get_history", session_id, n=20)
 except ModuleNotAvailableError:
-    ...  # 目標モジュールが存在しない / 有効化されていない
+    ...  # 対象モジュールが存在しない／無効
 except ServiceNotProvidedError:
-    ...  # 目標モジュールが該当サービスを提供していない
+    ...  # 対象モジュールがそのサービスを提供していない
 ```
 
-### Shadow 系列 — `Core/shadow.py`（影子モジュール）
+### Shadow 系列 — `Core/shadow.py`（シャドウモジュール）
 
-| エラー | 発生位置 | 代表的なシナリオ |
+| 例外 | 発生箇所 | 典型的なシナリオ |
 |------|----------|----------|
-| `ShadowError` | 影子モジュールメカニズム | 影子エラーの基底クラス（すべての影エラーを一括でキャッチ） |
-| `ShadowStateError` | `shadow_start()` / `dismiss_shadow()` | 目標がロードされていない / 既にアクティブな影がある / 影がバインドされていない |
-| `ShadowSourceError` | `shadow_start()` | ソースパスが存在しない / プラグインローダーが不足 / ソースにロード可能なクラスがない / 装載に失敗 |
-| `ShadowPromoteError` | `promote_shadow()` | 影が登録されていない / 未ロード / ローダーがスナップショットをサポートしていない / 転正後の再ロードに失敗 |
+| `ShadowError` | シャドウモジュール機構 | シャドウ例外の基底クラス（すべてのシャドウエラーを一括捕捉） |
+| `ShadowStateError` | `shadow_start()` / `dismiss_shadow()` | 対象未ロード／アクティブなシャドウが既に存在／シャドウ未バインド |
+| `ShadowSourceError` | `shadow_start()` | ソースパス不存在／プラグインローダー欠如／ソースにロード可能なクラスなし／ロード失敗 |
+| `ShadowPromoteError` | `promote_shadow()` | シャドウ未登録／未ロード／ローダーがスナップショット非対応／正式化リロード失敗 |
 
 ### フレームワーク内部のパラメータ検証（ValueError）
 
 ストレージクエリビルダーのパラメータ検証（空の列タイプ、`Insert` が dict でない、安全でない列タイプなど）は標準の
-`ValueError` を送出する——これは**開発時のコーディングエラー**であり、通常の業務コードではキャッチせず、呼び出しを修正すべきである。
+`ValueError` をスローします——これは**開発時のコーディングエラー**に属し、正常なビジネスコードで捕捉すべきものではなく、
+呼び出し側を修正すべきものです。
 
-アダプターの標準アクションが失敗しても**エラーは送出しない**：`retcode` を持つレスポンス辞書を返す（プロトコルの意味、例えば
-`retcode=10002` はアクションが実装されていないことを示す）——これは client 層の「失敗時は `ClientError` を送出する」
-とは並行するエラーチャネルであり、アダプター開発時には両方を処理する必要がある。
+アダプターの標準アクション失敗は**例外をスローしません**：`retcode` を含むレスポンス辞書を返します（プロトコルセマンティクス、例：
+`retcode=10002` はアクションが実装されていないことを示す）——client 層の「失敗時に `ClientError` をスローする」とは並行する
+2つのエラーチャネルであり、アダプター開発時には両方を処理する必要があります。
 
-## エラーのキャプチャに関する提案
+## 捕捉の推奨事項
 
 ```python
-from ErisPulse.Core import ErisPulseError  # 基底クラスは Core から集約的にエクスポートされています
+from ErisPulse.Core import ErisPulseError  # 基底クラスは Core から集約エクスポート済み
 
 try:
     ...
 except ErisPulseError as e:
-    ...  # 一括処理：フレームワークが定義したすべての独自例外
+    ...  # 統一フォールバック：すべてのフレームワークカスタム例外
 ```
 
-- モジュール開発：必要に応じて正確にキャッチ（上記表参照）。最外層では `ErisPulseError` を使用して一括処理が可能です。
-- すべての例外は `ErisPulse.Core` から集約的にエクスポートされています（`SessionOccupiedError` / `InteractionCancelled` / `StrictModeError` 含む）。また、`ErisPulse.Core.Bases.errors` から個別にインポートすることも可能です。
-- 完全な定義は `src/ErisPulse/Core/Bases/errors.py` を参照してください。
+- モジュール開発：必要に応じて厳密に捕捉し（上の表を参照）、最外層は `ErisPulseError` でフォールバック可能
+- 例外はすべて `ErisPulse.Core` から集約エクスポートされており（`SessionOccupiedError` / `InteractionCancelled` / `StrictModeError` を含む）、`ErisPulse.Core.Bases.errors` からもインポート可能
+- 完全な定義は `src/ErisPulse/Core/Bases/errors.py` を参照
 
-## インタープリタの不要な警告の抑制
+## シャットダウンノイズの折りたたみ
 
-長期間実行されるプロセスが終了（またはバックグラウンドのループがキャンセル）する際、イベントループは多くの無意味な
-`Task was destroyed but it is pending!` といったインタープリタの警告を出力することがあります。フレームワークには**同種の警告の抑制**が内蔵されています：
-2秒の時間枠内に同種のメッセージはTRACEレベルに昇格され、1回だけ出力され、末尾には「（さらに N 件の同種のメッセージが抑制されました）」というサフィックスが付きます。これは意図的な警告の抑制です。このサフィックスが表示されたからといって、フレームワークが実際のエラーを無視しているわけではありません。上記の表に示す業務上のエラーは、通常通り完全に出力されます。この抑制はインタープリタの終了時の警告にのみ適用され、業務上のエラーには影響しません。どのレベルのエラーを記録すべきか、どのエラーを低レベル化または抑制するかは、[エンジニアリングの堅牢性ルール · エラーの記録レベル](../styleguide/engineering.md#1-エラーの記録レベル)に従います。
+長期駐留プロセスがシャットダウンする際（またはバックグラウンドループがキャンセルされた際）、イベントループはしばしば処置の価値のない
+`Task was destroyed but it is pending!` などのインタープリターノイズを大量に吐き出します。フレームワークには**同種ノイズの折りたたみ**が組み込まれています：
+2 秒ウィンドウ内の同種メッセージは TRACE にダウングレードされてカウントが統合され、1 回だけ出力され、末尾に
+「（他に N 件の同種メッセージが折りたたまれました）」というサフィックスが付きます。これは意図的なノイズ低減動作です——折りたたみサフィックスが表示されても、
+フレームワークが実際の例外を握りつぶしたことを意味しません。ビジネス例外（上表の各種）は従来どおり完全に出力されます。折りたたみはインタープリター終了時のノイズのみを対象とし、
+ビジネス例外には影響しません。どのレベルの例外を記録すべきで、どれをダウングレード／折りたたみできるかについては、
+[エンジニアリング堅牢性ルール · 例外記録のレベル分け](../styleguide/engineering.md#1-例外記録のレベル分け) に従ってください。
 
 ## 関連ドキュメント
 
-問題の原因に応じて、以下のドキュメントを参照してください。
+トラブルシューティングの目的に応じて選択してください：
 
-- **ストレージ操作が `False` / `None` を返し、接続状態を確認したい** → [ストレージバックエンド · 接続失敗時の動作](storage-backends.md#接続失敗時の動作)，または [storage.unreachable / storage.recovered イベント](lifecycle.md#ストレージ接続状態) をサブスクライブ
-- **`wait_reply` が `None` を返し、キャンセルされた原因を知りたい** → [インタラクティブセッションシステム](interaction.md)（キャンセル原因の対照表）
+- **ストレージ操作が `False` / `None` を返し、接続状態を把握したい** → [ストレージバックエンド · 接続失敗時の動作](storage-backends.md#接続失敗時の動作)、または [storage.unreachable / storage.recovered イベント](lifecycle.md#ストレージ接続状態) を購読
+- **`wait_reply` が `None` を返し、何によってキャンセルされたかを知りたい** → [インタラクションシステム](interaction.md)（キャンセル理由対応表）
 - **`module.call` がモジュール呼び出し例外をスロー** → [モジュール間通信](module-communication.md)
-- **接続 / WebSocket に関するエラー** → [ネットワーククライアント](http-client.md)（ClientError 体系）および [接続プールとブロードキャスト](connections.md)（接続レジストリの例外）
+- **接続 / WebSocket のエラー** → [ネットワーククライアント](client.md)（ClientError 体系）と[接続プールとブロードキャスト](connections.md)（接続レジストリ例外）

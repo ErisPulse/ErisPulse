@@ -309,24 +309,31 @@ ssl_keyfile = "/path/to/key.pem"
 
 > **埠口占用不是致命錯誤**：啟動時若檢測到 `port` 已被占用，框架會跳過路由伺服器啟動並告警，**適配器與模組照常運行**（僅 HTTP/WS/SSE 路由與 WebUI 不可用）。排查「機器人能跑但 WebUI 打不開」時先確認埠口。
 
-## 主人系統配置
+## 主人系統設定
 
-主人系統用於識別「框架主人」帳號（如 Bot 管理員）。`master.users` 支援兩種寫法：
+主人系統用於識別「框架主人」帳號（如 Bot 管理員）。`master.users` 支援三種寫法：
 
 ```toml
 [ErisPulse.master]
-# 寫法一：全局主人（所有平台生效）
+# 寫法一：全域主人（所有平台生效，含之後新增的平台）
 users = ["123456", "789012"]
 
-# 寫法二：按平台指定主人（dict）
+# 寫法二：僅按平台指定主人（dict）
 # users = { yunhu = ["123456"], telegram = ["789012"] }
+
+# 寫法三：全域 + 平台專屬共存——dict 中的 global 鍵為全域主人桶
+# users = { global = ["123456"], yunhu = ["789012"] }
 ```
 
-| 配置項 | 類型 | 預設值 | 說明 |
+| 設定項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| users | array / object | 空 | 主人帳號列表。`list` 形式為全局主人（所有平台生效）；`dict` 形式按平台指定（鍵為平台名，值為該平台的主人帳號列表） |
+| users | array / object | 空 | 主人帳號列表。`list` 形式為全域主人（所有平台生效）；`dict` 形式按平台指定（鍵為平台名，`global` 鍵為全域主人桶），值為該平台的主人帳號列表 |
 
-程式碼中透過 `master.is_master(event)` 或 `master.is_master(platform, user_id)` 檢查，每次呼叫實時讀取配置（支援熱更新，無需重啟）：
+> **關於新平台**：`list` 形式與 `dict` 中的 `global` 桶都是「定義一次、全平台生效」，
+> 之後接入新平台無需再改設定；平台專屬條目則只對同名（含前綴/萬用字元寬容匹配）平台生效。
+> `master.add(None, uid)` 持久化時寫入 `global` 桶，已有平台條目不受影響。
+
+程式碼中透過 `master.is_master(event)` 或 `master.is_master(platform, user_id)` 檢查，每次呼叫即時讀取設定（支援熱更新，無需重啟）：
 
 ```python
 from ErisPulse.Core import master
@@ -335,33 +342,33 @@ if master.is_master(event):
     await event.reply("主人你好")
 ```
 
-### 判定鏈與運行時增刪
+### 判定鏈與執行時增刪
 
-主人判定鏈為 **配置主人 → 運行時記錄 → provider 鏈**：
+主人判定鏈為 **設定主人 → 執行時記錄 → provider 鏈**：
 
 ```python
 from ErisPulse.Core import master
 
 master.is_master(event)                      # 從事件判定
 master.is_master("yunhu", "123")             # 顯式判定
-master.add("yunhu", "123")                   # 運行時新增（預設持久化；persist=False 僅記憶體）
+master.add("yunhu", "123")                   # 執行時新增（預設持久化；persist=False 僅記憶體）
 master.remove("yunhu", "123")                # 移除（預設持久化）
-master.list()                                # 匯總：{"global": [...], "<platform>": [...]}
+master.list()                                # 彙總：{"global": [...], "<platform>": [...]}
 ```
 
-### 自訂身份源（provider）
+### 自訂身分來源（provider）
 
-除配置外，還可註冊自訂身份源：`fn(platform, user_id) -> bool`，
-內建身份源（配置 + 運行時記錄）未命中時依次嘗試，任一 provider 放行即認定為主人。
-適合對接適配器管理員介面、資料庫角色等外部身份體系。
+除設定外，還可註冊自訂身分來源：`fn(platform, user_id) -> bool`，
+內建身分來源（設定 + 執行時記錄）未命中時依序嘗試，任一 provider 放行即認定為主人。
+適合對接轉接器管理員介面、資料庫角色等外部身分體系。
 
-註冊入口 `master.provider` 支援裝飾器 / 函數式兩種寫法，
-註銷統一走被註冊函數上的 `fn.unregister()`：
+註冊入口 `master.provider` 支援裝飾器 / 函式風格兩種寫法，
+註銷統一透過被註冊函式上的 `fn.unregister()`：
 
 ```python
 from ErisPulse.Core import master
 
-# 寫法一：裝飾器（常駐身份源，推薦）
+# 寫法一：裝飾器（常駐身分來源，推薦）
 @master.provider
 def admin_provider(platform, user_id):
     return user_id in {"999"}     # 自訂判定邏輯
@@ -369,19 +376,19 @@ def admin_provider(platform, user_id):
 master.is_master("yunhu", "999")   # True
 admin_provider.unregister()        # 不再需要時註銷
 
-# 寫法二：函數式（模組載入期註冊 / 卸載期註銷）
+# 寫法二：函式風格（模組載入期註冊 / 卸載期註銷）
 fn = master.provider(admin_provider)
 fn.unregister()
 ```
 
-> provider 異常會被捕獲並跳過，不阻斷身份判定鏈。
-> 綁定實例方法無法掛載 `unregister`，需要註冊/註銷配對的場景請用**模組級函數**。
+> provider 例外會被捕獲並跳過，不阻斷身分判定鏈。
+> 綁定實例方法無法掛載 `unregister`，需要註冊/註銷配對的情境請用**模組級函式**。
 
-### 用戶優先：主人生效範圍由用戶最終決定
+### 使用者優先：主人生效範圍由使用者最終決定
 
-命令的 `master=True` 只是**開發者預設**：用戶可在
+指令的 `master=True` 只是**開發者預設**：使用者可在
 `ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false`
-覆寫緊縮或放開（見[統一事件覆寫配置](#統一事件覆寫配置eventoverrides)，用戶顯式配置即生效）。
+覆寫收緊或放寬（見[統一事件覆寫設定](#統一事件覆寫設定eventoverrides)，使用者明確設定即生效）。
 
 ## 日誌設定
 

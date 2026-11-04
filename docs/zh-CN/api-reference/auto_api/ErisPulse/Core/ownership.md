@@ -100,8 +100,9 @@ ErisPulse 归属权统一门面
 
 统一注销 owner 名下的全部资源（异步完整版）
 
-顺序：取消归属后台任务 → 触发外部清理钩子（on_cleanup）→ 注销全部
-注册类资源。模块卸载 / 禁用的标准回收路径。
+顺序：取消归属后台任务 → 关闭归属连接 → 释放合作式登记资源 →
+触发外部清理钩子（on_cleanup）→ 注销全部注册类资源。模块卸载 /
+禁用的标准回收路径。
 
 - **owner** (`owner`): 名（模块名或适配器平台名）
 
@@ -121,11 +122,13 @@ await ownership.reclaim("roll")
 
 ##### `async reclaim_tasks(owner: str) -> 'dict[str, int]'`
 
-注销 owner 的进行中工作：归属后台任务取消 + 归属连接关闭 + 外部清理钩子触发
+注销 owner 的进行中工作：归属后台任务取消 + 归属连接关闭 + 合作式资源释放 + 外部清理钩子触发
 
 - **owner** (`owner`): 名
 
-**返回值**: {"tasks_cancelled": int, "connections_closed": int, "cleanups_run": int}
+**返回值**: {"tasks_cancelled": int, "connections_closed": int,
+
+         "tracked_released": int, "cleanups_run": int}
 
 ---
 

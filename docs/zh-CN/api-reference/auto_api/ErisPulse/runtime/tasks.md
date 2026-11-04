@@ -183,6 +183,13 @@ run_main_loop(connections.broadcast({"type": "ping"}, group="room:1"), timeout=5
 ---
 
 
+### `_warn_cross_loop_residual(owner: str | None, task: Any, task_loop: asyncio.AbstractEventLoop | None = None) -> None`
+
+**内部方法** 归属取消遇到异环任务时留痕（跨 loop 残留可见性）
+
+---
+
+
 ### `spawn_later(delay: float, coro_fn: Callable[[], Awaitable[Any]], *args: Any, owner: str | None = None) -> asyncio.TimerHandle`
 
 归属化的延迟调度（``loop.call_later`` 的 owner 感知包装）
@@ -225,6 +232,9 @@ spawn_later(30, lambda: cleanup_expired(), owner="MyModule")
 - **daemon**: 是否守护线程 (默认: True，随主进程退出)
 
 **返回值**: 已启动的 :class:`threading.Thread`
+
+线程入口以创建时捕获的 owner 上下文执行（新线程默认空上下文，
+不绑定则线程内创建的任务 owner=None 不进归属表，卸载时成残留）。
 
 **示例**:
 

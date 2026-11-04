@@ -241,12 +241,12 @@ except ErisPulseError as e:
 
 ## 相關文件
 
-根據排查意圖選擇：
+依排查意圖選擇：
 
-- **儲存操作返回 `False` / `None`，想搞清連接狀態** → [儲存後端 · 連接失敗行為](storage-backends.md#連接失敗行為)，或訂閱 [storage.unreachable / storage.recovered 事件](lifecycle.md#儲存連接狀態)
-- **`wait_reply` 返回 `None`，想知道被什麼取消** → [互動會話系統](interaction.md)（取消原因對照表）
-- **`module.call` 抛模組呼叫異常** → [模組間通信](module-communication.md)
-- **連接 / WebSocket 報錯** → [網路用戶端](http-client.md)（ClientError 體系）與[連接池與廣播](connections.md)（連接註冊表異常）
+- **儲存操作回傳 `False` / `None`，想知道連線狀態** → [儲存後端 · 連線失敗行為](storage-backends.md#連線失敗行為)，或訂閱 [storage.unreachable / storage.recovered 事件](lifecycle.md#儲存連線狀態)
+- **`wait_reply` 回傳 `None`，想知道被什麼取消** → [互動會話系統](interaction.md)（取消原因對照表）
+- **`module.call` 抛模組呼叫異常** → [模組間通訊](module-communication.md)
+- **連線 / WebSocket 報錯** → [網路客戶端](client.md)（ClientError 體系）與[連線池與廣播](connections.md)（連線註冊表異常）
 
 ## 已知问题追踪
 
