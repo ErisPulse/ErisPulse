@@ -25,7 +25,7 @@ Material documentation is located in the `prompts/` directory, divided into thre
 | **ErisPulse-AdapterDev.md** | Adapter Development | Builds on module development, plus adapter core concepts, SendDSL, and platform adaptation guidelines |
 | **ErisPulse-Full.md** | Full-stack Reference | All above content + complete user guide and API reference collection |
 
-Acquisition: Directly from the `prompts/` directory (synchronized with documentation updates), or from [GitHub Releases](https://github.com/ErisPulse/ErisPulse/releases).
+Acquisition: from the `prompts/` directory on the [docs-generated branch](https://github.com/ErisPulse/ErisPulse/tree/docs-generated) (synchronized with documentation updates), or via the download cards on the website.
 
 ### Usage
 
@@ -57,43 +57,23 @@ Required Send Methods to Implement: [Text / Image / Voice ...]
 Configuration Items: [Key Name]: [Purpose] ([Required/Optional])
 ```
 
-## Agent Skills
+## Docs Pack
 
-Agent Skills is a skill package for AI coding agents (e.g., ZCode / Claude Code): each skill is a directory (`SKILL.md` + frontmatter). The agent automatically discovers and loads skills based on `description`—reading only the relevant chapters when needed, rather than loading the entire document.
+`skills.zip` packages every document of this language as-is (no merging, no rewriting), plus a README index at the root: grouped by directory, each entry annotated with its "when to read this" note. The AI loads only the documents it needs.
 
-Skills are located in the `skills/` directory (synchronized with material documentation). Each `SKILL.md` starts with a **line-number outline** indicating the start and end line numbers of each section, allowing the AI to read only the required parts.
+### Docs pack vs. material documents
 
-### Difference Between Skill Package and Material Documentation
-
-| | Material Documentation | Skill Package |
+| | Material documents | Docs pack |
 |---|---|---|
-| Form | Single `.md` file | Multiple skill directories, packaged as a `.zip` |
-| Usage | Entire document loaded as context | Placed in the agent's skill directory, triggered automatically based on tasks |
-| Suitable For | Sufficient context window, full project development | Daily completion, on-demand loading, token-saving |
+| Form | single merged `.md` | all raw documents + README index |
+| Usage | inject whole into context | unzip into the workspace, AI picks documents on demand |
+| Best for | large context windows, whole-project work | long-lived workspace, on-demand retrieval |
 
-Both are generated from the same batch of documentation and updated synchronously: material documentation is "fully loaded at once," while skills are "loaded on-demand." Use either or both as needed.
+Both are generated from the same docs and updated in sync.
 
-### Acquisition and Deployment
+### Get it
 
-1. Download the skill package `.zip` from the "AI-Assisted Development" page on the website (language-specific), or directly from the repository branch `docs/<language>/ai-support/skills/` to get the latest content
-2. Unzip and copy the skill directory into the agent's skill directory (according to your tool's conventions, such as `.zcode/skills/` or `.claude/skills/`)
-3. The agent will automatically trigger loading for relevant tasks, without manual reference
-
-Each skill directory covers a specific topic (quick start, module development, adapter development, hot reload, ownership, error troubleshooting, etc.). The directory list and their applicable ranges are detailed on the download page—install only the topics you need.
-
-### Outline Example
-
-```markdown
-## Content Outline
-AI reads only the required sections, not the entire document.
-
-- Lazy Loading and Sleep: Lines 18-29
-- Overview: Lines 30-38
-- Event-Driven Lazy Activation (activate_on): Lines 55-132
-```
-
-> Skills are automatically built by CI (`python -m scripts.tools gen skills`); do not modify manually.
-
+Download from the "AI-assisted development" page on the website, or take `docs/en/ai-support/skills.zip` directly from the [docs-generated branch](https://github.com/ErisPulse/ErisPulse/tree/docs-generated).
 ## MCP Server
 
 ErisPulse provides a documentation retrieval MCP Server, allowing AI coding assistants (any that support MCP) to directly search and access ErisPulse's official documentation while writing code.

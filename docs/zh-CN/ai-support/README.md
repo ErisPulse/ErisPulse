@@ -25,7 +25,7 @@ ErisPulse 提供两种互补的 AI 辅助开发方式，让 AI 能基于最新�
 | **ErisPulse-AdapterDev.md** | 适配器开发 | 在模块开发基础上，外加适配器核心概念、SendDSL、平台适配指南 |
 | **ErisPulse-Full.md** | 全栈参考 | 上述全部内容 + 完整用户指南与 API 参考合集 |
 
-获取方式：从 `prompts/` 目录直接获取（与文档同步更新），或从 [GitHub Releases](https://github.com/ErisPulse/ErisPulse/releases) 下载对应版本。
+获取方式：从 [docs-generated 分支](https://github.com/ErisPulse/ErisPulse/tree/docs-generated) 的 `prompts/` 目录获取（与文档同步更新），或经官网「AI 辅助开发」页下载。
 
 ### 使用方式
 
@@ -57,47 +57,23 @@ ErisPulse 提供两种互补的 AI 辅助开发方式，让 AI 能基于最新�
 配置项：[键名]：[用途]（[必填/可选]）
 ```
 
-## Agent Skills
+## 文档全集包
 
-Agent Skills 是面向 AI 编码智能体（ZCode / Claude Code 等）的技能包：每个技能是一个目录（`SKILL.md` + frontmatter），智能体按 `description` 自动发现、按需加载——只在任务相关时读对应章节，不必全文灌入。
+`skills.zip` 将该语言全部文档原文打包（不合并、不改写），根目录附一份 README 总索引：按目录分组，逐篇标注「什么时候需要读这篇」。AI 可以按索引只加载需要的文档。
 
-技能位于 `skills/` 目录（与物料文档同步生成），每个 `SKILL.md` 开头带**行号大纲**：标注各章节的起止行号，AI 可只读需要的部分。
+### 与物料文档的区别
 
-### 技能包与物料文档的区别
-
-| | 物料文档 | 技能包 |
+| | 物料文档 | 文档全集包 |
 |---|---|---|
-| 形态 | 单个 `.md` 文件 | 多个技能目录，整体打成一个 `.zip` |
-| 使用方式 | 整段灌入上下文 | 放入智能体技能目录，按任务自动触发 |
-| 适用 | 上下文窗口充足、整项目开发 | 日常补全、按需加载、节省 token |
+| 形态 | 单个 `.md` 合并稿 | 全部文档原文 + 索引 README |
+| 使用方式 | 整段灌入上下文 | 解压放进工作区，AI 按需挑文档读 |
+| 适用 | 上下文窗口充足、整项目开发 | 长期驻留工作区、按需检索 |
 
-两者由同一批文档生成、同步更新：物料是"一次性喂饱"，技能是"按需取用"。需要哪套用哪套，也可以同时部署。
+两者由同一批文档生成、同步更新。
 
-### 获取与部署
+### 获取
 
-1. 从官网「AI 辅助开发」页下载技能包 `.zip`（按语言区分），或直接从仓库分支
-   `docs/<语言>/ai-support/skills/` 获取最新内容
-2. 解压后把技能目录整体拷入智能体的技能目录（按你的工具约定，如
-   `.zcode/skills/`、`.claude/skills/`）
-3. 之后智能体遇到相关任务会自动触发加载，无需手动引用
-
-每个技能目录覆盖一个主题（快速上手、模块开发、适配器开发、热重载、归属权、
-错误排查等），目录清单与各自适用范围见下载页说明——
-不必全部安装，只装你需要的主题即可。
-
-### 大纲示例
-
-```markdown
-## 内容大纲
-AI 按需读取：只读需要的章节即可，不必全文加载。
-
-- 懒加载与休眠: 18-29 行
-- 概述: 30-38 行
-- 事件驱动懒激活（activate_on）: 55-132 行
-```
-
-> 技能由 CI 自动构建（`python -m scripts.tools gen skills`），不要手改。
-
+官网「AI 辅助开发」页下载，或直接取 [docs-generated 分支](https://github.com/ErisPulse/ErisPulse/tree/docs-generated) 的 `docs/zh-CN/ai-support/skills.zip`。
 ## MCP 服务器
 
 ErisPulse 提供一个文档检索 MCP Server，让 AI 编码助手（支持 MCP 的均可）在你写代码时直接检索、查阅 ErisPulse 官方文档。
@@ -178,3 +154,4 @@ ERISPULSE_DOCS_DIR=/path/to/erispulse/docs epsdk-mcp --server
 - [适配器开发入门](../developer-guide/adapters/getting-started.md) -- 手动开发适配器的完整教程
 - [示例代码](../../examples/) -- 参考已有的模块和适配器实现
 - [模块构建器](https://www.erisdev.com/builder.html) -- 浏览器内的可视化 AI 模块生成器
+

@@ -238,6 +238,11 @@ pyvenv.cfg
 # 但保留源中文文档
 !docs/zh-CN/
 
+# AI 物料与文档全集包（CI 生成，只发布到 docs-generated 分支，不入开发分支）
+docs/*/ai-support/prompts/
+docs/*/ai-support/skills/
+docs/*/ai-support/skills*.zip
+
 .zcode/
 
 .github/assets/ErisPulseFilm1.mp4

@@ -1,11 +1,11 @@
 name: "📚 Eris Docs Update"
 
-# 文档产物管线：翻译（zh-CN → 各语言）+ 四类生成器产物 → 提交回开发分支
-# （克隆/pull 即得最新多语言文档）；另推 docs-generated orphan 分支与
-# workflow artifact 作为查验副本（400 天）
+# 文档产物管线：翻译（zh-CN → 各语言）+ 生成器产物；文档树与翻译缓存提交回
+# 开发分支，AI 物料（prompts / skills.zip）只发布到 docs-generated orphan 分支
+# （单提交强推，官网与 raw 直链的分发源）；另存 workflow artifact 查验副本
 #
 # 设计要点：
-# - 产物与翻译缓存随分支入库：checkout 即含最新状态，跨轮缓存天然续传
+# - 文档与翻译缓存随开发分支入库：checkout 即含最新状态，跨轮缓存天然续传
 # - 翻译尽力而为：部分失败不阻断提交（已成功译文照常入库，失败文件下轮续译）
 # - bash 安全纪律：任何步骤脚本不得以可能短路的 `cmd && cmd` 语句结尾
 #   （短路退出码会成为整个步骤的退出码——历史事故根因）
@@ -156,7 +156,7 @@ jobs:
           check_updated ai_prompts_updated -- docs/*/ai-support/prompts/
 
           python -m scripts.tools gen skills
-          check_updated skills_updated -- docs/*/ai-support/skills/ docs/*/ai-support/skills-*.zip
+          check_updated skills_updated -- docs/*/ai-support/skills.zip
 
           python -m scripts.tools gen docs-index
           check_updated docs_index_updated -- docs/_meta/
@@ -185,6 +185,7 @@ jobs:
           git config user.email "${BOT_USER_ID}+${BOT_SLUG}[bot]@users.noreply.github.com"
 
           git add docs/ README.md README.*.md .github/.translate_cache/
+          # ai-support 物料已 gitignore：只发布到 docs-generated，不回提开发分支
           git commit -qm "docs: 自动更新文档产物 (${{ github.sha }}) [skip ci]"
 
           # 注入当前 GITHUB_TOKEN（persist-credentials: false，长任务防旧 token 过期）
@@ -222,18 +223,19 @@ jobs:
           include-hidden-files: true
 
       - name: Publish docs tree to docs-generated branch (durable)
-        if: steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-docs.outputs.any_updated == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          # 多语言文档树的持久层：单提交强推到 orphan 分支（分支永久，artifact 会过期）。
-          # GITHUB_TOKEN 推送不触发 workflow，天然防递归。
+          # 分发层：文档树 + AI 物料 + skills.zip，单提交强推 orphan 分支（分支永久，artifact 会过期）。
+          BOT_SLUG="${{ steps.app-token.outputs.app-slug }}"
+          BOT_USER_ID=$(gh api "/users/${BOT_SLUG}[bot]" --jq .id)
           rm -rf /tmp/docs-pub && mkdir -p /tmp/docs-pub
           cp -r docs /tmp/docs-pub/docs
+          cp .github/dist-readme/README*.md /tmp/docs-pub/
           cd /tmp/docs-pub
           git init -q -b docs-generated
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "${BOT_SLUG}[bot]"
+          git config user.email "${BOT_USER_ID}+${BOT_SLUG}[bot]@users.noreply.github.com"
           git add -A
           git commit -qm "docs build ${{ github.sha }} $(date -u '+%Y-%m-%dT%H:%MZ')"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"

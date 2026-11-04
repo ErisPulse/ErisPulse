@@ -25,7 +25,7 @@ ErisPulse 提供兩種互補的 AI 輔助開發方式，讓 AI 能基於最新�
 | **ErisPulse-AdapterDev.md** | 適配器開發 | 在模塊開發基礎上，外加適配器核心概念、SendDSL、平台適配指南 |
 | **ErisPulse-Full.md** | 全棧參考 | 上述全部內容 + 完整用戶指南與 API 參考合集 |
 
-獲取方式：從 `prompts/` 目錄直接獲取（與文件同步更新），或從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse/releases) 下載對應版本。
+獲取方式：從 [docs-generated 分支](https://github.com/ErisPulse/ErisPulse/tree/docs-generated) 的 `prompts/` 目錄獲取（與文件同步更新），或經官網「AI 輔助開發」頁下載。
 
 ### 使用方式
 
@@ -57,31 +57,23 @@ ErisPulse 提供兩種互補的 AI 輔助開發方式，讓 AI 能基於最新�
 設定項：[鍵名]：[用途]（[必填/可選]）
 ```
 
-## Agent Skills
+## 文檔全集包
 
-Agent Skills 是面向 AI 編碼智能體（ZCode / Claude Code 等）的技能包：每個技能是一個目錄（`SKILL.md` + frontmatter），智能體根據 `description` 自動發現、按需加載——僅在任務相關時讀取對應章節，不必全文灌入。
+`skills.zip` 將該語言全部文檔原文打包（不合併、不改寫），根目錄附 README 總索引：按目錄分組，逐篇標註「什麼時候需要讀這篇」。AI 可只載入需要的文檔。
 
-技能位於 `skills/` 目錄（與物料文件同步生成），每個 `SKILL.md` 開頭帶**行號大綱**：標註各章節的起止行號，AI 可只讀取需要的部分。
+### 與物料文件的區別
 
-### 部署方式
+| | 物料文件 | 文檔全集包 |
+|---|---|---|
+| 形態 | 單個 `.md` 合併稿 | 全部文檔原文 + 索引 README |
+| 使用方式 | 整段注入上下文 | 解壓放進工作區，AI 按需挑文檔讀 |
+| 適用 | 上下文視窗充足、整專案開發 | 長期駐留工作區、按需檢索 |
 
-1. 從 `skills/<語言>/` 目錄獲取技能（或下載對應版本的 artifact）
-2. 將技能目錄拷入智能體的技能目錄（按你的工具約定，如 `.zcode/skills/`、`.claude/skills/`）
-3. 之後智能體遇到相關任務會自動觸發加載，無需手動引用
+兩者由同一批文檔生成、同步更新。
 
-### 大綱示例
+### 取得
 
-```markdown
-## 內容大綱
-AI 按需讀取：只讀取需要的章節即可，不必全文加載。
-
-- 慣性加載與休眠: 18-29 行
-- 概述: 30-38 行
-- 事件驅動慣性激活（activate_on）: 55-132 行
-```
-
-> 技能由 CI 自動建構（`python -m scripts.tools gen skills`），請勿手動修改。
-
+官網「AI 輔助開發」頁下載，或直接取 [docs-generated 分支](https://github.com/ErisPulse/ErisPulse/tree/docs-generated) 的 `docs/zh-TW/ai-support/skills.zip`。
 ## MCP 伺服器
 
 ErisPulse 提供一個文件檢索 MCP 伺服器，讓 AI 編碼助手（支援 MCP 的均可）在你寫程式碼時直接檢索、查閱 ErisPulse 官方文件。
