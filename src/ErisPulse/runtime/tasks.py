@@ -381,8 +381,8 @@ def _warn_cross_loop_residual(
 ) -> None:
     """{!--< internal-use >!--} 归属取消遇到异环任务时留痕（跨 loop 残留可见性）"""
     try:
-        from ..Core.i18n import i18n as _i18n
-        from ..Core.logger import logger
+        from ..Core import i18n as _i18n
+        from ..Core import logger
 
         task_name = getattr(task, "get_name", lambda: repr(task))()
         logger.warning(

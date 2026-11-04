@@ -12,6 +12,7 @@ import warnings
 from typing import Any, TypeVar
 
 from ..runtime.context import current_caller, current_owner
+from ..runtime.resource_track import release_owner_tracked
 from .Bases import BaseModule
 from .Bases.errors import (
     ModuleCallError,
@@ -1046,8 +1047,6 @@ class ModuleManager(ManagerBase):
 
             # 释放合作式登记资源（ownership.track）：任务工厂拦截够不着的
             # Loop-bound 资源（第三方连接池 / client）由模块显式登记，此处统一释放
-            from ..runtime.resource_track import release_owner_tracked
-
             released_resources = await release_owner_tracked(module_name)
             if released_resources > 0:
                 logger.debug(
@@ -1752,8 +1751,6 @@ class ModuleManager(ManagerBase):
                             count=cleaned_hooks,
                         )
                     )
-                from ..runtime.resource_track import release_owner_tracked
-
                 await release_owner_tracked(module_name)
 
             if inspect.iscoroutinefunction(instance.on_unload):

@@ -24,14 +24,17 @@ from ..Core.Bases.errors import ModuleNotAvailableError
 from ..Core.constants import (
     ACTIVATE_RETRY_COOLDOWN_SECS,
     ACTIVATION_STUB_PRIORITY,
+    EVENT_MODULE_ROLLBACK,
     MODULE_ENTRY_POINT_GROUP,
     MODULE_SOURCE_PLUGIN_FOLDER,
     MODULE_SOURCE_RUNTIME,
 )
+from ..Core.di import call_with_depends
 from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
 from ..Core.logger import logger
 from ..finders import ModuleFinder
+from ..runtime.context import owner_scope
 from ._reload_utils import (
     check_reload_identity,
     clear_source_caches,
@@ -870,10 +873,6 @@ class ModuleLoader(BaseLoader):
         :param instance: 快照中的旧实例
         :param manager_instance: 模块管理器实例
         """
-        from ..Core.constants import EVENT_MODULE_ROLLBACK
-        from ..Core.di import call_with_depends
-        from ..runtime.context import owner_scope
-
         on_load = getattr(instance, "on_load", None)
         success = False
         if callable(on_load):
