@@ -17,21 +17,21 @@ The two approaches are not mutually exclusive: for large projects, both can be u
 
 ## Material Documentation
 
-Material documentation is located in the `prompts/` directory, divided into three scenarios:
+The material documentation is located in the `prompts/` directory and is divided into three types based on development scenarios:
 
 | Document | Scenario | Description |
 |----------|----------|-------------|
-| **ErisPulse-ModuleDev.md** | Module Development | Covers the entire module development process (event handling, routing, lifecycle, etc.) |
-| **ErisPulse-AdapterDev.md** | Adapter Development | Builds on module development, plus adapter core concepts, SendDSL, and platform adaptation guidelines |
-| **ErisPulse-Full.md** | Full-stack Reference | All above content + complete user guide and API reference collection |
+| **ErisPulse-ModuleDev.md** | Module Development | Covers the entire module development workflow (event handling, routing, lifecycle, etc.) |
+| **ErisPulse-AdapterDev.md** | Adapter Development | Builds on module development and adds core adapter concepts, SendDSL, and platform adaptation guidelines |
+| **ErisPulse-Full.md** | Full Stack Reference | All the above content plus a complete user guide and API reference collection |
 
-Acquisition: from the `prompts/` directory on the [docs-generated branch](https://github.com/ErisPulse/ErisPulse/tree/docs-generated) (synchronized with documentation updates), or via the download cards on the website.
+Access method: Retrieve from the `prompts/` directory in the [docs-generated branch](https://github.com/ErisPulse/ErisPulse/tree/docs-generated) (updated synchronously with the documentation), or download via the "AI-Assisted Development" page on the official website.
 
 ### Usage
 
-1. Choose the document based on your target (module → `ModuleDev`, adapter → `AdapterDev`, complex needs → `Full`)
-2. Provide the document content as context to the AI: place it in the IDE workspace, paste directly for chat-based tools, or inject as a system message for API calls
-3. Use the template below to describe your requirements; the more specific, the higher the quality of generated code
+1. Choose the appropriate document based on your target (module → `ModuleDev`, adapter → `AdapterDev`, complex needs → `Full`)
+2. Provide the document content as context to the AI: place it in your IDE workspace, paste directly into chat-style interfaces, or inject as a system message in API calls
+3. Describe your requirements using the template below; the more specific your description, the higher the quality of the generated output
 
 ### Requirement Description Template
 
@@ -40,9 +40,9 @@ Acquisition: from the `prompts/` directory on the [docs-generated branch](https:
 ```
 Please generate a complete code for a [Module Name] module based on the ErisPulse module development specification.
 
-Function Description: [Core Function]
-Events to Listen To: [Message / Command / Notification / Request], Handling Logic: [Operation]
-Configuration Items Needed: [Key Name]: [Purpose] ([Required/Optional], Default Value: [Value])
+Function Description: [Core Functionality]
+Events to listen for: [Message / Command / Notification / Request], Processing Logic: [Operation]
+Required Configuration Items: [Key Name]: [Purpose] ([Required/Optional], Default Value: [Value])
 Other Requirements: [Additional Constraints]
 ```
 
@@ -51,29 +51,30 @@ Other Requirements: [Additional Constraints]
 ```
 Please generate a complete code for an [Adapter Name] adapter based on the ErisPulse adapter development specification.
 
-Platform Information: [Name], Communication Protocol: [WebSocket / WebHook / HTTP Polling], API Documentation: [Address]
+Platform Information: [Name], Communication Protocol: [WebSocket / WebHook / HTTP Polling], API Documentation: [URL]
 Event Mapping: Platform Event [Type] → OneBot12 Mapping [Relationship]
-Required Send Methods to Implement: [Text / Image / Voice ...]
+Send Methods to Implement: [Text / Image / Voice ...]
 Configuration Items: [Key Name]: [Purpose] ([Required/Optional])
 ```
 
-## Docs Pack
+## Complete Documentation Package
 
-`skills.zip` packages every document of this language as-is (no merging, no rewriting), plus a README index at the root: grouped by directory, each entry annotated with its "when to read this" note. The AI loads only the documents it needs.
+The `skills.zip` file packages all the original documentation in this language (unmerged and unmodified), with a README index at the root directory: documents grouped by directory, each entry marked with "When to read this document." An AI can load only the required documents according to the index.
 
-### Docs pack vs. material documents
+### Difference from Material Documentation
 
-| | Material documents | Docs pack |
+| | Material Documentation | Complete Documentation Package |
 |---|---|---|
-| Form | single merged `.md` | all raw documents + README index |
-| Usage | inject whole into context | unzip into the workspace, AI picks documents on demand |
-| Best for | large context windows, whole-project work | long-lived workspace, on-demand retrieval |
+| Format | Single `.md` merged document | All original documents + index README |
+| Usage | Entire document inserted into context | Unzip and place into workspace; AI reads documents as needed |
+| Applicable | When context window is sufficient, for whole project development | Long-term workspace residency, document retrieval on demand |
 
-Both are generated from the same docs and updated in sync.
+Both are generated from the same batch of documents and are updated synchronously.
 
-### Get it
+### Download
 
-Download from the "AI-assisted development" page on the website, or take `docs/en/ai-support/skills.zip` directly from the [docs-generated branch](https://github.com/ErisPulse/ErisPulse/tree/docs-generated).
+Download from the "AI-assisted Development" page on the official website, or directly access the `docs/en/ai-support/skills.zip` file from the [docs-generated branch](https://github.com/ErisPulse/ErisPulse/tree/docs-generated).
+
 ## MCP Server
 
 ErisPulse provides a documentation retrieval MCP Server, allowing AI coding assistants (any that support MCP) to directly search and access ErisPulse's official documentation while writing code.

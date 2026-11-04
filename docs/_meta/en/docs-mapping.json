@@ -594,7 +594,7 @@
     "AI-Assisted Development": {
       "description": "Using AI to assist ErisPulse development",
       "icon": "fa-robot",
-      "count": 13,
+      "count": 1,
       "documents": [
         {
           "title": "AI-Assisted Development",
@@ -603,86 +603,7 @@
           "icon": "fa-robot"
         }
       ],
-      "subgroups": {
-        "skills": {
-          "name": "Skills",
-          "icon": "fa-folder",
-          "documents": [
-            {
-              "title": "Skill Manifest",
-              "path": "ai-support/skills/README.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 适配器开发",
-              "path": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 适配器技术标准",
-              "path": "ai-support/skills/erispulse-adapter-standards/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 通信与连接",
-              "path": "ai-support/skills/erispulse-communication/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 配置系统与 CLI 工具链",
-              "path": "ai-support/skills/erispulse-config-cli/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 生态与多平台",
-              "path": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 异常体系与排障",
-              "path": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 快速上手与核心概念",
-              "path": "ai-support/skills/erispulse-getting-started/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 热重载与懒加载休眠",
-              "path": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 模块开发",
-              "path": "ai-support/skills/erispulse-module-dev/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 权限作用域与归属权",
-              "path": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 影子灰度与消息追踪",
-              "path": "ai-support/skills/erispulse-shadow-transcript/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            }
-          ]
-        }
-      }
+      "subgroups": {}
     },
     "Technical Standards": {
       "description": "Framework technical specifications and standards",

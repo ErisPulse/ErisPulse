@@ -1,7 +1,8 @@
 # 路由管理器
 
 > [!TIP]
-> **什麼時候需要閱讀這篇**：需要 HTTP / WebSocket / SSE 路由（含連接池廣播）時。不需要則跳過，不會影響其他功能的使用。
+> **什麼時候需要閱讀這篇**：需要 HTTP / WebSocket / SSE 路由（含連接池廣播）時。不需要則跳過，不影響其他功能的使用。
+
 
 ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支援多適配器路由註冊和生命週期管理。底層透過抽象層封裝（目前為 FastAPI + Uvicorn）
 
@@ -13,13 +14,13 @@ ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支�
 - **自動注入**：路由處理器無需導入 FastAPI 類型，框架自動注入抽象物件
 - **路由分組**：支援帶前綴和版本號的 `RouteGroup`
 - **路由中間件**：支援 glob 模式匹配的請求攔截
-- **速率限制**：內建滑動視窗限流
+- **速率限制**：內建滑動窗口限流
 - **CORS 支援**：一鍵開啟跨域資源共享
 - **安全頭**：自動添加安全回應頭
 - **自動文件**：基於 OpenAPI 的互動式文件
-- **WebSocket 支援**：完整的 WebSocket 連線管理、自訂認證和生命週期鉤子
-- **生命週期整合**：與 ErisPulse 生命週期系統深度整合
-- **SSL/TLS 支援**：支援 HTTPS 和 WSS 安全連線
+- **WebSocket 支援**：完整的 WebSocket 連接管理、自訂認證和生命週期鉤子
+- **生命週期集成**：與 ErisPulse 生命週期系統深度集成
+- **SSL/TLS 支援**：支援 HTTPS 和 WSS 安全連接
 - **主頁入口**：支援模組在根路由 `/` 註冊快速入口按鈕，支援國際化
 
 ## 抽象類型
@@ -29,10 +30,10 @@ ErisPulse 提供了服務端抽象類型，使模組無需直接依賴 FastAPI�
 | 抽象類型 | FastAPI 對應 | 說明 |
 |---------|-------------|------|
 | `HttpRequest` | `fastapi.Request` | HTTP 請求封裝，介面完全相容 |
-| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket 連線封裝，額外提供生命週期鈎子 |
+| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket 連接封裝，額外提供生命週期鉤子 |
 | `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket 斷開異常 |
 
-> `WebSocketConnection` 繼承自 `WebSocketConnectionBase`，與客戶端 WebSocket (`ClientWebSocket`) 共享相同的 send/receive/iter/close 接口。客戶端和服務端 WebSocket 可以使用相同的業務邏輯程式碼。
+> `WebSocketConnection` 繼承自 `WebSocketConnectionBase`，與客戶端 WebSocket (`ClientWebSocket`) 共享相同的 send/receive/iter/close 介面。客戶端和服務端 WebSocket 可以使用相同的業務邏輯程式碼。
 >
 > 透過 `.raw` 屬性可存取底層 FastAPI 原生物件。直接使用 FastAPI 類型的程式碼也完全相容。
 
@@ -55,7 +56,7 @@ async def hello():
 async def chat(ws):
     ...
 
-# 雙參：明確指定模組名（規則不變，跨模組/工具程式碼註冊時使用）
+# 雙參：顯式指定模組名（規則不變，跨模組/工具程式碼註冊時使用）
 @router.get("other_module", "/info")
 async def get_info(request):
     return {"method": request.method, "path": str(request.url)}
@@ -63,14 +64,14 @@ async def get_info(request):
 
 > [!NOTE]
 > 單參形態要求在模組/適配器**載入上下文**中註冊（載入期框架已注入歸屬）；
-> 在無歸屬上下文處呼叫會拋 `ValueError` 並提示明確傳入模組名。
+> 在無歸屬上下文處呼叫會拋 `ValueError` 並提示顯式傳入模組名。
 
 ### HTTP 裝飾器
 
 ```python
 from ErisPulse import router, HttpRequest
 
-# 也可明確標註抽象類型
+# 也可顯式標註抽象類型
 @router.post("/data")
 async def post_data(request: HttpRequest):
     data = await request.json()
@@ -171,7 +172,7 @@ router.register_http_route(
     methods=["GET"],
 )
 
-# 帶限流和文件說明
+# 帶限流和文件資訊
 router.register_http_route(
     module_name="my_module",
     path="/api/data",
@@ -199,7 +200,7 @@ router.register_websocket(
     handler=websocket_handler,
 )
 
-# 帶驗證的註冊（推薦）
+# 帶認證的註冊（推薦）
 async def auth_handler(ws: WebSocketConnection) -> bool:
     token = ws.query_params.get("token")
     return token == "secret"
@@ -219,14 +220,14 @@ router.register_websocket(
 | `module_name` | 模組名稱（必須） | - |
 | `path` | WebSocket 路徑 | - |
 | `handler` | 處理函數 | - |
-| `auth_handler` | 驗證函數，回傳 `False` 會自動關閉連接 | `None` |
+| `auth_handler` | 認證函數，回傳 `False` 會自動關閉連接 | `None` |
 | `auto_accept` | 是否自動 `accept()` | `True` |
 
-> **建議**：使用 `auth_handler` 進行連接確認，而非關閉 `auto_accept`。僅在你需要完全控制連接流程時才設定 `auto_accept=False`。
+> **推薦**：使用 `auth_handler` 進行連接確認，而非關閉 `auto_accept`。僅在你需要完全控制連接流程時才設定 `auto_accept=False`。
 
 ## WebSocket 生命週期鉤子
 
-`WebSocketConnection` 提供了斷開連線和錯誤的回調註冊，無需手動 try/catch：
+`WebSocketConnection` 提供了斷開連接和錯誤的回調註冊，無需手動 try/catch：
 
 ```python
 from ErisPulse.Core import WebSocketConnection
@@ -251,7 +252,7 @@ async def my_ws(ws: WebSocketConnection):
 ## 路由分組
 
 ```python
-# 創建帶前綴的路由組
+# 建立帶前綴的路由組
 group = router.group("my_module", prefix="/v1")
 
 @group.get("/users")
@@ -284,14 +285,14 @@ async def admin_middleware(request, call_next):
 
 ## 請求關聯 ID（X-Request-ID）
 
-從 2.7.0 版本開始，每個 HTTP 請求都會攜帶一個 `X-Request-ID` 關聯 ID，用於日誌 / 鏈路追蹤串聯：
+從 2.7.0 起，每個 HTTP 請求都會攜帶一個 `X-Request-ID` 關聯 ID，用於日誌 / 鏈路追蹤串聯：
 
-- **生成規則**：優先沿用客戶端傳入的 `X-Request-ID` 請求頭（分佈式追蹤場景）；否則自動生成 UUID
-- **回應標頭**：回應會回寫 `X-Request-ID`，方便客戶端將請求與日誌對應
-- **生命週期事件**：`server.request` 與 `server.response` 事件資料中新增 `request_id` 欄位
+- **生成規則**：優先沿用客戶端傳入的 `X-Request-ID` 請求頭（分散式追蹤場景）；否則自生成 UUID
+- **回應頭**：回應會回寫 `X-Request-ID`，方便客戶端把請求與日誌對應
+- **生命週期事件**：`server.request` 與 `server.response` 事件資料中新增 `request_id` 字段
 
 ```python
-# 在模組中監聽請求事件，依 request_id 串聯請求-回應
+# 在模組中監聽請求事件，按 request_id 串聯請求-回應
 @sdk.lifecycle.on("server.request")
 async def on_request(data):
     print(f"[{data['request_id']}] {data['method']} {data['path']}")
@@ -309,7 +310,7 @@ curl -H "X-Request-ID: my-trace-id" http://localhost:8080/my_module/health
 
 ## 速率限制
 
-使用滑動視窗演算法對路由進行限流：
+使用滑動窗口演算法對路由進行限流：
 
 ```python
 @router.get("my_module", "/limited", rate_limit="10/minute")
@@ -321,7 +322,7 @@ async def submit_data(request):
     return {"submitted": True}
 ```
 
-速率限制格式：`{次數}/{時間視窗}`，例如 `10/minute`、`100/hour`。
+速率限制格式：`{次數}/{時間窗口}`，如 `10/minute`、`100/hour`。
 
 ## CORS 配置
 
@@ -333,7 +334,7 @@ router.setup_cors(
 )
 ```
 
-也可透過 `config.toml` 進行配置：
+也可透過 `config.toml` 配置：
 
 ```toml
 [router.cors]
@@ -342,49 +343,49 @@ allow_methods = ["GET", "POST"]
 allow_headers = ["*"]
 ```
 
-## 安全標頭
+## 安全頭
 
 ```python
 router.setup_security_headers()
 ```
 
-自動添加 `X-Content-Type-Options`、`X-Frame-Options`、`X-XSS-Protection` 等安全標頭。
+自動添加 `X-Content-Type-Options`、`X-Frame-Options`、`X-XSS-Protection` 等安全頭。
 
-也可透過 `config.toml` 進行配置：
+也可透過 `config.toml` 配置：
 
 ```toml
 [router.security]
 enabled = true
 ```
 
-## 自動文檔
+## 自動文件
 
-Router 預設啟用 OpenAPI 互動式文檔：
+Router 預設啟用 OpenAPI 互動式文件：
 
 ```python
-# 禁用文檔
+# 禁用文件
 router.disable_docs()
 
-# 自訂文檔資訊
+# 自訂文件資訊
 router.set_docs_info(
     title="My API",
-    description="API 文檔",
+    description="API 文件",
     version="1.0.0"
 )
 ```
 
 ## 路徑處理
 
-路由路徑會自動加上模組名稱作為前綴，以避免衝突：
+路由路徑會自動添加模組名稱作為前綴，避免衝突：
 
 ```python
-# 將路徑 "/api" 註冊到模組 "my_module"
-# 實際可存取的路徑為 "/my_module/api"
+# 註冊路徑 "/api" 到模組 "my_module"
+# 實際存取路徑為 "/my_module/api"
 router.register_http_route("my_module", "/api", handler)
 ```
 
 > [!WARNING]
-> 路由路徑（包含模組名前綴）**區分大小寫**。註冊時的模組名稱大小寫會反映在實際路徑上：當模組名稱為 `Test` 時，註冊 `/api` 的實際路徑是 `/Test/api`，若存取 `/test/api` 則會回傳 404。
+> 路由路徑（含模組名前綴）**大小寫敏感**。註冊時的模組名是什麼大小寫，實際路徑就是什麼大小寫：模組名為 `Test` 時註冊 `/api` 的實際路徑是 `/Test/api`，存取 `/test/api` 將回傳 404。
 
 ## 系統路由
 
@@ -405,11 +406,11 @@ GET /
 # 回傳 ErisPulse 品牌頁
 ```
 
-根路由 `/` 顯示 ErisPulse 品牌頁面，自動偵測 Dashboard 的可用性並添加入口按鈕。
+根路由 `/` 顯示 ErisPulse 品牌頁面，自動偵測 Dashboard 可用性並添加入口按鈕。
 
 ## 主頁入口
 
-路由管理器允許外部模組在根路由 `/` 上註冊快捷入口按鈕，方便使用者快速訪問各模組的管理頁面。
+路由管理器允許外部模組在根路由 `/` 上註冊快速入口按鈕，方便使用者快速存取各模組的管理頁面。
 
 ### 註冊入口
 
@@ -420,7 +421,7 @@ router.register_home_entry(
     url="/mymodule/admin",
 )
 
-# 帶圖標的註冊（SVG）
+# 帶圖示的註冊（SVG）
 router.register_home_entry(
     name="控制台",
     url="/console",
@@ -438,13 +439,13 @@ router.register_home_entry(
 
 | 參數 | 類型 | 說明 | 必填 |
 |------|------|------|------|
-| `name` | `str` / `dict` | 按鈕顯示文本；傳入 `{"i18n": "key", "default": "文本"}` 字典時使用國際化 | 是 |
+| `name` | `str` / `dict` | 按鈕顯示文字；傳入 `{"i18n": "key", "default": "文字"}` 字典時使用國際化 | 是 |
 | `url` | `str` | 按鈕連結地址 | 是 |
-| `icon_svg` | `str` | 可選 SVG 圖標標記 | 否 |
+| `icon_svg` | `str` | 可選 SVG 圖示標記 | 否 |
 
 ### Dashboard 自動註冊
 
-當偵測到 `sdk.Dashboard` 可用時，路由管理器會自動在入口列表首位添加 Dashboard 按鈕，無需手動註冊。
+當偵測到 `sdk.Dashboard` 可用時，路由管理器自動在入口列表首位添加 Dashboard 按鈕，無需手動註冊。
 
 ## 生命週期集成
 
@@ -462,16 +463,16 @@ async def on_server_stop(event):
 
 ## 最佳實踐
 
-1. **優先使用抽象類型**：使用 `HttpRequest` / `WebSocketConnection` 替代 `fastapi.Request` / `fastapi.WebSocket`，避免硬性依賴
+1. **優先使用抽象類型**：使用 `HttpRequest` / `WebSocketConnection` 替代 `fastapi.Request` / `fastapi.WebSocket`，避免硬依賴
 2. **利用自動注入**：處理器第一個參數命名為 `request` 或 `req`，無需任何類型註解即可獲得 `HttpRequest`
-3. **優先使用單參數形態**：模組加載上下文中優先使用單參數形態（自動歸屬命名空間）；跨模組/工具代碼註冊時顯式傳入模組名
-4. **使用路由分組**：對同一模組的多個路由使用 `group()` 進行組織
+3. **單參形態優先**：模組載入上下文中優先單參形態（自動歸屬命名空間）；跨模組/工具程式碼註冊時顯式傳模組名
+4. **使用路由分組**：對同一模組的多個路由使用 `group()` 組織
 5. **安全性考量**：為敏感操作實現認證機制和安全頭
-6. **合理限流**：對高頻接口設置速率限制
-7. **使用生命週期鉤子**：通過 `@ws.on_disconnect` / `@ws.on_error` 處理 WebSocket 異常，避免手動 try/catch
+6. **合理限流**：對高頻介面設定速率限制
+7. **使用生命週期鉤子**：透過 `@ws.on_disconnect` / `@ws.on_error` 處理 WebSocket 異常，避免手動 try/catch
 
 ## 相關文件
 
-- [HTTP 客戶端](http-client.md) - 使用內建 HTTP 客戶端發送請求
+- [網路客戶端](client.md) - 使用內建請求客戶端發送請求
 - [模組開發指南](../developer-guide/modules/getting-started.md) - 了解模組路由註冊
 - [最佳實踐](../developer-guide/modules/best-practices.md) - 路由使用建議
