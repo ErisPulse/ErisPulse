@@ -156,7 +156,7 @@ jobs:
           check_updated ai_prompts_updated -- docs/*/ai-support/prompts/
 
           python -m scripts.tools gen skills
-          check_updated skills_updated -- docs/*/ai-support/skills/
+          check_updated skills_updated -- docs/*/ai-support/skills/ docs/*/ai-support/skills-*.zip
 
           python -m scripts.tools gen docs-index
           check_updated docs_index_updated -- docs/_meta/
