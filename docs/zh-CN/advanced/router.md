@@ -473,6 +473,6 @@ async def on_server_stop(event):
 
 ## 相关文档
 
-- [HTTP 客户端](http-client.md) - 使用内置 HTTP 客户端发送请求
+- [网络客户端](client.md) - 使用内置请求客户端发送请求
 - [模块开发指南](../developer-guide/modules/getting-started.md) - 了解模块路由注册
 - [最佳实践](../developer-guide/modules/best-practices.md) - 路由使用建议

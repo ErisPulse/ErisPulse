@@ -411,7 +411,7 @@ async def list_users(request: HttpRequest):
 
 统一网络客户端，聚合 HTTP 请求、WebSocket 连接、连接池管理、自动重试、请求统计和生命周期事件集成。
 
-> 完整的网络客户端文档（请求方法、响应对象、WebSocket 客户端、异常体系等）请参考 [网络客户端](../advanced/http-client.md)。
+> 完整的网络客户端文档（请求方法、响应对象、WebSocket 客户端、异常体系等）请参考 [网络客户端](../advanced/client.md)。
 
 ### 快速参考
 
@@ -536,5 +536,5 @@ sdk.transcript.clear(event)
 **深入某个子系统的完整文档**：
 - [SQL 查询构建器](../advanced/sql-builder.md) - SQL 链式查询完整文档
 - [路由管理器](../advanced/router.md) - 路由管理器完整文档
-- [网络客户端](../advanced/http-client.md) - 网络客户端完整文档
+- [网络客户端](../advanced/client.md) - 网络客户端完整文档
 - [生命周期管理](../advanced/lifecycle.md) - 生命周期完整文档

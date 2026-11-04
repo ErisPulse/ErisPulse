@@ -139,7 +139,7 @@ SECTION_ADVANCED_MODULE = Section(
         DocEntry("交互会话系统", "advanced/interaction.md"),
         DocEntry("模块间通信", "advanced/module-communication.md"),
         DocEntry("MessageBuilder 详解", "advanced/message-builder.md"),
-        DocEntry("HTTP 客户端", "advanced/http-client.md"),
+        DocEntry("网络客户端", "advanced/client.md"),
         DocEntry("SQL 查询构建器", "advanced/sql-builder.md"),
         DocEntry("路由系统", "advanced/router.md"),
         DocEntry("生命周期管理", "advanced/lifecycle.md"),
@@ -155,7 +155,7 @@ SECTION_ADVANCED_MODULE = Section(
 SECTION_ADVANCED_ADAPTER = Section(
     title="高级主题",
     entries=[
-        DocEntry("HTTP 客户端", "advanced/http-client.md"),
+        DocEntry("网络客户端", "advanced/client.md"),
         DocEntry("SQL 查询构建器", "advanced/sql-builder.md"),
         DocEntry("生命周期管理", "advanced/lifecycle.md"),
         DocEntry("懶加载系统", "advanced/lazy-loading.md"),
@@ -171,7 +171,7 @@ SECTION_ADVANCED_ADAPTER = Section(
 SECTION_ADVANCED_FULL = Section(
     title="高级主题",
     entries=[
-        DocEntry("HTTP 客户端", "advanced/http-client.md"),
+        DocEntry("网络客户端", "advanced/client.md"),
         DocEntry("SQL 查询构建器", "advanced/sql-builder.md"),
         DocEntry("懶加载系统", "advanced/lazy-loading.md"),
         DocEntry("生命周期管理", "advanced/lifecycle.md"),
@@ -544,6 +544,7 @@ SKILL_SPECS: list[SkillSpec] = [
         audience="改代码不重启（热重载）、闲置自动归眠（dormant_after）、运行时注册模块",
         docs=[
             SkillDoc("懒加载与休眠", "advanced/lazy-loading.md"),
+            SkillDoc("归属权与热重载边界", "advanced/ownership.md"),
             SkillDoc("模块开发入门（加载策略）", "developer-guide/modules/getting-started.md"),
         ],
     ),
@@ -564,7 +565,7 @@ SKILL_SPECS: list[SkillSpec] = [
         docs=[
             SkillDoc("模块间通信", "advanced/module-communication.md"),
             SkillDoc("连接管理", "advanced/connections.md"),
-            SkillDoc("HTTP 客户端", "advanced/http-client.md"),
+            SkillDoc("网络客户端", "advanced/client.md"),
             SkillDoc("路由", "advanced/router.md"),
         ],
     ),
