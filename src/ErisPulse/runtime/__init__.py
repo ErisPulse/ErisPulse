@@ -12,6 +12,7 @@ ErisPulse 运行时配置和管理模块
 # （避免在 runtime 初始化阶段触发 Core.Bases 完整加载链，导致循环引用）
 # 注意：i18n_schema 的 BaseI18n / I18nKey 已不再从 runtime 导出，请从 Core.Bases 导入
 from .context import (
+    bind_owner,
     current_caller,
     current_owner,
     current_trace_id,
@@ -63,6 +64,12 @@ from .hints import (
 )
 from .memory import get_rss_mb, get_traced_mb, log_snapshot, snapshot
 from .owner_cleanup import off_cleanup, on_cleanup, run_owner_cleanups
+from .resource_track import (
+    get_owner_tracked,
+    release_owner_tracked,
+    track,
+    untrack,
+)
 from .plugin_reload import PluginReloadWatcher
 from .kernel import Kernel
 from .tasks import (
@@ -90,6 +97,7 @@ __all__ = [
     "ExceptionHandler",
     "async_exception_handler",
     "best_match",
+    "bind_owner",
     "best_match_with_prefix",
     "cancel_all_background_tasks",
     "cancel_owner_tasks",
@@ -121,6 +129,7 @@ __all__ = [
     "get_rss_mb",
     "get_send_receipts",
     "get_server_config",
+    "get_owner_tracked",
     "get_storage_config",
     "get_traced_mb",
     "global_exception_handler",
@@ -137,6 +146,7 @@ __all__ = [
     "resolve_config_schema",
     "run_main_loop",
     "run_owner_cleanups",
+    "release_owner_tracked",
     "send_receipts",
     "setup_exception_handling",
     "snapshot",
@@ -148,6 +158,8 @@ __all__ = [
     # 友好提示
     "suggest_similar",
     "set_erispulse_section",
+    "track",
+    "untrack",
     "update_erispulse_config",
     "validate_config",
     "explain_event",

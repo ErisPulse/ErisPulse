@@ -667,7 +667,10 @@ class AdapterManager(ManagerBase):
                     # 适配器重启后通知类事件将永久失聪。此处主动触发
                     # Event 层自检（内部有幂等保护），不依赖下一条事件才暴露
                     try:
-                        from .Event import message as _ev_message, meta as _ev_meta, notice as _ev_notice, request as _ev_request
+                        from .Event import message as _ev_message
+                        from .Event import meta as _ev_meta
+                        from .Event import notice as _ev_notice
+                        from .Event import request as _ev_request
 
                         for _handler in (_ev_message.handler, _ev_notice.handler, _ev_request.handler, _ev_meta.handler):
                             _handler.ensure_bus_link()
@@ -1213,7 +1216,10 @@ class AdapterManager(ManagerBase):
 
         # 自检自愈（restart 路径）：同主启动路径，总线被清空后主动重挂
         try:
-            from .Event import message as _ev_message, meta as _ev_meta, notice as _ev_notice, request as _ev_request
+            from .Event import message as _ev_message
+            from .Event import meta as _ev_meta
+            from .Event import notice as _ev_notice
+            from .Event import request as _ev_request
 
             for _handler in (_ev_message.handler, _ev_notice.handler, _ev_request.handler, _ev_meta.handler):
                 _handler.ensure_bus_link()

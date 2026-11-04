@@ -101,8 +101,9 @@ class OwnershipManager:
         """
         统一注销 owner 名下的全部资源（异步完整版）
 
-        顺序：取消归属后台任务 → 触发外部清理钩子（on_cleanup）→ 注销全部
-        注册类资源。模块卸载 / 禁用的标准回收路径。
+        顺序：取消归属后台任务 → 关闭归属连接 → 释放合作式登记资源 →
+        触发外部清理钩子（on_cleanup）→ 注销全部注册类资源。模块卸载 /
+        禁用的标准回收路径。
 
         :param owner: owner 名（模块名或适配器平台名）
         :return: 各类资源注销数量（键见 :meth:`reclaim_sync`，另含
@@ -118,12 +119,13 @@ class OwnershipManager:
 
     async def reclaim_tasks(self, owner: str) -> "dict[str, int]":
         """
-        注销 owner 的进行中工作：归属后台任务取消 + 归属连接关闭 + 外部清理钩子触发
+        注销 owner 的进行中工作：归属后台任务取消 + 归属连接关闭 + 合作式资源释放 + 外部清理钩子触发
 
         :param owner: owner 名
-        :return: {"tasks_cancelled": int, "connections_closed": int, "cleanups_run": int}
+        :return: {"tasks_cancelled": int, "connections_closed": int,
+                 "tracked_released": int, "cleanups_run": int}
         """
-        result = {"tasks_cancelled": 0, "connections_closed": 0, "cleanups_run": 0}
+        result = {"tasks_cancelled": 0, "connections_closed": 0, "cleanups_run": 0, "tracked_released": 0}
         try:
             from ..runtime.tasks import cancel_owner_tasks
 
@@ -136,6 +138,12 @@ class OwnershipManager:
             result["connections_closed"] = await connections.close_owner(owner)
         except Exception as e:
             _log_reclaim_failure("connections_closed", e)
+        try:
+            from ..runtime.resource_track import release_owner_tracked
+
+            result["tracked_released"] = await release_owner_tracked(owner)
+        except Exception as e:
+            _log_reclaim_failure("tracked_released", e)
         try:
             from ..runtime.owner_cleanup import run_owner_cleanups
 
@@ -328,6 +336,14 @@ class OwnershipManager:
 
             for o, hooks in (_owner_cleanups or {}).items():
                 _add(o, "cleanups", len(hooks or ()))
+        except Exception:
+            pass
+
+        try:
+            from ..runtime.resource_track import _owner_tracked
+
+            for o, resources in (_owner_tracked or {}).items():
+                _add(o, "tracked", len(resources or ()))
         except Exception:
             pass
 

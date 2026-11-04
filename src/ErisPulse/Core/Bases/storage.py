@@ -95,6 +95,22 @@ class AsyncBridge:
         """{!--< internal-use >!--} 桥接线程入口：启动常驻事件循环"""
         self._loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._loop)
+        # 桥接循环同样安装 owner 感知任务工厂：同步 API 经
+        # run_coroutine_threadsafe 携带的 owner 上下文在本循环内派生的
+        # 任务自动归属、卸载兜底取消——消除主循环外任务绕过归属表的
+        # 盲区（热重载跨 loop 残留的根因之一）。懒导入规避 Core.Bases
+        # 早期加载链与 runtime 包的循环引用；失败不阻塞桥接启动。
+        try:
+            from ...runtime.tasks import install_owner_task_factory
+
+            install_owner_task_factory(self._loop)
+        except Exception as e:
+            try:
+                from ..logger import logger
+
+                logger.warning(i18n.t("core.storage.bridge_factory_failed", error=e))
+            except Exception:
+                pass
         self._ready.set()
         try:
             self._loop.run_forever()
