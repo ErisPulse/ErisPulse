@@ -51,6 +51,64 @@ class TestMasterManager:
         with patch.object(master_module, "get_master_config", return_value=config):
             assert mgr.is_master("yunhu", "123") is True
 
+    def test_dict_global_bucket_hits_any_platform(self):
+        """dict 中的 global 桶：带任意平台参数判定都命中（新平台同样生效）"""
+        mgr = MasterManager()
+        config = {"users": {"global": ["123"], "yunhu": ["456"]}}
+        with patch.object(master_module, "get_master_config", return_value=config):
+            assert mgr.is_master("yunhu", "123") is True
+            assert mgr.is_master("onebot11", "123") is True  # 配置里不存在的新平台
+            assert mgr.is_master("", "123") is True
+            # 平台专属仍只在本平台生效
+            assert mgr.is_master("yunhu", "456") is True
+            assert mgr.is_master("telegram", "456") is False
+
+    def test_dict_global_key_case_insensitive(self):
+        """global 桶键名大小写不敏感"""
+        mgr = MasterManager()
+        config = {"users": {"Global": ["123"]}}
+        with patch.object(master_module, "get_master_config", return_value=config):
+            assert mgr.is_master("any", "123") is True
+
+    def test_add_global_persist_with_dict_users(self):
+        """users 为 dict 时，持久化添加全局主人写入 global 桶（不再抛错）"""
+        mgr = MasterManager()
+        mgr.reset()
+        config = {"users": {"yunhu": ["456"]}}
+        written = {}
+
+        with (
+            patch.object(master_module, "get_master_config", return_value=config),
+            patch.object(
+                master_module,
+                "update_erispulse_config",
+                side_effect=lambda d: written.update(d),
+            ),
+        ):
+            mgr.add(None, "123", persist=True)
+
+        assert written == {"master": {"users": {"yunhu": ["456"], "global": ["123"]}}}
+
+    def test_remove_global_persist_with_dict_users(self):
+        """users 为 dict 时，持久化移除全局主人从 global 桶删除"""
+        mgr = MasterManager()
+        mgr.reset()
+        config = {"users": {"global": ["123", "789"], "yunhu": ["456"]}}
+        written = {}
+
+        with (
+            patch.object(master_module, "get_master_config", return_value=config),
+            patch.object(
+                master_module,
+                "update_erispulse_config",
+                side_effect=lambda d: written.update(d),
+            ),
+        ):
+            removed = mgr.remove(None, "123", persist=True)
+
+        assert removed is True
+        assert written == {"master": {"users": {"global": ["789"], "yunhu": ["456"]}}}
+
     def test_is_master_from_event(self):
         """从事件对象提取 platform 和 user_id"""
         mgr = MasterManager()

@@ -34,6 +34,12 @@ _EventLike = Any  # 具有 get_platform() / get_user_id() 方法的对象
 # 自定义身份源 provider 签名：(platform, user_id) -> bool
 MasterProvider = Callable[[str, str], bool]
 
+# dict 形态 ``users`` 中的保留键：该桶内的 ID 为全局主人（对所有平台生效）。
+# 用于「全局主人 + 平台专属主人」共存的场景——纯全局仍可直接写 list。
+# 外部工具（如 Dashboard）可据此常量做能力探测：旧框架不认识该键时
+# 会把它当平台名处理，写入前应先检查本符号是否存在。
+GLOBAL_MASTER_KEY = "global"
+
 
 class MasterManager:
     """
@@ -77,7 +83,13 @@ class MasterManager:
             for platform, ids in users.items():
                 if not isinstance(ids, list):
                     ids = [ids]
-                platform_masters[str(platform)] = {str(i) for i in ids}
+                key = str(platform)
+                # ``global`` 是保留键：全局主人桶（「全局 + 平台专属」共存写法，
+                # 与 list() 输出一致）。当平台名处理会导致带平台参数判定时漏判
+                if key.lower() == GLOBAL_MASTER_KEY:
+                    global_masters |= {str(i) for i in ids}
+                else:
+                    platform_masters[key] = {str(i) for i in ids}
         elif isinstance(users, list):
             global_masters = {str(i) for i in users}
 
@@ -300,10 +312,10 @@ class MasterManager:
         users = current.get("users", {})
 
         if isinstance(users, dict):
-            if platform is None:
-                # 全局主人 → 转为混合格式: 保留现有 platform dict，添加 global key
-                raise ValueError(i18n.t("core.master.global_persist_not_supported"))
-            platform_key = str(platform)
+            # 全局主人写入保留键 ``global``（不再因「已有平台桶」而拒绝持久化）
+            platform_key = (
+                GLOBAL_MASTER_KEY if platform is None else str(platform)
+            )
             ids = set(users.get(platform_key, []))
             ids.add(uid)
             users[platform_key] = sorted(ids)
@@ -345,16 +357,17 @@ class MasterManager:
             users = current.get("users", {})
 
             if isinstance(users, dict):
-                if platform is not None:
-                    platform_key = str(platform)
-                    if platform_key in users:
-                        ids = [i for i in users[platform_key] if str(i) != uid]
-                        if ids:
-                            users[platform_key] = ids
-                        else:
-                            del users[platform_key]
-                        found = True
-                        update_erispulse_config({"master": {"users": users}})
+                platform_key = (
+                    GLOBAL_MASTER_KEY if platform is None else str(platform)
+                )
+                if platform_key in users:
+                    ids = [i for i in users[platform_key] if str(i) != uid]
+                    if ids:
+                        users[platform_key] = ids
+                    else:
+                        del users[platform_key]
+                    found = True
+                    update_erispulse_config({"master": {"users": users}})
             elif isinstance(users, list):
                 new_ids = [i for i in users if str(i) != uid]
                 if len(new_ids) != len(users):
@@ -381,6 +394,7 @@ class MasterManager:
 master: MasterManager = MasterManager()
 
 __all__ = [
+    "GLOBAL_MASTER_KEY",
     "MasterManager",
     "MasterProvider",
     "master",
