@@ -36,6 +36,17 @@ from .context import current_caller, current_owner
 _owner_tracked: dict[str, list[Any]] = {}
 
 
+def _log_and_t(key: str, level: str = "warning", **kwargs: Any) -> str:
+    """{!--< internal-use >!--} 惰性取日志与翻译（运行时层避免顶层导入 Core 的循环依赖）"""
+    from ..Core import i18n as _i18n
+    from ..Core import logger as _logger
+
+    message = _i18n.t(key, **kwargs)
+    if level == "warning":
+        _logger.warning(message)
+    return message
+
+
 def track(resource: Any, *, owner: str | None = None) -> str:
     """
     登记合作式资源：owner 被 reclaim 时自动调用 ``resource.release()``
@@ -58,16 +69,12 @@ def track(resource: Any, *, owner: str | None = None) -> str:
     >>> track(self._pool)  # 卸载/重载时归属链自动释放，无需 on_unload 手收
     """
     if not callable(getattr(resource, "release", None)):
-        from ..Core.i18n import i18n
-
-        raise ValueError(i18n.t("runtime.resource_track.release_required"))
+        raise ValueError(_log_and_t("runtime.resource_track.release_required", level="none"))
 
     if owner is None:
         owner = current_caller.get() or current_owner.get()
     if not owner:
-        from ..Core.i18n import i18n
-
-        raise ValueError(i18n.t("runtime.resource_track.owner_required"))
+        raise ValueError(_log_and_t("runtime.resource_track.owner_required", level="none"))
 
     resources = _owner_tracked.setdefault(owner, [])
     if resource not in resources:
@@ -161,27 +168,20 @@ def _log_release_failure(
     {!--< /internal-use >!--}
     """
     try:
-        from ..Core.i18n import i18n
-        from ..Core.logger import logger
-
         resource_name = type(resource).__name__
         if timeout:
-            logger.warning(
-                i18n.t(
-                    "runtime.resource_track.release_timeout",
-                    owner=owner,
-                    resource=resource_name,
-                    timeout=TRACKED_RELEASE_TIMEOUT_SECS,
-                )
+            _log_and_t(
+                "runtime.resource_track.release_timeout",
+                owner=owner,
+                resource=resource_name,
+                timeout=TRACKED_RELEASE_TIMEOUT_SECS,
             )
         else:
-            logger.warning(
-                i18n.t(
-                    "runtime.resource_track.release_failed",
-                    owner=owner,
-                    resource=resource_name,
-                    error=error,
-                )
+            _log_and_t(
+                "runtime.resource_track.release_failed",
+                owner=owner,
+                resource=resource_name,
+                error=error,
             )
     except Exception:
         pass
