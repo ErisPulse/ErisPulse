@@ -662,6 +662,21 @@ class AdapterManager(ManagerBase):
                         current_owner.reset(token)
                     self._started_instances.add(adapter)
 
+                    # 自检自愈：start/shutdown 循环可能清空事件总线而
+                    # Event 层的 _linked_to_adapter_bus 仍是 True（残留），
+                    # 适配器重启后通知类事件将永久失聪。此处主动触发
+                    # Event 层自检（内部有幂等保护），不依赖下一条事件才暴露
+                    try:
+                        from .Event import message as _ev_message
+                        from .Event import meta as _ev_meta
+                        from .Event import notice as _ev_notice
+                        from .Event import request as _ev_request
+
+                        for _handler in (_ev_message.handler, _ev_notice.handler, _ev_request.handler, _ev_meta.handler):
+                            _handler.ensure_bus_link()
+                    except Exception:
+                        pass
+
                     # 提交适配器状态变化事件（started）
                     await lifecycle.submit_event(
                         "adapter.status.change",
@@ -1198,6 +1213,18 @@ class AdapterManager(ManagerBase):
         finally:
             current_owner.reset(token)
         self._started_instances.add(adapter_instance)
+
+        # 自检自愈（restart 路径）：同主启动路径，总线被清空后主动重挂
+        try:
+            from .Event import message as _ev_message
+            from .Event import meta as _ev_meta
+            from .Event import notice as _ev_notice
+            from .Event import request as _ev_request
+
+            for _handler in (_ev_message.handler, _ev_notice.handler, _ev_request.handler, _ev_meta.handler):
+                _handler.ensure_bus_link()
+        except Exception:
+            pass
 
         await lifecycle.submit_event(
             "adapter.status.change",

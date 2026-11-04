@@ -21,8 +21,8 @@
 
 - **模块总数**: 139
 - **类总数**: 194（包括 5 个嵌套类）
-- **函数总数**: 376
-- **方法总数**: 1752
+- **函数总数**: 377
+- **方法总数**: 1753
 
 ---
 
@@ -191,7 +191,7 @@
 
 ### [ErisPulse.CLI.utils.display](ErisPulse/CLI/utils/display.md)
 
-10 个函数
+11 个函数
 
 
 ### [ErisPulse.CLI.utils.interactive](ErisPulse/CLI/utils/interactive.md)
@@ -221,7 +221,7 @@
 
 ### [ErisPulse.Core.Bases.adapter](ErisPulse/Core/Bases/adapter.md)
 
-3 个类 | 67 个方法 | 7 个函数
+3 个类 | 66 个方法 | 7 个函数
 
 
 ### [ErisPulse.Core.Bases.adapter_patterns](ErisPulse/Core/Bases/adapter_patterns.md)
@@ -316,7 +316,7 @@
 
 ### [ErisPulse.Core.Event.base](ErisPulse/Core/Event/base.md)
 
-1 个类 | 10 个方法 | 1 个函数
+1 个类 | 12 个方法 | 1 个函数
 
 
 ### [ErisPulse.Core.Event.command](ErisPulse/Core/Event/command.md)

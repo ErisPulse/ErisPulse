@@ -212,7 +212,7 @@ class BaseClient:
     HTTP 客户端抽象基类
 
     定义统一的异步 HTTP 请求和 WebSocket 连接接口，
-    具体实现由 Core.client.HttpClient 提供。
+    具体实现由 Core.client.Client 提供。
 
     {!--< tips >!--}
     1. 通过 sdk.client 获取全局单例，也可自行实例化

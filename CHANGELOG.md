@@ -73,6 +73,63 @@
 
 ---
 
+
+---
+
+## [2.11.2] - 2026/11/01
+
+**版本摘要**
+本版本为主题修复与资源治理发布：适配器事件总线清空后通知类事件失聪自愈、epsdk CLI 健壮性加固；热重载补齐主循环之外的归属拦截与跨循环残留告警，重载失败回滚后自动重放 `on_load`；同时修复主人系统全局主人的跨平台判定。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 升级原因：无破坏性变更；`on_unload` 载荷新增 `reason` 字段（旧模块忽略即可），使用通知类事件或热重载迭代的部署尤其建议升级
+
+**注意事项**
+- 重载失败回滚后会重放旧实例的 `on_load`（失败仅告警），并新增 `module.rollback` 事件
+- `master.users` 为 dict 时新增 `global` 保留键，用于「全局主人 + 平台专属」共存；`master.add(None, uid)` 写入该桶
+- 全新部署的适配器不再预生成 `default` 账户：Server 模式适配器需先添加账户才会开始监听，存量配置不受影响
+- 文档 `advanced/http-client.md` 更名为 `advanced/client.md`（`HttpClient` / `BaseHttpClient` 兼容别名保持不变）
+
+### 新增
+
+- @YingXinche
+  - Event：BaseEventHandler 新增 `ensure_bus_link()` 自检自愈——适配器事件总线被清空（WS 重连 / restart）而挂载标记残留 True 时自动重新挂载分发器，并在每次分发入口兜底检查
+  - AdapterManager：适配器 start 与 restart 完成后主动触发 message/notice/request/meta 四类分发器的总线自检，不再依赖下一条事件才暴露失聪
+  - 归属体系新增合作式 API：`sdk.context.bind_owner()` 让回调随身携带创建时 owner，`ownership.track()` 登记任务工厂够不着的 Loop-bound 资源，卸载/重载时统一释放
+  - 存储桥接循环安装 owner 感知任务工厂，同步存储调用派生的任务不再绕过归属表
+
+### 变更
+
+- @YingXinche
+  - Adapter：声明 `AccountConfigClass` 的适配器不再自动生成 `default` 账户模板——未添加账户时 `accounts` 为空字典，账户改由用户在 Dashboard 账户向导中自行创建
+
+### 优化
+
+- @YingXinche
+  - 热重载：失败回滚后重放 `on_load` 并发射 `module.rollback` 事件；`on_unload` 载荷携带 `reason`，模块可区分 `reload` 与常规卸载
+  - 归属取消跨事件循环时改为线程安全投递并打残留告警，不再以非安全方式取消
+
+### 修复
+
+- @YingXinche
+  - CLI：命令自动发现失败由静默警告升级为错误提示并附诊断建议；`-h`/`-help`/`--help` 不再进入命令拼写检查；带值全局选项（`--lang`）后的值不再被误判为命令名
+  - CLI：`__main__.main()` 顶层异常兜底——初始化/执行阶段的任何异常输出纯文本诊断到 stderr，exe shim 下不再出现"无响应且无输出"
+  - CLI 交互：确认提示（Confirm）调用前自动清空 stdin 缓冲——耗时表格/安装过程中用户连敲的回车不再被下一次确认一次性吞掉（表现为"莫名取消卸载"）；确认文案自动带 `(Y/n)`/`(y/N)` 默认值后缀
+  - CLI 文案：卸载确认五语言明示"直接回车 = 取消不卸载"
+  - 适配器（onebot11/12，随各适配器仓库发布）：json 卡片消息段生成可读 alt_message——提取 title/prompt/desc/preview 等常见字段为摘要，解析失败保留长度线索，触发判定与上下文不再只见占位符
+  - 主人系统「全局 + 平台专属」共存：`users` 为 dict 时支持 `global` 保留键，带平台参数判定不再漏掉全局主人；`master.add(None, uid)` 持久化写入该桶
+  - 热重载跨 Loop 残留：旧实例遗留在其它事件循环上的任务不再漏网（#477）
+  - `spawn_thread` 启动的线程入口丢失 owner 上下文，线程内创建的任务由此可被正确归属
+
+### 文档
+
+- @YingXinche
+  - 《归属权（owner）系统》增补热重载边界：能力边界表、三层资源治理、跨循环语义、模块侧守则与排查清单
+  - Agent Skills 技能库新增技能清单 README 与 `skills-<语言>.zip` 分发包；AI 物料与技能包改为从文档分支直接下载，不再随发行版分发附件
+
+---
+
 ## [2.11.1] - 2026/10/30
 > 正式发布
 
@@ -130,7 +187,9 @@
   - `PollingAdapter` 批内单条上报失败隔离（单条异常不再丢弃余批）
   - `spawn_client_loop` 空 platform 时回退 owner 上下文兜底（空 owner 任务不再无人回收）
   - 文件监控停止 join 改有限超时（不再阻塞事件循环一个轮询周期）；预检与监控日志全面 i18n 化（五语言）
-  - 配置 schema 透传满血组件扩展元数据（`min/max/step/rows/show_if/disabled_if/value_type/item`，供 Dashboard 2.4.0+ 组件系统消费；旧面板自动忽略）
+  - 新增 Bilibili 私信适配器（Cookie/扫码双登录、事件驱动私信收发、图片消息、多账户，基于 bilibili-api-python）
+  - 新增 Minecraft RCON 适配器（全量命令执行、tellraw/say 发送、可选日志事件监听、多服务器，RCON 协议自实现零三方依赖）
+  - 配置体系确立框架级《配置与 UI 元数据》规范（docs/zh-CN/developer-guide/configuration.md）：widget 名录、`show_if/disabled_if` 条件算子、`value_type` 值形态与消费方兼容性契约；`config_schema` 透传全部规范键（`min/max/step/rows/show_if/disabled_if/value_type/item`），供 Dashboard 2.4+ 等任意面板消费，旧消费方自动忽略
 
 ### 变更
 

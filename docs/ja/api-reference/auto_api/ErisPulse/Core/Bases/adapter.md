@@ -1154,15 +1154,6 @@ def Raw_ob12(self, message: dict, **kwargs):
 ---
 
 
-##### `_ensure_accounts_exist()`
-
-确保多账户配置模板存在，不存在则生成默认账户配置
-
-**内部方法**
-
----
-
-
 ##### `_resolve_account(account_id: str | None = None) -> tuple`
 
 解析目标账户

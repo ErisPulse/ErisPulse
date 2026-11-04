@@ -10,26 +10,30 @@ Here you'll find your development path: **Module Development** allows you to ext
 ### Module Development
 
 1. [Getting Started with Module Development](modules/getting-started.md) - Create your first module
-2. [Module Core Concepts](modules/core-concepts.md) - Core concepts and architecture of modules
-3. [Event Wrapper Class in Detail](modules/event-wrapper.md) - A complete description of the Event object
+2. [Core Concepts of Modules](modules/core-concepts.md) - Core concepts and architecture of modules
+3. [Event Wrapper Class Explained](modules/event-wrapper.md) - Complete documentation of the Event object
 4. [Module Best Practices](modules/best-practices.md) - Recommendations for developing high-quality modules
 5. [Data Model Layer (ORM)](orm.md) - Advanced module development: declarative models, automatic table creation, and CRUD operations
 
 ### Adapter Development
 
 1. [Getting Started with Adapter Development](adapters/getting-started.md) - Create your first adapter
-2. [Adapter Core Concepts](adapters/core-concepts.md) - Core concepts of adapters (including two ways to write start() and the PollingAdapter / WebhookAdapter connection pattern base classes)
-3. [SendDSL in Detail](adapters/send-dsl.md) - A complete description of the Send message DSL
-4. [Event Converter](adapters/converter.md) - Implementing event converters
+2. [Core Concepts of Adapters](adapters/core-concepts.md) - Core concepts of adapters (including two writing styles for start(), and base classes for PollingAdapter / WebhookAdapter connection modes)
+3. [SendDSL Explained](adapters/send-dsl.md) - Complete documentation of the Send message sending DSL
+4. [Event Converters](adapters/converter.md) - Implementing event converters
 5. [Adapter Best Practices](adapters/best-practices.md) - Recommendations for developing high-quality adapters
 
-### Testing and Troubleshooting
+### Testing & Troubleshooting
 
-1. [Module Testing (ErisPulse-Testing)](testing.md) - TestBot, event factories, and the assertion interface
+1. [Module Testing (ErisPulse-Testing)](testing.md) - TestBot, event factories, and assertion surfaces
+
+### General Standards
+
+1. [Configuration & UI Metadata](configuration.md) - Declarative configuration: widget / conditional visibility / value shape / compatibility contract (applicable to both adapters and modules)
 
 ### Publishing Guide
 
-- [Publishing and Module Store Guide](publishing.md) - Publish your work to PyPI and the ErisPulse module store
+- [Publishing & Module Store Guide](publishing.md) - Publish your work to PyPI and the ErisPulse Module Store
 
 ## Development Preparation
 

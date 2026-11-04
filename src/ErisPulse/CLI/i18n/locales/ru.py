@@ -39,6 +39,7 @@ TRANSLATIONS = {
     "cli.discover.instantiate_failed": "Не удалось создать экземпляр команды {name}: {error}",
     "cli.discover.load_failed": "Не удалось загрузить модуль команды {name}: {error}",
     "cli.discover.import_failed": "Невозможно импортировать пакет commands: {error}",
+    "cli.discover.import_failed_hint": "Проверьте окружение Python и целостность установки ErisPulse (pip install -U ErisPulse) или запустите epsdk doctor",
     # ==================== команда create ====================
     "cli.create.description": "Создать каркас проекта Module / Adapter",
     "cli.create.type_help": "Тип создания: module / adapter / pack (плагин в проект)",
@@ -511,7 +512,7 @@ TRANSLATIONS = {
     "cli.package.alias_mapping": "  Сопоставление псевдонима: {alias} → {package}",
     "cli.package.installed_package_found": "  Найден установленный пакет: {package}",
     "cli.package.uninstall_alias_not_found": "  Псевдоним не найден, попытка прямого удаления: {package}",
-    "cli.package.confirm_uninstall": "Подтвердить удаление следующих пакетов?\n{packages}",
+    "cli.package.confirm_uninstall": "Удалить следующие пакеты? (Enter — отмена)\n{packages}",
     "cli.package.operation_cancelled": "  Операция отменена",
     "cli.package.uninstalling": "Удаление {package}",
     "cli.package.uninstall_success": "[OK] Пакет {package} успешно удалён",

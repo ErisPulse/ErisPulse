@@ -467,8 +467,8 @@ class ModuleLoader(BaseLoader):
                         error=reload_error,
                     )
                 )
-            self._restore_reload_snapshot(snapshot, module_name, manager_instance, sdk_instance)
-            self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
+            await self._restore_reload_snapshot(snapshot, module_name, manager_instance, sdk_instance)
+            await self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
             return False
 
         # 重载明细回填（reload 事件载荷消费）：新旧类身份是否变化 / 版本迁移 / 活性保持
@@ -526,7 +526,7 @@ class ModuleLoader(BaseLoader):
             # 未加载且非插件来源的依赖者：跳过（懒加载会在下次访问时使用新依赖）
 
         # 级联失败的依赖者：快照时已加载而重载后仍未回到加载态 → 恢复旧注册
-        self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
+        await self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
 
         return True
 
@@ -749,7 +749,7 @@ class ModuleLoader(BaseLoader):
             pre_sys_prefix_keys=pre_prefix_keys,
         )
 
-    def _restore_reload_snapshot(
+    async def _restore_reload_snapshot(
         self,
         snapshot: _ReloadSnapshot,
         module_name: str,
@@ -761,8 +761,12 @@ class ModuleLoader(BaseLoader):
         恢复重载快照（任一重载步骤失败时调用）
 
         恢复顺序：sys.modules 条目 → 注册存根 → 懒加载态 / 已加载态 →
-        sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日志，不阻断
-        其余恢复）。
+        sdk 属性 → 重载快照对象 → 重放 ``on_load``。每步独立容错（单步失败
+        仅记日志，不阻断其余恢复）。
+
+        重放 ``on_load`` 是回滚闭环的关键：旧实例在卸载阶段已执行过
+        ``on_unload``，断开的外部资源不会随注册态还原而恢复；重放让模块
+        重建这些资源（失败仅告警，保持"尽力而为"回滚语义）。
 
         :param snapshot: 重载前采集的快照
         :param module_name: 模块名
@@ -840,7 +844,86 @@ class ModuleLoader(BaseLoader):
                     )
         self._last_module_objs[module_name] = snapshot.module_obj
 
-    def _restore_failed_dependents(
+        # 注册态恢复完毕后重放 on_load：旧实例的 on_unload 已执行过，
+        # 外部资源（连接 / 定时器）处于已收尾态，重放使其恢复服务能力
+        if snapshot.was_loaded and snapshot.instance is not None:
+            await self._replay_on_load(module_name, snapshot.instance, manager_instance)
+
+    async def _replay_on_load(
+        self,
+        module_name: str,
+        instance: Any,
+        manager_instance: Any,
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        回滚后重放 ``on_load``（恢复旧实例的服务能力）
+
+        与首次加载同归因上下文（``owner_scope``）执行，模块借此重建
+        ``on_unload`` 中释放的外部资源；失败 / 超时仅告警，保持"尽力而为"
+        回滚语义（不阻断回滚完成，旧实例仍可处理无外部依赖的调用）。
+
+        结束后发射 :data:`EVENT_MODULE_ROLLBACK` 事件（载荷含 success），
+        供外部观测本次回滚的重放结果。
+
+        :param module_name: 模块名
+        :param instance: 快照中的旧实例
+        :param manager_instance: 模块管理器实例
+        """
+        from ..Core.constants import EVENT_MODULE_ROLLBACK
+        from ..Core.di import call_with_depends
+        from ..runtime.context import owner_scope
+
+        on_load = getattr(instance, "on_load", None)
+        success = False
+        if callable(on_load):
+            try:
+                timeout = manager_instance._shutdown_timeout()
+            except Exception:
+                timeout = None
+            try:
+                with owner_scope(module_name):
+                    await asyncio.wait_for(
+                        call_with_depends(
+                            on_load,
+                            {"module_name": module_name, "reason": "rollback"},
+                        ),
+                        timeout=timeout,
+                    )
+                success = True
+            except asyncio.TimeoutError:
+                logger.warning(
+                    i18n.t(
+                        "loader.module.reload_rollback_replay_timeout",
+                        name=module_name,
+                    )
+                )
+            except Exception as e:
+                logger.warning(
+                    i18n.t(
+                        "loader.module.reload_rollback_replay_failed",
+                        name=module_name,
+                        error=e,
+                    )
+                )
+        if success:
+            logger.info(
+                i18n.t("loader.module.reload_rollback_replayed", name=module_name)
+            )
+
+        try:
+            await lifecycle.submit_event(
+                EVENT_MODULE_ROLLBACK,
+                msg=i18n.t(
+                    "loader.module.reload_rollback_event",
+                    name=module_name,
+                ),
+                data={"module_name": module_name, "success": success},
+            )
+        except Exception:
+            pass
+
+    async def _restore_failed_dependents(
         self,
         dependent_snapshots: "dict[str, _ReloadSnapshot]",
         manager_instance: Any,
@@ -858,7 +941,7 @@ class ModuleLoader(BaseLoader):
         loaded = getattr(manager_instance, "_loaded_modules", None)
         for dep, dep_snapshot in dependent_snapshots.items():
             if dep_snapshot.was_loaded and (loaded is None or dep not in loaded):
-                self._restore_reload_snapshot(dep_snapshot, dep, manager_instance, sdk_instance)
+                await self._restore_reload_snapshot(dep_snapshot, dep, manager_instance, sdk_instance)
 
     async def _reload_single_plugin(
         self, plugin_name: str, manager_instance: Any, sdk_instance: Any, *, was_loaded: bool = False

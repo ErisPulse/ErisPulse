@@ -118,6 +118,7 @@ CONFIG_KEY_ROUTER_CORS: Final[str] = "ErisPulse.router.cors"
 # 修改影响: 安全响应头配置的读取路径。
 CONFIG_KEY_ROUTER_SECURITY: Final[str] = "ErisPulse.router.security"
 
+
 # ==============================================================================
 # 配置管理器
 #
@@ -448,6 +449,7 @@ DEFAULT_EVENT_SOURCE: Final[str] = "ErisPulse"
 #           改名只需动这里，但仍需同步文档（advanced/lifecycle.md）。
 EVENT_CORE_INIT_STAGE: Final[str] = "core.init.stage"
 EVENT_MODULE_RELOAD: Final[str] = "module.reload"
+EVENT_MODULE_ROLLBACK: Final[str] = "module.rollback"
 EVENT_ADAPTER_RELOAD: Final[str] = "adapter.reload"
 EVENT_STORAGE_READY: Final[str] = "storage.ready"
 EVENT_STORAGE_UNREACHABLE: Final[str] = "storage.unreachable"
@@ -1218,6 +1220,12 @@ DEFAULT_OWNER_CANCEL_TIMEOUT_SECS: Final[float] = 5.0
 # 修改影响: 设大容忍慢清理（拖长卸载流程），设小加速卸载（超时钩子被放弃并告警）。
 CLEANUP_CALLBACK_TIMEOUT_SECS: Final[float] = 10.0
 
+# 合作式登记资源（ownership.track）中单个异步 release() 的执行超时（秒）。
+# 使用位置: runtime/resource_track.py（release_owner_tracked 释放归属资源时，
+# 对返回 awaitable 的 release() 施加 wait_for 超时保护）。
+# 修改影响: 设大容忍慢释放（拖长卸载/重载流程），设小加速回收（超时资源被放弃并告警）。
+TRACKED_RELEASE_TIMEOUT_SECS: Final[float] = 10.0
+
 # 模块注册来源标识：本地插件文件夹（plugins/ 目录）。
 # 使用位置: loaders/plugin_folder.py（构造 meta.source）与 Core/module.py
 # （purge 卸载时仅对本地插件清理 sys.modules）。
@@ -1391,6 +1399,7 @@ __all__ = [
     "BOT_STATUS_OFFLINE",
     "BOT_STATUS_ONLINE",
     "CLEANUP_CALLBACK_TIMEOUT_SECS",
+    "TRACKED_RELEASE_TIMEOUT_SECS",
     "COMMAND_ARG_DURATION_UNITS",
     "GOVERNANCE_KEY_KINDS",
     "GOVERNANCE_STATE_MAX_ENTRIES",
@@ -1463,6 +1472,7 @@ __all__ = [
     "EVENT_I18N_LANGUAGE_CHANGED",
     "EVENT_ADAPTER_RELOAD",
     "EVENT_MODULE_RELOAD",
+    "EVENT_MODULE_ROLLBACK",
     "EVENT_STORAGE_READY",
     "EVENT_STORAGE_RECOVERED",
     "EVENT_STORAGE_UNREACHABLE",

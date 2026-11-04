@@ -39,6 +39,7 @@ TRANSLATIONS = {
     "cli.discover.instantiate_failed": "實例化命令 {name} 失敗: {error}",
     "cli.discover.load_failed": "載入命令模組 {name} 失敗: {error}",
     "cli.discover.import_failed": "無法匯入 commands 套件: {error}",
+    "cli.discover.import_failed_hint": "檢查 Python 環境與 ErisPulse 安裝完整性（pip install -U ErisPulse），或執行 epsdk doctor 診斷",
     # ==================== create 命令 ====================
     "cli.create.description": "建立 Module / Adapter 專案脚手架",
     "cli.create.type_help": "建立類型: module / adapter / pack（插件轉專案）",
@@ -511,7 +512,7 @@ TRANSLATIONS = {
     "cli.package.alias_mapping": "  別名對映: {alias} → {package}",
     "cli.package.installed_package_found": "  找到已安裝包: {package}",
     "cli.package.uninstall_alias_not_found": "  未找到別名，將嘗試直接解除安裝: {package}",
-    "cli.package.confirm_uninstall": "確認解除安裝以下包嗎？\n{packages}",
+    "cli.package.confirm_uninstall": "確認解除安裝以下包嗎？（直接 Enter = 取消，不解除安裝）\n{packages}",
     "cli.package.operation_cancelled": "  操作已取消",
     "cli.package.uninstalling": "解除安裝 {package}",
     "cli.package.uninstall_success": "[OK] 包 {package} 解除安裝成功",

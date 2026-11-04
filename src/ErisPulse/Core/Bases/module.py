@@ -4,9 +4,16 @@ ErisPulse 模块基础模块
 提供模块基类定义和标准接口
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
-from typing import Any, TypedDict
+from typing import TYPE_CHECKING, Any, TypedDict
+
+if TYPE_CHECKING:
+    # NotRequired 仅在 3.11+ 的 typing 提供，3.10 需 typing_extensions 兜底；
+    # 本模块启用 PEP 563（字符串注解），运行时不解析该名字
+    from typing_extensions import NotRequired
 
 from ...loaders.strategy import ModuleLoadStrategy
 from ..config import config as config_mgr
@@ -50,7 +57,7 @@ class ModuleMeta:
     group: str | None = None
     tags: list[str] = field(default_factory=list)
     commands: list[str] | None = None
-    services: "list[str | dict[str, Any]] | None" = None
+    services: list[str | dict[str, Any]] | None = None
     min_sdk_version: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -67,8 +74,12 @@ class ModuleEvent(TypedDict):
     on_load / on_unload 事件数据
 
     :ivar module_name: str 模块名称
+    :ivar reason: str 卸载来意，仅 on_unload 提供；``"unload"`` / ``"reload"`` /
+        ``"disable"`` / ``"cascade"`` / ``"dormant"`` / ``"load-failed"`` /
+        ``"rollback"``（``"rollback"`` 为热重载回滚后重放 on_load 的事件来意）
     """
     module_name: str
+    reason: NotRequired[str]
 
 
 class BaseModule(ABC):
@@ -91,7 +102,7 @@ class BaseModule(ABC):
     I18nClass: type | None = None
 
     @staticmethod
-    def get_meta() -> "ModuleMeta | dict[str, Any]":
+    def get_meta() -> ModuleMeta | dict[str, Any]:
         """
         获取模块介绍元信息（描述这个模块是什么、属于哪一类等）
 
@@ -237,7 +248,14 @@ class BaseModule(ABC):
 
         {!--< tips >!--}
         其中，event事件内容为:
-            `{ "module_name": "模块名" }`
+            `{ "module_name": "模块名", "reason": "卸载来意" }`
+
+        reason 取值：``unload``（常规卸载）/ ``reload``（热重载，失败会回滚并
+        重放 on_load）/ ``disable``（禁用）/ ``cascade``（依赖级联）/
+        ``dormant``（归眠）/ ``load-failed``（加载失败半卸载）。
+
+        需要跨重载存活的资源（连接池等）可据此区分来意：``reload`` 时可
+        推迟关闭，交由归属清理链或回滚重放兜底。
         {!--< /tips >!--}
         """
         raise NotImplementedError
@@ -271,7 +289,7 @@ class BaseModule(ABC):
         return spawn_background(coro, owner=self._get_config_key())
 
     @property
-    def state(self) -> "BaseModule.ModuleState":
+    def state(self) -> BaseModule.ModuleState:
         """
         模块级持久化状态（storage 的命名空间视图）
 

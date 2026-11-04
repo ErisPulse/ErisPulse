@@ -137,46 +137,9 @@ jobs:
             -f event_type=docs-build \
             --jq '.event_type // "dispatched"' || true
 
-      - name: Generate AI material documents
-        if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
-        run: |
-          # Dynamically create output directories for all languages
-          for lang_dir in docs/*/; do
-            lang=$(basename "$lang_dir")
-            if [ "$lang" != "_meta" ]; then
-              mkdir -p "docs/$lang/ai-support/prompts"
-            fi
-          done
-
-          if [ -f "scripts/tools/generators/spec.py" ]; then
-            python -m scripts.tools gen ai-prompts
-            echo "AI material documents generated"
-          else
-            echo "AI Prompt generation script not found, skipping this step"
-          fi
-
-      - name: Collect AI material documents
-        if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
-        run: |
-          mkdir -p release_assets
-
-          # Dynamically scan all language directories
-          PROMPT_FILES="ErisPulse-ModuleDev.md ErisPulse-AdapterDev.md ErisPulse-Full.md"
-          for lang_dir in docs/*/; do
-            lang=$(basename "$lang_dir")
-            [ "$lang" = "_meta" ] && continue
-            prompts_dir="docs/$lang/ai-support/prompts"
-            [ -d "$prompts_dir" ] || continue
-            for prompt_file in $PROMPT_FILES; do
-              if [ -f "$prompts_dir/$prompt_file" ]; then
-                base="${prompt_file%.md}"
-                cp "$prompts_dir/$prompt_file" "release_assets/${base}-${lang}.md"
-              fi
-            done
-          done
-
-          echo "AI docs collected:"
-          ls -la release_assets/ || true
+      # AI 物料（prompts .md）与技能包（skills .zip）不再随发行版分发附件：
+      # 二者由 auto-update-docs 生成并提交回开发分支，官网直接链接分支文件下载，
+      # 避免 release assets 里堆叠与文档重复的大文件。
 
       - name: Setup pybuild
         if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'

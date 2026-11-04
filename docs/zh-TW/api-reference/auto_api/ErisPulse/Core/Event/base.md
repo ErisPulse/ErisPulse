@@ -120,6 +120,30 @@ ErisPulse 事件处理基础模块
 ---
 
 
+##### `_bus_has_self() -> bool | None`
+
+检查适配器总线上是否已挂本分发器；无法判定时返回 None。
+
+adapter.on 的 wrapper 是 functools.wraps(_process_event) 的闭包：
+__wrapped__ 与闭包 cell 都指向绑定方法，绑定方法 __func__ 即
+self._process_event（未绑定函数对象）。
+
+---
+
+
+##### `ensure_bus_link() -> bool`
+
+开机自检自愈：WS 重连走适配器 shutdown 时总线被清空，
+但本标记仍是 True、模块处理器列表非空——总线空了却无人重新挂载，
+notice 等事件从此永久失聪（此前只有整机重启才会自愈）。
+
+自检"有处理器但总线无本分发器"即重新挂载并返回 True（发生过自愈）。
+开销：一次布尔判断 + 标记为真时的一次总线查表；在 _process_event 入口
+与适配器 start 后调用均可。
+
+---
+
+
 ##### `async _process_event(event: dict[str, Any])`
 
 处理事件

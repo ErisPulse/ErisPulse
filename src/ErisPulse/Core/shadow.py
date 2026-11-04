@@ -398,8 +398,8 @@ class ShadowManager:
                 loader._last_module_objs[real_name] = module_obj
         except Exception as e:
             logger.error(i18n.t("core.shadow.promote_failed", real_name=real_name, error=e))
-            loader._restore_reload_snapshot(v1_snapshot, real_name, manager, sdk)
-            loader._restore_failed_dependents(dep_snapshots, manager, sdk)
+            await loader._restore_reload_snapshot(v1_snapshot, real_name, manager, sdk)
+            await loader._restore_failed_dependents(dep_snapshots, manager, sdk)
             return False
 
         # 转正成功：回收影子资源（旧事件处理器/账本随之失效）并解除绑定

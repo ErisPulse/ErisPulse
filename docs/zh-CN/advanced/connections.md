@@ -7,7 +7,7 @@
 > 跨模块复用与关闭权归属，以及模块卸载时连接的清理语义。
 >
 > **本篇不涉及**：WebSocket / SSE 路由的注册写法与连接生命周期钩子
-> （见[路由管理器](router.md)）；客户端 HTTP 请求（见[网络客户端](http-client.md)）。
+> （见[路由管理器](router.md)）；客户端 HTTP 请求（见[网络客户端](client.md)）。
 
 
 连接（服务端 WebSocket / SSE / 客户端出站 WebSocket）在 ErisPulse 中是**框架级一等资源**：
@@ -225,6 +225,6 @@ spawn_later(30, push_tick, owner="MyModule")
 ## 相关文档
 
 - **注册服务端 WS / SSE 路由** → [路由管理器](router.md)
-- **建立客户端出站 WebSocket** → [网络客户端](http-client.md)
+- **建立客户端出站 WebSocket** → [网络客户端](client.md)
 - **模块卸载时连接如何被回收** → [归属权（owner）系统](ownership.md)
 - **连接相关异常（`ConnectionNotFoundError` / `ConnectionPermissionError`）** → [异常体系与捕获指南](errors.md)

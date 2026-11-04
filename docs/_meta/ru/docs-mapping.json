@@ -151,7 +151,7 @@
     "Руководство разработчика": {
       "description": "Руководство по разработке модулей и адаптеров",
       "icon": "fa-code",
-      "count": 13,
+      "count": 14,
       "documents": [
         {
           "title": "Руководство для разработчиков",
@@ -174,6 +174,12 @@
         {
           "title": "Слой моделей данных (ORM)",
           "path": "developer-guide/orm.md",
+          "level": 1,
+          "icon": "fa-code"
+        },
+        {
+          "title": "Конфигурация и метаданные пользовательского интерфейса",
+          "path": "developer-guide/configuration.md",
           "level": 1,
           "icon": "fa-code"
         }
@@ -232,7 +238,7 @@
               "icon": "fa-code-branch"
             },
             {
-              "title": "Лучшие практики разработки адаптеров",
+              "title": "Рекомендуемые практики разработки адаптеров",
               "path": "developer-guide/adapters/best-practices.md",
               "level": 1,
               "icon": "fa-medal"
@@ -250,7 +256,7 @@
     "Руководство по платформам": {
       "description": "Возможности платформ и документация адаптеров",
       "icon": "fa-plug",
-      "count": 18,
+      "count": 21,
       "documents": [
         {
           "title": "Документация по функциям платформы ErisPulse",
@@ -343,6 +349,18 @@
           "icon": "fa-wrench"
         },
         {
+          "title": "Документация по функциям платформы Bilibili",
+          "path": "platform-guide/bilibili.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Документация по функциональным возможностям платформы Minecraft",
+          "path": "platform-guide/minecraft.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
           "title": "Документация по функциям платформы Sandbox",
           "path": "platform-guide/sandbox.md",
           "level": 1,
@@ -357,6 +375,12 @@
         {
           "title": "Документация по функциям платформы Terminal",
           "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Документация по возможностям платформы WeCom (WeChat Work)",
+          "path": "platform-guide/wecom.md",
           "level": 1,
           "icon": "fa-plug"
         }

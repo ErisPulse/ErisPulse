@@ -367,6 +367,64 @@ class BaseEventHandler:
 
         return decorator
 
+    def _bus_has_self(self) -> bool | None:
+        """检查适配器总线上是否已挂本分发器；无法判定时返回 None。
+
+        adapter.on 的 wrapper 是 functools.wraps(_process_event) 的闭包：
+        __wrapped__ 与闭包 cell 都指向绑定方法，绑定方法 __func__ 即
+        self._process_event（未绑定函数对象）。
+        """
+        try:
+            handlers = adapter._onebot_handlers.get(self.event_type) or []
+        except Exception:
+            return None
+        # _process_event 是绑定方法：每次属性访问生成新对象，is 比较必失败；
+        # 绑定方法对「同一实例 + 同一底层函数」相等（==），据此比对
+        target = self._process_event
+        for wrapper in handlers:
+            func = wrapper.get("func") if isinstance(wrapper, dict) else wrapper
+            if func is None:
+                continue
+            if func == target:
+                return True
+            wrapped = getattr(func, "__wrapped__", None)
+            if wrapped == target:
+                return True
+            for cell in getattr(func, "__closure__", None) or ():
+                if getattr(cell, "cell_contents", None) == target:
+                    return True
+        return False
+
+    def ensure_bus_link(self) -> bool:
+        """
+        开机自检自愈：WS 重连走适配器 shutdown 时总线被清空，
+        但本标记仍是 True、模块处理器列表非空——总线空了却无人重新挂载，
+        notice 等事件从此永久失聪（此前只有整机重启才会自愈）。
+
+        自检"有处理器但总线无本分发器"即重新挂载并返回 True（发生过自愈）。
+        开销：一次布尔判断 + 标记为真时的一次总线查表；在 _process_event 入口
+        与适配器 start 后调用均可。
+        """
+        if not self.handlers or not self.event_type:
+            return False
+        if not self._linked_to_adapter_bus:
+            return self._ensure_bus_link_force()
+        state = self._bus_has_self()
+        if state is False:
+            return self._ensure_bus_link_force()
+        return False
+
+    def _ensure_bus_link_force(self) -> bool:
+        try:
+            adapter.on(self.event_type, scope_exempt=True)(self._process_event)
+        except Exception:
+            return False
+        self._linked_to_adapter_bus = True
+        logger.warning(
+            i18n.t("core.event.bus_link_restored", event_type=self.event_type)
+        )
+        return True
+
     async def _process_event(self, event: dict[str, Any]):
         """
         处理事件
@@ -377,6 +435,8 @@ class BaseEventHandler:
 
         :param event: 事件数据
         """
+        # 自检自愈：总线被清空而标记未重置的场景，本调用点兜底恢复
+        self.ensure_bus_link()
         if not isinstance(event, Event):
             event = Event(event)
 

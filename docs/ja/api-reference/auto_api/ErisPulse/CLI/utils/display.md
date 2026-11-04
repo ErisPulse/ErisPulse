@@ -32,6 +32,17 @@ ErisPulse CLI 显示工具
 ---
 
 
+### `_flush_stdin_buffer() -> None`
+
+清空 stdin 缓冲中已积压的按键（用户在耗时操作期间连敲的回车/数字）。
+
+不清掉的话，这些残留输入会被紧随其后的 Confirm/Prompt 一次性吞掉：
+用户只是想让表格快点出来，结果"替自己确认了卸载"。Windows 走 msvcrt，
+POSIX 走 termios+select；任何失败静默跳过（能力探测，绝不因此报错）。
+
+---
+
+
 ### `_input(prompt_label: str = '>') -> str`
 
 读取用户输入，遇到EOF或中断时返回 "q"

@@ -158,9 +158,32 @@ async def cancel_owner_tasks(owner: str | None, *, timeout: float = DEFAULT_OWNE
     # 防自取消：排除当前正在执行取消逻辑的任务（见 docstring——
     # 取消自身会经 gather 取消传播形成递归环，RecursionError 后续清理全部中断）
     current = asyncio.current_task()
-    pending: list[Any] = [
-        t for t in tasks if not t.done() and t is not current
-    ]
+    try:
+        current_loop: asyncio.AbstractEventLoop | None = asyncio.get_running_loop()
+    except RuntimeError:
+        current_loop = None
+
+    # 跨 loop 分区：异环任务的 cancel/gather 非线程安全（gather 混入异环
+    # Task 会抛 RuntimeError），须移出 gather 队列、经所属循环的
+    # call_soon_threadsafe 尽力取消并逐个告警（跨 loop 残留可见性）。
+    # concurrent.futures.Future（run_coroutine_threadsafe 产物）无 get_loop，
+    # 其 cancel() 本身线程安全，直接取消、同样不进 gather（gather 对其抛
+    # TypeError）。
+    pending: list[Any] = []
+    cross_loop: list[tuple[Any, asyncio.AbstractEventLoop]] = []
+    threaded: list[Any] = []
+    for task in tasks:
+        if task.done() or task is current:
+            continue
+        get_loop = getattr(task, "get_loop", None)
+        task_loop = get_loop() if callable(get_loop) else None
+        if task_loop is None:
+            threaded.append(task)
+        elif current_loop is not None and task_loop is not current_loop:
+            cross_loop.append((task, cast(asyncio.AbstractEventLoop, task_loop)))
+        else:
+            pending.append(task)
+
     cancelled = 0
     for task in pending:
         try:
@@ -168,6 +191,21 @@ async def cancel_owner_tasks(owner: str | None, *, timeout: float = DEFAULT_OWNE
             cancelled += 1
         except Exception:
             pass
+
+    for task in threaded:
+        try:
+            task.cancel()
+            cancelled += 1
+        except Exception:
+            pass
+
+    for task, task_loop in cross_loop:
+        try:
+            task_loop.call_soon_threadsafe(task.cancel)
+            cancelled += 1
+        except Exception:
+            pass
+        _warn_cross_loop_residual(owner, task, task_loop)
 
     if pending:
         try:
@@ -336,6 +374,28 @@ def _warn_coro_fn_failed(error: Exception) -> None:
         pass
 
 
+def _warn_cross_loop_residual(
+    owner: str | None,
+    task: Any,
+    task_loop: asyncio.AbstractEventLoop | None = None,
+) -> None:
+    """{!--< internal-use >!--} 归属取消遇到异环任务时留痕（跨 loop 残留可见性）"""
+    try:
+        from ..Core.i18n import i18n as _i18n
+        from ..Core.logger import logger
+
+        task_name = getattr(task, "get_name", lambda: repr(task))()
+        logger.warning(
+            _i18n.t(
+                "runtime.tasks.cross_loop_task_residual",
+                owner=owner or "-",
+                task=f"{task_name} @ loop {id(task_loop):#x}",
+            )
+        )
+    except Exception:
+        pass
+
+
 def spawn_later(
     delay: float,
     coro_fn: Callable[[], Awaitable[Any]],
@@ -438,15 +498,20 @@ def spawn_thread(
     :param daemon: 是否守护线程 (默认: True，随主进程退出)
     :return: 已启动的 :class:`threading.Thread`
 
+    线程入口以创建时捕获的 owner 上下文执行（新线程默认空上下文，
+    不绑定则线程内创建的任务 owner=None 不进归属表，卸载时成残留）。
+
     :example:
     >>> spawn_thread("poller", poll_loop, owner="MyAdapter")
     """
     task_owner = owner if owner is not None else current_owner.get()
 
     def _runner() -> None:
+        token = current_owner.set(task_owner)
         try:
             target(*args)
         finally:
+            current_owner.reset(token)
             threads = _owner_threads.get(task_owner)
             if threads is not None:
                 threads.discard(thread)

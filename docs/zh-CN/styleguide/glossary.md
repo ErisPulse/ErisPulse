@@ -23,7 +23,7 @@
 
 **唯一定义**：统一 HTTP/WS 客户端，通过抽象层封装底层请求库（当前为 aiohttp），提供请求统计、重试、日志、WebSocket 客户端与 ErisPulse 异常体系。2.8.0 起类名由 `HttpClient` 更名为 `Client`，**`sdk.client` 属性名不变**。
 
-**文档写法**：一律写 `Client`；仅在"旧代码迁移 / 兼容"语境提及 `HttpClient`，并括注"兼容别名"。定义出处见 [http-client](../advanced/http-client.md) 与 [架构总览](../architecture.md)。
+**文档写法**：一律写 `Client`；仅在"旧代码迁移 / 兼容"语境提及 `HttpClient`，并括注"兼容别名"。定义出处见 [http-client](../advanced/client.md) 与 [架构总览](../architecture.md)。
 
 ## 2. storage、env 与 StorageManager
 

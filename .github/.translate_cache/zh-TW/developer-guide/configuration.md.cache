@@ -1,0 +1,41 @@
+{
+  "version": 2,
+  "hash": "9615cfdf57f3335e042185747dcc1a9c",
+  "file_hash": "9615cfdf57f3335e042185747dcc1a9c",
+  "translated_at": "2026-10-30T14:56:55.110586",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "3ab73fcbddee1e5346f823b3f7766e06",
+      "translation": "# 配置與 UI 元數據\n\n> 適用範圍：所有繼承 `BaseConfig` / `BotAccountConfig` 的配置宣告（適配器全域配置、帳戶配置、模組配置）。\n\nErisPulse 的配置體系是**宣告式**的：開發者使用 dataclass 欄位 + 元數據描述配置項，框架的 `get_config_schema()` 將其轉譯為 JSON Schema，供任何消費方（Dashboard、第三方介面、CLI 導覽器等）渲染。本文是該元數據的**規範定義**——widget 語義、值形態、條件顯示隱藏、相容性義務皆以此為準；各消費方負責具體實現，語義必須與本文一致。"
+    },
+    {
+      "hash": "3268dc019b5dc0c79a3d41ccd78ea993",
+      "translation": "## 聲明結構\n\n```python\nfrom dataclasses import dataclass, field\nfrom ErisPulse.Core.Bases import BaseConfig, BotAccountConfig\n\n@dataclass\nclass MyAdapterConfig(BaseConfig):\n    \"\"\"適配器全域設定\"\"\"\n\n@dataclass\nclass MyAccountConfig(BotAccountConfig):\n    \"\"\"帳戶設定（多帳戶適配器）\"\"\"\n    token: str = field(\n        default=\"\",\n        metadata={\n            \"description\": \"存取令牌\",\n            \"required\": True,\n            \"secret\": True,\n            \"ui\": {\n                \"widget\": \"password\",\n                \"group\": \"basic\",\n                \"order\": 1,\n                \"placeholder\": \"貼上平台令牌\",\n            },\n        },\n    )\n```"
+    },
+    {
+      "hash": "79063dce7eb799ae40c4e32ebd0231e4",
+      "translation": "## 基礎元數據（metadata 頂層鍵）\n\n| 鍵 | 類型 | 語義 |\n|---|---|---|\n| `description` | `str` 或 `{\"i18n\": key, \"default\": text}` | 配置項說明（支援 i18n 引用） |\n| `required` | `bool` | 必填（校驗與 UI 提示；帳戶必填為空時消費方可提示未完成配置） |\n| `secret` | `bool` | 敏感值：UI 必須以密碼形態呈現、日誌中脫敏 |"
+    },
+    {
+      "hash": "1a568510a150aa4e1c257127b72ab6da",
+      "translation": "## UI 元數據（`metadata[\"ui\"]` 子表）\n\n`ui` 為標準鍵；`webui` 為舊別名（等價，消費方須同時支援）。\n\n### 通用鍵\n\n| 鍵 | 語義 |\n|---|---|\n| `widget` | 控件類型（見 widget 名錄）；缺省時按欄位類型推斷 |\n| `group` | 分組名；同名分組由 `_schema_meta[\"group_labels\"]` 提供顯示名（同樣支援 i18n 字典） |\n| `order` | 組內排序權重（小者在前，缺省 100） |\n| `options` | 枚舉選項 `[{label, value}]`（`label` 支援 i18n 字典；用於 select/multiselect） |\n| `placeholder` | 輸入占位文字（支援 i18n 字典） |\n| `min` / `max` / `step` | 數值範圍與步長（number/slider） |\n| `rows` | 多行文字行數（textarea） |\n\n### 條件顯示/禁用（欄位聯動）\n\n| 鍵 | 語義 |\n|---|---|\n| `show_if` | 條件不滿足時**隱藏**該欄位（值保留，不刪除） |\n| `disabled_if` | 條件滿足時**禁用**該欄位（置灰鎖定，值保留） |\n\n條件物件：`{\"field\": <同作用域欄位名或完整配置鍵>, \"op\": <算子>, \"value\": <比較值>}`。算子集合：\n\n| op | 語義 |\n|---|---|\n| `eq` / `ne` | 相等 / 不等（字串化比較） |\n| `in` / `nin` | `value` 為陣列，成員 / 非成員 |\n| `gt` / `gte` / `lt` / `lte` | 數值比較 |\n| `truthy` | 真值（非空、非 `\"false\"`、非 `\"0\"`） |\n\n`op` 缺省為 `eq`。欄位解析：先按**同配置作用域短名**，再按完整鍵（如 `accounts.default.mode`）。\n\n### 值形態（`value_type`，用於 `multiselect`）\n\n| 值 | 存儲形態 | 適用 |\n|---|---|---|\n| `json`（預設） | JSON 陣列**字串**（如 `\"[0, 25]\"`） | 欄位類型為 `str`、以 JSON 文本存陣列 |\n| `array` | 原生陣列 | 欄位類型為 `list` |\n| `mask` | 位遮罩**整數**（勾選值按 `2^v` 求和） | 欄位類型為 `int` 的位標誌，`options[].value` 為位序號 |\n\n**消費方義務**：`value_type` 缺省時必須按欄位類型推斷（`int` + 數字選項 → `mask`；`list` → `array`；否則 `json`），保證只聲明 `widget: multiselect` 也能寫入正確類型。"
+    },
+    {
+      "hash": "24ca8115e899606855a0405e43795dfc",
+      "translation": "## widget 名錄\n\n消費方需實現以下語義；**未識別的 widget 必須回退為單行文本**，不得報錯。\n\n| widget | 值類型 | 語義 |\n|---|---|---|\n| `text` | str | 單行文本（預設回退目標） |\n| `textarea` | str | 多行文本（`rows`） |\n| `password` | str | 密碼（`secret: True` 時自動推斷） |\n| `number` | int/float | 數字輸入（`min`/`max`/`step`；數值類型字段自動推斷） |\n| `switch` | bool | 開關（bool 字段自動推斷） |\n| `select` | str | 單選下拉（`options`；有 options 的字串字段自動推斷） |\n| `multiselect` | 見值形態 | 多選（複選組；`options` + `value_type`） |\n| `slider` | int/float | 滑杆（`min`/`max`/`step`） |\n| `color` | str | 顏色（`#rrggbb`） |\n| `date` / `time` / `datetime` | str | 日期 / 時間 / 日期時間（ISO 字符串） |\n| `kv` | dict | 鍵值對編輯器（`dict[str, str]`） |\n| `list` | list | 列表編輯器（`item` 聲明行內字段：`{\"widget\": ...}` 或 `{\"fields\": {...}}` 支持行內嵌套） |"
+    },
+    {
+      "hash": "29dc898a3f9900536e5806cb434854e3",
+      "translation": "## 兼容性契約（消費方必須遵守）\n\n1. **忽略未知鍵**：元數據中出現規範外鍵（含未來新增）時靜默忽略，不報錯\n2. **未知 widget 回退 text**：保證新聲明在舊消費方上仍可編輯\n3. **條件不滿足 ≠ 值刪除**：`show_if` 隱藏的欄位值原樣保留\n4. **類型推斷兜底**：`value_type` 等擴展鍵缺失時按欄位類型推斷正確儲存形態"
+    },
+    {
+      "hash": "baa035c7b3eece480e33b2f97a0f367f",
+      "translation": "## 完整示例\n\n```python\n@dataclass\nclass OneBotAccountDemo(BotAccountConfig):\n    mode: str = field(\n        default=\"server\",\n        metadata={\n            \"description\": \"連接模式\",\n            \"ui\": {\n                \"widget\": \"select\",\n                \"group\": \"connection\",\n                \"order\": 1,\n                \"options\": [\n                    {\"label\": \"Server（被動）\", \"value\": \"server\"},\n                    {\"label\": \"Client（主動）\", \"value\": \"client\"},\n                ],\n            },\n        },\n    )\n    url: str = field(\n        default=\"ws://127.0.0.1:3001\",\n        metadata={\n            \"description\": \"WebSocket 位址\",\n            \"ui\": {\n                \"widget\": \"text\",\n                \"group\": \"connection\",\n                \"order\": 2,\n                \"show_if\": {\"field\": \"mode\", \"op\": \"eq\", \"value\": \"client\"},\n            },\n        },\n    )\n    intents: int = field(\n        default=33281,\n        metadata={\n            \"description\": \"位元遮罩多選（欄位為 int，自動按 mask 存數）\",\n            \"ui\": {\n                \"widget\": \"multiselect\",\n                \"group\": \"advanced\",\n                \"order\": 3,\n                \"options\": [\n                    {\"label\": \"頻道基礎\", \"value\": 0},\n                    {\"label\": \"頻道訊息\", \"value\": 9},\n                    {\"label\": \"訊息內容（特權）\", \"value\": 15},\n                ],\n            },\n        },\n    )\n```"
+    },
+    {
+      "hash": "71bc8cb15aaf6dc386b972bd2cef7bce",
+      "translation": "## Schema 輸出\n\n`ErisPulse.Core.Bases.config_schema.get_config_schema(cls)` 輸出 JSON Schema（`fields`/`groups`/`account_based`/`meta`），並**原樣透傳**本文定義的全部 `ui` 子表鍵，供消費方直接消費。"
+    }
+  ]
+}

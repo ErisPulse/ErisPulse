@@ -4948,26 +4948,30 @@ Here you'll find your development path: **Module Development** allows you to ext
 ### Module Development
 
 1. [Getting Started with Module Development](modules/getting-started.md) - Create your first module
-2. [Module Core Concepts](modules/core-concepts.md) - Core concepts and architecture of modules
-3. [Event Wrapper Class in Detail](modules/event-wrapper.md) - A complete description of the Event object
+2. [Core Concepts of Modules](modules/core-concepts.md) - Core concepts and architecture of modules
+3. [Event Wrapper Class Explained](modules/event-wrapper.md) - Complete documentation of the Event object
 4. [Module Best Practices](modules/best-practices.md) - Recommendations for developing high-quality modules
 5. [Data Model Layer (ORM)](orm.md) - Advanced module development: declarative models, automatic table creation, and CRUD operations
 
 ### Adapter Development
 
 1. [Getting Started with Adapter Development](adapters/getting-started.md) - Create your first adapter
-2. [Adapter Core Concepts](adapters/core-concepts.md) - Core concepts of adapters (including two ways to write start() and the PollingAdapter / WebhookAdapter connection pattern base classes)
-3. [SendDSL in Detail](adapters/send-dsl.md) - A complete description of the Send message DSL
-4. [Event Converter](adapters/converter.md) - Implementing event converters
+2. [Core Concepts of Adapters](adapters/core-concepts.md) - Core concepts of adapters (including two writing styles for start(), and base classes for PollingAdapter / WebhookAdapter connection modes)
+3. [SendDSL Explained](adapters/send-dsl.md) - Complete documentation of the Send message sending DSL
+4. [Event Converters](adapters/converter.md) - Implementing event converters
 5. [Adapter Best Practices](adapters/best-practices.md) - Recommendations for developing high-quality adapters
 
-### Testing and Troubleshooting
+### Testing & Troubleshooting
 
-1. [Module Testing (ErisPulse-Testing)](testing.md) - TestBot, event factories, and the assertion interface
+1. [Module Testing (ErisPulse-Testing)](testing.md) - TestBot, event factories, and assertion surfaces
+
+### General Standards
+
+1. [Configuration & UI Metadata](configuration.md) - Declarative configuration: widget / conditional visibility / value shape / compatibility contract (applicable to both adapters and modules)
 
 ### Publishing Guide
 
-- [Publishing and Module Store Guide](publishing.md) - Publish your work to PyPI and the ErisPulse module store
+- [Publishing & Module Store Guide](publishing.md) - Publish your work to PyPI and the ErisPulse Module Store
 
 ## Development Preparation
 
@@ -6150,19 +6154,18 @@ Method resolution priority (from high to low): platform-specific methods → wil
 # Module Development Best Practices
 
 > [!TIP]
-> **When to read this**: Recommended after you finish writing your first module (engineering best practices). Skip it if not needed—doing so will not affect the use of any other features.
+> **When to read this**: Recommended reading after you complete your first module (engineering best practices). Feel free to skip it if you don't need it — doing so won't affect your use of any other features.
 
-
-This section summarizes the engineering conventions for module development: asynchronous operations must not block the event loop, configuration should be declarative, and resources hosted on behalf of others must be released upon unloading—following these guidelines helps you avoid the most common pitfalls in module development, such as memory leaks, residual background tasks, and hot-reload failures.
+This page summarizes the engineering conventions for module development: async operations must not block the event loop, configuration should be declarative, and resources hosted on behalf of other modules must be released on unload — following these conventions helps you avoid the most common module-development pitfalls, such as memory leaks, leftover background tasks, and broken hot reloading.
 
 ## Module Design
 
 ### 1. Single Responsibility Principle
 
-Each module should only be responsible for one core function:
+Each module should be responsible for only one core feature:
 
 ```python
-# Good design: each module handles only one function
+# Good design: each module handles a single feature
 class WeatherModule(BaseModule):
     """Weather query module"""
     pass
@@ -6171,22 +6174,22 @@ class NewsModule(BaseModule):
     """News query module"""
     pass
 
-# Bad design: one module handles multiple unrelated functions
+# Bad design: one module handling multiple unrelated features
 class UtilityModule(BaseModule):
-    """Contains weather, news, jokes, and other functions"""
+    """Contains weather, news, jokes, and other features"""
     pass
 ```
 
-### 2. Module Naming Convention
+### 2. Module Naming Conventions
 
 ```toml
 [project]
-name = "ErisPulse-ModuleName"  # Use ErisPulse- prefix
+name = "ErisPulse-ModuleName"  # Use the ErisPulse- prefix
 ```
 
-### 3. Clear Configuration Management
+### 3. Clean Configuration Management
 
-It is recommended to use declarative configuration (`ConfigClass` + `BaseConfig`) to gain type safety, automatic template generation, and WebUI form support:
+Declarative configuration (`ConfigClass` + `BaseConfig`) is recommended, giving you type safety, automatic template generation, WebUI form support, and more:
 
 ```python
 from dataclasses import dataclass, field
@@ -6195,7 +6198,7 @@ from ErisPulse.Core.Bases import BaseConfig
 @dataclass
 class MyModuleConfig(BaseConfig):
     api_url: str = field(default="https://api.example.com", metadata={
-        "description": {"i18n": "my_module.api_url", "default": "API URL"},
+        "description": {"i18n": "my_module.api_url", "default": "API address"},
     })
     timeout: int = field(default=30, metadata={
         "description": {"i18n": "my_module.timeout", "default": "Timeout (seconds)"},
@@ -6208,46 +6211,46 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def do_something(self):
-        cfg = self.cfg  # Type-safe, real-time reading
+        cfg = self.cfg  # Type-safe, read in real time
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-You can also continue using manual configuration storage reading and writing (see [Module Core Concepts](core-concepts.md#configuration-management)).
+You can also continue to read and write the configuration store manually (see [Module Core Concepts](core-concepts.md#configuration-management)).
 
 ### Declarative Translation Keys (v2.7.0+)
 
-Modules can centrally declare translation keys via `I18nClass`, and the framework automatically registers them to the i18n system, eliminating the need to manually call `i18n.register()`.
+Modules can declare translation keys centrally via `I18nClass`; the framework registers them with the i18n system automatically, with no need to call `i18n.register()` manually.
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, I18nKey
 
 class MyModule(BaseModule):
     class I18nClass(BaseI18n):
-        # Business translation keys with placeholders
+        # Business translation key with placeholders
         welcome: I18nKey = I18nKey(
             default="Welcome, {name}!",
-            zh_CN="欢迎你，{name}！",
-            zh_TW="歡迎你，{name}！",
+            zh_CN="Welcome, {name}!",
+            zh_TW="Welcome, {name}!",
             en="Welcome, {name}!",
-            ja="ようこそ、{name}！",
-            ru="Добро пожаловать, {name}!",
+            ja="Welcome, {name}!",
+            ru="Welcome, {name}!",
         )
-        # Configuration field description translations
+        # Translation for config field descriptions
         api_url: I18nKey = I18nKey(
             default="API URL",
-            zh_CN="API 地址",
-            zh_TW="API 位址",
+            zh_CN="API URL",
+            zh_TW="API URL",
             en="API URL",
             ja="API URL",
             ru="API URL",
         )
 ```
 
-See [i18n documentation](../../advanced/i18n.md#recommended-usage-declaring-translation-keys-via-i18nclass-v270) for detailed usage.
+See the [i18n documentation](../../advanced/i18n.md#recommended-approach-declare-translation-keys-via-i18nclass-v270) for detailed usage.
 
-## Asynchronous Programming
+## Async Programming
 
-### 1. Using Asynchronous Libraries
+### 1. Use Async Libraries
 
 ```python
 # Recommended: use the SDK's built-in HTTP client (async, with automatic logging and statistics)
@@ -6258,7 +6261,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# Can also be used via sdk.client (equivalent behavior)
+# Also available via sdk.client (same effect)
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -6266,7 +6269,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# Do not import aiohttp directly (makes it harder for the framework to manage uniformly)
+# Do not import aiohttp directly (harder for the framework to manage uniformly)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -6275,82 +6278,82 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Do not use requests (synchronous, blocks the event loop)
+# Do not use requests (synchronous; it blocks the event loop)
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # blocks the event loop
+        return requests.get(url).json()  # Blocks the event loop
 ```
 
-### 2. Proper Async Operations
+### 2. Correct Async Operations
 
 ```python
-from ErisPulse.Core.Event import Event  # the event: Event annotation enables IDE autocompletion
+from ErisPulse.Core.Event import Event  # The event: Event annotation gives you IDE completion
 
 async def handle_command(self, event: Event):
-    # Time-consuming operations whose results are needed: await directly (clear lifecycle)
+    # Long-running operations whose results you need: await directly (clear lifecycle)
     result = await self._long_operation()
 
 async def on_load(self, event: dict):
-    # Background tasks (polling/scheduled/fire-and-forget): use self.spawn();
-    # when the module is unloaded, the framework cancels them as a fallback after on_unload,
-    # avoiding leaks caused by holding self
+    # Background tasks (polling / timers / fire-and-forget): use self.spawn().
+    # On module unload the framework cancels them as a fallback after on_unload,
+    # avoiding leaks caused by holding a reference to self
     self.spawn(self._poll())
 ```
 
 > [!NOTE]
-> For background tasks, prefer `self.spawn()` (ErisPulse **2.8.0+**). From **2.8.3 onward**, bare
-> `asyncio.create_task` calls are also implicitly attributed to the module automatically
-> (auto-registered by the Task Factory, cancelled as a fallback on unload, no longer leaking `self` references);
-> `self.spawn()` remains the recommended approach—it supports dispatching back to the main loop
-> from non-main-loop threads and explicit `owner=` designation.
-> In versions **before 2.8.3**, bare tasks are not attributed and hold `self` references,
-> preventing module instances from being garbage-collected (hot-reload leaks); you must use `self.spawn()`.
-> For details, see [Lifecycle Management](../../advanced/lifecycle.md#background-task-attribution-and-automatic-cancellation).
+> `self.spawn()` is recommended for background tasks (ErisPulse **2.8.0+**). From **2.8.3 on**, bare
+> `asyncio.create_task` calls are also automatically and implicitly attributed to the module (the Task Factory
+> registers them automatically and cancels them on unload as a fallback, so the `self` reference no longer leaks);
+> `self.spawn()` remains the recommended style — it supports scheduling back to the main loop from non-main-loop
+> threads and explicit `owner=` assignment. In versions **before 2.8.3**, bare tasks were not attributed and
+> would hold a `self` reference, preventing the module instance from being reclaimed (a hot-reload leak);
+> you must use `self.spawn()`. See [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation) for details.
 
 ### 3. Resource Management
 
 ```python
 async def on_load(self, event):
-    # The SDK client already manages the connection pool automatically; no need to create sessions manually
+    # The SDK client manages the connection pool automatically; no need to create sessions manually
     pass
     
 async def on_unload(self, event):
-    # If you use a custom client, remember to clean up resources
+    # If you use a custom client, remember to clean up its resources
     pass
 ```
 
 ## Event Handling
 
-### 1. Use Event Wrapper Class
+### 1. Use the Event Wrapper Class
 
 ```python
-# Use convenient methods of Event wrapper class
+# Use the convenience methods of the Event wrapper class
 @command("info")
 async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"Hello, {nickname}!")
 
-# Rather than directly accessing dictionary
+# Rather than accessing the dict directly
 @command("info")
 async def info_command(event: Event):
-    user_id = event["user_id"]  # Less clear, prone to errors
+    user_id = event["user_id"]  # Not clear enough and error-prone
 ```
 
-### 2. Reasonable Use of Lazy Loading
+### 2. Use Lazy Loading Appropriately
 
 ```python
-# Low-frequency command module: declare activate_on trigger, automatically activates on first matching command arrival (maintain lazy loading)
+# Low-frequency command module: declare activate_on triggers; the module activates automatically
+# when the first matching command arrives (stays lazily loaded)
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True, activate_on=[
-            {"command": {"name": "dice", "help": "Roll a dice", "aliases": ["d"]}},
+            {"command": {"name": "dice", "help": "Roll a die", "aliases": ["d"]}},
         ])
 
-# Low-frequency listener module: declare event trigger, automatically activates on event arrival
+# Low-frequency listener module: declare event triggers; the module activates automatically when events arrive
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -6358,27 +6361,27 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# High-frequency triggers (every message needs processing) or modules that must be ready at startup: load immediately
+# High-frequency triggers (every message must be handled) or modules that must be ready at startup: load immediately
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# Utility modules are suitable for lazy loading
+# Utility modules are a good fit for lazy loading
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> The complete syntax of `activate_on` (event three forms / command shorthand and dict declaration / help fallback chain) is detailed in
-> [Lazy Loading Module System](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate_on).
+> For the complete syntax of `activate_on` (the three event forms / command shorthand and dict declaration / help fallback chain), see
+> [Lazy-Loading Module System](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate_on).
 
 ### 3. Event Handler Registration
 
 ```python
 async def on_load(self, event):
-    # Register event handlers in on_load
+    # Register event handlers inside on_load
     @command("hello")
     async def hello_handler(event: Event):
         await event.reply("Hello!")
@@ -6387,12 +6390,12 @@ async def on_load(self, event):
     async def group_handler(event: Event):
         self.logger.info("Received group message")
     
-    # No need to manually unregister, framework handles automatically
+    # No need to unregister manually; the framework handles it automatically
 ```
 
-## Utility Module: When Hosting Other Things, You Must Catch "Unload Notification"
+## Tool Modules: Catch "Unload Notifications" When Hosting Things for Others
 
-**When is it needed**: Your module holds things for other modules (timers, subscribers, connections, cache entries...). If these references are not discarded after the other module unloads, the other instance can never be recycled—this is the most common source of memory leaks in utility modules.
+**When you need this**: your module keeps things on behalf of other modules (timed callbacks, subscribers, connections, cache entries, ...). If those references are never dropped after the other module unloads, its instance can never be reclaimed — this is the most common source of memory leaks in tool modules.
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -6400,31 +6403,31 @@ from ErisPulse.runtime import off_cleanup, on_cleanup
 
 class MyToolModule(BaseModule):
     def __init__(self):
-        self._entries = {}  # {module name: hosted things}
+        self._entries = {}  # {module name: hosted items}
 
     def register(self, entry):
-        owner = on_cleanup(self._drop)   # ① Register cleanup chain on registration, automatically recognize caller
+        owner = on_cleanup(self._drop)   # ① Hook into the cleanup chain on registration; the caller is identified automatically
         self._entries.setdefault(owner, []).append(entry)
 
     def _drop(self, owner: str):
-        self._entries.pop(owner, None)   # ② When the other module unloads, framework automatically calls: discard its things
+        self._entries.pop(owner, None)   # ② Called automatically by the framework when the other side unloads: drop its items
 
     async def on_unload(self, event):
-        off_cleanup(self._drop)          # ③ Unregister hook before unloading self
+        off_cleanup(self._drop)          # ③ Unregister the hook before your own unload
 ```
 
-That's it. The framework ensures:
+That's all there is to it. The framework guarantees:
 
-- When the other module is **unloaded / disabled** (or adapter closed), `_drop("other module name")` will definitely be called
-- **Caller identification is automatic**: The caller directly calls `sdk.MyToolModule.register(...)` in `on_load`, or calls via `sdk.module.call("MyToolModule", "register", ...)`; both can correctly identify who it is
-- No need to worry about timing—the hook triggers in the framework cleanup chain, earlier than leak detection, no false positives
+- When the other module is **unloaded / disabled** (or its adapter shuts down), `_drop("OtherModuleName")` is guaranteed to be called
+- **Caller identification is fully automatic**: whether the other side calls `sdk.MyToolModule.register(...)` directly in `on_load`, or through `sdk.module.call("MyToolModule", "register", ...)`, the caller is identified correctly
+- No need to worry about timing — the hook fires within the framework's cleanup chain, before leak diagnostics, so it won't produce false positives
 
-Consequences of not hooking in: The instance cannot be recycled when the other `purge` unloads completely (leak diagnosis reports "un回收able"); if the other module does not unregister you in `on_unload`, the leak is permanent.
+Consequences of not adopting this: when the other side is completely removed with `purge`, its instance cannot be reclaimed (leak diagnostics report it as "unreclaimable"); if the other side also never unregisters from you in its own `on_unload`, the leak becomes permanent.
 
-**Ordinary modules (not hosting other things) do not need to care about this**—framework resources (commands / handlers / routing / background tasks...) are automatically cleaned up on unload.
+**Ordinary modules (those that don't host things for others) don't need to care about this** — cleanup of framework resources (commands / handlers / routes / background tasks, ...) on unload is fully automatic.
 
-> Trigger timing, caller identification rules, timeout and fault tolerance details are detailed in
-> [Ownership System · Utility Module Guide](../../advanced/ownership.md#utility-module-guide-hosting-handles-from-other-modules).
+> For details such as trigger timing, caller identification rules, timeouts, and fault tolerance, see
+> [Ownership System · Tool Module Guide](../../advanced/ownership.md#tool-module-guide-hosting-handles-of-other-modules).
 
 ## Error Handling
 
@@ -6439,9 +6442,9 @@ async def handle_event(self, event: Event):
     except ValueError as e:
         # Expected business error
         self.logger.warning(f"Business warning: {e}")
-        await event.reply(f"Parameter error: {e}")
+        await event.reply(f"Invalid argument: {e}")
     except ClientError as e:
-        # Network error (sdk.client's underlying aiohttp exception is automatically converted)
+        # Network error (underlying aiohttp exceptions from sdk.client are converted automatically)
         self.logger.error(f"Network error {e.method} {e.url}: {e}")
         await event.reply("Network request failed, please try again later")
     except Exception as e:
@@ -6454,7 +6457,7 @@ async def handle_event(self, event: Event):
 ### 2. Timeout Handling
 
 ```python
-# Recommended to use SDK built-in client (with timeout and retry)
+# Recommended: use the SDK's built-in client (timeout and retry included)
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -6463,7 +6466,7 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"Request timeout: {url}")
+        self.logger.warning(f"Request timed out: {url}")
         raise
 ```
 
@@ -6472,16 +6475,16 @@ async def fetch_with_timeout(self, url, timeout=30):
 ### 1. Use Transactions
 
 ```python
-# Use transaction to ensure data consistency
+# Use transactions to ensure data consistency
 async def update_user(self, user_id, data):
     with self.sdk.storage.transaction():
         self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
         self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 
-# ❌ Not using transaction may cause data inconsistency
+# ❌ Not using transactions may lead to data inconsistency
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # If this fails, the above setting cannot be rolled back
+    # If an error occurs here, the setting above cannot be rolled back
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
@@ -6502,26 +6505,26 @@ def cache_multiple_items(self, items):
 
 ## Logging
 
-### 1. Reasonable Use of Log Levels
+### 1. Use Log Levels Appropriately
 
 ```python
-# DEBUG: Detailed debug information (only during development)
+# DEBUG: detailed debugging information (development only)
 self.logger.debug(f"Input parameters: {params}")
 
-# INFO: Normal operation information
+# INFO: normal operation information
 self.logger.info("Module loaded")
 self.logger.info(f"Processing request: {request_id}")
 
-# WARNING: Warning information, does not affect main functionality
-self.logger.warning(f"Configuration item {key} not set, using default value")
-self.logger.warning("API response slow, may need optimization")
+# WARNING: warnings that don't affect core functionality
+self.logger.warning(f"Config item {key} not set, using default value")
+self.logger.warning("API response is slow, may need optimization")
 
-# ERROR: Error information
+# ERROR: error information
 self.logger.error(f"API request failed: {e}")
-self.logger.error(f"Event processing failed: {e}", exc_info=True)
+self.logger.error(f"Failed to process event: {e}", exc_info=True)
 
-# CRITICAL: Fatal error, needs immediate handling
-self.logger.critical("Database connection failed, bot cannot run normally")
+# CRITICAL: fatal error, requires immediate attention
+self.logger.critical("Database connection failed, the bot cannot run properly")
 ```
 
 ### 2. Structured Logging
@@ -6530,8 +6533,8 @@ self.logger.critical("Database connection failed, bot cannot run normally")
 # Use structured logging for easier parsing
 self.logger.info(f"Processing request: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
-# ❌ Use unstructured logging
-self.logger.info(f"Processing request, from user {user_id}, took {duration} milliseconds")
+# ❌ Unstructured logging
+self.logger.info(f"Processed a request from user {user_id}, took {duration} ms")
 ```
 
 ## Performance Optimization
@@ -6549,10 +6552,10 @@ class MyModule(BaseModule):
             if key in self._cache:
                 return self._cache[key]
             
-            # Get from database
+            # Fetch from the database
             data = await self._fetch_from_db(key)
             
-            # Cache data
+            # Cache the data
             self._cache[key] = data
             return data
 ```
@@ -6560,14 +6563,14 @@ class MyModule(BaseModule):
 ### 2. Avoid Blocking Operations
 
 ```python
-# Use asynchronous operations
+# Use async operations
 async def process_message(self, event: Event):
-    # Asynchronous processing
+    # Async processing
     await self._async_process(event)
 
 # ❌ Blocking operation
 async def process_message(self, event: Event):
-    # Synchronous operation, blocks the event loop
+    # Synchronous operation; blocks the event loop
     result = self._sync_process(event)
 ```
 
@@ -6576,7 +6579,7 @@ async def process_message(self, event: Event):
 ### 1. Sensitive Data Protection
 
 ```python
-# Sensitive data stored in configuration (declarative ConfigClass, secret fields not in logs/export)
+# Sensitive data lives in configuration (declarative ConfigClass; secret fields are excluded from logs/exports)
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
@@ -6596,7 +6599,7 @@ class MyModule(BaseModule):
 
 # ❌ Hardcoded sensitive data
 class MyModule(BaseModule):
-    API_KEY = "sk-1234567890"  # Don't do this!
+    API_KEY = "sk-1234567890"  # Never do this!
 ```
 
 ### 2. Input Validation
@@ -6608,7 +6611,7 @@ async def process_command(self, event: Event):
     
     # Validate input length
     if len(user_input) > 1000:
-        await event.reply("Input too long, please re-enter")
+        await event.reply("Input is too long, please try again")
         return
     
     # Validate input format
@@ -6619,7 +6622,7 @@ async def process_command(self, event: Event):
 
 ## Testing
 
-### 1. Unit Tests
+### 1. Unit Testing
 
 ```python
 import pytest
@@ -6632,7 +6635,7 @@ class TestMyModule:
         assert config.timeout == 30
 ```
 
-### 2. Integration Tests
+### 2. Integration Testing
 
 ```python
 @pytest.mark.asyncio
@@ -6641,10 +6644,34 @@ async def test_command_handling():
     module = MyModule()
     await module.on_load({})
     
-    # Simulate command event
+    # Simulate a command event
     event = create_test_command_event("hello")
     await module.handle_command(event)
 ```
+
+## HTTP Route Lifecycle
+
+The lifecycle of HTTP/WebSocket routes registered by a module through `router` is managed automatically by the framework according to the **ownership principle**:
+
+- The namespace used at registration is the ownership identifier; **on reload / unload the framework automatically cleans up all routes and connection resources under that ownership**, with no manual unregistration required
+- Therefore **routes must be re-registered unconditionally in `on_load`**. Do not use an instance-level boolean flag as a "register only once" optimization: configuration hot reloads trigger stop/start and **reuse the same instance**, so a leftover flag causes routes to be **permanently lost** after cleanup — manifesting as 404s on the endpoint that only recover after restarting the process
+
+```python
+class MyModule(BaseModule):
+    async def on_load(self):
+        # Re-register unconditionally on every load
+        router.register_http_route("MyModule", "/api/panel", self._panel, methods=["GET"])
+```
+
+If you need to unload routes manually ahead of time (e.g., taking an endpoint offline dynamically), you can unregister proactively:
+
+```python
+from ErisPulse.Core import router
+
+router.unregister_http_route("MyModule", "/api/panel")
+```
+
+- Frontends/callers may receive route 404s during the hot-reload window; this is transient. For browser-facing interactive pages, a limited number of automatic retries on 404 are recommended
 
 ## Deployment
 
@@ -6664,9 +6691,9 @@ Follow semantic versioning:
 
 ### 2. README Header
 
-The README generated by `epsdk create` already includes the ErisPulse header (Logo + badge row). Two recommended modes:
+The README generated by `epsdk create` already includes the ErisPulse header identity (logo + badge row). Two recommended patterns:
 
-**Mode A — Only ErisPulse Logo (Default):**
+**Pattern A — ErisPulse logo only (default):**
 
 ```markdown
 <div align="center">
@@ -6675,7 +6702,7 @@ The README generated by `epsdk create` already includes the ErisPulse header (Lo
 
 # MyModule
 
-**One-sentence description**
+**One-line description**
 
 <p>
   <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -6687,7 +6714,7 @@ The README generated by `epsdk create` already includes the ErisPulse header (Lo
 </div>
 ```
 
-**Mode B — Module Icon × ErisPulse Logo (with custom icon):**
+**Pattern B — Module icon × ErisPulse logo (when a custom icon is available):**
 
 ```markdown
 <div align="center">
@@ -6701,7 +6728,7 @@ The README generated by `epsdk create` already includes the ErisPulse header (Lo
 </div>
 ```
 
-You can add GitHub Stars, Downloads, and other badges as needed. The logo can also be downloaded to the project locally (`.github/assets/ErisPulseLogo.png`) and referenced with a relative path.
+You can add badges such as GitHub Stars or Downloads as needed. The logo can also be downloaded into the project locally (`.github/assets/ErisPulseLogo.png`) and referenced via a relative path.
 
 
 
@@ -9486,33 +9513,33 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("Announcemen
 # Adapter Development Best Practices
 
 > [!TIP]
-> **When to read this**: After the adapter skeleton is working, it is recommended to read this section (engineering best practices). Skip if not needed, as it does not affect the use of other features.
+> **When to read this**: Recommended reading after your adapter skeleton is up and running (engineering best practices). Feel free to skip it if not needed—it won't affect the use of other features.
 
-This document summarizes engineering conventions for adapter development: Bot status reporting, connection retry and heartbeat, multi-account parsing, and standardized error responses. Following these practices can help avoid common platform integration issues such as undetected disconnections, sending messages to the wrong account, and difficult-to-locate errors.
+This document consolidates the engineering conventions for adapter development: Bot status reporting, connection retry and heartbeat, multi-account resolution, and standardized error responses. Following them helps you avoid common platform integration problems such as silent disconnects, sending to the wrong target in multi-account setups, and errors that are hard to locate.
 
 ## Bot Status Management and Meta Events
 
-The adapter should actively send meta events using `adapter.emit()` to allow the framework to automatically track the Bot's connection status, online/offline events, and heartbeat information.
+Adapters should proactively send meta events via `adapter.emit()` so that the framework can automatically track each Bot's connection state, online/offline status, and heartbeat information.
 
 ### 1. When to Send Meta Events
 
-| Event | `detail_type` | Trigger Timing | Framework Behavior |
-|-------|---------------|----------------|--------------------|
-| Connect | `"connect"` | When the Bot establishes a connection with the platform | Register the Bot, trigger the `adapter.bot.online` lifecycle event |
-| Disconnect | `"disconnect"` | When the Bot disconnects from the platform | Mark the Bot as offline, trigger the `adapter.bot.offline` lifecycle event |
-| Heartbeat | `"heartbeat"` | Regularly (recommended 30-60 seconds) | Update the Bot's active time and metadata |
+| Event | `detail_type` | Trigger | Framework Behavior |
+|------|--------------|---------|---------|
+| Connect | `"connect"` | When the Bot establishes a connection with the platform | Registers the Bot and triggers the `adapter.bot.online` lifecycle event |
+| Disconnect | `"disconnect"` | When the Bot disconnects from the platform | Marks the Bot offline and triggers the `adapter.bot.offline` lifecycle event |
+| Heartbeat | `"heartbeat"` | Sent periodically (every 30-60 seconds recommended) | Updates the Bot's active time and metadata |
 
 ### 2. Sending Meta Events
 
-The framework provides the `emit_meta()` method to send meta events in a single line:
+The framework provides the `emit_meta()` method, which sends a meta event in a single line:
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
-        # Bot online: send connect event in one line
-        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的机器人")
+        # Bot online: send the connect event in one line
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="My Bot")
 
         try:
             while True:
@@ -9527,7 +9554,7 @@ class MyAdapter(BaseAdapter):
             await self.emit_meta("disconnect", bot_id)
 ```
 
-You can also manually construct a standard meta event (the old method is still compatible):
+You can also manually construct a standard meta event (the legacy approach remains compatible):
 
 ```python
 await self.adapter.emit({
@@ -9549,26 +9576,26 @@ await self.adapter.emit({
 
 ### 3. Heartbeat Events
 
-The adapter should regularly send heartbeat events during the connection's active period to update the Bot's active time:
+While the connection is alive, the adapter should periodically send heartbeat events to update the Bot's active time:
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self, bot_id: str):
         while self._connected:
-            # Send meta heartbeat to the framework (one line)
+            # Send a meta heartbeat to the framework (done in one line)
             await self.emit_meta("heartbeat", bot_id)
             await asyncio.sleep(30)
 ```
 
-### 4. Automatic Discovery of `self` Field
+### 4. Automatic `self` Field Discovery
 
 The framework's `adapter.emit()` automatically processes the `self` field in all events (not just meta events):
 
-- **Normal events** (`message/notice/request`) with a `self` field will be automatically discovered and registered as a Bot
-- **Extended `self` field information**: Supports optional fields such as `user_name`, `nickname`, `avatar`, and `account_id`
+- The `self` field in **regular events** (message/notice/request) is automatically discovered and used to register the Bot
+- **Extended `self` field info**: the optional fields `user_name`, `nickname`, `avatar`, and `account_id` are supported
 
 ```python
-# Including the `self` field in the converter will automatically register the Bot
+# Simply include the self field in the converter to register the Bot automatically
 onebot_event = {
     "type": "message",
     "detail_type": "private",
@@ -9577,21 +9604,21 @@ onebot_event = {
         "platform": "myplatform",
         "user_id": "bot123",
         "user_name": "MyBot",
-        "nickname": "我的机器人",
+        "nickname": "My Bot",
     },
     # ... other fields
 }
 await self.adapter.emit(onebot_event)
-# Bot "bot123" is automatically registered and its active time is updated
+# Bot "bot123" has been automatically registered and its active time updated
 ```
 
 ### 5. Bot Status Query
 
-The query APIs (`get_bot_info()` / `list_bots()` / `is_bot_online()` / `get_status_summary()`) and the Bot lifecycle event table are available at [Adapter System API - Bot Status Management](../../api-reference/adapter-system.md#bot-状态管理).
+For the query APIs (`get_bot_info()` / `list_bots()` / `is_bot_online()` / `get_status_summary()`) and the Bot lifecycle event table, see [Adapter System API - Bot Status Management](../../api-reference/adapter-system.md#bot-status-management).
 
 ## Connection Management
 
-### 1. Implement Connection Retry
+### 1. Implementing Connection Retry
 
 ```python
 import asyncio
@@ -9616,7 +9643,7 @@ class MyAdapter(BaseAdapter):
                     )
                     await asyncio.sleep(wait_time)
                 else:
-                    self.logger.error("Connection failed, maximum retry attempts reached")
+                    self.logger.error("Connection failed, maximum retries reached")
                     raise
 ```
 
@@ -9638,15 +9665,15 @@ class MyAdapter(BaseAdapter):
                 data = await websocket.receive_text()
                 await self._process_event(data)
         except WebSocketDisconnect:
-            self.logger.info("Connection disconnected")
+            self.logger.info("Connection closed")
         finally:
             self.connection = None
             self._connected = False
 ```
 
-### 3. Heartbeat Keepalive and Meta Heartbeat
+### 3. Heartbeat Keep-Alive and Meta Heartbeat
 
-The adapter's heartbeat should perform two tasks simultaneously: sending a heartbeat keepalive to the platform and sending a meta heartbeat event to the framework.
+The adapter's heartbeat should accomplish two tasks at once: sending a keep-alive heartbeat to the platform and sending a meta heartbeat event to the framework.
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -9657,21 +9684,21 @@ class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self):
         while self.connection:
             try:
-                # 1. Send heartbeat keepalive to the platform
+                # 1. Send a keep-alive heartbeat to the platform
                 await self.connection.send_json({"type": "ping"})
 
-                # 2. Send meta heartbeat to the framework (one line)
+                # 2. Send a meta heartbeat to the framework (one line with emit_meta)
                 await self.emit_meta("heartbeat", self._bot_id)
 
                 await asyncio.sleep(30)
             except Exception as e:
-                self.logger.error(f"Failed to heartbeat: {e}")
+                self.logger.error(f"Heartbeat failed: {e}")
                 break
 ```
 
-### 4. Connection Information Exposure
+### 4. Exposing Connection Info
 
-The routes registered by the adapter should be visible to users, facilitating the configuration of callback addresses on the platform side. It is recommended to actively output connection information in `start()`:
+Routes registered by the adapter should be visible to users so they can configure the platform-side callback URL. It is recommended to proactively log connection info in `start()`:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -9685,35 +9712,68 @@ class MyAdapter(BaseAdapter):
         if self.sdk:
             info = self.sdk.adapter.get_connection_info(self.platform)
             if info:
-                self.logger.info(f"WebSocket address: "
+                self.logger.info(f"WebSocket URL: "
                     f"{info.get('connection', {}).get('base_url', '')}"
                     f"{info.get('connection', {}).get('websocket_routes', [])}")
 ```
 
-Users can query all routes and connection addresses of the adapter using the following APIs:
+Users can view all adapter routes and connection URLs via the following APIs:
 
 ```python
 from ErisPulse import sdk
 
-# Adapter-level connection information (recommended)
+# Adapter-level connection info (recommended)
 info = sdk.adapter.get_connection_info("myplatform")
 
-# Query at the router manager level
+# Route manager-level queries
 sdk.router.list_namespaces()              # List all namespaces
-sdk.router.get_module_routes("myplatform")  # Detailed route information
-sdk.router.get_module_urls("myplatform")    # Full connection URL
+sdk.router.get_module_routes("myplatform")  # Detailed route info
+sdk.router.get_module_urls("myplatform")    # Full connection URLs
 ```
 
-> **Note**: The `module_name` used during route registration must exactly match the `platform` name registered by the adapter in ErisPulse, otherwise `get_connection_info()` will not be able to associate the route. For multi-account adapters, sub-paths (e.g., `/account1/webhook`, `/account2/webhook`) should be registered for each account instead of using different `module_name`.
+> **Note**: The `module_name` used at route registration must exactly match the adapter's `platform` name registered in ErisPulse; otherwise `get_connection_info()` will fail to associate the routes. Multi-account adapters should register a sub-path for each account (e.g., `/account1/webhook`, `/account2/webhook`) instead of using different `module_name` values.
+
+### 5. HTTP Route Lifecycle
+
+The lifecycle of HTTP/WebSocket routes registered by adapters/modules via `router` is automatically managed by the framework based on the **ownership principle**:
+
+- The `module_name` (namespace) at registration time is the ownership identifier. **On reload / stop / unload, the framework automatically cleans up all routes and connection resources under that ownership**, so no manual unregistration is needed
+- Therefore, **routes must be unconditionally re-registered in `start()` (`on_load` for modules)**. Do not optimize with instance-level boolean flags to "register only once": config hot reload (e.g., account field changes saved instantly) triggers stop/start while **reusing the same instance**, and leftover flags will cause routes to be **permanently lost** after cleanup, manifesting as 404s on endpoints that persist until the process restarts
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        # Unconditionally re-register on every startup (after reload, routes have been auto-cleaned with the previous stop)
+        router.register_http_route(self.platform, "/qr/start", self._qr_start, methods=["POST"])
+        router.register_http_route(self.platform, "/qr/poll", self._qr_poll, methods=["POST"])
+```
+
+The same applies on the module side (register in `on_load`):
+
+```python
+class MyModule(BaseModule):
+    async def on_load(self):
+        router.register_http_route("MyModule", "/api/panel", self._panel, methods=["GET"])
+```
+
+When you need to **manually unload routes in advance** (e.g., dynamically taking an entry point offline), you can actively unregister them:
+
+```python
+from ErisPulse.Core import router
+
+router.unregister_http_route(self.platform, "/qr/start")
+```
+
+- Frontend/callers may receive route 404s during the hot-reload window; this is transient. For browser-facing interactive pages, a limited number of automatic retries on 404 is recommended
 
 ## Event Conversion
 
-### 1. Strictly Follow OneBot12 Standard
+### 1. Strictly Follow the OneBot12 Standard
 
 ```python
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """Convert event"""
+        """Convert an event"""
         onebot_event = {
             "id": str(raw_event.get("event_id", uuid.uuid4())),
             "time": int(time.time()),
@@ -9724,17 +9784,17 @@ class MyPlatformConverter:
                 "platform": "myplatform",
                 "user_id": str(raw_event.get("bot_id", ""))
             },
-            "myplatform_raw": raw_event,  # Preserve raw data (required)
+            "myplatform_raw": raw_event,  # Keep the raw data (required)
             "myplatform_raw_type": raw_event.get("type", "")  # Raw type (required)
         }
         return onebot_event
 ```
 
-### 2. Standardize Timestamps
+### 2. Timestamp Normalization
 
 ```python
 def _convert_timestamp(self, timestamp):
-    """Convert to 10-digit second-level timestamp"""
+    """Convert to a 10-digit second-level timestamp"""
     if not timestamp:
         return int(time.time())
     
@@ -9752,24 +9812,24 @@ def _convert_timestamp(self, timestamp):
 import uuid
 
 def _generate_event_id(self, raw_event):
-    """Generate event ID"""
+    """Generate an event ID"""
     event_id = raw_event.get("event_id")
     if event_id:
         return str(event_id)
-    # If the platform does not provide an ID, generate a UUID
+    # If the platform doesn't provide an ID, generate a UUID
     return str(uuid.uuid4())
 ```
 
 ## SendDSL Implementation
 
-The `At`/`AtAll`/`Reply` decorators are already built into the framework's SendDSL base class; the adapter only needs to implement `Raw_ob12` and specific send methods. Use `self._apply_modifiers(message)` and `self.send_context` to simplify development.
+The `At`/`AtAll`/`Reply` modifiers are built into the framework's SendDSL base class; the adapter only needs to implement `Raw_ob12` and the concrete send methods. Use `self._apply_modifiers(message)` and `self.send_context` to simplify development.
 
 ### 1. Must Return a Task Object
 
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """Recommended implementation: Use framework helper methods"""
+        """Recommended implementation: use the framework helper methods"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -9784,7 +9844,7 @@ class Send(BaseAdapter.Send):
         return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-### 2. Chainable Modifier Methods Return `self`
+### 2. Chained Modifier Methods Return self
 
 ```python
 class Send(BaseAdapter.Send):
@@ -9803,7 +9863,7 @@ class Send(BaseAdapter.Send):
 ```python
 class Send(BaseAdapter.Send):
     def Sticker(self, sticker_id: str):
-        """Send sticker"""
+        """Send a sticker"""
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_sticker",
@@ -9813,7 +9873,7 @@ class Send(BaseAdapter.Send):
         )
     
     def Card(self, card_data: dict):
-        """Send card message"""
+        """Send a card message"""
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_card",
@@ -9823,11 +9883,11 @@ class Send(BaseAdapter.Send):
         )
 ```
 
-## API Response
+## API Responses
 
 ### 1. Standardized Response Format
 
-The framework provides `make_response()` and `make_error()` methods to construct standardized responses:
+The framework provides the `make_response()` and `make_error()` methods to build standardized responses:
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -9850,9 +9910,9 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-`make_response()` automatically generates a response dictionary containing the `{platform}_raw` key. `make_error()` defaults to using `retcode=34000` (Platform Error).
+`make_response()` automatically generates a response dict containing the `{platform}_raw` key. `make_error()` uses `retcode=34000` (Platform Error) by default.
 
-### 2. Error Code Specification
+### 2. Error Code Conventions
 
 Follow the OneBot12 standard error codes:
 
@@ -9878,7 +9938,7 @@ Follow the OneBot12 standard error codes:
 
 ### 1. Declarative Configuration (Recommended)
 
-After declaring a configuration class using `AccountConfigClass`, the framework automatically manages multi-account loading, validation, and template generation. The `BotAccountConfig` base class provides the `enabled` and `name` fields, which the adapter does not need to declare:
+After declaring a config class with `AccountConfigClass`, the framework automatically manages multi-account loading, validation, and template generation. The `BotAccountConfig` base class provides the `enabled` and `name` fields, so adapters don't need to declare them:
 
 ```python
 from dataclasses import dataclass, field
@@ -9899,7 +9959,7 @@ class MyAdapter(BaseAdapter):
         for name, account in self.enabled_accounts.items():
             self.logger.info(f"Starting account {name}")
             await self._connect(name, account.token)
-            # bot_id is automatically obtained from the platform protocol/login response and backfilled by the framework
+            # bot_id is automatically obtained from the platform protocol/login response and filled in by the framework
     
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
@@ -9916,20 +9976,20 @@ enabled = true
 name = ""
 ```
 
-### 2. Account Selection Mechanism
+### 2. Account Resolution Mechanism
 
-The framework provides the built-in `_resolve_account()` method, which matches accounts in the following priority:
+The framework provides a built-in `_resolve_account()` method with the following matching priority:
 
-1. **Account name** — exact match with the configuration key
-2. **`bot_id` field** — automatically obtained bot_id (i.e., `event["self"]["user_id"]`)
-3. **Any str field** — other string fields in the configuration
+1. **Account name** — exact match against the config key name
+2. **`bot_id` field** — the automatically obtained bot_id (i.e., `event["self"]["user_id"]`)
+3. **Any str field** — other string fields in the config
 4. **Fallback** — the first enabled account
 
 ```python
 # Match by account name
 name, account = self._resolve_account("account1")
 
-# Match by bot_id (most commonly used method, from event)
+# Match by bot_id (most common approach, from the event)
 name, account = self._resolve_account("bot_123")
 
 # Get the first enabled account (pass None)
@@ -9940,7 +10000,7 @@ name, account = self._resolve_account(None)
 
 ### 1. Categorized Exception Handling
 
-Use `make_error()` to construct standardized error responses. When using `sdk.client` to request, catch ErisPulse exceptions:
+Use `make_error()` to build standardized error responses. When making requests through `sdk.client`, catch ErisPulse exceptions:
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
@@ -9963,21 +10023,21 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(retcode=33000, message="Network request failed")
     except json.JSONDecodeError:
         self.logger.error("JSON parsing failed")
-        return self.make_error(retcode=10006, message="Response format error")
+        return self.make_error(retcode=10006, message="Invalid response format")
     except Exception as e:
         self.logger.error(f"Unknown error: {e}", exc_info=True)
         return self.make_error(message=str(e))
 ```
 
-> **Backward Compatibility**: Old adapter code using `aiohttp` is unaffected and can still catch `aiohttp.ClientError`. Exception conversion only takes effect when requests are made via `sdk.client`.
+> **Backward compatibility**: Legacy adapter code that uses `aiohttp` directly is unaffected and can still catch `aiohttp.ClientError`. Exception conversion only takes effect for requests made through `sdk.client`.
 
 ### 2. Logging
 
-The framework automatically creates a sub-logger for the adapter (`sdk.logger.get_child("MyAdapter")`), so manual initialization is not required:
+The framework automatically creates a child logger for each adapter (`sdk.logger.get_child("MyAdapter")`), so no manual initialization is needed:
 
 ```python
 class MyAdapter(BaseAdapter):
-    # ConfigClass = ...  # After declaring the configuration class, self.logger is automatically available
+    # ConfigClass = ...  # self.logger is automatically available after declaring a config class
     
     async def start(self):
         self.logger.info("Adapter starting...")
@@ -9992,7 +10052,7 @@ class MyAdapter(BaseAdapter):
 
 ## Testing
 
-### 1. Unit Tests
+### 1. Unit Testing
 
 ```python
 import pytest
@@ -10000,7 +10060,7 @@ from ErisPulse.Core.Bases import BaseAdapter
 
 class TestMyAdapter:
     def test_converter(self):
-        """Test converter"""
+        """Test the converter"""
         converter = MyPlatformConverter()
         raw_event = {"type": "message", "content": "Hello"}
         result = converter.convert(raw_event)
@@ -10009,26 +10069,26 @@ class TestMyAdapter:
         assert "myplatform_raw" in result
     
     def test_api_response(self):
-        """Test API response format"""
+        """Test the API response format"""
         adapter = MyAdapter()
         response = adapter.call_api("/test", param="value")
         assert "status" in response
         assert "retcode" in response
 ```
 
-### 2. Integration Tests
+### 2. Integration Testing
 
 ```python
 @pytest.mark.asyncio
 async def test_adapter_start():
-    """Test adapter start"""
+    """Test adapter startup"""
     adapter = MyAdapter()
     await adapter.start()
     assert adapter._connected is True
 
 @pytest.mark.asyncio
 async def test_send_message():
-    """Test send message"""
+    """Test sending a message"""
     adapter = MyAdapter()
     await adapter.start()
     
@@ -10038,45 +10098,45 @@ async def test_send_message():
 
 ## Reverse Conversion and Message Building
 
-`Raw_ob12` is the method that adapters **must implement**, serving as the unified entry point for reverse conversion (OneBot12 → platform). Standard methods (`Text`, `Image`, etc.) should delegate to `Raw_ob12`, and modifier states (`At`/`Reply`/`AtAll`) must be merged into message segments within `Raw_ob12`.
+`Raw_ob12` is a method that adapters **must implement**; it is the unified entry point for reverse conversion (OneBot12 → platform). Standard methods (`Text`, `Image`, etc.) should delegate to `Raw_ob12`, and modifier state (`At`/`Reply`/`AtAll`) must be merged into message segments within `Raw_ob12`.
 
-`MessageBuilder` is a message segment builder tool that works in conjunction with `Raw_ob12`, supporting chainable calls and rapid message construction.
+`MessageBuilder` is a message segment building tool used together with `Raw_ob12`, supporting chained calls and quick construction.
 
-> For complete implementation specifications, code examples, and usage methods, please refer to:
-> - [Send Method Specification §6 Reverse Conversion Specification](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)
-> - [Send Method Specification §11 MessageBuilder](../../standards/send-method-spec.md#11-消息构建器-messagebuilder)
+> For the complete implementation specification, code examples, and usage, see:
+> - [Send Method Spec §6 Reverse Conversion Spec](../../standards/send-method-spec.md#6-reverse-conversion-spec-onebot12--platform)
+> - [Send Method Spec §11 Message Builder](../../standards/send-method-spec.md#11-message-builder-messagebuilder)
 
-## Platform Event Method Extension
+## Platform Event Method Extensions
 
-Adapters can register platform-specific methods for Event wrapper classes, allowing module developers to more easily access platform-specific data.
+Adapters can register platform-specific methods on the Event wrapper classes, allowing module developers to access platform-specific data more conveniently.
 
-### 1. Use Mixin Class to Register Multiple Methods (Recommended)
+### 1. Batch Registration with a Mixin Class (Recommended)
 
-When the platform has multiple specific methods, it is recommended to use a Mixin class:
+When the platform has multiple specific methods, using a Mixin class is recommended:
 
 ```python
-# Register at the start() or module level
+# Register at the adapter's start() or at module level
 from ErisPulse.Core.Event import register_event_mixin
 
 class MyPlatformEventMixin:
     def get_chat_name(self):
-        """Get chat name"""
+        """Get the chat name"""
         return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 
     def is_official_message(self):
-        """Check if it is an official message"""
+        """Check whether the message is official"""
         raw = self.get("myplatform_raw", {})
         return raw.get("sender", {}).get("is_official", False)
 
     def get_message_type(self):
-        """Get platform message type"""
+        """Get the platform message type"""
         return self.get("myplatform_raw", {}).get("msg_type", "text")
 
-# Register in bulk
+# Batch registration
 register_event_mixin("myplatform", MyPlatformEventMixin)
 ```
 
-### 2. Use Decorator to Register a Single Method
+### 2. Registering a Single Method with a Decorator
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -10086,37 +10146,37 @@ def get_chat_name(self):
     return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 ```
 
-### 3. Clean Up on Adapter Shutdown
+### 3. Cleanup on Adapter Shutdown
 
 ```python
 from ErisPulse.Core.Event import unregister_platform_event_methods
 
 class MyAdapter(BaseAdapter):
     async def shutdown(self):
-        # Clean up platform event method registration
+        # Clean up platform event method registrations
         unregister_platform_event_methods("myplatform")
         # ... other cleanup
 ```
 
-> For more detailed registration and deregistration instructions, please refer to [Event System API - Register Platform Extension Methods](../../api-reference/event-system.md#适配器注册平台扩展方法).
+> For more details on registration and unregistration, see [Event System API - Registering Platform Extension Methods](../../api-reference/event-system.md#adapter-registered-platform-extension-methods).
 
 ## Documentation Maintenance
 
 ### 1. Maintain Platform Feature Documentation
 
-Create a `{platform}.md` documentation file under `docs/en/platform-guide/` (other language versions will be automatically generated):
+Create the `{platform}.md` documentation under `docs/en/platform-guide/` (versions in other languages are generated automatically):
 
 ```markdown
 # Platform Name Adapter Documentation
 
 ## Basic Information
-- Corresponding Module Version: 1.0.0
+- Module version: 1.0.0
 - Maintainer: Your Name
 
-## Supported Message Sending Types
+## Supported Message Send Types
 ...
 
-## Specific Event Types
+## Platform-Specific Event Types
 ...
 
 ## Configuration Options
@@ -10129,7 +10189,7 @@ When releasing a new version, update the version information in the documentatio
 
 ```toml
 [project]
-version = "2.0.0"  # Update version number
+version = "2.0.0"  # Update the version number
 ```
 
 
@@ -20896,23 +20956,25 @@ enabled = true
 
 # ErisPulse PlatformFeatures Documentation
 
-> Base Protocol: [OneBot12](https://12.onebot.dev/)  
-> This document is a **platform-specific feature guide**, including:
-> - Examples of chainable Send method calls supported by each adapter
-> - Explanations of platform-specific event/message formats
+> Baseline protocol: [OneBot12](https://12.onebot.dev/) 
+> 
+> This document is a **platform-specific features guide**, including:
+> - Chained Send method call examples supported by each adapter
+> - Descriptions of platform-specific event/message formats
 > 
 > For general usage, please refer to:
 > - [Basic Concepts](../getting-started/basic-concepts.md)
-> - [Event Conversion Standard](../standards/event-conversion.md)
+> - [Event Conversion Standard](../standards/event-conversion.md)  
 > - [API Response Specification](../standards/api-response.md)
 
 ---
 
 ## Platform-Specific Features
 
-This section is maintained by each adapter developer and describes the differences and extended features of the adapter compared to the OneBot12 standard. Please refer to the detailed documentation for each platform below:
+This section is maintained by each adapter's developer, and is used to explain the adapter's differences from and extensions to the OneBot12 standard. Please refer to the detailed documentation for each platform below:
 
-- [Maintain Notes](maintain-notes.md)
+- [Maintenance Notes](maintain-notes.md)
+
 - [Yunhu Platform Features](yunhu.md)
 - [Yunhu User Platform Features](yunhu_user.md)
 - [Telegram Platform Features](telegram.md)
@@ -20920,24 +20982,27 @@ This section is maintained by each adapter developer and describes the differenc
 - [OneBot12 Platform Features](onebot12.md)
 - [SnowLuma Platform Features](snowluma.md)
 - [Email Platform Features](email.md)
-- [Kook (Open Black) Platform Features](kook.md)
+- [Kook Platform Features](kook.md)
 - [Matrix Platform Features](matrix.md)
-- [Official QQ Bot Platform Features](qqbot.md)
-- [Ideaura Coffee Shop](ideaura.md)
+- [WeCom (Enterprise WeChat) Platform Features](wecom.md)
+- [Bilibili Platform Features](bilibili.md)
+- [Minecraft Platform Features](minecraft.md)
+- [QQ Official Bot Platform Features](qqbot.md)
+- [Kaede Café](ideaura.md)
 - [Discord](discord.md)
 - [Webhook Protocol Bridge](webhook.md)
 - [WeChat Official Account](wechatmp.md)
 
-> Additionally, there is a `sandbox` adapter, but this adapter does not require a platform-specific feature documentation.
+> There is also a `sandbox` adapter, but this adapter does not require a platform features document to be maintained
 
 ---
 
-## General Interfaces
+## Common Interfaces
 
-### Chainable Send Calls
+### Send Chained Calls
 All adapters support the following standard calling methods:
 
-> **Note:** `{AdapterName}` in the documentation must be replaced with the actual adapter name (such as `yunhu`, `telegram`, `onebot11`, `email`, etc.).
+> **Note:** `{AdapterName}` in the documentation should be replaced with the actual adapter name (e.g., `yunhu`, `telegram`, `onebot11`, `email`, etc.).
 
 1. Specify type and ID: `To(type,id).Func()`
    ```python
@@ -20951,7 +21016,7 @@ All adapters support the following standard calling methods:
    yunhu = adapter.get("yunhu")
    await yunhu.Send.To("user", "U1001").Text("Hello")
    ```
-2. Specify only ID: `To(id).Func()`
+2. Specify ID only: `To(id).Func()`
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.To("U1001").Text("Hello")
@@ -20960,7 +21025,7 @@ All adapters support the following standard calling methods:
    telegram = adapter.get("telegram")
    await telegram.Send.To("U1001").Text("Hello")
    ```
-3. Specify sending account: `Using(account_id)`
+3. Specify the sending account: `Using(account_id)`
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.Using("bot1").To("U1001").Text("Hello")
@@ -20979,38 +21044,38 @@ All adapters support the following standard calling methods:
    await email.Send.Text("Broadcast message")
    ```
 
-#### Asynchronous Sending and Result Handling
+#### Async Send and Result Handling
 
-The methods of the Send DSL return an `asyncio.Task` object, which means you can choose whether to wait for the result immediately:
+The Send DSL methods return `asyncio.Task` objects, which means you can choose whether to await the result immediately:
 
 ```python
 # Get adapter instance
 my_adapter = adapter.get("{AdapterName}")
 
-# Do not wait for the result, the message is sent in the background
+# Without awaiting, the message is sent in the background
 task = my_adapter.Send.To("user", "123").Text("Hello")
 
-# If you need to get the sending result, you can wait later
+# If you need the send result, you can await it later
 result = await task
 ```
 
-#### Sending Rule Decorators
+#### Send Rule Decorators
 
-In actual development, it is often necessary to: execute subsequent logic only after successful sending, automatically retry on failure, cancel on timeout, and monitor sending progress. The Send DSL includes a set of built-in sending rule decorators, which can be added via chained methods:
+In real-world development, you often need to: execute follow-up logic only after a successful send, retry automatically on failure, cancel on timeout, monitor send progress, etc. The Send DSL comes with a built-in set of send rule decorators; attach rules via chained methods:
 
 | Method | Description |
-|--------|-------------|
-| `.Hook(callback)` | Callback executed after successful sending (can be called multiple times) |
-| `.Retry(times=1)` | Automatic retry on failure N times (total of N+1 attempts, including the first) |
-| `.Timeout(seconds)` | Single sending timeout, cancellation on timeout (can be stacked with Retry) |
-| `.Defer(seconds)` | Delay sending (in-process timing, not persisted) |
-| `.OnProgress(callback)` | Progress callback at each stage, passing SendContext |
-| `.OnError(callback)` | Error callback on final failure (triggers only once) |
+|--------|------|
+| `.Hook(callback)` | Callback executed after a successful send (can be called multiple times) |
+| `.Retry(times=1)` | Automatically retry N times on failure (N+1 attempts in total including the first) |
+| `.Timeout(seconds)` | Timeout for a single send; cancels on timeout (can be combined with Retry) |
+| `.Defer(seconds)` | Delayed send (in-process scheduling, not persisted) |
+| `.OnProgress(callback)` | Progress callback for each stage, receiving a SendContext |
+| `.OnError(callback)` | Error callback on final failure (triggered only once) |
 
 ```python
 yunhu = adapter.get("yunhu")
 
-# Deduct points only after successful sending
+# Deduct points only after the send succeeds
 await (yunhu.Send.To("user", "123")
        .Hook(lambda r: deduct_points("123"))
        .Text("Consumption successful"))
@@ -21021,17 +21086,17 @@ def on_progress(ctx):
 
 task = (yunhu.Send.To("user", "123")
         .Retry(3)              # Retry up to 3 times
-        .Timeout(10)           # Timeout of 10 seconds per attempt
+        .Timeout(10)           # 10-second timeout per attempt
         .OnProgress(on_progress)
         .OnError(lambda ctx: notify_admin(ctx.error))
         .Text("Important notice"))
 ```
 
-Rule methods return `self`, so they must be called before the sending methods (such as Text/Image). `SendContext` contains fields such as `stage` (pending/sending/retrying/success/failed/timeout), `attempt`, `elapsed`, `error`, `result`, which are useful for monitoring.
+Rule methods return `self` and must be called before the send method (Text/Image, etc.). `SendContext` contains fields such as `stage` (pending/sending/retrying/success/failed/timeout), `attempt`, `elapsed`, `error`, and `result`, making monitoring easy.
 
 #### Batch Build Mode (Build)
 
-Multiple sending methods can be built within a single chain, and executed together at the end. This is suitable for scenarios where multiple messages are sent at once:
+Build multiple send methods in a single chain and execute them all together at the end. Suitable for scenarios where you want to "send multiple messages in one go":
 
 ```python
 yunhu = adapter.get("yunhu")
@@ -21039,31 +21104,31 @@ yunhu = adapter.get("yunhu")
 # Build multiple messages and send them together
 results = await (yunhu.Send.To("user", "123")
                 .Build()                     # Enter build mode
-                .Text("Notification 1")
+                .Text("Notice one")
                 .Image("pic.jpg")
-                .Text("Notification 2")
-                .send_all())                 # Execute all at once
+                .Text("Notice two")
+                .send_all())                 # Execute all together
 # results = [Text result, Image result, Text result]
 ```
 
-`.send_all()` executes by default **in parallel** (concurrent sending, high efficiency). If the order of message arrival needs to be guaranteed, call `.Sequential()` to execute serially:
+`.send_all()` executes **in parallel** by default (concurrent sending, more efficient). When message arrival order must be guaranteed, call `.Sequential()` to execute serially:
 
 ```python
-# Sequential execution (guarantee order) + retry on failure
+# Serial execution (order guaranteed) + retry on failure
 await (yunhu.Send.To("group", "456")
        .Build()
-       .Sequential()                # Send in order
-       .Retry(2)                     # Retry failed entries individually
+       .Sequential()                # Send one by one in order
+       .Retry(2)                    # Each failed entry retries independently
        .Text("First message").Text("Second message")
        .send_all())
 ```
 
-Batch execution adopts a **fail-continue** strategy: failure of one message does not interrupt others, and failed entries are automatically retried. Batch also supports `Hook` for the entire batch (triggered after all succeed), `OnError` (triggered when there are failures), and `OnProgress` (progress callback).
+Batch execution adopts a **fail-and-continue** strategy: one failure does not interrupt the other entries, and failed entries are retried automatically. Batch mode also supports batch-level `Hook` (triggered after all succeed), `OnError` (triggered when any entry fails), and `OnProgress` (progress callback).
 
-> For more detailed information on rules and batch building, please refer to [SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md).
+> For more detailed rules and batch build descriptions, please refer to [SendDSL in Detail](../developer-guide/adapters/send-dsl.md).
 
 ### Event Listening
-There are three ways to listen to events:
+There are three ways to listen for events:
 
 1. Platform-native event listening:
    ```python
@@ -21071,26 +21136,26 @@ There are three ways to listen to events:
    
    @adapter.on("event_type", raw=True, platform="{AdapterName}")
    async def handler(data):
-       logger.info(f"Received raw {AdapterName} event: {data}")
+       logger.info(f"Received {AdapterName} native event: {data}")
    ```
 
 2. OneBot12 standard event listening:
    ```python
    from ErisPulse.Core import adapter, logger
 
-   # Listen to OneBot12 standard events
+   # Listen for OneBot12 standard events
    @adapter.on("event_type")
    async def handler(data):
        logger.info(f"Received standard event: {data}")
 
-   # Listen to specific platform's standard events
+   # Listen for standard events from a specific platform
    @adapter.on("event_type", platform="{AdapterName}")
    async def handler(data):
        logger.info(f"Received {AdapterName} standard event: {data}")
    ```
 
 3. Event module listening:
-    Events in the `Event` module are based on the `adapter.on()` function, so the event format provided by `Event` is a OneBot12 standard event.
+    The events of `Event` are based on the `adapter.on()` function, so the event format provided by `Event` is a OneBot12 standard event
 
     ```python
     from ErisPulse.Core.Event import message, notice, request, command
@@ -21110,17 +21175,17 @@ There are three ways to listen to events:
         logger.info(f"Received command: {event}")
     ```
 
-Among these, it is most recommended to use the `Event` module for event handling, because the `Event` module provides rich event types and event handling methods.
+Among these, using the `Event` module for event handling is the most recommended option, because the `Event` module provides rich event types as well as rich event handling methods.
 
 ---
 
 ## Standard Formats
-For easy reference, the following are basic event formats. For detailed information, please refer to the links above.
+For convenience of reference, simple event formats are given here. If you need detailed information, please refer to the links above.
 
-> **Note:** The following formats are basic OneBot12 standard formats. Each adapter may have extended fields based on this. Please refer to the specific feature descriptions of each adapter for details.
+> **Note:** The formats below are the basic OneBot12 standard formats; each adapter may have extension fields on top of them. For specifics, please refer to each adapter's platform-specific feature descriptions.
 
 ### Standard Event Format
-All adapters must implement the event conversion format:
+The event conversion format that all adapters must implement:
 ```json
 {
   "id": "event_123",
@@ -21141,7 +21206,7 @@ All adapters must implement the event conversion format:
 ```
 
 ### Standard Response Format
-#### Message Sending Success
+#### Message Send Success
 ```json
 {
   "status": "ok",
@@ -21157,14 +21222,14 @@ All adapters must implement the event conversion format:
 }
 ```
 
-#### Message Sending Failure
+#### Message Send Failure
 ```json
 {
   "status": "failed",
   "retcode": 10003,
   "data": null,
   "message_id": "",
-  "message": "Missing required parameters",
+  "message": "Missing required parameter",
   "echo": "1234",
   "{platform}_raw": {...}
 }
@@ -21172,24 +21237,24 @@ All adapters must implement the event conversion format:
 
 ---
 
-## References
-ErisPulse Project:
+## Reference Links
+ErisPulse projects:
 - [Main Repository](https://github.com/ErisPulse/ErisPulse/)
 - [Yunhu Adapter Repository](https://github.com/ErisPulse/ErisPulse-YunhuAdapter)
 - [Telegram Adapter Repository](https://github.com/ErisPulse/ErisPulse-TelegramAdapter)
 - [OneBot Adapter Repository](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
 
-Related Official Documentation:
+Related official documentation:
 - [OneBot V11 Protocol Documentation](https://github.com/botuniverse/onebot-11)
 - [Telegram Bot API Official Documentation](https://core.telegram.org/bots/api)
 - [Yunhu Official Documentation](https://www.yhchat.com/document/1-3)
 
 ## Contributing
 
-We welcome more developers to contribute and maintain adapter documentation! Please follow these steps to submit your contribution:
-1. Fork the [ErisPulse](https://github.com/ErisPulse/ErisPulse) repository.
-2. Create a Markdown file in the `docs/platform-features/` directory, naming it in the format `<Platform Name>.md`.
-3. Add a link to your contributed adapter and related official documentation in this `README.md` file.
+We welcome more developers to participate in writing and maintaining adapter documentation! Please follow these steps to submit your contributions:
+1. Fork the [ErisPuls](https://github.com/ErisPulse/ErisPulse) repository.
+2. Create a Markdown file under the `docs/platform-features/` directory, named in the format `<platform-name>.md`.
+3. Add a link to your contributed adapter and its related official documentation in this `README.md` file.
 4. Submit a Pull Request.
 
 Thank you for your support!

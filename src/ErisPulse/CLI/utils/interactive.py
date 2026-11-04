@@ -81,23 +81,34 @@ def _require_interactive() -> None:
     raise NonInteractiveError(i18n.t("cli.interactive.non_tty"))
 
 
-def confirm(message: str, *, default: bool = False, **kwargs) -> bool:
+def confirm(message: str, *, default: bool = False, show_default: bool = True, **kwargs) -> bool:
     """
     yes/no 确认提示（统一入口）
 
     assume-yes 模式（``--yes/-y``）下直接返回 True；非 TTY 且未启用
     assume-yes 时抛出 :class:`NonInteractiveError`。
 
-    :param message: 提示文案（可含 Rich 标记）
-    :param default: 用户直接回车时的默认取值（交互模式下透传给 Confirm）
+    体验护栏（坑 6 反馈）：调用前清空 stdin 缓冲——耗时表格/安装过程中
+    用户连敲的回车不会残留到本确认被一次吞掉（默认 N 时表现为"莫名取消"）；
+    提示文案自动带 ``(Y/n)`` / ``(y/N)`` 后缀，回车默认值一眼可见。
+
+    :param message: [str] 文案（可含 Rich 标记）
+    :param default: [bool] 用户直接回车时的默认取值
+    :param show_default: [bool] 是否在提示中显示默认值（默认 True）
     :param kwargs: 其余参数透传 rich Confirm.ask
-    :return: 用户是否确认
+    :return: [bool] 用户是否确认
     :raises NonInteractiveError: 非交互环境且未启用 ``--yes/-y``
     """
     if _ASSUME_YES:
         return True
     _require_interactive()
-    return Confirm.ask(message, default=default, **kwargs)
+    try:
+        from .display import _flush_stdin_buffer
+
+        _flush_stdin_buffer()
+    except Exception:
+        pass
+    return Confirm.ask(message, default=default, show_default=show_default, **kwargs)
 
 
 def select(

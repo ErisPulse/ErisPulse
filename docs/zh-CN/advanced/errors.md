@@ -213,4 +213,4 @@ except ErisPulseError as e:
 - **存储操作返回 `False` / `None`，想搞清连接状态** → [存储后端 · 连接失败行为](storage-backends.md#连接失败行为)，或订阅 [storage.unreachable / storage.recovered 事件](lifecycle.md#存储连接状态)
 - **`wait_reply` 返回 `None`，想知道被什么取消** → [交互会话系统](interaction.md)（取消原因对照表）
 - **`module.call` 抛模块调用异常** → [模块间通信](module-communication.md)
-- **连接 / WebSocket 报错** → [网络客户端](http-client.md)（ClientError 体系）与[连接池与广播](connections.md)（连接注册表异常）
+- **连接 / WebSocket 报错** → [网络客户端](client.md)（ClientError 体系）与[连接池与广播](connections.md)（连接注册表异常）

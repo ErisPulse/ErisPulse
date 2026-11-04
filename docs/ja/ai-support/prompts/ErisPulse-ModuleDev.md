@@ -3533,10 +3533,10 @@ async def ai_chat(self, prompt: str):
 # モジュール開発ベストプラクティス
 
 > [!TIP]
-> **いつこのドキュメントを読むべきか**：最初のモジュールを書き終えた後に読むことを推奨（エンジニアリングのベストプラクティス）。必要なければスキップしても、他の機能の利用には影響しません。
+> **このドキュメントを読むべきタイミング**：最初のモジュールを書き終えた後に読むことを推奨します（エンジニアリングのベストプラクティス）。必要なければスキップしても、他の機能の利用には影響しません。
 
 
-ここでは、モジュール開発におけるエンジニアリング上の作法をまとめています：非同期操作はイベントループをブロックしない、設定は宣言的に、他のモジュールのリソースを管理する場合はアンロード時に解放する——これに従って書けば、メモリリーク、バックグラウンドタスクの残存、ホットリロードの失効といったモジュール開発で最もよくある落とし穴を回避できます。
+ここでは、モジュール開発における実装規約をまとめています：非同期操作でイベントループをブロックしない、設定は宣言的に行う、他のモジュールのリソースを預かる場合はアンロード時に解放する——これに従って書けば、メモリリーク、バックグラウンドタスクの残留、ホットリロードの失効といったモジュール開発で最もよくある落とし穴を避けられます。
 
 ## モジュール設計
 
@@ -3560,7 +3560,7 @@ class UtilityModule(BaseModule):
     pass
 ```
 
-### 2. モジュール命名規則
+### 2. モジュールの命名規則
 
 ```toml
 [project]
@@ -3569,7 +3569,7 @@ name = "ErisPulse-ModuleName"  # ErisPulse- プレフィックスを使用
 
 ### 3. 明確な設定管理
 
-宣言的設定（`ConfigClass` + `BaseConfig`）の使用を推奨します。型安全性、自動テンプレート生成、WebUI フォーム対応などの機能が得られます：
+宣言的設定（`ConfigClass` + `BaseConfig`）の使用を推奨します。型安全性、テンプレート自動生成、WebUI フォームサポートなどの機能が得られます：
 
 ```python
 from dataclasses import dataclass, field
@@ -3584,7 +3584,7 @@ class MyModuleConfig(BaseConfig):
         "description": {"i18n": "my_module.timeout", "default": "タイムアウト時間（秒）"},
     })
     cache_ttl: int = field(default=3600, metadata={
-        "description": {"i18n": "my_module.cache_ttl", "default": "キャッシュ生存時間（秒）"},
+        "description": {"i18n": "my_module.cache_ttl", "default": "キャッシュ有効期間（秒）"},
     })
 
 class MyModule(BaseModule):
@@ -3595,11 +3595,11 @@ class MyModule(BaseModule):
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-手動方式で設定ストレージの読み書きを行うことも引き続き可能です（[モジュールのコア概念](core-concepts.md#設定管理)を参照）。
+従来どおり手動方式で設定ストレージを読み書きすることも可能です（[モジュールのコア概念](core-concepts.md#設定管理)を参照）。
 
-### 宣言的翻訳キー（v2.7.0+）
+### 宣言的な翻訳キー（v2.7.0+）
 
-モジュールは `I18nClass` を通じて翻訳キーを一元的に宣言でき、フレームワークが自動的に i18n システムへ登録するため、手動で `i18n.register()` を呼び出す必要はありません。
+モジュールは `I18nClass` を通じて翻訳キーを一元宣言でき、フレームワークが自動的に i18n システムへ登録するため、手動で `i18n.register()` を呼び出す必要はありません。
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, I18nKey
@@ -3626,14 +3626,14 @@ class MyModule(BaseModule):
         )
 ```
 
-詳細な使い方は [i18n ドキュメント](../../advanced/i18n.md#推奨される書き方i18nclass-による翻訳キーの宣言v270) を参照してください。
+詳細な使い方は [i18n ドキュメント](../../advanced/i18n.md#推奨される書き方i18nclass-で翻訳キーを宣言するv270)を参照してください。
 
 ## 非同期プログラミング
 
-### 1. 非同期ライブラリの使用
+### 1. 非同期ライブラリを使用する
 
 ```python
-# SDK 組み込み HTTP クライアントの使用を推奨（非同期、ログと統計を自動取得）
+# SDK 組み込み HTTP クライアントの使用を推奨（非同期、ログと統計が自動）
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -3641,7 +3641,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# sdk.client 経由でも使用可能（効果は同じ）
+# sdk.client 経由でも使用可能（同じ効果）
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -3658,7 +3658,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# requests は使用しない（同期のためイベントループをブロックする）
+# requests を使用しない（同期処理のためイベントループをブロックする）
 import requests
 
 class MyModule(BaseModule):
@@ -3666,44 +3666,44 @@ class MyModule(BaseModule):
         return requests.get(url).json()  # イベントループをブロックする
 ```
 
-### 2. 正しい非同期操作
+### 2. 正しい非同期処理
 
 ```python
-from ErisPulse.Core.Event import Event  # event: Event アノテーションで IDE 補完が得られる
+from ErisPulse.Core.Event import Event  # event: Event のアノテーションで IDE 補完が効く
 
 async def handle_command(self, event: Event):
-    # 結果を待つ必要のある時間のかかる操作：直接 await（ライフサイクルが明確）
+    # 結果を待つ必要がある時間のかかる操作：直接 await（ライフサイクルが明確）
     result = await self._long_operation()
 
 async def on_load(self, event: dict):
     # バックグラウンドタスク（ポーリング/タイマー/fire-and-forget）：self.spawn() を使用。
-    # モジュールのアンロード時、フレームワークが on_unload の後にフォールバックでキャンセルするため、
-    # self を保持することによるリークを回避できる
+    # モジュールのアンロード時、フレームワークが on_unload の後に最終的にキャンセルするため、
+    # self を保持し続けることによるリークを防げる
     self.spawn(self._poll())
 ```
 
 > [!NOTE]
-> バックグラウンドタスクには `self.spawn()` を推奨します（ErisPulse **2.8.0+**）。**2.8.3 以降**は、素の `asyncio.create_task`
-> も自動的にモジュールへ暗黙的に帰属します（Task Factory が自動登録し、アンロード時にフォールバックでキャンセル、`self` 参照はリークしなくなります）。
-> `self.spawn()` が引き続き推奨の書き方です——非メインループのスレッドからメインループへのスケジューリングや、明示的な `owner=` 指定をサポートします。
-> **2.8.3 より前**のバージョンでは、素のタスクは帰属せず `self` 参照を保持し続けるためモジュールインスタンスが回収できなくなり
-> （ホットリロード時のリーク）、`self.spawn()` を使う必要があります。詳細は [ライフサイクル管理](../../advanced/lifecycle.md#バックグラウンドタスクの帰属と自動キャンセル) を参照。
+> バックグラウンドタスクには `self.spawn()` を推奨します（ErisPulse **2.8.0+**）。**2.8.3 以降**は裸の `asyncio.create_task`
+> も自動的にモジュールへ暗黙帰属します（Task Factory が自動登録し、アンロード時に最終的にキャンセルするため、`self` 参照はリークしません）。
+> `self.spawn()` が依然として推奨される書き方です——メインループ以外のスレッドからメインループへのスケジューリングや、明示的な `owner=` 指定をサポートします。
+> **2.8.3 未満**のバージョンでは、裸のタスクは帰属せず `self` 参照を保持し続けるため、モジュールインスタンスが回収されなくなります
+> （ホットリロード時のリーク）。必ず `self.spawn()` を使用してください。詳細は[ライフサイクル管理](../../advanced/lifecycle.md#バックグラウンドタスクの帰属と自動キャンセル)を参照してください。
 
 ### 3. リソース管理
 
 ```python
 async def on_load(self, event):
-    # SDK クライアントは接続プールを自動管理するため、手動で session を作成する必要なし
+    # SDK クライアントは接続プールを自動管理するため、session を手動で作成する必要はない
     pass
     
 async def on_unload(self, event):
-    # カスタムクライアントが必要な場合は、リソースのクリーンアップを忘れずに
+    # カスタムクライアントを使用する場合は、リソースのクリーンアップを忘れずに
     pass
 ```
 
 ## イベント処理
 
-### 1. Event ラッパークラスの使用
+### 1. Event ラッパークラスを使用する
 
 ```python
 # Event ラッパークラスの便利メソッドを使用
@@ -3716,13 +3716,13 @@ async def info_command(event: Event):
 # 辞書へ直接アクセスするのではなく
 @command("info")
 async def info_command(event: Event):
-    user_id = event["user_id"]  # わかりにくく、間違いやすい
+    user_id = event["user_id"]  # わかりにくく、ミスしやすい
 ```
 
-### 2. 遅延ロードの適切な使用
+### 2. 遅延ロードの適切な活用
 
 ```python
-# 低頻度コマンドモジュール：activate_on トリガーを宣言し、最初に一致するコマンドが到着した時点で自動アクティブ化（遅延ロードを維持）
+# 低頻度コマンドモジュール：activate_on トリガーを宣言し、最初に一致するコマンドが到着した時点で自動アクティベート（遅延ロードを維持）
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -3730,7 +3730,7 @@ class CommandModule(BaseModule):
             {"command": {"name": "dice", "help": "サイコロを1つ振る", "aliases": ["d"]}},
         ])
 
-# 低頻度リスナーモジュール：イベントトリガーを宣言し、イベント到着時に自動アクティブ化
+# 低頻度リスナーモジュール：イベントトリガーを宣言し、イベント到着時に自動アクティベート
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -3738,21 +3738,21 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# 高頻度トリガー（すべてのメッセージを処理する必要がある）や起動時に即時準備が必要なモジュール：即時ロード
+# 高頻度トリガー（すべてのメッセージの処理が必要）や起動時に即時準備が必要なモジュール：即時ロード
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# ユーティリティモジュールは遅延ロードが適している
+# ユーティリティモジュールは遅延ロードに適している
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> `activate_on` の完全な構文（イベントの3形式 / コマンド略記と dict 宣言 / help フォールバックチェーン）については
-> [遅延ロードモジュールシステム](../../advanced/lazy-loading.md#イベント駆動の遅延アクティベーションactivate_on) を参照してください。
+> `activate_on` の完全な構文（イベントの3形式 / コマンド省略記法と dict 宣言 / help フォールバックチェーン）については、
+> [遅延ロードモジュールシステム](../../advanced/lazy-loading.md#イベント駆動の遅延アクティベーションactivate_on)を参照してください。
 
 ### 3. イベントハンドラーの登録
 
@@ -3770,9 +3770,9 @@ async def on_load(self, event):
     # 手動で登録解除する必要はなく、フレームワークが自動的に処理する
 ```
 
-## ユーティリティモジュール：他のモジュールのものを預かる時は「アンロード通知」を受け止める
+## ユーティリティモジュール：他モジュールのものを預かるときは「アンロード通知」を受け止める
 
-**いつ必要か**：あなたのモジュールが他のモジュールの代わりにものを管理している場合（タイマーコールバック、サブスクライバー、接続、キャッシュエントリなど）。これらの参照を、相手モジュールのアンロード後も捨てずに保持し続けると、相手のインスタンスは永遠に回収されません——これがユーティリティモジュールで最もよくあるメモリリークの原因です。
+**いつ必要か**：あなたのモジュールが他のモジュールの代わりに何かを保持している場合（タイマーコールバック、サブスクライバー、接続、キャッシュエントリなど）。これらの参照は、相手のモジュールがアンロードされた後も破棄しないままだと、相手のインスタンスは永遠に回収されません——これがユーティリティモジュールで最もよくあるメモリリークの発生源です。
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -3780,31 +3780,31 @@ from ErisPulse.runtime import off_cleanup, on_cleanup
 
 class MyToolModule(BaseModule):
     def __init__(self):
-        self._entries = {}  # {モジュール名: 管理しているもの}
+        self._entries = {}  # {モジュール名: 預かっているもの}
 
     def register(self, entry):
         owner = on_cleanup(self._drop)   # ① 登録時にクリーンアップチェーンへ登録し、呼び出し元を自動識別
         self._entries.setdefault(owner, []).append(entry)
 
     def _drop(self, owner: str):
-        self._entries.pop(owner, None)   # ② 相手のアンロード時にフレームワークが自動呼び出し：相手のものを破棄
+        self._entries.pop(owner, None)   # ② 相手のアンロード時にフレームワークが自動呼び出し：その持ち物を破棄
 
     async def on_unload(self, event):
         off_cleanup(self._drop)          # ③ 自身のアンロード前にフックを解除
 ```
 
-たったこれだけで、フレームワークが保証します：
+以上だけです。フレームワークは次を保証します：
 
-- 相手モジュールが**アンロード / 無効化**される（またはアダプターが終了する）とき、`_drop("相手モジュール名")` が必ず呼び出される
-- **呼び出し元の識別は全自動**：相手が `on_load` 内で直接 `sdk.MyToolModule.register(...)` を呼び出しても、`sdk.module.call("MyToolModule", "register", ...)` 経由で呼び出しても、誰が呼び出したのかを正しく識別できる
-- タイミングを気にする必要なし——フックはフレームワークのクリーンアップチェーン内でトリガーされ、リーク診断より前に実行されるため、誤検出されない
+- 相手モジュールが**アンロード / 無効化**されたとき（またはアダプターがシャットダウンされたとき）に、`_drop("相手モジュール名")` が必ず呼び出される
+- **呼び出し元の識別は完全自動**：相手が `on_load` 内で直接 `sdk.MyToolModule.register(...)` を呼び出しても、`sdk.module.call("MyToolModule", "register", ...)` 経由で呼び出しても、誰による呼び出しかを正しく識別できる
+- タイミングを気にする必要はない——フックはフレームワークのクリーンアップチェーン内でトリガーされ、リーク診断より先に実行されるため、誤検出はない
 
-組み込まない場合の結果：相手が `purge` で完全アンロードされるときにインスタンスを回収できず（リーク診断が「回収不可」と報告）、相手自身も `on_unload` 内であなたへの登録解除を行わなければ、リークは恒久的なものになります。
+対応しなかった場合の結果：相手が `purge` で完全アンロードされるときにインスタンスを回収できなくなります（リーク診断が「回収不可」と報告）。さらに相手自身も `on_unload` 内であなたへの登録解除を行わない場合、リークは永続的になります。
 
-**通常のモジュール（他のモジュールのものを管理しない）はこれを気にする必要ありません**——フレームワークリソース（コマンド / ハンドラー / ルート / バックグラウンドタスクなど）のアンロード時のクリーンアップは全自動です。
+**通常のモジュール（他のモジュールのものを預からない）はこれを気にする必要がありません**——フレームワークリソース（コマンド / ハンドラー / ルート / バックグラウンドタスクなど）のアンロード時のクリーンアップは完全自動です。
 
-> トリガータイミング、呼び出し元識別ルール、タイムアウトとフォールトトレランスなどの詳細は
-> [所有権システム · ユーティリティモジュールガイド](../../advanced/ownership.md#ユーティリティモジュールガイド他のモジュールのハンドルを管理する) を参照してください。
+> トリガータイミング、呼び出し元識別ルール、タイムアウトとフォールトトレランスなどの詳細は、
+> [所有権システム · ユーティリティモジュールガイド](../../advanced/ownership.md#ユーティリティモジュールガイド他のモジュールのハンドル)を参照してください。
 
 ## エラー処理
 
@@ -3817,7 +3817,7 @@ async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # 予期されるビジネスエラー
+        # 予期されたビジネスエラー
         self.logger.warning(f"ビジネス警告: {e}")
         await event.reply(f"パラメータエラー: {e}")
     except ClientError as e:
@@ -3843,13 +3843,13 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"リクエストタイムアウト: {url}")
+        self.logger.warning(f"リクエストがタイムアウトしました: {url}")
         raise
 ```
 
 ## ストレージシステム
 
-### 1. トランザクションの使用
+### 1. トランザクションを使用する
 
 ```python
 # トランザクションを使用してデータの一貫性を確保
@@ -3858,23 +3858,23 @@ async def update_user(self, user_id, data):
         self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
         self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 
-# ❌ トランザクションを使わないとデータ不整合が起こる可能性
+# ❌ トランザクションを使用しないとデータの不整合が発生する可能性がある
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # ここでエラーが発生すると、上の設定はロールバックできない
+    # ここでエラーが発生すると、上記の設定はロールバックできない
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
 ### 2. バッチ操作
 
 ```python
-# バッチ操作でパフォーマンスを向上
+# バッチ操作を使用してパフォーマンスを向上
 def cache_multiple_items(self, items):
     self.sdk.storage.set_multi({
         f"item:{k}": v for k, v in items.items()
     })
 
-# ❌ 何度も呼び出すと効率が悪い
+# ❌ 複数回の呼び出しは効率が低い
 def cache_multiple_items(self, items):
     for k, v in items.items():
         self.sdk.storage.set(f"item:{k}", v)
@@ -3888,19 +3888,19 @@ def cache_multiple_items(self, items):
 # DEBUG: 詳細なデバッグ情報（開発時のみ）
 self.logger.debug(f"入力パラメータ: {params}")
 
-# INFO: 正常動作の情報
+# INFO: 通常の実行情報
 self.logger.info("モジュールがロードされました")
-self.logger.info(f"リクエストを処理中: {request_id}")
+self.logger.info(f"リクエストを処理: {request_id}")
 
 # WARNING: 警告情報、主要機能には影響しない
-self.logger.warning(f"設定項目 {key} が未設定のため、デフォルト値を使用します")
+self.logger.warning(f"設定項目 {key} が設定されていないため、デフォルト値を使用します")
 self.logger.warning("API の応答が遅く、最適化が必要な可能性があります")
 
 # ERROR: エラー情報
-self.logger.error(f"API リクエスト失敗: {e}")
-self.logger.error(f"イベント処理失敗: {e}", exc_info=True)
+self.logger.error(f"API リクエストに失敗: {e}")
+self.logger.error(f"イベントの処理に失敗: {e}", exc_info=True)
 
-# CRITICAL: 致命的エラー、即時対応が必要
+# CRITICAL: 致命的なエラー、即時の対応が必要
 self.logger.critical("データベース接続に失敗し、ボットが正常に動作できません")
 ```
 
@@ -3908,10 +3908,10 @@ self.logger.critical("データベース接続に失敗し、ボットが正常�
 
 ```python
 # 構造化ログを使用すると解析しやすい
-self.logger.info(f"リクエスト処理: request_id={request_id}, user_id={user_id}, duration={duration}ms")
+self.logger.info(f"リクエストを処理: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
-# ❌ 非構造化ログを使用
-self.logger.info(f"ユーザー {user_id} からのリクエストを処理しました。所要時間 {duration} ミリ秒")
+# ❌ 非構造化ログの使用
+self.logger.info(f"リクエストを処理しました。ユーザー {user_id} から、所要時間 {duration} ミリ秒")
 ```
 
 ## パフォーマンス最適化
@@ -3937,7 +3937,7 @@ class MyModule(BaseModule):
             return data
 ```
 
-### 2. ブロッキング操作の回避
+### 2. ブロッキング操作を避ける
 
 ```python
 # 非同期操作を使用
@@ -3947,7 +3947,7 @@ async def process_message(self, event: Event):
 
 # ❌ ブロッキング操作
 async def process_message(self, event: Event):
-    # 同期操作、イベントループをブロックする
+    # 同期操作のためイベントループをブロックする
     result = self._sync_process(event)
 ```
 
@@ -3976,22 +3976,22 @@ class MyModule(BaseModule):
 
 # ❌ 機密データのハードコード
 class MyModule(BaseModule):
-    API_KEY = "sk-1234567890"  # こんなことをしてはいけない！
+    API_KEY = "sk-1234567890"  # このようにしないでください！
 ```
 
-### 2. 入力検証
+### 2. 入力バリデーション
 
 ```python
-# ユーザー入力を検証
+# ユーザー入力の検証
 async def process_command(self, event: Event):
     user_input = event.get_text()
     
-    # 入力長を検証
+    # 入力長の検証
     if len(user_input) > 1000:
-        await event.reply("入力が長すぎます。入力し直してください")
+        await event.reply("入力が長すぎます。再度入力してください")
         return
     
-    # 入力形式を検証
+    # 入力形式の検証
     if not re.match(r'^[a-zA-Z0-9]+$', user_input):
         await event.reply("入力形式が正しくありません")
         return
@@ -4012,7 +4012,7 @@ class TestMyModule:
         assert config.timeout == 30
 ```
 
-### 2. 結合テスト
+### 2. 統合テスト
 
 ```python
 @pytest.mark.asyncio
@@ -4026,6 +4026,30 @@ async def test_command_handling():
     await module.handle_command(event)
 ```
 
+## HTTP ルートのライフサイクル
+
+モジュールが `router` 経由で登録した HTTP/WebSocket ルートのライフサイクルは、フレームワークが**帰属原則**に基づいて自動管理します：
+
+- 登録時の名前空間がそのまま帰属識別子になります。**reload / unload 時にフレームワークがその帰属下のすべてのルートと接続リソースを自動クリーンアップする**ため、手動での登録解除は不要です
+- したがって、**`on_load` 内では無条件にルートを再登録しなければなりません**。インスタンスレベルのブールフラグによる「1 回だけ登録する」最適化はしないでください：設定のホットリロードは stop/start をトリガーして**同一インスタンスを再利用**するため、フラグが残留すると、ルートがクリーンアップされた後に**永久に失われ**、エンドポイントが 404 を返し、プロセスを再起動するまで回復しなくなります
+
+```python
+class MyModule(BaseModule):
+    async def on_load(self):
+        # ロードのたびに無条件で再登録
+        router.register_http_route("MyModule", "/api/panel", self._panel, methods=["GET"])
+```
+
+ルートを事前に手動でアンロードする必要がある場合（特定のエントリを動的にオフラインにするなど）は、能動的に登録解除できます：
+
+```python
+from ErisPulse.Core import router
+
+router.unregister_http_route("MyModule", "/api/panel")
+```
+
+- フロントエンド/呼び出し側は、ホットリロードのウィンドウ期間中にルートの 404 を受信する可能性がありますが、これは一時的な現象です。ブラウザ向けのインタラクティブページでは、404 に対して有限回の自動リトライを行うことを推奨します
+
 ## デプロイ
 
 ### 1. バージョン管理
@@ -4036,15 +4060,15 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-セマンティックバージョニングに従う：
+セマンティックバージョニングに従います：
 - MAJOR.MINOR.PATCH
 - メジャーバージョン：互換性のない API 変更
-- マイナーバージョン：後方互換のある機能追加
-- パッチバージョン：後方互換のある問題修正
+- マイナーバージョン：後方互換性のある機能追加
+- パッチバージョン：後方互換性のある問題修正
 
 ### 2. README ヘッダー
 
-`epsdk create` が生成する README には ErisPulse ヘッダー識別（ロゴ + バッジ行）が組み込まれています。推奨される2つのパターン：
+`epsdk create` で生成される README には、ErisPulse のヘッダー識別（ロゴ + バッジ行）が組み込まれています。推奨される2つのパターン：
 
 **パターン A — ErisPulse ロゴのみ（デフォルト）：**
 
@@ -4060,7 +4084,7 @@ version = "1.0.0"
 <p>
   <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
   <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=blue" alt="Python"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/ライセンス-MIT-blue?style=for-the-badge" alt="License"></a>
   <a href="https://github.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/Powered_by-ErisPulse-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="ErisPulse"></a>
 </p>
 
@@ -4077,11 +4101,11 @@ version = "1.0.0"
 <img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
 
 # MyModule
-（バッジ行は上に同じ）
+（バッジ行は上記と同じ）
 </div>
 ```
 
-必要に応じて GitHub Stars、Downloads などのバッジを追加できます。ロゴをプロジェクトのローカル（`.github/assets/ErisPulseLogo.png`）にダウンロードして、相対パス参照に変更することもできます。
+必要に応じて GitHub Stars、Downloads などのバッジを追加できます。ロゴはプロジェクトのローカルにダウンロードし（`.github/assets/ErisPulseLogo.png`）、相対パスで参照するように変更することもできます。
 
 
 
@@ -13279,204 +13303,206 @@ enabled = true
 
 # ErisPulse PlatformFeatures ドキュメント
 
-> 基準プロトコル: [OneBot12](https://12.onebot.dev/)  
-> 本文書は**プラットフォーム固有の機能ガイド**であり、以下を含む：
-> - 各アダプタがサポートするSendメソッドの連鎖呼び出し例
-> - プラットフォーム固有のイベント/メッセージフォーマットの説明
+> 基準プロトコル：[OneBot12](https://12.onebot.dev/) 
 > 
-> 一般的な使用方法は以下のドキュメントを参照してください：
+> 本ドキュメントは**プラットフォーム固有機能ガイド**であり、以下の内容を含みます：
+> - 各アダプターが対応するSendメソッドの連鎖呼び出し（チェーン呼び出し）例
+> - プラットフォーム固有のイベント/メッセージ形式の説明
+> 
+> 一般的な使用方法については以下を参照してください：
 > - [基本概念](../getting-started/basic-concepts.md)
-> - [イベント変換基準](../standards/event-conversion.md)  
-> - [APIレスポンス規格](../standards/api-response.md)
+> - [イベント変換標準](../standards/event-conversion.md)  
+> - [APIレスポンス仕様](../standards/api-response.md)
 
 ---
 
-## プラットフォーム固有の機能
+## プラットフォーム固有機能
 
-このセクションは、各アダプタの開発者が維持・更新するものであり、OneBot12標準との差異や拡張機能を説明するためのものです。以下の各プラットフォームの詳細ドキュメントを参照してください：
+このセクションは各アダプター開発者によって保守されており、そのアダプターとOneBot12標準との差分および拡張機能について説明するものです。以下の各プラットフォームの詳細ドキュメントを参照してください：
 
-- [維持説明](maintain-notes.md)
+- [メンテナンスガイド](maintain-notes.md)
 
-- [雲湖プラットフォームの特徴](yunhu.md)
-- [雲湖ユーザープラットフォームの特徴](yunhu_user.md)
-- [Telegramプラットフォームの特徴](telegram.md)
-- [OneBot11プラットフォームの特徴](onebot11.md)
-- [OneBot12プラットフォームの特徴](onebot12.md)
-- [SnowLumaプラットフォームの特徴](snowluma.md)
-- [メールプラットフォームの特徴](email.md)
-- [Kook(開黒啦)プラットフォームの特徴](kook.md)
-- [Matrixプラットフォームの特徴](matrix.md)
-- [QQ公式ロボットプラットフォームの特徴](qqbot.md)
-- [花楓コーヒーハウス](ideaura.md)
+- [Yunhuプラットフォーム特性](yunhu.md)
+- [Yunhuユーザープラットフォーム特性](yunhu_user.md)
+- [Telegramプラットフォーム特性](telegram.md)
+- [OneBot11プラットフォーム特性](onebot11.md)
+- [OneBot12プラットフォーム特性](onebot12.md)
+- [SnowLumaプラットフォーム特性](snowluma.md)
+- [メールプラットフォーム特性](email.md)
+- [Kookプラットフォーム特性](kook.md)
+- [Matrixプラットフォーム特性](matrix.md)
+- [WeCom（企業向けWeChat）プラットフォーム特性](wecom.md)
+- [Bilibili プラットフォーム特性](bilibili.md)
+- [Minecraft プラットフォーム特性](minecraft.md)
+- [QQ公式ボットプラットフォーム特性](qqbot.md)
+- [花楓珈琲館](ideaura.md)
 - [Discord](discord.md)
 - [Webhookプロトコルブリッジ](webhook.md)
 - [WeChat公式アカウント](wechatmp.md)
 
-> また、`sandbox`アダプタもありますが、このアダプタにはプラットフォーム固有のドキュメントを維持する必要はありません。
+> また `sandbox` アダプターもありますが、このアダプターにはプラットフォーム特性ドキュメントの保守は不要です
 
 ---
 
-## 一般的なインターフェース
+## 共通インターフェース
 
-### Send 鏈式呼び出し
+### Send 連鎖呼び出し
+すべてのアダプターが以下の標準的な呼び出し方法に対応しています：
 
-すべてのアダプタは以下の標準的な呼び出し方法をサポートしています：
+> **注意：** ドキュメント内の `{AdapterName}` は実際のアダプター名（例： `yunhu`、`telegram`、`onebot11`、`email` など）に置き換えてください。
 
-> **注意:** ドキュメント内の `{AdapterName}` は実際のアダプタ名（例: `yunhu`、`telegram`、`onebot11`、`email` など）に置き換える必要があります。
-
-1. タイプとIDを指定: `To(type,id).Func()`
+1. タイプとIDを指定： `To(type,id).Func()`
    ```python
-   # アダプタインスタンスを取得
+   # アダプターインスタンスの取得
    my_adapter = adapter.get("{AdapterName}")
    
-   # メッセージを送信
+   # メッセージの送信
    await my_adapter.Send.To("user", "U1001").Text("Hello")
    
-   # 例:
+   # 例：
    yunhu = adapter.get("yunhu")
    await yunhu.Send.To("user", "U1001").Text("Hello")
    ```
-2. IDのみを指定: `To(id).Func()`
+2. IDのみ指定： `To(id).Func()`
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.To("U1001").Text("Hello")
    
-   # 例:
+   # 例：
    telegram = adapter.get("telegram")
    await telegram.Send.To("U1001").Text("Hello")
    ```
-3. 送信アカウントを指定: `Using(account_id)`
+3. 送信アカウントを指定： `Using(account_id)`
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.Using("bot1").To("U1001").Text("Hello")
    
-   # 例:
+   # 例：
    onebot11 = adapter.get("onebot11")
    await onebot11.Send.Using("bot1").To("U1001").Text("Hello")
    ```
-4. 直接呼び出し: `Func()`
+4. 直接呼び出し： `Func()`
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.Text("Broadcast message")
    
-   # 例:
+   # 例：
    email = adapter.get("email")
    await email.Send.Text("Broadcast message")
    ```
 
 #### 非同期送信と結果処理
 
-Send DSLのメソッドは`asyncio.Task`オブジェクトを返すため、結果を即座に待つか、後で待つかを選択できます：
+Send DSLのメソッドは `asyncio.Task` オブジェクトを返します。つまり、結果をすぐに待つかどうかを選択できます：
 
 ```python
-# アダプタインスタンスを取得
+# アダプターインスタンスの取得
 my_adapter = adapter.get("{AdapterName}")
 
-# 結果を待たずにバックグラウンドでメッセージを送信
+# 結果を待たずに、メッセージをバックグラウンドで送信
 task = my_adapter.Send.To("user", "123").Text("Hello")
 
-# 送信結果が必要な場合は、後で待つ
+# 送信結果を取得する必要がある場合は、後から待機できます
 result = await task
 ```
 
-#### 送信ルールデコレータ
+#### 送信ルールデコレーター
 
-実際の開発では、送信が成功した後に後続の処理を実行したい、失敗時に自動でリトライしたい、タイムアウトでキャンセルしたい、送信の進行状況を監視したいなどの要望があります。Send DSLには、これらの要望に応えるための送信ルールデコレータが組み込まれており、送信メソッドの前にチェーンでルールを追加できます：
+実際の開発では、送信成功後に後続のロジックを実行する、失敗時に自動リトライ、タイムアウト取消、送信進捗の監視などが必要になることがよくあります。Send DSLには送信ルールデコレーターが組み込まれており、連鎖メソッドを通じてルールを追加できます：
 
 | メソッド | 説明 |
 |--------|------|
-| `.Hook(callback)` | 送信が成功した後に実行されるコールバック（複数回呼び出せる） |
-| `.Retry(times=1)` | 失敗時にリトライをN回（初回含む、合計N+1回） |
-| `.Timeout(seconds)` | 単回送信のタイムアウト、タイムアウトでキャンセル（Retryと組み合わせ可） |
-| `.Defer(seconds)` | 送信を遅延（プロセス内での単純な遅延、永続化はしない） |
-| `.OnProgress(callback)` | 各段階の進行状況をコールバック、SendContextを渡す |
-| `.OnError(callback)` | 最終的に失敗した際のエラーコールバック（1回のみ発動） |
+| `.Hook(callback)` | 送信成功後に実行されるコールバック（複数回呼び出し可能） |
+| `.Retry(times=1)` | 失敗時に自動でN回リトライ（初回を含め計N+1回） |
+| `.Timeout(seconds)` | 単回送信のタイムアウト、超過で取消（Retryと併用可） |
+| `.Defer(seconds)` | 送信を遅延（プロセス内タイマー、永続化なし） |
+| `.OnProgress(callback)` | 各段階の進捗コールバック、SendContextを渡す |
+| `.OnError(callback)` | 最終失敗時のエラーコールバック（一度のみ発火） |
 
 ```python
 yunhu = adapter.get("yunhu")
 
-# 送信成功後にポイントを減らす
+# 送信成功後にポイントを減算
 await (yunhu.Send.To("user", "123")
        .Hook(lambda r: deduct_points("123"))
-       .Text("消費成功"))
+       .Text("消費が完了しました"))
 
-# 失敗リトライ + タイムアウトキャンセル + 進行状況の監視
+# 失敗時リトライ + タイムアウト取消 + 進捗監視
 def on_progress(ctx):
     print(f"段階: {ctx.stage}, 試行: {ctx.attempt + 1}/{ctx.max_attempts}")
 
 task = (yunhu.Send.To("user", "123")
         .Retry(3)              # 最大3回リトライ
-        .Timeout(10)           # 10秒でタイムアウト
+        .Timeout(10)           # 毎回10秒でタイムアウト
         .OnProgress(on_progress)
         .OnError(lambda ctx: notify_admin(ctx.error))
-        .Text("重要通知"))
+        .Text("重要なお知らせ"))
 ```
 
-ルールメソッドは`self`を返すため、送信メソッド（Text/Imageなど）の前に呼び出す必要があります。`SendContext`には`stage`（pending/sending/retrying/success/failed/timeout）、`attempt`、`elapsed`、`error`、`result`などのフィールドが含まれ、モニタリングに便利です。
+ルールメソッドは `self` を返すため、送信メソッド（Text/Imageなど）の前に呼び出す必要があります。`SendContext` には `stage`（pending/sending/retrying/success/failed/timeout）、`attempt`、`elapsed`、`error`、`result` などのフィールドが含まれ、監視に便利です。
 
-#### バッチ構築モード（Build）
+#### 一括構築モード（Build）
 
-1つのチェーンで複数の送信メソッドを構築し、最後にまとめて実行します。これは「一気に複数のメッセージを送信する」ような場面に適しています：
+1つのチェーン内で複数の送信メソッドを構築し、最後に一括実行します。「一度に複数のメッセージを送る」シナリオに適しています：
 
 ```python
 yunhu = adapter.get("yunhu")
 
-# 複数のメッセージを構築し、まとめて送信
+# 複数のメッセージを構築し、一括送信
 results = await (yunhu.Send.To("user", "123")
-                .Build()                     # 構築モードに入る
-                .Text("通知一")
+                .Build()                     # ビルドモードに入る
+                .Text("通知1")
                 .Image("pic.jpg")
-                .Text("通知二")
-                .send_all())                 # まとめて実行
-# results = [Textの結果, Imageの結果, Textの結果]
+                .Text("通知2")
+                .send_all())                 # 一括実行
+# results = [Text結果, Image結果, Text結果]
 ```
 
-`.send_all()`はデフォルトで**並列**実行（並行送信、効率的）です。順序を保証したい場合は`.Sequential()`で**直列**実行します：
+`.send_all()` はデフォルトで**並列**実行されます（同時送信で効率が高い）。メッセージの到着順序を保証する必要がある場合は、`.Sequential()` を呼び出して逐次実行します：
 
 ```python
-# 直列実行（順序を保証）+ 失敗リトライ
+# 逐次実行（順序保証）+ 失敗時リトライ
 await (yunhu.Send.To("group", "456")
        .Build()
-       .Sequential()                # 送信順序を保証
+       .Sequential()                # 順番に送信
        .Retry(2)                     # 失敗した項目はそれぞれリトライ
-       .Text("第一条").Text("第二条")
+       .Text("1つ目のメッセージ").Text("2つ目のメッセージ")
        .send_all())
 ```
 
-バッチ実行では**失敗継続**戦略を採用しています：1つのメッセージが失敗しても他のメッセージは中断されず、失敗したメッセージは自動でリトライされます。バッチ実行では、全メッセージが成功した後に発動する`Hook`、失敗した場合に発動する`OnError`、進行状況を監視する`OnProgress`もサポートしています。
+一括実行は**失敗継続**ポリシーを採用しています：ある項目が失敗しても他の項目は中断されず、失敗した項目は自動的にリトライされます。一括実行でもバッチ全体の `Hook`（全成功後に発火）、`OnError`（失敗があると発火）、`OnProgress`（進捗コールバック）に対応しています。
 
-> さらに詳細なルールとバッチ構築の説明は [SendDSL 詳解](../developer-guide/adapters/send-dsl.md) を参照してください。
+> より詳細なルールと一括構築の説明については、[SendDSL 詳解](../developer-guide/adapters/send-dsl.md) を参照してください。
 
-### イベント監視
+### イベントリスニング
+イベントのリスニング方法は3種類あります：
 
-3種類のイベント監視方法があります：
-
-1. プラットフォーム固有のイベント監視：
+1. プラットフォームネイティブイベントのリスニング：
    ```python
    from ErisPulse.Core import adapter, logger
    
    @adapter.on("event_type", raw=True, platform="{AdapterName}")
    async def handler(data):
-       logger.info(f"受信した{AdapterName}プラットフォームのイベント: {data}")
+       logger.info(f"{AdapterName}のネイティブイベントを受信: {data}")
    ```
 
-2. OneBot12標準イベント監視：
+2. OneBot12標準イベントのリスニング：
    ```python
    from ErisPulse.Core import adapter, logger
 
-   # OneBot12標準イベントを監視
+   # OneBot12標準イベントをリッスン
    @adapter.on("event_type")
    async def handler(data):
-       logger.info(f"受信した標準イベント: {data}")
+       logger.info(f"標準イベントを受信: {data}")
 
-   # 特定プラットフォームの標準イベントを監視
+   # 特定プラットフォームの標準イベントをリッスン
    @adapter.on("event_type", platform="{AdapterName}")
    async def handler(data):
-       logger.info(f"受信した{AdapterName}プラットフォームの標準イベント: {data}")
+       logger.info(f"{AdapterName}の標準イベントを受信: {data}")
    ```
 
-3. Eventモジュールによるイベント監視：
-    `Event`のイベントは`adapter.on()`関数に基づいているため、`Event`が提供するイベントフォーマットはOneBot12標準イベントです。
+3. Eventモジュールによるリスニング：
+    `Event`のイベントは `adapter.on()` 関数をベースとしているため、`Event`が提供するイベント形式はOneBot12標準イベントです
 
     ```python
     from ErisPulse.Core.Event import message, notice, request, command
@@ -13487,26 +13513,26 @@ await (yunhu.Send.To("group", "456")
     command("hello", help="挨拶メッセージを送信", usage="hello")(command_handler)
 
     async def message_handler(event):
-        logger.info(f"受信したメッセージ: {event}")
+        logger.info(f"メッセージを受信: {event}")
     async def notice_handler(event):
-        logger.info(f"受信した通知: {event})
+        logger.info(f"通知を受信: {event}")
     async def request_handler(event):
-        logger.info(f"受信したリクエスト: {event})
+        logger.info(f"リクエストを受信: {event}")
     async def command_handler(event):
-        logger.info(f"受信したコマンド: {event})
+        logger.info(f"コマンドを受信: {event}")
     ```
 
-この中で、最も推奨されるのは`Event`モジュールによるイベント処理です。`Event`モジュールは豊富なイベントタイプとイベント処理メソッドを提供しているためです。
+中でも最も推奨されるのは `Event` モジュールを使用したイベント処理です。`Event` モジュールは豊富なイベントタイプと豊富なイベント処理メソッドを提供しているためです。
 
 ---
 
-## 標準フォーマット
-参考のため、ここにイベントフォーマットの簡単な例を示します。詳細情報が必要な場合は、上記のリンクを参照してください。
+## 標準形式
+参考用として、ここでは簡単なイベント形式を示します。詳細情報が必要な場合は、上記のリンクを参照してください。
 
-> **注意:** 以下のフォーマットは基本的なOneBot12標準フォーマットであり、各アダプタはこの上に拡張フィールドを追加する可能性があります。具体的な内容は、各アダプタの特定機能の説明を参照してください。
+> **注意：** 以下の形式は基本的なOneBot12標準形式であり、各アダプターはこのベースに拡張フィールドを追加している場合があります。詳細は各アダプターの固有機能説明を参照してください。
 
-### 標準イベントフォーマット
-すべてのアダプタが実装するイベント変換フォーマット：
+### 標準イベント形式
+すべてのアダプターが実装しなければならないイベント変換形式：
 ```json
 {
   "id": "event_123",
@@ -13517,16 +13543,16 @@ await (yunhu.Send.To("group", "456")
   "self": {"platform": "example_platform", "user_id": "bot_123"},
   "message_id": "msg_abc",
   "message": [
-    {"type": "text", "data": {"text": "你好"}}
+    {"type": "text", "data": {"text": "こんにちは"}}
   ],
-  "alt_message": "你好",
+  "alt_message": "こんにちは",
   "user_id": "user_456",
   "user_nickname": "ExampleUser",
   "group_id": "group_789"
 }
 ```
 
-### 標準レスポンスフォーマット
+### 標準レスポンス形式
 #### メッセージ送信成功
 ```json
 {
@@ -13558,13 +13584,13 @@ await (yunhu.Send.To("group", "456")
 
 ---
 
-## 貢献の参加
+## コントリビューション
 
-開発者の方々からのさらなる貢献を歓迎します！以下の手順に従って、貢献を提出してください：
-1. [ErisPulse](https://github.com/ErisPulse/ErisPulse) リポジトリをForkします。
-2. `docs/platform-features/` ディレクトリにMarkdownファイルを作成し、`<プラットフォーム名>.md`という形式で命名します。
-3. 本`README.md`ファイルに、ご自身が貢献したアダプタへのリンクと、関連する公式ドキュメントを追加します。
-4. Pull Requestを提出します。
+より多くの開発者にアダプタードキュメントの執筆と保守への参加をご案内しています！以下の手順に従ってコントリビューションを提出してください：
+1. [ErisPuls](https://github.com/ErisPulse/ErisPulse) リポジトリをForkします。
+2. `docs/platform-features/` ディレクトリにMarkdownファイルを作成し、`<プラットフォーム名>.md` の形式で命名します。
+3. この `README.md` ファイルに、ご自身が貢献したアダプターへのリンクおよび関連公式ドキュメントを追加します。
+4. Pull Request を提出します。
 
 ご支援ありがとうございます！
 

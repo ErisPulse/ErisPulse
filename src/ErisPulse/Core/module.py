@@ -703,6 +703,7 @@ class ModuleManager(ManagerBase):
             data={
                 "module_name": module_name,
                 "success": success,
+                "reason": reason,
             },
         )
         return success
@@ -955,7 +956,9 @@ class ModuleManager(ManagerBase):
         卸载单个模块（``sleep=True`` 时为归眠：释放资源但保留懒加载代理）
 
         :param module_name: 模块名称
-        :param reason: 卸载来意（透传给 on_before_unload 钩子与 before_unload 事件）
+        :param reason: 卸载来意（透传给 on_before_unload / on_unload 钩子与
+            before_unload 事件；``"reload"`` 时模块可推迟关闭外部资源，
+            回滚重放 on_load 后仍可继续服务）
         :param sleep: 归眠模式——保留懒加载代理与注册存根，模块回到"已注册未加载"状态
         :return: 是否卸载成功
         """
@@ -982,7 +985,10 @@ class ModuleManager(ManagerBase):
                 try:
                     # 优雅收尾超时保护：on_unload 卡死不再阻塞卸载/级联/重载/uninit
                     await asyncio.wait_for(
-                        call_with_depends(instance.on_unload, {"module_name": module_name}),
+                        call_with_depends(
+                            instance.on_unload,
+                            {"module_name": module_name, "reason": reason},
+                        ),
                         timeout=unload_timeout,
                     )
                 except asyncio.TimeoutError:
@@ -1035,6 +1041,20 @@ class ModuleManager(ManagerBase):
                         "core.cleanup.executed",
                         owner=module_name,
                         count=cleaned_hooks,
+                    )
+                )
+
+            # 释放合作式登记资源（ownership.track）：任务工厂拦截够不着的
+            # Loop-bound 资源（第三方连接池 / client）由模块显式登记，此处统一释放
+            from ..runtime.resource_track import release_owner_tracked
+
+            released_resources = await release_owner_tracked(module_name)
+            if released_resources > 0:
+                logger.debug(
+                    i18n.t(
+                        "core.module.unload_resources_released",
+                        name=module_name,
+                        count=released_resources,
                     )
                 )
 
@@ -1188,7 +1208,10 @@ class ModuleManager(ManagerBase):
         if instance is not None and hasattr(instance, "on_unload"):
             try:
                 await asyncio.wait_for(
-                    call_with_depends(instance.on_unload, {"module_name": module_name}),
+                    call_with_depends(
+                        instance.on_unload,
+                        {"module_name": module_name, "reason": "load-failed"},
+                    ),
                     timeout=self._shutdown_timeout(),
                 )
             except asyncio.TimeoutError:
@@ -1729,6 +1752,9 @@ class ModuleManager(ManagerBase):
                             count=cleaned_hooks,
                         )
                     )
+                from ..runtime.resource_track import release_owner_tracked
+
+                await release_owner_tracked(module_name)
 
             if inspect.iscoroutinefunction(instance.on_unload):
 
@@ -1739,7 +1765,10 @@ class ModuleManager(ManagerBase):
                     unload_timeout = self._shutdown_timeout()
                     try:
                         await asyncio.wait_for(
-                            call_with_depends(instance.on_unload, {"module_name": module_name}),
+                            call_with_depends(
+                                instance.on_unload,
+                                {"module_name": module_name, "reason": "disable"},
+                            ),
                             timeout=unload_timeout,
                         )
                     except asyncio.TimeoutError:
@@ -1764,7 +1793,10 @@ class ModuleManager(ManagerBase):
             else:
                 # 同步 on_unload 内联执行（保持在路由/事件清理之前完成）
                 try:
-                    call_with_depends_sync(instance.on_unload, {"module_name": module_name})
+                    call_with_depends_sync(
+                        instance.on_unload,
+                        {"module_name": module_name, "reason": "disable"},
+                    )
                 except TypeError as e:
                     # 同步上下文不支持异步依赖
                     logger.error(str(e))

@@ -285,7 +285,7 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-> 完整的网络客户端 API 请参考 [网络客户端](../advanced/http-client.md)。
+> 完整的网络客户端 API 请参考 [网络客户端](../advanced/client.md)。
 
 ## SendDSL 消息发送
 

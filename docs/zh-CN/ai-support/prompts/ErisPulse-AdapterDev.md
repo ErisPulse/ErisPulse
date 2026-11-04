@@ -5210,6 +5210,39 @@ sdk.router.get_module_urls("myplatform")    # 完整连接 URL
 
 > **注意**：路由注册时的 `module_name` 必须与适配器在 ErisPulse 中注册的 `platform` 名称完全一致，否则 `get_connection_info()` 将无法关联路由。多账户适配器应为每个账户注册子路径（如 `/account1/webhook`、`/account2/webhook`），而非使用不同的 `module_name`。
 
+### 5. HTTP 路由生命周期
+
+适配器/模块通过 `router` 注册的 HTTP/WebSocket 路由，其生命周期由框架按**归属原则**自动管理：
+
+- 注册时的 `module_name`（命名空间）即归属标识；**reload / stop / unload 时框架会自动清理该归属下的全部路由与连接资源**，无需手动注销
+- 因此 **`start()`（模块为 `on_load`）中必须无条件重新注册路由**。不要用实例级布尔标志做"只注册一次"的优化：配置热重载（如账户字段变更即时保存）会触发 stop/start 且**复用同一实例**，标志残留会导致路由被清理后**永久丢失**，表现为接口 404 且重启进程才恢复
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        # 每次启动无条件重注册（reload 后路由已随上次 stop 自动清理）
+        router.register_http_route(self.platform, "/qr/start", self._qr_start, methods=["POST"])
+        router.register_http_route(self.platform, "/qr/poll", self._qr_poll, methods=["POST"])
+```
+
+模块侧同理（`on_load` 中注册）：
+
+```python
+class MyModule(BaseModule):
+    async def on_load(self):
+        router.register_http_route("MyModule", "/api/panel", self._panel, methods=["GET"])
+```
+
+需要**提前手动卸载**路由（如动态下线某个入口）时，可主动注销：
+
+```python
+from ErisPulse.Core import router
+
+router.unregister_http_route(self.platform, "/qr/start")
+```
+
+- 前端/调用方在热重载窗口可能收到路由 404，属瞬时现象；面向浏览器的交互页建议对 404 做有限次自动重试
+
 ## 事件转换
 
 ### 1. 严格遵循 OneBot12 标准
@@ -15659,6 +15692,9 @@ enabled = true
 - [邮件平台特性](email.md)
 - [Kook(开黑啦)平台特性](kook.md)
 - [Matrix平台特性](matrix.md)
+- [企业微信平台特性](wecom.md)
+- [Bilibili 平台特性](bilibili.md)
+- [Minecraft 平台特性](minecraft.md)
 - [QQ官方机器人平台特性](qqbot.md)
 - [花枫咖啡馆](ideaura.md)
 - [Discord](discord.md)

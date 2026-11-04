@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1869,
+  "total_keywords": 1901,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -38,6 +38,20 @@
         "title": "1. Basic Information Section"
       }
     ],
+    "1. Batch Registration with a Mixin Class (Recommended)": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3706,
+        "level": 3,
+        "title": "1. Batch Registration with a Mixin Class (Recommended)"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 601,
+        "level": 3,
+        "title": "1. Batch Registration with a Mixin Class (Recommended)"
+      }
+    ],
     "1. CLI run command (development/simple deployment, recommended)": [
       {
         "document": "advanced/startup.md",
@@ -49,7 +63,7 @@
     "1. Categorized Exception Handling": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3561,
+        "line": 3594,
         "level": 3,
         "title": "1. Categorized Exception Handling"
       },
@@ -61,13 +75,13 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 456,
+        "line": 489,
         "level": 3,
         "title": "1. Categorized Exception Handling"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 282,
+        "line": 281,
         "level": 3,
         "title": "1. Categorized Exception Handling"
       }
@@ -147,13 +161,13 @@
     "1. Declarative Configuration (Recommended)": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3499,
+        "line": 3532,
         "level": 3,
         "title": "1. Declarative Configuration (Recommended)"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 394,
+        "line": 427,
         "level": 3,
         "title": "1. Declarative Configuration (Recommended)"
       }
@@ -238,30 +252,30 @@
         "title": "1. I Want to Use a Bot"
       }
     ],
-    "1. Implement Connection Retry": [
+    "1. Implementing Connection Retry": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
         "line": 3214,
         "level": 3,
-        "title": "1. Implement Connection Retry"
+        "title": "1. Implementing Connection Retry"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 109,
         "level": 3,
-        "title": "1. Implement Connection Retry"
+        "title": "1. Implementing Connection Retry"
       }
     ],
     "1. Maintain Platform Feature Documentation": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3725,
+        "line": 3758,
         "level": 3,
         "title": "1. Maintain Platform Feature Documentation"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 620,
+        "line": 653,
         "level": 3,
         "title": "1. Maintain Platform Feature Documentation"
       }
@@ -283,13 +297,13 @@
     "1. Must Return a Task Object": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3387,
+        "line": 3420,
         "level": 3,
         "title": "1. Must Return a Task Object"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 282,
+        "line": 315,
         "level": 3,
         "title": "1. Must Return a Task Object"
       }
@@ -306,20 +320,6 @@
         "line": 8,
         "level": 2,
         "title": "1. Overview"
-      }
-    ],
-    "1. Reasonable Use of Log Levels": [
-      {
-        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1583,
-        "level": 3,
-        "title": "1. Reasonable Use of Log Levels"
-      },
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 356,
-        "level": 3,
-        "title": "1. Reasonable Use of Log Levels"
       }
     ],
     "1. SDK Object": [
@@ -353,7 +353,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 427,
+        "line": 426,
         "level": 3,
         "title": "1. Sensitive Data Protection"
       }
@@ -367,7 +367,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 11,
+        "line": 10,
         "level": 3,
         "title": "1. Single Responsibility Principle"
       }
@@ -417,29 +417,29 @@
     "1. Standardized Response Format": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3448,
+        "line": 3481,
         "level": 3,
         "title": "1. Standardized Response Format"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 343,
+        "line": 376,
         "level": 3,
         "title": "1. Standardized Response Format"
       }
     ],
-    "1. Strictly Follow OneBot12 Standard": [
+    "1. Strictly Follow the OneBot12 Standard": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3331,
+        "line": 3364,
         "level": 3,
-        "title": "1. Strictly Follow OneBot12 Standard"
+        "title": "1. Strictly Follow the OneBot12 Standard"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 226,
+        "line": 259,
         "level": 3,
-        "title": "1. Strictly Follow OneBot12 Standard"
+        "title": "1. Strictly Follow the OneBot12 Standard"
       }
     ],
     "1. The BaseAdapter Level (No Override Needed in Most Cases)": [
@@ -456,30 +456,44 @@
         "title": "1. The BaseAdapter Level (No Override Needed in Most Cases)"
       }
     ],
-    "1. Unit Tests": [
+    "1. Unit Testing": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3615,
+        "line": 3648,
         "level": 3,
-        "title": "1. Unit Tests"
+        "title": "1. Unit Testing"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
         "line": 1700,
         "level": 3,
-        "title": "1. Unit Tests"
+        "title": "1. Unit Testing"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 510,
+        "line": 543,
         "level": 3,
-        "title": "1. Unit Tests"
+        "title": "1. Unit Testing"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 473,
+        "line": 472,
         "level": 3,
-        "title": "1. Unit Tests"
+        "title": "1. Unit Testing"
+      }
+    ],
+    "1. Use Async Libraries": [
+      {
+        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
+        "line": 1328,
+        "level": 3,
+        "title": "1. Use Async Libraries"
+      },
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 100,
+        "level": 3,
+        "title": "1. Use Async Libraries"
       }
     ],
     "1. Use Caching": [
@@ -491,37 +505,23 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 390,
+        "line": 389,
         "level": 3,
         "title": "1. Use Caching"
       }
     ],
-    "1. Use Event Wrapper Class": [
+    "1. Use Log Levels Appropriately": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1404,
+        "line": 1583,
         "level": 3,
-        "title": "1. Use Event Wrapper Class"
+        "title": "1. Use Log Levels Appropriately"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 177,
+        "line": 355,
         "level": 3,
-        "title": "1. Use Event Wrapper Class"
-      }
-    ],
-    "1. Use Mixin Class to Register Multiple Methods (Recommended)": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3673,
-        "level": 3,
-        "title": "1. Use Mixin Class to Register Multiple Methods (Recommended)"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 568,
-        "level": 3,
-        "title": "1. Use Mixin Class to Register Multiple Methods (Recommended)"
+        "title": "1. Use Log Levels Appropriately"
       }
     ],
     "1. Use Transactions": [
@@ -533,35 +533,35 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 323,
+        "line": 322,
         "level": 3,
         "title": "1. Use Transactions"
       }
     ],
-    "1. Using Asynchronous Libraries": [
+    "1. Use the Event Wrapper Class": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1328,
+        "line": 1403,
         "level": 3,
-        "title": "1. Using Asynchronous Libraries"
+        "title": "1. Use the Event Wrapper Class"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 101,
+        "line": 175,
         "level": 3,
-        "title": "1. Using Asynchronous Libraries"
+        "title": "1. Use the Event Wrapper Class"
       }
     ],
     "1. Version Management": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1729,
+        "line": 1753,
         "level": 3,
         "title": "1. Version Management"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 502,
+        "line": 525,
         "level": 3,
         "title": "1. Version Management"
       }
@@ -776,18 +776,18 @@
         "title": "1xxxx Request Error"
       }
     ],
-    "2. Account Selection Mechanism": [
+    "2. Account Resolution Mechanism": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3539,
+        "line": 3572,
         "level": 3,
-        "title": "2. Account Selection Mechanism"
+        "title": "2. Account Resolution Mechanism"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 434,
+        "line": 467,
         "level": 3,
-        "title": "2. Account Selection Mechanism"
+        "title": "2. Account Resolution Mechanism"
       }
     ],
     "2. Avoid Blocking Operations": [
@@ -799,7 +799,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 411,
+        "line": 410,
         "level": 3,
         "title": "2. Avoid Blocking Operations"
       }
@@ -827,23 +827,23 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 339,
+        "line": 338,
         "level": 3,
         "title": "2. Batch Operations"
       }
     ],
-    "2. Chainable Modifier Methods Return `self`": [
+    "2. Chained Modifier Methods Return self": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3407,
+        "line": 3440,
         "level": 3,
-        "title": "2. Chainable Modifier Methods Return `self`"
+        "title": "2. Chained Modifier Methods Return self"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 302,
+        "line": 335,
         "level": 3,
-        "title": "2. Chainable Modifier Methods Return `self`"
+        "title": "2. Chained Modifier Methods Return self"
       }
     ],
     "2. Connection State Management": [
@@ -858,6 +858,20 @@
         "line": 138,
         "level": 3,
         "title": "2. Connection State Management"
+      }
+    ],
+    "2. Correct Async Operations": [
+      {
+        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
+        "line": 1364,
+        "level": 3,
+        "title": "2. Correct Async Operations"
+      },
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 136,
+        "level": 3,
+        "title": "2. Correct Async Operations"
       }
     ],
     "2. Create a GitHub Actions Workflow": [
@@ -882,18 +896,18 @@
         "title": "2. Create pyproject.toml"
       }
     ],
-    "2. Error Code Specification": [
+    "2. Error Code Conventions": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3475,
+        "line": 3508,
         "level": 3,
-        "title": "2. Error Code Specification"
+        "title": "2. Error Code Conventions"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 370,
+        "line": 403,
         "level": 3,
-        "title": "2. Error Code Specification"
+        "title": "2. Error Code Conventions"
       }
     ],
     "2. Event Object": [
@@ -947,35 +961,35 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 453,
+        "line": 452,
         "level": 3,
         "title": "2. Input Validation"
       }
     ],
-    "2. Integration Tests": [
+    "2. Integration Testing": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3639,
+        "line": 3672,
         "level": 3,
-        "title": "2. Integration Tests"
+        "title": "2. Integration Testing"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
         "line": 1713,
         "level": 3,
-        "title": "2. Integration Tests"
+        "title": "2. Integration Testing"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 534,
+        "line": 567,
         "level": 3,
-        "title": "2. Integration Tests"
+        "title": "2. Integration Testing"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 486,
+        "line": 485,
         "level": 3,
-        "title": "2. Integration Tests"
+        "title": "2. Integration Testing"
       }
     ],
     "2. Loading Layer: Loader": [
@@ -989,7 +1003,7 @@
     "2. Logging": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3594,
+        "line": 3627,
         "level": 3,
         "title": "2. Logging"
       },
@@ -1001,7 +1015,7 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 489,
+        "line": 522,
         "level": 3,
         "title": "2. Logging"
       },
@@ -1012,18 +1026,18 @@
         "title": "2. Logging"
       }
     ],
-    "2. Module Naming Convention": [
+    "2. Module Naming Conventions": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
         "line": 1258,
         "level": 3,
-        "title": "2. Module Naming Convention"
+        "title": "2. Module Naming Conventions"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 31,
+        "line": 30,
         "level": 3,
-        "title": "2. Module Naming Convention"
+        "title": "2. Module Naming Conventions"
       }
     ],
     "2. Module/Command Not Responding": [
@@ -1054,20 +1068,6 @@
         "title": "2. Parameter Specification Details"
       }
     ],
-    "2. Proper Async Operations": [
-      {
-        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1364,
-        "level": 3,
-        "title": "2. Proper Async Operations"
-      },
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 137,
-        "level": 3,
-        "title": "2. Proper Async Operations"
-      }
-    ],
     "2. Publish to PyPI": [
       {
         "document": "developer-guide/publishing.md",
@@ -1079,29 +1079,15 @@
     "2. README Header": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1743,
+        "line": 1767,
         "level": 3,
         "title": "2. README Header"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 516,
+        "line": 539,
         "level": 3,
         "title": "2. README Header"
-      }
-    ],
-    "2. Reasonable Use of Lazy Loading": [
-      {
-        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1420,
-        "level": 3,
-        "title": "2. Reasonable Use of Lazy Loading"
-      },
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 193,
-        "level": 3,
-        "title": "2. Reasonable Use of Lazy Loading"
       }
     ],
     "2. Receive Event (POST)": [
@@ -1110,6 +1096,20 @@
         "line": 73,
         "level": 3,
         "title": "2. Receive Event (POST)"
+      }
+    ],
+    "2. Registering a Single Method with a Decorator": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3732,
+        "level": 3,
+        "title": "2. Registering a Single Method with a Decorator"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 627,
+        "level": 3,
+        "title": "2. Registering a Single Method with a Decorator"
       }
     ],
     "2. Request Event Field Requirements": [
@@ -1212,20 +1212,6 @@
         "title": "2. Standardize API Interfaces"
       }
     ],
-    "2. Standardize Timestamps": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3353,
-        "level": 3,
-        "title": "2. Standardize Timestamps"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 248,
-        "level": 3,
-        "title": "2. Standardize Timestamps"
-      }
-    ],
     "2. Structured Logging": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
@@ -1235,7 +1221,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 378,
+        "line": 377,
         "level": 3,
         "title": "2. Structured Logging"
       }
@@ -1285,37 +1271,51 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 305,
+        "line": 304,
         "level": 3,
         "title": "2. Timeout Handling"
+      }
+    ],
+    "2. Timestamp Normalization": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3386,
+        "level": 3,
+        "title": "2. Timestamp Normalization"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 281,
+        "level": 3,
+        "title": "2. Timestamp Normalization"
       }
     ],
     "2. Update Version Information": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3746,
+        "line": 3779,
         "level": 3,
         "title": "2. Update Version Information"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 641,
+        "line": 674,
         "level": 3,
         "title": "2. Update Version Information"
       }
     ],
-    "2. Use Decorator to Register a Single Method": [
+    "2. Use Lazy Loading Appropriately": [
       {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3699,
+        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
+        "line": 1419,
         "level": 3,
-        "title": "2. Use Decorator to Register a Single Method"
+        "title": "2. Use Lazy Loading Appropriately"
       },
       {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 594,
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 191,
         "level": 3,
-        "title": "2. Use Decorator to Register a Single Method"
+        "title": "2. Use Lazy Loading Appropriately"
       }
     ],
     "2. systemd (Linux server)": [
@@ -1606,32 +1606,32 @@
         "title": "3. Adapters"
       }
     ],
-    "3. Clean Up on Adapter Shutdown": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3709,
-        "level": 3,
-        "title": "3. Clean Up on Adapter Shutdown"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 604,
-        "level": 3,
-        "title": "3. Clean Up on Adapter Shutdown"
-      }
-    ],
-    "3. Clear Configuration Management": [
+    "3. Clean Configuration Management": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
         "line": 1265,
         "level": 3,
-        "title": "3. Clear Configuration Management"
+        "title": "3. Clean Configuration Management"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 38,
+        "line": 37,
         "level": 3,
-        "title": "3. Clear Configuration Management"
+        "title": "3. Clean Configuration Management"
+      }
+    ],
+    "3. Cleanup on Adapter Shutdown": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3742,
+        "level": 3,
+        "title": "3. Cleanup on Adapter Shutdown"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 637,
+        "level": 3,
+        "title": "3. Cleanup on Adapter Shutdown"
       }
     ],
     "3. Conditional Handling": [
@@ -1693,7 +1693,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 228,
+        "line": 227,
         "level": 3,
         "title": "3. Event Handler Registration"
       }
@@ -1701,13 +1701,13 @@
     "3. Event ID Generation": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3369,
+        "line": 3402,
         "level": 3,
         "title": "3. Event ID Generation"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 264,
+        "line": 297,
         "level": 3,
         "title": "3. Event ID Generation"
       }
@@ -1748,18 +1748,18 @@
         "title": "3. Heartbeat Events"
       }
     ],
-    "3. Heartbeat Keepalive and Meta Heartbeat": [
+    "3. Heartbeat Keep-Alive and Meta Heartbeat": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
         "line": 3267,
         "level": 3,
-        "title": "3. Heartbeat Keepalive and Meta Heartbeat"
+        "title": "3. Heartbeat Keep-Alive and Meta Heartbeat"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 162,
         "level": 3,
-        "title": "3. Heartbeat Keepalive and Meta Heartbeat"
+        "title": "3. Heartbeat Keep-Alive and Meta Heartbeat"
       }
     ],
     "3. I Want to Deeply Understand the Internals": [
@@ -1873,13 +1873,13 @@
     "3. Resource Management": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1390,
+        "line": 1389,
         "level": 3,
         "title": "3. Resource Management"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 163,
+        "line": 161,
         "level": 3,
         "title": "3. Resource Management"
       }
@@ -1937,13 +1937,13 @@
     "3. Support Platform-Specific Methods": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3421,
+        "line": 3454,
         "level": 3,
         "title": "3. Support Platform-Specific Methods"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 316,
+        "line": 349,
         "level": 3,
         "title": "3. Support Platform-Specific Methods"
       }
@@ -2264,18 +2264,18 @@
         "title": "3xxxx Execution Error"
       }
     ],
-    "4. Automatic Discovery of `self` Field": [
+    "4. Automatic `self` Field Discovery": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
         "line": 3183,
         "level": 3,
-        "title": "4. Automatic Discovery of `self` Field"
+        "title": "4. Automatic `self` Field Discovery"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 78,
         "level": 3,
-        "title": "4. Automatic Discovery of `self` Field"
+        "title": "4. Automatic `self` Field Discovery"
       }
     ],
     "4. Combine Usage": [
@@ -2290,20 +2290,6 @@
         "line": 28,
         "level": 3,
         "title": "4. Combine Usage"
-      }
-    ],
-    "4. Connection Information Exposure": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3292,
-        "level": 3,
-        "title": "4. Connection Information Exposure"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 187,
-        "level": 3,
-        "title": "4. Connection Information Exposure"
       }
     ],
     "4. Custom Type Extension": [
@@ -2360,6 +2346,20 @@
         "line": 156,
         "level": 2,
         "title": "4. Event Convenience Methods"
+      }
+    ],
+    "4. Exposing Connection Info": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3292,
+        "level": 3,
+        "title": "4. Exposing Connection Info"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 187,
+        "level": 3,
+        "title": "4. Exposing Connection Info"
       }
     ],
     "4. Extended Field Description": [
@@ -2744,6 +2744,20 @@
         "line": 111,
         "level": 2,
         "title": "5. Extension Specifications"
+      }
+    ],
+    "5. HTTP Route Lifecycle": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3329,
+        "level": 3,
+        "title": "5. HTTP Route Lifecycle"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 224,
+        "level": 3,
+        "title": "5. HTTP Route Lifecycle"
       }
     ],
     "5. Handling Unknown Events": [
@@ -3965,7 +3979,7 @@
     "@Message Related": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 919,
+        "line": 920,
         "level": 4,
         "title": "@Message Related"
       },
@@ -3993,7 +4007,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2201,
+        "line": 2225,
         "level": 3,
         "title": "@conv.branch(name) Decorator"
       }
@@ -4116,18 +4130,6 @@
     ],
     "API Response": [
       {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3446,
-        "level": 2,
-        "title": "API Response"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 341,
-        "level": 2,
-        "title": "API Response"
-      },
-      {
         "document": "platform-guide/wechatmp.md",
         "line": 176,
         "level": 2,
@@ -4158,6 +4160,20 @@
         "line": 372,
         "level": 2,
         "title": "API Response Standard"
+      }
+    ],
+    "API Responses": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3479,
+        "level": 2,
+        "title": "API Responses"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 374,
+        "level": 2,
+        "title": "API Responses"
       }
     ],
     "API Standard": [
@@ -4209,7 +4225,7 @@
     "Accessing Core Modules": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 454,
+        "line": 455,
         "level": 3,
         "title": "Accessing Core Modules"
       },
@@ -4373,7 +4389,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2177,
+        "line": 2201,
         "level": 2,
         "title": "Active State Management"
       }
@@ -4527,7 +4543,7 @@
     "Adapter Send Method Query": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 473,
+        "line": 474,
         "level": 2,
         "title": "Adapter Send Method Query"
       },
@@ -4619,7 +4635,7 @@
     "Adding Type Annotations to the event Parameter": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 737,
+        "line": 738,
         "level": 2,
         "title": "Adding Type Annotations to the event Parameter"
       },
@@ -4697,7 +4713,7 @@
     "Advanced Interactive Sessions": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 822,
+        "line": 823,
         "level": 2,
         "title": "Advanced Interactive Sessions"
       },
@@ -4758,20 +4774,6 @@
         "title": "Advanced: Dictionary-style Dot-separated Path Fallback"
       }
     ],
-    "After Completing the Adapter": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3761,
-        "level": 3,
-        "title": "After Completing the Adapter"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 658,
-        "level": 3,
-        "title": "After Completing the Adapter"
-      }
-    ],
     "After Writing": [
       {
         "document": "ai-support/skills/erispulse-hot-reload/SKILL.md",
@@ -4781,7 +4783,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 296,
+        "line": 297,
         "level": 3,
         "title": "After Writing"
       },
@@ -4790,6 +4792,20 @@
         "line": 211,
         "level": 3,
         "title": "After Writing"
+      }
+    ],
+    "After Your Adapter Is Complete": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3794,
+        "level": 3,
+        "title": "After Your Adapter Is Complete"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 691,
+        "level": 3,
+        "title": "After Your Adapter Is Complete"
       }
     ],
     "Agent Skills": [
@@ -4809,7 +4825,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2458,
+        "line": 2482,
         "level": 3,
         "title": "All Parameters Overview"
       }
@@ -4858,6 +4874,40 @@
         "line": 453,
         "level": 4,
         "title": "Article Message Segment (yunhu_user_post)"
+      }
+    ],
+    "Async Programming": [
+      {
+        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
+        "line": 1326,
+        "level": 2,
+        "title": "Async Programming"
+      },
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 98,
+        "level": 2,
+        "title": "Async Programming"
+      }
+    ],
+    "Async Send and Result Handling": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3892,
+        "level": 4,
+        "title": "Async Send and Result Handling"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 929,
+        "level": 4,
+        "title": "Async Send and Result Handling"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 91,
+        "level": 4,
+        "title": "Async Send and Result Handling"
       }
     ],
     "Asynchronous Initialization": [
@@ -4924,40 +4974,6 @@
         "line": 425,
         "level": 2,
         "title": "Asynchronous Processing Mechanism"
-      }
-    ],
-    "Asynchronous Programming": [
-      {
-        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1326,
-        "level": 2,
-        "title": "Asynchronous Programming"
-      },
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 99,
-        "level": 2,
-        "title": "Asynchronous Programming"
-      }
-    ],
-    "Asynchronous Sending and Result Handling": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3854,
-        "level": 4,
-        "title": "Asynchronous Sending and Result Handling"
-      },
-      {
-        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 924,
-        "level": 4,
-        "title": "Asynchronous Sending and Result Handling"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 86,
-        "level": 4,
-        "title": "Asynchronous Sending and Result Handling"
       }
     ],
     "At Method": [
@@ -5051,7 +5067,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2292,
+        "line": 2316,
         "level": 3,
         "title": "Automatic Archiving"
       }
@@ -5079,7 +5095,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2290,
+        "line": 2314,
         "level": 2,
         "title": "Automatic Checkpoint and Restart Recovery"
       }
@@ -5137,7 +5153,7 @@
     "Automatic Migration (Phase Two)": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1898,
+        "line": 1922,
         "level": 2,
         "title": "Automatic Migration (Phase Two)"
       },
@@ -5157,7 +5173,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2313,
+        "line": 2337,
         "level": 3,
         "title": "Automatic Recovery on Restart"
       }
@@ -5193,13 +5209,13 @@
     "Back to the Learning Path": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1784,
+        "line": 1808,
         "level": 3,
         "title": "Back to the Learning Path"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 559,
+        "line": 582,
         "level": 3,
         "title": "Back to the Learning Path"
       }
@@ -5315,7 +5331,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 198,
+        "line": 199,
         "level": 3,
         "title": "BaseModule Base Class"
       },
@@ -5343,7 +5359,7 @@
     "Basic Checks": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 925,
+        "line": 926,
         "level": 4,
         "title": "Basic Checks"
       },
@@ -5371,7 +5387,7 @@
     "Basic Event Information": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 883,
+        "line": 884,
         "level": 4,
         "title": "Basic Event Information"
       },
@@ -5383,6 +5399,12 @@
       }
     ],
     "Basic Information": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      },
       {
         "document": "platform-guide/discord.md",
         "line": 13,
@@ -5409,6 +5431,12 @@
       },
       {
         "document": "platform-guide/matrix.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
         "line": 12,
         "level": 2,
         "title": "Basic Information"
@@ -5462,6 +5490,12 @@
         "title": "Basic Information"
       },
       {
+        "document": "platform-guide/wecom.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 12,
         "level": 2,
@@ -5480,6 +5514,14 @@
         "line": 129,
         "level": 3,
         "title": "Basic Message Types"
+      }
+    ],
+    "Basic Metadata (metadata top-level keys)": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 36,
+        "level": 2,
+        "title": "Basic Metadata (metadata top-level keys)"
       }
     ],
     "Basic Methods": [
@@ -5521,7 +5563,7 @@
     "Basic Reply": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 956,
+        "line": 957,
         "level": 4,
         "title": "Basic Reply"
       },
@@ -5562,6 +5604,18 @@
       {
         "document": "getting-started/basic-concepts.md",
         "line": 294,
+        "level": 3,
+        "title": "Basic Sending"
+      },
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 51,
+        "level": 3,
+        "title": "Basic Sending"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 58,
         "level": 3,
         "title": "Basic Sending"
       },
@@ -5663,7 +5717,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 621,
+        "line": 622,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -5725,13 +5779,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3904,
+        "line": 3942,
         "level": 4,
         "title": "Batch Build Mode (Build)"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 974,
+        "line": 979,
         "level": 4,
         "title": "Batch Build Mode (Build)"
       },
@@ -5743,7 +5797,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 136,
+        "line": 141,
         "level": 4,
         "title": "Batch Build Mode (Build)"
       }
@@ -5876,6 +5930,14 @@
         "title": "Best Practices"
       }
     ],
+    "Bilibili Platform Features Documentation": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 1,
+        "level": 1,
+        "title": "Bilibili Platform Features Documentation"
+      }
+    ],
     "Binding Inheritance (merge)": [
       {
         "document": "advanced/scope.md",
@@ -5931,7 +5993,7 @@
     "Bot Information": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 890,
+        "line": 891,
         "level": 4,
         "title": "Bot Information"
       },
@@ -6025,7 +6087,7 @@
     "Boundaries and Notes": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1890,
+        "line": 1914,
         "level": 2,
         "title": "Boundaries and Notes"
       },
@@ -6059,7 +6121,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2199,
+        "line": 2223,
         "level": 2,
         "title": "Branching and Jumping"
       }
@@ -6325,7 +6387,7 @@
     "Catching Exceptions": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 691,
+        "line": 692,
         "level": 3,
         "title": "Catching Exceptions"
       },
@@ -6345,6 +6407,18 @@
       }
     ],
     "Chain Modifier Methods": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 65,
+        "level": 3,
+        "title": "Chain Modifier Methods"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 71,
+        "level": 3,
+        "title": "Chain Modifier Methods"
+      },
       {
         "document": "platform-guide/onebot12.md",
         "line": 364,
@@ -6416,26 +6490,6 @@
         "line": 77,
         "level": 2,
         "title": "Chainable Queries"
-      }
-    ],
-    "Chainable Send Calls": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3809,
-        "level": 3,
-        "title": "Chainable Send Calls"
-      },
-      {
-        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 879,
-        "level": 3,
-        "title": "Chainable Send Calls"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 41,
-        "level": 3,
-        "title": "Chainable Send Calls"
       }
     ],
     "Chained Call Example": [
@@ -6597,7 +6651,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2301,
+        "line": 2325,
         "level": 3,
         "title": "Checkpoint TTL"
       }
@@ -6783,7 +6837,7 @@
     "Command Basics": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1146,
+        "line": 1147,
         "level": 4,
         "title": "Command Basics"
       },
@@ -6881,7 +6935,7 @@
     "Command Information": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1144,
+        "line": 1145,
         "level": 3,
         "title": "Command Information"
       },
@@ -7048,6 +7102,26 @@
         "title": "Common Fields (All Event Types)"
       }
     ],
+    "Common Interfaces": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3845,
+        "level": 2,
+        "title": "Common Interfaces"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 882,
+        "level": 2,
+        "title": "Common Interfaces"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 44,
+        "level": 2,
+        "title": "Common Interfaces"
+      }
+    ],
     "Common Issues and Considerations": [
       {
         "document": "advanced/scope.md",
@@ -7060,6 +7134,14 @@
         "line": 395,
         "level": 2,
         "title": "Common Issues and Considerations"
+      }
+    ],
+    "Common Keys": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 48,
+        "level": 3,
+        "title": "Common Keys"
       }
     ],
     "Common Methods": [
@@ -7186,6 +7268,14 @@
         "title": "Compatibility"
       }
     ],
+    "Compatibility Contract (Consumers Must Comply)": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 107,
+        "level": 2,
+        "title": "Compatibility Contract (Consumers Must Comply)"
+      }
+    ],
     "Complete API Reference": [
       {
         "document": "advanced/lifecycle.md",
@@ -7236,6 +7326,12 @@
         "title": "Complete Example"
       },
       {
+        "document": "developer-guide/configuration.md",
+        "line": 114,
+        "level": 2,
+        "title": "Complete Example"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 227,
         "level": 3,
@@ -7279,7 +7375,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2497,
+        "line": 2521,
         "level": 3,
         "title": "Complete Matching Chain for Reply Events"
       }
@@ -7342,6 +7438,14 @@
         "title": "Conditional Listening"
       }
     ],
+    "Conditional Show/Hide and Disable (Field Linkage)": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 60,
+        "level": 3,
+        "title": "Conditional Show/Hide and Disable (Field Linkage)"
+      }
+    ],
     "Config (Configuration)": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
@@ -7398,7 +7502,25 @@
         "title": "Configuration"
       },
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 22,
+        "level": 2,
+        "title": "Configuration"
+      },
+      {
         "document": "platform-guide/discord.md",
+        "line": 23,
+        "level": 2,
+        "title": "Configuration"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 32,
+        "level": 2,
+        "title": "Configuration"
+      },
+      {
+        "document": "platform-guide/wecom.md",
         "line": 23,
         "level": 2,
         "title": "Configuration"
@@ -7667,7 +7789,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 501,
+        "line": 502,
         "level": 2,
         "title": "Configuration Management"
       },
@@ -7734,6 +7856,14 @@
         "line": 186,
         "level": 2,
         "title": "Configuration Reading and Deletion API"
+      }
+    ],
+    "Configuration and UI Metadata": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 1,
+        "level": 1,
+        "title": "Configuration and UI Metadata"
       }
     ],
     "Configuring Components": [
@@ -7951,7 +8081,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2251,
+        "line": 2275,
         "level": 2,
         "title": "Context and Persistence"
       }
@@ -7959,7 +8089,7 @@
     "Continue Module Development Path": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1215,
+        "line": 1216,
         "level": 3,
         "title": "Continue Module Development Path"
       },
@@ -7979,7 +8109,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 291,
+        "line": 292,
         "level": 3,
         "title": "Continue Your Learning Path"
       },
@@ -8033,7 +8163,7 @@
     "Continuing the Learning Path": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 717,
+        "line": 718,
         "level": 3,
         "title": "Continuing the Learning Path"
       },
@@ -8047,19 +8177,19 @@
     "Contributing": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4059,
+        "line": 4097,
         "level": 2,
         "title": "Contributing"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1129,
+        "line": 1134,
         "level": 2,
         "title": "Contributing"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 291,
+        "line": 296,
         "level": 2,
         "title": "Contributing"
       }
@@ -8081,7 +8211,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1997,
+        "line": 2021,
         "level": 1,
         "title": "Conversation Multi-turn Dialogue"
       }
@@ -8145,7 +8275,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2035,
+        "line": 2059,
         "level": 2,
         "title": "Core API"
       }
@@ -8207,7 +8337,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 196,
+        "line": 197,
         "level": 2,
         "title": "Core Concepts"
       },
@@ -8285,7 +8415,7 @@
     "Core Features": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 754,
+        "line": 755,
         "level": 2,
         "title": "Core Features"
       },
@@ -8299,7 +8429,7 @@
     "Core Field Methods": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 761,
+        "line": 762,
         "level": 2,
         "title": "Core Field Methods"
       },
@@ -8347,7 +8477,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 881,
+        "line": 882,
         "level": 3,
         "title": "Core Methods"
       },
@@ -8425,7 +8555,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 135,
+        "line": 136,
         "level": 2,
         "title": "Core.py - Core Module"
       },
@@ -8509,7 +8639,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2004,
+        "line": 2028,
         "level": 2,
         "title": "Creating a Conversation"
       }
@@ -8539,7 +8669,7 @@
     "Cross-Platform Extensions (Wildcard)": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1196,
+        "line": 1197,
         "level": 3,
         "title": "Cross-Platform Extensions (Wildcard)"
       },
@@ -8669,7 +8799,7 @@
     "Data Model Layer (ORM)": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1798,
+        "line": 1822,
         "level": 1,
         "title": "Data Model Layer (ORM)"
       },
@@ -8723,7 +8853,7 @@
     "Debugging Tips": [
       {
         "document": "developer-guide/README.md",
-        "line": 71,
+        "line": 75,
         "level": 3,
         "title": "Debugging Tips"
       }
@@ -8770,6 +8900,14 @@
         "title": "Declaration"
       }
     ],
+    "Declaration Structure": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 7,
+        "level": 2,
+        "title": "Declaration Structure"
+      }
+    ],
     "Declarative Configuration (Recommended)": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
@@ -8779,7 +8917,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 503,
+        "line": 504,
         "level": 3,
         "title": "Declarative Configuration (Recommended)"
       },
@@ -8819,7 +8957,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2509,
+        "line": 2533,
         "level": 2,
         "title": "Declarative Multi-turn: `.got()` Chain (2.11+)"
       }
@@ -8833,7 +8971,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 561,
+        "line": 562,
         "level": 3,
         "title": "Declarative Translation Keys (v2.7.0+)"
       },
@@ -8851,7 +8989,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 68,
+        "line": 67,
         "level": 3,
         "title": "Declarative Translation Keys (v2.7.0+)"
       },
@@ -8879,7 +9017,7 @@
     "Declaring Models": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1805,
+        "line": 1829,
         "level": 2,
         "title": "Declaring Models"
       },
@@ -8926,18 +9064,18 @@
         "title": "Decorators and Rule Inheritance"
       }
     ],
-    "Deep Dive by Scenario": [
+    "Deep Dives by Scenario": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1789,
+        "line": 1813,
         "level": 3,
-        "title": "Deep Dive by Scenario"
+        "title": "Deep Dives by Scenario"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 564,
+        "line": 587,
         "level": 3,
-        "title": "Deep Dive by Scenario"
+        "title": "Deep Dives by Scenario"
       }
     ],
     "Deep Integration (Optional)": [
@@ -8957,7 +9095,7 @@
     "Deepen Interaction Capabilities": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1220,
+        "line": 1221,
         "level": 3,
         "title": "Deepen Interaction Capabilities"
       },
@@ -9049,13 +9187,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1727,
+        "line": 1751,
         "level": 2,
         "title": "Deployment"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 500,
+        "line": 523,
         "level": 2,
         "title": "Deployment"
       }
@@ -9153,7 +9291,7 @@
     "Development Mode": [
       {
         "document": "developer-guide/README.md",
-        "line": 63,
+        "line": 67,
         "level": 3,
         "title": "Development Mode"
       }
@@ -9169,7 +9307,7 @@
     "Development Preparation": [
       {
         "document": "developer-guide/README.md",
-        "line": 34,
+        "line": 38,
         "level": 2,
         "title": "Development Preparation"
       }
@@ -9177,7 +9315,7 @@
     "Development Tools": [
       {
         "document": "developer-guide/README.md",
-        "line": 54,
+        "line": 58,
         "level": 2,
         "title": "Development Tools"
       }
@@ -9185,7 +9323,7 @@
     "Development Type Selection": [
       {
         "document": "developer-guide/README.md",
-        "line": 43,
+        "line": 47,
         "level": 2,
         "title": "Development Type Selection"
       }
@@ -9354,6 +9492,12 @@
     ],
     "Document Information": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 7,
+        "level": 2,
+        "title": "Document Information"
+      },
+      {
         "document": "platform-guide/discord.md",
         "line": 7,
         "level": 2,
@@ -9436,6 +9580,14 @@
         "title": "Documentation Format Guidelines"
       }
     ],
+    "Documentation Info": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 7,
+        "level": 2,
+        "title": "Documentation Info"
+      }
+    ],
     "Documentation Information": [
       {
         "document": "platform-guide/email.md",
@@ -9454,6 +9606,12 @@
         "line": 7,
         "level": 2,
         "title": "Documentation Information"
+      },
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 7,
+        "level": 2,
+        "title": "Documentation Information"
       }
     ],
     "Documentation List": [
@@ -9467,13 +9625,13 @@
     "Documentation Maintenance": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3723,
+        "line": 3756,
         "level": 2,
         "title": "Documentation Maintenance"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 618,
+        "line": 651,
         "level": 2,
         "title": "Documentation Maintenance"
       }
@@ -9511,7 +9669,7 @@
     "Don't need table structures, just store a few key-value pairs": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1989,
+        "line": 2013,
         "level": 3,
         "title": "Don't need table structures, just store a few key-value pairs"
       },
@@ -9558,6 +9716,14 @@
         "line": 568,
         "level": 3,
         "title": "Dynamic Content"
+      }
+    ],
+    "Echo Deduplication": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 228,
+        "level": 3,
+        "title": "Echo Deduplication"
       }
     ],
     "Ecosystem Modules": [
@@ -9751,7 +9917,7 @@
     "ErisPulse PlatformFeatures Documentation": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3769,
+        "line": 3802,
         "level": 1,
         "title": "ErisPulse PlatformFeatures Documentation"
       },
@@ -10099,13 +10265,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3559,
+        "line": 3592,
         "level": 2,
         "title": "Error Handling"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 689,
+        "line": 690,
         "level": 2,
         "title": "Error Handling"
       },
@@ -10117,7 +10283,7 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 454,
+        "line": 487,
         "level": 2,
         "title": "Error Handling"
       },
@@ -10129,7 +10295,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 280,
+        "line": 279,
         "level": 2,
         "title": "Error Handling"
       },
@@ -10177,13 +10343,13 @@
     "Event Conversion": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3329,
+        "line": 3362,
         "level": 2,
         "title": "Event Conversion"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 224,
+        "line": 257,
         "level": 2,
         "title": "Event Conversion"
       }
@@ -10228,6 +10394,14 @@
         "line": 956,
         "level": 2,
         "title": "Event Data Access"
+      }
+    ],
+    "Event Description": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 110,
+        "level": 2,
+        "title": "Event Description"
       }
     ],
     "Event Distribution Mechanism": [
@@ -10294,6 +10468,20 @@
         "title": "Event Factories"
       }
     ],
+    "Event Field Example": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 178,
+        "level": 3,
+        "title": "Event Field Example"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 197,
+        "level": 3,
+        "title": "Event Field Example"
+      }
+    ],
     "Event Flow": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
@@ -10311,7 +10499,7 @@
     "Event Handler Lifecycle": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 662,
+        "line": 663,
         "level": 3,
         "title": "Event Handler Lifecycle"
       },
@@ -10325,19 +10513,19 @@
     "Event Handling": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 644,
+        "line": 645,
         "level": 2,
         "title": "Event Handling"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1402,
+        "line": 1401,
         "level": 2,
         "title": "Event Handling"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 175,
+        "line": 173,
         "level": 2,
         "title": "Event Handling"
       },
@@ -10443,13 +10631,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3937,
+        "line": 3975,
         "level": 3,
         "title": "Event Listening"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1007,
+        "line": 1012,
         "level": 3,
         "title": "Event Listening"
       },
@@ -10461,9 +10649,23 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 169,
+        "line": 174,
         "level": 3,
         "title": "Event Listening"
+      }
+    ],
+    "Event Mapping": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 170,
+        "level": 3,
+        "title": "Event Mapping"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 189,
+        "level": 3,
+        "title": "Event Mapping"
       }
     ],
     "Event Mixin Extension Methods": [
@@ -10638,10 +10840,24 @@
         "title": "Event Types"
       },
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 166,
+        "level": 2,
+        "title": "Event Types"
+      },
+      {
         "document": "platform-guide/wechatmp.md",
         "line": 53,
         "level": 2,
         "title": "Event Types"
+      }
+    ],
+    "Event Types (enable_log_tail = true)": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 185,
+        "level": 2,
+        "title": "Event Types (enable_log_tail = true)"
       }
     ],
     "Event Wrapper Class": [
@@ -10655,7 +10871,7 @@
     "Event Wrapper Class in Detail": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 730,
+        "line": 731,
         "level": 1,
         "title": "Event Wrapper Class in Detail"
       },
@@ -10669,7 +10885,7 @@
     "Event 包装类": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 726,
+        "line": 727,
         "level": 2,
         "title": "Event 包装类"
       }
@@ -10894,6 +11110,12 @@
     ],
     "Extended Field Description": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 197,
+        "level": 3,
+        "title": "Extended Field Description"
+      },
+      {
         "document": "platform-guide/yunhu_user.md",
         "line": 429,
         "level": 2,
@@ -11099,7 +11321,7 @@
     "Field Parameters": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1822,
+        "line": 1846,
         "level": 2,
         "title": "Field Parameters"
       },
@@ -11273,7 +11495,7 @@
     "Foreign Keys (Foundation for Relationship Mapping)": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1918,
+        "line": 1942,
         "level": 2,
         "title": "Foreign Keys (Foundation for Relationship Mapping)"
       },
@@ -11317,7 +11539,7 @@
     "Forwarding": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 974,
+        "line": 975,
         "level": 4,
         "title": "Forwarding"
       },
@@ -11504,24 +11726,12 @@
         "title": "General"
       }
     ],
-    "General Interfaces": [
+    "General Standards": [
       {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3807,
-        "level": 2,
-        "title": "General Interfaces"
-      },
-      {
-        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 877,
-        "level": 2,
-        "title": "General Interfaces"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 39,
-        "level": 2,
-        "title": "General Interfaces"
+        "document": "developer-guide/README.md",
+        "line": 30,
+        "level": 3,
+        "title": "General Standards"
       }
     ],
     "Generating Type Stubs": [
@@ -11536,6 +11746,20 @@
         "line": 747,
         "level": 3,
         "title": "Generating Type Stubs"
+      }
+    ],
+    "Generic Action Entry": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 138,
+        "level": 3,
+        "title": "Generic Action Entry"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 159,
+        "level": 3,
+        "title": "Generic Action Entry"
       }
     ],
     "Generic request": [
@@ -11569,7 +11793,7 @@
     "Getting Command Information": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 857,
+        "line": 858,
         "level": 2,
         "title": "Getting Command Information"
       },
@@ -11597,7 +11821,7 @@
     "Getting Method Details": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 485,
+        "line": 486,
         "level": 3,
         "title": "Getting Method Details"
       },
@@ -11653,7 +11877,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 88,
+        "line": 89,
         "level": 1,
         "title": "Getting Started with Module Development"
       },
@@ -11733,7 +11957,7 @@
     "Going Deeper and Troubleshooting": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 721,
+        "line": 722,
         "level": 3,
         "title": "Going Deeper and Troubleshooting"
       },
@@ -11865,7 +12089,7 @@
     "Group/Channel Information": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 913,
+        "line": 914,
         "level": 4,
         "title": "Group/Channel Information"
       },
@@ -11899,7 +12123,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2360,
+        "line": 2384,
         "level": 3,
         "title": "Guided Registration"
       }
@@ -11980,6 +12204,20 @@
         "line": 547,
         "level": 3,
         "title": "HTTP Requests"
+      }
+    ],
+    "HTTP Route Lifecycle": [
+      {
+        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
+        "line": 1727,
+        "level": 2,
+        "title": "HTTP Route Lifecycle"
+      },
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 499,
+        "level": 2,
+        "title": "HTTP Route Lifecycle"
       }
     ],
     "HTTP Routing": [
@@ -12319,7 +12557,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 668,
+        "line": 669,
         "level": 3,
         "title": "How It Works"
       },
@@ -12501,7 +12739,7 @@
     "Immediate Loading": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 676,
+        "line": 677,
         "level": 3,
         "title": "Immediate Loading"
       },
@@ -12897,7 +13135,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 465,
+        "line": 466,
         "level": 3,
         "title": "Inter-Module Communication"
       },
@@ -12911,7 +13149,7 @@
     "Interaction Method Examples": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1036,
+        "line": 1037,
         "level": 4,
         "title": "Interaction Method Examples"
       },
@@ -12925,7 +13163,7 @@
     "Interaction Methods": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 997,
+        "line": 998,
         "level": 4,
         "title": "Interaction Methods"
       },
@@ -12967,7 +13205,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2422,
+        "line": 2446,
         "level": 1,
         "title": "Interactive Conversation System"
       }
@@ -13215,7 +13453,7 @@
     "Lazy Loading Mechanism": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 666,
+        "line": 667,
         "level": 2,
         "title": "Lazy Loading Mechanism"
       },
@@ -13381,7 +13619,7 @@
     "Lifecycle Overview": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 410,
+        "line": 411,
         "level": 3,
         "title": "Lifecycle Overview"
       },
@@ -13551,7 +13789,7 @@
     "Listing Supported Send Methods": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 477,
+        "line": 478,
         "level": 3,
         "title": "Listing Supported Send Methods"
       },
@@ -13565,7 +13803,7 @@
     "Load Strategy": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 313,
+        "line": 314,
         "level": 3,
         "title": "Load Strategy"
       },
@@ -13621,7 +13859,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 178,
+        "line": 179,
         "level": 3,
         "title": "Local Testing"
       },
@@ -13695,7 +13933,7 @@
     "Logging": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 706,
+        "line": 707,
         "level": 3,
         "title": "Logging"
       },
@@ -13707,7 +13945,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 354,
+        "line": 353,
         "level": 2,
         "title": "Logging"
       },
@@ -13741,7 +13979,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2391,
+        "line": 2415,
         "level": 3,
         "title": "Looping Conversation"
       }
@@ -13899,7 +14137,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2347,
+        "line": 2371,
         "level": 3,
         "title": "Manual Resume (Without Automatic Mechanism)"
       }
@@ -14083,7 +14321,7 @@
     "Message Content": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 902,
+        "line": 903,
         "level": 4,
         "title": "Message Content"
       },
@@ -14157,13 +14395,13 @@
     "Message Event Methods": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 774,
+        "line": 775,
         "level": 2,
         "title": "Message Event Methods"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 900,
+        "line": 901,
         "level": 3,
         "title": "Message Event Methods"
       },
@@ -14360,6 +14598,46 @@
         "title": "Message Segment Types"
       }
     ],
+    "Message Send Failure": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 4070,
+        "level": 4,
+        "title": "Message Send Failure"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 1107,
+        "level": 4,
+        "title": "Message Send Failure"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 269,
+        "level": 4,
+        "title": "Message Send Failure"
+      }
+    ],
+    "Message Send Success": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 4054,
+        "level": 4,
+        "title": "Message Send Success"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 1091,
+        "level": 4,
+        "title": "Message Send Success"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 253,
+        "level": 4,
+        "title": "Message Send Success"
+      }
+    ],
     "Message Sending": [
       {
         "document": "advanced/lifecycle.md",
@@ -14374,30 +14652,28 @@
         "title": "Message Sending"
       },
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 47,
+        "level": 2,
+        "title": "Message Sending"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 54,
+        "level": 2,
+        "title": "Message Sending"
+      },
+      {
         "document": "platform-guide/qqbot.md",
         "line": 59,
         "level": 2,
         "title": "Message Sending"
-      }
-    ],
-    "Message Sending Failure": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4032,
-        "level": 4,
-        "title": "Message Sending Failure"
       },
       {
-        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1102,
-        "level": 4,
-        "title": "Message Sending Failure"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 264,
-        "level": 4,
-        "title": "Message Sending Failure"
+        "document": "platform-guide/wecom.md",
+        "line": 51,
+        "level": 2,
+        "title": "Message Sending"
       }
     ],
     "Message Sending Methods": [
@@ -14406,26 +14682,6 @@
         "line": 357,
         "level": 3,
         "title": "Message Sending Methods"
-      }
-    ],
-    "Message Sending Success": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4016,
-        "level": 4,
-        "title": "Message Sending Success"
-      },
-      {
-        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1086,
-        "level": 4,
-        "title": "Message Sending Success"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 248,
-        "level": 4,
-        "title": "Message Sending Success"
       }
     ],
     "Message Sequence Number Mechanism": [
@@ -14459,7 +14715,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2665,
+        "line": 2689,
         "level": 2,
         "title": "Message Transaction: message_tx"
       }
@@ -14467,13 +14723,13 @@
     "Message Type Detection": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 787,
+        "line": 788,
         "level": 2,
         "title": "Message Type Detection"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 923,
+        "line": 924,
         "level": 3,
         "title": "Message Type Detection"
       },
@@ -14707,7 +14963,7 @@
     "Method Quick Reference": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 879,
+        "line": 880,
         "level": 2,
         "title": "Method Quick Reference"
       },
@@ -14832,6 +15088,14 @@
         "line": 426,
         "level": 3,
         "title": "Migration from Old Configuration"
+      }
+    ],
+    "Minecraft Platform Features Documentation": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 1,
+        "level": 1,
+        "title": "Minecraft Platform Features Documentation"
       }
     ],
     "Minimal Viable Module": [
@@ -14965,7 +15229,7 @@
     "Module Core Concepts": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 304,
+        "line": 305,
         "level": 1,
         "title": "Module Core Concepts"
       },
@@ -14985,7 +15249,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 9,
+        "line": 8,
         "level": 2,
         "title": "Module Design"
       }
@@ -15001,7 +15265,7 @@
     "Module Development Best Practices": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1228,
+        "line": 1229,
         "level": 1,
         "title": "Module Development Best Practices"
       },
@@ -15077,7 +15341,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 311,
+        "line": 312,
         "level": 2,
         "title": "Module Lifecycle"
       },
@@ -15125,7 +15389,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 210,
+        "line": 211,
         "level": 3,
         "title": "Module Meta Information"
       },
@@ -15275,13 +15539,13 @@
       },
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3497,
+        "line": 3530,
         "level": 2,
         "title": "Multi-Account Support"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 392,
+        "line": 425,
         "level": 2,
         "title": "Multi-Account Support"
       },
@@ -15342,6 +15606,14 @@
         "title": "Multi-Platform Adaptation"
       }
     ],
+    "Multi-Server Sending": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 78,
+        "level": 3,
+        "title": "Multi-Server Sending"
+      }
+    ],
     "Multi-Way Waiting: expect + select": [
       {
         "document": "advanced/interaction.md",
@@ -15351,7 +15623,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2582,
+        "line": 2606,
         "level": 2,
         "title": "Multi-Way Waiting: expect + select"
       }
@@ -15362,6 +15634,14 @@
         "line": 289,
         "level": 3,
         "title": "Multi-account Send Syntax"
+      }
+    ],
+    "Multi-account Sending": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 82,
+        "level": 3,
+        "title": "Multi-account Sending"
       }
     ],
     "Multi-element Message": [
@@ -15451,7 +15731,7 @@
     "Need to switch databases or deploy to a cloud database": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1985,
+        "line": 2009,
         "level": 3,
         "title": "Need to switch databases or deploy to a cloud database"
       },
@@ -15792,14 +16072,32 @@
         "title": "Notes"
       },
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 203,
+        "level": 2,
+        "title": "Notes"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 496,
         "level": 2,
         "title": "Notes"
       },
       {
+        "document": "platform-guide/minecraft.md",
+        "line": 232,
+        "level": 2,
+        "title": "Notes"
+      },
+      {
         "document": "platform-guide/webhook.md",
         "line": 222,
+        "level": 2,
+        "title": "Notes"
+      },
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 116,
         "level": 2,
         "title": "Notes"
       }
@@ -15821,13 +16119,13 @@
     "Notice Event Methods": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 869,
+        "line": 870,
         "level": 2,
         "title": "Notice Event Methods"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 931,
+        "line": 932,
         "level": 3,
         "title": "Notice Event Methods"
       },
@@ -15871,7 +16169,7 @@
     "Notice Operator": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 933,
+        "line": 934,
         "level": 4,
         "title": "Notice Operator"
       },
@@ -15885,7 +16183,7 @@
     "Notice Type Checks": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 937,
+        "line": 938,
         "level": 4,
         "title": "Notice Type Checks"
       },
@@ -15923,7 +16221,7 @@
     "ORM 数据模型": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1794,
+        "line": 1818,
         "level": 2,
         "title": "ORM 数据模型"
       }
@@ -16102,6 +16400,14 @@
         "line": 475,
         "level": 2,
         "title": "OneBot12 Standard Features"
+      }
+    ],
+    "OneBot12 Standard Segment Sending": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 72,
+        "level": 3,
+        "title": "OneBot12 Standard Segment Sending"
       }
     ],
     "OneBot12 Supported detail_type": [
@@ -16481,7 +16787,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2527,
+        "line": 2551,
         "level": 3,
         "title": "Parameter Description"
       }
@@ -16559,7 +16865,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 388,
+        "line": 387,
         "level": 2,
         "title": "Performance Optimization"
       }
@@ -16623,7 +16929,7 @@
     "Platform Capability Queries": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 970,
+        "line": 971,
         "level": 4,
         "title": "Platform Capability Queries"
       },
@@ -16634,21 +16940,27 @@
         "title": "Platform Capability Queries"
       }
     ],
-    "Platform Event Method Extension": [
+    "Platform Event Method Extensions": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3669,
+        "line": 3702,
         "level": 2,
-        "title": "Platform Event Method Extension"
+        "title": "Platform Event Method Extensions"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 564,
+        "line": 597,
         "level": 2,
-        "title": "Platform Event Method Extension"
+        "title": "Platform Event Method Extensions"
       }
     ],
     "Platform Extension Actions": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 131,
+        "level": 3,
+        "title": "Platform Extension Actions"
+      },
       {
         "document": "platform-guide/yunhu.md",
         "line": 317,
@@ -16695,7 +17007,7 @@
     "Platform Extension Methods": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1158,
+        "line": 1159,
         "level": 3,
         "title": "Platform Extension Methods"
       },
@@ -16837,19 +17149,19 @@
     "Platform-Specific Features": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3783,
+        "line": 3817,
         "level": 2,
         "title": "Platform-Specific Features"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 853,
+        "line": 854,
         "level": 2,
         "title": "Platform-Specific Features"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 15,
+        "line": 16,
         "level": 2,
         "title": "Platform-Specific Features"
       }
@@ -17137,7 +17449,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 95,
+        "line": 96,
         "level": 2,
         "title": "Project Structure"
       },
@@ -17157,7 +17469,7 @@
     "Project Templates": [
       {
         "document": "developer-guide/README.md",
-        "line": 56,
+        "line": 60,
         "level": 3,
         "title": "Project Templates"
       }
@@ -17201,7 +17513,7 @@
     "Publish Your Module": [
       {
         "document": "developer-guide/README.md",
-        "line": 82,
+        "line": 86,
         "level": 2,
         "title": "Publish Your Module"
       }
@@ -17217,7 +17529,7 @@
     "Publishing Guide": [
       {
         "document": "developer-guide/README.md",
-        "line": 30,
+        "line": 34,
         "level": 3,
         "title": "Publishing Guide"
       }
@@ -17367,7 +17679,7 @@
     "Querying Registered Methods": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1180,
+        "line": 1181,
         "level": 3,
         "title": "Querying Registered Methods"
       },
@@ -17561,7 +17873,7 @@
     "Raw Data": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1153,
+        "line": 1154,
         "level": 3,
         "title": "Raw Data"
       },
@@ -17603,7 +17915,7 @@
     "Reading Configuration Manually (Deprecated)": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 602,
+        "line": 603,
         "level": 3,
         "title": "Reading Configuration Manually (Deprecated)"
       },
@@ -17704,24 +18016,24 @@
         "title": "Reference Documents"
       }
     ],
-    "References": [
+    "Reference Links": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4047,
+        "line": 4085,
         "level": 2,
-        "title": "References"
+        "title": "Reference Links"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1117,
+        "line": 1122,
         "level": 2,
-        "title": "References"
+        "title": "Reference Links"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 279,
+        "line": 284,
         "level": 2,
-        "title": "References"
+        "title": "Reference Links"
       }
     ],
     "Refresh Timing": [
@@ -17779,7 +18091,7 @@
     "Registering Event Handlers": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 646,
+        "line": 647,
         "level": 3,
         "title": "Registering Event Handlers"
       },
@@ -17999,13 +18311,13 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 86,
+        "line": 90,
         "level": 2,
         "title": "Related Documentation"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 650,
+        "line": 683,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -18023,7 +18335,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 557,
+        "line": 580,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -18095,7 +18407,7 @@
     "Relationship Mapping (relationship)": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1932,
+        "line": 1956,
         "level": 2,
         "title": "Relationship Mapping (relationship)"
       },
@@ -18131,7 +18443,7 @@
     "Relationship with Declarative Configuration Class": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1874,
+        "line": 1898,
         "level": 2,
         "title": "Relationship with Declarative Configuration Class"
       },
@@ -18159,7 +18471,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2689,
+        "line": 2713,
         "level": 2,
         "title": "Relationship with Other Systems"
       }
@@ -18229,13 +18541,13 @@
     "Reply Functionality": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 800,
+        "line": 801,
         "level": 2,
         "title": "Reply Functionality"
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 954,
+        "line": 955,
         "level": 3,
         "title": "Reply Functionality"
       },
@@ -18333,7 +18645,7 @@
     "Request Event Methods": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 944,
+        "line": 945,
         "level": 3,
         "title": "Request Event Methods"
       },
@@ -18363,7 +18675,7 @@
     "Request Information": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 946,
+        "line": 947,
         "level": 4,
         "title": "Request Information"
       },
@@ -18469,7 +18781,7 @@
     "Request Type Checks": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 949,
+        "line": 950,
         "level": 4,
         "title": "Request Type Checks"
       },
@@ -18591,7 +18903,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2334,
+        "line": 2358,
         "level": 3,
         "title": "Resume Equals Takeover"
       }
@@ -18624,6 +18936,14 @@
         "line": 323,
         "level": 2,
         "title": "Return Value Description"
+      }
+    ],
+    "Return Value Format": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 150,
+        "level": 2,
+        "title": "Return Value Format"
       }
     ],
     "Return Value Structure": [
@@ -18679,13 +18999,13 @@
     "Reverse Conversion and Message Building": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3659,
+        "line": 3692,
         "level": 2,
         "title": "Reverse Conversion and Message Building"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 554,
+        "line": 587,
         "level": 2,
         "title": "Reverse Conversion and Message Building"
       }
@@ -18704,18 +19024,18 @@
         "title": "Reverse Proxy"
       }
     ],
-    "Review Prerequisites": [
+    "Review the Prerequisites": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3755,
+        "line": 3788,
         "level": 3,
-        "title": "Review Prerequisites"
+        "title": "Review the Prerequisites"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 652,
+        "line": 685,
         "level": 3,
-        "title": "Review Prerequisites"
+        "title": "Review the Prerequisites"
       }
     ],
     "Reviewing the Initial Steps": [
@@ -19055,7 +19375,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 276,
+        "line": 277,
         "level": 3,
         "title": "SDK Object"
       },
@@ -19148,6 +19468,14 @@
         "title": "Scheduled Tasks"
       }
     ],
+    "Schema Output": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 164,
+        "level": 2,
+        "title": "Schema Output"
+      }
+    ],
     "Scope": [
       {
         "document": "advanced/scope.md",
@@ -19221,7 +19549,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 425,
+        "line": 424,
         "level": 2,
         "title": "Security"
       }
@@ -19311,7 +19639,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2539,
+        "line": 2563,
         "level": 3,
         "title": "Semantics and Boundaries"
       }
@@ -19336,6 +19664,26 @@
         "line": 509,
         "level": 1,
         "title": "Send A2UI message"
+      }
+    ],
+    "Send Chained Calls": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3847,
+        "level": 3,
+        "title": "Send Chained Calls"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 884,
+        "level": 3,
+        "title": "Send Chained Calls"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 46,
+        "level": 3,
+        "title": "Send Chained Calls"
       }
     ],
     "Send Decorators (Implemented by Each Adapter's Send Class)": [
@@ -19408,6 +19756,12 @@
         "title": "Send Method Return Values"
       },
       {
+        "document": "platform-guide/minecraft.md",
+        "line": 171,
+        "level": 2,
+        "title": "Send Method Return Values"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 470,
         "level": 2,
@@ -19450,6 +19804,26 @@
         "line": 510,
         "level": 3,
         "title": "Send Methods"
+      }
+    ],
+    "Send Rule Decorators": [
+      {
+        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
+        "line": 3907,
+        "level": 4,
+        "title": "Send Rule Decorators"
+      },
+      {
+        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
+        "line": 944,
+        "level": 4,
+        "title": "Send Rule Decorators"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 106,
+        "level": 4,
+        "title": "Send Rule Decorators"
       }
     ],
     "Send Rule Engine (Retry/Timeout/Delay)": [
@@ -19513,13 +19887,13 @@
     "SendDSL Implementation": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3383,
+        "line": 3416,
         "level": 2,
         "title": "SendDSL Implementation"
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 278,
+        "line": 311,
         "level": 2,
         "title": "SendDSL Implementation"
       }
@@ -19541,7 +19915,7 @@
     "Sender Information": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 908,
+        "line": 909,
         "level": 4,
         "title": "Sender Information"
       },
@@ -19628,26 +20002,6 @@
         "title": "Sending Rendered Results"
       }
     ],
-    "Sending Rule Decorators": [
-      {
-        "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3869,
-        "level": 4,
-        "title": "Sending Rule Decorators"
-      },
-      {
-        "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 939,
-        "level": 4,
-        "title": "Sending Rule Decorators"
-      },
-      {
-        "document": "platform-guide/README.md",
-        "line": 101,
-        "level": 4,
-        "title": "Sending Rule Decorators"
-      }
-    ],
     "Sending a Reply": [
       {
         "document": "ai-support/skills/erispulse-getting-started/SKILL.md",
@@ -19698,6 +20052,14 @@
         "title": "Server Configuration"
       }
     ],
+    "Server Prerequisite Configuration": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 22,
+        "level": 2,
+        "title": "Server Prerequisite Configuration"
+      }
+    ],
     "Service Contract (`meta.services`)": [
       {
         "document": "api-reference/core-modules.md",
@@ -19745,7 +20107,7 @@
     "Session Identifiers": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 896,
+        "line": 897,
         "level": 4,
         "title": "Session Identifiers"
       },
@@ -19779,7 +20141,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2647,
+        "line": 2671,
         "level": 2,
         "title": "Session Inbox: event.history"
       }
@@ -19793,7 +20155,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2616,
+        "line": 2640,
         "level": 2,
         "title": "Session Mutual Exclusion: acquire / hold / get_owner_of"
       }
@@ -19807,7 +20169,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2546,
+        "line": 2570,
         "level": 2,
         "title": "Session Timers: remind / escalate"
       }
@@ -20072,6 +20434,12 @@
         "line": 64,
         "level": 3,
         "title": "Standard API Actions"
+      },
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 88,
+        "level": 2,
+        "title": "Standard API Actions"
       }
     ],
     "Standard API Actions (API DSL)": [
@@ -20100,6 +20468,20 @@
         "line": 33,
         "level": 2,
         "title": "Standard API Actions (Api DSL)"
+      }
+    ],
+    "Standard API Actions (Api)": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 97,
+        "level": 2,
+        "title": "Standard API Actions (Api)"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 100,
+        "level": 2,
+        "title": "Standard API Actions (Api)"
       }
     ],
     "Standard API Actions (ApiDSL)": [
@@ -20165,19 +20547,19 @@
     "Standard Event Format": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3994,
+        "line": 4032,
         "level": 3,
         "title": "Standard Event Format"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1064,
+        "line": 1069,
         "level": 3,
         "title": "Standard Event Format"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 226,
+        "line": 231,
         "level": 3,
         "title": "Standard Event Format"
       }
@@ -20185,19 +20567,19 @@
     "Standard Formats": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3989,
+        "line": 4027,
         "level": 2,
         "title": "Standard Formats"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1059,
+        "line": 1064,
         "level": 2,
         "title": "Standard Formats"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 221,
+        "line": 226,
         "level": 2,
         "title": "Standard Formats"
       }
@@ -20235,19 +20617,19 @@
     "Standard Response Format": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 4015,
+        "line": 4053,
         "level": 3,
         "title": "Standard Response Format"
       },
       {
         "document": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-        "line": 1085,
+        "line": 1090,
         "level": 3,
         "title": "Standard Response Format"
       },
       {
         "document": "platform-guide/README.md",
-        "line": 247,
+        "line": 252,
         "level": 3,
         "title": "Standard Response Format"
       }
@@ -20471,7 +20853,7 @@
     "Storage System": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 619,
+        "line": 620,
         "level": 2,
         "title": "Storage System"
       },
@@ -20483,7 +20865,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 321,
+        "line": 320,
         "level": 2,
         "title": "Storage System"
       },
@@ -20730,6 +21112,18 @@
     ],
     "Supported Standard Actions": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 120,
+        "level": 3,
+        "title": "Supported Standard Actions"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 122,
+        "level": 3,
+        "title": "Supported Standard Actions"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 297,
         "level": 3,
@@ -20742,6 +21136,20 @@
         "line": 30,
         "level": 3,
         "title": "Supported Submission Types"
+      }
+    ],
+    "Supported and Unsupported Message Segments": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 88,
+        "level": 3,
+        "title": "Supported and Unsupported Message Segments"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 84,
+        "level": 3,
+        "title": "Supported and Unsupported Message Segments"
       }
     ],
     "Supported i18n Fields": [
@@ -20851,7 +21259,7 @@
     "Table Creation and CRUD": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1838,
+        "line": 1862,
         "level": 2,
         "title": "Table Creation and CRUD"
       },
@@ -20876,6 +21284,14 @@
         "line": 8,
         "level": 2,
         "title": "Table of Contents"
+      }
+    ],
+    "Target Types": [
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 93,
+        "level": 3,
+        "title": "Target Types"
       }
     ],
     "Task Object": [
@@ -20939,7 +21355,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 188,
+        "line": 189,
         "level": 3,
         "title": "Test Commands"
       },
@@ -20961,7 +21377,7 @@
     "Testing": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3613,
+        "line": 3646,
         "level": 2,
         "title": "Testing"
       },
@@ -20973,15 +21389,23 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 508,
+        "line": 541,
         "level": 2,
         "title": "Testing"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 471,
+        "line": 470,
         "level": 2,
         "title": "Testing"
+      }
+    ],
+    "Testing & Troubleshooting": [
+      {
+        "document": "developer-guide/README.md",
+        "line": 26,
+        "level": 3,
+        "title": "Testing & Troubleshooting"
       }
     ],
     "Testing Module": [
@@ -20993,7 +21417,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 176,
+        "line": 177,
         "level": 2,
         "title": "Testing Module"
       },
@@ -21002,14 +21426,6 @@
         "line": 89,
         "level": 2,
         "title": "Testing Module"
-      }
-    ],
-    "Testing and Troubleshooting": [
-      {
-        "document": "developer-guide/README.md",
-        "line": 26,
-        "level": 3,
-        "title": "Testing and Troubleshooting"
       }
     ],
     "Testing for \"Command Not Triggered\" Type Issues": [
@@ -21051,7 +21467,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2479,
+        "line": 2503,
         "level": 3,
         "title": "The Boundary Between Waiting and Commands (Command Bypass)"
       }
@@ -21073,7 +21489,7 @@
     "The SDK Object": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 452,
+        "line": 453,
         "level": 2,
         "title": "The SDK Object"
       },
@@ -21117,7 +21533,7 @@
     "The on_before_unload Method": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 367,
+        "line": 368,
         "level": 3,
         "title": "The on_before_unload Method"
       },
@@ -21131,7 +21547,7 @@
     "The on_load Method": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 337,
+        "line": 338,
         "level": 3,
         "title": "The on_load Method"
       },
@@ -21145,7 +21561,7 @@
     "The on_unload Method": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 352,
+        "line": 353,
         "level": 3,
         "title": "The on_unload Method"
       },
@@ -21184,6 +21600,20 @@
         "title": "Tool Module Guide: Handling References to Other Modules"
       }
     ],
+    "Tool Modules: Catch \"Unload Notifications\" When Hosting Things for Others": [
+      {
+        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
+        "line": 1471,
+        "level": 2,
+        "title": "Tool Modules: Catch \"Unload Notifications\" When Hosting Things for Others"
+      },
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 243,
+        "level": 2,
+        "title": "Tool Modules: Catch \"Unload Notifications\" When Hosting Things for Others"
+      }
+    ],
     "Topology Tree API": [
       {
         "document": "advanced/scope.md",
@@ -21207,7 +21637,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2678,
+        "line": 2702,
         "level": 2,
         "title": "Trace ID"
       }
@@ -21237,7 +21667,7 @@
     "Transactions": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1864,
+        "line": 1888,
         "level": 2,
         "title": "Transactions"
       },
@@ -21399,9 +21829,17 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2358,
+        "line": 2382,
         "level": 2,
         "title": "Typical Workflow Patterns"
+      }
+    ],
+    "UI Metadata (the `metadata[\"ui\"]` Subtable)": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 44,
+        "level": 2,
+        "title": "UI Metadata (the `metadata[\"ui\"]` Subtable)"
       }
     ],
     "Unified Event Override Configuration (event.overrides)": [
@@ -21511,7 +21949,7 @@
     "Unload and Complete Unload (purge)": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 383,
+        "line": 384,
         "level": 3,
         "title": "Unload and Complete Unload (purge)"
       },
@@ -21575,6 +22013,18 @@
       }
     ],
     "Unsupported Standard Actions": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 130,
+        "level": 3,
+        "title": "Unsupported Standard Actions"
+      },
+      {
+        "document": "platform-guide/minecraft.md",
+        "line": 152,
+        "level": 3,
+        "title": "Unsupported Standard Actions"
+      },
       {
         "document": "platform-guide/yunhu.md",
         "line": 310,
@@ -21889,7 +22339,7 @@
     "Using Transactions": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 634,
+        "line": 635,
         "level": 3,
         "title": "Using Transactions"
       },
@@ -22024,18 +22474,12 @@
         "title": "Utility Methods"
       }
     ],
-    "Utility Module: When Hosting Other Things, You Must Catch \"Unload Notification\"": [
+    "Value Form (`value_type`, used for `multiselect`)": [
       {
-        "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1471,
-        "level": 2,
-        "title": "Utility Module: When Hosting Other Things, You Must Catch \"Unload Notification\""
-      },
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 244,
-        "level": 2,
-        "title": "Utility Module: When Hosting Other Things, You Must Catch \"Unload Notification\""
+        "document": "developer-guide/configuration.md",
+        "line": 78,
+        "level": 3,
+        "title": "Value Form (`value_type`, used for `multiselect`)"
       }
     ],
     "Verification of Installation": [
@@ -22121,7 +22565,7 @@
     "Waiting for Replies": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 985,
+        "line": 986,
         "level": 3,
         "title": "Waiting for Replies"
       },
@@ -22147,7 +22591,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2440,
+        "line": 2464,
         "level": 2,
         "title": "Waiting for Reply: wait_reply"
       }
@@ -22270,6 +22714,14 @@
         "line": 1,
         "level": 1,
         "title": "WeChat MP Adapter - Platform Features Documentation"
+      }
+    ],
+    "WeCom Platform Features Documentation": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 1,
+        "level": 1,
+        "title": "WeCom Platform Features Documentation"
       }
     ],
     "WebHook Connection": [
@@ -22503,7 +22955,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2483,
+        "line": 2507,
         "level": 3,
         "title": "When Does Waiting Get Cancelled"
       }
@@ -22555,7 +23007,7 @@
     "When to Use Which Declaration": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1878,
+        "line": 1902,
         "level": 3,
         "title": "When to Use Which Declaration"
       },
@@ -22588,6 +23040,14 @@
         "line": 31,
         "level": 2,
         "title": "Why is a Standard Needed?"
+      }
+    ],
+    "Widget Catalog": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 88,
+        "level": 2,
+        "title": "Widget Catalog"
       }
     ],
     "Wildcard and Regex Listening": [
@@ -23315,7 +23775,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 129,
+        "line": 130,
         "level": 2,
         "title": "__init__.py"
       },
@@ -23351,7 +23811,7 @@
     "`hasattr` and `dir` Support": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1189,
+        "line": 1190,
         "level": 3,
         "title": "`hasattr` and `dir` Support"
       },
@@ -23477,7 +23937,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2086,
+        "line": 2110,
         "level": 3,
         "title": "choose(prompt, options, **kwargs)"
       }
@@ -23499,7 +23959,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2120,
+        "line": 2144,
         "level": 3,
         "title": "collect(fields, **kwargs)"
       }
@@ -23527,7 +23987,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2068,
+        "line": 2092,
         "level": 3,
         "title": "confirm(prompt=None, **kwargs)"
       }
@@ -23541,7 +24001,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2253,
+        "line": 2277,
         "level": 3,
         "title": "conv.context"
       }
@@ -23555,7 +24015,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2242,
+        "line": 2266,
         "level": 3,
         "title": "conv.start(name=None)"
       }
@@ -23671,7 +24131,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2567,
+        "line": 2591,
         "level": 3,
         "title": "escalate: Guaranteed Escalation at Deadline"
       }
@@ -23755,7 +24215,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 254,
+        "line": 255,
         "level": 4,
         "title": "i18n Support for Meta Fields"
       },
@@ -23803,7 +24263,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2168,
+        "line": 2192,
         "level": 3,
         "title": "is_active"
       }
@@ -23903,7 +24363,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 109,
+        "line": 110,
         "level": 2,
         "title": "pyproject.toml Configuration"
       },
@@ -23923,7 +24383,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2550,
+        "line": 2574,
         "level": 3,
         "title": "remind: Gentle Reminder if No Reply"
       }
@@ -23965,7 +24425,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2269,
+        "line": 2293,
         "level": 3,
         "title": "save() / resume() / clear_saved()"
       }
@@ -23979,7 +24439,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2037,
+        "line": 2061,
         "level": 3,
         "title": "say(content, **kwargs)"
       }
@@ -24037,7 +24497,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2160,
+        "line": 2184,
         "level": 3,
         "title": "stop()"
       }
@@ -24251,7 +24711,7 @@
       },
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2051,
+        "line": 2075,
         "level": 3,
         "title": "wait(prompt=None, timeout=None)"
       }
@@ -24371,7 +24831,7 @@
     "交互会话": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 2418,
+        "line": 2442,
         "level": 2,
         "title": "交互会话"
       }
@@ -24487,7 +24947,7 @@
     "多轮对话": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1993,
+        "line": 2017,
         "level": 2,
         "title": "多轮对话"
       }
@@ -24535,7 +24995,7 @@
     "平台接入指南索引": [
       {
         "document": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-        "line": 3765,
+        "line": 3798,
         "level": 2,
         "title": "平台接入指南索引"
       }
@@ -24599,7 +25059,7 @@
     "模块开发入门": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 84,
+        "line": 85,
         "level": 2,
         "title": "模块开发入门"
       }
@@ -24615,7 +25075,7 @@
     "模块最佳实践": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 1224,
+        "line": 1225,
         "level": 2,
         "title": "模块最佳实践"
       }
@@ -24623,7 +25083,7 @@
     "模块核心概念": [
       {
         "document": "ai-support/skills/erispulse-module-dev/SKILL.md",
-        "line": 300,
+        "line": 301,
         "level": 2,
         "title": "模块核心概念"
       }

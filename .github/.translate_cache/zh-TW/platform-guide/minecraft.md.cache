@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "hash": "2e5f08e5c95e85cbf69896230f8ed464",
+  "file_hash": "2e5f08e5c95e85cbf69896230f8ed464",
+  "translated_at": "2026-10-31T17:05:26.596346",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "cd699312a673e3b564f19bc5f28b77ab",
+      "translation": "# Minecraft 平台特性文件\n\nMinecraftAdapter 是基於 RCON 協議的 Minecraft Java 版伺服器適配器，支援命令執行、訊息傳送與日誌事件監聽。\n\n---"
+    },
+    {
+      "hash": "60e1b88c6dac705e8df300523e98c7c7",
+      "translation": "## 文件資訊\n\n- 對應模組版本: 0.1.0\n- 維護者: ErisPulse"
+    },
+    {
+      "hash": "2e9059888476f5e99218491b3e1b846c",
+      "translation": "## 基本資訊\n\n- 平台簡介：Minecraft Java 版伺服器機器人（透過 RCON 遠端控制台）\n- 适配器名稱：MinecraftAdapter\n- 多伺服器支援：支援（每帳號一臺伺服器，斷線自動重連）\n- 連接方式：RCON TCP 長連線（保活 + 指數退避重連）\n- 認證方式：RCON 密碼（server.properties 的 rcon.password）\n- 事件監聽：日誌 tail（可選，聊天/加入/退出）\n- 鏈式修飾支援：支援 `.At()` 等鏈式修飾方法\n- OneBot12 兼容：僅 text 段（RCON 無法發送媒體）"
+    },
+    {
+      "hash": "67dc472813cf2231db607d0f2d0817ae",
+      "translation": "## 伺服器前置設定\n\n`server.properties`：\n\n```properties\nenable-rcon=true\nrcon.port=25575\nrcon.password=your_rcon_password\n```"
+    },
+    {
+      "hash": "a40f38d45044f1ecf26b0c1ed8261191",
+      "translation": "## 配置說明\n\n```toml\n[MinecraftAdapter.accounts.default]\nhost = \"127.0.0.1\"             # RCON 伺服器位址\nport = 25575                   # RCON 端口\npassword = \"your_rcon_password\"\nbot_id = \"\"                    # 留空預設為帳戶名\nenable_log_tail = false        # 啟用日誌監聽（聊天/加入/退出事件）\nlog_path = \"logs/latest.log\"   # 日誌檔案路徑\npoll_interval = 1.0            # 日誌掃描間隔（秒）\nenabled = true\n```\n\n**配置項說明（每個帳戶）：**\n\n- `host` / `port` / `password`：RCON 端點（必填）\n- `bot_id`：事件中的機器人標識（預設為帳戶名），同時作為全服廣播的 `group_id`\n- `enable_log_tail`：日誌事件開關（預設關閉）。關閉時適配器為純命令模式（只發送、不產生事件）\n- `log_path`：日誌檔案路徑。要求適配器與伺服器**同機執行**或日誌目錄已掛載；支援日誌滾動（latest.log 輪轉後自動重置讀取位置）\n- `poll_interval`：日誌掃描間隔（秒，最小 0.2）"
+    },
+    {
+      "hash": "4ec5336232dd77d3a1509711f7091c97",
+      "translation": "## 消息發送\n\n所有發送方法返回 Task，await 後得到標準響應（見「返回值格式」）。\n\n### 基礎發送\n\n```python\nfrom ErisPulse import sdk\nmc = sdk.adapter.get(\"minecraft\")\n\n# 單人消息（tellraw 純文本）\nawait mc.Send.To(\"user\", \"Steve\").Text(\"Hello Steve\")\n\n# 全服廣播（say）\nawait mc.Send.To(\"server\", \"myserver\").Text(\"伺服器廣播\")\n```\n\n### 鏈式修飾方法\n\n```python\n# @玩家（tellraw 中內聯渲染為玩家名）\nawait mc.Send.To(\"server\", \"myserver\").At(\"Steve\").Text(\" 看看這個\")\n```\n\n### 多伺服器發送\n\n```python\nawait mc.Send.Using(\"server2\").To(\"server\", \"s2\").Text(\"來自第二台伺服器\")\n```\n\n### 支援與不支援的消息段\n\n| 段 | 支援 | 說明 |\n|----|------|------|\n| `text` | 支援 | 拼接後按目標類型轉 tellraw / say |\n| `mention` | 支援 | 渲染為玩家名內聯 |\n| `reply` | 部分支援 | 接受但 Minecraft 無引用展示 |\n| `image` / `audio` / `video` / `file` | 不支援 | 回傳 `retcode=10002` 並列出段類型 |\n\n### 目標類型\n\n| target_type | 行為 |\n|-------------|------|\n| `user` | `tellraw <玩家名> {\"text\":\"...\"}` 僅該玩家可見 |\n| `server` / `group` | `say <內容>` 全服廣播（group_id 為 bot_id） |"
+    },
+    {
+      "hash": "35e38104137c6f17bb9c7ca18835fc7e",
+      "translation": "## 標準 API 動作（Api）\n\n```python\nfrom ErisPulse import sdk\nmc = sdk.adapter.get(\"minecraft\")\n\n# 在線玩家列表（解析 list 命令輸出）\nresult = await mc.Api.get_player_list()       # {\"players\": [\"Steve\", \"Alex\"], \"raw\": \"...\"}\n\n# 連接狀態\nresult = await mc.Api.get_status()            # {\"status\": \"ok\", \"connected\": true}\n\n# 伺服器身份\nresult = await mc.Api.get_self_info()         # {user_id, user_name, host}\n\n# 版本\nresult = await mc.Api.get_version()\n\n# 多伺服器\nresult = await mc.Api.Using(\"server2\").get_player_list()\n```\n\n### 支援的標準動作\n\n| 方法 | 說明 | 數據來源 |\n|------|------|---------|\n| `get_status()` | RCON 連接狀態 | 本地 |\n| `get_self_info()` | 伺服器身份（bot_id/帳戶名/host:port） | 本地 |\n| `get_player_list()` | 在線玩家列表（解析 `list` 命令輸出） | RCON |\n| `get_version()` | 適配器版本 | 本地 |\n\n### 平台擴展動作\n\n透過 `Api.exec(cmd)` 執行任意 RCON 命令（等價於 `call_api(\"exec\", command=...)`）：\n\n```python\n# 白名單管理\nawait mc.Api.exec(\"whitelist add Alex\")\nawait mc.Api.exec(\"whitelist remove Alex\")\n\n# 伺服器管理\nawait mc.Api.exec(\"time set day\")\nawait mc.Api.exec(\"weather clear\")\nawait mc.Api.exec(\"op Alex\")\nawait mc.Api.exec(\"kick Steve\")\n\n# 數據與計分板\nawait mc.Api.exec(\"scoreboard objectives add kills deathCount\")\n```\n\n> **安全提醒**：`Api.exec` 擁有伺服器控制台完整權限（包括 stop/deop 等），請勿將未鑑權的入口暴露給不可信調用方。\n\n### 不支援的標準動作\n\n以下標準動作 RCON 無對應能力，調用返回 `retcode=10002` 或 `33001`（未連接）：\n\n- `delete_message`（Minecraft 無訊息撤回）\n- `get_friend_list` / `get_group_list`（用 `get_player_list` 替代）\n\n### 通用動作入口\n\n```python\n# send_message：等價於 Send 鏈\nresult = await mc.call_api(\n    \"send_message\",\n    _account_id=\"default\",\n    target_type=\"user\", target_id=\"Steve\",\n    message=[{\"type\": \"text\", \"data\": {\"text\": \"hi\"}}],\n)\n```"
+    },
+    {
+      "hash": "c9698f9426cbed951e173a97aeabdfc2",
+      "translation": "## 發送方法返回值\n\n```python\n{\n    \"status\": \"ok\",                  # ok / failed\n    \"retcode\": 0,                    # 0 成功；33001 未連接/執行失敗；10002 不支援\n    \"data\": {\"command_output\": \"...\"},  # RCON 命令回顯\n    \"self\": {\"platform\": \"minecraft\", \"user_id\": \"mc1\"},\n    \"message_id\": \"uuid\",            # 生成的消息標識（tellraw/say 無真實消息 ID）\n    \"message\": \"\",\n    \"minecraft_raw\": {\"output\": \"...\"}\n}\n```"
+    },
+    {
+      "hash": "96827ce76c62f208955bd3ba1dda8277",
+      "translation": "## 事件類型（enable_log_tail = true）\n\n需要 `platform == \"minecraft\"` 檢測再使用本平台特性。**RCON 協議收不到聊天事件**（純請求-響應協議），事件面依賴日誌監聽。\n\n### 事件映射\n\n| 伺服器日誌行 | Adapter 事件 | 說明 |\n|--------------|--------------|------|\n| `[12:34:56] [...]: <Steve> 你好` | message（`detail_type: server`） | 玩家聊天 |\n| `[12:35:00] [...]: Alex joined the game` | notice（`detail_type: server_joined`） | 玩家加入 |\n| `[12:36:00] [...]: Alex left the game` | notice（`detail_type: server_left`） | 玩家退出 |\n\n### 事件欄位示例\n\n```python\n# 聊天\n{\n  \"id\": \"uuid\",\n  \"time\": 1793277000,\n  \"type\": \"message\",\n  \"detail_type\": \"server\",\n  \"platform\": \"minecraft\",\n  \"self\": {\"platform\": \"minecraft\", \"user_id\": \"mc1\", \"user_name\": \"mc1\", \"account_id\": \"default\"},\n  \"user_id\": \"Steve\",                      # 玩家名\n  \"message\": [{\"type\": \"text\", \"data\": {\"text\": \"你好世界\"}}],\n  \"alt_message\": \"你好世界\",\n  \"group_id\": \"mc1\",                       # bot_id\n  \"minecraft_raw\": {\"line\": \"[12:34:56] [Server thread/INFO]: <Steve> 你好世界\"},\n  \"minecraft_raw_type\": \"log_line\"\n}\n\n# 加入（notice）\n{\n  \"type\": \"notice\",\n  \"detail_type\": \"server_joined\",          # 或 server_left\n  \"user_id\": \"Alex\",\n  \"operator_id\": \"Alex\",\n  \"group_id\": \"mc1\",\n  \"minecraft_raw\": {\"line\": \"...\"},\n  \"minecraft_raw_type\": \"log_line\"\n}\n```\n\n### 回環去重\n\n`say` / `tellraw` 命令的回顯同樣會寫入日誌。適配器在發送時記錄內容指紋（30 秒視窗），日誌中出現相同內容時跳過發射，避免 bot 發出的消息被當成收到的事件回環。"
+    },
+    {
+      "hash": "33e033d0ae6e80d8bd6e40a874adc14b",
+      "translation": "## 注意事項\n\n1. **RCON 無法接收聊天事件**：協議本身的限制（純請求-回應），事件面必須啟用日誌監聽\n2. **日誌路徑可達性**：適配器與伺服器同機運行，或日誌目錄已掛載（容器場景掛載 `logs/`）\n3. **日誌格式**：依賴 vanilla / 主流服務端（Paper、Fabric 等）預設格式；修改過日誌格式的插件（如自定義 chat 插件）可能解析不到\n4. **RCON 併發限制**：Minecraft RCON 為單連接串行處理；適配器內建鎖與保活（30 秒空命令）\n5. **回環去重視窗**：30 秒內相同內容只發射一次\n6. **安全**：`Api.exec` 為控制台級權限，請勿暴露給不可信調用方"
+    }
+  ]
+}
