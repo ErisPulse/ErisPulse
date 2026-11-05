@@ -143,6 +143,43 @@ ownership.orphans()                      # [{"owner": "ghost", "total": 2, ...}]
   给出引用方类型（定位"谁攥着旧实例"）；有全局暂停开销，仅显式排障使用
 - 深普查属显式操作，不设配置键、不做自动修复
 
+## 嵌套生命周期（ownership.nest）
+
+允许一个模块（父）托管另一批 owner（子），父被回收时子整体回收。典型场景：
+脚本引擎模块内跑子插件、Dashboard 托管面板扩展、工具模块代管外部注册表条目。
+
+```python
+from ErisPulse.Core import ownership
+
+ownership.nest("ScriptEngine", "ScriptEngine.plugin_a")
+ownership.nest("ScriptEngine", "ScriptEngine.plugin_b")
+
+ownership.nested_children("ScriptEngine")
+# frozenset({"ScriptEngine.plugin_a", "ScriptEngine.plugin_b"})
+
+ownership.unnest("ScriptEngine", "ScriptEngine.plugin_a")
+```
+
+| 项 | 约定 |
+|----|------|
+| 回收顺序 | 子先于父；同级按注册逆序（后注册的先回收） |
+| 回收范围 | 资源级（任务 / 连接 / 路由 / 命令 / tracked 资源 / 清理钩子），**不触发子的模块级 `on_unload`** |
+| 环检测 | `nest` 拒绝自环与已存在的反向链，返回 `False` 并告警 |
+| 子先亡 | 子被独立回收（`reclaim` / `reclaim_sync`）时自动 `unnest`，父侧不保留悬挂关系 |
+| 超时 | 单个子回收受 `CLEANUP_CALLBACK_TIMEOUT_SECS` 约束；超时告警、移除父子关系并继续 |
+| 可观测 | `ownership.counts(parent)` 增加 `nested` 计数；`ownership.orphans()` 对嵌套关系做传递闭包，父已消失的残留关系仍会暴露 |
+
+**为什么不触发子的 `on_unload`**：模块完整卸载需要走管理器级流程（懒代理、
+sdk 属性、事件广播），而 `ownership` 门面只负责资源回收，跨层调用会引入
+卸载锁重入风险。需要子的 `on_unload` 时，由父在自己的 `on_unload` 里显式调用：
+
+```python
+await self.sdk.module.unload(child, reason="cascade")
+```
+
+同步入口（如 `sdk.module.disable`）会先标记异步级联，后台任务回收子资源；
+`reclaim_sync` 只在没有异步级联进行时自行级联子的注册类资源。
+
 ## 热重载失败回滚
 
 热重载为"**卸载前快照 → 失败自动恢复 → 重放 on_load**"：新版本语法错误、
@@ -150,6 +187,11 @@ ownership.orphans()                      # [{"owner": "ghost", "total": 2, ...}]
 条目）自动还原，随后在归属上下文内**重放旧实例的 `on_load`**（`reason`
 为 `"rollback"`），让卸载阶段断开的外部资源重新建立；结束后发射
 `module.rollback` 事件（载荷 `{module_name, success}`）。
+
+适配器热重载失败同样恢复旧注册态；旧实例原处于运行态且旧启动任务已结束时，
+回滚后会重放 `start()`，并发射 `adapter.rollback` 事件（载荷
+`{adapter_name, replayed, success}`）。断连 / bot offline 等 unload 副作用
+仍不可撤销。
 
 边界说明：
 
@@ -184,7 +226,6 @@ ownership.orphans()                      # [{"owner": "ghost", "total": 2, ...}]
 | 持久化覆写（`persist=True`）/ 配置文件 | 不处理，保留 | 用户资产 |
 | 第三方库内部缓存的对象引用 | 不处理 | 框架看不到，需模块自行解引用 |
 | 模块自己 `new` 的事件循环 / 裸线程 | 不回收 | 见下方守则 |
-| 适配器回滚后的资源 | 未对齐 | 适配器侧暂不重放 `start()` |
 
 ### 三层资源治理
 

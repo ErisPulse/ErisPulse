@@ -383,6 +383,24 @@ epsdk run main.py
 
 `epsdk run --reload`（开发热重载模式，2.11.1 起）同样走「监督进程 + 重载 worker 子进程」结构：worker 内保存 `.py` 文件即触发**组件级热重载**（不整框架重启）；硬重启由监督进程重拉全新 worker，升级框架后新代码即刻生效。
 
+#### 细粒度重载判定（2.12+）
+
+保存 `.py` 后按运行时源码归属选择最小重载单元，不按路径字符串猜：
+
+| 变更文件 | 处理 |
+|----------|------|
+| 插件目录（`ErisPulse.framework.plugins_dir`）内 | 由插件热重载 watcher 处理，dev watcher 不重复触发 |
+| 已加载模块的源码（含 `pip install -e` 与 site-packages） | `sdk.reload_module(模块名)` |
+| 已注册适配器的源码 | `sdk.reload_adapter(平台名)` |
+| 入口脚本 | 进程级重启（退出码 42，由监督者重拉） |
+| 框架自身源码（`ErisPulse` 包内） | 进程级重启 |
+| 同时匹配多个 owner / 无法归属 | 保守走进程级重启 |
+
+脚本模式（`epsdk run main.py --reload`）不把脚本 worker 化：脚本子进程内挂载
+dev watcher，并把 `component_reload_pid` 写入 `.erispulse/runtime.json`；父进程
+看到该标记后，模块/适配器/插件变更交给子进程处理，只有入口脚本或框架源码
+变更才重启脚本进程。
+
 #### 2. systemd（Linux 服务器）
 
 `RestartForceExitStatus=42` 让退出码 42 也触发重启（默认 `on-failure` 只对非零码生效）：

@@ -1003,6 +1003,20 @@ class ModuleManager(ManagerBase):
                 except Exception as e:
                     logger.error(i18n.t("core.module.on_unload_failed", name=module_name, error=e))
 
+            # 嵌套生命周期：子先于父回收（资源级，不触发子模块的 on_unload）
+            try:
+                from .ownership import ownership as ownership_service
+
+                await ownership_service.reclaim_nested(module_name)
+            except Exception as e:
+                logger.warning(
+                    i18n.t(
+                        "core.ownership.reclaim_step_failed",
+                        step="nested",
+                        error=e,
+                    )
+                )
+
             # on_unload 之后兜底取消该模块名下的后台任务：
             # 模块未自行取消的任务可能持有实例引用，导致卸载后无法被 GC
             from ..runtime.tasks import cancel_owner_tasks
@@ -1291,6 +1305,69 @@ class ModuleManager(ManagerBase):
             return shadow_manager.real_name_of(module_name) is not None
         except Exception:
             return False
+
+    def list_shadows(self) -> "dict[str, str]":
+        """
+        当前全部影子绑定（Dashboard 聚合展示用）
+
+        :return: ``{原模块名: 影子 owner 名}``
+        """
+        try:
+            from .shadow import shadow_manager
+
+            return shadow_manager.bindings()
+        except Exception:
+            return {}
+
+    def shadow_ingest_whl(self, module_name: str, *, data: bytes, filename: str) -> "dict[str, str]":
+        """
+        摄取 whl 作为影子源：校验 → 原件落盘 → 解包 → 推导 source
+
+        :param module_name: 被影子测试的模块名（仅作落盘目录段）
+        :param data: whl 文件字节
+        :param filename: whl 文件名（PEP 427）
+        :return: ``{"source": 解包源目录, "whl_path": 原件路径}``
+        :raises ShadowSourceError: 文件名/大小非法或无法推导源目录
+
+        :example:
+        >>> sdk.module.shadow_ingest_whl("roll", data=whl_bytes, filename="roll-2.0-py3-none-any.whl")
+        """
+        from .shadow import shadow_manager
+
+        return shadow_manager.ingest_whl(module_name, data, filename)
+
+    async def shadow_promote_persist(self, module_name: str, *, whl_path: str) -> "dict[str, Any]":
+        """
+        转正并持久化：promote 成功后后台 pip 安装落盘的 whl 原件
+
+        :param module_name: 原模块名
+        :param whl_path: :meth:`shadow_ingest_whl` 返回的原件路径
+        :return: ``{"task_id": 后台安装任务 ID}``
+        :raises ShadowSourceError: whl_path 缺失 / 越界
+
+        :example:
+        >>> await sdk.module.shadow_promote_persist("roll", whl_path=info["whl_path"])
+        """
+        from .shadow import shadow_manager
+
+        validated = shadow_manager.validate_persist_whl(module_name, whl_path)
+        ok = await self.promote_shadow(module_name)
+        if not ok:
+            return {"task_id": "", "promoted": False}
+        result = shadow_manager.start_persist(validated)
+        result["promoted"] = True
+        return result
+
+    def shadow_persist_status(self, task_id: str) -> "dict[str, Any] | None":
+        """
+        查询「转正并持久化」后台 pip 任务状态
+
+        :param task_id: :meth:`shadow_promote_persist` 返回的任务 ID
+        :return: ``{"status": running/success/error, "output": [...], ...}``；未知任务为 None
+        """
+        from .shadow import shadow_manager
+
+        return shadow_manager.persist_status(task_id)
 
     async def shadow_start(
         self,
@@ -1800,6 +1877,24 @@ class ModuleManager(ManagerBase):
                 except Exception as e:
                     logger.error(i18n.t("core.module.on_unload_failed", name=module_name, error=e))
                 spawn_background(_fallback_cleanup())
+
+        # 嵌套生命周期：同步入口先标记 inflight，随后由后台任务异步级联回收
+        # 子资源；_cleanup_module_registrations 的 reclaim_sync 据此跳过子级联
+        try:
+            from .ownership import ownership as ownership_service
+
+            if ownership_service.begin_nested_reclaim(module_name):
+                from ..runtime.tasks import spawn_background as _spawn_nested
+
+                _spawn_nested(ownership_service.reclaim_nested(module_name))
+        except Exception as e:
+            logger.warning(
+                i18n.t(
+                    "core.ownership.reclaim_step_failed",
+                    step="nested",
+                    error=e,
+                )
+            )
 
         # 清理模块在加载上下文内注册的全部框架资源（与 unload 共用，
         # 含 master provider / 适配器处理器 / 自定义会话类型等，保持卸载对等）

@@ -20,6 +20,7 @@ from typing import Any, cast
 from ..Core.constants import (
     ADAPTER_ENTRY_POINT_GROUP,
     ADAPTER_SOURCE_PLUGIN_FOLDER,
+    EVENT_ADAPTER_ROLLBACK,
 )
 from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
@@ -519,7 +520,7 @@ class AdapterLoader(BaseLoader):
             sys_modules=sys_entries,
         )
 
-    def _restore_adapter_snapshot(
+    async def _restore_adapter_snapshot(
         self, snapshot: "_AdapterReloadSnapshot", adapter_name: str, manager_instance: Any
     ) -> None:
         """
@@ -527,8 +528,9 @@ class AdapterLoader(BaseLoader):
         恢复适配器重载快照（重发现 / 注册失败时调用）
 
         恢复顺序：sys.modules 条目 → 注册存根与实例 → 启动态 / bots /
-        启动任务。尽力而为语义：unload 已执行的副作用（断连 / bot offline）
-        不可撤销，恢复后旧实例处于"已收尾"状态。
+        启动任务。原实例处于运行态且旧启动任务已结束时，重放 `start()`；
+        其余情况只恢复登记状态。unload 已执行的副作用（断连 / bot offline）
+        不可撤销。
 
         :param snapshot: 重载前采集的快照
         :param adapter_name: 适配器名
@@ -554,18 +556,28 @@ class AdapterLoader(BaseLoader):
                         name=adapter_name, step="registry", error=e,
                     )
                 )
+
+        replayed = False
+        replay_ok = True
         if snapshot.instance is not None:
             try:
                 manager_instance._adapters[adapter_name] = snapshot.instance
-                if snapshot.was_started:
-                    manager_instance._started_instances.add(snapshot.instance)
                 if snapshot.bots:
                     manager_instance._bots[adapter_name] = snapshot.bots
-                if snapshot.task is not None and not snapshot.task.done():
+                task_alive = (
+                    snapshot.task is not None and not snapshot.task.done()
+                )
+                if snapshot.was_started and task_alive:
+                    manager_instance._started_instances.add(snapshot.instance)
                     manager_instance._adapter_tasks[adapter_name] = snapshot.task
                 else:
+                    manager_instance._started_instances.discard(
+                        snapshot.instance
+                    )
                     manager_instance._adapter_tasks.pop(adapter_name, None)
+                    replayed = bool(snapshot.was_started)
             except Exception as e:
+                replay_ok = False
                 logger.warning(
                     i18n.t(
                         "loader.adapter.reload_restore_failed",
@@ -574,6 +586,41 @@ class AdapterLoader(BaseLoader):
                 )
         if snapshot.module_obj is not None:
             self._last_adapter_objs[adapter_name] = snapshot.module_obj
+
+        if replayed:
+            try:
+                await manager_instance.startup(adapter_name)
+                logger.info(
+                    i18n.t(
+                        "loader.adapter.reload_rollback_replayed",
+                        name=adapter_name,
+                    )
+                )
+            except Exception as e:
+                replay_ok = False
+                logger.warning(
+                    i18n.t(
+                        "loader.adapter.reload_rollback_replay_failed",
+                        name=adapter_name,
+                        error=e,
+                    )
+                )
+
+        try:
+            await lifecycle.submit_event(
+                EVENT_ADAPTER_ROLLBACK,
+                msg=i18n.t(
+                    "loader.adapter.reload_rollback_event",
+                    name=adapter_name,
+                ),
+                data={
+                    "adapter_name": adapter_name,
+                    "replayed": replayed,
+                    "success": replay_ok,
+                },
+            )
+        except Exception:
+            pass
 
     async def reload_adapter(
         self, adapter_name: str, manager_instance: Any, sdk_instance: Any, *, full: bool = True
@@ -684,7 +731,9 @@ class AdapterLoader(BaseLoader):
                 # 重发现整体失败（非删除）：恢复快照返回失败，不能落入
                 # found = {} → item None → 误判「已删除」的路径
                 logger.error(i18n.t("loader.plugin.discovery_failed", error=e))
-                self._restore_adapter_snapshot(snapshot, adapter_name, manager_instance)
+                await self._restore_adapter_snapshot(
+                    snapshot, adapter_name, manager_instance
+                )
                 return False
             item = found.get(adapter_name)
             if item is None:
@@ -697,7 +746,9 @@ class AdapterLoader(BaseLoader):
                             name=adapter_name,
                         )
                     )
-                    self._restore_adapter_snapshot(snapshot, adapter_name, manager_instance)
+                    await self._restore_adapter_snapshot(
+                        snapshot, adapter_name, manager_instance
+                    )
                     return False
                 removed = True
             else:
@@ -737,7 +788,7 @@ class AdapterLoader(BaseLoader):
                         hint_key="loader.adapter.diag_hint",
                         hint_params={"name": adapter_name},
                     )
-                    self._restore_adapter_snapshot(
+                    await self._restore_adapter_snapshot(
                         snapshot, adapter_name, manager_instance
                     )
                     return False
@@ -776,7 +827,9 @@ class AdapterLoader(BaseLoader):
             logger.error(
                 i18n.t("loader.adapter.reload_register_failed", name=adapter_name, error=e)
             )
-            self._restore_adapter_snapshot(snapshot, adapter_name, manager_instance)
+            await self._restore_adapter_snapshot(
+                snapshot, adapter_name, manager_instance
+            )
             return False
 
         # 5. 原运行态则重新拉起（状态事件由 startup / _run_adapter 全链路播报；

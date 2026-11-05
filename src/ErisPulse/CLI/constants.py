@@ -34,6 +34,12 @@ ENV_SUPERVISED: str = "ERISPULSE_SUPERVISED"
 # `uv run epsdk` 等场景混淆。使用位置: CLI/commands/run.py。
 ENV_RELOAD_WORKER: str = "ERISPULSE_RELOAD_WORKER"
 
+# 脚本模式热重载标记环境变量名。
+# `epsdk run <script> --reload` 拉起脚本子进程时注入；SDK 据此在
+# ``sdk.run()`` 内挂载细粒度 watcher。使用位置: CLI/commands/run.py。
+# 镜像于: ErisPulse.Core.constants.ENV_SCRIPT_RELOAD
+ENV_SCRIPT_RELOAD: str = "ERISPULSE_SCRIPT_RELOAD"
+
 # 模块入口点组名（loader / finder / create / types 共用）。
 # 镜像于: ErisPulse.Core.constants.MODULE_ENTRY_POINT_GROUP
 MODULE_ENTRY_POINT_GROUP: str = "erispulse.module"
@@ -142,6 +148,7 @@ __all__ = [
     "RUN_PERSISTENT_CRASH_HINT_THRESHOLD",
     "ENV_SUPERVISED",
     "ENV_RELOAD_WORKER",
+    "ENV_SCRIPT_RELOAD",
     "HARD_RESTART_EXIT_CODE",
     "MODULE_ENTRY_POINT_GROUP",
     "PYPI_PACKAGE_JSON_URL_TEMPLATE",

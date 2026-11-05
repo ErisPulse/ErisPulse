@@ -24,10 +24,14 @@ import asyncio
 import inspect
 import threading
 import weakref
+from collections import deque
 from collections.abc import Awaitable, Callable, Coroutine
 from typing import Any, TypeVar, cast
 
-from ..Core.constants import DEFAULT_OWNER_CANCEL_TIMEOUT_SECS
+from ..Core.constants import (
+    DEFAULT_OWNER_CANCEL_TIMEOUT_SECS,
+    PENDING_TASK_QUEUE_MAX,
+)
 from .context import current_owner
 
 _T = TypeVar("_T")
@@ -56,6 +60,120 @@ _owner_threads: dict[str | None, set[threading.Thread]] = {}
 _MAIN_LOOP: asyncio.AbstractEventLoop | None = None
 _MAIN_LOOP_LOCK = threading.Lock()
 
+# 主循环注册前的待发队列：(协程, owner)。主循环可用后由
+# register_main_loop 统一冲队列；队列满时丢弃新任务并告警。
+_PENDING_TASKS: deque[tuple[Awaitable[Any], str | None]] = deque()
+_PENDING_LOCK = threading.Lock()
+
+
+def _close_awaitable(awaitable: Any) -> None:
+    """{!--< internal-use >!--} 关闭未执行的协程，避免 never awaited 警告"""
+    close = getattr(awaitable, "close", None)
+    if callable(close):
+        try:
+            close()
+        except Exception:
+            pass
+
+
+def _enqueue_pending(awaitable: Awaitable[Any], owner: str | None) -> bool:
+    """{!--< internal-use >!--} 入队待发任务；队列满时丢弃并告警"""
+    size = 0
+    with _PENDING_LOCK:
+        if len(_PENDING_TASKS) >= PENDING_TASK_QUEUE_MAX:
+            full = True
+        else:
+            _PENDING_TASKS.append((awaitable, owner))
+            full = False
+            size = len(_PENDING_TASKS)
+    if full:
+        try:
+            from ..Core.i18n import i18n as _i18n
+            from ..Core.logger import logger
+
+            logger.warning(
+                _i18n.t(
+                    "runtime.tasks.queue_full",
+                    limit=PENDING_TASK_QUEUE_MAX,
+                    owner=owner or "-",
+                )
+            )
+        except Exception:
+            pass
+        _close_awaitable(awaitable)
+        return False
+    try:
+        from ..Core.i18n import i18n as _i18n
+        from ..Core.logger import logger
+
+        logger.debug(
+            _i18n.t(
+                "runtime.tasks.queued_pending",
+                owner=owner or "-",
+                count=size,
+            )
+        )
+    except Exception:
+        pass
+    return True
+
+
+def _take_pending_for_owner(owner: str | None) -> list[Awaitable[Any]]:
+    """{!--< internal-use >!--} 取出并移除指定 owner 的待发任务"""
+    removed: list[Awaitable[Any]] = []
+    with _PENDING_LOCK:
+        kept: deque[tuple[Awaitable[Any], str | None]] = deque()
+        for awaitable, item_owner in _PENDING_TASKS:
+            if item_owner == owner:
+                removed.append(awaitable)
+            else:
+                kept.append((awaitable, item_owner))
+        _PENDING_TASKS.clear()
+        _PENDING_TASKS.extend(kept)
+    return removed
+
+
+def _drain_pending(loop: asyncio.AbstractEventLoop) -> None:
+    """{!--< internal-use >!--} 把待发队列冲入主循环"""
+    with _PENDING_LOCK:
+        pending = list(_PENDING_TASKS)
+        _PENDING_TASKS.clear()
+    if not pending:
+        return
+    try:
+        current_loop: asyncio.AbstractEventLoop | None = asyncio.get_running_loop()
+    except RuntimeError:
+        current_loop = None
+
+    drained = 0
+    for awaitable, owner in pending:
+        try:
+            if current_loop is loop:
+                task = loop.create_task(
+                    cast("Coroutine[Any, Any, Any]", awaitable)
+                )
+                _background_tasks.add(task)
+                task.add_done_callback(_background_tasks.discard)
+                _track_owner_task(owner, task)
+            else:
+                future = asyncio.run_coroutine_threadsafe(
+                    cast("Coroutine[Any, Any, Any]", awaitable), loop
+                )
+                _track_owner_task(owner, future)
+            drained += 1
+        except Exception:
+            _close_awaitable(awaitable)
+    if drained:
+        try:
+            from ..Core.i18n import i18n as _i18n
+            from ..Core.logger import logger
+
+            logger.debug(
+                _i18n.t("runtime.tasks.pending_drained", count=drained)
+            )
+        except Exception:
+            pass
+
 
 def register_main_loop(loop: asyncio.AbstractEventLoop) -> None:
     """
@@ -73,6 +191,7 @@ def register_main_loop(loop: asyncio.AbstractEventLoop) -> None:
     with _MAIN_LOOP_LOCK:
         _MAIN_LOOP = loop
     install_owner_task_factory(loop)
+    _drain_pending(loop)
 
 
 def _get_main_loop() -> asyncio.AbstractEventLoop | None:
@@ -142,6 +261,10 @@ async def cancel_owner_tasks(owner: str | None, *, timeout: float = DEFAULT_OWNE
     :return: 发起取消的任务数
     """
     # 该归属者名下的未触发定时器一并取消（TimerHandle.cancel 幂等且立即生效）
+    pending_removed = _take_pending_for_owner(owner)
+    for awaitable in pending_removed:
+        _close_awaitable(awaitable)
+
     timers = _owner_timers.pop(owner, None)
     if timers:
         for handle in timers:
@@ -153,7 +276,7 @@ async def cancel_owner_tasks(owner: str | None, *, timeout: float = DEFAULT_OWNE
 
     tasks = _owner_tasks.pop(owner, None)
     if not tasks:
-        return 0
+        return len(pending_removed)
 
     # 防自取消：排除当前正在执行取消逻辑的任务（见 docstring——
     # 取消自身会经 gather 取消传播形成递归环，RecursionError 后续清理全部中断）
@@ -184,7 +307,7 @@ async def cancel_owner_tasks(owner: str | None, *, timeout: float = DEFAULT_OWNE
         else:
             pending.append(task)
 
-    cancelled = 0
+    cancelled = len(pending_removed)
     for task in pending:
         try:
             task.cancel()
@@ -234,6 +357,23 @@ async def cancel_all_background_tasks(*, timeout: float = DEFAULT_OWNER_CANCEL_T
     # 无归属上下文（None 键）的任务同样会被遍历清理
     for owner in list(_owner_tasks.keys()) + list(_owner_timers.keys()):
         total += await cancel_owner_tasks(owner, timeout=timeout)
+
+    with _PENDING_LOCK:
+        pending = list(_PENDING_TASKS)
+        _PENDING_TASKS.clear()
+    if pending:
+        try:
+            from ..Core.i18n import i18n as _i18n
+            from ..Core.logger import logger
+
+            logger.warning(
+                _i18n.t("runtime.tasks.pending_at_exit", count=len(pending))
+            )
+        except Exception:
+            pass
+        for awaitable, _ in pending:
+            _close_awaitable(awaitable)
+        total += len(pending)
     return total
 
 
@@ -243,7 +383,7 @@ def spawn_background(coro: Awaitable[_T] | Coroutine[_T, Any, Any], *, owner: st
 
     优先在当前线程的事件循环中调度；如果当前线程没有运行中的事件循环
     （如配置监听后台线程），则优先调度回主事件循环（若已注册且正在运行），
-    否则创建一个临时事件循环同步执行，确保协程在任何情况下都会被运行。
+    否则放入待发队列，由 :func:`register_main_loop` 在主循环可用时统一冲队列。
 
     任务会自动归属到当前 ``owner_scope`` 上下文（模块名/适配器平台名），
     卸载/关闭时框架按归属兜底取消；也可通过 ``owner`` 参数显式指定。
@@ -255,67 +395,61 @@ def spawn_background(coro: Awaitable[_T] | Coroutine[_T, Any, Any], *, owner: st
     :param coro: 待执行的协程或可等待对象
     :param owner: 显式指定资源归属者；缺省时从当前 owner 上下文捕获
     :return: 创建出的 :class:`asyncio.Task` / 调度回主循环的
-             :class:`concurrent.futures.Future`，调用方可忽略返回值；
-             在临时事件循环中同步执行时返回 ``None``
+             :class:`concurrent.futures.Future`；入队待发时返回 ``None``
     :example:
     >>> spawn_background(some_async_work())
     """
     task_owner = owner if owner is not None else current_owner.get()
     coro = cast('Coroutine[Any, Any, Any]', coro)
 
+    main_loop = _get_main_loop()
+    try:
+        current_loop: asyncio.AbstractEventLoop | None = (
+            asyncio.get_running_loop()
+        )
+    except RuntimeError:
+        current_loop = None
+
     # 从非主循环线程（如同步桥接线程 / config watcher）调度时，优先投递回
     # 主事件循环：桥接循环可能按次运行（run_until_complete 用完即停），
     # 其上排队的后台任务会被孤立而永不执行；业务协程也理应回到主循环。
-    main_loop = _get_main_loop()
+    if (
+        main_loop is not None
+        and main_loop.is_running()
+        and current_loop is not None
+        and current_loop is not main_loop
+    ):
+        try:
+            future = asyncio.run_coroutine_threadsafe(coro, main_loop)
+            _track_owner_task(task_owner, future)
+            return future
+        except RuntimeError:
+            pass
+
+    if current_loop is not None:
+        task = current_loop.create_task(coro)
+        _background_tasks.add(task)
+        task.add_done_callback(_background_tasks.discard)
+        _track_owner_task(task_owner, task)
+        return task
+
+    # 当前线程没有运行中事件循环：优先调度回运行中的主循环
     if main_loop is not None and main_loop.is_running():
         try:
-            current_loop = asyncio.get_running_loop()
+            future = asyncio.run_coroutine_threadsafe(coro, main_loop)
+            _track_owner_task(task_owner, future)
+            return future
         except RuntimeError:
-            current_loop = None
-        if current_loop is not None and current_loop is not main_loop:
-            try:
-                future = asyncio.run_coroutine_threadsafe(coro, main_loop)
-                _track_owner_task(task_owner, future)
-                return future
-            except RuntimeError:
-                pass
+            pass
 
-    try:
-        task = asyncio.ensure_future(coro)  # type: ignore[arg-type]
-    except RuntimeError:
-        # 当前线程没有运行中事件循环（如 config watcher 后台线程）。
-        # 优先调度回主事件循环，确保业务代码在正确的循环上运行。
-        main_loop = _get_main_loop()
-        if main_loop is not None and main_loop.is_running():
-            try:
-                future = asyncio.run_coroutine_threadsafe(coro, main_loop)
-                _track_owner_task(task_owner, future)
-                return future
-            except RuntimeError:
-                pass
-        # 兜底：创建一个临时事件循环同步执行，确保协程不会丢失。
-        # 业务协程若绑定了主循环资源（存储连接 / ContextVar 关联 Task），
-        # 在异循环上执行可能报 "attached to a different loop"，留痕供排查
-        from ..Core.i18n import i18n as _i18n
-        from ..Core.logger import logger
-
-        logger.warning(_i18n.t("runtime.tasks.temp_loop_fallback", owner=task_owner or "-"))
-        _loop = asyncio.new_event_loop()
-        try:
-            _loop.run_until_complete(coro)
-        finally:
-            _loop.close()
-        return None
-
-    # 把引用塞进模块级集合，并在完成时自动清理
-    _background_tasks.add(task)
-    task.add_done_callback(_background_tasks.discard)
-    _track_owner_task(task_owner, task)
-
-    return task
+    # 无可用主循环：放入待发队列，由 register_main_loop 统一冲队列
+    _enqueue_pending(coro, task_owner)
+    return None
 
 
-def run_main_loop(coro: Coroutine[Any, Any, _T], *, timeout: float | None = None) -> _T:
+def run_main_loop(
+    coro: Coroutine[Any, Any, _T], *, timeout: float | None = None
+) -> _T | None:
     """
     从子线程安全投递协程到主循环并阻塞等待结果
 
@@ -325,9 +459,12 @@ def run_main_loop(coro: Coroutine[Any, Any, _T], *, timeout: float | None = None
     广播、推送、连接操作等凡从子线程触达主循环资源的场景都应基于它，
     不再手写 ``run_coroutine_threadsafe``。
 
+    主循环尚未注册或未运行时，协程进入待发队列并返回 ``None``；主循环
+    可用后由 :func:`register_main_loop` 统一冲队列。
+
     :param coro: 待执行的协程对象
     :param timeout: 阻塞等待结果的超时秒数；None 表示无限等待
-    :return: 协程的返回值
+    :return: 协程的返回值；入队待发时返回 ``None``
     :raises RuntimeError: 在主循环内同步调用（应改为 await），
                          或超时未完成（:class:`TimeoutError`）
 
@@ -351,16 +488,8 @@ def run_main_loop(coro: Coroutine[Any, Any, _T], *, timeout: float | None = None
         future = asyncio.run_coroutine_threadsafe(coro, main_loop)
         return future.result(timeout)
 
-    # 兜底：主循环尚未注册（过早调用）——临时事件循环同步执行，留痕供排查
-    from ..Core.i18n import i18n as _i18n
-    from ..Core.logger import logger
-
-    logger.warning(_i18n.t("runtime.tasks.temp_loop_fallback", owner="run_main_loop"))
-    loop = asyncio.new_event_loop()
-    try:
-        return loop.run_until_complete(coro)
-    finally:
-        loop.close()
+    _enqueue_pending(coro, None)
+    return None
 
 
 def _warn_coro_fn_failed(error: Exception) -> None:

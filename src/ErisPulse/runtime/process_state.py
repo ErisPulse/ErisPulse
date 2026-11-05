@@ -88,4 +88,43 @@ def clear_mark() -> None:
         _write(data)
 
 
-__all__ = ["STATE_DIR", "STATE_FILE", "clear_mark", "mark_hard_restart", "read"]
+def mark_component_reload(pid: int | None = None) -> None:
+    """
+    写入脚本模式组件级热重载能力标记
+
+    脚本子进程在 ``sdk.run()`` 内挂载 ``DevWatcher`` 后调用；父进程据此
+    跳过自身的进程重启，避免与子进程内 watcher 双重重载。
+
+    :param pid: 具备组件重载能力的进程 PID（默认当前进程）
+    """
+    data = read() or {}
+    data["component_reload_pid"] = pid if pid is not None else os.getpid()
+    data["component_reload_at"] = time.time()
+    _write(data)
+
+
+def clear_component_reload() -> None:
+    """
+    清除脚本模式组件级热重载能力标记（best-effort 不抛异常）
+    """
+    data = read()
+    if data is None:
+        return
+    changed = False
+    for key in ("component_reload_pid", "component_reload_at"):
+        if key in data:
+            data.pop(key)
+            changed = True
+    if changed:
+        _write(data)
+
+
+__all__ = [
+    "STATE_DIR",
+    "STATE_FILE",
+    "clear_component_reload",
+    "clear_mark",
+    "mark_component_reload",
+    "mark_hard_restart",
+    "read",
+]

@@ -1088,6 +1088,16 @@ class AdapterManager(ManagerBase):
         try:
             from .ownership import ownership
 
+            try:
+                await ownership.reclaim_nested(platform)
+            except Exception as e:
+                logger.warning(
+                    i18n.t(
+                        "core.ownership.reclaim_step_failed",
+                        step="nested",
+                        error=e,
+                    )
+                )
             reclaimed = ownership.reclaim_sync(platform)
             if reclaimed:
                 logger.trace(

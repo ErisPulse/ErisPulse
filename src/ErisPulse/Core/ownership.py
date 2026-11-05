@@ -10,6 +10,8 @@ ErisPulse 归属权统一门面
 - :func:`ownership.counts` —— 按 owner 统计在册资源（审计的计数面）
 - :func:`ownership.orphans` —— 孤儿扫描：资源在册而 owner 已注销（泄漏实锤）
 - :func:`ownership.audit` —— 泄漏审计（计数 + 孤儿 + 可选 gc 实例普查）
+- :func:`ownership.nest` / :func:`ownership.unnest` —— 声明父子归属，
+  父回收时按注册逆序先回收子（资源级，不触发子的模块级 ``on_unload``）
 
 各子系统既有的 ``*_by_owner`` 注销函数保持不变，作为本门面的内部 SPI；
 新增可回收资源时，子系统提供注销函数并登记进 :func:`reclaim_sync` 的
@@ -24,8 +26,10 @@ ErisPulse 归属权统一门面
 {!--< /tips >!--}
 """
 
+import asyncio
 from typing import Any
 
+from .i18n import i18n
 from .logger import logger
 
 __all__ = ["OwnershipManager", "ownership"]
@@ -47,9 +51,9 @@ class OwnershipManager:
     归属权管理器（单例）
 
     聚合各子系统的 owner 归属资源：统一注销（reclaim）、只读计数（counts）、
-    孤儿扫描（orphans）、泄漏审计（audit），以及影子 owner 判定面
-    （is_shadow / register_shadow / unregister_shadow——影子模块机制，
-    见 ``Core/shadow`` 与 docs/zh-CN/advanced/shadow.md）。
+    孤儿扫描（orphans）、泄漏审计（audit）、嵌套生命周期（nest / unnest），
+    以及影子 owner 判定面（is_shadow / register_shadow / unregister_shadow——
+    影子模块机制，见 ``Core/shadow`` 与 docs/zh-CN/advanced/shadow.md）。
     子系统内部表通过惰性导入访问，避免加载链耦合（与 module.py 清理链的
     既有风格一致）。
     """
@@ -59,6 +63,168 @@ class OwnershipManager:
         # 八道隔离闸（事件副本 / 命令目录 / 出站记账 / 存储覆盖层 / 生命周期
         # 静默 / 路由只登记）统一以此集合为判定来源
         self._shadow_owners: set[str] = set()
+        # 嵌套生命周期关系：parent -> [child, ...] 保持注册顺序，回收时逆序。
+        # _nested_parents 为反向索引（子 -> 父集合），用于子先亡时自动解绑。
+        # _nested_inflight 标记正在异步级联回收的父 owner，避免同步路径重复级联。
+        self._nested_children: dict[str, list[str]] = {}
+        self._nested_parents: dict[str, set[str]] = {}
+        self._nested_inflight: set[str] = set()
+
+    # ==================== 嵌套生命周期 ====================
+
+    def nest(self, parent: str, child: str) -> bool:
+        """
+        声明父子归属关系：父被回收时子先被完整回收
+
+        拒绝自环与已存在的反向链（会形成环）；重复声明幂等。
+
+        :param parent: 父 owner 名
+        :param child: 子 owner 名
+        :return: 是否声明成功
+
+        :example:
+        >>> from ErisPulse.Core import ownership
+        >>> ownership.nest("ScriptEngine", "ScriptEngine.plugin_a")
+        True
+        """
+        if not parent or not child:
+            logger.warning(i18n.t("core.ownership.nest_invalid"))
+            return False
+        if parent == child or self._reaches(child, parent):
+            logger.warning(
+                i18n.t(
+                    "core.ownership.nest_cycle",
+                    parent=parent,
+                    child=child,
+                )
+            )
+            return False
+        children = self._nested_children.setdefault(parent, [])
+        if child not in children:
+            children.append(child)
+        self._nested_parents.setdefault(child, set()).add(parent)
+        return True
+
+    def unnest(self, parent: str, child: str) -> bool:
+        """
+        解除父子归属关系
+
+        :param parent: 父 owner 名
+        :param child: 子 owner 名
+        :return: 是否解除了既有关系
+        """
+        children = self._nested_children.get(parent)
+        if not children or child not in children:
+            return False
+        children.remove(child)
+        if not children:
+            self._nested_children.pop(parent, None)
+        parents = self._nested_parents.get(child)
+        if parents is not None:
+            parents.discard(parent)
+            if not parents:
+                self._nested_parents.pop(child, None)
+        return True
+
+    def nested_children(self, parent: str) -> "frozenset[str]":
+        """
+        只读视图：父 owner 当前登记的子 owner
+
+        :param parent: 父 owner 名
+        :return: 子 owner 名集合
+        """
+        return frozenset(self._nested_children.get(parent, ()))
+
+    def begin_nested_reclaim(self, owner: str) -> bool:
+        """
+        {!--< internal-use >!--}
+        标记 owner 的异步级联回收即将开始
+
+        供同步入口（如 ``ModuleManager.disable``）在调度后台级联前调用，
+        使随后的 :meth:`reclaim_sync` 跳过子级联，避免与异步路径重复。
+
+        :param owner: 父 owner 名
+        :return: 是否存在需要级联的子 owner
+        """
+        if not self._nested_children.get(owner):
+            return False
+        self._nested_inflight.add(owner)
+        return True
+
+    async def reclaim_nested(self, owner: str) -> "dict[str, int]":
+        """
+        按注册逆序回收 owner 的全部子 owner（递归级联）
+
+        每个子回收受 ``CLEANUP_CALLBACK_TIMEOUT_SECS`` 约束；超时或失败
+        告警后继续处理其余子，并移除该父子关系（残留资源由 orphans 暴露）。
+
+        :param owner: 父 owner 名
+        :return: ``{"nested_children": 已处理子数}``
+        """
+        children = list(self._nested_children.get(owner, ()))
+        if not children:
+            self._nested_inflight.discard(owner)
+            return {}
+        self._nested_inflight.add(owner)
+        processed = 0
+        try:
+            from .constants import CLEANUP_CALLBACK_TIMEOUT_SECS
+
+            for child in reversed(children):
+                try:
+                    await asyncio.wait_for(
+                        self.reclaim(child),
+                        timeout=CLEANUP_CALLBACK_TIMEOUT_SECS,
+                    )
+                except asyncio.TimeoutError:
+                    logger.warning(
+                        i18n.t(
+                            "core.ownership.nest_child_timeout",
+                            parent=owner,
+                            child=child,
+                            timeout=CLEANUP_CALLBACK_TIMEOUT_SECS,
+                        )
+                    )
+                except Exception as e:
+                    _log_reclaim_failure(f"nested_child:{child}", e)
+                finally:
+                    self.unnest(owner, child)
+                    processed += 1
+        finally:
+            self._nested_inflight.discard(owner)
+        return {"nested_children": processed}
+
+    def _reaches(self, start: str, target: str) -> bool:
+        """{!--< internal-use >!--} 沿子关系判断 start 是否可达 target（环检测）"""
+        if start == target:
+            return True
+        visited: set[str] = set()
+        stack = [start]
+        while stack:
+            current = stack.pop()
+            if current in visited:
+                continue
+            visited.add(current)
+            for child in self._nested_children.get(current, ()):
+                if child == target:
+                    return True
+                if child not in visited:
+                    stack.append(child)
+        return False
+
+    def _detach_from_parents(self, child: str) -> None:
+        """{!--< internal-use >!--} 子被独立回收后从所有父的登记中移除"""
+        for parent in list(self._nested_parents.pop(child, set())):
+            children = self._nested_children.get(parent)
+            if not children:
+                continue
+            try:
+                children.remove(child)
+            except ValueError:
+                pass
+            if not children:
+                self._nested_children.pop(parent, None)
+
 
     # ==================== 影子判定面 ====================
 
@@ -113,8 +279,10 @@ class OwnershipManager:
         >>> from ErisPulse.Core import ownership
         >>> await ownership.reclaim("roll")
         """
-        result = await self.reclaim_tasks(owner)
+        result = await self.reclaim_nested(owner)
+        result.update(await self.reclaim_tasks(owner))
         result.update(self.reclaim_sync(owner))
+        self._detach_from_parents(owner)
         return result
 
     async def reclaim_tasks(self, owner: str) -> "dict[str, int]":
@@ -170,6 +338,21 @@ class OwnershipManager:
         {"routes_http": 2, "commands": 1, ...}
         """
         result: dict[str, int] = {}
+
+        # 子先于父：独立调用 reclaim_sync 时先逆序级联子的注册类资源；
+        # 异步 reclaim_nested 已标记 inflight 时由其负责，避免重复级联。
+        nested_processed = 0
+        if owner not in self._nested_inflight:
+            for child in reversed(list(self._nested_children.get(owner, ()))):
+                try:
+                    self.reclaim_sync(child)
+                except Exception as e:
+                    _log_reclaim_failure(f"nested_child:{child}", e)
+                finally:
+                    self.unnest(owner, child)
+                    nested_processed += 1
+        if nested_processed:
+            result["nested_children"] = nested_processed
 
         try:
             from .i18n import i18n as i18n_service
@@ -276,6 +459,7 @@ class OwnershipManager:
         except Exception as e:
             _log_reclaim_failure("resume_handlers", e)
 
+        self._detach_from_parents(owner)
         return {key: count for key, count in result.items() if count}
 
     # ==================== 只读计数 ====================
@@ -502,6 +686,11 @@ class OwnershipManager:
         except Exception:
             pass
 
+        for parent, children in self._nested_children.items():
+            if children:
+                entry = table.setdefault(parent, {})
+                entry["nested"] = len(children)
+
         if owner is not None:
             return table.get(str(owner), {})
         return table
@@ -538,10 +727,22 @@ class OwnershipManager:
         except Exception:
             pass
 
+        # 嵌套关系闭包：已注册 owner 名下的嵌套子（含多级）视为受管，
+        # 不算孤儿；父已消失的残留关系仍会暴露
+        governed: set[str] = set()
+        queue = list(registered)
+        while queue:
+            parent = queue.pop()
+            for child in self._nested_children.get(parent, ()):
+                if child in governed:
+                    continue
+                governed.add(child)
+                queue.append(child)
+
         all_counts = self.counts()
         result = []
         for o in sorted(all_counts):
-            if o in registered:
+            if o in registered or o in governed:
                 continue
             resources = all_counts[o]
             result.append(

@@ -73,6 +73,43 @@
 
 ---
 
+## [2.12.0-dev.1] - 2026/11/05
+> 开发版
+
+**版本摘要**
+本版本主题为「生命周期治理与可运维性」：新增嵌套生命周期，补齐细粒度热重载、后台任务排队、适配器回滚重放与影子模块体验闭环。
+
+**升级建议**
+- **是否建议升级**：dev 版，建议开发环境先行验证
+- 嵌套关系需显式声明，既有模块与适配器升级后行为不变
+
+**注意事项**
+- `run_main_loop` 无主循环时改为入队并返回 `None`（不再创建临时事件循环）
+- 适配器热重载失败回滚后会重放旧实例的 `start()`，并新增 `adapter.rollback` 事件
+
+### 新增
+
+- @YingXinche
+  - `ownership.nest()` 嵌套生命周期：父 owner 回收时按注册逆序级联回收子 owner，环声明拒绝，`counts` / `orphans` 覆盖嵌套关系
+  - 细粒度热重载：按运行时源码归属判定单模块/单适配器重载，入口脚本与框架源码变更走进程重启；脚本模式子进程内挂载 watcher 并通过运行状态握手去重
+  - 后台任务待发队列：主循环注册前的 `spawn_background` 入队并在 `register_main_loop` 时统一冲队列，队列上限与退出滞留告警
+  - 影子模块体验闭环：SDK 新增 `shadow_ingest_whl`（whl 校验/原件落盘/解包）、`shadow_promote_persist`（转正后后台 pip 安装原件，重启不回退）、`shadow_persist_status`、`list_shadows`；Dashboard 真实模块卡片「影子测试中」标记、顶部影子聚合区、影子 owner 移出普通列表，旧版 SDK 自动降级为基础影子（功能不退化）
+
+### 优化
+
+- @YingXinche
+  - 适配器热重载失败回滚后自动重放 `start()`，新增 `adapter.rollback` 事件
+  - `spawn_background` / `run_main_loop` 移除临时事件循环兜底，避免业务协程在异循环执行
+
+### 变更
+
+- @YingXinche
+  - `run_main_loop` 无可用主循环时入队并返回 `None`
+
+### 修复
+
+- @YingXinche
+  - 适配器回滚后旧实例不再停留在「已启动」但未实际服务的状态
 
 ---
 

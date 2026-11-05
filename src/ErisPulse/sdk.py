@@ -21,9 +21,11 @@ import os
 import sys
 import time
 from collections.abc import Callable
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from .Core.constants import (
+    ENV_SCRIPT_RELOAD,
     ENV_SUPERVISED,
     HARD_RESTART_EXIT_CODE,
     LIFECYCLE_TIMER_CORE_INIT,
@@ -787,6 +789,7 @@ class SDK:
                     self.logger.error(i18n.t("core.sdk.callback.on_ready_failed", error=e))
 
             if keep_running:
+                self._start_script_dev_watcher()
                 self._shutdown_event = asyncio.Event()
                 self._register_signal_handlers()
                 await self._shutdown_event.wait()
@@ -804,11 +807,63 @@ class SDK:
             # 模块/适配器不应能终止进程
             self.logger.error(i18n.t("core.sdk.run.unexpected_error", error=repr(e)))
         finally:
+            self._stop_script_dev_watcher()
             if keep_running:
                 try:
                     await self.uninit()
                 except Exception:
                     pass
+
+    def _start_script_dev_watcher(self) -> None:
+        """{!--< internal-use >!--} 脚本模式：挂载细粒度 watcher 并写入能力标记"""
+        if not os.environ.get(ENV_SCRIPT_RELOAD):
+            return
+        if getattr(self, "_dev_watcher", None) is not None:
+            return
+        try:
+            from .runtime import process_state
+            from .runtime.dev_watch import DevWatcher
+
+            entry_paths = (sys.argv[0],) if sys.argv else ()
+            watcher = DevWatcher(self, entry_paths=entry_paths)
+
+            def _notify(paths: set[str]) -> None:
+                for path in sorted(paths):
+                    self.logger.info(
+                        i18n.t(
+                            "runtime.dev_reload.file_changed",
+                            file=Path(path).name,
+                        )
+                    )
+
+            if not watcher.start(
+                ".", asyncio.get_running_loop(), notify=_notify
+            ):
+                return
+            self._dev_watcher = watcher
+            process_state.mark_component_reload(os.getpid())
+            self.logger.info(i18n.t("core.sdk.dev_reload.started"))
+        except Exception as e:
+            self.logger.warning(
+                i18n.t("core.sdk.dev_reload.failed", error=e)
+            )
+
+    def _stop_script_dev_watcher(self) -> None:
+        """{!--< internal-use >!--} 停止脚本模式 watcher 并清除能力标记"""
+        watcher = getattr(self, "_dev_watcher", None)
+        if watcher is None:
+            return
+        try:
+            watcher.stop()
+        except Exception:
+            pass
+        self._dev_watcher = None
+        try:
+            from .runtime import process_state
+
+            process_state.clear_component_reload()
+        except Exception:
+            pass
 
     def shutdown(self) -> None:
         """
@@ -1324,6 +1379,7 @@ class SDK:
         :example:
         >>> await sdk.uninit()
         """
+        self._stop_script_dev_watcher()
         # 创建反初始化协调器
         uninitializer = self._kernel.get_uninitializer()
 

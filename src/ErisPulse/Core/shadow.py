@@ -20,12 +20,27 @@ Dashboard / 自定义管理模块调用这些 API，无需用户手写任何配�
 {!--< /tips >!--}
 """
 
+import io
+import re
+import secrets
+import shutil
+import subprocess
 import sys
+import threading
+import time
+import zipfile
 from collections import deque
 from pathlib import Path
 from typing import Any
 
 from .Bases.errors import ShadowPromoteError, ShadowSourceError, ShadowStateError
+from .constants import (
+    SHADOW_EXTRACT_MAX_BYTES,
+    SHADOW_EXTRACT_MAX_ENTRIES,
+    SHADOW_PERSIST_TASKS_MAX,
+    SHADOW_PIP_TIMEOUT_SECS,
+    SHADOW_WHL_MAX_BYTES,
+)
 from .i18n import i18n
 from .logger import logger
 
@@ -151,6 +166,8 @@ class ShadowManager:
         self._shadows: dict[str, dict[str, str]] = {}
         # 影子 owner → 覆盖层
         self._overlays: dict[str, ShadowOverlay] = {}
+        # 「转正并持久化」后台 pip 任务状态：task_id → {status, output, ...}
+        self._persist_tasks: dict[str, dict[str, Any]] = {}
 
     # ---- 绑定查询 ----
 
@@ -175,6 +192,232 @@ class ShadowManager:
             if info.get("shadow_owner") == shadow_owner:
                 return real
         return None
+
+    def bindings(self) -> "dict[str, str]":
+        """
+        当前全部影子绑定（只读视图）
+
+        :return: ``{原模块名: 影子 owner 名}``
+        """
+        return {
+            real: info["shadow_owner"]
+            for real, info in self._shadows.items()
+            if info.get("shadow_owner")
+        }
+
+    # ---- whl 摄取与「转正并持久化」 ----
+
+    _WHL_SEG_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+    _WHL_DIR_RE = re.compile(r"^[A-Za-z]:")  # Windows 盘符前缀（ZipSlip 防护）
+
+    def ingest_whl(self, module_name: str, data: bytes, filename: str) -> "dict[str, str]":
+        """
+        摄取 whl 作为影子源：校验 → 原件落盘 → 解包 → 推导 source
+
+        原件与解包目录同级（``shadows/<module>/<时间戳>/``）：解包目录供
+        :meth:`~ShadowManager.start` 装载，原件供「转正并持久化」pip 安装。
+        影子期**只解包不安装**（pip 排他），避免覆盖已装包。
+
+        :param module_name: 被影子测试的模块名（仅作落盘目录段）
+        :param data: whl 文件字节
+        :param filename: whl 文件名（PEP 427：name-version-...whl）
+        :return: ``{"source": 解包源目录, "whl_path": 原件路径}``
+        :raises ShadowSourceError: 文件名/大小非法、zip 非法或无法推导源目录
+
+        :example:
+        >>> sdk.module.shadow_ingest_whl("roll", data=whl_bytes, filename="roll-2.0-py3-none-any.whl")
+        {'source': '.../shadows/roll/2026.../roll', 'whl_path': '.../shadows/roll/2026.../roll-2.0-py3-none-any.whl'}
+        """
+        if not isinstance(module_name, str) or module_name in (".", "..") or not self._WHL_SEG_RE.match(module_name):
+            raise ShadowSourceError(f"invalid module name: {module_name!r}")
+        filename = str(filename or "")
+        if not filename.lower().endswith(".whl"):
+            raise ShadowSourceError("only .whl files are allowed")
+        stem_parts = filename[:-4].split("-")
+        if len(stem_parts) < 5 or any(not p for p in stem_parts):
+            raise ShadowSourceError("invalid wheel filename (name-version-...whl)")
+        if not isinstance(data, bytes) or not data:
+            raise ShadowSourceError("empty whl payload")
+        if len(data) > SHADOW_WHL_MAX_BYTES:
+            raise ShadowSourceError(f"wheel too large (max {SHADOW_WHL_MAX_BYTES // (1024 * 1024)}MB)")
+
+        ts = time.strftime("%Y%m%d_%H%M%S") + "_" + secrets.token_hex(3)
+        dest = Path.cwd() / "shadows" / module_name / ts
+        try:
+            source = self._extract_shadow_whl(data, dest, stem_parts[0])
+            whl_path = dest.parent / filename
+            whl_path.write_bytes(data)
+        except Exception as e:
+            shutil.rmtree(dest, ignore_errors=True)
+            if isinstance(e, ShadowSourceError):
+                raise
+            raise ShadowSourceError(f"whl ingest failed: {e}") from e
+        return {"source": str(source), "whl_path": str(whl_path)}
+
+    def validate_persist_whl(self, module_name: str, whl_path: "str | Path") -> Path:
+        """
+        校验「转正并持久化」的 whl 原件路径
+
+        路径必须存在、是 .whl，且位于本模块的 ``shadows/<module>/`` 目录内。
+
+        :param module_name: 模块名
+        :param whl_path: 待校验路径
+        :return: 规范化后的路径
+        :raises ShadowSourceError: 路径缺失 / 非法 / 越界
+        """
+        shadows_root = (Path.cwd() / "shadows" / module_name).resolve()
+        try:
+            candidate = Path(whl_path).resolve()
+        except (OSError, ValueError) as e:
+            raise ShadowSourceError(f"invalid whl_path: {e}") from e
+        if not candidate.is_file() or not candidate.name.lower().endswith(".whl"):
+            raise ShadowSourceError(f"whl_path not found: {candidate}")
+        if shadows_root not in candidate.parents:
+            raise ShadowSourceError("whl_path outside module shadows dir")
+        return candidate
+
+    def persist_status(self, task_id: str) -> "dict[str, Any] | None":
+        """
+        查询「转正并持久化」后台 pip 任务状态
+
+        :param task_id: :meth:`start_persist` 返回的任务 ID
+        :return: ``{"status": running/success/error, "output": [...], ...}``；未知任务为 None
+        """
+        return self._persist_tasks.get(task_id)
+
+    def start_persist(self, whl_path: "str | Path") -> "dict[str, Any]":
+        """
+        后台 pip 安装 whl 原件（转正成功后调用；进程内 fire-and-forget）
+
+        :param whl_path: 经 :meth:`validate_persist_whl` 校验的 whl 路径
+        :return: ``{"task_id": str}``
+        """
+        task_id = "sp_" + secrets.token_hex(4)
+        self._record_persist_task(task_id, {"status": "running", "started_at": time.time(), "path": str(whl_path)})
+        thread = threading.Thread(
+            target=self._run_pip_persist, args=(task_id, Path(whl_path)), daemon=True
+        )
+        thread.start()
+        return {"task_id": task_id}
+
+    def _record_persist_task(self, task_id: str, entry: "dict[str, Any]") -> None:
+        """{!--< internal-use >!--} 记录持久化任务状态（环形上限）"""
+        self._persist_tasks[task_id] = entry
+        while len(self._persist_tasks) > SHADOW_PERSIST_TASKS_MAX:
+            oldest = next(iter(self._persist_tasks))
+            self._persist_tasks.pop(oldest, None)
+
+    def _run_pip_persist(self, task_id: str, whl_path: Path) -> None:
+        """{!--< internal-use >!--} 执行 pip install 并回写任务状态"""
+        lines: list[str] = []
+        try:
+            proc = subprocess.Popen(
+                [sys.executable, "-m", "pip", "install", str(whl_path)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True,
+            )
+            try:
+                out, _ = proc.communicate(timeout=SHADOW_PIP_TIMEOUT_SECS)
+                lines = (out or "").splitlines()
+                rc = proc.returncode
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.communicate()
+                lines.append(f"pip install timed out after {SHADOW_PIP_TIMEOUT_SECS}s")
+                rc = 1
+        except Exception as e:
+            rc = 1
+            lines.append(str(e))
+
+        status = "success" if rc == 0 else "error"
+        entry = {
+            "status": status,
+            "started_at": self._persist_tasks.get(task_id, {}).get("started_at"),
+            "finished_at": time.time(),
+            "path": str(whl_path),
+            "output": lines[-50:],
+        }
+        self._record_persist_task(task_id, entry)
+        log = logger.info if rc == 0 else logger.warning
+        log(
+            i18n.t(
+                "core.shadow.persist_finished" if rc == 0 else "core.shadow.persist_failed",
+                path=whl_path,
+                rc=rc,
+            )
+        )
+
+    def _extract_shadow_whl(self, data: bytes, dest: Path, dist_name: str) -> Path:
+        """
+        {!--< internal-use >!--}
+        解包 whl（zip）到 dest 并推导影子源目录
+
+        安全限制：条目数 / 解包总大小上限、拒绝绝对路径 / 盘符 / ``..``
+        （防 ZipSlip）。source 推导：唯一含 ``__init__.py`` 的顶层包目录优先
+        （发行名匹配者优先），其次扁平 wheel 解包根，最后唯一同名单文件模块。
+        """
+        with zipfile.ZipFile(io.BytesIO(data)) as zf:
+            entries = [i for i in zf.infolist() if not i.is_dir()]
+            if len(entries) > SHADOW_EXTRACT_MAX_ENTRIES:
+                raise ShadowSourceError(
+                    f"too many entries in wheel (max {SHADOW_EXTRACT_MAX_ENTRIES})"
+                )
+            total = sum(i.file_size for i in entries)
+            if total > SHADOW_EXTRACT_MAX_BYTES:
+                raise ShadowSourceError(
+                    f"wheel decompressed size too large (max {SHADOW_EXTRACT_MAX_BYTES // (1024 * 1024)}MB)"
+                )
+            for info in entries:
+                name = info.filename.replace("\\", "/")
+                if name.startswith("/") or self._WHL_DIR_RE.match(name):
+                    raise ShadowSourceError(f"unsafe entry in wheel: {info.filename}")
+                if any(part == ".." for part in name.split("/")):
+                    raise ShadowSourceError(f"unsafe entry in wheel: {info.filename}")
+            dest.mkdir(parents=True, exist_ok=True)
+            dest_resolved = dest.resolve()
+            for info in entries:
+                target = dest / info.filename.replace("\\", "/")
+                target.parent.mkdir(parents=True, exist_ok=True)
+                if not str(target.resolve()).startswith(str(dest_resolved)):
+                    raise ShadowSourceError(f"entry escapes target dir: {info.filename}")
+                with zf.open(info) as src, target.open("wb") as out:
+                    shutil.copyfileobj(src, out, length=1024 * 1024)
+        return self._derive_shadow_source(dest, dist_name)
+
+    @staticmethod
+    def _norm_wheel_dist_name(name: str) -> str:
+        """{!--< internal-use >!--} wheel 发行名归一化（PEP 503）"""
+        return re.sub(r"[-_.]+", "-", name).lower()
+
+    def _derive_shadow_source(self, dest: Path, dist_name: str) -> Path:
+        """{!--< internal-use >!--} 从解包结果推导 shadow_start 可用的 source"""
+        tops = sorted(dest.iterdir(), key=lambda p: p.name)
+        norm = self._norm_wheel_dist_name
+        pkg_dirs = [
+            p
+            for p in tops
+            if p.is_dir()
+            and not p.name.endswith(".dist-info")
+            and not p.name.endswith(".data")
+            and not p.name.endswith(".libs")
+        ]
+        with_init = [p for p in pkg_dirs if (p / "__init__.py").exists()]
+        matched = [p for p in with_init if norm(p.name) == norm(dist_name)]
+        if len(matched) == 1:
+            return matched[0]
+        if len(with_init) == 1:
+            return with_init[0]
+        # 扁平 wheel：包内容直接在解包根（根目录即含 __init__.py）
+        if (dest / "__init__.py").exists():
+            return dest
+        # 单模块 wheel：顶层唯一与发行名同名的 .py 文件
+        singles = [
+            p for p in tops if p.is_file() and p.suffix == ".py" and norm(p.stem) == norm(dist_name)
+        ]
+        if len(singles) == 1:
+            return singles[0]
+        raise ShadowSourceError("no package dir with __init__.py found in wheel")
 
     def bind(self, real_name: str, shadow_owner: str) -> None:
         """
