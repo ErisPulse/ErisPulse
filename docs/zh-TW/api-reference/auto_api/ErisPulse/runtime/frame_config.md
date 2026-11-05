@@ -1,0 +1,196 @@
+# `ErisPulse.runtime.frame_config` 模块
+
+---
+
+## 模块概述
+
+
+ErisPulse 框架配置管理模块
+
+提供默认配置定义及配置完整性管理功能
+
+---
+
+## 函数列表
+
+
+### `_deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]`
+
+深度合并两个字典，override 中的值覆盖 base 中的对应值
+
+- **base**: 基础字典
+- **override**: 覆盖字典
+
+**返回值**: 合并后的新字典
+
+---
+
+
+### `_iter_leaf_diff(old: dict[str, Any], new: dict[str, Any], prefix: str = '') -> list[tuple[str, Any]]`
+
+递归比较两棵配置字典，返回新增或值变化的叶子键（点分路径）
+
+仅收集 new 中相对 old 发生变化的叶子，用于把整棵配置的持久化
+拆分为细粒度叶子写入，避免整棵覆盖导致用户热更新丢失。
+
+**内部方法**
+语义：只增改、不处理删除（本模块的合并语义仅新增/覆盖叶子值）。
+
+- **old**: 变更前的配置字典
+- **new**: 变更后的配置字典
+- **prefix**: 递归时的路径前缀
+
+**返回值** (`(点分路径, 叶子值), ...`):
+
+---
+
+
+### `_ensure_erispulse_config_structure(config_dict: dict[str, Any]) -> dict[str, Any]`
+
+确保 ErisPulse 配置结构完整，补全缺失的配置项
+
+- **config_dict**: 当前配置
+
+**返回值**: 补全后的完整配置
+
+---
+
+
+### `get_erispulse_config() -> dict[str, Any]`
+
+获取 ErisPulse 框架配置，自动补全缺失的配置项
+
+默认配置仅在内存中合并返回，不写入配置文件——config.toml 保持最小化，
+只包含用户显式设置的键；完整可配置项参考项目内的 config.full.example。
+用户显式设置（手动编辑 / update_erispulse_config / set_erispulse_section）
+的键不受影响，优先级始终高于内置默认值。
+
+**返回值**: 完整的 ErisPulse 配置字典
+
+---
+
+
+### `_apply_env_overrides(config: dict[str, Any], root: str = CONFIG_ROOT_KEY) -> None`
+
+**内部方法**
+递归对配置字典应用环境变量覆盖
+
+命名规则：``ErisPulse.server.port`` → ``ERISPULSE_SERVER_PORT``
+（将点路径大写、``.`` 替换为 ``_``）。仅覆盖叶子值，按原值类型做 coerce。
+
+---
+
+
+### `_coerce_env_value(original: Any, env_str: str) -> Any`
+
+按原值类型把环境变量字符串转换为对应 Python 类型
+
+---
+
+
+### `get_config(section: str | None = None) -> dict[str, Any] | Any`
+
+获取 ErisPulse 配置
+
+- **section**: 配置部分名称（如 "server"、"logger" 等），None 表示获取完整配置
+
+**返回值**: 配置字典或配置项
+
+---
+
+
+### `update_erispulse_config(new_config: dict[str, Any]) -> bool`
+
+更新 ErisPulse 配置，自动补全缺失的配置项
+
+- **new_config**: 新的配置字典
+
+**返回值**: 是否更新成功
+
+---
+
+
+### `set_erispulse_section(path: str, value: Any) -> bool`
+
+整节替换写入 ErisPulse 配置
+
+与 :func:`update_erispulse_config` 的深合并语义不同，本函数对目标子路径
+**整节替换**（支持删除子键，如移除绑定、黑名单移除等场景）。
+写入失败时抛出异常。
+
+- **path**: 相对 ``ErisPulse`` 根的配置路径，如 ``"event.overrides.acl"``、``"scope"``
+- **value**: 新的配置节内容（通常为 dict）
+
+**返回值**: 是否写入成功
+
+**示例**:
+
+```python
+set_erispulse_section("event.overrides.acl", {"roll*": {"allow": ["onebot11:123456"]}})
+```
+
+---
+
+
+### `get_server_config() -> dict[str, Any]`
+
+获取服务器配置，确保结构完整
+
+**返回值**: 服务器配置字典
+
+---
+
+
+### `get_logger_config() -> dict[str, Any]`
+
+获取日志配置，确保结构完整
+
+**返回值**: 日志配置字典
+
+---
+
+
+### `get_storage_config() -> dict[str, Any]`
+
+获取存储模块配置
+
+**返回值**: 存储配置字典
+
+---
+
+
+### `get_event_config() -> dict[str, Any]`
+
+获取事件系统配置
+
+**返回值**: 事件系统配置字典
+
+---
+
+
+### `get_framework_config() -> dict[str, Any]`
+
+获取框架配置
+
+**返回值**: 框架配置字典
+
+---
+
+
+### `get_i18n_config() -> dict[str, Any]`
+
+获取国际化配置
+
+**返回值**: 国际化配置字典
+
+---
+
+
+### `get_master_config() -> dict[str, Any]`
+
+获取框架主人系统配置
+
+**返回值**: 框架主人配置字典
+
+---
+

@@ -1,0 +1,180 @@
+# 微信公众号（WechatMp）アダプター - プラットフォーム特性ドキュメント
+
+## 基本情報
+- モジュール名: `ErisPulse-WechatMpAdapter`
+- プラットフォーム識別子: `mp`（別名: `wechat_mp`）
+- モジュールバージョン: 4.3.0
+- 維持管理者: ErisPulse
+- 依存: `cryptography`
+
+## v5 フレームワークの更新 (4.2.0)
+
+- **BaseConverter 継承**：変換器の共通フィールドは、フレームワークの build_base_event によって構築されます。
+- **Api DSL 最小セット**：get_self_info（appid）/get_status/get_version/get_supported_actions
+- **フレームワークのソフト依存**：実行時に ErisPulse>=2.7.1 を検出し、警告を出力します。起動時にバージョンログを出力します。
+
+---
+
+### 対応プラットフォーム機能
+
+- **受信**：公式アカウントのコールバックメッセージと、フォロー/アンフォローなどのイベント（平文/セキュリティモード）、署名検証
+- **送信**：カスタマーメッセージ（Text/Image など、Send DSL を経由）
+- **API**：アカウント情報（appid）と実行状態（最小セット）
+
+## 支援するメッセージ送信タイプ
+
+| 方法 | 説明 | WeChat API |
+|------|------|---------|
+| `Text(text)` | テキストを送信 | カスタマーサービスメッセージ `message/custom/send` |
+| `Image(file)` | 画像を送信（media_id の自動アップロード） | カスタマーサービスメッセージ + `media/upload` |
+| `Voice(file)` | 音声を送信（media_id の自動アップロード） | カスタマーサービスメッセージ + `media/upload` |
+| `Video(file, title, description)` | 動画を送信（media_id の自動アップロード） | カスタマーサービスメッセージ + `media/upload` |
+| `Music(url, title, description, ...)` | 音楽を送信 | カスタマーサービスメッセージ |
+| `News(articles)` | 画像付きテキストメッセージを送信 | カスタマーサービスメッセージ |
+| `Template(template_id, data, url)` | テンプレートメッセージを送信 | `message/template/send` |
+| `Menu(head_content, list, tail_content)` | メニューメッセージを送信 | カスタマーサービスメッセージ `msgmenu` |
+| `Raw_ob12(message)` | OneBot12 標準メッセージセグメントを送信 | - |
+
+### メディアファイルの説明
+- 3 種類のパラメータタイプをサポート：
+  - `str` URL（`http://` / `https://` で始まる）：自動的にダウンロードしてアップロード
+  - `str` ローカルファイルパス：自動的に読み取ってアップロード
+  - `bytes` バイナリデータ：直接アップロード
+  - `str` media_id：`media:` というプレフィックスを付けることで、既にアップロードされた media_id を再利用可能
+- アップロード後に有効期限 3 日の臨時素材 `media_id` が取得できる
+
+### 重要な制限事項
+- カスタマーサービスメッセージは、ユーザーと公式アカウントが対話した後 **48 時間以内** にのみ送信可能
+- 48 時間を超える場合は、テンプレートメッセージを使用する必要がある（ユーザーの許可が必要）
+- 認証されていないサービスアカウント（`verified=false`）は、自動送信ができない。受動的な返信のみ可能（上記の「認証済みサービスアカウントと受動的な返信」を参照）
+
+## イベントの種類
+
+### メッセージイベント (message)
+すべてのユーザーのメッセージは `detail_type: private`（公式アカウントの1対1の場面）です。
+
+| 微信 MsgType | メッセージセグメントの種類 | 説明 |
+|-------------|-----------|------|
+| `text` | `text` | テキストメッセージ |
+| `image` | `image` | 画像メッセージ |
+| `voice` | `voice` | 音声メッセージ（音声認識結果を含む） |
+| `video` | `video` | ビデオメッセージ |
+| `shortvideo` | `video` | 小型ビデオ（`mp_shortvideo`をマーク） |
+| `location` | `location` | 地理位置メッセージ |
+| `link` | `text` | リンクメッセージ（テキストに変換） |
+
+### 通知イベント (notice)
+イベントは `mp_event` フィールドで具体的な種類を識別します。
+
+| 微信 Event | `mp_event` | 説明 |
+|-----------|-----------|------|
+| `subscribe` | `subscribe` | 公式アカウントをフォロー |
+| `unsubscribe` | `unsubscribe` | フォローを解除 |
+| `SCAN` | `scan` | パラメータ付きQRコードをスキャン |
+| `LOCATION` | `location_report` | 地理位置を報告 |
+| `CLICK` | `menu_click` | 自定義メニューをクリック |
+| `VIEW` | `menu_view` | メニューのリンクに遷移 |
+| `TEMPLATESENDJOBFINISH` | `template_send_finish` | テンプレートメッセージ送信結果 |
+| `MASSSENDJOBFINISH` | `mass_send_finish` | 一斉送信メッセージ送信結果 |
+
+## プラットフォーム拡張フィールド
+
+イベントオブジェクト内の微信特有のフィールド（`mp_` で始まる）：
+
+| フィールド | 型 | 説明 |
+|------|------|------|
+| `mp_raw` | str | 元の XML データ |
+| `mp_raw_type` | str | 元のメッセージ/イベントの型 |
+| `mp_msg_id` | str | 微信メッセージ ID |
+| `mp_event` | str | イベントの型（イベント通知のみ） |
+| `mp_event_key` | str | イベントのキー（メニューのクリック/スキャンなど） |
+| `mp_to_user` | str | 受信者の微信号（公式アカウントの元のID） |
+| `mp_from_user` | str | 送信者の OpenID |
+| `mp_data` | dict | 解析後の XML ディクショナリデータ |
+
+## イベント拡張メソッド
+
+`register_event_mixin("mp", ...)` で登録すると、イベントオブジェクト上で直接以下のメソッドを呼び出すことができます。
+
+| メソッド | 戻り値 | 説明 |
+|------|--------|------|
+| `get_openid()` | str | 送信者の OpenID |
+| `get_msg_type()` | str | 微信の元のメッセージタイプ |
+| `get_event()` | str | イベントタイプ（イベント通知のみ） |
+| `get_content()` | str | メッセージの純粋なテキスト内容 |
+| `get_raw_xml()` | str | 元の XML データ |
+
+## 設定オプション
+
+### 複数アカウントの設定
+
+各アカウントは1つの公式アカウントに対応します：
+
+```toml
+[WechatMpAdapter.accounts.main]
+appid = "wx1234567890abcdef"
+appsecret = "your_app_secret_here"
+token = "your_callback_token"
+encoding_aes_key = ""                    # セキュリティモード/互換モードが必要な場合（43文字）
+callback_path = "/mp/main"               # コールバックパス
+verified = true                          # 認証済みサービスアカウントかどうか（アクティブ送信能力に影響）
+enable = true
+
+[WechatMpAdapter.accounts.secondary]
+appid = "wx0987654321fedcba"
+appsecret = "another_app_secret"
+token = "another_callback_token"
+callback_path = "/mp/secondary"
+enable = true
+```
+
+### 設定項目の説明
+
+| 項目 | 必須 | 説明 |
+|------|------|------|
+| `appid` | はい | 公式アカウントの AppID |
+| `appsecret` | はい | 公式アカウントの AppSecret（secret） |
+| `token` | いいえ | コールバック検証用のトークン（署名検証を有効にするために推奨） |
+| `encoding_aes_key` | いいえ | メッセージ暗号化/復号化用のキー（43文字、セキュリティモードで必須） |
+| `callback_path` | いいえ | コールバックパスのテンプレート、デフォルトは `/mp/{account}`、`{account}` はアカウント名に置換されます |
+| `verified` | いいえ | **認証済みサービスアカウント**かどうか、デフォルトは `true`（下記参照） |
+| `enable` | いいえ | 有効かどうか、デフォルトは true |
+
+### 認証済みサービスアカウントとパッシブ応答（verified）
+
+- `verified = true`（デフォルト、認証済みサービスアカウント）：**カスタマーメッセージ**のアクティブ送信（48時間ウィンドウ内）とテンプレートメッセージを使用可能
+- `verified = false`（未認証のサブスクリプションアカウント）：
+  - カスタマーメッセージ / テンプレートメッセージは**webhookのパッシブ応答コンテキスト内でのみ送信可能**（ユーザーのメッセージを受け取ってから15秒以内、1回の応答）——アダプターは送信をパッシブ応答として自動的に截獲します
+  - アクティブ送信（例：定期的なタスク）は `retcode=34003` エラーを返します
+
+## 暗号化モードの説明
+
+WeChat 公開アカウントは、3 つのメッセージの暗号化/復号化モードを提供しています。
+
+| モード | 説明 | encoding_aes_key | 验証フィールド |
+|------|------|-----------------|---------|
+| 明文モード | XML を明文で送信 | 不要 | `signature` |
+| 兼容モード | 明文と暗号文が同時に存在 | 選択 | `signature` / `msg_signature` |
+| 安全モード | 全てを暗号化 | 必須 | `msg_signature` |
+
+このアダプタは自動的に処理します：
+- 明文モード：`signature` を検証し、XML を直接解析
+- 安全/兼容モード：`Encrypt` フィールドを検出し、`msg_signature` を検証し、AES-256-CBC を使用して復号
+- 復号には `cryptography` ライブラリが必要（dependencies に宣言済み）
+
+## コールバックルート
+
+アダプターは、有効なアカウントごとに2つのルート（GET + POST）を登録します。
+
+- **GET**：WeChatサーバーの接続検証。署名を検証した後に `echostr` を返します。
+- **POST**：ユーザーのメッセージとイベントを受け取ります。署名を検証→必要に応じて復号化→変換→emit
+
+実際のアクセスパスには、モジュールのプレフィックスが自動的に追加されます。たとえば、ルートを `/mp/main` に登録した場合、実際のアクセスパスは `/mp_{account}_verify/mp/main` および `/mp_{account}_message/mp/main` になります。
+
+## API レスポンス
+
+すべての `call_api` 呼び出しは標準化されたレスポンスを返します：
+
+- 成功: `status: "ok"`, `retcode: 0`
+- 失敗: `status: "failed"`, `retcode: 34000+errcode`
+- いずれの場合も `mp_raw`（元のレスポンス）と `message_id` が含まれます。

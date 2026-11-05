@@ -1,0 +1,1145 @@
+# 事件处理入门
+
+> [!TIP]
+> **什么时候需要读这篇**：想让机器人响应消息、命令、通知、请求，或要实现等待回复 / 多轮对话、排查"命令为什么没触发"时读。只想了解框架设计，看 [基础概念](basic-concepts.md) 即可；不需要则跳过。
+
+事件处理器就是机器人"听懂"用户并作出反应的地方——这篇按五类事件给出可直接复制的写法，并覆盖参数解析、权限、节流、多轮交互这些实战场景。
+
+## 事件类型概览
+
+ErisPulse 支持以下事件类型：
+
+| 事件类型 | 说明 | 适用场景 |
+|---------|------|---------|
+| 消息事件 | 用户发送的任何消息 | 聊天机器人、内容过滤 |
+| 命令事件 | 以命令前缀开头的消息 | 命令处理、功能入口 |
+| 通知事件 | 系统通知（好友添加、群成员变化等） | 欢迎消息、状态通知 |
+| 请求事件 | 用户请求（好友请求、群邀请） | 自动处理请求 |
+| 元事件 | 系统级事件（连接、心跳） | 连接监控、状态检查 |
+
+## 消息事件处理
+
+> **提示**: 建议在事件处理器中使用 `Event` 类型注解，以获得 IDE 自动补全和类型检查支持。
+
+```python
+from ErisPulse.Core.Event import Event  # 导入事件类型用于注解
+```
+
+### 监听所有消息
+
+```python
+from ErisPulse.Core.Event import message, Event
+
+@message.on_message()
+async def message_handler(event: Event):
+    text = event.get_text()
+    user_id = event.get_user_id()
+    sdk.logger.info(f"收到 {user_id} 的消息: {text}")
+```
+
+### 监听私聊消息
+
+```python
+@message.on_private_message()
+async def private_handler(event: Event):
+    user_id = event.get_user_id()
+    await event.reply(f"你好，{user_id}！这是私聊消息。")
+```
+
+### 监听群聊消息
+
+```python
+@message.on_group_message()
+async def group_handler(event: Event):
+    group_id = event.get_group_id()
+    user_id = event.get_user_id()
+    sdk.logger.info(f"群 {group_id} 中 {user_id} 发送了消息")
+```
+
+### 监听@消息
+
+```python
+@message.on_at_message()
+async def at_handler(event: Event):
+    # 获取被@的用户列表
+    mentions = event.get_mentions()
+    await event.reply(f"你@了这些用户: {mentions}")
+```
+
+### 通配符与正则监听
+
+四个消息装饰器（`on_message` / `on_private_message` / `on_group_message` /
+`on_at_message`）均支持 `pattern`（glob 通配符）与 `regex`（正则），不匹配的消息
+**不会触发**处理器：
+
+```python
+# glob 通配符：* 任意串、? 单字符、[seq] 字符集
+@message.on_message(pattern="签到*")
+async def signin_handler(event: Event):
+    await event.reply("签到成功")
+
+# 正则：匹配金额
+@message.on_message(regex=r"\d+\s*元")
+async def price_handler(event: Event):
+    await event.reply(f"收到金额：{event.get_text()}")
+
+# pattern 与 regex 同时给出 → 两者都须匹配
+@message.on_message(pattern="*元", regex=r"\d+\s*元")
+async def combined_handler(event: Event):
+    pass
+```
+
+`wait_reply` 同样支持这两个参数（见[等待回复](../developer-guide/modules/event-wrapper.md#等待回复功能)）。
+
+## 命令事件处理
+
+### 基本命令
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("help", help="显示帮助信息")
+async def help_handler(event):
+    help_text = """
+可用命令：
+/help - 显示帮助
+/ping - 测试连接
+/info - 查看信息
+    """
+    await event.reply(help_text)
+```
+
+### 命令别名
+
+```python
+@command(["help", "h"], aliases=["帮助"], help="显示帮助信息")
+async def help_handler(event):
+    await event.reply("帮助信息...")
+```
+
+用户可以使用以下任何方式调用：
+- `/help`
+- `/h`
+- `/帮助`
+
+### 命令参数
+
+```python
+@command("echo", help="回显消息")
+async def echo_handler(event):
+    # 获取命令参数
+    args = event.get_command_args()
+    
+    if not args:
+        await event.reply("请输入要回显的消息")
+    else:
+        await event.reply(f"你说了: {' '.join(args)}")
+```
+
+参数保留用户输入的原始大小写（即使配置为大小写不敏感，
+命令名匹配归一也不会影响参数内容）。
+
+### 声明式参数与选项（args= / options=）
+
+手动解析参数需要自己处理类型转换与错误提示。声明 `args=` / `options=` 后，
+框架在权限检查通过后自动解析命令参数并**按名注入处理器**；用户输入错误时
+自动回复本地化提示与用法（不会抛异常崩溃），`/help <命令>` 也会自动展示用法：
+
+```python
+@command(
+    "roll",
+    args="<count:int> [sides:int=6]",
+    options={"verbose": "-v/--verbose", "label": "--label"},
+    help="掷骰子",
+)
+async def roll_handler(event, count: int, sides: int = 6, verbose: bool = False, label: str = ""):
+    total = sum(random.randint(1, sides) for _ in range(count))
+    await event.reply(f"掷了 {count} 次 {sides} 面骰，总点数：{total}")
+```
+
+`args=` 位置参数语法：`<count:int>` 必填、`[sides:int=6]` 可选（含默认值）。支持类型：
+
+| 类型 | 示例输入 | 说明 |
+|------|---------|------|
+| `str` | `hello` | 文本（缺省类型） |
+| `int` / `float` | `3` / `0.5` | 数值 |
+| `bool` | `是` / `yes` / `はい` / `да` / `true` / `no` / `取消` | 布尔值，复用交互确认（`Event.confirm()`）的确认词表 |
+| `literal` | `<mode:literal=fast|slow>` | 枚举，仅接受列出的值；可选形式默认取首个 |
+| `duration` | `90s`、`1h30m`、`1d` | 时长，按秒折算为 float |
+| `rest` | `<text:rest>` | 剩余全部文本（必须位于最后） |
+
+`options=` 选项为字典式声明：键为处理器参数名，值为旗标形式（多个别名以 `/` 分隔）。
+注解为 `bool` 的参数是布尔旗标（出现即 `True`）；其余（缺省按 `str`）是带值选项，
+支持 `--label hello` 与 `--label=hello` 两种取值，类型跟随处理器注解。
+选项先被识别剔除，剩余 token 再按 `args=` 解析（`rest` 覆盖剔除选项后的剩余文本）。
+
+**行为要点**：
+
+- 权限检查先于参数解析——无权限用户不会触发解析
+- 解析失败（类型不符 / 缺少参数 / 参数过多 / 未知选项）自动回复本地化错误 + 用法，命令仍被认领
+- 声明的参数名必须存在于处理器签名中，否则注册期抛 `ValueError`
+- 不声明 `args=` / `options=` 的命令行为完全不变（向后兼容）
+
+### 命令治理（cooldown= / rate_limit= / usage_limit= / deprecated=）
+
+手写冷却计时、限流窗口、使用配额、废弃提示可用声明替代，四者可任意组合。
+
+**冷却**——时长语法与 `args=` 的 `duration` 类型一致（如 `"30s"`、`"1h30m"`、`"1d"`）：
+
+```python
+@command("daily", cooldown="1d", cooldown_key="user", cooldown_reply="今天已签到")
+async def daily_handler(event):
+    await event.reply("签到成功！")
+```
+
+**限流**——滑动窗口声明 `"次数/窗口"`（如 `"5/minute"`、`"10/s"`、`"3/2m"`）：
+
+```python
+@command("search", rate_limit="5/minute", rate_limit_key="user")
+async def search_handler(event):
+    await event.reply("搜索结果")
+```
+
+**配额**——周期内总次数上限（如 `"100/day"`、`"10/hour"`、`"500/30d"`），超限拒绝执行：
+
+```python
+@command("translate", usage_limit="100/day", usage_limit_key="user",
+         usage_limit_reply="今日翻译次数已用完")
+async def translate_handler(event):
+    ...
+```
+
+与冷却/限流不同，配额计数**经存储持久化**（KV 键 `erispulse.usage.<key>`，重启不丢）：
+存储不可达时自动退化为纯内存计数并告警（此时配额重启清零）。计数随配额周期
+切换自动清零，模块卸载时清理。
+
+**废弃**——调用时自动回复废弃文案，`deprecated_reject=True` 拒绝执行：
+
+```python
+@command("oldcmd", deprecated="请用 /newcmd", deprecated_reject=True)
+async def old_handler(event): ...
+```
+
+键粒度（`cooldown_key=` / `rate_limit_key=`）：`"user"`（默认，同一用户共享）、
+`"session"`（同一会话共享，如同一群）、`"global"`（所有用户所有会话共享）。
+
+**行为要点**：
+
+- 冷却 / 限流 / 配额命中默认**静默丢弃**（对称于作用域静默）；声明 `cooldown_reply=` / `rate_limit_reply=` / `usage_limit_reply=` 后命中即回复该文案
+- 命令命中即认领——治理命中的命令不会漏给低优先级消息处理器
+- 治理判定位于全部权限检查与参数解析通过、实际执行前：无权限用户不触发，参数错误不消耗
+- 同时声明冷却与限流时冷却先判（冷却命中不占限流窗口）；配额在冷却/限流判定之后
+- `deprecated=` 默认回复文案后**继续执行**；`deprecated_reject=True` 拒绝执行（`command.executed` 钩子记 `success=False, error="deprecated"`）
+- `/help` 列表与单命令帮助自动显示废弃标记与文案
+- 冷却与限流状态为进程内内存，模块卸载时自动清理；跨进程共享 / 重启持久化不在范围内（**usage 配额计数除外**——经存储持久化，见上节）
+- 声明在注册期校验（fail-fast）：语法非法、键粒度非白名单值、reply 未搭配主声明均抛 `ValueError`
+
+### 处理器节流（throttle=）与防抖（debounce=）
+
+消息处理器防刷屏声明——同键事件在间隔内至多处理一条，其余静默丢弃：
+
+```python
+from ErisPulse import sdk
+
+@sdk.message.on_message(throttle="2s", throttle_key="user")
+async def handler(event): ...
+```
+
+防抖与节流互补：**窗口内只执行最后一条**，前序待执行任务自动取消（适合
+"停止输入后再处理"的搜索联想类场景）：
+
+```python
+@sdk.message.on_message(debounce="2s", debounce_key="user")
+async def search(event): ...
+```
+
+`on_message` / `on_private_message` / `on_group_message` / `on_at_message`
+均支持；`throttle_key=` / `debounce_key=` 与命令治理同一套键粒度
+（user / session / global），时长语法与 `duration` 一致。节流与 `pattern=` /
+`regex=` 等既有条件叠加生效（全部满足才触发）；间隔内丢弃仅记 TRACE 日志；
+声明在注册期校验；`throttle=` 与 `debounce=` 语义互斥（同时声明抛 `ValueError`）。
+
+> **防抖不半途掐断业务**：只有尚未越过等待窗口的待执行任务会被取消；已经
+> 越窗、正在执行中的处理器不会被新事件取消（避免停在任意 await 点产生
+> 部分副作用）。
+
+### 依赖注入（Depends）
+
+公共依赖（数据库会话、配置读取等）可抽为依赖函数，处理器以
+`Depends(依赖函数)` 作为参数默认值声明，框架在调用前自动以上下文对象
+调用依赖函数并按名注入：
+
+```python
+from ErisPulse.Core import Depends
+
+async def get_session(event):
+    return await sdk.module.call("DB", "get_session")
+
+@command("admin")
+async def admin_handler(event, db=Depends(get_session)):
+    ...
+```
+
+默认开启**请求级缓存**：同一次事件分发内，相同依赖函数只解析一次、所有
+注入点共享结果（如 `get_db` 在一次事件中只建一次数据库会话）；跨请求自动
+不复用。可用 `Depends(get_db, use_cache=False)` 关闭单条依赖的缓存。
+
+覆盖全部框架注入点——命令处理器、事件处理器（`message.on_message()` 等）、
+生命周期钩子（`sdk.lifecycle.on`）、SSE 路由处理器。依赖函数的第一个参数
+是注入点上下文对象（事件场景为 `Event`，生命周期为事件 `data`，
+路由为 `HttpRequest` / `SseEmitter`）；同步与异步依赖函数均可声明。
+
+**声明其它模块的服务**（语法糖）：
+
+```python
+@command("query")
+async def query_handler(event, session=Depends.module("DB", "get_session")):
+    ...
+```
+
+`Depends.module(模块名, 方法名, *固定参数)` 等价于在依赖函数内调用
+`sdk.module.call(...)`。模块实例化（`__init__`）不在覆盖范围——实例化时无
+上下文对象；FastAPI 承载的 HTTP 路由请用 FastAPI 原生 `fastapi.Depends`。
+
+**行为要点**：
+
+- 声明在注册期校验（fail-fast）：依赖不可调用、或与 `args=` / `options=` 参数重名时抛 `ValueError`
+- 依赖函数抛出的异常与处理器自身异常同口径处理（命令自动回复错误）
+- 不声明 `Depends` 的处理器零开销（分发期无任何反射）
+- FastAPI 承载的 HTTP 路由请使用 FastAPI 原生 `fastapi.Depends`
+
+### 命令组
+
+```python
+@command("admin.reload", group="admin", help="重新加载模块")
+async def reload_handler(event):
+    await event.reply("模块已重新加载")
+
+@command("admin.stop", group="admin", help="停止机器人")
+async def stop_handler(event):
+    await event.reply("机器人已停止")
+```
+
+`group` 参数仅用于帮助列表归类；上面示例中的 `admin.reload` 是一个**整体命令名**
+（点号只是命名风格，用户需输入 `/admin.reload`）。
+
+### 子命令
+
+命令名支持**空格分隔**的多 token 形式，实现 `/admin add`、`/admin user ban` 这样的子命令：
+
+```python
+@command("admin", help="管理命令")
+async def admin_handler(event):
+    await event.reply("用法：/admin add | /admin remove")
+
+@command("admin add", help="添加管理员")
+async def admin_add_handler(event):
+    target = event.get_command_args()[0]
+    await event.reply(f"已添加 {target}")
+
+@command("admin remove", aliases=["a remove"], help="移除管理员")
+async def admin_remove_handler(event):
+    await event.reply("已移除")
+```
+
+匹配规则（**最长前缀匹配**）：
+
+- `/admin add x` 优先命中 `admin add`，`event.get_command_args()` 返回 `["x"]`（子命令名之后的参数）
+- 仅注册了 `admin` 时，`/admin add x` 命中 `admin`，`get_command_args()` 返回 `["add", "x"]`（历史行为不变）
+- 别名支持多 token 形式（如 `a remove`），也可用单 token 别名（如 `a`）指向子命令
+- 父子命令同时注册时，未注册的子命令输入（如 `/admin list x`）回落到父命令
+
+**权限继承**：子命令未声明 `permission` 时，自动继承父链上最近声明了权限的祖先命令——
+保护 `/admin` 即自动保护其下全部子命令；子命令自身声明的权限优先：
+
+```python
+def is_admin(event):
+    return event.get_user_id() in {"user123"}
+
+@command("admin", permission=is_admin, help="管理命令")
+async def admin_handler(event):
+    ...
+
+# 无需重复声明 permission，自动继承 is_admin
+@command("admin add", help="添加管理员")
+async def admin_add_handler(event):
+    ...
+```
+
+注意：`master=True` 与 `hidden` **不会**继承，需要时请在子命令上单独声明；
+用户 ACL（黑白名单）按命令全名匹配，glob 规则如 `"admin*"` 可覆盖整组子命令。
+
+`/help` 的命令总览中，子命令会自动挂到可见的父命令下缩进展示
+（`admin` → `admin add` 缩进一级，`admin user` → `admin user ban` 缩进两级）。
+
+### 命令权限与访问控制
+
+命令权限分三层，从上到下逐层判定（**上层拒绝则不再看下层**）：
+
+```python
+# ① 命令权限 ACL（用户侧配置）：按命令的用户黑白名单，拒绝时回复"权限不足"
+# ② master=True —— 仅框架主人可执行（框架自动检查，拒绝时回复"权限不足"）
+@command("restart", master=True, help="重启模块")
+async def restart_handler(event):
+    await event.reply("模块已重启")
+
+# ③ permission=调用函数 —— 命令自身的控制逻辑（返回 True 才执行）
+def is_admin(event):
+    return event.get_user_id() in {"user123", "user456"}
+
+@command("panel", permission=is_admin, help="管理面板")
+async def panel_handler(event):
+    await event.reply("欢迎来到管理面板")
+```
+
+**命令用户 ACL**（`ErisPulse.event.command.acl`）：用户可为任意命令配置用户黑白名单，
+命令名支持精确与 glob 模式（如 `"roll*"`），拒绝时回复"权限不足"：
+
+```toml
+# config.toml —— 仅允许 123456 执行 restart；666 一律拒绝
+[ErisPulse.event.command.acl.restart]
+allow = ["onebot11:123456"]
+deny = ["onebot11:666"]
+```
+
+判定顺序：`deny` 命中 → 拒绝；`allow` 非空且未命中 → 拒绝；未配置 ACL 时遵循
+`event.command.default_allow`（`false` = 严格模式，无 ACL 即拒；`true` 时交给开发者默认
+`master=True` / `permission`）。运行时 API（命令名支持 glob）：
+
+```python
+from ErisPulse.Core.Event import command
+
+command.allow_user("restart", "onebot11", "123456")   # 允许名单
+command.deny_user("restart", "onebot11", "666")       # 拒绝名单
+command.remove_acl("restart")                          # 清除黑白名单
+command.get_acl("restart")                             # 查询当前名单
+```
+
+> 命令处理器从事件包导入：`from ErisPulse.Core.Event import command`；
+> 也可经 SDK 事件包访问：`sdk.Event.command`（两者为同一单例）。
+> 在模块内通常已随命令装饰器导入（`from ErisPulse.Core.Event import command`）。
+
+跨命令 / 跨用户的**事件级**访问控制（某人 / 某群 / 某 Bot 的消息收不收）
+走作用域**身份维度**（`scope.identity`）；**模块级**可用性（哪些模块能用）
+走作用域**模块维度**（`scope.platforms / bots / sessions`）。
+详见[作用域（scope）](../advanced/scope.md)。
+
+> 建议：命令内部需要联动业务逻辑的用 `master=True` / `permission`；纯按用户 / 群做
+> 访问控制的用作用域身份维度；控制模块可用性的用作用域模块维度。
+
+### 命令优先级
+
+```python
+# 优先级数值越大，执行越早
+@message.on_message(priority=10)
+async def high_priority_handler(event):
+    await event.reply("高优先级处理器")
+
+@message.on_message(priority=1)
+async def low_priority_handler(event):
+    await event.reply("低优先级处理器")
+```
+
+### 并行事件处理
+
+ErisPulse 事件系统采用**同优先级并行、不同优先级串行**的调度模型：
+
+```
+事件到达
+    ↓
+priority=10 组: [处理器C || 处理器D] 并行 → 合并结果
+    ↓ (如未中断)
+priority=0 组: [处理器A || 处理器B] 并行 → 合并结果
+    ↓
+...
+```
+
+- **同优先级并行**：优先级相同的多个处理器会同时执行，提高吞吐量
+- **跨级串行**：不同优先级的组按顺序执行（数值越大越先执行），确保高优先级处理器先运行
+- **Copy-On-Write**：处理器无修改时不创建副本，确保零开销
+- **冲突处理**：同优先级多处理器修改同一字段时，使用最后修改值并记录警告日志
+- **中断机制**：任意处理器调用 `event.done()`（默认）或 `event.done(claim=False)` 后，跳过后续低优先级组。认领与阻断的区别见下文[「链路控制：认领与阻断」](#链路控制认领与阻断)
+
+```python
+# 示例：同优先级处理器并行执行
+@message.on_message(priority=0)
+async def handler_a(event):
+    # 处理任务A
+    event['result_a'] = process_a()
+
+@message.on_message(priority=0)
+async def handler_b(event):
+    # 与 handler_a 并行执行
+    event['result_b'] = process_b()
+
+# 不同优先级串行执行
+@message.on_message(priority=10)
+async def handler_c(event):
+    # 优先级最高，最先执行
+    pass
+```
+
+> **并发上限**：所有匹配 handler 的 Task 会**立即创建**，但通过一个信号量限制**同时在途执行数**，默认上限 **64**（`ErisPulse.framework.handler_max_concurrency`，支持热更新）。超过上限的 Task 在信号量上排队，等前面的完成后再进。事件洪峰时这就是你的「泄压阀」。
+>
+> **慢日志**：单个处理器耗时超过 **1 秒**时，框架会在日志打 WARNING（`handler_slow`）。`wait_reply` 的等待时间会从耗时里剔除，不会因为「等人回复」误报慢。
+
+## 中间件：分发前改写与否决
+
+中间件在事件分发**之前**顺序执行，防火墙、限流、事件脱敏等场景的正统实现点：
+
+```python
+from ErisPulse.Core import adapter
+
+@adapter.middleware
+async def firewall(data):
+    if _is_banned(data.get("user_id")):
+        return False          # 否决：事件被丢弃，不进入任何处理器，无出站副作用
+    data["checked"] = True    # 返回 dict：改写载荷（与历史行为一致）
+    # 返回 None：放行，载荷不变（历史行为）
+    return data
+```
+
+| 返回值 | 行为 |
+|--------|------|
+| `False` | **否决**：事件立即丢弃，不进入任何处理器 |
+| `dict` | 改写事件载荷后继续分发 |
+| `None` | 放行，载荷不变 |
+
+否决时框架输出 TRACE 日志并触发 `adapter.event.blocked` 生命周期钩子（携带中间件名与完整事件），供审计「事件为什么没响应」。
+
+## 命令分发决策链：为什么命令没触发
+
+一条命令消息依次经过：**命令文本判定 → 命令名/别名命中（未命中附拼写建议）→ 命中即认领 → 作用域 → 用户 ACL → 主人 → 权限 → 冷却/限流 → 配额（usage）→ 废弃（deprecated，notice/rejected）→ 参数解析 → 执行**（中间件可在事件层否决，见上一节）。任何一步不满足即终止；治理命中（冷却/限流/配额）默认静默丢弃，权限类拒绝会回复用户，废弃按声明回复或拒绝。
+
+测试中 `ErisPulse-Testing` 的 `dispatch()` 直接返回这条决策链（`DispatchTrace`，`trace.explain()` 输出逐行因果），生产环境可用 `ErisPulse.Core.Event.start_dispatch_trace()` 采集同样的记录。
+
+此外 `ErisPulse.runtime` 提供两组排查诊断 API：`explain_module(模块名)` 回答"模块为什么没加载"（未注册 / 懒加载 / 配置禁用 / 依赖缺失 / SDK 版本不满足，逐项给原因），`explain_event(事件)` 回答"事件为什么没响应"（适配器未注册 / 身份拉黑 / 模块会话屏蔽 / 命令未命中）；配 `format_report()` 渲染人类可读结论。
+
+## 作用域过滤：为什么我的模块没收到消息
+
+事件到达后有两道**静默**过滤（都不回复、不报错）：
+
+1. **身份维度**（`ErisPulse.scope.identity`）：事件进入分发入口时，按 用户 > 群 > Bot > 适配器 判定收不收。
+   被拒绝的**整个事件**直接丢弃，任何处理器（含命令分发器）都不会触发。
+2. **模块维度**（`ErisPulse.scope`）：事件到达某模块的处理器/命令时，按 会话 > Bot > 平台 判定
+   该模块是否可用，**不通过就静默跳过**。
+
+```toml
+# 例1：某群所有消息不传播
+[ErisPulse.scope.identity.sessions.onebot11."group_123"]
+deny = true
+
+# 例2：把 MyModule 屏蔽在某个 Bot
+[ErisPulse.scope.bots.onebot11."123456"]
+blocked = ["MyModule"]
+```
+
+此时该群的消息到达时，`MyModule` 的命令与事件处理器**都不会被调度**。这不是 bug，是过滤机制——排查「模块没反应」时优先检查作用域的身份与模块绑定。
+
+- 过滤日志只在 **TRACE** 级可见（`core.scope.identity_denied` / `core.scope.denied`），默认 INFO 看不到任何痕迹
+- 框架级处理器（如命令分发器 `scope_exempt=True`）不受**模块维度**影响，但受**身份维度**影响（整个事件已丢弃）
+- 命令执行前还有第三道：命令用户 ACL（拒绝时回复"权限不足"，见上节）
+- 第四道是**事件覆写**（见下节）
+
+> [!NOTE]
+> **作用域过滤与事件认领（claim）的关系**：两道静默过滤都发生在处理器
+> **调度之前**——被过滤跳过的处理器没有机会执行，自然也不参与
+> `event.done()` / `mark_processed()` 的认领状态。事件是否已被认领，
+> 只由**实际执行**的处理器（命令命中认领、回复命中认领、显式调用）决定；
+> 作用域拒绝本身既不认领也不阻断（静默跳过，消息继续走完剩余分发链）。
+
+> 作用域配置、匹配语法、运行时 API 见 [作用域（scope）](../advanced/scope.md)。
+
+## 事件覆写：不改模块代码，覆写任意事件类型的行为
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
+事件处理器在注册时声明的参数（`pattern` / `regex` / `master` / `hidden` 等）只是**开发者默认**。
+统一覆写系统让用户按**事件类型**覆写任意模块的行为——OneBot12 标准类型
+（meta / message / notice / request）与 ErisPulse 扩展类型（command）各自拥有专属的可覆写参数：
+
+| 事件类型 | 可覆写参数 | 作用 |
+|---------|-----------|------|
+| `message` | `pattern` / `regex` / `detail_types` | 文本触发条件 + 消息子类型白名单 |
+| `notice` | `detail_types` / `pattern` / `regex` | 通知子类型白名单 + 文本条件 |
+| `request` | `detail_types` / `pattern` / `regex` | 请求子类型白名单 + 文本条件 |
+| `meta` | `detail_types` | 元事件子类型白名单（connect / heartbeat 等） |
+| `command` | `master` / `hidden` / `aliases` / `prefix` / `help` / `usage` | 命令实现参数（用户优先） |
+| `acl`（command 专属） | `allow` / `deny` | 命令用户黑白名单（按命令名 glob） |
+
+```toml
+# message：覆写文本触发条件（与代码内条件 AND）
+[ErisPulse.event.overrides.message.ChatModule]
+pattern = "闲聊*"
+
+# notice：只响应特定通知子类型
+[ErisPulse.event.overrides.notice.MyModule]
+detail_types = ["group_increase"]
+
+# command：覆写实现参数（用户优先——可收紧或放开开发者默认）
+[ErisPulse.event.overrides.command.MyModule.restart]
+master = true
+hidden = true
+
+# acl：命令用户黑白名单（跨命令 glob）
+[ErisPulse.event.overrides.acl."roll*"]
+allow = ["onebot11:u_vip"]
+
+# ACL 兜底（false = 严格模式：无 ACL 即拒）
+acl_default_allow = true
+```
+
+运行时 API（`from ErisPulse.Core.Event import overrides` 或 `sdk.Event.overrides`，
+**类型子命名空间**——每类型对称的 `set` / `get` / `delete` 三件套）：
+
+```python
+from ErisPulse.Core.Event import overrides
+
+overrides.message.set("ChatModule", pattern="闲聊*")   # message 文本条件
+overrides.notice.set("MyModule", detail_types=["group_increase"])
+overrides.command.set("MyModule", "restart", master=True)  # 命令参数
+overrides.acl.set("roll*", deny=["onebot11:u_bad"])    # 命令用户黑名单
+
+overrides.message.get("ChatModule")     # {"pattern": "闲聊*"}
+overrides.message.delete("ChatModule")  # 恢复开发者默认
+```
+
+- 覆写条件与处理器代码内条件**同时生效**（AND 语义）；`command` 参数与开发者声明**深合并**（覆写优先）
+- `detail_types`：事件缺 `detail_type` 时放行（不误杀未知事件）
+- `pattern` / `regex`：无文本的事件（connect / heartbeat 等）不受约束，直接放行
+- `command` 覆写键 `master` 同步映射存储键 `must_master`；禁用命令统一走 `acl` deny
+- **键名映射说明**：`overrides.command.set("My", "restart", master=True)` 的参数名
+  `master` 仅为配置别名，实际存储键与 `get()` 返回值中的键名统一为 **`must_master`**
+  （`get()` 返回 `{"must_master": true}`）——运行时判断读取的是存储键，请勿按
+  `master` 键名读取
+- 配置改了立即生效（热更新），格式校验告警（未知参数 / 坏条目忽略）
+
+## 链路控制：认领与阻断
+
+> [!NOTE]
+> `event.done()` / `event.mark_processed()` 的 `claim=` / `stop=` 参数本特性需要 ErisPulse **2.7.1+**。
+
+ErisPulse 将「认领」与「阻断」两个正交语义解耦，通过 `event.done()` 统一控制，便于在命令处理周围叠加日志、审计、权限等观察层。
+
+**两个概念的准确定义：**
+
+- **认领（claim）**：标记事件已被本处理器处理（写入 `_processed`）。命令分发器看到已认领的事件会**跳过去重**——避免同一消息被多个命令处理器重复处理。典型场景：命令匹配成功后认领，阻止命令分发器再介入。
+- **阻断（stop）**：阻止事件向**更低优先级**处理器传播（写入 `_propagation_stopped`）。低优先级处理器（如 `on_message`）将不再看到该事件。典型场景：高优先级处理器已完整处理事件，不希望低优先级再执行。
+
+| `event.done(...)` | 认领 | 阻断 | 场景 |
+|-------------------|------|------|------|
+| `event.done()` | ✔ | ✔ | 命令 / 处理器处理完的标准做法 |
+| `event.done(stop=False)` | ✔ | ✘ | 仅认领，让低优先级观察者（日志 / 统计）继续看到 |
+| `event.done(claim=False)` | ✘ | ✔ | 仅阻断（如防火墙 / 限流），但不做命令去重 |
+
+`event.done(claim=, stop=)` 是 `event.mark_processed(claim=, stop=)` 的别名，二者参数与行为完全等价。
+
+```python
+@command("help")
+async def help_cmd(event):
+    event.done()            # 认领 + 阻断（命令处理完的标准做法）
+
+@message.on_message(priority=50)
+async def observer(event):
+    event.done(stop=False)  # 仅认领：低优先级仍会执行（日志 / 统计）
+
+@message.on_message(priority=100)
+async def firewall(event):
+    if denied(event):
+        event.done(claim=False)  # 仅阻断：低优先级不执行，但不做去重
+```
+
+### 命令与回复的 block 配置
+
+**命令命中即认领**：消息一旦匹配到已注册命令名（含子命令/别名），无论后续作用域或权限判定结果如何，都会被认领并默认阻断传播——被权限拒绝的命令不会再漏给低优先级消息处理器（消除"命令被拒后 on_message 又响应一次"的双重响应）。
+
+可通过配置放行阻断，让低优先级观察者（日志 / 审计 / 权限）也能看到这些消息：
+
+```toml
+[ErisPulse.event.command]
+block = false   # 命令消息继续流向低优先级处理器（认领不受影响，不会重复消费）
+
+[ErisPulse.event.wait_reply]
+block = false   # 被 wait_reply 消费的回复继续流向低优先级处理器
+```
+
+> 注意：`block` 只控制**阻断**（stop），不影响**认领**（claim）——命中的命令永远不会被消息处理器重复消费；未命中任何命令的消息照常流向消息处理器。
+
+## 通知事件处理
+
+### 好友添加
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_friend_add()
+async def friend_add_handler(event):
+    user_id = event.get_user_id()
+    nickname = event.get_user_nickname() or "新朋友"
+    await event.reply(f"欢迎添加我为好友，{nickname}！")
+```
+
+### 群成员增加
+
+```python
+@notice.on_group_increase()
+async def member_increase_handler(event):
+    group_id = event.get_group_id()
+    user_id = event.get_user_id()
+    await event.reply(f"欢迎新成员 {user_id} 加入群 {group_id}")
+```
+
+### 群成员减少
+
+```python
+@notice.on_group_decrease()
+async def member_decrease_handler(event):
+    group_id = event.get_group_id()
+    user_id = event.get_user_id()
+    await event.reply(f"成员 {user_id} 离开了群 {group_id}")
+```
+
+## 请求事件处理
+
+### 好友请求
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def friend_request_handler(event):
+    user_id = event.get_user_id()
+    comment = event.get_comment()
+    
+    sdk.logger.info(f"收到好友请求: {user_id}, 附言: {comment}")
+    
+    # 可以通过适配器 API 处理请求
+    # 具体实现请参考各适配器文档
+```
+
+### 群邀请请求
+
+```python
+@request.on_group_request()
+async def group_request_handler(event):
+    group_id = event.get_group_id()
+    user_id = event.get_user_id()
+    
+    await event.reply(f"收到群 {group_id} 的邀请，来自 {user_id}")
+```
+
+## 元事件处理
+
+### 连接事件
+
+```python
+from ErisPulse.Core.Event import meta
+
+@meta.on_connect()
+async def connect_handler(event):
+    platform = event.get_platform()
+    sdk.logger.info(f"{platform} 平台已连接")
+
+@meta.on_disconnect()
+async def disconnect_handler(event):
+    platform = event.get_platform()
+    sdk.logger.warning(f"{platform} 平台已断开连接")
+```
+
+### 心跳事件
+
+```python
+@meta.on_heartbeat()
+async def heartbeat_handler(event):
+    platform = event.get_platform()
+    sdk.logger.debug(f"{platform} 心跳检测")
+```
+
+### Bot 状态查询
+
+当适配器发送 meta 事件后，框架自动追踪 Bot 状态，你可以随时查询：
+
+```python
+from ErisPulse import sdk
+
+# 检查某个 Bot 是否在线
+if sdk.adapter.is_bot_online("telegram", "123456"):
+    telegram = sdk.adapter.get("telegram")
+    await telegram.Send.To("user", "123456").Text("Bot 在线")
+
+# 列出当前所有在线 Bot
+bots = sdk.adapter.list_bots()
+for platform, bot_list in bots.items():
+    for bot_id, info in bot_list.items():
+        print(f"{platform}/{bot_id}: {info['status']}")
+
+# 获取完整状态摘要
+summary = sdk.adapter.get_status_summary()
+```
+
+## 交互式处理
+
+### 使用 reply 方法发送回复
+
+`event.reply()` 方法支持多种修饰参数，方便发送带有 @、回复等功能的消息：
+
+```python
+# 简单回复
+await event.reply("你好")
+
+# 发送不同类型的消息
+await event.reply("http://example.com/image.jpg", method="Image")  # 图片
+await event.reply("http://example.com/voice.mp3", method="Voice")  # 语音
+
+# @单个用户
+await event.reply("你好", at_users=["user123"])
+
+# @多个用户
+await event.reply("大家好", at_users=["user1", "user2", "user3"])
+
+# 回复消息
+await event.reply("回复内容", reply_to="msg_id")
+
+# @全体成员
+await event.reply("公告", at_all=True)
+
+# 组合使用：@用户 + 回复消息
+await event.reply("内容", at_users=["user1"], reply_to="msg_id")
+```
+
+### 等待用户回复
+
+```python
+@command("ask", help="询问用户")
+async def ask_handler(event):
+    await event.reply("请输入你的名字:")
+    
+    # 等待用户回复，超时时间 30 秒
+    reply = await event.wait_reply(timeout=30)
+    
+    if reply:
+        name = reply.get_text()
+        await event.reply(f"你好，{name}！")
+    else:
+        await event.reply("等待超时，请重新输入。")
+```
+
+> [!TIP]
+> **等待期间命令仍然可用**（2.8.3+）：以命令前缀开头且命中已注册命令的
+> 消息（如 `/cancel`）会**执行命令**而非作为回复内容，等待继续挂起——
+> 用户可以随时取消/切换，命令执行完仍可继续回复。需要"等待吞掉一切文本"
+> 的旧行为时：配置 `ErisPulse.event.wait_reply.cmdpass = true`，或单次
+> `wait_reply(cmdpass=True)`。
+
+### 带验证的等待回复
+
+```python
+@command("age", help="询问年龄")
+async def age_handler(event):
+    def validate_age(event_data):
+        """验证年龄是否有效"""
+        try:
+            age = int(event_data.get_text())
+            return 0 <= age <= 150
+        except ValueError:
+            return False
+    
+    await event.reply("请输入你的年龄 (0-150):")
+    
+    reply = await event.wait_reply(
+        timeout=60,
+        validator=validate_age
+    )
+    
+    if reply:
+        age = int(reply.get_text())
+        await event.reply(f"你的年龄是 {age} 岁")
+    else:
+        await event.reply("输入无效或超时")
+```
+
+### 带回调的等待回复
+
+```python
+@command("confirm", help="确认操作")
+async def confirm_handler(event):
+    async def handle_confirmation(reply_event):
+        text = reply_event.get_text().lower()
+        
+        if text in ["是", "yes", "y"]:
+            await event.reply("操作已确认！")
+        else:
+            await event.reply("操作已取消。")
+    
+    await event.reply("确认执行此操作吗？(是/否)")
+    
+    await event.wait_reply(
+        timeout=30,
+        callback=handle_confirmation
+    )
+```
+
+### 确认对话 (confirm)
+
+等待用户确认或否定，自动识别内置中英文确认词：
+
+```python
+@command("confirm", help="确认操作")
+async def confirm_handler(event):
+    if await event.confirm("确定要执行此操作吗？"):
+        await event.reply("已确认，执行中...")
+    else:
+        await event.reply("已取消")
+
+# 自定义确认词
+if await event.confirm("继续吗？", yes_words={"go", "继续"}, no_words={"stop", "停止"}):
+    pass
+```
+
+### 选择菜单 (choose)
+
+用户可回复选项编号或选项文本：
+
+```python
+@command("choose", help="选择")
+async def choose_handler(event):
+    choice = await event.choose(
+        "请选择颜色：",
+        ["红色", "绿色", "蓝色"]
+    )
+    
+    if choice is not None:
+        colors = ["红色", "绿色", "蓝色"]
+        await event.reply(f"你选择了：{colors[choice]}")
+    else:
+        await event.reply("超时未选择")
+```
+
+**合并模式**：`merge_prompt=True` 时将选项拼入提示消息，用用户指定的 `method` 一条消息发送：
+
+```python
+# 用 Markdown 发送合并后的提示 + 选项
+choice = await event.choose(
+    "## 请选择颜色\n{options}\n请回复编号",
+    ["红色", "绿色", "蓝色"],
+    method="Markdown",
+    merge_prompt=True,
+)
+```
+
+> `{options}` 占位符控制选项插入位置；不写则追加到 prompt 末尾。
+> 可通过 `placeholder` 参数自定义占位符（如 `placeholder="[choices]"`）。
+> `options_format="auto"`（默认）根据 method 自动选择样式：Markdown→无序列表，Html→有序列表，其他→纯文本列表。
+> 文本类方法（Text/Markdown/Html 等）默认合并选项到末尾；非文本方法（Image 等）默认拆分为两条消息。
+
+### 收集表单 (collect)
+
+多步骤收集用户输入：
+
+```python
+@command("register", help="注册")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "请输入姓名："},
+        {"key": "age", "prompt": "请输入年龄：", 
+         "validator": lambda e: e.get_text().isdigit()},
+        {"key": "email", "prompt": "请输入邮箱："}
+    ])
+    
+    if data:
+        await event.reply(f"注册成功！\n姓名：{data['name']}\n年龄：{data['age']}\n邮箱：{data['email']}")
+    else:
+        await event.reply("注册超时或输入无效")
+```
+
+### 等待任意事件 (wait_for)
+
+等待满足条件的任意事件，不限于同一用户：
+
+```python
+@command("wait_member", help="等待新成员")
+async def wait_member_handler(event):
+    await event.reply("等待群成员加入...")
+    
+    evt = await event.wait_for(
+        event_type="notice",
+        condition=lambda e: e.get_detail_type() == "group_member_increase",
+        timeout=120
+    )
+    
+    if evt:
+        await event.reply(f"欢迎新成员：{evt.get_user_id()}")
+    else:
+        await event.reply("等待超时")
+```
+
+### 多轮对话 (conversation)
+
+创建可交互的多轮对话上下文：
+
+```python
+@command("survey", help="问卷调查")
+async def survey_handler(event):
+    conv = event.conversation(timeout=60)
+    
+    await conv.say("欢迎参与问卷调查！")
+    
+    while conv.is_active:
+        reply = await conv.wait()
+        
+        if reply is None:
+            await conv.say("对话超时，再见！")
+            break
+        
+        text = reply.get_text()
+        
+        if text == "退出":
+            await conv.say("再见！")
+            break
+        
+        await conv.say(f"你说了：{text}，继续输入或回复'退出'结束")
+```
+
+### 内置确认词
+
+ErisPulse 内置了中英文确认词集合：
+
+- **确认词** (`CONFIRM_YES_WORDS`): 是、yes、y、确认、确定、好、好的、ok、true、对、嗯、行、同意、没问题...
+- **否定词** (`CONFIRM_NO_WORDS`): 否、no、n、取消、不、不要、不行、cancel、false、错、拒绝、不可以...
+
+## 事件数据访问
+
+### Event 对象常用方法
+
+```python
+@command("info")
+async def info_handler(event):
+    # 基础信息
+    event_id = event.get_id()
+    event_time = event.get_time()
+    event_type = event.get_type()
+    detail_type = event.get_detail_type()
+    
+    # 发送者信息
+    user_id = event.get_user_id()
+    nickname = event.get_user_nickname()
+    
+    # 消息内容
+    message_segments = event.get_message()
+    alt_message = event.get_alt_message()
+    text = event.get_text()
+    
+    # 群组信息
+    group_id = event.get_group_id()
+    
+    # 机器人信息
+    self_id = event.get_self_user_id()
+    self_platform = event.get_self_platform()
+    
+    # 原始数据
+    raw_data = event.get_raw()
+    raw_type = event.get_raw_type()
+    
+    # 平台信息
+    platform = event.get_platform()
+    
+    # 消息类型判断
+    is_private = event.is_private_message()
+    is_group = event.is_group_message()
+    is_at = event.is_at_message()
+    
+    # 命令信息
+    if event.is_command():
+        cmd_name = event.get_command_name()
+        cmd_args = event.get_command_args()
+        cmd_raw = event.get_command_raw()
+```
+
+### 平台扩展方法
+
+除了内置方法外，各平台适配器还会注册平台专有方法，方便你访问平台特有的数据。
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    platform = event.get_platform()
+
+    # 根据平台调用专有方法
+    if platform == "telegram":
+        chat_type = event.get_chat_type()      # Telegram 专有方法
+    elif platform == "email":
+        subject = event.get_subject()           # 邮件专有方法
+```
+
+如果不确定平台是否注册了某个方法，可以查询某个平台注册了哪些方法：
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("telegram")
+# ["get_chat_type", "is_bot_message", ...]
+```
+
+> 各平台注册的专有方法请参阅对应的 [平台文档](../platform-guide/)。
+
+## 事件处理最佳实践
+
+### 1. 异常处理
+
+```python
+@command("process")
+async def process_handler(event):
+    try:
+        # 业务逻辑
+        result = await do_some_work()
+        await event.reply(f"结果: {result}")
+    except ValueError as e:
+        # 预期的业务错误
+        await event.reply(f"参数错误: {e}")
+    except Exception as e:
+        # 未预期的错误
+        sdk.logger.error(f"处理失败: {e}")
+        await event.reply("处理失败，请稍后重试")
+```
+
+### 2. 日志记录
+
+```python
+@message.on_message()
+async def message_handler(event):
+    user_id = event.get_user_id()
+    text = event.get_text()
+    
+    sdk.logger.info(f"处理消息: {user_id} - {text}")
+    
+    # 使用模块自己的日志
+    from ErisPulse import sdk
+    logger = sdk.logger.get_child("MyHandler")
+    logger.debug(f"详细调试信息")
+```
+
+### 3. 条件处理
+
+```python
+@message.on_message(priority=0)
+async def conditional_handler(event):
+    """条件处理 - 在处理器内部判断"""
+    # 只处理特定用户的消息
+    if event.get_user_id() in ["bot1", "bot2"]:
+        return
+    
+    # 只处理包含特定关键词的消息
+    if "关键词" not in event.get_text():
+        return
+    
+    await event.reply("条件满足，处理消息")
+```
+
+## 下一步
+
+- **想操纵事件对象本身**：看 [Event 包装类详解](../developer-guide/modules/event-wrapper.md)，Event 全部方法的权威参考
+- **想发更复杂的消息**：[平台特性指南](../platform-guide/README.md) 讲透 SendDSL 链式发送、发送规则与批量构建；[常见任务示例](common-tasks.md) 里有重试 / 超时 / 批量的现成代码
+- **功能写完要配置和部署**：进入 [用户使用指南](../user-guide/)，配置文件与 CLI 管理都在那里

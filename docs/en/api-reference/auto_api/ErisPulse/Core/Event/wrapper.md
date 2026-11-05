@@ -1,0 +1,1555 @@
+# `ErisPulse.Core.Event.wrapper` 模块
+
+---
+
+## 模块概述
+
+
+ErisPulse 事件包装类
+
+提供便捷的事件访问方法
+
+> **提示**
+> 1. 继承自dict，完全兼容字典访问
+> 2. 提供便捷方法简化事件处理
+> 3. 支持点式访问 event.platform
+> 4. 支持适配器通过 register_event_mixin / register_event_method 注册平台专有方法
+> 5. 建议在处理器参数中使用类型注解以获得 IDE 自动补全: async def handler(event: Event)
+
+---
+
+## 函数列表
+
+
+### `_record_event_method_owner(platform: str, name: str) -> None`
+
+**内部方法** 记录事件方法注入的 owner 归属（非 owner 上下文不记录）
+
+---
+
+
+### `register_event_mixin(platform: str, mixin_cls: type) -> int`
+
+注册一个类的所有公开方法到指定平台
+
+适配器可以创建一个 Mixin 类集中定义平台专有方法，
+然后通过此函数一次性注册。
+
+注册的方法会通过 Event.__getattribute__ 优先于内置方法生效，
+因此可以覆写 confirm / choose / collect / wait_reply 等内置交互式方法。
+
+- **platform**: 平台名称（需与适配器注册名一致），传 "*" 表示对所有平台生效
+- **mixin_cls**: 包含平台方法的类
+
+**返回值**: 成功注册的方法数量
+
+**示例**:
+
+```python
+class EmailEventMixin:
+    def get_subject(self):
+        return self.get("email_raw", {}).get("subject", "")
+    def get_from(self):
+        return self.get("email_raw", {}).get("from", "")
+register_event_mixin("email", EmailEventMixin)
+2
+```
+
+---
+
+
+### `register_event_method(platform: str)`
+
+装饰器：注册单个方法到指定平台
+
+适合少量方法或动态注册的场景。
+
+注册的方法会通过 Event.__getattribute__ 优先于内置方法生效，
+因此可以覆写 confirm / choose / collect / wait_reply 等内置交互式方法。
+
+- **platform**: 平台名称（需与适配器注册名一致），传 "*" 表示对所有平台生效
+
+**示例**:
+
+```python
+@register_event_method("email")
+def get_subject(self):
+    return self.get("email_raw", {}).get("subject", "")
+
+# 跨平台通配符
+@register_event_method("*")
+def ai_chat(self, prompt):
+    return await self.reply(f"AI: {prompt}")
+```
+
+---
+
+
+### `unregister_event_method(platform: str, name: str) -> bool`
+
+注销指定平台的单个扩展方法
+
+- **platform**: 平台名称
+- **name**: 方法名
+
+**返回值**: 是否成功注销
+
+---
+
+
+### `unregister_platform_event_methods(platform: str) -> int`
+
+注销指定平台的全部扩展方法
+
+适配器关闭时应调用此方法清理注册的方法。
+
+- **platform**: 平台名称
+
+**返回值**: 被注销的方法数量
+
+---
+
+
+### `unregister_event_methods_by_owner(owner: str) -> int`
+
+注销指定 owner（模块）注册的全部平台事件方法
+
+模块在加载上下文（on_load）内通过 :func:`register_event_method` /
+:func:`register_event_mixin` 注入的方法，由框架在模块卸载时自动调用
+本方法清理（作用域清理）——避免旧闭包持有已卸载模块实例造成泄漏。
+
+- **owner** (`owner`): 名（模块名）
+
+**返回值**: 被注销的方法数量
+
+---
+
+
+### `get_platform_event_methods(platform: str) -> list[str]`
+
+查询指定平台已注册的扩展方法名列表
+
+- **platform**: 平台名称
+
+**返回值**: 方法名列表
+
+---
+
+
+### `async _builtin_wait_reply(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None, cmdpass: bool | None = None, session: bool = False) -> Optional['Event']`
+
+内置 wait_reply 实现
+
+供覆写函数调用以复用内置等待逻辑。
+
+- **pattern** (`glob`): 通配符，回复文本不匹配时继续等待（超时返回 None）
+- **regex**: 正则表达式，回复文本不匹配时继续等待（与 pattern 同时给定时须都匹配）
+- **cmdpass**: 是否跳过命令匹配的三态（None=跟随全局配置，默认不跳过——
+
+    等待期间命中已注册命令的消息放行给命令分发器执行；True=跳过命令匹配，
+    等待期间消息一律作为回复消费）
+
+---
+
+
+### `async _builtin_confirm(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] | None = None, no_words: set[str] | frozenset[str] | None = None, method: str = DEFAULT_SEND_METHOD, hint: bool = False) -> bool | None`
+
+内置 confirm 实现
+
+供覆写函数调用以复用内置确认逻辑。
+
+---
+
+
+### `_format_options(options: list[str], fmt: str | Callable[[list[str]], str], method: str = DEFAULT_SEND_METHOD) -> str`
+
+格式化选项列表为文本
+
+- **options**: 选项列表
+- **fmt**: 格式类型，支持 "auto"（根据 method 自动选择）、"list"、"inline"、"md"、"html" 或自定义函数
+- **method**: 发送方法名，fmt="auto" 时用于推断合适的格式
+
+**返回值**: 格式化后的选项文本
+
+---
+
+
+### `_merge_prompt_options(prompt: str, options_text: str, placeholder: str = '{options}') -> str`
+
+将选项文本合并到提示消息中
+
+如果 prompt 包含占位符（默认 ``{options}``），则替换占位符；
+否则将选项追加到 prompt 末尾（用换行分隔）。
+
+- **prompt**: 提示消息（可能包含占位符）
+- **options_text**: 已格式化的选项文本
+- **placeholder**: 占位符标记，prompt 中出现该标记的位置将被替换为选项文本
+
+**返回值**: 合并后的完整提示消息
+
+---
+
+
+### `_is_text_method(method: str) -> bool`
+
+判断发送方法是否为文本类（内容可拼接选项文本）
+
+通过大小写不敏感的子串匹配：方法名包含 text/md/markdown/html/h5 即视为文本类。
+设计原则是“只要不是明确的富媒体就合并”，减少拆分消息的情况。
+
+- **method**: 发送方法名
+
+**返回值**: True 表示该方法是文本类，选项可直接拼接到末尾
+
+---
+
+
+### `async _builtin_choose(event: 'Event', prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, method: str = DEFAULT_SEND_METHOD, options_format: str | Callable[[list[str]], str] = 'auto', merge_prompt: bool = False, placeholder: str = '{options}') -> int | None`
+
+内置 choose 实现
+
+供覆写函数调用以复用内置选择逻辑。
+
+发送行为取决于 method 和 merge_prompt：
+- 文本类方法 (Text/Markdown/md/Html/h5 等): 选项默认拼接到 prompt 末尾，一条消息发送
+- 非文本方法 (Image/Voice 等) + merge_prompt=False: 先发富媒体 prompt，再发 Text 选项
+- 任意方法 + merge_prompt=True: 强制合并为一条消息发送（用用户指定的 method）
+- prompt 含占位符（默认 ``{options}``，可通过 placeholder 自定义）时，替换该位置；否则追加到末尾
+- options_format="auto" 时根据 method 自动选择内置样式（Markdown→无序列表，Html→有序列表）
+
+---
+
+
+### `async _builtin_collect(event: 'Event', fields: list[dict[str, Any]], timeout_per_field: float = 60.0) -> dict[str, str] | None`
+
+内置 collect 实现
+
+供覆写函数调用以复用内置收集逻辑。
+每个 field 支持 `method` 键来指定发送方法。
+
+---
+
+
+### `_normalize_modifier(mod) -> tuple[str, tuple, dict]`
+
+**内部方法**
+归一化修饰方法定义为 (name, args, kwargs)
+
+支持以下形式：
+- ``"Name"``                            → ``("Name", (), {})``
+- ``("Name",)``                         → ``("Name", (), {})``
+- ``("Name", arg1, arg2, ...)``         → ``("Name", (arg1, arg2, ...), {})``
+- ``("Name", (arg1, arg2), kwargs_dict)`` → 显式位置参数 + 关键字参数
+
+- **mod**: str|tuple - 修饰方法定义（字符串或元组）
+
+**返回值**: tuple - ``(方法名, 位置参数元组, 关键字参数字典)``
+
+---
+
+
+## 类列表
+
+
+### `class EventData(TypedDict)`
+
+OneBot12 标准事件数据结构
+
+> **提示**
+> 所有字段均为可选（total=False），实际字段取决于事件类型。
+> 详见 docs/zh-CN/standards/event-conversion.md（适配器标准化转换规范）
+
+:ivar id: str 事件唯一标识符
+:ivar time: int Unix时间戳（秒级）
+:ivar type: str 事件类型（message/notice/request/meta）
+:ivar detail_type: str 事件详细类型（详见会话类型标准）
+:ivar sub_type: str 子类型
+:ivar platform: str 平台名称
+:ivar self: dict 机器人信息（含 platform, user_id）
+:ivar message_id: str 消息ID
+:ivar message: list 消息段数组
+:ivar alt_message: str 纯文本消息
+:ivar user_id: str 用户ID
+:ivar user_nickname: str 用户昵称
+:ivar group_id: str 群组ID
+:ivar guild_id: str 频道ID
+:ivar channel_id: str 子频道ID
+:ivar thread_id: str 主题ID
+:ivar operator_id: str 操作者ID
+:ivar comment: str 请求附言
+:ivar request_id: str 请求标识符
+
+
+### `class Expectation`
+
+等待期望描述（:meth:`Event.expect` 创建，传给 :meth:`Event.select` 做多路等待）
+
+本身不注册任何等待——仅在 ``select()`` 调用时统一注册，
+任一路命中即返回该路结果，其余自动取消。
+
+:attribute pattern: glob 文本过滤（``*`` / ``?`` / ``[seq]``）
+:attribute regex: 正则文本过滤（与 pattern 同时给定时须都匹配）
+:attribute validator: 回复校验函数（接收 Event，返回 bool）
+:attribute user: 限定回复者 user_id（None 不限定）
+:attribute session: 会话级等待（同会话任何人可命中，忽略 user）
+
+
+### `class Event(dict)`
+
+事件包装类
+
+提供便捷的事件访问方法
+
+> **提示**
+> 所有方法都是可选的，不影响原有字典访问方式
+
+
+#### 方法列表
+
+
+##### `__init__(event_data: dict[str, Any])`
+
+初始化事件包装器
+
+- **event_data**: 原始事件数据
+
+---
+
+
+##### `get_id() -> str`
+
+获取事件ID
+
+**返回值**: 事件ID
+
+---
+
+
+##### `get_time() -> int`
+
+获取事件时间戳
+
+**返回值** (`Unix`): 时间戳（秒级）
+
+---
+
+
+##### `get_type() -> str`
+
+获取事件类型
+
+**返回值**: 事件类型（message/notice/request/meta等）
+
+---
+
+
+##### `get_detail_type() -> str`
+
+获取事件详细类型
+
+**返回值**: 事件详细类型（private/group/friend等）
+
+---
+
+
+##### `get_platform() -> str`
+
+获取平台名称
+
+**返回值**: 平台名称
+
+---
+
+
+##### `get_self_platform() -> str`
+
+获取机器人平台
+
+**返回值**: 机器人平台名称
+
+---
+
+
+##### `get_self_user_id() -> str`
+
+获取机器人用户ID
+
+**返回值**: 机器人用户ID
+
+---
+
+
+##### `get_self_account_id() -> str`
+
+获取机器人账户标识（多Bot模式）
+
+优先返回 account_id（ErisPulse扩展），若不存在则回退到 user_id（OB12标准）
+
+**返回值**: 机器人账户标识，单Bot模式下返回空字符串
+
+---
+
+
+##### `get_self_info() -> dict[str, Any]`
+
+获取机器人完整信息
+
+**返回值**: 机器人信息字典
+
+---
+
+
+##### `get_message() -> list[dict[str, Any]]`
+
+获取消息段数组
+
+**返回值**: 消息段数组
+
+---
+
+
+##### `get_alt_message() -> str`
+
+获取消息备用文本
+
+**返回值**: 消息备用文本
+
+---
+
+
+##### `get_text() -> str`
+
+获取纯文本内容
+
+alt_message 优先（适配器提供的备用文本）；未提供时回退为消息段
+中全部 text 段的顺序拼接——适配器只填 message 段时不再静默返回空串。
+
+**返回值**: 纯文本内容
+
+---
+
+
+##### `get_message_text() -> str`
+
+获取纯文本内容（别名，回退口径同 :meth:`get_text`）
+
+**返回值**: 纯文本内容
+
+---
+
+
+##### `has_mention() -> bool`
+
+是否包含@消息
+
+**返回值**: 是否包含@消息
+
+---
+
+
+##### `get_mentions() -> list[str]`
+
+获取所有被@的用户ID列表
+
+**返回值**: 被@的用户ID列表
+
+---
+
+
+##### `get_user_id() -> str`
+
+获取发送者ID
+
+**返回值**: 发送者用户ID
+
+---
+
+
+##### `is_master() -> bool`
+
+检查事件发送者是否为框架主人
+
+基于 ``ErisPulse.master.users`` 配置和运行时添加的主人列表判断。
+
+**返回值**: 是否为框架主人
+
+**示例**:
+
+```python
+if event.is_master():
+    await event.reply("主人你好")
+```
+
+---
+
+
+##### `get_user_nickname() -> str`
+
+获取发送者昵称
+
+**返回值**: 发送者昵称
+
+---
+
+
+##### `get_group_id() -> str`
+
+获取群组ID
+
+**返回值**: 群组ID（群聊消息）
+
+---
+
+
+##### `get_channel_id() -> str`
+
+获取频道ID
+
+**返回值**: 频道ID（频道消息）
+
+---
+
+
+##### `get_guild_id() -> str`
+
+获取服务器ID
+
+**返回值**: 服务器ID（服务器消息）
+
+---
+
+
+##### `get_thread_id() -> str`
+
+获取话题/子频道ID
+
+**返回值**: 话题ID（话题消息）
+
+---
+
+
+##### `get_target_id() -> str`
+
+获取当前会话的目标ID（统一接口）
+
+根据事件类型自动返回对应的目标ID：
+群聊 → group_id，频道 → channel_id，私聊 → user_id，以此类推。
+
+**返回值**: 目标ID字符串，无法确定时返回空字符串
+
+**示例**:
+
+```python
+target = event.get_target_id()
+# 群聊事件 → group_id
+# 私聊事件 → user_id
+```
+
+---
+
+
+##### `get_session_id() -> str`
+
+生成会话唯一标识
+
+格式: ``{platform}:{detail_type}:{target_id}``
+如: ``telegram:private:12345``、``qq:group:67890``
+
+用于存储、上下文管理等需要唯一标识会话的场景。
+
+**返回值**: 会话标识字符串
+
+**示例**:
+
+```python
+session_id = event.get_session_id()
+# "qq:group:123456"
+```
+
+---
+
+
+##### `get_sender() -> dict[str, Any]`
+
+获取发送者信息字典
+
+**返回值**: 发送者信息字典
+
+---
+
+
+##### `is_message() -> bool`
+
+是否为消息事件
+
+**返回值**: 是否为消息事件
+
+---
+
+
+##### `is_private_message() -> bool`
+
+是否为私聊消息
+
+**返回值**: 是否为私聊消息
+
+---
+
+
+##### `is_group_message() -> bool`
+
+是否为群聊消息
+
+**返回值**: 是否为群聊消息
+
+---
+
+
+##### `is_at_message() -> bool`
+
+是否为@消息
+
+**返回值**: 是否为@消息
+
+---
+
+
+##### `get_operator_id() -> str`
+
+获取操作者ID
+
+**返回值**: 操作者ID
+
+---
+
+
+##### `get_operator_nickname() -> str`
+
+获取操作者昵称
+
+**返回值**: 操作者昵称
+
+---
+
+
+##### `is_notice() -> bool`
+
+是否为通知事件
+
+**返回值**: 是否为通知事件
+
+---
+
+
+##### `is_group_member_increase() -> bool`
+
+群成员增加
+
+**返回值**: 是否为群成员增加事件
+
+---
+
+
+##### `is_group_member_decrease() -> bool`
+
+群成员减少
+
+**返回值**: 是否为群成员减少事件
+
+---
+
+
+##### `is_friend_add() -> bool`
+
+好友添加
+
+**返回值**: 是否为好友添加事件
+
+---
+
+
+##### `is_friend_delete() -> bool`
+
+好友删除
+
+**返回值**: 是否为好友删除事件
+
+---
+
+
+##### `get_comment() -> str`
+
+获取请求附言
+
+**返回值**: 请求附言
+
+---
+
+
+##### `get_request_id() -> str`
+
+获取请求ID
+
+用于标识可操作的请求，配合 approve()/reject() 使用。
+
+**返回值**: 请求ID，不存在时返回空字符串
+
+---
+
+
+##### `async approve(comment: str | None = None) -> Any`
+
+同意当前请求事件
+
+通过适配器的 Request DSL 执行同意操作。
+仅对请求类型事件（type == "request"）有效。
+
+- **comment**: 附带备注信息（可选，部分平台支持）
+
+**返回值**: 标准响应格式
+
+**异常**: `ValueError` - 当事件不是请求类型或缺少必要字段时
+
+**示例**:
+
+```python
+@request.on_friend_request()
+async def handle_friend_request(event):
+    await event.approve()
+    # 带备注
+    await event.approve(comment="欢迎添加好友")
+```
+
+---
+
+
+##### `async reject(comment: str | None = None) -> Any`
+
+拒绝当前请求事件
+
+通过适配器的 Request DSL 执行拒绝操作。
+仅对请求类型事件（type == "request"）有效。
+
+- **comment**: 附带备注信息（可选，部分平台支持）
+
+**返回值**: 标准响应格式
+
+**异常**: `ValueError` - 当事件不是请求类型或缺少必要字段时
+
+**示例**:
+
+```python
+@request.on_group_request()
+async def handle_group_request(event):
+    await event.reject()
+```
+
+---
+
+
+##### `async _handle_request_action(action: str, comment: str | None = None) -> Any`
+
+执行请求操作的内部方法
+
+- **action**: 操作类型 ("accept" / "reject")
+- **comment**: 附带备注
+
+**返回值**: 标准响应格式
+
+**异常**: `ValueError` - 当缺少必要字段时
+
+---
+
+
+##### `is_request() -> bool`
+
+是否为请求事件
+
+**返回值**: 是否为请求事件
+
+---
+
+
+##### `is_friend_request() -> bool`
+
+是否为好友请求
+
+**返回值**: 是否为好友请求
+
+---
+
+
+##### `is_group_request() -> bool`
+
+是否为群组请求
+
+**返回值**: 是否为群组请求
+
+---
+
+
+##### `_get_adapter_and_target() -> tuple[Any, str, str, str]`
+
+获取适配器实例和目标信息
+
+使用会话类型管理模块自动处理类型转换和ID获取
+
+**返回值**: (适配器实例, 发送目标类型, 目标ID, 账户ID)
+
+---
+
+
+##### `async reply(content: str, method: str | None = None, at_sender: bool = False, quote: bool = False, at_users: list[str] | None = None, reply_to: str | None = None, at_all: bool = False, via: list | None = None, **kwargs) -> Any`
+
+通用回复方法
+
+基于适配器的Text方法，但可以通过method参数指定其他发送方法
+
+- **content**: 发送内容（文本、URL等，取决于method参数）
+- **method**: str - 适配器发送方法（默认: "Text"）
+
+               可选值: "Text", "Image", "Voice", "Video", "File" 等；
+               使用 via 时必须显式指定
+- **at_sender**: 是否@发送者（自动从事件中提取 user_id）
+- **quote**: 是否引用回复当前消息（自动从事件中提取 message_id）
+- **at_users**: @用户列表（可选），如 ["user1", "user2"]
+- **reply_to**: 回复消息ID（可选，手动指定）
+- **at_all**: 是否@全体成员（可选），默认为 False
+- **via**: list - 经由的平台修饰方法链（可选，默认: None），按顺序在发送方法前应用。
+
+            每个元素可为：
+            - ``"Name"``（无参）
+            - ``("Name", arg1, arg2, ...)``（位置参数）
+            - ``("Name", (arg1, ...), {kw: val})``（位置+关键字参数）
+            例如 ``[("Expire", 3600), ("ForMember", "uid")]`` 等价于
+            ``.Expire(3600).ForMember("uid")``。
+            当需要连续多个修饰方法、或 method 强依赖修饰方法时使用；
+            更复杂的场景建议用 :meth:`send_chain`
+- **kwargs**: 额外参数，例如Mention方法的user_id
+
+**返回值**: Any - 适配器发送方法的返回值
+
+**异常**: `ValueError` - 当适配器不支持指定的发送方法/修饰方法时
+
+**示例**:
+
+```python
+# 简单回复
+await event.reply("你好")
+
+# 回复并@发送者
+await event.reply("你好", at_sender=True)
+
+# 回复并引用当前消息
+await event.reply("收到", quote=True)
+
+# 发送图片
+await event.reply("http://example.com/image.jpg", method="Image")
+
+# @指定用户
+await event.reply("你好", at_users=["user123"])
+
+# @全体成员
+await event.reply("公告", at_all=True)
+
+# 平台专有修饰方法链 + 看板发送
+await event.reply("看板内容", method="Board",
+                  via=[("Expire", 3600), ("ForMember", "uid")])
+```
+
+---
+
+
+##### `async reply_ob12(message: list[dict[str, Any]] | dict[str, Any]) -> Any`
+
+使用 OneBot12 消息段回复
+
+通过适配器的 Raw_ob12 方法发送 OneBot12 标准消息段，
+是 reply() 方法的 OB12 对应版本。
+
+- **message** (`OneBot12`): 消息段列表或单个消息段
+
+    [
+        {"type": "text", "data": {"text": "Hello"}},
+        {"type": "image", "data": {"file": "https://..." }},
+    ]
+**返回值**: 适配器 Raw_ob12 的返回值（标准响应格式）
+
+**示例**:
+
+```python
+# 简单文本回复
+await event.reply_ob12([{"type": "text", "data": {"text": "收到"}}])
+
+# 配合 MessageBuilder 使用
+from ErisPulse.Core import MessageBuilder
+await event.reply_ob12(
+    MessageBuilder()
+        .reply(event.get_id())
+        .text("收到你的消息")
+        .build()
+)
+
+# 发送复杂消息
+await event.reply_ob12(
+    MessageBuilder()
+        .mention(event.get_user_id())
+        .text("你好")
+        .image("https://example.com/img.jpg")
+        .build()
+)
+```
+
+---
+
+
+##### `send_chain() -> Any`
+
+获取已配置好目标和发送账号的发送链
+
+返回已设置 ``To``（目标）和 ``Using``（发送账号）的 SendDSL 实例，
+可自由追加修饰方法（At/Reply/平台专有修饰）和发送方法。
+
+适用于 :meth:`reply` 无法覆盖的场景：
+- 平台专有修饰方法（如云虎的 Expire/ExpireAt/ForMember）
+- 需要连续多个修饰方法
+- 无内容参数的动作型发送方法（如 DismissBoard）
+
+**返回值**: SendDSL - 已设置目标和发送账号的发送链实例
+
+**异常**: `ValueError` - 当事件缺少 platform 字段或找不到对应适配器时
+
+**示例**:
+
+```python
+# 平台专有修饰方法 + 看板发送
+await event.send_chain().Expire(3600).Board("一小时后过期")
+
+# 连续多个修饰方法
+await (event.send_chain()
+       .Expire(3600)
+       .ForMember("114514")
+       .Board("看板内容", content_type="markdown"))
+
+# 内置修饰方法同样可用
+await event.send_chain().At("123").Reply("msg_id").Text("hi")
+
+# 无内容参数的动作型方法
+await event.send_chain().DismissBoard()
+```
+
+---
+
+
+##### `supports(method: str) -> bool`
+
+检查当前事件所在平台是否支持某发送方法
+
+- **method**: 发送方法名，如 "Image"、"Voice"、"Video"
+
+**返回值**: 是否支持
+
+**示例**:
+
+```python
+if event.supports("Image"):
+    await event.reply(url, method="Image")
+```
+
+---
+
+
+##### `available_methods() -> list[str]`
+
+列出当前平台所有可用发送方法
+
+**返回值**: 发送方法名列表
+
+**示例**:
+
+```python
+methods = event.available_methods()
+# ["Text", "Image", "Voice", ...]
+```
+
+---
+
+
+##### `async wait_reply(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None, cmdpass: bool | None = None, session: bool = False) -> Optional['Event']`
+
+等待用户回复
+
+- **prompt**: 提示消息，如果提供会发送给用户
+- **timeout**: 等待超时时间(秒)
+- **callback**: 回调函数，当收到回复时执行
+- **validator**: 验证函数，用于验证回复是否有效
+- **method**: 发送方法，默认为 "Text"（可选: "Image", "Markdown", "Html" 等）
+- **pattern** (`glob`): 通配符（``*`` / ``?`` / ``[seq]``），回复文本不匹配时继续等待
+- **regex**: 正则表达式，回复文本不匹配时继续等待（与 pattern 同时给定时须都匹配）
+- **cmdpass**: 是否跳过命令匹配的三态（None=跟随全局配置，默认不跳过——
+
+    等待期间命中已注册命令的消息（如 /cancel）放行给命令分发器执行，
+    等待继续挂起；True=跳过命令匹配，等待期间消息一律作为回复消费）
+- **session**: 会话级等待——同会话任何人可命中（忽略 user 维度）
+
+**返回值**: 用户回复的事件数据，如果超时则返回None
+
+**示例**:
+
+```python
+reply = await event.wait_reply(prompt="请输入金额:", regex=r"\\d+\\s*元")
+```
+
+---
+
+
+##### `async confirm(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] | None = None, no_words: set[str] | frozenset[str] | None = None, method: str = DEFAULT_SEND_METHOD, hint: bool = False) -> bool | None`
+
+等待用户确认 (是/否)
+
+自动发送提示消息并等待用户回复，识别内置中英文确认词。
+内置确认词: 是/yes/y/确认/确定/好/ok/true/对/嗯/行/同意/没问题... (否/no/n/取消/不/不要/cancel/false/错/拒绝...)
+
+- **prompt**: str - 提示消息（可选，发送后等待回复）
+- **timeout**: float - 超时时间(秒)（默认: 60.0）
+- **yes_words**: set[str] - 自定义确认词集合（默认: 内置 CONFIRM_YES_WORDS）
+- **no_words**: set[str] - 自定义否定词集合（默认: 内置 CONFIRM_NO_WORDS）
+- **method**: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
+- **hint**: bool - 是否在提示消息末尾自动追加确认词提示，如 "（是/否）"（默认: False）
+
+**返回值**: bool|None - True=确认, False=否定, None=超时
+
+**示例**:
+
+```python
+if await event.confirm("确定要执行此操作吗？", hint=True):
+    await event.reply("已执行")
+# 发送图片作为确认提示
+if await event.confirm("https://example.com/image.jpg", method="Image"):
+    await event.reply("已确认")
+```
+
+---
+
+
+##### `async choose(prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, method: str = DEFAULT_SEND_METHOD, options_format: str | Callable[[list[str]], str] = 'auto', merge_prompt: bool = False, placeholder: str = '{options}') -> int | None`
+
+等待用户从选项中选择
+
+        自动发送编号选项列表，用户可回复编号或选项文本。
+
+        发送行为取决于 method 和 merge_prompt：
+        - 文本类方法 (Text/Markdown/md/Html/h5 等): 选项默认拼接到 prompt 末尾，一条消息发送
+        - 非文本方法 (Image/Voice 等) + merge_prompt=False (默认): 先发富媒体 prompt，再发 Text 选项
+        - 任意方法 + merge_prompt=True: 强制合并为一条消息发送（用用户指定的 method）
+        - prompt 含占位符（默认 ``{options}``，可通过 placeholder 自定义）时，替换该位置；否则追加到末尾
+
+- **prompt**: str - 提示消息（必须）。可含占位符指定选项插入位置
+- **options**: list[str] - 选项列表（不能为空）
+- **timeout**: float - 超时时间(秒)（默认: 60.0）
+- **method**: str - 发送方法（默认: "Text"）
+- **options_format**: str|callable - 选项格式（默认: "auto"，根据 method 自动选择内置样式）
+
+            - "auto": 根据 method 自动选择（Markdown→无序列表，Html→有序列表，其他→纯文本列表）
+            - "list": 每行一个，如 ``1. 选项A
+2. 选项B``
+            - "inline": 单行展示，如 ``1.选项A | 2.选项B``
+            - "md": Markdown 无序列表，如 ``- 1. 选项A
+- 2. 选项B``
+            - "html": Html 有序列表，如 ``<ol><li>1. 选项A</li>...</ol>``
+            - callable: 自定义函数，接收 ``list[str]`` 返回 ``str``
+- **merge_prompt**: bool - 是否合并为一条消息（默认: False）
+
+            合并时使用用户指定的 method（如 Markdown/Html/Image 等），尊重用户选择
+- **placeholder**: str - 选项插入占位符（默认: ``{options}``），
+
+            prompt 中出现该标记的位置将被替换为选项文本；设为空字符串则始终追加到末尾
+**返回值**: int|None - 选中选项的索引(0-based), 超时返回 None
+
+**异常**: `ValueError` - 当 options 为空时
+
+**示例**:
+
+```python
+# 基本用法（prompt 和选项分两条消息）
+choice = await event.choose("请选择颜色:", ["红", "绿", "蓝"])
+# 合并模式：用 Markdown 一条消息发送
+choice = await event.choose("请选择:", ["A", "B"],
+    method="Markdown", merge_prompt=True)
+# 占位符：控制选项插入位置
+choice = await event.choose(
+    "## 任务选择
+```
+
+{options}
+请回复编号",
+```python
+    ["下载", "上传"], method="Markdown", merge_prompt=True)
+# 自定义占位符
+choice = await event.choose(
+    "请选择: [choices]",
+    ["A", "B"], placeholder="[choices]")
+```
+
+---
+
+
+##### `async collect(fields: list[dict[str, Any]], timeout_per_field: float = 60.0) -> dict[str, str] | None`
+
+多步骤收集信息 (表单式)
+
+依次向用户发送提示消息并收集回复，每个字段可配置验证器和重试逻辑
+
+- **fields**: list[dict] - 字段列表，每个字段为字典:
+
+    - key: str - 字段键名（必须）
+    - prompt: str - 提示消息（默认: "请输入 {key}"）
+    - validator: callable - 验证函数，接收 Event 对象，返回 bool（可选）
+    - retry_prompt: str - 验证失败时的重试提示（默认: "输入无效，请重新输入"）
+    - max_retries: int - 最大重试次数（默认: 3）
+    - method: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
+    - options: list[str] - 可选值列表，提供时该字段变为选择题（可选）
+    - options_format: str|callable - 选项格式（默认: "auto"，详见 choose()）
+    - merge_prompt: bool - 是否合并为一条消息（默认: False）
+    - placeholder: str - 选项插入占位符（默认: "{options}"，详见 choose()）
+- **timeout_per_field**: float - 每个字段的超时时间(秒)（默认: 60.0）
+
+**返回值**: dict|None - 收集到的数据字典, 任何步骤超时或重试耗尽返回 None
+
+**示例**:
+
+```python
+data = await event.collect([
+    {"key": "name", "prompt": "请输入姓名"},
+    {"key": "age", "prompt": "请输入年龄",
+     "validator": lambda e: e.get("alt_message", "").strip().isdigit()},
+    {"key": "avatar", "prompt": "请发送头像图片", "method": "Image"},
+])
+if data:
+    await event.reply(f"姓名: {data['name']}, 年龄: {data['age']}")
+```
+
+---
+
+
+##### `async wait_for(event_type: str = 'message', condition: Callable[['Event'], bool] | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS) -> Optional['Event']`
+
+等待满足条件的任意事件
+
+不限于同一用户/会话，可监听任意类型事件
+
+- **event_type**: str - 事件类型 (message/notice/request/meta 等，默认: message)
+- **condition**: callable - 条件函数，接收 Event 对象，返回 bool（可选）
+- **timeout**: float - 超时时间(秒)（默认: 60.0）
+
+**返回值**: Event|None - 匹配的事件, 超时返回 None
+
+**示例**:
+
+```python
+# 等待群成员加入通知
+evt = await event.wait_for(
+    "notice",
+    condition=lambda e: e.get_detail_type() == "group_member_increase",
+    timeout=120,
+)
+
+# 等待任意消息包含特定关键词
+evt = await event.wait_for(
+    condition=lambda e: "hello" in e.get_text(),
+)
+```
+
+---
+
+
+##### `conversation(timeout: float = DEFAULT_WAIT_TIMEOUT_SECS) -> 'Conversation'`
+
+创建多轮对话上下文
+
+- **timeout**: 默认超时时间(秒)
+
+**返回值** (`Conversation`): 对象
+
+**示例**:
+
+```python
+conv = event.conversation(timeout=30)
+await conv.say("欢迎！请问有什么需要帮助的？")
+while conv.is_active:
+    resp = await conv.wait()
+    if resp is None:
+        await conv.say("会话超时，再见！")
+        break
+    if resp.get_text() == "退出":
+        await conv.say("再见！")
+        break
+```
+
+---
+
+
+##### `get_raw() -> dict[str, Any]`
+
+获取原始事件数据
+
+**返回值**: dict - 原始事件数据字典
+
+---
+
+
+##### `get_raw_type() -> str`
+
+获取原始事件类型
+
+**返回值**: str - 原始事件类型
+
+---
+
+
+##### `get_command_name() -> str`
+
+获取命令名称
+
+**返回值**: str - 命令名称
+
+---
+
+
+##### `get_command_args() -> list[str]`
+
+获取命令参数
+
+**返回值**: 命令参数列表
+
+---
+
+
+##### `get_command_raw() -> str`
+
+获取命令原始文本
+
+**返回值**: 命令原始文本
+
+---
+
+
+##### `get_command_info() -> dict[str, Any]`
+
+获取完整命令信息
+
+**返回值**: 命令信息字典
+
+---
+
+
+##### `is_command() -> bool`
+
+是否为命令
+
+**返回值**: 是否为命令
+
+---
+
+
+##### `remind(delay: float, text: str | None = None, *, callback: Any = None) -> Any`
+
+会话定时提醒：delay 秒后无回复则提醒 / 执行回调
+
+挂在当前会话上的定时器——用户**在该会话回复后自动取消**
+（"如果没在时限内回复就提醒"）；也可 ``reminder.cancel()`` 手动取消；
+归属模块卸载 / 适配器关闭时随归属清理自动取消。
+
+- **delay**: 延迟秒数
+- **text**: 到期发送到当前会话的提醒文本（与 callback 二选一，同时给定时文本优先）
+- **callback**: 到期执行的回调（同步或异步，接收当前 Event 为参数）
+
+**返回值**: :class:`~ErisPulse.Core.Event.interaction.Reminder` 句柄；超过单会话上限时返回 None
+
+**异常**: `RuntimeError` - text 与 callback 均未提供时
+
+**示例**:
+
+```python
+reminder = event.remind(300, "还在吗？不想聊就回复「退出」哦")
+# 用户 5 分钟内回复 → 提醒自动取消；未回复 → 到期发送
+```
+
+> **提示**
+> 单会话同时最多挂 5 个活跃提醒（超出返回 None）。
+
+---
+
+
+##### `escalate(delay: float, callback: Any) -> Any`
+
+超时升级：delay 秒后执行升级回调（**不被用户回复取消**）
+
+与 :meth:`remind` 的差异：remind 是"没回复就提醒、回复即取消"，
+escalate 是"到点必达"的升级动作（如长时间无处理通知主人、转人工），
+仅手动 ``cancel()`` / 模块卸载 / 适配器关闭才取消。
+
+- **delay**: 延迟秒数
+- **callback**: 到期执行的回调（同步或异步，接收当前 Event 为参数）
+
+**返回值**: :class:`~ErisPulse.Core.Event.interaction.Reminder` 句柄
+
+**示例**:
+
+```python
+event.escalate(1800, lambda e: notify_master("工单 30 分钟未处理"))
+```
+
+---
+
+
+##### `async history(n: int = 20) -> list[dict[str, Any]]`
+
+查询当前会话的近期消息（会话收件箱）
+
+返回当前会话（platform:detail_type:target_id）最近的消息流，
+含用户与机器人双方，按时间升序。每条记录携带归因：``sender`` 为
+发送者标识（user_id / bot self_id，可用于区分群内不同成员），
+``meta`` 为记录时刻的元数据（入站含 nickname / sub_type 等，出站
+含发送归属 module）。收件箱未启用或无记录时返回空列表。
+
+- **n**: 返回的最大条数（默认 20）
+
+**返回值**: 消息列表，每条含 role / text / ts / event_id / sender / meta
+
+**示例**:
+
+```python
+messages = await event.history(10)
+for m in messages:
+    print(m["role"], m.get("sender"), ":", m["text"])
+```
+
+---
+
+
+##### `expect(pattern: str | None = None, regex: str | None = None, validator: Any = None, user: str | None = None, session: bool = False) -> Expectation`（staticmethod）
+
+构造一条等待期望（不注册，传给 :meth:`select` 做多路等待）
+
+- **pattern** (`glob`): 文本过滤（``*`` / ``?`` / ``[seq]``）
+- **regex**: 正则文本过滤（与 pattern 同时给定时须都匹配）
+- **validator**: 回复校验函数（接收 Event，返回 bool）
+- **user**: 限定回复者 user_id（None 不限定）
+- **session**: 会话级等待——同会话任何人可命中（忽略 user）
+
+**返回值**: 期望描述对象
+
+**示例**:
+
+```python
+which, reply = await event.select(
+    event.expect(pattern="同意*", user="10001"),
+    event.expect(pattern="拒绝*", user="10002"),
+    timeout=60,
+)
+```
+
+---
+
+
+##### `async select(*expectations: Expectation, timeout: float | None = None) -> 'tuple[int | None, Event | None]'`
+
+多路等待：同时挂起多条期望，任一命中即返回该路结果（先到先得）
+
+典型场景：同时等待"管理员同意"与"用户回复"、多人协作投票等。
+未命中的等待在返回前自动取消；全部超时返回 ``(None, None)``。
+命中的事件已被框架认领（mark_processed），不会被低优先级处理器重复消费。
+
+- **expectations**: :meth:`expect` 构造的期望描述（至少一条）
+- **timeout**: 统一超时秒数（None 表示不限时）
+
+**返回值**: ``(命中的期望下标, 回复事件)``；超时返回 ``(None, None)``
+
+**异常**: `ValueError` - 未提供任何期望时
+
+**示例**:
+
+```python
+which, reply = await event.select(
+    event.expect(pattern="同意*", user="10001"),
+    event.expect(pattern="拒绝*", user="10002"),
+    timeout=60,
+)
+if which is None:
+    await event.reply("超时未收到审批")
+elif which == 0:
+    await event.reply("已同意")
+```
+
+---
+
+
+##### `message_tx() -> '_MessageTx'`
+
+开启消息事务
+
+事务内的所有出站发送（reply / Send DSL）自动记入回执账本；
+以异常退出事务时，已发送的消息按逆序自动撤回。
+
+撤回是**能力感知**的：适配器未实现 ``delete_message`` 时跳过撤回
+（账本仍正常记录），平台不支持撤回的消息不报错。
+
+**返回值**: 异步上下文管理器
+
+**示例**:
+
+```python
+async with event.message_tx():
+    await event.reply("正在处理，请稍候")
+    result = await do_something()
+    await event.reply(f"完成: {result}")
+# do_something() 抛出异常时，前面两条消息自动撤回
+```
+
+> **提示**
+> 嵌套事务各自独立记账；事务外发送不记账（零开销）。
+
+---
+
+
+##### `to_dict() -> dict[str, Any]`
+
+转换为字典（过滤内部键）
+
+过滤以 ``_`` 开头的内部键（如 ``_processed``/``_propagation_stopped``），
+只返回事件数据。
+
+**返回值**: 事件数据字典
+
+---
+
+
+##### `is_processed() -> bool`
+
+是否已被处理
+
+**返回值**: 是否已被处理
+
+---
+
+
+##### `mark_processed(claim: bool = True, stop: bool = True) -> None`
+
+标记事件为已处理
+
+认领与阻断是两个**正交**的语义，可独立控制：
+
+- **认领（claim）**：标记事件已被本处理器处理（写入 ``_processed``）。
+
+  命令分发器看到已认领的事件会跳过去重，避免同一消息被多个命令处理器
+  重复处理。典型场景：命令匹配成功后认领，阻止命令分发器再介入。
+- **阻断（stop）**：阻止事件向更低优先级处理器传播（写入
+
+  ``_propagation_stopped``）。低优先级处理器（如 ``on_message``）将不再
+  看到该事件。典型场景：高优先级处理器已完整处理事件，不希望低优先级再执行。
+
+参数组合：
+- ``mark_processed()``：认领 + 阻断（默认）
+- ``mark_processed(stop=False)``：仅认领，不阻断 —— 事件继续流向低优先级观察者
+- ``mark_processed(claim=False)``：仅阻断，不认领 —— 低优先级不执行，但不做去重
+
+- **claim**: 是否认领事件（标记已处理，命令分发去重）（默认 True）
+- **stop**: 是否阻断向低优先级处理器传播（默认 True）
+
+**示例**:
+
+```python
+event.mark_processed()            # 认领 + 阻断（默认）
+event.mark_processed(stop=False)  # 仅认领，低优先级仍能看到
+event.mark_processed(claim=False) # 仅阻断，不标记已处理
+```
+
+---
+
+
+##### `done(claim: bool = True, stop: bool = True) -> None`
+
+标记事件完成（:meth:`mark_processed` 的别名）
+
+与 :meth:`mark_processed` 完全等价，提供更简洁的写法。
+
+- **claim**: 是否认领事件（标记已处理，命令分发去重）（默认 True）
+- **stop**: 是否阻断向低优先级处理器传播（默认 True）
+
+**示例**:
+
+```python
+@command("help")
+async def help_cmd(event):
+    event.done()            # 认领 + 阻断（命令处理完的标准做法）
+
+@message.on_message(priority=50)
+async def observer(event):
+    event.done(stop=False)  # 仅认领，低优先级仍能看到（日志/统计）
+
+@message.on_message(priority=100)
+async def firewall(event):
+    if denied(event):
+        event.done(claim=False)  # 仅阻断，不标记已处理
+```
+
+---
+
+
+##### `is_stopped() -> bool`
+
+事件传播是否已被阻断（是否已停止向低优先级处理器传播）
+
+对应 ``done(stop=True)`` / ``mark_processed(stop=True)`` 的阻断效果。
+
+**返回值**: 是否已阻断传播
+
+---
+
+
+##### `__getattribute__(name: str) -> Any`
+
+属性查找优先级:
+1. 当前平台的注册方法覆写（优先于内置方法）
+2. 通配符 "*" 平台的注册方法
+3. 内置方法/属性（正常解析）
+
+- **name**: str - 属性名
+
+**返回值**: Any - 属性值
+
+---
+
+
+##### `__getattr__(name: str) -> Any`
+
+属性查找优先级:
+1. 当前平台的扩展方法
+2. 通配符 "*" 平台的扩展方法
+3. 字典键访问（点式访问 event.platform 等）
+
+- **name**: str - 属性名
+
+**返回值**: Any - 属性值
+
+**异常**: `AttributeError` - 属性不存在
+
+---
+
+
+##### `__dir__() -> list[str]`
+
+让 dir(event) 包含当前平台和通配符注册的扩展方法名
+
+---
+
+
+##### `__repr__() -> str`
+
+字符串表示
+
+**返回值**: 字符串表示
+
+---
+
