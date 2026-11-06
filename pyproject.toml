@@ -62,7 +62,7 @@ classifiers = [
 
 dependencies = [
     "rich>=13.0.0",
-    "tomlclass>=0.3.2,<0.4",
+    "tomlclass>=0.3.2,<0.5",
 
     # network 相关
     "websockets>=12.0",
