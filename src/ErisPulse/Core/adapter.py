@@ -6,6 +6,7 @@ ErisPulse 适配器系统
 
 import asyncio
 import functools
+import hashlib
 import inspect
 import time
 import uuid
@@ -14,7 +15,7 @@ from collections import OrderedDict, defaultdict
 from collections.abc import Callable
 from typing import Any, TypeVar, cast
 
-from ..runtime.context import current_owner, current_trace_id, handler_waits
+from ..runtime.context import current_event_account, current_owner, current_trace_id, handler_waits
 from .Bases.adapter import BaseAdapter
 from .Bases.manager import ManagerBase
 from .config import config
@@ -35,6 +36,9 @@ from .constants import (
     CONFIG_KEY_ADAPTER_STATUS,
     CONFIG_KEY_ADAPTER_STATUS_OF,
     DEFAULT_ADAPTER_ENABLED,
+    DEFAULT_CROSS_RECEIPT_CAPACITY,
+    DEFAULT_CROSS_RECEIPT_POLICY,
+    DEFAULT_CROSS_RECEIPT_WINDOW_SECS,
     DEFAULT_EVENT_DEDUPE_CAPACITY,
     DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS,
     DEFAULT_HANDLER_MAX_CONCURRENCY,
@@ -144,6 +148,12 @@ class AdapterManager(ManagerBase):
         # 事件幂等去重：已分发事件 id 的 LRU 记录（平台重连重推同 id 事件只分发一次）
         self._seen_event_ids: OrderedDict[str, None] = OrderedDict()
         self._event_dedupe_enabled: bool | None = None  # None = 惰性读配置
+
+        # 跨账户重复受理关联：内容键 → (首个受理 self_id, 事件 id, 单调时间戳) 的
+        # LRU 记录；策略 mark / drop 时同一物理消息经其他账户（或同账户其他连接）
+        # 再次到达即被标记 / 丢弃。策略惰性读配置（None = 未读取）
+        self._cross_receipts: OrderedDict[tuple, tuple[str, str, float]] = OrderedDict()
+        self._cross_receipt_policy: str | None = None
 
         # 标记是否正在关闭，避免重复提交离线事件
         self._is_being_shutdown = False
@@ -503,6 +513,7 @@ class AdapterManager(ManagerBase):
         # 重置事件幂等去重缓存（重连重推只存在于单次连接会话内，
         # 新注册 / 重启的适配器不应被上一代连接的去重记忆拦截）
         self._seen_event_ids.clear()
+        self._cross_receipts.clear()
 
         return True
 
@@ -1805,6 +1816,16 @@ class AdapterManager(ManagerBase):
             )
             return
 
+        # 跨账户重复受理关联（策略 mark/drop 时生效；drop 在分发入口丢弃）
+        if self._cross_receipt_check(data, platform, trace_id):
+            return
+
+        # 触发账户注入调用上下文：处理链内的 Send / Api 链路未显式指定
+        # 账户时据此兜底绑定（self.account_id or self.user_id 口径，
+        # 动态账户的代位账户名同样命中）
+        from .scope import scope as _scope
+
+        _account_token = current_event_account.set(_scope.bot_id_from_event(data))
         _trace_token = current_trace_id.set(trace_id)
         try:
             await self._emit_dispatch(
@@ -1818,6 +1839,7 @@ class AdapterManager(ManagerBase):
             )
         finally:
             current_trace_id.reset(_trace_token)
+            current_event_account.reset(_account_token)
 
     def _dedupe_enabled(self) -> bool:
         """
@@ -1860,6 +1882,101 @@ class AdapterManager(ManagerBase):
         seen[event_id] = None
         if len(seen) > DEFAULT_EVENT_DEDUPE_CAPACITY:
             seen.popitem(last=False)
+        return False
+
+    def _cross_receipt_active_policy(self) -> str:
+        """
+        {!--< internal-use >!--}
+        读取跨账户重复受理策略（``ErisPulse.framework.cross_account_policy``）
+
+        :return: "off" / "mark" / "drop"（非法值按 "off" 处理）
+        """
+        if self._cross_receipt_policy is None:
+            try:
+                policy = str(
+                    config.getConfig(
+                        "ErisPulse.framework.cross_account_policy",
+                        DEFAULT_CROSS_RECEIPT_POLICY,
+                    )
+                ).strip().lower()
+                self._cross_receipt_policy = (
+                    policy if policy in ("off", "mark", "drop") else "off"
+                )
+            except Exception:
+                self._cross_receipt_policy = "off"
+        return self._cross_receipt_policy
+
+    def _cross_receipt_check(self, data: dict, platform: str, trace_id: str) -> bool:
+        """
+        {!--< internal-use >!--}
+        跨账户重复受理关联判定（内容级，需策略 mark / drop）
+
+        同平台 + 同会话 + 同发送者 + 同 alt_message 在
+        ``DEFAULT_CROSS_RECEIPT_WINDOW_SECS`` 窗口内再次到达（无论经哪个 self_id）
+        视为同一物理消息的重复受理：mark 注入 ``multi_receipt`` 字段后放行，
+        drop 直接丢弃。alt_message 为空（无法安全比对内容）的事件不参与关联。
+
+        :param data: 事件数据
+        :param platform: 平台名
+        :param trace_id: 事件 id
+        :return: 是否为重复受理且策略为 drop（True 时调用方应丢弃）
+        """
+        policy = self._cross_receipt_active_policy()
+        if policy == "off" or data.get("type") != "message":
+            return False
+
+        self_info = data.get("self")
+        self_id = str(self_info.get("user_id") or "") if isinstance(self_info, dict) else ""
+        alt_message = str(data.get("alt_message") or "").strip()
+        if not self_id or not alt_message:
+            return False
+
+        from .scope import scope as _scope
+
+        session_id = _scope.session_id_from_event(data)
+        sender_id = str(data.get("user_id") or "")
+        content_key = hashlib.md5(alt_message.encode("utf-8")).hexdigest()
+        key = (platform, session_id, sender_id, content_key)
+
+        now = time.monotonic()
+        receipts = self._cross_receipts
+        entry = receipts.get(key)
+        if entry is not None:
+            stored_self_id, stored_event_id, stored_ts = entry
+            if now - stored_ts > DEFAULT_CROSS_RECEIPT_WINDOW_SECS:
+                receipts.pop(key, None)
+                entry = None
+
+        if entry is not None:
+            stored_self_id, stored_event_id, _ = entry
+            receipts.move_to_end(key)
+            if policy == "drop":
+                logger.trace(
+                    i18n.t(
+                        "core.adapter.cross_receipt_dropped",
+                        platform=platform,
+                        event_id=trace_id,
+                        self_id=stored_self_id,
+                    )
+                )
+                return True
+            data["multi_receipt"] = {
+                "event_id": stored_event_id,
+                "self_id": stored_self_id,
+            }
+            logger.trace(
+                i18n.t(
+                    "core.adapter.cross_receipt_marked",
+                    platform=platform,
+                    event_id=trace_id,
+                    self_id=stored_self_id,
+                )
+            )
+            return False
+
+        receipts[key] = (self_id, trace_id, now)
+        if len(receipts) > DEFAULT_CROSS_RECEIPT_CAPACITY:
+            receipts.popitem(last=False)
         return False
 
     async def _emit_dispatch(
@@ -2524,7 +2641,7 @@ class AdapterManager(ManagerBase):
         - self.user_id (必须) - Bot用户ID
         - self.user_name (可选) - Bot昵称
         - self.avatar (可选) - Bot头像URL
-        - self.account_id (可选) - 多账户标识
+        - self.account_id (可选) - 动态账户代位标识：机器人 user_id 尚未获取时填充账户名/账户标识，user_id 可用后优先填 self.user_id
 
         :param platform: 平台名称
         :param self_info: 事件中的self字段内容
@@ -2949,7 +3066,7 @@ class AdapterManager(ManagerBase):
         返回类型为泛型 ``_TAdapter``（默认为 BaseAdapter）。
         由于框架通过 entry_points 动态发现适配器，入口点无法静态获知
         具体平台类型；但返回的实例始终是具体适配器子类的实例，
-        其 ``Send`` 属性提供标准发送方法（Text/Image/Voice/Video/File）的补全。
+        其 ``Send`` 属性提供标准发送方法（Text/Image/Voice/Video/File/Location）的补全。
 
         若调用方与适配器同项目且能导入适配器类，可添加类型注解获得更精确补全：
 
@@ -3086,7 +3203,7 @@ class AdapterManager(ManagerBase):
         """
         列出指定平台支持的发送方法
 
-        包含标准发送方法（Text/Image/Voice/Video/File/Raw_ob12）和平台特有方法，
+        包含标准发送方法（Text/Image/Voice/Video/File/Location/Raw_ob12）和平台特有方法，
         排除链式修饰方法（At/To/Hook/Retry 等）和属性。
 
         :param platform: 平台名称

@@ -74,21 +74,35 @@ class ApiDSL:
         """
         获取当前 API 操作上下文
 
+        account_id 优先取显式 ``Using()`` 指定值；未指定时兜底当前事件分发
+        链路的触发账户（无事件上下文时为 None）。
+
         :return: 包含 account_id 的字典
         """
+        account_id = self._account_id
+        if account_id is None:
+            from ...runtime.context import get_current_event_account
+
+            account_id = get_current_event_account() or None
         return {
-            "account_id": self._account_id,
+            "account_id": account_id,
         }
 
     def _merge_context(self, params: dict) -> dict:
         """
         将 api_context 合并到参数字典
 
+        优先级：业务参数显式传入的 account_id > ``Using()`` > 事件分发链路兜底。
+
         :param params: 业务参数
         :return: 合并后的参数字典
         """
         merged = dict(params)
-        merged.update(self.api_context)
+        if "account_id" in merged:
+            return merged
+        account_id = self.api_context.get("account_id")
+        if account_id is not None:
+            merged["account_id"] = account_id
         return merged
 
     async def _api_call(self, action: str, **params: Any) -> dict[str, Any]:

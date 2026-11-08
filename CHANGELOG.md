@@ -90,9 +90,12 @@
 ### 新增
 
 - @YingXinche
+  - 跨账户重复受理关联：`ErisPulse.framework.cross_account_policy`（默认 `off` 保持现状）——多账户同群的同一物理消息可 `mark`（后续副本注入 `multi_receipt` 字段照常分发，模块读取该字段自行裁决）或 `drop`（分发入口直接丢弃）；内容级判定无需适配器参与，`self.user_id` 契约不变
   - `ownership.nest()` 嵌套生命周期：父 owner 回收时按注册逆序级联回收子 owner，环声明拒绝，`counts` / `orphans` 覆盖嵌套关系
   - 细粒度热重载：按运行时源码归属判定单模块/单适配器重载，入口脚本与框架源码变更走进程重启；脚本模式子进程内挂载 watcher 并通过运行状态握手去重
   - 后台任务待发队列：主循环注册前的 `spawn_background` 入队并在 `register_main_loop` 时统一冲队列，队列上限与退出滞留告警
+  - 事件分发链账户自动绑定：分发入口把触发事件的账户标识注入调用上下文，处理链内的 `Send` / `Api` / `Request` 链路未显式指定账户时自动绑定（显式 `Using()` 与参数显式传入永远优先；无事件上下文维持默认账户语义），`send_context` / `api_context` / `request_context` 统一同口径——多账户部署模块侧零改动即可回复到正确账户
+  - `SendDSL` 新增 `Location()` 标准发送方法（OneBot12 `location` 段），方法清单与模板提示同步
   - 影子模块体验闭环：SDK 新增 `shadow_ingest_whl`（whl 校验/原件落盘/解包）、`shadow_promote_persist`（转正后后台 pip 安装原件，重启不回退）、`shadow_persist_status`、`list_shadows`；Dashboard 真实模块卡片「影子测试中」标记、顶部影子聚合区、影子 owner 移出普通列表，旧版 SDK 自动降级为基础影子（功能不退化）
 
 ### 优化
@@ -105,11 +108,14 @@
 
 - @YingXinche
   - `run_main_loop` 无可用主循环时入队并返回 `None`
+  - `self.account_id` 调整为限定扩展键：动态注入的账户在尚未获取机器人 user_id 时以账户标识代位填充，`Event.get_self_account_id()` 保持 `account_id or user_id` 读取口径（账户名代位经账户名匹配解析回正确账户），user_id 可用后优先填入 self.user_id（OneBot12 基线口径）
 
 ### 修复
 
 - @YingXinche
   - 适配器回滚后旧实例不再停留在「已启动」但未实际服务的状态
+  - 适配器账户解析：显式 `account_id` 无法匹配时记录 WARNING 并回退首个启用账户（WARNING 的 platform / account_id / account 用于定位未归属到账户的事件来源）
+  - 适配器（onebot11/12、SnowLuma，随各适配器仓库发布）：运行期识别 Bot ID 并关联到账户实例（`bot_id`），事件 `self.user_id` 即可解析到接收账户，`event.reply()` 不再固定走第一个账户；OneBot11/SnowLuma 事件 id 改为稳定组合，重推去重恢复且不同账户互不吞事件
 
 ---
 

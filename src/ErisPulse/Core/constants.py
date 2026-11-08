@@ -745,6 +745,26 @@ DEFAULT_MODULE_CALL_TIMEOUT_SECS: Final[float] = 30.0
 # 修改影响: 平台重连重推同 id 事件的去重窗口——容量越大可回溯越久，内存占用略增。
 DEFAULT_EVENT_DEDUPE_CAPACITY: Final[int] = 4096
 
+# 跨账户重复受理关联（cross-account receipt）的判定窗口（秒）：
+# 同平台 + 同会话 + 同发送者 + 同 alt_message 内容在窗口内再次到达（无论经哪个
+# self_id）视为同一物理消息的重复受理。
+# 使用位置: Core/adapter.py -> AdapterManager._cross_receipt_check()
+# 修改影响: 调大→更长的重复判定窗口（更少漏判，误吞同内容连发的风险略增）；
+# 调小→反之。
+DEFAULT_CROSS_RECEIPT_WINDOW_SECS: Final[float] = 3.0
+
+# 跨账户重复受理关联的 LRU 容量（记录最近 N 个首受理消息的内容键）。
+# 使用位置: Core/adapter.py -> AdapterManager._cross_receipt_check()
+# 修改影响: 容量越大可回溯越久（洪峰下不易被挤出），内存占用略增。
+DEFAULT_CROSS_RECEIPT_CAPACITY: Final[int] = 512
+
+# 跨账户重复受理的默认策略：off（不关联）/ mark（后续副本注入 multi_receipt
+# 字段后照常分发）/ drop（后续副本直接丢弃）。
+# 使用位置: Core/adapter.py -> AdapterManager._cross_receipt_check()；
+# 配置键 ErisPulse.framework.cross_account_policy。
+# 修改影响: 改为 mark/drop 即全局默认启用关联（当前默认 off 保持既有行为）。
+DEFAULT_CROSS_RECEIPT_POLICY: Final[str] = "off"
+
 # 文本匹配正则编译的 LRU 缓存容量（pattern/regex → 编译结果）。
 # 使用位置: Core/text_match.py -> _compile_regex() 装饰器。
 # 修改影响: 调大→更多正则驻留缓存（重复编译更少）；调小→冷 pattern 反复重编译。
@@ -1596,6 +1616,9 @@ __all__ = [
     "UNLOAD_LOCK_WAIT_TIMEOUT_SECS",
     "DEFAULT_MODULE_CALL_TIMEOUT_SECS",
     "DEFAULT_EVENT_DEDUPE_CAPACITY",
+    "DEFAULT_CROSS_RECEIPT_WINDOW_SECS",
+    "DEFAULT_CROSS_RECEIPT_CAPACITY",
+    "DEFAULT_CROSS_RECEIPT_POLICY",
     "DEFAULT_MAX_SESSION_REMINDERS",
     "DEFAULT_WS_AUTO_ACCEPT",
     "DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS",

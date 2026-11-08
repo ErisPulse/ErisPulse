@@ -690,6 +690,28 @@ class TestEventWrapper:
         """测试获取机器人ID"""
         assert sample_event.get_self_user_id() == "bot_123"
 
+    def test_get_self_account_id_prefers_account_id(self):
+        """get_self_account_id 按代位语义优先返回 account_id，缺失时回退 user_id"""
+        event = Event(
+            {
+                "self": {"platform": "test", "user_id": "u1", "account_id": "a1"},
+                "user_id": "sender",
+            }
+        )
+        # 代位扩展键存在时优先返回（account_id or user_id 口径）
+        assert event.get_self_account_id() == "a1"
+
+        standin = Event(
+            {"self": {"platform": "test", "account_id": "MyAccount"}, "user_id": "sender"}
+        )
+        # 动态账户未获取 user_id 时的账户名代位
+        assert standin.get_self_account_id() == "MyAccount"
+        assert standin.get_self_user_id() == ""
+
+        baseline = Event({"self": {"platform": "test", "user_id": "u1"}})
+        # 正常态（无代位键）回退 OneBot12 基线 user_id
+        assert baseline.get_self_account_id() == "u1"
+
     def test_get_self_info(self, sample_event):
         """测试获取机器人信息"""
         info = sample_event.get_self_info()
