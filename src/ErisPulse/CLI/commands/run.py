@@ -22,6 +22,7 @@ import sys
 import threading
 import time
 from argparse import ArgumentParser, BooleanOptionalAction, Namespace
+from collections.abc import Callable
 from pathlib import Path
 
 from rich.panel import Panel
@@ -88,12 +89,19 @@ class _DevWatchdog(DevWatcher):
             sdk = sdk_instance
         super().__init__(sdk)
 
-    def start(self, watch_dir: str, loop: asyncio.AbstractEventLoop) -> None:
+    def start(
+        self,
+        watch_dir: str = ".",
+        loop: asyncio.AbstractEventLoop | None = None,
+        notify: "Callable[[set[str]], None] | None" = None,
+    ) -> bool:
         """
         启动 dev 文件监控并打印模式面板
 
         :param watch_dir: 监控目录
-        :param loop: 用于调度重载的事件循环
+        :param loop: 用于调度重载的事件循环（缺省取当前运行循环）
+        :param notify: 文件变更提示回调（本覆写忽略，固定使用面板打印）
+        :return: 是否启动成功
         """
         from ...Core.constants import FILE_WATCHER_IGNORED_DIRS
 
@@ -102,7 +110,7 @@ class _DevWatchdog(DevWatcher):
             set(FILE_WATCHER_IGNORED_DIRS) if ignore is None else set(ignore)
         )
         if not super().start(watch_dir, loop, notify=self._notify):
-            return
+            return False
         console.print(
             Panel(
                 i18n.t(
@@ -114,6 +122,7 @@ class _DevWatchdog(DevWatcher):
                 border_style="info",
             )
         )
+        return True
 
     @staticmethod
     def _notify(paths: set[str]) -> None:
