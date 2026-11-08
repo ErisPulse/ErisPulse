@@ -241,7 +241,7 @@ def get_interaction_id(self) -> str: ...  # interaction_id
       [发送方法规范 §2.1](send-method-spec.md) 的形态分级与降级阶梯处理）
 - [ ] ★ 实现 `Raw_ob12`（含标准段 → 平台结构转换；标准 `keyboard` 段必做）
 - [ ] ★ 返回标准响应结构（`make_response`/`make_error`）
-- [ ] ★ 多账户：`AccountConfigClass(BotAccountConfig)` + `_resolve_account`
+- [ ] ★ 多账户：`AccountConfigClass(BotAccountConfig)` + 账户解析（账户名 / `bot_id` 匹配）
 - [ ] ★ Send 类继承 `BaseAdapter.Send`，用 `_apply_modifiers`/`send_context`
 - [ ] ☆ Api DSL：标准动作映射到平台API（见 API 动作标准）
 - [ ] ☆ Request DSL：请求事件含 `request_id` + `accept/reject`

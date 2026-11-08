@@ -19,10 +19,13 @@
 | time | integer | Unix时间戳（秒级） |
 | type | string | 事件类型 |
 | detail_type | string | 事件详细类型（详见[会话类型标准](session-types.md)） |
+| sub_type | string | 事件子类型 |
 | platform | string | 平台名称 |
 | self | object | 机器人自身信息 |
 | self.platform | string | 平台名称 |
 | self.user_id | string | 机器人用户ID |
+
+> **OneBot12 基线**：`self.platform` / `self.user_id` 与消息事件的 `message_id` 均为 OneBot12 基线已定义的字段，框架直接采用基线定义，不再引入自有扩展键（`self.account_id` 为限定扩展键，仅用于动态账户未获取 user_id 前的代位标识，见 §6）。
 
 **detail_type 规范**：
 - 必须使用 ErisPulse 标准会话类型（详见 [会话类型标准](session-types.md)）
@@ -32,6 +35,7 @@
 ### 2.2 消息事件字段
 | 字段 | 类型 | 说明 |
 |------|------|------|
+| message_id | string | 消息ID（OneBot12 基线标准必选字段，适配器必须产出事件顶层） |
 | message | array | 消息段数组 |
 | alt_message | string | 消息段备用文本 |
 | user_id | string | 用户ID |
@@ -145,14 +149,18 @@
 |------|------|----------|
 | `text` | 纯文本 | `text: str` |
 | `image` | 图片 | `file`, `url: str` |
-| `audio` | 音频 | `file`, `url: str` |
+| `voice` | 语音（当场录制的声音，区别于 `audio`） | `file`, `url: str` |
+| `audio` | 音频（可直接播放的音乐文件，区别于 `voice`） | `file`, `url: str` |
 | `video` | 视频 | `file`, `url: str` |
 | `file` | 文件 | `file`, `url: str`, `filename: str` |
 | `mention` | @用户 | `user_id: str`, `user_name: str` |
-| `reply` | 回复 | `message_id: str` |
-| `face` | 表情 | `id: str` |
-| `location` | 位置 | `latitude: float`, `longitude: float` |
-| `keyboard` | 按钮/内联键盘 | `rows: list[list[button]]`（见 4.1.1） |
+| `mention_all` | @全体成员 | 无 data 字段 |
+| `reply` | 回复 | `message_id: str`, `user_id: str`（回复的原发送者，接收方向由适配器尽可能填入） |
+| `location` | 位置 | `latitude: float`, `longitude: float`, `title: str`（可选）, `content: str`（可选） |
+| `face` | 表情（ErisPulse 跨平台扩展段） | `id: str` |
+| `keyboard` | 按钮/内联键盘（ErisPulse 跨平台扩展段） | `rows: list[list[button]]`（见 4.1.1） |
+
+> **与 OneBot12 基线的字段映射**：媒体段（`image` / `voice` / `audio` / `video` / `file`）在 OneBot12 基线中为 `file_id: str`；本标准的 `file`（发送形态超集：URL / 本地路径 / bytes）与 `url`（接收回链）由适配器双向映射到平台的 `file_id` 资源。`face` / `keyboard` 为 OneBot12 基线之外的扩展段。
 
 **媒体段 `file` 字段格式**（发送方向，`image` / `audio` / `video` / `file` 通用）：
 
@@ -347,7 +355,9 @@ email       subject           email_subject
 |------|------|------|
 | `self.user_name` | `string` | 机器人昵称 |
 | `self.avatar` | `string` | 机器人头像 URL |
-| `self.account_id` | `string` | 多账户模式下的账户标识 |
+| `self.account_id` | `string` | **限定扩展键（账户名代位）**：动态注入的账户在尚未获取机器人 `user_id` 时，以账户名 / 账户标识代位填充，保证事件可归属；`self.user_id` 可用后必须优先填入。框架按 `account_id or user_id` 口径兼容两者——账户名代位时 `reply()` 绑定经账户名匹配解析回正确账户 |
+
+> **运行期边界：事件必须始终携带 `self.user_id`（含绑定未建立的窗口）**。连接层在绑定表回填、connect meta 到达之前收到的事件，同样要注入已知标识：机器人 `user_id` 尚未获取时以账户名填充 `self.account_id` 代位（框架按 `account_id or user_id` 口径解析，账户名可经账户名匹配路由回正确账户），已获取则优先填 `self.user_id`——框架在事件的任何阶段都需要能判断「这条事件来自哪个账户」。缺失时的后果是确定的：`event.reply()` 不注入账户、未指定账户的发送回落第一个启用账户，多账户适配器即表现为「从默认账户发出」。
 
 > **Bot 状态追踪**：适配器通过发送 `type: "meta"` 事件告知框架 Bot 的连接状态。支持的 `detail_type`：`connect`（上线）、`heartbeat`（心跳）、`disconnect`（离线）。系统自动从中提取 `self` 字段的 Bot 元信息进行状态追踪。此外，普通事件中的 `self` 字段也会自动发现 Bot。详见 [适配器系统 API - Bot 状态管理](../api-reference/adapter-system.md)。
 

@@ -38,7 +38,7 @@ await adapter.Send.Using("bot1").To("group", "123").Text("Hello")
 flowchart LR
     A["Using / Account<br/>（选发送账号，可选）"] --> B["To<br/>（选目标类型与 ID）"]
     B --> C["修饰方法<br/>At / Reply / Expire / ForMember 等"]
-    C --> D["发送方法<br/>Text / Image / Voice / Raw_ob12"]
+    C --> D["发送方法<br/>Text / Image / Voice / Video / File / Location / Raw_ob12"]
     D --> E["返回 asyncio.Task"]
 ```
 
@@ -57,6 +57,7 @@ flowchart LR
 | `Voice(file: bytes \| str)` | 发送语音（OneBot12 `audio` 段） | `asyncio.Task` |
 | `Video(file: bytes \| str)` | 发送视频 | `asyncio.Task` |
 | `File(file: bytes \| str, filename: str = None)` | 发送文件 | `asyncio.Task` |
+| `Location(latitude: float, longitude: float, title: str = "", content: str = "")` | 发送位置消息（OneBot12 `location` 段） | `asyncio.Task` |
 
 适配器可覆盖单个标准方法以提供平台特定逻辑：
 
@@ -226,10 +227,10 @@ results = await (event.send_chain()
 
 ### Using 方法
 
-`Using()` 用于指定发送消息的账户。传入的标识符会通过 `_resolve_account()` 按以下优先级匹配：
+`Using()` 用于指定发送消息的账户。传入的标识符按以下优先级匹配到具体账户（解析由框架自动完成）：
 
 1. **账户名** — 配置中的键名（如 `"default"`、`"bot1"`）
-2. **运行时注入的 bot_id** — 从事件转换时自动注入的标识符
+2. **`bot_id` 字段** — 账户配置中的 `bot_id` 字段（运行期由适配器回填，通常即机器人的 `self.user_id`）
 3. **任意 str 字段** — 配置中其他字符串字段
 4. **兜底** — 第一个启用的账户
 
@@ -237,9 +238,11 @@ results = await (event.send_chain()
 # 使用账户名
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# 使用 bot_id（即事件中的 self.user_id）
+# 使用 bot_id（通常即事件中的 self.user_id）
 await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
+
+> 处理事件的链路内未显式 `Using()` 时，框架自动绑定触发事件的账户（见[无感语法糖](#无感语法糖)）；定时器 / 启动任务等无事件上下文场景走默认账户。
 
 ### Account 方法
 
@@ -603,16 +606,26 @@ flowchart TD
 
 ### 账户解析回退链
 
-当适配器内部调用 `_resolve_account(account_id)` 时，按以下顺序解析到具体账户：
+`Using()` 显式指定（含 `reply()` 自动注入）或事件链自动绑定的账户标识，按以下顺序解析到具体账户：
 
 1. 单账户适配器（无 `AccountConfigClass`）→ 直接返回
 2. 账户名精确匹配 `account_id`
 3. 各账户 `bot_id` 字段匹配
 4. 各账户任意 `str` 字段值匹配（排除 `enabled`/`name`）
-5. 兜底第一个启用的账户
-6. 全部失败 → 抛 `ValueError`
+5. 兜底第一个启用的账户：未传 `account_id` 时直接采用（默认账户语义）；显式传入的 `account_id` 无法解析时记录 WARNING 后采用（WARNING 中的 `platform` / `account_id` / `account` 用于定位未归属到账户的事件来源）
+6. 没有任何启用账户（含全部账户已禁用）→ 抛 `ValueError`：无账户可发送
 
-> 你传的 `account_id` 来自：`Using()` 显式指定 > 事件 `self` 字段（`account_id` 优先于 `user_id`，由 `event.reply()` 自动注入）> 不指定（由适配器兜底第一个启用账户）。
+> 你传的 `account_id` 来自：`Using()` 显式指定（含 `event.reply()` 自动注入的 `self.user_id` / `self.account_id` 代位）> **事件分发链兜底**（处理事件时未显式指定的发送，自动绑定触发事件的账户）> 不指定（默认账户语义，定时器 / 启动任务等无事件上下文场景）。
+
+### 无感语法糖
+
+| 语法糖 | 触发条件 | 效果 |
+|--------|----------|------|
+| 事件链内免 `Using()` | 处理事件的链路内调用 `Send` / `Api` / `Request` | 自动绑定触发事件的账户（分发入口注入调用上下文；`send_context` / `api_context` / `request_context` 同口径） |
+| `reply()` 自动引用 | `quote=True` | 自动取事件 `message_id` 构造 `Reply` 段 |
+| `reply()` 自动账户绑定 | reply 链路 | 自动 `Using(self.account_id or self.user_id)`——代位账户名直接可路由 |
+| 代位账户名路由 | 动态账户未获取 user_id | 事件 `self.account_id` = 账户名 → 账户名匹配解析回正确账户 |
+| 默认账户兜底 | 无事件上下文（定时器 / 启动任务） | 第一个启用账户（既有语义不变） |
 
 ### 发送规则引擎（重试/超时/延迟）
 
@@ -651,7 +664,7 @@ def Raw_ob12(self, message, **kwargs):
         )
     return asyncio.create_task(_do_send())
 
-# Text/Image/Voice/Video/File 已从基类继承，自动委托给 Raw_ob12
+# Text/Image/Voice/Video/File/Location 已从基类继承，自动委托给 Raw_ob12
 # 如需覆盖标准方法，返回 asyncio.Task 即可：
 # def Text(self, text: str):
 #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
@@ -664,6 +677,7 @@ def Raw_ob12(self, message, **kwargs):
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
+        # _do_api_call 为适配器自行实现的平台请求（示例占位）
         result = await self._do_api_call(endpoint, **params)
         return self.make_response(
             data=result.get("data"),

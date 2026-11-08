@@ -254,6 +254,15 @@ target_id = event.get_group_id()  # 或指定其他群组ID
 await adapter.Send.To("group", target_id).Text(event.get_text())
 ```
 
+> **多账户部署**：处理事件的链路内发送**无需显式指定账户**——框架在事件分发入口把触发事件的账户标识注入调用上下文，`Send` / `Api` / `Request` 链路未显式指定时自动绑定触发事件的账户（显式 `Using()` 永远优先；定时器等无事件上下文场景走默认账户）。即上例转发会从「收到这条事件的账户」发出，无需额外代码。
+
+#### 跨账户重复受理
+
+多账户同群时，同一物理消息可能经多个账户各收到一遍。框架按 `ErisPulse.framework.cross_account_policy` 处理（默认 `off` 不关联）：
+
+- `mark`：后续副本照常分发，但事件顶层注入 `multi_receipt` 字段（`{"event_id": 首个受理事件id, "self_id": 首个受理账户}`）——模块读取该字段自行裁决是否跳过响应
+- `drop`：副本在分发入口直接丢弃，模块无感
+
 ### 等待回复功能
 
 - `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text", pattern=None, regex=None)` - 等待用户回复

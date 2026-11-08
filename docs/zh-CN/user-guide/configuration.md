@@ -465,6 +465,8 @@ adapters = []
 | plugins_dir | string / list | "plugins" | 本地插件文件夹（相对项目根目录）；新增/删除/修改插件文件会被热重载 watcher 自动发现 |
 | watch_ignore_dirs | list | 内置清单 | 热重载文件监控忽略的目录名（`.venv`/`.git`/`__pycache__` 等）；非空列表**整体替换**内置清单，`[]` 表示不忽略任何目录 |
 | watch_include_plugin_dirs | boolean | true | `epsdk run --reload` 是否把插件目录交给插件热重载 watcher 精确处理（单模块重载），并从全量监控中排除 |
+| event_dedupe | boolean | true | 事件幂等去重：相同事件 id 的重复投递（连接层重推 / 网关重发）只分发一次 |
+| cross_account_policy | string | "off" | 跨账户重复受理策略：同一物理消息经多个账户先后到达时的处理——`off` 不关联（事件照常逐一分发）；`mark` 副本注入顶层 `multi_receipt` 字段（指向首个受理事件）后照常分发，模块读取该字段自行裁决；`drop` 副本在分发入口直接丢弃（框架层去重，模块无感） |
 
 ### 主动 GC 配置
 
@@ -591,6 +593,8 @@ ignore_self = true
 | 配置项 | 类型 | 默认值 | 说明 |
 |---------|------|---------|------|
 | ignore_self | boolean | true | 是否忽略机器人自己的消息 |
+
+> 事件去重共三层，各管一类重复：`event_dedupe`（framework，相同事件 id 的重复投递）→ `ignore_self`（本节，机器人自身消息）→ `cross_account_policy`（framework，多账户同群的内容级副本）。分层职责详见[适配器核心概念](../developer-guide/adapters/core-concepts.md)。
 
 ## 会话收件箱配置（transcript）
 

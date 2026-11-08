@@ -117,6 +117,8 @@ OneBot12 标准中 `message_id` 位于 `data` 对象内部且非强制。ErisPul
 - 无法获取 `message_id` 时应设为空字符串 `""`
 - 确保 `message_id` 始终存在，模块无需做 null 检查
 
+> **注意区分两侧**：本节的顶层提升仅针对**动作响应**（出站）。入站 message **事件**的 `message_id` 是 OneBot12 基线顶层必选字段，见[事件转换标准](event-conversion.md)。
+
 ### 5.2 `{platform}_raw` 原始响应字段
 
 返回值中应包含 `{platform}_raw` 字段，存放平台原始响应数据的完整副本：

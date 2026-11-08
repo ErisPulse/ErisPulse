@@ -238,7 +238,7 @@ class MyAdapter(BaseAdapter):
                 )
             return asyncio.create_task(_do_send())
 
-        # Text/Image/Voice/Video/File 已从 SendDSL 基类继承，
+        # Text/Image/Voice/Video/File/Location 已从 SendDSL 基类继承，
         # 默认委托给 Raw_ob12，无需重复实现。
         # 如需平台特定逻辑，可覆盖单个方法：
         # def Text(self, text: str):

@@ -624,7 +624,7 @@ async def handler(event):
 
 #### 账户解析
 
-多账户适配器可使用 `_resolve_account()` 自动解析目标账户：
+适配器实现 `call_api` 时，需要把账户标识解析为具体账户配置——`Send` / `Api` 链路传入的 `account_id`（`Using()` 或事件链绑定的结果）即解析目标：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -705,7 +705,7 @@ class MyAdapter(BaseAdapter):
 | 方法/属性 | 说明 |
 |-----------|------|
 | `self._apply_modifiers(message)` | 将 At/AtAll/Reply 修饰器状态合并到消息段列表 |
-| `self.send_context` | 返回 `{target_type, target_id, account_id}` 字典 |
+| `self.send_context` | 返回 `{target_type, target_id, account_id}` 字典；`account_id` 未显式指定时兜底当前事件分发链路的触发账户 |
 
 ### 基本方法
 
@@ -763,11 +763,12 @@ OneBot12 标准事件
 
 ```python
 {
-    "id": "事件唯一标识",
+    "id": "事件唯一标识",          # 同一账户重推同一事件必须相同（框架据此去重）
     "time": 1234567890,           # 10位 Unix 时间戳
     "type": "message/notice/request/meta",
     "detail_type": "事件详细类型",
     "platform": "平台名称",
+    "message_id": "消息ID",        # 消息类事件必须
     "self": {
         "platform": "平台名称",
         "user_id": "机器人ID"     # 必须与 bot_id 一致
@@ -776,6 +777,36 @@ OneBot12 标准事件
     "{platform}_raw_type": "..."    # 原始类型（必须）
 }
 ```
+
+> 事件 `id` 需带账户维度：同一账户重推同一事件保持相同 `id`，不同账户收到同一条群消息时 `id` 必须不同（例如 `f"{self.user_id}:{post_type}:{message_id}"`）。
+
+### 跨账户重复受理（框架注入字段）
+
+多账户适配器的多个账户在同一群/会话时，同一物理消息会经各账户先后到达。框架在 `ErisPulse.framework.cross_account_policy != "off"` 时自动做内容级关联（同平台 + 同会话 + 同发送者 + 同 `alt_message` 在短窗口内），适配器无需参与：
+
+- `mark`：后续副本注入顶层字段 `"multi_receipt": {"event_id": 首受理事件id, "self_id": 首受理账户}` 后照常分发，模块读取该字段自行裁决
+- `drop`：后续副本在分发入口直接丢弃
+
+`multi_receipt` 为框架注入的可选字段，适配器 Converter 不产出也不消费；策略默认 `off` 时事件结构与既有契约完全一致。
+
+#### 三层去重机制分工
+
+| 机制 | 配置 | 拦截什么 | 判定依据 |
+|------|------|----------|----------|
+| 事件幂等去重 | `ErisPulse.framework.event_dedupe`（默认开） | 同一事件 id 的重连重推（同连接） | 事件 `id` |
+| 本号回声过滤 | `ErisPulse.event.message.ignore_self`（默认开） | 接收账户自己的消息（发送者 == 接收账户） | `self.user_id` vs `user_id` |
+| 跨账户重复受理 | `ErisPulse.framework.cross_account_policy`（默认 `off`，`drop` 启用） | **同一物理消息经其它账户的副本**——多账户同群时 bot A 发言、bot B 也收到一份 | 内容级关联（同平台 + 同会话 + 同发送者 + 同内容，短窗口），键不含 self_id |
+
+**典型场景——多账户同群复读**：bot A 发言，同群的其他账户（bot B）也会收到一份，复读类模块看到同一内容出现两次。启用 `cross_account_policy = "drop"` 后，后续账户的副本在分发入口丢弃，任何模块至多看到一次。
+
+与 `ignore_self` 的语义正交，两者组合决定可见次数：
+
+| 组合 | 复读模块看到 bot A 的消息 |
+|------|--------------------------|
+| `drop` + `ignore_self = true`（默认） | 0 或 1 次（先到副本若经 A 自身连接则被 ignore_self 拦截）——**永不 2 次** |
+| `drop` + `ignore_self = false` | 恒定恰好 1 次 |
+
+> 不建议把 `ignore_self` 的语义扩展为「排除本机全部账户」：该判定依赖接收事件的 `self.user_id`（绑定未建立的窗口期会失效，见上文运行期边界），而跨账户关联是内容级判定，不依赖 self 信息；且「逐账户接收」是跨账户日志 / 同步类模块的既有依赖，收窄语义属于隐式破坏。跨账户去重交给 `cross_account_policy`。
 
 ### 转换器示例
 
@@ -1098,22 +1129,28 @@ await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("He
 await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 ```
 
-### self.user_id 与 Using 的关系
+### 事件的账户标识与 Using 的关系
 
-框架的事件回复机制会自动从事件的 `self` 字段中提取 `account_id`（优先）或 `user_id`，作为 `Using` 参数传入。适配器开发者需要确保 Converter 中 `self.user_id` 的值与 `_resolve_account()` 能够正确匹配。
+框架的事件回复机制会自动从事件的 `self` 字段提取账户标识（优先 `account_id` 代位，否则 `user_id`），注入 `Using` 后发送。适配器开发者需确保 Converter 产出的账户标识能与账户配置匹配（账户名或 `bot_id` 等字段）。
 
-**框架内部行为**：
+**框架注入行为**：
 
 ```python
-# 框架提取 bot_id 的逻辑
-bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
+# 框架提取账户标识的逻辑（account_id 代位优先，user_id 兜底）
+account = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
 
-# 仅在 bot_id 非空时调用 Using
-if bot_id:
-    send_chain = send_chain.Using(bot_id)
+# 仅在标识非空时注入 Using
+if account:
+    send_chain = send_chain.Using(account)
 ```
 
-> **关键点**：即使适配器只使用一个 Bot 配置，只要 Converter 正确设置了 `self.user_id`，框架就会将其作为 `Using` 参数传入。适配器需确保 `self.user_id` 与 `AccountConfigClass` 中的标识字段（如 `bot_id`）一致，使 `_resolve_account()` 能匹配到正确账户。如果 `self.user_id` 为空，框架不会调用 `Using`，此时 `call_api` 收到的 `account_id` 为 `None`，`_resolve_account(None)` 返回第一个启用的账户。
+> **关键点**：即使适配器只使用一个 Bot 配置，只要 Converter 正确设置了账户标识，框架就会将其注入 `Using`。适配器需确保该标识与 `AccountConfigClass` 中的账户名或 `bot_id` 等字段一致，从而解析到正确账户。标识为空时框架不注入 `Using`，此时发送按未指定账户处理——回落第一个启用的账户。
+
+显式传入的 `account_id` 无法解析时，框架记录 WARNING 并回退到第一个启用账户；WARNING 中的 `platform` / `account_id` / `account` 可用于定位未归属到账户的事件来源。
+
+**事件分发链内的自动绑定**：处理事件的链路内调用发送方法时**无需显式 `Using()`**——框架在事件分发入口把触发事件的账户标识注入调用上下文，`Send` / `Api` / `Request` 链路未显式指定账户时据此兜底绑定（显式 `Using()` 永远优先；定时器 / 启动任务等无事件上下文场景维持默认账户语义）。
+
+> 事件 `self.user_id` / `self.account_id` 代位的产出契约见[事件转换标准](../../standards/event-conversion.md)；该字段恒定存在是账户解析回退语义的前提——缺失时回落第一个启用账户，多账户下即「从默认账户发出」。
 
 ## 错误处理
 
