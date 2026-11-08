@@ -214,14 +214,15 @@ ErisPulse 适配器加载器
 ---
 
 
-##### `_restore_adapter_snapshot(snapshot: '_AdapterReloadSnapshot', adapter_name: str, manager_instance: Any) -> None`
+##### `async _restore_adapter_snapshot(snapshot: '_AdapterReloadSnapshot', adapter_name: str, manager_instance: Any) -> None`
 
 **内部方法**
 恢复适配器重载快照（重发现 / 注册失败时调用）
 
 恢复顺序：sys.modules 条目 → 注册存根与实例 → 启动态 / bots /
-启动任务。尽力而为语义：unload 已执行的副作用（断连 / bot offline）
-不可撤销，恢复后旧实例处于"已收尾"状态。
+启动任务。原实例处于运行态且旧启动任务已结束时，重放 `start()`；
+其余情况只恢复登记状态。unload 已执行的副作用（断连 / bot offline）
+不可撤销。
 
 - **snapshot**: 重载前采集的快照
 - **adapter_name**: 适配器名

@@ -367,7 +367,7 @@
           "icon": "fa-plug"
         },
         {
-          "title": "SnowLumaプラットフォームの特徴ドキュメント",
+          "title": "SnowLuma プラットフォーム機能ドキュメント",
           "path": "platform-guide/snowluma.md",
           "level": 1,
           "icon": "fa-plug"
@@ -485,7 +485,7 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "所有権システム",
+          "title": "所有権（owner）システム",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
@@ -527,7 +527,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "起動フローと手動制御",
+          "title": "スタートアップフローと手動制御",
           "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"

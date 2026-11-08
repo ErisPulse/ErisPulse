@@ -16,6 +16,8 @@ ErisPulse 归属权统一门面
 - :func:`ownership.counts` —— 按 owner 统计在册资源（审计的计数面）
 - :func:`ownership.orphans` —— 孤儿扫描：资源在册而 owner 已注销（泄漏实锤）
 - :func:`ownership.audit` —— 泄漏审计（计数 + 孤儿 + 可选 gc 实例普查）
+- :func:`ownership.nest` / :func:`ownership.unnest` —— 声明父子归属，
+  父回收时按注册逆序先回收子（资源级，不触发子的模块级 ``on_unload``）
 
 各子系统既有的 ``*_by_owner`` 注销函数保持不变，作为本门面的内部 SPI；
 新增可回收资源时，子系统提供注销函数并登记进 :func:`reclaim_sync` 的
@@ -48,14 +50,102 @@ ErisPulse 归属权统一门面
 归属权管理器（单例）
 
 聚合各子系统的 owner 归属资源：统一注销（reclaim）、只读计数（counts）、
-孤儿扫描（orphans）、泄漏审计（audit），以及影子 owner 判定面
-（is_shadow / register_shadow / unregister_shadow——影子模块机制，
-见 ``Core/shadow`` 与 docs/zh-CN/advanced/shadow.md）。
+孤儿扫描（orphans）、泄漏审计（audit）、嵌套生命周期（nest / unnest），
+以及影子 owner 判定面（is_shadow / register_shadow / unregister_shadow——
+影子模块机制，见 ``Core/shadow`` 与 docs/zh-CN/advanced/shadow.md）。
 子系统内部表通过惰性导入访问，避免加载链耦合（与 module.py 清理链的
 既有风格一致）。
 
 
 #### 方法列表
+
+
+##### `nest(parent: str, child: str) -> bool`
+
+声明父子归属关系：父被回收时子先被完整回收
+
+拒绝自环与已存在的反向链（会形成环）；重复声明幂等。
+
+- **parent**: 父 owner 名
+- **child**: 子 owner 名
+
+**返回值**: 是否声明成功
+
+**示例**:
+
+```python
+from ErisPulse.Core import ownership
+ownership.nest("ScriptEngine", "ScriptEngine.plugin_a")
+True
+```
+
+---
+
+
+##### `unnest(parent: str, child: str) -> bool`
+
+解除父子归属关系
+
+- **parent**: 父 owner 名
+- **child**: 子 owner 名
+
+**返回值**: 是否解除了既有关系
+
+---
+
+
+##### `nested_children(parent: str) -> 'frozenset[str]'`
+
+只读视图：父 owner 当前登记的子 owner
+
+- **parent**: 父 owner 名
+
+**返回值**: 子 owner 名集合
+
+---
+
+
+##### `begin_nested_reclaim(owner: str) -> bool`
+
+**内部方法**
+标记 owner 的异步级联回收即将开始
+
+供同步入口（如 ``ModuleManager.disable``）在调度后台级联前调用，
+使随后的 :meth:`reclaim_sync` 跳过子级联，避免与异步路径重复。
+
+- **owner**: 父 owner 名
+
+**返回值**: 是否存在需要级联的子 owner
+
+---
+
+
+##### `async reclaim_nested(owner: str) -> 'dict[str, int]'`
+
+按注册逆序回收 owner 的全部子 owner（递归级联）
+
+每个子回收受 ``CLEANUP_CALLBACK_TIMEOUT_SECS`` 约束；超时或失败
+告警后继续处理其余子，并移除该父子关系（残留资源由 orphans 暴露）。
+
+- **owner**: 父 owner 名
+
+**返回值**: ``{"nested_children": 已处理子数}``
+
+---
+
+
+##### `_reaches(start: str, target: str) -> bool`
+
+**内部方法** 沿子关系判断 start 是否可达 target（环检测）
+
+---
+
+
+##### `_detach_from_parents(child: str) -> None`
+
+**内部方法** 子被独立回收后从所有父的登记中移除
+
+---
 
 
 ##### `register_shadow(owner: str) -> None`

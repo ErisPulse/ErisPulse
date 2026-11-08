@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1886,
+  "total_keywords": 1895,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -107,7 +107,7 @@
     "1. Команда CLI run (разработка/простое развёртывание, рекомендуется)": [
       {
         "document": "advanced/startup.md",
-        "line": 377,
+        "line": 375,
         "level": 4,
         "title": "1. Команда CLI run (разработка/простое развёртывание, рекомендуется)"
       }
@@ -323,7 +323,7 @@
     "1. Уровень обнаружения: Finder": [
       {
         "document": "advanced/startup.md",
-        "line": 57,
+        "line": 56,
         "level": 3,
         "title": "1. Уровень обнаружения: Finder"
       }
@@ -470,12 +470,12 @@
         "title": "1xxxx Ошибка запроса действия (Request Error)"
       }
     ],
-    "2. systemd (серверы Linux)": [
+    "2. systemd (Linux-серверы)": [
       {
         "document": "advanced/startup.md",
-        "line": 387,
+        "line": 404,
         "level": 4,
-        "title": "2. systemd (серверы Linux)"
+        "title": "2. systemd (Linux-серверы)"
       }
     ],
     "2. Базовая структура возвращаемого значения": [
@@ -797,7 +797,7 @@
     "2. Уровень загрузки: Loader": [
       {
         "document": "advanced/startup.md",
-        "line": 77,
+        "line": 76,
         "level": 3,
         "title": "2. Уровень загрузки: Loader"
       }
@@ -973,7 +973,7 @@
     "3. Docker / docker-compose": [
       {
         "document": "advanced/startup.md",
-        "line": 400,
+        "line": 417,
         "level": 4,
         "title": "3. Docker / docker-compose"
       }
@@ -1173,7 +1173,7 @@
     "3. Уровень регистрации: register_to_manager": [
       {
         "document": "advanced/startup.md",
-        "line": 126,
+        "line": 125,
         "level": 3,
         "title": "3. Уровень регистрации: register_to_manager"
       }
@@ -1373,7 +1373,7 @@
     "4. PM2 (эксплуатация в экосистеме Node)": [
       {
         "document": "advanced/startup.md",
-        "line": 411,
+        "line": 428,
         "level": 4,
         "title": "4. PM2 (эксплуатация в экосистеме Node)"
       }
@@ -1389,7 +1389,7 @@
     "4. Запуск адаптеров": [
       {
         "document": "advanced/startup.md",
-        "line": 140,
+        "line": 139,
         "level": 3,
         "title": "4. Запуск адаптеров"
       }
@@ -1621,7 +1621,7 @@
     "5. supervisord": [
       {
         "document": "advanced/startup.md",
-        "line": 419,
+        "line": 436,
         "level": 4,
         "title": "5. supervisord"
       }
@@ -1653,7 +1653,7 @@
     "5. Инициализация модулей": [
       {
         "document": "advanced/startup.md",
-        "line": 152,
+        "line": 151,
         "level": 3,
         "title": "5. Инициализация модулей"
       }
@@ -1906,12 +1906,12 @@
         "title": "6. Будущие кандидаты (Roadmap)"
       }
     ],
-    "6. Запуск сервера маршрутизации": [
+    "6. Запуск сервера маршрутов": [
       {
         "document": "advanced/startup.md",
-        "line": 164,
+        "line": 163,
         "level": 3,
-        "title": "6. Запуск сервера маршрутизации"
+        "title": "6. Запуск сервера маршрутов"
       }
     ],
     "6. Примеры использования API": [
@@ -1949,7 +1949,7 @@
     "6. Собственный супервизор на чистом Python": [
       {
         "document": "advanced/startup.md",
-        "line": 428,
+        "line": 445,
         "level": 4,
         "title": "6. Собственный супервизор на чистом Python"
       }
@@ -2691,17 +2691,17 @@
     "HTTP-клиент": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 321,
+        "line": 322,
         "level": 3,
         "title": "HTTP-клиент"
       }
     ],
-    "HTTP-роутинг": [
+    "HTTP-маршрутизация": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 261,
+        "line": 262,
         "level": 3,
-        "title": "HTTP-роутинг"
+        "title": "HTTP-маршрутизация"
       }
     ],
     "HTTPStatusError": [
@@ -2760,6 +2760,14 @@
         "title": "MySQL (`ErisPulse.storage.mysql`)"
       }
     ],
+    "OB11 расширенные действия (Api DSL)": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 173,
+        "level": 2,
+        "title": "OB11 расширенные действия (Api DSL)"
+      }
+    ],
     "OneBot11": [
       {
         "document": "standards/session-types.md",
@@ -2808,12 +2816,12 @@
         "title": "PostgreSQL (`ErisPulse.storage.postgres`)"
       }
     ],
-    "QQ-пространство": [
+    "QQ空间": [
       {
         "document": "platform-guide/snowluma.md",
         "line": 141,
         "level": 3,
-        "title": "QQ-пространство"
+        "title": "QQ空间"
       }
     ],
     "RPC: module.call": [
@@ -2939,7 +2947,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 278,
+        "line": 279,
         "level": 3,
         "title": "WebSocket"
       }
@@ -3839,7 +3847,7 @@
     "Автоматическое отображение self_id": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 300,
+        "line": 406,
         "level": 2,
         "title": "Автоматическое отображение self_id"
       }
@@ -4438,6 +4446,14 @@
         "title": "Вложенные конфигурации (v2.8.0+)"
       }
     ],
+    "Вложенный жизненный цикл (ownership.nest)": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 130,
+        "level": 2,
+        "title": "Вложенный жизненный цикл (ownership.nest)"
+      }
+    ],
     "Вложенный класс `Send`": [
       {
         "document": "api-reference/adapter-system.md",
@@ -4481,7 +4497,7 @@
     "Внутренняя реализация: как работает принадлежность": [
       {
         "document": "advanced/ownership.md",
-        "line": 219,
+        "line": 253,
         "level": 2,
         "title": "Внутренняя реализация: как работает принадлежность"
       }
@@ -4546,6 +4562,12 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 351,
+        "level": 2,
+        "title": "Возвращаемые значения методов отправки"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 381,
         "level": 2,
         "title": "Возвращаемые значения методов отправки"
       },
@@ -4886,12 +4908,12 @@
         "title": "Горячая перезагрузка конфигурации сервера во время выполнения"
       }
     ],
-    "Горячий запуск/остановка адаптеров": [
+    "Горячий запуск и остановка адаптеров": [
       {
         "document": "advanced/startup.md",
-        "line": 256,
+        "line": 254,
         "level": 3,
-        "title": "Горячий запуск/остановка адаптеров"
+        "title": "Горячий запуск и остановка адаптеров"
       }
     ],
     "Граница между ожиданием и командами (сквозной проход команд)": [
@@ -4902,12 +4924,36 @@
         "title": "Граница между ожиданием и командами (сквозной проход команд)"
       }
     ],
+    "Границы возможностей": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 182,
+        "level": 3,
+        "title": "Границы возможностей"
+      }
+    ],
+    "Границы горячей перезагрузки": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 178,
+        "level": 2,
+        "title": "Границы горячей перезагрузки"
+      }
+    ],
     "Границы с другими механизмами": [
       {
         "document": "advanced/transcript.md",
         "line": 156,
         "level": 2,
         "title": "Границы с другими механизмами"
+      }
+    ],
+    "Границы циклов событий": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 204,
+        "level": 3,
+        "title": "Границы циклов событий"
       }
     ],
     "Группировка в боковой панели": [
@@ -4932,6 +4978,14 @@
         "line": 19,
         "level": 2,
         "title": "Группировка по сценариям"
+      }
+    ],
+    "Групповые альбомы": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 235,
+        "level": 3,
+        "title": "Групповые альбомы"
       }
     ],
     "Группы (модель подписки)": [
@@ -5174,6 +5228,22 @@
         "title": "Декораторы правил отправки"
       }
     ],
+    "Детализированное определение единицы перезагрузки (2.12+)": [
+      {
+        "document": "advanced/startup.md",
+        "line": 385,
+        "level": 4,
+        "title": "Детализированное определение единицы перезагрузки (2.12+)"
+      }
+    ],
+    "Детализированное управление во время выполнения": [
+      {
+        "document": "advanced/startup.md",
+        "line": 250,
+        "level": 2,
+        "title": "Детализированное управление во время выполнения"
+      }
+    ],
     "Диагностика окружения": [
       {
         "document": "user-guide/cli-reference.md",
@@ -5185,7 +5255,7 @@
     "Диагностическая информация при сбое загрузки": [
       {
         "document": "advanced/startup.md",
-        "line": 101,
+        "line": 100,
         "level": 4,
         "title": "Диагностическая информация при сбое загрузки"
       }
@@ -5196,6 +5266,14 @@
         "line": 8,
         "level": 2,
         "title": "Дизайн модуля"
+      }
+    ],
+    "Дизайн-границы: какие ресурсы не удаляются при отключении": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 240,
+        "level": 2,
+        "title": "Дизайн-границы: какие ресурсы не удаляются при отключении"
       }
     ],
     "Динамический контент": [
@@ -5524,14 +5602,6 @@
         "title": "Другие типы сообщений"
       }
     ],
-    "Единая воронка принадлежности (ownership)": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 104,
-        "level": 2,
-        "title": "Единая воронка принадлежности (ownership)"
-      }
-    ],
     "Единая конфигурация перезаписи событий (event.overrides)": [
       {
         "document": "user-guide/configuration.md",
@@ -5546,6 +5616,14 @@
         "line": 196,
         "level": 3,
         "title": "Единый вход для получения модуля"
+      }
+    ],
+    "Единый интерфейс принадлежности (ownership)": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 104,
+        "level": 2,
+        "title": "Единый интерфейс принадлежности (ownership)"
       }
     ],
     "Жизненные циклы событий": [
@@ -5627,7 +5705,7 @@
     "Загрузка модулей по требованию": [
       {
         "document": "advanced/startup.md",
-        "line": 282,
+        "line": 280,
         "level": 3,
         "title": "Загрузка модулей по требованию"
       }
@@ -5810,14 +5888,6 @@
         "line": 67,
         "level": 2,
         "title": "Защита конфиденциальности (4.3.0)"
-      }
-    ],
-    "Значения возвращаемые методами отправки": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 275,
-        "level": 2,
-        "title": "Значения возвращаемые методами отправки"
       }
     ],
     "Значения статуса бота": [
@@ -6009,7 +6079,7 @@
     "Инструменты": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 391,
+        "line": 392,
         "level": 3,
         "title": "Инструменты"
       }
@@ -6570,6 +6640,14 @@
         "title": "Классификация типов"
       }
     ],
+    "Кликнуть / Социальные функции": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 134,
+        "level": 3,
+        "title": "Кликнуть / Социальные функции"
+      }
+    ],
     "Ключевые моменты безопасности": [
       {
         "document": "ecosystem/apimcp.md",
@@ -6610,12 +6688,28 @@
         "title": "Когда выбрать что"
       }
     ],
+    "Когда использовать жёсткий перезапуск?": [
+      {
+        "document": "advanced/startup.md",
+        "line": 350,
+        "level": 3,
+        "title": "Когда использовать жёсткий перезапуск?"
+      }
+    ],
     "Когда какой способ объявления использовать": [
       {
         "document": "developer-guide/orm.md",
         "line": 82,
         "level": 3,
         "title": "Когда какой способ объявления использовать"
+      }
+    ],
+    "Когда нужен ручной запуск?": [
+      {
+        "document": "advanced/startup.md",
+        "line": 240,
+        "level": 3,
+        "title": "Когда нужен ручной запуск?"
       }
     ],
     "Когда ожидание может быть отменено": [
@@ -6632,22 +6726,6 @@
         "line": 76,
         "level": 2,
         "title": "Когда перегенерировать"
-      }
-    ],
-    "Когда следует использовать жёсткий перезапуск?": [
-      {
-        "document": "advanced/startup.md",
-        "line": 352,
-        "level": 3,
-        "title": "Когда следует использовать жёсткий перезапуск?"
-      }
-    ],
-    "Когда стоит запускать вручную?": [
-      {
-        "document": "advanced/startup.md",
-        "line": 242,
-        "level": 3,
-        "title": "Когда стоит запускать вручную?"
       }
     ],
     "Кого и когда выбирать": [
@@ -6677,7 +6755,7 @@
     "Командная система": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 246,
+        "line": 247,
         "level": 3,
         "title": "Командная система"
       }
@@ -6803,7 +6881,7 @@
     "Контракт кода выхода 42": [
       {
         "document": "advanced/startup.md",
-        "line": 362,
+        "line": 360,
         "level": 3,
         "title": "Контракт кода выхода 42"
       }
@@ -7107,7 +7185,7 @@
     "Корректное завершение работы": [
       {
         "document": "advanced/startup.md",
-        "line": 289,
+        "line": 287,
         "level": 2,
         "title": "Корректное завершение работы"
       }
@@ -7292,6 +7370,22 @@
         "line": 212,
         "level": 2,
         "title": "Матрица функциональных возможностей"
+      }
+    ],
+    "Мгновенные сообщения / Избранные эмодзи / Низкоуровневые каналы": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 266,
+        "level": 3,
+        "title": "Мгновенные сообщения / Избранные эмодзи / Низкоуровневые каналы"
+      }
+    ],
+    "Международная локализация": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 332,
+        "level": 3,
+        "title": "Международная локализация"
       }
     ],
     "Межмодульная передача / повторное использование": [
@@ -7546,6 +7640,12 @@
         "title": "Методы расширения событий"
       },
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 319,
+        "level": 2,
+        "title": "Методы расширения событий"
+      },
+      {
         "document": "platform-guide/wechatmp.md",
         "line": 95,
         "level": 2,
@@ -7674,12 +7774,6 @@
       {
         "document": "platform-guide/kook.md",
         "line": 120,
-        "level": 3,
-        "title": "Методы цепочки модификаторов (можно комбинировать)"
-      },
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 157,
         "level": 3,
         "title": "Методы цепочки модификаторов (можно комбинировать)"
       }
@@ -7818,14 +7912,6 @@
         "line": 563,
         "level": 3,
         "title": "Многоязычное покрытие"
-      }
-    ],
-    "Многоязычность": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 331,
-        "level": 3,
-        "title": "Многоязычность"
       }
     ],
     "Многоязычные поля конфигурации": [
@@ -8318,14 +8404,6 @@
         "title": "Обзор архитектуры"
       }
     ],
-    "Обзор верхнеуровневых точек входа SDK": [
-      {
-        "document": "advanced/startup.md",
-        "line": 13,
-        "level": 2,
-        "title": "Обзор верхнеуровневых точек входа SDK"
-      }
-    ],
     "Обзор исключений": [
       {
         "document": "advanced/errors.md",
@@ -8374,20 +8452,20 @@
         "title": "Обзор типов событий"
       }
     ],
+    "Обзор точек входа SDK верхнего уровня": [
+      {
+        "document": "advanced/startup.md",
+        "line": 12,
+        "level": 2,
+        "title": "Обзор точек входа SDK верхнего уровня"
+      }
+    ],
     "Обзор функций": [
       {
         "document": "user-guide/deployment.md",
         "line": 104,
         "level": 3,
         "title": "Обзор функций"
-      }
-    ],
-    "Обзор цепочки запуска": [
-      {
-        "document": "advanced/startup.md",
-        "line": 27,
-        "level": 2,
-        "title": "Обзор цепочки запуска"
       }
     ],
     "Область действия (scope)": [
@@ -8870,6 +8948,14 @@
         "title": "Общая статистика"
       }
     ],
+    "Общая схема цепочки запуска": [
+      {
+        "document": "advanced/startup.md",
+        "line": 26,
+        "level": 2,
+        "title": "Общая схема цепочки запуска"
+      }
+    ],
     "Общие интерфейсы": [
       {
         "document": "platform-guide/README.md",
@@ -8950,20 +9036,20 @@
         "title": "Общий метод request"
       }
     ],
-    "Объединённая пересылка": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 96,
-        "level": 3,
-        "title": "Объединённая пересылка"
-      }
-    ],
     "Объединённая пересылка (необязательно, см. §2.4)": [
       {
         "document": "standards/send-method-spec.md",
         "line": 523,
         "level": 3,
         "title": "Объединённая пересылка (необязательно, см. §2.4)"
+      }
+    ],
+    "Объединённое сообщение": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 96,
+        "level": 3,
+        "title": "Объединённое сообщение"
       }
     ],
     "Объект SDK": [
@@ -9028,6 +9114,14 @@
         "title": "Объявленные ключи перевода (v2.7.0+)"
       }
     ],
+    "Объяснение расширенных полей": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 311,
+        "level": 3,
+        "title": "Объяснение расширенных полей"
+      }
+    ],
     "Обязательно ли имя пакета должно начинаться с `ErisPulse-`?": [
       {
         "document": "developer-guide/publishing.md",
@@ -9080,36 +9174,12 @@
         "title": "Ограничение скорости обработчиков (throttle=) и дебаунсинг (debounce=)"
       }
     ],
-    "Ограничения горячей перезагрузки": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 143,
-        "level": 2,
-        "title": "Ограничения горячей перезагрузки"
-      }
-    ],
     "Ограничения и важные замечания": [
       {
         "document": "developer-guide/orm.md",
         "line": 94,
         "level": 2,
         "title": "Ограничения и важные замечания"
-      }
-    ],
-    "Ограничения по возможностям": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 147,
-        "level": 3,
-        "title": "Ограничения по возможностям"
-      }
-    ],
-    "Ограничения цикла событий": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 170,
-        "level": 3,
-        "title": "Ограничения цикла событий"
       }
     ],
     "Одноразовая регистрация (once)": [
@@ -9426,12 +9496,6 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 360,
-        "level": 3,
-        "title": "Описание расширенных полей"
-      },
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 208,
         "level": 3,
         "title": "Описание расширенных полей"
       },
@@ -10025,7 +10089,7 @@
     "Откат при горячей перезагрузке": [
       {
         "document": "advanced/ownership.md",
-        "line": 130,
+        "line": 163,
         "level": 2,
         "title": "Откат при горячей перезагрузке"
       }
@@ -10070,14 +10134,6 @@
         "title": "Отношение к i18n в CLI"
       }
     ],
-    "Отношение к адаптеру OneBot11": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 20,
-        "level": 3,
-        "title": "Отношение к адаптеру OneBot11"
-      }
-    ],
     "Отношение к стандартным методам SendDSL": [
       {
         "document": "getting-started/ide-completion.md",
@@ -10092,6 +10148,14 @@
         "line": 10,
         "level": 3,
         "title": "Отношения между компонентами"
+      }
+    ],
+    "Отношения с адаптером OneBot11": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 20,
+        "level": 3,
+        "title": "Отношения с адаптером OneBot11"
       }
     ],
     "Отображение detail_type": [
@@ -10124,6 +10188,14 @@
         "line": 91,
         "level": 3,
         "title": "Отправка в разные цели"
+      }
+    ],
+    "Отправка в чат (расширение SnowLuma, автоматическая маршрутизация в групповой/личный чат)": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 157,
+        "level": 3,
+        "title": "Отправка в чат (расширение SnowLuma, автоматическая маршрутизация в групповой/личный чат)"
       }
     ],
     "Отправка встроенного сообщения": [
@@ -10215,7 +10287,7 @@
     "Отправка сообщений": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 231,
+        "line": 232,
         "level": 3,
         "title": "Отправка сообщений"
       },
@@ -10507,7 +10579,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 240,
+        "line": 343,
         "level": 2,
         "title": "Параметры конфигурации"
       },
@@ -10559,7 +10631,7 @@
     "Перезапуск": [
       {
         "document": "advanced/startup.md",
-        "line": 329,
+        "line": 327,
         "level": 2,
         "title": "Перезапуск"
       }
@@ -10652,14 +10724,6 @@
         "title": "Письмо с вложением"
       }
     ],
-    "План отладки": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 258,
-        "level": 3,
-        "title": "План отладки"
-      }
-    ],
     "Платформенно-специфические методы": [
       {
         "document": "getting-started/event-handling.md",
@@ -10690,6 +10754,14 @@
         "title": "Платформенно-специфичные модифицирующие методы"
       }
     ],
+    "Платформенно-специфичные события и расширенные сегменты": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 305,
+        "level": 3,
+        "title": "Платформенно-специфичные события и расширенные сегменты"
+      }
+    ],
     "Платформенные расширения": [
       {
         "document": "api-reference/event-system.md",
@@ -10710,14 +10782,6 @@
         "line": 16,
         "level": 2,
         "title": "Платформенные функции"
-      }
-    ],
-    "Платформо-специфические события и расширенные сегменты": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 202,
-        "level": 3,
-        "title": "Платформо-специфические события и расширенные сегменты"
       }
     ],
     "Платформо-специфичные события (префикс onebot11_)": [
@@ -11150,12 +11214,12 @@
         "title": "Подробности метода `t()`"
       }
     ],
-    "Подробный разбор этапов": [
+    "Подробный разбор каждого этапа": [
       {
         "document": "advanced/startup.md",
-        "line": 55,
+        "line": 54,
         "level": 2,
-        "title": "Подробный разбор этапов"
+        "title": "Подробный разбор каждого этапа"
       }
     ],
     "Подстановочные знаки": [
@@ -11220,18 +11284,18 @@
         "title": "Политика пропущенных запусков (missed_policy)"
       }
     ],
-    "Полная картина принадлежащих ресурсов": [
+    "Полная картина принадлежности ресурсов": [
       {
         "document": "advanced/ownership.md",
         "line": 44,
         "level": 2,
-        "title": "Полная картина принадлежащих ресурсов"
+        "title": "Полная картина принадлежности ресурсов"
       }
     ],
     "Полная справочная документация API": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 363,
+        "line": 364,
         "level": 2,
         "title": "Полная справочная документация API"
       }
@@ -11313,7 +11377,7 @@
     "Полный пример ручного запуска": [
       {
         "document": "advanced/startup.md",
-        "line": 177,
+        "line": 176,
         "level": 2,
         "title": "Полный пример ручного запуска"
       }
@@ -11340,6 +11404,14 @@
         "line": 10,
         "level": 3,
         "title": "Получение адаптера"
+      }
+    ],
+    "Получение и обработка событий": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 207,
+        "level": 3,
+        "title": "Получение и обработка событий"
       }
     ],
     "Получение информации о команде": [
@@ -11447,7 +11519,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 244,
+        "line": 347,
         "level": 3,
         "title": "Поля конфигурации аккаунта"
       }
@@ -11487,17 +11559,17 @@
     "Последовательность отмены (отключение модуля)": [
       {
         "document": "advanced/ownership.md",
-        "line": 247,
+        "line": 281,
         "level": 3,
         "title": "Последовательность отмены (отключение модуля)"
       }
     ],
-    "Последовательность очистки при отключении/деактивации": [
+    "Последовательность очистки при отключении/отключении": [
       {
         "document": "advanced/ownership.md",
         "line": 79,
         "level": 2,
-        "title": "Последовательность очистки при отключении/деактивации"
+        "title": "Последовательность очистки при отключении/отключении"
       }
     ],
     "Поток WebSocket": [
@@ -11514,6 +11586,14 @@
         "line": 12,
         "level": 3,
         "title": "Поток событий"
+      }
+    ],
+    "Потоковые интерфейсы": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 254,
+        "level": 3,
+        "title": "Потоковые интерфейсы"
       }
     ],
     "Почему нужен стандарт?": [
@@ -11546,14 +11626,6 @@
         "line": 364,
         "level": 3,
         "title": "Пошаговая регистрация"
-      }
-    ],
-    "Пощёчина / социальные действия": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 134,
-        "level": 3,
-        "title": "Пощёчина / социальные действия"
       }
     ],
     "Права в группах": [
@@ -11591,7 +11663,7 @@
     "Правила для модулей": [
       {
         "document": "advanced/ownership.md",
-        "line": 182,
+        "line": 216,
         "level": 3,
         "title": "Правила для модулей"
       }
@@ -11650,14 +11722,6 @@
         "line": 67,
         "level": 2,
         "title": "Предварительные знания"
-      }
-    ],
-    "Пределы дизайна: какие ресурсы не очищаются при отключении": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 206,
-        "level": 2,
-        "title": "Пределы дизайна: какие ресурсы не очищаются при отключении"
       }
     ],
     "Предупреждение о нескольких экземплярах и файле блокировки": [
@@ -11722,14 +11786,6 @@
         "title": "Приглашения в комнаты"
       }
     ],
-    "Прием и обработка событий": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 206,
-        "level": 3,
-        "title": "Прием и обработка событий"
-      }
-    ],
     "Пример Jinja-шаблона": [
       {
         "document": "ecosystem/takumi.md",
@@ -11773,7 +11829,7 @@
     "Пример использования в модуле": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 401,
+        "line": 402,
         "level": 2,
         "title": "Пример использования в модуле"
       }
@@ -11801,7 +11857,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 257,
+        "line": 363,
         "level": 3,
         "title": "Пример конфигурации"
       },
@@ -11956,6 +12012,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 395,
+        "level": 3,
+        "title": "Примеры использования"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 199,
         "level": 3,
         "title": "Примеры использования"
       }
@@ -12129,13 +12191,13 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 459,
+        "line": 463,
         "level": 2,
         "title": "Примечания"
       },
       {
         "document": "advanced/ownership.md",
-        "line": 287,
+        "line": 321,
         "level": 3,
         "title": "Примечания"
       },
@@ -12170,12 +12232,12 @@
         "title": "Примечания"
       }
     ],
-    "Принадлежность фоновых задач и автоматическая отмена": [
+    "Принадлежность фоновых задач и автоматическое отмена": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 428,
+        "line": 429,
         "level": 2,
-        "title": "Принадлежность фоновых задач и автоматическая отмена"
+        "title": "Принадлежность фоновых задач и автоматическое отмена"
       }
     ],
     "Принцип ближайшего соответствия": [
@@ -12492,12 +12554,12 @@
         "title": "Промежуточные обработчики (Middleware)"
       }
     ],
-    "Промотирование и откат": [
+    "Промоут и откат": [
       {
         "document": "advanced/shadow.md",
         "line": 69,
         "level": 2,
-        "title": "Промотирование и откат"
+        "title": "Промоут и откат"
       }
     ],
     "Прослушивание жизненного цикла ботов": [
@@ -12583,7 +12645,7 @@
     "Процесс выгрузки": [
       {
         "document": "advanced/startup.md",
-        "line": 311,
+        "line": 309,
         "level": 2,
         "title": "Процесс выгрузки"
       }
@@ -12892,6 +12954,14 @@
         "title": "Расширения Event Mixin"
       }
     ],
+    "Расширения QQпространства": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 224,
+        "level": 3,
+        "title": "Расширения QQпространства"
+      }
+    ],
     "Расширенная информация в поле `self`": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -12922,14 +12992,6 @@
         "title": "Расширенные действия"
       }
     ],
-    "Расширенные действия OB11 (DSL)": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 165,
-        "level": 2,
-        "title": "Расширенные действия OB11 (DSL)"
-      }
-    ],
     "Расширенные действия платформы": [
       {
         "document": "platform-guide/minecraft.md",
@@ -12958,14 +13020,6 @@
         "line": 543,
         "level": 2,
         "title": "Расширенные методы Event Mixin"
-      }
-    ],
-    "Расширенные методы событий": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 216,
-        "level": 2,
-        "title": "Расширенные методы событий"
       }
     ],
     "Расширенные методы события (WebhookEventMixin)": [
@@ -13015,7 +13069,7 @@
     "Регистрация и отмена": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 365,
+        "line": 366,
         "level": 3,
         "title": "Регистрация и отмена"
       }
@@ -13220,14 +13274,6 @@
         "title": "Рекомендованные сценарии отключения ленивой загрузки (lazy_load=False)"
       }
     ],
-    "Рекомендуемая запись": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 265,
-        "level": 3,
-        "title": "Рекомендуемая запись"
-      }
-    ],
     "Рекомендуемая стратегия миграции": [
       {
         "document": "showcase/migrate-from-astrbot.md",
@@ -13288,6 +13334,14 @@
         "title": "Рекомендуемый способ: объявление ключей перевода через I18nClass (v2.7.0+)"
       }
     ],
+    "Рекомендуемый стиль": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 299,
+        "level": 3,
+        "title": "Рекомендуемый стиль"
+      }
+    ],
     "Рендеринг HTML": [
       {
         "document": "ecosystem/takumi.md",
@@ -13315,7 +13369,7 @@
     "Руководство для авторов модулей": [
       {
         "document": "advanced/ownership.md",
-        "line": 263,
+        "line": 297,
         "level": 2,
         "title": "Руководство для авторов модулей"
       }
@@ -13347,7 +13401,7 @@
     "Руководство по инструментальным модулям: управление дескрипторами других модулей": [
       {
         "document": "advanced/ownership.md",
-        "line": 309,
+        "line": 343,
         "level": 2,
         "title": "Руководство по инструментальным модулям: управление дескрипторами других модулей"
       }
@@ -13403,7 +13457,7 @@
     "Руководство по супервизорам": [
       {
         "document": "advanced/startup.md",
-        "line": 373,
+        "line": 371,
         "level": 3,
         "title": "Руководство по супервизорам"
       }
@@ -13523,7 +13577,7 @@
     "Связанная документация": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 469,
+        "line": 473,
         "level": 2,
         "title": "Связанная документация"
       },
@@ -13534,8 +13588,8 @@
         "title": "Связанная документация"
       },
       {
-        "document": "advanced/startup.md",
-        "line": 446,
+        "document": "advanced/ownership.md",
+        "line": 391,
         "level": 2,
         "title": "Связанная документация"
       },
@@ -13628,12 +13682,6 @@
         "title": "Связанные документы"
       },
       {
-        "document": "advanced/ownership.md",
-        "line": 349,
-        "level": 2,
-        "title": "Связанные документы"
-      },
-      {
         "document": "advanced/router.md",
         "line": 468,
         "level": 2,
@@ -13647,13 +13695,19 @@
       },
       {
         "document": "advanced/shadow.md",
-        "line": 75,
+        "line": 88,
         "level": 2,
         "title": "Связанные документы"
       },
       {
         "document": "advanced/sql-builder.md",
         "line": 435,
+        "level": 2,
+        "title": "Связанные документы"
+      },
+      {
+        "document": "advanced/startup.md",
+        "line": 463,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -13858,12 +13912,12 @@
         "title": "Семейство методов платформенных API"
       }
     ],
-    "Сервер маршрутизации": [
+    "Сервер маршрутов": [
       {
         "document": "advanced/startup.md",
-        "line": 272,
+        "line": 270,
         "level": 3,
-        "title": "Сервер маршрутизации"
+        "title": "Сервер маршрутов"
       }
     ],
     "Сервисный контракт (meta.services)": [
@@ -13953,7 +14007,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 290,
+        "line": 396,
         "level": 3,
         "title": "Синтаксис отправки с несколькими аккаунтами"
       }
@@ -14036,20 +14090,20 @@
         "title": "Система правил отправки"
       }
     ],
-    "Система принадлежности (owner)": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 1,
-        "level": 1,
-        "title": "Система принадлежности (owner)"
-      }
-    ],
     "Система приоритетов": [
       {
         "document": "api-reference/event-system.md",
         "line": 526,
         "level": 2,
         "title": "Система приоритетов"
+      }
+    ],
+    "Система собственности (owner)": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 1,
+        "level": 1,
+        "title": "Система собственности (owner)"
       }
     ],
     "Система событий": [
@@ -14088,6 +14142,14 @@
         "line": 6,
         "level": 2,
         "title": "Системные требования"
+      }
+    ],
+    "Системные эмодзи": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 245,
+        "level": 3,
+        "title": "Системные эмодзи"
       }
     ],
     "Скачивание и сохранение изображений": [
@@ -14736,14 +14798,6 @@
         "title": "Сопоставление событий"
       }
     ],
-    "Сопоставление сценария регистрации → результат присвоения": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 294,
-        "level": 3,
-        "title": "Сопоставление сценария регистрации → результат присвоения"
-      }
-    ],
     "Сопоставление типов событий": [
       {
         "document": "platform-guide/onebot11.md",
@@ -14753,7 +14807,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 185,
+        "line": 288,
         "level": 2,
         "title": "Сопоставление типов событий"
       }
@@ -14777,7 +14831,7 @@
     "Состояние подключения хранилища": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 299,
+        "line": 300,
         "level": 3,
         "title": "Состояние подключения хранилища"
       }
@@ -14812,6 +14866,14 @@
         "line": 1,
         "level": 1,
         "title": "Спецификация методов отправки ErisPulse"
+      }
+    ],
+    "Специфические действия SnowLuma (SnowLumaExtensionApi)": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 220,
+        "level": 2,
+        "title": "Специфические действия SnowLuma (SnowLumaExtensionApi)"
       }
     ],
     "Специфические типы событий": [
@@ -14887,7 +14949,7 @@
     "Список проверки": [
       {
         "document": "advanced/ownership.md",
-        "line": 199,
+        "line": 233,
         "level": 3,
         "title": "Список проверки"
       }
@@ -14900,12 +14962,12 @@
         "title": "Список стандартных документов"
       }
     ],
-    "Список точек вставки хуков": [
+    "Список точек останова хуков": [
       {
         "document": "advanced/lifecycle.md",
         "line": 120,
         "level": 2,
-        "title": "Список точек вставки хуков"
+        "title": "Список точек останова хуков"
       }
     ],
     "Способ 1: Локальный процесс (рекомендуется)": [
@@ -15181,7 +15243,7 @@
     "Стандартное определение событий": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 337,
+        "line": 338,
         "level": 2,
         "title": "Стандартное определение событий"
       }
@@ -15195,7 +15257,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 187,
+        "line": 290,
         "level": 3,
         "title": "Стандартное сопоставление OB12"
       }
@@ -15238,14 +15300,6 @@
         "title": "Стандартные API-действия (Api)"
       }
     ],
-    "Стандартные API-действия (DSL)": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 32,
-        "level": 2,
-        "title": "Стандартные API-действия (DSL)"
-      }
-    ],
     "Стандартные возможности OneBot12": [
       {
         "document": "platform-guide/onebot12.md",
@@ -15274,6 +15328,14 @@
         "line": 88,
         "level": 2,
         "title": "Стандартные действия API"
+      }
+    ],
+    "Стандартные действия API (Api DSL)": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 32,
+        "level": 2,
+        "title": "Стандартные действия API (Api DSL)"
       }
     ],
     "Стандартные действия API (DSL API)": [
@@ -15430,6 +15492,14 @@
         "title": "Стратегия выполнения Windows PowerShell"
       }
     ],
+    "Стратегия диагностики": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 292,
+        "level": 3,
+        "title": "Стратегия диагностики"
+      }
+    ],
     "Стратегия загрузки": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -15568,6 +15638,14 @@
         "line": 121,
         "level": 4,
         "title": "Таблица маппинга по платформам"
+      }
+    ],
+    "Таблица соответствия времени регистрации и результата присвоения": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 328,
+        "level": 3,
+        "title": "Таблица соответствия времени регистрации и результата присвоения"
       }
     ],
     "Таймауты и повторные попытки": [
@@ -15806,14 +15884,6 @@
         "title": "Типы целей"
       }
     ],
-    "Тонкое управление во время выполнения": [
-      {
-        "document": "advanced/startup.md",
-        "line": 252,
-        "level": 2,
-        "title": "Тонкое управление во время выполнения"
-      }
-    ],
     "Традиционный способ регистрации": [
       {
         "document": "advanced/router.md",
@@ -15878,20 +15948,28 @@
         "title": "Трекер ошибок"
       }
     ],
+    "Трехуровневое управление ресурсами": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 198,
+        "level": 3,
+        "title": "Трехуровневое управление ресурсами"
+      }
+    ],
+    "Три жёстких границы": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 76,
+        "level": 2,
+        "title": "Три жёстких границы"
+      }
+    ],
     "Триггеризация": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 373,
+        "line": 374,
         "level": 3,
         "title": "Триггеризация"
-      }
-    ],
-    "Трёхуровневое управление ресурсами": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 164,
-        "level": 3,
-        "title": "Трёхуровневое управление ресурсами"
       }
     ],
     "Убедитесь в качестве перед публикацией": [
@@ -16374,12 +16452,12 @@
         "title": "Файл конфигурации аккаунта"
       }
     ],
-    "Файлы групп / история сообщений / статус прочитанности": [
+    "Файлы группы / История сообщений / Статус прочтения": [
       {
         "document": "platform-guide/snowluma.md",
         "line": 148,
         "level": 3,
-        "title": "Файлы групп / история сообщений / статус прочитанности"
+        "title": "Файлы группы / История сообщений / Статус прочтения"
       }
     ],
     "Фильтрация области: почему мой модуль не получил сообщение": [
@@ -16620,6 +16698,12 @@
         "title": "Цепочечные модификаторы (можно комбинировать)"
       },
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 165,
+        "level": 3,
+        "title": "Цепочечные модификаторы (можно комбинировать)"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 170,
         "level": 3,
@@ -16694,12 +16778,12 @@
         "title": "Цепочка отката при разрешении аккаунта"
       }
     ],
-    "Цепочка отмены (таблица регистрации задач)": [
+    "Цепочка отмены (таблица задач)": [
       {
         "document": "advanced/ownership.md",
-        "line": 238,
+        "line": 272,
         "level": 3,
-        "title": "Цепочка отмены (таблица регистрации задач)"
+        "title": "Цепочка отмены (таблица задач)"
       }
     ],
     "Цепочка принятия решений при распределении команд: почему команда не сработала": [
@@ -16710,12 +16794,12 @@
         "title": "Цепочка принятия решений при распределении команд: почему команда не сработала"
       }
     ],
-    "Цепочка присвоения (contextvar передача)": [
+    "Цепочка присвоения (contextvar распространение)": [
       {
         "document": "advanced/ownership.md",
-        "line": 225,
+        "line": 259,
         "level": 3,
-        "title": "Цепочка присвоения (contextvar передача)"
+        "title": "Цепочка присвоения (contextvar распространение)"
       }
     ],
     "Цепочка проверки и добавление/удаление во время выполнения": [

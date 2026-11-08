@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1846,
+  "total_keywords": 1856,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -805,7 +805,7 @@
     "2. systemd (Linux server)": [
       {
         "document": "advanced/startup.md",
-        "line": 385,
+        "line": 400,
         "level": 4,
         "title": "2. systemd (Linux server)"
       }
@@ -1005,7 +1005,7 @@
     "3. Docker / docker-compose": [
       {
         "document": "advanced/startup.md",
-        "line": 398,
+        "line": 413,
         "level": 4,
         "title": "3. Docker / docker-compose"
       }
@@ -1477,7 +1477,7 @@
     "4. PM2 (Node ecosystem operations)": [
       {
         "document": "advanced/startup.md",
-        "line": 409,
+        "line": 424,
         "level": 4,
         "title": "4. PM2 (Node ecosystem operations)"
       }
@@ -1741,7 +1741,7 @@
     "5. supervisord": [
       {
         "document": "advanced/startup.md",
-        "line": 417,
+        "line": 432,
         "level": 4,
         "title": "5. supervisord"
       }
@@ -1949,7 +1949,7 @@
     "6. Pure Python Custom Supervisor": [
       {
         "document": "advanced/startup.md",
-        "line": 426,
+        "line": 441,
         "level": 4,
         "title": "6. Pure Python Custom Supervisor"
       }
@@ -2601,7 +2601,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 243,
+        "line": 347,
         "level": 3,
         "title": "Account Configuration Fields"
       }
@@ -2757,7 +2757,7 @@
     "Adapter Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 193,
+        "line": 197,
         "level": 3,
         "title": "Adapter Lifecycle"
       }
@@ -3106,14 +3106,6 @@
         "title": "Attribute Access"
       }
     ],
-    "Attribution Chain (contextvar Propagation)": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 262,
-        "level": 3,
-        "title": "Attribution Chain (contextvar Propagation)"
-      }
-    ],
     "Authentication and API Calls": [
       {
         "document": "ecosystem/dashboard.md",
@@ -3237,7 +3229,7 @@
     "Background Task Ownership and Automatic Cancellation": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 428,
+        "line": 433,
         "level": 2,
         "title": "Background Task Ownership and Automatic Cancellation"
       }
@@ -3504,6 +3496,14 @@
         "title": "Basic Requirements"
       }
     ],
+    "Basic Send Methods": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 84,
+        "level": 3,
+        "title": "Basic Send Methods"
+      }
+    ],
     "Basic Sending": [
       {
         "document": "api-reference/adapter-system.md",
@@ -3546,12 +3546,6 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 90,
-        "level": 3,
-        "title": "Basic Sending Methods"
-      },
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 83,
         "level": 3,
         "title": "Basic Sending Methods"
       },
@@ -3627,7 +3621,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 43,
+        "line": 44,
         "level": 3,
         "title": "Basic Usage"
       }
@@ -4028,26 +4022,18 @@
         "title": "Can a single package register multiple modules?"
       }
     ],
-    "Cancellation Chain (Task Registry)": [
+    "Cancellation Timing (Module Unload)": [
       {
         "document": "advanced/ownership.md",
-        "line": 278,
+        "line": 309,
         "level": 3,
-        "title": "Cancellation Chain (Task Registry)"
-      }
-    ],
-    "Cancellation Sequence (Module Unload)": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 291,
-        "level": 3,
-        "title": "Cancellation Sequence (Module Unload)"
+        "title": "Cancellation Timing (Module Unload)"
       }
     ],
     "Capability Boundaries": [
       {
         "document": "advanced/ownership.md",
-        "line": 174,
+        "line": 200,
         "level": 3,
         "title": "Capability Boundaries"
       }
@@ -4087,7 +4073,7 @@
     "Caveats": [
       {
         "document": "advanced/ownership.md",
-        "line": 333,
+        "line": 351,
         "level": 3,
         "title": "Caveats"
       }
@@ -4231,7 +4217,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 156,
+        "line": 165,
         "level": 3,
         "title": "Chained Modifier Methods (can be combined)"
       }
@@ -4515,7 +4501,7 @@
     "Command System": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 246,
+        "line": 251,
         "level": 3,
         "title": "Command System"
       }
@@ -4705,7 +4691,7 @@
     "Complete API Reference": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 363,
+        "line": 368,
         "level": 2,
         "title": "Complete API Reference"
       }
@@ -4903,7 +4889,7 @@
     "Configuration Changes": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 163,
+        "line": 167,
         "level": 3,
         "title": "Configuration Changes"
       }
@@ -4959,7 +4945,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 256,
+        "line": 364,
         "level": 3,
         "title": "Configuration Example"
       },
@@ -5117,7 +5103,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 239,
+        "line": 343,
         "level": 2,
         "title": "Configuration Options"
       },
@@ -5519,7 +5505,7 @@
     "Core Initialization": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 146,
+        "line": 150,
         "level": 3,
         "title": "Core Initialization"
       }
@@ -6007,7 +5993,7 @@
     "Design Boundaries: Which Resources Are Not Cleaned Up on Unload": [
       {
         "document": "advanced/ownership.md",
-        "line": 240,
+        "line": 260,
         "level": 2,
         "title": "Design Boundaries: Which Resources Are Not Cleaned Up on Unload"
       }
@@ -6020,12 +6006,12 @@
         "title": "Design Differences Comparison"
       }
     ],
-    "Detailed Component Explanations": [
+    "Detailed Breakdown of Each Step": [
       {
         "document": "advanced/startup.md",
         "line": 54,
         "level": 2,
-        "title": "Detailed Component Explanations"
+        "title": "Detailed Breakdown of Each Step"
       }
     ],
     "Detailed Event Handling Chain": [
@@ -6156,12 +6142,12 @@
         "title": "Directed Events: lifecycle.emit with to parameter"
       }
     ],
-    "Directed Propagation (`emit to=`)": [
+    "Directed Propagation (emit to=)": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 70,
+        "line": 73,
         "level": 3,
-        "title": "Directed Propagation (`emit to=`)"
+        "title": "Directed Propagation (emit to=)"
       }
     ],
     "Directory Structure": [
@@ -6294,12 +6280,6 @@
         "title": "Document Information"
       },
       {
-        "document": "platform-guide/snowluma.md",
-        "line": 7,
-        "level": 2,
-        "title": "Document Information"
-      },
-      {
         "document": "platform-guide/telegram.md",
         "line": 7,
         "level": 2,
@@ -6337,6 +6317,12 @@
     "Documentation Info": [
       {
         "document": "platform-guide/minecraft.md",
+        "line": 7,
+        "level": 2,
+        "title": "Documentation Info"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
         "line": 7,
         "level": 2,
         "title": "Documentation Info"
@@ -6416,12 +6402,12 @@
         "title": "Don't need table structures, just store a few key-value pairs"
       }
     ],
-    "Dot-Structure Events": [
+    "Dot-Structured Events": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 54,
+        "line": 57,
         "level": 3,
-        "title": "Dot-Structure Events"
+        "title": "Dot-Structured Events"
       }
     ],
     "Download": [
@@ -6881,7 +6867,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 215,
+        "line": 319,
         "level": 2,
         "title": "Event Extension Methods"
       },
@@ -6999,7 +6985,7 @@
     "Event Handling Mechanism": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 17,
+        "line": 20,
         "level": 2,
         "title": "Event Handling Mechanism"
       }
@@ -7037,7 +7023,7 @@
     "Event Loop Boundaries": [
       {
         "document": "advanced/ownership.md",
-        "line": 199,
+        "line": 224,
         "level": 3,
         "title": "Event Loop Boundaries"
       }
@@ -7100,20 +7086,20 @@
         "title": "Event Parameters"
       }
     ],
+    "Event Receiving and Processing": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 211,
+        "level": 3,
+        "title": "Event Receiving and Processing"
+      }
+    ],
     "Event Reception (WebSocket, protobuf encoding)": [
       {
         "document": "platform-guide/yunhu_user.md",
         "line": 34,
         "level": 3,
         "title": "Event Reception (WebSocket, protobuf encoding)"
-      }
-    ],
-    "Event Reception and Processing": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 206,
-        "level": 3,
-        "title": "Event Reception and Processing"
       }
     ],
     "Event Reply Methods": [
@@ -7179,7 +7165,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 184,
+        "line": 288,
         "level": 2,
         "title": "Event Type Mapping"
       }
@@ -7252,12 +7238,12 @@
         "title": "Event-Driven Lazy Activation (activate_on)"
       }
     ],
-    "Example Usage in Module": [
+    "Example Usage in a Module": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 401,
+        "line": 406,
         "level": 2,
-        "title": "Example Usage in Module"
+        "title": "Example Usage in a Module"
       }
     ],
     "Example of Return Value Handling": [
@@ -7423,7 +7409,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 207,
+        "line": 311,
         "level": 3,
         "title": "Extension Field Description"
       }
@@ -7546,10 +7532,26 @@
         "title": "Filtering Conditions"
       }
     ],
+    "Fine-Grained Reload Determination (2.12+)": [
+      {
+        "document": "advanced/startup.md",
+        "line": 385,
+        "level": 4,
+        "title": "Fine-Grained Reload Determination (2.12+)"
+      }
+    ],
+    "Fine-Grained Runtime Control": [
+      {
+        "document": "advanced/startup.md",
+        "line": 250,
+        "level": 2,
+        "title": "Fine-Grained Runtime Control"
+      }
+    ],
     "Five Isolation Gates": [
       {
         "document": "advanced/shadow.md",
-        "line": 46,
+        "line": 49,
         "level": 2,
         "title": "Five Isolation Gates"
       }
@@ -7560,6 +7562,14 @@
         "line": 116,
         "level": 2,
         "title": "Fixed Bugs"
+      }
+    ],
+    "Flash Transfer / Collected Faces / Low-Level Channel": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 266,
+        "level": 3,
+        "title": "Flash Transfer / Collected Faces / Low-Level Channel"
       }
     ],
     "Fluent Call Examples": [
@@ -8008,10 +8018,18 @@
         "title": "Graceful Shutdown"
       }
     ],
+    "Group Album": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 235,
+        "level": 3,
+        "title": "Group Album"
+      }
+    ],
     "Group Files / Message History / Read Status": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 147,
+        "line": 148,
         "level": 3,
         "title": "Group Files / Message History / Read Status"
       }
@@ -8073,7 +8091,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 119,
+        "line": 120,
         "level": 3,
         "title": "Group Operation Methods"
       }
@@ -8121,7 +8139,7 @@
     "HTTP Client": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 321,
+        "line": 326,
         "level": 3,
         "title": "HTTP Client"
       }
@@ -8177,7 +8195,7 @@
     "HTTP Routing": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 261,
+        "line": 266,
         "level": 3,
         "title": "HTTP Routing"
       }
@@ -8380,34 +8398,34 @@
         "title": "Home Page Entry"
       }
     ],
-    "Honest Boundaries (Can't Be Blocked)": [
+    "Honest Boundaries (What Cannot Be Intercepted)": [
       {
         "document": "advanced/shadow.md",
-        "line": 58,
+        "line": 61,
         "level": 2,
-        "title": "Honest Boundaries (Can't Be Blocked)"
+        "title": "Honest Boundaries (What Cannot Be Intercepted)"
       }
     ],
     "Hook Breakpoints Overview": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 120,
+        "line": 124,
         "level": 2,
         "title": "Hook Breakpoints Overview"
       }
     ],
-    "Hot Restart of Adapters": [
+    "Hot Restart/Stop of Adapters": [
       {
         "document": "advanced/startup.md",
         "line": 254,
         "level": 3,
-        "title": "Hot Restart of Adapters"
+        "title": "Hot Restart/Stop of Adapters"
       }
     ],
     "Hot-Reload Boundaries": [
       {
         "document": "advanced/ownership.md",
-        "line": 168,
+        "line": 194,
         "level": 2,
         "title": "Hot-Reload Boundaries"
       }
@@ -8415,7 +8433,7 @@
     "Hot-Reload Failure Rollback": [
       {
         "document": "advanced/ownership.md",
-        "line": 148,
+        "line": 170,
         "level": 2,
         "title": "Hot-Reload Failure Rollback"
       }
@@ -8929,7 +8947,7 @@
     "Internal Implementation: How Ownership Works": [
       {
         "document": "advanced/ownership.md",
-        "line": 256,
+        "line": 274,
         "level": 2,
         "title": "Internal Implementation: How Ownership Works"
       }
@@ -8937,7 +8955,7 @@
     "Internationalization": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 331,
+        "line": 336,
         "level": 3,
         "title": "Internationalization"
       }
@@ -8956,14 +8974,6 @@
         "line": 589,
         "level": 2,
         "title": "Internationalization Configuration"
-      }
-    ],
-    "Inventory of Owned Resources": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 55,
-        "level": 2,
-        "title": "Inventory of Owned Resources"
       }
     ],
     "Invoked as a Service": [
@@ -9160,12 +9170,12 @@
         "title": "List of Rule Methods"
       }
     ],
-    "Listener Query (`has_handlers`)": [
+    "Listener Query (has_handlers)": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 108,
+        "line": 112,
         "level": 3,
-        "title": "Listener Query (`has_handlers`)"
+        "title": "Listener Query (has_handlers)"
       }
     ],
     "Listening to @ Messages": [
@@ -9575,7 +9585,7 @@
     "Merged Forward": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 95,
+        "line": 96,
         "level": 3,
         "title": "Merged Forward"
       }
@@ -9847,7 +9857,7 @@
     "Message Sending": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 231,
+        "line": 236,
         "level": 3,
         "title": "Message Sending"
       },
@@ -10243,7 +10253,7 @@
     "Module Author Guide": [
       {
         "document": "advanced/ownership.md",
-        "line": 309,
+        "line": 327,
         "level": 2,
         "title": "Module Author Guide"
       }
@@ -10339,7 +10349,7 @@
     "Module Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 178,
+        "line": 182,
         "level": 3,
         "title": "Module Lifecycle"
       },
@@ -10423,7 +10433,7 @@
     "Module-Side Guidelines": [
       {
         "document": "advanced/ownership.md",
-        "line": 216,
+        "line": 236,
         "level": 3,
         "title": "Module-Side Guidelines"
       }
@@ -10480,6 +10490,12 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 412,
+        "level": 3,
+        "title": "Multi-Account Sending Syntax"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 397,
         "level": 3,
         "title": "Multi-Account Sending Syntax"
       }
@@ -10552,14 +10568,6 @@
         "line": 161,
         "level": 2,
         "title": "Multi-Way Waiting: expect + select"
-      }
-    ],
-    "Multi-account Send Syntax": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 289,
-        "level": 3,
-        "title": "Multi-account Send Syntax"
       }
     ],
     "Multi-account Sending": [
@@ -10656,6 +10664,14 @@
         "line": 496,
         "level": 4,
         "title": "Nested Configuration (v2.8.0+)"
+      }
+    ],
+    "Nested Lifecycles (ownership.nest)": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 136,
+        "level": 2,
+        "title": "Nested Lifecycles (ownership.nest)"
       }
     ],
     "Network Client": [
@@ -10895,7 +10911,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 459,
+        "line": 471,
         "level": 2,
         "title": "Notes"
       },
@@ -11006,12 +11022,12 @@
         "title": "Notification Events (notice)"
       }
     ],
-    "OB11 Extension Actions (API DSL)": [
+    "OB11 Extension Actions (Api DSL)": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 164,
+        "line": 173,
         "level": 2,
-        "title": "OB11 Extension Actions (API DSL)"
+        "title": "OB11 Extension Actions (Api DSL)"
       }
     ],
     "OB12 Message Segment Reverse Conversion (Raw_ob12)": [
@@ -11054,12 +11070,12 @@
         "title": "One-Click Installation Script (Recommended for New Environments)"
       }
     ],
-    "One-time Registration (`once`)": [
+    "One-Time Registration (once)": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 94,
+        "line": 98,
         "level": 3,
-        "title": "One-time Registration (`once`)"
+        "title": "One-Time Registration (once)"
       }
     ],
     "OneBot11": [
@@ -11338,6 +11354,14 @@
         "line": 1,
         "level": 1,
         "title": "Ownership (owner) System"
+      }
+    ],
+    "Ownership Resource Panorama": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 47,
+        "level": 2,
+        "title": "Ownership Resource Panorama"
       }
     ],
     "POST": [
@@ -11645,7 +11669,7 @@
     "Platform-Specific Events and Extension Segments": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 201,
+        "line": 305,
         "level": 3,
         "title": "Platform-Specific Events and Extension Segments"
       }
@@ -11725,7 +11749,7 @@
     "Poke / Social": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 133,
+        "line": 134,
         "level": 3,
         "title": "Poke / Social"
       }
@@ -11765,7 +11789,7 @@
     "Priority": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 40,
+        "line": 43,
         "level": 3,
         "title": "Priority"
       }
@@ -11864,12 +11888,12 @@
         "title": "Project Templates"
       }
     ],
-    "Promote and Rollback": [
+    "Promotion and Rollback": [
       {
         "document": "advanced/shadow.md",
-        "line": 66,
+        "line": 68,
         "level": 2,
-        "title": "Promote and Rollback"
+        "title": "Promotion and Rollback"
       }
     ],
     "Protocol Methods": [
@@ -11966,14 +11990,6 @@
         "line": 361,
         "level": 3,
         "title": "Q5: How are special platforms like email handled?"
-      }
-    ],
-    "QQ Space": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 140,
-        "level": 3,
-        "title": "QQ Space"
       }
     ],
     "QQBot Platform Features Documentation": [
@@ -12101,7 +12117,7 @@
       },
       {
         "document": "advanced/shadow.md",
-        "line": 19,
+        "line": 22,
         "level": 2,
         "title": "Quick Start"
       },
@@ -12140,6 +12156,22 @@
         "line": 12,
         "level": 3,
         "title": "Quick Start"
+      }
+    ],
+    "Qzone": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 141,
+        "level": 3,
+        "title": "Qzone"
+      }
+    ],
+    "Qzone Extensions": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 224,
+        "level": 3,
+        "title": "Qzone Extensions"
       }
     ],
     "RPC: module.call": [
@@ -12247,7 +12279,7 @@
     "Recommended Patterns": [
       {
         "document": "advanced/ownership.md",
-        "line": 311,
+        "line": 329,
         "level": 3,
         "title": "Recommended Patterns"
       }
@@ -12327,7 +12359,7 @@
     "Registering Handlers": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 19,
+        "line": 22,
         "level": 3,
         "title": "Registering Handlers"
       }
@@ -12364,18 +12396,18 @@
         "title": "Registration Forms: Single Parameter (Recommended) vs. Double Parameter"
       }
     ],
-    "Registration Timing → Attribution Results Table": [
+    "Registration Timing → Ownership Result Reference Table": [
       {
         "document": "advanced/ownership.md",
-        "line": 348,
+        "line": 365,
         "level": 3,
-        "title": "Registration Timing → Attribution Results Table"
+        "title": "Registration Timing → Ownership Result Reference Table"
       }
     ],
     "Registration and Unregistration": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 365,
+        "line": 370,
         "level": 3,
         "title": "Registration and Unregistration"
       }
@@ -12413,7 +12445,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 469,
+        "line": 481,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -12431,7 +12463,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 415,
+        "line": 430,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -12448,14 +12480,8 @@
         "title": "Related Documentation"
       },
       {
-        "document": "advanced/shadow.md",
-        "line": 72,
-        "level": 2,
-        "title": "Related Documentation"
-      },
-      {
         "document": "advanced/startup.md",
-        "line": 444,
+        "line": 459,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -12558,6 +12584,12 @@
         "title": "Related Documents"
       },
       {
+        "document": "advanced/shadow.md",
+        "line": 86,
+        "level": 2,
+        "title": "Related Documents"
+      },
+      {
         "document": "advanced/sql-builder.md",
         "line": 439,
         "level": 2,
@@ -12628,14 +12660,6 @@
         "title": "Relationship with Declarative Configuration Class"
       }
     ],
-    "Relationship with OneBot11 Adapter": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 20,
-        "level": 3,
-        "title": "Relationship with OneBot11 Adapter"
-      }
-    ],
     "Relationship with Other Systems": [
       {
         "document": "advanced/interaction.md",
@@ -12658,6 +12682,14 @@
         "line": 82,
         "level": 2,
         "title": "Relationship with SendDSL Standard Methods"
+      }
+    ],
+    "Relationship with the OneBot11 Adapter": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 20,
+        "level": 3,
+        "title": "Relationship with the OneBot11 Adapter"
       }
     ],
     "Render HTML": [
@@ -13216,14 +13248,6 @@
         "title": "Runtime Configuration"
       }
     ],
-    "Runtime Fine-Grained Control": [
-      {
-        "document": "advanced/startup.md",
-        "line": 250,
-        "level": 2,
-        "title": "Runtime Fine-Grained Control"
-      }
-    ],
     "Runtime Hot Reload Server Configuration": [
       {
         "document": "user-guide/deployment.md",
@@ -13539,7 +13563,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 274,
+        "line": 382,
         "level": 2,
         "title": "Send Method Return Values"
       },
@@ -13602,6 +13626,14 @@
         "line": 498,
         "level": 1,
         "title": "Send a message with buttons to a private chat"
+      }
+    ],
+    "Send to Conversation (SnowLuma extension, automatic group/private chat routing)": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 157,
+        "level": 3,
+        "title": "Send to Conversation (SnowLuma extension, automatic group/private chat routing)"
       }
     ],
     "SendDSL Detailed Explanation": [
@@ -13842,12 +13874,12 @@
         "title": "Shadow Family — `Core/shadow.py` (shadow modules)"
       }
     ],
-    "Shadow Modules and Gradual Promotion": [
+    "Shadow Modules and Canary Promotion": [
       {
         "document": "advanced/shadow.md",
         "line": 1,
         "level": 1,
-        "title": "Shadow Modules and Gradual Promotion"
+        "title": "Shadow Modules and Canary Promotion"
       }
     ],
     "Shutdown Adapter": [
@@ -13914,12 +13946,20 @@
         "title": "Single Account Configuration"
       }
     ],
-    "SnowLuma Platform Feature Document": [
+    "SnowLuma Platform Features Documentation": [
       {
         "document": "platform-guide/snowluma.md",
         "line": 1,
         "level": 1,
-        "title": "SnowLuma Platform Feature Document"
+        "title": "SnowLuma Platform Features Documentation"
+      }
+    ],
+    "SnowLuma-Specific Actions (SnowLumaExtensionApi)": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 220,
+        "level": 2,
+        "title": "SnowLuma-Specific Actions (SnowLumaExtensionApi)"
       }
     ],
     "Sorting and Pagination": [
@@ -14030,12 +14070,6 @@
         "title": "Standard API Actions (API DSL)"
       },
       {
-        "document": "platform-guide/snowluma.md",
-        "line": 31,
-        "level": 2,
-        "title": "Standard API Actions (API DSL)"
-      },
-      {
         "document": "platform-guide/telegram.md",
         "line": 19,
         "level": 2,
@@ -14046,6 +14080,12 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 33,
+        "level": 2,
+        "title": "Standard API Actions (Api DSL)"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 32,
         "level": 2,
         "title": "Standard API Actions (Api DSL)"
       }
@@ -14099,7 +14139,7 @@
     "Standard Event Definitions": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 337,
+        "line": 342,
         "level": 2,
         "title": "Standard Event Definitions"
       }
@@ -14145,7 +14185,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 186,
+        "line": 290,
         "level": 3,
         "title": "Standard OB12 Mapping"
       }
@@ -14286,12 +14326,12 @@
         "title": "Storage Configuration"
       }
     ],
-    "Storage Connection State": [
+    "Storage Connection Status": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 299,
+        "line": 304,
         "level": 3,
-        "title": "Storage Connection State"
+        "title": "Storage Connection Status"
       }
     ],
     "Storage Family — `Core/storage` / `Core/Bases/sql_base.py`": [
@@ -14322,6 +14362,14 @@
         "line": 316,
         "level": 2,
         "title": "Storage System"
+      }
+    ],
+    "Streaming Interfaces": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 254,
+        "level": 3,
+        "title": "Streaming Interfaces"
       }
     ],
     "Strict Mode": [
@@ -14457,7 +14505,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 65,
+        "line": 66,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -14622,6 +14670,14 @@
         "title": "Synchronous Initialization"
       }
     ],
+    "System Faces": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 245,
+        "level": 3,
+        "title": "System Faces"
+      }
+    ],
     "System Requirements": [
       {
         "document": "user-guide/installation.md",
@@ -14780,6 +14836,14 @@
         "title": "The 14 Tools at a Glance"
       }
     ],
+    "The Attribution Chain (contextvar Propagation)": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 280,
+        "level": 3,
+        "title": "The Attribution Chain (contextvar Propagation)"
+      }
+    ],
     "The Boundary Between Waiting and Commands (Command Bypass)": [
       {
         "document": "advanced/interaction.md",
@@ -14788,12 +14852,28 @@
         "title": "The Boundary Between Waiting and Commands (Command Bypass)"
       }
     ],
+    "The Cancellation Chain (Task Registry)": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 296,
+        "level": 3,
+        "title": "The Cancellation Chain (Task Registry)"
+      }
+    ],
     "The LazyModule Class": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 20,
         "level": 3,
         "title": "The LazyModule Class"
+      }
+    ],
+    "The Owner Context Mechanism": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 24,
+        "level": 2,
+        "title": "The Owner Context Mechanism"
       }
     ],
     "The SDK Object": [
@@ -14852,12 +14932,20 @@
         "title": "The on_unload Method"
       }
     ],
-    "Three-Tier Resource Governance": [
+    "Three Hard Boundaries": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 74,
+        "level": 2,
+        "title": "Three Hard Boundaries"
+      }
+    ],
+    "Three-Layer Resource Governance": [
       {
         "document": "advanced/ownership.md",
-        "line": 191,
+        "line": 216,
         "level": 3,
-        "title": "Three-Tier Resource Governance"
+        "title": "Three-Layer Resource Governance"
       }
     ],
     "Timeout and Retry": [
@@ -14871,7 +14959,7 @@
     "Tool Module Guide: Hosting Handles of Other Modules": [
       {
         "document": "advanced/ownership.md",
-        "line": 364,
+        "line": 381,
         "level": 2,
         "title": "Tool Module Guide: Hosting Handles of Other Modules"
       }
@@ -14959,7 +15047,7 @@
     "Triggering": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 373,
+        "line": 378,
         "level": 3,
         "title": "Triggering"
       }
@@ -14967,7 +15055,7 @@
     "Troubleshooting Approach": [
       {
         "document": "advanced/ownership.md",
-        "line": 302,
+        "line": 320,
         "level": 3,
         "title": "Troubleshooting Approach"
       }
@@ -14975,7 +15063,7 @@
     "Troubleshooting Checklist": [
       {
         "document": "advanced/ownership.md",
-        "line": 233,
+        "line": 253,
         "level": 3,
         "title": "Troubleshooting Checklist"
       }
@@ -15063,7 +15151,7 @@
     "Unified Ownership Facade (ownership)": [
       {
         "document": "advanced/ownership.md",
-        "line": 118,
+        "line": 108,
         "level": 2,
         "title": "Unified Ownership Facade (ownership)"
       }
@@ -15129,7 +15217,7 @@
     "Unload/Disable Cleanup Sequence": [
       {
         "document": "advanced/ownership.md",
-        "line": 90,
+        "line": 82,
         "level": 2,
         "title": "Unload/Disable Cleanup Sequence"
       }
@@ -15271,6 +15359,12 @@
         "document": "platform-guide/qqbot.md",
         "line": 184,
         "level": 2,
+        "title": "Usage Examples"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 199,
+        "level": 3,
         "title": "Usage Examples"
       }
     ],
@@ -15519,7 +15613,7 @@
     "Utilities": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 391,
+        "line": 396,
         "level": 3,
         "title": "Utilities"
       }
@@ -15709,7 +15803,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 278,
+        "line": 283,
         "level": 3,
         "title": "WebSocket"
       }
@@ -15933,7 +16027,7 @@
     "Wildcards": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 60,
+        "line": 63,
         "level": 3,
         "title": "Wildcards"
       }
@@ -16682,14 +16776,6 @@
         "title": "metadata Convention"
       }
     ],
-    "owner Context Mechanism": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 30,
-        "level": 2,
-        "title": "owner Context Mechanism"
-      }
-    ],
     "pip Method": [
       {
         "document": "user-guide/deployment.md",
@@ -16773,7 +16859,7 @@
     "self_id Automatic Mapping": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 299,
+        "line": 407,
         "level": 2,
         "title": "self_id Automatic Mapping"
       }

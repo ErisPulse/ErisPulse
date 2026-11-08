@@ -350,6 +350,20 @@ await sdk.run(before_init=before, after_init=after, on_ready=ready)
 ---
 
 
+##### `_start_script_dev_watcher() -> None`
+
+**内部方法** 脚本模式：挂载细粒度 watcher 并写入能力标记
+
+---
+
+
+##### `_stop_script_dev_watcher() -> None`
+
+**内部方法** 停止脚本模式 watcher 并清除能力标记
+
+---
+
+
 ##### `shutdown() -> None`
 
 请求优雅关闭

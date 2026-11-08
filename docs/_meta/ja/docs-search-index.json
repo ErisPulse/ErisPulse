@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1883,
+  "total_keywords": 1897,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -561,7 +561,7 @@
     "2. systemd（Linux サーバー）": [
       {
         "document": "advanced/startup.md",
-        "line": 385,
+        "line": 400,
         "level": 4,
         "title": "2. systemd（Linux サーバー）"
       }
@@ -980,10 +980,18 @@
         "title": "2つのインジェクションモード"
       }
     ],
+    "3 つのハードな境界線": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 86,
+        "level": 2,
+        "title": "3 つのハードな境界線"
+      }
+    ],
     "3. Docker / docker-compose": [
       {
         "document": "advanced/startup.md",
-        "line": 398,
+        "line": 413,
         "level": 4,
         "title": "3. Docker / docker-compose"
       }
@@ -1388,6 +1396,14 @@
         "title": "3つのモードの選択"
       }
     ],
+    "3層のリソースガバナンス": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 217,
+        "level": 3,
+        "title": "3層のリソースガバナンス"
+      }
+    ],
     "4. Event の便利メソッド": [
       {
         "document": "standards/request-action-spec.md",
@@ -1399,7 +1415,7 @@
     "4. PM2（Node 生態系の運用）": [
       {
         "document": "advanced/startup.md",
-        "line": 409,
+        "line": 424,
         "level": 4,
         "title": "4. PM2（Node 生態系の運用）"
       }
@@ -1420,12 +1436,12 @@
         "title": "4. detail_type に非標準の値を使用している"
       }
     ],
-    "4. アダプターの起動": [
+    "4. アダプタの起動": [
       {
         "document": "advanced/startup.md",
         "line": 139,
         "level": 3,
-        "title": "4. アダプターの起動"
+        "title": "4. アダプタの起動"
       }
     ],
     "4. イメージを公開設定にする": [
@@ -1655,7 +1671,7 @@
     "5. supervisord": [
       {
         "document": "advanced/startup.md",
-        "line": 417,
+        "line": 432,
         "level": 4,
         "title": "5. supervisord"
       }
@@ -1972,12 +1988,12 @@
         "title": "6. 注意事項"
       }
     ],
-    "6. 純 Python のカスタム監督者": [
+    "6. 純 Python 自定義監督者": [
       {
         "document": "advanced/startup.md",
-        "line": 426,
+        "line": 441,
         "level": 4,
-        "title": "6. 純 Python のカスタム監督者"
+        "title": "6. 純 Python 自定義監督者"
       }
     ],
     "6. 逆変換規格（OneBot12 → プラットフォーム）": [
@@ -3308,6 +3324,14 @@
         "title": "HTTP Client モジュール"
       }
     ],
+    "HTTP クライアント": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 322,
+        "level": 3,
+        "title": "HTTP クライアント"
+      }
+    ],
     "HTTP デコレータ": [
       {
         "document": "advanced/router.md",
@@ -3340,6 +3364,14 @@
         "title": "HTTP リクエストパラメータ"
       }
     ],
+    "HTTP ルーティング": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 262,
+        "level": 3,
+        "title": "HTTP ルーティング"
+      }
+    ],
     "HTTP ルートのライフサイクル": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -3354,22 +3386,6 @@
         "line": 456,
         "level": 3,
         "title": "HTTPStatusError"
-      }
-    ],
-    "HTTPクライアント": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 321,
-        "level": 3,
-        "title": "HTTPクライアント"
-      }
-    ],
-    "HTTPルーティング": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 261,
-        "level": 3,
-        "title": "HTTPルーティング"
       }
     ],
     "HttpResponse": [
@@ -3583,7 +3599,7 @@
     "OB11 拡張アクション（Api DSL）": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 163,
+        "line": 173,
         "level": 2,
         "title": "OB11 拡張アクション（Api DSL）"
       }
@@ -3604,12 +3620,12 @@
         "title": "OneBot11"
       }
     ],
-    "OneBot11 アダプタとの関係": [
+    "OneBot11 アダプターとの関係": [
       {
         "document": "platform-guide/snowluma.md",
         "line": 20,
         "level": 3,
-        "title": "OneBot11 アダプタとの関係"
+        "title": "OneBot11 アダプターとの関係"
       }
     ],
     "OneBot11プラットフォーム特徴ドキュメント": [
@@ -3812,12 +3828,20 @@
         "title": "QQBotプラットフォームの特徴ドキュメント"
       }
     ],
-    "QQスペース": [
+    "QQ空間": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 139,
+        "line": 141,
         "level": 3,
-        "title": "QQスペース"
+        "title": "QQ空間"
+      }
+    ],
+    "QQ空間拡張": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 224,
+        "level": 3,
+        "title": "QQ空間拡張"
       }
     ],
     "RPC: module.call": [
@@ -3906,12 +3930,12 @@
         "title": "SDK デバッグ"
       }
     ],
-    "SDK トップレベルエントリ一覧": [
+    "SDK トップレベルエントリポイント一覧": [
       {
         "document": "advanced/startup.md",
         "line": 12,
         "level": 2,
-        "title": "SDK トップレベルエントリ一覧"
+        "title": "SDK トップレベルエントリポイント一覧"
       }
     ],
     "SDKとの関係": [
@@ -4074,12 +4098,20 @@
         "title": "Shadow 系列 — `Core/shadow.py`（シャドウモジュール）"
       }
     ],
-    "SnowLumaプラットフォームの特徴ドキュメント": [
+    "SnowLuma プラットフォーム機能ドキュメント": [
       {
         "document": "platform-guide/snowluma.md",
         "line": 1,
         "level": 1,
-        "title": "SnowLumaプラットフォームの特徴ドキュメント"
+        "title": "SnowLuma プラットフォーム機能ドキュメント"
+      }
+    ],
+    "SnowLuma 固有アクション（SnowLumaExtensionApi）": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 220,
+        "level": 2,
+        "title": "SnowLuma 固有アクション（SnowLumaExtensionApi）"
       }
     ],
     "SseEmitter API": [
@@ -4213,7 +4245,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 278,
+        "line": 279,
         "level": 3,
         "title": "WebSocket"
       }
@@ -5144,12 +5176,12 @@
         "title": "on_unload メソッド"
       }
     ],
-    "owner コンテキストの仕組み": [
+    "owner コンテキスト機構": [
       {
         "document": "advanced/ownership.md",
         "line": 28,
         "level": 2,
-        "title": "owner コンテキストの仕組み"
+        "title": "owner コンテキスト機構"
       }
     ],
     "pip を使用したインストール": [
@@ -5256,12 +5288,12 @@
         "title": "self.user_id と Using の関係"
       }
     ],
-    "self_id の自動マッピング": [
+    "self_id 自動マッピング": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 293,
+        "line": 407,
         "level": 2,
-        "title": "self_id の自動マッピング"
+        "title": "self_id 自動マッピング"
       }
     ],
     "self_id 自自動マッピング": [
@@ -5564,6 +5596,14 @@
         "title": "その他のメッセージタイプ"
       }
     ],
+    "つつき / ソーシャル": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 134,
+        "level": 3,
+        "title": "つつき / ソーシャル"
+      }
+    ],
     "どちらの宣言を使うべきか": [
       {
         "document": "developer-guide/orm.md",
@@ -5733,7 +5773,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 238,
+        "line": 347,
         "level": 3,
         "title": "アカウント設定フィールド"
       }
@@ -5800,6 +5840,14 @@
         "line": 1,
         "level": 1,
         "title": "アダプタのコアコンセプト"
+      }
+    ],
+    "アダプタのホットリスタート": [
+      {
+        "document": "advanced/startup.md",
+        "line": 254,
+        "level": 3,
+        "title": "アダプタのホットリスタート"
       }
     ],
     "アダプタのホットリロードアーキテクチャ": [
@@ -5870,14 +5918,6 @@
         "line": 153,
         "level": 4,
         "title": "アダプターでの使用"
-      }
-    ],
-    "アダプターのホットリスタート": [
-      {
-        "document": "advanced/startup.md",
-        "line": 254,
-        "level": 3,
-        "title": "アダプターのホットリスタート"
       }
     ],
     "アダプターの取得": [
@@ -6032,12 +6072,12 @@
         "title": "アニメーションの例"
       }
     ],
-    "アンロード/無効化時のクリーンアップシーケンス": [
+    "アンロード/無効化クリーンアップシーケンス": [
       {
         "document": "advanced/ownership.md",
         "line": 89,
         "level": 2,
-        "title": "アンロード/無効化時のクリーンアップシーケンス"
+        "title": "アンロード/無効化クリーンアップシーケンス"
       }
     ],
     "アンロードとクリーンアップの意味": [
@@ -6190,12 +6230,6 @@
         "line": 266,
         "level": 2,
         "title": "イベントタイプのマッピング"
-      },
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 181,
-        "level": 2,
-        "title": "イベントタイプのマッピング"
       }
     ],
     "イベントタイプの概要": [
@@ -6204,6 +6238,14 @@
         "line": 8,
         "level": 2,
         "title": "イベントタイプの概要"
+      }
+    ],
+    "イベントタイプマッピング": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 288,
+        "level": 2,
+        "title": "イベントタイプマッピング"
       }
     ],
     "イベントタイプ（enable_log_tail = true）": [
@@ -6301,7 +6343,7 @@
     "イベントループの境界": [
       {
         "document": "advanced/ownership.md",
-        "line": 197,
+        "line": 223,
         "level": 3,
         "title": "イベントループの境界"
       }
@@ -6427,7 +6469,7 @@
     "イベント受信と処理": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 206,
+        "line": 207,
         "level": 3,
         "title": "イベント受信と処理"
       }
@@ -6465,7 +6507,7 @@
     "イベント拡張メソッド": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 210,
+        "line": 319,
         "level": 2,
         "title": "イベント拡張メソッド"
       },
@@ -6772,20 +6814,20 @@
         "title": "キャッシュとホットアップデート"
       }
     ],
-    "キャンセルのタイミング（モジュールアンロード）": [
+    "キャンセルのシーケンス（モジュールのアンロード）": [
       {
         "document": "advanced/ownership.md",
-        "line": 288,
+        "line": 307,
         "level": 3,
-        "title": "キャンセルのタイミング（モジュールアンロード）"
+        "title": "キャンセルのシーケンス（モジュールのアンロード）"
       }
     ],
-    "キャンセルチェーン（タスク登録表）": [
+    "キャンセルチェーン（タスク登録テーブル）": [
       {
         "document": "advanced/ownership.md",
-        "line": 275,
+        "line": 294,
         "level": 3,
-        "title": "キャンセルチェーン（タスク登録表）"
+        "title": "キャンセルチェーン（タスク登録テーブル）"
       }
     ],
     "キーワードフィルタ": [
@@ -6874,12 +6916,20 @@
         "title": "グループにボタン付きメッセージを送信"
       }
     ],
-    "グループファイル / メッセージ履歴 / 読み取り状態": [
+    "グループアルバム": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 146,
+        "line": 235,
         "level": 3,
-        "title": "グループファイル / メッセージ履歴 / 読み取り状態"
+        "title": "グループアルバム"
+      }
+    ],
+    "グループファイル / メッセージ履歴 / 既読状態": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 148,
+        "level": 3,
+        "title": "グループファイル / メッセージ履歴 / 既読状態"
       }
     ],
     "グループメッセージの処理": [
@@ -6939,7 +6989,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 118,
+        "line": 120,
         "level": 3,
         "title": "グループ操作メソッド"
       }
@@ -7217,7 +7267,7 @@
     "コマンドシステム": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 246,
+        "line": 247,
         "level": 3,
         "title": "コマンドシステム"
       }
@@ -7484,6 +7534,14 @@
         "title": "サポートされている送信メソッドの一覧"
       }
     ],
+    "サポートされるメッセージ送信タイプ": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 66,
+        "level": 2,
+        "title": "サポートされるメッセージ送信タイプ"
+      }
+    ],
     "サポートされる送信メソッドの照会": [
       {
         "document": "api-reference/adapter-system.md",
@@ -7578,6 +7636,14 @@
         "line": 387,
         "level": 2,
         "title": "システムルーティング"
+      }
+    ],
+    "システム絵文字": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 245,
+        "level": 3,
+        "title": "システム絵文字"
       }
     ],
     "システム要件": [
@@ -7676,6 +7742,22 @@
         "title": "スコープ（scope）"
       }
     ],
+    "スタータップフローの概要": [
+      {
+        "document": "advanced/startup.md",
+        "line": 26,
+        "level": 2,
+        "title": "スタータップフローの概要"
+      }
+    ],
+    "スタートアップフローと手動制御": [
+      {
+        "document": "advanced/startup.md",
+        "line": 1,
+        "level": 1,
+        "title": "スタートアップフローと手動制御"
+      }
+    ],
     "ステッカー・メッセージセグメント (yunhu_user_sticker)": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -7690,6 +7772,14 @@
         "line": 466,
         "level": 3,
         "title": "ストリクトモード"
+      }
+    ],
+    "ストリーミングインターフェース": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 254,
+        "level": 3,
+        "title": "ストリーミングインターフェース"
       }
     ],
     "ストレージシステム": [
@@ -7725,7 +7815,7 @@
     "ストレージ接続状態": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 299,
+        "line": 300,
         "level": 3,
         "title": "ストレージ接続状態"
       }
@@ -7934,6 +8024,14 @@
         "title": "チェーン修飾メソッド（self を返すため、組み合わせて使用可能）"
       }
     ],
+    "チェーン修飾メソッド（組み合わせ可能）": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 165,
+        "level": 3,
+        "title": "チェーン修飾メソッド（組み合わせ可能）"
+      }
+    ],
     "チェーン修飾子メソッド（組み合わせて使用可能）": [
       {
         "document": "platform-guide/matrix.md",
@@ -8036,12 +8134,6 @@
         "line": 120,
         "level": 3,
         "title": "チェーン式修飾メソッド（組み合わせて使用可能）"
-      },
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 155,
-        "level": 3,
-        "title": "チェーン式修飾メソッド（組み合わせて使用可能）"
       }
     ],
     "チェーン式修飾メソッド（組み合わせ可能）": [
@@ -8120,12 +8212,12 @@
         "title": "ツールメソッド"
       }
     ],
-    "ツールモジュールガイド：他モジュールのハンドルの管理": [
+    "ツールモジュールガイド：他のモジュールのハンドルを預かる": [
       {
         "document": "advanced/ownership.md",
-        "line": 360,
+        "line": 379,
         "level": 2,
-        "title": "ツールモジュールガイド：他モジュールのハンドルの管理"
+        "title": "ツールモジュールガイド：他のモジュールのハンドルを預かる"
       }
     ],
     "テスト": [
@@ -8365,7 +8457,7 @@
     "トラブルシューティングの考え方": [
       {
         "document": "advanced/ownership.md",
-        "line": 299,
+        "line": 318,
         "level": 3,
         "title": "トラブルシューティングの考え方"
       }
@@ -8373,7 +8465,7 @@
     "トラブルシューティングチェックリスト": [
       {
         "document": "advanced/ownership.md",
-        "line": 231,
+        "line": 252,
         "level": 3,
         "title": "トラブルシューティングチェックリスト"
       }
@@ -8421,7 +8513,7 @@
     "トリガー": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 373,
+        "line": 374,
         "level": 3,
         "title": "トリガー"
       }
@@ -8594,6 +8686,14 @@
         "title": "ドキュメント構造規格"
       }
     ],
+    "ネストされたライフサイクル（ownership.nest）": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 146,
+        "level": 2,
+        "title": "ネストされたライフサイクル（ownership.nest）"
+      }
+    ],
     "ネットワーククライアント": [
       {
         "document": "advanced/client.md",
@@ -8696,12 +8796,12 @@
         "title": "バックエンドの選択"
       }
     ],
-    "バックグラウンドタスクの所有と自動解除": [
+    "バックグラウンドタスクの帰属と自動キャンセル": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 428,
+        "line": 429,
         "level": 2,
-        "title": "バックグラウンドタスクの所有と自動解除"
+        "title": "バックグラウンドタスクの帰属と自動キャンセル"
       }
     ],
     "バックグラウンド実行": [
@@ -8878,12 +8978,20 @@
         "title": "フォームメッセージセグメント (yunhu_user_form)"
       }
     ],
-    "フックポイント一覧": [
+    "フックブレークポイント一覧": [
       {
         "document": "advanced/lifecycle.md",
         "line": 120,
         "level": 2,
-        "title": "フックポイント一覧"
+        "title": "フックブレークポイント一覧"
+      }
+    ],
+    "フラッシュ転送 / お気に入り絵文字 / 低レベルチャネル": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 266,
+        "level": 3,
+        "title": "フラッシュ転送 / お気に入り絵文字 / 低レベルチャネル"
       }
     ],
     "フレームワーク内部のパラメータ検証（ValueError）": [
@@ -9052,14 +9160,6 @@
         "title": "プラットフォーム原生イベント"
       }
     ],
-    "プラットフォーム固有のイベントと拡張セグメント": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 198,
-        "level": 3,
-        "title": "プラットフォーム固有のイベントと拡張セグメント"
-      }
-    ],
     "プラットフォーム固有のメソッド": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -9082,6 +9182,14 @@
         "line": 190,
         "level": 3,
         "title": "プラットフォーム固有の応答"
+      }
+    ],
+    "プラットフォーム固有イベントと拡張セグメント": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 305,
+        "level": 3,
+        "title": "プラットフォーム固有イベントと拡張セグメント"
       }
     ],
     "プラットフォーム固有イベント（onebot11_ 前綴）": [
@@ -9311,7 +9419,7 @@
     "ホットリロードの境界": [
       {
         "document": "advanced/ownership.md",
-        "line": 166,
+        "line": 196,
         "level": 2,
         "title": "ホットリロードの境界"
       }
@@ -9319,7 +9427,7 @@
     "ホットリロード失敗時のロールバック": [
       {
         "document": "advanced/ownership.md",
-        "line": 146,
+        "line": 179,
         "level": 2,
         "title": "ホットリロード失敗時のロールバック"
       }
@@ -9456,6 +9564,22 @@
         "line": 82,
         "level": 3,
         "title": "マルチアカウント送信"
+      }
+    ],
+    "マルチアカウント送信構文": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 397,
+        "level": 3,
+        "title": "マルチアカウント送信構文"
+      }
+    ],
+    "マージ転送": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 96,
+        "level": 3,
+        "title": "マージ転送"
       }
     ],
     "ミドルウェア": [
@@ -9907,7 +10031,7 @@
     "メッセージ送信": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 231,
+        "line": 232,
         "level": 3,
         "title": "メッセージ送信"
       },
@@ -10073,7 +10197,7 @@
     "モジュールでの使用例": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 401,
+        "line": 402,
         "level": 2,
         "title": "モジュールでの使用例"
       }
@@ -10229,7 +10353,7 @@
     "モジュール作者ガイド": [
       {
         "document": "advanced/ownership.md",
-        "line": 306,
+        "line": 325,
         "level": 2,
         "title": "モジュール作者ガイド"
       }
@@ -10237,7 +10361,7 @@
     "モジュール側のガイドライン": [
       {
         "document": "advanced/ownership.md",
-        "line": 214,
+        "line": 235,
         "level": 3,
         "title": "モジュール側のガイドライン"
       }
@@ -10459,7 +10583,7 @@
     "ユーティリティ": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 391,
+        "line": 392,
         "level": 3,
         "title": "ユーティリティ"
       }
@@ -11152,14 +11276,6 @@
         "title": "一括登録（Mixin クラス）"
       }
     ],
-    "一撃 / ソーシャル": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 132,
-        "level": 3,
-        "title": "一撃 / ソーシャル"
-      }
-    ],
     "一般的な request": [
       {
         "document": "advanced/client.md",
@@ -11222,14 +11338,6 @@
         "line": 56,
         "level": 3,
         "title": "三、原理を深く理解したい"
-      }
-    ],
-    "三層リソースガバナンス": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 189,
-        "level": 3,
-        "title": "三層リソースガバナンス"
       }
     ],
     "並列と直列": [
@@ -11412,6 +11520,14 @@
         "title": "会話の高度な機能"
       }
     ],
+    "会話への送信（SnowLuma 拡張、グループチャット/個人チャット自動ルーティング）": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 157,
+        "level": 3,
+        "title": "会話への送信（SnowLuma 拡張、グループチャット/個人チャット自動ルーティング）"
+      }
+    ],
     "会話受信箱設定（transcript）": [
       {
         "document": "user-guide/configuration.md",
@@ -11505,6 +11621,12 @@
         "document": "platform-guide/qqbot.md",
         "line": 186,
         "level": 2,
+        "title": "使用例"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 199,
+        "level": 3,
         "title": "使用例"
       },
       {
@@ -11814,12 +11936,12 @@
         "title": "内部デフォルト値"
       }
     ],
-    "内部実装：帰属の仕組み": [
+    "内部実装：オーナーシップの仕組み": [
       {
         "document": "advanced/ownership.md",
-        "line": 253,
+        "line": 272,
         "level": 2,
-        "title": "内部実装：帰属の仕組み"
+        "title": "内部実装：オーナーシップの仕組み"
       }
     ],
     "再生成のタイミング": [
@@ -12210,14 +12332,6 @@
         "title": "各例外の説明と発生箇所"
       }
     ],
-    "合併転送": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 94,
-        "level": 3,
-        "title": "合併転送"
-      }
-    ],
     "合併転送（オプション、§2.4参照）": [
       {
         "document": "standards/send-method-spec.md",
@@ -12291,7 +12405,7 @@
     "国際化": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 331,
+        "line": 332,
         "level": 3,
         "title": "国際化"
       }
@@ -12581,7 +12695,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 42,
+        "line": 44,
         "level": 3,
         "title": "基本的な使い方"
       }
@@ -12634,12 +12748,6 @@
         "line": 103,
         "level": 3,
         "title": "基本的な送信メソッド"
-      },
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 82,
-        "level": 3,
-        "title": "基本的な送信メソッド"
       }
     ],
     "基本要件": [
@@ -12668,6 +12776,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 93,
+        "level": 3,
+        "title": "基本送信メソッド"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 84,
         "level": 3,
         "title": "基本送信メソッド"
       },
@@ -12831,7 +12945,7 @@
     "完全なAPIリファレンス": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 363,
+        "line": 364,
         "level": 2,
         "title": "完全なAPIリファレンス"
       }
@@ -13253,17 +13367,9 @@
     "帰属チェーン（contextvar の伝播）": [
       {
         "document": "advanced/ownership.md",
-        "line": 259,
+        "line": 278,
         "level": 3,
         "title": "帰属チェーン（contextvar の伝播）"
-      }
-    ],
-    "帰属リソースの全体像": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 53,
-        "level": 2,
-        "title": "帰属リソースの全体像"
       }
     ],
     "常用コマンド": [
@@ -13486,20 +13592,28 @@
         "title": "戻り値の説明"
       }
     ],
-    "所有権システム": [
+    "所有権リソースの全体像": [
       {
         "document": "advanced/ownership.md",
-        "line": 1,
-        "level": 1,
-        "title": "所有権システム"
+        "line": 53,
+        "level": 2,
+        "title": "所有権リソースの全体像"
       }
     ],
-    "所有権統一ファサード": [
+    "所有権統一ファサード（ownership）": [
       {
         "document": "advanced/ownership.md",
         "line": 117,
         "level": 2,
-        "title": "所有権統一ファサード"
+        "title": "所有権統一ファサード（ownership）"
+      }
+    ],
+    "所有権（owner）システム": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 1,
+        "level": 1,
+        "title": "所有権（owner）システム"
       }
     ],
     "手動で Request DSL を呼び出す": [
@@ -13653,7 +13767,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 204,
+        "line": 311,
         "level": 3,
         "title": "拡張フィールドの説明"
       },
@@ -13832,6 +13946,14 @@
         "title": "接続管理"
       }
     ],
+    "推奨される書き方": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 327,
+        "level": 3,
+        "title": "推奨される書き方"
+      }
+    ],
     "推奨モジュール": [
       {
         "document": "ecosystem/README.md",
@@ -13846,14 +13968,6 @@
         "line": 80,
         "level": 3,
         "title": "推奨方法：I18nClass を使って翻訳キーを宣言する（v2.7.0+）"
-      }
-    ],
-    "推奨記法": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 308,
-        "level": 3,
-        "title": "推奨記法"
       }
     ],
     "支持されていないメソッドの呼び出し": [
@@ -13906,12 +14020,6 @@
       {
         "document": "platform-guide/matrix.md",
         "line": 108,
-        "level": 2,
-        "title": "支援されるメッセージ送信タイプ"
-      },
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 64,
         "level": 2,
         "title": "支援されるメッセージ送信タイプ"
       },
@@ -14448,6 +14556,14 @@
         "title": "標準 API アクション"
       }
     ],
+    "標準 API アクション（Api DSL）": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 32,
+        "level": 2,
+        "title": "標準 API アクション（Api DSL）"
+      }
+    ],
     "標準 API アクション（Api）": [
       {
         "document": "platform-guide/bilibili.md",
@@ -14479,7 +14595,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 183,
+        "line": 290,
         "level": 3,
         "title": "標準 OB12 マッピング"
       }
@@ -14530,12 +14646,6 @@
         "line": 33,
         "level": 2,
         "title": "標準Api動作（Api DSL）"
-      },
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 30,
-        "level": 2,
-        "title": "標準Api動作（Api DSL）"
       }
     ],
     "標準の必要性": [
@@ -14581,7 +14691,7 @@
     "標準イベント定義": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 337,
+        "line": 338,
         "level": 2,
         "title": "標準イベント定義"
       }
@@ -14653,7 +14763,7 @@
     "機能の境界": [
       {
         "document": "advanced/ownership.md",
-        "line": 172,
+        "line": 201,
         "level": 3,
         "title": "機能の境界"
       }
@@ -14911,13 +15021,13 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 459,
+        "line": 462,
         "level": 2,
         "title": "注意事項"
       },
       {
         "document": "advanced/ownership.md",
-        "line": 330,
+        "line": 349,
         "level": 3,
         "title": "注意事項"
       },
@@ -15189,7 +15299,7 @@
     "登録と解除": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 365,
+        "line": 366,
         "level": 3,
         "title": "登録と解除"
       }
@@ -15197,7 +15307,7 @@
     "登録タイミング → 帰属結果の対応表": [
       {
         "document": "advanced/ownership.md",
-        "line": 344,
+        "line": 363,
         "level": 3,
         "title": "登録タイミング → 帰属結果の対応表"
       }
@@ -15322,6 +15432,14 @@
         "line": 386,
         "level": 3,
         "title": "簡単な検索"
+      }
+    ],
+    "細粒度重載判定（2.12+）": [
+      {
+        "document": "advanced/startup.md",
+        "line": 385,
+        "level": 4,
+        "title": "細粒度重載判定（2.12+）"
       }
     ],
     "終了コード 42 の契約": [
@@ -15600,14 +15718,6 @@
         "line": 217,
         "level": 3,
         "title": "複数アカウントの起動"
-      }
-    ],
-    "複数アカウントの送信構文": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 283,
-        "level": 3,
-        "title": "複数アカウントの送信構文"
       }
     ],
     "複数アカウントモデル": [
@@ -15901,7 +16011,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 234,
+        "line": 343,
         "level": 2,
         "title": "設定オプション"
       },
@@ -15995,7 +16105,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 252,
+        "line": 364,
         "level": 3,
         "title": "設定例"
       },
@@ -16074,12 +16184,12 @@
         "title": "設定項目の説明"
       }
     ],
-    "設計上の境界：アンロード時にクリーンアップされないリソース": [
+    "設計境界：アンロード時にクリーンアップされないリソース": [
       {
         "document": "advanced/ownership.md",
-        "line": 238,
+        "line": 259,
         "level": 2,
-        "title": "設計上の境界：アンロード時にクリーンアップされないリソース"
+        "title": "設計境界：アンロード時にクリーンアップされないリソース"
       }
     ],
     "設計差異の対照表": [
@@ -16160,22 +16270,6 @@
         "line": 86,
         "level": 3,
         "title": "起動と停止"
-      }
-    ],
-    "起動フローと手動制御": [
-      {
-        "document": "advanced/startup.md",
-        "line": 1,
-        "level": 1,
-        "title": "起動フローと手動制御"
-      }
-    ],
-    "起動フローの概要": [
-      {
-        "document": "advanced/startup.md",
-        "line": 26,
-        "level": 2,
-        "title": "起動フローの概要"
       }
     ],
     "跨プラットフォーム拡張（ワイルドカード）": [
@@ -16317,7 +16411,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 268,
+        "line": 382,
         "level": 2,
         "title": "送信メソッドの戻り値"
       },
@@ -16747,7 +16841,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 469,
+        "line": 472,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -16765,7 +16859,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 409,
+        "line": 426,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -16783,7 +16877,7 @@
       },
       {
         "document": "advanced/shadow.md",
-        "line": 91,
+        "line": 101,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -16795,7 +16889,7 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 444,
+        "line": 459,
         "level": 2,
         "title": "関連ドキュメント"
       },

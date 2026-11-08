@@ -66,3 +66,22 @@ SDK 侧对 ``.erispulse/runtime.json`` 的最小写入面：硬重启退出前�
 
 ---
 
+
+### `mark_component_reload(pid: int | None = None) -> None`
+
+写入脚本模式组件级热重载能力标记
+
+脚本子进程在 ``sdk.run()`` 内挂载 ``DevWatcher`` 后调用；父进程据此
+跳过自身的进程重启，避免与子进程内 watcher 双重重载。
+
+- **pid**: 具备组件重载能力的进程 PID（默认当前进程）
+
+---
+
+
+### `clear_component_reload() -> None`
+
+清除脚本模式组件级热重载能力标记（best-effort 不抛异常）
+
+---
+

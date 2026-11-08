@@ -27,6 +27,34 @@
 ## 函数列表
 
 
+### `_close_awaitable(awaitable: Any) -> None`
+
+**内部方法** 关闭未执行的协程，避免 never awaited 警告
+
+---
+
+
+### `_enqueue_pending(awaitable: Awaitable[Any], owner: str | None) -> bool`
+
+**内部方法** 入队待发任务；队列满时丢弃并告警
+
+---
+
+
+### `_take_pending_for_owner(owner: str | None) -> list[Awaitable[Any]]`
+
+**内部方法** 取出并移除指定 owner 的待发任务
+
+---
+
+
+### `_drain_pending(loop: asyncio.AbstractEventLoop) -> None`
+
+**内部方法** 把待发队列冲入主循环
+
+---
+
+
 ### `register_main_loop(loop: asyncio.AbstractEventLoop) -> None`
 
 注册当前主事件循环
@@ -122,7 +150,7 @@
 
 优先在当前线程的事件循环中调度；如果当前线程没有运行中的事件循环
 （如配置监听后台线程），则优先调度回主事件循环（若已注册且正在运行），
-否则创建一个临时事件循环同步执行，确保协程在任何情况下都会被运行。
+否则放入待发队列，由 :func:`register_main_loop` 在主循环可用时统一冲队列。
 
 任务会自动归属到当前 ``owner_scope`` 上下文（模块名/适配器平台名），
 卸载/关闭时框架按归属兜底取消；也可通过 ``owner`` 参数显式指定。
@@ -136,8 +164,7 @@
 
 **返回值**: 创建出的 :class:`asyncio.Task` / 调度回主循环的
 
-         :class:`concurrent.futures.Future`，调用方可忽略返回值；
-         在临时事件循环中同步执行时返回 ``None``
+         :class:`concurrent.futures.Future`；入队待发时返回 ``None``
 **示例**:
 
 ```python
@@ -147,7 +174,7 @@ spawn_background(some_async_work())
 ---
 
 
-### `run_main_loop(coro: Coroutine[Any, Any, _T], *, timeout: float | None = None) -> _T`
+### `run_main_loop(coro: Coroutine[Any, Any, _T], *, timeout: float | None = None) -> _T | None`
 
 从子线程安全投递协程到主循环并阻塞等待结果
 
@@ -157,10 +184,13 @@ spawn_background(some_async_work())
 广播、推送、连接操作等凡从子线程触达主循环资源的场景都应基于它，
 不再手写 ``run_coroutine_threadsafe``。
 
+主循环尚未注册或未运行时，协程进入待发队列并返回 ``None``；主循环
+可用后由 :func:`register_main_loop` 统一冲队列。
+
 - **coro**: 待执行的协程对象
 - **timeout**: 阻塞等待结果的超时秒数；None 表示无限等待
 
-**返回值**: 协程的返回值
+**返回值**: 协程的返回值；入队待发时返回 ``None``
 
 **异常**: `RuntimeError` - 在主循环内同步调用（应改为 await），
 

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1870,
+  "total_keywords": 1879,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -26,12 +26,12 @@
         "title": "1. BaseAdapter 層（大多數情況不需要重寫）"
       }
     ],
-    "1. CLI run 命令（開發/簡單部署，推薦）": [
+    "1. CLI run 命令（開發/簡單部署，建議）": [
       {
         "document": "advanced/startup.md",
         "line": 376,
         "level": 4,
-        "title": "1. CLI run 命令（開發/簡單部署，推薦）"
+        "title": "1. CLI run 命令（開發/簡單部署，建議）"
       }
     ],
     "1. SDK 物件": [
@@ -497,7 +497,7 @@
     "2. systemd（Linux 伺服器）": [
       {
         "document": "advanced/startup.md",
-        "line": 386,
+        "line": 404,
         "level": 4,
         "title": "2. systemd（Linux 伺服器）"
       }
@@ -957,7 +957,7 @@
     "3. Docker / docker-compose": [
       {
         "document": "advanced/startup.md",
-        "line": 399,
+        "line": 417,
         "level": 4,
         "title": "3. Docker / docker-compose"
       }
@@ -1365,7 +1365,7 @@
     "4. PM2（Node 生態維運）": [
       {
         "document": "advanced/startup.md",
-        "line": 410,
+        "line": 428,
         "level": 4,
         "title": "4. PM2（Node 生態維運）"
       }
@@ -1613,7 +1613,7 @@
     "5. supervisord": [
       {
         "document": "advanced/startup.md",
-        "line": 418,
+        "line": 436,
         "level": 4,
         "title": "5. supervisord"
       }
@@ -1933,7 +1933,7 @@
     "6. 純 Python 自訂監督者": [
       {
         "document": "advanced/startup.md",
-        "line": 427,
+        "line": 445,
         "level": 4,
         "title": "6. 純 Python 自訂監督者"
       }
@@ -3105,7 +3105,7 @@
     "HTTP 客戶端": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 330,
+        "line": 331,
         "level": 3,
         "title": "HTTP 客戶端"
       }
@@ -3145,7 +3145,7 @@
     "HTTP 路由": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 270,
+        "line": 271,
         "level": 3,
         "title": "HTTP 路由"
       }
@@ -3358,12 +3358,12 @@
         "title": "Notice 通知模組"
       }
     ],
-    "OB11 扩展動作（Api DSL）": [
+    "OB11 擴展動作（Api DSL）": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 161,
+        "line": 173,
         "level": 2,
-        "title": "OB11 扩展動作（Api DSL）"
+        "title": "OB11 擴展動作（Api DSL）"
       }
     ],
     "OB12 消息段反向轉換（Raw_ob12）": [
@@ -3574,20 +3574,28 @@
         "title": "Q5: 郵箱等特殊平台如何處理？"
       }
     ],
+    "QQ 空間": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 141,
+        "level": 3,
+        "title": "QQ 空間"
+      }
+    ],
+    "QQ 空間擴展": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 224,
+        "level": 3,
+        "title": "QQ 空間擴展"
+      }
+    ],
     "QQBot 平台特性文件": [
       {
         "document": "platform-guide/qqbot.md",
         "line": 1,
         "level": 1,
         "title": "QQBot 平台特性文件"
-      }
-    ],
-    "QQ空間": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 139,
-        "level": 3,
-        "title": "QQ空間"
       }
     ],
     "RPC：module.call": [
@@ -3796,6 +3804,14 @@
         "title": "SnowLuma 平台特性文件"
       }
     ],
+    "SnowLuma 特有動作（SnowLumaExtensionApi）": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 220,
+        "level": 2,
+        "title": "SnowLuma 特有動作（SnowLumaExtensionApi）"
+      }
+    ],
     "SseEmitter API": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -3919,7 +3935,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 287,
+        "line": 288,
         "level": 3,
         "title": "WebSocket"
       }
@@ -4909,7 +4925,7 @@
     "owner 上下文機制": [
       {
         "document": "advanced/ownership.md",
-        "line": 21,
+        "line": 27,
         "level": 2,
         "title": "owner 上下文機制"
       }
@@ -5011,7 +5027,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 296,
+        "line": 407,
         "level": 2,
         "title": "self_id 自動映射"
       }
@@ -5305,9 +5321,17 @@
     "三層資源治理": [
       {
         "document": "advanced/ownership.md",
-        "line": 181,
+        "line": 218,
         "level": 3,
         "title": "三層資源治理"
+      }
+    ],
+    "三條硬邊界": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 85,
+        "level": 2,
+        "title": "三條硬邊界"
       }
     ],
     "三種模式怎麼選": [
@@ -5761,7 +5785,7 @@
     "事件接收與處理": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 215,
+        "line": 216,
         "level": 3,
         "title": "事件接收與處理"
       }
@@ -5783,7 +5807,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 211,
+        "line": 319,
         "level": 2,
         "title": "事件擴展方法"
       },
@@ -6053,7 +6077,7 @@
     "事件迴圈邊界": [
       {
         "document": "advanced/ownership.md",
-        "line": 189,
+        "line": 226,
         "level": 3,
         "title": "事件迴圈邊界"
       }
@@ -6101,7 +6125,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 180,
+        "line": 288,
         "level": 2,
         "title": "事件類型映射"
       }
@@ -6534,6 +6558,12 @@
         "line": 390,
         "level": 3,
         "title": "使用範例"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 199,
+        "level": 3,
+        "title": "使用範例"
       }
     ],
     "使用翻譯": [
@@ -6907,7 +6937,7 @@
     "內部實現：歸屬如何運作": [
       {
         "document": "advanced/ownership.md",
-        "line": 245,
+        "line": 282,
         "level": 2,
         "title": "內部實現：歸屬如何運作"
       }
@@ -7334,12 +7364,12 @@
         "title": "占位命令 help 回退鏈"
       }
     ],
-    "卸載 / 禁用清理序列": [
+    "卸載/停用清理序列": [
       {
         "document": "advanced/ownership.md",
-        "line": 82,
+        "line": 88,
         "level": 2,
-        "title": "卸載 / 禁用清理序列"
+        "title": "卸載/停用清理序列"
       }
     ],
     "卸載流程": [
@@ -7507,7 +7537,7 @@
     "取消時序（模組卸載）": [
       {
         "document": "advanced/ownership.md",
-        "line": 280,
+        "line": 317,
         "level": 3,
         "title": "取消時序（模組卸載）"
       }
@@ -7515,7 +7545,7 @@
     "取消鏈（任務登記表）": [
       {
         "document": "advanced/ownership.md",
-        "line": 267,
+        "line": 304,
         "level": 3,
         "title": "取消鏈（任務登記表）"
       }
@@ -7571,7 +7601,7 @@
     "合併轉發": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 94,
+        "line": 96,
         "level": 3,
         "title": "合併轉發"
       }
@@ -7691,7 +7721,7 @@
     "命令系統": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 255,
+        "line": 256,
         "level": 3,
         "title": "命令系統"
       }
@@ -7983,7 +8013,7 @@
     "國際化": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 340,
+        "line": 341,
         "level": 3,
         "title": "國際化"
       }
@@ -8207,7 +8237,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 42,
+        "line": 44,
         "level": 3,
         "title": "基本用法"
       }
@@ -8421,7 +8451,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 82,
+        "line": 84,
         "level": 3,
         "title": "基礎發送方法"
       }
@@ -8546,6 +8576,14 @@
         "title": "多帳戶模型"
       }
     ],
+    "多帳戶發送語法": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 397,
+        "level": 3,
+        "title": "多帳戶發送語法"
+      }
+    ],
     "多帳戶配置": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8626,14 +8664,6 @@
         "line": 1045,
         "level": 2,
         "title": "多账户支持"
-      }
-    ],
-    "多账户發送語法": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 286,
-        "level": 3,
-        "title": "多账户發送語法"
       }
     ],
     "多路等待：expect + select": [
@@ -8863,7 +8893,7 @@
     "存儲連接狀態": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 308,
+        "line": 309,
         "level": 3,
         "title": "存儲連接狀態"
       }
@@ -9007,7 +9037,7 @@
     "完整 API 參考": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 372,
+        "line": 373,
         "level": 2,
         "title": "完整 API 參考"
       }
@@ -9296,6 +9326,14 @@
         "title": "屬性存取"
       }
     ],
+    "嵌套生命週期（ownership.nest）": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 144,
+        "level": 2,
+        "title": "嵌套生命週期（ownership.nest）"
+      }
+    ],
     "嵌套配置（v2.8.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -9351,7 +9389,7 @@
     "工具": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 400,
+        "line": 401,
         "level": 3,
         "title": "工具"
       }
@@ -9364,12 +9402,12 @@
         "title": "工具方法"
       }
     ],
-    "工具模組指南：託管其他模組的句柄": [
+    "工具模組指南：托管其他模組的句柄": [
       {
         "document": "advanced/ownership.md",
-        "line": 352,
+        "line": 389,
         "level": 2,
-        "title": "工具模組指南：託管其他模組的句柄"
+        "title": "工具模組指南：托管其他模組的句柄"
       }
     ],
     "工具模組：托管別人東西時要接住\"卸載通知\"": [
@@ -9458,12 +9496,14 @@
         "line": 417,
         "level": 3,
         "title": "帳戶配置字段"
-      },
+      }
+    ],
+    "帳戶配置欄位": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 239,
+        "line": 347,
         "level": 3,
-        "title": "帳戶配置字段"
+        "title": "帳戶配置欄位"
       }
     ],
     "帳戶配置（EmailAdapter.accounts）": [
@@ -9743,7 +9783,7 @@
     "平台特有事件與擴展段": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 197,
+        "line": 305,
         "level": 3,
         "title": "平台特有事件與擴展段"
       }
@@ -9858,6 +9898,14 @@
         "title": "引導式註冊"
       }
     ],
+    "归屬權（owner）系統": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 1,
+        "level": 1,
+        "title": "归屬權（owner）系統"
+      }
+    ],
     "影子模組與灰度轉正": [
       {
         "document": "advanced/shadow.md",
@@ -9869,7 +9917,7 @@
     "後台任務歸屬與自動取消": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 437,
+        "line": 438,
         "level": 2,
         "title": "後台任務歸屬與自動取消"
       }
@@ -10188,14 +10236,6 @@
         "title": "房間邀請"
       }
     ],
-    "所屬權（owner）系統": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 1,
-        "level": 1,
-        "title": "所屬權（owner）系統"
-      }
-    ],
     "手动构造响应（旧版方式仍然兼容）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -10315,7 +10355,7 @@
     "拍一戳 / 社交": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 132,
+        "line": 134,
         "level": 3,
         "title": "拍一戳 / 社交"
       }
@@ -10425,7 +10465,7 @@
     "排查思路": [
       {
         "document": "advanced/ownership.md",
-        "line": 291,
+        "line": 328,
         "level": 3,
         "title": "排查思路"
       }
@@ -10433,7 +10473,7 @@
     "排查清單": [
       {
         "document": "advanced/ownership.md",
-        "line": 223,
+        "line": 260,
         "level": 3,
         "title": "排查清單"
       }
@@ -10457,7 +10497,7 @@
     "推薦寫法": [
       {
         "document": "advanced/ownership.md",
-        "line": 300,
+        "line": 337,
         "level": 3,
         "title": "推薦寫法"
       }
@@ -10510,14 +10550,6 @@
         "title": "擴展動作"
       }
     ],
-    "擴展字段說明": [
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 203,
-        "level": 3,
-        "title": "擴展字段說明"
-      }
-    ],
     "擴展欄位": [
       {
         "document": "platform-guide/discord.md",
@@ -10560,6 +10592,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 355,
+        "level": 3,
+        "title": "擴展欄位說明"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 311,
         "level": 3,
         "title": "擴展欄位說明"
       },
@@ -10694,18 +10732,18 @@
         "line": 82,
         "level": 2,
         "title": "支援的消息發送類型"
-      },
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 64,
-        "level": 2,
-        "title": "支援的消息發送類型"
       }
     ],
     "支援的訊息發送類型": [
       {
         "document": "platform-guide/matrix.md",
         "line": 108,
+        "level": 2,
+        "title": "支援的訊息發送類型"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 66,
         "level": 2,
         "title": "支援的訊息發送類型"
       },
@@ -11785,7 +11823,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 30,
+        "line": 32,
         "level": 2,
         "title": "標準 Api 動作（Api DSL）"
       },
@@ -11805,7 +11843,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 182,
+        "line": 290,
         "level": 3,
         "title": "標準 OB12 映射"
       }
@@ -11821,7 +11859,7 @@
     "標準事件定義": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 346,
+        "line": 347,
         "level": 2,
         "title": "標準事件定義"
       }
@@ -11941,7 +11979,7 @@
     "模組中使用示例": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 410,
+        "line": 411,
         "level": 2,
         "title": "模組中使用示例"
       }
@@ -11957,7 +11995,7 @@
     "模組作者指南": [
       {
         "document": "advanced/ownership.md",
-        "line": 298,
+        "line": 335,
         "level": 2,
         "title": "模組作者指南"
       }
@@ -11965,7 +12003,7 @@
     "模組側守則": [
       {
         "document": "advanced/ownership.md",
-        "line": 206,
+        "line": 243,
         "level": 3,
         "title": "模組側守則"
       }
@@ -12058,15 +12096,13 @@
         "title": "模組熱重載架構"
       }
     ],
-    "模組生命周期": [
+    "模組生命週期": [
       {
         "document": "advanced/lifecycle.md",
         "line": 187,
         "level": 3,
-        "title": "模組生命周期"
-      }
-    ],
-    "模組生命週期": [
+        "title": "模組生命週期"
+      },
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 8,
@@ -12235,7 +12271,7 @@
     "歸因鏈（contextvar 传播）": [
       {
         "document": "advanced/ownership.md",
-        "line": 251,
+        "line": 288,
         "level": 3,
         "title": "歸因鏈（contextvar 传播）"
       }
@@ -12243,7 +12279,7 @@
     "歸屬權統一門面（ownership）": [
       {
         "document": "advanced/ownership.md",
-        "line": 109,
+        "line": 115,
         "level": 2,
         "title": "歸屬權統一門面（ownership）"
       }
@@ -12251,7 +12287,7 @@
     "歸屬資源全景": [
       {
         "document": "advanced/ownership.md",
-        "line": 46,
+        "line": 52,
         "level": 2,
         "title": "歸屬資源全景"
       }
@@ -12265,13 +12301,13 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 468,
+        "line": 475,
         "level": 2,
         "title": "注意事項"
       },
       {
         "document": "advanced/ownership.md",
-        "line": 322,
+        "line": 359,
         "level": 3,
         "title": "注意事項"
       },
@@ -12342,6 +12378,14 @@
         "line": 181,
         "level": 2,
         "title": "活躍狀態管理"
+      }
+    ],
+    "流式介面": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 254,
+        "level": 3,
+        "title": "流式介面"
       }
     ],
     "消息事件 (Message Events)": [
@@ -12427,7 +12471,7 @@
     "消息發送": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 240,
+        "line": 241,
         "level": 3,
         "title": "消息發送"
       },
@@ -12699,7 +12743,7 @@
     "熱重載失敗回滾": [
       {
         "document": "advanced/ownership.md",
-        "line": 138,
+        "line": 181,
         "level": 2,
         "title": "熱重載失敗回滾"
       }
@@ -12707,7 +12751,7 @@
     "熱重載邊界": [
       {
         "document": "advanced/ownership.md",
-        "line": 158,
+        "line": 196,
         "level": 2,
         "title": "熱重載邊界"
       }
@@ -13208,6 +13252,14 @@
         "title": "發送到不同目標"
       }
     ],
+    "發送到會話（SnowLuma 擴展，群聊/私聊自動路由）": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 157,
+        "level": 3,
+        "title": "發送到會話（SnowLuma 擴展，群聊/私聊自動路由）"
+      }
+    ],
     "發送回覆": [
       {
         "document": "getting-started/first-bot.md",
@@ -13284,6 +13336,12 @@
         "title": "發送方法回傳值"
       },
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 382,
+        "level": 2,
+        "title": "發送方法回傳值"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 344,
         "level": 2,
@@ -13336,12 +13394,6 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 351,
-        "level": 2,
-        "title": "發送方法返回值"
-      },
-      {
-        "document": "platform-guide/snowluma.md",
-        "line": 271,
         "level": 2,
         "title": "發送方法返回值"
       }
@@ -13519,7 +13571,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 478,
+        "line": 485,
         "level": 2,
         "title": "相關文件"
       },
@@ -13537,7 +13589,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 401,
+        "line": 438,
         "level": 2,
         "title": "相關文件"
       },
@@ -13555,7 +13607,7 @@
       },
       {
         "document": "advanced/shadow.md",
-        "line": 90,
+        "line": 101,
         "level": 2,
         "title": "相關文件"
       },
@@ -13567,7 +13619,7 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 445,
+        "line": 463,
         "level": 2,
         "title": "相關文件"
       },
@@ -13930,6 +13982,14 @@
         "title": "类型分类"
       }
     ],
+    "系統表情": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 245,
+        "level": 3,
+        "title": "系統表情"
+      }
+    ],
     "系統要求": [
       {
         "document": "user-guide/installation.md",
@@ -13944,6 +14004,14 @@
         "line": 390,
         "level": 2,
         "title": "系統路由"
+      }
+    ],
+    "細粒度重載判定（2.12+）": [
+      {
+        "document": "advanced/startup.md",
+        "line": 386,
+        "level": 4,
+        "title": "細粒度重載判定（2.12+）"
       }
     ],
     "終端平台特性文件": [
@@ -14137,7 +14205,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 118,
+        "line": 120,
         "level": 3,
         "title": "群操作方法"
       }
@@ -14145,9 +14213,17 @@
     "群檔案 / 訊息歷史 / 已讀狀態": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 146,
+        "line": 148,
         "level": 3,
         "title": "群檔案 / 訊息歷史 / 已讀狀態"
+      }
+    ],
+    "群相簿": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 235,
+        "level": 3,
+        "title": "群相簿"
       }
     ],
     "群組/頻道資訊": [
@@ -14265,7 +14341,7 @@
     "能力邊界": [
       {
         "document": "advanced/ownership.md",
-        "line": 164,
+        "line": 202,
         "level": 3,
         "title": "能力邊界"
       }
@@ -14693,7 +14769,7 @@
     "觸發": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 382,
+        "line": 383,
         "level": 3,
         "title": "觸發"
       }
@@ -14925,7 +15001,7 @@
     "設計邊界：哪些資源不隨卸載清理": [
       {
         "document": "advanced/ownership.md",
-        "line": 230,
+        "line": 267,
         "level": 2,
         "title": "設計邊界：哪些資源不隨卸載清理"
       }
@@ -14970,18 +15046,18 @@
         "title": "註冊形態：單參（推薦）與雙參"
       }
     ],
-    "註冊時機 → 所有權結果對照表": [
+    "註冊時機 → 歸屬結果對照表": [
       {
         "document": "advanced/ownership.md",
-        "line": 336,
+        "line": 373,
         "level": 3,
-        "title": "註冊時機 → 所有權結果對照表"
+        "title": "註冊時機 → 歸屬結果對照表"
       }
     ],
     "註冊與取消": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 374,
+        "line": 375,
         "level": 3,
         "title": "註冊與取消"
       }
@@ -15506,6 +15582,14 @@
         "title": "适配器发送方法查询"
       }
     ],
+    "适配器生命週期": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 202,
+        "level": 3,
+        "title": "适配器生命週期"
+      }
+    ],
     "透過 Dashboard 安裝模組": [
       {
         "document": "user-guide/deployment.md",
@@ -16002,14 +16086,6 @@
         "title": "適配器熱重載架構"
       }
     ],
-    "適配器生命周期": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 202,
-        "level": 3,
-        "title": "適配器生命周期"
-      }
-    ],
     "適配器管理": [
       {
         "document": "api-reference/adapter-system.md",
@@ -16294,12 +16370,6 @@
         "title": "配置示例"
       },
       {
-        "document": "platform-guide/snowluma.md",
-        "line": 253,
-        "level": 3,
-        "title": "配置示例"
-      },
-      {
         "document": "platform-guide/telegram.md",
         "line": 408,
         "level": 3,
@@ -16330,6 +16400,12 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 314,
+        "level": 3,
+        "title": "配置範例"
+      },
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 364,
         "level": 3,
         "title": "配置範例"
       }
@@ -16471,7 +16547,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 235,
+        "line": 343,
         "level": 2,
         "title": "配置選項"
       },
@@ -16693,7 +16769,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 155,
+        "line": 165,
         "level": 3,
         "title": "鏈式修飾方法（可組合使用）"
       },
@@ -16820,6 +16896,14 @@
         "line": 1118,
         "level": 2,
         "title": "错误处理"
+      }
+    ],
+    "閃傳 / 收藏表情 / 底層通道": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 266,
+        "level": 3,
+        "title": "閃傳 / 收藏表情 / 底層通道"
       }
     ],
     "開發工具": [

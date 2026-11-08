@@ -19,10 +19,10 @@
 
 ## 统计信息
 
-- **模块总数**: 140
-- **类总数**: 194（包括 5 个嵌套类）
-- **函数总数**: 385
-- **方法总数**: 1754
+- **模块总数**: 142
+- **类总数**: 196（包括 5 个嵌套类）
+- **函数总数**: 403
+- **方法总数**: 1781
 
 ---
 
@@ -91,7 +91,7 @@
 
 ### [ErisPulse.CLI.commands.run](ErisPulse/CLI/commands/run.md)
 
-3 个类 | 18 个方法 | 1 个函数
+2 个类 | 10 个方法 | 1 个函数
 
 
 ### [ErisPulse.CLI.commands.runtime](ErisPulse/CLI/commands/runtime.md)
@@ -496,12 +496,12 @@
 
 ### [ErisPulse.Core.module](ErisPulse/Core/module.md)
 
-1 个类 | 73 个方法
+1 个类 | 77 个方法
 
 
 ### [ErisPulse.Core.ownership](ErisPulse/Core/ownership.md)
 
-1 个类 | 10 个方法 | 1 个函数
+1 个类 | 17 个方法 | 1 个函数
 
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
@@ -516,7 +516,7 @@
 
 ### [ErisPulse.Core.shadow](ErisPulse/Core/shadow.md)
 
-3 个类 | 16 个方法 | 1 个函数
+3 个类 | 26 个方法 | 1 个函数
 
 
 ### [ErisPulse.Core.storage.__init__](ErisPulse/Core/storage/__init__.md)
@@ -634,6 +634,11 @@
 7 个函数
 
 
+### [ErisPulse.runtime.dev_watch](ErisPulse/runtime/dev_watch.md)
+
+2 个类 | 12 个方法
+
+
 ### [ErisPulse.runtime.diagnostics](ErisPulse/runtime/diagnostics.md)
 
 12 个函数
@@ -691,12 +696,17 @@
 
 ### [ErisPulse.runtime.process_state](ErisPulse/runtime/process_state.md)
 
-5 个函数
+7 个函数
 
 
 ### [ErisPulse.runtime.reload_ops](ErisPulse/runtime/reload_ops.md)
 
 1 个类 | 7 个方法 | 3 个函数
+
+
+### [ErisPulse.runtime.reload_target](ErisPulse/runtime/reload_target.md)
+
+1 个类 | 12 个函数
 
 
 ### [ErisPulse.runtime.resource_track](ErisPulse/runtime/resource_track.md)
@@ -711,7 +721,7 @@
 
 ### [ErisPulse.runtime.tasks](ErisPulse/runtime/tasks.md)
 
-16 个函数
+20 个函数
 
 
 ### [ErisPulse.runtime.troubleshoot](ErisPulse/runtime/troubleshoot.md)
@@ -726,5 +736,5 @@
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)
 
-1 个类 | 33 个方法 | 1 个函数
+1 个类 | 35 个方法 | 1 个函数
 

@@ -367,7 +367,7 @@
           "icon": "fa-plug"
         },
         {
-          "title": "SnowLuma Platform Feature Document",
+          "title": "SnowLuma Platform Features Documentation",
           "path": "platform-guide/snowluma.md",
           "level": 1,
           "icon": "fa-plug"
@@ -497,7 +497,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Shadow Modules and Gradual Promotion",
+          "title": "Shadow Modules and Canary Promotion",
           "path": "advanced/shadow.md",
           "level": 1,
           "icon": "fa-eye"

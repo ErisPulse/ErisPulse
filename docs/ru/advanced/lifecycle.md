@@ -117,21 +117,21 @@ if sdk.lifecycle.has_handlers("message.sending"):
 - Охватывает **точное имя события, подстановочный знак `*` и родительские события**
 - Возвращает `False`, если нет слушателей, можно безопасно пропустить `emit`
 
-## Список точек вставки хуков
+## Список точек останова хуков
 
-Последовательность событий жизненного цикла, когда сообщение от платформы поступает в фреймворк и обрабатывается:
+Типичный жизненный цикл события, когда сообщение проходит от платформы в фреймворк до завершения обработки:
 
 ```mermaid
 sequenceDiagram
     participant P as Платформа
     participant A as Адаптер
     participant F as Ядро фреймворка
-    participant M as Обработчики модулей
+    participant M as Обработчик модуля
 
-    P->>A: Пришло исходное событие
+    P->>A: Прибытие нативного события
     A->>F: adapter.event.receive (самый ранний)
-    F->>F: event.pre_process (перед выполнением обработчиков)
-    F->>M: Доставка обработчикам (команды/сообщения/уведомления и т.д.)
+    F->>F: event.pre_process (до выполнения обработчика)
+    F->>M: Доставка обработчику (команды/сообщения/уведомления и т.д.)
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending (перед отправкой)
@@ -141,31 +141,31 @@ sequenceDiagram
     F->>F: adapter.event.dispatched (доставка завершена)
 ```
 
-Фреймворк включает следующие точки вставки хуков, которые можно прослушивать с помощью `@sdk.lifecycle.on()` для реализации пользовательской логики.
+Фреймворк включает следующие точки останова хуков, пользователь может прослушивать любую точку останова, реализуя пользовательскую логику с помощью `@sdk.lifecycle.on()`.
 
 ### Инициализация ядра
 
-| Название хука | Время триггера | Данные |
+| Название хука | Точка останова | Данные |
 |---------|---------|------|
 | `core.init.start` | Начало инициализации SDK | `{}` |
-| `core.init.stage` | Начало инициализации на каждой стадии (выpusкается в фоне) | `{"stage": str}`, значения: `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
-| `core.init.complete` | Завершение инициализации SDK | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(только при неудаче)}` |
-| `core.uninit.complete` | Завершение обратной инициализации SDK | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(только при неудаче)}` |
+| `core.init.stage` | Начало этапа инициализации (выpusкается в фоновом режиме) | `{"stage": str}`; значения: `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.complete` | Завершение инициализации SDK | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str (только при неудаче)}` |
+| `core.uninit.complete` | Завершение обратной инициализации SDK | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (только при неудаче)}` |
 
 **Пример: отображение прогресса запуска**
 
 ```python
 @sdk.lifecycle.on("core.init.stage")
 def show_stage(data):
-    print(f"[Запуск] Вход в стадию: {data['stage']}")
+    print(f"[Запуск] Вход в этап: {data['stage']}")
 ```
 
 ### Изменение конфигурации
 
-| Название хука | Время триггера | Данные |
+| Название хука | Точка останова | Данные |
 |---------|---------|------|
 | `config.set` | Изменение конфигурационного параметра | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | После изменения config.toml обнаружено изменение всей конфигурации | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.updated` | После обнаружения изменения всей конфигурации после редактирования config.toml | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **Пример: аудит конфигурации**
 
@@ -177,40 +177,41 @@ def audit_config(data):
 
 ### Жизненный цикл модуля
 
-| Название хука | Время триггера | Данные |
+| Название хука | Точка останова | Данные |
 |---------|---------|------|
 | `module.register` | Регистрация класса модуля в менеджере | `{"module_name": str, "success": bool}` |
-| `module.load` | Завершение загрузки модуля (успешное инстанцирование); в случае ошибки payload дополнительно содержит `"error": str, "traceback": str` (сцена ошибки также доступна через `module.last_error(имя)`) | `{"module_name": str, "success": bool}` |
+| `module.load` | Завершение загрузки модуля (успешное инстанцирование); при неудаче payload дополнительно содержит `"error": str, "traceback": str` (среда неудачи также может быть получена через `module.last_error(имя)`) | `{"module_name": str, "success": bool}` |
 | `module.init` | Завершение инициализации модуля (включая ленивую загрузку) | `{"module_name": str, "success": bool}` |
-| `module.before_unload` | Первый шаг в цепочке выгрузки (до `on_unload` и освобождения ресурсов; хук экземпляра модуля `on_before_unload` также срабатывает синхронно) | `{"module_name": str, "reason": str}`; `reason` значения: `unload` / `reload` / `disable` / `cascade` / `dormant` |
-| `module.sleep` | Завершение засыпания модуля (ленивая загрузка: ресурсы освобождены, при обращении автоматически пробуждается) | `{"module_name": str, "success": bool}` |
-| `module.unload` | Выгрузка или отключение модуля (`disable` и `unload` равнозначны для уведомления зависимостей; контракт `on_dependency_lost` включает "отключение") | `{"module_name": str, "success": bool, "reason": str}`; `reason` значения: `unload` / `reload` / `disable` / `cascade` / `dormant` |
-| `module.rollback` | Завершение отката после неудачной горячей перезагрузки (восстановление снапшота + повтор выполнения `on_load` старого экземпляра) | `{"module_name": str, "success": bool}`; `success` указывает, успешно ли повтор `on_load` (если `False`, старый экземпляр остаётся в завершённом состоянии) |
-| `module.reload` | Завершение горячей перезагрузки модуля (включая повторную перезагрузку зависимостей) | `{"module_name": str, "success": bool, "full": bool, "duration_ms": int}`; для отдельного модуля дополнительно содержит `"identity_changed": bool` (`False` = в процессе может всё ещё выполняться старый код, например, кэш C-расширений) и `"version_old": str, "version_new": str`; при полной перезагрузке (`reload_all`) `module_name` = `"All"`, payload дополнительно содержит `"results": dict[str, bool]` |
+| `module.before_unload` | Первый шаг в процессе выгрузки (до `on_unload` и освобождения ресурсов; хук модульного экземпляра `on_before_unload` срабатывает синхронно) | `{"module_name": str, "reason": str}`; `reason` принимает значения: `unload` / `reload` / `disable` / `cascade` / `dormant` |
+| `module.sleep` | Завершение сна модуля (ленивая загрузка: ресурсы освобождены, автоматическое пробуждение при доступе) | `{"module_name": str, "success": bool}` |
+| `module.unload` | Выгрузка или отключение модуля (`disable` и `unload` эквивалентны уведомлению зависимых; контракт `on_dependency_lost` содержит "отключение") | `{"module_name": str, "success": bool, "reason": str}`; `reason` принимает значения: `unload` / `reload` / `disable` / `cascade` / `dormant` |
+| `module.rollback` | Завершение отката после неудачной горячей перезагрузки (восстановление снимка + повтор старого экземпляра `on_load`) | `{"module_name": str, "success": bool}`; `success` указывает, успешно ли повтор `on_load` (при False старый экземпляр остается в состоянии завершения) |
+| `module.reload` | Завершение горячей перезагрузки модуля (включая перезагрузку зависимых) | `{"module_name": str, "success": bool, "full": bool, "duration_ms": int}`; для отдельного модуля дополнительно содержит `"identity_changed": bool` (False = возможно, старый код все еще выполняется в процессе, например, кэш расширений C) и `"version_old": str, "version_new": str`; при полной перезагрузке (`reload_all`) `module_name` равен `"All"`, payload дополнительно содержит `"results": dict[str, bool]` |
 
-> **Хук экземпляра модуля `on_before_unload`**: соответствующий метод жизненного цикла, связанный с событием `module.before_unload` — `event["reason"]` указывает причину, подходит для сохранения состояния в `sdk.storage` перед освобождением ресурсов, восстановление при пробуждении/перезагрузке происходит в `on_load` (состояние ленивой загрузки продолжается благодаря этому). Ошибка хука только предупреждает, не блокирует процесс выгрузки.
+> **Хук экземпляра модуля `on_before_unload`**: соответствующий метод жизненного цикла, связанный с событием `module.before_unload` — `event["reason"]` указывает причину, подходит для сохранения состояния в `sdk.storage` перед освобождением ресурсов, восстановление происходит при пробуждении / перезагрузке в `on_load` (состояние продолжения ленивой загрузки основано на этом). Ошибка хука только предупреждает, не блокирует процесс выгрузки.
 
 ### Жизненный цикл адаптера
 
-| Название хука | Время триггера | Данные |
+| Название хука | Точка останова | Данные |
 |---------|---------|------|
 | `adapter.load` | Завершение регистрации адаптера | `{"platform": str, "success": bool}` |
-| `adapter.reload` | Завершение горячей перезагрузки кода адаптера | `{"adapter_name": str, "success": bool, "full": bool, "duration_ms": int, "identity_changed": bool, "version_old": str, "version_new": str, "was_started": bool, "source": str}`; `identity_changed=False` = в процессе может всё ещё выполняться старый код |
+| `adapter.reload` | Завершение горячей перезагрузки кода адаптера | `{"adapter_name": str, "success": bool, "full": bool, "duration_ms": int, "identity_changed": bool, "version_old": str, "version_new": str, "was_started": bool, "source": str}`; `identity_changed=False` = возможно, старый код все еще выполняется в процессе |
+| `adapter.rollback` | Завершение отката после неудачной горячей перезагрузки адаптера (после восстановления старого состояния регистрации) | `{"adapter_name": str, "replayed": bool, "success": bool}`; `replayed=True` означает, что старый экземпляр `start()` был повторен, `success` указывает, успешно ли повтор |
 | `adapter.start` | Запуск адаптера | `{"platforms": [str]}` |
-| `adapter.status.change` | Изменение состояния адаптера | `{"platform": str, "status": str, "retry_count": int, "error": str(только при неудаче)}`; полные значения `status`: `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
+| `adapter.status.change` | Изменение состояния адаптера | `{"platform": str, "status": str, "retry_count": int, "error": str (только при неудаче)}`; полные значения status: `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
 | `adapter.stop` | Остановка адаптера | `{"platforms": [str]}` |
 | `adapter.stopped` | Завершение остановки адаптера | `{"platforms": [str]}` |
-| `adapter.bot.online` | Бот в сети | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
-| `adapter.bot.offline` | Бот не в сети | `{"platform": str, "bot_id": str, "status": str}` |
+| `adapter.bot.online` | Онлайн бота | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
+| `adapter.bot.offline` | Оффлайн бота | `{"platform": str, "bot_id": str, "status": str}` |
 
-### Прием и обработка событий
+### Получение и обработка событий
 
-| Название хука | Время триггера | Данные |
+| Название хука | Точка останова | Данные |
 |---------|---------|------|
-| `adapter.event.receive` | Получено событие от внешней платформы (самый ранний) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.blocked` | Промежуточный слой отклонил событие (возврат `False`, событие отбрасывается и не поступает в обработчики) | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
+| `adapter.event.receive` | Получение события с внешней платформы (самый ранний) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.blocked` | Промежуточный модуль отклоняет событие (возвращает `False`, событие отбрасывается и не попадает в обработчики) | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
 | `adapter.event.dispatched` | Завершение доставки события | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | Начало выполнения обработчиков события | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `event.pre_process` | Начало выполнения обработчика события | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **Пример: статистика событий**
 
@@ -230,10 +231,10 @@ def log_unhandled(data):
 
 ### Отправка сообщений
 
-| Название хука | Время триггера | Данные |
+| Название хука | Точка останова | Данные |
 |---------|---------|------|
 | `message.sending` | Сообщение готово к отправке | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | Сообщение отправлено | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | Завершение отправки сообщения | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **Пример: аудит отправки сообщений**
 
@@ -245,10 +246,10 @@ def log_sending(data):
 
 ### Командная система
 
-| Название хука | Время триггера | Данные |
+| Название хука | Точка останова | Данные |
 |---------|---------|------|
 | `command.matched` | Команда сопоставлена и готова к выполнению | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | Команда выполнена | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(только при неудаче)}` |
+| `command.executed` | Завершение выполнения команды | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (только при неудаче)}` |
 
 **Пример: статистика команд**
 
@@ -258,14 +259,14 @@ def count_commands(data):
     print(f"[Команда] /{data['command']} от {data['user_id']}@{data['platform']}")
 ```
 
-### HTTP-роутинг
+### HTTP-маршрутизация
 
-| Название хука | Время триггера | Данные |
+| Название хука | Точка останова | Данные |
 |---------|---------|------|
-| `server.request` | Получен HTTP-запрос | `{"method": str, "path": str, "client_ip": str, "request_id": str}` |
-| `server.response` | Отправлен HTTP-ответ | `{"method": str, "path": str, "status_code": int, "client_ip": str, "request_id": str}` |
+| `server.request` | Получение HTTP-запроса | `{"method": str, "path": str, "client_ip": str, "request_id": str}` |
+| `server.response` | Отправка HTTP-ответа | `{"method": str, "path": str, "status_code": int, "client_ip": str, "request_id": str}` |
 
-> `request_id` — это [идентификатор X-Request-ID](router.md#идентификатор-запроса-idx-request-id): приоритетно используется из заголовка клиента, иначе генерируется UUID, с его помощью можно связать событие запроса и ответа.
+> `request_id` — это [идентификатор ассоциации запроса](router.md#запрос-ассоциации-idx-request-id): приоритетно используется заголовок запроса клиента, в противном случае генерируется UUID, с его помощью можно связать событие запроса и ответа.
 
 **Пример: логирование HTTP-запросов**
 
@@ -277,14 +278,14 @@ def log_http(data):
 
 ### WebSocket
 
-| Название хука | Время триггера | Данные |
+| Название хука | Точка останова | Данные |
 |---------|---------|------|
-| `server.start` | Запуск сервера маршрутизации | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(только при неудаче)}` |
+| `server.start` | Запуск сервера маршрутизации | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str (только при неудаче)}` |
 | `server.stop` | Остановка сервера маршрутизации | `{}` |
-| `server.websocket.connect` | Установлено WebSocket-соединение | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | Отключено WebSocket-соединение | `{"path": str, "module_name": str, "reason": str, "error": str(только при аномальном отключении)}` |
+| `server.websocket.connect` | Установление соединения WebSocket | `{"path": str, "module_name": str, "client_ip": str}` |
+| `server.websocket.disconnect` | Разрыв соединения WebSocket | `{"path": str, "module_name": str, "reason": str, "error": str (только при аномалии)}` |
 
-**Пример: мониторинг WebSocket-соединений**
+**Пример: мониторинг подключений WebSocket**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
@@ -293,44 +294,44 @@ def on_ws_connect(data):
 
 @sdk.lifecycle.on("server.websocket.disconnect")
 def on_ws_disconnect(data):
-    print(f"[WS] Отключение: {data['path']} ({data['reason']})")
+    print(f"[WS] Разрыв: {data['path']} ({data['reason']})")
 ```
 
 ### Состояние подключения хранилища
 
-Создание, сбой и восстановление пула подключений к хранилищу (все события происходят в фоне, не блокируют операции хранилища):
+Создание пула подключений к хранилищу, сбои и восстановление (все события выпускаются в фоновом режиме, не блокируют операции хранилища):
 
-| Название хука | Время триггера | Данные |
+| Название хука | Точка останова | Данные |
 |---------|---------|------|
-| `storage.ready` | Готовность пула подключений к хранилищу (первое успешное создание пула в цикле событий) | `{"backend": str}` |
-| `storage.unreachable` | Повторные попытки подключения исчерпаны, вступает в силу период охлаждения (в течение которого операции быстро завершаются с ошибкой) | `{"backend": str, "error": str, "cooldown": float}` |
-| `storage.recovered` | Охлаждение завершён, соединение восстановлено, хранилище снова доступно | `{"backend": str}` |
+| `storage.ready` | Пул подключений к хранилищу готов (каждое событие цикла впервые успешно создается) | `{"backend": str}` |
+| `storage.unreachable` | Повторные попытки подключения исчерпаны, вступает период охлаждения (в течение которого операции завершаются быстро с ошибкой) | `{"backend": str, "error": str, "cooldown": float}` |
+| `storage.recovered` | Охлаждение завершено, повторное подключение успешно, хранилище снова доступно | `{"backend": str}` |
 
-**Пример: оповещение о сбое хранилища**
+**Пример: предупреждение о сбое хранилища**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
 def alert_storage_down(data):
-    print(f"[Оповещение] Хранилище {data['backend']} недоступно: {data['error']}, автоматическое переподключение через {data['cooldown']} секунд")
+    print(f"[Предупреждение] Хранилище {data['backend']} недоступно: {data['error']}, автоматически переподключится через {data['cooldown']}s")
 
 @sdk.lifecycle.on("storage.recovered")
 def notify_storage_back(data):
-    print(f"[Восстановление] Хранилище {data['backend']} снова доступно")
+    print(f"[Восстановлено] Хранилище {data['backend']} снова доступно")
 ```
 
 ### HTTP-клиент
 
-События запросов и подключений клиента `sdk.client` (все события происходят в фоне):
+События запросов и подключений `sdk.client` (все события выпускаются в фоновом режиме):
 
-| Название хука | Время триггера | Данные |
+| Название хука | Точка останова | Данные |
 |---------|---------|------|
-| `client.request.success` | HTTP-запрос выполнен успешно | `{"method": str, "url": str, "status": int, "elapsed": float}` |
-| `client.request.failed` | HTTP-запрос не удался после исчерпания попыток | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
-| `client.ws.connect` | Установлено WebSocket-соединение | `{"url": str}` |
+| `client.request.success` | HTTP-запрос успешен | `{"method": str, "url": str, "status": int, "elapsed": float}` |
+| `client.request.failed` | HTTP-запрос окончательно завершился неудачей после исчерпания попыток повтора | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
+| `client.ws.connect` | Установление соединения WebSocket | `{"url": str}` |
 
-### Многоязычность
+### Международная локализация
 
-| Название хука | Время триггера | Данные |
+| Название хука | Точка останова | Данные |
 |---------|---------|------|
 | `i18n.language.changed` | Смена языка фреймворка (`i18n.set_language`) | `{"language": str, "previous": str}` |
 
@@ -425,24 +426,27 @@ class Main(BaseModule):
             sdk.logger.info(f"Изменение конфигурации: {data['key']} = {data['new_value']}")
 ```
 
-## Принадлежность фоновых задач и автоматическая отмена
+## Принадлежность фоновых задач и автоматическое отмена
 
 > [!NOTE]
-> Эта функция доступна в ErisPulse **2.8.0+**.
+> Эта функция доступна начиная с ErisPulse **2.8.0+**.
 
-Фоновые задачи, созданные модулем, если не отменены в `on_unload`, будут удерживать ссылку на `self`, что приведёт к невозможности удаления экземпляра модуля (оставшиеся экземпляры после горячей перезагрузки). Фреймворк предоставляет следующие механизмы по умолчанию:
+Фоновые задачи asyncio, созданные модулем, если не отменить их в `on_unload`, будут удерживать ссылку на `self`, что приведёт к невозможности сборки мусора для экземпляра модуля (старые экземпляры остаются после горячей перезагрузки). Рамка предоставляет следующие механизмы по умолчанию:
 
-- **`self.spawn(coro)`** (рекомендуется использовать в модуле): задача автоматически принадлежит имени модуля, модуль отменяет не завершённые задачи после `on_unload` и записывает предупреждение
-- **`spawn_background(coro)`** (в `ErisPulse.runtime`): автоматически захватывает текущее окружение `owner_scope`; `cancel_owner_tasks(owner)` отменяет задачи по принадлежности, `cancel_all_background_tasks()` используется для `sdk.uninit()` по умолчанию
-- **Адаптеры**: при остановке отменяются фоновые задачи по имени платформы
+- **`self.spawn(coro)`** (рекомендуется в модуле): задача автоматически привязывается к имени модуля, и при выгрузке модуля рамка в `on_unload` **после** этого автоматически отменяет незавершённые задачи и записывает предупреждение
+- **`spawn_background(coro)`** (`ErisPulse.runtime`): автоматически захватывает текущий контекст `owner_scope`; `cancel_owner_tasks(owner)` отменяет задачи по принадлежности, `cancel_all_background_tasks()` используется как резервный механизм в `sdk.uninit()`
+- **Адаптеры**: при закрытии также автоматически отменяются фоновые задачи, привязанные к имени платформы
+
+**Задачи, созданные до регистрации основного цикла** (начиная с 2.12): `spawn_background()` и `run_main_loop()`
+Если основной цикл не доступен, вместо создания временного цикла событий задачи помещаются в очередь ожидания (максимум `PENDING_TASK_QUEUE_MAX`, по умолчанию 1024). При регистрации основного цикла `sdk.run()` задачи из очереди выполняются. Если очередь заполнена, новые задачи отбрасываются и выводится предупреждение; отмена по `owner` также удаляет из очереди ожидания задачи этого `owner`. При выходе из программы, если остаются задачи в очереди, выводится предупреждение и задачи отбрасываются. `run_main_loop()` возвращает `None`, если задача попала в очередь.
 
 ```python
 async def on_load(self, event):
-    # Рекомендуется: фоновые задачи использовать self.spawn(), фреймворк автоматически отменяет по умолчанию
+    # Рекомендуется: использовать self.spawn() для фоновых задач, рамка автоматически отменит их при выгрузке
     self.spawn(self._poll())
 
 async def on_unload(self, event):
-    # В сценариях с тонким контролем всё равно рекомендуется отменить и дождаться завершения
+    # В сценариях, требующих точного контроля, рекомендуется отменить задачу и дождаться завершения
     if self._poll_task:
         self._poll_task.cancel()
         await asyncio.gather(self._poll_task, return_exceptions=True)
@@ -454,7 +458,7 @@ async def _poll(self):
 ```
 
 > [!IMPORTANT]
-> Фреймворк принудительно отменяет (`cancel_owner_tasks`), это происходит после возврата из `on_unload`. Поэтому задачи, требующие элегантного завершения (flush буфера, сохранение состояния, закрытие соединения), **должны** быть отменены и завершены в `on_unload` — не рассчитывайте на по умолчанию. Фреймворк гарантирует только «не оставлять задач, удерживающих `self»`, но не гарантирует «элегантность». Задачи, требующие `await` результата, следует вызывать напрямую, не бросать в фоновые задачи.
+> Механизм по умолчанию — **принудительная отмена** (`cancel_owner_tasks`), которая происходит после возврата из `on_unload`. Поэтому задачи, требующие аккуратного завершения (очистка буфера, сохранение состояния, закрытие соединений), **обязательно** должны быть отменены и завершены в `on_unload` — не рассчитывайте на механизм по умолчанию для сохранения логики завершения. Рамка гарантирует только «отсутствие задач, удерживающих ссылку на `self`», но не гарантирует «аккуратное завершение». Задачи, ожидающие результата, следует вызывать напрямую, а не передавать их в фоновые задачи.
 
 ## Примечания
 

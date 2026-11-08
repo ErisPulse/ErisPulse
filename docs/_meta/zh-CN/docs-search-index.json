@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1809,
+  "total_keywords": 1819,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -497,7 +497,7 @@
     "2. systemd（Linux 服务器）": [
       {
         "document": "advanced/startup.md",
-        "line": 386,
+        "line": 404,
         "level": 4,
         "title": "2. systemd（Linux 服务器）"
       }
@@ -957,7 +957,7 @@
     "3. Docker / docker-compose": [
       {
         "document": "advanced/startup.md",
-        "line": 399,
+        "line": 417,
         "level": 4,
         "title": "3. Docker / docker-compose"
       }
@@ -1365,7 +1365,7 @@
     "4. PM2（Node 生态运维）": [
       {
         "document": "advanced/startup.md",
-        "line": 410,
+        "line": 428,
         "level": 4,
         "title": "4. PM2（Node 生态运维）"
       }
@@ -1613,7 +1613,7 @@
     "5. supervisord": [
       {
         "document": "advanced/startup.md",
-        "line": 418,
+        "line": 436,
         "level": 4,
         "title": "5. supervisord"
       }
@@ -1933,7 +1933,7 @@
     "6. 纯 Python 自定义监督者": [
       {
         "document": "advanced/startup.md",
-        "line": 427,
+        "line": 445,
         "level": 4,
         "title": "6. 纯 Python 自定义监督者"
       }
@@ -3111,7 +3111,7 @@
     "HTTP 客户端": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 331,
+        "line": 332,
         "level": 3,
         "title": "HTTP 客户端"
       }
@@ -3151,7 +3151,7 @@
     "HTTP 路由": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 271,
+        "line": 272,
         "level": 3,
         "title": "HTTP 路由"
       }
@@ -3367,7 +3367,7 @@
     "OB11 扩展动作（Api DSL）": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 165,
+        "line": 173,
         "level": 2,
         "title": "OB11 扩展动作（Api DSL）"
       }
@@ -3578,6 +3578,14 @@
         "line": 361,
         "level": 3,
         "title": "Q5: 邮箱等特殊平台如何处理？"
+      }
+    ],
+    "QQ 空间扩展": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 224,
+        "level": 3,
+        "title": "QQ 空间扩展"
       }
     ],
     "QQBot平台特性文档": [
@@ -3794,6 +3802,14 @@
         "title": "Shadow 系列 — `Core/shadow.py`（影子模块）"
       }
     ],
+    "SnowLuma 特有动作（SnowLumaExtensionApi）": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 220,
+        "level": 2,
+        "title": "SnowLuma 特有动作（SnowLumaExtensionApi）"
+      }
+    ],
     "SnowLuma平台特性文档": [
       {
         "document": "platform-guide/snowluma.md",
@@ -3933,7 +3949,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 288,
+        "line": 289,
         "level": 3,
         "title": "WebSocket"
       }
@@ -4937,7 +4953,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 302,
+        "line": 407,
         "level": 2,
         "title": "self_id 自动映射"
       }
@@ -5231,9 +5247,17 @@
     "三层资源治理": [
       {
         "document": "advanced/ownership.md",
-        "line": 189,
+        "line": 230,
         "level": 3,
         "title": "三层资源治理"
+      }
+    ],
+    "三条硬边界": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 92,
+        "level": 2,
+        "title": "三条硬边界"
       }
     ],
     "三种模式怎么选": [
@@ -5885,7 +5909,7 @@
     "事件循环边界": [
       {
         "document": "advanced/ownership.md",
-        "line": 197,
+        "line": 238,
         "level": 3,
         "title": "事件循环边界"
       }
@@ -5899,7 +5923,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 217,
+        "line": 319,
         "level": 2,
         "title": "事件扩展方法"
       },
@@ -5921,7 +5945,7 @@
     "事件接收与处理": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 216,
+        "line": 217,
         "level": 3,
         "title": "事件接收与处理"
       }
@@ -6027,7 +6051,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 186,
+        "line": 288,
         "level": 2,
         "title": "事件类型映射"
       }
@@ -6626,6 +6650,12 @@
         "title": "使用示例"
       },
       {
+        "document": "platform-guide/snowluma.md",
+        "line": 199,
+        "level": 3,
+        "title": "使用示例"
+      },
+      {
         "document": "platform-guide/telegram.md",
         "line": 342,
         "level": 3,
@@ -7011,7 +7041,7 @@
     "内部实现：归属如何工作": [
       {
         "document": "advanced/ownership.md",
-        "line": 253,
+        "line": 294,
         "level": 2,
         "title": "内部实现：归属如何工作"
       }
@@ -7682,6 +7712,14 @@
         "title": "发送到不同目标"
       }
     ],
+    "发送到会话（SnowLuma 扩展，群聊/私聊自动路由）": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 157,
+        "level": 3,
+        "title": "发送到会话（SnowLuma 扩展，群聊/私聊自动路由）"
+      }
+    ],
     "发送回复": [
       {
         "document": "getting-started/first-bot.md",
@@ -7809,7 +7847,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 277,
+        "line": 382,
         "level": 2,
         "title": "发送方法返回值"
       },
@@ -7885,7 +7923,7 @@
     "取消时序（模块卸载）": [
       {
         "document": "advanced/ownership.md",
-        "line": 288,
+        "line": 329,
         "level": 3,
         "title": "取消时序（模块卸载）"
       }
@@ -7893,7 +7931,7 @@
     "取消链（任务登记表）": [
       {
         "document": "advanced/ownership.md",
-        "line": 275,
+        "line": 316,
         "level": 3,
         "title": "取消链（任务登记表）"
       }
@@ -7989,7 +8027,7 @@
     "后台任务归属与自动取消": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 438,
+        "line": 439,
         "level": 2,
         "title": "后台任务归属与自动取消"
       }
@@ -8163,7 +8201,7 @@
     "命令系统": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 256,
+        "line": 257,
         "level": 3,
         "title": "命令系统"
       }
@@ -8337,7 +8375,7 @@
     "国际化": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 341,
+        "line": 342,
         "level": 3,
         "title": "国际化"
       }
@@ -9079,7 +9117,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 292,
+        "line": 397,
         "level": 3,
         "title": "多账户发送语法"
       }
@@ -9381,7 +9419,7 @@
     "存储连接状态": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 309,
+        "line": 310,
         "level": 3,
         "title": "存储连接状态"
       }
@@ -9523,7 +9561,7 @@
     "完整 API 参考": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 373,
+        "line": 374,
         "level": 2,
         "title": "完整 API 参考"
       }
@@ -9756,6 +9794,14 @@
         "title": "属性访问"
       }
     ],
+    "嵌套生命周期（ownership.nest）": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 146,
+        "level": 2,
+        "title": "嵌套生命周期（ownership.nest）"
+      }
+    ],
     "嵌套配置（v2.8.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -9811,7 +9857,7 @@
     "工具": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 401,
+        "line": 402,
         "level": 3,
         "title": "工具"
       }
@@ -9827,7 +9873,7 @@
     "工具模块指南：托管其它模块的句柄": [
       {
         "document": "advanced/ownership.md",
-        "line": 360,
+        "line": 401,
         "level": 2,
         "title": "工具模块指南：托管其它模块的句柄"
       }
@@ -10155,7 +10201,7 @@
     "平台特有事件与扩展段": [
       {
         "document": "platform-guide/snowluma.md",
-        "line": 203,
+        "line": 305,
         "level": 3,
         "title": "平台特有事件与扩展段"
       }
@@ -10441,7 +10487,7 @@
     "归因链（contextvar 传播）": [
       {
         "document": "advanced/ownership.md",
-        "line": 259,
+        "line": 300,
         "level": 3,
         "title": "归因链（contextvar 传播）"
       }
@@ -10891,7 +10937,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 209,
+        "line": 311,
         "level": 3,
         "title": "扩展字段说明"
       },
@@ -11097,7 +11143,7 @@
     "排查思路": [
       {
         "document": "advanced/ownership.md",
-        "line": 299,
+        "line": 340,
         "level": 3,
         "title": "排查思路"
       }
@@ -11105,7 +11151,7 @@
     "排查清单": [
       {
         "document": "advanced/ownership.md",
-        "line": 231,
+        "line": 272,
         "level": 3,
         "title": "排查清单"
       }
@@ -11129,7 +11175,7 @@
     "推荐写法": [
       {
         "document": "advanced/ownership.md",
-        "line": 308,
+        "line": 349,
         "level": 3,
         "title": "推荐写法"
       }
@@ -12119,7 +12165,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 188,
+        "line": 290,
         "level": 3,
         "title": "标准 OB12 映射"
       }
@@ -12181,7 +12227,7 @@
     "标准事件定义": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 347,
+        "line": 348,
         "level": 2,
         "title": "标准事件定义"
       }
@@ -12549,7 +12595,7 @@
     "模块中使用示例": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 411,
+        "line": 412,
         "level": 2,
         "title": "模块中使用示例"
       }
@@ -12565,7 +12611,7 @@
     "模块作者指南": [
       {
         "document": "advanced/ownership.md",
-        "line": 306,
+        "line": 347,
         "level": 2,
         "title": "模块作者指南"
       }
@@ -12573,7 +12619,7 @@
     "模块侧守则": [
       {
         "document": "advanced/ownership.md",
-        "line": 214,
+        "line": 255,
         "level": 3,
         "title": "模块侧守则"
       }
@@ -12799,7 +12845,7 @@
     "注册与取消": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 375,
+        "line": 376,
         "level": 3,
         "title": "注册与取消"
       }
@@ -12847,7 +12893,7 @@
     "注册时机 → 归属结果对照表": [
       {
         "document": "advanced/ownership.md",
-        "line": 344,
+        "line": 385,
         "level": 3,
         "title": "注册时机 → 归属结果对照表"
       }
@@ -12877,13 +12923,13 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 469,
+        "line": 476,
         "level": 2,
         "title": "注意事项"
       },
       {
         "document": "advanced/ownership.md",
-        "line": 330,
+        "line": 371,
         "level": 3,
         "title": "注意事项"
       },
@@ -12954,6 +13000,14 @@
         "line": 182,
         "level": 2,
         "title": "活跃状态管理"
+      }
+    ],
+    "流式接口": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 254,
+        "level": 3,
+        "title": "流式接口"
       }
     ],
     "测试": [
@@ -13107,7 +13161,7 @@
     "消息发送": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 241,
+        "line": 242,
         "level": 3,
         "title": "消息发送"
       },
@@ -13467,7 +13521,7 @@
     "热重载失败回滚": [
       {
         "document": "advanced/ownership.md",
-        "line": 146,
+        "line": 183,
         "level": 2,
         "title": "热重载失败回滚"
       }
@@ -13475,7 +13529,7 @@
     "热重载边界": [
       {
         "document": "advanced/ownership.md",
-        "line": 166,
+        "line": 208,
         "level": 2,
         "title": "热重载边界"
       }
@@ -13905,7 +13959,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 479,
+        "line": 486,
         "level": 2,
         "title": "相关文档"
       },
@@ -13923,7 +13977,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 409,
+        "line": 450,
         "level": 2,
         "title": "相关文档"
       },
@@ -13941,7 +13995,7 @@
       },
       {
         "document": "advanced/shadow.md",
-        "line": 91,
+        "line": 108,
         "level": 2,
         "title": "相关文档"
       },
@@ -13953,7 +14007,7 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 445,
+        "line": 463,
         "level": 2,
         "title": "相关文档"
       },
@@ -14306,6 +14360,14 @@
         "title": "类型存根生成（IDE 补全）"
       }
     ],
+    "系统表情": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 245,
+        "level": 3,
+        "title": "系统表情"
+      }
+    ],
     "系统要求": [
       {
         "document": "user-guide/installation.md",
@@ -14336,6 +14398,14 @@
         "line": 123,
         "level": 3,
         "title": "组合修饰"
+      }
+    ],
+    "细粒度重载判定（2.12+）": [
+      {
+        "document": "advanced/startup.md",
+        "line": 386,
+        "level": 4,
+        "title": "细粒度重载判定（2.12+）"
       }
     ],
     "绑定继承（merge）": [
@@ -14484,6 +14554,14 @@
         "title": "群文件 / 消息历史 / 已读状态"
       }
     ],
+    "群相册": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 235,
+        "level": 3,
+        "title": "群相册"
+      }
+    ],
     "群组/频道信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -14543,7 +14621,7 @@
     "能力边界": [
       {
         "document": "advanced/ownership.md",
-        "line": 172,
+        "line": 214,
         "level": 3,
         "title": "能力边界"
       }
@@ -14807,7 +14885,7 @@
     "触发": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 383,
+        "line": 384,
         "level": 3,
         "title": "触发"
       }
@@ -14855,7 +14933,7 @@
     "设计边界：哪些资源不随卸载清理": [
       {
         "document": "advanced/ownership.md",
-        "line": 238,
+        "line": 279,
         "level": 2,
         "title": "设计边界：哪些资源不随卸载清理"
       }
@@ -15131,7 +15209,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 245,
+        "line": 347,
         "level": 3,
         "title": "账户配置字段"
       }
@@ -16247,7 +16325,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 259,
+        "line": 364,
         "level": 3,
         "title": "配置示例"
       },
@@ -16391,7 +16469,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 241,
+        "line": 343,
         "level": 2,
         "title": "配置选项"
       },
@@ -16543,7 +16621,7 @@
       },
       {
         "document": "platform-guide/snowluma.md",
-        "line": 157,
+        "line": 165,
         "level": 3,
         "title": "链式修饰方法（可组合使用）"
       },
@@ -16746,6 +16824,14 @@
         "line": 95,
         "level": 3,
         "title": "错过策略（missed_policy）"
+      }
+    ],
+    "闪传 / 收藏表情 / 底层通道": [
+      {
+        "document": "platform-guide/snowluma.md",
+        "line": 266,
+        "level": 3,
+        "title": "闪传 / 收藏表情 / 底层通道"
       }
     ],
     "阅读纪律": [

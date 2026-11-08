@@ -163,6 +163,119 @@ start（启动影子）/ promote（转正）/ dismiss（放弃）/ diff（对比
 ---
 
 
+##### `bindings() -> 'dict[str, str]'`
+
+当前全部影子绑定（只读视图）
+
+**返回值**: ``{原模块名: 影子 owner 名}``
+
+---
+
+
+##### `ingest_whl(module_name: str, data: bytes, filename: str) -> 'dict[str, str]'`
+
+摄取 whl 作为影子源：校验 → 原件落盘 → 解包 → 推导 source
+
+原件与解包目录同级（``shadows/<module>/<时间戳>/``）：解包目录供
+:meth:`~ShadowManager.start` 装载，原件供「转正并持久化」pip 安装。
+影子期**只解包不安装**（pip 排他），避免覆盖已装包。
+
+- **module_name**: 被影子测试的模块名（仅作落盘目录段）
+- **data** (`whl`): 文件字节
+- **filename** (`whl`): 文件名（PEP 427：name-version-...whl）
+
+**返回值**: ``{"source": 解包源目录, "whl_path": 原件路径}``
+
+**异常**: `ShadowSourceError` - 文件名/大小非法、zip 非法或无法推导源目录
+
+**示例**:
+
+```python
+sdk.module.shadow_ingest_whl("roll", data=whl_bytes, filename="roll-2.0-py3-none-any.whl")
+{'source': '.../shadows/roll/2026.../roll', 'whl_path': '.../shadows/roll/2026.../roll-2.0-py3-none-any.whl'}
+```
+
+---
+
+
+##### `validate_persist_whl(module_name: str, whl_path: 'str | Path') -> Path`
+
+校验「转正并持久化」的 whl 原件路径
+
+路径必须存在、是 .whl，且位于本模块的 ``shadows/<module>/`` 目录内。
+
+- **module_name**: 模块名
+- **whl_path**: 待校验路径
+
+**返回值**: 规范化后的路径
+
+**异常**: `ShadowSourceError` - 路径缺失 / 非法 / 越界
+
+---
+
+
+##### `persist_status(task_id: str) -> 'dict[str, Any] | None'`
+
+查询「转正并持久化」后台 pip 任务状态
+
+- **task_id**: :meth:`start_persist` 返回的任务 ID
+
+**返回值**: ``{"status": running/success/error, "output": [...], ...}``；未知任务为 None
+
+---
+
+
+##### `start_persist(whl_path: 'str | Path') -> 'dict[str, Any]'`
+
+后台 pip 安装 whl 原件（转正成功后调用；进程内 fire-and-forget）
+
+- **whl_path**: 经 :meth:`validate_persist_whl` 校验的 whl 路径
+
+**返回值**: ``{"task_id": str}``
+
+---
+
+
+##### `_record_persist_task(task_id: str, entry: 'dict[str, Any]') -> None`
+
+**内部方法** 记录持久化任务状态（环形上限）
+
+---
+
+
+##### `_run_pip_persist(task_id: str, whl_path: Path) -> None`
+
+**内部方法** 执行 pip install 并回写任务状态
+
+---
+
+
+##### `_extract_shadow_whl(data: bytes, dest: Path, dist_name: str) -> Path`
+
+**内部方法**
+解包 whl（zip）到 dest 并推导影子源目录
+
+安全限制：条目数 / 解包总大小上限、拒绝绝对路径 / 盘符 / ``..``
+（防 ZipSlip）。source 推导：唯一含 ``__init__.py`` 的顶层包目录优先
+（发行名匹配者优先），其次扁平 wheel 解包根，最后唯一同名单文件模块。
+
+---
+
+
+##### `_norm_wheel_dist_name(name: str) -> str`（staticmethod）
+
+**内部方法** wheel 发行名归一化（PEP 503）
+
+---
+
+
+##### `_derive_shadow_source(dest: Path, dist_name: str) -> Path`
+
+**内部方法** 从解包结果推导 shadow_start 可用的 source
+
+---
+
+
 ##### `bind(real_name: str, shadow_owner: str) -> None`
 
 登记 绑定关系（影子启动成功后调用；同时向归属权登记影子状态）

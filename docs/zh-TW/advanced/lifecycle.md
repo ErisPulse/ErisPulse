@@ -128,40 +128,40 @@ if sdk.lifecycle.has_handlers("message.sending"):
 
 ## 鈎子斷點一覽
 
-一條訊息從平台進入框架到處理完成的典型生命周期事件時序：
+一條訊息從平台進入框架到處理完成的典型生命週期事件時序：
 
 ```mermaid
 sequenceDiagram
     participant P as 平台
-    participant A as 適配器
+    participant A as 适配器
     participant F as 框架核心
-    participant M as 模組處理器
+    participant M as 模块处理器
 
-    P->>A: 原生事件到達
+    P->>A: 原生事件到达
     A->>F: adapter.event.receive（最早期）
-    F->>F: event.pre_process（處理器執行前）
-    F->>M: 分發到處理器（命令/訊息/通知等）
+    F->>F: event.pre_process（处理器执行前）
+    F->>M: 分发到处理器（命令/消息/通知等）
     M->>M: command.matched / command.executed
     M->>F: event.reply()
-    F->>F: message.sending（發送前）
-    F->>A: SendDSL 發送
-    A->>P: 發送到平台
-    A->>F: message.sent（發送完成）
-    F->>F: adapter.event.dispatched（分發完成）
+    F->>F: message.sending（发送前）
+    F->>A: SendDSL 发送
+    A->>P: 发送到平台
+    A->>F: message.sent（发送完成）
+    F->>F: adapter.event.dispatched（分发完成）
 ```
 
-框架內建了以下鈎子斷點，用戶可以透過 `@sdk.lifecycle.on()` 監聽任意斷點實現自訂邏輯。
+框架內建了以下鈎子斷點，使用者可以透過 `@sdk.lifecycle.on()` 監聽任意斷點以實現自訂邏輯。
 
 ### 核心初始化
 
 | 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `core.init.start` | SDK 初始化開始 | `{}` |
-| `core.init.stage` | 初始化各階段開始（後台發射） | `{"stage": str}`，取值 `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.stage` | 初始化各階段開始（背景發射） | `{"stage": str}`，取值 `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
 | `core.init.complete` | SDK 初始化完成 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(僅失敗時)}` |
 | `core.uninit.complete` | SDK 反初始化完成 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(僅失敗時)}` |
 
-**示例：啟動進度展示**
+**範例：啟動進度展示**
 
 ```python
 @sdk.lifecycle.on("core.init.stage")
@@ -176,7 +176,7 @@ def show_stage(data):
 | `config.set` | 配置項被修改 | `{"key": str, "old_value": Any, "new_value": Any}` |
 | `config.updated` | 外部編輯 config.toml 後檢測到整樹變更 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
-**示例：配置審計**
+**範例：配置審計**
 
 ```python
 @sdk.lifecycle.on("config.set")
@@ -184,31 +184,32 @@ def audit_config(data):
     print(f"[審計] {data['key']}: {data['old_value']} -> {data['new_value']}")
 ```
 
-### 模組生命周期
+### 模組生命週期
 
 | 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `module.register` | 模組類註冊到管理器 | `{"module_name": str, "success": bool}` |
-| `module.load` | 模組加載完成（實例化成功）；失敗時 payload 項外加 `"error": str, "traceback": str`（失敗現場亦可經 `module.last_error(名字)` 查詢） | `{"module_name": str, "success": bool}` |
+| `module.load` | 模組載入完成（實例化成功）；失敗時 payload 預留額外攜帶 `"error": str, "traceback": str`（失敗現場亦可經 `module.last_error(名字)` 查詢） | `{"module_name": str, "success": bool}` |
 | `module.init` | 模組初始化完畢（含懶加載） | `{"module_name": str, "success": bool}` |
 | `module.before_unload` | 卸載流水線第一步（先於 `on_unload` 與資源回收；模組實例鈎子 `on_before_unload` 同步觸發） | `{"module_name": str, "reason": str}`；`reason` 取值：`unload` / `reload` / `disable` / `cascade` / `dormant` |
-| `module.sleep` | 模組歸眠完成（懶加載休眠：資源已釋放，訪問時自動喚醒） | `{"module_name": str, "success": bool}` |
+| `module.sleep` | 模組歸眠完成（懶加載休眠：資源已釋放，存取時自動喚醒） | `{"module_name": str, "success": bool}` |
 | `module.unload` | 模組卸載或禁用（`disable` 與 `unload` 對等通知依賴方，`on_dependency_lost` 契約含"禁用"） | `{"module_name": str, "success": bool, "reason": str}`；`reason` 取值：`unload` / `reload` / `disable` / `cascade` / `dormant` |
 | `module.rollback` | 熱重載失敗回滾完成（快照恢復 + 重放舊實例 `on_load` 之後） | `{"module_name": str, "success": bool}`；`success` 表示重放 `on_load` 是否成功（False 時舊實例停留在已收尾態） |
-| `module.reload` | 模組熱重載完成（含級聯重載依賴者） | `{"module_name": str, "success": bool, "full": bool, "duration_ms": int}`；單模組額外攜帶 `"identity_changed": bool`（False = 進程內可能仍運行舊代碼，如 C 扩展緩存）與 `"version_old": str, "version_new": str`；全量重載（`reload_all`）時 `module_name` 為 `"All"`，payload 項外額外攜帶 `"results": dict[str, bool]` |
+| `module.reload` | 模組熱重載完成（含級聯重載依賴者） | `{"module_name": str, "success": bool, "full": bool, "duration_ms": int}`；單模組額外攜帶 `"identity_changed": bool`（False = 進程內可能仍運行舊程式碼，如 C 扩展快取）與 `"version_old": str, "version_new": str`；全量重載（`reload_all`）時 `module_name` 為 `"All"`，payload 預留額外攜帶 `"results": dict[str, bool]` |
 
-> **模組實例鈎子 `on_before_unload`**：與 `module.before_unload` 事件對應的可選生命周期方法——`event["reason"]` 標註來意，適合在資源釋放前把狀態保存到 `sdk.storage`，喚醒 / 重載後在 `on_load` 中恢復（懶加載休眠的狀態接續即基於此）。鈎子失敗僅告警，不阻塞卸載流程。
+> **模組實例鈎子 `on_before_unload`**：與 `module.before_unload` 事件對應的可選生命週期方法——`event["reason"]` 標註來意，適合在資源釋放前把狀態保存到 `sdk.storage`，喚醒 / 重載後在 `on_load` 中恢復（懶加載休眠的狀態接續即基於此）。鈎子失敗僅告警，不阻塞卸載流程。
 
-### 適配器生命周期
+### 适配器生命週期
 
 | 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
-| `adapter.load` | 適配器註冊完成 | `{"platform": str, "success": bool}` |
-| `adapter.reload` | 適配器代碼級熱重載完成 | `{"adapter_name": str, "success": bool, "full": bool, "duration_ms": int, "identity_changed": bool, "version_old": str, "version_new": str, "was_started": bool, "source": str}`；`identity_changed=False` = 進程內可能仍運行舊代碼 |
-| `adapter.start` | 適配器啟動 | `{"platforms": [str]}` |
-| `adapter.status.change` | 適配器狀態變化 | `{"platform": str, "status": str, "retry_count": int, "error": str(僅失敗時)}`；status 完整取值：`starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
-| `adapter.stop` | 適配器關閉 | `{"platforms": [str]}` |
-| `adapter.stopped` | 適配器關閉完成 | `{"platforms": [str]}` |
+| `adapter.load` | 适配器註冊完成 | `{"platform": str, "success": bool}` |
+| `adapter.reload` | 适配器程式級熱重載完成 | `{"adapter_name": str, "success": bool, "full": bool, "duration_ms": int, "identity_changed": bool, "version_old": str, "version_new": str, "was_started": bool, "source": str}`；`identity_changed=False` = 進程內可能仍運行舊程式碼 |
+| `adapter.rollback` | 适配器熱重載失敗回滾完成（恢復舊註冊態之後） | `{"adapter_name": str, "replayed": bool, "success": bool}`；`replayed=True` 表示已重放舊實例的 `start()`，`success` 表示重放是否成功 |
+| `adapter.start` | 适配器啟動 | `{"platforms": [str]}` |
+| `adapter.status.change` | 适配器狀態變化 | `{"platform": str, "status": str, "retry_count": int, "error": str(僅失敗時)}`；status 完整取值：`starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
+| `adapter.stop` | 适配器關閉 | `{"platforms": [str]}` |
+| `adapter.stopped` | 适配器關閉完成 | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot 上線 | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
 | `adapter.bot.offline` | Bot 下線 | `{"platform": str, "bot_id": str, "status": str}` |
 
@@ -221,7 +222,7 @@ def audit_config(data):
 | `adapter.event.dispatched` | 事件分發完成 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
 | `event.pre_process` | 事件處理器開始執行前 | `{"event_type": str, "platform": str, "detail_type": str}` |
 
-**示例：事件統計**
+**範例：事件統計**
 
 ```python
 event_counter = {}
@@ -244,7 +245,7 @@ def log_unhandled(data):
 | `message.sending` | 消息即將發送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | 消息發送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
-**示例：消息發送審計**
+**範例：消息發送審計**
 
 ```python
 @sdk.lifecycle.on("message.sending")
@@ -259,7 +260,7 @@ def log_sending(data):
 | `command.matched` | 命令被匹配並即將執行 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
 | `command.executed` | 命令執行完成 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(僅失敗時)}` |
 
-**示例：命令統計**
+**範例：命令統計**
 
 ```python
 @sdk.lifecycle.on("command.matched")
@@ -274,9 +275,9 @@ def count_commands(data):
 | `server.request` | HTTP 請求接收 | `{"method": str, "path": str, "client_ip": str, "request_id": str}` |
 | `server.response` | HTTP 回應發送 | `{"method": str, "path": str, "status_code": int, "client_ip": str, "request_id": str}` |
 
-> `request_id` 即 [X-Request-ID 請求關聯 ID](router.md#請求關聯-idx-request-id)：優先沿用客戶端請求頭，否則自生成 UUID，可用它把請求與回應兩條事件串聯。
+> `request_id` 即 [X-Request-ID 請求關聯 ID](router.md#請求關聯-idx-request-id)：優先沿用客戶端請求頭，否則自行產生 UUID，可用它把請求與回應兩條事件串聯。
 
-**示例：請求日誌**
+**範例：請求日誌**
 
 ```python
 @sdk.lifecycle.on("server.response")
@@ -293,7 +294,7 @@ def log_http(data):
 | `server.websocket.connect` | WebSocket 連接建立 | `{"path": str, "module_name": str, "client_ip": str}` |
 | `server.websocket.disconnect` | WebSocket 連接斷開 | `{"path": str, "module_name": str, "reason": str, "error": str(僅異常時)}` |
 
-**示例：WebSocket 連接監控**
+**範例：WebSocket 連接監控**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
@@ -307,29 +308,29 @@ def on_ws_disconnect(data):
 
 ### 存儲連接狀態
 
-存儲後端連接池的建立、故障與恢復（均後台發射，不阻塞存儲操作）：
+儲存後端連接池的建立、故障與恢復（均背景發射，不阻塞儲存操作）：
 
 | 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
-| `storage.ready` | 存儲後端連接池就緒（每事件迴圈首次建池成功） | `{"backend": str}` |
+| `storage.ready` | 儲存後端連接池就緒（每事件循環首次建池成功） | `{"backend": str}` |
 | `storage.unreachable` | 連接重試耗盡進入冷卻期（期間操作快速失敗） | `{"backend": str, "error": str, "cooldown": float}` |
-| `storage.recovered` | 冷卻結束重連成功，存儲恢復可用 | `{"backend": str}` |
+| `storage.recovered` | 冷卻結束重連成功，儲存恢復可用 | `{"backend": str}` |
 
-**示例：存儲故障告警**
+**範例：儲存故障告警**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
 def alert_storage_down(data):
-    print(f"[告警] 存儲後端 {data['backend']} 不可達: {data['error']}，{data['cooldown']}s 後自動重連")
+    print(f"[告警] 儲存後端 {data['backend']} 不可達: {data['error']}，{data['cooldown']}s 後自動重連")
 
 @sdk.lifecycle.on("storage.recovered")
 def notify_storage_back(data):
-    print(f"[恢復] 存儲後端 {data['backend']} 已恢復可用")
+    print(f"[恢復] 儲存後端 {data['backend']} 已恢復可用")
 ```
 
 ### HTTP 客戶端
 
-`sdk.client` 的請求與連接事件（均後台發射）：
+`sdk.client` 的請求與連接事件（均背景發射）：
 
 | 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
@@ -439,11 +440,17 @@ class Main(BaseModule):
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-模組創建的 asyncio 後台任務若未在 `on_unload` 中取消，會持有 `self` 引用導致模組實例無法被回收（熱重載後舊實例殘留）。框架提供以下兜底機制：
+模組建立的 asyncio 後台任務若未在 `on_unload` 中取消，會持有 `self` 引用，導致模組實例無法被回收（熱重載後舊實例殘留）。框架提供以下兜底機制：
 
 - **`self.spawn(coro)`**（模組內推薦）：任務自動歸屬模組名，模組卸載時框架在 `on_unload` **之後**兜底取消未結束的任務並記錄警告
 - **`spawn_background(coro)`**（`ErisPulse.runtime`）：自動捕獲當前 `owner_scope` 上下文；`cancel_owner_tasks(owner)` 按歸屬取消，`cancel_all_background_tasks()` 供 `sdk.uninit()` 兜底
 - **適配器**：關閉時對平台名下的後台任務同樣兜底取消
+
+**主迴圈註冊前的任務**（2.12+）：`spawn_background()` 與 `run_main_loop()`
+在無可用主迴圈時不再建立臨時事件迴圈，而是進入待發佇列（上限
+`PENDING_TASK_QUEUE_MAX`，預設 1024）；`sdk.run()` 註冊主迴圈時統一衝佇列。
+佇列滿時丟棄新任務並告警；按 owner 取消會同時移除該 owner 的待發任務；
+退出時仍有滯留任務會告警並丟棄。`run_main_loop()` 在入隊路徑返回 `None`。
 
 ```python
 async def on_load(self, event):
@@ -463,7 +470,7 @@ async def _poll(self):
 ```
 
 > [!IMPORTANT]
-> 框架兜底是**強制 cancel**（`cancel_owner_tasks`），它發生在 `on_unload` 返回之後。因此需要優雅收尾的任務（flush 缓衝、持久化狀態、關閉連接）**必須**在 `on_unload` 裡自行 `cancel()` + `await` 完成——別指望兜底能保留收尾邏輯。框架只保證「不殘留持有 `self` 的任務」，不保證「優雅」。需要 `await` 結果的任務請直接 `await`，不要丟給後台任務。
+> 框架兜底是**強制 cancel**（`cancel_owner_tasks`），它發生在 `on_unload` 返回之後。因此需要優雅收尾的任務（flush 緩衝、持久化狀態、關閉連接）**必須**在 `on_unload` 裡自行 `cancel()` + `await` 完成——別指望兜底能保留收尾邏輯。框架只保證「不殘留持有 `self` 的任務」，不保證「優雅」。需要 `await` 結果的任務請直接 `await`，不要丟給後台任務。
 
 ## 注意事項
 
