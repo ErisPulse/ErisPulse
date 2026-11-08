@@ -6,14 +6,14 @@ SnowLumaAdapter 是基于 SnowLuma 后端（NTQQ hook）构建的适配器，使
 
 ## 文档信息
 
-- 对应模块版本: 0.1.0
+- 对应模块版本: 0.3.0
 - 维护者: ErisPulse
 
 ## 基本信息
 
 - 平台简介：SnowLuma 是基于 NTQQ hook 的 QQ 协议实现，API 全面向 NapCat 对齐，通过 OneBot v11 协议对外提供服务（默认端口：HTTP 3000、WS 3001）
 - 适配器名称：SnowLumaAdapter
-- 支持的协议/API版本：OneBot V11（含 SnowLuma 扩展动作，全面兼容 NapCat，可直接连接 NapCat 后端）
+- 支持的协议/API版本：OneBot V11（官方动作目录共 200 个动作，适配器全量覆盖；全面兼容 NapCat，可直接连接 NapCat 后端）
 - 多账户支持：默认多账户架构，支持同时配置和运行多个账户
 - 配置键名：`SnowLuma_Adapter`
 
@@ -22,9 +22,9 @@ SnowLumaAdapter 是基于 SnowLuma 后端（NTQQ hook）构建的适配器，使
 SnowLuma 使用 OB11 协议，标准动作与事件转换与 OneBot11 适配器同构（OB12 标准动作名自动映射）。
 主要差异：
 
-1. **默认 client 模式**：主动连接 SnowLuma WS（`ws://127.0.0.1:3001`），无需公网监听
+1. **默认 client 模式**：主动连接 SnowLuma WS（`ws://127.0.0.1:3001`），无需公网监听；另支持 server（反向 WS）/ http（API+轮询）/ webhook（API+上报）共四种模式
 2. **bot_id 自动识别**：无需在账户配置中填写 QQ 号，适配器启动后自动探测并维护 `self_id → account_name` 映射
-3. **109 个扩展动作**：拍一戳、QQ空间、群文件/群相册、消息历史、精华、已读状态等 SnowLuma/NapCat 兼容扩展
+3. **200 个动作全量封装**：类型化方法 169 个（127 个通用扩展 + 42 个 SnowLuma 特有），其余为 Core 直调 / ApiDSL 透传 / 服务端别名，完整对照见适配器仓库 [docs/api-coverage.md](https://github.com/ErisPulse/ErisPulse-SnowLumaAdapter/blob/main/docs/api-coverage.md)
 4. **合并转发扩展链路**：专用端点 + `upload_forward_msg`（上传节点取 resid）+ `get_forward_msg`（解析转发内容）三级回退
 
 ---
@@ -57,8 +57,8 @@ await snowluma.Api.delete_message(message_id=123456)
 # 指定账户（多账户）
 result = await snowluma.Api.Using("main").get_self_info()
 
-# 扩展动作通过 call() 逃生舱调用（SnowLuma/NapCat 通用）
-result = await snowluma.Api.call("send_poke", group_id=123, user_id=456)
+# 服务端别名等少数动作通过 call() 逃生舱调用（SnowLuma/NapCat 通用）
+result = await snowluma.Api.call("upload_foward_msg", messages=[...])  # upload_forward_msg 别名
 ```
 
 ---
@@ -140,7 +140,7 @@ result = await snowluma.Api.get_forward_msg(id="resid_xxx")
 
 ### QQ空间
 
-- `.QzoneMsg(content)`：发表 QQ 空间说說。
+- `.QzoneMsg(content)`：发表 QQ 空间说说。
 - `.QzoneLike(tid)` / `.QzoneUnlike(tid)`：点赞/取消点赞。
 - `.QzoneComment(tid, content)`：评论。
 - `.QzoneDelete(tid)`：删除。
@@ -149,10 +149,18 @@ result = await snowluma.Api.get_forward_msg(id="resid_xxx")
 
 - `.UploadGroupFile(file, name)`：上传群文件（需 `To("group", group_id)`）。
 - `.GetGroupFileUrl(file_id)`：获取群文件下载链接。
-- `.GetGroupMsgHistory(message_seq=0, count=20)`：获取群消息历史。
+- `.GetGroupMsgHistory(message_id=0, count=20)`：获取群消息历史（message_id=0 从最新开始）。
 - `.GetFriendMsgHistory(user_id, count=20)`：获取好友消息历史。
-- `.MarkMsgAsRead()`：标记当前会话已读。
+- `.MarkMsgAsRead(message_id)`：按消息 ID 标记已读。
 - `.SetOnlineStatus(status)`：设置在线状态。
+
+### 发送到会话（SnowLuma 扩展，群聊/私聊自动路由）
+
+- `.AIRecord(character, text, chat_type=1)`：发送 AI 语音到群（需 `To("group", group_id)`；角色来自 `Api.get_ai_characters`）。
+- `.CustomFace(emoji_id, reply_to=None)`：发送账号收藏表情（保留表情显示样式）。
+- `.FlashMsg(fileset_id)`：发送闪传消息（对端收到后可下载）。
+- `.ForwardSingle(message_id)`：转发单条消息到当前会话。
+- `.TuwenArk(title, desc, jump_url, summary="[分享]", preview_url=...)`：发送图文 Ark 卡片。
 
 ### 链式修饰方法（可组合使用）
 
@@ -164,22 +172,116 @@ result = await snowluma.Api.get_forward_msg(id="resid_xxx")
 
 ## OB11 扩展动作（Api DSL）
 
-除标准动作外，`OB11ExtensionApi` 混入提供了 60+ 个类型化扩展方法，全部 109 个扩展动作均可通过
-`Api.call("action_name", ...)` 直接调用（SnowLuma/NapCat 通用）。分组概览：
+官方动作目录共 **200 个动作**，适配器类型化封装 169 个（`OB11ExtensionApi` 127 个通用 + `SnowLumaExtensionApi` 42 个 SnowLuma 特有），其余为 Core 直调 / ApiDSL 透传 / 服务端别名，逐条状态见[覆盖对照表](https://github.com/ErisPulse/ErisPulse-SnowLumaAdapter/blob/main/docs/api-coverage.md)。
+全部动作均可通过 `Api.call("action_name", ...)` 直接调用（SnowLuma/NapCat 通用部分跨后端可移植）。分组概览：
 
 | 分组 | 代表动作 |
 |------|----------|
 | 拍一戳 / 社交 | send_poke / group_poke / friend_poke / send_like |
-| 消息回应 / 精华 | set_msg_emoji_like / get_emoji_likes / set_essence_msg / get_essence_msg_list |
-| 已读 / 状态 | mark_msg_as_read / mark_group_msg_as_read / mark_all_as_read / set_online_status / set_input_status |
+| 消息回应 / 精华 | set_msg_emoji_like / get_msg_emoji_likes / fetch_emoji_like / set_essence_msg / get_essence_msg_list |
+| 已读 / 状态 | mark_msg_as_read / mark_all_as_read / set_online_status / set_diy_online_status / set_input_status / nc_get_user_status |
 | 消息历史 | get_group_msg_history / get_friend_msg_history |
-| 群管理扩展 | set_group_reaction / set_group_remark / set_group_sign / set_group_todo / get_group_info_ex / get_group_shut_list / get_group_at_all_remain |
-| 好友 / 联系人 | set_friend_remark / get_unidirectional_friend_list / get_friends_with_category / get_recent_contact |
-| 群文件 | get_group_file_url / get_private_file_url / get_group_root_files / get_group_files_by_folder / create_group_file_folder / delete_group_file |
-| 群相册 | get_group_album_list / get_group_album_media_list |
-| QQ空间 | send_qzone_msg / get_qzone_msg_list / get_qzone_feeds |
-| 合并转发 | get_forward_msg / upload_forward_msg |
-| 媒体 / OCR | ocr_image / get_image |
+| 群管理扩展 | set_group_reaction / set_group_remark / set_group_sign / set_group_todo（含 cancel/complete/list）/ get_group_info_ex / get_group_shut_list / get_group_at_all_remain / set_group_kick_members / set_group_member_invite_policy / set_group_search / set_group_robot_add_option |
+| 群标签 / 管理设置 | add_group_tag / delete_group_tag / get_group_tags / get_group_admin_settings / set_group_add_option / set_group_member_permissions / set_group_new_member_history_visibility |
+| 好友 / 联系人 | set_friend_remark / delete_friend / set_friends_category / get_unidirectional_friend_list / get_friends_with_category / get_doubt_friends_add_request（含处理） |
+| 群文件 | get_group_file_url / get_private_file_url / get_group_root_files / get_group_files_by_folder / create_group_file_folder / delete_group_file（含文件夹删除/重命名）/ move_group_file / trans_group_file / get_group_file_system_info |
+| 群信息 | get_group_honor_info / get_group_share_link / get_group_system_msg / get_group_ignore_add_request / get_group_ignored_notifies |
+| 群相册（列表） | get_group_album_list / get_group_album_media_list |
+| QQ空间 | send_qzone_msg / get_qzone_msg_list / get_qzone_feeds / like_qzone / unlike_qzone / comment_qzone / delete_qzone_msg |
+| 合并转发 / 单条转发 | get_forward_msg / upload_forward_msg / send_forward_msg / forward_group_single_msg / forward_friend_single_msg |
+| Ark 卡片 / 小程序 | send_ark_share / send_group_ark_share / share_peer / share_group_ex / send_tuwen_ark / get_mini_app_ark / get_share_link |
+| AI 语音 | get_ai_characters / get_ai_record / send_group_ai_record |
+| 群公告 / 机型 / 装扮 | get_group_notice / send_group_notice / delete_group_notice / get_model_show / set_model_show / get_friend_dress |
+| 媒体 / OCR | ocr_image / get_image / get_record / fetch_ptt_text |
+| 凭证 / 能力 | get_cookies / get_csrf_token / get_credentials / get_clientkey / can_send_image / can_send_record / get_version_info |
+| 工具 / 杂项 | check_url_safely / clean_cache / get_file / get_rkey / get_rkey_server / translate_en2zh / get_online_clients / get_profile_like / click_inline_keyboard_button |
+
+### 使用示例
+
+```python
+snowluma = sdk.adapter.get("snowluma")
+
+# 已读（按消息 ID 定位）
+await snowluma.Api.mark_msg_as_read(message_id=123)
+
+# 语音转文字（按消息 ID 定位）
+result = await snowluma.Api.fetch_ptt_text(message_id=123)
+
+# 表情回应详情
+result = await snowluma.Api.get_msg_emoji_likes(message_id=123)
+
+# 群公告
+await snowluma.Api.send_group_notice(group_id=123456, content="公告", pinned=1)
+
+# AI 语音
+await snowluma.Api.send_group_ai_record(group_id=123456, character="1002", text="你好")
+```
+
+## SnowLuma 特有动作（SnowLumaExtensionApi）
+
+以下动作为 SnowLuma 服务端特有（非 NapCat/Lagrange 通用），同样以类型化方法提供：
+
+### QQ 空间扩展
+
+```python
+# 说说详情与一页评论（需有访问权限）
+result = await snowluma.Api.get_qzone_msg_detail(tid="tid_xxx", num=20)
+# 修改已发说说的查看权限：1=所有人，4=好友，16=部分好友，64=仅自己，128=部分好友不可见
+await snowluma.Api.set_qzone_msg_right(tid="tid_xxx", ugc_right=64)
+# 拉黑/解除拉黑某人（机器人自己的空间黑名单）
+await snowluma.Api.set_qzone_ban(user_id=789, enable=True)
+```
+
+### 群相册
+
+```python
+result = await snowluma.Api.get_qun_album_list(group_id=123456)
+await snowluma.Api.upload_image_to_qun_album(group_id=123456, album_id="a1", album_name="相册", file="https://a.jpg")
+await snowluma.Api.upload_video_to_qun_album(group_id=123456, album_id="a1", album_name="相册", file="./v.mp4")
+await snowluma.Api.do_group_album_comment(group_id=123456, album_id="a1", lloc="xxx", content="拍得不错")
+await snowluma.Api.del_group_album_media(group_id=123456, album_id="a1", lloc="xxx")
+```
+
+### 系统表情
+
+```python
+result = await snowluma.Api.fetch_sys_faces()            # 完整目录（按分组）
+result = await snowluma.Api.search_sys_faces(query="微笑")  # 按名称/别名/编号搜索
+result = await snowluma.Api.fetch_face_entity(face_id=1)   # 按编号查询
+result = await snowluma.Api.fetch_super_face_id(face_id=1) # 是否超级表情格式
+```
+
+### 流式接口
+
+```python
+# 分块上传文件到机器人本地（新流 → 逐块 → is_complete 合并，返回可发送的本地路径）
+await snowluma.Api.upload_file_stream(stream_id="uuid", total_chunks=2, file_size=1024, filename="a.txt")
+# 流式下载（file_info → file_chunk* → file_complete 分帧返回）
+await snowluma.Api.download_file_stream(file_id="cached-id", chunk_size=65536)
+await snowluma.Api.download_file_image_stream(file="https://a.jpg")
+await snowluma.Api.download_file_record_stream(file_id="cached-record")
+await snowluma.Api.clean_stream_temp_file()
+```
+
+### 闪传 / 收藏表情 / 底层通道
+
+```python
+# QQ 闪传：分享码 → fileset_id → 发送/列表/直链
+fileset = await snowluma.Api.get_fileset_id(share_code="abcd1234")
+await snowluma.Api.send_flash_msg(fileset_id="fs_xxx", group_id=123456)
+result = await snowluma.Api.get_flash_file_list(fileset_id="fs_xxx")
+result = await snowluma.Api.download_fileset(fileset_id="fs_xxx")
+
+# 收藏表情
+await snowluma.Api.add_custom_face(file="https://a.gif")
+result = await snowluma.Api.fetch_custom_face(count=10, return_type="url")
+await snowluma.Api.send_custom_face(emoji_id="emoji_id_or_md5", group_id=123456)
+
+# 底层通道（高级用法）
+await snowluma.Api.send_packet(cmd="Oidb.0xxxx", data="hex...")
+await snowluma.Api.request_decrypt_key(db_path="./db")
+await snowluma.Api.bot_exit()
+```
 
 ---
 
@@ -246,10 +348,13 @@ SnowLuma 适配器采用多账户架构，每个账户独立配置。配置键�
 
 | 字段 | 类型 | 必填 | 默认值 | 说明 |
 |------|------|------|--------|------|
-| `mode` | `str` | 否 | `"client"` | 运行模式：`"client"`（主动连接，推荐）或 `"server"`（被动监听） |
+| `mode` | `str` | 否 | `"client"` | `client`(主动连 WS) / `server`(反向 WS) / `http`(HTTP API+轮询) / `webhook`(HTTP API+上报) |
 | `url` | `str` | 否 | `"ws://127.0.0.1:3001"` | Client 模式的 WebSocket 地址（SnowLuma 默认 WS 端口 3001） |
 | `token` | `str` | 否 | `""` | 访问令牌（Bearer 认证） |
 | `server_path` | `str` | 否 | `"/"` | Server 模式的 WebSocket 路径 |
+| `http_url` | `str` | 否 | `"http://127.0.0.1:3000"` | http/webhook 模式的 API 地址 |
+| `poll_interval` | `float` | 否 | `1.0` | http 模式事件轮询间隔（秒） |
+| `webhook_path` | `str` | 否 | `"/snowluma_{account}"` | webhook 模式上报路由前缀 |
 | `enabled` | `bool` | 否 | `true` | 是否启用该账户 |
 | `name` | `str` | 否 | `""` | 账户备注名称 |
 
