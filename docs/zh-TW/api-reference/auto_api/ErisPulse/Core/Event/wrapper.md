@@ -383,9 +383,10 @@ OneBot12 标准事件数据结构
 
 获取机器人账户标识（多Bot模式）
 
-优先返回 account_id（ErisPulse扩展），若不存在则回退到 user_id（OB12标准）
+优先返回 account_id（ErisPulse 扩展，动态账户未获取 user_id 前的
+账户名代位），若不存在则回退到 user_id（OneBot12 基线标准）
 
-**返回值**: 机器人账户标识，单Bot模式下返回空字符串
+**返回值**: 机器人账户标识
 
 ---
 

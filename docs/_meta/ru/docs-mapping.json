@@ -202,7 +202,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Подробное руководство по классу-обёртке Event",
+              "title": "Подробное объяснение Event-обертки",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -232,7 +232,7 @@
               "icon": "fa-microchip"
             },
             {
-              "title": "Подробное руководство по SendDSL",
+              "title": "SendDSL详解",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1,
               "icon": "fa-code-branch"
@@ -653,7 +653,7 @@
           "icon": "fa-bolt"
         },
         {
-          "title": "Руководство по стандартизации адаптеров (генеральное руководство)",
+          "title": "Руководство по стандартизации адаптеров (общее руководство)",
           "path": "standards/standardization-guide.md",
           "level": 1,
           "icon": "fa-gavel"

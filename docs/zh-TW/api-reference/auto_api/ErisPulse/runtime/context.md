@@ -131,6 +131,24 @@ caller = get_current_caller()  # "OrderModule" 或 None
 ---
 
 
+### `get_current_event_account() -> str`
+
+获取当前事件处理链路的触发账户标识
+
+在事件分发 / handler 执行期间可读取，Send / Api 链路未显式指定账户时
+据此兜底绑定；不在事件处理上下文内（如后台定时任务）返回空字符串。
+
+**返回值**: 当前触发账户标识或空字符串
+
+**示例**:
+
+```python
+account = get_current_event_account()
+```
+
+---
+
+
 ### `get_current_trace_id() -> str | None`
 
 获取当前事件处理链路的追踪 ID（trace-id）

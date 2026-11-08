@@ -281,7 +281,7 @@ adapter = sdk.adapter.myplatform
 await adapter.Send.To("user", "123").Text("Hello")
 ```
 
-## BaseAdapter 基類
+## BaseAdapter 基底類別
 
 ### 基本結構
 
@@ -304,30 +304,30 @@ class MyConfig(BaseConfig):
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyConfig  # 宣聲明配置類
+    ConfigClass = MyConfig  # 宣告配置類別
     
     # 無需覆寫 __init__，框架自動處理：
     # - self.sdk, self.logger
-    # - self.cfg（類型安全的配置實例，即時讀取）
+    # - self.cfg（型別安全的配置實例，即時讀取）
     # - self.Send, self.Request
     
     async def start(self):
-        """啟動適配器（必須實現）"""
-        cfg = self.cfg  # 自動載入的類型安全配置
+        """啟動適配器（必須實作）"""
+        cfg = self.cfg  # 自動載入的型別安全配置
         pass
     
     async def shutdown(self):
-        """關閉適配器（必須實現）"""
+        """關閉適配器（必須實作）"""
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """呼叫平台 API（必須實現）"""
+        """呼叫平台 API（必須實作）"""
         pass
 ```
 
 ### 配置管理
 
-框架提供了宣告式配置管理，透過 dataclass 定義配置結構，框架自動處理載入、驗證和樣板生成。
+框架提供了宣告式配置管理，透過 dataclass 定義配置結構，框架自動處理載入、驗證和範本產生。
 
 #### 單帳戶配置
 
@@ -344,7 +344,7 @@ class TelegramConfig(BaseConfig):
         "ui": {"widget": "password", "group": "basic", "order": 1},
     })
     proxy: str = field(default="", metadata={
-        "description": {"i18n": "telegram.proxy", "default": "代理地址"},
+        "description": {"i18n": "telegram.proxy", "default": "代理位址"},
         "ui": {"widget": "text", "group": "advanced", "order": 10},
     })
 
@@ -352,7 +352,7 @@ class TelegramAdapter(BaseAdapter):
     ConfigClass = TelegramConfig
     
     async def start(self):
-        cfg = self.cfg  # 類型安全，即時讀取
+        cfg = self.cfg  # 型別安全，即時讀取
         if not cfg.token:
             raise ValueError("未配置 Token")
         await self._connect(cfg.token, proxy=cfg.proxy)
@@ -360,13 +360,13 @@ class TelegramAdapter(BaseAdapter):
 
 #### 多帳戶配置
 
-`BotAccountConfig` 基類提供 `enabled` 和 `name` 字段。絕大多數適配器能從平台協定或登入回應中自動獲取 bot_id，在事件轉換時注入到帳戶配置中。：
+`BotAccountConfig` 基底類別提供 `enabled` 和 `name` 欄位。絕大多數適配器能從平台協定或登入回應中自動取得 bot_id，在事件轉換時注入到帳戶配置中。：
 
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BotAccountConfig
 
-# 大多數適配器：bot_id 運行時自動獲取，無需配置
+# 大多數適配器：bot_id 執行時自動取得，無需配置
 @dataclass
 class MyBotConfig(BotAccountConfig):
     token: str = field(default="", metadata={
@@ -374,7 +374,7 @@ class MyBotConfig(BotAccountConfig):
         "required": True,
     })
 
-# 如果登入時無法獲取 bot_id，可以讓使用者在配置中填寫
+# 如果登入時無法取得 bot_id，可以讓使用者在配置中填寫
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
     bot_id: str = field(default="", metadata={
@@ -397,41 +397,41 @@ class MyAdapter(BaseAdapter):
 
 #### metadata 約定
 
-字段 metadata 同時服務於 TOML 注釋生成和 WebUI 表單渲染：
+欄位 metadata 同時服務於 TOML 註解產生和 WebUI 表單渲染：
 
 ```python
 metadata = {
-    "description": str | dict,  # 字段描述（支援 i18n）
+    "description": str | dict,  # 欄位描述（支援 i18n）
     "required": bool,         # 是否必填（驗證 + WebUI 必填標記）
-    "secret": bool,           # 是否敏感（WebUI 顯示為 ***，日誌中脫敏）
-    "example": bool,          # 不落盤標誌：不寫入 config.toml（預設值/樣板均排除），
+    "secret": bool,           # 是否敏感（WebUI 顯示為 ***，日誌中遮蔽）
+    "example": bool,          # 不寫入磁碟標誌：不寫入 config.toml（預設值/範本均排除），
                               # 僅渲染進 config.full.example；schema 帶 "example": true 標記，
-                              # CLI 配置向導預設跳過；使用者手動設定後正常持久化
+                              # CLI 配置精靈預設跳過；使用者手動設定後正常持久化
     "min": number, "max": number,  # 數值範圍驗證
-    "ui": {                   # WebUI 控件配置（舊名 "webui" 仍兼容）
-        "widget": str,        # 控件類型: "text" | "switch" | "select" | "number" | "password"
+    "ui": {                   # WebUI 控制項配置（舊名 "webui" 仍相容）
+        "widget": str,        # 控制項類型: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # 分組: "basic" | "advanced" | "connection" 等
         "order": int,         # 排序權重（越小越靠前）
-        "options": list,      # select 控件的可選項 [{label, value}]，label 支援 i18n
+        "options": list,      # select 控制項的可選項目 [{label, value}]，label 支援 i18n
         "placeholder": str | dict,  # 輸入框佔位符（支援 i18n）
     },
-    "extra": dict,            # 額外擴展字段（透傳到 schema）
+    "extra": dict,            # 額外擴充欄位（透傳到 schema）
 }
 ```
 
-所有使用者可見的文本字段均支援 i18n，統一採用 `{"i18n": "key", "default": "文本"}` 格式，
-純字串則原樣透傳（向後相容）。支援的 i18n 字段：
+所有使用者可見的文字欄位均支援 i18n，統一採用 `{"i18n": "key", "default": "文字"}` 格式，
+純字串則原樣透傳（向後相容）。支援的 i18n 欄位：
 
-| 字段 | 位置 | 說明 |
+| 欄位 | 位置 | 說明 |
 |------|------|------|
-| `description` | field metadata | 字段描述 |
-| `options[].label` | `ui.options` | select 控件選項標籤 |
+| `description` | field metadata | 欄位描述 |
+| `options[].label` | `ui.options` | select 控制項選項標籤 |
 | `placeholder` | `ui.placeholder` | 輸入框佔位符 |
-| `group_labels` | `_schema_meta` | 分組顯示名（Dashboard 分區標題） |
+| `group_labels` | `_schema_meta` | 分組顯示名稱（Dashboard 分區標題） |
 
-使用 i18n 時，需提前將翻譯鍵註冊到 i18n 系統（詳見 [i18n 文檔](../../advanced/i18n.md#配置字段多語言)）。
+使用 i18n 時，需提前將翻譯鍵註冊到 i18n 系統（詳見 [i18n 文件](../../advanced/i18n.md#配置字段多语言)）。
 
-**description / placeholder / options label** 示例：
+**description / placeholder / options label** 範例：
 
 ```python
 token: str = field(
@@ -459,24 +459,24 @@ mode: str = field(
 )
 ```
 
-**group_labels** 示例（在配置類定義後宣告）：
+**group_labels** 範例（在配置類別定義後宣告）：
 
 ```python
 MyConfig._schema_meta = {
     "group_labels": {
         "basic": {"i18n": "my_adapter.group.basic", "default": "基本設定"},
-        "advanced": {"i18n": "my_adapter.group.advanced", "default": "高級設定"},
+        "advanced": {"i18n": "my_adapter.group.advanced", "default": "進階設定"},
     }
 }
 ```
 
-框架的 `resolve_config_schema()` 會根據當前語言自動解析上述所有字段的 i18n 鍵；
+框架的 `resolve_config_schema()` 會根據目前語言自動解析上述所有欄位的 i18n 鍵；
 `get_config_schema()` 則原樣透傳 i18n 字典，由前端自行解析。
 
-#### docstring 自动生成字段描述（v2.8.0+）
+#### docstring 自動產生欄位描述（v2.8.0+）
 
-未在 metadata 中宣告 `description` 的字段，框架會自動從配置類 docstring 中
-提取字段說明作為兜底，支援兩種常見風格（可混用）：
+未在 metadata 中宣告 `description` 的欄位，框架會自動從配置類別 docstring 中
+提取欄位說明作為後備方案，支援兩種常見風格（可混用）：
 
 ```python
 @dataclass
@@ -484,25 +484,25 @@ class MyConfig(BaseConfig):
     """
     MyAdapter 配置
 
-    :ivar endpoint: 平台 API 地址        # reST 風格
-    :ivar timeout: 請求超時秒數
+    :ivar endpoint: 平台 API 位址        # reST 風格
+    :ivar timeout: 請求逾時秒數
     """
 
-    endpoint: str = "https://api.example.com"   # 無 metadata description → 注釋/描述取 docstring
+    endpoint: str = "https://api.example.com"   # 無 metadata description → 註解/描述取 docstring
     timeout: int = 30
 
     # Google 風格同樣支援（Attributes: 段）：
     # Attributes:
-    #     endpoint: 平台 API 地址
+    #     endpoint: 平台 API 位址
 ```
 
-優先級：**metadata description > docstring 字段說明 > 空**。
+優先順序：**metadata description > docstring 欄位說明 > 空**。
 i18n 字典形式的 description 不受影響（始終優先）。
 
-#### 嵌套配置（v2.8.0+）
+#### 巢狀配置（v2.8.0+）
 
-字段類型為嵌套 dataclass 時，框架遞迴處理：schema 以 `"type": "table"` +
-`"fields"` 子樹承載（WebUI 渲染為可摺疊嵌套分組），TOML 樣板渲染為 `[子表]` 節，
+欄位型別為巢狀 dataclass 時，框架遞迴處理：schema 以 `"type": "table"` +
+`"fields"` 子樹承載（WebUI 渲染為可摺疊的巢狀分組），TOML 範本渲染為 `[子表]` 節，
 預設值 / 填充 / 驗證 / i18n 解析均遞迴生效。
 
 ```python
@@ -519,10 +519,10 @@ class RetryConfig(BaseConfig):
 class MyConfig(BaseConfig):
     """MyAdapter 配置"""
     endpoint: str = "https://api.example.com"
-    retry: RetryConfig = field(default_factory=RetryConfig)   # 嵌套配置段
+    retry: RetryConfig = field(default_factory=RetryConfig)   # 巢狀配置段
 ```
 
-生成的 TOML 樣板：
+產生的 TOML 範本：
 
 ```toml
 endpoint = "https://api.example.com"
@@ -533,34 +533,34 @@ max_retries = 3
 backoff = 0.5
 ```
 
-> 嵌套類型建議使用直接類型註解；字串註解（如延遲求值場景）需保證
-> 類型可從配置類所在模組全域、`__qualname__` 外層類命名空間或類屬性中按名解析。
+> 巢狀型別建議使用直接型別註解；字串註解（如延遲求值場景）需保證
+> 型別可從配置類別所在模組全域、`__qualname__` 外層類別命名空間或類別屬性中按名稱解析。
 
-#### 不落盤的 example 字段（v2.8.0+）
+#### 不寫入磁碟的 example 欄位（v2.8.0+）
 
 ```python
 gc_interval: int = field(default=300, metadata={"example": True})
 ```
 
-帶 `example: True` 的字段：
+帶有 `example: True` 的欄位：
 
-- 不寫入 config.toml（適配器/模組配置樣板與預設值均排除，運行時走代碼預設值）
-- 僅渲染進專案內 `config.full.example`（供使用者參考，按需手動複製到 config.toml）
-- schema 中帶 `"example": true` 標記（面板可自行決定展示策略），CLI 配置向導預設跳過
-- 使用者手動設定該鍵後正常持久化、正常熱更新（使用者顯式意圖優先）
+- 不寫入 config.toml（適配器/模組配置範本與預設值均排除，執行時採用程式碼預設值）
+- 僅渲染進專案內的 `config.full.example`（供使用者參考，按需手動複製到 config.toml）
+- schema 中帶有 `"example": true` 標記（面板可自行決定展示策略），CLI 配置精靈預設跳過
+- 使用者手動設定該鍵後正常持久化、正常熱更新（使用者明確意圖優先）
 
-適合"繁雜又很少觸碰"的高級配置項，保持使用者的 config.toml 最小化。
+適合「冗雜又很少觸碰」的進階配置項，保持使用者的 config.toml 最小化。
 
-> ⚠️ `_schema_meta` 是類級元資料（非配置字段）。若在 dataclass 類體內部宣告，
-> 必須加 `ClassVar` 註解（`_schema_meta: ClassVar[dict] = {...}`），否則會被
-> dataclass 視為普通字段。框架對下劃線前綴字段已做防禦性排除（不進入任何
-> schema / 樣板 / 預設值 / 驗證輸出），但仍建議規範宣告。
+> ⚠️ `_schema_meta` 是類別層級的元資料（非配置欄位）。若在 dataclass 類別主體內部宣告，
+> 必須加上 `ClassVar` 註解（`_schema_meta: ClassVar[dict] = {...}`），否則會被
+> dataclass 視為普通欄位。框架對底線前綴欄位已做防禦性排除（不進入任何
+> schema / 範本 / 預設值 / 驗證輸出），但仍建議規範宣告。
 
-### 声明式翻译键（v2.7.0+）
+### 宣告式翻譯鍵（v2.7.0+）
 
-适配器可以像声明 `ConfigClass` 一样，通过嵌套类 `I18nClass` 集中声明翻译键。
-框架会在 `__init__` 阶段（配置样版生成之前）自动注册所有声明的翻译键，
-确保配置描述中引用的 i18n 键在生成样版时已可用。
+適配器可以像宣告 `ConfigClass` 一樣，透過巢狀類別 `I18nClass` 集中宣告翻譯鍵。
+框架會在 `__init__` 階段（配置範本產生之前）自動註冊所有宣告的翻譯鍵，
+確保配置描述中引用的 i18n 鍵在產生範本時已可用。
 
 ```python
 from ErisPulse.Core.Bases import BaseAdapter, BaseI18n, I18nKey
@@ -585,14 +585,14 @@ class MyAdapter(BaseAdapter):
         )
 ```
 
-> ``I18nKey.default`` 是**语言无关的兜底文本**，不会注册到任何语言。
-> 要让翻译生效，必须显式传入至少一个语言参数。
+> ``I18nKey.default`` 是**與語言無關的後備文字**，不會註冊到任何語言。
+> 要讓翻譯生效，必須明確傳入至少一個語言參數。
 
-详细用法（键路径规则、显式 key 参数等）见 [i18n 文档](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270)。
+詳細用法（鍵路徑規則、明確 key 參數等）見 [i18n 文件](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270)。
 
-### 声明式事件扩展方法（v2.7.0+）
+### 宣告式事件擴充方法（v2.7.0+）
 
-适配器可以通过 `EventMixin` 集中声明平台特有的事件扩展方法，框架自动注册到当前平台。
+適配器可以透過 `EventMixin` 集中宣告平台特有的事件擴充方法，框架自動註冊到目前平台。
 
 ```python
 from ErisPulse.Core import BaseAdapter
@@ -600,44 +600,44 @@ from ErisPulse.Core import BaseAdapter
 class MyAdapter(BaseAdapter):
     class EventMixin:
         def get_chat_name(self):
-            """获取聊天名称"""
+            """取得聊天名稱"""
             return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 
         def is_official_message(self):
-            """判断是否为官方消息"""
+            """判斷是否為官方訊息"""
             raw = self.get("myplatform_raw", {})
             return raw.get("sender", {}).get("is_official", False)
 ```
 
-注册后，事件对象直接调用这些方法：
+註冊後，事件物件直接呼叫這些方法：
 
 ```python
 @message.on_group_message()
 async def handler(event):
     if event.is_official_message():
         chat_name = event.get_chat_name()
-        await event.reply(f"[{chat_name}] 官方消息已收到")
+        await event.reply(f"[{chat_name}] 官方訊息已收到")
 ```
 
-> 适配器的事件扩展方法注册到自身平台（``self._platform``）。
-> 模块如需跨平台事件扩展，请使用原有的 ``register_event_mixin()`` API。
+> 適配器的事件擴充方法註冊到自身平台（``self._platform``）。
+> 模組如需跨平台事件擴充，請使用原有的 ``register_event_mixin()`` API。
 
-#### 账户解析
+#### 帳戶解析
 
-多账户适配器可使用 `_resolve_account()` 自动解析目标账户：
+適配器實作 `call_api` 時，需要將帳戶識別解析為具體的帳戶配置——`Send` / `Api` 鏈路傳入的 `account_id`（`Using()` 或事件鏈綁定的結果）即為解析目標：
 
 ```python
 async def call_api(self, endpoint: str, **params):
     account_id = params.pop("account_id", None)
     name, account = self._resolve_account(account_id)
-    # name: 账户名, account: 配置实例
+    # name: 帳戶名稱, account: 配置實例
 ```
 
-解析策略：账户名匹配 → `bot_id` 字段匹配 → 其他 str 字段匹配 → 第一个启用账户。
+解析策略：帳戶名稱匹配 → `bot_id` 欄位匹配 → 其他 str 欄位匹配 → 第一個啟用的帳戶。
 
-#### 配置热更新
+#### 配置熱更新
 
-子类可覆写 `on_config_update()` 响应配置变更：
+子類別可覆寫 `on_config_update()` 以回應配置變更：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -645,76 +645,76 @@ class MyAdapter(BaseAdapter):
     
     def on_config_update(self, old_config, new_config):
         if old_config.token != new_config.token:
-            self.logger.info("Token 已更新，将重新连接")
+            self.logger.info("Token 已更新，將重新連線")
 ```
 
-### 初始化过程
+### 初始化流程
 
-框架在 `BaseAdapter.__init__(self, sdk=None)` 中自动完成以下工作：
+框架在 `BaseAdapter.__init__(self, sdk=None)` 中自動完成以下工作：
 
-1. **SDK 引用**：设置 `self.sdk`、`self.logger`
-2. **Send/Request 工厂**：创建 `self.Send` 和 `self.Request`
-3. **配置样版**：如果声明了 `ConfigClass`，自动生成默认配置样版（首次）
-4. **账户样版**：如果声明了 `AccountConfigClass`，自动生成默认账户样版（首次）
-5. **EventMixin 注册**：如果声明了 `EventMixin`，在 `AdapterManager` 注入平台名后自动注册
+1. **SDK 參考**：設定 `self.sdk`、`self.logger`
+2. **Send/Request 工廠**：建立 `self.Send` 和 `self.Request`
+3. **配置範本**：如果宣告了 `ConfigClass`，自動產生預設配置範本（首次）
+4. **帳戶範本**：如果宣告了 `AccountConfigClass`，自動產生預設帳戶範本（首次）
+5. **EventMixin 註冊**：如果宣告了 `EventMixin`，在 `AdapterManager` 注入平台名稱後自動註冊
 
-配置通过 `self.cfg` / `self.accounts` 实时读取（每次访问都从配置存储读取最新值）。`self.config` 作为 `self.cfg` 的兼容别名仍可使用。
+配置透過 `self.cfg` / `self.accounts` 即時讀取（每次存取都從配置儲存讀取最新值）。`self.config` 作為 `self.cfg` 的相容別名仍可使用。
 
-大多数适配器无需覆写 `__init__`。如需自定义初始化：
+大多數適配器無需覆寫 `__init__`。如需自訂初始化：
 
 ```python
 class MyAdapter(BaseAdapter):
     ConfigClass = MyConfig
     
     def __init__(self, sdk=None):
-        super().__init__(sdk)  # 传入 sdk
+        super().__init__(sdk)  # 傳入 sdk
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 ```
 
-## Send 消息发送 DSL
+## Send 訊息傳送 DSL
 
-### 继承关系
+### 繼承關係
 
 ```python
 class MyAdapter(BaseAdapter):
     class Send(BaseAdapter.Send):
-        """Send 嵌套类，继承自 BaseAdapter.Send"""
+        """Send 巢狀類別，繼承自 BaseAdapter.Send"""
         pass
 ```
 
-### 可用属性
+### 可用屬性
 
-`Send` 类在调用时会自动设置以下属性：
+`Send` 類別在呼叫時會自動設定以下屬性：
 
-| 属性 | 说明 | 设置方式 |
+| 屬性 | 說明 | 設定方式 |
 |-----|------|---------|
-| `_target_id` | 目标ID | `To(id)` 或 `To(type, id)` |
-| `_target_type` | 目标类型 | `To(type, id)` |
-| `_target_to` | 简化目标ID | `To(id)` |
-| `_account_id` | 发送账号ID | `Using(account_id)` |
-| `_adapter` | 适配器实例 | 自动设置 |
-| `_at_user_ids` | @用户列表 | `At(user_id)` |
-| `_reply_message_id` | 回复的消息ID | `Reply(message_id)` |
-| `_at_all` | 是否@全体 | `AtAll()` |
+| `_target_id` | 目標ID | `To(id)` 或 `To(type, id)` |
+| `_target_type` | 目標類型 | `To(type, id)` |
+| `_target_to` | 簡化目標ID | `To(id)` |
+| `_account_id` | 傳送帳號ID | `Using(account_id)` |
+| `_adapter` | 配接器實例 | 自動設定 |
+| `_at_user_ids` | @使用者清單 | `At(user_id)` |
+| `_reply_message_id` | 回覆的訊息ID | `Reply(message_id)` |
+| `_at_all` | 是否@全體 | `AtAll()` |
 
-> **推荐**：使用 `self.send_context` 属性一次性获取 `target_type`、`target_id`、`account_id`，比直接访问实例变量更清晰。
+> **推薦**：使用 `self.send_context` 屬性一次性取得 `target_type`、`target_id`、`account_id`，比直接存取實例變數更清晰。
 
-### 框架辅助方法
+### 框架輔助方法
 
-| 方法/属性 | 说明 |
+| 方法/屬性 | 說明 |
 |-----------|------|
-| `self._apply_modifiers(message)` | 将 At/AtAll/Reply 修饰器状态合并到消息段列表 |
-| `self.send_context` | 返回 `{target_type, target_id, account_id}` 字典 |
+| `self._apply_modifiers(message)` | 將 At/AtAll/Reply 修飾器狀態合併到訊息段清單 |
+| `self.send_context` | 回傳 `{target_type, target_id, account_id}` 字典；`account_id` 未顯式指定時兜底當前事件分發鏈路的觸發帳戶 |
 
 ### 基本方法
 
-适配器只需实现 `Raw_ob12`，标准方法（Text/Image/Voice/Video/File）已从 `SendDSL` 基类继承并默认委托给它：
+配接器只需實作 `Raw_ob12`，標準方法（Text/Image/Voice/Video/File）已從 `SendDSL` 基底類別繼承並預設委派給它：
 
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """必须实现：OneBot12 消息段 → 平台 API"""
+        """必須實作：OneBot12 訊息段 → 平台 API"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -725,13 +725,13 @@ class Send(BaseAdapter.Send):
             )
         return asyncio.create_task(_do_send())
 
-    # Text/Image/Voice/Video/File 已从基类继承，自动委托 Raw_ob12，无需重复实现
-    # 如需平台特定逻辑，可覆盖单个方法：
+    # Text/Image/Voice/Video/File 已從基底類別繼承，自動委派 Raw_ob12，無需重複實作
+    # 如需平台特定邏輯，可覆寫單一方法：
     # def Text(self, text: str):
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-### 链式修饰方法
+### 鏈式修飾方法
 
 ```python
 class Send(BaseAdapter.Send):
@@ -745,62 +745,93 @@ class Send(BaseAdapter.Send):
         return self
 ```
 
-## 事件转换器
+## 事件轉換器
 
-### 转换流程
+### 轉換流程
 
 ```
 平台原始事件
     ↓
 Converter.convert()
     ↓
-OneBot12 标准事件
+OneBot12 標準事件
 ```
 
-### 必需字段
+### 必需欄位
 
-所有转换后的事件必须包含：
+所有轉換後的事件必須包含：
 
 ```python
 {
-    "id": "事件唯一标识",
-    "time": 1234567890,           # 10位 Unix 时间戳
+    "id": "事件唯一標識",          # 同一帳戶重推同一事件必須相同（框架據此去重）
+    "time": 1234567890,           # 10位 Unix 時間戳
     "type": "message/notice/request/meta",
-    "detail_type": "事件详细类型",
-    "platform": "平台名称",
+    "detail_type": "事件詳細類型",
+    "platform": "平台名稱",
+    "message_id": "訊息ID",        # 訊息類事件必須
     "self": {
-        "platform": "平台名称",
-        "user_id": "机器人ID"     # 必须与 bot_id 一致
+        "platform": "平台名稱",
+        "user_id": "機器人ID"     # 必須與 bot_id 一致
     },
-    "{platform}_raw": {...},       # 原始数据（必须）
-    "{platform}_raw_type": "..."    # 原始类型（必须）
+    "{platform}_raw": {...},       # 原始資料（必須）
+    "{platform}_raw_type": "..."    # 原始類型（必須）
 }
 ```
 
-### 转换器示例
+> 事件 `id` 需帶帳戶維度：同一帳戶重推同一事件保持相同 `id`，不同帳戶收到同一條群組訊息時 `id` 必須不同（例如 `f"{self.user_id}:{post_type}:{message_id}"`）。
+
+### 跨帳戶重複受理（框架注入欄位）
+
+多帳戶轉接器的多個帳戶在同一群組/會話時，同一實體訊息會經各帳戶先後到達。框架在 `ErisPulse.framework.cross_account_policy != "off"` 時自動做內容級關聯（同平台 + 同會話 + 同發送者 + 同 `alt_message` 在短窗口內），轉接器無需參與：
+
+- `mark`：後續副本注入頂層欄位 `"multi_receipt": {"event_id": 首受理事件id, "self_id": 首受理帳戶}` 後照常分發，模組讀取該欄位自行裁決
+- `drop`：後續副本在分發入口直接丟棄
+
+`multi_receipt` 為框架注入的可選欄位，轉接器 Converter 不產出也不消費；策略預設 `off` 時事件結構與既有契約完全一致。
+
+#### 三層去重機制分工
+
+| 機制 | 配置 | 攔截什麼 | 判定依據 |
+|------|------|----------|----------|
+| 事件冪等去重 | `ErisPulse.framework.event_dedupe`（預設開） | 同一事件 id 的重連重推（同連線） | 事件 `id` |
+| 本號回聲過濾 | `ErisPulse.event.message.ignore_self`（預設開） | 接收帳戶自己的訊息（發送者 == 接收帳戶） | `self.user_id` vs `user_id` |
+| 跨帳戶重複受理 | `ErisPulse.framework.cross_account_policy`（預設 `off`，`drop` 啟用） | **同一實體訊息經其它帳戶的副本**——多帳戶同群組時 bot A 發言、bot B 也收到一份 | 內容級關聯（同平台 + 同會話 + 同發送者 + 同內容，短窗口），鍵不含 self_id |
+
+**典型場景——多帳戶同群組複讀**：bot A 發言，同群組的其他帳戶（bot B）也會收到一份，複讀類模組看到同一內容出現兩次。啟用 `cross_account_policy = "drop"` 後，後續帳戶的副本在分發入口丟棄，任何模組至多看到一次。
+
+與 `ignore_self` 的語義正交，兩者組合決定可見次數：
+
+| 組合 | 複讀模組看到 bot A 的訊息 |
+|------|--------------------------|
+| `drop` + `ignore_self = true`（預設） | 0 或 1 次（先到副本若經 A 自身連線則被 ignore_self 攔截）——**永不 2 次** |
+| `drop` + `ignore_self = false` | 恆定恰好 1 次 |
+
+> 不建議把 `ignore_self` 的語義擴展為「排除本機全部帳戶」：該判定依賴接收事件的 `self.user_id`（綁定未建立的窗口期會失效，見上文執行期邊界），而跨帳戶關聯是內容級判定，不依賴 self 資訊；且「逐帳戶接收」是跨帳戶日誌 / 同步類模組的既有依賴，收窄語義屬於隱式破壞。跨帳戶去重交給 `cross_account_policy`。
+
+### 轉換器範例
 
 ```python
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """将平台原生事件转换为 OneBot12 标准格式"""
+        """將平台原生事件轉換為 OneBot12 標準格式"""
         if not isinstance(raw_event, dict):
             return None
         
-        # 生成事件 ID
+        # 產生事件 ID
         event_id = raw_event.get("event_id") or str(uuid.uuid4())
         
-        # 转换时间戳
+        # 轉換時間戳
         timestamp = raw_event.get("timestamp")
         if timestamp and timestamp > 10**12:
             timestamp = int(timestamp / 1000)
         else:
             timestamp = int(timestamp) if timestamp else int(time.time())
         
-        # 转换事件类型
+        # 轉換事件類型
         event_type = self._convert_type(raw_event.get("type"))
         detail_type = self._convert_detail_type(raw_event)
         
-        # 构建标准事件
+        # 建構標準事件
         onebot_event = {
             "id": str(event_id),
             "time": timestamp,
@@ -1042,11 +1073,11 @@ async def call_api(self, endpoint: str, **params):
     }
 ```
 
-## 多账户支持
+## 多帳戶支援
 
-### 声明式配置（推荐）
+### 宣告式設定（建議）
 
-使用 `AccountConfigClass` 声明配置类后，框架自动管理多账户加载、验证和样版生成：
+使用 `AccountConfigClass` 宣告設定類別後，框架自動管理多帳戶載入、驗證和範本產生：
 
 ```python
 from dataclasses import dataclass, field
@@ -1062,16 +1093,16 @@ class MyAdapter(BaseAdapter):
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            self.logger.info(f"启动账户 {name}: {account.bot_id}")
+            self.logger.info(f"啟動帳戶 {name}: {account.bot_id}")
             await self._connect(name, account)
     
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
         name, account = self._resolve_account(account_id)
-        # 使用 account.token, account.bot_id 等字段
+        # 使用 account.token、account.bot_id 等欄位
 ```
 
-### 账户配置文件
+### 帳戶設定檔
 
 ```toml
 [MyAdapter.accounts.account1]
@@ -1085,35 +1116,41 @@ token = "token2"
 enabled = true
 ```
 
-### 指定账户发送
+### 指定帳戶傳送
 
 ```python
-# 使用 Using 方法指定账户
+# 使用 Using 方法指定帳戶
 my_adapter = adapter.get("myplatform")
 
-# 通过事件中的 self.user_id（推荐，最通用）
+# 透過事件中的 self.user_id（建議，最通用）
 await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
 
-# 通过账户名
+# 透過帳戶名稱
 await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 ```
 
-### self.user_id 与 Using 的关系
+### 事件的帳戶標識與 Using 的關係
 
-框架的事件回复机制会自动从事件的 `self` 字段中提取 `account_id`（优先）或 `user_id`，作为 `Using` 参数传入。适配器开发者需要确保 Converter 中 `self.user_id` 的值与 `_resolve_account()` 能够正确匹配。
+框架的事件回覆機制會自動從事件的 `self` 欄位提取帳戶標識（優先 `account_id` 代位，否則 `user_id`），注入 `Using` 後傳送。適配器開發者需確保 Converter 產出的帳戶標識能與帳戶設定匹配（帳戶名稱或 `bot_id` 等欄位）。
 
-**框架内部行为**：
+**框架注入行為**：
 
 ```python
-# 框架提取 bot_id 的逻辑
-bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
+# 框架提取帳戶標識的邏輯（account_id 代位優先，user_id 兜底）
+account = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
 
-# 仅在 bot_id 非空时调用 Using
-if bot_id:
-    send_chain = send_chain.Using(bot_id)
+# 僅在標識非空時注入 Using
+if account:
+    send_chain = send_chain.Using(account)
 ```
 
-> **关键点**：即使适配器只使用一个 Bot 配置，只要 Converter 正确设置了 `self.user_id`，框架就会将其作为 `Using` 参数传入。适配器需确保 `self.user_id` 与 `AccountConfigClass` 中的标识字段（如 `bot_id`）一致，使 `_resolve_account()` 能匹配到正确账户。如果 `self.user_id` 为空，框架不会调用 `Using`，此时 `call_api` 收到的 `account_id` 为 `None`，`_resolve_account(None)` 返回第一个启用的账户。
+> **關鍵點**：即使適配器只使用一個 Bot 設定，只要 Converter 正確設定了帳戶標識，框架就會將其注入 `Using`。適配器需確保該標識與 `AccountConfigClass` 中的帳戶名稱或 `bot_id` 等欄位一致，從而解析到正確帳戶。標識為空時框架不注入 `Using`，此時傳送按未指定帳戶處理——回落第一個啟用的帳戶。
+
+顯式傳入的 `account_id` 無法解析時，框架記錄 WARNING 並回退到第一個啟用帳戶；WARNING 中的 `platform` / `account_id` / `account` 可用於定位未歸屬到帳戶的事件來源。
+
+**事件分發鏈內的自動綁定**：處理事件的鏈路內呼叫傳送方法時**無需顯式 `Using()`**——框架在事件分發入口把觸發事件的帳戶標識注入呼叫上下文，`Send` / `Api` / `Request` 鏈路未顯式指定帳戶時據此兜底綁定（顯式 `Using()` 永遠優先；定時器 / 啟動任務等無事件上下文情境維持預設帳戶語意）。
+
+> 事件 `self.user_id` / `self.account_id` 代位的產出契約見[事件轉換標準](../../standards/event-conversion.md)；該欄位恆定存在是帳戶解析回退語意的前提——缺失時回落第一個啟用帳戶，多帳戶下即「從預設帳戶送出」。
 
 ## 错误处理
 

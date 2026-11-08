@@ -205,23 +205,24 @@ def get_interaction_id(self) -> str: ...  # interaction_id
 | フォーム form | 云湖 | 低 | プラットフォーム固有、`{platform}_` プレフィックスを保持 |
 | メディア変換/サイズ検出 | 各プラットフォーム | 低 | アダプタ内部での実装、外部には標準化しない |
 
-## 7. 新しいアダプター開発者の標準チェックリスト
+## 7. 新規アダプター開発者向け標準 Checklist
 
-新しいアダプターを開発する際は、以下のチェックリストを確認して実装してください（★ は必須、その他の項目は推奨）：
+新しいアダプターを開発する際は、このチェックリストに照らして実装を確認してください（★ は必須、その他は推奨）：
 
-- [ ] ★ イベントを OneBot12 標準構造に変換し、`BaseConverter` を継承する
-- [ ] ★ 標準メッセージセグメントの送受信をサポート（text/image/mention/reply/keyboard…；メディアセグメントは [送信方法規格 §2.1](send-method-spec.md) の形態分類と階層処理に従う）
-- [ ] ★ `Raw_ob12` を実装する（標準セグメント → プラットフォーム構造の変換；標準 `keyboard` セグメントは必ず実装）
+- [ ] ★ イベントを OneBot12 標準構造に変換、`BaseConverter` を継承
+- [ ] ★ 標準メッセージセグメントの送受信サポート（text/image/mention/reply/keyboard…；メディアセグメントは
+      [送信メソッド仕様 §2.1](send-method-spec.md) の形態グレード分けとフォールバック段階処理に従う）
+- [ ] ★ `Raw_ob12` を実装（標準セグメント → プラットフォーム構造の変換を含む；標準 `keyboard` セグメントは必須）
 - [ ] ★ 標準レスポンス構造を返す（`make_response`/`make_error`）
-- [ ] ★ 複数アカウント対応：`AccountConfigClass(BotAccountConfig)` + `_resolve_account`
-- [ ] ★ Send クラスは `BaseAdapter.Send` を継承し、`_apply_modifiers`/`send_context` を使用する
-- [ ] ☆ Api DSL：標準アクションをプラットフォームAPIにマッピングする（API 動作標準を参照）
-- [ ] ☆ Request DSL：リクエストイベントには `request_id` と `accept/reject` を含める
-- [ ] ☆ インタラクティブコンポーネント：`keyboard` セグメントの変換 + インタラクティブコールバックの標準フィールド + `.Keyboard()`/.Buttons()` 修飾子（アダプターの Send クラスで実装）
+- [ ] ★ マルチアカウント：`AccountConfigClass(BotAccountConfig)` + アカウント解決（アカウント名 / `bot_id` のマッチング）
+- [ ] ★ Send クラスは `BaseAdapter.Send` を継承し、`_apply_modifiers`/`send_context` を使用
+- [ ] ☆ Api DSL：標準アクションをプラットフォーム API にマッピング（API アクション標準を参照）
+- [ ] ☆ Request DSL：リクエストイベントに `request_id` + `accept/reject` を含める
+- [ ] ☆ インタラクティブコンポーネント：`keyboard` セグメント変換 + インタラクションコールバック標準フィールド + `.Keyboard()`/`.Buttons()` 修飾子（アダプターの Send クラスで実装）
 - [ ] ☆ EventMixin：`get_raw_event()` / `get_button_data()` などのプラットフォーム拡張メソッド
-- [ ] ☆ ライフサイクルタスクは `runtime.spawn_background` を使用する
-- [ ] ☆ 設定読み込みは `self.cfg` を使用する
-- [ ] ☆ フレームワークのソフト依存：ErisPulse のハード依存を宣言せず、ランタイムでのバージョン検証を行う
+- [ ] ☆ ライフサイクルタスクには `runtime.spawn_background` を使用
+- [ ] ☆ 設定の読み取りには `self.cfg` を使用
+- [ ] ☆ フレームワークへのソフト依存：ErisPulse のハード依存を宣言しない + 実行時バージョン検出
 - [ ] ☆ i18n：設定フィールドとログの多言語対応
 - [ ] ☆ platform-guide プラットフォームドキュメント + アダプターリポジトリの platform-features.md
 

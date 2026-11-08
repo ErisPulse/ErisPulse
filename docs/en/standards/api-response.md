@@ -1,26 +1,24 @@
 # ErisPulse Adapter Standardized Return Specification
 
 > [!TIP]
-> **When to read this**: When you are implementing the return values of `call_api` / Send / Request in an adapter and need to confirm that the response structure and return codes conform to the ErisPulse standard, or when troubleshooting the meaning of a particular `retcode`, refer to this document. Skip if not needed.
+> **When to read this**: When implementing `call_api` / Send / Request in your adapter, and you need to confirm whether the response structure and return codes conform to the ErisPulse standard, or when troubleshooting the meaning of a particular `retcode`, refer to this document. If not needed, skip it.
 
-## 1. Description
+## 1. Introduction
+Why is this specification necessary?
 
-Why does this specification exist?
+To ensure consistency in API response formats across platforms and maintain compatibility with OneBot12, ErisPulse adapters adopt the standardized message sending return structure defined by OneBot12.
 
-To ensure the uniformity of API response formats across different platforms and maintain compatibility with OneBot12, the ErisPulse adapter adopts the message sending return structure standard defined by OneBot12.
-
-However, the ErisPulse protocol has some special definitions:
-- 1. In the base fields, `message_id` is required, but this field does not exist in the OneBot12 standard.
-- 2. The response content needs to include a `{platform_name}_raw` field to store the raw response data.
+However, ErisPulse has some special protocol definitions:
+- 1. The `message_id` field is required in the base fields, but it is not part of the OneBot12 standard.
+- 2. The response content must include a `{platform_name}_raw` field to store raw response data.
 
 ## 2. Basic Return Structure
-
-All action responses must include the following basic fields:
+All action responses must include the following base fields:
 
 | Field Name | Data Type | Required | Description |
-|-----------|-----------|----------|-------------|
+|-------|---------|------|------|
 | status | string | Yes | Execution status, must be "ok" or "failed" |
-| retcode | int64 | Yes | Return code, follows OneBot12 return code rules |
+| retcode | int64 | Yes | Return code, must follow OneBot12 return code rules |
 | data | any | Yes | Response data, contains the request result on success, null on failure |
 | message_id | string | Yes | Message ID, used to identify the message, empty string if not available |
 | message | string | Yes | Error message, empty string on success |
@@ -28,14 +26,14 @@ All action responses must include the following basic fields:
 
 Optional fields:
 | Field Name | Data Type | Required | Description |
-|-----------|-----------|----------|-------------|
-| echo | string | No | Returned verbatim when the request contains an echo field |
+|-------|---------|------|------|
+| echo | string | No | If the request contains an echo field, return it unchanged |
 
-## 3. Full Field Specification
+## 3. Complete Field Specification
 
-### 3.1 Common Fields
+### 3.1 General Fields
 
-#### Successful Response Example
+#### Success Response Example
 ```json
 {
     "status": "ok",
@@ -51,7 +49,7 @@ Optional fields:
 }
 ```
 
-#### Failed Response Example
+#### Failure Response Example
 ```json
 {
     "status": "failed",
@@ -71,7 +69,7 @@ Optional fields:
 
 #### 1xxxx Request Error
 | Error Code | Error Name | Description |
-|------------|------------|-------------|
+|-------|-------|------|
 | 10001 | Bad Request | Invalid action request |
 | 10002 | Unsupported Action | Unsupported action request |
 | 10003 | Bad Param | Invalid action request parameter |
@@ -84,44 +82,46 @@ Optional fields:
 
 #### 2xxxx Handler Error
 | Error Code | Error Name | Description |
-|------------|------------|-------------|
+|-------|-------|------|
 | 20001 | Bad Handler | Action handler implementation error |
 | 20002 | Internal Handler Error | Exception thrown during action handler execution |
 
 #### 3xxxx Execution Error
 | Error Code Range | Error Type | Description |
-|------------------|------------|-------------|
+|-----------|---------|------|
 | 31xxx | Database Error | Database error |
 | 32xxx | Filesystem Error | Filesystem error |
 | 33xxx | Network Error | Network error |
 | 34xxx | Platform Error | Robot platform error |
 | 35xxx | Logic Error | Action logic error |
-| 36xxx | I Am Tired | Implementation decided to strike |
+| 36xxx | I Am Tired | Implementation decided to stop |
 
-#### Reserved Error Ranges
-- 4xxxx, 5xxxx: Reserved ranges, should not be used
-- 6xxxx–9xxxx: Other error ranges, for custom implementation use
+#### Reserved Error Segments
+- 4xxxx, 5xxxx: Reserved segments, should not be used
+- 6xxxx～9xxxx: Other error segments, for custom implementation use
 
 ## 4. Implementation Requirements
-1. All responses must contain the fields: `status`, `retcode`, `data`, and `message`.
-2. When the request contains a non-empty `echo` field, the response must include an `echo` field with the same value.
+1. All responses must include the `status`, `retcode`, `data`, and `message` fields.
+2. If the request contains a non-empty `echo` field, the response must include an `echo` field with the same value.
 3. Return codes must strictly follow the OneBot12 specification.
 4. Error messages (`message`) should be human-readable descriptions.
 
 ## 5. Extension Specifications
 
-ErisPulse extends the OneBot12 standard return structure as follows:
+ErisPulse extends the OneBot12 standard response structure with the following additions:
 
 ### 5.1 `message_id` Required Field
 
-In the OneBot12 standard, `message_id` is located within the `data` object and is not mandatory. ErisPulse elevates it to a **required** top-level field:
+In the OneBot12 standard, `message_id` is located inside the `data` object and is not mandatory. ErisPulse elevates it to a required top-level field:
 
-- When `message_id` cannot be obtained, it should be set as an empty string `""`
-- Ensure `message_id` always exists, so modules do not need to perform null checks
+- If `message_id` cannot be obtained, it should be set to an empty string `""`.
+- Ensure `message_id` is always present; modules should not perform null checks.
+
+> **Note the distinction**: This top-level elevation applies only to **action responses** (outbound). For inbound message **events**, the `message_id` is a required top-level field in the OneBot12 baseline, see [Event Conversion Standard](event-conversion.md).
 
 ### 5.2 `{platform}_raw` Raw Response Field
 
-The return value should include the `{platform}_raw` field, which stores a complete copy of the raw response data from the platform:
+The response should include a `{platform}_raw` field to store a complete copy of the platform's raw response data:
 
 ```json
 {
@@ -138,31 +138,31 @@ The return value should include the `{platform}_raw` field, which stores a compl
 ```
 
 **Requirements**:
-- `{platform}_raw` must be a deep copy of the original response, not a reference
-- `platform` must exactly match the platform name registered by the adapter (case-sensitive)
-- Error information from the original response should also be retained for debugging purposes
+- `{platform}_raw` must be a deep copy of the raw response, not a reference.
+- `platform` must exactly match the platform name registered by the adapter (case-sensitive).
+- Raw error messages should also be preserved for debugging.
 
-### 5.3 Framework Extension Return Codes (Custom Low Three Digits in the 34xxx Platform Error Segment)
+### 5.3 Framework Extension Return Codes (Customizing the Last Three Digits of 34xxx Platform Error Segment)
 
-The OneBot12 specification allows implementations to define custom low three digits of `3xxxx`. The `34xxx` segment semantics are **Platform Error** (robot platform error, such as failures caused by platform restrictions). The `34xxx` segment is used hierarchically according to responsibilities:
+The OneBot12 specification allows implementations to customize the last three digits of `3xxxx`. `34xxx` semantics are **Platform Error** (robot platform error, e.g., platform restrictions causing failure). `34xxx` internally uses the lower three digits for layered responsibilities:
 
-| Low Three Digits Segment | Ownership | Purpose |
+| Last Three Digits | Ownership | Purpose |
 |---------|------|------|
-| `340xx` | Adapter Implementation | Request operation group (Request Not Found / Already Handled / Not Supported / Permission Denied, see request-action-spec §7) |
-| `341xx`～`345xx` | Adapter Implementation | Platform-side permission / risk control / account restriction errors (implement custom low three digits, original error placed in `{platform}_raw`) |
-| `346xx` | **ErisPulse Framework (reserved)** | Framework-level interception and general failures; adapters/modules should not occupy these codes |
+| `340xx` | Adapter Implementation | Request operation family (Request Not Found / Already Handled / Not Supported / Permission Denied, see request-action-spec §7) |
+| `341xx`～`345xx` | Adapter Implementation | Platform-side permission / risk control / account restrictions (implementers define the last three digits, original error in `{platform}_raw`) |
+| `346xx` | **ErisPulse Framework (Reserved)** | Framework-level interception and general failures; adapters/modules should not use |
 | `347xx`～`349xx` | Adapter Implementation | Other platform execution errors |
 
 ErisPulse framework currently uses the `346xx` codes:
 
 | Error Code | Error Name | Description |
 |-------|-------|------|
-| 34600 | SDK Failure | General failure in the framework (`make_error()` default return code) |
-| 34601 | Action Denied | Outbound action denied by scope (`scope.actions`), call not initiated, directly return this response |
+| 34600 | SDK Failure | Framework general failure (default return code for `make_error()`) |
+| 34601 | Action Denied | Outbound action denied by `scope.actions`, call not initiated, directly return this response |
 
-> Responsibility distinction: `34601` is **framework-level interception before the call** (the module has no right to initiate the action); `34004` / `34xxx` platform codes are **actions already sent but rejected by the platform** (e.g., Bot lacks permission, is restricted). When modules check for permission issues, they should check both types: first check `34601` (the module's own scope is disabled), then check `34xxx` (platform-side restrictions).
+> **Responsibility distinction**: `34601` is **framework-level pre-call interception** (module has no permission to initiate the action); `34004` / `34xxx` platform codes are **actions already sent but rejected by the platform** (e.g., Bot lacks permission, is restricted). Modules should check both types of errors when determining permission issues: first check `34601` (module is restricted by scope), then check `34xxx` (platform restrictions).
 
-The return structure is the standard failure response as defined in §2:
+The return structure is the standard failure response from §2:
 
 ```json
 {
@@ -178,16 +178,18 @@ The return structure is the standard failure response as defined in §2:
 
 - [ ] Include `status`, `retcode`, `data`, `message_id`, `message` fields
 - [ ] Return codes follow the OneBot12 specification (see §3.2)
-- [ ] `message_id` always exists (set as empty string if unavailable)
-- [ ] `{platform}_raw` contains the raw response data from the platform
+- [ ] `message_id` is always present (empty string if unavailable)
+- [ ] `{platform}_raw` contains platform raw response data
 
 ## 6. Notes
-- For error codes starting with 3xxxx, the last three digits can be defined by the implementation.
-- Avoid using reserved error ranges (4xxxx, 5xxxx).
-- **`34600` / `34601` are reserved error codes for the ErisPulse framework** (see §5.3); adapters/modules should avoid using them.
-- Error messages should be concise and clear for easier debugging.
+- For `3xxxx` error codes, the last three digits can be defined by the implementation.
+- Avoid using reserved error segments (4xxxx, 5xxxx).
+- **`34600` / `34601` are reserved codes for the ErisPulse framework** (see §5.3); adapters/modules should avoid using them.
+- Error messages should be concise and clear for debugging.
+
+---
 
 ## Next Steps
 
-- **Implement corresponding value mapping for each DSL**: [API Action Specification](api-action-spec.md) (the data field of standard actions), [Request Action Specification](request-action-spec.md) (the 34001-34004 extensions for request actions), [Send Method Specification](send-method-spec.md) (the degradation semantics for failed sends)
-- **Troubleshoot permission-related failures**: First check `34601` (the module is disabled by scope, the framework intercepts before calling, see §5.3), then check `34xxx` (the action has been sent but rejected by the platform side)
+- **Implement DSL return values in parallel**: [API Action Standard](api-action-spec.md) (standard action data fields), [Request Operation Specification](request-action-spec.md) (34001-34004 extension for request operations), [Send Method Specification](send-method-spec.md) (degradation semantics for send failures)
+- **Troubleshoot permission-related failures**: First check `34601` (module is restricted by scope, framework intercepts before call, see §5.3), then check `34xxx` (action was sent but rejected by platform side)

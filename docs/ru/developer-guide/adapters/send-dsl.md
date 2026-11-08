@@ -1,143 +1,143 @@
-# Подробное руководство по SendDSL
+# SendDSL详解
 
 > [!TIP]
-> **Когда это нужно прочитать**: обязательно к прочтению в рамках пути разработки адаптеров (DSL отправки). Если это не требуется — пропустите, на использование остальных функций это не влияет.
+> **什么时候需要读这篇**：适配器开发路径内必读（发送 DSL）。不需要则跳过，不影响其它功能的使用。
 
+SendDSL 让消息发送串成一条链完成：指定目标、@ / 回复、重试 / 超时 / 延迟、批量发送，一行链式调用搞定。本篇覆盖发送方法、修饰方法、发送规则与发送链路的内部机制。
 
-SendDSL позволяет выполнить отправку сообщения единой цепочкой: указание цели, @ / ответ, повтор / тайм-аут / задержка, пакетная отправка — всё делается одной строкой цепного вызова. В этой статье рассматриваются методы отправки, модифицирующие методы, правила отправки и внутренние механизмы цепочки отправки.
+## 基本调用方式
 
-## Базовые способы вызова
-
-### 1. Указание типа и ID
+### 1. 指定类型和ID
 
 ```python
 await adapter.Send.To("group", "123").Text("Hello")
 ```
 
-### 2. Указание только ID
+### 2. 仅指定ID
 
 ```python
 await adapter.Send.To("123").Text("Hello")
 ```
 
-### 3. Указание аккаунта отправки
+### 3. 指定发送账号
 
 ```python
 await adapter.Send.Using("bot1").Text("Hello")
 ```
 
-### 4. Комбинированное использование
+### 4. 组合使用
 
 ```python
 await adapter.Send.Using("bot1").To("group", "123").Text("Hello")
 ```
 
-## Цепочка методов
+## 方法链
 
 ```mermaid
 flowchart LR
-    A["Using / Account<br/>(выбор аккаунта отправки, опционально)"] --> B["To<br/>(выбор типа цели и ID)"]
-    B --> C["Модифицирующие методы<br/>At / Reply / Expire / ForMember и др."]
-    C --> D["Методы отправки<br/>Text / Image / Voice / Raw_ob12"]
-    D --> E["Возвращает asyncio.Task"]
+    A["Using / Account<br/>（选发送账号，可选）"] --> B["To<br/>（选目标类型与 ID）"]
+    B --> C["修饰方法<br/>At / Reply / Expire / ForMember 等"]
+    C --> D["发送方法<br/>Text / Image / Voice / Video / File / Location / Raw_ob12"]
+    D --> E["返回 asyncio.Task"]
 ```
 
-## Методы отправки
+## 发送方法
 
-Все методы отправки возвращают объект `asyncio.Task`.
+所有发送方法返回 `asyncio.Task` 对象。
 
-### Базовые методы (встроены в базовый класс)
+### 基本方法（基类内置）
 
-Следующие стандартные методы уже встроены в базовый класс `SendDSL` и **по умолчанию делегируются `Raw_ob12`**; подклассы адаптеров могут использовать их напрямую без повторной реализации, а IDE обеспечивает автодополнение:
+以下标准方法已由 `SendDSL` 基类内置实现，**默认委托给 `Raw_ob12`**，适配器子类无需重复实现即可直接使用，且 IDE 能补全：
 
-| Название метода | Описание | Возвращаемое значение |
+| 方法名 | 说明 | 返回值 |
 |--------|------|---------|
-| `Text(text: str)` | Отправка текстового сообщения | `asyncio.Task` |
-| `Image(file: bytes \| str)` | Отправка изображения | `asyncio.Task` |
-| `Voice(file: bytes \| str)` | Отправка голосового сообщения (сегмент `audio` OneBot12) | `asyncio.Task` |
-| `Video(file: bytes \| str)` | Отправка видео | `asyncio.Task` |
-| `File(file: bytes \| str, filename: str = None)` | Отправка файла | `asyncio.Task` |
+| `Text(text: str)` | 发送文本消息 | `asyncio.Task` |
+| `Image(file: bytes \| str)` | 发送图片 | `asyncio.Task` |
+| `Voice(file: bytes \| str)` | 发送语音（OneBot12 `audio` 段） | `asyncio.Task` |
+| `Video(file: bytes \| str)` | 发送视频 | `asyncio.Task` |
+| `File(file: bytes \| str, filename: str = None)` | 发送文件 | `asyncio.Task` |
+| `Location(latitude: float, longitude: float, title: str = "", content: str = "")` | 发送位置消息（OneBot12 `location` 段） | `asyncio.Task` |
 
-Адаптер может переопределить отдельный стандартный метод, чтобы реализовать специфичную для платформы логику:
+适配器可覆盖单个标准方法以提供平台特定逻辑：
 
 ```python
 class Send(SendDSL):
     def Raw_ob12(self, message, **kwargs):
-        # Обязателен к реализации
+        # 必须实现
         ...
 
-    # Опционально: переопределение Text для платформенно-специфичной логики
+    # 可选：覆盖 Text 以提供平台特定逻辑
     # def Text(self, text: str):
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-### Протокольные методы
+### 协议方法
 
-| Название метода | Описание | Возвращаемое значение | Обязателен ли |
+| 方法名 | 说明 | 返回值 | 是否必须 |
 |--------|------|---------|---------|
-| `Raw_ob12(message)` | Отправка сообщения в формате OneBot12 | `asyncio.Task` | **Обязателен к реализации** |
+| `Raw_ob12(message)` | 发送 OneBot12 格式消息 | `asyncio.Task` | **必须实现** |
 
-> **Важно**: `Raw_ob12` — ключевой метод адаптера, **обязательный к реализации**. Это единая точка входа для обратного преобразования (OneBot12 → платформа). Если метод не реализован, базовый класс запишет журнал уровня error и вернёт стандартный ответ с ошибкой (`status: "failed"`, `retcode: 10002`). Стандартные методы (`Text`, `Image` и др.) по умолчанию делегируются `Raw_ob12`.
+> **重要**：`Raw_ob12` 是适配器的核心方法，**必须实现**。它是反向转换（OneBot12 → 平台）的统一入口。未实现时基类会记录 error 日志并返回标准错误响应（`status: "failed"`, `retcode: 10002`）。标准方法（`Text`、`Image` 等）默认委托给 `Raw_ob12`。
 
-### Платформенно-специфичные методы
+### 平台特有方法
 
-Адаптер может добавлять в подкласс `Send` платформенно-специфичные методы отправки (они распознаются через `event.supports()` / `event.available_methods()`):
+适配器可在 `Send` 子类中添加平台特有的发送方法（会被 `event.supports()` / `event.available_methods()` 识别）：
 
 ```python
 class Send(SendDSL):
     def Raw_ob12(self, message, **kwargs): ...
 
-    # Платформенно-специфичный метод
+    # 平台特有方法
     def Sticker(self, sticker_id: str):
         return self.Raw_ob12([{"type": "sticker", "data": {"id": sticker_id}}])
 ```
 
-## Модифицирующие методы
+## 修饰方法
 
-Модифицирующие методы возвращают `self`, что позволяет использовать цепные вызовы.
+修饰方法返回 `self` 以支持链式调用。
 
-### Метод At
-
-```python
-# Упоминание одного пользователя
-await adapter.Send.To("group", "123").At("456").Text("Привет")
-
-# Упоминание нескольких пользователей
-await adapter.Send.To("group", "123").At("456").At("789").Text("Всем привет")
-```
-
-### Метод AtAll
+### At 方法
 
 ```python
-# Упоминание всех участников
-await adapter.Send.To("group", "123").AtAll().Text("Привет всем")
+# @单个用户
+await adapter.Send.To("group", "123").At("456").Text("你好")
+
+# @多个用户
+await adapter.Send.To("group", "123").At("456").At("789").Text("你们好")
 ```
 
-### Метод Reply
+### AtAll 方法
 
 ```python
-# Ответ на сообщение
-await adapter.Send.To("group", "123").Reply("msg_id").Text("Текст ответа")
+# @全体成员
+await adapter.Send.To("group", "123").AtAll().Text("大家好")
 ```
 
-### Комбинирование модификаторов
+### Reply 方法
 
 ```python
-await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("Ответ на упомянутое сообщение")
+# 回复消息
+await adapter.Send.To("group", "123").Reply("msg_id").Text("回复内容")
 ```
 
-### Платформенно-специфичные модифицирующие методы
+### 组合修饰
 
-Помимо встроенных `At`/`AtAll`/`Reply`, адаптер может определять **платформенно-специфичные модифицирующие методы**. Таким методам **достаточно возвращать `self`** — какие-либо декораторы не нужны, фреймворк распознаёт их автоматически:
+```python
+await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("回复@的消息")
+```
 
-- Возвращает `self` (экземпляр SendDSL) → модифицирующий метод: не запускает обёртку отправки / события жизненного цикла, цепочка продолжается
-- Возвращает `Task`/`Awaitable` → метод отправки
+### 平台专有修饰方法
+
+除了内置的 `At`/`AtAll`/`Reply`，适配器可以定义**平台专有的修饰方法**。这类方法**只需返回 `self`**，无需任何装饰器——框架会自动识别：
+
+- 返回 `self`（SendDSL 实例）→ 修饰方法，不触发发送包装/生命周期事件，链式继续
+- 返回 `Task`/`Awaitable` → 发送方法
 
 ```python
 class Send(SendDSL):
     def Raw_ob12(self, message, **kwargs): ...
 
-    # Модифицирующий метод: возвращает self, ничего не отправляет
+    # 修饰方法：返回 self，不发送
     def Expire(self, seconds: int):
         self._expire = seconds
         return self
@@ -146,399 +146,401 @@ class Send(SendDSL):
         self._member = user_id
         return self
 
-    # Метод отправки: возвращает Task и зависит от состояния, заданного модифицирующими методами
+    # 发送方法：返回 Task，依赖修饰方法设置的状态
     def Board(self, content: str, **kwargs):
         return self.Raw_ob12([{"type": "board", "data": {"text": content}}])
 ```
 
-Использование:
+使用：
 
 ```python
-# Модифицирующие методы можно накладывать цепочкой друг за другом
-await adapter.Send.To("group", "big").Expire(3600).ForMember("114").Board("Содержимое доски")
+# 修饰方法可连续链式叠加
+await adapter.Send.To("group", "big").Expire(3600).ForMember("114").Board("看板内容")
 ```
 
-## Использование модифицирующих методов в классе-обёртке Event
+## 在 Event 包装类中使用修饰方法
 
 > [!NOTE]
-> Для функций `reply(via=)` и `event.send_chain()` требуется ErisPulse **2.7.0+**.
+> `reply(via=)` 与 `event.send_chain()` 本特性需要 ErisPulse **2.7.0+**。
 
-`event.reply()` по умолчанию предоставляет только встроенные параметры модификации, такие как `at_sender`/`at_users`/`at_all`/`quote`. Чтобы использовать платформенно-специфичные модифицирующие методы, есть два способа:
+`event.reply()` 默认只暴露 `at_sender`/`at_users`/`at_all`/`quote` 等内置修饰参数。要使用平台专有修饰方法，有两种方式：
 
-### Способ 1: параметр via метода reply()
+### 方式一：reply() 的 via 参数
 
-Подходит для небольшого набора заранее известных модифицирующих методов:
+适合少量、已知的修饰方法：
 
 ```python
-await event.reply("Содержимое доски", method="Board",
+await event.reply("看板内容", method="Board",
                   via=[("Expire", 3600), ("ForMember", "114514")])
 ```
 
-`via` — это список, каждый элемент которого может иметь вид:
+`via` 是一个列表，每个元素可为：
 
-| Форма записи | Эквивалентный цепной вызов |
+| 形式 | 等价链式调用 |
 |------|-------------|
 | `"Name"` | `.Name()` |
 | `("Name", arg1, arg2)` | `.Name(arg1, arg2)` |
 | `("Name", (arg1,), {kw: val})` | `.Name(arg1, kw=val)` |
 
-### Способ 2: event.send_chain()
+### 方式二：event.send_chain()
 
-Подходит для **нескольких модифицирующих методов подряд** или **методов-действий без параметров содержимого** (например, отзыв, удаление). `send_chain()` возвращает цепочку отправки с уже настроенными `To`/`Using`, к которой можно свободно добавлять любые модифицирующие методы и методы отправки:
+适合**连续多个修饰方法**或**无内容参数的动作型方法**（如撤回、删除）。`send_chain()` 返回已配置好 `To`/`Using` 的发送链，可自由追加任意修饰方法和发送方法：
 
 ```python
-# Платформенно-специфичный модифицирующий метод + отправка доски
-await event.send_chain().Expire(3600).Board("Истечёт через час")
+# 平台专有修饰方法 + 看板发送
+await event.send_chain().Expire(3600).Board("一小时后过期")
 
-# Несколько модифицирующих методов подряд
+# 连续多个修饰方法
 await (event.send_chain()
        .Expire(3600)
        .ForMember("114514")
-       .Board("Содержимое доски", content_type="markdown"))
+       .Board("看板内容", content_type="markdown"))
 
-# Встроенные модифицирующие методы также доступны
+# 内置修饰方法同样可用
 await event.send_chain().At("123").Reply("msg_id").Text("hi")
 
-# Методы-действия без параметров содержимого
+# 无内容参数的动作型方法
 await event.send_chain().DismissBoard()
 ```
 
-> `send_chain()` возвращает полноценный экземпляр SendDSL, поэтому **доступны все возможности цепочек** — не только модифицирующие методы, но и правила отправки и пакетное построение:
+> `send_chain()` 返回的是完整的 SendDSL 实例，因此**所有链式特性都可用**——不仅是修饰方法，还包括发送规则和批量构建：
 
 ```python
-# Правила отправки: повтор + тайм-аут + колбэк успешной отправки
+# 发送规则：重试 + 超时 + 成功回调
 await (event.send_chain()
        .Retry(3).Timeout(10)
-       .Hook(lambda r: print("Отправка успешна"))
-       .Text("Надёжная отправка"))
+       .Hook(lambda r: print("发送成功"))
+       .Text("可靠发送"))
 
-# Отложенная отправка + платформенный модификатор + доска
-await event.send_chain().Defer(5).Expire(3600).Board("Отложенная доска")
+# 延迟发送 + 平台修饰 + 看板
+await event.send_chain().Defer(5).Expire(3600).Board("延迟看板")
 
-# Режим пакетного построения
+# 批量构建模式
 results = await (event.send_chain()
                  .Build()
-                 .Text("Первая фраза").Image("pic.jpg").Text("Вторая фраза")
+                 .Text("第一句").Image("pic.jpg").Text("第二句")
                  .send_all())
 ```
 
-## Управление аккаунтами
+## 账户管理
 
-### Метод Using
+### Using 方法
 
-`Using()` используется для указания аккаунта, от имени которого отправляется сообщение. Переданный идентификатор сопоставляется через `_resolve_account()` со следующим приоритетом:
+`Using()` 用于指定发送消息的账户。传入的标识符按以下优先级匹配到具体账户（解析由框架自动完成）：
 
-1. **Имя аккаунта** — ключ в конфигурации (например, `"default"`, `"bot1"`)
-2. **bot_id, внедрённый во время выполнения** — идентификатор, автоматически внедряемый при конвертации события
-3. **Любое строковое (str) поле** — прочие строковые поля в конфигурации
-4. **Запасной вариант** — первый включённый аккаунт
+1. **账户名** — 配置中的键名（如 `"default"`、`"bot1"`）
+2. **`bot_id` 字段** — 账户配置中的 `bot_id` 字段（运行期由适配器回填，通常即机器人的 `self.user_id`）
+3. **任意 str 字段** — 配置中其他字符串字段
+4. **兜底** — 第一个启用的账户
 
 ```python
-# Использование имени аккаунта
+# 使用账户名
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# Использование bot_id (то есть self.user_id из события)
+# 使用 bot_id（通常即事件中的 self.user_id）
 await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
 
-### Метод Account
+> 处理事件的链路内未显式 `Using()` 时，框架自动绑定触发事件的账户（见[无感语法糖](#无感语法糖)）；定时器 / 启动任务等无事件上下文场景走默认账户。
 
-Метод `Account` эквивалентен `Using`:
+### Account 方法
+
+`Account` 方法与 `Using` 等价：
 
 ```python
 await adapter.Send.Account("account1").To("user", "123").Text("Hello")
 ```
 
-## Асинхронная обработка
+## 异步处理
 
-### Без ожидания результата
+### 不等待结果
 
 ```python
-# Сообщение отправляется в фоновом режиме
+# 消息在后台发送
 task = adapter.Send.To("user", "123").Text("Hello")
 
-# Продолжаем выполнять другие операции
+# 继续执行其他操作
 # ...
 ```
 
-### С ожиданием результата
+### 等待结果
 
 ```python
-# Получение результата напрямую через await
+# 直接 await 获取结果
 result = await adapter.Send.To("user", "123").Text("Hello")
-print(f"Результат отправки: {result}")
+print(f"发送结果: {result}")
 
-# Сначала сохраняем Task, затем ожидаем
+# 先保存 Task，稍后等待
 task = adapter.Send.To("user", "123").Text("Hello")
-# ... другие операции ...
+# ... 其他操作 ...
 result = await task
 ```
 
-## Система правил отправки
+## 发送规则系统
 
-SendDSL включает набор декораторов правил отправки: правила добавляются через цепные методы и применяются единообразно при финальной отправке. Правила покрывают типовые производственные сценарии: контроль тайм-аутов, повтор при сбоях, колбэки успешной отправки, отложенная отправка, отбрасывание по приоритету, мониторинг прогресса.
+SendDSL 内置了一套发送规则装饰器，通过链式方法附加规则，在最终发送时统一应用。规则覆盖常见的生产场景：超时控制、失败重试、成功回调、延迟发送、优先级丢弃、进度监控。
 
-Методы правил **возвращают self** (как At/AtAll/Reply) и должны вызываться перед методом отправки (Text/Image и т.д.). Правила распространяются на новые экземпляры, создаваемые `To`/`Using`/`Account`.
+规则方法**返回 self**（与 At/AtAll/Reply 一样），必须放在发送方法（Text/Image 等）之前调用。规则会随 `To`/`Using`/`Account` 创建的新实例传播。
 
-### Обзор методов правил
+### 规则方法一览
 
-| Метод | Описание |
+| 方法 | 说明 |
 |--------|------|
-| `.Hook(callback)` | Колбэк, выполняемый после успешной отправки (можно вызывать многократно, выполняются по порядку) |
-| `.Retry(times=1)` | Автоматический повтор N раз при сбое (всего N+1 попыток с учётом первой) |
-| `.Timeout(seconds)` | Тайм-аут одной отправки; при превышении текущая попытка отменяется (можно комбинировать с Retry) |
-| `.Defer(seconds=1.0)` | Отложенная отправка (таймер внутри процесса, без персистентности) |
-| `.Priority(level, drop_if_busy=False)` | Установка приоритета; возможно отбрасывание при перегрузке очереди |
-| `.OnProgress(callback)` | Колбэк прогресса по этапам (передаётся `SendContext`) |
-| `.OnError(callback)` | Колбэк ошибки при финальном сбое (срабатывает только один раз) |
+| `.Hook(callback)` | 发送成功后执行的回调（可多次调用，按顺序执行） |
+| `.Retry(times=1)` | 失败自动重试 N 次（含首次共 N+1 次） |
+| `.Timeout(seconds)` | 单次发送超时，超时取消当前尝试（可与 Retry 叠加） |
+| `.Defer(seconds=1.0)` | 延迟发送（进程内定时，不持久化） |
+| `.Priority(level, drop_if_busy=False)` | 设置优先级；积压时可丢弃 |
+| `.OnProgress(callback)` | 各阶段进度回调（传入 `SendContext`） |
+| `.OnError(callback)` | 最终失败时的错误回调（仅触发一次） |
 
-### Логика после успешной отправки (Hook)
+### 发送成功后执行逻辑（Hook）
 
 ```python
-# Синхронный колбэк
+# 同步回调
 await (adapter.Send.To("user", "123")
-       .Hook(lambda r: print(f"Отправка успешна, ID сообщения: {r['message_id']}"))
-       .Text("Привет"))
+       .Hook(lambda r: print(f"发送成功，消息ID: {r['message_id']}"))
+       .Text("你好"))
 
-# Асинхронный колбэк
+# 异步回调
 async def deduct_points(result):
     await db.update(user_id="123", points=-1)
 
-await adapter.Send.To("user", "123").Hook(deduct_points).Text("Списание баллов")
+await adapter.Send.To("user", "123").Hook(deduct_points).Text("扣积分")
 ```
 
-Hook выполняется только при финальном успехе отправки (включая успех после повторов); при сбое, тайм-ауте или отмене он не срабатывает.
+Hook 仅在发送最终成功（含重试成功）时执行；失败、超时、取消不触发。
 
-### Автоматический повтор при сбое (Retry)
+### 失败自动重试（Retry）
 
 ```python
-# 2 повтора после первого сбоя, всего 3 попытки
-result = await adapter.Send.To("user", "123").Retry(2).Text("С повтором")
+# 首次失败后重试 2 次，共 3 次尝试
+result = await adapter.Send.To("user", "123").Retry(2).Text("带重试")
 ```
 
-Условия срабатывания повтора: исключение при отправке, тайм-аут отправки, ответ со `status == "failed"`.
+重试触发条件：发送抛出异常、发送超时、发送返回 `status == "failed"` 的响应。
 
-### Автоматическая отмена по тайм-ауту (Timeout)
+### 超时自动取消（Timeout）
 
 ```python
-# Отмена, если одна отправка превышает 10 секунд
-await adapter.Send.To("user", "123").Timeout(10).Text("С тайм-аутом")
+# 单次发送超过 10 秒则取消
+await adapter.Send.To("user", "123").Timeout(10).Text("带超时")
 
-# Тайм-аут + повтор: 10 секунд на попытку, максимум 3 попытки
-await adapter.Send.To("user", "123").Timeout(10).Retry(2).Text("Тайм-аут с повтором")
+# 超时 + 重试：每次尝试 10 秒，最多 3 次
+await adapter.Send.To("user", "123").Timeout(10).Retry(2).Text("超时重试")
 ```
 
-### Мониторинг прогресса (OnProgress / OnError)
+### 进度监控（OnProgress / OnError）
 
 ```python
 def on_progress(ctx):
-    print(f"Этап: {ctx.stage}, попытка: {ctx.attempt + 1}/{ctx.max_attempts}, затрачено: {ctx.elapsed:.2f}s")
+    print(f"阶段: {ctx.stage}, 尝试: {ctx.attempt + 1}/{ctx.max_attempts}, 耗时: {ctx.elapsed:.2f}s")
     if ctx.stage == "failed":
-        print(f"  Ошибка: {ctx.error!r}")
+        print(f"  错误: {ctx.error!r}")
 
 async def on_error(ctx):
-    await notify_admin(f"Не удалось отправить {ctx.target_id}: {ctx.error!r}")
+    await notify_admin(f"发送给 {ctx.target_id} 失败: {ctx.error!r}")
 
 await (adapter.Send.To("user", "123")
        .Retry(3).Timeout(10)
        .OnProgress(on_progress)
        .OnError(on_error)
-       .Text("Мониторинг"))
+       .Text("监控"))
 ```
 
-Поля, которые содержит `SendContext`: `task_id`, `platform`, `method`, `target_type`, `target_id`, `bot_id`, `stage`, `attempt`, `max_attempts`, `started_at`, `finished_at`, `elapsed`, `error`, `result`, `extra`.
+`SendContext` 包含的字段：`task_id`、`platform`、`method`、`target_type`、`target_id`、`bot_id`、`stage`、`attempt`、`max_attempts`、`started_at`、`finished_at`、`elapsed`、`error`、`result`、`extra`。
 
-Возможные значения `stage`: `pending`, `sending`, `retrying`, `success`, `failed`, `timeout`, `cancelled`, `dropped`.
+`stage` 可能的值：`pending`、`sending`、`retrying`、`success`、`failed`、`timeout`、`cancelled`、`dropped`。
 
-### Отложенная отправка (Defer)
+### 延迟发送（Defer）
 
 ```python
-# Отправка через 5 секунд
-await adapter.Send.To("user", "123").Defer(5).Text("Запоздалое сообщение")
+# 5 秒后发送
+await adapter.Send.To("user", "123").Defer(5).Text("迟到消息")
 ```
 
-> Примечание: задержка реализуется таймером внутри процесса; при перезапуске процесса она теряется, персистентность не предусмотрена.
+> 注意：延迟为进程内定时，进程重启会丢失，不提供持久化。
 
-### Приоритет и отбрасывание при перегрузке (Priority)
+### 优先级与积压丢弃（Priority）
 
 ```python
-# Низкоприоритетное сообщение, автоматически отбрасывается при накоплении очереди
+# 低优先级消息，队列积压时自动丢弃
 result = await (adapter.Send.To("user", "123")
                .Priority(-1, drop_if_busy=True)
-               .Text("Отбрасываемое уведомление"))
-# Если отброшено, result["status"] == "failed"
+               .Text("可放弃的通知"))
+# 若被丢弃，result["status"] == "failed"
 ```
 
-Если включён `drop_if_busy`, при превышении порога числа находящихся в работе задач отправки (по умолчанию 64) отправка сразу отменяется. Глобальный порог можно настроить через `.PriorityThreshold(n)`.
+`drop_if_busy` 启用后，当在途发送任务数超过阈值（默认 64）时直接放弃本次发送。可通过 `.PriorityThreshold(n)` 调整全局阈值。
 
-### Комбинация правил и фоновое выполнение
+### 规则组合与后台执行
 
 ```python
-# Не блокирует основной поток — правила по-прежнему действуют
+# 不阻塞主流程，规则照样生效
 task = (adapter.Send.To("user", "123")
-        .Hook(lambda r: print("Отправка успешна!"))
+        .Hook(lambda r: print("发送成功！"))
         .Retry(3)
         .Timeout(10)
         .OnProgress(on_progress)
-        .Text("Привет"))
+        .Text("你好"))
 
-# Продолжаем выполнять другие операции
+# 继续执行其他操作
 await handle_next_action()
 ```
 
-### Распространение правил
+### 规则传播
 
-Правила распространяются на новые экземпляры, создаваемые `To`/`Using`/`Account`, что предотвращает потерю правил в цепных вызовах:
+规则随 `To`/`Using`/`Account` 创建的新实例传播，避免链式调用中规则丢失：
 
 ```python
-# Правила, заданные до To, также распространяются на экземпляр, созданный To
+# 规则在 To 之前设置，也会传播到 To 创建的实例
 builder = adapter.Send.Retry(3).Timeout(10)
-send = builder.To("user", "123")  # send по-прежнему несёт Retry(3) и Timeout(10)
+send = builder.To("user", "123")  # send 仍携带 Retry(3) 和 Timeout(10)
 await send.Text("hi")
 ```
 
-Правила у разных экземпляров независимы друг от друга (список hooks глубоко копируется).
+多个实例的规则相互独立（hooks 列表深拷贝）。
 
-## Режим пакетного построения
+## 批量构建模式（Build）
 
-Помимо режима одиночной отправки, SendDSL поддерживает режим пакетного построения: несколько методов отправки записываются в одну цепочку и единовременно выполняются в конце. Подходит для сценариев «отправить несколько сообщений одним махом».
+除单发模式外，SendDSL 还支持批量构建模式：一条链路中写多个发送方法，最后统一执行。适用于“一口气发多条消息”的场景。
 
-### Вход в режим построения
+### 进入构建模式
 
-Вызовите `.Build()` перед методом отправки; он возвращает `SendBuilder`. После этого методы отправки (Text/Image и т.д.) не выполняются сразу, а накапливаются как намерения отправки:
+在发送方法之前调用 `.Build()`，返回 `SendBuilder`。此后发送方法（Text/Image 等）不再立即执行，而是累积为发送意图：
 
 ```python
 results = await (adapter.Send.To("user", "123")
-                 .Build()                    # Вход в режим построения
-                 .Text("Первая фраза")
+                 .Build()                    # 进入构建模式
+                 .Text("第一句")
                  .Image("pic.jpg")
-                 .Text("Вторая фраза")
-                 .send_all())                # Единое выполнение
-# results = [результат Text, результат Image, результат Text]
+                 .Text("第二句")
+                 .send_all())                 # 统一执行
+# results = [Text结果, Image结果, Text结果]
 ```
 
-`.send_all()` возвращает `asyncio.Task`; после await получается список результатов (в порядке намерений).
+`.send_all()` 返回 `asyncio.Task`，await 后得到结果列表（按意图顺序）。
 
-### Параллельное и последовательное выполнение
+### 并行与串行
 
-По умолчанию выполнение **параллельное** (отправка с одновременным запуском; общее время примерно равно времени самой медленной). Чтобы гарантировать порядок доставки сообщений, вызовите `.Sequential()`:
+默认**并行**执行（并发发送，总耗时约等于最慢的一条）。需要保证消息到达顺序时调用 `.Sequential()`：
 
 ```python
-# Последовательно: отправка по порядку друг за другом
+# 串行：按顺序依次发送
 await (adapter.Send.To("group", "456")
        .Build()
        .Sequential()
-       .Text("Сначала это").Text("Затем это")
+       .Text("先发这个").Text("再发这个")
        .send_all())
 
-# Параллельно (по умолчанию, можно вызвать явно)
+# 并行（默认，可显式调用）
 await (adapter.Send.To("group", "456")
        .Build()
        .Parallel()
-       .Text("Параллельно 1").Text("Параллельно 2")
+       .Text("并发1").Text("并发2")
        .send_all())
 ```
 
-### Продолжение при сбое и повтор
+### 失败继续与重试
 
-Пакетное выполнение использует стратегию **продолжения при сбое**: сбой одного элемента не прерывает отправку остальных. В сочетании с `.Retry()` неудавшиеся элементы автоматически повторяются (повтор применяется к отдельному элементу, а не ко всей партии):
+批量执行采用**失败继续**策略：某条失败不会中断其他条的发送。配合 `.Retry()` 时，失败的条目会自动重试（重试作用于单条，不是重试整批）：
 
 ```python
 await (adapter.Send.To("user", "123")
        .Build()
-       .Retry(2)                       # Каждая позиция повторяется отдельно 2 раза
-       .Text("Возможен сбой").Image("Тоже возможен сбой")
+       .Retry(2)                       # 每条各自重试 2 次
+       .Text("可能失败的").Image("也可能失败的")
        .send_all())
 ```
 
-### Правила для всей партии и колбэки
+### 整批规则与回调
 
-Правила применяются единообразно ко всей партии:
+规则统一作用于整批：
 
-| Метод | Описание |
+| 方法 | 说明 |
 |--------|------|
-| `.Timeout(seconds)` | Тайм-аут одной попытки для каждой отправки |
-| `.Retry(times)` | Повтор для каждой отправки отдельно (продолжение при сбое) |
-| `.Defer(seconds)` | Отложенная отправка всей партии |
-| `.Hook(callback)` | Срабатывает после успеха всей партии, получает список `results` |
-| `.OnError(callback)` | Срабатывает при наличии сбоев в партии, получает `BatchContext` |
-| `.OnProgress(callback)` | Срабатывает по завершении каждой позиции, получает `BatchContext` |
+| `.Timeout(seconds)` | 每条发送的单次超时 |
+| `.Retry(times)` | 每条发送各自重试（失败继续） |
+| `.Defer(seconds)` | 延迟整批发送 |
+| `.Hook(callback)` | 整批全部成功后触发，接收 `results` 列表 |
+| `.OnError(callback)` | 批次存在失败时触发，接收 `BatchContext` |
+| `.OnProgress(callback)` | 每条完成时触发，接收 `BatchContext` |
 
 ```python
 def on_progress(ctx):
-    print(f"Прогресс: {ctx.completed}/{ctx.total}, успешно: {ctx.succeeded}, сбоев: {ctx.failed}")
+    print(f"进度: {ctx.completed}/{ctx.total}, 成功 {ctx.succeeded}, 失败 {ctx.failed}")
 
 async def on_error(ctx):
-    print(f"В партии {ctx.failed} сбоев")
+    print(f"批次有 {ctx.failed} 条失败")
 
 results = await (adapter.Send.To("user", "123")
                .Build()
                .Retry(2).Timeout(10)
                .OnProgress(on_progress)
                .OnError(on_error)
-               .Hook(lambda rs: print("Вся партия завершена"))
+               .Hook(lambda rs: print("整批完成"))
                .Text("a").Text("b").Text("c")
                .send_all())
 ```
 
-`BatchContext` содержит: `task_id`, `total`, `completed`, `succeeded`, `failed`, `stage`, `results`, `errors`, `elapsed`, `extra`.
+`BatchContext` 包含：`task_id`、`total`、`completed`、`succeeded`、`failed`、`stage`、`results`、`errors`、`elapsed`、`extra`。
 
-Возможные значения `stage`: `pending`, `sending`, `success` (всё успешно), `partial` (частично успешно), `failed` (всё с ошибкой).
+`stage` 可能的值：`pending`、`sending`、`success`（全部成功）、`partial`（部分成功）、`failed`（全部失败）。
 
-### Наследование модификаторов и правил
+### 修饰器与规则的继承
 
-Модификаторы At/AtAll/Reply и правила, заданные до `.Build()`, наследуются всей партией и применяются к каждому сообщению:
-
-```python
-await (adapter.Send.To("group", "456")
-       .At("789")                        # Наследование: каждое сообщение с @789
-       .Build()
-       .Retry(2)                         # Наследование + добавление: повтор для каждой позиции отдельно
-       .Text("@Уведомление для вас")
-       .Image("объявление.jpg")
-       .send_all())
-```
-
-После входа в Build всё ещё можно добавлять модификаторы (они действуют на всю партию):
+`.Build()` 之前的 At/AtAll/Reply 修饰器和规则会继承到整批，作用于每条消息：
 
 ```python
 await (adapter.Send.To("group", "456")
+       .At("789")                        # 继承：每条消息都 @789
        .Build()
-       .At("111").At("222")             # Добавление @, применяется ко всей партии
-       .Text("@нескольким")
+       .Retry(2)                         # 继承 + 追加：每条各自重试
+       .Text("@你的通知")
+       .Image("公告图")
        .send_all())
 ```
 
-### Фоновое выполнение
+进入 Build 后仍可追加修饰器（作用于整批）：
 
-Как и при одиночной отправке, `.send_all()` возвращает Task; можно не делать await и позволить ей выполняться в фоне:
+```python
+await (adapter.Send.To("group", "456")
+       .Build()
+       .At("111").At("222")             # 追加 @，作用于整批
+       .Text("@多人")
+       .send_all())
+```
+
+### 后台执行
+
+与单发一样，`.send_all()` 返回 Task，可不 await 让其在后台执行：
 
 ```python
 task = (adapter.Send.To("user", "123")
         .Build()
-        .Hook(lambda rs: print("Пакетная отправка завершена"))
+        .Hook(lambda rs: print("批量发送完成"))
         .Text("a").Text("b")
         .send_all())
 
-# Не блокирует основной поток
+# 不阻塞主流程
 await do_something_else()
 ```
 
-## Правила именования
+## 命名规范
 
-### Именование в PascalCase
+### PascalCase 命名
 
-Все методы отправки используют нотацию PascalCase (UpperCamelCase):
+所有发送方法使用大驼峰命名法：
 
 ```python
-# ✅ Правильно
+# ✅ 正确
 def Text(self, text: str):
     pass
 
 def Image(self, file: bytes):
     pass
 
-# ❌ Неправильно
+# ❌ 错误
 def text(self, text: str):
     pass
 
@@ -546,96 +548,106 @@ def send_image(self, file: bytes):
     pass
 ```
 
-### Платформенно-специфичные методы
+### 平台特有方法
 
-Не рекомендуется добавлять методы с префиксом платформы:
+不推荐添加平台前缀方法：
 
 ```python
-# ✅ Рекомендуется
+# ✅ 推荐
 def Sticker(self, sticker_id: str):
     pass
 
-# ❌ Не рекомендуется
+# ❌ 不推荐
 def TelegramSticker(self, sticker_id: str):
     pass
 ```
 
-Вместо этого используйте метод `Raw`:
+使用 `Raw` 方法替代：
 
 ```python
-# ✅ Рекомендуется
+# ✅ 推荐
 await adapter.Send.Raw_ob12([{"type": "sticker", ...}])
 
-# ❌ Не рекомендуется
+# ❌ 不推荐
 def TelegramSticker(self, ...):
     pass
 ```
 
-## Внутреннее устройство цепочки отправки
+## 发送链路内部拆解
 
-За одним вызовом `await adapter.Send.To("group", "123").Text("x")` фреймворк выполняет за вас следующую цепочку действий:
+一次 `await adapter.Send.To("group", "123").Text("x")` 的背后，框架帮你完成了下面这一串事：
 
 ```mermaid
 flowchart TD
-    A["adapter.Send.To(...).Text(...)"] --> B["Цепные методы To/Using<br/>каждый раз возвращают новый неизменяемый экземпляр (порядок не важен)"]
-    B --> C["__getattribute__ перехватывает метод отправки<br/>и оборачивает его в обёртку правил"]
-    C --> D["Вызов исходного метода (например, Text)<br/>внутри делегируется Raw_ob12"]
-    D --> E["Raw_ob12 возвращает asyncio.create_task(...)"]
-    E --> F["Запись журнала [Send]"]
-    F --> G["emit message.sending (fire-and-forget)"]
-    G --> H{"Объявлены правила отправки?"}
-    H -->|"Нет"| I["Task done_callback → emit message.sent"]
-    H -->|"Да"| J["apply_send_rules оборачивает во внешний Task<br/>повтор/тайм-аут/задержка/приоритет"]
+    A["adapter.Send.To(...).Text(...)"] --> B["To/Using 链式方法<br/>每次返回不可变新实例（顺序无关）"]
+    B --> C["__getattribute__ 拦截发送方法<br/>包一层规则包装器"]
+    C --> D["调用原始方法（如 Text）<br/>内部委托 Raw_ob12"]
+    D --> E["Raw_ob12 返回 asyncio.create_task(...)"]
+    E --> F["写 [Send] 日志"]
+    F --> G["emit message.sending（fire-and-forget）"]
+    G --> H{"声明了发送规则？"}
+    H -->|"否"| I["Task done_callback → emit message.sent"]
+    H -->|"是"| J["apply_send_rules 包成外层 Task<br/>重试/超时/延迟/优先级"]
     J --> I
-    I --> K["await возвращает стандартный dict-ответ"]
+    I --> K["await 得到标准响应 dict"]
 ```
 
-**Что фреймворк делает на каждом шаге:**
+**每一步框架做了什么：**
 
-| Этап | Что делает фреймворк |
+| 阶段 | 框架做了什么 |
 |------|-------------|
-| Слияние цепочки | `To`/`Using`/`Account` при каждом вызове **создают новый неизменяемый экземпляр**, наследующий уже установленные поля, поэтому `To(...).Using(...)` и `Using(...).To(...)` **эквивалентны**, порядок не важен |
-| Обёртка методов | Методы отправки (`Text` и др.) перехватываются `__getattribute__` и оборачиваются; модифицирующие методы (`To`/`Using`/`At`/`Retry` и др.) **не оборачиваются**. Вложенные вызовы `Raw_ob12` защищены от повторной обёртки флагом `_in_rule_wrap` |
-| Создание Task | Настоящая точка создания Task — это `asyncio.create_task()` внутри `Raw_ob12`; `Text()` лишь синхронно возвращает этот Task, **не блокируя** |
-| Журнал отправки | Записывается событийный журнал `[Send] platform/method -> target` (можно отключить через `exclude_levels=["EVENT"]`) |
-| `message.sending` | Срабатывает **немедленно** в режиме fire-and-forget при вызове метода отправки (только при наличии подписчиков — сначала короткая проверка `has_handlers`) |
-| `message.sent` | Привязывается к `done_callback` Task — **при наличии правил покрывает итоговый результат всего процесса повторов**, без правил — само завершение исходного Task |
+| 链式合并 | `To`/`Using`/`Account` 每次调用都**新建不可变实例**并继承已设字段，因此 `To(...).Using(...)` 与 `Using(...).To(...)` **等价**、顺序无关 |
+| 方法包装 | 发送方法（`Text` 等）被 `__getattribute__` 拦截包一层；修饰方法（`To`/`Using`/`At`/`Retry` 等）**不包装**。嵌套的 `Raw_ob12` 调用靠 `_in_rule_wrap` 标记防重复包装 |
+| Task 创建 | `Raw_ob12` 内部 `asyncio.create_task()` 才是 Task 真正的创建点；`Text()` 只是同步返回这个 Task，**不阻塞** |
+| 发送日志 | 写 `[Send] platform/method -> target` 事件日志（`exclude_levels=["EVENT"]` 可屏蔽） |
+| `message.sending` | 发送方法被调用时**立即**以 fire-and-forget 触发（仅当存在监听者，先 `has_handlers` 短路） |
+| `message.sent` | 绑定在 Task 的 `done_callback` 上——**有规则时覆盖整个重试流程的最终结果**，无规则时即原始 Task 完成 |
 
-### Цепочка отката при разрешении аккаунта
+### 账户解析回退链
 
-Когда адаптер внутри вызывает `_resolve_account(account_id)`, конкретный аккаунт определяется в следующем порядке:
+`Using()` 显式指定（含 `reply()` 自动注入）或事件链自动绑定的账户标识，按以下顺序解析到具体账户：
 
-1. Адаптер с единственным аккаунтом (нет `AccountConfigClass`) → возврат напрямую
-2. Точное совпадение имени аккаунта с `account_id`
-3. Совпадение по полю `bot_id` каждого аккаунта
-4. Совпадение по любому строковому (`str`) значению полей аккаунтов (кроме `enabled`/`name`)
-5. Запасной вариант — первый включённый аккаунт
-6. Если всё не удалось → выбрасывается `ValueError`
+1. 单账户适配器（无 `AccountConfigClass`）→ 直接返回
+2. 账户名精确匹配 `account_id`
+3. 各账户 `bot_id` 字段匹配
+4. 各账户任意 `str` 字段值匹配（排除 `enabled`/`name`）
+5. 兜底第一个启用的账户：未传 `account_id` 时直接采用（默认账户语义）；显式传入的 `account_id` 无法解析时记录 WARNING 后采用（WARNING 中的 `platform` / `account_id` / `account` 用于定位未归属到账户的事件来源）
+6. 没有任何启用账户（含全部账户已禁用）→ 抛 `ValueError`：无账户可发送
 
-> Передаваемый `account_id` берётся из: явного указания в `Using()` > полей `self` события (`account_id` имеет приоритет над `user_id`, автоматически внедряется через `event.reply()`) > не указан (адаптер в качестве запасного варианта берёт первый включённый аккаунт).
+> 你传的 `account_id` 来自：`Using()` 显式指定（含 `event.reply()` 自动注入的 `self.user_id` / `self.account_id` 代位）> **事件分发链兜底**（处理事件时未显式指定的发送，自动绑定触发事件的账户）> 不指定（默认账户语义，定时器 / 启动任务等无事件上下文场景）。
 
-### Движок правил отправки (повтор/тайм-аут/задержка)
+### 无感语法糖
 
-Правила оборачиваются в новый внешний Task **после** того, как `Raw_ob12` вернёт Task, и не затрагивают основной поток. Ключевые факты:
+| 语法糖 | 触发条件 | 效果 |
+|--------|----------|------|
+| 事件链内免 `Using()` | 处理事件的链路内调用 `Send` / `Api` / `Request` | 自动绑定触发事件的账户（分发入口注入调用上下文；`send_context` / `api_context` / `request_context` 同口径） |
+| `reply()` 自动引用 | `quote=True` | 自动取事件 `message_id` 构造 `Reply` 段 |
+| `reply()` 自动账户绑定 | reply 链路 | 自动 `Using(self.account_id or self.user_id)`——代位账户名直接可路由 |
+| 代位账户名路由 | 动态账户未获取 user_id | 事件 `self.account_id` = 账户名 → 账户名匹配解析回正确账户 |
+| 默认账户兜底 | 无事件上下文（定时器 / 启动任务）| 第一个启用账户（既有语义不变） |
 
-| Правило | Описание |
+### 发送规则引擎（重试/超时/延迟）
+
+规则在 `Raw_ob12` 返回 Task **之后**包装成新的外层 Task，不影响主流程。关键事实：
+
+| 规则 | 说明 |
 |------|------|
-| `Retry(n)` | Всего `n+1` попыток; **после сбоя немедленная повторная отправка, без экспоненциальной задержки** |
-| `Timeout(s)` | Отмена одной отправки по тайм-ауту (`asyncio.wait_for`); если попытки не исчерпаны — повтор |
-| `Defer(s)` | Задержка (sleep) перед отправкой |
-| `Priority(level, drop_if_busy)` | При превышении порога накопления очереди сразу возвращает `{status:"failed", retcode:10002, message:"dropped_low_priority"}` |
-| `Hook(fn)` | Выполняется по порядку только при финальном успехе |
-| `on_progress` / `on_error` | Колбэки по этапам / финального сбоя |
+| `Retry(n)` | 总尝试 `n+1` 次；**失败后立即重发，无指数退避** |
+| `Timeout(s)` | 单次发送超时取消（`asyncio.wait_for`），未耗尽则重试 |
+| `Defer(s)` | 发送前延迟 sleep |
+| `Priority(level, drop_if_busy)` | 积压超阈值时直接返回 `{status:"failed", retcode:10002, message:"dropped_low_priority"}` |
+| `Hook(fn)` | 仅最终成功时按序执行 |
+| `on_progress` / `on_error` | 各阶段 / 最终失败回调 |
 
-> **Внимание**: повтор — это «немедленная повторная отправка», без интервала между попытками; если платформа ограничивает частоту запросов и требует выдержки, выполните sleep в колбэке `on_error` и повторите отправку вручную. Правила считают отправку успешной по `status == "ok"` возвращаемого dict (`retcode == 0`).
+> **注意**：重试是「立即重发」，没有退避间隔；若平台限流需要退避，请在 `on_error` 回调里自行 sleep 后再手动重发。规则的成功判定以返回 dict 的 `status == "ok"` 为准（`retcode == 0`）。
 
-> Полная семантика формата стандартного ответа и `retcode` описана в [Спецификации ответов API](../../standards/api-response.md).
+> 标准响应格式与 `retcode` 完整语义见 [API 响应规范](../../standards/api-response.md)。
 
-## Возвращаемые значения
+## 返回值
 
-### Объект Task
+### Task 对象
 
-Все методы отправки возвращают `asyncio.Task`. Адаптеру достаточно реализовать `Raw_ob12`; стандартные методы (Text/Image и т.д.) по умолчанию делегируются ему:
+所有发送方法返回 `asyncio.Task`。适配器只需实现 `Raw_ob12`，标准方法（Text/Image 等）默认委托给它：
 
 ```python
 import asyncio
@@ -651,19 +663,20 @@ def Raw_ob12(self, message, **kwargs):
         )
     return asyncio.create_task(_do_send())
 
-# Text/Image/Voice/Video/File унаследованы от базового класса и автоматически делегируются Raw_ob12
-# При необходимости переопределить стандартный метод достаточно вернуть asyncio.Task:
+# Text/Image/Voice/Video/File/Location 已从基类继承，自动委托给 Raw_ob12
+# 如需覆盖标准方法，返回 asyncio.Task 即可：
 # def Text(self, text: str):
 #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-### Стандартизированный ответ
+### 标准化响应
 
-`call_api` должна возвращать стандартизированный ответ. Рекомендуется использовать методы `make_response()` / `make_error()`:
+`call_api` 应返回标准化响应。推荐使用 `make_response()` / `make_error()` 方法：
 
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
+        # _do_api_call 为适配器自行实现的平台请求（示例占位）
         result = await self._do_api_call(endpoint, **params)
         return self.make_response(
             data=result.get("data"),
@@ -674,7 +687,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-Также поддерживается ручное построение (старый способ по-прежнему совместим):
+也支持手动构造（旧版方式仍然兼容）：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -688,52 +701,52 @@ async def call_api(self, endpoint: str, **params):
     }
 ```
 
-## Полные примеры
+## 完整示例
 
-### Базовое использование
+### 基本使用
 
 ```python
 from ErisPulse.Core import adapter
 
 my_adapter = adapter.get("myplatform")
 
-# Отправка текста
+# 发送文本
 await my_adapter.Send.To("user", "123").Text("Hello World!")
 
-# Отправка изображения
+# 发送图片
 await my_adapter.Send.To("group", "456").Image("https://example.com/image.jpg")
 
-# Отправка файла
+# 发送文件
 with open("document.pdf", "rb") as f:
     await my_adapter.Send.To("user", "123").File(f.read())
 ```
 
-### Цепные вызовы
+### 链式调用
 
 ```python
-# Упоминание пользователя + ответ
-await my_adapter.Send.To("group", "456").At("789").Reply("msg123").Text("Ответ на упомянутое сообщение")
+# @用户 + 回复
+await my_adapter.Send.To("group", "456").At("789").Reply("msg123").Text("回复@的消息")
 
-# Упоминание всех + несколько модификаторов
-await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("Объявление")
+# @全体 + 多个修饰
+await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消息")
 ```
 
-### Сырые сообщения и построение сообщений
+### 原始消息与消息构建
 
-`Raw_ob12` — ключевая точка входа обратного преобразования (приём сегментов сообщений OB12 → вызов API платформы), а `MessageBuilder` — инструмент цепного построения сегментов сообщений, используемый вместе с ним.
+`Raw_ob12` 是反向转换的核心入口（接收 OB12 消息段 → 平台 API 调用），`MessageBuilder` 是配合其使用的链式消息段构建工具。
 
-> Полную спецификацию реализации `Raw_ob12`, использование `MessageBuilder` и примеры кода смотрите в:
-> - [Спецификация методов отправки §6 Спецификация обратного преобразования](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)
-> - [Спецификация методов отправки §11 Построитель сообщений](../../standards/send-method-spec.md#11-消息构建器-messagebuilder)
+> 完整的 `Raw_ob12` 实现规范、`MessageBuilder` 用法及代码示例请参阅：
+> - [发送方法规范 §6 反向转换规范](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)
+> - [发送方法规范 §11 消息构建器](../../standards/send-method-spec.md#11-消息构建器-messagebuilder)
 
-## Связанная документация
+## 相关文档
 
-### Продолжение пути разработки адаптеров
+### 继续适配器开发路径
 
-- [Введение в разработку адаптеров](getting-started.md) - создание адаптера
-- [Ключевые концепции адаптеров](core-concepts.md) - знакомство с архитектурой адаптеров
-- [Лучшие практики разработки адаптеров](best-practices.md) - разработка качественных адаптеров
+- [适配器开发入门](getting-started.md) - 创建适配器
+- [适配器核心概念](core-concepts.md) - 了解适配器架构
+- [适配器最佳实践](best-practices.md) - 开发高质量适配器
 
-### Следование официальным спецификациям
+### 遵循正式规范
 
-- [Спецификация методов отправки](../../standards/send-method-spec.md) - полная спецификация методов отправки (реализация `Raw_ob12` и `MessageBuilder`)
+- [发送方法规范](../../standards/send-method-spec.md) - 发送方法完整规范（`Raw_ob12` 实现与 `MessageBuilder`）

@@ -56,12 +56,15 @@ dev 模式文件监控（reload worker 内运行）
 #### 方法列表
 
 
-##### `start(watch_dir: str, loop: asyncio.AbstractEventLoop) -> None`
+##### `start(watch_dir: str = '.', loop: asyncio.AbstractEventLoop | None = None, notify: 'Callable[[set[str]], None] | None' = None) -> bool`
 
 启动 dev 文件监控并打印模式面板
 
 - **watch_dir**: 监控目录
-- **loop**: 用于调度重载的事件循环
+- **loop**: 用于调度重载的事件循环（缺省取当前运行循环）
+- **notify**: 文件变更提示回调（本覆写忽略，固定使用面板打印）
+
+**返回值**: 是否启动成功
 
 ---
 

@@ -234,24 +234,24 @@ def get_interaction_id(self) -> str: ...  # interaction_id
 
 ## 7. 新適配器開發者的標準 Checklist
 
-開發新適配器時，按此清單對照實作（★ 為必須，其餘建議）：
+開發新適配器時，請依照此清單對照實現（★ 為必須，其餘推薦）：
 
-- [ ] ★ 事件轉換為 OneBot12 標準結構，繼承 `BaseConverter`
-- [ ] ★ 標準訊息段收發支援（text/image/mention/reply/keyboard…；媒體段按
-      [發送方法規範 §2.1](send-method-spec.md) 的形態分級與降級階梯處理）
+- [ ] ★ 將事件轉換為 OneBot12 標準結構，繼承 `BaseConverter`
+- [ ] ★ 支援標準訊息段的收發（text/image/mention/reply/keyboard…；媒體段依
+      [發送方法規範 §2.1](send-method-spec.md) 的形態進行分級與降級階梯處理）
 - [ ] ★ 實作 `Raw_ob12`（含標準段 → 平台結構轉換；標準 `keyboard` 段必做）
-- [ ] ★ 回傳標準回應結構（`make_response`/`make_error`）
-- [ ] ★ 多帳戶：`AccountConfigClass(BotAccountConfig)` + `_resolve_account`
-- [ ] ★ Send 類別繼承 `BaseAdapter.Send`，用 `_apply_modifiers`/`send_context`
-- [ ] ☆ Api DSL：標準動作映射到平台API（見 API 動作標準）
-- [ ] ☆ Request DSL：請求事件含 `request_id` + `accept/reject`
-- [ ] ☆ 互動元件：`keyboard` 段轉換 + 互動回呼標準欄位 + `.Keyboard()`/`.Buttons()` 修飾器（適配器 Send 類別實作）
-- [ ] ☆ EventMixin：`get_raw_event()` / `get_button_data()` 等平台擴充方法
-- [ ] ☆ 生命週期任務用 `runtime.spawn_background`
-- [ ] ☆ 設定讀取用 `self.cfg`
-- [ ] ☆ 框架軟依賴：不宣告 ErisPulse 硬依賴 + 執行時版本偵測
-- [ ] ☆ i18n：設定欄位與日誌多語言
-- [ ] ☆ platform-guide 平台文件 + 適配器儲存庫 platform-features.md
+- [ ] ★ 返回標準回應結構（`make_response`/`make_error`）
+- [ ] ★ 支援多帳戶：`AccountConfigClass(BotAccountConfig)` + 帳戶解析（帳戶名 / `bot_id` 匹配）
+- [ ] ★ Send 類繼承 `BaseAdapter.Send`，使用 `_apply_modifiers`/`send_context`
+- [ ] ☆ API DSL：將標準動作對應到平台 API（詳見 API 動作標準）
+- [ ] ☆ Request DSL：請求事件包含 `request_id` + `accept/reject`
+- [ ] ☆ 互動元件：`keyboard` 段轉換 + 互動回調標準欄位 + `.Keyboard()`/.Buttons()` 修飾器（由適配器 Send 類實作）
+- [ ] ☆ EventMixin：`get_raw_event()` / `get_button_data()` 等平台擴展方法
+- [ ] ☆ 使用 `runtime.spawn_background` 管理生命週期任務
+- [ ] ☆ 使用 `self.cfg` 讀取配置
+- [ ] ☆ 框架軟依賴：不宣告 ErisPulse 硬依賴 + 運行時版本檢測
+- [ ] ☆ i18n：配置欄位與日誌多語言
+- [ ] ☆ platform-guide 平台文件 + 適配器倉庫 platform-features.md
 
 ## 8. 相關文件
 

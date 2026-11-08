@@ -17,7 +17,7 @@
 
 ## 1. 標準方法命名
 
-所有發送方法使用 **大駝峰命名法**，首字母大寫。
+所有發送方法使用 **大駝峰命名法（PascalCase）**，首字母大寫。
 
 ### 1.1 標準發送方法
 
@@ -28,6 +28,7 @@
 | `Voice` | 發送語音 | `str` \| `bytes` | 必須（基類已內建；平台不支援語音時按 §2.1.5 降級） |
 | `Video` | 發送影片 | `str` \| `bytes` | 必須（基類已內建；平台不支援影片時按 §2.1.5 降級） |
 | `File` | 發送檔案 | `str` \| `bytes`，`filename: str \| None = None` | 必須（基類已內建） |
+| `Location` | 發送位置訊息 | `float` (latitude/longitude)，`title: str = ""`，`content: str = ""` | 必須（基類已內建） |
 | `At` | @使用者/群組 | `str` (user_id) | 修飾方法，按需 |
 | `Face` | 發送表情 | `str` (emoji) | 可以 |
 | `Reply` | 回覆訊息 | `str` (message_id) | 修飾方法，按需 |
@@ -36,13 +37,13 @@
 | `HTML` | 發送 HTML 訊息 | `str` | 可以 |
 | `Card` | 發送卡片訊息 | `dict` | 可以 |
 
-> 標準方法（`Text`/`Image`/`Voice`/`Video`/`File`）由基類 `SendDSL` 內建並預設委派 `Raw_ob12`，適配器**無需重複實現**即可獲得類型簽名；僅當平台需要特殊邏輯時才覆寫單一方法（見 §6.4）。
+> 標準方法（`Text`/`Image`/`Voice`/`Video`/`File`/`Location`）由基類 `SendDSL` 內建並預設委派 `Raw_ob12`，適配器**無需重複實現**即可獲得型別簽名；僅當平台需要特殊邏輯時才覆寫單個方法（見 §6.4）。
 
 ### 1.2 鏈式修飾方法
 
 | 方法名 | 說明 | 參數類型 |
 |-------|------|---------|
-| `At` | @使用者（可多次呼叫） | `str` (user_id) |
+| `At` | @使用者（可多次調用） | `str` (user_id) |
 | `AtAll` | @全體成員 | 無 |
 | `Reply` | 回覆訊息 | `str` (message_id) |
 
@@ -52,22 +53,22 @@
 |-------|------|---------|
 | `Raw_ob12` | 發送 OneBot12 格式訊息段 | 必須 |
 
-**`Raw_ob12` 是必須實現的方法**。這是適配器的核心職責之一：接收 OneBot12 標準訊息段並將其轉換為平台原生 API 呼叫。`Raw_ob12` 是反向轉換（OneBot12 → 平台）的統一入口，確保模組可以不依賴平台特有方法，直接使用標準訊息段發送訊息。
+**`Raw_ob12` 是必須實現的方法**。這是適配器的核心職責之一：接收 OneBot12 標準訊息段並將其轉換為平台原生 API 調用。`Raw_ob12` 是反向轉換（OneBot12 → 平台）的統一入口，確保模組可以不依賴平台特有方法，直接使用標準訊息段發送訊息。
 
-**未覆寫 `Raw_ob12` 時的行為**：基類預設實現會記錄 **error 級別**日誌並回傳標準錯誤回應格式（`status: "failed"`, `retcode: 10002`），提示適配器開發者必須實現此方法。
+**未重寫 `Raw_ob12` 時的行為**：基類預設實現會記錄 **error 級別**日誌並回傳標準錯誤回應格式（`status: "failed"`, `retcode: 10002`），提示適配器開發者必須實現此方法。
 
-### 1.4 建議的擴展命名約定
+### 1.4 推薦的擴充命名慣例
 
-適配器如需支援發送非 OneBot12 格式的原始資料（如平台特定 JSON、XML 等），建議使用以下命名約定：
+適配器如需支援發送非 OneBot12 格式的原始資料（如平台特定 JSON、XML 等），推薦使用以下命名慣例：
 
-| 建議方法名 | 說明 |
+| 推薦方法名 | 說明 |
 |-----------|------|
 | `Raw_json` | 發送任意 JSON 資料 |
 | `Raw_xml` | 發送任意 XML 資料 |
 
-**注意**：這些方法**不是**基類提供的預設方法，也不強制要求實現。它們僅作為命名約定，適配器可根據需要自行定義。如果適配器不支援這些格式，則無需定義。
+**注意**：這些方法**不是**基類提供的預設方法，也不強制要求實現。它們僅作為命名慣例，適配器可根據需要自行定義。如果適配器不支援這些格式，則無需定義。
 
-**訊息建構器**：ErisPulse 提供了 `MessageBuilder` 工具類別，用於方便地建構 OneBot12 訊息段列表，配合 `Raw_ob12` 使用。詳見 [MessageBuilder 詳解](../advanced/message-builder.md)。
+**訊息建構器（MessageBuilder）**：ErisPulse 提供了 `MessageBuilder` 工具類別，用於方便地建構 OneBot12 訊息段列表，配合 `Raw_ob12` 使用。詳見 [MessageBuilder 詳解](../advanced/message-builder.md)。
 
 ## 2. 參數規範詳解
 
@@ -327,7 +328,7 @@ Converter.convert()               Send.Raw_ob12()
     │                                  │
     ▼                                  ▼
 OneBot12 標準事件                  平台原生 API 呼叫
-（含 {platform}_raw）             （回傳標準回應格式）
+（含 {platform}_raw）             （返回標準響應格式）
 ```
 
 **核心對稱性**：正向轉換保留原始資料在 `{platform}_raw` 中，反向轉換接受 OneBot12 標準格式並還原為平台呼叫。
@@ -349,7 +350,7 @@ def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
             {"type": "image", "data": {"file": "https://..."}},
             {"type": "mention", "data": {"user_id": "123"}},
         ]
-    :return: asyncio.Task，await 後回傳標準回應格式
+    :return: asyncio.Task，await 後返回標準響應格式
     """
 ```
 
@@ -357,8 +358,8 @@ def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
 
 1. **必須處理所有標準訊息段類型**：至少支援 `text`、`image`、`audio`、`video`、`file`、`mention`、`reply`
 2. **必須處理平台擴展訊息段**：對於 `{platform}_xxx` 類型的訊息段，轉換為平台對應的原生呼叫
-3. **必須回傳標準回應格式**：遵循 [API 回應標準](api-response.md)
-4. **不支援的訊息段應跳過並記錄警告**，不應拋出例外導致整條訊息發送失敗
+3. **必須返回標準響應格式**：遵循 [API 響應標準](api-response.md)
+4. **不支援的訊息段應跳過並記錄警告**，不應拋出異常導致整條訊息發送失敗
 
 ### 6.3 訊息段轉換規則
 
@@ -369,10 +370,10 @@ def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
 | OneBot12 訊息段 | 轉換要求 |
 |----------------|---------|
 | `text` | 直接使用 `data.text` |
-| `image` | `data.file` 按 §2.1 媒體協定處理（三必須形態 + 判定順序） |
+| `image` | `data.file` 按 §2.1 媒體協議處理（三必須形態 + 判定順序） |
 | `audio` | 同 image 處理邏輯 |
 | `video` | 同 image 處理邏輯 |
-| `file` | 同 image 處理邏輯；檔案名稱按 §2.1.3 推導順序處理 `data.filename` |
+| `file` | 同 image 處理邏輯；檔案名按 §2.1.3 推導順序處理 `data.filename` |
 | `mention` | 轉換為平台的 @使用者 機制（如 Telegram 的 `entities`，雲湖的 `at_uid`） |
 | `reply` | 轉換為平台的回覆引用機制 |
 | `face` | 轉換為平台的表情發送機制，不支援則跳過 |
@@ -422,7 +423,7 @@ await send.Raw_ob12([
 
 ### 6.4 `Raw_ob12` 與標準方法的關係
 
-適配器的標準發送方法（`Text`、`Image` 等）**已由 `SendDSL` 基類內建實現並預設委派給 `Raw_ob12`**，適配器子類別無需重複實現：
+適配器的標準發送方法（`Text`、`Image` 等）**已由 `SendDSL` 基類內置實現並默認委託給 `Raw_ob12`**，適配器子類無需重複實現：
 
 ```python
 class Send(SendDSL):
@@ -430,8 +431,8 @@ class Send(SendDSL):
         """核心實現：OneBot12 訊息段 → 平台 API（必須實現）"""
         return asyncio.create_task(self._send_ob12(message_segments))
 
-    # Text/Image/Voice/Video/File 已從基類繼承，自動委派 Raw_ob12
-    # 如需平台特定邏輯，可覆寫單一方法：
+    # Text/Image/Voice/Video/File/Location 已從基類繼承，自動委託 Raw_ob12
+    # 如需平台特定邏輯，可覆寫單個方法：
     # def Text(self, text: str) -> asyncio.Task:
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
@@ -442,7 +443,7 @@ class Send(SendDSL):
 - 模組無論使用 `Text()` 還是 `Raw_ob12()` 都能得到相同結果
 - 基類提供類型簽名，IDE 能補全標準方法
 
-### 6.5 實現範例
+### 6.5 實現示例
 
 ```python
 class YunhuSend(SendDSL):
@@ -482,7 +483,7 @@ class YunhuSend(SendDSL):
         # 3. 呼叫雲湖 API
         response = await self._call_yunhu_api(yunhu_elements, at_users, reply_to, at_all)
         
-        # 4. 回傳標準回應格式
+        # 4. 返回標準響應格式
         return {
             "status": "ok" if response["code"] == 0 else "failed",
             "retcode": response["code"],

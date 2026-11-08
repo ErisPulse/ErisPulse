@@ -457,13 +457,15 @@ adapters = []
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | 是否啟用模組懶載入 |
 | uninit_timeout | integer | 30 | 優雅關閉的總逾時時間（秒），超過後強制終止。0 表示不設逾時 |
-| strict_mode | integer | 0 | 嚴格模式層級，見下方「嚴格模式」說明 |
-| handler_max_concurrency | integer | 64 | 事件處理器最大並發 Task 數，設大可提高吞吐但增加記憶體佔用 |
-| handler_queue_max_pending | integer | 4096 | 事件洪峰入列背壓：單平台待處理 handler Task 數上限，超限時新事件的處理器 Task 直接捨棄並記錄 WARNING（捨棄計數可在 troubleshoot 排查中查看）；`0` 表示不限制 |
+| strict_mode | integer | 0 | 嚴格模式級別，見下方「嚴格模式」說明 |
+| handler_max_concurrency | integer | 64 | 事件處理器最大並行 Task 數，設大提高吞吐但增加記憶體佔用 |
+| handler_queue_max_pending | integer | 4096 | 事件洪峰入列背壓：單平台待處理 handler Task 數上限，超限時新事件的處理器 Task 直接丟棄並記 WARNING（丟棄計數可在 troubleshoot 疑難排解中查看）；`0` 表示不限 |
 | offline_bot_expiry | integer | 3600 | 離線 Bot 記錄自動過期時間（秒），0 表示不過期 |
-| plugins_dir | string / list | "plugins" | 本機插件資料夾（相對專案根目錄）；新增/刪除/修改插件檔案會被熱重載 watcher 自動發現 |
-| watch_ignore_dirs | list | 內建清單 | 熱重載檔案監控忽略的目錄名稱（`.venv`/`.git`/`__pycache__` 等）；非空列表**整體取代**內建清單，`[]` 表示不忽略任何目錄 |
-| watch_include_plugin_dirs | boolean | true | `epsdk run --reload` 是否將插件目錄交給插件熱重載 watcher 精確處理（單模組重載），並從全量監控中排除 |
+| plugins_dir | string / list | "plugins" | 本機外掛資料夾（相對專案根目錄）；新增/刪除/修改外掛檔案會被熱重載 watcher 自動發現 |
+| watch_ignore_dirs | list | 內建清單 | 熱重載檔案監控忽略的目錄名（`.venv`/`.git`/`__pycache__` 等）；非空列表**整體替換**內建清單，`[]` 表示不忽略任何目錄 |
+| watch_include_plugin_dirs | boolean | true | `epsdk run --reload` 是否把外掛目錄交給外掛熱重載 watcher 精確處理（單模組重載），並從全量監控中排除 |
+| event_dedupe | boolean | true | 事件冪等去重：相同事件 id 的重複投遞（連線層重推 / 閘道重發）只分發一次 |
+| cross_account_policy | string | "off" | 跨帳戶重複受理策略：同一實體訊息經多個帳戶先後到達時的處理——`off` 不關聯（事件照常逐一分發）；`mark` 副本注入頂層 `multi_receipt` 欄位（指向首個受理事件）後照常分發，模組讀取該欄位自行裁決；`drop` 副本在分發入口直接丟棄（框架層去重，模組無感） |
 
 ### 主動 GC 設定
 
@@ -474,25 +476,25 @@ SDK 初始化完成後啟動主動 GC 背景任務，週期性執行 Python GC �
 | proactive_gc_interval | number | 300 | 回收間隔（秒），支援小數。0 表示停用主動 GC |
 | proactive_gc_generation | integer | 0 | 常規輪次回收分代（0/1/2，鉗制到 0..2）。注意 `gc.collect(2)` 等同於全量回收，預設 0 保持輕量；深度回收由 `proactive_gc_full_every` 週期性觸發 |
 | proactive_gc_full_every | integer | 20 | 每 N 輪做一次全量回收，0 表示停用週期性全量。全量回收受 `proactive_gc_memory_growth_mb` 門檻約束 |
-| proactive_gc_memory_growth_mb | integer | 32 | 全量回收的記憶體成長門檻（MB）：對比上次全量後的記憶體基準線（優先 tracemalloc，其次 RSS），僅當成長達到此值才執行全量回收。0 表示不設門檻 |
+| proactive_gc_memory_growth_mb | integer | 32 | 全量回收的記憶體成長門檻（MB）：對比上次全量後的記憶體基線（優先 tracemalloc，其次 RSS），僅當成長達到此值才執行全量回收。0 表示不設門檻 |
 | proactive_gc_idle_only | boolean | false | 開啟後，事件洪峰（存在未完成的 pending handler）時本輪跳過 Python GC，避免停頓與訊息處理競爭；內部資源回收不受影響 |
 | proactive_gc_gen0_min | integer | 500 | 常規輪次觸發回收的 gen0 垃圾量下限：`gc.get_count()[0]` 低於此值直接跳過（空轉輪次近乎零開銷）。0 表示始終回收 |
 
-> **2.7.1 變更**：預設 `proactive_gc_generation` 由 `2` 調整為 `0`，預設 `proactive_gc_full_every` 由 `0` 調整為 `20`。此前 `generation=2` 意味著每輪都做最重的全量回收；新預設在保持回收覆蓋的同時顯著降低空轉開銷。明確設定的舊值仍按字面語意生效。
+> **2.7.1 變更**：預設 `proactive_gc_generation` 由 `2` 調整為 `0`，預設 `proactive_gc_full_every` 由 `0` 調整為 `20`。此前 `generation=2` 意味著每輪都做最重的全量回收；新預設在保持回收覆蓋的同時顯著降低空轉開銷。明確設定的舊值仍按字面語義生效。
 
 ### 嚴格模式
 
-嚴格模式控制模組/轉接器在載入階段不合規或失敗時的處理策略。現代模組/轉接器都應繼承對應的基底類別（`BaseModule`/`BaseAdapter`），未繼承基底類別的元件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
+嚴格模式控制模組/配接器在載入階段不合規或失敗時的處理策略。現代模組/配接器都應繼承對應的基底類別（`BaseModule`/`BaseAdapter`），未繼承基底類別的元件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
 
-> **2.5.2 變更**：預設層級從 `1`（跳過）調整為 `0`（寬鬆），以減少新使用者初次使用時遇到的載入問題。未繼承基底類別的元件將以 WARNING 提示並嘗試載入，而非直接拒絕。如需恢復舊行為，請明確設定 `strict_mode = 1`。
+> **2.5.2 變更**：預設級別從 `1`（跳過）調整為 `0`（寬鬆），以減少新使用者初次使用時遇到的載入問題。未繼承基底類別的元件將以 WARNING 提示並嘗試載入，而非直接拒絕。如需恢復舊行為，請明確設定 `strict_mode = 1`。
 
-| 層級 | 名稱 | 行為 |
+| 級別 | 名稱 | 行為 |
 |------|------|------|
 | 0 | 寬鬆（預設） | 違規僅警告，未繼承基底類別的元件仍會嘗試載入（相容舊元件） |
 | 1 | 嚴格-跳過 | 拒絕未繼承基底類別的元件並跳過，其餘正常啟動 |
 | 2 | 嚴格-致命 | 收集所有違規後統一報告並中止整個啟動 |
 
-各層級下，「載入/註冊/初始化階段報錯」這類元件自身崩潰始終會被跳過；區別在於：
+各級別下，「載入/註冊/初始化階段報錯」這類元件自身崩潰始終會被跳過；區別在於：
 
 - **0 → 1**：唯一行為變化是「未繼承基底類別」從「仍載入」變為「跳過」。
 - **1 → 2**：所有違規（未繼承基底類別、載入失敗、註冊失敗、初始化失敗等）升級為致命，會在啟動檢查點收集後一次性輸出違規清單並中止。
@@ -507,11 +509,11 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> 當某個元件被嚴格模式拒絕時，日誌會明確提示如何恢復載入（加入豁免清單或調低層級）。
+> 當某個元件被嚴格模式拒絕時，日誌會明確提示如何恢復載入（加入豁免清單或調低級別）。
 
 #### 與 CLI 的聯動
 
-`epsdk run` 的啟動前自檢（設定檔可解析性、元件必填設定完整性）預設跟隨本設定：非 0 時檢查失敗即拒絕啟動，0 時僅警告繼續。也可以不改設定臨時切換：`epsdk run --strict` 本次將自檢與嚴格層級同時開啟（層級只升不降，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到執行程序），`--no-strict` 本次臨時壓到寬鬆並僅警告。
+`epsdk run` 的啟動前自檢（設定檔可解析性、元件必填設定完整性）預設跟隨本設定：非 0 時檢查失敗即拒絕啟動，0 時僅警告繼續。也可以不改設定臨時切換：`epsdk run --strict` 本次將自檢與嚴格級別同時開啟（級別只升不降，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導至執行中的處理程序），`--no-strict` 本次臨時壓到寬鬆並僅警告。
 
 ## 存儲配置
 
@@ -580,7 +582,7 @@ allow_space_prefix = false
 | allow_space_prefix | boolean | false | 是否允許空格作為前綴 |
 | must_at_bot | boolean | false | 是否必須@機器人才能觸發命令（私聊不受限制） |
 
-### 消息配置
+### 訊息配置
 
 ```toml
 [ErisPulse.event.message]
@@ -590,6 +592,8 @@ ignore_self = true
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | ignore_self | boolean | true | 是否忽略機器人自己的訊息 |
+
+> 事件去重共三層，各管一類重複：`event_dedupe`（framework，相同事件 id 的重複投遞）→ `ignore_self`（本節，機器人自身訊息）→ `cross_account_policy`（framework，多帳戶同群的內容級副本）。分層職責詳見[適配器核心概念](../developer-guide/adapters/core-concepts.md)。
 
 ## 會話收件匣配置（transcript）
 

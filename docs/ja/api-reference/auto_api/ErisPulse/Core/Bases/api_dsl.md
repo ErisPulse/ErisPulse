@@ -76,6 +76,9 @@ info = await adapter.myplatform.Api.Using("bot1").get_user_info("123")
 
 获取当前 API 操作上下文
 
+account_id 优先取显式 ``Using()`` 指定值；未指定时兜底当前事件分发
+链路的触发账户（无事件上下文时为 None）。
+
 **返回值**: 包含 account_id 的字典
 
 ---
@@ -84,6 +87,8 @@ info = await adapter.myplatform.Api.Using("bot1").get_user_info("123")
 ##### `_merge_context(params: dict) -> dict`
 
 将 api_context 合并到参数字典
+
+优先级：业务参数显式传入的 account_id > ``Using()`` > 事件分发链路兜底。
 
 - **params**: 业务参数
 

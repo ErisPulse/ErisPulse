@@ -128,7 +128,7 @@
           "icon": "fa-download"
         },
         {
-          "title": "Configuration File Guide",
+          "title": "Configuration File Documentation",
           "path": "user-guide/configuration.md",
           "level": 1,
           "icon": "fa-sliders"
@@ -226,19 +226,19 @@
               "icon": "fa-network-wired"
             },
             {
-              "title": "Core Adapter Concepts",
+              "title": "Adapter Core Concepts",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1,
               "icon": "fa-microchip"
             },
             {
-              "title": "SendDSL Detailed Explanation",
+              "title": "SendDSL in Detail",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1,
               "icon": "fa-code-branch"
             },
             {
-              "title": "Adapter Development Best Practices",
+              "title": "Best Practices for Adapter Development",
               "path": "developer-guide/adapters/best-practices.md",
               "level": 1,
               "icon": "fa-medal"
@@ -629,7 +629,7 @@
           "icon": "fa-arrow-right-arrow-left"
         },
         {
-          "title": "Adapter Standardization Conversion Specification",
+          "title": "Standardization Specification for Adapter Conversion",
           "path": "standards/event-conversion.md",
           "level": 1,
           "icon": "fa-shuffle"
@@ -653,7 +653,7 @@
           "icon": "fa-bolt"
         },
         {
-          "title": "Adapter Standardization Guide (General Overview)",
+          "title": "Adapter Standardization Guide (Master Document)",
           "path": "standards/standardization-guide.md",
           "level": 1,
           "icon": "fa-gavel"
