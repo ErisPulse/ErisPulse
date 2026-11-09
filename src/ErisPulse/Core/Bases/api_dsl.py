@@ -12,7 +12,10 @@ ErisPulse 标准 API 动作 DSL 模块
 {!--< /tips >!--}
 """
 
+import inspect
 from typing import TYPE_CHECKING, Any
+
+from ...runtime.context import get_current_event_account
 
 if TYPE_CHECKING:
     # Self 用于让链式方法返回子类类型，使 IDE 能补全平台特有方法
@@ -20,6 +23,98 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .adapter import BaseAdapter
+
+
+def _code_string_constants(code) -> set:
+    """递归收集代码对象引用的字符串常量（探测 **params 内的字段消费）"""
+    out = set()
+    for const in code.co_consts:
+        if isinstance(const, str):
+            out.add(const)
+        elif hasattr(const, "co_consts"):
+            out |= _code_string_constants(const)
+    return out
+
+
+def _call_account_mode(adapter) -> str:
+    """
+    探测适配器 call_api 消费账户字段的方式
+
+    返回 ``account_id``（标准名）/ ``_account_id``（旧名）/ ``none``（不消费），
+    结果按适配器类缓存。签名只有 ``**params`` 的适配器继续扫描函数体常量，
+    覆盖在内部 ``params.pop("account_id")`` 的实现。
+
+    :param adapter: 适配器实例
+    :return: 账户字段名模式
+    """
+    cls = adapter.__class__
+    mode = getattr(cls, "_ep_call_account_mode", None)
+    if mode is not None:
+        return mode
+    mode = "none"
+    try:
+        fn = cls.call_api
+        names = set(inspect.signature(fn).parameters)
+        if "account_id" in names:
+            mode = "account_id"
+        elif "_account_id" in names:
+            mode = "_account_id"
+        else:
+            consts = _code_string_constants(fn.__code__)
+            if "account_id" in consts:
+                mode = "account_id"
+            elif "_account_id" in consts:
+                mode = "_account_id"
+    except (TypeError, ValueError, AttributeError):
+        pass
+    try:
+        cls._ep_call_account_mode = mode
+    except Exception:
+        pass
+    return mode
+
+
+def _warn_account_unconsumed(adapter) -> None:
+    """适配器不消费账户字段时提示一次（每个适配器类仅一次）"""
+    cls = adapter.__class__
+    if getattr(cls, "_ep_account_warned", False):
+        return
+    try:
+        cls._ep_account_warned = True
+        from ..i18n import i18n
+
+        adapter._get_logger().warning(
+            i18n.t(
+                "core.adapter.call_api_account_unconsumed",
+                platform=getattr(adapter, "_platform", "") or cls.__name__,
+            )
+        )
+    except Exception:
+        pass
+
+
+def _adapt_account_param(adapter, params: dict) -> dict:
+    """
+    按适配器实现改写标准账户字段名（兼容旧适配器）
+
+    - 标准实现（消费 ``account_id``）：原样传递
+    - 旧实现（只有 ``_account_id``）：改写为旧名，``Using()`` 继续生效
+    - 完全不消费：剔除字段避免泄漏到平台参数，并提示一次 WARNING
+
+    :param adapter: 适配器实例
+    :param params: 已合并 api_context 的动作参数
+    :return: 改写后的参数
+    """
+    if "account_id" not in params:
+        return params
+    mode = _call_account_mode(adapter)
+    if mode == "_account_id":
+        params["_account_id"] = params.pop("account_id")
+    elif mode == "none":
+        params.pop("account_id", None)
+        _warn_account_unconsumed(adapter)
+    return params
+
 
 class ApiDSL:
     """
@@ -81,8 +176,6 @@ class ApiDSL:
         """
         account_id = self._account_id
         if account_id is None:
-            from ...runtime.context import get_current_event_account
-
             account_id = get_current_event_account() or None
         return {
             "account_id": account_id,
@@ -154,6 +247,7 @@ class ApiDSL:
                     message="shadow (not called)",
                 )
 
+        params = _adapt_account_param(self._adapter, params)
         return await self._adapter.call_api(action, **params)
 
     # ==================== 用户相关动作 ====================

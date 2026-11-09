@@ -188,6 +188,7 @@ TRANSLATIONS = {
     "core.adapter.account_not_found": "No available account found (account_id={account_id})",
     "core.adapter.legacy_bots_migrated": "Legacy account config {key}.bots has been migrated to {key}.accounts ({count} accounts)",
     "core.adapter.accounts_set_failed": "Failed to write account config key={key}: {error}",
+    "core.adapter.call_api_account_unconsumed": "Platform {platform} call_api does not consume account_id/_account_id; Api DSL Using() and event accounts fall back to the default account",
     "core.adapter.account_unresolved_fallback": "Platform {platform} could not resolve account_id={account_id} to an account, falling back to the first enabled account {account}",
     "core.adapter.cross_receipt_dropped": "Platform {platform} detected a cross-account duplicate receipt, event {event_id} dropped (first receiving account {self_id})",
     "core.adapter.cross_receipt_marked": "Platform {platform} detected a cross-account duplicate receipt, event {event_id} marked with multi_receipt (first receiving account {self_id})",

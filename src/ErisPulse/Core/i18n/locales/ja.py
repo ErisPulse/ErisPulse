@@ -188,6 +188,7 @@ TRANSLATIONS = {
     "core.adapter.account_not_found": "利用可能なアカウントが見つかりません (account_id={account_id})",
     "core.adapter.legacy_bots_migrated": "旧形式のアカウント設定 {key}.bots を {key}.accounts に移行しました（{count} 件）",
     "core.adapter.accounts_set_failed": "アカウント設定の書き込みに失敗 key={key}: {error}",
+    "core.adapter.call_api_account_unconsumed": "プラットフォーム {platform} の call_api はアカウントフィールド（account_id / _account_id）を消費していません。Api DSL の Using() とイベントアカウントは既定のアカウントにフォールバックします",
     "core.adapter.account_unresolved_fallback": "プラットフォーム {platform} は account_id={account_id} を特定のアカウントに解決できませんでした。最初の有効なアカウント {account} にフォールバックします",
     "core.adapter.cross_receipt_dropped": "プラットフォーム {platform} がアカウント間の重複受信を検出しました。イベント {event_id} を破棄しました（最初の受信アカウント {self_id}）",
     "core.adapter.cross_receipt_marked": "プラットフォーム {platform} がアカウント間の重複受信を検出しました。イベント {event_id} に multi_receipt を付与しました（最初の受信アカウント {self_id}）",

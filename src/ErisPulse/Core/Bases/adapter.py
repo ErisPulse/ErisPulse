@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
     from .send_builder import SendBuilder
 
+from ...runtime.context import get_current_event_account
 from ..config import config as config_mgr
 from ..constants import (
     DEFAULT_SEND_METHOD,
@@ -678,8 +679,6 @@ class SendDSL:
         # （处理事件时发送无需显式 Using；定时器等无事件上下文场景为 None）
         account_id = self._account_id
         if account_id is None:
-            from ...runtime.context import get_current_event_account
-
             account_id = get_current_event_account() or None
         return {
             "target_type": self._target_type,
@@ -1285,8 +1284,6 @@ class RequestDSL:
         """
         account_id = self._account_id
         if account_id is None:
-            from ...runtime.context import get_current_event_account
-
             account_id = get_current_event_account() or None
         return {
             "request_id": self._request_id,

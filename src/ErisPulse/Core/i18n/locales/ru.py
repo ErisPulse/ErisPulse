@@ -188,6 +188,7 @@ TRANSLATIONS = {
     "core.adapter.account_not_found": "Доступный аккаунт не найден (account_id={account_id})",
     "core.adapter.legacy_bots_migrated": "Старая конфигурация аккаунтов {key}.bots перенесена в {key}.accounts ({count} аккаунтов)",
     "core.adapter.accounts_set_failed": "Не удалось записать конфигурацию аккаунтов key={key}: {error}",
+    "core.adapter.call_api_account_unconsumed": "call_api платформы {platform} не использует поле account_id/_account_id; Using() в Api DSL и аккаунт события будут использовать аккаунт по умолчанию",
     "core.adapter.account_unresolved_fallback": "Платформа {platform} не смогла сопоставить account_id={account_id} с аккаунтом, используется первый включённый аккаунт {account}",
     "core.adapter.cross_receipt_dropped": "Платформа {platform} обнаружила дублирующее получение между аккаунтами, событие {event_id} отклонено (первый принявший аккаунт {self_id})",
     "core.adapter.cross_receipt_marked": "Платформа {platform} обнаружила дублирующее получение между аккаунтами, событие {event_id} помечено multi_receipt (первый принявший аккаунт {self_id})",
