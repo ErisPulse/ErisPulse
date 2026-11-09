@@ -72,6 +72,7 @@ TRANSLATIONS = {
     "core.sdk.hot_reload.no_loader": "熱重載不可用：SDK 尚未初始化模組載入器",
     "core.sdk.hot_reload.failed": "熱重載模組 {name} 失敗: {error}",
     "core.sdk.run.shutdown_signal": "收到關閉訊號，正在清理...",
+    "core.sdk.run.restart_signal": "收到熱重啟訊號（SIGUSR1），開始進程內軟重啟（元件級熱載入）",
     "core.sdk.run.unexpected_error": "攔截到意外終止訊號: {error}，已阻止程序退出",
     "core.sdk.run.unhandled_error": "執行過程中發生未處理異常，已攔截以保證框架繼續執行: {error}",
     # ==================== SDK 回呼 ====================

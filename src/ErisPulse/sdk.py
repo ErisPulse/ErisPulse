@@ -1063,7 +1063,11 @@ class SDK:
     def _register_signal_handlers(self) -> None:
         """
         {!--< internal-use >!--}
-        注册进程信号处理器，将 SIGTERM / SIGHUP 等信号转为优雅关闭
+        注册进程信号处理器：SIGTERM / SIGHUP 转为优雅关闭，SIGUSR1 转为
+        进程内软重启（组件级热重载）
+
+        SIGUSR1 供 ``epsdk restart`` 对容器内 PID 1 实例使用——容器主进程
+        被终止即容器退出，外部「停止后重拉」不可用，改由框架进程内完成重启。
 
         Windows 不支持 ``loop.add_signal_handler``，捕获异常后跳过
         （Windows 下仍可通过 ``sdk.shutdown()`` 或 Ctrl+C 触发关闭）。
@@ -1076,6 +1080,12 @@ class SDK:
             self.logger.info(i18n.t("core.sdk.run.shutdown_signal"))
             self.shutdown()
 
+        def _on_restart_signal():
+            from .runtime.tasks import spawn_background
+
+            self.logger.info(i18n.t("core.sdk.run.restart_signal"))
+            spawn_background(self.restart())
+
         for sig_name in ("SIGTERM", "SIGHUP"):
             sig = getattr(signal, sig_name, None)
             if sig is None:
@@ -1084,6 +1094,13 @@ class SDK:
                 loop.add_signal_handler(sig, _on_signal)
             except (NotImplementedError, RuntimeError, ValueError):
                 # Windows / 某些事件循环不支持 add_signal_handler
+                pass
+
+        sigusr1 = getattr(signal, "SIGUSR1", None)
+        if sigusr1 is not None:
+            try:
+                loop.add_signal_handler(sigusr1, _on_restart_signal)
+            except (NotImplementedError, RuntimeError, ValueError):
                 pass
 
     async def _do_restart(self) -> bool:

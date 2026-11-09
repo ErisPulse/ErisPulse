@@ -302,7 +302,7 @@ async def shutdown_after_idle():
     sdk.shutdown()  # 空闲 1 小时后优雅退出
 ```
 
-**信号处理**：`run()` 内部会注册 `SIGTERM` / `SIGHUP` 处理器，将系统信号转为优雅关闭——容器编排（Docker `docker stop`）或 `systemd` 停止服务时，进程会走完 `uninit()` 清理而非被强杀。
+**信号处理**：`run()` 内部会注册 `SIGTERM` / `SIGHUP` 处理器，将系统信号转为优雅关闭——容器编排（Docker `docker stop`）或 `systemd` 停止服务时，进程会走完 `uninit()` 清理而非被强杀。另注册 `SIGUSR1` 处理器转为进程内软重启（`sdk.restart()`）——`epsdk restart` 对容器内 PID 1 实例（终止即容器退出，无法外部重拉）改发此信号触发组件热重载。SIGUSR1 热重启通道需要 ErisPulse **2.12+**。
 
 - Windows 不支持 `loop.add_signal_handler`，信号处理器会自动跳过（仍可用 `sdk.shutdown()` 或 Ctrl+C 触发关闭）
 - 反复调用 `sdk.shutdown()` 是安全的（事件已设置后再次调用为无操作）
@@ -424,6 +424,9 @@ services:
     build: .
     restart: unless-stopped   # 任何退出（含 42）都重启
 ```
+
+> 容器内 `epsdk restart` 对 PID 1 实例走 SIGUSR1 进程内热重启，不会退出容器；
+> 整进程重启由 `restart` 策略承载。详见 [部署 → 容器内重启](../user-guide/deployment.md#容器内重启pid-1-实例)。
 
 #### 4. PM2（Node 生态运维）
 

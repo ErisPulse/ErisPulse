@@ -72,6 +72,7 @@ TRANSLATIONS = {
     "core.sdk.hot_reload.no_loader": "Hot reload unavailable: SDK module loader not initialized",
     "core.sdk.hot_reload.failed": "Hot reload of module {name} failed: {error}",
     "core.sdk.run.shutdown_signal": "Shutdown signal received, cleaning up...",
+    "core.sdk.run.restart_signal": "Hot restart signal (SIGUSR1) received, starting in-process soft restart (component-level hot reload)",
     "core.sdk.run.unexpected_error": "Unexpected termination signal intercepted: {error}, process kept alive",
     "core.sdk.run.unhandled_error": "Unhandled exception during run; intercepted to keep the framework running: {error}",
     # ==================== SDK Callbacks ====================

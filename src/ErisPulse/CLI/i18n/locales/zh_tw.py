@@ -390,6 +390,8 @@ TRANSLATIONS = {
     "cli.stop.failed": "停止實例失敗 (PID {pid})，請手動檢查程序狀態",
     "cli.restart.description": "重啟正在執行的 ErisPulse 實例（停止後按原參數重新啟動）",
     "cli.restart.not_running_hint": "未找到執行中的實例——直接執行 epsdk run 啟動即可",
+    "cli.restart.container_hot": "容器內實例（PID 1）不可由外部重啟——已向框架進程（pid {pid}）發送進程內熱重啟訊號，元件與新增適配器將熱載入生效；整進程重啟請重啟容器（如 docker restart）",
+    "cli.restart.container_hot_unsupported": "偵測到容器內實例（PID 1），但目前環境不支援熱重啟訊號（SIGUSR1）——請在宿主機重啟容器",
     "cli.restart.starting_new": "已停止，正在按原參數重新啟動: {cmd}",
     "cli.run.script_help": "要執行的主程式路徑 (不指定則直接執行 SDK)",
     "cli.run.reload_help": "啟用熱重載模式",

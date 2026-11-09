@@ -390,6 +390,8 @@ TRANSLATIONS = {
     "cli.stop.failed": "Failed to stop instance (PID {pid}); please check the process manually",
     "cli.restart.description": "Restart a running ErisPulse instance (stop, then relaunch with the original arguments)",
     "cli.restart.not_running_hint": "No running instance found — just run epsdk run to start one",
+    "cli.restart.container_hot": "Container instance (PID 1) cannot be restarted externally — in-process hot restart signal (SIGUSR1) sent to the framework process (pid {pid}); components and newly installed adapters take effect via hot reload. For a full process restart, restart the container (e.g. docker restart)",
+    "cli.restart.container_hot_unsupported": "Container instance (PID 1) detected, but this environment does not support the hot restart signal (SIGUSR1) — restart the container from the host",
     "cli.restart.starting_new": "Stopped. Relaunching with the original arguments: {cmd}",
     "cli.run.script_help": "Script path to run (default: run SDK directly)",
     "cli.run.reload_help": "Enable hot reload mode",

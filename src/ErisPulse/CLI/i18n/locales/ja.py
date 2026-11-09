@@ -390,6 +390,8 @@ TRANSLATIONS = {
     "cli.stop.failed": "インスタンスの停止に失敗しました (PID {pid})。手動でプロセス状態を確認してください",
     "cli.restart.description": "稼働中の ErisPulse インスタンスを再起動します（停止後、元の引数で再起動）",
     "cli.restart.not_running_hint": "稼働中のインスタンスが見つかりません——epsdk run で起動してください",
+    "cli.restart.container_hot": "コンテナ内インスタンス（PID 1）は外部から再起動できません——フレームワークプロセス（pid {pid}）にプロセス内ホットリスタートシグナルを送信しました。コンポーネントと新規アダプタはホットリロードで反映されます。プロセス全体の再起動はコンテナの再起動で行ってください（例: docker restart）",
+    "cli.restart.container_hot_unsupported": "コンテナ内インスタンス（PID 1）を検出しましたが、この環境はホットリスタートシグナル（SIGUSR1）に対応していません——ホストからコンテナを再起動してください",
     "cli.restart.starting_new": "停止しました。元の引数で再起動します: {cmd}",
     "cli.run.script_help": "実行するスクリプトパス（省略時は SDK を直接実行）",
     "cli.run.reload_help": "ホットリロードモードを有効化",

@@ -72,6 +72,7 @@ TRANSLATIONS = {
     "core.sdk.hot_reload.no_loader": "ホットリロード不可: SDK のモジュールローダーが未初期化です",
     "core.sdk.hot_reload.failed": "モジュール {name} のホットリロードに失敗しました: {error}",
     "core.sdk.run.shutdown_signal": "シャットダウンシグナルを受信しました、クリーンアップ中...",
+    "core.sdk.run.restart_signal": "ホットリスタートシグナル（SIGUSR1）を受信、プロセス内ソフトリスタート（コンポーネントレベルのホットリロード）を開始します",
     "core.sdk.run.unexpected_error": "予期しない終了シグナルを遮断しました: {error}、プロセスは維持されます",
     "core.sdk.run.unhandled_error": "実行中に未処理の例外が発生しました。フレームワークの継続実行のため遮断しました: {error}",
     # ==================== SDK コールバック ====================

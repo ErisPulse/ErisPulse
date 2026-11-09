@@ -72,6 +72,7 @@ TRANSLATIONS = {
     "core.sdk.hot_reload.no_loader": "热重载不可用：SDK 尚未初始化模块加载器",
     "core.sdk.hot_reload.failed": "热重载模块 {name} 失败: {error}",
     "core.sdk.run.shutdown_signal": "收到关闭信号，正在清理...",
+    "core.sdk.run.restart_signal": "收到热重启信号（SIGUSR1），开始进程内软重启（组件级热重载）",
     "core.sdk.run.unexpected_error": "拦截到意外终止信号: {error}，已阻止进程退出",
     "core.sdk.run.unhandled_error": "运行过程中发生未处理异常，已拦截以保证框架继续运行: {error}",
     # ==================== SDK 回调 ====================

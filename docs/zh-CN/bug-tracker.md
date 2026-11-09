@@ -1141,3 +1141,15 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **严重性**: 🟡 中等
 **类型**: 适配器 / 会话收件箱
+
+### [BUG-050] 容器内执行 epsdk restart 直接退出容器
+
+**问题**: 框架作为容器主进程（PID 1）运行时（官方镜像 `CMD ["epsdk", "run"]` 或直启脚本），`ep i <包>` 安装组件后按提示执行 `epsdk restart`，容器直接退出且不再拉起——安装的新组件未生效，服务中断。
+**原因**: `epsdk restart` 的实现是「终止运行实例 + 按原参数重拉」——重拉由 epsdk CLI 进程托管。容器场景下目标实例是 PID 1（容器主进程），SIGINT/SIGTERM 使其退出即整个 PID namespace 销毁，CLI 自身与待重拉的子进程一并被杀，重拉永远无法发生。
+**影响版本**: 2.11.0 - 2.11.2（runtime.json 实例控制随 2.11.0 引入；更早版本无 restart 命令）
+**修复版本**: 2.12.0-dev.0
+**修复内容**: `epsdk restart` 检测状态文件 `pid == 1`（容器主进程特征）时不再终止重拉，改向框架进程发送 `SIGUSR1`，框架在进程内完成组件级软重启（`sdk.restart()`：模块与适配器热重载管线，运行中新装适配器 entry-point 即刻生效）；`sdk.run()` 注册 `SIGUSR1` 处理器承载该通道。整进程重启场景交由容器重启（`docker restart` / restart 策略）承载。
+**回归测试**: tests/unit/test_unit_cli_runtime.py::TestRestartContainerHot
+
+**严重性**: 🔴 严重（容器部署重启即服务中断）
+**类型**: CLI / 部署
