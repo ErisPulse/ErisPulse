@@ -237,6 +237,8 @@ async def get_user_info(self, user_id: str) -> dict:
     return await self._adapter.call_api("get_user_info", user_id=user_id, account_id=self._account_id)
 ```
 
+> **账户字段**：框架按适配器 `call_api` 的实际消费方式自动适配账户绑定（标准名 `account_id`；旧名 `_account_id` 自动改写；函数体 `params.pop` 同样识别），未消费时剔除该字段避免泄漏进平台参数并提示一次——消费形态详见 [适配器开发 - 账户解析](../developer-guide/adapters/core-concepts.md#账户解析)。
+
 **适用场景**：当适配器的底层后端自身即遵循 OneBot12 标准动作协议时，
 `call_api` 天然支持标准动作名（如直接对接遵循该协议的服务端）。
 

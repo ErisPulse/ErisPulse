@@ -567,8 +567,8 @@ class {name}(BaseAdapter):
         router.unregister_websocket("{entry_key}", "/ws")
         self.logger.info("{text[adapter.log.shutdown]}")
 
-    async def call_api(self, endpoint: str, **params):
-        \"\"\"Call platform API\"\"\"
+    async def call_api(self, endpoint: str, account_id: str | None = None, **params):
+        \"\"\"Call platform API (account_id carries the framework account binding; single-account implementations may ignore it)\"\"\"
         from ErisPulse import client
 
         cfg = self.cfg
@@ -750,8 +750,8 @@ class {name}(PollingAdapter):
 
     # Request / Api 内部类继承基类默认实现即可；如需平台特定逻辑可按需覆盖
 
-    async def call_api(self, endpoint: str, **params):
-        \"\"\"Call platform API\"\"\"
+    async def call_api(self, endpoint: str, account_id: str | None = None, **params):
+        \"\"\"Call platform API (account_id carries the framework account binding; single-account implementations may ignore it)\"\"\"
         cfg = self.cfg
         headers = {{"Authorization": "Bearer " + cfg.token}}
         url = cfg.endpoint + endpoint
@@ -907,8 +907,8 @@ class {name}(WebhookAdapter):
 
     # Request / Api 内部类继承基类默认实现即可；如需平台特定逻辑可按需覆盖
 
-    async def call_api(self, endpoint: str, **params):
-        \"\"\"Call platform API\"\"\"
+    async def call_api(self, endpoint: str, account_id: str | None = None, **params):
+        \"\"\"Call platform API (account_id carries the framework account binding; single-account implementations may ignore it)\"\"\"
         cfg = self.cfg
         headers = {{"Authorization": "Bearer " + cfg.token}}
         url = cfg.endpoint + endpoint

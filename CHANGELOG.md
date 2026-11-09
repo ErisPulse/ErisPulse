@@ -117,6 +117,7 @@
   - `epsdk restart` 对容器内 PID 1 实例改为向框架进程发送 `SIGUSR1` 触发进程内软重启（原「终止后重拉」模型会直接退出容器且不再拉起）；框架 `run()` 注册 `SIGUSR1` → `sdk.restart()`，整进程重启交由 `docker restart` / restart 策略承载
   - 适配器回滚后旧实例不再停留在「已启动」但未实际服务的状态
   - 适配器账户解析：显式 `account_id` 无法匹配时记录 WARNING 并回退首个启用账户（WARNING 的 platform / account_id / account 用于定位未归属到账户的事件来源）
+  - Api DSL 账户绑定跨适配器生效：框架按 `call_api` 实际消费方式自动改写账户字段（标准名 `account_id`，旧名 `_account_id` 兼容），未消费时剔除避免泄漏进平台参数并提示一次 WARNING；脚手架模板同步声明账户字段
   - 适配器（onebot11/12、SnowLuma，随各适配器仓库发布）：运行期识别 Bot ID 并关联到账户实例（`bot_id`），事件 `self.user_id` 即可解析到接收账户，`event.reply()` 不再固定走第一个账户；OneBot11/SnowLuma 事件 id 改为稳定组合，重推去重恢复且不同账户互不吞事件
 
 ### 文档

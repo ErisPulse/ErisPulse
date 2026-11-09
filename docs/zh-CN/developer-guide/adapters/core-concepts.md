@@ -624,14 +624,25 @@ async def handler(event):
 
 #### 账户解析
 
-适配器实现 `call_api` 时，需要把账户标识解析为具体账户配置——`Send` / `Api` 链路传入的 `account_id`（`Using()` 或事件链绑定的结果）即解析目标：
+适配器实现 `call_api` 时，需要把账户标识解析为具体账户配置。框架把账户绑定（`Using()` 或事件链自动绑定的结果）以标准字段 `account_id` 传入 `call_api`，并按适配器的实际消费方式自动适配——三种消费形态任选其一，框架按签名参数名与函数体常量探测，与参数位置无关：
 
 ```python
+# 形态一（推荐）：签名声明标准名
+async def call_api(self, endpoint: str, account_id: str | None = None, **params):
+    name, account = self._resolve_account(account_id)
+    # name: 账户名, account: 配置实例
+
+# 形态二（存量兼容）：旧名 _account_id，框架自动把 account_id 改写为旧名下发
+async def call_api(self, endpoint: str, _account_id: str | None = None, **params):
+    name, account = self._resolve_account(_account_id)
+
+# 形态三：函数体内从 params 取（被常量探测识别）
 async def call_api(self, endpoint: str, **params):
     account_id = params.pop("account_id", None)
     name, account = self._resolve_account(account_id)
-    # name: 账户名, account: 配置实例
 ```
+
+> 适配器未消费账户字段时，框架剔除该字段（避免泄漏进平台参数）并提示一次 WARNING；单账户适配器可不消费（解析回退第一个启用账户）。
 
 解析策略：账户名匹配 → `bot_id` 字段匹配 → 其他 str 字段匹配 → 第一个启用账户。
 
@@ -1096,8 +1107,7 @@ class MyAdapter(BaseAdapter):
             self.logger.info(f"启动账户 {name}: {account.bot_id}")
             await self._connect(name, account)
     
-    async def call_api(self, endpoint: str, **params):
-        account_id = params.pop("account_id", None)
+    async def call_api(self, endpoint: str, account_id: str | None = None, **params):
         name, account = self._resolve_account(account_id)
         # 使用 account.token, account.bot_id 等字段
 ```
