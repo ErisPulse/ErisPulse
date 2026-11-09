@@ -6,8 +6,9 @@ TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消�
 
 ## 文档信息
 
-- 对应模块版本: 4.3.0
+- 对应模块版本: 4.3.3
 - 维护者: ErisPulse
+- 最后更新: 2026-11-10
 
 ## 基本信息
 
@@ -15,6 +16,49 @@ TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消�
 - 适配器名称：TelegramAdapter
 - 支持的协议/API版本：Telegram Bot API
 - 会话类型映射：`private` → 发送时用 `user`，`group`/`supergroup` → `group`，`channel` → `channel`
+
+## 标准化对齐（4.3.3）
+
+本章节说明 4.3.3 版本完成的标准化对齐内容：事件变更、多账户约定、错误码规范与 Send 规范。
+
+### 事件变更
+
+1. **群加入申请事件标准化**：
+   - `detail_type` 由 `telegram_chat_join_request` 改为标准 `"group"`，`sub_type="join"`
+   - `@request.on_group_request()` 现在能直接命中该事件
+   - `request_id` 合成规则不变：`tjr_{chat_id}_{user_id}_{date}`
+   - 事件可用 `event.approve()` / `event.reject()` 审批（对应 `approveChatJoinRequest` / `declineChatJoinRequest`）
+2. **事件 `self.account_id` 注入**：所有事件携带产生它的账户名，多账户下 `event.reply()` 自动按该账户受理发送
+3. **unknown 事件**：`self.user_id` 填 bot_id（与消息事件行为一致）
+
+请求事件接口约定遵循 SDK 标准：[请求与审批动作规范](../../standards/request-action-spec.md)。
+
+### 账户与多账户
+
+`call_api` 支持双兼容账户字段：标准字段 `account_id`（ApiDSL.Using 传此名）/ 旧别名 `_account_id`；框架 ApiDSL 自动适配新旧适配器。
+
+```python
+from ErisPulse import sdk
+telegram = sdk.adapter.get("telegram")
+
+await telegram.Api.Using("main").get_self_info()        # 标准方式指定账户
+await telegram.Api.get_self_info(account_id="main")     # 显式传标准字段 account_id
+```
+
+### 错误码规范
+
+| retcode | 说明 |
+|---------|------|
+| 0 | 成功 |
+| 33001 | 网络错误（连接失败、超时等） |
+| 34100 | 平台拒绝（原始响应保留在 `telegram_raw` 字段） |
+| 10002 | 不支持的动作（如 `get_friend_list` / `get_group_list`，Telegram Bot API 无对应接口） |
+
+### Send 规范
+
+- HTML 方法名为 `HTML`，`Html` 为保留别名
+- `Location` 签名补全 `title` / `content` 可选参数
+- `AnswerCallback` / `Raw_json` 走 send_context 账户：在事件处理链内调用发送 DSL 时自动使用当前事件所属账户发送
 
 ## 标准Api动作（Api DSL）
 
@@ -42,26 +86,26 @@ await telegram.Api.delete_message(message_id=55)   # 自动补全 chat_id
 result = await telegram.Api.Using("main").get_self_info()
 ```
 
-> Telegram Bot API 无获取好友列表/群列表接口，get_friend_list/get_group_list 返回 
-etcode=10002。
+> Telegram Bot API 无获取好友列表/群列表接口，get_friend_list/get_group_list 显式返回
+> retcode=10002（不支持的动作）。
 
 ---
 
 ## 请求操作（Request DSL）
 
-处理加群申请（chat_join_request 事件），基于 pproveChatJoinRequest / declineChatJoinRequest：
+处理加群申请，基于 approveChatJoinRequest / declineChatJoinRequest。4.3.3 起 `chat_join_request` 映射为标准 `group` 请求事件（`sub_type="join"`），`@request.on_group_request()` 现在能直接命中：
 
 ```python
 from ErisPulse.Core.Event import request
 
-@request.on_request()
+@request.on_group_request()
 async def handle_join_request(event):
     if event.get("platform") != "telegram":
         return
-    # event["request_id"] 为合成标识（tjr_{chat_id}_{user_id}_{date}）
-    if event.get("user_nickname"):
-        await event.approve()          # 同意
-    # await event.reject()             # 拒绝
+    # event["request_id"] 为合成标识（tjr_{chat_id}_{user_id}_{date}，规则不变）
+    if event.get("sub_type") == "join":
+        await event.approve()          # 同意（approveChatJoinRequest）
+    # await event.reject()             # 拒绝（declineChatJoinRequest）
 
 # 手动调用（需先收到过对应请求事件以登记上下文）
 await telegram.Request(event["request_id"]).accept()
@@ -87,10 +131,10 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 | `.Text(text)` | 发送纯文本消息 | `text: str` |
 | `.Face(emoji)` | 发送表情骰子 | `emoji: str`（如 🎲 🎯 🏀） |
 | `.Markdown(text, content_type)` | 发送 Markdown 格式消息 | `content_type` 默认 `"MarkdownV2"` |
-| `.HTML(text)` | 发送 HTML 格式消息 | `text: str` |
+| `.HTML(text)` | 发送 HTML 格式消息（`Html` 为保留别名） | `text: str` |
 | `.MergeForward(nodes, title)` | 发送合并转发消息（标题 + 每条 blockquote 引用块，4096 截断） | `nodes: List[Dict]`, `title: str` |
 | `.Sticker(file)` | 发送贴纸 | `file: str (file_id/URL) \| bytes` |
-| `.Location(lat, lng)` | 发送位置 | `latitude: float, longitude: float` |
+| `.Location(lat, lng, title="", content="")` | 发送位置（可选标题与内容） | `latitude: float, longitude: float, title: str, content: str` |
 | `.Venue(lat, lng, title, addr)` | 发送地点 | 含标题和地址 |
 | `.Contact(phone, first, last)` | 发送联系人 | 含电话号码和姓名 |
 
@@ -115,12 +159,12 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 | `.Recall(message_id)` | 删除指定消息 |
 | `.Forward(from_chat_id, message_id)` | 转发消息（保留来源） |
 | `.CopyMessage(from_chat_id, message_id)` | 复制消息（不带来源） |
-| `.AnswerCallback(callback_query_id, text, show_alert)` | 应答回调查询 |
+| `.AnswerCallback(callback_query_id, text, show_alert)` | 应答回调查询（走 send_context 账户） |
 
 ### 原始消息发送
 
 - `.Raw_ob12(message: List[Dict])`：发送 OneBot12 标准格式消息
-- `.Raw_json(json_str: str)`：发送原始 JSON 格式消息
+- `.Raw_json(json_str: str)`：发送原始 JSON 格式消息（走 send_context 账户）
 
 ### 链式修饰方法
 
@@ -160,6 +204,12 @@ await telegram.Send.To("group", group_id).Reply("12345").ProtectContent().Text("
 # 静默发送
 await telegram.Send.To("group", group_id).Silent().Text("静默通知")
 
+# HTML 格式消息（Html 为旧名别名）
+await telegram.Send.To("user", user_id).HTML("<b>加粗</b> <i>斜体</i>")
+
+# 发送位置（带标题）
+await telegram.Send.To("user", user_id).Location(39.9042, 116.4074, title="天安门", content="北京市中心")
+
 # 应答回调查询
 await telegram.Send.AnswerCallback(callback_query_id, text="已处理", show_alert=False)
 
@@ -174,9 +224,6 @@ await telegram.Send.To("group", group_id).Raw_ob12(ob12_message)
 
 # 发送贴纸
 await telegram.Send.To("user", user_id).Sticker("CAACAgIAAxkBAA...")  # file_id
-
-# 发送位置
-await telegram.Send.To("user", user_id).Location(39.9042, 116.4074)
 ```
 
 ## 特有事件类型
@@ -203,9 +250,12 @@ Telegram 事件转换遵循 OneBot12 标准，同时通过 `telegram_` 前缀提
 | `telegram_poll_answer` | 投票答案 |
 | `telegram_my_chat_member` | Bot 自身成员状态变更 |
 | `telegram_chat_member` | 聊天成员变更 |
-| `telegram_chat_join_request` | 加入聊天请求 |
 | `telegram_shipping_query` | 运费查询 |
 | `telegram_pre_checkout_query` | 预付款查询 |
+
+> 加入聊天请求（chat_join_request）已标准化为 `group` 请求事件（`sub_type="join"`），
+> 不再使用 `telegram_chat_join_request` 作为 detail_type；相关平台字段
+> （`telegram_chat_join_request_id`、`telegram_chat` 等）仍保留。
 
 ### 标准消息段类型
 
@@ -251,10 +301,41 @@ Telegram 事件转换遵循 OneBot12 标准，同时通过 `telegram_` 前缀提
     {"type": "mention", "data": {"user_id": "", "user_name": "@nm123_91178"}}
   ],
   "alt_message": "/it.echo @nm123_91178",
+  "self": {
+    "platform": "telegram",
+    "user_id": "6117725680",
+    "account_id": "default"
+  },
   "telegram_chat": {
     "id": -1002850921906,
     "title": "ErisPulse",
     "username": "erispulse",
+    "type": "supergroup"
+  }
+}
+```
+
+#### 群加入申请事件（标准化后）
+```python
+{
+  "type": "request",
+  "detail_type": "group",
+  "sub_type": "join",
+  "platform": "telegram",
+  "user_id": "6117725680",
+  "user_nickname": "申请者昵称",
+  "request_id": "tjr_-1002850921906_6117725680_1731212345",
+  "group_id": "-1002850921906",
+  "comment": "邀请链接名称",
+  "self": {
+    "platform": "telegram",
+    "user_id": "6117725680",
+    "account_id": "default"
+  },
+  "telegram_chat_join_request_id": "",
+  "telegram_chat": {
+    "id": -1002850921906,
+    "title": "ErisPulse",
     "type": "supergroup"
   }
 }
@@ -386,7 +467,7 @@ async def handle_notice(event):
         telegram = sdk.adapter.get("telegram")
         await telegram.Send.AnswerCallback(callback_id, text="已点击")
 
-        # 回复消息
+        # 回复消息（多账户下自动按事件所属账户受理）
         await event.reply(f"你点击了：{callback_data}")
 ```
 
@@ -395,6 +476,7 @@ async def handle_notice(event):
 - 所有特有字段均以 `telegram_` 前缀标识
 - 保留原始数据在 `telegram_raw` 字段
 - 保留原始事件类型在 `telegram_raw_type` 字段
+- 事件 `self.account_id` 为产生事件的账户名（多账户下 `event.reply()` 自动按该账户受理）
 - 频道消息使用 `detail_type="channel"`
 - 私聊消息使用 `detail_type="private"`（发送时需转换为 `user`）
 - 话题消息包含 `thread_id` 字段

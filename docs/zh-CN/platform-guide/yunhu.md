@@ -6,8 +6,9 @@ YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功�
 
 ## 文档信息
 
-- 对应模块版本: 4.5.0
+- 对应模块版本: 4.6.2
 - 维护者: ErisPulse
+- 最后更新: 2026-11-10
 
 ## 基本信息
 
@@ -23,9 +24,8 @@ YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功�
 
 - **官方服务端API全集**（Api DSL 扩展方法）：编辑消息、批量发送、消息列表、用户/全局看板、群成员禁言、移除群成员、群消息类型控制、群标签 CRUD、用户打标签
 - **标准 keyboard 段**（跨平台交互组件标准）：{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}} 段自动转换为云湖 buttons；.Buttons(rows) / .Keyboard(rows) 修饰器接受通用结构（原生结构向后兼容）
-- **交互回调标准字段**：按钮点击/A2UI 事件包含 interaction_id / utton_data 标准字段
-- **spawn_background 任务归属**：WS 连接任务改用 
-untime.spawn_background
+- **交互回调标准字段**：按钮点击/A2UI 事件包含 interaction_id / button_data 标准字段
+- **spawn_background 任务归属**：WS 连接任务改用 `runtime.spawn_background`
 - **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
 
 ### 平台扩展动作（call / Api 方法）
@@ -58,6 +58,54 @@ async def handle_button(event):
 
 > 完整标准说明见 [跨平台交互组件标准](../standards/standardization-guide.md)。
 
+## 标准化对齐（4.6.2）
+
+本版本完成适配器标准化对齐，响应结构与错误码遵循 [API 响应规范](../../standards/api-response.md)。
+
+### 账户与多账户闭环
+
+- **事件注入 `self.account_id`**（内部账户名）：接收到的事件 `self` 对象携带产生该事件的账户名，`event.reply()` 会自动路由到**受理该事件的账户**，多账户场景无需再手工 `Using(bot_id)`
+- **`call_api` 双兼容字段**：`account_id`（标准名）/ `_account_id`（旧名）均可指定账户，框架 ApiDSL（`Api.Using(...)`）自动适配
+- **`Send` 读取 `send_context`**（事件账户兜底）：在事件处理上下文中调用 `Send` 时默认回落到来源账户
+
+### 错误码规范
+
+| retcode | 含义 | 说明 |
+|---------|------|------|
+| 0 | 成功 | — |
+| 33001 | 网络错误 | 连接云湖服务器失败等网络类异常 |
+| 34100 | 平台失败 | 云湖返回失败；原始响应保留在 `yunhu_raw` |
+| 10002 | 不支持 | 资源不存在（机器人/用户/群不存在）或平台无对应能力的标准动作 |
+| 10003 | 参数错误 | 缺少或无效参数 |
+
+> **4.6.2 变化**：适配器补齐 `_platform` 后，`make_response` 由框架自动携带 `yunhu_raw`，平台失败统一返回 `34100`；"机器人/用户/群不存在" 从 `34001` 调整为 `10002`（资源不存在）。
+
+### 响应结构调整
+
+原响应顶层的非标准 `self` 字段移入 `data.self_info`（含 bot_id），顶层仅保留标准字段与 `yunhu_raw`：
+
+```json
+{
+  "status": "ok",
+  "retcode": 0,
+  "data": {
+    "self_info": {"user_id": "bot_id"},
+    "messageInfo": {"msgId": "..."}
+  },
+  "message_id": "123456",
+  "message": "",
+  "yunhu_raw": {}
+}
+```
+
+### 未知事件不再静默丢弃
+
+无法识别的云湖事件现产出 `type="unknown"` 事件（`detail_type` 为原始事件类型，原始数据保留在 `yunhu_raw`）并输出 warning 日志，模块可据此排查未接入的事件类型。
+
+### 平台扩展方法约定
+
+历史平台扩展方法（`edit_message` / `batch_send` / `set_user_board` / `gag_group_member` / `create_group_tag` 等）继续保留可用；**新增平台扩展统一走 `Api.call("yunhu.xxx", **params)`**（见下文「平台扩展动作」）。
+
 ---
 ## 支持的消息发送类型
 
@@ -71,7 +119,7 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 
 支持的发送类型包括：
 - `.Text(text: str)`：发送纯文本消息。
-- `.Html(html: str)`：发送HTML格式消息。
+- `.Html(html: str)`：发送HTML格式消息。`.HTML(html)` 为别名（与标准 Send 方法命名保持一致）。
 - `.Markdown(markdown: str)`：发送Markdown格式消息。
 - `.MergeForward(nodes, title="合并聊天记录")`：发送合并转发消息（渲染为 `<details>` 折叠 HTML 卡片，经 html 通道发出）。
 - `.A2UI(text: str)`：发送A2UI格式消息。
@@ -349,13 +397,14 @@ result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="gr
 {
     "status": "ok",           // 执行状态
     "retcode": 0,             // 返回码
-    "data": {...},            // 响应数据
-    "self": {...},            // 自身信息（包含 bot_id）
+    "data": {...},            // 响应数据（self_info 含 bot_id，见「响应结构调整」）
     "message_id": "123456",   // 消息ID
     "message": "",            // 错误信息
     "yunhu_raw": {...}        // 原始响应数据
 }
 ```
+
+> **4.6.2 变化**：原响应顶层的非标准 `self` 字段已移入 `data.self_info`。获取 bot_id 请改用 `result["data"]["self_info"]["user_id"]`。
 
 ## 特有事件类型
 
@@ -687,7 +736,7 @@ await yunhu.Send.To("user", "user123").Text("Hello from default bot!")
 
 ### 事件中的Bot标识
 
-接收到的事件会自动包含对应的`bot_id`信息：
+接收到的事件会自动包含对应的`bot_id`信息（4.6.2 起同时注入内部账户名 `self.account_id`）：
 
 ```python
 from ErisPulse.Core.Event import message
@@ -697,15 +746,21 @@ async def handle_message(event):
     if event["platform"] == "yunhu":
         # 获取触发事件的机器人ID
         bot_id = event["self"]["user_id"]
-        print(f"消息来自Bot: {bot_id}")
-        
-        # 使用相同bot回复消息
+        account_id = event["self"].get("account_id", "")  # 内部账户名（如 bot1）
+        print(f"消息来自Bot: {bot_id}（账户: {account_id}）")
+
+        # 4.6.2 起 event.reply() 自动路由到受理账户，直接回复即可
+        await event.reply("回复消息")
+
+        # 仍可显式指定账户发送
         yunhu = adapter.get("yunhu")
         await yunhu.Send.Using(bot_id).To(
             event["detail_type"],
             event["user_id"] if event["detail_type"] == "private" else event["group_id"]
         ).Text("回复消息")
 ```
+
+> **提示**：`call_api` 支持双兼容账户字段：`account_id`（标准名）与 `_account_id`（旧名），框架 ApiDSL 的 `Using()` 与事件账户兜底（`send_context`）均自动适配。
 
 ### 日志信息
 

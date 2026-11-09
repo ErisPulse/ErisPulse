@@ -1,13 +1,15 @@
 # SnowLuma平台特性文档
 
-SnowLumaAdapter 是基于 SnowLuma 后端（NTQQ hook）构建的适配器，使用 OneBot v11 协议通信。
+SnowLumaAdapter 是基于 SnowLuma 后端（NTQQ hook）构建的适配器，使用 OneBot v11 协议通信。作为 `ErisPulse-OneBot11Adapter[snowluma]` 可选扩展安装（`pip install "ErisPulse-OneBot11Adapter[snowluma]"`）。
 
 ---
 
 ## 文档信息
 
-- 对应模块版本: 0.3.0
+- 对应模块版本: 0.3.4
 - 维护者: ErisPulse
+- 协议版本: OneBot v11（NapCat/go-cqhttp 兼容扩展）
+- 最后更新: 2026-11-10
 
 ## 基本信息
 
@@ -16,6 +18,7 @@ SnowLumaAdapter 是基于 SnowLuma 后端（NTQQ hook）构建的适配器，使
 - 支持的协议/API版本：OneBot V11（官方动作目录共 200 个动作，适配器全量覆盖；全面兼容 NapCat，可直接连接 NapCat 后端）
 - 多账户支持：默认多账户架构，支持同时配置和运行多个账户
 - 配置键名：`SnowLuma_Adapter`
+- i18n：支持 5 语言（zh-CN / zh-TW / en / ja / ru）
 
 ### 与 OneBot11 适配器的关系
 
@@ -54,12 +57,52 @@ print(result["data"]["user_id"], result["data"]["user_name"])
 # 撤回消息
 await snowluma.Api.delete_message(message_id=123456)
 
+# upload_file 扩展参数（OB11 文件上传绑定目标，group_id/user_id 可选）
+await snowluma.Api.upload_file(type="path", name="doc.pdf", path="./doc.pdf", group_id="123456")
+await snowluma.Api.upload_file(type="url", name="img.jpg", url="https://...", user_id="789")
+
 # 指定账户（多账户）
 result = await snowluma.Api.Using("main").get_self_info()
 
 # 服务端别名等少数动作通过 call() 逃生舱调用（SnowLuma/NapCat 通用）
 result = await snowluma.Api.call("upload_foward_msg", messages=[...])  # upload_forward_msg 别名
 ```
+
+> **命名约定**：OB11 协议扩展直接用动作名（`send_poke`），不加 `snowluma.` 前缀。只有真正平台独有的功能才用 `{prefix}.xxx`。
+
+## 标准化对齐
+
+本节说明适配器与 ErisPulse 标准化规范对齐的行为。规范详情参见 SDK 文档《请求操作规范》（`docs/zh-CN/standards/request-action-spec.md`）与《API 响应规范》（`docs/zh-CN/standards/api-response.md`）。
+
+### 请求事件处理（0.3.3 起）
+
+适配器按请求操作规范实现请求事件的接收与响应（与 OneBot11 适配器同构）：
+
+- **上下文留存**：事件入口将 `request_id` 映射到 `{request_type, sub_type, group_id, account, ts}` 并缓存（TTL 3600 秒、上限 512 条，请求处理成功后清理），供后续 `accept()`/`reject()` 路由使用
+- **端点路由优先级**：`accept()`/`reject()` 的 kwargs 显式传参（`request_type`/`sub_type`/`group_id` 为保留名）> 事件留存上下文 > 回退好友端点（`set_friend_add_request`）并输出 WARNING
+- **群邀请/加群请求**：`request_type == "group"` 时正确路由到 `set_group_add_request`（加群 `sub_type="add"`、邀请 `sub_type="invite"`）
+- **废弃说明**：通过私有参数 `_request_type` 指定请求类型的方式已废弃，传入会被忽略
+
+### call_api 错误码
+
+- HTTP 调用失败（连接异常/超时）返回 `retcode=33001` 标准失败响应
+- 响应格式异常（无法解析为标准结构）返回 `retcode=34100`，原始数据保留在 `snowluma_raw` 字段
+
+| retcode | 含义 | 触发场景 |
+|---------|------|----------|
+| 0 | 成功 | 动作执行成功 |
+| 33001 | 网络错误 | HTTP 调用失败、API 调用超时 |
+| 34100 | 平台错误 | 响应格式异常（原始数据保留在 `snowluma_raw`） |
+
+### 账户字段双兼容与 send_context
+
+- `call_api` 同时接受标准字段 `account_id` 与旧字段名 `_account_id`（标准名优先）；框架 ApiDSL 自动适配，模块代码推荐使用 `account_id`
+- Send DSL 全方法读取 `send_context`：事件链内自动使用当前事件来源账户，显式 `Using()` 指定的账户优先
+
+### 事件字段规范化
+
+- meta 事件顶层 `type` 统一为 `"meta"`（原 `meta_event` 不再使用）
+- 所有特有字段均以 `snowluma_` 前缀标识，原始数据保留在 `snowluma_raw`
 
 ---
 
@@ -162,6 +205,19 @@ result = await snowluma.Api.get_forward_msg(id="resid_xxx")
 - `.ForwardSingle(message_id)`：转发单条消息到当前会话。
 - `.TuwenArk(title, desc, jump_url, summary="[分享]", preview_url=...)`：发送图文 Ark 卡片。
 
+### 更多 Send 便捷方法
+
+| 方法 | 对应动作 | 说明 |
+|------|---------|------|
+| `.GroupReaction(msg_id, emoji_id)` | `set_group_reaction` | 群表情回应 |
+| `.SetEssenceMsg(msg_id)` | `set_essence_msg` | 设置精华消息 |
+| `.DeleteEssenceMsg(msg_id)` | `delete_essence_msg` | 移除精华消息 |
+| `.SetFriendRemark(uid, remark)` | `set_friend_remark` | 设置好友备注 |
+| `.OcrImage(image)` | `ocr_image` | OCR 图片识别 |
+| `.GetImage(file)` | `get_image` | 获取图片信息 |
+| `.GetRecord(file)` | `get_record` | 获取语音信息 |
+| `.FetchPttText(message_id)` | `fetch_ptt_text` | 语音转文字 |
+
 ### 链式修饰方法（可组合使用）
 
 - `.At(user_id: Union[str, int])`：@指定用户（可多次调用）。
@@ -172,7 +228,7 @@ result = await snowluma.Api.get_forward_msg(id="resid_xxx")
 
 ## OB11 扩展动作（Api DSL）
 
-官方动作目录共 **200 个动作**，适配器类型化封装 169 个（`OB11ExtensionApi` 127 个通用 + `SnowLumaExtensionApi` 42 个 SnowLuma 特有），其余为 Core 直调 / ApiDSL 透传 / 服务端别名，逐条状态见[覆盖对照表](https://github.com/ErisPulse/ErisPulse-SnowLumaAdapter/blob/main/docs/api-coverage.md)。
+官方动作目录共 **200 个动作**，适配器类型化封装 169 个（`OB11ExtensionApi` 127 个通用 + `SnowLumaExtensionApi` 42 个 SnowLuma 特有），其余为 Core 直调 / ApiDSL 透传 / 服务端别名，逐条状态见适配器仓库 [覆盖对照表](https://github.com/ErisPulse/ErisPulse-SnowLumaAdapter/blob/main/docs/api-coverage.md)。
 全部动作均可通过 `Api.call("action_name", ...)` 直接调用（SnowLuma/NapCat 通用部分跨后端可移植）。分组概览：
 
 | 分组 | 代表动作 |
@@ -293,6 +349,8 @@ await snowluma.Api.bot_exit()
 |--------------|-------------------|------|
 | message_type: private | `private` | 私聊消息 |
 | message_type: group | `group` | 群聊消息 |
+| request_type: friend | `friend` | 好友请求 |
+| request_type: group | `group` | 群请求（加群/邀请） |
 | notice_type: group_upload | `group_file_upload` | 群文件上传 |
 | notice_type: group_admin | `group_admin_change` | 群管理员变动 |
 | notice_type: group_increase | `group_member_increase` | 群成员增加 |
@@ -313,6 +371,7 @@ await snowluma.Api.bot_exit()
 - 所有特有字段均以 `snowluma_` 前缀标识
 - 保留原始事件数据在 `snowluma_raw` 字段
 - 保留原始事件类型在 `snowluma_raw_type` 字段
+- meta 事件顶层 `type` 统一为 `"meta"`
 
 ---
 

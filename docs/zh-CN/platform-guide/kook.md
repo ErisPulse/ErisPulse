@@ -6,8 +6,9 @@ KookAdapter 是基于Kook（开黑啦）Bot WebSocket 协议构建的适配器�
 
 ## 文档信息
 
-- 对应模块版本: 4.2.0
+- 对应模块版本: 4.3.2
 - 维护者: ShanFish
+- 最后更新: 2026-11-10
 
 ## 基本信息
 
@@ -51,6 +52,31 @@ enabled = true
 - Kook API 基础地址：`https://www.kookapp.cn/api/v3`
 - WebSocket 网关通过 API 动态获取：`POST /gateway/index`
 
+## 标准化对齐（4.3.2）
+
+### 事件与账户
+
+- **事件 `self.account_id` 注入**：所有事件携带产生它的账户名，多账户下 `event.reply()` 自动按该账户受理发送
+
+### Api 签名对齐
+
+| 动作 | 签名 | 说明 |
+|------|------|------|
+| get_channel_info | `(guild_id, channel_id)` | 新签名 guild_id 首参；仅传一个位置参数时兼容旧签名（视为 channel_id） |
+| get_channel_member_list | `(guild_id, channel_id)` | 同上兼容规则 |
+| get_guild_info / get_guild_list | - | data 使用 `guild_id` / `guild_name` 等字段（旧 `group_*` 字段保留，避免破坏已有调用方） |
+
+### 错误码规范
+
+错误码已按 SDK 标准化，Kook 平台原始错误码（401xx/4xxxx 等）不再直接作为 retcode：
+
+| retcode | 说明 |
+|---------|------|
+| 0 | 成功（成功响应 `message` 为空串） |
+| 33001 | 网络错误（请求异常、账户 API 实例未初始化等） |
+| 34100 | 平台错误（Kook 返回非 0 code；原始响应保留在 `kook_raw`，原始 code 另存 `kook_code` 字段） |
+| 10002 | 不支持的动作（`get_guild_member_info` / `get_guild_member_list` / `set_guild_name` / `leave_guild` / `leave_channel` 显式返回；未知 API endpoint 不再抛异常，统一返回 10002） |
+
 ## v5 范式更新（4.1.0）
 
 本适配器已完成 v5 范式对齐（增量升级，API 兼容）：
@@ -58,8 +84,7 @@ enabled = true
 - **BaseConverter 继承**：转换器公共字段由框架 `build_base_event` 构建
 - **Api DSL**：标准Api动作映射（见下）
 - **标准 keyboard 段**：`{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}}` 文本+键盘自动组合为 Kook 卡片消息（section + action-group）；.Keyboard(rows) 修饰器接受通用结构
-- **spawn_background 任务归属**：连接任务改用 
-untime.spawn_background
+- **spawn_background 任务归属**：连接任务改用 runtime.spawn_background
 - **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
 
 ### 标准Api动作
@@ -70,9 +95,9 @@ kook = sdk.adapter.get("kook")
 
 result = await kook.Api.get_self_info()              # GET /users/@me
 result = await kook.Api.get_user_info(user_id)       # POST /user/view
-result = await kook.Api.get_guild_info(guild_id)     # POST /guild/view
+result = await kook.Api.get_guild_info(guild_id)     # POST /guild/view（data 用 guild_id / guild_name）
 result = await kook.Api.get_guild_list()             # POST /guild/list
-result = await kook.Api.get_channel_info(channel_id) # POST /channel/view
+result = await kook.Api.get_channel_info(guild_id, channel_id)  # POST /channel/view（新签名 guild_id 首参）
 result = await kook.Api.get_channel_list(guild_id)   # POST /channel/list
 await kook.Api.delete_message(msg_id)                # POST /message/delete
 result = await kook.Api.Using("main").get_self_info()
@@ -192,11 +217,12 @@ file_url = result["data"]["url"]
 ```python
 {
     "status": "ok",           // 执行状态: "ok" 或 "failed"
-    "retcode": 0,             // 返回码（Kook API 的 code）
+    "retcode": 0,             // 返回码（0 为成功，平台错误统一 34100）
     "data": {...},            // 响应数据
     "message_id": "xxx",      // 消息ID
-    "message": "",            // 错误信息
-    "kook_raw": {...}         // 原始响应数据
+    "message": "",            // 错误信息（成功响应为空串）
+    "kook_raw": {...},        // 原始响应数据
+    "kook_code": 0            // Kook 原始 code（错误时保留）
 }
 ```
 
@@ -205,15 +231,9 @@ file_url = result["data"]["url"]
 | retcode | 说明 |
 |---------|------|
 | 0 | 成功 |
-| 40100 | Token 无效或未提供 |
-| 40101 | Token 过期 |
-| 40102 | Token 与 Bot 不匹配 |
-| 40103 | 缺少权限 |
-| 40000 | 参数错误 |
-| 40400 | 目标不存在 |
-| 40300 | 无权限操作 |
-| 50000 | 服务器内部错误 |
-| -1 | 适配器内部错误 |
+| 33001 | 网络错误（请求异常、账户 API 实例未初始化等） |
+| 34100 | 平台错误（Kook 返回非 0 code，原始响应保留在 `kook_raw`，原始 code 另存 `kook_code`） |
+| 10002 | 不支持的动作（见「标准化对齐（4.3.2）」错误码规范） |
 
 ## 特有事件类型
 
@@ -232,6 +252,7 @@ file_url = result["data"]["url"]
 - 所有特有字段均以 `kook_` 前缀标识
 - 保留原始数据在 `kook_raw` 字段
 - `kook_raw_type` 标识原始Kook消息类型编号（如 `1` 为文本、`255` 为通知事件）
+- 事件 `self.account_id` 为产生事件的账户名（多账户下 `event.reply()` 自动按该账户受理）
 
 ### 特殊字段示例
 
@@ -244,6 +265,11 @@ file_url = result["data"]["url"]
   "group_id": "频道ID",
   "channel_id": "频道ID",
   "message_id": "消息ID",
+  "self": {
+    "platform": "kook",
+    "user_id": "BotID",
+    "account_id": "default"
+  },
   "kook_raw": {...},
   "kook_raw_type": "1",
   "message": [

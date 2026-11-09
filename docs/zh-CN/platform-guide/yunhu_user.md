@@ -6,8 +6,9 @@ YunhuUserAdapter 是基于云湖用户账户协议构建的适配器，通过用
 
 ## 文档信息
 
-- 对应模块版本: 4.4.0
+- 对应模块版本: 4.6.1
 - 维护者: wsu2059
+- 最后更新: 2026-11-10
 
 ## 基本信息
 
@@ -17,7 +18,7 @@ YunhuUserAdapter 是基于云湖用户账户协议构建的适配器，通过用
 - 链式修饰支持：支持 `.Reply()` 等链式修饰方法
 - OneBot12兼容：支持发送 OneBot12 格式消息
 - 通信方式：通过邮箱登录获取 token，使用 WebSocket 接收事件，HTTP + Protobuf 协议发送消息
-- 会话类型：支持私聊（user）、群聊（group）、机器人会话（bot）
+- 会话类型：支持私聊（user）、群聊（group）、机器人会话（chat_type=3，4.6.1 起映射为 `private`）
 
 ## v5 范式更新（4.2.0）
 
@@ -92,6 +93,85 @@ result = await yunhu_user.Api.get_group_member_list(group_id)
 result = await yunhu_user.Api.get_conversation_list()        # 会话列表
 await yunhu_user.Api.delete_message(msg_id, chat_id, chat_type)  # 撤回
 ```
+
+## 好友申请处理（4.6.0 新增）
+
+云湖用户端 WebSocket **不推送好友申请事件**，适配器默认开启轮询拉取申请列表并合成标准请求事件（遵循 [请求操作规范](../../standards/request-action-spec.md)）：
+
+- **账户配置**：`poll_friend_requests = true`（默认开启）、`poll_interval = 60`（轮询间隔秒，最小 5 秒）；设为 `false` 可关闭轮询
+- **轮询逻辑**：按间隔拉取 `/friend/request-list`，diff 出**新增申请**后合成标准 request 事件：
+  - `type="request"`、`detail_type="friend"`
+  - `request_id` = **申请方 user_id**
+  - `user_nickname` / `comment` 来自申请资料，原始条目保留在 `yunhu_user_raw`
+- **事件去重**：已处理的申请不会重复产出事件
+
+### 模块侧审批（事件方式）
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    if event.get("platform") != "yunhu_user":
+        return
+
+    applicant = event.get("user_id")
+    nickname = event.get("user_nickname", "")
+    comment = event.get("comment", "")
+    print(f"好友申请: {nickname}({applicant}) 附言: {comment}")
+
+    # 同意好友申请（accept = 同意好友）
+    await event.approve()
+    # 或忽略申请（reject = 忽略）
+    # await event.reject()
+```
+
+### 直接调用适配器（Request DSL）
+
+```python
+from ErisPulse.Core import adapter
+yunhu_user = adapter.get("yunhu_user")
+
+# request_id 即申请方 user_id
+await yunhu_user.Request("申请人user_id").accept()   # accept = 同意好友
+await yunhu_user.Request("申请人user_id").reject()   # reject = 忽略申请
+
+# 多账户：指定账户审批
+await yunhu_user.Request("申请人user_id").Using("default").accept()
+```
+
+> `accept()` 内部调用 `/friend/agree-apply`，`reject()` 调用 `/friend/ignore-apply`；两者均返回标准响应（`status` / `retcode` / `message` / `yunhu_user_raw`）。
+
+## 标准化对齐（4.6.1）
+
+响应结构与错误码遵循 [API 响应规范](../../standards/api-response.md)。
+
+### 标准响应
+
+Api DSL 20 个方法统一返回标准响应：`status` / `retcode` / `data` / `message_id` / `message`，平台原始数据同时位于 `data` 与顶层 `yunhu_user_raw`。`get_self_info` 的原始数据移至响应顶层 `yunhu_user_raw`。
+
+### 错误码规范
+
+| retcode | 含义 | 说明 |
+|---------|------|------|
+| 0 | 成功 | — |
+| 33001 | 网络错误 | HTTP/WS 连接类异常 |
+| 34100 | 平台失败 | 云湖用户端返回失败；原始响应保留在 `yunhu_user_raw` |
+| 10002 | 不支持 | 平台无对应能力的标准动作 |
+| 10003 | 参数错误 | 缺少 request_id、无可用账户等 |
+
+### 事件字段修正
+
+- **`chat_type=3`（机器人会话）映射为 `private`**（原 `"bot"` 非标准接收类型；原始 chat_type 保留在 `yunhu_user_raw`）
+- **`edit_message` 事件 id 加 `edit:` 前缀**：不再与 create 事件产生相同 id 而被下游去重吞掉
+- **`message_id` 始终存在**：缺失时空串兜底
+- **事件 `time` 使用消息自身时间戳**（秒级），不再统一取适配器处理时刻
+
+### 账户与多账户
+
+- `call_api` 支持双兼容账户字段：`account_id`（标准名）/ `_account_id`（旧名），框架 ApiDSL（`Api.Using(...)`）自动适配
+- `Send` 读取 `send_context`（事件账户兜底）：从事件上下文调用 `Send` 时默认回落到来源账户
+- 事件回复建议直接使用 `event.reply()`，自动路由到受理账户
 
 ---
 
@@ -259,7 +339,7 @@ Raw_ob12 支持自动将混合消息段分组处理：
 |---------------------|---------------|------|
 | `private` | 1 | 私聊消息 |
 | `group` | 2 | 群聊消息 |
-| `bot` | 3 | 机器人会话 |
+| `private` | 3 | 机器人会话（4.6.1 起映射为 `private`，原 `"bot"` 非标准；原始 chat_type 保留在 `yunhu_user_raw`） |
 
 ### 消息事件示例
 
@@ -533,6 +613,8 @@ email = "user1@example.com"  # 用户邮箱（必填）
 password = "password1"       # 用户密码（必填）
 platform = "windows"         # 登录平台（可选，默认windows）
 device_id = ""               # 设备ID（可选，不填自动生成）
+poll_friend_requests = true  # 轮询好友申请（可选，默认true）
+poll_interval = 60           # 好友申请轮询间隔（秒，可选，默认60）
 enabled = true               # 是否启用（可选，默认为true）
 
 [YunhuUserAdapter.accounts.account2]
@@ -548,6 +630,8 @@ enabled = true
 - `password`：用户密码（必填）
 - `platform`：登录平台标识（可选，默认为 `windows`），可选值：`windows`、`macos`、`linux`、`ios`、`android`
 - `device_id`：设备ID（可选，不填自动生成），建议填写固定值以保持会话一致性
+- `poll_friend_requests`：是否轮询好友申请（可选，默认 `true`；见「好友申请处理」）
+- `poll_interval`：好友申请轮询间隔（秒，可选，默认 60，最小 5）
 - `enabled`：是否启用该账户（可选，默认为 `true`）
 
 **适配器级别配置：**

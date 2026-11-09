@@ -1,11 +1,28 @@
+# Webhook 通用桥接适配器平台特性文档
 
-### 已对接平台能力
+WebhookAdapter 是一个协议级双向桥接适配器，不绑定任何特定平台：入站将外部系统 POST 的 JSON 转为 OneBot12 事件，出站将模块 Send 转为 POST 到外部系统。
+
+---
+
+## 文档信息
+
+- 对应模块版本: 4.3.2
+- 维护者: ErisPulse
+- 最后更新: 2026-11-10
+
+## 基本信息
+
+- 平台简介：任意能发起 HTTP 请求的系统均可通过本适配器接入 ErisPulse
+- 适配器名称：WebhookAdapter
+- 平台标识：`webhook`
+- 多账户支持：每个账户是独立的桥接配置（bot_id / callback_path / outgoing_url / secret）
+- 框架要求：软依赖 `ErisPulse>=2.7.1`（运行时检测提示，不强制）
+
+## 已对接平台能力
 
 - **入站**：外部系统 POST 到 callback_path → 转为 OneBot12 事件（json/text 段透传）
 - **出站**：模块 Send → POST 到 outgoing_url（双桥接）
 - **API**：桥接身份信息与运行状态（最小集）
-
----
 
 ## v5 范式更新（4.2.0）
 
@@ -13,11 +30,31 @@
 - **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
 - 导入路径更新至 Core.Bases
 
----
+## 标准化对齐（4.3.2）
 
-# 平台特性说明 — Webhook 通用桥接适配器
+响应结构与错误码遵循 [API 响应规范](../../standards/api-response.md)。
 
-本文档详细说明 Webhook 适配器的双向桥接协议、字段映射与实现特性。
+### 事件字段
+
+- **消息事件补齐顶层 `message_id`**：优先透传入站 body 的 `message_id`，缺失时以 uuid 兜底（避免下游按 message_id 去重/回复时拿到空值）
+- **事件注入 `self.account_id`**（账户名）：多账户场景下 `event.reply()` 自动路由到受理该事件的账户
+- **`alt_message` 空串兜底**：入站未提供时补空串，保证标准字段完整
+- **JSON 段名改为 `webhook_json`**：未加平台前缀的裸 `json` 段统一归一为 `webhook_json`（遵循平台扩展段命名规则）
+- Converter 复用框架 `BaseConverter`（公共字段由 `build_base_event` 统一构建）
+- `get_self_info` 补齐标准字段：`user_id`（账户 bot_id）/ `user_name` / `user_displayname`（`webhook:{账户名}`）
+
+### 错误码规范
+
+| retcode | 含义 | 说明 |
+|---------|------|------|
+| 0 | 成功 | — |
+| 33001 | 网络错误 | 出站 POST 目标失败（连接/超时等） |
+| 10003 | 参数错误 | 出站 URL 未配置、参数缺失等 |
+
+### 账户与多账户
+
+- `call_api` 支持双兼容账户字段：`account_id`（标准名）/ `_account_id`（旧名），框架 ApiDSL（`Api.Using(...)`）自动适配
+- `Send` 读取 `send_context`（事件账户兜底）：从事件上下文调用 `Send` 时默认回落到来源账户
 
 ## 总览
 
@@ -62,6 +99,15 @@ Webhook 适配器是一个**协议级桥接器**，不绑定任何特定平台�
 
 每个账户启动时独立注册路由、独立 emit connect。
 
+### 账户配置字段
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `bot_id` | 否 | Bot 身份 ID（由此桥接表示） |
+| `callback_path` | 否 | 入站回调路径（支持 `{account}` 占位符） |
+| `outgoing_url` | 否 | 出站目标 URL（模块发送消息时 POST 到此地址） |
+| `secret` | 否 | 鉴权密钥（留空则禁用验证；配置面板中以密文存储） |
+
 ## 入站协议
 
 ### 1. 健康检查（GET）
@@ -90,6 +136,8 @@ Webhook 适配器是一个**协议级桥接器**，不绑定任何特定平台�
   "user_nickname": "用户名",
   "group_id": "群组ID（仅群组会话）",
   "detail_type": "private",
+  "message_id": "可选，透传为事件 message_id（缺失时自动生成 uuid）",
+  "alt_message": "可选，纯文本备援",
   "message": [
     {"type": "text", "data": {"text": "消息内容"}}
   ],
@@ -103,6 +151,8 @@ Webhook 适配器是一个**协议级桥接器**，不绑定任何特定平台�
 | `user_nickname` | 否 | 发送者昵称 |
 | `group_id` | 否 | 群组/频道 ID（群组会话时提供） |
 | `detail_type` | 否 | 会话类型（`private`/`group`），缺省用账户默认 |
+| `message_id` | 否 | 消息 ID，透传为事件顶层 `message_id`（缺失时 uuid 兜底） |
+| `alt_message` | 否 | 纯文本备援，缺失时空串兜底 |
 | `message` | 是 | OneBot12 消息段数组 |
 | `raw` | 否 | 原始数据，原样存入 `webhook_raw` |
 
@@ -132,13 +182,18 @@ Webhook 适配器是一个**协议级桥接器**，不绑定任何特定平台�
 | — | `platform` | 固定 `webhook` |
 | — | `self.platform` | 固定 `webhook` |
 | — | `self.user_id` | 账户 `bot_id` |
+| — | `self.account_id` | 账户名（4.3.2 注入，多账户路由） |
 | `user_id` | `user_id` | 透传 |
 | `user_nickname` | `user_nickname` | 透传（可选） |
 | `group_id` | `group_id` | 透传（可选） |
+| `message_id` | `message_id` | 透传，缺失时 uuid 兜底（4.3.2） |
+| `alt_message` | `alt_message` | 透传，缺失时空串兜底（4.3.2） |
 | `message` | `message` | 透传 |
 | 完整 body | `webhook_raw` | 原始请求 |
 | 账户名 | `webhook_account` | 产生事件的账户名 |
 | `type` 或 `message` | `webhook_raw_type` | 原始事件类型 |
+
+> 裸 `json` 段（`{"type": "json", ...}`）在入站/出站两侧均归一为 `webhook_json` 段。
 
 ## 出站协议
 
@@ -198,7 +253,7 @@ Webhook 适配器是一个**协议级桥接器**，不绑定任何特定平台�
 | `Text(text)` | 发送文本，封装为 `[{"type":"text","data":{"text":text}}]` |
 | `Image(file)` | 发送图片，封装为 `[{"type":"image","data":{"file":file}}]` |
 | `Raw_ob12(message)` | 发送 OneBot12 原始消息段 |
-| `Json(data)` | 原始 JSON 透传，封装为 `[{"type":"json","data":{"raw":data}}]` |
+| `Json(data)` | 原始 JSON 透传，封装为 `[{"type":"webhook_json","data":{"raw":data}}]` |
 
 `At` / `AtAll` / `Reply` 修饰器由框架基类提供，通过 `_apply_modifiers` 合并到消息段。
 
@@ -226,7 +281,7 @@ Webhook 适配器是一个**协议级桥接器**，不绑定任何特定平台�
 
 ## 注意事项
 
-1. **单向出站**：若 `outgoing_url` 留空，该账户仅作入站接收，发送操作会返回错误
+1. **单向出站**：若 `outgoing_url` 留空，该账户仅作入站接收，发送操作会返回错误（`retcode: 10003`）
 2. **密钥安全**：`secret` 在配置中以密文存储（metadata secret），传输建议使用 HTTPS
 3. **路径唯一**：多个账户的 `callback_path` 必须互不相同，避免路由冲突
 4. **幂等性**：适配器不保证入站事件去重，外部系统应自行处理重试

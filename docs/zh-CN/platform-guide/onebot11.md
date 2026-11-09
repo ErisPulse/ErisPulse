@@ -6,8 +6,9 @@ OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 
 ## 文档信息
 
-- 对应模块版本: 4.4.0
+- 对应模块版本: 4.6.2
 - 维护者: ErisPulse
+- 最后更新: 2026-11-10
 
 ## 基本信息
 
@@ -17,17 +18,18 @@ OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 - 多账户支持：默认多账户架构，支持同时配置和运行多个 OneBot 账户
 - 配置键名：`OneBotAdapter`
 
-## v5 范式更新（4.3.0）
+## v5 范式更新（4.3.0 起）
 
 本适配器已完成 v5 范式对齐（增量升级，API 兼容）：
 
-- **BaseConverter 继承**：转换器公共字段（id/time/platform/self/raw）由框架 uild_base_event 构建，按 OB11 字段名（echo/time/self_id）覆盖
-- **spawn_background 任务归属**：Client 模式连接任务改用 
-untime.spawn_background（owner 归属，shutdown 自动回收）
+- **BaseConverter 继承**：转换器公共字段（id/time/platform/self/raw）由框架 build_base_event 构建，按 OB11 字段名（echo/time/self_id）覆盖
+- **spawn_background 任务归属**：Client 模式连接任务改用 Runtime.spawn_background（owner 归属，shutdown 自动回收）
 - **框架软依赖**：安装适配器不再声明 ErisPulse 硬依赖，避免 pip 解析时调整框架版本；运行时检测 ErisPulse>=2.7.1 并在版本过低时打日志提示
-- **启动版本日志**：初始化时输出 OneBotAdapter v4.3.0 已加载
+- **启动版本日志**：初始化时输出 OneBotAdapter vX.Y.Z 已加载
 
 已有能力（4.2.0 起支持）：多账户、Api DSL 标准动作映射（get_self_info→get_login_info 等）、Request DSL（好友/群请求审批：event.approve() / event.reject()）、EventMixin、i18n。
+
+4.3.1 起请求事件处理按规范实现，详见下文[标准化对齐](#标准化对齐)章节。
 
 ---
 ## 标准Api动作（Api DSL）
@@ -66,6 +68,70 @@ result = await onebot.Api.Using("main").get_self_info()
 # 未映射的 OB11 动作通过 call() 逃生舱调用（NapCat/Lagrange 等扩展通用）
 result = await onebot.Api.call("send_poke", group_id=123, user_id=456)
 ```
+
+### OB11 协议扩展（NapCat/go-cqhttp/SnowLuma 通用）
+
+高频扩展动作已封装为类型化方法（`OB11ExtensionApi` mixin），支持 IDE 补全：
+
+```python
+await onebot.Api.send_poke(user_id=789, group_id=123456)
+await onebot.Api.set_msg_emoji_like(message_id=123, emoji_id="76")
+await onebot.Api.mark_msg_as_read(group_id=123456)
+result = await onebot.Api.get_group_msg_history(group_id=123456, count=20)
+await onebot.Api.set_essence_msg(message_id=123)
+result = await onebot.Api.ocr_image(image="https://example.com/img.png")
+```
+
+> 扩展动作直接用 OB11 动作名，不加平台前缀。少数未封装的动作用 `Api.call("action_name", ...)` 调用。
+
+### Send 查询方法（已废弃）
+
+以下 Send 方法仍可用但已标注废弃，推荐使用 Api DSL 替代：
+
+| Send 方法（废弃） | Api DSL 替代 |
+|------------------|-------------|
+| `Send.GetLoginInfo()` | `Api.get_self_info()` |
+| `Send.GetFriendList()` | `Api.get_friend_list()` |
+| `Send.GetGroupInfo()` | `Api.get_group_info(group_id)` |
+| `Send.GetGroupList()` | `Api.get_group_list()` |
+| `Send.GetGroupMemberInfo(uid)` | `Api.get_group_member_info(gid, uid)` |
+| `Send.GetGroupMemberList()` | `Api.get_group_member_list(gid)` |
+| `Send.GetMsg(mid)` | `Api.call("get_msg", message_id=mid)` |
+| `Send.GetForwardMsg(id)` | `Api.call("get_forward_msg", id=id)` |
+
+## 标准化对齐
+
+本节说明适配器与 ErisPulse 标准化规范对齐的行为。规范详情参见 SDK 文档《请求操作规范》（`docs/zh-CN/standards/request-action-spec.md`）与《API 响应规范》（`docs/zh-CN/standards/api-response.md`）。
+
+### 请求事件处理（4.3.1 起）
+
+适配器按请求操作规范实现请求事件的接收与响应：
+
+- **上下文留存**：事件入口将 `request_id` 映射到 `{request_type, sub_type, group_id, account, ts}` 并缓存（TTL 3600 秒、上限 512 条，请求处理成功后清理），供后续 `accept()`/`reject()` 路由使用
+- **端点路由优先级**：`accept()`/`reject()` 的 kwargs 显式传参（`request_type`/`sub_type`/`group_id` 为保留名）> 事件留存上下文 > 回退好友端点（`set_friend_add_request`）并输出 WARNING
+- **群邀请/加群请求**：`request_type == "group"` 时正确路由到 `set_group_add_request`（加群 `sub_type="add"`、邀请 `sub_type="invite"`）
+- **废弃说明**：4.3.1 之前通过私有参数 `_request_type` 指定请求类型的方式已废弃，传入会被忽略
+
+### call_api 错误处理
+
+- 账户未连接或连接已关闭时，`call_api` 不再抛出 `ConnectionError`，而是返回标准失败响应（`status="failed"`、`retcode=33001`）
+- API 调用超时同样返回标准失败响应（`retcode=33001`）
+
+### 账户字段双兼容
+
+- `call_api` 同时接受标准字段 `account_id` 与旧字段名 `_account_id`（标准名优先）；框架 ApiDSL 自动适配，模块代码推荐使用 `account_id`
+- Send DSL 全方法读取 `send_context`：事件链内自动使用当前事件来源账户，显式 `Using()` 指定的账户优先
+
+### 错误码规范
+
+| retcode | 含义 | 触发场景 |
+|---------|------|----------|
+| 0 | 成功 | 动作执行成功 |
+| 33001 | 网络错误 | 账户未连接、连接已关闭、API 调用超时 |
+| 10002 | 不支持的动作 | 调用未实现的动作 |
+| 10003 | 参数错误 | 缺少必要参数 |
+
+> 平台原始响应数据保留在 `onebot11_raw` 字段。
 
 ---
 ## 支持的消息发送类型
@@ -292,7 +358,7 @@ async def handle_friend_request(event):
 
 ### 事件示例
 
-```python
+```json
 // 好友请求
 {
   "type": "request",
@@ -372,6 +438,7 @@ from ErisPulse.Core.Event import message
 
 @message.on_message()
 async def handle_message(event):
+    raw_event = event.get_raw_event()
     raw_self_id = event.get_raw_self_id()
     sender_info = event.get_sender_info()
     sender_role = event.get_sender_role()
@@ -518,8 +585,9 @@ OneBot11 适配器采用异步非阻塞设计，确保：
 
 适配器提供完善的错误处理机制：
 1. 网络连接异常自动重连（支持每个账户独立重连，间隔30秒）
-2. API 调用超时处理（固定30秒超时）
-3. 连接失败时自动按间隔重试
+2. API 调用超时处理（固定30秒超时，超时返回 `retcode=33001` 标准失败响应）
+3. 账户未连接/连接已关闭时 `call_api` 返回 `retcode=33001` 标准失败响应，不再抛出 `ConnectionError`
+4. 连接失败时自动按间隔重试
 
 ## 事件处理增强
 

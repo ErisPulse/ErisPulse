@@ -6,8 +6,9 @@ EmailAdapter 是基于 SMTP/IMAP 协议的邮件适配器，支持邮件发送�
 
 ## 文档信息
 
-- 对应模块版本: 4.3.0
+- 对应模块版本: 4.3.2
 - 维护者: ErisPulse
+- 最后更新: 2026-11-10
 
 ## 基本信息
 
@@ -62,6 +63,35 @@ enabled = true
 - **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
 - 导入路径更新至 Core.Bases；_load_accounts 保留（全局默认值合并为该适配器特有逻辑）
 
+## 标准化对齐（4.3.2）
+
+响应结构与错误码遵循 [API 响应规范](../../standards/api-response.md)。
+
+### 事件与响应字段
+
+- **消息事件补齐顶层 `message_id`**：取邮件 `Message-ID` 头
+- **无 `Message-ID` 的邮件事件 id 回退 uuid**：事件 `id` 与 `message_id` 不再为空，避免事件因 id 重复被下游去重吞掉
+- **`get_self_info` 原始数据位于响应顶层 `email_raw`**，标准字段含 `user_id`（邮箱地址）
+
+### HTML 发送方法
+
+- `.Html(html: str)`：发送 HTML 格式邮件
+- `.HTML(html: str)`：`.Html()` 的别名（与标准 Send 方法命名保持一致）
+
+### 错误码规范
+
+| retcode | 含义 | 说明 |
+|---------|------|------|
+| 0 | 成功 | — |
+| 33001 | 网络错误 | SMTP/IMAP 连接类失败（超时、拒连等） |
+| 34100 | 平台失败 | SMTP 拒绝（收件人/发件人/数据/认证被拒）；原始错误保留在 `email_raw` |
+| 10003 | 参数错误 | 缺少或无效参数 |
+
+### 账户与多账户
+
+- `Send` 读取 `send_context`（事件账户兜底）：从事件上下文调用 `Send` 时默认回落到来源账户
+- 多账户发送用 `Send.Using("账户名")` 显式指定
+
 ---
 
 
@@ -108,7 +138,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
 | 方法 | 说明 |
 |------|------|
 | `.Text(text: str)` | 发送纯文本邮件 |
-| `.Html(html: str)` | 发送 HTML 格式邮件 |
+| `.Html(html: str)` | 发送 HTML 格式邮件（`.HTML(html)` 为别名） |
 | `.MergeForward(nodes, title)` | 发送合并转发邮件（正文为 `<details>` 折叠 HTML 卡片，主题默认取标题） |
 | `.Raw_ob12(message, **kwargs)` | 发送 OneBot12 格式消息 |
 
@@ -156,6 +186,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
     "platform": "email",
     "user_id": "bot@example.com"
   },
+  "message_id": "<message-id@example.com>",
   "message": [
     {
       "type": "text",
@@ -232,6 +263,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
     "platform": "email",
     "user_id": "bot@example.com"
   },
+  "message_id": "<abc123@example.com>",
   "message": [
     {
       "type": "text",

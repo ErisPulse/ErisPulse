@@ -6,8 +6,9 @@ MinecraftAdapter 是基于 RCON 协议的 Minecraft Java 版服务器适配器�
 
 ## 文档信息
 
-- 对应模块版本: 0.1.0
+- 对应模块版本: 0.1.2
 - 维护者: ErisPulse
+- 最后更新: 2026-11-10
 
 ## 基本信息
 
@@ -51,6 +52,44 @@ enabled = true
 - `enable_log_tail`：日志事件开关（默认关闭）。关闭时适配器为纯命令模式（只发送、不产生事件）
 - `log_path`：日志文件路径。要求适配器与服务器**同机运行**或日志目录已挂载；支持日志滚动（latest.log 轮转后自动重置读取位置）
 - `poll_interval`：日志扫描间隔（秒，最小 0.2）
+
+## 标准化对齐
+
+本节说明适配器与 ErisPulse 标准化规范对齐的行为。规范详情参见 SDK 文档《API 响应规范》（`docs/zh-CN/standards/api-response.md`）。
+
+### Api.Using() 账户路由修复（0.1.2）
+
+`Api` DSL 各方法此前未正确消费 `Using()` 指定的账户，现已修复：显式 `Using()` 传入的 `_account_id` 与事件链路的 `api_context`（事件来源账户）均能正确路由到对应服务器的 runtime，缺省时回退首个账户。
+
+### 消息事件补顶层 message_id
+
+消息事件补充顶层 `message_id` 字段（UUID；tellraw/say 无真实消息 ID，为生成的消息标识）。
+
+### 加入/退出事件 detail_type 标准化（0.1.2）
+
+玩家加入/退出事件的 `detail_type` 从 `server_joined` / `server_left` 标准化为 `group_member_increase` / `group_member_decrease`，原始类型保留在 `sub_type`：
+
+| 原生类型 | 标准化 detail_type | sub_type |
+|----------|-------------------|----------|
+| server_joined | `group_member_increase` | `server_joined` |
+| server_left | `group_member_decrease` | `server_left` |
+
+### 扩展动作标准化（0.1.2）
+
+扩展动作提供带平台前缀的调用形式，旧方法名保留兼容：
+
+- `Api.call("minecraft.get_player_list")` / `call_api("minecraft.get_player_list")`（旧 `get_player_list` 保留）
+- `Api.call("minecraft.exec", command="...")` / `call_api("minecraft.exec", ...)`（旧 `exec` 保留）
+
+### 元动作标准化
+
+- `get_self_info` 的 `data` 含标准字段：`user_id` / `user_name` / `user_displayname` 及 `host`
+- `get_version` 返回 `{"impl": "ErisPulse-MinecraftAdapter", "version": "...", "onebot_version": "12"}`
+- `get_supported_actions` 返回支持的动作名列表
+
+### 其他
+
+- `call_api` 同时接受标准字段 `account_id` 与旧字段名 `_account_id`（标准名优先）；框架 ApiDSL 自动适配
 
 ## 消息发送
 
@@ -106,6 +145,8 @@ mc = sdk.adapter.get("minecraft")
 
 # 在线玩家列表（解析 list 命令输出）
 result = await mc.Api.get_player_list()       # {"players": ["Steve", "Alex"], "raw": "..."}
+# 也可用带前缀的扩展动作形式
+result = await mc.Api.call("minecraft.get_player_list")
 
 # 连接状态
 result = await mc.Api.get_status()            # {"status": "ok", "connected": true}
@@ -126,12 +167,13 @@ result = await mc.Api.Using("server2").get_player_list()
 |------|------|---------|
 | `get_status()` | RCON 连接状态 | 本地 |
 | `get_self_info()` | 服务器身份（bot_id/账户名/host:port） | 本地 |
-| `get_player_list()` | 在线玩家列表（解析 `list` 命令输出） | RCON |
-| `get_version()` | 适配器版本 | 本地 |
+| `get_player_list()` | 在线玩家列表（解析 `list` 命令输出；扩展名 `minecraft.get_player_list`） | RCON |
+| `get_version()` | 适配器版本（impl/version/onebot_version） | 本地 |
+| `get_supported_actions()` | 支持的动作名列表 | 本地 |
 
 ### 平台扩展动作
 
-通过 `Api.exec(cmd)` 执行任意 RCON 命令（等价于 `call_api("exec", command=...)`）：
+通过 `Api.exec(cmd)` 执行任意 RCON 命令（等价于 `call_api("minecraft.exec", command=...)`，旧名 `exec` 保留兼容）：
 
 ```python
 # 白名单管理
@@ -163,7 +205,7 @@ await mc.Api.exec("scoreboard objectives add kills deathCount")
 # send_message：等价于 Send 链
 result = await mc.call_api(
     "send_message",
-    _account_id="default",
+    account_id="default",
     target_type="user", target_id="Steve",
     message=[{"type": "text", "data": {"text": "hi"}}],
 )
@@ -192,8 +234,8 @@ result = await mc.call_api(
 | 服务器日志行 | Adapter 事件 | 说明 |
 |--------------|--------------|------|
 | `[12:34:56] [...]: <Steve> 你好` | message（`detail_type: server`） | 玩家聊天 |
-| `[12:35:00] [...]: Alex joined the game` | notice（`detail_type: server_joined`） | 玩家加入 |
-| `[12:36:00] [...]: Alex left the game` | notice（`detail_type: server_left`） | 玩家退出 |
+| `[12:35:00] [...]: Alex joined the game` | notice（`detail_type: group_member_increase`，`sub_type: server_joined`） | 玩家加入 |
+| `[12:36:00] [...]: Alex left the game` | notice（`detail_type: group_member_decrease`，`sub_type: server_left`） | 玩家退出 |
 
 ### 事件字段示例
 
@@ -217,7 +259,8 @@ result = await mc.call_api(
 # 加入（notice）
 {
   "type": "notice",
-  "detail_type": "server_joined",          # 或 server_left
+  "detail_type": "group_member_increase",  # 退出为 group_member_decrease
+  "sub_type": "server_joined",             # 原生类型保留在 sub_type（退出为 server_left）
   "user_id": "Alex",
   "operator_id": "Alex",
   "group_id": "mc1",
