@@ -619,6 +619,8 @@ flowchart TD
 
 ### 无感语法糖
 
+> 「事件链内免 `Using()`」「代位账户名路由」需要 ErisPulse **2.12+**。
+
 | 语法糖 | 触发条件 | 效果 |
 |--------|----------|------|
 | 事件链内免 `Using()` | 处理事件的链路内调用 `Send` / `Api` / `Request` | 自动绑定触发事件的账户（分发入口注入调用上下文；`send_context` / `api_context` / `request_context` 同口径） |

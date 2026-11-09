@@ -145,6 +145,8 @@ ownership.orphans()                      # [{"owner": "ghost", "total": 2, ...}]
 
 ## 嵌套生命周期（ownership.nest）
 
+> 本节特性需要 ErisPulse **2.12+**。
+
 允许一个模块（父）托管另一批 owner（子），父被回收时子整体回收。典型场景：
 脚本引擎模块内跑子插件、Dashboard 托管面板扩展、工具模块代管外部注册表条目。
 
@@ -191,7 +193,7 @@ await self.sdk.module.unload(child, reason="cascade")
 适配器热重载失败同样恢复旧注册态；旧实例原处于运行态且旧启动任务已结束时，
 回滚后会重放 `start()`，并发射 `adapter.rollback` 事件（载荷
 `{adapter_name, replayed, success}`）。断连 / bot offline 等 unload 副作用
-仍不可撤销。
+仍不可撤销。重放与 `adapter.rollback` 事件需要 ErisPulse **2.12+**。
 
 边界说明：
 
