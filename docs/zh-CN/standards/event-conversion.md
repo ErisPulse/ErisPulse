@@ -57,7 +57,7 @@
 | request_id | string | 请求标识符（**强烈推荐**，用于同意/拒绝请求操作） |
 
 **`request_id` 字段说明**：
-- `request_id` 是请求事件的唯一操作标识符，用于通过 `HandleRequest` DSL 执行同意/拒绝操作
+- `request_id` 是请求事件的唯一操作标识符，用于通过 `Request` DSL 执行同意/拒绝操作
 - 适配器在转换请求事件时，应将平台原生的请求标识映射到此字段
 - 如果平台本身没有请求ID，适配器应生成一个唯一标识（如基于时间戳+用户ID的哈希）
 - 当 `request_id` 缺失时，`event.approve()` / `event.reject()` 将抛出 `ValueError`

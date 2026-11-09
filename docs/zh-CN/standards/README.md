@@ -14,7 +14,7 @@
 2. [事件转换标准](event-conversion.md) - 平台事件转换规范、扩展命名规范、消息段标准
 3. [API 响应标准](api-response.md) - 适配器 API 响应格式标准及扩展要求
 4. [发送方法规范](send-method-spec.md) - Send 类方法命名、参数规范及反向转换要求
-5. [请求操作规范](request-action-spec.md) - 请求事件字段要求、HandleRequest DSL 及适配器实现要求
+5. [请求操作规范](request-action-spec.md) - 请求事件字段要求、Request DSL（approve/reject）、异构端点的请求类型上下文留存及适配器实现要求
 6. [API 动作标准](api-action-spec.md) - OneBot12 标准 API 动作统一接口（用户/群组/频道/消息管理/文件含分片/元动作）
 7. [适配器标准化指南（总纲）](standardization-guide.md) - 标准化原则/工作流/命名规则 + 交互组件标准（按钮键盘/交互回调事件）与各平台映射
 

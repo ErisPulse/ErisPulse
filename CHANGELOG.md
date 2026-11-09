@@ -119,6 +119,11 @@
   - 适配器账户解析：显式 `account_id` 无法匹配时记录 WARNING 并回退首个启用账户（WARNING 的 platform / account_id / account 用于定位未归属到账户的事件来源）
   - 适配器（onebot11/12、SnowLuma，随各适配器仓库发布）：运行期识别 Bot ID 并关联到账户实例（`bot_id`），事件 `self.user_id` 即可解析到接收账户，`event.reply()` 不再固定走第一个账户；OneBot11/SnowLuma 事件 id 改为稳定组合，重推去重恢复且不同账户互不吞事件
 
+### 文档
+
+- @YingXinche
+  - 请求操作规范新增「请求类型上下文留存」：异构端点（好友/群请求分端点）适配器须在事件侧留存 `request_id` → 类型/账户上下文，定义介质无关的统一条目字段表（含 `ts` 时间戳与 TTL、一一对应、KV 键名规则），`accept`/`reject` 按 kwargs 显式传参 > 缓存 > 回退默认端点 + WARNING 路由，类型覆盖参数保留名 `request_type` / `sub_type` / `group_id`；持久化介质（KV / 内置 ORM）为可选项且写入失败须降级为仅内存留存（纯文档规范，不涉及框架 API 与依赖变更）
+
 ---
 
 ## [2.11.2] - 2026/11/01
