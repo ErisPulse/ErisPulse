@@ -15,11 +15,19 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from ..Core.constants import (
+    FILE_RELOAD_DEBOUNCE_SECS,
+    FILE_WATCH_POLL_INTERVAL_SECS,
+    FILE_WATCHER_IGNORED_DIRS,
+)
+from ..Core.i18n import i18n
+from ..Core.logger import logger
 from .file_watcher import (
     FileChangeEvent,
     FileSystemEventHandler,
     PollingObserver,
 )
+from .frame_config import get_framework_config
 from .reload_target import ReloadTarget, classify_reload_path
 
 __all__ = ["DevReloadHandler", "DevWatcher"]
@@ -52,8 +60,6 @@ class DevReloadHandler(FileSystemEventHandler):
         :param entry_paths: 入口脚本路径（缺省从 ``sys.argv[0]`` 推断）
         :param notify: 文件变更提示回调（接收本批变更路径）
         """
-        from ..Core.constants import FILE_RELOAD_DEBOUNCE_SECS
-
         super().__init__()
         self._loop = loop
         self._sdk = sdk
@@ -118,8 +124,8 @@ class DevReloadHandler(FileSystemEventHandler):
         if self._notify is not None:
             try:
                 self._notify(set(paths))
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"dev watcher notify callback failed: {e!r}")
 
         targets: dict[tuple[str, str | None, str | None], ReloadTarget] = {}
         for path in sorted(paths):
@@ -138,14 +144,11 @@ class DevReloadHandler(FileSystemEventHandler):
 
         try:
             asyncio.run_coroutine_threadsafe(_execute(), self._loop)
-        except RuntimeError:
-            pass
+        except RuntimeError as e:
+            logger.debug(f"dev watcher dispatch dropped: event loop closed ({e!r})")
 
     async def _apply(self, target: ReloadTarget) -> None:
         """{!--< internal-use >!--} 执行单个重载目标"""
-        from ..Core.i18n import i18n
-        from ..Core.logger import logger
-
         try:
             if target.kind == "module" and target.name:
                 logger.info(
@@ -221,8 +224,6 @@ class DevWatcher:
         :param notify: 文件变更提示回调
         :return: 是否启动成功
         """
-        from ..Core.constants import FILE_WATCHER_IGNORED_DIRS
-
         if not Path(watch_dir).exists():
             return False
         if loop is None:
@@ -252,9 +253,6 @@ class DevWatcher:
             self._handler.close()
             self._handler = None
         if self._observer is not None:
-            from ..Core.constants import FILE_WATCH_POLL_INTERVAL_SECS
-            from ..Core.logger import logger
-
             try:
                 self._observer.stop()
                 self._observer.join(timeout=FILE_WATCH_POLL_INTERVAL_SECS * 2)
@@ -266,8 +264,6 @@ class DevWatcher:
     def _resolve_ignore_dirs() -> "list[str] | None":
         """{!--< internal-use >!--} 解析忽略目录（含插件目录）"""
         try:
-            from .frame_config import get_framework_config
-
             framework = get_framework_config()
         except Exception:
             framework = {}
