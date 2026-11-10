@@ -219,9 +219,16 @@ class SQLiteStorage(_SingletonMixin, SQLStorageBase):
     # 事务控制
 
     async def _begin_txn(self, conn: Any) -> None:
-        """{!--< internal-use >!--} BEGIN TRANSACTION"""
+        """
+        {!--< internal-use >!--} BEGIN IMMEDIATE TRANSACTION
+
+        IMMEDIATE 在事务开始时即取写锁（busy_timeout 正常生效），避免
+        deferred 事务「先读后写」升级写锁时的 SQLITE_BUSY_SNAPSHOT——
+        该 busy 错误不重试、直接抛 locked，WAL + busy_timeout 均无法缓解
+        （高频读写混合下表现为间歇性 database is locked）。
+        """
         logger.trace(i18n.t("core.storage.transaction_begin"))
-        await conn.execute("BEGIN TRANSACTION")
+        await conn.execute("BEGIN IMMEDIATE TRANSACTION")
 
     async def _commit_txn(self, conn: Any, handle: Any = None) -> None:
         """{!--< internal-use >!--} COMMIT"""

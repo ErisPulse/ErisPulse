@@ -120,6 +120,7 @@
 ### 修复
 
 - @YingXinche
+  - SQLite 事务改用 `BEGIN IMMEDIATE`：事务开始即取写锁（busy_timeout 正常生效），消除 deferred 事务「先读后写」升级写锁时的 `SQLITE_BUSY_SNAPSHOT`——该 busy 不重试直接抛 locked，是高频读写混合（ORM / KV 双路径交错）下间歇性 database is locked 的框架内根因
   - `epsdk restart` 对容器内 PID 1 实例改为向框架进程发送 `SIGUSR1` 触发进程内软重启（原「终止后重拉」模型会直接退出容器且不再拉起）；框架 `run()` 注册 `SIGUSR1` → `sdk.restart()`，整进程重启交由 `docker restart` / restart 策略承载
   - 适配器回滚后旧实例不再停留在「已启动」但未实际服务的状态
   - 适配器账户解析：显式 `account_id` 无法匹配时记录 WARNING 并回退首个启用账户（WARNING 的 platform / account_id / account 用于定位未归属到账户的事件来源）
