@@ -9,6 +9,8 @@ name: "📚 Eris Docs Update"
 # - 翻译尽力而为：部分失败不阻断提交（已成功译文照常入库，失败文件下轮续译）
 # - 产物副本（artifact / docs-generated）先于分支提交落盘：任一写步骤失败时产物已在手
 # - App Installation Token 有效期 1h < 翻译预算 270min：App Token 在翻译完成后才铸造
+# - 触发面收窄：仅文档/源码 docstring/生成器/译者变更触发（纯测试与构建配置不触发）
+# - 非抢占锁：push 排队不打断进行中的翻译；手动触发可勾选 cancel_running 取消旧任务重跑
 # - bash 安全纪律：任何步骤脚本不得以可能短路的 `cmd && cmd` 语句结尾
 #   （短路退出码会成为整个步骤的退出码——历史事故根因）
 
@@ -17,15 +19,31 @@ permissions:
 
 concurrency:
   group: docs-update
-  cancel-in-progress: true
+  # 非抢占锁：翻译预算 270min，push 触发的新任务排队等待，不打断进行中的翻译。
+  # 仅在手动触发并勾选 cancel_running 时取消旧任务立即重跑。
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' && inputs.cancel_running == 'true' }}
 
 on:
   push:
     branches: [Develop/v2]
+    # 只在会影响文档产物的路径变更时触发：源文档、根 README、
+    # docstring（api-docs / ai-prompts 输入）、生成器与译者、分发用 README
+    paths:
+      - 'docs/zh-CN/**'
+      - 'README.md'
+      - 'README.*.md'
+      - 'src/ErisPulse/**'
+      - 'scripts/tools/**'
+      - '.github/dist-readme/README*.md'
+      - '.github/workflows/auto-update-docs.yml'
   workflow_dispatch:
     inputs:
       force_translate:
         description: 'Force re-translate all documents'
+        required: false
+        default: 'false'
+      cancel_running:
+        description: 'Cancel the in-progress docs run and start fresh'
         required: false
         default: 'false'
 
@@ -168,7 +186,7 @@ jobs:
       # 故在本步才铸造，避免长任务后 token 失效）
       # ----------------------------------------------------------------------
       - name: Upload all docs as artifact
-        if: steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-docs.outputs.any_updated == 'true'
+        if: always() && (steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-docs.outputs.any_updated == 'true')
         uses: actions/upload-artifact@v4
         with:
           name: docs-build
@@ -191,7 +209,7 @@ jobs:
           private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
 
       - name: Publish docs tree to docs-generated branch (durable)
-        if: steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-docs.outputs.any_updated == 'true'
+        if: always() && (steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-docs.outputs.any_updated == 'true')
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
