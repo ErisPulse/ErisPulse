@@ -77,6 +77,14 @@ DEFAULT_ERISPULSE_CONFIG = {
         # 内联 PEM 内容（优先于路径，适合容器/无文件系统场景）
         "ssl_cert": None,
         "ssl_key": None,
+        # /metrics Prometheus 文本端点开关（默认关闭；环境变量
+        # ERISPULSE_SERVER_METRICS_ENABLED 覆盖）
+        "metrics_enabled": False,
+    },
+    "router": {
+        # 限流键是否信任反向代理头（X-Forwarded-For 首地址）。
+        # 仅在可信反向代理之后启用，直连暴露时启用可被伪造绕过限流
+        "rate_limit_trust_proxy": False,
     },
     "logger": {
         "level": DEFAULT_LOG_LEVEL,

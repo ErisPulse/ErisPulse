@@ -11,6 +11,7 @@ ErisPulse 运行时配置和管理模块
 # config_schema 的符号通过 __getattr__ 懒加载
 # （避免在 runtime 初始化阶段触发 Core.Bases 完整加载链，导致循环引用）
 # 注意：i18n_schema 的 BaseI18n / I18nKey 已不再从 runtime 导出，请从 Core.Bases 导入
+from .metrics import MetricsRegistry, metrics
 from .context import (
     bind_owner,
     current_caller,
@@ -113,6 +114,8 @@ __all__ = [
     "current_event_account",
     "current_owner",
     "current_trace_id",
+    "MetricsRegistry",
+    "metrics",
     "get_config",
     "get_config_schema",
     "get_current_caller",

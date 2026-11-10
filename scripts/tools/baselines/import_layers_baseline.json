@@ -1,5 +1,5 @@
 {
- "lazy_total": 1018,
+ "lazy_total": 1022,
  "by_file": {
   "__init__.py": 15,
   "__main__.py": 1,
@@ -29,7 +29,7 @@
   "CLI/utils/package_manager.py": 11,
   "CLI/utils/scaffold_text.py": 1,
   "Core/__init__.py": 27,
-  "Core/adapter.py": 54,
+  "Core/adapter.py": 55,
   "Core/Bases/__init__.py": 17,
   "Core/Bases/adapter.py": 34,
   "Core/Bases/adapter_patterns.py": 7,
@@ -75,7 +75,7 @@
   "Core/master.py": 4,
   "Core/module.py": 61,
   "Core/ownership.py": 42,
-  "Core/router.py": 18,
+  "Core/router.py": 20,
   "Core/scope.py": 14,
   "Core/shadow.py": 12,
   "Core/storage/__init__.py": 9,
@@ -97,7 +97,7 @@
   "loaders/module.py": 27,
   "loaders/plugin_folder.py": 13,
   "loaders/strict.py": 5,
-  "runtime/__init__.py": 13,
+  "runtime/__init__.py": 14,
   "runtime/config_schema.py": 1,
   "runtime/dev_watch.py": 7,
   "runtime/diagnostics.py": 5,

@@ -16,6 +16,7 @@ from collections.abc import Callable
 from typing import Any, TypeVar, cast
 
 from ..runtime.context import current_event_account, current_owner, current_trace_id, handler_waits
+from ..runtime.metrics import metrics
 from .Bases.adapter import BaseAdapter
 from .Bases.manager import ManagerBase
 from .config import config
@@ -1800,6 +1801,10 @@ class AdapterManager(ManagerBase):
         platform = data.get("platform", "unknown")
         event_type = data.get("type", "unknown")
         detail_type = data.get("detail_type", "")
+
+        # 运行指标（/health 与 /metrics 数据源）：接收总量与按类型计数
+        metrics.inc("events.received_total")
+        metrics.inc(f"events.type.{event_type}")
         platform_raw = data.get(f"{platform}_raw", {})
         raw_event_type = data.get(f"{platform}_raw_type")
 
