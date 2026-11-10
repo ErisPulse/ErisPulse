@@ -66,12 +66,12 @@ def _call_account_mode(adapter) -> str:
                 mode = "account_id"
             elif "_account_id" in consts:
                 mode = "_account_id"
-    except (TypeError, ValueError, AttributeError):
-        pass
+    except (TypeError, ValueError, AttributeError) as e:
+        adapter._get_logger().debug(f"call_api account probe failed on {cls.__name__}: {e!r}")
     try:
         cls._ep_call_account_mode = mode
-    except Exception:
-        pass
+    except Exception as e:
+        adapter._get_logger().debug(f"account mode cache write failed on {cls.__name__}: {e!r}")
     return mode
 
 
@@ -88,8 +88,8 @@ def _warn_account_unconsumed(adapter) -> None:
                 platform=getattr(adapter, "_platform", "") or cls.__name__,
             )
         )
-    except Exception:
-        pass
+    except Exception as e:
+        adapter._get_logger().debug(f"account unconsumed warning failed: {e!r}")
 
 
 def _adapt_account_param(adapter, params: dict) -> dict:
