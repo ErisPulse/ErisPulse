@@ -149,6 +149,7 @@ SECTION_ADVANCED_MODULE = Section(
         DocEntry("归属权（owner）系统", "advanced/ownership.md"),
         DocEntry("影子模块与灰度转正", "advanced/shadow.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
+        DocEntry("性能基准与调优", "advanced/performance.md"),
     ],
 )
 
@@ -165,6 +166,7 @@ SECTION_ADVANCED_ADAPTER = Section(
         DocEntry("影子模块与灰度转正", "advanced/shadow.md"),
         DocEntry("模块间通信", "advanced/module-communication.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
+        DocEntry("性能基准与调优", "advanced/performance.md"),
     ],
 )
 
@@ -185,6 +187,7 @@ SECTION_ADVANCED_FULL = Section(
         DocEntry("归属权（owner）系统", "advanced/ownership.md"),
         DocEntry("影子模块与灰度转正", "advanced/shadow.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
+        DocEntry("性能基准与调优", "advanced/performance.md"),
     ],
 )
 

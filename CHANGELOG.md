@@ -98,7 +98,11 @@
   - `SendDSL` 新增 `Location()` 标准发送方法（OneBot12 `location` 段），方法清单与模板提示同步
   - 影子模块体验闭环：SDK 新增 `shadow_ingest_whl`（whl 校验/原件落盘/解包）、`shadow_promote_persist`（转正后后台 pip 安装原件，重启不回退）、`shadow_persist_status`、`list_shadows`；Dashboard 真实模块卡片「影子测试中」标记、顶部影子聚合区、影子 owner 移出普通列表，旧版 SDK 自动降级为基础影子（功能不退化）
   - `epsdk create`（module / adapter / pack）生成的可发布项目自带 `.gitignore`：排除运行时数据（config/ 令牌、data/、logs/）、`uv.lock`（库项目不入库 lockfile）与缓存/编辑器文件；已存在则不覆盖
+  - 运行指标观测一期：`/metrics` Prometheus 文本端点（`ErisPulse.server.metrics_enabled` 默认关闭，含事件接收总量与按类型计数、进程 uptime；`ERISPULSE_INSTANCE_ID` 实例身份覆盖）；`/health` 增补 `instance_id` / `uptime_seconds` / `events_received` 字段（多实例部署区分实例与容量评估的数据源）
+  - 网络客户端 `Client.stats` 增补请求延迟分位 `latency_p50_ms` / `latency_p95_ms`（有界采样窗口 256 条）
+  - 限流键支持信任反向代理头：`ErisPulse.router.rate_limit_trust_proxy`（默认 `false`）——反代后多客户端同 IP 共享限流窗口误伤场景，仅在可信反代后启用
   - 模块开发者文档补齐公共 API 教学：请求事件审批闭环（`on_friend_request`/`on_group_request` + `event.approve()`/`reject()`）、`BaseModule.state` 模块级持久化状态（替代裸写 storage 键）、`event.send_chain`（reply 覆盖不了的修饰链场景）、`event.done` 认领/阻断入口、`sdk.enable_plugin_hot_reload`（裸 `sdk.run()` 场景）、泛型事件注册器（`on_notice`/`on_request`/`on_meta`）；`event: Event` 类型注解明确为强烈建议（全部文档示例补齐 import，并接入 `epsdk types` 类型存根动线）
+  - 新增性能基准与调优页：实测数字（含 NoneBot2 对照：单 handler 3.0× / 洪泛 4.8× / 多 handler 9.9×）、基准自跑与回归对比方法（`benchmark.py --json/--compare`）、调优要点；CI 新增 benchmark 报告 job（warning-only，快速档 8 套件结果落 artifact 供人工对比）
 
 ### 优化
 

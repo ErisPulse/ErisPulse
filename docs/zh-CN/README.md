@@ -82,6 +82,7 @@ ErisPulse 是事件驱动的模块化异步机器人框架——业务代码只�
 | 通信连接 | [模块间通信](advanced/module-communication.md) · [连接池与广播](advanced/connections.md) · [路由系统](advanced/router.md) | 不懂服务契约（`meta.services`）白名单，跨模块 `module.call` 会被 `ServiceNotProvidedError` 拒绝且不知原因 |
 | 数据存储 | [存储后端](advanced/storage-backends.md) · [SQL 构建](advanced/sql-builder.md) · [网络客户端](advanced/client.md) | 不懂连接失败冷却期语义，数据库抖动时会误判"框架挂了"（实际是存储操作快速失败、冷却后自动重连） |
 | 消息对话 | [Conversation 多轮对话](advanced/conversation.md) · [会话收件箱](advanced/transcript.md) · [MessageBuilder](advanced/message-builder.md) · [国际化](advanced/i18n.md) | 不懂会话互斥租约，两个模块同时等同一用户的回复会互相踢掉 |
+| 性能观测 | [性能基准与调优](advanced/performance.md) | 部署前不看基准数字，容量规划全靠猜；升级后不做回归对比，性能退化发现不了 |
 | 灰度影子 | [影子模块与灰度转正](advanced/shadow.md) | 不懂五道隔离闸就提前转正，影子的出站消息会外溢到真实用户 |
 
 **概念关系总表**
