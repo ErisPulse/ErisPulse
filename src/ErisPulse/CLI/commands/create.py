@@ -1115,6 +1115,62 @@ def _copy_erispulse_logo(project_dir: Path) -> None:
     shutil.copy2(logo_src, dest)
 
 
+_PROJECT_GITIGNORE = (
+    "# Python\n"
+    "__pycache__/\n"
+    "*.py[cod]\n"
+    "*$py.class\n"
+    "build/\n"
+    "dist/\n"
+    "*.egg-info/\n"
+    ".eggs/\n"
+    "\n"
+    "# Virtual environments and local env files\n"
+    ".venv/\n"
+    "venv/\n"
+    "env/\n"
+    ".env\n"
+    "\n"
+    "# Tool caches\n"
+    ".pytest_cache/\n"
+    ".mypy_cache/\n"
+    ".ruff_cache/\n"
+    ".coverage\n"
+    "coverage.xml\n"
+    "htmlcov/\n"
+    "\n"
+    "# Library projects don't commit the lockfile (uv.lock is for local dev only)\n"
+    "uv.lock\n"
+    "\n"
+    "# ErisPulse runtime data (config contains tokens, keep out of VCS)\n"
+    "config/\n"
+    "data/\n"
+    "logs/\n"
+    ".erispulse/\n"
+    "\n"
+    "# Editor and system files\n"
+    ".idea/\n"
+    ".vscode/\n"
+    "*.swp\n"
+    ".DS_Store\n"
+)
+
+
+def _write_project_gitignore(project_dir: Path) -> None:
+    """
+    为可发布项目写入 .gitignore（已存在则跳过）
+
+    排除运行时产物（config/data/logs）、lockfile 与缓存；
+    config.example.toml 等模板文件不在排除范围。
+
+    :param project_dir: [Path] 项目根目录
+    """
+    gitignore_file = project_dir / ".gitignore"
+    if gitignore_file.exists():
+        return
+    gitignore_file.write_text(_PROJECT_GITIGNORE, encoding="utf-8")
+
+
 def _scaffold_text(name: str) -> dict:
     """
     构建当前语言的脚手架文案映射，并预填充 {name} 占位符
@@ -1401,6 +1457,7 @@ class CreateCommand(Command):
                 readme_tpl.format(**readme_kwargs),
                 encoding="utf-8",
             )
+            _write_project_gitignore(project_dir)
 
             console.print()
             console.print(
@@ -1412,6 +1469,7 @@ class CreateCommand(Command):
             console.print("    ├── pyproject.toml")
             console.print("    ├── LICENSE")
             console.print("    ├── README.md")
+            console.print("    ├── .gitignore")
             console.print(f"    └── {project_name}/  [dim]({plugin_path})[/]")
             console.print()
             console.print(Text(i18n.t("cli.create.next_steps"), style="bold"))
@@ -1495,6 +1553,7 @@ class CreateCommand(Command):
                 _README_MODULE.format(name=name, description=description),
                 encoding="utf-8",
             )
+            _write_project_gitignore(project_dir)
 
             console.print()
             console.print(
@@ -1506,6 +1565,7 @@ class CreateCommand(Command):
             console.print("    ├── pyproject.toml")
             console.print("    ├── LICENSE")
             console.print("    ├── README.md")
+            console.print("    ├── .gitignore")
             console.print(f"    └── {name}/")
             console.print("        ├── __init__.py")
             console.print("        └── Core.py")
@@ -1746,6 +1806,7 @@ class CreateCommand(Command):
                 ),
                 encoding="utf-8",
             )
+            _write_project_gitignore(project_dir)
 
             console.print()
             console.print(
@@ -1760,6 +1821,7 @@ class CreateCommand(Command):
             console.print("    ├── pyproject.toml")
             console.print("    ├── LICENSE")
             console.print("    ├── README.md")
+            console.print("    ├── .gitignore")
             console.print(f"    └── {name}/")
             console.print("        ├── __init__.py")
             console.print("        ├── Core.py")
