@@ -7,6 +7,8 @@ name: "📚 Eris Docs Update"
 # 设计要点：
 # - 文档与翻译缓存随开发分支入库：checkout 即含最新状态，跨轮缓存天然续传
 # - 翻译尽力而为：部分失败不阻断提交（已成功译文照常入库，失败文件下轮续译）
+# - 产物副本（artifact / docs-generated）先于分支提交落盘：任一写步骤失败时产物已在手
+# - App Installation Token 有效期 1h < 翻译预算 270min：App Token 在翻译完成后才铸造
 # - bash 安全纪律：任何步骤脚本不得以可能短路的 `cmd && cmd` 语句结尾
 #   （短路退出码会成为整个步骤的退出码——历史事故根因）
 
@@ -33,22 +35,13 @@ jobs:
     # 硬上限 5h：翻译预算 270min + 生成/检查/收尾余量
     timeout-minutes: 300
     steps:
-      - name: Generate App Token
-        id: app-token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.ERISBOT_APP_ID }}
-          private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.ref }}
-          token: ${{ steps.app-token.outputs.token }}
-          # App Token 检出：提交作者是 erispulse[bot]（与 auto-tag-release 一致）；
-          # 不缓存凭据到 .git/config，写操作由提交步骤经 remote set-url
-          # 显式注入当前 App Token
+          # 默认 GITHUB_TOKEN 只读检出（公共仓库）；写操作由发布/提交步骤
+          # 经 remote set-url 注入翻译完成后新铸造的 App Token
           persist-credentials: false
 
       - name: Setup environment
@@ -169,42 +162,10 @@ jobs:
           exit 0
 
       # ----------------------------------------------------------------------
-      # 产物提交回开发分支：克隆/pull 即得最新多语言文档；
-      # fetch+rebase 处理翻译期间远端新提交（产物路径与源码基本不冲突），
-      # rebase 失败不判 job 失败（产物仍经 artifact + docs-generated 兜底）
-      # ----------------------------------------------------------------------
-      - name: Commit docs to branch
-        id: commit-docs
-        if: steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-docs.outputs.any_updated == 'true'
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          BOT_SLUG="${{ steps.app-token.outputs.app-slug }}"
-          BOT_USER_ID=$(gh api "/users/${BOT_SLUG}[bot]" --jq .id)
-          git config user.name "${BOT_SLUG}[bot]"
-          git config user.email "${BOT_USER_ID}+${BOT_SLUG}[bot]@users.noreply.github.com"
-
-          git add docs/ README.md README.*.md .github/.translate_cache/
-          # ai-support 物料已 gitignore：只发布到 docs-generated，不回提开发分支
-          git commit -qm "docs: 自动更新文档产物 (${{ github.sha }}) [skip ci]"
-
-          # 注入当前 GITHUB_TOKEN（persist-credentials: false，长任务防旧 token 过期）
-          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-
-          # 远端在翻译期间可能有新提交：rebase 后推送
-          if git fetch origin "${{ github.ref_name }}" && git rebase "origin/${{ github.ref_name }}"; then
-            if git push origin "HEAD:${{ github.ref_name }}"; then
-              echo "committed=true" >> $GITHUB_OUTPUT
-              echo "已提交回 ${{ github.ref_name }}: $(git rev-parse --short HEAD)"
-              exit 0
-            fi
-          fi
-          echo "::warning::提交回分支失败（远端推进/rebase 冲突），产物经 artifact 与 docs-generated 兜底"
-          echo "committed=false" >> $GITHUB_OUTPUT
-          exit 0
-
-      # ----------------------------------------------------------------------
-      # 查验副本：artifact（400 天）+ docs-generated orphan 分支（单提交强推）
+      # 查验副本（先于提交落盘）：artifact（400 天）+ docs-generated orphan
+      # 分支（单提交强推）。提交回开发分支放在最后——任一写步骤失败时
+      # 产物副本已在手（App Installation Token 有效期 1h，翻译预算 270min，
+      # 故在本步才铸造，避免长任务后 token 失效）
       # ----------------------------------------------------------------------
       - name: Upload all docs as artifact
         if: steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-docs.outputs.any_updated == 'true'
@@ -222,7 +183,15 @@ jobs:
           # 必须显式包含，否则跨轮缓存续传断裂（每轮全量重译）
           include-hidden-files: true
 
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.ERISBOT_APP_ID }}
+          private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
+
       - name: Publish docs tree to docs-generated branch (durable)
+        if: steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-docs.outputs.any_updated == 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
@@ -240,6 +209,41 @@ jobs:
           git commit -qm "docs build ${{ github.sha }} $(date -u '+%Y-%m-%dT%H:%MZ')"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push --force origin docs-generated:docs-generated
+
+      # ----------------------------------------------------------------------
+      # 产物提交回开发分支：克隆/pull 即得最新多语言文档；
+      # fetch+rebase 处理翻译期间远端新提交（产物路径与源码基本不冲突），
+      # rebase 失败不判 job 失败（产物已先落 artifact + docs-generated）
+      # ----------------------------------------------------------------------
+      - name: Commit docs to branch
+        id: commit-docs
+        if: steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-docs.outputs.any_updated == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          BOT_SLUG="${{ steps.app-token.outputs.app-slug }}"
+          BOT_USER_ID=$(gh api "/users/${BOT_SLUG}[bot]" --jq .id)
+          git config user.name "${BOT_SLUG}[bot]"
+          git config user.email "${BOT_USER_ID}+${BOT_SLUG}[bot]@users.noreply.github.com"
+
+          git add docs/ README.md README.*.md .github/.translate_cache/
+          # ai-support 物料已 gitignore：只发布到 docs-generated，不回提开发分支
+          git commit -qm "docs: 自动更新文档产物 (${{ github.sha }}) [skip ci]"
+
+          # persist-credentials: false，写凭据在此显式注入（token 为上一步新铸造）
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          # 远端在翻译期间可能有新提交：rebase 后推送
+          if git fetch origin "${{ github.ref_name }}" && git rebase "origin/${{ github.ref_name }}"; then
+            if git push origin "HEAD:${{ github.ref_name }}"; then
+              echo "committed=true" >> $GITHUB_OUTPUT
+              echo "已提交回 ${{ github.ref_name }}: $(git rev-parse --short HEAD)"
+              exit 0
+            fi
+          fi
+          echo "::warning::提交回分支失败（远端推进/rebase 冲突），产物经 artifact 与 docs-generated 兜底"
+          echo "committed=false" >> $GITHUB_OUTPUT
+          exit 0
 
       - name: Summary
         if: always()

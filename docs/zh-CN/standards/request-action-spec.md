@@ -142,7 +142,7 @@ await adapter.Request("req_id").Using("bot1").accept(comment="欢迎")
 }
 ```
 
-**未实现**（适配器未重写 `accept`/`reject`）：
+**未实现**（适配器未重写 `_do_accept`/`_do_reject`）：
 ```json
 {
     "status": "failed",
@@ -236,7 +236,9 @@ def _extract_request_id(self, raw_event: dict) -> str:
 
 ### 5.2 Request 内部类实现
 
-适配器在 `Request` 内部类中重写 `accept` 和 `reject` 即可：
+基类的 `accept()` / `reject()` 是公开入口：内置 scope 授权闸口（`scope.actions.<owner>.request`，禁用时直接返回 34601 拒绝响应）与任务包装，**适配器不要重写公开入口**——重写会绕过授权闸口。适配器重写 `_do_accept` / `_do_reject`（异步方法，直接返回标准响应 dict）。
+
+> **多账户提醒**：`_do_accept` / `_do_reject` 内是适配器自己调 `call_api`，账户不会自动注入——账户经 `self.request_context.get("account_id")` 获取（`Using()` 显式指定 > 事件链自动绑定，与 Send 的 `send_context` 同口径），并作为 `account_id` 参数传给 `call_api`，否则多账户部署下会落到默认账户。
 
 ```python
 from ErisPulse.Core import BaseAdapter, RequestDSL
@@ -246,66 +248,39 @@ class MyAdapter(BaseAdapter):
     class Request(RequestDSL):
         """MyPlatform 请求操作实现"""
         
-        def accept(self, **kwargs):
+        async def _do_accept(self, **kwargs) -> dict:
             """
             同意请求
             
             :param kwargs: 扩展参数，如 comment="备注"
-            :return: asyncio.Task
+            :return: 标准响应格式 dict
             """
-            async def _do():
-                try:
-                    result = await self._adapter.call_api(
-                        endpoint="/set_request",
-                        request_id=self._request_id,
-                        approve=True,
-                        **kwargs,
-                    )
-                    return {
-                        "status": "ok" if result.get("code") == 0 else "failed",
-                        "retcode": result.get("code", 0),
-                        "data": None,
-                        "message_id": "",
-                        "message": result.get("message", ""),
-                    }
-                except Exception as e:
-                    return {
-                        "status": "failed",
-                        "retcode": 34001,
-                        "data": None,
-                        "message_id": "",
-                        "message": f"请求操作失败: {e}",
-                    }
-            
-            return self._create_task(_do())
+            try:
+                result = await self._adapter.call_api(
+                    endpoint="/set_request",
+                    request_id=self._request_id,
+                    account_id=self.request_context.get("account_id"),
+                    approve=True,
+                    **kwargs,
+                )
+                return {
+                    "status": "ok" if result.get("code") == 0 else "failed",
+                    "retcode": result.get("code", 0),
+                    "data": None,
+                    "message_id": "",
+                    "message": result.get("message", ""),
+                }
+            except Exception as e:
+                return {
+                    "status": "failed",
+                    "retcode": 34001,
+                    "data": None,
+                    "message_id": "",
+                    "message": f"请求操作失败: {e}",
+                }
         
-        def reject(self, **kwargs):
-            """拒绝请求"""
-            async def _do():
-                try:
-                    result = await self._adapter.call_api(
-                        endpoint="/set_request",
-                        request_id=self._request_id,
-                        approve=False,
-                        **kwargs,
-                    )
-                    return {
-                        "status": "ok" if result.get("code") == 0 else "failed",
-                        "retcode": result.get("code", 0),
-                        "data": None,
-                        "message_id": "",
-                        "message": result.get("message", ""),
-                    }
-                except Exception as e:
-                    return {
-                        "status": "failed",
-                        "retcode": 34001,
-                        "data": None,
-                        "message_id": "",
-                        "message": f"请求操作失败: {e}",
-                    }
-            
-            return self._create_task(_do())
+        async def _do_reject(self, **kwargs) -> dict:
+            """拒绝请求（与 _do_accept 同构：approve=False）"""
 ```
 
 ### 5.3 请求类型上下文留存（异构端点适配器必须）
@@ -326,9 +301,9 @@ class MyAdapter(BaseAdapter):
 平台端点异构（同意/拒绝需要按请求类型路由）的适配器，`accept` / `reject` 实现必须满足：
 
 1. **事件侧留存**：适配器收到请求事件的入口处，把 `request_id → {请求类型, sub_type, group_id, 账户}` 写入实例内缓存（统一字段见 §5.3.3），并顺手清理过期条目
-2. **操作侧路由**：端点选择顺序为 **kwargs 显式传参 > 缓存 > 回退默认端点并记 WARNING**——类型未知必须打日志（可观测），不得静默选端点
+2. **操作侧路由**：`_do_accept` / `_do_reject` 内的端点选择顺序为 **kwargs 显式传参 > 缓存 > 回退默认端点并记 WARNING**——类型未知必须打日志（可观测），不得静默选端点
 3. **kwargs 保留名**：显式覆盖参数统一命名 `request_type` / `sub_type` / `group_id`（无下划线前缀、跨适配器同名同义）；不使用 `_request_type` 一类私有约定名（标准调用方不会传）
-4. **账户一并留存**：缓存保存事件到达时的账户（事件的 `self.user_id`）；调用方未显式 `Using()` 时按该账户受理
+4. **账户读取**：操作账户统一经基类属性 `self.request_context.get("account_id")` 获取（`Using()` 显式指定 > 事件链自动绑定，与 Send 的 `send_context` 同口径）；缓存留存事件到达账户作为事件链缺失时的兜底（如轮询合成事件、跨重启重建）
 5. **处理后清理**：操作提交成功后从缓存删除该 `request_id`
 
 单一请求端点的平台（如统一 `/set_request`）无需留存，透传即可。本节是适配器实现口径，`Request` DSL 契约不受影响。
@@ -403,71 +378,68 @@ class MyAdapter(BaseAdapter):
                 ctx["request_type"] = "friend"
             return ctx
 
-        def accept(self, **kwargs):
-            """
-            同意请求
+        async def _do_accept(self, **kwargs) -> dict:
+            """同意请求；kwargs 类型路由可用 request_type / sub_type / group_id 显式覆盖"""
+            return await self._do_action(approve=True, **kwargs)
 
-            :param kwargs: 扩展参数；类型路由可用 request_type / sub_type / group_id 显式覆盖
-            :return: asyncio.Task
-            """
-            async def _do():
-                ctx = self._route(**kwargs)
-                account = self._account_id or ctx.get("account")
-                try:
-                    if ctx["request_type"] == "group":
-                        result = await self._adapter.call_api(
-                            endpoint="/set_group_add_request",
-                            flag=self._request_id,
-                            sub_type=ctx.get("sub_type") or "add",
-                            approve=True,
-                            account=account,
-                        )
-                    else:
-                        result = await self._adapter.call_api(
-                            endpoint="/set_friend_add_request",
-                            flag=self._request_id,
-                            approve=True,
-                            account=account,
-                        )
-                    response = {
-                        "status": "ok" if result.get("code") == 0 else "failed",
-                        "retcode": result.get("code", 0),
-                        "data": None,
-                        "message_id": "",
-                        "message": result.get("message", ""),
-                    }
-                except Exception as e:
-                    response = {
-                        "status": "failed",
-                        "retcode": 34001,
-                        "data": None,
-                        "message_id": "",
-                        "message": f"请求操作失败: {e}",
-                    }
-                if response["status"] == "ok":
-                    self._adapter._request_ctx.pop(self._request_id, None)   # 处理后清理
-                return response
+        async def _do_reject(self, **kwargs) -> dict:
+            """拒绝请求（与 _do_accept 同构：approve=False）"""
+            return await self._do_action(approve=False, **kwargs)
 
-            return self._create_task(_do())
+        async def _do_action(self, approve: bool, **kwargs) -> dict:
+            ctx = self._route(**kwargs)
+            account = self.request_context.get("account_id") or ctx.get("account")
+            try:
+                if ctx["request_type"] == "group":
+                    result = await self._adapter.call_api(
+                        endpoint="/set_group_add_request",
+                        flag=self._request_id,
+                        sub_type=ctx.get("sub_type") or "add",
+                        approve=approve,
+                        account_id=account,
+                    )
+                else:
+                    result = await self._adapter.call_api(
+                        endpoint="/set_friend_add_request",
+                        flag=self._request_id,
+                        approve=approve,
+                        account_id=account,
+                    )
+                response = {
+                    "status": "ok" if result.get("code") == 0 else "failed",
+                    "retcode": result.get("code", 0),
+                    "data": None,
+                    "message_id": "",
+                    "message": result.get("message", ""),
+                }
+            except Exception as e:
+                response = {
+                    "status": "failed",
+                    "retcode": 34001,
+                    "data": None,
+                    "message_id": "",
+                    "message": f"请求操作失败: {e}",
+                }
+            if response["status"] == "ok":
+                self._adapter._request_ctx.pop(self._request_id, None)   # 处理后清理
+            return response
 ```
-
-`reject` 与 `accept` 同构：调用链与路由逻辑相同，`approve=False`，清理条件同样为 `status == "ok"`。
 
 #### 5.3.5 跨重启持久化（可选）
 
 进程内存 + TTL 已覆盖绝大多数场景：请求从到达到被处理通常几秒～几分钟，平台侧本有过期时间，重启丢缓存的窗口极小（回退端点 + WARNING 已保证可观测）。仅当适配器在意「处理瞬间恰好重启」时，才把上下文落到持久化介质，介质自选其一，均按 §5.3.3 统一字段形状落存：
 
-- **KV 存储**：`self.storage`（框架统一 KV 存储，即 `self.sdk.storage`，后端切换见 [存储后端](../advanced/storage-backends.md)）：
+- **KV 存储**：`self.sdk.storage`（框架统一 KV 存储，后端切换见 [存储后端](../advanced/storage-backends.md)）：
 
   ```python
   # 事件入口：写入（key 见 §5.3.3 键名规则）
   key = f"{self._get_config_key()}:request_ctx:{request_id}"
-  self.storage.set(key, {"request_type": "group", "sub_type": "invite",
-                         "group_id": group_id, "account": self_id, "ts": time.time()})
+  self.sdk.storage.set(key, {"request_type": "group", "sub_type": "invite",
+                             "group_id": group_id, "account": self_id, "ts": time.time()})
 
   # 操作侧：读取 + 清理
-  ctx = self.storage.get(key)
-  self.storage.delete(key)
+  ctx = self.sdk.storage.get(key)
+  self.sdk.storage.delete(key)
   ```
 
   存储层不做条目过期：条目自带 `ts`，读取方判断过期即视为未留存（走回退 + WARNING）；处理后必须 `delete`。
@@ -482,7 +454,7 @@ class MyAdapter(BaseAdapter):
 
 1. **不重写 `Request` 内部类**：使用基类默认实现，调用 `accept()`/`reject()` 时返回 `retcode=10002`
 2. **在转换时跳过 `request_id`**：不生成 `request_id`，让 `event.approve()` 抛出 `ValueError`
-3. **记录日志**：在 `accept`/`reject` 中记录警告并返回适当错误码
+3. **记录日志**：在 `_do_accept` / `_do_reject` 中记录警告并返回适当错误码
 
 ### 5.5 总结：Send 与 Request 并行
 
@@ -496,8 +468,10 @@ BaseAdapter
 │   └── Image()       ← 按需实现
 │
 └── Request(RequestDSL) ← 请求操作
-    ├── accept()        ← 按需实现
-    └── reject()        ← 按需实现
+    ├── accept()        ← 公开入口（scope 闸口 + 任务包装，勿重写）
+    ├── reject()        ← 公开入口（同上）
+    ├── _do_accept()    ← 按需重写
+    └── _do_reject()    ← 按需重写
 ```
 
 ### 5.6 适配器 `__init__` 注意事项
@@ -517,8 +491,7 @@ BaseAdapter
 
 ### 请求操作
 - [ ] `Request` 内部类已实现（如平台支持请求操作）
-- [ ] `accept()` 方法已实现
-- [ ] `reject()` 方法已实现
+- [ ] `_do_accept()` / `_do_reject()` 已重写（公开入口 `accept()` / `reject()` 勿重写——绕过 scope 授权闸口）
 - [ ] 操作返回标准 API 响应格式
 - [ ] 不支持的操作返回 `retcode=10002`
 - [ ] 网络错误返回 `retcode=33xxx`（遵循 API 响应标准）
@@ -529,7 +502,7 @@ BaseAdapter
 - [ ] `accept` / `reject` 端点路由顺序为 kwargs 显式传参 > 缓存 > 回退默认端点 + WARNING
 - [ ] 类型覆盖参数使用保留名 `request_type` / `sub_type` / `group_id`（无 `_request_type` 一类私有约定名）
 - [ ] 缓存有 TTL 与容量上限，操作提交成功后清理对应条目
-- [ ] 多账户：缓存含事件到达账户，调用方未显式 `Using()` 时按该账户受理
+- [ ] 多账户：操作账户经 `self.request_context.get("account_id")` 读取（`Using()` > 事件链兜底），缓存账户作事件链缺失时兜底
 - [ ] 若用持久化介质：写入失败降级为仅内存留存，不阻断事件流
 
 ## 7. 错误码扩展

@@ -137,7 +137,7 @@ class MyModule(BaseModule):
 ### 2. 正确的异步操作
 
 ```python
-from ErisPulse.Core.Event import Event  # event: Event 注解可获得 IDE 补全
+from ErisPulse.Core.Event import Event  # event: Event 注解强烈建议；自定义方法补全见 epsdk types
 
 async def handle_command(self, event: Event):
     # 需要等待结果的耗时操作：直接 await（生命周期明确）
@@ -173,6 +173,7 @@ async def on_unload(self, event):
 ### 1. 使用 Event 包装类
 
 ```python
+from ErisPulse.Core.Event import Event
 # 使用 Event 包装类的便捷方法
 @command("info")
 async def info_command(event: Event):
@@ -224,6 +225,7 @@ class UtilityModule(BaseModule):
 ### 3. 事件处理器注册
 
 ```python
+from ErisPulse.Core.Event import Event
 async def on_load(self, event):
     # 在 on_load 中注册事件处理器
     @command("hello")
@@ -278,6 +280,7 @@ class MyToolModule(BaseModule):
 ### 1. 分类异常处理
 
 ```python
+from ErisPulse.Core.Event import Event
 from ErisPulse.Core.Bases.errors import ClientError
 
 async def handle_event(self, event: Event):
@@ -407,6 +410,7 @@ class MyModule(BaseModule):
 ### 2. 避免阻塞操作
 
 ```python
+from ErisPulse.Core.Event import Event
 # 使用异步操作
 async def process_message(self, event: Event):
     # 异步处理
@@ -449,6 +453,7 @@ class MyModule(BaseModule):
 ### 2. 输入验证
 
 ```python
+from ErisPulse.Core.Event import Event
 # 验证用户输入
 async def process_command(self, event: Event):
     user_input = event.get_text()

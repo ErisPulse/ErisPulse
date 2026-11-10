@@ -250,6 +250,18 @@ if __name__ == "__main__":
 
 ## 运行时细粒度控制
 
+### 本地插件热重载
+
+`sdk.enable_plugin_hot_reload()` 监控本地插件目录（`plugins/`）的源码变更并自动重载：
+`epsdk run` 已自动开启，无需手动调用；**裸 `sdk.run()` 启动**时如需插件热重载，
+在 `run()` 之前调用一次（只覆盖本地插件目录，不影响 pip 安装的模块/适配器）：
+
+```python
+sdk.enable_plugin_hot_reload()
+sdk.run()
+```
+
+
 即使用了 `sdk.run()` 完成启动，你仍然可以在运行时单独控制各子系统，而不必重启整个 SDK：
 
 ### 适配器热启停

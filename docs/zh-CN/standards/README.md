@@ -129,7 +129,7 @@ ErisPulse 采用 OneBot12 作为核心事件标准，并在此基础上进行了
 ### 请求操作
 
 
-- [ ] HandleRequest 类已实现 _do_accept / _do_reject
+- [ ] Request 内部类已重写 _do_accept / _do_reject（公开入口 accept()/reject() 勿重写）
 - [ ] 操作返回标准 API 响应格式
 - [ ] 不支持的操作返回 retcode=10002
 

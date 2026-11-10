@@ -17,13 +17,12 @@ ErisPulse 支持以下事件类型：
 | 请求事件 | 用户请求（好友请求、群邀请） | 自动处理请求 |
 | 元事件 | 系统级事件（连接、心跳） | 连接监控、状态检查 |
 
+> 各类型均有泛型注册器：`notice.on_notice()` / `request.on_request()` / `meta.on_meta()`
+> （接收该类型全部事件）；细分装饰器（如 `on_group_increase`）只订阅对应子类型，优先使用细分装饰器。
+
 ## 消息事件处理
 
-> **提示**: 建议在事件处理器中使用 `Event` 类型注解，以获得 IDE 自动补全和类型检查支持。
-
-```python
-from ErisPulse.Core.Event import Event  # 导入事件类型用于注解
-```
+> **强烈建议**：为事件处理器的 `event` 参数添加 `Event` 类型注解——运行时不写也能跑（框架分发时传入的就是 Event 实例），注解服务于 IDE 补全与静态检查；为获得**模块/适配器自定义方法**的补全，在项目根目录跑一次 `epsdk types` 生成类型存根（见 [IDE 补全](../getting-started/ide-completion.md)）。
 
 ### 监听所有消息
 
@@ -40,6 +39,7 @@ async def message_handler(event: Event):
 ### 监听私聊消息
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_private_message()
 async def private_handler(event: Event):
     user_id = event.get_user_id()
@@ -49,6 +49,7 @@ async def private_handler(event: Event):
 ### 监听群聊消息
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_group_message()
 async def group_handler(event: Event):
     group_id = event.get_group_id()
@@ -59,6 +60,7 @@ async def group_handler(event: Event):
 ### 监听@消息
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_at_message()
 async def at_handler(event: Event):
     # 获取被@的用户列表
@@ -73,6 +75,7 @@ async def at_handler(event: Event):
 **不会触发**处理器：
 
 ```python
+from ErisPulse.Core.Event import Event
 # glob 通配符：* 任意串、? 单字符、[seq] 字符集
 @message.on_message(pattern="签到*")
 async def signin_handler(event: Event):

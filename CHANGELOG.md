@@ -78,7 +78,6 @@
 
 **版本摘要**
 本版本主题为「生命周期治理与可运维性」：新增嵌套生命周期，补齐细粒度热重载、后台任务排队、适配器回滚重放与影子模块体验闭环。
-  - `epsdk create`（module / adapter / pack）生成的可发布项目自带 `.gitignore`：排除运行时数据（config/ 令牌、data/、logs/）、`uv.lock`（库项目不入库 lockfile）与缓存/编辑器文件；已存在则不覆盖
 
 **升级建议**
 - **是否建议升级**：dev 版，建议开发环境先行验证
@@ -98,6 +97,8 @@
   - 事件分发链账户自动绑定：分发入口把触发事件的账户标识注入调用上下文，处理链内的 `Send` / `Api` / `Request` 链路未显式指定账户时自动绑定（显式 `Using()` 与参数显式传入永远优先；无事件上下文维持默认账户语义），`send_context` / `api_context` / `request_context` 统一同口径——多账户部署模块侧零改动即可回复到正确账户
   - `SendDSL` 新增 `Location()` 标准发送方法（OneBot12 `location` 段），方法清单与模板提示同步
   - 影子模块体验闭环：SDK 新增 `shadow_ingest_whl`（whl 校验/原件落盘/解包）、`shadow_promote_persist`（转正后后台 pip 安装原件，重启不回退）、`shadow_persist_status`、`list_shadows`；Dashboard 真实模块卡片「影子测试中」标记、顶部影子聚合区、影子 owner 移出普通列表，旧版 SDK 自动降级为基础影子（功能不退化）
+  - `epsdk create`（module / adapter / pack）生成的可发布项目自带 `.gitignore`：排除运行时数据（config/ 令牌、data/、logs/）、`uv.lock`（库项目不入库 lockfile）与缓存/编辑器文件；已存在则不覆盖
+  - 模块开发者文档补齐公共 API 教学：请求事件审批闭环（`on_friend_request`/`on_group_request` + `event.approve()`/`reject()`）、`BaseModule.state` 模块级持久化状态（替代裸写 storage 键）、`event.send_chain`（reply 覆盖不了的修饰链场景）、`event.done` 认领/阻断入口、`sdk.enable_plugin_hot_reload`（裸 `sdk.run()` 场景）、泛型事件注册器（`on_notice`/`on_request`/`on_meta`）；`event: Event` 类型注解明确为强烈建议（全部文档示例补齐 import，并接入 `epsdk types` 类型存根动线）
 
 ### 优化
 
@@ -124,7 +125,8 @@
 ### 文档
 
 - @YingXinche
-  - 请求操作规范新增「请求类型上下文留存」：异构端点（好友/群请求分端点）适配器须在事件侧留存 `request_id` → 类型/账户上下文，定义介质无关的统一条目字段表（含 `ts` 时间戳与 TTL、一一对应、KV 键名规则），`accept`/`reject` 按 kwargs 显式传参 > 缓存 > 回退默认端点 + WARNING 路由，类型覆盖参数保留名 `request_type` / `sub_type` / `group_id`；持久化介质（KV / 内置 ORM）为可选项且写入失败须降级为仅内存留存（纯文档规范，不涉及框架 API 与依赖变更）
+  - 请求操作规范新增「请求类型上下文留存」：异构端点（好友/群请求分端点）适配器须在事件侧留存 `request_id` → 类型/账户上下文，定义介质无关的统一条目字段表（含 `ts` 时间戳与 TTL、一一对应、KV 键名规则），操作侧按 kwargs 显式传参 > 缓存 > 回退默认端点 + WARNING 路由，类型覆盖参数保留名 `request_type` / `sub_type` / `group_id`；持久化介质（KV / 内置 ORM）为可选项且写入失败须降级为仅内存留存（纯文档规范，不涉及框架 API 与依赖变更）
+  - 请求操作全链文档修正扩展点口径：适配器重写 `_do_accept` / `_do_reject`（公开入口 `accept()` / `reject()` 内置 scope 授权闸口，勿重写），操作账户统一经 `self.request_context`（`Using()` > 事件链 `self.account_id` 代位 > `self.user_id` 兜底，与 `send_context` 同口径），示例项目与开发指南同步；清理 `HandleRequest` 旧 DSL 名残留；API 响应标准补 `make_response` / `make_error` 构造助手说明（参数语义与 `{platform}_raw` 挂载行为）
 
 ---
 

@@ -582,4 +582,4 @@ info = adapter.send_info("myplatform", "Form")
 **同一适配器的其它侧**：
 - [事件转换标准](event-conversion.md) - 完整的事件转换规范、扩展命名和消息段标准
 - [会话类型标准](session-types.md) - 会话类型定义和映射关系
-- [请求操作规范](request-action-spec.md) - 请求事件字段要求、HandleRequest DSL 及适配器实现要求
+- [请求操作规范](request-action-spec.md) - 请求事件字段要求、Request DSL（approve/reject）及适配器实现要求

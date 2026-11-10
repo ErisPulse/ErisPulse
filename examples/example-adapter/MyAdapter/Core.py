@@ -130,39 +130,35 @@ class MyAdapter(BaseAdapter):
         - self._adapter: 适配器实例（可调用 call_api）
         """
 
-        def accept(self, **kwargs):
+        async def _do_accept(self, **kwargs):
             """同意请求"""
 
-            async def _do():
-                result = await self._adapter.call_api(
-                    endpoint="/set_request",
-                    request_id=self._request_id,
-                    approve=True,
-                    **kwargs,
-                )
-                return self._adapter.make_response(
-                    data=result,
-                    message=result.get("message", ""),
-                )
+            result = await self._adapter.call_api(
+                endpoint="/set_request",
+                request_id=self._request_id,
+                account_id=self.request_context.get("account_id"),
+                approve=True,
+                **kwargs,
+            )
+            return self._adapter.make_response(
+                data=result,
+                message=result.get("message", ""),
+            )
 
-            return self._create_task(_do())
-
-        def reject(self, **kwargs):
+        async def _do_reject(self, **kwargs):
             """拒绝请求"""
 
-            async def _do():
-                result = await self._adapter.call_api(
-                    endpoint="/set_request",
-                    request_id=self._request_id,
-                    approve=False,
-                    **kwargs,
-                )
-                return self._adapter.make_response(
-                    data=result,
-                    message=result.get("message", ""),
-                )
-
-            return self._create_task(_do())
+            result = await self._adapter.call_api(
+                endpoint="/set_request",
+                request_id=self._request_id,
+                account_id=self.request_context.get("account_id"),
+                approve=False,
+                **kwargs,
+            )
+            return self._adapter.make_response(
+                data=result,
+                message=result.get("message", ""),
+            )
 
     class Api(BaseAdapter.Api):
         """

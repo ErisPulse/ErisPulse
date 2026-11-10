@@ -2427,7 +2427,7 @@ class TestApiDSL:
 
     @pytest.fixture
     def api_adapter(self):
-        """创建带 call_api 记录的测试适配器"""
+        """创建带 call_api 记录的测试适配器（签名声明标准账户字段）"""
         call_log = []
 
         class _ApiAdapter(BaseAdapter):
@@ -2440,7 +2440,8 @@ class TestApiDSL:
             async def shutdown(self):
                 pass
 
-            async def call_api(self, endpoint: str, **params):
+            async def call_api(self, endpoint: str, account_id: str | None = None, **params):
+                params["account_id"] = account_id
                 call_log.append((endpoint, params))
                 return {
                     "status": "ok",
@@ -2567,6 +2568,56 @@ class TestApiDSL:
         adapter, call_log = api_adapter
         await adapter.Api.Using("bot1").get_user_info("123")
         assert call_log[0][1]["account_id"] == "bot1"
+
+    @pytest.mark.asyncio
+    async def test_legacy_account_param_rewritten(self):
+        """旧名 _account_id 适配器：框架将 account_id 改写为旧名下发"""
+        call_log = []
+
+        class _LegacyAdapter(BaseAdapter):
+            def __init__(self):
+                super().__init__()
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, _account_id: str | None = None, **params):
+                call_log.append((endpoint, _account_id, params))
+                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "", "message": ""}
+
+        adapter = _LegacyAdapter()
+        await adapter.Api.Using("bot1").get_user_info("123")
+        endpoint, account_id, params = call_log[0]
+        assert endpoint == "get_user_info"
+        assert account_id == "bot1"
+        assert "account_id" not in params and "_account_id" not in params
+
+    @pytest.mark.asyncio
+    async def test_unconsumed_account_param_dropped(self):
+        """不消费账户字段的适配器：account_id 被剔除，不泄漏进平台参数"""
+        call_log = []
+
+        class _PlainAdapter(BaseAdapter):
+            def __init__(self):
+                super().__init__()
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                call_log.append((endpoint, params))
+                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "", "message": ""}
+
+        adapter = _PlainAdapter()
+        await adapter.Api.Using("bot1").get_user_info("123")
+        assert call_log[0][0] == "get_user_info"
+        assert "account_id" not in call_log[0][1]
 
     # ---- 频道（Guild）相关动作 ----
 

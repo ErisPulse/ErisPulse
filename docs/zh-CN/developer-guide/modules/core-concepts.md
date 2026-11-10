@@ -75,7 +75,7 @@ async def on_unload(self, event):
 async def on_before_unload(self, event):
     # event["reason"] 标注来意：unload / reload / disable / cascade / dormant
     if event["reason"] in ("reload", "dormant"):
-        await self.sdk.storage.aset(f"{self._module_name}:state", self.collect_state())
+        await self.state.aset("snapshot", self.collect_state())
 ```
 
 钩子失败仅告警，不阻塞卸载流程；未声明该钩子的模块行为不变。归眠 / 唤醒语义详见
@@ -160,6 +160,13 @@ from ErisPulse import sdk
 # 通过 sdk 对象访问所有核心模块
 sdk.logger.info("日志")
 sdk.storage.set("key", "value")
+
+# 模块自有小状态（计数器/开关/上次运行时间）优先用 self.state——
+# 键自动带 module.state.<模块名>. 前缀，模块卸载重载后仍在：
+count = self.state.get("runs", 0) + 1
+self.state.set("runs", count)            # 同步（任意上下文）
+await self.state.aset("runs", count)     # 异步路径
+await self.state.aget("runs", 0)
 config = sdk.config.getConfig("MyModule")
 ```
 

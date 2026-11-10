@@ -318,41 +318,41 @@ class MyAdapter(BaseAdapter):
     class Request(RequestDSL):
         """请求操作实现（好友请求、群邀请等）"""
 
-        def accept(self, **kwargs):
+        # 公开入口 accept()/reject() 由基类提供（scope 授权闸口 + 任务包装），
+        # 适配器只重写 _do_accept / _do_reject，直接返回标准响应 dict
+        async def _do_accept(self, **kwargs) -> dict:
             """同意请求"""
-            async def _do():
-                result = await self._adapter.call_api(
-                    endpoint="/set_request",
-                    request_id=self._request_id,
-                    approve=True,
-                    **kwargs,
-                )
-                return {
-                    "status": "ok" if result.get("code") == 0 else "failed",
-                    "retcode": result.get("code", 0),
-                    "data": None,
-                    "message_id": "",
-                    "message": result.get("message", ""),
-                }
-            return self._create_task(_do())
+            result = await self._adapter.call_api(
+                endpoint="/set_request",
+                request_id=self._request_id,
+                account_id=self.request_context.get("account_id"),
+                approve=True,
+                **kwargs,
+            )
+            return {
+                "status": "ok" if result.get("code") == 0 else "failed",
+                "retcode": result.get("code", 0),
+                "data": None,
+                "message_id": "",
+                "message": result.get("message", ""),
+            }
 
-        def reject(self, **kwargs):
-            """拒绝请求"""
-            async def _do():
-                result = await self._adapter.call_api(
-                    endpoint="/set_request",
-                    request_id=self._request_id,
-                    approve=False,
-                    **kwargs,
-                )
-                return {
-                    "status": "ok" if result.get("code") == 0 else "failed",
-                    "retcode": result.get("code", 0),
-                    "data": None,
-                    "message_id": "",
-                    "message": result.get("message", ""),
-                }
-            return self._create_task(_do())
+        async def _do_reject(self, **kwargs) -> dict:
+            """拒绝请求（与 _do_accept 同构：approve=False）"""
+            result = await self._adapter.call_api(
+                endpoint="/set_request",
+                request_id=self._request_id,
+                account_id=self.request_context.get("account_id"),
+                approve=False,
+                **kwargs,
+            )
+            return {
+                "status": "ok" if result.get("code") == 0 else "failed",
+                "retcode": result.get("code", 0),
+                "data": None,
+                "message_id": "",
+                "message": result.get("message", ""),
+            }
 ```
 
 模块开发者使用方式：
