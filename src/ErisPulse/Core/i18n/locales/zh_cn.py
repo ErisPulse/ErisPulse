@@ -431,6 +431,7 @@ TRANSLATIONS = {
     "core.storage.recovered": "存储后端 {backend} 已从连接故障中恢复，重新可用",
     "core.storage.cooldown": "{backend}: 连接不可达（冷却期内，稍后自动重连）",
     "core.storage.cooldown_fast_fail": "存储后端 {backend} 处于连接冷却期内，操作快速失败（等待自动重连）",
+    "core.storage.loop_resource_invalidated": "检测到连接级损坏（{error}），已丢弃当前循环缓存连接，下次操作自动重建",
     "core.storage.aclose_failed": "关闭存储后端资源失败: {error}",
     "core.storage.bridge_closed": "存储同步桥接已关闭，无法执行异步操作",
     "core.storage.bridge_reentrant": "禁止在存储桥接线程内调用同步兼容接口，请改用异步方法",

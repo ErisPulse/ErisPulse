@@ -115,6 +115,7 @@
 
 - @YingXinche
   - 存储写操作失败语义收紧（破坏性）：`aset` / `adelete` / `aclear` / `set_multi`（及同步桥 `set` / `delete` 等同路径）执行失败（写锁竞争超时 / SQL 错误 / 约束冲突）默认抛 `StorageOperationError`（`ErisPulse.Core` 聚合导出），不再静默返回 `False`——库可达而写失败意味着数据未写入，静默丢数据不可接受；连接级不可达的冷却期快速失败（`False` / `None`）保持不变（`StorageUnreachableError` 语义，规则 26）；**依赖旧返回值判断失败的模块需改为 try/except**
+  - 循环连接自愈：操作命中连接级损坏（closed / 磁盘 IO / 库文件损坏）时自动丢弃当前循环缓存连接并在下次操作重建——此前坏连接永久命中缓存、自愈断路（故障持续到进程退出，须手动清理资源池）；写锁竞争（database is locked）不误伤
   - 事务开启兜底超时：`atransaction` / 同步事务开启超过 30s（`STORAGE_TXN_BEGIN_TIMEOUT_SECS`）抛 `StorageOperationError`，消除并发长事务下无限死等不报错的缺陷
   - 依赖提升：tomlclass `>=0.3.2,<0.4` → `>=0.4.0,<0.5`（一致性版本——被清空的容器不再保留为空容器，内存与文件完全一致；保序数组编辑保留每元素注释与排版；公共 API 不再泄露 RecursionError）
   - `run_main_loop` 无可用主循环时入队并返回 `None`

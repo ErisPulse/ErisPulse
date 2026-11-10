@@ -431,6 +431,7 @@ TRANSLATIONS = {
     "core.storage.recovered": "Storage backend {backend} recovered from connection failure and is available again",
     "core.storage.cooldown": "{backend}: connection unreachable (in cooldown, auto-reconnect later)",
     "core.storage.cooldown_fast_fail": "Storage backend {backend} is in connection cooldown, operations fail fast (waiting for auto-reconnect)",
+    "core.storage.loop_resource_invalidated": "Connection-level failure detected ({error}); cached loop connection invalidated and will be rebuilt on next operation",
     "core.storage.aclose_failed": "Failed to close storage backend resources: {error}",
     "core.storage.bridge_closed": "The storage sync bridge is closed and cannot execute async operations",
     "core.storage.bridge_reentrant": "Cannot call sync compatibility APIs from the storage bridge thread; use async methods instead",

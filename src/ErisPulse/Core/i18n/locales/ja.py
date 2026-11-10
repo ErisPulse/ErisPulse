@@ -431,6 +431,7 @@ TRANSLATIONS = {
     "core.storage.recovered": "ストレージバックエンド {backend} は接続障害から回復し、再び利用可能になりました",
     "core.storage.cooldown": "{backend}: 接続に到達できません（クールダウン中、後で自動再接続します）",
     "core.storage.cooldown_fast_fail": "ストレージバックエンド {backend} は接続クールダウン中のため、操作は即座に失敗します（自動再接続待ち）",
+    "core.storage.loop_resource_invalidated": "接続レベルの破損を検出（{error}）。現在のループのキャッシュ接続を破棄し、次の操作で再構築します",
     "core.storage.aclose_failed": "ストレージバックエンドのリソース解放に失敗しました: {error}",
     "core.storage.bridge_closed": "ストレージ同期ブリッジは閉じられており、非同期操作を実行できません",
     "core.storage.bridge_reentrant": "ストレージブリッジスレッド内から同期互換インターフェースを呼び出すことはできません。非同期メソッドを使用してください",
