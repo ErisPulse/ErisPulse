@@ -300,6 +300,9 @@ epsdk run main.py
 4. **定期更新**：使用 `epsdk self-update` 或拉取最新 Docker 镜像
 5. **不要以 root 运行**：手动部署时创建专用用户
 6. **使用 Docker 重启策略**：官方 compose 的 `restart: on-failure:5` 已确保异常退出（含硬重启退出码 42）后自动重启
+7. **关闭 API 文档端点**：`/docs`、`/redoc`、`/openapi.json` 默认开启且无鉴权，公网部署时调用 `router.disable_docs()` 关闭
+8. **Webhook 验签**：脚手架生成的 `verify_request` 默认放行，接入公网回调前必须实现签名/令牌校验
+9. **安全模型边界**：主人/作用域体系约束的是平台侧用户；已加载模块视为可信代码（scope 未配置默认允许、模块可注册 provider），不要加载来路不明的模块
 
 ## 多实例部署
 
@@ -308,6 +311,11 @@ epsdk run main.py
 1. 每个实例使用独立的项目目录和 `docker-compose.yml`
 2. 使用不同的端口号：`ERISPULSE_PORT=8001`
 3. 使用不同的容器名：`container_name: erispulse-bot2`
+
+> **存储后端注意**：实例间互不共享状态（会话收件箱 / 对话检查点 / 命令冷却均为实例内存态）。
+> 默认 SQLite 为单文件后端，**不可**被多实例同时打开；实例各自的 `config/` 目录必须独立，
+> 切换 mysql / postgres 也只是各自独立库——当前版本不支持多实例协作（共享会话/负载分担），
+> 同群多实例会各自独立响应，需在平台侧或业务侧自行去重。
 
 ## 更新与维护
 

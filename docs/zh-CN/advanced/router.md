@@ -137,10 +137,13 @@ async def chat(ws: WebSocketConnection):
     async for msg in ws.iter_text():
         await ws.send_text(f"Echo: {msg}")
 
-# 带认证的 WebSocket
+# 带认证的 WebSocket（令牌从环境变量读取，勿在代码中硬编码）
+import os
+
 async def ws_auth(ws: WebSocketConnection) -> bool:
     token = ws.query_params.get("token")
-    return token == "secret"
+    expected = os.environ.get("ERISPULSE_WS_TOKEN", "")
+    return bool(expected) and token == expected
 
 @router.ws("secure_ws", auth_handler=ws_auth)
 async def secure_ws_handler(ws):

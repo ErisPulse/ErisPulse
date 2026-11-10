@@ -1038,6 +1038,24 @@ class PackageManager:
                 current_package_name = package_name
 
             package_info = asyncio.run(self._get_package_info(package_name))
+            if not package_info:
+                # 索引外包名：验证状态 / SDK 兼容 / 来源信息守卫均不可用，安装前显式确认
+                console.print(
+                    Panel(
+                        i18n.t(
+                            "cli.package.unknown_warning",
+                            package=f"[package]{current_package_name}[/]",
+                        ),
+                        title=i18n.t("cli.package.unknown_title"),
+                        border_style="yellow",
+                    )
+                )
+                if not confirm(
+                    i18n.t("cli.package.confirm_install"), default=False
+                ):
+                    console.print(f"[info]{i18n.t('cli.package.install_cancelled')}[/]")
+                    all_success = False
+                    continue
             if package_info and not package_info.get("verified", True):
                 console.print(
                     Panel(
@@ -1253,6 +1271,9 @@ class PackageManager:
             if success:
                 console.print(
                     f"[success]{i18n.t('cli.package.uninstall_success', package=package_name)}[/]"
+                )
+                console.print(
+                    f"[info]{i18n.t('cli.package.uninstall_residue_hint', package=package_name)}[/]"
                 )
             else:
                 console.print(

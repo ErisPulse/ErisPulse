@@ -134,6 +134,7 @@ ErisPulse 是事件驱动的模块化异步机器人框架——业务代码只�
 | **2.9** | 「模块开发体验」主线（EPRFC-2026-001）：声明式命令参数（`args=` / `options=`）与命令治理（`cooldown=` / `rate_limit=`）、统一依赖注入（`Depends`）、中间件事件否决权、内置 ORM（自动迁移 + 关系映射）、影子模块灰度转正、分发决策链追踪与排查诊断、正式支持 Python 3.14 |
 | **2.10** | 连接一等资源（`connections` 注册表：广播 / 业务分组 / 跨模块传递复用 / 卸载自动回收）、根导入契约（常用 API 全部可 `from ErisPulse import`）、归属权体系补全、收件箱保留策略运行时覆盖；2.10.2 适配器本地插件目录（`plugins/`）+ `epsdk create pack` + tomlclass 无损配置写入 |
 | **2.11**（dev） | 「改代码 → 看效果」开发闭环：热重载默认全量语义（语法预检 + 代码身份核对 + 依赖者级联重导）、懒加载休眠（`dormant_after`）、适配器代码级热重载（`sdk.adapter.reload`）、`.got()` 命令流语法糖、`epsdk stop` / `restart` 运行时控制 |
+| **2.12**（dev） | 生命周期治理与可运维性：嵌套生命周期（`ownership.nest()`）、细粒度热重载（单模块/单适配器判定，框架源码变更走进程重启）、后台任务待发队列、事件分发链账户自动绑定（`send_context` / `api_context` / `request_context` 同口径，多账户模块零改动）、跨账户重复受理关联（`framework.cross_account_policy`）、影子模块 whl 摄取与持久化转正闭环、容器内 `epsdk restart` 进程内软重启、`SendDSL.Location()` |
 
 ## 开发方式
 

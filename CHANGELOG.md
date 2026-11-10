@@ -120,6 +120,8 @@
   - 适配器回滚后旧实例不再停留在「已启动」但未实际服务的状态
   - 适配器账户解析：显式 `account_id` 无法匹配时记录 WARNING 并回退首个启用账户（WARNING 的 platform / account_id / account 用于定位未归属到账户的事件来源）
   - Api DSL 账户绑定跨适配器生效：框架按 `call_api` 实际消费方式自动改写账户字段（标准名 `account_id`，旧名 `_account_id` 兼容），未消费时剔除避免泄漏进平台参数并提示一次 WARNING；脚手架模板同步声明账户字段
+  - `epsdk install` 索引外包名守卫：不在生态索引中的包名安装前显式确认（验证状态 / SDK 兼容 / 来源信息守卫均不可用，黄牌提示自行确认来源）；`epsdk uninstall` 成功后提示配置条目与持久化数据不会自动清理
+  - `epsdk doctor` 新增安全体检项：服务监听地址（0.0.0.0 全网卡警示）与 API 文档端点默认开启提示（只读警示，不计入失败项）
   - 适配器（onebot11/12、SnowLuma，随各适配器仓库发布）：运行期识别 Bot ID 并关联到账户实例（`bot_id`），事件 `self.user_id` 即可解析到接收账户，`event.reply()` 不再固定走第一个账户；OneBot11/SnowLuma 事件 id 改为稳定组合，重推去重恢复且不同账户互不吞事件
 
 ### 文档
@@ -127,6 +129,7 @@
 - @YingXinche
   - 请求操作规范新增「请求类型上下文留存」：异构端点（好友/群请求分端点）适配器须在事件侧留存 `request_id` → 类型/账户上下文，定义介质无关的统一条目字段表（含 `ts` 时间戳与 TTL、一一对应、KV 键名规则），操作侧按 kwargs 显式传参 > 缓存 > 回退默认端点 + WARNING 路由，类型覆盖参数保留名 `request_type` / `sub_type` / `group_id`；持久化介质（KV / 内置 ORM）为可选项且写入失败须降级为仅内存留存（纯文档规范，不涉及框架 API 与依赖变更）
   - 请求操作全链文档修正扩展点口径：适配器重写 `_do_accept` / `_do_reject`（公开入口 `accept()` / `reject()` 内置 scope 授权闸口，勿重写），操作账户统一经 `self.request_context`（`Using()` > 事件链 `self.account_id` 代位 > `self.user_id` 兜底，与 `send_context` 同口径），示例项目与开发指南同步；清理 `HandleRequest` 旧 DSL 名残留；API 响应标准补 `make_response` / `make_error` 构造助手说明（参数语义与 `{platform}_raw` 挂载行为）
+  - 部署文档安全口径补齐：`/docs` / `/redoc` / `/openapi.json` 默认开启无鉴权的公网处置（`router.disable_docs()`）、webhook 验签默认放行提醒、安全模型边界声明（模块即可信代码 / scope 未配置默认允许）、SQLite 单文件后端不可多实例共享明示；`router.md` 鉴权示例改环境变量读法；README 版本速查表补 2.12 行；bug-tracker 统计概览与正文条目数同步（48 条 = 严重 17 + 中等 28 + 轻微 3）
 
 ---
 
