@@ -27,7 +27,7 @@ SandboxAdapter 是 ErisPulse 内置的沙盒适配器，用于本地开发与模
 
 ## 标准化对齐（4.2.3）
 
-响应结构与错误码遵循 [API 响应规范](../../standards/api-response.md)。
+响应结构与错误码遵循 [API 响应规范](../standards/api-response.md)。
 
 ### HTML 发送方法
 
@@ -57,7 +57,7 @@ result = await sandbox.Api.get_supported_actions()
 
 ### 请求事件处理（Request stub）
 
-沙盒会合成 `type="request"` 事件（好友/群申请，`request_id` 透传自模拟事件），模块可用标准方式审批（完整规范见 [请求操作规范](../../standards/request-action-spec.md)）：
+沙盒会合成 `type="request"` 事件（好友/群申请，`request_id` 透传自模拟事件），模块可用标准方式审批（完整规范见 [请求操作规范](../standards/request-action-spec.md)）：
 
 ```python
 from ErisPulse.Core.Event import request

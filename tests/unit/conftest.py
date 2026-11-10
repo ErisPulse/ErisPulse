@@ -108,7 +108,9 @@ def _isolated_framework_singletons():
     global _SESSION_MODULES_SNAPSHOT
     if _SESSION_MODULES_SNAPSHOT is None:
         _SESSION_MODULES_SNAPSHOT = {
-            name: mod for name, mod in sys.modules.items() if name.split(".")[0] == "ErisPulse"
+            name: mod
+            for name, mod in list(sys.modules.items())
+            if name.split(".")[0] == "ErisPulse"
         }
     erispulse_modules_snapshot = _SESSION_MODULES_SNAPSHOT
 
@@ -133,7 +135,11 @@ def _isolated_framework_singletons():
     _fill(module_manager._loaded_modules, module_loaded_snapshot)
 
     current_erispulse_modules = {
-        name for name in sys.modules if name.split(".")[0] == "ErisPulse"
+        # 迭代取快照：后台线程（如 aiosqlite 连接线程）可能并发触发导入，
+        # free-threaded 构建下裸迭代 sys.modules 会抛 dictionary changed size
+        name
+        for name in list(sys.modules)
+        if name.split(".")[0] == "ErisPulse"
     }
     for name in current_erispulse_modules - set(erispulse_modules_snapshot):
         del sys.modules[name]

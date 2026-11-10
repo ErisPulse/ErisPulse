@@ -42,7 +42,7 @@ async def handle_friend_request(event):
     # await event.reject()       # 拒绝好友申请
 ```
 
-接口约定遵循 SDK 标准：[请求与审批动作规范](../../standards/request-action-spec.md)。
+接口约定遵循 SDK 标准：[请求与审批动作规范](../standards/request-action-spec.md)。
 
 ### 动作与错误码规范
 

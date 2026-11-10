@@ -16,6 +16,7 @@ import inspect
 from typing import TYPE_CHECKING, Any
 
 from ...runtime.context import get_current_event_account
+from ..i18n import i18n
 
 if TYPE_CHECKING:
     # Self 用于让链式方法返回子类类型，使 IDE 能补全平台特有方法
@@ -81,8 +82,6 @@ def _warn_account_unconsumed(adapter) -> None:
         return
     try:
         cls._ep_account_warned = True
-        from ..i18n import i18n
-
         adapter._get_logger().warning(
             i18n.t(
                 "core.adapter.call_api_account_unconsumed",

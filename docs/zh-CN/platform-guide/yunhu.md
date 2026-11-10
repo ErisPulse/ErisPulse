@@ -60,7 +60,7 @@ async def handle_button(event):
 
 ## 标准化对齐（4.6.2）
 
-本版本完成适配器标准化对齐，响应结构与错误码遵循 [API 响应规范](../../standards/api-response.md)。
+本版本完成适配器标准化对齐，响应结构与错误码遵循 [API 响应规范](../standards/api-response.md)。
 
 ### 账户与多账户闭环
 

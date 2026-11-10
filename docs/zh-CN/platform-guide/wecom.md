@@ -25,7 +25,7 @@ WeComAdapter 是基于企业微信自建应用 API 构建的适配器，通过�
 
 ## 标准化对齐（0.1.2）
 
-本版本完成适配器标准化对齐，响应结构与错误码遵循 [API 响应规范](../../standards/api-response.md)。
+本版本完成适配器标准化对齐，响应结构与错误码遵循 [API 响应规范](../standards/api-response.md)。
 
 ### 账户与多账户
 

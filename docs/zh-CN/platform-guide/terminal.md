@@ -38,7 +38,7 @@ echo_input = false         # 是否回显用户输入（管道输入场景下开
 
 ## 标准化对齐（1.2.2）
 
-响应结构与错误码遵循 [API 响应规范](../../standards/api-response.md)。
+响应结构与错误码遵循 [API 响应规范](../standards/api-response.md)。
 
 ### 消息事件补齐 message_id
 

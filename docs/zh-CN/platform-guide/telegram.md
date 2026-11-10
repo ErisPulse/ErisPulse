@@ -31,7 +31,7 @@ TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消�
 2. **事件 `self.account_id` 注入**：所有事件携带产生它的账户名，多账户下 `event.reply()` 自动按该账户受理发送
 3. **unknown 事件**：`self.user_id` 填 bot_id（与消息事件行为一致）
 
-请求事件接口约定遵循 SDK 标准：[请求与审批动作规范](../../standards/request-action-spec.md)。
+请求事件接口约定遵循 SDK 标准：[请求与审批动作规范](../standards/request-action-spec.md)。
 
 ### 账户与多账户
 

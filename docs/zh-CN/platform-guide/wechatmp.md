@@ -16,7 +16,7 @@
 
 ## 标准化对齐（4.3.2）
 
-响应结构与错误码遵循 [API 响应规范](../../standards/api-response.md)。
+响应结构与错误码遵循 [API 响应规范](../standards/api-response.md)。
 
 ### 消息事件补齐 message_id
 

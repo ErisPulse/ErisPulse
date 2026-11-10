@@ -96,7 +96,7 @@ await yunhu_user.Api.delete_message(msg_id, chat_id, chat_type)  # 撤回
 
 ## 好友申请处理（4.6.0 新增）
 
-云湖用户端 WebSocket **不推送好友申请事件**，适配器默认开启轮询拉取申请列表并合成标准请求事件（遵循 [请求操作规范](../../standards/request-action-spec.md)）：
+云湖用户端 WebSocket **不推送好友申请事件**，适配器默认开启轮询拉取申请列表并合成标准请求事件（遵循 [请求操作规范](../standards/request-action-spec.md)）：
 
 - **账户配置**：`poll_friend_requests = true`（默认开启）、`poll_interval = 60`（轮询间隔秒，最小 5 秒）；设为 `false` 可关闭轮询
 - **轮询逻辑**：按间隔拉取 `/friend/request-list`，diff 出**新增申请**后合成标准 request 事件：
@@ -144,7 +144,7 @@ await yunhu_user.Request("申请人user_id").Using("default").accept()
 
 ## 标准化对齐（4.6.1）
 
-响应结构与错误码遵循 [API 响应规范](../../standards/api-response.md)。
+响应结构与错误码遵循 [API 响应规范](../standards/api-response.md)。
 
 ### 标准响应
 
