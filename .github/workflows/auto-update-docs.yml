@@ -62,6 +62,19 @@ jobs:
           # 经 remote set-url 注入翻译完成后新铸造的 App Token
           persist-credentials: false
 
+      # 排队 run 的触发 commit 早于前一轮产物提交：checkout 检出的是旧快照，
+      # 译文与 .translate_cache 均过期会触发全量重译。同步到分支最新 HEAD，
+      # 让本轮命中上一轮缓存、只译增量。
+      - name: Sync to latest branch head
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch origin "${{ github.ref_name }}"
+          git reset --hard "origin/${{ github.ref_name }}"
+          echo "Synced to $(git rev-parse --short HEAD) (${{ github.ref_name }})"
+          exit 0
+
       - name: Setup environment
         uses: actions/setup-python@v7
         with:
