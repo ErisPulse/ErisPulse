@@ -350,8 +350,21 @@ info = await yunhu.Api.Using("bot1").get_self_info()
 | `get_user_info(user_id)` | 用户信息（任意用户可查） | 公开 Web API（user/homepage） |
 | `get_group_info(group_id)` | 群信息 | 公开 Web API（group-info） |
 | `upload_file(*, type, name, ...)` | 上传文件（自动判定 image/video/file） | Bot 开放 API |
-| `get_file(file_id)` | 获取文件（file_id 即 URL） | — |
+| `get_file(file_id)` | 获取文件（file_id 即 URL，自动携带 Referer 下载并返回 base64） | 代理下载 |
 | `delete_message(message_id, *, chat_id, chat_type)` | 撤回消息 | Bot 开放 API（/bot/recall） |
+
+#### 媒体消息与防盗链（4.6.3）
+
+云湖媒体 CDN（`chat-img.jwznb.com` 等）启用 **Referer 防盗链**：裸 `GET` 一律 `403`，必须携带 `Referer: https://im.jwzhd.com/`。
+
+- 收到媒体消息（image/video/file/audio）时，事件内媒体段的 `data.headers.Referer` 已附带该值；自行下载的模块请携带此头
+- 或者直接用 `call_api("get_file", file_id=<url>)`，适配器代理下载并返回 base64（自动处理防盗链）
+
+```python
+seg = event["message"][0]          # {"type": "image", "data": {...}}
+img = await bot.call_api("get_file", file_id=seg["data"]["url"])
+raw_bytes = base64.b64decode(img["data"]["base64"])
+```
 
 > **注意**：`get_self_info` / `get_user_info` / `get_group_info` 通过**非官方公开 Web API**（chat-web-go.jwzhd.com）实现，这些接口无需鉴权但非官方文档、可能随平台更新变动；失败时返回标准错误响应。
 

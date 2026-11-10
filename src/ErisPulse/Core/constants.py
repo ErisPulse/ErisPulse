@@ -1097,6 +1097,12 @@ DEFAULT_I18N_LANGUAGE: Final[str] = "auto"
 # 修改影响: 超过此时间的请求将被中止。
 DEFAULT_HTTP_CLIENT_TIMEOUT_SECS: Final[float] = 30.0
 
+# 存储事务开启兜底超时（秒）。
+# 使用位置: Core/Bases/storage.py _AsyncTransaction.start()。
+# 修改影响: 超过此时长仍拿不到事务连接/写锁则抛 StorageOperationError——
+# 兜底双层保险（内层为 SQLite busy_timeout 5s），防止事务无限死等。
+STORAGE_TXN_BEGIN_TIMEOUT_SECS: Final[float] = 30.0
+
 # HTTP 客户端连接超时（秒）。
 # 修改影响: 建立 TCP 连接的最大等待时间。
 DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS: Final[float] = 10.0
@@ -1541,6 +1547,7 @@ __all__ = [
     "DEFAULT_BROADCAST_TIMEOUT_SECS",
     "CONNECTION_ID_HEX_CHARS",
     "CLIENT_LATENCY_SAMPLES_MAX",
+    "STORAGE_TXN_BEGIN_TIMEOUT_SECS",
     "DEFAULT_CONNECTION_CLOSE_TIMEOUT_SECS",
     "DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS",
     "DEFAULT_HTTP_CLIENT_MAX_RETRIES",

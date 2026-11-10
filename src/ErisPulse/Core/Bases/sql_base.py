@@ -38,7 +38,7 @@ from ..constants import (
 from ..i18n import i18n
 from ..lifecycle import lifecycle
 from ..logger import TRACE, logger
-from .errors import StorageUnreachableError
+from .errors import StorageOperationError, StorageUnreachableError
 from .storage import _SENTINEL, BaseQueryBuilder, BaseStorage, _current_txn
 
 # SQL 标识符（表名/列名）合法模式——用于 INSERT/UPDATE 列名、表名等必须为简单标识符的场景
@@ -1267,8 +1267,10 @@ class SQLStorageBase(BaseStorage):
                 logger.trace(f"storage.set: key={key}")
             return result
         except Exception as e:
-            logger.error(i18n.t("core.storage.set_failed", key=key, error=e))
-            return False
+            raise StorageOperationError(
+                i18n.t("core.storage.set_failed", key=key, error=e),
+                operation="set", key=key,
+            ) from e
 
     async def _delete_impl(self, conn: Any, key: str) -> bool:
         table, key_col, value_col = self._kv_table_sql()
@@ -1333,8 +1335,10 @@ class SQLStorageBase(BaseStorage):
         try:
             return await self._run_with_conn(self._delete_impl, key, conn=conn)
         except Exception as e:
-            logger.error(i18n.t("core.storage.delete_failed", key=key, error=e))
-            return False
+            raise StorageOperationError(
+                i18n.t("core.storage.delete_failed", key=key, error=e),
+                operation="delete", key=key,
+            ) from e
 
     async def _aget_all_keys_impl(self, conn: Any) -> list[str]:
         table, key_col, _value_col = self._kv_table_sql()
@@ -1384,8 +1388,9 @@ class SQLStorageBase(BaseStorage):
             )
             return True
         except Exception as e:
-            logger.error(i18n.t("core.storage.clear_failed", error=e))
-            return False
+            raise StorageOperationError(
+                i18n.t("core.storage.clear_failed", error=e), operation="clear"
+            ) from e
 
     # 批量操作（单连接批量 SQL）
 
@@ -1466,8 +1471,9 @@ class SQLStorageBase(BaseStorage):
             await self._run_with_conn(write_all)
             return True
         except Exception as e:
-            logger.error(i18n.t("core.storage.set_multi_failed", error=e))
-            return False
+            raise StorageOperationError(
+                i18n.t("core.storage.set_multi_failed", error=e), operation="set_multi"
+            ) from e
 
     def set_multi(self, items: dict[str, Any]) -> bool:
         """

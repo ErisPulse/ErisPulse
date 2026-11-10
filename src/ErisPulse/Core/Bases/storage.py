@@ -23,6 +23,7 @@ from typing import Any
 
 from ..constants import STORAGE_BRIDGE_JOIN_TIMEOUT_SECS
 from ..i18n import i18n
+from .errors import StorageOperationError
 
 # 哨兵值，用于区分"键不存在"和"值为 None"
 _SENTINEL = object()
@@ -189,9 +190,28 @@ class _AsyncTransaction:
         self.handle: Any = None
 
     async def start(self) -> None:
-        """获取专用连接并开启事务"""
-        self.conn = await self.storage._acquire_txn_conn()
-        self.handle = await self.storage._begin_txn(self.conn)
+        """
+        获取专用连接并开启事务
+
+        兜底超时（STORAGE_TXN_BEGIN_TIMEOUT_SECS）：无论后端层行为如何，
+        事务开启挂起超过阈值即抛 StorageOperationError——事务无限死等
+        （如另一长事务持锁且调用方永不提交）属框架缺陷，必须可观测。
+        """
+        from ..constants import STORAGE_TXN_BEGIN_TIMEOUT_SECS
+
+        try:
+            self.conn = await asyncio.wait_for(
+                self.storage._acquire_txn_conn(), STORAGE_TXN_BEGIN_TIMEOUT_SECS
+            )
+            self.handle = await asyncio.wait_for(
+                self.storage._begin_txn(self.conn), STORAGE_TXN_BEGIN_TIMEOUT_SECS
+            )
+        except asyncio.TimeoutError as e:
+            raise StorageOperationError(
+                f"事务开启超时（>{STORAGE_TXN_BEGIN_TIMEOUT_SECS}s）:"
+                "存在长时间持锁的事务或连接池不可用",
+                operation="transaction_begin",
+            ) from e
 
     async def finish(self, exc: BaseException | None) -> None:
         """

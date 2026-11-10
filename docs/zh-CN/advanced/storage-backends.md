@@ -83,6 +83,16 @@ pool_max = 10
 
 日志示例：`mysql 连接池创建最终失败（已重试 3 次），30 秒后自动重连；期间存储操作将快速失败，框架其余功能不受影响`
 
+## 失败语义（2.12 起）
+
+| 场景 | 行为 |
+|------|------|
+| 操作执行失败（写锁超时 / SQL 错误 / 约束冲突） | **抛 `StorageOperationError`**（写路径：aset / adelete / aclear / set_multi 及同步桥同路径）——不再静默 `False`，重要写入失败必须可见 |
+| 连接级不可达（冷却期快速失败） | 返回 `False` / `None`（规则 26 框架韧性语义，另有 `storage.unreachable` / `storage.recovered` 事件） |
+| 事务开启超时（>30s） | 抛 `StorageOperationError`（`STORAGE_TXN_BEGIN_TIMEOUT_SECS`） |
+
+重要写入请用 try/except 包裹并做补偿；事务块内只放纯 DB 操作。
+
 ## 异步原生 API
 
 ```python

@@ -114,6 +114,8 @@
 ### 变更
 
 - @YingXinche
+  - 存储写操作失败语义收紧（破坏性）：`aset` / `adelete` / `aclear` / `set_multi`（及同步桥 `set` / `delete` 等同路径）执行失败（写锁竞争超时 / SQL 错误 / 约束冲突）默认抛 `StorageOperationError`（`ErisPulse.Core` 聚合导出），不再静默返回 `False`——库可达而写失败意味着数据未写入，静默丢数据不可接受；连接级不可达的冷却期快速失败（`False` / `None`）保持不变（`StorageUnreachableError` 语义，规则 26）；**依赖旧返回值判断失败的模块需改为 try/except**
+  - 事务开启兜底超时：`atransaction` / 同步事务开启超过 30s（`STORAGE_TXN_BEGIN_TIMEOUT_SECS`）抛 `StorageOperationError`，消除并发长事务下无限死等不报错的缺陷
   - 依赖提升：tomlclass `>=0.3.2,<0.4` → `>=0.4.0,<0.5`（一致性版本——被清空的容器不再保留为空容器，内存与文件完全一致；保序数组编辑保留每元素注释与排版；公共 API 不再泄露 RecursionError）
   - `run_main_loop` 无可用主循环时入队并返回 `None`
   - `self.account_id` 调整为限定扩展键：动态注入的账户在尚未获取机器人 user_id 时以账户标识代位填充，`Event.get_self_account_id()` 保持 `account_id or user_id` 读取口径（账户名代位经账户名匹配解析回正确账户），user_id 可用后优先填入 self.user_id（OneBot12 基线口径）

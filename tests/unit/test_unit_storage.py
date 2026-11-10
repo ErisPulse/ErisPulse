@@ -12,6 +12,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+from ErisPulse.Core import StorageOperationError
 from ErisPulse.Core.storage import StorageManager, storage
 
 # importlib.import_module 返回真实子模块（Core.storage / Core.logger 包属性被单例遮蔽）
@@ -710,7 +711,8 @@ class TestGlobalStorage:
 
 
 class TestStorageErrorLogging:
-    """验证原先静默吞异常的写操作失败时现在会产出 logger.error/trace 日志"""
+    """验证写操作失败默认抛 StorageOperationError（2.12 起不再静默 False）"""
+
 
     @pytest.fixture
     def storage_manager(self, tmp_path):
@@ -732,26 +734,18 @@ class TestStorageErrorLogging:
             side_effect=sqlite3.OperationalError("forced failure"),
         )
 
-    def test_set_multi_failure_logs_error(self, storage_manager):
-        """set_multi 失败时应记录 logger.error"""
-        with (
-            self._force_conn_failure(storage_manager),
-            patch.object(sql_base_module, "logger") as mock_logger,
-        ):
-            result = storage_manager.set_multi({"a": 1})
-        assert result is False
-        mock_logger.error.assert_called_once()
+    def test_set_multi_failure_raises(self, storage_manager):
+        """set_multi 失败默认抛 StorageOperationError（不再静默 False）"""
+        with self._force_conn_failure(storage_manager):
+            with pytest.raises(StorageOperationError):
+                storage_manager.set_multi({"a": 1})
 
-    def test_delete_failure_logs_error(self, storage_manager):
-        """delete 失败时应记录 logger.error"""
+    def test_delete_failure_raises(self, storage_manager):
+        """delete 失败默认抛 StorageOperationError"""
         storage_manager.set("temp.key", 1)
-        with (
-            self._force_conn_failure(storage_manager),
-            patch.object(sql_base_module, "logger") as mock_logger,
-        ):
-            result = storage_manager.delete("temp.key")
-        assert result is False
-        mock_logger.error.assert_called_once()
+        with self._force_conn_failure(storage_manager):
+            with pytest.raises(StorageOperationError):
+                storage_manager.delete("temp.key")
 
     def test_delete_multi_failure_logs_error(self, storage_manager):
         """delete_multi 失败时应记录 logger.error"""
@@ -764,16 +758,12 @@ class TestStorageErrorLogging:
         assert result is False
         mock_logger.error.assert_called_once()
 
-    def test_clear_failure_logs_error(self, storage_manager):
-        """clear 失败时应记录 logger.error"""
+    def test_clear_failure_raises(self, storage_manager):
+        """clear 失败默认抛 StorageOperationError"""
         storage_manager.set("temp.key", 1)
-        with (
-            self._force_conn_failure(storage_manager),
-            patch.object(sql_base_module, "logger") as mock_logger,
-        ):
-            result = storage_manager.clear()
-        assert result is False
-        mock_logger.error.assert_called_once()
+        with self._force_conn_failure(storage_manager):
+            with pytest.raises(StorageOperationError):
+                storage_manager.clear()
 
     def test_has_table_failure_logs_error(self, storage_manager):
         """HasTable 失败时应记录 logger.error"""
