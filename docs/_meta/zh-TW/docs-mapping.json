@@ -134,7 +134,7 @@
           "icon": "fa-sliders"
         },
         {
-          "title": "CLI 指令參考",
+          "title": "CLI 命令參考",
           "path": "user-guide/cli-reference.md",
           "level": 1,
           "icon": "fa-terminal"
@@ -265,7 +265,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "OneBot11 平台特性文件",
+          "title": "OneBot11平台特性文件",
           "path": "platform-guide/onebot11.md",
           "level": 1,
           "icon": "fa-comments"
@@ -301,13 +301,13 @@
           "icon": "fa-user"
         },
         {
-          "title": "QQBot 平台特性文件",
+          "title": "QQBot平台特性文件",
           "path": "platform-guide/qqbot.md",
           "level": 1,
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Kook 平台特性文件",
+          "title": "Kook平台特性文檔",
           "path": "platform-guide/kook.md",
           "level": 1,
           "icon": "fa-headset"
@@ -373,7 +373,7 @@
           "icon": "fa-plug"
         },
         {
-          "title": "終端平台特性文件",
+          "title": "Terminal 平台特性文件",
           "path": "platform-guide/terminal.md",
           "level": 1,
           "icon": "fa-plug"
@@ -485,7 +485,7 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "归屬權（owner）系統",
+          "title": "所有权（owner）系統",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"

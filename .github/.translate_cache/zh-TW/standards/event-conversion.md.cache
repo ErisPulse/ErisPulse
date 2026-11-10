@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "6d0eeaaf8a7d268dc918adc2389554ea",
-  "file_hash": "6d0eeaaf8a7d268dc918adc2389554ea",
-  "translated_at": "2026-11-08T14:09:31.985910",
+  "hash": "2d753edf562ecbae24ee6fe7fb470074",
+  "file_hash": "2d753edf562ecbae24ee6fe7fb470074",
+  "translated_at": "2026-11-10T06:32:12.904186",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -14,8 +14,8 @@
       "translation": "## 1. 核心原則\n1. 嚴格相容：所有標準欄位必須完全遵循 OneBot12 規範\n2. 明確擴展：平台特有的功能必須添加 {platform}_ 前綴（例如 yunhu_form）\n3. 數據完整：原始事件數據必須保留在 {platform}_raw 欄位中，原始事件類型必須保留在 {platform}_raw_type 欄位中\n4. 時間統一：所有時間戳必須轉換為 10 位 Unix 時間戳（秒級）\n5. 平台統一：platform 項命名必須與你在 ErisPulse 中註冊的名稱/別稱一致"
     },
     {
-      "hash": "e76d600d561d9365daca8edf8746a84b",
-      "translation": "## 2. 標準欄位要求\n\n### 2.1 必須欄位\n| 欄位 | 類型 | 說明 |\n|------|------|------|\n| id | string | 事件唯一識別碼 |\n| time | integer | Unix時間戳（秒級） |\n| type | string | 事件類型 |\n| detail_type | string | 事件詳細類型（詳見[會話類型標準](session-types.md)） |\n| sub_type | string | 事件子類型 |\n| platform | string | 平台名稱 |\n| self | object | 機器人自身資訊 |\n| self.platform | string | 平台名稱 |\n| self.user_id | string | 機器人使用者ID |\n\n> **OneBot12 基線**：`self.platform` / `self.user_id` 與訊息事件的 `message_id` 均為 OneBot12 基線已定義的欄位，框架直接採用基線定義，不再引入自有擴充鍵（`self.account_id` 為限定擴充鍵，僅用於動態帳戶未取得 user_id 前的代位識別，見 §6）。\n\n**detail_type 規範**：\n- 必須使用 ErisPulse 標準會話類型（詳見 [會話類型標準](session-types.md)）\n- 支援的類型：`private`, `group`, `user`, `channel`, `guild`, `thread`\n- 配接器負責將平台原生類型映射到標準類型\n\n### 2.2 訊息事件欄位\n| 欄位 | 類型 | 說明 |\n|------|------|------|\n| message_id | string | 訊息ID（OneBot12 基線標準必選欄位，配接器必須產出事件頂層） |\n| message | array | 訊息段陣列 |\n| alt_message | string | 訊息段備用文字 |\n| user_id | string | 使用者ID |\n| user_nickname | string | 使用者暱稱（可選） |\n\n### 2.3 通知事件欄位\n| 欄位 | 類型 | 說明 |\n|------|------|------|\n| user_id | string | 使用者ID |\n| user_nickname | string | 使用者暱稱（可選） |\n| operator_id | string | 操作者ID（可選） |\n\n### 2.4 請求事件欄位\n| 欄位 | 類型 | 說明 |\n|------|------|------|\n| user_id | string | 使用者ID |\n| user_nickname | string | 使用者暱稱（可選） |\n| comment | string | 請求附言（可選） |\n| request_id | string | 請求識別碼（**強烈推薦**，用於同意/拒絕請求操作） |\n\n**`request_id` 欄位說明**：\n- `request_id` 是請求事件的唯一操作識別碼，用於透過 `HandleRequest` DSL 執行同意/拒絕操作\n- 配接器在轉換請求事件時，應將平台原生的請求識別映射到此欄位\n- 如果平台本身沒有請求ID，配接器應產生一個唯一識別（如基於時間戳+使用者ID的雜湊）\n- 當 `request_id` 缺失時，`event.approve()` / `event.reject()` 將拋出 `ValueError`"
+      "hash": "a63879dd229df1fd1344b67449ee198d",
+      "translation": "## 2. 標準欄位要求\n\n### 2.1 必須欄位\n| 欄位 | 類型 | 說明 |\n|------|------|------|\n| id | string | 事件唯一識別碼 |\n| time | integer | Unix時間戳記（秒級） |\n| type | string | 事件類型 |\n| detail_type | string | 事件詳細類型（詳見[會話類型標準](session-types.md)） |\n| sub_type | string | 事件子類型 |\n| platform | string | 平台名稱 |\n| self | object | 機器人自身資訊 |\n| self.platform | string | 平台名稱 |\n| self.user_id | string | 機器人使用者ID |\n\n> **OneBot12 基線**：`self.platform` / `self.user_id` 與訊息事件的 `message_id` 均為 OneBot12 基線已定義的欄位，框架直接採用基線定義，不再引入自有擴充鍵（`self.account_id` 為限定擴充鍵，僅用於動態帳戶未取得 user_id 前的代位標識，見 §6）。\n\n**detail_type 規範**：\n- 必須使用 ErisPulse 標準會話類型（詳見 [會話類型標準](session-types.md)）\n- 支援的類型：`private`, `group`, `user`, `channel`, `guild`, `thread`\n- 適配器負責將平台原生類型映射到標準類型\n\n### 2.2 訊息事件欄位\n| 欄位 | 類型 | 說明 |\n|------|------|------|\n| message_id | string | 訊息ID（OneBot12 基線標準必選欄位，適配器必須產出事件頂層） |\n| message | array | 訊息段陣列 |\n| alt_message | string | 訊息段備用文字 |\n| user_id | string | 使用者ID |\n| user_nickname | string | 使用者暱稱（可選） |\n\n### 2.3 通知事件欄位\n| 欄位 | 類型 | 說明 |\n|------|------|------|\n| user_id | string | 使用者ID |\n| user_nickname | string | 使用者暱稱（可選） |\n| operator_id | string | 操作者ID（可選） |\n\n### 2.4 請求事件欄位\n| 欄位 | 類型 | 說明 |\n|------|------|------|\n| user_id | string | 使用者ID |\n| user_nickname | string | 使用者暱稱（可選） |\n| comment | string | 請求附言（可選） |\n| request_id | string | 請求識別碼（**強烈推薦**，用於同意/拒絕請求操作） |\n\n**`request_id` 欄位說明**：\n- `request_id` 是請求事件的唯一操作識別碼，用於透過 `Request` DSL 執行同意/拒絕操作\n- 適配器在轉換請求事件時，應將平台原生的請求識別碼映射到此欄位\n- 如果平台本身沒有請求ID，適配器應產生一個唯一標識（如基於時間戳記+使用者ID的雜湊值）\n- 當 `request_id` 缺失時，`event.approve()` / `event.reject()` 將拋出 `ValueError`"
     },
     {
       "hash": "ef22de997382d03e1b2d5aba1008034a",

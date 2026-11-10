@@ -4,11 +4,12 @@ OneBot12Adapter 是基於 OneBot V12 協議所建構的適配器，作為 ErisPu
 
 ---
 
-## 文件資訊
+## 文檔資訊
 
-- 對應模組版本: 4.4.0
+- 對應模組版本: 4.6.2
 - 維護者: ErisPulse
 - 協定版本: OneBot V12
+- 最後更新: 2026-11-10
 
 ## 基本資訊
 
@@ -19,14 +20,52 @@ OneBot12Adapter 是基於 OneBot V12 協議所建構的適配器，作為 ErisPu
 
 ## v5 範式更新（4.3.0）
 
-本適配器已完成 v5 範式對齊（增量升級，API 兼容）：
+本適配器已完成 v5 範式對齊（增量升級，API 相容）：
 
-- **BaseConverter 繼承**：轉換器公共欄位（id/time/platform/self/raw）由框架 build_base_event 構建，按 OB11 欄位名（echo/time/self_id）覆蓋
-- **spawn_background 任務歸屬**：Client 模式連接任務改用 asyncio.spawn_background（owner 歸屬，shutdown 自動回收）
-- **框架軟依賴**：安裝適配器不再聲明 ErisPulse 硬依賴，避免 pip 解析時調整框架版本；運行時檢測 ErisPulse>=2.7.1 並在版本過低時打日誌提示
-- **啟動版本日誌**：初始化時輸出 OneBotAdapter v4.3.0 已加載
+- **BaseConverter 繼承**：轉換器公共欄位（id/time/platform/self/raw）由框架 build_base_event 建構，按 OB11 欄位名（echo/time/self_id）覆蓋
+- **spawn_background 任務歸屬**：Client 模式連線任務改用 Runtime.spawn_background（owner 歸屬，shutdown 自動回收）
+- **框架軟依賴**：安裝適配器不再宣告 ErisPulse 硬依賴，避免 pip 解析時調整框架版本；執行時檢測 ErisPulse>=2.7.1 並在版本過低時記錄日誌提示
+- **啟動版本日誌**：初始化時輸出 OneBot12Adapter vX.Y.Z 已載入
 
-已有能力（4.2.0 起支援）：多帳戶、Api DSL 標準動作映射（get_self_info→get_login_info 等）、Request DSL（好友/群請求審批：event.approve() / event.reject()）、EventMixin、i18n。
+既有能力（4.2.0 起支援）：多帳戶、Api DSL 標準動作映射（get_self_info→get_login_info 等）、Request DSL（好友/群組請求審核：event.approve() / event.reject()）、EventMixin、i18n。
+
+## 標準化對齊
+
+本節說明適配器與 ErisPulse 標準化規範對齊的行為。規範詳情參見 SDK 文件《請求操作規範》（`docs/zh-TW/standards/request-action-spec.md`）與《API 回應規範》（`docs/zh-TW/standards/api-response.md`）。
+
+### 請求事件與 Request DSL
+
+- **request_id 保障**：請求事件透傳時保障頂層 `request_id` 欄位（優先原生 `request_id`，OB11 風格實作回退映射 `flag` 欄位；兩者皆無時不合成），供 Request DSL 使用
+- **預設帳戶回退**：`Request` DSL（基於 `handle_quick_request` 動作）未顯式 `Using()` 指定帳戶時，回退使用請求事件的來源帳戶（`request_context`），確保事件鏈內 `event.approve()`/`event.reject()` 正確路由
+
+### call_api 錯誤處理
+
+- 帳戶未連線或連線已關閉時，`call_api` 不再拋出 `ConnectionError`，而是返回標準失敗回應（`status="failed"`、`retcode=33001`）
+- API 呼叫逾時同樣返回標準失敗回應（`retcode=33001`）
+
+### 帳戶欄位雙相容與 send_context
+
+- `call_api` 同時接受標準欄位 `account_id` 與舊欄位名 `_account_id`（標準名優先）；框架 ApiDSL 自動適配，模組程式碼推薦使用 `account_id`
+- `Send`/`Recall`/`Edit`/`Batch` 全方法讀取 `send_context`：事件鏈內自動使用當前事件來源帳戶，顯式 `Using()` 指定的帳戶優先
+
+### 事件欄位注入
+
+- 所有事件注入 `self.account_id`（來源帳戶名），多帳戶模式下事件可正確回路由到來源帳戶
+- 所有事件必含 `onebot12_raw_type` 欄位（原始事件類型，符合事件轉換規範）
+- 表情包/貼圖訊息段名為 `onebot12_sticker`（`.Sticker()` 方法內部發送該段）
+
+### 錯誤碼規範
+
+| retcode | 含義 | 觸發場景 |
+|---------|------|----------|
+| 0 | 成功 | 動作執行成功 |
+| 33001 | 網路錯誤 | 帳戶未連線、連線已關閉、API 呼叫逾時 |
+| 10002 | 不支援的動作 | 後端不支援的動作請求 |
+| 10003 | 參數錯誤 | 缺少必要參數 |
+
+> 後端返回的原始回應資料保留在 `onebot12_raw` 欄位。
+
+---
 
 ## 標準 Api 動作（Api DSL）
 
@@ -79,7 +118,7 @@ await ob12.Request("request_flag").Using("main").accept()
 
 ---
 
-## 支援的消息發送類型
+## 支援的訊息發送類型
 
 所有發送方法均透過鏈式語法實現，例如：
 
@@ -91,12 +130,12 @@ onebot12 = adapter.get("onebot12")
 await onebot12.Send.To("group", group_id).Text("Hello World!")
 
 # 指定特定帳戶發送
-await onebot12.Send.To("group", group_id).Account("main").Text("來自主帳戶的消息")
+await onebot12.Send.To("group", group_id).Account("main").Text("來自主帳戶的訊息")
 ```
 
-### 大小寫不敏感調用
+### 大小寫不敏感呼叫
 
-所有發送方法和鏈式修飾方法均支援大小寫不敏感調用，適配器會自動映射到正確的標準方法名：
+所有發送方法和鏈式修飾方法均支援大小寫不敏感呼叫，配接器會自動映射到正確的標準方法名稱：
 
 ```python
 # 以下所有呼叫方式等價
@@ -110,16 +149,16 @@ await onebot12.Send.To("group", 123).at(456).TEXT("hello")
 await onebot12.Send.To("group", 123).AT(456).text("hello")
 ```
 
-### 不支援的方法調用
+### 不支援的方法呼叫
 
-當呼叫不存在的方法時，適配器會回傳友好的文字提示，而不是拋出例外：
+當呼叫不存在的方法時，配接器會回傳友善的文字提示，而不是拋出例外：
 
 ```python
 # 呼叫不支援的方法
 result = await onebot12.Send.To("user", 123).UnsupportedMethod("test")
 
-# 回傳的結果是發送的文本訊息
-# 訊息內容: [不支援的發送類型] 方法名: UnsupportedMethod, 參數: [args[0]: 'test']
+# 回傳的結果是發送的文字訊息
+# 訊息內容: [不支援的發送類型] 方法名稱: UnsupportedMethod, 參數: [args[0]: 'test']
 ```
 
 ### 基礎訊息類型
@@ -127,10 +166,10 @@ result = await onebot12.Send.To("user", 123).UnsupportedMethod("test")
 - `.Text(text: str)`：發送純文字訊息
 - `.Image(file: Union[str, bytes], filename: str = "image.png")`：發送圖片訊息（支援URL、Base64或bytes）
 - `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")`：發送音訊訊息
-- `.Voice(file: Union[str, bytes], filename: str = "voice.ogg")`：發送語音訊息（Audio的別名，相容OneBot11）
+- `.Voice(file: Union[str, bytes], filename: str = "voice.ogg")`：發送語音訊息（Audio 的別名，相容 OneBot11）
 - `.Video(file: Union[str, bytes], filename: str = "video.mp4")`：發送影片訊息
 
-### 鏈式修飾方法（返回self支援鏈式調用）
+### 鏈式修飾方法（回傳self支援鏈式呼叫）
 
 - `.At(user_id: Union[str, int])`：@使用者（可多次呼叫）
 - `.AtAll()`：@全體成員
@@ -142,7 +181,7 @@ result = await onebot12.Send.To("user", 123).UnsupportedMethod("test")
 
 ### 其他訊息類型
 
-- `.Sticker(file_id: str)`：發送表情包/貼紙
+- `.Sticker(file_id: str)`：發送表情包/貼圖（`onebot12_sticker` 訊息段）
 - `.Location(latitude: float, longitude: float, title: str = "", content: str = "")`：發送位置
 
 ### 管理功能
@@ -150,21 +189,21 @@ result = await onebot12.Send.To("user", 123).UnsupportedMethod("test")
 - `.Recall(message_id: Union[str, int])`：撤回訊息
 - `.Edit(message_id: Union[str, int], content: Union[str, List[Dict]])`：編輯訊息
 - `.Raw(message_segments: List[Dict])`：發送原生OneBot12訊息段
-- `.Batch(target_ids: List[str], message: Union[str, List[Dict]], target_type: str = "user")`：批量發送訊息
+- `.Batch(target_ids: List[str], message: Union[str, List[Dict]], target_type: str = "user")`：批次發送訊息
 
 ## OneBot12 標準事件
 
 OneBot12 適配器完全遵循 OneBot12 標準，事件格式無需轉換，直接提交到框架。
 
-### 新增特性：原始事件類型字段
+### 新增特性：原始事件類型欄位
 
-符合 `standards/event-conversion.md` 規範，所有事件都會保留原始事件類型字段 `onebot12_raw_type`：
+符合 `standards/event-conversion.md` 規範，所有事件都會保留原始事件類型欄位 `onebot12_raw_type`：
 
 ```python
 {
     "id": "event-id",
     "type": "message",              # 事件類型
-    "onebot12_raw_type": "message", # 原始事件類型（與type相同）
+    "onebot12_raw_type": "message", # 原始事件類型（與 type 相同）
     "detail_type": "private",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
@@ -174,10 +213,10 @@ OneBot12 適配器完全遵循 OneBot12 標準，事件格式無需轉換，直�
 }
 ```
 
-### 消息事件 (Message Events)
+### 訊息事件 (Message Events)
 
 ```python
-# 私聊消息
+# 私聊訊息
 {
     "id": "event-id",
     "type": "message",
@@ -190,7 +229,7 @@ OneBot12 適配器完全遵循 OneBot12 標準，事件格式無需轉換，直�
     "time": 1234567890
 }
 
-# 群聊消息
+# 群聊訊息
 {
     "id": "event-id",
     "type": "message",
@@ -248,7 +287,8 @@ OneBot12 適配器完全遵循 OneBot12 標準，事件格式無需轉換，直�
     "detail_type": "friend",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
-    "comment": "申請消息",
+    "comment": "申請訊息",
+    "request_id": "request-flag",
     "flag": "request-flag",
     "time": 1234567890
 }
@@ -262,7 +302,8 @@ OneBot12 適配器完全遵循 OneBot12 標準，事件格式無需轉換，直�
     "self": {"user_id": "bot-id"},
     "group_id": "group-id",
     "user_id": "user-id",
-    "comment": "申請消息",
+    "comment": "申請訊息",
+    "request_id": "request-flag",
     "flag": "request-flag",
     "sub_type": "invite",
     "time": 1234567890
@@ -430,12 +471,12 @@ OneBot12 适配器采用异步非阻塞设计：
 
 ## 錯誤處理
 
-適配器提供完善的錯誤處理機制：
+轉接器提供完善的錯誤處理機制：
 
 1. 網路連線異常自動重連（支援每個帳戶獨立重連，間隔30秒）
-2. API呼叫逾時處理（固定30秒逾時）
-3. 消息發送失敗自動重試（最多3次重試）
-4. 不支援的方法呼叫會返回友善的文字提示
+2. API 呼叫逾時處理（固定30秒逾時，逾時回傳 `retcode=33001` 標準失敗回應）
+3. 帳戶未連線/連線已關閉時 `call_api` 回傳 `retcode=33001` 標準失敗回應，不再擲出 `ConnectionError`
+4. 不支援的方法呼叫會回傳友善的文字提示
 
 ## 事件處理增強
 

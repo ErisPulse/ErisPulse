@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "c7586071f740821bb36b0956a03105a8",
-  "file_hash": "c7586071f740821bb36b0956a03105a8",
-  "translated_at": "2026-11-08T14:04:29.706199",
+  "hash": "fdda13beca7ad6dcd9b66f7eceb6788a",
+  "file_hash": "fdda13beca7ad6dcd9b66f7eceb6788a",
+  "translated_at": "2026-11-10T06:08:13.114319",
   "target_lang": "ja",
   "chunks": [
     {
@@ -22,8 +22,8 @@
       "translation": "## 3. 完全なフィールド仕様\n\n### 3.1 一般的なフィールド\n\n#### 成功時のレスポンス例\n```json\n{\n    \"status\": \"ok\",\n    \"retcode\": 0,\n    \"data\": {\n        \"message_id\": \"1234\",\n        \"time\": 1632847927.599013\n    },\n    \"message_id\": \"1234\",\n    \"message\": \"\",\n    \"echo\": \"1234\",\n    \"telegram_raw\": {...}\n}\n```\n\n#### 失敗時のレスポンス例\n```json\n{\n    \"status\": \"failed\",\n    \"retcode\": 10003,\n    \"data\": null,\n    \"message_id\": \"\",\n    \"message\": \"必要なパラメータが不足しています: user_id\",\n    \"echo\": \"1234\",\n    \"telegram_raw\": {...}\n}\n```\n\n### 3.2 戻り値コードの仕様\n\n#### 0 成功（OK）\n- 0: 成功（OK）\n\n#### 1xxxx 動作リクエストエラー（Request Error）\n| エラーコード | エラー名 | 説明 |\n|-------|-------|------|\n| 10001 | Bad Request | 無効な動作リクエスト |\n| 10002 | Unsupported Action | 対応していない動作リクエスト |\n| 10003 | Bad Param | 無効な動作リクエストパラメータ |\n| 10004 | Unsupported Param | 対応していない動作リクエストパラメータ |\n| 10005 | Unsupported Segment | 対応していないメッセージセグメントの種類 |\n| 10006 | Bad Segment Data | 無効なメッセージセグメントパラメータ |\n| 10007 | Unsupported Segment Data | 対応していないメッセージセグメントパラメータ |\n| 10101 | Who Am I | ロボットアカウントが指定されていません |\n| 10102 | Unknown Self | 知らないロボットアカウント |\n\n#### 2xxxx 動作ハンドラーエラー（Handler Error）\n| エラーコード | エラー名 | 説明 |\n|-------|-------|------|\n| 20001 | Bad Handler | 動作ハンドラーの実装エラー |\n| 20002 | Internal Handler Error | 動作ハンドラーが実行中に例外をスローしました |\n\n#### 3xxxx 動作実行エラー（Execution Error）\n| エラーコード範囲 | エラー種別 | 説明 |\n|-----------|---------|------|\n| 31xxx | Database Error | データベースエラー |\n| 32xxx | Filesystem Error | ファイルシステムエラー |\n| 33xxx | Network Error | ネットワークエラー |\n| 34xxx | Platform Error | ロボットプラットフォームエラー |\n| 35xxx | Logic Error | 動作ロジックエラー |\n| 36xxx | I Am Tired | 実装が作業を中止することを決定しました |\n\n#### 保留エラーセグメント\n- 4xxxx、5xxxx: 保留セグメント、使用しないでください\n- 6xxxx～9xxxx: 他のエラーセグメント、実装が独自に使用するためのものです"
     },
     {
-      "hash": "31669faf6d364039f8c4a74abdb1fae9",
-      "translation": "## 4. 実装要件\n1. すべてのレスポンスには status、retcode、data、message フィールドが含まれている必要があります。\n2. リクエストに非空の echo フィールドが含まれている場合、レスポンスには同じ値の echo フィールドが含まれている必要があります。\n3. 戻り値コードは OneBot12 規格に厳密に従う必要があります。\n4. エラーメッセージ(message)は人間に読みやすい説明文である必要があります。"
+      "hash": "276c52eedb359dc8fcc9dfafc0e51f29",
+      "translation": "## 4. 実装要件\n1. すべてのレスポンスは、status、retcode、data、message フィールドを含む必要があります。\n2. リクエストに非空の echo フィールドが含まれている場合、レスポンスには同じ値の echo フィールドが含まれている必要があります。\n3. 戻り値コードは OneBot12 規格に厳密に従う必要があります。\n4. エラーメッセージ(message)は人間に読みやすい説明である必要があります。\n\n### 4.1 レスポンス構築ヘルパー：`make_response` / `make_error`\n\nアダプタは、`BaseAdapter` 上の 2 つのヘルパーを使用して標準レスポンスを一貫して構築します。dict を手動で記述する必要はありません。\n\n```python\n# 成功（send / call_api / _do_accept など、すべての標準レスポンスを返す位置）\nreturn self.make_response(\n    data=result,                    # レスポンスデータ\n    message_id=result.get(\"message_id\", \"\"),\n    raw=result,                     # プラットフォームの元のレスポンス → 自動的に {platform}_raw フィールドに追加\n)\n\n# 失敗（status は固定で \"failed\"）\nreturn self.make_error(\n    retcode=34100,                  # デフォルトは 34600（SDK Failure）；プラットフォームエラーは独自の 34xxx を渡す\n    message=\"プラットフォームのリスク管理が拒否しました\",\n    raw=response,\n)\n```\n\n| ヘルパー | シグネチャ | 意味 |\n|------|------|------|\n| `make_response` | `(*, status=\"ok\", retcode=0, data=None, message_id=\"\", message=\"\", raw=None)` | 標準構造に従ってレスポンスを構築します。`raw` が `None` でない場合、自動的に `{platform}_raw` キーを追加します（プラットフォーム名は `self._platform` から取得） |\n| `make_error` | `(retcode=34600, message=\"\", raw=None)` | `make_response(status=\"failed\", ...)` のショートカットです |\n\n> 手動で等価な dict を記述することも合法です（構造が一致していれば）。ヘルパーの価値は、`{platform}_raw` のプラットフォーム名の自動連結と、フィールドの漏れがないことです。"
     },
     {
       "hash": "266c9f184ba770f775b691a0c6ff6c03",

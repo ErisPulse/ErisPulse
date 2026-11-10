@@ -576,10 +576,10 @@ info = adapter.send_info("myplatform", "Form")
 
 ## 12. 相關文件
 
-**實現發送回傳值時配套對照**：
-- [API 回應標準](api-response.md) - 適配器 API 回應格式標準
+**實作傳送回傳值時的配套對照**：
+- [API 回應標準](api-response.md) - 轉接器 API 回應格式標準
 
-**同一適配器的其它側**：
-- [事件轉換標準](event-conversion.md) - 完整的事件轉換規範、擴展命名和訊息段標準
+**同一轉接器的其他側**：
+- [事件轉換標準](event-conversion.md) - 完整的事件轉換規範、擴充命名和訊息段標準
 - [會話類型標準](session-types.md) - 會話類型定義和映射關係
-- [請求操作規範](request-action-spec.md) - 請求事件欄位要求、HandleRequest DSL 及適配器實現要求
+- [請求操作規範](request-action-spec.md) - 請求事件欄位要求、Request DSL（approve/reject）及轉接器實作要求

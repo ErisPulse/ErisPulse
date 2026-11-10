@@ -1,28 +1,29 @@
-# Документация по функциям платформы Discord
+# Документация по функциональным возможностям платформы Discord
 
-DiscordAdapter — это адаптер, построенный на протоколах Discord Gateway (WebSocket) и REST API v10, объединяющий основные функции Discord Bot и предоставляющий единый интерфейс для обработки событий и операций с сообщениями.
+DiscordAdapter — это адаптер, построенный на протоколах Discord Gateway (WebSocket) и REST API v10, объединяющий основные функции Discord Bot и предоставляющий унифицированные интерфейсы для обработки событий и операций с сообщениями.
 
 ---
 
 ## Информация о документации
 
-- Версия соответствующего модуля: 4.3.0
-- Поддержка: ErisPulse
+- Версия соответствующего модуля: 4.4.3
+- Ответственный: ErisPulse
 - Версия Discord API: v10
+- Последнее обновление: 2026-11-10
 
 ## Основная информация
 
-- Краткое описание платформы: Discord — это популярная платформа для коммуникации в сообществах, поддерживающая различные формы общения, такие как серверы, каналы, личные сообщения, а также предоставляет полный интерфейт разработки ботов
+- Краткое описание платформы: Discord — это популярная платформа для общения в сообществах, поддерживающая серверы, каналы, личные сообщения и другие формы общения, а также предоставляет полный интерфейт для разработки ботов.
 - Название адаптера: DiscordAdapter
-- Поддержка нескольких аккаунтов: Поддерживает настройку нескольких Discord-ботов одновременно
-- Способ подключения: Gateway WebSocket (для получения событий) + REST API (для отправки сообщений/вызова интерфейсов)
+- Поддержка нескольких аккаунтов: Поддерживает одновременную настройку нескольких Discord-ботов
+- Способ подключения: Gateway WebSocket (для получения событий) + REST API (для отправки сообщений/вызовов интерфейсов)
 - Способ аутентификации: Bot Token (HTTP-заголовок `Authorization: Bot {token}`, в payload IDENTIFY для Gateway передается токен)
-- Поддержка цепочечных модификаторов: Поддерживает цепочечные методы модификаторов, такие как `.Reply()`, `.At()`, `.AtAll()`
+- Поддержка цепочки методов: Поддерживает цепочные методы, такие как `.Reply()`, `.At()`, `.AtAll()`
 - Совместимость с OneBot12: Поддерживает отправку сообщений в формате OneBot12
 
 ## Описание конфигурации
 
-DiscordAdapter поддерживает конфигурацию нескольких аккаунтов, каждый аккаунт соответствует отдельному Discord-боту.
+DiscordAdapter поддерживает конфигурацию нескольких аккаунтов, каждый аккаунт соответствует отдельному Discord Bot.
 
 ```toml
 # config.toml
@@ -31,7 +32,7 @@ DiscordAdapter поддерживает конфигурацию несколь�
 [DiscordAdapter.accounts.default]
 token = "YOUR_BOT_TOKEN"       # Discord Bot Token (обязательно)
 intents = 33281                 # Gateway Intents (необязательно, по умолчанию 33281)
-enabled = true                  # Включить (необязательно, по умолчанию true)
+enabled = true                  # Включить аккаунт (необязательно, по умолчанию true)
 
 # Аккаунт 2
 [DiscordAdapter.accounts.bot2]
@@ -42,42 +43,70 @@ enabled = true
 
 **Описание параметров конфигурации (для каждого аккаунта):**
 
-- `token`: Discord Bot Token (обязательно), получается в [Discord Developer Portal](https://discord.com/developers/applications)
-- `intents`: Bitmask для Gateway Intents (необязательно, по умолчанию `33281`), определяет типы событий, на которые бот подписывается
-- `bot_id`: ID пользователя бота (необязательно, ID бота автоматически получается во время выполнения из события READY, не нужно заполнять вручную)
-- `enabled`: Включить этот аккаунт (необязательно, по умолчанию `true`)
+- `token`: Discord Bot Token (обязательно), получается из [Discord Developer Portal](https://discord.com/developers/applications)
+- `intents`: Bitmask для Gateway Intents (необязательно, по умолчанию `33281`), определяет типы событий, на которые подписан бот
+- `bot_id`: ID пользователя бота (необязательно, ID автоматически получается из события READY во время выполнения, не нужно вручную указывать)
+- `enabled`: Включить аккаунт (необязательно, по умолчанию `true`)
 
 ### Gateway Intents
 
-Intents используют bitmask, вычисляются путем побитового OR (`|`) значений каждого Intent:
+Intents используют bitmask, вычисляются посредством побитового OR (`|`):
 
-| Intent | Bit | Значение | Описание | Привилегированный |
+| Intent | Бит | Значение | Описание | Привилегированный |
 |-------|------|------|------|------|
-| GUILDS | `1 << 0` | 1 | Создание/удаление/обновление серверов, каналов, изменение ролей | Нет |
+| GUILDS | `1 << 0` | 1 | Создание/удаление/обновление серверов, каналов, ролей | Нет |
 | GUILD_MEMBERS | `1 << 1` | 2 | Участие/выход/обновление участников | Да |
 | GUILD_MESSAGES | `1 << 9` | 512 | Отправка/получение сообщений на сервере | Нет |
-| MESSAGE_CONTENT | `1 << 15` | 32768 | Содержимое сообщений (без этого Intent значение content будет пустым) | Да |
+| MESSAGE_CONTENT | `1 << 15` | 32768 | Текст сообщения (без этого Intents поле content будет пустым) | Да |
 
 Значение по умолчанию `33281` = `GUILDS(1) | GUILD_MESSAGES(512) | MESSAGE_CONTENT(32768)`.
 
-> **Внимание:** Привилегированные Intents необходимо включить в Discord Developer Portal → Bot → Privileged Gateway Intents. Если бот находится на более чем 100 серверах, также требуется прохождение проверки Discord.
+> **Важно**: Привилегированные Intents должны быть включены в Discord Developer Portal → Bot → Privileged Gateway Intents. Если бот находится более чем в 100 серверах, необходимо пройти проверку Discord.
 
-**API-среда:**
-- Основной адрес REST API Discord: `https://discord.com/api/v10`
+**API-окружение:**
+- Базовый адрес Discord REST API: `https://discord.com/api/v10`
 - Адрес WebSocket Gateway: получается динамически через `GET /gateway/bot`, обычно `wss://gateway.discord.gg/?v=10&encoding=json`
+
+## Стандартизация (4.4.3)
+
+### Изменения в событиях
+
+1. **Уникальность идентификаторов событий**: `MESSAGE_UPDATE` / `MESSAGE_DELETE`, `REACTION_ADD` / `REMOVE` (включая `REMOVE_ALL` / `REMOVE_EMOJI`) и другие производные события имеют `id` в формате `"имя_события:оригинальный_id"` (например, `MESSAGE_UPDATE:123456`), чтобы избежать коллизий с идентификаторами событий `CREATE`, которые могут быть удалены фреймворком.
+2. **Внедрение `self.account_id` в события**: Все события содержат имя аккаунта, который их породил, и в режиме нескольких аккаунтов `event.reply()` автоматически отправляется через соответствующий аккаунт.
+3. **Исправление события INTERACTION_CREATE**: Изначально ошибочно помечалось как `type="request"` (подтип `interaction`), теперь изменено на `type="notice"` и `detail_type="discord_interaction"`; данные взаимодействия сохраняются в поле `discord_interaction`.
+
+### Сопоставление сигнатур API
+
+| Действие | Сигнатура | Описание |
+|------|------|------|
+| get_channel_info | `(guild_id, channel_id)` | Новая сигнатура с `guild_id` первым аргументом; при передаче одного аргумента используется старая сигнатура (считается `channel_id`) |
+| get_channel_list | `(guild_id, joined_only=False)` | Добавлен необязательный аргумент `joined_only` |
+| get_guild_info / get_guild_list | - | Используются поля `guild_id` / `guild_name` (старые поля `group_id` / `group_name` сохраняются, чтобы не нарушить существующие вызовы) |
+
+### Стандартизация кодов ошибок
+
+Коды ошибок стандартизированы по SDK (старый код `34000` больше не используется):
+
+| retcode | Описание |
+|---------|------|
+| 0 | Успешно |
+| 33001 | Ошибка сети (ошибка подключения, таймаут и т.д.) |
+| 34100 | Платформа отклонила запрос (оригинальный ответ сохраняется в поле `discord_raw`) |
+| 10002 | Не поддерживаемое действие (`get_guild_member_list` / `set_guild_name` / `get_channel_member_info` / `get_channel_member_list` / `leave_channel` явно возвращают ошибку, Discord REST не имеет соответствующей семантики) |
+| 10003 | Ошибка параметров (например, отсутствие соответствующего контекста в таблице сообщений, что приводит к невозможности отмены) |
 
 ## Обновление до v5 (4.2.0)
 
-Данный адаптер был обновлен до соответствия v5 (постепенное обновление, совместимость API сохранена):
+Адаптер был обновлен до стандарта v5 (обновление постепенное, API совместим):
 
-- **BaseConverter наследование**: Общие поля конвертера строятся с помощью `build_base_event` из фреймворка
-- **Api DSL**: Стандартное сопоставление API-действий (см. ниже)
-- **Стандартный сегмент keyboard**: Преобразуется в Discord components (строка действий + кнопки); модификатор .Keyboard(rows) принимает общую структуру
-- **Стандартные поля для взаимодействий**: Событие INTERACTION_CREATE содержит interaction_id / button_data
-- **Задачи spawn_background**: Задачи подключения используют runtime.spawn_background
-- **Мягкая зависимость от фреймворка**: Проверка на ErisPulse>=2.7.1 и вывод предупреждения при запуске; вывод версии в логах
+- **Наследование BaseConverter**: Общие поля конвертеров создаются фреймворком `build_base_event`
+- **API DSL**: Стандартные действия API (см. ниже)
+- **Стандартный сегмент keyboard**: Преобразуется в компоненты Discord (строка действий + кнопки); модификатор `.Keyboard(rows)` принимает общую структуру
+- **Стандартные поля обратного вызова**: Событие INTERACTION_CREATE содержит `interaction_id` / `button_data`
+- **Принадлежность задач spawn_background**: Задачи подключения используют `runtime.spawn_background`
+- **Мягкая зависимость от фреймворка**: Время выполнения проверяет наличие ErisPulse>=2.7.1 и выводит предупреждение; при запуске выводится лог версии
 
-### Стандартные API-действия
+### Стандартные действия API
 
 ```python
 from ErisPulse import sdk
@@ -85,11 +114,12 @@ discord = sdk.adapter.get("discord")
 
 result = await discord.Api.get_self_info()                # GET /users/@me
 result = await discord.Api.get_user_info(user_id)         # GET /users/{id}
-result = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}
+result = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id} (используется data с guild_id / guild_name)
 result = await discord.Api.get_guild_list()               # GET /users/@me/guilds
+result = await discord.Api.get_channel_info(guild_id, channel_id)  # GET /channels/{id} (новая сигнатура с guild_id первым аргументом)
 result = await discord.Api.get_channel_list(guild_id)     # GET /guilds/{id}/channels
 result = await discord.Api.get_guild_member_info(gid, uid)
-await discord.Api.delete_message(message_id)              # Автоматически дополняется channel_id
+await discord.Api.delete_message(message_id)              # Таблица регистрации автоматически дополняет channel_id
 await discord.Api.leave_guild(guild_id)
 result = await discord.Api.Using("main").get_self_info()
 ```
@@ -97,7 +127,7 @@ result = await discord.Api.Using("main").get_self_info()
 ### Кнопки (keyboard / components)
 
 ```python
-rows = [[{"label": "Нажми", "type": "callback", "data": "btn:1"},
+rows = [[{"label": "Нажать", "type": "callback", "data": "btn:1"},
          {"label": "Сайт",  "type": "link",     "data": "https://example.com"}]]
 await discord.Send.To("channel", channel_id).Keyboard(rows).Text("Выберите")
 # Автоматически преобразуется в components: callback → custom_id / link → url
@@ -107,7 +137,7 @@ await discord.Send.To("channel", channel_id).Keyboard(rows).Text("Выберит
 
 ## Поддерживаемые типы отправки сообщений
 
-Все методы отправки реализованы с использованием цепочечного синтаксиса, например:
+Все методы отправки сообщений реализованы через цепочку вызовов, например:
 ```python
 from ErisPulse.Core import adapter
 discord = adapter.get("discord")
@@ -116,24 +146,24 @@ await discord.Send.To("group", channel_id).Text("Hello World!")
 ```
 
 Поддерживаемые типы отправки включают:
-- `.Text(text: str)` — отправка обычного текстового сообщения.
+- `.Text(text: str)` — отправка текстового сообщения.
 - `.Embed(embed: dict | list)` — отправка встраиваемого сообщения Embed, поддерживает одно или несколько Embed.
-- `.MergeForward(nodes, title="Объединённые сообщения")` — отправка объединённого сообщения (Embed: заголовок + каждое сообщение как поле, ≤25 полей, значение ≤1024).
+- `.MergeForward(nodes, title="Сообщения вложений")` — отправка сообщения с объединёнными вложениями (Embed: заголовок + каждое сообщение в поле, ≤25 полей, значение ≤1024).
 - `.Image(file: bytes | str, filename: str = "image.png")` — отправка изображения, поддерживает бинарные данные или URL.
 - `.File(file: bytes | str, filename: str = None)` — отправка файла, поддерживает бинарные данные или URL.
-- `.Reply(content: str, message_id: str)` — ответ на указанное сообщение (удобный метод для терминала).
+- `.Reply(content: str, message_id: str)` — ответ на указанное сообщение (удобный метод).
 - `.Raw_ob12(message: List[Dict], **kwargs)` — отправка сообщения в формате OneBot12.
 - `.Raw_json(json_str: str)` — отправка произвольного JSON-запроса Discord API.
 
-### Методы цепочечного модификатора (можно комбинировать)
+### Цепочные методы (можно комбинировать)
 
-Методы цепочечного модификатора возвращают `self`, поддерживают цепочечный вызов, должны вызываться перед окончательным методом отправки:
+Цепочные методы возвращают `self`, поддерживают цепочку вызовов, должны быть вызваны перед окончательным методом отправки:
 
 - `.Reply(message_id: str)` — ответ (ссылка) на указанное сообщение, устанавливает `message_reference`.
-- `.At(user_id: str)` — упоминание пользователя, преобразуется в `<@user_id>`, может вызываться несколько раз.
-- `.AtAll()` — упоминание всех участников, преобразуется в `@everyone`.
+- `.At(user_id: str)` — упоминание пользователя, преобразуется в `<@user_id>`, можно вызывать несколько раз.
+- `.AtAll()` — упоминание всех пользователей, преобразуется в `@everyone`.
 
-### Примеры цепочечного вызова
+### Примеры цепочечных вызовов
 
 ```python
 # Базовая отправка
@@ -142,14 +172,14 @@ await discord.Send.To("group", channel_id).Text("Hello")
 # Ответ на сообщение
 await discord.Send.To("group", channel_id).Reply(msg_id).Text("Ответ на сообщение")
 
-# Удобный ответ (одно действие)
+# Удобный ответ (в один шаг)
 await discord.Send.To("group", channel_id).Reply("Содержание ответа", msg_id)
 
 # Упоминание пользователя
 await discord.Send.To("group", channel_id).At("user_id").Text("Привет")
 
 # Упоминание нескольких пользователей
-await discord.Send.To("group", channel_id).At("user1").At("user2").Text("Несколько пользователей@")
+await discord.Send.To("group", channel_id).At("user1").At("user2").Text("Упоминание нескольких пользователей")
 
 # Упоминание всех
 await discord.Send.To("group", channel_id).AtAll().Text("Объявление")
@@ -186,7 +216,7 @@ await discord.Send.To("user", user_id).Embed(embed)
 # Отмена отправки сообщения
 await discord.Send.To("group", channel_id).Recall(msg_id)
 
-# Формат OneBot12
+# OneBot12 формат
 ob12_msg = [
     {"type": "text", "data": {"text": "Hello "}},
     {"type": "mention", "data": {"user_id": "user_id"}},
@@ -196,12 +226,12 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 
 ## Возвращаемые значения методов отправки
 
-Все методы отправки возвращают объект Task, который можно await-ом получить результат отправки. Возвращаемый результат соответствует стандартизированному формату возврата адаптера ErisPulse:
+Все методы отправки возвращают объект Task, который можно ожидать для получения результата отправки. Возвращаемые результаты соответствуют стандартизированному формату возвратов адаптера ErisPulse:
 
 ```python
 {
     "status": "ok",           // Статус выполнения: "ok" или "failed"
-    "retcode": 0,             // Код возврата (0 — успех)
+    "retcode": 0,             // Код возврата (0 — успешный)
     "data": {...},            // Оригинальный ответ Discord API
     "message_id": "xxx",      // ID сообщения (при отправке сообщения)
     "message": "",            // Сообщение об ошибке
@@ -215,42 +245,47 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 |---------|------|
 | 0 | Успешно |
 | 33001 | Ошибка сети (ошибка подключения, таймаут и т.д.) |
-| 34000 | Ошибка Discord API (недостаточно прав, неверные параметры и т.д.) |
+| 34100 | Платформа отклонила запрос (недостаточно прав, ошибка параметров и т.д., оригинальный ответ сохраняется в поле `discord_raw`) |
+| 10002 | Не поддерживаемое действие (см. раздел "Стандартизация (4.4.3)" в описании кодов ошибок) |
+| 10003 | Ошибка параметров (например, при отмене отсутствует соответствующий контекст сообщения) |
 
-## Уникальные типы событий
+## Специфические типы событий
 
-Необходимо использовать `platform == "discord"` для проверки и использования особенностей данной платформы.
+Необходимо использовать `platform == "discord"` для проверки и использования специфических функций данной платформы.
 
-### Основные различия
+### Основные отличия
 
-1. **Система серверов/каналов**: Discord использует двухуровневую структуру серверов (Guild) и каналов (Channel), канал является основной целью отправки сообщений
-2. **События Gateway**: Все события получают через WebSocket Gateway, используя механизм Opcode + Dispatch
-3. **Подписка на Intents**: Подписка на типы событий через bitmask, `MESSAGE_CONTENT` требует привилегированных прав
-4. **Типы сообщений**: Поддерживаются текст, изображение, файл, видео, аудио, Embed, Sticker и другие типы сообщений
+1. **Система серверов/каналов**: Discord использует двухуровневую структуру серверов (Guild) и каналов (Channel), канал является основным целевым объектом для отправки сообщений
+2. **События Gateway**: Все события получаются через WebSocket Gateway, механизм Opcode + Dispatch
+3. **Подписка на события**: Используется bitmask для подписки на типы событий, `MESSAGE_CONTENT` требует привилегированных прав
+4. **Типы сообщений**: Поддерживает текст, изображения, файлы, видео, аудио, Embed, Sticker и другие типы сообщений
 5. **Формат упоминания**: Discord использует формат `<@user_id>` для упоминания пользователей
 
 ### Расширенные поля
 
-Все дополнительные поля имеют префикс `discord_`:
+Все специфические поля обозначаются префиксом `discord_`:
 - `discord_raw`: Оригинальные данные события Discord
-- `discord_raw_type`: Имя оригинального типа события (например, `MESSAGE_CREATE`)
+- `discord_raw_type`: Оригинальное имя типа события (например, `MESSAGE_CREATE`)
 - `discord_guild_id`: ID сервера
 - `discord_channel_id`: ID канала
+- `discord_interaction`: Данные события взаимодействия (INTERACTION_CREATE)
 
-### Отображение detail_type
+### Сопоставление detail_type
 
-| Сцена Discord | detail_type | Описание |
+| Сценарий Discord | detail_type | Описание |
 |---|---|---|
-| Сообщение в канале | `channel` | Расширенный тип ErisPulse |
+| Канал сообщения | `channel` | Расширение ErisPulse |
 | Личное сообщение (DM) | `private` | Стандартный тип OneBot12 |
 
-### Отображение типов событий
+### Сопоставление типов событий
 
 | Событие Discord | OneBot12 type | detail_type | Описание |
 |---|---|---|---|
 | MESSAGE_CREATE | message | channel/private | Создание сообщения |
-| MESSAGE_UPDATE | message | channel/private | Редактирование сообщения |
-| MESSAGE_DELETE | notice | group_message_delete / private_message_delete | Удаление сообщения |
+| MESSAGE_UPDATE | message | channel/private | Редактирование сообщения (id имеет вид `MESSAGE_UPDATE:оригинальный_id`) |
+| MESSAGE_DELETE | notice | group_message_delete / private_message_delete | Удаление сообщения (id имеет вид `MESSAGE_DELETE:оригинальный_id`) |
+| MESSAGE_REACTION_ADD | notice | group_message_reaction_add | Добавление реакции (id имеет вид `MESSAGE_REACTION_ADD:оригинальный_id`) |
+| MESSAGE_REACTION_REMOVE | notice | group_message_reaction_remove | Удаление реакции (id имеет вид `MESSAGE_REACTION_REMOVE:оригинальный_id`) |
 | GUILD_MEMBER_ADD | notice | group_member_increase | Участник присоединился |
 | GUILD_MEMBER_REMOVE | notice | group_member_decrease | Участник покинул |
 | GUILD_MEMBER_UPDATE | notice | group_member_update | Обновление информации о участнике |
@@ -258,7 +293,9 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 | GUILD_ROLE_DELETE | notice | group_role_delete | Удаление роли |
 | CHANNEL_CREATE | notice | channel_create | Создание канала |
 | CHANNEL_DELETE | notice | channel_delete | Удаление канала |
-| INTERACTION_CREATE | request | interaction | Взаимодействие (кнопки, команды и т.д.) |
+| INTERACTION_CREATE | notice | discord_interaction | Взаимодействие (кнопки, команды и т.д.) |
+
+> Начиная с версии 4.4.3, идентификаторы несоздающих событий, таких как MESSAGE_UPDATE / MESSAGE_DELETE, REACTION_ADD / REMOVE и т.д., были изменены на формат `"имя_события:оригинальный_id"`, чтобы избежать конфликтов с идентификаторами событий MESSAGE_CREATE, которые могут быть удалены фреймворком.
 
 ### Примеры специальных полей
 
@@ -271,6 +308,11 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
   "user_nickname": "Имя пользователя",
   "group_id": "ID канала",
   "message_id": "ID сообщения",
+  "self": {
+    "platform": "discord",
+    "user_id": "ID бота",
+    "account_id": "default"
+  },
   "discord_raw": {...},
   "discord_raw_type": "MESSAGE_CREATE",
   "discord_guild_id": "ID сервера",
@@ -290,11 +332,11 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
   "message_id": "ID сообщения",
   "discord_raw": {...},
   "discord_raw_type": "MESSAGE_CREATE",
-  "discord_channel_id": "ID DM-канала",
+  "discord_channel_id": "ID канала DM",
   "message": [
-    {"type": "text", "data": {"text": "Содержимое личного сообщения"}}
+    {"type": "text", "data": {"text": "Содержание личного сообщения"}}
   ],
-  "alt_message": "Содержимое личного сообщения"
+  "alt_message": "Содержание личного сообщения"
 }
 
 # Сообщение с Embed
@@ -304,7 +346,7 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
   "message": [
     {"type": "discord_embed", "data": {"embed": {...}}}
   ],
-  "alt_message": "[Встроенное сообщение]"
+  "alt_message": "[Встраиваемое сообщение]"
 }
 
 # Сообщение с вложениями
@@ -321,22 +363,22 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 
 ### Типы сообщений
 
-Содержимое Discord-сообщений автоматически преобразуется в соответствующие типы сообщений на основе `content`, `attachments`, `embeds`:
+Содержимое Discord-сообщений автоматически преобразуется в соответствующие типы сообщений на основе полей `content`, `attachments`, `embeds`:
 
 | Источник | Тип преобразования | Описание |
 |---|---|---|
-| Текст content | `text` | Текстовое содержимое |
-| Текст content `<@id>` | `mention` | Упоминание пользователя |
-| Текст content `<@&id>` | `discord_role_mention` | Упоминание роли |
-| Текст content `<#id>` | `discord_channel_mention` | Упоминание канала |
-| attachments (image/*) | `image` | Вложение изображения |
-| attachments (video/*) | `video` | Вложение видео |
-| attachments (audio/*) | `audio` | Вложение аудио |
-| attachments (другое) | `file` | Вложение файла |
-| embeds | `discord_embed` | Встроенное сообщение |
-| sticker_items | `discord_sticker` | Наклейка |
+| Текст в content | `text` | Чистый текст |
+| Упоминания `<@id>` в content | `mention` | Упоминание пользователя |
+| Упоминания `<@&id>` в content | `discord_role_mention` | Упоминание роли |
+| Упоминания `<#id>` в content | `discord_channel_mention` | Упоминание канала |
+| Вложения (image/*) | `image` | Изображение |
+| Вложения (video/*) | `video` | Видео |
+| Вложения (audio/*) | `audio` | Аудио |
+| Вложения (другое) | `file` | Файл |
+| Вложения (embeds) | `discord_embed` | Встраиваемое сообщение |
+| Вложения (sticker_items) | `discord_sticker` | Стикер |
 
-### Сообщение типа discord_embed
+### Сообщения с типом discord_embed
 
 ```json
 {
@@ -362,38 +404,38 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 1. Вызов `GET /gateway/bot` для получения URL WebSocket Gateway
 2. Подключение к `wss://gateway.discord.gg/?v=10&encoding=json`
 3. Получение opcode 10 HELLO: содержит `heartbeat_interval`
-4. Отправка opcode 2 IDENTIFY: содержит token, intents, properties
-5. Начало цикла心跳: отправка opcode 1 Heartbeat с интервалом `heartbeat_interval`
-6. Получение opcode 0 Dispatch: событие распределения (`t`=имя события, `s`=номер, `d`=данные)
-7. Получение opcode 11 Heartbeat ACK: подтверждение心跳
+4. Отправка opcode 2 IDENTIFY: содержит token, intents и properties
+5. Начало цикла отправки heartbeat: отправлять opcode 1 Heartbeat с интервалом `heartbeat_interval`
+6. Получение opcode 0 Dispatch: событие dispatch (с полями `t`=имя события, `s`=номер, `d`=данные)
+7. Получение opcode 11 Heartbeat ACK: подтверждение heartbeat
 
 ### Описание Opcode
 
 | Opcode | Название | Направление | Описание |
 |--------|------|------|------|
-| 0 | Dispatch | Получение | Распределение событий (с полями `t`, `s`, `d`) |
-| 1 | Heartbeat | Отправка/Получение |心跳 (содержит последний seq) |
+| 0 | Dispatch | Прием | Распределение событий (с полями `t`, `s`, `d`) |
+| 1 | Heartbeat | Отправка/Прием | Heartbeat (содержит последний seq) |
 | 2 | Identify | Отправка | Аутентификация |
 | 6 | Resume | Отправка | Восстановление сессии |
-| 7 | Reconnect | Получение | Сервер требует переподключения |
-| 9 | Invalid Session | Получение | Недействительная сессия |
-| 10 | Hello | Получение | Приветствие подключения (с heartbeat_interval) |
-| 11 | Heartbeat ACK | Получение | Подтверждение心跳 |
+| 7 | Reconnect | Прием | Сервер требует переподключения |
+| 9 | Invalid Session | Прием | Невалидная сессия |
+| 10 | Hello | Прием | Приветствие подключения (содержит heartbeat_interval) |
+| 11 | Heartbeat ACK | Прием | Подтверждение heartbeat |
 
 ### Переподключение и RESUME
 
-- При разрыве соединения адаптер автоматически повторяет попытку подключения
-- Если ранее был `session_id`, сначала попытка RESUME (opcode 6) для восстановления сессии
-- RESUME содержит `token`, `session_id`, последний `seq`, после восстановления досылаются упущенные события
-- При получении opcode 7 (Reconnect) сохраняется состояние сессии и переподключение
-- При получении opcode 9 (Invalid Session) и `d=false` сессия удаляется и выполняется повторная идентификация
+- При разрыве соединения адаптер автоматически пытается переподключиться
+- Если ранее был `session_id`, сначала пытается восстановить сессию с помощью RESUME (opcode 6)
+- RESUME содержит `token`, `session_id`, последний `seq`, после восстановления дополняет пропущенные события
+- При получении opcode 7 (Reconnect) сохраняет состояние сессии и переподключается
+- При получении opcode 9 (Invalid Session) и `d=false`, сбрасывает сессию и выполняет новый IDENTIFY
 
-### Механизм心跳
+### Механизм heartbeat
 
-- После получения HELLO, после `heartbeat_interval * random()` миллисекунд отправляется первый heartbeat
-- Затем каждые `heartbeat_interval` миллисекунд отправляется heartbeat
-- heartbeat содержит последний `seq` (opcode 1, `d: seq`)
-- Если heartbeat отправлен, но в течение `heartbeat_interval` не получено ACK (opcode 11), считается, что соединение нестабильно, и выполняется переподключение
+- После получения HELLO, ждёт `heartbeat_interval * random()` миллисекунд и отправляет первый heartbeat
+- Затем отправляет heartbeat каждые `heartbeat_interval` миллисекунд
+- Heartbeat содержит последний `seq` (opcode 1, `d: seq`)
+- Если после отправки heartbeat в течение `heartbeat_interval` не получено подтверждение ACK (opcode 11), считается, что соединение нестабильно, и происходит переподключение
 
 ## Примеры использования
 
@@ -433,15 +475,15 @@ async def handle_private_msg(event):
     await discord.Send.To("user", user_id).Text(f"Вы сказали: {text}")
 ```
 
-### Отправка встроенного сообщения
+### Отправка встраиваемого сообщения
 
 ```python
 embed = {
     "title": "Объявление сервера",
-    "description": "Добро пожаловать в Discord-адаптер ErisPulse",
+    "description": "Добро пожаловать в ErisPulse Discord адаптер",
     "color": 3447003,
     "fields": [
-        {"name": "Версия", "value": "4.0.0", "inline": True},
+        {"name": "Версия", "value": "4.4.3", "inline": True},
         {"name": "Фреймворк", "value": "ErisPulse", "inline": True},
     ],
     "footer": {"text": "Powered by ErisPulse"},
@@ -466,21 +508,25 @@ async def handle(event):
 
     if embeds:
         await discord.Send.To("group", channel_id).Text(
-            f"Получено {len(embeds)} встроенных сообщений"
+            f"Получено {len(embeds)} встраиваемых сообщений"
         )
 ```
 
 ### Обработка событий взаимодействия
 
-```python
-from ErisPulse.Core.Event import request
+Начиная с 4.4.3, событие INTERACTION_CREATE распределяется как `notice` / `discord_interaction`:
 
-@request.on_request()
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
 async def handle_interaction(event):
     if event.get("platform") != "discord":
         return
+    if event.get("detail_type") != "discord_interaction":
+        return
 
-    interaction = event.get_interaction_data()
+    interaction = event.get_interaction_data()  # Эквивалентно event["discord_interaction"]
     if interaction.get("type") == 3:  # MESSAGE_COMPONENT
-        await event.reply("Кнопка была нажата!")
+        await event.reply("Кнопка нажата!")
 ```

@@ -6,8 +6,9 @@ BilibiliAdapter は bilibili-api-python をベースにした Bilibili ダイレ
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 0.1.0
+- 対応モジュールバージョン: 0.3.1
 - メンテナー: ErisPulse
+- 最終更新: 2026-11-10
 
 ## 基本情報
 
@@ -43,6 +44,41 @@ enabled = true
 **QRコードログインの流れ**：`login_mode = "qrcode"` を保存した後、Dashboard → コンポーネント設定 → アカウント追加ウィザードで「QRコードでBilibiliにログイン」を選択 → Bilibili アプリで QRコードをスキャン → スマホで確認 → アダプターがログイン状態をポーリング（scan → confirm → done）し、認証情報は自動的にそのアカウントの設定に書き込まれて有効になります。
 
 > アダプターは同時に `POST /bilibili/qr/start`（QRコードの取得、画像 URL + セッショントークンを返す）と `POST /bilibili/qr/poll`（ログイン状態のポーリング）のエンドポイントも登録しており、サードパーティのフロントエンドからも直接利用できます。ポーリングリクエストには start が返した `poll_token` を付与する必要があり、不正なポーリングを防止します。
+
+## 標準化への準拠
+
+本セクションでは、アダプターが ErisPulse 標準化仕様に準拠する動作について説明します。仕様の詳細は、SDK ドキュメント『API レスポンス規範』（`docs/ja/standards/api-response.md`）を参照してください。
+
+### Api.Using() アカウントルーティングの修正（0.3.1）
+
+`Api` DSL の各メソッドは以前、`Using()` で指定されたアカウントを正しく消費していませんでしたが、今回修正されました：明示的に `Using()` に渡された `_account_id` と、イベントチェーン上の `api_context`（イベント発生源アカウント）は、いずれも対応するアカウントの runtime に正しくルーティングされ、無効な場合は最初のアカウントにフォールバックします。
+
+### メッセージイベントへのトップレベル message_id の追加
+
+メッセージイベントにはトップレベルの `message_id` フィールド（`msg_key` から取得）が追加され、標準レスポンス構造と一致しているため、`Reply()` のチェーン修飾にそのまま使用できます。
+
+### エラーコードの標準化（0.3.1）
+
+bilibili_api の例外はクラスごとに分類されます：ネットワーク系例外（`NetworkException` など）は `33001` を返し、プラットフォームインターフェースエラーは `34100` を返します（従来の 34000/10004 は使用されなくなりました）。元のレスポンスは `bilibili_raw` に保持されます。
+
+| retcode | 説明 |
+|---------|------|
+| 0 | 成功 |
+| 10002 | サポートされていないアクション／メッセージセグメント |
+| 10003 | パラメータ／ターゲットエラー |
+| 33001 | ネットワークエラー（接続異常、タイムアウト） |
+| 34100 | Bilibili インターフェースエラー（元のレスポンスは `bilibili_raw` に保持されます） |
+
+### メタアクションの標準化
+
+- `get_self_info` / `get_user_info` の `data` には標準フィールドが含まれます：`user_id` / `user_name` / `user_displayname` / `user_remark`（Bilibili には備考の概念がないため、`user_remark` は常に空になります）および `avatar`
+- `get_version` は `{"impl": "ErisPulse-BilibiliAdapter", "version": "...", "onebot_version": "12"}` を返します
+- `get_supported_actions` はサポートされているアクション名のリストを返します
+
+### その他
+
+- `call_api` は標準フィールドの `account_id` と旧フィールド名の `_account_id` の両方を受け付けます（標準名が優先されます）；フレームワークの ApiDSL が自動的に適応します
+- Converter はフレームワークの `BaseConverter` を継承し、共通フィールド（id/time/platform/self/raw）はフレームワークによって統一的に構築されます
 
 ## メッセージ送信
 
@@ -103,10 +139,10 @@ bili = sdk.adapter.get("bilibili")
 # 自身の情報（ニックネーム/アバター/UID）
 result = await bili.Api.get_self_info()
 
-# ユーザーの公開情報（任意のユーザー、ニックネーム/アバター）
+# ユーザーの公開情報（任意のユーザーのニックネーム/アバター）
 result = await bili.Api.get_user_info("123456789")
 
-# 指定セッションの履歴メッセージを取得（begin_seqno はページ送りに使用）
+# 指定したセッションの履歴メッセージを取得（begin_seqno はページ送りに使用）
 result = await bili.Api.get_session_msgs("123456789", begin_seqno=0)
 
 # ステータスとバージョン
@@ -117,34 +153,45 @@ result = await bili.Api.get_version()
 result = await bili.Api.Using("account2").get_self_info()
 ```
 
-### 対応している標準アクション
+### サポートされている標準アクション
 
 | メソッド | 説明 | データソース |
 |------|------|---------|
 | `get_self_info()` | 自身の情報（mid/name/face） | Web API（スペース情報） |
 | `get_user_info(user_id)` | ユーザーの公開情報（ニックネーム/アバター） | Web API（ユーザー情報カード） |
-| `get_session_msgs(talker_id, begin_seqno)` | セッションの履歴メッセージ | Web DM インターフェース（session_msgs） |
+| `get_session_msgs(talker_id, begin_seqno)` | セッションの履歴メッセージ | Web ダイレクトメッセージ API（session_msgs） |
 | `get_status()` | アダプターの実行状態 | ローカル |
-| `get_version()` | アダプターのバージョン | ローカル |
+| `get_version()` | アダプターのバージョン（impl/version/onebot_version） | ローカル |
+| `get_supported_actions()` | サポートされているアクション名のリスト | ローカル |
 
-### 非対応の標準アクション
+### サポートされていない標準アクション
 
-以下の標準アクションは Bilibili DM に対応する機能がなく、呼び出すと `retcode=10002` が返されます：
+以下の標準アクションは Bilibili のダイレクトメッセージに対応する機能がないため、呼び出すと `retcode=10002` が返されます：
 
 - `get_friend_list` / `get_group_list` / `get_group_member_info`
-- `delete_message`（Bilibili DM では相手側のみが自分のメッセージを取り消せます）
+- `delete_message`（Bilibili のダイレクトメッセージでは、メッセージの取り消しは送信者本人のみ可能です）
 - `set_group_name` / `leave_group` などのグループ管理系
 
-### 汎用アクションエントリ
+### 汎用アクションのエントリポイント
 
 ```python
-# send_message：テキストと画像セグメントの組み合わせ送信（Send チェーンと同等）
+# send_message：テキストと画像セグメントを組み合わせて送信（Send チェーンと同等）
 result = await bili.call_api(
     "send_message",
-    _account_id="default",
+    account_id="default",
     target_id="123456789",
     message=[{"type": "text", "data": {"text": "hi"}}],
 )
+```
+
+### コンテンツ閲覧拡張アクション（エコシステムモジュール向け）
+
+`Api.call()` / `call_api()` を通じてコンテンツ閲覧拡張を提供します（`call_adapter_api` などのエコシステムモジュールで利用可能）：
+
+```python
+result = await bili.Api.call("get_user_dynamics", uid="123456789")   # ユーザーのダイナミック（簡略化されたエントリ）
+result = await bili.Api.call("search_video", keyword="キーワード", page=1)  # 動画検索
+result = await bili.Api.call("get_popular")                          # 人気コンテンツ
 ```
 
 ## 戻り値の形式
@@ -154,10 +201,10 @@ result = await bili.call_api(
 ```python
 {
     "status": "ok",              # ok / failed
-    "retcode": 0,                # 0 成功；10002 非対応；10003 パラメータ/ターゲットエラー；34000 Bilibili APIエラー
+    "retcode": 0,                # 0 成功；10002 非対応；10003 パラメータ/ターゲットエラー；33001 ネットワークエラー；34100 Bilibili API エラー
     "data": {...},               # レスポンスデータ（send_msg の生の戻り値）
     "self": {"platform": "bilibili", "user_id": "..."},
-    "message_id": "123456",      # Bilibili msg_key
+    "message_id": "123456",      # Bilibili の msg_key
     "message": "",               # エラーメッセージ
     "bilibili_raw": {...}        # 生のレスポンス
 }

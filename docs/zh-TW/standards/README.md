@@ -9,14 +9,13 @@
 
 ## 標準文件列表
 
-
 1. [會話類型標準](session-types.md) - ErisPulse 會話類型定義和映射規範
-2. [事件轉換標準](event-conversion.md) - 平台事件轉換規範、擴充命名規範、訊息段標準
-3. [API 回應標準](api-response.md) - 適配器 API 回應格式標準及擴充要求
-4. [傳送方法規範](send-method-spec.md) - Send 類別方法命名、參數規範及反向轉換要求
-5. [請求操作規範](request-action-spec.md) - 請求事件欄位要求、HandleRequest DSL 及適配器實作要求
+2. [事件轉換標準](event-conversion.md) - 平台事件轉換規範、擴展命名規範、訊息段標準
+3. [API 回應標準](api-response.md) - 適配器 API 回應格式標準及擴展要求
+4. [發送方法規範](send-method-spec.md) - Send 類方法命名、參數規範及反向轉換要求
+5. [請求操作規範](request-action-spec.md) - 請求事件欄位要求、Request DSL（approve/reject）、異構端點的請求類型上下文留存及適配器實現要求
 6. [API 動作標準](api-action-spec.md) - OneBot12 標準 API 動作統一介面（使用者/群組/頻道/訊息管理/檔案含分片/元動作）
-7. [適配器標準化指南（總綱）](standardization-guide.md) - 標準化原則/工作流程/命名規則 + 互動元件標準（按鈕鍵盤/互動回呼事件）與各平台映射
+7. [適配器標準化指南（總綱）](standardization-guide.md) - 標準化原則/工作流程/命名規則 + 互動元件標準（按鈕鍵盤/互動回調事件）與各平台映射
 
 ## 標準概述
 
@@ -84,54 +83,48 @@ ErisPulse 採用 OneBot12 作為核心事件標準，並在此基礎上進行了
 
 ## 標準遵循檢查清單
 
-
 ### 事件轉換
 
-
-- [ ] 所有標準欄位已正確映射
-- [ ] 平台特有欄位已加上前綴
-- [ ] 時間戳已轉換為 10 位秒級
-- [ ] 原始資料保存在 {platform}_raw
+- [ ] 所有標準字段已正確映射
+- [ ] 平台特有字段已添加前綴
+- [ ] 時間戳已轉換為10位秒級
+- [ ] 原始數據保存在 {platform}_raw
 - [ ] 原始事件類型保存在 {platform}_raw_type
-- [ ] 訊息段的 alt_message 已產生
-- [ ] 請求事件包含 request_id 欄位
+- [ ] 消息段的 alt_message 已生成
+- [ ] 請求事件包含 request_id 字段
 
-### API 回應
+### API 响應
 
+- [ ] 包含 status 字段
+- [ ] 包含 retcode 字段
+- [ ] 包含 data 字段
+- [ ] 包含 message_id 字段
+- [ ] 包含 message 字段
+- [ ] 返回碼遵循 OneBot12 規範
 
-- [ ] 包含 status 欄位
-- [ ] 包含 retcode 欄位
-- [ ] 包含 data 欄位
-- [ ] 包含 message_id 欄位
-- [ ] 包含 message 欄位
-- [ ] 回傳碼遵循 OneBot12 規範
-
-### 傳送方法命名
-
+### 發送方法命名
 
 - [ ] 使用大駝峰命名法（PascalCase）
-- [ ] 回傳 Task 物件
-- [ ] 修飾方法回傳 self
+- [ ] 返回 Task 對象
+- [ ] 修飾方法返回 self
 - [ ] 參數命名符合規範
 
-### 媒體傳送（Image / Voice / Video / File）
+### 媒體發送（Image / Voice / Video / File）
 
-
-- [ ] `file` 參數必須支援所有形態：HTTP(S) URL / 本機路徑 / `bytes`
-- [ ] `file` 參數應盡量支援各種形態：`file://` URI / Base64 / Data URI（無法支援時按降級階梯回傳 `retcode=10002`）
+- [ ] `file` 參數必須形態全部支援：HTTP(S) URL / 本地路徑 / `bytes`
+- [ ] `file` 參數應當形態盡量支援：`file://` URI / Base64 / Data URI（無法支援時按降級階梯返回 `retcode=10002`）
 - [ ] 形態判定順序符合規範（bytes → URL → `file://` → 路徑）
-- [ ] `File` 的檔案名稱按推導順序產生（明確指定的 `filename` > URL basename > 路徑 basename > 平台預設）
+- [ ] `File` 的檔案名按推導順序生成（顯式 `filename` > URL basename > 路徑 basename > 平台預設）
 - [ ] 平台媒體限制已在適配器文件中聲明
-- [ ] 不支援的媒體類型按降級階梯處理（近緣類型降級或 `retcode=10002`，不拋出例外、不靜默捨棄）
+- [ ] 不支援的媒體類型按降級階梯處理（近緣類型降級或 `retcode=10002`，不拋異常、不靜默丟棄）
 
-> 詳細協定見 [傳送方法規範 §2.1](send-method-spec.md#21-媒體訊息傳送協定image--voice--video--file)
+> 詳細協議見 [發送方法規範 §2.1](send-method-spec.md#21-%E5%AA%92%E9%AB%94%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E5%8D%8F%E8%AE%AEimage--voice--video--file)
 
 ### 請求操作
 
-
-- [ ] HandleRequest 類別已實作 _do_accept / _do_reject
-- [ ] 操作回傳標準 API 回應格式
-- [ ] 不支援的操作回傳 retcode=10002
+- [ ] Request 內部類已重寫 _do_accept / _do_reject（公開入口 accept()/reject() 勿重寫）
+- [ ] 操作返回標準 API 响應格式
+- [ ] 不支援的操作返回 retcode=10002
 
 ## 相關文件
 

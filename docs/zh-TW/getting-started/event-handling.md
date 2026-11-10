@@ -11,19 +11,18 @@ ErisPulse 支援以下事件類型：
 
 | 事件類型 | 說明 | 適用場景 |
 |---------|------|---------|
-| 消息事件 | 使用者發送的任何訊息 | 聊天機器人、內容過濾 |
+| 訊息事件 | 使用者傳送的任何訊息 | 聊天機器人、內容過濾 |
 | 命令事件 | 以命令前綴開頭的訊息 | 命令處理、功能入口 |
-| 通知事件 | 系統通知（好友添加、群成員變化等） | 歡迎訊息、狀態通知 |
+| 通知事件 | 系統通知（好友新增、群成員變化等） | 歡迎訊息、狀態通知 |
 | 請求事件 | 使用者請求（好友請求、群邀請） | 自動處理請求 |
-| 元事件 | 系統級事件（連接、心跳） | 連接監控、狀態檢查 |
+| 元事件 | 系統級事件（連線、心跳） | 連線監控、狀態檢查 |
 
-## 消息事件處理
+> 各類型均有泛型註冊器：`notice.on_notice()` / `request.on_request()` / `meta.on_meta()`
+> （接收該類型全部事件）；細分裝飾器（如 `on_group_increase`）只訂閱對應子類型，優先使用細分裝飾器。
 
-> **提示**: 建議在事件處理器中使用 `Event` 類型註解，以獲得 IDE 自動補全和類型檢查支援。
+## 訊息事件處理
 
-```python
-from ErisPulse.Core.Event import Event  # 導入事件類型用於註解
-```
+> **強烈建議**：為事件處理器的 `event` 參數加上 `Event` 型別註解——執行時不寫也能跑（框架分發時傳入的就是 Event 實例），註解服務於 IDE 補全與靜態檢查；為取得**模組/轉接器自訂方法**的補全，在專案根目錄執行一次 `epsdk types` 生成型別存根（見 [IDE 補全](../getting-started/ide-completion.md)）。
 
 ### 監聽所有訊息
 
@@ -37,53 +36,57 @@ async def message_handler(event: Event):
     sdk.logger.info(f"收到 {user_id} 的訊息: {text}")
 ```
 
-### 監聽私人訊息
+### 監聽私聊訊息
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_private_message()
 async def private_handler(event: Event):
     user_id = event.get_user_id()
-    await event.reply(f"你好，{user_id}！這是私人訊息。")
+    await event.reply(f"你好，{user_id}！這是私聊訊息。")
 ```
 
 ### 監聽群聊訊息
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_group_message()
 async def group_handler(event: Event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"群 {group_id} 中 {user_id} 發送了訊息")
+    sdk.logger.info(f"群 {group_id} 中 {user_id} 傳送了訊息")
 ```
 
 ### 監聽@訊息
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_at_message()
 async def at_handler(event: Event):
-    # 獲取被@的使用者列表
+    # 取得被@的使用者清單
     mentions = event.get_mentions()
     await event.reply(f"你@了這些使用者: {mentions}")
 ```
 
-### 通配符與正規表示式監聽
+### 萬用字元與正規表示式監聽
 
 四個訊息裝飾器（`on_message` / `on_private_message` / `on_group_message` /
-`on_at_message`）均支援 `pattern`（glob 通配符）與 `regex`（正規表示式），不匹配的訊息
+`on_at_message`）均支援 `pattern`（glob 萬用字元）與 `regex`（正規表示式），不符合的訊息
 **不會觸發**處理器：
 
 ```python
-# glob 通配符：* 任意串、? 單字元、[seq] 字元集
+from ErisPulse.Core.Event import Event
+# glob 萬用字元：* 任意字串、? 單一字元、[seq] 字元集
 @message.on_message(pattern="簽到*")
 async def signin_handler(event: Event):
     await event.reply("簽到成功")
 
-# 正規表示：匹配金額
+# 正規表示式：比對金額
 @message.on_message(regex=r"\d+\s*元")
 async def price_handler(event: Event):
     await event.reply(f"收到金額：{event.get_text()}")
 
-# pattern 與 regex 同時給出 → 兩者都須匹配
+# pattern 與 regex 同時給出 → 兩者皆須符合
 @message.on_message(pattern="*元", regex=r"\d+\s*元")
 async def combined_handler(event: Event):
     pass

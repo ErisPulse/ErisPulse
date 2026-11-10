@@ -124,14 +124,23 @@ The Dashboard integrates the module store feature, allowing you to:
 
 ## Process Supervision and Hard Restart
 
-ErisPulse's hard restart (`sdk.hard_restart()`) relies on an **external supervisor** to restart the process when the exit code is 42—the SDK itself does not restart a new process. In production environments, you must configure a supervisor; otherwise, the process will not automatically recover after a hard restart:
+ErisPulse's hard restart (`sdk.hard_restart()`) relies on an **external supervisor** to restart the process when the exit code is 42—the SDK itself does not restart a new process. In production environments, a supervisor must be configured; otherwise, the process will not automatically recover after a hard restart:
 
-- Docker: The official compose uses `restart: on-failure:5`—restarts on any non-zero exit code (overriding the hard restart exit code 42), with a limit of 5 consecutive attempts to prevent dead loops; to allow unlimited attempts, you can change it to `unless-stopped`
-- systemd: `Restart=on-failure` + `RestartForceExitStatus=42`
-- PM2 / supervisord: Add 42 to the list of restartable exit codes
-- Pure Python custom supervisor: Use a loop with `Popen` and check `returncode == 42`
+- Docker: The official compose uses `restart: on-failure:5`—this restarts on any non-zero exit code (overriding the hard restart exit code 42), with a limit of 5 consecutive attempts to prevent dead loops; to allow unlimited restarts, change it to `unless-stopped`.
+- systemd: Use `Restart=on-failure` + `RestartForceExitStatus=42`.
+- PM2 / supervisord: Add 42 to the list of restartable exit codes.
+- Pure Python custom supervisor: Use a loop with `Popen` and check if `returncode == 42`.
 
-Complete configuration examples for each supervisor and the exit code 42 contract are available in [Startup Flow → Supervisor Guide](../advanced/startup.md#Supervisor-Guide).
+For complete configuration examples for each supervisor and detailed explanations of the exit code 42 contract, see [Startup Flow → Supervisor Guide](../advanced/startup.md#supervisor-guide).
+
+### Restarting Inside Containers (PID 1 Instances)
+
+> This feature requires ErisPulse **2.12+**.
+
+When the framework runs as the main process inside a container (PID 1), `epsdk restart` **does not** terminate the process and restart it—terminating PID 1 causes the container to exit. Instead, a `SIGUSR1` signal is sent to the framework process, and the framework performs an in-process, component-level soft restart (`sdk.restart()`): newly installed adapters and upgraded module code via `ep i <package>` are immediately reloaded and take effect.
+
+- For a full process restart (e.g., framework updates, structural configuration changes), restart the container: `docker restart <container>`.
+- For PID 1 instances, `epsdk stop` still means termination—the container stops accordingly (whether it is automatically restarted depends on the `restart` policy).
 
 ## Health Check
 

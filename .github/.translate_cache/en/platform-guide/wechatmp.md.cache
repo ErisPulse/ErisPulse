@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "1568a93b78175b74ec638244c9d67247",
-  "file_hash": "1568a93b78175b74ec638244c9d67247",
-  "translated_at": "2026-10-19T09:21:51.891668",
+  "hash": "c30613c7a9577d38205fc748378b9f70",
+  "file_hash": "c30613c7a9577d38205fc748378b9f70",
+  "translated_at": "2026-11-10T04:55:50.641936",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,12 +10,16 @@
       "translation": "# WeChat MP Adapter - Platform Features Documentation"
     },
     {
-      "hash": "8d03ebf6fb75f1b343dd75a0aef750d7",
-      "translation": "## Basic Information\n- Module Name: `ErisPulse-WechatMpAdapter`\n- Platform Identifier: `mp` (Alias: `wechat_mp`)\n- Module Version: 4.3.0\n- Maintainer: ErisPulse\n- Dependencies: `cryptography`"
+      "hash": "8d6036b35faaff3c5baa315e90ddcbc8",
+      "translation": "## Basic Information\n- Module Name: `ErisPulse-WechatMpAdapter`\n- Platform Identifier: `mp` (Alias: `wechat_mp`)\n- Module Version: 4.3.2\n- Maintainer: ErisPulse\n- Last Updated: 2026-11-10\n- Dependencies: `cryptography`"
     },
     {
-      "hash": "c3e718ebdaa0d944a6d5e231bfc3b6b4",
-      "translation": "## v5 Paradigm Update (4.2.0)\n\n- **BaseConverter Inheritance**: Common fields of converters are built by the framework's build_base_event\n- **Api DSL Minimal Set**: get_self_info (appid) / get_status / get_version / get_supported_actions\n- **Framework Soft Dependency**: Runtime detection of ErisPulse>=2.7.1 with prompt; version logs output on startup\n\n---\n\n### Platform Capabilities Already Integrated\n\n- **Receiving**: Official account callback messages and events such as follow/unfollow (plaintext/secure mode), signature verification\n- **Sending**: Customer service messages (Text/Image, etc., via Send DSL)\n- **API**: Account information (appid) and runtime status (minimal set)\n\n---"
+      "hash": "26ae620bad5b04efa40537f36cdc30a0",
+      "translation": "## v5 Paradigm Update (4.2.0)\n\n- **BaseConverter Inheritance**: Common fields of converters are built by the framework's build_base_event\n- **Minimal Set of Api DSL**: get_self_info (appid) / get_status / get_version / get_supported_actions\n- **Framework Soft Dependency**: Runtime detection of ErisPulse>=2.7.1 with prompt; version logs output on startup"
+    },
+    {
+      "hash": "974ad0f261f280c746f512a80447212b",
+      "translation": "## Standardized Alignment (4.3.2)\n\nThe response structure and error codes follow the [API Response Specification](../standards/api-response.md).\n\n### Message Event Completion: message_id\n\nThe top-level message event is supplemented with the standard `message_id` field (using WeChat's MsgId; if missing, an empty string is used as a fallback). Modules no longer need to read from `mp_msg_id`.\n\n### Standard Response\n\nAll `call_api` / Send calls return a standard response: `status` / `retcode` / `data` / `message_id` / `message` + top-level `mp_raw`. **When passive replies are successful, `message` is an empty string** (`data.passive_reply=true` indicates interception as a passive reply).\n\n### Error Code Specification\n\n| retcode | Meaning | Description |\n|---------|---------|-------------|\n| 0 | Success | — |\n| 34100 | Platform Failure | WeChat API returned errcode != 0; **the original errcode is preserved in `mp_raw`**. Token acquisition failure is also categorized under this code |\n| 10003 | Parameter Error / Not Authenticated | Unauthenticated accounts (`verified=false`) calling customer service messages in non-passive reply contexts |\n\n### Accounts and Multi-Account Support\n\n- `call_api` supports dual-compatible account fields: `account_id` (standard name) / `_account_id` (old name), with the framework ApiDSL (`Api.Using(...)`) automatically adapting\n- `Send` reads from `send_context` (event account as fallback)\n- `get_self_info` supplements standard fields: `user_id` (official account AppID) / `user_name` / `user_displayname` (`wechatmp:{account name}`)\n\n---\n\n### Platform Capabilities Already Integrated\n\n- **Receiving**: Official account callback messages and events such as follow/unfollow (plaintext/safe mode), signature verification\n- **Sending**: Customer service messages (Text/Image, etc., via Send DSL)\n- **API**: Account information (appid) and operational status (minimal set)"
     },
     {
       "hash": "5a31f4da1ab530aebcecf5636951aa52",
@@ -34,8 +38,8 @@
       "translation": "## Event Extension Methods\n\nRegistered via `register_event_mixin(\"mp\", ...)`, allowing direct calls on event objects:\n\n| Method | Return Value | Description |\n|--------|--------------|-------------|\n| `get_openid()` | str | Sender's OpenID |\n| `get_msg_type()` | str | Original WeChat message type |\n| `get_event()` | str | Event type (only for event notifications) |\n| `get_content()` | str | Pure text content of the message |\n| `get_raw_xml()` | str | Raw XML data |"
     },
     {
-      "hash": "e703acfb172d5d5d53d27c404fb4bdf0",
-      "translation": "## Configuration Options\n\n### Multi-Account Configuration\n\nEach account corresponds to a public account:\n\n```toml\n[WechatMpAdapter.accounts.main]\nappid = \"wx1234567890abcdef\"\nappsecret = \"your_app_secret_here\"\ntoken = \"your_callback_token\"\nencoding_aes_key = \"\"                    # Required for secure mode/compatibility mode (43 characters)\ncallback_path = \"/mp/main\"               # Callback path\nverified = true                          # Whether it is a verified service account (affects active sending capability)\nenable = true\n\n[WechatMpAdapter.accounts.secondary]\nappid = \"wx0987654321fedcba\"\nappsecret = \"another_app_secret\"\ntoken = \"another_callback_token\"\ncallback_path = \"/mp/secondary\"\nenable = true\n```\n\n### Configuration Field Descriptions\n\n| Field | Required | Description |\n|-------|----------|-------------|\n| `appid` | Yes | Public account AppID |\n| `appsecret` | Yes | Public account AppSecret (secret) |\n| `token` | No | Callback verification Token (recommended to enable signature verification) |\n| `encoding_aes_key` | No | Message encryption/decryption key (43 characters, required for secure mode) |\n| `callback_path` | No | Callback path template, default `/mp/{account}`, `{account}` will be replaced by the account name |\n| `verified` | No | Whether it is a **verified service account**, default `true` (see below for details) |\n| `enable` | No | Whether to enable, default true |\n\n### Verified Service Account and Passive Reply (`verified`)\n\n- `verified = true` (default, verified service account): Can use **customer service messages** for active push (within a 48-hour window) and template messages at any time.\n- `verified = false` (unverified subscription account):\n  - Customer service messages / template messages can **only be sent within the passive reply context of a webhook** (within 15 seconds after receiving a user message, one reply only) — the adapter will automatically intercept and convert the sending into a passive reply.\n  - Active push (e.g., scheduled tasks) returns `retcode=34003` error."
+      "hash": "9dbabbec9035c085a7af69e126032a04",
+      "translation": "## Configuration Options\n\n### Multi-Account Configuration\n\nEach account corresponds to a WeChat Official Account:\n\n```toml\n[WechatMpAdapter.accounts.main]\nappid = \"wx1234567890abcdef\"\nappsecret = \"your_app_secret_here\"\ntoken = \"your_callback_token\"\nencoding_aes_key = \"\"                    # Required for secure or compatibility mode (43 characters)\ncallback_path = \"/mp/main\"               # Callback path\nverified = true                          # Whether it is a verified service account (affects active sending capability)\nenable = true\n\n[WechatMpAdapter.accounts.secondary]\nappid = \"wx0987654321fedcba\"\nappsecret = \"another_app_secret\"\ntoken = \"another_callback_token\"\ncallback_path = \"/mp/secondary\"\nenable = true\n```\n\n### Configuration Field Descriptions\n\n| Field | Required | Description |\n|-------|----------|-------------|\n| `appid` | Yes | Official Account AppID |\n| `appsecret` | Yes | Official Account AppSecret (secret) |\n| `token` | No | Callback verification token (recommended to enable signature verification) |\n| `encoding_aes_key` | No | Message encryption/decryption key (43 characters, required for secure mode) |\n| `callback_path` | No | Callback path template, default `/mp/{account}`, where `{account}` is replaced by the account name |\n| `verified` | No | Whether it is a **verified service account**, default `true` (see below for details) |\n| `enable` | No | Whether to enable, default true |\n\n### Verified Service Account and Passive Replies (`verified`)\n\n- `verified = true` (default, verified service account): Can use **customer service messages** to push actively (within a 48-hour window) and template messages at any time.\n- `verified = false` (unverified subscription account):\n  - Customer service messages / template messages **can only be sent within the webhook passive reply context** (within 15 seconds after receiving a user message, one reply only) — the adapter will automatically intercept and convert the send operation into a passive reply.\n  - Active push (e.g., scheduled tasks) returns `retcode=10003` error (not verified)."
     },
     {
       "hash": "aa50fccfb0318b3abe63534caeb53ae8",
@@ -46,8 +50,8 @@
       "translation": "## Callback Routes\n\nThe adapter registers two routes (GET + POST) for each enabled account:\n\n- **GET**: WeChat server access verification. After verifying the signature, it returns the `echostr`.\n- **POST**: Receives user messages and events. Verifies the signature → decrypts (if required) → converts → emits.\n\nThe actual access paths automatically include the module prefix. For example, if the registered path is `/mp/main`, the actual access paths will be `/mp_{account}_verify/mp/main` and `/mp_{account}_message/mp/main`."
     },
     {
-      "hash": "0d3b45708e831329d83b1324ac4eed5a",
-      "translation": "## API Response\n\nAll `call_api` calls return a standardized response:\n\n- Success: `status: \"ok\"`, `retcode: 0`\n- Failure: `status: \"failed\"`, `retcode: 34000+errcode`\n- Always includes `mp_raw` (raw response), `message_id`"
+      "hash": "b55d3a483fb6f82d6f7d2a4644737706",
+      "translation": "## API Response\n\nAll `call_api` calls return a standardized response:\n\n- Success: `status: \"ok\"`, `retcode: 0`\n- Failure: `status: \"failed\"`, `retcode: 34100` (platform failure; **original errcode is preserved in `mp_raw`**) or `10003` (parameter error / not authenticated)\n- Always includes `mp_raw` (raw response) and top-level `message_id` (empty string if missing)"
     }
   ]
 }

@@ -327,7 +327,7 @@ class MyAdapter(BaseAdapter):
 
 ### 配置管理
 
-框架提供了宣告式配置管理，透過 dataclass 定義配置結構，框架自動處理載入、驗證和範本產生。
+框架提供了宣告式配置管理，透過 dataclass 定義配置結構，框架自動處理載入、驗證和範本生成。
 
 #### 單帳戶配置
 
@@ -397,22 +397,22 @@ class MyAdapter(BaseAdapter):
 
 #### metadata 約定
 
-欄位 metadata 同時服務於 TOML 註解產生和 WebUI 表單渲染：
+欄位 metadata 同時服務於 TOML 註解生成和 WebUI 表單渲染：
 
 ```python
 metadata = {
     "description": str | dict,  # 欄位描述（支援 i18n）
     "required": bool,         # 是否必填（驗證 + WebUI 必填標記）
-    "secret": bool,           # 是否敏感（WebUI 顯示為 ***，日誌中遮蔽）
-    "example": bool,          # 不寫入磁碟標誌：不寫入 config.toml（預設值/範本均排除），
+    "secret": bool,           # 是否敏感（WebUI 顯示為 ***，日誌中脫敏）
+    "example": bool,          # 不落盤標誌：不寫入 config.toml（預設值/範本均排除），
                               # 僅渲染進 config.full.example；schema 帶 "example": true 標記，
                               # CLI 配置精靈預設跳過；使用者手動設定後正常持久化
     "min": number, "max": number,  # 數值範圍驗證
-    "ui": {                   # WebUI 控制項配置（舊名 "webui" 仍相容）
-        "widget": str,        # 控制項類型: "text" | "switch" | "select" | "number" | "password"
+    "ui": {                   # WebUI 控制元件配置（舊名 "webui" 仍相容）
+        "widget": str,        # 控制元件類型: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # 分組: "basic" | "advanced" | "connection" 等
         "order": int,         # 排序權重（越小越靠前）
-        "options": list,      # select 控制項的可選項目 [{label, value}]，label 支援 i18n
+        "options": list,      # select 控制元件的可選項 [{label, value}]，label 支援 i18n
         "placeholder": str | dict,  # 輸入框佔位符（支援 i18n）
     },
     "extra": dict,            # 額外擴充欄位（透傳到 schema）
@@ -420,16 +420,16 @@ metadata = {
 ```
 
 所有使用者可見的文字欄位均支援 i18n，統一採用 `{"i18n": "key", "default": "文字"}` 格式，
-純字串則原樣透傳（向後相容）。支援的 i18n 欄位：
+純字串則原樣透傳（向下相容）。支援的 i18n 欄位：
 
 | 欄位 | 位置 | 說明 |
 |------|------|------|
 | `description` | field metadata | 欄位描述 |
-| `options[].label` | `ui.options` | select 控制項選項標籤 |
+| `options[].label` | `ui.options` | select 控制元件選項標籤 |
 | `placeholder` | `ui.placeholder` | 輸入框佔位符 |
-| `group_labels` | `_schema_meta` | 分組顯示名稱（Dashboard 分區標題） |
+| `group_labels` | `_schema_meta` | 分組顯示名（Dashboard 分區標題） |
 
-使用 i18n 時，需提前將翻譯鍵註冊到 i18n 系統（詳見 [i18n 文件](../../advanced/i18n.md#配置字段多语言)）。
+使用 i18n 時，需提前將翻譯鍵註冊到 i18n 系統（詳見 [i18n 文件](../../advanced/i18n.md#配置欄位多語言)）。
 
 **description / placeholder / options label** 範例：
 
@@ -473,10 +473,10 @@ MyConfig._schema_meta = {
 框架的 `resolve_config_schema()` 會根據目前語言自動解析上述所有欄位的 i18n 鍵；
 `get_config_schema()` 則原樣透傳 i18n 字典，由前端自行解析。
 
-#### docstring 自動產生欄位描述（v2.8.0+）
+#### docstring 自動生成欄位描述（v2.8.0+）
 
 未在 metadata 中宣告 `description` 的欄位，框架會自動從配置類別 docstring 中
-提取欄位說明作為後備方案，支援兩種常見風格（可混用）：
+提取欄位說明作為後備，支援兩種常見風格（可混用）：
 
 ```python
 @dataclass
@@ -501,8 +501,8 @@ i18n 字典形式的 description 不受影響（始終優先）。
 
 #### 巢狀配置（v2.8.0+）
 
-欄位型別為巢狀 dataclass 時，框架遞迴處理：schema 以 `"type": "table"` +
-`"fields"` 子樹承載（WebUI 渲染為可摺疊的巢狀分組），TOML 範本渲染為 `[子表]` 節，
+欄位類型為巢狀 dataclass 時，框架遞迴處理：schema 以 `"type": "table"` +
+`"fields"` 子樹承載（WebUI 渲染為可摺疊巢狀分組），TOML 範本渲染為 `[子表]` 節，
 預設值 / 填充 / 驗證 / i18n 解析均遞迴生效。
 
 ```python
@@ -522,7 +522,7 @@ class MyConfig(BaseConfig):
     retry: RetryConfig = field(default_factory=RetryConfig)   # 巢狀配置段
 ```
 
-產生的 TOML 範本：
+生成的 TOML 範本：
 
 ```toml
 endpoint = "https://api.example.com"
@@ -533,34 +533,34 @@ max_retries = 3
 backoff = 0.5
 ```
 
-> 巢狀型別建議使用直接型別註解；字串註解（如延遲求值場景）需保證
-> 型別可從配置類別所在模組全域、`__qualname__` 外層類別命名空間或類別屬性中按名稱解析。
+> 巢狀類型建議使用直接型別註解；字串註解（如延遲求值場景）需保證
+> 型別可從配置類別所在模組全域、`__qualname__` 外層類別命名空間或類別屬性中按名解析。
 
-#### 不寫入磁碟的 example 欄位（v2.8.0+）
+#### 不落盤的 example 欄位（v2.8.0+）
 
 ```python
 gc_interval: int = field(default=300, metadata={"example": True})
 ```
 
-帶有 `example: True` 的欄位：
+帶 `example: True` 的欄位：
 
-- 不寫入 config.toml（適配器/模組配置範本與預設值均排除，執行時採用程式碼預設值）
-- 僅渲染進專案內的 `config.full.example`（供使用者參考，按需手動複製到 config.toml）
-- schema 中帶有 `"example": true` 標記（面板可自行決定展示策略），CLI 配置精靈預設跳過
-- 使用者手動設定該鍵後正常持久化、正常熱更新（使用者明確意圖優先）
+- 不寫入 config.toml（適配器/模組配置範本與預設值均排除，執行時走程式碼預設值）
+- 僅渲染進專案內 `config.full.example`（供使用者參考，按需手動複製到 config.toml）
+- schema 中帶 `"example": true` 標記（面板可自行決定展示策略），CLI 配置精靈預設跳過
+- 使用者手動設定該鍵後正常持久化、正常熱更新（使用者顯式意圖優先）
 
 適合「冗雜又很少觸碰」的進階配置項，保持使用者的 config.toml 最小化。
 
-> ⚠️ `_schema_meta` 是類別層級的元資料（非配置欄位）。若在 dataclass 類別主體內部宣告，
-> 必須加上 `ClassVar` 註解（`_schema_meta: ClassVar[dict] = {...}`），否則會被
+> ⚠️ `_schema_meta` 是類別層級元資料（非配置欄位）。若在 dataclass 類別主體內部宣告，
+> 必須加 `ClassVar` 註解（`_schema_meta: ClassVar[dict] = {...}`），否則會被
 > dataclass 視為普通欄位。框架對底線前綴欄位已做防禦性排除（不進入任何
 > schema / 範本 / 預設值 / 驗證輸出），但仍建議規範宣告。
 
 ### 宣告式翻譯鍵（v2.7.0+）
 
 適配器可以像宣告 `ConfigClass` 一樣，透過巢狀類別 `I18nClass` 集中宣告翻譯鍵。
-框架會在 `__init__` 階段（配置範本產生之前）自動註冊所有宣告的翻譯鍵，
-確保配置描述中引用的 i18n 鍵在產生範本時已可用。
+框架會在 `__init__` 階段（配置範本生成之前）自動註冊所有宣告的翻譯鍵，
+確保配置描述中引用的 i18n 鍵在生成範本時已可用。
 
 ```python
 from ErisPulse.Core.Bases import BaseAdapter, BaseI18n, I18nKey
@@ -569,7 +569,7 @@ class MyAdapter(BaseAdapter):
     class I18nClass(BaseI18n):
         endpoint: I18nKey = I18nKey(
             default="API Endpoint",
-            zh_CN="API 地址",
+            zh_CN="API 位址",
             zh_TW="API 位址",
             en="API Endpoint",
             ja="APIアドレス",
@@ -585,10 +585,10 @@ class MyAdapter(BaseAdapter):
         )
 ```
 
-> ``I18nKey.default`` 是**與語言無關的後備文字**，不會註冊到任何語言。
-> 要讓翻譯生效，必須明確傳入至少一個語言參數。
+> ``I18nKey.default`` 是**語言無關的後備文字**，不會註冊到任何語言。
+> 要讓翻譯生效，必須顯式傳入至少一個語言參數。
 
-詳細用法（鍵路徑規則、明確 key 參數等）見 [i18n 文件](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270)。
+詳細用法（鍵路徑規則、顯式 key 參數等）見 [i18n 文件](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
 
 ### 宣告式事件擴充方法（v2.7.0+）
 
@@ -624,20 +624,31 @@ async def handler(event):
 
 #### 帳戶解析
 
-適配器實作 `call_api` 時，需要將帳戶識別解析為具體的帳戶配置——`Send` / `Api` 鏈路傳入的 `account_id`（`Using()` 或事件鏈綁定的結果）即為解析目標：
+適配器實作 `call_api` 時，需要把帳戶標識解析為具體帳戶配置。框架把帳戶綁定（`Using()` 或事件鏈自動綁定的結果）以標準欄位 `account_id` 傳入 `call_api`，並按適配器的實際消費方式自動適配——三種消費形態任選其一，框架按簽名參數名與函式體常數探測，與參數位置無關：
 
 ```python
+# 形態一（推薦）：簽名宣告標準名
+async def call_api(self, endpoint: str, account_id: str | None = None, **params):
+    name, account = self._resolve_account(account_id)
+    # name: 帳戶名, account: 配置實例
+
+# 形態二（存量相容）：舊名 _account_id，框架自動把 account_id 改寫為舊名下發
+async def call_api(self, endpoint: str, _account_id: str | None = None, **params):
+    name, account = self._resolve_account(_account_id)
+
+# 形態三：函式體內從 params 取（被常數探測識別）
 async def call_api(self, endpoint: str, **params):
     account_id = params.pop("account_id", None)
     name, account = self._resolve_account(account_id)
-    # name: 帳戶名稱, account: 配置實例
 ```
 
-解析策略：帳戶名稱匹配 → `bot_id` 欄位匹配 → 其他 str 欄位匹配 → 第一個啟用的帳戶。
+> 適配器未消費帳戶欄位時，框架剔除該欄位（避免洩漏進平台參數）並提示一次 WARNING；單帳戶適配器可不消費（解析回退第一個啟用帳戶）。
+
+解析策略：帳戶名匹配 → `bot_id` 欄位匹配 → 其他 str 欄位匹配 → 第一個啟用帳戶。
 
 #### 配置熱更新
 
-子類別可覆寫 `on_config_update()` 以回應配置變更：
+子類別可覆寫 `on_config_update()` 回應配置變更：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -648,15 +659,15 @@ class MyAdapter(BaseAdapter):
             self.logger.info("Token 已更新，將重新連線")
 ```
 
-### 初始化流程
+### 初始化過程
 
 框架在 `BaseAdapter.__init__(self, sdk=None)` 中自動完成以下工作：
 
-1. **SDK 參考**：設定 `self.sdk`、`self.logger`
+1. **SDK 引用**：設定 `self.sdk`、`self.logger`
 2. **Send/Request 工廠**：建立 `self.Send` 和 `self.Request`
-3. **配置範本**：如果宣告了 `ConfigClass`，自動產生預設配置範本（首次）
-4. **帳戶範本**：如果宣告了 `AccountConfigClass`，自動產生預設帳戶範本（首次）
-5. **EventMixin 註冊**：如果宣告了 `EventMixin`，在 `AdapterManager` 注入平台名稱後自動註冊
+3. **配置範本**：如果宣告了 `ConfigClass`，自動生成預設配置範本（首次）
+4. **帳戶範本**：如果宣告了 `AccountConfigClass`，自動生成預設帳戶範本（首次）
+5. **EventMixin 註冊**：如果宣告了 `EventMixin`，在 `AdapterManager` 注入平台名後自動註冊
 
 配置透過 `self.cfg` / `self.accounts` 即時讀取（每次存取都從配置儲存讀取最新值）。`self.config` 作為 `self.cfg` 的相容別名仍可使用。
 
@@ -1075,9 +1086,9 @@ async def call_api(self, endpoint: str, **params):
 
 ## 多帳戶支援
 
-### 宣告式設定（建議）
+### 宣告式設定（推薦）
 
-使用 `AccountConfigClass` 宣告設定類別後，框架自動管理多帳戶載入、驗證和範本產生：
+使用 `AccountConfigClass` 宣告設定類別後，框架自動管理多帳戶載入、驗證和模板生成：
 
 ```python
 from dataclasses import dataclass, field
@@ -1096,8 +1107,7 @@ class MyAdapter(BaseAdapter):
             self.logger.info(f"啟動帳戶 {name}: {account.bot_id}")
             await self._connect(name, account)
     
-    async def call_api(self, endpoint: str, **params):
-        account_id = params.pop("account_id", None)
+    async def call_api(self, endpoint: str, account_id: str | None = None, **params):
         name, account = self._resolve_account(account_id)
         # 使用 account.token、account.bot_id 等欄位
 ```
@@ -1116,22 +1126,22 @@ token = "token2"
 enabled = true
 ```
 
-### 指定帳戶傳送
+### 指定帳戶發送
 
 ```python
 # 使用 Using 方法指定帳戶
 my_adapter = adapter.get("myplatform")
 
-# 透過事件中的 self.user_id（建議，最通用）
+# 透過事件中的 self.user_id（推薦，最通用）
 await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
 
-# 透過帳戶名稱
+# 透過帳戶名
 await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 ```
 
 ### 事件的帳戶標識與 Using 的關係
 
-框架的事件回覆機制會自動從事件的 `self` 欄位提取帳戶標識（優先 `account_id` 代位，否則 `user_id`），注入 `Using` 後傳送。適配器開發者需確保 Converter 產出的帳戶標識能與帳戶設定匹配（帳戶名稱或 `bot_id` 等欄位）。
+框架的事件回覆機制會自動從事件的 `self` 欄位提取帳戶標識（優先 `account_id` 代位，否則 `user_id`），注入 `Using` 後發送。適配器開發者需確保 Converter 產出的帳戶標識能與帳戶設定匹配（帳戶名或 `bot_id` 等欄位）。
 
 **框架注入行為**：
 
@@ -1144,13 +1154,13 @@ if account:
     send_chain = send_chain.Using(account)
 ```
 
-> **關鍵點**：即使適配器只使用一個 Bot 設定，只要 Converter 正確設定了帳戶標識，框架就會將其注入 `Using`。適配器需確保該標識與 `AccountConfigClass` 中的帳戶名稱或 `bot_id` 等欄位一致，從而解析到正確帳戶。標識為空時框架不注入 `Using`，此時傳送按未指定帳戶處理——回落第一個啟用的帳戶。
+> **關鍵點**：即使適配器只使用一個 Bot 設定，只要 Converter 正確設置了帳戶標識，框架就會將其注入 `Using`。適配器需確保該標識與 `AccountConfigClass` 中的帳戶名或 `bot_id` 等欄位一致，從而解析到正確帳戶。標識為空時框架不注入 `Using`，此時發送按未指定帳戶處理——回落第一個啟用的帳戶。
 
 顯式傳入的 `account_id` 無法解析時，框架記錄 WARNING 並回退到第一個啟用帳戶；WARNING 中的 `platform` / `account_id` / `account` 可用於定位未歸屬到帳戶的事件來源。
 
-**事件分發鏈內的自動綁定**：處理事件的鏈路內呼叫傳送方法時**無需顯式 `Using()`**——框架在事件分發入口把觸發事件的帳戶標識注入呼叫上下文，`Send` / `Api` / `Request` 鏈路未顯式指定帳戶時據此兜底綁定（顯式 `Using()` 永遠優先；定時器 / 啟動任務等無事件上下文情境維持預設帳戶語意）。
+**事件分發鏈內的自動綁定**：處理事件的鏈路內調用發送方法時**無需顯式 `Using()`**——框架在事件分發入口把觸發事件的帳戶標識注入調用上下文，`Send` / `Api` / `Request` 鏈路未顯式指定帳戶時據此兜底綁定（顯式 `Using()` 永遠優先；定時器 / 啟動任務等無事件上下文場景維持預設帳戶語義）。事件鏈自動綁定需要 ErisPulse **2.12+**。
 
-> 事件 `self.user_id` / `self.account_id` 代位的產出契約見[事件轉換標準](../../standards/event-conversion.md)；該欄位恆定存在是帳戶解析回退語意的前提——缺失時回落第一個啟用帳戶，多帳戶下即「從預設帳戶送出」。
+> 事件 `self.user_id` / `self.account_id` 代位的產出契約見[事件轉換標準](../../standards/event-conversion.md)；該欄位恆定存在是帳戶解析回退語義的前提——缺失時回落第一個啟用帳戶，多帳戶下即「從預設帳戶發出」。
 
 ## 错误处理
 

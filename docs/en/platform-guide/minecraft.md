@@ -4,10 +4,11 @@ MinecraftAdapter is a Minecraft Java Edition server adapter based on the RCON pr
 
 ---
 
-## Documentation Info
+## Documentation Information
 
-- Corresponding module version: 0.1.0
+- Corresponding Module Version: 0.1.2
 - Maintainer: ErisPulse
+- Last Updated: 2026-11-10
 
 ## Basic Information
 
@@ -50,6 +51,44 @@ enabled = true
 - `enable_log_tail`: Log event switch (disabled by default). When disabled, the adapter operates in pure command mode (send only, no events generated)
 - `log_path`: Log file path. Requires the adapter and the server to **run on the same machine**, or the log directory to be mounted; supports log rotation (automatically resets the read position after latest.log rotation)
 - `poll_interval`: Log scan interval (seconds, minimum 0.2)
+
+## Standardized Alignment
+
+This section outlines the behaviors of the adapter that align with the ErisPulse standardization specification. For detailed specifications, refer to the SDK documentation "API Response Specification" (`docs/en/standards/api-response.md`).
+
+### Api.Using() Account Route Fix (0.1.2)
+
+Previously, methods in the `Api` DSL did not correctly consume the account specified by `Using()`. This has now been fixed: explicitly passed `_account_id` in `Using()` and `api_context` from the event chain (the account from which the event originated) can both correctly route to the corresponding server's runtime. When omitted, the fallback is the first account.
+
+### Message Event Top-Level message_id Addition
+
+Message events now include a top-level `message_id` field (UUID; tellraw/say do not have a real message ID, so this is a generated message identifier).
+
+### Join/Leave Event detail_type Standardization (0.1.2)
+
+The `detail_type` of player join/leave events has been standardized from `server_joined` / `server_left` to `group_member_increase` / `group_member_decrease`, with the original type preserved in `sub_type`:
+
+| Native Type | Standardized detail_type | sub_type |
+|-------------|--------------------------|----------|
+| server_joined | `group_member_increase` | `server_joined` |
+| server_left | `group_member_decrease` | `server_left` |
+
+### Extended Action Standardization (0.1.2)
+
+Extended actions provide a call form with a platform prefix, while old method names are retained for compatibility:
+
+- `Api.call("minecraft.get_player_list")` / `call_api("minecraft.get_player_list")` (old `get_player_list` retained)
+- `Api.call("minecraft.exec", command="...")` / `call_api("minecraft.exec", ...)` (old `exec` retained)
+
+### Meta-Action Standardization
+
+- `get_self_info`'s `data` includes standard fields: `user_id` / `user_name` / `user_displayname` and `host`
+- `get_version` returns `{"impl": "ErisPulse-MinecraftAdapter", "version": "...", "onebot_version": "12"}`
+- `get_supported_actions` returns a list of supported action names
+
+### Other
+
+- `call_api` accepts both the standard field `account_id` and the old field name `_account_id` (standard name takes precedence); the framework ApiDSL automatically adapts
 
 ## Message Sending
 
@@ -103,8 +142,10 @@ await mc.Send.Using("server2").To("server", "s2").Text("From the second server")
 from ErisPulse import sdk
 mc = sdk.adapter.get("minecraft")
 
-# Online player list (parses the output of the `list` command)
+# Online player list (parse output of list command)
 result = await mc.Api.get_player_list()       # {"players": ["Steve", "Alex"], "raw": "..."}
+# Can also use extended action form with prefix
+result = await mc.Api.call("minecraft.get_player_list")
 
 # Connection status
 result = await mc.Api.get_status()            # {"status": "ok", "connected": true}
@@ -122,15 +163,16 @@ result = await mc.Api.Using("server2").get_player_list()
 ### Supported Standard Actions
 
 | Method | Description | Data Source |
-|--------|-------------|-------------|
+|------|------|---------|
 | `get_status()` | RCON connection status | Local |
 | `get_self_info()` | Server identity (bot_id/account name/host:port) | Local |
-| `get_player_list()` | Online player list (parses the output of the `list` command) | RCON |
-| `get_version()` | Adapter version | Local |
+| `get_player_list()` | Online player list (parse `list` command output; extended name `minecraft.get_player_list`) | RCON |
+| `get_version()` | Adapter version (impl/version/onebot_version) | Local |
+| `get_supported_actions()` | List of supported action names | Local |
 
-### Platform Extension Actions
+### Platform Extended Actions
 
-Execute arbitrary RCON commands via `Api.exec(cmd)` (equivalent to `call_api("exec", command=...)`):
+Execute arbitrary RCON commands via `Api.exec(cmd)` (equivalent to `call_api("minecraft.exec", command=...)`, old name `exec` retained for compatibility):
 
 ```python
 # Whitelist management
@@ -147,22 +189,22 @@ await mc.Api.exec("kick Steve")
 await mc.Api.exec("scoreboard objectives add kills deathCount")
 ```
 
-> **Security Reminder**: `Api.exec` carries full server console privileges (including stop/deop, etc.); do not expose unauthenticated entry points to untrusted callers.
+> **Security Warning**: `Api.exec` has full server console privileges (including stop/deop, etc.). Do not expose unauthenticated entry points to untrusted callers.
 
 ### Unsupported Standard Actions
 
-The following standard actions have no corresponding RCON capability; calls return `retcode=10002` or `33001` (not connected):
+The following standard actions are not supported by RCON and return `retcode=10002` or `33001` (not connected):
 
-- `delete_message` (Minecraft has no message recall)
+- `delete_message` (Minecraft does not support message deletion)
 - `get_friend_list` / `get_group_list` (use `get_player_list` instead)
 
-### Generic Action Entry
+### General Action Entry Point
 
 ```python
-# send_message: equivalent to the Send chain
+# send_message: equivalent to Send chain
 result = await mc.call_api(
     "send_message",
-    _account_id="default",
+    account_id="default",
     target_type="user", target_id="Steve",
     message=[{"type": "text", "data": {"text": "hi"}}],
 )
@@ -184,17 +226,17 @@ result = await mc.call_api(
 
 ## Event Types (enable_log_tail = true)
 
-Detect with `platform == "minecraft"` before using these platform features. **The RCON protocol cannot receive chat events** (it is a pure request-response protocol); the event side relies on log listening.
+The `platform == "minecraft"` check is required to use platform-specific features. **The RCON protocol does not receive chat events** (it is a pure request-response protocol), and event handling depends on log tailing.
 
 ### Event Mapping
 
 | Server Log Line | Adapter Event | Description |
 |-----------------|---------------|-------------|
-| `[12:34:56] [...]: <Steve> Hello` | message (`detail_type: server`) | Player chat |
-| `[12:35:00] [...]: Alex joined the game` | notice (`detail_type: server_joined`) | Player joined |
-| `[12:36:00] [...]: Alex left the game` | notice (`detail_type: server_left`) | Player left |
+| `[12:34:56] [...]: <Steve> 你好` | message (`detail_type: server`) | Player chat |
+| `[12:35:00] [...]: Alex joined the game` | notice (`detail_type: group_member_increase`, `sub_type: server_joined`) | Player joined |
+| `[12:36:00] [...]: Alex left the game` | notice (`detail_type: group_member_decrease`, `sub_type: server_left`) | Player left |
 
-### Event Field Example
+### Event Field Examples
 
 ```python
 # Chat
@@ -206,17 +248,18 @@ Detect with `platform == "minecraft"` before using these platform features. **Th
   "platform": "minecraft",
   "self": {"platform": "minecraft", "user_id": "mc1", "user_name": "mc1", "account_id": "default"},
   "user_id": "Steve",                      # Player name
-  "message": [{"type": "text", "data": {"text": "Hello world"}}],
-  "alt_message": "Hello world",
+  "message": [{"type": "text", "data": {"text": "Hello World"}}],
+  "alt_message": "Hello World",
   "group_id": "mc1",                       # bot_id
-  "minecraft_raw": {"line": "[12:34:56] [Server thread/INFO]: <Steve> Hello world"},
+  "minecraft_raw": {"line": "[12:34:56] [Server thread/INFO]: <Steve> Hello World"},
   "minecraft_raw_type": "log_line"
 }
 
 # Join (notice)
 {
   "type": "notice",
-  "detail_type": "server_joined",          # or server_left
+  "detail_type": "group_member_increase",  # group_member_decrease for leave
+  "sub_type": "server_joined",             # native type preserved in sub_type (server_left for leave)
   "user_id": "Alex",
   "operator_id": "Alex",
   "group_id": "mc1",
@@ -225,9 +268,9 @@ Detect with `platform == "minecraft"` before using these platform features. **Th
 }
 ```
 
-### Echo Deduplication
+### Loopback Deduplication
 
-The echo of `say` / `tellraw` commands is also written to the log. The adapter records a content fingerprint at send time (30-second window); when the same content appears in the log, emission is skipped to prevent messages sent by the bot from looping back as received events.
+The echo of `say` / `tellraw` commands is also written to the log. The adapter records the content fingerprint (30-second window) when sending; if the same content appears in the log, it skips emission to avoid the bot's own messages being treated as received events in a loop.
 
 ## Notes
 

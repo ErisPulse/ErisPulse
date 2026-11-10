@@ -208,7 +208,7 @@
               "icon": "fa-bolt-lightning"
             },
             {
-              "title": "モジュール開発ベストプラクティス",
+              "title": "モジュール開発のベストプラクティス",
               "path": "developer-guide/modules/best-practices.md",
               "level": 1,
               "icon": "fa-award"
@@ -220,7 +220,7 @@
           "icon": "fa-network-wired",
           "documents": [
             {
-              "title": "アダプタ開発入門",
+              "title": "アダプター開発入門",
               "path": "developer-guide/adapters/getting-started.md",
               "level": 1,
               "icon": "fa-network-wired"
@@ -265,37 +265,37 @@
           "icon": "fa-server"
         },
         {
-          "title": "OneBot11プラットフォーム特徴ドキュメント",
+          "title": "OneBot11プラットフォームの機能ドキュメント",
           "path": "platform-guide/onebot11.md",
           "level": 1,
           "icon": "fa-comments"
         },
         {
-          "title": "OneBot12プラットフォーム仕様ドキュメント",
+          "title": "OneBot12プラットフォームの機能ドキュメント",
           "path": "platform-guide/onebot12.md",
           "level": 1,
           "icon": "fa-comments"
         },
         {
-          "title": "Telegramプラットフォーム特徴ドキュメント",
+          "title": "Telegramプラットフォーム特性ドキュメント",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
         },
         {
-          "title": "メールプラットフォームの機能ドキュメント",
+          "title": "メールプラットフォーム機能ドキュメント",
           "path": "platform-guide/email.md",
           "level": 1,
           "icon": "fa-envelope"
         },
         {
-          "title": "雲湖プラットフォームの特徴ドキュメント",
+          "title": "云湖プラットフォームの特徴ドキュメント",
           "path": "platform-guide/yunhu.md",
           "level": 1,
           "icon": "fa-cloud"
         },
         {
-          "title": "雲湖ユーザープラットフォーム特徴ドキュメント",
+          "title": "云湖用户平台特性文档",
           "path": "platform-guide/yunhu_user.md",
           "level": 1,
           "icon": "fa-user"
@@ -307,13 +307,13 @@
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Kookプラットフォームの機能ドキュメント",
+          "title": "Kookプラットフォームの特徴ドキュメント",
           "path": "platform-guide/kook.md",
           "level": 1,
           "icon": "fa-headset"
         },
         {
-          "title": "Matrixプラットフォームの機能ドキュメント",
+          "title": "Matrixプラットフォーム特性ドキュメント",
           "path": "platform-guide/matrix.md",
           "level": 1,
           "icon": "fa-th-large"
@@ -331,13 +331,13 @@
           "icon": "fa-mobile-screen"
         },
         {
-          "title": "プラットフォームの機能説明 — Webhook 一般的なブリッジアダプター",
+          "title": "Webhook 通用橋接アダプタープラットフォームの機能ドキュメント",
           "path": "platform-guide/webhook.md",
           "level": 1,
           "icon": "fa-link"
         },
         {
-          "title": "花楓カフェ（RockyChat）プラットフォームの機能ドキュメント",
+          "title": "花枫咖啡館（RockyChat）プラットフォーム機能ドキュメント",
           "path": "platform-guide/ideaura.md",
           "level": 1,
           "icon": "fa-wand-magic-sparkles"
@@ -355,19 +355,19 @@
           "icon": "fa-plug"
         },
         {
-          "title": "Minecraft プラットフォーム機能ドキュメント",
+          "title": "Minecraftプラットフォーム特徴ドキュメント",
           "path": "platform-guide/minecraft.md",
           "level": 1,
           "icon": "fa-plug"
         },
         {
-          "title": "Sandboxプラットフォームの特徴ドキュメント",
+          "title": "Sandbox プラットフォーム機能ドキュメント",
           "path": "platform-guide/sandbox.md",
           "level": 1,
           "icon": "fa-plug"
         },
         {
-          "title": "SnowLuma プラットフォーム機能ドキュメント",
+          "title": "SnowLumaプラットフォーム機能ドキュメント",
           "path": "platform-guide/snowluma.md",
           "level": 1,
           "icon": "fa-plug"
@@ -485,7 +485,7 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "所有権（owner）システム",
+          "title": "帰属システム",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
@@ -629,7 +629,7 @@
           "icon": "fa-arrow-right-arrow-left"
         },
         {
-          "title": "アダプタ標準化変換規格",
+          "title": "アダプタ標準変換規格",
           "path": "standards/event-conversion.md",
           "level": 1,
           "icon": "fa-shuffle"
@@ -653,7 +653,7 @@
           "icon": "fa-bolt"
         },
         {
-          "title": "アダプター標準化ガイド（概要）",
+          "title": "アダプター標準化ガイド（総綱）",
           "path": "standards/standardization-guide.md",
           "level": 1,
           "icon": "fa-gavel"

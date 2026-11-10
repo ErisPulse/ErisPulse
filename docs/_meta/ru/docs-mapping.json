@@ -202,7 +202,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Подробное объяснение Event-обертки",
+              "title": "Документация по классу Event",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -265,7 +265,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "Документация по функциям платформы OneBot11",
+          "title": "Документация по особенностям платформы OneBot11",
           "path": "platform-guide/onebot11.md",
           "level": 1,
           "icon": "fa-comments"
@@ -277,7 +277,7 @@
           "icon": "fa-comments"
         },
         {
-          "title": "Документация по функциям Telegram-платформы",
+          "title": "Документация по функциям Telegram",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
@@ -295,7 +295,7 @@
           "icon": "fa-cloud"
         },
         {
-          "title": "Документация по функциям платформы пользователей Yunhu",
+          "title": "Документация по возможностям пользовательской платформы Yunhu",
           "path": "platform-guide/yunhu_user.md",
           "level": 1,
           "icon": "fa-user"
@@ -313,31 +313,31 @@
           "icon": "fa-headset"
         },
         {
-          "title": "Документация по функциональным возможностям платформы Matrix",
+          "title": "Документация по функциям платформы Matrix",
           "path": "platform-guide/matrix.md",
           "level": 1,
           "icon": "fa-th-large"
         },
         {
-          "title": "Документация по функциям платформы Discord",
+          "title": "Документация по функциональным возможностям платформы Discord",
           "path": "platform-guide/discord.md",
           "level": 1,
           "icon": "fa-gamepad"
         },
         {
-          "title": "Адаптер WeChatMp - Документация по функциональности платформы",
+          "title": "Адаптер официального аккаунта WeChat (WechatMp) — документация по особенностям платформы",
           "path": "platform-guide/wechatmp.md",
           "level": 1,
           "icon": "fa-mobile-screen"
         },
         {
-          "title": "Описание функциональных возможностей платформы — универсальный адаптер-мост Webhook",
+          "title": "Документация по возможностям платформы универсального мостового адаптера Webhook",
           "path": "platform-guide/webhook.md",
           "level": 1,
           "icon": "fa-link"
         },
         {
-          "title": "Документация по функционалу платформы RockyChat",
+          "title": "Документация по возможностям платформы «Кафе Хуафэн» (RockyChat)",
           "path": "platform-guide/ideaura.md",
           "level": 1,
           "icon": "fa-wand-magic-sparkles"
@@ -373,7 +373,7 @@
           "icon": "fa-plug"
         },
         {
-          "title": "Документация по функциям платформы Terminal",
+          "title": "Документация по функциональным возможностям платформы Terminal",
           "path": "platform-guide/terminal.md",
           "level": 1,
           "icon": "fa-plug"
@@ -485,7 +485,7 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "Система собственности (owner)",
+          "title": "Система принадлежности (owner)",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
@@ -623,13 +623,13 @@
           "icon": "fa-layer-group"
         },
         {
-          "title": "Стандарт спецификации возвращаемых значений адаптеров ErisPulse",
+          "title": "Спецификация стандартизированных ответов адаптеров ErisPulse",
           "path": "standards/api-response.md",
           "level": 1,
           "icon": "fa-arrow-right-arrow-left"
         },
         {
-          "title": "Стандартизированные правила преобразования адаптеров",
+          "title": "Спецификация стандартизированной конвертации адаптеров",
           "path": "standards/event-conversion.md",
           "level": 1,
           "icon": "fa-shuffle"
@@ -641,19 +641,19 @@
           "icon": "fa-paper-plane"
         },
         {
-          "title": "Стандарты операций запросов ErisPulse",
+          "title": "Спецификация операций запросов ErisPulse",
           "path": "standards/request-action-spec.md",
           "level": 1,
           "icon": "fa-hand-paper"
         },
         {
-          "title": "Стандарт действий API ErisPulse",
+          "title": "Стандартные действия ErisPulse API",
           "path": "standards/api-action-spec.md",
           "level": 1,
           "icon": "fa-bolt"
         },
         {
-          "title": "Руководство по стандартизации адаптеров (общее руководство)",
+          "title": "Руководство по стандартизации адаптеров (общий план)",
           "path": "standards/standardization-guide.md",
           "level": 1,
           "icon": "fa-gavel"

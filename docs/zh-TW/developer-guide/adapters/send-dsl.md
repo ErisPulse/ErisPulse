@@ -586,11 +586,11 @@ flowchart TD
     D --> E["Raw_ob12 返回 asyncio.create_task(...)"]
     E --> F["寫 [Send] 日誌"]
     F --> G["emit message.sending（fire-and-forget）"]
-    G --> H{"宣告了發送規則？"}
+    G --> H{"聲明了發送規則？"}
     H -->|"否"| I["Task done_callback → emit message.sent"]
     H -->|"是"| J["apply_send_rules 包成外層 Task<br/>重試/超時/延遲/優先級"]
     J --> I
-    I --> K["await 得到標準回應 dict"]
+    I --> K["await 得到標準響應 dict"]
 ```
 
 **每一步框架做了什麼：**
@@ -599,7 +599,7 @@ flowchart TD
 |------|-------------|
 | 鏈式合併 | `To`/`Using`/`Account` 每次調用都**新建不可變實例**並繼承已設字段，因此 `To(...).Using(...)` 與 `Using(...).To(...)` **等價**、順序無關 |
 | 方法包裝 | 發送方法（`Text` 等）被 `__getattribute__` 拦截包一層；修飾方法（`To`/`Using`/`At`/`Retry` 等）**不包裝**。嵌套的 `Raw_ob12` 調用靠 `_in_rule_wrap` 標記防重複包裝 |
-| Task 建立 | `Raw_ob12` 內部 `asyncio.create_task()` 才是 Task 真正的建立點；`Text()` 只是同步返回這個 Task，**不阻塞** |
+| Task 創建 | `Raw_ob12` 內部 `asyncio.create_task()` 才是 Task 真正的創建點；`Text()` 只是同步返回這個 Task，**不阻塞** |
 | 發送日誌 | 寫 `[Send] platform/method -> target` 事件日誌（`exclude_levels=["EVENT"]` 可屏蔽） |
 | `message.sending` | 發送方法被調用時**立即**以 fire-and-forget 觸發（僅當存在監聽者，先 `has_handlers` 短路） |
 | `message.sent` | 綁定在 Task 的 `done_callback` 上——**有規則時覆蓋整個重試流程的最終結果**，無規則時即原始 Task 完成 |
@@ -618,6 +618,8 @@ flowchart TD
 > 你傳的 `account_id` 來自：`Using()` 明確指定（含 `event.reply()` 自動注入的 `self.user_id` / `self.account_id` 代位）> **事件分發鏈兜底**（處理事件時未明確指定的發送，自動綁定觸發事件的帳戶）> 不指定（預設帳戶語義，定時器 / 啟動任務等無事件上下文場景）。
 
 ### 無感語法糖
+
+> 「事件鏈內免 `Using()`」「代位帳戶名路由」需要 ErisPulse **2.12+**。
 
 | 語法糖 | 觸發條件 | 效果 |
 |--------|----------|------|
@@ -642,7 +644,7 @@ flowchart TD
 
 > **注意**：重試是「立即重發」，沒有退避間隔；若平台限流需要退避，請在 `on_error` 回調裡自行 sleep 後再手動重發。規則的成功判定以返回 dict 的 `status == "ok"` 為準（`retcode == 0`）。
 
-> 標準回應格式與 `retcode` 完整語義見 [API 回應規範](../../standards/api-response.md)。
+> 標準響應格式與 `retcode` 完整語義見 [API 響應規範](../../standards/api-response.md)。
 
 ## 返回值
 

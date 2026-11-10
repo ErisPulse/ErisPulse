@@ -1,24 +1,24 @@
-# アダプタ標準化変換規格
+# アダプタ標準変換規格
 
 > [!TIP]
-> **このドキュメントを読むタイミング**：アダプタ内でプラットフォーム固有のイベントを OneBot12 標準イベントに変換する際、必須フィールド、メッセージセグメント構造、拡張フィールド命名規則（`{platform}_` 付き）、会話タイプの推論を確認する必要がある場合。不要であればスキップしてください。
+> **このドキュメントを読むべきタイミング**：アダプタ内でプラットフォームのネイティブイベントを OneBot12 標準イベントに変換する際、必須フィールド、メッセージセグメント構造、拡張フィールド命名規則（`{platform}_` プレフィックス）、会話タイプの推論を確認する必要がある場合。不要であれば飛ばしてください。
 
 ## 1. 核心原則
 
-1. 厳密な互換性：すべての標準フィールドは OneBot12 規格に完全に準拠する
-2. 明確な拡張：プラットフォーム固有の機能は `{platform}_` 付きのプレフィックスを付与する（例：yunhu_form）
-3. データの完全性：元のイベントデータは `{platform}_raw` フィールドに保持され、元のイベントタイプは `{platform}_raw_type` フィールドに保持される
-4. 時間の統一：すべてのタイムスタンプは10桁のUnixタイムスタンプ（秒単位）に変換される
-5. プラットフォームの統一：`platform` フィールドの命名は、ErisPulse で登録したプラットフォーム名/別称と一致する
+1. **厳密な互換性**：すべての標準フィールドは OneBot12 規格に完全に準拠する。
+2. **明確な拡張**：プラットフォーム固有の機能は `{platform}_` プレフィックスを付ける（例：yunhu_form）。
+3. **データの完全性**：元のイベントデータは `{platform}_raw` フィールドに、元のイベントタイプは `{platform}_raw_type` フィールドに保持する。
+4. **時間の統一**：すべてのタイムスタンプは 10 位の Unix タイムスタンプ（秒単位）に変換する。
+5. **プラットフォームの統一**：`platform` 項目の命名は、ErisPulse に登録した名前/別称と一致する。
 
 ## 2. 標準フィールド要件
 
 ### 2.1 必須フィールド
-| フィールド | タイプ | 説明 |
+| フィールド | 型 | 説明 |
 |------|------|------|
-| id | string | イベントの一意識別子 |
-| time | integer | Unixタイムスタンプ（秒単位） |
-| type | string | イベントタイプ |
+| id | string | イベントの一意な識別子 |
+| time | integer | Unix タイムスタンプ（秒単位） |
+| type | string | イベントのタイプ |
 | detail_type | string | イベントの詳細タイプ（[会話タイプ標準](session-types.md)を参照） |
 | sub_type | string | イベントのサブタイプ |
 | platform | string | プラットフォーム名 |
@@ -26,44 +26,44 @@
 | self.platform | string | プラットフォーム名 |
 | self.user_id | string | ロボットのユーザーID |
 
-> **OneBot12 基準**：`self.platform` / `self.user_id` とメッセージイベントの `message_id` は OneBot12 基準で定義されたフィールドであり、フレームワークは基準定義を直接採用し、独自の拡張キー（`self.account_id` は限定拡張キー、user_id を取得する前に動的アカウントの代位識別子として使用、§6を参照）を追加しない。
+> **OneBot12 基準**：`self.platform` / `self.user_id` とメッセージイベントの `message_id` は OneBot12 基準で定義されたフィールドであり、フレームワークは基準定義を直接採用し、独自の拡張キー（`self.account_id` は動的アカウントが user_id を取得する前に代用する限定拡張キー、§6 を参照）を導入しない。
 
-**detail_type 標準**：
-- ErisPulse 標準会話タイプを使用する必要があります（[会話タイプ標準](session-types.md)を参照）
+**detail_type 規格**：
+- ErisPulse 標準会話タイプを使用する（[会話タイプ標準](session-types.md)を参照）
 - 対応するタイプ：`private`, `group`, `user`, `channel`, `guild`, `thread`
-- アダプタは、プラットフォーム固有のタイプを標準タイプにマッピングする責任があります
+- アダプタは、プラットフォームのネイティブタイプを標準タイプにマッピングする。
 
 ### 2.2 メッセージイベントフィールド
-| フィールド | タイプ | 説明 |
+| フィールド | 型 | 説明 |
 |------|------|------|
-| message_id | string | メッセージID（OneBot12 基準で必須、アダプタはイベントのルートに生成する必要があります） |
-| message | array | メッセージセグメント配列 |
+| message_id | string | メッセージID（OneBot12 基準必須フィールド、アダプタはイベントの最上層に生成する） |
+| message | array | メッセージセグメントの配列 |
 | alt_message | string | メッセージセグメントの代替テキスト |
 | user_id | string | ユーザーID |
 | user_nickname | string | ユーザーのニックネーム（オプション） |
 
 ### 2.3 通知イベントフィールド
-| フィールド | タイプ | 説明 |
+| フィールド | 型 | 説明 |
 |------|------|------|
 | user_id | string | ユーザーID |
 | user_nickname | string | ユーザーのニックネーム（オプション） |
 | operator_id | string | 操作者のID（オプション） |
 
 ### 2.4 要求イベントフィールド
-| フィールド | タイプ | 説明 |
+| フィールド | 型 | 説明 |
 |------|------|------|
 | user_id | string | ユーザーID |
 | user_nickname | string | ユーザーのニックネーム（オプション） |
-| comment | string | 要求の付言（オプション） |
-| request_id | string | 要求識別子（**強く推奨**、同意/拒否操作に使用） |
+| comment | string | 要求のコメント（オプション） |
+| request_id | string | 要求の識別子（**強く推奨**、同意/拒否操作に使用） |
 
 **`request_id` フィールドの説明**：
-- `request_id` は要求イベントの唯一の操作識別子であり、`HandleRequest` DSL を通じて同意/拒否操作に使用されます
-- アダプタは、要求イベントを変換する際に、プラットフォーム固有の要求識別子をこのフィールドにマッピングする必要があります
-- プラットフォームに要求IDがない場合、アダプタはユニークな識別子（例：タイムスタンプ+ユーザーIDのハッシュ）を生成する必要があります
-- `request_id` が欠落している場合、`event.approve()` / `event.reject()` は `ValueError` をスローします
+- `request_id` は要求イベントの唯一の操作識別子であり、`Request` DSL を通じて同意/拒否操作に使用される。
+- アダプタは、プラットフォームのネイティブの要求識別子をこのフィールドにマッピングする。
+- プラットフォームに要求IDがない場合、アダプタはユニークな識別子（例：タイムスタンプ+ユーザーIDのハッシュ）を生成する。
+- `request_id` が欠落している場合、`event.approve()` / `event.reject()` は `ValueError` をスローする。
 
-## 3. イベントフォーマットの例
+## 3. イベント形式の例
 
 ### 3.1 メッセージイベント (message)
 ```json
@@ -144,44 +144,44 @@
 
 ### 4.1 標準メッセージセグメント
 
-標準メッセージセグメントにはプラットフォームのプレフィックスは**不要**です。
+標準メッセージセグメントにはプラットフォームのプレフィックスを付けない。
 
 | タイプ | 説明 | data フィールド |
 |------|------|----------|
 | `text` | 純テキスト | `text: str` |
 | `image` | 画像 | `file`, `url: str` |
 | `voice` | 音声（即時録音の音声、`audio` とは区別） | `file`, `url: str` |
-| `audio` | 音楽（再生可能な音声ファイル、`voice` とは区別） | `file`, `url: str` |
+| `audio` | 音楽（再生可能な音楽ファイル、`voice` とは区別） | `file`, `url: str` |
 | `video` | 動画 | `file`, `url: str` |
 | `file` | ファイル | `file`, `url: str`, `filename: str` |
-| `mention` | ユーザーを@する | `user_id: str`, `user_name: str` |
-| `mention_all` | 全員を@する | data フィールドなし |
-| `reply` | メッセージを返信する | `message_id: str`, `user_id: str`（返信元の送信者、適切に記入） |
-| `location` | 位置情報 | `latitude: float`, `longitude: float`, `title: str`（オプション）, `content: str`（オプション） |
+| `mention` | @ユーザー | `user_id: str`, `user_name: str` |
+| `mention_all` | @全員 | data フィールドなし |
+| `reply` | 返信 | `message_id: str`, `user_id: str`（返信の元送信者、受信方向はアダプタが可能な限り記入） |
+| `location` | 位置 | `latitude: float`, `longitude: float`, `title: str`（オプション）, `content: str`（オプション） |
 | `face` | 表情（ErisPulse 跨プラットフォーム拡張セグメント） | `id: str` |
-| `keyboard` | ボタン/インラインキーボード（ErisPulse 跨プラットフォーム拡張セグメント） | `rows: list[list[button]]`（4.1.1参照） |
+| `keyboard` | ボタン/インラインキーボード（ErisPulse 跨プラットフォーム拡張セグメント） | `rows: list[list[button]]`（4.1.1 参照） |
 
-> **OneBot12 基準とのフィールドマッピング**：メディアセグメント（`image` / `voice` / `audio` / `video` / `file`）は OneBot12 基準では `file_id: str` です。本標準の `file`（送信形態の超集合：URL / ローカルパス / bytes）と `url`（受信回線）は、アダプタがプラットフォームの `file_id` リソースに双方向マッピングします。`face` / `keyboard` は OneBot12 基準の拡張セグメントです。
+> **OneBot12 基準とのフィールドマッピング**：メディアセグメント（`image` / `voice` / `audio` / `video` / `file`）は OneBot12 基準では `file_id: str` である。本標準の `file`（送信形態の超集合：URL / 本地パス / bytes）と `url`（受信回路）は、アダプタによってプラットフォームの `file_id` リソースに双方向にマッピングされる。`face` / `keyboard` は OneBot12 基準の外の拡張セグメントである。
 
 **メディアセグメント `file` フィールド形式**（送信方向、`image` / `audio` / `video` / `file` に共通）：
 
 | 形態 | 例 | アダプタの要件 |
 |------|------|-----------|
 | HTTP(S) URL | `https://example.com/a.png` | **必須** |
-| ローカルファイルパス | `/tmp/a.png`、`C:\tmp\a.png` | **必須** |
-| 二進データ | `bytes` | **必須** |
+| 本地ファイルパス | `/tmp/a.png`、`C:\tmp\a.png` | **必須** |
+| 二進数データ | `bytes` | **必須** |
 | `file://` URI / Base64 / Data URI | `file:///tmp/a.png`、`data:image/png;base64,...` | **推奨** |
 
-> 完全なメディア送信プロトコル（形態判定順序、ファイル名推論、能力降格ステップ）は
-> [送信メソッド規格 §2.1](send-method-spec.md#21-媒体メッセージ送信プロトコルimage--voice--video--file) を参照してください。
+> 完全なメディア送信プロトコル（形態判定順序、ファイル名推論、能力降格の段階）は
+> [送信方法規格 §2.1](send-method-spec.md#21-媒体消息发送协议image--voice--video--file) を参照。
 
-**フィールドの方向性の意味**：
+**フィールドの方向意味**：
 
-- `file`：**送信方向**のコンテンツソース（上記の形態）；**受信方向**はアダプタが可能な形態を記入する
-  （通常はダウンロード可能なURL、または `get_file` などのアクションで利用可能なリソース識別子）
-- `url`：受信方向のプラットフォーム回線（アダプタがイベントを変換する際に可能な限り記入し、モジュールが直接利用できるようにする）；送信方向は記入しなくてもよい
-- `filename`：`file` セグメントのファイル名（送信方向はオプション、省略時はアダプタが
-  [送信メソッド規格 §2.1.3](send-method-spec.md) の推論順序に従って生成する；受信方向は**プラットフォームの元のファイル名を記入する**）
+- `file`：**送信方向**のコンテンツソース（上記の形態）；**受信方向**はアダプタが可能な限りプラットフォームで取得可能な形態を記入する
+  （通常はダウンロード可能な URL、または `get_file` 類のアクションで利用可能なリソース識別子）
+- `url`：受信方向のプラットフォームの回路（アダプタがプラットフォームのイベントを変換する際に可能な限り記入し、モジュールが直接取得できるようにする）；送信方向は記入しなくてもよい
+- `filename`：`file` セグメントのファイル名（送信方向はオプション、欠落時はアダプタが
+  [送信方法規格 §2.1.3](send-method-spec.md) の推論順序に従って生成する；受信方向は**プラットフォームの元のファイル名を記入する**）
 
 ```json
 {
@@ -194,7 +194,8 @@
 
 ### 4.1.1 keyboard ボタン/インラインキーボードセグメント（跨プラットフォーム共通）
 
-複数のプラットフォーム（Telegram / 云湖 / QQBot / Kook / Discord 等）には、ボタン/インラインキーボード機能が存在し、**跨プラットフォーム共通の概念**であるため、標準メッセージセグメントとして扱い、プラットフォーム固有の拡張セグメント（例：`telegram_inline_keyboard`）はそのまま透かします。
+ボタン/インラインキーボードは、Telegram / 云湖 / QQBot / Kook / Discord 等の複数のプラットフォームで対応しており、**跨プラットフォーム共通概念**であるため、標準メッセージセグメント（プラットフォームのプレフィックスなし）として扱う。アダプタは標準セグメントを
+プラットフォームのネイティブ構造に変換する。プラットフォームのネイティブ拡張セグメント（例：`telegram_inline_keyboard`）はそのまま透かす。
 
 ```json
 {
@@ -202,8 +203,8 @@
   "data": {
     "rows": [
       [
-        {"label": "選択肢A", "type": "callback", "data": "vote:A"},
-        {"label": "公式サイト", "type": "link", "data": "https://example.com"}
+        {"label": "选项A", "type": "callback", "data": "vote:A"},
+        {"label": "官网",   "type": "link",     "data": "https://example.com"}
       ]
     ]
   }
@@ -212,44 +213,44 @@
 
 **フィールドの説明**：
 
-| フィールド | タイプ | 必須 | 説明 |
+| フィールド | 型 | 必須 | 説明 |
 |------|------|------|------|
-| `rows` | 2次元配列 | 是 | 各サブ配列が1行のボタン |
-| `rows[][].label` | str | 是 | ボタンの表示テキスト |
-| `rows[][].type` | str | 是 | `callback`（クリックでデータを返す）/ `link`（URLに移動） |
-| `rows[][].data` | str | 是 | コールバックデータ（type=callback）または移動先アドレス（type=link） |
-| `rows[][].*` | Any | 否 | プラットフォーム固有のオプションフィールド（例：`web_app`、`menus`）、アダプタが能力に応じてマッピングまたは無視する |
+| `rows` | 二次元配列 | はい | 各サブ配列が一行のボタン |
+| `rows[][].label` | str | はい | ボタンの表示テキスト |
+| `rows[][].type` | str | はい | `callback`（クリックでデータを戻す）/ `link`（URL にジャンプ） |
+| `rows[][].data` | str | はい | コールバックデータ（type=callback）またはジャンプアドレス（type=link） |
+| `rows[][].*` | Any | いいえ | プラットフォーム特有のオプションフィールド（例：`web_app`、`menus`）、アダプタは能力に応じてマッピングまたは無視する |
 
-**アダプタ変換の参考**（完全なマッピングとインタラクティブイベントの標準は [跨プラットフォームインタラクティブコンポーネント標準](standardization-guide.md) を参照）：
+**アダプタの変換参考**（完全なマッピングとインタラクティブコールバックイベントの標準は [跨プラットフォームインタラクティブコンポーネント標準](standardization-guide.md) を参照）：
 
-| プラットフォーム | 標準セグメント → プラットフォーム固有 |
+| プラットフォーム | 標準セグメント → プラットフォームのネイティブ |
 |------|------------------|
 | Telegram | `inline_keyboard`：`[{text, callback_data \| url}]` |
-| 云湖 | `buttons`：`[{label, action_type: 2=コールバック \| 1=移動, ...}]` |
-| QQBot | `keyboard.content.rows`：`[{label, type: 2=コールバック \| 0=移動, data}]`（markdown形式のメッセージが必要） |
+| 云湖 | `buttons`：`[{label, action_type: 2=コールバック \| 1=ジャンプ, ...}]` |
+| QQBot | `keyboard.content.rows`：`[{label, type: 2=コールバック \| 0=ジャンプ, data}]`（markdown メッセージ形式が必要） |
 | Kook | カードの action-group モジュール |
 | Discord | components：`action_row` + `buttons`（custom_id/url） |
 
 ### 4.2 プラットフォーム拡張メッセージセグメント
 
-プラットフォーム固有のメッセージセグメントにはプラットフォームのプレフィックスを付与する必要があります：
+プラットフォーム固有のメッセージセグメントにはプラットフォームのプレフィックスを付ける：
 
 ```json
 // 云湖 - フォーム
-{"type": "yunhu_form", "data": {"form_id": "123456", "form_name": "応募フォーム"}}
+{"type": "yunhu_form", "data": {"form_id": "123456", "form_name": "报名表"}}
 
 // Telegram - ステッカー
 {"type": "telegram_sticker", "data": {"file_id": "CAACAgIAAxkBAA...", "emoji": "😂"}}
 ```
 
 **拡張メッセージセグメントの要件**：
-1. **data 内部のフィールドにプレフィックスを付けない**：`{"type": "yunhu_form", "data": {"form_id": "..."}}` ではなく `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
-2. **降格対応**：モジュールが拡張メッセージセグメントを認識できない場合、アダプタは `alt_message` にテキスト代替を提供する
-3. **ドキュメントの充実**：各拡張メッセージセグメントは、`type`、`data` 構造、使用場面をアダプタのドキュメントに明記する
+1. **data 内部のフィールドはプレフィックスを付けない**：`{"type": "yunhu_form", "data": {"form_id": "..."}}` ではなく `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
+2. **降格のソリューションを提供する**：モジュールが拡張メッセージセグメントを認識できない場合、アダプタは `alt_message` にテキストの代替を提供する
+3. **ドキュメントの完全性**：各拡張メッセージセグメントは、`type`、`data` の構造、使用場面をアダプタのドキュメントで説明する必要がある
 
 ## 5. 未知イベントの処理
 
-認識できないイベントタイプは、警告イベントとして生成する必要があります：
+認識できないイベントタイプに対しては、警告イベントを生成する：
 ```json
 {
   "id": "1234567893",
@@ -258,8 +259,8 @@
   "platform": "yunhu",
   "yunhu_raw": {...},
   "yunhu_raw_type": "unknown",
-  "warning": "サポートされていないイベントタイプ: special_event",
-  "alt_message": "このイベントタイプはこのシステムではサポートされていません。"
+  "warning": "Unsupported event type: special_event",
+  "alt_message": "This event type is not supported by this system."
 }
 ```
 
@@ -272,7 +273,7 @@
 **ルール**：`{platform}_{field_name}`
 
 ```
-プラットフォームプレフィックス    フィールド名            完全フィールド名
+プラットフォーム前缀    フィールド名            完全フィールド名
 ────────    ───────          ──────────
 yunhu       command           yunhu_command
 telegram    sticker_file_id   telegram_sticker_file_id
@@ -281,32 +282,32 @@ email       subject           email_subject
 ```
 
 **要件**：
-- `platform` はアダプタ登録時のプラットフォーム名と完全一致（大文字小文字を区別）
-- `field_name` は `snake_case` で命名
+- `platform` はアダプタ登録時のプラットフォーム名と完全一致する（大文字小文字を区別）
+- `field_name` は `snake_case` 命名を使用
 - `__` で始まる名前は禁止（Python が予約）
-- 標準フィールド名（例：`type`、`time`、`message` など）と重複しない
+- 標準フィールド（例：`type`、`time`、`message` など）と同名の名前は禁止
 
 ### 6.2 メッセージセグメントタイプ命名
 
 **ルール**：`{platform}_{segment_type}`
 
-標準メッセージセグメントタイプ（`text`、`image`、`audio`、`video`、`mention`、`reply` など）には**プラットフォームプレフィックスを付けない**。プラットフォーム固有のメッセージセグメントタイプのみにプレフィックスを付与する。
+標準メッセージセグメントタイプ（`text`、`image`、`audio`、`video`、`mention`、`reply` など）は**プラットフォームのプレフィックスを付けない**。プラットフォーム固有のメッセージセグメントタイプのみプレフィックスを付ける。
 
-### 6.3 元データフィールド命名
+### 6.3 原始データフィールド命名
 
-以下のフィールド名は**予約フィールド**であり、すべてのアダプタは遵守する必要があります：
+以下のフィールド名は**予約フィールド**であり、すべてのアダプタは以下の要件を遵守する：
 
-| 予約フィールド | タイプ | 説明 |
+| 予約フィールド | 型 | 説明 |
 |---------|------|------|
-| `{platform}_raw` | `any` | プラットフォーム元イベントデータの完全コピー |
-| `{platform}_raw_type` | `string` | プラットフォーム元イベントタイプ識別子 |
+| `{platform}_raw` | `any` | プラットフォームの元のイベントデータの完全なコピー |
+| `{platform}_raw_type` | `string` | プラットフォームの元のイベントタイプの識別子 |
 
 **要件**：
-- `{platform}_raw` は元データの深いコピー（参照ではなく）
-- `{platform}_raw_type` は文字列で、プラットフォームが数値型を使用している場合も文字列に変換する
-- この2つのフィールドはすべてのイベントで**必ず存在する**（取得できない場合は `null` と空文字列 `""`）
+- `{platform}_raw` は元のデータの深いコピー（参照ではなく）である必要がある
+- `{platform}_raw_type` は文字列である必要がある（プラットフォームが数値型を使用している場合も文字列に変換する）
+- これらのフィールドはすべてのイベントで**存在する必要がある**（取得できない場合は `null` と空文字列 `""` とする）
 
-### 6.4 プラットフォーム特有フィールドの例
+### 6.4 プラットフォーム特有のフィールドの例
 
 ```json
 {
@@ -325,7 +326,7 @@ email       subject           email_subject
 
 ### 6.5 嵌套拡張フィールド
 
-拡張フィールドは単純な値でも、ネストされたオブジェクトでも構成できます：
+拡張フィールドは単純な値でも、ネストされたオブジェクトでもよい：
 
 ```json
 {
@@ -341,30 +342,30 @@ email       subject           email_subject
 }
 ```
 
-**ネストフィールドの要件**：
-- トップレベルのキーはプラットフォームプレフィックスを付ける
-- ネストされた内部フィールドには**プラットフォームプレフィックスを付けない**
-- ネストの深さは3層以下を推奨
+**ネストされたフィールドの要件**：
+- トップレベルのキーにはプラットフォームのプレフィックスを付ける
+- ネストされた内部のフィールドには**プラットフォームのプレフィックスを付けない**
+- ネストの深さは 3 層を超えないように推奨
 
 ### 6.6 `self` フィールドの拡張
 
-`self` オブジェクトの標準必須フィールド（`platform`、`user_id`）は §2.1 を参照。以下は ErisPulse が拡張したオプションフィールドです：
+`self` オブジェクトの標準の必須フィールド（`platform`、`user_id`）は §2.1 を参照。以下は ErisPulse が拡張したオプションフィールドである：
 
-| フィールド | タイプ | 説明 |
+| フィールド | 型 | 説明 |
 |------|------|------|
 | `self.user_name` | `string` | ロボットのニックネーム |
-| `self.avatar` | `string` | ロボットのアバターURL |
-| `self.account_id` | `string` | **限定拡張フィールド（アカウント名代位）**：動的に注入されたアカウントが `user_id` を取得する前に、アカウント名/アカウント識別子を代位して `self.account_id` に記入し、イベントの所属を保証する。`self.user_id` が利用可能になると、優先的に `self.user_id` を記入する。フレームワークは `account_id or user_id` の口径で両方を互換的に扱う——アカウント名代位時は、`reply()` がアカウント名マッチングを経由して正しいアカウントにバインドされる |
+| `self.avatar` | `string` | ロボットのアバターのURL |
+| `self.account_id` | `string` | **限定拡張キー（アカウント名の代用）**：動的に注入されたアカウントが `user_id` を取得する前に、アカウント名/アカウント識別子で代用して記入し、イベントの所属を保証する。`self.user_id` が利用可能になったら優先的に記入する。フレームワークは `account_id or user_id` の口径で両方を互換的に扱う——アカウント名の代用時は `reply()` がアカウント名マッチングで正しいアカウントにルーティングされる |
 
-> **実行時の境界：イベントは常に `self.user_id` を持つ必要がある（バインドが確立していない期間も含む）**。接続層がバインドテーブルを戻し、connect meta が到着する前にイベントを受け取った場合、同様に既知の識別子を注入する：ロボットの `user_id` が取得できない場合はアカウント名で `self.account_id` を代位して記入（フレームワークは `account_id or user_id` の口径で解析し、アカウント名マッチング経由で正しいアカウントにルーティングできる）、取得済みの場合は `self.user_id` を優先的に記入する——フレームワークはイベントのどの段階でも「このイベントはどのアカウントから来たのか」を判断できる必要がある。欠落した場合の結果は確定的である：`event.reply()` にアカウントが注入されず、アカウントが指定されていない送信は最初に有効なアカウントに降格し、多アカウントアダプタでは「デフォルトアカウントから送信された」ように見える。
+> **実行時境界：イベントは常に `self.user_id` を保持する必要がある**（バインドが確立していない期間も含む）。接続層がバインドテーブルを戻し、connect meta が到着する前に受信したイベントは、ロボットの `user_id` が取得されていない場合はアカウント名で `self.account_id` を代用して注入する（フレームワークは `account_id or user_id` の口径で解析し、アカウント名はアカウント名マッチングルーターで正しいアカウントに戻る）。取得済みの場合は優先的に `self.user_id` を記入する——フレームワークはイベントの任意の段階で「このイベントはどのアカウントから来たのか」を判断できる必要がある。欠落した場合の結果は明確である：`event.reply()` にアカウントを注入せず、アカウントが指定されていない送信は最初の有効なアカウントに降格し、複数アカウントのアダプタでは「デフォルトアカウントから発信された」と表現される。
 
-> **Bot 状態の追跡**：アダプタは `type: "meta"` イベントを送信してフレームワークに Bot の接続状態を通知する。サポートされる `detail_type`：`connect`（オンライン）、`heartbeat`（ハートビート）、`disconnect`（オフライン）。システムは自動的に `self` フィールドの Bot 元情報を抽出して状態を追跡する。また、通常のイベントの `self` フィールドも自動的に Bot を検出する。[アダプタシステム API - Bot 状態管理](../api-reference/adapter-system.md)を参照。
+> **Bot 状態の追跡**：アダプタは `type: "meta"` イベントを送信してフレームワークに Bot の接続状態を通知する。サポートされる `detail_type`：`connect`（オンライン）、`heartbeat`（ハートビート）、`disconnect`（オフライン）。システムはこの中から `self` フィールドの Bot 元情報を自動抽出して状態を追跡する。また、通常のイベントの `self` フィールドも自動的に Bot を発見する。[アダプタシステム API - Bot 状態管理](../api-reference/adapter-system.md)を参照。
 
 ---
 
 ## 7. 会話タイプの拡張
 
-ErisPulse は OneBot12 標準の `private`、`group` の上に以下の会話タイプを拡張しています：
+ErisPulse は OneBot12 標準の `private`、`group` の上に以下の会話タイプを拡張している：
 
 | タイプ | OneBot12 標準 | ErisPulse 拡張 | 説明 |
 |------|:-----------:|:------------:|------|
@@ -375,7 +376,7 @@ ErisPulse は OneBot12 標準の `private`、`group` の上に以下の会話タ
 | `guild` | — | ✅ | サーバー/コミュニティ |
 | `thread` | — | ✅ | トピック/サブチャンネル |
 
-**アダプタ独自のタイプ拡張**：
+**アダプタのカスタムタイプ拡張**：
 
 ```python
 from ErisPulse.Core.Event.session_type import register_custom_type
@@ -389,8 +390,8 @@ register_custom_type(
 )
 ```
 
-**独自タイプの要件**：
-- アダプタの `start()` 時に登録し、`shutdown()` 時に解除する
+**カスタムタイプの要件**：
+- アダプタの `start()` 時に登録し、`shutdown()` 時に登録解除する
 - `receive_type` は標準タイプと重複しない
 - `id_field` は `{対象}_id` の命名パターンに従う
 
@@ -411,13 +412,13 @@ async def handle_message(event):
     text = event.get_text()
     user_id = event.get_user_id()
 
-    # プラットフォーム拡張フィールド - 方法1：直接 get
+    # プラットフォーム拡張フィールドのアクセス - 方法1: 直接 get
     yunhu_command = event.get("yunhu_command")
 
-    # プラットフォーム拡張フィールド - 方法2：点式アクセス（Event 包装クラス）
+    # プラットフォーム拡張フィールドのアクセス - 方法2: ポイント式アクセス（Event 包装クラス）
     # event.yunhu_command
 
-    # 元データのアクセス
+    # 原始データのアクセス
     raw_data = event.get("yunhu_raw")
     raw_type = event.get_raw_type()
 
@@ -452,34 +453,34 @@ async def handle_message(event):
 
 ### 8.3 最適実践
 
-1. **標準フィールドを優先する**：拡張フィールドが必ず存在するとは仮定しない
-2. **プラットフォームの判断**：`event.get_platform()` を通じてプラットフォームを判断し、拡張フィールドの存在で推測しない
-3. **優雅な降格**：拡張メッセージセグメントを処理できない場合は、`alt_message` をバックアップとして使用
-4. **プレフィックスをハードコーディングしない**：`platform` 変数を動的に連結する
+1. **標準フィールドを優先する**：拡張フィールドが必ず存在すると仮定しない
+2. **プラットフォームの判断**：拡張フィールドの存在でプラットフォームを推論するのではなく、`event.get_platform()` を使用する
+3. **優雅な降格**：拡張メッセージセグメントを処理できない場合は、`alt_message` をバックアップとして使用する
+4. **プレフィックスをハードコードしない**：`platform` 変数を使用して動的に結合する
 
 ```python
 # ✅ 推奨
 platform = event.get_platform()
 raw_data = event.get(f"{platform}_raw")
 
-# ❌ 推奨されない
+# ❌ 推奨しない
 raw_data = event.get("yunhu_raw")
 ```
 
 ### 8.4 要求イベントの処理
 
-モジュール開発者は `event.approve()` と `event.reject()` を通じて要求イベントを処理できます：
+モジュール開発者は `event.approve()` と `event.reject()` を使用して要求イベントを操作できる：
 
 ```python
 from ErisPulse.Core.Event import request
 
-# フレンドリクエスト：自動同意
+# フレンドリクエスト：自動で承認
 @request.on_friend_request()
 async def handle_friend_request(event):
     user_name = event.get_user_nickname() or event.get_user_id()
     comment = event.get_comment()
     
-    # リクエストを承認
+    # 承認
     result = await event.approve()
     if result.get("status") == "ok":
         print(f"{user_name} のフレンドリクエストを承認しました")
@@ -491,11 +492,11 @@ async def handle_friend_request(event):
 async def handle_group_request(event):
     comment = event.get_comment()
     
-    # リクエストを拒否
-    result = await event.reject(comment="新しいグループに参加しません")
+    # 拒否
+    result = await event.reject(comment="暫定的に新しいグループに参加しません")
 ```
 
-**アダプタを通じた直接操作**（イベントハンドラ外の場面に適する）：
+**アダプタ経由での直接操作**（イベントハンドラ外のシナリオに適用）：
 
 ```python
 from ErisPulse import adapter
@@ -507,7 +508,7 @@ await adapter.myplatform.Request("req_abc123").reject()
 # 特定の Bot アカウントで操作
 await adapter.myplatform.Request("req_abc123").Using("bot1").accept()
 
-# 備考を付けて
+# コメントを付けて
 await adapter.myplatform.Request("req_abc123").accept(comment="ようこそ")
 ```
 
@@ -517,7 +518,7 @@ await adapter.myplatform.Request("req_abc123").accept(comment="ようこそ")
 
 ### 9.1 問題の背景
 
-notice イベントと request イベントの `detail_type` は**意味のサブタイプ**（例：`group_member_increase`、`friend_increase`）であり、会話タイプ（例：`group`、`private`）ではありません。
+notice イベントと request イベントの `detail_type` は**意味のサブタイプ**（例：`group_member_increase`、`friend_increase`）であり、会話タイプ（例：`group`、`private`）ではない。
 
 ```
 type        detail_type                  含義            会話タイプ
@@ -535,20 +536,20 @@ request     group                        グループリクエスト           g
 `infer_receive_type()` の推論順序：
 
 1. `detail_type` が既知の会話タイプ（`private`/`group`/`channel`/`guild`/`thread`/`user`）の場合、そのまま使用
-2. `detail_type` が独自会話タイプの場合、そのまま使用
-3. それ以外（notice/request の意味のサブタイプ）、ID フィールドから推論：
-   - `group_id` がある → `"group"`
-   - `channel_id` がある → `"channel"`
-   - `guild_id` がある → `"guild"`
-   - `thread_id` がある → `"thread"`
-   - `user_id` がある → `"private"`
+2. `detail_type` がカスタム会話タイプの場合、そのまま使用
+3. それ以外（notice/request の意味のサブタイプ）の場合、ID フィールドから推論：
+   - `group_id` があれば → `"group"`
+   - `channel_id` があれば → `"channel"`
+   - `guild_id` があれば → `"guild"`
+   - `thread_id` があれば → `"thread"`
+   - `user_id` があれば → `"private"`
 
 ### 9.3 `event.reply()` の送信先推論
 
-notice/request イベントにおける `event.reply()` の送信先は会話タイプの推論によって決定されます：
+notice/request イベントにおける `event.reply()` の送信先は会話タイプの推論で決定される：
 
-- グループ通知イベント（group_id を含む）→ グループに返信
-- フレンド通知イベント（user_id だけを含む）→ ユーザーのプライベートチャットに返信
+- グループ通知イベント（`group_id` がある）→ グループに返信
+- フレンド通知イベント（`user_id` だけがある）→ ユーザーのプライベートチャットに返信
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -561,13 +562,13 @@ async def handle_welcome(event):
     # event.reply() はグループ（group/group_789）に送信
     await event.reply("ようこそ！")
 
-    # 管理者に通知する場合（プライベートチャット）、明示的に送信先を指定：
+    # 管理者に通知したい場合（プライベートチャット）、送信先を明示的に指定する：
     await adapter.Send.To("user", "admin_id").Text(f"新メンバー {user_id} が {group_id} に参加しました")
 ```
 
 ### 9.4 アダプタ開発の推奨
 
-notice/request イベントに正しい ID フィールドを含めるようにしてください：
+notice/request イベントに正しい ID フィールドを含めるようにする：
 
 | detail_type | 必須の ID フィールド | 推論される会話タイプ |
 |-------------|-------------------|---------------|
@@ -582,13 +583,13 @@ notice/request イベントに正しい ID フィールドを含めるように�
 
 ## 10. 関連ドキュメント
 
-**変換器の実装時に併せて参照**：
+**変換器を実装する際に併せて参照**：
 - [会話タイプ標準](session-types.md) - 会話タイプの定義とマッピング関係
-- [API レスポンス標準](api-response.md) - アダプタの API レスポンス形式の標準
+- [API レスポンス標準](api-response.md) - アダプタ API レスポンス形式の標準
 
-**同一アダプタの送信側**：
-- [送信メソッド規格](send-method-spec.md) - Send クラスのメソッド命名、パラメータ規格、逆変換要件
+**同じアダプタの送信側**：
+- [送信方法規格](send-method-spec.md) - Send クラスのメソッド命名、パラメータ規格および逆変換要件
 - [API アクション標準](api-action-spec.md) - OneBot12 標準 API アクションの統一インターフェース
 
-**プラットフォームごとの既知の拡張イベントとメッセージセグメントを確認する**：
-- [各プラットフォームの特性ドキュメント](../platform-guide/README.md) - 各プラットフォームの特性や既知の拡張イベント、メッセージセグメントなどを確認できます。
+**各プラットフォームの既知の拡張イベントとメッセージセグメントを確認**：
+- [各プラットフォームの特徴ドキュメント](../platform-guide/README.md) - 各プラットフォームの特徴や既知の拡張イベント、メッセージセグメントなどを確認できるドキュメントにアクセスできます。

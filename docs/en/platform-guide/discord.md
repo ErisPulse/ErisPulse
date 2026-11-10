@@ -6,9 +6,10 @@ DiscordAdapter is an adapter built on the Discord Gateway (WebSocket) and REST A
 
 ## Document Information
 
-- Corresponding Module Version: 4.3.0
+- Corresponding module version: 4.4.3
 - Maintainer: ErisPulse
-- Discord API Version: v10
+- Discord API version: v10
+- Last updated: 2026-11-10
 
 ## Basic Information
 
@@ -66,18 +67,46 @@ Default value `33281` = `GUILDS(1) | GUILD_MESSAGES(512) | MESSAGE_CONTENT(32768
 - Discord REST API base URL: `https://discord.com/api/v10`
 - Gateway WebSocket URL: Dynamically retrieved via `GET /gateway/bot`, typically `wss://gateway.discord.gg/?v=10&encoding=json`
 
+## Standardization Alignment (4.4.3)
+
+### Event Changes
+
+1. **Event id uniqueness**: The `id` of derived events such as MESSAGE_UPDATE / MESSAGE_DELETE, REACTION_ADD / REMOVE (including REMOVE_ALL / REMOVE_EMOJI) has been changed to `"EventName:OriginalId"` (e.g., `MESSAGE_UPDATE:123456`), so they no longer collide with CREATE event ids and get deduplicated by the framework
+2. **Event `self.account_id` injection**: All events carry the account name that produced them; in multi-account scenarios, `event.reply()` automatically sends via that account
+3. **INTERACTION_CREATE event fix**: Previously incorrectly marked as `type="request"` (detail_type `interaction`), now changed to `type="notice"`, `detail_type="discord_interaction"`; interaction data is retained in the `discord_interaction` field
+
+### API Signature Alignment
+
+| Action | Signature | Description |
+|------|------|------|
+| get_channel_info | `(guild_id, channel_id)` | New signature with guild_id as the first parameter; when only one positional argument is passed, the old signature is still supported (treated as channel_id) |
+| get_channel_list | `(guild_id, joined_only=False)` | Added the joined_only keyword parameter |
+| get_guild_info / get_guild_list | - | data uses `guild_id` / `guild_name` (the old `group_id` / `group_name` fields are retained to avoid breaking existing callers) |
+
+### Error Code Specification
+
+Error codes have been standardized according to the SDK (the original `34000` is no longer used):
+
+| retcode | Description |
+|---------|------|
+| 0 | Success |
+| 33001 | Network error (connection failure, timeout, etc.) |
+| 34100 | Platform rejection (the original response is retained in the `discord_raw` field) |
+| 10002 | Unsupported action (`get_guild_member_list` / `set_guild_name` / `get_channel_member_info` / `get_channel_member_list` / `leave_channel` explicitly return this; Discord REST has no corresponding semantics) |
+| 10003 | Parameter error (e.g., unable to recall a message because no corresponding context exists in the message registry) |
+
 ## v5 Paradigm Update (4.2.0)
 
-This adapter has completed alignment with the v5 paradigm (incremental upgrade, API compatible):
+This adapter has completed v5 paradigm alignment (incremental upgrade, API compatible):
 
-- **BaseConverter Inheritance**: Common fields of the converter are built by the framework `build_base_event`
-- **Api DSL**: Standard API action mapping (see below)
-- **Standard keyboard segment**: Converted to Discord components (action row + buttons); .Keyboard(rows) decorator accepts a generic structure
-- **Standard interaction callback fields**: The INTERACTION_CREATE event includes interaction_id / button_data
+- **BaseConverter inheritance**: Common converter fields are built by the framework's `build_base_event`
+- **Api DSL**: Standard Api action mappings (see below)
+- **Standard keyboard segment**: Converted to Discord components (action row + buttons); the .Keyboard(rows) modifier accepts generic structures
+- **Standard interaction callback fields**: INTERACTION_CREATE events include interaction_id / button_data
 - **spawn_background task ownership**: Connection tasks now use runtime.spawn_background
-- **Framework soft dependency**: Runtime detection of ErisPulse>=2.7.1 with prompts; version logs output on startup
+- **Framework soft dependency**: Runtime detection of ErisPulse>=2.7.1 with prompts; version logs output at startup
 
-### Standard API Actions
+### Standard Api Actions
 
 ```python
 from ErisPulse import sdk
@@ -85,11 +114,12 @@ discord = sdk.adapter.get("discord")
 
 result = await discord.Api.get_self_info()                # GET /users/@me
 result = await discord.Api.get_user_info(user_id)         # GET /users/{id}
-result = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}
+result = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id} (data uses guild_id / guild_name)
 result = await discord.Api.get_guild_list()               # GET /users/@me/guilds
+result = await discord.Api.get_channel_info(guild_id, channel_id)  # GET /channels/{id} (new signature: guild_id as first parameter)
 result = await discord.Api.get_channel_list(guild_id)     # GET /guilds/{id}/channels
 result = await discord.Api.get_guild_member_info(gid, uid)
-await discord.Api.delete_message(message_id)              # channel_id auto-completed in the registration table
+await discord.Api.delete_message(message_id)              # channel_id is auto-completed from the registry
 await discord.Api.leave_guild(guild_id)
 result = await discord.Api.Using("main").get_self_info()
 ```
@@ -98,9 +128,9 @@ result = await discord.Api.Using("main").get_self_info()
 
 ```python
 rows = [[{"label": "Click", "type": "callback", "data": "btn:1"},
-         {"label": "Website", "type": "link", "data": "https://example.com"}]]
-await discord.Send.To("channel", channel_id).Keyboard(rows).Text("Please Select")
-# Automatically converts components: callback → custom_id / link → url
+         {"label": "Official Site",  "type": "link",     "data": "https://example.com"}]]
+await discord.Send.To("channel", channel_id).Keyboard(rows).Text("Please select")
+# Automatically converted to components: callback → custom_id / link → url
 ```
 
 ---
@@ -196,69 +226,78 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 
 ## Send Method Return Values
 
-All send methods return a Task object, which can be awaited directly to obtain the send result. The returned result follows the ErisPulse adapter's standardized return specification:
+All send methods return a Task object, which can be directly awaited to obtain the send result. The returned result follows the ErisPulse adapter standardized return specification:
 
 ```python
 {
     "status": "ok",           // Execution status: "ok" or "failed"
     "retcode": 0,             // Return code (0 indicates success)
-    "data": {...},            // Original Discord API response
+    "data": {...},            // Raw Discord API response
     "message_id": "xxx",      // Message ID (when sending a message)
     "message": "",            // Error message
     "discord_raw": {...}      // Raw response data
 }
 ```
 
-### Error Code Description
+### Error Code Descriptions
 
 | retcode | Description |
 |---------|-------------|
 | 0 | Success |
-| 33001 | Network error (connection failed, timeout, etc.) |
-| 34000 | Discord API returned error (insufficient permissions, invalid parameters, etc.) |
+| 33001 | Network error (connection failure, timeout, etc.) |
+| 34100 | Platform rejection (insufficient permissions, invalid parameters, etc.; the raw response is preserved in the `discord_raw` field) |
+| 10002 | Unsupported action (see the "Standardization Alignment (4.4.3)" error code specification) |
+| 10003 | Invalid parameters (e.g., no corresponding message context when recalling a message) |
 
-## Unique Event Types
+## Platform-Specific Event Types
 
-The platform-specific features require `platform == "discord"` detection before use.
+A `platform == "discord"` check is required before using the platform-specific features of this section.
 
 ### Core Differences
 
-1. **Server/Channel System**: Discord uses a two-tier structure of servers (Guild) and channels (Channel), with channels being the basic targets for message sending.
-2. **Gateway Events**: All events are received via the WebSocket Gateway using the Opcode + Dispatch mechanism.
-3. **Intents Subscription**: Event types are subscribed via bitmask, and `MESSAGE_CONTENT` requires Privileged permissions.
-4. **Message Segment Types**: Supports text, images, files, videos, audio, Embed, Sticker, and other message segments.
-5. **Mention Format**: Discord uses the `<@user_id>` format for user mentions.
+1. **Server/Channel System**: Discord uses a two-tier structure of servers (Guilds) and channels (Channels); channels are the basic targets for sending messages
+2. **Gateway Events**: All events are received through the WebSocket Gateway, using the Opcode + Dispatch mechanism
+3. **Intents Subscription**: Event types are subscribed via bitmask; `MESSAGE_CONTENT` requires Privileged permission
+4. **Message Segment Types**: Supports message segments such as text, image, file, video, audio, Embed, and Sticker
+5. **Mention Format**: Discord uses the `<@user_id>` format to represent user mentions
 
 ### Extended Fields
 
-All unique fields are prefixed with `discord_`:
-- `discord_raw`: The raw Discord event data.
-- `discord_raw_type`: The raw event type name (e.g., `MESSAGE_CREATE`).
-- `discord_guild_id`: The server ID.
-- `discord_channel_id`: The channel ID.
+All platform-specific fields are identified by the `discord_` prefix:
+- `discord_raw`: Raw Discord event data
+- `discord_raw_type`: Raw event type name (e.g., `MESSAGE_CREATE`)
+- `discord_guild_id`: Guild ID
+- `discord_channel_id`: Channel ID
+- `discord_interaction`: Interaction event data (INTERACTION_CREATE)
 
 ### detail_type Mapping
 
 | Discord Scenario | detail_type | Description |
 |---|---|---|
-| Channel Message | `channel` | ErisPulse extension type |
-| Direct Message (DM) | `private` | OneBot12 standard type |
+| Channel message | `channel` | ErisPulse extension type |
+| Direct message (DM) | `private` | OneBot12 standard type |
 
 ### Event Type Mapping
 
 | Discord Event | OneBot12 type | detail_type | Description |
 |---|---|---|---|
-| MESSAGE_CREATE | message | channel/private | Message creation |
-| MESSAGE_UPDATE | message | channel/private | Message edit |
-| MESSAGE_DELETE | notice | group_message_delete / private_message_delete | Message deletion |
-| GUILD_MEMBER_ADD | notice | group_member_increase | Member join |
-| GUILD_MEMBER_REMOVE | notice | group_member_decrease | Member leave |
-| GUILD_MEMBER_UPDATE | notice | group_member_update | Member information update |
-| GUILD_ROLE_CREATE | notice | group_role_create | Role creation |
-| GUILD_ROLE_DELETE | notice | group_role_delete | Role deletion |
-| CHANNEL_CREATE | notice | channel_create | Channel creation |
-| CHANNEL_DELETE | notice | channel_delete | Channel deletion |
-| INTERACTION_CREATE | request | interaction | Interaction (button, command, etc.) |
+| MESSAGE_CREATE | message | channel/private | Message created |
+| MESSAGE_UPDATE | message | channel/private | Message edited (id is `MESSAGE_UPDATE:original_id`) |
+| MESSAGE_DELETE | notice | group_message_delete / private_message_delete | Message deleted (id is `MESSAGE_DELETE:original_id`) |
+| MESSAGE_REACTION_ADD | notice | group_message_reaction_add | Reaction added (id is `MESSAGE_REACTION_ADD:original_id`) |
+| MESSAGE_REACTION_REMOVE | notice | group_message_reaction_remove | Reaction removed (id is `MESSAGE_REACTION_REMOVE:original_id`) |
+| GUILD_MEMBER_ADD | notice | group_member_increase | Member joined |
+| GUILD_MEMBER_REMOVE | notice | group_member_decrease | Member left |
+| GUILD_MEMBER_UPDATE | notice | group_member_update | Member info updated |
+| GUILD_ROLE_CREATE | notice | group_role_create | Role created |
+| GUILD_ROLE_DELETE | notice | group_role_delete | Role deleted |
+| CHANNEL_CREATE | notice | channel_create | Channel created |
+| CHANNEL_DELETE | notice | channel_delete | Channel deleted |
+| INTERACTION_CREATE | notice | discord_interaction | Interaction (buttons, commands, etc.) |
+
+> Since 4.4.3, the `id` of non-creation events such as MESSAGE_UPDATE / MESSAGE_DELETE and
+> REACTION_ADD / REMOVE has been changed to `"EventName:original_id"` to avoid id conflicts
+> with MESSAGE_CREATE events that would cause deduplication by the framework.
 
 ### Special Field Examples
 
@@ -267,14 +306,19 @@ All unique fields are prefixed with `discord_`:
 {
   "type": "message",
   "detail_type": "channel",
-  "user_id": "sender ID",
-  "user_nickname": "username",
-  "group_id": "channel ID",
-  "message_id": "message ID",
+  "user_id": "Sender ID",
+  "user_nickname": "Username",
+  "group_id": "Channel ID",
+  "message_id": "Message ID",
+  "self": {
+    "platform": "discord",
+    "user_id": "Bot ID",
+    "account_id": "default"
+  },
   "discord_raw": {...},
   "discord_raw_type": "MESSAGE_CREATE",
-  "discord_guild_id": "server ID",
-  "discord_channel_id": "channel ID",
+  "discord_guild_id": "Guild ID",
+  "discord_channel_id": "Channel ID",
   "message": [
     {"type": "text", "data": {"text": "Hello"}}
   ],
@@ -285,37 +329,37 @@ All unique fields are prefixed with `discord_`:
 {
   "type": "message",
   "detail_type": "private",
-  "user_id": "sender ID",
-  "user_nickname": "username",
-  "message_id": "message ID",
+  "user_id": "Sender ID",
+  "user_nickname": "Username",
+  "message_id": "Message ID",
   "discord_raw": {...},
   "discord_raw_type": "MESSAGE_CREATE",
-  "discord_channel_id": "DM channel ID",
+  "discord_channel_id": "DM Channel ID",
   "message": [
-    {"type": "text", "data": {"text": "private message content"}}
+    {"type": "text", "data": {"text": "Direct message content"}}
   ],
-  "alt_message": "private message content"
+  "alt_message": "Direct message content"
 }
 
-# Message with Embed
+# Message with an Embed
 {
   "type": "message",
   "detail_type": "channel",
   "message": [
     {"type": "discord_embed", "data": {"embed": {...}}}
   ],
-  "alt_message": "[embedded message]"
+  "alt_message": "[Embedded message]"
 }
 
-# Message with attachment
+# Message with attachments
 {
   "type": "message",
   "detail_type": "channel",
   "message": [
-    {"type": "text", "data": {"text": "Look at this image"}},
-    {"type": "image", "data": {"file": "image URL", "url": "image URL", "file_name": "image.png"}}
+    {"type": "text", "data": {"text": "Look at this picture"}},
+    {"type": "image", "data": {"file": "Image URL", "url": "Image URL", "file_name": "image.png"}}
   ],
-  "alt_message": "Look at this image[image]"
+  "alt_message": "Look at this picture [Image]"
 }
 ```
 
@@ -323,7 +367,7 @@ All unique fields are prefixed with `discord_`:
 
 Discord message content is automatically converted into corresponding message segments based on the `content`, `attachments`, and `embeds` fields:
 
-| Source | Conversion Type | Description |
+| Source | Converted Type | Description |
 |---|---|---|
 | content text | `text` | Plain text content |
 | content `<@id>` | `mention` | User mention |
@@ -438,10 +482,10 @@ async def handle_private_msg(event):
 ```python
 embed = {
     "title": "Server Announcement",
-    "description": "Welcome to use ErisPulse Discord adapter",
+    "description": "Welcome to the ErisPulse Discord adapter",
     "color": 3447003,
     "fields": [
-        {"name": "Version", "value": "4.0.0", "inline": True},
+        {"name": "Version", "value": "4.4.3", "inline": True},
         {"name": "Framework", "value": "ErisPulse", "inline": True},
     ],
     "footer": {"text": "Powered by ErisPulse"},
@@ -472,15 +516,19 @@ async def handle(event):
 
 ### Handling Interaction Events
 
-```python
-from ErisPulse.Core.Event import request
+Since 4.4.3, INTERACTION_CREATE events are dispatched as `notice` / `discord_interaction`:
 
-@request.on_request()
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
 async def handle_interaction(event):
     if event.get("platform") != "discord":
         return
+    if event.get("detail_type") != "discord_interaction":
+        return
 
-    interaction = event.get_interaction_data()
+    interaction = event.get_interaction_data()  # Equivalent to event["discord_interaction"]
     if interaction.get("type") == 3:  # MESSAGE_COMPONENT
         await event.reply("Button clicked!")
 ```

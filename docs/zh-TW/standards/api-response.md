@@ -100,11 +100,38 @@
 - 4xxxx、5xxxx: 保留段，不應使用
 - 6xxxx～9xxxx: 其他錯誤段，供實現自訂使用
 
-## 4. 實現要求
-1. 所有回應必須包含 status、retcode、data 和 message 欄位
-2. 當請求中包含非空 echo 欄位時，回應必須包含相同值的 echo 欄位
-3. 返回碼必須嚴格遵循 OneBot12 標準
-4. 錯誤資訊 (message) 應當是人類可讀的描述
+## 4. 實作要求
+1. 所有回應必須包含status、retcode、data和message欄位
+2. 當請求中包含非空echo欄位時，回應必須包含相同值的echo欄位
+3. 回傳碼必須嚴格遵循OneBot12規範
+4. 錯誤訊息(message)應當是人類可讀的描述
+
+### 4.1 回應建構助手：`make_response` / `make_error`
+
+轉接器建構標準回應統一用 `BaseAdapter` 上的兩個助手，不必手寫 dict：
+
+```python
+# 成功（send / call_api / _do_accept 等所有回傳標準回應的位置）
+return self.make_response(
+    data=result,                    # 回應資料
+    message_id=result.get("message_id", ""),
+    raw=result,                     # 平台原始回應 → 自動掛到 {platform}_raw 欄位
+)
+
+# 失敗（status 固定 "failed"）
+return self.make_error(
+    retcode=34100,                  # 預設 34600（SDK Failure）；平台錯誤應傳自訂的 34xxx
+    message="平台風控拒絕",
+    raw=response,
+)
+```
+
+| 助手 | 簽名 | 語意 |
+|------|------|------|
+| `make_response` | `(*, status="ok", retcode=0, data=None, message_id="", message="", raw=None)` | 依標準結構組裝；`raw` 非 `None` 時自動掛 `{platform}_raw` 鍵（平台名取 `self._platform`） |
+| `make_error` | `(retcode=34600, message="", raw=None)` | `make_response(status="failed", ...)` 的快捷方式 |
+
+> 手寫等價 dict 亦合法（結構一致即可）；助手的價值是 `{platform}_raw` 的平台名串接與欄位完整性不遺漏。
 
 ## 5. 擴充規範
 

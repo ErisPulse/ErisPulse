@@ -18,6 +18,54 @@ ErisPulse 标准 API 动作 DSL 模块
 
 ---
 
+## 函数列表
+
+
+### `_code_string_constants(code) -> set`
+
+递归收集代码对象引用的字符串常量（探测 **params 内的字段消费）
+
+---
+
+
+### `_call_account_mode(adapter) -> str`
+
+探测适配器 call_api 消费账户字段的方式
+
+返回 ``account_id``（标准名）/ ``_account_id``（旧名）/ ``none``（不消费），
+结果按适配器类缓存。签名只有 ``**params`` 的适配器继续扫描函数体常量，
+覆盖在内部 ``params.pop("account_id")`` 的实现。
+
+- **adapter**: 适配器实例
+
+**返回值**: 账户字段名模式
+
+---
+
+
+### `_warn_account_unconsumed(adapter) -> None`
+
+适配器不消费账户字段时提示一次（每个适配器类仅一次）
+
+---
+
+
+### `_adapt_account_param(adapter, params: dict) -> dict`
+
+按适配器实现改写标准账户字段名（兼容旧适配器）
+
+- 标准实现（消费 ``account_id``）：原样传递
+- 旧实现（只有 ``_account_id``）：改写为旧名，``Using()`` 继续生效
+- 完全不消费：剔除字段避免泄漏到平台参数，并提示一次 WARNING
+
+- **adapter**: 适配器实例
+- **params**: 已合并 api_context 的动作参数
+
+**返回值**: 改写后的参数
+
+---
+
+
 ## 类列表
 
 

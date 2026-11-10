@@ -573,21 +573,21 @@ def TelegramSticker(self, ...):
     pass
 ```
 
-## Internal Breakdown of the Sending Pipeline
+## Internal Breakdown of the Send Chain
 
-Behind a single `await adapter.Send.To("group", "123").Text("x")`, the framework does the following series of things for you:
+Behind a single `await adapter.Send.To("group", "123").Text("x")`, the framework completes the following chain of tasks for you:
 
 ```mermaid
 flowchart TD
-    A["adapter.Send.To(...).Text(...)"] --> B["To/Using chained methods<br/>each call returns an immutable new instance (order-independent)"]
-    B --> C["__getattribute__ intercepts send methods<br/>wraps them with a rule wrapper"]
-    C --> D["Calls the original method (e.g. Text)<br/>internally delegates to Raw_ob12"]
+    A["adapter.Send.To(...).Text(...)"] --> B["To/Using chained methods<br/>return a new immutable instance each time (order-independent)"]
+    B --> C["__getattribute__ intercepts send methods<br/>wraps them in a rule wrapper"]
+    C --> D["Calls the original method (e.g., Text)<br/>internally delegates to Raw_ob12"]
     D --> E["Raw_ob12 returns asyncio.create_task(...)"]
     E --> F["Writes the [Send] log"]
     F --> G["emit message.sending (fire-and-forget)"]
     G --> H{"Send rules declared?"}
     H -->|"No"| I["Task done_callback → emit message.sent"]
-    H -->|"Yes"| J["apply_send_rules wraps it into an outer Task<br/>retry/timeout/defer/priority"]
+    H -->|"Yes"| J["apply_send_rules wraps into an outer Task<br/>retry/timeout/delay/priority"]
     J --> I
     I --> K["await yields the standard response dict"]
 ```
@@ -596,52 +596,54 @@ flowchart TD
 
 | Stage | What the framework does |
 |------|-------------|
-| Chained merging | Every call to `To`/`Using`/`Account` **creates a new immutable instance** that inherits the already-set fields, so `To(...).Using(...)` and `Using(...).To(...)` are **equivalent** and order-independent |
-| Method wrapping | Send methods (`Text`, etc.) are intercepted by `__getattribute__` and wrapped with one layer; modifier methods (`To`/`Using`/`At`/`Retry`, etc.) are **not wrapped**. Nested `Raw_ob12` calls rely on the `_in_rule_wrap` flag to prevent duplicate wrapping |
-| Task creation | The `asyncio.create_task()` inside `Raw_ob12` is where the Task is actually created; `Text()` merely returns this Task synchronously and **does not block** |
-| Send log | Writes the `[Send] platform/method -> target` event log (it can be muted with `exclude_levels=["EVENT"]`) |
-| `message.sending` | Triggered **immediately** in fire-and-forget fashion when the send method is called (only when listeners exist; short-circuits via `has_handlers` first) |
-| `message.sent` | Bound to the Task's `done_callback`—**with rules, it carries the final result of the entire retry flow**; without rules, it fires when the original Task completes |
+| Chained merge | `To`/`Using`/`Account` **create a new immutable instance** on every call while inheriting already-set fields; therefore `To(...).Using(...)` and `Using(...).To(...)` are **equivalent** and order-independent |
+| Method wrapping | Send methods (e.g., `Text`) are intercepted by `__getattribute__` and wrapped in one layer; modifier methods (`To`/`Using`/`At`/`Retry`, etc.) are **not wrapped**. Nested `Raw_ob12` calls rely on the `_in_rule_wrap` flag to prevent duplicate wrapping |
+| Task creation | `asyncio.create_task()` inside `Raw_ob12` is where the Task is actually created; `Text()` merely synchronously returns that Task and is **non-blocking** |
+| Send log | Writes the `[Send] platform/method -> target` event log (can be suppressed with `exclude_levels=["EVENT"]`) |
+| `message.sending` | Fired **immediately** in fire-and-forget mode when the send method is called (only when listeners exist, short-circuited via `has_handlers` first) |
+| `message.sent` | Bound to the Task's `done_callback` — **with rules, it carries the final result of the entire retry process**; without rules, it fires when the original Task completes |
 
 ### Account Resolution Fallback Chain
 
-An account identifier explicitly specified via `Using()` (including automatic injection by `reply()`) or automatically bound by the event chain is resolved to a specific account in the following order:
+Account identifiers explicitly specified via `Using()` (including auto-injection by `reply()`) or automatically bound by the event chain are resolved to a concrete account in the following order:
 
 1. Single-account adapter (no `AccountConfigClass`) → return directly
-2. Account name exactly matching `account_id`
-3. Matching against each account's `bot_id` field
-4. Matching against any `str` field value of each account (excluding `enabled`/`name`)
-5. Fallback to the first enabled account: adopted directly when no `account_id` is passed (default-account semantics); when an explicitly passed `account_id` cannot be resolved, a WARNING is logged and then it is adopted (the `platform` / `account_id` / `account` in the WARNING are used to locate the source of events not attributed to any account)
-6. No enabled account at all (including all accounts being disabled) → raises `ValueError`: no account available for sending
+2. Exact match of the account name against `account_id`
+3. Match against each account's `bot_id` field
+4. Match against any `str` field value of each account (excluding `enabled`/`name`)
+5. Fall back to the first enabled account: if no `account_id` is passed, adopt it directly (default-account semantics); if an explicitly passed `account_id` cannot be resolved, log a WARNING and then adopt it (the `platform` / `account_id` / `account` in the WARNING are used to locate event sources not attributed to an account)
+6. No enabled account at all (including all accounts disabled) → raise `ValueError`: no account available to send
 
-> The `account_id` you pass comes from: explicit specification via `Using()` (including the `self.user_id` / `self.account_id` stand-in automatically injected by `event.reply()`) > **event dispatch chain fallback** (sends without explicit specification during event handling automatically bind the account that triggered the event) > unspecified (default-account semantics; scenarios without event context such as timers / startup tasks).
+> The `account_id` you pass comes from: explicit specification via `Using()` (including the `self.user_id` / `self.account_id` substitution auto-injected by `event.reply()`) > **event dispatch chain fallback** (sends without explicit specification while handling an event are automatically bound to the account that triggered the event) > unspecified (default-account semantics, e.g., timers / startup tasks and other scenarios without event context).
 
 ### Seamless Syntactic Sugar
 
+> "Omitting `Using()` inside the event chain" and "substitute account-name routing" require ErisPulse **2.12+**.
+
 | Syntactic Sugar | Trigger Condition | Effect |
 |--------|----------|------|
-| No `Using()` needed in the event chain | Calling `Send` / `Api` / `Request` within the event-handling pipeline | Automatically binds the account that triggered the event (the dispatch entry point injects the calling context; `send_context` / `api_context` / `request_context` follow the same convention) |
-| `reply()` automatic quoting | `quote=True` | Automatically uses the event's `message_id` to construct a `Reply` segment |
-| `reply()` automatic account binding | reply pipeline | Automatically `Using(self.account_id or self.user_id)`—the stand-in account name is directly routable |
-| Stand-in account name routing | Dynamic account has not obtained user_id yet | Event `self.account_id` = account name → account-name matching resolves back to the correct account |
-| Default account fallback | No event context (timers / startup tasks) | The first enabled account (existing semantics unchanged) |
+| Omitting `Using()` inside the event chain | Calling `Send` / `Api` / `Request` within the event handling chain | Automatically binds to the account that triggered the event (the dispatch entry injects the call context; `send_context` / `api_context` / `request_context` behave identically) |
+| `reply()` automatic quoting | `quote=True` | Automatically takes the event's `message_id` to construct the `Reply` segment |
+| `reply()` automatic account binding | reply chain | Automatically applies `Using(self.account_id or self.user_id)` — the substitute account name is directly routable |
+| Substitute account-name routing | Dynamic account has not obtained user_id | Event `self.account_id` = account name → account-name matching resolves back to the correct account |
+| Default-account fallback | No event context (timers / startup tasks) | First enabled account (existing semantics unchanged) |
 
-### Send Rules Engine (Retry/Timeout/Defer)
+### Send Rule Engine (Retry/Timeout/Delay)
 
 Rules are wrapped into a new outer Task **after** `Raw_ob12` returns the Task, without affecting the main flow. Key facts:
 
 | Rule | Description |
 |------|------|
-| `Retry(n)` | A total of `n+1` attempts; **resends immediately after failure, no exponential backoff** |
-| `Timeout(s)` | Per-send timeout cancellation (`asyncio.wait_for`); retries if attempts are not exhausted |
-| `Defer(s)` | Delays with a sleep before sending |
+| `Retry(n)` | Attempts `n+1` times in total; **resends immediately after failure, no exponential backoff** |
+| `Timeout(s)` | Cancels a single send on timeout (`asyncio.wait_for`); retries if attempts are not exhausted |
+| `Defer(s)` | Sleeps for a delay before sending |
 | `Priority(level, drop_if_busy)` | Returns `{status:"failed", retcode:10002, message:"dropped_low_priority"}` directly when the backlog exceeds the threshold |
-| `Hook(fn)` | Executed in order only on final success |
-| `on_progress` / `on_error` | Per-stage / final-failure callbacks |
+| `Hook(fn)` | Executes in order only on final success |
+| `on_progress` / `on_error` | Callbacks for each stage / final failure |
 
-> **Note**: retry means "resend immediately" with no backoff interval; if the platform's rate limiting requires backoff, sleep on your own in the `on_error` callback and then resend manually. The success determination of rules is based on `status == "ok"` in the returned dict (`retcode == 0`).
+> **Note**: Retries are "immediate resends" with no backoff interval; if platform rate limiting requires backoff, sleep on your own in the `on_error` callback and then manually resend. Rule success is determined by `status == "ok"` in the returned dict (`retcode == 0`).
 
-> For the standard response format and the complete semantics of `retcode`, see [API Response Specification](../../standards/api-response.md).
+> For the standard response format and the full semantics of `retcode`, see [API Response Specification](../../standards/api-response.md).
 
 ## Return Values
 

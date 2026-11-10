@@ -101,10 +101,37 @@
 - 6xxxx～9xxxx: 他のエラーセグメント、実装が独自に使用するためのものです
 
 ## 4. 実装要件
-1. すべてのレスポンスには status、retcode、data、message フィールドが含まれている必要があります。
+1. すべてのレスポンスは、status、retcode、data、message フィールドを含む必要があります。
 2. リクエストに非空の echo フィールドが含まれている場合、レスポンスには同じ値の echo フィールドが含まれている必要があります。
 3. 戻り値コードは OneBot12 規格に厳密に従う必要があります。
-4. エラーメッセージ(message)は人間に読みやすい説明文である必要があります。
+4. エラーメッセージ(message)は人間に読みやすい説明である必要があります。
+
+### 4.1 レスポンス構築ヘルパー：`make_response` / `make_error`
+
+アダプタは、`BaseAdapter` 上の 2 つのヘルパーを使用して標準レスポンスを一貫して構築します。dict を手動で記述する必要はありません。
+
+```python
+# 成功（send / call_api / _do_accept など、すべての標準レスポンスを返す位置）
+return self.make_response(
+    data=result,                    # レスポンスデータ
+    message_id=result.get("message_id", ""),
+    raw=result,                     # プラットフォームの元のレスポンス → 自動的に {platform}_raw フィールドに追加
+)
+
+# 失敗（status は固定で "failed"）
+return self.make_error(
+    retcode=34100,                  # デフォルトは 34600（SDK Failure）；プラットフォームエラーは独自の 34xxx を渡す
+    message="プラットフォームのリスク管理が拒否しました",
+    raw=response,
+)
+```
+
+| ヘルパー | シグネチャ | 意味 |
+|------|------|------|
+| `make_response` | `(*, status="ok", retcode=0, data=None, message_id="", message="", raw=None)` | 標準構造に従ってレスポンスを構築します。`raw` が `None` でない場合、自動的に `{platform}_raw` キーを追加します（プラットフォーム名は `self._platform` から取得） |
+| `make_error` | `(retcode=34600, message="", raw=None)` | `make_response(status="failed", ...)` のショートカットです |
+
+> 手動で等価な dict を記述することも合法です（構造が一致していれば）。ヘルパーの価値は、`{platform}_raw` のプラットフォーム名の自動連結と、フィールドの漏れがないことです。
 
 ## 5. 拡張仕様
 

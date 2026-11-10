@@ -1,13 +1,13 @@
 # 部署指南
 
 > [!TIP]
-> **什麼時候需要讀這篇**：機器人要長期掛著跑時——Docker 部署、systemd / Supervisor 程序守護、反向代理與 SSL、備份與升級都在這裡。本地開發除錯階段不需要則跳過。
+> **什麼時候需要讀這篇**：機器人要長期掛著跑時——Docker 部署、systemd / Supervisor 行程守護、反向代理與 SSL、備份與升級都在這裡。本地開發除錯階段不需要則跳過。
 
-機器人開發完只是開始。這篇涵蓋把它穩定掛在伺服器上所需的三種部署方式（Docker / systemd / Supervisor），以及反向代理、安全強化與備份。
+機器人開發完只是開始。這篇涵蓋將它穩定掛在伺服器上所需的三種部署方式（Docker / systemd / Supervisor），以及反向代理、安全強化與備份。
 
 ## Docker 部署（推薦）
 
-ErisPulse 提供官方 Docker 映像，內建 ErisPulse 框架和 Dashboard 管理面板，支援 `linux/amd64` 和 `linux/arm64` 架構。
+ErisPulse 提供官方 Docker 映像，內建 ErisPulse 框架與 Dashboard 管理面板，支援 `linux/amd64` 和 `linux/arm64` 架構。
 
 ### 快速啟動
 
@@ -70,7 +70,7 @@ services:
       retries: 3
 ```
 
-> 以上與儲存庫根目錄的 [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml) 保持一致（儲存庫版本開頭另有映像加速與環境變數說明註解），推薦直接下載使用。
+> 以上與儲存庫根目錄的 [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml) 保持一致（儲存庫版本開頭另有映像加速與環境變數說明註解），建議直接下載使用。
 
 ### 環境變數
 
@@ -82,20 +82,20 @@ services:
 | `ERISPULSE_DASHBOARD_TOKEN` | 自動產生 | Dashboard 登入權杖（強烈建議設定） |
 | `TZ` | `Asia/Shanghai` | 時區 |
 | `LANG` | `en_US.UTF-8` | 系統語言，自動偵測啟動介面語言 |
-| `ERISPULSE_LANG` | 空 | 強制啟動介面語言：`zh` / `zh_TW` / `en` / `ja` / `ru`（覆寫 `LANG`） |
+| `ERISPULSE_LANG` | 空 | 強制啟動介面語言：`zh` / `zh_TW` / `en` / `ja` / `ru`（覆蓋 `LANG`） |
 
 ### 資料持久化
 
-`./config` 目錄掛載了設定檔和資料庫，包含：
+`./config` 目錄掛載了設定檔與資料庫，包含：
 
 - `config/config.toml` — 設定檔
 - `config/config.db` — SQLite 儲存資料庫
-- `config/.packages` — Python site-packages 持久化卷，儲存框架、配接器和已安裝模組（首次啟動時由入口點從映像內建備份自動初始化，之後的模組安裝與框架熱更新均寫入此目錄）
+- `config/.packages` — Python site-packages 持久化磁碟區，儲存框架、配接器和已安裝模組（首次啟動時由進入點從映像內建備份自動初始化，之後的模組安裝與框架熱更新均寫入此目錄）
 
-> **框架升級（含 pre/rc）與映像自癒**：入口點會在每次容器啟動時做核心套件完整性自我檢查，
-> 損壞時按「使用者已安裝版本優先」原則修復——持久卷內顯式安裝/升級的版本
-> （如 Dashboard 安裝的 pre 版本）會從 PyPI **重裝同版本**，絕不靜默回退到
-> 映像內建版本。因此 Dashboard 升級框架後，任意次容器重啟都應保持目標版本。
+> **框架升級（含 pre/rc）與映像自我修復**：進入點會在每次容器啟動時做核心套件完整性自我檢查，
+> 損壞時按「使用者已安裝版本優先」原則修復——持久化磁碟區內顯式安裝/升級的版本
+> （如 Dashboard 安裝的 pre 版本）會從 PyPI **重新安裝同版本**，絕不靜默回退到
+> 映像內建版本。因此 Dashboard 升級框架後，無論容器重新啟動多少次都應保持目標版本。
 
 ## Dashboard 管理面板
 
@@ -106,10 +106,10 @@ ErisPulse Docker 映像內建 Dashboard 模組，提供 Web 視覺化管理介�
 | 功能 | 說明 |
 |------|------|
 | 儀表板 | 系統概覽、CPU/記憶體監控、執行時長、事件統計 |
-| 機器人管理 | 查看各平台機器人線上狀態和資訊 |
-| 事件查看 | 即時事件流，支援按類型和平台篩選 |
-| 日誌查看 | 按模組和層級篩選的日誌檢視器 |
-| 模組管理 | 查看、載入、卸載已安裝的模組和配接器 |
+| 機器人管理 | 檢視各平台機器人的線上狀態與資訊 |
+| 事件檢視 | 即時事件流，支援依類型和平台篩選 |
+| 日誌檢視 | 依模組和等級篩選的日誌檢視器 |
+| 模組管理 | 檢視、載入、解除安裝已安裝的模組和配接器 |
 | 模組商店 | 瀏覽遠端可用套件並一鍵安裝 |
 | 設定編輯 | 線上編輯 `config.toml` |
 | 儲存管理 | 瀏覽和編輯 Key-Value 儲存資料 |
@@ -121,20 +121,29 @@ ErisPulse Docker 映像內建 Dashboard 模組，提供 Web 視覺化管理介�
 Dashboard 整合了模組商店功能，你可以：
 
 1. **從商店安裝**：瀏覽遠端模組清單，選擇需要的模組一鍵安裝
-2. **上傳本地套件**：直接上傳 `.whl` 或 `.zip` 檔案進行安裝，方便測試個人開發的模組
+2. **上傳本機套件**：直接上傳 `.whl` 或 `.zip` 檔案進行安裝，方便測試個人開發的模組
 
-> **模組開發者的快速測試流程**：使用 Docker 部署後，在 Dashboard 中透過「上傳本地套件」功能直接上傳你建置的 `.whl` 檔案進行測試，無需手動操作容器。
+> **模組開發者的快速測試流程**：使用 Docker 部署後，在 Dashboard 中透過「上傳本機套件」功能直接上傳你建置的 `.whl` 檔案進行測試，無需手動操作容器。
 
-## 程序監督與硬重啟
+## 行程監督與硬重啟
 
-ErisPulse 的硬重啟（`sdk.hard_restart()`）依賴**外部監督者**在程序結束碼為 42 時重新拉起程序——SDK 自己不會拉起新程序。正式環境務必設定監督者，否則硬重啟後程序不會自動恢復：
+ErisPulse 的硬重啟（`sdk.hard_restart()`）依賴**外部監督者**在行程結束代碼為 42 時重新啟動行程——SDK 自身不會啟動新行程。正式環境務必設定監督者，否則硬重啟後行程不會自動恢復：
 
-- Docker：官方 compose 使用 `restart: on-failure:5`——非零結束碼即重啟（覆寫硬重啟的結束碼 42），連續 5 次上限防死循環；需要不限次數可自行改為 `unless-stopped`
+- Docker：官方 compose 使用 `restart: on-failure:5`——非零結束代碼即重新啟動（覆蓋硬重啟的結束代碼 42），連續 5 次上限以防無限迴圈；需要不限次數可自行改為 `unless-stopped`
 - systemd：`Restart=on-failure` + `RestartForceExitStatus=42`
-- PM2 / supervisord：將 42 加入可重啟結束碼
-- 純 Python 自訂監督者：以迴圈 `Popen` + 偵測 `returncode == 42`
+- PM2 / supervisord：將 42 加入可重新啟動的結束代碼
+- 純 Python 自訂監督者：以迴圈呼叫 `Popen` + 偵測 `returncode == 42`
 
-各監督者的完整設定範例與結束碼 42 契約說明見 [啟動流程 → 監督者指南](../advanced/startup.md#監督者指南)。
+各監督者的完整設定範例與結束代碼 42 契約說明見 [啟動流程 → 監督者指南](../advanced/startup.md#監督者指南)。
+
+### 容器內重啟（PID 1 實例）
+
+> 本節特性需要 ErisPulse **2.12+**。
+
+框架作為容器主行程（PID 1）執行時，`epsdk restart` **不會**終止行程後重新啟動——終止 PID 1 即容器結束。此時改為向框架行程傳送 `SIGUSR1`，框架在行程內完成元件級軟重啟（`sdk.restart()`）：`ep i <套件>` 新安裝的配接器與升級後的模組程式碼即刻熱重載生效。
+
+- 需要整個行程重啟（框架自身更新、結構性設定變更）時，重新啟動容器：`docker restart <容器>`
+- `epsdk stop` 對 PID 1 實例仍是終止語義——容器隨之停止（配合 `restart` 策略決定是否自動啟動）
 
 ## 健康檢查
 
@@ -261,36 +270,36 @@ stdout_logfile=/var/log/erispulse-bot/out.log
 
 ### uv tool 分離部署（CLI 與專案環境隔離）
 
-`uv tool install` 會將 `epsdk` 安裝為**獨立的工具環境**，CLI 自身與專案依賴徹底隔離：升級 CLI 不會動到專案 `.venv`，專案依賴變動也不會影響 CLI。
+`uv tool install` 會將 `epsdk` 安裝為**獨立的工具環境**，CLI 自身與專案相依套件徹底隔離：升級 CLI 不會動到專案 `.venv`，專案相依套件的變動也不會影響 CLI。
 
 ```bash
 # 1. 全域安裝 CLI（自動提供 epsdk / ep 指令）
 uv tool install ErisPulse
 
-# 2. 專案內只放機器人依賴（.venv 由 uv 管理）
+# 2. 專案內只放機器人相依套件（.venv 由 uv 管理）
 cd /opt/erispulse-bot
-uv add erispulse ErisPulse-Adapter-Yunhu   # 依需求追加配接器
+uv add erispulse ErisPulse-Adapter-Yunhu   # 視需要追加配接器
 
-# 3. 用 CLI 執行（自動偵測並使用專案 .venv 中的直譯器）
+# 3. 以 CLI 執行（自動偵測並使用專案 .venv 中的直譯器）
 epsdk run main.py
 ```
 
-行為要點：
+行為重點：
 
-- `epsdk run` 的目標直譯器解析順序：`ERISPULSE_PYTHON` 環境變數 → 專案 `.venv` → 當前直譯器；工具環境本身只承載 CLI，元件（配接器/模組）應裝進專案 `.venv`
+- `epsdk run` 的目標直譯器解析順序：`ERISPULSE_PYTHON` 環境變數 → 專案 `.venv` → 目前直譯器；工具環境本身只承載 CLI，元件（配接器/模組）應裝進專案 `.venv`
 - `epsdk install` / `uninstall` / `upgrade` / `list` 同樣作用於專案 `.venv`，不會污染工具環境
-- 升級 CLI：`uv tool upgrade ErisPulse`（或直接 `epsdk self-update`，uv tool 環境下會自動改走 `uv tool upgrade`）；升級專案依賴：在專案目錄執行 `uv sync` / `uv add`，兩者互不影響
-- 伺服器情境下工具環境由 uv 統一管理（`uv tool list` 查看、`uv tool upgrade --all` 批次升級），無需手動維護全域 pip 套件
-- 若在無專案的目錄用 `uv run epsdk ...` 執行，會落入**一次性隔離環境**（安裝的元件不會持久化）；伺服器上請一律直接呼叫 `epsdk`，或先 `cd` 進專案目錄
+- 升級 CLI：`uv tool upgrade ErisPulse`（或直接 `epsdk self-update`，uv tool 環境下會自動改走 `uv tool upgrade`）；升級專案相依套件：在專案目錄執行 `uv sync` / `uv add`，兩者互不影響
+- 伺服器情境下工具環境由 uv 統一管理（以 `uv tool list` 檢視、`uv tool upgrade --all` 批次升級），無需手動維護全域 pip 套件
+- 若在沒有專案的目錄中以 `uv run epsdk ...` 執行，會落入**一次性隔離環境**（安裝的元件不會持久化）；在伺服器上請一律直接呼叫 `epsdk`，或先 `cd` 進入專案目錄
 
 ## 安全建議
 
 1. **設定 Dashboard 權杖**：使用強隨機權杖，不要使用預設值
-2. **不要將連接埠公開到公網**：除非使用反向代理 + SSL，否則將 Dashboard 連接埠限制在內網
+2. **不要將連接埠暴露到網際網路**：除非使用反向代理 + SSL，否則將 Dashboard 連接埠限制在內部網路
 3. **保護資料目錄**：`config/` 目錄包含設定和資料庫，設定適當的檔案權限
-4. **定期更新**：使用 `epsdk self-update` 或拉取最新 Docker 映像
+4. **定期更新**：使用 `epsdk self-update` 或拉取最新的 Docker 映像
 5. **不要以 root 執行**：手動部署時建立專用使用者
-6. **使用 Docker 重啟策略**：官方 compose 的 `restart: on-failure:5` 已確保異常結束（含硬重啟結束碼 42）後自動重啟
+6. **使用 Docker 重新啟動策略**：官方 compose 的 `restart: on-failure:5` 已確保異常結束（含硬重啟結束代碼 42）後自動重新啟動
 
 ## 多實例部署
 
@@ -308,7 +317,7 @@ epsdk run main.py
 # 拉取最新映像
 docker compose pull
 
-# 重啟以使用新映像
+# 重新啟動以使用新映像
 docker compose up -d
 ```
 
@@ -325,22 +334,22 @@ epsdk upgrade
 # 升級 CLI 工具環境
 uv tool upgrade ErisPulse
 
-# 升級專案依賴（在專案目錄內執行）
+# 升級專案相依套件（於專案目錄內執行）
 uv sync
 ```
 
 ### 執行時熱重載伺服器設定
 
-修改監聽位址 / 連接埠 / SSL 憑證後無需重啟程序，在任意協程中呼叫 `router.reload()`：
+修改監聽位址 / 連接埠 / SSL 憑證後無需重啟行程，在任意協程中呼叫 `router.reload()`：
 
 ```python
 await sdk.router.reload(port=9000)                                # 換連接埠
 await sdk.router.reload(ssl_cert=new_pem, ssl_key=new_key)        # 熱更換憑證（憑證續期情境）
-await sdk.router.reload(host="0.0.0.0", port=9000)                # 未指定的參數沿用當前設定
+await sdk.router.reload(host="0.0.0.0", port=9000)                # 預設參數沿用目前設定
 ```
 
-- 重用同一 FastAPI 應用程式，模組註冊的 HTTP / WebSocket / SSE 路由全部保留
-- 先驗證新設定（憑證可建置、連接埠可用）再切換；失敗時以舊設定恢復服務並回傳 `False`，
+- 重複使用同一個 FastAPI 應用程式，模組註冊的 HTTP / WebSocket / SSE 路由全部保留
+- 先驗證新設定（憑證可建構、連接埠可用）再切換；失敗時以舊設定恢復服務並回傳 `False`，
   保證回傳 `False` = 舊服務保持可用
 - 伺服器未執行時回傳 `False`（首次啟動請使用 `sdk.router.start()`）
 
@@ -357,6 +366,6 @@ tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
 ## 下一步
 
-- **部署完想視覺化管理**：裝 [ErisPulse-Dashboard](../ecosystem/dashboard.md)，在瀏覽器裡管模組、看日誌、改設定
-- **懷疑環境有問題**：先跑 `epsdk doctor` 輸出健康報告，見 [CLI 指令參考 · doctor](cli-reference.md#doctor)
-- **要調整框架與元件設定**：查 [設定檔說明](configuration.md)，環境變數覆寫尤其適合容器部署
+- **部署完想視覺化管理**：安裝 [ErisPulse-Dashboard](../ecosystem/dashboard.md)，在瀏覽器裡管理模組、看日誌、改設定
+- **懷疑環境有問題**：先執行 `epsdk doctor` 輸出健康報告，見 [CLI 指令參考 · doctor](cli-reference.md#doctor)
+- **要調整框架與元件設定**：查閱 [設定檔說明](configuration.md)，環境變數覆寫尤其適合容器部署

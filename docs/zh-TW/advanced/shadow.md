@@ -86,17 +86,19 @@ await sdk.module.dismiss_shadow("roll")   # 或：放棄影子
 
 | 邊界 | 說明 |
 |------|------|
-| pip 排他 | 影子期**只解包不安裝**：whl 原件落盤到 `shadows/<module>/`，僅供轉正後持久化；影子運行期間不會 pip 安裝，避免覆蓋已裝包導致線上行為漂移 |
+| pip 排他 | 影子期**只解包不安裝**：whl 原件落盤到 `shadows/<module>/`，僅供轉正後持久化；影子運行期間不會 pip 安裝，避免覆蓋已安裝包導致線上行為漂移 |
 | promote 不落盤 | `promote_shadow` 只做運行時切換，不寫包管理器；重啟後回退 v1（配置中仍指向舊版本）。需要重啟保持 v2 時用「轉正並持久化」或手動 `pip install` |
-| 第三方依賴 = 進程已裝版本 | 影子 import 的第三方庫用的是**當前進程已安裝的版本**；whl 聲明的新依賴不會自動安裝，缺依賴時影子裝載失敗（錯誤原樣拋出） |
+| 第三方依賴 = 進程已安裝版本 | 影子 import 的第三方庫用的是**當前進程已安裝的版本**；whl 聲明的新依賴不會自動安裝，缺依賴時影子載入失敗（錯誤原樣拋出） |
 
-運維查詢面：`sdk.module.list_shadows()` 返回當前全部綁定  
+> whl 摄取、`list_shadows` 與「轉正並持久化」（`shadow_ingest_whl` /
+> `shadow_promote_persist` / `shadow_persist_status`）需要 ErisPulse **2.12+**；
+> 舊版 SDK 自動降級為基礎影子（僅解包啟動，無持久化），Dashboard 能力探測自動切換。
+
+運維查詢面：`sdk.module.list_shadows()` 返回當前全部綁定
 `{原模組名: 影子 owner 名}`，供 Dashboard / 腳本聚合展示。
 
-whl 摄取與「轉正並持久化」的實現歸屬 SDK（`shadow_ingest_whl` /  
-`shadow_promote_persist` / `shadow_persist_status`）：解包 / 落盤 / pip  
-編排跟隨 SDK 版本演進，Dashboard 只是呼叫入口。Dashboard 對舊版 SDK 保留  
-本地降級路徑（僅解包啟動，無持久化），能力探測自動切換。
+whl 摄取與「轉正並持久化」的實現歸屬 SDK：解包 / 落盤 / pip
+編排跟隨 SDK 版本演進，Dashboard 只是呼叫入口。
 
 ## 相關文件
 

@@ -225,11 +225,11 @@ async def handle(event):
         await event.reply(f"你好，{user_name}！")
 ```
 
-## 5. 適配器實作
+## 5. 適配器實現
 
-### 5.1 預設行為（零設定）
+### 5.1 默認行為（零設定）
 
-`ApiDSL` 的預設實作將標準動作名作為 `endpoint` 直接傳遞給 `adapter.call_api()`：
+`ApiDSL` 的預設實作會將標準動作名作為 `endpoint` 直接傳遞給 `adapter.call_api()`：
 
 ```python
 # ApiDSL 預設實作等價於：
@@ -237,12 +237,13 @@ async def get_user_info(self, user_id: str) -> dict:
     return await self._adapter.call_api("get_user_info", user_id=user_id, account_id=self._account_id)
 ```
 
-**適用場景**：當適配器的底層後端自身即遵循 OneBot12 標準動作協定時，
-`call_api` 天然支援標準動作名（如直接對接遵循該協定的服務端）。
+> **帳戶欄位**：框架會根據適配器 `call_api` 的實際消耗方式自動適配帳戶綁定（標準名 `account_id`；舊名 `_account_id` 會自動改寫；函數體 `params.pop` 同樣識別），未被消耗時會剔除該欄位以避免泄漏至平台參數並提示一次——消耗形態詳見 [適配器開發 - 帳戶解析](../developer-guide/adapters/core-concepts.md#帳戶解析)。
 
-### 5.2 覆蓋標準方法（映射到平台原生 API）
+**適用場景**：當適配器的底層後端本身即遵循 OneBot12 標準動作協議時，`call_api` 天然支援標準動作名（例如直接對接遵循該協議的服務端）。
 
-適配器可覆蓋單個標準方法，將其映射到平台原生 API：
+### 5.2 覆蓋標準方法（映射至平台原生 API）
+
+適配器可覆蓋單個標準方法，將其映射至平台原生 API：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -251,11 +252,11 @@ class MyAdapter(BaseAdapter):
         """MyPlatform 標準 API 動作實作"""
 
         async def get_user_info(self, user_id: str) -> dict:
-            # 映射到平台原生 API
+            # 映射至平台原生 API
             raw = await self._adapter._request("GET", f"/users/{user_id}")
             if raw.get("code") != 0:
-                # 平台側錯誤：用 341xx～345xx 段自定義低三位（346xx 為框架保留，勿佔用）
-                return self._adapter.make_error(retcode=34400, message="使用者不存在")
+                # 平台側錯誤：使用 341xx～345xx 段自定義低三位（346xx 為框架保留，請勿占用）
+                return self._adapter.make_error(retcode=34400, message="用戶不存在")
 
             user = raw["data"]
             return self._adapter.make_response(
@@ -284,13 +285,13 @@ class MyAdapter(BaseAdapter):
 
 ### 5.3 未支援的動作
 
-適配器未覆蓋的標準方法走預設實作（委派給 `call_api`）。如果 `call_api` 也不支援該動作，應回傳標準錯誤回應：
+適配器未覆蓋的標準方法會走預設實作（委託給 `call_api`）。如果 `call_api` 也不支援該動作，應返回標準錯誤回應：
 
 ```python
 async def call_api(self, endpoint: str, **params):
     if endpoint not in self._supported_endpoints:
         return self.make_error(retcode=10002, message=f"不支援的動作: {endpoint}")
-    # ... 平台 API 呼叫
+    # ... 平台 API 調用
 ```
 
 模組開發者可透過回傳值的 `retcode` 判斷是否支援：

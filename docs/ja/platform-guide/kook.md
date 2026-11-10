@@ -1,36 +1,37 @@
-# Kookプラットフォームの機能ドキュメント
+# Kookプラットフォームの特徴ドキュメント
 
-KookAdapter は、Kook（開黒啦）Bot WebSocket プロトコルに基づいて構築されたアダプタであり、Kook のすべての機能モジュールを統合し、一貫したイベント処理とメッセージ操作インターフェースを提供します。
+KookAdapterは、Kook（開黒啦）Bot WebSocketプロトコルに基づいて構築されたアダプターであり、Kookのすべての機能モジュールを統合し、一貫したイベント処理とメッセージ操作のインターフェースを提供します。
 
 ---
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.2.0
-- メンテナー: ShanFish
+- 対応モジュールバージョン: 4.3.2
+- 維持者: ShanFish
+- 最終更新日: 2026-11-10
 
 ## 基本情報
 
-- プラットフォーム概要: Kook（旧称：開黒啦）は、テキスト、音声、ビデオ通話に対応したコミュニティプラットフォームであり、完全な Bot 開発インターフェースを提供しています。
-- アダプタ名: KookAdapter
-- マルチアカウント対応: 複数の Kook ボットを同時に設定できます
-- 接続方法: WebSocket 長時間接続（Kook ゲートウェイ経由）
-- 認証方法: Bot Token に基づく認証
-- チェーン修飾子対応: `.Reply()`、`.At()`、`.AtAll()` などのチェーン修飾メソッドに対応しています
-- OneBot12互換: OneBot12 形式のメッセージ送信に対応しています
+- プラットフォーム概要: Kook（元開黒啦）は、テキスト、音声、ビデオ通信をサポートするコミュニティプラットフォームであり、完全なBot開発インターフェースを提供します。
+- アダプター名: KookAdapter
+- 多アカウント対応: 複数のKook Botを同時に設定できます。
+- 接続方式: WebSocket長接続（Kookゲートウェイ経由）
+- 認証方式: Bot Tokenを用いた認証
+- 鏈式修飾対応: `.Reply()`、`.At()`、`.AtAll()`などの修飾メソッドをチェーンで使用できます。
+- OneBot12互換: OneBot12形式のメッセージ送信をサポートします。
 
-## 設定の説明
+## 設定説明
 
-KookAdapter は、複数のアカウントをサポートしており、各アカウントは独立した Kook ロボットに対応します。
+KookAdapterは複数アカウントの設定に対応しており、各アカウントは独立したKook Botに対応します。
 
 ```toml
 # config.toml
 # アカウント1
 [KookAdapter.accounts.default]
 token = "YOUR_BOT_TOKEN"     # Kook Bot Token（必須、形式: Bot xxx/xxx）
-bot_id = ""                   # Bot ユーザーID（任意、空欄の場合は token から解析）
-compress = true               # WebSocket 圧縮を有効にするか（任意、デフォルトは true）
-enabled = true                # 有効にするか（任意、デフォルトはtrue）
+bot_id = ""                   # BotのユーザーID（オプション、未記入の場合はtokenから解析）
+compress = true               # WebSocket圧縮の有効化（オプション、デフォルトはtrue）
+enabled = true                # アカウントの有効化（オプション、デフォルトはtrue）
 
 # アカウント2
 [KookAdapter.accounts.bot2]
@@ -39,29 +40,54 @@ bot_id = ""
 enabled = true
 ```
 
-> 旧設定の互換性：`[KookAdapter]` に token を含む旧の単一アカウント設定が検出された場合、`accounts.default` に自動的に移行されます。
+> 旧設定の互換性: 旧の単一アカウントの`[KookAdapter]`設定（tokenを含む）が検出された場合、自動的に`accounts.default`に移行されます。
 
-**各アカウントの設定項目の説明：**
-- `token`：Kook Bot のトークン（必須）、[Kook開発者センター](https://developer.kookapp.cn) から取得し、形式は `Bot xxx/xxx` です。
-- `bot_id`：Bot のユーザーID（任意）、空欄の場合は、トークンから自動的に解析されます。正確さを保証するため、手動で入力することを推奨します。
-- `compress`：WebSocket データ圧縮を有効にするか（任意、デフォルトは `true`）、有効にすると zlib でデータを解凍します。
-- `enabled`：このアカウントを有効にするか（任意、デフォルトは true）
+**各アカウントの設定項目説明:**
+- `token`: Kook BotのToken（必須）、[Kook開発者センター](https://developer.kookapp.cn)から取得、形式は`Bot xxx/xxx`
+- `bot_id`: BotのユーザーID（オプション）、未記入の場合はtokenから自動解析されます。正確性を確保するため、手動で記入することを推奨します。
+- `compress`: WebSocketデータ圧縮の有効化（オプション、デフォルトは`true`）、有効化するとzlibでデータを解凍します。
+- `enabled`: アカウントの有効化（オプション、デフォルトはtrue）
 
-**API 環境：**
-- Kook API 基本アドレス：`https://www.kookapp.cn/api/v3`
-- WebSocket ゲートウェイは API を介して動的に取得されます：`POST /gateway/index`
+**API環境:**
+- Kook APIの基本アドレス: `https://www.kookapp.cn/api/v3`
+- WebSocketゲートウェイはAPIを介して動的に取得: `POST /gateway/index`
 
-## v5 フレームワークの更新（4.1.0）
+## 標準化対応（4.3.2）
 
-このアダプタは v5 フレームワークに準拠した更新を完了しました（段階的なアップグレード、API は互換性を保つ）。
+### イベントとアカウント
 
-- **BaseConverter の継承**：コンバーターの共通フィールドはフレームワークの `build_base_event` によって構築されます。
-- **Api DSL**：標準的な API アクションのマッピング（下記を参照）
-- **標準的な keyboard セグメント**：`{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}}` テキストとキーボードは自動的に Kook カードメッセージ（section + action-group）に組み合わされます。.Keyboard(rows) 修飾子は一般的な構造を受け付けます。
-- **spawn_background でのタスクの所属**：接続タスクは `untime.spawn_background` を使用します。
-- **フレームワークのソフト依存**：ErisPulse>=2.7.1 の実行時検出と警告メッセージを出力します。起動時にバージョンのログを出力します。
+- **イベント `self.account_id` 注入**: すべてのイベントに発生元のアカウント名が注入され、複数アカウント下では`event.reply()`は自動的に該当アカウントで応答されます。
 
-### 標準的な API アクション
+### Api署名対応
+
+| 動作 | 署名 | 説明 |
+|------|------|------|
+| get_channel_info | `(guild_id, channel_id)` | 新しい署名guild_idが最初のパラメータに；1つの位置パラメータのみ渡された場合、旧署名（channel_idと見なす）を互換します。 |
+| get_channel_member_list | `(guild_id, channel_id)` | 同上互換ルール |
+| get_guild_info / get_guild_list | - | dataは`guild_id` / `guild_name`などのフィールドを使用（旧`group_*`フィールドは破壊しないように保持） |
+
+### エラーコード規格
+
+エラーコードはSDKの標準化に従い、Kookプラットフォームの元のエラーコード（401xx/4xxxxなど）は直接retcodeとして使用されません：
+
+| retcode | 説明 |
+|---------|------|
+| 0 | 成功（成功応答`message`は空文字列） |
+| 33001 | ネットワークエラー（リクエスト異常、アカウントAPIインスタンスが初期化されていないなど） |
+| 34100 | プラットフォームエラー（Kookが0以外のcodeを返した場合；元の応答は`kook_raw`に保持され、元のcodeは`kook_code`フィールドに別途保存） |
+| 10002 | 不支持の動作（`get_guild_member_info` / `get_guild_member_list` / `set_guild_name` / `leave_guild` / `leave_channel`は明示的に返す；未知のAPIエンドポイントは例外を投げず、統一して10002を返す） |
+
+## v5範式更新（4.1.0）
+
+このアダプターはv5範式の対応を完了しました（段階的なアップグレード、API互換性あり）：
+
+- **BaseConverter継承**: 転換器の共通フィールドはフレームワーク`build_base_event`で構築されます。
+- **Api DSL**: 標準Apiアクションのマッピング（以下を参照）
+- **標準 keyboard 段**: `{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}}` テキスト+キーボードは自動的にKookカードメッセージ（section + action-group）に組み合わされます；.Keyboard(rows)修飾子は汎用構造を受け入れます。
+- **spawn_background 任務の帰属**: 接続タスクはruntime.spawn_backgroundを使用します。
+- **フレームワークのソフト依存**: ErisPulse>=2.7.1の実行時検出と警告；起動時にバージョンログを出力します。
+
+### 標準Apiアクション
 
 ```python
 from ErisPulse import sdk
@@ -69,9 +95,9 @@ kook = sdk.adapter.get("kook")
 
 result = await kook.Api.get_self_info()              # GET /users/@me
 result = await kook.Api.get_user_info(user_id)       # POST /user/view
-result = await kook.Api.get_guild_info(guild_id)     # POST /guild/view
+result = await kook.Api.get_guild_info(guild_id)     # POST /guild/view（dataにguild_id / guild_nameを使用）
 result = await kook.Api.get_guild_list()             # POST /guild/list
-result = await kook.Api.get_channel_info(channel_id) # POST /channel/view
+result = await kook.Api.get_channel_info(guild_id, channel_id)  # POST /channel/view（新しい署名guild_idが最初のパラメータ）
 result = await kook.Api.get_channel_list(guild_id)   # POST /channel/list
 await kook.Api.delete_message(msg_id)                # POST /message/delete
 result = await kook.Api.Using("main").get_self_info()
@@ -80,12 +106,12 @@ result = await kook.Api.Using("main").get_self_info()
 ### ボタン（keyboard）
 
 ```python
-rows = [[{"label": "オプションA", "type": "callback", "data": "vote:A"},
+rows = [[{"label": "選択肢A", "type": "callback", "data": "vote:A"},
          {"label": "公式サイト",  "type": "link",     "data": "https://example.com"}]]
 await kook.Send.To("channel", channel_id).Keyboard(rows).Text("選択してください")
-# テキストとボタンは自動的に Kook カードメッセージ（section + action-group）に組み合わされます。
+# テキストとボタンは自動的にKookカードメッセージ（section + action-group）に組み合わされます。
 
-# ボタンのクリックコールバック（標準的なフィールド）
+# ボタンクリックのコールバック（標準フィールド）
 from ErisPulse.Core.Event import notice
 
 @notice.on_notice()
@@ -94,10 +120,11 @@ async def handle_button(event):
         data = event["button_data"]
 ```
 
-## 支援されるメッセージ送信タイプ
+---
 
-すべての送信メソッドは、チェーン式の構文で実装されています。たとえば：
+## 支援するメッセージ送信タイプ
 
+すべての送信メソッドはチェーン式構文で実現されます。例えば：
 ```python
 from ErisPulse.Core import adapter
 kook = adapter.get("kook")
@@ -105,27 +132,26 @@ kook = adapter.get("kook")
 await kook.Send.To("group", channel_id).Text("Hello World!")
 ```
 
-サポートされる送信タイプは以下の通りです：
-
+支援する送信タイプは以下の通りです：
 - `.Text(text: str)`：純粋なテキストメッセージを送信します。
-- `.Image(file: bytes | str)`：画像メッセージを送信します。ファイルパス、URL、バイナリデータをサポートします。
-- `.Video(file: bytes | str)`：動画メッセージを送信します。ファイルパス、URL、バイナリデータをサポートします。
-- `.File(file: bytes | str, filename: str = None)`：ファイルメッセージを送信します。ファイルパス、URL、バイナリデータをサポートします。
-- `.Voice(file: bytes | str)`：音声メッセージを送信します。ファイルパス、URL、バイナリデータをサポートします。
+- `.Image(file: bytes | str)`：画像メッセージを送信します。ファイルパス、URL、バイナリデータに対応します。
+- `.Video(file: bytes | str)`：ビデオメッセージを送信します。ファイルパス、URL、バイナリデータに対応します。
+- `.File(file: bytes | str, filename: str = None)`：ファイルメッセージを送信します。ファイルパス、URL、バイナリデータに対応します。
+- `.Voice(file: bytes | str)`：音声メッセージを送信します。ファイルパス、URL、バイナリデータに対応します。
 - `.Markdown(text: str)`：KMarkdown形式のメッセージを送信します。
 - `.Card(card_data: dict)`：カードメッセージ（CardMessage）を送信します。
-- `.MergeForward(nodes, title="合併チャット記録")`：合併転送メッセージを送信します（カードにレンダリング：タイトル header + 各メッセージを section として、KMD エスケープ、≤40 ノード）。
-- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12 形式のメッセージを送信します。
+- `.MergeForward(nodes, title="合併チャット記録")`：合併転送メッセージを送信します（カードにレンダリング：タイトルheader + 各メッセージごとにsection、KMDエスケープ、≤40ノード）。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します。
 
-### チェーン式修飾メソッド（組み合わせて使用可能）
+### 鏈式修飾メソッド（組み合わせ使用可能）
 
-チェーン式修飾メソッドは `self` を返し、チェーン式で呼び出すことができます。最終的な送信メソッドの前に呼び出す必要があります：
+修飾メソッドは`self`を返すため、チェーンで呼び出すことができます。最終的な送信メソッドの前に呼び出す必要があります：
 
-- `.Reply(message_id: str)`：指定されたメッセージに返信します。
-- `.At(user_id: str)`：指定されたユーザーを@します。複数回呼び出すことで、複数のユーザーを@できます。
+- `.Reply(message_id: str)`：指定したメッセージに返信（引用）します。
+- `.At(user_id: str)`：指定したユーザーを@します。複数回呼び出すことで複数のユーザーを@できます。
 - `.AtAll()`：全員を@します。
 
-### チェーン式呼び出しの例
+### 鏈式呼び出しの例
 
 ```python
 # 基本的な送信
@@ -138,29 +164,29 @@ await kook.Send.To("group", channel_id).Reply(msg_id).Text("返信メッセー�
 await kook.Send.To("group", channel_id).At("user_id").Text("こんにちは")
 
 # 複数のユーザーを@する
-await kook.Send.To("group", channel_id).At("user1").At("user2").Text("複数ユーザー@")
+await kook.Send.To("group", channel_id).At("user1").At("user2").Text("複数のユーザー@")
 
 # 全員を@する
 await kook.Send.To("group", channel_id).AtAll().Text("お知らせ")
 
-# 組み合わせて使用する
+# 組み合わせ
 await kook.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("複合メッセージ")
 ```
 
 ### OneBot12メッセージのサポート
 
-アダプターはOneBot12形式のメッセージの送信をサポートしており、プラットフォーム間のメッセージ互換性を確保します：
+アダプターはOneBot12形式のメッセージ送信をサポートし、プラットフォーム間のメッセージ互換性を確保します：
 
 ```python
-# OneBot12形式のメッセージを送信する
+# OneBot12形式のメッセージを送信
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await kook.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 
-# チェーン式修飾と組み合わせる
+# 鏈式修飾と組み合わせる
 ob12_msg = [{"type": "text", "data": {"text": "返信メッセージ"}}]
 await kook.Send.To("group", channel_id).Reply(msg_id).Raw_ob12(ob12_msg)
 
-# Raw_ob12でmentionとreplyメッセージセグメントを使用する
+# Raw_ob12でmentionとreplyメッセージセグメントを使用
 ob12_msg = [
     {"type": "text", "data": {"text": "Hello "}},
     {"type": "mention", "data": {"user_id": "user_id"}},
@@ -169,34 +195,35 @@ ob12_msg = [
 await kook.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 ```
 
-### 追加の操作メソッド
+### 追加操作メソッド
 
 メッセージ送信以外にも、Kookアダプターは以下の操作をサポートします：
 
 ```python
-# メッセージを編集する（KMarkdown type=9 と CardMessage type=10 のみサポート）
+# メッセージの編集（KMarkdown type=9とCardMessage type=10のみサポート）
 await kook.Send.To("group", channel_id).Edit(msg_id, "**更新後の内容**")
 
-# メッセージを撤回する
+# メッセージの撤回
 await kook.Send.To("group", channel_id).Recall(msg_id)
 
-# ファイルをアップロードする（ファイルURLを取得）
+# ファイルのアップロード（ファイルURLの取得）
 result = await kook.Send.Upload("C:/path/to/file.jpg")
 file_url = result["data"]["url"]
 ```
 
 ## 送信メソッドの戻り値
 
-すべての送信メソッドは Task オブジェクトを返します。これを直接 await することで送信結果を取得できます。返り値は ErisPulse アダプタの標準化された返り値規格に従います：
+すべての送信メソッドはTaskオブジェクトを返し、直接awaitして送信結果を取得できます。返り値はErisPulseアダプターの標準化された返り値規格に従います：
 
 ```python
 {
-    "status": "ok",           // 実行ステータス: "ok" または "failed"
-    "retcode": 0,             // 戻りコード（Kook API の code）
+    "status": "ok",           // 実行状態: "ok" または "failed"
+    "retcode": 0,             // 返り値コード（0が成功、プラットフォームエラーは34100）
     "data": {...},            // 応答データ
     "message_id": "xxx",      // メッセージID
-    "message": "",            // エラーメッセージ
-    "kook_raw": {...}         // 元の応答データ
+    "message": "",            // エラー情報（成功応答は空文字列）
+    "kook_raw": {...},        // 元の応答データ
+    "kook_code": 0            // Kookの元のcode（エラー時は保存）
 }
 ```
 
@@ -205,38 +232,33 @@ file_url = result["data"]["url"]
 | retcode | 説明 |
 |---------|------|
 | 0 | 成功 |
-| 40100 | Token が無効または提供されていない |
-| 40101 | Token が期限切れ |
-| 40102 | Token が Bot と一致しない |
-| 40103 | 権限が不足している |
-| 40000 | パラメータエラー |
-| 40400 | 対象が存在しない |
-| 40300 | 操作権限がありません |
-| 50000 | サーバ内部エラー |
-| -1 | アダプタ内部エラー |
+| 33001 | ネットワークエラー（リクエスト異常、アカウントAPIインスタンスが初期化されていないなど） |
+| 34100 | プラットフォームエラー（Kookが0以外のcodeを返した場合、元の応答は`kook_raw`に保持され、元のcodeは`kook_code`に保存） |
+| 10002 | 不支持の動作（「標準化対応（4.3.2）」のエラーコード規格を参照）
 
-## 特有イベントタイプ
+## 特有のイベントタイプ
 
-このプラットフォームの機能を使用するには、`platform=="kook"` の検証が必要です。
+`platform=="kook"`の検証が必要です。このプラットフォームの特性を使用するには。
 
 ### 核心的な違い
 
-1. **チャンネルシステム**：Kook はサーバー（Guild）とチャンネル（Channel）の2層構造を使用し、チャンネルがメッセージの基本的な送信先となります。
-2. **メッセージタイプ**：Kook はテキスト(1)、画像(2)、動画(3)、ファイル(4)、音声(8)、KMarkdown(9)、カードメッセージ(10)など、多様なメッセージタイプをサポートしています。
-3. **プライベートメッセージシステム**：Kook はチャンネルメッセージとプライベートメッセージを区別し、異なる API エンドポイントを使用します。
-4. **メッセージの順序番号**：Kook の WebSocket は `sn` 番号を使用してメッセージの順序性を保証し、メッセージの一時保存や順序の乱れを再配置することをサポートします。
-5. **メッセージの編集と撤回**：既に送信されたメッセージ（KMarkdown および CardMessage に限る）を編集し、メッセージを撤回することができます。
+1. **チャンネルシステム**: Kookはサーバー（Guild）とチャンネル（Channel）の2層構造を使用し、チャンネルがメッセージの基本的な送信先です。
+2. **メッセージタイプ**: Kookはテキスト(1)、画像(2)、ビデオ(3)、ファイル(4)、音声(8)、KMarkdown(9)、カードメッセージ(10)など、多様なメッセージタイプをサポートします。
+3. **プライベートメッセージシステム**: Kookはチャンネルメッセージとプライベートメッセージを区別し、異なるAPIエンドポイントを使用します。
+4. **メッセージ番号**: KookのWebSocketは`sn`番号を使用してメッセージの順序性を保証し、メッセージの一時保存と乱序の再配置をサポートします。
+5. **メッセージの編集と撤回**: KMarkdownとCardMessageの既送信メッセージの編集とメッセージの撤回をサポートします。
 
 ### 拡張フィールド
 
-- すべての固有フィールドは `kook_` で始まるプレフィックスで識別されます。
-- 保持された元のデータは `kook_raw` フィールドに格納されます。
-- `kook_raw_type` は元の Kook メッセージタイプの番号を示します（例：`1` はテキスト、`255` は通知イベント）。
+- すべての特有のフィールドは`kook_`前接辞で識別されます。
+- 元のデータは`kook_raw`フィールドに保持されます。
+- `kook_raw_type`は元のKookメッセージタイプ番号を識別します（例: `1`はテキスト、`255`は通知イベント）。
+- イベント`self.account_id`はイベントを発生させたアカウント名です（複数アカウント下では`event.reply()`は該当アカウントで自動的に受理されます）。
 
 ### 特殊フィールドの例
 
 ```python
-# チャンネルのテキストメッセージ
+# チャンネルテキストメッセージ
 {
   "type": "message",
   "detail_type": "group",
@@ -244,6 +266,11 @@ file_url = result["data"]["url"]
   "group_id": "チャンネルID",
   "channel_id": "チャンネルID",
   "message_id": "メッセージID",
+  "self": {
+    "platform": "kook",
+    "user_id": "BotID",
+    "account_id": "default"
+  },
   "kook_raw": {...},
   "kook_raw_type": "1",
   "message": [
@@ -252,7 +279,7 @@ file_url = result["data"]["url"]
   "alt_message": "Hello"
 }
 
-# 画像付きのメッセージ
+# 画像付きメッセージ
 {
   "type": "message",
   "detail_type": "group",
@@ -296,7 +323,7 @@ file_url = result["data"]["url"]
   ]
 }
 
-# プライベートチャットメッセージ
+# プライベートメッセージ
 {
   "type": "message",
   "detail_type": "private",
@@ -305,20 +332,20 @@ file_url = result["data"]["url"]
   "kook_raw": {...},
   "kook_raw_type": "1",
   "message": [
-    {"type": "text", "data": {"text": "プライベートチャットの内容"}}
+    {"type": "text", "data": {"text": "プライベートメッセージの内容"}}
   ]
 }
 ```
 
 ### メッセージセグメントタイプ
 
-Kook のメッセージタイプは `type` フィールドに基づいて対応するメッセージセグメントに自動的に変換されます：
+Kookのメッセージタイプは`type`フィールドに基づいて対応するメッセージセグメントに自動変換されます：
 
 | Kook type | 変換タイプ | 説明 |
 |---|---|---|
 | 1 | `text` | テキストメッセージ |
 | 2 | `image` | 画像メッセージ |
-| 3 | `video` | 動画メッセージ |
+| 3 | `video` | ビデオメッセージ |
 | 4 | `file` | ファイルメッセージ |
 | 8 | `record` | 音声メッセージ |
 | 9 | `text` | KMarkdownメッセージ（純粋なテキスト内容を抽出） |
@@ -337,20 +364,20 @@ Kook のメッセージタイプは `type` フィールドに基づいて対応�
 
 ### Mentionメッセージセグメント
 
-メッセージに @ 情報が含まれる場合、メッセージセグメントの前に `mention` メッセージセグメントが挿入されます：
+メッセージに@情報が含まれている場合、メッセージセグメントの前に`mention`メッセージセグメントが挿入されます：
 
 ```json
 {
   "type": "mention",
   "data": {
-    "user_id": "メンションされたユーザーID"
+    "user_id": "@されたユーザーID"
   }
 }
 ```
 
 ### mention_allメッセージセグメント
 
-メッセージが @全員 の場合、`mention_all` メッセージセグメントが挿入されます：
+メッセージが全員を@している場合、`mention_all`メッセージセグメントが挿入されます：
 
 ```json
 {
@@ -363,39 +390,39 @@ Kook のメッセージタイプは `type` フィールドに基づいて対応�
 
 ### 接続フロー
 
-1. Bot Tokenを使用して `POST /gateway/index` を呼び出すことでWebSocketゲートウェイのアドレスを取得します。
+1. Bot Tokenを使用して`POST /gateway/index`を呼び出し、WebSocketゲートウェイアドレスを取得します。
 2. WebSocketゲートウェイに接続します。
-3. HELLO（s=1）シグナルを受信し、接続状態を確認します。
-4. ハートビートループを開始します（PING、s=2、30秒ごとに1回）。
-5. メッセージイベント（s=0）を受信し、sn番号を使用して順序を保証します。
+3. HELLO（s=1）シグナルを受信し、接続状態を検証します。
+4. ハートビートループを開始します（PING、s=2、30秒ごとに1回）、現在のsnを含みます。
+5. メッセージイベント（s=0）を受信し、sn番号を使用して順序性を保証します。
 6. ハートビート応答PONG（s=3）を受信します。
 
 ### シグナルタイプ
 
 | シグナル | s値 | 説明 |
 |------|-----|------|
-| HELLO | 1 | サーバーからの歓迎シグナル、接続成功後に受信します。 |
-| PING | 2 | クライアントのハートビート、30秒ごとに現在のsnを含めて送信します。 |
+| HELLO | 1 | サーバーの歓迎シグナル、接続成功後に受信します |
+| PING | 2 | クライアントのハートビート、30秒ごとに送信し、現在のsnを含みます |
 | PONG | 3 | ハートビート応答 |
-| RESUME | 4 | 接続の復元シグナル、snを含んでセッションを復元します。 |
-| RECONNECT | 5 | サーバーからの再接続要求、ゲートウェイを再取得する必要があります。 |
-| RESUME_ACK | 6 | RESUMEの成功応答 |
+| RESUME | 4 | 接続の再開シグナル、snを含みセッションを再開します |
+| RECONNECT | 5 | サーバーが再接続を要求するシグナル、再びゲートウェイを取得する必要があります |
+| RESUME_ACK | 6 | RESUME成功応答 |
 
 ### 断線再接続
 
-- 接続が異常終了した後、アダプターは自動的に再接続を試みます。
-- 以前に `sn > 0` が存在する場合、まずRESUME（s=4）を使って接続を復元しようとします。
-- RESUMEが失敗した場合、snとメッセージキューをリセットし、完全な接続（HELLOフロー）からやり直します。
+- 接続が異常断線した場合、アダプターは自動的に再接続を試みます。
+- 以前に`sn > 0`があった場合、まずRESUME（s=4）を試みます。
+- RESUMEに失敗した場合、snとメッセージキューをリセットし、完全な新接続（HELLOフロー）を行います。
 - RECONNECT（s=5）シグナルを受信した場合、状態をクリアして再接続します。
 
 ### メッセージ番号メカニズム
 
-Kook WebSocketは`sn`（増加する番号）を使用してメッセージの順序を保証します：
+Kook WebSocketは`sn`（増加する番号）を使用してメッセージの順序性を保証します：
 
-- 各メッセージイベント（s=0）を受信するたびに、snは1増加します。
+- 各メッセージイベント（s=0）を受信するたびに、snが増加します。
 - 受信したメッセージのsnが連続していない場合、一時保存モードに入ります。
-- 一時保存中のメッセージはsn順に並べ替えられ、欠落したメッセージが到着した後に順序通りに処理されます。
-- 一時保存区がクリアされた後、自動的に一時保存モードから抜けます。
+- 一時保存エリアのメッセージはsn順に並べ替えられ、欠落したメッセージが到着した後に順序に従って処理されます。
+- 一時保存エリアがクリアされた後は、自動的に一時保存モードを終了します。
 
 ## 使用例
 
@@ -465,25 +492,25 @@ async def handle_notice(event):
 ### メディアメッセージの送信
 
 ```python
-# 画像の送信（URL）
+# 画像送信（URL）
 await kook.Send.To("group", channel_id).Image("https://example.com/image.png")
 
-# 画像の送信（バイナリ）
+# 画像送信（バイナリ）
 with open("image.png", "rb") as f:
     image_bytes = f.read()
 await kook.Send.To("group", channel_id).Image(image_bytes)
 
-# ビデオの送信
+# ビデオ送信
 await kook.Send.To("group", channel_id).Video("https://example.com/video.mp4")
 
-# ファイルの送信
+# ファイル送信
 await kook.Send.To("group", channel_id).File("https://example.com/file.pdf", filename="document.pdf")
 
-# 音声の送信
+# 音声送信
 await kook.Send.To("group", channel_id).Voice("https://example.com/voice.mp3")
 ```
 
-### KMarkdown とカードメッセージの送信
+### KMarkdownとカードメッセージの送信
 
 ```python
 # KMarkdown
@@ -505,11 +532,11 @@ await kook.Send.To("group", channel_id).Card(card)
 ### メッセージの編集と撤回
 
 ```python
-# メッセージの送信
+# メッセージ送信
 result = await kook.Send.To("group", channel_id).Markdown("**元の内容**")
 msg_id = result["data"]["msg_id"]
 
-# メッセージの編集（KMarkdown と CardMessage にのみ対応）
+# メッセージの編集（KMarkdownとCardMessageのみサポート）
 await kook.Send.To("group", channel_id).Edit(msg_id, "**更新後の内容**")
 
 # メッセージの撤回

@@ -16,7 +16,7 @@
 | 欄位 | 類型 | 說明 |
 |------|------|------|
 | id | string | 事件唯一識別碼 |
-| time | integer | Unix時間戳（秒級） |
+| time | integer | Unix時間戳記（秒級） |
 | type | string | 事件類型 |
 | detail_type | string | 事件詳細類型（詳見[會話類型標準](session-types.md)） |
 | sub_type | string | 事件子類型 |
@@ -25,17 +25,17 @@
 | self.platform | string | 平台名稱 |
 | self.user_id | string | 機器人使用者ID |
 
-> **OneBot12 基線**：`self.platform` / `self.user_id` 與訊息事件的 `message_id` 均為 OneBot12 基線已定義的欄位，框架直接採用基線定義，不再引入自有擴充鍵（`self.account_id` 為限定擴充鍵，僅用於動態帳戶未取得 user_id 前的代位識別，見 §6）。
+> **OneBot12 基線**：`self.platform` / `self.user_id` 與訊息事件的 `message_id` 均為 OneBot12 基線已定義的欄位，框架直接採用基線定義，不再引入自有擴充鍵（`self.account_id` 為限定擴充鍵，僅用於動態帳戶未取得 user_id 前的代位標識，見 §6）。
 
 **detail_type 規範**：
 - 必須使用 ErisPulse 標準會話類型（詳見 [會話類型標準](session-types.md)）
 - 支援的類型：`private`, `group`, `user`, `channel`, `guild`, `thread`
-- 配接器負責將平台原生類型映射到標準類型
+- 適配器負責將平台原生類型映射到標準類型
 
 ### 2.2 訊息事件欄位
 | 欄位 | 類型 | 說明 |
 |------|------|------|
-| message_id | string | 訊息ID（OneBot12 基線標準必選欄位，配接器必須產出事件頂層） |
+| message_id | string | 訊息ID（OneBot12 基線標準必選欄位，適配器必須產出事件頂層） |
 | message | array | 訊息段陣列 |
 | alt_message | string | 訊息段備用文字 |
 | user_id | string | 使用者ID |
@@ -57,9 +57,9 @@
 | request_id | string | 請求識別碼（**強烈推薦**，用於同意/拒絕請求操作） |
 
 **`request_id` 欄位說明**：
-- `request_id` 是請求事件的唯一操作識別碼，用於透過 `HandleRequest` DSL 執行同意/拒絕操作
-- 配接器在轉換請求事件時，應將平台原生的請求識別映射到此欄位
-- 如果平台本身沒有請求ID，配接器應產生一個唯一識別（如基於時間戳+使用者ID的雜湊）
+- `request_id` 是請求事件的唯一操作識別碼，用於透過 `Request` DSL 執行同意/拒絕操作
+- 適配器在轉換請求事件時，應將平台原生的請求識別碼映射到此欄位
+- 如果平台本身沒有請求ID，適配器應產生一個唯一標識（如基於時間戳記+使用者ID的雜湊值）
 - 當 `request_id` 缺失時，`event.approve()` / `event.reject()` 將拋出 `ValueError`
 
 ## 3. 事件格式示例

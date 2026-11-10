@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "c7586071f740821bb36b0956a03105a8",
-  "file_hash": "c7586071f740821bb36b0956a03105a8",
-  "translated_at": "2026-11-08T14:10:04.646938",
+  "hash": "fdda13beca7ad6dcd9b66f7eceb6788a",
+  "file_hash": "fdda13beca7ad6dcd9b66f7eceb6788a",
+  "translated_at": "2026-11-10T06:35:06.124618",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -22,8 +22,8 @@
       "translation": "## 3. 完整欄位規範\n\n### 3.1 通用欄位\n\n#### 成功回應範例\n```json\n{\n    \"status\": \"ok\",\n    \"retcode\": 0,\n    \"data\": {\n        \"message_id\": \"1234\",\n        \"time\": 1632847927.599013\n    },\n    \"message_id\": \"1234\",\n    \"message\": \"\",\n    \"echo\": \"1234\",\n    \"telegram_raw\": {...}\n}\n```\n\n#### 失敗回應範例\n```json\n{\n    \"status\": \"failed\",\n    \"retcode\": 10003,\n    \"data\": null,\n    \"message_id\": \"\",\n    \"message\": \"缺少必要參數: user_id\",\n    \"echo\": \"1234\",\n    \"telegram_raw\": {...}\n}\n```\n\n### 3.2 回傳碼規範\n\n#### 0 成功（OK）\n- 0: 成功（OK）\n\n#### 1xxxx 動作請求錯誤（Request Error）\n| 錯誤碼 | 錯誤名 | 說明 |\n|-------|-------|------|\n| 10001 | Bad Request | 無效的動作請求 |\n| 10002 | Unsupported Action | 不支援的動作請求 |\n| 10003 | Bad Param | 無效的動作請求參數 |\n| 10004 | Unsupported Param | 不支援的動作請求參數 |\n| 10005 | Unsupported Segment | 不支援的訊息段類型 |\n| 10006 | Bad Segment Data | 無效的訊息段參數 |\n| 10007 | Unsupported Segment Data | 不支援的訊息段參數 |\n| 10101 | Who Am I | 未指定機器人帳號 |\n| 10102 | Unknown Self | 未知的機器人帳號 |\n\n#### 2xxxx 動作處理器錯誤（Handler Error）\n| 錯誤碼 | 錯誤名 | 說明 |\n|-------|-------|------|\n| 20001 | Bad Handler | 動作處理器實作錯誤 |\n| 20002 | Internal Handler Error | 動作處理器執行時拋出例外 |\n\n#### 3xxxx 動作執行錯誤（Execution Error）\n| 錯誤碼範圍 | 錯誤類型 | 說明 |\n|-----------|---------|------|\n| 31xxx | Database Error | 資料庫錯誤 |\n| 32xxx | Filesystem Error | 檔案系統錯誤 |\n| 33xxx | Network Error | 網路錯誤 |\n| 34xxx | Platform Error | 機器人平台錯誤 |\n| 35xxx | Logic Error | 動作邏輯錯誤 |\n| 36xxx | I Am Tired | 實現決定罷工 |\n\n#### 保留錯誤段\n- 4xxxx、5xxxx: 保留段，不應使用\n- 6xxxx～9xxxx: 其他錯誤段，供實現自訂使用"
     },
     {
-      "hash": "31669faf6d364039f8c4a74abdb1fae9",
-      "translation": "## 4. 實現要求\n1. 所有回應必須包含 status、retcode、data 和 message 欄位\n2. 當請求中包含非空 echo 欄位時，回應必須包含相同值的 echo 欄位\n3. 返回碼必須嚴格遵循 OneBot12 標準\n4. 錯誤資訊 (message) 應當是人類可讀的描述"
+      "hash": "276c52eedb359dc8fcc9dfafc0e51f29",
+      "translation": "## 4. 實作要求\n1. 所有回應必須包含status、retcode、data和message欄位\n2. 當請求中包含非空echo欄位時，回應必須包含相同值的echo欄位\n3. 回傳碼必須嚴格遵循OneBot12規範\n4. 錯誤訊息(message)應當是人類可讀的描述\n\n### 4.1 回應建構助手：`make_response` / `make_error`\n\n轉接器建構標準回應統一用 `BaseAdapter` 上的兩個助手，不必手寫 dict：\n\n```python\n# 成功（send / call_api / _do_accept 等所有回傳標準回應的位置）\nreturn self.make_response(\n    data=result,                    # 回應資料\n    message_id=result.get(\"message_id\", \"\"),\n    raw=result,                     # 平台原始回應 → 自動掛到 {platform}_raw 欄位\n)\n\n# 失敗（status 固定 \"failed\"）\nreturn self.make_error(\n    retcode=34100,                  # 預設 34600（SDK Failure）；平台錯誤應傳自訂的 34xxx\n    message=\"平台風控拒絕\",\n    raw=response,\n)\n```\n\n| 助手 | 簽名 | 語意 |\n|------|------|------|\n| `make_response` | `(*, status=\"ok\", retcode=0, data=None, message_id=\"\", message=\"\", raw=None)` | 依標準結構組裝；`raw` 非 `None` 時自動掛 `{platform}_raw` 鍵（平台名取 `self._platform`） |\n| `make_error` | `(retcode=34600, message=\"\", raw=None)` | `make_response(status=\"failed\", ...)` 的快捷方式 |\n\n> 手寫等價 dict 亦合法（結構一致即可）；助手的價值是 `{platform}_raw` 的平台名串接與欄位完整性不遺漏。"
     },
     {
       "hash": "266c9f184ba770f775b691a0c6ff6c03",

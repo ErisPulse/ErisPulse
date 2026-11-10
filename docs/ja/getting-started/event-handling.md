@@ -5,25 +5,24 @@
 
 イベントハンドラーとは、ボットがユーザーの意図を「理解」して反応する場です。このドキュメントでは、5種類のイベントごとにそのままコピーして使える実装例を示し、パラメータ解析、権限、スロットリング、マルチターン対話といった実践的なシナリオも網羅します。
 
-## イベントタイプの概要
+## 事件タイプの概要
 
 ErisPulse は以下のイベントタイプをサポートしています：
 
 | イベントタイプ | 説明 | 適用場面 |
 |---------|------|---------|
-| メッセージイベント | ユーザーが送信したすべてのメッセージ | チャットボット、コンテンツフィルタ |
-| コマンドイベント | コマンド接頭辞で始まるメッセージ | コマンド処理、機能入口 |
-| 通知イベント | システム通知（友達追加、グループメンバー変更など） | メッセージ歓迎、ステータス通知 |
+| メッセージイベント | ユーザーが送信した任意のメッセージ | チャットボット、コンテンツフィルタリング |
+| コマンドイベント | コマンドプレフィックスで始まるメッセージ | コマンド処理、機能エントリ |
+| 通知イベント | システム通知（友達追加、グループメンバーの変更など） | メッセージの歓迎、ステータス通知 |
 | 要求イベント | ユーザーの要求（友達リクエスト、グループ招待） | 要求の自動処理 |
 | 元イベント | システムレベルのイベント（接続、ハートビート） | 接続監視、ステータスチェック |
 
-## メッセージイベントの処理
+> 各タイプには、`notice.on_notice()` / `request.on_request()` / `meta.on_meta()` という汎用レジストラがあります。
+> （このタイプのすべてのイベントを受信します）；細分化されたデコレータ（例：`on_group_increase`）は、対応するサブタイプのみをサブスクライブします。細分化されたデコレータを優先的に使用してください。
 
-> **ヒント**: IDEの自動補完と型チェックのサポートを得るために、イベントハンドラで `Event` タイプ注釈を使用することを推奨します。
+## メッセージイベント処理
 
-```python
-from ErisPulse.Core.Event import Event  # 注釈に使用するイベントタイプをインポート
-```
+> **強く推奨**：イベントハンドラの `event` パラメータに `Event` タイプの注釈を追加してください。実行時にはなくても動作します（フレームワークがイベントインスタンスを渡します）。注釈はIDEの補完と静的チェックに役立ちます。**モジュール/アダプターのカスタムメソッドの補完**を得るには、プロジェクトのルートディレクトリで `epsdk types` を実行して型定義を生成してください（[IDE補完](../getting-started/ide-completion.md)を参照）。
 
 ### すべてのメッセージを監視
 
@@ -34,45 +33,48 @@ from ErisPulse.Core.Event import message, Event
 async def message_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
-    sdk.logger.info(f"{user_id} からのメッセージ: {text}")
+    sdk.logger.info(f"ユーザー {user_id} からメッセージを受け取りました: {text}")
 ```
 
 ### プライベートメッセージを監視
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_private_message()
 async def private_handler(event: Event):
     user_id = event.get_user_id()
-    await event.reply(f"こんにちは，{user_id}！これはプライベートメッセージです。")
+    await event.reply(f"こんにちは、{user_id}！これはプライベートメッセージです。")
 ```
 
 ### グループメッセージを監視
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_group_message()
 async def group_handler(event: Event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"グループ {group_id} で {user_id} がメッセージを送信しました")
+    sdk.logger.info(f"グループ {group_id} でユーザー {user_id} がメッセージを送信しました")
 ```
 
 ### @メッセージを監視
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_at_message()
 async def at_handler(event: Event):
     # @されたユーザーのリストを取得
     mentions = event.get_mentions()
-    await event.reply(f"あなたは以下のユーザーを@しました: {mentions}")
+    await event.reply(f"以下のユーザーを@しました: {mentions}")
 ```
 
-### ワイルドカードと正規表現の監視
+### ワイルドカードと正規表現による監視
 
-4つのメッセージデコレータ（`on_message` / `on_private_message` / `on_group_message` /
-`on_at_message`）は `pattern`（glob ワイルドカード）と `regex`（正規表現）をサポートし、一致しないメッセージは**ハンドラをトリガーしません**：
+4つのメッセージデコレータ（`on_message` / `on_private_message` / `on_group_message` / `on_at_message`）は、`pattern`（globワイルドカード）と `regex`（正規表現）をサポートしています。マッチしないメッセージは**ハンドラをトリガーしません**。
 
 ```python
-# glob ワイルドカード：* 任意の文字列、? 単一文字、[seq] 文字集合
+from ErisPulse.Core.Event import Event
+# globワイルドカード：* 任意の文字列、? 1文字、[seq] 文字集合
 @message.on_message(pattern="签到*")
 async def signin_handler(event: Event):
     await event.reply("签到成功")
@@ -80,15 +82,15 @@ async def signin_handler(event: Event):
 # 正規表現：金額をマッチ
 @message.on_message(regex=r"\d+\s*元")
 async def price_handler(event: Event):
-    await event.reply(f"受信金額：{event.get_text()}")
+    await event.reply(f"金額を受け取りました: {event.get_text()}")
 
-# pattern と regex が両方指定された場合 → 両方一致する必要がある
+# pattern と regex が両方指定された場合 → 両方マッチする必要があります
 @message.on_message(pattern="*元", regex=r"\d+\s*元")
 async def combined_handler(event: Event):
     pass
 ```
 
-`wait_reply` もこの2つのパラメータをサポートします（[返信待ち機能](../developer-guide/modules/event-wrapper.md#返信待ち機能)を参照）。
+`wait_reply` でもこの2つのパラメータがサポートされています（[返信待ち機能](../developer-guide/modules/event-wrapper.md#返信待ち機能)を参照）。
 
 ## コマンドイベント処理
 

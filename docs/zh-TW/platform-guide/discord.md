@@ -6,9 +6,10 @@ DiscordAdapter 是基於 Discord Gateway (WebSocket) 和 REST API v10 協議建�
 
 ## 文件資訊
 
-- 對應模組版本: 4.3.0
+- 對應模組版本: 4.4.3
 - 維護者: ErisPulse
 - Discord API 版本: v10
+- 最後更新: 2026-11-10
 
 ## 基本資訊
 
@@ -66,6 +67,34 @@ Intents 使用位遮罩，計算方式為各 Intent 值按位或（`|`）：
 - Discord REST API 基礎位址：`https://discord.com/api/v10`
 - Gateway WebSocket 位址：透過 `GET /gateway/bot` 動態獲取，通常為 `wss://gateway.discord.gg/?v=10&encoding=json`
 
+## 標準化對齊（4.4.3）
+
+### 事件變更
+
+1. **事件 id 唯一性**：MESSAGE_UPDATE / MESSAGE_DELETE、REACTION_ADD / REMOVE（含 REMOVE_ALL / REMOVE_EMOJI）等衍生事件的 `id` 改為 `"事件名:原始id"`（如 `MESSAGE_UPDATE:123456`），不再與 CREATE 事件撞 id 而被框架去重
+2. **事件 `self.account_id` 注入**：所有事件攜帶產生它的帳戶名，多帳戶下 `event.reply()` 自動按該帳戶受理發送
+3. **INTERACTION_CREATE 事件修正**：原誤標為 `type="request"`（detail_type `interaction`），現改為 `type="notice"`、`detail_type="discord_interaction"`；互動資料保留在 `discord_interaction` 字段
+
+### Api 簽名對齊
+
+| 動作 | 簽名 | 說明 |
+|------|------|------|
+| get_channel_info | `(guild_id, channel_id)` | 新簽名 guild_id 首參；僅傳一個位置參數時相容舊簽名（視為 channel_id） |
+| get_channel_list | `(guild_id, joined_only=False)` | 新增 joined_only 關鍵字參數 |
+| get_guild_info / get_guild_list | - | data 使用 `guild_id` / `guild_name`（舊 `group_id` / `group_name` 字段保留，避免破壞已有呼叫方） |
+
+### 錯誤碼規範
+
+錯誤碼已按 SDK 標準化（原 `34000` 不再使用）：
+
+| retcode | 說明 |
+|---------|------|
+| 0 | 成功 |
+| 33001 | 網路錯誤（連接失敗、超時等） |
+| 34100 | 平台拒絕（原始回應保留在 `discord_raw` 字段） |
+| 10002 | 不支援的動作（`get_guild_member_list` / `set_guild_name` / `get_channel_member_info` / `get_channel_member_list` / `leave_channel` 明確回傳，Discord REST 無對應語義） |
+| 10003 | 參數錯誤（如訊息登記表中無對應上下文導致無法撤回） |
+
 ## v5 範式更新（4.2.0）
 
 本適配器已完成 v5 範式對齊（增量升級，API 兼容）：
@@ -74,7 +103,7 @@ Intents 使用位遮罩，計算方式為各 Intent 值按位或（`|`）：
 - **Api DSL**：標準 Api 動作映射（見下）
 - **標準 keyboard 段**：轉換為 Discord components（action row + buttons）；.Keyboard(rows) 修飾器接受通用結構
 - **互動回調標準欄位**：INTERACTION_CREATE 事件包含 interaction_id / button_data
-- **spawn_background 任務歸屬**：連接任務改用 `runtime.spawn_background`
+- **spawn_background 任務歸屬**：連接任務改用 runtime.spawn_background
 - **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌
 
 ### 標準 Api 動作
@@ -85,8 +114,9 @@ discord = sdk.adapter.get("discord")
 
 result = await discord.Api.get_self_info()                # GET /users/@me
 result = await discord.Api.get_user_info(user_id)         # GET /users/{id}
-result = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}
+result = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}（data 用 guild_id / guild_name）
 result = await discord.Api.get_guild_list()               # GET /users/@me/guilds
+result = await discord.Api.get_channel_info(guild_id, channel_id)  # GET /channels/{id}（新簽名 guild_id 首參）
 result = await discord.Api.get_channel_list(guild_id)     # GET /guilds/{id}/channels
 result = await discord.Api.get_guild_member_info(gid, uid)
 await discord.Api.delete_message(message_id)              # 登記表自動補全 channel_id
@@ -214,8 +244,10 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 | retcode | 說明 |
 |---------|------|
 | 0 | 成功 |
-| 33001 | 網路錯誤（連接失敗、超時等） |
-| 34000 | Discord API 返回錯誤（權限不足、參數錯誤等） |
+| 33001 | 網絡錯誤（連接失敗、超時等） |
+| 34100 | 平台拒絕（權限不足、參數錯誤等，原始響應保留在 `discord_raw` 字段） |
+| 10002 | 不支援的動作（見「標準化對齊（4.4.3）」錯誤碼規範） |
+| 10003 | 參數錯誤（如撤回時無對應消息上下文） |
 
 ## 特有事件類型
 
@@ -236,6 +268,7 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 - `discord_raw_type`：原始事件類型名（如 `MESSAGE_CREATE`）
 - `discord_guild_id`：伺服器 ID
 - `discord_channel_id`：頻道 ID
+- `discord_interaction`：互動事件資料（INTERACTION_CREATE）
 
 ### detail_type 映射
 
@@ -249,8 +282,10 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 | Discord 事件 | OneBot12 type | detail_type | 說明 |
 |---|---|---|---|
 | MESSAGE_CREATE | message | channel/private | 訊息建立 |
-| MESSAGE_UPDATE | message | channel/private | 訊息編輯 |
-| MESSAGE_DELETE | notice | group_message_delete / private_message_delete | 訊息刪除 |
+| MESSAGE_UPDATE | message | channel/private | 訊息編輯（id 為 `MESSAGE_UPDATE:原始id`） |
+| MESSAGE_DELETE | notice | group_message_delete / private_message_delete | 訊息刪除（id 為 `MESSAGE_DELETE:原始id`） |
+| MESSAGE_REACTION_ADD | notice | group_message_reaction_add | 表情回應新增（id 為 `MESSAGE_REACTION_ADD:原始id`） |
+| MESSAGE_REACTION_REMOVE | notice | group_message_reaction_remove | 表情回應移除（id 為 `MESSAGE_REACTION_REMOVE:原始id`） |
 | GUILD_MEMBER_ADD | notice | group_member_increase | 成員加入 |
 | GUILD_MEMBER_REMOVE | notice | group_member_decrease | 成員離開 |
 | GUILD_MEMBER_UPDATE | notice | group_member_update | 成員資訊更新 |
@@ -258,7 +293,10 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 | GUILD_ROLE_DELETE | notice | group_role_delete | 角色刪除 |
 | CHANNEL_CREATE | notice | channel_create | 頻道建立 |
 | CHANNEL_DELETE | notice | channel_delete | 頻道刪除 |
-| INTERACTION_CREATE | request | interaction | 互動（按鈕、命令等） |
+| INTERACTION_CREATE | notice | discord_interaction | 互動（按鈕、指令等） |
+
+> 4.4.3 起，MESSAGE_UPDATE / MESSAGE_DELETE、REACTION_ADD / REMOVE 等非建立類事件的
+> `id` 均改為 `"事件名:原始id"`，避免與 MESSAGE_CREATE 事件 id 相衝突而被框架去重。
 
 ### 特殊欄位範例
 
@@ -271,6 +309,11 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
   "user_nickname": "使用者名稱",
   "group_id": "頻道ID",
   "message_id": "訊息ID",
+  "self": {
+    "platform": "discord",
+    "user_id": "BotID",
+    "account_id": "default"
+  },
   "discord_raw": {...},
   "discord_raw_type": "MESSAGE_CREATE",
   "discord_guild_id": "伺服器ID",
@@ -395,7 +438,7 @@ Discord 訊息內容根據 `content`、`attachments`、`embeds` 欄位自動轉�
 - 心跳攜帶最後的 `seq` 值（opcode 1，`d: seq`）
 - 若發送心跳後 `heartbeat_interval` 內未收到 ACK（opcode 11），視為連接異常並重連
 
-## 使用範例
+## 使用示例
 
 ### 處理頻道訊息
 
@@ -438,10 +481,10 @@ async def handle_private_msg(event):
 ```python
 embed = {
     "title": "伺服器公告",
-    "description": "歡迎使用 ErisPulse Discord 适配器",
+    "description": "歡迎使用 ErisPulse Discord 適配器",
     "color": 3447003,
     "fields": [
-        {"name": "版本", "value": "4.0.0", "inline": True},
+        {"name": "版本", "value": "4.4.3", "inline": True},
         {"name": "框架", "value": "ErisPulse", "inline": True},
     ],
     "footer": {"text": "Powered by ErisPulse"},
@@ -472,15 +515,19 @@ async def handle(event):
 
 ### 處理互動事件
 
-```python
-from ErisPulse.Core.Event import request
+4.4.3 起 INTERACTION_CREATE 按 `notice` / `discord_interaction` 分發：
 
-@request.on_request()
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
 async def handle_interaction(event):
     if event.get("platform") != "discord":
         return
+    if event.get("detail_type") != "discord_interaction":
+        return
 
-    interaction = event.get_interaction_data()
+    interaction = event.get_interaction_data()  # 等價於 event["discord_interaction"]
     if interaction.get("type") == 3:  # MESSAGE_COMPONENT
         await event.reply("按鈕已點擊！")
 ```

@@ -6,8 +6,9 @@ EmailAdapter 是基於 SMTP/IMAP 協議的郵件適配器，支援郵件發送�
 
 ## 文件資訊
 
-- 對應模組版本: 4.3.0
+- 對應模組版本: 4.3.2
 - 維護者: ErisPulse
+- 最後更新: 2026-11-10
 
 ## 基本資訊
 
@@ -55,32 +56,61 @@ password = "another-password"
 enabled = true
 ```
 
-## v5 範式更新（4.2.0）
+## v5 範式更新 (4.2.0)
 
 - **Api DSL 最小集**：get_self_info（電子信箱）/get_status/get_version/get_supported_actions
 - **spawn_background 任務歸屬**：IMAP 輪詢任務改用 runtime.spawn_background
 - **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌
 - 導入路徑更新至 Core.Bases；_load_accounts 保留（全域預設值合併為該適配器特有邏輯）
 
+## 標準化對齊（4.3.2）
+
+響應結構與錯誤碼遵循 [API 響應規範](../standards/api-response.md)。
+
+### 事件與響應欄位
+
+- **消息事件補齊頂層 `message_id`**：取郵件 `Message-ID` 頭
+- **無 `Message-ID` 的郵件事件 id 回退 uuid**：事件 `id` 與 `message_id` 不再為空，避免事件因 id 重複被下游去重吞掉
+- **`get_self_info` 原始數據位於響應頂層 `email_raw`**，標準欄位含 `user_id`（郵箱地址）
+
+### HTML 發送方法
+
+- `.Html(html: str)`：發送 HTML 格式郵件
+- `.HTML(html: str)`：`.Html()` 的別名（與標準 Send 方法命名保持一致）
+
+### 錯誤碼規範
+
+| retcode | 含義 | 說明 |
+|---------|------|------|
+| 0 | 成功 | — |
+| 33001 | 網路錯誤 | SMTP/IMAP 連接類失敗（超時、拒連等） |
+| 34100 | 平台失敗 | SMTP 拒絕（收件人/發件人/數據/認證被拒）；原始錯誤保留在 `email_raw` |
+| 10003 | 參數錯誤 | 缺少或無效參數 |
+
+### 帳戶與多帳戶
+
+- `Send` 讀取 `send_context`（事件帳戶兜底）：從事件上下文調用 `Send` 時預設回落到來源帳戶
+- 多帳戶發送用 `Send.Using("帳戶名")` 明確指定
+
 ---
 
 ### 已對接平台能力
 
-- **接收**：IMAP 輪詢收信（正文/HTML/附件解析為訊息段），未讀增量檢測
-- **发送**：SMTP 發信（Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment），支援多帳戶
+- **接收**：IMAP 輪詢收信（正文/HTML/附件解析為消息段），未讀增量檢測
+- **發送**：SMTP 發信（Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment），支援多帳戶
 - **API**：帳戶資訊與運行狀態（最小集）；郵件撤回/群組等概念不適用
 
 ---
 
-## 支援的消息傳送類型
+## 支援的消息發送類型
 
-所有傳送方法均透過串接語法實作：
+所有發送方法均透過鏈式語法實現：
 
 ```python
 from ErisPulse.Core import adapter
 mail = adapter.get("email")
 
-# 簡單文字郵件
+# 簡單純文字郵件
 await mail.Send.To("private", "to@example.com").Subject("測試").Text("內容")
 
 # 帶附件的 HTML 郵件
@@ -100,25 +130,25 @@ await mail.Send.To("private", "to@example.com").Raw_ob12([
 await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
 ```
 
-> 注意：使用串接語法時，參數方法（Subject / Cc / Attachment 等）必須在發送方法（Text / Html / Raw_ob12）之前呼叫。
+> 注意：使用鏈式語法時，參數方法（Subject / Cc / Attachment 等）必須在發送方法（Text / Html / Raw_ob12）之前調用。
 
 ### 基礎發送方法
 
 | 方法 | 說明 |
 |------|------|
 | `.Text(text: str)` | 發送純文字郵件 |
-| `.Html(html: str)` | 發送 HTML 格式郵件 |
+| `.Html(html: str)` | 發送 HTML 格式郵件（`.HTML(html)` 為別名） |
 | `.MergeForward(nodes, title)` | 發送合併轉發郵件（正文為 `<details>` 折疊 HTML 卡片，主題預設取標題） |
-| `.Raw_ob12(message, **kwargs)` | 發送 OneBot12 格式訊息 |
+| `.Raw_ob12(message, **kwargs)` | 發送 OneBot12 格式消息 |
 
-### 串接修飾方法（返回 self，可組合使用）
+### 鏈式修飾方法（返回 self，可組合使用）
 
 | 方法 | 說明 |
 |------|------|
-| `.Subject(subject: str)` | 設定郵件主題 |
-| `.Cc(emails: Union[str, List[str]])` | 設定抄送地址 |
-| `.Bcc(emails: Union[str, List[str]])` | 設定密送地址 |
-| `.ReplyTo(email: str)` | 設定回覆地址 |
+| `.Subject(subject: str)` | 設置郵件主題 |
+| `.Cc(emails: Union[str, List[str]])` | 設置抄送地址 |
+| `.Bcc(emails: Union[str, List[str]])` | 設置密送地址 |
+| `.ReplyTo(email: str)` | 設置回覆地址 |
 | `.Attachment(file, filename: str = None)` | 添加附件 |
 
 ### OB12 消息段反向轉換（Raw_ob12）
@@ -139,7 +169,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
 1. 郵件事件均為 `message` 類型，`detail_type` 固定為 `private`
 2. `user_id` 為寄件人**純郵箱地址**，`user_nickname` 為寄件人顯示名
 3. `message` 消息段為標準 OB12 格式（text 段 + file 段）
-4. 郵件主題透過 `email_subject` 擴展欄位獲取
+4. 郵件主題透過 `email_subject` 擴展欄位取得
 5. 完整原始資料保留在 `email_raw` 欄位中
 
 ### 新郵件事件（email_new）
@@ -155,6 +185,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
     "platform": "email",
     "user_id": "bot@example.com"
   },
+  "message_id": "<message-id@example.com>",
   "message": [
     {
       "type": "text",
@@ -194,7 +225,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
 
 ### 回覆郵件事件（email_reply）
 
-當郵件包含 `References` 或 `In-Reply-To` 標頭時，`email_raw_type` 為 `email_reply`：
+當郵件包含 `References` 或 `In-Reply-To` 頭時，`email_raw_type` 為 `email_reply`：
 
 ```json
 {
@@ -216,7 +247,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
 | `email_from` | str | 寄件人純郵件地址（便捷存取） |
 | `attachments` | list | 附件資料清單（含二進位 `data` 欄位，向後相容） |
 
-## 標準事件範例
+## 標準事件示例
 
 ### 完整郵件事件
 
@@ -231,6 +262,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
     "platform": "email",
     "user_id": "bot@example.com"
   },
+  "message_id": "<abc123@example.com>",
   "message": [
     {
       "type": "text",

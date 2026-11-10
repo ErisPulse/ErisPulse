@@ -1,33 +1,37 @@
 {
   "version": 2,
-  "hash": "2bfa9b84dda7dd3a6022cba97406e012",
-  "file_hash": "2bfa9b84dda7dd3a6022cba97406e012",
-  "translated_at": "2026-09-12T10:27:55.732526",
+  "hash": "03263a02ff9fa6db25c848bc41207108",
+  "file_hash": "03263a02ff9fa6db25c848bc41207108",
+  "translated_at": "2026-11-10T06:39:16.976114",
   "target_lang": "en",
   "chunks": [
     {
       "hash": "801ea581e858921e6eed2a28181710d8",
-      "translation": "# Terminal Platform Features Documentation\n\nTerminalAdapter is a command-line terminal adapter—where the terminal serves as a chat session, enabling rapid local debugging of module logic.\n\n---"
+      "translation": "# Terminal Platform Features Documentation\n\nTerminalAdapter is a command-line terminal adapter—the terminal acts as a chat session, used for quickly debugging module logic locally.\n\n---"
     },
     {
-      "hash": "355ff45b64d1e76fde9e42ae8f563746",
-      "translation": "## Documentation Information\n\n- Corresponding Module Version: 1.1.0\n- Maintainer: ErisPulse"
+      "hash": "16dfefe4f0e55a87c5598ec54e3f3013",
+      "translation": "## Document Information\n\n- Corresponding module version: 1.2.2\n- Maintainer: ErisPulse\n- Last updated: 2026-11-10"
     },
     {
       "hash": "e1c9704c47ba4a2be3d3c6120e628e0c",
-      "translation": "## Basic Information\n\n- Platform Introduction: Treat the local command line as a chat session, where stdin input is a message, and module responses are directly printed to the terminal\n- Adapter Name: TerminalAdapter\n- Platform Identifier: `terminal`\n- Single account design (for local debugging scenarios)\n- Framework Requirements: Soft dependency `ErisPulse>=2.7.1` (runtime detection prompts, not enforced)"
+      "translation": "## Basic Information\n\n- Platform Overview: Treats the local command line as a chat session, where stdin input serves as messages and module replies are printed directly to the terminal\n- Adapter Name: TerminalAdapter\n- Platform Identifier: `terminal`\n- Single-account design (for local debugging scenarios)\n- Framework Requirement: Soft dependency on `ErisPulse>=2.7.1` (runtime detection with a prompt, not enforced)"
     },
     {
-      "hash": "41f08af72b2159f33630119d0dac06a0",
-      "translation": "## Configuration Description\n\n```toml\n[Terminal]\nbot_id = \"terminal_bot\"   # Sandbox bot ID\nbot_name = \"Terminal\"     # Display name\n```"
+      "hash": "bf04ae4c43f4298e461dfc144796bf47",
+      "translation": "## Configuration\n\n```toml\n[Terminal]\nbot_id = \"terminal_bot\"    # User ID of the bot\nbot_name = \"TerminalBot\"   # Bot nickname\nuser_id = \"terminal_user\"  # ID of the simulated user (the end user chatting with the bot)\nuser_name = \"User\"         # Nickname of the simulated user\nprompt = \"> \"              # Input prompt\nreply_prefix = \"[Bot] \"    # Line prefix for bot replies (leave empty for no prefix)\necho_input = false         # Whether to echo user input (enable for piped input scenarios)\n```"
     },
     {
       "hash": "2a934798be3daee3ed96232be0615395",
-      "translation": "## v5 Paradigm Update (1.1.0)\n\n- **spawn_background Task Ownership**: The stdin reading loop now uses `runtime.spawn_background`.\n- **Framework Soft Dependency**: Runtime checks for `ErisPulse>=2.7.1` and provides a warning; version logs are output on startup."
+      "translation": "## v5 Paradigm Update (1.1.0)\n\n- **spawn_background task ownership**: The stdin reading loop now uses `runtime.spawn_background`\n- **Framework soft dependency**: Runtime detection of `ErisPulse>=2.7.1` with a prompt; version log output at startup"
     },
     {
-      "hash": "4144a6370fce61b9fb24e28425de1a1f",
-      "translation": "## Usage Instructions\n\n```python\n# The module can listen to messages as usual\nfrom ErisPulse.Core.Event import message\n\n@message.on_message()\nasync def handle(event):\n    if event.get(\"platform\") == \"terminal\":\n        await event.reply(\"Received: \" + event.get_text())\n```\n\n- Text entered in the terminal is treated as user messages and supports multi-line input (terminated by an empty line)\n- Suitable for quickly verifying module logic during development, without needing to connect to a real platform"
+      "hash": "499b4081ea35949fe9249891ac86bf03",
+      "translation": "## Standardization Alignment (1.2.2)\n\nThe response structure and error codes follow the [API Response Specification](../standards/api-response.md).\n\n### message_id Added to Message Events\n\nstdin message events now include the standard top-level `message_id` field (generated via uuid), allowing modules to reliably reference terminal messages for replies/deduplication.\n\n### Send Inherits BaseAdapter.Send\n\n`Send` inherits the framework's `BaseAdapter.Send`; **the standard decorator chain (`At` / `AtAll` / `Reply`, etc.) now takes effect**, with decorator segments rendered together with text segments in the output; `node` (merged forward) segments are degraded to plain-text raw output (no content is lost).\n\n### Meta Actions Completed\n\nStandard meta actions have been fully implemented and return standard responses:\n\n| Action | data Content |\n|------|----------|\n| `get_status` | `enabled` (running state) / `boot_time` (boot timestamp) |\n| `get_version` | `impl` (TerminalAdapter) / `version` / `onebot_version` |\n| `get_supported_actions` | List of supported action names |\n\n```python\nfrom ErisPulse import sdk\nterminal = sdk.adapter.get(\"terminal\")\n\nresult = await terminal.Api.get_status()\nresult = await terminal.Api.get_version()\nresult = await terminal.Api.get_supported_actions()\nresult = await terminal.Api.get_self_info()    # user_id/user_name\nresult = await terminal.Api.get_user_info(\"terminal_user\")\nresult = await terminal.Api.get_friend_list()\n```\n\n### delete_message Capability Fallback Semantics Corrected\n\nThe terminal has no message recall capability: `delete_message` has been corrected from \"returning success\" to the **standard capability-fallback semantics**—it returns `retcode=10002` (unsupported operation), so modules can detect the fallback accordingly.\n\n### Error Code Specification\n\n| retcode | Meaning | Description |\n|---------|------|------|\n| 0 | Success | — |\n| 10002 | Unsupported | Group operations, message recall, unimplemented standard actions |"
+    },
+    {
+      "hash": "4b303269e7bc47aa98552048c5f5ce81",
+      "translation": "## Usage Instructions\n\n```python\n# The module simply listens for messages as usual\nfrom ErisPulse.Core.Event import message\n\n@message.on_message()\nasync def handle(event):\n    if event.get(\"platform\") == \"terminal\":\n        await event.reply(\"Received: \" + event.get_text())\n```\n\n- Text entered in the terminal is treated as user messages, supporting multiple lines (terminated by an empty line)\n- Event structure example (stdin message):\n\n```json\n{\n  \"id\": \"<uuid>\",\n  \"time\": 1700000000,\n  \"message_id\": \"<uuid>\",\n  \"type\": \"message\",\n  \"detail_type\": \"private\",\n  \"platform\": \"terminal\",\n  \"self\": {\"platform\": \"terminal\", \"user_id\": \"terminal_bot\", \"user_name\": \"TerminalBot\"},\n  \"user_id\": \"terminal_user\",\n  \"message\": [{\"type\": \"text\", \"data\": {\"text\": \"Input content\"}}],\n  \"alt_message\": \"Input content\",\n  \"terminal_raw\": {\"text\": \"Input content\"},\n  \"terminal_raw_type\": \"stdin_line\"\n}\n```\n\n- Send example (decorator chains are supported):\n\n```python\nterminal = sdk.adapter.get(\"terminal\")\n\nawait terminal.Send.To(\"private\", \"terminal_user\").Text(\"Hello\")\nawait terminal.Send.To(\"private\", \"terminal_user\").At(\"terminal_user\").Text(\"Message with decorator\")\nawait terminal.Send.To(\"private\", \"terminal_user\").Raw_ob12([\n    {\"type\": \"text\", \"data\": {\"text\": \"OneBot12 segment\"}}\n])\n```\n\n- Suitable for quickly verifying module logic during development, without connecting to a real platform"
     }
   ]
 }

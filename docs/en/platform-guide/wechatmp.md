@@ -3,25 +3,50 @@
 ## Basic Information
 - Module Name: `ErisPulse-WechatMpAdapter`
 - Platform Identifier: `mp` (Alias: `wechat_mp`)
-- Module Version: 4.3.0
+- Module Version: 4.3.2
 - Maintainer: ErisPulse
+- Last Updated: 2026-11-10
 - Dependencies: `cryptography`
 
 ## v5 Paradigm Update (4.2.0)
 
 - **BaseConverter Inheritance**: Common fields of converters are built by the framework's build_base_event
-- **Api DSL Minimal Set**: get_self_info (appid) / get_status / get_version / get_supported_actions
+- **Minimal Set of Api DSL**: get_self_info (appid) / get_status / get_version / get_supported_actions
 - **Framework Soft Dependency**: Runtime detection of ErisPulse>=2.7.1 with prompt; version logs output on startup
+
+## Standardized Alignment (4.3.2)
+
+The response structure and error codes follow the [API Response Specification](../standards/api-response.md).
+
+### Message Event Completion: message_id
+
+The top-level message event is supplemented with the standard `message_id` field (using WeChat's MsgId; if missing, an empty string is used as a fallback). Modules no longer need to read from `mp_msg_id`.
+
+### Standard Response
+
+All `call_api` / Send calls return a standard response: `status` / `retcode` / `data` / `message_id` / `message` + top-level `mp_raw`. **When passive replies are successful, `message` is an empty string** (`data.passive_reply=true` indicates interception as a passive reply).
+
+### Error Code Specification
+
+| retcode | Meaning | Description |
+|---------|---------|-------------|
+| 0 | Success | — |
+| 34100 | Platform Failure | WeChat API returned errcode != 0; **the original errcode is preserved in `mp_raw`**. Token acquisition failure is also categorized under this code |
+| 10003 | Parameter Error / Not Authenticated | Unauthenticated accounts (`verified=false`) calling customer service messages in non-passive reply contexts |
+
+### Accounts and Multi-Account Support
+
+- `call_api` supports dual-compatible account fields: `account_id` (standard name) / `_account_id` (old name), with the framework ApiDSL (`Api.Using(...)`) automatically adapting
+- `Send` reads from `send_context` (event account as fallback)
+- `get_self_info` supplements standard fields: `user_id` (official account AppID) / `user_name` / `user_displayname` (`wechatmp:{account name}`)
 
 ---
 
 ### Platform Capabilities Already Integrated
 
-- **Receiving**: Official account callback messages and events such as follow/unfollow (plaintext/secure mode), signature verification
+- **Receiving**: Official account callback messages and events such as follow/unfollow (plaintext/safe mode), signature verification
 - **Sending**: Customer service messages (Text/Image, etc., via Send DSL)
-- **API**: Account information (appid) and runtime status (minimal set)
-
----
+- **API**: Account information (appid) and operational status (minimal set)
 
 ## Supported Message Sending Types
 
@@ -110,14 +135,14 @@ Registered via `register_event_mixin("mp", ...)`, allowing direct calls on event
 
 ### Multi-Account Configuration
 
-Each account corresponds to a public account:
+Each account corresponds to a WeChat Official Account:
 
 ```toml
 [WechatMpAdapter.accounts.main]
 appid = "wx1234567890abcdef"
 appsecret = "your_app_secret_here"
 token = "your_callback_token"
-encoding_aes_key = ""                    # Required for secure mode/compatibility mode (43 characters)
+encoding_aes_key = ""                    # Required for secure or compatibility mode (43 characters)
 callback_path = "/mp/main"               # Callback path
 verified = true                          # Whether it is a verified service account (affects active sending capability)
 enable = true
@@ -134,20 +159,20 @@ enable = true
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `appid` | Yes | Public account AppID |
-| `appsecret` | Yes | Public account AppSecret (secret) |
-| `token` | No | Callback verification Token (recommended to enable signature verification) |
+| `appid` | Yes | Official Account AppID |
+| `appsecret` | Yes | Official Account AppSecret (secret) |
+| `token` | No | Callback verification token (recommended to enable signature verification) |
 | `encoding_aes_key` | No | Message encryption/decryption key (43 characters, required for secure mode) |
-| `callback_path` | No | Callback path template, default `/mp/{account}`, `{account}` will be replaced by the account name |
+| `callback_path` | No | Callback path template, default `/mp/{account}`, where `{account}` is replaced by the account name |
 | `verified` | No | Whether it is a **verified service account**, default `true` (see below for details) |
 | `enable` | No | Whether to enable, default true |
 
-### Verified Service Account and Passive Reply (`verified`)
+### Verified Service Account and Passive Replies (`verified`)
 
-- `verified = true` (default, verified service account): Can use **customer service messages** for active push (within a 48-hour window) and template messages at any time.
+- `verified = true` (default, verified service account): Can use **customer service messages** to push actively (within a 48-hour window) and template messages at any time.
 - `verified = false` (unverified subscription account):
-  - Customer service messages / template messages can **only be sent within the passive reply context of a webhook** (within 15 seconds after receiving a user message, one reply only) — the adapter will automatically intercept and convert the sending into a passive reply.
-  - Active push (e.g., scheduled tasks) returns `retcode=34003` error.
+  - Customer service messages / template messages **can only be sent within the webhook passive reply context** (within 15 seconds after receiving a user message, one reply only) — the adapter will automatically intercept and convert the send operation into a passive reply.
+  - Active push (e.g., scheduled tasks) returns `retcode=10003` error (not verified).
 
 ## Encryption Mode Explanation
 
@@ -178,5 +203,5 @@ The actual access paths automatically include the module prefix. For example, if
 All `call_api` calls return a standardized response:
 
 - Success: `status: "ok"`, `retcode: 0`
-- Failure: `status: "failed"`, `retcode: 34000+errcode`
-- Always includes `mp_raw` (raw response), `message_id`
+- Failure: `status: "failed"`, `retcode: 34100` (platform failure; **original errcode is preserved in `mp_raw`**) or `10003` (parameter error / not authenticated)
+- Always includes `mp_raw` (raw response) and top-level `message_id` (empty string if missing)

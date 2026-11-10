@@ -208,7 +208,7 @@
               "icon": "fa-bolt-lightning"
             },
             {
-              "title": "Module Development Best Practices",
+              "title": "Best Practices for Module Development",
               "path": "developer-guide/modules/best-practices.md",
               "level": 1,
               "icon": "fa-award"
@@ -226,7 +226,7 @@
               "icon": "fa-network-wired"
             },
             {
-              "title": "Adapter Core Concepts",
+              "title": "Core Adapter Concepts",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1,
               "icon": "fa-microchip"
@@ -289,7 +289,7 @@
           "icon": "fa-envelope"
         },
         {
-          "title": "Yunhu Platform Features Documentation",
+          "title": "Yunhu Platform Feature Documentation",
           "path": "platform-guide/yunhu.md",
           "level": 1,
           "icon": "fa-cloud"
@@ -313,7 +313,7 @@
           "icon": "fa-headset"
         },
         {
-          "title": "Matrix Platform Feature Documentation",
+          "title": "Matrix Platform Features Documentation",
           "path": "platform-guide/matrix.md",
           "level": 1,
           "icon": "fa-th-large"
@@ -331,7 +331,7 @@
           "icon": "fa-mobile-screen"
         },
         {
-          "title": "Platform Feature Description — Webhook Universal Bridge Adapter",
+          "title": "Webhook Generic Bridge Adapter Platform Features Documentation",
           "path": "platform-guide/webhook.md",
           "level": 1,
           "icon": "fa-link"
@@ -361,7 +361,7 @@
           "icon": "fa-plug"
         },
         {
-          "title": "Sandbox Platform Feature Documentation",
+          "title": "Sandbox Platform Features Documentation",
           "path": "platform-guide/sandbox.md",
           "level": 1,
           "icon": "fa-plug"
@@ -379,7 +379,7 @@
           "icon": "fa-plug"
         },
         {
-          "title": "WeCom Platform Features Documentation",
+          "title": "Enterprise WeChat (WeCom) Platform Features Documentation",
           "path": "platform-guide/wecom.md",
           "level": 1,
           "icon": "fa-plug"
@@ -497,7 +497,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Shadow Modules and Canary Promotion",
+          "title": "Shadow Modules and Gray-Scale Promotion",
           "path": "advanced/shadow.md",
           "level": 1,
           "icon": "fa-eye"
@@ -623,13 +623,13 @@
           "icon": "fa-layer-group"
         },
         {
-          "title": "ErisPulse Adapter Standardized Return Specification",
+          "title": "ErisPulse Adapter Standard Return Specification",
           "path": "standards/api-response.md",
           "level": 1,
           "icon": "fa-arrow-right-arrow-left"
         },
         {
-          "title": "Standardization Specification for Adapter Conversion",
+          "title": "Adapter Standardization Specification",
           "path": "standards/event-conversion.md",
           "level": 1,
           "icon": "fa-shuffle"
@@ -653,7 +653,7 @@
           "icon": "fa-bolt"
         },
         {
-          "title": "Adapter Standardization Guide (Master Document)",
+          "title": "Adapter Standardization Guide (Master Outline)",
           "path": "standards/standardization-guide.md",
           "level": 1,
           "icon": "fa-gavel"

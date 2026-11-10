@@ -58,6 +58,18 @@ Create 命令实现
 ---
 
 
+### `_write_project_gitignore(project_dir: Path) -> None`
+
+为可发布项目写入 .gitignore（已存在则跳过）
+
+排除运行时产物（config/data/logs）、lockfile 与缓存；
+config.example.toml 等模板文件不在排除范围。
+
+- **project_dir** (`Path`): 项目根目录
+
+---
+
+
 ### `_scaffold_text(name: str) -> dict`
 
 构建当前语言的脚手架文案映射，并预填充 {name} 占位符

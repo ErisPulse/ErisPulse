@@ -7,15 +7,16 @@
 
 This document contains the technical standards of ErisPulse to ensure consistency and compatibility among components.
 
-## Standard Document List
+## Standard Documentation List
+
 
 1. [Session Type Standard](session-types.md) - ErisPulse session type definitions and mapping specifications
 2. [Event Conversion Standard](event-conversion.md) - Platform event conversion specifications, extension naming conventions, and message segment standards
 3. [API Response Standard](api-response.md) - Adapter API response format standards and extension requirements
-4. [Send Method Specification](send-method-spec.md) - Naming, parameter specifications for Send class methods, and reverse conversion requirements
-5. [Request Action Specification](request-action-spec.md) - Request event field requirements, HandleRequest DSL, and adapter implementation requirements
-6. [API Action Standard](api-action-spec.md) - Unified interface for OneBot12 standard API actions (user/group/channel/message management/file with chunking/meta actions)
-7. [Adapter Standardization Guide (General Outline)](standardization-guide.md) - Standardization principles/workflow/naming conventions + interaction component standards (buttons/keyboards/interaction callback events) and platform mappings
+4. [Send Method Specification](send-method-spec.md) - Send class method naming, parameter specifications, and reverse conversion requirements
+5. [Request Action Specification](request-action-spec.md) - Request event field requirements, Request DSL (approve/reject), request type context retention for heterogeneous endpoints, and adapter implementation requirements
+6. [API Action Standard](api-action-spec.md) - Unified interface for OneBot12 standard API actions (user/group/channel/message management/file including chunking/meta actions)
+7. [Adapter Standardization Guide (Overview)](standardization-guide.md) - Standardization principles/workflows/naming rules + interactive component standards (button keyboards/interaction callback events) and their mappings across platforms
 
 ## Standard Overview
 
@@ -71,50 +72,56 @@ Standardized specifications help:
 - Uniform message format
 - Good compatibility
 
-## Standard Compliance Checklist
+## Standards Compliance Checklist
 
-### Event Transformation
 
-- [ ] All standard fields have been correctly mapped
-- [ ] Platform-specific fields have been prefixed
-- [ ] Timestamps have been converted to 10-digit second-level format
-- [ ] Raw data has been saved in `{platform}_raw`
-- [ ] Raw event type has been saved in `{platform}_raw_type`
-- [ ] The `alt_message` for message segments has been generated
-- [ ] Request events contain the `request_id` field
+### Event Conversion
+
+
+- [ ] All standard fields are correctly mapped
+- [ ] Platform-specific fields are prefixed
+- [ ] Timestamps are converted to 10-digit second-level values
+- [ ] Raw data is saved in {platform}_raw
+- [ ] Raw event types are saved in {platform}_raw_type
+- [ ] alt_message has been generated for message segments
+- [ ] Request events include the request_id field
 
 ### API Response
 
-- [ ] Contains `status` field
-- [ ] Contains `retcode` field
-- [ ] Contains `data` field
-- [ ] Contains `message_id` field
-- [ ] Contains `message` field
-- [ ] Return codes follow the OneBot12 specification
+
+- [ ] Contains the status field
+- [ ] Contains the retcode field
+- [ ] Contains the data field
+- [ ] Contains the message_id field
+- [ ] Contains the message field
+- [ ] Return codes follow the OneBot 12 specification
 
 ### Send Method Naming
 
+
 - [ ] Uses PascalCase naming convention
 - [ ] Returns a Task object
-- [ ] Modifier methods return `self`
-- [ ] Parameter names conform to the specification
+- [ ] Modifier methods return self
+- [ ] Parameter naming follows the specification
 
 ### Media Sending (Image / Voice / Video / File)
 
-- [ ] The `file` parameter must support all forms: HTTP(S) URL / Local path / `bytes`
-- [ ] The `file` parameter should support as many forms as possible: `file://` URI / Base64 / Data URI (if not supported, return `retcode=10002` in descending order)
-- [ ] Form determination order conforms to the specification (bytes → URL → `file://` → path)
-- [ ] The `File` filename is generated in the following order (explicit `filename` > URL basename > path basename > platform default)
-- [ ] Platform media limitations have been declared in the adapter documentation
-- [ ] Unsupported media types are handled in descending order (nearby types are downgraded or `retcode=10002`, no exception is thrown, no silent discard)
 
-> For detailed protocol, see [Send Method Specification §2.1](send-method-spec.md#21-media-message-send-protocolimage--voice--video--file)
+- [ ] The `file` parameter must support all forms: HTTP(S) URL / local path / `bytes`
+- [ ] The `file` parameter should support as many forms as possible: `file://` URI / Base64 / Data URI (when a form cannot be supported, return `retcode=10002` following the fallback ladder)
+- [ ] The form detection order follows the specification (bytes → URL → `file://` → path)
+- [ ] The `File` filename is generated following the derivation order (explicit `filename` > URL basename > path basename > platform default)
+- [ ] Platform media limitations are declared in the adapter documentation
+- [ ] Unsupported media types are handled per the fallback ladder (fall back to a closely-related type or return `retcode=10002`; no exceptions thrown, no silent drops)
+
+> For the detailed protocol, see [Send Method Specification §2.1](send-method-spec.md#21-media-message-send-protocol-image--voice--video--file)
 
 ### Request Operations
 
-- [ ] The `HandleRequest` class has implemented `_do_accept` / `_do_reject`
-- [ ] The operation returns the standard API response format
-- [ ] Unsupported operations return `retcode=10002`
+
+- [ ] The Request inner class has overridden _do_accept / _do_reject (do not override the public entry points accept()/reject())
+- [ ] Operations return the standard API response format
+- [ ] Unsupported operations return retcode=10002
 
 ## Related Documentation
 

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2432,
+  "total_keywords": 2438,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -2713,7 +2713,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 58,
+        "line": 106,
         "level": 5,
         "title": "`Using(account_id: str | int) -> 'Self'`"
       }
@@ -3107,7 +3107,7 @@
     "`__init__(adapter: 'BaseAdapter', account_id: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 48,
+        "line": 96,
         "level": 5,
         "title": "`__init__(adapter: 'BaseAdapter', account_id: str | None = None)`"
       }
@@ -3482,6 +3482,14 @@
         "title": "`_action_denied_response(adapter: 'BaseAdapter', action: str)`"
       }
     ],
+    "`_adapt_account_param(adapter, params: dict) -> dict`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
+        "line": 53,
+        "level": 3,
+        "title": "`_adapt_account_param(adapter, params: dict) -> dict`"
+      }
+    ],
     "`_adapter_sources(sdk: Any) -> 'dict[str, list[Path]]'`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/reload_target.md",
@@ -3605,7 +3613,7 @@
     "`_ask_missing(args, field_name: str, prompt_text: str, default: str = '') -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
-        "line": 94,
+        "line": 106,
         "level": 5,
         "title": "`_ask_missing(args, field_name: str, prompt_text: str, default: str = '') -> str`"
       }
@@ -3776,6 +3784,14 @@
         "line": 123,
         "level": 5,
         "title": "`_bus_has_self() -> bool | None`"
+      }
+    ],
+    "`_call_account_mode(adapter) -> str`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
+        "line": 31,
+        "level": 3,
+        "title": "`_call_account_mode(adapter) -> str`"
       }
     ],
     "`_camel_to_snake(name: str) -> str`": [
@@ -4080,6 +4096,14 @@
         "title": "`_close_awaitable(awaitable: Any) -> None`"
       }
     ],
+    "`_code_string_constants(code) -> set`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
+        "line": 24,
+        "level": 3,
+        "title": "`_code_string_constants(code) -> set`"
+      }
+    ],
     "`_coerce(step: _Step, reply: Any) -> Any`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command_flow.md",
@@ -4379,7 +4403,7 @@
     "`_create_adapter(args, name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
-        "line": 159,
+        "line": 171,
         "level": 5,
         "title": "`_create_adapter(args, name: str)`"
       }
@@ -4387,7 +4411,7 @@
     "`_create_adapter_local(args, name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
-        "line": 147,
+        "line": 159,
         "level": 5,
         "title": "`_create_adapter_local(args, name: str)`"
       }
@@ -4395,7 +4419,7 @@
     "`_create_module(args, name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
-        "line": 123,
+        "line": 135,
         "level": 5,
         "title": "`_create_module(args, name: str)`"
       }
@@ -4403,7 +4427,7 @@
     "`_create_module_local(args, name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
-        "line": 135,
+        "line": 147,
         "level": 5,
         "title": "`_create_module_local(args, name: str)`"
       }
@@ -4411,7 +4435,7 @@
     "`_create_pack(args)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
-        "line": 108,
+        "line": 120,
         "level": 5,
         "title": "`_create_pack(args)`"
       }
@@ -5634,6 +5658,14 @@
         "title": "`_has_running_loop() -> bool`"
       }
     ],
+    "`_hot_restart_target(state: dict) -> 'int | None'`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/commands/runtime.md",
+        "line": 27,
+        "level": 3,
+        "title": "`_hot_restart_target(state: dict) -> 'int | None'`"
+      }
+    ],
     "`_http_decorate(full_path: str, module_name: str, methods: list[str] | None = None, **kwargs)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
@@ -5833,7 +5865,7 @@
     "`_interactive_select_type() -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
-        "line": 85,
+        "line": 97,
         "level": 5,
         "title": "`_interactive_select_type() -> str`"
       }
@@ -6477,7 +6509,7 @@
     "`_merge_context(params: dict) -> dict`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 87,
+        "line": 135,
         "level": 5,
         "title": "`_merge_context(params: dict) -> dict`"
       }
@@ -8003,7 +8035,7 @@
     "`_scaffold_text(name: str) -> dict`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
-        "line": 61,
+        "line": 73,
         "level": 3,
         "title": "`_scaffold_text(name: str) -> dict`"
       }
@@ -8371,7 +8403,7 @@
     "`_stop_instance(state: dict, force: bool = False) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/runtime.md",
-        "line": 23,
+        "line": 41,
         "level": 3,
         "title": "`_stop_instance(state: dict, force: bool = False) -> bool`"
       }
@@ -8784,6 +8816,14 @@
         "title": "`_walk_to(tree: dict, parts: list[str]) -> dict`（staticmethod）"
       }
     ],
+    "`_warn_account_unconsumed(adapter) -> None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
+        "line": 46,
+        "level": 3,
+        "title": "`_warn_account_unconsumed(adapter) -> None`"
+      }
+    ],
     "`_warn_coro_fn_failed(error: Exception) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/tasks.md",
@@ -8884,6 +8924,14 @@
         "line": 42,
         "level": 3,
         "title": "`_write(data: 'dict[str, Any]') -> None`"
+      }
+    ],
+    "`_write_project_gitignore(project_dir: Path) -> None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
+        "line": 61,
+        "level": 3,
+        "title": "`_write_project_gitignore(project_dir: Path) -> None`"
       }
     ],
     "`_ws_decorate(full_path: str, module_name: str, **kwargs)`": [
@@ -8991,7 +9039,7 @@
     "`api_context -> dict`（property）": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 75,
+        "line": 123,
         "level": 5,
         "title": "`api_context -> dict`（property）"
       }
@@ -9183,7 +9231,7 @@
     "`async _api_call(action: str, **params: Any) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 100,
+        "line": 148,
         "level": 5,
         "title": "`async _api_call(action: str, **params: Any) -> dict[str, Any]`"
       }
@@ -9499,7 +9547,7 @@
     "`async _do_restart() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 522,
+        "line": 526,
         "level": 5,
         "title": "`async _do_restart() -> bool`"
       }
@@ -9605,7 +9653,7 @@
     "`async _execute_restart_once() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 551,
+        "line": 555,
         "level": 5,
         "title": "`async _execute_restart_once() -> bool`"
       }
@@ -10583,7 +10631,7 @@
     "`async call(action: str, **params: Any) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 711,
+        "line": 759,
         "level": 5,
         "title": "`async call(action: str, **params: Any) -> dict[str, Any]`"
       }
@@ -10849,7 +10897,7 @@
     "`async delete_message(message_id: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 493,
+        "line": 541,
         "level": 5,
         "title": "`async delete_message(message_id: str) -> dict[str, Any]`"
       }
@@ -10977,7 +11025,7 @@
     "`async get_channel_info(guild_id: str, channel_id: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 380,
+        "line": 428,
         "level": 5,
         "title": "`async get_channel_info(guild_id: str, channel_id: str) -> dict[str, Any]`"
       }
@@ -10985,7 +11033,7 @@
     "`async get_channel_list(guild_id: str, *, joined_only: bool = False) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 399,
+        "line": 447,
         "level": 5,
         "title": "`async get_channel_list(guild_id: str, *, joined_only: bool = False) -> dict[str, Any]`"
       }
@@ -10993,7 +11041,7 @@
     "`async get_channel_member_info(guild_id: str, channel_id: str, user_id: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 437,
+        "line": 485,
         "level": 5,
         "title": "`async get_channel_member_info(guild_id: str, channel_id: str, user_id: str) -> dict[str, Any]`"
       }
@@ -11001,7 +11049,7 @@
     "`async get_channel_member_list(guild_id: str, channel_id: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 456,
+        "line": 504,
         "level": 5,
         "title": "`async get_channel_member_list(guild_id: str, channel_id: str) -> dict[str, Any]`"
       }
@@ -11009,7 +11057,7 @@
     "`async get_file(file_id: str, type: str = 'url') -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 540,
+        "line": 588,
         "level": 5,
         "title": "`async get_file(file_id: str, type: str = 'url') -> dict[str, Any]`"
       }
@@ -11017,7 +11065,7 @@
     "`async get_file_fragmented_prepare(file_id: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 626,
+        "line": 674,
         "level": 5,
         "title": "`async get_file_fragmented_prepare(file_id: str) -> dict[str, Any]`"
       }
@@ -11025,7 +11073,7 @@
     "`async get_file_fragmented_transfer(file_id: str, offset: int, size: int) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 646,
+        "line": 694,
         "level": 5,
         "title": "`async get_file_fragmented_transfer(file_id: str, offset: int, size: int) -> dict[str, Any]`"
       }
@@ -11033,7 +11081,7 @@
     "`async get_friend_list() -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 152,
+        "line": 200,
         "level": 5,
         "title": "`async get_friend_list() -> dict[str, Any]`"
       }
@@ -11041,7 +11089,7 @@
     "`async get_group_info(group_id: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 168,
+        "line": 216,
         "level": 5,
         "title": "`async get_group_info(group_id: str) -> dict[str, Any]`"
       }
@@ -11049,7 +11097,7 @@
     "`async get_group_list() -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 186,
+        "line": 234,
         "level": 5,
         "title": "`async get_group_list() -> dict[str, Any]`"
       }
@@ -11057,7 +11105,7 @@
     "`async get_group_member_info(group_id: str, user_id: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 202,
+        "line": 250,
         "level": 5,
         "title": "`async get_group_member_info(group_id: str, user_id: str) -> dict[str, Any]`"
       }
@@ -11065,7 +11113,7 @@
     "`async get_group_member_list(group_id: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 221,
+        "line": 269,
         "level": 5,
         "title": "`async get_group_member_list(group_id: str) -> dict[str, Any]`"
       }
@@ -11073,7 +11121,7 @@
     "`async get_guild_info(guild_id: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 274,
+        "line": 322,
         "level": 5,
         "title": "`async get_guild_info(guild_id: str) -> dict[str, Any]`"
       }
@@ -11081,7 +11129,7 @@
     "`async get_guild_list() -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 292,
+        "line": 340,
         "level": 5,
         "title": "`async get_guild_list() -> dict[str, Any]`"
       }
@@ -11089,7 +11137,7 @@
     "`async get_guild_member_info(guild_id: str, user_id: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 326,
+        "line": 374,
         "level": 5,
         "title": "`async get_guild_member_info(guild_id: str, user_id: str) -> dict[str, Any]`"
       }
@@ -11097,7 +11145,7 @@
     "`async get_guild_member_list(guild_id: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 345,
+        "line": 393,
         "level": 5,
         "title": "`async get_guild_member_list(guild_id: str) -> dict[str, Any]`"
       }
@@ -11105,7 +11153,7 @@
     "`async get_latest_events(limit: int = 0, timeout: int = 0) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 669,
+        "line": 717,
         "level": 5,
         "title": "`async get_latest_events(limit: int = 0, timeout: int = 0) -> dict[str, Any]`"
       }
@@ -11129,7 +11177,7 @@
     "`async get_self_info() -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 118,
+        "line": 166,
         "level": 5,
         "title": "`async get_self_info() -> dict[str, Any]`"
       }
@@ -11137,7 +11185,7 @@
     "`async get_status() -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 690,
+        "line": 738,
         "level": 5,
         "title": "`async get_status() -> dict[str, Any]`"
       }
@@ -11145,7 +11193,7 @@
     "`async get_supported_actions() -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 681,
+        "line": 729,
         "level": 5,
         "title": "`async get_supported_actions() -> dict[str, Any]`"
       }
@@ -11153,7 +11201,7 @@
     "`async get_user_info(user_id: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 134,
+        "line": 182,
         "level": 5,
         "title": "`async get_user_info(user_id: str) -> dict[str, Any]`"
       }
@@ -11161,7 +11209,7 @@
     "`async get_version() -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 702,
+        "line": 750,
         "level": 5,
         "title": "`async get_version() -> dict[str, Any]`"
       }
@@ -11169,7 +11217,7 @@
     "`async hard_restart(reason: str = '') -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 606,
+        "line": 610,
         "level": 5,
         "title": "`async hard_restart(reason: str = '') -> bool`"
       }
@@ -11273,7 +11321,7 @@
     "`async leave_channel(guild_id: str, channel_id: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 475,
+        "line": 523,
         "level": 5,
         "title": "`async leave_channel(guild_id: str, channel_id: str) -> dict[str, Any]`"
       }
@@ -11281,7 +11329,7 @@
     "`async leave_group(group_id: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 257,
+        "line": 305,
         "level": 5,
         "title": "`async leave_group(group_id: str) -> dict[str, Any]`"
       }
@@ -11289,7 +11337,7 @@
     "`async leave_guild(guild_id: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 363,
+        "line": 411,
         "level": 5,
         "title": "`async leave_guild(guild_id: str) -> dict[str, Any]`"
       }
@@ -11719,7 +11767,7 @@
     "`async restart() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 559,
+        "line": 563,
         "level": 5,
         "title": "`async restart() -> bool`"
       }
@@ -11891,7 +11939,7 @@
     "`async set_channel_name(guild_id: str, channel_id: str, channel_name: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 418,
+        "line": 466,
         "level": 5,
         "title": "`async set_channel_name(guild_id: str, channel_id: str, channel_name: str) -> dict[str, Any]`"
       }
@@ -11899,7 +11947,7 @@
     "`async set_group_name(group_id: str, group_name: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 239,
+        "line": 287,
         "level": 5,
         "title": "`async set_group_name(group_id: str, group_name: str) -> dict[str, Any]`"
       }
@@ -11907,7 +11955,7 @@
     "`async set_guild_name(guild_id: str, guild_name: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 308,
+        "line": 356,
         "level": 5,
         "title": "`async set_guild_name(guild_id: str, guild_name: str) -> dict[str, Any]`"
       }
@@ -12063,7 +12111,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 665,
+        "line": 669,
         "level": 5,
         "title": "`async uninit() -> bool`"
       }
@@ -12103,7 +12151,7 @@
     "`async upload_file(*, type: str, name: str, url: str | None = None, path: str | None = None, data: bytes | None = None, headers: dict[str, str] | None = None, sha256: str | None = None) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 510,
+        "line": 558,
         "level": 5,
         "title": "`async upload_file(*, type: str, name: str, url: str | None = None, path: str | None = None, data: bytes | None = None, headers: dict[str, str] | None = None, sha256: str | None = None) -> dict[str, Any]`"
       }
@@ -12111,7 +12159,7 @@
     "`async upload_file_fragmented_finish(file_id: str, sha256: str) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 608,
+        "line": 656,
         "level": 5,
         "title": "`async upload_file_fragmented_finish(file_id: str, sha256: str) -> dict[str, Any]`"
       }
@@ -12119,7 +12167,7 @@
     "`async upload_file_fragmented_prepare(name: str, total_size: int) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 564,
+        "line": 612,
         "level": 5,
         "title": "`async upload_file_fragmented_prepare(name: str, total_size: int) -> dict[str, Any]`"
       }
@@ -12127,7 +12175,7 @@
     "`async upload_file_fragmented_transfer(file_id: str, offset: int, data: bytes) -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 586,
+        "line": 634,
         "level": 5,
         "title": "`async upload_file_fragmented_transfer(file_id: str, offset: int, data: bytes) -> dict[str, Any]`"
       }
@@ -12581,7 +12629,7 @@
     "`class ApiDSL`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 24,
+        "line": 72,
         "level": 3,
         "title": "`class ApiDSL`"
       }
@@ -12909,7 +12957,7 @@
     "`class CreateCommand(Command)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
-        "line": 75,
+        "line": 87,
         "level": 3,
         "title": "`class CreateCommand(Command)`"
       }
@@ -13541,7 +13589,7 @@
     "`class RestartCommand(Command)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/runtime.md",
-        "line": 52,
+        "line": 70,
         "level": 3,
         "title": "`class RestartCommand(Command)`"
       }
@@ -13757,7 +13805,7 @@
     "`class StopCommand(Command)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/runtime.md",
-        "line": 45,
+        "line": 63,
         "level": 3,
         "title": "`class StopCommand(Command)`"
       }
@@ -16451,7 +16499,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 636,
+        "line": 640,
         "level": 5,
         "title": "`get_topology(*, json_safe: bool = True) -> dict[str, Any]`"
       }
@@ -17227,7 +17275,7 @@
     "`is_supervised() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 593,
+        "line": 597,
         "level": 5,
         "title": "`is_supervised() -> bool`"
       }
@@ -18089,7 +18137,7 @@
     "`os_needs_force() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/runtime.md",
-        "line": 35,
+        "line": 53,
         "level": 3,
         "title": "`os_needs_force() -> bool`"
       }
@@ -20879,7 +20927,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/runtime.md",
-        "line": 20,
+        "line": 24,
         "level": 2,
         "title": "函数列表"
       },
@@ -20940,6 +20988,12 @@
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/adapter.md",
         "line": 18,
+        "level": 2,
+        "title": "函数列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
+        "line": 21,
         "level": 2,
         "title": "函数列表"
       },
@@ -21291,7 +21345,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
-        "line": 82,
+        "line": 94,
         "level": 4,
         "title": "方法列表"
       },
@@ -21441,7 +21495,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 45,
+        "line": 93,
         "level": 4,
         "title": "方法列表"
       },
@@ -22991,7 +23045,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
-        "line": 72,
+        "line": 84,
         "level": 2,
         "title": "类列表"
       },
@@ -23039,7 +23093,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/runtime.md",
-        "line": 42,
+        "line": 60,
         "level": 2,
         "title": "类列表"
       },
@@ -23129,7 +23183,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/api_dsl.md",
-        "line": 21,
+        "line": 69,
         "level": 2,
         "title": "类列表"
       },

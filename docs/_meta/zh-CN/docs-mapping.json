@@ -331,7 +331,7 @@
           "icon": "fa-mobile-screen"
         },
         {
-          "title": "平台特性说明 — Webhook 通用桥接适配器",
+          "title": "Webhook 通用桥接适配器平台特性文档",
           "path": "platform-guide/webhook.md",
           "level": 1,
           "icon": "fa-link"

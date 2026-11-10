@@ -8,7 +8,7 @@
 
 ## 為 event 參數添加類型註解
 
-事件處理器的 `event` 參數是 **Event 包裝類別**（dict 子類別）。強烈建議為它添加類型註解：
+事件處理器的 `event` 參數是 **Event 包裝類**（dict 子類）。**強烈建議**為它添加 `Event` 類型註解（運行時無註解也能跑，註解服務於 IDE 自動完成與靜態檢查）：
 
 ```python
 from ErisPulse.Core.Event import Event
@@ -19,9 +19,9 @@ async def handler(event: Event):
     await event.reply(text)   # 拼寫錯誤在靜態檢查時即可發現
 ```
 
-不加註解時 IDE 無法識別 Event 上的方法（`get_text()` / `reply()` / `wait_reply()` / 平台擴充方法均不提示），只能靠記憶拼寫。
+不加註解時 IDE 無法識別 Event 上的方法（`get_text()` / `reply()` / `wait_reply()` / 平台擴展方法均不提示），只能靠記憶拼寫。
 
-> **注意區分**：事件處理器回呼的 `event` 是 **Event 包裝類別**（註解為 `Event`）；模組生命週期方法 `on_load` / `on_unload` 的 `event` 是普通 **dict**（註解為 `dict`），二者不要混淆。
+> **注意區分**：事件處理器回調的 `event` 是 **Event 包裝類**（註解為 `Event`）；模組生命週期方法 `on_load` / `on_unload` 的 `event` 是普通 **dict**（註解為 `dict`），二者不要混淆。
 
 ## 核心特性
 
@@ -30,10 +30,10 @@ async def handler(event: Event):
 - **點式存取**：支援使用點號存取事件欄位
 - **向後相容**：所有方法都是可選的
 
-## 核心欄位方法
+## 核心字段方法
 
 ```python
-from ErisPulse.Core.Event import command
+from ErisPulse.Core.Event import command, Event
 
 @command("info")
 async def info_command(event: Event):
@@ -43,10 +43,10 @@ async def info_command(event: Event):
     print(f"ID: {event_id}, 平台: {platform}, 時間: {time}")
 ```
 
-## 訊息事件方法
+## 消息事件方法
 
 ```python
-from ErisPulse.Core.Event import message
+from ErisPulse.Core.Event import message, Event
 
 @message.on_private_message()
 async def private_handler(event: Event):
@@ -56,10 +56,10 @@ async def private_handler(event: Event):
     await event.reply(f"你好，{nickname}！")
 ```
 
-## 訊息類型判斷
+## 消息類型判斷
 
 ```python
-from ErisPulse.Core.Event import message
+from ErisPulse.Core.Event import message, Event
 
 @message.on_group_message()
 async def group_handler(event: Event):
@@ -72,7 +72,7 @@ async def group_handler(event: Event):
 ## 回覆功能
 
 ```python
-from ErisPulse.Core.Event import command
+from ErisPulse.Core.Event import command, Event
 
 @command("ask")
 async def ask_command(event: Event):
@@ -85,11 +85,23 @@ async def ask_command(event: Event):
 @command("price")
 async def price_command(event: Event):
     await event.reply("請輸入金額（如：5元）:")
-    # 回覆必須匹配正規表示式，否則繼續等待直到逾時
+    # 回覆必須匹配正則，否則繼續等待直到超時
     reply = await event.wait_reply(timeout=30, regex=r"\d+\s*元")
     if reply:
         await event.reply(f"收到金額：{reply.get_text()}")
 ```
+
+#### reply 之外：send_chain
+
+`reply()` 覆蓋不了的場景——平台專有修飾方法（如 Expire/Board 類）、連續多個修飾、
+無內容參數的動作型發送——用 `event.send_chain` 獲取已設好目標與發送帳號的發送鏈，
+自由追加修飾後發送：
+
+```python
+await event.send_chain.At(event.user_id).Text("內容")     # 鏈式修飾 + 發送
+```
+
+修飾方法清單見 [發送方法規範](../../standards/send-method-spec.md)。
 
 ## 互動會話進階
 
@@ -126,10 +138,10 @@ async with event.message_tx():
     await event.reply(f"完成：{result}")
 ```
 
-## 命令資訊取得
+## 命令資訊獲取
 
 ```python
-from ErisPulse.Core.Event import command
+from ErisPulse.Core.Event import command, Event
 
 @command("cmdinfo")
 async def cmdinfo_command(event: Event):
@@ -141,7 +153,7 @@ async def cmdinfo_command(event: Event):
 ## 通知事件方法
 
 ```python
-from ErisPulse.Core.Event import notice
+from ErisPulse.Core.Event import notice, Event
 
 @notice.on_friend_add()
 async def friend_add_handler(event: Event):
@@ -160,10 +172,10 @@ async def friend_add_handler(event: Event):
 - `get_platform()` - 獲取平台名稱
 
 #### 机器人資訊
-- `get_self_platform()` - 獲取机器人平台名稱
-- `get_self_user_id()` - 獲取机器人用戶ID
-- `get_self_account_id()` - 獲取机器人帳號ID（多Bot模式）
-- `get_self_info()` - 獲取机器人完整資訊字典
+- `get_self_platform()` - 獲取機器人平台名稱
+- `get_self_user_id()` - 獲取機器人用戶ID
+- `get_self_account_id()` - 獲取機器人帳戶ID（多Bot模式）
+- `get_self_info()` - 獲取機器人完整資訊字典
 
 #### 會話標識
 - `get_target_id()` - 獲取統一目標 ID（群聊返回 `group_id`，頻道返回 `channel_id`，私聊返回 `user_id`，按 group → channel → guild → thread → user 顺序取首个非空值）
@@ -183,14 +195,14 @@ async def friend_add_handler(event: Event):
 - `get_sender()` - 獲取發送者完整資訊字典
 
 #### 群組/頻道資訊
-- `get_group_id()` - 獲取群組ID（群聊消息）
-- `get_channel_id()` - 獲取頻道ID（頻道消息）
-- `get_guild_id()` - 獲取伺服器ID（伺服器消息）
-- `get_thread_id()` - 獲取話題/子頻道ID（話題消息）
+- `get_group_id()` - 獵取群組ID（群聊消息）
+- `get_channel_id()` - 獵取頻道ID（頻道消息）
+- `get_guild_id()` - 獵取伺服器ID（伺服器消息）
+- `get_thread_id()` - 獵取話題/子頻道ID（話題消息）
 
 #### @消息相關
-- `has_mention()` - 是否包含@机器人
-- `get_mentions()` - 獲取所有被@的用戶ID列表
+- `has_mention()` - 是否包含@機器人
+- `get_mentions()` - 獵取所有被@的用戶ID列表
 
 ### 消息類型判斷
 
@@ -203,8 +215,8 @@ async def friend_add_handler(event: Event):
 ### 通知事件方法
 
 #### 通知操作者
-- `get_operator_id()` - 獲取操作者ID
-- `get_operator_nickname()` - 獲取操作者暱稱
+- `get_operator_id()` - 獵取操作者ID
+- `get_operator_nickname()` - 獵取操作者暱稱
 
 #### 通知類型判斷
 - `is_notice()` - 是否為通知事件
@@ -216,12 +228,48 @@ async def friend_add_handler(event: Event):
 ### 請求事件方法
 
 #### 請求資訊
-- `get_comment()` - 獲取請求附言
+- `get_comment()` - 獵取請求附言
 
 #### 請求類型判斷
 - `is_request()` - 是否為請求事件
 - `is_friend_request()` - 是否為好友請求
 - `is_group_request()` - 是否為群組請求
+
+#### 請求審批（approve / reject）
+
+註冊請求處理器並對請求做出決策：
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend(event):
+    request_id = event.get_request_id()   # 請求標識（缺失時 approve/reject 抛 ValueError）
+    if event.get_comment() == "暗號":
+        result = await event.approve()    # 同意（可帶備註：approve(comment="歡迎")）
+    else:
+        result = await event.reject()     # 拒絕
+    if result.get("status") != "ok":
+        # 標準回應格式，失敗時 message 說明原因（如 34001 請求已過期）
+        pass
+
+@request.on_group_request()               # 群申請 / 群邀請
+async def handle_group(event):
+    await event.approve()
+```
+
+> 審批動作經適配器 `Request` DSL 執行；返回值、錯誤碼與適配器實現要求見
+> [請求操作規範](../../standards/request-action-spec.md)。通用註冊器
+> `request.on_request()`（不區分類型）同樣可用。
+
+#### 鏈路控制（done / is_processed / is_stopped）
+
+- `done(claim=True)` - 認領（預設）或僅阻斷後續低優先級處理器
+- `is_processed()` - 當前事件是否已被認領
+- `is_stopped()` - 當前事件處理鏈是否已被阻斷
+
+認領與阻斷的完整語義（優先級交互、命令認領）見
+[事件處理入門 · 鏈路控制：認領與阻斷](../../getting-started/event-handling.md#鏈路控制認領與阻斷)。
 
 ### 回覆功能
 
@@ -237,7 +285,7 @@ async def friend_add_handler(event: Event):
   - `**kwargs`: 額外參數（如 Mention 方法的 user_id）
 
 - `reply_ob12(message)` - 使用 OneBot12 消息段回覆
-  - `message`: OneBot12 消息段列表或字典，可配合 MessageBuilder 構建
+  - `message`: OneBot12 消息段列表或字典，可配合 MessageBuilder 构建
 
 #### 平台能力查詢
 - `supports(method)` - 檢查當前平台是否支援某發送方法（如 `"Image"`、`"Voice"`），返回 `bool`
@@ -245,7 +293,7 @@ async def friend_add_handler(event: Event):
 
 #### 轉發功能
 
-> **注意**：轉發功能需要透過適配器的 Send DSL 實現，Event 包裝類本身不提供直接的轉發方法。
+> **注意**：轉發功能需要通過適配器的 Send DSL 實現，Event 包裝類本身不提供直接的轉發方法。
 
 ```python
 # 轉發消息到群組
@@ -254,13 +302,13 @@ target_id = event.get_group_id()  # 或指定其他群組ID
 await adapter.Send.To("group", target_id).Text(event.get_text())
 ```
 
-> **多帳號部署**：處理事件的鏈路內發送**無需顯式指定帳號**——框架在事件分發入口把觸發事件的帳號標識注入呼叫上下文，`Send` / `Api` / `Request` 鏈路未顯式指定時自動綁定觸發事件的帳號（顯式 `Using()` 永遠優先；定時器等無事件上下文場景走預設帳號）。即上例轉發會從「收到這條事件的帳號」發出，無需額外程式碼。
+> **多帳戶部署**：處理事件的鏈路內發送**無需顯式指定帳戶**——框架在事件分發入口把觸發事件的帳戶標識注入調用上下文，`Send` / `Api` / `Request` 鏈路未顯式指定時自動綁定觸發事件的帳戶（顯式 `Using()` 永遠優先；定時器等無事件上下文場景走預設帳戶）。即上例轉發會從「收到這條事件的帳戶」發出，無需額外代碼。
 
-#### 跨帳號重複受理
+#### 跨帳戶重複受理
 
-多帳號同群時，同一物理消息可能經多個帳號各收到一遍。框架按 `ErisPulse.framework.cross_account_policy` 處理（預設 `off` 不關聯）：
+多帳戶同群時，同一物理消息可能經多個帳戶各收到一遍。框架按 `ErisPulse.framework.cross_account_policy` 處理（預設 `off` 不關聯）：
 
-- `mark`：後續副本照常分發，但事件頂層注入 `multi_receipt` 字段（`{"event_id": 首個受理事件id, "self_id": 首個受理帳號}`）——模組讀取該字段自行裁決是否跳過回應
+- `mark`：後續副本照常分發，但事件頂層注入 `multi_receipt` 字段（`{"event_id": 首個受理事件id, "self_id": 首個受理帳戶}`）——模組讀取該字段自行裁決是否跳過回應
 - `drop`：副本在分發入口直接丟棄，模組無感
 
 ### 等待回覆功能
@@ -275,27 +323,27 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - `regex`: 正則表達式，回覆文本必須匹配（`pattern` 與 `regex` 二選一），不匹配則繼續等待
   - 返回用戶回覆的 Event 對象，超時返回 None
 
-#### 互動方法
+#### 交互方法
 
 - `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - 確認對話
   - 返回 `True`（確認）/ `False`（否定）/ `None`（超時）
   - 內建中英文確認詞自動識別，可自定義詞集
-  - `method`: 發送方法，預設 "Text"；支援 "Image"/"Markdown" 等非文字方式發送提示
+  - `method`: 發送方法，預設 "Text"；支援 "Image"/"Markdown" 等非文本方式發送提示
   - `hint`: 是否在提示末尾自動追加確認詞提示（如 "（是/否）"），預設 False
 
 - `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - 選擇菜單
   - `options`: 選項文本列表
   - 返回選項索引（0-based），超時返回 `None`
-  - `method`: 發送方法，預設 "Text"；文字類方法 (Text/Markdown/md/Html/h5) 預設合併選項到末尾
+  - `method`: 發送方法，預設 "Text"；文本類方法 (Text/Markdown/md/Html/h5) 預設合併選項到末尾
   - `options_format`: 選項格式（預設: "auto"，根據 method 自動選擇內建樣式）
-    - `"auto"`：Markdown→無序列表（`- 1.選項`），Html→有序列表（`<ol>`），其他→純文字列表
+    - `"auto"`：Markdown→無序列表（`- 1.選項`），Html→有序列表（`<ol>`），其他→純文本列表
     - `"list"`：每行一個，如 ``1. 選項A\n2. 選項B``
     - `"inline"`：單行展示，如 ``1.A | 2.B``
     - `"md"`：Markdown 無序列表
     - `"html"`：Html 有序列表
     - `callable`：自定義函數，接收 ``list[str]`` 返回 ``str``
   - `merge_prompt`: 是否強制合併為一條消息發送，預設 False
-    - `False`（預設）：文字類方法自動合併；非文字方法先發 prompt 再發 Text 選項
+    - `False`（預設）：文本類方法自動合併；非文本方法先發 prompt 再發 Text 選項
     - `True`：無論什麼 method 都合併為一條消息，用用戶指定的 method 發送
   - `placeholder`: 選項插入佔位符，預設 `{options}`；prompt 中出現該標記的位置替換為選項文本，設為空字串則始終追加到末尾
 
@@ -314,11 +362,12 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - 返回 `Conversation` 對象，支援 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
   - `is_active` 屬性表示對話是否活躍
 
-#### 互動方法示例
+#### 交互方法示例
 
 **confirm() - 確認對話：**
 
 ```python
+from ErisPulse.Core.Event import Event
 @command("delete", help="刪除數據")
 async def delete_handler(event: Event):
     if await event.confirm("確定要刪除所有數據嗎？"):
@@ -340,6 +389,7 @@ if await event.confirm("確定繼續？", hint=True):
 **choose() - 選擇菜單：**
 
 ```python
+from ErisPulse.Core.Event import Event
 @command("color", help="選擇顏色")
 async def color_handler(event: Event):
     choice = await event.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
@@ -398,6 +448,7 @@ choice = await event.choose(
 **collect() - 表單收集：**
 
 ```python
+from ErisPulse.Core.Event import Event
 @command("register", help="註冊")
 async def register_handler(event: Event):
     data = await event.collect([
@@ -431,16 +482,16 @@ await event.reply_ob12(segments)
 - `get_command_info()` - 獲取完整命令資訊字典
 - `is_command()` - 是否為命令
 
-### 原始資料
+### 原始數據
 
-- `get_raw()` - 獲取平台原始事件資料
+- `get_raw()` - 獲取平台原始事件數據
 - `get_raw_type()` - 獲取平台原始事件類型
 
 ### 平台擴展方法
 
-適配器可以為 Event 包裝類註冊平台專有方法。方法僅在對應平台的 Event 實例上可用，其他平台存取時拋出 `AttributeError`。
+適配器可以為 Event 包裝類註冊平台專有方法。方法僅在對應平台的 Event 實例上可用，其他平台訪問時拋出 `AttributeError`。
 
-平台方法透過 `Event.__getattribute__` 优先於內建方法生效，因此可以覆寫 `confirm`、`choose`、`collect`、`wait_reply` 等內建互動方法，提供平台特色實現（如按鈕、卡片等）。內建實現作為 `_builtin_*` 函數導出供覆寫方調用。
+平台方法通過 `Event.__getattribute__` 优先於內建方法生效，因此可以覆寫 `confirm`、`choose`、`collect`、`wait_reply` 等內建交互方法，提供平台特色實現（如按鈕、卡片等）。內建實現作為 `_builtin_*` 函數導出供覆寫方調用。
 
 ```python
 # 郵件事件 - 只有郵件方法
@@ -483,13 +534,13 @@ from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    # self 為 Event 實例，可存取事件資料和內建方法
+    # self 為 Event 實例，可訪問事件數據和內建方法
     await self.reply(f"AI: {prompt}")
 ```
 
 註冊後，任何平台的事件處理器都能調用 `event.ai_chat(...)`。
 
-方法解析優先級（從高到低）：平台特定方法 → 通配符方法 → 內建方法 → 字典鍵存取。
+方法解析優先級（從高到低）：平台特定方法 → 通配符方法 → 內建方法 → 字典鍵訪問。
 
 > 適配器開發者註冊擴展方法的方式請參閱 [事件系統 API - 跨平台擴展通配符](../../api-reference/event-system.md#跨平台擴展通配符)。
 

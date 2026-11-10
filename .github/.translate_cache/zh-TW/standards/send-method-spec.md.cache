@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "032740b23602f599bde1c2a975f95652",
-  "file_hash": "032740b23602f599bde1c2a975f95652",
-  "translated_at": "2026-11-08T14:11:57.334358",
+  "hash": "9508c8449a4b11de7cf547ee501ba1cb",
+  "file_hash": "9508c8449a4b11de7cf547ee501ba1cb",
+  "translated_at": "2026-11-10T06:36:19.066739",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -54,8 +54,8 @@
       "translation": "## 11. 訊息建構器——適配器側須知\n\n`MessageBuilder` 是 ErisPulse 提供的 OneBot12 訊息段建構工具，供**模組側**建構訊息：\n鏈式呼叫（或靜態快速建構）最終產出標準訊息段列表 `[{\"type\": ..., \"data\": ...}]`，\n由呼叫方直接傳給 `Raw_ob12`。\n\n**適配器側只需知道這一點**：`Raw_ob12` 接收到的就是這份產物——與手寫的訊息段列表\n完全同構，按 §6.2 的段分發邏輯處理即可，無需感知它來自 MessageBuilder 還是字面值。\n\n> 完整用法（雙模式機制、全部訊息段方法、`copy()` / `clear()` 工具方法與範例）見\n> [MessageBuilder 詳解](../advanced/message-builder.md)，本篇不再重複。\n\n---"
     },
     {
-      "hash": "c4ed40d0d6dc65c462adb3de77e501ca",
-      "translation": "## 12. 相關文件\n\n**實現發送回傳值時配套對照**：\n- [API 回應標準](api-response.md) - 適配器 API 回應格式標準\n\n**同一適配器的其它側**：\n- [事件轉換標準](event-conversion.md) - 完整的事件轉換規範、擴展命名和訊息段標準\n- [會話類型標準](session-types.md) - 會話類型定義和映射關係\n- [請求操作規範](request-action-spec.md) - 請求事件欄位要求、HandleRequest DSL 及適配器實現要求"
+      "hash": "ab7cd60062ab0d194d62f5b63252e79a",
+      "translation": "## 12. 相關文件\n\n**實作傳送回傳值時的配套對照**：\n- [API 回應標準](api-response.md) - 轉接器 API 回應格式標準\n\n**同一轉接器的其他側**：\n- [事件轉換標準](event-conversion.md) - 完整的事件轉換規範、擴充命名和訊息段標準\n- [會話類型標準](session-types.md) - 會話類型定義和映射關係\n- [請求操作規範](request-action-spec.md) - 請求事件欄位要求、Request DSL（approve/reject）及轉接器實作要求"
     }
   ]
 }
