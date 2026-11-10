@@ -1297,6 +1297,10 @@ class SQLStorageBase(BaseStorage):
             if logger.should_log(TRACE):
                 logger.trace(f"storage.set: key={key}")
             return result
+        except StorageUnreachableError:
+            # 规则 26：连接级不可达 → 冷却期快速失败返回 False（框架韧性，failover 契约）
+            logger.warning(i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name))
+            return False
         except Exception as e:
             raise StorageOperationError(
                 i18n.t("core.storage.set_failed", key=key, error=e),
@@ -1365,6 +1369,10 @@ class SQLStorageBase(BaseStorage):
             logger.trace(i18n.t("core.storage.kv_delete", key=key))
         try:
             return await self._run_with_conn(self._delete_impl, key, conn=conn)
+        except StorageUnreachableError:
+            # 规则 26：连接级不可达 → 冷却期快速失败返回 False（框架韧性，failover 契约）
+            logger.warning(i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name))
+            return False
         except Exception as e:
             raise StorageOperationError(
                 i18n.t("core.storage.delete_failed", key=key, error=e),
@@ -1418,6 +1426,10 @@ class SQLStorageBase(BaseStorage):
                 conn=conn,
             )
             return True
+        except StorageUnreachableError:
+            # 规则 26：连接级不可达 → 冷却期快速失败返回 False（框架韧性，failover 契约）
+            logger.warning(i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name))
+            return False
         except Exception as e:
             raise StorageOperationError(
                 i18n.t("core.storage.clear_failed", error=e), operation="clear"
@@ -1501,6 +1513,10 @@ class SQLStorageBase(BaseStorage):
 
             await self._run_with_conn(write_all)
             return True
+        except StorageUnreachableError:
+            # 规则 26：连接级不可达 → 冷却期快速失败返回 False（框架韧性，failover 契约）
+            logger.warning(i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name))
+            return False
         except Exception as e:
             raise StorageOperationError(
                 i18n.t("core.storage.set_multi_failed", error=e), operation="set_multi"
