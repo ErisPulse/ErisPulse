@@ -3794,3 +3794,83 @@ class TestCrossAccountReceipt:
         )
         manager.register("test_platform", test_adapter_class, {"version": "1.0.0"})
         assert len(manager._cross_receipts) == 0
+
+
+class TestUpdateBotId:
+    """运行期 bot_id 注册表与持久化"""
+
+    def _make_multi(self):
+        from dataclasses import dataclass
+
+        @dataclass
+        class BotConfig:
+            bot_id: str = ""
+            enabled: bool = True
+            token: str = ""
+
+        class MultiAdapter(BaseAdapter):
+            ConfigClass = None
+            AccountConfigClass = BotConfig
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok"}
+
+        return MultiAdapter()
+
+    def test_registry_lookup_resolves_before_property_scan(self):
+        """注册表反查优先：bot_id 首次识别后立即可解析（不等快照刷新）"""
+        adapter = self._make_multi()
+        adapter._accounts_data = {
+            "a": adapter.AccountConfigClass(bot_id="", enabled=True),
+            "b": adapter.AccountConfigClass(bot_id="", enabled=True),
+        }
+        adapter.update_bot_id("b", "90001")
+        name, cfg = adapter._resolve_account("90001")
+        assert name == "b"
+        assert cfg.bot_id == "90001"
+
+    def test_persist_writes_config_only_on_change(self, monkeypatch):
+        """配置持久化：值变化时写一次，重复识别不重复写"""
+        adapter = self._make_multi()
+        writes = []
+        monkeypatch.setattr(
+            "ErisPulse.Core.config.getConfig",
+            lambda key, default=None: {},
+        )
+        monkeypatch.setattr(
+            "ErisPulse.Core.config.setConfig",
+            lambda key, value: writes.append((key, value)),
+        )
+        adapter.update_bot_id("default", "90001")
+        adapter.update_bot_id("default", "90001")   # 重复识别（注册表已一致）
+        assert len(writes) == 1
+        assert writes[0][0].endswith("accounts.default.bot_id")
+        assert writes[0][1] == "90001"
+
+    def test_reassign_warns_on_owner_change(self, monkeypatch):
+        """bot_id 归属变更（同 id 换账户）→ 告警且写新账户配置"""
+        adapter = self._make_multi()
+        writes = []
+        monkeypatch.setattr(
+            "ErisPulse.Core.config.getConfig", lambda key, default=None: {}
+        )
+        monkeypatch.setattr(
+            "ErisPulse.Core.config.setConfig",
+            lambda key, value: writes.append((key, value)),
+        )
+        adapter.update_bot_id("a", "90001")
+        adapter.update_bot_id("b", "90001")   # 归属变更
+        assert adapter._bot_id_registry["90001"] == "b"
+        assert any("accounts.b.bot_id" in k for k, _ in writes)
+
+    def test_empty_inputs_are_noop(self):
+        adapter = self._make_multi()
+        adapter.update_bot_id("", "90001")
+        adapter.update_bot_id("a", "")
+        assert adapter._bot_id_registry == {}

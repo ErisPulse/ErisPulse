@@ -190,6 +190,8 @@ TRANSLATIONS = {
     "core.adapter.accounts_set_failed": "Failed to write account config key={key}: {error}",
     "core.adapter.call_api_account_unconsumed": "Platform {platform} call_api does not consume account_id/_account_id; Api DSL Using() and event accounts fall back to the default account",
     "core.adapter.account_unresolved_fallback": "Platform {platform} could not resolve account_id={account_id} to an account, falling back to the first enabled account {account}",
+    "core.adapter.bot_id_recognized": "Runtime bot_id recognized for account {account}: {bot_id} (persisted to account config)",
+    "core.adapter.bot_id_changed": "bot_id for account {old_account} moved to {account}: {bot_id}",
     "core.adapter.cross_receipt_dropped": "Platform {platform} detected a cross-account duplicate receipt, event {event_id} dropped (first receiving account {self_id})",
     "core.adapter.cross_receipt_marked": "Platform {platform} detected a cross-account duplicate receipt, event {event_id} marked with multi_receipt (first receiving account {self_id})",
     "core.adapter.raw_ob12_not_implemented": "Platform {platform} has not implemented the Raw_ob12 method, message was not sent. The adapter must implement this method to support OneBot12 message segment sending.",

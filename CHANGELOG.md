@@ -94,6 +94,7 @@
   - `ownership.nest()` 嵌套生命周期：父 owner 回收时按注册逆序级联回收子 owner，环声明拒绝，`counts` / `orphans` 覆盖嵌套关系
   - 细粒度热重载：按运行时源码归属判定单模块/单适配器重载，入口脚本与框架源码变更走进程重启；脚本模式子进程内挂载 watcher 并通过运行状态握手去重
   - 后台任务待发队列：主循环注册前的 `spawn_background` 入队并在 `register_main_loop` 时统一冲队列，队列上限与退出滞留告警
+  - 运行期 bot_id 注册表与持久化：`BaseAdapter.update_bot_id(account_name, bot_id)`——bot_id → 账户注册表（解析链第一优先级，事件到达即回填）+ 账户配置持久化（`accounts.<name>.bot_id` 仅变更时落盘），重启后解析不依赖账户活动回填，多账户第二账户审批的重启窗口期根治
   - 事件分发链账户自动绑定：分发入口把触发事件的账户标识注入调用上下文，处理链内的 `Send` / `Api` / `Request` 链路未显式指定账户时自动绑定（显式 `Using()` 与参数显式传入永远优先；无事件上下文维持默认账户语义），`send_context` / `api_context` / `request_context` 统一同口径——多账户部署模块侧零改动即可回复到正确账户
   - `SendDSL` 新增 `Location()` 标准发送方法（OneBot12 `location` 段），方法清单与模板提示同步
   - 影子模块体验闭环：SDK 新增 `shadow_ingest_whl`（whl 校验/原件落盘/解包）、`shadow_promote_persist`（转正后后台 pip 安装原件，重启不回退）、`shadow_persist_status`、`list_shadows`；Dashboard 真实模块卡片「影子测试中」标记、顶部影子聚合区、影子 owner 移出普通列表，旧版 SDK 自动降级为基础影子（功能不退化）

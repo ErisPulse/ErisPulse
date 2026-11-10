@@ -1475,6 +1475,9 @@ class BaseAdapter(ABC):
 
         self._config_instance = None
         self._accounts_data = None
+        # 运行期 bot_id 注册表（bot_id → 账户名）：事件到达即回填，
+        # 解析链第一优先级使用；持久化经 update_bot_id 落配置
+        self._bot_id_registry: dict[str, str] = {}
 
         # 注册 I18nClass 中声明的翻译键（在生成配置之前）
         self._ensure_i18n_registered()
@@ -1803,6 +1806,43 @@ class BaseAdapter(ABC):
                 exc_info=True,
             )
 
+    def update_bot_id(self, account_name: str, bot_id: str) -> None:
+        """
+        运行期识别 bot_id 并持久化到账户配置
+
+        适配器在连接建立 / 事件到达时调用（协议事件的 self.user_id 即 bot_id）。
+        框架维护 bot_id → 账户名注册表（本进程解析链第一优先级），并在配置值
+        变化时把 ``accounts.<账户名>.bot_id`` 写入配置存储（无损路径）——
+        重启后账户实例重建即自带 bot_id，解析不再依赖账户活动回填。
+
+        :param account_name: 账户名（accounts 配置键）
+        :param bot_id: 协议侧机器人标识
+        """
+        bot_id = str(bot_id or "")
+        if not account_name or not bot_id:
+            return
+        old = self._bot_id_registry.get(bot_id)
+        if old == account_name:
+            return
+        if old is not None:
+            self._get_logger().warning(
+                i18n.t("core.adapter.bot_id_changed", old_account=old, account=account_name, bot_id=bot_id)
+            )
+        else:
+            self._get_logger().info(
+                i18n.t("core.adapter.bot_id_recognized", account=account_name, bot_id=bot_id)
+            )
+        self._bot_id_registry[bot_id] = account_name
+        # 快照同步（accounts property 重建实例，setattr 仅对当前快照有效）
+        account = (self._accounts_data or {}).get(account_name)
+        if account is not None and getattr(account, "bot_id", None) != bot_id:
+            account.bot_id = bot_id
+        # 配置持久化（仅值变化时写一次；无损路径保留注释与顺序）
+        key = f"{self._get_config_key()}.accounts.{account_name}"
+        current = config_mgr.getConfig(key)
+        if isinstance(current, dict) and current.get("bot_id") != bot_id:
+            config_mgr.setConfig(f"{key}.bot_id", bot_id)
+
     def _resolve_account(self, account_id: str | None = None) -> tuple:
         """
         解析目标账户
@@ -1830,6 +1870,11 @@ class BaseAdapter(ABC):
         if account_id is not None:
             if account_id in accounts:
                 return account_id, accounts[account_id]
+
+            # 运行期注册表反查（事件到达即回填，覆盖快照未刷新 / 重启窗口）
+            reg_name = self._bot_id_registry.get(str(account_id))
+            if reg_name and reg_name in accounts:
+                return reg_name, accounts[reg_name]
 
             for name, cfg in accounts.items():
                 if hasattr(cfg, "bot_id") and cfg.bot_id == account_id:

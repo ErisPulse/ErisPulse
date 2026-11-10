@@ -646,6 +646,8 @@ async def call_api(self, endpoint: str, **params):
 
 解析策略：账户名匹配 → `bot_id` 字段匹配 → 其他 str 字段匹配 → 第一个启用账户。
 
+**运行期识别与持久化**（2.12+）：适配器在连接建立 / 事件到达时调用 `self.update_bot_id(account_name, bot_id)`——框架维护 bot_id → 账户注册表（解析链第一优先级），并在值变化时把 `accounts.<账户名>.bot_id` 写入配置存储：重启后账户实例重建即自带 bot_id，第二账户等场景的解析不再依赖账户活动回填（消除重启窗口期）。
+
 #### 配置热更新
 
 子类可覆写 `on_config_update()` 响应配置变更：

@@ -190,6 +190,8 @@ TRANSLATIONS = {
     "core.adapter.accounts_set_failed": "アカウント設定の書き込みに失敗 key={key}: {error}",
     "core.adapter.call_api_account_unconsumed": "プラットフォーム {platform} の call_api はアカウントフィールド（account_id / _account_id）を消費していません。Api DSL の Using() とイベントアカウントは既定のアカウントにフォールバックします",
     "core.adapter.account_unresolved_fallback": "プラットフォーム {platform} は account_id={account_id} を特定のアカウントに解決できませんでした。最初の有効なアカウント {account} にフォールバックします",
+    "core.adapter.bot_id_recognized": "アカウント {account} の bot_id を実行時認識: {bot_id}（アカウント設定に永続化済み）",
+    "core.adapter.bot_id_changed": "bot_id {bot_id} の所属アカウントが {old_account} から {account} に変更",
     "core.adapter.cross_receipt_dropped": "プラットフォーム {platform} がアカウント間の重複受信を検出しました。イベント {event_id} を破棄しました（最初の受信アカウント {self_id}）",
     "core.adapter.cross_receipt_marked": "プラットフォーム {platform} がアカウント間の重複受信を検出しました。イベント {event_id} に multi_receipt を付与しました（最初の受信アカウント {self_id}）",
     "core.adapter.raw_ob12_not_implemented": "プラットフォーム {platform} は Raw_ob12 メソッドを実装していないため、メッセージは送信されませんでした。OneBot12 メッセージセグメント送信をサポートするには、アダプターがこのメソッドを実装する必要があります。",

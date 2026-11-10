@@ -190,6 +190,8 @@ TRANSLATIONS = {
     "core.adapter.accounts_set_failed": "账户配置写入失败 key={key}: {error}",
     "core.adapter.call_api_account_unconsumed": "平台 {platform} 的 call_api 未消费账户字段（account_id / _account_id），Api DSL 的 Using() 与事件账户将回退到默认账户",
     "core.adapter.account_unresolved_fallback": "平台 {platform} 未能将 account_id={account_id} 解析到具体账户，已回退到第一个启用账户 {account}",
+    "core.adapter.bot_id_recognized": "账户 {account} 运行期识别 bot_id: {bot_id}（已持久化到账户配置）",
+    "core.adapter.bot_id_changed": "bot_id {bot_id} 的归属账户由 {old_account} 变更为 {account}",
     "core.adapter.cross_receipt_dropped": "平台 {platform} 检测到跨账户重复受理，事件 {event_id} 已丢弃（首个受理账户 {self_id}）",
     "core.adapter.cross_receipt_marked": "平台 {platform} 检测到跨账户重复受理，事件 {event_id} 已标记 multi_receipt（首个受理账户 {self_id}）",
     "core.adapter.raw_ob12_not_implemented": "平台 {platform} 未实现 Raw_ob12 方法，消息未被发送。适配器必须实现此方法以支持 OneBot12 消息段发送。",
