@@ -129,6 +129,18 @@ async with sdk.storage.atransaction():
 建表列类型统一使用 SQLite 风格定义（如 `"INTEGER PRIMARY KEY AUTOINCREMENT"`、
 `"TEXT NOT NULL"`、`"DOUBLE DEFAULT 0.0"`），由方言自动翻译为目标后端等价写法。
 
+## SQLite "database is locked" 排查
+
+框架 SQLite 后端已内建：**WAL 日志模式**（读写不互斥）+ **busy_timeout 5000ms**（写锁竞争自动等待）+ autocommit 连接 + 多事件循环各持共享连接。单进程内纯用框架存储/ORM **不会自我锁死**；出现 locked 时按以下顺序排查：
+
+| 场景 | 判定 | 处置 |
+|------|------|------|
+| **第二连接写竞争**（最常见） | 同一进程内混用 sqlmodel / SQLAlchemy / 裸 sqlite3 自开连接写同一个库文件——WAL 单写者，跨连接写互斥 | **同一库文件只用一套 ORM**：要么全用内置 ORM（本就是异步原生），要么全换外部 ORM，不要混用过渡 |
+| 多进程同文件 | 多实例 / Dashboard / 数据库工具打开同一 sqlite | 各实例独立 `config/` 目录；管理工具用只读模式打开；高频写场景切 mysql / postgres（配置一改零代码迁移） |
+| 长事务持锁 | `atransaction` 块内有慢操作（外部 HTTP、大计算） | 事务块内只做库操作，慢操作移出 |
+
+> `busy_timeout` 当前为类常量 `_SQLITE_BUSY_TIMEOUT_MS = 5000`（`Core/storage/sqlite.py`）；如需调整属于源码级修改，不作为运行时配置暴露。
+
 ## 自定义 SQL 后端
 
 纯 SQL 后端可继承共享基类，只需提供连接管理与方言执行漏斗：

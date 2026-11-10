@@ -3,6 +3,9 @@
 > [!TIP]
 > **什么时候需要读这篇**：需要数据模型、自动建表或关系映射时。不需要则跳过，不影响其它功能的使用。
 
+> [!NOTE]
+> **ORM 是异步原生的**：全部 CRUD 方法（`create` / `get` / `save` / `delete` / `create_table` / QuerySet 终结操作）都是 `async def`，直接在事件循环内 `await` 调用即可——底层驱动为 aiosqlite / aiomysql / asyncpg（随存储后端切换），不存在同步阻塞。KV 存储的同步 `get`/`set` 是兼容层，与 ORM 无关。
+
 
 2.9.0 起框架内置声明式数据模型层：继承 `Model` 并用 `Field` 声明字段，即可获得自动建表与增删改查能力。模型直接构建在内置存储层之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置决定，**切换后端无需修改模型代码**。
 
