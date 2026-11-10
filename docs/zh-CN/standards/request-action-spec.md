@@ -303,8 +303,9 @@ class MyAdapter(BaseAdapter):
 1. **事件侧留存**：适配器收到请求事件的入口处，把 `request_id → {请求类型, sub_type, group_id, 账户}` 写入实例内缓存（统一字段见 §5.3.3），并顺手清理过期条目
 2. **操作侧路由**：`_do_accept` / `_do_reject` 内的端点选择顺序为 **kwargs 显式传参 > 缓存 > 回退默认端点并记 WARNING**——类型未知必须打日志（可观测），不得静默选端点
 3. **kwargs 保留名**：显式覆盖参数统一命名 `request_type` / `sub_type` / `group_id`（无下划线前缀、跨适配器同名同义）；不使用 `_request_type` 一类私有约定名（标准调用方不会传）
-4. **账户读取**：操作账户统一经基类属性 `self.request_context.get("account_id")` 获取（`Using()` 显式指定 > 事件链自动绑定，与 Send 的 `send_context` 同口径）；缓存留存事件到达账户作为事件链缺失时的兜底（如轮询合成事件、跨重启重建）
-5. **处理后清理**：操作提交成功后从缓存删除该 `request_id`
+4. **账户读取与归属校验**：操作账户统一经基类属性 `self.request_context.get("account_id")` 获取（`Using()` 显式指定 > 事件链自动绑定，与 Send 的 `send_context` 同口径）；留存条目的事件到达账户作为事件链缺失时的兜底（如轮询合成事件、跨重启重建）。**账户无法解析到具体账户实例时必须快速失败**（返回 34005），不得静默回退默认账户——回退会把操作打到错误连接（flag 在默认账户会话不存在，平台报 invalid，多账户下表现为「只有第一个账户能操作」）
+5. **默认持久化**：留存介质默认为框架统一存储（`self.sdk.storage`）**单键整快照**——请求为低频批复类事件，事件到达时即写透（库内足迹恒为 1 个键）；启动时一次加载回内存，运行时读路径零开销；存储不可用时降级仅内存（WARNING），不阻断事件流
+6. **处理后清理**：操作提交成功后删除该 `request_id` 条目并同步写透快照
 
 单一请求端点的平台（如统一 `/set_request`）无需留存，透传即可。本节是适配器实现口径，`Request` DSL 契约不受影响。
 
@@ -327,7 +328,9 @@ class MyAdapter(BaseAdapter):
 - **TTL**：以 `ts` 为基准，建议 1 小时级（覆盖平台侧请求有效期）；过期视同未留存，走回退默认端点 + WARNING
 - **键名（KV 持久化时）**：`{适配器配置键}:request_ctx:{request_id}`，避免跨适配器冲突
 
-#### 5.3.4 参考实现（内存缓存）
+#### 5.3.4 参考实现（统一存储单键快照，默认）
+
+留存介质**默认为框架统一存储**（`self.sdk.storage`）：请求事件是批复类低频事件（好友/群请求，非消息流），**事件到达时即写透**不会造成写入压力。存储形式为**单键整快照**——整个上下文字典作为一个键一次写入（库内足迹恒为 1 个键，随处理自动收敛），不做逐 flag 分键。重启后启动时一次加载回内存，运行时读路径零开销。
 
 ```python
 import time
@@ -338,12 +341,31 @@ from ErisPulse.Core import BaseAdapter, RequestDSL
 class MyAdapter(BaseAdapter):
     """请求端点异构平台（好友与群请求分端点）"""
 
-    _REQ_CTX_TTL = 3600    # 上下文留存秒数，覆盖平台侧请求有效期即可
-    _REQ_CTX_MAX = 512     # 缓存容量上限
+    _REQ_CTX_TTL = 86400   # 留存秒数（覆盖平台侧 flag 有效期，重启不丢）
+    _REQ_CTX_MAX = 512     # 条目容量上限
 
     def __init__(self, sdk=None):
         super().__init__(sdk)
-        self._request_ctx: dict[str, dict] = {}   # request_id → 请求上下文
+        self._request_ctx: dict[str, dict] = {}   # request_id → 请求上下文（内存态）
+        self._ctx_key = f"{self._get_config_key()}:request_ctx"   # 单键整快照
+
+    async def start(self):
+        # 启动加载（重启后仍可审批）；存储不可用按冷启动处理
+        try:
+            loaded = self.sdk.storage.get(self._ctx_key, {}) or {}
+            now = time.time()
+            self._request_ctx = {k: v for k, v in loaded.items()
+                                 if now - v.get("ts", 0) <= self._REQ_CTX_TTL}
+        except Exception as e:
+            self.logger.warning(f"请求上下文加载失败（按冷启动处理）: {e}")
+            self._request_ctx = {}
+
+    def _persist_ctx(self) -> None:
+        """单键整快照写透（存储不可用时降级仅内存，不阻断事件流）"""
+        try:
+            self.sdk.storage.set(self._ctx_key, self._request_ctx)
+        except Exception as e:
+            self.logger.warning(f"请求上下文写透失败（降级仅内存）: {e}")
 
     def remember_request(self, request_id: str, *, request_type: str,
                          sub_type: str | None = None, group_id: str | None = None,
@@ -359,9 +381,10 @@ class MyAdapter(BaseAdapter):
             "request_type": request_type,   # "friend" / "group"
             "sub_type": sub_type,           # 群请求子类型："add" / "invite"
             "group_id": group_id,
-            "account": account,             # 事件到达账户（事件的 self.user_id）
+            "account": account,             # 事件到达账户（事件的 self.user_id / 代位账户名）
             "ts": now,
         }
+        self._persist_ctx()
 
     class Request(RequestDSL):
         """端点路由：kwargs 显式传参 > 缓存 > 回退默认端点 + WARNING"""
@@ -378,6 +401,23 @@ class MyAdapter(BaseAdapter):
                 ctx["request_type"] = "friend"
             return ctx
 
+        def _resolve_or_fail(self, account):
+            """
+            审批账户归属校验：解析失败快速失败（34005），不回退默认账户。
+
+            回退默认账户会把操作打到错误连接上（flag 在该账户会话不存在，
+            平台报 invalid，表现为「只有第一个账户能操作」的玄学故障）。
+            """
+            if not account:
+                return None, None            # 无任何账户信息时维持默认账户语义
+            name, inst = self._adapter._resolve_account(account)
+            hit = str(account) == str(name) or str(account) == str(getattr(inst, "bot_id", "") or "")
+            if not hit:
+                self._adapter.logger.warning(
+                    f"请求 {self._request_id} 的账户 {account} 无法解析，拒绝回退默认账户")
+                return None, "34005"
+            return (name, inst), None
+
         async def _do_accept(self, **kwargs) -> dict:
             """同意请求；kwargs 类型路由可用 request_type / sub_type / group_id 显式覆盖"""
             return await self._do_action(approve=True, **kwargs)
@@ -389,6 +429,12 @@ class MyAdapter(BaseAdapter):
         async def _do_action(self, approve: bool, **kwargs) -> dict:
             ctx = self._route(**kwargs)
             account = self.request_context.get("account_id") or ctx.get("account")
+            resolved, fail = self._resolve_or_fail(account)
+            if fail:
+                return {
+                    "status": "failed", "retcode": 34005, "data": None,
+                    "message_id": "", "message": f"请求账户 {account} 无法解析到账户实例",
+                }
             try:
                 if ctx["request_type"] == "group":
                     result = await self._adapter.call_api(
@@ -414,39 +460,22 @@ class MyAdapter(BaseAdapter):
                 }
             except Exception as e:
                 response = {
-                    "status": "failed",
-                    "retcode": 34001,
-                    "data": None,
-                    "message_id": "",
-                    "message": f"请求操作失败: {e}",
+                    "status": "failed", "retcode": 34001, "data": None,
+                    "message_id": "", "message": f"请求操作失败: {e}",
                 }
             if response["status"] == "ok":
                 self._adapter._request_ctx.pop(self._request_id, None)   # 处理后清理
+                self._adapter._persist_ctx()
             return response
 ```
 
-#### 5.3.5 跨重启持久化（可选）
+#### 5.3.5 边界与降级
 
-进程内存 + TTL 已覆盖绝大多数场景：请求从到达到被处理通常几秒～几分钟，平台侧本有过期时间，重启丢缓存的窗口极小（回退端点 + WARNING 已保证可观测）。仅当适配器在意「处理瞬间恰好重启」时，才把上下文落到持久化介质，介质自选其一，均按 §5.3.3 统一字段形状落存：
+**降级语义**：统一存储不可用（连接失败冷却期 fast-fail）时写透降级为仅内存（WARNING 可观测），事件照常分发；重启后条目丢失走「类型未知回退 + WARNING」路径。
 
-- **KV 存储**：`self.sdk.storage`（框架统一 KV 存储，后端切换见 [存储后端](../advanced/storage-backends.md)）：
+**等价介质**：内置 ORM（`request_id` 主键建表，见 [数据模型层](../developer-guide/orm.md)）语义等价，适配器可按需选用；不引入额外文件或新依赖。
 
-  ```python
-  # 事件入口：写入（key 见 §5.3.3 键名规则）
-  key = f"{self._get_config_key()}:request_ctx:{request_id}"
-  self.sdk.storage.set(key, {"request_type": "group", "sub_type": "invite",
-                             "group_id": group_id, "account": self_id, "ts": time.time()})
-
-  # 操作侧：读取 + 清理
-  ctx = self.sdk.storage.get(key)
-  self.sdk.storage.delete(key)
-  ```
-
-  存储层不做条目过期：条目自带 `ts`，读取方判断过期即视为未留存（走回退 + WARNING）；处理后必须 `delete`。
-
-- **内置 ORM**：`Model` / `Field` 声明式模型（2.9+ 内置，见 [数据模型层](../developer-guide/orm.md)）可作为等价介质，表按统一字段表建列（`request_id` 主键）。注意两点：`create_table` 为 `IF NOT EXISTS` 幂等，后续字段演进由适配器自行迁移存量表；表属于适配器自有数据，非跨适配器共享表。
-
-无论选择哪种介质：**持久化写入失败不得阻断事件流**——存储后端不可用（冷却期 fast-fail）时降级为仅内存留存，事件照常分发；两种持久化介质均为可选，默认内存即可，不新增任何外部依赖。
+**多实例边界**：本规范不覆盖多进程实例协同——ErisPulse 为单进程多 bot 模型（多账户同进程，请求与其所属账户天然同侧），统一存储即满足重启语义；跨实例共享（多进程分摊账户）需要时再行立项。
 
 ### 5.4 平台不支持请求操作
 
@@ -502,8 +531,9 @@ BaseAdapter
 - [ ] `accept` / `reject` 端点路由顺序为 kwargs 显式传参 > 缓存 > 回退默认端点 + WARNING
 - [ ] 类型覆盖参数使用保留名 `request_type` / `sub_type` / `group_id`（无 `_request_type` 一类私有约定名）
 - [ ] 缓存有 TTL 与容量上限，操作提交成功后清理对应条目
-- [ ] 多账户：操作账户经 `self.request_context.get("account_id")` 读取（`Using()` > 事件链兜底），缓存账户作事件链缺失时兜底
-- [ ] 若用持久化介质：写入失败降级为仅内存留存，不阻断事件流
+- [ ] 多账户：操作账户经 `self.request_context.get("account_id")` 读取（`Using()` > 事件链兜底），留存账户作事件链缺失时兜底
+- [ ] 审批账户解析失败快速失败（34005），不回退默认账户
+- [ ] 默认统一存储单键快照：启动加载、事件到达/处理后写透、存储不可用降级仅内存
 
 ## 7. 错误码扩展
 
@@ -516,6 +546,7 @@ BaseAdapter
 | 34002 | Request Already Handled | 请求已被处理 |
 | 34003 | Request Not Supported | 平台不支持该类型的请求操作 |
 | 34004 | Permission Denied | Bot 无权处理此请求（平台返回） |
+| 34005 | Request Account Unresolved | 请求所属账户无法解析到账户实例（快速失败，不回退默认账户） |
 
 > **与框架码的边界**：以上 `340xx` 是**平台/适配器**返回的请求处理失败；
 > ErisPulse 框架在 `scope.actions` 禁用某模块的 request 动作时，**在调用适配器之前**
