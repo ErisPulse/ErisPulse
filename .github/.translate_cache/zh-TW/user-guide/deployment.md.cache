@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "5185ea407b6c45d8562a745c0e5fd9fb",
-  "file_hash": "5185ea407b6c45d8562a745c0e5fd9fb",
-  "translated_at": "2026-11-10T06:46:28.054924",
+  "hash": "cf2b5d0d910d0b28def13cd986f20233",
+  "file_hash": "cf2b5d0d910d0b28def13cd986f20233",
+  "translated_at": "2026-11-10T14:55:49.544343",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -34,12 +34,12 @@
       "translation": "## 手動部署（pip）\n\n如果不使用 Docker，也可以手動部署。\n\n### 正式環境設定\n\n```toml\n# config/config.toml\n\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\n\n[ErisPulse.logger]\nlevel = \"INFO\"\nlog_files = [\"app.log\"]\nmemory_limit = 5000\n\n[ErisPulse.framework]\nenable_lazy_loading = true\n```\n\n### systemd (Linux)\n\n建立 `/etc/systemd/system/erispulse-bot.service`：\n\n```ini\n[Unit]\nDescription=ErisPulse Bot\nAfter=network.target\n\n[Service]\nType=simple\nUser=bot\nWorkingDirectory=/opt/erispulse-bot\nExecStart=/opt/erispulse-bot/venv/bin/epsdk run main.py\nRestart=always\nRestartSec=5\nStandardOutput=journal\nStandardError=journal\n\n[Install]\nWantedBy=multi-user.target\n```\n\n管理：\n\n```bash\nsudo systemctl daemon-reload\nsudo systemctl start erispulse-bot\nsudo systemctl enable erispulse-bot\nsudo journalctl -u erispulse-bot -f\n```\n\n### Supervisor\n\n建立 `/etc/supervisor/conf.d/erispulse-bot.conf`：\n\n```ini\n[program:erispulse-bot]\ncommand=/opt/erispulse-bot/venv/bin/python -m ErisPulse run main.py\ndirectory=/opt/erispulse-bot\nuser=bot\nautostart=true\nautorestart=true\nstderr_logfile=/var/log/erispulse-bot/err.log\nstdout_logfile=/var/log/erispulse-bot/out.log\n```\n\n### uv tool 分離部署（CLI 與專案環境隔離）\n\n`uv tool install` 會將 `epsdk` 安裝為**獨立的工具環境**，CLI 自身與專案相依套件徹底隔離：升級 CLI 不會動到專案 `.venv`，專案相依套件的變動也不會影響 CLI。\n\n```bash\n# 1. 全域安裝 CLI（自動提供 epsdk / ep 指令）\nuv tool install ErisPulse\n\n# 2. 專案內只放機器人相依套件（.venv 由 uv 管理）\ncd /opt/erispulse-bot\nuv add erispulse ErisPulse-Adapter-Yunhu   # 視需要追加配接器\n\n# 3. 以 CLI 執行（自動偵測並使用專案 .venv 中的直譯器）\nepsdk run main.py\n```\n\n行為重點：\n\n- `epsdk run` 的目標直譯器解析順序：`ERISPULSE_PYTHON` 環境變數 → 專案 `.venv` → 目前直譯器；工具環境本身只承載 CLI，元件（配接器/模組）應裝進專案 `.venv`\n- `epsdk install` / `uninstall` / `upgrade` / `list` 同樣作用於專案 `.venv`，不會污染工具環境\n- 升級 CLI：`uv tool upgrade ErisPulse`（或直接 `epsdk self-update`，uv tool 環境下會自動改走 `uv tool upgrade`）；升級專案相依套件：在專案目錄執行 `uv sync` / `uv add`，兩者互不影響\n- 伺服器情境下工具環境由 uv 統一管理（以 `uv tool list` 檢視、`uv tool upgrade --all` 批次升級），無需手動維護全域 pip 套件\n- 若在沒有專案的目錄中以 `uv run epsdk ...` 執行，會落入**一次性隔離環境**（安裝的元件不會持久化）；在伺服器上請一律直接呼叫 `epsdk`，或先 `cd` 進入專案目錄"
     },
     {
-      "hash": "cee67f21b42aeebc5b047a9ede899426",
-      "translation": "## 安全建議\n\n1. **設定 Dashboard 權杖**：使用強隨機權杖，不要使用預設值\n2. **不要將連接埠暴露到網際網路**：除非使用反向代理 + SSL，否則將 Dashboard 連接埠限制在內部網路\n3. **保護資料目錄**：`config/` 目錄包含設定和資料庫，設定適當的檔案權限\n4. **定期更新**：使用 `epsdk self-update` 或拉取最新的 Docker 映像\n5. **不要以 root 執行**：手動部署時建立專用使用者\n6. **使用 Docker 重新啟動策略**：官方 compose 的 `restart: on-failure:5` 已確保異常結束（含硬重啟結束代碼 42）後自動重新啟動"
+      "hash": "edb9e6e2306f2d857c4fe8730f576878",
+      "translation": "## 安全建議\n\n1. **設定 Dashboard 權杖**：使用強隨機權杖，不要使用預設值\n2. **不要將連接埠暴露到公網**：除非使用反向代理 + SSL，否則將 Dashboard 連接埠限制在內網\n3. **保護資料目錄**：`config/` 目錄包含設定和資料庫，設定適當的檔案權限\n4. **定期更新**：使用 `epsdk self-update` 或拉取最新 Docker 映像\n5. **不要以 root 執行**：手動部署時建立專用使用者\n6. **使用 Docker 重啟策略**：官方 compose 的 `restart: on-failure:5` 已確保異常退出（含硬重啟退出碼 42）後自動重啟\n7. **關閉 API 文件端點**：`/docs`、`/redoc`、`/openapi.json` 預設開啟且無鑑權，公網部署時呼叫 `router.disable_docs()` 關閉\n8. **Webhook 驗簽**：鷹架產生的 `verify_request` 預設放行，接入公網回呼前必須實現簽章/權杖校驗\n9. **安全模型邊界**：主人/作用域體系約束的是平台側使用者；已載入模組視為可信程式碼（scope 未設定預設允許、模組可註冊 provider），不要載入來路不明的模組"
     },
     {
-      "hash": "4390212870747e62813e58876de81a65",
-      "translation": "## 多實例部署\n\n執行多個機器人實例時：\n\n1. 每個實例使用獨立的專案目錄和 `docker-compose.yml`\n2. 使用不同的連接埠號：`ERISPULSE_PORT=8001`\n3. 使用不同的容器名稱：`container_name: erispulse-bot2`"
+      "hash": "78a3acee88ef2947bbcba681c94a554e",
+      "translation": "## 多實例部署\n\n運行多個機器人實例時：\n\n1. 每個實例使用獨立的專案目錄和 `docker-compose.yml`\n2. 使用不同的連接埠：`ERISPULSE_PORT=8001`\n3. 使用不同的容器名稱：`container_name: erispulse-bot2`\n\n> **儲存後端注意**：實例間互不共享狀態（會話收件匣 / 對話檢查點 / 命令冷卻均為實例記憶體狀態）。\n> 預設 SQLite 為單一檔案後端，**不可**被多實例同時開啟；實例各自的 `config/` 目錄必須獨立，\n> 切換 mysql / postgres 也只是各自獨立的資料庫——當前版本不支援多實例協作（共享會話/負載分擔），\n> 同群多實例會各自獨立回應，需在平台側或業務側自行去重。"
     },
     {
       "hash": "949c67b1bfcb2f4f89fcbb0d5a4fc186",

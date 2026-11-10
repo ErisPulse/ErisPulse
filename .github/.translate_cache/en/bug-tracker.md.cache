@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "0ae69adb7c4ea4f356ea785982518170",
-  "file_hash": "0ae69adb7c4ea4f356ea785982518170",
-  "translated_at": "2026-11-10T04:48:49.338593",
+  "hash": "d0ba6d02aa79a2ef35c16dac803c0fe2",
+  "file_hash": "d0ba6d02aa79a2ef35c16dac803c0fe2",
+  "translated_at": "2026-11-10T14:48:27.346505",
   "target_lang": "en",
   "chunks": [
     {
@@ -26,8 +26,8 @@
       "translation": "## Item Template\n\nWhen adding a new bug item, follow the following format:\n\n```markdown\n### [BUG-XXX] Title\n\n**Problem**: Problem description (error message or typical phenomenon)\n**Cause**: Root cause analysis\n**Affected Version**: Introduced version - Fixed version\n**Fixed Version**: x.x.x\n**Fixed Content**: Repair solution\n**Fixed Date**: YYYY/MM/DD\n\n<!-- Optional fields -->\n**Reproduction Steps**: (Recommended for complex bugs)\n**Associated**: (Issue/PR link)\n**Regression Test**: (Test case path)\n\n**Severity**: 🔴 Critical | 🟡 Medium | 🟢 Minor\n**Type**: Configuration System / Event System / Adapter / Router / Client / Storage / Loader System / CLI / Runtime\n```\n\n---"
     },
     {
-      "hash": "f4442ef5085064654b642685c8e0bbf8",
-      "translation": "## Statistical Overview\n\n| Severity | Quantity |\n|--------|------|\n| 🔴 Critical | 16 |\n| 🟡 Medium | 26 |\n| 🟢 Minor | 3 |\n| **Total** | **45** |\n\n| Type | Quantity |\n|------|------|\n| Event System | 12 |\n| Configuration System | 12 |\n| Adapter | 7 |\n| CLI | 3 |\n| Storage | 3 |\n| Loader System | 4 |\n| Router | 2 |\n| Client | 1 |\n| Runtime | 1 |\n\n> Note: A single bug can belong to multiple types; the table above is counted based on the main type.\n> Note: BUG-028 / BUG-031 numbering is vacant (abandoned during registration, numbering remains stable and is not recycled).\n\n---"
+      "hash": "a8426cc3a38759dd14b275fee9c2b238",
+      "translation": "## Statistics Overview\n\n| Severity | Count |\n|----------|-------|\n| 🔴 Critical | 17 |\n| 🟡 Medium | 28 |\n| 🟢 Low | 3 |\n| **Total** | **48** |\n\n| Type | Count |\n|------|-------|\n| Event System | 13 |\n| Configuration System | 14 |\n| Adapters | 5 |\n| CLI | 4 |\n| Storage | 4 |\n| Loading System | 4 |\n| Routing | 2 |\n| Client | 1 |\n| Runtime | 1 |\n\n> Note: A single bug may belong to multiple types; the table above is counted by primary type.\n> Note: Bug IDs BUG-028 / BUG-031 are missing (abandoned during registration, and not recycled or renumbered to maintain existing ID stability)."
     },
     {
       "hash": "f401c71e33684f49d2ea987c8d96c80f",

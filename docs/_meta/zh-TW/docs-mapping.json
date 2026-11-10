@@ -422,7 +422,7 @@
     "進階主題": {
       "description": "深入理解框架的進階特性",
       "icon": "fa-fire",
-      "count": 19,
+      "count": 20,
       "documents": [
         {
           "title": "高級主題",
@@ -523,6 +523,12 @@
         {
           "title": "連接池與廣播",
           "path": "advanced/connections.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "性能基準與調優",
+          "path": "advanced/performance.md",
           "level": 1,
           "icon": "fa-fire"
         },

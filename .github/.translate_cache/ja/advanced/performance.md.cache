@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "hash": "b88740174e1be36e1ae2b3c76834c5cd",
+  "file_hash": "b88740174e1be36e1ae2b3c76834c5cd",
+  "translated_at": "2026-11-10T15:21:47.813850",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "617b28a6efc8b54921abcdc6f5d3058a",
+      "translation": "# パフォーマンスベンチマークとチューニング\n\n> [!TIP]\n> **いつこのドキュメントを読むべきか**：イベントのスループットやレイテンシの数値に関心がある場合、デプロイ前のキャパシティ評価、バージョンアップグレード前後のパフォーマンスリグレッションを比較したい場合に読んでください。必要がなければ読み飛ばしても、他の機能の利用には影響しません。"
+    },
+    {
+      "hash": "c7c37b3af69556525154e0ca33cf2e5c",
+      "translation": "## 実測ベンチマーク（2026-10-05、Python 3.13.14）\n\n同一マシン上での前後2回の実測（ウォームアップ + 複数回のサンプリングによるパーセンタイル算出）、NoneBot2 2.5.0 は独立環境の対照。\nすべての数値はリポジトリ同梱のベンチマークで再現可能：`python tests/performance/benchmark.py`。\n\n### イベントディスパッチ（ops/s、値が高いほど良い）\n\n| ベンチマーク項目 | ErisPulse | NoneBot2 2.5.0 | 比較 |\n|---|---|---|---|\n| バス単一ハンドラ逐次レイテンシ | **9,189** | 3,021 | 3.0× |\n| バスフラッドスループット（1000 イベント/ラウンド） | **9,877** | 2,055 | 4.8× |\n| 10 ハンドラ/イベント スループット | **4,309** | 435 | 9.9× |\n| コマンドヒット（/コマンド） | **2,165** | 677 | 3.2× |\n| コマンドミス（コマンド以外のメッセージ） | **10,818** | 921 | 11.7× |\n| メッセージブリッジ単一ハンドラ（デフォルト全パイプライン） | **2,804** | 2,144 | 1.3× |\n\n### その他サブシステムの能力（最適化後）\n\n| ベンチマーク項目 | ops/s | ベンチマーク項目 | 数値 |\n|---|---|---|---|\n| getConfig ホット読み取り | 1,086,957 | ORM 単一 create | 407/s |\n| KV aset（sqlite） | 1,659 | GET /health（ASGI） | 1,188/s |\n| KV aget（sqlite） | 3,333 | module.call RPC | 148,905/s |\n| エンドツーエンドメッセージ往復 | 298 | 混合負荷 | 142/s |\n\n### 起動時間\n\n| フェーズ | ErisPulse | NoneBot2 |\n|---|---|---|\n| インタプリタ空転対照 | 59.5ms | — |\n| コールドインポート | 241.7ms | 249.6ms |\n| sdk.init / NoneBot init | 30.8ms | 162.3ms |"
+    },
+    {
+      "hash": "d331306ee20cf508cafa35ec7cff0048",
+      "translation": "## ベンチマークの実行とリグレッション比較\n\n```bash\n# クイックモード（サンプル数は約1/4、スモークテスト用）\npython tests/performance/benchmark.py --quick\n\n# 完全なベースラインをファイルに保存（8スイート：config/event/storage/send/router/module/overall/startup）\npython tests/performance/benchmark.py --json baseline.json\n\n# 旧ベースラインとの比較（差分が±5%の閾値内ならノイズとみなす）\npython tests/performance/benchmark.py --compare baseline.json\n\n# HTMLレポート / ストレージスイートのバックエンド指定\npython tests/performance/benchmark.py --html report.html\npython tests/performance/benchmark.py --backend mysql\n```\n\n> CI に関する注意：ベンチマークの数値はマシンによって変動するため、`--compare` の ±5% 閾値は**同一マシン**での前後比較（アップグレード検証）にのみ適しており、マシンをまたぐゲート判定には適していません。"
+    },
+    {
+      "hash": "5660dbb58db555f6daffb832071895a7",
+      "translation": "## チューニングのポイント\n\n1. **メッセージブリッジの全経路におけるボトルネックはセッション記録**：デフォルトで transcript 記録が有効（2.9 以降はメモリバッファ + バックグラウンドでの一括永続化）；監査要件がない場合は無効化可能で、全経路のスループットは約 2,804 → 3,774 ops/s に向上\n2. **GC 管理**：`ErisPulse.framework` の proactive_gc 設定グループ（interval / full_every / memory_growth_mb / `idle_only`）——イベントのピーク時には自動的に GC をスキップ；init フェーズでの `gc.freeze()` は組み込み済み\n3. **ストレージバックエンド**：ローカル単体の sqlite（WAL）で十分；マルチインスタンスでデータ層を共有する場合は mysql / postgres に切り替え（[ストレージバックエンド](storage-backends.md) を参照）\n4. **ホットパスは最適化組み込み済み**（2.9 以降、設定不要）：transcript の一括永続化、i18n キャッシュ、ログレベルガード、マッチャーの事前コンパイル、設定の遅延書き込みと統一フラッシュ\n5. **コマンド制御状態の上限**：クールダウン/レート制限/クォータの状態テーブルは上限 4096 件（超過時は最も古いものから削除）、超大規模グループ向けのデプロイでも調整不要"
+    },
+    {
+      "hash": "08b4155b018ca52956bb4ad47a5fbf5f",
+      "translation": "## 関連ドキュメント\n\n- **実行メトリクスの観測**：`/health`（インスタンス識別 / イベントカウント）と `/metrics`（Prometheus テキスト、`ErisPulse.server.metrics_enabled` が有効な場合）については、[デプロイガイド](../user-guide/deployment.md)を参照してください"
+    }
+  ]
+}

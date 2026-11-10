@@ -1,7 +1,7 @@
 # 路由管理器
 
 > [!TIP]
-> **什麼時候需要閱讀這篇**：需要 HTTP / WebSocket / SSE 路由（含連接池廣播）時。不需要則跳過，不影響其他功能的使用。
+> **什麼時候需要閱讀這篇**：需要 HTTP / WebSocket / SSE 路由（含連接池廣播）時。不需要則跳過，不影響其它功能的使用。
 
 
 ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支援多適配器路由註冊和生命週期管理。底層透過抽象層封裝（目前為 FastAPI + Uvicorn）
@@ -10,7 +10,7 @@ ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支�
 
 路由管理器的主要功能：
 
-- **裝飾器路由**：支援 `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` 裝飾器快速註冊
+- **裝飾器路由**：支援 `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` 裝飾器快捷註冊
 - **自動注入**：路由處理器無需導入 FastAPI 類型，框架自動注入抽象物件
 - **路由分組**：支援帶前綴和版本號的 `RouteGroup`
 - **路由中間件**：支援 glob 模式匹配的請求攔截
@@ -21,7 +21,7 @@ ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支�
 - **WebSocket 支援**：完整的 WebSocket 連接管理、自訂認證和生命週期鉤子
 - **生命週期集成**：與 ErisPulse 生命週期系統深度集成
 - **SSL/TLS 支援**：支援 HTTPS 和 WSS 安全連接
-- **主頁入口**：支援模組在根路由 `/` 註冊快速入口按鈕，支援國際化
+- **主頁入口**：支援模組在根路由 `/` 註冊快捷入口按鈕，支援國際化
 
 ## 抽象類型
 
@@ -63,7 +63,7 @@ async def get_info(request):
 ```
 
 > [!NOTE]
-> 單參形態要求在模組/適配器**載入上下文**中註冊（載入期框架已注入歸屬）；
+> 單參形態要求在模組/適配器**加載上下文**中註冊（加載期框架已注入歸屬）；
 > 在無歸屬上下文處呼叫會拋 `ValueError` 並提示顯式傳入模組名。
 
 ### HTTP 裝飾器
@@ -90,7 +90,7 @@ async def delete_data(request):
 
 #### 回應返回約定（2.10+）
 
-處理器回傳值支援**元組約定**（推薦寫法，明確控制狀態碼），dict/str/Response 照舊：
+處理器返回值支援**元組約定**（推薦寫法，明確控制狀態碼），dict/str/Response 照舊：
 
 ```python
 @router.post("/login")
@@ -128,7 +128,7 @@ async def websocket_handler(ws):
 async def chat(ws: WebSocketConnection):
     @ws.on_disconnect
     async def on_disconnect(ws, reason="unknown"):
-        print(f"用戶斷開: {reason}")
+        print(f"使用者斷開: {reason}")
 
     @ws.on_error
     async def on_error(ws, error=""):
@@ -137,10 +137,13 @@ async def chat(ws: WebSocketConnection):
     async for msg in ws.iter_text():
         await ws.send_text(f"Echo: {msg}")
 
-# 帶認證的 WebSocket
+# 帶認證的 WebSocket（金鑰從環境變數讀取，勿在程式碼中硬編碼）
+import os
+
 async def ws_auth(ws: WebSocketConnection) -> bool:
     token = ws.query_params.get("token")
-    return token == "secret"
+    expected = os.environ.get("ERISPULSE_WS_TOKEN", "")
+    return bool(expected) and token == expected
 
 @router.ws("secure_ws", auth_handler=ws_auth)
 async def secure_ws_handler(ws):
@@ -252,7 +255,7 @@ async def my_ws(ws: WebSocketConnection):
 ## 路由分組
 
 ```python
-# 建立帶前綴的路由組
+# 創建帶前綴的路由組
 group = router.group("my_module", prefix="/v1")
 
 @group.get("/users")
@@ -302,7 +305,7 @@ async def on_response(data):
     print(f"[{data['request_id']}] -> {data['status_code']}")
 ```
 
-客戶端可自訂 ID 以便跨服務追蹤：
+客戶端可自定義 ID 以便跨服務追蹤：
 
 ```bash
 curl -H "X-Request-ID: my-trace-id" http://localhost:8080/my_module/health
@@ -368,7 +371,7 @@ router.disable_docs()
 
 # 自訂文件資訊
 router.set_docs_info(
-    title="My API",
+    title="我的 API",
     description="API 文件",
     version="1.0.0"
 )
@@ -406,11 +409,11 @@ GET /
 # 回傳 ErisPulse 品牌頁
 ```
 
-根路由 `/` 顯示 ErisPulse 品牌頁面，自動偵測 Dashboard 可用性並添加入口按鈕。
+根路由 `/` 顯示 ErisPulse 品牌頁面，自動檢測 Dashboard 可用性並添加入口按鈕。
 
 ## 主頁入口
 
-路由管理器允許外部模組在根路由 `/` 上註冊快速入口按鈕，方便使用者快速存取各模組的管理頁面。
+路由管理器允許外部模組在根路由 `/` 上註冊快捷入口按鈕，方便使用者快速存取各模組的管理頁面。
 
 ### 註冊入口
 
@@ -445,7 +448,7 @@ router.register_home_entry(
 
 ### Dashboard 自動註冊
 
-當偵測到 `sdk.Dashboard` 可用時，路由管理器自動在入口列表首位添加 Dashboard 按鈕，無需手動註冊。
+當檢測到 `sdk.Dashboard` 可用時，路由管理器自動在入口列表首位添加 Dashboard 按鈕，無需手動註冊。
 
 ## 生命週期集成
 
@@ -465,9 +468,9 @@ async def on_server_stop(event):
 
 1. **優先使用抽象類型**：使用 `HttpRequest` / `WebSocketConnection` 替代 `fastapi.Request` / `fastapi.WebSocket`，避免硬依賴
 2. **利用自動注入**：處理器第一個參數命名為 `request` 或 `req`，無需任何類型註解即可獲得 `HttpRequest`
-3. **單參形態優先**：模組載入上下文中優先單參形態（自動歸屬命名空間）；跨模組/工具程式碼註冊時顯式傳模組名
+3. **單參形態優先**：模組加載上下文中優先單參形態（自動歸屬命名空間）；跨模組/工具程式碼註冊時顯式傳模組名
 4. **使用路由分組**：對同一模組的多個路由使用 `group()` 組織
-5. **安全性考量**：為敏感操作實現認證機制和安全頭
+5. **安全性考慮**：為敏感操作實現認證機制和安全頭
 6. **合理限流**：對高頻介面設定速率限制
 7. **使用生命週期鉤子**：透過 `@ws.on_disconnect` / `@ws.on_error` 處理 WebSocket 異常，避免手動 try/catch
 

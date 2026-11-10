@@ -1,25 +1,25 @@
 {
   "version": 2,
-  "hash": "97113aada86019cafbcbd339a4dbb80e",
-  "file_hash": "97113aada86019cafbcbd339a4dbb80e",
-  "translated_at": "2026-11-04T14:24:01.501055",
+  "hash": "88ba9e5f1b70e7590560eb982dbc7e35",
+  "file_hash": "88ba9e5f1b70e7590560eb982dbc7e35",
+  "translated_at": "2026-11-10T14:56:53.197378",
   "target_lang": "zh-TW",
   "chunks": [
     {
       "hash": "42c8c2ece6ceba5983e420ff46bb201e",
-      "translation": "# 路由管理器\n\n> [!TIP]\n> **什麼時候需要閱讀這篇**：需要 HTTP / WebSocket / SSE 路由（含連接池廣播）時。不需要則跳過，不影響其他功能的使用。\n\n\nErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支援多適配器路由註冊和生命週期管理。底層透過抽象層封裝（目前為 FastAPI + Uvicorn）"
+      "translation": "# 路由管理器\n\n> [!TIP]\n> **什麼時候需要閱讀這篇**：需要 HTTP / WebSocket / SSE 路由（含連接池廣播）時。不需要則跳過，不影響其它功能的使用。\n\n\nErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支援多適配器路由註冊和生命週期管理。底層透過抽象層封裝（目前為 FastAPI + Uvicorn）"
     },
     {
       "hash": "fb144a12cbd40237d4f461fd0a1f0c7b",
-      "translation": "## 概述\n\n路由管理器的主要功能：\n\n- **裝飾器路由**：支援 `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` 裝飾器快速註冊\n- **自動注入**：路由處理器無需導入 FastAPI 類型，框架自動注入抽象物件\n- **路由分組**：支援帶前綴和版本號的 `RouteGroup`\n- **路由中間件**：支援 glob 模式匹配的請求攔截\n- **速率限制**：內建滑動窗口限流\n- **CORS 支援**：一鍵開啟跨域資源共享\n- **安全頭**：自動添加安全回應頭\n- **自動文件**：基於 OpenAPI 的互動式文件\n- **WebSocket 支援**：完整的 WebSocket 連接管理、自訂認證和生命週期鉤子\n- **生命週期集成**：與 ErisPulse 生命週期系統深度集成\n- **SSL/TLS 支援**：支援 HTTPS 和 WSS 安全連接\n- **主頁入口**：支援模組在根路由 `/` 註冊快速入口按鈕，支援國際化"
+      "translation": "## 概述\n\n路由管理器的主要功能：\n\n- **裝飾器路由**：支援 `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` 裝飾器快捷註冊\n- **自動注入**：路由處理器無需導入 FastAPI 類型，框架自動注入抽象物件\n- **路由分組**：支援帶前綴和版本號的 `RouteGroup`\n- **路由中間件**：支援 glob 模式匹配的請求攔截\n- **速率限制**：內建滑動窗口限流\n- **CORS 支援**：一鍵開啟跨域資源共享\n- **安全頭**：自動添加安全回應頭\n- **自動文件**：基於 OpenAPI 的互動式文件\n- **WebSocket 支援**：完整的 WebSocket 連接管理、自訂認證和生命週期鉤子\n- **生命週期集成**：與 ErisPulse 生命週期系統深度集成\n- **SSL/TLS 支援**：支援 HTTPS 和 WSS 安全連接\n- **主頁入口**：支援模組在根路由 `/` 註冊快捷入口按鈕，支援國際化"
     },
     {
       "hash": "563001a54a5f55d43c1457f2f6ecb08d",
       "translation": "## 抽象類型\n\nErisPulse 提供了服務端抽象類型，使模組無需直接依賴 FastAPI：\n\n| 抽象類型 | FastAPI 對應 | 說明 |\n|---------|-------------|------|\n| `HttpRequest` | `fastapi.Request` | HTTP 請求封裝，介面完全相容 |\n| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket 連接封裝，額外提供生命週期鉤子 |\n| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket 斷開異常 |\n\n> `WebSocketConnection` 繼承自 `WebSocketConnectionBase`，與客戶端 WebSocket (`ClientWebSocket`) 共享相同的 send/receive/iter/close 介面。客戶端和服務端 WebSocket 可以使用相同的業務邏輯程式碼。\n>\n> 透過 `.raw` 屬性可存取底層 FastAPI 原生物件。直接使用 FastAPI 類型的程式碼也完全相容。"
     },
     {
-      "hash": "ffe4e29a47f76c0920e274fc7aa68706",
-      "translation": "## 裝飾器路由（推薦）\n\n### 註冊形態：單參（推薦）與雙參\n\n裝飾器路由支援兩種形態，**推薦單參**——與命令 / 事件觸發器一致，命名空間自動歸屬當前模組：\n\n```python\nfrom ErisPulse import router\n\n# 單參（推薦）：自動歸屬 模組名/hello → 實際路徑 /my_module/hello\n@router.get(\"/hello\")\nasync def hello():\n    return {\"ok\": True}\n\n# 單參 WebSocket：@ws(\"chat\") → /my_module/chat\n@router.ws(\"chat\")\nasync def chat(ws):\n    ...\n\n# 雙參：顯式指定模組名（規則不變，跨模組/工具程式碼註冊時使用）\n@router.get(\"other_module\", \"/info\")\nasync def get_info(request):\n    return {\"method\": request.method, \"path\": str(request.url)}\n```\n\n> [!NOTE]\n> 單參形態要求在模組/適配器**載入上下文**中註冊（載入期框架已注入歸屬）；\n> 在無歸屬上下文處呼叫會拋 `ValueError` 並提示顯式傳入模組名。\n\n### HTTP 裝飾器\n\n```python\nfrom ErisPulse import router, HttpRequest\n\n# 也可顯式標註抽象類型\n@router.post(\"/data\")\nasync def post_data(request: HttpRequest):\n    data = await request.json()\n    return {\"received\": data}\n\n@router.put(\"/data/{item_id}\")\nasync def update_data(request):\n    return {\"updated\": True}\n\n@router.delete(\"/data/{item_id}\")\nasync def delete_data(request):\n    return {\"deleted\": True}\n```\n\n> **自動注入規則**：當處理器第一個參數名為 `request` 或 `req` 且無 FastAPI 類型註解時，框架自動注入 `HttpRequest`。無參數或非請求參數名的處理器不受影響。\n\n#### 回應返回約定（2.10+）\n\n處理器回傳值支援**元組約定**（推薦寫法，明確控制狀態碼），dict/str/Response 照舊：\n\n```python\n@router.post(\"/login\")\nasync def login(request):\n    if not check_token(request):\n        # (body, status_code) → 401 JSON\n        return {\"error\": \"unauthorized\", \"message\": \"token 無效\"}, 401\n    # (body, status_code, headers) 還可帶回應頭\n    return {\"user_id\": 1}, 200, {\"X-Request-Cost\": \"12ms\"}\n\n# 或使用 respond() 幫助函數（message 自動合併進回應體）\nfrom ErisPulse import respond\n\n@router.get(\"/me\")\nasync def me():\n    return respond({\"user_id\": 1}, status_code=200, message=\"ok\")\n```\n\n路徑 / 查詢參數直接用 FastAPI 原生註解即可（`item_id: int`、`page: int = 1`），\n中間件見[路由中間件](#路由中間件)一節。\n\n### WebSocket 裝飾器\n\n```python\nfrom ErisPulse import WebSocketConnection, WebSocketDisconnect\n\n# 基本 WebSocket（單參形態）\n@router.ws(\"ws\")\nasync def websocket_handler(ws):\n    async for msg in ws.iter_text():\n        await ws.send_text(f\"Echo: {msg}\")\n\n# 帶生命週期鉤子的 WebSocket\n@router.ws(\"/ws/chat\")\nasync def chat(ws: WebSocketConnection):\n    @ws.on_disconnect\n    async def on_disconnect(ws, reason=\"unknown\"):\n        print(f\"用戶斷開: {reason}\")\n\n    @ws.on_error\n    async def on_error(ws, error=\"\"):\n        print(f\"連接錯誤: {error}\")\n\n    async for msg in ws.iter_text():\n        await ws.send_text(f\"Echo: {msg}\")\n\n# 帶認證的 WebSocket\nasync def ws_auth(ws: WebSocketConnection) -> bool:\n    token = ws.query_params.get(\"token\")\n    return token == \"secret\"\n\n@router.ws(\"secure_ws\", auth_handler=ws_auth)\nasync def secure_ws_handler(ws):\n    while True:\n        data = await ws.receive_text()\n        await ws.send_text(f\"Echo: {data}\")\n```\n\n> **注意**：WebSocket 處理器和認證處理器也支援自動注入。無需參數註解即可獲得 `WebSocketConnection`。標註 `fastapi.WebSocket` 也可傳入原生物件，但推薦使用抽象類型。\n\n### 連接自動登記（連接池，2.10+）\n\n`@ws` / `@sse` 建立的連接**預設自動登記**進框架連接池（`track=False` 可關閉）：\nhandler 內 `ws.id` / `ws.join_group(...)` 可用，任意模組可\n`connections.list(namespace=...)` 查看本模組連接、向分組廣播。\n詳見[連接池與廣播](connections.md)。"
+      "hash": "a0530f15c22bc9517762bae59f9ae8c1",
+      "translation": "## 裝飾器路由（推薦）\n\n### 註冊形態：單參（推薦）與雙參\n\n裝飾器路由支援兩種形態，**推薦單參**——與命令 / 事件觸發器一致，命名空間自動歸屬當前模組：\n\n```python\nfrom ErisPulse import router\n\n# 單參（推薦）：自動歸屬 模組名/hello → 實際路徑 /my_module/hello\n@router.get(\"/hello\")\nasync def hello():\n    return {\"ok\": True}\n\n# 單參 WebSocket：@ws(\"chat\") → /my_module/chat\n@router.ws(\"chat\")\nasync def chat(ws):\n    ...\n\n# 雙參：顯式指定模組名（規則不變，跨模組/工具程式碼註冊時使用）\n@router.get(\"other_module\", \"/info\")\nasync def get_info(request):\n    return {\"method\": request.method, \"path\": str(request.url)}\n```\n\n> [!NOTE]\n> 單參形態要求在模組/適配器**加載上下文**中註冊（加載期框架已注入歸屬）；\n> 在無歸屬上下文處呼叫會拋 `ValueError` 並提示顯式傳入模組名。\n\n### HTTP 裝飾器\n\n```python\nfrom ErisPulse import router, HttpRequest\n\n# 也可顯式標註抽象類型\n@router.post(\"/data\")\nasync def post_data(request: HttpRequest):\n    data = await request.json()\n    return {\"received\": data}\n\n@router.put(\"/data/{item_id}\")\nasync def update_data(request):\n    return {\"updated\": True}\n\n@router.delete(\"/data/{item_id}\")\nasync def delete_data(request):\n    return {\"deleted\": True}\n```\n\n> **自動注入規則**：當處理器第一個參數名為 `request` 或 `req` 且無 FastAPI 類型註解時，框架自動注入 `HttpRequest`。無參數或非請求參數名的處理器不受影響。\n\n#### 回應返回約定（2.10+）\n\n處理器返回值支援**元組約定**（推薦寫法，明確控制狀態碼），dict/str/Response 照舊：\n\n```python\n@router.post(\"/login\")\nasync def login(request):\n    if not check_token(request):\n        # (body, status_code) → 401 JSON\n        return {\"error\": \"unauthorized\", \"message\": \"token 無效\"}, 401\n    # (body, status_code, headers) 還可帶回應頭\n    return {\"user_id\": 1}, 200, {\"X-Request-Cost\": \"12ms\"}\n\n# 或使用 respond() 幫助函數（message 自動合併進回應體）\nfrom ErisPulse import respond\n\n@router.get(\"/me\")\nasync def me():\n    return respond({\"user_id\": 1}, status_code=200, message=\"ok\")\n```\n\n路徑 / 查詢參數直接用 FastAPI 原生註解即可（`item_id: int`、`page: int = 1`），\n中間件見[路由中間件](#路由中間件)一節。\n\n### WebSocket 裝飾器\n\n```python\nfrom ErisPulse import WebSocketConnection, WebSocketDisconnect\n\n# 基本 WebSocket（單參形態）\n@router.ws(\"ws\")\nasync def websocket_handler(ws):\n    async for msg in ws.iter_text():\n        await ws.send_text(f\"Echo: {msg}\")\n\n# 帶生命週期鉤子的 WebSocket\n@router.ws(\"/ws/chat\")\nasync def chat(ws: WebSocketConnection):\n    @ws.on_disconnect\n    async def on_disconnect(ws, reason=\"unknown\"):\n        print(f\"使用者斷開: {reason}\")\n\n    @ws.on_error\n    async def on_error(ws, error=\"\"):\n        print(f\"連接錯誤: {error}\")\n\n    async for msg in ws.iter_text():\n        await ws.send_text(f\"Echo: {msg}\")\n\n# 帶認證的 WebSocket（金鑰從環境變數讀取，勿在程式碼中硬編碼）\nimport os\n\nasync def ws_auth(ws: WebSocketConnection) -> bool:\n    token = ws.query_params.get(\"token\")\n    expected = os.environ.get(\"ERISPULSE_WS_TOKEN\", \"\")\n    return bool(expected) and token == expected\n\n@router.ws(\"secure_ws\", auth_handler=ws_auth)\nasync def secure_ws_handler(ws):\n    while True:\n        data = await ws.receive_text()\n        await ws.send_text(f\"Echo: {data}\")\n```\n\n> **注意**：WebSocket 處理器和認證處理器也支援自動注入。無需參數註解即可獲得 `WebSocketConnection`。標註 `fastapi.WebSocket` 也可傳入原生物件，但推薦使用抽象類型。\n\n### 連接自動登記（連接池，2.10+）\n\n`@ws` / `@sse` 建立的連接**預設自動登記**進框架連接池（`track=False` 可關閉）：\nhandler 內 `ws.id` / `ws.join_group(...)` 可用，任意模組可\n`connections.list(namespace=...)` 查看本模組連接、向分組廣播。\n詳見[連接池與廣播](connections.md)。"
     },
     {
       "hash": "504cdd35d8618be97f83466daa9d38e7",
@@ -31,7 +31,7 @@
     },
     {
       "hash": "aa2322a217b9f7d31c24d38637aff6b7",
-      "translation": "## 路由分組\n\n```python\n# 建立帶前綴的路由組\ngroup = router.group(\"my_module\", prefix=\"/v1\")\n\n@group.get(\"/users\")\nasync def list_users(request):\n    return {\"users\": []}\n\n@group.post(\"/users\")\nasync def create_user(request):\n    return {\"created\": True}\n\n# 實際路徑: /my_module/v1/users\n```"
+      "translation": "## 路由分組\n\n```python\n# 創建帶前綴的路由組\ngroup = router.group(\"my_module\", prefix=\"/v1\")\n\n@group.get(\"/users\")\nasync def list_users(request):\n    return {\"users\": []}\n\n@group.post(\"/users\")\nasync def create_user(request):\n    return {\"created\": True}\n\n# 實際路徑: /my_module/v1/users\n```"
     },
     {
       "hash": "88da2f33fd5e5f851b73097389157798",
@@ -39,7 +39,7 @@
     },
     {
       "hash": "66cabb7fc9b3e9646c7218e26dcbb27e",
-      "translation": "## 請求關聯 ID（X-Request-ID）\n\n從 2.7.0 起，每個 HTTP 請求都會攜帶一個 `X-Request-ID` 關聯 ID，用於日誌 / 鏈路追蹤串聯：\n\n- **生成規則**：優先沿用客戶端傳入的 `X-Request-ID` 請求頭（分散式追蹤場景）；否則自生成 UUID\n- **回應頭**：回應會回寫 `X-Request-ID`，方便客戶端把請求與日誌對應\n- **生命週期事件**：`server.request` 與 `server.response` 事件資料中新增 `request_id` 字段\n\n```python\n# 在模組中監聽請求事件，按 request_id 串聯請求-回應\n@sdk.lifecycle.on(\"server.request\")\nasync def on_request(data):\n    print(f\"[{data['request_id']}] {data['method']} {data['path']}\")\n\n@sdk.lifecycle.on(\"server.response\")\nasync def on_response(data):\n    print(f\"[{data['request_id']}] -> {data['status_code']}\")\n```\n\n客戶端可自訂 ID 以便跨服務追蹤：\n\n```bash\ncurl -H \"X-Request-ID: my-trace-id\" http://localhost:8080/my_module/health\n```"
+      "translation": "## 請求關聯 ID（X-Request-ID）\n\n從 2.7.0 起，每個 HTTP 請求都會攜帶一個 `X-Request-ID` 關聯 ID，用於日誌 / 鏈路追蹤串聯：\n\n- **生成規則**：優先沿用客戶端傳入的 `X-Request-ID` 請求頭（分散式追蹤場景）；否則自生成 UUID\n- **回應頭**：回應會回寫 `X-Request-ID`，方便客戶端把請求與日誌對應\n- **生命週期事件**：`server.request` 與 `server.response` 事件資料中新增 `request_id` 字段\n\n```python\n# 在模組中監聽請求事件，按 request_id 串聯請求-回應\n@sdk.lifecycle.on(\"server.request\")\nasync def on_request(data):\n    print(f\"[{data['request_id']}] {data['method']} {data['path']}\")\n\n@sdk.lifecycle.on(\"server.response\")\nasync def on_response(data):\n    print(f\"[{data['request_id']}] -> {data['status_code']}\")\n```\n\n客戶端可自定義 ID 以便跨服務追蹤：\n\n```bash\ncurl -H \"X-Request-ID: my-trace-id\" http://localhost:8080/my_module/health\n```"
     },
     {
       "hash": "283c962be00b239d411e8ecdd7196bd1",
@@ -55,7 +55,7 @@
     },
     {
       "hash": "7e6759feab2887f107673a5788cbf48e",
-      "translation": "## 自動文件\n\nRouter 預設啟用 OpenAPI 互動式文件：\n\n```python\n# 禁用文件\nrouter.disable_docs()\n\n# 自訂文件資訊\nrouter.set_docs_info(\n    title=\"My API\",\n    description=\"API 文件\",\n    version=\"1.0.0\"\n)\n```"
+      "translation": "## 自動文件\n\nRouter 預設啟用 OpenAPI 互動式文件：\n\n```python\n# 禁用文件\nrouter.disable_docs()\n\n# 自訂文件資訊\nrouter.set_docs_info(\n    title=\"我的 API\",\n    description=\"API 文件\",\n    version=\"1.0.0\"\n)\n```"
     },
     {
       "hash": "3efff5883417aeee2582eff5944b43da",
@@ -63,11 +63,11 @@
     },
     {
       "hash": "bc3df13a708431aae80900b948e4b75a",
-      "translation": "## 系統路由\n\n路由管理器自動提供以下系統路由：\n\n### 健康檢查\n\n```\nGET /health\n# 回傳:\n{\"status\": \"ok\", \"service\": \"ErisPulse Router\"}\n```\n\n### 根頁面\n\n```\nGET /\n# 回傳 ErisPulse 品牌頁\n```\n\n根路由 `/` 顯示 ErisPulse 品牌頁面，自動偵測 Dashboard 可用性並添加入口按鈕。"
+      "translation": "## 系統路由\n\n路由管理器自動提供以下系統路由：\n\n### 健康檢查\n\n```\nGET /health\n# 回傳:\n{\"status\": \"ok\", \"service\": \"ErisPulse Router\"}\n```\n\n### 根頁面\n\n```\nGET /\n# 回傳 ErisPulse 品牌頁\n```\n\n根路由 `/` 顯示 ErisPulse 品牌頁面，自動檢測 Dashboard 可用性並添加入口按鈕。"
     },
     {
       "hash": "50e9063f3496cc51c3eb4394ad460111",
-      "translation": "## 主頁入口\n\n路由管理器允許外部模組在根路由 `/` 上註冊快速入口按鈕，方便使用者快速存取各模組的管理頁面。\n\n### 註冊入口\n\n```python\n# 簡單註冊\nrouter.register_home_entry(\n    name=\"我的面板\",\n    url=\"/mymodule/admin\",\n)\n\n# 帶圖示的註冊（SVG）\nrouter.register_home_entry(\n    name=\"控制台\",\n    url=\"/console\",\n    icon_svg='<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\"><path d=\"M4 17l6-6-6-6\"/><path d=\"M12 19h8\"/></svg>',\n)\n\n# 支援國際化的註冊（項目 i18n 字典格式）\nrouter.register_home_entry(\n    name={\"i18n\": \"mymodule.home.entry\", \"default\": \"我的面板\"},\n    url=\"/mymodule/admin\",\n)\n```\n\n**參數說明：**\n\n| 參數 | 類型 | 說明 | 必填 |\n|------|------|------|------|\n| `name` | `str` / `dict` | 按鈕顯示文字；傳入 `{\"i18n\": \"key\", \"default\": \"文字\"}` 字典時使用國際化 | 是 |\n| `url` | `str` | 按鈕連結地址 | 是 |\n| `icon_svg` | `str` | 可選 SVG 圖示標記 | 否 |\n\n### Dashboard 自動註冊\n\n當偵測到 `sdk.Dashboard` 可用時，路由管理器自動在入口列表首位添加 Dashboard 按鈕，無需手動註冊。"
+      "translation": "## 主頁入口\n\n路由管理器允許外部模組在根路由 `/` 上註冊快捷入口按鈕，方便使用者快速存取各模組的管理頁面。\n\n### 註冊入口\n\n```python\n# 簡單註冊\nrouter.register_home_entry(\n    name=\"我的面板\",\n    url=\"/mymodule/admin\",\n)\n\n# 帶圖示的註冊（SVG）\nrouter.register_home_entry(\n    name=\"控制台\",\n    url=\"/console\",\n    icon_svg='<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\"><path d=\"M4 17l6-6-6-6\"/><path d=\"M12 19h8\"/></svg>',\n)\n\n# 支援國際化的註冊（項目 i18n 字典格式）\nrouter.register_home_entry(\n    name={\"i18n\": \"mymodule.home.entry\", \"default\": \"我的面板\"},\n    url=\"/mymodule/admin\",\n)\n```\n\n**參數說明：**\n\n| 參數 | 類型 | 說明 | 必填 |\n|------|------|------|------|\n| `name` | `str` / `dict` | 按鈕顯示文字；傳入 `{\"i18n\": \"key\", \"default\": \"文字\"}` 字典時使用國際化 | 是 |\n| `url` | `str` | 按鈕連結地址 | 是 |\n| `icon_svg` | `str` | 可選 SVG 圖示標記 | 否 |\n\n### Dashboard 自動註冊\n\n當檢測到 `sdk.Dashboard` 可用時，路由管理器自動在入口列表首位添加 Dashboard 按鈕，無需手動註冊。"
     },
     {
       "hash": "5435f1b9f38981e008f461ece4447b34",
@@ -75,7 +75,7 @@
     },
     {
       "hash": "3eac3415ddcbff9ff9cb74a350551851",
-      "translation": "## 最佳實踐\n\n1. **優先使用抽象類型**：使用 `HttpRequest` / `WebSocketConnection` 替代 `fastapi.Request` / `fastapi.WebSocket`，避免硬依賴\n2. **利用自動注入**：處理器第一個參數命名為 `request` 或 `req`，無需任何類型註解即可獲得 `HttpRequest`\n3. **單參形態優先**：模組載入上下文中優先單參形態（自動歸屬命名空間）；跨模組/工具程式碼註冊時顯式傳模組名\n4. **使用路由分組**：對同一模組的多個路由使用 `group()` 組織\n5. **安全性考量**：為敏感操作實現認證機制和安全頭\n6. **合理限流**：對高頻介面設定速率限制\n7. **使用生命週期鉤子**：透過 `@ws.on_disconnect` / `@ws.on_error` 處理 WebSocket 異常，避免手動 try/catch"
+      "translation": "## 最佳實踐\n\n1. **優先使用抽象類型**：使用 `HttpRequest` / `WebSocketConnection` 替代 `fastapi.Request` / `fastapi.WebSocket`，避免硬依賴\n2. **利用自動注入**：處理器第一個參數命名為 `request` 或 `req`，無需任何類型註解即可獲得 `HttpRequest`\n3. **單參形態優先**：模組加載上下文中優先單參形態（自動歸屬命名空間）；跨模組/工具程式碼註冊時顯式傳模組名\n4. **使用路由分組**：對同一模組的多個路由使用 `group()` 組織\n5. **安全性考慮**：為敏感操作實現認證機制和安全頭\n6. **合理限流**：對高頻介面設定速率限制\n7. **使用生命週期鉤子**：透過 `@ws.on_disconnect` / `@ws.on_error` 處理 WebSocket 異常，避免手動 try/catch"
     },
     {
       "hash": "6a35cbf1dfb9287e733b12c6e8e3db54",

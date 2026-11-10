@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1982,
+  "total_keywords": 1990,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -155,7 +155,7 @@
     "1. I Want to Use a Bot": [
       {
         "document": "README.md",
-        "line": 29,
+        "line": 30,
         "level": 3,
         "title": "1. I Want to Use a Bot"
       }
@@ -561,7 +561,7 @@
     "2. I Want to Develop Modules / Adapters": [
       {
         "document": "README.md",
-        "line": 44,
+        "line": 45,
         "level": 3,
         "title": "2. I Want to Develop Modules / Adapters"
       }
@@ -906,12 +906,12 @@
         "title": "2.2 Message Event Fields"
       }
     ],
-    "2.2 The `request_id` Field": [
+    "2.2 `request_id` Field": [
       {
         "document": "standards/request-action-spec.md",
         "line": 56,
         "level": 3,
-        "title": "2.2 The `request_id` Field"
+        "title": "2.2 `request_id` Field"
       }
     ],
     "2.3 Notice Event Fields": [
@@ -1066,12 +1066,12 @@
         "title": "3. Heartbeat Keepalive and Meta Heartbeat"
       }
     ],
-    "3. I Want to Understand the Internals": [
+    "3. I Want to Deeply Understand the Internals": [
       {
         "document": "README.md",
-        "line": 56,
+        "line": 57,
         "level": 3,
-        "title": "3. I Want to Understand the Internals"
+        "title": "3. I Want to Deeply Understand the Internals"
       }
     ],
     "3. Improve Code Quality": [
@@ -1410,12 +1410,12 @@
         "title": "4. Difference Handling Patterns (Adapter Layer)"
       }
     ],
-    "4. Ecosystem & Official Clients": [
+    "4. Ecosystem & Official Client": [
       {
         "document": "README.md",
-        "line": 102,
+        "line": 104,
         "level": 3,
-        "title": "4. Ecosystem & Official Clients"
+        "title": "4. Ecosystem & Official Client"
       }
     ],
     "4. Event Convenience Methods": [
@@ -1693,7 +1693,7 @@
     "5. I Want to Contribute to ErisPulse": [
       {
         "document": "README.md",
-        "line": 116,
+        "line": 118,
         "level": 3,
         "title": "5. I Want to Contribute to ErisPulse"
       }
@@ -1794,20 +1794,20 @@
         "title": "5.1 `message_id` Required Field"
       }
     ],
-    "5.2 Implementing the Request Inner Class": [
-      {
-        "document": "standards/request-action-spec.md",
-        "line": 237,
-        "level": 3,
-        "title": "5.2 Implementing the Request Inner Class"
-      }
-    ],
     "5.2 Overriding Standard Methods (Mapping to Platform-Native APIs)": [
       {
         "document": "standards/api-action-spec.md",
         "line": 245,
         "level": 3,
         "title": "5.2 Overriding Standard Methods (Mapping to Platform-Native APIs)"
+      }
+    ],
+    "5.2 Request Internal Class Implementation": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 237,
+        "level": 3,
+        "title": "5.2 Request Internal Class Implementation"
       }
     ],
     "5.2 Usage Examples": [
@@ -1850,12 +1850,12 @@
         "title": "5.3 Interaction Callback Events (After a Button Click)"
       }
     ],
-    "5.3 Request-Type Context Retention (Required for Adapters with Heterogeneous Endpoints)": [
+    "5.3 Request Type Context Retention (Required for Heterogeneous Endpoints)": [
       {
         "document": "standards/request-action-spec.md",
         "line": 286,
         "level": 3,
-        "title": "5.3 Request-Type Context Retention (Required for Adapters with Heterogeneous Endpoints)"
+        "title": "5.3 Request Type Context Retention (Required for Heterogeneous Endpoints)"
       }
     ],
     "5.3 Unsupported Actions": [
@@ -1882,28 +1882,28 @@
         "title": "5.3.2 Specification Requirements"
       }
     ],
-    "5.3.3 Unified Entry Fields (Media-Independent)": [
+    "5.3.3 Uniform entry fields (medium-agnostic)": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 311,
+        "line": 312,
         "level": 4,
-        "title": "5.3.3 Unified Entry Fields (Media-Independent)"
+        "title": "5.3.3 Uniform entry fields (medium-agnostic)"
       }
     ],
-    "5.3.4 Reference Implementation (In-Memory Cache)": [
+    "5.3.4 Reference Implementation (Default Single-Key Snapshot with Unified Storage)": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 330,
+        "line": 331,
         "level": 4,
-        "title": "5.3.4 Reference Implementation (In-Memory Cache)"
+        "title": "5.3.4 Reference Implementation (Default Single-Key Snapshot with Unified Storage)"
       }
     ],
-    "5.3.5 Persistence Across Restarts (Optional)": [
+    "5.3.5 Edge Cases and Degradation": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 428,
+        "line": 473,
         "level": 4,
-        "title": "5.3.5 Persistence Across Restarts (Optional)"
+        "title": "5.3.5 Edge Cases and Degradation"
       }
     ],
     "5.4 Adapter Implementation Checklist": [
@@ -1914,12 +1914,12 @@
         "title": "5.4 Adapter Implementation Checklist"
       }
     ],
-    "5.4 The Platform Does Not Support Request Operations": [
+    "5.4 Platform Does Not Support Request Operations": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 451,
+        "line": 481,
         "level": 3,
-        "title": "5.4 The Platform Does Not Support Request Operations"
+        "title": "5.4 Platform Does Not Support Request Operations"
       }
     ],
     "5.4 select Dropdown (Reserved)": [
@@ -1933,7 +1933,7 @@
     "5.5 Summary: Send and Request in Parallel": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 459,
+        "line": 489,
         "level": 3,
         "title": "5.5 Summary: Send and Request in Parallel"
       }
@@ -1946,12 +1946,12 @@
         "title": "5.5 card Card (Reserved, Standardization Deferred)"
       }
     ],
-    "5.6 Notes on the Adapter `__init__`": [
+    "5.6 Adapter `__init__` Considerations": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 477,
+        "line": 507,
         "level": 3,
-        "title": "5.6 Notes on the Adapter `__init__`"
+        "title": "5.6 Adapter `__init__` Considerations"
       }
     ],
     "6. API Usage Examples": [
@@ -1965,7 +1965,7 @@
     "6. Adapter Implementation Checklist": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 481,
+        "line": 511,
         "level": 2,
         "title": "6. Adapter Implementation Checklist"
       }
@@ -2186,12 +2186,12 @@
         "title": "7. Core API Reference"
       }
     ],
-    "7. Error Code Extensions": [
+    "7. Error Code Extension": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 508,
+        "line": 541,
         "level": 2,
-        "title": "7. Error Code Extensions"
+        "title": "7. Error Code Extension"
       }
     ],
     "7. Implement the Request Class (Request Actions)": [
@@ -2314,13 +2314,15 @@
         "title": "8. Module Developer Guide"
       }
     ],
-    "8. Related Documents": [
+    "8. Related Documentation": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 524,
+        "line": 555,
         "level": 2,
-        "title": "8. Related Documents"
-      },
+        "title": "8. Related Documentation"
+      }
+    ],
+    "8. Related Documents": [
       {
         "document": "standards/standardization-guide.md",
         "line": 255,
@@ -2607,7 +2609,7 @@
     "Abstract Types": [
       {
         "document": "advanced/router.md",
-        "line": 25,
+        "line": 26,
         "level": 2,
         "title": "Abstract Types"
       }
@@ -3023,7 +3025,7 @@
     "Advanced Features Version Quick Reference": [
       {
         "document": "README.md",
-        "line": 127,
+        "line": 129,
         "level": 2,
         "title": "Advanced Features Version Quick Reference"
       }
@@ -3319,7 +3321,7 @@
     "Automatic Connection Registration (Connection Pool, 2.10+)": [
       {
         "document": "advanced/router.md",
-        "line": 152,
+        "line": 157,
         "level": 3,
         "title": "Automatic Connection Registration (Connection Pool, 2.10+)"
       }
@@ -3335,7 +3337,7 @@
     "Automatic Documentation": [
       {
         "document": "advanced/router.md",
-        "line": 359,
+        "line": 364,
         "level": 2,
         "title": "Automatic Documentation"
       }
@@ -3415,7 +3417,7 @@
     "Backup": [
       {
         "document": "user-guide/deployment.md",
-        "line": 352,
+        "line": 357,
         "level": 3,
         "title": "Backup"
       }
@@ -3667,7 +3669,7 @@
     "Basic Requirements": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 483,
+        "line": 513,
         "level": 3,
         "title": "Basic Requirements"
       }
@@ -3893,7 +3895,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 462,
+        "line": 467,
         "level": 2,
         "title": "Best Practices"
       },
@@ -4185,7 +4187,7 @@
     "CORS Configuration": [
       {
         "document": "advanced/router.md",
-        "line": 325,
+        "line": 330,
         "level": 2,
         "title": "CORS Configuration"
       }
@@ -5508,6 +5510,14 @@
         "title": "Connection Retry"
       }
     ],
+    "Container Restart (PID 1 Instance)": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 136,
+        "level": 3,
+        "title": "Container Restart (PID 1 Instance)"
+      }
+    ],
     "Content Browsing Extension Actions (for ecosystem modules)": [
       {
         "document": "platform-guide/bilibili.md",
@@ -6012,12 +6022,12 @@
         "title": "Custom Storage Backend"
       }
     ],
-    "Dashboard Automatic Registration": [
+    "Dashboard Auto-Registration": [
       {
         "document": "advanced/router.md",
-        "line": 444,
+        "line": 449,
         "level": 3,
-        "title": "Dashboard Automatic Registration"
+        "title": "Dashboard Auto-Registration"
       }
     ],
     "Dashboard Management Panel": [
@@ -6172,12 +6182,12 @@
         "title": "Declaring i18n Fields"
       }
     ],
-    "Decorator-based Routing (Recommended)": [
+    "Decorator Routes (Recommended)": [
       {
         "document": "advanced/router.md",
-        "line": 39,
+        "line": 40,
         "level": 2,
-        "title": "Decorator-based Routing (Recommended)"
+        "title": "Decorator Routes (Recommended)"
       }
     ],
     "Deep Dive by Scenario": [
@@ -6333,7 +6343,7 @@
     "Development Approaches": [
       {
         "document": "README.md",
-        "line": 139,
+        "line": 142,
         "level": 2,
         "title": "Development Approaches"
       }
@@ -6515,7 +6525,7 @@
     "Docker Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 311,
+        "line": 316,
         "level": 3,
         "title": "Docker Method"
       }
@@ -6680,12 +6690,12 @@
         "title": "Documentation Structure Guidelines"
       }
     ],
-    "Domestic Mirror Acceleration": [
+    "Domestic Image Acceleration": [
       {
         "document": "user-guide/deployment.md",
         "line": 27,
         "level": 3,
-        "title": "Domestic Mirror Acceleration"
+        "title": "Domestic Image Acceleration"
       }
     ],
     "Don't need table structures, just store a few key-value pairs": [
@@ -7278,6 +7288,14 @@
         "line": 193,
         "level": 4,
         "title": "Event Dispatch Mechanism"
+      }
+    ],
+    "Event Dispatching (ops/s, higher is better)": [
+      {
+        "document": "advanced/performance.md",
+        "line": 11,
+        "level": 3,
+        "title": "Event Dispatching (ops/s, higher is better)"
       }
     ],
     "Event Examples": [
@@ -8079,7 +8097,7 @@
     "Fixed Bugs": [
       {
         "document": "bug-tracker.md",
-        "line": 116,
+        "line": 114,
         "level": 2,
         "title": "Fixed Bugs"
       }
@@ -8431,7 +8449,7 @@
     "Getting Help": [
       {
         "document": "README.md",
-        "line": 152,
+        "line": 155,
         "level": 2,
         "title": "Getting Help"
       }
@@ -8731,7 +8749,7 @@
     "HTTP Decorators": [
       {
         "document": "advanced/router.md",
-        "line": 68,
+        "line": 69,
         "level": 3,
         "title": "HTTP Decorators"
       }
@@ -8919,7 +8937,7 @@
     "Health Check": [
       {
         "document": "advanced/router.md",
-        "line": 392,
+        "line": 397,
         "level": 3,
         "title": "Health Check"
       },
@@ -8968,12 +8986,12 @@
         "title": "High-Level Methods (Recommended)"
       }
     ],
-    "Home Page Entry": [
+    "Home Page Entries": [
       {
         "document": "advanced/router.md",
-        "line": 409,
+        "line": 414,
         "level": 2,
-        "title": "Home Page Entry"
+        "title": "Home Page Entries"
       }
     ],
     "Honest Boundaries (What Cannot Be Intercepted)": [
@@ -8990,6 +9008,14 @@
         "line": 124,
         "level": 2,
         "title": "Hook Breakpoints Overview"
+      }
+    ],
+    "Hot Reload Server Configuration at Runtime": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 343,
+        "level": 3,
+        "title": "Hot Reload Server Configuration at Runtime"
       }
     ],
     "Hot-Reload Boundaries": [
@@ -9421,7 +9447,7 @@
     "Intended Audience": [
       {
         "document": "advanced/README.md",
-        "line": 57,
+        "line": 61,
         "level": 2,
         "title": "Intended Audience"
       }
@@ -9747,7 +9773,7 @@
     "Lifecycle Integration": [
       {
         "document": "advanced/router.md",
-        "line": 448,
+        "line": 453,
         "level": 2,
         "title": "Lifecycle Integration"
       }
@@ -10178,6 +10204,14 @@
         "line": 1,
         "level": 1,
         "title": "Matrix Platform Features Documentation"
+      }
+    ],
+    "Measured Benchmarks (2026-10-05, Python 3.13.14)": [
+      {
+        "document": "advanced/performance.md",
+        "line": 6,
+        "level": 2,
+        "title": "Measured Benchmarks (2026-10-05, Python 3.13.14)"
       }
     ],
     "Media File Handling": [
@@ -11257,7 +11291,7 @@
     "Multi-Instance Deployment": [
       {
         "document": "user-guide/deployment.md",
-        "line": 301,
+        "line": 304,
         "level": 2,
         "title": "Multi-Instance Deployment"
       }
@@ -11583,7 +11617,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 363,
+        "line": 368,
         "level": 2,
         "title": "Next Steps"
       },
@@ -11961,7 +11995,7 @@
     "Other": [
       {
         "document": "README.md",
-        "line": 146,
+        "line": 149,
         "level": 2,
         "title": "Other"
       },
@@ -11978,6 +12012,14 @@
         "line": 182,
         "level": 3,
         "title": "Other Message Types"
+      }
+    ],
+    "Other Subsystem Capabilities (after optimization)": [
+      {
+        "document": "advanced/performance.md",
+        "line": 22,
+        "level": 3,
+        "title": "Other Subsystem Capabilities (after optimization)"
       }
     ],
     "Others": [
@@ -12081,7 +12123,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 8,
+        "line": 9,
         "level": 2,
         "title": "Overview"
       },
@@ -12197,7 +12239,7 @@
     "Path Handling": [
       {
         "document": "advanced/router.md",
-        "line": 375,
+        "line": 380,
         "level": 2,
         "title": "Path Handling"
       }
@@ -12216,6 +12258,14 @@
         "line": 122,
         "level": 4,
         "title": "Per-Platform Mapping Comparison"
+      }
+    ],
+    "Performance Benchmarking and Tuning": [
+      {
+        "document": "advanced/performance.md",
+        "line": 1,
+        "level": 1,
+        "title": "Performance Benchmarking and Tuning"
       }
     ],
     "Performance Optimization": [
@@ -12567,7 +12617,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 65,
+        "line": 69,
         "level": 2,
         "title": "Prerequisites"
       }
@@ -12620,12 +12670,12 @@
         "title": "Process Supervision and Hard Restart"
       }
     ],
-    "Production Environment Configuration": [
+    "Production Configuration": [
       {
         "document": "user-guide/deployment.md",
         "line": 203,
         "level": 3,
-        "title": "Production Environment Configuration"
+        "title": "Production Configuration"
       }
     ],
     "Progress Monitoring (OnProgress / OnError)": [
@@ -12971,7 +13021,7 @@
     "Rate Limiting": [
       {
         "document": "advanced/router.md",
-        "line": 309,
+        "line": 314,
         "level": 2,
         "title": "Rate Limiting"
       }
@@ -13108,14 +13158,6 @@
         "title": "Refresh Timing"
       }
     ],
-    "Register Entry": [
-      {
-        "document": "advanced/router.md",
-        "line": 413,
-        "level": 3,
-        "title": "Register Entry"
-      }
-    ],
     "Registering Commands": [
       {
         "document": "api-reference/event-system.md",
@@ -13172,6 +13214,14 @@
         "title": "Registering a Single Method"
       }
     ],
+    "Registering an Entry": [
+      {
+        "document": "advanced/router.md",
+        "line": 418,
+        "level": 3,
+        "title": "Registering an Entry"
+      }
+    ],
     "Registration API": [
       {
         "document": "ecosystem/dashboard.md",
@@ -13180,12 +13230,12 @@
         "title": "Registration API"
       }
     ],
-    "Registration Forms: Single Parameter (Recommended) vs. Double Parameter": [
+    "Registration Forms: Single-Argument (Recommended) and Two-Argument": [
       {
         "document": "advanced/router.md",
-        "line": 41,
+        "line": 42,
         "level": 3,
-        "title": "Registration Forms: Single Parameter (Recommended) vs. Double Parameter"
+        "title": "Registration Forms: Single-Argument (Recommended) and Two-Argument"
       }
     ],
     "Registration Timing → Ownership Result Reference Table": [
@@ -13254,8 +13304,14 @@
         "title": "Related Documentation"
       },
       {
+        "document": "advanced/performance.md",
+        "line": 66,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
         "document": "advanced/router.md",
-        "line": 472,
+        "line": 477,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -13397,7 +13453,7 @@
     "Related Links": [
       {
         "document": "README.md",
-        "line": 158,
+        "line": 161,
         "level": 2,
         "title": "Related Links"
       },
@@ -13597,7 +13653,7 @@
     "Request Correlation ID (X-Request-ID)": [
       {
         "document": "advanced/router.md",
-        "line": 284,
+        "line": 289,
         "level": 2,
         "title": "Request Correlation ID (X-Request-ID)"
       }
@@ -13605,7 +13661,7 @@
     "Request Event Conversion": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 486,
+        "line": 516,
         "level": 3,
         "title": "Request Event Conversion"
       }
@@ -13713,7 +13769,7 @@
       },
       {
         "document": "standards/request-action-spec.md",
-        "line": 492,
+        "line": 522,
         "level": 3,
         "title": "Request Operations"
       }
@@ -13754,12 +13810,12 @@
         "title": "Request Type Checks"
       }
     ],
-    "Request-Type Context Retention (heterogeneous-endpoint platforms, see §5.3)": [
+    "Request Type Context Retention (Heterogeneous Endpoints, see §5.3)": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 499,
+        "line": 529,
         "level": 3,
-        "title": "Request-Type Context Retention (heterogeneous-endpoint platforms, see §5.3)"
+        "title": "Request Type Context Retention (Heterogeneous Endpoints, see §5.3)"
       }
     ],
     "Required Field Mapping": [
@@ -13810,12 +13866,12 @@
         "title": "Response"
       }
     ],
-    "Response Return Convention (2.10+)": [
+    "Response Return Conventions (2.10+)": [
       {
         "document": "advanced/router.md",
-        "line": 90,
+        "line": 91,
         "level": 4,
-        "title": "Response Return Convention (2.10+)"
+        "title": "Response Return Conventions (2.10+)"
       }
     ],
     "Response Structure Adjustment": [
@@ -13832,14 +13888,6 @@
         "line": 338,
         "level": 2,
         "title": "Restart"
-      }
-    ],
-    "Restarting Inside Containers (PID 1 Instances)": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 136,
-        "level": 3,
-        "title": "Restarting Inside Containers (PID 1 Instances)"
       }
     ],
     "Resume Equals Takeover": [
@@ -13997,7 +14045,7 @@
     "Root Page": [
       {
         "document": "advanced/router.md",
-        "line": 400,
+        "line": 405,
         "level": 3,
         "title": "Root Page"
       }
@@ -14010,18 +14058,18 @@
         "title": "Route Discovery"
       }
     ],
-    "Route Grouping": [
+    "Route Groups": [
       {
         "document": "advanced/router.md",
-        "line": 250,
+        "line": 255,
         "level": 2,
-        "title": "Route Grouping"
+        "title": "Route Groups"
       }
     ],
     "Route Middleware": [
       {
         "document": "advanced/router.md",
-        "line": 267,
+        "line": 272,
         "level": 2,
         "title": "Route Middleware"
       }
@@ -14144,14 +14192,6 @@
         "line": 250,
         "level": 2,
         "title": "Runtime Fine-Grained Control"
-      }
-    ],
-    "Runtime Hot Reload Server Configuration": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 338,
-        "level": 3,
-        "title": "Runtime Hot Reload Server Configuration"
       }
     ],
     "Runtime Override API": [
@@ -14341,7 +14381,7 @@
     "Security Headers": [
       {
         "document": "advanced/router.md",
-        "line": 344,
+        "line": 349,
         "level": 2,
         "title": "Security Headers"
       }
@@ -14368,6 +14408,14 @@
         "line": 850,
         "level": 3,
         "title": "Selection menu (choose)"
+      }
+    ],
+    "Self-Run Benchmarks and Regression Comparison": [
+      {
+        "document": "advanced/performance.md",
+        "line": 39,
+        "level": 2,
+        "title": "Self-Run Benchmarks and Regression Comparison"
       }
     ],
     "Semantics and Boundaries": [
@@ -15364,6 +15412,14 @@
         "title": "Startup Flow and Manual Control"
       }
     ],
+    "Startup Time": [
+      {
+        "document": "advanced/performance.md",
+        "line": 31,
+        "level": 3,
+        "title": "Startup Time"
+      }
+    ],
     "Startup and Shutdown": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -15388,12 +15444,12 @@
         "title": "Static Factory + Chain Mixing"
       }
     ],
-    "Statistical Overview": [
+    "Statistics Overview": [
       {
         "document": "bug-tracker.md",
         "line": 90,
         "level": 2,
-        "title": "Statistical Overview"
+        "title": "Statistics Overview"
       }
     ],
     "Step 1: Write Your First Command": [
@@ -15849,7 +15905,7 @@
     "System Routes": [
       {
         "document": "advanced/router.md",
-        "line": 388,
+        "line": 393,
         "level": 2,
         "title": "System Routes"
       }
@@ -16140,12 +16196,12 @@
         "title": "Trace ID"
       }
     ],
-    "Traditional Registration Method": [
+    "Traditional Registration": [
       {
         "document": "advanced/router.md",
-        "line": 159,
+        "line": 164,
         "level": 2,
-        "title": "Traditional Registration Method"
+        "title": "Traditional Registration"
       }
     ],
     "Transaction Operations": [
@@ -16210,6 +16266,14 @@
         "line": 243,
         "level": 3,
         "title": "Troubleshooting Checklist"
+      }
+    ],
+    "Tuning Highlights": [
+      {
+        "document": "advanced/performance.md",
+        "line": 58,
+        "level": 2,
+        "title": "Tuning Highlights"
       }
     ],
     "Two Correct Ways to Write start()": [
@@ -16414,12 +16478,12 @@
         "title": "Update Requirements"
       }
     ],
-    "Update and Maintenance": [
+    "Updates and Maintenance": [
       {
         "document": "user-guide/deployment.md",
-        "line": 309,
+        "line": 314,
         "level": 2,
-        "title": "Update and Maintenance"
+        "title": "Updates and Maintenance"
       }
     ],
     "Updating Data": [
@@ -16993,7 +17057,7 @@
     "WebSocket Decorators": [
       {
         "document": "advanced/router.md",
-        "line": 113,
+        "line": 115,
         "level": 3,
         "title": "WebSocket Decorators"
       }
@@ -17009,7 +17073,7 @@
     "WebSocket Lifecycle Hooks": [
       {
         "document": "advanced/router.md",
-        "line": 226,
+        "line": 231,
         "level": 2,
         "title": "WebSocket Lifecycle Hooks"
       }
@@ -17017,7 +17081,7 @@
     "WebSocket Registration": [
       {
         "document": "advanced/router.md",
-        "line": 185,
+        "line": 190,
         "level": 3,
         "title": "WebSocket Registration"
       }
@@ -17197,7 +17261,7 @@
     "[BUG-001] Event handlers registered multiple times causing events to be processed multiple times": [
       {
         "document": "bug-tracker.md",
-        "line": 118,
+        "line": 116,
         "level": 3,
         "title": "[BUG-001] Event handlers registered multiple times causing events to be processed multiple times"
       }
@@ -17205,7 +17269,7 @@
     "[BUG-002] Init command adapter configuration path type error": [
       {
         "document": "bug-tracker.md",
-        "line": 138,
+        "line": 136,
         "level": 3,
         "title": "[BUG-002] Init command adapter configuration path type error"
       }
@@ -17213,7 +17277,7 @@
     "[BUG-003] Command events fail after restart": [
       {
         "document": "bug-tracker.md",
-        "line": 162,
+        "line": 160,
         "level": 3,
         "title": "[BUG-003] Command events fail after restart"
       }
@@ -17221,7 +17285,7 @@
     "[BUG-004] Lifecycle event handlers not cleaned up": [
       {
         "document": "bug-tracker.md",
-        "line": 182,
+        "line": 180,
         "level": 3,
         "title": "[BUG-004] Lifecycle event handlers not cleaned up"
       }
@@ -17229,7 +17293,7 @@
     "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard": [
       {
         "document": "bug-tracker.md",
-        "line": 202,
+        "line": 200,
         "level": 3,
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard"
       }
@@ -17237,7 +17301,7 @@
     "[BUG-006] adapter.clear() not cleaning _started_instances causing incorrect state after restart": [
       {
         "document": "bug-tracker.md",
-        "line": 222,
+        "line": 220,
         "level": 3,
         "title": "[BUG-006] adapter.clear() not cleaning _started_instances causing incorrect state after restart"
       }
@@ -17245,7 +17309,7 @@
     "[BUG-007] command.wait_reply() using deprecated asyncio.get_event_loop()": [
       {
         "document": "bug-tracker.md",
-        "line": 242,
+        "line": 240,
         "level": 3,
         "title": "[BUG-007] command.wait_reply() using deprecated asyncio.get_event_loop()"
       }
@@ -17253,7 +17317,7 @@
     "[BUG-008] Bot offline event submitted repeatedly during shutdown": [
       {
         "document": "bug-tracker.md",
-        "line": 262,
+        "line": 260,
         "level": 3,
         "title": "[BUG-008] Bot offline event submitted repeatedly during shutdown"
       }
@@ -17261,7 +17325,7 @@
     "[BUG-009] LazyModule synchronous access to BaseModule causing incomplete initialization": [
       {
         "document": "bug-tracker.md",
-        "line": 282,
+        "line": 280,
         "level": 3,
         "title": "[BUG-009] LazyModule synchronous access to BaseModule causing incomplete initialization"
       }
@@ -17269,7 +17333,7 @@
     "[BUG-010] Multi-threaded configuration system writing causing data loss": [
       {
         "document": "bug-tracker.md",
-        "line": 302,
+        "line": 300,
         "level": 3,
         "title": "[BUG-010] Multi-threaded configuration system writing causing data loss"
       }
@@ -17277,7 +17341,7 @@
     "[BUG-011] Windows Ctrl+C unable to stop program": [
       {
         "document": "bug-tracker.md",
-        "line": 325,
+        "line": 323,
         "level": 3,
         "title": "[BUG-011] Windows Ctrl+C unable to stop program"
       }
@@ -17285,7 +17349,7 @@
     "[BUG-012] Hot restart failing to load updated module code": [
       {
         "document": "bug-tracker.md",
-        "line": 349,
+        "line": 347,
         "level": 3,
         "title": "[BUG-012] Hot restart failing to load updated module code"
       }
@@ -17293,7 +17357,7 @@
     "[BUG-013] Module loading strategy sort logic error": [
       {
         "document": "bug-tracker.md",
-        "line": 369,
+        "line": 367,
         "level": 3,
         "title": "[BUG-013] Module loading strategy sort logic error"
       }
@@ -17301,7 +17365,7 @@
     "[BUG-014] Adapter middleware returning None causing event data loss": [
       {
         "document": "bug-tracker.md",
-        "line": 389,
+        "line": 387,
         "level": 3,
         "title": "[BUG-014] Adapter middleware returning None causing event data loss"
       }
@@ -17309,7 +17373,7 @@
     "[BUG-015] Configuration file path dependent on working directory": [
       {
         "document": "bug-tracker.md",
-        "line": 409,
+        "line": 407,
         "level": 3,
         "title": "[BUG-015] Configuration file path dependent on working directory"
       }
@@ -17317,7 +17381,7 @@
     "[BUG-016] BaseStorage confusing storing value None with key not existing": [
       {
         "document": "bug-tracker.md",
-        "line": 429,
+        "line": 427,
         "level": 3,
         "title": "[BUG-016] BaseStorage confusing storing value None with key not existing"
       }
@@ -17325,7 +17389,7 @@
     "[BUG-017] WebSocket route auto_accept flag lost after service restart": [
       {
         "document": "bug-tracker.md",
-        "line": 449,
+        "line": 447,
         "level": 3,
         "title": "[BUG-017] WebSocket route auto_accept flag lost after service restart"
       }
@@ -17333,7 +17397,7 @@
     "[BUG-018] HTTP/WS client concurrent calls causing crash and connection leaks": [
       {
         "document": "bug-tracker.md",
-        "line": 469,
+        "line": 467,
         "level": 3,
         "title": "[BUG-018] HTTP/WS client concurrent calls causing crash and connection leaks"
       }
@@ -17341,7 +17405,7 @@
     "[BUG-019] Adapter hot reload causing route conflicts and reload failure": [
       {
         "document": "bug-tracker.md",
-        "line": 497,
+        "line": 495,
         "level": 3,
         "title": "[BUG-019] Adapter hot reload causing route conflicts and reload failure"
       }
@@ -17349,7 +17413,7 @@
     "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in script directory": [
       {
         "document": "bug-tracker.md",
-        "line": 521,
+        "line": 519,
         "level": 3,
         "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in script directory"
       }
@@ -17357,7 +17421,7 @@
     "[BUG-021] SQL query builder rejecting valid wildcards and list expressions": [
       {
         "document": "bug-tracker.md",
-        "line": 541,
+        "line": 539,
         "level": 3,
         "title": "[BUG-021] SQL query builder rejecting valid wildcards and list expressions"
       }
@@ -17365,7 +17429,7 @@
     "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)": [
       {
         "document": "bug-tracker.md",
-        "line": 570,
+        "line": 568,
         "level": 3,
         "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)"
       }
@@ -17373,7 +17437,7 @@
     "[BUG-023] Adapter cache not refreshed after account configuration modification causing account resolution failure": [
       {
         "document": "bug-tracker.md",
-        "line": 609,
+        "line": 607,
         "level": 3,
         "title": "[BUG-023] Adapter cache not refreshed after account configuration modification causing account resolution failure"
       }
@@ -17381,7 +17445,7 @@
     "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill": [
       {
         "document": "bug-tracker.md",
-        "line": 629,
+        "line": 627,
         "level": 3,
         "title": "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill"
       }
@@ -17389,7 +17453,7 @@
     "[BUG-025] on_config_update callback not core-routed": [
       {
         "document": "bug-tracker.md",
-        "line": 675,
+        "line": 673,
         "level": 3,
         "title": "[BUG-025] on_config_update callback not core-routed"
       }
@@ -17397,7 +17461,7 @@
     "[BUG-026] notice/request event reply target inference error": [
       {
         "document": "bug-tracker.md",
-        "line": 705,
+        "line": 703,
         "level": 3,
         "title": "[BUG-026] notice/request event reply target inference error"
       }
@@ -17405,7 +17469,7 @@
     "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limit rules to fail": [
       {
         "document": "bug-tracker.md",
-        "line": 736,
+        "line": 734,
         "level": 3,
         "title": "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limit rules to fail"
       }
@@ -17413,7 +17477,7 @@
     "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions": [
       {
         "document": "bug-tracker.md",
-        "line": 768,
+        "line": 766,
         "level": 3,
         "title": "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions"
       }
@@ -17421,7 +17485,7 @@
     "[BUG-030] Configuration watcher race condition causing setConfig delayed write silently loses data": [
       {
         "document": "bug-tracker.md",
-        "line": 804,
+        "line": 802,
         "level": 3,
         "title": "[BUG-030] Configuration watcher race condition causing setConfig delayed write silently loses data"
       }
@@ -17429,7 +17493,7 @@
     "[BUG-032] Configuration delay write period \"write-then-read\" reads old values": [
       {
         "document": "bug-tracker.md",
-        "line": 840,
+        "line": 838,
         "level": 3,
         "title": "[BUG-032] Configuration delay write period \"write-then-read\" reads old values"
       }
@@ -17437,7 +17501,7 @@
     "[BUG-033] wait_reply suspended replies starved by high-priority processors": [
       {
         "document": "bug-tracker.md",
-        "line": 862,
+        "line": 860,
         "level": 3,
         "title": "[BUG-033] wait_reply suspended replies starved by high-priority processors"
       }
@@ -17445,7 +17509,7 @@
     "[BUG-034] Runtime bindings with persist=False in scope are silently overridden by subsequent configuration writes": [
       {
         "document": "bug-tracker.md",
-        "line": 882,
+        "line": 880,
         "level": 3,
         "title": "[BUG-034] Runtime bindings with persist=False in scope are silently overridden by subsequent configuration writes"
       }
@@ -17453,7 +17517,7 @@
     "[BUG-035] Configuration panel select options and dict fields rendered as [object Object]": [
       {
         "document": "bug-tracker.md",
-        "line": 905,
+        "line": 903,
         "level": 3,
         "title": "[BUG-035] Configuration panel select options and dict fields rendered as [object Object]"
       }
@@ -17461,7 +17525,7 @@
     "[BUG-036] Configuration write failures (ENOENT) when multiple instances share config directory": [
       {
         "document": "bug-tracker.md",
-        "line": 926,
+        "line": 924,
         "level": 3,
         "title": "[BUG-036] Configuration write failures (ENOENT) when multiple instances share config directory"
       }
@@ -17469,7 +17533,7 @@
     "[BUG-037] Commands with space-separated names never get triggered after registration": [
       {
         "document": "bug-tracker.md",
-        "line": 952,
+        "line": 950,
         "level": 3,
         "title": "[BUG-037] Commands with space-separated names never get triggered after registration"
       }
@@ -17477,7 +17541,7 @@
     "[BUG-038] Runtime bindings with persist=False are persistently written to disk, reviving after module unload": [
       {
         "document": "bug-tracker.md",
-        "line": 976,
+        "line": 974,
         "level": 3,
         "title": "[BUG-038] Runtime bindings with persist=False are persistently written to disk, reviving after module unload"
       }
@@ -17485,7 +17549,7 @@
     "[BUG-039] Inconsistent read/write when section write and dotted write coexist (dotted overwrite lost)": [
       {
         "document": "bug-tracker.md",
-        "line": 1001,
+        "line": 999,
         "level": 3,
         "title": "[BUG-039] Inconsistent read/write when section write and dotted write coexist (dotted overwrite lost)"
       }
@@ -17493,7 +17557,7 @@
     "[BUG-040] Command tail parameters silently lost in platform-chunked messages": [
       {
         "document": "bug-tracker.md",
-        "line": 1023,
+        "line": 1021,
         "level": 3,
         "title": "[BUG-040] Command tail parameters silently lost in platform-chunked messages"
       }
@@ -17501,7 +17565,7 @@
     "[BUG-041] Rejected command reruns entire alt_message chain: duplicate replies and permission function side effects triggered twice": [
       {
         "document": "bug-tracker.md",
-        "line": 1035,
+        "line": 1033,
         "level": 3,
         "title": "[BUG-041] Rejected command reruns entire alt_message chain: duplicate replies and permission function side effects triggered twice"
       }
@@ -17509,7 +17573,7 @@
     "[BUG-042] wait_reply registered within command handler is immediately consumed by the same triggering message": [
       {
         "document": "bug-tracker.md",
-        "line": 1047,
+        "line": 1045,
         "level": 3,
         "title": "[BUG-042] wait_reply registered within command handler is immediately consumed by the same triggering message"
       }
@@ -17517,7 +17581,7 @@
     "[BUG-043] Multiple wait paths with same key in select() silently cancel earlier ones": [
       {
         "document": "bug-tracker.md",
-        "line": 1059,
+        "line": 1057,
         "level": 3,
         "title": "[BUG-043] Multiple wait paths with same key in select() silently cancel earlier ones"
       }
@@ -17525,7 +17589,7 @@
     "[BUG-044] BaseConverter.at() produces OB11 legacy \"at\" segment, full framework mention detection does not recognize": [
       {
         "document": "bug-tracker.md",
-        "line": 1071,
+        "line": 1069,
         "level": 3,
         "title": "[BUG-044] BaseConverter.at() produces OB11 legacy \"at\" segment, full framework mention detection does not recognize"
       }
@@ -17533,7 +17597,7 @@
     "[BUG-045] Interaction primitives permanently timeout and command penetration fail on adapters without alt_message": [
       {
         "document": "bug-tracker.md",
-        "line": 1083,
+        "line": 1081,
         "level": 3,
         "title": "[BUG-045] Interaction primitives permanently timeout and command penetration fail on adapters without alt_message"
       }
@@ -17541,7 +17605,7 @@
     "[BUG-046] Declarative configuration template's nested subtable header drifts to top-level table": [
       {
         "document": "bug-tracker.md",
-        "line": 1095,
+        "line": 1093,
         "level": 3,
         "title": "[BUG-046] Declarative configuration template's nested subtable header drifts to top-level table"
       }
@@ -17549,7 +17613,7 @@
     "[BUG-047] Service directory full enumeration omits lazy-loaded modules": [
       {
         "document": "bug-tracker.md",
-        "line": 1109,
+        "line": 1107,
         "level": 3,
         "title": "[BUG-047] Service directory full enumeration omits lazy-loaded modules"
       }
@@ -17557,7 +17621,7 @@
     "[BUG-048] Session inbox query API loses message attribution (sender and event metadata)": [
       {
         "document": "bug-tracker.md",
-        "line": 1121,
+        "line": 1119,
         "level": 3,
         "title": "[BUG-048] Session inbox query API loses message attribution (sender and event metadata)"
       }
@@ -17565,7 +17629,7 @@
     "[BUG-049] Inbound bot self-message echo recorded as user, polluting inbox attribution": [
       {
         "document": "bug-tracker.md",
-        "line": 1134,
+        "line": 1132,
         "level": 3,
         "title": "[BUG-049] Inbound bot self-message echo recorded as user, polluting inbox attribution"
       }
@@ -17573,7 +17637,7 @@
     "[BUG-050] Container execution of `epsdk restart` directly exits container": [
       {
         "document": "bug-tracker.md",
-        "line": 1147,
+        "line": 1145,
         "level": 3,
         "title": "[BUG-050] Container execution of `epsdk restart` directly exits container"
       }
@@ -17995,7 +18059,7 @@
     "pip Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 321,
+        "line": 326,
         "level": 3,
         "title": "pip Method"
       }
@@ -18145,7 +18209,7 @@
     "uv tool Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 328,
+        "line": 333,
         "level": 3,
         "title": "uv tool Method"
       }

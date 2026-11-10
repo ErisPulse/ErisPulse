@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "5185ea407b6c45d8562a745c0e5fd9fb",
-  "file_hash": "5185ea407b6c45d8562a745c0e5fd9fb",
-  "translated_at": "2026-11-10T04:53:31.089943",
+  "hash": "cf2b5d0d910d0b28def13cd986f20233",
+  "file_hash": "cf2b5d0d910d0b28def13cd986f20233",
+  "translated_at": "2026-11-10T14:48:47.037499",
   "target_lang": "ja",
   "chunks": [
     {
@@ -34,12 +34,12 @@
       "translation": "## 手動デプロイ（pip）\n\nDocker を使用しない場合、手動でデプロイすることもできます。\n\n### プロダクション環境の設定\n\n```toml\n# config/config.toml\n\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\n\n[ErisPulse.logger]\nlevel = \"INFO\"\nlog_files = [\"app.log\"]\nmemory_limit = 5000\n\n[ErisPulse.framework]\nenable_lazy_loading = true\n```\n\n### systemd (Linux)\n\n`/etc/systemd/system/erispulse-bot.service` を作成します：\n\n```ini\n[Unit]\nDescription=ErisPulse Bot\nAfter=network.target\n\n[Service]\nType=simple\nUser=bot\nWorkingDirectory=/opt/erispulse-bot\nExecStart=/opt/erispulse-bot/venv/bin/epsdk run main.py\nRestart=always\nRestartSec=5\nStandardOutput=journal\nStandardError=journal\n\n[Install]\nWantedBy=multi-user.target\n```\n\n管理：\n\n```bash\nsudo systemctl daemon-reload\nsudo systemctl start erispulse-bot\nsudo systemctl enable erispulse-bot\nsudo journalctl -u erispulse-bot -f\n```\n\n### Supervisor\n\n`/etc/supervisor/conf.d/erispulse-bot.conf` を作成します：\n\n```ini\n[program:erispulse-bot]\ncommand=/opt/erispulse-bot/venv/bin/python -m ErisPulse run main.py\ndirectory=/opt/erispulse-bot\nuser=bot\nautostart=true\nautorestart=true\nstderr_logfile=/var/log/erispulse-bot/err.log\nstdout_logfile=/var/log/erispulse-bot/out.log\n```\n\n### uv tool による分離デプロイ（CLI とプロジェクト環境の分離）\n\n`uv tool install` は `epsdk` を**独立したツール環境**としてインストールし、CLI 自身とプロジェクト依存関係を完全に分離します：CLI のアップグレードはプロジェクトの `.venv` を触らず、プロジェクトの依存関係の変更も CLI に影響しません。\n\n```bash\n# 1. グローバルに CLI をインストール（自動的に epsdk / ep コマンドが利用可能になります）\nuv tool install ErisPulse\n\n# 2. プロジェクト内にロボットの依存関係のみを配置（.venv は uv で管理）\ncd /opt/erispulse-bot\nuv add erispulse ErisPulse-Adapter-Yunhu   # 必要に応じてアダプタを追加\n\n# 3. CLI を使って実行（自動的にプロジェクトの .venv の解釈子を検出して使用）\nepsdk run main.py\n```\n\n動作の要点：\n\n- `epsdk run` の対象解釈子の解析順序は：`ERISPULSE_PYTHON` 環境変数 → プロジェクト `.venv` → 現在の解釈子；ツール環境は CLI だけを保持し、コンポーネント（アダプタ/モジュール）はプロジェクトの `.venv` にインストールするべきです\n- `epsdk install` / `uninstall` / `upgrade` / `list` も同様にプロジェクトの `.venv` に作用し、ツール環境を汚染しません\n- CLI のアップグレード：`uv tool upgrade ErisPulse`（または `epsdk self-update`、uv tool 環境下では自動的に `uv tool upgrade` に切り替わります）；プロジェクトの依存関係のアップグレード：プロジェクトディレクトリ内で `uv sync` / `uv add` を実行し、互いに影響しません\n- サーバー環境ではツール環境は uv で統一管理されます（`uv tool list` で確認、`uv tool upgrade --all` で一括アップグレード）、手動でグローバルな pip パッケージを管理する必要はありません\n- プロジェクトのないディレクトリで `uv run epsdk ...` を実行する場合、**一時的な隔離環境**に落ちます（インストールしたコンポーネントは永続化されません）；サーバーでは常に `epsdk` を直接呼び出すか、まず `cd` でプロジェクトディレクトリに移動するべきです"
     },
     {
-      "hash": "cee67f21b42aeebc5b047a9ede899426",
-      "translation": "## セキュリティの推奨事項\n\n1. **Dashboard トークンの設定**：強力なランダムトークンを使用し、デフォルト値を使用しないでください\n2. **ポートを外部に公開しない**：リバースプロキシ + SSL を使用しない限り、Dashboard のポートを内網に制限してください\n3. **データディレクトリの保護**：`config/` ディレクトリには設定とデータベースが含まれており、適切なファイル権限を設定してください\n4. **定期的な更新**：`epsdk self-update` または最新の Docker イメージを取得して使用してください\n5. **root で実行しない**：手動デプロイ時は専用ユーザーを作成してください\n6. **Docker のリスタートポリシーを使用する**：公式の compose の `restart: on-failure:5` は、異常終了（ハードリスタートの終了コード 42 を含む）後に自動的に再起動することを保証しています"
+      "hash": "edb9e6e2306f2d857c4fe8730f576878",
+      "translation": "## セキュリティに関する推奨事項\n\n1. **Dashboard トークンの設定**：強力なランダムなトークンを使用し、デフォルト値は使用しないでください。\n2. **ポートをパブリックに公開しない**：リバースプロキシ + SSL を使用しない限り、Dashboard のポートをローカルネットワークに限定してください。\n3. **データディレクトリの保護**：`config/` ディレクトリには設定とデータベースが含まれており、適切なファイル権限を設定してください。\n4. **定期的な更新**：`epsdk self-update` を使用するか、最新の Docker イメージを取得してください。\n5. **root で実行しない**：手動でのデプロイ時には専用ユーザーを作成してください。\n6. **Docker の再起動ポリシーの使用**：公式の compose では `restart: on-failure:5` が設定されており、例外的な終了（ハードリセット終了コード 42 を含む）後も自動的に再起動されます。\n7. **API ドキュメントエンドポイントの無効化**：`/docs`、`/redoc`、`/openapi.json` はデフォルトで有効で認証がされていないため、パブリック環境で展開する場合は `router.disable_docs()` を呼び出して無効化してください。\n8. **Webhook の署名検証**：スキャフォールディングで生成された `verify_request` はデフォルトで許可されていますが、パブリックなコールバックを接続する前に、署名またはトークン検証を実装する必要があります。\n9. **セキュリティモデルの境界**：マスター/スコープ体系はプラットフォーム側のユーザーを制約します。ロードされたモジュールは信頼できるコードと見なされます（スコープが設定されていない場合はデフォルトで許可され、モジュールはプロバイダーを登録できます）。信頼できないモジュールをロードしないでください。"
     },
     {
-      "hash": "4390212870747e62813e58876de81a65",
-      "translation": "## マルチインスタンスデプロイ\n\n複数のロボットインスタンスを実行する場合：\n\n1. 各インスタンスは独立したプロジェクトディレクトリと `docker-compose.yml` を使用します\n2. 異なるポート番号を使用します：`ERISPULSE_PORT=8001`\n3. 異なるコンテナ名を使用します：`container_name: erispulse-bot2`"
+      "hash": "78a3acee88ef2947bbcba681c94a554e",
+      "translation": "## 多インスタンスデプロイ\n\n複数のロボットインスタンスを実行する場合：\n\n1. 各インスタンスは独立したプロジェクトディレクトリと `docker-compose.yml` を使用します。\n2. 異なるポート番号を使用します：`ERISPULSE_PORT=8001`\n3. 異なるコンテナ名を使用します：`container_name: erispulse-bot2`\n\n> **ストレージバックエンドの注意点**：インスタンス間でステート（セッション受信箱 / ダイアログチェックポイント / コマンドクールダウン）は共有されません（すべてインスタンスのメモリ状態です）。\n> 既定の SQLite は単一ファイルのバックエンドであり、**複数インスタンスで同時に開くことはできません**。各インスタンスの `config/` ディレクトリは独立している必要があります。mysql / postgres に切り替えても、それぞれ独立したデータベースになります。現在のバージョンでは、複数インスタンスによる協調（セッション共有 / ロードバランシング）はサポートしていません。同じグループに複数インスタンスが存在する場合、それぞれが個別に応答します。重複を防ぐには、プラットフォーム側または業務側で独自に重複除去を行う必要があります。"
     },
     {
       "hash": "949c67b1bfcb2f4f89fcbb0d5a4fc186",

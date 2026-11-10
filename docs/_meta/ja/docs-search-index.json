@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2041,
+  "total_keywords": 2052,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1214,20 +1214,20 @@
         "title": "3. 送信アカウントを指定"
       }
     ],
+    "3.1 チェーン呼び出し": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 91,
+        "level": 3,
+        "title": "3.1 チェーン呼び出し"
+      }
+    ],
     "3.1 マッピングの原則": [
       {
         "document": "standards/session-types.md",
         "line": 86,
         "level": 3,
         "title": "3.1 マッピングの原則"
-      }
-    ],
-    "3.1 メソッドチェーン呼び出し": [
-      {
-        "document": "standards/request-action-spec.md",
-        "line": 91,
-        "level": 3,
-        "title": "3.1 メソッドチェーン呼び出し"
       }
     ],
     "3.1 メッセージイベント (message)": [
@@ -1414,12 +1414,12 @@
         "title": "3層リソースガバナンス"
       }
     ],
-    "4. Event の便利メソッド": [
+    "4. Event 便利メソッド": [
       {
         "document": "standards/request-action-spec.md",
         "line": 156,
         "level": 2,
-        "title": "4. Event の便利メソッド"
+        "title": "4. Event 便利メソッド"
       }
     ],
     "4. PM2（Node 生態系の運用）": [
@@ -1702,12 +1702,12 @@
         "title": "5. アダプター実装"
       }
     ],
-    "5. アダプター実装要件": [
+    "5. アダプタ実装要件": [
       {
         "document": "standards/request-action-spec.md",
         "line": 192,
         "level": 2,
-        "title": "5. アダプター実装要件"
+        "title": "5. アダプタ実装要件"
       }
     ],
     "5. インタラクティブコンポーネント標準": [
@@ -1790,14 +1790,6 @@
         "title": "5.1 `message_id` 必須フィールド"
       }
     ],
-    "5.1 コンバーターの要件": [
-      {
-        "document": "standards/request-action-spec.md",
-        "line": 194,
-        "level": 3,
-        "title": "5.1 コンバーターの要件"
-      }
-    ],
     "5.1 コンポーネント一覧と状態": [
       {
         "document": "standards/standardization-guide.md",
@@ -1822,12 +1814,20 @@
         "title": "5.1 推論の優先順位"
       }
     ],
-    "5.2 Request 内部クラスの実装": [
+    "5.1 転換器要件": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 238,
+        "line": 194,
         "level": 3,
-        "title": "5.2 Request 内部クラスの実装"
+        "title": "5.1 転換器要件"
+      }
+    ],
+    "5.2 Request 内部クラス実装": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 237,
+        "level": 3,
+        "title": "5.2 Request 内部クラス実装"
       }
     ],
     "5.2 `{platform}_raw` 原始応答フィールド": [
@@ -1886,52 +1886,52 @@
         "title": "5.3 フレームワーク拡張返却コード（34xxx プラットフォームエラーセグメントの下3桁カスタム）"
       }
     ],
-    "5.3 リクエストタイプコンテキストの保持（異種エンドポイントアダプターでは必須）": [
+    "5.3 リクエストタイプコンテキスト保持（異質なエンドポイントアダプタは必須）": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 287,
+        "line": 286,
         "level": 3,
-        "title": "5.3 リクエストタイプコンテキストの保持（異種エンドポイントアダプターでは必須）"
+        "title": "5.3 リクエストタイプコンテキスト保持（異質なエンドポイントアダプタは必須）"
       }
     ],
     "5.3.1 契約のギャップ": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 289,
+        "line": 288,
         "level": 4,
         "title": "5.3.1 契約のギャップ"
       }
     ],
-    "5.3.2 仕様要件": [
+    "5.3.2 規格要件": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 300,
+        "line": 299,
         "level": 4,
-        "title": "5.3.2 仕様要件"
+        "title": "5.3.2 規格要件"
       }
     ],
-    "5.3.3 統一エントリフィールド（媒体非依存）": [
+    "5.3.3 統一条目フィールド（メディア依存）": [
       {
         "document": "standards/request-action-spec.md",
         "line": 312,
         "level": 4,
-        "title": "5.3.3 統一エントリフィールド（媒体非依存）"
+        "title": "5.3.3 統一条目フィールド（メディア依存）"
       }
     ],
-    "5.3.4 リファレンス実装（メモリキャッシュ）": [
+    "5.3.4 参考実装（統一ストレージ単一キースナップショット、デフォルト）": [
       {
         "document": "standards/request-action-spec.md",
         "line": 331,
         "level": 4,
-        "title": "5.3.4 リファレンス実装（メモリキャッシュ）"
+        "title": "5.3.4 参考実装（統一ストレージ単一キースナップショット、デフォルト）"
       }
     ],
-    "5.3.5 再起動をまたぐ永続化（オプション）": [
+    "5.3.5 バウンダリと降格": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 429,
+        "line": 472,
         "level": 4,
-        "title": "5.3.5 再起動をまたぐ永続化（オプション）"
+        "title": "5.3.5 バウンダリと降格"
       }
     ],
     "5.4 select ドロップダウン選択（予約）": [
@@ -1953,7 +1953,7 @@
     "5.4 プラットフォームがリクエスト操作をサポートしていない場合": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 452,
+        "line": 480,
         "level": 3,
         "title": "5.4 プラットフォームがリクエスト操作をサポートしていない場合"
       }
@@ -1966,20 +1966,20 @@
         "title": "5.5 card カード（予約、標準化は当面保留）"
       }
     ],
-    "5.5 まとめ：Send と Request の並行": [
+    "5.5 まとめ：SendとRequestの並行": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 460,
+        "line": 488,
         "level": 3,
-        "title": "5.5 まとめ：Send と Request の並行"
+        "title": "5.5 まとめ：SendとRequestの並行"
       }
     ],
-    "5.6 アダプター `__init__` の注意点": [
+    "5.6 アダプタ`__init__`の注意事項": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 478,
+        "line": 506,
         "level": 3,
-        "title": "5.6 アダプター `__init__` の注意点"
+        "title": "5.6 アダプタ`__init__`の注意事項"
       }
     ],
     "5つの分離ゲート": [
@@ -1998,12 +1998,12 @@
         "title": "6. API 使用例"
       }
     ],
-    "6. アダプター実装チェックリスト": [
+    "6. アダプタ実装チェックリスト": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 482,
+        "line": 510,
         "level": 2,
-        "title": "6. アダプター実装チェックリスト"
+        "title": "6. アダプタ実装チェックリスト"
       }
     ],
     "6. コンバーターの実装": [
@@ -2233,7 +2233,7 @@
     "7. エラーコードの拡張": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 509,
+        "line": 540,
         "level": 2,
         "title": "7. エラーコードの拡張"
       }
@@ -2361,7 +2361,7 @@
     "8. 関連ドキュメント": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 525,
+        "line": 554,
         "level": 2,
         "title": "8. 関連ドキュメント"
       },
@@ -2694,6 +2694,14 @@
         "title": "Api DSL メソッド対照表（ YunhuHTTPClient → ユーザーAPI v1 エンドポイント ）"
       }
     ],
+    "Api 署名対応": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 78,
+        "level": 3,
+        "title": "Api 署名対応"
+      }
+    ],
     "Api.Using() アカウントルーティングの修正（0.3.1）": [
       {
         "document": "platform-guide/bilibili.md",
@@ -2909,7 +2917,7 @@
     "CORS 設定": [
       {
         "document": "advanced/router.md",
-        "line": 324,
+        "line": 330,
         "level": 2,
         "title": "CORS 設定"
       }
@@ -3002,20 +3010,20 @@
         "title": "Dashboard でモジュールをインストール"
       }
     ],
-    "Dashboard の自動登録": [
-      {
-        "document": "advanced/router.md",
-        "line": 443,
-        "level": 3,
-        "title": "Dashboard の自動登録"
-      }
-    ],
     "Dashboard 管理パネル": [
       {
         "document": "user-guide/deployment.md",
         "line": 97,
         "level": 2,
         "title": "Dashboard 管理パネル"
+      }
+    ],
+    "Dashboard 自動登録": [
+      {
+        "document": "advanced/router.md",
+        "line": 449,
+        "level": 3,
+        "title": "Dashboard 自動登録"
       }
     ],
     "Debian/Ubuntu での仮想環境作成の失敗": [
@@ -3034,20 +3042,20 @@
         "title": "Discord"
       }
     ],
-    "Discordプラットフォーム特徴ドキュメント": [
+    "Discord プラットフォーム特性ドキュメント": [
       {
         "document": "platform-guide/discord.md",
         "line": 1,
         "level": 1,
-        "title": "Discordプラットフォーム特徴ドキュメント"
+        "title": "Discord プラットフォーム特性ドキュメント"
       }
     ],
-    "Discord固有メソッドの使用": [
+    "Discord 特有のメソッドの使用": [
       {
         "document": "platform-guide/discord.md",
-        "line": 454,
+        "line": 498,
         "level": 3,
-        "title": "Discord固有メソッドの使用"
+        "title": "Discord 特有のメソッドの使用"
       }
     ],
     "Docker Hub への同時公開": [
@@ -3085,7 +3093,7 @@
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 311,
+        "line": 317,
         "level": 3,
         "title": "Docker 方式"
       }
@@ -3098,12 +3106,12 @@
         "title": "Docker 部署（推奨）"
       }
     ],
-    "Embedメッセージの送信": [
+    "Embed メッセージの送信": [
       {
         "document": "platform-guide/discord.md",
-        "line": 437,
+        "line": 481,
         "level": 3,
-        "title": "Embedメッセージの送信"
+        "title": "Embed メッセージの送信"
       }
     ],
     "ErisPulse API アクション標準": [
@@ -3170,12 +3178,12 @@
         "title": "ErisPulse ドキュメント"
       }
     ],
-    "ErisPulse リクエスト操作仕様": [
+    "ErisPulse リクエスト操作規格": [
       {
         "document": "standards/request-action-spec.md",
         "line": 1,
         "level": 1,
-        "title": "ErisPulse リクエスト操作仕様"
+        "title": "ErisPulse リクエスト操作規格"
       }
     ],
     "ErisPulse 送信メソッド規格": [
@@ -3391,9 +3399,17 @@
     "Gateway Intents": [
       {
         "document": "platform-guide/discord.md",
-        "line": 50,
+        "line": 51,
         "level": 3,
         "title": "Gateway Intents"
+      }
+    ],
+    "Gateway 接続": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 403,
+        "level": 2,
+        "title": "Gateway 接続"
       }
     ],
     "HTML のレンダリング": [
@@ -3437,7 +3453,7 @@
     "HTTP デコレータ": [
       {
         "document": "advanced/router.md",
-        "line": 67,
+        "line": 69,
         "level": 3,
         "title": "HTTP デコレータ"
       }
@@ -3562,12 +3578,12 @@
         "title": "Kookプラットフォームの特徴ドキュメント"
       }
     ],
-    "L2 必読 4 記事": [
+    "L2 必読4篇": [
       {
         "document": "advanced/README.md",
         "line": 8,
         "level": 2,
-        "title": "L2 必読 4 記事"
+        "title": "L2 必読4篇"
       }
     ],
     "LazyModule クラス": [
@@ -3865,7 +3881,7 @@
     "Opcode 説明": [
       {
         "document": "platform-guide/discord.md",
-        "line": 371,
+        "line": 415,
         "level": 3,
         "title": "Opcode 説明"
       }
@@ -4447,7 +4463,7 @@
     "WebSocket デコレータ": [
       {
         "document": "advanced/router.md",
-        "line": 113,
+        "line": 115,
         "level": 3,
         "title": "WebSocket デコレータ"
       }
@@ -4455,7 +4471,7 @@
     "WebSocket ライフサイクルフック": [
       {
         "document": "advanced/router.md",
-        "line": 225,
+        "line": 231,
         "level": 2,
         "title": "WebSocket ライフサイクルフック"
       }
@@ -4491,7 +4507,7 @@
     "WebSocket 登録": [
       {
         "document": "advanced/router.md",
-        "line": 184,
+        "line": 190,
         "level": 3,
         "title": "WebSocket 登録"
       }
@@ -4563,7 +4579,7 @@
     "[BUG-001] イベントハンドラーの重複登録によりイベントが複数回処理される": [
       {
         "document": "bug-tracker.md",
-        "line": 116,
+        "line": 118,
         "level": 3,
         "title": "[BUG-001] イベントハンドラーの重複登録によりイベントが複数回処理される"
       }
@@ -4571,7 +4587,7 @@
     "[BUG-002] Init コマンドのアダプター設定パス型エラー": [
       {
         "document": "bug-tracker.md",
-        "line": 136,
+        "line": 138,
         "level": 3,
         "title": "[BUG-002] Init コマンドのアダプター設定パス型エラー"
       }
@@ -4579,7 +4595,7 @@
     "[BUG-003] 再起動後にコマンドイベントが機能しなくなる": [
       {
         "document": "bug-tracker.md",
-        "line": 160,
+        "line": 162,
         "level": 3,
         "title": "[BUG-003] 再起動後にコマンドイベントが機能しなくなる"
       }
@@ -4587,7 +4603,7 @@
     "[BUG-004] ライフサイクルイベントハンドラーがクリーンアップされない": [
       {
         "document": "bug-tracker.md",
-        "line": 180,
+        "line": 182,
         "level": 3,
         "title": "[BUG-004] ライフサイクルイベントハンドラーがクリーンアップされない"
       }
@@ -4595,7 +4611,7 @@
     "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない": [
       {
         "document": "bug-tracker.md",
-        "line": 200,
+        "line": 202,
         "level": 3,
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない"
       }
@@ -4603,7 +4619,7 @@
     "[BUG-006] adapter.clear() が _started_instances をクリーンアップせず、再起動後に状態が不正になる": [
       {
         "document": "bug-tracker.md",
-        "line": 220,
+        "line": 222,
         "level": 3,
         "title": "[BUG-006] adapter.clear() が _started_instances をクリーンアップせず、再起動後に状態が不正になる"
       }
@@ -4611,7 +4627,7 @@
     "[BUG-007] command.wait_reply() が非推奨の asyncio.get_event_loop() を使用している": [
       {
         "document": "bug-tracker.md",
-        "line": 240,
+        "line": 242,
         "level": 3,
         "title": "[BUG-007] command.wait_reply() が非推奨の asyncio.get_event_loop() を使用している"
       }
@@ -4619,7 +4635,7 @@
     "[BUG-008] Bot オフラインイベントが shutdown プロセス中に重複送信される": [
       {
         "document": "bug-tracker.md",
-        "line": 260,
+        "line": 262,
         "level": 3,
         "title": "[BUG-008] Bot オフラインイベントが shutdown プロセス中に重複送信される"
       }
@@ -4627,7 +4643,7 @@
     "[BUG-009] LazyModule による BaseModule への同期アクセスで初期化が未完了のままになる": [
       {
         "document": "bug-tracker.md",
-        "line": 280,
+        "line": 282,
         "level": 3,
         "title": "[BUG-009] LazyModule による BaseModule への同期アクセスで初期化が未完了のままになる"
       }
@@ -4635,7 +4651,7 @@
     "[BUG-010] 設定システムのマルチスレッド書き込みによるデータ消失": [
       {
         "document": "bug-tracker.md",
-        "line": 300,
+        "line": 302,
         "level": 3,
         "title": "[BUG-010] 設定システムのマルチスレッド書き込みによるデータ消失"
       }
@@ -4643,7 +4659,7 @@
     "[BUG-011] Windows で CTRL+C でプログラムを停止できない": [
       {
         "document": "bug-tracker.md",
-        "line": 323,
+        "line": 325,
         "level": 3,
         "title": "[BUG-011] Windows で CTRL+C でプログラムを停止できない"
       }
@@ -4651,7 +4667,7 @@
     "[BUG-012] ホットリスタート後に更新済みモジュールの Python コードが反映されない": [
       {
         "document": "bug-tracker.md",
-        "line": 347,
+        "line": 349,
         "level": 3,
         "title": "[BUG-012] ホットリスタート後に更新済みモジュールの Python コードが反映されない"
       }
@@ -4659,7 +4675,7 @@
     "[BUG-013] モジュールロード戦略のソートロジックエラー": [
       {
         "document": "bug-tracker.md",
-        "line": 367,
+        "line": 369,
         "level": 3,
         "title": "[BUG-013] モジュールロード戦略のソートロジックエラー"
       }
@@ -4667,7 +4683,7 @@
     "[BUG-014] アダプターのミドルウェアが None を返すことでイベントデータが失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 387,
+        "line": 389,
         "level": 3,
         "title": "[BUG-014] アダプターのミドルウェアが None を返すことでイベントデータが失われる"
       }
@@ -4675,7 +4691,7 @@
     "[BUG-015] 設定ファイルパスが作業ディレクトリに依存する": [
       {
         "document": "bug-tracker.md",
-        "line": 407,
+        "line": 409,
         "level": 3,
         "title": "[BUG-015] 設定ファイルパスが作業ディレクトリに依存する"
       }
@@ -4683,7 +4699,7 @@
     "[BUG-016] BaseStorage が格納値 None とキー不存在を混同する": [
       {
         "document": "bug-tracker.md",
-        "line": 427,
+        "line": 429,
         "level": 3,
         "title": "[BUG-016] BaseStorage が格納値 None とキー不存在を混同する"
       }
@@ -4691,7 +4707,7 @@
     "[BUG-017] WebSocket ルートの auto_accept フラグがサービス再起動後に失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 447,
+        "line": 449,
         "level": 3,
         "title": "[BUG-017] WebSocket ルートの auto_accept フラグがサービス再起動後に失われる"
       }
@@ -4699,7 +4715,7 @@
     "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続リーク": [
       {
         "document": "bug-tracker.md",
-        "line": 467,
+        "line": 469,
         "level": 3,
         "title": "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続リーク"
       }
@@ -4707,7 +4723,7 @@
     "[BUG-019] アダプターのホットリロード時にルート競合によりリロードが失敗する": [
       {
         "document": "bug-tracker.md",
-        "line": 495,
+        "line": 497,
         "level": 3,
         "title": "[BUG-019] アダプターのホットリロード時にルート競合によりリロードが失敗する"
       }
@@ -4715,7 +4731,7 @@
     "[BUG-020] 子プロセスモード `ep run <script>` がスクリプト所在ディレクトリのサブパッケージを見つけられない": [
       {
         "document": "bug-tracker.md",
-        "line": 519,
+        "line": 521,
         "level": 3,
         "title": "[BUG-020] 子プロセスモード `ep run <script>` がスクリプト所在ディレクトリのサブパッケージを見つけられない"
       }
@@ -4723,7 +4739,7 @@
     "[BUG-021] SQL クエリビルダーが正当なワイルドカードと列式を拒否する": [
       {
         "document": "bug-tracker.md",
-        "line": 539,
+        "line": 541,
         "level": 3,
         "title": "[BUG-021] SQL クエリビルダーが正当なワイルドカードと列式を拒否する"
       }
@@ -4731,7 +4747,7 @@
     "[BUG-022] _resolve_account() のアカウント解決リグレッション（_accounts_data 未設定）": [
       {
         "document": "bug-tracker.md",
-        "line": 569,
+        "line": 571,
         "level": 3,
         "title": "[BUG-022] _resolve_account() のアカウント解決リグレッション（_accounts_data 未設定）"
       }
@@ -4739,7 +4755,7 @@
     "[BUG-023] アカウント設定変更後にアダプターのキャッシュが更新されず、アカウント解決が失敗する": [
       {
         "document": "bug-tracker.md",
-        "line": 608,
+        "line": 610,
         "level": 3,
         "title": "[BUG-023] アカウント設定変更後にアダプターのキャッシュが更新されず、アカウント解決が失敗する"
       }
@@ -4747,7 +4763,7 @@
     "[BUG-024] storage.set() で大きな数値 ID キーを書き込む際に OOM Kill が発生する": [
       {
         "document": "bug-tracker.md",
-        "line": 628,
+        "line": 630,
         "level": 3,
         "title": "[BUG-024] storage.set() で大きな数値 ID キーを書き込む際に OOM Kill が発生する"
       }
@@ -4755,7 +4771,7 @@
     "[BUG-025] on_config_update コールバックがコアによってルーティングされない": [
       {
         "document": "bug-tracker.md",
-        "line": 674,
+        "line": 676,
         "level": 3,
         "title": "[BUG-025] on_config_update コールバックがコアによってルーティングされない"
       }
@@ -4763,7 +4779,7 @@
     "[BUG-026] notice/request イベントの reply 宛先推論エラー": [
       {
         "document": "bug-tracker.md",
-        "line": 704,
+        "line": 706,
         "level": 3,
         "title": "[BUG-026] notice/request イベントの reply 宛先推論エラー"
       }
@@ -4771,7 +4787,7 @@
     "[BUG-027] ルートレートリミットのクリーンアップタスクが固定ウィンドウを使用し、長期ウィンドウのレートリミットルールが機能しない": [
       {
         "document": "bug-tracker.md",
-        "line": 735,
+        "line": 737,
         "level": 3,
         "title": "[BUG-027] ルートレートリミットのクリーンアップタスクが固定ウィンドウを使用し、長期ウィンドウのレートリミットルールが機能しない"
       }
@@ -4779,7 +4795,7 @@
     "[BUG-029] 設定監視タスクが未完成の TOML をブロードキャストし、例外を静かに握りつぶす": [
       {
         "document": "bug-tracker.md",
-        "line": 767,
+        "line": 769,
         "level": 3,
         "title": "[BUG-029] 設定監視タスクが未完成の TOML をブロードキャストし、例外を静かに握りつぶす"
       }
@@ -4787,7 +4803,7 @@
     "[BUG-030] 設定 watcher の競合により setConfig の遅延書き込みがデータを静かに失う": [
       {
         "document": "bug-tracker.md",
-        "line": 803,
+        "line": 805,
         "level": 3,
         "title": "[BUG-030] 設定 watcher の競合により setConfig の遅延書き込みがデータを静かに失う"
       }
@@ -4795,7 +4811,7 @@
     "[BUG-032] 設定の遅延フラッシュ中の「書き込み後即時読み取り」で旧値が読まれる": [
       {
         "document": "bug-tracker.md",
-        "line": 839,
+        "line": 841,
         "level": 3,
         "title": "[BUG-032] 設定の遅延フラッシュ中の「書き込み後即時読み取り」で旧値が読まれる"
       }
@@ -4803,7 +4819,7 @@
     "[BUG-033] wait_reply の保留中の返信が高優先度ハンドラーによりスターベーション（飢餓）状態に陥る": [
       {
         "document": "bug-tracker.md",
-        "line": 861,
+        "line": 863,
         "level": 3,
         "title": "[BUG-033] wait_reply の保留中の返信が高優先度ハンドラーによりスターベーション（飢餓）状態に陥る"
       }
@@ -4811,7 +4827,7 @@
     "[BUG-034] スコープ persist=False での実行時バインディングが任意の後続の設定書き込みによって静かに上書きされる": [
       {
         "document": "bug-tracker.md",
-        "line": 884,
+        "line": 886,
         "level": 3,
         "title": "[BUG-034] スコープ persist=False での実行時バインディングが任意の後続の設定書き込みによって静かに上書きされる"
       }
@@ -4819,7 +4835,7 @@
     "[BUG-035] 設定パネルの select 項目と辞書型フィールドが [object Object] と表示される": [
       {
         "document": "bug-tracker.md",
-        "line": 908,
+        "line": 910,
         "level": 3,
         "title": "[BUG-035] 設定パネルの select 項目と辞書型フィールドが [object Object] と表示される"
       }
@@ -4827,7 +4843,7 @@
     "[BUG-036] 複数インスタンスが共有する設定ディレクトリで設定書き込みが偶発的に失敗する（ENOENT）": [
       {
         "document": "bug-tracker.md",
-        "line": 929,
+        "line": 931,
         "level": 3,
         "title": "[BUG-036] 複数インスタンスが共有する設定ディレクトリで設定書き込みが偶発的に失敗する（ENOENT）"
       }
@@ -4835,7 +4851,7 @@
     "[BUG-037] 空白文字を含むコマンド名で登録されたサブコマンドが決してトリガーされない": [
       {
         "document": "bug-tracker.md",
-        "line": 954,
+        "line": 956,
         "level": 3,
         "title": "[BUG-037] 空白文字を含むコマンド名で登録されたサブコマンドが決してトリガーされない"
       }
@@ -4843,7 +4859,7 @@
     "[BUG-038] persist=False で実行時バインディングが永続化書き込みによってディスクに落とされ、モジュールのアンロード後にディスクから「復活」する": [
       {
         "document": "bug-tracker.md",
-        "line": 977,
+        "line": 979,
         "level": 3,
         "title": "[BUG-038] persist=False で実行時バインディングが永続化書き込みによってディスクに落とされ、モジュールのアンロード後にディスクから「復活」する"
       }
@@ -4851,7 +4867,7 @@
     "[BUG-039] 整節書き込みと点分書き込みが共存する場合の読み書きの不整合（点分覆写が失われる）": [
       {
         "document": "bug-tracker.md",
-        "line": 1001,
+        "line": 1003,
         "level": 3,
         "title": "[BUG-039] 整節書き込みと点分書き込みが共存する場合の読み書きの不整合（点分覆写が失われる）"
       }
@@ -4859,7 +4875,7 @@
     "[BUG-040] プラットフォームがメッセージをセグメントに分割した際、コマンドの末尾引数が静かに失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 1024,
+        "line": 1026,
         "level": 3,
         "title": "[BUG-040] プラットフォームがメッセージをセグメントに分割した際、コマンドの末尾引数が静かに失われる"
       }
@@ -4867,7 +4883,7 @@
     "[BUG-041] 拒否されたコマンドが alt_message 整链で再実行される：重複返信と権限関数の副作用が両方発動する": [
       {
         "document": "bug-tracker.md",
-        "line": 1036,
+        "line": 1038,
         "level": 3,
         "title": "[BUG-041] 拒否されたコマンドが alt_message 整链で再実行される：重複返信と権限関数の副作用が両方発動する"
       }
@@ -4875,7 +4891,7 @@
     "[BUG-042] コマンドハンドラ内で登録された wait_reply が同一条のトリガーメッセージで即座に消費される": [
       {
         "document": "bug-tracker.md",
-        "line": 1048,
+        "line": 1050,
         "level": 3,
         "title": "[BUG-042] コマンドハンドラ内で登録された wait_reply が同一条のトリガーメッセージで即座に消費される"
       }
@@ -4883,7 +4899,7 @@
     "[BUG-043] select() 同キーの複数ルートが後者で前者を静かにキャンセルする": [
       {
         "document": "bug-tracker.md",
-        "line": 1060,
+        "line": 1062,
         "level": 3,
         "title": "[BUG-043] select() 同キーの複数ルートが後者で前者を静かにキャンセルする"
       }
@@ -4891,7 +4907,7 @@
     "[BUG-044] BaseConverter.at() が OB11 の「at」セグメントを生成し、全フレームワークのメンション判定が認識しない": [
       {
         "document": "bug-tracker.md",
-        "line": 1072,
+        "line": 1074,
         "level": 3,
         "title": "[BUG-044] BaseConverter.at() が OB11 の「at」セグメントを生成し、全フレームワークのメンション判定が認識しない"
       }
@@ -4899,7 +4915,7 @@
     "[BUG-045] alt_message が存在しない适配器ではインタラクション原語が永久にタイムアウトし、コマンドが貫通しない": [
       {
         "document": "bug-tracker.md",
-        "line": 1084,
+        "line": 1086,
         "level": 3,
         "title": "[BUG-045] alt_message が存在しない适配器ではインタラクション原語が永久にタイムアウトし、コマンドが貫通しない"
       }
@@ -4907,7 +4923,7 @@
     "[BUG-046] 宣言的設定テンプレートのネストされたサブテーブルヘッダーがトップレベルに漂移する": [
       {
         "document": "bug-tracker.md",
-        "line": 1096,
+        "line": 1098,
         "level": 3,
         "title": "[BUG-046] 宣言的設定テンプレートのネストされたサブテーブルヘッダーがトップレベルに漂移する"
       }
@@ -4915,7 +4931,7 @@
     "[BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを漏らす": [
       {
         "document": "bug-tracker.md",
-        "line": 1110,
+        "line": 1112,
         "level": 3,
         "title": "[BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを漏らす"
       }
@@ -4923,7 +4939,7 @@
     "[BUG-048] 会話受信箱のクエリ API はメッセージの帰属（sender とイベントメタデータ）を失う": [
       {
         "document": "bug-tracker.md",
-        "line": 1122,
+        "line": 1124,
         "level": 3,
         "title": "[BUG-048] 会話受信箱のクエリ API はメッセージの帰属（sender とイベントメタデータ）を失う"
       }
@@ -4931,7 +4947,7 @@
     "[BUG-049] 入力 bot 自発メッセージのエコーが user として記録され、受信箱の帰属を汚染する": [
       {
         "document": "bug-tracker.md",
-        "line": 1135,
+        "line": 1137,
         "level": 3,
         "title": "[BUG-049] 入力 bot 自発メッセージのエコーが user として記録され、受信箱の帰属を汚染する"
       }
@@ -4939,7 +4955,7 @@
     "[BUG-050] コンテナ内で `epsdk restart` を実行するとコンテナが直ちに終了する": [
       {
         "document": "bug-tracker.md",
-        "line": 1148,
+        "line": 1150,
         "level": 3,
         "title": "[BUG-050] コンテナ内で `epsdk restart` を実行するとコンテナが直ちに終了する"
       }
@@ -5184,18 +5200,18 @@
         "title": "delete_message の機能縮退セマンティクス修正"
       }
     ],
-    "detail_type のマッピング": [
+    "detail_type マッピング": [
       {
         "document": "platform-guide/discord.md",
-        "line": 241,
+        "line": 275,
         "level": 3,
-        "title": "detail_type のマッピング"
+        "title": "detail_type マッピング"
       }
     ],
     "discord_embed メッセージセグメント": [
       {
         "document": "platform-guide/discord.md",
-        "line": 340,
+        "line": 384,
         "level": 3,
         "title": "discord_embed メッセージセグメント"
       }
@@ -5427,7 +5443,7 @@
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 321,
+        "line": 327,
         "level": 3,
         "title": "pip 方式"
       }
@@ -5619,7 +5635,7 @@
     "uv tool 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 328,
+        "line": 334,
         "level": 3,
         "title": "uv tool 方式"
       }
@@ -5686,20 +5702,20 @@
         "title": "v5 ファンタジーの更新（4.3.0）"
       }
     ],
+    "v5 ファンタジー更新（4.2.0）": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 98,
+        "level": 2,
+        "title": "v5 ファンタジー更新（4.2.0）"
+      }
+    ],
     "v5 ファンタジー更新（4.4.0）": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 21,
         "level": 2,
         "title": "v5 ファンタジー更新（4.4.0）"
-      }
-    ],
-    "v5 ファンタムの更新（4.2.0）": [
-      {
-        "document": "platform-guide/discord.md",
-        "line": 69,
-        "level": 2,
-        "title": "v5 ファンタムの更新（4.2.0）"
       }
     ],
     "v5 ファンタム更新（4.2.0）": [
@@ -5823,7 +5839,7 @@
     "その他": [
       {
         "document": "README.md",
-        "line": 146,
+        "line": 148,
         "level": 2,
         "title": "その他"
       },
@@ -5854,6 +5870,14 @@
         "line": 184,
         "level": 3,
         "title": "その他のメッセージタイプ"
+      }
+    ],
+    "その他サブシステムの能力（最適化後）": [
+      {
+        "document": "advanced/performance.md",
+        "line": 22,
+        "level": 3,
+        "title": "その他サブシステムの能力（最適化後）"
       }
     ],
     "どちらの宣言を使うべきか": [
@@ -6608,12 +6632,6 @@
     ],
     "イベントタイプのマッピング": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 248,
-        "level": 3,
-        "title": "イベントタイプのマッピング"
-      },
-      {
         "document": "platform-guide/onebot11.md",
         "line": 331,
         "level": 2,
@@ -6621,6 +6639,12 @@
       }
     ],
     "イベントタイプマッピング": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 282,
+        "level": 3,
+        "title": "イベントタイプマッピング"
+      },
       {
         "document": "platform-guide/snowluma.md",
         "line": 344,
@@ -6634,6 +6658,14 @@
         "line": 228,
         "level": 2,
         "title": "イベントタイプ（enable_log_tail = true）"
+      }
+    ],
+    "イベントディスパッチ（ops/s、値が高いほど良い）": [
+      {
+        "document": "advanced/performance.md",
+        "line": 11,
+        "level": 3,
+        "title": "イベントディスパッチ（ops/s、値が高いほど良い）"
       }
     ],
     "イベントデータのアクセス": [
@@ -6918,6 +6950,14 @@
         "title": "イベント変換器"
       }
     ],
+    "イベント変更": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 72,
+        "level": 3,
+        "title": "イベント変更"
+      }
+    ],
     "イベント拡張メソッド": [
       {
         "document": "platform-guide/onebot11.md",
@@ -7163,7 +7203,7 @@
     "エラーコードの説明": [
       {
         "document": "platform-guide/discord.md",
-        "line": 213,
+        "line": 244,
         "level": 3,
         "title": "エラーコードの説明"
       },
@@ -7252,6 +7292,14 @@
         "title": "エラーコード規格"
       }
     ],
+    "エラーコード規格化": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 86,
+        "level": 3,
+        "title": "エラーコード規格化"
+      }
+    ],
     "エラーコード規範": [
       {
         "document": "platform-guide/sandbox.md",
@@ -7322,12 +7370,12 @@
         "title": "エレガントなシャットダウン"
       }
     ],
-    "エントリの登録": [
+    "エントリーの登録": [
       {
         "document": "advanced/router.md",
-        "line": 412,
+        "line": 418,
         "level": 3,
-        "title": "エントリの登録"
+        "title": "エントリーの登録"
       }
     ],
     "エンドツーエンド暗号化（4.3.0）": [
@@ -7688,14 +7736,6 @@
         "line": 24,
         "level": 3,
         "title": "グローバル設定（EmailAdapter）"
-      }
-    ],
-    "ゲートウェイ接続": [
-      {
-        "document": "platform-guide/discord.md",
-        "line": 359,
-        "level": 2,
-        "title": "ゲートウェイ接続"
       }
     ],
     "コア API": [
@@ -8312,12 +8352,12 @@
         "title": "シグナルタイプ"
       }
     ],
-    "システムルーティング": [
+    "システムルート": [
       {
         "document": "advanced/router.md",
-        "line": 387,
+        "line": 393,
         "level": 2,
-        "title": "システムルーティング"
+        "title": "システムルート"
       }
     ],
     "システム絵文字": [
@@ -8342,14 +8382,6 @@
         "line": 583,
         "level": 3,
         "title": "シナリオ別に深く学ぶ"
-      }
-    ],
-    "シナリオ別グループ": [
-      {
-        "document": "advanced/README.md",
-        "line": 17,
-        "level": 2,
-        "title": "シナリオ別グループ"
       }
     ],
     "シナリオ早見表": [
@@ -8544,18 +8576,18 @@
         "title": "セキュリティ"
       }
     ],
-    "セキュリティの推奨事項": [
+    "セキュリティに関する推奨事項": [
       {
         "document": "user-guide/deployment.md",
         "line": 292,
         "level": 2,
-        "title": "セキュリティの推奨事項"
+        "title": "セキュリティに関する推奨事項"
       }
     ],
     "セキュリティヘッダー": [
       {
         "document": "advanced/router.md",
-        "line": 343,
+        "line": 349,
         "level": 2,
         "title": "セキュリティヘッダー"
       }
@@ -8760,6 +8792,14 @@
         "title": "チェーン修飾メソッド（組み合わせ可能）"
       }
     ],
+    "チェーン修飾メソッド（複数使用可能）": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 160,
+        "level": 3,
+        "title": "チェーン修飾メソッド（複数使用可能）"
+      }
+    ],
     "チェーン修飾子メソッド": [
       {
         "document": "platform-guide/minecraft.md",
@@ -8809,6 +8849,12 @@
       }
     ],
     "チェーン呼び出しの例": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 168,
+        "level": 3,
+        "title": "チェーン呼び出しの例"
+      },
       {
         "document": "platform-guide/ideaura.md",
         "line": 115,
@@ -8862,12 +8908,6 @@
     ],
     "チェーン式修飾メソッド（組み合わせて使用可能）": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 129,
-        "level": 3,
-        "title": "チェーン式修飾メソッド（組み合わせて使用可能）"
-      },
-      {
         "document": "platform-guide/onebot11.md",
         "line": 199,
         "level": 3,
@@ -8875,12 +8915,6 @@
       }
     ],
     "チェーン式呼び出しの例": [
-      {
-        "document": "platform-guide/discord.md",
-        "line": 137,
-        "level": 3,
-        "title": "チェーン式呼び出しの例"
-      },
       {
         "document": "platform-guide/onebot11.md",
         "line": 207,
@@ -8899,7 +8933,7 @@
     "チャンネルメッセージの処理": [
       {
         "document": "platform-guide/discord.md",
-        "line": 401,
+        "line": 445,
         "level": 3,
         "title": "チャンネルメッセージの処理"
       },
@@ -8924,6 +8958,14 @@
         "line": 274,
         "level": 3,
         "title": "チャンネル（Guild）"
+      }
+    ],
+    "チューニングのポイント": [
+      {
+        "document": "advanced/performance.md",
+        "line": 58,
+        "level": 2,
+        "title": "チューニングのポイント"
       }
     ],
     "ツールメソッド": [
@@ -9071,7 +9113,7 @@
     "デコレータルーティング（推奨）": [
       {
         "document": "advanced/router.md",
-        "line": 38,
+        "line": 40,
         "level": 2,
         "title": "デコレータルーティング（推奨）"
       }
@@ -9451,7 +9493,7 @@
     "ハートビートメカニズム": [
       {
         "document": "platform-guide/discord.md",
-        "line": 392,
+        "line": 436,
         "level": 3,
         "title": "ハートビートメカニズム"
       },
@@ -9489,7 +9531,7 @@
     "バックアップ": [
       {
         "document": "user-guide/deployment.md",
-        "line": 352,
+        "line": 358,
         "level": 3,
         "title": "バックアップ"
       }
@@ -9537,7 +9579,7 @@
     "パス処理": [
       {
         "document": "advanced/router.md",
-        "line": 374,
+        "line": 380,
         "level": 2,
         "title": "パス処理"
       }
@@ -9556,6 +9598,14 @@
         "line": 12,
         "level": 2,
         "title": "パッケージ管理コマンド"
+      }
+    ],
+    "パフォーマンスベンチマークとチューニング": [
+      {
+        "document": "advanced/performance.md",
+        "line": 1,
+        "level": 1,
+        "title": "パフォーマンスベンチマークとチューニング"
       }
     ],
     "パフォーマンス最適化": [
@@ -9743,7 +9793,7 @@
     "プライベートメッセージの処理": [
       {
         "document": "platform-guide/discord.md",
-        "line": 421,
+        "line": 465,
         "level": 3,
         "title": "プライベートメッセージの処理"
       },
@@ -9773,7 +9823,7 @@
     "プライベートメッセージ送信": [
       {
         "document": "platform-guide/discord.md",
-        "line": 174,
+        "line": 205,
         "level": 3,
         "title": "プライベートメッセージ送信"
       }
@@ -10099,7 +10149,7 @@
     "ヘルスチェック": [
       {
         "document": "advanced/router.md",
-        "line": 391,
+        "line": 397,
         "level": 3,
         "title": "ヘルスチェック"
       },
@@ -10113,17 +10163,31 @@
     "ヘルプの入手": [
       {
         "document": "README.md",
-        "line": 152,
+        "line": 154,
         "level": 2,
         "title": "ヘルプの入手"
       }
     ],
     "ベストプラクティス": [
       {
+        "document": "advanced/router.md",
+        "line": 467,
+        "level": 2,
+        "title": "ベストプラクティス"
+      },
+      {
         "document": "developer-guide/adapters/converter.md",
         "line": 393,
         "level": 2,
         "title": "ベストプラクティス"
+      }
+    ],
+    "ベンチマークの実行とリグレッション比較": [
+      {
+        "document": "advanced/performance.md",
+        "line": 39,
+        "level": 2,
+        "title": "ベンチマークの実行とリグレッション比較"
       }
     ],
     "ホットアップデートの内部構造分解": [
@@ -10150,20 +10214,12 @@
         "title": "ホットリロード失敗時のロールバック"
       }
     ],
-    "ホームエントリ": [
+    "ホームエントリー": [
       {
         "document": "advanced/router.md",
-        "line": 408,
+        "line": 414,
         "level": 2,
-        "title": "ホームエントリ"
-      }
-    ],
-    "ホームページ": [
-      {
-        "document": "advanced/router.md",
-        "line": 399,
-        "level": 3,
-        "title": "ホームページ"
+        "title": "ホームエントリー"
       }
     ],
     "ボタンインタラクションの処理": [
@@ -10207,7 +10263,7 @@
     "ボタン（keyboard / components）": [
       {
         "document": "platform-guide/discord.md",
-        "line": 97,
+        "line": 127,
         "level": 3,
         "title": "ボタン（keyboard / components）"
       }
@@ -10322,14 +10378,6 @@
         "line": 456,
         "level": 3,
         "title": "マルチアカウント送信構文"
-      }
-    ],
-    "マルチインスタンスデプロイ": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 301,
-        "level": 2,
-        "title": "マルチインスタンスデプロイ"
       }
     ],
     "ミドルウェア": [
@@ -10683,7 +10731,7 @@
     "メッセージセグメントタイプ": [
       {
         "document": "platform-guide/discord.md",
-        "line": 323,
+        "line": 367,
         "level": 3,
         "title": "メッセージセグメントタイプ"
       },
@@ -10773,7 +10821,7 @@
     "メッセージ操作": [
       {
         "document": "platform-guide/discord.md",
-        "line": 184,
+        "line": 215,
         "level": 3,
         "title": "メッセージ操作"
       }
@@ -11450,14 +11498,6 @@
         "title": "ライフサイクルの全体像"
       }
     ],
-    "ライフサイクルの統合": [
-      {
-        "document": "advanced/router.md",
-        "line": 447,
-        "level": 2,
-        "title": "ライフサイクルの統合"
-      }
-    ],
     "ライフサイクルイベント": [
       {
         "document": "advanced/client.md",
@@ -11514,6 +11554,14 @@
         "line": 1,
         "level": 1,
         "title": "ライフサイクル管理"
+      }
+    ],
+    "ライフサイクル統合": [
+      {
+        "document": "advanced/router.md",
+        "line": 453,
+        "level": 2,
+        "title": "ライフサイクル統合"
       }
     ],
     "ラグジュアリーなモジュールと呼び出し": [
@@ -11594,14 +11642,6 @@
         "title": "リクエストイベントの処理（4.3.1から）"
       }
     ],
-    "リクエストイベントの変換": [
-      {
-        "document": "standards/request-action-spec.md",
-        "line": 487,
-        "level": 3,
-        "title": "リクエストイベントの変換"
-      }
-    ],
     "リクエストイベントメソッド": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -11626,6 +11666,14 @@
         "title": "リクエストイベント処理（Request stub）"
       }
     ],
+    "リクエストイベント変換": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 515,
+        "level": 3,
+        "title": "リクエストイベント変換"
+      }
+    ],
     "リクエストコンテキストの保持（5.3.2 以降）": [
       {
         "document": "platform-guide/qqbot.md",
@@ -11634,12 +11682,12 @@
         "title": "リクエストコンテキストの保持（5.3.2 以降）"
       }
     ],
-    "リクエストタイプコンテキストの保持（異種エンドポイントプラットフォーム、§5.3 参照）": [
+    "リクエストタイプコンテキスト保持（異質なエンドポイントプラットフォーム、§5.3参照）": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 500,
+        "line": 528,
         "level": 3,
-        "title": "リクエストタイプコンテキストの保持（異種エンドポイントプラットフォーム、§5.3 参照）"
+        "title": "リクエストタイプコンテキスト保持（異質なエンドポイントプラットフォーム、§5.3参照）"
       }
     ],
     "リクエストタイプ判定": [
@@ -11691,7 +11739,7 @@
       },
       {
         "document": "standards/request-action-spec.md",
-        "line": 493,
+        "line": 521,
         "level": 3,
         "title": "リクエスト操作"
       }
@@ -11743,7 +11791,7 @@
     "リクエスト関連 ID（X-Request-ID）": [
       {
         "document": "advanced/router.md",
-        "line": 283,
+        "line": 289,
         "level": 2,
         "title": "リクエスト関連 ID（X-Request-ID）"
       }
@@ -11868,14 +11916,6 @@
         "title": "リンク制御：認領とブロック"
       }
     ],
-    "ルーティンググループ": [
-      {
-        "document": "advanced/router.md",
-        "line": 249,
-        "level": 2,
-        "title": "ルーティンググループ"
-      }
-    ],
     "ルーティングサーバー": [
       {
         "document": "advanced/startup.md",
@@ -11892,12 +11932,12 @@
         "title": "ルーティングマネージャー"
       }
     ],
-    "ルーティングミドルウェア": [
+    "ルートグループ": [
       {
         "document": "advanced/router.md",
-        "line": 266,
+        "line": 255,
         "level": 2,
-        "title": "ルーティングミドルウェア"
+        "title": "ルートグループ"
       }
     ],
     "ルートディスカバリー": [
@@ -11906,6 +11946,22 @@
         "line": 629,
         "level": 4,
         "title": "ルートディスカバリー"
+      }
+    ],
+    "ルートページ": [
+      {
+        "document": "advanced/router.md",
+        "line": 405,
+        "level": 3,
+        "title": "ルートページ"
+      }
+    ],
+    "ルートミドルウェア": [
+      {
+        "document": "advanced/router.md",
+        "line": 272,
+        "level": 2,
+        "title": "ルートミドルウェア"
       }
     ],
     "ループ対話": [
@@ -11972,12 +12028,12 @@
         "title": "レスポンスの送信"
       }
     ],
-    "レスポンス返却の約束事（2.10+）": [
+    "レスポンス返却の規約（2.10+）": [
       {
         "document": "advanced/router.md",
-        "line": 89,
+        "line": 91,
         "level": 4,
-        "title": "レスポンス返却の約束事（2.10+）"
+        "title": "レスポンス返却の規約（2.10+）"
       }
     ],
     "レプライが一致する完全な判定チェーン": [
@@ -12023,7 +12079,7 @@
     "レート制限": [
       {
         "document": "advanced/router.md",
-        "line": 308,
+        "line": 314,
         "level": 2,
         "title": "レート制限"
       }
@@ -12294,12 +12350,12 @@
         "title": "一般的タスクの例"
       }
     ],
-    "三、原理を深く理解したい": [
+    "三、仕組みを深く理解したい": [
       {
         "document": "README.md",
         "line": 56,
         "level": 3,
-        "title": "三、原理を深く理解したい"
+        "title": "三、仕組みを深く理解したい"
       }
     ],
     "並列と逐次": [
@@ -12377,17 +12433,9 @@
     "五、ErisPulse に貢献したい": [
       {
         "document": "README.md",
-        "line": 116,
+        "line": 117,
         "level": 3,
         "title": "五、ErisPulse に貢献したい"
-      }
-    ],
-    "交互イベントの処理": [
-      {
-        "document": "platform-guide/discord.md",
-        "line": 474,
-        "level": 3,
-        "title": "交互イベントの処理"
       }
     ],
     "交互会話システム": [
@@ -12486,14 +12534,6 @@
         "title": "会話受信箱設定（transcript）"
       }
     ],
-    "伝統的な登録方法": [
-      {
-        "document": "advanced/router.md",
-        "line": 158,
-        "level": 2,
-        "title": "伝統的な登録方法"
-      }
-    ],
     "低レベルメソッド": [
       {
         "document": "advanced/client.md",
@@ -12521,7 +12561,7 @@
     "使用例": [
       {
         "document": "platform-guide/discord.md",
-        "line": 399,
+        "line": 443,
         "level": 2,
         "title": "使用例"
       },
@@ -12685,7 +12725,7 @@
     "修正済みのバグ": [
       {
         "document": "bug-tracker.md",
-        "line": 114,
+        "line": 116,
         "level": 2,
         "title": "修正済みのバグ"
       }
@@ -12958,6 +12998,14 @@
         "title": "分岐とジャンプ"
       }
     ],
+    "切断再接続と RESUME": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 428,
+        "level": 3,
+        "title": "切断再接続と RESUME"
+      }
+    ],
     "切断時の再接続": [
       {
         "document": "platform-guide/qqbot.md",
@@ -13039,7 +13087,7 @@
     "前提知識": [
       {
         "document": "advanced/README.md",
-        "line": 65,
+        "line": 69,
         "level": 2,
         "title": "前提知識"
       }
@@ -13349,7 +13397,7 @@
     "四、エコシステムと公式クライアント": [
       {
         "document": "README.md",
-        "line": 102,
+        "line": 103,
         "level": 3,
         "title": "四、エコシステムと公式クライアント"
       }
@@ -13511,7 +13559,7 @@
       },
       {
         "document": "platform-guide/discord.md",
-        "line": 13,
+        "line": 14,
         "level": 2,
         "title": "基本情報"
       },
@@ -13741,7 +13789,7 @@
     "基本要件": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 484,
+        "line": 512,
         "level": 3,
         "title": "基本要件"
       }
@@ -13804,6 +13852,14 @@
         "title": "基礎的な送信メソッド"
       }
     ],
+    "場面別グループ分け": [
+      {
+        "document": "advanced/README.md",
+        "line": 17,
+        "level": 2,
+        "title": "場面別グループ分け"
+      }
+    ],
     "変換フロー": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -13856,6 +13912,14 @@
         "line": 453,
         "level": 3,
         "title": "多アカウント送信の構文"
+      }
+    ],
+    "多インスタンスデプロイ": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 304,
+        "level": 2,
+        "title": "多インスタンスデプロイ"
       }
     ],
     "多プラットフォーム対応": [
@@ -13962,14 +14026,6 @@
         "title": "学習パスの続き"
       }
     ],
-    "学習パスを選ぶ": [
-      {
-        "document": "README.md",
-        "line": 9,
-        "level": 2,
-        "title": "学習パスを選ぶ"
-      }
-    ],
     "完全なAPIリファレンス": [
       {
         "document": "advanced/lifecycle.md",
@@ -14064,6 +14120,14 @@
         "title": "定期タスク"
       }
     ],
+    "実測ベンチマーク（2026-10-05、Python 3.13.14）": [
+      {
+        "document": "advanced/performance.md",
+        "line": 6,
+        "level": 2,
+        "title": "実測ベンチマーク（2026-10-05、Python 3.13.14）"
+      }
+    ],
     "実行モード": [
       {
         "document": "platform-guide/telegram.md",
@@ -14107,7 +14171,7 @@
     "実行時ホットリロードサーバー設定": [
       {
         "document": "user-guide/deployment.md",
-        "line": 338,
+        "line": 344,
         "level": 3,
         "title": "実行時ホットリロードサーバー設定"
       }
@@ -14342,6 +14406,14 @@
         "title": "対話の作成"
       }
     ],
+    "対話イベントの処理": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 518,
+        "level": 3,
+        "title": "対話イベントの処理"
+      }
+    ],
     "対話処理": [
       {
         "document": "getting-started/event-handling.md",
@@ -14356,14 +14428,6 @@
         "line": 651,
         "level": 2,
         "title": "対話式インストール"
-      }
-    ],
-    "対象読者": [
-      {
-        "document": "advanced/README.md",
-        "line": 57,
-        "level": 2,
-        "title": "対象読者"
       }
     ],
     "導入": [
@@ -14472,6 +14536,14 @@
         "line": 61,
         "level": 3,
         "title": "待ちとコマンドの境界（コマンド透過）"
+      }
+    ],
+    "従来の登録方式": [
+      {
+        "document": "advanced/router.md",
+        "line": 164,
+        "level": 2,
+        "title": "従来の登録方式"
       }
     ],
     "復元は即座に引き継ぎ": [
@@ -14729,7 +14801,7 @@
     "抽象型": [
       {
         "document": "advanced/router.md",
-        "line": 25,
+        "line": 26,
         "level": 2,
         "title": "抽象型"
       }
@@ -14769,7 +14841,7 @@
     "拡張フィールド": [
       {
         "document": "platform-guide/discord.md",
-        "line": 233,
+        "line": 266,
         "level": 3,
         "title": "拡張フィールド"
       },
@@ -14885,7 +14957,7 @@
     "接続の自動登録（接続プール、2.10+）": [
       {
         "document": "advanced/router.md",
-        "line": 152,
+        "line": 157,
         "level": 3,
         "title": "接続の自動登録（接続プール、2.10+）"
       }
@@ -14917,7 +14989,7 @@
     "接続フロー": [
       {
         "document": "platform-guide/discord.md",
-        "line": 361,
+        "line": 405,
         "level": 3,
         "title": "接続フロー"
       },
@@ -15055,7 +15127,7 @@
     "支援されるメッセージ送信タイプ": [
       {
         "document": "platform-guide/discord.md",
-        "line": 108,
+        "line": 138,
         "level": 2,
         "title": "支援されるメッセージ送信タイプ"
       },
@@ -15116,14 +15188,6 @@
         "line": 411,
         "level": 3,
         "title": "断線再接続"
-      }
-    ],
-    "断線時の再接続と RESUME": [
-      {
-        "document": "platform-guide/discord.md",
-        "line": 384,
-        "level": 3,
-        "title": "断線時の再接続と RESUME"
       }
     ],
     "新機能：元のイベントタイプフィールド": [
@@ -15281,7 +15345,7 @@
     "更新とメンテナンス": [
       {
         "document": "user-guide/deployment.md",
-        "line": 309,
+        "line": 315,
         "level": 2,
         "title": "更新とメンテナンス"
       }
@@ -15352,14 +15416,6 @@
         "line": 548,
         "level": 2,
         "title": "最適な実践"
-      }
-    ],
-    "最適な実践方法": [
-      {
-        "document": "advanced/router.md",
-        "line": 461,
-        "level": 2,
-        "title": "最適な実践方法"
       }
     ],
     "未対応（エンドポイントは既知、full.proto メッセージは完全、必要に応じて拡張可能）": [
@@ -15445,7 +15501,7 @@
     "核心的な違い": [
       {
         "document": "platform-guide/discord.md",
-        "line": 225,
+        "line": 258,
         "level": 3,
         "title": "核心的な違い"
       },
@@ -15531,7 +15587,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 8,
+        "line": 9,
         "level": 2,
         "title": "概要"
       },
@@ -15582,12 +15638,12 @@
         "title": "標準 API アクション（Api）"
       }
     ],
-    "標準 Api アクション": [
+    "標準 Api 動作": [
       {
         "document": "platform-guide/discord.md",
-        "line": 80,
+        "line": 109,
         "level": 3,
-        "title": "標準 Api アクション"
+        "title": "標準 Api 動作"
       }
     ],
     "標準 OB12 マッピング": [
@@ -15926,6 +15982,14 @@
         "title": "標準化対応（4.3.3）"
       }
     ],
+    "標準化対応（4.4.3）": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 70,
+        "level": 2,
+        "title": "標準化対応（4.4.3）"
+      }
+    ],
     "標準化対応（4.6.2）": [
       {
         "document": "platform-guide/yunhu.md",
@@ -16175,7 +16239,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 363,
+        "line": 369,
         "level": 2,
         "title": "次のステップ"
       },
@@ -16308,6 +16372,12 @@
     ],
     "特有のイベントタイプ": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 254,
+        "level": 2,
+        "title": "特有のイベントタイプ"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 187,
         "level": 2,
@@ -16334,12 +16404,6 @@
     ],
     "特有イベントタイプ": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 221,
-        "level": 2,
-        "title": "特有イベントタイプ"
-      },
-      {
         "document": "platform-guide/wecom.md",
         "line": 200,
         "level": 2,
@@ -16365,7 +16429,7 @@
     "特殊フィールドの例": [
       {
         "document": "platform-guide/discord.md",
-        "line": 264,
+        "line": 303,
         "level": 3,
         "title": "特殊フィールドの例"
       },
@@ -16526,12 +16590,12 @@
         "title": "登録タイミング → 帰属結果の対応表"
       }
     ],
-    "登録形態：単引数（推奨）と二引数": [
+    "登録形式：単一引数（推奨）と二引数": [
       {
         "document": "advanced/router.md",
-        "line": 40,
+        "line": 42,
         "level": 3,
-        "title": "登録形態：単引数（推奨）と二引数"
+        "title": "登録形式：単一引数（推奨）と二引数"
       }
     ],
     "登録済みメソッドの照会": [
@@ -16792,6 +16856,14 @@
         "title": "能力の境界"
       }
     ],
+    "自分に合ったパスを選ぶ": [
+      {
+        "document": "README.md",
+        "line": 9,
+        "level": 2,
+        "title": "自分に合ったパスを選ぶ"
+      }
+    ],
     "自分のモジュール / アダプターを書きたい": [
       {
         "document": "quick-start.md",
@@ -16827,7 +16899,7 @@
     "自動ドキュメント": [
       {
         "document": "advanced/router.md",
-        "line": 358,
+        "line": 364,
         "level": 2,
         "title": "自動ドキュメント"
       }
@@ -17128,12 +17200,6 @@
     ],
     "設定の説明": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 23,
-        "level": 2,
-        "title": "設定の説明"
-      },
-      {
         "document": "platform-guide/ideaura.md",
         "line": 452,
         "level": 3,
@@ -17340,6 +17406,12 @@
         "title": "設定説明"
       },
       {
+        "document": "platform-guide/discord.md",
+        "line": 24,
+        "level": 2,
+        "title": "設定説明"
+      },
+      {
         "document": "platform-guide/email.md",
         "line": 22,
         "level": 2,
@@ -17478,6 +17550,14 @@
         "title": "起動と停止"
       }
     ],
+    "起動時間": [
+      {
+        "document": "advanced/performance.md",
+        "line": 31,
+        "level": 3,
+        "title": "起動時間"
+      }
+    ],
     "転送メッセージセグメント (ideaura_forwarded)": [
       {
         "document": "platform-guide/ideaura.md",
@@ -17605,7 +17685,7 @@
     "送信メソッドの戻り値": [
       {
         "document": "platform-guide/discord.md",
-        "line": 198,
+        "line": 229,
         "level": 2,
         "title": "送信メソッドの戻り値"
       },
@@ -17912,6 +17992,14 @@
         "title": "適用シナリオ"
       }
     ],
+    "適用対象": [
+      {
+        "document": "advanced/README.md",
+        "line": 61,
+        "level": 2,
+        "title": "適用対象"
+      }
+    ],
     "選定ガイド": [
       {
         "document": "showcase/README.md",
@@ -17992,14 +18080,6 @@
         "title": "開発の準備"
       }
     ],
-    "開発スタイル": [
-      {
-        "document": "README.md",
-        "line": 139,
-        "level": 2,
-        "title": "開発スタイル"
-      }
-    ],
     "開発タイプの選択": [
       {
         "document": "developer-guide/README.md",
@@ -18030,6 +18110,14 @@
         "line": 167,
         "level": 2,
         "title": "開発モードでのテスト"
+      }
+    ],
+    "開発方式": [
+      {
+        "document": "README.md",
+        "line": 141,
+        "level": 2,
+        "title": "開発方式"
       }
     ],
     "開発方法の選択": [
@@ -18118,8 +18206,14 @@
         "title": "関連ドキュメント"
       },
       {
+        "document": "advanced/performance.md",
+        "line": 66,
+        "level": 2,
+        "title": "関連ドキュメント"
+      },
+      {
         "document": "advanced/router.md",
-        "line": 471,
+        "line": 477,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -18241,7 +18335,7 @@
     "関連リンク": [
       {
         "document": "README.md",
-        "line": 158,
+        "line": 160,
         "level": 2,
         "title": "関連リンク"
       },
@@ -18393,7 +18487,7 @@
     "高度な機能のバージョン早見表": [
       {
         "document": "README.md",
-        "line": 127,
+        "line": 128,
         "level": 2,
         "title": "高度な機能のバージョン早見表"
       }

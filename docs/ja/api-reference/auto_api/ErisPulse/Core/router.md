@@ -1080,6 +1080,21 @@ async def users(request):
 ---
 
 
+##### `_rate_limit_client_ip(request: Request) -> str`
+
+限流键客户端地址
+
+默认取直连地址（``request.client.host``）；配置
+``ErisPulse.router.rate_limit_trust_proxy`` 为 true 后取
+``X-Forwarded-For`` 首个地址（仅在可信反向代理后启用，避免伪造）。
+
+- **request**: 请求对象
+
+**返回值** (`str`): 用于限流键的客户端地址
+
+---
+
+
 ##### `_apply_rate_limit(full_path: str, limit: str | dict)`
 
 为路由应用限流

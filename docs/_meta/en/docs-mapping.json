@@ -422,7 +422,7 @@
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
       "icon": "fa-fire",
-      "count": 19,
+      "count": 20,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -523,6 +523,12 @@
         {
           "title": "Connection Pools and Broadcasting",
           "path": "advanced/connections.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "Performance Benchmarking and Tuning",
+          "path": "advanced/performance.md",
           "level": 1,
           "icon": "fa-fire"
         },

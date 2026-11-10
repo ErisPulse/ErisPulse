@@ -422,7 +422,7 @@
     "Продвинутые темы": {
       "description": "Глубокое изучение продвинутых функций фреймворка",
       "icon": "fa-fire",
-      "count": 19,
+      "count": 20,
       "documents": [
         {
           "title": "Продвинутые темы",
@@ -523,6 +523,12 @@
         {
           "title": "Пул соединений и широковещательная рассылка",
           "path": "advanced/connections.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "Производительность, тестирование и оптимизация",
+          "path": "advanced/performance.md",
           "level": 1,
           "icon": "fa-fire"
         },

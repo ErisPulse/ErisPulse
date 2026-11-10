@@ -1,8 +1,8 @@
 # ErisPulse 文件
 
-ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式碼只寫一次，透過適配器部署到 QQ、Telegram、Kook、雲湖等多個平台，插件系統、熱重載與完整的開發者工具鏈開箱即用。
+ErisPulse 是事件驅動的模組化異步機器人框架——業務程式碼只寫一次，透過適配器部署到 QQ、Telegram、Kook、雲湖等多個平台，插件系統、熱重載與完整開發者工具鏈開箱即用。
 
-> **第一次使用？** 直接看 [5 分鐘快速入門](docs/zh-TW/quick-start.md) —— 從安裝到執行第一個機器人，一氣呵成。
+> **第一次使用？** 直接看 [5 分鐘快速入門](quick-start.md) —— 從安裝到運行第一個機器人，一氣呵成。
 
 ---
 
@@ -27,18 +27,18 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 
 ### 一、我要使用機器人
 
-讓機器人跑起來、安裝模組、做配置。
+讓機器人跑起來、裝模組、做配置。
 
 | 進度 | 文件 | 說明 |
 |------|------|------|
-| **① 上手** | [5 分鐘快速開始](quick-start.md) | 安裝、初始化、運行 —— 唯一的起步入口 |
-| App 直裝 | [ErisPulse-App 客戶端](ecosystem/app.md) | 官方全平台客戶端：手機 / 電腦圖形界面直接運行與管理，免終端 |
+| **① 上手** | [5 分鐘快速入門](quick-start.md) | 安裝、初始化、運行 —— 唯一的起步入口 |
+| App 直裝 | [ErisPulse-App 客戶端](ecosystem/app.md) | 官方全平台客戶端：手機 / 電腦圖形介面直接運行與管理，免終端 |
 | ② 深入 | [建立第一個機器人](getting-started/first-bot.md) | 編寫第一個命令處理器 |
 | ③ 概念 | [基礎概念](getting-started/basic-concepts.md) | 理解適配器/模組/事件的設計 |
 | ④ 實戰 | [常見任務示例](getting-started/common-tasks.md) | 存儲、定時任務、權限控制 |
 | 參考 | [配置文件說明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md) | 按需查閱 |
 | 參考 | [平台特性指南](platform-guide/README.md) | 各平台（雲湖/QQ/Telegram…）的差異 |
-| 選型 | [選型指南](showcase/README.md) | 和 NoneBot2 / AstrBot / LangBot 的對比與遷移 |
+| 選型 | [選型指南](showcase/README.md) | 和 NoneBot2 / AstrBot / LangBot 的比較與遷移 |
 
 ### 二、我要開發模組 / 適配器
 
@@ -52,7 +52,7 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 | **測試與排查** | [模組測試（ErisPulse-Testing）](developer-guide/testing.md) | 分發決策鏈排查"命令為什麼沒觸發" |
 | **發布** | [發布與模組商店](developer-guide/publishing.md) | 將作品發布到 PyPI 和模組商店 |
 
-### 三、我要深入了解原理
+### 三、我要深入理解原理
 
 了解框架內部如何運作。先看架構與 API 參考，再按下面對照表進入專題。
 
@@ -60,7 +60,7 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 
 | 文件 | 說明 |
 |------|------|
-| [架構概覽](architecture.md) | 可視化圖表：核心架構、初始化流程、事件處理、生命週期、模組加載策略（含 `activate_on` 事件驅動懶加載）、本地插件文件夾與模組熱重載架構（支援全部模組來源） |
+| [架構概覽](architecture.md) | 可視化圖表：核心架構、初始化流程、事件處理、生命週期、模組加載策略（含 `activate_on` 事件驅動懶激活）、本地插件文件夾與模組熱重載架構（支援全部模組來源） |
 | [事件系統](api-reference/event-system.md) | 五大類事件的完整 API |
 | [適配器系統](api-reference/adapter-system.md) | 適配器註冊、啟停、API 調用 |
 | [核心模組](api-reference/core-modules.md) | Storage / Config / Logger / Router 等基礎能力 |
@@ -72,7 +72,7 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 | [作用域（scope）](advanced/scope.md) | 三維作用域控制：模組可用性 / 事件准入 / 出站動作限制（含方法級細粒度規則、綁定繼承 merge） |
 | [歸屬權（owner）系統](advanced/ownership.md) | 資源歸屬與自動回收：owner 上下文、歸屬資源全景、卸載清理序列、設計邊界與模組作者指南 |
 | [生命週期管理](advanced/lifecycle.md) | 生命週期事件系統：模組 / 適配器加載、卸載、重載、禁用時各自該做什麼 |
-| [交互會話系統](advanced/interaction.md) | wait_reply 全解、會話定時器（remind/escalate）、多路等待（select）、會話互斥租約、收件箱、消息事務、鏈路追蹤 |
+| [互動會話系統](advanced/interaction.md) | wait_reply 全解、會話定時器（remind/escalate）、多路等待（select）、會話互斥租約、收件箱、消息事務、鏈路追蹤 |
 
 **按場景分組（按需查閱）**
 
@@ -80,8 +80,9 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 |------|------|------|
 | 運行啟動 | [啟動流程與手動控制](advanced/startup.md) · [懶加載](advanced/lazy-loading.md) | 不懂啟動鏈路（Finder / Loader / Manager / Router），模組加載失敗時只能對著日誌干瞪眼 |
 | 通信連接 | [模組間通信](advanced/module-communication.md) · [連接池與廣播](advanced/connections.md) · [路由系統](advanced/router.md) | 不懂服務契約（`meta.services`）白名單，跨模組 `module.call` 會被 `ServiceNotProvidedError` 拒絕且不知原因 |
-| 數據存儲 | [存儲後端](advanced/storage-backends.md) · [SQL 構建](advanced/sql-builder.md) · [網路客戶端](advanced/client.md) | 不懂連接失敗冷卻期語義，數據庫抖動時會誤判"框架掛了"（實際是存儲操作快速失敗、冷卻後自動重連） |
+| 數據存儲 | [存儲後端](advanced/storage-backends.md) · [SQL 建構](advanced/sql-builder.md) · [網路客戶端](advanced/client.md) | 不懂連接失敗冷卻期語義，資料庫抖動時會誤判"框架掛了"（實際是存儲操作快速失敗、冷卻後自動重連） |
 | 消息對話 | [Conversation 多輪對話](advanced/conversation.md) · [會話收件箱](advanced/transcript.md) · [MessageBuilder](advanced/message-builder.md) · [國際化](advanced/i18n.md) | 不懂會話互斥租約，兩個模組同時等同一用戶的回覆會互相踢掉 |
+| 性能觀測 | [性能基準與調優](advanced/performance.md) | 部署前不看基準數字，容量規劃全靠猜；升級後不做回歸對比，性能退化發現不了 |
 | 灰度影子 | [影子模組與灰度轉正](advanced/shadow.md) | 不懂五道隔離閘就提前轉正，影子的出站消息會外溢到真實用戶 |
 
 **概念關係總表**
@@ -94,8 +95,8 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 | [權限](advanced/scope.md)（scope） | 誰能用這個模組、誰能觸發事件、能執行哪些動作？ | 三道閘——模組綁定、身份准入、出站限制，全部由用戶配置說了算 |
 | [歸屬](advanced/ownership.md)（ownership） | 模組卸載後，它開的連接、定時器、訂閱去哪了？ | 誰註冊誰歸屬，卸載即回收，不留懸掛資源 |
 | [懶加載與休眠](advanced/lazy-loading.md)（lazy-loading） | 模組什麼時候才真正加載、閒置後去哪？ | `activate_on` 用到才醒，`dormant_after` 閒置歸眠 |
-| [交互](advanced/interaction.md)（interaction） | 怎麼等用戶下一條回覆、多輪收集怎麼寫？ | `wait_reply` 等一條、`.got()` 鏈收多輪，租約保證不打架 |
-| [影子灰度](advanced/shadow.md)（shadow） | 新版模組怎麼在不影響線上的情況下試運行？ | 影子收副本、出站只記賬，`promote` 由人確認才轉正 |
+| [互動](advanced/interaction.md)（interaction） | 怎麼等用戶下一條回覆、多輪收集怎麼寫？ | `wait_reply` 等一條、`.got()` 鏈收多輪，租約保證不打架 |
+| [影子灰度](advanced/shadow.md)（shadow） | 新版模組怎麼在不妨礙線上的情況下試運行？ | 影子收副本、出站只記賬，`promote` 由人確認才轉正 |
 | [存儲](advanced/storage-backends.md)（storage-backends） | 數據存哪、後端怎麼換？ | 同一套存儲 API，sqlite / mysql / postgres 配置切換 |
 
 ### 四、生態與官方客戶端
@@ -107,10 +108,10 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 | [生態總覽](ecosystem/README.md) | 如何安裝生態模組、為什麼這些不是內建功能 |
 | [ErisPulse-QvQChat](ecosystem/qvqchat.md) | 通用智能體模組：工具循環 / MCP / 長期記憶 / 知識庫，聲明服務的模組自動成為 AI 工具 |
 | [ErisPulse-ApiMCP](ecosystem/apimcp.md) | 把機器人反向開放為 MCP 工具，讓 Claude 等 AI 客戶端直接操控 |
-| [ErisPulse-App](ecosystem/app.md) | 官方全平台客戶端（Android / Windows / Linux / macOS）：原生界面管理多個實例，**手機直接運行**，桌面托盤常駐 |
-| [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web 管理面板 + 視窗註冊 API（模組可向側邊欄註冊自定義頁面） |
+| [ErisPulse-App](ecosystem/app.md) | 官方全平台客戶端（Android / Windows / Linux / macOS）：原生介面管理多個實例，**手機直接運行**，桌面托盤常駐 |
+| [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web 管理介面 + 視窗註冊 API（模組可向側邊欄註冊自定義頁面） |
 | [ErisPulse-Cron](ecosystem/cron.md) | 定時任務調度模組：一次性 / 間隔 / Cron 表達式，回調傳參，SQLite 持久化，其他模組可托管定時回調 |
-| [ErisPulse-Takumi](ecosystem/takumi.md) | 圖片渲染（HTML / 節點樹 / SVG / 動畫，內置中英文字體） |
+| [ErisPulse-Takumi](ecosystem/takumi.md) | 圖片渲染（HTML / 節點樹 / SVG / 動畫，內置中英文字型） |
 
 ### 五、我要為 ErisPulse 貢獻
 
@@ -122,37 +123,37 @@ ErisPulse 是事件驅動的模組化非同步機器人框架——業務程式�
 | [首次貢獻](contributing/first-contribution.md) | 從 fork 到提交 PR |
 
 ---
-[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
 ## 高級特性版本速查表
 
-在進行版本相容性判斷，或接手舊項目時想要知道「這個功能是哪個版本引入的」，可依照此表對號入座（以倉庫根目錄 [CHANGELOG.md](https://github.com/ErisPulse/ErisPulse/blob/main/CHANGELOG.md) 各版本條目為準）。
+做版本兼容判斷、或接手舊專案想知道"這個能力是哪個版本引入的"時，按此表對號入座（以倉庫根 [CHANGELOG.md](https://github.com/ErisPulse/ErisPulse/blob/main/CHANGELOG.md) 各版本條目為準）。
 
-| 版本 | 引入的功能 |
+| 版本 | 引入的能力 |
 |------|-----------|
-| **2.7** | 生產化基座：OneBot12 標準化基類（`ApiDSL` / `BaseConverter`）、配置熱更新系統化、優雅關閉與 SIGTERM/SIGHUP 信號處理、環境變數配置覆蓋、生命週期回調鉤子、Web 栈懶加載；2.7.1 修補配置寫入可靠性和 GC 分代治理 |
-| **2.8** | 權限與通信骨架：作用域三維體系（scope）、交互會話基礎設施（租約 / 檢查點 / 消息事務 / 會話收件箱 transcript）、模組間 RPC 協議化（`module.call` / `meta.services` 服務契約 / 定向事件 emit(to=)）、多後端異步存儲（sqlite / mysql / postgres，連接失敗不阻塞框架）、歸屬權清理、配置註釋保留；2.8.x 後續版本為 CLI 腳手架、子命令等打磨 |
-| **2.9** | 「模組開發體驗」主線（EPRFC-2026-001）：宣告式命令參數（`args=` / `options=`）與命令治理（`cooldown=` / `rate_limit=`）、統一依賴注入（`Depends`）、中間件事件否決權、內建 ORM（自動遷移 + 關係映射）、影子模組灰度轉正、分發決策鏈追蹤與排查診斷、正式支援 Python 3.14 |
-| **2.10** | 連接一等資源（`connections` 註冊表：廣播 / 業務分組 / 跨模組傳遞複用 / 卸載自動回收）、根導入契約（常用 API 全部可 `from ErisPulse import`）、歸屬權體系補全、收件箱保留策略執行時覆蓋；2.10.2 適配器本地插件目錄（`plugins/`）+ `epsdk create pack` + tomlclass 無損配置寫入 |
+| **2.7** | 生產化基座：OneBot12 標準化基類（`ApiDSL` / `BaseConverter`）、配置熱更新系統化、優雅關閉與 SIGTERM/SIGHUP 信號處理、環境變數配置覆蓋、生命週期回調鉤子、Web 棧懶加載；2.7.1 補配置寫入可靠性與 GC 分代治理 |
+| **2.8** | 權限與通信骨架：作用域三維體系（scope）、互動會話基礎設施（租約 / 檢查點 / 消息事務 / 會話收件箱 transcript）、模組間 RPC 協議化（`module.call` / `meta.services` 服務契約 / 定向事件 emit(to=)）、多後端異步存儲（sqlite / mysql / postgres，連接失敗不阻塞框架）、歸屬權清理、配置註釋保留；2.8.x 後續版本為 CLI 腳手架、子命令等打磨 |
+| **2.9** | 「模組開發體驗」主線（EPRFC-2026-001）：聲明式命令參數（`args=` / `options=`）與命令治理（`cooldown=` / `rate_limit=`）、統一依賴注入（`Depends`）、中間件事件否決權、內建 ORM（自動遷移 + 關係映射）、影子模組灰度轉正、分發決策鏈追蹤與排查診斷、正式支援 Python 3.14 |
+| **2.10** | 連接一等資源（`connections` 註冊表：廣播 / 業務分組 / 跨模組傳遞複用 / 卸載自動回收）、根導入契約（常用 API 全部可 `from ErisPulse import`）、歸屬權體系補全、收件箱保留策略運行時覆蓋；2.10.2 適配器本地插件目錄（`plugins/`）+ `epsdk create pack` + tomlclass 無損配置寫入 |
 | **2.11**（dev） | 「改代碼 → 看效果」開發閉環：熱重載預設全量語義（語法預檢 + 代碼身份核對 + 依賴者級聯重導）、懶加載休眠（`dormant_after`）、適配器代碼級熱重載（`sdk.adapter.reload`）、`.got()` 命令流語法糖、`epsdk stop` / `restart` 運行時控制 |
+| **2.12**（dev） | 生命週期治理與可運維性：嵌套生命週期（`ownership.nest()`）、細粒度熱重載（單模組/單適配器判定，框架源碼變更走進程重啟）、後台任務待發隊列、事件分發鏈帳戶自動綁定（`send_context` / `api_context` / `request_context` 同口徑，多帳戶模組零改動）、跨帳戶重複受理關聯（`framework.cross_account_policy`）、影子模組 whl 攝取與持久化轉正閉環、容器內 `epsdk restart` 進程內軟重啟、`SendDSL.Location()` |
 
 ## 開發方式
 
 ErisPulse 支援兩種開發方式：
 
-- **模組開發（推薦）**：建立獨立的模組套件，透過套件管理工具安裝，便於分發與管理。
-- **內嵌式開發**：直接在專案中編寫處理器，適合快速原型。詳見 [快速入門](docs/zh-TW/quick-start.md)。
+- **模組開發（推薦）**：建立獨立的模組包，透過包管理器安裝，便於分發和管理。
+- **嵌入式開發**：直接在專案中編寫處理器，適合快速原型。詳見 [快速入門](quick-start.md)。
 
 ## 其他
 
 - [文件風格指南](styleguide/docstring.md) — 貢獻文件時的寫作規範
-- [為 ErisPulse 貢獻](contributing/README.md) — 參與項目共建的入口
+- [為 ErisPulse 貢獻](contributing/README.md) — 參與專案共建的入口
 - [AI 輔助開發](ai-support/README.md) — 獲取供 AI 編程助手使用的專案提示詞
 
 ## 獲取幫助
 
 - GitHub 倉庫：[https://github.com/ErisPulse/ErisPulse](https://github.com/ErisPulse/ErisPulse)
-- 問題回報：提交 Issue
+- 問題反饋：提交 Issue
 - 技術討論：查看 Discussions
 
 ## 相關連結

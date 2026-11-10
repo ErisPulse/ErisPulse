@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1923,
+  "total_keywords": 1930,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1853,25 +1853,25 @@
     "5.3.3 统一条目字段（介质无关）": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 311,
+        "line": 312,
         "level": 4,
         "title": "5.3.3 统一条目字段（介质无关）"
       }
     ],
-    "5.3.4 参考实现（内存缓存）": [
+    "5.3.4 参考实现（统一存储单键快照，默认）": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 330,
+        "line": 331,
         "level": 4,
-        "title": "5.3.4 参考实现（内存缓存）"
+        "title": "5.3.4 参考实现（统一存储单键快照，默认）"
       }
     ],
-    "5.3.5 跨重启持久化（可选）": [
+    "5.3.5 边界与降级": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 428,
+        "line": 472,
         "level": 4,
-        "title": "5.3.5 跨重启持久化（可选）"
+        "title": "5.3.5 边界与降级"
       }
     ],
     "5.4 select 下拉选择（预留）": [
@@ -1885,7 +1885,7 @@
     "5.4 平台不支持请求操作": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 451,
+        "line": 480,
         "level": 3,
         "title": "5.4 平台不支持请求操作"
       }
@@ -1909,7 +1909,7 @@
     "5.5 总结：Send 与 Request 并行": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 459,
+        "line": 488,
         "level": 3,
         "title": "5.5 总结：Send 与 Request 并行"
       }
@@ -1917,7 +1917,7 @@
     "5.6 适配器 `__init__` 注意事项": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 477,
+        "line": 506,
         "level": 3,
         "title": "5.6 适配器 `__init__` 注意事项"
       }
@@ -1997,7 +1997,7 @@
     "6. 适配器实现检查清单": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 481,
+        "line": 510,
         "level": 2,
         "title": "6. 适配器实现检查清单"
       }
@@ -2197,7 +2197,7 @@
     "7. 错误码扩展": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 508,
+        "line": 538,
         "level": 2,
         "title": "7. 错误码扩展"
       }
@@ -2285,7 +2285,7 @@
     "8. 相关文档": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 525,
+        "line": 556,
         "level": 2,
         "title": "8. 相关文档"
       },
@@ -2777,7 +2777,7 @@
     "CORS 配置": [
       {
         "document": "advanced/router.md",
-        "line": 327,
+        "line": 330,
         "level": 2,
         "title": "CORS 配置"
       }
@@ -2873,7 +2873,7 @@
     "Dashboard 自动注册": [
       {
         "document": "advanced/router.md",
-        "line": 446,
+        "line": 449,
         "level": 3,
         "title": "Dashboard 自动注册"
       }
@@ -2905,7 +2905,7 @@
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 314,
+        "line": 322,
         "level": 3,
         "title": "Docker 方式"
       }
@@ -4131,7 +4131,7 @@
     "WebSocket 注册": [
       {
         "document": "advanced/router.md",
-        "line": 187,
+        "line": 190,
         "level": 3,
         "title": "WebSocket 注册"
       }
@@ -4139,7 +4139,7 @@
     "WebSocket 生命周期钩子": [
       {
         "document": "advanced/router.md",
-        "line": 228,
+        "line": 231,
         "level": 2,
         "title": "WebSocket 生命周期钩子"
       }
@@ -5069,7 +5069,7 @@
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 324,
+        "line": 332,
         "level": 3,
         "title": "pip 方式"
       }
@@ -5251,7 +5251,7 @@
     "uv tool 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 331,
+        "line": 339,
         "level": 3,
         "title": "uv tool 方式"
       }
@@ -5669,7 +5669,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 367,
+        "line": 375,
         "level": 2,
         "title": "下一步"
       },
@@ -5941,7 +5941,7 @@
     "主页入口": [
       {
         "document": "advanced/router.md",
-        "line": 411,
+        "line": 414,
         "level": 2,
         "title": "主页入口"
       }
@@ -5996,6 +5996,14 @@
         "line": 193,
         "level": 4,
         "title": "事件分发机制"
+      }
+    ],
+    "事件分发（ops/s，越高越好）": [
+      {
+        "document": "advanced/performance.md",
+        "line": 11,
+        "level": 3,
+        "title": "事件分发（ops/s，越高越好）"
       }
     ],
     "事件参数": [
@@ -6535,7 +6543,7 @@
     "五、我要为 ErisPulse 贡献": [
       {
         "document": "README.md",
-        "line": 115,
+        "line": 116,
         "level": 3,
         "title": "五、我要为 ErisPulse 贡献"
       }
@@ -6779,7 +6787,7 @@
     "传统注册方式": [
       {
         "document": "advanced/router.md",
-        "line": 161,
+        "line": 164,
         "level": 2,
         "title": "传统注册方式"
       }
@@ -7099,7 +7107,7 @@
     "健康检查": [
       {
         "document": "advanced/router.md",
-        "line": 394,
+        "line": 397,
         "level": 3,
         "title": "健康检查"
       },
@@ -7279,7 +7287,7 @@
     "其他": [
       {
         "document": "README.md",
-        "line": 145,
+        "line": 147,
         "level": 2,
         "title": "其他"
       },
@@ -7302,6 +7310,14 @@
         "line": 182,
         "level": 3,
         "title": "其他消息类型"
+      }
+    ],
+    "其它子系统能力（优化后）": [
+      {
+        "document": "advanced/performance.md",
+        "line": 22,
+        "level": 3,
+        "title": "其它子系统能力（优化后）"
       }
     ],
     "典型流程模式": [
@@ -7675,7 +7691,7 @@
     "前置知识": [
       {
         "document": "advanced/README.md",
-        "line": 67,
+        "line": 71,
         "level": 2,
         "title": "前置知识"
       }
@@ -8452,6 +8468,14 @@
         "title": "启动流程与手动控制"
       }
     ],
+    "启动耗时": [
+      {
+        "document": "advanced/performance.md",
+        "line": 31,
+        "level": 3,
+        "title": "启动耗时"
+      }
+    ],
     "启动适配器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8661,7 +8685,7 @@
     "四、生态与官方客户端": [
       {
         "document": "README.md",
-        "line": 101,
+        "line": 102,
         "level": 3,
         "title": "四、生态与官方客户端"
       }
@@ -9219,7 +9243,7 @@
     "基础要求": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 483,
+        "line": 512,
         "level": 3,
         "title": "基础要求"
       }
@@ -9427,7 +9451,7 @@
     "备份": [
       {
         "document": "user-guide/deployment.md",
-        "line": 356,
+        "line": 364,
         "level": 3,
         "title": "备份"
       }
@@ -9475,7 +9499,7 @@
     "多实例部署": [
       {
         "document": "user-guide/deployment.md",
-        "line": 304,
+        "line": 307,
         "level": 2,
         "title": "多实例部署"
       }
@@ -9883,7 +9907,7 @@
     "安全头": [
       {
         "document": "advanced/router.md",
-        "line": 346,
+        "line": 349,
         "level": 2,
         "title": "安全头"
       }
@@ -10100,6 +10124,14 @@
         "line": 77,
         "level": 2,
         "title": "定时任务"
+      }
+    ],
+    "实测基准（2026-10-05，Python 3.13.14）": [
+      {
+        "document": "advanced/performance.md",
+        "line": 6,
+        "level": 2,
+        "title": "实测基准（2026-10-05，Python 3.13.14）"
       }
     ],
     "实现层面深入": [
@@ -10797,7 +10829,7 @@
     "开发方式": [
       {
         "document": "README.md",
-        "line": 138,
+        "line": 140,
         "level": 2,
         "title": "开发方式"
       }
@@ -11184,6 +11216,14 @@
         "line": 387,
         "level": 2,
         "title": "性能优化"
+      }
+    ],
+    "性能基准与调优": [
+      {
+        "document": "advanced/performance.md",
+        "line": 1,
+        "level": 1,
+        "title": "性能基准与调优"
       }
     ],
     "总结": [
@@ -12409,7 +12449,7 @@
     "更新与维护": [
       {
         "document": "user-guide/deployment.md",
-        "line": 312,
+        "line": 320,
         "level": 2,
         "title": "更新与维护"
       }
@@ -12459,7 +12499,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 464,
+        "line": 467,
         "level": 2,
         "title": "最佳实践"
       },
@@ -13247,7 +13287,7 @@
     "根页面": [
       {
         "document": "advanced/router.md",
-        "line": 402,
+        "line": 405,
         "level": 3,
         "title": "根页面"
       }
@@ -13635,7 +13675,7 @@
     "注册入口": [
       {
         "document": "advanced/router.md",
-        "line": 415,
+        "line": 418,
         "level": 3,
         "title": "注册入口"
       }
@@ -14581,7 +14621,7 @@
     "生命周期集成": [
       {
         "document": "advanced/router.md",
-        "line": 450,
+        "line": 453,
         "level": 2,
         "title": "生命周期集成"
       }
@@ -14822,8 +14862,14 @@
         "title": "相关文档"
       },
       {
+        "document": "advanced/performance.md",
+        "line": 66,
+        "level": 2,
+        "title": "相关文档"
+      },
+      {
         "document": "advanced/router.md",
-        "line": 474,
+        "line": 477,
         "level": 2,
         "title": "相关文档"
       },
@@ -14945,7 +14991,7 @@
     "相关链接": [
       {
         "document": "README.md",
-        "line": 157,
+        "line": 159,
         "level": 2,
         "title": "相关链接"
       },
@@ -15227,7 +15273,7 @@
     "系统路由": [
       {
         "document": "advanced/router.md",
-        "line": 390,
+        "line": 393,
         "level": 2,
         "title": "系统路由"
       }
@@ -15517,7 +15563,7 @@
     "自动文档": [
       {
         "document": "advanced/router.md",
-        "line": 361,
+        "line": 364,
         "level": 2,
         "title": "自动文档"
       }
@@ -15602,6 +15648,14 @@
         "title": "自定义默认头"
       }
     ],
+    "自跑基准与回归对比": [
+      {
+        "document": "advanced/performance.md",
+        "line": 39,
+        "level": 2,
+        "title": "自跑基准与回归对比"
+      }
+    ],
     "节点树示例": [
       {
         "document": "ecosystem/takumi.md",
@@ -15637,7 +15691,7 @@
     "获取帮助": [
       {
         "document": "README.md",
-        "line": 151,
+        "line": 153,
         "level": 2,
         "title": "获取帮助"
       }
@@ -15969,7 +16023,7 @@
     "请求事件转换": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 486,
+        "line": 515,
         "level": 3,
         "title": "请求事件转换"
       }
@@ -15985,7 +16039,7 @@
     "请求关联 ID（X-Request-ID）": [
       {
         "document": "advanced/router.md",
-        "line": 286,
+        "line": 289,
         "level": 2,
         "title": "请求关联 ID（X-Request-ID）"
       }
@@ -16007,7 +16061,7 @@
       },
       {
         "document": "standards/request-action-spec.md",
-        "line": 492,
+        "line": 521,
         "level": 3,
         "title": "请求操作"
       }
@@ -16059,7 +16113,7 @@
     "请求类型上下文留存（异构端点平台，见 §5.3）": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 499,
+        "line": 528,
         "level": 3,
         "title": "请求类型上下文留存（异构端点平台，见 §5.3）"
       }
@@ -16078,6 +16132,14 @@
         "line": 234,
         "level": 2,
         "title": "请求统计"
+      }
+    ],
+    "调优要点": [
+      {
+        "document": "advanced/performance.md",
+        "line": 58,
+        "level": 2,
+        "title": "调优要点"
       }
     ],
     "调试技巧": [
@@ -16337,7 +16399,7 @@
     "路径处理": [
       {
         "document": "advanced/router.md",
-        "line": 377,
+        "line": 380,
         "level": 2,
         "title": "路径处理"
       }
@@ -16345,7 +16407,7 @@
     "路由中间件": [
       {
         "document": "advanced/router.md",
-        "line": 269,
+        "line": 272,
         "level": 2,
         "title": "路由中间件"
       }
@@ -16353,7 +16415,7 @@
     "路由分组": [
       {
         "document": "advanced/router.md",
-        "line": 252,
+        "line": 255,
         "level": 2,
         "title": "路由分组"
       }
@@ -16481,7 +16543,7 @@
     "运行时热重载服务器配置": [
       {
         "document": "user-guide/deployment.md",
-        "line": 341,
+        "line": 349,
         "level": 3,
         "title": "运行时热重载服务器配置"
       }
@@ -16697,7 +16759,7 @@
     "连接自动登记（连接池，2.10+）": [
       {
         "document": "advanced/router.md",
-        "line": 154,
+        "line": 157,
         "level": 3,
         "title": "连接自动登记（连接池，2.10+）"
       }
@@ -16729,7 +16791,7 @@
     "适用对象": [
       {
         "document": "advanced/README.md",
-        "line": 59,
+        "line": 63,
         "level": 2,
         "title": "适用对象"
       }
@@ -17147,7 +17209,7 @@
     "速率限制": [
       {
         "document": "advanced/router.md",
-        "line": 311,
+        "line": 314,
         "level": 2,
         "title": "速率限制"
       }
@@ -18129,7 +18191,7 @@
     "高级特性版本速查表": [
       {
         "document": "README.md",
-        "line": 126,
+        "line": 127,
         "level": 2,
         "title": "高级特性版本速查表"
       }

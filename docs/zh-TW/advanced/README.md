@@ -16,7 +16,7 @@
 - [生命週期管理](lifecycle.md) - 生命週期事件系統：模組 / 轉接器載入、卸載、重載、停用時各自該做什麼
 - [互動會話系統](interaction.md) - wait_reply / 會話定時器 / 多路等待 / 會話互斥租約 / 收件匣 / 訊息事務 / 鏈路追蹤
 
-## 依場景分組
+## 按場景分組
 
 與文件首頁「深入理解原理」的分組口徑一致，每組首篇標註「不懂會踩什麼坑」。
 
@@ -25,15 +25,15 @@
 - [啟動流程與手動控制](startup.md) - 啟動鏈路拆解（Finder/Loader/Manager/Router）與手動完整啟動
 - [懶載入系統](lazy-loading.md) - 懶載入模組系統的工作原理、設定與事件驅動懶啟用（activate_on）
 
-**通訊連線** —— 不懂服務契約（`meta.services`）白名單，跨模組 `module.call` 會被 `ServiceNotProvidedError` 拒絕且不知原因
+**通訊連接** —— 不懂服務契約（`meta.services`）白名單，跨模組 `module.call` 會被 `ServiceNotProvidedError` 拒絕且不知原因
 
 - [模組間通訊](module-communication.md) - RPC 協定化（module.call）、服務契約與目錄、定向事件、冷啟動回放、事件冪等去重
-- [連線池與廣播](connections.md) - 連線註冊表：廣播、分組訂閱、跨模組傳遞與複用、連線池查看
+- [連接池與廣播](connections.md) - 連接註冊表：廣播、分組訂閱、跨模組傳遞與複用、連接池查看
 - [路由管理器](router.md) - HTTP 和 WebSocket 路由管理（含單參註冊、元組回應約定）
 
 **資料儲存** —— 不懂連線失敗冷卻期語意，資料庫抖動時會誤判「框架掛了」（實際是快速失敗、冷卻後自動重連）
 
-- [儲存後端](storage-backends.md) - sqlite / mysql / postgres 非同步原生儲存後端的選擇、設定與切換
+- [儲存後端](storage-backends.md) - sqlite / mysql / postgres 非同步原生存儲後端的選擇、設定與切換
 - [SQL 查詢建構器](sql-builder.md) - 通用 SQL 鏈式查詢建構器及儲存後端抽象
 - [網路客戶端](client.md) - 統一 HTTP 請求客戶端
 
@@ -48,9 +48,13 @@
 
 - [影子模組與灰度轉正](shadow.md) - 模組新版本獨立 owner 並行試運行：出站攔截記帳、行為 diff 對比、promote 轉正與失敗回滾
 
-**例外與規範參考**
+**效能與觀測** —— 出問題只會重啟、不看指標，等於盲飛
 
-- [例外體系與捕捉指南](errors.md) - 框架全部例外類型、發生位置與捕捉建議
+- [效能基準與調校](performance.md) - 實測基準數字（含 NoneBot2 對照）、基準自跑與回歸對比方法、調校要點
+
+**異常與規範參考**
+
+- [異常體系與捕獲指南](errors.md) - 框架全部異常類型、發生位置與捕獲建議
 - [會話類型系統](../standards/session-types.md) - 會話類型定義、映射與自訂類型註冊
 
 > [!NOTE]

@@ -422,7 +422,7 @@
     "高级主题": {
       "description": "深入理解框架的高级特性",
       "icon": "fa-fire",
-      "count": 19,
+      "count": 20,
       "documents": [
         {
           "title": "高级主题",
@@ -523,6 +523,12 @@
         {
           "title": "连接池与广播",
           "path": "advanced/connections.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "性能基准与调优",
+          "path": "advanced/performance.md",
           "level": 1,
           "icon": "fa-fire"
         },

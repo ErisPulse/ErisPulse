@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2438,
+  "total_keywords": 2448,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -1050,10 +1050,18 @@
         "title": "[ErisPulse.runtime.memory](ErisPulse/runtime/memory.md)"
       }
     ],
-    "[ErisPulse.runtime.owner_cleanup](ErisPulse/runtime/owner_cleanup.md)": [
+    "[ErisPulse.runtime.metrics](ErisPulse/runtime/metrics.md)": [
       {
         "document": "api-reference/auto_api/README.md",
         "line": 682,
+        "level": 3,
+        "title": "[ErisPulse.runtime.metrics](ErisPulse/runtime/metrics.md)"
+      }
+    ],
+    "[ErisPulse.runtime.owner_cleanup](ErisPulse/runtime/owner_cleanup.md)": [
+      {
+        "document": "api-reference/auto_api/README.md",
+        "line": 687,
         "level": 3,
         "title": "[ErisPulse.runtime.owner_cleanup](ErisPulse/runtime/owner_cleanup.md)"
       }
@@ -1061,7 +1069,7 @@
     "[ErisPulse.runtime.plugin_reload](ErisPulse/runtime/plugin_reload.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 687,
+        "line": 692,
         "level": 3,
         "title": "[ErisPulse.runtime.plugin_reload](ErisPulse/runtime/plugin_reload.md)"
       }
@@ -1069,7 +1077,7 @@
     "[ErisPulse.runtime.proactive_gc](ErisPulse/runtime/proactive_gc.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 692,
+        "line": 697,
         "level": 3,
         "title": "[ErisPulse.runtime.proactive_gc](ErisPulse/runtime/proactive_gc.md)"
       }
@@ -1077,7 +1085,7 @@
     "[ErisPulse.runtime.process_state](ErisPulse/runtime/process_state.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 697,
+        "line": 702,
         "level": 3,
         "title": "[ErisPulse.runtime.process_state](ErisPulse/runtime/process_state.md)"
       }
@@ -1085,7 +1093,7 @@
     "[ErisPulse.runtime.reload_ops](ErisPulse/runtime/reload_ops.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 702,
+        "line": 707,
         "level": 3,
         "title": "[ErisPulse.runtime.reload_ops](ErisPulse/runtime/reload_ops.md)"
       }
@@ -1093,7 +1101,7 @@
     "[ErisPulse.runtime.reload_target](ErisPulse/runtime/reload_target.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 707,
+        "line": 712,
         "level": 3,
         "title": "[ErisPulse.runtime.reload_target](ErisPulse/runtime/reload_target.md)"
       }
@@ -1101,7 +1109,7 @@
     "[ErisPulse.runtime.resource_track](ErisPulse/runtime/resource_track.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 712,
+        "line": 717,
         "level": 3,
         "title": "[ErisPulse.runtime.resource_track](ErisPulse/runtime/resource_track.md)"
       }
@@ -1109,7 +1117,7 @@
     "[ErisPulse.runtime.sdk_initializer](ErisPulse/runtime/sdk_initializer.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 717,
+        "line": 722,
         "level": 3,
         "title": "[ErisPulse.runtime.sdk_initializer](ErisPulse/runtime/sdk_initializer.md)"
       }
@@ -1117,7 +1125,7 @@
     "[ErisPulse.runtime.tasks](ErisPulse/runtime/tasks.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 722,
+        "line": 727,
         "level": 3,
         "title": "[ErisPulse.runtime.tasks](ErisPulse/runtime/tasks.md)"
       }
@@ -1125,7 +1133,7 @@
     "[ErisPulse.runtime.troubleshoot](ErisPulse/runtime/troubleshoot.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 727,
+        "line": 732,
         "level": 3,
         "title": "[ErisPulse.runtime.troubleshoot](ErisPulse/runtime/troubleshoot.md)"
       }
@@ -1133,7 +1141,7 @@
     "[ErisPulse.runtime.version](ErisPulse/runtime/version.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 732,
+        "line": 737,
         "level": 3,
         "title": "[ErisPulse.runtime.version](ErisPulse/runtime/version.md)"
       }
@@ -1141,7 +1149,7 @@
     "[ErisPulse.sdk](ErisPulse/sdk.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 737,
+        "line": 742,
         "level": 3,
         "title": "[ErisPulse.sdk](ErisPulse/sdk.md)"
       }
@@ -2296,6 +2304,14 @@
         "line": 1,
         "level": 1,
         "title": "`ErisPulse.runtime.memory` 模块"
+      }
+    ],
+    "`ErisPulse.runtime.metrics` 模块": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/metrics.md",
+        "line": 1,
+        "level": 1,
+        "title": "`ErisPulse.runtime.metrics` 模块"
       }
     ],
     "`ErisPulse.runtime.owner_cleanup` 模块": [
@@ -3549,7 +3565,7 @@
     "`_apply_config()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1168,
+        "line": 1183,
         "level": 5,
         "title": "`_apply_config()`"
       }
@@ -3589,7 +3605,7 @@
     "`_apply_rate_limit(full_path: str, limit: str | dict)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1083,
+        "line": 1098,
         "level": 5,
         "title": "`_apply_rate_limit(full_path: str, limit: str | dict)`"
       }
@@ -3629,7 +3645,7 @@
     "`_attempt_fixes(fix_context: dict)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/doctor.md",
-        "line": 86,
+        "line": 99,
         "level": 5,
         "title": "`_attempt_fixes(fix_context: dict)`"
       }
@@ -3765,7 +3781,7 @@
     "`_build_ssl_context_from_pem(cert_pem: str, key_pem: str)`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1202,
+        "line": 1217,
         "level": 5,
         "title": "`_build_ssl_context_from_pem(cert_pem: str, key_pem: str)`（staticmethod）"
       }
@@ -3899,7 +3915,7 @@
     "`_check_port_available(host: str, port: int) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1329,
+        "line": 1344,
         "level": 5,
         "title": "`_check_port_available(host: str, port: int) -> None`"
       }
@@ -3963,7 +3979,7 @@
     "`_cleanup_expired_rate_limits() -> int`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1363,
+        "line": 1378,
         "level": 5,
         "title": "`_cleanup_expired_rate_limits() -> int`"
       }
@@ -4467,7 +4483,7 @@
     "`_create_uvicorn_server(config: uvicorn.Config) -> tuple[uvicorn.Server, Callable[[], Any]]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1218,
+        "line": 1233,
         "level": 5,
         "title": "`_create_uvicorn_server(config: uvicorn.Config) -> tuple[uvicorn.Server, Callable[[], Any]]`"
       }
@@ -5181,7 +5197,7 @@
     "`_fix_config_pollution(pollution: 'list[tuple[str, str, str]]') -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/doctor.md",
-        "line": 67,
+        "line": 80,
         "level": 5,
         "title": "`_fix_config_pollution(pollution: 'list[tuple[str, str, str]]') -> None`"
       }
@@ -5241,7 +5257,7 @@
     "`_format_display_url(url: str) -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1382,
+        "line": 1397,
         "level": 5,
         "title": "`_format_display_url(url: str) -> str`"
       }
@@ -5485,7 +5501,7 @@
     "`_get_local_ips() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1193,
+        "line": 1208,
         "level": 5,
         "title": "`_get_local_ips() -> None`"
       }
@@ -6819,7 +6835,7 @@
     "`_on_router_config_changed(_data: dict) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1177,
+        "line": 1192,
         "level": 5,
         "title": "`_on_router_config_changed(_data: dict) -> None`"
       }
@@ -6883,7 +6899,7 @@
     "`_parse_rate_limit(limit: str | dict) -> tuple[int, int]`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1092,
+        "line": 1107,
         "level": 5,
         "title": "`_parse_rate_limit(limit: str | dict) -> tuple[int, int]`（staticmethod）"
       }
@@ -7107,7 +7123,7 @@
     "`_print_report(rows: list, failed: bool)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/doctor.md",
-        "line": 76,
+        "line": 89,
         "level": 5,
         "title": "`_print_report(rows: list, failed: bool)`"
       }
@@ -7222,6 +7238,14 @@
         "line": 752,
         "level": 5,
         "title": "`_quote_key_segment(segment: str) -> str`（staticmethod）"
+      }
+    ],
+    "`_rate_limit_client_ip(request: Request) -> str`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/router.md",
+        "line": 1083,
+        "level": 5,
+        "title": "`_rate_limit_client_ip(request: Request) -> str`"
       }
     ],
     "`_rate_limits -> dict[str, deque]`（property）": [
@@ -7771,7 +7795,7 @@
     "`_resolve_python_chain() -> 'list[tuple[str, str]]'`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/doctor.md",
-        "line": 100,
+        "line": 113,
         "level": 5,
         "title": "`_resolve_python_chain() -> 'list[tuple[str, str]]'`"
       }
@@ -8043,7 +8067,7 @@
     "`_scan_config_pollution(config_path: Path) -> 'list[tuple[str, str, str]]'`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/doctor.md",
-        "line": 48,
+        "line": 61,
         "level": 5,
         "title": "`_scan_config_pollution(config_path: Path) -> 'list[tuple[str, str, str]]'`"
       }
@@ -8102,6 +8126,14 @@
         "line": 28,
         "level": 3,
         "title": "`_scope_key(kind: str, event: Any) -> str`"
+      }
+    ],
+    "`_security_rows(config_path: Path) -> 'list[tuple[str, str, str]]'`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/commands/doctor.md",
+        "line": 48,
+        "level": 5,
+        "title": "`_security_rows(config_path: Path) -> 'list[tuple[str, str, str]]'`"
       }
     ],
     "`_select_from_version_list(versions, include_pre: bool = False) -> str | None`": [
@@ -8347,7 +8379,7 @@
     "`_start_rate_limit_cleanup() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1345,
+        "line": 1360,
         "level": 5,
         "title": "`_start_rate_limit_cleanup() -> None`"
       }
@@ -8387,7 +8419,7 @@
     "`_status(ok: bool) -> str`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/doctor.md",
-        "line": 120,
+        "line": 133,
         "level": 5,
         "title": "`_status(ok: bool) -> str`（staticmethod）"
       }
@@ -8419,7 +8451,7 @@
     "`_stop_rate_limit_cleanup() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1355,
+        "line": 1370,
         "level": 5,
         "title": "`_stop_rate_limit_cleanup() -> None`"
       }
@@ -8659,7 +8691,7 @@
     "`_uv_project_rows() -> 'list[tuple[str, str, str]]'`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/doctor.md",
-        "line": 110,
+        "line": 123,
         "level": 5,
         "title": "`_uv_project_rows() -> 'list[tuple[str, str, str]]'`"
       }
@@ -9813,7 +9845,7 @@
     "`async _launch_uvicorn(params: dict[str, Any]) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1282,
+        "line": 1297,
         "level": 5,
         "title": "`async _launch_uvicorn(params: dict[str, Any]) -> bool`"
       }
@@ -10223,7 +10255,7 @@
     "`async _stop_uvicorn_listener() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1270,
+        "line": 1285,
         "level": 5,
         "title": "`async _stop_uvicorn_listener() -> None`"
       }
@@ -11641,7 +11673,7 @@
     "`async reload(host: str | None = None, port: int | None = None, ssl_certfile: str | None = None, ssl_keyfile: str | None = None, *, ssl_cert: str | None = None, ssl_key: str | None = None) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1299,
+        "line": 1314,
         "level": 5,
         "title": "`async reload(host: str | None = None, port: int | None = None, ssl_certfile: str | None = None, ssl_keyfile: str | None = None, *, ssl_cert: str | None = None, ssl_key: str | None = None) -> bool`"
       }
@@ -12041,7 +12073,7 @@
     "`async start(host: str = DEFAULT_SERVER_HOST, port: int = DEFAULT_SERVER_PORT, ssl_certfile: str | None = None, ssl_keyfile: str | None = None, *, ssl_cert: str | None = None, ssl_key: str | None = None) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1243,
+        "line": 1258,
         "level": 5,
         "title": "`async start(host: str = DEFAULT_SERVER_HOST, port: int = DEFAULT_SERVER_PORT, ssl_certfile: str | None = None, ssl_keyfile: str | None = None, *, ssl_cert: str | None = None, ssl_key: str | None = None) -> None`"
       }
@@ -12065,7 +12097,7 @@
     "`async stop() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1375,
+        "line": 1390,
         "level": 5,
         "title": "`async stop() -> None`"
       }
@@ -13296,6 +13328,14 @@
         "line": 21,
         "level": 3,
         "title": "`class MetaHandler`"
+      }
+    ],
+    "`class MetricsRegistry`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/metrics.md",
+        "line": 24,
+        "level": 3,
+        "title": "`class MetricsRegistry`"
       }
     ],
     "`class Model`": [
@@ -14921,7 +14961,7 @@
     "`disable_docs() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1145,
+        "line": 1160,
         "level": 5,
         "title": "`disable_docs() -> None`"
       }
@@ -15613,7 +15653,7 @@
     "`get_app() -> FastAPI`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1184,
+        "line": 1199,
         "level": 5,
         "title": "`get_app() -> FastAPI`"
       }
@@ -16810,6 +16850,14 @@
         "title": "`in_(values: list | tuple) -> Condition`"
       }
     ],
+    "`inc(name: str, amount: int = 1) -> None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/metrics.md",
+        "line": 32,
+        "level": 5,
+        "title": "`inc(name: str, amount: int = 1) -> None`"
+      }
+    ],
     "`increment_lang_hint() -> int`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/i18n/__init__.md",
@@ -16902,6 +16950,14 @@
         "line": 599,
         "level": 5,
         "title": "`install_package(package_names: list[str], upgrade: bool = False, pre: bool = False, extra_pip_args: list[str] | None = None) -> bool`"
+      }
+    ],
+    "`instance_id -> str`（property）": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/metrics.md",
+        "line": 51,
+        "level": 5,
+        "title": "`instance_id -> str`（property）"
       }
     ],
     "`interactive_select_table(title_text: str, items: list[Any], columns: list, row_builder, page_size: int | None = None) -> list[Any]`": [
@@ -19012,6 +19068,14 @@
         "title": "`render_full_example(adapter_list = None, st = None) -> str`"
       }
     ],
+    "`render_prometheus(prefix: str = 'erispulse') -> str`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/metrics.md",
+        "line": 65,
+        "level": 5,
+        "title": "`render_prometheus(prefix: str = 'erispulse') -> str`"
+      }
+    ],
     "`render_root_page(version: str, sub_text: str, docs_link: str, community_link: str, entries: list[dict[str, str]] | None = None) -> str`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/assets/__init__.md",
@@ -19113,7 +19177,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/client.md",
-        "line": 489,
+        "line": 491,
         "level": 5,
         "title": "`reset_stats() -> None`"
       },
@@ -19453,7 +19517,7 @@
     "`set_docs_info(title: str | None = None, description: str | None = None) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1158,
+        "line": 1173,
         "level": 5,
         "title": "`set_docs_info(title: str | None = None, description: str | None = None) -> None`"
       }
@@ -19619,7 +19683,7 @@
     "`setup_cors(allow_origins: list[str] | None = None, allow_methods: list[str] | None = None, allow_headers: list[str] | None = None, allow_credentials: bool = False, max_age: int = DEFAULT_CORS_MAX_AGE_SECS, expose_headers: list[str] | None = None) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1105,
+        "line": 1120,
         "level": 5,
         "title": "`setup_cors(allow_origins: list[str] | None = None, allow_methods: list[str] | None = None, allow_headers: list[str] | None = None, allow_credentials: bool = False, max_age: int = DEFAULT_CORS_MAX_AGE_SECS, expose_headers: list[str] | None = None) -> None`"
       }
@@ -19635,7 +19699,7 @@
     "`setup_security_headers(headers: dict[str, str] | None = None) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1128,
+        "line": 1143,
         "level": 5,
         "title": "`setup_security_headers(headers: dict[str, str] | None = None) -> None`"
       }
@@ -19700,6 +19764,14 @@
         "line": 367,
         "level": 5,
         "title": "`shutdown() -> None`"
+      }
+    ],
+    "`snapshot() -> dict[str, int]`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/metrics.md",
+        "line": 42,
+        "level": 5,
+        "title": "`snapshot() -> dict[str, int]`"
       }
     ],
     "`snapshot(label: str = '') -> dict[str, Any]`": [
@@ -19876,18 +19948,18 @@
         "title": "`state_path() -> Path`"
       }
     ],
-    "`stats -> dict[str, int]`（property）": [
+    "`stats -> dict[str, int | float]`（property）": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/client.md",
         "line": 338,
         "level": 5,
-        "title": "`stats -> dict[str, int]`（property）"
+        "title": "`stats -> dict[str, int | float]`（property）"
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/client.md",
         "line": 480,
         "level": 5,
-        "title": "`stats -> dict[str, int]`（property）"
+        "title": "`stats -> dict[str, int | float]`（property）"
       }
     ],
     "`stats() -> dict[str, int]`": [
@@ -20690,6 +20762,14 @@
         "line": 38,
         "level": 5,
         "title": "`upsert_kv_sql(table: str, key_col: str, value_col: str) -> str`"
+      }
+    ],
+    "`uptime_seconds -> float`（property）": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/metrics.md",
+        "line": 58,
+        "level": 5,
+        "title": "`uptime_seconds -> float`（property）"
       }
     ],
     "`url -> Any`（property）": [
@@ -22118,6 +22198,12 @@
         "title": "方法列表"
       },
       {
+        "document": "api-reference/auto_api/ErisPulse/runtime/metrics.md",
+        "line": 29,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/runtime/plugin_reload.md",
         "line": 48,
         "level": 4,
@@ -22952,6 +23038,12 @@
         "title": "模块概述"
       },
       {
+        "document": "api-reference/auto_api/ErisPulse/runtime/metrics.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/runtime/owner_cleanup.md",
         "line": 5,
         "level": 2,
@@ -23555,6 +23647,12 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/kernel.md",
+        "line": 21,
+        "level": 2,
+        "title": "类列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/metrics.md",
         "line": 21,
         "level": 2,
         "title": "类列表"

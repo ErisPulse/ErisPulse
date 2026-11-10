@@ -319,7 +319,7 @@
           "icon": "fa-th-large"
         },
         {
-          "title": "Discordプラットフォーム特徴ドキュメント",
+          "title": "Discord プラットフォーム特性ドキュメント",
           "path": "platform-guide/discord.md",
           "level": 1,
           "icon": "fa-gamepad"
@@ -422,7 +422,7 @@
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
       "icon": "fa-fire",
-      "count": 19,
+      "count": 20,
       "documents": [
         {
           "title": "高級トピック",
@@ -523,6 +523,12 @@
         {
           "title": "接続プールとブロードキャスト",
           "path": "advanced/connections.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "パフォーマンスベンチマークとチューニング",
+          "path": "advanced/performance.md",
           "level": 1,
           "icon": "fa-fire"
         },
@@ -641,7 +647,7 @@
           "icon": "fa-paper-plane"
         },
         {
-          "title": "ErisPulse リクエスト操作仕様",
+          "title": "ErisPulse リクエスト操作規格",
           "path": "standards/request-action-spec.md",
           "level": 1,
           "icon": "fa-hand-paper"

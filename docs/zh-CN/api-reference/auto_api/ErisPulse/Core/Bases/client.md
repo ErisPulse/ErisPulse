@@ -335,11 +335,11 @@ async for text in ws.iter_text():
 ---
 
 
-##### `stats -> dict[str, int]`（property）
+##### `stats -> dict[str, int | float]`（property）
 
 请求统计
 
-**返回值** (`dict[str, int]`): 统计数据
+**返回值** (`dict`): 统计数据（含 latency_p50_ms / latency_p95_ms 延迟分位）
 
 ---
 

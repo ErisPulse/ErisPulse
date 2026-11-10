@@ -16,43 +16,47 @@ The following four articles are essential for writing production-grade modules. 
 
 ## Grouped by Scenario
 
-Consistent with the grouping criteria on the documentation homepage "Deep Understanding of Principles," the first entry in each group is marked with "What pitfalls will you encounter if you don't understand."
+Consistent with the grouping logic in the documentation homepage's "Deep Dive into Principles," the first article in each group is marked with "What pitfalls you'll encounter if you don't understand this."
 
-**Startup** —— Not understanding the startup chain (Finder / Loader / Manager / Router) leaves you staring helplessly at logs when module loading fails.
+**Startup** —— Without understanding the startup chain (Finder / Loader / Manager / Router), you can only stare helplessly at the logs when module loading fails.
 
 - [Startup Process and Manual Control](startup.md) - Breakdown of the startup chain (Finder/Loader/Manager/Router) and manual full startup
-- [Lazy Loading System](lazy-loading.md) - Working principles, configuration, and event-driven lazy activation (activate_on) of the lazy loading module system
+- [Lazy Loading System](lazy-loading.md) - Working principle, configuration, and event-driven lazy activation (activate_on) of the lazy loading module system
 
-**Communication & Connection** —— Not understanding service contracts (`meta.services`) whitelists causes cross-module `module.call` to be rejected by `ServiceNotProvidedError` without knowing the reason.
+**Communication & Connection** —— Without understanding service contracts (`meta.services`) whitelists, cross-module `module.call` will be rejected by `ServiceNotProvidedError` and you won't know why.
 
-- [Module Communication](module-communication.md) - RPC protocol (module.call), service contracts and directories, directed events, cold start replay, event idempotency deduplication
-- [Connection Pool & Broadcasting](connections.md) - Connection registry: broadcasting, grouped subscriptions, cross-module passing and reuse, connection pool inspection
-- [Router Manager](router.md) - HTTP and WebSocket routing management (including single-argument registration, tuple response conventions)
+- [Module Communication](module-communication.md) - RPC protocolization (`module.call`), service contracts and directories, directed events, cold-start replay, event idempotency deduplication
+- [Connection Pool & Broadcasting](connections.md) - Connection registry: broadcasting, group subscriptions, cross-module passing and reuse, connection pool inspection
+- [Router Manager](router.md) - HTTP and WebSocket route management (including single-parameter registration, tuple response conventions)
 
-**Data Storage** —— Not understanding the semantics of connection failure cooldown periods leads to mistakenly concluding the framework is down during database jitter (actually it's fast failure followed by automatic reconnection after cooldown).
+**Data Storage** —— Without understanding the semantics of connection failure cooldown periods, you might mistakenly conclude that the framework has crashed during database fluctuations (it is actually a rapid failure followed by automatic reconnection after cooldown).
 
-- [Storage Backends](storage-backends.md) - Selecting, configuring, and switching between asynchronous native storage backends (sqlite / mysql / postgres)
-- [SQL Query Builder](sql-builder.md) - General SQL chainable query builder and storage backend abstraction
+- [Storage Backends](storage-backends.md) - Selection, configuration, and switching of asynchronous native storage backends (sqlite / mysql / postgres)
+- [SQL Query Builder](sql-builder.md) - General SQL fluent query builder and storage backend abstraction
 - [Network Client](client.md) - Unified HTTP request client
 
-**Messaging & Conversation** —— Not understanding session mutual exclusion leases causes two modules waiting for the same user's reply to kick each other out.
+**Messaging & Conversations** —— Without understanding session mutual exclusion leases, two modules waiting for the same user's reply will kick each other off.
 
-- [Conversation Multi-turn Dialogue](conversation.md) - Interaction methods for multi-turn dialogue context
-- [Session Inbox](transcript.md) - Automatic message recording: retention policy controls, runtime override APIs, risk/audit
-- [MessageBuilder Detailed Explanation](message-builder.md) - Dual-mode usage of OneBot12 message segment builder
+- [Conversation Multi-turn Dialogue](conversation.md) - Interaction methods for multi-turn conversation context
+- [Conversation Inbox](transcript.md) - Automatic message recording: retention policy controls, runtime override APIs, and risk/audit considerations
+- [MessageBuilder Detailed Explanation](message-builder.md) - Dual-mode usage of the OneBot12 message segment builder
 - [Internationalization (i18n)](i18n.md) - Multi-language support, translation registration, and language detection
 
-**Shadow & Grey-scale** —— Not understanding five isolation gates before promotion causes shadow outbound messages to leak into real users.
+**Shadow Gray Release** —— Without understanding the five isolation gates, shadow outbound messages will leak into real users prematurely.
 
-- [Shadow Modules & Grey-scale Promotion](shadow.md) - New module versions run in parallel with independent owners: outbound interception and accounting, behavior diff comparison, promote promotion and rollback on failure
+- [Shadow Modules & Gray Release Promotion](shadow.md) - Independent owner parallel testing of new module versions: outbound interception and accounting, behavior diff comparison, promote promotion and rollback on failure
+
+**Performance & Observability** —— If you only restart when problems occur without checking metrics, it's like flying blind.
+
+- [Performance Benchmarking & Tuning](performance.md) - Measured baseline numbers (including NoneBot2 comparison), self-running benchmarks and regression comparison methods, tuning key points
 
 **Exceptions & Standards Reference**
 
-- [Exception System and Capture Guide](errors.md) - All framework exception types, occurrence locations, and capture recommendations
+- [Exception System & Handling Guide](errors.md) - All framework exception types, occurrence locations, and handling suggestions
 - [Session Type System](../standards/session-types.md) - Session type definitions, mappings, and custom type registration
 
-> [!NOTE]
-> Documentation for **third-party ecosystem modules** such as Dashboard view registration and Takumi image rendering has been moved to the [ecosystem](../ecosystem/README.md) directory.
+> [!NOTE]  
+> Documentation for **third-party ecosystem modules** such as Dashboard view registration and Takumi image rendering has been moved to the [Ecosystem Modules](../ecosystem/README.md) directory.
 
 ## Intended Audience
 
