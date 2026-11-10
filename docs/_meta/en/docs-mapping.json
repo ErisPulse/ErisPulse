@@ -277,13 +277,13 @@
           "icon": "fa-comments"
         },
         {
-          "title": "Telegram Platform Feature Documentation",
+          "title": "Telegram Platform Features Documentation",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
         },
         {
-          "title": "Email Platform Feature Documentation",
+          "title": "Email Platform Features Documentation",
           "path": "platform-guide/email.md",
           "level": 1,
           "icon": "fa-envelope"

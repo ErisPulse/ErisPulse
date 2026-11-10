@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2015,
+  "total_keywords": 2034,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -4048,6 +4048,12 @@
         "line": 37,
         "level": 3,
         "title": "Аккаунты и мультиаккаунтность"
+      },
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 30,
+        "level": 3,
+        "title": "Аккаунты и мультиаккаунтность"
       }
     ],
     "Аккаунты и несколько аккаунтов": [
@@ -4161,7 +4167,7 @@
     "Асинхронная обработка": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 421,
+        "line": 460,
         "level": 2,
         "title": "Асинхронная обработка"
       }
@@ -4230,6 +4236,14 @@
         "title": "Аутентификация и вызов API"
       }
     ],
+    "Аутентификация и шифрование": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 351,
+        "level": 2,
+        "title": "Аутентификация и шифрование"
+      }
+    ],
     "Базовая информация": [
       {
         "document": "platform-guide/terminal.md",
@@ -4294,6 +4308,14 @@
         "line": 206,
         "level": 4,
         "title": "Базовые проверки"
+      }
+    ],
+    "Базовые типы сообщений": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 162,
+        "level": 3,
+        "title": "Базовые типы сообщений"
       }
     ],
     "Базовый класс BaseAdapter": [
@@ -4497,7 +4519,7 @@
       },
       {
         "document": "platform-guide/wecom.md",
-        "line": 116,
+        "line": 367,
         "level": 2,
         "title": "Важные замечания"
       }
@@ -4735,7 +4757,7 @@
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 351,
+        "line": 390,
         "level": 2,
         "title": "Возвращаемые значения методов отправки"
       },
@@ -4918,6 +4940,14 @@
         "title": "Вызов API"
       }
     ],
+    "Вызов без учёта регистра": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 134,
+        "level": 3,
+        "title": "Вызов без учёта регистра"
+      }
+    ],
     "Вызов в качестве службы": [
       {
         "document": "ecosystem/qvqchat.md",
@@ -4934,12 +4964,12 @@
         "title": "Вызов между модулями (RPC)"
       }
     ],
-    "Вызов несуществующих методов": [
+    "Вызов неподдерживаемых методов": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 113,
+        "line": 150,
         "level": 3,
-        "title": "Вызов несуществующих методов"
+        "title": "Вызов неподдерживаемых методов"
       }
     ],
     "Вызовы API": [
@@ -5332,6 +5362,14 @@
         "title": "Двигатель правил отправки (повтор/таймаут/задержка)"
       }
     ],
+    "Двойная совместимость полей аккаунта и send_context": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 46,
+        "level": 3,
+        "title": "Двойная совместимость полей аккаунта и send_context"
+      }
+    ],
     "Двойная совместимость поля аккаунта": [
       {
         "document": "platform-guide/onebot11.md",
@@ -5562,14 +5600,6 @@
         "title": "Документация ErisPulse"
       }
     ],
-    "Документация по возможностям платформы WeCom (WeChat Work)": [
-      {
-        "document": "platform-guide/wecom.md",
-        "line": 1,
-        "level": 1,
-        "title": "Документация по возможностям платформы WeCom (WeChat Work)"
-      }
-    ],
     "Документация по возможностям платформы «Кафе Хуафэн» (RockyChat)": [
       {
         "document": "platform-guide/ideaura.md",
@@ -5608,6 +5638,14 @@
         "line": 1,
         "level": 1,
         "title": "Документация по особенностям платформы OneBot11"
+      }
+    ],
+    "Документация по особенностям платформы WeCom (корпоративный WeChat)": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 1,
+        "level": 1,
+        "title": "Документация по особенностям платформы WeCom (корпоративный WeChat)"
       }
     ],
     "Документация по функциональным возможностям платформы Discord": [
@@ -5857,7 +5895,7 @@
     "Другие типы сообщений": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 143,
+        "line": 180,
         "level": 3,
         "title": "Другие типы сообщений"
       }
@@ -6660,6 +6698,14 @@
         "title": "Информация об событии"
       }
     ],
+    "Инъекция полей событий": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 51,
+        "level": 3,
+        "title": "Инъекция полей событий"
+      }
+    ],
     "Использование": [
       {
         "document": "platform-guide/sandbox.md",
@@ -7287,7 +7333,7 @@
     "Конфигурация аккаунтов": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 301,
+        "line": 340,
         "level": 3,
         "title": "Конфигурация аккаунтов"
       }
@@ -7431,7 +7477,7 @@
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 339,
+        "line": 378,
         "level": 3,
         "title": "Конфигурация по умолчанию"
       }
@@ -7716,6 +7762,14 @@
         "title": "Менеджер адаптеров"
       }
     ],
+    "Мета-события (Meta Events)": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 311,
+        "level": 3,
+        "title": "Мета-события (Meta Events)"
+      }
+    ],
     "Метаинформация модуля": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -7842,6 +7896,14 @@
         "title": "Методы запросов Send (устарели)"
       }
     ],
+    "Методы карточек с форматированием": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 151,
+        "level": 3,
+        "title": "Методы карточек с форматированием"
+      }
+    ],
     "Методы операций с группой": [
       {
         "document": "platform-guide/onebot11.md",
@@ -7890,6 +7952,14 @@
         "title": "Методы отправки адаптера"
       }
     ],
+    "Методы отправки медиа": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 139,
+        "level": 3,
+        "title": "Методы отправки медиа"
+      }
+    ],
     "Методы отправки медиафайлов": [
       {
         "document": "platform-guide/telegram.md",
@@ -7901,7 +7971,7 @@
     "Методы отправки сообщений": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 353,
+        "line": 392,
         "level": 3,
         "title": "Методы отправки сообщений"
       }
@@ -7972,18 +8042,10 @@
         "title": "Методы управления сообщениями"
       }
     ],
-    "Методы цепочечного вызова (возвращают self для поддержки цепочечного вызова)": [
-      {
-        "document": "platform-guide/onebot12.md",
-        "line": 133,
-        "level": 3,
-        "title": "Методы цепочечного вызова (возвращают self для поддержки цепочечного вызова)"
-      }
-    ],
     "Методы цепочечного изменения": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 360,
+        "line": 399,
         "level": 3,
         "title": "Методы цепочечного изменения"
       }
@@ -8504,14 +8566,6 @@
         "title": "Неподдерживаемые стандартные действия"
       }
     ],
-    "Неразличительность регистра": [
-      {
-        "document": "platform-guide/onebot12.md",
-        "line": 97,
-        "level": 3,
-        "title": "Неразличительность регистра"
-      }
-    ],
     "Неудачная отправка сообщения": [
       {
         "document": "platform-guide/README.md",
@@ -8528,12 +8582,12 @@
         "title": "Низкоуровневые методы"
       }
     ],
-    "Нововведение: Поле типа исходного события": [
+    "Новая функция: поле исходного типа события": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 159,
+        "line": 196,
         "level": 3,
-        "title": "Нововведение: Поле типа исходного события"
+        "title": "Новая функция: поле исходного типа события"
       }
     ],
     "Нормализация кодов ошибок (0.3.1)": [
@@ -8861,7 +8915,7 @@
     "Обновление парадигмы v5 (4.3.0)": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 20,
+        "line": 21,
         "level": 2,
         "title": "Обновление парадигмы v5 (4.3.0)"
       }
@@ -9025,7 +9079,7 @@
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 431,
+        "line": 470,
         "level": 2,
         "title": "Обработка ошибок"
       }
@@ -9042,6 +9096,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 116,
+        "level": 3,
+        "title": "Обработка ошибок call_api"
+      },
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 41,
         "level": 3,
         "title": "Обработка ошибок call_api"
       }
@@ -9565,7 +9625,7 @@
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 54,
+        "line": 91,
         "level": 2,
         "title": "Операции с запросами (Request DSL)"
       },
@@ -9671,7 +9731,7 @@
       },
       {
         "document": "platform-guide/wecom.md",
-        "line": 23,
+        "line": 51,
         "level": 2,
         "title": "Описание конфигурации"
       },
@@ -9792,6 +9852,12 @@
         "title": "Описание расширенных полей"
       },
       {
+        "document": "platform-guide/wecom.md",
+        "line": 341,
+        "level": 2,
+        "title": "Описание расширенных полей"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 630,
         "level": 2,
@@ -9810,14 +9876,6 @@
         "line": 179,
         "level": 2,
         "title": "Описание режимов шифрования"
-      }
-    ],
-    "Описание событий": [
-      {
-        "document": "platform-guide/wecom.md",
-        "line": 110,
-        "level": 2,
-        "title": "Описание событий"
       }
     ],
     "Определение возможностей платформы": [
@@ -9911,7 +9969,7 @@
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 13,
+        "line": 14,
         "level": 2,
         "title": "Основная информация"
       },
@@ -9953,7 +10011,7 @@
       },
       {
         "document": "platform-guide/wecom.md",
-        "line": 12,
+        "line": 13,
         "level": 2,
         "title": "Основная информация"
       },
@@ -10148,6 +10206,12 @@
         "line": 127,
         "level": 3,
         "title": "Основные методы отправки"
+      },
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 132,
+        "level": 3,
+        "title": "Основные методы отправки"
       }
     ],
     "Основные модули": [
@@ -10242,14 +10306,6 @@
         "line": 9,
         "level": 2,
         "title": "Основные принципы проектирования"
-      }
-    ],
-    "Основные типы сообщений": [
-      {
-        "document": "platform-guide/onebot12.md",
-        "line": 125,
-        "level": 3,
-        "title": "Основные типы сообщений"
       }
     ],
     "Основные требования": [
@@ -10502,6 +10558,14 @@
         "title": "Отправка встраиваемого сообщения"
       }
     ],
+    "Отправка исходных (raw) сообщений": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 176,
+        "level": 3,
+        "title": "Отправка исходных (raw) сообщений"
+      }
+    ],
     "Отправка личных сообщений": [
       {
         "document": "platform-guide/discord.md",
@@ -10614,12 +10678,6 @@
         "line": 118,
         "level": 2,
         "title": "Отправка сообщений"
-      },
-      {
-        "document": "platform-guide/wecom.md",
-        "line": 51,
-        "level": 2,
-        "title": "Отправка сообщений"
       }
     ],
     "Отправка сообщений (Send)": [
@@ -10644,14 +10702,6 @@
         "line": 291,
         "level": 2,
         "title": "Отправка сообщений SendDSL"
-      }
-    ],
-    "Отправка сообщений в исходном формате": [
-      {
-        "document": "platform-guide/onebot12.md",
-        "line": 139,
-        "level": 3,
-        "title": "Отправка сообщений в исходном формате"
       }
     ],
     "Отправка сообщений в формате OneBot12": [
@@ -10692,6 +10742,14 @@
         "line": 108,
         "level": 3,
         "title": "Отправка стандартных сегментов OneBot12"
+      }
+    ],
+    "Отправка сырых сообщений": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 160,
+        "level": 3,
+        "title": "Отправка сырых сообщений"
       }
     ],
     "Официальный клиент (независимое приложение)": [
@@ -10831,7 +10889,7 @@
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 299,
+        "line": 338,
         "level": 2,
         "title": "Параметры конфигурации"
       },
@@ -11228,6 +11286,12 @@
         "title": "Поддерживаемые типы отправки сообщений"
       },
       {
+        "document": "platform-guide/onebot12.md",
+        "line": 119,
+        "level": 2,
+        "title": "Поддерживаемые типы отправки сообщений"
+      },
+      {
         "document": "platform-guide/sandbox.md",
         "line": 96,
         "level": 2,
@@ -11248,6 +11312,12 @@
       {
         "document": "platform-guide/wechatmp.md",
         "line": 53,
+        "level": 2,
+        "title": "Поддерживаемые типы отправки сообщений"
+      },
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 90,
         "level": 2,
         "title": "Поддерживаемые типы отправки сообщений"
       },
@@ -12100,6 +12170,12 @@
         "line": 421,
         "level": 3,
         "title": "Пример использования"
+      },
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 314,
+        "level": 3,
+        "title": "Пример использования"
       }
     ],
     "Пример использования в модуле": [
@@ -12127,7 +12203,7 @@
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 314,
+        "line": 353,
         "level": 3,
         "title": "Пример конфигурации"
       },
@@ -12350,6 +12426,12 @@
       {
         "document": "platform-guide/telegram.md",
         "line": 285,
+        "level": 3,
+        "title": "Примеры событий"
+      },
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 257,
         "level": 3,
         "title": "Примеры событий"
       }
@@ -13281,7 +13363,7 @@
     "Расширенная обработка событий": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 440,
+        "line": 479,
         "level": 2,
         "title": "Расширенная обработка событий"
       }
@@ -13322,6 +13404,12 @@
       {
         "document": "platform-guide/ideaura.md",
         "line": 415,
+        "level": 2,
+        "title": "Расширенные методы Event Mixin"
+      },
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 297,
         "level": 2,
         "title": "Расширенные методы Event Mixin"
       },
@@ -13372,6 +13460,14 @@
         "line": 109,
         "level": 2,
         "title": "Расширенные поля платформы"
+      }
+    ],
+    "Расширенные сегменты сообщений платформы": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 245,
+        "level": 3,
+        "title": "Расширенные сегменты сообщений платформы"
       }
     ],
     "Расширенные сообщения платформы": [
@@ -13635,7 +13731,7 @@
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 503,
+        "line": 542,
         "level": 2,
         "title": "Рекомендуемые практики"
       }
@@ -13819,7 +13915,7 @@
     "Ручное вызов Request DSL": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 74,
+        "line": 111,
         "level": 3,
         "title": "Ручное вызов Request DSL"
       }
@@ -14359,7 +14455,7 @@
     "Синтаксис отправки с несколькими аккаунтами": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 408,
+        "line": 447,
         "level": 3,
         "title": "Синтаксис отправки с несколькими аккаунтами"
       },
@@ -14712,6 +14808,14 @@
         "title": "Событие изменения статуса пользователя"
       }
     ],
+    "Событие клика по меню": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 284,
+        "level": 4,
+        "title": "Событие клика по меню"
+      }
+    ],
     "Событие нового письма (email_new)": [
       {
         "document": "platform-guide/email.md",
@@ -14855,9 +14959,17 @@
     "События запросов (Request Events)": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 240,
+        "line": 277,
         "level": 3,
         "title": "События запросов (Request Events)"
+      }
+    ],
+    "События запросов и Request DSL": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 36,
+        "level": 3,
+        "title": "События запросов и Request DSL"
       }
     ],
     "События и аккаунты": [
@@ -14882,14 +14994,6 @@
         "title": "События и поля ответа"
       }
     ],
-    "События метаданных (Meta Events)": [
-      {
-        "document": "platform-guide/onebot12.md",
-        "line": 272,
-        "level": 3,
-        "title": "События метаданных (Meta Events)"
-      }
-    ],
     "События с точечной структурой": [
       {
         "document": "advanced/lifecycle.md",
@@ -14909,7 +15013,7 @@
     "События сообщений (Message Events)": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 177,
+        "line": 214,
         "level": 3,
         "title": "События сообщений (Message Events)"
       }
@@ -14920,6 +15024,14 @@
         "line": 82,
         "level": 3,
         "title": "События сообщений (message)"
+      }
+    ],
+    "События стандарта OneBot12": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 192,
+        "level": 2,
+        "title": "События стандарта OneBot12"
       }
     ],
     "События уведомлений": [
@@ -14933,7 +15045,7 @@
     "События уведомлений (Notice Events)": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 208,
+        "line": 245,
         "level": 3,
         "title": "События уведомлений (Notice Events)"
       }
@@ -15150,6 +15262,14 @@
         "title": "Соответствие стандартам"
       }
     ],
+    "Соответствие стандартам (0.1.2)": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 26,
+        "level": 2,
+        "title": "Соответствие стандартам (0.1.2)"
+      }
+    ],
     "Соответствие стандартам (4.3.2)": [
       {
         "document": "platform-guide/webhook.md",
@@ -15168,6 +15288,12 @@
       {
         "document": "platform-guide/minecraft.md",
         "line": 56,
+        "level": 2,
+        "title": "Соответствие стандартизации"
+      },
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 32,
         "level": 2,
         "title": "Соответствие стандартизации"
       }
@@ -15194,6 +15320,14 @@
         "line": 233,
         "level": 3,
         "title": "Сопоставление detail_type для событий сообщений"
+      }
+    ],
+    "Сопоставление detail_type событий сообщений": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 205,
+        "level": 3,
+        "title": "Сопоставление detail_type событий сообщений"
       }
     ],
     "Сопоставление концепций": [
@@ -15238,6 +15372,14 @@
         "line": 343,
         "level": 2,
         "title": "Сопоставление типов событий"
+      }
+    ],
+    "Сопоставление целей отправки": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 172,
+        "level": 3,
+        "title": "Сопоставление целей отправки"
       }
     ],
     "Сопутствующие плагины": [
@@ -15319,7 +15461,13 @@
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 399,
+        "line": 57,
+        "level": 3,
+        "title": "Спецификация кодов ошибок"
+      },
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 438,
         "level": 3,
         "title": "Спецификация кодов ошибок"
       },
@@ -15344,6 +15492,12 @@
       {
         "document": "platform-guide/wechatmp.md",
         "line": 29,
+        "level": 3,
+        "title": "Спецификация кодов ошибок"
+      },
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 43,
         "level": 3,
         "title": "Спецификация кодов ошибок"
       },
@@ -15454,10 +15608,24 @@
         "title": "Специфические типы событий"
       },
       {
+        "document": "platform-guide/wecom.md",
+        "line": 201,
+        "level": 2,
+        "title": "Специфические типы событий"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 410,
         "level": 2,
         "title": "Специфические типы событий"
+      }
+    ],
+    "Специфические типы событий (notice)": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 218,
+        "level": 3,
+        "title": "Специфические типы событий (notice)"
       }
     ],
     "Список документов": [
@@ -15781,7 +15949,7 @@
     "Стандарт ответа API": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 368,
+        "line": 407,
         "level": 2,
         "title": "Стандарт ответа API"
       }
@@ -15975,7 +16143,7 @@
     "Стандартные API": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 491,
+        "line": 530,
         "level": 3,
         "title": "Стандартные API"
       }
@@ -16015,7 +16183,7 @@
     "Стандартные возможности OneBot12": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 471,
+        "line": 510,
         "level": 2,
         "title": "Стандартные возможности OneBot12"
       }
@@ -16037,7 +16205,7 @@
       },
       {
         "document": "platform-guide/wecom.md",
-        "line": 88,
+        "line": 179,
         "level": 2,
         "title": "Стандартные действия API"
       }
@@ -16067,7 +16235,7 @@
     "Стандартные действия API (DSL API)": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 33,
+        "line": 70,
         "level": 2,
         "title": "Стандартные действия API (DSL API)"
       },
@@ -16094,18 +16262,28 @@
         "title": "Стандартные ответы API"
       }
     ],
+    "Стандартные поля": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 36,
+        "level": 3,
+        "title": "Стандартные поля"
+      }
+    ],
     "Стандартные события OneBot12": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 158,
         "level": 4,
         "title": "Стандартные события OneBot12"
-      },
+      }
+    ],
+    "Стандартные типы сегментов сообщений": [
       {
-        "document": "platform-guide/onebot12.md",
-        "line": 155,
-        "level": 2,
-        "title": "Стандартные события OneBot12"
+        "document": "platform-guide/wecom.md",
+        "line": 232,
+        "level": 3,
+        "title": "Стандартные типы сегментов сообщений"
       }
     ],
     "Стандартные типы сообщений": [
@@ -16173,7 +16351,7 @@
     "Стандартный формат сообщений": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 473,
+        "line": 512,
         "level": 3,
         "title": "Стандартный формат сообщений"
       }
@@ -16398,6 +16576,14 @@
         "title": "Таймеры сессии: remind / escalate"
       }
     ],
+    "Текстовое сообщение": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 259,
+        "level": 4,
+        "title": "Текстовое сообщение"
+      }
+    ],
     "Тело запроса (Body)": [
       {
         "document": "platform-guide/webhook.md",
@@ -16526,12 +16712,6 @@
       {
         "document": "platform-guide/email.md",
         "line": 103,
-        "level": 2,
-        "title": "Типы поддерживаемых сообщений"
-      },
-      {
-        "document": "platform-guide/onebot12.md",
-        "line": 82,
         "level": 2,
         "title": "Типы поддерживаемых сообщений"
       }
@@ -16809,7 +16989,7 @@
     "Удобные методы Event": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 58,
+        "line": 95,
         "level": 3,
         "title": "Удобные методы Event"
       }
@@ -16868,6 +17048,14 @@
         "title": "Универсальная точка входа для действий"
       }
     ],
+    "Управление access_token": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 353,
+        "level": 3,
+        "title": "Управление access_token"
+      }
+    ],
     "Управление адаптером": [
       {
         "document": "api-reference/adapter-system.md",
@@ -16919,7 +17107,7 @@
     "Управление интерфейсом": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 455,
+        "line": 494,
         "level": 2,
         "title": "Управление интерфейсом"
       }
@@ -17313,7 +17501,7 @@
     "Функции управления": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 148,
+        "line": 185,
         "level": 3,
         "title": "Функции управления"
       }
@@ -17404,6 +17592,14 @@
         "line": 59,
         "level": 2,
         "title": "Целевая аудитория"
+      }
+    ],
+    "Цепочечные методы-модификаторы": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 164,
+        "level": 3,
+        "title": "Цепочечные методы-модификаторы"
       }
     ],
     "Цепочечные методы-модификаторы (можно комбинировать)": [
@@ -17550,6 +17746,14 @@
         "line": 164,
         "level": 3,
         "title": "Цепочные модификаторы (можно комбинировать)"
+      }
+    ],
+    "Цепочные модифицирующие методы (возвращают self, поддерживают цепочные вызовы)": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 170,
+        "level": 3,
+        "title": "Цепочные модифицирующие методы (возвращают self, поддерживают цепочные вызовы)"
       }
     ],
     "Циклический диалог": [
@@ -17742,6 +17946,14 @@
         "line": 74,
         "level": 2,
         "title": "Широковещательная рассылка и подписка"
+      }
+    ],
+    "Шифрование и дешифрование сообщений": [
+      {
+        "document": "platform-guide/wecom.md",
+        "line": 359,
+        "level": 3,
+        "title": "Шифрование и дешифрование сообщений"
       }
     ],
     "Шкала серьезности": [

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2018,
+  "total_keywords": 2041,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2500,14 +2500,6 @@
         "title": "@メッセージ関連"
       }
     ],
-    "@ロボット検出メカニズム（重要）": [
-      {
-        "document": "platform-guide/qqbot.md",
-        "line": 131,
-        "level": 2,
-        "title": "@ロボット検出メカニズム（重要）"
-      }
-    ],
     "A2UI 形式メッセージセグメント (a2ui)": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -3618,6 +3610,14 @@
         "title": "MCP サーバー"
       }
     ],
+    "Markdown / Ark / Embed / Keyboard": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 163,
+        "level": 3,
+        "title": "Markdown / Ark / Embed / Keyboard"
+      }
+    ],
     "Matrixプラットフォーム特性ドキュメント": [
       {
         "document": "platform-guide/matrix.md",
@@ -3786,12 +3786,12 @@
         "title": "OneBot12 標準"
       }
     ],
-    "OneBot12 標準APIアクション": [
+    "OneBot12 標準Apiアクション（v5 新規）": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 100,
+        "line": 209,
         "level": 2,
-        "title": "OneBot12 標準APIアクション"
+        "title": "OneBot12 標準Apiアクション（v5 新規）"
       }
     ],
     "OneBot12 標準イベント": [
@@ -3958,12 +3958,12 @@
         "title": "QQ スペース"
       }
     ],
-    "QQBotプラットフォームの特徴ドキュメント": [
+    "QQBotプラットフォーム機能ドキュメント": [
       {
         "document": "platform-guide/qqbot.md",
         "line": 1,
         "level": 1,
-        "title": "QQBotプラットフォームの特徴ドキュメント"
+        "title": "QQBotプラットフォーム機能ドキュメント"
       }
     ],
     "QQ空間拡張": [
@@ -4130,6 +4130,14 @@
         "line": 65,
         "level": 2,
         "title": "Send との連携"
+      }
+    ],
+    "Send の BaseAdapter.Send 継承": [
+      {
+        "document": "platform-guide/terminal.md",
+        "line": 47,
+        "level": 3,
+        "title": "Send の BaseAdapter.Send 継承"
       }
     ],
     "Send デコレーター（各アダプターの Send クラスが実装）": [
@@ -4300,6 +4308,14 @@
         "title": "Storage（ストレージ）"
       }
     ],
+    "Stream 送信の send_context 読み取り": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 114,
+        "level": 3,
+        "title": "Stream 送信の send_context 読み取り"
+      }
+    ],
     "Supervisor": [
       {
         "document": "user-guide/deployment.md",
@@ -4354,6 +4370,14 @@
         "line": 59,
         "level": 2,
         "title": "TestBot API"
+      }
+    ],
+    "Token 管理": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 357,
+        "level": 3,
+        "title": "Token 管理"
       }
     ],
     "Transcript セッション受信トレイ": [
@@ -4412,14 +4436,6 @@
         "title": "WebSocket"
       }
     ],
-    "WebSocket / Webhook 接続": [
-      {
-        "document": "platform-guide/qqbot.md",
-        "line": 155,
-        "level": 2,
-        "title": "WebSocket / Webhook 接続"
-      }
-    ],
     "WebSocket クライアント": [
       {
         "document": "advanced/client.md",
@@ -4434,14 +4450,6 @@
         "line": 113,
         "level": 3,
         "title": "WebSocket デコレータ"
-      }
-    ],
-    "WebSocket フロー": [
-      {
-        "document": "platform-guide/qqbot.md",
-        "line": 157,
-        "level": 3,
-        "title": "WebSocket フロー"
       }
     ],
     "WebSocket ライフサイクルフック": [
@@ -4463,6 +4471,12 @@
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 961,
         "level": 3,
+        "title": "WebSocket 接続"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 340,
+        "level": 2,
         "title": "WebSocket 接続"
       }
     ],
@@ -4506,12 +4520,12 @@
         "title": "WebUI での消費方法"
       }
     ],
-    "Webhook モード": [
+    "Webhook 接入（v5 新規）": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 164,
-        "level": 3,
-        "title": "Webhook モード"
+        "line": 363,
+        "level": 2,
+        "title": "Webhook 接入（v5 新規）"
       }
     ],
     "Webhook 通用橋接アダプタープラットフォームの機能ドキュメント": [
@@ -5162,6 +5176,14 @@
         "title": "delConfig：設定キーの削除"
       }
     ],
+    "delete_message の機能縮退セマンティクス修正": [
+      {
+        "document": "platform-guide/terminal.md",
+        "line": 73,
+        "level": 3,
+        "title": "delete_message の機能縮退セマンティクス修正"
+      }
+    ],
     "detail_type のマッピング": [
       {
         "document": "platform-guide/discord.md",
@@ -5610,6 +5632,14 @@
         "title": "uv のインストール"
       }
     ],
+    "v5 パラダイム更新（1.1.0）": [
+      {
+        "document": "platform-guide/terminal.md",
+        "line": 34,
+        "level": 2,
+        "title": "v5 パラダイム更新（1.1.0）"
+      }
+    ],
     "v5 パラダイム更新（4.1.0）": [
       {
         "document": "platform-guide/sandbox.md",
@@ -5678,14 +5708,6 @@
         "line": 23,
         "level": 2,
         "title": "v5 ファンタム更新（4.2.0）"
-      }
-    ],
-    "v5 フレームワークの更新 (1.1.0)": [
-      {
-        "document": "platform-guide/terminal.md",
-        "line": 28,
-        "level": 2,
-        "title": "v5 フレームワークの更新 (1.1.0)"
       }
     ],
     "v5 フレームワーク更新 (4.2.0)": [
@@ -6932,6 +6954,14 @@
         "title": "イベント設定"
       }
     ],
+    "イベント購読と openid 体系": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 380,
+        "level": 2,
+        "title": "イベント購読と openid 体系"
+      }
+    ],
     "イベント配信メカニズム": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -7122,6 +7152,14 @@
         "title": "エラーコードの標準化（0.3.1）"
       }
     ],
+    "エラーコードの標準化（5.3.x）": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 74,
+        "level": 3,
+        "title": "エラーコードの標準化（5.3.x）"
+      }
+    ],
     "エラーコードの説明": [
       {
         "document": "platform-guide/discord.md",
@@ -7134,18 +7172,18 @@
         "line": 230,
         "level": 3,
         "title": "エラーコードの説明"
-      },
-      {
-        "document": "platform-guide/qqbot.md",
-        "line": 172,
-        "level": 2,
-        "title": "エラーコードの説明"
       }
     ],
     "エラーコード仕様": [
       {
         "document": "platform-guide/email.md",
         "line": 81,
+        "level": 3,
+        "title": "エラーコード仕様"
+      },
+      {
+        "document": "platform-guide/terminal.md",
+        "line": 77,
         "level": 3,
         "title": "エラーコード仕様"
       }
@@ -7322,6 +7360,14 @@
         "line": 398,
         "level": 2,
         "title": "カスタムストレージバックエンド"
+      }
+    ],
+    "カスタムメニュー / コマンドパネル（v5 新規）": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 318,
+        "level": 3,
+        "title": "カスタムメニュー / コマンドパネル（v5 新規）"
       }
     ],
     "ガイド付き登録": [
@@ -7502,6 +7548,14 @@
         "title": "グループメッセージの処理"
       }
     ],
+    "グループメッセージの処理（@検出）": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 393,
+        "level": 3,
+        "title": "グループメッセージの処理（@検出）"
+      }
+    ],
     "グループメッセージを監視": [
       {
         "document": "getting-started/event-handling.md",
@@ -7586,6 +7640,14 @@
         "line": 137,
         "level": 3,
         "title": "グループ管理メソッド"
+      }
+    ],
+    "グループ管理（v2、**一部のAPIはホワイトリストボットのみ開放**）": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 296,
+        "level": 3,
+        "title": "グループ管理（v2、**一部のAPIはホワイトリストボットのみ開放**）"
       }
     ],
     "グループ（サブスクリプションモデル）": [
@@ -8112,6 +8174,14 @@
         "title": "サブコマンド"
       }
     ],
+    "サブチャンネル（Channel）": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 279,
+        "level": 3,
+        "title": "サブチャンネル（Channel）"
+      }
+    ],
     "サポートされていない標準アクション": [
       {
         "document": "platform-guide/bilibili.md",
@@ -8338,6 +8408,14 @@
         "title": "スキーマ出力"
       }
     ],
+    "スケジュール / スレッド / オーディオ": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 291,
+        "level": 3,
+        "title": "スケジュール / スレッド / オーディオ"
+      }
+    ],
     "スコープ設定（scope）": [
       {
         "document": "user-guide/configuration.md",
@@ -8384,6 +8462,14 @@
         "line": 310,
         "level": 3,
         "title": "ストリーミングインターフェース"
+      }
+    ],
+    "ストリーミングメッセージ（v5 新規、1対1チャット）": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 187,
+        "level": 3,
+        "title": "ストリーミングメッセージ（v5 新規、1対1チャット）"
       }
     ],
     "ストレージシステム": [
@@ -8822,6 +8908,22 @@
         "line": 429,
         "level": 3,
         "title": "チャンネルメッセージの処理"
+      }
+    ],
+    "チャンネルメンバー": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 283,
+        "level": 3,
+        "title": "チャンネルメンバー"
+      }
+    ],
+    "チャンネル（Guild）": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 274,
+        "level": 3,
+        "title": "チャンネル（Guild）"
       }
     ],
     "ツールメソッド": [
@@ -9724,12 +9826,12 @@
         "title": "プラットフォームイベントメソッドの拡張"
       }
     ],
-    "プラットフォームネイティブAPIメソッド族": [
+    "プラットフォームネイティブAPIメソッド群": [
       {
         "document": "platform-guide/qqbot.md",
-        "line": 142,
+        "line": 267,
         "level": 2,
-        "title": "プラットフォームネイティブAPIメソッド族"
+        "title": "プラットフォームネイティブAPIメソッド群"
       }
     ],
     "プラットフォームメソッドの分離": [
@@ -10064,6 +10166,14 @@
         "title": "ホームページ"
       }
     ],
+    "ボタンインタラクションの処理": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 407,
+        "level": 3,
+        "title": "ボタンインタラクションの処理"
+      }
+    ],
     "ボタンクリックイベントかどうかを確認": [
       {
         "document": "platform-guide/yunhu.md",
@@ -10108,6 +10218,14 @@
         "line": 106,
         "level": 3,
         "title": "ボタン（keyboard）"
+      }
+    ],
+    "ボット / インタラクション": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 271,
+        "level": 3,
+        "title": "ボット / インタラクション"
       }
     ],
     "ボット情報": [
@@ -10180,6 +10298,14 @@
         "line": 450,
         "level": 2,
         "title": "マルチアカウント設定"
+      }
+    ],
+    "マルチアカウント起動": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 422,
+        "level": 3,
+        "title": "マルチアカウント起動"
       }
     ],
     "マルチアカウント送信": [
@@ -10340,6 +10466,14 @@
         "title": "メタアクションの標準化"
       }
     ],
+    "メタアクションの補完": [
+      {
+        "document": "platform-guide/terminal.md",
+        "line": 51,
+        "level": 3,
+        "title": "メタアクションの補完"
+      }
+    ],
     "メタアクション（標準化済み）": [
       {
         "document": "platform-guide/sandbox.md",
@@ -10378,6 +10512,14 @@
         "line": 297,
         "level": 3,
         "title": "メッセージの受信"
+      }
+    ],
+    "メッセージの撤回": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 200,
+        "level": 3,
+        "title": "メッセージの撤回"
       }
     ],
     "メッセージの暗号化・復号": [
@@ -10474,6 +10616,14 @@
         "line": 126,
         "level": 3,
         "title": "メッセージイベントの追加フィールド"
+      }
+    ],
+    "メッセージイベントへの message_id 補完": [
+      {
+        "document": "platform-guide/terminal.md",
+        "line": 43,
+        "level": 3,
+        "title": "メッセージイベントへの message_id 補完"
       }
     ],
     "メッセージイベントへのトップレベル message_id の追加": [
@@ -10729,7 +10879,7 @@
       },
       {
         "document": "platform-guide/qqbot.md",
-        "line": 59,
+        "line": 118,
         "level": 2,
         "title": "メッセージ送信"
       }
@@ -11476,6 +11626,14 @@
         "title": "リクエストイベント処理（Request stub）"
       }
     ],
+    "リクエストコンテキストの保持（5.3.2 以降）": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 102,
+        "level": 3,
+        "title": "リクエストコンテキストの保持（5.3.2 以降）"
+      }
+    ],
     "リクエストタイプコンテキストの保持（異種エンドポイントプラットフォーム、§5.3 参照）": [
       {
         "document": "standards/request-action-spec.md",
@@ -11546,6 +11704,14 @@
         "title": "リクエスト操作の戻り値"
       }
     ],
+    "リクエスト操作（Request DSL、v5 新規）": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 239,
+        "level": 2,
+        "title": "リクエスト操作（Request DSL、v5 新規）"
+      }
+    ],
     "リクエスト操作（Request DSL）": [
       {
         "document": "platform-guide/onebot11.md",
@@ -11596,6 +11762,14 @@
         "line": 337,
         "level": 2,
         "title": "リスタート"
+      }
+    ],
+    "リッチメディア": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 147,
+        "level": 3,
+        "title": "リッチメディア"
       }
     ],
     "リッチメディアメッセージの変換例": [
@@ -12214,12 +12388,6 @@
         "line": 474,
         "level": 3,
         "title": "交互イベントの処理"
-      },
-      {
-        "document": "platform-guide/qqbot.md",
-        "line": 202,
-        "level": 3,
-        "title": "交互イベントの処理"
       }
     ],
     "交互会話システム": [
@@ -12377,7 +12545,7 @@
       },
       {
         "document": "platform-guide/qqbot.md",
-        "line": 186,
+        "line": 391,
         "level": 2,
         "title": "使用例"
       },
@@ -12409,7 +12577,7 @@
       },
       {
         "document": "platform-guide/terminal.md",
-        "line": 33,
+        "line": 84,
         "level": 2,
         "title": "使用方法"
       }
@@ -12788,6 +12956,14 @@
         "line": 203,
         "level": 2,
         "title": "分岐とジャンプ"
+      }
+    ],
+    "切断時の再接続": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 351,
+        "level": 3,
+        "title": "切断時の再接続"
       }
     ],
     "初期化の流れ": [
@@ -13383,7 +13559,7 @@
       },
       {
         "document": "platform-guide/qqbot.md",
-        "line": 12,
+        "line": 13,
         "level": 2,
         "title": "基本情報"
       },
@@ -13407,7 +13583,7 @@
       },
       {
         "document": "platform-guide/terminal.md",
-        "line": 12,
+        "line": 13,
         "level": 2,
         "title": "基本情報"
       },
@@ -13546,12 +13722,6 @@
         "line": 294,
         "level": 3,
         "title": "基本的な送信"
-      },
-      {
-        "document": "platform-guide/qqbot.md",
-        "line": 61,
-        "level": 3,
-        "title": "基本的な送信"
       }
     ],
     "基本的な送信メソッド": [
@@ -13594,6 +13764,12 @@
       {
         "document": "platform-guide/minecraft.md",
         "line": 98,
+        "level": 3,
+        "title": "基本送信"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 120,
         "level": 3,
         "title": "基本送信"
       }
@@ -14574,6 +14750,14 @@
         "title": "拡張アクション"
       }
     ],
+    "拡張アクションのルーティング（5.3.x）": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 106,
+        "level": 3,
+        "title": "拡張アクションのルーティング（5.3.x）"
+      }
+    ],
     "拡張アクションの標準化（0.1.2）": [
       {
         "document": "platform-guide/minecraft.md",
@@ -14740,6 +14924,12 @@
       {
         "document": "platform-guide/kook.md",
         "line": 391,
+        "level": 3,
+        "title": "接続フロー"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 342,
         "level": 3,
         "title": "接続フロー"
       }
@@ -15660,6 +15850,12 @@
         "line": 92,
         "level": 2,
         "title": "標準化アラインメント"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 70,
+        "level": 2,
+        "title": "標準化アラインメント"
       }
     ],
     "標準化レスポンス": [
@@ -15692,6 +15888,14 @@
         "line": 26,
         "level": 2,
         "title": "標準化対応（0.1.2）"
+      }
+    ],
+    "標準化対応（1.2.2）": [
+      {
+        "document": "platform-guide/terminal.md",
+        "line": 39,
+        "level": 2,
+        "title": "標準化対応（1.2.2）"
       }
     ],
     "標準化対応（4.3.2）": [
@@ -15744,6 +15948,14 @@
         "line": 75,
         "level": 2,
         "title": "標準準拠チェックリスト"
+      }
+    ],
+    "権限 / お知らせ / リアクション": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 287,
+        "level": 3,
+        "title": "権限 / お知らせ / リアクション"
       }
     ],
     "権限制御": [
@@ -16548,14 +16760,6 @@
         "title": "継承関係"
       }
     ],
-    "群メッセージの処理（@検出）": [
-      {
-        "document": "platform-guide/qqbot.md",
-        "line": 188,
-        "level": 3,
-        "title": "群メッセージの処理（@検出）"
-      }
-    ],
     "翻訳のアンロード": [
       {
         "document": "advanced/i18n.md",
@@ -16752,14 +16956,6 @@
         "title": "複数アカウントの設定"
       }
     ],
-    "複数アカウントの起動": [
-      {
-        "document": "platform-guide/qqbot.md",
-        "line": 217,
-        "level": 3,
-        "title": "複数アカウントの起動"
-      }
-    ],
     "複数アカウントの重複受信（フレームワークが注入するフィールド）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -16822,14 +17018,6 @@
         "line": 680,
         "level": 2,
         "title": "要求イベントの処理"
-      }
-    ],
-    "要求操作（グループ参加申請の承認）": [
-      {
-        "document": "platform-guide/qqbot.md",
-        "line": 115,
-        "level": 2,
-        "title": "要求操作（グループ参加申請の承認）"
       }
     ],
     "規則の形態（インライン表）": [
@@ -16952,8 +17140,8 @@
         "title": "設定の説明"
       },
       {
-        "document": "platform-guide/qqbot.md",
-        "line": 22,
+        "document": "platform-guide/terminal.md",
+        "line": 21,
         "level": 2,
         "title": "設定の説明"
       },
@@ -17176,14 +17364,14 @@
         "title": "設定説明"
       },
       {
-        "document": "platform-guide/sandbox.md",
-        "line": 82,
+        "document": "platform-guide/qqbot.md",
+        "line": 23,
         "level": 2,
         "title": "設定説明"
       },
       {
-        "document": "platform-guide/terminal.md",
-        "line": 20,
+        "document": "platform-guide/sandbox.md",
+        "line": 82,
         "level": 2,
         "title": "設定説明"
       },
@@ -17596,6 +17784,14 @@
         "line": 467,
         "level": 3,
         "title": "通知イベントの処理（絵文字反応など）"
+      }
+    ],
+    "通知イベントの命名（5.3.x）": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 93,
+        "level": 3,
+        "title": "通知イベントの命名（5.3.x）"
       }
     ],
     "通知イベントの追加フィールド": [

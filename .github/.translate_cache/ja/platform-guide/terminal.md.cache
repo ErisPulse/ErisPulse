@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "hash": "03263a02ff9fa6db25c848bc41207108",
+  "file_hash": "03263a02ff9fa6db25c848bc41207108",
+  "translated_at": "2026-11-10T09:35:58.267238",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "801ea581e858921e6eed2a28181710d8",
+      "translation": "# Terminal プラットフォーム機能ドキュメント\n\nTerminalAdapter はコマンドライン端末アダプターです。端末そのものがチャットセッションとなり、モジュールロジックをローカルで素早くデバッグするために使用されます。\n\n---"
+    },
+    {
+      "hash": "16dfefe4f0e55a87c5598ec54e3f3013",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 1.2.2\n- メンテナー: ErisPulse\n- 最終更新: 2026-11-10"
+    },
+    {
+      "hash": "e1c9704c47ba4a2be3d3c6120e628e0c",
+      "translation": "## 基本情報\n\n- プラットフォーム概要：ローカルのコマンドラインをチャットセッションとして扱い、stdin の入力をメッセージとし、モジュールの応答をターミナルに直接出力する\n- アダプター名：TerminalAdapter\n- プラットフォーム識別子：`terminal`\n- シングルアカウント設計（ローカルデバッグ向け）\n- フレームワーク要件：ソフト依存 `ErisPulse>=2.7.1`（実行時に検出して通知するのみ、強制ではない）"
+    },
+    {
+      "hash": "bf04ae4c43f4298e461dfc144796bf47",
+      "translation": "## 設定の説明\n\n```toml\n[Terminal]\nbot_id = \"terminal_bot\"    # Bot のユーザー ID\nbot_name = \"TerminalBot\"   # Bot のニックネーム\nuser_id = \"terminal_user\"  # シミュレートされたユーザーの ID（Bot と会話するエンドユーザー）\nuser_name = \"User\"         # シミュレートされたユーザーのニックネーム\nprompt = \"> \"              # 入力プロンプト\nreply_prefix = \"[Bot] \"    # Bot の返信の行プレフィックス（空の場合はプレフィックスを付けない）\necho_input = false         # ユーザー入力をエコー表示するかどうか（パイプ入力の場合に有効化）\n```"
+    },
+    {
+      "hash": "2a934798be3daee3ed96232be0615395",
+      "translation": "## v5 パラダイム更新（1.1.0）\n\n- **spawn_background タスクの帰属**：stdin 読み取りループを `runtime.spawn_background` を使用するように変更\n- **フレームワークのソフト依存**：実行時に `ErisPulse>=2.7.1` を検出して通知し、起動時にバージョンログを出力"
+    },
+    {
+      "hash": "499b4081ea35949fe9249891ac86bf03",
+      "translation": "## 標準化対応（1.2.2）\n\nレスポンス構造とエラーコードは [API レスポンス仕様](../standards/api-response.md) に従います。\n\n### メッセージイベントへの message_id 補完\n\nstdin メッセージイベントにトップレベルの標準 `message_id` フィールド（uuid により生成）が補完され、モジュールはターミナルメッセージを安定して参照して返信・重複排除を行えるようになりました。\n\n### Send の BaseAdapter.Send 継承\n\n`Send` はフレームワークの `BaseAdapter.Send` を継承し、**標準修飾子チェーン（`At` / `AtAll` / `Reply` など）が有効になります**。修飾セグメントとテキストセグメントがまとめてレンダリングされて出力されます。`node`（統合転送）セグメントはプレーンテキストの原文出力に縮退されます（内容は失われません）。\n\n### メタアクションの補完\n\n標準メタアクションが補完され、標準レスポンスを返します：\n\n| アクション | data の内容 |\n|------|----------|\n| `get_status` | `enabled`（実行状態）/ `boot_time`（起動タイムスタンプ） |\n| `get_version` | `impl`（TerminalAdapter）/ `version` / `onebot_version` |\n| `get_supported_actions` | サポートされているアクション名のリスト |\n\n```python\nfrom ErisPulse import sdk\nterminal = sdk.adapter.get(\"terminal\")\n\nresult = await terminal.Api.get_status()\nresult = await terminal.Api.get_version()\nresult = await terminal.Api.get_supported_actions()\nresult = await terminal.Api.get_self_info()    # user_id/user_name\nresult = await terminal.Api.get_user_info(\"terminal_user\")\nresult = await terminal.Api.get_friend_list()\n```\n\n### delete_message の機能縮退セマンティクス修正\n\nターミナルにはメッセージ撤回機能がないため、`delete_message` は「成功を返す」から**機能縮退の標準セマンティクス**に修正されました——`retcode=10002`（サポートされていない操作）を返し、モジュールはこれに基づいて縮退を判定できます。\n\n### エラーコード仕様\n\n| retcode | 意味 | 説明 |\n|---------|------|------|\n| 0 | 成功 | — |\n| 10002 | サポートなし | グループ操作、メッセージ撤回、未実装の標準アクション |"
+    },
+    {
+      "hash": "4b303269e7bc47aa98552048c5f5ce81",
+      "translation": "## 使用方法\n\n```python\n# モジュールは通常どおりメッセージを監視するだけで構いません\nfrom ErisPulse.Core.Event import message\n\n@message.on_message()\nasync def handle(event):\n    if event.get(\"platform\") == \"terminal\":\n        await event.reply(\"受信：\" + event.get_text())\n```\n\n- ターミナルに入力されたテキストがそのままユーザーメッセージとなり、複数行（空行で終了）に対応しています\n- イベント構造の例（stdin メッセージ）：\n\n```json\n{\n  \"id\": \"<uuid>\",\n  \"time\": 1700000000,\n  \"message_id\": \"<uuid>\",\n  \"type\": \"message\",\n  \"detail_type\": \"private\",\n  \"platform\": \"terminal\",\n  \"self\": {\"platform\": \"terminal\", \"user_id\": \"terminal_bot\", \"user_name\": \"TerminalBot\"},\n  \"user_id\": \"terminal_user\",\n  \"message\": [{\"type\": \"text\", \"data\": {\"text\": \"入力内容\"}}],\n  \"alt_message\": \"入力内容\",\n  \"terminal_raw\": {\"text\": \"入力内容\"},\n  \"terminal_raw_type\": \"stdin_line\"\n}\n```\n\n- 送信例（修飾子チェーンが使用可能）：\n\n```python\nterminal = sdk.adapter.get(\"terminal\")\n\nawait terminal.Send.To(\"private\", \"terminal_user\").Text(\"Hello\")\nawait terminal.Send.To(\"private\", \"terminal_user\").At(\"terminal_user\").Text(\"修飾子付きメッセージ\")\nawait terminal.Send.To(\"private\", \"terminal_user\").Raw_ob12([\n    {\"type\": \"text\", \"data\": {\"text\": \"OneBot12 セグメント\"}}\n])\n```\n\n- 開発時にモジュールのロジックを素早く検証するのに適しており、実際のプラットフォームへの接続は不要です"
+    }
+  ]
+}

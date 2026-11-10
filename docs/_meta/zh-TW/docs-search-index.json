@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2010,
+  "total_keywords": 2011,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -93,7 +93,7 @@
     "1. 健康檢查（GET）": [
       {
         "document": "platform-guide/webhook.md",
-        "line": 64,
+        "line": 113,
         "level": 3,
         "title": "1. 健康檢查（GET）"
       }
@@ -291,7 +291,7 @@
     "1. 發送訊息": [
       {
         "document": "platform-guide/webhook.md",
-        "line": 142,
+        "line": 200,
         "level": 3,
         "title": "1. 發送訊息"
       }
@@ -555,7 +555,7 @@
     "2. 回應標準化": [
       {
         "document": "platform-guide/webhook.md",
-        "line": 172,
+        "line": 230,
         "level": 3,
         "title": "2. 回應標準化"
       }
@@ -603,7 +603,7 @@
     "2. 接收事件（POST）": [
       {
         "document": "platform-guide/webhook.md",
-        "line": 75,
+        "line": 124,
         "level": 3,
         "title": "2. 接收事件（POST）"
       }
@@ -1014,14 +1014,6 @@
         "title": "3. 出站動作被拒時排查"
       }
     ],
-    "3. 字段映射（入站 JSON → OneBot12 事件）": [
-      {
-        "document": "platform-guide/webhook.md",
-        "line": 121,
-        "level": 3,
-        "title": "3. 字段映射（入站 JSON → OneBot12 事件）"
-      }
-    ],
     "3. 完整欄位規範": [
       {
         "document": "standards/api-response.md",
@@ -1124,6 +1116,14 @@
         "line": 40,
         "level": 2,
         "title": "3. 標準化工作流程（新能力如何進入標準）"
+      }
+    ],
+    "3. 欄位映射（入站 JSON → OneBot12 事件）": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 174,
+        "level": 3,
+        "title": "3. 欄位映射（入站 JSON → OneBot12 事件）"
       }
     ],
     "3. 清晰的配置管理": [
@@ -3859,7 +3859,7 @@
     "Send 方法": [
       {
         "document": "platform-guide/webhook.md",
-        "line": 191,
+        "line": 249,
         "level": 2,
         "title": "Send 方法"
       }
@@ -4216,6 +4216,14 @@
         "line": 363,
         "level": 2,
         "title": "Webhook 接入（v5 新增）"
+      }
+    ],
+    "Webhook 通用橋接適配器平台特性文件": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 1,
+        "level": 1,
+        "title": "Webhook 通用橋接適配器平台特性文件"
       }
     ],
     "WebhookAdapter（HTTP 回呼型）": [
@@ -5387,7 +5395,7 @@
       },
       {
         "document": "platform-guide/webhook.md",
-        "line": 7,
+        "line": 27,
         "level": 2,
         "title": "v5 範式更新（4.2.0）"
       },
@@ -6053,7 +6061,7 @@
     "事件擴展方法（WebhookEventMixin）": [
       {
         "document": "platform-guide/webhook.md",
-        "line": 202,
+        "line": 260,
         "level": 2,
         "title": "事件擴展方法（WebhookEventMixin）"
       }
@@ -6064,6 +6072,14 @@
         "line": 217,
         "level": 3,
         "title": "事件映射"
+      }
+    ],
+    "事件欄位": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 37,
+        "level": 3,
+        "title": "事件欄位"
       }
     ],
     "事件欄位修正": [
@@ -7229,7 +7245,7 @@
     "入站協議": [
       {
         "document": "platform-guide/webhook.md",
-        "line": 62,
+        "line": 111,
         "level": 2,
         "title": "入站協議"
       }
@@ -7439,7 +7455,7 @@
     "出站協議": [
       {
         "document": "platform-guide/webhook.md",
-        "line": 140,
+        "line": 198,
         "level": 2,
         "title": "出站協議"
       }
@@ -8339,7 +8355,7 @@
     "回應": [
       {
         "document": "platform-guide/webhook.md",
-        "line": 106,
+        "line": 159,
         "level": 4,
         "title": "回應"
       }
@@ -8802,6 +8818,12 @@
         "title": "基本資訊"
       },
       {
+        "document": "platform-guide/webhook.md",
+        "line": 13,
+        "level": 2,
+        "title": "基本資訊"
+      },
+      {
         "document": "platform-guide/wechatmp.md",
         "line": 3,
         "level": 2,
@@ -9021,7 +9043,7 @@
     "多帳戶模型": [
       {
         "document": "platform-guide/webhook.md",
-        "line": 51,
+        "line": 91,
         "level": 2,
         "title": "多帳戶模型"
       }
@@ -9965,8 +9987,8 @@
       },
       {
         "document": "platform-guide/webhook.md",
-        "line": 1,
-        "level": 3,
+        "line": 21,
+        "level": 2,
         "title": "已對接平台能力"
       },
       {
@@ -10018,6 +10040,12 @@
       {
         "document": "platform-guide/telegram.md",
         "line": 36,
+        "level": 3,
+        "title": "帳戶與多帳戶"
+      },
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 54,
         "level": 3,
         "title": "帳戶與多帳戶"
       },
@@ -10092,6 +10120,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 488,
+        "level": 3,
+        "title": "帳戶配置欄位"
+      },
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 102,
         "level": 3,
         "title": "帳戶配置欄位"
       }
@@ -10374,14 +10408,6 @@
         "line": 207,
         "level": 3,
         "title": "平台特性檢測"
-      }
-    ],
-    "平台特性說明 — Webhook 通用橋接適配器": [
-      {
-        "document": "platform-guide/webhook.md",
-        "line": 15,
-        "level": 1,
-        "title": "平台特性說明 — Webhook 通用橋接適配器"
       }
     ],
     "平台特有事件与扩展段": [
@@ -11610,6 +11636,12 @@
         "title": "文件資訊"
       },
       {
+        "document": "platform-guide/webhook.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件資訊"
+      },
+      {
         "document": "platform-guide/wecom.md",
         "line": 7,
         "level": 2,
@@ -12690,6 +12722,12 @@
         "title": "標準化對齊（4.3.2）"
       },
       {
+        "document": "platform-guide/webhook.md",
+        "line": 33,
+        "level": 2,
+        "title": "標準化對齊（4.3.2）"
+      },
+      {
         "document": "platform-guide/wechatmp.md",
         "line": 17,
         "level": 2,
@@ -13231,7 +13269,7 @@
       },
       {
         "document": "platform-guide/webhook.md",
-        "line": 224,
+        "line": 282,
         "level": 2,
         "title": "注意事項"
       },
@@ -13699,7 +13737,7 @@
     "特性矩陣": [
       {
         "document": "platform-guide/webhook.md",
-        "line": 210,
+        "line": 268,
         "level": 2,
         "title": "特性矩陣"
       }
@@ -15001,7 +15039,7 @@
     "總覽": [
       {
         "document": "platform-guide/webhook.md",
-        "line": 19,
+        "line": 59,
         "level": 2,
         "title": "總覽"
       }
@@ -16117,13 +16155,13 @@
     "請求 Body": [
       {
         "document": "platform-guide/webhook.md",
-        "line": 82,
+        "line": 131,
         "level": 4,
         "title": "請求 Body"
       },
       {
         "document": "platform-guide/webhook.md",
-        "line": 150,
+        "line": 208,
         "level": 4,
         "title": "請求 Body"
       }
@@ -17702,6 +17740,12 @@
       {
         "document": "platform-guide/terminal.md",
         "line": 77,
+        "level": 3,
+        "title": "錯誤碼規範"
+      },
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 46,
         "level": 3,
         "title": "錯誤碼規範"
       },

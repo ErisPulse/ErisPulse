@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1972,
+  "total_keywords": 1982,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2639,7 +2639,7 @@
     "Account Configuration (EmailAdapter.accounts)": [
       {
         "document": "platform-guide/email.md",
-        "line": 36,
+        "line": 37,
         "level": 3,
         "title": "Account Configuration (EmailAdapter.accounts)"
       }
@@ -2766,6 +2766,20 @@
         "line": 30,
         "level": 3,
         "title": "Accounts & Multi-Accounts"
+      }
+    ],
+    "Accounts and Multi-Account": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 90,
+        "level": 3,
+        "title": "Accounts and Multi-Account"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 36,
+        "level": 3,
+        "title": "Accounts and Multi-Account"
       }
     ],
     "Accounts and Multi-Account Support": [
@@ -3108,6 +3122,14 @@
         "line": 59,
         "level": 3,
         "title": "Api.Using() Account Route Fix (0.1.2)"
+      }
+    ],
+    "Api.Using() Account Routing Fix (0.3.1)": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 52,
+        "level": 3,
+        "title": "Api.Using() Account Routing Fix (0.3.1)"
       }
     ],
     "Approval via Module Side (Event-based)": [
@@ -3473,7 +3495,7 @@
     "Basic Information": [
       {
         "document": "platform-guide/bilibili.md",
-        "line": 12,
+        "line": 13,
         "level": 2,
         "title": "Basic Information"
       },
@@ -3485,7 +3507,7 @@
       },
       {
         "document": "platform-guide/email.md",
-        "line": 12,
+        "line": 13,
         "level": 2,
         "title": "Basic Information"
       },
@@ -3545,7 +3567,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 12,
+        "line": 13,
         "level": 2,
         "title": "Basic Information"
       },
@@ -3664,6 +3686,12 @@
         "title": "Basic Send Methods"
       },
       {
+        "document": "platform-guide/telegram.md",
+        "line": 128,
+        "level": 3,
+        "title": "Basic Send Methods"
+      },
+      {
         "document": "platform-guide/wecom.md",
         "line": 132,
         "level": 3,
@@ -3685,7 +3713,7 @@
       },
       {
         "document": "platform-guide/bilibili.md",
-        "line": 51,
+        "line": 87,
         "level": 3,
         "title": "Basic Sending"
       },
@@ -3705,13 +3733,7 @@
     "Basic Sending Methods": [
       {
         "document": "platform-guide/email.md",
-        "line": 105,
-        "level": 3,
-        "title": "Basic Sending Methods"
-      },
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 83,
+        "line": 136,
         "level": 3,
         "title": "Basic Sending Methods"
       }
@@ -4187,17 +4209,17 @@
     "Callback Query Event": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 263,
+        "line": 345,
         "level": 4,
         "title": "Callback Query Event"
       }
     ],
-    "Callback Query-related": [
+    "Callback Query-Related": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 326,
+        "line": 408,
         "level": 3,
-        "title": "Callback Query-related"
+        "title": "Callback Query-Related"
       }
     ],
     "Callback Routes": [
@@ -4289,12 +4311,6 @@
       }
     ],
     "Chain Modifier Methods": [
-      {
-        "document": "platform-guide/bilibili.md",
-        "line": 65,
-        "level": 3,
-        "title": "Chain Modifier Methods"
-      },
       {
         "document": "platform-guide/minecraft.md",
         "line": 110,
@@ -4402,6 +4418,18 @@
         "line": 743,
         "level": 3,
         "title": "Chained Modifier Methods"
+      },
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 101,
+        "level": 3,
+        "title": "Chained Modifier Methods"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 170,
+        "level": 3,
+        "title": "Chained Modifier Methods"
       }
     ],
     "Chained Modifier Methods (Combinable)": [
@@ -4418,6 +4446,14 @@
         "line": 221,
         "level": 3,
         "title": "Chained Modifier Methods (combinable)"
+      }
+    ],
+    "Chained Modifier Methods (return self, can be combined)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 145,
+        "level": 3,
+        "title": "Chained Modifier Methods (return self, can be combined)"
       }
     ],
     "Chained Modifiers": [
@@ -4929,7 +4965,7 @@
     "Complete Email Event": [
       {
         "document": "platform-guide/email.md",
-        "line": 221,
+        "line": 253,
         "level": 3,
         "title": "Complete Email Event"
       }
@@ -5077,13 +5113,19 @@
       },
       {
         "document": "platform-guide/bilibili.md",
-        "line": 22,
+        "line": 23,
         "level": 2,
         "title": "Configuration"
       },
       {
         "document": "platform-guide/discord.md",
         "line": 24,
+        "level": 2,
+        "title": "Configuration"
+      },
+      {
+        "document": "platform-guide/email.md",
+        "line": 22,
         "level": 2,
         "title": "Configuration"
       },
@@ -5177,7 +5219,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 407,
+        "line": 490,
         "level": 3,
         "title": "Configuration Example"
       }
@@ -5237,12 +5279,6 @@
       }
     ],
     "Configuration Guide": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 21,
-        "level": 2,
-        "title": "Configuration Guide"
-      },
       {
         "document": "platform-guide/wecom.md",
         "line": 51,
@@ -5331,7 +5367,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 403,
+        "line": 486,
         "level": 2,
         "title": "Configuration Options"
       },
@@ -5470,6 +5506,14 @@
         "line": 1147,
         "level": 3,
         "title": "Connection Retry"
+      }
+    ],
+    "Content Browsing Extension Actions (for ecosystem modules)": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 187,
+        "level": 3,
+        "title": "Content Browsing Extension Actions (for ecosystem modules)"
       }
     ],
     "Content List": [
@@ -5666,12 +5710,6 @@
       {
         "document": "platform-guide/discord.md",
         "line": 256,
-        "level": 3,
-        "title": "Core Differences"
-      },
-      {
-        "document": "platform-guide/email.md",
-        "line": 137,
         "level": 3,
         "title": "Core Differences"
       },
@@ -6496,6 +6534,12 @@
         "title": "Document Information"
       },
       {
+        "document": "platform-guide/email.md",
+        "line": 7,
+        "level": 2,
+        "title": "Document Information"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 7,
         "level": 2,
@@ -6585,12 +6629,6 @@
       }
     ],
     "Documentation Information": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 7,
-        "level": 2,
-        "title": "Documentation Information"
-      },
       {
         "document": "platform-guide/minecraft.md",
         "line": 7,
@@ -6720,18 +6758,18 @@
         "title": "Ecosystem Modules"
       }
     ],
-    "Email Platform Feature Documentation": [
+    "Email Platform Features Documentation": [
       {
         "document": "platform-guide/email.md",
         "line": 1,
         "level": 1,
-        "title": "Email Platform Feature Documentation"
+        "title": "Email Platform Features Documentation"
       }
     ],
     "Email with Attachments": [
       {
         "document": "platform-guide/email.md",
-        "line": 172,
+        "line": 204,
         "level": 3,
         "title": "Email with Attachments"
       }
@@ -7008,6 +7046,14 @@
         "title": "Error Code Descriptions"
       }
     ],
+    "Error Code Normalization (0.3.1)": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 60,
+        "level": 3,
+        "title": "Error Code Normalization (0.3.1)"
+      }
+    ],
     "Error Code Normalization (4.6.x)": [
       {
         "document": "platform-guide/matrix.md",
@@ -7032,6 +7078,12 @@
         "title": "Error Code Specification"
       },
       {
+        "document": "platform-guide/email.md",
+        "line": 81,
+        "level": 3,
+        "title": "Error Code Specification"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 126,
         "level": 3,
@@ -7052,6 +7104,12 @@
       {
         "document": "platform-guide/sandbox.md",
         "line": 72,
+        "level": 3,
+        "title": "Error Code Specification"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 48,
         "level": 3,
         "title": "Error Code Specification"
       },
@@ -7152,6 +7210,12 @@
         "line": 72,
         "level": 3,
         "title": "Event Changes"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 24,
+        "level": 3,
+        "title": "Event Changes"
       }
     ],
     "Event Configuration": [
@@ -7225,7 +7289,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 237,
+        "line": 288,
         "level": 3,
         "title": "Event Examples"
       },
@@ -7283,7 +7347,7 @@
     "Event Field Example": [
       {
         "document": "platform-guide/bilibili.md",
-        "line": 178,
+        "line": 225,
         "level": 3,
         "title": "Event Field Example"
       }
@@ -7369,7 +7433,7 @@
     "Event Handling Example": [
       {
         "document": "platform-guide/email.md",
-        "line": 300,
+        "line": 333,
         "level": 2,
         "title": "Event Handling Example"
       },
@@ -7435,7 +7499,7 @@
     "Event Mapping": [
       {
         "document": "platform-guide/bilibili.md",
-        "line": 170,
+        "line": 217,
         "level": 3,
         "title": "Event Mapping"
       },
@@ -7455,7 +7519,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 309,
+        "line": 391,
         "level": 2,
         "title": "Event Mixin Extension Methods"
       },
@@ -7597,7 +7661,7 @@
       },
       {
         "document": "platform-guide/bilibili.md",
-        "line": 166,
+        "line": 213,
         "level": 2,
         "title": "Event Types"
       },
@@ -7668,6 +7732,14 @@
         "line": 57,
         "level": 3,
         "title": "Events and Accounts"
+      }
+    ],
+    "Events and Response Fields": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 70,
+        "level": 3,
+        "title": "Events and Response Fields"
       }
     ],
     "Example Usage in a Module": [
@@ -7794,12 +7866,6 @@
     ],
     "Extended Field Description": [
       {
-        "document": "platform-guide/bilibili.md",
-        "line": 197,
-        "level": 3,
-        "title": "Extended Field Description"
-      },
-      {
         "document": "platform-guide/yunhu_user.md",
         "line": 509,
         "level": 2,
@@ -7858,8 +7924,20 @@
     ],
     "Extension Field Descriptions": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 244,
+        "level": 3,
+        "title": "Extension Field Descriptions"
+      },
+      {
         "document": "platform-guide/email.md",
-        "line": 209,
+        "line": 241,
+        "level": 2,
+        "title": "Extension Field Descriptions"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 475,
         "level": 2,
         "title": "Extension Field Descriptions"
       }
@@ -7869,12 +7947,6 @@
         "document": "platform-guide/onebot11.md",
         "line": 425,
         "level": 3,
-        "title": "Extension Field Explanation"
-      },
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 393,
-        "level": 2,
         "title": "Extension Field Explanation"
       },
       {
@@ -8030,12 +8102,6 @@
     ],
     "Fluent Modifier Methods": [
       {
-        "document": "platform-guide/telegram.md",
-        "line": 125,
-        "level": 3,
-        "title": "Fluent Modifier Methods"
-      },
-      {
         "document": "platform-guide/wecom.md",
         "line": 164,
         "level": 3,
@@ -8064,14 +8130,6 @@
         "line": 172,
         "level": 3,
         "title": "Fluent Modifier Methods (return self to support fluent chaining)"
-      }
-    ],
-    "Fluent Modifier Methods (return self, can be chained)": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 114,
-        "level": 3,
-        "title": "Fluent Modifier Methods (return self, can be chained)"
       }
     ],
     "Follow the Formal Specifications": [
@@ -8349,7 +8407,7 @@
     "Generic Action Entry": [
       {
         "document": "platform-guide/bilibili.md",
-        "line": 138,
+        "line": 175,
         "level": 3,
         "title": "Generic Action Entry"
       }
@@ -8453,7 +8511,7 @@
     "Global Configuration (EmailAdapter)": [
       {
         "document": "platform-guide/email.md",
-        "line": 23,
+        "line": 24,
         "level": 3,
         "title": "Global Configuration (EmailAdapter)"
       }
@@ -8514,6 +8572,14 @@
         "title": "Group Invitation Request"
       }
     ],
+    "Group Join Request Event (after standardization)": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 319,
+        "level": 4,
+        "title": "Group Join Request Event (after standardization)"
+      }
+    ],
     "Group Management (v2, **some endpoints are only available to whitelisted bots**)": [
       {
         "document": "platform-guide/qqbot.md",
@@ -8554,12 +8620,12 @@
         "title": "Group Member Increase"
       }
     ],
-    "Group Message (with @ mention)": [
+    "Group Message (with @mention)": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 239,
+        "line": 290,
         "level": 4,
-        "title": "Group Message (with @ mention)"
+        "title": "Group Message (with @mention)"
       }
     ],
     "Group Operation Methods": [
@@ -8633,6 +8699,12 @@
       }
     ],
     "HTML Sending Methods": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 76,
+        "level": 3,
+        "title": "HTML Sending Methods"
+      },
       {
         "document": "platform-guide/sandbox.md",
         "line": 32,
@@ -9193,7 +9265,7 @@
     "Inline Query Event": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 276,
+        "line": 358,
         "level": 4,
         "title": "Inline Query Event"
       }
@@ -9325,6 +9397,12 @@
       }
     ],
     "Integrated Platform Capabilities": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 98,
+        "level": 3,
+        "title": "Integrated Platform Capabilities"
+      },
       {
         "document": "platform-guide/matrix.md",
         "line": 133,
@@ -9528,6 +9606,14 @@
         "title": "Join/Leave Event detail_type Standardization (0.1.2)"
       }
     ],
+    "Key Differences": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 168,
+        "level": 3,
+        "title": "Key Differences"
+      }
+    ],
     "Keyword Filtering": [
       {
         "document": "getting-started/common-tasks.md",
@@ -9614,6 +9700,14 @@
         "line": 8,
         "level": 2,
         "title": "Learning Path"
+      }
+    ],
+    "Legacy Configuration Migration": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 509,
+        "level": 3,
+        "title": "Legacy Configuration Migration"
       }
     ],
     "Lifecycle Events": [
@@ -10104,6 +10198,12 @@
     ],
     "Media Send Methods": [
       {
+        "document": "platform-guide/telegram.md",
+        "line": 142,
+        "level": 3,
+        "title": "Media Send Methods"
+      },
+      {
         "document": "platform-guide/wecom.md",
         "line": 139,
         "level": 3,
@@ -10116,14 +10216,6 @@
         "line": 107,
         "level": 3,
         "title": "Media Sending (Image / Voice / Video / File)"
-      }
-    ],
-    "Media Sending Methods": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 97,
-        "level": 3,
-        "title": "Media Sending Methods"
       }
     ],
     "Media Sending Protocol": [
@@ -10279,7 +10371,7 @@
     "Message Event detail_type Mapping": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 186,
+        "line": 234,
         "level": 3,
         "title": "Message Event detail_type Mapping"
       },
@@ -10312,6 +10404,14 @@
         "title": "Message Events (message)"
       }
     ],
+    "Message Events Add Top-Level message_id": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 56,
+        "level": 3,
+        "title": "Message Events Add Top-Level message_id"
+      }
+    ],
     "Message Filtering": [
       {
         "document": "getting-started/common-tasks.md",
@@ -10331,7 +10431,7 @@
     "Message Management Methods": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 110,
+        "line": 155,
         "level": 3,
         "title": "Message Management Methods"
       }
@@ -10403,7 +10503,7 @@
     "Message Segment Data Extraction": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 333,
+        "line": 415,
         "level": 3,
         "title": "Message Segment Data Extraction"
       }
@@ -10475,7 +10575,7 @@
       },
       {
         "document": "platform-guide/bilibili.md",
-        "line": 47,
+        "line": 83,
         "level": 2,
         "title": "Message Sending"
       },
@@ -10543,17 +10643,17 @@
     "Message with Inline Keyboard": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 289,
+        "line": 371,
         "level": 4,
         "title": "Message with Inline Keyboard"
       }
     ],
-    "Message-related": [
+    "Message-Related": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 313,
+        "line": 395,
         "level": 3,
-        "title": "Message-related"
+        "title": "Message-Related"
       }
     ],
     "MessageBuilder Detailed Explanation": [
@@ -10627,6 +10727,12 @@
       }
     ],
     "Meta-Action Standardization": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 72,
+        "level": 3,
+        "title": "Meta-Action Standardization"
+      },
       {
         "document": "platform-guide/minecraft.md",
         "line": 83,
@@ -10790,14 +10896,6 @@
         "line": 20,
         "level": 2,
         "title": "Migration Steps"
-      }
-    ],
-    "Migration from Old Configuration": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 426,
-        "level": 3,
-        "title": "Migration from Old Configuration"
       }
     ],
     "Minecraft Platform Features Documentation": [
@@ -11118,6 +11216,14 @@
         "title": "Multi-Account Send Syntax"
       }
     ],
+    "Multi-Account Sending": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 118,
+        "level": 3,
+        "title": "Multi-Account Sending"
+      }
+    ],
     "Multi-Account Sending Syntax": [
       {
         "document": "platform-guide/onebot12.md",
@@ -11194,14 +11300,6 @@
         "line": 599,
         "level": 2,
         "title": "Multi-account Configuration"
-      }
-    ],
-    "Multi-account Sending": [
-      {
-        "document": "platform-guide/bilibili.md",
-        "line": 82,
-        "level": 3,
-        "title": "Multi-account Sending"
       }
     ],
     "Multi-element Message": [
@@ -11319,7 +11417,7 @@
     "New Email Event (email_new)": [
       {
         "document": "platform-guide/email.md",
-        "line": 145,
+        "line": 176,
         "level": 3,
         "title": "New Email Event (email_new)"
       }
@@ -11557,7 +11655,7 @@
       },
       {
         "document": "platform-guide/bilibili.md",
-        "line": 203,
+        "line": 250,
         "level": 2,
         "title": "Notes"
       },
@@ -11681,7 +11779,7 @@
     "OB12 Message Segment Reverse Conversion (Raw_ob12)": [
       {
         "document": "platform-guide/email.md",
-        "line": 124,
+        "line": 155,
         "level": 3,
         "title": "OB12 Message Segment Reverse Conversion (Raw_ob12)"
       }
@@ -11815,7 +11913,7 @@
     "OneBot12 Standard Segment Sending": [
       {
         "document": "platform-guide/bilibili.md",
-        "line": 72,
+        "line": 108,
         "level": 3,
         "title": "OneBot12 Standard Segment Sending"
       }
@@ -11880,6 +11978,14 @@
         "line": 182,
         "level": 3,
         "title": "Other Message Types"
+      }
+    ],
+    "Others": [
+      {
+        "document": "platform-guide/bilibili.md",
+        "line": 78,
+        "level": 3,
+        "title": "Others"
       }
     ],
     "Outbound Assertions": [
@@ -12146,12 +12252,6 @@
     ],
     "Platform Capabilities Already Integrated": [
       {
-        "document": "platform-guide/email.md",
-        "line": 67,
-        "level": 3,
-        "title": "Platform Capabilities Already Integrated"
-      },
-      {
         "document": "platform-guide/ideaura.md",
         "line": 72,
         "level": 3,
@@ -12221,7 +12321,7 @@
     "Platform Extension Message Segments": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 226,
+        "line": 277,
         "level": 3,
         "title": "Platform Extension Message Segments"
       },
@@ -12310,6 +12410,12 @@
         "title": "Platform-Specific Event Types"
       },
       {
+        "document": "platform-guide/email.md",
+        "line": 166,
+        "level": 2,
+        "title": "Platform-Specific Event Types"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 239,
         "level": 2,
@@ -12323,13 +12429,13 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 182,
+        "line": 230,
         "level": 2,
         "title": "Platform-Specific Event Types"
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 195,
+        "line": 243,
         "level": 3,
         "title": "Platform-Specific Event Types"
       },
@@ -12587,7 +12693,7 @@
     "Proxy Configuration": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 422,
+        "line": 505,
         "level": 3,
         "title": "Proxy Configuration"
       }
@@ -12887,7 +12993,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 120,
+        "line": 165,
         "level": 3,
         "title": "Raw Message Sending"
       },
@@ -13413,7 +13519,7 @@
     "Reply Email Event (email_reply)": [
       {
         "document": "platform-guide/email.md",
-        "line": 195,
+        "line": 227,
         "level": 3,
         "title": "Reply Email Event (email_reply)"
       }
@@ -13627,7 +13733,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 49,
+        "line": 94,
         "level": 2,
         "title": "Request Operations (Request DSL)"
       }
@@ -13771,7 +13877,7 @@
     "Return Value Format": [
       {
         "document": "platform-guide/bilibili.md",
-        "line": 150,
+        "line": 197,
         "level": 2,
         "title": "Return Value Format"
       }
@@ -13995,7 +14101,7 @@
     "Running Mode": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 418,
+        "line": 501,
         "level": 3,
         "title": "Running Mode"
       }
@@ -14456,6 +14562,12 @@
         "line": 114,
         "level": 3,
         "title": "Send Specification"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 57,
+        "level": 3,
+        "title": "Send Specification"
       }
     ],
     "Send Target Mapping": [
@@ -14533,7 +14645,7 @@
     "Sending Examples": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 136,
+        "line": 181,
         "level": 3,
         "title": "Sending Examples"
       }
@@ -14568,12 +14680,12 @@
         "title": "Sending Messages with Send"
       }
     ],
-    "Sending Method Return Values": [
+    "Sending Method Return Value": [
       {
         "document": "platform-guide/email.md",
-        "line": 281,
+        "line": 314,
         "level": 2,
-        "title": "Sending Method Return Values"
+        "title": "Sending Method Return Value"
       }
     ],
     "Sending Rendered Results": [
@@ -14896,14 +15008,6 @@
         "title": "Standard API Actions"
       }
     ],
-    "Standard API Actions (API DSL)": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 19,
-        "level": 2,
-        "title": "Standard API Actions (API DSL)"
-      }
-    ],
     "Standard API Actions (Api DSL)": [
       {
         "document": "platform-guide/onebot11.md",
@@ -14927,7 +15031,7 @@
     "Standard API Actions (Api)": [
       {
         "document": "platform-guide/bilibili.md",
-        "line": 97,
+        "line": 133,
         "level": 2,
         "title": "Standard API Actions (Api)"
       },
@@ -14970,6 +15074,14 @@
         "title": "Standard Api Actions"
       }
     ],
+    "Standard Api Actions (Api DSL)": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 63,
+        "level": 2,
+        "title": "Standard Api Actions (Api DSL)"
+      }
+    ],
     "Standard Documentation List": [
       {
         "document": "standards/README.md",
@@ -14986,12 +15098,12 @@
         "title": "Standard Event Definitions"
       }
     ],
-    "Standard Event Examples": [
+    "Standard Event Example": [
       {
         "document": "platform-guide/email.md",
-        "line": 219,
+        "line": 251,
         "level": 2,
-        "title": "Standard Event Examples"
+        "title": "Standard Event Example"
       }
     ],
     "Standard Event Format": [
@@ -15021,7 +15133,7 @@
     "Standard Message Segment Types": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 210,
+        "line": 261,
         "level": 3,
         "title": "Standard Message Segment Types"
       },
@@ -15078,6 +15190,12 @@
     ],
     "Standardization Alignment": [
       {
+        "document": "platform-guide/bilibili.md",
+        "line": 48,
+        "level": 2,
+        "title": "Standardization Alignment"
+      },
+      {
         "document": "platform-guide/matrix.md",
         "line": 92,
         "level": 2,
@@ -15120,10 +15238,24 @@
     ],
     "Standardization Alignment (4.3.2)": [
       {
+        "document": "platform-guide/email.md",
+        "line": 66,
+        "level": 2,
+        "title": "Standardization Alignment (4.3.2)"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 55,
         "level": 2,
         "title": "Standardization Alignment (4.3.2)"
+      }
+    ],
+    "Standardization Alignment (4.3.3)": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 20,
+        "level": 2,
+        "title": "Standardization Alignment (4.3.3)"
       }
     ],
     "Standardization Alignment (4.4.3)": [
@@ -15509,7 +15641,7 @@
       },
       {
         "document": "platform-guide/email.md",
-        "line": 75,
+        "line": 106,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -15545,7 +15677,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 73,
+        "line": 118,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -15595,7 +15727,7 @@
     "Supported Standard Actions": [
       {
         "document": "platform-guide/bilibili.md",
-        "line": 120,
+        "line": 156,
         "level": 3,
         "title": "Supported Standard Actions"
       },
@@ -15623,7 +15755,7 @@
     "Supported and Unsupported Message Segments": [
       {
         "document": "platform-guide/bilibili.md",
-        "line": 88,
+        "line": 124,
         "level": 3,
         "title": "Supported and Unsupported Message Segments"
       },
@@ -15778,12 +15910,12 @@
         "title": "Telegram"
       }
     ],
-    "Telegram Platform Feature Documentation": [
+    "Telegram Platform Features Documentation": [
       {
         "document": "platform-guide/telegram.md",
         "line": 1,
         "level": 1,
-        "title": "Telegram Platform Feature Documentation"
+        "title": "Telegram Platform Features Documentation"
       }
     ],
     "Terminal Platform Features Documentation": [
@@ -16170,12 +16302,6 @@
     ],
     "Unique Event Types": [
       {
-        "document": "platform-guide/email.md",
-        "line": 135,
-        "level": 2,
-        "title": "Unique Event Types"
-      },
-      {
         "document": "platform-guide/ideaura.md",
         "line": 183,
         "level": 2,
@@ -16263,7 +16389,7 @@
     "Unsupported Standard Actions": [
       {
         "document": "platform-guide/bilibili.md",
-        "line": 130,
+        "line": 167,
         "level": 3,
         "title": "Unsupported Standard Actions"
       },
@@ -16343,7 +16469,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 342,
+        "line": 424,
         "level": 3,
         "title": "Usage Example"
       },
@@ -18068,12 +18194,6 @@
         "title": "v5 Paradigm Update (4.2.0)"
       },
       {
-        "document": "platform-guide/email.md",
-        "line": 58,
-        "level": 2,
-        "title": "v5 Paradigm Update (4.2.0)"
-      },
-      {
         "document": "platform-guide/matrix.md",
         "line": 63,
         "level": 2,
@@ -18120,6 +18240,14 @@
         "line": 21,
         "level": 2,
         "title": "v5 Paradigm Update (from 4.3.0)"
+      }
+    ],
+    "v5 Paradigm Updates (4.2.0)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 59,
+        "level": 2,
+        "title": "v5 Paradigm Updates (4.2.0)"
       }
     ],
     "wait(prompt=None, timeout=None)": [

@@ -379,7 +379,7 @@
           "icon": "fa-plug"
         },
         {
-          "title": "Документация по возможностям платформы WeCom (WeChat Work)",
+          "title": "Документация по особенностям платформы WeCom (корпоративный WeChat)",
           "path": "platform-guide/wecom.md",
           "level": 1,
           "icon": "fa-plug"
