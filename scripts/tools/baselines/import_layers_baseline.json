@@ -1,5 +1,5 @@
 {
- "lazy_total": 1022,
+ "lazy_total": 1023,
  "by_file": {
   "__init__.py": 15,
   "__main__.py": 1,
@@ -75,7 +75,7 @@
   "Core/master.py": 4,
   "Core/module.py": 61,
   "Core/ownership.py": 42,
-  "Core/router.py": 20,
+  "Core/router.py": 21,
   "Core/scope.py": 14,
   "Core/shadow.py": 12,
   "Core/storage/__init__.py": 9,

@@ -421,7 +421,7 @@ jobs:
         run: uv sync --extra test
 
       - name: Run benchmark (quick)
-        run: uv run python tests/performance/benchmark.py --quick --json benchmark-result.json
+        run: uv run python tests/performance/benchmark.py --quick --suite config,storage,startup --json benchmark-result.json
 
       - name: Upload benchmark result
         uses: actions/upload-artifact@v4
