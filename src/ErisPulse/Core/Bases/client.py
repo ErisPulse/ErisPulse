@@ -340,11 +340,11 @@ class BaseClient:
         raise NotImplementedError
 
     @property
-    def stats(self) -> dict[str, int]:
+    def stats(self) -> dict[str, int | float]:
         """
         请求统计
 
-        :return: dict[str, int] 统计数据
+        :return: dict 统计数据（含 latency_p50_ms / latency_p95_ms 延迟分位）
         """
         raise NotImplementedError
 

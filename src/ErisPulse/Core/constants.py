@@ -1101,6 +1101,11 @@ DEFAULT_HTTP_CLIENT_TIMEOUT_SECS: Final[float] = 30.0
 # 修改影响: 建立 TCP 连接的最大等待时间。
 DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS: Final[float] = 10.0
 
+# HTTP 客户端延迟采样窗口（条数）。
+# 使用位置: Core/client.py 请求延迟分位统计（stats() 的 latency_p50/p95）。
+# 修改影响: 越大分位越平滑、内存略增；增减只影响统计精度，不影响行为。
+CLIENT_LATENCY_SAMPLES_MAX: Final[int] = 256
+
 # HTTP 客户端默认最大重试次数。
 # 修改影响: 请求失败后的自动重试次数。0 = 不重试。
 DEFAULT_HTTP_CLIENT_MAX_RETRIES: Final[int] = 1
@@ -1535,6 +1540,7 @@ __all__ = [
     "DEFAULT_BROADCAST_CONCURRENCY",
     "DEFAULT_BROADCAST_TIMEOUT_SECS",
     "CONNECTION_ID_HEX_CHARS",
+    "CLIENT_LATENCY_SAMPLES_MAX",
     "DEFAULT_CONNECTION_CLOSE_TIMEOUT_SECS",
     "DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS",
     "DEFAULT_HTTP_CLIENT_MAX_RETRIES",

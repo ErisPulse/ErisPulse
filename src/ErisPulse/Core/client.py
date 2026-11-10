@@ -20,6 +20,7 @@ from __future__ import annotations
 import asyncio
 import json
 import time
+from collections import deque
 from typing import Any
 
 from .Bases.client import BaseClient, BaseClientWebSocket, BaseHttpResponse
@@ -32,6 +33,7 @@ from .Bases.errors import (
 )
 from .Bases.websocket import WSMessage
 from .constants import (
+    CLIENT_LATENCY_SAMPLES_MAX,
     DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS,
     DEFAULT_HTTP_CLIENT_MAX_RETRIES,
     DEFAULT_HTTP_CLIENT_RETRY_DELAY_SECS,
@@ -472,6 +474,8 @@ class Client(BaseClient):
             "total_bytes_sent": 0,
             "total_bytes_received": 0,
         }
+        # 请求延迟采样（秒）：有界窗口，stats 据此计算分位
+        self._latency_samples: deque[float] = deque(maxlen=CLIENT_LATENCY_SAMPLES_MAX)
 
     def _build_session_kwargs(self, timeout):
         """构建 aiohttp.ClientSession 参数，自动注入代理"""
@@ -648,6 +652,7 @@ class Client(BaseClient):
                     elapsed = time.monotonic() - start
 
                     self._stats["total_requests"] += 1
+                    self._latency_samples.append(elapsed)
                     lifecycle.fire(
                         EVENT_CLIENT_REQUEST_SUCCESS,
                         {
@@ -982,13 +987,27 @@ class Client(BaseClient):
     # ---- 统计 ----
 
     @property
-    def stats(self) -> dict[str, int]:
+    def stats(self) -> dict[str, int | float]:
         """
         请求统计
 
-        :return: dict[str, int] 统计数据 (total_requests, total_errors 等)
+        :return: dict 统计数据（total_requests / total_errors 等，含
+            latency_p50_ms / latency_p95_ms 请求延迟分位；无采样时为 0）
         """
-        return dict(self._stats)
+        out: dict[str, int | float] = dict(self._stats)
+        if self._latency_samples:
+            ordered = sorted(self._latency_samples)
+
+            def _pct(p: float) -> float:
+                idx = min(int(p * (len(ordered) - 1)), len(ordered) - 1)
+                return round(ordered[idx] * 1000, 2)
+
+            out["latency_p50_ms"] = _pct(0.50)
+            out["latency_p95_ms"] = _pct(0.95)
+        else:
+            out["latency_p50_ms"] = 0
+            out["latency_p95_ms"] = 0
+        return out
 
     def reset_stats(self) -> None:
         """
@@ -1000,6 +1019,7 @@ class Client(BaseClient):
             "total_bytes_sent": 0,
             "total_bytes_received": 0,
         }
+        self._latency_samples.clear()
 
     # ---- 上下文管理 ----
 
