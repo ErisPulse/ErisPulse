@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1933,
+  "total_keywords": 1934,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -5539,7 +5539,7 @@
       },
       {
         "document": "developer-guide/orm.md",
-        "line": 196,
+        "line": 229,
         "level": 2,
         "title": "下一步"
       },
@@ -5743,7 +5743,7 @@
     "不需要表结构、只存几个键值": [
       {
         "document": "developer-guide/orm.md",
-        "line": 202,
+        "line": 235,
         "level": 3,
         "title": "不需要表结构、只存几个键值"
       }
@@ -5807,7 +5807,7 @@
     "与声明式配置类的关系": [
       {
         "document": "developer-guide/orm.md",
-        "line": 81,
+        "line": 113,
         "level": 2,
         "title": "与声明式配置类的关系"
       }
@@ -5823,7 +5823,7 @@
     "两种声明何时用哪个": [
       {
         "document": "developer-guide/orm.md",
-        "line": 85,
+        "line": 117,
         "level": 3,
         "title": "两种声明何时用哪个"
       }
@@ -6495,7 +6495,7 @@
     "事务": [
       {
         "document": "developer-guide/orm.md",
-        "line": 71,
+        "line": 103,
         "level": 2,
         "title": "事务"
       }
@@ -7263,7 +7263,7 @@
     "关系映射（relationship）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 142,
+        "line": 175,
         "level": 2,
         "title": "关系映射（relationship）"
       }
@@ -9464,6 +9464,14 @@
         "title": "备份"
       }
     ],
+    "复合主键与联合唯一": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 49,
+        "level": 2,
+        "title": "复合主键与联合唯一"
+      }
+    ],
     "复用查询条件": [
       {
         "document": "advanced/sql-builder.md",
@@ -9475,7 +9483,7 @@
     "外键（关系映射基础）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 128,
+        "line": 160,
         "level": 2,
         "title": "外键（关系映射基础）"
       }
@@ -10821,7 +10829,7 @@
     "建表与 CRUD": [
       {
         "document": "developer-guide/orm.md",
-        "line": 45,
+        "line": 70,
         "level": 2,
         "title": "建表与 CRUD"
       }
@@ -15611,7 +15619,7 @@
     "自动迁移（阶段二）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 105,
+        "line": 137,
         "level": 2,
         "title": "自动迁移（阶段二）"
       }
@@ -16527,7 +16535,7 @@
     "边界与注意事项": [
       {
         "document": "developer-guide/orm.md",
-        "line": 97,
+        "line": 129,
         "level": 2,
         "title": "边界与注意事项"
       }
@@ -18097,7 +18105,7 @@
     "需要换数据库或部署到云数据库": [
       {
         "document": "developer-guide/orm.md",
-        "line": 198,
+        "line": 231,
         "level": 3,
         "title": "需要换数据库或部署到云数据库"
       }
