@@ -43,9 +43,16 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import sys
 import json
 import re
 from typing import Any, ClassVar
+
+if sys.version_info >= (3, 11):
+    from typing import dataclass_transform
+else:
+    from typing_extensions import dataclass_transform
+
 
 from .config_schema import python_type_category, validate_field_constraints
 from .sql_base import BaseStorage, SQLDialect, SQLStorageBase
@@ -92,6 +99,18 @@ class Field:
     >>> id: int = Field(primary_key=True, autoincrement=True)
     >>> name: str = Field(max_length=64)
     """
+
+    def __new__(cls, *args: Any, **kwargs: Any) -> Any:
+        """
+        实例化类型标注为 ``Any``
+
+        类体声明 ``name: str = Field(...)`` 的赋值侧类型检查：Field 是声明
+        哨兵（类属性由 Model 机制消费、实例属性由 ``__init__`` 写入真实值），
+        哨兵本身与声明类型不匹配——返回 ``Any`` 让类型检查器跳过赋值侧检查
+        （pydantic v2 ``Field() -> Any`` 同款口径）；实例属性读取类型由
+        声明注解（``str`` / ``int``）提供。
+        """
+        return super().__new__(cls)
 
     def __init__(
         self,
@@ -727,6 +746,7 @@ class Model:
     # 供 Relationship 按类名字符串惰性解析，声明顺序无关）
     _model_registry: ClassVar[dict[str, type[Model]]] = {}
 
+    @dataclass_transform(field_specifiers=(Field,))
     def __init_subclass__(cls, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
         collected: dict[str, Field] = {}
