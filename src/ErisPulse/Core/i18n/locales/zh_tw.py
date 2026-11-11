@@ -431,6 +431,7 @@ TRANSLATIONS = {
     "core.storage.recovered": "儲存後端 {backend} 已從連線故障中恢復，重新可用",
     "core.storage.cooldown": "{backend}: 連線不可達（冷卻期內，稍後自動重連）",
     "core.storage.cooldown_fast_fail": "儲存後端 {backend} 處於連線冷卻期內，操作快速失敗（等待自動重連）",
+    "core.storage.loop_resource_invalidated": "偵測到連線級損壞（{error}），已捨棄目前循環快取連線，下次操作自動重建",
     "core.storage.aclose_failed": "關閉儲存後端資源失敗: {error}",
     "core.storage.bridge_closed": "儲存同步橋接已關閉，無法執行非同步操作",
     "core.storage.bridge_reentrant": "禁止在儲存橋接執行緒內呼叫同步相容介面，請改用非同步方法",

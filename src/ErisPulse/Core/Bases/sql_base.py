@@ -856,6 +856,33 @@ class SQLStorageBase(BaseStorage):
         finally:
             await self._release_resource_conn(resource, conn)
 
+    # 连接级损坏判定：命中即丢弃循环缓存资源，下次操作重建（规则 26 自动重连兑现）
+    _CONN_BROKEN_MARKERS = ("closed", "disk i/o", "malformed", "shutdown")
+
+    def _invalidate_if_connection_broken(self, e: BaseException) -> None:
+        """
+        {!--< internal-use >!--}
+        连接级损坏（closed / 磁盘 IO / 库文件损坏）时丢弃当前循环的缓存资源
+
+        写锁竞争（database is locked）不属此类——连接本身可用，丢弃会误伤。
+        不失效则坏连接永远命中缓存、永不重建（自愈断路，故障持续到进程退出）。
+
+        :param e: 操作抛出的异常
+        """
+        msg = str(e).lower()
+        if not any(marker in msg for marker in self._CONN_BROKEN_MARKERS):
+            return
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            return
+        with self._resources_lock:
+            if loop in self._loop_resources:
+                del self._loop_resources[loop]
+                logger.warning(
+                    i18n.t("core.storage.loop_resource_invalidated", error=str(e))
+                )
+
     async def _run_with_conn(
         self, impl: Callable[..., Any], *args: Any, conn: Any = None
     ) -> Any:
@@ -865,8 +892,12 @@ class SQLStorageBase(BaseStorage):
         """
         if conn is not None:
             return await impl(conn, *args)
-        async with self._acquire() as acquired:
-            return await impl(acquired, *args)
+        try:
+            async with self._acquire() as acquired:
+                return await impl(acquired, *args)
+        except Exception as e:
+            self._invalidate_if_connection_broken(e)
+            raise
 
     # 方言执行漏斗（子类实现）
 
@@ -1266,6 +1297,10 @@ class SQLStorageBase(BaseStorage):
             if logger.should_log(TRACE):
                 logger.trace(f"storage.set: key={key}")
             return result
+        except StorageUnreachableError:
+            # 规则 26：连接级不可达 → 冷却期快速失败返回 False（框架韧性，failover 契约）
+            logger.warning(i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name))
+            return False
         except Exception as e:
             raise StorageOperationError(
                 i18n.t("core.storage.set_failed", key=key, error=e),
@@ -1334,6 +1369,10 @@ class SQLStorageBase(BaseStorage):
             logger.trace(i18n.t("core.storage.kv_delete", key=key))
         try:
             return await self._run_with_conn(self._delete_impl, key, conn=conn)
+        except StorageUnreachableError:
+            # 规则 26：连接级不可达 → 冷却期快速失败返回 False（框架韧性，failover 契约）
+            logger.warning(i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name))
+            return False
         except Exception as e:
             raise StorageOperationError(
                 i18n.t("core.storage.delete_failed", key=key, error=e),
@@ -1387,6 +1426,10 @@ class SQLStorageBase(BaseStorage):
                 conn=conn,
             )
             return True
+        except StorageUnreachableError:
+            # 规则 26：连接级不可达 → 冷却期快速失败返回 False（框架韧性，failover 契约）
+            logger.warning(i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name))
+            return False
         except Exception as e:
             raise StorageOperationError(
                 i18n.t("core.storage.clear_failed", error=e), operation="clear"
@@ -1470,6 +1513,10 @@ class SQLStorageBase(BaseStorage):
 
             await self._run_with_conn(write_all)
             return True
+        except StorageUnreachableError:
+            # 规则 26：连接级不可达 → 冷却期快速失败返回 False（框架韧性，failover 契约）
+            logger.warning(i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name))
+            return False
         except Exception as e:
             raise StorageOperationError(
                 i18n.t("core.storage.set_multi_failed", error=e), operation="set_multi"
