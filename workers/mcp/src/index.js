@@ -765,9 +765,8 @@ async function handleMcpRequest(body) {
       };
   }
 }
-
 // ============================================================
-// 7. 人类访问的着陆页（GET /）
+// 7. 人类访问的着陆页（GET /）—— 与 ErisPulse Dashboard 同一设计语言
 // ============================================================
 
 function pickRequestLang(request, url) {
@@ -780,152 +779,360 @@ function pickRequestLang(request, url) {
   return "zh-CN";
 }
 
+const NPM_PACKAGE = "@erisdev/mcp-server";
+const NPM_VERSION = "1.0.4";
+
 const LANDING_I18N = {
   "zh-CN": {
+    htmlLang: "zh-CN",
     title: "ErisPulse MCP Server",
-    tag: "MCP · mcp.erisdev.com",
-    lead: "本端点为 AI 编码助手提供 ErisPulse 官方文档检索能力（MCP Streamable HTTP）。",
-    tools: "支持的 MCP 工具",
-    search: "BM25 关键词检索",
-    read: "读取单篇文档",
-    list: "列出所有文档",
-    client: "在客户端中接入",
-    endpoint: "在客户端配置中填入上面的 url：",
-    docs: "开源仓库",
-    source: "github.com/ErisPulse/ErisPulse",
+    crumbs: "ErisPulse / MCP",
+    lead: "两组 MCP 服务：官方文档检索（本站端点 / npm 本地包）与机器人运行时控制（ApiMCP 模块）。",
+    chips: ["Streamable HTTP", "MCP 2025-03-26", "BM25 检索", "文档 5 语言"],
+    docsTitle: "文档检索 MCP · erispulse-docs",
+    docsDesc: "让 AI 编码助手直接检索、阅读 ErisPulse 官方文档。两种部署形态，工具集完全相同。",
+    docsTabs: ["远程端点", "npm 本地包"],
+    remoteDesc: "零依赖，客户端直连 Cloudflare Worker；文档缓存 4 小时，限流 60 次/分钟/IP。",
+    remoteLabel: "客户端 mcpServers 配置",
+    npmDesc: "本地 Node 进程（stdio 默认 / 可选 HTTP）。首次运行拉取文档缓存到 <code>~/.cache/erispulse-mcp</code>；设置 <code>ERISPULSE_DOCS_DIR</code> 可完全离线。",
+    npmRunLabel: "运行（stdio）",
+    npmHttpLabel: "HTTP 模式（自定义端口）",
+    npmCfgLabel: "客户端 mcpServers 配置（stdio）",
+    apiTitle: "机器人运行时 MCP · ApiMCP 模块",
+    apiDesc: "把 <strong>框架运行时能力</strong>开放给 AI 客户端：收发消息、跨模块 RPC、模块热重载、适配器状态、事件流订阅、拓扑观测——AI 可以直接操作你的机器人，而不只是查文档。REST 桥挂框架内置 HTTP server（默认 <code>0.0.0.0:8000</code>），token 必须显式配置。",
+    apiInstallLabel: "安装（机器人环境）",
+    apiTokenLabel: "配置 token（config.toml [ApiMCP] 节）",
+    apiCfgLabel: "Claude Desktop 配置",
+    docsToolsTitle: "文档工具（3 个）",
+    apiToolsTitle: "运行时工具（14 个）",
+    apiToolsNote: "安全默认：限流 30 请求/分钟 · 模块重载默认允许 · 适配器重载默认禁用 · 模块调用白名单可配 · 私有方法拒绝",
+    securityTitle: "访问控制",
+    secItems: ["Bearer / X-MCP-Token 鉴权", "限流 60/min（远程）· 30/min（ApiMCP）", "事件环形缓冲 1000 条", "消息段摘要化（文本 500 字符）"],
+    linksTitle: "相关链接",
+    links: { repo: "框架仓库", npm: "npm 包", apimcp: "ApiMCP 模块", docs: "官方文档", site: "官方网站" },
+    copyBtn: "复制",
+    copiedBtn: "已复制!",
+    foot: "ErisDev · MCP Server v" + NPM_VERSION,
   },
   en: {
+    htmlLang: "en",
     title: "ErisPulse MCP Server",
-    tag: "MCP · mcp.erisdev.com",
-    lead: "This endpoint gives AI coding assistants MCP Streamable HTTP access to ErisPulse docs.",
-    tools: "MCP tools",
-    search: "BM25 keyword search",
-    read: "read a single doc",
-    list: "list all docs",
-    client: "Client configuration",
-    endpoint: "Set the url above in your client:",
-    docs: "Source",
-    source: "github.com/ErisPulse/ErisPulse",
+    crumbs: "ErisPulse / MCP",
+    lead: "Two MCP services: official docs retrieval (this endpoint / npm package) and bot runtime control (ApiMCP module).",
+    chips: ["Streamable HTTP", "MCP 2025-03-26", "BM25 search", "Docs in 5 languages"],
+    docsTitle: "Docs MCP · erispulse-docs",
+    docsDesc: "Lets AI coding assistants search and read the official ErisPulse docs. Two deployment forms, identical toolset.",
+    docsTabs: ["Remote endpoint", "npm local"],
+    remoteDesc: "Zero-dependency: clients hit the Cloudflare Worker directly. Docs cached 4h, rate limit 60 req/min/IP.",
+    remoteLabel: "Client mcpServers config",
+    npmDesc: "Local Node process (stdio by default, HTTP optional). Docs are pulled on first run and cached under <code>~/.cache/erispulse-mcp</code>; set <code>ERISPULSE_DOCS_DIR</code> to stay fully offline.",
+    npmRunLabel: "Run (stdio)",
+    npmHttpLabel: "HTTP mode (custom port)",
+    npmCfgLabel: "Client mcpServers config (stdio)",
+    apiTitle: "Bot Runtime MCP · ApiMCP module",
+    apiDesc: "Exposes the <strong>framework runtime</strong> to AI clients: send/receive messages, cross-module RPC, hot reload, adapter status, event streams, topology — AI can drive your bot, not just read docs. The REST bridge mounts on the framework HTTP server (default <code>0.0.0.0:8000</code>); a token must be configured explicitly.",
+    apiInstallLabel: "Install (bot env)",
+    apiTokenLabel: "Configure token (config.toml [ApiMCP])",
+    apiCfgLabel: "Claude Desktop config",
+    docsToolsTitle: "Docs tools (3)",
+    apiToolsTitle: "Runtime tools (14)",
+    apiToolsNote: "Secure defaults: 30 req/min rate limit · module reload allowed · adapter reload disabled by default · configurable call whitelist · private methods rejected",
+    securityTitle: "Access control",
+    secItems: ["Bearer / X-MCP-Token auth", "Rate limit 60/min (remote) · 30/min (ApiMCP)", "Ring buffer of 1000 events", "Message segments summarized (500 chars)"],
+    linksTitle: "Resources",
+    links: { repo: "Framework repo", npm: "npm package", apimcp: "ApiMCP module", docs: "Documentation", site: "Website" },
+    copyBtn: "Copy",
+    copiedBtn: "Copied!",
+    foot: "ErisDev · MCP Server v" + NPM_VERSION,
   },
 };
 
+const LANDING_TOOLS_DOCS = [
+  ["search_docs(query, top_k?, lang?)", "BM25 keyword search across official docs"],
+  ["read_document(doc_path, lang?)", "read one full document (Markdown)"],
+  ["list_documents(lang?)", "list all doc titles & paths"],
+];
+
+const LANDING_TOOLS_API = [
+  ["list_modules", "list registered modules & status"],
+  ["get_module_info(name)", "module registration + meta info"],
+  ["call_module(name, method, args?, kwargs?)", "cross-module RPC (whitelist-guarded)"],
+  ["reload_module(name)", "hot reload a module"],
+  ["list_adapters", "list platform adapters & bots"],
+  ["get_adapter_status(platform)", "per-platform runtime status"],
+  ["reload_adapter(platform)", "adapter reload (off by default)"],
+  ["send_message(platform, target_type, target_id, method, content)", "send Text/Image/Voice/Video/File"],
+  ["recent_messages(platform?, session?, limit=50)", "recent messages via transcript"],
+  ["subscribe_events(types)", "subscribe message/notice/request/meta/*"],
+  ["unsubscribe(subscription_id)", "cancel a subscription"],
+  ["poll_events(since_ts, since_seq, limit?, subscription_id?)", "incremental event polling"],
+  ["get_topology", "runtime topology (sanitized)"],
+  ["sdk_health", "SDK version / uptime / module & adapter summary"],
+];
+
 function landingPage(lang) {
   const t = LANDING_I18N[lang] || LANDING_I18N["zh-CN"];
+  const isZh = lang === "zh-CN";
+  const remoteJson = JSON.stringify(
+    { mcpServers: { erispulse: { url: "https://mcp.erisdev.com/" } } },
+    null,
+    2,
+  );
+  const npmJson = JSON.stringify(
+    { mcpServers: { erispulse: { command: "npx", args: ["-y", NPM_PACKAGE] } } },
+    null,
+    2,
+  );
+  const apiJson = JSON.stringify(
+    {
+      mcpServers: {
+        erispulse: {
+          command: "erispulse-apimcp",
+          env: {
+            ERISPULSE_APIMCP_URL: "http://127.0.0.1:8000",
+            ERISPULSE_APIMCP_TOKEN: "your-token",
+          },
+        },
+      },
+    },
+    null,
+    2,
+  );
+
+  const docsToolsRows = LANDING_TOOLS_DOCS.map(
+    (x) => '<div class="tool-row"><code>' + x[0] + "</code><span>" + x[1] + "</span></div>",
+  ).join("");
+  const apiToolsRows = LANDING_TOOLS_API.map(
+    (x) => '<div class="tool-row"><code>' + x[0] + "</code><span>" + x[1] + "</span></div>",
+  ).join("");
+  const secChips = (t.secItems || [])
+    .map((s) => '<span class="sec-chip">' + s + "</span>")
+    .join("");
+
   const html = `<!DOCTYPE html>
-<html lang="${lang || "zh-CN"}">
+<html lang="${t.htmlLang}">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>${t.title}</title>
 <style>
   :root {
-    --bg: #f4f6fb; --bg-deep: #eceff6; --card: #ffffff;
-    --ink: #1f2937; --ink-soft: #64748b; --ink-faint: #9aa6b8; --line: #e8edf5;
-    --accent: #64748b; --accent-glow: rgba(100,116,139,0.10); --danger: #ef4444;
-    --radius: 14px; --shadow: 0 1px 2px rgba(16,24,40,0.03), 0 4px 20px rgba(16,24,40,0.04);
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    --bg-p: #f6f7f9; --bg-s: #eef0f3; --bg-t: #ffffff;
+    --tx-p: #0a0a0a; --tx-s: #5f6b7a; --tx-t: #9aa4b1;
+    --bd: #e5e8ec; --bd-h: #d0d6dd;
+    --accent: #4aa3dd; --accent-fill: #3a94d0; --accent-soft: rgba(74,163,221,.14);
+    --ok-c: #178a52; --ok-bg: #e9f8ef; --ok-bd: #bce8cd;
+    --radius: 14px;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  html[data-theme="dark"] {
+    --bg-p: #0f1115; --bg-s: #161a20; --bg-t: #1c2027;
+    --tx-p: #e6e9f0; --tx-s: #98a2b0; --tx-t: #5f6875;
+    --bd: #272c35; --bd-h: #343b47;
+    --accent: #6a9df0; --accent-fill: #4a85d8; --accent-soft: rgba(106,157,240,.16);
+    --ok-c: #6fd6a1; --ok-bg: #12301f; --ok-bd: #1e5c3c;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: var(--font-sans); background: var(--bg); color: var(--ink); min-height: 100vh; line-height: 1.6; -webkit-font-smoothing: antialiased; }
-  .container { max-width: 860px; margin: 0 auto; padding: 32px 24px 64px; }
-  .crumbs { color: var(--ink-faint); font-size: 13px; margin-bottom: 6px; }
-  h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
-  .sub { color: var(--ink-soft); font-size: 15px; margin-top: 6px; }
+  body { font-family: var(--font-sans); background: var(--bg-p); color: var(--tx-p); min-height: 100vh; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent-fill); text-decoration: none; }
+  code { font-family: var(--font-mono); }
+  .topbar { position: sticky; top: 10px; z-index: 10; width: min(1080px, calc(100% - 24px)); margin: 10px auto 0; background: var(--bg-t); border: 1px solid var(--bd); border-radius: var(--radius); padding: 0 18px; height: 54px; display: flex; align-items: center; gap: 12px; }
+  .topbar .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; }
+  .topbar .brand svg { width: 22px; height: 22px; color: var(--accent-fill); }
+  .topbar .sp { flex: 1; }
+  .round { width: 34px; height: 34px; border-radius: 8px; background: var(--bg-t); border: 1px solid var(--bd); display: flex; align-items: center; justify-content: center; color: var(--tx-s); cursor: pointer; transition: color .15s ease, border-color .15s ease; }
+  .round:hover { border-color: var(--accent); color: var(--accent); }
+  .round svg { width: 17px; height: 17px; }
+  .container { max-width: 1080px; margin: 0 auto; padding: 28px 24px 64px; }
+  .header { margin-bottom: 26px; }
+  .crumbs { color: var(--tx-t); font-size: 13px; margin-bottom: 6px; }
+  .header h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
+  .header .sub { color: var(--tx-s); font-size: 15px; margin-top: 6px; max-width: 680px; }
   .badges { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-  .chip { padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; background: var(--bg-deep); color: var(--ink-soft); border: 1px solid var(--line); }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 28px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; transition: box-shadow 0.2s, transform 0.2s; }
-  .card:hover { box-shadow: 0 6px 28px rgba(16,24,40,0.06); transform: translateY(-2px); }
-  .card.wide { grid-column: 1 / -1; }
-  .card-head { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; margin-bottom: 18px; }
-  .card-head svg { width: 19px; height: 19px; }
-  .cmd-wrapper { position: relative; background: var(--bg-deep); border-radius: 12px; overflow: hidden; }
-  .cmd-label { padding: 8px 16px; font-size: 12px; color: var(--ink-soft); border-bottom: 1px solid var(--line); background: rgba(0,0,0,0.02); }
-  .cmd-content { padding: 14px 16px; font-family: var(--font-mono); font-size: 13px; color: var(--ink); display: flex; align-items: center; justify-content: space-between; gap: 12px; overflow-x: auto; }
-  .cmd-text { flex: 1; word-break: break-all; }
-  .btn { background: var(--accent); color: #fff; border: none; padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-  .btn:hover { opacity: 0.9; }
-  .steps { list-style: none; counter-reset: s; }
-  .steps li { position: relative; padding-left: 32px; margin-bottom: 12px; color: var(--ink-soft); font-size: 14px; }
-  .steps li:last-child { margin-bottom: 0; }
-  .steps li::before { counter-increment: s; content: counter(s); position: absolute; left: 0; top: 0; width: 22px; height: 22px; background: var(--bg-deep); border: 1px solid var(--line); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--accent); }
-  .steps code { font-family: var(--font-mono); color: var(--ink); background: var(--bg-deep); padding: 1px 5px; border-radius: 4px; }
+  .chip { padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; background: var(--bg-s); color: var(--tx-s); border: 1px solid var(--bd); }
+  .card { background: var(--bg-t); border: 1px solid var(--bd); border-radius: var(--radius); padding: 22px; transition: border-color .2s ease; }
+  .card:hover { border-color: var(--bd-h); }
+  .card + .card { margin-top: 16px; }
+  .card-head { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+  .card-head svg { width: 19px; height: 19px; color: var(--accent-fill); flex: none; }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+  .tab-btn { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--bd); background: var(--bg-s); color: var(--tx-s); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .tab-btn.active { background: var(--accent-fill); border-color: var(--accent-fill); color: #fff; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+  .pane-desc { color: var(--tx-s); font-size: 14px; margin-bottom: 14px; }
+  .pane-desc code { color: var(--accent-fill); background: var(--accent-soft); padding: 2px 6px; border-radius: 5px; font-size: 12px; }
+  .cmd-wrapper { border: 1px solid var(--bd); border-radius: 12px; overflow: hidden; margin-bottom: 12px; background: var(--bg-s); }
+  .cmd-label { padding: 8px 16px; font-size: 12px; color: var(--tx-s); border-bottom: 1px solid var(--bd); }
+  .cmd-content { padding: 14px 16px; font-size: 13px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .cmd-content pre { flex: 1; font-family: var(--font-mono); margin: 0; overflow-x: auto; scrollbar-width: thin; }
+  .btn { background: var(--accent-fill); color: #fff; border: none; padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: inherit; }
+  .btn:hover { filter: brightness(.94); }
+  .btn.ok { background: var(--ok-c); }
+  .tools-grid { display: grid; grid-template-columns: 1fr; gap: 0; }
+  .tool-row { display: flex; flex-direction: column; gap: 2px; padding: 10px 4px; border-bottom: 1px solid var(--bd); }
+  .tool-row:last-child { border-bottom: none; }
+  .tool-row code { color: var(--tx-p); background: var(--bg-s); padding: 2px 8px; border-radius: 6px; font-size: 12.5px; width: fit-content; }
+  .tool-row span { color: var(--tx-s); font-size: 13px; }
+  .note { margin-top: 12px; font-size: 12.5px; color: var(--tx-t); }
+  .sec-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sec-chip { padding: 4px 12px; border-radius: 999px; font-size: 12px; background: var(--ok-bg); color: var(--ok-c); border: 1px solid var(--ok-bd); }
   .links-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
-  .link-item { display: flex; align-items: center; justify-content: center; padding: 12px; background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px; color: var(--ink-soft); text-decoration: none; font-size: 14px; font-weight: 600; transition: all 0.2s; }
-  .link-item:hover { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
-  .foot { margin-top: 36px; text-align: center; color: var(--ink-faint); font-size: 13px; }
-  .lang-switch { display: inline-flex; background: var(--bg-deep); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; margin-bottom: 12px; }
-  .lang-btn { padding: 6px 16px; font-size: 12px; background: transparent; border: none; color: var(--ink-soft); cursor: pointer; }
-  .lang-btn.active { background: var(--accent); color: #fff; }
-  a { color: var(--accent); text-decoration: none; }
-  @media (max-width: 640px) { .container { padding: 20px 14px 40px; } .grid { grid-template-columns: 1fr; } .cmd-content { flex-direction: column; align-items: stretch; gap: 10px; } .btn { width: 100%; } }
+  .link-item { display: flex; align-items: center; justify-content: center; padding: 12px; background: var(--bg-s); border: 1px solid var(--bd); border-radius: 10px; color: var(--tx-s); text-decoration: none; font-size: 14px; font-weight: 600; transition: color .15s ease, border-color .15s ease; }
+  .link-item:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-fill); }
+  .foot { margin-top: 32px; text-align: center; color: var(--tx-t); font-size: 13px; }
+  .lang-switch { display: inline-flex; background: var(--bg-s); border: 1px solid var(--bd); border-radius: 999px; overflow: hidden; margin-top: 12px; }
+  .lang-btn { padding: 6px 16px; font-size: 12px; background: transparent; border: none; color: var(--tx-s); cursor: pointer; font-family: inherit; }
+  .lang-btn.active { background: var(--accent-fill); color: #fff; }
+  @media (max-width: 760px) { .container { padding: 20px 14px 40px; } .cmd-content { flex-direction: column; align-items: stretch; } .btn { width: 100%; } }
 </style>
 </head>
 <body>
+<div class="topbar">
+  <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>ErisPulse</span></div>
+  <div class="sp"></div>
+  <button class="round" id="themeBtn" onclick="toggleTheme()" title="Theme" aria-label="Toggle theme">
+    <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+  </button>
+  <a class="round" href="https://github.com/ErisPulse/ErisPulse" target="_blank" rel="noopener noreferrer" title="GitHub" aria-label="GitHub">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55 0-.27-.01-1.17-.02-2.12-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.75 2.69 1.25 3.34.95.1-.74.4-1.25.72-1.53-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.05.77 2.12 0 1.53-.01 2.76-.01 3.14 0 .3.2.67.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+  </a>
+</div>
+
 <div class="container">
-  <div class="crumbs">ErisPulse / MCP</div>
-  <h1>${t.title}</h1>
-  <div class="sub">${t.lead}</div>
-  <div class="badges">
-    <span class="chip">MCP</span><span class="chip">Streamable HTTP</span><span class="chip">mcp.erisdev.com</span>
+  <div class="header">
+    <div class="crumbs">${t.crumbs}</div>
+    <h1>${t.title}</h1>
+    <div class="sub">${t.lead}</div>
+    <div class="badges">${t.chips.map((c) => '<span class="chip">' + c + "</span>").join("")}</div>
   </div>
 
-  <div class="grid">
-    <div class="card wide">
-      <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>${t.client}</div>
+  <div class="card">
+    <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>${t.docsTitle}</div>
+    <p class="pane-desc">${t.docsDesc}</p>
+    <div class="tabs">
+      ${t.docsTabs.map((n, i) => '<button class="tab-btn' + (i === 0 ? " active" : "") + '" onclick="switchTab(' + i + ')">' + n + "</button>").join("")}
+    </div>
+
+    <div class="tab-pane active" id="pane-0">
+      <p class="pane-desc">${t.remoteDesc}</p>
       <div class="cmd-wrapper">
-        <div class="cmd-label">mcpServers</div>
-        <div class="cmd-content">
-          <span class="cmd-text">{ "mcpServers": { "erispulse": { "url": "https://mcp.erisdev.com/" } } }</span>
-          <button class="btn" onclick="copyCmd(this)">复制</button>
-        </div>
+        <div class="cmd-label">${t.remoteLabel}</div>
+        <div class="cmd-content"><pre>${remoteJson}</pre><button class="btn" data-copy>${t.copyBtn}</button></div>
       </div>
-      <p class="hint" style="margin-top:12px;font-size:13px;color:var(--ink-soft)">${t.endpoint}</p>
     </div>
 
-    <div class="card">
-      <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>${t.tools}</div>
-      <ol class="steps">
-        <li><code>search_docs(query, top_k?, lang?)</code> — ${t.search}</li>
-        <li><code>read_document(doc_path, lang?)</code> — ${t.read}</li>
-        <li><code>list_documents(lang?)</code> — ${t.list}</li>
-      </ol>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>${t.docs}</div>
-      <div class="links-grid">
-        <a href="https://github.com/ErisPulse/ErisPulse" target="_blank" class="link-item">GitHub</a>
-        <a href="https://www.erisdev.com" target="_blank" class="link-item">官网</a>
-        <a href="https://github.com/ErisPulse/ErisPulse/tree/Develop/v2/workers/mcp" target="_blank" class="link-item">源码</a>
+    <div class="tab-pane" id="pane-1">
+      <p class="pane-desc">${t.npmDesc}</p>
+      <div class="cmd-wrapper">
+        <div class="cmd-label">${t.npmRunLabel}</div>
+        <div class="cmd-content"><pre>npx -y ${NPM_PACKAGE}</pre><button class="btn" data-copy>${t.copyBtn}</button></div>
       </div>
+      <div class="cmd-wrapper">
+        <div class="cmd-label">${t.npmHttpLabel}</div>
+        <div class="cmd-content"><pre>epsdk-mcp --http --port 8765</pre><button class="btn" data-copy>${t.copyBtn}</button></div>
+      </div>
+      <div class="cmd-wrapper">
+        <div class="cmd-label">${t.npmCfgLabel}</div>
+        <div class="cmd-content"><pre>${npmJson}</pre><button class="btn" data-copy>${t.copyBtn}</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>${t.apiTitle}</div>
+    <p class="pane-desc">${t.apiDesc}</p>
+    <div class="cmd-wrapper">
+      <div class="cmd-label">${t.apiInstallLabel}</div>
+      <div class="cmd-content"><pre>epsdk install ErisPulse-ApiMCP</pre><button class="btn" data-copy>${t.copyBtn}</button></div>
+    </div>
+    <div class="cmd-wrapper">
+      <div class="cmd-label">${t.apiTokenLabel}</div>
+      <div class="cmd-content"><pre>token = "your-long-random-string"</pre><button class="btn" data-copy>${t.copyBtn}</button></div>
+    </div>
+    <div class="cmd-wrapper">
+      <div class="cmd-label">${t.apiCfgLabel}</div>
+      <div class="cmd-content"><pre>${apiJson}</pre><button class="btn" data-copy>${t.copyBtn}</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>${t.docsToolsTitle}</div>
+    <div class="tools-grid">${docsToolsRows}</div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>${t.apiToolsTitle}</div>
+    <div class="tools-grid">${apiToolsRows}</div>
+    <p class="note">${t.apiToolsNote}</p>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5.4L12 2.5 4 5.4V12c0 6 8 10 8 10z"/></svg>${t.securityTitle}</div>
+    <div class="sec-chips">${secChips}</div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>${t.linksTitle}</div>
+    <div class="links-grid">
+      <a href="https://github.com/ErisPulse/ErisPulse" target="_blank" rel="noopener noreferrer" class="link-item">${t.links.repo}</a>
+      <a href="https://www.npmjs.com/package/${NPM_PACKAGE}" target="_blank" rel="noopener noreferrer" class="link-item">${t.links.npm}</a>
+      <a href="https://github.com/ErisPulse/ErisPulse-ApiMCP" target="_blank" rel="noopener noreferrer" class="link-item">${t.links.apimcp}</a>
+      <a href="https://docs.erisdev.com" target="_blank" rel="noopener noreferrer" class="link-item">${t.links.docs}</a>
+      <a href="https://www.erisdev.com" target="_blank" rel="noopener noreferrer" class="link-item">${t.links.site}</a>
     </div>
   </div>
 
   <div class="foot">
+    ${t.foot}
     <div class="lang-switch">
-      <button class="lang-btn ${lang === "en" ? "active" : ""}" onclick="switchLang('en')">English</button>
-      <button class="lang-btn ${lang !== "en" ? "active" : ""}" onclick="switchLang('zh')">中文</button>
+      <button class="lang-btn ${isZh ? "" : "active"}" onclick="switchLang('en')">English</button>
+      <button class="lang-btn ${isZh ? "active" : ""}" onclick="switchLang('zh')">中文</button>
     </div>
-      </div>
+  </div>
 </div>
+
 <script>
-function copyCmd(btn) {
-  const t = btn.closest('.cmd-wrapper').querySelector('.cmd-text').innerText.trim();
-  navigator.clipboard.writeText(t).then(() => {
-    const zh = document.documentElement.lang !== 'en';
-    const orig = btn.innerText;
-    btn.innerText = zh ? '已复制!' : 'Copied!';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.innerText = orig; btn.classList.remove('copied'); }, 2000);
-  }).catch(() => {});
-}
-function switchLang(lang) {
-  const url = new URL(window.location.href);
-  url.searchParams.set('lang', lang);
-  window.location.href = url.toString();
-}
+(function () {
+  var root = document.documentElement;
+  var stored = null;
+  try { stored = localStorage.getItem("ep_theme"); } catch (e) {}
+  var theme = stored === "dark" || stored === "light" ? stored
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  function applyTheme(v) {
+    root.setAttribute("data-theme", v);
+    theme = v;
+    try { localStorage.setItem("ep_theme", v); } catch (e) {}
+  }
+  applyTheme(theme);
+  window.toggleTheme = function () { applyTheme(theme === "dark" ? "light" : "dark"); };
+  window.switchTab = function (i) {
+    document.querySelectorAll(".tab-btn").forEach(function (b, idx) { b.classList.toggle("active", idx === i); });
+    document.querySelectorAll(".tab-pane").forEach(function (p, idx) { p.classList.toggle("active", idx === i); });
+  };
+  var COPY_OK = ${JSON.stringify(t.copiedBtn)};
+  var COPY_TXT = ${JSON.stringify(t.copyBtn)};
+  document.querySelectorAll("[data-copy]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var pre = btn.parentElement.querySelector("pre");
+      if (!pre) return;
+      var done = function () {
+        btn.innerText = COPY_OK;
+        btn.classList.add("ok");
+        setTimeout(function () { btn.innerText = COPY_TXT; btn.classList.remove("ok"); }, 2000);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(pre.innerText).then(done, done);
+      } else { done(); }
+    });
+  });
+  window.switchLang = function (lang) {
+    var url = new URL(window.location.href);
+    url.searchParams.set("lang", lang);
+    window.location.href = url.toString();
+  };
+})();
 </script>
 </body>
 </html>`;
