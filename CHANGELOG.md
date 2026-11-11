@@ -73,6 +73,37 @@
 
 ---
 
+## [2.12.0-dev.1] - 2026/11/11
+> 开发版
+
+**版本摘要**
+本版本主题为「内置 ORM 能力补全」：复合主键、联合唯一约束、自动时间戳列等声明能力落地，并修正 ORM 字段声明的类型检查误报。
+
+**升级建议**
+- **是否建议升级**：dev 版，建议开发环境先行验证
+- 既有单主键模型行为不变，新能力全部为增量声明参数与增量方法
+
+**注意事项**
+- 存量表执行 `create_table()` 会自动补建 `__unique_together__` 声明的唯一索引（幂等，无需重建表）
+- 复合主键模型的关系映射（has-many / belongs-to）暂不支持，实例访问时明确报错（此前静默取首个主键）
+
+### 新增
+
+- @YingXinche
+  - ORM 复合主键：多个 `primary_key=True` 字段收敛为表级 `PRIMARY KEY (a, b)` 约束，`get` / `save` / `delete` 按全部主键列定位，关系映射对复合主键明确报错（自增主键保持单列，与复合主键互斥，定义期校验）
+  - ORM 联合唯一：模型 `__unique_together__` 声明联合唯一分组，唯一索引实现、存量表免重建自动补建；存储层 `aCreateTable` 同步支持表级约束片段
+  - ORM `get_or_create` / `update_or_create` 惯用快捷
+  - ORM 自动时间戳列：`Field(auto_now_add=True)` 插入打点、`auto_now=True` 插入与实例保存均打点（浮点纪秒；QuerySet 批量更新路径不触发）
+  - ORM 外键删除动作：`Field(on_delete=...)` 生成 `ON DELETE` 子句（CASCADE / SET NULL / RESTRICT / NO ACTION / SET DEFAULT）
+  - ORM 部分列更新：`save(update_fields=[...])` 白名单更新
+
+### 修复
+
+- @YingXinche
+  - ORM `Field` 声明赋值侧类型检查误报：哨兵返回 `Any`（pydantic v2 同款口径）+ `dataclass_transform`（PEP 681），ty / basedpyright 检查归零，IDE 字段构造参数补全精确化
+
+---
+
 ## [2.12.0-dev.0] - 2026/11/05
 > 开发版
 

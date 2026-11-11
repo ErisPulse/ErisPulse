@@ -363,6 +363,7 @@ class Main(BaseModule):
             id: int = Field(primary_key=True, autoincrement=True)
             content: str = Field(max_length=255)
             created_by: str = Field(default="")
+            created_at: float = Field(auto_now_add=True)   # 插入时自动打点（浮点纪秒）
 
             # has-many：外键（note_id）声明在对方表 → 返回查询集，
             # await note.attachments.all() / .count() / .create(note 补全主键)

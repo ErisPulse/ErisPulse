@@ -1590,7 +1590,9 @@ class SQLStorageBase(BaseStorage):
         """
         return SQLQueryBuilder(self, table_name)
 
-    async def aCreateTable(self, table_name: str, columns: dict[str, str]) -> bool:
+    async def aCreateTable(
+        self, table_name: str, columns: dict[str, str], constraints: list[str] | None = None
+    ) -> bool:
         """
         异步创建表
 
@@ -1599,6 +1601,9 @@ class SQLStorageBase(BaseStorage):
 
         :param table_name: 表名
         :param columns: 列名到类型的映射
+        :param constraints: 表级约束 DDL 片段（如 ``PRIMARY KEY ("a", "b")``），
+            追加在列定义之后；片段内标识符引用由调用方完成，内容经注入
+            危险字符校验
         :return: 操作是否成功
 
         :example:
@@ -1615,6 +1620,8 @@ class SQLStorageBase(BaseStorage):
             for col_name, col_type in columns.items():
                 _validate_identifier(col_name, "column")
                 _validate_column_type(col_type)
+            for constraint in constraints or []:
+                _validate_column_type(constraint)
         except ValueError as e:
             logger.error(
                 i18n.t("core.storage.create_table_failed", table=table_name, error=e)
@@ -1627,7 +1634,8 @@ class SQLStorageBase(BaseStorage):
                 f"{dialect.quote(col)} {dialect.translate_column_type(typ)}"
                 for col, typ in columns.items()
             )
-            sql = f"CREATE TABLE IF NOT EXISTS {dialect.quote(table_name)} ({col_defs})"
+            fragments = [col_defs, *(constraints or [])]
+            sql = f"CREATE TABLE IF NOT EXISTS {dialect.quote(table_name)} ({', '.join(fragments)})"
             await self._execute_query("dml", sql, [])
             return True
         except Exception as e:

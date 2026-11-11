@@ -9,7 +9,9 @@ Record CRUD（create / get / where / save / delete / 批量操作）、查询表
 """
 
 import os
+import sqlite3
 import tempfile
+import time
 from datetime import datetime
 from typing import Optional
 
@@ -701,3 +703,313 @@ async def test_insert_none_with_default_backfills_instance(sm):
 
     row = await BackfillUser.where(BackfillUser.name == "A").first()
     assert row.nickname == "anon"  # 行内容一致
+
+
+# ---- dev.1 ORM 扩展：复合主键 / 联合唯一 / 时间戳列 / on_delete / 部分更新 / 惯用 API ----
+
+
+def make_membership_model(sm):
+    """复合主键模型（user_id + group_id 双主键 + 联合唯一同构场景）"""
+
+    class Membership(Model):
+        __storage__ = sm
+        __tablename__ = "orm_memberships"
+        __unique_together__ = (("user_id", "group_id"),)
+
+        user_id: int = Field(primary_key=True)
+        group_id: int = Field(primary_key=True)
+        role: str = Field(default="member")
+
+    return Membership
+
+
+class TestCompositePrimaryKey:
+    def test_autoincrement_composite_rejected(self, sm):
+        """自增主键与复合主键互斥：模型定义期报错"""
+        with pytest.raises(ValueError, match="autoincrement"):
+
+            class Bad(Model):
+                __storage__ = sm
+                __tablename__ = "orm_bad_cpk"
+
+                id: int = Field(autoincrement=True)
+                part: int = Field(primary_key=True)
+
+    @pytest.mark.asyncio
+    async def test_composite_pk_crud_roundtrip(self, sm):
+        """复合主键全链：create / get 双键定位 / save 整行更新 / delete"""
+        M = make_membership_model(sm)
+        assert await M.create_table()
+        await M.create(user_id=1, group_id=10, role="admin")
+        await M.create(user_id=1, group_id=20)
+        await M.create(user_id=2, group_id=10)
+        assert await M.count() == 3
+
+        got = await M.get(user_id=1, group_id=10)
+        assert got.role == "admin"
+
+        got.role = "owner"
+        await got.save()
+        assert (await M.get(user_id=1, group_id=10)).role == "owner"
+        assert (await M.get(user_id=1, group_id=20)).role == "member"  # 其他行不受影响
+
+        await got.delete()
+        assert await M.get(user_id=1, group_id=10) is None
+        assert await M.count() == 2
+
+    @pytest.mark.asyncio
+    async def test_composite_pk_save_missing_part_raises(self, sm):
+        """复合主键无法退化为插入：部分主键缺失 save 报错"""
+        M = make_membership_model(sm)
+        await M.create_table()
+        with pytest.raises(ValueError, match="composite primary key"):
+            await M(user_id=1).save()
+
+    @pytest.mark.asyncio
+    async def test_composite_pk_delete_missing_part_raises(self, sm):
+        """任一主键字段值缺失 delete 报错"""
+        M = make_membership_model(sm)
+        await M.create_table()
+        with pytest.raises(ValueError):
+            await M(user_id=1).delete()
+
+    @pytest.mark.asyncio
+    async def test_composite_pk_ddl_table_constraint(self, sm):
+        """DDL 收敛为表级 PRIMARY KEY (a, b)，主键列显式 NOT NULL"""
+        M = make_membership_model(sm)
+        await M.create_table()
+        row, _ = await sm._execute_query(
+            "one",
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?",
+            ["orm_memberships"],
+        )
+        assert 'PRIMARY KEY ("user_id", "group_id")' in row[0]
+        assert row[0].count("PRIMARY KEY") == 1  # inline PRIMARY KEY 不再重复出现
+
+    @pytest.mark.asyncio
+    async def test_relationship_composite_pk_guards(self, sm):
+        """复合主键关系守卫：belongs-to / has-many 访问期明确报错"""
+        M = make_membership_model(sm)
+        await M.create_table()
+
+        class TagOwner(Model):
+            __storage__ = sm
+            __tablename__ = "orm_cpk_owner"
+
+            a: int = Field(primary_key=True)
+            b: int = Field(primary_key=True)
+            memberships = relationship("Membership", foreign_key="user_id")
+
+        class Guest(Model):
+            __storage__ = sm
+            __tablename__ = "orm_cpk_guest"
+
+            id: int = Field(primary_key=True, autoincrement=True)
+            membership_id: int = Field(foreign_key="orm_memberships.user_id")
+            m = relationship("Membership", foreign_key="membership_id")
+
+        with pytest.raises(ValueError, match="composite primary key"):
+            TagOwner(a=1, b=2).memberships
+        with pytest.raises(ValueError, match="composite primary key"):
+            Guest(id=1, membership_id=1).m
+
+
+class TestUniqueTogether:
+    @pytest.mark.asyncio
+    async def test_unique_together_enforced(self, sm):
+        """联合唯一：重复组合 INSERT 违反唯一索引"""
+        M = make_membership_model(sm)
+        await M.create_table()
+        await M.create(user_id=1, group_id=10)
+        with pytest.raises(sqlite3.IntegrityError):
+            await M.create(user_id=1, group_id=10)
+
+    @pytest.mark.asyncio
+    async def test_unique_together_index_created(self, sm):
+        """建表后生成 uq_ 前缀唯一索引"""
+        M = make_membership_model(sm)
+        await M.create_table()
+        exists_sql, exists_params = sm.dialect.has_index_sql(
+            "orm_memberships", "uq_orm_memberships_user_id_group_id"
+        )
+        row, _ = await sm._execute_query("one", exists_sql, exists_params)
+        assert row is not None
+
+    @pytest.mark.asyncio
+    async def test_unique_together_flat_shorthand(self, sm):
+        """字符串序列简写收单组"""
+        M = make_membership_model(sm)
+        assert M._unique_groups == (("user_id", "group_id"),)
+
+    def test_unique_together_unknown_field_rejected(self, sm):
+        """引用未声明字段：模型定义期报错"""
+        with pytest.raises(ValueError, match="unknown fields"):
+
+            class BadUq(Model):
+                __storage__ = sm
+                __tablename__ = "orm_uq_bad"
+                __unique_together__ = (("a", "nope"),)
+
+                a: int = Field(primary_key=True)
+
+    @pytest.mark.asyncio
+    async def test_unique_together_backfilled_on_existing_table(self, sm):
+        """已存在的表免重建：create_table 自动补建唯一索引并生效"""
+        assert await sm.aCreateTable("orm_uq_old", {"a": "INTEGER", "b": "TEXT"})
+
+        class Old(Model):
+            __storage__ = sm
+            __tablename__ = "orm_uq_old"
+            __unique_together__ = (("a", "b"),)
+
+            a: int = Field(primary_key=True)
+            b: int = Field(primary_key=True)
+
+        assert await Old.create_table()
+        exists_sql, exists_params = sm.dialect.has_index_sql("orm_uq_old", "uq_orm_uq_old_a_b")
+        row, _ = await sm._execute_query("one", exists_sql, exists_params)
+        assert row is not None
+        await Old.create(a=1, b="x")
+        with pytest.raises(sqlite3.IntegrityError):
+            await Old.create(a=1, b="x")
+
+
+class TestAutoTimestamps:
+    @pytest.mark.asyncio
+    async def test_auto_now_add_and_auto_now(self, sm):
+        """插入打点 created_at / updated_at；实例 save 刷新 updated_at"""
+        created_at = time.time()
+
+        class Ev(Model):
+            __storage__ = sm
+            __tablename__ = "orm_ts_events"
+
+            id: int = Field(primary_key=True, autoincrement=True)
+            name: str = Field()
+            created_at: float = Field(auto_now_add=True)
+            updated_at: float = Field(auto_now=True)
+
+        await Ev.create_table()
+        e = await Ev.create(name="x")
+        assert e.created_at >= created_at and e.updated_at >= created_at
+
+        time.sleep(0.01)
+        e.name = "y"
+        await e.save()
+        got = await Ev.get(id=e.id)
+        assert got.name == "y"
+        assert got.created_at == e.created_at  # 创建时间戳不被 save 覆盖
+        assert got.updated_at == e.updated_at  # save 时已重新打点
+
+    @pytest.mark.asyncio
+    async def test_auto_now_not_on_queryset_update(self, sm):
+        """QuerySet.update 批量路径不触发 auto_now（声明语义）"""
+        created_at = time.time()
+
+        class Ev(Model):
+            __storage__ = sm
+            __tablename__ = "orm_ts_events2"
+
+            id: int = Field(primary_key=True, autoincrement=True)
+            name: str = Field()
+            updated_at: float = Field(auto_now=True)
+
+        await Ev.create_table()
+        e = await Ev.create(name="x")
+        await Ev.where(Ev.id == e.id).update(name="z")
+        got = await Ev.get(id=e.id)
+        assert got.name == "z"
+        assert got.updated_at == e.updated_at  # 时间戳未被批量路径刷新
+
+
+class TestOnDelete:
+    def test_on_delete_invalid_action_rejected(self):
+        """非法动作 Field 声明期报错"""
+        with pytest.raises(ValueError, match="on_delete"):
+            Field(foreign_key="users.id", on_delete="EXPLODE")
+
+    @pytest.mark.asyncio
+    async def test_on_delete_ddl_clause(self, sm):
+        """DDL 生成 ON DELETE 子句（动作大小写归一化）"""
+        class Post(Model):
+            __storage__ = sm
+            __tablename__ = "orm_od_posts"
+
+            id: int = Field(primary_key=True, autoincrement=True)
+            user_id: int = Field(foreign_key="users.id", on_delete="cascade")
+
+        await Post.create_table()
+        row, _ = await sm._execute_query(
+            "one",
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?",
+            ["orm_od_posts"],
+        )
+        assert "REFERENCES users(id)" in row[0]
+        assert "ON DELETE CASCADE" in row[0]
+
+
+class TestSaveUpdateFields:
+    @pytest.mark.asyncio
+    async def test_update_fields_partial(self, sm):
+        """白名单外字段不写入"""
+        User = make_user_model(sm)
+        await User.create_table()
+        u = await User.create(name="Old", age=1, tags=["t"])
+        u.age = 99
+        u.name = "New"
+        assert await u.save(update_fields=["age"]) == 1
+        got = await User.get(id=u.id)
+        assert got.age == 99
+        assert got.name == "Old"
+        assert got.tags == ["t"]
+
+    @pytest.mark.asyncio
+    async def test_update_fields_empty_returns_zero(self, sm):
+        User = make_user_model(sm)
+        await User.create_table()
+        u = await User.create(name="A")
+        assert await u.save(update_fields=[]) == 0
+
+    @pytest.mark.asyncio
+    async def test_update_fields_unknown_raises(self, sm):
+        User = make_user_model(sm)
+        await User.create_table()
+        u = await User.create(name="A")
+        with pytest.raises(ValueError, match="unknown fields"):
+            await u.save(update_fields=["nope"])
+
+    @pytest.mark.asyncio
+    async def test_update_fields_requires_existing_row(self, sm):
+        """主键缺失需走插入路径：update_fields 报错"""
+        User = make_user_model(sm)
+        await User.create_table()
+        with pytest.raises(ValueError, match="existing row"):
+            await User(name="A").save(update_fields=["name"])
+
+
+class TestGetOrCreate:
+    @pytest.mark.asyncio
+    async def test_get_or_create_roundtrip(self, sm):
+        """查得返回原行；defaults 仅创建路径补齐"""
+        User = make_user_model(sm)
+        await User.create_table()
+        u1, created1 = await User.get_or_create({"age": 30}, name="Diana")
+        assert created1 is True
+        assert u1.id is not None and u1.age == 30
+        u2, created2 = await User.get_or_create({"age": 1}, name="Diana")
+        assert created2 is False
+        assert u2.id == u1.id
+        assert u2.age == 30
+
+    @pytest.mark.asyncio
+    async def test_update_or_create_roundtrip(self, sm):
+        """查得更新 defaults 并保存；无则创建"""
+        User = make_user_model(sm)
+        await User.create_table()
+        u1, created1 = await User.update_or_create({"age": 9}, name="Eve")
+        assert created1 is True and u1.age == 9
+        u2, created2 = await User.update_or_create({"age": 10}, name="Eve")
+        assert created2 is False
+        assert u2.id == u1.id
+        got = await User.get(id=u1.id)
+        assert got.age == 10
