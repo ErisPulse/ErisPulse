@@ -1134,7 +1134,7 @@ class DocsTranslator:
                 "temperature", 0.1, provider_index % len(self.providers)
             )
             max_tokens = self._setting(
-                "max_tokens", 4000, provider_index % len(self.providers)
+                "max_tokens", 8000, provider_index % len(self.providers)
             )
 
             stream = await client.chat.completions.create(
