@@ -509,13 +509,13 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Storage Backend",
+          "title": "Storage Backends",
           "path": "advanced/storage-backends.md",
           "level": 1,
           "icon": "fa-server"
         },
         {
-          "title": "Exception System and Catching Guide",
+          "title": "Exception Hierarchy and Catching Guide",
           "path": "advanced/errors.md",
           "level": 1,
           "icon": "fa-triangle-exclamation"

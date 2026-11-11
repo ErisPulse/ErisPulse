@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1990,
+  "total_keywords": 1991,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2491,7 +2491,7 @@
     "API Error Handling": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1171,
+        "line": 1164,
         "level": 3,
         "title": "API Error Handling"
       }
@@ -2571,7 +2571,7 @@
     "API Response Standard": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1033,
+        "line": 1026,
         "level": 2,
         "title": "API Response Standard"
       },
@@ -2669,7 +2669,7 @@
     "Account Configuration File": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1095,
+        "line": 1088,
         "level": 3,
         "title": "Account Configuration File"
       }
@@ -2717,7 +2717,7 @@
     "Account Resolution": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 623,
+        "line": 614,
         "level": 4,
         "title": "Account Resolution"
       }
@@ -2937,7 +2937,7 @@
     "Adapter Sending Meta Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1229,
+        "line": 1222,
         "level": 3,
         "title": "Adapter Sending Meta Events"
       }
@@ -3212,14 +3212,6 @@
         "title": "Asynchronous Native API"
       }
     ],
-    "Asynchronous Native APIs": [
-      {
-        "document": "advanced/storage-backends.md",
-        "line": 85,
-        "level": 2,
-        "title": "Asynchronous Native APIs"
-      }
-    ],
     "Asynchronous Processing Mechanism": [
       {
         "document": "platform-guide/onebot11.md",
@@ -3329,7 +3321,7 @@
     "Automatic Discovery Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1203,
+        "line": 1196,
         "level": 3,
         "title": "Automatic Discovery Mechanism"
       }
@@ -3340,6 +3332,14 @@
         "line": 364,
         "level": 2,
         "title": "Automatic Documentation"
+      }
+    ],
+    "Automatic Field Description Generation from docstring (v2.8.0+)": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 475,
+        "level": 4,
+        "title": "Automatic Field Description Generation from docstring (v2.8.0+)"
       }
     ],
     "Automatic Injection": [
@@ -3377,7 +3377,7 @@
     "Available Attributes": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 695,
+        "line": 688,
         "level": 3,
         "title": "Available Attributes"
       }
@@ -3637,7 +3637,7 @@
     "Basic Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 719,
+        "line": 712,
         "level": 3,
         "title": "Basic Methods"
       }
@@ -4009,7 +4009,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1199,
+        "line": 1192,
         "level": 2,
         "title": "Bot Status Management"
       }
@@ -4039,7 +4039,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1244,
+        "line": 1237,
         "level": 3,
         "title": "Bot Status Query"
       },
@@ -4283,7 +4283,7 @@
     "Catching Recommendations": [
       {
         "document": "advanced/errors.md",
-        "line": 183,
+        "line": 190,
         "level": 2,
         "title": "Catching Recommendations"
       }
@@ -4417,7 +4417,7 @@
     "Chained Modifier Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 743,
+        "line": 736,
         "level": 3,
         "title": "Chained Modifier Methods"
       },
@@ -4552,12 +4552,12 @@
         "title": "Client (Network Client)"
       }
     ],
-    "Client Family — `Core/client.py` / `Core/Bases/client.py`": [
+    "Client Series — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 74,
+        "line": 76,
         "level": 3,
-        "title": "Client Family — `Core/client.py` / `Core/Bases/client.py`"
+        "title": "Client Series — `Core/client.py` / `Core/Bases/client.py`"
       }
     ],
     "ClientWebSocket Properties": [
@@ -5290,18 +5290,16 @@
     ],
     "Configuration Hot Reload": [
       {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 640,
+        "level": 4,
+        "title": "Configuration Hot Reload"
+      },
+      {
         "document": "user-guide/configuration.md",
         "line": 117,
         "level": 2,
         "title": "Configuration Hot Reload"
-      }
-    ],
-    "Configuration Hot Update": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 647,
-        "level": 4,
-        "title": "Configuration Hot Update"
       }
     ],
     "Configuration Instructions": [
@@ -5439,7 +5437,7 @@
     "Connection Failure Behavior": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 74,
+        "line": 72,
         "level": 2,
         "title": "Connection Failure Behavior"
       }
@@ -5473,7 +5471,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 861,
+        "line": 854,
         "level": 2,
         "title": "Connection Management"
       }
@@ -5481,7 +5479,7 @@
     "Connection Parameters": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 41,
+        "line": 40,
         "level": 2,
         "title": "Connection Parameters"
       }
@@ -5494,18 +5492,18 @@
         "title": "Connection Pools and Broadcasting"
       }
     ],
-    "Connection Registry Family — `Core/connections.py` (2.10+)": [
+    "Connection Registry Series — `Core/connections.py` (2.10+)": [
       {
         "document": "advanced/errors.md",
-        "line": 101,
+        "line": 103,
         "level": 3,
-        "title": "Connection Registry Family — `Core/connections.py` (2.10+)"
+        "title": "Connection Registry Series — `Core/connections.py` (2.10+)"
       }
     ],
     "Connection Retry": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1147,
+        "line": 1140,
         "level": 3,
         "title": "Connection Retry"
       }
@@ -5639,7 +5637,7 @@
     "Conversion Process": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 759,
+        "line": 752,
         "level": 3,
         "title": "Conversion Process"
       }
@@ -5647,7 +5645,7 @@
     "Converter Example": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 820,
+        "line": 813,
         "level": 3,
         "title": "Converter Example"
       }
@@ -5913,7 +5911,7 @@
     "Cross-Account Duplicate Handling (Framework Injected Fields)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 792,
+        "line": 785,
         "level": 3,
         "title": "Cross-Account Duplicate Handling (Framework Injected Fields)"
       }
@@ -6009,7 +6007,7 @@
     "Custom SQL Backend": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 126,
+        "line": 149,
         "level": 2,
         "title": "Custom SQL Backend"
       }
@@ -6111,7 +6109,7 @@
     "Declarative Configuration (Recommended)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1069,
+        "line": 1062,
         "level": 3,
         "title": "Declarative Configuration (Recommended)"
       },
@@ -6125,7 +6123,7 @@
     "Declarative Event Extension Methods (v2.7.0+)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 591,
+        "line": 582,
         "level": 3,
         "title": "Declarative Event Extension Methods (v2.7.0+)"
       }
@@ -6141,7 +6139,7 @@
     "Declarative Translation Keys (v2.7.0+)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 557,
+        "line": 550,
         "level": 3,
         "title": "Declarative Translation Keys (v2.7.0+)"
       },
@@ -6407,7 +6405,7 @@
     "Dialect Behavior Differences": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 113,
+        "line": 121,
         "level": 2,
         "title": "Dialect Behavior Differences"
       }
@@ -7177,7 +7175,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1145,
+        "line": 1138,
         "level": 2,
         "title": "Error Handling"
       },
@@ -7261,7 +7259,7 @@
     "Event Converter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 757,
+        "line": 750,
         "level": 2,
         "title": "Event Converter"
       }
@@ -7790,12 +7788,12 @@
         "title": "Examples"
       }
     ],
-    "Exception Descriptions and Where They Occur": [
+    "Exception Details and Where They Occur": [
       {
         "document": "advanced/errors.md",
-        "line": 72,
+        "line": 74,
         "level": 2,
-        "title": "Exception Descriptions and Where They Occur"
+        "title": "Exception Details and Where They Occur"
       }
     ],
     "Exception Handling": [
@@ -7826,6 +7824,14 @@
         "title": "Exception Hierarchy"
       }
     ],
+    "Exception Hierarchy and Catching Guide": [
+      {
+        "document": "advanced/errors.md",
+        "line": 1,
+        "level": 1,
+        "title": "Exception Hierarchy and Catching Guide"
+      }
+    ],
     "Exception List": [
       {
         "document": "user-guide/configuration.md",
@@ -7840,14 +7846,6 @@
         "line": 15,
         "level": 2,
         "title": "Exception Overview"
-      }
-    ],
-    "Exception System and Catching Guide": [
-      {
-        "document": "advanced/errors.md",
-        "line": 1,
-        "level": 1,
-        "title": "Exception System and Catching Guide"
       }
     ],
     "Execute Logic After Successful Sending": [
@@ -8008,6 +8006,14 @@
         "line": 52,
         "level": 4,
         "title": "Failure Response Example"
+      }
+    ],
+    "Failure Semantics (since 2.12)": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 83,
+        "level": 2,
+        "title": "Failure Semantics (since 2.12)"
       }
     ],
     "Feature Matrix": [
@@ -8273,17 +8279,17 @@
     "Framework Helper Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 712,
+        "line": 705,
         "level": 3,
         "title": "Framework Helper Methods"
       }
     ],
-    "Framework-Internal Parameter Validation (ValueError)": [
+    "Framework Internal Parameter Validation (ValueError)": [
       {
         "document": "advanced/errors.md",
-        "line": 174,
+        "line": 181,
         "level": 3,
-        "title": "Framework-Internal Parameter Validation (ValueError)"
+        "title": "Framework Internal Parameter Validation (ValueError)"
       }
     ],
     "Frequently Asked Questions": [
@@ -9103,7 +9109,7 @@
     "How to Choose the Three Modes": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 963,
+        "line": 956,
         "level": 4,
         "title": "How to Choose the Three Modes"
       }
@@ -9183,7 +9189,7 @@
     "Implementation-Level Details": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1254,
+        "line": 1247,
         "level": 3,
         "title": "Implementation-Level Details"
       }
@@ -9239,7 +9245,7 @@
     "Inheritance Relationship": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 686,
+        "line": 679,
         "level": 3,
         "title": "Inheritance Relationship"
       }
@@ -9267,7 +9273,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 660,
+        "line": 653,
         "level": 3,
         "title": "Initialization Process"
       }
@@ -9493,7 +9499,7 @@
     "Interaction — `Core/Event/interaction.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 123,
+        "line": 130,
         "level": 3,
         "title": "Interaction — `Core/Event/interaction.py`"
       }
@@ -9853,7 +9859,7 @@
     "Listening to Bot Lifecycle": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1248,
+        "line": 1241,
         "level": 3,
         "title": "Listening to Bot Lifecycle"
       }
@@ -10161,7 +10167,7 @@
     "Manually Constructed Response (Old Style Still Compatible)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1053,
+        "line": 1046,
         "level": 3,
         "title": "Manually Constructed Response (Old Style Still Compatible)"
       }
@@ -10733,7 +10739,7 @@
     "Meta Event Types": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1221,
+        "line": 1214,
         "level": 3,
         "title": "Meta Event Types"
       }
@@ -11060,14 +11066,6 @@
         "title": "Module Extensions"
       }
     ],
-    "Module Family — `Core/module.py` (`sdk.module.call`)": [
-      {
-        "document": "advanced/errors.md",
-        "line": 136,
-        "level": 3,
-        "title": "Module Family — `Core/module.py` (`sdk.module.call`)"
-      }
-    ],
     "Module Hot Reload Architecture": [
       {
         "document": "architecture.md",
@@ -11142,6 +11140,14 @@
         "line": 19,
         "level": 2,
         "title": "Module Overview"
+      }
+    ],
+    "Module Series — `Core/module.py` (`sdk.module.call`)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 143,
+        "level": 3,
+        "title": "Module Series — `Core/module.py` (`sdk.module.call`)"
       }
     ],
     "Module Store Overview": [
@@ -11275,7 +11281,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1067,
+        "line": 1060,
         "level": 2,
         "title": "Multi-Account Support"
       }
@@ -11387,7 +11393,7 @@
     "MySQL (`ErisPulse.storage.mysql`)": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 43,
+        "line": 42,
         "level": 3,
         "title": "MySQL (`ErisPulse.storage.mysql`)"
       }
@@ -11398,6 +11404,14 @@
         "line": 529,
         "level": 2,
         "title": "Naming Conventions"
+      }
+    ],
+    "Native Asynchronous API": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 93,
+        "level": 2,
+        "title": "Native Asynchronous API"
       }
     ],
     "Native Renderer": [
@@ -11427,7 +11441,7 @@
     "Nested Configuration (v2.8.0+)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 501,
+        "line": 499,
         "level": 4,
         "title": "Nested Configuration (v2.8.0+)"
       }
@@ -11644,12 +11658,12 @@
         "title": "Node Tree Example"
       }
     ],
-    "Non-persistent example Fields (v2.8.0+)": [
+    "Non-Persistent `example` Fields (v2.8.0+)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 537,
+        "line": 533,
         "level": 4,
-        "title": "Non-persistent example Fields (v2.8.0+)"
+        "title": "Non-Persistent `example` Fields (v2.8.0+)"
       }
     ],
     "Not Waiting for the Result": [
@@ -12593,7 +12607,7 @@
     "PollingAdapter (HTTP Polling Type)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 910,
+        "line": 903,
         "level": 4,
         "title": "PollingAdapter (HTTP Polling Type)"
       }
@@ -12601,7 +12615,7 @@
     "PostgreSQL (`ErisPulse.storage.postgres`)": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 57,
+        "line": 56,
         "level": 3,
         "title": "PostgreSQL (`ErisPulse.storage.postgres`)"
       }
@@ -13335,7 +13349,7 @@
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 151,
+        "line": 174,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -13389,7 +13403,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1252,
+        "line": 1245,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -13427,7 +13441,7 @@
     "Related Documents": [
       {
         "document": "advanced/errors.md",
-        "line": 208,
+        "line": 215,
         "level": 2,
         "title": "Related Documents"
       },
@@ -13479,7 +13493,7 @@
     "Relationship Between Event Account Identifier and Using": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1122,
+        "line": 1115,
         "level": 3,
         "title": "Relationship Between Event Account Identifier and Using"
       }
@@ -13829,7 +13843,7 @@
     "Required Fields": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 769,
+        "line": 762,
         "level": 3,
         "title": "Required Fields"
       }
@@ -13997,7 +14011,7 @@
     "Reviewing the Initial Steps": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1259,
+        "line": 1252,
         "level": 3,
         "title": "Reviewing the Initial Steps"
       }
@@ -14250,6 +14264,14 @@
         "title": "SQL Query Builder"
       }
     ],
+    "SQLite \"database is locked\" Troubleshooting": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 134,
+        "level": 2,
+        "title": "SQLite \"database is locked\" Troubleshooting"
+      }
+    ],
     "SVG Output Example": [
       {
         "document": "ecosystem/takumi.md",
@@ -14435,7 +14457,7 @@
     "Semi-finished Base Classes for Connection Modes": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 906,
+        "line": 899,
         "level": 3,
         "title": "Semi-finished Base Classes for Connection Modes"
       }
@@ -14475,7 +14497,7 @@
     "Send Message Sending DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 684,
+        "line": 677,
         "level": 2,
         "title": "Send Message Sending DSL"
       }
@@ -14880,20 +14902,20 @@
         "title": "Severity Classification"
       }
     ],
-    "Shadow Family — `Core/shadow.py` (shadow modules)": [
-      {
-        "document": "advanced/errors.md",
-        "line": 165,
-        "level": 3,
-        "title": "Shadow Family — `Core/shadow.py` (shadow modules)"
-      }
-    ],
     "Shadow Modules and Gray-Scale Promotion": [
       {
         "document": "advanced/shadow.md",
         "line": 1,
         "level": 1,
         "title": "Shadow Modules and Gray-Scale Promotion"
+      }
+    ],
+    "Shadow Series — `Core/shadow.py` (shadow modules)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 172,
+        "level": 3,
+        "title": "Shadow Series — `Core/shadow.py` (shadow modules)"
       }
     ],
     "Shutdown Adapter": [
@@ -14907,7 +14929,7 @@
     "Shutdown Noise Folding": [
       {
         "document": "advanced/errors.md",
-        "line": 198,
+        "line": 205,
         "level": 2,
         "title": "Shutdown Noise Folding"
       }
@@ -14952,12 +14974,12 @@
         "title": "Simple Timer"
       }
     ],
-    "Single Account Configuration": [
+    "Single-Account Configuration": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 332,
         "level": 4,
-        "title": "Single Account Configuration"
+        "title": "Single-Account Configuration"
       }
     ],
     "SnowLuma Platform Features Documentation": [
@@ -15013,7 +15035,7 @@
     "Specify Account for Sending": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1109,
+        "line": 1102,
         "level": 3,
         "title": "Specify Account for Sending"
       }
@@ -15492,20 +15514,20 @@
         "title": "Storage"
       }
     ],
-    "Storage Backend": [
-      {
-        "document": "advanced/storage-backends.md",
-        "line": 1,
-        "level": 1,
-        "title": "Storage Backend"
-      }
-    ],
     "Storage Backend Abstraction": [
       {
         "document": "api-reference/core-modules.md",
         "line": 62,
         "level": 3,
         "title": "Storage Backend Abstraction"
+      }
+    ],
+    "Storage Backends": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 1,
+        "level": 1,
+        "title": "Storage Backends"
       }
     ],
     "Storage Configuration": [
@@ -15524,20 +15546,20 @@
         "title": "Storage Connection Status"
       }
     ],
-    "Storage Family — `Core/storage` / `Core/Bases/sql_base.py`": [
-      {
-        "document": "advanced/errors.md",
-        "line": 108,
-        "level": 3,
-        "title": "Storage Family — `Core/storage` / `Core/Bases/sql_base.py`"
-      }
-    ],
     "Storage Module": [
       {
         "document": "api-reference/core-modules.md",
         "line": 8,
         "level": 2,
         "title": "Storage Module"
+      }
+    ],
+    "Storage Series — `Core/storage` / `Core/Bases/sql_base.py`": [
+      {
+        "document": "advanced/errors.md",
+        "line": 110,
+        "level": 3,
+        "title": "Storage Series — `Core/storage` / `Core/Bases/sql_base.py`"
       }
     ],
     "Storage System": [
@@ -15589,7 +15611,7 @@
     "Structured Attributes": [
       {
         "document": "advanced/errors.md",
-        "line": 45,
+        "line": 46,
         "level": 2,
         "title": "Structured Attributes"
       }
@@ -15613,7 +15635,7 @@
     "Success Response": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1037,
+        "line": 1030,
         "level": 3,
         "title": "Success Response"
       }
@@ -16151,7 +16173,7 @@
     "Three-tier Deduplication Mechanism Division of Labor": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 801,
+        "line": 794,
         "level": 4,
         "title": "Three-tier Deduplication Mechanism Division of Labor"
       }
@@ -16279,7 +16301,7 @@
     "Two Correct Ways to Write start()": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 863,
+        "line": 856,
         "level": 3,
         "title": "Two Correct Ways to Write start()"
       }
@@ -16999,7 +17021,7 @@
     "WebHook Connection": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1007,
+        "line": 1000,
         "level": 3,
         "title": "WebHook Connection"
       }
@@ -17029,7 +17051,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 973,
+        "line": 966,
         "level": 3,
         "title": "WebSocket Connection"
       },
@@ -17062,14 +17084,6 @@
         "title": "WebSocket Decorators"
       }
     ],
-    "WebSocket Family — `Core/client.py` (`send` / `receive`)": [
-      {
-        "document": "advanced/errors.md",
-        "line": 94,
-        "level": 3,
-        "title": "WebSocket Family — `Core/client.py` (`send` / `receive`)"
-      }
-    ],
     "WebSocket Lifecycle Hooks": [
       {
         "document": "advanced/router.md",
@@ -17084,6 +17098,14 @@
         "line": 190,
         "level": 3,
         "title": "WebSocket Registration"
+      }
+    ],
+    "WebSocket Series — `Core/client.py` (`send` / `receive`)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 96,
+        "level": 3,
+        "title": "WebSocket Series — `Core/client.py` (`send` / `receive`)"
       }
     ],
     "Webhook Generic Bridge Adapter Platform Features Documentation": [
@@ -17105,7 +17127,7 @@
     "WebhookAdapter (HTTP Callback Type)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 937,
+        "line": 930,
         "level": 4,
         "title": "WebhookAdapter (HTTP Callback Type)"
       }
@@ -17709,7 +17731,7 @@
     "`self` Field Extended Information": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1233,
+        "line": 1226,
         "level": 3,
         "title": "`self` Field Extended Information"
       }
@@ -17880,14 +17902,6 @@
         "title": "docker-compose.yml"
       }
     ],
-    "docstring Auto-generates Field Descriptions (v2.8.0+)": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 476,
-        "level": 4,
-        "title": "docstring Auto-generates Field Descriptions (v2.8.0+)"
-      }
-    ],
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
@@ -18024,12 +18038,12 @@
         "title": "message_id Added to Message Events"
       }
     ],
-    "metadata Convention": [
+    "metadata Conventions": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 398,
         "level": 4,
-        "title": "metadata Convention"
+        "title": "metadata Conventions"
       }
     ],
     "on_before_unload Method": [

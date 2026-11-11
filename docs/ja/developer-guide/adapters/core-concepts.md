@@ -292,7 +292,7 @@ from ErisPulse.Core.Bases import BaseConfig, BotAccountConfig
 
 @dataclass
 class MyConfig(BaseConfig):
-    """アダプタの設定（宣言後フレームワークが自動管理）"""
+    """アダプター設定（宣言後はフレームワークが自動管理）"""
     token: str = field(
         default="",
         metadata={
@@ -306,28 +306,28 @@ class MyConfig(BaseConfig):
 class MyAdapter(BaseAdapter):
     ConfigClass = MyConfig  # 設定クラスを宣言
     
-    # __init__ はオーバーライド不要、フレームワークが自動処理：
+    # __init__ のオーバーライドは不要。フレームワークが自動的に処理：
     # - self.sdk, self.logger
     # - self.cfg（型安全な設定インスタンス、リアルタイム読み取り）
     # - self.Send, self.Request
     
     async def start(self):
-        """アダプタの起動（必須実装）"""
-        cfg = self.cfg  # 自動読み込みの型安全な設定
+        """アダプターを起動する（実装必須）"""
+        cfg = self.cfg  # 自動的に読み込まれた型安全な設定
         pass
     
     async def shutdown(self):
-        """アダプタの停止（必須実装）"""
+        """アダプターをシャットダウンする（実装必須）"""
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """プラットフォーム API の呼び出し（必須実装）"""
+        """プラットフォーム API を呼び出す（実装必須）"""
         pass
 ```
 
 ### 設定管理
 
-フレームワークは宣言的な設定管理を提供し、dataclass を使って設定構造を定義し、フレームワークが自動的に読み込み、検証、テンプレート生成を行います。
+フレームワークは宣言的な設定管理を提供しています。dataclass で設定構造を定義すると、読み込み、検証、テンプレート生成が自動的に処理されます。
 
 #### 単一アカウントの設定
 
@@ -352,7 +352,7 @@ class TelegramAdapter(BaseAdapter):
     ConfigClass = TelegramConfig
     
     async def start(self):
-        cfg = self.cfg  # 型安全でリアルタイム読み取り
+        cfg = self.cfg  # 型安全、リアルタイム読み取り
         if not cfg.token:
             raise ValueError("Token が設定されていません")
         await self._connect(cfg.token, proxy=cfg.proxy)
@@ -360,13 +360,13 @@ class TelegramAdapter(BaseAdapter):
 
 #### 複数アカウントの設定
 
-`BotAccountConfig` 基底クラスは `enabled` と `name` フィールドを提供します。ほとんどのアダプタは、プラットフォームプロトコルやログイン応答から自動的に bot_id を取得でき、イベント変換時にアカウント設定に注入されます。：
+`BotAccountConfig` 基底クラスは `enabled` と `name` フィールドを提供します。ほとんどのアダプターはプラットフォームのプロトコルやログインレスポンスから bot_id を自動取得でき、イベント変換時にアカウント設定へ注入します。
 
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BotAccountConfig
 
-# 多くのアダプタでは、bot_id は実行時に自動取得され、設定は不要
+# ほとんどのアダプター：bot_id は実行時に自動取得されるため設定は不要
 @dataclass
 class MyBotConfig(BotAccountConfig):
     token: str = field(default="", metadata={
@@ -374,11 +374,11 @@ class MyBotConfig(BotAccountConfig):
         "required": True,
     })
 
-# ログイン時に bot_id を取得できない場合は、ユーザーに設定を入力させる
+# ログイン時に bot_id を取得できない場合は、設定でユーザーに入力してもらうことができます
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
     bot_id: str = field(default="", metadata={
-        "description": {"i18n": "yunhu.bot_id", "default": "ロボットID"},
+        "description": {"i18n": "yunhu.bot_id", "default": "ボットID"},
         "required": True,
     })
     token: str = field(default="", metadata={
@@ -395,38 +395,40 @@ class MyAdapter(BaseAdapter):
             await self.emit_meta("connect", user_id)
 ```
 
-#### metadata 約定
+#### metadata の規約
 
-フィールドの metadata は TOML 注釈生成と WebUI フォームレンダリングの両方に使用されます：
+フィールドの metadata は、TOML コメント生成と WebUI フォームレンダリングの両方に使用されます：
 
 ```python
 metadata = {
-    "description": str | dict,  # フィールドの説明（i18n に対応）
-    "required": bool,         # 必須入力か（検証 + WebUI 必須マーク）
-    "secret": bool,           # 敏感情報か（WebUI では *** に表示、ログでは脱敏）
-    "example": bool,          # ファイルに書き込まないフラグ：config.toml に書き込まない（デフォルト値/テンプレートから除外）、config.full.example にレンダリングされるだけ；schema に "example": true が付いていれば、CLI 設定ウィザードではデフォルトでスキップされる；ユーザーが手動で設定した後は通常永続化される
-    "min": number, "max": number,  # 数値範囲検証
-    "ui": {                   # WebUI コントロール設定（旧名 "webui" は互換性あり）
+    "description": str | dict,  # フィールドの説明（i18n 対応）
+    "required": bool,         # 必須かどうか（検証 + WebUI の必須マーク）
+    "secret": bool,           # 機密情報かどうか（WebUI では *** と表示、ログではマスキング）
+    "example": bool,          # 永続化しないフラグ：config.toml に書き込まない（デフォルト値/テンプレートとも除外）、
+                              # config.full.example にのみレンダリング；schema には "example": true のマークが付き、
+                              # CLI 設定ウィザードではデフォルトでスキップ；ユーザーが手動設定した後は通常どおり永続化
+    "min": number, "max": number,  # 数値範囲の検証
+    "ui": {                   # WebUI コントロール設定（旧名 "webui" も互換）
         "widget": str,        # コントロールタイプ: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # グループ: "basic" | "advanced" | "connection" など
         "order": int,         # ソートの重み（小さいほど先に表示）
-        "options": list,      # select コントロールのオプション [{label, value}]、label は i18n に対応
-        "placeholder": str | dict,  # 入力欄のプレースホルダ（i18n に対応）
+        "options": list,      # select コントロールの選択肢 [{label, value}]、label は i18n 対応
+        "placeholder": str | dict,  # 入力フィールドのプレースホルダー（i18n 対応）
     },
-    "extra": dict,            # 余分な拡張フィールド（schema に透かし渡す）
+    "extra": dict,            # 追加の拡張フィールド（schema へそのまま透過）
 }
 ```
 
-すべてのユーザーが表示するテキストフィールドは i18n をサポートし、統一的に `{"i18n": "key", "default": "テキスト"}` 形式で、純粋な文字列はそのまま透かし渡す（後方互換性）。サポートされる i18n フィールド：
+ユーザーに表示されるすべてのテキストフィールドは i18n に対応しており、統一して `{"i18n": "key", "default": "テキスト"}` 形式を使用します。純粋な文字列はそのまま透過されます（後方互換）。対応している i18n フィールド：
 
-| フィールド | 位置 | 説明 |
+| フィールド | 場所 | 説明 |
 |------|------|------|
 | `description` | field metadata | フィールドの説明 |
-| `options[].label` | `ui.options` | select コントロールのオプションラベル |
-| `placeholder` | `ui.placeholder` | 入力欄のプレースホルダ |
+| `options[].label` | `ui.options` | select コントロールの選択肢ラベル |
+| `placeholder` | `ui.placeholder` | 入力フィールドのプレースホルダー |
 | `group_labels` | `_schema_meta` | グループの表示名（Dashboard のセクションタイトル） |
 
-i18n を使用する際は、翻訳キーを i18n システムに事前に登録する必要があります（[i18n 文書](../../advanced/i18n.md#設定フィールド多言語)を参照）。
+i18n を使用する場合は、事前に翻訳キーを i18n システムへ登録しておく必要があります（詳細は [i18n ドキュメント](../../advanced/i18n.md#設定フィールドの多言語化) を参照）。
 
 **description / placeholder / options label** の例：
 
@@ -449,7 +451,7 @@ mode: str = field(
             "widget": "select",
             "options": [
                 {"label": {"i18n": "my_adapter.mode.a", "default": "オプションA"}, "value": "a"},
-                {"label": "純粋な文字列ラベル", "value": "b"},  # 純粋な文字列はそのまま透かし渡す
+                {"label": "純粋な文字列ラベル", "value": "b"},  # 純粋な文字列はそのまま透過
             ],
         },
     },
@@ -462,46 +464,46 @@ mode: str = field(
 MyConfig._schema_meta = {
     "group_labels": {
         "basic": {"i18n": "my_adapter.group.basic", "default": "基本設定"},
-        "advanced": {"i18n": "my_adapter.group.advanced", "default": "高度設定"},
+        "advanced": {"i18n": "my_adapter.group.advanced", "default": "高度な設定"},
     }
 }
 ```
 
-フレームワークの `resolve_config_schema()` は現在の言語に応じて上記のすべてのフィールドの i18n キーを自動的に解析します；
-`get_config_schema()` は i18n 辞書をそのまま透かし渡し、フロントエンドが独自に解析します。
+フレームワークの `resolve_config_schema()` は、現在の言語に応じて上記すべてのフィールドの i18n キーを自動解決します。`get_config_schema()` は i18n 辞書をそのまま透過し、フロントエンド側で解決します。
 
-#### docstring から自動生成されるフィールド説明（v2.8.0+）
+#### docstring によるフィールド説明の自動生成（v2.8.0+）
 
-metadata で `description` を宣言していないフィールドは、フレームワークが設定クラスの docstring からフィールド説明を自動的に取り出してバックアップとして使用します。2 つの一般的なスタイル（混在可能）がサポートされています：
+metadata で `description` が宣言されていないフィールドについては、フレームワークが設定クラスの docstring からフィールドの説明を自動抽出し、フォールバックとして使用します。一般的な 2 つのスタイルに対応しています（混用可）：
 
 ```python
 @dataclass
 class MyConfig(BaseConfig):
     """
-    MyAdapter 配置
+    MyAdapter の設定
 
-    :ivar endpoint: プラットフォーム API アドレス        # reST スタイル
-    :ivar timeout: リクエストタイムアウト秒数
+    :ivar endpoint: プラットフォーム API のアドレス        # reST スタイル
+    :ivar timeout: リクエストのタイムアウト秒数
     """
 
-    endpoint: str = "https://api.example.com"   # metadata description がない → コメント/説明を docstring から取得
+    endpoint: str = "https://api.example.com"   # metadata description なし → コメント/説明は docstring から取得
     timeout: int = 30
 
-    # Google スタイルもサポート（Attributes: セグメント）
+    # Google スタイルも同様にサポート（Attributes: セクション）：
     # Attributes:
-    #     endpoint: プラットフォーム API アドレス
+    #     endpoint: プラットフォーム API のアドレス
 ```
 
-優先順位：**metadata description > docstring フィールド説明 > 空**。i18n 辞書形式の description は影響を受けません（常に優先されます）。
+優先順位：**metadata description > docstring のフィールド説明 > 空**。
+i18n 辞書形式の description は影響を受けません（常に優先されます）。
 
-#### 嵌套設定（v2.8.0+）
+#### ネストした設定（v2.8.0+）
 
-フィールド型がネストされた dataclass の場合、フレームワークは再帰的に処理します：schema は `"type": "table"` + `"fields"` 子ツリーを保持し（WebUI は可展開のネストしたグループとしてレンダリング）、TOML テンプレートは `[サブテーブル]` セクションとしてレンダリングされ、デフォルト値 / 埋め込み / 検証 / i18n 解析も再帰的に有効になります。
+フィールドの型がネストした dataclass の場合、フレームワークは再帰的に処理します：schema は `"type": "table"` + `"fields"` のサブツリーとして表現され（WebUI では折りたたみ可能なネストグループとしてレンダリング）、TOML テンプレートでは `[サブテーブル]` セクションとしてレンダリングされます。デフォルト値 / 補完 / 検証 / i18n 解決はいずれも再帰的に適用されます。
 
 ```python
 @dataclass
 class RetryConfig(BaseConfig):
-    """リトライ戦略
+    """リトライポリシー
 
     :ivar max_retries: 最大リトライ回数
     """
@@ -510,9 +512,9 @@ class RetryConfig(BaseConfig):
 
 @dataclass
 class MyConfig(BaseConfig):
-    """MyAdapter 配置"""
+    """MyAdapter の設定"""
     endpoint: str = "https://api.example.com"
-    retry: RetryConfig = field(default_factory=RetryConfig)   # 嵌套設定セグメント
+    retry: RetryConfig = field(default_factory=RetryConfig)   # ネストした設定セクション
 ```
 
 生成される TOML テンプレート：
@@ -526,28 +528,28 @@ max_retries = 3
 backoff = 0.5
 ```
 
-> 嵌套型は直接型注釈を使用することを推奨します。遅延評価の場面では文字列注釈を使用する必要があります。この場合、型は設定クラスが存在するモジュール全体、`__qualname__` 外側のクラス名前空間、またはクラス属性から名前で解決可能であることを保証する必要があります。
+> ネストした型には直接の型アノテーションを推奨します。文字列アノテーション（遅延評価のシナリオなど）の場合は、型が設定クラスの所在モジュールのグローバル名前空間、`__qualname__` の外側クラスの名前空間、またはクラス属性から名前で解決できることを保証する必要があります。
 
-#### ファイルに書き込まれない example フィールド（v2.8.0+）
+#### 永続化されない example フィールド（v2.8.0+）
 
 ```python
 gc_interval: int = field(default=300, metadata={"example": True})
 ```
 
-`example: True` を持つフィールド：
+`example: True` を持つフィールドは以下のとおりです：
 
-- `config.toml` に書き込まれない（アダプタ/モジュールの設定テンプレートとデフォルト値から除外、実行時はコードのデフォルト値を使用）
-- `config.full.example` にレンダリングされる（ユーザーが参考として必要に応じて `config.toml` にコピーする）
-- schema に `"example": true` が含まれる（パネルが独自の表示戦略を決定）、CLI 設定ウィザードではデフォルトでスキップされる
-- ユーザーがこのキーを手動で設定した後は通常永続化され、通常のホットアップデートが行われる（ユーザーの明示的な意図が優先）
+- config.toml には書き込まれない（アダプター/モジュールの設定テンプレートとデフォルト値のいずれからも除外され、実行時はコード上のデフォルト値が使用される）
+- プロジェクト内の `config.full.example` にのみレンダリングされる（ユーザーの参考用。必要に応じて config.toml へ手動でコピー）
+- schema には `"example": true` のマークが付く（パネル側で表示ポリシーを自由に決定可能）。CLI 設定ウィザードではデフォルトでスキップ
+- ユーザーが手動でこのキーを設定した後は、通常どおり永続化・ホットアップデートされる（ユーザーの明示的な意図が優先）
 
-「冗長でほとんど触れない」高度な設定項目に適しており、`config.toml` を最小限に保つことができます。
+「冗長でほとんど触れることのない」高度な設定項目に適しており、ユーザーの config.toml を最小限に保てます。
 
-> ⚠️ `_schema_meta` はクラスレベルのメタデータ（設定フィールドではない）。dataclass のクラス本体内部で宣言する場合、`ClassVar` 注釈（`_schema_meta: ClassVar[dict] = {...}`）を付ける必要があります。そうでなければ、`dataclass` は通常のフィールドとして扱われます。フレームワークは下線付きのフィールドを防御的に除外しています（すべての schema / テンプレート / デフォルト値 / 検証の出力から除外）、ただし、規範的な宣言を推奨します。
+> ⚠️ `_schema_meta` はクラスレベルのメタデータです（設定フィールドではありません）。dataclass のクラス本体内で宣言する場合は、必ず `ClassVar` アノテーションを付ける必要があります（`_schema_meta: ClassVar[dict] = {...}`）。そうしないと、dataclass に通常のフィールドと見なされます。フレームワークはアンダースコア接頭辞のフィールドに対して防御的な除外を行っています（schema / テンプレート / デフォルト値 / 検証出力のいずれにも含まれません）が、それでも規約に従った宣言を推奨します。
 
 ### 宣言的な翻訳キー（v2.7.0+）
 
-アダプタは `ConfigClass` を宣言するのと同じように、`I18nClass` というネストされたクラスを使って翻訳キーを宣言することができます。フレームワークは、`__init__` 段階（設定テンプレート生成前）で、宣言されたすべての翻訳キーを自動的に登録し、設定の説明で参照される i18n キーがテンプレート生成時に利用可能であることを保証します。
+アダプターは `ConfigClass` を宣言するのと同じように、ネストクラス `I18nClass` によって翻訳キーを一元的に宣言できます。フレームワークは `__init__` の段階（設定テンプレート生成の前）で、宣言されたすべての翻訳キーを自動登録するため、設定の説明で参照される i18n キーがテンプレート生成時に利用可能であることが保証されます。
 
 ```python
 from ErisPulse.Core.Bases import BaseAdapter, BaseI18n, I18nKey
@@ -557,7 +559,7 @@ class MyAdapter(BaseAdapter):
         endpoint: I18nKey = I18nKey(
             default="API Endpoint",
             zh_CN="API アドレス",
-            zh_TW="API 位址",
+            zh_TW="API アドレス",
             en="API Endpoint",
             ja="APIアドレス",
             ru="API адрес",
@@ -565,20 +567,21 @@ class MyAdapter(BaseAdapter):
         token: I18nKey = I18nKey(
             default="Platform Token",
             zh_CN="プラットフォーム Token",
-            zh_TW="平台權杖",
+            zh_TW="プラットフォーム Token",
             en="Platform Token",
             ja="プラットフォームトークン",
             ru="Токен платформы",
         )
 ```
 
-> ``I18nKey.default`` は**言語に依存しないバックアップテキスト**であり、どの言語にも登録されません。翻訳を有効にするには、少なくとも1つの言語パラメータを明示的に渡す必要があります。
+> ``I18nKey.default`` は**言語に依存しないフォールバックテキスト**であり、どの言語にも登録されません。
+> 翻訳を有効にするには、少なくとも 1 つの言語パラメータを明示的に渡す必要があります。
 
-詳細な使い方（キーのパスルール、明示的な key パラメータなど）は [i18n 文書](../../advanced/i18n.md#推奨書き方-i18nclass-を使って翻訳キーを宣言する-v270) を参照してください。
+詳細な使い方（キーのパス規則、明示的な key パラメータなど）については、[i18n ドキュメント](../../advanced/i18n.md#推奨される書き方i18nclassによる翻訳キーの宣言v270) を参照してください。
 
 ### 宣言的なイベント拡張メソッド（v2.7.0+）
 
-アダプタは `EventMixin` を使ってプラットフォーム固有のイベント拡張メソッドを宣言し、フレームワークが自動的に現在のプラットフォームに登録します。
+アダプターは `EventMixin` を通じて、プラットフォーム固有のイベント拡張メソッドを一元的に宣言できます。フレームワークが現在のプラットフォームへ自動登録します。
 
 ```python
 from ErisPulse.Core import BaseAdapter
@@ -586,55 +589,57 @@ from ErisPulse.Core import BaseAdapter
 class MyAdapter(BaseAdapter):
     class EventMixin:
         def get_chat_name(self):
-            """チャット名を取得"""
+            """チャット名を取得する"""
             return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 
         def is_official_message(self):
-            """公式メッセージかどうかを判断"""
+            """公式メッセージかどうかを判定する"""
             raw = self.get("myplatform_raw", {})
             return raw.get("sender", {}).get("is_official", False)
 ```
 
-登録後、イベントオブジェクトは直接これらのメソッドを呼び出します：
+登録後は、イベントオブジェクトからこれらのメソッドを直接呼び出せます：
 
 ```python
 @message.on_group_message()
 async def handler(event):
     if event.is_official_message():
         chat_name = event.get_chat_name()
-        await event.reply(f"[{chat_name}] 公式メッセージを受け取りました")
+        await event.reply(f"[{chat_name}] 公式メッセージを受信しました")
 ```
 
-> アダプタのイベント拡張メソッドは自身のプラットフォーム（``self._platform``）に登録されます。
-> モジュールがプラットフォーム間のイベント拡張を必要とする場合は、従来の ``register_event_mixin()`` API を使用してください。
+> アダプターのイベント拡張メソッドは、自身のプラットフォーム（``self._platform``）に登録されます。
+> モジュールでクロスプラットフォームのイベント拡張が必要な場合は、既存の ``register_event_mixin()`` API を使用してください。
 
-#### アカウントの解析
+#### アカウントの解決
 
-アダプタが `call_api` を実装する際、アカウント識別子を具体的なアカウント設定に解析する必要があります。フレームワークはアカウントのバインディング（`Using()` またはイベントチェーンの自動バインディングの結果）を `account_id` という標準フィールドとして `call_api` に渡し、アダプタの実際の消費方法に応じて自動的に適応します——3つの消費形態からいずれかを選択できます。フレームワークはサインチャネル名と関数体の定数を検索し、パラメータの位置とは無関係に、アダプタは `account_id` を消費する必要があります。
+アダプターが `call_api` を実装する際は、アカウント識別子を具体的なアカウント設定へ解決する必要があります。フレームワークはアカウントのバインディング（`Using()` またはイベントチェーンによる自動バインディングの結果）を標準フィールド `account_id` として `call_api` に渡し、アダプターの実際の消費方法に応じて自動的に適応させます。3 つの消費形態のいずれかを選択でき、フレームワークはシグネチャのパラメータ名と関数本体内の定数によって検出するため、パラメータの位置は問いません：
 
 ```python
-# 形態一（推奨）：サインチャネルを宣言
+# 形態 1（推奨）：シグネチャで標準名を宣言
 async def call_api(self, endpoint: str, account_id: str | None = None, **params):
     name, account = self._resolve_account(account_id)
     # name: アカウント名, account: 設定インスタンス
 
-# 形態二（従来互換）：旧名 _account_id、フレームワークが account_id を旧名に書き換えて渡す
+# 形態 2（既存互換）：旧名 _account_id。フレームワークが account_id を自動的に旧名へ書き換えて渡す
 async def call_api(self, endpoint: str, _account_id: str | None = None, **params):
     name, account = self._resolve_account(_account_id)
 
-# 形態三：関数体内で params から取得（定数検出で識別）
+# 形態 3：関数本体内で params から取得（定数検出により識別される）
 async def call_api(self, endpoint: str, **params):
     account_id = params.pop("account_id", None)
     name, account = self._resolve_account(account_id)
 ```
 
-> アダプタがアカウントフィールドを消費しない場合、フレームワークはそのフィールドを削除し（プラットフォームパラメータに漏洩しないように）、WARNINGを1回出力します。単一アカウントアダプタは消費する必要がありません（解析は最初の有効アカウントにフォールバック）。
+> アダプターがアカウントフィールドを消費しない場合、フレームワークはそのフィールドを除去し（プラットフォームパラメータへの混入を防止）、WARNING を一度出力します。単一アカウントのアダプターでは消費しなくても構いません（解決は最初に有効化されているアカウントへフォールバックします）。
 
-解析戦略：アカウント名マッチ → `bot_id` フィールドマッチ → 他の文字列フィールドマッチ → 最初の有効アカウント。
+解決ポリシー：アカウント名の一致 → `bot_id` フィールドの一致 → その他の str フィールドの一致 → 最初に有効化されているアカウント。
+
+**実行時の識別と永続化**（2.12+）：アダプターは接続の確立時 / イベントの到着時に `self.update_bot_id(account_name, bot_id)` を呼び出します。フレームワークは bot_id → アカウントのレジストリを維持し（解決チェーンの第一優先度）、値が変化した際に `accounts.<アカウント名>.bot_id` を設定ストレージへ書き込みます：再起動後はアカウントインスタンスの再構築時に bot_id が付与された状態になるため、第 2 アカウントなどのシナリオにおける解決がアカウントアクティビティによるバックフィルに依存しなくなります（再起動時のウィンドウ期間を解消）。
 
 #### 設定のホットアップデート
 
-サブクラスは `on_config_update()` をオーバーライドして設定変更に反応できます：
+サブクラスは `on_config_update()` をオーバーライドして設定変更に応答できます：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -642,22 +647,22 @@ class MyAdapter(BaseAdapter):
     
     def on_config_update(self, old_config, new_config):
         if old_config.token != new_config.token:
-            self.logger.info("Token が更新されました、再接続します")
+            self.logger.info("Token が更新されました。再接続します")
 ```
 
 ### 初期化プロセス
 
-フレームワークは `BaseAdapter.__init__(self, sdk=None)` で自動的に以下の作業を行います：
+フレームワークは `BaseAdapter.__init__(self, sdk=None)` 内で以下の処理を自動的に行います：
 
-1. **SDK参照**：`self.sdk`、`self.logger` を設定
-2. **Send/Request工場**：`self.Send` と `self.Request` を作成
-3. **設定テンプレート**：`ConfigClass` を宣言した場合、自動的にデフォルト設定テンプレートを生成（初回）
-4. **アカウントテンプレート**：`AccountConfigClass` を宣言した場合、自動的にデフォルトアカウントテンプレートを生成（初回）
-5. **EventMixin登録**：`EventMixin` を宣言した場合、`AdapterManager` がプラットフォーム名を注入した後に自動的に登録
+1. **SDK 参照**：`self.sdk`、`self.logger` を設定
+2. **Send/Request ファクトリ**：`self.Send` と `self.Request` を作成
+3. **設定テンプレート**：`ConfigClass` が宣言されている場合、デフォルトの設定テンプレートを自動生成（初回のみ）
+4. **アカウントテンプレート**：`AccountConfigClass` が宣言されている場合、デフォルトのアカウントテンプレートを自動生成（初回のみ）
+5. **EventMixin の登録**：`EventMixin` が宣言されている場合、`AdapterManager` によるプラットフォーム名の注入後に自動登録
 
-設定は `self.cfg` / `self.accounts` でリアルタイムに読み取ります（設定ストアから最新値を毎回読み取ります）。`self.config` は `self.cfg` の互換エイリアスとして引き続き使用できます。
+設定は `self.cfg` / `self.accounts` からリアルタイムに読み込まれます（アクセスのたびに設定ストレージから最新値が読み取られます）。`self.config` は `self.cfg` の互換エイリアスとして引き続き使用できます。
 
-ほとんどのアダプタは `__init__` をオーバーライドする必要はありません。独自の初期化が必要な場合は：
+ほとんどのアダプターでは `__init__` のオーバーライドは不要です。カスタム初期化が必要な場合：
 
 ```python
 class MyAdapter(BaseAdapter):

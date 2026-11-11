@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2052,
+  "total_keywords": 2053,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -486,6 +486,14 @@
         "line": 70,
         "level": 4,
         "title": "1xxxx 動作リクエストエラー（Request Error）"
+      }
+    ],
+    "2 つの宣言の使い分け": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 84,
+        "level": 3,
+        "title": "2 つの宣言の使い分け"
       }
     ],
     "2. 3 層 DSL の並列構造": [
@@ -1393,7 +1401,7 @@
     "3つのモードの使い分け": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 951,
+        "line": 956,
         "level": 4,
         "title": "3つのモードの使い分け"
       }
@@ -1401,7 +1409,7 @@
     "3層の重複防止メカニズムの役割分担": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 789,
+        "line": 794,
         "level": 4,
         "title": "3層の重複防止メカニズムの役割分担"
       }
@@ -2511,7 +2519,7 @@
     "A2UIボタンイベントを処理": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 522,
+        "line": 535,
         "level": 1,
         "title": "A2UIボタンイベントを処理"
       }
@@ -2519,7 +2527,7 @@
     "A2UIメッセージを送信": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 559,
+        "line": 572,
         "level": 1,
         "title": "A2UIメッセージを送信"
       }
@@ -2535,7 +2543,7 @@
     "API エラー処理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1159,
+        "line": 1164,
         "level": 3,
         "title": "API エラー処理"
       }
@@ -2571,7 +2579,7 @@
     "API レスポンス標準": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1021,
+        "line": 1026,
         "level": 2,
         "title": "API レスポンス標準"
       }
@@ -2847,7 +2855,7 @@
     "Bot ライフサイクルの監視": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1236,
+        "line": 1241,
         "level": 3,
         "title": "Bot ライフサイクルの監視"
       }
@@ -2855,7 +2863,7 @@
     "Bot 状態の照会": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1232,
+        "line": 1237,
         "level": 3,
         "title": "Bot 状態の照会"
       },
@@ -2869,7 +2877,7 @@
     "Bot 状態管理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1187,
+        "line": 1192,
         "level": 2,
         "title": "Bot 状態管理"
       }
@@ -2930,12 +2938,12 @@
         "title": "Claude Desktop 接続"
       }
     ],
-    "Client 系列 — `Core/client.py` / `Core/Bases/client.py`": [
+    "Client 系 — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 74,
+        "line": 77,
         "level": 3,
-        "title": "Client 系列 — `Core/client.py` / `Core/Bases/client.py`"
+        "title": "Client 系 — `Core/client.py` / `Core/Bases/client.py`"
       }
     ],
     "ClientWebSocket の属性": [
@@ -3319,7 +3327,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 593,
+        "line": 606,
         "level": 2,
         "title": "Event Mixin 拡張メソッド"
       }
@@ -3541,7 +3549,7 @@
     "Interaction — `Core/Event/interaction.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 123,
+        "line": 131,
         "level": 3,
         "title": "Interaction — `Core/Event/interaction.py`"
       }
@@ -3677,7 +3685,7 @@
     "Meta イベントタイプ": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1209,
+        "line": 1214,
         "level": 3,
         "title": "Meta イベントタイプ"
       }
@@ -3706,12 +3714,12 @@
         "title": "Module モジュール"
       }
     ],
-    "Module 系列 — `Core/module.py`（`sdk.module.call`）": [
+    "Module 系 — `Core/module.py`（`sdk.module.call`）": [
       {
         "document": "advanced/errors.md",
-        "line": 135,
+        "line": 144,
         "level": 3,
-        "title": "Module 系列 — `Core/module.py`（`sdk.module.call`）"
+        "title": "Module 系 — `Core/module.py`（`sdk.module.call`）"
       }
     ],
     "MySQL（`ErisPulse.storage.mysql`）": [
@@ -3913,7 +3921,7 @@
     "PollingAdapter（HTTPポーリング型）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 898,
+        "line": 903,
         "level": 4,
         "title": "PollingAdapter（HTTPポーリング型）"
       }
@@ -4108,6 +4116,14 @@
         "title": "SQL チェーンクエリ"
       }
     ],
+    "SQLite \"データベースはロックされています\" のトラブルシューティング": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 136,
+        "level": 2,
+        "title": "SQLite \"データベースはロックされています\" のトラブルシューティング"
+      }
+    ],
     "SVG 出力の例": [
       {
         "document": "ecosystem/takumi.md",
@@ -4135,7 +4151,7 @@
     "Send DSLを使用してBotを指定": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 717,
+        "line": 730,
         "level": 3,
         "title": "Send DSLを使用してBotを指定"
       }
@@ -4191,7 +4207,7 @@
     "Send メッセージ送信 DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 672,
+        "line": 677,
         "level": 2,
         "title": "Send メッセージ送信 DSL"
       }
@@ -4268,12 +4284,12 @@
         "title": "Sendのクエリメソッド（廃止済み）"
       }
     ],
-    "Shadow 系列 — `Core/shadow.py`（シャドウモジュール）": [
+    "Shadow 系 — `Core/shadow.py`（シャドウモジュール）": [
       {
         "document": "advanced/errors.md",
-        "line": 164,
+        "line": 173,
         "level": 3,
-        "title": "Shadow 系列 — `Core/shadow.py`（シャドウモジュール）"
+        "title": "Shadow 系 — `Core/shadow.py`（シャドウモジュール）"
       }
     ],
     "SnowLuma 固有アクション（SnowLumaExtensionApi）": [
@@ -4308,12 +4324,12 @@
         "title": "Storage モジュール"
       }
     ],
-    "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`": [
+    "Storage 系 — `Core/storage` / `Core/Bases/sql_base.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 108,
+        "line": 111,
         "level": 3,
-        "title": "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`"
+        "title": "Storage 系 — `Core/storage` / `Core/Bases/sql_base.py`"
       }
     ],
     "Storage（ストレージ）": [
@@ -4439,7 +4455,7 @@
     "WebHook 接続": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 995,
+        "line": 1000,
         "level": 3,
         "title": "WebHook 接続"
       }
@@ -4485,7 +4501,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 961,
+        "line": 966,
         "level": 3,
         "title": "WebSocket 接続"
       },
@@ -4512,12 +4528,12 @@
         "title": "WebSocket 登録"
       }
     ],
-    "WebSocket 系列 — `Core/client.py`（`send` / `receive`）": [
+    "WebSocket 系 — `Core/client.py`（`send` / `receive`）": [
       {
         "document": "advanced/errors.md",
-        "line": 94,
+        "line": 97,
         "level": 3,
-        "title": "WebSocket 系列 — `Core/client.py`（`send` / `receive`）"
+        "title": "WebSocket 系 — `Core/client.py`（`send` / `receive`）"
       }
     ],
     "WebSocket接続": [
@@ -4555,7 +4571,7 @@
     "WebhookAdapter（HTTPコールバック型）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 925,
+        "line": 930,
         "level": 4,
         "title": "WebhookAdapter（HTTPコールバック型）"
       }
@@ -5027,7 +5043,7 @@
     "`self` フィールドの拡張情報": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1221,
+        "line": 1226,
         "level": 3,
         "title": "`self` フィールドの拡張情報"
       }
@@ -5224,12 +5240,12 @@
         "title": "docker-compose.yml"
       }
     ],
-    "docstring から自動生成されるフィールド説明（v2.8.0+）": [
+    "docstring によるフィールド説明の自動生成（v2.8.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 473,
+        "line": 474,
         "level": 4,
-        "title": "docstring から自動生成されるフィールド説明（v2.8.0+）"
+        "title": "docstring によるフィールド説明の自動生成（v2.8.0+）"
       }
     ],
     "doctor": [
@@ -5267,7 +5283,7 @@
     "event.reply()を使用して返信（プラットフォームに応じて正しい送信方法を選択する）": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 504,
+        "line": 517,
         "level": 1,
         "title": "event.reply()を使用して返信（プラットフォームに応じて正しい送信方法を選択する）"
       }
@@ -5392,12 +5408,12 @@
         "title": "meta フィールドの i18n サポート"
       }
     ],
-    "metadata 約定": [
+    "metadata の規約": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 398,
         "level": 4,
-        "title": "metadata 約定"
+        "title": "metadata の規約"
       }
     ],
     "on_before_unload メソッド": [
@@ -5555,7 +5571,7 @@
     "start() の2つの正しい書き方": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 851,
+        "line": 856,
         "level": 3,
         "title": "start() の2つの正しい書き方"
       }
@@ -5880,14 +5896,6 @@
         "title": "その他サブシステムの能力（最適化後）"
       }
     ],
-    "どちらの宣言を使うべきか": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 81,
-        "level": 3,
-        "title": "どちらの宣言を使うべきか"
-      }
-    ],
     "どちらを選ぶべきか": [
       {
         "document": "showcase/comparison-agent-platforms.md",
@@ -6042,12 +6050,12 @@
         "title": "アカウントと複数アカウント"
       }
     ],
-    "アカウントの解析": [
+    "アカウントの解決": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 611,
+        "line": 614,
         "level": 4,
-        "title": "アカウントの解析"
+        "title": "アカウントの解決"
       }
     ],
     "アカウントフィールドのデュアル互換と send_context": [
@@ -6077,7 +6085,7 @@
     "アカウント指定での送信": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1097,
+        "line": 1102,
         "level": 3,
         "title": "アカウント指定での送信"
       }
@@ -6117,7 +6125,7 @@
     "アカウント設定ファイル": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1083,
+        "line": 1088,
         "level": 3,
         "title": "アカウント設定ファイル"
       }
@@ -6169,7 +6177,7 @@
     "アダプタが Meta イベントを送信": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1217,
+        "line": 1222,
         "level": 3,
         "title": "アダプタが Meta イベントを送信"
       }
@@ -6523,7 +6531,7 @@
     "イベントのアカウント識別子と Using の関係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1110,
+        "line": 1115,
         "level": 3,
         "title": "イベントのアカウント識別子と Using の関係"
       }
@@ -6809,7 +6817,7 @@
     "イベント内のBot識別子": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 739,
+        "line": 752,
         "level": 3,
         "title": "イベント内のBot識別子"
       }
@@ -6945,7 +6953,7 @@
     "イベント変換器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 745,
+        "line": 750,
         "level": 2,
         "title": "イベント変換器"
       }
@@ -7345,7 +7353,7 @@
     "エラー処理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1133,
+        "line": 1138,
         "level": 2,
         "title": "エラー処理"
       },
@@ -7559,7 +7567,7 @@
     "グループにボタン付きメッセージを送信": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 545,
+        "line": 558,
         "level": 1,
         "title": "グループにボタン付きメッセージを送信"
       }
@@ -8228,6 +8236,12 @@
         "line": 167,
         "level": 3,
         "title": "サポートされていない標準アクション"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 372,
+        "level": 3,
+        "title": "サポートされていない標準アクション"
       }
     ],
     "サポートされている提出タイプ": [
@@ -8242,6 +8256,12 @@
       {
         "document": "platform-guide/bilibili.md",
         "line": 156,
+        "level": 3,
+        "title": "サポートされている標準アクション"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 346,
         "level": 3,
         "title": "サポートされている標準アクション"
       }
@@ -8392,12 +8412,12 @@
         "title": "シナリオ早見表"
       }
     ],
-    "シャットダウンノイズの折りたたみ": [
+    "シャットダウン時のノイズ折りたたみ": [
       {
         "document": "advanced/errors.md",
-        "line": 198,
+        "line": 206,
         "level": 2,
-        "title": "シャットダウンノイズの折りたたみ"
+        "title": "シャットダウン時のノイズ折りたたみ"
       }
     ],
     "シャドウモジュールとカナリア昇格": [
@@ -8411,7 +8431,7 @@
     "ショートカットメニューイベントを処理": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 512,
+        "line": 525,
         "level": 1,
         "title": "ショートカットメニューイベントを処理"
       }
@@ -8731,7 +8751,7 @@
     "チェーン修飾メソッド": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 731,
+        "line": 736,
         "level": 3,
         "title": "チェーン修飾メソッド"
       },
@@ -9054,6 +9074,14 @@
         "title": "テーブル作成"
       }
     ],
+    "テーブル作成と CRUD": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 44,
+        "level": 2,
+        "title": "テーブル作成と CRUD"
+      }
+    ],
     "テーブル削除": [
       {
         "document": "advanced/sql-builder.md",
@@ -9062,20 +9090,20 @@
         "title": "テーブル削除"
       }
     ],
+    "テーブル構造が不要で、少数のキーバリューを保存するだけの場合": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 201,
+        "level": 3,
+        "title": "テーブル構造が不要で、少数のキーバリューを保存するだけの場合"
+      }
+    ],
     "テーブル構造の変更": [
       {
         "document": "advanced/sql-builder.md",
         "line": 61,
         "level": 3,
         "title": "テーブル構造の変更"
-      }
-    ],
-    "テーブル構造は不要で、いくつかのキーと値だけを保存したい場合": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 194,
-        "level": 3,
-        "title": "テーブル構造は不要で、いくつかのキーと値だけを保存したい場合"
       }
     ],
     "テーブル管理": [
@@ -9197,7 +9225,7 @@
     "データベースの変更やクラウドデータベースへのデプロイが必要な場合": [
       {
         "document": "developer-guide/orm.md",
-        "line": 190,
+        "line": 197,
         "level": 3,
         "title": "データベースの変更やクラウドデータベースへのデプロイが必要な場合"
       }
@@ -9229,7 +9257,7 @@
     "トランザクション": [
       {
         "document": "developer-guide/orm.md",
-        "line": 67,
+        "line": 70,
         "level": 2,
         "title": "トランザクション"
       }
@@ -9440,6 +9468,14 @@
         "line": 14,
         "level": 2,
         "title": "ドキュメント構造規格"
+      }
+    ],
+    "ネストした設定（v2.8.0+）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 499,
+        "level": 4,
+        "title": "ネストした設定（v2.8.0+）"
       }
     ],
     "ネットワーククライアント": [
@@ -9670,14 +9706,6 @@
         "title": "ビルダーのリセット"
       }
     ],
-    "ファイルに書き込まれない example フィールド（v2.8.0+）": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 531,
-        "level": 4,
-        "title": "ファイルに書き込まれない example フィールド（v2.8.0+）"
-      }
-    ],
     "ファイル処理の特性": [
       {
         "document": "platform-guide/ideaura.md",
@@ -9705,7 +9733,7 @@
     "フィールドパラメータ": [
       {
         "document": "developer-guide/orm.md",
-        "line": 25,
+        "line": 28,
         "level": 2,
         "title": "フィールドパラメータ"
       }
@@ -9753,7 +9781,7 @@
     "フレームワーク内部のパラメータ検証（ValueError）": [
       {
         "document": "advanced/errors.md",
-        "line": 173,
+        "line": 182,
         "level": 3,
         "title": "フレームワーク内部のパラメータ検証（ValueError）"
       }
@@ -9761,7 +9789,7 @@
     "フレームワーク補助メソッド": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 700,
+        "line": 705,
         "level": 3,
         "title": "フレームワーク補助メソッド"
       }
@@ -9963,7 +9991,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 366,
+        "line": 379,
         "level": 3,
         "title": "プラットフォーム拡張アクション"
       }
@@ -10233,7 +10261,7 @@
     "ボタンクリックイベントかどうかを確認": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 496,
+        "line": 509,
         "level": 1,
         "title": "ボタンクリックイベントかどうかを確認"
       }
@@ -10988,6 +11016,14 @@
         "title": "メディアファイル処理"
       }
     ],
+    "メディアメッセージとホットリンク保護（4.6.3）": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 357,
+        "level": 4,
+        "title": "メディアメッセージとホットリンク保護（4.6.3）"
+      }
+    ],
     "メディアメッセージの送信": [
       {
         "document": "platform-guide/kook.md",
@@ -11389,7 +11425,7 @@
     "モデルの宣言": [
       {
         "document": "developer-guide/orm.md",
-        "line": 8,
+        "line": 11,
         "level": 2,
         "title": "モデルの宣言"
       }
@@ -11429,7 +11465,7 @@
     "ユーザーのプライベートチャットにボタン付きメッセージを送信": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 548,
+        "line": 561,
         "level": 1,
         "title": "ユーザーのプライベートチャットにボタン付きメッセージを送信"
       }
@@ -11908,6 +11944,14 @@
         "title": "リリース済みモジュールの更新"
       }
     ],
+    "リレーションマッピング（relationship）": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 141,
+        "level": 2,
+        "title": "リレーションマッピング（relationship）"
+      }
+    ],
     "リンク制御：認領とブロック": [
       {
         "document": "getting-started/event-handling.md",
@@ -12111,7 +12155,7 @@
     "ログ情報": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 767,
+        "line": 780,
         "level": 3,
         "title": "ログ情報"
       },
@@ -12149,7 +12193,7 @@
     "ロボットの設定変更": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 517,
+        "line": 530,
         "level": 1,
         "title": "ロボットの設定変更"
       }
@@ -12661,7 +12705,7 @@
     "例外一覧": [
       {
         "document": "advanced/errors.md",
-        "line": 15,
+        "line": 16,
         "level": 2,
         "title": "例外一覧"
       }
@@ -12913,7 +12957,7 @@
     "再びステップを振り返る": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1247,
+        "line": 1252,
         "level": 3,
         "title": "再びステップを振り返る"
       }
@@ -13031,7 +13075,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 648,
+        "line": 653,
         "level": 3,
         "title": "初期化プロセス"
       }
@@ -13079,7 +13123,7 @@
     "利用可能な属性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 683,
+        "line": 688,
         "level": 3,
         "title": "利用可能な属性"
       }
@@ -13349,7 +13393,7 @@
     "各例外の説明と発生箇所": [
       {
         "document": "advanced/errors.md",
-        "line": 72,
+        "line": 75,
         "level": 2,
         "title": "各例外の説明と発生箇所"
       }
@@ -13505,7 +13549,7 @@
     "基本メソッド": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 707,
+        "line": 712,
         "level": 3,
         "title": "基本メソッド"
       }
@@ -13860,10 +13904,18 @@
         "title": "場面別グループ分け"
       }
     ],
+    "境界と注意点": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 96,
+        "level": 2,
+        "title": "境界と注意点"
+      }
+    ],
     "変換フロー": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 747,
+        "line": 752,
         "level": 3,
         "title": "変換フロー"
       }
@@ -13871,7 +13923,7 @@
     "変換器の例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 808,
+        "line": 813,
         "level": 3,
         "title": "変換器の例"
       }
@@ -13879,7 +13931,7 @@
     "外部キー（リレーションマッピングの基礎）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 121,
+        "line": 127,
         "level": 2,
         "title": "外部キー（リレーションマッピングの基礎）"
       }
@@ -13887,7 +13939,7 @@
     "多Bot設定": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 684,
+        "line": 697,
         "level": 2,
         "title": "多Bot設定"
       }
@@ -13952,6 +14004,14 @@
         "line": 138,
         "level": 3,
         "title": "大小文字を区別しない呼び出し"
+      }
+    ],
+    "失敗の意味（2.12 以降）": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 85,
+        "level": 2,
+        "title": "失敗の意味（2.12 以降）"
       }
     ],
     "失敗時のリトライ + タイムアウト": [
@@ -14187,7 +14247,7 @@
     "実装面の詳細": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1242,
+        "line": 1247,
         "level": 3,
         "title": "実装面の詳細"
       }
@@ -14200,12 +14260,12 @@
         "title": "宣言型の翻訳キー（v2.7.0+）"
       }
     ],
-    "宣言式構成クラスとの関係": [
+    "宣言型設定クラスとの関係": [
       {
         "document": "developer-guide/orm.md",
-        "line": 77,
+        "line": 80,
         "level": 2,
-        "title": "宣言式構成クラスとの関係"
+        "title": "宣言型設定クラスとの関係"
       }
     ],
     "宣言方法": [
@@ -14227,7 +14287,7 @@
     "宣言的なイベント拡張メソッド（v2.7.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 579,
+        "line": 582,
         "level": 3,
         "title": "宣言的なイベント拡張メソッド（v2.7.0+）"
       }
@@ -14235,7 +14295,7 @@
     "宣言的な翻訳キー（v2.7.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 548,
+        "line": 550,
         "level": 3,
         "title": "宣言的な翻訳キー（v2.7.0+）"
       }
@@ -14267,7 +14327,7 @@
     "宣言的設定（推奨）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1057,
+        "line": 1062,
         "level": 3,
         "title": "宣言的設定（推奨）"
       },
@@ -14466,14 +14526,6 @@
         "title": "属性アクセス"
       }
     ],
-    "嵌套設定（v2.8.0+）": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 497,
-        "level": 4,
-        "title": "嵌套設定（v2.8.0+）"
-      }
-    ],
     "帰属の統一ファサード（ownership）": [
       {
         "document": "advanced/ownership.md",
@@ -14504,14 +14556,6 @@
         "line": 20,
         "level": 3,
         "title": "常用コマンド"
-      }
-    ],
-    "建表と CRUD": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 41,
-        "level": 2,
-        "title": "建表と CRUD"
       }
     ],
     "建議される移行戦略": [
@@ -14571,7 +14615,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 757,
+        "line": 762,
         "level": 3,
         "title": "必須フィールド"
       }
@@ -14665,7 +14709,7 @@
     "成功レスポンス": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1025,
+        "line": 1030,
         "level": 3,
         "title": "成功レスポンス"
       }
@@ -14761,7 +14805,7 @@
     "手動でレスポンス構築（旧版方式は互換性あり）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1041,
+        "line": 1046,
         "level": 3,
         "title": "手動でレスポンス構築（旧版方式は互換性あり）"
       }
@@ -14903,7 +14947,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 630,
+        "line": 643,
         "level": 2,
         "title": "拡張フィールドの説明"
       },
@@ -14949,7 +14993,7 @@
     "捕捉の推奨事項": [
       {
         "document": "advanced/errors.md",
-        "line": 183,
+        "line": 191,
         "level": 2,
         "title": "捕捉の推奨事項"
       }
@@ -15025,23 +15069,23 @@
     "接続モードの半完成基底クラス": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 894,
+        "line": 899,
         "level": 3,
         "title": "接続モードの半完成基底クラス"
       }
     ],
-    "接続レジストリ系列 — `Core/connections.py`（2.10+）": [
+    "接続レジストリ系 — `Core/connections.py`（2.10+）": [
       {
         "document": "advanced/errors.md",
-        "line": 101,
+        "line": 104,
         "level": 3,
-        "title": "接続レジストリ系列 — `Core/connections.py`（2.10+）"
+        "title": "接続レジストリ系 — `Core/connections.py`（2.10+）"
       }
     ],
     "接続再試行": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1135,
+        "line": 1140,
         "level": 3,
         "title": "接続再試行"
       }
@@ -15071,7 +15115,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 849,
+        "line": 854,
         "level": 2,
         "title": "接続管理"
       }
@@ -15114,14 +15158,6 @@
         "line": 111,
         "level": 2,
         "title": "支持するメッセージ送信タイプ"
-      }
-    ],
-    "支持する標準アクション": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 346,
-        "level": 3,
-        "title": "支持する標準アクション"
       }
     ],
     "支援されるメッセージ送信タイプ": [
@@ -15273,7 +15309,7 @@
     "方言の動作の違い": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 113,
+        "line": 123,
         "level": 2,
         "title": "方言の動作の違い"
       }
@@ -15305,7 +15341,7 @@
     "旧設定の互換性": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 792,
+        "line": 805,
         "level": 3,
         "title": "旧設定の互換性"
       }
@@ -15521,7 +15557,7 @@
     "核心的な違い点": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 414,
+        "line": 427,
         "level": 3,
         "title": "核心的な違い点"
       }
@@ -15609,7 +15645,7 @@
     "構造化属性": [
       {
         "document": "advanced/errors.md",
-        "line": 45,
+        "line": 47,
         "level": 2,
         "title": "構造化属性"
       }
@@ -15620,14 +15656,6 @@
         "line": 178,
         "level": 2,
         "title": "標準 API アクション"
-      }
-    ],
-    "標準 API アクション（ApiDSL）": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 319,
-        "level": 2,
-        "title": "標準 API アクション（ApiDSL）"
       }
     ],
     "標準 API アクション（Api）": [
@@ -15660,6 +15688,14 @@
         "line": 70,
         "level": 2,
         "title": "標準APIアクション（Api DSL）"
+      }
+    ],
+    "標準APIアクション（ApiDSL）": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 319,
+        "level": 2,
+        "title": "標準APIアクション（ApiDSL）"
       }
     ],
     "標準APIアクション（Api）": [
@@ -15760,14 +15796,6 @@
         "line": 195,
         "level": 3,
         "title": "標準アクションの非サポート"
-      }
-    ],
-    "標準アクションの非対応": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 359,
-        "level": 3,
-        "title": "標準アクションの非対応"
       }
     ],
     "標準イベント例": [
@@ -16131,7 +16159,7 @@
       },
       {
         "document": "developer-guide/orm.md",
-        "line": 188,
+        "line": 195,
         "level": 2,
         "title": "次のステップ"
       },
@@ -16274,6 +16302,14 @@
         "title": "比較：ErisPulse と NoneBot2"
       }
     ],
+    "永続化されない example フィールド（v2.8.0+）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 533,
+        "level": 4,
+        "title": "永続化されない example フィールド（v2.8.0+）"
+      }
+    ],
     "汎用アクションのエントリポイント": [
       {
         "document": "platform-guide/bilibili.md",
@@ -16391,7 +16427,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 410,
+        "line": 423,
         "level": 2,
         "title": "特有のイベントタイプ"
       },
@@ -16441,7 +16477,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 431,
+        "line": 444,
         "level": 3,
         "title": "特殊フィールドの例"
       }
@@ -16561,7 +16597,7 @@
     "異スレッド API": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 85,
+        "line": 95,
         "level": 2,
         "title": "異スレッド API"
       }
@@ -16677,7 +16713,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 776,
+        "line": 789,
         "level": 3,
         "title": "管理インターフェース"
       },
@@ -16819,7 +16855,7 @@
     "継承関係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 674,
+        "line": 679,
         "level": 3,
         "title": "継承関係"
       }
@@ -16904,12 +16940,12 @@
         "title": "自動ドキュメント"
       }
     ],
-    "自動マイグレーション（フェーズ2）": [
+    "自動マイグレーション（フェーズ 2）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 101,
+        "line": 104,
         "level": 2,
-        "title": "自動マイグレーション（フェーズ2）"
+        "title": "自動マイグレーション（フェーズ 2）"
       }
     ],
     "自動注入": [
@@ -16923,7 +16959,7 @@
     "自動発見メカニズム": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1191,
+        "line": 1196,
         "level": 3,
         "title": "自動発見メカニズム"
       }
@@ -16931,7 +16967,7 @@
     "自定义 SQL バックエンド": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 126,
+        "line": 151,
         "level": 2,
         "title": "自定义 SQL バックエンド"
       }
@@ -16979,7 +17015,7 @@
     "表情/ステッカー形式のメッセージセグメント (yunhu_expression)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 642,
+        "line": 655,
         "level": 3,
         "title": "表情/ステッカー形式のメッセージセグメント (yunhu_expression)"
       }
@@ -17031,7 +17067,7 @@
     "複数アカウントの重複受信（フレームワークが注入するフィールド）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 780,
+        "line": 785,
         "level": 3,
         "title": "複数アカウントの重複受信（フレームワークが注入するフィールド）"
       }
@@ -17039,7 +17075,7 @@
     "複数アカウントサポート": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1055,
+        "line": 1060,
         "level": 2,
         "title": "複数アカウントサポート"
       }
@@ -17171,7 +17207,7 @@
     "設定のホットアップデート": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 635,
+        "line": 640,
         "level": 4,
         "title": "設定のホットアップデート"
       },
@@ -17213,7 +17249,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 686,
+        "line": 699,
         "level": 3,
         "title": "設定の説明"
       },
@@ -17574,14 +17610,6 @@
         "title": "転送機能"
       }
     ],
-    "辺界と注意事項": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 93,
-        "level": 2,
-        "title": "辺界と注意事項"
-      }
-    ],
     "近接マッピング原則": [
       {
         "document": "advanced/i18n.md",
@@ -17741,7 +17769,7 @@
     "送信メソッドの返り値": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 393,
+        "line": 406,
         "level": 2,
         "title": "送信メソッドの返り値"
       }
@@ -18136,14 +18164,6 @@
         "title": "開発者ガイド"
       }
     ],
-    "関係マッピング（relationship）": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 135,
-        "level": 2,
-        "title": "関係マッピング（relationship）"
-      }
-    ],
     "関連ドキュメント": [
       {
         "document": "advanced/client.md",
@@ -18165,7 +18185,7 @@
       },
       {
         "document": "advanced/errors.md",
-        "line": 208,
+        "line": 216,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -18243,7 +18263,7 @@
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 152,
+        "line": 177,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -18297,7 +18317,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1240,
+        "line": 1245,
         "level": 2,
         "title": "関連ドキュメント"
       },

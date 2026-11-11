@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2018,
+  "total_keywords": 2020,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2474,14 +2474,6 @@
         "title": "API 呼叫"
       }
     ],
-    "API 响应标准": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1053,
-        "level": 2,
-        "title": "API 响应标准"
-      }
-    ],
     "API 响應": [
       {
         "document": "standards/README.md",
@@ -2510,6 +2502,14 @@
         "line": 204,
         "level": 2,
         "title": "API 回應"
+      }
+    ],
+    "API 回應標準": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 1054,
+        "level": 2,
+        "title": "API 回應標準"
       }
     ],
     "API 概覽": [
@@ -2560,12 +2560,12 @@
         "title": "API 調用"
       }
     ],
-    "API 错误处理": [
+    "API 錯誤處理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1191,
+        "line": 1192,
         "level": 3,
-        "title": "API 错误处理"
+        "title": "API 錯誤處理"
       }
     ],
     "Account 方法": [
@@ -2595,7 +2595,7 @@
     "AdapterManager 適配器管理器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 49,
+        "line": 48,
         "level": 2,
         "title": "AdapterManager 適配器管理器"
       }
@@ -2654,12 +2654,12 @@
         "title": "AtAll 方法"
       }
     ],
-    "BaseAdapter 基底類別": [
+    "BaseAdapter 基類": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 284,
+        "line": 283,
         "level": 2,
-        "title": "BaseAdapter 基底類別"
+        "title": "BaseAdapter 基類"
       }
     ],
     "BaseAdapter 方法": [
@@ -2733,7 +2733,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1264,
+        "line": 1265,
         "level": 3,
         "title": "Bot 狀態查詢"
       },
@@ -2753,7 +2753,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1219,
+        "line": 1220,
         "level": 2,
         "title": "Bot 狀態管理"
       }
@@ -2801,7 +2801,7 @@
     "Client 系列 — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 74,
+        "line": 75,
         "level": 3,
         "title": "Client 系列 — `Core/client.py` / `Core/Bases/client.py`"
       }
@@ -3111,7 +3111,7 @@
     "Event Mixin 擴展方法": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 593,
+        "line": 606,
         "level": 2,
         "title": "Event Mixin 擴展方法"
       }
@@ -3301,7 +3301,7 @@
     "Interaction — `Core/Event/interaction.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 123,
+        "line": 129,
         "level": 3,
         "title": "Interaction — `Core/Event/interaction.py`"
       }
@@ -3421,7 +3421,7 @@
     "Meta 事件類型": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1241,
+        "line": 1242,
         "level": 3,
         "title": "Meta 事件類型"
       }
@@ -3453,7 +3453,7 @@
     "Module 系列 — `Core/module.py`（`sdk.module.call`）": [
       {
         "document": "advanced/errors.md",
-        "line": 136,
+        "line": 142,
         "level": 3,
         "title": "Module 系列 — `Core/module.py`（`sdk.module.call`）"
       }
@@ -3549,7 +3549,7 @@
     "OneBot12 標準事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 158,
+        "line": 157,
         "level": 4,
         "title": "OneBot12 標準事件"
       },
@@ -3645,7 +3645,7 @@
     "PollingAdapter（HTTP 輪詢型）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 919,
+        "line": 920,
         "level": 4,
         "title": "PollingAdapter（HTTP 輪詢型）"
       }
@@ -3880,6 +3880,14 @@
         "title": "Send 消息發送"
       }
     ],
+    "Send 消息發送 DSL": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 687,
+        "level": 2,
+        "title": "Send 消息發送 DSL"
+      }
+    ],
     "Send 繼承 BaseAdapter.Send": [
       {
         "document": "platform-guide/terminal.md",
@@ -3906,14 +3914,6 @@
         "line": 57,
         "level": 3,
         "title": "Send 規範"
-      }
-    ],
-    "Send 訊息傳送 DSL": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 686,
-        "level": 2,
-        "title": "Send 訊息傳送 DSL"
       }
     ],
     "Send 鏈式呼叫": [
@@ -3951,7 +3951,7 @@
     "Shadow 系列 — `Core/shadow.py`（影子模組）": [
       {
         "document": "advanced/errors.md",
-        "line": 165,
+        "line": 171,
         "level": 3,
         "title": "Shadow 系列 — `Core/shadow.py`（影子模組）"
       }
@@ -3991,7 +3991,7 @@
     "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 108,
+        "line": 109,
         "level": 3,
         "title": "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`"
       }
@@ -4111,7 +4111,7 @@
     "WebHook 連線": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1025,
+        "line": 1026,
         "level": 3,
         "title": "WebHook 連線"
       }
@@ -4143,7 +4143,7 @@
     "WebSocket 系列 — `Core/client.py`（`send` / `receive`）": [
       {
         "document": "advanced/errors.md",
-        "line": 94,
+        "line": 95,
         "level": 3,
         "title": "WebSocket 系列 — `Core/client.py`（`send` / `receive`）"
       }
@@ -4183,7 +4183,7 @@
     "WebSocket 連線": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 991,
+        "line": 992,
         "level": 3,
         "title": "WebSocket 連線"
       },
@@ -4226,12 +4226,12 @@
         "title": "Webhook 通用橋接適配器平台特性文件"
       }
     ],
-    "WebhookAdapter（HTTP 回呼型）": [
+    "WebhookAdapter（HTTP 回調型）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 950,
+        "line": 951,
         "level": 4,
-        "title": "WebhookAdapter（HTTP 回呼型）"
+        "title": "WebhookAdapter（HTTP 回調型）"
       }
     ],
     "Where 參數傳遞規則": [
@@ -4778,12 +4778,12 @@
         "title": "`qvq_schemas()` → 顯式參數 schema"
       }
     ],
-    "`self` 欄位擴充資訊": [
+    "`self` 欄位擴展資訊": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1253,
+        "line": 1254,
         "level": 3,
-        "title": "`self` 欄位擴充資訊"
+        "title": "`self` 欄位擴展資訊"
       }
     ],
     "`t()` 方法詳解": [
@@ -4968,12 +4968,12 @@
         "title": "docker-compose.yml"
       }
     ],
-    "docstring 自動生成欄位描述（v2.8.0+）": [
+    "docstring 自动生成欄位描述（v2.8.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 476,
+        "line": 475,
         "level": 4,
-        "title": "docstring 自動生成欄位描述（v2.8.0+）"
+        "title": "docstring 自动生成欄位描述（v2.8.0+）"
       }
     ],
     "doctor": [
@@ -5003,7 +5003,7 @@
     "get() 方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 268,
+        "line": 267,
         "level": 4,
         "title": "get() 方法"
       }
@@ -5115,7 +5115,7 @@
     "metadata 約定": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 398,
+        "line": 397,
         "level": 4,
         "title": "metadata 約定"
       }
@@ -5259,7 +5259,7 @@
     "start() 的兩種正確寫法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 865,
+        "line": 866,
         "level": 3,
         "title": "start() 的兩種正確寫法"
       }
@@ -5549,7 +5549,7 @@
     "三層去重機制分工": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 803,
+        "line": 804,
         "level": 4,
         "title": "三層去重機制分工"
       }
@@ -5573,7 +5573,7 @@
     "三種模式怎麼選": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 980,
+        "line": 981,
         "level": 4,
         "title": "三種模式怎麼選"
       }
@@ -5621,7 +5621,7 @@
       },
       {
         "document": "developer-guide/orm.md",
-        "line": 192,
+        "line": 195,
         "level": 2,
         "title": "下一步"
       },
@@ -5793,7 +5793,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 359,
+        "line": 372,
         "level": 3,
         "title": "不支援的標準動作"
       }
@@ -5814,18 +5814,18 @@
         "title": "不等待結果"
       }
     ],
-    "不落盤的 example 欄位（v2.8.0+）": [
+    "不落盤的 example 字段（v2.8.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 539,
+        "line": 538,
         "level": 4,
-        "title": "不落盤的 example 欄位（v2.8.0+）"
+        "title": "不落盤的 example 字段（v2.8.0+）"
       }
     ],
     "不需要表結構、只存幾個鍵值": [
       {
         "document": "developer-guide/orm.md",
-        "line": 198,
+        "line": 201,
         "level": 3,
         "title": "不需要表結構、只存幾個鍵值"
       }
@@ -5863,7 +5863,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 207,
+        "line": 206,
         "level": 3,
         "title": "中間件"
       }
@@ -5871,7 +5871,7 @@
     "中間件回傳契約": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 227,
+        "line": 226,
         "level": 4,
         "title": "中間件回傳契約"
       }
@@ -5887,7 +5887,7 @@
     "中間件執行順序": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 251,
+        "line": 250,
         "level": 4,
         "title": "中間件執行順序"
       }
@@ -5935,7 +5935,7 @@
     "事件中的Bot標識": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 739,
+        "line": 752,
         "level": 3,
         "title": "事件中的Bot標識"
       }
@@ -5965,7 +5965,7 @@
     "事件分發機制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 193,
+        "line": 192,
         "level": 4,
         "title": "事件分發機制"
       }
@@ -6133,7 +6133,7 @@
     "事件的帳戶標識與 Using 的關係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1142,
+        "line": 1143,
         "level": 3,
         "title": "事件的帳戶標識與 Using 的關係"
       }
@@ -6141,7 +6141,7 @@
     "事件監聽": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 156,
+        "line": 155,
         "level": 3,
         "title": "事件監聽"
       },
@@ -6387,7 +6387,7 @@
     "事件轉換器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 759,
+        "line": 760,
         "level": 2,
         "title": "事件轉換器"
       }
@@ -6485,7 +6485,7 @@
     "事務": [
       {
         "document": "developer-guide/orm.md",
-        "line": 67,
+        "line": 70,
         "level": 2,
         "title": "事務"
       }
@@ -6777,7 +6777,7 @@
     "使用 event.reply() 自動回覆（會根據平台自動選擇正確的發送方式）": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 504,
+        "line": 517,
         "level": 1,
         "title": "使用 event.reply() 自動回覆（會根據平台自動選擇正確的發送方式）"
       }
@@ -6801,7 +6801,7 @@
     "使用Send DSL指定Bot": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 717,
+        "line": 730,
         "level": 3,
         "title": "使用Send DSL指定Bot"
       }
@@ -7094,14 +7094,6 @@
         "title": "傳送到不同目標"
       }
     ],
-    "傳送方法回傳值": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 393,
-        "level": 2,
-        "title": "傳送方法回傳值"
-      }
-    ],
     "傳送渲染結果": [
       {
         "document": "ecosystem/takumi.md",
@@ -7379,7 +7371,7 @@
     "兩種宣告何時用哪個": [
       {
         "document": "developer-guide/orm.md",
-        "line": 81,
+        "line": 84,
         "level": 3,
         "title": "兩種宣告何時用哪個"
       }
@@ -7551,7 +7543,7 @@
     "列出平台": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 142,
+        "line": 141,
         "level": 4,
         "title": "列出平台"
       }
@@ -7597,7 +7589,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 662,
+        "line": 663,
         "level": 3,
         "title": "初始化過程"
       }
@@ -8013,7 +8005,7 @@
     "可用屬性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 697,
+        "line": 698,
         "level": 3,
         "title": "可用屬性"
       }
@@ -8053,7 +8045,7 @@
     "各異常說明與發生位置": [
       {
         "document": "advanced/errors.md",
-        "line": 72,
+        "line": 73,
         "level": 2,
         "title": "各異常說明與發生位置"
       }
@@ -8259,7 +8251,7 @@
     "啟動和關閉": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 86,
+        "line": 85,
         "level": 3,
         "title": "啟動和關閉"
       }
@@ -8283,7 +8275,7 @@
     "啟動適配器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 88,
+        "line": 87,
         "level": 4,
         "title": "啟動適配器"
       }
@@ -8315,7 +8307,7 @@
     "單帳戶配置": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 332,
+        "line": 331,
         "level": 4,
         "title": "單帳戶配置"
       }
@@ -8403,7 +8395,7 @@
     "回看起步步驟": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1279,
+        "line": 1280,
         "level": 3,
         "title": "回看起步步驟"
       }
@@ -8623,7 +8615,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 61,
+        "line": 60,
         "level": 3,
         "title": "基本使用"
       },
@@ -8687,7 +8679,7 @@
     "基本方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 721,
+        "line": 722,
         "level": 3,
         "title": "基本方法"
       }
@@ -8743,7 +8735,7 @@
     "基本結構": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 286,
+        "line": 285,
         "level": 3,
         "title": "基本結構"
       }
@@ -8970,6 +8962,22 @@
         "title": "場景速查"
       }
     ],
+    "声明式事件擴展方法（v2.7.0+）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 592,
+        "level": 3,
+        "title": "声明式事件擴展方法（v2.7.0+）"
+      }
+    ],
+    "声明式翻譯鍵（v2.7.0+）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 558,
+        "level": 3,
+        "title": "声明式翻譯鍵（v2.7.0+）"
+      }
+    ],
     "外掛重寫對照": [
       {
         "document": "showcase/migrate-from-astrbot.md",
@@ -8981,17 +8989,17 @@
     "外鍵（關係映射基礎）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 124,
+        "line": 127,
         "level": 2,
         "title": "外鍵（關係映射基礎）"
       }
     ],
-    "多Bot設定": [
+    "多Bot配置": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 684,
+        "line": 697,
         "level": 2,
-        "title": "多Bot設定"
+        "title": "多Bot配置"
       }
     ],
     "多伺服器發送": [
@@ -9051,7 +9059,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1087,
+        "line": 1088,
         "level": 2,
         "title": "多帳戶支援"
       }
@@ -9089,7 +9097,7 @@
     "多帳戶配置": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 361,
+        "line": 360,
         "level": 4,
         "title": "多帳戶配置"
       },
@@ -9322,6 +9330,14 @@
         "title": "媒體發送（Image / Voice / Video / File）"
       }
     ],
+    "媒體訊息與防盜鏈（4.6.3）": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 357,
+        "level": 4,
+        "title": "媒體訊息與防盜鏈（4.6.3）"
+      }
+    ],
     "子命令": [
       {
         "document": "getting-started/event-handling.md",
@@ -9357,7 +9373,7 @@
     "字段參數": [
       {
         "document": "developer-guide/orm.md",
-        "line": 25,
+        "line": 28,
         "level": 2,
         "title": "字段參數"
       }
@@ -9636,21 +9652,7 @@
         "title": "定時任務"
       }
     ],
-    "宣告式事件擴充方法（v2.7.0+）": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 593,
-        "level": 3,
-        "title": "宣告式事件擴充方法（v2.7.0+）"
-      }
-    ],
     "宣告式翻譯鍵（v2.7.0+）": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 559,
-        "level": 3,
-        "title": "宣告式翻譯鍵（v2.7.0+）"
-      },
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 67,
@@ -9665,12 +9667,6 @@
       }
     ],
     "宣告式設定（推薦）": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1089,
-        "level": 3,
-        "title": "宣告式設定（推薦）"
-      },
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 211,
@@ -9710,20 +9706,20 @@
         "title": "富文本卡片方法"
       }
     ],
+    "實作層面深入": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 1275,
+        "level": 3,
+        "title": "實作層面深入"
+      }
+    ],
     "實測基準（2026-10-05，Python 3.13.14）": [
       {
         "document": "advanced/performance.md",
         "line": 6,
         "level": 2,
         "title": "實測基準（2026-10-05，Python 3.13.14）"
-      }
-    ],
-    "實現層面深入": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1274,
-        "level": 3,
-        "title": "實現層面深入"
       }
     ],
     "審核需要多長時間？": [
@@ -9869,7 +9865,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 276,
+        "line": 275,
         "level": 4,
         "title": "屬性存取"
       }
@@ -9882,12 +9878,12 @@
         "title": "嵌套生命週期（ownership.nest）"
       }
     ],
-    "巢狀配置（v2.8.0+）": [
+    "嵌套配置（v2.8.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 502,
+        "line": 501,
         "level": 4,
-        "title": "巢狀配置（v2.8.0+）"
+        "title": "嵌套配置（v2.8.0+）"
       }
     ],
     "工作原理": [
@@ -10092,18 +10088,18 @@
         "title": "帳戶與多帳戶"
       }
     ],
-    "帳戶與多帳戶閉環": [
+    "帳戶與多帳戶封閉": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 65,
         "level": 3,
-        "title": "帳戶與多帳戶閉環"
+        "title": "帳戶與多帳戶封閉"
       }
     ],
     "帳戶解析": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 625,
+        "line": 624,
         "level": 4,
         "title": "帳戶解析"
       }
@@ -10124,20 +10120,20 @@
         "title": "帳戶解析回退鏈"
       }
     ],
-    "帳戶設定檔": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1115,
-        "level": 3,
-        "title": "帳戶設定檔"
-      }
-    ],
     "帳戶配置": [
       {
         "document": "platform-guide/onebot12.md",
         "line": 342,
         "level": 3,
         "title": "帳戶配置"
+      }
+    ],
+    "帳戶配置檔案": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 1116,
+        "level": 3,
+        "title": "帳戶配置檔案"
       }
     ],
     "帳戶配置欄位": [
@@ -10309,7 +10305,7 @@
     "平台原生事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 179,
+        "line": 178,
         "level": 4,
         "title": "平台原生事件"
       }
@@ -10320,22 +10316,6 @@
         "line": 130,
         "level": 3,
         "title": "平台專有修飾方法"
-      }
-    ],
-    "平台擴充動作（call / Api 方法）": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 31,
-        "level": 3,
-        "title": "平台擴充動作（call / Api 方法）"
-      }
-    ],
-    "平台擴充方法約定": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 105,
-        "level": 3,
-        "title": "平台擴充方法約定"
       }
     ],
     "平台擴充訊息段": [
@@ -10355,9 +10335,17 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 366,
+        "line": 379,
         "level": 3,
         "title": "平台擴展動作"
+      }
+    ],
+    "平台擴展動作（call / Api 方法）": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 31,
+        "level": 3,
+        "title": "平台擴展動作（call / Api 方法）"
       }
     ],
     "平台擴展字段": [
@@ -10392,6 +10380,14 @@
         "line": 1062,
         "level": 3,
         "title": "平台擴展方法"
+      }
+    ],
+    "平台擴展方法約定": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 105,
+        "level": 3,
+        "title": "平台擴展方法約定"
       }
     ],
     "平台擴展消息段": [
@@ -10531,7 +10527,7 @@
     "建表與 CRUD": [
       {
         "document": "developer-guide/orm.md",
-        "line": 41,
+        "line": 44,
         "level": 2,
         "title": "建表與 CRUD"
       }
@@ -10657,7 +10653,7 @@
     "必需欄位": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 771,
+        "line": 772,
         "level": 3,
         "title": "必需欄位"
       }
@@ -10850,12 +10846,12 @@
         "title": "懶載入系統"
       }
     ],
-    "成功响应": [
+    "成功回應": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1057,
+        "line": 1058,
         "level": 3,
-        "title": "成功响应"
+        "title": "成功回應"
       }
     ],
     "成功回應範例": [
@@ -10890,14 +10886,6 @@
         "title": "所有权（owner）系統"
       }
     ],
-    "手动构造响应（旧版方式仍然兼容）": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1073,
-        "level": 3,
-        "title": "手动构造响应（旧版方式仍然兼容）"
-      }
-    ],
     "手動創建項目": [
       {
         "document": "quick-start.md",
@@ -10918,6 +10906,14 @@
         "line": 111,
         "level": 3,
         "title": "手動呼叫 Request DSL"
+      }
+    ],
+    "手動建構回應（舊版方式仍然相容）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 1074,
+        "level": 3,
+        "title": "手動建構回應（舊版方式仍然相容）"
       }
     ],
     "手動恢復（不用自動機制時）": [
@@ -11049,7 +11045,7 @@
     "指定帳戶發送": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1129,
+        "line": 1130,
         "level": 3,
         "title": "指定帳戶發送"
       }
@@ -11127,7 +11123,7 @@
     "捕獲建議": [
       {
         "document": "advanced/errors.md",
-        "line": 183,
+        "line": 189,
         "level": 2,
         "title": "捕獲建議"
       }
@@ -11286,6 +11282,14 @@
         "title": "擴展動作路由（5.3.x）"
       }
     ],
+    "擴展字段說明": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 643,
+        "level": 2,
+        "title": "擴展字段說明"
+      }
+    ],
     "擴展欄位": [
       {
         "document": "platform-guide/discord.md",
@@ -11310,12 +11314,6 @@
       {
         "document": "platform-guide/email.md",
         "line": 240,
-        "level": 2,
-        "title": "擴展欄位說明"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 630,
         "level": 2,
         "title": "擴展欄位說明"
       }
@@ -11951,7 +11949,7 @@
     "日誌資訊": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 767,
+        "line": 780,
         "level": 3,
         "title": "日誌資訊"
       },
@@ -12313,7 +12311,7 @@
     "核心功能": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 53,
+        "line": 52,
         "level": 3,
         "title": "核心功能"
       }
@@ -12373,7 +12371,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 414,
+        "line": 427,
         "level": 3,
         "title": "核心差異點"
       },
@@ -12471,7 +12469,7 @@
     "框架內部參數校驗（ValueError）": [
       {
         "document": "advanced/errors.md",
-        "line": 174,
+        "line": 180,
         "level": 3,
         "title": "框架內部參數校驗（ValueError）"
       }
@@ -12487,7 +12485,7 @@
     "框架輔助方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 714,
+        "line": 715,
         "level": 3,
         "title": "框架輔助方法"
       }
@@ -13187,7 +13185,7 @@
     "檢查平台狀態": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 128,
+        "line": 127,
         "level": 4,
         "title": "檢查平台狀態"
       }
@@ -13195,7 +13193,7 @@
     "檢查是否是按鈕點擊事件": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 496,
+        "line": 509,
         "level": 1,
         "title": "檢查是否是按鈕點擊事件"
       }
@@ -13595,7 +13593,7 @@
     "添加中間件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 209,
+        "line": 208,
         "level": 4,
         "title": "添加中間件"
       }
@@ -13833,7 +13831,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 410,
+        "line": 423,
         "level": 2,
         "title": "特有事件類型"
       },
@@ -13860,6 +13858,14 @@
         "title": "特有訊息段類型"
       }
     ],
+    "特殊字段範例": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 444,
+        "level": 3,
+        "title": "特殊字段範例"
+      }
+    ],
     "特殊欄位範例": [
       {
         "document": "platform-guide/discord.md",
@@ -13876,12 +13882,6 @@
       {
         "document": "platform-guide/matrix.md",
         "line": 260,
-        "level": 3,
-        "title": "特殊欄位範例"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 431,
         "level": 3,
         "title": "特殊欄位範例"
       }
@@ -13929,7 +13929,7 @@
     "獲取適配器實例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 266,
+        "line": 265,
         "level": 3,
         "title": "獲取適配器實例"
       }
@@ -14069,7 +14069,7 @@
     "異常總覽": [
       {
         "document": "advanced/errors.md",
-        "line": 15,
+        "line": 14,
         "level": 2,
         "title": "異常總覽"
       }
@@ -14086,14 +14086,6 @@
         "line": 45,
         "level": 3,
         "title": "異常體系"
-      }
-    ],
-    "異常體系與捕獲指南": [
-      {
-        "document": "advanced/errors.md",
-        "line": 1,
-        "level": 1,
-        "title": "異常體系與捕獲指南"
       }
     ],
     "異步初始化": [
@@ -14209,7 +14201,7 @@
     "發送A2UI訊息": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 559,
+        "line": 572,
         "level": 1,
         "title": "發送A2UI訊息"
       }
@@ -14247,7 +14239,7 @@
     "發送帶按鈕的訊息到使用者私聊": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 548,
+        "line": 561,
         "level": 1,
         "title": "發送帶按鈕的訊息到使用者私聊"
       }
@@ -14255,7 +14247,7 @@
     "發送帶按鈕的訊息到群組": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 545,
+        "line": 558,
         "level": 1,
         "title": "發送帶按鈕的訊息到群組"
       }
@@ -14308,6 +14300,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 540,
+        "level": 2,
+        "title": "發送方法回傳值"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 406,
         "level": 2,
         "title": "發送方法回傳值"
       },
@@ -14407,7 +14405,7 @@
     "監聽 Bot 生命週期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1268,
+        "line": 1269,
         "level": 3,
         "title": "監聽 Bot 生命週期"
       }
@@ -14513,7 +14511,7 @@
       },
       {
         "document": "advanced/errors.md",
-        "line": 208,
+        "line": 214,
         "level": 2,
         "title": "相關文件"
       },
@@ -14650,6 +14648,12 @@
         "title": "相關文件"
       },
       {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 1273,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 745,
         "level": 2,
@@ -14678,14 +14682,6 @@
         "line": 129,
         "level": 2,
         "title": "相關文件"
-      }
-    ],
-    "相關文檔": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1272,
-        "level": 2,
-        "title": "相關文檔"
       }
     ],
     "相關連結": [
@@ -14865,7 +14861,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 776,
+        "line": 789,
         "level": 3,
         "title": "管理介面"
       },
@@ -15093,7 +15089,7 @@
     "繼承關係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 688,
+        "line": 689,
         "level": 3,
         "title": "繼承關係"
       }
@@ -15280,6 +15276,14 @@
         "title": "聲明式多輪：`.got()` 鏈（2.11+）"
       }
     ],
+    "聲明式配置（推薦）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 1090,
+        "level": 3,
+        "title": "聲明式配置（推薦）"
+      }
+    ],
     "聲明方式": [
       {
         "document": "advanced/lazy-loading.md",
@@ -15291,7 +15295,7 @@
     "聲明模型": [
       {
         "document": "developer-guide/orm.md",
-        "line": 8,
+        "line": 11,
         "level": 2,
         "title": "聲明模型"
       }
@@ -15355,7 +15359,7 @@
     "自動發現機制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1223,
+        "line": 1224,
         "level": 3,
         "title": "自動發現機制"
       }
@@ -15363,7 +15367,7 @@
     "自動遷移（階段二）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 101,
+        "line": 104,
         "level": 2,
         "title": "自動遷移（階段二）"
       }
@@ -15491,7 +15495,7 @@
     "與宣告式配置類的關係": [
       {
         "document": "developer-guide/orm.md",
-        "line": 77,
+        "line": 80,
         "level": 2,
         "title": "與宣告式配置類的關係"
       }
@@ -15512,12 +15516,12 @@
         "title": "舊版配置遷移"
       }
     ],
-    "舊設定相容": [
+    "舊配置相容": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 792,
+        "line": 805,
         "level": 3,
-        "title": "舊設定相容"
+        "title": "舊配置相容"
       }
     ],
     "花楓咖啡館（RockyChat）平台特性文件": [
@@ -15539,7 +15543,7 @@
     "處理A2UI按鈕事件": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 522,
+        "line": 535,
         "level": 1,
         "title": "處理A2UI按鈕事件"
       }
@@ -15563,7 +15567,7 @@
     "處理快捷選單事件": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 512,
+        "line": 525,
         "level": 1,
         "title": "處理快捷選單事件"
       }
@@ -15579,7 +15583,7 @@
     "處理機器人設定變更": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 517,
+        "line": 530,
         "level": 1,
         "title": "處理機器人設定變更"
       }
@@ -15681,7 +15685,7 @@
     "表情包/貼紙訊息段 (yunhu_expression)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 642,
+        "line": 655,
         "level": 3,
         "title": "表情包/貼紙訊息段 (yunhu_expression)"
       }
@@ -16015,12 +16019,6 @@
         "document": "platform-guide/wecom.md",
         "line": 51,
         "level": 2,
-        "title": "設定說明"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 686,
-        "level": 3,
         "title": "設定說明"
       },
       {
@@ -16513,7 +16511,7 @@
     "跨帳戶重複受理（框架注入欄位）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 794,
+        "line": 795,
         "level": 3,
         "title": "跨帳戶重複受理（框架注入欄位）"
       }
@@ -16637,7 +16635,7 @@
     "轉換器範例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 822,
+        "line": 823,
         "level": 3,
         "title": "轉換器範例"
       }
@@ -16645,7 +16643,7 @@
     "轉換流程": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 761,
+        "line": 762,
         "level": 3,
         "title": "轉換流程"
       }
@@ -16696,14 +16694,6 @@
         "line": 85,
         "level": 3,
         "title": "返回值結構"
-      }
-    ],
-    "连接重试": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1167,
-        "level": 3,
-        "title": "连接重试"
       }
     ],
     "退出碼 42 契約": [
@@ -16985,17 +16975,17 @@
     "連接註冊表系列 — `Core/connections.py`（2.10+）": [
       {
         "document": "advanced/errors.md",
-        "line": 101,
+        "line": 102,
         "level": 3,
         "title": "連接註冊表系列 — `Core/connections.py`（2.10+）"
       }
     ],
-    "連線模式半成品基底類別": [
+    "連線模式半成品基類": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 913,
+        "line": 914,
         "level": 3,
-        "title": "連線模式半成品基底類別"
+        "title": "連線模式半成品基類"
       }
     ],
     "連線流程": [
@@ -17021,9 +17011,17 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 863,
+        "line": 864,
         "level": 2,
         "title": "連線管理"
+      }
+    ],
+    "連線重試": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 1168,
+        "level": 3,
+        "title": "連線重試"
       }
     ],
     "進入建構模式": [
@@ -17154,14 +17152,6 @@
         "title": "適配器事件"
       }
     ],
-    "適配器傳送 Meta 事件": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1249,
-        "level": 3,
-        "title": "適配器傳送 Meta 事件"
-      }
-    ],
     "適配器基類": [
       {
         "document": "api-reference/adapter-system.md",
@@ -17214,6 +17204,14 @@
         "line": 327,
         "level": 2,
         "title": "適配器熱重載架構"
+      }
+    ],
+    "適配器發送 Meta 事件": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 1250,
+        "level": 3,
+        "title": "適配器發送 Meta 事件"
       }
     ],
     "適配器發送方法查詢": [
@@ -17337,7 +17335,7 @@
     "邊界與注意事項": [
       {
         "document": "developer-guide/orm.md",
-        "line": 93,
+        "line": 96,
         "level": 2,
         "title": "邊界與注意事項"
       }
@@ -17495,7 +17493,7 @@
     "配置熱更新": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 649,
+        "line": 650,
         "level": 4,
         "title": "配置熱更新"
       },
@@ -17523,13 +17521,13 @@
     "配置管理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 126,
+        "line": 125,
         "level": 3,
         "title": "配置管理"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 328,
+        "line": 327,
         "level": 3,
         "title": "配置管理"
       }
@@ -17631,6 +17629,12 @@
         "document": "platform-guide/terminal.md",
         "line": 21,
         "level": 2,
+        "title": "配置說明"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 699,
+        "level": 3,
         "title": "配置說明"
       }
     ],
@@ -17882,6 +17886,12 @@
         "title": "錯誤處理"
       },
       {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 1166,
+        "level": 2,
+        "title": "錯誤處理"
+      },
+      {
         "document": "developer-guide/modules/best-practices.md",
         "line": 277,
         "level": 2,
@@ -17904,6 +17914,14 @@
         "line": 472,
         "level": 2,
         "title": "錯誤處理"
+      }
+    ],
+    "錯誤體系與捕獲指南": [
+      {
+        "document": "advanced/errors.md",
+        "line": 1,
+        "level": 1,
+        "title": "錯誤體系與捕獲指南"
       }
     ],
     "錯過策略（missed_policy）": [
@@ -17931,7 +17949,7 @@
     "鏈式修飾方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 745,
+        "line": 746,
         "level": 3,
         "title": "鏈式修飾方法"
       },
@@ -18136,14 +18154,6 @@
         "title": "链式修饰方法（可组合使用）"
       }
     ],
-    "错误处理": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1165,
-        "level": 2,
-        "title": "错误处理"
-      }
-    ],
     "開發工具": [
       {
         "document": "developer-guide/README.md",
@@ -18219,7 +18229,7 @@
     "關係映射（relationship）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 138,
+        "line": 141,
         "level": 2,
         "title": "關係映射（relationship）"
       }
@@ -18243,7 +18253,7 @@
     "關閉噪音折疊": [
       {
         "document": "advanced/errors.md",
-        "line": 198,
+        "line": 204,
         "level": 2,
         "title": "關閉噪音折疊"
       }
@@ -18259,7 +18269,7 @@
     "關閉適配器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 111,
+        "line": 110,
         "level": 4,
         "title": "關閉適配器"
       }
@@ -18307,7 +18317,7 @@
     "需要換資料庫或部署到雲端資料庫": [
       {
         "document": "developer-guide/orm.md",
-        "line": 194,
+        "line": 197,
         "level": 3,
         "title": "需要換資料庫或部署到雲端資料庫"
       }

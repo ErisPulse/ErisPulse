@@ -1179,6 +1179,21 @@ def Raw_ob12(self, message: dict, **kwargs):
 ---
 
 
+##### `update_bot_id(account_name: str, bot_id: str) -> None`
+
+运行期识别 bot_id 并持久化到账户配置
+
+适配器在连接建立 / 事件到达时调用（协议事件的 self.user_id 即 bot_id）。
+框架维护 bot_id → 账户名注册表（本进程解析链第一优先级），并在配置值
+变化时把 ``accounts.<账户名>.bot_id`` 写入配置存储（无损路径）——
+重启后账户实例重建即自带 bot_id，解析不再依赖账户活动回填。
+
+- **account_name**: 账户名（accounts 配置键）
+- **bot_id**: 协议侧机器人标识
+
+---
+
+
 ##### `_resolve_account(account_id: str | None = None) -> tuple`
 
 解析目标账户

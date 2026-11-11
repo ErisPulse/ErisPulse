@@ -142,6 +142,18 @@ WebSocket 连接、通信相关的异常。
 所有存储后端相关的异常基类。
 
 
+### `class StorageOperationError(StorageError)`
+
+存储操作执行失败
+
+操作执行层错误（写锁竞争超时 / SQL 错误 / 约束冲突等）。默认抛出——
+库可达而操作失败意味着数据未写入，静默返回会让调用方在无感知中丢数据。
+
+与 :class:`StorageUnreachableError`（连接级不可达）的边界：后者是运行
+环境故障，冷却期内快速失败返回 ``False`` / ``None``（框架韧性语义，
+规则 26），不抛本异常。
+
+
 ### `class StorageUnreachableError(StorageError)`
 
 存储后端不可达
