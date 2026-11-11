@@ -97,6 +97,10 @@ ErisPulse 存储基类
 
 获取专用连接并开启事务
 
+兜底超时（STORAGE_TXN_BEGIN_TIMEOUT_SECS）：无论后端层行为如何，
+事务开启挂起超过阈值即抛 StorageOperationError——事务无限死等
+（如另一长事务持锁且调用方永不提交）属框架缺陷，必须可观测。
+
 ---
 
 

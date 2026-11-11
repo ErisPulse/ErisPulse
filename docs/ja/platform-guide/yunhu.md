@@ -316,19 +316,19 @@ ob12_msg = [{"type": "text", "data": {"text": "返信メッセージ"}}]
 await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 ```
 
-## 標準 API アクション（ApiDSL）
+## 標準APIアクション（ApiDSL）
 
 > [!NOTE]
-> 本機能は ErisPulse **2.7.0+** および YunhuAdapter **4.3.0+** が必要です。
+> この機能には ErisPulse **2.7.0+** および YunhuAdapter **4.3.0+** が必要です。
 
-`Send` チェーン送信に加えて、アダプターは `Api` 内部クラスを提供し、OneBot12標準 API アクションと Yunhu プラットフォーム拡張アクションを公開します。すべてのメソッドは標準応答形式を返します。
+`Send` チェーン送信に加えて、アダプターは `Api` 内部クラスを提供しており、OneBot12 標準 API アクションと Yunhu プラットフォームの拡張アクションを公開しています。すべてのメソッドは標準レスポンス形式を返します。
 
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# 情報照会（公開 Web API を通じて、認証不要）
-result = await yunhu.Api.get_self_info()              # ロボット自身の情報
+# 情報照会（公開 Web API 経由、認証不要）
+result = await yunhu.Api.get_self_info()              # ボット自身の情報
 result = await yunhu.Api.get_user_info("7058262")     # 任意のユーザー情報
 result = await yunhu.Api.get_group_info("635409929")  # グループ情報
 
@@ -336,59 +336,72 @@ result = await yunhu.Api.get_group_info("635409929")  # グループ情報
 result = await yunhu.Api.upload_file(type="path", name="a.png", path="./a.png")
 result = await yunhu.Api.get_file("https://chat-file.jwznb.com/xxx")
 
-# メッセージの撤回（chat_id + chat_type の提供が必要）
+# メッセージの取り消し（chat_id + chat_type の追加指定が必要）
 await yunhu.Api.delete_message("msg_id", chat_id="123", chat_type="group")
 
-# 多アカウント：特定の Bot アカウントを指定
+# マルチアカウント：Bot アカウントを指定
 info = await yunhu.Api.Using("bot1").get_self_info()
 ```
 
-### 支持する標準アクション
+### サポートされている標準アクション
 
-| メソッド | 説明 | データ来源 |
+| メソッド | 説明 | データソース |
 |------|------|---------|
-| `get_self_info()` | ロボット自身の情報 | 公開 Web API（bot-info） |
-| `get_user_info(user_id)` | ユーザー情報（任意のユーザーが照会可能） | 公開 Web API（user/homepage） |
+| `get_self_info()` | ボット自身の情報 | 公開 Web API（bot-info） |
+| `get_user_info(user_id)` | ユーザー情報（任意のユーザーを照会可能） | 公開 Web API（user/homepage） |
 | `get_group_info(group_id)` | グループ情報 | 公開 Web API（group-info） |
-| `upload_file(*, type, name, ...)` | ファイルをアップロード（image/video/file を自動判定） | Bot 開放 API |
-| `get_file(file_id)` | ファイルを取得（file_id は URL に等しい） | — |
-| `delete_message(message_id, *, chat_id, chat_type)` | メッセージを撤回 | Bot 開放 API（/bot/recall） |
+| `upload_file(*, type, name, ...)` | ファイルのアップロード（image/video/file を自動判定） | Bot オープン API |
+| `get_file(file_id)` | ファイルの取得（file_id は URL そのもの、Referer を自動付与してダウンロードし base64 で返す） | プロキシダウンロード |
+| `delete_message(message_id, *, chat_id, chat_type)` | メッセージの取り消し | Bot オープン API（/bot/recall） |
 
-> **注意**：`get_self_info` / `get_user_info` / `get_group_info` は**非公式の公開 Web API**（chat-web-go.jwzhd.com）を通じて実現され、これらのインターフェースは認証不要だが、公式ドキュメントではなく、プラットフォームの更新に伴い変更される可能性がある。失敗時は標準エラーレスポンスを返す。
+#### メディアメッセージとホットリンク保護（4.6.3）
 
-### 標準アクションの非対応
+Yunhu メディア CDN（`chat-img.jwznb.com` など）では **Referer によるホットリンク保護** が有効になっています：Referer なしの `GET` は一律 `403` となるため、`Referer: https://im.jwzhd.com/` を付与する必要があります。
 
-以下の標準アクションは Yunhu には対応する API がないため、呼び出された場合は `retcode=10002`（対応しない操作）が返される：
-- `get_friend_list`（Bot 開放 API の「ロボットユーザー一覧」はまだリリース待ち）
+- メディアメッセージ（image/video/file/audio）を受信した際、イベント内のメディアセグメントの `data.headers.Referer` には既にこの値が含まれています。独自にダウンロードするモジュールはこのヘッダーを付与してください
+- または `call_api("get_file", file_id=<url>)` を直接使用すると、アダプターがプロキシダウンロードして base64 を返します（ホットリンク保護を自動処理）
+
+```python
+seg = event["message"][0]          # {"type": "image", "data": {...}}
+img = await bot.call_api("get_file", file_id=seg["data"]["url"])
+raw_bytes = base64.b64decode(img["data"]["base64"])
+```
+
+> **注意**：`get_self_info` / `get_user_info` / `get_group_info` は**非公式の公開 Web API**（chat-web-go.jwzhd.com）で実装されています。これらのインターフェースは認証不要ですが公式ドキュメントではないため、プラットフォームの更新により変更される可能性があります。失敗時には標準エラーレスポンスが返されます。
+
+### サポートされていない標準アクション
+
+以下の標準アクションには Yunhu に対応する API が存在せず、呼び出すと `retcode=10002`（サポートされていない操作）が返されます：
+- `get_friend_list`（Bot オープン API の「ボットユーザーリスト」はまだリリース待ちの状態です）
 - `get_group_list` / `get_group_member_info` / `get_group_member_list`
 - `set_group_name` / `leave_group`
 
 ### プラットフォーム拡張アクション
 
-`Api.call("yunhu.xxx", **params)` を通じて Yunhu 特有のアクションを呼び出す（パラメータは OB12 風の命名を使用し、アダプターが自動的に Yunhu フィールドに翻訳する）：
+`Api.call("yunhu.xxx", **params)` を使用して Yunhu 固有のアクションを呼び出します（パラメータは OB12 スタイルの命名を採用し、アダプターが自動的に Yunhu のフィールドへ変換します）：
 
-| 拡張アクション | 説明 | 等価 Send メソッド |
+| 拡張アクション | 説明 | 同等の Send メソッド |
 |---------|------|---------------|
-| `yunhu.recall` | メッセージの撤回（msg_id, chat_id, chat_type） | `Send.To(...).Recall(msg_id)` |
+| `yunhu.recall` | メッセージの取り消し（msg_id, chat_id, chat_type） | `Send.To(...).Recall(msg_id)` |
 | `yunhu.kick` | グループメンバーの削除（group_id, user_id） | `Send.To("group", g).Kick(uid)` |
-| `yunhu.ban` | 禁言（group_id, user_id, duration） | `Send.To("group", g).Ban(uid, duration)` |
-| `yunhu.unban` | 禁言の解除（group_id, user_id） | `Send.To("group", g).Ban(uid, duration=0)` |
+| `yunhu.ban` | ミュート（group_id, user_id, duration） | `Send.To("group", g).Ban(uid, duration)` |
+| `yunhu.unban` | ミュート解除（group_id, user_id） | `Send.To("group", g).Ban(uid, duration=0)` |
 | `yunhu.tag.create/edit/delete/list` | グループタグの CRUD（group_id, ...） | `Send.To("group", g).CreateTag(...)` など |
-| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | ユーザーにタグを追加/削除 | `Send.To("group", g).AddUserTag(...)` など |
-| `yunhu.set_member_title` / `yunhu.unset_member_title` | **メンバーの頭語の別名**（タグ ≈ 頭語、内部的に tag.relate にマッピング） | — |
-| `yunhu.msg_type_limit` | グループメッセージのタイプ制限（group_id, type） | `Send.To("group", g).SetMsgTypeLimit(...)` |
-| `yunhu.get_messages` | 歴史メッセージの取得（chat_id, chat_type, message_id?, before?, after?） | `Send.To(...).GetMessages(...)` |
-| `yunhu.bot_info` | 公開 bot-info 検索（bot_id） | — |
-| `yunhu.user_homepage` | 公開ユーザーのホーム検索（user_id） | — |
+| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | ユーザーへのタグ追加/削除 | `Send.To("group", g).AddUserTag(...)` など |
+| `yunhu.set_member_title` / `yunhu.unset_member_title` | **メンバータイトルのセマンティックエイリアス**（タグ≈タイトル、内部的に tag.relate にマッピング） | — |
+| `yunhu.msg_type_limit` | グループメッセージタイプの制限（group_id, type） | `Send.To("group", g).SetMsgTypeLimit(...)` |
+| `yunhu.get_messages` | 履歴メッセージの取得（chat_id, chat_type, message_id?, before?, after?） | `Send.To(...).GetMessages(...)` |
+| `yunhu.bot_info` | 公開 bot-info 照会（bot_id） | — |
+| `yunhu.user_homepage` | 公開ユーザーホームページ照会（user_id） | — |
 
 ```python
-# プラットフォーム拡展示例
+# プラットフォーム拡張の例
 await yunhu.Api.call("yunhu.kick", group_id="123", user_id="456")
 await yunhu.Api.call("yunhu.set_member_title", group_id="123", user_id="456", title="VIP")
 result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="group", before=10)
 ```
 
-> **タグと頭語**：Yunhuの「タグ」の意味はOneBot12のグループメンバーの`title`と同等です。`yunhu.set_member_title`は`yunhu.tag.relate`の原生語義別名で、内部的には同一のエンドポイントにマッピングされます。グループメッセージイベントで送信者の役割は`senderUserLevel`から標準の`role`フィールドにマッピングされます（owner/admin/member）。
+> **タグとタイトル**：Yunhu の「タグ」は OneBot12 のグループメンバー `title` とセマンティクス上同等です。`yunhu.set_member_title` は `yunhu.tag.relate` のネイティブなセマンティックエイリアスであり、両者は内部的に同じエンドポイントへマッピングされます。グループメッセージイベントにおける送信者の役割は、`senderUserLevel` から標準の `role` フィールド（owner/admin/member）へマッピングされます。
 
 ## 送信メソッドの返り値
 

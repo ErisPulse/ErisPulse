@@ -172,7 +172,7 @@
           "icon": "fa-code"
         },
         {
-          "title": "Слой моделей данных (ORM)",
+          "title": "Уровень модели данных (ORM)",
           "path": "developer-guide/orm.md",
           "level": 1,
           "icon": "fa-code"
@@ -226,7 +226,7 @@
               "icon": "fa-network-wired"
             },
             {
-              "title": "Основные концепции адаптеров",
+              "title": "Основные концепции адаптера",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1,
               "icon": "fa-microchip"
@@ -289,7 +289,7 @@
           "icon": "fa-envelope"
         },
         {
-          "title": "Характеристики платформы Yunhu",
+          "title": "Документация по функциям Yunhu Platform",
           "path": "platform-guide/yunhu.md",
           "level": 1,
           "icon": "fa-cloud"
@@ -509,7 +509,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Хранилище данных",
+          "title": "Бэкенды хранилища",
           "path": "advanced/storage-backends.md",
           "level": 1,
           "icon": "fa-server"

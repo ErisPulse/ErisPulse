@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "2224d9499abf21c4a545a2ae820a9763",
-  "file_hash": "2224d9499abf21c4a545a2ae820a9763",
-  "translated_at": "2026-10-14T02:07:53.659438",
+  "hash": "8bc10e0d17b5911bf1916c08c8a4c435",
+  "file_hash": "8bc10e0d17b5911bf1916c08c8a4c435",
+  "translated_at": "2026-11-11T02:10:37.373348",
   "target_lang": "ja",
   "chunks": [
     {
@@ -22,12 +22,20 @@
       "translation": "## 接続失敗時の動作\n\nフレームワークの起動と実行は**データベースの利用可能性に依存しません**。MySQL / PostgreSQL への接続失敗は、フレームワークのクラッシュや起動不能を引き起こしません。\n\n1. プール作成時の瞬時失敗は、指数関数的退避再試行（デフォルト 3 回）で自動的に処理されます。\n2. 再試行回数をすべて使用した場合 → WARNING ログを記録（原因とクールダウン期間を含む）、フレームワークは通常通り起動 / 継続的に動作しますが、ストレージ操作は一時的に利用できません。\n3. クールダウン期間（デフォルト 30 秒）内では、その後のストレージ操作は**即時失敗**します（ブロックされず、他の機能の遅延もありません）。\n4. クールダウン終了後は自動的に再接続を試みます。データベースが復旧するとストレージも復旧し、フレームワークの再起動は不要です。\n\nログ例: `mysql 接続プールの作成が最終的に失敗しました（再試行を 3 回行いました）。30 秒後に自動的に再接続を試みます。この間、ストレージ操作は即時失敗しますが、フレームワークの他の機能には影響しません。`"
     },
     {
+      "hash": "50e905a793b1e285407478848fe71bd8",
+      "translation": "## 失敗の意味（2.12 以降）\n\n| ステージ | 行動 |\n|------|------|\n| 操作実行の失敗（書き込みロックのタイムアウト / SQL エラー / 制約違反） | **`StorageOperationError` をスロー**（書き込みパス：aset / adelete / aclear / set_multi および同期ブリッジの同パス）——静かに `False` を返すことはなくなり、重要な書き込みの失敗は明示的に見えるようにします |\n| 接続レベルでの到達不能（クールダウン期間中の迅速な失敗） | `False` / `None` を返します（ルール 26 のフレームワークの回復力の意味、`storage.unreachable` / `storage.recovered` イベントも別途あります） |\n| トランザクションの開始タイムアウト（>30秒） | `StorageOperationError` をスロー（`STORAGE_TXN_BEGIN_TIMEOUT_SECS`） |\n\n重要な書き込み操作は `try/except` で囲み、補償処理を行う必要があります。トランザクションブロック内には純粋な DB 操作のみを含めるようにしてください。"
+    },
+    {
       "hash": "66ed20d51a58850c2d3f76f52a31217f",
       "translation": "## 異スレッド API\n\n```python\n# KV 操作\nawait sdk.storage.aset(\"app.name\", \"MyApp\")\nvalue = await sdk.storage.aget(\"app.name\")\nkeys = await sdk.storage.aget_all_keys()\n\n# 表操作\nawait sdk.storage.aCreateTable(\"users\", {\n    \"id\": \"INTEGER PRIMARY KEY AUTOINCREMENT\",\n    \"name\": \"TEXT NOT NULL\",\n})\nrows = await sdk.storage.Table(\"users\").Select(\"name\").ToDict().aExecute()\n\n# 異スレッドトランザクション\nasync with sdk.storage.atransaction():\n    await sdk.storage.aset(\"key1\", \"value1\")\n    await sdk.storage.Table(\"users\").Insert({\"name\": \"Alice\"}).aExecute()\n```\n\n同期 API (`get/set/transaction/Table(...).Execute()`) は引き続き使用可能です。内部では `AsyncBridge` がバックグラウンドイベントループを橋渡しして実行しています。非同期ハンドラ内で同期 API を呼び出すと、イベントループが一時的にブロックされます。**初回呼び出し時に一回限りの警告**（「a 前置きの非同期メソッドの使用を推奨」）が出力されます。非同期メソッドの使用を推奨します。以下の境界条件に注意してください：\n\n- **橋渡しスレッド内では再び同期インターフェースを呼び出せない**：同期インターフェースは橋渡しスレッド内で実行され、この状態で再度同期インターフェースを呼び出すと `RuntimeError` が発生します（再入防止の保護により、自己デッドロックを回避します）。\n- **橋渡し対象のループが閉じた後に呼び出すと失敗する**：`uninit()` の後にストレージインターフェースを呼び出さないでください。\n\n完全なメソッド対照は [SQL クエリビルダ](sql-builder.md) を参照してください。"
     },
     {
       "hash": "fb0f5a54e8e15925c34bc9789399f653",
       "translation": "## 方言の動作の違い\n\n方言の違いはすべてフレームワーク内部で吸収され、呼び出し元のコードはその違いを意識する必要はありません。\n\n| 差異点 | SQLite | MySQL | PostgreSQL |\n|------|------|------|------|\n| プレースホルダ | `?` | `%s`（自動変換） | `$1..$n`（自動変換） |\n| KV UPSERT | `INSERT OR REPLACE` | `ON DUPLICATE KEY UPDATE` | `ON CONFLICT DO UPDATE` |\n| KV 値の列型 | `TEXT` | `LONGTEXT` | `TEXT` |\n| 自動増分主キー | 原生サポート | `AUTO_INCREMENT`（自動変換） | `SERIAL`（自動変換） |\n\n列の定義はすべて SQLite のスタイルを使用します（例: `\"INTEGER PRIMARY KEY AUTOINCREMENT\"`、`\"TEXT NOT NULL\"`、`\"DOUBLE DEFAULT 0.0\"`）。これらの定義は、後端のデータベースに等価な形式に自動的に変換されます。"
+    },
+    {
+      "hash": "81c0d75eef60bc5afa0f9a32a2cb664c",
+      "translation": "## SQLite \"データベースはロックされています\" のトラブルシューティング\n\nフレームワークの SQLite バックエンドには、**WAL ログモード**（読み取りと書き込みが排他にならない）+ **busy_timeout 5000ms**（書き込みロックの競合時に自動で待機）+ autocommit 接続 + 複数のイベントループが共有接続を持つ + **トランザクション `BEGIN IMMEDIATE`**（2.12 以降——トランザクション開始時に書き込みロックを取得し、deferred トランザクションの「先読み後書き込み」のアップグレード時に発生する `SQLITE_BUSY_SNAPSHOT` を排除。この busy は再試行せず、`busy_timeout` でも緩和できないため、頻繁な読み書き混在下での間欠的な locked はフレームワーク内の根本原因）が内蔵されています。\n\n2.12 以降の純粋なフレームワーク使用（ストレージ / ORM / 混合双経路の交差書き込み）では、locked が発生することはなくなります。それでも発生する場合は、以下の順序でトラブルシューティングを行ってください。\n\n| シナリオ | 判定基準 | 対処方法 |\n|------|------|------|\n| トランザクション内の遅い操作 | `atransaction` ブロック内に外部 HTTP や大規模な計算などの遅い処理があり、ロックを保持して busy_timeout を超える | トランザクションブロック内ではデータベース操作のみを行い、遅い処理はブロック外へ移動する |\n| 第二の ORM を混用 | 同一プロセス内で sqlmodel / SQLAlchemy / 裸の sqlite3 が独自の接続で同じデータベースファイルを書き込む | **同一のデータベースファイルには 1 つの ORM を使用する**（内部では非同期ネイティブ接続を使用しているため）。ORM の混用は避ける |\n| 複数プロセスが同一ファイルにアクセス | 複数のインスタンス / Dashboard / データベースツールが同一の sqlite ファイルを開いている | 各インスタンスは独立した `config/` ディレクトリを使用する。管理ツールは読み取り専用モードで開く。頻繁な書き込みが必要な場合は mysql / postgres に切り替える（設定変更だけでコード変更なしに移行可能） |\n| 古いフレームワークバージョン | `<2.12` の deferred トランザクションのアップグレード問題 | フレームワークをアップグレードする |\n\n> `busy_timeout` は現在、定数 `_SQLITE_BUSY_TIMEOUT_MS = 5000`（`Core/storage/sqlite.py`）として定義されています。調整が必要な場合はソースコードの変更が必要であり、実行時の設定として公開されていません。"
     },
     {
       "hash": "4456caf0b2aa114376e6566017473994",

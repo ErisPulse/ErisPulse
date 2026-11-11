@@ -1,9 +1,12 @@
 # 數據模型層（ORM）
 
-> [!TIP]  
-> **什麼時候需要閱讀這篇**：需要數據模型、自動建表或關係映射時。不需要則跳過，不會影響其他功能的使用。  
+> [!TIP]
+> **何時需要閱讀這篇**：需要數據模型、自動建表或關係映射時。不需要則跳過，不會影響其他功能的使用。
 
-2.9.0 版本起框架內建聲明式數據模型層：繼承 `Model` 並使用 `Field` 聲明欄位，即可獲得自動建表與增刪改查能力。模型直接建立在內建儲存層之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置決定，**切換後端無需修改模型代碼**。
+> [!NOTE]
+> **ORM 是異步原生的**：所有 CRUD 方法（`create` / `get` / `save` / `delete` / `create_table` / QuerySet 終結操作）都是 `async def`，直接在事件循環內 `await` 調用即可——底層驅動為 aiosqlite / aiomysql / asyncpg（隨儲存後端切換），不存在同步阻塞。KV 儲存的同步 `get`/`set` 是相容層，與 ORM 無關。
+
+2.9.0 起框架內建宣告式數據模型層：繼承 `Model` 並使用 `Field` 聲明欄位，即可獲得自動建表與增刪改查能力。模型直接建構在內建儲存層之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置決定，**切換後端無需修改模型程式碼**。
 
 ## 聲明模型
 

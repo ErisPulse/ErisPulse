@@ -292,7 +292,7 @@ from ErisPulse.Core.Bases import BaseConfig, BotAccountConfig
 
 @dataclass
 class MyConfig(BaseConfig):
-    """Adapter configuration (automatically managed after declaration)"""
+    """Adapter configuration (automatically managed by the framework once declared)"""
     token: str = field(
         default="",
         metadata={
@@ -304,32 +304,32 @@ class MyConfig(BaseConfig):
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyConfig  # Declare configuration class
+    ConfigClass = MyConfig  # Declare the config class
     
-    # No need to override __init__, framework handles automatically:
+    # No need to override __init__; the framework automatically handles:
     # - self.sdk, self.logger
-    # - self.cfg (type-safe configuration instance, real-time reading)
+    # - self.cfg (type-safe config instance, read in real time)
     # - self.Send, self.Request
     
     async def start(self):
-        """Start adapter (must implement)"""
-        cfg = self.cfg  # Automatically loaded type-safe configuration
+        """Start the adapter (must be implemented)"""
+        cfg = self.cfg  # Automatically loaded type-safe config
         pass
     
     async def shutdown(self):
-        """Shutdown adapter (must implement)"""
+        """Shut down the adapter (must be implemented)"""
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """Call platform API (must implement)"""
+        """Call the platform API (must be implemented)"""
         pass
 ```
 
 ### Configuration Management
 
-The framework provides declarative configuration management, defining the configuration structure with dataclass, and the framework automatically handles loading, validation, and template generation.
+The framework provides declarative configuration management: the configuration structure is defined via dataclasses, and the framework automatically handles loading, validation, and template generation.
 
-#### Single Account Configuration
+#### Single-Account Configuration
 
 ```python
 from dataclasses import dataclass, field
@@ -344,7 +344,7 @@ class TelegramConfig(BaseConfig):
         "ui": {"widget": "password", "group": "basic", "order": 1},
     })
     proxy: str = field(default="", metadata={
-        "description": {"i18n": "telegram.proxy", "default": "Proxy Address"},
+        "description": {"i18n": "telegram.proxy", "default": "Proxy address"},
         "ui": {"widget": "text", "group": "advanced", "order": 10},
     })
 
@@ -352,7 +352,7 @@ class TelegramAdapter(BaseAdapter):
     ConfigClass = TelegramConfig
     
     async def start(self):
-        cfg = self.cfg  # Type-safe, real-time reading
+        cfg = self.cfg  # Type-safe, read in real time
         if not cfg.token:
             raise ValueError("Token not configured")
         await self._connect(cfg.token, proxy=cfg.proxy)
@@ -360,13 +360,13 @@ class TelegramAdapter(BaseAdapter):
 
 #### Multi-Account Configuration
 
-The `BotAccountConfig` base class provides `enabled` and `name` fields. Most adapters can automatically obtain `bot_id` from the platform protocol or login response, injecting it into the account configuration during event conversion.:
+The `BotAccountConfig` base class provides the `enabled` and `name` fields. The vast majority of adapters can automatically obtain the bot_id from the platform protocol or the login response, and inject it into the account configuration during event conversion:
 
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BotAccountConfig
 
-# Most adapters: bot_id is automatically obtained at runtime, no configuration needed
+# Most adapters: bot_id is obtained automatically at runtime, no configuration needed
 @dataclass
 class MyBotConfig(BotAccountConfig):
     token: str = field(default="", metadata={
@@ -374,7 +374,7 @@ class MyBotConfig(BotAccountConfig):
         "required": True,
     })
 
-# If bot_id cannot be obtained during login, allow users to fill it in the configuration
+# If bot_id cannot be obtained at login, you can have the user fill it in via configuration
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
     bot_id: str = field(default="", metadata={
@@ -395,7 +395,7 @@ class MyAdapter(BaseAdapter):
             await self.emit_meta("connect", user_id)
 ```
 
-#### metadata Convention
+#### metadata Conventions
 
 Field metadata serves both TOML comment generation and WebUI form rendering:
 
@@ -403,35 +403,35 @@ Field metadata serves both TOML comment generation and WebUI form rendering:
 metadata = {
     "description": str | dict,  # Field description (supports i18n)
     "required": bool,         # Whether required (validation + WebUI required marker)
-    "secret": bool,           # Whether sensitive (WebUI displays as ***, logs are masked)
-    "example": bool,          # Non-persistent flag: not written to config.toml (default value/template excluded),
-                              # Only rendered into config.full.example; schema with "example": true marker,
-                              # CLI configuration wizard defaults to skip; after manual setting, normal persistence
+    "secret": bool,           # Whether sensitive (shown as *** in WebUI, masked in logs)
+    "example": bool,          # No-persist flag: not written to config.toml (excluded from
+                              # defaults/templates); only rendered into config.full.example; the
+                              # schema carries an "example": true marker; the CLI config wizard
+                              # skips it by default; persists normally once set manually by the user
     "min": number, "max": number,  # Numeric range validation
-    "ui": {                   # WebUI control configuration (old name "webui" still compatible)
-        "widget": str,        # Control type: "text" | "switch" | "select" | "number" | "password"
-        "group": str,         # Group: "basic" | "advanced" | "connection" etc.
-        "order": int,         # Sorting weight (smaller values are earlier)
-        "options": list,      # Select control options [{label, value}], label supports i18n
+    "ui": {                   # WebUI control config (old name "webui" still compatible)
+        "widget": str,        # Widget type: "text" | "switch" | "select" | "number" | "password"
+        "group": str,         # Group: "basic" | "advanced" | "connection", etc.
+        "order": int,         # Sort weight (smaller comes first)
+        "options": list,      # Options for the select widget [{label, value}]; label supports i18n
         "placeholder": str | dict,  # Input placeholder (supports i18n)
     },
-    "extra": dict,            # Additional extended fields (passed through to schema)
+    "extra": dict,            # Extra extension fields (passed through to the schema)
 }
 ```
 
-All user-visible text fields support i18n, uniformly using the `{"i18n": "key", "default": "text"}` format,
-pure strings are passed through as-is (backward compatibility). Supported i18n fields:
+All user-visible text fields support i18n, uniformly using the `{"i18n": "key", "default": "text"}` format; plain strings are passed through as-is (backward compatible). Supported i18n fields:
 
 | Field | Location | Description |
 |------|------|------|
 | `description` | field metadata | Field description |
-| `options[].label` | `ui.options` | Select control option label |
+| `options[].label` | `ui.options` | Select widget option labels |
 | `placeholder` | `ui.placeholder` | Input placeholder |
-| `group_labels` | `_schema_meta` | Group display name (Dashboard partition title) |
+| `group_labels` | `_schema_meta` | Group display names (Dashboard section titles) |
 
-When using i18n, pre-register the translation keys to the i18n system (see [i18n documentation](../../advanced/i18n.md#configuration-field-multilingual) for details).
+When using i18n, translation keys must be registered with the i18n system in advance (see the [i18n documentation](../../advanced/i18n.md#配置字段多语言) for details).
 
-**description / placeholder / options label** Example:
+**description / placeholder / options label** example:
 
 ```python
 token: str = field(
@@ -452,14 +452,14 @@ mode: str = field(
             "widget": "select",
             "options": [
                 {"label": {"i18n": "my_adapter.mode.a", "default": "Option A"}, "value": "a"},
-                {"label": "Plain string label", "value": "b"},  # Plain string passed through as-is
+                {"label": "Plain string label", "value": "b"},  # Plain strings are passed through as-is
             ],
         },
     },
 )
 ```
 
-**group_labels** Example (declared after configuration class definition):
+**group_labels** example (declared after the config class is defined):
 
 ```python
 MyConfig._schema_meta = {
@@ -470,53 +470,49 @@ MyConfig._schema_meta = {
 }
 ```
 
-The framework's `resolve_config_schema()` automatically resolves the above fields' i18n keys based on the current language;
-`get_config_schema()` passes the i18n dictionary as-is, letting the frontend parse it.
+The framework's `resolve_config_schema()` automatically resolves the i18n keys of all the fields above according to the current language; `get_config_schema()` passes the i18n dictionaries through as-is, leaving resolution to the frontend.
 
-#### docstring Auto-generates Field Descriptions (v2.8.0+)
+#### Automatic Field Description Generation from docstring (v2.8.0+)
 
-Fields without `description` declared in metadata will automatically use the configuration class docstring as a fallback, supporting two common styles (can be mixed):
+For fields without a `description` declared in metadata, the framework automatically extracts the field description from the config class docstring as a fallback. Two common styles are supported (and can be mixed):
 
 ```python
 @dataclass
 class MyConfig(BaseConfig):
     """
-    MyAdapter Configuration
+    MyAdapter configuration
 
     :ivar endpoint: Platform API address        # reST style
     :ivar timeout: Request timeout in seconds
     """
 
-    endpoint: str = "https://api.example.com"   # No metadata description → use comment/description from docstring
+    endpoint: str = "https://api.example.com"   # No metadata description → comment/description taken from docstring
     timeout: int = 30
 
-    # Google style also supported (Attributes: section):
+    # Google style is also supported (Attributes: section):
     # Attributes:
     #     endpoint: Platform API address
 ```
 
-Priority: **metadata description > docstring field description > empty**.
-i18n dictionary form of description is unaffected (always prioritized).
+Priority: **metadata description > docstring field description > empty**. Descriptions in i18n dictionary form are unaffected (they always take precedence).
 
 #### Nested Configuration (v2.8.0+)
 
-When the field type is a nested dataclass, the framework recursively processes: schema uses `"type": "table"` +
-`"fields"` subtree (WebUI renders as collapsible nested groups), TOML template renders as `[sub-table]` sections,
-default values / filling / validation / i18n parsing all work recursively.
+When a field's type is a nested dataclass, the framework handles it recursively: the schema carries it via a `"type": "table"` + `"fields"` subtree (rendered by the WebUI as a collapsible nested group), the TOML template renders it as a `[subtable]` section, and defaults / population / validation / i18n resolution all apply recursively.
 
 ```python
 @dataclass
 class RetryConfig(BaseConfig):
-    """Retry Strategy
+    """Retry strategy
 
-    :ivar max_retries: Maximum retry attempts
+    :ivar max_retries: Maximum retry count
     """
     max_retries: int = 3
     backoff: float = 0.5
 
 @dataclass
 class MyConfig(BaseConfig):
-    """MyAdapter Configuration"""
+    """MyAdapter configuration"""
     endpoint: str = "https://api.example.com"
     retry: RetryConfig = field(default_factory=RetryConfig)   # Nested configuration section
 ```
@@ -527,14 +523,14 @@ Generated TOML template:
 endpoint = "https://api.example.com"
 
 [retry]
-# Maximum retry attempts
+# Maximum retry count
 max_retries = 3
 backoff = 0.5
 ```
 
-> For nested types, it is recommended to use direct type annotations; string annotations (e.g., for delayed evaluation scenarios) must ensure that the type can be globally resolved from the configuration class module, `__qualname__` outer class namespace, or class attributes by name.
+> For nested types, direct type annotations are recommended. String annotations (e.g., in deferred-evaluation scenarios) must ensure that the type can be resolved by name from the config class's module globals, the enclosing-class namespaces referenced by `__qualname__`, or class attributes.
 
-#### Non-persistent example Fields (v2.8.0+)
+#### Non-Persistent `example` Fields (v2.8.0+)
 
 ```python
 gc_interval: int = field(default=300, metadata={"example": True})
@@ -542,23 +538,18 @@ gc_interval: int = field(default=300, metadata={"example": True})
 
 Fields with `example: True`:
 
-- Not written to config.toml (adapter/module configuration template and default values excluded, runtime uses code default values)
-- Only rendered into project's `config.full.example` (for user reference, copy to config.toml as needed)
-- Schema with `"example": true` marker (panel can decide display strategy itself), CLI configuration wizard defaults to skip
-- After user manually sets this key, it persists normally, updates normally (user's explicit intent takes precedence)
+- Are not written to config.toml (excluded from both adapter/module config templates and defaults; code defaults apply at runtime)
+- Are only rendered into the project's `config.full.example` (for user reference; manually copy into config.toml as needed)
+- Carry an `"example": true` marker in the schema (the panel can decide its own display strategy); skipped by default by the CLI config wizard
+- Persist normally and hot-update normally once the user sets this key manually (explicit user intent takes precedence)
 
-Suitable for "complex but rarely touched" advanced configuration items, keeping the user's config.toml minimal.
+Suitable for advanced configuration items that are "cumbersome and rarely touched", keeping the user's config.toml minimal.
 
-> ⚠️ `_schema_meta` is class-level metadata (not a configuration field). If declared inside the dataclass class body,
-> it must be annotated with `ClassVar` (`_schema_meta: ClassVar[dict] = {...}`), otherwise it will be treated as a
-> regular field by dataclass. The framework defensively excludes fields with leading underscores from any
-> schema/template/default/valid output, but it is still recommended to declare them properly.
+> ⚠️ `_schema_meta` is class-level metadata (not a configuration field). If declared inside the dataclass body, it must carry a `ClassVar` annotation (`_schema_meta: ClassVar[dict] = {...}`), otherwise it will be treated as a regular field by the dataclass. The framework already defensively excludes underscore-prefixed fields (they do not enter any schema / template / defaults / validation output), but a standards-compliant declaration is still recommended.
 
 ### Declarative Translation Keys (v2.7.0+)
 
-Adapters can declare translation keys like `ConfigClass` by embedding the `I18nClass` class to centrally declare translation keys.
-The framework automatically registers all declared translation keys during `__init__` (before configuration template generation),
-ensuring that i18n keys referenced in configuration descriptions are available when generating templates.
+Adapters can declare translation keys centrally via the nested `I18nClass`, just as they declare `ConfigClass`. During the `__init__` phase (before config template generation), the framework automatically registers all declared translation keys, ensuring that the i18n keys referenced in configuration descriptions are available when templates are generated.
 
 ```python
 from ErisPulse.Core.Bases import BaseAdapter, BaseI18n, I18nKey
@@ -567,30 +558,30 @@ class MyAdapter(BaseAdapter):
     class I18nClass(BaseI18n):
         endpoint: I18nKey = I18nKey(
             default="API Endpoint",
-            zh_CN="API 地址",
-            zh_TW="API 位址",
+            zh_CN="API address",
+            zh_TW="API address",
             en="API Endpoint",
             ja="APIアドレス",
             ru="API адрес",
         )
         token: I18nKey = I18nKey(
             default="Platform Token",
-            zh_CN="平台 Token",
-            zh_TW="平台權杖",
+            zh_CN="Platform Token",
+            zh_TW="Platform Token",
             en="Platform Token",
             ja="プラットフォームトークン",
             ru="Токен платформы",
         )
 ```
 
-> ``I18nKey.default`` is a **language-agnostic fallback text** and will not be registered to any language.
-> To make the translation effective, at least one language parameter must be explicitly passed.
+> ``I18nKey.default`` is **language-independent fallback text** and is not registered to any language.
+> To make a translation take effect, you must explicitly pass at least one language parameter.
 
-For detailed usage (key path rules, explicit key parameters, etc.), see [i18n documentation](../../advanced/i18n.md#recommended-usage-declaring-translation-keys-via-i18nclass-v270).
+For detailed usage (key path rules, explicit key parameters, etc.), see the [i18n documentation](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270).
 
 ### Declarative Event Extension Methods (v2.7.0+)
 
-Adapters can centrally declare platform-specific event extension methods via `EventMixin`, and the framework automatically registers them to the current platform.
+Adapters can use `EventMixin` to centrally declare platform-specific event extension methods, which the framework automatically registers to the current platform.
 
 ```python
 from ErisPulse.Core import BaseAdapter
@@ -598,16 +589,16 @@ from ErisPulse.Core import BaseAdapter
 class MyAdapter(BaseAdapter):
     class EventMixin:
         def get_chat_name(self):
-            """Get chat name"""
+            """Get the chat name"""
             return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 
         def is_official_message(self):
-            """Check if it is an official message"""
+            """Check whether the message is official"""
             raw = self.get("myplatform_raw", {})
             return raw.get("sender", {}).get("is_official", False)
 ```
 
-After registration, event objects can directly call these methods:
+After registration, event objects can call these methods directly:
 
 ```python
 @message.on_group_message()
@@ -617,34 +608,36 @@ async def handler(event):
         await event.reply(f"[{chat_name}] Official message received")
 ```
 
-> Adapter's event extension methods are registered to its own platform (``self._platform``).
-> For modules needing cross-platform event extensions, use the original ``register_event_mixin()`` API.
+> An adapter's event extension methods are registered to its own platform (``self._platform``).
+> If a module needs cross-platform event extensions, use the original ``register_event_mixin()`` API.
 
 #### Account Resolution
 
-When implementing `call_api`, adapters need to resolve the account identifier into a specific account configuration. The framework passes the account binding (result of `Using()` or automatic binding from event chain) to `call_api` as a standard field `account_id`, and adapts it automatically according to the adapter's actual consumption method—three consumption forms are available, and the framework detects them via signature parameter names and function body constants, independent of parameter position:
+When implementing `call_api`, the adapter needs to resolve the account identifier into a concrete account configuration. The framework passes the account binding (the result of `Using()` or automatic binding along the event chain) into `call_api` via the standard field `account_id`, and automatically adapts to how the adapter actually consumes it—choose any of the three consumption forms; the framework detects them by signature parameter names and in-body constants, regardless of parameter position:
 
 ```python
-# Form 1 (Recommended): Signature declares standard name
+# Form 1 (recommended): declare the standard name in the signature
 async def call_api(self, endpoint: str, account_id: str | None = None, **params):
     name, account = self._resolve_account(account_id)
-    # name: account name, account: configuration instance
+    # name: account name, account: config instance
 
-# Form 2 (Legacy Compatibility): Old name _account_id, framework automatically rewrites account_id to old name for dispatch
+# Form 2 (legacy compatibility): old name _account_id; the framework automatically rewrites account_id to the old name when dispatching
 async def call_api(self, endpoint: str, _account_id: str | None = None, **params):
     name, account = self._resolve_account(_account_id)
 
-# Form 3: Function body reads from params (detected by constant)
+# Form 3: extracted from params inside the function body (recognized via constant detection)
 async def call_api(self, endpoint: str, **params):
     account_id = params.pop("account_id", None)
     name, account = self._resolve_account(account_id)
 ```
 
-> When the adapter does not consume the account field, the framework removes this field (to avoid leaking into platform parameters) and issues a warning once; single-account adapters can not consume (resolution falls back to the first enabled account).
+> When the adapter does not consume the account field, the framework strips that field (to prevent it from leaking into platform parameters) and emits a WARNING once; single-account adapters may skip consuming it (resolution falls back to the first enabled account).
 
 Resolution strategy: account name match → `bot_id` field match → other str field match → first enabled account.
 
-#### Configuration Hot Update
+**Runtime identification and persistence** (2.12+): the adapter calls `self.update_bot_id(account_name, bot_id)` when a connection is established / an event arrives — the framework maintains a bot_id → account registry (first priority in the resolution chain) and, when the value changes, writes `accounts.<account name>.bot_id` into the config storage: after a restart, the rebuilt account instance already carries its bot_id, and resolution for scenarios such as the second account no longer depends on backfilling from account activity (eliminating the restart window).
+
+#### Configuration Hot Reload
 
 Subclasses can override `on_config_update()` to respond to configuration changes:
 
@@ -654,20 +647,20 @@ class MyAdapter(BaseAdapter):
     
     def on_config_update(self, old_config, new_config):
         if old_config.token != new_config.token:
-            self.logger.info("Token has been updated, reconnecting")
+            self.logger.info("Token updated, will reconnect")
 ```
 
 ### Initialization Process
 
-The framework automatically performs the following tasks in `BaseAdapter.__init__(self, sdk=None)`:
+The framework automatically completes the following within `BaseAdapter.__init__(self, sdk=None)`:
 
-1. **SDK Reference**: Set `self.sdk`, `self.logger`
-2. **Send/Request Factory**: Create `self.Send` and `self.Request`
-3. **Configuration Template**: If `ConfigClass` is declared, automatically generate default configuration template (first time)
-4. **Account Template**: If `AccountConfigClass` is declared, automatically generate default account template (first time)
-5. **EventMixin Registration**: If `EventMixin` is declared, automatically register to `AdapterManager` after injecting platform name
+1. **SDK reference**: sets `self.sdk`, `self.logger`
+2. **Send/Request factories**: creates `self.Send` and `self.Request`
+3. **Config template**: if `ConfigClass` is declared, a default config template is generated automatically (first time only)
+4. **Account template**: if `AccountConfigClass` is declared, a default account template is generated automatically (first time only)
+5. **EventMixin registration**: if `EventMixin` is declared, it is registered automatically after `AdapterManager` injects the platform name
 
-Configuration is read in real-time via `self.cfg` / `self.accounts` (each access reads the latest value from the configuration store). `self.config` as a `self.cfg` compatibility alias is still usable.
+Configuration is read in real time through `self.cfg` / `self.accounts` (each access reads the latest value from the config storage). `self.config` remains available as a compatibility alias for `self.cfg`.
 
 Most adapters do not need to override `__init__`. If custom initialization is needed:
 
@@ -676,7 +669,7 @@ class MyAdapter(BaseAdapter):
     ConfigClass = MyConfig
     
     def __init__(self, sdk=None):
-        super().__init__(sdk)  # Pass sdk
+        super().__init__(sdk)  # Pass in the sdk
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 ```
