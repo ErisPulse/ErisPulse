@@ -133,6 +133,19 @@ name: str = Field(max_length=64)
 #### 方法列表
 
 
+##### `__new__(*args: Any, **kwargs: Any) -> Any`
+
+实例化类型标注为 ``Any``
+
+类体声明 ``name: str = Field(...)`` 的赋值侧类型检查：Field 是声明
+哨兵（类属性由 Model 机制消费、实例属性由 ``__init__`` 写入真实值），
+哨兵本身与声明类型不匹配——返回 ``Any`` 让类型检查器跳过赋值侧检查
+（pydantic v2 ``Field() -> Any`` 同款口径）；实例属性读取类型由
+声明注解（``str`` / ``int``）提供。
+
+---
+
+
 ##### `_annotation() -> Any`
 
 字段注解（__set_name__ 阶段从 owner __annotations__ 反查）

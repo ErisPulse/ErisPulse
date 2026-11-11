@@ -2746,12 +2746,12 @@
         "title": "Account and Multi-Account"
       }
     ],
-    "Account and Multi-Account Closure": [
+    "Account and Multi-Account Closed Loop": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 65,
         "level": 3,
-        "title": "Account and Multi-Account Closure"
+        "title": "Account and Multi-Account Closed Loop"
       }
     ],
     "Account and Multi-account": [
@@ -3353,7 +3353,7 @@
     "Automatic Migration (Phase Two)": [
       {
         "document": "developer-guide/orm.md",
-        "line": 101,
+        "line": 105,
         "level": 2,
         "title": "Automatic Migration (Phase Two)"
       }
@@ -3987,7 +3987,7 @@
     "Bot Identification in Events": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 739,
+        "line": 752,
         "level": 3,
         "title": "Bot Identification in Events"
       }
@@ -4058,12 +4058,12 @@
         "title": "Bot Status Values"
       }
     ],
-    "Boundaries and Notes": [
+    "Boundaries and Caveats": [
       {
         "document": "developer-guide/orm.md",
-        "line": 93,
+        "line": 97,
         "level": 2,
-        "title": "Boundaries and Notes"
+        "title": "Boundaries and Caveats"
       }
     ],
     "Boundaries with Other Mechanisms": [
@@ -4334,14 +4334,6 @@
         "title": "Chain Modifier Methods (can be combined)"
       }
     ],
-    "Chainable Call Example": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 228,
-        "level": 3,
-        "title": "Chainable Call Example"
-      }
-    ],
     "Chainable Call Examples": [
       {
         "document": "platform-guide/kook.md",
@@ -4362,12 +4354,6 @@
       {
         "document": "platform-guide/kook.md",
         "line": 146,
-        "level": 3,
-        "title": "Chainable Modifier Methods (can be combined)"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 219,
         "level": 3,
         "title": "Chainable Modifier Methods (can be combined)"
       }
@@ -4396,6 +4382,12 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 207,
+        "level": 3,
+        "title": "Chained Call Examples"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 228,
         "level": 3,
         "title": "Chained Call Examples"
       },
@@ -4440,6 +4432,14 @@
         "line": 162,
         "level": 3,
         "title": "Chained Modifier Methods (Combinable)"
+      }
+    ],
+    "Chained Modifier Methods (Composable)": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 219,
+        "level": 3,
+        "title": "Chained Modifier Methods (Composable)"
       }
     ],
     "Chained Modifier Methods (combinable)": [
@@ -4496,12 +4496,12 @@
         "title": "Check Platform Status"
       }
     ],
-    "Check if it is a button click event": [
+    "Check whether it is a button click event": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 496,
+        "line": 509,
         "level": 1,
-        "title": "Check if it is a button click event"
+        "title": "Check whether it is a button click event"
       }
     ],
     "Checking if a Table Exists": [
@@ -5186,6 +5186,12 @@
         "title": "Configuration Description"
       },
       {
+        "document": "platform-guide/yunhu.md",
+        "line": 699,
+        "level": 3,
+        "title": "Configuration Description"
+      },
+      {
         "document": "platform-guide/yunhu_user.md",
         "line": 601,
         "level": 3,
@@ -5224,14 +5230,6 @@
         "line": 490,
         "level": 3,
         "title": "Configuration Example"
-      }
-    ],
-    "Configuration Explanation": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 686,
-        "level": 3,
-        "title": "Configuration Explanation"
       }
     ],
     "Configuration Field Descriptions": [
@@ -5741,7 +5739,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 414,
+        "line": 427,
         "level": 3,
         "title": "Core Differences"
       },
@@ -6167,7 +6165,7 @@
     "Declaring Models": [
       {
         "document": "developer-guide/orm.md",
-        "line": 8,
+        "line": 12,
         "level": 2,
         "title": "Declaring Models"
       }
@@ -6696,14 +6694,6 @@
         "title": "Domestic Image Acceleration"
       }
     ],
-    "Don't need table structures, just store a few key-value pairs": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 194,
-        "level": 3,
-        "title": "Don't need table structures, just store a few key-value pairs"
-      }
-    ],
     "Dot-Structured Events": [
       {
         "document": "advanced/lifecycle.md",
@@ -6782,12 +6772,12 @@
         "title": "Email with Attachments"
       }
     ],
-    "Emoticon/Sticker Message Segment (yunhu_expression)": [
+    "Emoji/Sticker Message Segment (yunhu_expression)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 642,
+        "line": 655,
         "level": 3,
-        "title": "Emoticon/Sticker Message Segment (yunhu_expression)"
+        "title": "Emoji/Sticker Message Segment (yunhu_expression)"
       }
     ],
     "Enable IDE Completion (Optional)": [
@@ -7547,7 +7537,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 593,
+        "line": 606,
         "level": 2,
         "title": "Event Mixin Extension Methods"
       }
@@ -7936,6 +7926,12 @@
         "line": 341,
         "level": 2,
         "title": "Extension Field Description"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 643,
+        "level": 2,
+        "title": "Extension Field Description"
       }
     ],
     "Extension Field Descriptions": [
@@ -7963,12 +7959,6 @@
         "document": "platform-guide/onebot11.md",
         "line": 425,
         "level": 3,
-        "title": "Extension Field Explanation"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 630,
-        "level": 2,
         "title": "Extension Field Explanation"
       }
     ],
@@ -8063,7 +8053,7 @@
     "Field Parameters": [
       {
         "document": "developer-guide/orm.md",
-        "line": 25,
+        "line": 29,
         "level": 2,
         "title": "Field Parameters"
       }
@@ -8223,7 +8213,7 @@
     "Foreign Keys (Foundation for Relationship Mapping)": [
       {
         "document": "developer-guide/orm.md",
-        "line": 121,
+        "line": 128,
         "level": 2,
         "title": "Foreign Keys (Foundation for Relationship Mapping)"
       }
@@ -8811,25 +8801,25 @@
     "Handle A2UI button events": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 522,
+        "line": 535,
         "level": 1,
         "title": "Handle A2UI button events"
       }
     ],
-    "Handle quick menu events": [
+    "Handle bot setting changes": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 512,
+        "line": 530,
         "level": 1,
-        "title": "Handle quick menu events"
+        "title": "Handle bot setting changes"
       }
     ],
-    "Handle robot setting changes": [
+    "Handle shortcut menu events": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 517,
+        "line": 525,
         "level": 1,
-        "title": "Handle robot setting changes"
+        "title": "Handle shortcut menu events"
       }
     ],
     "Handler Throttling (throttle=) and Debouncing (debounce=)": [
@@ -9734,6 +9724,14 @@
         "title": "Learning Path"
       }
     ],
+    "Legacy Configuration Compatibility": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 805,
+        "level": 3,
+        "title": "Legacy Configuration Compatibility"
+      }
+    ],
     "Legacy Configuration Migration": [
       {
         "document": "platform-guide/telegram.md",
@@ -9953,7 +9951,7 @@
     "Log Information": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 767,
+        "line": 780,
         "level": 3,
         "title": "Log Information"
       },
@@ -10097,7 +10095,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 776,
+        "line": 789,
         "level": 3,
         "title": "Management Interface"
       },
@@ -10234,6 +10232,14 @@
         "line": 65,
         "level": 3,
         "title": "Media File Notes"
+      }
+    ],
+    "Media Messages and Hotlink Protection (4.6.3)": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 357,
+        "level": 4,
+        "title": "Media Messages and Hotlink Protection (4.6.3)"
       }
     ],
     "Media Send Methods": [
@@ -11289,7 +11295,7 @@
     "Multi-Bot Configuration": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 684,
+        "line": 697,
         "level": 2,
         "title": "Multi-Bot Configuration"
       }
@@ -11433,7 +11439,7 @@
     "Need to switch databases or deploy to a cloud database": [
       {
         "document": "developer-guide/orm.md",
-        "line": 190,
+        "line": 198,
         "level": 3,
         "title": "Need to switch databases or deploy to a cloud database"
       }
@@ -11505,7 +11511,7 @@
       },
       {
         "document": "developer-guide/orm.md",
-        "line": 188,
+        "line": 196,
         "level": 2,
         "title": "Next Steps"
       },
@@ -11648,6 +11654,14 @@
         "line": 121,
         "level": 3,
         "title": "No response from command?"
+      }
+    ],
+    "No table structure needed, just a few key-value pairs": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 202,
+        "level": 3,
+        "title": "No table structure needed, just a few key-value pairs"
       }
     ],
     "Node Tree Example": [
@@ -11838,14 +11852,6 @@
         "line": 70,
         "level": 2,
         "title": "Official Client (Standalone Application)"
-      }
-    ],
-    "Old Configuration Compatibility": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 792,
-        "level": 3,
-        "title": "Old Configuration Compatibility"
       }
     ],
     "One-Click Installation Script (Recommended for New Environments)": [
@@ -12355,17 +12361,17 @@
     "Platform Extension Actions": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 366,
+        "line": 379,
         "level": 3,
         "title": "Platform Extension Actions"
       }
     ],
-    "Platform Extension Actions (call / Api methods)": [
+    "Platform Extension Actions (call / Api Methods)": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 31,
         "level": 3,
-        "title": "Platform Extension Actions (call / Api methods)"
+        "title": "Platform Extension Actions (call / Api Methods)"
       }
     ],
     "Platform Extension Fields": [
@@ -12396,12 +12402,12 @@
         "title": "Platform Extension Message Segments"
       }
     ],
-    "Platform Extension Method Convention": [
+    "Platform Extension Method Conventions": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 105,
         "level": 3,
-        "title": "Platform Extension Method Convention"
+        "title": "Platform Extension Method Conventions"
       }
     ],
     "Platform Extension Methods": [
@@ -12501,6 +12507,12 @@
         "document": "platform-guide/telegram.md",
         "line": 243,
         "level": 3,
+        "title": "Platform-Specific Event Types"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 423,
+        "level": 2,
         "title": "Platform-Specific Event Types"
       },
       {
@@ -13501,7 +13513,7 @@
     "Relationship Mapping (relationship)": [
       {
         "document": "developer-guide/orm.md",
-        "line": 135,
+        "line": 142,
         "level": 2,
         "title": "Relationship Mapping (relationship)"
       }
@@ -13514,12 +13526,12 @@
         "title": "Relationship with CLI i18n"
       }
     ],
-    "Relationship with Declarative Configuration Class": [
+    "Relationship with Declarative Config Classes": [
       {
         "document": "developer-guide/orm.md",
-        "line": 77,
+        "line": 81,
         "level": 2,
-        "title": "Relationship with Declarative Configuration Class"
+        "title": "Relationship with Declarative Config Classes"
       }
     ],
     "Relationship with Other Systems": [
@@ -14462,14 +14474,6 @@
         "title": "Semi-finished Base Classes for Connection Modes"
       }
     ],
-    "Send A2UI message": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 559,
-        "level": 1,
-        "title": "Send A2UI message"
-      }
-    ],
     "Send Chained Calls": [
       {
         "document": "platform-guide/README.md",
@@ -14563,7 +14567,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 393,
+        "line": 406,
         "level": 2,
         "title": "Send Method Return Values"
       },
@@ -14651,17 +14655,25 @@
     "Send a message with buttons to a group": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 545,
+        "line": 558,
         "level": 1,
         "title": "Send a message with buttons to a group"
       }
     ],
-    "Send a message with buttons to a private chat": [
+    "Send a message with buttons to a user in private chat": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 548,
+        "line": 561,
         "level": 1,
-        "title": "Send a message with buttons to a private chat"
+        "title": "Send a message with buttons to a user in private chat"
+      }
+    ],
+    "Send an A2UI message": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 572,
+        "level": 1,
+        "title": "Send an A2UI message"
       }
     ],
     "Send to Conversation (SnowLuma extension, group/private auto-routing)": [
@@ -15027,7 +15039,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 431,
+        "line": 444,
         "level": 3,
         "title": "Special Field Examples"
       }
@@ -15038,6 +15050,14 @@
         "line": 1102,
         "level": 3,
         "title": "Specify Account for Sending"
+      }
+    ],
+    "Specifying a Bot with the Send DSL": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 730,
+        "level": 3,
+        "title": "Specifying a Bot with the Send DSL"
       }
     ],
     "Specifying the Sending Account": [
@@ -15708,6 +15728,12 @@
         "line": 96,
         "level": 2,
         "title": "Supported Message Send Types"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 111,
+        "level": 2,
+        "title": "Supported Message Send Types"
       }
     ],
     "Supported Message Sending Types": [
@@ -15762,12 +15788,6 @@
       {
         "document": "platform-guide/wechatmp.md",
         "line": 51,
-        "level": 2,
-        "title": "Supported Message Sending Types"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 111,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -15935,7 +15955,7 @@
     "Table Creation and CRUD": [
       {
         "document": "developer-guide/orm.md",
-        "line": 41,
+        "line": 45,
         "level": 2,
         "title": "Table Creation and CRUD"
       }
@@ -16237,7 +16257,7 @@
     "Transactions": [
       {
         "document": "developer-guide/orm.md",
-        "line": 67,
+        "line": 71,
         "level": 2,
         "title": "Transactions"
       }
@@ -16392,20 +16412,14 @@
         "line": 183,
         "level": 2,
         "title": "Unique Event Types"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 410,
-        "level": 2,
-        "title": "Unique Event Types"
       }
     ],
-    "Unknown Events Are No Longer Silently Discarded": [
+    "Unknown Events Are No Longer Silently Dropped": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 101,
         "level": 3,
-        "title": "Unknown Events Are No Longer Silently Discarded"
+        "title": "Unknown Events Are No Longer Silently Dropped"
       }
     ],
     "Unload Process": [
@@ -16487,7 +16501,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 359,
+        "line": 372,
         "level": 3,
         "title": "Unsupported Standard Actions"
       }
@@ -16622,12 +16636,12 @@
         "title": "Use Cases"
       }
     ],
-    "Use event.reply() to automatically reply (will automatically select the correct sending method based on the platform)": [
+    "Use event.reply() for automatic reply (it automatically selects the correct send method based on the platform)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 504,
+        "line": 517,
         "level": 1,
-        "title": "Use event.reply() to automatically reply (will automatically select the correct sending method based on the platform)"
+        "title": "Use event.reply() for automatic reply (it automatically selects the correct send method based on the platform)"
       }
     ],
     "User API Example": [
@@ -16746,14 +16760,6 @@
         "line": 647,
         "level": 3,
         "title": "Using Send DSL to Specify Account"
-      }
-    ],
-    "Using Send DSL to Specify Bot": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 717,
-        "level": 3,
-        "title": "Using Send DSL to Specify Bot"
       }
     ],
     "Using Transactions": [
@@ -17203,7 +17209,7 @@
     "When to Use Which Declaration": [
       {
         "document": "developer-guide/orm.md",
-        "line": 81,
+        "line": 85,
         "level": 3,
         "title": "When to Use Which Declaration"
       }
@@ -17264,12 +17270,12 @@
         "title": "Windows PowerShell Execution Policy"
       }
     ],
-    "Yunhu Platform Feature Documentation": [
+    "Yunhu Platform Features Documentation": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 1,
         "level": 1,
-        "title": "Yunhu Platform Feature Documentation"
+        "title": "Yunhu Platform Features Documentation"
       }
     ],
     "Yunhu User Adapter Feature Documentation": [

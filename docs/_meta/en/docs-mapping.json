@@ -289,7 +289,7 @@
           "icon": "fa-envelope"
         },
         {
-          "title": "Yunhu Platform Feature Documentation",
+          "title": "Yunhu Platform Features Documentation",
           "path": "platform-guide/yunhu.md",
           "level": 1,
           "icon": "fa-cloud"

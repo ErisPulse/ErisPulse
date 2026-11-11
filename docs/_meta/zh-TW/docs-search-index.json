@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2020,
+  "total_keywords": 2022,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3814,6 +3814,14 @@
         "line": 46,
         "level": 3,
         "title": "SQL 鏈式查詢"
+      }
+    ],
+    "SQLite \"database is locked\" 排查": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 141,
+        "level": 2,
+        "title": "SQLite \"database is locked\" 排查"
       }
     ],
     "SVG 輸出範例": [
@@ -9196,6 +9204,14 @@
         "title": "失敗自動重試（Retry）"
       }
     ],
+    "失敗語義（2.12 起）": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 85,
+        "level": 2,
+        "title": "失敗語義（2.12 起）"
+      }
+    ],
     "失敗重試 + 超時取消": [
       {
         "document": "getting-started/common-tasks.md",
@@ -11887,7 +11903,7 @@
     "方言行為差異": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 117,
+        "line": 127,
         "level": 2,
         "title": "方言行為差異"
       }
@@ -14105,7 +14121,7 @@
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 85,
+        "line": 95,
         "level": 2,
         "title": "異步原生 API"
       }
@@ -14595,7 +14611,7 @@
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 157,
+        "line": 182,
         "level": 2,
         "title": "相關文件"
       },
@@ -15375,7 +15391,7 @@
     "自訂 SQL 後端": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 131,
+        "line": 156,
         "level": 2,
         "title": "自訂 SQL 後端"
       }
