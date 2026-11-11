@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "b88740174e1be36e1ae2b3c76834c5cd",
-  "file_hash": "b88740174e1be36e1ae2b3c76834c5cd",
-  "translated_at": "2026-11-10T15:20:24.477605",
+  "hash": "1cc39f20ca25d7a4b3a955397afafeee",
+  "file_hash": "1cc39f20ca25d7a4b3a955397afafeee",
+  "translated_at": "2026-11-11T15:12:40.939384",
   "target_lang": "en",
   "chunks": [
     {
@@ -20,6 +20,10 @@
     {
       "hash": "5660dbb58db555f6daffb832071895a7",
       "translation": "## Tuning Highlights\n\n1. **The full-pipeline bottleneck of the message bridge lies in session transcript recording**: transcript recording is enabled by default (since 2.9, with in-memory buffering + background batch flushing to disk); it can be disabled if no audit requirement exists, boosting full-pipeline throughput from ~2,804 → 3,774 ops/s\n2. **GC management**: the `proactive_gc` configuration group of `ErisPulse.framework` (interval / full_every / memory_growth_mb / `idle_only`) — GC is automatically skipped during event storms; `gc.freeze()` during the init phase is already built in\n3. **Storage backends**: local single-machine sqlite (WAL) is sufficient; switch to mysql / postgres when multiple instances share a data layer (see [Storage Backends](storage-backends.md))\n4. **Hot paths are already optimized** (since 2.9, no configuration required): transcript batch flushing, i18n caching, log level guards, matcher pre-compilation, and unified flushing of deferred config writes\n5. **Command governance state caps**: cooldown/rate-limit/quota state tables are capped at 4096 entries (oldest entries evicted when exceeded); no adjustment is needed even for deployments at very large group scales"
+    },
+    {
+      "hash": "ac9bdc2c6701cb57895881ecd2b9b62d",
+      "translation": "## Memory Diagnostics\n\nWhen troubleshooting \"memory consumption increases over time,\" take a snapshot with a label before and after the suspected code path. Snapshots with the same label are automatically compared to calculate the increment (using both RSS and tracemalloc metrics):\n\n```python\nfrom ErisPulse.runtime import log_snapshot, snapshot\n\nclass MyModule(BaseModule):\n    async def on_load(self, event):\n        snapshot(\"MyModule.load\")            # Collects and returns a dict (including RSS delta by label)\n\n    async def on_unload(self, event):\n        log_snapshot(\"MyModule.unload\")      # Collects with the same metric and logs at TRACE level\n```\n\n- `snapshot(label)` returns a machine-readable dict, suitable for assertions and reporting; `log_snapshot(label)` directly logs at TRACE level, suitable for temporary troubleshooting\n- Label snapshots are bounded in memory and will not leak with repeated calls; combined with process metrics from the `/metrics` endpoint, they can be used for long-term trend analysis\n- Residual memory growth after module unload usually indicates missing ownership (see the `bind_owner` background task entry in the [Ownership System](ownership.md))"
     },
     {
       "hash": "08b4155b018ca52956bb4ad47a5fbf5f",

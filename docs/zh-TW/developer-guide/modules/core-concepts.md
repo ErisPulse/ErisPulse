@@ -206,11 +206,11 @@ info = sdk.adapter.send_info("onebot11", "Text")
 # }
 ```
 
-## 設定管理
+## 配置管理
 
-### 宣告式設定（推薦）
+### 聲明式配置（推薦）
 
-從 v2.5.2 起，模組可透過 `ConfigClass` 宣告設定類別，與適配器使用同一套設定 Schema 系統。設定透過 `self.cfg` 即時讀取，修改後立即生效：
+從 v2.5.2 起，模組可透過 `ConfigClass` 聲明配置類，與適配器使用同一套配置 Schema 系統。配置透過 `self.cfg` 即時讀取，修改後立即生效：
 
 ```python
 from dataclasses import dataclass, field
@@ -222,7 +222,7 @@ class MyModuleConfig(BaseConfig):
     api_key: str = field(
         default="",
         metadata={
-            "description": {"i18n": "my_module.api_key", "default": "API 金鑰"},
+            "description": {"i18n": "my_module.api_key", "default": "API 密鑰"},
             "required": True,
             "secret": True,
             "ui": {"widget": "password", "group": "basic", "order": 1},
@@ -231,7 +231,7 @@ class MyModuleConfig(BaseConfig):
     timeout: int = field(
         default=30,
         metadata={
-            "description": {"i18n": "my_module.timeout", "default": "逾時時間（秒）"},
+            "description": {"i18n": "my_module.timeout", "default": "超時時間（秒）"},
             "ui": {"widget": "number", "group": "advanced", "order": 2},
         },
     )
@@ -250,31 +250,62 @@ class MyModule(BaseModule):
         pass
 
     async def do_something(self):
-        cfg = self.cfg  # 即時讀取，型別安全
+        cfg = self.cfg  # 即時讀取，類型安全
         api_key = cfg.api_key
         timeout = cfg.timeout
 ```
 
-`BaseConfig` 是通用設定基底類別，適用於適配器、模組、外部專案等任何場景。設定欄位支援 i18n 多語言描述（詳見 [i18n 文件](../../advanced/i18n.md#設定欄位多語言)）。
+`BaseConfig` 是通用配置基類，適用於適配器、模組、外部專案等任何場景。配置欄位支援 i18n 多語言描述（詳見 [i18n 文檔](../../advanced/i18n.md#配置欄位多語言)）。
 
 > [!NOTE]
-> 模組（含適配器）的載入、卸載、啟停等生命週期由框架統一管理（`module manager` / `scope` 提供查詢與控制 API）。`ConfigClass` 只應承載業務參數，模組無需在內部再次巢狀判斷「自己要不要啟動」的邏輯。
+> 模組（含適配器）的載入、卸載、啟停等生命週期由框架統一管理（`module manager` / `scope` 提供查詢與控制 API）。`ConfigClass` 只應承載業務參數，模組無需在內部再次嵌套判斷「自己要不要啟動」的邏輯。
 
-設定 Schema 系統還支援（v2.8.0+，詳見 [適配器 core-concepts](../adapters/core-concepts.md#metadata-約定)）：
+配置 Schema 系統還支援（v2.8.0+，詳見 [適配器 core-concepts](../adapters/core-concepts.md#metadata-約定)）：
 
-- **docstring 自動生成欄位描述**：未宣告 metadata `description` 時，自動從 docstring 的 `:ivar 欄位: 說明` 或 `Attributes:` 段提取兜底
-- **巢狀 dataclass 設定**：欄位型別為巢狀 dataclass 時，schema/範本/校驗遞迴處理，WebUI 渲染為巢狀分組
-- **`example` 不落盤欄位**：`metadata={"example": True}` 的欄位不寫入 config.toml，僅記錄在 `config.full.example`（適合冗雜又很少觸碰的進階設定項），使用者手動設定後正常持久化
+- **docstring 自動生成欄位描述**：未聲明 metadata `description` 時，自動從 docstring 的 `:ivar 字段: 說明` 或 `Attributes:` 段提取兜底
+- **嵌套 dataclass 配置**：欄位類型為嵌套 dataclass 時，schema/模板/校驗遞迴處理，WebUI 渲染為嵌套分組
+- **`example` 不落盤欄位**：`metadata={"example": True}` 的欄位不寫入 config.toml，僅記錄在 `config.full.example`（適合繁雜又很少觸碰的進階配置項目），使用者手動設定後正常持久化
 
-### 宣告式翻譯鍵（v2.7.0+）
+### 配置熱更新（on_config_update）
 
-從 v2.7.0 起，模組還可以像宣告 `ConfigClass` 一樣，透過巢狀類別 `I18nClass` 集中宣告翻譯鍵。框架會在載入時**自動註冊**所有宣告的翻譯鍵，無需手動呼叫 `i18n.register()`，且註冊時機早於設定範本產生，確保設定描述中參考的 i18n 鍵已可用。
+模組與適配器實作 `on_config_update(old, new)` 方法後，框架在**本模組相關配置實際變化**
+時自動路由呼叫（無需自行訂閱配置事件），改 token / 開關 / 限流參數**免重啟**生效：
+
+```python
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    def on_config_update(self, old_config, new_config):
+        # 聲明了 ConfigClass 時為類型安全配置物件（未聲明則為 dict）；
+        # 運行時 setConfig() 觸發時 old_config 為 None（僅 new 有值）
+        if old_config is None or new_config.api_key != old_config.api_key:
+            self.logger.info("API key 已更新，重建客戶端")
+            self._client = build_client(new_config.api_key)
+```
+
+觸發來源與路由規則：
+
+- **運行時寫入**（程式碼或 Dashboard 調用 `setConfig()`）：按配置鍵前綴匹配路由——只有
+  落在本模組配置鍵（或其子鍵）內的寫入才觸發，此時 `old_config` 為 `None`
+- **配置檔案編輯**（檔案監聽觸發整樹對比）：新舊配置節不相等才觸發，此時 `old` / `new`
+  分別為變更前後的配置物件
+- 回呼內拋出的例外被框架捕獲記錄，不影響配置寫入本身
+
+使用口徑：
+
+- `self.cfg` 是即時讀取——不需要重建狀態的簡單參數（如超時秒數）在下一行程式碼就是新值，
+  無需在此鉤子手動同步
+- 需要重建的**有狀態資源**（客戶端連線、連線池、定時器）才在此鉤子處理
+
+### 聲明式翻譯鍵（v2.7.0+）
+
+從 v2.7.0 起，模組還可以像聲明 `ConfigClass` 一樣，透過嵌套類 `I18nClass` 集中聲明翻譯鍵。框架會在載入時**自動註冊**所有聲明的翻譯鍵，無需手動呼叫 `i18n.register()`，且註冊時機早於配置模板生成，確保配置描述中引用的 i18n 鍵已可用。
 
 ```python
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
 
 class MyModule(BaseModule):
-    # 設定類別（可選）
+    # 配置類（可選）
     @dataclass
     class ConfigClass(BaseConfig):
         welcome_msg: str = field(
@@ -284,12 +315,12 @@ class MyModule(BaseModule):
             },
         )
 
-    # 翻譯鍵集合類別（可選）
+    # 翻譯鍵集合類（可選）
     class I18nClass(BaseI18n):
         # 屬性名自動拼接為完整鍵路徑：<模組名>.<屬性名>
         welcome_msg: I18nKey = I18nKey(
             default="Welcome Message",   # 語言無關的兜底
-            zh_CN="歡迎消息",
+            zh_CN="歡迎訊息",
             zh_TW="歡迎訊息",
             en="Welcome Message",
             ja="ウェルカムメッセージ",
@@ -305,11 +336,11 @@ class MyModule(BaseModule):
         )
 ```
 
-詳情見 [i18n 推薦寫法](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
+詳情見 [i18n 推薦寫法](../../advanced/i18n.md#推薦寫法通過-i18nclass-聲明翻譯鍵-v270)。
 
-### 手動讀取設定（已棄用）
+### 手動讀取配置（已廢棄）
 
-> **已棄用**：請改用 [宣告式設定](#宣告式設定推薦) + `self.cfg` 即時讀取。
+> **已廢棄**：請改用 [聲明式配置](#聲明式配置推薦) + `self.cfg` 即時讀取。
 
 ```python
 class MyModule(BaseModule):

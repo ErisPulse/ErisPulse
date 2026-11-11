@@ -25,30 +25,55 @@
 4. ツールモジュールが管理する外部ハンドルは `on_cleanup(cb)` でクリーンアップチェーンに組み込め、相手モジュールのアンロード時に自動コールバックされる（[ツールモジュールガイド](#ツールモジュールガイド他のモジュールのハンドルを管理する) を参照）
 {!--< /tips >!--}
 
-## owner コンテキストの仕組み
+## owner コンテキスト機構
 
-owner はコンテキスト変数 `current_owner` によって伝播されます（`ErisPulse.runtime.context`）：
+owner はコンテキスト変数 `current_owner` を通じて伝達されます（`ErisPulse.runtime.context`）：
 
 ```python
 from ErisPulse.runtime import owner_scope, get_current_owner
 
 with owner_scope("MyModule"):
-    # この範囲内で登録されるすべてのリソースは自動的に MyModule に帰属する
+    # この区間内で登録されるすべてのリソースは自動的に MyModule に帰属します
     assert get_current_owner() == "MyModule"
 ```
 
-フレームワークは以下のタイミングで owner を自動注入します（モジュール/アダプターコードを手動でラップする必要はありません）：
+フレームワークは以下のタイミングで自動的に owner を注入します（モジュール/アダプターのコードで手動ラップは不要）：
 
-| タイミング | owner 値 | 位置 |
+| タイミング | owner 値 | 場所 |
 |------|----------|------|
 | モジュール `load()` | モジュール名 | インスタンス化 + `on_load` の全期間 |
 | アダプター `start()` / `restart()` | プラットフォーム名 | アダプター起動の全期間 |
-| `activate_on` 遅延読み込みスタブの登録 | モジュール名 | プレースホルダーコマンド/ハンドラーの登録 |
-| イベントハンドラー実行期間 | ハンドラーの帰属モジュール名 | handler / コマンドエントリでの再注入 |
+| `activate_on` 遅延ロード stub 登録 | モジュール名 | プレースホルダーコマンド/ハンドラー登録 |
+| イベントハンドラー実行時 | ハンドラーの帰属モジュール名 | handler / コマンドエントリでの再注入 |
 
-実行期間の再注入とは、モジュールが `on_load` で宣言したコマンドハンドラーの**実行中**に
-登録系 API（`sdk.adapter.on()`、`overrides.*.set(persist=False)` など）を呼び出した場合も、
+実行時の再注入とは、モジュールが `on_load` 内で宣言したコマンドハンドラーの**実行中**に
+登録型 API（`sdk.adapter.on()`、`overrides.*.set(persist=False)` など）を呼び出した場合も、
 同様に自動的に当該モジュールに帰属することを意味します。
+
+### bind_owner：帰属をコールバックとスレッドエントリに縫い込む
+
+`owner_scope` はコードブロックに作用します。`bind_owner(fn)` はコンテキストを関数そのものに「縫い込み」ます——
+ラップした瞬間に `current_owner` をキャプチャし、その後は誰が、どのスレッドやイベントループから呼び出しても、
+元の owner の身分で実行されます。新規スレッドはデフォルトで空のコンテキストを持ち
+（Timer / watcher / サードパーティのスレッドプールのトリガーパスでは `current_owner` が None になります）、
+その中で作成されたタスクは帰属テーブルに入らず、モジュールのアンロード時にキャンセルできません
+（loop を跨いだ残留の原因の一つ）が、ラップすれば帰属が随伴します：
+
+```python
+from ErisPulse.runtime import bind_owner
+
+class MyModule(BaseModule):
+    async def on_load(self, event):
+        # サードパーティのスケジューラ / スレッドプールに渡す前にラップします：
+        external_scheduler.submit(bind_owner(self._poll))
+
+    async def _poll(self):
+        # 実行中は current_owner == "MyModule" となり、アンロード時に正しく回収されます
+        ...
+```
+
+- `async` 関数は `async` のまま維持され、owner はすべての `await` を跨いで有効になります。通常の関数は同期実行中のみ有効です
+- フレームワーク自身のエントリ（`self.spawn()` / コマンドハンドラー）はすでに自動的に帰属を持ち運ぶため、この関数は**フレームワーク外のトリガーパス**（外部スケジューラ、`threading.Timer`、コールバック登録表など）にのみ使用します
 
 ## 帰属リソースの全体像
 

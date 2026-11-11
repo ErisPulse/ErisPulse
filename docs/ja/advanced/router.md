@@ -1,77 +1,77 @@
 # ルーティングマネージャー
 
 > [!TIP]
-> **このドキュメントを読むべきケース**：HTTP / WebSocket / SSE ルーティング（接続プールのブロードキャストを含む）が必要な場合。不要であればスキップしても、他の機能の利用には影響しません。
+> **この記事を読むタイミング**：HTTP / WebSocket / SSE ルーティング（接続プールによるブロードキャストを含む）が必要な場合。不要な場合はスキップしても、他の機能の使用に影響はありません。
 
 
-ErisPulse ルーティングマネージャーは、統一された HTTP および WebSocket ルーティング管理を提供し、複数アダプターのルート登録とライフサイクル管理をサポートします。内部は抽象化レイヤーでラップされています（現在は FastAPI + Uvicorn）
+ErisPulse ルーティングマネージャーは、HTTP および WebSocket ルーティングを一元的に管理し、複数アダプタのルーティング登録とライフサイクル管理をサポートします。内部では抽象層を介してラップされており、現在は FastAPI + Uvicorn が使用されています。
 
 ## 概要
 
 ルーティングマネージャーの主な機能：
 
-- **デコレータルーティング**：`@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` デコレータによる手軽な登録をサポート
-- **自動注入**：ルートハンドラーは FastAPI の型をインポートする必要がなく、フレームワークが抽象オブジェクトを自動的に注入します
-- **ルートグループ**：プレフィックスやバージョン番号付きの `RouteGroup` をサポート
-- **ルートミドルウェア**：glob パターンマッチングによるリクエストインターセプトをサポート
-- **レート制限**：スライディングウィンドウ方式のレート制限を内蔵
-- **CORS サポート**：クロスオリジンリソース共有をワンクリックで有効化
-- **セキュリティヘッダー**：セキュリティレスポンスヘッダーを自動追加
-- **自動ドキュメント**：OpenAPI ベースのインタラクティブドキュメント
-- **WebSocket サポート**：完全な WebSocket 接続管理、カスタム認証、ライフサイクルフック
-- **ライフサイクル統合**：ErisPulse ライフサイクルシステムとの深い統合
-- **SSL/TLS サポート**：HTTPS および WSS の安全な接続をサポート
-- **ホームエントリー**：モジュールがルートパス `/` にクイックアクセスボタンを登録でき、国際化に対応
+- **デコレータによるルーティング**：`@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` デコレータによる高速登録
+- **自動注入**：ルーティングハンドラは FastAPI クラスをインポートする必要がなく、フレームワークが自動的に抽象オブジェクトを注入
+- **ルーティンググループ**：プレフィックスとバージョン番号付きの `RouteGroup` をサポート
+- **ルーティングミドルウェア**：glob パターンマッチングによるリクエストのインターセプト
+- **リクエスト制限**：スライディングウィンドウによる制限
+- **CORS サポート**：ワンクリックで CORS を有効化
+- **セキュリティヘッダー**：自動的にセキュリティレスポンスヘッダーを追加
+- **自動ドキュメント**：OpenAPI に基づくインタラクティブなドキュメント
+- **WebSocket サポート**：WebSocket 接続の完全な管理、カスタム認証およびライフサイクルフック
+- **ライフサイクル統合**：ErisPulse ライフサイクルシステムとの深層統合
+- **SSL/TLS サポート**：HTTPS および WSS セキュア接続をサポート
+- **ホームエントリ**：モジュールをルートルーティング `/` に登録し、国際化をサポートするショートカットボタン
 
 ## 抽象型
 
-ErisPulse はサーバーサイドの抽象型を提供し、モジュールが FastAPI に直接依存する必要をなくします：
+ErisPulse はサーバーサイドの抽象型を提供し、モジュールが FastAPI に直接依存しないようにします。
 
-| 抽象型 | FastAPI 対応 | 説明 |
+| 抽象型 | FastAPI に対応 | 説明 |
 |---------|-------------|------|
-| `HttpRequest` | `fastapi.Request` | HTTP リクエストのラッパー。インターフェースは完全互換 |
-| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket 接続のラッパー。ライフサイクルフックを追加提供 |
-| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket 切断例外 |
+| `HttpRequest` | `fastapi.Request` | HTTP リクエストのラッパー、インターフェースは完全に互換性があります |
+| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket 接続のラッパー、ライフサイクルフックを追加 |
+| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket 接続切断の例外 |
 
-> `WebSocketConnection` は `WebSocketConnectionBase` を継承しており、クライアント WebSocket（`ClientWebSocket`）と同じ send/receive/iter/close インターフェースを共有します。クライアントとサーバーサイドの WebSocket で、同じビジネスロジックコードを使用できます。
+> `WebSocketConnection` は `WebSocketConnectionBase` を継承し、クライアント側の WebSocket (`ClientWebSocket`) と同じ send/receive/iter/close インターフェースを共有します。クライアントとサーバー側の WebSocket は同じビジネスロジックコードを使用できます。
 >
-> `.raw` プロパティから、基盤の FastAPI ネイティブオブジェクトにアクセスできます。FastAPI の型を直接使用するコードも完全に互換です。
+> `.raw` 属性を使用して、下層の FastAPI ネイティブオブジェクトにアクセスできます。FastAPI クラスを使用するコードも完全に互換性があります。
 
-## デコレータルーティング（推奨）
+## デコレータによるルーティング（推奨）
 
-### 登録形式：単一引数（推奨）と二引数
+### 登録形態：単引数（推奨）と二引数
 
-デコレータルーティングには 2 つの形式があり、**単一引数を推奨**します。コマンド / イベントトリガーと同様に、名前空間は現在のモジュールに自動的に帰属します：
+デコレータによるルーティングは二つの形態をサポートし、**単引数を推奨**します。これはコマンド/イベントトリガーと一致し、名前空間は自動的に現在のモジュールに属します。
 
 ```python
 from ErisPulse import router
 
-# 単一引数（推奨）：モジュール名/hello に自動帰属 → 実際のパスは /my_module/hello
+# 単引数（推奨）：自動的にモジュール名/hello → 実際のパス /my_module/hello
 @router.get("/hello")
 async def hello():
     return {"ok": True}
 
-# 単一引数 WebSocket：@ws("chat") → /my_module/chat
+# 単引数 WebSocket：@ws("chat") → /my_module/chat
 @router.ws("chat")
 async def chat(ws):
     ...
 
-# 二引数：モジュール名を明示的に指定（ルールは同じ。モジュールをまたぐコードやツールコードからの登録時に使用）
+# 二引数：明示的にモジュール名を指定（ルールは変更なし、モジュール間/ツールコードの登録時に使用）
 @router.get("other_module", "/info")
 async def get_info(request):
     return {"method": request.method, "path": str(request.url)}
 ```
 
 > [!NOTE]
-> 単一引数形式は、モジュール / アダプターの**読み込みコンテキスト**内での登録が必要です（読み込み時にフレームワークが帰属を注入済み）。
-> 帰属のないコンテキストで呼び出すと `ValueError` が発生し、モジュール名を明示的に渡すよう促されます。
+> 単引数の形態は、モジュール/アダプタの**ロードコンテキスト**内で登録する必要があります（ロード時にフレームワークが自動的に属するモジュールを注入）。
+> 属するコンテキストがない場所で呼び出すと、`ValueError` が発生し、明示的にモジュール名を渡すように通知されます。
 
 ### HTTP デコレータ
 
 ```python
 from ErisPulse import router, HttpRequest
 
-# 抽象型を明示的にアノテートすることも可能
+# 抽象型を明示的に注釈することもできます
 @router.post("/data")
 async def post_data(request: HttpRequest):
     data = await request.json()
@@ -86,22 +86,22 @@ async def delete_data(request):
     return {"deleted": True}
 ```
 
-> **自動注入ルール**：ハンドラーの最初の引数名が `request` または `req` で、FastAPI の型アノテーションがない場合、フレームワークが `HttpRequest` を自動的に注入します。引数がないハンドラーや、リクエスト以外の引数名を持つハンドラーには影響しません。
+> **自動注入ルール**：ハンドラの最初の引数が `request` または `req` であり、FastAPI の型注釈がない場合、フレームワークは自動的に `HttpRequest` を注入します。引数がない場合やリクエスト引数名でない場合は影響を受けません。
 
-#### レスポンス返却の規約（2.10+）
+#### レスポンス返却の約束（2.10+）
 
-ハンドラーの戻り値は**タプル規約**をサポートします（推奨の書き方で、ステータスコードを明確に制御できます）。dict/str/Response は従来どおりです：
+ハンドラの返り値は**タプルの約束**（推奨の書き方、明確にステータスコードを制御）をサポートし、dict/str/Response は従来通りです。
 
 ```python
 @router.post("/login")
 async def login(request):
     if not check_token(request):
         # (body, status_code) → 401 JSON
-        return {"error": "unauthorized", "message": "トークンが無効です"}, 401
-    # (body, status_code, headers) ではレスポンスヘッダーも付加できます
+        return {"error": "unauthorized", "message": "token が無効です"}, 401
+    # (body, status_code, headers) さらにレスポンスヘッダーも追加できます
     return {"user_id": 1}, 200, {"X-Request-Cost": "12ms"}
 
-# または respond() ヘルパー関数を使用（message は自動的にレスポンスボディにマージされます）
+# または respond() ヘルパー関数を使用（message はレスポンス本体に自動的にマージされます）
 from ErisPulse import respond
 
 @router.get("/me")
@@ -109,21 +109,21 @@ async def me():
     return respond({"user_id": 1}, status_code=200, message="ok")
 ```
 
-パス / クエリパラメータは FastAPI のネイティブアノテーションをそのまま使用できます（`item_id: int`、`page: int = 1` など）。
-ミドルウェアについては[ルートミドルウェア](#ルートミドルウェア)のセクションを参照してください。
+パス/クエリパラメータは FastAPI のネイティブ注釈を使用できます（`item_id: int`、`page: int = 1`）。
+ミドルウェアは[ルーティングミドルウェア](#ルーティングミドルウェア)のセクションを参照してください。
 
 ### WebSocket デコレータ
 
 ```python
 from ErisPulse import WebSocketConnection, WebSocketDisconnect
 
-# 基本 WebSocket（単一引数形式）
+# 基本的な WebSocket（単引数の形態）
 @router.ws("ws")
 async def websocket_handler(ws):
     async for msg in ws.iter_text():
         await ws.send_text(f"Echo: {msg}")
 
-# ライフサイクルフック付きの WebSocket
+# ライフサイクルフックを含む WebSocket
 @router.ws("/ws/chat")
 async def chat(ws: WebSocketConnection):
     @ws.on_disconnect
@@ -137,7 +137,7 @@ async def chat(ws: WebSocketConnection):
     async for msg in ws.iter_text():
         await ws.send_text(f"Echo: {msg}")
 
-# 認証付き WebSocket（トークンは環境変数から読み込み、コードにハードコードしないこと）
+# 認証付きの WebSocket（トークンは環境変数から読み込み、コード内にハードコードしないでください）
 import os
 
 async def ws_auth(ws: WebSocketConnection) -> bool:
@@ -152,22 +152,22 @@ async def secure_ws_handler(ws):
         await ws.send_text(f"Echo: {data}")
 ```
 
-> **注意**：WebSocket ハンドラーと認証ハンドラーも自動注入をサポートします。引数にアノテーションがなくても `WebSocketConnection` を取得できます。`fastapi.WebSocket` をアノテートすればネイティブオブジェクトも渡せますが、抽象型の使用を推奨します。
+> **注意**：WebSocket ハンドラと認証ハンドラも自動注入がサポートされます。`WebSocketConnection` を取得するには、パラメータの注釈を必要としません。`fastapi.WebSocket` を注釈することも可能です。ただし、抽象型を使用することを推奨します。
 
 ### 接続の自動登録（接続プール、2.10+）
 
-`@ws` / `@sse` で確立された接続は、**デフォルトで自動的に**フレームワークの接続プールに登録されます（`track=False` で無効化可能）。
-ハンドラー内では `ws.id` / `ws.join_group(...)` が利用でき、任意のモジュールは
-`connections.list(namespace=...)` で自身のモジュールの接続を確認したり、グループにブロードキャストできます。
-詳細は[接続プールとブロードキャスト](connections.md)を参照してください。
+`@ws` / `@sse` で確立された接続は**デフォルトでフレームワークの接続プールに自動登録**されます（`track=False` で無効化）：
+ハンドラ内では `ws.id` / `ws.join_group(...)` が使用でき、任意のモジュールで
+`connections.list(namespace=...)` を使用して本モジュールの接続を確認し、グループにブロードキャストできます。
+[接続プールとブロードキャスト](connections.md)を参照してください。
 
-## 従来の登録方式
+## 伝統的な登録方法
 
 ```python
 async def hello_handler(request):
     return {"message": "Hello World"}
 
-# 基本登録
+# 基本的な登録
 router.register_http_route(
     module_name="my_module",
     path="/hello",
@@ -175,14 +175,14 @@ router.register_http_route(
     methods=["GET"],
 )
 
-# レート制限とドキュメント情報付き
+# 限流とドキュメント情報付き
 router.register_http_route(
     module_name="my_module",
     path="/api/data",
     handler=data_handler,
     methods=["POST"],
     rate_limit="10/minute",
-    summary="データ API",
+    summary="データエンドポイント",
     tags=["API"],
 )
 ```
@@ -196,14 +196,14 @@ async def websocket_handler(ws: WebSocketConnection):
     async for msg in ws.iter_text():
         await ws.send_text(f"Echo: {msg}")
 
-# 基本登録
+# 基本的な登録
 router.register_websocket(
     module_name="my_module",
     path="/ws",
     handler=websocket_handler,
 )
 
-# 認証付き登録（推奨）
+# 認証付きの登録（推奨）
 async def auth_handler(ws: WebSocketConnection) -> bool:
     token = ws.query_params.get("token")
     return token == "secret"
@@ -216,21 +216,21 @@ router.register_websocket(
 )
 ```
 
-**パラメータ説明：**
+**パラメータの説明：**
 
 | パラメータ | 説明 | デフォルト値 |
 |------|------|--------|
 | `module_name` | モジュール名（必須） | - |
 | `path` | WebSocket パス | - |
-| `handler` | ハンドラー関数 | - |
-| `auth_handler` | 認証関数。`False` を返すと自動的に接続を閉じます | `None` |
+| `handler` | ハンドラ関数 | - |
+| `auth_handler` | 認証関数、`False` を返すと接続が自動的に切断されます | `None` |
 | `auto_accept` | 自動的に `accept()` するかどうか | `True` |
 
-> **推奨**：`auto_accept` を無効にする代わりに、`auth_handler` で接続の確認を行ってください。接続フローを完全に制御する必要がある場合にのみ `auto_accept=False` を設定してください。
+> **推奨**：`auth_handler` を使用して接続を確認するよう推奨します。`auto_accept` を `False` に設定するのは、接続フローを完全に制御する必要がある場合にのみ行います。
 
 ## WebSocket ライフサイクルフック
 
-`WebSocketConnection` は切断とエラーのコールバック登録を提供するため、手動の try/catch は不要です：
+`WebSocketConnection` は切断とエラーのコールバックを提供し、手動の try/catch が不要です。
 
 ```python
 from ErisPulse.Core import WebSocketConnection
@@ -242,7 +242,7 @@ async def my_ws(ws: WebSocketConnection):
     async def on_close(ws, reason="unknown"):
         print(f"切断理由: {reason}")
 
-    # 直接呼び出すことも可能
+    # 直接呼び出すこともできます
     async def on_err(ws, error=""):
         print(f"エラー: {error}")
     ws.on_error(on_err)
@@ -252,10 +252,10 @@ async def my_ws(ws: WebSocketConnection):
         await ws.send_text(f"Echo: {msg}")
 ```
 
-## ルートグループ
+## ルーティンググループ
 
 ```python
-# プレフィックス付きのルートグループを作成
+# プレフィックス付きのルーティンググループを作成
 group = router.group("my_module", prefix="/v1")
 
 @group.get("/users")
@@ -269,9 +269,9 @@ async def create_user(request):
 # 実際のパス: /my_module/v1/users
 ```
 
-## ルートミドルウェア
+## ルーティングミドルウェア
 
-ミドルウェアは glob パターンマッチングによるパス指定をサポートします：
+ミドルウェアは glob パターンでパスをマッチングできます：
 
 ```python
 @router.middleware("/my_module/*")
@@ -288,14 +288,14 @@ async def admin_middleware(request, call_next):
 
 ## リクエスト関連 ID（X-Request-ID）
 
-2.7.0 以降、すべての HTTP リクエストには、ログ / トレーシングを紐付けるための `X-Request-ID` 関連 ID が付与されます：
+2.7.0 から、各 HTTP リクエストには `X-Request-ID` という関連 ID が付与され、ログ / リレーショナルトレースの連携に使用されます：
 
-- **生成ルール**：クライアントが渡した `X-Request-ID` リクエストヘッダーを優先して使用します（分散トレーシングのシナリオ）。それ以外は UUID を自動生成
-- **レスポンスヘッダー**：レスポンスには `X-Request-ID` が書き戻され、クライアントがリクエストとログを対応付けやすくなります
-- **ライフサイクルイベント**：`server.request` と `server.response` イベントのデータに `request_id` フィールドが追加されました
+- **生成ルール**：クライアントが送信した `X-Request-ID` リクエストヘッダーを優先して使用（分散トレースの場面）。なければ、UUID を生成
+- **レスポンスヘッダー**：レスポンスには `X-Request-ID` を返し、クライアントがリクエストとログを対応させるのに便利
+- **ライフサイクルイベント**：`server.request` と `server.response` イベントのデータに `request_id` フィールドが追加
 
 ```python
-# モジュール内でリクエストイベントをリッスンし、request_id でリクエストとレスポンスを紐付ける
+# モジュールでリクエストイベントを監視し、request_id でリクエスト-レスポンスを連携
 @sdk.lifecycle.on("server.request")
 async def on_request(data):
     print(f"[{data['request_id']}] {data['method']} {data['path']}")
@@ -305,15 +305,15 @@ async def on_response(data):
     print(f"[{data['request_id']}] -> {data['status_code']}")
 ```
 
-クライアントは、サービス間トレーシングのために ID をカスタマイズできます：
+クライアントはトレースを跨いで ID をカスタマイズできます：
 
 ```bash
 curl -H "X-Request-ID: my-trace-id" http://localhost:8080/my_module/health
 ```
 
-## レート制限
+## リクエスト制限
 
-スライディングウィンドウアルゴリズムでルートのレート制限を行います：
+ルーティングに対してスライディングウィンドウアルゴリズムを使用してリクエスト制限を行います：
 
 ```python
 @router.get("my_module", "/limited", rate_limit="10/minute")
@@ -325,7 +325,7 @@ async def submit_data(request):
     return {"submitted": True}
 ```
 
-レート制限の形式：`{回数}/{時間ウィンドウ}`。例：`10/minute`、`100/hour`。
+リクエスト制限の形式：`{回数}/{時間ウィンドウ}`、例えば `10/minute`、`100/hour`。
 
 ## CORS 設定
 
@@ -337,7 +337,7 @@ router.setup_cors(
 )
 ```
 
-`config.toml` による設定も可能です：
+`config.toml` で設定することもできます：
 
 ```toml
 [router.cors]
@@ -354,7 +354,7 @@ router.setup_security_headers()
 
 `X-Content-Type-Options`、`X-Frame-Options`、`X-XSS-Protection` などのセキュリティヘッダーを自動的に追加します。
 
-`config.toml` による設定も可能です：
+`config.toml` で設定することもできます：
 
 ```toml
 [router.security]
@@ -363,7 +363,7 @@ enabled = true
 
 ## 自動ドキュメント
 
-Router はデフォルトで OpenAPI インタラクティブドキュメントを有効にしています：
+Router はデフォルトで OpenAPI によるインタラクティブなドキュメントを有効にします：
 
 ```python
 # ドキュメントを無効化
@@ -379,78 +379,78 @@ router.set_docs_info(
 
 ## パス処理
 
-ルートパスには、競合を避けるためにモジュール名が自動的にプレフィックスとして付加されます：
+ルーティングパスは自動的にモジュール名をプレフィックスとして追加し、衝突を回避します：
 
 ```python
-# パス "/api" をモジュール "my_module" に登録
-# 実際のアクセスパスは "/my_module/api"
+# モジュール "my_module" にパス "/api" を登録
+# 実際にアクセスするパスは "/my_module/api"
 router.register_http_route("my_module", "/api", handler)
 ```
 
 > [!WARNING]
-> ルートパス（モジュール名プレフィックスを含む）は**大文字小文字を区別**します。登録時のモジュール名の大文字小文字が、そのまま実際のパスに反映されます。モジュール名が `Test` の場合に `/api` を登録すると実際のパスは `/Test/api` となり、`/test/api` にアクセスすると 404 が返されます。
+> ルーティングパス（モジュール名のプレフィックスを含む）は**大文字小文字を区別**します。登録時のモジュール名が大文字小文字で、実際のパスもその通りです：モジュール名が `Test` の場合、`/api` を登録した実際のパスは `/Test/api` となり、`/test/api` にアクセスすると 404 が返されます。
 
-## システムルート
+## システムルーティング
 
-ルーティングマネージャーは、以下のシステムルートを自動的に提供します：
+ルーティングマネージャーは以下のシステムルーティングを自動的に提供します：
 
 ### ヘルスチェック
 
 ```
 GET /health
-# レスポンス:
+# 返り値:
 {"status": "ok", "service": "ErisPulse Router"}
 ```
 
-### ルートページ
+### ホームページ
 
 ```
 GET /
-# ErisPulse ブランドページを返します
+# ErisPulse ブランドページを返す
 ```
 
-ルートパス `/` には ErisPulse ブランドページが表示され、Dashboard の可用性を自動検出してエントリーボタンを追加します。
+ルートルーティング `/` は ErisPulse ブランドページを表示し、ダッシュボードの可用性を自動検出し、エントリーボタンを追加します。
 
-## ホームエントリー
+## ホームエントリ
 
-ルーティングマネージャーは、外部モジュールがルートパス `/` にクイックアクセスボタンを登録できるようにし、ユーザーが各モジュールの管理ページへ素早くアクセスできるようにします。
+ルーティングマネージャーは外部モジュールがルートルーティング `/` にショートカットエントリーボタンを登録できるようにし、ユーザーがモジュールの管理ページにすばやくアクセスできるようにします。
 
 ### エントリーの登録
 
 ```python
-# シンプルな登録
+# 簡単な登録
 router.register_home_entry(
-    name="マイパネル",
+    name="私のパネル",
     url="/mymodule/admin",
 )
 
-# アイコン付きの登録（SVG）
+# イコン付きの登録（SVG）
 router.register_home_entry(
     name="コンソール",
     url="/console",
     icon_svg='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>',
 )
 
-# 国際化対応の登録（プロジェクトの i18n 辞書形式）
+# 国際化をサポートする登録（i18n ディクショナリ形式）
 router.register_home_entry(
-    name={"i18n": "mymodule.home.entry", "default": "マイパネル"},
+    name={"i18n": "mymodule.home.entry", "default": "私のパネル"},
     url="/mymodule/admin",
 )
 ```
 
-**パラメータ説明：**
+**パラメータの説明：**
 
 | パラメータ | 型 | 説明 | 必須 |
 |------|------|------|------|
-| `name` | `str` / `dict` | ボタンの表示テキスト。`{"i18n": "key", "default": "テキスト"}` の辞書を渡すと国際化を使用 | はい |
-| `url` | `str` | ボタンのリンク先 URL | はい |
-| `icon_svg` | `str` | 任意の SVG アイコンマークアップ | いいえ |
+| `name` | `str` / `dict` | ボタンの表示テキスト；`{"i18n": "key", "default": "テキスト"}` ディクショナリを渡すと国際化を使用 | はい |
+| `url` | `str` | ボタンのリンク先 | はい |
+| `icon_svg` | `str` | オプションの SVG イコン | いいえ |
 
-### Dashboard 自動登録
+### ダッシュボードの自動登録
 
-`sdk.Dashboard` が利用可能と検出されると、ルーティングマネージャーはエントリーリストの先頭に Dashboard ボタンを自動的に追加します。手動での登録は不要です。
+`sdk.Dashboard` が利用可能であることが検出された場合、ルーティングマネージャーはダッシュボードボタンを自動的にエントリーリストの先頭に追加します。手動で登録する必要はありません。
 
-## ライフサイクル統合
+## ライフサイクルの統合
 
 ```python
 from ErisPulse.Core import lifecycle
@@ -461,21 +461,51 @@ async def on_server_start(event):
 
 @lifecycle.on("server.stop")
 async def on_server_stop(event):
-    print("サーバーを停止しています...")
+    print("サーバーが停止中です...")
 ```
 
-## ベストプラクティス
+## リクエストオブジェクトの高度なプロパティ
 
-1. **抽象型を優先して使用**：`fastapi.Request` / `fastapi.WebSocket` の代わりに `HttpRequest` / `WebSocketConnection` を使用し、ハードな依存を避けます
-2. **自動注入を活用**：ハンドラーの最初の引数を `request` または `req` と命名すれば、型アノテーションなしで `HttpRequest` を取得できます
-3. **単一引数形式を優先**：モジュール読み込みコンテキストでは単一引数形式を優先します（名前空間に自動帰属）。モジュールをまたぐコードやツールコードからの登録時は、モジュール名を明示的に渡します
-4. **ルートグループの使用**：同一モジュールの複数ルートは `group()` で整理します
-5. **セキュリティへの配慮**：機密性の高い操作には認証機構とセキュリティヘッダーを実装します
-6. **適切なレート制限**：高頻度でアクセスされる API にはレート制限を設定します
-7. **ライフサイクルフックの使用**：`@ws.on_disconnect` / `@ws.on_error` で WebSocket の例外を処理し、手動の try/catch を避けます
+`HttpRequest` は `method` / `query` / `headers` / `json` / `body` の基本的な面に加え、
+認証ミドルウェア、切断感知の長時間タスクなどでよく使用される高機能を透過します：
+
+| プロパティ / メソッド | 説明 |
+|-------------|------|
+| `request.session` | セッション dict（セッションミドルウェアが必要）、リクエスト間で保持 |
+| `request.auth` | 認証情報（認証ミドルウェアが書き込む） |
+| `request.user` | 現在のユーザーオブジェクト（認証ミドルウェアが書き込む） |
+| `request.url_for(name, **params)` | リバースルーティング：ルーティング名から URL を生成 |
+| `await request.is_disconnected()` | クライアントが切断されたかどうか（SSE / 長時間タスクのループ終了に使用） |
+| `request.raw` | 下層の Starlette リクエストオブジェクト（緊急対応、下節の互換性説明参照） |
+
+## 緊急対応：router.app
+
+`router.app` は下層の FastAPI アプリケーションインスタンスを直接公開します（遅延作成、最初のアクセス時に web スタックをロードし、コアルーティングを登録）。デコレータで表現できない状況をカバーします—サブアプリのマウント、グローバルミドルウェア、FastAPI エコシステムへの接続（StaticFiles / バックグラウンドタスクテンプレートなど）：
+
+```python
+from ErisPulse.Core import router
+from starlette.staticfiles import StaticFiles
+
+app = router.app
+app.mount("/static", StaticFiles(directory="static"), name="static")
+```
+
+> [!WARNING]
+> **互換性の境界**：`router.app` は緊急対応手段であり、安定した契約ではありません—取得するのは現在の web スタック（FastAPI/Starlette）のインスタンスです。フレームワークが将来的に下層の web 実装を移行した場合、`app` 内部構造（ミドルウェアの順序、Starlette 特定の API）に依存するコードは**破壊的変更**に遭遇します。優先的に `@router.http` / `HttpRequest` 抽象層（`request.raw` も同様）を使用し、`.app` の使用をモジュールの独立したアダプタ層に限定してください—移行時に 1 か所だけを変更すれば済みます。
+
+## 最適実践
+
+1. **優先的に抽象型を使用**：`fastapi.Request` / `fastapi.WebSocket` に依存しないように、`HttpRequest` / `WebSocketConnection` を使用
+2. **自動注入を活用**：ハンドラの最初の引数を `request` または `req` とし、型注釈なしでも `HttpRequest` を取得できるように
+3. **単引数形態を優先**：モジュールのロードコンテキストでは優先的に単引数形態（自動的に名前空間に属する）を使用；モジュール間/ツールコードの登録時は明示的にモジュール名を渡す
+4. **ルーティンググループの使用**：同一モジュールの複数のルーティングは `group()` で整理
+5. **セキュリティを考慮**：セキュアな操作には認証メカニズムとセキュリティヘッダーを実装
+6. **適切なリクエスト制限**：高頻度のエンドポイントにはリクエスト制限を設定
+7. **ライフサイクルフックの使用**：`@ws.on_disconnect` / `@ws.on_error` を使って WebSocket のエラーを処理し、手動の try/catch を避ける
+8. **緊急対応の使用を限定**：`router.app` / `request.raw` は抽象層で表現できない場合にのみ使用し、依存を 1 箇所に限定し、フレームワークの下層移行時の適応範囲を最小限に抑える
 
 ## 関連ドキュメント
 
-- [ネットワーククライアント](client.md) - 内蔵のリクエストクライアントでリクエストを送信
-- [モジュール開発ガイド](../developer-guide/modules/getting-started.md) - モジュールのルート登録について学ぶ
-- [ベストプラクティス](../developer-guide/modules/best-practices.md) - ルーティングの使用に関する推奨事項
+- [ネットワーククライアント](client.md) - 内部リクエストクライアントを使用してリクエストを送信
+- [モジュール開発ガイド](../developer-guide/modules/getting-started.md) - モジュールルーティング登録の理解
+- [最適実践](../developer-guide/modules/best-practices.md) - ルーティング使用の推奨事項

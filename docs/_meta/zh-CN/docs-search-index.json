@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1934,
+  "total_keywords": 1952,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -497,7 +497,7 @@
     "2. systemd（Linux 服务器）": [
       {
         "document": "advanced/startup.md",
-        "line": 416,
+        "line": 419,
         "level": 4,
         "title": "2. systemd（Linux 服务器）"
       }
@@ -957,7 +957,7 @@
     "3. Docker / docker-compose": [
       {
         "document": "advanced/startup.md",
-        "line": 429,
+        "line": 432,
         "level": 4,
         "title": "3. Docker / docker-compose"
       }
@@ -1365,7 +1365,7 @@
     "4. PM2（Node 生态运维）": [
       {
         "document": "advanced/startup.md",
-        "line": 443,
+        "line": 446,
         "level": 4,
         "title": "4. PM2（Node 生态运维）"
       }
@@ -1621,7 +1621,7 @@
     "5. supervisord": [
       {
         "document": "advanced/startup.md",
-        "line": 451,
+        "line": 454,
         "level": 4,
         "title": "5. supervisord"
       }
@@ -1989,7 +1989,7 @@
     "6. 纯 Python 自定义监督者": [
       {
         "document": "advanced/startup.md",
-        "line": 460,
+        "line": 463,
         "level": 4,
         "title": "6. 纯 Python 自定义监督者"
       }
@@ -3606,6 +3606,14 @@
         "title": "OneBot12消息支持"
       }
     ],
+    "Oopz 平台特性文档": [
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 1,
+        "level": 1,
+        "title": "Oopz 平台特性文档"
+      }
+    ],
     "Opcode 说明": [
       {
         "document": "platform-guide/discord.md",
@@ -3923,7 +3931,7 @@
     "Send 链式调用": [
       {
         "document": "platform-guide/README.md",
-        "line": 46,
+        "line": 47,
         "level": 3,
         "title": "Send 链式调用"
       }
@@ -4732,6 +4740,14 @@
         "title": "alt_message 渲染约定"
       }
     ],
+    "bind_owner：把归属缝进回调与线程入口": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 53,
+        "level": 3,
+        "title": "bind_owner：把归属缝进回调与线程入口"
+      }
+    ],
     "call_api 方法": [
       {
         "document": "api-reference/adapter-system.md",
@@ -4872,6 +4888,14 @@
         "line": 272,
         "level": 3,
         "title": "detail_type 映射"
+      }
+    ],
+    "dict_to_dataclass：dict → 类型安全对象": [
+      {
+        "document": "advanced/runtime.md",
+        "line": 34,
+        "level": 2,
+        "title": "dict_to_dataclass：dict → 类型安全对象"
       }
     ],
     "discord_embed 消息段": [
@@ -5128,6 +5152,14 @@
         "line": 307,
         "level": 3,
         "title": "run"
+      }
+    ],
+    "runtime 工具带": [
+      {
+        "document": "advanced/runtime.md",
+        "line": 1,
+        "level": 1,
+        "title": "runtime 工具带"
       }
     ],
     "save() / resume() / clear_saved()": [
@@ -5475,7 +5507,7 @@
     "三层资源治理": [
       {
         "document": "advanced/ownership.md",
-        "line": 232,
+        "line": 258,
         "level": 3,
         "title": "三层资源治理"
       }
@@ -5671,7 +5703,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 755,
+        "line": 767,
         "level": 2,
         "title": "下一步"
       },
@@ -5714,6 +5746,14 @@
         "line": 371,
         "level": 3,
         "title": "不支持的标准动作"
+      }
+    ],
+    "不支持的标准动作（retcode=10002）": [
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 79,
+        "level": 3,
+        "title": "不支持的标准动作（retcode=10002）"
       }
     ],
     "不支持的类型处理": [
@@ -5759,7 +5799,7 @@
     "与 CLI 的联动": [
       {
         "document": "user-guide/configuration.md",
-        "line": 515,
+        "line": 527,
         "level": 4,
         "title": "与 CLI 的联动"
       }
@@ -5791,7 +5831,7 @@
     "与其他系统的关系": [
       {
         "document": "advanced/interaction.md",
-        "line": 307,
+        "line": 327,
         "level": 2,
         "title": "与其他系统的关系"
       }
@@ -5799,7 +5839,7 @@
     "与其它机制的边界": [
       {
         "document": "advanced/transcript.md",
-        "line": 177,
+        "line": 202,
         "level": 2,
         "title": "与其它机制的边界"
       }
@@ -5839,7 +5879,7 @@
     "严格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 486,
+        "line": 498,
         "level": 3,
         "title": "严格模式"
       }
@@ -5933,7 +5973,7 @@
     "主动 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 471,
+        "line": 483,
         "level": 3,
         "title": "主动 GC 配置"
       }
@@ -6053,7 +6093,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 352,
+        "line": 383,
         "level": 2,
         "title": "事件处理"
       }
@@ -6069,7 +6109,7 @@
     "事件处理器注册": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 354,
+        "line": 385,
         "level": 3,
         "title": "事件处理器注册"
       }
@@ -6077,7 +6117,7 @@
     "事件处理器生命周期": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 370,
+        "line": 401,
         "level": 3,
         "title": "事件处理器生命周期"
       }
@@ -6164,6 +6204,14 @@
         "title": "事件字段修正"
       }
     ],
+    "事件字段完备性": [
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 47,
+        "level": 3,
+        "title": "事件字段完备性"
+      }
+    ],
     "事件字段注入": [
       {
         "document": "platform-guide/onebot12.md",
@@ -6213,7 +6261,7 @@
     "事件循环边界": [
       {
         "document": "advanced/ownership.md",
-        "line": 240,
+        "line": 266,
         "level": 3,
         "title": "事件循环边界"
       }
@@ -6309,7 +6357,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 174,
+        "line": 175,
         "level": 3,
         "title": "事件监听"
       }
@@ -6463,7 +6511,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 568,
+        "line": 580,
         "level": 2,
         "title": "事件配置"
       }
@@ -6511,7 +6559,7 @@
     "事务使用": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 342,
+        "line": 373,
         "level": 3,
         "title": "事务使用"
       }
@@ -6763,7 +6811,7 @@
     "会话收件箱配置（transcript）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 599,
+        "line": 611,
         "level": 2,
         "title": "会话收件箱配置（transcript）"
       }
@@ -6790,6 +6838,14 @@
         "line": 180,
         "level": 4,
         "title": "会话标识"
+      }
+    ],
+    "会话模型": [
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 22,
+        "level": 2,
+        "title": "会话模型"
       }
     ],
     "传统注册方式": [
@@ -6843,7 +6899,7 @@
     "作用域配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 658,
+        "line": 670,
         "level": 2,
         "title": "作用域配置（scope）"
       }
@@ -7352,6 +7408,14 @@
         "title": "兼容性契约（消费方必须遵守）"
       }
     ],
+    "内存诊断": [
+      {
+        "document": "advanced/performance.md",
+        "line": 66,
+        "level": 2,
+        "title": "内存诊断"
+      }
+    ],
     "内容列表": [
       {
         "document": "developer-guide/README.md",
@@ -7423,7 +7487,7 @@
     "内部实现：归属如何工作": [
       {
         "document": "advanced/ownership.md",
-        "line": 296,
+        "line": 322,
         "level": 2,
         "title": "内部实现：归属如何工作"
       }
@@ -7699,7 +7763,7 @@
     "前置知识": [
       {
         "document": "advanced/README.md",
-        "line": 71,
+        "line": 72,
         "level": 2,
         "title": "前置知识"
       }
@@ -7855,7 +7919,7 @@
     "卸载/禁用清理序列": [
       {
         "document": "advanced/ownership.md",
-        "line": 89,
+        "line": 115,
         "level": 2,
         "title": "卸载/禁用清理序列"
       }
@@ -7947,7 +8011,7 @@
     "参与贡献": [
       {
         "document": "platform-guide/README.md",
-        "line": 296,
+        "line": 297,
         "level": 2,
         "title": "参与贡献"
       }
@@ -7991,7 +8055,7 @@
     "参考链接": [
       {
         "document": "platform-guide/README.md",
-        "line": 284,
+        "line": 285,
         "level": 2,
         "title": "参考链接"
       }
@@ -8047,7 +8111,7 @@
     "发布你的模块": [
       {
         "document": "developer-guide/README.md",
-        "line": 86,
+        "line": 89,
         "level": 2,
         "title": "发布你的模块"
       }
@@ -8250,6 +8314,12 @@
         "title": "发送方法返回值"
       },
       {
+        "document": "platform-guide/oopz.md",
+        "line": 110,
+        "level": 2,
+        "title": "发送方法返回值"
+      },
+      {
         "document": "platform-guide/snowluma.md",
         "line": 441,
         "level": 2,
@@ -8319,7 +8389,7 @@
     "发送规则装饰器": [
       {
         "document": "platform-guide/README.md",
-        "line": 106,
+        "line": 107,
         "level": 4,
         "title": "发送规则装饰器"
       }
@@ -8335,7 +8405,7 @@
     "取消时序（模块卸载）": [
       {
         "document": "advanced/ownership.md",
-        "line": 331,
+        "line": 357,
         "level": 3,
         "title": "取消时序（模块卸载）"
       }
@@ -8343,7 +8413,7 @@
     "取消链（任务登记表）": [
       {
         "document": "advanced/ownership.md",
-        "line": 318,
+        "line": 344,
         "level": 3,
         "title": "取消链（任务登记表）"
       }
@@ -8653,7 +8723,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 570,
+        "line": 582,
         "level": 3,
         "title": "命令配置"
       }
@@ -8672,6 +8742,14 @@
         "line": 159,
         "level": 4,
         "title": "响应"
+      }
+    ],
+    "响应结构": [
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 43,
+        "level": 3,
+        "title": "响应结构"
       }
     ],
     "响应结构调整": [
@@ -8819,7 +8897,7 @@
     "国际化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 618,
+        "line": 630,
         "level": 2,
         "title": "国际化配置"
       }
@@ -8939,7 +9017,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 329,
+        "line": 360,
         "level": 3,
         "title": "基本使用"
       }
@@ -8995,6 +9073,12 @@
       },
       {
         "document": "platform-guide/onebot12.md",
+        "line": 14,
+        "level": 2,
+        "title": "基本信息"
+      },
+      {
+        "document": "platform-guide/oopz.md",
         "line": 14,
         "level": 2,
         "title": "基本信息"
@@ -9311,7 +9395,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 269,
+        "line": 300,
         "level": 3,
         "title": "声明式翻译键（v2.7.0+）"
       }
@@ -9732,6 +9816,14 @@
         "title": "好友添加"
       }
     ],
+    "好友申请处理": [
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 104,
+        "level": 2,
+        "title": "好友申请处理"
+      }
+    ],
     "好友申请处理（4.6.0 新增）": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -9907,7 +9999,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 327,
+        "line": 358,
         "level": 2,
         "title": "存储系统"
       }
@@ -9923,7 +10015,7 @@
     "存储配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 519,
+        "line": 531,
         "level": 2,
         "title": "存储配置"
       }
@@ -10325,7 +10417,7 @@
     "嵌套生命周期（ownership.nest）": [
       {
         "document": "advanced/ownership.md",
-        "line": 146,
+        "line": 172,
         "level": 2,
         "title": "嵌套生命周期（ownership.nest）"
       }
@@ -10353,7 +10445,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 376,
+        "line": 407,
         "level": 3,
         "title": "工作原理"
       },
@@ -10409,7 +10501,7 @@
     "工具模块指南：托管其它模块的句柄": [
       {
         "document": "advanced/ownership.md",
-        "line": 403,
+        "line": 429,
         "level": 2,
         "title": "工具模块指南：托管其它模块的句柄"
       }
@@ -10660,6 +10752,14 @@
         "title": "平台扩展动作（call / Api 方法）"
       }
     ],
+    "平台扩展动作（oopz.*）": [
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 83,
+        "level": 3,
+        "title": "平台扩展动作（oopz.*）"
+      }
+    ],
     "平台扩展字段": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -10877,7 +10977,7 @@
     "开发模式": [
       {
         "document": "developer-guide/README.md",
-        "line": 67,
+        "line": 70,
         "level": 3,
         "title": "开发模式"
       }
@@ -10953,7 +11053,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 399,
+        "line": 430,
         "level": 3,
         "title": "异常捕获"
       }
@@ -10983,7 +11083,7 @@
     "异步发送与结果处理": [
       {
         "document": "platform-guide/README.md",
-        "line": 91,
+        "line": 92,
         "level": 4,
         "title": "异步发送与结果处理"
       }
@@ -11037,7 +11137,7 @@
     "归因链（contextvar 传播）": [
       {
         "document": "advanced/ownership.md",
-        "line": 302,
+        "line": 328,
         "level": 3,
         "title": "归因链（contextvar 传播）"
       }
@@ -11045,7 +11145,7 @@
     "归属权统一门面（ownership）": [
       {
         "document": "advanced/ownership.md",
-        "line": 117,
+        "line": 143,
         "level": 2,
         "title": "归属权统一门面（ownership）"
       }
@@ -11061,7 +11161,7 @@
     "归属资源全景": [
       {
         "document": "advanced/ownership.md",
-        "line": 53,
+        "line": 79,
         "level": 2,
         "title": "归属资源全景"
       }
@@ -11325,7 +11425,7 @@
     "懒加载机制": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 374,
+        "line": 405,
         "level": 2,
         "title": "懒加载机制"
       }
@@ -11386,6 +11486,14 @@
         "title": "手动创建项目"
       }
     ],
+    "手动归档与落盘（append / flush）": [
+      {
+        "document": "advanced/transcript.md",
+        "line": 146,
+        "level": 3,
+        "title": "手动归档与落盘（append / flush）"
+      }
+    ],
     "手动恢复（不用自动机制时）": [
       {
         "document": "advanced/conversation.md",
@@ -11413,7 +11521,7 @@
     "手动读取配置（已废弃）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 310,
+        "line": 341,
         "level": 3,
         "title": "手动读取配置（已废弃）"
       }
@@ -11573,7 +11681,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 141,
+        "line": 142,
         "level": 4,
         "title": "批量构建模式（Build）"
       }
@@ -11723,7 +11831,7 @@
     "排查思路": [
       {
         "document": "advanced/ownership.md",
-        "line": 342,
+        "line": 368,
         "level": 3,
         "title": "排查思路"
       }
@@ -11731,7 +11839,7 @@
     "排查清单": [
       {
         "document": "advanced/ownership.md",
-        "line": 274,
+        "line": 300,
         "level": 3,
         "title": "排查清单"
       }
@@ -11755,7 +11863,7 @@
     "推荐写法": [
       {
         "document": "advanced/ownership.md",
-        "line": 351,
+        "line": 377,
         "level": 3,
         "title": "推荐写法"
       }
@@ -11884,6 +11992,12 @@
         "title": "支持的标准动作"
       },
       {
+        "document": "platform-guide/oopz.md",
+        "line": 75,
+        "level": 3,
+        "title": "支持的标准动作"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 345,
         "level": 3,
@@ -11930,6 +12044,12 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 121,
+        "level": 2,
+        "title": "支持的消息发送类型"
+      },
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 61,
         "level": 2,
         "title": "支持的消息发送类型"
       },
@@ -12106,6 +12226,12 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 7,
+        "level": 2,
+        "title": "文档信息"
+      },
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 3,
         "level": 2,
         "title": "文档信息"
       },
@@ -12433,7 +12559,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 414,
+        "line": 445,
         "level": 3,
         "title": "日志记录"
       }
@@ -12531,7 +12657,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 467,
+        "line": 502,
         "level": 2,
         "title": "最佳实践"
       },
@@ -12812,6 +12938,12 @@
     ],
     "标准 API 动作（ApiDSL）": [
       {
+        "document": "platform-guide/oopz.md",
+        "line": 73,
+        "level": 2,
+        "title": "标准 API 动作（ApiDSL）"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 318,
         "level": 2,
@@ -12905,7 +13037,7 @@
     "标准事件格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 231,
+        "line": 232,
         "level": 3,
         "title": "标准事件格式"
       }
@@ -12976,6 +13108,14 @@
         "line": 73,
         "level": 2,
         "title": "标准化对齐"
+      }
+    ],
+    "标准化对齐（0.1.0）": [
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 30,
+        "level": 2,
+        "title": "标准化对齐（0.1.0）"
       }
     ],
     "标准化对齐（0.1.2）": [
@@ -13083,7 +13223,7 @@
     "标准响应格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 252,
+        "line": 253,
         "level": 3,
         "title": "标准响应格式"
       }
@@ -13107,7 +13247,7 @@
     "标准格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 226,
+        "line": 227,
         "level": 2,
         "title": "标准格式"
       }
@@ -13343,7 +13483,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 444,
+        "line": 456,
         "level": 2,
         "title": "框架配置"
       }
@@ -13441,7 +13581,7 @@
     "模块作者指南": [
       {
         "document": "advanced/ownership.md",
-        "line": 349,
+        "line": 375,
         "level": 2,
         "title": "模块作者指南"
       }
@@ -13449,7 +13589,7 @@
     "模块侧守则": [
       {
         "document": "advanced/ownership.md",
-        "line": 257,
+        "line": 283,
         "level": 3,
         "title": "模块侧守则"
       }
@@ -13629,7 +13769,7 @@
     "模块配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 629,
+        "line": 641,
         "level": 2,
         "title": "模块配置"
       }
@@ -13739,7 +13879,7 @@
     "注册时机 → 归属结果对照表": [
       {
         "document": "advanced/ownership.md",
-        "line": 387,
+        "line": 413,
         "level": 3,
         "title": "注册时机 → 归属结果对照表"
       }
@@ -13775,7 +13915,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 373,
+        "line": 399,
         "level": 3,
         "title": "注意事项"
       },
@@ -14083,7 +14223,7 @@
     "消息发送失败": [
       {
         "document": "platform-guide/README.md",
-        "line": 269,
+        "line": 270,
         "level": 4,
         "title": "消息发送失败"
       }
@@ -14091,7 +14231,7 @@
     "消息发送成功": [
       {
         "document": "platform-guide/README.md",
-        "line": 253,
+        "line": 254,
         "level": 4,
         "title": "消息发送成功"
       }
@@ -14315,7 +14455,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 586,
+        "line": 598,
         "level": 3,
         "title": "消息配置"
       }
@@ -14323,7 +14463,7 @@
     "深入与排查": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 431,
+        "line": 462,
         "level": 3,
         "title": "深入与排查"
       }
@@ -14411,7 +14551,7 @@
     "热重载失败回滚": [
       {
         "document": "advanced/ownership.md",
-        "line": 185,
+        "line": 211,
         "level": 2,
         "title": "热重载失败回滚"
       }
@@ -14419,7 +14559,7 @@
     "热重载边界": [
       {
         "document": "advanced/ownership.md",
-        "line": 210,
+        "line": 236,
         "level": 2,
         "title": "热重载边界"
       }
@@ -14476,6 +14616,12 @@
       {
         "document": "platform-guide/matrix.md",
         "line": 241,
+        "level": 2,
+        "title": "特有事件类型"
+      },
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 123,
         "level": 2,
         "title": "特有事件类型"
       },
@@ -14859,7 +15005,7 @@
       },
       {
         "document": "advanced/interaction.md",
-        "line": 314,
+        "line": 334,
         "level": 2,
         "title": "相关文档"
       },
@@ -14889,19 +15035,25 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 452,
+        "line": 478,
         "level": 2,
         "title": "相关文档"
       },
       {
         "document": "advanced/performance.md",
-        "line": 66,
+        "line": 89,
         "level": 2,
         "title": "相关文档"
       },
       {
         "document": "advanced/router.md",
-        "line": 477,
+        "line": 513,
+        "level": 2,
+        "title": "相关文档"
+      },
+      {
+        "document": "advanced/runtime.md",
+        "line": 64,
         "level": 2,
         "title": "相关文档"
       },
@@ -14925,7 +15077,7 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 478,
+        "line": 481,
         "level": 2,
         "title": "相关文档"
       },
@@ -14937,7 +15089,7 @@
       },
       {
         "document": "advanced/transcript.md",
-        "line": 184,
+        "line": 209,
         "level": 2,
         "title": "相关文档"
       },
@@ -14967,7 +15119,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 90,
+        "line": 93,
         "level": 2,
         "title": "相关文档"
       },
@@ -15003,7 +15155,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 425,
+        "line": 456,
         "level": 2,
         "title": "相关文档"
       },
@@ -15079,7 +15231,7 @@
     "立即加载": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 384,
+        "line": 415,
         "level": 3,
         "title": "立即加载"
       }
@@ -15353,7 +15505,7 @@
     "统一事件覆写配置（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 708,
+        "line": 720,
         "level": 2,
         "title": "统一事件覆写配置（event.overrides）"
       }
@@ -15393,7 +15545,7 @@
     "继续学习路径": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 427,
+        "line": 458,
         "level": 3,
         "title": "继续学习路径"
       },
@@ -15563,9 +15715,17 @@
     "能力边界": [
       {
         "document": "advanced/ownership.md",
-        "line": 216,
+        "line": 242,
         "level": 3,
         "title": "能力边界"
+      }
+    ],
+    "能力速查表": [
+      {
+        "document": "advanced/runtime.md",
+        "line": 12,
+        "level": 2,
+        "title": "能力速查表"
       }
     ],
     "能力速览": [
@@ -15907,7 +16067,7 @@
     "设计边界：哪些资源不随卸载清理": [
       {
         "document": "advanced/ownership.md",
-        "line": 281,
+        "line": 307,
         "level": 2,
         "title": "设计边界：哪些资源不随卸载清理"
       }
@@ -16084,6 +16244,14 @@
         "title": "请求审批（approve / reject）"
       }
     ],
+    "请求对象高阶属性": [
+      {
+        "document": "advanced/router.md",
+        "line": 467,
+        "level": 2,
+        "title": "请求对象高阶属性"
+      }
+    ],
     "请求操作": [
       {
         "document": "standards/README.md",
@@ -16177,7 +16345,7 @@
     "调试技巧": [
       {
         "document": "developer-guide/README.md",
-        "line": 75,
+        "line": 78,
         "level": 3,
         "title": "调试技巧"
       }
@@ -16185,7 +16353,7 @@
     "豁免清单": [
       {
         "document": "user-guide/configuration.md",
-        "line": 503,
+        "line": 515,
         "level": 4,
         "title": "豁免清单"
       }
@@ -16823,7 +16991,7 @@
     "适用对象": [
       {
         "document": "advanced/README.md",
-        "line": 63,
+        "line": 64,
         "level": 2,
         "title": "适用对象"
       }
@@ -17002,6 +17170,14 @@
         "title": "适配器：注册平台扩展方法"
       }
     ],
+    "逃生舱：router.app": [
+      {
+        "document": "advanced/router.md",
+        "line": 481,
+        "level": 2,
+        "title": "逃生舱：router.app"
+      }
+    ],
     "选型指南": [
       {
         "document": "showcase/README.md",
@@ -17075,7 +17251,7 @@
     "通用接口": [
       {
         "document": "platform-guide/README.md",
-        "line": 44,
+        "line": 45,
         "level": 2,
         "title": "通用接口"
       }
@@ -17450,6 +17626,14 @@
         "line": 130,
         "level": 2,
         "title": "配置热更新"
+      }
+    ],
+    "配置热更新（on_config_update）": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 269,
+        "level": 3,
+        "title": "配置热更新（on_config_update）"
       }
     ],
     "配置示例": [
@@ -17903,7 +18087,7 @@
     "链路追踪：trace-id": [
       {
         "document": "advanced/interaction.md",
-        "line": 296,
+        "line": 316,
         "level": 2,
         "title": "链路追踪：trace-id"
       }
@@ -17929,7 +18113,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 397,
+        "line": 428,
         "level": 2,
         "title": "错误处理"
       },
@@ -17980,6 +18164,12 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 440,
+        "level": 3,
+        "title": "错误码规范"
+      },
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 32,
         "level": 3,
         "title": "错误码规范"
       },
@@ -18094,6 +18284,14 @@
         "title": "阅读纪律"
       }
     ],
+    "降级语义": [
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 55,
+        "level": 3,
+        "title": "降级语义"
+      }
+    ],
     "需求描述模板": [
       {
         "document": "ai-support/README.md",
@@ -18183,7 +18381,7 @@
     "风险与审计：放开限制前必读": [
       {
         "document": "advanced/transcript.md",
-        "line": 146,
+        "line": 171,
         "level": 2,
         "title": "风险与审计：放开限制前必读"
       }

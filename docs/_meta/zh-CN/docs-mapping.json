@@ -256,7 +256,7 @@
     "平台特性指南": {
       "description": "各平台特性和适配器说明",
       "icon": "fa-plug",
-      "count": 21,
+      "count": 22,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures 文档",
@@ -361,6 +361,12 @@
           "icon": "fa-plug"
         },
         {
+          "title": "Oopz 平台特性文档",
+          "path": "platform-guide/oopz.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
           "title": "Sandbox 平台特性文档",
           "path": "platform-guide/sandbox.md",
           "level": 1,
@@ -422,7 +428,7 @@
     "高级主题": {
       "description": "深入理解框架的高级特性",
       "icon": "fa-fire",
-      "count": 20,
+      "count": 21,
       "documents": [
         {
           "title": "高级主题",
@@ -529,6 +535,12 @@
         {
           "title": "性能基准与调优",
           "path": "advanced/performance.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "runtime 工具带",
+          "path": "advanced/runtime.md",
           "level": 1,
           "icon": "fa-fire"
         },

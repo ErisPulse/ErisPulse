@@ -63,6 +63,25 @@ python tests/performance/benchmark.py --backend mysql
 4. **Hot paths are already optimized** (since 2.9, no configuration required): transcript batch flushing, i18n caching, log level guards, matcher pre-compilation, and unified flushing of deferred config writes
 5. **Command governance state caps**: cooldown/rate-limit/quota state tables are capped at 4096 entries (oldest entries evicted when exceeded); no adjustment is needed even for deployments at very large group scales
 
+## Memory Diagnostics
+
+When troubleshooting "memory consumption increases over time," take a snapshot with a label before and after the suspected code path. Snapshots with the same label are automatically compared to calculate the increment (using both RSS and tracemalloc metrics):
+
+```python
+from ErisPulse.runtime import log_snapshot, snapshot
+
+class MyModule(BaseModule):
+    async def on_load(self, event):
+        snapshot("MyModule.load")            # Collects and returns a dict (including RSS delta by label)
+
+    async def on_unload(self, event):
+        log_snapshot("MyModule.unload")      # Collects with the same metric and logs at TRACE level
+```
+
+- `snapshot(label)` returns a machine-readable dict, suitable for assertions and reporting; `log_snapshot(label)` directly logs at TRACE level, suitable for temporary troubleshooting
+- Label snapshots are bounded in memory and will not leak with repeated calls; combined with process metrics from the `/metrics` endpoint, they can be used for long-term trend analysis
+- Residual memory growth after module unload usually indicates missing ownership (see the `bind_owner` background task entry in the [Ownership System](ownership.md))
+
 ## Related Documentation
 
 - **Runtime Metrics Monitoring**: `/health` (instance identity / event counters) and `/metrics` (Prometheus text, enabled via `ErisPulse.server.metrics_enabled`) — see the [Deployment Guide](../user-guide/deployment.md)

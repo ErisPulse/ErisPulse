@@ -1,13 +1,14 @@
 # Module Core Concepts
 
 > [!NOTE]
-> **L1 Core Must-Read** — one of the five core documents in the homepage's "Reading Path"; essential for module development.
+> **L1 Core Must-Read** — one of the five core documents in the "Reading Path" on the homepage, essential for module development.
 
-This document explains the complete lifecycle of a module from loading to unloading, along with how to use declarative configuration and storage — what the framework automatically does for you and what you only need to write, so you'll know exactly where you stand after reading.
+
+This document explains the complete lifecycle of a module from load to unload, along with declarative configuration and storage usage — what the framework does automatically for you and what you only need to write yourself, so you'll know exactly where you stand after reading.
 
 ## Module Lifecycle
 
-### Load Strategy
+### Loading Strategy
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -16,24 +17,24 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """Return module load strategy"""
+        """Returns the module loading strategy"""
         return ModuleLoadStrategy(
-            lazy_load=True,   # Lazy load or immediate load
-            priority=0,       # Load priority (higher value loads earlier)
-            depends=["OtherModule"]  # Optional: declare dependencies on other modules
+            lazy_load=True,   # Whether to lazy-load or load immediately
+            priority=0,       # Loading priority (higher values load first)
+            depends=["OtherModule"]  # Optional: declare other modules this one depends on
         )
 ```
 
-> If modules declared in `depends` are not registered, the current module will be skipped and a warning is logged. The loading order is determined by topological sorting, with modules at the same level sorted by `priority` in descending order.
+> If a module declared in `depends` is not registered, the current module will be skipped and a warning logged. Load order is determined by topological sorting; within the same tier, modules are sorted by `priority` in descending order.
 
 > [!NOTE]
-> **Cascading Unload / Cascading Reload** (ErisPulse **2.8.0+**): When unloading a module that is depended on by other modules, the dependent modules will be **cascaded unloaded first** (with logs indicating the cascade chain); during hot reload of any module (local plugin / runtime registered / PyPI installed package), dependent modules will also be **cascaded reloaded**, avoiding dependent modules holding invalid instance references and continuing to run. Circular dependencies will be rejected at load time with a `RuntimeError`.
+> **Cascade unload / cascade reload** (ErisPulse **2.8.0+**): when unloading a module that other modules depend on, the modules depending on it are **cascade-unloaded first** (the logs explain the cascade chain); when hot-reloading any module (local plugin / runtime-registered / PyPI-installed package), the modules depending on it are likewise **cascade-reloaded**, preventing dependents from continuing to run while holding stale instance references. Declaring circular dependencies is rejected at load time with a `RuntimeError`.
 >
-> **Reload is Full Reload** (ErisPulse **2.11.0+**): `reload()` by default clears the import cache by top-level package name and re-imports dependent code, performs syntax pre-check before unloading (fails to reject unloading, old instances continue to serve), and verifies code identity after success (false reload warning / `stale` flag); load failure can be directly queried via `sdk.module.last_error(name)` on-site (including traceback).
+> **reload means a full reload** (ErisPulse **2.11.0+**): `reload()` by default clears the import cache by top-level package name and re-imports dependent code, runs an automatic syntax pre-check before unloading (on failure the unload is rejected and the old instance keeps serving), and after success verifies code identity (fake-reload warnings / `stale` markers); a failed load can be inspected directly via `sdk.module.last_error(name)` (including the traceback).
 
 ### on_load Method
 
-Called when the module is loaded, used for initializing resources and registering event handlers:
+Called when the module loads, used to initialize resources and register event handlers:
 
 ```python
 async def on_load(self, event):
@@ -42,126 +43,126 @@ async def on_load(self, event):
     async def hello_handler(event):
         await event.reply("Hello!")
     
-    # Use SDK built-in HTTP client (automatically manages connection pool, no need to manually create session)
+    # Use the SDK built-in HTTP client (connection pool managed automatically, no need to manually create a session)
     # Send requests via sdk.client
 ```
 
 ### on_unload Method
 
-Called when the module is unloaded, used for cleaning up resources:
+Called when the module unloads, used to clean up resources:
 
 ```python
 async def on_unload(self, event):
     # Clean up custom resources
-    # sdk.client is managed by the framework, no need to manually close
+    # sdk.client is managed by the framework, no need to close it manually
     
     # Cancel event handlers (handled automatically by the framework)
     self.logger.info("Module unloaded")
 ```
 
-> Creation and cleanup of background tasks (`self.spawn()` / framework's default cancellation) are detailed in [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
+> For creation and cleanup of background tasks (`self.spawn()` / framework fallback cancellation), see [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-auto-cancellation).
 
 ### on_before_unload Method
 
 > [!NOTE]
 > This hook requires ErisPulse **2.11.0+**.
 
-An optional hook triggered in the **first step** of the unload pipeline (before `on_unload` and resource cleanup) — at this point, all module resources are still intact, suitable for saving state to `sdk.storage` before unloading / sleeping / reloading, which can be restored in the next `on_load` (lazy loading resumes based on this): 
+An optional hook triggered as the **first step** of the unload pipeline (before `on_unload` and resource reclamation) — at this point all of the module's resources are still intact, making it ideal for saving state to `sdk.storage` before unload / dormancy / reload so the next `on_load` can restore it (lazy-load dormancy's state continuity is based on this):
 
 ```python
 async def on_before_unload(self, event):
-    # event["reason"] indicates the reason: unload / reload / disable / cascade / dormant
+    # event["reason"] indicates the intent: unload / reload / disable / cascade / dormant
     if event["reason"] in ("reload", "dormant"):
         await self.state.aset("snapshot", self.collect_state())
 ```
 
-Failure of the hook only logs a warning and does not block the unload process; modules without this hook behave unchanged. The semantics of sleeping / waking are detailed in [Lazy Loading Dormancy](../../advanced/lazy-loading.md#lazy-loading-dormancy-dormant_after).
+A hook failure only logs a warning and does not block the unload process; modules that do not declare this hook behave unchanged. For dormancy / wake-up semantics, see [Lazy-Load Dormancy](../../advanced/lazy-loading.md#lazy-load-dormancy-dormant_after).
 
-### Unload vs. Purge Unload
+### Unload and Full Unload (purge)
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-`unload()` by default only **unloads** (unloads instance and resources), but retains registration stubs (module class and metadata) — the module can be rediscovered by `discover` and re-instantiated with `load()`, no need to re-register.
+By default, `unload()` only **cancels loading** (unloads the instance and resources) but keeps the registration stub (module class and metadata) — the module can still be rediscovered by discover and re-instantiated via `load()`, without needing to `register()` again.
 
-When you need to **completely unload** (release module class references, clean up `sys.modules`, allowing plugins and their exclusive dependencies to be collected by GC), pass `purge=True`:
+When you need a **full unload** (release the module class reference and clean up `sys.modules`, so the plugin and its exclusive dependencies can be reclaimed by GC), pass `purge=True`:
 
 ```python
-# Only unloads: retains registration stubs, can be reloaded anytime
+# Cancel loading only: keep the registration stub, can be load()ed again at any time
 await sdk.module.unload("MyModule")
 
-# Completely unloads: deletes registration stubs + cleans up sys.modules (plugin source)
+# Full unload: delete the registration stub + clean up sys.modules (plugin-sourced)
 await sdk.module.unload("MyModule", purge=True)
 ```
 
 | Semantics | `unload()` default | `unload(purge=True)` |
-|-----------|--------------------|----------------------|
-| Unloads instance and resources (events/task/routes/lifecycle/i18n) | ✅ | ✅ |
-| Retains registration stubs (module class and metadata) | ✅ | ❌ deleted |
-| Cleans up `sys.modules` (only plugin folder sources) | ❌ | ✅ |
-| Module class can be collected by GC | ❌ | ✅ |
-| Reload | `load()` is directly available | Requires `register()` + `load()` first |
+|------|-----------------|----------------------|
+| Unload instance and resources (events/tasks/routes/lifecycle/i18n) | ✅ | ✅ |
+| Keep registration stub (module class and metadata) | ✅ | ❌ Deleted |
+| Clean up `sys.modules` (only for plugin folder sources) | ❌ | ✅ |
+| Module class eligible for GC reclamation | ❌ | ✅ |
+| Reload | `load()` works directly | Requires `register()` + `load()` first |
 
-> When `purge=True`, cascaded unloaded dependents are also purged; after unloading, the framework performs `gc.collect()` and checks if module class/instance is collectible, residual references are warned in logs (including reference source, DEBUG level).
+> When `purge=True`, dependents cascade-unloaded are purged as well; after unloading, the framework runs `gc.collect()` and checks whether the module class/instance can be reclaimed; residual references trigger a log warning (including the referencing parties, at DEBUG level).
 
 ### Lifecycle Overview
 
-Putting the above methods together, the framework does **all the behind-the-scenes work** when loading and unloading a module:
+Tying the above methods together, here is **everything the framework does behind the scenes** when loading and unloading a module:
 
 ```mermaid
 flowchart TD
     subgraph Load["Load (register → load)"]
-        L1["register: register module class and metadata"] --> L2["Dependency validation<br/>Skips if missing"]
-        L2 --> L3["Topological sorting (Kahn + priority)"]
-        L3 --> L4["Inject owner: current_owner"]
-        L4 --> L5["Generate configuration template + register i18n translation keys"]
+        L1["register: register module class and metadata"] --> L2["Dependency check<br/>skip if missing"]
+        L2 --> L3["Topological sort (Kahn + priority)"]
+        L3 --> L4["owner injects current_owner"]
+        L4 --> L5["Generate config template + register i18n translation keys"]
         L5 --> L6["Instantiate module (inject sdk)"]
         L6 --> L7["Call on_load()"]
-        L7 --> L8["Mount to sdk attribute + emit module.load"]
+        L7 --> L8["Mount as sdk attribute + emit module.load"]
     end
 
     subgraph Unload["Unload (unload)"]
-        U1["Call on_unload()"] --> U2["Default cancellation of background tasks (self.spawn ownership)"]
+        U1["Call on_unload()"] --> U2["Fallback-cancel background tasks (self.spawn ownership)"]
         U2 --> U3["Clean up i18n translation keys"]
         U3 --> U4["Remove routes / commands / event handlers (by owner)"]
         U4 --> U5["Clean up lifecycle hooks (by owner)"]
-        U5 --> U6["Remove SDK attribute + lazy load proxy"]
+        U5 --> U6["Remove SDK attribute + lazy-load proxy"]
         U6 --> U7["emit module.unload"]
     end
 
     Load --> Unload
 ```
 
-**What the framework does for you during loading** (you only need to write `on_load`, the rest is automatic):
+**What the framework does for you at load time** (you only write `on_load`; everything else is done automatically):
 
-| Step | What the framework automatically does |
-|------|---------------------------------------|
-| Owner injection | Wrap the module name with `owner_scope` during instantiation — commands/events/hooks/background tasks registered in `on_load` are **automatically assigned to this module**, and cleaned up in one click during unload by owner |
-| Configuration template | Modules declaring `ConfigClass` have configuration segments `ErisPulse.<ModuleName>` automatically generated/loaded by the framework |
-| i18n translation keys | Modules declaring `I18nClass` have translation keys automatically registered (unregistered automatically during unload) |
-| Dependency topology | Sort by `depends` declaration, ensuring dependent modules are loaded first; circular dependencies are rejected with a `RuntimeError` |
-| SDK mounting | After instantiation, mount to `sdk.<ModuleName>`, allowing you to access via `sdk.MyModule.xxx` |
+| Stage | What the framework does automatically |
+|------|-------------|
+| Owner injection | During instantiation, the module name is wrapped in `owner_scope` — commands/events/hooks/background tasks registered in your `on_load` are **automatically attributed to this module**, and are cleaned up in one step by owner at unload time |
+| Config template | For modules declaring `ConfigClass`, the framework automatically generates/fills the `ErisPulse.<ModuleName>` config section |
+| i18n translation keys | For modules declaring `I18nClass`, translation keys are registered automatically (and deregistered at unload) |
+| Dependency topology | Ordered by the `depends` declaration to ensure depended-on modules load first; circular dependencies are rejected with a `RuntimeError` |
+| SDK mounting | After instantiation, mounted at `sdk.<ModuleName>` — only then can you access it via `sdk.MyModule.xxx` |
 
-**What the framework cleans up during unload** (corresponding to U1→U7 above): After `on_unload` completes, it performs a default cleanup — background tasks are forcibly cancelled (created via `self.spawn`, graceful shutdown should be handled manually in `on_unload`), i18n keys, routes, commands/event handlers, lifecycle hooks, finally removing SDK attributes. `purge=True` additionally deletes registration stubs + cleans up `sys.modules`.
+**What the framework cleans up for you at unload time** (corresponding to U1→U7 above): after `on_unload` finishes, a fallback cleanup runs — background tasks are forcibly cancelled (those created by `self.spawn`; do graceful wrap-up yourself in `on_unload`), i18n keys, routes, command/event handlers, and lifecycle hooks are cleaned up, and finally the SDK attribute is removed. `purge=True` additionally deletes the registration stub + cleans up `sys.modules`.
 
-> This automatic cleanup is the foundation for the principle that "you only need to write `on_load`/`on_unload`, without manually unregistering" — the framework uses owner assignment to make "who registers cleans up" a one-click operation.
+> This automatic cleanup is exactly what backs the promise of "you only write `on_load`/`on_unload`, no manual unregister needed" — the framework uses owner attribution to turn "whoever registers it cleans it up" into a one-step operation.
 
-## SDK Objects
+## SDK Object
 
 ### Accessing Core Modules
 
 ```python
 from ErisPulse import sdk
 
-# Access all core modules through the sdk object
-sdk.logger.info("Log message")
+# Access all core modules via the sdk object
+sdk.logger.info("log")
 sdk.storage.set("key", "value")
 
-# Module-specific small states (counters/switches/last run time) should be accessed via self.state —
-# Keys are automatically prefixed with module.state.<module name>. and persist after module unload/reload:
+# For a module's own small state (counters/toggles/last run time), prefer self.state —
+# keys are automatically prefixed with module.state.<module name>. and survive module unload/reload:
 count = self.state.get("runs", 0) + 1
 self.state.set("runs", count)            # Synchronous (any context)
-await self.state.aset("runs", count)     # Asynchronous path
+await self.state.aset("runs", count)     # Async path
 await self.state.aget("runs", 0)
 config = sdk.config.getConfig("MyModule")
 ```
@@ -176,7 +177,7 @@ result = await other_module.some_method()
 
 ## Adapter Send Method Query
 
-Because the new standard specification requires overriding the `__getattr__` method to implement the fallback send mechanism, the `hasattr` method can no longer be used to check whether a method exists. Starting from `2.3.5`, the ability to query send methods has been added.
+Because the new standard specification requires overriding the `__getattr__` method to implement the fallback send mechanism, the `hasattr` method can no longer be used to check whether a method exists. Starting from `2.3.5`, a new feature for querying send methods has been added.
 
 ### Listing Supported Send Methods
 
@@ -186,10 +187,10 @@ methods = sdk.adapter.list_sends("onebot11")
 # Returns: ["Text", "Image", "Voice", "Markdown", ...]
 ```
 
-### Getting Method Details
+### Getting Detailed Method Information
 
 ```python
-# Get the details of a method
+# Get detailed information about a method
 info = sdk.adapter.send_info("onebot11", "Text")
 # Returns:
 # {
@@ -206,7 +207,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 
 ### Declarative Configuration (Recommended)
 
-Since v2.5.2, modules can declare a configuration class via `ConfigClass`, sharing the same configuration Schema system as adapters. Configuration is read in real time through `self.cfg`, so changes take effect immediately:
+Since v2.5.2, modules can declare a configuration class via `ConfigClass`, using the same config Schema system as adapters. Configuration is read in real time via `self.cfg`, and changes take effect immediately:
 
 ```python
 from dataclasses import dataclass, field
@@ -218,7 +219,7 @@ class MyModuleConfig(BaseConfig):
     api_key: str = field(
         default="",
         metadata={
-            "description": {"i18n": "my_module.api_key", "default": "API Key"},
+            "description": {"i18n": "my_module.api_key", "default": "API key"},
             "required": True,
             "secret": True,
             "ui": {"widget": "password", "group": "basic", "order": 1},
@@ -246,31 +247,58 @@ class MyModule(BaseModule):
         pass
 
     async def do_something(self):
-        cfg = self.cfg  # Read in real time, type-safe
+        cfg = self.cfg  # Real-time read, type-safe
         api_key = cfg.api_key
         timeout = cfg.timeout
 ```
 
-`BaseConfig` is a general-purpose configuration base class suitable for adapters, modules, external projects, and any other scenario. Configuration fields support i18n multilingual descriptions (see the [i18n documentation](../../advanced/i18n.md#multilingual-configuration-fields) for details).
+`BaseConfig` is a general-purpose configuration base class, applicable to adapters, modules, external projects, and any other scenario. Config fields support i18n multilingual descriptions (see the [i18n documentation](../../advanced/i18n.md#config-field-i18n) for details).
 
 > [!NOTE]
-> The lifecycle of modules (including adapters) — loading, unloading, enabling/disabling, and so on — is managed uniformly by the framework (the `module manager` / `scope` provide query and control APIs). `ConfigClass` should only carry business parameters; modules do not need to nest logic inside themselves that decides "whether they should start".
+> The lifecycle of modules (including adapters) — loading, unloading, enabling/disabling, etc. — is managed uniformly by the framework (`module manager` / `scope` provide query and control APIs). `ConfigClass` should only carry business parameters; a module does not need to nest additional internal logic deciding "whether it should start itself".
 
-The configuration Schema system also supports the following (v2.8.0+, see [adapter core-concepts](../adapters/core-concepts.md#metadata-conventions) for details):
+The config Schema system also supports (v2.8.0+, see [Adapter core-concepts](../adapters/core-concepts.md#metadata-conventions) for details):
 
-- **Automatic field descriptions from docstrings**: when metadata `description` is not declared, a fallback is automatically extracted from the docstring's `:ivar field: description` or `Attributes:` section
-- **Nested dataclass configuration**: when a field's type is a nested dataclass, schema/template/validation are handled recursively, and the WebUI renders it as nested groups
-- **`example` non-persisted fields**: fields with `metadata={"example": True}` are not written to config.toml and are only recorded in `config.full.example` (suitable for verbose, rarely touched advanced configuration items); once users set them manually, they persist normally
+- **Docstring auto-generated field descriptions**: when metadata `description` is not declared, a fallback is automatically extracted from the docstring's `:ivar field: description` or `Attributes:` section
+- **Nested dataclass configuration**: when a field's type is a nested dataclass, schema/template/validation are processed recursively and rendered as nested groups in the WebUI
+- **`example` non-persisted fields**: fields with `metadata={"example": True}` are not written to config.toml and are only recorded in `config.full.example` (suitable for verbose, rarely touched advanced config items); once the user sets them manually, they persist as normal
+
+### Config Hot Reload (on_config_update)
+
+Once a module or adapter implements the `on_config_update(old, new)` method, the framework automatically routes calls to it when **config related to this module actually changes** (no need to subscribe to config events yourself), so changing tokens / switches / rate-limit parameters takes effect **without a restart**:
+
+```python
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    def on_config_update(self, old_config, new_config):
+        # When ConfigClass is declared, these are type-safe config objects (dict if not declared);
+        # when triggered by runtime setConfig(), old_config is None (only new has a value)
+        if old_config is None or new_config.api_key != old_config.api_key:
+            self.logger.info("API key updated, rebuilding client")
+            self._client = build_client(new_config.api_key)
+```
+
+Trigger sources and routing rules:
+
+- **Runtime writes** (code or Dashboard calling `setConfig()`): routed by config key prefix matching — only writes that fall within this module's config key (or its sub-keys) trigger the hook, in which case `old_config` is `None`
+- **Config file edits** (file watching triggers a full-tree comparison): triggered only when the old and new config sections differ, in which case `old` / `new` are the config objects before and after the change, respectively
+- Exceptions thrown inside the callback are caught and logged by the framework, without affecting the config write itself
+
+Usage guidance:
+
+- `self.cfg` reads in real time — simple parameters that don't require rebuilding state (such as timeout seconds) already hold the new value on the next line of code, no need to sync manually in this hook
+- Only **stateful resources** that need rebuilding (client connections, connection pools, timers) should be handled in this hook
 
 ### Declarative Translation Keys (v2.7.0+)
 
-Since v2.7.0, modules can also declare translation keys centrally through a nested class `I18nClass`, just like declaring `ConfigClass`. The framework **automatically registers** all declared translation keys at load time — no need to call `i18n.register()` manually — and registration happens before config template generation, ensuring that i18n keys referenced in configuration descriptions are already available.
+Since v2.7.0, modules can also declare translation keys centrally via a nested `I18nClass` class, just like declaring `ConfigClass`. The framework **automatically registers** all declared translation keys at load time — no need to call `i18n.register()` manually — and registration happens before config template generation, ensuring that the i18n keys referenced in config descriptions are already available.
 
 ```python
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
 
 class MyModule(BaseModule):
-    # Configuration class (optional)
+    # Config class (optional)
     @dataclass
     class ConfigClass(BaseConfig):
         welcome_msg: str = field(
@@ -282,7 +310,7 @@ class MyModule(BaseModule):
 
     # Translation key collection class (optional)
     class I18nClass(BaseI18n):
-        # Attribute names are automatically joined into the full key path: <module name>.<attribute name>
+        # Attribute names are auto-concatenated into the full key path: <module name>.<attribute name>
         welcome_msg: I18nKey = I18nKey(
             default="Welcome Message",   # Language-independent fallback
             zh_CN="Welcome message",
@@ -303,7 +331,7 @@ class MyModule(BaseModule):
 
 For details, see [i18n Recommended Approach](../../advanced/i18n.md#recommended-approach-declaring-translation-keys-via-i18nclass-v270).
 
-### Reading Configuration Manually (Deprecated)
+### Manual Config Reading (Deprecated)
 
 > **Deprecated**: Please use [Declarative Configuration](#declarative-configuration-recommended) + real-time reading via `self.cfg` instead.
 
@@ -335,7 +363,7 @@ user = sdk.storage.get("user:123", {})
 sdk.storage.delete("user:123")
 ```
 
-### Using Transactions
+### Transaction Usage
 
 ```python
 # Use a transaction to ensure data consistency
@@ -347,7 +375,7 @@ with sdk.storage.transaction():
 
 ## Event Handling
 
-### Registering Event Handlers
+### Event Handler Registration
 
 ```python
 from ErisPulse.Core.Event import command, message
@@ -355,31 +383,31 @@ from ErisPulse.Core.Event import command, message
 # Register a command
 @command("info", help="Get information")
 async def info_handler(event):
-    await event.reply("Here is the information")
+    await event.reply("This is the information")
 
 # Register a message handler
 @message.on_group_message()
 async def group_handler(event):
-    sdk.logger.info(f"Received group message: {event.get_text()}")
+    sdk.logger.info(f"Group message received: {event.get_text()}")
 ```
 
 ### Event Handler Lifecycle
 
-The framework automatically manages the registration and unregistration of event handlers; you only need to register them in `on_load`.
+The framework automatically manages the registration and deregistration of event handlers; you only need to register them in `on_load`.
 
 ## Lazy Loading Mechanism
 
 ### How It Works
 
 ```python
-# The module is only initialized on first access
+# The module is only initialized when first accessed
 result = await sdk.my_module.some_method()
 # ↑ This triggers module initialization
 ```
 
 ### Immediate Loading
 
-For modules that need to be initialized immediately (such as listeners, timers):
+For modules that need immediate initialization (such as listeners, timers):
 
 ```python
 @staticmethod
@@ -392,7 +420,7 @@ def get_load_strategy():
 
 ## Error Handling
 
-### Catching Exceptions
+### Exception Catching
 
 ```python
 async def handle_event(self, event):
@@ -411,20 +439,20 @@ async def handle_event(self, event):
 
 ```python
 # Use different log levels
-self.logger.debug("Debug info")    # Detailed debug information
-self.logger.info("Running status")      # Normal operation information
-self.logger.warning("Warning message")  # Warning message
-self.logger.error("Error message")    # Error message
+self.logger.debug("Debug info")     # Detailed debugging information
+self.logger.info("Running state")   # Normal runtime information
+self.logger.warning("Warning")      # Warning information
+self.logger.error("Error")          # Error information
 self.logger.critical("Fatal error") # Fatal error
 ```
 
 ## Related Documentation
 
-### Continuing the Learning Path
+### Continue the Learning Path
 
-- [Event Wrapper Class](event-wrapper.md) - Event handling in depth
+- [Event Wrapper Class](event-wrapper.md) - Event handling in detail
 
-### Going Deeper and Troubleshooting
+### Deep Dive and Troubleshooting
 
 - [Module Best Practices](best-practices.md) - Developing high-quality modules
 - [Module Development Getting Started](getting-started.md) - Review the steps for building your first module

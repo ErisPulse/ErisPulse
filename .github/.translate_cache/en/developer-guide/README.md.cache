@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "8916c18a07dcac34b05189f0e6153895",
-  "file_hash": "8916c18a07dcac34b05189f0e6153895",
-  "translated_at": "2026-10-30T14:49:51.807304",
+  "hash": "26050d5e8390366dfed069f3f417cf86",
+  "file_hash": "26050d5e8390366dfed069f3f417cf86",
+  "translated_at": "2026-11-11T15:55:33.368620",
   "target_lang": "en",
   "chunks": [
     {
@@ -22,8 +22,8 @@
       "translation": "## Development Type Selection\n\nChoose the appropriate development type based on your needs:\n\n| Development Type | Use Case | Getting Started |\n|------------------|----------|-----------------|\n| **Module Development** | Extend bot functionality, implement business logic, provide commands and message handling | [Getting Started with Module Development](modules/getting-started.md) |\n| **Adapter Development** | Connect to new messaging platforms, enable cross-platform communication, provide platform-specific features | [Getting Started with Adapter Development](adapters/getting-started.md) |\n\n> If you want to extend the bot's functionality (such as adding commands or handling messages), choose **module development**. If you need to connect the bot to a new platform, choose **adapter development**."
     },
     {
-      "hash": "df55c8acea3081490090bb2ad7dfa656",
-      "translation": "## Development Tools\n\n### Project Templates\n\nErisPulse provides example projects as references:\n\n- [Module Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - The complete project structure for a module\n- [Adapter Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - The complete project structure for an adapter\n\n### Development Mode\n\nUse hot-reload mode for development, where code changes automatically trigger reloads:\n\n```bash\nepsdk run main.py --reload\n```\n\n### Debugging Tips\n\nEnable DEBUG or TRACE level logging in `config/config.toml`:\n\n```toml\n[ErisPulse.logger]\n# DEBUG: Outputs development and debugging information such as module loading and route registration\n# TRACE: The lowest level, outputs detailed framework internal processes such as event dispatching, storage writes, and lazy loading\nlevel = \"DEBUG\"\n```"
+      "hash": "4ea6d33598a6f50b1c26861ad4db3410",
+      "translation": "## Development Tools\n\n### Project Templates\n\nErisPulse provides example projects for reference:\n\n- [Module Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - Complete project structure for a module (Commands / Config / ORM / Dependency Injection)\n- [Web Capability Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-web) - Route decorators / Middleware / WebSocket hooks / router.app escape hatch\n- [Advanced Interaction Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-interactive) - Message transactions and receipts / ORM composite unique constraints and transactions / Request approval / Send chains\n- [Ops Governance Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-ops) - Thread task ownership / Delayed tasks / Memory health checks / Privacy switches\n- [Adapter Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - Complete project structure for an adapter (also available: [Polling](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter-polling) / [Webhook](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter-webhook) variants)\n\n### Development Mode\n\nUse hot-reload mode for development, which automatically reloads after code changes:\n\n```bash\nepsdk run main.py --reload\n```\n\n### Debugging Tips\n\nEnable DEBUG or TRACE level logging in `config/config.toml`:\n\n```toml\n[ErisPulse.logger]\n# DEBUG: Outputs development debugging information such as module loading and route registration\n# TRACE: Lowest level, outputs detailed internal framework processes such as event dispatching, storage writes, and lazy loading\nlevel = \"DEBUG\"\n```"
     },
     {
       "hash": "786840a3da60cbc55439693abdaaedee",

@@ -395,29 +395,29 @@ fn.unregister()
 ```toml
 [ErisPulse.logger]
 level = "INFO"
-log_files = []                # 顯式日誌檔案清單（與 log_dir 互斥，優先級更高）
-log_dir = ""                  # 日誌目錄（設定後自動分段輪替）
+log_files = []                # 明確日誌檔案清單（與 log_dir 互斥，優先級更高）
+log_dir = ""                  # 日誌目錄（設定後自動分段輪轉）
 log_rotation = "size"         # 分段方式: "size" / "date" / "none"
 log_max_size_mb = 10          # size 模式單檔案上限（MB）
 log_backup_count = 5          # 保留的歷史日誌檔案數
-log_rotation_when = "midnight"  # date 模式輪替週期: S/M/H/D/midnight
-memory_limit = 1000             # 單模組記憶體日誌筆數上限（0 = 關閉記憶體日誌副本）
-total_memory_limit = 5000       # 全部模組記憶體日誌總筆數上限（0 = 不限）
+log_rotation_when = "midnight"  # date 模式輪轉週期: S/M/H/D/midnight
+memory_limit = 1000             # 單模組記憶體日誌條數上限（0 = 關閉記憶體日誌副本）
+total_memory_limit = 5000       # 全部模組記憶體日誌總條數上限（0 = 不限）
 exclude_levels = ["EVENT"]
 ```
 
 | 設定項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | level | string | INFO | 日誌級別：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低級別，輸出框架內部詳細除錯資訊） |
-| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文字無顏色，適合日誌收集/管線重新導向）、`json`（JSON 結構化，適合 ELK 等） |
-| log_files | array | 空 | 日誌輸出檔案清單（顯式路徑，不分段） |
+| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文字無顏色，適合日誌擷取/管道重新導向）、`json`（JSON 結構化，適合 ELK 等） |
+| log_files | array | 空 | 日誌輸出檔案清單（明確路徑，不分段） |
 | log_dir | string | 空 | 日誌輸出目錄（自動建立）。設定後寫入目錄內 `erispulse.log` 並按 `log_rotation` 自動分段；與 `log_files` 互斥，`log_files` 優先 |
 | log_rotation | string | size | 分段方式：`size`（按大小）/ `date`（按時間）/ `none`（不分段） |
-| log_max_size_mb | float | 10 | size 模式單檔案大小上限（MB），超過後輪替為 `.1`/`.2` 備份 |
+| log_max_size_mb | float | 10 | size 模式單檔案大小上限（MB），超過後輪轉為 `.1`/`.2` 備份 |
 | log_backup_count | integer | 5 | 保留的歷史日誌檔案數，超出的最舊備份自動刪除 |
-| log_rotation_when | string | midnight | date 模式輪替週期：`S`/`M`/`H`/`D`/`midnight`（預設每天零點） |
-| memory_limit | integer | 1000 | 單模組記憶體中保存的日誌筆數；`0` 表示關閉記憶體日誌副本（不再寫入記憶體，已有記錄保留） |
-| total_memory_limit | integer | 5000 | 全部模組記憶體日誌總筆數上限；`0` 表示不限。超限時按輪替策略淘汰最舊記錄（優先削減筆數最多的模組佇列），與單模組 `memory_limit` 獨立生效 |
+| log_rotation_when | string | midnight | date 模式輪轉週期：`S`/`M`/`H`/`D`/`midnight`（預設每天零點） |
+| memory_limit | integer | 1000 | 單模組記憶體中保存的日誌條數；`0` 表示關閉記憶體日誌副本（不再寫入記憶體，已有記錄保留） |
+| total_memory_limit | integer | 5000 | 全部模組記憶體日誌總條數上限；`0` 表示不限。超限時按輪轉策略淘汰最舊記錄（優先削減條數最多的模組佇列），與單模組 `memory_limit` 獨立生效 |
 | exclude_levels | array | 空 | 屏蔽指定日誌等級。被屏蔽等級的日誌**完全丟棄**（不寫記憶體、不推送給 Dashboard 等訂閱器、不列印、不寫檔案）。支援熱更新 |
 
 也可在程式碼中動態切換：
@@ -428,7 +428,7 @@ from ErisPulse.Core import logger
 # 按大小分段：單檔案 10MB，保留 5 份
 logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
 
-# 按時間分段：每天零點輪替，保留 7 份
+# 按時間分段：每天零點輪轉，保留 7 份
 logger.set_output_dir("logs", rotation="date", backup_count=7)
 ```
 
@@ -436,6 +436,18 @@ logger.set_output_dir("logs", rotation="date", backup_count=7)
 > `log_dir` 及分段相關設定需要 ErisPulse **2.8.0+**。
 
 > **隱私保護**：訊息收發內容以 **EVENT 等級**（數值 21）記錄。設定 `exclude_levels = ["EVENT"]` 即可讓後台（如 Dashboard 日誌面板）無法看到各群/私聊的訊息內容，同時不影響其它等級日誌。
+
+除設定檔（支援熱更新）外，也可在執行時以程式碼切換同等能力——做
+`/privacy on|off` 類管理命令時不必寫設定：
+
+```python
+from ErisPulse import logger
+
+logger.exclude_level("EVENT")        # 執行時屏蔽某等級（同 exclude_levels 設定語義）
+logger.allow_level("EVENT")          # 恢復該等級
+logger.list_excluded_levels()        # 檢視目前被屏蔽的等級
+logger.set_format("json")            # 輸出切 JSON 行協定（與 format 設定鍵同效）
+```
 
 > [!NOTE]
 > `exclude_levels` 本特性需要 ErisPulse **2.8.0+**。

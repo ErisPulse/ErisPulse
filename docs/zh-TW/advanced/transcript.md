@@ -119,27 +119,52 @@ transcript.recent(3600, session_key="onebot11:group:123")
 
 `session_key=None` 保持跨會話語義；空字串 `""` 等價不過濾（容錯）。
 
-## 運行時覆蓋 API
+## 執行時覆寫 API
 
-需要在運行中動態調整（例如臨時為某個場景延長保留）時：
+需要在執行中動態調整（如臨時為某個場景延長保留）時：
 
 ```python
 from ErisPulse import transcript
 
-# 覆蓋（優先於配置；僅駐記憶體，重啟後恢復配置值）
+# 覆寫（優先於設定；僅駐記憶體，重啟後恢復設定值）
 transcript.set_retention(max_per_session=500, ttl_hours=24 * 30)
 
 # 查詢生效值與來源
 transcript.get_retention()
 # {'max_per_session': 500, 'ttl_hours': 720.0, 'overridden': ['max_per_session', 'ttl_hours']}
 
-# 恢復按配置生效
+# 恢復按設定生效
 transcript.reset_retention()
 ```
 
-- 傳入 `0` = 關閉對應策略（會打 warning 日誌留痕）；負數拋 `ValueError`；
-- 覆蓋在下次保留清理時生效（懶惰，最多延遲 ~32 條追加的節奏）；
-- `transcript` 單例可從根包導入，也可 `sdk.transcript`。
+- 傳 `0` = 關閉對應策略（會記錄 warning 日誌留痕）；負數拋出 `ValueError`；
+- 覆寫在下次保留清理時生效（惰性，最多延遲 ~32 條追加的節奏）；
+- `transcript` 單例可從根套件匯入，也可 `sdk.transcript`。
+
+### 手動歸檔與落盤（append / flush）
+
+訊息記錄由框架管線自動寫入；非訊息類互動（按鈕點擊、支付回呼、外部
+webhook）也可歸檔進同一會話時間線，配合 `get_by_trace` 讓自訂事件同樣
+可被 `explain_trace` 鏈路診斷：
+
+```python
+from ErisPulse import transcript
+
+transcript.append(
+    "onebot11:12345",                 # 事件物件 / dict / 會話鍵字串均可
+    role="bot",
+    text="使用者點擊了按鈕: pay_ok",
+    event_id="evt_click_1024",
+    meta={"order_id": "A-1024"},      # 歸因元資料（白名單契約）
+)
+
+await transcript.aflush()             # 非同步強制落盤（腳本/測試裡斷言前呼叫）
+```
+
+- `append` 僅入記憶體緩衝即返回（微秒級），隨保留策略統一清理；`flush` /
+  `aflush` 立即寫入儲存，查詢介面自動合併未落盤的緩衝行
+- `session` 需與目標會話一致（重用訊息事件的會話鍵），否則歸檔落在獨立
+  會話時間線
 
 ## 風險與審計：解除限制前必讀
 

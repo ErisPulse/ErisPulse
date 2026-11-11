@@ -57,28 +57,31 @@
 
 ## 開發工具
 
-### 專案範本
+### 項目模板
 
-ErisPulse 提供了範例專案作為參考：
+ErisPulse 提供了示例項目作為參考：
 
-- [模組範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模組的完整專案結構
-- [配接器範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 配接器的完整專案結構
+- [模組示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模組的完整專案結構（命令 / 配置 / ORM / 依賴注入）
+- [Web 能力示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-web) - 路由裝飾器 / 中間件 / WebSocket 鈎子 / router.app 逃生艙
+- [互動進階示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-interactive) - 消息事務與回執 / ORM 聯合唯一與事務 / 請求審批 / 發送鏈
+- [運維治理示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-ops) - 線程任務歸屬 / 延遲任務 / 內存體檢 / 隱私開關
+- [適配器示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 適配器的完整專案結構（另有 [輪詢](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter-polling) / [Webhook](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter-webhook) 變體）
 
 ### 開發模式
 
-使用熱重載模式進行開發，程式碼修改後自動重新載入：
+使用熱重載模式進行開發，程式碼修改後自動重載：
 
 ```bash
 epsdk run main.py --reload
 ```
 
-### 偵錯技巧
+### 調試技巧
 
 在 `config/config.toml` 中啟用 DEBUG 或 TRACE 級別日誌：
 
 ```toml
 [ErisPulse.logger]
-# DEBUG: 輸出模組載入、路由註冊等開發偵錯資訊
+# DEBUG: 輸出模組載入、路由註冊等開發調試資訊
 # TRACE: 最低級別，輸出事件分發、儲存寫入、懶載入等框架內部詳細流程
 level = "DEBUG"
 ```

@@ -243,16 +243,37 @@ for m in messages:
 
 ## Message Transaction: message_tx
 
-All outbound sends within the transaction are automatically logged; **on abnormal exit, previously sent messages are automatically withdrawn in reverse order** (skipped if adapter does not implement `delete_message`, but the ledger is still recorded normally).
+All outbound sends within a transaction are automatically recorded in the ledger; **on abnormal exit, already-sent messages are automatically recalled in reverse order**
+(skipped if the adapter does not implement `delete_message`, while the ledger is still recorded normally).
 
 ```python
 async with event.message_tx():
     await event.reply("Processing, please wait")
-    result = await do_something()          # Exception thrown here →
-    await event.reply(f"Completed: {result}")   # The previous "processing" message is automatically withdrawn
+    result = await do_something()          # exception raised here →
+    await event.reply(f"Done: {result}")   # the previous "Processing" message is automatically recalled
 ```
 
-Sends outside the transaction are not logged (zero overhead); `get_send_receipts()` can view receipts of messages already sent in the current transaction.
+Sends outside the transaction are not recorded (zero overhead); within the transaction, the receipt ledger can be read at any time. Typical use cases are **self-deleting bots**
+(scheduling a delayed recall immediately upon sending) and send auditing:
+
+```python
+import asyncio
+from ErisPulse.runtime import get_send_receipts
+
+async def delayed_delete(adapter, message_id: str, delay: float):
+    await asyncio.sleep(delay)
+    await adapter.delete_message(message_id)
+
+async with event.message_tx():
+    await event.reply("Temporary notice")
+    for r in get_send_receipts() or []:
+        # each receipt contains platform / bot_id / message_id / trace_id
+        asyncio.create_task(delayed_delete(adapter, r["message_id"], 30))
+```
+
+Receipt reading is **transaction-scoped**: it returns a non-`None` value only within a `message_tx()` transaction,
+and is always `None` outside; to capture all outbound messages (including those outside transactions), use the `message.sending/sent`
+hooks (see the `trace_id` field in [Link Tracing](#link-tracing-trace-id)).
 
 ## Trace ID
 

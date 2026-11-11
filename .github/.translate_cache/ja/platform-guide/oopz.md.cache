@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "hash": "b6f1278f31b56890ea180d05803ba34a",
+  "file_hash": "b6f1278f31b56890ea180d05803ba34a",
+  "translated_at": "2026-11-11T15:22:31.732893",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "775a7152043978448b3079f07e96ff1a",
+      "translation": "# Oopz プラットフォームの特徴ドキュメント"
+    },
+    {
+      "hash": "be1559cdda22d06e8b4b492f8c4353ab",
+      "translation": "## ドキュメント情報\n\n| 項目 | 内容 |\n|---|---|\n| モジュールバージョン | 0.1.0 |\n| プラットフォーム識別子 | `oopz` |\n| メンテナ | ErisPulse チーム |\n| 最終更新日 | 2026-11-11 |\n\n> ⚠️ Oopz には公式のロボットプラットフォームが存在せず、このアダプターはコミュニティによる逆解析プロトコルに基づき**ユーザーのアカウントとして**接続しています。非公式のインターフェースはいつでも無効になる可能性がありますので、サブアカウントを使用してください。詳細は README のリスクに関する声明をご覧ください。"
+    },
+    {
+      "hash": "099f82766d244980905d746b3c7530bf",
+      "translation": "## 基本情報\n\n- アダプタクラス: `OopzAdapter`（エントリーポイント `oopz`）\n- 接続方法: WebSocket（`wss://ws.oopz.cn`）+ REST ゲートウェイ（`https://gateway.oopz.cn`）、RSA署名リクエストヘッダー + JWT\n- 認証情報: 「アカウントとパスワードのどちらか」——`password`（電話番号+パスワード+クライアントの秘密鍵、自動ログイン継続）または `token`（uid/JWT/device_id/秘密鍵の4つ揃い）\n- 複数アカウント: サポート（`[Oopz_Adapter.accounts.<name>]`）、イベント `self.account_id` で元のアカウントを識別\n- フレームワークのソフト依存: ErisPulse ≥ 2.7.1"
+    },
+    {
+      "hash": "a4ca879cb789fce28370aea7ca24de2e",
+      "translation": "## 会話モデル\n\n| ErisPulse 目標 | Oopz 概念 | 説明 |\n|---|---|---|\n| `Send.To(\"group\", <チャンネルID>)` | チャンネル（channel） | ドメインはアダプターが「channel→area キャッシュ + 加入ドメインスキャン」を経て自動的に解析します |\n| `Send.To(\"user\", <相手UID>)` | プライベートチャットセッション | 自動的に `PATCH /client/v1/chat/v1/to` を実行してセッションを開始し、sessionId をキャッシュします |\n| `guild_id` フィールド / guild の意味 | ドメイン（area） | ドメインレベルの操作は `get_guild_*` と `oopz.*` 管理拡張を経由します |"
+    },
+    {
+      "hash": "8b625a77fc14ceb37bf2177673db54ad",
+      "translation": "## 標準化の整列（0.1.0）\n\n### エラーコードの規格\n\n| retcode | 含意 |\n|---|---|\n| 0 | 成功 |\n| 10002 | 対応されていないアクション/メッセージセグメントの降格（音声、動画、ファイル送信、upload_file、keyboard など） |\n| 10003 | パラメータの欠落/不正（例：チャンネルが所属するドメインを特定できない） |\n| 33001 | ネットワーク異常/リクエスト制限（429の場合は Retry-After を尊重し、1回リトライ） |\n| 34100 | プラットフォームが失敗を返した（元の応答は `oopz_raw` に格納） |\n| 34005 | アカウントが解析されていない（設定されていないか、セッションが確立されていない） |\n\n### 応答構造\n\nすべての応答は `status / retcode / data / message_id / message / oopz_raw` を含む。送信応答の `message_id` は、プラットフォームが返した `messageId` から取得する。`data.self_info.user_id` は `get_self_info` で戻り値として戻される。\n\n### イベントフィールドの完全性\n\n- すべてのイベントは `id / time / type / detail_type / sub_type / platform / self` を必須とし、`oopz_raw` と `oopz_raw_type` は常に存在する。\n- メッセージイベントの最上位には `message_id` を必ず含む。タイムスタンプのマイクロ秒文字列は統一的に秒に変換する。\n- イベントの `id` はアカウントドメインで重複を排除する（`<アカウント>:<タイプ>:<プラットフォームID>`）。\n- 未知のイベントは `type=\"unknown\"` + `warning` に変換され、静かに破棄されない。\n- プロトコル内部フレーム（ハンドシェイク/認証/ハートビート/サブスクリプション）はプラットフォームイベントを生成しない。\n\n### 降格の意味\n\n- `voice/audio/video/file` 送信セグメント → `retcode=10002`（プラットフォームがサポートしているのは画像のアップロードのみ）、例外をスローしない。\n- `guild` 送信先 → `retcode=10003`（チャンネルを指定してください）。\n- token モードの JWT が無効 → `retcode=34100` で認証情報の更新を促す。password モードでは、自動的に再ログイン後、1回リトライする。"
+    },
+    {
+      "hash": "08931eeda252b63bbc33953431198f9f",
+      "translation": "## 支援されるメッセージ送信タイプ\n\n| 方法 | プラットフォーム実装 |\n|---|---|\n| `Text` | テキスト（text/content 両方書き込み） |\n| `Image` | COS 署名票アップロード（画像のみ）、テキストプレースホルダ `![IMAGEw{w}h{h}]({fileKey})` + attachments |\n| `At / AtAll / Reply` | `mentionList` / `isMentionAll` / `referenceMessageId` |\n| `Important()` 修飾子 | `styleTags=[\"IMPORTANT\"]` 公告スタイル |\n| `Recall(messageId)` | `recallGim`（チャンネル）/ `recallIm`（プライベートメッセージ、自分発信のみ撤回可能） |\n| `Raw_ob12` | OneBot12 段 → プラットフォーム payload（text/mention/mention_all/reply/image；その他の段は降格 10002） |\n| Voice/Video/File/Keyboard | 非対応 → 10002 |"
+    },
+    {
+      "hash": "bc70d6c35fc80fd19cbc1a94cd3be2a3",
+      "translation": "## 標準 API 動作（ApiDSL）\n\n### 対応している標準動作\n\n`get_self_info`、`get_user_info`、`get_friend_list`、`get_group_info`（チャンネルと所属ドメインの統合情報）、`get_group_list`（参加しているドメインのチャンネルの平準化されたリスト）、`get_guild_info`、`get_guild_list`、`get_channel_list`、`get_guild_members`、`delete_message`（`channel_id` または `user_id` のコンテキストが必要）、`get_file`（添付ファイル URL → base64）、`leave_guild`、`get_status`、`get_version`、`get_supported_actions`\n\n### 対応していない標準動作（retcode=10002）\n\n`send_message`（Send DSL を使用）、`upload_file`、`get_latest_events`、`set_group_name`、`set_group_admin`、`set_group_leave`、`set_group_card`、`leave_group`、`leave_channel`\n\n### プラットフォーム拡張動作（oopz.*）\n\n| 動作 | 必須パラメータ | 説明 |\n|---|---|---|\n| `oopz.create_channel` | `area_id, name` | オプション: `channel_type/group_id/secret/max_member` |\n| `oopz.delete_channel` | `area_id, channel_id` | |\n| `oopz.mute_member` / `oopz.unmute_member` | `area_id, user_id` | ミュート、`duration` 分数が自動的に設定（5分/1時間/1日/3日/7日） |\n| `oopz.mute_mic` / `oopz.unmute_mic` | `area_id, user_id` | ミュート解除 |\n| `oopz.kick_member` | `area_id, user_id` | ドメインから退出 |\n| `oopz.block_user` / `oopz.unblock_user` | `area_id, user_id` | ドメインのブラックリスト |\n| `oopz.get_area_members` | `area_id` | オプション: `offset_start/offset_end` |\n| `oopz.get_assignable_roles` | `area_id, target_id` | 分配可能なロール |\n| `oopz.assign_role` / `oopz.revoke_role` | `area_id, target_id, role_id` | 内部で全ロールを読み込んで、まとめて送信 |\n| `oopz.react_message` / `oopz.unreact_message` | `message_id, channel_id, emoji` | オプション: `user_id`（プライベートメッセージ）/`area_id` |\n| `oopz.get_reactions` | `message_id` | オプション: `message_ids`（≤50）/`user_id` |\n| `oopz.get_reaction_persons` | `message_id, channel_id, emoji` | レイションしたユーザーのページング |\n| `oopz.top_message` | `message_id, area_id, channel_id` | ピン留め/解除（`cancel=True`） |\n| `oopz.get_history_messages` | `area_id, channel_id` | オプション: `size`（デフォルト 50） |\n| `oopz.get_friend_requests` | — | フレンドリクエストリスト |\n| `oopz.respond_friend_request` | `target, friend_request_id, agree` | 審査（通常は Request DSL を使用） |"
+    },
+    {
+      "hash": "d304e129e425dd6d4b8874c92a6d2d8c",
+      "translation": "## 友人申請の処理\n\n- イベント: `request/friend`、`request_id` は**状態を持たない複合キー** `<target>:<friendRequestId>`\n- `event.approve()` / `event.reject()` → POST `/client/v1/friendship/v1/response`\n- 単一エンドポイントの同構性により、要求タイプのコンテキスト保持テーブルは不要"
+    },
+    {
+      "hash": "11ed71084028936e34bc64c24c86f1e9",
+      "translation": "## 送信メソッドの戻り値\n\n```json\n{\n  \"status\": \"ok\",\n  \"retcode\": 0,\n  \"data\": {\"message_id\": \"14283...\"},\n  \"message_id\": \"14283...\",\n  \"message\": \"\",\n  \"oopz_raw\": {\"messageId\": \"14283...\", \"timestamp\": \"...\"}\n}\n```"
+    },
+    {
+      "hash": "af5728f6a64f80abe113b9ddbccc736c",
+      "translation": "## 特有イベントタイプ\n\n- メッセージイベント拡張フィールド: `oopz_area_id`、`guild_id`（チャンネルメッセージ）；`oopz_reference_message_id`（返信）\n- 通知拡張: `oopz_edited_text`、`oopz_emoji`、`oopz_reaction_type`、`oopz_persons`、`oopz_from_channel`、`oopz_channel_name`、`oopz_channel_type`、`oopz_area_name`、`oopz_role_id`、`oopz_role_name`、`oopz_ban_until`、`oopz_login_state`\n- `EventMixin` 便利メソッド: `get_raw_event()`、`get_area_id()`、`get_edited_text()`、`get_emoji()`、`get_reaction_type()`、`get_voice_persons()`"
+    }
+  ]
+}

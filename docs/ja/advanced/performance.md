@@ -63,6 +63,25 @@ python tests/performance/benchmark.py --backend mysql
 4. **ホットパスは最適化組み込み済み**（2.9 以降、設定不要）：transcript の一括永続化、i18n キャッシュ、ログレベルガード、マッチャーの事前コンパイル、設定の遅延書き込みと統一フラッシュ
 5. **コマンド制御状態の上限**：クールダウン/レート制限/クォータの状態テーブルは上限 4096 件（超過時は最も古いものから削除）、超大規模グループ向けのデプロイでも調整不要
 
+## メモリ診断
+
+「実行するほどにメモリを多く消費する」問題を調査する際、疑わしい処理の前後にラベル付きのスナップショットを打つことで、同名のラベルが自動的に増分（RSS + tracemalloc 両指標）を計算します。
+
+```python
+from ErisPulse.runtime import log_snapshot, snapshot
+
+class MyModule(BaseModule):
+    async def on_load(self, event):
+        snapshot("MyModule.load")            # dict（ラベルによる RSS delta 含む）を取得して返す
+
+    async def on_unload(self, event):
+        log_snapshot("MyModule.unload")      # 同じ口径で取得し TRACE レベルのログに記録
+```
+
+- `snapshot(label)` はマシンで読み取れる dict を返し、アサーションや報告に適しています。`log_snapshot(label)` は TRACE レベルのログに直接書き込み、一時的な調査に適しています。
+- label は容量制限付きで、呼び出し回数に応じてメモリが漏れることはありません。`/metrics` エンドポイントのプロセス指標と併用することで、長期的な傾向を観察できます。
+- モジュールのアンロード後に残る増加は、通常、所有権の欠如を示しています（[所有権システム](ownership.md)の `bind_owner` タスク項目を参照）。
+
 ## 関連ドキュメント
 
 - **実行メトリクスの観測**：`/health`（インスタンス識別 / イベントカウント）と `/metrics`（Prometheus テキスト、`ErisPulse.server.metrics_enabled` が有効な場合）については、[デプロイガイド](../user-guide/deployment.md)を参照してください

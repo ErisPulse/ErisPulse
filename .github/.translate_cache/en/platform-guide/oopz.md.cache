@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "hash": "b6f1278f31b56890ea180d05803ba34a",
+  "file_hash": "b6f1278f31b56890ea180d05803ba34a",
+  "translated_at": "2026-11-11T15:14:42.739670",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "775a7152043978448b3079f07e96ff1a",
+      "translation": "# Oopz Platform Feature Documentation"
+    },
+    {
+      "hash": "be1559cdda22d06e8b4b492f8c4353ab",
+      "translation": "## Documentation Information\n\n| Item | Content |\n|---|---|\n| Module Version | 0.1.0 |\n| Platform Identifier | `oopz` |\n| Maintainer | ErisPulse Team |\n| Last Updated | 2026-11-11 |\n\n> ⚠️ Oopz does not have an official bot platform. This adapter connects via a reverse-engineered community protocol as a **user account** and is not an official interface. The interface may become invalid at any time; use a test account. See the README for risk disclosures."
+    },
+    {
+      "hash": "099f82766d244980905d746b3c7530bf",
+      "translation": "## Basic Information\n\n- Adapter class: `OopzAdapter` (entry-point `oopz`)\n- Access method: WebSocket (`wss://ws.oopz.cn`) + REST gateway (`https://gateway.oopz.cn`), RSA-signed request headers + JWT\n- Credentials: \"either password or token\" — `password` (phone number + password + client private key, auto-login session renewal) or `token` (uid/JWT/device_id/private key four-piece set)\n- Multi-account: Supported (`[Oopz_Adapter.accounts.<name>]`), events marked with `self.account_id` to indicate source\n- Framework soft dependency: ErisPulse ≥ 2.7.1"
+    },
+    {
+      "hash": "a4ca879cb789fce28370aea7ca24de2e",
+      "translation": "## Session Model\n\n| ErisPulse Goal | Oopz Concept | Description |\n|---|---|---|\n| `Send.To(\"group\", <channel ID>)` | Channel | The domain is automatically resolved by the adapter via \"channel→area cache + joined domain scanning\" |\n| `Send.To(\"user\", <对方UID>)` | Private Chat Session | Automatically `PATCH /client/v1/chat/v1/to` initiates a session and caches the sessionId |\n| `guild_id` field / guild semantics | Area | Area-level operations use `get_guild_*` and `oopz.*` management extensions |"
+    },
+    {
+      "hash": "8b625a77fc14ceb37bf2177673db54ad",
+      "translation": "## Standardized Alignment (0.1.0)\n\n### Error Code Specification\n\n| retcode | Meaning |\n|---|---|\n| 0 | Success |\n| 10002 | Unsupported action/Message segment downgrade (Voice, video file sending, upload_file, keyboard, etc.) |\n| 10003 | Missing/invalid parameter (e.g., channel cannot be located in the domain) |\n| 33001 | Network exception/Rate limiting (429, respect Retry-After, retry once) |\n| 34100 | Platform returned failure (Original response in `oopz_raw`) |\n| 34005 | Account not resolved (Not configured or session not established) |\n\n### Response Structure\n\nAll responses contain `status / retcode / data / message_id / message / oopz_raw`; the `message_id` of the send response is taken from the platform's returned `messageId`; `data.self_info.user_id` is filled back in `get_self_info`.\n\n### Event Field Completeness\n\n- All events must have `id / time / type / detail_type / sub_type / platform / self`, and `oopz_raw` + `oopz_raw_type` always exist.\n- Message events must have `message_id` at the top level; microsecond timestamps are unified into second strings.\n- Event `id` is deduplicated by account domain (`<account>:<type>:<platformID>`).\n- Unknown events are converted to `type=\"unknown\"` + `warning`, and are not silently discarded.\n- Internal protocol frames (handshake/authentication/heartbeat/subscription) do not generate platform events.\n\n### Downgrade Semantics\n\n- `voice/audio/video/file` send segment → `retcode=10002` (Platform only supports image upload), no exception thrown.\n- `guild` send target → `retcode=10003` (Please specify the channel).\n- JWT token mode expiration → `retcode=34100` prompts credential update; password mode automatically relogs in and retries once."
+    },
+    {
+      "hash": "08931eeda252b63bbc33953431198f9f",
+      "translation": "## Supported Message Sending Types\n\n| Method | Platform Implementation |\n|---|---|\n| `Text` | Text (dual write of text/content) |\n| `Image` | COS signature ticket upload (images only), text placeholder `![IMAGEw{w}h{h}]({fileKey})` + attachments |\n| `At / AtAll / Reply` | `mentionList` / `isMentionAll` / `referenceMessageId` |\n| `Important()` modifier | `styleTags=[\"IMPORTANT\"]` announcement style |\n| `Recall(messageId)` | `recallGim` (channel) / `recallIm` (private message, only self-sent messages can be recalled) |\n| `Raw_ob12` | OneBot12 segment → platform payload (text/mention/mention_all/reply/image; other segments downgraded to 10002) |\n| Voice/Video/File/Keyboard | Not supported → 10002 |"
+    },
+    {
+      "hash": "bc70d6c35fc80fd19cbc1a94cd3be2a3",
+      "translation": "## Standard API Actions (ApiDSL)\n\n### Supported Standard Actions\n\n`get_self_info`, `get_user_info`, `get_friend_list`, `get_group_info` (channel + domain merged information), `get_group_list` (flattened list of joined domains/channels), `get_guild_info`, `get_guild_list`, `get_channel_list`, `get_guild_members`, `delete_message` (requires `channel_id` or `user_id` context), `get_file` (attachment URL → base64), `leave_guild`, `get_status`, `get_version`, `get_supported_actions`\n\n### Unsupported Standard Actions (retcode=10002)\n\n`send_message` (use Send DSL), `upload_file`, `get_latest_events`, `set_group_name`, `set_group_admin`, `set_group_leave`, `set_group_card`, `leave_group`, `leave_channel`\n\n### Platform Extension Actions (oopz.*)\n\n| Action | Required Parameters | Description |\n|---|---|---|\n| `oopz.create_channel` | `area_id, name` | Optional: `channel_type/group_id/secret/max_member` |\n| `oopz.delete_channel` | `area_id, channel_id` | |\n| `oopz.mute_member` / `oopz.unmute_member` | `area_id, user_id` | Mute, `duration` in minutes automatically adjusted to predefined intervals (5 minutes / 1 hour / 1 day / 3 days / 7 days) |\n| `oopz.mute_mic` / `oopz.unmute_mic` | `area_id, user_id` | Mute microphone |\n| `oopz.kick_member` | `area_id, user_id` | Remove user from domain |\n| `oopz.block_user` / `oopz.unblock_user` | `area_id, user_id` | Domain blacklist |\n| `oopz.get_area_members` | `area_id` | Optional: `offset_start/offset_end` |\n| `oopz.get_assignable_roles` | `area_id, target_id` | Assignable roles |\n| `oopz.assign_role` / `oopz.revoke_role` | `area_id, target_id, role_id` | Submit after reading full role list |\n| `oopz.react_message` / `oopz.unreact_message` | `message_id, channel_id, emoji` | Optional: `user_id` (private message) / `area_id` |\n| `oopz.get_reactions` | `message_id` | Optional: `message_ids` (≤50) / `user_id` |\n| `oopz.get_reaction_persons` | `message_id, channel_id, emoji` | Paginated list of reaction users |\n| `oopz.top_message` | `message_id, area_id, channel_id` | Pin/unpin message (`cancel=True` to unpin) |\n| `oopz.get_history_messages` | `area_id, channel_id` | Optional: `size` (default 50) |\n| `oopz.get_friend_requests` | — | List of friend requests |\n| `oopz.respond_friend_request` | `target, friend_request_id, agree` | Approve/reject request (typically handled via Request DSL) |"
+    },
+    {
+      "hash": "d304e129e425dd6d4b8874c92a6d2d8c",
+      "translation": "## Friend Request Handling\n\n- Event: `request/friend`, `request_id` is a **stateless composite key** `<target>:<friendRequestId>`\n- `event.approve()` / `event.reject()` → POST `/client/v1/friendship/v1/response`\n- Single endpoint isomorphic, no need to retain request type context table"
+    },
+    {
+      "hash": "11ed71084028936e34bc64c24c86f1e9",
+      "translation": "## Return Value of Send Method\n\n```json\n{\n  \"status\": \"ok\",\n  \"retcode\": 0,\n  \"data\": {\"message_id\": \"14283...\"},\n  \"message_id\": \"14283...\",\n  \"message\": \"\",\n  \"oopz_raw\": {\"messageId\": \"14283...\", \"timestamp\": \"...\"}\n}\n```"
+    },
+    {
+      "hash": "af5728f6a64f80abe113b9ddbccc736c",
+      "translation": "## Unique Event Types\n\n- Message event extension fields: `oopz_area_id`, `guild_id` (channel message); `oopz_reference_message_id` (reply)\n- Notification extensions: `oopz_edited_text`, `oopz_emoji`, `oopz_reaction_type`, `oopz_persons`, `oopz_from_channel`, `oopz_channel_name`, `oopz_channel_type`, `oopz_area_name`, `oopz_role_id`, `oopz_role_name`, `oopz_ban_until`, `oopz_login_state`\n- `EventMixin` convenience methods: `get_raw_event()`, `get_area_id()`, `get_edited_text()`, `get_emoji()`, `get_reaction_type()`, `get_voice_persons()`"
+    }
+  ]
+}

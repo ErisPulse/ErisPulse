@@ -256,10 +256,10 @@
     "Руководство по платформам": {
       "description": "Возможности платформ и документация адаптеров",
       "icon": "fa-plug",
-      "count": 21,
+      "count": 22,
       "documents": [
         {
-          "title": "Документация по функциям платформы ErisPulse",
+          "title": "Документация ErisPulse PlatformFeatures",
           "path": "platform-guide/README.md",
           "level": 1,
           "icon": "fa-server"
@@ -361,6 +361,12 @@
           "icon": "fa-plug"
         },
         {
+          "title": "Документация по возможностям платформы Oopz",
+          "path": "platform-guide/oopz.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
           "title": "Документация по функциям платформы Sandbox",
           "path": "platform-guide/sandbox.md",
           "level": 1,
@@ -422,10 +428,10 @@
     "Продвинутые темы": {
       "description": "Глубокое изучение продвинутых функций фреймворка",
       "icon": "fa-fire",
-      "count": 20,
+      "count": 21,
       "documents": [
         {
-          "title": "Продвинутые темы",
+          "title": "Расширенные темы",
           "path": "advanced/README.md",
           "level": 1,
           "icon": "fa-fire"
@@ -443,7 +449,7 @@
           "icon": "fa-hourglass-half"
         },
         {
-          "title": "Маршрутизатор",
+          "title": "Менеджер маршрутов",
           "path": "advanced/router.md",
           "level": 1,
           "icon": "fa-route"
@@ -485,13 +491,13 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "Система принадлежности (owner)",
+          "title": "Система принадлежности (владельца)",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
         },
         {
-          "title": "Система интерактивных сессий",
+          "title": "Система интерактивного диалога",
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"
@@ -533,13 +539,19 @@
           "icon": "fa-fire"
         },
         {
+          "title": "Инструментарий runtime",
+          "path": "advanced/runtime.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
           "title": "Процесс запуска и ручное управление",
           "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"
         },
         {
-          "title": "Транскрипт сессии (Transcript)",
+          "title": "Входящие диалога (Transcript)",
           "path": "advanced/transcript.md",
           "level": 1,
           "icon": "fa-fire"

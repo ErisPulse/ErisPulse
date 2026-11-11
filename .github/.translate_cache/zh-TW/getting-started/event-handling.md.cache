@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "9c6cd41d1b87b64b9d6bcc996a5e42bb",
-  "file_hash": "9c6cd41d1b87b64b9d6bcc996a5e42bb",
-  "translated_at": "2026-11-10T05:25:14.063239",
+  "hash": "7de071572ff530f3b1207c4408431acb",
+  "file_hash": "7de071572ff530f3b1207c4408431acb",
+  "translated_at": "2026-11-11T16:08:45.554518",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -26,8 +26,8 @@
       "translation": "## 中間件：分發前改寫或否決\n\n中間件在事件分發**之前**順序執行，防火牆、限流、事件脫敏等場景的正統實現點：\n\n```python\nfrom ErisPulse.Core import adapter\n\n@adapter.middleware\nasync def firewall(data):\n    if _is_banned(data.get(\"user_id\")):\n        return False          # 否決：事件被丟棄，不進入任何處理器，無出站副作用\n    data[\"checked\"] = True    # 返回 dict：改寫載體（與歷史行為一致）\n    # 返回 None：放行，載體不變（歷史行為）\n    return data\n```\n\n| 回傳值 | 行為 |\n|--------|------|\n| `False` | **否決**：事件立即丟棄，不進入任何處理器 |\n| `dict` | 改寫事件載體後繼續分發 |\n| `None` | 放行，載體不變 |\n\n否決時框架輸出 TRACE 日誌並觸發 `adapter.event.blocked` 生命週期鈎子（攜帶中間件名與完整事件），供審計「事件為什麼沒響應」。"
     },
     {
-      "hash": "eea703b93d2858d749e3beac3b9ed12b",
-      "translation": "## 命令分發決策鏈：為什麼命令沒觸發\n\n一條命令訊息依次經過：**命令文字判定 → 命令名/別名命中（未命中附拼寫建議）→ 命中即認領 → 作用域 → 使用者 ACL → 主人 → 權限 → 冷卻/限流 → 配額（usage）→ 廢棄（deprecated，notice/rejected）→ 參數解析 → 執行**（中間件可在事件層否決，見上一節）。任何一步不滿足即終止；治理命中（冷卻/限流/配額）預設靜默丟棄，權限類拒絕會回覆使用者，廢棄按聲明回覆或拒絕。\n\n測試中 `ErisPulse-Testing` 的 `dispatch()` 直接回傳這條決策鏈（`DispatchTrace`，`trace.explain()` 輸出逐行因果），生產環境可用 `ErisPulse.Core.Event.start_dispatch_trace()` 采集同樣的記錄。\n\n此外 `ErisPulse.runtime` 提供兩組排查診斷 API：`explain_module(模組名)` 回答\"模組為什麼沒加載\"（未註冊 / 懶加載 / 配置禁用 / 依賴缺失 / SDK 版本不滿足，逐項給原因），`explain_event(事件)` 回答\"事件為什麼沒響應\"（適配器未註冊 / 身份拉黑 / 模組會話屏蔽 / 命令未命中）；配 `format_report()` 渲染人類可讀結論。"
+      "hash": "61a1df20bb933fc5f2d8f80c5122c5d6",
+      "translation": "## 命令分發決策鏈：為什麼命令沒觸發\n\n一條命令訊息依次經過：**命令文本判定 → 命令名/別名命中（未命中附拼寫建議）→ 命中即認領 → 作用域 → 用戶 ACL → 主人 → 權限 → 冷卻/限流 → 配額（usage）→ 廢棄（deprecated，notice/rejected）→ 參數解析 → 執行**（中介軟體可在事件層否決，見上一節）。任何一步不滿足即終止；治理命中（冷卻/限流/配額）預設靜默丟棄，權限類拒絕會回覆用戶，廢棄按聲明回覆或拒絕。\n\n測試中 `ErisPulse-Testing` 的 `dispatch()` 直接回傳這條決策鏈（`DispatchTrace`，`trace.explain()` 輸出逐行因果），生產環境可用 `ErisPulse.Core.Event.start_dispatch_trace()` 採集同樣的記錄。\n\n此外 `ErisPulse.runtime` 提供三組排查診斷 API：`explain_module(模組名)` 回答「模組為什麼沒載入」（未註冊 / 懶載入 / 設定停用 / 依賴缺失 / SDK 版本不滿足，逐項給原因），`explain_event(事件)` 回答「事件為什麼沒回應」（適配器未註冊 / 身分封鎖 / 模組會話屏蔽 / 命令未命中），`explain_trace(trace_id)` 回答「這條訊息收到後為什麼沒回」——按 trace-id 從會話 transcript 聚合完整出入站時間軸並給出結論（收到未回 / 已回 / transcript 未啟用）；配 `format_report()` 渲染人類可讀結論。`explain_trace` 依賴[會話轉錄](../advanced/transcript.md)，未啟用時明確回傳該結論而不是空結果。"
     },
     {
       "hash": "186ec9afe13e30687317fbe909d2f362",

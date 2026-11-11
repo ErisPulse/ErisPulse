@@ -512,11 +512,11 @@ async def firewall(data):
 
 ## 命令分發決策鏈：為什麼命令沒觸發
 
-一條命令訊息依次經過：**命令文字判定 → 命令名/別名命中（未命中附拼寫建議）→ 命中即認領 → 作用域 → 使用者 ACL → 主人 → 權限 → 冷卻/限流 → 配額（usage）→ 廢棄（deprecated，notice/rejected）→ 參數解析 → 執行**（中間件可在事件層否決，見上一節）。任何一步不滿足即終止；治理命中（冷卻/限流/配額）預設靜默丟棄，權限類拒絕會回覆使用者，廢棄按聲明回覆或拒絕。
+一條命令訊息依次經過：**命令文本判定 → 命令名/別名命中（未命中附拼寫建議）→ 命中即認領 → 作用域 → 用戶 ACL → 主人 → 權限 → 冷卻/限流 → 配額（usage）→ 廢棄（deprecated，notice/rejected）→ 參數解析 → 執行**（中介軟體可在事件層否決，見上一節）。任何一步不滿足即終止；治理命中（冷卻/限流/配額）預設靜默丟棄，權限類拒絕會回覆用戶，廢棄按聲明回覆或拒絕。
 
-測試中 `ErisPulse-Testing` 的 `dispatch()` 直接回傳這條決策鏈（`DispatchTrace`，`trace.explain()` 輸出逐行因果），生產環境可用 `ErisPulse.Core.Event.start_dispatch_trace()` 采集同樣的記錄。
+測試中 `ErisPulse-Testing` 的 `dispatch()` 直接回傳這條決策鏈（`DispatchTrace`，`trace.explain()` 輸出逐行因果），生產環境可用 `ErisPulse.Core.Event.start_dispatch_trace()` 採集同樣的記錄。
 
-此外 `ErisPulse.runtime` 提供兩組排查診斷 API：`explain_module(模組名)` 回答"模組為什麼沒加載"（未註冊 / 懶加載 / 配置禁用 / 依賴缺失 / SDK 版本不滿足，逐項給原因），`explain_event(事件)` 回答"事件為什麼沒響應"（適配器未註冊 / 身份拉黑 / 模組會話屏蔽 / 命令未命中）；配 `format_report()` 渲染人類可讀結論。
+此外 `ErisPulse.runtime` 提供三組排查診斷 API：`explain_module(模組名)` 回答「模組為什麼沒載入」（未註冊 / 懶載入 / 設定停用 / 依賴缺失 / SDK 版本不滿足，逐項給原因），`explain_event(事件)` 回答「事件為什麼沒回應」（適配器未註冊 / 身分封鎖 / 模組會話屏蔽 / 命令未命中），`explain_trace(trace_id)` 回答「這條訊息收到後為什麼沒回」——按 trace-id 從會話 transcript 聚合完整出入站時間軸並給出結論（收到未回 / 已回 / transcript 未啟用）；配 `format_report()` 渲染人類可讀結論。`explain_trace` 依賴[會話轉錄](../advanced/transcript.md)，未啟用時明確回傳該結論而不是空結果。
 
 ## 作用域過濾：為什麼我的模組沒收到訊息
 

@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "hash": "b6f1278f31b56890ea180d05803ba34a",
+  "file_hash": "b6f1278f31b56890ea180d05803ba34a",
+  "translated_at": "2026-11-11T15:29:49.520234",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "775a7152043978448b3079f07e96ff1a",
+      "translation": "# Oopz 平台特性文檔"
+    },
+    {
+      "hash": "be1559cdda22d06e8b4b492f8c4353ab",
+      "translation": "## 文件資訊\n\n| 項目 | 內容 |\n|---|---|\n| 模組版本 | 0.1.0 |\n| 平台標識 | `oopz` |\n| 維護者 | ErisPulse 團隊 |\n| 最後更新 | 2026-11-11 |\n\n> ⚠️ Oopz 無官方機器人平台，本轉接器基於社群逆向協定以**使用者帳號身份**接入，非官方介面隨時可能失效，請使用小號。詳見 README 風險聲明。"
+    },
+    {
+      "hash": "099f82766d244980905d746b3c7530bf",
+      "translation": "## 基本資訊\n\n- 適配器類別：`OopzAdapter`（entry-point `oopz`）\n- 接入方式：WebSocket（`wss://ws.oopz.cn`）+ REST 閘道（`https://gateway.oopz.cn`），RSA 簽名請求標頭 + JWT\n- 憑證：「帳密二選一」——`password`（手機號碼+密碼+用戶端私鑰，自動登入續期）或 `token`（uid/JWT/device_id/私鑰四件套）\n- 多帳戶：支援（`[Oopz_Adapter.accounts.<name>]`），事件 `self.account_id` 標記來源\n- 框架軟依賴：ErisPulse ≥ 2.7.1"
+    },
+    {
+      "hash": "a4ca879cb789fce28370aea7ca24de2e",
+      "translation": "## 會話模型\n\n| ErisPulse 目標 | Oopz 概念 | 說明 |\n|---|---|---|\n| `Send.To(\"group\", <頻道ID>)` | 頻道（channel） | 域由適配器經「channel→area 快取 + 已加入域掃描」自動解析 |\n| `Send.To(\"user\", <對方UID>)` | 私信會話 | 自動 `PATCH /client/v1/chat/v1/to` 開會話並快取 sessionId |\n| `guild_id` 欄位 / guild 語義 | 域（area） | 域級操作走 `get_guild_*` 與 `oopz.*` 管理擴充 |"
+    },
+    {
+      "hash": "8b625a77fc14ceb37bf2177673db54ad",
+      "translation": "## 標準化對齊（0.1.0）\n\n### 錯誤碼規範\n\n| retcode | 含義 |\n|---|---|\n| 0 | 成功 |\n| 10002 | 不支援的動作/訊息段降級（語音影片檔案傳送、upload_file、keyboard 等） |\n| 10003 | 參數缺失/不合法（如頻道無法定位所屬域） |\n| 33001 | 網路異常/限流（429 尊重 Retry-After 重試一次） |\n| 34100 | 平台回傳失敗（原始回應在 `oopz_raw`） |\n| 34005 | 帳戶未解析（未設定或未建立工作階段） |\n\n### 回應結構\n\n所有回應包含 `status / retcode / data / message_id / message / oopz_raw`；傳送回應的 `message_id` 取自平台回傳的 `messageId`；`data.self_info.user_id` 在 `get_self_info` 中回填。\n\n### 事件欄位完備性\n\n- 所有事件必備 `id / time / type / detail_type / sub_type / platform / self`，且 `oopz_raw` + `oopz_raw_type` 永遠存在\n- 訊息事件頂層必帶 `message_id`；時間戳微秒字串統一歸一為秒\n- 事件 `id` 以帳戶域去重（`<account>:<類型>:<平台ID>`）\n- 未知事件轉為 `type=\"unknown\"` + `warning`，不靜默丟棄\n- 協定內部幀（握手/認證/心跳/訂閱）不產生平台事件\n\n### 降級語義\n\n- `voice/audio/video/file` 傳送段 → `retcode=10002`（平台僅支援圖片上傳），不拋出例外\n- `guild` 傳送目標 → `retcode=10003`（請指定頻道）\n- token 模式 JWT 失效 → `retcode=34100` 提示更新憑證；password 模式自動重新登入後重試一次"
+    },
+    {
+      "hash": "08931eeda252b63bbc33953431198f9f",
+      "translation": "## 支援的訊息發送類型\n\n| 方法 | 平台實作 |\n|---|---|\n| `Text` | 文字（text/content 雙寫） |\n| `Image` | COS 簽名票上傳（僅圖片），文字佔位符 `![IMAGEw{w}h{h}]({fileKey})` + attachments |\n| `At / AtAll / Reply` | `mentionList` / `isMentionAll` / `referenceMessageId` |\n| `Important()` 修飾符 | `styleTags=[\"IMPORTANT\"]` 公告樣式 |\n| `Recall(messageId)` | `recallGim`（頻道）/ `recallIm`（私訊，僅撤回自己發的） |\n| `Raw_ob12` | OneBot12 段 → 平台 payload（text/mention/mention_all/reply/image；其餘段降級 10002） |\n| Voice/Video/File/Keyboard | 不支援 → 10002 |"
+    },
+    {
+      "hash": "bc70d6c35fc80fd19cbc1a94cd3be2a3",
+      "translation": "## 標準 API 動作（ApiDSL）\n\n### 支援的標準動作\n\n`get_self_info`、`get_user_info`、`get_friend_list`、`get_group_info`（頻道+所屬域合併資訊）、`get_group_list`（已加入域的頻道扁平表）、`get_guild_info`、`get_guild_list`、`get_channel_list`、`get_guild_members`、`delete_message`（需 `channel_id` 或 `user_id` 上下文）、`get_file`（附件 URL → base64）、`leave_guild`、`get_status`、`get_version`、`get_supported_actions`\n\n### 不支援的標準動作（retcode=10002）\n\n`send_message`（走 Send DSL）、`upload_file`、`get_latest_events`、`set_group_name`、`set_group_admin`、`set_group_leave`、`set_group_card`、`leave_group`、`leave_channel`\n\n### 平台擴充動作（oopz.*）\n\n| 動作 | 必填參數 | 說明 |\n|---|---|---|\n| `oopz.create_channel` | `area_id, name` | 可選 `channel_type/group_id/secret/max_member` |\n| `oopz.delete_channel` | `area_id, channel_id` | |\n| `oopz.mute_member` / `oopz.unmute_member` | `area_id, user_id` | 禁言，`duration` 分鐘數自動吸附檔位（5分鐘/1小時/1天/3天/7天） |\n| `oopz.mute_mic` / `oopz.unmute_mic` | `area_id, user_id` | 禁麥 |\n| `oopz.kick_member` | `area_id, user_id` | 移出域 |\n| `oopz.block_user` / `oopz.unblock_user` | `area_id, user_id` | 域黑名單 |\n| `oopz.get_area_members` | `area_id` | 可選 `offset_start/offset_end` |\n| `oopz.get_assignable_roles` | `area_id, target_id` | 可分配身分組 |\n| `oopz.assign_role` / `oopz.revoke_role` | `area_id, target_id, role_id` | 內部讀全量角色後整體提交 |\n| `oopz.react_message` / `oopz.unreact_message` | `message_id, channel_id, emoji` | 可選 `user_id`（私訊）/`area_id` |\n| `oopz.get_reactions` | `message_id` | 可選 `message_ids`（≤50）/`user_id` |\n| `oopz.get_reaction_persons` | `message_id, channel_id, emoji` | 回應者分頁 |\n| `oopz.top_message` | `message_id, area_id, channel_id` | 置頂/取消（`cancel=True`） |\n| `oopz.get_history_messages` | `area_id, channel_id` | 可選 `size`（預設 50） |\n| `oopz.get_friend_requests` | — | 好友申請列表 |\n| `oopz.respond_friend_request` | `target, friend_request_id, agree` | 審批（一般用 Request DSL） |"
+    },
+    {
+      "hash": "d304e129e425dd6d4b8874c92a6d2d8c",
+      "translation": "## 好友申請處理\n\n- 事件：`request/friend`，`request_id` 為**無狀態複合鍵** `<target>:<friendRequestId>`\n- `event.approve()` / `event.reject()` → POST `/client/v1/friendship/v1/response`\n- 單端點同構，無需請求類型上下文留存表"
+    },
+    {
+      "hash": "11ed71084028936e34bc64c24c86f1e9",
+      "translation": "## 發送方法返回值\n\n```json\n{\n  \"status\": \"ok\",\n  \"retcode\": 0,\n  \"data\": {\"message_id\": \"14283...\"},\n  \"message_id\": \"14283...\",\n  \"message\": \"\",\n  \"oopz_raw\": {\"messageId\": \"14283...\", \"timestamp\": \"...\"}\n}\n```"
+    },
+    {
+      "hash": "af5728f6a64f80abe113b9ddbccc736c",
+      "translation": "## 特有事件類型\n\n- 訊息事件擴充欄位：`oopz_area_id`、`guild_id`（頻道訊息）；`oopz_reference_message_id`（回覆）\n- 通知擴充：`oopz_edited_text`、`oopz_emoji`、`oopz_reaction_type`、`oopz_persons`、`oopz_from_channel`、`oopz_channel_name`、`oopz_channel_type`、`oopz_area_name`、`oopz_role_id`、`oopz_role_name`、`oopz_ban_until`、`oopz_login_state`\n- `EventMixin` 便捷方法：`get_raw_event()`、`get_area_id()`、`get_edited_text()`、`get_emoji()`、`get_reaction_type()`、`get_voice_persons()`"
+    }
+  ]
+}

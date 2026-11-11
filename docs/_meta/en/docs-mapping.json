@@ -256,10 +256,10 @@
     "Platform Guide": {
       "description": "Platform features and adapter documentation",
       "icon": "fa-plug",
-      "count": 21,
+      "count": 22,
       "documents": [
         {
-          "title": "ErisPulse PlatformFeatures Documentation",
+          "title": "ErisPulse Platform Features Documentation",
           "path": "platform-guide/README.md",
           "level": 1,
           "icon": "fa-server"
@@ -361,6 +361,12 @@
           "icon": "fa-plug"
         },
         {
+          "title": "Oopz Platform Feature Documentation",
+          "path": "platform-guide/oopz.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
           "title": "Sandbox Platform Features Documentation",
           "path": "platform-guide/sandbox.md",
           "level": 1,
@@ -422,7 +428,7 @@
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
       "icon": "fa-fire",
-      "count": 20,
+      "count": 21,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -529,6 +535,12 @@
         {
           "title": "Performance Benchmarking and Tuning",
           "path": "advanced/performance.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "The runtime Toolbelt",
+          "path": "advanced/runtime.md",
           "level": 1,
           "icon": "fa-fire"
         },

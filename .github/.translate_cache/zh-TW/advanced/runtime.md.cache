@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "hash": "e7c1d67c7460e477b6357e375df1cd89",
+  "file_hash": "e7c1d67c7460e477b6357e375df1cd89",
+  "translated_at": "2026-11-11T15:07:04.252328",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "995cbce0f83e3e82e88e3b1323574400",
+      "translation": "# runtime 工具帶\n\n> [!TIP]\n> **何時需要閱讀本文**：想一站式了解 `ErisPulse.runtime` 包提供了哪些\n> 可直接 import 的運行時工具時。各能力的詳細用法在對應主題文件，本頁是\n> 速查索引 + 少量無主題歸屬能力的用法說明。\n\n`ErisPulse.runtime` 是框架的聚合導出層：把散落在各模組的運行時工具收進\n單一入口，腳本、模組、適配器代碼統一 `from ErisPulse.runtime import X`\n取用，不必記深層路徑。"
+    },
+    {
+      "hash": "869677f689b5db4680de3602056fbd2c",
+      "translation": "## 能力速查表\n\n| 類別 | 名稱 | 用途 | 詳見 |\n|------|------|------|------|\n| 歸屬權 | `bind_owner` | 將 owner 上下文綫程入口 | [歸屬權系統](ownership.md) |\n| 歸屬權 | `owner_scope` / `get_current_owner` | 代碼塊級歸屬上下文 | [歸屬權系統](ownership.md) |\n| 歸屬權 | `get_owner_tasks` / `cancel_owner_tasks` | 查詢 / 取消某 owner 的後台任務 | [歸屬權系統](ownership.md) |\n| 後台任務 | `spawn_background` / `spawn_later` / `spawn_thread` | 後台協程 / 延遲任務 / 線程任務 | [生命週期管理](lifecycle.md) |\n| 後台任務 | `cancel_all_background_tasks` / `run_main_loop` | 後台任務收口與主迴圈註冊 | [生命週期管理](lifecycle.md) |\n| 事件上下文 | `get_current_trace_id` | 讀取當前鏈路追蹤 ID | [鏈路追蹤](interaction.md#鏈路追蹤trace-id) |\n| 事件上下文 | `get_send_receipts` | 讀取消息事務的發送回執帳本 | [消息事務](interaction.md#消息事務message_tx) |\n| 事件上下文 | `get_current_event_account` / `get_current_caller` / `get_handler_waits` | 事件帳戶 / 調用方 / 等待表讀取 | [互動會話系統](interaction.md) |\n| 內存 | `snapshot` / `log_snapshot` | 帶 label 的 RSS + tracemalloc 快照（自動計算增量） | [內存診斷](performance.md#內存診斷) |\n| 內存 | `get_rss_mb` / `get_traced_mb` | 當前進程內存讀數 | [內存診斷](performance.md#內存診斷) |\n| 配置解析 | `dict_to_dataclass` | dict → 類型安全 dataclass 實例 | 請見下節 |\n| 配置解析 | `dataclass_to_defaults_dict` / `dataclass_to_toml_with_comments` | dataclass → 預設值 dict / 帶 TOML 序列化 | [宣告式配置](../developer-guide/configuration.md) |\n| 排障 | `explain_module` / `explain_event` / `explain_trace` | 模組 / 事件 / 消息鏈路診斷 | [啟動排查](startup.md) 與 [事件處理](../getting-started/event-handling.md) |\n| 排障 | `format_diagnostic_block` / `log_diagnostic` / `extract_user_frame` | 異常診斷塊渲染與使用者幀提取 | [啟動流程](startup.md) |\n| 異常兜底 | `setup_exception_handling` / `global_exception_handler` | 全域異常處理器掛載 | [啟動流程](startup.md) |\n| 安全 | `redact_secret` | 日誌 / 報告中的敏感值脫敏 | [啟動流程](startup.md) |\n| 指標 | `metrics` / `MetricsRegistry` | 運行指標註冊表（`/metrics` 端點資料源） | [部署指南](../user-guide/deployment.md) |"
+    },
+    {
+      "hash": "622eaf7e958ccde1218ba2a0898ad898",
+      "translation": "## dict_to_dataclass：dict → 類型安全物件\n\n宣告式 dataclass 配置的「反方向」——將任意 dict（API 回應、webhook payload、使用者輸入）依照宣告解析成類型安全的實例，取代手寫 `data.get(\"x\", default)` 鏈：\n\n```python\nfrom dataclasses import dataclass, field\nfrom ErisPulse.runtime import dict_to_dataclass\n\n@dataclass\nclass WebhookPayload:\n    order_id: str\n    amount: float = 0.0\n    tags: list = field(default_factory=list)\n    remark: str = \"\"\n\npayload = dict_to_dataclass(WebhookPayload, {\n    \"order_id\": \"A-1024\",\n    \"amount\": \"99.5\",          # str → float 自動轉換\n    \"unknown_key\": \"忽略\",      # 未宣告欄位自動忽略\n})\npayload.amount                   # 99.5（float）\n```\n\n- 類型轉換（str → int/float 等）、預設值填充、巢狀 dataclass 的遞迴填充\n- 環境變數覆蓋：欄位 `metadata={\"env\": \"NAME\"}` 時，優先順序為 環境變數 > 數據 > 預設值\n- 宣告式配置類（`ConfigClass` / `BaseConfig`）的熱更新回調內部即由它完成 dict → 配置物件的轉換"
+    },
+    {
+      "hash": "ff77237f1443c20ce64694e90ac99267",
+      "translation": "## 相關文件\n\n- [宣告式設定](../developer-guide/configuration.md) - ConfigClass / BaseConfig 宣告式設定\n- [歸屬權（owner）系統](ownership.md) - 資源歸屬與自動回收\n- [生命週期管理](lifecycle.md) - 後台任務與主迴圈"
+    }
+  ]
+}

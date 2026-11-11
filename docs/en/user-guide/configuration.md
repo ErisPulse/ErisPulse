@@ -373,30 +373,30 @@ The `master=True` of a command is only a **developer default**: the user can ove
 ```toml
 [ErisPulse.logger]
 level = "INFO"
-log_files = []                # Explicit log file list (mutually exclusive with log_dir, higher priority)
-log_dir = ""                  # Log output directory (automatically segment and rotate when set; log_files is mutually exclusive, log_files has higher priority)
-log_rotation = "size"         # Segmentation method: "size" / "date" / "none"
-log_max_size_mb = 10          # Single file size limit (MB) in size mode
+log_files = []                # Explicit list of log files (mutually exclusive with log_dir, higher priority)
+log_dir = ""                  # Log directory (automatic segment rotation enabled)
+log_rotation = "size"         # Segmenting method: "size" / "date" / "none"
+log_max_size_mb = 10          # Maximum size per file in size mode (MB)
 log_backup_count = 5          # Number of historical log files to retain
-log_rotation_when = "midnight"  # Date mode rotation cycle: S/M/H/D/midnight
-memory_limit = 1000             # Number of log entries per module in memory (0 = disable memory log copy)
-total_memory_limit = 5000       # Total number of log entries in memory for all modules (0 = unlimited)
+log_rotation_when = "midnight"  # Rotation cycle in date mode: S/M/H/D/midnight
+memory_limit = 1000             # Maximum number of log entries per module in memory (0 = disable memory log copy)
+total_memory_limit = 5000       # Total number of log entries across all modules in memory (0 = unlimited)
 exclude_levels = ["EVENT"]
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------|------|---------|------|
-| level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed framework internal debugging information) |
+|---------------------|------|---------------|-------------|
+| level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed internal debugging information) |
 | format | string | rich | Log output format: `rich` (colored, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (JSON structured, suitable for ELK, etc.) |
-| log_files | array | empty | List of log output files (explicit paths, no segmentation) |
-| log_dir | string | empty | Log output directory (automatically created). When set, logs are written to `erispulse.log` in the directory and automatically segmented based on `log_rotation`; mutually exclusive with `log_files`, `log_files` takes precedence |
+| log_files | array | empty | List of explicit log file paths (no segmentation) |
+| log_dir | string | empty | Log output directory (automatically created). When set, logs are written into `erispulse.log` in the directory and segmented automatically based on `log_rotation`; mutually exclusive with `log_files`, `log_files` takes precedence |
 | log_rotation | string | size | Segmentation method: `size` (by size) / `date` (by time) / `none` (no segmentation) |
-| log_max_size_mb | float | 10 | Single file size limit (MB) in size mode, logs are rotated to `.1`/`.2` backups when exceeded |
-| log_backup_count | integer | 5 | Number of historical log files to retain, oldest backups are automatically deleted when exceeded |
-| log_rotation_when | string | midnight | Date mode rotation cycle: `S`/`M`/`H`/`D`/`midnight` (default is midnight daily) |
-| memory_limit | integer | 1000 | Number of log entries saved in memory per module; `0` means disable memory log copy (no longer write to memory, existing records are retained) |
-| total_memory_limit | integer | 5000 | Total number of log entries in memory for all modules; `0` means unlimited. When exceeded, the oldest records are discarded based on rotation strategy (prioritizing modules with the most entries), independent of the per-module `memory_limit` |
-| exclude_levels | array | empty | Levels to exclude. Logs of excluded levels are **completely discarded** (not written to memory, not pushed to Dashboard or other subscribers, not printed, not written to file). Supports hot reload |
+| log_max_size_mb | float | 10 | Maximum file size in size mode (MB); when exceeded, the file rotates to `.1`/`.2` backups |
+| log_backup_count | integer | 5 | Number of historical log files to retain; oldest backups beyond this limit are automatically deleted |
+| log_rotation_when | string | midnight | Rotation cycle in date mode: `S`/`M`/`H`/`D`/`midnight` (default is midnight each day) |
+| memory_limit | integer | 1000 | Number of log entries saved in memory per module; `0` means disable memory log copy (no new entries are written to memory, but existing records are retained) |
+| total_memory_limit | integer | 5000 | Total number of log entries across all modules in memory; `0` means unlimited. When exceeded, the oldest records are discarded according to the rotation policy (prioritizing modules with the most entries), independent of the single-module `memory_limit` |
+| exclude_levels | array | empty | Levels to exclude. Logs of excluded levels are **completely discarded** (not written to memory, not pushed to Dashboard or other subscribers, not printed, not written to files). Supports hot update |
 
 You can also dynamically switch in code:
 
@@ -406,17 +406,28 @@ from ErisPulse.Core import logger
 # Segment by size: single file 10MB, retain 5 copies
 logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
 
-# Segment by time: rotate daily at midnight, retain 7 copies
+# Segment by time: rotate at midnight daily, retain 7 copies
 logger.set_output_dir("logs", rotation="date", backup_count=7)
 ```
 
-> [!NOTE]
-> `log_dir` and segmentation-related configurations require ErisPulse **2.8.0+**.
+> [!NOTE]  
+> `log_dir` and related segmentation configurations require ErisPulse **2.8.0+**.
 
-> **Privacy Protection**: Message sending and receiving content is logged at the **EVENT level** (value 21). Setting `exclude_levels = ["EVENT"]` prevents the backend (such as the Dashboard log panel) from seeing the content of messages in groups/private chats, while not affecting logs of other levels.
+> **Privacy Protection**: Message send/receive content is logged at the **EVENT** level (value 21). Setting `exclude_levels = ["EVENT"]` ensures that backend components (such as the Dashboard log panel) cannot see message content from groups or private chats, while not affecting logs of other levels.
 
-> [!NOTE]
-> This `exclude_levels` feature requires ErisPulse **2.8.0+**.
+In addition to configuration files (supporting hot updates), you can also switch at runtime using code—no need to write configuration when making management commands like `/privacy on|off`:
+
+```python
+from ErisPulse import logger
+
+logger.exclude_level("EVENT")        # Temporarily exclude a log level at runtime (same semantics as exclude_levels configuration)
+logger.allow_level("EVENT")          # Restore this level
+logger.list_excluded_levels()        # View currently excluded levels
+logger.set_format("json")            # Switch output to JSON line protocol (same effect as format configuration key)
+```
+
+> [!NOTE]  
+> The `exclude_levels` feature requires ErisPulse **2.8.0+**.
 
 ## Framework Configuration
 

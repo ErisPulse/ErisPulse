@@ -29,39 +29,71 @@ class User(Model):
 
 | パラメータ | 説明 |
 |------|------|
-| `default` | デフォルト値（未指定かつ自動採番でない場合 → 必須の NOT NULL） |
-| `default_factory` | デフォルトファクトリ（変更可能なデフォルト値を生成する callable、例: `list`） |
-| `primary_key` | 主キー |
-| `autoincrement` | 自動採番主キー（主キーを暗黙に含み、`create` 後に自動でインスタンスへ書き戻します） |
-| `max_length` | 文字列の最大長（`VARCHAR(n)` を生成、書き込み時に検証） |
+| `default` | デフォルト値（未指定かつ自動増分でない場合 → NOT NULL 必須） |
+| `default_factory` | ミュータブルなデフォルト値のファクトリ（例：`list`） |
+| `primary_key` | 主キー（複数指定で複合主キーとなり、テーブルレベルの `PRIMARY KEY (a, b)` に集約される） |
+| `autoincrement` | 自動増分主キー（暗黙的に主キーを含み、`create` 後に自動的に値が反映される。単一列主キー専用で、複合主キーとは排他） |
+| `max_length` | 文字列の最大長（`VARCHAR(n)` を生成、書き込み時にバリデーション） |
 | `nullable` | NULL を許可するかどうか（デフォルトは False） |
-| `index` | 通常インデックスを生成します |
+| `index` | 通常インデックスを生成 |
 | `unique` | 一意制約 |
-| `choices` / `ge` / `le` | 列挙 / 数値範囲（書き込み時に検証） |
+| `choices` / `ge` / `le` | 列挙 / 数値範囲（書き込み時にバリデーション） |
 | `description` | 説明（i18n 辞書、設定クラスと同じ形式） |
-| `column_type` | SQL カラム型定義を上書きします |
+| `column_type` | SQL の列型定義の上書き |
+| `foreign_key` | 列レベルの外部キー制約（`"テーブル.列"`、`REFERENCES` を生成） |
+| `on_delete` | 外部キーの削除アクション：`CASCADE` / `SET NULL` / `RESTRICT` / `NO ACTION` / `SET DEFAULT` |
+| `auto_now_add` | 挿入時に現在のタイムスタンプ（浮動小数点型のエポック秒）を自動的に書き込む |
+| `auto_now` | 挿入時およびインスタンスの `save()` による更新時に自動的に書き込む（`QuerySet.update` の一括パスでは発動しない） |
+
+## 複合主キーと複合一意
+
+複数の `primary_key=True` フィールドで複合主キーを構成し、`get` / `save` / `delete` はすべての主キー列を基にレコードを特定します。
+`__unique_together__` で複合一意グループを宣言します（複数グループ可）：
+
+```python
+class Membership(Model):
+    __tablename__ = "memberships"
+    __unique_together__ = (("user_id", "group_id"),)
+
+    user_id: int = Field(primary_key=True)
+    group_id: int = Field(primary_key=True)
+    role: str = Field(default="member")
+
+m = await Membership.get(user_id=1, group_id=2)
+```
+
+- `autoincrement` は複合主キーと排他的であり、共存させるとモデル定義時にエラーが発生します
+- `__unique_together__` は一意インデックスで実装されます（インデックス名に `uq_` プレフィックスを付与）：新規テーブルの場合はテーブル作成時に生成され、**既存テーブルに対しては `create_table()` の実行時に自動的に追加作成されます**。再作成は不要です
+- 複合主キーのモデルは現時点ではリレーションマッピング（has-many / belongs-to）をサポートしていません。インスタンスアクセス時に明示的にエラーが発生します
 
 ## テーブル作成と CRUD
 
 ```python
 await User.create_table()                      # 冪等（IF NOT EXISTS）
 
-user = await User.create(name="Alice", age=20) # 挿入（自動採番主キーは自動で書き戻されます）
-got = await User.get(id=user.id)               # 等値条件に一致する最初の 1 件を取得
+user = await User.create(name="Alice", age=20) # 挿入（オートインクリメント主キーは自動的にインスタンスへ反映）
+got = await User.get(id=user.id)               # 等値条件で最初の1件を取得
 
 users = await User.where(User.age > 18).order_by("-age").limit(10).all()
 first = await User.where(User.name == "Alice").first()
 total = await User.count(User.age > 18)
 
 user.age = 21
-await user.save()                              # 主キーによる更新（先に制約検証）。主キーがない場合は挿入にフォールバック（自動採番主キーもインスタンスに書き戻されます）
+await user.save()                              # 主キーによる更新（先に制約チェック）。主キーがない場合は挿入にフォールバック（オートインクリメント主キーも同様にインスタンスへ反映）
+await user.save(update_fields=["age"])         # 部分カラム更新（ホワイトリスト。それ以外のカラムは書き込まれない）
 await user.delete()                            # 主キーによる削除
+
+user, created = await User.get_or_create({"age": 20}, name="Alice")      # 見つかればそのまま返す。なければ作成
+user, created = await User.update_or_create({"age": 21}, name="Alice")   # 見つかれば defaults を更新して保存。なければ作成
 
 await User.update_all(User.age > 18, role="adult")  # 一括更新
 await User.delete_all(User.age > 100)               # 一括削除
 ```
 
-クエリ式は `> >= < <= == !=`、`in_([...])`、および `&`（AND）/ `|`（OR）の組み合わせに対応しています:
+> [!NOTE]
+> `get_or_create` / `update_or_create` は並行競合下では、2つのコルーチンが同時に作成処理に進む可能性があります——一意制約（主キー / `unique` / `__unique_together__`）により、後から到達した側は `StorageOperationError` を受け取ります。冪等なセマンティクスが必要な場合は、例外を捕捉した後にもう一度再クエリを行ってください。
+
+クエリ式は `> >= < <= == !=`、`in_([...])`、および `&`（AND）/ `|`（OR）の組み合わせをサポートしています：
 
 ```python
 await User.where((User.age > 18) & User.name.in_(["Alice", "Bob"])).all()
@@ -126,14 +158,14 @@ ALTER 誤操作を避けるため）。
 
 ## 外部キー（リレーションマッピングの基礎）
 
-`foreign_key="テーブル.カラム"` でカラムレベルの外部キー制約を宣言すると、DDL に `REFERENCES` 句が生成されます:
+`foreign_key="テーブル.カラム"` は列レベルの外部キー制約を宣言し、DDL には `REFERENCES` 句が生成されます。`on_delete` は削除時の動作を宣言します（例：`"CASCADE"` は参照行を連鎖的に削除します）：
 
 ```python
 class Post(Model):
     __tablename__ = "posts"
 
     id: int = Field(primary_key=True, autoincrement=True)
-    author: int = Field(foreign_key="orm_users.id")
+    author: int = Field(foreign_key="orm_users.id", on_delete="CASCADE")
 
     content: str = Field(max_length=255)
 ```

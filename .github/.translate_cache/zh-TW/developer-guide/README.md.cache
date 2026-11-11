@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "8916c18a07dcac34b05189f0e6153895",
-  "file_hash": "8916c18a07dcac34b05189f0e6153895",
-  "translated_at": "2026-10-30T14:50:23.915036",
+  "hash": "26050d5e8390366dfed069f3f417cf86",
+  "file_hash": "26050d5e8390366dfed069f3f417cf86",
+  "translated_at": "2026-11-11T15:30:27.767099",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -22,8 +22,8 @@
       "translation": "## 開發類型選擇\n\n根據你的需求選擇合適的開發類型：\n\n| 開發類型 | 適用場景 | 入門指南 |\n|---------|---------|---------|\n| **模組開發** | 擴充機器人功能、實作業務邏輯、提供命令和訊息處理 | [模組開發入門](modules/getting-started.md) |\n| **配接器開發** | 連接新的訊息平台、實作跨平台通訊、提供平台特定功能 | [配接器開發入門](adapters/getting-started.md) |\n\n> 如果你想擴充機器人的功能（如新增命令、處理訊息），選擇**模組開發**。如果你需要讓機器人連接到一個新的平台，選擇**配接器開發**。"
     },
     {
-      "hash": "df55c8acea3081490090bb2ad7dfa656",
-      "translation": "## 開發工具\n\n### 專案範本\n\nErisPulse 提供了範例專案作為參考：\n\n- [模組範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模組的完整專案結構\n- [配接器範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 配接器的完整專案結構\n\n### 開發模式\n\n使用熱重載模式進行開發，程式碼修改後自動重新載入：\n\n```bash\nepsdk run main.py --reload\n```\n\n### 偵錯技巧\n\n在 `config/config.toml` 中啟用 DEBUG 或 TRACE 級別日誌：\n\n```toml\n[ErisPulse.logger]\n# DEBUG: 輸出模組載入、路由註冊等開發偵錯資訊\n# TRACE: 最低級別，輸出事件分發、儲存寫入、懶載入等框架內部詳細流程\nlevel = \"DEBUG\"\n```"
+      "hash": "4ea6d33598a6f50b1c26861ad4db3410",
+      "translation": "## 開發工具\n\n### 項目模板\n\nErisPulse 提供了示例項目作為參考：\n\n- [模組示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模組的完整專案結構（命令 / 配置 / ORM / 依賴注入）\n- [Web 能力示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-web) - 路由裝飾器 / 中間件 / WebSocket 鈎子 / router.app 逃生艙\n- [互動進階示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-interactive) - 消息事務與回執 / ORM 聯合唯一與事務 / 請求審批 / 發送鏈\n- [運維治理示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-ops) - 線程任務歸屬 / 延遲任務 / 內存體檢 / 隱私開關\n- [適配器示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 適配器的完整專案結構（另有 [輪詢](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter-polling) / [Webhook](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter-webhook) 變體）\n\n### 開發模式\n\n使用熱重載模式進行開發，程式碼修改後自動重載：\n\n```bash\nepsdk run main.py --reload\n```\n\n### 調試技巧\n\n在 `config/config.toml` 中啟用 DEBUG 或 TRACE 級別日誌：\n\n```toml\n[ErisPulse.logger]\n# DEBUG: 輸出模組載入、路由註冊等開發調試資訊\n# TRACE: 最低級別，輸出事件分發、儲存寫入、懶載入等框架內部詳細流程\nlevel = \"DEBUG\"\n```"
     },
     {
       "hash": "786840a3da60cbc55439693abdaaedee",

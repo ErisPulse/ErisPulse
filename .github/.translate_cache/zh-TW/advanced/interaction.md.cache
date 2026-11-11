@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "6a3aece0e19dad78fdbcd91f16ef82c2",
-  "file_hash": "6a3aece0e19dad78fdbcd91f16ef82c2",
-  "translated_at": "2026-10-22T09:29:47.262433",
+  "hash": "7d58faac9ce514ca749884737295e271",
+  "file_hash": "7d58faac9ce514ca749884737295e271",
+  "translated_at": "2026-11-11T15:13:15.901578",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -34,8 +34,8 @@
       "translation": "## 會話收件箱：event.history\n\n> 保留策略（7 天 / 條數上限）與運行時覆蓋 API、風險與審計見[會話收件箱](transcript.md)專題。\n\n每會話近期訊息流的統一記錄（使用者 + 機器人雙方），作為 AI 上下文、\n防重複、行為分析類模組的**共享事實底座**——各模組不再各自存歷史。\n\n```python\nmessages = await event.history(20)   # 當前會話最近 20 條，時間升序\nfor m in messages:\n    print(m[\"role\"], \":\", m[\"text\"])  # role: \"user\" / \"bot\"\n```\n\n- 自動記錄：入站訊息（role=user）+ 機器人出站文字（role=bot）\n- 存儲：獨立 SQLite 表，保留策略 = 每會話上限（預設 50）+ 全局 TTL（預設 7 天）\n- 寫入方式：記憶體緩衝 + 後台批量落盤（延遲至多 1 秒），查詢介面自動合併未落盤的緩衝行——同進程「讀你的寫」不受影響；正常退出（`sdk.uninit` / 進程退出）自動刷盤。**硬崩潰 / 強殺時最近約 1 秒的記錄可能遺失**：該底座定位為近期上下文緩存，不適合作為審計級持久化\n- 配置：`ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`\n- 管理器 API：`sdk.transcript.append() / get() / clear()`，`aflush()` / `flush()` 手動刷盤"
     },
     {
-      "hash": "54ea849a11ce1018eea963a7748994a4",
-      "translation": "## 訊息事務：message_tx\n\n事務內的所有出站發送自動記帳；**異常退出時逆序自動撤回**已發送的訊息\n（適配器未實現 `delete_message` 時跳過，帳本仍正常記錄）。\n\n```python\nasync with event.message_tx():\n    await event.reply(\"正在處理，請稍候\")\n    result = await do_something()          # 這裡拋異常 →\n    await event.reply(f\"完成: {result}\")   # 前面的「處理中」自動撤回\n```\n\n事務外發送不記帳（零開銷）；`get_send_receipts()` 可查看當前事務已發送的回執。"
+      "hash": "dcd956b9e657b3bb8bcbd8f068888546",
+      "translation": "## 消息事務：message_tx\n\n事務內的所有出站發送自動記帳；**異常退出時逆序自動撤回**已發送的消息  \n（適配器未實作 `delete_message` 時跳過，帳本仍正常記錄）。\n\n```python\nasync with event.message_tx():\n    await event.reply(\"正在處理，請稍候\")\n    result = await do_something()          # 這裡拋異常 →\n    await event.reply(f\"完成: {result}\")   # 前面的\"處理中\"自動撤回\n```\n\n事務外發送不記帳（零開銷）；事務內隨時可讀回執帳本，典型用途是**自刪機器人**  \n（發出即安排延時撤回）與發送審計：\n\n```python\nimport asyncio\nfrom ErisPulse.runtime import get_send_receipts\n\nasync def delayed_delete(adapter, message_id: str, delay: float):\n    await asyncio.sleep(delay)\n    await adapter.delete_message(message_id)\n\nasync with event.message_tx():\n    await event.reply(\"臨時提示\")\n    for r in get_send_receipts() or []:\n        # 每條回執含 platform / bot_id / message_id / trace_id\n        asyncio.create_task(delayed_delete(adapter, r[\"message_id\"], 30))\n```\n\n回執讀取是**事務作用域**的：僅在 `message_tx()` 事務內返回非 `None`，  \n事務外恆為 `None`；需要捕獲全部出站（含事務外）請用 `message.sending/sent`  \n鉤子（見[鏈路追蹤](#鏈路追蹤trace-id)的 `trace_id` 字段）。"
     },
     {
       "hash": "a149314e314cf92524cf4e6b8861163d",

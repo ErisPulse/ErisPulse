@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "hash": "b6f1278f31b56890ea180d05803ba34a",
+  "file_hash": "b6f1278f31b56890ea180d05803ba34a",
+  "translated_at": "2026-11-11T15:59:48.591399",
+  "target_lang": "ru",
+  "chunks": [
+    {
+      "hash": "775a7152043978448b3079f07e96ff1a",
+      "translation": "# Документация по возможностям платформы Oopz"
+    },
+    {
+      "hash": "be1559cdda22d06e8b4b492f8c4353ab",
+      "translation": "## Информация о документе\n\n| Параметр | Содержание |\n|---|---|\n| Версия модуля | 0.1.0 |\n| Идентификатор платформы | `oopz` |\n| Сопровождающие | Команда ErisPulse |\n| Последнее обновление | 2026-11-11 |\n\n> ⚠️ У Oopz нет официальной платформы для ботов; данный адаптер подключается **от имени аккаунта пользователя** на основе реверс-инжиниринга протокола сообществом. Неофициальный интерфейс может перестать работать в любой момент — используйте запасной аккаунт. Подробности см. в заявлении о рисках в README."
+    },
+    {
+      "hash": "099f82766d244980905d746b3c7530bf",
+      "translation": "## Основная информация\n\n- Класс адаптера: `OopzAdapter` (entry-point `oopz`)\n- Способ подключения: WebSocket (`wss://ws.oopz.cn`) + REST-шлюз (`https://gateway.oopz.cn`), заголовки подписи RSA + JWT\n- Учетные данные: «логин-пароль или токен на выбор» — `password` (номер телефона + пароль + приватный ключ клиента, автоматический вход и продление) или `token` (четыре компонента: uid/JWT/device_id/приватный ключ)\n- Мультиаккаунт: поддерживается (`[Oopz_Adapter.accounts.<name>]`), поле `self.account_id` в событиях указывает источник\n- Мягкая зависимость от фреймворка: ErisPulse ≥ 2.7.1"
+    },
+    {
+      "hash": "a4ca879cb789fce28370aea7ca24de2e",
+      "translation": "## Модель сессий\n\n| Цель ErisPulse | Понятие Oopz | Описание |\n|---|---|---|\n| `Send.To(\"group\", <ID канала>)` | Канал (channel) | Домен автоматически определяется адаптером через «кэш channel→area + сканирование присоединенных доменов» |\n| `Send.To(\"user\", <UID собеседника>)` | Личная переписка | Автоматический `PATCH /client/v1/chat/v1/to` открывает сессию и кэширует sessionId |\n| Поле `guild_id` / семантика guild | Домен (area) | Операции уровня домена выполняются через `get_guild_*` и административные расширения `oopz.*` |"
+    },
+    {
+      "hash": "8b625a77fc14ceb37bf2177673db54ad",
+      "translation": "## Соответствие стандарту (0.1.0)\n\n### Спецификация кодов ошибок\n\n| retcode | Значение |\n|---|---|\n| 0 | Успех |\n| 10002 | Неподдерживаемое действие/деградация сегмента сообщения (отправка голосовых и видеофайлов, upload_file, keyboard и т.д.) |\n| 10003 | Отсутствующие/недопустимые параметры (например, не удается определить домен, к которому относится канал) |\n| 33001 | Сетевая ошибка/ограничение частоты (при 429 учитывается Retry-After, одна повторная попытка) |\n| 34100 | Ошибка, возвращенная платформой (исходный ответ в `oopz_raw`) |\n| 34005 | Аккаунт не определен (не настроен или сессия не установлена) |\n\n### Структура ответа\n\nВсе ответы содержат `status / retcode / data / message_id / message / oopz_raw`; `message_id` в ответе на отправку берется из возвращаемого платформой `messageId`; `data.self_info.user_id` заполняется в `get_self_info`.\n\n### Полнота полей событий\n\n- Во всех событиях обязательны `id / time / type / detail_type / sub_type / platform / self`, при этом `oopz_raw` + `oopz_raw_type` присутствуют всегда\n- На верхнем уровне событий сообщений обязательно присутствует `message_id`; временные метки в виде строк микросекунд нормализуются в секунды\n- `id` события дедуплицируется в рамках аккаунта (`<account>:<тип>:<ID платформы>`)\n- Неизвестные события преобразуются в `type=\"unknown\"` + `warning` и не отбрасываются молча\n- Внутренние кадры протокола (рукопожатие/аутентификация/heartbeat/подписка) не порождают событий платформы\n\n### Семантика деградации\n\n- Сегменты отправки `voice/audio/video/file` → `retcode=10002` (платформа поддерживает загрузку только изображений), без выбрасывания исключений\n- Цель отправки `guild` → `retcode=10003` (укажите канал)\n- Недействительность JWT в режиме token → `retcode=34100` с предложением обновить учетные данные; в режиме password выполняется автоматический повторный вход и одна повторная попытка"
+    },
+    {
+      "hash": "08931eeda252b63bbc33953431198f9f",
+      "translation": "## Поддерживаемые типы отправки сообщений\n\n| Метод | Реализация на платформе |\n|---|---|\n| `Text` | Текст (двойная запись text/content) |\n| `Image` | Загрузка через подписанный билет COS (только изображения), текстовый плейсхолдер `![IMAGEw{w}h{h}]({fileKey})` + attachments |\n| `At / AtAll / Reply` | `mentionList` / `isMentionAll` / `referenceMessageId` |\n| Модификатор `Important()` | Стиль объявления `styleTags=[\"IMPORTANT\"]` |\n| `Recall(messageId)` | `recallGim` (канал) / `recallIm` (личные сообщения, только отзыв собственных сообщений) |\n| `Raw_ob12` | Сегменты OneBot12 → payload платформы (text/mention/mention_all/reply/image; остальные сегменты деградируют в 10002) |\n| Voice/Video/File/Keyboard | Не поддерживается → 10002 |"
+    },
+    {
+      "hash": "bc70d6c35fc80fd19cbc1a94cd3be2a3",
+      "translation": "## Стандартные API-действия (ApiDSL)\n\n### Поддерживаемые стандартные действия\n\n`get_self_info`, `get_user_info`, `get_friend_list`, `get_group_info` (объединенная информация о канале и его домене), `get_group_list` (плоская таблица каналов присоединенных доменов), `get_guild_info`, `get_guild_list`, `get_channel_list`, `get_guild_members`, `delete_message` (требуется контекст `channel_id` или `user_id`), `get_file` (URL вложения → base64), `leave_guild`, `get_status`, `get_version`, `get_supported_actions`\n\n### Неподдерживаемые стандартные действия (retcode=10002)\n\n`send_message` (используется Send DSL), `upload_file`, `get_latest_events`, `set_group_name`, `set_group_admin`, `set_group_leave`, `set_group_card`, `leave_group`, `leave_channel`\n\n### Расширенные действия платформы (oopz.*)\n\n| Действие | Обязательные параметры | Описание |\n|---|---|---|\n| `oopz.create_channel` | `area_id, name` | Необязательные `channel_type/group_id/secret/max_member` |\n| `oopz.delete_channel` | `area_id, channel_id` | |\n| `oopz.mute_member` / `oopz.unmute_member` | `area_id, user_id` | Заглушение, число минут `duration` автоматически приводится к ближайшей ступени (5 минут/1 час/1 день/3 дня/7 дней) |\n| `oopz.mute_mic` / `oopz.unmute_mic` | `area_id, user_id` | Отключение микрофона |\n| `oopz.kick_member` | `area_id, user_id` | Исключение из домена |\n| `oopz.block_user` / `oopz.unblock_user` | `area_id, user_id` | Черный список домена |\n| `oopz.get_area_members` | `area_id` | Необязательные `offset_start/offset_end` |\n| `oopz.get_assignable_roles` | `area_id, target_id` | Назначаемые роли |\n| `oopz.assign_role` / `oopz.revoke_role` | `area_id, target_id, role_id` | Внутренне считывает все роли и отправляет результат целиком |\n| `oopz.react_message` / `oopz.unreact_message` | `message_id, channel_id, emoji` | Необязательные `user_id` (личные сообщения)/`area_id` |\n| `oopz.get_reactions` | `message_id` | Необязательные `message_ids` (≤50)/`user_id` |\n| `oopz.get_reaction_persons` | `message_id, channel_id, emoji` | Постраничный вывод пользователей, оставивших реакции |\n| `oopz.top_message` | `message_id, area_id, channel_id` | Закрепление/отмена (`cancel=True`) |\n| `oopz.get_history_messages` | `area_id, channel_id` | Необязательный `size` (по умолчанию 50) |\n| `oopz.get_friend_requests` | — | Список заявок в друзья |\n| `oopz.respond_friend_request` | `target, friend_request_id, agree` | Одобрение (обычно используется Request DSL) |"
+    },
+    {
+      "hash": "d304e129e425dd6d4b8874c92a6d2d8c",
+      "translation": "## Обработка заявок в друзья\n\n- Событие: `request/friend`, `request_id` — **составной stateless-ключ** `<target>:<friendRequestId>`\n- `event.approve()` / `event.reject()` → POST `/client/v1/friendship/v1/response`\n- Единый изоморфный endpoint, таблица хранения контекста типа запроса не требуется"
+    },
+    {
+      "hash": "11ed71084028936e34bc64c24c86f1e9",
+      "translation": "## Возвращаемые значения методов отправки\n\n```json\n{\n  \"status\": \"ok\",\n  \"retcode\": 0,\n  \"data\": {\"message_id\": \"14283...\"},\n  \"message_id\": \"14283...\",\n  \"message\": \"\",\n  \"oopz_raw\": {\"messageId\": \"14283...\", \"timestamp\": \"...\"}\n}\n```"
+    },
+    {
+      "hash": "af5728f6a64f80abe113b9ddbccc736c",
+      "translation": "## Специфические типы событий\n\n- Расширенные поля событий сообщений: `oopz_area_id`, `guild_id` (сообщения канала); `oopz_reference_message_id` (ответы)\n- Расширения уведомлений: `oopz_edited_text`, `oopz_emoji`, `oopz_reaction_type`, `oopz_persons`, `oopz_from_channel`, `oopz_channel_name`, `oopz_channel_type`, `oopz_area_name`, `oopz_role_id`, `oopz_role_name`, `oopz_ban_until`, `oopz_login_state`\n- Удобные методы `EventMixin`: `get_raw_event()`, `get_area_id()`, `get_edited_text()`, `get_emoji()`, `get_reaction_type()`, `get_voice_persons()`"
+    }
+  ]
+}

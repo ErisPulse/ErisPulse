@@ -196,7 +196,7 @@
               "icon": "fa-puzzle-piece"
             },
             {
-              "title": "モジュールのコア概念",
+              "title": "モジュールのコアコンセプト",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1,
               "icon": "fa-cubes-stacked"
@@ -256,7 +256,7 @@
     "プラットフォームガイド": {
       "description": "各プラットフォームの機能とアダプターの説明",
       "icon": "fa-plug",
-      "count": 21,
+      "count": 22,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures ドキュメント",
@@ -361,6 +361,12 @@
           "icon": "fa-plug"
         },
         {
+          "title": "Oopz プラットフォームの特徴ドキュメント",
+          "path": "platform-guide/oopz.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
           "title": "Sandbox プラットフォーム機能ドキュメント",
           "path": "platform-guide/sandbox.md",
           "level": 1,
@@ -422,7 +428,7 @@
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
       "icon": "fa-fire",
-      "count": 20,
+      "count": 21,
       "documents": [
         {
           "title": "高級トピック",
@@ -491,7 +497,7 @@
           "icon": "fa-user-tag"
         },
         {
-          "title": "交互会話システム",
+          "title": "インタラクションセッションシステム",
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"
@@ -533,7 +539,13 @@
           "icon": "fa-fire"
         },
         {
-          "title": "スタートアップフローと手動制御",
+          "title": "runtimeツールベルト",
+          "path": "advanced/runtime.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "起動フローと手動制御",
           "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"
