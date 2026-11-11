@@ -102,6 +102,13 @@
 - @YingXinche
   - ORM `Field` 声明赋值侧类型检查误报：哨兵返回 `Any`（pydantic v2 同款口径）+ `dataclass_transform`（PEP 681），ty / basedpyright 检查归零，IDE 字段构造参数补全精确化
 
+### 文档
+
+- @YingXinche
+  - 存量公共 API 教学补齐：配置热更新钩子 `on_config_update`（触发来源与路由规则）、`explain_trace` 消息链路诊断、`sdk.reload_all_modules()`、`bind_owner` 线程任务归属、消息事务回执读取、transcript 手动归档、路由请求对象高阶属性与 `router.app` 逃生舱（含底层 web 迁移的破坏性边界警示）、日志运行时隐私开关、内存诊断
+  - 新增 runtime 工具带速查页：`ErisPulse.runtime` 聚合导出层分类索引（归属权 / 后台任务 / 事件上下文 / 内存 / dict 解析 / 排障）与 `dict_to_dataclass` 用法
+  - 新增三个示例项目（web / interactive / ops）：路由与 WebSocket、消息事务与回执、ORM 联合唯一与存储事务、请求审批、发送链修饰、线程任务归属、延迟任务、隐私开关
+
 ---
 
 ## [2.12.0-dev.0] - 2026/11/05

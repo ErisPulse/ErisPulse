@@ -464,6 +464,41 @@ async def on_server_stop(event):
     print("服务器正在停止...")
 ```
 
+## 请求对象高阶属性
+
+`HttpRequest` 除 `method` / `query` / `headers` / `json` / `body` 基础面外，
+还透出高阶能力（鉴权中间件、断连感知长任务常用）：
+
+| 属性 / 方法 | 说明 |
+|-------------|------|
+| `request.session` | 会话 dict（需会话中间件支持），跨请求保持 |
+| `request.auth` | 认证信息（认证中间件写入） |
+| `request.user` | 当前用户对象（认证中间件写入） |
+| `request.url_for(name, **params)` | 反向路由：按路由名生成 URL |
+| `await request.is_disconnected()` | 客户端是否已断连（SSE / 长任务轮询退出用） |
+| `request.raw` | 底层 Starlette 请求对象（逃生舱，见下节兼容性说明） |
+
+## 逃生舱：router.app
+
+`router.app` 直接暴露底层 FastAPI 应用实例（惰性创建，首次访问加载 web
+栈并注册核心路由），覆盖装饰器表达不了的场景——挂载子应用、全局中间件、
+接入 FastAPI 生态（StaticFiles / 后台任务模板等）：
+
+```python
+from ErisPulse.Core import router
+from starlette.staticfiles import StaticFiles
+
+app = router.app
+app.mount("/static", StaticFiles(directory="static"), name="static")
+```
+
+> [!WARNING]
+> **兼容性边界**：`router.app` 是逃生舱而非稳定契约——拿到的是当前 web
+> 栈（FastAPI/Starlette）的实例。框架日后若迁移底层 web 实现，依赖
+> `app` 内部结构（中间件顺序、Starlette 特定 API）的代码会遇到**破坏性
+> 变更**。优先使用 `@router.http` / `HttpRequest` 抽象层（`request.raw`
+> 同理），并把 `.app` 的使用收敛在模块的独立适配层里——迁移时只需改一处。
+
 ## 最佳实践
 
 1. **优先使用抽象类型**：使用 `HttpRequest` / `WebSocketConnection` 替代 `fastapi.Request` / `fastapi.WebSocket`，避免硬依赖
@@ -473,6 +508,7 @@ async def on_server_stop(event):
 5. **安全性考虑**：为敏感操作实现认证机制和安全头
 6. **合理限流**：对高频接口设置速率限制
 7. **使用生命周期钩子**：通过 `@ws.on_disconnect` / `@ws.on_error` 处理 WebSocket 异常，避免手动 try/catch
+8. **逃生舱收敛使用**：`router.app` / `request.raw` 仅在抽象层表达不了时使用，并把依赖收敛到单点，降低框架底层迁移时的适配面
 
 ## 相关文档
 

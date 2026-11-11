@@ -408,6 +408,9 @@ epsdk run main.py
 | 框架自身源码（`ErisPulse` 包内） | 进程级重启 |
 | 同时匹配多个 owner / 无法归属 | 保守走进程级重启 |
 
+`epsdk upgrade` 等批量升级场景可用 `sdk.reload_all_modules()` 一次重载全部已注册
+模块（按依赖拓扑序，单模块失败跳过不回滚），无需重启进程。
+
 脚本模式（`epsdk run main.py --reload`）不把脚本 worker 化：脚本子进程内挂载
 dev watcher，并把 `component_reload_pid` 写入 `.erispulse/runtime.json`；父进程
 看到该标记后，模块/适配器/插件变更交给子进程处理，只有入口脚本或框架源码

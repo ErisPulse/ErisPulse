@@ -291,7 +291,27 @@ async with event.message_tx():
     await event.reply(f"完成: {result}")   # 前面的"处理中"自动撤回
 ```
 
-事务外发送不记账（零开销）；`get_send_receipts()` 可查看当前事务已发送的回执。
+事务外发送不记账（零开销）；事务内随时可读回执账本，典型用途是**自删机器人**
+（发出即安排延时撤回）与发送审计：
+
+```python
+import asyncio
+from ErisPulse.runtime import get_send_receipts
+
+async def delayed_delete(adapter, message_id: str, delay: float):
+    await asyncio.sleep(delay)
+    await adapter.delete_message(message_id)
+
+async with event.message_tx():
+    await event.reply("临时提示")
+    for r in get_send_receipts() or []:
+        # 每条回执含 platform / bot_id / message_id / trace_id
+        asyncio.create_task(delayed_delete(adapter, r["message_id"], 30))
+```
+
+回执读取是**事务作用域**的：仅在 `message_tx()` 事务内返回非 `None`，
+事务外恒为 `None`；需要捕获全部出站（含事务外）请用 `message.sending/sent`
+钩子（见[链路追踪](#链路追踪trace-id)的 `trace_id` 字段）。
 
 ## 链路追踪：trace-id
 

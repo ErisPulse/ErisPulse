@@ -143,6 +143,31 @@ transcript.reset_retention()
 - 覆盖在下次保留清理时生效（惰性，最多延迟 ~32 条追加的节奏）；
 - `transcript` 单例可从根包导入，也可 `sdk.transcript`。
 
+### 手动归档与落盘（append / flush）
+
+消息记录由框架管线自动写入；非消息类交互（按钮点击、支付回调、外部
+webhook）也可归档进同一会话时间线，配合 `get_by_trace` 让自定义事件同样
+可被 `explain_trace` 链路诊断：
+
+```python
+from ErisPulse import transcript
+
+transcript.append(
+    "onebot11:12345",                 # 事件对象 / dict / 会话键字符串均可
+    role="bot",
+    text="用户点击了按钮: pay_ok",
+    event_id="evt_click_1024",
+    meta={"order_id": "A-1024"},      # 归因元数据（白名单契约）
+)
+
+await transcript.aflush()             # 异步强制落盘（脚本/测试里断言前调用）
+```
+
+- `append` 仅入内存缓冲即返回（微秒级），随保留策略统一清理；`flush` /
+  `aflush` 立即写存储，查询接口自动合并未落盘的缓冲行
+- `session` 需与目标会话一致（复用消息事件的会话键），否则归档落在独立
+  会话时间线
+
 ## 风险与审计：放开限制前必读
 
 关闭 `max_per_session` / `ttl_hours`（或大幅调大）后，`transcript` 表随消息量

@@ -438,6 +438,18 @@ logger.set_output_dir("logs", rotation="date", backup_count=7)
 
 > **隐私保护**：消息收发内容以 **EVENT 等级**（数值 21）记录。设置 `exclude_levels = ["EVENT"]` 即可让后台（如 Dashboard 日志面板）无法看到各群/私聊的消息内容，同时不影响其它等级日志。
 
+除配置文件（支持热更新）外，也可在运行时以代码切换同等能力——做
+`/privacy on|off` 类管理命令时不必写配置：
+
+```python
+from ErisPulse import logger
+
+logger.exclude_level("EVENT")        # 运行时屏蔽某等级（同 exclude_levels 配置语义）
+logger.allow_level("EVENT")          # 恢复该等级
+logger.list_excluded_levels()        # 查看当前被屏蔽的等级
+logger.set_format("json")            # 输出切 JSON 行协议（与 format 配置键同效）
+```
+
 > [!NOTE]
 > `exclude_levels` 本特性需要 ErisPulse **2.8.0+**。
 

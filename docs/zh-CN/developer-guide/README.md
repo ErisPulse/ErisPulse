@@ -61,8 +61,11 @@
 
 ErisPulse 提供了示例项目作为参考：
 
-- [模块示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模块的完整项目结构
-- [适配器示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 适配器的完整项目结构
+- [模块示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模块的完整项目结构（命令 / 配置 / ORM / 依赖注入）
+- [Web 能力示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-web) - 路由装饰器 / 中间件 / WebSocket 钩子 / router.app 逃生舱
+- [交互进阶示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-interactive) - 消息事务与回执 / ORM 联合唯一与事务 / 请求审批 / 发送链
+- [运维治理示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-ops) - 线程任务归属 / 延迟任务 / 内存体检 / 隐私开关
+- [适配器示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 适配器的完整项目结构（另有 [轮询](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter-polling) / [Webhook](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter-webhook) 变体）
 
 ### 开发模式
 

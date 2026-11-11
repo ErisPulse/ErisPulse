@@ -50,6 +50,32 @@ with owner_scope("MyModule"):
 注册型 API（如 `sdk.adapter.on()`、`overrides.*.set(persist=False)`），
 同样会自动归属本模块。
 
+### bind_owner：把归属缝进回调与线程入口
+
+`owner_scope` 作用于代码块；`bind_owner(fn)` 把上下文"缝进"函数本身——
+包装瞬间捕获 `current_owner`，此后无论谁、从哪个线程或事件循环调用，都以
+原 owner 身份执行。新线程默认空上下文（Timer / watcher / 第三方线程池的
+触发路径 `current_owner` 为 None），其内创建的任务不进归属表、模块卸载时
+取消不掉（跨 loop 残留的来源之一），经包装后归属随身携带：
+
+```python
+from ErisPulse.runtime import bind_owner
+
+class MyModule(BaseModule):
+    async def on_load(self, event):
+        # 交给第三方调度器 / 线程池前先包装：
+        external_scheduler.submit(bind_owner(self._poll))
+
+    async def _poll(self):
+        # 运行期间 current_owner == "MyModule"，卸载时可被正确回收
+        ...
+```
+
+- `async` 函数保持 `async`，owner 跨全部 `await` 生效；普通函数仅在同步
+  执行期间生效
+- 框架自有入口（`self.spawn()` / 命令处理器）已自动携带归属，本函数只用于
+  **框架之外的触发路径**（外部调度器、`threading.Timer`、回调注册表等）
+
 ## 归属资源全景
 
 模块在加载上下文内注册的以下资源均记录归属，卸载/禁用时自动回收：

@@ -516,7 +516,7 @@ async def firewall(data):
 
 测试中 `ErisPulse-Testing` 的 `dispatch()` 直接返回这条决策链（`DispatchTrace`，`trace.explain()` 输出逐行因果），生产环境可用 `ErisPulse.Core.Event.start_dispatch_trace()` 采集同样的记录。
 
-此外 `ErisPulse.runtime` 提供两组排查诊断 API：`explain_module(模块名)` 回答"模块为什么没加载"（未注册 / 懒加载 / 配置禁用 / 依赖缺失 / SDK 版本不满足，逐项给原因），`explain_event(事件)` 回答"事件为什么没响应"（适配器未注册 / 身份拉黑 / 模块会话屏蔽 / 命令未命中）；配 `format_report()` 渲染人类可读结论。
+此外 `ErisPulse.runtime` 提供三组排查诊断 API：`explain_module(模块名)` 回答"模块为什么没加载"（未注册 / 懒加载 / 配置禁用 / 依赖缺失 / SDK 版本不满足，逐项给原因），`explain_event(事件)` 回答"事件为什么没响应"（适配器未注册 / 身份拉黑 / 模块会话屏蔽 / 命令未命中），`explain_trace(trace_id)` 回答"这条消息收到后为什么没回"——按 trace-id 从会话 transcript 聚合完整出入站时间线并给出结论（收到未回 / 已回 / transcript 未启用）；配 `format_report()` 渲染人类可读结论。`explain_trace` 依赖[会话转录](../advanced/transcript.md)，未启用时明确返回该结论而不是空结果。
 
 ## 作用域过滤：为什么我的模块没收到消息
 

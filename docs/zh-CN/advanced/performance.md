@@ -63,6 +63,29 @@ python tests/performance/benchmark.py --backend mysql
 4. **热路径已内建优化**（2.9 起，无需配置）：transcript 批量落盘、i18n 缓存、日志级别守卫、匹配器预编译、配置延迟写入统一刷盘
 5. **命令治理状态上限**：冷却/限流/配额状态表上限 4096 条（超限淘汰最旧），超大群规模部署无需调整
 
+## 内存诊断
+
+排查"越跑越吃内存"时，在可疑路径前后各打一个带 label 的快照，同名 label
+自动计算增量（RSS + tracemalloc 双指标）：
+
+```python
+from ErisPulse.runtime import log_snapshot, snapshot
+
+class MyModule(BaseModule):
+    async def on_load(self, event):
+        snapshot("MyModule.load")            # 采集并返回 dict（含按 label 的 RSS delta）
+
+    async def on_unload(self, event):
+        log_snapshot("MyModule.unload")      # 同口径采集并落 TRACE 级日志
+```
+
+- `snapshot(label)` 返回机器可读 dict，适合断言与上报；`log_snapshot(label)`
+  直接写日志（TRACE 级），适合临时排查
+- label 缓存有界，不会随调用次数增长泄漏；配合 `/metrics` 端点的进程指标
+  可做长期趋势观察
+- 模块卸载后的残留增长通常指向归属缺失（见[归属权系统](ownership.md)的
+  `bind_owner` 后台任务条目）
+
 ## 相关文档
 
 - **运行指标观测**：`/health`（实例身份 / 事件计数）与 `/metrics`（Prometheus 文本，`ErisPulse.server.metrics_enabled` 开启）见[部署指南](../user-guide/deployment.md)
