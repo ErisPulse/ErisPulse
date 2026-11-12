@@ -248,3 +248,5 @@ docs/*/ai-support/skills*.zip
 .github/assets/ErisPulseFilm1.mp4
 .github/assets/score1.wav
 .github/assets/score2.wav
+# Cloudflare wrangler 本地状态
+.wrangler/

@@ -3,7 +3,7 @@
 > [!TIP]
 > **什么时候需要读这篇**：当你想让 Claude Desktop 等支持 MCP 的 AI 客户端直接操控你的机器人——发消息、看消息、调模块、管适配器、观测事件流——时读这篇。不需要则跳过。
 
-[ErisPulse-ApiMCP](https://github.com/wsu2059q/ErisPulse-ApiMCP) 把机器人运行时能力经 **MCP（Model Context Protocol）** 开放给 AI 客户端：装上之后，Claude Desktop 里就多出 14 个工具，AI 可以替你收发消息、排查模块问题、订阅群聊事件——机器人从"你管理的程序"变成"AI 的手和眼"。
+[ErisPulse-ApiMCP](https://github.com/wsu2059q/ErisPulse-ApiMCP) 把机器人运行时能力经 **MCP（Model Context Protocol）** 开放给 AI 客户端：装上之后，Claude Desktop 里就多出 17 个工具，AI 可以替你收发消息、排查模块问题、订阅群聊事件、检索框架文档——机器人从"你管理的程序"变成"AI 的手和眼"。
 
 > [!IMPORTANT]
 > ApiMCP 需要单独安装，且**必须显式配置 token** 后桥才启用：
@@ -47,17 +47,18 @@ Claude Desktop ──MCP(stdio)──► erispulse-apimcp ──HTTP──► �
 
 保存后完全重启 Claude Desktop，工具列表出现 `erispulse` 服务器即接入成功。任何支持 MCP stdio server 的客户端（Claude Code、Cursor 等）都能用同样方式接入。
 
-## 14 个工具一览
+## 17 个工具一览
 
 | 类别 | 工具 | 说明 |
 |---|---|---|
 | 模块 | `list_modules` / `get_module_info` / `call_module` / `reload_module` | 查看与调用已装模块的公开服务，触发热重载 |
 | 适配器 | `list_adapters` / `get_adapter_status` / `reload_adapter` | 平台在线状态；适配器重载默认禁用 |
-| 消息 | `send_message` / `recent_messages` | 向任意平台发文本/图/音/视/文件；经 [transcript](../advanced/transcript.md) 回看最近消息 |
+| 消息 | `send_message` / `recent_messages` | 向任意平台发文本/图/音/视/文件，多 bot 部署可用 `account` 指定发送账户；经 [transcript](../advanced/transcript.md) 回看最近消息 |
 | 事件 | `subscribe_events` / `unsubscribe` / `poll_events` | 订阅消息/通知等事件，环形缓冲（默认 1000 条），增量轮询 |
+| 文档 | `search_erispulse_docs` / `read_erispulse_doc` / `refresh_erispulse_docs` | 检索与阅读 ErisPulse 框架文档；独立文档引擎，按框架版本下载并缓存，不依赖其它模块 |
 | 运行时 | `get_topology` / `sdk_health` | 运行时拓扑（已脱敏）与健康摘要 |
 
-一个典型用法：AI 先 `subscribe_events(["message"])`，然后周期性 `poll_events` 观察群里在聊什么，决定要不要 `send_message` 插话或 `call_module` 触发某个模块的能力。
+一个典型用法：AI 先 `subscribe_events(["message"])`，然后周期性 `poll_events` 观察群里在聊什么，决定要不要 `send_message` 插话或 `call_module` 触发某个模块的能力。拿不准某个框架能力怎么用时，AI 也可以先 `search_erispulse_docs` 查文档再动手。
 
 ## 安全要点
 
