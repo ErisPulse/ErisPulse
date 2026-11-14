@@ -1,0 +1,328 @@
+# 適配器系統 API
+
+> [!TIP]
+> **什麼時候需要閱讀這篇**：當你需要管理適配器（獲取實例、啟停、查詢 Bot 的線上狀態）、使用 Send DSL 發送訊息、註冊中間件，或為適配器接入 Bot 狀態上報（meta 事件）時請參閱本文。不需要則可跳過。
+
+本文檔詳細介紹了 ErisPulse 適配器系統的 API。
+
+## Adapter 管理器
+
+### 獲取適配器
+
+```python
+from ErisPulse import sdk
+
+# 透過名稱獲取適配器
+adapter = sdk.adapter.get("platform_name")
+
+# 或者也可以直接透過屬性存取
+adapter = sdk.adapter.platform_name
+```
+
+### 使用適配器事件監聽
+> 一般情況下，更建議使用`Event`模組進行事件的監聽/處理;
+>
+> 同時`Event`模組提供了強大的包裝器，可以為您的模組開發帶來更多便利
+
+```python
+# 監聽 OneBot12 標準事件
+@sdk.adapter.on("message")
+async def handle_message(event):
+    pass
+
+# 監聽特定平台的標準事件
+@sdk.adapter.on("message", platform="yunhu")
+async def handle_yunhu_message(event):
+    pass
+
+# 監聽平台原生事件
+@sdk.adapter.on("raw_event", raw=True, platform="yunhu")
+async def handle_raw_event(data):
+    pass
+```
+
+### 適配器管理
+
+```python
+# 獲取所有平台
+platforms = sdk.adapter.platforms
+
+# 檢查適配器是否存在
+exists = sdk.adapter.exists("platform_name")
+
+# 啟用/禁用適配器
+sdk.adapter.enable("platform_name")
+sdk.adapter.disable("platform_name")
+
+# 啟動/關閉適配器
+# 以下方法都只展示了傳入參數的情況，無參數時代表啟動/停止全部已註冊適配器
+await sdk.adapter.startup(["platform1", "platform2"])
+await sdk.adapter.shutdown(["platform1", "platform2"])
+
+# 檢查適配器是否正在運行
+is_running = sdk.adapter.is_running("platform_name")
+
+# 列出所有正在運行的適配器
+running = sdk.adapter.list_running()
+
+# 讀取適配器元資訊（對齊 module.get_meta，供面板 / 商店等消費）
+info = sdk.adapter.get_info("platform_name")   # 注冊資訊（meta + 類名，json-safe）
+meta = sdk.adapter.get_meta("platform_name")   # 介紹元資訊（description 支持 i18n 解析）
+raw = sdk.adapter.get_meta("platform_name", resolve_i18n=False)  # 透傳原始 i18n 字典
+```
+
+## 中間件
+
+中間件在事件分發到處理器之前執行，可以對事件資料進行修改、過濾或記錄。
+
+### 註冊中間件
+
+```python
+@sdk.adapter.middleware
+async def my_middleware(event):
+    sdk.logger.info(f"中間件處理: {event}")
+    return event
+```
+
+### 中間件執行模型
+
+- **執行順序**：中間件按註冊順序執行（先註冊先執行）
+- **資料傳遞**：每個中間件接收上一個中間件返回的 `event` 資料；如果某個中間件返回 `None`，則忽略該返回值並保留原資料繼續傳遞（同時輸出 `warning` 級別日誌）
+- **修改資料**：中間件可以修改事件資料並返回修改後的字典
+- **事件否決**：中間件顯式返回 `False` 時否決事件——事件被丟棄，不進入任何處理器、無任何出站副作用；否決時輸出 TRACE 日誌並觸發 `adapter.event.blocked` 生命週期鉤子（攜帶中間件名與完整事件）
+
+```python
+@sdk.adapter.middleware
+async def add_timestamp(event):
+    event["processed_at"] = time.time()
+    return event
+
+@sdk.adapter.middleware
+async def filter_spam(event):
+    if event.get("detail_type") == "private":
+        text = event.get("alt_message", "")
+        if "垃圾廣告" in text:
+            return False  # 否決：事件被丟棄，不進入任何處理器
+    return event
+```
+
+> **注意**：只有顯式返回 `False` 才否決事件（返回空字典 / `0` / `""` 等 falsy 值不否決）；
+> 返回 `None` 仍然是放行且載荷不變。否決後的事件可透過監聽
+> `adapter.event.blocked` 鉤子進行審計與排查"事件為什麼沒響應"。
+
+## Send 消息發送
+
+### 基本發送
+
+```python
+# 獲取適配器
+adapter = sdk.adapter.get("platform")
+
+# 發送文字訊息
+await adapter.Send.To("user", "123").Text("Hello")
+
+# 發送圖片訊息
+await adapter.Send.To("group", "456").Image("https://example.com/image.jpg")
+```
+
+### 指定發送帳號
+
+```python
+# 使用帳號名
+await adapter.Send.Using("account1").To("user", "123").Text("Hello")
+
+# 使用帳號 ID
+await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
+```
+
+### 查詢支援的發送方法
+
+```python
+# 列出平台支援的所有發送方法
+methods = sdk.adapter.list_sends("onebot11")
+# 返回: ["Text", "Image", "Voice", "Markdown", ...]
+
+# 獲取某個方法的詳細資訊
+info = sdk.adapter.send_info("onebot11", "Text")
+# 返回:
+# {
+#     "name": "Text",
+#     "parameters": [
+#         {"name": "text", "type": "str", "default": null, "annotation": "str"}
+#     ],
+#     "return_type": "Awaitable[Any]",
+#     "docstring": "發送文字訊息..."
+# }
+```
+
+### 鏈式修飾
+
+```python
+# @用戶
+await adapter.Send.To("group", "456").At("789").Text("你好")
+
+# @全體成員
+await adapter.Send.To("group", "456").AtAll().Text("大家好")
+
+# 回覆訊息
+await adapter.Send.To("group", "456").Reply("msg_id").Text("回覆內容")
+
+# 組合使用
+await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("回覆@的訊息")
+```
+
+## API 調用
+
+### call_api 方法
+
+> **注意**：`call_api` 是直接調用平台原生 API 的底層方法，各平台的參數和回傳值可能不同，請參考對應平台適配器文件。**推薦使用 Send DSL 發送訊息**，僅在 Send DSL 不支援的場景（如獲取平台特有的資料、呼叫平台管理介面等）中使用 `call_api`。
+
+```python
+# 調用平台 API
+result = await adapter.call_api(
+    endpoint="/send",
+    content="Hello",
+    recvId="123",
+    recvType="user"
+)
+
+# 標準化回應
+{
+    "status": "ok",
+    "retcode": 0,
+    "data": {...},
+    "message_id": "msg_id",
+    "message": "",
+    "{platform}_raw": raw_response
+}
+```
+
+## 適配器基類
+
+### BaseAdapter 方法
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core import BaseAdapter
+
+class MyAdapter(BaseAdapter):
+    def __init__(self):
+        super().__init__()
+        self.sdk = sdk
+        # 初始化適配器
+        pass
+    
+    async def start(self):
+        """啟動適配器（必須實現）"""
+        pass
+    
+    async def shutdown(self):
+        """關閉適配器（必須實現）"""
+        pass
+    
+    async def call_api(self, endpoint: str, **params):
+        """調用平台 API（必須實現）"""
+        pass
+```
+
+### Send 嵌套類
+
+```python
+class MyAdapter(BaseAdapter):
+    class Send(BaseAdapter.Send):
+        def Text(self, text: str):
+            """發送文字訊息"""
+            import asyncio
+            return asyncio.create_task(
+                self._adapter.call_api(
+                    endpoint="/send",
+                    content=text,
+                    recvId=self._target_id,
+                    recvType=self._target_type
+                )
+            )
+```
+
+## Bot 狀態管理
+
+適配器透過發送 OneBot12 標準的 **`meta` 事件**來告知框架 Bot 的連線狀態。系統會自動從中提取 Bot 資訊進行狀態追蹤。
+
+### meta 事件上報
+
+適配器透過 `meta` 事件上報 Bot 狀態，三種 `detail_type`：`connect`（註冊上線）、`heartbeat`（心跳保活）、`disconnect`（標記離線）。推薦使用 `emit_meta()` 一行發送；即使不發送 meta 事件，框架也會從普通事件（message/notice/request）的 `self` 欄位自動發現 Bot。
+
+- **meta 事件格式與發送方式**（何時發送、`emit_meta()` 用法、手動構造格式）請見 [適配器最佳實踐 - Bot 狀態管理與 Meta 事件](../developer-guide/adapters/best-practices.md#bot-狀態管理與-meta-事件)
+- **自動發現機制與框架行為**請見 [適配器核心概念 - Bot 狀態管理](../developer-guide/adapters/core-concepts.md#bot-狀態管理)
+
+### 查詢 Bot 狀態
+
+```python
+# 獲取所有適配器與 Bot 的完整狀態（WebUI 友好）
+summary = sdk.adapter.get_status_summary()
+# {
+#     "adapters": {
+#         "telegram": {
+#             "status": "started",
+#             "bots": {
+#                 "123456": {
+#                     "status": "online",
+#                     "last_active": 1712345678.0,
+#                     "info": {"nickname": "MyBot"}
+#                 }
+#             }
+#         }
+#     }
+# }
+
+# 列出所有 Bot
+all_bots = sdk.adapter.list_bots()
+
+# 列出指定平台的 Bot
+tg_bots = sdk.adapter.list_bots("telegram")
+
+# 獲取單個 Bot 詳情
+info = sdk.adapter.get_bot_info("telegram", "123456")
+
+# 檢查 Bot 是否在線
+if sdk.adapter.is_bot_online("telegram", "123456"):
+    print("Bot 在線")
+```
+
+### Bot 狀態值
+
+| 狀態 | 說明 |
+|------|------|
+| `online` | 在線（持續收到事件或適配器主動標記） |
+| `offline` | 離線（適配器主動標記或系統關閉時自動設定） |
+| `unknown` | 未知（僅註冊但未確認狀態） |
+
+### 生命週期事件
+
+| 事件名 | 觸發時機 | 資料 |
+|--------|---------|------|
+| `adapter.bot.online` | 首次自動發現新 Bot | `{platform, bot_id, status}` |
+| `adapter.status.change` | 適配器狀態變化 | `{platform, status}`，status 完整取值：`starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency`（所依賴的適配器未就緒而跳過啟動）/ `disabled`（配置禁用） |
+
+```python
+# 監聽 Bot 上線事件
+@sdk.lifecycle.on("adapter.bot.online")
+def on_bot_online(event):
+    print(f"Bot 上線: {event['data']['platform']}/{event['data']['bot_id']}")
+
+# 監聽適配器狀態變化
+@sdk.lifecycle.on("adapter.status.change")
+def on_status_change(event):
+    print(f"適配器狀態: {event['data']['platform']} -> {event['data']['status']}")
+```
+
+> 系統關閉時（`shutdown`），所有 Bot 會自動被標記為 `offline`。
+
+## 相關文件
+
+**繼續查 API**：
+- [核心模組 API](core-modules.md) - 核心模組 API
+- [事件系統 API](event-system.md) - Event 模組 API
+
+**動手寫適配器**：
+- [適配器開發指南](../developer-guide/adapters/) - 開發平台適配器
+- [適配器標準化指南（總綱）](../standards/standardization-guide.md) - 實現新適配器前的標準對照與 Checklist

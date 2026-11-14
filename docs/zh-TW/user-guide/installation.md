@@ -1,0 +1,178 @@
+# 安裝參考
+
+> [!TIP]
+> **何時需要閱讀本文**：需要選擇一種安裝方式（pip / uv / Docker / ErisPulse-App 客戶端），或遇到安裝失敗需要排查時閱讀。只想快速運行，[5 分鐘快速入門](../quick-start.md) 已涵蓋最簡流程，不需要則跳過。
+
+## 系統要求
+
+- Python 3.10 – 3.14（3.14t 自由線程 / 無 GIL 構建為實驗性支持，框架以實驗性 CI 冒煙持續監測，不作正式承諾）
+- pip 或 uv（推薦）
+- 足夠的磁盤空間（至少 100MB）
+
+## 安裝方式
+
+### 方式一：使用 pip 安裝
+
+```bash
+# 安裝 ErisPulse
+pip install ErisPulse
+
+# 升級到最新版本
+pip install ErisPulse --upgrade
+```
+
+### 方式二：使用 uv 安裝（推薦）
+
+uv 是一個更快的 Python 工具鏈，推薦用於開發環境。
+
+#### 安裝 uv
+
+```bash
+# 使用 pip 安裝 uv
+pip install uv
+
+# 驗證安裝
+uv --version
+```
+
+#### 建立虛擬環境
+
+```bash
+# 建立項目目錄
+mkdir my_bot && cd my_bot
+
+# 安裝 Python 3.12
+uv python install 3.12
+
+# 建立虛擬環境
+uv venv
+```
+
+#### 激活虛擬環境
+
+```bash
+# Windows
+.venv\Scripts\activate
+
+# Linux/Mac
+source .venv/bin/activate
+```
+
+#### 安裝 ErisPulse
+
+```bash
+# 安裝 ErisPulse
+uv pip install ErisPulse --upgrade
+```
+
+### 方式三：使用 uv tool 安裝（全域 CLI，推薦）
+
+只想把 `epsdk` 當全域命令列工具使用時，`uv tool install` 是最乾淨的方式——
+epsdk 運行在獨立的工具環境中，不污染任何專案環境：
+
+```bash
+# 安裝（epsdk 立即可用，無需激活任何虛擬環境）
+uv tool install ErisPulse
+
+# 升級（或直接使用 epsdk self-update，會自動走此通道）
+uv tool upgrade ErisPulse
+```
+
+> [!NOTE]
+> 工具環境裡的 epsdk 在專案目錄內運行時會自動感知專案 `.venv`：
+> `epsdk install` 將組件安裝進專案環境、`epsdk run` 使用專案環境運行機器人，
+> 框架本體仍由工具環境提供，兩邊互不干擾。
+>
+> 一鍵安裝腳本（`get.erisdev.com/install.sh` / `install.ps1`）的選單中
+> 同樣提供「全域 CLI 安裝（uv tool）」方式，會自動安裝 uv 並引導完成。
+
+## 專案初始化與模組安裝
+
+安裝完成後，專案初始化、模組安裝、運行的完整流程見 [5 分鐘快速入門](../quick-start.md)。
+
+### 方式四：使用 ErisPulse-App 客戶端（免終端）
+
+不想裝 Python 環境？[ErisPulse-App](../ecosystem/app-tw.md) 是官方全平台客戶端
+（Android / Windows / Linux / macOS），**手機直接運行**，桌面版支援最小化到
+系統托盤後台常駐；內建 Python 運行時與 ErisPulse SDK，無需終端與手動配置：
+
+- 從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 按平台選擇下載
+  （Android `online`/`offline` APK、Windows `setup.exe`/`zip`、Linux `tar.gz`、macOS `zip`）
+- 在 App 內建立並啟動實例，透過原生介面管理適配器與模組、瀏覽模組商店
+
+> 完整說明見 [ErisPulse-App 安裝與使用](../ecosystem/app-tw.md)。
+
+## 驗證安裝
+
+### 檢查安裝
+
+```bash
+# 檢查 ErisPulse 版本
+epsdk --version
+```
+
+### 運行測試
+
+```bash
+# 運行專案
+epsdk run main.py
+```
+
+如果看到類似的輸出說明安裝成功：
+
+```
+[INFO] 正在初始化 ErisPulse...
+[INFO] 適配器已加載: Yunhu
+[INFO] 模組已加載: MyModule
+[INFO] ErisPulse 初始化完成
+```
+
+## 常見問題
+
+### 安裝失敗
+
+1. 檢查 Python 版本是否在支援範圍內（支援 3.10 – 3.14；3.14t 自由線程 / 無 GIL 構建為實驗性支持，不作正式承諾）
+2. 嘗試使用 `uv pip install ErisPulse` 替代 `pip install`
+3. 如果提示權限錯誤，嘗試 `pip install --user ErisPulse` 或使用虛擬環境
+4. 如果在企業代理環境下遇到 SSL 證書錯誤，嘗試 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
+5. 確保網路連接正常，pip 源可存取
+
+### 配置錯誤
+
+1. 檢查 `config.toml` 語法是否正確（TOML 格式對縮進和引號敏感）
+2. 確認所有必需的配置項都已填寫
+3. 查看終端日誌獲取詳細錯誤資訊
+4. 使用 `epsdk init` 重新生成配置檔案
+
+### 模組安裝失敗
+
+1. 確認模組名稱拼寫正確（大小寫敏感）
+2. 檢查網路連接
+3. 使用 `epsdk list-remote` 查看可用模組列表
+4. 確認模組與你當前 SDK 版本相容
+
+### Windows PowerShell 執行策略
+
+如果 PowerShell 提示「無法載入檔案...在此系統上禁止執行腳本」：
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+### Debian/Ubuntu 虛擬環境建立失敗
+
+如果安裝腳本提示「虛擬環境建立失敗」，且錯誤資訊包含 `ensurepip is not available`，是因為 Debian/Ubuntu 預設未安裝 `python3-venv`（系統 Python 的 `ensurepip` 被禁用）：
+
+```bash
+sudo apt install python3.13-venv   # 按實際 Python 版本安裝對應套件
+# 或安裝通用元套件：
+sudo apt install python3-venv
+```
+
+安裝後重新執行安裝腳本即可。新版安裝腳本在偵測到該問題時會主動詢問並嘗試自動安裝對應系統套件；也可以改用 uv（`uv venv` 不依賴 `ensurepip`）。
+
+## 下一步
+
+- **裝好後初始化專案、安裝適配器**：跟著 [5 分鐘快速入門](../quick-start.md) 走完剩餘步驟
+- **日常用命令列管理組件**：查 [CLI 命令參考](cli-reference-tw.md)
+- **要填令牌、調端口**：看 [配置檔案說明](configuration-tw.md)
