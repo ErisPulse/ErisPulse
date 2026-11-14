@@ -2,12 +2,21 @@ name: 🐳 Docker Hub Publish
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Pin ErisPulse version from PyPI (e.g. 2.12.0); empty = dev image from PyPI latest"
+        required: false
+        default: ""
   push:
     branches:
       - main
       - Pre-Release/*
-    tags:
-      - "v*"
+  workflow_run:
+    # PyPI Publish 成功结束后才构建镜像：旧模式 tag 与 PyPI 上传并发，build-arg
+    # pin 的版本尚未收录，pip 解析直接失败。workflow_run 事件运行在默认分支
+    # 上下文，head_branch 携带触发 run 的 tag 名（如 v2.12.0），据其 pin 版本。
+    workflows: ["🎀 Eris PyPI Publish"]
+    types: [completed]
 
 permissions:
   contents: read
@@ -26,7 +35,11 @@ env:
 jobs:
   docker-publish:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    # workflow_run 只在 PyPI Publish 成功时接手；push/dispatch 维持原语义
+    if: >-
+      github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
 
     steps:
       - name: Checkout code
@@ -55,28 +68,46 @@ jobs:
       - name: Determine release channel
         id: channel
         run: |
-          REF="${{ github.ref }}"
-          # 与 auto-tag-release 的预发布判定同口径；非正式发布一律只推 dev 标签
-          if [[ "$REF" == refs/tags/v* ]] && ! grep -qE '(dev|alpha|beta|rc|pre)' <<< "$REF"; then
-            echo "stable=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "stable=false" >> "$GITHUB_OUTPUT"
+          # 频道判定（预发布口径与 auto-tag-release 一致：dev/alpha/beta/rc/pre）
+          # ① workflow_run（PyPI Publish 成功后）：head_branch 为 v* tag → pin
+          #    该版本（正式 → latest + x.y.z + x.y；预发布 → dev）
+          # ② workflow_dispatch 带 version 输入 → pin 手动指定版本（正式发布
+          #    补发 / 重发入口）
+          # ③ push main / Pre-Release → dev 镜像，装 PyPI 最新版
+          version=""
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_run" ]]; then
+            head="${{ github.event.workflow_run.head_branch }}"
+            if [[ "$head" == v* ]]; then version="${head#v}"; fi
+          elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            version="${{ inputs.version }}"
           fi
 
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/erispulse
-          tags: |
-            # 正式版：latest + 完整版本号 + 主次版本号
-            type=semver,pattern={{version}},enable=${{ steps.channel.outputs.stable == 'true' }}
-            type=semver,pattern={{major}}.{{minor}},enable=${{ steps.channel.outputs.stable == 'true' }}
-            type=raw,value=latest,enable=${{ steps.channel.outputs.stable == 'true' }}
-            # 非正式发布（预发布 tag / 分支 push）只推 dev 标签
-            type=raw,value=dev,enable=${{ steps.channel.outputs.stable != 'true' }}
+          img_dh="docker.io/${{ env.IMAGE_NAME }}"
+          img_ghcr="ghcr.io/${{ github.repository_owner }}/erispulse"
+
+          if [[ -n "$version" ]]; then
+            if grep -qE '(dev|alpha|beta|rc|pre)' <<< "$version"; then
+              tags="${img_dh}:dev
+          ${img_ghcr}:dev"
+            else
+              tags="${img_dh}:latest
+          ${img_dh}:${version}
+          ${img_dh}:${version%.*}
+          ${img_ghcr}:latest
+          ${img_ghcr}:${version}
+          ${img_ghcr}:${version%.*}"
+            fi
+          else
+            tags="${img_dh}:dev
+          ${img_ghcr}:dev"
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          {
+            echo "tags<<EOF"
+            echo "$tags"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
@@ -86,12 +117,11 @@ jobs:
           target: production
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          # tag 触发时按标签 pin PyPI 版本：此前从不传 build-args，镜像内装的
-          # 可能是 PyPI 上的"最新版"而非本 tag 对应版本（标签与内容不一致）
+          tags: ${{ steps.channel.outputs.tags }}
+          # pin 的版本此时必然已在 PyPI 收录（本 run 由 publish 成功触发）；
+          # dev 镜像（push main）不传版本，装 PyPI 最新版
           build-args: |
-            ERISPULSE_VERSION=${{ startsWith(github.ref, 'refs/tags/v') && steps.meta.outputs.version || '' }}
+            ERISPULSE_VERSION=${{ steps.channel.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -109,7 +139,7 @@ jobs:
           echo "Image: ${{ env.IMAGE_NAME }}"
           echo "Registry: Docker Hub + GitHub Container Registry"
           echo "Tags:"
-          echo "${{ steps.meta.outputs.tags }}" | while IFS= read -r tag; do
+          echo "${{ steps.channel.outputs.tags }}" | while IFS= read -r tag; do
             echo "  - ${tag}"
           done
           echo "Platforms: linux/amd64,linux/arm64"
