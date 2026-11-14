@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ErisPulse · 透感风格展示</title>
+<link rel="stylesheet" href="glass.css">
+<style>
+/* 页面布局（展示空间型；Dashboard 真身在 layout.css） */
+* { box-sizing: border-box; }
+.stage { max-width: 960px; margin: 0 auto; padding: clamp(20px, 4vw, 40px) clamp(16px, 4vw, 32px) 120px; }
+.brand { display: flex; align-items: center; }
+.brand img { width: clamp(120px, 16vw, 180px); height: auto; }
+.hero { margin: 11vh 0 40px; }
+.hero h1 { margin: 0 0 12px; font-size: clamp(28px, 5.5vw, 44px); line-height: 1.25; text-shadow: 0 1px 12px rgba(255, 255, 255, 0.55); }
+[data-theme="dark"] .hero h1 { text-shadow: 0 1px 14px rgba(0, 0, 0, 0.6); }
+.hero p { margin: 0; color: var(--tx-s); font-size: 15px; max-width: 520px; text-shadow: 0 1px 8px rgba(255, 255, 255, 0.45); }
+[data-theme="dark"] .hero p { color: var(--tx-s); text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55); }
+.gallery { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; align-items: start; }
+.card { padding: 22px 24px; }
+.card h3 { margin: 0 0 10px; font-size: 16px; }
+.card p { margin: 0 0 16px; color: var(--tx-s); font-size: 14px; line-height: 1.7; }
+.btn-accent { padding: 9px 22px; font-size: 14px; cursor: pointer; }
+.btn-accent.ghost { background: rgba(var(--accent-rgb), 0.12); color: var(--accent); }
+input.demo {
+    width: 100%; padding: 10px 14px; font-size: 14px;
+    background: var(--bg-t); border: 1px solid var(--bd); border-radius: var(--radius);
+    color: var(--tx-p); outline: none;
+}
+input.demo:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15); }
+.ctrl {
+    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 8px; padding: 10px 14px; z-index: 10; max-width: calc(100vw - 24px); flex-wrap: wrap; justify-content: center;
+    background: var(--bg-t); border: 1px solid var(--bd); border-radius: 14px; box-shadow: 0 8px 30px rgba(15,23,42,.18);
+}
+.ctrl button { border: 1px solid var(--bd); background: none; color: var(--tx-p); padding: 6px 14px; border-radius: 9px; cursor: pointer; font-size: 13px; }
+.ctrl button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* 移动端自适应：单列卡片、缩小留白 */
+@media (max-width: 720px) {
+    .stage { padding-bottom: 110px; }
+    .hero { margin: 8vh 0 28px; }
+    .hero p { max-width: none; }
+    .gallery { grid-template-columns: 1fr; }
+    .card { padding: 18px 18px; }
+    .ctrl { bottom: 12px; padding: 8px 10px; gap: 6px; }
+    .ctrl button { padding: 6px 11px; font-size: 12px; }
+}
+</style>
+</head>
+<body class="bg-image" data-bg-level="standard">
+<div class="bg-layer" style="background-image: url('bg.png')"></div>
+
+<div class="stage">
+  <header class="brand">
+    <img src="ErisPulseLogo.png" alt="ErisPulse">
+  </header>
+
+  <section class="hero">
+    <h1>透感界面<br>让内容悬浮于光之上</h1>
+  </section>
+
+  <div class="gallery">
+    <div class="card">
+      <h3>ErisPulse</h3>
+      <p>异步机器人框架：多平台适配器、声明式配置与 ORM、事件治理与归属回收，一个 SDK 全部就位。</p>
+      <button class="btn-accent">开始使用</button>
+      <button class="btn-accent ghost">查看文档</button>
+    </div>
+    <div class="card shift-card">
+      <h3>订阅更新</h3>
+      <p>输入邮箱接收版本通知。</p>
+      <input class="demo" type="email" placeholder="you@example.com">
+      <button class="btn-accent" style="width:100%;margin-top:12px">订阅</button>
+    </div>
+  </div>
+</div>
+
+<div class="ctrl" id="ctrl">
+  <button data-k="data-bg-level" data-v="soft">轻档</button>
+  <button data-k="data-bg-level" data-v="standard" class="on">标准</button>
+  <button data-k="data-bg-level" data-v="strong">强档</button>
+  <button data-k="data-theme" data-v="light" class="on">浅色</button>
+  <button data-k="data-theme" data-v="dark">深色</button>
+</div>
+
+<script>
+// 切换根作用域的 data 属性——token 由 glass.css 的覆盖层重定义，组件无感知
+document.getElementById('ctrl').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.documentElement.setAttribute(b.dataset.k, b.dataset.v);
+  [...document.querySelectorAll(`#ctrl [data-k="${b.dataset.k}"]`)].forEach(x => x.classList.toggle('on', x === b));
+});
+</script>
+</body>
+</html>

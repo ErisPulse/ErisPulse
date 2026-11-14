@@ -250,3 +250,4 @@ docs/*/ai-support/skills*.zip
 .github/assets/score2.wav
 # Cloudflare wrangler 本地状态
 .wrangler/
+.mimosa/

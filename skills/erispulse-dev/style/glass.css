@@ -1,0 +1,97 @@
+/*
+ * ErisPulse 透感玻璃样式（教学实现）
+ * 架构同构自 ErisPulse-Dashboard：:root 实底 token → 组件模式层 → .bg-image 覆盖层。
+ * 设计说明见 README.md；Dashboard 真身见其仓库 static/css/ 全链。
+ */
+
+:root {
+    --bg-p: #f6f7f9;  --bg-s: #eef0f3;  --bg-t: #ffffff;
+    --tx-p: #0a0a0a;  --tx-s: #5f6b7a;  --tx-t: #9aa4b1;
+    --bd: #e5e8ec;    --bd-h: #d0d6dd;
+    --accent: #4aa3dd;  --accent-h: #3a94d0;  --accent-rgb: 74, 163, 221;
+    --ok-c: #178a52;  --ok-bg: #e9f8ef;  --ok-bd: #bce8cd;
+    --er-c: #d9404e;  --er-bg: #fdecee;  --er-bd: #f6c6cb;
+    --sh: 0 6px 18px -8px rgba(15, 23, 42, 0.18);
+    --radius: 12px;   --radius-lg: 16px;
+    --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+html[data-theme="dark"] { --bg-p: #0f1115; --bg-s: #161a20; --bg-t: #1c2027; }
+html[data-theme="dark"] {
+    --tx-p: #e6e8ec;  --tx-s: #9aa4b1;  --tx-t: #6b7684;
+    --bd: #262b33;    --bd-h: #333a44;
+    --sh: 0 6px 18px -8px rgba(0, 0, 0, 0.55);
+}
+
+html { background: #f6f7f9; }
+html[data-theme="dark"] { background: #0f1115; }
+body {
+    margin: 0; min-height: 100vh; font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg-p); color: var(--tx-p); color-scheme: light dark;
+}
+
+.card {
+    background: var(--bg-t); border: 1px solid var(--bd);
+    border-radius: var(--radius-lg); box-shadow: none;
+    transition: box-shadow var(--ease) 0.3s;
+}
+.card:hover { box-shadow: var(--sh); }
+.modal-box {
+    background: var(--bg-t); border: 1px solid var(--bd);
+    border-radius: var(--radius-lg); box-shadow: 0 16px 48px rgba(15, 23, 42, 0.22);
+}
+.badge-ok { background: var(--ok-bg); color: var(--ok-c); border: 1px solid var(--ok-bd); }
+.badge-er { background: var(--er-bg); color: var(--er-c); border: 1px solid var(--er-bd); }
+.btn-accent { background: var(--accent); color: #fff; border: none; border-radius: var(--radius); }
+.btn-accent:hover { background: var(--accent-h); }
+
+/* 覆盖层：同名 token 重定义为透明混合；档位百分比即透感强度 */
+.bg-image {
+    --bg-p: color-mix(in srgb, #f6f7f9 30%, transparent);
+    --bg-s: color-mix(in srgb, #eef0f3 62%, transparent);
+    --bg-t: color-mix(in srgb, #ffffff 82%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    backdrop-filter: blur(14px) saturate(1.15);
+}
+html[data-theme="dark"] .bg-image {
+    --bg-p: color-mix(in srgb, #0f1115 28%, transparent);
+    --bg-s: color-mix(in srgb, #161a20 62%, transparent);
+    --bg-t: color-mix(in srgb, #1c2027 82%, transparent);
+}
+.bg-image[data-bg-level="soft"] {
+    --bg-p: color-mix(in srgb, #f6f7f9 45%, transparent);
+    --bg-s: color-mix(in srgb, #eef0f3 78%, transparent);
+    --bg-t: color-mix(in srgb, #ffffff 92%, transparent);
+}
+.bg-image[data-bg-level="strong"] {
+    --bg-p: color-mix(in srgb, #f6f7f9 20%, transparent);
+    --bg-s: color-mix(in srgb, #eef0f3 50%, transparent);
+    --bg-t: color-mix(in srgb, #ffffff 72%, transparent);
+}
+html[data-theme="dark"] .bg-image[data-bg-level="soft"] {
+    --bg-p: color-mix(in srgb, #0f1115 42%, transparent);
+    --bg-s: color-mix(in srgb, #161a20 78%, transparent);
+    --bg-t: color-mix(in srgb, #1c2027 92%, transparent);
+}
+html[data-theme="dark"] .bg-image[data-bg-level="strong"] {
+    --bg-p: color-mix(in srgb, #0f1115 18%, transparent);
+    --bg-s: color-mix(in srgb, #161a20 50%, transparent);
+    --bg-t: color-mix(in srgb, #1c2027 72%, transparent);
+}
+.bg-image .modal-box { -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.bg-image[data-bg-level="strong"] .modal-box { -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+
+.bg-layer {
+    position: fixed; inset: 0; z-index: -1;
+    background-size: cover; background-position: center;
+}
+html[data-theme="dark"] .bg-layer {
+    background-color: rgba(10, 13, 18, 0.62);
+    background-blend-mode: multiply;
+}
+html[data-theme="dark"] .bg-layer::after {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 30%, rgba(10, 13, 18, 0.45) 100%);
+}
+@media (prefers-reduced-motion: reduce) {
+    .card, .modal-box { transition: none; }
+}
