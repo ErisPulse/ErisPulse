@@ -83,7 +83,10 @@ jobs:
           fi
 
           img_dh="docker.io/${{ env.IMAGE_NAME }}"
-          img_ghcr="ghcr.io/${{ github.repository_owner }}/erispulse"
+          # ghcr 仓库名必须全小写：repository_owner（ErisPulse）原样拼会构成
+          # 非法 tag（旧 metadata-action 自动小写，手工拼装需自行转换）
+          owner="${{ github.repository_owner }}"
+          img_ghcr="ghcr.io/${owner,,}/erispulse"
 
           if [[ -n "$version" ]]; then
             if grep -qE '(dev|alpha|beta|rc|pre)' <<< "$version"; then

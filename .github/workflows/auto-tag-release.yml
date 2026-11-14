@@ -80,10 +80,9 @@ jobs:
               # 安装包文件名随 App 版本演进（latest 页永远最新），rootfs 为
               # 固定名滚动资产（随框架发版由 pypi-publish 的 notify-app-rootfs
               # 触发重建）。表头英文保证通用可读；printf 拼装保持 YAML 块缩进，
-              # 产出行首的 --- 分隔与表格由 markdown 渲染。
+              # 产出行首的 --- 分隔与表格由 markdown 渲染。条目分隔线随 sed
+              # 提取带入提取段（条目以 --- 结尾），此处不再重复。
               app_section="$(printf '%s\n' \
-                '' \
-                '---' \
                 '' \
                 '> **ErisPulse App**：可直接安装并管理 ErisPulse 的客户端——安装即得框架运行环境、Dashboard 管理面板与进程守护。安装包文件名随 App 版本演进，rootfs 随框架发版自动重建：' \
                 '' \
