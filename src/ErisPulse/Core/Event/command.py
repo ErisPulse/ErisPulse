@@ -870,8 +870,10 @@ class CommandHandler:
             return None
         finally:
             # 无论成功、超时、异常还是 CancelledError，都确保清理等待条目
-            # （命中 / 取消路径条目已被移除，此处仅兜底超时路径的残留）
-            interaction.cancel(wait_key)
+            # （命中 / 取消路径条目已被移除，此处仅兜底超时路径的残留）。
+            # 仅当条目仍是本次等待时才清理：同键被后继等待顶替（conflict）时，
+            # 本方被取消后的兜底清理不得误删后继等待，否则新旧互杀、双双失效
+            interaction.cancel_if_current(wait_key, entry)
 
     # 文本处理三态结果（_process_text_for_command / _try_execute_command 的返回契约）：
     # unmatched = 文本未解析出任何注册命令（允许 alt_message 兜底重试）；

@@ -155,6 +155,31 @@ class TestConflictAndCancel:
         assert new.done()
 
     @pytest.mark.asyncio
+    async def test_cancel_if_current_spares_successor(self):
+        """回归：等待方兜底清理不得误删同键后继等待（conflict 顶替场景）"""
+        loop = asyncio.get_running_loop()
+        old = loop.create_future()
+        new = loop.create_future()
+
+        old_entry = interaction.register(_evt(), old)
+        new_entry = interaction.register(_evt(), new)
+        assert old.done() and not new.done()
+
+        # 旧等待方被顶替后做兜底清理，不得删除新等待
+        assert interaction.cancel_if_current(old_entry.key, old_entry) is False
+        assert interaction._find_entry(old_entry.key) is new_entry
+
+        # 条目仍是自身时才允许清理（正常超时兜底路径）
+        assert interaction.cancel_if_current(new_entry.key, new_entry) is True
+        assert interaction._find_entry(new_entry.key) is None
+
+        # 端到端：顶替后新等待仍可被消息正常命中
+        new2 = loop.create_future()
+        interaction.register(_evt(), new2)
+        assert await interaction.resolve(_evt()) is True
+        assert new2.done() and not new2.cancelled() and new2.exception() is None
+
+    @pytest.mark.asyncio
     async def test_cancel_by_owner(self):
         loop = asyncio.get_running_loop()
         future = loop.create_future()
