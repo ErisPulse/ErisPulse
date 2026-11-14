@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1952,
+  "total_keywords": 1954,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -123,7 +123,7 @@
     "1. 创建 Dockerfile": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 207,
+        "line": 233,
         "level": 3,
         "title": "1. 创建 Dockerfile"
       }
@@ -529,7 +529,7 @@
     "2. 创建 GitHub Actions 工作流": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 235,
+        "line": 261,
         "level": 3,
         "title": "2. 创建 GitHub Actions 工作流"
       }
@@ -1074,12 +1074,12 @@
         "title": "3. 指定发送账号"
       }
     ],
-    "3. 提交到模块商店": [
+    "3. 提交到模块商店（ErisPulse Workbench）": [
       {
         "document": "developer-guide/publishing.md",
         "line": 94,
         "level": 3,
-        "title": "3. 提交到模块商店"
+        "title": "3. 提交到模块商店（ErisPulse Workbench）"
       }
     ],
     "3. 提高代码质量": [
@@ -1157,7 +1157,7 @@
     "3. 触发构建": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 304,
+        "line": 330,
         "level": 3,
         "title": "3. 触发构建"
       }
@@ -1469,7 +1469,7 @@
     "4. 管理已发布的模块": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 110,
+        "line": 139,
         "level": 3,
         "title": "4. 管理已发布的模块"
       }
@@ -1493,7 +1493,7 @@
     "4. 设置镜像为公开": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 319,
+        "line": 345,
         "level": 3,
         "title": "4. 设置镜像为公开"
       }
@@ -1677,7 +1677,7 @@
     "5. 用户使用": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 326,
+        "line": 352,
         "level": 3,
         "title": "5. 用户使用"
       }
@@ -2921,7 +2921,7 @@
     "Docker 镜像 vs PyPI 发布": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 381,
+        "line": 407,
         "level": 3,
         "title": "Docker 镜像 vs PyPI 发布"
       }
@@ -5467,7 +5467,7 @@
     "一个包可以注册多个模块吗？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 183,
+        "line": 209,
         "level": 3,
         "title": "一个包可以注册多个模块吗？"
       }
@@ -5577,7 +5577,7 @@
       },
       {
         "document": "developer-guide/publishing.md",
-        "line": 393,
+        "line": 419,
         "level": 2,
         "title": "下一步"
       },
@@ -6747,7 +6747,7 @@
     "代码质量": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 131,
+        "line": 157,
         "level": 3,
         "title": "代码质量"
       }
@@ -7395,7 +7395,7 @@
     "兼容性": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 139,
+        "line": 165,
         "level": 3,
         "title": "兼容性"
       }
@@ -7855,7 +7855,7 @@
     "包名必须以 `ErisPulse-` 开头吗？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 179,
+        "line": 205,
         "level": 3,
         "title": "包名必须以 `ErisPulse-` 开头吗？"
       }
@@ -8095,7 +8095,7 @@
     "发布": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 160,
+        "line": 186,
         "level": 3,
         "title": "发布"
       }
@@ -8119,7 +8119,7 @@
     "发布前把质量关": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 395,
+        "line": 421,
         "level": 3,
         "title": "发布前把质量关"
       }
@@ -8127,7 +8127,7 @@
     "发布前检查清单": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 127,
+        "line": 153,
         "level": 2,
         "title": "发布前检查清单"
       }
@@ -8135,7 +8135,7 @@
     "发布后让用户用起来": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 400,
+        "line": 426,
         "level": 3,
         "title": "发布后让用户用起来"
       }
@@ -8485,7 +8485,7 @@
     "同时发布到 Docker Hub": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 358,
+        "line": 384,
         "level": 3,
         "title": "同时发布到 Docker Hub"
       }
@@ -10269,7 +10269,7 @@
     "审核需要多长时间？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 193,
+        "line": 219,
         "level": 3,
         "title": "审核需要多长时间？"
       }
@@ -10665,7 +10665,7 @@
       },
       {
         "document": "developer-guide/publishing.md",
-        "line": 177,
+        "line": 203,
         "level": 2,
         "title": "常见问题"
       },
@@ -10985,7 +10985,7 @@
     "开发模式测试": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 167,
+        "line": 193,
         "level": 2,
         "title": "开发模式测试"
       }
@@ -12169,7 +12169,7 @@
     "文档": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 153,
+        "line": 179,
         "level": 3,
         "title": "文档"
       }
@@ -12408,12 +12408,28 @@
         "title": "方式一：本地进程（推荐）"
       }
     ],
+    "方式一：网页提交（推荐首次使用）": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 98,
+        "level": 4,
+        "title": "方式一：网页提交（推荐首次使用）"
+      }
+    ],
     "方式三：使用 uv tool 安装（全局 CLI，推荐）": [
       {
         "document": "user-guide/installation.md",
         "line": 68,
         "level": 3,
         "title": "方式三：使用 uv tool 安装（全局 CLI，推荐）"
+      }
+    ],
+    "方式二：API 自主提交（CLI / CI 场景）": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 104,
+        "level": 4,
+        "title": "方式二：API 自主提交（CLI / CI 场景）"
       }
     ],
     "方式二：event.send_chain()": [
@@ -12615,7 +12631,7 @@
     "更新已发布模块": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 119,
+        "line": 145,
         "level": 2,
         "title": "更新已发布模块"
       }
@@ -16983,7 +16999,7 @@
     "适用场景": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 201,
+        "line": 227,
         "level": 3,
         "title": "适用场景"
       }
@@ -17369,7 +17385,7 @@
     "通过 Docker 镜像分发应用": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 197,
+        "line": 223,
         "level": 2,
         "title": "通过 Docker 镜像分发应用"
       }
@@ -17509,7 +17525,7 @@
       },
       {
         "document": "developer-guide/publishing.md",
-        "line": 147,
+        "line": 173,
         "level": 3,
         "title": "配置"
       },
