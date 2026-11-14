@@ -26,7 +26,7 @@ epsdk list-remote -t adapters
 epsdk list-remote -r
 ```
 
-你也可以访问 [ErisPulse 官网](https://www.erisdev.com/#market) 在线浏览模块商店。
+你也可以访问 [ErisPulse 官网](https://www.erisdev.com/#market) 或 [ErisPulse Workbench](https://workbench.erisdev.com/) 的「模块列表」在线浏览模块商店。
 
 ### 支持的提交类型
 
@@ -91,30 +91,56 @@ python -m twine upload dist/*
 pip install ErisPulse-MyModule
 ```
 
-### 3. 提交到模块商店
+### 3. 提交到模块商店（ErisPulse Workbench）
 
-前往 [ErisPulse 模块商店](https://www.erisdev.com/#market)，点击「提交模块」，登录后填写模块信息即可。
+模块收录与认证统一由 **ErisPulse Workbench** 承载：**[https://workbench.erisdev.com/](https://workbench.erisdev.com/)**。提交后经 `repository_dispatch` 下发到模块索引仓库，workflow 完成即入商店（通常数分钟）。
 
-支持的登录方式：**GitHub**、**Codeberg**、**云湖**，任选其一即可。
+#### 方式一：网页提交（推荐首次使用）
 
-填写要点：
-- 模块名称、描述、仓库地址
-- 最低 SDK 版本：如果不确定，填写 [ErisPulse 最新发行版](https://pypi.org/project/ErisPulse/) 版本号即可
+1. 打开工作台，用 **GitHub / Codeberg** 账号登录（历史时期的模块可在模块详情页走「认领此模块」找回归属）
+2. 左侧「提交新模块」→ 按表单填写：名称 / 类型（module · adapter）/ PyPI 包名 / 描述（≥10 字符）/ 作者 / 仓库地址（github.com 或 codeberg.org）/ 分类（1 工具 · 2 娱乐 · 3 管理 · 4 通知 · 5 AI · 6 平台 · 7 分析）/ 标签 / 最低 SDK 版本
+3. 提交即生效并标记「未验证」（仅表示尚未官方审核，用户安装时会收到风险提示需确认）；「认证审核」通过后转为「已验证」
 
-提交后立即生效，用户可通过模块源安装。模块会被标记为「未验证」，维护者审核通过后改为「已验证」。
+#### 方式二：API 自主提交（CLI / CI 场景）
 
-> **关于验证状态**：
-> - 「未验证」仅表示尚未经过官方审核，不代表模块有问题
-> - 用户通过 `epsdk install` 安装未验证模块时会收到风险提示，需确认后才可继续安装
+**① 生成访问令牌**：工作台「开放接口 → 访问令牌」页 → 填写名称 →「生成令牌」。格式为 `epat_` + 40 位十六进制，**仅生成时显示一次**；开启两步验证的账户可勾选「免动态码」，之后敏感接口不再要求 `totp_code`。
+
+**② 调用约定**：
+
+```http
+Authorization: Bearer epat_…
+Content-Type: application/json
+```
+
+请求体必须为 **UTF-8 编码的 JSON**。Windows 终端默认 GBK，中文会被写成非 UTF-8 字节，服务端直接拒绝（报错 `415 ENCODING_INVALID` 并指出问题字段）——先执行 `chcp 65001`，或把请求体存成 UTF-8 文件后用 `curl --data-binary @body.json` 提交。
+
+**③ 提交模块**：
+
+```bash
+curl -X POST https://workbench.erisdev.com/api/modules/submit \
+  -H "Authorization: Bearer epat_…" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "MyModule",
+    "type": "module",
+    "package": "ErisPulse-MyModule",
+    "description": "模块描述，至少 10 字符",
+    "author": "Your Name",
+    "repository": "https://github.com/you/MyModule",
+    "category": 1,
+    "tags": ["工具"],
+    "i18n": ["zh", "en"],
+    "min_sdk_version": ">=2.7.0"
+  }'
+```
+
+**④ 查询与管理**：`GET /api/modules/ops?name=MyModule&type=module` 查提交/审核进度；`POST /api/modules/manage` 编辑 / 转正 / 删除；`POST /api/modules/batch` 批量操作。完整端点表见工作台内置「使用文档」（令牌 / 归属认领 / 模块管理 / FAQ）。
 
 ### 4. 管理已发布的模块
 
-在模块商店点击「提交模块」并登录后，切换到「我的模块」标签页，可以：
+登录工作台「模块列表」→ 自己的模块详情页，可编辑描述、仓库、标签等（版本号自动从 PyPI 同步）、删除模块、发起归属认领；API 侧走 `manage` / `batch` 端点。
 
-- **编辑** — 修改模块描述、仓库地址、标签等信息，版本号会自动从 PyPI 同步
-- **删除** — 从模块商店移除模块（不可撤销）
-
-> 刚提交的模块可能需要几分钟才会显示在「我的模块」列表中。
+> 刚提交的模块可能需要几分钟才会出现在列表中。
 
 ## 更新已发布模块
 
