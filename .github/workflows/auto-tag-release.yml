@@ -76,23 +76,23 @@ jobs:
             if [ -n "$changelog_section" ]; then
               changelog=$(echo "$changelog_section" | tail -n +2)
 
-              # Notes 末尾追加客户端下载表：固定指向 App 仓库 latest——
-              # 安装包文件名随 App 版本演进（latest 页永远最新），rootfs 为
-              # 固定名滚动资产（随框架发版由 pypi-publish 的 notify-app-rootfs
-              # 触发重建）。表头英文保证通用可读；printf 拼装保持 YAML 块缩进，
-              # 产出行首的 --- 分隔与表格由 markdown 渲染。条目分隔线随 sed
-              # 提取带入提取段（条目以 --- 结尾），此处不再重复。
+              # Notes 末尾追加客户端下载表：全部为 releases/latest/download 直链。
+              # 直链要求 App 侧上传时同步无版本固定名副本（--clobber 覆盖，与
+              # erispulse-rootfs-aarch64.tar.gz 同款模式）；rootfs 为固定名滚动
+              # 资产（随框架发版由 pypi-publish 的 notify-app-rootfs 触发重建）。
+              # 表头英文保证通用可读；printf 拼装保持 YAML 块缩进，产出行首的
+              # --- 分隔与表格由 markdown 渲染。
               app_section="$(printf '%s\n' \
                 '' \
-                '> **ErisPulse App**：可直接安装并管理 ErisPulse 的客户端——安装即得框架运行环境、Dashboard 管理面板与进程守护。安装包文件名随 App 版本演进，rootfs 随框架发版自动重建：' \
+                '> **ErisPulse App**：可直接安装并管理 ErisPulse 的客户端——安装即得框架运行环境、Dashboard 管理面板与进程守护。以下为各平台安装包直链（固定名，随 App 发版自动更新；rootfs 随框架发版自动重建）：' \
                 '' \
-                '| Platform | Package | Download |' \
-                '|----------|---------|----------|' \
-                '| Windows | `*-windows-x64-setup.exe` / `*-windows-x64.zip` | [Latest release](https://github.com/ErisPulse/ErisPulse-App/releases/latest) |' \
-                '| Linux | `*-linux-x64.tar.gz` | [Latest release](https://github.com/ErisPulse/ErisPulse-App/releases/latest) |' \
-                '| macOS (Apple Silicon) | `*-macos-arm64.zip` | [Latest release](https://github.com/ErisPulse/ErisPulse-App/releases/latest) |' \
-                '| Android | `*-online-*.apk` / `*-offline-*.apk` | [Latest release](https://github.com/ErisPulse/ErisPulse-App/releases/latest) |' \
-                '| Termux / Proot (aarch64) | `erispulse-rootfs-aarch64.tar.gz` | [Direct link](https://github.com/ErisPulse/ErisPulse-App/releases/latest/download/erispulse-rootfs-aarch64.tar.gz) |')"
+                '| Platform | Download |' \
+                '|----------|----------|' \
+                '| Windows | [ErisPulse-App-windows-x64-setup.exe](https://github.com/ErisPulse/ErisPulse-App/releases/latest/download/ErisPulse-App-windows-x64-setup.exe) · [ErisPulse-App-windows-x64.zip](https://github.com/ErisPulse/ErisPulse-App/releases/latest/download/ErisPulse-App-windows-x64.zip) |' \
+                '| Linux | [ErisPulse-App-linux-x64.tar.gz](https://github.com/ErisPulse/ErisPulse-App/releases/latest/download/ErisPulse-App-linux-x64.tar.gz) |' \
+                '| macOS (Apple Silicon) | [ErisPulse-App-macos-arm64.zip](https://github.com/ErisPulse/ErisPulse-App/releases/latest/download/ErisPulse-App-macos-arm64.zip) |' \
+                '| Android | [ErisPulse-App-online-universal.apk](https://github.com/ErisPulse/ErisPulse-App/releases/latest/download/ErisPulse-App-online-universal.apk) · [online-arm64-v8a](https://github.com/ErisPulse/ErisPulse-App/releases/latest/download/ErisPulse-App-online-arm64-v8a.apk) · [offline-universal](https://github.com/ErisPulse/ErisPulse-App/releases/latest/download/ErisPulse-App-offline-universal.apk) · [offline-arm64-v8a](https://github.com/ErisPulse/ErisPulse-App/releases/latest/download/ErisPulse-App-offline-arm64-v8a.apk) |' \
+                '| Termux / Proot (aarch64) | [erispulse-rootfs-aarch64.tar.gz](https://github.com/ErisPulse/ErisPulse-App/releases/latest/download/erispulse-rootfs-aarch64.tar.gz) |')"
               changelog="$changelog$app_section"
 
               # Determine if this is a dev version
