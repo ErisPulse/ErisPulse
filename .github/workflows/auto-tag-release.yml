@@ -23,6 +23,10 @@ jobs:
         with:
           app-id: ${{ secrets.ERISBOT_APP_ID }}
           private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
+          # 不传 owner 时 token 只签发当前仓库作用域，跨库 dispatch（官网 docs
+          # 重建 / App rootfs 同步）必 403
+          owner: ErisPulse
+          repositories: ErisPulse, erispulse.github.io, ErisPulse-App
 
       - name: Checkout code
         uses: actions/checkout@v4
